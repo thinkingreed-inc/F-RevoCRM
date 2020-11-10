@@ -1,0 +1,33 @@
+version: "3"
+services:
+  php:
+    build:
+        context: '.'
+        dockerfile: ./docker/php/Dockerfile
+    volumes:
+      - ./docker/php/php.ini:/usr/local/etc/php/php.ini
+      - ./:/var/www/html:cached
+      - app-ignore-1:/var/www/html/test/template_c
+    ports:
+      - 80:80
+  db:
+    build:
+      context: "."
+      dockerfile: ./docker/mysql/Dockerfile
+    restart: always
+    volumes:
+      - db-store:/var/lib/mysql
+      - db-log-store:/var/log/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    environment:
+      - MYSQL_DATABASE=frevocrm
+      - MYSQL_USER=docker
+      - MYSQL_PASSWORD=docker
+      - MYSQL_ROOT_PASSWORD=docker
+      - TZ=Asia/Tokyo
+    ports:
+      - 3306:3306
+volumes:
+  db-store:
+  db-log-store:
+  app-ignore-1:
