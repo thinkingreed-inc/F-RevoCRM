@@ -1,0 +1,167 @@
+.clearfix {
+  clear: both;
+}
+
+/*
+ * 一覧の左側の列固定（IE11非対応）
+ */
+ @media (min-width: 991px) { 
+  .fix-title-column {
+    position: sticky;
+    z-index: 1;
+    left: 0;
+    background: rgb(251, 251, 251);
+    transform: scale(0.999);
+    background-clip: padding-box;
+  }
+  .fix-data-column {
+    position: sticky;
+    z-index: 1;
+    left: 0;
+    background: #fff;
+    transform: scale(0.999);
+    background-clip: padding-box;
+  }
+}
+/*
+ * モーダルウインドウの背景を黒ベースに変更
+ */
+.modal-backdrop {
+  background-color: #555;
+}
+
+/*
+ * カスタムモジュールのアイコン位置調整
+ */
+ .app-menu a .module-icon .custom-module {
+  position: relative;
+  width: 23px;
+  height: 20px;
+  padding: 8px 6px 0px 3px !important;
+}
+.app-menu a .module-icon .custom-module span {
+  position: absolute;
+  top:0px;
+  left: 3px;
+}
+.modules-menu .module-qtip .custom-module {
+  text-align: center;
+  padding: 3px 4px 3px 4px !important;
+}
+
+.related-tabs .tab-icon {
+  position: relative;
+}
+.related-tabs .tab-icon .custom-module {
+  position: relative;
+  top: 2px;
+}
+.row .nav > li.tab-item > a,
+.row .nav > li.tab-item > a:hover {
+  height: 40px;
+}
+#mailmanagerContainer {
+  padding-top: 10px;
+}
+.app-modules-dropdown-container-global.open {
+  background: #eee;
+}
+.app-modules-dropdown-container-global .dropdown-toggle {
+  cursor: pointer;
+  padding: 13px;
+}
+.app-modules-dropdown-container-global .custom-module {
+  background: #666;
+  color: #fff;
+}
+.fc-slats tr {
+  height: 35px;
+}
+
+/**
+ * PDF Templates
+ */
+ #SLAEditContainer .select2.inputElement.PDFTemplates,
+ #editTagContainer .select2.inputElement.PDFTemplates {
+   width: 90%;
+ }
+
+/*
+ * モバイル表示
+ */
+@media (max-width: 768px) { 
+  .settingsIcon {
+    display: none;
+  }
+  .calendarview {
+    padding-bottom: 25px;
+  }
+  .main-container.calendarview{
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: column-reverse;
+  }  
+  div.CalendarViewPageDiv {
+    padding-top: 75px;
+  }
+  .list-menu-content.calendar_view_events .mCustomScrollBox {
+    max-height: none!important;
+    overflow: scroll;
+    -webkit-overflow-scrolling: touch
+  }
+  .main-container .module-nav {
+    width: 100%;
+    z-index: 1100;
+    background-color: #2C3B49;
+    background: #2C3B49;
+  }
+  .module-nav div.modules-menu {
+    position: relative;
+    left: auto;
+  }
+  .module-nav div.mod-switcher-container {
+    width: 100%;
+  }
+  .modules-menu ul li {
+    display: inline-block;
+  }
+  .modules-menu ul li.module-qtip a > span {
+    display: none;
+  }
+  .listViewPageDiv.content-area.full-width, .CalendarViewPageDiv.content-area.full-width, .editViewPageDiv.content-area.full-width, .settingsPageDiv.content-area.full-width {
+    padding-left: 0!important;
+  }
+  .detailViewContainer {
+    padding-top: 60px;
+  }
+  .dashBoardContainer {
+    padding-top: 40px;
+  }
+  #mCSB_9_scrollbar_vertical {
+    display: none!important;
+  }
+  .mCustomScrollbar.mCS_no_scrollbar {
+    max-height: none!important;
+  }
+  .quickView.fa.fa-eye.icon,
+  .fa.fa-ellipsis-v.icon {
+    display: none;
+  }
+  .updates_timeline > li .update_time {
+  position: static !important;
+}
+}
+
+div.summaryView span.value.textOverflowEllipsis img {
+  max-width: 100%;
+}
+div.detailview-content.container-fluid span.value img {
+  max-width: 100%;
+}
+
+/*
+ * プロフィールアイコン
+ */
+#imageContainer > img{
+  height: auto;
+}

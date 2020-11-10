@@ -1,0 +1,35 @@
+<?xml version='1.0'?>
+<module>
+	<type>extension</type>
+	<name>ExtensionStore</name>
+	<label>Extension Store</label>
+	<parent>Settings</parent>
+	<version>1.2</version>
+	<dependencies>
+		<vtiger_version>6.0.0</vtiger_version>
+		<vtiger_max_version>6.*</vtiger_max_version>
+	</dependencies>
+	<tables>
+		<table>
+		<name>vtiger_extnstore_users</name>
+		<sql><![CDATA[CREATE TABLE `vtiger_extnstore_users` (
+		  `id` int(11) NOT NULL AUTO_INCREMENT,
+		  `username` varchar(50) DEFAULT NULL,
+		  `password` varchar(75) DEFAULT NULL,
+		  `instanceurl` varchar(255) DEFAULT NULL,
+		  `createdon` datetime DEFAULT NULL,
+		  `deleted` int(1) NOT NULL DEFAULT 0,
+		  PRIMARY KEY (`id`)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8]]></sql>
+		</table>
+	</tables>
+	<customlinks>
+		<customlink>
+			<linktype>HEADERSCRIPT</linktype>
+			<linklabel>ExtensionStoreCommonHeaderScript</linklabel>
+			<linkurl><![CDATA[modules/ExtensionStore/ExtensionStore.js]]></linkurl>
+			<linkicon><![CDATA[]]></linkicon>
+			<sequence>0</sequence>
+		</customlink>
+	</customlinks>
+</module>

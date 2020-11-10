@@ -1,0 +1,17 @@
+<?xml version='1.0'?>
+<schema>
+	<tables>
+		<table>
+			<name>vtiger_extnstore_users</name>
+			<sql><![CDATA[CREATE TABLE `vtiger_extnstore_users` (
+		  `id` int(11) NOT NULL AUTO_INCREMENT,
+		  `username` varchar(50) DEFAULT NULL,
+		  `password` varchar(75) DEFAULT NULL,
+		  `instanceurl` varchar(255) DEFAULT NULL,
+		  `createdon` datetime DEFAULT NULL,
+		  `deleted` int(1) NOT NULL DEFAULT 0,
+		  PRIMARY KEY (`id`)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8]]></sql>
+		</table>
+	</tables>
+</schema>
