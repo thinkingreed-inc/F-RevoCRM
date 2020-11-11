@@ -91,12 +91,12 @@ class Users_Login_View extends Vtiger_View_Controller {
 		$message = '';
 		if ($error) {
 			switch ($error) {
-				case 'login'		:	$message = 'Invalid credentials';						break;
-				case 'fpError'		:	$message = 'Invalid Username or Email address';			break;
-				case 'statusError'	:	$message = 'Outgoing mail server was not configured';	break;
+				case 'login'		:	$message = '無効なユーザ名またはパスワード';						break;
+				case 'fpError'		:	$message = '無効なユーザ名またはE-mailアドレス';			break;
+				case 'statusError'	:	$message = 'メールサーバが設定されていません';	break;
 			}
 		} else if ($mailStatus) {
-			$message = 'Mail has been sent to your inbox, please check your e-mail';
+			$message = 'アドレスにメールを送信しました';
 		}
 
 		$viewer->assign('ERROR', $error);
