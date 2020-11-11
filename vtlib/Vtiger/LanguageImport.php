@@ -47,7 +47,7 @@ class Vtiger_LanguageImport extends Vtiger_LanguageExport {
 		$this->initImport($zipfile, $overwrite);
 
 		// Call module import function
-		$this->import_Language($zipfile);
+		// $this->import_Language($zipfile);
 	}
 
 	/**
