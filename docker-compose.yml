@@ -18,7 +18,6 @@ services:
     volumes:
       - db-store:/var/lib/mysql
       - db-log-store:/var/log/mysql
-      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
     environment:
       - MYSQL_DATABASE=frevocrm
       - MYSQL_USER=docker
