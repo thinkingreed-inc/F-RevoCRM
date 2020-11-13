@@ -9,7 +9,7 @@
  *************************************************************************************/
 
 class Users_Record_Model extends Vtiger_Record_Model {
-	
+
 	/**
 	 * Checks if the key is in property or data.
 	 */
@@ -29,7 +29,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		}
 		return parent::get($key);
 	}
-    
+
     /**
      * Sets the value of the key . First it will check whether specified key is a property if not it
      * will set from normal set from base class
@@ -52,7 +52,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$module = $this->getModule();
 		return 'index.php?module='.$this->getModuleName().'&parent=Settings&view='.$module->getDetailViewName().'&record='.$this->getId();
 	}
-	
+
 	/**
 	 * Function to get the Detail View url for the Preferences page
 	 * @return <String> - Record Detail View Url
@@ -61,15 +61,15 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$module = $this->getModule();
 		return 'index.php?module='.$this->getModuleName().'&view=PreferenceDetail&parent=Settings&record='.$this->getId();
 	}
-	
+
 	public function getCalendarSettingsDetailViewUrl(){
 		return 'index.php?module=' .$this->getModuleName() . '&parent=Settings&view=Calendar&record='.$this->getId();
 	}
-	
+
 	public function getCalendarSettingsEditViewUrl(){
 		return 'index.php?module='.$this->getModuleName() . '&parent=Settings&view=Calendar&mode=Edit&record='.$this->getId();
 	}
-    
+
     public function getMyTagSettingsListUrl() {
         return 'index.php?module=Tags&parent=Settings&view=List&record='.$this->getId();
     }
@@ -81,7 +81,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$module = $this->getModule();
 		return 'index.php?module=Users&view=ChangePassword&mode=Profile';
 	}
-	
+
 	/**
 	 * Function to get the Edit View url for the record
 	 * @return <String> - Record Edit View Url
@@ -148,7 +148,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 	public function save() {
         $newUser = false;
         $userId = $this->getId();
-        
+
         if(empty($userId)) {
             $newUser = true;
         }
@@ -156,7 +156,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$this->saveTagCloud();
         $this->addDashboardTabs();
 	}
-    
+
     /**
      * Funtion to add default Dashboard Tab in Vtiger7 Home Page
      */
@@ -170,7 +170,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
                 $moduleName = $tabName['module'];
                 $tabName = $tabName['name'];
             }
-           
+
             $db->pquery("INSERT INTO vtiger_dashboard_tabs(tabname,userid,isdefault,sequence,appname,modulename) VALUES(?,?,?,?,?,?) ON DUPLICATE KEY UPDATE tabname=?,userid=?,appname=?,modulename=?",
                     array($tabName, $this->getId(),$isDefault,$seq,$appName,$moduleName,$tabName, $this->getId(),$appName, $moduleName));
         }
@@ -195,7 +195,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		//TODO : Remove the global dependency
 		$currentUser = vglobal('current_user');
 		if(!empty($currentUser)) {
-			
+
 			// Optimization to avoid object creation every-time
 			// Caching is per-id as current_user can get swapped at runtime (ex. workflow)
 			$currentUserModel = NULL;
@@ -311,7 +311,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 
 		return $privilegesModel->get('roleid');
 	}
-    
+
     /**
      * Function returns User Current Role Name
      * @return <String>
@@ -327,7 +327,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
         }
         return $roleName;
     }
-    
+
 
 	/**
 	 * Function returns List of Accessible Users for a Module
@@ -424,7 +424,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$accessibleUser = Vtiger_Cache::get('vtiger-'.$this->getRole().'-'.$currentUserRoleModel->get('allowassignedrecordsto'), 'accessibleusers');
         if(empty($accessibleUser)) {
 			if($currentUserRoleModel->get('allowassignedrecordsto') === '1' || $private == 'Public') {
-				$accessibleUser = get_user_array(false, "ACTIVE", "", $private,$module);
+				$accessibleUser = get_user_array(false, "Active", "", $private,$module);
 			} else if($currentUserRoleModel->get('allowassignedrecordsto') === '2'){
 				$accessibleUser = $this->getSameLevelUsersWithSubordinates();
 			} else if($currentUserRoleModel->get('allowassignedrecordsto') === '3') {
@@ -449,7 +449,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		}
 		return $sameLevelUsers;
 	}
-	
+
 	/**
 	 * Function to get subordinates Users
 	 * @return <array> Users
@@ -474,11 +474,11 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		foreach ($roles as $key => $role) {
 			$roleIds[] = $role->getId();
 		}
-        
+
         if(empty($roleIds)) {
             return array();
         }
-        
+
 		$sql = 'SELECT userid FROM vtiger_user2role WHERE roleid IN ('.  generateQuestionMarks($roleIds).')';
 		$result = $db->pquery($sql, $roleIds);
 		$noOfUsers = $db->num_rows($result);
@@ -489,7 +489,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 				$userIds[] = $db->query_result($result, $i, 'userid');
 			}
 			$query = 'SELECT id, first_name, last_name FROM vtiger_users WHERE status = ? AND id IN ('.  generateQuestionMarks($userIds).')';
-			$result = $db->pquery($query, array('ACTIVE', $userIds));
+			$result = $db->pquery($query, array("Active", $userIds));
 			$noOfUsers = $db->num_rows($result);
 			for($j=0; $j<$noOfUsers; ++$j) {
 				$userId = $db->query_result($result, $j,'id');
@@ -500,7 +500,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		}
 		return $subUsers;
 	}
-	
+
 	/**
 	 * Function to get all the accessible groups
 	 * @return <Array>
@@ -510,7 +510,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		//TODO:Remove dependence on $_REQUEST for the module name in the below API
         $accessibleGroups = Vtiger_Cache::get('vtiger-'.$private, 'accessiblegroups');
         if(!$accessibleGroups){
-            $accessibleGroups = get_group_array(false, "ACTIVE", "", $private,$module);
+            $accessibleGroups = get_group_array(false, "Active", "", $private,$module);
             Vtiger_Cache::set('vtiger-'.$private, 'accessiblegroups',$accessibleGroups);
         }
         if (!empty($accessibleGroups)) {
@@ -603,8 +603,8 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$visibility = $db->query_result($db->pquery($query, array($this->getId())), 0, 'visible');
 		if($visibility == 0) {
 			return true;
-		} 
-		return false; 
+		}
+		return false;
 	}
 
 	/**
@@ -625,7 +625,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
         self::getAllUserGroups();
         return self::$allUserGroups[$userId];
 	}
-    
+
     /**
 	 * Function to get all users groups
 	 * @return <array> - all users groupId's
@@ -674,8 +674,8 @@ class Users_Record_Model extends Vtiger_Record_Model {
 			}
 		}
 		return $activityReminderInSeconds;
-	}	
-    
+	}
+
     /**
      * Function to get the users count
      * @param <Boolean> $onlyActive - If true it returns count of only acive users else only inactive users
@@ -685,18 +685,18 @@ class Users_Record_Model extends Vtiger_Record_Model {
         $db = PearDatabase::getInstance();
         $query = 'SELECT 1 FROM vtiger_users ';
         $params = array();
-        
+
         if($onlyActive) {
             $query.= ' WHERE status=? ';
             array_push($params,'active');
         }
 
         $result = $db->pquery($query,$params);
-        
+
         $numOfUsers = $db->num_rows($result);
         return $numOfUsers;
     }
-	
+
 	/**
 	 * Funtion to get Duplicate Record Url
 	 * @return <String>
@@ -706,7 +706,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		return 'index.php?module='.$this->getModuleName().'&parent=Settings&view='.$module->getEditViewName().'&record='.$this->getId().'&isDuplicate=true';
 
 	}
-	
+
 	/**
 	 * Function to get instance of user model by name
 	 * @param <String> $userName
@@ -721,29 +721,29 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Function to delete the current Record Model
 	 */
 	public function delete() {
 		$this->getModule()->deleteRecord($this);
 	}
-	
+
 	public function isAccountOwner() {
 		$db = PearDatabase::getInstance();
 		$query = 'SELECT is_owner FROM vtiger_users WHERE id = ?';
 		$isOwner = $db->query_result($db->pquery($query, array($this->getId())), 0, 'is_owner');
 		if($isOwner == 1) {
 			return true;
-		} 
+		}
 		return false;
 	}
-	
+
 	public function getActiveAdminUsers() {
 		$db = PearDatabase::getInstance();
 
 		$sql = 'SELECT id FROM vtiger_users WHERE status=? AND is_admin=?';
-		$result = $db->pquery($sql, array('ACTIVE', 'on'));
+		$result = $db->pquery($sql, array("Active", 'on'));
 
 		$noOfUsers = $db->num_rows($result);
 		$users = array();
@@ -760,7 +760,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		}
 		return $users;
 	}
-	
+
 	public function isFirstTimeLogin($userId) {
 		$db = PearDatabase::getInstance();
 
@@ -771,12 +771,12 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		}
 		return false;
     }
-	
+
 	/*
 	 * Function to delete user permanemtly from CRM and
 	 * assign all record which are assigned to that user
 	 * and not transfered to other user to other user
-	 * 
+	 *
 	 * @param User Ids of user to be deleted and user
 	 * to whom records should be assigned
 	 */
@@ -790,12 +790,12 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$sql = "UPDATE vtiger_crmentity SET smcreatorid = ? WHERE smcreatorid = ? AND setype <> ?";
 		$db->pquery($sql, array($newOwnerId, $userId,'ModComments'));
 
-		//update history details in vtiger_modtracker_basic 
-		$sql ="update vtiger_modtracker_basic set whodid=? where whodid=?"; 
-		$db->pquery($sql, array($newOwnerId, $userId)); 
+		//update history details in vtiger_modtracker_basic
+		$sql ="update vtiger_modtracker_basic set whodid=? where whodid=?";
+		$db->pquery($sql, array($newOwnerId, $userId));
 
-		//update comments details in vtiger_modcomments 
-		$sql ="update vtiger_modcomments set userid=? where userid=?"; 
+		//update comments details in vtiger_modcomments
+		$sql ="update vtiger_modcomments set userid=? where userid=?";
 		$db->pquery($sql, array($newOwnerId, $userId));
 
 		$sql = "DELETE FROM vtiger_users WHERE id=?";
@@ -818,7 +818,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$focusObj->retrieveCurrentUserInfoFromFile($userId);
 		return self::getInstanceFromUserObject($focusObj);
 	}
-    
+
     /**
      * Function returns all the subordinates based on Reports To field
      * @return Array
@@ -841,7 +841,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
         $subUsers = array_diff($subUsers, array($forUserId));
         return $subUsers;
     }
-    
+
      /**
 	 * Function returns List of Accessible Users given Group
 	 * @param <String> groupid
@@ -868,7 +868,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 
 
 	/**
-	 * Function to change username 
+	 * Function to change username
 	 * @param <string> $newUsername
 	 * @param <string> $newpassword
 	 * @param <string> $oldPassword
@@ -879,7 +879,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$response = array('success'=> false,'message' => 'error');
 		$record = self::getInstanceFromPreferenceFile($forUserId);
 		$moduleName = $record->getModuleName();
-		
+
 		if(!Users_Privileges_Model::isPermittedToChangeUsername($forUserId)) {
 			$response['message'] = vtranslate('LBL_PERMISSION_DENIED', $moduleName);
 			return $response;
@@ -901,14 +901,14 @@ class Users_Record_Model extends Vtiger_Record_Model {
 					$changePwdResponse = $users->change_password($oldPassword,$newpassword);
 					if($changePwdResponse) {
 						$response['success'] = true;
-						$response['message'] = vtranslate('LBL_USERNAME_CHANGED',  $moduleName);	
+						$response['message'] = vtranslate('LBL_USERNAME_CHANGED',  $moduleName);
 					}else{
 						$response['message'] = vtranslate('ERROR_CHANGE_USERNAME',  $moduleName);
 					}
 				}  catch (Exception $e) {
 					$response['success'] = false;
 					$response['message'] = vtranslate('ERROR_CHANGE_USERNAME',  $moduleName);
-				}		
+				}
 			}
 		}else{
 			$response['message'] = vJSTranslate('JS_ENTERED_CURRENT_USERNAME_MSG', $moduleName);
