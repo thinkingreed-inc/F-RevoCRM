@@ -337,11 +337,14 @@
 					var password = jQuery('#password').val();
 					var result = true;
 					var errorMessage = '';
-					if (username === '') {
-						errorMessage = 'Please enter valid username';
+					if (username === '' & password === '') {
+						errorMessage = 'ユーザー名とパスワードを入力してください';
+						result = false;　
+					} else if (username === '') {
+						errorMessage = 'ユーザー名を入力してください';
 						result = false;
 					} else if (password === '') {
-						errorMessage = 'Please enter valid password';
+						errorMessage = 'パスワードを入力してください';
 						result = false;
 					}
 					if (errorMessage) {
@@ -360,14 +363,17 @@
 
 					var result = true;
 					var errorMessage = '';
-					if (username === '') {
-						errorMessage = 'Please enter valid username';
+					if (username === '' & (!emailFilter.test(email1) || email == '')) {
+						errorMessage = 'ユーザー名とメールアドレスを入力してください';
+						result = false;
+					} else if (username === '') {
+						errorMessage = 'ユーザー名を入力してください';
 						result = false;
 					} else if (!emailFilter.test(email1) || email == '') {
-						errorMessage = 'Please enter valid email address';
+						errorMessage = 'メールアドレスを入力してください';
 						result = false;
 					} else if (email.match(illegalChars)) {
-						errorMessage = 'The email address contains illegal characters.';
+						errorMessage = '不正なメールアドレスです';
 						result = false;
 					}
 					if (errorMessage) {
