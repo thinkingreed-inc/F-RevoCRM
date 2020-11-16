@@ -1042,7 +1042,7 @@ jQuery.Class("Vtiger_Helper_Js",{
         return $parent && $parent.length ? $parent : $this.parent();
     },
 
-    checkStrengthPassword(password) {
+    checkStrengthPassword: function (password) {
         if(password.lenght < 8) {
             return false;
         }
