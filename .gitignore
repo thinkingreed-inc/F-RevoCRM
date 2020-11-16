@@ -17,6 +17,8 @@ test/vtlib/CSS/*
 test/vtlib/URI/*
 test/vtlib/HTML/*
 user_privileges/*
+!user_privileges/sharing_privileges_1.php
+!user_privileges/user_privileges_1.php
 /*.xlsx
 .DS_Store
 .vscode
