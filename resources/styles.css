@@ -162,6 +162,34 @@ div.detailview-content.container-fluid span.value img {
 /*
  * プロフィールアイコン
  */
+/* 管理メニューサムネイル */
 #imageContainer > img{
+  height: auto;
+}
+/* 右上個人ボックス */
+.profile-img-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.profile-img-container > img{
+  height: auto;
+}
+/* ユーザー情報詳細左上アイコン */
+#prefPageHeader .logo{
+  width: 75px;
+  height: 75px;
+  display: flex;
+  background-color: #f5f5f5;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+#prefPageHeader .logo > img{
+  height: auto;
+}
+/* アップロードサムネイル */
+[name="existingImages"] img{
   height: auto;
 }
