@@ -187,13 +187,18 @@ jQuery.Class('Install_Index_Js', {}, {
 
 	registerEventForStep6: function () {
 		jQuery('input[name="step7"]').on('click', function () {
-			var lastname = jQuery('select[name="lastname"]').val();
+			var lastname = jQuery('input[name="lastname"]').val();
 			if (lastname == "") {
 				alert('氏名を入力してください。');
 				return;
 			}
+			var email = jQuery('input[name="email"]').val();
+			if (email == "") {
+				alert('メールアドレスを入力してください。');
+				return;
+			}
 			var reg_survey = "";
-			jQuery('input[name="reg_survey\[\]"]').each(function(){
+			jQuery('input[name="reg_survey\[\]"]:checked').each(function(){
 				$this = jQuery(this);
 				reg_survey += $this.val();
 			});
