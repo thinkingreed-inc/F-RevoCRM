@@ -1,4 +1,6 @@
 FROM php:7.4-apache
+RUN usermod -u 1000 www-data
+RUN groupmod -g 1000 www-data
 RUN set -xe; \
     apt-get update -yqq && \
     apt-get install -yqq --no-install-recommends \
