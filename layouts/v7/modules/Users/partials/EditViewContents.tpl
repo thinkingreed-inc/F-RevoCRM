@@ -34,7 +34,7 @@
                             {continue}
                          {/if}
                          {if $FIELD_MODEL->isEditable() eq true}
-                             {if $FIELD_MODEL->get('uitype') eq "19"}
+                             {if $FIELD_MODEL->get('uitype') eq "19" || $FIELD_MODEL->get('uitype') eq "21"}
                                  {if $COUNTER eq '1'}
                                      <td></td><td></td></tr><tr>
                                      {assign var=COUNTER value=0}
@@ -63,7 +63,7 @@
                              {/if}
                              &nbsp; {if $FIELD_MODEL->isMandatory() eq true} <span class="redColor">*</span> {/if}
                          </td>
-                         <td  {if in_array($FIELD_MODEL->get('uitype'),array('19')) || $FIELD_MODEL->get('label') eq 'Signature'} class="fieldValue fieldValueWidth80" colspan="3" {assign var=COUNTER value=$COUNTER+1} {else} class="fieldValue" {/if}>
+                         <td  {if in_array($FIELD_MODEL->get('uitype'),array('19')) || in_array($FIELD_MODEL->get('uitype'),array('21')) || $FIELD_MODEL->get('label') eq 'Signature'} class="fieldValue fieldValueWidth80" colspan="3" {assign var=COUNTER value=$COUNTER+1} {else} class="fieldValue" {/if}>
                              {include file=vtemplate_path($FIELD_MODEL->getUITypeModel()->getTemplateName(),$MODULE)}
                          </td>
                      {/if}
