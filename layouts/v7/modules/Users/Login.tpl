@@ -339,7 +339,7 @@
 					var errorMessage = '';
 					if (username === '' & password === '') {
 						errorMessage = 'ユーザー名とパスワードを入力してください';
-						result = false;　
+						result = false;
 					} else if (username === '') {
 						errorMessage = 'ユーザー名を入力してください';
 						result = false;
