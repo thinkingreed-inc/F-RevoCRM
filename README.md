@@ -129,7 +129,7 @@ cp -r frevocrm.20201001/storage/* frevocrm/storage/
 ### 3. マイグレーションツールの実行
 
 1. アクセスすると自動でマイグレーションが実行されます。
- * http://xxx.xxx.xxx.xxx/frevocrm/index.php?Module=Migration&view=Index&mode=step1
+ * http://xxx.xxx.xxx.xxx/frevocrm/index.php?module=Migration&view=Index&mode=step1
 
 2. 動作確認
   F-RevoCRMのログインや業務に関わる動作を確認してください。
