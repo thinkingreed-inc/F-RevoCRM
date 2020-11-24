@@ -1,0 +1,6 @@
+config.inc.php export-ignore
+tabdata.php export-ignore
+parent_tabdata.php export-ignore
+.DS_Store export-ignore
+.gitignore export-ignore
+.gitattributes export-ignore
