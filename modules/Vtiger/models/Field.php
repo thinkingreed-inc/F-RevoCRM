@@ -1093,6 +1093,10 @@ class Vtiger_Field_Model extends Vtiger_Field {
 		return array('I'=> vtranslate('LBL_INTERNAL','Documents'), 'E'=> vtranslate('LBL_EXTERNAL','Documents'));
 	}
 
+	public function getFileLocationType2() {
+		return array('E'=> vtranslate('LBL_EXTERNAL','Documents'),'I'=> vtranslate('LBL_INTERNAL','Documents'));
+	}
+
 	/**
 	 * Function returns list of Currencies available in the system
 	 * @return <Array>
