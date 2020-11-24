@@ -128,7 +128,7 @@ jQuery.validator.addMethod("Calendar_greaterThanDependentField", function(value,
 		var startTimeElement = form.find('[name="time_start"]');
 		var endDateElement = form.find('[name="due_date"]');
 		var endTimeElement = form.find('[name="time_end"]');
-
+		var isAlldayElement = form.find('[name="is_allday"]');
 		var dateFormat = app.getDateFormat();
 		var hourFormat = app.getHourFormat();
 
@@ -157,6 +157,11 @@ jQuery.validator.addMethod("Calendar_greaterThanDependentField", function(value,
 		var momentFormat = dateFormat.toUpperCase() + ' ' +timeFormat;
 		var m1 = moment(startDate + ' ' + startTime, momentFormat);
 		var m2 = moment(endDate + ' ' + endTime, momentFormat);
+		//終日表示の際は日付のみ比較
+		var isAllday = isAlldayElement.prop('checked');
+		if (isAllday) {
+			return moment(startDate, momentFormat).unix() <= moment(endDate, momentFormat).unix();
+		}
 		return m1.unix() < m2.unix();
 	}, jQuery.validator.format(app.vtranslate('JS_CHECK_START_AND_END_DATE_SHOULD_BE_GREATER'))
 );
