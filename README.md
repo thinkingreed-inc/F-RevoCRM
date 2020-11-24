@@ -154,7 +154,7 @@ rm -r frevocrm.20170118
 #### パッチ適用方法
 - 差分ファイルを上書き更新してください
 - 以下のURLにアクセスし、マイグレーションを実施してください。  
-`https://xxx.xxx.xxx.xxx/frevocrm/index.php?Module=Migration&view=Index&mode=step1`
+`https://xxx.xxx.xxx.xxx/frevocrm/index.php?module=Migration&view=Index&mode=step1`
 
 #### 主な変更点
 * 機能改善
