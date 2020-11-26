@@ -45,6 +45,10 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var instance = Calendar_Calendar_Js.getInstance();
 		instance.editCalendarEvent(eventId, isRecurring);
 	},
+	copyCalendarEvent: function (eventId, isRecurring) {
+		var instance = Calendar_Calendar_Js.getInstance();
+		instance.copyCalendarEvent(eventId, isRecurring, true);
+	},
 	editCalendarTask: function (taskId) {
 		var instance = Calendar_Calendar_Js.getInstance();
 		instance.editCalendarTask(taskId);
@@ -1431,7 +1435,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 	registerEditEventModalEvents: function (modalContainer, isRecurring) {
 		this.validateAndUpdateEvent(modalContainer, isRecurring);
 	},
-	showEditModal: function (moduleName, record, isRecurring) {
+	showEditModal: function (moduleName, record, isRecurring, isDuplicate) {
 		var thisInstance = this;
 		var quickCreateNode = jQuery('#quickCreateModules').find('[data-name="' + moduleName + '"]');
 		if (quickCreateNode.length <= 0) {
@@ -1441,6 +1445,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		} else {
 			var quickCreateUrl = quickCreateNode.data('url');
 			var quickCreateEditUrl = quickCreateUrl + '&mode=edit&record=' + record;
+			if(isDuplicate == true) quickCreateEditUrl += "&isDuplicate=true";
 			quickCreateNode.data('url', quickCreateEditUrl);
 			quickCreateNode.trigger('click');
 			quickCreateNode.data('url', quickCreateUrl);
@@ -1459,11 +1464,14 @@ Vtiger.Class("Calendar_Calendar_Js", {
 	editCalendarTask: function (taskId) {
 		this.showEditTaskModal(taskId);
 	},
-	showEditEventModal: function (eventId, isRecurring) {
-		this.showEditModal('Events', eventId, isRecurring);
+	showEditEventModal: function (eventId, isRecurring, isDuplicate) {
+		this.showEditModal('Events', eventId, isRecurring, isDuplicate);
 	},
 	editCalendarEvent: function (eventId, isRecurring) {
 		this.showEditEventModal(eventId, isRecurring);
+	},
+	copyCalendarEvent: function (eventId, isRecurring, isDuplicate) {
+		this.showEditEventModal(eventId, isRecurring, isDuplicate);
 	},
 	registerPopoverEvent: function (event, element, calendarView) {
 		var dateFormat = this.getUserPrefered('date_format');
@@ -1534,6 +1542,12 @@ Vtiger.Class("Calendar_Calendar_Js", {
 							'onClick="Calendar_Calendar_Js.editCalendarEvent(\'' + eventObj.id +
 							'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_EDIT') + '">' +
 							'&nbsp;&nbsp;<i class="fa fa-pencil"></i>' +
+							'</span>';
+							popOverHTML += '' +
+							'<span class="pull-right cursorPointer" ' +
+							'onClick="Calendar_Calendar_Js.copyCalendarEvent(\'' + eventObj.id +
+							'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_COPY') + '">' +
+							'&nbsp;&nbsp;<i class="fa fa-copy"></i>' +
 							'</span>';
 				} else if (sourceModule === 'Calendar') {
 					popOverHTML += '' +
@@ -1947,6 +1961,11 @@ Vtiger.Class("Calendar_Calendar_Js", {
 						'onClick="Calendar_Calendar_Js.editCalendarEvent(\'' + event.id +
 						'\',' + event.recurringcheck + ');" title="' + app.vtranslate('JS_EDIT') + '">' +
 						'&nbsp;&nbsp;<i class="fa fa-pencil"></i>' +
+						'</span>' + 
+						'<span class="pull-right cursorPointer" ' +
+						'onClick="Calendar_Calendar_Js.copyCalendarEvent(\'' + event.id +
+						'\',' + event.recurringcheck + ');" title="' + app.vtranslate('JS_COPY') + '">' +
+						'&nbsp;&nbsp;<i class="fa fa-copy"></i>' +
 						'</span>';
 
 				if (event.status !== 'Held') {

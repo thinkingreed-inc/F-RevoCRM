@@ -41,6 +41,10 @@ class Calendar_QuickCreateAjax_View extends Vtiger_QuickCreateAjax_View {
 					$viewer = $this->getViewer ($request);
 					$viewer->assign('IS_ALLDAY', $recordModel->isAllDay());
 				}
+
+                if (!empty($recordId) && $request->get('isDuplicate') == true) {
+                    $mode = "";
+                }
 			}
 
 			$moduleModel = $recordModel->getModule();
