@@ -264,7 +264,8 @@ $jsLanguageStrings = array(
     'JS_CALENDAR_VIEW_YOU_ARE_EDITING_NOT_FOUND' => 'カレンダー表示が見つかりませんでした。',
     
     'JS_DELETE' => '削除',
-    'JS_EDIT' => '編集',
+	'JS_EDIT' => '編集',
+	'JS_COPY' => '複製',
     'JS_MARK_AS_HELD' => '完了にする',
     'JS_CREATE_FOLLOW_UP' => '次の予定を作成',
     'JS_RECURRING_EVENT' => '繰り返し予定',
