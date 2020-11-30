@@ -193,3 +193,18 @@ div.detailview-content.container-fluid span.value img {
 [name="existingImages"] img{
   height: auto;
 }
+/* フィールドラベル */
+.detailview-table .fieldLabel{
+    text-align: right;
+}
+.detailview-table .fieldLabel .muted{
+    color: #222;
+    font-weight: bold;
+}
+.summaryView .fieldLabel {
+    text-align: right;
+}
+.summaryView .fieldLabel .muted{
+    color: #222;
+    font-weight: bold;
+}
