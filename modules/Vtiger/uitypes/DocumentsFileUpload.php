@@ -31,10 +31,14 @@ class Vtiger_DocumentsFileUpload_UIType extends Vtiger_Base_UIType {
 				if($fileLocationType == 'I') {
 					$db = PearDatabase::getInstance();
 					$fileIdRes = $db->pquery('SELECT attachmentsid FROM vtiger_seattachmentsrel WHERE crmid = ?', array($recordId));
-					$fileId = $db->query_result($fileIdRes, 0, 'attachmentsid');
+					$fileId = $db->query_result($fileIdRes, 0, 'attachmentsid');					
+					$matchPattern = "^[\w]+:\/\/^";
+					preg_match($matchPattern, $value, $matches);
 					if($fileId){
 						$value = '<a href="index.php?module=Documents&action=DownloadFile&record='.$recordId.'&fileid='.$fileId.'"'.
 									' title="'.	vtranslate('LBL_DOWNLOAD_FILE', 'Documents').'" >'.$value.'</a>';
+					} else if (!empty ($matches[0])){
+						$value = '<a href="'.$value.'" target="_blank" title="'. vtranslate('LBL_DOWNLOAD_FILE', 'Documents').'" >'.textlength_check($value).'</a>';
 					}
 				} else {
 					$value = '<a href="'.$value.'" target="_blank" title="'. vtranslate('LBL_DOWNLOAD_FILE', 'Documents').'" >'.textlength_check($value).'</a>';
