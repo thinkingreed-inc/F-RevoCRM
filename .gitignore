@@ -26,3 +26,4 @@ user_privileges/*
 /*.xlsx
 .DS_Store
 .vscode
+config.inc.php
