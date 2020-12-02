@@ -19,6 +19,10 @@ test/vtlib/HTML/*
 user_privileges/*
 !user_privileges/sharing_privileges_1.php
 !user_privileges/user_privileges_1.php
+!user_privileges/audit_trail.php
+!user_privileges/default_module_view.php
+!user_privileges/enable_backup.php
+!user_privileges/index.html
 /*.xlsx
 .DS_Store
 .vscode
