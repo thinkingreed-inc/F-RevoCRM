@@ -104,10 +104,11 @@ abstract class Vtiger_Basic_View extends Vtiger_Footer_View {
 	 * モジュール名から所属カテゴリーを一つ取得する
 	 */
 	protected function getFirstModuleCategory($selectedModule, $menuGroupedByParent){
-		foreach ($menuGroupedByParent as $category => $modules) {
-			foreach ($modules as $moduleName => $moduleModel) {
+		$appMenuList = Vtiger_MenuStructure_Model::getAppMenuList();
+		foreach ($appMenuList as $parentCategory) {
+			foreach ($menuGroupedByParent[$parentCategory] as $moduleName => $moduleModel) {
 				if($selectedModule == $moduleName){
-					return $category;
+					return $parentCategory;
 				}
 			}
 		}
