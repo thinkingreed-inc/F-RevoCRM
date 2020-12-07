@@ -10,6 +10,7 @@ cache/images*
 cache/import*
 cache/upload*
 storage/*
+!storage/.htaccess
 test/curumeru_csv/*
 test/templates_c
 test/upload/*
