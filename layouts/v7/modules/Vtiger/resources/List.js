@@ -90,6 +90,10 @@ Vtiger.Class("Vtiger_List_Js", {
 		var listInstance = window.app.controller();
 		listInstance.performExportAction(exportActionUrl);
 	},
+	massPDFExportRecords: function (url, instance) {
+		var listInstance = app.controller();
+		listInstance.performMassPDFExportRecords(url);
+	},
 	/*
 	 * function to trigger send Email
 	 * @params: send email url , module name.
@@ -359,6 +363,29 @@ Vtiger.Class("Vtiger_List_Js", {
 							});
 						}
 				);
+			});
+		}
+		else {
+			listInstance.noRecordSelectedAlert();
+		}
+	},
+	performMassPDFExportRecords: function (url) {
+		var listInstance = this;
+		var params = {};
+		var paramArray = url.slice(url.indexOf('?') + 1).split('&');
+		for (var i = 0; i < paramArray.length; i++) {
+			var param = paramArray[i].split('=');
+			params[param[0]] = param[1];
+		}
+		var listSelectParams = listInstance.getListSelectAllParams(true);
+		listSelectParams = jQuery.extend(listSelectParams, params);
+		if (listSelectParams) {
+			var message = app.vtranslate('LBL_MASS_PDF_EXPORT_CONFIRMATION');
+			app.helper.showConfirmationBox({'message': message}).then(function (e) {
+				listSelectParams['module'] = app.getModuleName();
+				listSelectParams['action'] = 'MassPDFExport';
+				listSelectParams['search_params'] = JSON.stringify(listInstance.getListSearchParams());
+				window.location.href = 'index.php?'+jQuery.param(listSelectParams);
 			});
 		}
 		else {

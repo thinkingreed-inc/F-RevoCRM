@@ -70,6 +70,31 @@ class Inventory_ListView_Model extends Vtiger_ListView_Model {
 				$links['LISTVIEWSETTING'][] = Vtiger_Link_Model::getInstanceFromValues($settingsLink);
 			}
 		}
+
+		$exportPDFLinks = $this->getExportPDFLinks();
+		foreach($exportPDFLinks as $exportPDFLink) {
+			$links['LISTVIEW'][] = Vtiger_Link_Model::getInstanceFromValues($exportPDFLink);
+		}
+
 		return $links;
+	}
+
+	public function getExportPDFLinks()
+	{
+		global $adb;
+		$moduleName = $this->getModule()->getName();
+		$result = $adb->pquery("SELECT templateid, templatename FROM vtiger_pdftemplates WHERE module = ?",array($moduleName));
+		$exportPDFLinks = array();
+		for($i=0; $i<$adb->num_rows($result); $i++) {
+			$templateId = $adb->query_result($result, $i, 'templateid');
+			$templateName = $adb->query_result($result, $i, 'templatename');
+			$exportPDFLink = array(
+				'linklabel' => vtranslate('LBL_EXPORT_TO_PDF', $moduleName).'('.$templateName.')',
+				'linkurl' => 'javascript:Vtiger_List_Js.massPDFExportRecords("index.php?module='.$moduleName.'&action=MassPDFExport&templateName='.$templateName.'&template='.$templateId.'");',
+				'linkicon' => ''
+			);
+			$exportPDFLinks[] = $exportPDFLink;
+		}
+		return $exportPDFLinks;
 	}
 }
