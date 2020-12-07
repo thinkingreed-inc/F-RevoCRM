@@ -289,7 +289,7 @@ class Inventory_Record_Model extends Vtiger_Record_Model {
 	/**
 	 * Function to get this record and details as PDF
 	 */
-	public function getPDF($templateId) {
+	public function getPDF($templateId, $isheader = true) {
 		$recordId = $this->getId();
 		$moduleName = $this->getModuleName();
 
@@ -311,6 +311,7 @@ class Inventory_Record_Model extends Vtiger_Record_Model {
 		$tcpdf->SetFont('ume-tgo4','B');
 		$tcpdf->writeHTML($template);
 		$pdf = $tcpdf->Output($templateName.'.pdf', 'S');//Dの場合は日本語が消える
+		if(!$isheader) return $pdf;
 
 		header("Pragma: public");
 		header("Expires: 0");
