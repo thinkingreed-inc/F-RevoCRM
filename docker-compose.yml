@@ -10,6 +10,13 @@ services:
       - app-ignore-1:/var/www/html/test/template_c
     ports:
       - 80:80
+    environment:
+      - FREVOCRM_INSTALLER_DB_HOST=db
+      - FREVOCRM_INSTALLER_DB_PORT=3306
+      - FREVOCRM_INSTALLER_DB_USER=root
+      - FREVOCRM_INSTALLER_DB_PASSWORD=docker
+      - FREVOCRM_INSTALLER_DB_NAME=frevocrm
+
   db:
     build:
       context: "."

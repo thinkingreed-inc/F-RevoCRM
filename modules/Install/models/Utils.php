@@ -187,6 +187,21 @@ class Install_Utils_Model {
 				$parameters['admin_email']    = $vtconfig['adminEmail'];
 			}
 		}
+
+		// 初期インストール時にDBの設定などが煩雑な為、主にDockerで試すことを想定して、
+		// 環境変数から自動で値を読み取り、入力済み状態にするコードを追加
+		if(empty($parameters['db_hostname']) && (!empty($_ENV['FREVOCRM_INSTALLER_DB_HOST']) && !empty($_ENV['FREVOCRM_INSTALLER_DB_PORT']))){
+			$parameters['db_hostname'] = $_ENV['FREVOCRM_INSTALLER_DB_HOST'].':'.$_ENV['FREVOCRM_INSTALLER_DB_PORT'];
+		}
+		if(empty($parameters['db_username']) && !empty($_ENV['FREVOCRM_INSTALLER_DB_USER'])){
+			$parameters['db_username'] = $_ENV['FREVOCRM_INSTALLER_DB_USER'];
+		}
+		if(empty($parameters['db_password']) && !empty($_ENV['FREVOCRM_INSTALLER_DB_PASSWORD'])){
+			$parameters['db_password'] = $_ENV['FREVOCRM_INSTALLER_DB_PASSWORD'];
+		}
+		if(empty($parameters['db_name']) && !empty($_ENV['FREVOCRM_INSTALLER_DB_NAME'])){
+			$parameters['db_name'] = $_ENV['FREVOCRM_INSTALLER_DB_NAME'];
+		}
 		
 		return $parameters;
 	}

@@ -39,6 +39,7 @@ Vtiger Public License 1.2
 * F-RevoCRM7.3のインストール方法はそのまま読み進めてください。
 * F-RevoCRM6.5からのバージョンアップはインストール方法の後に記載があります。
 * F-RevoCRM7.3のパッチ適用方法については各パッチ付属のREADMEを参照してください。
+* 本レポジトリをDockerで構築する場合は、[docker/README.md](./docker/README.md)を参照してください。
 
 ### 前提条件
 データベース名などを「frevocrm」としてインストールすることを前提に記載します。
@@ -96,7 +97,7 @@ ApacheのDocumentRoot以下に解凍したディレクトリ毎、あるいは�
 ### 3. 初期設定
 
 3.で設置したF-RevoCRMのURLを開きます。
-* http://xxx.xxx.xxx.xxx/frevocrm
+* http://example.com/frevocrm
 
 画面に従って初期設定を完了させてください。
 
@@ -139,7 +140,7 @@ cp -r frevocrm.20201001/storage/* frevocrm/storage/
 ### 3. マイグレーションツールの実行
 
 1. アクセスすると自動でマイグレーションが実行されます。
- * http://xxx.xxx.xxx.xxx/frevocrm/index.php?module=Migration&view=Index&mode=step1
+ * http://example.com/frevocrm/index.php?module=Migration&view=Index&mode=step1
 
 2. 動作確認
   F-RevoCRMのログインや業務に関わる動作を確認してください。
@@ -154,7 +155,7 @@ rm -r frevocrm.20170118
 #### パッチ適用方法
 - 差分ファイルを上書き更新してください
 - 以下のURLにアクセスし、マイグレーションを実施してください。  
-`https://xxx.xxx.xxx.xxx/frevocrm/index.php?module=Migration&view=Index&mode=step1`
+`https://example.com/frevocrm/index.php?module=Migration&view=Index&mode=step1`
 
 #### 主な変更点
 * 機能改善

@@ -51,7 +51,11 @@ abstract class Vtiger_Basic_View extends Vtiger_Footer_View {
 		$supportGroup = $menuGroupedByParent['SUPPORT'];
 		unset($menuGroupedByParent['SUPPORT']);
 		$menuGroupedByParent['SUPPORT'] = $supportGroup;
-        $parentApp = $request->get('app');
+		$parentApp = $request->get('app');
+		// もしリンクにカテゴリーが定義されていなかった場合、所属カテゴリーの一つを表示する
+		if(empty($parentApp)){
+			$parentApp = $this->getFirstModuleCategory($selectedModule, $menuGroupedByParent);
+		}
 
 		foreach ($menuGroupedByParent as $parentCategory => $menuList) {
 			if($parentCategory == 'ANALYTICS' || $parentCategory == 'SETTINGS') continue;
@@ -94,6 +98,21 @@ abstract class Vtiger_Basic_View extends Vtiger_Footer_View {
 		if($display) {
 			$this->preProcessDisplay($request);
 		}
+	}
+
+	/**
+	 * モジュール名から所属カテゴリーを一つ取得する
+	 */
+	protected function getFirstModuleCategory($selectedModule, $menuGroupedByParent){
+		$appMenuList = Vtiger_MenuStructure_Model::getAppMenuList();
+		foreach ($appMenuList as $parentCategory) {
+			foreach ($menuGroupedByParent[$parentCategory] as $moduleName => $moduleModel) {
+				if($selectedModule == $moduleName){
+					return $parentCategory;
+				}
+			}
+		}
+		return "";
 	}
 
 	protected function preProcessTplName(Vtiger_Request $request) {
