@@ -90,7 +90,7 @@ class Inventory_ListView_Model extends Vtiger_ListView_Model {
 			$templateName = $adb->query_result($result, $i, 'templatename');
 			$exportPDFLink = array(
 				'linklabel' => vtranslate('LBL_EXPORT_TO_PDF', $moduleName).'('.$templateName.')',
-				'linkurl' => 'javascript:Vtiger_List_Js.massPDFExportRecords("index.php?module='.$moduleName.'&action=MassPDFExport&templateName='.$templateName.'&template='.$templateId.'");',
+				'linkurl' => 'javascript:Vtiger_List_Js.triggerPDFExportAction("'.$this->getModule()->getPDFExportUrl().'&templateName='.$templateName.'&template='.$templateId.'")',
 				'linkicon' => ''
 			);
 			$exportPDFLinks[] = $exportPDFLink;
