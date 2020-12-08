@@ -28,6 +28,7 @@ $languageStrings = array(
 	'LBL_BACK' => '戻る',
 	'LBL_IMPORT' => 'インポート',
 	'LBL_EXPORT' => 'エクスポート',
+	'LBL_PDF_EXPORT' => 'PDFエクスポート',
 	'LBL_FIND_DUPLICATES' => '重複の検出・統合',
 	'LBL_MORE' => 'その他',
 	'LBL_LESS' => '閉じる',
