@@ -39,6 +39,7 @@ Vtiger Public License 1.2
 * F-RevoCRM7.3のインストール方法はそのまま読み進めてください。
 * F-RevoCRM6.5からのバージョンアップはインストール方法の後に記載があります。
 * F-RevoCRM7.3のパッチ適用方法については各パッチ付属のREADMEを参照してください。
+* 本レポジトリをDockerで構築する場合は、[docker/README.md](./docker/README.md)を参照してください。
 
 ### 前提条件
 データベース名などを「frevocrm」としてインストールすることを前提に記載します。
