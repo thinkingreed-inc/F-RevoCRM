@@ -2,7 +2,7 @@
 name: 不具合報告（Bug report）
 about: 不具合を報告する（Create a report to help us improve）
 title: "[不具合]"
-labels: ''
+labels: 'bug'
 assignees: ''
 
 ---
@@ -15,9 +15,9 @@ assignees: ''
 不具合の発生手順を細かく記載してください。
 （Steps to reproduce the behavior:）
 1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+1. Click on '....'
+1. Scroll down to '....'
+1. See error
 
 **スクリーンショット（Screenshots）**
 スクリーンショットがあれば添付してください。
