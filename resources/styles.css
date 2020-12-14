@@ -208,3 +208,11 @@ div.detailview-content.container-fluid span.value img {
     color: #222;
     font-weight: bold;
 }
+@media all and (min-width: 0px) and (max-width: 830px) {
+  .detailview-table .fieldLabel{
+      text-align: left;
+  }
+   .summaryView .fieldLabel {
+      text-align: left;
+  }
+}
