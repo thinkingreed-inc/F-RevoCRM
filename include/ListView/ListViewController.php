@@ -295,7 +295,7 @@ class ListViewController {
 									'" >'.textlength_check($value).
 									'</a>';
 						} elseif ($downloadType == 'I') {
-							$value = '<a href="'.$value.'"'.
+							$value = '<a onclick="event.stopPropagation()" href="'.$value.'" target="_blank"'.
 									' title="'.$value.
 									'" >'.textlength_check($value).
 									'</a>';
