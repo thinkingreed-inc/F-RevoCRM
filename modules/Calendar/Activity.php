@@ -143,14 +143,20 @@ class Activity extends CRMEntity {
 		$this->setAllDay();
 
 		// 参加者情報をまとめる
-		if(empty($this->invitee_array) && array_key_exists('inviteesid', $_REQUEST)) {
+		if(empty($this->invitee_array) && array_key_exists('inviteesid', $_REQUEST)) {// カレンダーからの遷移の場合
 			$selected_users_string =  $_REQUEST['inviteesid'];
 			$this->invitee_array = explode(';',$selected_users_string);
 			$smownerid = $this->column_fields['assigned_user_id'];
 			if(!in_array($smownerid, $this->invitee_array)) {
 				$this->invitee_array[] = $smownerid;
 			}
-		} else {
+		} else if(empty($this->invitee_array) && count($_REQUEST['selectedusers']) > 0){// 概要欄や関連からの遷移の場合
+			$this->invitee_array = $_REQUEST['selectedusers'];
+			$smownerid = $this->column_fields['assigned_user_id'];
+			if(!in_array($smownerid, $this->invitee_array)) {
+				$this->invitee_array[] = $smownerid;
+			}
+		} else {// リクエストに入っていない場合はDBから取得を試みる
 			$this->loadInvitees();
 		}
 
