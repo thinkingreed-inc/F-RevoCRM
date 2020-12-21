@@ -44,7 +44,7 @@
 			</li>
 			{assign var=INVISIBLE_CALENDAR_VIEWS_EXISTS value='false'}
 			{foreach key=ID item=USER from=$SHAREDUSERS}
-				{if $SHAREDUSERS_INFO[$ID]['visible'] != '0'}
+				{if $SHAREDUSERS_INFO[$ID]['visible'] == '1'}
 					<li class="activitytype-indicator calendar-feed-indicator" style="background-color: {$SHAREDUSERS_INFO[$ID]['color']};">
 						<span class="userName textOverflowEllipsis" title="{$USER}">
 							{$USER}
