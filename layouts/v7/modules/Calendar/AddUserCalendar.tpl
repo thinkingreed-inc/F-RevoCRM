@@ -24,7 +24,7 @@
                 <div class="controls fieldValue col-sm-6">
                     <select class="select2" name="usersList" style="min-width: 250px;">
                         {foreach key=USER_ID item=USER_NAME from=$SHAREDUSERS}
-                            {if $SHAREDUSERS_INFO[$USER_ID]['visible'] == '0'}
+                            {if $SHAREDUSERS_INFO[$USER_ID]['visible'] != '1'}
                                 <option value="{$USER_ID}" data-calendar-group="false">{$USER_NAME}</option>
                             {/if}
                         {/foreach}
