@@ -73,7 +73,11 @@ class Vtiger_MassPDFExport_Action extends Vtiger_Mass_Action
                 if (!empty($uitype4fieldname)) {
                     $uitype4value = $recordModel->get($uitype4fieldname);
                 }
-                $filename = $templateName."_".Vtiger_Functions::getCRMRecordLabel($recordModel->getId())."_".$uitype4value.'.pdf';
+                $accountname = "";
+                if($recordModel->get("account_id")){
+                    $accountname = Vtiger_Functions::getCRMRecordLabel($recordModel->get("account_id"));
+                }
+                $filename = $accountname."_".$templateName."(".Vtiger_Functions::getCRMRecordLabel($recordModel->getId()).")_".$uitype4value.'.pdf';
                 file_put_contents($uploadfilepath . $filename, $returnPDF, FILE_APPEND);
                 $pdfarray[] = $uploadfilepath . $filename;
             }
