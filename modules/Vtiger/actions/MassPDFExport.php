@@ -97,6 +97,7 @@ class Vtiger_MassPDFExport_Action extends Vtiger_Mass_Action
         set_time_limit(0);
 
         // zipに追加
+        setlocale(LC_ALL, 'ja_JP.UTF-8');
         foreach ($pathAry as $filepath) {
             $filename = basename($filepath);
             $zip->addFile($filepath, mb_convert_encoding($filename, 'CP932', 'UTF-8'));
