@@ -24,10 +24,10 @@ RUN set -xe; \
       docker-php-ext-install zip \
     && docker-php-ext-install bcmath gettext mbstring mysqli pdo pdo_mysql zip \
     && docker-php-ext-configure mbstring --disable-mbregex \
-    # gd
+    # gd exif
     && docker-php-ext-install -j$(nproc) iconv \
     && docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/include/ \
-    && docker-php-ext-install -j$(nproc) gd \
+    && docker-php-ext-install -j$(nproc) gd exif \
     # for imap
     && docker-php-ext-configure imap --with-kerberos --with-imap-ssl && \
     docker-php-ext-install -j$(nproc) imap
