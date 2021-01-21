@@ -119,10 +119,10 @@ F-RevoCRMのデータベース、ファイルを全てバックアップを取�
 # コマンド例
 mv frevocrm frevocrm.20201001
 ```
-2. F-RevoCRM 6.5 インストール直後のファイルをもともとのF-RevoCRMのディレクトリとしてコピーします。
+2. F-RevoCRM 7.3 インストール直後のファイルをもともとのF-RevoCRMのディレクトリとしてコピーします。
 ```
 # コマンド例
-cp -r frevocrm65 frevocrm
+cp -r frevocrm73 frevocrm
 ```
 3. F-RevoCRMの設定ファイル(config.*, *.properties, *tabdata.php)をコピーします。
 ```
