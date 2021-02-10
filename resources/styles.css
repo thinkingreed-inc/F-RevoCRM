@@ -194,25 +194,26 @@ div.detailview-content.container-fluid span.value img {
   height: auto;
 }
 /* フィールドラベル */
-.detailview-table .fieldLabel{
+.detailview-table .fieldLabel,
+.recordEditView .fieldLabel,
+.summaryView .fieldLabel{
     text-align: right;
 }
 .detailview-table .fieldLabel .muted{
     color: #222;
     font-weight: bold;
 }
-.summaryView .fieldLabel {
-    text-align: right;
-}
+.detailview-table .fieldLabel .muted,
+.recordEditView .fieldLabel .muted,
 .summaryView .fieldLabel .muted{
     color: #222;
     font-weight: bold;
 }
+
 @media all and (min-width: 0px) and (max-width: 830px) {
-  .detailview-table .fieldLabel{
-      text-align: left;
-  }
-   .summaryView .fieldLabel {
+  .detailview-table .fieldLabel,
+  .recordEditView .fieldLabel,
+  .summaryView .fieldLabel{
       text-align: left;
   }
 }
