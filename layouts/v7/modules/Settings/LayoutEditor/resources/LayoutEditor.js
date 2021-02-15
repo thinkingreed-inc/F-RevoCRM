@@ -1863,7 +1863,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 								thisInstance.showFieldEditModel(data, blockId, container);
 								data.find('[name="fieldType"]').trigger('change');
 								jQuery('#fieldPresence').bootstrapSwitch();
-								jQuery('#fieldPresence').bootstrapSwitch('handleWidth', '27px');
+								jQuery('#fieldPresence').bootstrapSwitch('handleWidth', '40px');
 								jQuery('#fieldPresence').bootstrapSwitch('labelWidth', '25px');
 
 								jQuery('#fieldPresence').on('switchChange.bootstrapSwitch', function (e) {
@@ -2084,7 +2084,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 					thisInstance.registerAddCustomBlockEvent();
 					thisInstance.registerFieldSequenceSaveClick();
 					jQuery("input[name='collapseBlock']").bootstrapSwitch();
-					jQuery("input[name='collapseBlock']").bootstrapSwitch('handleWidth', '27px');
+					jQuery("input[name='collapseBlock']").bootstrapSwitch('handleWidth', '40px');
 					jQuery("input[name='collapseBlock']").bootstrapSwitch('labelWidth', '25px');
 					thisInstance.registerSwitchActionOnFieldProperties();
 					thisInstance.registerAddCustomField();

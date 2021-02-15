@@ -142,7 +142,7 @@
 								<label class="checkbox">
 									<input type="checkbox" class ='cursorPointer bootstrap-switch' id="fieldPresence" name="presence" {if $FIELD_MODEL->isViewable()} checked {/if}
 										{if $FIELD_MODEL->isActiveOptionDisabled()} readonly="readonly" {/if} {if $FIELD_MODEL->isMandatory()} readonly="readonly" {/if}
-										data-on-text="Yes" data-off-text="No" value="{$FIELD_MODEL->get('presence')}"/>
+										data-on-text="{vtranslate('LBL_YES', $QUALIFIED_MODULE)}" data-off-text="{vtranslate('LBL_NO', $QUALIFIED_MODULE)}" value="{$FIELD_MODEL->get('presence')}"/>
 								</label>
 							</div>
 						</div>
