@@ -19,7 +19,11 @@
 	{assign var=EVENT_STATUS_FIELD_MODEL value=$EVENTS_MODULE_MODEL->getField('eventstatus')}
 	{assign var=EVENT_STAUTS_PICKLIST_VALUES value=$EVENT_STATUS_FIELD_MODEL->getPicklistValues()}
 	{foreach item=PICKLIST_LABEL key=PICKLIST_KEY from=$EVENT_STAUTS_PICKLIST_VALUES}
+	{if $PICKLIST_LABEL == vtranslate('Planned',"Calendar")}
+		{$EVENT_STAUTS_PICKLIST_VALUES[$PICKLIST_KEY]='('|cat:vtranslate('SINGLE_Calendar',"Calendar")|cat:'/'|cat:vtranslate('SINGLE_Events',"Calendar")|cat:')'|cat:$PICKLIST_LABEL}
+	{else}
 		{$EVENT_STAUTS_PICKLIST_VALUES[$PICKLIST_KEY]='('|cat:vtranslate('SINGLE_Events',"Calendar")|cat:')'|cat:$PICKLIST_LABEL}
+	{/if}
 	{/foreach}
 	{assign var=PICKLIST_VALUES value=array_merge($PICKLIST_VALUES, $EVENT_STAUTS_PICKLIST_VALUES)}
 	{assign var=SEARCH_VALUES value=explode(',',$SEARCH_INFO['searchValue'])}
