@@ -217,3 +217,14 @@ div.detailview-content.container-fluid span.value img {
       text-align: left;
   }
 }
+.module-action-bar.coloredBorderTop {
+  width: calc(100% - 42px);
+}
+@media all and (min-width:992px) and (max-width: 1290px) {
+    .app-list {
+        display: none;
+    }
+}
+.app-navigator-container {
+  width: 222px;
+}
