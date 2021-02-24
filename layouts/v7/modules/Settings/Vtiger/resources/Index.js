@@ -37,7 +37,6 @@ Vtiger_Index_Js("Settings_Vtiger_Index_Js",{
 			app.request.post({'url':actionUrl}).then(function(err, data) {
 				if(err === null) {
 					closestBlock.remove();
-					thisInstance.registerSettingShortCutAlignmentEvent();
 					var menuItemId = '#'+fieldId+'_menuItem';
 					var shortCutActionEle = jQuery(menuItemId);
 					var imagePath = shortCutActionEle.data('pinimageurl');
@@ -77,7 +76,6 @@ Vtiger_Index_Js("Settings_Vtiger_Index_Js",{
 							var url = 'module=Vtiger&parent=Settings&view=IndexAjax&mode=getSettingsShortCutBlock&fieldid='+shortCutActionEle.data('id');
 							app.request.post({url:url}).then(function(err, data){
 								var newBlock = jQuery(data).appendTo(shortCutsMainContainer);
-								thisInstance.registerSettingShortCutAlignmentEvent();
 								thisInstance.registerDeleteShortCutEvent(newBlock);
 							});
 						}
@@ -88,7 +86,6 @@ Vtiger_Index_Js("Settings_Vtiger_Index_Js",{
 						var pinTitle = shortCutActionEle.data('pintitle');
 						shortCutActionEle.attr('src',imagePath).data('action','pin').attr('title',pinTitle);
 						jQuery('#shortcut_'+shortCutActionEle.data('id')).remove();
-						thisInstance.registerSettingShortCutAlignmentEvent();
 						progressIndicatorElement.progressIndicator({'mode' : 'hide'});
 						app.helper.showSuccessNotification({'message':app.vtranslate('JS_SUCCESSFULLY_UNPINNED')});
 					}
@@ -103,11 +100,6 @@ Vtiger_Index_Js("Settings_Vtiger_Index_Js",{
 			var url = jQuery(e.currentTarget).data('url');
 			window.location.href = url;
 		});
-	},
-
-	registerSettingShortCutAlignmentEvent : function() {
-		jQuery('#settingsShortCutsContainer').find('.moduleBlock').removeClass('marginLeftZero');
-		jQuery('#settingsShortCutsContainer').find('.moduleBlock:nth-child(4n+1)').addClass('marginLeftZero');
 	},
 
 	registerWidgetsEvents : function() {
@@ -212,7 +204,6 @@ Vtiger_Index_Js("Settings_Vtiger_Index_Js",{
 		this.registerWidgetsEvents();
 		this.registerPinUnpinShortCutEvent();
 		this.registerAddShortcutDragDropEvent();
-		this.registerSettingShortCutAlignmentEvent();
 		this.registerBasicSettingsEvents();
 	}
 
