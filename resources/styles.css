@@ -216,3 +216,52 @@ div.detailview-content.container-fluid span.value img {
       text-align: left;
   }
 }
+
+/**
+ * モジュールアイコンのPNGファイル指定時のスタイル調整
+ */
+/*上ドロップダウンメニュー*/
+.col-sm-5 .nav .app-modules-dropdown-container .dropdown-menu .module-icon img{
+  width: 15px;
+  height: 15px;
+}
+/*左メニュー*/
+.app-menu .container-fluid .app-list .dropdown .dropdown-menu .mCustomScrollBox .mCSB_container .module-icon img{
+  width: 23px;
+  height: 23px;
+}
+.dropdown-menu .mCustomScrollBox .mCSB_container .module-name{
+  position: relative;
+  top: 4px;
+}
+.hidden-xs .modules-menu .mCustomScrollBox .mCSB_container .module-qtip a img{
+  width: 20px;
+  height: 20px;
+}
+/*詳細*/
+.col-sm-6 .clearfix .recordImage .name img{
+  width: 80px;
+  height: 80px;
+}
+.detailview-header .col-sm-6 .clearfix .Read_BG_clear{/*背景透明化*/
+  background-color: rgba(0,0,0,0) !important;
+}
+/*関連メニュー*/
+.collapse .nav .tab-item a .tab-icon img{
+  width: 23px;
+  height: 23px;
+}
+/*クイック作成*/
+.col-lg-12 .row .col-lg-4 .quickCreateModule img{
+  width: 20px;
+  height: 20px;
+}
+.col-lg-12 .row .col-lg-4 .quickCreateModule .quick-create-module{
+  position: relative;
+}
+/*システム設定　メニュー設定*/
+.col-lg-2 .sortable .modules .menuEditorItem .IconSize img{
+  width: 23px;
+  height: 23px;
+}
+
