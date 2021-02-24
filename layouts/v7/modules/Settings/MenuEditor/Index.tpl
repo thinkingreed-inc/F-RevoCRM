@@ -40,7 +40,7 @@
 									</span>
 									{assign var='translatedModuleLabel' value=vtranslate($moduleModel->get('label'),$moduleName )}
 									<span>
-										<span class="marginRight10px marginTop5px pull-left">{$moduleModel->getModuleIcon()}</span>
+										<span class="marginRight10px marginTop5px pull-left IconSize">{$moduleModel->getModuleIcon()}</span>
 									</span>
 									<div class="textOverflowEllipsis marginTop5px textAlignLeft" title="{$translatedModuleLabel}">{$translatedModuleLabel}</div>
 								</div>
