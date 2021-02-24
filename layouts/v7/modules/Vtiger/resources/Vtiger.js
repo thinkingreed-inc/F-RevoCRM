@@ -701,6 +701,7 @@ Vtiger.Class('Vtiger_Index_Js', {
 		jQuery('.app-modules-dropdown-container').hover(function(e) {
 			var dropdownContainer = jQuery(e.currentTarget);
 			jQuery('.dropdown').removeClass('open');
+			jQuery('.listViewMassActions').removeClass('open');
 			if(dropdownContainer.length) {
 				//Fix for Responsive layout Sub Menu in mobile devices
 				var appModulesDropdown = dropdownContainer.find('.app-modules-dropdown');
