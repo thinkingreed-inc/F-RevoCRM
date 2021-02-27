@@ -2400,7 +2400,16 @@ class CRMEntity {
 					$matrix->addDependency($tab_name, $crmentityRelModuleFieldTable);
 
 					if ($queryPlanner->requireTable($crmentityRelModuleFieldTable, $matrix)) {
-						$relquery.= " LEFT JOIN vtiger_crmentity AS $crmentityRelModuleFieldTable ON $crmentityRelModuleFieldTable.crmid = $tab_name.$field_name AND vtiger_crmentityRel$module$field_id.deleted=0";
+						// Usersを関連にした場合、vtiger_crmentityをJoinするとレコードがないため、vtiger_usersを一度JOINする
+						if($rel_mod == "Users"){
+							// vtiger_crmentityの代わりとして動かすため、
+							//   - vtiger_users.id as `crmid` として振る舞わせる
+							//   - deleted = 0となっていた箇所は、vtiger_users.status = 'Active'で判定する
+							// [TODO] Usersの場合、通常のレコードとは異なり過去のユーザーも見せたいのであれば、この判定は無く必要がある
+							$relquery.= " LEFT JOIN (select u.*, u.id as `crmid` from vtiger_users u) AS $crmentityRelModuleFieldTable ON $crmentityRelModuleFieldTable.id = $tab_name.$field_name AND vtiger_crmentityRel$module$field_id.status='Active'";
+						}else{
+							$relquery.= " LEFT JOIN vtiger_crmentity AS $crmentityRelModuleFieldTable ON $crmentityRelModuleFieldTable.crmid = $tab_name.$field_name AND vtiger_crmentityRel$module$field_id.deleted=0";
+						}
 					}
 
 					$calendarFlag = false;
