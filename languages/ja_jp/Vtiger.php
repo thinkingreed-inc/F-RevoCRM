@@ -166,6 +166,7 @@ $languageStrings = array(
 	'LBL_ADVANCE_SEARCH' => '詳細',
 	'LBL_LOADING_PLEASE_WAIT' => '読み込み中です。少々お待ちください。',
 	'LBL_PLEASE_SELECT_MODULE' => 'モジュールを選択してから検索してください。',
+	'LBL_CANT_SELECT_THE_OTHER_MODULE_WITH_USERS_FOR_RELFIELD' => 'は、他のモジュールと同時に選択できません',
 
 	//DropDown Category
 	'LBL_USERS' => 'ユーザ',
