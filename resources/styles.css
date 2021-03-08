@@ -217,3 +217,7 @@ div.detailview-content.container-fluid span.value img {
       text-align: left;
   }
 }
+
+#reportDetails table tr td.summaryHead {
+    border-bottom: 0;
+}
