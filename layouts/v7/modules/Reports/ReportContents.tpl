@@ -66,32 +66,42 @@
                         {assign var=FIELDNAMES value=array()}
                         {for $i=0 to $GROUPBYFIELDSCOUNT-1}
                             {assign var=FIELD value=explode(':',$GROUPBYFIELDS[$i])}
-                            {assign var=FIELD_EXPLODE value=explode('_',$FIELD[2])}
+                            {assign var=FIELD_EXPLODE_FIRST_UNDERBAR value=explode('_',$FIELD[2],2)}
+                            {if in_array($FIELD_EXPLODE_FIRST_UNDERBAR[1], $INCLUDED_UNDERBAR_LABELS)}
+                                {assign var=FIELD_EXPLODE value=$FIELD_EXPLODE_FIRST_UNDERBAR}
+                            {else}
+                                {assign var=FIELD_EXPLODE value=explode('_',$FIELD[2])}
+                            {/if}
                             {for $j=1 to count($FIELD_EXPLODE)-1}
                                 {$FIELDNAMES.$i = $FIELDNAMES.$i|cat:$FIELD_EXPLODE[$j]|cat:" "}
                             {/for}
                         {/for}
 
                         {if $GROUPBYFIELDSCOUNT eq 1}
-                            {assign var=FIRST_FIELD value=vtranslate(trim($FIELDNAMES[0]), $MODULE)}
+                            {assign var=FIRST_FIELD value=vtranslate(trim($FIELDNAMES[0]),$GROUPING_MODULES[0])}
                         {else if $GROUPBYFIELDSCOUNT eq 2}    
-                            {assign var=FIRST_FIELD value=vtranslate(trim($FIELDNAMES[0]),$MODULE)}
-                            {assign var=SECOND_FIELD value=vtranslate(trim($FIELDNAMES[1]),$MODULE)}
+                            {assign var=FIRST_FIELD value=vtranslate(trim($FIELDNAMES[0]),$GROUPING_MODULES[0])}
+                            {assign var=SECOND_FIELD value=vtranslate(trim($FIELDNAMES[1]),$GROUPING_MODULES[1])}
                         {else if $GROUPBYFIELDSCOUNT eq 3}    
-                            {assign var=FIRST_FIELD value=vtranslate(trim($FIELDNAMES[0]),$MODULE)}
-                            {assign var=SECOND_FIELD value=vtranslate(trim($FIELDNAMES[1]),$MODULE)}
-                            {assign var=THIRD_FIELD value=vtranslate(trim($FIELDNAMES[2]),$MODULE)}
+                            {assign var=FIRST_FIELD value=vtranslate(trim($FIELDNAMES[0]),$GROUPING_MODULES[0])}
+                            {assign var=SECOND_FIELD value=vtranslate(trim($FIELDNAMES[1]),$GROUPING_MODULES[1])}
+                            {assign var=THIRD_FIELD value=vtranslate(trim($FIELDNAMES[2]),$GROUPING_MODULES[2])}
                         {/if}    
 
                         {assign var=FIRST_VALUE value=" "}
                         {assign var=SECOND_VALUE value=" "}
                         {assign var=THIRD_VALUE value=" "}
                         {foreach from=$DATA item=VALUES}
+                            {assign var=FIRST_IS_HEAD value=0}
+                            {assign var=SECOND_IS_HEAD value=0}
                             <tr>
                                 {foreach from=$VALUES item=VALUE key=NAME}
                                     {if ($NAME eq $FIRST_FIELD || $NAME|strstr:{$FIRST_FIELD}) && ($FIRST_VALUE eq $VALUE || $FIRST_VALUE eq " ")}
                                         {if $FIRST_VALUE eq " " || $VALUE eq "-"}
-                                            <td class="summary">{$VALUE}</td>
+                                            <td class="summaryHead">{$VALUE}</td>
+                                            {$FIRST_IS_HEAD = 1}
+                                        {else if $VALUE eq ""}
+                                            <td></td>
                                         {else}    
                                             <td class="summary">{" "}</td>
                                         {/if}   
@@ -99,8 +109,11 @@
                                             {$FIRST_VALUE = $VALUE}
                                         {/if}   
                                     {else if ( $NAME eq $SECOND_FIELD || $NAME|strstr:$SECOND_FIELD) && ($SECOND_VALUE eq $VALUE || $SECOND_VALUE eq " ")}
-                                        {if $SECOND_VALUE eq " " || $VALUE eq "-"}
-                                            <td class="summary">{$VALUE}</td>
+                                        {if $SECOND_VALUE eq " " || $VALUE eq "-" || $FIRST_IS_HEAD eq 1}
+                                            <td class="summaryHead">{$VALUE}</td>
+                                            {$SECOND_IS_HEAD = 1}
+                                        {else if $VALUE eq ""}
+                                            <td></td>
                                         {else}    
                                             <td class="summary">{" "}</td>
                                         {/if}   
@@ -108,8 +121,10 @@
                                             {$SECOND_VALUE = $VALUE}
                                         {/if}   
                                     {else if ($NAME eq $THIRD_FIELD || $NAME|strstr:$THIRD_FIELD) && ($THIRD_VALUE eq $VALUE || $THIRD_VALUE eq " ")}
-                                        {if $THIRD_VALUE eq " " || $VALUE eq "-"}
-                                            <td class="summary">{$VALUE}</td>
+                                        {if $THIRD_VALUE eq " " || $VALUE eq "-" || $SECOND_IS_HEAD eq 1}
+                                            <td class="summaryHead">{$VALUE}</td>
+                                        {else if $VALUE eq ""}
+                                            <td></td>
                                         {else}    
                                             <td class="summary">{" "}</td>
                                         {/if}   
@@ -117,13 +132,19 @@
                                             {$THIRD_VALUE = $VALUE}
                                         {/if}
                                     {else}
-                                        <td>{$VALUE}</td>
                                         {if $NAME eq $FIRST_FIELD || $NAME|strstr:$FIRST_FIELD}
+                                            <td class="summaryHead">{$VALUE}</td>
+                                            {$FIRST_IS_HEAD = 1}
                                             {$FIRST_VALUE = $VALUE}
                                         {else if $NAME eq $SECOND_FIELD || $NAME|strstr:$SECOND_FIELD}
+                                            <td class="summaryHead">{$VALUE}</td>
+                                            {$SECOND_IS_HEAD = 1}
                                             {$SECOND_VALUE = $VALUE}
                                         {else if $NAME eq $THIRD_FIELD || $NAME|strstr:$THIRD_FIELD}
+                                            <td class="summaryHead">{$VALUE}</td>
                                             {$THIRD_VALUE = $VALUE}
+                                        {else}
+                                            <td>{$VALUE}</td>
                                         {/if}    
                                     {/if}   
                                 {/foreach}
