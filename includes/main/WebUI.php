@@ -93,6 +93,23 @@ class Vtiger_WebUI extends Vtiger_EntryPoint {
 
 	function process (Vtiger_Request $request) {
 		Vtiger_Session::init();
+
+		//URLに'record'のみを指定すれば、指定のモジュールの詳細画面に移動する
+		//$requestの'module'はDBより取得,'view'はDetailで固定する
+		if(1 < $_REQUEST['record'] && empty($_REQUEST['module']) && empty($_REQUEST['view'])){
+			global $adb;
+			$query = "SELECT setype FROM vtiger_crmentity WHERE crmid=?";
+			$queryParams = Array($_REQUEST['record']);
+			$result = $adb->pquery($query, $queryParams);
+			$rows = $adb->num_rows($result);
+			if(0 < $rows){
+				$module_name = $adb->query_result($result, 0, 'setype');
+				if(!empty($module_name)){
+					$request->set('module', $module_name);
+					$request->set('view', 'Detail');
+				}
+			}
+		}
 		
 		// Better place this here as session get initiated
 		//skipping the csrf checking for the forgot(reset) password 
@@ -132,7 +149,6 @@ class Vtiger_WebUI extends Vtiger_EntryPoint {
 				vglobal('app_strings', $moduleLanguageStrings['languageStrings']);
 			}
 		}
-
 		$view = $request->get('view');
 		$action = $request->get('action');
 		$response = false;
@@ -148,7 +164,6 @@ class Vtiger_WebUI extends Vtiger_EntryPoint {
 				header('Location:index.php?module=Install&view=Index');
 				exit;
 			}
-
 			if(empty($module)) {
 				if ($this->hasLogin()) {
 					$defaultModule = $currentUser->defaultlandingpage;
