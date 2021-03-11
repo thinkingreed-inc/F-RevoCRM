@@ -217,3 +217,10 @@ div.detailview-content.container-fluid span.value img {
       text-align: left;
   }
 }
+/*
+ * カスタム項目編集画面
+ */
+.related_field_caution{
+  margin-top: 10px;
+  float: left;
+}
