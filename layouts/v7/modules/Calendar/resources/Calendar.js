@@ -1659,15 +1659,11 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			dayTitleFormat = 'YYYY年MM月DD日';
 		}
 
-		if ($(window).width() > 991) {
-			var CalendarHeight = $(window).height() - 90 - 45;
-		} else if ($(window).width() < 769) {
-			var CalendarHeight = 500;
-			$(".essentials-toggle").remove();
-		} else {
-			var CalendarHeight = $(window).height() - $(".calendar-sidebar-tab").height() - 270;
-			$(".essentials-toggle").remove();
-		}
+		// 縦が短い端末を考慮して，表示するカレンダーの最低の高さを設定(500px)
+		var MIN_CALENDAR_HEIGHT = 500;
+		var HEADER_HEIGHT = 200;
+		var CalendarHeight = $(window).height() - HEADER_HEIGHT;
+		CalendarHeight = (CalendarHeight < MIN_CALENDAR_HEIGHT) ? MIN_CALENDAR_HEIGHT : CalendarHeight;
 
 		var calenderConfigs = {
 			header: {
