@@ -1639,24 +1639,34 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var userDefaultActivityView = thisInstance.getDefaultCalendarView();
 		var userDefaultTimeFormat = thisInstance.getDefaultCalendarTimeFormat();
                 
-                var dateFormat = app.getDateFormat();
-                //Converting to fullcalendar accepting date format
-                var monthPos = dateFormat.search("mm");
-                var datePos = dateFormat.search("dd");
-                if (monthPos < datePos) {
-                    dateFormat = "M/D";
-                } else {
-                    dateFormat = "D/M";
-                }
-        var monthTitleFormat = 'MMMM YYYY';
-        var weekTitleFormat = 'MMM D YYYY';
+		var dateFormat = app.getDateFormat();
+		//Converting to fullcalendar accepting date format
+		var monthPos = dateFormat.search("mm");
+		var datePos = dateFormat.search("dd");
+		if (monthPos < datePos) {
+			dateFormat = "M/D";
+		} else {
+			dateFormat = "D/M";
+		}
+		var monthTitleFormat = 'MMMM YYYY';
+		var weekTitleFormat = 'MMM D YYYY';
 		var dayTitleFormat = 'MMMM D YYYY';
 
 		var lang = (navigator.language) ? navigator.language : navigator.userLanguage;
-		if(lang.toLowerCase().indexOf("ja") !== -1) {
+		if (lang.toLowerCase().indexOf("ja") !== -1) {
 			monthTitleFormat = 'YYYY年MM月';
 			weekTitleFormat = 'YYYY年MM月DD日';
 			dayTitleFormat = 'YYYY年MM月DD日';
+		}
+
+		if ($(window).width() > 991) {
+			var CalendarHeight = $(window).height() - 90 - 45;
+		} else if ($(window).width() < 769) {
+			var CalendarHeight = 500;
+			$(".essentials-toggle").remove();
+		} else {
+			var CalendarHeight = $(window).height() - $(".calendar-sidebar-tab").height() - 270;
+			$(".essentials-toggle").remove();
 		}
 
 		var calenderConfigs = {
@@ -1687,7 +1697,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
                                 columnFormat: dateFormat + ' dddd'
                             }
 			},
-			height: ($(window).width() > 1020 ? $(window).height() - 90 - 45 : 500),
+			height: (CalendarHeight),
 			fixedWeekCount: false,
 			firstDay: thisInstance.daysOfWeek[thisInstance.getUserPrefered('start_day')],
 			scrollTime: thisInstance.getUserPrefered('start_hour'),

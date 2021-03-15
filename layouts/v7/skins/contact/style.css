@@ -7726,11 +7726,13 @@ body .fc {
   .listViewPageDiv #table-content {
     overflow: scroll !important;
   }
-  #appnavcontent {
-    border: 1px solid #ccc;
-    background: #f0f0f0;
-    border-width: thin;
-    padding: 30px;
-  }
+}
+@media all and (min-width:0px) and (max-width: 767px) {
+    #appnavcontent {
+        border: 1px solid #ccc;
+        background: #f0f0f0;
+        border-width: thin;
+        padding: 30px;
+    }
 }
 /*# sourceMappingURL=style.css.map */
