@@ -96,13 +96,8 @@
   .calendarview {
     padding-bottom: 25px;
   }
-  .main-container.calendarview{
-    display: flex;
-    flex-wrap: nowrap;
-    flex-direction: column-reverse;
-  }  
   div.CalendarViewPageDiv {
-    padding-top: 75px;
+    padding-top: 30px;
   }
   .list-menu-content.calendar_view_events .mCustomScrollBox {
     max-height: none!important;
@@ -151,7 +146,20 @@
   position: static !important;
 }
 }
-
+@media (max-width: 991px) { 
+  .main-container.calendarview{
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: column-reverse;
+  } 
+  .list-menu-content .activitytypes .activitytype-indicator {
+    padding: 14px 5%;
+    margin: 8px;
+    font-size: 80%;
+    min-height: 35px;
+    word-wrap: break-word;
+  }
+}
 div.summaryView span.value.textOverflowEllipsis img {
   max-width: 100%;
 }
