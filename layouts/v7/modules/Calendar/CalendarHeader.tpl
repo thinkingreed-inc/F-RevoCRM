@@ -9,8 +9,8 @@
 
 {strip}
 	<input type="hidden" name="is_record_creation_allowed" id="is_record_creation_allowed" value="{$IS_CREATE_PERMITTED}">
-	<div class="col-sm-12 col-xs-12 module-action-bar clearfix">
-		<div class="module-action-content clearfix coloredBorderTop">
+	<div class="col-sm-12 col-xs-12 module-action-bar coloredBorderTop">
+		<div class="module-action-content clearfix">
 			<div class="col-lg-5 col-md-5">
 				<span>
 					{assign var="VIEW_HEADER_LABEL" value="LBL_CALENDAR_VIEW"}
