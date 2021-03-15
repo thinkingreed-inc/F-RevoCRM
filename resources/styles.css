@@ -229,7 +229,7 @@ div.detailview-content.container-fluid span.value img {
   width: calc(100% - 42px);
 }
 @media all and (min-width:992px) and (max-width: 1290px) {
-    .app-list {
+    .global-nav .app-list {
         display: none;
     }
 }
