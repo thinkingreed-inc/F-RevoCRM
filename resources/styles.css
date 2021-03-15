@@ -236,3 +236,10 @@ div.detailview-content.container-fluid span.value img {
 .app-navigator-container {
   width: 222px;
 }
+/*
+ * カスタム項目編集画面
+ */
+.related_field_caution{
+  margin-top: 10px;
+  float: left;
+}
