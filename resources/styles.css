@@ -225,6 +225,13 @@ div.detailview-content.container-fluid span.value img {
       text-align: left;
   }
 }
+.settingsIndexPage .settingsSummary a {
+    margin-bottom: 10px;
+}
+.settingsIndexPage #settingsShortCutsContainer .well {
+  margin-left: 0px;
+  height: 100px;
+}
 .module-action-bar.coloredBorderTop {
   width: calc(100% - 42px);
 }
