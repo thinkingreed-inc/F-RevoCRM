@@ -601,6 +601,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		vtUtils.showSelect2ElementView(form.find('[name="pickListValues"]'), select2params);
 
 		this.registerFieldTypeChangeEvent(form);
+		this.registerRelationFieldValidationEvent(form);
 		data.find('.fieldTypesList').trigger('change');
 
 		var params = {
@@ -837,6 +838,29 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		}
 		return aDeferred.promise();
 	},
+
+	/**
+	 * Function to register validation event for relation field 
+	 * @param {*} form 
+	 */
+	registerRelationFieldValidationEvent: function(form) {
+		$(form).on('change', '.relationModule', function(){
+			var values = $(this).val();
+			if(values){
+				var usersIndex = values.indexOf('Users');
+				var hasUsers = (usersIndex != -1) ? true : false;
+				var valuesCount = values.length;
+				if(valuesCount > 1 && hasUsers){
+					var changedArray = values.splice(usersIndex, 1);
+					$(this).val(values); 
+					setTimeout(function(){
+						$('.relationModule').trigger('change');
+					},100);
+				}
+			}
+		});
+	},
+
 	/**
 	 * Function to register change event for fieldType while adding custom field
 	 */

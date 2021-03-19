@@ -8,7 +8,7 @@
 *************************************************************************************}
 
 {strip}
-	<div class="col-sm-11 col-xs-10 padding0 module-action-bar clearfix coloredBorderTop">
+	<div class="col-sm-11 col-xs-10 padding0 module-action-bar coloredBorderTop">
 		<div class="module-action-content clearfix {$MODULE}-module-action-content">
 			<div class="col-lg-7 col-md-6 col-sm-5 col-xs-11 padding0 module-breadcrumb module-breadcrumb-{$smarty.request.view} transitionsAllHalfSecond">
 				{assign var=MODULE_MODEL value=Vtiger_Module_Model::getInstance($MODULE)}
