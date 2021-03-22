@@ -66,7 +66,7 @@ $languageStrings = array(
 	'Not Started' => '未着手',
 	'Deferred' => '保留',
 	'Held' => '完了',
-	'Not Held' => '未実施',
+	'Not Held' => '取り止め',
 	
 	//Priority picklist values
 	'Medium' => '中',

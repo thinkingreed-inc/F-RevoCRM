@@ -101,7 +101,7 @@
                                     {/if}
                                 </td>
                                 {/foreach}
-                                <td class="listViewEntryValue {$WIDTHTYPE}">
+                                 {$WIDTHTYPE}">
                                     <input type="text" value="{if $EDITED_VALUE}{$EDITED_VALUE["price"]}{else}{$LISTVIEW_ENTRY->get('unit_price')}{/if}" name="unit_price" class="{if !$EDITED_VALUE} hide {/if} inputElement zeroPaddingAndMargin" data-rule-required="true" data-rule-currency="true"
                                                data-decimal-separator='{$USER_MODEL->get('currency_decimal_separator')}' data-group-separator='{$USER_MODEL->get('currency_grouping_separator')}'/>
                                 </td>

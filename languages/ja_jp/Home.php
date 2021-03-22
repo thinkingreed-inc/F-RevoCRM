@@ -26,6 +26,7 @@ $languageStrings = array(
 	'LBL_SAVE_ORDER'=>'順序を保存',
 	'LBL_ADD_NEW_DASHBOARD'=>'ダッシュボードの追加',
 	'LBL_MAX_CHARACTERS_ALLOWED_DASHBOARD' => 'ダッシュボード名は30文字までです。',
+	'顧客担当者 - Contacts Address' => '顧客担当者 - 郵送先リスト',
 );
 
 $jsLanguageStrings = array(
