@@ -18,7 +18,7 @@
                 </button>
             </div>
             <h4 class="pull-left">
-                {$TITLE}
+                {vtranslate($TITLE)}
             </h4>
         </div>
     </div>

@@ -27,7 +27,9 @@ $languageStrings = array(
 	'LBL_CUSTOM_ACCESS_MESG' => 'ルールが定義されていません。',
 	'SINGLE_Groups' => 'グループ',
 	'SINGLE_Roles' => '役割',
+	'Roles' => '役割',
 	'SINGLE_RoleAndSubordinates' => '役割とその従属',
+	'RoleAndSubordinates' => '役割とその従属',
 
 	// F-RevoCRM
 	'Public: Read Only' => '公開: 読み取り専用',

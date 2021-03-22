@@ -16,7 +16,7 @@
                 <ul>
                     <li data-role="{$ROOT_ROLE->getParentRoleString()}" data-roleid="{$ROOT_ROLE->getId()}">
                         <div class="toolbar-handle">
-                            <a href="javascript:;" class="btn app-MARKETING droppable">{$ROOT_ROLE->getName()}</a>
+                            <a href="javascript:;" class="btn app-MARKETING droppable">{vtranslate($ROOT_ROLE->getName(), 'Settings/Roles')}</a>
                             <div class="toolbar" title="{vtranslate('LBL_ADD_RECORD', $QUALIFIED_MODULE)}">
                                 &nbsp;<a href="{$ROOT_ROLE->getCreateChildUrl()}" data-url="{$ROOT_ROLE->getCreateChildUrl()}" data-action="modal"><span class="icon-plus-sign"></span></a>
                             </div>
