@@ -136,14 +136,14 @@ $taskManager = new VTTaskManager($adb);
 
 $potentailsWorkFlow = $workflowManager->newWorkFlow("Potentials");
 $potentailsWorkFlow->test = '';
-$potentailsWorkFlow->description = "Calculate or Update forecast amount";
+$potentailsWorkFlow->description = "予想金額を更新するワークフロー";
 $potentailsWorkFlow->executionCondition = VTWorkflowManager::$ON_EVERY_SAVE;
 $potentailsWorkFlow->defaultworkflow = 1;
 $workflowManager->save($potentailsWorkFlow);
 
 $task = $taskManager->createTask('VTUpdateFieldsTask', $potentailsWorkFlow->id);
 $task->active = true;
-$task->summary = 'update forecast amount';
+$task->summary = '予想金額を更新';
 $task->field_value_mapping = '[{"fieldname":"forecast_amount","valuetype":"expression","value":"amount * probability / 100"}]';
 $taskManager->saveTask($task);
 
@@ -525,7 +525,7 @@ $taskManager = new VTTaskManager($adb);
 // Events workflow when Send Notification is checked
 $eventsWorkflow = $workflowManager->newWorkFlow("Events");
 $eventsWorkflow->test = '[{"fieldname":"sendnotification","operation":"is","value":"true:boolean"}]';
-$eventsWorkflow->description = "Workflow for Events when Send Notification is True";
+$eventsWorkflow->description = "通知がオンの際の活動のワークフロー";
 $eventsWorkflow->executionCondition = VTWorkflowManager::$ON_EVERY_SAVE;
 $eventsWorkflow->defaultworkflow = 1;
 $workflowManager->save($eventsWorkflow);
@@ -553,7 +553,7 @@ $taskManager->saveTask($task);
 // Calendar workflow when Send Notification is checked
 $calendarWorkflow = $workflowManager->newWorkFlow("Calendar");
 $calendarWorkflow->test = '[{"fieldname":"sendnotification","operation":"is","value":"true:boolean"}]';
-$calendarWorkflow->description = "Workflow for Calendar Todos when Send Notification is True";
+$calendarWorkflow->description = "通知がオンの際のTODOのワークフロー";
 $calendarWorkflow->executionCondition = VTWorkflowManager::$ON_EVERY_SAVE;
 $calendarWorkflow->defaultworkflow = 1;
 $workflowManager->save($calendarWorkflow);
@@ -1191,7 +1191,7 @@ $emm->addEntityMethod($moduleName,"UpdateInventory","include/InventoryHandler.ph
 
 $vtWorkFlow = new VTWorkflowManager($adb);
 $poWorkFlow = $vtWorkFlow->newWorkFlow($moduleName);
-$poWorkFlow->description = "Update Inventory Products On Every Save";
+$poWorkFlow->description = "保存されるごとに在庫製品を更新するワークフロー";
 $poWorkFlow->defaultworkflow = 1;
 $poWorkFlow->executionCondition = 3;
 $vtWorkFlow->save($poWorkFlow);
@@ -1199,7 +1199,7 @@ $vtWorkFlow->save($poWorkFlow);
 $tm = new VTTaskManager($adb);
 $task = $tm->createTask('VTEntityMethodTask', $poWorkFlow->id);
 $task->active = true;
-$task->summary = "Update Inventory Products";
+$task->summary = "在庫製品を更新する";
 $task->methodName = "UpdateInventory";
 $tm->saveTask($task);
 
@@ -2003,12 +2003,12 @@ for ($i = 0; $i < $numOfRows; $i++) {
 
 				unset($newWorkflowModel->id);
 				$newWorkflowModel->test = Zend_Json::encode($newWorkflowConditions);
-				$newWorkflowModel->description = 'Comment Added From Portal : Send Email to Record Owner';
+				$newWorkflowModel->description = 'ポータルからコメントが追加されたときレコードの担当にメールを送るワークフロー';
 				$wfs->save($newWorkflowModel);
 
 				$emailTask->id = '';
 				$emailTask->workflowId = $newWorkflowModel->id;
-				$emailTask->summary = 'Comment Added From Portal : Send Email to Record Owner';
+				$emailTask->summary = 'ポータルからコメントが追加されたときレコードの担当にメールを送るワークフロー';
 				$emailTask->fromEmail = '$(contact_id : (Contacts) lastname) $(contact_id : (Contacts) firstname)&lt;$(contact_id : (Contacts) email)&gt;';
 				$emailTask->recepient = ',$(assigned_user_id : (Users) email1)';
 				$emailTask->subject = 'Respond to Ticket ID## $(general : (__VtigerMeta__) recordId) ## in Customer Portal - URGENT';
@@ -2057,12 +2057,12 @@ for ($i = 0; $i < $numOfRows; $i++) {
 
 				unset($newWorkflowModel->id);
 				$newWorkflowModel->test = Zend_Json::encode(array_merge($portalCondition, $newWorkflowConditions));
-				$newWorkflowModel->description = 'Comment Added From CRM : Send Email to Contact, where Contact is not a Portal User';
+				$newWorkflowModel->description = 'コメントが追加されたときポータルユーザーでない顧客担当者にメールを送るワークフロー';
 				$wfs->save($newWorkflowModel);
 
 				$emailTask->id = '';
 				$emailTask->workflowId = $newWorkflowModel->id;
-				$emailTask->summary = 'Comment Added From CRM : Send Email to Contact, where Contact is not a Portal User';
+				$emailTask->summary = 'コメントが追加されたときポータルユーザーでない顧客担当者にメールを送るワークフロー';
 				$emailTask->fromEmail = '$(general : (__VtigerMeta__) supportName)&lt;$(general : (__VtigerMeta__) supportEmailId)&gt;';
 				$emailTask->recepient = ',$(contact_id : (Contacts) email)';
 				$emailTask->subject = '$ticket_no [ Ticket Id : $(general : (__VtigerMeta__) recordId) ] $ticket_title';
@@ -2092,12 +2092,12 @@ for ($i = 0; $i < $numOfRows; $i++) {
 
 				unset($newWorkflowModel->id);
 				$newWorkflowModel->test = Zend_Json::encode(array_merge($portalCondition, $newWorkflowConditions));
-				$newWorkflowModel->description = 'Comment Added From CRM : Send Email to Contact, where Contact is Portal User';
+				$newWorkflowModel->description = 'コメントが追加されたときポータルユーザーである顧客担当者にメールを送るワークフロー';
 				$wfs->save($newWorkflowModel);
 
 				$emailTask->id = '';
 				$emailTask->workflowId = $newWorkflowModel->id;
-				$emailTask->summary = 'Comment Added From CRM : Send Email to Contact, where Contact is Portal User';
+				$emailTask->summary = 'コメントが追加されたときポータルユーザーである顧客担当者にメールを送るワークフロー';
 				$emailTask->content = 'Ticket No : $ticket_no<br>
 										Ticket Id : $(general : (__VtigerMeta__) recordId)<br>
 										Subject : $ticket_title<br><br>
@@ -2119,12 +2119,12 @@ for ($i = 0; $i < $numOfRows; $i++) {
 				);
 
 				$workflowModel->test = Zend_Json::encode($newConditions);
-				$workflowModel->description = 'Comment Added From CRM : Send Email to Organization';
+				$workflowModel->description = 'コメントが追加された際にメールを送るワークフロー';
 				$wfs->save($workflowModel);
 
 				$emailTask->id = '';
 				$emailTask->workflowId = $workflowModel->id;
-				$emailTask->summary = 'Comment Added From CRM : Send Email to Organization';
+				$emailTask->summary = 'コメントが追加された際にメールを送るワークフロー';
 				$emailTask->recepient = ',$(parent_id : (Accounts) email1),';
 				$emailTask->content = 'Ticket ID : $(general : (__VtigerMeta__) recordId)<br>Ticket Title : $ticket_title<br><br>
 								Dear $(parent_id : (Accounts) accountname),<br><br>
