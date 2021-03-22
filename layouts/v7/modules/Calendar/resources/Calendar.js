@@ -2013,7 +2013,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				}
 				html += this.getAgendaEventTitle(event) +
 						'</div>' +
-						'<div class="agenda-event-status verticalAlignMiddle">' + event.status + '</div>' +
+						'<div class="agenda-event-status verticalAlignMiddle">' + app.vtranslate(event.status) + '</div>' +
 						this.getAgendaActionsHTML(event) +
 						'</div>' +
 						'<div class="agenda-event-details hide verticalAlignMiddle">' +

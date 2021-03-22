@@ -19,12 +19,13 @@ $languageStrings = array(
 	'LBL_NEW' => '作成',
 	'LBL_LINKED' => '関連',
 	'LBL_SELECT_ALL' => 'すべて選択',
-	'LBL_SELECT_TO_LOAD_LIST' => 'Select to Load List',
+	'LBL_SELECT_TO_LOAD_LIST' => 'リストから選択',
 	'LBL_CREATING_NEW' => '新規作成',
 	'LBL_ADDING_NEW' => '追加',
 	'LBL_EDITING' => '編集',
 	'LBL_SAVE' => '保存',
 	'LBL_CANCEL' => 'キャンセル',
+	'Canceled ' => 'キャンセル',
 	'LBL_BACK' => '戻る',
 	'LBL_IMPORT' => 'インポート',
 	'LBL_EXPORT' => 'エクスポート',
@@ -53,12 +54,15 @@ $languageStrings = array(
 	'LBL_RECORD_DELETE' => 'The record you are trying to view has been deleted.',
 	'LBL_RECORD_NOT_FOUND' => 'Record you are trying to access is not found',
 	'LBL_EDIT_REASON' => '編集の理由',
+	'Result' => "リザルト",
 	//'LBL_EDIT_CURRENT_FILTER' => 'Edit Current Filter',
 	//'LBL_DELETE_CURRENT_FILTER' => 'Delete Current Filter',
 	'LBL_SELECT' => '選択',
 	'LBL_CLEAR' => 'クリア',
 	'LBL_YES' => 'はい',
+	'yes' => 'はい',
 	'LBL_NO' => 'いいえ',
+	'no' => 'いいえ',
 	'LBL_SHOW_COMPLETE_DETAILS' => '詳細情報',
 	'LBL_MINILIST_FIELDS_ARE_NOT_AVAILABLE_FOR_YOU' => 'Sorry! Minilist fields are not available for you.',
 	'LBL_MASS_EDITING' => '一括編集',
@@ -97,6 +101,8 @@ $languageStrings = array(
 	'LBL_TODOS' => 'TODO',
 	'LBL_LAST_VIEWED_RECORDS' => '最後に見たデータ',
 	'LBL_DASHBOARD' => 'ダッシュボード',
+	'My Dashboard' => 'マイダッシュボード',
+	'Default' => 'デフォルト',
 	'LBL_USER_SETTINGS' => 'ユーザ設定',
 	'LBL_MY_PREFERENCES' => '個人設定',
 	'LBL_SIGN_OUT' => 'ログアウト',
@@ -107,6 +113,7 @@ $languageStrings = array(
 	'LBL_CHAT_SUPPORT'=>'チャットサポート',
 	'LBL_CRM_SETTINGS' => 'システム設定',
 	'LBL_ON_DEMAND_ADMIN' => '追加 / 削除ユーザー',
+	'Faq_user' => 'ユーザーFAQ',
 	'LBL_ANNOUNCEMENT' => 'お知らせ',
 	'LBL_CALENDAR' => 'カレンダー',
 	'LBL_POST' => '投稿',
@@ -128,6 +135,7 @@ $languageStrings = array(
 	'LBL_EDIT_TAG'=>'タグの編集',
 	'LBL_NO_TAG_EXISTS' => 'タグが存在しません。' ,
 	'LBL_RELATED_USERS' => '関連ユーザ',
+	'Primary Module' => 'モジュール',
 
 	// Common Fields
 	'LBL_USER' => 'ユーザ',
@@ -188,6 +196,7 @@ $languageStrings = array(
 	'LBL_REPLY_ALL' => '全員に返信',
 
 	//Translation for all modules
+	'Dashboards' => 'ダッシュボード',
 	'Accounts' => '顧客企業',
 	'Assets' => '資産・レンタル管理',
 	'Calendar' => 'カレンダー',
@@ -195,15 +204,20 @@ $languageStrings = array(
 	'Contacts' => '顧客担当者',
 	'Documents' => 'ドキュメント',
 	'Leads' => 'リード',
+	'lead日' => 'リード日',
+	'Faq_lead日' => 'FAQリード日',
 	'ModComments' => 'コメント',
+	'Comments' => 'コメント',
 	'Potentials' => '案件',
 	'PriceBooks' => '価格表',
+	'Unit Price' => '単価',
 	'Products' => '製品',
 	'Project' => 'プロジェクト',
 	'ProjectMilestone' => 'マイルストーン',
 	'ProjectTask' => 'タスク',
 	'ServiceContracts' => '契約',
 	'Services' => 'サービス',
+	'Service Requests' => 'サービスリクエスト',
 	'Vendors' => '発注先',
 	'Rss' => 'RSS',
 	'Quotes'=>'見積',
@@ -215,6 +229,8 @@ $languageStrings = array(
 	'Portal' => 'ポータル',
 	'Email Templates' => 'メールテンプレート',
 	'Recycle Bin' => 'ゴミ箱',
+	'Events' => '活動',
+	'Dailyreports' => '日報',
 
 	//Basic String Translation
 	'LBL_ADD_RECORD' => '追加',
@@ -279,6 +295,7 @@ $languageStrings = array(
 	'LBL_ITEM_DETAILS'=> '項目の詳細',
 	'LBL_CURRENCY' => '通貨',
 	'LBL_TAX_MODE' => '消費税',
+	'Taxes' => '税',
 	'LBL_INDIVIDUAL' => '個別',
 	'LBL_GROUP' => 'グループ',
 	'LBL_TOOLS' => 'ツール',
@@ -391,6 +408,7 @@ $languageStrings = array(
 	'LBL_AGO' => '前',
 	'LBL_CHANGED' => '変更',
 	'SINGLE_Users' => 'ユーザー',
+	'user' => 'ユーザー',
 	'LBL_MATCHED_THIS_CRITERIA'=> 'この条件に一致',
 	'LBL_NO_SCHEDULED_ACTIVITIES' => '予定された活動がありません',
 	'LBL_NO_OVERDUE_ACTIVITIES' => '期限切れの活動がありません',
@@ -583,6 +601,7 @@ $languageStrings = array(
 	'--None--'=>'--なし--',
 	'Acquired'=>'獲得済み',
 	'Active'=>'有効',
+	'Inactive'=>'無効',
 	'Market Failed'=>'市場失敗',
 	'Project Cancelled'=>'プロジェクト中止',
 	'Shutdown'=>'操業停止',
@@ -1168,6 +1187,7 @@ $languageStrings = array(
 	'LBL_PROJECT' => 'プロジェクト',
 	'LBL_TOOLS' => 'ツール',
 	'LBL_TAGS' => 'タグ',
+	'tags' => 'タグ',
 	'LBL_SHARE_TAGS' => '共有タグ',
 	'LBL_SHARE_TAG' => '共有タグ',
 	'private' => '非公開',
@@ -1307,6 +1327,7 @@ $languageStrings = array(
 	'LBL_CHAT_WITH_SUPPORT' => 'CRMエキスパートとチャット',
 
 	'LBL_ROLES' => '役割',
+	'Roles' => '役割',
 	'LBL_ROLEANDSUBORDINATE' => '役割と部下',
 	'LBL_YOUR_LEARNING_SCORE' => 'CRM学習スコア',
 	'LBL_SWITCH_TO_VTIGER7_NOW' => '2月15日までにVtiger7に切り替え',
@@ -1459,6 +1480,45 @@ $languageStrings = array(
 	'Item net price' => '品目の金額',
 	'Item total price' => '品目の割引前合計',
 	'List columns saved successfully' => 'カラムは正常に保存されました',
+
+	//ユーザー管理>プロファイル
+	'Import' => 'インポート',
+	'Export' => 'エクスポート',
+	'DuplicatesHandling' => '複製',
+	'Merge' => 'マージ',
+	'Print' => '印刷',
+	'UserId ' => 'ユーザーID',
+	'ConvertLead' => 'リード変換',
+	//プロファイル詳細内容
+	'Admin Profile' => '管理者のプロファイル',
+	'Profile Related to Sales' => 'セールスに関するプロファイル',
+	'Profile Related to Support' => 'サポートに関するプロファイル',
+	'Guest Profile for Test Users' => 'テストユーザー向けのゲストプロファイル',
+	//ユーザー管理>ログイン履歴
+	'Signed in' => 'ログイン',
+	'Signed off' => 'ログアウト',
+	//モジュール管理
+	'Existing Business' => '既存ビジネス',
+	'New Business' => '新規ビジネス',
+	//自動化>スケジューラー
+	'Workflow' => 'ワークフロー',
+	'RecurringInvoice' => '請求書',
+	'SendReminder' => 'リマインダー',
+	'MailScanner' => 'メールコンバータ',
+	'Scheduled Import' => 'スケジュール入力',
+	'ScheduleReports' => 'スケジュールレポート',
+	//設定>販売管理
+	'Compound' => '複合(Compound)',
+	'Simple' => '単純(Simple)',
+	'Deducted' => '差し引く(Deducted)',
+	'Fixed' => '固定(Fixed)',
+	'Variable' => '変動(Variable)',
+	//個人設定>個人タグ
+	'Private/Public' => '公開/非公開',
+	//ツール>ゴミ箱
+	'Sales Stage' => '販売段階',
+	'Amount' => '数',
+	'Templates' => 'テンプレート'
 );
 
 $jsLanguageStrings = array(
@@ -2033,4 +2093,9 @@ $jsLanguageStrings = array(
 	'JS_NO_RESULTS_FOUND' => '結果がありません',
 	'JS_INVALID_STRENGTH_PASSWORDS'=>'複雑なパスワードを指定してください（アルファベット大文字・小文字、数字、記号を含む8文字以上）',
 	'LBL_MASS_PDF_EXPORT_CONFIRMATION' => '選択したレコードに関するPDFを生成してもよろしいですか？',
+
+	//個人カレンダー
+	'Planned' => '計画済み',
+	'Held' => '完了',
+	'Not Held' => '取り止め',
 );

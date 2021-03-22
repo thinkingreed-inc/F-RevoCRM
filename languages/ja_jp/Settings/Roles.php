@@ -29,6 +29,7 @@ $languageStrings = array(
 	'LBL_ASSIGN_EXISTING_PRIVILEGES' => '権限を既存プロファイルから割り当てる',
 	'LBL_PRIVILEGES' => '権限',
 	'LBL_DUPLICATES_EXIST' => '重複した役割が存在します',
+	'Organization' => '組織',
 	
 	//Assign Records to
 	'LBL_CAN_ASSIGN_RECORDS_TO' => 'レコードを割り当てる能力：',

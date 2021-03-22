@@ -30,6 +30,7 @@ $languageStrings = array(
 	'Sales Commission' => '販売手数料',
     'LBL_PAID' => '支払い済み',
     'LBL_BALANCE' => '未払い残高',
+	'Paid' => '支払い済み',
 
 	//Added for existing Picklist Entries
 
