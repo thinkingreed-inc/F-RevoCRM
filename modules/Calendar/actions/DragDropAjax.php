@@ -40,6 +40,10 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 				$result = array('ispermitted'=>false,'error'=>false);
 				$response->setResult($result);
 			} else {
+				//招待情報を設定する。
+				$inviteesstring = implode(";",array_keys(Events_Util_Helper::getInvitees($recordId)));
+				$_REQUEST['inviteesid'] = $inviteesstring;
+
 				$result = array('ispermitted'=>true,'error'=>false);
 				$record = Vtiger_Record_Model::getInstanceById($recordId, $moduleName);
 				$record->set('mode','edit');
@@ -176,6 +180,10 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 				$result = array('ispermitted'=>false);
 				$response->setResult($result);
 			} else {
+				//招待情報を設定する。
+				$inviteesstring = implode(";",array_keys(Events_Util_Helper::getInvitees($recordId)));
+				$_REQUEST['inviteesid'] = $inviteesstring;
+
 				$result = array('ispermitted'=>true);
 				$record = Vtiger_Record_Model::getInstanceById($recordId, $moduleName);
 				$record->set('mode','edit');
