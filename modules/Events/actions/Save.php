@@ -84,6 +84,9 @@ class Events_Save_Action extends Calendar_Save_Action {
 			$focus =  CRMEntity::getInstance('Events');
 			//get all the stored data to this object
 			$focus->column_fields = new TrackableObject($recordModel->getData());
+			if($recordModel->get('is_allday')){
+				$focus->is_allday = true;
+			}
 			try {
 				Calendar_RepeatEvents::repeatFromRequest($focus, $recurObjDb);
 			} catch (DuplicateException $e) {

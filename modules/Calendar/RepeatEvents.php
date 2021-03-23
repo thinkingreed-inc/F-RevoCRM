@@ -329,6 +329,9 @@ class Calendar_RepeatEvents {
 					$new_focus->column_fields['date_start'] = $startDate;
 				} else if($key == 'due_date') {
 					$new_focus->column_fields['due_date']   = $endDate;
+				} else if($key == 'is_allday') {
+					$new_focus->is_allday                   = $value;
+					$new_focus->column_fields[$key]         = $value;
 				} else {
 					$new_focus->column_fields[$key]         = $value;
 				}
