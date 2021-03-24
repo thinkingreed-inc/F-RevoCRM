@@ -32,6 +32,7 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 		$minuteDelta = $request->get('minuteDelta');
 		$secondsDelta = $request->get('secondsDelta',NULL);
 		$recurringEditMode = $request->get('recurringEditMode');
+		$is_allday = $request->get('allday');
 
 		$actionname = 'EditView';
 		$response = new Vtiger_Response();
@@ -47,6 +48,15 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 				$result = array('ispermitted'=>true,'error'=>false);
 				$record = Vtiger_Record_Model::getInstanceById($recordId, $moduleName);
 				$record->set('mode','edit');
+
+				//終日チェックの更新
+				if($is_allday == "true"){
+					$record->set('is_allday',true);
+					$record->getEntity()->is_allday = 1;
+				}else{
+					$record->set('is_allday','');
+					$record->getEntity()->is_allday = 0;
+				}
 
                 $startDateTime = $this->getFormattedDateTime($record->get('date_start'), $record->get('time_start'));
                 $oldDateTime = $this->getFormattedDateTime($record->get('due_date'), $record->get('time_end'));
@@ -169,6 +179,7 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 		$minuteDelta = $request->get('minuteDelta');
 		$secondsDelta = $request->get('secondsDelta');
 		$recurringEditMode = $request->get('recurringEditMode');
+		$is_allday = $request->get('allday');
 		$actionname = 'EditView';
 
 		//ドラッグ&ドロップ時にContactsを更新しないようにフラグを作成
@@ -187,6 +198,15 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 				$result = array('ispermitted'=>true);
 				$record = Vtiger_Record_Model::getInstanceById($recordId, $moduleName);
 				$record->set('mode','edit');
+
+				//終日チェックの更新
+				if($is_allday == "true"){
+					$record->set('is_allday',true);
+					$record->getEntity()->is_allday = 1;
+				}else{
+					$record->set('is_allday',false);
+					$record->getEntity()->is_allday = 0;
+				}
 
                 $oldStartDateTime = $this->getFormattedDateTime($record->get('date_start'), $record->get('time_start'));
 				$resultDateTime = $this->changeDateTime($oldStartDateTime, $dayDelta, $minuteDelta, $secondsDelta);

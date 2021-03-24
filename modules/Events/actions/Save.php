@@ -86,6 +86,8 @@ class Events_Save_Action extends Calendar_Save_Action {
 			$focus->column_fields = new TrackableObject($recordModel->getData());
 			if($recordModel->get('is_allday')){
 				$focus->is_allday = true;
+			}else{
+				$focus->is_allday = false;
 			}
 			try {
 				Calendar_RepeatEvents::repeatFromRequest($focus, $recurObjDb);

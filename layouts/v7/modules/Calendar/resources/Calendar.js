@@ -1279,7 +1279,8 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			'activitytype': event.activitytype,
 			'secondsDelta': delta.asSeconds(),
 			'view': view.name,
-			'userid': event.userid
+			'userid': event.userid,
+			'allday': event.allDay,
 		};
 
 		if (event.recurringcheck) {
@@ -1306,7 +1307,8 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			'activitytype': event.activitytype,
 			'secondsDelta': delta.asSeconds(),
 			'view': view.name,
-			'userid': event.userid
+			'userid': event.userid,
+			'allday': event.allDay,
 		};
 
 		if (event.recurringcheck) {
