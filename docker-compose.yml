@@ -4,6 +4,7 @@ services:
     build:
         context: '.'
         dockerfile: ./docker/php/Dockerfile
+    restart: always
     volumes:
       - ./docker/php/php.ini:/usr/local/etc/php/php.ini
       - ./:/var/www/html:cached

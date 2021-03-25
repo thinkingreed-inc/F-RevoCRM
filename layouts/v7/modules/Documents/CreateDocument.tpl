@@ -169,7 +169,11 @@
 									</td>
 									{if $FIELD_MODEL->get('uitype') neq '83'}
 										<td class="fieldValue col-lg-4" {if $FIELD_MODEL->get('uitype') eq '19'} colspan="3" {assign var=COUNTER value=$COUNTER+1} {/if}>
+										{if $FILE_LOCATION_TYPE neq 'W'}
+											{include file=vtemplate_path($FIELD_MODEL->getUITypeModel()->getTemplateName(),$MODULE) type = "E"}
+										{else}
 											{include file=vtemplate_path($FIELD_MODEL->getUITypeModel()->getTemplateName(),$MODULE)}
+										{/if}
 										</td>
 									{/if}
 								{/if}

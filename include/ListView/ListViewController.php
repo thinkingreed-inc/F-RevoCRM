@@ -294,6 +294,11 @@ class ListViewController {
 									' title="'.	getTranslatedString('LBL_DOWNLOAD_FILE',$module).	
 									'" >'.textlength_check($value).
 									'</a>';
+						} elseif ($downloadType == 'I') {
+							$value = '<a onclick="event.stopPropagation()" href="'.$value.'" target="_blank"'.
+									' title="'.$value.
+									'" >'.textlength_check($value).
+									'</a>';
 						} else {
 							$value = ' --';
 						}

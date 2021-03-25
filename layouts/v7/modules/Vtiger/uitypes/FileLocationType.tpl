@@ -10,7 +10,11 @@
  ********************************************************************************/
 -->*}
 {strip}
-{assign var=FIELD_VALUES value=$FIELD_MODEL->getFileLocationType()}
+{if $type eq "E"}
+  {assign var=FIELD_VALUES value=$FIELD_MODEL->getFileLocationType2()}
+{else}
+  {assign var=FIELD_VALUES value=$FIELD_MODEL->getFileLocationType()}
+{/if}
 <select class="select2" name="{$FIELD_MODEL->getFieldName()}">
 {foreach item=TYPE key=KEY from=$FIELD_VALUES}
 	<option value="{$KEY}" {if $FIELD_MODEL->get('fieldvalue') eq $KEY} selected {/if}>{vtranslate($TYPE, $MODULE)}</option>

@@ -167,6 +167,7 @@ $languageStrings = array(
 	'LBL_ADVANCE_SEARCH' => '詳細',
 	'LBL_LOADING_PLEASE_WAIT' => '読み込み中です。少々お待ちください。',
 	'LBL_PLEASE_SELECT_MODULE' => 'モジュールを選択してから検索してください。',
+	'LBL_CANT_SELECT_THE_OTHER_MODULE_WITH_USERS_FOR_RELFIELD' => 'は、他のモジュールと同時に選択できません',
 
 	//DropDown Category
 	'LBL_USERS' => 'ユーザ',
@@ -526,9 +527,9 @@ $languageStrings = array(
 	'LBL_CUSTOM_VIEW_NAME_DUPLICATES_EXIST' => 'リストは既に存在しています。',
 	'LBL_TYPE_AND_SEARCH' => '入力して検索',
 	'LBL_EXPORT_CURRENCY_TOOLTIP_TEXT'=>'For exporting Currency values in Line items, Vtiger will use this setting to export as this currency. Any currency values outside the line items tables, will be exported as in User\'s preferred currency (selected in \'ユーザー情報\')',
-	'LBL_EXPORT_LINEITEM_CURRENCY'=>'Choose Currency (For Line Item Values)',
-	'LBL_EXPORT_USER_CURRENCY' =>'My preferred Currency',
-	'LBL_EXPORT_RECORD_CURRENCY'=>'Currency specified in Record',
+	'LBL_EXPORT_LINEITEM_CURRENCY'=>'通貨の選択 (単価)',
+	'LBL_EXPORT_USER_CURRENCY' =>'ユーザーの通貨',
+	'LBL_EXPORT_RECORD_CURRENCY'=>'レコードで指定された通貨',
 	'LBL_EXPORT_FORMAT' => 'エクスポート形式',
 	'LBL_EXPORT_DATA' => 'エクスポートデータ',
 

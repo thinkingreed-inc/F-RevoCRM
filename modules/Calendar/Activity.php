@@ -143,14 +143,20 @@ class Activity extends CRMEntity {
 		$this->setAllDay();
 
 		// 参加者情報をまとめる
-		if(empty($this->invitee_array) && array_key_exists('inviteesid', $_REQUEST)) {
+		if(empty($this->invitee_array) && array_key_exists('inviteesid', $_REQUEST)) {// カレンダーからの遷移の場合
 			$selected_users_string =  $_REQUEST['inviteesid'];
 			$this->invitee_array = explode(';',$selected_users_string);
 			$smownerid = $this->column_fields['assigned_user_id'];
 			if(!in_array($smownerid, $this->invitee_array)) {
 				$this->invitee_array[] = $smownerid;
 			}
-		} else {
+		} else if(empty($this->invitee_array) && count($_REQUEST['selectedusers']) > 0){// 概要欄や関連からの遷移の場合
+			$this->invitee_array = $_REQUEST['selectedusers'];
+			$smownerid = $this->column_fields['assigned_user_id'];
+			if(!in_array($smownerid, $this->invitee_array)) {
+				$this->invitee_array[] = $smownerid;
+			}
+		} else {// リクエストに入っていない場合はDBから取得を試みる
 			$this->loadInvitees();
 		}
 
@@ -167,24 +173,27 @@ class Activity extends CRMEntity {
 		}
 
 		$recordId = intval($this->id);
-		if(isset($_REQUEST['contactidlist']) && $_REQUEST['contactidlist'] != '') {
-			$adb->pquery( 'DELETE from vtiger_cntactivityrel WHERE activityid = ?', array($recordId));
 
-			$contactIdsList = explode (';', $_REQUEST['contactidlist']);
-			$count = count($contactIdsList);
-            $params=array();
-			$sql = 'INSERT INTO vtiger_cntactivityrel VALUES ';
-			for($i=0; $i<$count; $i++) {
-				$contactIdsList[$i] = intval($contactIdsList[$i]);
-				$sql .= " (?, ?)";
-				array_push($params,$contactIdsList[$i],$recordId);
-				if ($i != $count - 1) {
-					$sql .= ',';
+		//ドラッグ&ドロップ時にはContactsは変更されずcontactidlistを得られないので関連を更新しない
+		if(empty($_REQUEST['isDragDrop'])){
+			if(isset($_REQUEST['contactidlist']) && $_REQUEST['contactidlist'] != '') {
+				$adb->pquery( 'DELETE from vtiger_cntactivityrel WHERE activityid = ?', array($recordId));
+				$contactIdsList = explode (';', $_REQUEST['contactidlist']);
+				$count = count($contactIdsList);
+				$params=array();
+				$sql = 'INSERT INTO vtiger_cntactivityrel VALUES ';
+				for($i=0; $i<$count; $i++) {
+					$contactIdsList[$i] = intval($contactIdsList[$i]);
+					$sql .= " (?, ?)";
+					array_push($params,$contactIdsList[$i],$recordId);
+					if ($i != $count - 1) {
+						$sql .= ',';
+					}
 				}
+				$adb->pquery($sql, $params);
+			} else if ($_REQUEST['contactidlist'] == '' && $insertion_mode == "edit") {
+				$adb->pquery('DELETE FROM vtiger_cntactivityrel WHERE activityid = ?', array($recordId));
 			}
-			$adb->pquery($sql, $params);
-		} else if ($_REQUEST['contactidlist'] == '' && $insertion_mode == "edit") {
-			$adb->pquery('DELETE FROM vtiger_cntactivityrel WHERE activityid = ?', array($recordId));
 		}
 
 		//Insert into cntactivity rel

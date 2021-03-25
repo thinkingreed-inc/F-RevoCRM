@@ -167,6 +167,9 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 		$recurringEditMode = $request->get('recurringEditMode');
 		$actionname = 'EditView';
 
+		//ドラッグ&ドロップ時にContactsを更新しないようにフラグを作成
+		$_REQUEST['isDragDrop'] = 1;
+
 		$response = new Vtiger_Response();
 		try {
 			if(isPermitted($moduleName, $actionname, $recordId) === 'no'){
