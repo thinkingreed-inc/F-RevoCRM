@@ -32,6 +32,7 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 		$minuteDelta = $request->get('minuteDelta');
 		$secondsDelta = $request->get('secondsDelta',NULL);
 		$recurringEditMode = $request->get('recurringEditMode');
+		$is_allday = $request->get('allday');
 
 		$actionname = 'EditView';
 		$response = new Vtiger_Response();
@@ -40,14 +41,33 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 				$result = array('ispermitted'=>false,'error'=>false);
 				$response->setResult($result);
 			} else {
+				//招待情報を設定する。
+				$inviteesstring = implode(";",array_keys(Events_Util_Helper::getInvitees($recordId)));
+				$_REQUEST['inviteesid'] = $inviteesstring;
+
 				$result = array('ispermitted'=>true,'error'=>false);
 				$record = Vtiger_Record_Model::getInstanceById($recordId, $moduleName);
 				$record->set('mode','edit');
 
+				if($is_allday == "false" && $record->isAllDay()){
+					$endSecondsDelta = $secondsDelta + 7200;
+				}else{
+					$endSecondsDelta = $secondsDelta;
+				}
+
+				//終日チェックの更新
+				if($is_allday == "true"){
+					$record->set('is_allday',true);
+					$record->getEntity()->is_allday = 1;
+				}else{
+					$record->set('is_allday','');
+					$record->getEntity()->is_allday = 0;
+				}
+
                 $startDateTime = $this->getFormattedDateTime($record->get('date_start'), $record->get('time_start'));
                 $oldDateTime = $this->getFormattedDateTime($record->get('due_date'), $record->get('time_end'));
 
-				$resultDateTime = $this->changeDateTime($oldDateTime,$dayDelta,$minuteDelta,$secondsDelta);
+				$resultDateTime = $this->changeDateTime($oldDateTime,$dayDelta,$minuteDelta,$endSecondsDelta);
 				$interval = strtotime($resultDateTime) - strtotime($startDateTime);
 
 				if(!empty($recurringEditMode) && $recurringEditMode != 'current') {
@@ -88,7 +108,7 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 					$result['recurringRecords'] = true;
 				} else {
                     $oldDateTime = $this->getFormattedDateTime($record->get('due_date'), $record->get('time_end'));
-					$resultDateTime = $this->changeDateTime($oldDateTime,$dayDelta,$minuteDelta,$secondsDelta);
+					$resultDateTime = $this->changeDateTime($oldDateTime,$dayDelta,$minuteDelta,$endSecondsDelta);
 					$parts = explode(' ',$resultDateTime);
 					$record->set('due_date',$parts[0]);
 					if($activityType != 'Task') {
@@ -165,6 +185,7 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 		$minuteDelta = $request->get('minuteDelta');
 		$secondsDelta = $request->get('secondsDelta');
 		$recurringEditMode = $request->get('recurringEditMode');
+		$is_allday = $request->get('allday');
 		$actionname = 'EditView';
 
 		//ドラッグ&ドロップ時にContactsを更新しないようにフラグを作成
@@ -176,6 +197,10 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 				$result = array('ispermitted'=>false);
 				$response->setResult($result);
 			} else {
+				//招待情報を設定する。
+				$inviteesstring = implode(";",array_keys(Events_Util_Helper::getInvitees($recordId)));
+				$_REQUEST['inviteesid'] = $inviteesstring;
+
 				$result = array('ispermitted'=>true);
 				$record = Vtiger_Record_Model::getInstanceById($recordId, $moduleName);
 				$record->set('mode','edit');
@@ -184,8 +209,23 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 				$resultDateTime = $this->changeDateTime($oldStartDateTime, $dayDelta, $minuteDelta, $secondsDelta);
 				$startDateInterval = strtotime($resultDateTime) - strtotime($oldStartDateTime);
 
+				if($is_allday == "false" && $record->isAllDay()){
+					$endSecondsDelta = $secondsDelta + 7200;
+				}else{
+					$endSecondsDelta = $secondsDelta;
+				}
+
+				//終日チェックの更新
+				if($is_allday == "true"){
+					$record->set('is_allday',true);
+					$record->getEntity()->is_allday = 1;
+				}else{
+					$record->set('is_allday',false);
+					$record->getEntity()->is_allday = 0;
+				}
+
                 $oldEndDateTime = $this->getFormattedDateTime($record->get('due_date'), $record->get('time_end'));
-				$resultDateTime = $this->changeDateTime($oldEndDateTime, $dayDelta, $minuteDelta, $secondsDelta);
+				$resultDateTime = $this->changeDateTime($oldEndDateTime, $dayDelta, $minuteDelta, $endSecondsDelta);
 				$endDateInterval = strtotime($resultDateTime) - strtotime($oldEndDateTime);
 
 				if (!empty($recurringEditMode) && $recurringEditMode != 'current') {
@@ -222,6 +262,11 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 							$recordModel->set('time_end', $endDateParts[1]);
 
 						$this->setRecurrenceInfo($recordModel);
+
+						if($activityType != 'Task' && $is_allday == "true"){
+							$recordModel->set('time_start', "00:00:00");
+							$recordModel->set('time_end', "00:00:00");
+						}
 						$recordModel->save();
 					}
 					$result['recurringRecords'] = true;
@@ -233,7 +278,7 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 					$record->set('time_start',$parts[1]);
 
                     $oldEndDateTime = $this->getFormattedDateTime($record->get('due_date'), $record->get('time_end'));
-					$resultDateTime = $this->changeDateTime($oldEndDateTime,$dayDelta,$minuteDelta,$secondsDelta);
+					$resultDateTime = $this->changeDateTime($oldEndDateTime,$dayDelta,$minuteDelta,$endSecondsDelta);
 					$parts = explode(' ',$resultDateTime);
 					$record->set('due_date',$parts[0]);
 					if($activityType != 'Task') {
@@ -241,6 +286,11 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 					}
 
 					$this->setRecurrenceInfo($record);
+
+					if($activityType != 'Task' && $is_allday == "true"){
+						$record->set('time_start', "00:00:00");
+						$record->set('time_end', "00:00:00");
+					}
 					$record->save();
 					$result['recurringRecords'] = false;
 				}
