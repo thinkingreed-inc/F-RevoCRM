@@ -159,6 +159,12 @@ Class Calendar_Edit_View extends Vtiger_Edit_View {
 
 		$viewer->assign('RECORD_STRUCTURE_MODEL', $recordStructureInstance);
 		$viewer->assign('RECORD_STRUCTURE', $recordStructureInstance->getStructure());
+		// is_alldayはRecordStructure内で処理できないため、手動で追加する
+		if(!empty($request->get("is_allday"))){
+			if($request->get("is_allday") == "on"){
+				$viewer->assign('IS_ALLDAY', true);
+			}
+		}
 
 		$viewer->assign('MODULE', $moduleName);
 		$viewer->assign('CURRENTDATE', date('Y-n-j'));
