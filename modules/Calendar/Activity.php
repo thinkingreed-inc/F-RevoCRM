@@ -478,6 +478,7 @@ function insertIntoRecurringTable(& $recurObj)
 					$inviteRecord->set('invitees_array', $invitees_array);
 					$inviteRecord->set('is_not_invitees_update', true);
 					$inviteRecord->set('mode', 'edit');
+					$inviteRecord->set('is_allday', $this->is_allday);
 					$inviteRecord->save();
 				} else {
 					$inviteRecord->getModule()->deleteRecord($inviteRecord);
@@ -504,6 +505,7 @@ function insertIntoRecurringTable(& $recurObj)
 				$inviteRecord->set('invitees_array', $invitees_array);
 				$inviteRecord->set('assigned_user_id', $inviteeid);
 				$inviteRecord->set('is_not_invitees_update', true);
+				$inviteRecord->set('is_allday', $this->is_allday);
 				$inviteRecord->save();
 			}
 		}
