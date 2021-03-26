@@ -24,7 +24,7 @@ Vtiger Public License 1.2
   * sql_mode = NO_ENGINE_SUBSTITUTION for MySQL 5.6+
 
 ## PCの推奨環境
-* Windows 10 Google Chrome最新 / Microsoft Edge(Chronium)最新 / Internet Explorer 11（非推奨に移行予定）
+* Windows 10 Google Chrome最新 / Microsoft Edge(Chronium)最新 / Internet Explorer 11（2022年4月 非推奨に移行予定）
 * 最低1366×768以上の解像度、推奨1920×1080以上
 * 最低Intel Core iシリーズまたはそれ以上の2コア以上のプロセッサ、推奨4コア以上
 * 最低4GB以上のメモリ、推奨8GB以上
