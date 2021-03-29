@@ -239,7 +239,7 @@ class Settings_Picklist_SaveAjax_Action extends Settings_Vtiger_Basic_Action {
         
         // we should clear cache to update with latest values
         $rolesList = $request->get('rolesList');
-        //白色の背景色が適応されたときにNULlとして登録する
+        //白色の背景色が適応されたときにNULLとして登録する
         if($request->get('selectedColor') == '#ffffff'){
             $color = NULL;
         }else{
@@ -263,7 +263,7 @@ class Settings_Picklist_SaveAjax_Action extends Settings_Vtiger_Basic_Action {
                 $response->setError($e->getCode(), $e->getMessage());
             }
         } else {
-            if($color || $color === null) {
+            if($color || $color === NULL) {
                 $status = $moduleModel->updatePicklistColor($pickListFieldName, $id, $color);
                 $response->setResult(array('success',$status));
             }

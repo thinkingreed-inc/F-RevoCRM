@@ -81,7 +81,7 @@ class Settings_Picklist_Module_Model extends Vtiger_Module_Model {
 		//As older look utf8 characters are pushed as html-entities,and in new utf8 characters are pushed to database
 		//so we are checking for both the values
 		$primaryKey = Vtiger_Util_Helper::getPickListId($pickListFieldName);
-		if(!empty($color)) {
+		if(!empty($color) || $color === NULL) {
 			$query = 'UPDATE ' . $this->getPickListTableName($pickListFieldName) . ' SET ' . $pickListFieldName . '= ?, color = ? WHERE '.$primaryKey.' = ?';
 			$db->pquery($query, array($newValue, $color, $id));
 		} else {
@@ -568,7 +568,7 @@ class Settings_Picklist_Module_Model extends Vtiger_Module_Model {
 		//As older look utf8 characters are pushed as html-entities,and in new utf8 characters are pushed to database
 		//so we are checking for both the values
 		$primaryKey = Vtiger_Util_Helper::getPickListId($pickListFieldName);
-		if(!empty($color) || $color === null) {
+		if(!empty($color) || $color === NULL) {
 			$query = 'UPDATE ' . $this->getPickListTableName($pickListFieldName) . ' SET color = ? WHERE '.$primaryKey.' = ?';
 			$db->pquery($query, array($color, $id));
 		}
