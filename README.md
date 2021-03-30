@@ -154,6 +154,37 @@ cp -r frevocrm.20201001/storage/* frevocrm/storage/
 # コマンド例
 rm -r frevocrm.20170118
 ```
+
+## 開発環境の構築
+Dockerで構築する為、[docker/README.md](./docker/README.md)を参照してください。  
+
+### xdebug
+xdebug3がインストール済みです。
+`docker-compose.yml` の以下の部分を修正してください
+```yml
+# Xdebugの設定を有効にしたい場合は、mode=debug に変更してください
+# XDEBUG_CONFIG: "mode=off client_host=host.docker.internal client_port=9003 start_with_request=yes"
+XDEBUG_CONFIG: "mode=debug client_host=host.docker.internal client_port=9003 start_with_request=yes"
+```
+
+vscodeをご利用の場合は、以下のように `.vscode/launch.json`を修正してください。
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+      {
+       "name": "F-RevoCRM XDebug:9003",
+       "type": "php",
+       "request": "launch",
+       "port": 9003, 
+       "pathMappings": {
+          "/var/www/html": "${workspaceRoot}"
+       }
+      }
+  ]
+ }
+```
+
 ## 更新履歴
 
 ### F-RevoCRM7.3.2
