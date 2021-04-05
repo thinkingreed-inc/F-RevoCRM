@@ -10,7 +10,7 @@
 -->*}
 
 {strip}
-	<div class="col-sm-12 col-xs-12 module-action-bar clearfix coloredBorderTop">
+	<div class="col-sm-12 col-xs-12 module-action-bar coloredBorderTop">
 		<div class="module-action-content clearfix">
 			<span class="col-lg-7 col-md-7">
 				<span>
