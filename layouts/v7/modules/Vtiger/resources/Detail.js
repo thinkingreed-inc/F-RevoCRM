@@ -1488,6 +1488,11 @@ Vtiger.Class("Vtiger_Detail_Js",{
 			var detailViewValue = jQuery('.value',currentTdElement);
 			var editElement = jQuery('.edit',currentTdElement);
 			var actionElement = jQuery('.editAction', currentTdElement);
+			var fieldBasicData = editElement.find('.fieldBasicData');
+			var inputElement = editElement.find('.inputElement');
+			inputElement.attr('data-value', fieldBasicData.attr('data-value'));
+			inputElement.data('value', fieldBasicData.data('value'));
+			inputElement.val(inputElement.attr('data-value'));
 			detailViewValue.css('display', 'inline-block');
 			editElement.addClass('hide');
 			editElement.find('.inputElement').trigger('Vtiger.Validation.Hide.Messsage')
