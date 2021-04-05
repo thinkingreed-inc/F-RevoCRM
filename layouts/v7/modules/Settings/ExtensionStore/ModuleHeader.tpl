@@ -10,7 +10,7 @@
 -->*}
 
 {strip}
-    <div class="col-sm-12 col-xs-12 module-action-bar clearfix coloredBorderTop">
+    <div class="col-sm-12 col-xs-12 module-action-bar coloredBorderTop">
 		<div class="module-action-content clearfix">
 			<div class="col-lg-4 col-md-4">
 				<h4 title="{strtoupper(vtranslate($MODULE, $MODULE))}" class="module-title pull-left text-uppercase"> {strtoupper(vtranslate($MODULE, $MODULE))} </h4>
