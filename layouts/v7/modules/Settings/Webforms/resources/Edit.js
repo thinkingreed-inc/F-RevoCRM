@@ -69,11 +69,7 @@ Settings_Vtiger_Edit_Js('Settings_Webforms_Edit_Js', {}, {
 										'<td class="fieldLabel" data-label="'+selectedOptionLabel+'">'+selectedOptionLabel+'</td>'+
 										'<td class="fieldValue" data-name="fieldUI_'+selectedOptionName+'"></td>';
 				
-		if(isCustomField){
-			webFormTargetFieldStructure+=	'<td>'+app.vtranslate('JS_LABEL')+":"+selectedOptionLabel;
-		} else {
-			webFormTargetFieldStructure+=	'<td>'+selectedField;
-		}
+		webFormTargetFieldStructure+=	'<td>'+selectedField;
 		
 		webFormTargetFieldStructure+=	'<div class="pull-right actions">'+
 										'<span class="actionImages"><a class="removeTargetModuleField"><i class="icon-remove-sign"></i></a></span></div></td></tr>';

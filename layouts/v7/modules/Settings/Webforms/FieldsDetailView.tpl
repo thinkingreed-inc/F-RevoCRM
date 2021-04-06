@@ -67,11 +67,7 @@
 								{$FIELD_MODEL->getDisplayValue($FIELD_VALUE, $RECORD->getId(), $RECORD)}
 							</td>
 							<td>
-								{if Settings_Webforms_Record_Model::isCustomField($FIELD_MODEL->get('name'))}
-									{vtranslate('LBL_LABEL', $MODULE_NAME)} : {vtranslate($FIELD_MODEL->get('label'), $MODULE_NAME)}
-								{else}
-									{vtranslate({$FIELD_MODEL->get('neutralizedfield')}, $SOURCE_MODULE)}
-								{/if}
+								{$FIELD_MODEL->get('name')}
 							</td>
 						</tr>
 					{/foreach}
