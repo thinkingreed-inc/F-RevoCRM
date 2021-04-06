@@ -108,11 +108,7 @@
                                 {/if}
                             </td>
                             <td style="vertical-align: inherit">
-                                {if Settings_Webforms_Record_Model::isCustomField($FIELD_MODEL->get('name'))}
-                                    {vtranslate('LBL_LABEL', $QUALIFIED_MODULE)} : {vtranslate($FIELD_MODEL->get('label'), $SOURCE_MODULE)}
-                                {else}
-                                    {vtranslate({$FIELD_MODEL->get('name')}, $SOURCE_MODULE)}
-                                {/if}
+                                {$FIELD_MODEL->get('name')}
                                 {if !$FIELD_MODEL->isMandatory(true)}
                                     <div class="pull-right actions">
                                         <span class="actionImages"><a class="removeTargetModuleField" href="javascript:void(0);"><i class="icon-remove-sign"></i></a></span>
