@@ -221,8 +221,9 @@ div.detailview-content.container-fluid span.value img {
 @media all and (min-width: 0px) and (max-width: 830px) {
   .detailview-table .fieldLabel,
   .recordEditView .fieldLabel,
-  .summaryView .fieldLabel{
-      text-align: left;
+  .summaryView .fieldLabel,
+  .detailViewInfo.userPreferences .table.detailview-table .fieldLabel{
+    text-align: left;
   }
 }
 .settingsIndexPage .settingsSummary a {
