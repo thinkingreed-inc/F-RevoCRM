@@ -251,3 +251,16 @@ div.detailview-content.container-fluid span.value img {
   margin-top: 10px;
   float: left;
 }
+/* 概要画面の関連項目 */
+.summaryView .input-group.editElement {
+  min-width: auto;
+}
+.summaryView .input-group.editElement .referencefield-wrapper {
+  width: 100% ;
+}
+.summaryView .input-group.editElement .referencefield-wrapper .input-group {
+  min-width: auto;
+}
+.summaryView .input-group.editElement .referencefield-wrapper .input-group .inputElement {
+  width: 100% ;
+}
