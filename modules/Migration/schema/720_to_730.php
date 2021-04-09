@@ -306,6 +306,9 @@ if (defined('VTIGER_UPGRADE')) {
     $db->pquery("UPDATE vtiger_activity SET invitee_parentid = (SELECT activityid FROM vtiger_invitees WHERE vtiger_activity.activityid = vtiger_invitees.activityid ORDER BY vtiger_invitees.inviteeid limit 1) WHERE EXISTS(SELECT 1 FROM vtiger_invitees WHERE vtiger_activity.activityid = vtiger_invitees.activityid)");
     echo 'allday,invitee_parentid column in vtiger_activity updated';
 
+    // invitee_parentidが空の場合更新
+    include_once('setup/scripts/18_Update_InviteeParentFromInviteeTable.php');
+
     include_once('setup/scripts/10_Delete_Modules.php');
     include_once('setup/scripts/12_Update_Settings_menu.php');
     include_once('setup/scripts/15_Update_Activity.php');
