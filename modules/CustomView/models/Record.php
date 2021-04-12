@@ -82,6 +82,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 	public function isDefault() {
 		$db = PearDatabase::getInstance();
 		$userPrivilegeModel = Users_Privileges_Model::getCurrentUserPrivilegesModel();
+		$currentUserModel = Users_Record_Model::getCurrentUserModel();
 		$userId = $userPrivilegeModel->getId();
 		$moduleId = $this->getModule()->getId();
 		$cvId = Vtiger_Cache::get("UserDefaultCustomView",$userId."-".$moduleId);
@@ -98,7 +99,20 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 				return false;
 			}
 		}
-		return ($this->get('setdefault') == 1);
+		//check_cvid_idを取得してログイン中のユーザーと比較
+		//異なる場合falseを返す
+		global $adb;
+        $query = "SELECT ump.userid as check_cvid_id from vtiger_customview cv left join vtiger_user_module_preferences ump on cv.cvid = ump.default_cvid WHERE cvid=?";
+        $queryParams = Array($this->get('cvid'));
+        $result = $adb->pquery($query, $queryParams);
+        $rows = $adb->num_rows($result);
+        for ($i = 0; $i < $rows; $i++) {
+            $ump_userid[] = $adb->query_result($result, $i, 'check_cvid_id');
+            if($this->get('setdefault') == 1 && $currentUserModel->getId() == $ump_userid[$i]){
+                return true;
+            }
+        }
+        return false;
 	}
 
 	/**
@@ -300,10 +314,23 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 				$insertParams = array($currentUserModel->getId(), $moduleModel->getId(), $cvId);
 				$db->pquery($insertSql, $insertParams);
 			}
+
+			//共有リスト以外のsetdefaultを全て0にし, デフォルト設定したリストのみ1にする
+			$updateSql = 'UPDATE vtiger_customview SET setdefault = 0 WHERE entitytype = ? and userid = ? and status = 1';
+			$updateParams = array($moduleName, $currentUserModel->getId());
+			$db->pquery($updateSql, $updateParams);
+			$updateSql = 'UPDATE vtiger_customview SET setdefault = 1 WHERE cvid = ?';
+			$updateParams = array($cvId);
+			$db->pquery($updateSql, $updateParams);
 		} else {
 			$deleteSql = 'DELETE FROM vtiger_user_module_preferences WHERE userid = ? AND tabid = ? AND default_cvid = ?';
 			$deleteParams = array($currentUserModel->getId(), $moduleModel->getId(), $cvId);
 			$db->pquery($deleteSql, $deleteParams);
+
+			//共有リスト以外の全てのチェックボックスを外す
+			$updateSql = 'UPDATE vtiger_customview SET setdefault = 0 WHERE status = 1 and entitytype = ? and userid = ?';
+            $updateParams = array($moduleName, $currentUserModel->getId());
+            $db->pquery($updateSql, $updateParams);
 		}
 
 		$selectedColumnsList = $this->get('columnslist');
