@@ -99,15 +99,15 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 				return false;
 			}
 		}
-		//check_cvid_idを取得してログイン中のユーザーと比較
-		//異なる場合falseを返す
+		//setdefault値(1/0)を元にture/falseを決めていたため✓が複数入るバグが発生
+		//そこで上の条件に加え, ログイン中ユーザーidとDBのuseridが一致するかの条件を追加
 		global $adb;
-        $query = "SELECT ump.userid as check_cvid_id from vtiger_customview cv left join vtiger_user_module_preferences ump on cv.cvid = ump.default_cvid WHERE cvid=?";
+        $query = "SELECT ump.userid as check_userid from vtiger_customview cv left join vtiger_user_module_preferences ump on cv.cvid = ump.default_cvid WHERE cvid=?";
         $queryParams = Array($this->get('cvid'));
         $result = $adb->pquery($query, $queryParams);
         $rows = $adb->num_rows($result);
         for ($i = 0; $i < $rows; $i++) {
-            $ump_userid[] = $adb->query_result($result, $i, 'check_cvid_id');
+            $ump_userid[] = $adb->query_result($result, $i, 'check_userid');
             if($this->get('setdefault') == 1 && $currentUserModel->getId() == $ump_userid[$i]){
                 return true;
             }
