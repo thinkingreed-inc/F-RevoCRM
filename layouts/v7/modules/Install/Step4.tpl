@@ -63,18 +63,18 @@
 							<tr>
 								<td colspan="2">
 									<label>
-										<input type="checkbox" name="create_db"/>
+										<input type="checkbox" name="create_db" {$IS_CREATE_NEW_DB}/>
 										<span>{vtranslate('LBL_CREATE_NEW_DB','Install')}</span>
 									</label>
 								</td>
 							</tr>
-							<tr class="hide" id="root_user">
+							<tr class="{if empty($IS_CREATE_NEW_DB)}hide{else}{/if}" id="root_user">
 								<td>{vtranslate('LBL_ROOT_USERNAME', 'Install')}<span class="no">*</span></td>
-								<td><input type="text" value="" name="db_root_username"></td>
+								<td><input type="text" value="{$DB_ROOT_USER}" name="db_root_username"></td>
 							</tr>
-							<tr class="hide" id="root_password">
+							<tr class="{if empty($IS_CREATE_NEW_DB)}hide{else}{/if}" id="root_password">
 								<td>{vtranslate('LBL_ROOT_PASSWORD', 'Install')}</td>
-								<td><input type="password" value="" name="db_root_password"></td>
+								<td><input type="password" value="{$DB_ROOT_PASSWORD}" name="db_root_password"></td>
 							</tr>
 						</tbody>
 					</table>
