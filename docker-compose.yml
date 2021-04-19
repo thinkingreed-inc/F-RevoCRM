@@ -17,6 +17,8 @@ services:
       FREVOCRM_INSTALLER_DB_USER: "root"
       FREVOCRM_INSTALLER_DB_PASSWORD: "docker"
       FREVOCRM_INSTALLER_DB_NAME: "frevocrm"
+      FREVOCRM_INSTALLER_DB_ROOT_USER: "root"
+      FREVOCRM_INSTALLER_DB_ROOT_PASSWORD: "docker"
       # Xdebugの設定を有効にしたい場合は、mode=debug に変更してください
       XDEBUG_CONFIG: "mode=off client_host=host.docker.internal client_port=9003 start_with_request=yes"
       TZ: "Asia/Tokyo"
