@@ -6,9 +6,12 @@
 .project
 .idea/*
 logs/*
-cache/images*
-cache/import*
-cache/upload*
+cache/images/*
+!cache/images/.htaccess
+cache/import/*
+!cache/import/.htaccess
+cache/upload/*
+!cache/upload/.htaccess
 storage/*
 !storage/.htaccess
 test/curumeru_csv/*
