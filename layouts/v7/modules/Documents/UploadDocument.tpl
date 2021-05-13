@@ -10,7 +10,7 @@
 {strip}
 	<div class="modal-dialog modelContainer">
 		{assign var=HEADER_TITLE value={vtranslate('LBL_UPLOAD_TO_VTIGER', $MODULE)}}
-		<div class="modal-content" style="width:675px;">
+		<div class="modal-content">
 			<form class="form-horizontal recordEditView" name="upload" method="post" action="index.php">
 				{include file="ModalHeader.tpl"|vtemplate_path:$MODULE TITLE=$HEADER_TITLE}
 				<div class="modal-body">

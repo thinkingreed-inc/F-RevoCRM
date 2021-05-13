@@ -429,7 +429,6 @@ Vtiger.Class('Documents_Index_Js', {
 	registerCreateDocumentModalEvents : function(container) {
 		container.find('form').vtValidate();
 		if(container.find('input[name="type"]').val() === 'W') {
-			container.find('.modelContainer').css('width','750px');
 			//change id of text area to workaround multiple instances of ckeditor on same element
 			this.applyEditor(
 				container.find('#Documents_editView_fieldName_notecontent')
