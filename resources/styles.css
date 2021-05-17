@@ -271,6 +271,12 @@ button#advanceIntiateSave + input {
 .summaryView .input-group.editElement .referencefield-wrapper .input-group .inputElement {
   width: 100% ;
 }
+@media (max-width: 991px) {
+  .main-container-Documents #sidebar-essentials.sidebar-essentials,
+  .main-container-Reports #sidebar-essentials.sidebar-essentials {
+    width: 100%;
+  }
+}
 /**
  * ドキュメントアップロードモーダル
  **/
