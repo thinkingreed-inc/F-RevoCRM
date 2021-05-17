@@ -12,12 +12,14 @@ services:
     ports:
       - 80:80
     environment:
-      - FREVOCRM_INSTALLER_DB_HOST=db
-      - FREVOCRM_INSTALLER_DB_PORT=3306
-      - FREVOCRM_INSTALLER_DB_USER=root
-      - FREVOCRM_INSTALLER_DB_PASSWORD=docker
-      - FREVOCRM_INSTALLER_DB_NAME=frevocrm
-
+      FREVOCRM_INSTALLER_DB_HOST: "db"
+      FREVOCRM_INSTALLER_DB_PORT: "3306"
+      FREVOCRM_INSTALLER_DB_USER: "root"
+      FREVOCRM_INSTALLER_DB_PASSWORD: "docker"
+      FREVOCRM_INSTALLER_DB_NAME: "frevocrm"
+      # Xdebugの設定を有効にしたい場合は、mode=debug に変更してください
+      XDEBUG_CONFIG: "mode=off client_host=host.docker.internal client_port=9003 start_with_request=yes"
+      TZ: "Asia/Tokyo"
   db:
     build:
       context: "."
@@ -27,11 +29,11 @@ services:
       - db-store:/var/lib/mysql
       - db-log-store:/var/log/mysql
     environment:
-      - MYSQL_DATABASE=frevocrm
-      - MYSQL_USER=docker
-      - MYSQL_PASSWORD=docker
-      - MYSQL_ROOT_PASSWORD=docker
-      - TZ=Asia/Tokyo
+      MYSQL_DATABASE: "frevocrm"
+      MYSQL_USER: "docker"
+      MYSQL_PASSWORD: "docker"
+      MYSQL_ROOT_PASSWORD: "docker"
+      TZ: "Asia/Tokyo"
     ports:
       - 3306:3306
 volumes:
