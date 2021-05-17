@@ -56,36 +56,24 @@
                             </div>
 {*                        </div>*}
                     </div></div></div>
-                                <div class="modal-overlay-footer clearfix padding0px border0">
-                                <div class="row clearfix"> 
-                                    <div class="col-lg-5 col-md-5 col-sm-5">&nbsp;</div> 
-                        <div class="actions  col-lg-7 col-md-7 col-sm-7 p-xy-8">
-                                <div class="row">
-                                    <div class="col-lg-2">
-                                        <button class="btn btn-success" id="advanceSearchButton" {if $SOURCE_MODULE eq 'Home'} disabled="" {/if}  type="submit"><strong>{vtranslate('LBL_SEARCH', $MODULE)}</strong></button>
-                                    </div>
-                                    <div class="col-lg-10">
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="row">
-                                                    {if $SAVE_FILTER_PERMITTED}
-                                                        <button class="btn btn-success col-lg-2 marginLeft10px" {if $SOURCE_MODULE eq 'Home'} disabled="" {/if} id="advanceIntiateSave"><strong>{vtranslate('LBL_SAVE_AS_FILTER', $MODULE)}</strong></button>
-                                                        <input class="hide col-lg-3 marginLeft10px" type="text" value="" name="viewname"/>
-                                                        <button class="btn btn-success hide col-lg-2 marginLeft10px" {if $SOURCE_MODULE eq 'Home'} disabled="" {/if} id="advanceSave"><strong>{vtranslate('LBL_SAVE', $MODULE)}</strong></button>
-                                                    {/if}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                    <div class="searchResults"></div>
+                    <div class="modal-overlay-footer clearfix padding0px border0">
+                        <div class="row clearfix"> 
+                            <div class="actions col-xs-12  p-xy-8">
+                                <div class="row" id="advanceSearchButtonRow">
+                                    <button class="btn btn-success" id="advanceSearchButton" type="submit"><strong>{vtranslate('LBL_SEARCH', $MODULE)}</strong></button>
+                                    {if $SAVE_FILTER_PERMITTED}
+                                        <button class="btn btn-success marginLeft10px" id="advanceIntiateSave"><strong>{vtranslate('LBL_SAVE_AS_FILTER', $MODULE)}</strong></button>
+                                        <input class="hide marginLeft10px" type="text" value="" name="viewname" placeholder="リスト名を入力" />
+                                        <button class="btn btn-success hide marginLeft10px"  id="advanceSave"><strong>{vtranslate('LBL_SAVE', $MODULE)}</strong></button>
+                                    {/if}
                                 </div>
+                            </div>
                         </div>
                     </div>
-                                </div>
                     <div>&nbsp;</div>
                 </div>
                   <div class="col-lg-2 col-md-1 hidden-xs hidden-sm">&nbsp;</div>
-        <div class="searchResults">
-        </div>
 </div></div>
 {/strip}
 
