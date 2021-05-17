@@ -14,4 +14,6 @@ if (defined('VTIGER_UPGRADE')) {
 
     //"Canceled"が"Canceled[スペース]"で登録されていた箇所の修正
     $db->query("UPDATE vtiger_projecttaskstatus SET projecttaskstatus = 'Canceled' WHERE projecttaskstatus = 'Canceled '");
+    //activity_reminder_popupの高速化
+    $db->query("CREATE INDEX reminder_popup ON vtiger_activity_reminder_popup(status, date_start, time_start);");
 }
