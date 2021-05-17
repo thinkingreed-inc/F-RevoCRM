@@ -251,6 +251,13 @@ div.detailview-content.container-fluid span.value img {
   margin-top: 10px;
   float: left;
 }
+/* 詳細検索画面 */
+#advanceSearchButtonRow {
+  text-align: center;
+}
+button#advanceIntiateSave + input {
+  margin-left: 10px;
+}
 /* 概要画面の関連項目 */
 .summaryView .input-group.editElement {
   min-width: auto;
