@@ -81,7 +81,7 @@ Vtiger_BasicSearch_Js("Vtiger_AdvanceSearch_Js",{
         
         //if you are in settings then module should be vtiger
         if(app.getParentModuleName().length > 0) {
-            moduleName = 'Vtiger';
+			moduleName = "Home";
         }
         
         var searchableModulesParams = {
