@@ -34,7 +34,7 @@ Pull Requestはいつでも歓迎です。
 コミットメッセージは以下の形式にしてください。
 
 `#{issue num} {コミットメッセージ}`  
-例： 「 #12 ○○の日本語翻訳を修正 」
+例： 「 fixed #12 ○○の日本語翻訳を修正 」
 
 
 参考：[js\-primer/CONTRIBUTING\.md at master · asciidwango/js\-primer](https://github.com/asciidwango/js-primer/blob/master/CONTRIBUTING.md)

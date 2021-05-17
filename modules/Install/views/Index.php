@@ -107,6 +107,9 @@ class Install_Index_view extends Vtiger_View_Controller {
 		$viewer->assign('DB_USERNAME', $defaultParameters['db_username']);
 		$viewer->assign('DB_PASSWORD', $defaultParameters['db_password']);
 		$viewer->assign('DB_NAME', $defaultParameters['db_name']);
+		$viewer->assign('DB_ROOT_USER', $defaultParameters['db_root_user']);
+		$viewer->assign('DB_ROOT_PASSWORD', $defaultParameters['db_root_password']);
+		$viewer->assign('IS_CREATE_NEW_DB', $defaultParameters['is_create_new_db']);
 		$viewer->assign('ADMIN_NAME', $defaultParameters['admin_name']);
 		$viewer->assign('ADMIN_LASTNAME', $defaultParameters['admin_lastname']);
 		$viewer->assign('ADMIN_PASSWORD', $defaultParameters['admin_password']);
