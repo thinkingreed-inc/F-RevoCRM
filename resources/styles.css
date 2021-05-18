@@ -306,3 +306,12 @@ button#advanceIntiateSave + input {
     float: none !important;
   }
 }
+
+
+/**
+ * アクティブリストとホバー時の背景色指定
+ **/
+#sidebar-essentials ul.lists-menu > li.active,
+#sidebar-essentials ul.lists-menu > li:hover  {
+    background: #eee;
+}
