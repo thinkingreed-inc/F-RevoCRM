@@ -103,7 +103,14 @@ class PDFTemplates_Module_Model extends Vtiger_Module_Model {
 			}
 			$allFields = array();
 			foreach ($fieldList as $key => $field) {
-				$option = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate($field['fieldlabel'], $field['module']), "$" . strtolower($field['module']) . "-" . $field['columnname'] . "$");
+				if($field['module'] == 'Quotes' &&  $field['module'] == 'Item Discount Amount'){
+					$option = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate($field['fieldlabel'], $field['module']), "$" . strtolower($field['module']) . "-" . "discount_itemamount" . "$");
+				}else if($field['module'] == 'Quotes' &&  $field['module'] == 'Item Discount Percent'){
+					$option = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate($field['fieldlabel'], $field['module']), "$" . strtolower($field['module']) . "-" . "discount_itempercent" . "$");
+				}else{
+					$option = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate($field['fieldlabel'], $field['module']), "$" . strtolower($field['module']) . "-" . $field['columnname'] . "$");
+				}
+
 				$allFields[] = $option;
 				if (!empty($field['referencelist'])) {
 					foreach ($field['referencelist'] as $referenceList) {

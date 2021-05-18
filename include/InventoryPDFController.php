@@ -456,7 +456,7 @@ class Vtiger_InventoryPDFController {
 	private static function getMergeInventoryBlock($blocktemplate, $relatedProducts, $prefix) {
 		$convertedArray = array();
 		$cnt = 1;
-		foreach($relatedProducts as $product) {
+		foreach($relatedProducts as $key => $product) {
 			$block = $blocktemplate;
 			$product = self::getPDFDisplayValue($product, $cnt);
 			foreach($product as $name => $value) {
@@ -481,6 +481,12 @@ class Vtiger_InventoryPDFController {
 		}
 		else if($name == 'qty') {
 			$name = 'quantity';
+		}
+		else if($name == 'discount_amount'){
+			$name = "discount_itemamount";
+		}
+		else if($name == 'discount_percent'){
+			$name = "discount_itempercent";
 		}
 		return $name;
 	}
