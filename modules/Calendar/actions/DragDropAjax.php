@@ -34,6 +34,9 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 		$recurringEditMode = $request->get('recurringEditMode');
 		$is_allday = $request->get('allday');
 
+		//Contactsを更新しないようにフラグを作成
+		$_REQUEST['isDragDrop'] = 1;
+
 		$actionname = 'EditView';
 		$response = new Vtiger_Response();
 		try {
