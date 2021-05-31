@@ -230,11 +230,22 @@ function generateIcsAttachment($record) {
     $lastName = $userModel->entity->column_fields['last_name'];
     $email = $userModel->entity->column_fields['email1'];
     $fp = fopen('test/upload/'.$fileName.'.ics', "w");
+
+    // add timezone
+    fwrite($fp, "BEGIN:VTIMEZONE\n");
+    fwrite($fp, "TZID:Asia/Tokyo\n");
+    fwrite($fp, "BEGIN:STANDARD\n");
+    fwrite($fp, "TZOFFSETFROM:+0900\n");
+    fwrite($fp, "TZOFFSETTO:+0900\n");
+    fwrite($fp, "DTSTART:19700101T000000\n");
+    fwrite($fp, "END:STANDARD\n");
+    fwrite($fp, "END:VTIMEZONE\n");
+
     fwrite($fp, "BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\n");
     fwrite($fp, "ORGANIZER;CN=".$lastName." ".$firstName.":MAILTO:".$email."\n");
-    fwrite($fp, "DTSTART:".date('Ymd\THis\Z', strtotime($record['st_date_time']))."\n");
-    fwrite($fp, "DTEND:".date('Ymd\THis\Z', strtotime($record['end_date_time']))."\n");
-    fwrite($fp, "DTSTAMP:".date('Ymd\THis\Z')."\n");
+    fwrite($fp, "DTSTART;TZID=Asia/Tokyo:".date('Ymd\THis', strtotime($record['st_date_time']))."\n");
+    fwrite($fp, "DTEND;TZID=Asia/Tokyo:".date('Ymd\THis', strtotime($record['end_date_time']))."\n");
+    fwrite($fp, "DTSTAMP;TZID=Asia/Tokyo:".date('Ymd\THis')."\n");
     fwrite($fp, "DESCRIPTION:".$record['description']."\nLOCATION:".$record['location']."\n");
     fwrite($fp, "STATUS:CONFIRMED\nSUMMARY:".$record['subject']."\nEND:VEVENT\nEND:VCALENDAR");
     fclose($fp);

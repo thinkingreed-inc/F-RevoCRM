@@ -481,7 +481,6 @@ Vtiger_List_Js("Reports_List_Js",{
 
 	registerFolderScroll : function() {
 		app.helper.showVerticalScroll(jQuery('.list-menu-content'), {
-			setHeight: 450,
 			autoExpandScrollbar: true,
 			scrollInertia: 200,
 			autoHideScrollbar: true

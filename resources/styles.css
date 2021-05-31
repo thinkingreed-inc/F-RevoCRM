@@ -271,6 +271,12 @@ button#advanceIntiateSave + input {
 .summaryView .input-group.editElement .referencefield-wrapper .input-group .inputElement {
   width: 100% ;
 }
+@media (max-width: 991px) {
+  .main-container-Documents #sidebar-essentials.sidebar-essentials,
+  .main-container-Reports #sidebar-essentials.sidebar-essentials {
+    width: 100%;
+  }
+}
 /**
  * ドキュメントアップロードモーダル
  **/
@@ -305,4 +311,17 @@ button#advanceIntiateSave + input {
 .settingsPageDiv .form-horizontal.recordEditView > .modal-overlay-footer {
     border-left: 0px;
   }
+
+/**
+ * アクティブリストとホバー時の背景色指定
+ **/
+#sidebar-essentials ul.lists-menu > li.active,
+#sidebar-essentials ul.lists-menu > li:hover  {
+    background: #eee;
+}
+/**
+ * portal url表示
+ */
+.portal_url_warp{
+   word-break: break-all;
 }
