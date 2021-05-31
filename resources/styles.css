@@ -315,3 +315,9 @@ button#advanceIntiateSave + input {
 #sidebar-essentials ul.lists-menu > li:hover  {
     background: #eee;
 }
+/**
+ * portal url表示
+ */
+.portal_url_warp{
+   word-break: break-all;
+}
