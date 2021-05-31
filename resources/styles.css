@@ -300,3 +300,9 @@ button#advanceIntiateSave + input {
     float: none !important;
   }
 }
+/* システム設定画面 */
+@media (max-width: 991px) { 
+.settingsPageDiv .form-horizontal.recordEditView > .modal-overlay-footer {
+    border-left: 0px;
+  }
+}
