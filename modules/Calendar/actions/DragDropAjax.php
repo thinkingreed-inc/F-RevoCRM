@@ -236,6 +236,7 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 					foreach ($childRecords as $childId) {
 						$recordModel = Vtiger_Record_Model::getInstanceById($childId, 'Events');
 						$recordModel->set('mode', 'edit');
+						$recordModel->set('is_allday', $record->get('is_allday'));
 
                         $startDateTime = $this->getFormattedDateTime($recordModel->get('date_start'), $recordModel->get('time_start'));
 						$startDate = strtotime($startDateTime) + $startDateInterval;
