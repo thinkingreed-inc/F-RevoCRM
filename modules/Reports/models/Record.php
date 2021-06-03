@@ -486,7 +486,7 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 
 
 			$secondaryModule = $this->getSecondaryModules();
-			$db->pquery('INSERT INTO vtiger_reportmodules(reportmodulesid, primarymodule, secondarymodules, join_column) VALUES(?,?,?)',
+			$db->pquery('INSERT INTO vtiger_reportmodules(reportmodulesid, primarymodule, secondarymodules, join_column) VALUES(?,?,?,?)',
 					array($reportId, $this->getPrimaryModule(), $secondaryModule, $this->getJoinColumn()));
 
 			$this->saveSelectedFields();

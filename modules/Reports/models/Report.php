@@ -90,7 +90,7 @@ class Vtiger_Report_Model extends Reports {
 							$reportModulesRow["secondarymodules"], $reportModulesRow["reporttype"],
 							$reportModulesRow["reportname"], $reportModulesRow["description"],
 							$reportModulesRow["folderid"], $reportModulesRow["owner"],
-							$reportModulesRow["join_column"],
+							$reportModulesRow["join_column"]
 					);
 				}
 
