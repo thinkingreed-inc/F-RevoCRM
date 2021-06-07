@@ -160,27 +160,6 @@ Vtiger_Detail_Js("Users_Detail_Js",{
 					var params = {
 						submitHandler : function(form) {
 							var form = jQuery(form);
-							var new_password = form.find('[name="new_password"]');
-							var confirm_password = form.find('[name="confirm_password"]');
-							var params = {
-								position: {
-									my: 'bottom left',
-									at: 'top left',
-									container : form
-								},
-							};
-							if (new_password.val() !== confirm_password.val()) {
-								vtUtils.showValidationMessage(new_password, app.vtranslate('JS_REENTER_PASSWORDS'), params);
-								vtUtils.showValidationMessage(confirm_password, app.vtranslate('JS_REENTER_PASSWORDS'), params);
-								return false;
-							}else if(!app.helper.checkStrengthPassword(new_password)) {
-								vtUtils.showValidationMessage(new_password, app.vtranslate('JS_INVALID_STRENGTH_PASSWORDS'), params);
-								return false;
-							}else {
-								vtUtils.hideValidationMessage(new_password);
-								vtUtils.hideValidationMessage(confirm_password);
-							}
-							
 							Users_Detail_Js.changeUserName(form);
 						}
 					};
@@ -197,8 +176,6 @@ Vtiger_Detail_Js("Users_Detail_Js",{
 	
 	changeUserName: function (form) {
 		var newUsername = form.find('[name="new_username"]');
-		var new_password = form.find('[name="new_password"]');
-		var confirm_password = form.find('[name="confirm_password"]');
 		var userid = form.find('[name="userid"]');
 
 		app.helper.showProgress(app.vtranslate('JS_PLEASE_WAIT'));
@@ -208,8 +185,6 @@ Vtiger_Detail_Js("Users_Detail_Js",{
 			action: 'SaveAjax',
 			mode: 'changeUsername',
 			newUsername: newUsername.val(),
-			newPassword: new_password.val(),
-			confirmPassword: confirm_password.val(),
 			userid: userid.val()
 		};
 		vtUtils.hideValidationMessage(newUsername);

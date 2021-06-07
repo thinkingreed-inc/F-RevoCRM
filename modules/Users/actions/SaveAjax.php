@@ -252,7 +252,7 @@ class Users_SaveAjax_Action extends Vtiger_SaveAjax_Action {
 		$response = new Vtiger_Response();
 		$userId = $request->get('userid');
 
-		$status = Users_Record_Model::changeUsername($request->get('newUsername'), $request->get('newPassword'), $request->get('oldPassword'), $userId);
+		$status = Users_Record_Model::changeUsernameOnly($request->get('newUsername'), $userId);
 		if($status['success']) {
 			$response->setResult($status['message']);
 		}else{
