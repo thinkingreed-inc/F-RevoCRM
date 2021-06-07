@@ -260,6 +260,7 @@ $languageStrings = array(
 	'LBL_CHANGE_USERNAME' => 'ユーザー名の変更',
 	'LBL_USERNAME_CHANGED' => 'ユーザー名の変更が完了しました',
 	'ERROR_CHANGE_USERNAME' => 'ユーザー名の変更に失敗しました',
+	'New Username' => '新しいユーザー名',
 
 	'LBL_RESTORE_USER_FAILED' => 'ユーザーの復元を失敗しました。既に同じユーザー名のユーザーが登録されています。',
 
