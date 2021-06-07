@@ -916,6 +916,48 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		return $response;
 	}
 
+    /**
+	 * Function to change username only
+	 * @param <string> $newUsername
+	 * @param <integer> $forUserId
+	 * @return <array> $reponse
+	 */
+	public static function changeUsernameOnly($newUsername,$forUserId) {
+		$response = array('success'=> false,'message' => 'error');
+		$record = self::getInstanceFromPreferenceFile($forUserId);
+		$moduleName = $record->getModuleName();
+		
+		if(!Users_Privileges_Model::isPermittedToChangeUsername($forUserId)) {
+			$response['message'] = vtranslate('LBL_PERMISSION_DENIED', $moduleName);
+			return $response;
+		}
+
+		if($newUsername !== $record->get('user_name')){
+			$status = self::isUserExists($newUsername);
+			if($status) {
+				$response['message'] = vJSTranslate('JS_USER_EXISTS',  $moduleName);
+			}else{
+				//save new username
+				$record->set('mode','edit');
+				$record->set('user_name',$newUsername);
+
+				try{
+					$record->save();
+					$users = CRMEntity::getInstance('Users');
+					$users->retrieveCurrentUserInfoFromFile($forUserId);
+                    $response['success'] = true;
+                    $response['message'] = vtranslate('LBL_USERNAME_CHANGED',  $moduleName);	
+            }  catch (Exception $e) {
+					$response['success'] = false;
+					$response['message'] = vtranslate('ERROR_CHANGE_USERNAME',  $moduleName);
+				}		
+			}
+		}else{
+			$response['message'] = vJSTranslate('JS_ENTERED_CURRENT_USERNAME_MSG', $moduleName);
+		}
+		return $response;
+	}
+
 	/**
 	 * Function to check whether user exists in CRM and in VAS
 	 * @param <string> $userName
