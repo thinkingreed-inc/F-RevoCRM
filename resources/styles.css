@@ -311,6 +311,7 @@ button#advanceIntiateSave + input {
 .settingsPageDiv .form-horizontal.recordEditView > .modal-overlay-footer {
     border-left: 0px;
   }
+}
 
 /**
  * アクティブリストとホバー時の背景色指定
