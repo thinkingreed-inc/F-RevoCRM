@@ -1374,6 +1374,8 @@ class ReportRun extends CRMEntity {
 						} else if ($comparator == 'ny') {
 							if ($fieldInfo['uitype'] == '10' || isReferenceUIType($fieldInfo['uitype']))
 								$fieldvalue = "(" . $selectedfields[0] . "." . $selectedfields[1] . " IS NOT NULL AND " . $selectedfields[0] . "." . $selectedfields[1] . " != '' AND " . $selectedfields[0] . "." . $selectedfields[1] . "  != '0')";
+							else if($fieldDataType == "date" || $fieldDataType == "datetime")
+								$fieldvalue = $selectedfields[0] . "." . $selectedfields[1] . " IS NOT NULL";
 							else
 								$fieldvalue = "(" . $selectedfields[0] . "." . $selectedfields[1] . " IS NOT NULL AND " . $selectedfields[0] . "." . $selectedfields[1] . " != '')";
 						}elseif ($comparator == 'y' || ($comparator == 'e' && (trim($value) == "NULL" || trim($value) == ''))) {
@@ -1382,6 +1384,8 @@ class ReportRun extends CRMEntity {
 							}
 							if ($fieldInfo['uitype'] == '10' || isReferenceUIType($fieldInfo['uitype']))
 								$fieldvalue = "(" . $selectedfields[0] . "." . $selectedfields[1] . " IS NULL OR " . $selectedfields[0] . "." . $selectedfields[1] . " = '' OR " . $selectedfields[0] . "." . $selectedfields[1] . " = '0')";
+							else if($fieldDataType == "date" || $fieldDataType == "datetime")
+								$fieldvalue = $selectedfields[0] . "." . $selectedfields[1] . " IS NULL";
 							else
 								$fieldvalue = "(" . $selectedfields[0] . "." . $selectedfields[1] . " IS NULL OR " . $selectedfields[0] . "." . $selectedfields[1] . " = '')";
 						} elseif ($selectedfields[0] == 'vtiger_inventoryproductrel') {
