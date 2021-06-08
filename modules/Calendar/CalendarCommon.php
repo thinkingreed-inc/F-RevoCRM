@@ -230,17 +230,28 @@ function generateIcsAttachment($record, $inviteeid) {
     $lastName = $userModel->entity->column_fields['last_name'];
     $email = $userModel->entity->column_fields['email1'];
     $time_zone = $inviteeUserModel->entity->column_fields['time_zone'];
-		$stDatetime = date_format(DateTimeField::convertToUserTimeZone($record['st_date_time'], $inviteeid), "Y/m/d H:i:s");
-		$endDatetime = date_format(DateTimeField::convertToUserTimeZone($record['end_date_time'], $inviteeid), "Y/m/d H:i:s");
+
+		// ユーザーのTIMEZONEを取る
+		$inviteeUser = CRMEntity::getInstance('Users');
+		$inviteeUser->retrieveCurrentUserInfoFromFile($inviteeid);
+
+		$stDatetime = date_format(DateTimeField::convertToUserTimeZone($record['st_date_time'], $inviteeUser), "Y/m/d H:i:s");
+		$endDatetime = date_format(DateTimeField::convertToUserTimeZone($record['end_date_time'], $inviteeUser), "Y/m/d H:i:s");
 		$ics_filename = 'test/upload/'.$fileName.'_'.$inviteeid.'.ics';
     $fp = fopen($ics_filename, "w");
+
+		// TZ OFFSETを設定
+    $userTz = new DateTime(date('Y/m/d H:i:s', strtotime($stDatetime)), new DateTimeZone($time_zone));
+		$userOffset = $userTz->getOffset() / 3600;
+		$code = ($userOffset < 0) ? "-" : "+";
+		$userOffset = str_pad(str_replace("-" , "", $userOffset), 2, 0, STR_PAD_LEFT);
 
     // add timezone
     fwrite($fp, "BEGIN:VTIMEZONE\n");
     fwrite($fp, "TZID:".$time_zone."\n");
     fwrite($fp, "BEGIN:STANDARD\n");
-    fwrite($fp, "TZOFFSETFROM:+0900\n");
-    fwrite($fp, "TZOFFSETTO:+0900\n");
+    fwrite($fp, "TZOFFSETFROM:".$code.$userOffset."00\n");
+    fwrite($fp, "TZOFFSETTO:".$code.$userOffset."00\n");
     fwrite($fp, "DTSTART:19700101T000000\n");
     fwrite($fp, "END:STANDARD\n");
     fwrite($fp, "END:VTIMEZONE\n");
