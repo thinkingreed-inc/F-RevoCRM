@@ -17,7 +17,7 @@ storage/*
 test/curumeru_csv/*
 test/templates_c
 test/upload/*
-!test/upload
+!test/upload/.gitkeep
 test/vtlib/CSS/*
 test/vtlib/URI/*
 test/vtlib/HTML/*
