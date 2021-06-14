@@ -147,7 +147,7 @@ class Calendar_RepeatEvents {
         $delta = $vtEntityDelta->getEntityDelta('Events', $parentId, true);
 		$skip_focus_fields = Array ('record_id', 'createdtime', 'modifiedtime');
 		
-		if($focus->column_fields['mode'] == 'edit') { //editって何モード？
+		if($focus->column_fields['mode'] == 'edit') {
 			$childRecords = array();
 			$result = $adb->pquery("SELECT * FROM vtiger_activity_recurring_info WHERE activityid=?", array($parentId));
 			$noofrows = $adb->num_rows($result);
@@ -190,7 +190,7 @@ class Calendar_RepeatEvents {
 			$i = 0;
 			$updatedRecords = array();
 			
-			if(self::$recurringTypeChanged && $focus->column_fields['recurringEditMode'] == 'future') { //future？？
+			if(self::$recurringTypeChanged && $focus->column_fields['recurringEditMode'] == 'future') {
 				foreach($childRecords as $record) {
 					$adb->pquery("DELETE FROM vtiger_activity_recurring_info WHERE activityid=? AND recurrenceid=?", array($parentRecurringId, $record));
 				}
@@ -198,8 +198,8 @@ class Calendar_RepeatEvents {
 			}
 			
 			foreach ($recurObj->recurringdates as $index => $startDate) {
-				$recordId = $childRecords[$i]; //日付追加だとここにnullのデータが用意されてる
-				if(!empty($recordId) && !empty($startDate)) { //ここの中にcreateRecurringEventsがないのが問題？
+				$recordId = $childRecords[$i];
+				if(!empty($recordId) && !empty($startDate)) {
 					$i++;
 					if(!self::$recurringDataChanged && empty($delta['date_start']) && empty($delta['due_date'])) {
 						$skip_focus_fields[] = 'date_start';
@@ -264,7 +264,7 @@ class Calendar_RepeatEvents {
 						$updatedRecords[] = $recordId;
 						$recordModel->save('Calendar');
 					}
-				} else if(empty($recordId) && !empty($startDate) && self::$recurringDataChanged) { //日付が追加されるとstartDateにその数だけ実行
+				} else if(empty($recordId) && !empty($startDate) && self::$recurringDataChanged) {
 					//create new record with new start date
 					$datesList = array();
 					$datesList[] = $startDate;
@@ -275,6 +275,7 @@ class Calendar_RepeatEvents {
 				}
 			}
 			$deletingRecords = array_diff($childRecords, $updatedRecords);
+			self::checkadduser($parentId);
 			if(self::$recurringDataChanged && !empty($deletingRecords)) {
 				foreach($deletingRecords as $record) {
 					//delete reocrd with that reocrdid
@@ -348,16 +349,16 @@ class Calendar_RepeatEvents {
 			$result = $adb->pquery("SELECT activityid FROM vtiger_activity WHERE invitee_parentid = ?", Array($parentId));
 			$rows = $adb->num_rows($result);
 			for($i = 0; $i < $rows; $i++){
-				$vari_activityid[] = $adb->query_result($result, $i, "activityid");
+				$vari_activityId[] = $adb->query_result($result, $i, "activityid");
 			}
 			$result = $adb->pquery("SELECT activityid FROM vtiger_activity WHERE invitee_parentid = ?", Array($record));
 			$rows = $adb->num_rows($result);
 			for($i = 0; $i < $rows; $i++){
-				$vari_recurrenceid[] = $adb->query_result($result, $i, "activityid");
+				$vari_recurrenceId[] = $adb->query_result($result, $i, "activityid");
 			}
 		}
-		for($i = 0; $i < count($vari_activityid); $i++){
-			$adb->pquery("INSERT INTO vtiger_activity_recurring_info VALUES (?,?)", array($vari_activityid[$i], $vari_recurrenceid[$i]));
+		for($i = 0; $i < count($vari_activityId); $i++){
+			$adb->pquery("INSERT INTO vtiger_activity_recurring_info VALUES (?,?)", array($vari_activityId[$i], $vari_recurrenceId[$i]));
 		}
 	}
 	
@@ -428,6 +429,68 @@ class Calendar_RepeatEvents {
             return true;
         }
     }
+
+	//ユーザーが追加されたとき、vtiger_activity_recurring_infoにインサートする処理
+	//各テーブルは以下のようになるのが好ましい
+	/*
+	<vtiger_activity_recurring_info>
+	| activityid	 	| recurrenceid	    |
+	-----------------------------------------
+	| original_parentId	| original_childId	|
+	| copy_parentId		| copy_childId		|
+
+	<vtiger_activity>
+	| activityid	| invitee_parentid	|
+	-------------------------------------
+	| copy_childId	| original_childId	|
+	*/
+	static function checkadduser($parentId){
+		global $adb;
+		$result = $adb->pquery("SELECT activityid FROM vtiger_activity_recurring_info WHERE recurrenceid=?", array($parentId));
+		$original_parentId = $adb->query_result($result, 'activityid');
+		$result = $adb->pquery("SELECT recurrenceid FROM vtiger_activity_recurring_info WHERE activityid=?", array($original_parentId));
+		$original_rows = $adb->num_rows($result);
+		if($original_rows > 1){
+			for ($i = 0; $i < $original_rows; $i++) {
+				$original_childId[] = $adb->query_result($result, $i, 'recurrenceid');
+			}
+			for ($i = 0; $i < $original_rows; $i++) {
+				$result = $adb->pquery("SELECT activityid FROM vtiger_activity WHERE invitee_parentid = ?", Array($original_childId[$i]));
+				$rows = $adb->num_rows($result);
+				for ($j = 0; $j < $rows; $j++) {
+					$total_copy_childId[] = $adb->query_result($result, $j, 'activityid');
+				}
+				$total[] = $total_copy_childId;
+				$total_copy_childId = array();
+			}
+			$copy_parentId = $total[0]; //0でいいのか
+			for($i = 0;$i < count($total); $i++){
+				$copy_childId = $total[$i];
+				for($j = 0;$j < count($copy_parentId); $j++){
+					if(self::checkalready_vari($copy_parentId[$j], $copy_childId[$j])){
+						$adb->pquery("INSERT INTO vtiger_activity_recurring_info VALUES (?,?)", array($copy_parentId[$j], $copy_childId[$j]));
+					}
+				}
+			}
+		}else{
+			return 0;
+		}
+	}
+
+	//vtiger_activity_recurring_infoに同じデータが複数ある状態で、その予定を移動するとエラーが発生した。
+	//指定のデータがあるか確認する関数(返り値 true : データなし)
+	static function checkalready_vari($parentId, $childId){
+		global $adb;
+		$result = $adb->pquery("SELECT activityid FROM vtiger_activity_recurring_info WHERE recurrenceid=?", array($childId));
+		$rows = $adb->num_rows($result);
+		for ($i = 0; $i < $rows; $i++) {
+			$check_activityId[] = $adb->query_result($result, $i, 'activityid');
+			if($check_activityId[$i] == $parentId){
+				return false;
+			}
+		}
+		return true;
+	}
 }
 
 ?>
