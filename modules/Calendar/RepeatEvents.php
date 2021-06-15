@@ -463,7 +463,7 @@ class Calendar_RepeatEvents {
 				$total[] = $total_copy_childId;
 				$total_copy_childId = array();
 			}
-			$copy_parentId = $total[0]; //0でいいのか
+			$copy_parentId = $total[0];
 			for($i = 0;$i < count($total); $i++){
 				$copy_childId = $total[$i];
 				for($j = 0;$j < count($copy_parentId); $j++){
