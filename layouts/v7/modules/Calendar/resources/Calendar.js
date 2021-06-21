@@ -1096,7 +1096,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		startTimeElement.val(startDateTime.format(vtUtils.getMomentTimeFormat()));
 		vtUtils.registerEventForDateFields(startDateElement);
 		vtUtils.registerEventForTimeFields(startTimeElement);
-		if(startDateTime.format(vtUtils.getMomentTimeFormat()) == '00:00') {
+		if(startDateTime.format(vtUtils.getMomentTimeFormat()) == '00:00' || startDateTime.format(vtUtils.getMomentTimeFormat()) == '12:00 AM') {
 			alldayElement.attr('checked', true);
 			Calendar_Edit_Js.changeAllDay();
 		}
