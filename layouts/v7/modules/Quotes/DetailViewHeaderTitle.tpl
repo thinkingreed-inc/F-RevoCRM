@@ -12,7 +12,7 @@
 {strip}
     <div class="col-sm-6">
         <div class="record-header clearfix">
-            <div class="recordImage bgquotes app-{$SELECTED_MENU_CATEGORY}">
+            <div class="recordImage bgquotes app-{$SELECTED_MENU_CATEGORY} {if $IMAGE_DETAILS == false}Read_BG_clear{/if}">
                 {assign var=IMAGE_DETAILS value=$RECORD->getImageDetails()}
                 {foreach key=ITER item=IMAGE_INFO from=$IMAGE_DETAILS}
                     {if !empty($IMAGE_INFO.url)}

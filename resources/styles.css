@@ -280,7 +280,7 @@ button#advanceIntiateSave + input {
 /**
  * ドキュメントアップロードモーダル
  **/
- @media all and (min-width: 0px) and (max-width: 830px) {
+@media all and (min-width: 0px) and (max-width: 830px) {
   .createDocumentContent > table.table > tbody > tr > td,
   .createDocumentContent > table.table > tbody > tr > th,
   .createDocumentContent > table.table > tfoot > tr > td,
@@ -300,12 +300,65 @@ button#advanceIntiateSave + input {
   .uploadview-content > .uploadcontrols > #upload > table.table td.fieldLabel > label {
     float: left !important;
   }
+   
+   
   .createDocumentContent > table.table td.fieldValue .inputElement,
   .uploadview-content > .uploadcontrols > #upload > table.table td.fieldValue .inputElement {
     width: 100%;
     float: none !important;
   }
 }
+
+
+/**
+ * モジュールアイコンのPNGファイル指定時のスタイル調整
+ */
+/*上ドロップダウンメニュー*/
+.col-sm-5 .nav .app-modules-dropdown-container .dropdown-menu .module-icon img{
+  width: 15px;
+  height: 15px;
+}
+/*左メニュー*/
+.app-menu .container-fluid .app-list .dropdown .dropdown-menu .mCustomScrollBox .mCSB_container .module-icon img{
+  width: 23px;
+  height: 23px;
+}
+.dropdown-menu .mCustomScrollBox .mCSB_container .module-name{
+  position: relative;
+  top: 4px;
+}
+.hidden-xs .modules-menu .mCustomScrollBox .mCSB_container .module-qtip a img{
+  width: 20px;
+  height: 20px;
+}
+/*詳細*/
+.col-sm-6 .clearfix .recordImage .name img{
+  width: 80px;
+  height: 80px;
+}
+.detailview-header .col-sm-6 .clearfix .Read_BG_clear{/*背景透明化*/
+  background-color: rgba(0,0,0,0) !important;
+}
+/*関連メニュー*/
+.collapse .nav .tab-item a .tab-icon img{
+  width: 23px;
+  height: 23px;
+}
+/*クイック作成*/
+.col-lg-12 .row .col-lg-4 .quickCreateModule img{
+  width: 20px;
+  height: 20px;
+}
+.col-lg-12 .row .col-lg-4 .quickCreateModule .quick-create-module{
+  position: relative;
+}
+
+/*システム設定　メニュー設定*/
+.col-lg-2 .sortable .modules .menuEditorItem .IconSize img{
+  width: 23px;
+  height: 23px;
+}
+
 /* システム設定画面 */
 @media (max-width: 991px) { 
 .settingsPageDiv .form-horizontal.recordEditView > .modal-overlay-footer {
