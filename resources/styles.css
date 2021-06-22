@@ -314,40 +314,60 @@ button#advanceIntiateSave + input {
  * モジュールアイコンのPNGファイル指定時のスタイル調整
  */
 /*上ドロップダウンメニュー*/
-.col-sm-5 .nav .app-modules-dropdown-container .dropdown-menu .module-icon img{
+.col-sm-5 .nav .app-modules-dropdown-container .dropdown-menu .module-icon{
   width: 15px;
-  height: 15px;
+  display: inline-block;
+  text-align: center;
+}
+.col-sm-5 .nav .app-modules-dropdown-container .dropdown-menu .module-icon img{
+  width: auto;
+  max-width: 15px;
+  height: auto;
+  max-height: 15px;
+  margin: 0 auto;
 }
 /*左メニュー*/
+/*関連メニュー*/
+/*システム設定　メニュー設定*/
+.collapse .nav .tab-item a .tab-icon img,
+.col-lg-2 .sortable .modules .menuEditorItem .IconSize img,
 .app-menu .container-fluid .app-list .dropdown .dropdown-menu .mCustomScrollBox .mCSB_container .module-icon img{
-  width: 23px;
-  height: 23px;
+  width: auto;
+  max-width: 23px;
+  height: auto;
+  max-height: 23px;
+  margin: 0 auto;
 }
 .dropdown-menu .mCustomScrollBox .mCSB_container .module-name{
   position: relative;
   top: 4px;
 }
 .hidden-xs .modules-menu .mCustomScrollBox .mCSB_container .module-qtip a img{
-  width: 20px;
-  height: 20px;
+  width: auto;
+  max-width: 20px;
+  height: auto;
+  max-height: 20px;
+  margin: 0 auto;
 }
 /*詳細*/
 .col-sm-6 .clearfix .recordImage .name img{
-  width: 80px;
-  height: 80px;
+  width: auto;
+  max-width: 80px;
+  height: auto;
+  max-height: 80px;
+  margin: 0 auto;
 }
 .detailview-header .col-sm-6 .clearfix .Read_BG_clear{/*背景透明化*/
   background-color: rgba(0,0,0,0) !important;
 }
-/*関連メニュー*/
-.collapse .nav .tab-item a .tab-icon img{
-  width: 23px;
-  height: 23px;
-}
+
 /*クイック作成*/
 .col-lg-12 .row .col-lg-4 .quickCreateModule img{
-  width: 20px;
-  height: 20px;
+  width: auto;
+  max-width: 20px;
+  height: auto;
+  max-height: 20px;
+  margin: 0 auto;
 }
 .col-lg-12 .row .col-lg-4 .quickCreateModule .quick-create-module{
   position: relative;
@@ -364,18 +384,4 @@ button#advanceIntiateSave + input {
 .settingsPageDiv .form-horizontal.recordEditView > .modal-overlay-footer {
     border-left: 0px;
   }
-}
-
-/**
- * アクティブリストとホバー時の背景色指定
- **/
-#sidebar-essentials ul.lists-menu > li.active,
-#sidebar-essentials ul.lists-menu > li:hover  {
-    background: #eee;
-}
-/**
- * portal url表示
- */
-.portal_url_warp{
-   word-break: break-all;
 }

@@ -647,6 +647,9 @@ a.menu-item:hover {
 .app-menu .app-modules-dropdown .module-icon {
   font-size: 1.2em;
   opacity: 0.2;
+  display: inline-block;
+  width: 23px;
+  text-align: center;
 }
 .app-menu .app-list {
   margin-top: -10px;
