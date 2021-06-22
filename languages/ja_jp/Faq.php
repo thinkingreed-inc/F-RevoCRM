@@ -12,6 +12,8 @@ $languageStrings = array(
 	'SINGLE_Faq' => 'FAQ',
 	'LBL_RECORDS_LIST' => 'FAQのリスト',
 	'LBL_ADD_RECORD' => 'FAQの追加',
+	'lead日' => 'リード日',
+	'user' => 'ユーザー',
 
 	//Blocks
 	'LBL_FAQ_INFORMATION' => '基本情報',

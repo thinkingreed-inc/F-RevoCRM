@@ -38,7 +38,7 @@
 						<i class="fa fa-search"></i>
 					</button>
 				</div>
-				<div class="col-sm-5">
+				<div class="col-sm-5 hidden-xs hidden-sm app-list">
 					<ul class="nav navbar-nav">
 						{assign var=APP_GROUPED_MENU value=Settings_MenuEditor_Module_Model::getAllVisibleModules()}
 						{assign var=APP_LIST value=Vtiger_MenuStructure_Model::getAppMenuList()}
@@ -76,7 +76,7 @@
 						{/foreach}
 					</ul>
 				</div>
-				<div class="col-sm-2">
+				<div class="col-sm-3">
 					<div id="search-links-container" class="search-links-container collapse navbar-collapse">
 						<div class="search-link">
 							<span class="fa fa-search" aria-hidden="true"></span>

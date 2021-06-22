@@ -332,6 +332,14 @@ class Vtiger_Module_Model extends Vtiger_Module {
 	}
 
 	/**
+	 * Function to get the url for the Export action of the module
+	 * @return <String> - url
+	 */
+	public function getPDFExportUrl() {
+		return 'index.php?module='.$this->get('name').'&view=PDFExport';
+	}
+
+	/**
 	 * Function to get the url for the Find Duplicates action of the module
 	 * @return <String> - url
 	 */

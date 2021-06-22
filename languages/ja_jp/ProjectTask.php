@@ -45,7 +45,7 @@ $languageStrings = array(
 	'In Progress' => '進行中',
 	'Completed' => '完了',
 	'Deferred' => '保留',
-	'Canceled' => '対応不要',
+    'Canceled' => '対応不要',
     'LBL_NO_DATE_VALUE_MSG' => 'またはプロジェクトタスクに開始日または終了日、あるいはその両方がありません',
 
     //F-RevoCRM

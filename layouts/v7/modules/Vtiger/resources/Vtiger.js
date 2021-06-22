@@ -425,7 +425,7 @@ Vtiger.Class('Vtiger_Index_Js', {
 						$('#overlayPage').find(".arrow").css("left",taskManagementPageOffset.left+13);
 						$('#overlayPage').find(".arrow").addClass("show");
 
-						vtUtils.showSelect2ElementView($('#overlayPage .data-header').find('select[name="assigned_user_id"]'),{placeholder:"User : All"});
+						vtUtils.showSelect2ElementView($('#overlayPage .data-header').find('select[name="assigned_user_id"]'),{placeholder:"ユーザー選択"});
 						vtUtils.showSelect2ElementView($('#overlayPage .data-header').find('select[name="taskstatus"]'),{placeholder:"Status : All"});
 						var js = new Vtiger_TaskManagement_Js();
 						js.registerEvents();
@@ -701,6 +701,7 @@ Vtiger.Class('Vtiger_Index_Js', {
 		jQuery('.app-modules-dropdown-container').hover(function(e) {
 			var dropdownContainer = jQuery(e.currentTarget);
 			jQuery('.dropdown').removeClass('open');
+			jQuery('.listViewMassActions').removeClass('open');
 			if(dropdownContainer.length) {
 				//Fix for Responsive layout Sub Menu in mobile devices
 				var appModulesDropdown = dropdownContainer.find('.app-modules-dropdown');
