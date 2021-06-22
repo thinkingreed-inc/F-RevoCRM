@@ -210,6 +210,7 @@ class Calendar_RepeatEvents {
 						continue;
 					}
 					$recordModel = Vtiger_Record_Model::getInstanceById($recordId);
+					$recordModel->set("is_allday", $focus->is_allday); //recordModulにis_alldayが無いので追加
 					$recordModel->set('mode', 'edit');
 					if($focus->column_fields['recurringEditMode'] == 'future' && $recordModel->get('date_start') >= $eventStartDate) {
 						$startDateTimestamp = strtotime($startDate);
@@ -329,6 +330,9 @@ class Calendar_RepeatEvents {
 					$new_focus->column_fields['date_start'] = $startDate;
 				} else if($key == 'due_date') {
 					$new_focus->column_fields['due_date']   = $endDate;
+				} else if($key == 'is_allday') {
+					$new_focus->is_allday                   = $value;
+					$new_focus->column_fields[$key]         = $value;
 				} else {
 					$new_focus->column_fields[$key]         = $value;
 				}

@@ -90,6 +90,10 @@ Vtiger.Class("Vtiger_List_Js", {
 		var listInstance = window.app.controller();
 		listInstance.performExportAction(exportActionUrl);
 	},
+	triggerPDFExportAction: function (exportActionUrl) {
+		var listInstance = window.app.controller();
+		listInstance.performPDFExportAction(exportActionUrl);
+	},
 	/*
 	 * function to trigger send Email
 	 * @params: send email url , module name.
@@ -381,6 +385,29 @@ Vtiger.Class("Vtiger_List_Js", {
 		app.request.get({data: postData}).then(function (error, data) {
 			app.helper.loadPageContentOverlay(data).then(function (container) {
 				container.find('form#exportForm').on('submit', function () {
+					jQuery(this).find('button[type="submit"]').attr('disabled', 'disabled');
+					app.helper.hidePageContentOverlay();
+				});
+			});
+			app.helper.hideProgress();
+		});
+	},
+	performPDFExportAction: function (url) {
+		var listInstance = this;
+		var listViewContainer = this.getListViewContainer();
+		var pageNumber = listViewContainer.find('#pageNumber').val();
+		var postData = listInstance.getDefaultParams();
+
+		var params = app.convertUrlToDataParams(url);
+		postData = jQuery.extend(postData, params);
+		var listSelectAllParams = listInstance.getListSelectAllParams(true);
+		listSelectAllParams['search_params'] = JSON.stringify(listInstance.getListSearchParams());
+		postData = jQuery.extend(postData, listSelectAllParams);
+
+		app.helper.showProgress();
+		app.request.get({data: postData}).then(function (error, data) {
+			app.helper.loadPageContentOverlay(data).then(function (container) {
+				container.find('form#exportPDFForm').on('submit', function () {
 					jQuery(this).find('button[type="submit"]').attr('disabled', 'disabled');
 					app.helper.hidePageContentOverlay();
 				});

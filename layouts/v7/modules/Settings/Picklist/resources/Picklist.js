@@ -499,7 +499,8 @@ var Settings_Picklist_Js = {
 	},
 
 	registerPickListValuesSortableEvent : function() {
-        var thisInstance = this;
+		var thisInstance = this;
+		var $scrollContainer = $('html');
 		var tbody = jQuery( "tbody",jQuery('#pickListValuesTable'));
 		tbody.sortable({
 			'helper' : function(e,ui){
@@ -512,10 +513,14 @@ var Settings_Picklist_Js = {
 				})
 				return ui;
 			},
+			sort: function(event, ui) {
+				var offset = ui.helper.offset();
+				ui.helper.offset({ top: offset.top + $scrollContainer.scrollTop() });
+			},
 			'containment' : tbody,
-			'revert' : true,
+			'revert' : false,
 			update: function(e, ui ) {
-                thisInstance.saveSequence();
+				thisInstance.saveSequence();
 			}
 		});
 	},

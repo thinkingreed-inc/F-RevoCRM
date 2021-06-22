@@ -45,6 +45,7 @@ $languageStrings = array(
 	'Sent'=>'送付済み',
 	'Credit Invoice'=>'クレジット払い',
 	'Paid'=>'支払い済み',
+	'Next Invoice Date' => '次の請求日',
 	
 	//Translation for product not found
 	'LBL_THIS' => 'この',

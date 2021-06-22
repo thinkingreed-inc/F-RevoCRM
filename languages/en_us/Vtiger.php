@@ -164,6 +164,7 @@ $languageStrings = array(
 	'LBL_ADVANCE_SEARCH' => 'Advanced',
 	'LBL_LOADING_PLEASE_WAIT' => 'Loading, Please wait.',
 	'LBL_PLEASE_SELECT_MODULE' => 'Please select any module to search',
+	'LBL_CANT_SELECT_THE_OTHER_MODULE_WITH_USERS_FOR_RELFIELD' => ' cannot be selected at the same time as other modules.',
 
 	//DropDown Category
 	'LBL_USERS' => 'Users',

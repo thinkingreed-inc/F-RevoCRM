@@ -201,7 +201,7 @@
 																{assign var="index" value=($smarty.foreach.actions.index+1) % 3}
 																{assign var="colspan" value=4-$index}
 																colspan="{$colspan}"
-															{/if} data-action-name='{$ACTION_MODEL->getName()}' data-actionname-status='{$ACTIONNAME_STATUS}'><img class="alignMiddle" src="{if $ACTIONNAME_STATUS}{$ENABLE_IMAGE_PATH}{else}{$DISABLE_IMAGE_PATH}{/if}" />&nbsp;&nbsp;{$ACTION_MODEL->getName()}</td>
+															{/if} data-action-name='{$ACTION_MODEL->getName()}' data-actionname-status='{$ACTIONNAME_STATUS}'><img class="alignMiddle" src="{if $ACTIONNAME_STATUS}{$ENABLE_IMAGE_PATH}{else}{$DISABLE_IMAGE_PATH}{/if}" />&nbsp;&nbsp;{vtranslate($ACTION_MODEL->getName())}</td>
 															{if $smarty.foreach.actions.last OR ($smarty.foreach.actions.index+1) % 3 == 0}
 																</div>
 															{/if}

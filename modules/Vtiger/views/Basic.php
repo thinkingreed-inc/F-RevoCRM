@@ -175,6 +175,7 @@ abstract class Vtiger_Basic_View extends Vtiger_Footer_View {
 			"modules.Emails.resources.MassEdit",
 			'modules.Vtiger.resources.EmailsRelatedPopup',
 			"~layouts/v7/lib/jquery/sadropdown.js",
+			"~libraries/jquery/posabsolute-jQuery-Validation-Engine/js/jquery.validationEngine.js",
 		);
 
 		$jsScriptInstances = $this->checkAndConvertJsScripts($jsFileNames);

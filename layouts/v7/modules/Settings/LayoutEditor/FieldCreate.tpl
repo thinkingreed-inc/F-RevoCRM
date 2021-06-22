@@ -115,7 +115,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="form-group supportedType relationModules hide">
+						<div class="form-group supportedType relationModules clearfix hide">
 							<label class="control-label fieldLabel col-sm-5">
 								{vtranslate('SELECT_MODULE', $QUALIFIED_MODULE)}
 								&nbsp;<span class="redColor">*</span>
@@ -126,6 +126,7 @@
 										<option value="{$RELATION_MODULE_NAME}">{$TRANS_RELATION_MODULE_NAME}</option>
 									{/foreach}
 								</select>
+								<p class="related_field_caution">{vtranslate('Users', 'Vtiger')}{vtranslate('LBL_CANT_SELECT_THE_OTHER_MODULE_WITH_USERS_FOR_RELFIELD', 'Vtiger')}</p>
 							</div>
 						</div>
 					{/if}
@@ -142,7 +143,7 @@
 								<label class="checkbox">
 									<input type="checkbox" class ='cursorPointer bootstrap-switch' id="fieldPresence" name="presence" {if $FIELD_MODEL->isViewable()} checked {/if}
 										{if $FIELD_MODEL->isActiveOptionDisabled()} readonly="readonly" {/if} {if $FIELD_MODEL->isMandatory()} readonly="readonly" {/if}
-										data-on-text="Yes" data-off-text="No" value="{$FIELD_MODEL->get('presence')}"/>
+										data-on-text="{vtranslate('LBL_YES', $QUALIFIED_MODULE)}" data-off-text="{vtranslate('LBL_NO', $QUALIFIED_MODULE)}" value="{$FIELD_MODEL->get('presence')}"/>
 								</label>
 							</div>
 						</div>

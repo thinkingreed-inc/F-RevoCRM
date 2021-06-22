@@ -818,11 +818,18 @@ Vtiger_Widget_Js('Vtiger_Notebook_Widget_Js', {
 		var textarea = jQuery('.dashboard_notebookWidget_textarea', this.container);
 
 		var url = this.container.data('url');
-		var params = url + '&content=true&mode=save&contents=' + textarea.val();
 
 		app.helper.showProgress();
-		app.request.post({"url":params}).then(function(err,data) {
-            app.helper.hideProgress();
+		var params = {
+			url: url,
+			data: {
+				content: 'true',
+				mode: 'save',
+				contents: textarea.val(),
+			}
+		};
+		app.request.post(params).then(function (err, data) {
+			app.helper.hideProgress();
 			var parent = self.getContainer();
 			var widgetContent = parent.find('.dashboardWidgetContent');
 			widgetContent.mCustomScrollbar('destroy');

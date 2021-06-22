@@ -30,6 +30,11 @@ $languageStrings = array(
 	'LBL_EMAILTEMPLATE_WARNING_CONTENT' => '選択したテンプレートに、受信者レコードに関連する差し込みタグが含まれていることを確認してください。
 											Leadにメールを送信しているが、差し込みタグが連絡先モジュール（例：$contacts-lastname$）
 											に属している場合、値はマージされません。',
+	'Sales Enity Module' => 'セールス エンティティ',
+	'Activtiy Type' => 'アクティビティ',
+	'Email Flag' => 'フラグ',
+	'Attachment' => '添付ファイル',
+
 
 	//Button Names translation
 	'LBL_FORWARD' => '転送',
@@ -46,6 +51,8 @@ $languageStrings = array(
 	'LBL_EMAIL_INFORMATION' => 'メール情報',
 	'Draft' => '下書き',
 	'Parent ID' => '関連レコード',
+	'Access Count' => 'アクセス数',
+	'Click Count' => 'クリック数'
 );
 
 $jsLanguageStrings = array(
