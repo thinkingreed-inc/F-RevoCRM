@@ -1096,7 +1096,13 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		startTimeElement.val(startDateTime.format(vtUtils.getMomentTimeFormat()));
 		vtUtils.registerEventForDateFields(startDateElement);
 		vtUtils.registerEventForTimeFields(startTimeElement);
-		if(startDateTime.format(vtUtils.getMomentTimeFormat()) == '00:00' || startDateTime.format(vtUtils.getMomentTimeFormat()) == '12:00 AM') {
+		/**
+			終日エリア、月次カレンダーをクリックした場合は、終日フラグにチェックを入れる
+			経緯：これまでは00:00である、または12:00 AMであるを判定基準に使っていたため、00:00をクリックしたときに終日フラグが付いてしまっていた
+			
+			※tartDateTime._ambigTime: カレンダーの上部終日エリアを押したときtrueになる
+		*/
+		if(startDateTime._ambigTime) {
 			alldayElement.attr('checked', true);
 			Calendar_Edit_Js.changeAllDay();
 		}
