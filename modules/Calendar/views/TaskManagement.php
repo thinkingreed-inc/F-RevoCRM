@@ -36,7 +36,9 @@ class Calendar_TaskManagement_View extends Vtiger_Index_View {
 		$viewer->assign('OWNER_FIELD', $ownerField);
 
 		$viewer->assign('USER_MODEL', Users_Record_Model::getCurrentUserModel());
-		$viewer->assign('TASK_FILTERS', $this->getFiltersFromSession());
+		$filter = $this->getFiltersFromSession();
+		$viewer->assign('TASK_FILTERS', $filter);
+		$viewer->assign('TASK_FILTERS_JSON', json_encode($filter));
 		$module = Vtiger_Module_Model::getInstance($moduleName);
 		$field = Vtiger_Field_Model::getInstance('taskpriority', $module);
 		$priorities = $field->getPicklistValues();

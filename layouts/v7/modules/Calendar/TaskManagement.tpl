@@ -39,6 +39,7 @@
 							{assign var=PICKLIST_VALUES value=$FIELD_INFO['picklistvalues']}
 							{assign var=FIELD_INFO value=Vtiger_Util_Helper::toSafeHTML(Zend_Json::encode($FIELD_INFO))}
 							{assign var=SEARCH_VALUES value=explode(',',$SEARCH_INFO['searchValue'])}
+							<input type="hidden" id="hidden_session_taskfilter" value='{$TASK_FILTERS_JSON}'>
 							<select class="select2 listSearchContributor" name="{$FIELD_MODEL->get('name')}" multiple data-fieldinfo='{$FIELD_INFO|escape}'>
 								{foreach item=PICKLIST_LABEL key=PICKLIST_KEY from=$PICKLIST_VALUES}
 									<option {if $PICKLIST_KEY|in_array:$TASK_FILTERS['status']}selected{/if} value="{$PICKLIST_KEY}">{$PICKLIST_LABEL}</option>
