@@ -548,11 +548,21 @@ Vtiger_Index_Js("Vtiger_TaskManagement_Js",{},{
 	initializeTaskStatus : function(){
 		var container = this.getOverlayContainer();
 		var taskStatus = container.find('select[name="taskstatus"]');
+		// sessionに保存しているtaskfilterをjs側で取得する
+		var sessionTaskStatus = JSON.parse($('#hidden_session_taskfilter').val());
+
 		if(taskStatus.length > 0){
-			taskStatus.find('[value="Not Started"]').attr('selected', "selected");
-			taskStatus.find('[value="In Progress"]').attr('selected', "selected");
-			taskStatus.find('[value="Pending Input"]').attr('selected', "selected");
-			taskStatus.find('[value="Planned"]').attr('selected', "selected");
+			if(Array.isArray(sessionTaskStatus.status)){
+				// 保持しているtaskfilterの内容を事前にselectedな状態にしておく
+				sessionTaskStatus.status.forEach(function(element){
+					taskStatus.find('[value="'+element+'"]').attr('selected', "selected");
+				});
+			}else{
+				taskStatus.find('[value="Not Started"]').attr('selected', "selected");
+				taskStatus.find('[value="In Progress"]').attr('selected', "selected");
+				taskStatus.find('[value="Pending Input"]').attr('selected', "selected");
+				taskStatus.find('[value="Planned"]').attr('selected', "selected");
+			}
 			vtUtils.showSelect2ElementView(taskStatus);
 			this.loadContents();
 		}
