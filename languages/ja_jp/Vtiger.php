@@ -103,7 +103,7 @@ $languageStrings = array(
 	'LBL_DASHBOARD' => 'ダッシュボード',
 	'My Dashboard' => 'マイダッシュボード',
 	'Default' => 'デフォルト',
-	'LBL_USER_SETTINGS' => 'ユーザ設定',
+	'LBL_USER_SETTINGS' => 'ユーザー設定',
 	'LBL_MY_PREFERENCES' => '個人設定',
 	'LBL_SIGN_OUT' => 'ログアウト',
 	'LBL_HELP' => 'ヘルプ',
@@ -134,11 +134,11 @@ $languageStrings = array(
 	'LBL_CANT_MOVE_FROM_PUBLIC_TO_PRIVATE' => '公開タグを非公開タグにすることはできません。',
 	'LBL_EDIT_TAG'=>'タグの編集',
 	'LBL_NO_TAG_EXISTS' => 'タグが存在しません。' ,
-	'LBL_RELATED_USERS' => '関連ユーザ',
+	'LBL_RELATED_USERS' => '関連ユーザー',
 	'Primary Module' => 'モジュール',
 
 	// Common Fields
-	'LBL_USER' => 'ユーザ',
+	'LBL_USER' => 'ユーザー',
 	'LBL_GROUP' => 'グループ',
 	'Last Modified By' => '最終更新者',
 	'Created Time' => '登録日時',
@@ -178,7 +178,7 @@ $languageStrings = array(
 	'LBL_CANT_SELECT_THE_OTHER_MODULE_WITH_USERS_FOR_RELFIELD' => 'は、他のモジュールと同時に選択できません',
 
 	//DropDown Category
-	'LBL_USERS' => 'ユーザ',
+	'LBL_USERS' => 'ユーザー',
 	'LBL_GROUPS' => 'グループ',
 
 	//EditView Form Links
@@ -228,7 +228,7 @@ $languageStrings = array(
 	'Activities' => '活動',
 	'Portal' => 'ポータル',
 	'Email Templates' => 'メールテンプレート',
-	'Recycle Bin' => 'ゴミ箱',
+	'Recycle Bin' => 'ごみ箱',
 	'Events' => '活動',
 	'Dailyreports' => '日報',
 
@@ -877,7 +877,7 @@ $languageStrings = array(
 	'LBL_EDIT_QUANTITY' => '数量の編集',
 	'LBL_ADD_TO_PRODUCTS' => '製品の追加',
 
-	'LBL_MANAGE_USERS' => 'ユーザ管理',
+	'LBL_MANAGE_USERS' => 'ユーザー管理',
 	'LBL_TRANSFER_OWNERSHIP' => '担当の変更',
 	'LBL_SELECT_RELATED_MODULES' => '関連モジュールの選択',
 	'LBL_ASSIGNED_TO' => '担当',
