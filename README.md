@@ -166,23 +166,36 @@ xdebug3がインストール済みです。
 # XDEBUG_CONFIG: "mode=off client_host=host.docker.internal client_port=9003 start_with_request=yes"
 XDEBUG_CONFIG: "mode=debug client_host=host.docker.internal client_port=9003 start_with_request=yes"
 ```
-
-vscodeをご利用の場合は、以下のように `.vscode/launch.json`を修正してください。
+#### WSL2での利用
+WSL2を利用の場合は、以下のように実行してください。
+```sh
+cp docker-compose.override.yml.exmple docker-compose.override.yml
+cp .env.example .env
+```
+その後、.envの中にWSL2のIPアドレスを入力してください。
+```sh
+hostname -I
+# 172.26.76.74
+vim .env
+# DOCKER_HOST_IP=172.26.76.74
+```
+#### VSCodeでの設定
+vscodeをご利用の場合は、xdebugのエクステンションをインストール後、以下のように `.vscode/launch.json`を修正してください。
 ```json
 {
   "version": "0.2.0",
   "configurations": [
-      {
-       "name": "F-RevoCRM XDebug:9003",
-       "type": "php",
-       "request": "launch",
-       "port": 9003, 
-       "pathMappings": {
-          "/var/www/html": "${workspaceRoot}"
-       }
+    {
+      "name": "F-RevoCRM XDebug:9003",
+      "type": "php",
+      "request": "launch",
+      "port": 9003, 
+      "pathMappings": {
+        "/var/www/html": "${workspaceRoot}"
       }
+    }
   ]
- }
+}
 ```
 
 ## 更新履歴
