@@ -142,6 +142,8 @@ cp -r frevocrm.20201001/storage/* frevocrm/storage/
 ```
 
 ### 3. マイグレーションツールの実行
+タグとしてv7.3.xが追加されるまで、Migrationは実行されません。  
+最新のバージョンで実行したい場合は、`vtigerversion.php`のファイルを編集し、次のバージョンを指定してから以下のマイグレーション用のURLを実行してください。
 
 1. アクセスすると自動でマイグレーションが実行されます。
  * http://example.com/frevocrm/index.php?module=Migration&view=Index&mode=step1
