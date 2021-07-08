@@ -34,6 +34,9 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 		$recurringEditMode = $request->get('recurringEditMode');
 		$is_allday = $request->get('allday');
 
+		//Contactsを更新しないようにフラグを作成
+		$_REQUEST['isDragDrop'] = 1;
+
 		$actionname = 'EditView';
 		$response = new Vtiger_Response();
 		try {
@@ -258,6 +261,15 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 						if($activityType != 'Task' && $is_allday == "true"){
 							$recordModel->set('time_start', "00:00:00");
 							$recordModel->set('time_end', "00:00:00");
+						}
+
+						//終日チェックの更新
+						if($is_allday == "true"){
+							$recordModel->set('is_allday',true);
+							$recordModel->getEntity()->is_allday = 1;
+						}else{
+							$recordModel->set('is_allday',false);
+							$recordModel->getEntity()->is_allday = 0;
 						}
 						$recordModel->save();
 					}

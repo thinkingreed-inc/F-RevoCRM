@@ -251,6 +251,13 @@ div.detailview-content.container-fluid span.value img {
   margin-top: 10px;
   float: left;
 }
+/* 詳細検索画面 */
+#advanceSearchButtonRow {
+  text-align: center;
+}
+button#advanceIntiateSave + input {
+  margin-left: 10px;
+}
 /* 概要画面の関連項目 */
 .summaryView .input-group.editElement {
   min-width: auto;
@@ -263,4 +270,118 @@ div.detailview-content.container-fluid span.value img {
 }
 .summaryView .input-group.editElement .referencefield-wrapper .input-group .inputElement {
   width: 100% ;
+}
+@media (max-width: 991px) {
+  .main-container-Documents #sidebar-essentials.sidebar-essentials,
+  .main-container-Reports #sidebar-essentials.sidebar-essentials {
+    width: 100%;
+  }
+}
+/**
+ * ドキュメントアップロードモーダル
+ **/
+@media all and (min-width: 0px) and (max-width: 830px) {
+  .createDocumentContent > table.table > tbody > tr > td,
+  .createDocumentContent > table.table > tbody > tr > th,
+  .createDocumentContent > table.table > tfoot > tr > td,
+  .createDocumentContent > table.table > tfoot > tr > th,
+  .createDocumentContent > table.table > thead > tr > td,
+  .createDocumentContent > table.table > thead > tr > th,
+  .uploadview-content > .uploadcontrols > #upload > table.table > tbody > tr > td,
+  .uploadview-content > .uploadcontrols > #upload > table.table > tbody > tr > th,
+  .uploadview-content > .uploadcontrols > #upload > table.table > tfoot > tr > td,
+  .uploadview-content > .uploadcontrols > #upload > table.table > tfoot > tr > th,
+  .uploadview-content > .uploadcontrols > #upload > table.table > thead > tr > td,
+  .uploadview-content > .uploadcontrols > #upload > table.table > thead > tr > th {
+    display: block;
+    min-width: 100%!important;
+  }
+  .createDocumentContent > table.table td.fieldLabel > label,
+  .uploadview-content > .uploadcontrols > #upload > table.table td.fieldLabel > label {
+    float: left !important;
+  }
+   
+   
+  .createDocumentContent > table.table td.fieldValue .inputElement,
+  .uploadview-content > .uploadcontrols > #upload > table.table td.fieldValue .inputElement {
+    width: 100%;
+    float: none !important;
+  }
+}
+
+
+/**
+ * モジュールアイコンのPNGファイル指定時のスタイル調整
+ */
+/*上ドロップダウンメニュー*/
+.col-sm-5 .nav .app-modules-dropdown-container .dropdown-menu .module-icon{
+  width: 15px;
+  display: inline-block;
+  text-align: center;
+}
+.col-sm-5 .nav .app-modules-dropdown-container .dropdown-menu .module-icon img{
+  width: auto;
+  max-width: 15px;
+  height: auto;
+  max-height: 15px;
+  margin: 0 auto;
+}
+/*左メニュー*/
+/*関連メニュー*/
+/*システム設定　メニュー設定*/
+.collapse .nav .tab-item a .tab-icon img,
+.col-lg-2 .sortable .modules .menuEditorItem .IconSize img,
+.app-menu .container-fluid .app-list .dropdown .dropdown-menu .mCustomScrollBox .mCSB_container .module-icon img{
+  width: auto;
+  max-width: 23px;
+  height: auto;
+  max-height: 23px;
+  margin: 0 auto;
+}
+.dropdown-menu .mCustomScrollBox .mCSB_container .module-name{
+  position: relative;
+  top: 4px;
+}
+.hidden-xs .modules-menu .mCustomScrollBox .mCSB_container .module-qtip a img{
+  width: auto;
+  max-width: 20px;
+  height: auto;
+  max-height: 20px;
+  margin: 0 auto;
+}
+/*詳細*/
+.col-sm-6 .clearfix .recordImage .name img{
+  width: auto;
+  max-width: 80px;
+  height: auto;
+  max-height: 80px;
+  margin: 0 auto;
+}
+.detailview-header .col-sm-6 .clearfix .Read_BG_clear{/*背景透明化*/
+  background-color: rgba(0,0,0,0) !important;
+}
+
+/*クイック作成*/
+.col-lg-12 .row .col-lg-4 .quickCreateModule img{
+  width: auto;
+  max-width: 20px;
+  height: auto;
+  max-height: 20px;
+  margin: 0 auto;
+}
+.col-lg-12 .row .col-lg-4 .quickCreateModule .quick-create-module{
+  position: relative;
+}
+
+/*システム設定　メニュー設定*/
+.col-lg-2 .sortable .modules .menuEditorItem .IconSize img{
+  width: 23px;
+  height: 23px;
+}
+
+/* システム設定画面 */
+@media (max-width: 991px) { 
+.settingsPageDiv .form-horizontal.recordEditView > .modal-overlay-footer {
+    border-left: 0px;
+  }
 }

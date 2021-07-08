@@ -185,6 +185,7 @@ class Install_Utils_Model {
 				
 				$parameters['admin_password'] = $vtconfig['adminPwd'];
 				$parameters['admin_email']    = $vtconfig['adminEmail'];
+				$parameters['is_create_new_db'] = '';
 			}
 		}
 
@@ -201,6 +202,15 @@ class Install_Utils_Model {
 		}
 		if(empty($parameters['db_name']) && !empty($_ENV['FREVOCRM_INSTALLER_DB_NAME'])){
 			$parameters['db_name'] = $_ENV['FREVOCRM_INSTALLER_DB_NAME'];
+		}
+		if(empty($parameters['db_root_user']) && !empty($_ENV['FREVOCRM_INSTALLER_DB_ROOT_USER'])){
+			$parameters['db_root_user'] = $_ENV['FREVOCRM_INSTALLER_DB_ROOT_USER'];
+			if(!empty($parameters['db_root_user'])){
+				$parameters['is_create_new_db'] = 'checked="checked"';
+			}
+		}
+		if(empty($parameters['db_root_password']) && !empty($_ENV['FREVOCRM_INSTALLER_DB_ROOT_PASSWORD'])){
+			$parameters['db_root_password'] = $_ENV['FREVOCRM_INSTALLER_DB_ROOT_PASSWORD'];
 		}
 		
 		return $parameters;
