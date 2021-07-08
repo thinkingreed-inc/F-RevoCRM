@@ -63,13 +63,14 @@ class CustomerPortal_DownloadFile extends CustomerPortal_API_Abstract {
 				$fileres = $adb->pquery($fileidQuery, array($id));
 				$fileid = $adb->query_result($fileres, 0, 'attachmentsid');
 
-				$filepathQuery = 'SELECT path,name FROM vtiger_attachments WHERE attachmentsid = ?';
+				$filepathQuery = 'SELECT path,name,storedname FROM vtiger_attachments WHERE attachmentsid = ?';
 				$fileres = $adb->pquery($filepathQuery, array($fileid));
 				$filepath = $adb->query_result($fileres, 0, 'path');
 				$filename = $adb->query_result($fileres, 0, 'name');
+				$storedname = $adb->query_result($fileres, 0, 'storedname');
 				$filename = decode_html($filename);
 
-				$saved_filename = $fileid."_".$filename;
+				$saved_filename = $fileid."_".$storedname;
 				$filenamewithpath = $filepath.$saved_filename;
 				$filesize = filesize($filenamewithpath);
 				$fileDetails = array();
@@ -87,8 +88,9 @@ class CustomerPortal_DownloadFile extends CustomerPortal_API_Abstract {
 				$attachmentDetails = $rawAttachmentDetails[0];
 				$fileid = $attachmentDetails['attachmentsid'];
 				$filename = $attachmentDetails['name'];
+				$storedname = $attachmentDetails['storedname'];
 				$filepath = $attachmentDetails['path'];
-				$saved_filename = $fileid."_".$filename;
+				$saved_filename = $fileid."_".$storedname;
 				$filenamewithpath = $filepath.$saved_filename;
 				$filesize = filesize($filenamewithpath);
 				$filetype = $attachmentDetails['type'];
