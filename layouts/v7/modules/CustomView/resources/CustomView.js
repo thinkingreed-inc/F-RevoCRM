@@ -236,7 +236,7 @@ jQuery.Class("Vtiger_CustomView_Js",{
 						} 
 					} 
 						  if(mandatoryFieldsMissing){ 
-						app.helper.showErrorNotification({message:"Select atleast one mandatory value."}); 
+						app.helper.showErrorNotification({message: app.vtranslate('Select atleast one mandatory value.')}); 
 							  return false; 
 					} 
 					//handled advanced filters saved values.
