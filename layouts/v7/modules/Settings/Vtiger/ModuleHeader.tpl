@@ -12,7 +12,7 @@
 {strip}
 	<div class="col-sm-12 col-xs-12 module-action-bar coloredBorderTop">
 		<div class="module-action-content clearfix">
-			<div class="col-lg-7 col-md-7">
+			<div class="col-xs-7 col-lg-7 col-md-7">
 				{if $USER_MODEL->isAdminUser()}
 					<a title="{vtranslate('Home', $MODULE)}" href='index.php?module=Vtiger&parent=Settings&view=Index'>
 						<h4 class="module-title pull-left text-uppercase">{vtranslate('LBL_HOME', $MODULE)} </h4>
@@ -112,7 +112,7 @@
 					{/if}
 				{/if}
 			</div>
-			<div class="col-lg-5 col-md-5 pull-right">
+			<div class="col-xs-5  col-lg-5 col-md-5 pull-right">
 				<div id="appnav" class="navbar-right">
 					<ul class="nav navbar-nav">
 						{foreach item=BASIC_ACTION from=$MODULE_BASIC_ACTIONS}
