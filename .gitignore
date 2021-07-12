@@ -28,7 +28,9 @@ user_privileges/*
 !user_privileges/default_module_view.php
 !user_privileges/enable_backup.php
 !user_privileges/index.html
+config.inc.php
 /*.xlsx
 .DS_Store
 .vscode
-config.inc.php
+docker-compose.override.yml
+.env
