@@ -24,4 +24,7 @@ if (defined('VTIGER_UPGRADE')) {
         $relation_id = $db->query_result($r_result, 0, 'relation_id');
         $db->pquery('update vtiger_relatedlists set relationfieldid = ? where relation_id = ?', array($fieldid, $relation_id));
     }
+
+    //related_tabidが16(Events)だとレコード詳細画面が正常に表示されないので9(Calendar)へ変更
+    $db->query("UPDATE vtiger_relatedlists SET related_tabid = 9 WHERE related_tabid = 16");
 }
