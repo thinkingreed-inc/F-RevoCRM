@@ -74,6 +74,9 @@ require_once ("scripts/54_Update_SidebarWidget.php");
 // 日本語を追加
 require_once ("scripts/56_Add_JapaneseLanguage.php");
 
+// プロジェクトタスクの終了日をクリッククリエイトに追加
+$db->query('update vtiger_field set quickcreate = 0 where tabid = 41 and fieldname = "enddate"');
+
 // プロジェクトマイルストーンを関連メニューから追加する際、プロジェクトを引き継いで作成できるようにする
 $db->query('update vtiger_relatedlists set relationfieldid = "598" where relation_id = 174');
 
