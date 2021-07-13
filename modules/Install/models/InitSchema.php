@@ -992,7 +992,7 @@ class Install_InitSchema_Model {
 		$vtWorkFlow = new VTWorkflowManager($adb);
 		$invWorkFlow = $vtWorkFlow->newWorkFlow("Invoice");
 		$invWorkFlow->test = '[{"fieldname":"subject","operation":"does not contain","value":"`!`"}]';
-		$invWorkFlow->description = "UpdateInventoryProducts On Every Save";
+		$invWorkFlow->description = "販売管理の製品を保存毎に更新するワークフロー";
 		$invWorkFlow->defaultworkflow = 1;
 		$vtWorkFlow->save($invWorkFlow);
 
@@ -1032,7 +1032,7 @@ class Install_InitSchema_Model {
 		$conWorkFlow->summary="A contact has been created ";
 		$conWorkFlow->executionCondition=2;
 		$conWorkFlow->test = '[{"fieldname":"notify_owner","operation":"is","value":"true:boolean"}]';
-		$conWorkFlow->description = "Send Email to user when Notifyowner is True";
+		$conWorkFlow->description = "担当者に通知がオンの場合，ユーザーにメールを送るワークフロー";
 		$conWorkFlow->defaultworkflow = 1;
 		$vtcWorkFlow->save($conWorkFlow);
 		$id1=$conWorkFlow->id;
@@ -1057,7 +1057,7 @@ class Install_InitSchema_Model {
 		$vtcWorkFlow = new VTWorkflowManager($adb);
 		$conpuWorkFlow = $vtcWorkFlow->newWorkFlow("Contacts");
 		$conpuWorkFlow->test = '[{"fieldname":"portal","operation":"is","value":"true:boolean"}]';
-		$conpuWorkFlow->description = "Send Email to user when Portal User is True";
+		$conpuWorkFlow->description = "ポータルユーザーがオン場合，ユーザーにメールを送るワークフロー";
 		$conpuWorkFlow->executionCondition=2;
 		$conpuWorkFlow->defaultworkflow = 1;
 		$vtcWorkFlow->save($conpuWorkFlow);
@@ -1101,7 +1101,7 @@ class Install_InitSchema_Model {
 		// Contact workflow on creation/modification
 		$contactWorkFlow = $workflowManager->newWorkFlow("Contacts");
 		$contactWorkFlow->test = '';
-		$contactWorkFlow->description = "Workflow for Contact Creation or Modification";
+		$contactWorkFlow->description = "顧客担当者が作成・更新された際のワークフロー";
 		$contactWorkFlow->executionCondition = VTWorkflowManager::$ON_EVERY_SAVE;
 		$contactWorkFlow->defaultworkflow = 1;
 		$workflowManager->save($contactWorkFlow);
@@ -1174,7 +1174,7 @@ class Install_InitSchema_Model {
 		// Events workflow when Send Notification is checked
 		$eventsWorkflow = $workflowManager->newWorkFlow("Events");
 		$eventsWorkflow->test = '[{"fieldname":"sendnotification","operation":"is","value":"true:boolean"}]';
-		$eventsWorkflow->description = "Workflow for Events when Send Notification is True";
+		$eventsWorkflow->description = "通知がオンの際の活動のワークフロー";
 		$eventsWorkflow->executionCondition = VTWorkflowManager::$ON_EVERY_SAVE;
 		$eventsWorkflow->defaultworkflow = 1;
 		$workflowManager->save($eventsWorkflow);
@@ -1201,7 +1201,7 @@ class Install_InitSchema_Model {
 		// Calendar workflow when Send Notification is checked
 		$calendarWorkflow = $workflowManager->newWorkFlow("Calendar");
 		$calendarWorkflow->test = '[{"fieldname":"sendnotification","operation":"is","value":"true:boolean"}]';
-		$calendarWorkflow->description = "Workflow for Calendar Todos when Send Notification is True";
+		$calendarWorkflow->description = "通知がオンの際のTODOのワークフロー";
 		$calendarWorkflow->executionCondition = VTWorkflowManager::$ON_EVERY_SAVE;
 		$calendarWorkflow->defaultworkflow = 1;
 		$workflowManager->save($calendarWorkflow);

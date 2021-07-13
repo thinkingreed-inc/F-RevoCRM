@@ -624,6 +624,9 @@ a.menu-item:hover {
 .app-menu .app-modules-dropdown .module-icon {
   font-size: 1.2em;
   opacity: 0.2;
+  display: inline-block;
+  width: 23px;
+  text-align: center;
 }
 .app-menu .app-list {
   margin-top: -10px;
@@ -7726,12 +7729,14 @@ body .fc {
   .listViewPageDiv #table-content {
     overflow: scroll !important;
   }
-  #appnavcontent {
-    border: 1px solid #ccc;
-    background: #f0f0f0;
-    border-width: thin;
-    padding: 30px;
-  }
+}
+@media all and (min-width:0px) and (max-width: 767px) {
+    #appnavcontent {
+        border: 1px solid #ccc;
+        background: #f0f0f0;
+        border-width: thin;
+        padding: 30px;
+    }
 }
 .modules-menu ul li.active a {
   border-left: 3px solid #6297C3;

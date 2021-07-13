@@ -158,10 +158,10 @@ function sendInvitation($inviteesid,$mode,$recordModel,$desc) {
         $subject = vtranslate("LBL_INVITATION", "Calendar").' : ';
     }
 	$subject .= $recordModel->get('subject');
-	$attachment = generateIcsAttachment($desc);
 	$current_user_id = $current_user->id;
 	foreach($invitees_array as $inviteeid) {
 		if($inviteeid != '' && $inviteeid != $current_user_id) {
+			$attachment = generateIcsAttachment($desc, $inviteeid);
 			$description=getActivityDetails($desc,$inviteeid,"invite",$recordModel);
 			$description = getMergedDescription($description, $recordModel->getId(), 'Events');
 			$to_email = getUserEmailId('id',$inviteeid);
@@ -176,10 +176,9 @@ function sendInvitation($inviteesid,$mode,$recordModel,$desc) {
             $mail->Body = $description;
             $mail->AddAttachment($attachment, '', 'base64', 'text/calendar');
             $mail->SendTo($to_email, decode_html($to_name), false, false, true);
+			unlink($attachment);
 		}
 	}
-    unlink($attachment);
-
 }
 
 // User Select Customization
@@ -222,24 +221,51 @@ function calendarview_getSelectedUserFilterQuerySuffix() {
  * @params $record Event record
  * @return filename as event name
  */
-function generateIcsAttachment($record) {
+function generateIcsAttachment($record, $inviteeid) {
     $fileName = str_replace(' ', '_', decode_html($record['subject']));
     $assignedUserId = $record['user_id'];
     $userModel = Users_Record_Model::getInstanceById($assignedUserId, 'Users');
+    $inviteeUserModel = Users_Record_Model::getInstanceById($inviteeid, 'Users');
     $firstName = $userModel->entity->column_fields['first_name'];
     $lastName = $userModel->entity->column_fields['last_name'];
     $email = $userModel->entity->column_fields['email1'];
-    $fp = fopen('test/upload/'.$fileName.'.ics', "w");
+    $time_zone = $inviteeUserModel->entity->column_fields['time_zone'];
+
+		// ユーザーのTIMEZONEを取る
+		$inviteeUser = CRMEntity::getInstance('Users');
+		$inviteeUser->retrieveCurrentUserInfoFromFile($inviteeid);
+
+		$stDatetime = date_format(DateTimeField::convertToUserTimeZone($record['st_date_time'], $inviteeUser), "Y/m/d H:i:s");
+		$endDatetime = date_format(DateTimeField::convertToUserTimeZone($record['end_date_time'], $inviteeUser), "Y/m/d H:i:s");
+		$ics_filename = 'test/upload/'.$fileName.'_'.$inviteeid.'.ics';
+    $fp = fopen($ics_filename, "w");
+
+		// TZ OFFSETを設定
+    $userTz = new DateTime(date('Y/m/d H:i:s', strtotime($stDatetime)), new DateTimeZone($time_zone));
+		$userOffset = $userTz->getOffset() / 3600;
+		$code = ($userOffset < 0) ? "-" : "+";
+		$userOffset = str_pad(str_replace("-" , "", $userOffset), 2, 0, STR_PAD_LEFT);
+
+    // add timezone
+    fwrite($fp, "BEGIN:VTIMEZONE\n");
+    fwrite($fp, "TZID:".$time_zone."\n");
+    fwrite($fp, "BEGIN:STANDARD\n");
+    fwrite($fp, "TZOFFSETFROM:".$code.$userOffset."00\n");
+    fwrite($fp, "TZOFFSETTO:".$code.$userOffset."00\n");
+    fwrite($fp, "DTSTART:19700101T000000\n");
+    fwrite($fp, "END:STANDARD\n");
+    fwrite($fp, "END:VTIMEZONE\n");
+
     fwrite($fp, "BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\n");
     fwrite($fp, "ORGANIZER;CN=".$lastName." ".$firstName.":MAILTO:".$email."\n");
-    fwrite($fp, "DTSTART:".date('Ymd\THis\Z', strtotime($record['st_date_time']))."\n");
-    fwrite($fp, "DTEND:".date('Ymd\THis\Z', strtotime($record['end_date_time']))."\n");
-    fwrite($fp, "DTSTAMP:".date('Ymd\THis\Z')."\n");
+    fwrite($fp, "DTSTART;TZID=".$time_zone.":".date('Ymd\THis', strtotime($stDatetime))."\n");
+    fwrite($fp, "DTEND;TZID=".$time_zone.":".date('Ymd\THis', strtotime($endDatetime))."\n");
+    fwrite($fp, "DTSTAMP;TZID=".$time_zone.":".date('Ymd\THis')."\n");
     fwrite($fp, "DESCRIPTION:".$record['description']."\nLOCATION:".$record['location']."\n");
     fwrite($fp, "STATUS:CONFIRMED\nSUMMARY:".$record['subject']."\nEND:VEVENT\nEND:VCALENDAR");
     fclose($fp);
     
-    return 'test/upload/'.$fileName.'.ics';
+    return $ics_filename;
 }
 
 ?>

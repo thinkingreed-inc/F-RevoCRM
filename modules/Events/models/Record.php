@@ -45,7 +45,7 @@ class Events_Record_Model extends Calendar_Record_Model {
 
     public function getRelatedToContactIdList() {
         $adb = PearDatabase::getInstance();
-        $query = 'SELECT * from vtiger_cntactivityrel where activityid=?';
+        $query = 'SELECT vtiger_cntactivityrel.contactid, vtiger_cntactivityrel.activityid, vtiger_crmentity.deleted FROM vtiger_cntactivityrel LEFT JOIN vtiger_crmentity ON vtiger_cntactivityrel.contactid = vtiger_crmentity.crmid WHERE vtiger_cntactivityrel.activityid=? AND vtiger_crmentity.deleted = 0';
         $result = $adb->pquery($query, array($this->getId()));
         $num_rows = $adb->num_rows($result);
 

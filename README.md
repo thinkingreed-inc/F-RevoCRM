@@ -24,7 +24,7 @@ Vtiger Public License 1.2
   * sql_mode = NO_ENGINE_SUBSTITUTION for MySQL 5.6+
 
 ## PCの推奨環境
-* Windows 10 Google Chrome最新 / Microsoft Edge(Chronium)最新 / Internet Explorer 11（非推奨に移行予定）
+* Windows 10 Google Chrome最新 / Microsoft Edge(Chronium)最新 / Internet Explorer 11（2022年4月 非推奨に移行予定）
 * 最低1366×768以上の解像度、推奨1920×1080以上
 * 最低Intel Core iシリーズまたはそれ以上の2コア以上のプロセッサ、推奨4コア以上
 * 最低4GB以上のメモリ、推奨8GB以上
@@ -142,6 +142,8 @@ cp -r frevocrm.20201001/storage/* frevocrm/storage/
 ```
 
 ### 3. マイグレーションツールの実行
+タグとしてv7.3.xが追加されるまで、Migrationは実行されません。  
+最新のバージョンで実行したい場合は、`vtigerversion.php`のファイルを編集し、次のバージョンを指定してから以下のマイグレーション用のURLを実行してください。
 
 1. アクセスすると自動でマイグレーションが実行されます。
  * http://example.com/frevocrm/index.php?module=Migration&view=Index&mode=step1
@@ -154,7 +156,90 @@ cp -r frevocrm.20201001/storage/* frevocrm/storage/
 # コマンド例
 rm -r frevocrm.20170118
 ```
+
+## 開発環境の構築
+Dockerで構築する為、[docker/README.md](./docker/README.md)を参照してください。  
+
+### xdebug
+xdebug3がインストール済みです。
+`docker-compose.yml` の以下の部分を修正してください
+```yml
+# Xdebugの設定を有効にしたい場合は、mode=debug に変更してください
+# XDEBUG_CONFIG: "mode=off client_host=host.docker.internal client_port=9003 start_with_request=yes"
+XDEBUG_CONFIG: "mode=debug client_host=host.docker.internal client_port=9003 start_with_request=yes"
+```
+#### WSL2での利用
+WSL2を利用の場合は、以下のように実行してください。
+```sh
+cp docker-compose.override.yml.exmple docker-compose.override.yml
+cp .env.example .env
+```
+その後、.envの中にWSL2のIPアドレスを入力してください。
+```sh
+hostname -I
+# 172.26.76.74
+vim .env
+# DOCKER_HOST_IP=172.26.76.74
+```
+#### VSCodeでの設定
+vscodeをご利用の場合は、xdebugのエクステンションをインストール後、以下のように `.vscode/launch.json`を修正してください。
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "F-RevoCRM XDebug:9003",
+      "type": "php",
+      "request": "launch",
+      "port": 9003, 
+      "pathMappings": {
+        "/var/www/html": "${workspaceRoot}"
+      }
+    }
+  ]
+}
+```
+
 ## 更新履歴
+
+### F-RevoCRM7.3.3
+#### パッチ適用方法
+- 差分ファイルを上書き更新してください
+- 以下のURLにアクセスし、マイグレーションを実施してください。  
+`https://example.com/frevocrm/index.php?module=Migration&view=Index&mode=step1`
+
+#### 主な変更点
+
+* 機能改善
+  - 選択されているリストの色を、見やすくなるように濃く変更（#139）
+  - カレンダー通知用ポップアップの処理速度を改善（#99）
+  - Webフォーム参照フィールドの値を、cf_xxx形式で表示するように改善（#91）
+  - 関連項目として「ユーザー」を設定できるように改善（#32）
+  - 初期インストールされるワークフローのワークフロー名を日本語に変更
+  - 初期インストールされるレポートのレポート名を日本語に変更
+
+* 不具合修正
+  - カレンダーの招待ユーザーに送付されるicsファイルのタイムゾーンを、受信するユーザーに合わせるように修正（#121）
+  - 上部検索エリアが適切に動かないケースの修正（#85, #80）
+  - インライン編集を行い、キャンセルを行った後に再度編集を行い保存すると正常な値が保存されない不具合の修正（#95）
+  - 顧客ポータルのURLが長い場合、枠をはみ出してしまう不具合の修正（#64, #61）
+  - 繰り返し予定や招待予定を作成した場合、終日フラグが外れてしまう不具合の修正（#96）
+  - ダッシュボードウィジェットのノートにて、URLに？が含まれている場合に切り取られて保存されてしまう不具合の修正（#48）
+  - 活動に顧客担当者を複数名登録した後、詳細入力へ遷移すると顧客担当者が消えてしまう不具合の修正（#10）
+  - 終日の予定を時間予定に変更した際に、終日フラグがはずれない不具合の修正
+  - PDFを一括出力した場合に、顧客企業名をファイル名に含むように修正
+  - デザイン調整（#114, #140, #125, #116, #83, #97, #71, #37, #33）、その他
+
+* その他修正
+  - 復数の日本語訳を追加（#72） 
+  - DockerコンテナのタイムゾーンをJSTに変更（#154）
+  - Docker環境でのインストール時の入力を簡易化するように修正
+  - Docker環境下で必要なフォルダが生成されない不具合の修正
+  - Docker環境にxdebug3をインストール
+  - Docker環境を再起動時に自動で立ち上がるように修正
+  - Pull Requestのテンプレートを作成
+  - F-RevoCRMのIE11対応を、2022年4月以降非推奨とする文言の追加
+
 
 ### F-RevoCRM7.3.2
 #### パッチ適用方法

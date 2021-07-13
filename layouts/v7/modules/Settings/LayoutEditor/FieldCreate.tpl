@@ -115,7 +115,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="form-group supportedType relationModules hide">
+						<div class="form-group supportedType relationModules clearfix hide">
 							<label class="control-label fieldLabel col-sm-5">
 								{vtranslate('SELECT_MODULE', $QUALIFIED_MODULE)}
 								&nbsp;<span class="redColor">*</span>
@@ -126,6 +126,7 @@
 										<option value="{$RELATION_MODULE_NAME}">{$TRANS_RELATION_MODULE_NAME}</option>
 									{/foreach}
 								</select>
+								<p class="related_field_caution">{vtranslate('Users', 'Vtiger')}{vtranslate('LBL_CANT_SELECT_THE_OTHER_MODULE_WITH_USERS_FOR_RELFIELD', 'Vtiger')}</p>
 							</div>
 						</div>
 					{/if}

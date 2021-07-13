@@ -65,8 +65,8 @@
 			{foreach item=CHARGE_TAX_MODEL from=$CHARGE_TAXES}
 				<tr class="opacity" data-taxid="{$CHARGE_TAX_MODEL->get('taxid')}" data-taxtype="{$CHARGE_TAX_MODEL->getType()}">
 					<td class="{$WIDTHTYPE}" style="border-right:none;border-left:none"><span class="taxLabel" style="width:150px">{$CHARGE_TAX_MODEL->getName()}</span></td>
-					<td class="{$WIDTHTYPE}" style="border-right:none;border-left:none"><span class="taxType">{$CHARGE_TAX_MODEL->getTaxType()}</span></td>
-					<td class="{$WIDTHTYPE}" style="border-right:none;border-left:none"><span class="taxMethod">{$CHARGE_TAX_MODEL->getTaxMethod()}</span></td>
+					<td class="{$WIDTHTYPE}" style="border-right:none;border-left:none"><span class="taxType">{vtranslate($CHARGE_TAX_MODEL->getTaxType())}</span></td>
+					<td class="{$WIDTHTYPE}" style="border-right:none;border-left:none"><span class="taxMethod">{vtranslate($CHARGE_TAX_MODEL->getTaxMethod())}</span></td>
 					<td class="{$WIDTHTYPE}" style="border-right:none;border-left:none"><span class="taxPercentage">{$CHARGE_TAX_MODEL->getTax()}%</span></td>
 					<td class="{$WIDTHTYPE}" style="border-right:none;border-left:none"><input type="checkbox" class="editTaxStatus" {if !$CHARGE_TAX_MODEL->isDeleted()}checked{/if} /></td>
 					<td style="border-left:none;border-right:none;" class="{$WIDTHTYPE}">

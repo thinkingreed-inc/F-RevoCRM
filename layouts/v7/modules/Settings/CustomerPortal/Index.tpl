@@ -40,8 +40,8 @@
 				<div class="col-sm-12 col-xs-12 input-group">
 					<div class="form-group">
 						<label for="portal-url" class="col-sm-4 control-label fieldLabel">{vtranslate('LBL_PORTAL_URL', $QUALIFIED_MODULE)}</label>
-						<div class="col-sm-5">
-							<a target="_blank" href="{$PORTAL_URL}" class="help-inline" style="width: 300px;color:blue;">{$PORTAL_URL}</a>
+						<div class="col-sm-5 portal_url_warp">
+							<a target="_blank" href="{$PORTAL_URL}" class="help-inline" style="width: auto; min-width: 300px;color:blue;">{$PORTAL_URL}</a>
 							<div class="pull-left input-group-addon input-select-addon">
 								<a href="#" rel="tooltip" title="{vtranslate('LBL_PORTAL_URL_MESSAGE', $QUALIFIED_MODULE)}"><i class="fa fa-info-circle"></i></a>
 							</div>
