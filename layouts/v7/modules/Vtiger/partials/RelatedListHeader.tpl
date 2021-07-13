@@ -11,7 +11,7 @@
 	<div class="relatedHeader">
 		<div class="btn-toolbar row">
 			<div class="col-lg-6 col-md-6 col-sm-6 btn-toolbar">
-				 {foreach item=RELATED_LINK from=$RELATED_LIST_LINKS['LISTVIEWBASIC']}
+				{foreach item=RELATED_LINK from=$RELATED_LIST_LINKS['LISTVIEWBASIC']}
 					<div class="btn-group">
 						{assign var=DROPDOWNS value=$RELATED_LINK->get('linkdropdowns')}
 						{if !empty($DROPDOWNS) && (count($DROPDOWNS) gt 0)}
@@ -32,15 +32,19 @@
 							{elseif $RELATED_LINK->get('_linklabel') === '_add_task'}
 								{assign var=RELATED_MODULE_NAME value='Calendar'}
 							{/if}
+							{* カレンダーの場合表示確認を行う *}
 							{if $IS_SELECT_BUTTON || $IS_CREATE_PERMITTED}
-								<button type="button" module="{$RELATED_MODULE_NAME}" class="btn btn-default
-									{if $IS_SELECT_BUTTON eq true} selectRelation{else} addButton" name="addButton{/if}"
-									{if $IS_SELECT_BUTTON eq true} data-moduleName="{$RELATED_LINK->get('_module')->get('name')}" {/if}
-									{if ($RELATED_LINK->isPageLoadLink())}
-										{if $RELATION_FIELD} data-name="{$RELATION_FIELD->getName()}" {/if}
-										data-url="{$RELATED_LINK->getUrl()}{if $SELECTED_MENU_CATEGORY}&app={$SELECTED_MENU_CATEGORY}{/if}"
-									{/if}
-									>{if $IS_SELECT_BUTTON eq false}<i class="fa fa-plus"></i>&nbsp;{/if}&nbsp;{$RELATED_LINK->getLabel()}</button>
+								{if !$CAL_FIELD_CHECK || ($CAL_FIELD_CHECK && in_array($RELATED_MODULE_NAME, $FIELD_RELATED_MODULES))}
+
+									<button type="button" module="{$RELATED_MODULE_NAME}" class="btn btn-default
+										{if $IS_SELECT_BUTTON eq true} selectRelation{else} addButton" name="addButton{/if}"
+										{if $IS_SELECT_BUTTON eq true} data-moduleName="{$RELATED_LINK->get('_module')->get('name')}" {/if}
+										{if ($RELATED_LINK->isPageLoadLink())}
+											{if $RELATION_FIELD} data-name="{$RELATION_FIELD->getName()}" {/if}
+											data-url="{$RELATED_LINK->getUrl()}{if $SELECTED_MENU_CATEGORY}&app={$SELECTED_MENU_CATEGORY}{/if}"
+										{/if}
+										>{if $IS_SELECT_BUTTON eq false}<i class="fa fa-plus"></i>&nbsp;{/if}&nbsp;{$RELATED_LINK->getLabel()}</button>
+								{/if}
 							{/if}
 						{/if}
 					</div>
