@@ -1096,7 +1096,13 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		startTimeElement.val(startDateTime.format(vtUtils.getMomentTimeFormat()));
 		vtUtils.registerEventForDateFields(startDateElement);
 		vtUtils.registerEventForTimeFields(startTimeElement);
-		if(startDateTime.format(vtUtils.getMomentTimeFormat()) == '00:00') {
+		/**
+			終日エリア、月次カレンダーをクリックした場合は、終日フラグにチェックを入れる
+			経緯：これまでは00:00である、または12:00 AMであるを判定基準に使っていたため、00:00をクリックしたときに終日フラグが付いてしまっていた
+			
+			※tartDateTime._ambigTime: カレンダーの上部終日エリアを押したときtrueになる
+		*/
+		if(startDateTime._ambigTime) {
 			alldayElement.attr('checked', true);
 			Calendar_Edit_Js.changeAllDay();
 		}
@@ -1279,7 +1285,8 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			'activitytype': event.activitytype,
 			'secondsDelta': delta.asSeconds(),
 			'view': view.name,
-			'userid': event.userid
+			'userid': event.userid,
+			'allday': event.allDay,
 		};
 
 		if (event.recurringcheck) {
@@ -1306,7 +1313,8 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			'activitytype': event.activitytype,
 			'secondsDelta': delta.asSeconds(),
 			'view': view.name,
-			'userid': event.userid
+			'userid': event.userid,
+			'allday': event.allDay,
 		};
 
 		if (event.recurringcheck) {
@@ -1639,25 +1647,31 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var userDefaultActivityView = thisInstance.getDefaultCalendarView();
 		var userDefaultTimeFormat = thisInstance.getDefaultCalendarTimeFormat();
                 
-                var dateFormat = app.getDateFormat();
-                //Converting to fullcalendar accepting date format
-                var monthPos = dateFormat.search("mm");
-                var datePos = dateFormat.search("dd");
-                if (monthPos < datePos) {
-                    dateFormat = "M/D";
-                } else {
-                    dateFormat = "D/M";
-                }
-        var monthTitleFormat = 'MMMM YYYY';
-        var weekTitleFormat = 'MMM D YYYY';
+		var dateFormat = app.getDateFormat();
+		//Converting to fullcalendar accepting date format
+		var monthPos = dateFormat.search("mm");
+		var datePos = dateFormat.search("dd");
+		if (monthPos < datePos) {
+			dateFormat = "M/D";
+		} else {
+			dateFormat = "D/M";
+		}
+		var monthTitleFormat = 'MMMM YYYY';
+		var weekTitleFormat = 'MMM D YYYY';
 		var dayTitleFormat = 'MMMM D YYYY';
 
 		var lang = (navigator.language) ? navigator.language : navigator.userLanguage;
-		if(lang.toLowerCase().indexOf("ja") !== -1) {
+		if (lang.toLowerCase().indexOf("ja") !== -1) {
 			monthTitleFormat = 'YYYY年MM月';
 			weekTitleFormat = 'YYYY年MM月DD日';
 			dayTitleFormat = 'YYYY年MM月DD日';
 		}
+
+		// 縦が短い端末を考慮して，表示するカレンダーの最低の高さを設定(500px)
+		var MIN_CALENDAR_HEIGHT = 500;
+		var HEADER_HEIGHT = 200;
+		var CalendarHeight = $(window).height() - HEADER_HEIGHT;
+		CalendarHeight = (CalendarHeight < MIN_CALENDAR_HEIGHT) ? MIN_CALENDAR_HEIGHT : CalendarHeight;
 
 		var calenderConfigs = {
 			header: {
@@ -1687,7 +1701,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
                                 columnFormat: dateFormat + ' dddd'
                             }
 			},
-			height: ($(window).width() > 1020 ? $(window).height() - 90 - 45 : 500),
+			height: (CalendarHeight),
 			fixedWeekCount: false,
 			firstDay: thisInstance.daysOfWeek[thisInstance.getUserPrefered('start_day')],
 			scrollTime: thisInstance.getUserPrefered('start_hour'),
@@ -2007,7 +2021,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				}
 				html += this.getAgendaEventTitle(event) +
 						'</div>' +
-						'<div class="agenda-event-status verticalAlignMiddle">' + event.status + '</div>' +
+						'<div class="agenda-event-status verticalAlignMiddle">' + app.vtranslate(event.status) + '</div>' +
 						this.getAgendaActionsHTML(event) +
 						'</div>' +
 						'<div class="agenda-event-details hide verticalAlignMiddle">' +

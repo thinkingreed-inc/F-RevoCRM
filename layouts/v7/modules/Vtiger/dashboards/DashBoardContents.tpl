@@ -17,7 +17,7 @@
                         <a data-toggle="tab" href="#tab_{$TAB_DATA["id"]}">
                             <div>
                                 <span class="name textOverflowEllipsis" value="{$TAB_DATA["tabname"]}" style="width:10%">
-                                    <strong>{$TAB_DATA["tabname"]}</strong>
+                                    <strong>{vtranslate($TAB_DATA["tabname"])}</strong>
                                 </span>
                                 <span class="editTabName hide">
                                     <input type="text" name="tabName"/>

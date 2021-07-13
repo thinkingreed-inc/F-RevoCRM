@@ -173,24 +173,27 @@ class Activity extends CRMEntity {
 		}
 
 		$recordId = intval($this->id);
-		if(isset($_REQUEST['contactidlist']) && $_REQUEST['contactidlist'] != '') {
-			$adb->pquery( 'DELETE from vtiger_cntactivityrel WHERE activityid = ?', array($recordId));
 
-			$contactIdsList = explode (';', $_REQUEST['contactidlist']);
-			$count = count($contactIdsList);
-            $params=array();
-			$sql = 'INSERT INTO vtiger_cntactivityrel VALUES ';
-			for($i=0; $i<$count; $i++) {
-				$contactIdsList[$i] = intval($contactIdsList[$i]);
-				$sql .= " (?, ?)";
-				array_push($params,$contactIdsList[$i],$recordId);
-				if ($i != $count - 1) {
-					$sql .= ',';
+		//ドラッグ&ドロップ時にはContactsは変更されずcontactidlistを得られないので関連を更新しない
+		if(empty($_REQUEST['isDragDrop'])){
+			if(isset($_REQUEST['contactidlist']) && $_REQUEST['contactidlist'] != '') {
+				$adb->pquery( 'DELETE from vtiger_cntactivityrel WHERE activityid = ?', array($recordId));
+				$contactIdsList = explode (';', $_REQUEST['contactidlist']);
+				$count = count($contactIdsList);
+				$params=array();
+				$sql = 'INSERT INTO vtiger_cntactivityrel VALUES ';
+				for($i=0; $i<$count; $i++) {
+					$contactIdsList[$i] = intval($contactIdsList[$i]);
+					$sql .= " (?, ?)";
+					array_push($params,$contactIdsList[$i],$recordId);
+					if ($i != $count - 1) {
+						$sql .= ',';
+					}
 				}
+				$adb->pquery($sql, $params);
+			} else if ($_REQUEST['contactidlist'] == '' && $insertion_mode == "edit") {
+				$adb->pquery('DELETE FROM vtiger_cntactivityrel WHERE activityid = ?', array($recordId));
 			}
-			$adb->pquery($sql, $params);
-		} else if ($_REQUEST['contactidlist'] == '' && $insertion_mode == "edit") {
-			$adb->pquery('DELETE FROM vtiger_cntactivityrel WHERE activityid = ?', array($recordId));
 		}
 
 		//Insert into cntactivity rel
@@ -475,6 +478,7 @@ function insertIntoRecurringTable(& $recurObj)
 					$inviteRecord->set('invitees_array', $invitees_array);
 					$inviteRecord->set('is_not_invitees_update', true);
 					$inviteRecord->set('mode', 'edit');
+					$inviteRecord->set('is_allday', $this->is_allday);
 					$inviteRecord->save();
 				} else {
 					$inviteRecord->getModule()->deleteRecord($inviteRecord);
@@ -501,6 +505,7 @@ function insertIntoRecurringTable(& $recurObj)
 				$inviteRecord->set('invitees_array', $invitees_array);
 				$inviteRecord->set('assigned_user_id', $inviteeid);
 				$inviteRecord->set('is_not_invitees_update', true);
+				$inviteRecord->set('is_allday', $this->is_allday);
 				$inviteRecord->save();
 			}
 		}

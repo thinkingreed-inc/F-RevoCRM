@@ -388,6 +388,9 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 				$modulesList[$moduleName] = vtranslate($moduleName, 'Settings:LayoutEditor');
 			}
 		}
+		// Usersの追加
+		$modulesList["Users"] = vtranslate("Users", "Users");
+
 		// If calendar is disabled we should not show events module too
 		// in layout editor
 		if(!array_key_exists('Calendar', $modulesList)) {

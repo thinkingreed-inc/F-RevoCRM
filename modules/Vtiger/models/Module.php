@@ -332,6 +332,14 @@ class Vtiger_Module_Model extends Vtiger_Module {
 	}
 
 	/**
+	 * Function to get the url for the Export action of the module
+	 * @return <String> - url
+	 */
+	public function getPDFExportUrl() {
+		return 'index.php?module='.$this->get('name').'&view=PDFExport';
+	}
+
+	/**
 	 * Function to get the url for the Find Duplicates action of the module
 	 * @return <String> - url
 	 */
@@ -2050,7 +2058,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 
 		$imageFilePath = 'layouts/'.Vtiger_Viewer::getLayoutName()."/modules/$moduleName/$moduleName.png";
 		if (file_exists($imageFilePath)) {
-			$moduleIcon = "<img src='$imageFilePath' title='$title'/>";
+			$moduleIcon = "<img src='$imageFilePath' title='$title' width='1'/>";
 		}
 
 		return $moduleIcon;
