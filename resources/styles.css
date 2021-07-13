@@ -387,6 +387,7 @@ button#advanceIntiateSave + input {
   }
 }
 
+/* レポート：罫線 */
 #reportDetails table tr td.summaryHead {
     border-bottom: 0;
 }
