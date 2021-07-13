@@ -187,12 +187,29 @@ class Reports_Detail_View extends Vtiger_Index_View {
 			$calculation = $reportModel->getReportCalulationData();
 		}
 
+		$groupingList = ReportRun::getInstance($record)->_groupinglist;
+		foreach($groupingList as $groupingKey => $groupingValues){
+			$moduleField = explode(":", $groupingKey)[2];
+			$groupingModules[] = explode("_", $moduleField)[0];
+		}
+
+		// グループ化するカラムを判定するラベルをDB(vtiger_reportsortcol,vtiger_reportgroupbycolumn)からアンダーバーの置換で生成しているため，もとからアンダーバーを含むラベルを生成できない
+		// もとからアンダーバーを含むラベル抽出し置換を行うかどうかの判別をする
+		global $adb;
+		$result = $adb->pquery('SELECT DISTINCT fieldlabel FROM vtiger_field WHERE fieldlabel LIKE "%\_%"');
+		$rows = $adb->num_rows($result);
+		for ($i = 0; $i < $rows; $i++) {
+			$includedUnderbar[] = $adb->query_result($result, $i, 'fieldlabel');
+		}
+
 		$viewer->assign('CALCULATION_FIELDS',$calculation);
 		$viewer->assign('DATA', $data);
 		$viewer->assign('RECORD_ID', $record);
 		$viewer->assign('PAGING_MODEL', $pagingModel);
 		$viewer->assign('COUNT', $this->count);
 		$viewer->assign('MODULE', $moduleName);
+		$viewer->assign('GROUPING_MODULES', $groupingModules);
+		$viewer->assign('INCLUDED_UNDERBAR_LABELS', $includedUnderbar);
 		$viewer->assign('REPORT_RUN_INSTANCE', ReportRun::getInstance($record));
 		if (count($data) > self::REPORT_LIMIT) {
 			$viewer->assign('LIMIT_EXCEEDED', true);

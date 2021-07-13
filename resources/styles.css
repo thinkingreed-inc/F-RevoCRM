@@ -296,6 +296,7 @@ button#advanceIntiateSave + input {
     display: block;
     min-width: 100%!important;
   }
+
   .createDocumentContent > table.table td.fieldLabel > label,
   .uploadview-content > .uploadcontrols > #upload > table.table td.fieldLabel > label {
     float: left !important;
@@ -384,4 +385,8 @@ button#advanceIntiateSave + input {
 .settingsPageDiv .form-horizontal.recordEditView > .modal-overlay-footer {
     border-left: 0px;
   }
+}
+
+#reportDetails table tr td.summaryHead {
+    border-bottom: 0;
 }
