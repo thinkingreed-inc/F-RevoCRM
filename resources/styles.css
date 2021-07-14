@@ -271,6 +271,57 @@ button#advanceIntiateSave + input {
 .summaryView .input-group.editElement .referencefield-wrapper .input-group .inputElement {
   width: 100% ;
 }
+
+/* 画面幅320pxのときのヘッダーの検索ボタン調整(全モジュール)*/
+@media (max-width: 320px) {
+  .navbar-toggle.border0.collapsed {
+    margin-right: 5px;
+  }
+}
+/* 画面幅が550px以下でレポートとドキュメントのヘッダーを調整 */
+@media (max-width: 550px) {
+  /* フォルダ名やリスト名のオーバーフローを省略 */
+  #Documents_action_content .module-breadcrumb-List .current-filter-name ,
+  #Documents_action_content .module-breadcrumb-Detail .current-filter-name a ,
+  #Reports_action_content .current-filter-name {
+    max-width: 80px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  /* 追加ボタンのpaddingを削除し幅を減らす */
+  #Documents_action_content > .pull-right,
+  #Reports_action_content > .pull-right{
+    padding-right: 0px;
+    padding-left: 0px;
+  }
+  /* ドキュメント追加のボタンの右marginを調整 */
+  #Documents_listView_basicAction_Add {
+    margin-right: 10px;
+  }
+  /* ボタンの文字を省略 */
+  #Documents_listView_basicAction_Add > .btn-str,
+  #Reports_listView_basicAction_Add > .btn-str{
+    display: none;
+  }
+  /* レポート追加のドロップダウンメニューを右寄せ表示 */
+  .btn-group.open #addReportsDropdownMenu {
+    right: 0;
+    left: auto;
+  }
+}
+/* ドキュメント追加のドロップダウンメニューのスタイル */
+#addDocumentsDropdownMenu {
+  position: absolute;
+  border: 1px solid rgba(0,0,0,.2);
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
+}
+#addDocumentsDropdownMenu > li,
+#addDocumentsDropdownMenu > li > a {
+  color: #333;
+}
+
 @media (max-width: 991px) {
   .main-container-Documents #sidebar-essentials.sidebar-essentials,
   .main-container-Reports #sidebar-essentials.sidebar-essentials {
