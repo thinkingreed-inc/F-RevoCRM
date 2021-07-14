@@ -193,6 +193,8 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 
 										if ($orderBy && $orderByFieldModel) {
 											$query .= ' ORDER BY '.$queryGenerator->getOrderByColumn($orderBy).' '.$sortOrder;
+										} else {
+											$query .= ' ORDER BY '.$queryGenerator->getOrderByColumn('modifiedtime').' '.'DESC';
 										}
 										$query .= ' LIMIT '.$currentPageStart.','.$limit;
 										break;
