@@ -88,7 +88,11 @@ class Vtiger_Language_Handler {
 	 * @param <String> $module - module scope in which the translation need to be check
 	 * @return <String> - translated string
 	 */
-	public static function getJSTranslatedString($language, $key, $module = '') {
+	public static function getJSTranslatedString($key, $module = '', $language = '') {
+		if (empty($language)) {
+			$language = self::getLanguage();
+		}
+
 		$moduleStrings = array();
 
 		$module = str_replace(':', '.', $module);

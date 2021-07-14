@@ -27,26 +27,6 @@
                                 <input type="text" name="new_username" data-rule-required="true" data-rule-illegal="true"/>
                             </div>
                         </div>
-
-                        <div class="form-group">
-                            <label class="control-label fieldLabel col-sm-5">
-                                {vtranslate('LBL_NEW_PASSWORD', $MODULE)}&nbsp;
-                                <span class="redColor">*</span>
-                            </label>
-                            <div class="controls col-xs-6">
-                                <input type="password" name="new_password" data-rule-required="true"/>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="control-label fieldLabel col-sm-5">
-                                {vtranslate('LBL_CONFIRM_PASSWORD', $MODULE)}&nbsp;
-                                <span class="redColor">*</span>
-                            </label>
-                            <div class="controls col-xs-6">
-                                <input type="password" name="confirm_password" data-rule-required="true"/>
-                            </div>
-                        </div>
                     </div>
                 </div>
                 {include file='ModalFooter.tpl'|@vtemplate_path:$MODULE}

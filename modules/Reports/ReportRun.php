@@ -1374,6 +1374,8 @@ class ReportRun extends CRMEntity {
 						} else if ($comparator == 'ny') {
 							if ($fieldInfo['uitype'] == '10' || isReferenceUIType($fieldInfo['uitype']))
 								$fieldvalue = "(" . $selectedfields[0] . "." . $selectedfields[1] . " IS NOT NULL AND " . $selectedfields[0] . "." . $selectedfields[1] . " != '' AND " . $selectedfields[0] . "." . $selectedfields[1] . "  != '0')";
+							else if($fieldDataType == "date" || $fieldDataType == "datetime")
+								$fieldvalue = $selectedfields[0] . "." . $selectedfields[1] . " IS NOT NULL";
 							else
 								$fieldvalue = "(" . $selectedfields[0] . "." . $selectedfields[1] . " IS NOT NULL AND " . $selectedfields[0] . "." . $selectedfields[1] . " != '')";
 						}elseif ($comparator == 'y' || ($comparator == 'e' && (trim($value) == "NULL" || trim($value) == ''))) {
@@ -1382,6 +1384,8 @@ class ReportRun extends CRMEntity {
 							}
 							if ($fieldInfo['uitype'] == '10' || isReferenceUIType($fieldInfo['uitype']))
 								$fieldvalue = "(" . $selectedfields[0] . "." . $selectedfields[1] . " IS NULL OR " . $selectedfields[0] . "." . $selectedfields[1] . " = '' OR " . $selectedfields[0] . "." . $selectedfields[1] . " = '0')";
+							else if($fieldDataType == "date" || $fieldDataType == "datetime")
+								$fieldvalue = $selectedfields[0] . "." . $selectedfields[1] . " IS NULL";
 							else
 								$fieldvalue = "(" . $selectedfields[0] . "." . $selectedfields[1] . " IS NULL OR " . $selectedfields[0] . "." . $selectedfields[1] . " = '')";
 						} elseif ($selectedfields[0] == 'vtiger_inventoryproductrel') {
@@ -3691,11 +3695,24 @@ class ReportRun extends CRMEntity {
 					}
 					$header .= '<th>' . $headerName . '</th>';
 				}
+
+				// グループ化するカラムを判定するラベルをDB(vtiger_reportsortcol,vtiger_reportgroupbycolumn)からアンダーバーの置換で生成しているため，もとからアンダーバーを含むラベルを生成できない
+				// もとからアンダーバーを含むラベル抽出し置換を行うかどうかの判別をする
+				$includeUnderbarResult = $adb->pquery('SELECT DISTINCT fieldlabel FROM vtiger_field WHERE fieldlabel LIKE "%\_%"');
+				$includeUnderbarRows = $adb->num_rows($includeUnderbarResult);
+				for ($i = 0; $i < $includeUnderbarRows; $i++) {
+					$includedUnderbarLabels[] = $adb->query_result($includeUnderbarResult, $i, 'fieldlabel');
+				}
+
 				$groupslist = $this->getGroupingList($this->reportid);
 				foreach ($groupslist as $reportFieldName => $reportFieldValue) {
 					$nameParts = explode(":", $reportFieldName);
 					list($groupFieldModuleName, $groupFieldName) = split("_", $nameParts[2], 2);
-					$groupByFieldNames[] = vtranslate(str_replace('_', ' ', $groupFieldName), $groupFieldModuleName);
+					if(in_array($groupFieldName, $includedUnderbarLabels)){
+						$groupByFieldNames[] = vtranslate($groupFieldName, $groupFieldModuleName);
+					} else {
+						$groupByFieldNames[] = vtranslate(str_replace('_', ' ', $groupFieldName), $groupFieldModuleName);
+					}
 				}
 				if (count($groupByFieldNames) > 0) {
 					if (count($groupByFieldNames) == 1) {
@@ -3713,6 +3730,8 @@ class ReportRun extends CRMEntity {
 					$thirdValue = ' ';
 					foreach ($data as $key => $valueArray) {
 						$valtemplate .= '<tr>';
+						$firstIsHead = 0;
+						$secondIsHead = 0;
 						foreach ($valueArray as $fieldName => $fieldValue) {
 							if ($fieldName == 'ACTION' || $fieldName == vtranslate('LBL_ACTION', $this->primarymodule) || $fieldName == vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL_ACTION', $this->primarymodule) || $fieldName == vtranslate('LBL ACTION', $this->primarymodule) || $fieldName == vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL ACTION', $this->primarymodule)) {
 								continue;
@@ -3720,6 +3739,9 @@ class ReportRun extends CRMEntity {
 							if (($fieldName == $firstField || strstr($fieldName, $firstField)) && ($firstValue == $fieldValue || $firstValue == " ")) {
 								if ($firstValue == ' ' || $fieldValue == '-') {
 									$valtemplate .= "<td style='border-bottom: 0;'>" . $fieldValue . "</td>";
+									$firstIsHead = 1;
+								} else if($firstValue == '') {
+									$valtemplate .= "<td></td>";
 								} else {
 									$valtemplate .= "<td style='border-bottom: 0; border-top: 0;'>&nbsp;</td>";
 								}
@@ -3727,8 +3749,11 @@ class ReportRun extends CRMEntity {
 									$firstValue = $fieldValue;
 								}
 							} else if (($fieldName == $secondField || strstr($fieldName, $secondField)) && ($secondValue == $fieldValue || $secondValue == " ")) {
-								if ($secondValue == ' ' || $secondValue == '-') {
+								if ($secondValue == ' ' || $secondValue == '-' || $firstIsHead == 1) {
 									$valtemplate .= "<td style='border-bottom: 0;'>" . $fieldValue . "</td>";
+									$secondIsHead = 1;
+								} else if($secondValue == '') {
+									$valtemplate .= "<td></td>";
 								} else {
 									$valtemplate .= "<td style='border-bottom: 0; border-top: 0;'>&nbsp;</td>";
 								}
@@ -3736,8 +3761,10 @@ class ReportRun extends CRMEntity {
 									$secondValue = $fieldValue;
 								}
 							} else if (($fieldName == $thirdField || strstr($fieldName, $thirdField)) && ($thirdValue == $fieldValue || $thirdValue == " ")) {
-								if ($thirdValue == ' ' || $thirdValue == '-') {
+								if ($thirdValue == ' ' || $thirdValue == '-' || $secondIsHead == 1) {
 									$valtemplate .= "<td style='border-bottom: 0;'>" . $fieldValue . "</td>";
+								} else if($thirdValue == '') {
+									$valtemplate .= "<td></td>";
 								} else {
 									$valtemplate .= "<td style='border-bottom: 0; border-top: 0;'>&nbsp;</td>";
 								}
@@ -3747,8 +3774,10 @@ class ReportRun extends CRMEntity {
 							} else {
 								$valtemplate .= "<td style='border-bottom: 0;'>" . $fieldValue . "</td>";
 								if ($fieldName == $firstField || strstr($fieldName, $firstField)) {
+									$firstIsHead = 1;
 									$firstValue = $fieldValue;
 								} else if ($fieldName == $secondField || strstr($fieldName, $secondField)) {
+									$secondIsHead = 1;
 									$secondValue = $fieldValue;
 								} else if ($fieldName == $thirdField || strstr($fieldName, $thirdField)) {
 									$thirdValue = $fieldValue;

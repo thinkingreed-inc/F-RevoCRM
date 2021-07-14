@@ -93,8 +93,13 @@ class Vtiger_Module extends Vtiger_ModuleBasic {
         }
 		// Add column to vtiger_relatedlists to save extended actions
 		Vtiger_Utils::AddColumn('vtiger_relatedlists', 'actions', 'VARCHAR(50)');
+		if($moduleInstance->id == 16){// 活動のカスタム項目がEventsではなくCalendarとして作成する
+			$related_tabid = 9;
+		}else{
+			$related_tabid = $moduleInstance->id;
+		}
 		$adb->pquery("INSERT INTO vtiger_relatedlists(relation_id,tabid,related_tabid,name,sequence,label,presence,actions,relationfieldid,relationtype) VALUES(?,?,?,?,?,?,?,?,?,?)",
-			Array($relation_id,$this->id,$moduleInstance->id,$function_name,$sequence,$label,$presence,$useactions_text,$fieldId,$relationType));
+			Array($relation_id,$this->id,$related_tabid,$function_name,$sequence,$label,$presence,$useactions_text,$fieldId,$relationType));
         
         if(method_exists($this,'set')) {
             $this->set('relation_id', $relation_id);

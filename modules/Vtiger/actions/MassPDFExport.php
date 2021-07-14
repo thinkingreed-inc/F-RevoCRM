@@ -74,12 +74,16 @@ class Vtiger_MassPDFExport_Action extends Vtiger_Mass_Action
                     $uitype4value = $recordModel->get($uitype4fieldname);
                 }
                 $accountname = "";
-                if($recordModel->get("account_id")){
-                    $accountname = Vtiger_Functions::getCRMRecordLabel($recordModel->get("account_id"));
+                if($recordModel->get("account_id") || $recordModel->get("vendor_id")){
+                    if($moduleName == "PurchaseOrder"){
+                        $accountname = Vtiger_Functions::getCRMRecordLabel($recordModel->get("vendor_id"));
+                    } else {
+                        $accountname = Vtiger_Functions::getCRMRecordLabel($recordModel->get("account_id"));
+                    }
                 }
                 $filename = $accountname."_".$templateName."(".Vtiger_Functions::getCRMRecordLabel($recordModel->getId()).")_".$uitype4value.'.pdf';
                 file_put_contents($uploadfilepath . $filename, $returnPDF, FILE_APPEND);
-                $pdfarray[] = $uploadfilepath . $filename;
+                $pdfarray[] = ["filepath" => $uploadfilepath.$filename, "filename" => $filename];
             }
         }
 
@@ -98,10 +102,10 @@ class Vtiger_MassPDFExport_Action extends Vtiger_Mass_Action
 
         // zipに追加
         setlocale(LC_ALL, 'ja_JP.UTF-8');
-        foreach ($pathAry as $filepath) {
-            $filename = basename($filepath);
-            $zip->addFile($filepath, mb_convert_encoding($filename, 'CP932', 'UTF-8'));
-            unlink($filepath);
+        foreach ($pathAry as $filePathAndName) {
+            $filename = $filePathAndName["filename"];
+            $zip->addFile($filePathAndName["filepath"], mb_convert_encoding($filename, 'CP932', 'UTF-8'));
+            unlink($filePathAndName["filepath"]);
         }
         $zip->save();
 
