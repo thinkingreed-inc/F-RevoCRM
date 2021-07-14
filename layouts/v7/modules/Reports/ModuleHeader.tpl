@@ -11,8 +11,8 @@
 
 {strip}
 	<div class="col-sm-12 col-xs-12 module-action-bar coloredBorderTop">
-		<div class="module-action-content clearfix">
-			<span class="col-lg-7 col-md-7">
+		<div class="module-action-content clearfix" id="{$MODULE}_action_content">
+			<span class="col-sm-6 col-xs-11">
 				<span>
 					{assign var=MODULE_MODEL value=Vtiger_Module_Model::getInstance($MODULE)}
 					{assign var=DEFAULT_FILTER_ID value=$MODULE_MODEL->getDefaultCustomFilter()}
@@ -53,18 +53,20 @@
 				{/if}
 			</span>
 
-			<span class="col-lg-5 col-md-5 pull-right">
+			<span class="col-sm-6 col-xs-1 pull-right">
 				<div id="appnav" class="navbar-right">
 					{foreach item=LISTVIEW_BASICACTION from=$LISTVIEW_LINKS['LISTVIEWBASIC']}
 						{assign var="childLinks" value=$LISTVIEW_BASICACTION->getChildLinks()}
 						{if $childLinks && $LISTVIEW_BASICACTION->get('linklabel') == 'LBL_ADD_RECORD'}
-							<span class="btn-group">
-								<button class="btn btn-default dropdown-toggle module-buttons" data-toggle="dropdown" id="{$MODULE}_listView_basicAction_Add">
-									<i class="fa fa-plus"></i>&nbsp;&nbsp;
-									{vtranslate($LISTVIEW_BASICACTION->getLabel(), $MODULE)}&nbsp;
-									<i class="caret icon-white"></i>
+							<span class="btn-group" >
+								<button class="btn btn-default dropdown-toggle module-buttons" data-toggle="dropdown" id="{$MODULE}_listView_basicAction_Add" >
+									<i class="fa fa-plus"></i>
+									<span class="btn-str">
+										&nbsp;&nbsp;{vtranslate($LISTVIEW_BASICACTION->getLabel(), $MODULE)}&nbsp;
+										<i class="caret icon-white"></i>
+									<span>
 								</button>
-								<ul class="dropdown-menu">
+								<ul class="dropdown-menu" id="add{$MODULE}DropdownMenu">
 									{foreach item="childLink" from=$childLinks}
 										{if $childLink->getLabel() eq 'LBL_CHARTS'}
 											{assign var="ICON_CLASS" value='fa fa-pie-chart'}
