@@ -45,7 +45,7 @@
                 {if $commentAction}
                     <button type="button" class="btn btn-default" id="{$MODULE}_listView_massAction_{$commentAction->getLabel()}" 
                             onclick="Vtiger_List_Js.triggerMassAction('{$commentAction->getUrl()}')" title="{vtranslate('LBL_COMMENT', $MODULE)}">
-                        <i class="fa fa-comment"></i>
+                        <i class="fa fa-comment" style="font-size: 24px"></i>
                     </button>
                 {/if}
                 
