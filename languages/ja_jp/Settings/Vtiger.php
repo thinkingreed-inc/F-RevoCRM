@@ -209,7 +209,7 @@ $languageStrings = array(
 	//Outgoing Server
 	'LBL_RESET_TO_DEFAULT' => 'デフォルトに戻す',
 	'LBL_SERVER_NAME' => 'サーバ名',
-	'LBL_USER_NAME' => 'ユーザ名',
+	'LBL_USER_NAME' => 'ユーザー名',
 	'LBL_PASSWORD' => 'パスワード',
 	'LBL_FROM_EMAIL' => 'メール送信者',
 	'LBL_SERVER_TYPE' => 'サーバ種別',

@@ -91,8 +91,8 @@ class Users_Login_View extends Vtiger_View_Controller {
 		$message = '';
 		if ($error) {
 			switch ($error) {
-				case 'login'		:	$message = '無効なユーザ名またはパスワード';						break;
-				case 'fpError'		:	$message = '無効なユーザ名またはE-mailアドレス';			break;
+				case 'login'		:	$message = '無効なユーザー名またはパスワード';						break;
+				case 'fpError'		:	$message = '無効なユーザー名またはE-mailアドレス';			break;
 				case 'statusError'	:	$message = 'メールサーバが設定されていません';	break;
 			}
 		} else if ($mailStatus) {
