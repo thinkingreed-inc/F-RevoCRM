@@ -92,21 +92,25 @@ class CustomView extends CRMEntity {
 		if(!$now_action) {
 			$now_action = vtlib_purify($_REQUEST['view']);
 		}
+		/*
+		表示するリストを決める. 優先度は以下の通り1～4.
+		1(前回のセッションで開いていたリスト), 2(デフォルトチェックボックスに✓が入れられたリスト), 3(DBでデフォルトに設定されているリスト), 4(All)
+		*/
 		if (empty($_REQUEST['viewname'])) {
 			if (isset($_SESSION['lvs'][$module]["viewname"]) && $_SESSION['lvs'][$module]["viewname"] != '') {
 				$viewid = $_SESSION['lvs'][$module]["viewname"];
-			} elseif ($this->setdefaultviewid != "") { //？？
+			} elseif ($this->setdefaultviewid != "") {
 				$viewid = $this->setdefaultviewid;
-			} else { //デフォルトリスト判別
+			} else {
 				$defcv_result = $adb->pquery("SELECT ump.default_cvid from vtiger_customview cv left join vtiger_user_module_preferences ump on cv.cvid = ump.default_cvid where ump.userid = ? and ump.tabid = ?", array($current_user->id, getTabid($module)));
 				if ($adb->num_rows($defcv_result) > 0) {
 					$viewid = $adb->query_result($defcv_result, 0, 'default_cvid');
 				} else {
-					$viewid = ''; //all表示
+					$viewid = '';
 				}
 			}
 
-			if ($viewid == '' || $viewid == 0 || $this->isPermittedCustomView($viewid, $now_action, $module) != 'yes') { //ここでall
+			if ($viewid == '' || $viewid == 0 || $this->isPermittedCustomView($viewid, $now_action, $module) != 'yes') {
 				$query = "select cvid from vtiger_customview where viewname='All' and entitytype=? order by viewname";
 				$cvresult = $adb->pquery($query, array($module));
 				$viewid = $adb->query_result($cvresult, 0, 'cvid');
