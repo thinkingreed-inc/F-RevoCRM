@@ -95,23 +95,18 @@ class CustomView extends CRMEntity {
 		if (empty($_REQUEST['viewname'])) {
 			if (isset($_SESSION['lvs'][$module]["viewname"]) && $_SESSION['lvs'][$module]["viewname"] != '') {
 				$viewid = $_SESSION['lvs'][$module]["viewname"];
-			} elseif ($this->setdefaultviewid != "") {
+			} elseif ($this->setdefaultviewid != "") { //？？
 				$viewid = $this->setdefaultviewid;
-			} else {
-				$defcv_result = $adb->pquery("select default_cvid from vtiger_user_module_preferences where userid = ? and tabid =?", array($current_user->id, getTabid($module)));
+			} else { //デフォルトリスト判別
+				$defcv_result = $adb->pquery("SELECT ump.default_cvid from vtiger_customview cv left join vtiger_user_module_preferences ump on cv.cvid = ump.default_cvid where ump.userid = ? and ump.tabid = ?", array($current_user->id, getTabid($module)));
 				if ($adb->num_rows($defcv_result) > 0) {
 					$viewid = $adb->query_result($defcv_result, 0, 'default_cvid');
 				} else {
-					$query = "select cvid from vtiger_customview where setdefault=1 and entitytype=? order by viewname";
-					$cvresult = $adb->pquery($query, array($module));
-					if ($adb->num_rows($cvresult) > 0) {
-						$viewid = $adb->query_result($cvresult, 0, 'cvid');
-					} else
-						$viewid = '';
+					$viewid = ''; //all表示
 				}
 			}
 
-			if ($viewid == '' || $viewid == 0 || $this->isPermittedCustomView($viewid, $now_action, $module) != 'yes') {
+			if ($viewid == '' || $viewid == 0 || $this->isPermittedCustomView($viewid, $now_action, $module) != 'yes') { //ここでall
 				$query = "select cvid from vtiger_customview where viewname='All' and entitytype=? order by viewname";
 				$cvresult = $adb->pquery($query, array($module));
 				$viewid = $adb->query_result($cvresult, 0, 'cvid');
@@ -130,6 +125,7 @@ class CustomView extends CRMEntity {
 			if ($this->isPermittedCustomView($viewid, $now_action, $this->customviewmodule) != 'yes')
 				$viewid = 0;
 		}
+		
 		$_SESSION['lvs'][$module]["viewname"] = $viewid;
 		return $viewid;
 	}
