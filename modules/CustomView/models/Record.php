@@ -316,10 +316,10 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 			}
 
 			//共有リスト以外のsetdefaultを全て0にし, デフォルト設定したリストのみ1にする
-			$updateSql = 'UPDATE vtiger_customview SET setdefault = 0 WHERE entitytype = ? and userid = ? and status = 1';
+			$updateSql = 'UPDATE vtiger_customview SET setdefault = 0 WHERE status = "1" and entitytype = ? and userid = ?';
 			$updateParams = array($moduleName, $currentUserModel->getId());
 			$db->pquery($updateSql, $updateParams);
-			$updateSql = 'UPDATE vtiger_customview SET setdefault = 1 WHERE cvid = ?';
+			$updateSql = 'UPDATE vtiger_customview SET setdefault = "1" WHERE cvid = ?';
 			$updateParams = array($cvId);
 			$db->pquery($updateSql, $updateParams);
 		} else {
@@ -327,8 +327,8 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 			$deleteParams = array($currentUserModel->getId(), $moduleModel->getId(), $cvId);
 			$db->pquery($deleteSql, $deleteParams);
 
-			//共有リスト以外の全てのチェックボックスを外す
-			$updateSql = 'UPDATE vtiger_customview SET setdefault = 0 WHERE status = 1 and entitytype = ? and userid = ?';
+			//共有リスト以外のチェックボックスを外す
+			$updateSql = 'UPDATE vtiger_customview SET setdefault = 0 WHERE status = "1" and entitytype = ? and userid = ?';
             $updateParams = array($moduleName, $currentUserModel->getId());
             $db->pquery($updateSql, $updateParams);
 		}
