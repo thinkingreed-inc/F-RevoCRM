@@ -344,6 +344,7 @@ class Accounts_Module_Model extends Vtiger_Module_Model {
 		$numOfRows = $db->num_rows($result);
 
 		$groupsIds = Vtiger_Util_Helper::getGroupsIdsForUsers($currentUser->getId());
+		$crmidCache = array();
 		$activities = array();
 		for($i=0; $i<$numOfRows; $i++) {
 			$newRow = $db->query_result_rowdata($result, $i);
@@ -371,6 +372,10 @@ class Accounts_Module_Model extends Vtiger_Module_Model {
 
 			$model->setData($newRow);
 			$model->setId($newRow['crmid']);
+			if(in_array($newRow['crmid'], $crmidCache)){
+				continue;
+			}
+			$crmidCache[] = $newRow['crmid'];
 			$activities[] = $model;
 		}
 
