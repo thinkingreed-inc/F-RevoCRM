@@ -442,6 +442,7 @@ class Vtiger_InventoryPDFController {
 				$block = self::getMergeInventoryBlock($block, $relatedProducts, $prefix);
 			}
 			$block = preg_replace('/\$'.$prefix.'-discount_amount\$/', self::getDiscountTotal($relatedProducts), $block);
+			$block = preg_replace('/\$'.$prefix.'-discount_amount_final\$/', self::getDiscountTotal_Final($relatedProducts), $block);
 			$block = preg_replace('/\$'.$prefix.'-pre_tax_total\$/', self::getPreTaxTotal($relatedProducts), $block);
 			$block = preg_replace('/\$'.$prefix.'-total\$/', self::getTotalWithTax($relatedProducts), $block);
 			$block = preg_replace('/\$'.$prefix.'-tax_totalamount\$/', self::getTotalTax($relatedProducts), $block);
@@ -531,6 +532,14 @@ class Vtiger_InventoryPDFController {
 		$discount = $currencyField->getDisplayValueWithSymbol();
 
 		return $discount;
+	}
+
+	private static function getDiscountTotal_Final($relatedProducts){
+		$discountTotal = $relatedProducts[1]['final_details']['discountTotal_final'];
+		$currencyField = new CurrencyField($discountTotal);
+		$discountTotal = $currencyField->getDisplayValueWithSymbol();
+
+		return  $discountTotal;
 	}
 
 	private static function getPreTaxTotal($relatedProducts) {
