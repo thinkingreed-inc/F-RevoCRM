@@ -307,6 +307,7 @@ $languageStrings = array(
 	'LBL_NET_PRICE' => '金額',
 	'LBL_DISCOUNT' => '割引額',
 	'LBL_TOTAL_AFTER_DISCOUNT' => '割引後の合計',
+	'Discount Amount Final' => '総割引額',
 	'LBL_TAX' => '消費税',
 	'LBL_ADD_PRODUCT' => '製品を追加',
 	'LBL_ADD_SERVICE' => 'サービスを追加',

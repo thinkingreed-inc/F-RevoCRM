@@ -101,11 +101,19 @@ class PDFTemplates_Module_Model extends Vtiger_Module_Model {
 			}else{
 				$fieldList = $this->getRelatedFields($module, $currentUserModel);
 			}
+			//fieldListに総割引額(合計金額からの割引額)が無かったので追加
+			$fieldList[] = array(
+				'module' => $module,
+				'fieldname' => 'hdnDiscountAmountFinal',
+				'columnname' => 'discount_amount_final',
+				'fieldlabel' => 'Discount Amount Final'
+			);
+
 			$allFields = array();
 			foreach ($fieldList as $key => $field) {
-				if($field['module'] == 'Quotes' &&  $field['module'] == 'Item Discount Amount'){
+				if($field['module'] == 'Quotes' &&  $field['fieldlabel'] == 'Item Discount Amount'){
 					$option = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate($field['fieldlabel'], $field['module']), "$" . strtolower($field['module']) . "-" . "discount_itemamount" . "$");
-				}else if($field['module'] == 'Quotes' &&  $field['module'] == 'Item Discount Percent'){
+				}else if($field['module'] == 'Quotes' &&  $field['fieldlabel'] == 'Item Discount Percent'){
 					$option = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate($field['fieldlabel'], $field['module']), "$" . strtolower($field['module']) . "-" . "discount_itempercent" . "$");
 				}else{
 					$option = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate($field['fieldlabel'], $field['module']), "$" . strtolower($field['module']) . "-" . $field['columnname'] . "$");
