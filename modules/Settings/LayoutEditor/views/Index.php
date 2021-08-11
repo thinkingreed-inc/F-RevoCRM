@@ -33,6 +33,7 @@ class Settings_LayoutEditor_Index_View extends Settings_Vtiger_Index_View {
 
 		$sourceModule = $request->get('sourceModule');
 		$supportedModulesList = Settings_LayoutEditor_Module_Model::getSupportedModules();
+		unset($supportedModulesList['Users']);
 		$supportedModulesList = array_flip($supportedModulesList);
 		ksort($supportedModulesList);
 
@@ -57,6 +58,9 @@ class Settings_LayoutEditor_Index_View extends Settings_Vtiger_Index_View {
 	public function showFieldLayout(Vtiger_Request $request) {
 		$sourceModule = $request->get('sourceModule');
 		$supportedModulesList = Settings_LayoutEditor_Module_Model::getSupportedModules();
+		// [todo]: ユーザーモジュールは不具合を含むため除外する
+		// ユーザーモジュールの項目設定を行えるようにする
+		unset($supportedModulesList['Users']);
 		$supportedModulesList = array_flip($supportedModulesList);
 		ksort($supportedModulesList);
 
