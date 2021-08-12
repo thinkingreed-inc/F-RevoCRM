@@ -32,6 +32,9 @@
                                     <select class="select2 col-sm-3" name="relatedModule">
                                         {foreach item=MODULE_NAME from=$SUPPORTED_MODULES}
                                             {assign var=TRANSLATED_NAME value={vtranslate($MODULE_NAME, $MODULE_NAME)}}
+                                            {if $MODULE_NAME == 'Calendar'}
+                                                {assign var=TRANSLATED_NAME value={vtranslate('Events', $MODULE_NAME)}}
+                                            {/if}
                                             {$SINGULAR_MODULE_NAMES.$TRANSLATED_NAME = {vtranslate("SINGLE_$MODULE_NAME", $MODULE_NAME)}}
                                             <option value="{$MODULE_NAME}" {if $MODULE_NAME eq $SELECTED_RELATED_MODULE_NAME}selected="selected"{/if}>
                                                 {$TRANSLATED_NAME}

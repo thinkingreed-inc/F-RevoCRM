@@ -1202,12 +1202,10 @@ Vtiger.Class('Vtiger_Index_Js', {
 		var referenceModuleElement = jQuery('input[name="popupReferenceModule"]',parentElement).length ?
 			jQuery('input[name="popupReferenceModule"]',parentElement) : jQuery('input.popupReferenceModule',parentElement);
 		var customInfoFlag = jQuery('input[name="popupReferenceModule"]', parentElement).parents().find('div[data-block="LBL_CUSTOM_INFORMATION"]').length;
-		// カスタム項目の関連(カレンダー)のクイック作成はTODO(Calendar)でなく活動(Events)とする
-		if (customInfoFlag && referenceModuleElement.val() == "Calendar") {
-			return "Events"
-		} else {
-			return referenceModuleElement.val()
+		if(referenceModuleElement.val() == "Calendar"){
+			return 'Events';
 		}
+		return referenceModuleElement.val();
 	},
 
 	/*
