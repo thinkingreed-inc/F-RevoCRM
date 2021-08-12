@@ -468,12 +468,7 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 		if($tax_percent == '' || $tax_percent == 'NULL')
 			$tax_percent = 0;
 		$taxamount = ($subTotal-$finalDiscount)*$tax_percent/100;
-        list($before_dot, $after_dot) = explode('.', $taxamount);
-        if($after_dot[$no_of_decimal_places] == 5) {
-            $taxamount = round($taxamount, $no_of_decimal_places, PHP_ROUND_HALF_DOWN); 
-        } else {
-            $taxamount = number_format($taxamount, $no_of_decimal_places,'.','');
-        }
+		$taxamount = number_format($taxamount, $no_of_decimal_places,'.','');
 
 		$taxId = $tax_details[$tax_count]['taxid'];
 		$taxDetails[$taxId]['taxname']		= $tax_name;
@@ -505,13 +500,7 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 				$amount = (float)$amount + (float)$taxDetails[$id]['amount'];
 			}
 			$taxAmount = ((float)$amount * (float)$taxInfo['percentage']) / 100;
-			list($beforeDot, $afterDot) = explode('.', $taxAmount);
-
-			if ($afterDot[$no_of_decimal_places] == 5) {
-				$taxAmount = round($taxAmount, $no_of_decimal_places, PHP_ROUND_HALF_DOWN);
-			} else {
-				$taxAmount = number_format($taxAmount, $no_of_decimal_places, '.', '');
-			}
+			$taxAmount = number_format($taxAmount, $no_of_decimal_places, '.', '');
 
 			$taxDetails[$taxId]['amount'] = $taxAmount;
 		}
