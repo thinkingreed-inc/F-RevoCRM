@@ -8028,12 +8028,3 @@ a.btnReport:hover {
   overflow: auto;
 }
 /*# sourceMappingURL=style.css.map */
-
-/* 右上のメニューが表示されない場合、スマートフォンでヘッダーのスタイルが崩れる不具合修正 */
-@media (max-width: 768px) { 
-  .app-nav .module-action-bar .navbar-right{
-  float: right;
-  height: auto;
-  max-height: 42px;
-  }
-  }
