@@ -442,3 +442,12 @@ button#advanceIntiateSave + input {
 #reportDetails table tr td.summaryHead {
     border-bottom: 0;
 }
+
+/* 右上のメニューが表示されない場合、スマートフォンでヘッダーのスタイルが崩れる不具合修正 */
+@media (max-width: 768px) { 
+  .app-nav .module-action-bar .navbar-right{
+  float: right;
+  height: auto;
+  max-height: 42px;
+  }
+  }
