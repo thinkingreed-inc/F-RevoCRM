@@ -1168,7 +1168,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 		var chargesTotal = 0;
 		chargesBlockContainer.find('.chargeValue').each(function(index, domElement){
 			var chargeElementValue = jQuery(domElement).val();
-			if(!Number.isFinite(chargeElementValue)){
+			if(isNaN(chargeElementValue)){
 				jQuery(domElement).val(0);
 				chargeElementValue=0;
 			}
