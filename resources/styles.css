@@ -22,10 +22,6 @@
     transform: scale(0.999);
     background-clip: padding-box;
   }
-  .listViewRecordActions.fix-data-column {
-    position: static;
-    transform: none;
-  }
 }
 /*
  * モーダルウインドウの背景を黒ベースに変更
