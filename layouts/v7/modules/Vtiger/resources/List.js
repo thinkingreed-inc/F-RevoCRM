@@ -2809,6 +2809,18 @@ Vtiger.Class("Vtiger_List_Js", {
 				} else {
 					$column.addClass("fix-data-column");
 				}
+
+				/* 
+				ユーザー管理の「ユーザー」と「プロファイル」にて
+				fix-data-columnが適応されるとドロップダウンメニューが隠れてしまうので削除する
+				*/
+				var module = app.getModuleName();
+				var parentModule = app.getParentModuleName();
+				if(parentModule == 'Settings'){
+					if(module == 'Users' || 'Profiles'){
+						$column.removeClass("fix-data-column")
+					}
+				}
 	
 				if(i > 0) {
 					$column.css({
