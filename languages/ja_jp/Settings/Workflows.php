@@ -168,6 +168,13 @@ $languageStrings = array(
 	'Trigger' => 'タイミング',
 	'Conditions' => '条件',
 	'LBL_ACTIONS' => 'アクション',
+
+	//条件
+	'is' => 'が',
+	'does not contain' => 'に次が含まれない',
+	'is not empty' => 'が空でない',
+	'Comment' => 'コメント',
+	'is added' => 'が追加された',
 );
 
 $jsLanguageStrings = array(
