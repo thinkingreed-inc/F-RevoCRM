@@ -23,6 +23,15 @@ Vtiger Public License 1.2
   * local_infile = ON (under [mysqld] section)
   * sql_mode = NO_ENGINE_SUBSTITUTION for MySQL 5.6+
 
+## F-RevoCRMへのアクセスについて
+本アプリケーションはWebアプリケーションとなりますので、URLへ直接アクセスしてください。  
+またリファラーチェックを行っておりますので、もしSharePointなどの社内イントラにリンクを設置する場合は、`rel=noreferrer`属性を追加してください。
+```
+<a href="https://example.com/{CRM_DIR}/index.php">F-RevoCRM</a>​​​​​​
+↓
+<a href="https://example.com/{CRM_DIR}/index.php" rel="noreferrer">F-RevoCRM</a>​​​​​​
+```
+
 ## PCの推奨環境
 * Windows 10 Google Chrome最新 / Microsoft Edge(Chronium)最新 / Internet Explorer 11（2022年4月 非推奨に移行予定）
 * 最低1366×768以上の解像度、推奨1920×1080以上
