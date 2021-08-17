@@ -561,7 +561,8 @@ class Vtiger_InventoryPDFController {
 	private static function getTotalWithTax($relatedProducts) {
 		$preTotal = $relatedProducts[1]['final_details']['preTaxTotal'];
 		$tax = $relatedProducts[1]['final_details']['tax_totalamount'];
-		$currencyField = new CurrencyField($preTotal + $tax);
+		$adjustment = $relatedProducts[1]['final_details']['adjustment'];
+		$currencyField = new CurrencyField($preTotal + $tax + $adjustment);
 		$total = $currencyField->getDisplayValueWithSymbol();
 
 		return $total;
