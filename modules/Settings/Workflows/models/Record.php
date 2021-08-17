@@ -468,10 +468,10 @@ class Settings_Workflows_Record_Model extends Settings_Vtiger_Record_Model {
 				if ($fieldModel) {
 					$fieldDataType = $fieldModel->getFieldDataType();
 				}
-				if($value == 'true:boolean' || ($fieldModel && $fieldDataType == 'boolean' && $value == '1')) {
+				if($value == 'true:boolean' || ($fieldModel && $fieldDataType == 'boolean' && $value == '1') || ($fieldModel && $fieldDataType == 'fileLocationType' && $value == 'I')) {
                     $value = vtranslate('LBL_ENABLED', $moduleName);
                 }
-				if($value == 'false:boolean' || ($fieldModel && $fieldDataType == 'boolean' && $value == '0')) {
+				if($value == 'false:boolean' || ($fieldModel && $fieldDataType == 'boolean' && $value == '0' || ($fieldModel && $fieldDataType == 'fileLocationType' && $value == 'E'))) {
 					$value = vtranslate('LBL_DISABLED', $moduleName);
                 }
 				if ($fieldModel && (($fieldModel->column === 'smownerid') || (($fieldModel->column === 'smgroupid')))) {
@@ -504,7 +504,7 @@ class Settings_Workflows_Record_Model extends Settings_Vtiger_Record_Model {
 				if($fieldLabel == '_VT_add_comment') {
 					$fieldLabel = 'Comment';
 				}
-				$conditionList[$conditionGroup][] = vtranslate($fieldLabel, 'Settings:Workflows').' '.vtranslate($operation, 'Settings:Workflows'). ' '.vtranslate($value, 'Settings:Workflows');
+				$conditionList[$conditionGroup][] = vtranslate($fieldLabel, 'Settings:Workflows').' '.vtranslate($operation, 'Settings:Workflows'). ' '.$value;
 			}
 		}
 
