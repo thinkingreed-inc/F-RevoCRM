@@ -1100,7 +1100,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			終日エリア、月次カレンダーをクリックした場合は、終日フラグにチェックを入れる
 			経緯：これまでは00:00である、または12:00 AMであるを判定基準に使っていたため、00:00をクリックしたときに終日フラグが付いてしまっていた
 			
-			※tartDateTime._ambigTime: カレンダーの上部終日エリアを押したときtrueになる
+			※ startDateTime._ambigTime: カレンダーの上部終日エリアを押したときtrueになる
 		*/
 		if(startDateTime._ambigTime) {
 			alldayElement.attr('checked', true);
