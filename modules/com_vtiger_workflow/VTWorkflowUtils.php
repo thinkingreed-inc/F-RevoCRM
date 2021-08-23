@@ -65,8 +65,12 @@ class VTWorkflowUtils {
 	 */
 	function revertUser() {
 		global $current_user;
-		if (count(self::$userStack) != 0) {
-			$current_user = array_pop(self::$userStack);
+		$userStackCounts = count(self::$userStack);
+		if ($userStackCounts != 0) {
+			for  ($i=1; $i<$userStackCounts; $i++) {
+				array_pop(self::$userStack);
+			}
+			$current_user = self::$userStack[0];
 		} else {
 			$current_user = null;
 		}
