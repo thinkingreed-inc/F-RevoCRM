@@ -54,7 +54,8 @@
 									<span class="redColor">*</span>
 								{/if}
 							</td>
-							<td>
+							{assign var=PICKLIST_COLOR value=Settings_Picklist_Module_Model::getPicklistColorByValue($FIELD_MODEL->getName(), $FIELD_MODEL->get('fieldvalue'))}
+							<td {if !empty($PICKLIST_COLOR)} class="picklist-color" style="background-color: {$PICKLIST_COLOR}; line-height:15px; color: {Settings_Picklist_Module_Model::getTextColor($PICKLIST_COLOR)};" {/if}>
 								{if $FIELD_MODEL->getFieldDataType() eq 'reference'}
 									{assign var=EXPLODED_FIELD_VALUE value = 'x'|explode:$FIELD_MODEL->get('defaultvalue')}
 									{assign var=FIELD_VALUE value=$EXPLODED_FIELD_VALUE[1]}
