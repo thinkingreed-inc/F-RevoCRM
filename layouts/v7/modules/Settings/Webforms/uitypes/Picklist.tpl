@@ -34,6 +34,7 @@
 			{assign var=CLASS_NAME value="{$FIELD_MODEL->getFieldName()}_{$PICKLIST_NAME|replace:' ':'_'}"}
 			.picklistColor_{$CLASS_NAME} {
 				background-color: {$PICKLIST_COLORS[$PICKLIST_NAME]} !important;
+				color: {Settings_Picklist_Module_Model::getTextColor($PICKLIST_COLORS[$PICKLIST_NAME])};
 			}
 			{/foreach}
 		</style>
