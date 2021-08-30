@@ -64,7 +64,7 @@ function vtws_changePassword($id, $oldPassword, $newPassword, $confirmPassword, 
 							WebServiceErrorCode::$CHANGEPASSWORDFAILURE));
 		}
 		VTWS_PreserveGlobal::flush();
-		return array('message' => 'Changed password successfully');
+		return array('message' => vtranslate('Changed password successfully'));
 	}
 }
 ?>
