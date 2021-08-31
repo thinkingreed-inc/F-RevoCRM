@@ -201,6 +201,20 @@ div.detailview-content.container-fluid span.value img {
 [name="existingImages"] img{
   height: auto;
 }
+/* コメント部分 */
+.commentDetails .recordImage.commentInfoHeader{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background: none repeat scroll 0 0 #ababab;
+}
+.commentDetails .recordImage.commentInfoHeader>img{
+  max-width: 100%;
+  height: auto;
+}
+
+
 /* フィールドラベル */
 .detailview-table .fieldLabel,
 .recordEditView .fieldLabel,
