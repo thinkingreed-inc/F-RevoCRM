@@ -298,7 +298,7 @@ button#advanceIntiateSave + input {
   #Documents_action_content .module-breadcrumb-List .current-filter-name ,
   #Documents_action_content .module-breadcrumb-Detail .current-filter-name a ,
   #Reports_action_content .current-filter-name {
-    max-width: 80px;
+    max-width: 130px;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
