@@ -292,17 +292,17 @@ button#advanceIntiateSave + input {
     margin-right: 5px;
   }
 }
+/* フォルダ名やリスト名のオーバーフローを省略 */
+#Documents_action_content .module-breadcrumb-List .current-filter-name ,
+#Documents_action_content .module-breadcrumb-Detail .current-filter-name a ,
+#Reports_action_content .current-filter-name {
+  max-width: 200px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
 /* 画面幅が550px以下でレポートとドキュメントのヘッダーを調整 */
 @media (max-width: 550px) {
-  /* フォルダ名やリスト名のオーバーフローを省略 */
-  #Documents_action_content .module-breadcrumb-List .current-filter-name ,
-  #Documents_action_content .module-breadcrumb-Detail .current-filter-name a ,
-  #Reports_action_content .current-filter-name {
-    max-width: 130px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-  }
   /* 追加ボタンのpaddingを削除し幅を減らす */
   #Documents_action_content > .pull-right,
   #Reports_action_content > .pull-right{
@@ -464,4 +464,12 @@ button#advanceIntiateSave + input {
   height: auto;
   max-height: 42px;
   }
+}
+
+/* スマホサイズレポート作成画面 */
+@media (max-width: 550px) {
+  .reportContents .recordEditView .row{
+    margin: 0;
+    padding: 0;
   }
+}
