@@ -386,8 +386,6 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 		}
 		// Usersの追加
 		$modulesList["Users"] = vtranslate("Users", "Users");
-		// カスタム項目の関連ではカレンダーとして活動(Events)ではなくTODO(Calendar)を用いる
-		unset($modulesList['Events']);
 		return $modulesList;
 	}
 

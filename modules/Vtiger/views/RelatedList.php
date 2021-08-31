@@ -126,6 +126,9 @@ class Vtiger_RelatedList_View extends Vtiger_Index_View {
 				if($cnt > 0){
 					for ($i=0; $i < $cnt; $i++) { 
 						$relmodule = $adb->query_result($result, $i, 'module');
+						if($relmodule == 'Calendar'){
+							$relmodule = 'Events';
+						}
 						$relmodules[] = $relmodule;
 						if($relmodule == 'Calendar' || $relmodule == 'Events'){
 							$calFieldCheck = true;
