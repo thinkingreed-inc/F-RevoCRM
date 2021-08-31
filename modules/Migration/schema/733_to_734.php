@@ -27,4 +27,7 @@ if (defined('VTIGER_UPGRADE')) {
 
     //related_tabidが16(Events)だとレコード詳細画面が正常に表示されないので9(Calendar)へ変更
     $db->query("UPDATE vtiger_relatedlists SET related_tabid = 9 WHERE related_tabid = 16");
+
+    // プロジェクトタスクの終了日をクイッククリエイトに追加
+    $db->query('update vtiger_field f, vtiger_tab t set f.quickcreate = 0 where f.tabid = t.tabid and t.name = "ProjectTask" and f.fieldname = "enddate"');
 }
