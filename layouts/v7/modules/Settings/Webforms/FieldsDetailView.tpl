@@ -55,17 +55,32 @@
 								{/if}
 							</td>
 							{assign var=PICKLIST_COLOR value=Settings_Picklist_Module_Model::getPicklistColorByValue($FIELD_MODEL->getName(), $FIELD_MODEL->get('fieldvalue'))}
-							<td {if !empty($PICKLIST_COLOR)} class="picklist-color" style="background-color: {$PICKLIST_COLOR}; line-height:15px; color: {Settings_Picklist_Module_Model::getTextColor($PICKLIST_COLOR)};" {/if}>
-								{if $FIELD_MODEL->getFieldDataType() eq 'reference'}
+							<td>
+								{if !empty($PICKLIST_COLOR)}
+									<span class="picklist-color" style="background-color: {$PICKLIST_COLOR};color: {Settings_Picklist_Module_Model::getTextColor($PICKLIST_COLOR)};">
+										{if $FIELD_MODEL->getFieldDataType() eq 'reference'}
+										{assign var=EXPLODED_FIELD_VALUE value = 'x'|explode:$FIELD_MODEL->get('defaultvalue')}
+										{assign var=FIELD_VALUE value=$EXPLODED_FIELD_VALUE[1]}
+										{if !isRecordExists($FIELD_VALUE)}
+											{assign var=FIELD_VALUE value=0}
+										{/if}
+										{else}
+											{assign var=FIELD_VALUE value=$FIELD_MODEL->get('defaultvalue')}
+										{/if}
+										{$FIELD_MODEL->getDisplayValue($FIELD_VALUE, $RECORD->getId(), $RECORD)}
+									</span>
+								{else}
+									{if $FIELD_MODEL->getFieldDataType() eq 'reference'}
 									{assign var=EXPLODED_FIELD_VALUE value = 'x'|explode:$FIELD_MODEL->get('defaultvalue')}
 									{assign var=FIELD_VALUE value=$EXPLODED_FIELD_VALUE[1]}
 									{if !isRecordExists($FIELD_VALUE)}
 										{assign var=FIELD_VALUE value=0}
 									{/if}
-								{else}
-									{assign var=FIELD_VALUE value=$FIELD_MODEL->get('defaultvalue')}
+									{else}
+										{assign var=FIELD_VALUE value=$FIELD_MODEL->get('defaultvalue')}
+									{/if}
+									{$FIELD_MODEL->getDisplayValue($FIELD_VALUE, $RECORD->getId(), $RECORD)}
 								{/if}
-								{$FIELD_MODEL->getDisplayValue($FIELD_VALUE, $RECORD->getId(), $RECORD)}
 							</td>
 							<td>
 								{$FIELD_MODEL->get('name')}
