@@ -103,7 +103,8 @@
                                                     <option value="{Vtiger_Util_Helper::toSafeHTML($PICKLIST_NAME)}" {if (trim(decode_html($FIELD_MODEL->get('fieldvalue'))) eq trim($PICKLIST_NAME)) or ($FIELD_MODEL->get('fieldvalue') eq "1" and ($PICKLIST_NAME eq 'on')) or ($FIELD_MODEL->get('fieldvalue') eq "0" and ($PICKLIST_NAME eq 'off'))} selected {/if}>{$PICKLIST_VALUE}</option>
                                             {/foreach}
                                     </select>
-                                {else if $FIELD_MODEL->getFieldDataType() != 'image'}
+                                {else if $FIELD_MODEL->getFieldDataType() != 'image'}{*ここ！！*}
+                                    {$FIELD_INFO['editablepicklistvalues']}
 									{include file=vtemplate_path($FIELD_MODEL->getUITypeModel()->getTemplateName(), $SOURCE_MODULE) BLOCK_FIELDS=$BLOCK_FIELDS MODULE_NAME=$MODULE FIELD_NAME=$FIELD_MODEL->getFieldName() MODE = 'webform'}
                                 {/if}
                             </td>
