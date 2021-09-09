@@ -24,14 +24,14 @@
 			>
 		{foreach item=PICKLIST_VALUE key=PICKLIST_NAME from=$PICKLIST_VALUES}
 			{assign var=CLASS_NAME value="picklistColor_{$FIELD_MODEL->getFieldName()}_{$PICKLIST_NAME|replace:' ':'_'}"}
-			<option value="{Vtiger_Util_Helper::toSafeHTML($PICKLIST_NAME)}" {if $PICKLIST_COLORS[$PICKLIST_NAME]}class="{$CLASS_NAME}"{/if} {if in_array(Vtiger_Util_Helper::toSafeHTML($PICKLIST_NAME), $FIELD_VALUE_LIST)} selected {/if}>{vtranslate($PICKLIST_VALUE, $MODULE)}</option>
+			<option value="{Vtiger_Util_Helper::toSafeHTML($PICKLIST_NAME)}" {if $PICKLIST_COLORS[$PICKLIST_NAME]}class="{$CLASS_NAME|replace:'selectedFieldsData[':''|replace:'][defaultvalue]':''}"{/if} {if in_array(Vtiger_Util_Helper::toSafeHTML($PICKLIST_NAME), $FIELD_VALUE_LIST)} selected {/if}>{vtranslate($PICKLIST_VALUE, $MODULE)}</option>
 		{/foreach}
 	</select>
 	{if $PICKLIST_COLORS}
 		<style type="text/css">
 			{foreach item=PICKLIST_VALUE key=PICKLIST_NAME from=$PICKLIST_VALUES}
 			{assign var=CLASS_NAME value="{$FIELD_MODEL->getFieldName()}_{$PICKLIST_NAME|replace:' ':'_'}"}
-			.picklistColor_{$CLASS_NAME} {
+			.picklistColor_{$CLASS_NAME|replace:'selectedFieldsData[':''|replace:'][defaultvalue]':''} {
 				background-color: {$PICKLIST_COLORS[$PICKLIST_NAME]} !important;
 				color: {Settings_Picklist_Module_Model::getTextColor($PICKLIST_COLORS[$PICKLIST_NAME])};
 			}
