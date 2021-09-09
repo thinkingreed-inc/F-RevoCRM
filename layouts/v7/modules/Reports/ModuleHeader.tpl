@@ -29,9 +29,9 @@
 						&nbsp;<span class="fa fa-angle-right" aria-hidden="true"></span>
 						&nbsp;
 						{if $VIEW eq 'Detail' or $VIEW eq 'ChartDetail'}
-							{$REPORT_NAME}
+							{vtranslate($REPORT_NAME, $MODULE)}
 						{else}
-							{$VIEW}
+							{vtranslate($VIEW, $MODULE)}
 						{/if}
 						&nbsp;
 					</p>

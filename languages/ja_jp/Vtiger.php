@@ -713,10 +713,10 @@ $languageStrings = array(
 	'LBL_RELATED_PRODUCTS' => '製品情報',
 	'LBL_REMINDER_INFORMATION' => 'アラーム情報',
 
-	'LBL_FOLDER_SAVED' => 'フォルダーが保存されました',
-	'LBL_FOLDER_EXISTS' => 'フォルダーが既に存在しています。',
-	'LBL_FOLDER_DELETED' => 'フォルダーを削除しました。',
-	'LBL_EDIT_FOLDER' => 'フォルダーの編集',
+	'LBL_FOLDER_SAVED' => 'フォルダが保存されました',
+	'LBL_FOLDER_EXISTS' => 'フォルダが既に存在しています。',
+	'LBL_FOLDER_DELETED' => 'フォルダを削除しました。',
+	'LBL_EDIT_FOLDER' => 'フォルダの編集',
 
 	'Lead Source' => '紹介元',
 	'Mobile' => '携帯電話番号',
