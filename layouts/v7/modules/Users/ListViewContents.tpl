@@ -106,13 +106,13 @@
 													{assign var=IMAGE_DETAILS value=$LISTVIEW_ENTRY->getImageDetails()}
 													{foreach item=IMAGE_INFO from=$IMAGE_DETAILS}
 														{if !empty($IMAGE_INFO.url)}
-															<div class='col-lg-2'>
+															<div class='userIconDiv'>
 																<img height="25px" width="25px" src="{$IMAGE_INFO.url}">
 															</div>
 														{/if}
 													{/foreach}
 													{if $IMAGE_DETAILS[0]['id'] eq null}
-														<div class='col-lg-2'>
+														<div class='userIconDiv'>
 															<i class="fa fa-user userDefaultIcon"></i>
 														</div>
 													{/if}
