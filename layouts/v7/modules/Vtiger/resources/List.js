@@ -1238,7 +1238,8 @@ Vtiger.Class("Vtiger_List_Js", {
 			
 			//automatically select fields for mass edit when updated
 			$('#massEdit :input').change(function() {
-				$(this).closest('tr').find("input[id^=include_in_mass_edit_" + $(this).attr('name') + "]").prop( "checked", true );
+				var _replacedName =  $(this).attr('name').replace('[]', "");
+				$(this).closest('tr').find("input[id^=include_in_mass_edit_" + _replacedName + "]").prop( "checked", true );
 			});
 			
 			app.helper.registerLeavePageWithoutSubmit($("#massEdit"));
@@ -1419,6 +1420,13 @@ Vtiger.Class("Vtiger_List_Js", {
 			//add url params for fields that will be updated
 			changedFields.each(function(i, obj){
 				var key = $(this).data("update-field");
+				// multipicklistの場合は[]をつけた方のvalueを取得する
+				var $elm = $('[name='+key+']');
+				var fieldType = $elm.data('fieldtype');
+				if(fieldType == 'multipicklist'){
+					key = encodeURI(key+'[]');
+				}
+
 				var value = newData[key];
 				form_update_data += key + '=';
 				
