@@ -1572,6 +1572,7 @@ $jsLanguageStrings = array(
 	'JS_PLEASE_SELECT_ATLEAST_ONE_OPTION' => '少なくとも 1 つのオプションを選択してください',
 	'JS_SELECT_MODULE' => 'モジュールを選択してください',
 	'JS_PLEASE_SELECT_ATLEAST_ONE_MANDATORY_FIELD' => '少なくとも 1 つの必須項目を選択してください',
+	'Select atleast one mandatory value.' => '少なくとも 1 つの必須項目を選択してください',
 	'JS_SELECT_MODULE' => 'モジュールを選択してください',
 	'JS_PLEASE_ENTER_INTEGER_VALUE' => '整数値を入力してください',
 	'JS_PLEASE_ENTER_DECIMAL_VALUE' => '小数値を入力してください',
