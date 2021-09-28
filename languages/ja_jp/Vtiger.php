@@ -2093,6 +2093,7 @@ $jsLanguageStrings = array(
 	'LBL_LOADING' => '読み込み中',
 	'JS_NO_RESULTS_FOUND' => '結果がありません',
 	'JS_INVALID_STRENGTH_PASSWORDS'=>'複雑なパスワードを指定してください（アルファベット大文字・小文字、数字、記号を含む8文字以上）',
+	'Changed password successfully'=>'パスワードの変更に成功しました',
 	'LBL_MASS_PDF_EXPORT_CONFIRMATION' => '選択したレコードに関するPDFを生成してもよろしいですか？',
 
 	//個人カレンダー

@@ -96,7 +96,7 @@
                 }
             }
             function checkStrengthPassword(password) {
-                if(password.lenght < 8) {
+                if(password.length < 8) {
                     return false;
                 }
                 if(!/[a-z]/.test(password)
@@ -114,7 +114,7 @@
     <body>
         <div id="container">
             <div class="logo" style = "padding-left:50%">
-                <img  src="{$LOGOURL}" alt="{$TITLE}" style="height: 4em;width: 12em;"><br><br><br>
+                <img  src="{$LOGOURL}" alt="{$TITLE}" style="height: auto;width: 12em;"><br><br><br>
             </div>
             <div style = "padding-left:50%;width:100%">
                 {if $LINK_EXPIRED neq 'true'}
