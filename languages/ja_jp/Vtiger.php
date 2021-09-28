@@ -2100,4 +2100,7 @@ $jsLanguageStrings = array(
 	'Planned' => '計画済み',
 	'Held' => '完了',
 	'Not Held' => '取り止め',
+	
+	//ユーザー管理>グループ作成
+	'JS_DUPLICATES_EXIST' => '既に存在しています',
 );
