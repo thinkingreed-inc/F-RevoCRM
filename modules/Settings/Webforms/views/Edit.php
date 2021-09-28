@@ -30,7 +30,13 @@ Class Settings_Webforms_Edit_View extends Settings_Vtiger_Index_View {
 		$viewer = $this->getViewer($request);
 		$supportedModules = Settings_Webforms_Module_Model::getSupportedModulesList();
 
-		if ($recordId) {
+		if(!empty($recordId) && $request->get('isDuplicate') == true){
+			$recordModel = Settings_Webforms_Record_Model::getInstanceById($recordId, $qualifiedModuleName);
+			$selectedFieldsList = $recordModel->getSelectedFieldsList();
+			$fileFields = $recordModel->getFileFields();
+
+			$sourceModule = $recordModel->get('targetmodule');
+		}else if ($recordId) {
 			$recordModel = Settings_Webforms_Record_Model::getInstanceById($recordId, $qualifiedModuleName);
 			$selectedFieldsList = $recordModel->getSelectedFieldsList();
 			$fileFields = $recordModel->getFileFields();
