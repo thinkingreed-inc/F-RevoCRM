@@ -1136,7 +1136,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 	_updateAllOnCalendar: function (calendarModule) {
 		var thisInstance = this;
 		this.getCalendarViewContainer().fullCalendar('addEventSource',
-				function (start, end, timezone, render) {
+			updateAllOnCalendarEvent = function (start, end, timezone, render) {
 					var activeFeeds = jQuery('[data-calendar-feed="' + calendarModule + '"]:checked');
 
 					var activeFeedsRequestParams = {};
@@ -1177,7 +1177,10 @@ Vtiger.Class("Calendar_Calendar_Js", {
 							app.helper.hideProgress();
 						});
 					}
-				});
+			});
+		this.getCalendarViewContainer().fullCalendar('removeEventSource', updateAllOnCalendarEvent);
+		this.getCalendarViewContainer().fullCalendar('refetchEvents');
+
 	},
 	showCreateTaskModal: function () {
 		this.showCreateModal('Calendar');
