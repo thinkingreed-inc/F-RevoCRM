@@ -2817,7 +2817,7 @@ Vtiger.Class("Vtiger_List_Js", {
 				var module = app.getModuleName();
 				var parentModule = app.getParentModuleName();
 				if(parentModule == 'Settings'){
-					if(module == 'Users' || 'Profiles'){
+					if(module == 'Users' || module == 'Profiles'){
 						$column.removeClass("fix-data-column")
 					}
 				}
