@@ -36,7 +36,7 @@ class Users_Login_View extends Vtiger_View_Controller {
 		$finalJsonData = array();
 
 		try{
-			$rssPath = "https://f-revocrm.example.jp/?feed=rss2";
+			$rssPath = "https://f-revocrm.jp/?feed=rss2";
 			$xml = new SimpleXMLElement($rssPath, LIBXML_NOCDATA, true);
 			$jsonData = json_decode(json_encode($xml));
 			$dataCount = count($jsonData->channel->item);
