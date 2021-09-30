@@ -567,6 +567,8 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 								$result = $adb->pquery($query, array($entityLabel));
 								if ($adb->num_rows($result) > 0) {
 									$entityId = $adb->query_result($result, 0, "id");
+								} elseif ($adb->num_rows($result) == 0 && $fieldInstance->isMandatory()) {
+									$entityId = $this->user->id;
 								}
 							} else {
 								$entityId = getEntityId($referenceModuleName, decode_html($entityLabel));
