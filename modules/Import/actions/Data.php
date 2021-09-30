@@ -563,8 +563,8 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 						if (count($fieldValueDetails) == 2) {
 							$entityLabel = trim($fieldValueDetails[1]);
 							if ($fieldValueDetails[0] == 'Users') {
-								$query = "SELECT id  FROM vtiger_users WHERE trim(concat(last_name,' ',first_name)) = '".$entityLabel."';";
-								$result = $adb->pquery($query, array());
+								$query = "SELECT id  FROM vtiger_users WHERE trim(concat(last_name,' ',first_name)) = ? ;";
+								$result = $adb->pquery($query, array($entityLabel));
 								if ($adb->num_rows($result) > 0) {
 									$entityId = $adb->query_result($result, 0, "id");
 								}

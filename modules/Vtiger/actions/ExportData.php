@@ -390,8 +390,8 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 
 	function getParentModuleName($value, $fieldName) {
 		$db = PearDatabase::getInstance();
-		$query = "SELECT relmodule  FROM vtiger_fieldmodulerel WHERE fieldid = (SELECT fieldid FROM vtiger_field WHERE columnname = '".$fieldName."');";
-		$result = $db->pquery($query, array());
+		$query = "SELECT relmodule  FROM vtiger_fieldmodulerel WHERE fieldid = (SELECT fieldid FROM vtiger_field WHERE columnname = ? );";
+		$result = $db->pquery($query, array($fieldName));
 		if ($db->num_rows($result) > 0) {
 			$columname = $db->query_result($result, 0, "relmodule");
 		}
