@@ -1239,6 +1239,9 @@ Vtiger.Class("Vtiger_List_Js", {
 			//automatically select fields for mass edit when updated
 			$('#massEdit :input').change(function() {
 				var _replacedName =  $(this).attr('name').replace('[]', "");
+				if($("[name=" + _replacedName + "]").parent().attr("class") == "input-group"){
+					_replacedName = _replacedName.replace(/(.*)_display/,"$1");
+				}
 				$(this).closest('tr').find("input[id^=include_in_mass_edit_" + _replacedName + "]").prop( "checked", true );
 			});
 			

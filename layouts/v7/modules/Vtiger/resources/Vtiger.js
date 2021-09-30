@@ -1187,6 +1187,7 @@ Vtiger.Class('Vtiger_Index_Js', {
 			if(selectedName) {
 				fieldElement.parent().find('.clearReferenceSelection').removeClass('hide');
 				fieldElement.parent().find('.referencefield-wrapper').addClass('selected');
+				fieldElement.closest('tr').find("input[id^=include_in_mass_edit_" + sourceField + "]").prop( "checked", true );
 			}else {
 				fieldElement.parent().find('.clearReferenceSelection').addClass('hide');
 				fieldElement.parent().find('.referencefield-wrapper').removeClass('selected');
