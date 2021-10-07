@@ -423,9 +423,6 @@ button#advanceIntiateSave + input {
   max-height: 80px;
   margin: 0 auto;
 }
-.detailview-header .col-sm-6 .clearfix .Read_BG_clear{/*背景透明化*/
-  background-color: rgba(0,0,0,0) !important;
-}
 
 /*クイック作成*/
 .col-lg-12 .row .col-lg-4 .quickCreateModule img{

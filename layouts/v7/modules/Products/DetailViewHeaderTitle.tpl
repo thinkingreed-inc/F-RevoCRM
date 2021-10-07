@@ -13,7 +13,7 @@
     <div class="col-sm-6 col-lg-6 col-md-6">
         <div class="record-header clearfix">
                 {assign var=IMAGE_DETAILS value=$RECORD->getImageDetails()}
-            <div class="recordImage bgproducts app-{$SELECTED_MENU_CATEGORY} {if $IMAGE_DETAILS == false}Read_BG_clear{/if}" {if $IMAGE_DETAILS|@count gt 1}style = "display:block"{/if} >
+            <div class="recordImage bgproducts app-{$SELECTED_MENU_CATEGORY}" {if $IMAGE_DETAILS|@count gt 1}style = "display:block"{/if} >
                 {foreach key=ITER item=IMAGE_INFO from=$IMAGE_DETAILS}
 	               {if !empty($IMAGE_INFO.url)}
 	                {if $IMAGE_DETAILS|@count eq 1}

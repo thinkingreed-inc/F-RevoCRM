@@ -12,7 +12,7 @@
 {strip}
     <div class="col-sm-6 col-lg-6 col-md-6">
         <div class="record-header clearfix">
-            <div class="hidden-sm hidden-xs recordImage bgleads app-{$SELECTED_MENU_CATEGORY} {if $IMAGE_DETAILS == false}Read_BG_clear{/if}">
+            <div class="hidden-sm hidden-xs recordImage bgleads app-{$SELECTED_MENU_CATEGORY}">
                 {assign var=IMAGE_DETAILS value=$RECORD->getImageDetails()}
                 {foreach key=ITER item=IMAGE_INFO from=$IMAGE_DETAILS}
                     {if !empty($IMAGE_INFO.url)}
