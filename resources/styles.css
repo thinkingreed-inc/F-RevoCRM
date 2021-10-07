@@ -480,3 +480,8 @@ button#advanceIntiateSave + input {
   width: 30px;
   padding: 0 26px 0 10px;
 }
+
+/* 関連モジュールのモーダル */
+.overlayDetail .modal-content {
+  width: 100%;
+}
