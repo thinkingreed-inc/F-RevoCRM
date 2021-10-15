@@ -1577,7 +1577,6 @@ $jsLanguageStrings = array(
 	'JS_PLEASE_ENTER_INTEGER_VALUE' => '整数値を入力してください',
 	'JS_PLEASE_ENTER_DECIMAL_VALUE' => '小数値を入力してください',
 	'JS_PLEASE_ENTER_POSITIVE_DECIMAL_VALUE' => '正の小数値を入力してください',
-	'JS_ATLEAST_SELECT_ONE_FIELD' => '少なくとも 1 つの項目を選択してください',
 
 	'JS_START_TIME_SHOULD_BE_GREATER_THAN_CURRENT_TIME' => '開始時刻は現在時刻よりも未来にする必要があります',
 	'JS_SHOULD_BE_LESS_THAN_CURRENT_DATE' => '現在の日付より前である必要があります',
