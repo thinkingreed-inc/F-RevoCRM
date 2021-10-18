@@ -480,3 +480,20 @@ button#advanceIntiateSave + input {
   width: 30px;
   padding: 0 26px 0 10px;
 }
+
+/* 概要・詳細画面 */
+@media (min-width: 992px) {
+  .detailViewContainer.viewContent > .content-area {
+      padding-left: 57px;
+  }
+}
+@media (max-width: 991px) {
+  .detailViewContainer.viewContent > .content-area {
+      padding-left: 15px;
+  }
+}
+@media (min-width: 769px) {
+  .detailview-header-block {
+  margin-top: 10px;
+  }
+}
