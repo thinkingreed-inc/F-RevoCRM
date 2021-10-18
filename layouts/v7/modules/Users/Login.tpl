@@ -305,7 +305,7 @@
 						<div>
 							<h4>F-RevoCRMに関するお知らせ</h4>
 						</div>
-						<a href="https://f-revocrm.jp" target="_blank" style="margin-right: 25px;"><img src="https://f-revocrm.jp/frevowp/wp-content/uploads/2018/07/top_keyvisual-11-2.png" style="width: 85%; height: 100%; margin-top: 25px;"/></a>
+						<a href="https://f-revocrm.jp" target="_blank" style="margin-right: 25px;"><img src="https://f-revocrm.jp/frevowp/wp-content/uploads/2021/09/image_frevo_top.png" style="width: 85%; height: 100%; margin-top: 25px;"/></a>
 					</div>
 				{/if}
 				</div>
