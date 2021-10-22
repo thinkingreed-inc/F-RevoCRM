@@ -941,8 +941,6 @@ $languageStrings = array(
                                       knowing our users better will help us prioritise enhancements.',
   'TELL_US_ABOUT_YOU_HELP_TEXT_2' => 'The data you submitted here will not be revealed to anyone <Br>
                                         outside Vtiger.',
-  'LBL_IMPORT_ERROR_MULTIPLE_ACCOUNTS' => '%s is importing %s. Please try after some time.',
-
   'LBL_IMPORT_CONTACTS' => 'Import Contacts',
   'LBL_FROM_GOOGLE' => 'From Google',
   'LBL_FROM_CSV' => 'From CSV File',

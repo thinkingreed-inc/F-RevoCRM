@@ -107,7 +107,7 @@ class Import_Utils_Helper {
 	public static function showImportLockedError($lockInfo) {
 		$moduleName = getTabModuleName($lockInfo['tabid']);
 		$userName = getUserFullName($lockInfo['userid']);
-		$errorMessage = sprintf(vtranslate('LBL_IMPORT_ERROR_MULTIPLE_ACCOUNTS'),$userName, vtranslate($moduleName));
+		$errorMessage = sprintf("%s is importing %s. Please try after some time.",$userName, $moduleName);
 		self::showErrorPage($errorMessage);
 	}
 
