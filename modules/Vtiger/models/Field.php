@@ -1403,4 +1403,96 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	public function isUniqueField() {
 		return $this->isunique;
 	}
+
+	public function getFieldInfoForWfEditTask() {
+		$currentUser = Users_Record_Model::getCurrentUserModel();
+		$fieldDataType = $this->getFieldDataType();
+		$exceptDataType = ['email', 'picklist', 'multipicklist'];
+		if(in_array($fieldDataType, $exceptDataType)) {
+			$fieldDataType = "string";
+		}
+
+		$this->fieldInfo['mandatory'] = $this->isMandatory();
+		$this->fieldInfo['presence'] = $this->isActiveField();
+		$this->fieldInfo['quickcreate'] = $this->isQuickCreateEnabled();
+		$this->fieldInfo['masseditable'] = $this->isMassEditable();
+		$this->fieldInfo['defaultvalue'] = $this->hasDefaultValue();
+		$this->fieldInfo['column'] = $this->get('column');
+		$this->fieldInfo['type'] = $fieldDataType;
+		$this->fieldInfo['name'] = $this->get('name');
+		$this->fieldInfo['label'] = vtranslate($this->get('label'), $this->getModuleName());
+
+		if($fieldDataType == 'picklist' || $fieldDataType == 'multipicklist' || $fieldDataType == 'multiowner') {
+			$pickListValues = $this->getPicklistValues();
+            $editablePicklistValues = $this->getEditablePicklistValues();
+			if(!empty($pickListValues)) {
+				$this->fieldInfo['picklistvalues'] = $pickListValues;
+			} else {
+				$this->fieldInfo['picklistvalues'] = array();
+			}
+            
+            if(!empty($editablePicklistValues)) {
+                $this->fieldInfo['editablepicklistvalues'] = $editablePicklistValues;
+            } else {
+				$this->fieldInfo['editablepicklistvalues'] = array();
+			}
+
+			$this->fieldInfo['picklistColors'] = array();
+			$picklistColors = $this->getPicklistColors();
+			if ($picklistColors) {
+				$this->fieldInfo['picklistColors'] = $picklistColors;
+			}
+		}
+        
+        if($fieldDataType == "documentsFolder"){
+            $documentFolders = $this->getDocumentFolders();
+            if(!empty($documentFolders)) {
+                $this->fieldInfo['documentFolders'] = $documentFolders;
+            }
+        }
+
+		if($fieldDataType === 'currencyList'){
+		   $currencyList = $this->getCurrencyList();
+		   $this->fieldInfo['currencyList'] = $currencyList;
+		}
+
+		if($this->getFieldDataType() == 'date' || $this->getFieldDataType() == 'datetime'){
+			$currentUser = Users_Record_Model::getCurrentUserModel();
+			$this->fieldInfo['date-format'] = $currentUser->get('date_format');
+		}
+
+		if($this->getFieldDataType() == 'time') {
+			$currentUser = Users_Record_Model::getCurrentUserModel();
+			$this->fieldInfo['time-format'] = $currentUser->get('hour_format');
+		}
+
+		if($this->getFieldDataType() == 'currency') {
+			$currentUser = Users_Record_Model::getCurrentUserModel();
+			$this->fieldInfo['currency_symbol'] = $currentUser->get('currency_symbol');
+			$this->fieldInfo['decimal_separator'] = $currentUser->get('currency_decimal_separator');
+			$this->fieldInfo['group_separator'] = $currentUser->get('currency_grouping_separator');
+		}
+
+		if($this->getFieldDataType() == 'owner' || $this->get('uitype') == '52') {
+			$userList = $currentUser->getAccessibleUsers();
+			$groupList = $currentUser->getAccessibleGroups();
+			$pickListValues = array();
+			$pickListValues[vtranslate('LBL_USERS', $this->getModuleName())] = $userList;
+			$pickListValues[vtranslate('LBL_GROUPS', $this->getModuleName())] = $groupList;
+			$this->fieldInfo['picklistvalues'] = $pickListValues;
+		}
+
+		if($this->getFieldDataType() == 'ownergroup') {
+			$groupList = $currentUser->getAccessibleGroups();
+			$pickListValues = array();
+			$this->fieldInfo['picklistvalues'] = $groupList;
+		}
+
+		if($this->getFieldDataType() == 'reference') {
+			$this->fieldInfo['referencemodules'] = $this->getReferenceList();
+		}
+
+		$this->fieldInfo['validator'] = $this->getValidator();
+		return $this->fieldInfo;
+	}
 }

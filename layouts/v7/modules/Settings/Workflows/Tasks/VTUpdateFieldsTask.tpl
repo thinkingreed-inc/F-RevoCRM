@@ -33,7 +33,7 @@
                                 {if (!($FIELD_MODEL->get('workflow_fieldEditable') eq true)) or ($MODULE_MODEL->get('name')=="Documents" and in_array($FIELD_MODEL->get('name'),$RESTRICTFIELDS))}
                                     {continue}
                                 {/if}
-							{assign var=FIELD_INFO value=$FIELD_MODEL->getFieldInfo()}
+							{assign var=FIELD_INFO value=$FIELD_MODEL->getFieldInfoForWfEditTask()}
                             {assign var=FIELD_NAME value=$FIELD_MODEL->getName()}
                                 {assign var=FIELD_MODULE_MODEL value=$FIELD_MODEL->getModule()}
                                 <option value="{$FIELD_MODEL->get('workflow_columnname')}" {if $FIELD_MAP['fieldname'] eq $FIELD_MODEL->get('workflow_columnname')}selected=""{/if}data-fieldtype="{$FIELD_MODEL->getFieldType()}" data-field-name="{$FIELD_MODEL->get('name')}" 
@@ -69,7 +69,7 @@
                             {if (!($FIELD_MODEL->get('workflow_fieldEditable') eq true))  or ($MODULE_MODEL->get('name')=="Documents" and in_array($FIELD_MODEL->get('name'),$RESTRICTFIELDS))}
                                 {continue}
                             {/if}
-						{assign var=FIELD_INFO value=$FIELD_MODEL->getFieldInfo()}
+						{assign var=FIELD_INFO value=$FIELD_MODEL->getFieldInfoForWfEditTask()}
                         {assign var=FIELD_NAME value=$FIELD_MODEL->getName()}
                             {assign var=FIELD_MODULE_MODEL value=$FIELD_MODEL->getModule()}
                             <option value="{$FIELD_MODEL->get('workflow_columnname')}" data-fieldtype="{$FIELD_MODEL->getFieldType()}" data-field-name="{$FIELD_MODEL->get('name')}" 
