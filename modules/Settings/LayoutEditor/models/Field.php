@@ -267,22 +267,6 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 	}
 
 	/**
-	 * ユーザーモジュールなど、変更されないようにする為の修正
-	 * @return <Boolean> true/false
-	 */
-	public function isUneditableFields () {
-		require('modules/Settings/LayoutEditor/config/FieldEditConfig.php');
-		$moduleName = $this->getModuleName();
-		$fieldName = $this->getName();
-		if(isset($UneditableFields[$moduleName])){
-			if(in_array($fieldName, $UneditableFields[$moduleName])){
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
 	 * Function to get instance
 	 * @param <String> $value - fieldname or fieldid
 	 * @param <type> $module - optional - module instance
