@@ -273,7 +273,7 @@
 														<div class="row" >
 															{assign var=IS_MANDATORY value=$FIELD_MODEL->isMandatory()}
 															<span class="col-sm-1">&nbsp;
-																{if $FIELD_MODEL->isEditable() && $IS_FIELDS_SORTABLE}
+																{if $IS_FIELDS_SORTABLE}
 																	<img src="{vimage_path('drag.png')}" class="cursorPointerMove" border="0" title="{vtranslate('LBL_DRAG',$QUALIFIED_MODULE)}"/>
 																{/if}
 															</span>
