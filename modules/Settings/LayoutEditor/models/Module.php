@@ -160,6 +160,11 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 			$tableName= 'vtiger_'.strtolower($moduleName).'cf';
 		}
 
+		// Usersの場合はvtiger_usersに登録する
+		if($moduleName == 'Users'){
+			$tableName = 'vtiger_users';
+		}
+
 		$details = $this->getTypeDetailsForAddField($fieldType, $params);
 		$uitype = $details['uitype'];
 		$typeofdata = $details['typeofdata'];
