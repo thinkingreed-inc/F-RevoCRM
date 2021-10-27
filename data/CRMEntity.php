@@ -124,6 +124,11 @@ class CRMEntity {
 				$this->insertIntoEntityTable($table_name, $module, $fileid);
 			}
 		}
+		// tagのテーブルは$table_nameに入ってこないので別途追加
+		if($this->column_fields['tags'] != null){
+			$this->insertIntoTagsTable($module);
+		}
+		
 		$columnFields->restartTracking();
 		//Calling the Module specific save code
 		$this->save_module($module);
@@ -723,6 +728,41 @@ class CRMEntity {
 			$adb->pquery($sql1, $value);
 		}
 	}
+
+	function insertIntoTagsTable($module){
+        $db = PearDatabase::getInstance();
+        $currentUser = Users_Record_Model::getCurrentUserModel();
+
+        $tagName = $this->column_fields['tags'];
+        $visibility = 'public'; //インポートしたタグはpublicで固定
+		$userId = $currentUser->getId();
+		$now = date("Y-m-d H:i:s");
+
+		$explodedValue = explode(' |##| ', $tagName);
+		foreach ($explodedValue as $value) {
+			$id = $db->getUniqueId('vtiger_freetags');
+			$TagNotExist = true;
+			$tagName = $value;
+
+			//タグの新規作成の必要確認
+			//次の条件では作成しない : "vtiger_freetagsに同名のタグがあり" かつ "そのタグがpublicである"
+			$result = $db->pquery("SELECT id, visibility FROM vtiger_freetags WHERE tag=?", array($tagName));
+			$rows = $db->num_rows($result);
+			for ($i = 0; $i < $rows; $i++) {
+				$checkvisibility = $db->query_result($result, $i, 'visibility');
+				if($checkvisibility == "public"){
+					$TagNotExist = false;
+					$id = $db->query_result($result, $i, 'id');
+					break;
+				}
+			}
+
+			if($TagNotExist){
+				$db->pquery("INSERT INTO vtiger_freetags values(?,?,?,?,?)", array($id, $tagName, $tagName, $visibility, $userId));	
+			}
+			$db->pquery("INSERT INTO vtiger_freetagged_objects values(?,?,?,?,?)", array($id, $userId, $this->id, $now, $module));
+		}
+    }
 
 	/** Function to delete a record in the specifed table
 	 * @param $table_name -- table name:: Type varchar

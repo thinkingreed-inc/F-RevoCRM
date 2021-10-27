@@ -126,7 +126,8 @@ class Import_FileReader_Reader {
 			$newField[$key] = htmlspecialchars_decode($fieldVal, ENT_QUOTES); 
 		} 
 		$fieldValues = $newField; 
-		$tableName = Import_Utils_Helper::getDbTableName($this->user); 
+		$tableName = Import_Utils_Helper::getDbTableName($this->user);
+		$db->pquery('ALTER TABLE '.$tableName.' MODIFY tags varchar(50)'); //このままだとまずい
 		$db->pquery('INSERT INTO '.$tableName.' ('. implode(',', $columnNames).') VALUES ('. generateQuestionMarks($fieldValues) .')', $fieldValues); 
 		$this->numberOfRecordsRead++;
 	}
