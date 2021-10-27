@@ -15,6 +15,7 @@
 <hr>
 <div id="savedMapsContainer">{include file="Import_Saved_Maps.tpl"|@vtemplate_path:'Import'}</div>
 <div>{include file="Import_Mapping.tpl"|@vtemplate_path:'Import'}</div>
+<div><label for="save_map">{'LBL_TAGS_IMPORT_MESSAGE'|@vtranslate:$MODULE}</label><div>
 <div class="form-inline" style="padding-bottom: 10%;">
     <input type="checkbox" name="save_map" id="save_map">&nbsp;&nbsp;<label for="save_map">{'LBL_SAVE_AS_CUSTOM_MAPPING'|@vtranslate:$MODULE}</label>
     &nbsp;&nbsp;<input type="text" name="save_map_as" id="save_map_as" class = "form-control">

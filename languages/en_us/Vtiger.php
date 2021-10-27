@@ -127,6 +127,7 @@ $languageStrings = array(
 	'LBL_EDIT_TAG'=>'Edit Tag',
 	'LBL_NO_TAG_EXISTS' => 'No Tag Exists' ,
 	'LBL_RELATED_USERS' => 'Related Users',
+	'LBL_TAGS_IMPORT_MESSAGE' => 'If you import tags, they become Public tags.',
 
 	// Common Fields
 	'LBL_USER' => 'User',

@@ -136,6 +136,7 @@ $languageStrings = array(
 	'LBL_NO_TAG_EXISTS' => 'タグが存在しません。' ,
 	'LBL_RELATED_USERS' => '関連ユーザー',
 	'Primary Module' => 'モジュール',
+	'LBL_TAGS_IMPORT_MESSAGE' => 'タグをインポートした場合、共有タグに設定されます',
 
 	// Common Fields
 	'LBL_USER' => 'ユーザー',
