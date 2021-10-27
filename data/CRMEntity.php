@@ -744,16 +744,41 @@ class CRMEntity {
 			$TagNotExist = true;
 			$tagName = $value;
 
-			//タグの新規作成の必要確認
-			//次の条件では作成しない : "vtiger_freetagsに同名のタグがあり" かつ "そのタグがpublicである"
-			$result = $db->pquery("SELECT id, visibility FROM vtiger_freetags WHERE tag=?", array($tagName));
-			$rows = $db->num_rows($result);
-			for ($i = 0; $i < $rows; $i++) {
-				$checkvisibility = $db->query_result($result, $i, 'visibility');
-				if($checkvisibility == "public"){
+			//タグデータをcacheに登録
+			$checkcache = Vtiger_Cache::get('DBTags', $tagName);
+			if(!$checkcache){
+				$result = $db->pquery("SELECT id,tag,visibility,owner FROM vtiger_freetags;");
+				$rows = $db->num_rows($result);
+				for ($i = 0; $i < $rows; $i++) {
+					$DBtagName = $db->query_result($result, $i, 'tag');
+					$Tagvalue[0] = $db->query_result($result, $i, 'visibility');
+					$Tagvalue[1] = $db->query_result($result, $i, 'owner');
+					$Tagvalue[2] = $db->query_result($result, $i, 'id');
+					Vtiger_Cache::set('DBTags',$DBtagName,$Tagvalue);
+				}
+				$Tagvalue = [];
+			}
+
+			/*タグの新規作成の必要確認
+			1. vtiger_freetagsに同名のタグがない → 作成
+			2. vtiger_freetagsに同名のタグがある → publicである → 作成しない
+			3. 　　　　　　　　　                → privateである → ownerが自身 → 作成しない
+			4. 　　　　　　　　　                  　　　        → ownerが自身でない → 作成
+			*/
+			$Tagvalue = Vtiger_Cache::get('DBTags',$tagName);
+			if(!$Tagvalue){ // 1
+				$TagNotExist = true;
+			}else{
+				if($Tagvalue[0] == "public"){ // 2
 					$TagNotExist = false;
-					$id = $db->query_result($result, $i, 'id');
-					break;
+					$id = $Tagvalue[2];
+				}else if($Tagvalue[0] == "private"){
+					if($Tagvalue[1] == $userId){ // 3
+						$TagNotExist = false;
+						$id = $Tagvalue[2];
+					}else{ // 4
+						$TagNotExist = true;
+					}
 				}
 			}
 
