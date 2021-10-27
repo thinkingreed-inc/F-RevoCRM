@@ -747,7 +747,7 @@ class CRMEntity {
 			//タグデータをcacheに登録
 			$checkcache = Vtiger_Cache::get('DBTags', $tagName);
 			if(!$checkcache){
-				$result = $db->pquery("SELECT id,tag,visibility,owner FROM vtiger_freetags;");
+				$result = $db->pquery("SELECT id,tag,visibility,owner FROM vtiger_freetags;", array());
 				$rows = $db->num_rows($result);
 				for ($i = 0; $i < $rows; $i++) {
 					$DBtagName = $db->query_result($result, $i, 'tag');
