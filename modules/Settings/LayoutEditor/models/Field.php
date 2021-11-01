@@ -182,6 +182,9 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 		if($this->isUneditableFields()){
 			return true;
 		}
+		if($this->block->module->name == 'Users'){
+			return true;
+		}
 		$moduleModel = $this->getModule();
 		if($this->get('quickcreate') == 0 || $this->get('quickcreate') == 3 || $this->get('displaytype') == 5 || !$moduleModel->isQuickCreateSupported() || $this->get('uitype') == 69
 						|| $this->getName() == 'recurringtype' || $this->isOptionsRestrictedField()) {
@@ -196,6 +199,9 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 	 */
 	public function isMassEditOptionDisabled() {
 		if($this->isUneditableFields()){
+			return true;
+		}
+		if($this->block->module->name == 'Users'){
 			return true;
 		}
 		if($this->get('masseditable') == 0 || $this->get('displaytype') != 1 || $this->get('masseditable') == 3 || in_array($this->block->module->name, array('Events', 'Calendar')) || $this->isOptionsRestrictedField()) {
@@ -234,6 +240,9 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 		if($this->isUneditableFields()){
 			return true;
 		}
+		if($this->block->module->name == 'Users'){
+			return true;
+		}
 		if (in_array($this->get('displaytype'), array(4, 5)) || in_array($this->block->module->name, array('Events', 'Calendar'))
 				|| ($this->get('uitype') == '83' && $this->getName() == 'taxclass' && in_array($this->block->module->name, array('Products', 'Services')))) {
 			return true;
@@ -243,6 +252,9 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 
 	public function isHeaderFieldOptionDisabled() {
 		if($this->isUneditableFields()){
+			return true;
+		}
+		if($this->block->module->name == 'Users'){
 			return true;
 		}
 		/**
