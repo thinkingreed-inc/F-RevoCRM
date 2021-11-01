@@ -144,7 +144,16 @@ class Import_FileReader_Reader {
 		if(in_array($dataType, $skipDataType)){
 			$columnsListQuery .= ','.$fieldName.' varchar(250)';
 		} else {
-			$columnsListQuery .= ','.$fieldName.' '.$fieldTypes[$fieldObject->get('column')];
+			if (strpos($fieldTypes[$fieldObject->get('column')], 'varchar') !== false) {
+				preg_match('/(?<=\().*?(?=\))/', $fieldTypes[$fieldObject->get('column')], $match);
+				if (intval($match[0]) > 200) {
+					$columnsListQuery .= ',' . $fieldName . ' text';
+				} else {
+					$columnsListQuery .= ',' . $fieldName . ' ' . $fieldTypes[$fieldObject->get('column')];
+				}
+			} else {
+				$columnsListQuery .= ',' . $fieldName . ' ' . $fieldTypes[$fieldObject->get('column')];
+			}
 		}
 
 		return $columnsListQuery;
