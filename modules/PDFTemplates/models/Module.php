@@ -132,6 +132,7 @@ class PDFTemplates_Module_Model extends Vtiger_Module_Model {
 					}
 				}
 			}
+			$allFields[] = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate('Sequence no', $field['module']), "$" . strtolower($field['module']) . "-sequence_no$");
 			$allFields[] = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate('Item total price', $field['module']), "$" . strtolower($field['module']) . "-producttotal$");
 			$allFields[] = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate('Item net price', $field['module']), "$" . strtolower($field['module']) . "-netprice$");
 			$allFields[] = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate('Tax', $field['module']), "$" . strtolower($field['module']) . "-tax_totalamount$");

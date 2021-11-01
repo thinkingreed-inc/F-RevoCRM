@@ -1483,6 +1483,7 @@ $languageStrings = array(
 	'Item net price' => '品目の金額',
 	'Item total price' => '品目の割引前合計',
 	'List columns saved successfully' => 'カラムは正常に保存されました',
+	'Sequence no' => '明細行番号',
 
 	//ユーザー管理>プロファイル
 	'Import' => 'インポート',
