@@ -278,9 +278,6 @@ jQuery.validator.addMethod("currency", function(value, element, params) {
 	if(isNaN(strippedValue)){
 		return false;
 	}
-	if(strippedValue < 0){
-		return false;
-	}
 	return true;
 	}, jQuery.validator.format(app.vtranslate('JS_PLEASE_ENTER_VALID_VALUE'))
 );
