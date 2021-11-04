@@ -485,3 +485,6 @@ button#advanceIntiateSave + input {
 .overlayDetail .modal-content {
   width: 100%;
 }
+.overlayDetail .modal-content .overlayDetailHeader div > div.col-sm-6.col-lg-6.col-md-6{
+  width: 83.3%;
+}
