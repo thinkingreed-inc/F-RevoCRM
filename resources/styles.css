@@ -481,6 +481,14 @@ button#advanceIntiateSave + input {
   padding: 0 26px 0 10px;
 }
 
+/* 関連モジュールのモーダル */
+.overlayDetail .modal-content {
+  width: 100%;
+}
+.overlayDetail .modal-content .overlayDetailHeader div > div.col-sm-6.col-lg-6.col-md-6{
+  width: 83.3%;
+}
+
 /* 概要・詳細画面 */
 @media (min-width: 992px) {
   .detailViewContainer.viewContent > .content-area {
