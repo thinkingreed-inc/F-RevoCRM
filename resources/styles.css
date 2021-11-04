@@ -502,7 +502,7 @@ button#advanceIntiateSave + input {
 .activityEntries .relatedActivitiesLabel {
   color: #222;
   font-weight: bold;
-  padding-right: 30px;
+  padding-right: 25px;
   padding-bottom: 10px;
   text-align: right;
   width: 90px;
@@ -521,4 +521,5 @@ button#advanceIntiateSave + input {
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+  max-width: 60vw;
 }
