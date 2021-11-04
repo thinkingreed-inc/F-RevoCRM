@@ -134,20 +134,27 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 	}
 
 	public function initializeImport() {
+		global $adb;
 		$lockInfo = Import_Lock_Action::isLockedForModule($this->module);
-		if ($lockInfo != null) {
-			if ($lockInfo['userid'] != $this->user->id) {
+		$importUserId = $this->user->id;
+		if (isset($lockInfo)) {
+			if ($lockInfo['userid'] != $importUserId) { //他ユーザーのキューがインポート中なのでインポートしない
 				Import_Utils_Helper::showImportLockedError($lockInfo);
 				return false;
-			} else if($lockInfo['importid'] == $this->id) {
+			}
+			$configReader = new Import_Config_Model();
+			$pagingLimit = intval($configReader->get('importPagingLimit'));
+			$importTable = 'vtiger_import_'.$importUserId;
+			$finishedImportQuery = 'SELECT count(status) FROM '.$importTable.' WHERE status = 1 GROUP BY status';
+			$finishedImportResult = $adb->pquery($finishedImportQuery, array());
+			$finishedImportCount = $adb->query_result($finishedImportResult, 0, 'count(status)');
+			if($lockInfo['importid'] == $this->id && $finishedImportCount % $pagingLimit != 0 ) { //このキューはすでに実行されており,インポート中なのでインポートしない
 				return false;
-			} else {
-				return true;
 			}
 		} else {
 			Import_Lock_Action::lock($this->id, $this->module, $this->user);
-			return true;
 		}
+		return true;
 	}
 
 	public function finishImport() {
@@ -905,7 +912,14 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			$vtigerMailer->Body    = $emailData;
 			$vtigerMailer->Send(true);
 
-			$importDataController->finishImport();
+			//未完了のインポートがない場合のみ終了する
+			$importTable = 'vtiger_import_' . $current_user->id;
+			$unfinishedImportQuery = 'SELECT count(status) FROM ' . $importTable . ' WHERE status = 0 GROUP BY status';
+			$unfinishedImportResult = $adb->pquery($unfinishedImportQuery, array());
+			$unfinishedImportCount = $adb->query_result($unfinishedImportResult, 0, 'count(status)');
+			if(!$unfinishedImportCount){
+				$importDataController->finishImport();
+			}
 		}
 	}
 
