@@ -126,7 +126,7 @@ class Import_FileReader_Reader {
 			$newField[$key] = htmlspecialchars_decode($fieldVal, ENT_QUOTES); 
 		} 
 		$fieldValues = $newField; 
-		$tableName = Import_Utils_Helper::getDbTableName($this->user); 
+		$tableName = Import_Utils_Helper::getDbTableName($this->user);
 		$db->pquery('INSERT INTO '.$tableName.' ('. implode(',', $columnNames).') VALUES ('. generateQuestionMarks($fieldValues) .')', $fieldValues); 
 		$this->numberOfRecordsRead++;
 	}
@@ -141,7 +141,9 @@ class Import_FileReader_Reader {
 		$fieldName = $fieldObject->getName();
 		$dataType = $fieldObject->getFieldDataType();
 		$skipDataType = array('reference','owner', 'currencyList', 'date', 'datetime', 'productTax', 'ownergroup');
-		if(in_array($dataType, $skipDataType)){
+		if($fieldObject->get('name') == 'tags' && $fieldObject->get('displaytype') == 6){
+			$columnsListQuery .= ','.$fieldName.' varchar(500)';
+		} elseif(in_array($dataType, $skipDataType)){
 			$columnsListQuery .= ','.$fieldName.' varchar(250)';
 		} else {
 			if (strpos($fieldTypes[$fieldObject->get('column')], 'varchar') !== false) {

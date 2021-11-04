@@ -536,7 +536,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 					$ownerId = $this->user->id;
 				}
 				$fieldData[$fieldName] = $ownerId;
-			} elseif ($fieldDataType == 'multipicklist') {
+			} elseif ($fieldDataType == 'multipicklist' || $fieldName == 'tags') {
 				$trimmedValue = trim($fieldValue);
 
 				if (!$trimmedValue && isset($defaultFieldValues[$fieldName])) {
