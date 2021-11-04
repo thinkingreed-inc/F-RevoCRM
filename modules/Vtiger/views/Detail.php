@@ -162,6 +162,27 @@ class Vtiger_Detail_View extends Vtiger_Index_View {
 			$viewer->assign('SELECTED_MENU_CATEGORY',$appName);
 		}
 
+		//サムネイル部分を生成するために必要な情報をView側に渡す
+		$imagedetails = $recordModel->getImageDetails();
+		if($imagedetails){
+			if(!empty($imagedetails[0]['url'])){
+				$imageInfo["imgpath"] = $imagedetails[0]['url'];
+				$imageInfo["imgName"] = $imagedetails[0]['orgname'];
+				$isBGwhite = true;
+			}else{
+				$imageInfo["imgpath"] = "summaryImg.png";
+				$imageInfo["imgName"] = "summaryImg";
+				$isBGwhite = false;
+			}
+		}else{
+			$imageInfo["imgpath"] = $this->record->getModule()->getModuleIcon();
+			$imageInfo["imgName"] = "";
+			$isBGwhite = false;
+			if(strpos($imageInfo["imgpath"],$moduleName.'.png') !== false) $isBGwhite = true;
+		}
+		$viewer->assign('IMAGE_INFO',$imageInfo);
+		$viewer->assign('BGWHITE',$isBGwhite);
+
 		$selectedTabLabel = $request->get('tab_label');
 		$relationId = $request->get('relationId');
 

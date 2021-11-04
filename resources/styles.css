@@ -423,6 +423,14 @@ button#advanceIntiateSave + input {
   max-height: 80px;
   margin: 0 auto;
 }
+/*レコード画面アイコンの背景白色化と中央寄せ*/
+.detailview-header .col-sm-6 .clearfix .change_BG_white{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: white !important;
+}
 
 /*クイック作成*/
 .col-lg-12 .row .col-lg-4 .quickCreateModule img{

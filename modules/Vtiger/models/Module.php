@@ -2058,7 +2058,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 
 		$imageFilePath = 'layouts/'.Vtiger_Viewer::getLayoutName()."/modules/$moduleName/$moduleName.png";
 		if (file_exists($imageFilePath)) {
-			$moduleIcon = "<img src='$imageFilePath' title='$title' width='1' style='background-color: white;'/>";
+			$moduleIcon = "<img src='$imageFilePath' title='$title' width='1'/>";
 		}
 
 		return $moduleIcon;
