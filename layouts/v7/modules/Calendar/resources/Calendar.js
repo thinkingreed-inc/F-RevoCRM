@@ -1422,7 +1422,6 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var thisInstance = this;
 		var params = {
 			submitHandler: function (form) {
-				jQuery("button[name='saveButton']").attr("disabled", "disabled");
 				if (this.numberOfInvalids() > 0) {
 					jQuery("button[name='saveButton']").removeAttr("disabled");
 					return false;

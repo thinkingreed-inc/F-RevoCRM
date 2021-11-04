@@ -379,6 +379,8 @@ $languageStrings = array(
 	'LBL_REMOVE' => '削除',
 	'LBL_AT' => 'at',
 	'LBL_MINE' => '自分',
+	'Mine' => '自分', 
+	'Shared' => '共有',
 	'LBL_ME' => '自分',
 	'History' => '履歴',
 	'Upcoming Tasks' => '近日中の活動',
@@ -1481,6 +1483,7 @@ $languageStrings = array(
 	'Item net price' => '品目の金額',
 	'Item total price' => '品目の割引前合計',
 	'List columns saved successfully' => 'カラムは正常に保存されました',
+	'Sequence no' => '明細行番号',
 
 	//ユーザー管理>プロファイル
 	'Import' => 'インポート',

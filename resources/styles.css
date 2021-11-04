@@ -488,3 +488,46 @@ button#advanceIntiateSave + input {
 .overlayDetail .modal-content .overlayDetailHeader div > div.col-sm-6.col-lg-6.col-md-6{
   width: 83.3%;
 }
+
+/* 概要・詳細画面 */
+@media (min-width: 992px) {
+  .detailViewContainer.viewContent > .content-area {
+      padding-left: 57px;
+  }
+}
+@media (max-width: 991px) {
+  .detailViewContainer.viewContent > .content-area {
+      padding-left: 15px;
+  }
+}
+@media (min-width: 769px) {
+  .detailview-header-block {
+  margin-top: 10px;
+  }
+}
+
+/* 概要画面の関連活動*/
+.activityEntries .relatedActivitiesLabel {
+  color: #222;
+  font-weight: bold;
+  padding-right: 25px;
+  padding-bottom: 10px;
+  text-align: right;
+  width: 90px;
+}
+.activityEntries .relatedActivitiesValue {
+  padding-bottom: 10px;
+  word-break: break-all;
+}
+.activityEntries .summaryViewEntries {
+  display: flex !important;
+  margin-bottom: 10px;
+}
+.activityEntries .summaryViewEntries > a:first-child{
+  font-size: 120%;
+  display: block;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 60vw;
+}

@@ -55,7 +55,27 @@
 										{if $DELETE_PERMITTED == 'yes'}<a onclick="Vtiger_Detail_Js.deleteRelatedActivity(event);" data-id="{$RECORD->getId()}" data-recurring-enabled="{$RECORD->isRecurringEnabled()}" class="fieldValue"><i class="summaryViewEdit fa fa-trash " title="{vtranslate('LBL_DELETE',$MODULE_NAME)}"></i></a>{/if}
 									</div>
 								{assign var=START_DATE_AND_TIME value=Vtiger_Util_Helper::formatDateTimeIntoDayString("$START_DATE $START_TIME")}
-								<span><strong title="{$START_DATE_AND_TIME}">{$START_DATE_AND_TIME}</strong></span>
+								{assign var=OWNER value=$RECORD->get('smownerid')}
+								{assign var=ACTIVITYTYPE value=$RECORD->get('activitytype')}
+								{assign var=DESCRIPTION value=$RECORD->get('description')}
+								<table>
+									<tr class="relatedActivitiesEntries">
+										<td class="relatedActivitiesLabel">{vtranslate('Start Date & Time','Calendar')}</td>
+										<td class="relatedActivitiesValue">{$START_DATE_AND_TIME}</td>
+									</tr>
+									<tr class="relatedActivitiesEntries">
+										<td class="relatedActivitiesLabel">{vtranslate('Assigned To')}</td>
+										<td class="relatedActivitiesValue">{getUserFullName($OWNER)}</td>
+									</tr>
+									<tr class="relatedActivitiesEntries">
+										<td class="relatedActivitiesLabel">{vtranslate('Activity Type','Calendar')}</td>
+										<td class="relatedActivitiesValue">{vtranslate($ACTIVITYTYPE,$MODULE_NAME)}</td>
+									</tr>
+									<tr class="relatedActivitiesEntries">
+										<td class="relatedActivitiesLabel" valign="top">{vtranslate('Description')}</td>
+										<td class="relatedActivitiesValue">{$DESCRIPTION|nl2br}</td>
+									</tr>
+								</table>
 							</div>
 
 							<div class='col-lg-4 col-md-4 col-sm-4 activityStatus' style='line-height: 0px;padding-right:30px;'>
