@@ -12,7 +12,7 @@
 {strip}
 	<div class="col-lg-6 col-md-6 col-sm-6">
 		<div class="record-header clearfix">
-			<div class="recordImage bgvendors app-{$SELECTED_MENU_CATEGORY} {if $IMAGE_DETAILS == false}Read_BG_clear{/if}">
+			<div class="recordImage bgvendors app-{$SELECTED_MENU_CATEGORY} {if $BGWHITE}change_BG_white{/if}">
 				<div class="name"><span><strong>{$MODULE_MODEL->getModuleIcon()}</strong></span></div>
 			</div>
 			<div class="recordBasicInfo">
