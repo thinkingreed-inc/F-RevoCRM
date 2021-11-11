@@ -13,9 +13,9 @@
     <div class="col-sm-6">
         <div class="record-header clearfix">
             <div class="recordImage bgquotes app-{$SELECTED_MENU_CATEGORY} {if $BGWHITE}change_BG_white{/if}">
-                {if !empty($IMAGE_INFO.imgName)}
-                    {if $IMAGE_INFO.imgName neq "summaryImg"}
-                        <div class="name"><span><strong><img src="{$IMAGE_INFO.imgpath}" alt="{$IMAGE_INFO.orgname}" title="{$IMAGE_INFO.orgname}" width="1"/></strong></span></div>
+                {if !empty($IMAGE_INFO[0].imgpath)}
+                    {if $IMAGE_INFO[0].imgName neq "summaryImg"}
+                        <div class="name"><span><strong><img src="{$IMAGE_INFO[0].imgpath}" alt="{$IMAGE_INFO[0].orgname}" title="{$IMAGE_INFO[0].orgname}" width="1"/></strong></span></div>
                     {else}
                         <img src="{vimage_path('summary_organizations.png')}" class="summaryImg"/>
                     {/if}

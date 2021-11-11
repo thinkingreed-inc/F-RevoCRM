@@ -13,8 +13,8 @@
     <div class="col-sm-6 col-lg-6 col-md-6">
         <div class="record-header clearfix">
             <div class="recordImage bgproducts app-{$SELECTED_MENU_CATEGORY} {if $BGWHITE}change_BG_white{/if}">
-                {if !empty($IMAGE_INFO.0.imgpath)}
-                    {if $IMAGE_INFO.0.imgName neq "summaryImg"}
+                {if !empty($IMAGE_INFO[0].imgpath)}
+                    {if $IMAGE_INFO[0].imgName neq "summaryImg"}
                         {assign var=WIDTH value="40px"}{assign var=HEIGHT value="40px"}
                         {if $IMAGE_INFO|@count eq 1}{$WIDTH="80px"}{$HEIGHT="80px"}
                         {elseif $IMAGE_INFO|@count eq 2}{$HEIGHT="80px"}
