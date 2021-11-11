@@ -61,7 +61,7 @@ class Dailyreports_Module_Model extends Vtiger_Module_Model {
 		$nowInDBFormat = Vtiger_Datetime_UIType::getDBDateTimeValue($nowInUserFormat);
 		list($currentDate, $currentTime) = explode(' ', $nowInDBFormat);
 
-		$query = "SELECT vtiger_crmentity.crmid, vtiger_crmentity.smownerid, vtiger_crmentity.setype, vtiger_activity.* FROM vtiger_activity
+		$query = "SELECT vtiger_crmentity.crmid, vtiger_crmentity.smownerid, vtiger_crmentity.setype, vtiger_crmentity.description, vtiger_activity.* FROM vtiger_activity
 					INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_activity.activityid
 					left join vtiger_groups on vtiger_groups.groupid=vtiger_crmentity.smownerid
 					left join vtiger_users on vtiger_users.id=vtiger_crmentity.smownerid

@@ -198,7 +198,13 @@ class VtigerModuleOperation extends WebserviceEntityOperation {
 			if(!$meta->hasPermission(EntityMeta::$RETRIEVE,$row[$tableIdColumn])){
 				continue;
 			}
-			$output[$row[$tableIdColumn]] = DataTransform::sanitizeDataWithColumn($row,$meta);
+			if(strpos(explode("FROM",$mysql_query)[0], 'vtiger_inventoryproductrel') === false){
+				// 明細行が含まれていない場合
+				$output[$row[$tableIdColumn]] = DataTransform::sanitizeDataWithColumn($row,$meta);
+			}else{
+				// 明細行が含まれている場合
+				$output[] = DataTransform::sanitizeDataWithColumn($row,$meta);
+			}
 		}
 		
 		$newOutput = array();

@@ -467,6 +467,10 @@ class Vtiger_InventoryPDFController {
 				$fieldname = strtolower($name);
 				$fieldname = preg_replace('/'.$cnt.'$/', '', $fieldname);
 				$fieldname = self::convertFieldName($fieldname);
+
+				// 改行が適用されるように修正
+				$value = nl2br($value);
+
 				$block = preg_replace('/\$'.$prefix.'\-'.$fieldname.'\$/', $value, $block);
 			}
 			$convertedArray[] = $block;

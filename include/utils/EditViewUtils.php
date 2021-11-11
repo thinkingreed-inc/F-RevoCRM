@@ -201,7 +201,12 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 		$entitytype=$adb->query_result($result,$i-1,'entitytype');
 		$purchaseCost = $adb->query_result($result,$i-1,'purchase_cost');
 		$margin = $adb->query_result($result,$i-1,'margin');
+		$sequence_no = $adb->query_result($result,$i-1,'sequence_no');
 		$isSubProductsViewable = $adb->query_result($result, $i-1, 'is_subproducts_viewable');
+
+		if ($sequence_no) {
+			$product_Detail[$i]['sequence_no' . $i] = $sequence_no;
+		}
 
 		if ($purchaseCost) {
 			$product_Detail[$i]['purchaseCost'.$i] = number_format($purchaseCost, $no_of_decimal_places, '.', '');

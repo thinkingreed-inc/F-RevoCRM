@@ -123,7 +123,7 @@
 				</div>
 			{else}
 				{if $COMMENT_EDITABLE}
-					<div><br><textarea id="{$comment}" name="{$comment}" class="lineItemCommentBox">{decode_html($data.$comment)}</textarea></div>
+					<div><br><textarea id="{$comment}" name="{$comment}" class="lineItemCommentBox" style="width: 400px;height:150px;">{decode_html($data.$comment)}</textarea></div>
 				{/if}
 			{/if}
 		</td>
