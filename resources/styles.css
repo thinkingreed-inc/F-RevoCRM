@@ -425,11 +425,26 @@ button#advanceIntiateSave + input {
 }
 /*レコード画面アイコンの背景白色化と中央寄せ*/
 .detailview-header .col-sm-6 .clearfix .change_BG_white{
+  width: 80px;
+  height: 80px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
 
   background-color: white !important;
+}
+/* 製品の場合のみ画像を複数アップロードできる仕様
+ * object-fit:containはIE11で使えないのでbackground-size:containを使って中央寄せする
+*/
+.detailview-header .col-sm-6 .clearfix .change_BG_white .change_BG_center{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-position: center center;
+  background-size: contain;
+  background-repeat: no-repeat;
 }
 
 /*クイック作成*/

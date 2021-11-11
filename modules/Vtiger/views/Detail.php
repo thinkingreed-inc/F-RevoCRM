@@ -166,8 +166,11 @@ class Vtiger_Detail_View extends Vtiger_Index_View {
 		$imagedetails = $recordModel->getImageDetails();
 		if($imagedetails){
 			if(!empty($imagedetails[0]['url'])){
-				$imageInfo["imgpath"] = $imagedetails[0]['url'];
-				$imageInfo["imgName"] = $imagedetails[0]['orgname'];
+				// 製品の場合、画像を複数アップロードできるためfor文を使っている
+				for($i = 0; $i < count($imagedetails); $i++){
+					$imageInfo[$i]["imgpath"] = $imagedetails[$i]['url'];
+					$imageInfo[$i]["imgName"] = $imagedetails[$i]['orgname'];
+				}
 				$isBGwhite = true;
 			}else{
 				$imageInfo["imgpath"] = "summaryImg.png";
@@ -178,6 +181,7 @@ class Vtiger_Detail_View extends Vtiger_Index_View {
 			$imageInfo["imgpath"] = $this->record->getModule()->getModuleIcon();
 			$imageInfo["imgName"] = "";
 			$isBGwhite = false;
+			// (例:顧客担当者)/layouts/v7/modules/Contacts/Contacts.pngがある場合、背景を白に
 			if(strpos($imageInfo["imgpath"],$moduleName.'.png') !== false) $isBGwhite = true;
 		}
 		$viewer->assign('IMAGE_INFO',$imageInfo);
