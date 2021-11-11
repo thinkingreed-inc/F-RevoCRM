@@ -497,3 +497,7 @@ button#advanceIntiateSave + input {
   margin-top: 10px;
   }
 }
+/* 4カラムを維持する為の行を挿入 */
+.firstTr td{
+  padding: 0 !important;
+}
