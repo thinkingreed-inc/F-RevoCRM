@@ -12,16 +12,18 @@
 {strip}
     <div class="col-sm-6">
         <div class="record-header clearfix">
-            <div class="recordImage bginvoice app-{$SELECTED_MENU_CATEGORY} {if $BGWHITE}change_BG_white{/if}">
-                {if !empty($IMAGE_INFO[0].imgpath)}
-                    {if $IMAGE_INFO[0].imgName neq "summaryImg"}
-                        <div class="name"><span><strong><img src="{$IMAGE_INFO[0].imgpath}" alt="{$IMAGE_INFO[0].orgname}" title="{$IMAGE_INFO[0].orgname}" width="1"/></strong></span></div>
+            <div class="recordImage bginvoice app-{$SELECTED_MENU_CATEGORY} {if $IMAGE_DETAILS == false}Read_BG_clear{/if}">
+                {assign var=IMAGE_DETAILS value=$RECORD->getImageDetails()}
+                {foreach key=ITER item=IMAGE_INFO from=$IMAGE_DETAILS}
+                    {if !empty($IMAGE_INFO.url)}
+                        <img src="{$IMAGE_INFO.url}" alt="{$IMAGE_INFO.orgname}" title="{$IMAGE_INFO.orgname}" width="100%" height="100%" align="left"><br>
                     {else}
                         <img src="{vimage_path('summary_organizations.png')}" class="summaryImg"/>
                     {/if}
-                {else}
-                    <div class="name"><span><strong>{$MODULE_MODEL->getModuleIcon()}</strong></span></div>
-                {/if}
+                {/foreach}
+				{if empty($IMAGE_DETAILS)}
+					<div class="name"><span><strong>{$MODULE_MODEL->getModuleIcon()}</strong></span></div>
+				{/if}
             </div>
             <div class="recordBasicInfo">
                 <div class="info-row" >
