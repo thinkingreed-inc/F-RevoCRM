@@ -12,22 +12,27 @@
 {strip}
     <div class="col-sm-6 col-lg-6 col-md-6">
         <div class="record-header clearfix">
-            <div class="recordImage bgproducts app-{$SELECTED_MENU_CATEGORY} {if $BGWHITE}change_BG_white{/if}">
-                {if !empty($IMAGE_INFO[0].imgpath)}
-                    {if $IMAGE_INFO[0].imgName neq "summaryImg"}
-                        {assign var=WIDTH value="40px"}{assign var=HEIGHT value="40px"}
-                        {if $IMAGE_INFO|@count eq 1}{$WIDTH="80px"}{$HEIGHT="80px"}
-                        {elseif $IMAGE_INFO|@count eq 2}{$HEIGHT="80px"}
-                        {/if}
-                        {for $ITER=0 to $IMAGE_INFO|@count-1 max=4}
-                            <div class="change_BG_center" style="width: {$WIDTH}; height: {$HEIGHT}; background-image: url({$IMAGE_INFO.$ITER.imgpath})"></div>
-                        {/for}
-                    {else}
-                        <img src="{vimage_path('summary_Contact.png')}" class="summaryImg"/>
-                    {/if}
-                {else}
-                    <div class="name"><span><strong>{$MODULE_MODEL->getModuleIcon()}</strong></span></div>
-                {/if}
+                {assign var=IMAGE_DETAILS value=$RECORD->getImageDetails()}
+            <div class="recordImage bgproducts app-{$SELECTED_MENU_CATEGORY} {if $IMAGE_DETAILS == false}Read_BG_clear{/if}" {if $IMAGE_DETAILS|@count gt 1}style = "display:block"{/if} >
+                {foreach key=ITER item=IMAGE_INFO from=$IMAGE_DETAILS}
+	               {if !empty($IMAGE_INFO.url)}
+	                {if $IMAGE_DETAILS|@count eq 1}
+	                    <img src="{$IMAGE_INFO.url}" alt="{$IMAGE_INFO.orgname}" title="{$IMAGE_INFO.orgname}" width="100%" height="100%" align="left"><br>
+	                {else if $IMAGE_DETAILS|@count eq 2}
+	                    <span><img src="{$IMAGE_INFO.url}" alt="{$IMAGE_INFO.orgname}" title="{$IMAGE_INFO.orgname}" width="50%" height="100%" align="left"></span>
+	                {else if $IMAGE_DETAILS|@count eq 3}
+	                    <span><img src="{$IMAGE_INFO.url}" alt="{$IMAGE_INFO.orgname}" title="{$IMAGE_INFO.orgname}" {if $ITER eq 0 or $ITER eq 1}width="50%" height = "50%"{/if}{if $ITER eq 2}width="100%" height="50%"{/if} align="left"></span>
+	                {else if $IMAGE_DETAILS|@count eq 4 or $IMAGE_DETAILS|@count gt 4}
+	                    {if $ITER gt 3}{break}{/if}
+	                    <span><img src="{$IMAGE_INFO.url}" alt="{$IMAGE_INFO.orgname}" title="{$IMAGE_INFO.orgname}"width="50%" height="50%" align="left"></span>
+	                {/if}
+	               {else}
+	                  <img src="{vimage_path('summary_Products.png')}" class="summaryImg"/>
+	               {/if}
+	        {/foreach}
+			{if empty($IMAGE_DETAILS)}
+				<div class="name"><span><strong>{$MODULE_MODEL->getModuleIcon()}</strong></span></div>
+			{/if}
             </div>
 
             <div class="recordBasicInfo">

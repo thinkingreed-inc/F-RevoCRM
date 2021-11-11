@@ -13,7 +13,7 @@
 			{if !$MODULE}
 				{assign var=MODULE value=$MODULE_NAME}
 			{/if}
-			<div class="recordImage bg_{$MODULE} app-{$SELECTED_MENU_CATEGORY}  {if $BGWHITE}change_BG_white{/if}">
+			<div class="recordImage bg_{$MODULE} app-{$SELECTED_MENU_CATEGORY} {if $IMAGE_DETAILS == false}Read_BG_clear{/if}">
 				<div class="name"><span><strong>{$MODULE_MODEL->getModuleIcon()}</strong></span></div>
 			</div>
 
