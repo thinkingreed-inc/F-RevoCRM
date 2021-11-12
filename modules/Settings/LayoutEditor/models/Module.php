@@ -208,6 +208,9 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 
 		// If the column failed to create then do not add entry to vtiger_field table
 		if(!in_array($columnName, $db->getColumnNames($tableName))) {
+			// vtiger_fieldには登録されてしまっているので、レコードを削除する
+			$id = $fieldModel->get('id');
+			$db->pquery("DELETE FROM vtiger_field where fieldid = ?", array($id));
 			throw new Exception(vtranslate('LBL_FIELD_COULD_NOT_BE_CREATED', 'Settings::LayoutEditor', $label), 513);
 		}
 
