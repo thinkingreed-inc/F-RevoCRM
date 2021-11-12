@@ -531,3 +531,8 @@ button#advanceIntiateSave + input {
   overflow: hidden;
   max-width: 60vw;
 }
+
+/* 4カラムを維持する為の行を挿入 */
+.firstTr td{
+  padding: 0 !important;
+}
