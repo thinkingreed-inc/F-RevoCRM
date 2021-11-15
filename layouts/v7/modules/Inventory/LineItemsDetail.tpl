@@ -175,6 +175,7 @@
                         {if $QUANTITY_VIEWABLE}
                             <td>
                                 {$LINE_ITEM_DETAIL["qty$INDEX"]}
+                                <br><br><span>{vtranslate('Usage Unit', "Products")}：</span>{$LINE_ITEM_DETAIL["usageunit$INDEX"]}
                             </td>
                         {/if}
 

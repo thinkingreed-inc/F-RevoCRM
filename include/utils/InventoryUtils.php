@@ -663,6 +663,7 @@ function saveInventoryProductDetails(&$focus, $module, $update_prod_stock='false
 		$comment = vtlib_purify($_REQUEST['comment'.$i]);
 		$purchaseCost = vtlib_purify($_REQUEST['purchaseCost'.$i]);
 		$margin = vtlib_purify($_REQUEST['margin'.$i]);
+		$usageunit = vtlib_purify($_REQUEST['usageunit'.$i]);
 
 		if($module == 'SalesOrder') {
 			if($updateDemand == '-')
@@ -675,9 +676,9 @@ function saveInventoryProductDetails(&$focus, $module, $update_prod_stock='false
 			}
 		}
 
-		$query = 'INSERT INTO vtiger_inventoryproductrel(id, productid, sequence_no, quantity, listprice, comment, description, purchase_cost, margin)
-					VALUES(?,?,?,?,?,?,?,?,?)';
-		$qparams = array($focus->id,$prod_id,$prod_seq,$qty,$listprice,$comment,$description, $purchaseCost, $margin);
+		$query = 'INSERT INTO vtiger_inventoryproductrel(id, productid, sequence_no, quantity, listprice, comment, description, purchase_cost, margin, usageunit)
+		VALUES(?,?,?,?,?,?,?,?,?,?)';
+		$qparams = array($focus->id,$prod_id,$prod_seq,$qty,$listprice,$comment,$description, $purchaseCost, $margin, $usageunit);
 		$adb->pquery($query,$qparams);
 
 		$lineitem_id = $adb->getLastInsertID();

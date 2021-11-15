@@ -128,7 +128,7 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 	{
 		$query = '(SELECT vtiger_products.productid, vtiger_products.productname, vtiger_products.product_no AS productcode, vtiger_products.purchase_cost,
 					vtiger_products.unit_price, vtiger_products.qtyinstock, vtiger_crmentity.deleted, "Products" AS entitytype,
-					vtiger_products.is_subproducts_viewable, vtiger_crmentity.description '.$additionalProductFieldsString.' FROM vtiger_products
+					vtiger_products.is_subproducts_viewable, vtiger_crmentity.description, vtiger_products.usageunit '.$additionalProductFieldsString.' FROM vtiger_products
 					INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid=vtiger_products.productid
 					INNER JOIN vtiger_seproductsrel ON vtiger_seproductsrel.productid=vtiger_products.productid
 					INNER JOIN vtiger_productcf ON vtiger_products.productid = vtiger_productcf.productid
@@ -146,7 +146,7 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 	elseif ($module == 'Vendors') {
 		$query = 'SELECT vtiger_products.productid, vtiger_products.productname, vtiger_products.product_no AS productcode, vtiger_products.purchase_cost,
 					vtiger_products.unit_price, vtiger_products.qtyinstock, vtiger_crmentity.deleted, "Products" AS entitytype,
-					vtiger_products.is_subproducts_viewable, vtiger_crmentity.description '.$additionalServiceFieldsString.' FROM vtiger_products
+					vtiger_products.is_subproducts_viewable, vtiger_crmentity.description, vtiger_products.usageunit '.$additionalServiceFieldsString.' FROM vtiger_products
 					INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid=vtiger_products.productid
 					INNER JOIN vtiger_vendor ON vtiger_vendor.vendorid = vtiger_products.vendor_id
 					INNER JOIN vtiger_productcf ON vtiger_products.productid = vtiger_productcf.productid
@@ -167,7 +167,7 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 	{
 		$query = 'SELECT vtiger_products.productid, vtiger_products.productname, vtiger_products.product_no AS productcode, vtiger_products.purchase_cost,
 					vtiger_products.unit_price, vtiger_products.qtyinstock, vtiger_crmentity.deleted, "Products" AS entitytype,
-					vtiger_products.is_subproducts_viewable, vtiger_crmentity.description '.$additionalProductFieldsString.' FROM vtiger_products
+					vtiger_products.is_subproducts_viewable, vtiger_crmentity.description, vtiger_products.usageunit '.$additionalProductFieldsString.' FROM vtiger_products
 					INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid=vtiger_products.productid
 					INNER JOIN vtiger_productcf ON vtiger_products.productid = vtiger_productcf.productid
 					WHERE vtiger_crmentity.deleted=0 AND vtiger_products.productid=?';
@@ -203,6 +203,7 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 		$margin = $adb->query_result($result,$i-1,'margin');
 		$sequence_no = $adb->query_result($result,$i-1,'sequence_no');
 		$isSubProductsViewable = $adb->query_result($result, $i-1, 'is_subproducts_viewable');
+		$usageunit=$adb->query_result($result,$i-1,'usageunit');
 
 		if ($sequence_no) {
 			$product_Detail[$i]['sequence_no' . $i] = $sequence_no;
@@ -338,7 +339,8 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 		$discountTotal = number_format($discountTotal, $no_of_decimal_places,'.','');
 		$product_Detail[$i]['discountTotal'.$i] = $discountTotal;
 		$product_Detail[$i]['totalAfterDiscount'.$i] = $totalAfterDiscount;
-
+		$product_Detail[$i]['usageunit'.$i]=$usageunit;
+		
 		$taxTotal = 0;
 		$taxTotal = number_format($taxTotal, $no_of_decimal_places,'.','');
 		$product_Detail[$i]['taxTotal'.$i] = $taxTotal;
