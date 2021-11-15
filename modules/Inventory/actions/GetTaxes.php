@@ -88,8 +88,12 @@ class Inventory_GetTaxes_Action extends Vtiger_Action_Controller {
 								'baseCurrencyId'		=> $baseCurrencyIdsList[$id],
 								'quantityInStock'		=> $quantitiesList[$id],
 								'imageSource'			=> $imageSourcesList[$id],
-								'usageunit'				=> vtranslate($recordModel->get('usageunit'), $recordModel->getModuleName()),
 					);
+			if($recordModel->getModuleName() == 'Products'){
+				$resultData['usageunit'] = vtranslate($recordModel->get('usageunit'), $recordModel->getModuleName());
+			}else if($recordModel->getModuleName() == 'Services'){
+				$resultData['usageunit'] = vtranslate($recordModel->get('service_usageunit'), $recordModel->getModuleName());
+			}
 
 			$info[] = array($id => $resultData);
 		}
