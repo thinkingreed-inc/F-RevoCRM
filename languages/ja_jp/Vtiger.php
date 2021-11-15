@@ -1523,7 +1523,9 @@ $languageStrings = array(
 	//ツール>ゴミ箱
 	'Sales Stage' => '販売段階',
 	'Amount' => '数',
-	'Templates' => 'テンプレート'
+	'Templates' => 'テンプレート',
+	//請求
+	'Member Of' => '親企業',
 );
 
 $jsLanguageStrings = array(

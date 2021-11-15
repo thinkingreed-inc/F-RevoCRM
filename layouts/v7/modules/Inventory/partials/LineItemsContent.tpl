@@ -41,6 +41,8 @@
     {assign var="netPrice" value="netPrice"|cat:$row_no}
     {assign var="FINAL" value=$RELATED_PRODUCTS.1.final_details}
 
+		{assign var="usageunit" value="usageunit"|cat:$row_no}
+
 	{assign var="productDeleted" value="productDeleted"|cat:$row_no}
 	{assign var="productId" value=$data[$hdnProductId]}
 	{assign var="listPriceValues" value=Products_Record_Model::getListPriceValues($productId)}
@@ -143,6 +145,10 @@
 			<input type="hidden" name="{$margin}" value="{if $data.$margin}{$data.$margin}{else}0{/if}"></span>
 			<span class="margin pull-right" style="display:none">{if $data.$margin}{$data.$margin}{else}0{/if}</span>
 		{/if}
+		<br><br>
+		<span>{vtranslate('Usage Unit', "Products")}：</span>
+		<input id="{$usageunit}" name="{$usageunit}" value="{if !empty($data.$usageunit)}{$data.$usageunit}{/if}" type="text" class="usageunit smallInputBox inputElement" readonly style="border:hidden"/>
+
 		{if $MODULE neq 'PurchaseOrder'}
 			<br>
 			<span class="stockAlert redColor {if $data.$qty <= $data.$qtyInStock}hide{/if}" >

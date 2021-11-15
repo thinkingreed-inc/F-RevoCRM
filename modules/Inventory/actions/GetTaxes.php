@@ -76,6 +76,7 @@ class Inventory_GetTaxes_Action extends Vtiger_Action_Controller {
 		}
 
 		foreach($idList as $id) {
+			$recordModel = Vtiger_Record_Model::getInstanceById($id);
 			$resultData = array(
 								'id'					=> $id,
 								'name'					=> $namesList[$id],
@@ -86,7 +87,8 @@ class Inventory_GetTaxes_Action extends Vtiger_Action_Controller {
 								'description'			=> $descriptionsList[$id],
 								'baseCurrencyId'		=> $baseCurrencyIdsList[$id],
 								'quantityInStock'		=> $quantitiesList[$id],
-								'imageSource'			=> $imageSourcesList[$id]
+								'imageSource'			=> $imageSourcesList[$id],
+								'usageunit'				=> vtranslate($recordModel->get('usageunit'), $recordModel->getModuleName()),
 					);
 
 			$info[] = array($id => $resultData);
