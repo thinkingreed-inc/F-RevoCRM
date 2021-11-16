@@ -38,4 +38,12 @@ if (defined('VTIGER_UPGRADE')) {
             $blockInstance->addField($field);
         }
     }
+
+    // 日報モジュールの作成日時と更新日時のtype_of_dataをDTに変更する
+    $dailyReportsModuleInstance = Vtiger_Module::getInstance('Dailyreports');
+    $dailyreportsId = $dailyReportsModuleInstance->getId();
+    if(!empty($dailyreportsId)){
+        $db->pquery("update vtiger_field set typeofdata = 'DT~O' where fieldname = 'createdtime' and tabid = ?", array($dailyreportsId));
+        $db->pquery("update vtiger_field set typeofdata = 'DT~O' where fieldname = 'modifiedtime' and tabid = ?", array($dailyreportsId));
+    }
 }
