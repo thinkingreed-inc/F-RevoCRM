@@ -300,7 +300,6 @@
 					</span>
 				</li>
 			</ul>
-			<ul class="connectedSortable col-sm-6 ui-sortable" name="sortable2"></ul>
 		</div>
 	</div>
 
