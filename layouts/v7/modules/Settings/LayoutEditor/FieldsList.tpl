@@ -246,24 +246,7 @@
 											</div>
 										</li>
 									{/if}
-								{/foreach}
-								{if count($FIELDS_LIST)%2 eq 0 }
-									{if $BLOCK_MODEL->isAddCustomFieldEnabled()}
-										<li class="row dummyRow">
-											<span class="dragUiText col-sm-8">
-												{vtranslate('LBL_ADD_NEW_FIELD_HERE',$QUALIFIED_MODULE)}
-											</span>
-											<span class="col-sm-4" style="margin-top: 7%;margin-left: -15%;">
-												<button class="btn btn-default btn-sm addButton"><i class="fa fa-plus"></i>&nbsp;&nbsp;{vtranslate('LBL_ADD',$QUALIFIED_MODULE)}</button>
-											</span>
-										</li>
-									{/if}
-								{/if}
-							</ul>
-							<ul name="{if $IS_FIELDS_SORTABLE}sortable2{else}unSortable2{/if}" class="connectedSortable col-sm-6">
-								{foreach item=FIELD_MODEL from=$FIELDS_LIST name=fieldlist1}
-									{assign var=FIELD_INFO value=$FIELD_MODEL->getFieldInfo()}
-									{if $smarty.foreach.fieldlist1.index % 2 neq 0}
+                  {if $smarty.foreach.fieldlist.index % 2 neq 0}
 										<li>
 											<div class="row border1px">
 												<div class="col-sm-4">
@@ -420,18 +403,16 @@
 										</li>
 									{/if}
 								{/foreach}
-								{if count($FIELDS_LIST)%2 neq 0 }
-									{if $BLOCK_MODEL->isAddCustomFieldEnabled()}
-										<li class="row dummyRow">
-											<span class="dragUiText col-sm-8">
-												{vtranslate('LBL_ADD_NEW_FIELD_HERE',$QUALIFIED_MODULE)}
-											</span>
-											<span class="col-sm-4" style="margin-top: 7%;margin-left: -15%;">
-												<button class="btn btn-default btn-sm addButton"><i class="fa fa-plus"></i>&nbsp;&nbsp;{vtranslate('LBL_ADD',$QUALIFIED_MODULE)}</button>
-											</span>
-										</li>
-									{/if}
-								{/if}
+                {if $BLOCK_MODEL->isAddCustomFieldEnabled()}
+                  <li class="row dummyRow">
+                    <span class="dragUiText col-sm-8">
+                      {vtranslate('LBL_ADD_NEW_FIELD_HERE',$QUALIFIED_MODULE)}
+                    </span>
+                    <span class="col-sm-4" style="margin-top: 7%;margin-left: -15%;">
+                      <button class="btn btn-default btn-sm addButton"><i class="fa fa-plus"></i>&nbsp;&nbsp;{vtranslate('LBL_ADD',$QUALIFIED_MODULE)}</button>
+                    </span>
+                  </li>
+                {/if}
 							</ul>
 						</div>
 					</div>
