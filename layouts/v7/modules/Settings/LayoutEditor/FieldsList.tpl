@@ -405,12 +405,14 @@
 								{/foreach}
                 {if $BLOCK_MODEL->isAddCustomFieldEnabled()}
                   <li class="row dummyRow">
-                    <span class="dragUiText col-sm-8">
-                      {vtranslate('LBL_ADD_NEW_FIELD_HERE',$QUALIFIED_MODULE)}
-                    </span>
-                    <span class="col-sm-4" style="margin-top: 7%;margin-left: -15%;">
-                      <button class="btn btn-default btn-sm addButton"><i class="fa fa-plus"></i>&nbsp;&nbsp;{vtranslate('LBL_ADD',$QUALIFIED_MODULE)}</button>
-                    </span>
+                    <div class="row border1px" style="border: 1px dotted #DDDDDD;">
+                      <span class="dragUiText col-sm-8">
+                        {vtranslate('LBL_ADD_NEW_FIELD_HERE',$QUALIFIED_MODULE)}
+                      </span>
+                      <span class="col-sm-4" style="margin-top: 7%;margin-left: -15%;">
+                        <button class="btn btn-default btn-sm addButton"><i class="fa fa-plus"></i>&nbsp;&nbsp;{vtranslate('LBL_ADD',$QUALIFIED_MODULE)}</button>
+                      </span>
+                    </div>
                   </li>
                 {/if}
 							</ul>
