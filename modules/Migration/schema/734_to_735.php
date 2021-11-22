@@ -46,4 +46,8 @@ if (defined('VTIGER_UPGRADE')) {
         $db->pquery("update vtiger_field set typeofdata = 'DT~O' where fieldname = 'createdtime' and tabid = ?", array($dailyreportsId));
         $db->pquery("update vtiger_field set typeofdata = 'DT~O' where fieldname = 'modifiedtime' and tabid = ?", array($dailyreportsId));
     }
+
+    // 一部モジュールの関連活動の設定の不具合を修正
+    $relationfieldid = $db->pquery("SELECT fieldid FROM vtiger_field WHERE fieldname = 'parent_id' AND tabid = (SELECT tabid FROM vtiger_tab WHERE name = 'Calendar');", array());
+    $db->pquery("UPDATE vtiger_relatedlists SET relationfieldid = ?, relationtype = '1:N' WHERE name = 'get_activities' AND relationtype = 'N:N' AND relationfieldid is NULL", array($db->query_result($relationfieldid, 0, 'fieldid')));
 }
