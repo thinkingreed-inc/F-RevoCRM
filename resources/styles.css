@@ -571,7 +571,7 @@ ul#productsImageContainer > li{
   height: 180px;
   margin: 10px;
   overflow: hidden;
-  background-color: #ddd;
+  border: solid 1px #ddd;
 }
 ul#productsImageContainer > li a{
   cursor: pointer;
