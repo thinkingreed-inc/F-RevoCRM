@@ -20,27 +20,6 @@ PriceBooks_Detail_Js("Products_Detail_Js", {
                 });
     },
 }, {
-    /**
-     * function to register event for showing multiple images using bxslider
-     */
-    registerEventForImageGraphics: function() {
-        if (jQuery('#imageContainer').find("img").length > 0) {
-            jQuery('#imageContainer').bxSlider({
-                slideWidth: 400,
-                infiniteLoop: false,
-                minSlides: 1,
-                maxSlides: 1,
-                slideMargin: 10,
-                nextText: "",
-                prevText: "",
-                hideControlOnEnd: true
-            });
-            jQuery('.bx-next').css({"font-size": "20px", "color": "gray"});
-            jQuery('.bx-next').addClass("fa fa-arrow-right");
-            jQuery('.bx-prev').css({"font-size": "20px", "color": "gray"});
-            jQuery('.bx-prev').addClass("fa fa-arrow-left");
-        }
-    },
 
     /**
      * function to register event for editing the list price in related list
@@ -168,7 +147,6 @@ PriceBooks_Detail_Js("Products_Detail_Js", {
     },
     registerBasicEvents: function(){
         this._super();
-        this.registerEventForImageGraphics();
     },
     /**
      * Function to register events
@@ -186,7 +164,6 @@ PriceBooks_Detail_Js("Products_Detail_Js", {
         this.registerEventForChangeTotalCost();
         app.event.on("post.relatedListLoad.click", function() {
             self.registerPopover();
-            self.registerEventForImageGraphics();
         });
         app.event.on("popover.click.event", function(e) {
             self.registerPopover();
