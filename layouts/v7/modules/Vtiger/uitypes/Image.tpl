@@ -10,7 +10,7 @@
 -->*}
 
 {strip}
-	{if !is_array($IMAGE_DETAILS)}
+	{if !is_array($IMAGE_DETAILS) && !IS_DUPLICATE}
 		{assign var=IMAGE_DETAILS value=$RECORD_STRUCTURE_MODEL->getRecord()->getImageDetails()}
 	{/if}
 	{if $MODULE_NAME eq 'Webforms'}
