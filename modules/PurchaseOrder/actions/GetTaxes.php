@@ -80,6 +80,9 @@ class PurchaseOrder_GetTaxes_Action extends Inventory_GetTaxes_Action {
 								'quantityInStock'		=> $quantitiesList[$id],
 								'imageSource'			=> $imageSourcesList[$id]
 					);
+			$recordModel = Vtiger_Record_Model::getInstanceById($id);
+			$resultData['usageunit'] = vtranslate($recordModel->get('usageunit'), $recordModel->getModuleName());
+
 
 			$info[] = array($id => $resultData);
 		}
