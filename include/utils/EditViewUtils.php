@@ -515,6 +515,10 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 	}
 	$product_Detail[1]['final_details']['taxes'] = $taxDetails;
 	$product_Detail[1]['final_details']['tax_totalamount'] = number_format($taxTotal, $no_of_decimal_places, '.', '');
+	// 消費税がマイナスとなっている場合、引き算した時に料金が減ってしまうため、0にする
+	if($product_Detail[1]['final_details']['tax_totalamount'] <= 0){
+		$product_Detail[1]['final_details']['tax_totalamount'] = 0;
+	}
 
 	//To set the Shipping & Handling charge
 	$shCharge = ($focus->column_fields['hdnS_H_Amount'] != '')?$focus->column_fields['hdnS_H_Amount']:0;

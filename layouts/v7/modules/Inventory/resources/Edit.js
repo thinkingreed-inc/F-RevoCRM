@@ -591,9 +591,12 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 
 	getGroupTaxTotal : function() {
 		var groupTax = this.finalTaxEle.text();
-        if(groupTax)
-            return parseFloat(groupTax);
-        return 0
+		if(groupTax){
+			if(parseFloat(groupTax) >= 0){
+				return parseFloat(groupTax);
+			}
+		}
+		return 0
 	},
     
     getChargesTotal : function() {
@@ -1017,7 +1020,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
                 var individualTaxTotal = "0";
             } else {
                 var individualTaxPercentage = parseFloat(individualTaxPercentage);
-                var individualTaxTotal = Math.abs(individualTaxPercentage * totalAfterDiscount)/100;
+                var individualTaxTotal = (individualTaxPercentage * totalAfterDiscount)/100;
                 individualTaxTotal = individualTaxTotal.toFixed(self.numOfCurrencyDecimals);
             }
 			individualTaxRow.find('.taxTotal').val(individualTaxTotal);
@@ -1042,7 +1045,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 				if(isNaN(taxElement.val())) {
 					var total = 0;
 				} else {
-					var total = Math.abs(amount * taxElement.val())/100;
+					var total = (amount * taxElement.val())/100;
 				}
 
 				taxRow.find('.taxTotal').val(total);
@@ -1163,7 +1166,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 			if(isNaN(element.val())) {
 				var value = 0;
 			} else {
-				var value = Math.abs(amount * element.val())/100;
+				var value = (amount * element.val())/100;
 			}
 
 			element.closest('tr').find('.chargeValue').val(parseFloat(value).toFixed(numberOfDecimal));
@@ -1199,7 +1202,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
             if(isNaN(element.val())) {
 				var value = 0;
 			} else {
-				var value = Math.abs(chargeAmount * element.val())/100;
+				var value = (chargeAmount * element.val())/100;
 			}
             element.closest('tr').find('.chargeTaxValue').val(parseFloat(value).toFixed(self.numOfCurrencyDecimals));
 		});
@@ -1221,7 +1224,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 				if(isNaN(element.val())) {
 					var value = 0;
 				} else {
-					var value = Math.abs(chargeAmount * element.val())/100;
+					var value = (chargeAmount * element.val())/100;
 				}
 
 				element.closest('tr').find('.chargeTaxValue').val(parseFloat(value).toFixed(self.numOfCurrencyDecimals));
@@ -1275,7 +1278,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
             if(isNaN(groupTaxPercentageElement.val())){
                 var groupTaxValue = "0";
             } else {
-                var groupTaxValue = Math.abs(amount * groupTaxPercentageElement.val())/100;
+                var groupTaxValue = (amount * groupTaxPercentageElement.val())/100;
             }
 			groupTaxValue = parseFloat(groupTaxValue).toFixed(self.numOfCurrencyDecimals);
 			groupTaxRow.find('.groupTaxTotal').val(groupTaxValue);
@@ -1300,7 +1303,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 				if (isNaN(groupTaxPercentageElement.val())) {
 					var groupTaxValue = 0;
 				} else {
-					var groupTaxValue = Math.abs(totalAmount * groupTaxPercentageElement.val()) / 100;
+					var groupTaxValue = (totalAmount * groupTaxPercentageElement.val()) / 100;
 				}
 
 				groupTaxValue = parseFloat(groupTaxValue).toFixed(self.numOfCurrencyDecimals);
@@ -1313,6 +1316,10 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 			}
 			groupTaxTotal += parseFloat(groupTaxValue);
 		});
+
+		if(groupTaxTotal <= 0){
+			groupTaxTotal = 0;
+		}
 
 		this.setGroupTaxTotal(groupTaxTotal.toFixed(this.numOfCurrencyDecimals));
 	},
@@ -1328,7 +1335,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 				var value = 0;
 			var element = jQuery(domElement);
 			if(!isNaN(element.val())) {
-				value = Math.abs(amount * element.val())/100;
+				value = (amount * element.val())/100;
 			}
 
 			value = parseFloat(value).toFixed(self.numOfCurrencyDecimals);
