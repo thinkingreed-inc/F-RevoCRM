@@ -1009,6 +1009,7 @@ $languageStrings = array(
 	'LBL_SOCIAL_LINKED' => 'Your Vtiger is now linked to',
 	'LBL_ENTER_KEYWORDS_HELP'=>'Vtiger will scan twitter and find messages with these words',
 	'LBL_ENTER_KEYWORDS' => 'Enter Keywords',
+	'LBL_IMPORT_ERROR_MULTIPLE_ACCOUNTS' => '%s is importing %s. Please try after some time.',
 
 	 // Social Module Strings
 	'LBL_TWEETS' => 'Tweets',
