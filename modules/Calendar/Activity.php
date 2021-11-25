@@ -291,7 +291,7 @@ class Activity extends CRMEntity {
 			$reminder = false;
 			if(strtotime($record) > strtotime($current)){
 				$status = 0;
-				$reminder = true;
+				if($cbmodule != "Calendar") $reminder = true; // 予定をマウス移動した場合、$cbmoduleが"Calendar"として入ってくる
 			} else {
 				$status = 1;
 			}
