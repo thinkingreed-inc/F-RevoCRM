@@ -231,13 +231,13 @@ vscodeをご利用の場合は、xdebugのエクステンションをインス�
 
 * 不具合
   - #348 [不具合]顧客企業の概要画面が開くのが遅い
-  - #337 [不具合]文字列項目が多数含まれているモジュールをインポートした場合、インポートに失敗する。
+  - #337 [不具合]文字列項目が多数含まれているモジュールにインポートした場合、インポートに失敗する。
   - #336 [不具合]WebAPIのQuery処理で受注モジュールの明細行が最終行以外取得できない。
   - #304 [不具合]タイトルの長いレコードを、別モジュールの関連から表示した際、「詳細」や「×」ボタンが表示されない。
   - #295 [不具合]詳細画面のアイコンの背景色が消えている
   - #290 [不具合]ユーザー一覧の”名前とメールアドレス ”の列がズレて表示される
   - #284 [不具合]パスワード登録、変更の文字数制限が正常に機能していない
-  - #261 [不具合]ワークフローで値を更新すると更新履歴がシステム管理者になる
+  - #261 [不具合]ワークフローで値を更新すると最終更新者がシステム管理者になる
   - #238 [不具合]見積書で入力した調整金額がPDF出力すると合計金額に反映されない。
   - #153 [不具合]ブロック内のテキストエリアしかない場合の表示崩れ
   - #94 [不具合]私の予定表で「繰り返しの予定の変更/削除」の「×」ボタンを押すと保存できなくなる
@@ -262,11 +262,11 @@ vscodeをご利用の場合は、xdebugのエクステンションをインス�
 #### Contributors
 Thank you for contributing!
 
-<a href="https://github.com/Sota-Miyamoto"><img src="https://github.com/Sota-Miyamoto.png" title="Sota-Miyamoto" width="40" height="40" style="border-radius: 20px"></a>
-<a href="https://github.com/K-Haruto"><img src="https://github.com/K-Haruto.png" title="K-Haruto" width="40" height="40" style="border-radius: 20px"></a>
-<a href="https://github.com/pavish69"><img src="https://github.com/pavish69.png" title="pavish69" width="40" height="40" style="border-radius: 20px"></a>
-<a href="https://github.com/junmt"><img src="https://github.com/junmt.png" title="junmt" width="40" height="40" style="border-radius: 20px"></a>
-<a href="https://github.com/Remicck"><img src="https://github.com/Remicck.png" title="Remicck" width="40" height="40" style="border-radius: 20px"></a>
+<a href="https://github.com/Sota-Miyamoto"><img src="https://github.com/Sota-Miyamoto.png" title="Sota-Miyamoto" width="40" height="40" style="border-radius: 50%;"></a>
+<a href="https://github.com/K-Haruto"><img src="https://github.com/K-Haruto.png" title="K-Haruto" width="40" height="40" style="border-radius: 50%;"></a>
+<a href="https://github.com/pavish69"><img src="https://github.com/pavish69.png" title="pavish69" width="40" height="40" style="border-radius: 50%;"></a>
+<a href="https://github.com/junmt"><img src="https://github.com/junmt.png" title="junmt" width="40" height="40" style="border-radius: 50%;"></a>
+<a href="https://github.com/Remicck"><img src="https://github.com/Remicck.png" title="Remicck" width="40" height="40" style="border-radius: 50%;"></a>
 
 
 ### F-RevoCRM7.3.4
