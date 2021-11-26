@@ -2919,6 +2919,48 @@ Vtiger.Class("Vtiger_Detail_Js",{
 			editCommentBlock.appendTo(commentInfoBlock).show();
 		});
 
+			detailContentsHolder.on('click','.deleteComment', function(e){
+				console.log('deleteComment clicked');
+			var thisInstance = this;
+			var currentTarget = jQuery(e.currentTarget);
+			var message = app.vtranslate('LBL_DELETE_CONFIRMATION');
+			app.helper.showConfirmationBox({'message' : message}).then(function(e) {
+					var module = app.getModuleName();
+					var commentInfoBlock = currentTarget.closest('.singleComment');
+					var commentInfoHeader = commentInfoBlock.find('.commentInfoHeader');
+					var commentId = commentInfoHeader.data('commentid');
+					var commentRelatedTo = commentInfoHeader.data('relatedto');
+					if(!commentRelatedTo) commentRelatedTo = self.getRecordId();
+					var postData = {
+						'url': 'index.php',
+						'type': 'POST',
+						'module': 'ModComments',
+						'action': 'DeleteAjax',
+						'related_to': commentRelatedTo,
+						'commentId': commentId,
+					}
+					
+					app.helper.showProgress();
+					app.request.post({'data': postData}).then(function (error, res) {
+					app.helper.hideProgress();
+					app.helper.hideModal();
+					if (!error) {
+						/*jQuery('.vt-notification').remove();*/
+						thisInstance.updateCommentView();
+					} else {
+						app.event.trigger('post.save.failed', error);
+					}
+				},
+						function (error, err) {
+	
+						}
+					);
+				},
+				function(error, err){
+				}
+			);
+		});
+
 		detailContentsHolder.on('click','.closeCommentBlock', function(e){
 			var currentTarget = jQuery(e.currentTarget);
 			var commentInfoBlock = currentTarget.closest('.singleComment');
