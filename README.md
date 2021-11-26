@@ -259,6 +259,16 @@ vscodeをご利用の場合は、xdebugのエクステンションをインス�
   - #171 [要望]マイグレーションをコマンドライン側から叩きたい
   - #34 [不具合]getTranslatedString関数だと、LanguageConverterで指定した変換がされない
 
+#### Contributors
+Thank you for contributing!
+
+<a href="https://github.com/Sota-Miyamoto"><img src="https://github.com/Sota-Miyamoto.png" title="Sota-Miyamoto" width="40" height="40" style="border-radius: 20px"></a>
+<a href="https://github.com/K-Haruto"><img src="https://github.com/K-Haruto.png" title="K-Haruto" width="40" height="40" style="border-radius: 20px"></a>
+<a href="https://github.com/pavish69"><img src="https://github.com/pavish69.png" title="pavish69" width="40" height="40" style="border-radius: 20px"></a>
+<a href="https://github.com/junmt"><img src="https://github.com/junmt.png" title="junmt" width="40" height="40" style="border-radius: 20px"></a>
+<a href="https://github.com/Remicck"><img src="https://github.com/Remicck.png" title="Remicck" width="40" height="40" style="border-radius: 20px"></a>
+
+
 ### F-RevoCRM7.3.4
 #### パッチ適用方法
 - 差分ファイルを上書き更新してください
