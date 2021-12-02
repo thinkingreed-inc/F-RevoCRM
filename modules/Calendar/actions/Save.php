@@ -27,7 +27,7 @@ class Calendar_Save_Action extends Vtiger_Save_Action {
 	public function process(Vtiger_Request $request) {
 		try {
 			$recordModel = $this->saveRecord($request);
-			$loadUrl = $recordModel->getDetailViewUrl();
+			$loadUrl = 'index.php?module=Calendar&view=Calendar&lastRecordDate='. $recordModel->get('date_start');
 
 			if ($request->get('returntab_label')) {
 				$loadUrl = 'index.php?'.$request->getReturnURL();

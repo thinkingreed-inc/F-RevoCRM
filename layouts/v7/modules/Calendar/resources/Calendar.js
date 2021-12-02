@@ -1674,6 +1674,8 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var HEADER_HEIGHT = 200;
 		var CalendarHeight = $(window).height() - HEADER_HEIGHT;
 		CalendarHeight = (CalendarHeight < MIN_CALENDAR_HEIGHT) ? MIN_CALENDAR_HEIGHT : CalendarHeight;
+		var URL_Serarch = new URLSearchParams(location.search);
+		var defaultDate = new Date(URL_Serarch.get("lastRecordDate"));
 
 		var calenderConfigs = {
 			header: {
@@ -1712,6 +1714,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			defaultView: ($(window).width() > 1020 ? userDefaultActivityView : 'agendaDay'),
 			slotLabelFormat: userDefaultTimeFormat,
 			timeFormat: userDefaultTimeFormat,
+			defaultDate: defaultDate,
 			events: [],
 			monthNames: [
 				app.vtranslate('LBL_JANUARY'),
