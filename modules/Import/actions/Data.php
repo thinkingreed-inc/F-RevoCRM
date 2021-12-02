@@ -462,6 +462,9 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		//Update missing seq numbers
 		$focus = CRMEntity::getInstance($moduleName);
 		$focus->updateMissingSeqNumber($moduleName);
+		if($moduleName == "Calendar"){
+			$focus->updateMissingSeqNumber("Events");
+		}
 
 		//Creating entity data of created records for post save events 
 		if (!empty($createdRecords)) {
@@ -497,7 +500,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 				$fieldData['visibility'] = $current_user->calendarsharedtype;
 			}
 			foreach ($eventModuleFields as $fieldName => $fieldModel) {
-				if (stripos($fieldName, 'cf_') !== false) {
+				if (empty($moduleFields[$fieldName])) {
 					$moduleFields[$fieldName] = $fieldModel;
 				}
 			}
@@ -777,10 +780,20 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			}
 			$fieldData['currency_id'] = $this->lineitem_currency_id;
 		}
+
+		$skippedCalendarFields = array('contact_id', 'duration_hours', 'duration_minutes', 'recurringtype', 'reminder_time', 'smcreatorid');
+
 		if ($fieldData != null && $checkMandatoryFieldValues) {
 			foreach ($moduleFields as $fieldName => $fieldInstance) {
+				if($moduleName == "Calendar" && in_array($fieldName, $skippedCalendarFields)) continue;
 				if ((($fieldData[$fieldName] == '') || ($fieldData[$fieldName] == null)) && $fieldInstance->isMandatory()) {
+					if($moduleName == "Calendar" && $fieldData["activitytype"] != "Task" && $fieldName == "eventstatus" && !empty($fieldData["taskstatus"])){
+						$fieldData["eventstatus"] == $fieldData["taskstatus"];
+					}else if($moduleName == "Calendar" && $fieldData["activitytype"] == "Task" && $fieldName == "taskstatus" && !empty($fieldData["eventstatus"])){
+						$fieldData["taskstatus"] == $fieldData["eventstatus"];
+					}else{
 					return null;
+					}
 				}
 			}
 		}
