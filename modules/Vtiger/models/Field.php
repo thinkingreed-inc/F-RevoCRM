@@ -1407,7 +1407,7 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	public function getFieldInfoForWfEditTask() {
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$fieldDataType = $this->getFieldDataType();
-		$exceptDataType = ['email', 'picklist', 'multipicklist'];
+		$exceptDataType = ['email'];
 		if(in_array($fieldDataType, $exceptDataType)) {
 			$fieldDataType = "string";
 		}
