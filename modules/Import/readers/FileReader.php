@@ -111,6 +111,16 @@ class Import_FileReader_Reader {
 
 		$columnsListQuery = 'id INT PRIMARY KEY AUTO_INCREMENT, status INT DEFAULT 0, recordid INT';
 		$fieldTypes = $this->getModuleFieldDBColumnType();
+
+		if($this->moduleModel->getName() == 'Calendar'){
+			$eventModule = Vtiger_Module_Model::getInstance("Events");
+			$eventModuleFields = $eventModule->getFields();
+			$moduleFields = array_merge($moduleFields, $eventModuleFields);
+
+			$eventFieldTypes = $this->getModuleFieldDBColumnType($eventModule);
+			$fieldTypes = array_merge($fieldTypes, $eventFieldTypes);
+		}
+
 		foreach($fieldMapping as $fieldName => $index) {
 			$fieldObject = $moduleFields[$fieldName];
 			$columnsListQuery .= $this->getDBColumnType($fieldObject, $fieldTypes);
@@ -164,9 +174,13 @@ class Import_FileReader_Reader {
 	/** Function returns array of columnnames and their column datatype
 	 * @return <Array>
 	 */
-	public function getModuleFieldDBColumnType() {
+	public function getModuleFieldDBColumnType($specificModuleModel = null) {
+		$moduleModel = $this->moduleModel;
+		if($specificModuleModel){
+			$moduleModel = $specificModuleModel;
+		}
 		$db = PearDatabase::getInstance();
-		$result = $db->pquery('SELECT tablename FROM vtiger_field WHERE tabid=? GROUP BY tablename', array($this->moduleModel->getId()));
+		$result = $db->pquery('SELECT tablename FROM vtiger_field WHERE tabid=? GROUP BY tablename', array($moduleModel->getId()));
 		$tables = array();
 		if ($result && $db->num_rows($result) > 0) {
 			while ($row = $db->fetch_array($result)) {
