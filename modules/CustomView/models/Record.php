@@ -1126,7 +1126,15 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 		for ($i=0; $i<$noOfCVs; ++$i) {
 			$row = $db->query_result_rowdata($result, $i);
 			$customView = new self();
-			$customViews[] = $customView->setData($row)->setModule($row['entitytype']);
+			$cv = $customView->setData($row)->setModule($row['entitytype']);
+			// 「すべて」のリストは各モジュールでの標準のリストとして運用されるものであるが、
+			// 現状でも「All」であることから上部に表示されやすいとはいえ、00.---といったリストがあると下になってしまう為
+			// 共有リストの中では常に一番上に表示するようにする。
+			if($row['viewname'] == 'All'){
+				array_unshift($customViews, $cv);
+			}else{
+				$customViews[] = $cv;
+			}
 		}
 		return $customViews;
 	}
