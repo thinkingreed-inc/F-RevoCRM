@@ -2886,6 +2886,13 @@ class ReportRun extends CRMEntity {
 			$query .= " ".$this->getRelatedModulesQuery($module,$this->secondarymodule).
 					getNonAdminAccessControlQuery($this->primarymodule,$current_user).
 					" WHERE vtiger_crmentity.deleted = 0";
+		} else if ($module == "Services") {
+			$focus = CRMEntity::getInstance($module);
+			$query = $focus->generateReportsQuery($module, $this->queryPlanner) .
+					$focus->getReportsUiType10Query($module, $this->queryPlanner) .
+					$this->getRelatedModulesQuery($module, $this->secondarymodule) .
+					getNonAdminAccessControlQuery($this->primarymodule, $current_user) .
+					" WHERE vtiger_crmentity.deleted=0";
 		} else {
 			if ($module != '') {
 				$focus = CRMEntity::getInstance($module);
