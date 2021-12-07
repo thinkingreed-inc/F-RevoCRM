@@ -1,14 +1,14 @@
 
-## 更新履歴
+# 更新履歴
 
-### F-RevoCRM7.3.5
-#### パッチ適用方法
+## F-RevoCRM7.3.5
+### パッチ適用方法
 - ファイル、DBのバックアップを確実に取得してください
 - 差分ファイルを上書き更新してください
 - 以下のURLにアクセスし、マイグレーションを実施してください。  
 `https://example.com/frevocrm/index.php?module=Migration&view=Index&mode=step1`
 
-#### 主な変更点
+### 主な変更点
 
 * 機能改善
   - #346 [要望]通貨項目にマイナス値を入力できるようにしてほしい
@@ -49,7 +49,7 @@
   - #171 [要望]マイグレーションをコマンドライン側から叩きたい
   - #34 [不具合]getTranslatedString関数だと、LanguageConverterで指定した変換がされない
 
-#### Contributors
+### Contributors
 Thank you for contributing!
 
 <a href="https://github.com/Sota-Miyamoto"><img src="https://github.com/Sota-Miyamoto.png" title="Sota-Miyamoto" width="40" height="40" style="border-radius: 50%;"></a>
@@ -59,13 +59,13 @@ Thank you for contributing!
 <a href="https://github.com/Remicck"><img src="https://github.com/Remicck.png" title="Remicck" width="40" height="40" style="border-radius: 50%;"></a>
 
 
-### F-RevoCRM7.3.4
-#### パッチ適用方法
+## F-RevoCRM7.3.4
+### パッチ適用方法
 - 差分ファイルを上書き更新してください
 - 以下のURLにアクセスし、マイグレーションを実施してください。  
 `https://example.com/frevocrm/index.php?module=Migration&view=Index&mode=step1`
 
-#### 主な変更点
+### 主な変更点
 
 * 機能改善
   - #79 プロジェクトタスク「終了日」のクイック作成をデフォルトで有効にしてほしい
@@ -104,13 +104,13 @@ Thank you for contributing!
   - Migration時に実行時間の上限がなくなるように修正
   - #180 コミットメッセージの表記ゆれの改善
 
-### F-RevoCRM7.3.3
-#### パッチ適用方法
+## F-RevoCRM7.3.3
+### パッチ適用方法
 - 差分ファイルを上書き更新してください
 - 以下のURLにアクセスし、マイグレーションを実施してください。  
 `https://example.com/frevocrm/index.php?module=Migration&view=Index&mode=step1`
 
-#### 主な変更点
+### 主な変更点
 
 * 機能改善
   - 選択されているリストの色を、見やすくなるように濃く変更（#139）
@@ -143,13 +143,13 @@ Thank you for contributing!
   - F-RevoCRMのIE11対応を、2022年4月以降非推奨とする文言の追加
 
 
-### F-RevoCRM7.3.2
-#### パッチ適用方法
+## F-RevoCRM7.3.2
+### パッチ適用方法
 - 差分ファイルを上書き更新してください
 - 以下のURLにアクセスし、マイグレーションを実施してください。  
 `https://example.com/frevocrm/index.php?module=Migration&view=Index&mode=step1`
 
-#### 主な変更点
+### 主な変更点
 
 * 機能改善
   - ユーザーの初回ログイン時に、共有カレンダーのマイグループに所属するユーザーを、自身のみになるように改善
@@ -175,13 +175,13 @@ Thank you for contributing!
   - README.mdに記載されているサンプルURLをexample.comに置換
   - インストーラーにて、環境変数を見て自動でDB設定が入るように修正
 
-### F-RevoCRM7.3.1
-#### パッチ適用方法
+## F-RevoCRM7.3.1
+### パッチ適用方法
 - 差分ファイルを上書き更新してください
 - 以下のURLにアクセスし、マイグレーションを実施してください。  
 `https://example.com/frevocrm/index.php?module=Migration&view=Index&mode=step1`
 
-#### 主な変更点
+### 主な変更点
 * 機能改善
   - 日本語翻訳を複数追加
   - サイドバーアイコン部分の表示を改善
@@ -204,8 +204,8 @@ Thank you for contributing!
   - 管理機能「企業の詳細」画面にて、画像がアップロードできないケースがある不具合の修正
   - 初期セットアップ時に日報が追加されない不具合の修正 ※本パッチ適用時に日報モジュールが追加されます
 
-### F-RevoCRM7.3
-#### 主な変更点
+## F-RevoCRM7.3
+### 主な変更点
 
 * 機能追加
   - 見積、受注、請求、発注のPDFテンプレートを作成・編集できる機能を追加
