@@ -66,11 +66,50 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 	}
 
 	/**
+	 * Function returns the URL for creating Events at QuickCreat
+	 * @return <String>
+	 */
+	public function getQuickCreateEventRecordUrl() {
+		$refererUrl  = $_SERVER['HTTP_REFERER'];
+		$parsedurl = parse_url($refererUrl);
+		$searchParams = explode('&', $parsedurl['query']);
+		foreach ($searchParams as $searchParam) {
+			$explodedParams = explode('=', $searchParam);
+			$parsedParams[$explodedParams[0]] = $explodedParams[1];
+		}
+		$eventRecordUrl = 'index.php?module=' . $this->get('name') . '&view=' . $this->getEditViewName() . '&mode=Events';
+		if ($parsedParams['view'] == 'SharedCalendar') {
+			return $eventRecordUrl . '&referer=SharedCalendar';
+		}
+		return $eventRecordUrl;
+	}
+
+	/**
 	 * Function returns the URL for creating Task
 	 * @return <String>
 	 */
 	public function getCreateTaskRecordUrl() {
 		return 'index.php?module='.$this->get('name').'&view='.$this->getEditViewName().'&mode=Calendar';
+	}
+
+	/**
+	 * Function returns the URL for creating Tasks at QuickCreat
+	 * @return <String>
+	 */
+	public function getQuickCreateTaskRecordUrl()
+	{
+		$refererUrl  = $_SERVER['HTTP_REFERER'];
+		$parsedurl = parse_url($refererUrl);
+		$searchParams = explode('&', $parsedurl['query']);
+		foreach ($searchParams as $searchParam) {
+			$explodedParams = explode('=', $searchParam);
+			$parsedParams[$explodedParams[0]] = $explodedParams[1];
+		}
+		$eventRecordUrl = 'index.php?module=' . $this->get('name') . '&view=' . $this->getEditViewName() . '&mode=Calendar';
+		if ($parsedParams['view'] == 'SharedCalendar') {
+			return $eventRecordUrl . '&referer=SharedCalendar';
+		}
+		return $eventRecordUrl;
 	}
 
 	/**

@@ -1674,8 +1674,17 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var HEADER_HEIGHT = 200;
 		var CalendarHeight = $(window).height() - HEADER_HEIGHT;
 		CalendarHeight = (CalendarHeight < MIN_CALENDAR_HEIGHT) ? MIN_CALENDAR_HEIGHT : CalendarHeight;
+
+		// 表示する日付を取得
 		var URL_Serarch = new URLSearchParams(location.search);
-		var defaultDate = new Date(URL_Serarch.get("lastRecordDate"));
+		var calendarStartDate = URL_Serarch.get("calendarStartDate");
+		if (calendarStartDate) {
+			var defaultDate = new Date(calendarStartDate);
+		} else {
+			var defaultDate = new Date(); // 今日
+		}
+		URL_Serarch.delete("calendarStartDate");
+		history.replaceState('', '', 'index.php?' + URL_Serarch.toString());
 
 		var calenderConfigs = {
 			header: {

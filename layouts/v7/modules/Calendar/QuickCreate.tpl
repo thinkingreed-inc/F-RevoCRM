@@ -159,9 +159,9 @@
 							{assign var=BUTTON_LABEL value={vtranslate('LBL_SAVE', $MODULE)}}
 						{/if}
 						{assign var="CALENDAR_MODULE_MODEL" value=$QUICK_CREATE_CONTENTS['Calendar']['moduleModel']}
-						{assign var="EDIT_VIEW_URL" value=$CALENDAR_MODULE_MODEL->getCreateTaskRecordUrl()}
+						{assign var="EDIT_VIEW_URL" value=$CALENDAR_MODULE_MODEL->getQuickCreateTaskRecordUrl()}
 						{if $MODULE eq 'Events'}
-							{assign var="EDIT_VIEW_URL" value=$CALENDAR_MODULE_MODEL->getCreateEventRecordUrl()}
+							{assign var="EDIT_VIEW_URL" value=$CALENDAR_MODULE_MODEL->getQuickCreateEventRecordUrl()}
 						{/if}
 						<button class="btn btn-default" id="goToFullForm" data-edit-view-url="{$EDIT_VIEW_URL}" type="button"><strong>{vtranslate('LBL_GO_TO_FULL_FORM', $MODULE)}</strong></button>
 						<button {if $BUTTON_ID neq null} id="{$BUTTON_ID}" {/if} class="btn btn-success" type="submit" name="saveButton"><strong>{$BUTTON_LABEL}</strong></button>
