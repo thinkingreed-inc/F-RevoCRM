@@ -206,7 +206,7 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 			$queryGenerator->addUserSearchConditions(array('search_field' => $searchKey, 'search_text' => $searchValue, 'operator' => $operator));
 		}
 
-		$orderBy = $this->getForSql('orderby');
+		$orderBy = $this->get('orderby');
 		$sortOrder = $this->getForSql('sortorder');
 
 		if(!empty($orderBy)){
