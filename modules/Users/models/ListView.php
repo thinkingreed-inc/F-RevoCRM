@@ -65,12 +65,13 @@ class Users_ListView_Model extends Vtiger_ListView_Model {
 	 * Functions returns the query
 	 * @return string
 	 */
-    public function getQuery() {
+	public function getQuery()
+	{
 		$listQuery = parent::getQuery();
 		$searchKey = $this->get('search_key');
-        $db = PearDatabase::getInstance();
+		$db = PearDatabase::getInstance();
 
-		if(!empty($searchKey)) {
+		if (!empty($searchKey)) {
 			$listQueryComponents = explode(" WHERE vtiger_users.status='Active' AND", $listQuery);
 			$listQuery = implode(' WHERE ', $listQueryComponents);
 		}
@@ -78,13 +79,25 @@ class Users_ListView_Model extends Vtiger_ListView_Model {
 
 		// Impose non-admin restrictions.
 		$user = vglobal('current_user');
-		if(!is_admin($user)){
-			$listQuery .= " AND vtiger_users.id = ?";
-            $param[] = $user->id;
+		if (!is_admin($user)) {
+			// getAccessibleUsersを使い、inで処理を行う
+			$listQuery .= " AND vtiger_users.id IN (";
+			$currentUser = Users_Record_Model::getCurrentUserModel();
+			$userList = $currentUser->getAccessibleUsers();
+			$isFirst = true;
+			foreach ($userList as $id => $name) {
+				if (!$isFirst) {
+					$listQuery .= ", ";
+				}
+				$listQuery .= "?";
+				$param[] = $id;
+				$isFirst = false;
+			}
+			$listQuery .= ")";
 			//TODO: Consider user based on Role-heirarchy 
 		}
 		return $db->convert2Sql($listQuery, $param);
-    }
+	}
 
 	/**
 	 * Function to get the list view entries

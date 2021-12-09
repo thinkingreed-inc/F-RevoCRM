@@ -103,7 +103,7 @@ $languageStrings = array(
 	'LBL_DASHBOARD' => 'ダッシュボード',
 	'My Dashboard' => 'マイダッシュボード',
 	'Default' => 'デフォルト',
-	'LBL_USER_SETTINGS' => 'ユーザ設定',
+	'LBL_USER_SETTINGS' => 'ユーザー設定',
 	'LBL_MY_PREFERENCES' => '個人設定',
 	'LBL_SIGN_OUT' => 'ログアウト',
 	'LBL_HELP' => 'ヘルプ',
@@ -134,11 +134,12 @@ $languageStrings = array(
 	'LBL_CANT_MOVE_FROM_PUBLIC_TO_PRIVATE' => '公開タグを非公開タグにすることはできません。',
 	'LBL_EDIT_TAG'=>'タグの編集',
 	'LBL_NO_TAG_EXISTS' => 'タグが存在しません。' ,
-	'LBL_RELATED_USERS' => '関連ユーザ',
+	'LBL_RELATED_USERS' => '関連ユーザー',
 	'Primary Module' => 'モジュール',
+	'LBL_TAGS_IMPORT_MESSAGE' => 'タグをインポートした場合、共有タグに設定されます',
 
 	// Common Fields
-	'LBL_USER' => 'ユーザ',
+	'LBL_USER' => 'ユーザー',
 	'LBL_GROUP' => 'グループ',
 	'Last Modified By' => '最終更新者',
 	'Created Time' => '登録日時',
@@ -178,7 +179,7 @@ $languageStrings = array(
 	'LBL_CANT_SELECT_THE_OTHER_MODULE_WITH_USERS_FOR_RELFIELD' => 'は、他のモジュールと同時に選択できません',
 
 	//DropDown Category
-	'LBL_USERS' => 'ユーザ',
+	'LBL_USERS' => 'ユーザー',
 	'LBL_GROUPS' => 'グループ',
 
 	//EditView Form Links
@@ -228,7 +229,7 @@ $languageStrings = array(
 	'Activities' => '活動',
 	'Portal' => 'ポータル',
 	'Email Templates' => 'メールテンプレート',
-	'Recycle Bin' => 'ゴミ箱',
+	'Recycle Bin' => 'ごみ箱',
 	'Events' => '活動',
 	'Dailyreports' => '日報',
 
@@ -307,6 +308,7 @@ $languageStrings = array(
 	'LBL_NET_PRICE' => '金額',
 	'LBL_DISCOUNT' => '割引額',
 	'LBL_TOTAL_AFTER_DISCOUNT' => '割引後の合計',
+	'Discount Amount Final' => '総割引額',
 	'LBL_TAX' => '消費税',
 	'LBL_ADD_PRODUCT' => '製品を追加',
 	'LBL_ADD_SERVICE' => 'サービスを追加',
@@ -378,6 +380,8 @@ $languageStrings = array(
 	'LBL_REMOVE' => '削除',
 	'LBL_AT' => 'at',
 	'LBL_MINE' => '自分',
+	'Mine' => '自分', 
+	'Shared' => '共有',
 	'LBL_ME' => '自分',
 	'History' => '履歴',
 	'Upcoming Tasks' => '近日中の活動',
@@ -712,10 +716,10 @@ $languageStrings = array(
 	'LBL_RELATED_PRODUCTS' => '製品情報',
 	'LBL_REMINDER_INFORMATION' => 'アラーム情報',
 
-	'LBL_FOLDER_SAVED' => 'フォルダーが保存されました',
-	'LBL_FOLDER_EXISTS' => 'フォルダーが既に存在しています。',
-	'LBL_FOLDER_DELETED' => 'フォルダーを削除しました。',
-	'LBL_EDIT_FOLDER' => 'フォルダーの編集',
+	'LBL_FOLDER_SAVED' => 'フォルダが保存されました',
+	'LBL_FOLDER_EXISTS' => 'フォルダが既に存在しています。',
+	'LBL_FOLDER_DELETED' => 'フォルダを削除しました。',
+	'LBL_EDIT_FOLDER' => 'フォルダの編集',
 
 	'Lead Source' => '紹介元',
 	'Mobile' => '携帯電話番号',
@@ -877,7 +881,7 @@ $languageStrings = array(
 	'LBL_EDIT_QUANTITY' => '数量の編集',
 	'LBL_ADD_TO_PRODUCTS' => '製品の追加',
 
-	'LBL_MANAGE_USERS' => 'ユーザ管理',
+	'LBL_MANAGE_USERS' => 'ユーザー管理',
 	'LBL_TRANSFER_OWNERSHIP' => '担当の変更',
 	'LBL_SELECT_RELATED_MODULES' => '関連モジュールの選択',
 	'LBL_ASSIGNED_TO' => '担当',
@@ -943,16 +947,16 @@ $languageStrings = array(
 	'Related To' => '関連',
 
 	// Date Conditions
-	'LBL_LESS_THAN_DAYS_AGO' => '日以前（指定日含まない）',
-	'LBL_MORE_THAN_DAYS_AGO' => '日以前（指定日含む）',
-	'LBL_IN_LESS_THAN' => '日未満',
-	'LBL_IN_MORE_THAN' => '日以内',
+	'LBL_LESS_THAN_DAYS_AGO' => '本日からN日以前まで',
+	'LBL_MORE_THAN_DAYS_AGO' => '過去N日以前',
+	'LBL_IN_LESS_THAN' => '本日から未来N日まで',
+	'LBL_IN_MORE_THAN' => '未来N日以上',
 	'LBL_DAYS_AGO' => '日前',
 	'LBL_DAYS_LATER' => '日後',
-	'LBL_LESS_THAN_HOURS_BEFORE' => '時未満 前',
-	'LBL_LESS_THAN_HOURS_LATER' => '時未満 後',
-	'LBL_MORE_THAN_HOURS_BEFORE' => '時以上 前',
-	'LBL_MORE_THAN_HOURS_LATER' => '時以上 後',
+	'LBL_LESS_THAN_HOURS_BEFORE' => '現時刻から過去N時以前',
+	'LBL_LESS_THAN_HOURS_LATER' => '現時刻から未来N時以前',
+	'LBL_MORE_THAN_HOURS_BEFORE' => '時以前',
+	'LBL_MORE_THAN_HOURS_LATER' => '時以降',
 	'LBL_INTERNAL_COMMENT' => '内部コメント',
 	'LBL_NOTE_EXISTING_ATTACHMENTS_WILL_BE_REPLACED' => '注意 : 既存の添付ファイルが置き換えられます。',
 
@@ -1003,6 +1007,7 @@ $languageStrings = array(
 	'LBL_DOEST_FIRST_ROW_HEADER' => 'Does first row in your file contains column headers?',
 	'LBL_SELECT_CSV_FILE' => 'CSVファイルを選択してください',
 	'LBL_START_IMPORTING' => 'インポートを開始しました',
+	'LBL_IMPORT_ERROR_MULTIPLE_ACCOUNTS' => '%s が %s をインポートしています。時間をおいて再度お試しください。',
 	'LBL_PRIMARY' => '主',
 	'LBL_GOOGLE_SYNC_INTIATED_MSG' => 'Your import is scheduled, Your contacts will be imported shortly.<br> Proceeding to Next step will not interrupt the import.',
 	'LBL_IMPORT_SYNC_INTIATED_MSG' => 'Your import is in progress. You will receive an email when import is completed.<br> Proceeding to Next step will not interrupt the import.',
@@ -1480,6 +1485,7 @@ $languageStrings = array(
 	'Item net price' => '品目の金額',
 	'Item total price' => '品目の割引前合計',
 	'List columns saved successfully' => 'カラムは正常に保存されました',
+	'Sequence no' => '明細行番号',
 
 	//ユーザー管理>プロファイル
 	'Import' => 'インポート',
@@ -1518,7 +1524,9 @@ $languageStrings = array(
 	//ツール>ゴミ箱
 	'Sales Stage' => '販売段階',
 	'Amount' => '数',
-	'Templates' => 'テンプレート'
+	'Templates' => 'テンプレート',
+	//請求
+	'Member Of' => '親企業',
 );
 
 $jsLanguageStrings = array(
@@ -1571,6 +1579,7 @@ $jsLanguageStrings = array(
 	'JS_PLEASE_SELECT_ATLEAST_ONE_OPTION' => '少なくとも 1 つのオプションを選択してください',
 	'JS_SELECT_MODULE' => 'モジュールを選択してください',
 	'JS_PLEASE_SELECT_ATLEAST_ONE_MANDATORY_FIELD' => '少なくとも 1 つの必須項目を選択してください',
+	'Select atleast one mandatory value.' => '少なくとも 1 つの必須項目を選択してください',
 	'JS_SELECT_MODULE' => 'モジュールを選択してください',
 	'JS_PLEASE_ENTER_INTEGER_VALUE' => '整数値を入力してください',
 	'JS_PLEASE_ENTER_DECIMAL_VALUE' => '小数値を入力してください',
@@ -1609,6 +1618,7 @@ $jsLanguageStrings = array(
 	'JS_PLEASE_ENTER_SOME_VALUE' => '検索する値をいくつか入力してください',
 	'JS_VCF_FILE_IMPORT_WARNING' => 'VCFファイルが選択されました。VCFファイルからインポートできるのは顧客担当者のみです。このファイルをインポートするには顧客担当者からインポートを開始してください。',
 	'JS_ICS_FILE_IMPORT_WARNING' => 'ICSファイルが選択されました。ICSファイルからインポートできるのはカレンダーのみです。このファイルをインポートするには、カレンダーモジュールからインポートを開始してください',
+
 	//Select2 elements validation message
 	'JS_YOU_CAN_SELECT_ONLY'=> '選択可能：',
 	'JS_ITEMS' => '項目',
@@ -2092,10 +2102,14 @@ $jsLanguageStrings = array(
 	'LBL_LOADING' => '読み込み中',
 	'JS_NO_RESULTS_FOUND' => '結果がありません',
 	'JS_INVALID_STRENGTH_PASSWORDS'=>'複雑なパスワードを指定してください（アルファベット大文字・小文字、数字、記号を含む8文字以上）',
+	'Changed password successfully'=>'パスワードの変更に成功しました',
 	'LBL_MASS_PDF_EXPORT_CONFIRMATION' => '選択したレコードに関するPDFを生成してもよろしいですか？',
 
 	//個人カレンダー
 	'Planned' => '計画済み',
 	'Held' => '完了',
 	'Not Held' => '取り止め',
+	
+	//ユーザー管理>グループ作成
+	'JS_DUPLICATES_EXIST' => '既に存在しています',
 );

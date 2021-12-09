@@ -24,8 +24,15 @@
 					<table class="table detailview-table no-border">
 						<tbody>
 							{assign var=COUNTER value=0}
-							<tr>
+							<tr class="firstTr">
+								{assign var=IS_FIRST value=true}
 								{foreach item=FIELD_MODEL key=FIELD_NAME from=$FIELD_MODEL_LIST}
+									{if $IS_FIRST}
+										{assign var=IS_FIRST value=false}
+											<td></td><td></td><td></td><td></td>
+										</tr>
+										<tr>
+									{/if}
 									{assign var=fieldDataType value=$FIELD_MODEL->getFieldDataType()}
 									{if !$FIELD_MODEL->isViewableInDetailView()}
 										{continue}

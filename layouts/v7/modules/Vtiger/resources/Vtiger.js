@@ -1201,6 +1201,10 @@ Vtiger.Class('Vtiger_Index_Js', {
 	getReferencedModuleName : function(parentElement) {
 		var referenceModuleElement = jQuery('input[name="popupReferenceModule"]',parentElement).length ?
 			jQuery('input[name="popupReferenceModule"]',parentElement) : jQuery('input.popupReferenceModule',parentElement);
+		var customInfoFlag = jQuery('input[name="popupReferenceModule"]', parentElement).parents().find('div[data-block="LBL_CUSTOM_INFORMATION"]').length;
+		if(referenceModuleElement.val() == "Calendar"){
+			return 'Events';
+		}
 		return referenceModuleElement.val();
 	},
 

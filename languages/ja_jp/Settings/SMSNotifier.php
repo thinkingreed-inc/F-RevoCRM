@@ -16,7 +16,7 @@ $languageStrings = array(
 	'password' => 'パスワード',
 	'providertype' => 'プロバイダ',
 	'SMSNotifier' => 'SMSプロバイダ設定',
-	'username' => 'ユーザ名',
+	'username' => 'ユーザー名',
 );
 
 $jsLanguageStrings = array(

@@ -29,13 +29,16 @@ Class CustomView_EditAjax_View extends Vtiger_IndexAjax_View {
 		if(!empty($record)) {
 			$customViewModel = CustomView_Record_Model::getInstanceById($record);
 			$viewer->assign('MODE', 'edit');
+			$viewer->assign('MODE_DUPLICATE', false);
 		} else if(!empty($sourceRecord)) {
 			$customViewModel = CustomView_Record_Model::getInstanceById($sourceRecord);
 			$viewer->assign('MODE', '');
+			$viewer->assign('MODE_DUPLICATE', true);
 		} else {
 			$customViewModel = new CustomView_Record_Model();
 			$customViewModel->setModule($moduleName);
 			$viewer->assign('MODE', '');
+			$viewer->assign('MODE_DUPLICATE', false);
 		}
 
 		$viewer->assign('ADVANCE_CRITERIA', $customViewModel->transformToNewAdvancedFilter());

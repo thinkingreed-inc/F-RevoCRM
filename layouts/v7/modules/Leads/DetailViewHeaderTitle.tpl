@@ -12,18 +12,16 @@
 {strip}
     <div class="col-sm-6 col-lg-6 col-md-6">
         <div class="record-header clearfix">
-            <div class="hidden-sm hidden-xs recordImage bgleads app-{$SELECTED_MENU_CATEGORY}">
-                {assign var=IMAGE_DETAILS value=$RECORD->getImageDetails()}
-                {foreach key=ITER item=IMAGE_INFO from=$IMAGE_DETAILS}
-                    {if !empty($IMAGE_INFO.url)}
-                        <img src="{$IMAGE_INFO.url}" alt="{$IMAGE_INFO.orgname}" title="{$IMAGE_INFO.orgname}" width="100%" height="100px" align="left"><br>
+            <div class="hidden-sm hidden-xs recordImage bgleads app-{$SELECTED_MENU_CATEGORY} {if $BGWHITE}change_BG_white{/if}">
+                {if !empty($IMAGE_INFO[0].imgpath)}
+                    {if $IMAGE_INFO[0].imgName neq "summaryImg"}
+                        <div class="name"><span><strong><img src="{$IMAGE_INFO[0].imgpath}" alt="{$IMAGE_INFO[0].orgname}" title="{$IMAGE_INFO[0].orgname}" width="1"/></strong></span></div>
                     {else}
                         <img src="{vimage_path('summary_Leads.png')}" class="summaryImg"/>
                     {/if}
-                {/foreach}
-                {if empty($IMAGE_DETAILS)}
+                {else}
                     <div class="name"><span><strong>{$MODULE_MODEL->getModuleIcon()}</strong></span></div>
-				{/if}
+                {/if}
             </div>
             <div class="recordBasicInfo">
                 <div class="info-row">

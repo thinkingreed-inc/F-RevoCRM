@@ -82,6 +82,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 	public function isDefault() {
 		$db = PearDatabase::getInstance();
 		$userPrivilegeModel = Users_Privileges_Model::getCurrentUserPrivilegesModel();
+		$currentUserModel = Users_Record_Model::getCurrentUserModel();
 		$userId = $userPrivilegeModel->getId();
 		$moduleId = $this->getModule()->getId();
 		$cvId = Vtiger_Cache::get("UserDefaultCustomView",$userId."-".$moduleId);
@@ -98,7 +99,20 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 				return false;
 			}
 		}
-		return ($this->get('setdefault') == 1);
+		//setdefault値(1/0)を元にture/falseを決めていたため✓が複数入るバグが発生
+		//そこで上の条件に加え, ログイン中ユーザーidとDBのuseridが一致するかの条件を追加
+		global $adb;
+        $query = "SELECT ump.userid as check_userid from vtiger_customview cv left join vtiger_user_module_preferences ump on cv.cvid = ump.default_cvid WHERE cvid=?";
+        $queryParams = Array($this->get('cvid'));
+        $result = $adb->pquery($query, $queryParams);
+        $rows = $adb->num_rows($result);
+        for ($i = 0; $i < $rows; $i++) {
+            $ump_userid[] = $adb->query_result($result, $i, 'check_userid');
+            if($this->get('setdefault') == 1 && $currentUserModel->getId() == $ump_userid[$i]){
+                return true;
+            }
+        }
+        return false;
 	}
 
 	/**
@@ -300,10 +314,23 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 				$insertParams = array($currentUserModel->getId(), $moduleModel->getId(), $cvId);
 				$db->pquery($insertSql, $insertParams);
 			}
+
+			//共有リスト以外のsetdefaultを全て0にし, デフォルト設定したリストのみ1にする
+			$updateSql = 'UPDATE vtiger_customview SET setdefault = 0 WHERE status = "1" and entitytype = ? and userid = ?';
+			$updateParams = array($moduleName, $currentUserModel->getId());
+			$db->pquery($updateSql, $updateParams);
+			$updateSql = 'UPDATE vtiger_customview SET setdefault = "1" WHERE cvid = ?';
+			$updateParams = array($cvId);
+			$db->pquery($updateSql, $updateParams);
 		} else {
 			$deleteSql = 'DELETE FROM vtiger_user_module_preferences WHERE userid = ? AND tabid = ? AND default_cvid = ?';
 			$deleteParams = array($currentUserModel->getId(), $moduleModel->getId(), $cvId);
 			$db->pquery($deleteSql, $deleteParams);
+
+			//共有リスト以外のチェックボックスを外す
+			$updateSql = 'UPDATE vtiger_customview SET setdefault = 0 WHERE status = "1" and entitytype = ? and userid = ?';
+            $updateParams = array($moduleName, $currentUserModel->getId());
+            $db->pquery($updateSql, $updateParams);
 		}
 
 		$selectedColumnsList = $this->get('columnslist');
@@ -1099,7 +1126,15 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 		for ($i=0; $i<$noOfCVs; ++$i) {
 			$row = $db->query_result_rowdata($result, $i);
 			$customView = new self();
-			$customViews[] = $customView->setData($row)->setModule($row['entitytype']);
+			$cv = $customView->setData($row)->setModule($row['entitytype']);
+			// 「すべて」のリストは各モジュールでの標準のリストとして運用されるものであるが、
+			// 現状でも「All」であることから上部に表示されやすいとはいえ、00.---といったリストがあると下になってしまう為
+			// 共有リストの中では常に一番上に表示するようにする。
+			if($row['viewname'] == 'All'){
+				array_unshift($customViews, $cv);
+			}else{
+				$customViews[] = $cv;
+			}
 		}
 		return $customViews;
 	}

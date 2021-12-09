@@ -383,19 +383,9 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 		for($i=0; $i<$numOfRows; $i++) {
 			$moduleName = $db->query_result($result, $i, 'name');
 			$modulesList[$moduleName] = vtranslate($moduleName, $moduleName);
-			//Calendar needs to be shown as TODO so we are translating using Layout editor specific translations
-			if ($moduleName == 'Calendar') {
-				$modulesList[$moduleName] = vtranslate($moduleName, 'Settings:LayoutEditor');
-			}
 		}
 		// Usersの追加
 		$modulesList["Users"] = vtranslate("Users", "Users");
-
-		// If calendar is disabled we should not show events module too
-		// in layout editor
-		if(!array_key_exists('Calendar', $modulesList)) {
-			unset($modulesList['Events']);
-		}
 		return $modulesList;
 	}
 

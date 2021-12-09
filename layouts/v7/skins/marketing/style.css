@@ -647,6 +647,9 @@ a.menu-item:hover {
 .app-menu .app-modules-dropdown .module-icon {
   font-size: 1.2em;
   opacity: 0.2;
+  display: inline-block;
+  width: 23px;
+  text-align: center;
 }
 .app-menu .app-list {
   margin-top: -10px;
@@ -2411,6 +2414,13 @@ th {
   width: 100%;
   max-width: 325px;
 }
+
+input[type="text"]:read-only {
+  cursor: not-allowed;
+  color: #b3b3b3;
+  background-color: #eeeeee;
+}
+
 .editViewContents .input.form-control:focus,
 .editViewContents .input.form-control:hover,
 .editViewContents .input.form-control:active {
@@ -4033,14 +4043,14 @@ th {
 ********************************************/
 .dragdrop-dotted {
   border: 2px dashed #C0C0C0;
-  min-width: 300px;
+  min-width: 265px;
   width: auto;
   color: #C0C0C0;
   text-align: center;
   vertical-align: middle;
   padding-top: 2%;
   margin-bottom: 10px;
-  height: 150px;
+  padding-bottom: 20px;
 }
 .dragdrop-solid {
   border-style: solid;
@@ -5205,7 +5215,6 @@ TN-34230 .row .nav > li > a:hover {
   vertical-align: middle;
 }
 .layoutContent li.dummyRow {
-  border: 1px dotted #DDDDDD;
   min-height: 116px;
   height: auto;
 }
@@ -5266,13 +5275,20 @@ TN-34230 .row .nav > li > a:hover {
   border: 1px solid #CCCCCC;
 }
 .layoutContent .blockFieldsList ul {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: top;
+  justify-content: left;
+
   list-style-type: none;
-  float: left;
   min-height: 1px;
   padding: 2px;
-  margin-left: 4%;
   margin-top: 1%;
+}
+.layoutContent .blockFieldsList ul li {
   width: 44%;
+  margin-left: 4%;
 }
 .layoutContent .blockFieldsList {
   padding: 5px;

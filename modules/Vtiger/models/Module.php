@@ -1087,7 +1087,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 		$nowInDBFormat = Vtiger_Datetime_UIType::getDBDateTimeValue($nowInUserFormat);
 		list($currentDate, $currentTime) = explode(' ', $nowInDBFormat);
 
-		$query = "SELECT vtiger_crmentity.crmid, crmentity2.crmid AS parent_id, vtiger_crmentity.smownerid, vtiger_crmentity.setype, vtiger_activity.* FROM vtiger_activity
+		$query = "SELECT vtiger_crmentity.crmid, crmentity2.crmid AS parent_id, vtiger_crmentity.smownerid, vtiger_crmentity.setype, vtiger_crmentity.description, vtiger_activity.* FROM vtiger_activity
 					INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_activity.activityid
 					INNER JOIN vtiger_seactivityrel ON vtiger_seactivityrel.activityid = vtiger_activity.activityid
 					INNER JOIN vtiger_crmentity AS crmentity2 ON vtiger_seactivityrel.crmid = crmentity2.crmid AND crmentity2.deleted = 0 AND crmentity2.setype = ?
@@ -2058,7 +2058,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 
 		$imageFilePath = 'layouts/'.Vtiger_Viewer::getLayoutName()."/modules/$moduleName/$moduleName.png";
 		if (file_exists($imageFilePath)) {
-			$moduleIcon = "<img src='$imageFilePath' title='$title'/>";
+			$moduleIcon = "<img src='$imageFilePath' title='$title' width='1'/>";
 		}
 
 		return $moduleIcon;

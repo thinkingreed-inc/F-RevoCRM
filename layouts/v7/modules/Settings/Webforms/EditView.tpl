@@ -11,7 +11,7 @@
          <form class="form-horizontal" id="EditView" name="edit" method="post" action="index.php" enctype="multipart/form-data">
             <div class="editViewHeader">
                      {assign var=SINGLE_MODULE_NAME value='SINGLE_'|cat:$MODULE}
-                     {if $RECORD_ID neq ''}
+                     {if $MODE eq 'edit'}
                         <h3 class="editHeader" style="margin-top:5px;" title="{vtranslate('LBL_EDITING', $MODULE)} {vtranslate($SINGLE_MODULE_NAME, $MODULE)} {$RECORD_STRUCTURE_MODEL->getRecordName()}">{vtranslate('LBL_EDITING', $MODULE)} {vtranslate($SINGLE_MODULE_NAME, $MODULE)} - {$RECORD_STRUCTURE_MODEL->getRecordName()}</h3>
                      {else}
                         <h3 class="editHeader" style="margin-top:5px;">{vtranslate('LBL_CREATING_NEW', $MODULE)} {vtranslate($SINGLE_MODULE_NAME, $MODULE)}</h3>
@@ -30,7 +30,7 @@
                      <input type="hidden" name="module" value="{$MODULE}" />
                   {/if}
                   <input type="hidden" name="action" value="Save" />
-                  <input type="hidden" name="record" value="{$RECORD_ID}" />
+                  <input type="hidden" name="record" value="{if $MODE neq ''}{$RECORD_ID}{/if}" />
                   <input type="hidden" name="defaultCallDuration" value="{$USER_MODEL->get('callduration')}" />
                   <input type="hidden" name="defaultOtherEventDuration" value="{$USER_MODEL->get('othereventduration')}" />
                   {if $IS_RELATION_OPERATION }

@@ -317,8 +317,30 @@ class Accounts_Module_Model extends Vtiger_Module_Model {
 				LEFT JOIN vtiger_potential 
 					ON vtiger_seactivityrel.crmid = vtiger_potential.potentialid";
 			$query .= " WHERE vtiger_crmentity.deleted=0";
-			$query .= " AND ( ( vtiger_cntactivityrel.contactid IN (".$entityIds.",null) )";
-			$query .= " OR ( vtiger_potential.related_to = ".$recordId. ") ) ";
+			$query .= " AND vtiger_cntactivityrel.contactid IN (".$entityIds.",null) ";
+			$query .= "UNION ALL ";
+			$query .=
+				"SELECT distinct
+					vtiger_crmentity.crmid
+					, null AS parent_id
+					, vtiger_crmentity.smownerid
+					, vtiger_crmentity.setype
+					, vtiger_crmentity.description
+					, vtiger_activity.* 
+				FROM
+					vtiger_activity 
+				INNER JOIN vtiger_crmentity 
+					ON vtiger_crmentity.crmid = vtiger_activity.activityid 
+				LEFT JOIN vtiger_cntactivityrel 
+					ON vtiger_cntactivityrel.activityid = vtiger_activity.activityid 
+				LEFT JOIN vtiger_seactivityrel 
+					ON vtiger_seactivityrel.activityid = vtiger_activity.activityid 
+				LEFT JOIN vtiger_groups 
+					ON vtiger_groups.groupid = vtiger_crmentity.smownerid
+				LEFT JOIN vtiger_potential 
+					ON vtiger_seactivityrel.crmid = vtiger_potential.potentialid";
+			$query .= " WHERE vtiger_crmentity.deleted=0";
+			$query .= " AND vtiger_potential.related_to = ".$recordId. " ";
 		}
 
 		$query .= ") tmp";
@@ -344,6 +366,7 @@ class Accounts_Module_Model extends Vtiger_Module_Model {
 		$numOfRows = $db->num_rows($result);
 
 		$groupsIds = Vtiger_Util_Helper::getGroupsIdsForUsers($currentUser->getId());
+		$crmidCache = array();
 		$activities = array();
 		for($i=0; $i<$numOfRows; $i++) {
 			$newRow = $db->query_result_rowdata($result, $i);
@@ -371,6 +394,10 @@ class Accounts_Module_Model extends Vtiger_Module_Model {
 
 			$model->setData($newRow);
 			$model->setId($newRow['crmid']);
+			if(in_array($newRow['crmid'], $crmidCache)){
+				continue;
+			}
+			$crmidCache[] = $newRow['crmid'];
 			$activities[] = $model;
 		}
 

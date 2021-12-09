@@ -72,6 +72,19 @@ $languageStrings = array(
 	'Potentials Won' => '受注案件',
 	'last_action_date' => '最終活動日',
 	'Negotiation or Review' => '最終交渉', 
+
+	//ワークフロー条件
+	'Planning' => '計画中',
+	'Completed' => '完了',
+	'Integrator' => 'インテグレータ',
+	'Analyst' => 'アナリスト',
+	'Competitor' => '競合他社',
+	'Customer' => '顧客',
+	'Investor' => '投資家',
+	'Press' => '出版社・報道機関',
+	'Prospect' => '潜在顧客',
+	'Reseller' => '代理店',
+	
 );
 
 $jsLanguageStrings = array(

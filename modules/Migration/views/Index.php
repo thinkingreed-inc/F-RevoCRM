@@ -116,6 +116,9 @@ class Migration_Index_View extends Vtiger_View_Controller {
 
 		define('VTIGER_UPGRADE', true);
 
+		// migrationでは重い処理の可能性もあるため処理時間は無限にする
+		set_time_limit(0);
+
 		for($i=0; $i<$patchCount; $i++){
 			$filename =  "modules/Migration/schema/".$migrateVersions[$i]."_to_".$migrateVersions[$i+1].".php";
 			if(is_file($filename)) {

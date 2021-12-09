@@ -442,6 +442,7 @@ class Vtiger_InventoryPDFController {
 				$block = self::getMergeInventoryBlock($block, $relatedProducts, $prefix);
 			}
 			$block = preg_replace('/\$'.$prefix.'-discount_amount\$/', self::getDiscountTotal($relatedProducts), $block);
+			$block = preg_replace('/\$'.$prefix.'-discount_amount_final\$/', self::getDiscountTotal_Final($relatedProducts), $block);
 			$block = preg_replace('/\$'.$prefix.'-pre_tax_total\$/', self::getPreTaxTotal($relatedProducts), $block);
 			$block = preg_replace('/\$'.$prefix.'-total\$/', self::getTotalWithTax($relatedProducts), $block);
 			$block = preg_replace('/\$'.$prefix.'-tax_totalamount\$/', self::getTotalTax($relatedProducts), $block);
@@ -456,7 +457,7 @@ class Vtiger_InventoryPDFController {
 	private static function getMergeInventoryBlock($blocktemplate, $relatedProducts, $prefix) {
 		$convertedArray = array();
 		$cnt = 1;
-		foreach($relatedProducts as $product) {
+		foreach($relatedProducts as $key => $product) {
 			$block = $blocktemplate;
 			$product = self::getPDFDisplayValue($product, $cnt);
 			foreach($product as $name => $value) {
@@ -466,6 +467,10 @@ class Vtiger_InventoryPDFController {
 				$fieldname = strtolower($name);
 				$fieldname = preg_replace('/'.$cnt.'$/', '', $fieldname);
 				$fieldname = self::convertFieldName($fieldname);
+
+				// 改行が適用されるように修正
+				$value = nl2br($value);
+
 				$block = preg_replace('/\$'.$prefix.'\-'.$fieldname.'\$/', $value, $block);
 			}
 			$convertedArray[] = $block;
@@ -481,6 +486,12 @@ class Vtiger_InventoryPDFController {
 		}
 		else if($name == 'qty') {
 			$name = 'quantity';
+		}
+		else if($name == 'discount_amount'){
+			$name = "discount_itemamount";
+		}
+		else if($name == 'discount_percent'){
+			$name = "discount_itempercent";
 		}
 		return $name;
 	}
@@ -527,6 +538,14 @@ class Vtiger_InventoryPDFController {
 		return $discount;
 	}
 
+	private static function getDiscountTotal_Final($relatedProducts){
+		$discountTotal = $relatedProducts[1]['final_details']['discountTotal_final'];
+		$currencyField = new CurrencyField($discountTotal);
+		$discountTotal = $currencyField->getDisplayValueWithSymbol();
+
+		return  $discountTotal;
+	}
+
 	private static function getPreTaxTotal($relatedProducts) {
 		$preTotal = $relatedProducts[1]['final_details']['preTaxTotal'];
 		$currencyField = new CurrencyField($preTotal);
@@ -546,7 +565,8 @@ class Vtiger_InventoryPDFController {
 	private static function getTotalWithTax($relatedProducts) {
 		$preTotal = $relatedProducts[1]['final_details']['preTaxTotal'];
 		$tax = $relatedProducts[1]['final_details']['tax_totalamount'];
-		$currencyField = new CurrencyField($preTotal + $tax);
+		$adjustment = $relatedProducts[1]['final_details']['adjustment'];
+		$currencyField = new CurrencyField($preTotal + $tax + $adjustment);
 		$total = $currencyField->getDisplayValueWithSymbol();
 
 		return $total;

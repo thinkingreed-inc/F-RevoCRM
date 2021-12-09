@@ -101,9 +101,24 @@ class PDFTemplates_Module_Model extends Vtiger_Module_Model {
 			}else{
 				$fieldList = $this->getRelatedFields($module, $currentUserModel);
 			}
+			//fieldListに総割引額(合計金額からの割引額)が無かったので追加
+			$fieldList[] = array(
+				'module' => $module,
+				'fieldname' => 'hdnDiscountAmountFinal',
+				'columnname' => 'discount_amount_final',
+				'fieldlabel' => 'Discount Amount Final'
+			);
+
 			$allFields = array();
 			foreach ($fieldList as $key => $field) {
-				$option = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate($field['fieldlabel'], $field['module']), "$" . strtolower($field['module']) . "-" . $field['columnname'] . "$");
+				if($field['module'] == ('Quotes' || 'Invoice' || 'SalesORder' || 'PurchaseORder') &&  $field['fieldlabel'] == 'Item Discount Amount'){
+					$option = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate($field['fieldlabel'], $field['module']), "$" . strtolower($field['module']) . "-" . "discount_itemamount" . "$");
+				}else if($field['module'] == ('Quotes' || 'Invoice' || 'SalesORder' || 'PurchaseORder') &&  $field['fieldlabel'] == 'Item Discount Percent'){
+					$option = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate($field['fieldlabel'], $field['module']), "$" . strtolower($field['module']) . "-" . "discount_itempercent" . "$");
+				}else{
+					$option = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate($field['fieldlabel'], $field['module']), "$" . strtolower($field['module']) . "-" . $field['columnname'] . "$");
+				}
+
 				$allFields[] = $option;
 				if (!empty($field['referencelist'])) {
 					foreach ($field['referencelist'] as $referenceList) {
@@ -117,6 +132,7 @@ class PDFTemplates_Module_Model extends Vtiger_Module_Model {
 					}
 				}
 			}
+			$allFields[] = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate('Sequence no', $field['module']), "$" . strtolower($field['module']) . "-sequence_no$");
 			$allFields[] = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate('Item total price', $field['module']), "$" . strtolower($field['module']) . "-producttotal$");
 			$allFields[] = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate('Item net price', $field['module']), "$" . strtolower($field['module']) . "-netprice$");
 			$allFields[] = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate('Tax', $field['module']), "$" . strtolower($field['module']) . "-tax_totalamount$");

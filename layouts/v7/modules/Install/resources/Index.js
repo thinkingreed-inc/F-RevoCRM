@@ -75,7 +75,7 @@ jQuery.Class('Install_Index_Js', {}, {
 
 		function checkStrengthPassword() {
 			var password = jQuery('input[name="password"]').val();
-			if(password.lenght < 8) {
+			if(password.length < 8) {
 				setPasswordError('8文字以上のパスワードにしてください。');
 				return false;
 			}

@@ -193,7 +193,7 @@ class Vtiger_MassPDFExport_Action extends Vtiger_Mass_Action
             $uitype4fieldname = ",".$uitype4fieldname;
         }
 
-        $query = "SELECT ".$this->focus->table_index.$uitype4fieldname;
+        $query = "SELECT ".$this->focus->table_name.".".$this->focus->table_index.$uitype4fieldname;
         $query .= $queryGenerator->getFromClause();
         $query .= $queryGenerator->getWhereClause();
         $this->query = $query;

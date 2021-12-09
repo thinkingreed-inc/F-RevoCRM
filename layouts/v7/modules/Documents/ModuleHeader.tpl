@@ -11,8 +11,8 @@
 
 {strip}
 	<div class="col-sm-12 col-xs-12 module-action-bar coloredBorderTop">
-		<div class="module-action-content clearfix">
-			<div class="col-lg-7 col-md-7 module-breadcrumb module-breadcrumb-{$smarty.request.view}">
+		<div class="module-action-content clearfix" id="{$MODULE}_action_content">
+			<div class="col-sm-6 col-xs-11 module-breadcrumb module-breadcrumb-{$smarty.request.view}">
 				{assign var=MODULE_MODEL value=Vtiger_Module_Model::getInstance($MODULE)}
 				{if $MODULE_MODEL->getDefaultViewName() neq 'List'}
 					{assign var=DEFAULT_FILTER_URL value=$MODULE_MODEL->getDefaultUrl()}
@@ -50,17 +50,21 @@
 					<p class="current-filter-name filter-name pull-left"><span class="fa fa-angle-right pull-left" aria-hidden="true"></span><a title="{$RECORD->get('label')}">&nbsp;{$RECORD->get('label')}&nbsp;</a></p>
 				{/if}
 			</div>
-			<div class="col-lg-5 col-md-5 pull-right ">
+			<div class="col-sm-6 col-xs-1 pull-right">
 				<div id="appnav" class="navbar-right">
 					<ul class="nav navbar-nav">
 						{foreach item=BASIC_ACTION from=$MODULE_BASIC_ACTIONS}
 							{if $BASIC_ACTION->getLabel() eq 'LBL_ADD_RECORD'}
 								<li>
 									<div>
-										<button type="button" class="btn btn-default module-buttons dropdown-toggle" data-toggle="dropdown">
-											<span class="fa fa-plus" title="{vtranslate('LBL_NEW_DOCUMENT', $MODULE)}"></span>&nbsp;&nbsp;{vtranslate('LBL_NEW_DOCUMENT', $MODULE)}&nbsp;<span class="caret"></span>
+										<button type="button" class="btn btn-default module-buttons dropdown-toggle" data-toggle="dropdown" id="{$MODULE}_listView_basicAction_Add">
+											<span class="fa fa-plus" title="{vtranslate('LBL_NEW_DOCUMENT', $MODULE)}"></span>
+											<span class="btn-str">
+												&nbsp;&nbsp;{vtranslate('LBL_NEW_DOCUMENT', $MODULE)}&nbsp;
+												<span class="caret"></span>
+											</span>
 										</button>
-										<ul class="dropdown-menu">
+										<ul class="dropdown-menu dropdown-menu-right" id="add{$MODULE}DropdownMenu">
 											<li class="dropdown-header"><i class="fa fa-upload"></i> {vtranslate('LBL_FILE_UPLOAD', $MODULE)}</li>
 											<li id="VtigerAction">
 												<a href="javascript:Documents_Index_Js.uploadTo('Vtiger')">

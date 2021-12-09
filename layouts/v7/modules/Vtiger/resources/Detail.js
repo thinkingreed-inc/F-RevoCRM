@@ -638,6 +638,8 @@ Vtiger.Class("Vtiger_Detail_Js",{
 			var moreElementTitle = moreTabElement.find('a').attr('displaylabel')
 			moreTabElement.attr('title',moreElementTitle);
 			moreTabElement.find('.tab-icon').removeClass('textOverflowEllipsis');
+			moreTabElement.find('.fa-comment').attr('style', 'font-size: 19px');
+			moreTabElement.find('.spacer').empty();
 			jQuery('.related-tab-more-element').before(moreTabElement);
 			self.loadSelectedTabContents(moreTabElement, urlAttributes);
 			self.registerQtipevent(moreTabElement);
@@ -2875,7 +2877,7 @@ Vtiger.Class("Vtiger_Detail_Js",{
 						var commentInfoContent = commentInfoBlock.find('.commentInfoContent');
 						var commentEditStatus = commentInfoBlock.find('[name="editStatus"]');
 						var commentReason = commentInfoBlock.find('[name="editReason"]');
-						commentInfoContent.html(data.commentcontent);
+						commentInfoContent.html(data.commentcontent.replace(/\r?\n/g, '<br>'));
 						commentReason.html(data.reasontoedit);
 						modifiedTime.text(data.modifiedtime);
 						modifiedTime.attr('title',data.modifiedtimetitle)

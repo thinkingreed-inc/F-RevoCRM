@@ -111,6 +111,16 @@ class Import_FileReader_Reader {
 
 		$columnsListQuery = 'id INT PRIMARY KEY AUTO_INCREMENT, status INT DEFAULT 0, recordid INT';
 		$fieldTypes = $this->getModuleFieldDBColumnType();
+
+		if($this->moduleModel->getName() == 'Calendar'){
+			$eventModule = Vtiger_Module_Model::getInstance("Events");
+			$eventModuleFields = $eventModule->getFields();
+			$moduleFields = array_merge($moduleFields, $eventModuleFields);
+
+			$eventFieldTypes = $this->getModuleFieldDBColumnType($eventModule);
+			$fieldTypes = array_merge($fieldTypes, $eventFieldTypes);
+		}
+
 		foreach($fieldMapping as $fieldName => $index) {
 			$fieldObject = $moduleFields[$fieldName];
 			$columnsListQuery .= $this->getDBColumnType($fieldObject, $fieldTypes);
@@ -126,7 +136,7 @@ class Import_FileReader_Reader {
 			$newField[$key] = htmlspecialchars_decode($fieldVal, ENT_QUOTES); 
 		} 
 		$fieldValues = $newField; 
-		$tableName = Import_Utils_Helper::getDbTableName($this->user); 
+		$tableName = Import_Utils_Helper::getDbTableName($this->user);
 		$db->pquery('INSERT INTO '.$tableName.' ('. implode(',', $columnNames).') VALUES ('. generateQuestionMarks($fieldValues) .')', $fieldValues); 
 		$this->numberOfRecordsRead++;
 	}
@@ -141,10 +151,21 @@ class Import_FileReader_Reader {
 		$fieldName = $fieldObject->getName();
 		$dataType = $fieldObject->getFieldDataType();
 		$skipDataType = array('reference','owner', 'currencyList', 'date', 'datetime', 'productTax', 'ownergroup');
-		if(in_array($dataType, $skipDataType)){
+		if($fieldObject->get('name') == 'tags' && $fieldObject->get('displaytype') == 6){
+			$columnsListQuery .= ','.$fieldName.' varchar(500)';
+		} elseif(in_array($dataType, $skipDataType)){
 			$columnsListQuery .= ','.$fieldName.' varchar(250)';
 		} else {
-			$columnsListQuery .= ','.$fieldName.' '.$fieldTypes[$fieldObject->get('column')];
+			if (strpos($fieldTypes[$fieldObject->get('column')], 'varchar') !== false) {
+				preg_match('/(?<=\().*?(?=\))/', $fieldTypes[$fieldObject->get('column')], $match);
+				if (intval($match[0]) > 200) {
+					$columnsListQuery .= ',' . $fieldName . ' text';
+				} else {
+					$columnsListQuery .= ',' . $fieldName . ' ' . $fieldTypes[$fieldObject->get('column')];
+				}
+			} else {
+				$columnsListQuery .= ',' . $fieldName . ' ' . $fieldTypes[$fieldObject->get('column')];
+			}
 		}
 
 		return $columnsListQuery;
@@ -153,9 +174,13 @@ class Import_FileReader_Reader {
 	/** Function returns array of columnnames and their column datatype
 	 * @return <Array>
 	 */
-	public function getModuleFieldDBColumnType() {
+	public function getModuleFieldDBColumnType($specificModuleModel = null) {
+		$moduleModel = $this->moduleModel;
+		if($specificModuleModel){
+			$moduleModel = $specificModuleModel;
+		}
 		$db = PearDatabase::getInstance();
-		$result = $db->pquery('SELECT tablename FROM vtiger_field WHERE tabid=? GROUP BY tablename', array($this->moduleModel->getId()));
+		$result = $db->pquery('SELECT tablename FROM vtiger_field WHERE tabid=? GROUP BY tablename', array($moduleModel->getId()));
 		$tables = array();
 		if ($result && $db->num_rows($result) > 0) {
 			while ($row = $db->fetch_array($result)) {

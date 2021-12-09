@@ -82,9 +82,12 @@ Class Vtiger_Edit_View extends Vtiger_Index_View {
 		$viewer = $this->getViewer ($request);
 		$moduleName = $request->getModule();
 		$record = $request->get('record');
+		$viewer->assign('IS_DUPLICATE', false);
+
 		if(!empty($record) && $request->get('isDuplicate') == true) {
 			$recordModel = $this->record?$this->record:Vtiger_Record_Model::getInstanceById($record, $moduleName);
 			$viewer->assign('MODE', '');
+			$viewer->assign('IS_DUPLICATE', true);
 
 			//While Duplicating record, If the related record is deleted then we are removing related record info in record model
 			$mandatoryFieldModels = $recordModel->getModule()->getMandatoryFieldModels();

@@ -201,6 +201,10 @@ class Vtiger_FieldBasic {
 
 		Vtiger_Profile::initForField($this);
 
+		if($this->uitype == 10){
+			$adb->pquery("CREATE INDEX ".$this->column." ON ".$this->table."(".$this->column.")");
+		}
+
 		self::log("Creating Field $this->name ... DONE");
 		self::log("Module language mapping for $this->label ... CHECK");
 	}

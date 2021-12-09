@@ -41,6 +41,8 @@
     {assign var="netPrice" value="netPrice"|cat:$row_no}
     {assign var="FINAL" value=$RELATED_PRODUCTS.1.final_details}
 
+		{assign var="usageunit" value="usageunit"|cat:$row_no}
+
 	{assign var="productDeleted" value="productDeleted"|cat:$row_no}
 	{assign var="productId" value=$data[$hdnProductId]}
 	{assign var="listPriceValues" value=Products_Record_Model::getListPriceValues($productId)}
@@ -123,7 +125,7 @@
 				</div>
 			{else}
 				{if $COMMENT_EDITABLE}
-					<div><br><textarea id="{$comment}" name="{$comment}" class="lineItemCommentBox">{decode_html($data.$comment)}</textarea></div>
+					<div><br><textarea id="{$comment}" name="{$comment}" class="lineItemCommentBox" style="width: 400px; max-width: 650px; height:150px;">{decode_html($data.$comment)}</textarea></div>
 				{/if}
 			{/if}
 		</td>
@@ -131,7 +133,7 @@
 
 	<td>
 		<input id="{$qty}" name="{$qty}" type="text" class="qty smallInputBox inputElement"
-			   data-rule-required=true data-rule-positive=true data-rule-greater_than_zero=true value="{if !empty($data.$qty)}{$data.$qty}{else}1{/if}"
+			   data-rule-required=true data-rule-positive=false data-rule-greater_than_zero=true value="{if !empty($data.$qty)}{$data.$qty}{else}1{/if}"
 			   {if $QUANTITY_EDITABLE eq false} disabled=disabled {/if} />
 
 		{if $PURCHASE_COST_EDITABLE eq false and $MODULE neq 'PurchaseOrder'}
@@ -143,6 +145,10 @@
 			<input type="hidden" name="{$margin}" value="{if $data.$margin}{$data.$margin}{else}0{/if}"></span>
 			<span class="margin pull-right" style="display:none">{if $data.$margin}{$data.$margin}{else}0{/if}</span>
 		{/if}
+		<br><br>
+		<span>{vtranslate('Usage Unit', "Products")}：</span>
+		<input id="{$usageunit}" name="{$usageunit}" value="{if !empty($data.$usageunit)}{$data.$usageunit}{/if}" type="text" class="usageunit smallInputBox inputElement" readonly style="border:hidden"/>
+
 		{if $MODULE neq 'PurchaseOrder'}
 			<br>
 			<span class="stockAlert redColor {if $data.$qty <= $data.$qtyInStock}hide{/if}" >
@@ -165,7 +171,7 @@
 		<td>
 			<div>
 				<input id="{$listPrice}" name="{$listPrice}" value="{if !empty($data.$listPrice)}{$data.$listPrice}{else}0{/if}" type="text"
-					   data-rule-required=true data-rule-positive=true class="listPrice smallInputBox inputElement" data-is-price-changed="{if $RECORD_ID && $row_no neq 0}true{else}false{/if}" list-info='{if isset($data.$listPrice)}{Zend_Json::encode($listPriceValues)}{/if}' data-base-currency-id="{getProductBaseCurrency($productId, {$entityType})}" />
+					   data-rule-required=true data-rule-positive=false class="listPrice smallInputBox inputElement" data-is-price-changed="{if $RECORD_ID && $row_no neq 0}true{else}false{/if}" list-info='{if isset($data.$listPrice)}{Zend_Json::encode($listPriceValues)}{/if}' data-base-currency-id="{getProductBaseCurrency($productId, {$entityType})}" />
 				&nbsp;
 				{assign var=PRICEBOOK_MODULE_MODEL value=Vtiger_Module_Model::getInstance('PriceBooks')}
 				{if $PRICEBOOK_MODULE_MODEL->isPermitted('DetailView') && $MODULE != 'PurchaseOrder'}

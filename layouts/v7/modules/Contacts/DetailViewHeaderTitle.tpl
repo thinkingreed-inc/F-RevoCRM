@@ -12,16 +12,14 @@
 {strip}
    <div class="col-lg-6 col-md-6 col-sm-6">
 	  <div class="record-header clearfix ">
-		 <div class="recordImage bgcontacts app-{$SELECTED_MENU_CATEGORY}">
-			{assign var=IMAGE_DETAILS value=$RECORD->getImageDetails()}
-			{foreach key=ITER item=IMAGE_INFO from=$IMAGE_DETAILS}
-			   {if !empty($IMAGE_INFO.url)}
-				  <img src="{$IMAGE_INFO.url}" alt="{$IMAGE_INFO.orgname}" title="{$IMAGE_INFO.orgname}" width="100%" height="100%" align="left"><br>
-			   {else}
-				  <img src="{vimage_path('summary_Contact.png')}" class="summaryImg"/>
-			   {/if}
-			{/foreach}
-			{if empty($IMAGE_DETAILS)}
+		 <div class="recordImage bgcontacts app-{$SELECTED_MENU_CATEGORY} {if $BGWHITE}change_BG_white{/if}">
+			{if !empty($IMAGE_INFO[0].imgpath)}
+				{if $IMAGE_INFO[0].imgName neq "summaryImg"}
+					<div class="name"><span><strong><img src="{$IMAGE_INFO[0].imgpath}" alt="{$IMAGE_INFO[0].orgname}" title="{$IMAGE_INFO[0].orgname}" width="1"/></strong></span></div>
+			    {else}
+					<img src="{vimage_path('summary_Contact.png')}" class="summaryImg"/>
+				{/if}
+			{else}
 				<div class="name"><span><strong>{$MODULE_MODEL->getModuleIcon()}</strong></span></div>
 			{/if}
 		 </div>
