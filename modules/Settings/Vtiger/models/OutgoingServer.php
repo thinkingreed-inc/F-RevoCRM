@@ -19,7 +19,7 @@ class Settings_Vtiger_OutgoingServer_Model extends Settings_Vtiger_Systems_Model
     
     public function getBody() {
         $currentUser = Users_Record_Model::getCurrentUserModel();
-        return $currentUser->get('user_name').'へ <br><br><b> これは、設定したSMTPサーバーを介してメールが実際に送信され
+        return $currentUser->get('user_name').'さん <br><br><b> これは、設定したSMTPサーバーを介してメールが実際に送信され
                 ているかどうかを確認するために送信されるテストメールです。 </b><br>削除していただいてかまいません。
                 <br><br>よろしくお願いいたします。<br> F-RevoCRM <br><br>';
     }
