@@ -51,28 +51,29 @@ class Webform_Capture {
 			$parameters = array();
 			$webformFields = $webform->getFields();
 			foreach ($webformFields as $webformField) {
-				if ($webformField->getDefaultValue() != null) {
-					$parameters[$webformField->getFieldName()] = decode_html($webformField->getDefaultValue());
+				//If urlencode is enabled then skipping decoding field names
+				if ($isURLEncodeEnabled == 1) {
+					$webformNeutralizedField = $webformField->getNeutralizedField();
 				} else {
-					//If urlencode is enabled then skipping decoding field names
-					if ($isURLEncodeEnabled == 1) {
-						$webformNeutralizedField = $webformField->getNeutralizedField();
-					} else {
-						$webformNeutralizedField = html_entity_decode($webformField->getNeutralizedField(), ENT_COMPAT, "UTF-8");
-					}
+					$webformNeutralizedField = html_entity_decode($webformField->getNeutralizedField(), ENT_COMPAT, "UTF-8");
+				}
 
-					if (isset($request[$webformField->getFieldName()])) {
-						$webformNeutralizedField = $webformField->getFieldName();
-					}
-					if (is_array(vtlib_purify($request[$webformNeutralizedField]))) {
-						$fieldData = implode(" |##| ", vtlib_purify($request[$webformNeutralizedField]));
-					} else {
-						$fieldData = vtlib_purify($request[$webformNeutralizedField]);
-						$fieldData = decode_html($fieldData);
-					}
+				if (isset($request[$webformField->getFieldName()])) {
+					$webformNeutralizedField = $webformField->getFieldName();
+				}
+				if (is_array(vtlib_purify($request[$webformNeutralizedField]))) {
+					$fieldData = implode(" |##| ", vtlib_purify($request[$webformNeutralizedField]));
+				} else {
+					$fieldData = vtlib_purify($request[$webformNeutralizedField]);
+					$fieldData = decode_html($fieldData);
+				}
 
+				if ($webformField->getDefaultValue() != null && $fieldData == null){
+					$parameters[$webformField->getFieldName()] = decode_html($webformField->getDefaultValue());
+				}else{
 					$parameters[$webformField->getFieldName()] = stripslashes($fieldData);
 				}
+
 				if ($webformField->getRequired()) {
 					if (!isset($parameters[$webformField->getFieldName()]))
 						throw new Exception("Required fields not filled");
