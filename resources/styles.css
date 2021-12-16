@@ -587,3 +587,8 @@ ul#productsImageContainer > li a{
 .layoutContent .blockFieldsList ul li.wideField {
   width: 92%;
 }
+
+/* 項目設定画面の罫線*/
+.layoutContent .blockFieldsList ul li div {
+  height: 100%;
+}

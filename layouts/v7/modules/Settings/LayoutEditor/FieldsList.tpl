@@ -92,7 +92,7 @@
 									{assign var=FIELD_UITYPE value=$FIELD_MODEL->get('uitype')}
                   <li {if $FIELD_UITYPE == 19 || $FIELD_UITYPE == 20} class="wideField" {/if}>
                     <div class="row border1px">
-                      <div class="col-sm-4">
+                      <div class="col-sm-4 layoutEditFieldLabel">
                         <div class="opacity editFields marginLeftZero" data-block-id="{$BLOCK_ID}" data-field-id="{$FIELD_MODEL->get('id')}" 
                             data-sequence="{$FIELD_MODEL->get('sequence')}" data-field-name="{$FIELD_MODEL->get('name')}" 
                             >
