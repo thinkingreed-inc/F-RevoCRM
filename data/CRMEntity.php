@@ -125,8 +125,8 @@ class CRMEntity {
 			}
 		}
 		// tagのテーブルは$table_nameに入ってこないので別途追加
-		if($this->column_fields['tags'] != null && $this->mode == null){
-			$this->insertIntoTagsTable($module);
+		if($this->column_fields['tags'] != null && $_REQUEST['mode'] == 'import'){
+			$this->insertTags_atImportMode($module);
 		}
 		
 		$columnFields->restartTracking();
@@ -729,7 +729,7 @@ class CRMEntity {
 		}
 	}
 
-	function insertIntoTagsTable($module){
+	function insertTags_atImportMode($module){
         $db = PearDatabase::getInstance();
         $currentUser = Users_Record_Model::getCurrentUserModel();
 
