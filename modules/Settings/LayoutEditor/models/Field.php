@@ -139,6 +139,9 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 	 * @return <Boolean> - true if we can make a field mandatory and non mandatory , false if we cant change previous state
 	 */
 	public function isMandatoryOptionDisabled() {
+		if($this->isUneditableFields()){
+			return true;
+		}
 		$moduleModel = $this->getModule();
 		$complusoryMandatoryFieldList = $moduleModel->getCompulsoryMandatoryFieldList();
 		//uitypes for which mandatory switch is disabled
@@ -162,6 +165,9 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 	 * @return boolean
 	 */
 	public function isActiveOptionDisabled() {
+		if($this->isUneditableFields()){
+			return true;
+		}
 		if($this->get('presence') == 0 ||  $this->get('displaytype') == 2 || $this->isMandatoryOptionDisabled() || $this->isOptionsRestrictedField()){
 			return true;
 		}
@@ -173,6 +179,12 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 	 * @return boolean
 	 */
 	public function isQuickCreateOptionDisabled() {
+		if($this->isUneditableFields()){
+			return true;
+		}
+		if($this->block->module->name == 'Users'){
+			return true;
+		}
 		$moduleModel = $this->getModule();
 		if($this->get('quickcreate') == 0 || $this->get('quickcreate') == 3 || $this->get('displaytype') == 5 || !$moduleModel->isQuickCreateSupported() || $this->get('uitype') == 69
 						|| $this->getName() == 'recurringtype' || $this->isOptionsRestrictedField()) {
@@ -186,6 +198,12 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 	 * @return boolean
 	 */
 	public function isMassEditOptionDisabled() {
+		if($this->isUneditableFields()){
+			return true;
+		}
+		if($this->block->module->name == 'Users'){
+			return true;
+		}
 		if($this->get('masseditable') == 0 || $this->get('displaytype') != 1 || $this->get('masseditable') == 3 || in_array($this->block->module->name, array('Events', 'Calendar')) || $this->isOptionsRestrictedField()) {
 			return true;
 		}
@@ -197,6 +215,9 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 	 * @return boolean
 	 */
 	public function isDefaultValueOptionDisabled() {
+		if($this->isUneditableFields()){
+			return true;
+		}
 		// for Record Source Field we should not show default value option as we are setting this while Record Save
 		$defaultValueRestrictedFields = array('source');
 		$defaultValueRestrictedUitypes = array('4', '70', '69', '53', '6', '23');
@@ -216,6 +237,12 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 	 * @return <Boolean> true/false
 	 */
 	public function isSummaryFieldOptionDisabled() {
+		if($this->isUneditableFields()){
+			return true;
+		}
+		if($this->block->module->name == 'Users'){
+			return true;
+		}
 		if (in_array($this->get('displaytype'), array(4, 5)) || in_array($this->block->module->name, array('Events', 'Calendar'))
 				|| ($this->get('uitype') == '83' && $this->getName() == 'taxclass' && in_array($this->block->module->name, array('Products', 'Services')))) {
 			return true;
@@ -224,6 +251,12 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 	}
 
 	public function isHeaderFieldOptionDisabled() {
+		if($this->isUneditableFields()){
+			return true;
+		}
+		if($this->block->module->name == 'Users'){
+			return true;
+		}
 		/**
 		 * for Calendar & Events summary Field option is disabled by default
 		 * that shouldn't effect header field

@@ -199,8 +199,8 @@
 									<div class="controls col-sm-2">
 										<input type="hidden" name="summaryfield" value="0"/>
 										<label class="checkbox" style="margin-left: 6%;">
-											<input type="checkbox" class="{if $FIELD_MODEL->isSummaryFieldOptionDisabled()} cursorPointerNotAllowed {else} cursorPointer{/if}" name="summaryfield" value="1" {if $FIELD_MODEL->get('summaryfield') eq '1'}checked="checked"{/if}
-												{if $FIELD_MODEL->isSummaryFieldOptionDisabled()}readonly="readonly"{/if} />
+											<input type="checkbox" class="{if $FIELD_MODEL->isSummaryFieldOptionDisabled() || $SELECTED_MODULE_NAME eq 'Users'} cursorPointerNotAllowed {else} cursorPointer{/if}" name="summaryfield" value="1" {if $FIELD_MODEL->get('summaryfield') eq '1'}checked="checked"{/if}
+												{if $FIELD_MODEL->isSummaryFieldOptionDisabled() || $SELECTED_MODULE_NAME eq 'Users'}readonly="readonly"{/if} />
 										</label>
 									</div>
 								</div>
@@ -211,8 +211,8 @@
 									<div class="controls col-sm-5">
 										<input type="hidden" name="headerfield" value="0"/>
 										<label class="checkbox" style="margin-left: 9%;">
-											<input type="checkbox" class="{if $FIELD_MODEL->isHeaderFieldOptionDisabled()} cursorPointerNotAllowed {else} cursorPointer{/if}" name="headerfield" value="1" {if $FIELD_MODEL->get('headerfield') eq '1'}checked="checked"{/if}
-												{if $FIELD_MODEL->isHeaderFieldOptionDisabled() || $IS_NAME_FIELD}readonly="readonly"{/if} />
+											<input type="checkbox" class="{if $FIELD_MODEL->isHeaderFieldOptionDisabled() || $SELECTED_MODULE_NAME eq 'Users'} cursorPointerNotAllowed {else} cursorPointer{/if}" name="headerfield" value="1" {if $FIELD_MODEL->get('headerfield') eq '1'}checked="checked"{/if}
+												{if $FIELD_MODEL->isHeaderFieldOptionDisabled() || $IS_NAME_FIELD || $SELECTED_MODULE_NAME eq 'Users'}readonly="readonly"{/if} />
 										</label>
 									</div>
 								</div>
@@ -229,8 +229,8 @@
 											<input type="hidden" name="masseditable" value="2" />
 										{/if}
 										<label class="checkbox" style="margin-left: 6%;">
-											<input type="checkbox" class="{if $FIELD_MODEL->isMassEditOptionDisabled()} cursorPointerNotAllowed {else} cursorPointer{/if}" name="masseditable" value="1" {if $FIELD_MODEL->get('masseditable') eq '1'}checked="checked" {/if} 
-												{if $FIELD_MODEL->isMassEditOptionDisabled()}readonly="readonly"{/if}/>
+											<input type="checkbox" class="{if $FIELD_MODEL->isMassEditOptionDisabled() || $SELECTED_MODULE_NAME eq 'Users'} cursorPointerNotAllowed {else} cursorPointer{/if}" name="masseditable" value="1" {if $FIELD_MODEL->get('masseditable') eq '1'}checked="checked" {/if} 
+												{if $FIELD_MODEL->isMassEditOptionDisabled() || $SELECTED_MODULE_NAME eq 'Users'}readonly="readonly"{/if}/>
 										</label>
 									</div>
 								</div>

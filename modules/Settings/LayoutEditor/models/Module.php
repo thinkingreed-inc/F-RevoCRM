@@ -160,6 +160,11 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 			$tableName= 'vtiger_'.strtolower($moduleName).'cf';
 		}
 
+		// Usersの場合はvtiger_usersに登録する
+		if($moduleName == 'Users'){
+			$tableName = 'vtiger_users';
+		}
+
 		$details = $this->getTypeDetailsForAddField($fieldType, $params);
 		$uitype = $details['uitype'];
 		$typeofdata = $details['typeofdata'];
@@ -203,6 +208,9 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 
 		// If the column failed to create then do not add entry to vtiger_field table
 		if(!in_array($columnName, $db->getColumnNames($tableName))) {
+			// vtiger_fieldには登録されてしまっているので、レコードを削除する
+			$id = $fieldModel->get('id');
+			$db->pquery("DELETE FROM vtiger_field where fieldid = ?", array($id));
 			throw new Exception(vtranslate('LBL_FIELD_COULD_NOT_BE_CREATED', 'Settings::LayoutEditor', $label), 513);
 		}
 
@@ -385,7 +393,7 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 			$modulesList[$moduleName] = vtranslate($moduleName, $moduleName);
 		}
 		// Usersの追加
-		$modulesList["Users"] = vtranslate("Users", "Users");
+		$modulesList["Users"] = vtranslate("Users", "Users");	
 		return $modulesList;
 	}
 
