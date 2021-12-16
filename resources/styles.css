@@ -582,3 +582,8 @@ ul#productsImageContainer > li a{
   background-repeat: no-repeat;
   background-position: center center;
 }
+
+/* 項目設定でuitype=19 or 20 の行を広げる*/
+.layoutContent .blockFieldsList ul li.wideField {
+  width: 92%;
+}

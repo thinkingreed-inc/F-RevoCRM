@@ -89,7 +89,8 @@
 							<ul name="{if $IS_FIELDS_SORTABLE}sortable1{else}unSortable1{/if}" class="connectedSortable col-sm-6">
 								{foreach item=FIELD_MODEL from=$FIELDS_LIST name=fieldlist}
 									{assign var=FIELD_INFO value=$FIELD_MODEL->getFieldInfo()}
-                  <li>
+									{assign var=FIELD_UITYPE value=$FIELD_MODEL->get('uitype')}
+                  <li {if $FIELD_UITYPE == 19 || $FIELD_UITYPE == 20} class="wideField" {/if}>
                     <div class="row border1px">
                       <div class="col-sm-4">
                         <div class="opacity editFields marginLeftZero" data-block-id="{$BLOCK_ID}" data-field-id="{$FIELD_MODEL->get('id')}" 
