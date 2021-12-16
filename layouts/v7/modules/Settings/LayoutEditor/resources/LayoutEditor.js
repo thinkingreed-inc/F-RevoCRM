@@ -2215,7 +2215,9 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 	 */
 	adjustFieldLabelWidth: function () {
 		var fieldwidth = jQuery('.layoutContent .blockFieldsList ul li:not(.wideField) div > div.layoutEditFieldLabel').width();
-		jQuery('.layoutContent .blockFieldsList ul li div > div.layoutEditFieldLabel').width(fieldwidth);
+		if (window.innerWidth > 768) {
+			jQuery('.layoutContent .blockFieldsList ul li.wideField div > div.layoutEditFieldLabel').width(fieldwidth);
+		}
 	},
 	/**
 	 * register events for layout editor

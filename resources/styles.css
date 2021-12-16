@@ -592,3 +592,43 @@ ul#productsImageContainer > li a{
 .layoutContent .blockFieldsList ul li div {
   height: 100%;
 }
+
+/* 項目設定画面のモバイル表示*/
+.layoutContent .blockFieldsList {
+  display: initial;
+}
+.layoutContent .blockFieldsList ul li > div {
+  display: flex;
+}
+@media (max-width: 768px) { 
+  .layoutContent .blockFieldsList ul {
+    margin-left: 5px;
+  }
+  .layoutContent .blockFieldsList ul li.ui-sortable-handle {
+    width: 90%;
+  }
+  .layoutContent .blockFieldsList ul li div > div.layoutEditFieldLabel {
+  width: calc(100% / 3);
+  }
+  .layoutContent .blockFieldsList ul li div > div.fieldPropertyContainer {
+  width: calc(100% / 3 * 2);
+  }
+  .layoutContent .blockFieldsList ul li div div.fieldPropertyContainer div > span.col-sm-2.actions{
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+}
+
+/* 項目設定画面の項目追加ボタン周り*/
+.layoutContent .blockFieldsList ul li.dummyRow  div > span.dragUiText.col-sm-7{
+  text-align: right;
+    padding: 0;
+    padding-right: 20px;
+    margin: auto;
+}
+.layoutContent .blockFieldsList ul li.dummyRow  div > span.col-sm-5{
+  text-align: left;
+    padding: 0;
+    margin: auto;
+}
