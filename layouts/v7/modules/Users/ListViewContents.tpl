@@ -60,8 +60,6 @@
 							{/if}
 						{/foreach}
 					</tr>
-				</thead>
-				<tbody class="overflow-y">
 					{if $MODULE_MODEL->isQuickSearchEnabled() && !$SEARCH_MODE_RESULTS}
 						<tr class="searchRow listViewSearchContainer">
                                                     <th class="user-inline-search-btn">
@@ -89,6 +87,8 @@
 							{/foreach}
 						</tr>
 					{/if}
+				</thead>
+				<tbody class="overflow-y">
 					{foreach item=LISTVIEW_ENTRY from=$LISTVIEW_ENTRIES name=listview}
 						<tr class="listViewEntries" data-id='{$LISTVIEW_ENTRY->getId()}' data-recordUrl='{$LISTVIEW_ENTRY->getDetailViewUrl()}&parentblock=LBL_USER_MANAGEMENT' id="{$MODULE}_listView_row_{$smarty.foreach.listview.index+1}">
 							<td class="listViewRecordActions">

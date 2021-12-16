@@ -32,6 +32,7 @@ $languageStrings = array(
 	'Folder Name' => 'フォルダ名',
 	'Document No' => 'ドキュメント番号',
 	'Last Modified By' => '最終更新者',
+	'Download' => 'ダウンロード',
 
 	//Folder
 	'LBL_FOLDER_HAS_DOCUMENTS' => '削除する前にドキュメントをフォルダから移動してください。',

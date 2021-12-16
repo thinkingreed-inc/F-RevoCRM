@@ -125,9 +125,9 @@ class CRMEntity {
 			}
 		}
 		// tagのテーブルは$table_nameに入ってこないので別途追加
-		if($this->column_fields['tags'] != null){
-			$this->insertIntoTagsTable($module);
-		}
+		// if($this->column_fields['tags'] != null){
+		// 	$this->insertIntoTagsTable($module);
+		// }
 		
 		$columnFields->restartTracking();
 		//Calling the Module specific save code
