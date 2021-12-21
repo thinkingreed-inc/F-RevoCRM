@@ -162,7 +162,7 @@ function get_user_array($add_blank=true, $status="Active", $assigned_user="",$pr
 			 array_push($params, $assigned_user);
 		}
 
-		$query .= " order by user_name ASC";
+		$query .= " order by id = $current_user->id DESC, user_name ASC";
 
 		$result = $db->pquery($query, $params, true, "Error filling in user array: ");
 
