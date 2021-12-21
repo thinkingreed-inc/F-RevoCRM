@@ -73,6 +73,12 @@
 														{vtranslate('LBL_EDIT',$MODULE_NAME)}
 													</a>
 												{/if}
+												{if $CURRENTUSER->getId() eq $COMMENT->get('userid')}
+													&nbsp;&nbsp;&nbsp;
+													<a href="javascript:void(0);" class="cursorPointer deleteComment feedback" style="color: blue;">
+														{vtranslate('LBL_DELETE',$MODULE_NAME)}
+													</a>
+												{/if}
 											{/if}
 
 											{assign var=CHILD_COMMENTS_COUNT value=$COMMENT->getChildCommentsCount()}
