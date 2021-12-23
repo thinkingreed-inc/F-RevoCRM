@@ -875,7 +875,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 
 		// 「チェックボックス」→ 他の項目 の変更等でデフォルト値に0やNULLが表示される
 		// 上記を回避するために変更前の項目タイプを保存する
-		var TypeBeforChange;
+		var typeBeforeChange;
 
 		//register the change event for field types
 		form.find('[name="fieldType"]').on('change', function (e) {
@@ -980,7 +980,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 				data.name = nameAttr;
 				data.value = defaultValueUi.val();
 				//チェックボックス項目から、または選択肢(複数)からの変更の場合、デフォルト値に何も表示されないようにする
-				if(nameAttr == 'fieldDefaultValue' && (TypeBeforChange == 'Boolean' || TypeBeforChange == 'Multipicklist')){
+				if(nameAttr == 'fieldDefaultValue' && (typeBeforeChange == 'Boolean' || typeBeforeChange == 'Multipicklist')){
 					data.value = "";
 				}
 				if (currentTarget.val() == "MultiSelectCombo") {
@@ -999,7 +999,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 					case 'MultiSelectCombo':type = 'Multipicklist';break;
 				}
 				data.type = type;
-				TypeBeforChange = type;
+				typeBeforeChange = type;
 
 				if (typeof data.picklistvalues == "undefined")
 					data.picklistvalues = {};
