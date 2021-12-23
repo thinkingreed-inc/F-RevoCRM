@@ -70,7 +70,7 @@ class Import_Utils_Helper {
 	}
 
 	public static function getFileReader($request, $user) {
-		$fileReaderInfo = self::getFileReaderInfo($request->get('type'));
+		$fileReaderInfo = self::getFileReaderInfo(mb_strtolower($request->get('type')));
 		if(!empty($fileReaderInfo)) {
 			require_once $fileReaderInfo['classpath'];
 			$fileReader = new $fileReaderInfo['reader'] ($request, $user);
