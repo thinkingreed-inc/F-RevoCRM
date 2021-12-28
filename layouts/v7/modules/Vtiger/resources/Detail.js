@@ -2919,7 +2919,7 @@ Vtiger.Class("Vtiger_Detail_Js",{
 			editCommentBlock.appendTo(commentInfoBlock).show();
 		});
 
-			detailContentsHolder.on('click','.deleteComment', function(e){
+		detailContentsHolder.on('click','.deleteComment', function(e){
 			var thisInstance = this;
 			var currentTarget = jQuery(e.currentTarget);
 			var message = app.vtranslate('LBL_DELETE_CONFIRMATION');

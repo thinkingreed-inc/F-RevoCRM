@@ -161,7 +161,7 @@
 																{vtranslate('LBL_EDIT',$MODULE_NAME)}
 															</a>
 														{/if}
-														{if $CURRENTUSER->getId() eq $COMMENT->get('userid')}
+														{if $CURRENTUSER->getId() eq $COMMENT->get('userid') || $CURRENTUSER->isAdminUser()}
 															{if $IS_CREATABLE}&nbsp;&nbsp;&nbsp;{/if}
 															<a href="javascript:void(0);" class="cursorPointer deleteComment feedback" style="color: blue;">
 																{vtranslate('LBL_DELETE',$MODULE_NAME)}

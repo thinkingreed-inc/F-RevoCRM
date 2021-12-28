@@ -18,8 +18,7 @@ class Vtiger_DeleteAjax_Action extends Vtiger_Delete_Action {
 			
 			$response = new Vtiger_Response();
 			$response->setResult(array('result'=>'true'));
-		}
-		else{
+		} else{
 			$recordId = $request->get('record');
 
 			$recordModel = Vtiger_Record_Model::getInstanceById($recordId, $moduleName);
