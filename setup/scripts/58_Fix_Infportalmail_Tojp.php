@@ -25,18 +25,18 @@ $body = <<<EOF
                                 <td colspan="6" style="
                         font-family: Helvetica,Verdana,sans-serif">
                                 <div style="margin-bottom:10px;color: rgb(34, 34, 34); font-family: arial, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);"><br />
-                                contact_name 様へ</div>
+                                \$contact_name$ 様へ</div>
 
                                 <div style="margin-top:20px;margin-bottom:20px; color: rgb(34, 34, 34); font-family: arial, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);">いつも弊社サービスをご利用いただきありがとうございます。<br />
                                 <br />
                                 本メールは、弊社カスタマーポータルへの招待メールとなります<br />
                                 カスタマーポータルでは、お問い合わせ管理や、過去のFAQと回答をご確認いただけます。<br />                        
                                 ポータルへのアクセスは本メールに記載のURL、ID、パスワードを使いログインしてください。</div>
-                                <div style="margin-top:10px;color: rgb(34, 34, 34); font-family: arial, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);">portal_URL </div>
+                                <div style="margin-top:10px;color: rgb(34, 34, 34); font-family: arial, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);">\$portal_URL$ </div>
 
-                                <div style="margin-top:20px;color: rgb(34, 34, 34); font-family: arial, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);">Your Username: login_name_portal</div>
+                                <div style="margin-top:20px;color: rgb(34, 34, 34); font-family: arial, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);">Your Username: \$login_name_portal$</div>
 
-                                <div style="margin-bottom:20px;color: rgb(34, 34, 34); font-family: arial, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);">Your Password: pw_portalmail</div>
+                                <div style="margin-bottom:20px;color: rgb(34, 34, 34); font-family: arial, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);">Your Password: \$pw_portalmail$</div>
 
                                 <div class="gmail_extra" style="margin-top:10px;color: rgb(34, 34, 34); font-family: arial, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);"><br />
                                 </div>
