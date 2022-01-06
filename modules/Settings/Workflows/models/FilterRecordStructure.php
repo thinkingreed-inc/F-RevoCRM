@@ -34,10 +34,14 @@ class Settings_Workflows_FilterRecordStructure_Model extends Settings_Workflows_
 					if($fieldModel->isViewableInFilterView()) {
 						if (in_array($moduleModel->getName(), array('Calendar', 'Events')) && $fieldModel->getDisplayType() == 3) {
 							/* Restricting the following fields(Event module fields) for "Calendar" module
-							 * time_start, time_end, eventstatus, activitytype,	visibility, duration_hours,
+							 * eventstatus, activitytype,	visibility, duration_hours,
 							 * duration_minutes, reminder_time, recurringtype, notime
 							 */
-							continue;
+							
+							// time_start(開始時間), time_end(終了時間)は追加してほしい要望があったので除外しない
+							if($fieldName != 'time_start' && $fieldName != 'time_end'){
+								continue;
+							}
 						}
 						if(!empty($recordId)) {
 							//Set the fieldModel with the valuetype for the client side.
