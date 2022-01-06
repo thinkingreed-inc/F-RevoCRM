@@ -74,7 +74,7 @@ class Settings_Workflows_Field_Model extends Vtiger_Field_Model {
 			'multipicklist' => array('is', 'is not','contains','does not contain', 'has changed', 'has changed to'),
 			'datetime' => array('is', 'is not', 'has changed', 'before', 'after', 'is today', 'is tomorrow', 'is yesterday', 'less than hours before', 'less than hours later',
 				'more than hours before', 'more than hours later', 'less than days ago', 'less than days later', 'more than days ago', 'more than days later', 'days ago', 'days later', 'is empty', 'is not empty'),
-			'time' => array('is', 'is not', 'has changed', 'is not empty'),
+			'time' => array('is', 'is not', 'less than', 'greater than', 'less than or equal to', 'greater than or equal to', 'between', 'before', 'after', 'is empty', 'is not empty'),
 			'date' => array('is', 'is not', 'has changed', 'between', 'before', 'after', 'is today', 'is tomorrow', 'is yesterday', 'less than days ago', 'more than days ago', 'less than days later',
 				'more than days later', 'in less than', 'in more than', 'days ago', 'days later', 'is empty', 'is not empty'),
 			'boolean' => array('is', 'is not', 'has changed'),
