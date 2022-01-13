@@ -249,6 +249,10 @@ div.detailview-content.container-fluid span.value img {
 }
 .module-action-bar.coloredBorderTop {
   width: calc(100% - 42px);
+  height: 90px;
+}
+.textOverflowTest{
+	width: 600px;
 }
 @media all and (min-width:992px) and (max-width: 1290px) {
     .global-nav .app-list {
