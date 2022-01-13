@@ -220,12 +220,19 @@ class VTJsonCondition {
 		}
 
 		if($fieldInstance && $fieldInstance->getFieldDataType() == 'time') {
-			if(strpos($value,'AM') !== false || strpos($value,'PM') !== false){
-				$value = date('H:i', strtotime($value));
-			}
-
-			if($value){
-				$value = $value.':00';	// time fields will not have seconds appended to it, so we are adding 
+			if($condition != 'between'){
+				if(strpos($value,'AM') !== false || strpos($value,'PM') !== false){
+					$value = date('H:i', strtotime($value));
+				}
+	
+				if($value){
+					$value = $value.':00';	// time fields will not have seconds appended to it, so we are adding 
+				}
+			}else{ // 例) "12:00 AM,12:30 AM" → "12:00:00,12:30:00"
+				$values = explode(',', $value);
+				$values[0] = date('H:i', strtotime($values[0]));
+				$values[1] = date('H:i', strtotime($values[1]));
+				$value = $values[0].':00,'.$values[1].':00';
 			}
 		}
 
@@ -412,7 +419,9 @@ class VTJsonCondition {
 					return false;
 				}
 				$values = explode(',', $value);
-				$values = array_map('getValidDBInsertDateValue',$values);
+				if(preg_match('/^(0[0-9]{1}|1{1}[0-9]{1}|2{1}[0-3]{1}):(0[0-9]{1}|[1-5]{1}[0-9]{1}):(0[0-9]{1}|[1-5]{1}[0-9]{1})$/', $values[0]) == false){
+					$values = array_map('getValidDBInsertDateValue',$values);
+				}
 				if($fieldValue > $values[0] && $fieldValue < $values[1]) {
 					return true;
 				}
