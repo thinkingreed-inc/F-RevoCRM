@@ -38,8 +38,12 @@ class Settings_Workflows_FilterRecordStructure_Model extends Settings_Workflows_
 							 * duration_minutes, reminder_time, recurringtype, notime
 							 */
 							
-							// time_start(開始時間), time_end(終了時間)は追加してほしい要望があったので除外しない
-							if($fieldName != 'time_start' && $fieldName != 'time_end'){
+							/* 活動にtime_start(開始時間), time_end(終了時間)を
+							 * TODOにtime_startを追加してほしい要望があったので除外しない
+							 */
+							if($moduleModel->getName() == 'Events' && $fieldName != 'time_start' && $fieldName != 'time_end'){
+								continue;
+							}else if($moduleModel->getName() == 'Calendar' && $fieldName != 'time_start'){
 								continue;
 							}
 						}
