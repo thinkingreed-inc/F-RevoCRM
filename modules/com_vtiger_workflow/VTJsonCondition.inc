@@ -220,6 +220,10 @@ class VTJsonCondition {
 		}
 
 		if($fieldInstance && $fieldInstance->getFieldDataType() == 'time') {
+			if(strpos($value,'AM') !== false || strpos($value,'PM') !== false){
+				$value = date('H:i', strtotime($value));
+			}
+
 			if($value){
 				$value = $value.':00';	// time fields will not have seconds appended to it, so we are adding 
 			}
