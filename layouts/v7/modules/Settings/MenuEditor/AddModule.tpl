@@ -19,9 +19,9 @@
 							<span aria-hidden="true" class='fa fa-close'></span>
 						</button>
 					</div>
-					<div class="btn-group" style="width: 100%;">
+					<div class="btn-group" style="width: 96%;">
 						{assign var=APP_SELECTED_LABEL value="LBL_SELECT_`$SELECTED_APP_NAME`_MODULES"}
-						<h4 class="pull-left textOverflowEllipsis" style="word-break: break-all;width: 96%;">{vtranslate($APP_SELECTED_LABEL, $QUALIFIED_MODULE)}&nbsp;&nbsp;</h4>  
+						<h4 class="pull-left textOverflowEllipsis" style="word-break: break-all;width: 100%;">{vtranslate($APP_SELECTED_LABEL, $QUALIFIED_MODULE)}&nbsp;&nbsp;</h4>  
 					</div>
 				</div>
 			</div>
