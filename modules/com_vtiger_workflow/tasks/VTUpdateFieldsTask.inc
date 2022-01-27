@@ -270,11 +270,8 @@ class VTUpdateFieldsTask extends VTTask {
 				}
 
 				if($fieldInstance && $fieldInstance->getFieldDataType() == 'reference') {
-						$referenceModuleList = $fieldInstance->getReferenceList();
-						$fieldReferenceModule = $referenceModuleList[0];
-						$recordId = Vtiger_Util_Helper::getRecordId($fieldValue, $fieldReferenceModule,true);
-						if(!empty($recordId)) {
-							$fieldValue = $recordId;
+						if(isset($fieldValueInDB)) {
+							$fieldValue = $fieldValueInDB;
 						} else {
 							$fieldValue = '';
 						}
