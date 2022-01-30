@@ -884,7 +884,7 @@ class Vtiger_Functions {
 		$salt = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWZYG0123456789";
 		srand((double) microtime() * 1000000);
 		$i = 0;
-		while ($i <= 7) {
+		while ($i <= 15) {
 			$num = rand() % 62;
 			$tmp = substr($salt, $num, 1);
 			$pass = $pass . $tmp;
