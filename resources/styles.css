@@ -19,8 +19,21 @@
     z-index: 1;
     left: 0;
     background: #fff;
-    transform: scale(0.999);
     background-clip: padding-box;
+  }
+  .listViewRecordActions.fix-data-column {
+    border-top: 0px !important;
+    border-bottom: 0px !important;
+  }
+  .listViewEntryValue {
+    border-top: 0px !important;
+    border-bottom: 0px !important;
+  }
+  .listViewEntries {
+    border-bottom: 1px solid #ddd;
+  }
+  .listViewEntries:last-child {
+    border-bottom: 0px;
   }
 }
 /*
