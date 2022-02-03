@@ -42,6 +42,6 @@ if (defined('VTIGER_UPGRADE')) {
     $result = $adb->pquery("SELECT max(sequence) as maxsequence FROM vtiger_relatedlists WHERE tabid=?", array(getTabid("HelpDesk")));
     if($adb->num_rows($result)) $max_sequence = $adb->query_result($result, 0, 'maxsequence');
     $max_sequence++;
-    $adb->pquery("INSERT INTO vtiger_relatedlists VALUES(?,?,?,?,?,?,?,?,?,?,?)", array($adb->getUniqueID('vtiger_relatedlists'),getTabid("HelpDesk"),getTabid("Assets"),"get_related_list",$max_sequence,"Assets",0,"ADD","NULL","NULL","N:N"));
+    $adb->pquery("INSERT INTO vtiger_relatedlists VALUES(?,?,?,?,?,?,?,?,?,?,?)", array($adb->getUniqueID('vtiger_relatedlists'),getTabid("HelpDesk"),getTabid("Assets"),"get_related_list",$max_sequence,"Assets",0,"ADD,SELECT","NULL","NULL","N:N"));
 
 }
