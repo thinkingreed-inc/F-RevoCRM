@@ -272,6 +272,9 @@ div.detailview-content.container-fluid span.value img {
 button#advanceIntiateSave + input {
   margin-left: 10px;
 }
+.timepicker-default{
+  border: 1px solid #ccc;
+}
 /* 概要画面の関連項目 */
 .summaryView .input-group.editElement {
   min-width: auto;
