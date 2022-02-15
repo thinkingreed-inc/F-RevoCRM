@@ -61,6 +61,7 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
         $fieldInstance = Settings_LayoutEditor_Field_Model::getInstance($fieldId);
         
         $fieldLabel = $fieldInstance->get('label');
+        $uitype = $fieldInstance->get('uitype');
         $mandatory = $request->get('mandatory',null);
         $presence = $request->get('presence',null);
         $quickCreate = $request->get('quickcreate',null);
@@ -93,8 +94,12 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
         if(!empty($massEditable)){
             $fieldInstance->set('masseditable', $massEditable);
         }
-
-		$defaultValue = decode_html($request->get('fieldDefaultValue'));
+        
+        if($uitype == 33){
+            $defaultValue = decode_html(implode(' |##| ', $request->get('fieldDefaultValue')));
+        }else{
+            $defaultValue = decode_html($request->get('fieldDefaultValue'));
+        }
 		$fieldInstance->set('defaultvalue', $defaultValue);
 		$response = new Vtiger_Response();
         try{
