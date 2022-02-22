@@ -1139,6 +1139,7 @@ $jsLanguageStrings = array(
 	'JS_UPLOADED_FILE_SIZE_EXCEEDS' => 'Uploaded file size exceeds'  , // TODO: Review
 	'JS_PLEASE_SPLIT_FILE_AND_IMPORT_AGAIN' => 'Please split the file into smaller files and import again.', // TODO: Review
 	'JS_FIELD_MAPPED_MORE_THAN_ONCE' => 'Field mapped more than once' ,
+	'JS_SUCCESS_COMMENT'           => 'Import is complete',
 	'JS_MAP_MANDATORY_FIELDS'      => 'Please map mandatory fields' ,
 	'JS_PLEASE_ENTER_SOME_VALUE'   => 'Please enter some value to search',
 	'JS_YOU_CAN_SELECT_ONLY'       => 'You can select only'         ,

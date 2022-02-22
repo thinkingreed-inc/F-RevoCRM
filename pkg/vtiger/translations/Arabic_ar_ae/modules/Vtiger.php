@@ -1298,6 +1298,7 @@ $jsLanguageStrings = array(
 	'JS_UPLOADED_FILE_SIZE_EXCEEDS' => 'حجم الملف الذي تم تحميله يتجاوز',
 	'JS_PLEASE_SPLIT_FILE_AND_IMPORT_AGAIN' => 'يرجى تقسيم الملف إلى ملفات أصغر والاستيراد مرة أخرى.',
 	'JS_FIELD_MAPPED_MORE_THAN_ONCE' => 'الحقل تعين اكثر من مرة',
+	'JS_SUCCESS_COMMENT' => 'اكتمل الاستيراد',
 	'JS_MAP_MANDATORY_FIELDS' => 'يرجى تعيين حقول إلزامية',
 	'JS_PLEASE_ENTER_SOME_VALUE' => 'الرجاء إدخال قيمة للبحث',
 

@@ -98,7 +98,7 @@ if (typeof (Vtiger_Import_Js) == 'undefined') {
                             Vtiger_Import_Js.isReloadStatusPageStopped = false;
                             Vtiger_Import_Js.timer = setTimeout(Vtiger_Import_Js.scheduledImportRunning, 5000);
                         } else {
-                            app.helper.showSuccessNotification({message:'Import Completed.'});
+                            app.helper.showSuccessNotification({message:app.vtranslate('JS_SUCCESS_COMMENT')});
                         }
                     }
                 });
