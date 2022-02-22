@@ -504,8 +504,8 @@ $languageStrings = array(
 	'LBL_IS_TODAY' => '本日',
 	'LBL_IS_TOMORROW' => '明日',
 	'LBL_IS_YESTERDAY' => '昨日',
-	'LBL_LESS_THAN_DAYS_LATER' => '以前',
-	'LBL_MORE_THAN_DAYS_LATER' => '以降',
+	'LBL_LESS_THAN_DAYS_LATER' => '本日からN日後まで',
+	'LBL_MORE_THAN_DAYS_LATER' => '(本日 + N)日以降',
 
 	//Detail view summary widgets
 	'LBL_OWNER' => '所有者',
@@ -947,12 +947,12 @@ $languageStrings = array(
 	'Related To' => '関連',
 
 	// Date Conditions
-	'LBL_LESS_THAN_DAYS_AGO' => '本日からN日以前まで',
-	'LBL_MORE_THAN_DAYS_AGO' => '過去N日以前',
+	'LBL_LESS_THAN_DAYS_AGO' => 'N日以前から本日まで',
+	'LBL_MORE_THAN_DAYS_AGO' => '(本日 - N)日以前',
 	'LBL_IN_LESS_THAN' => '本日から未来N日まで',
 	'LBL_IN_MORE_THAN' => '未来N日以上',
-	'LBL_DAYS_AGO' => '日前',
-	'LBL_DAYS_LATER' => '日後',
+	'LBL_DAYS_AGO' => 'N日前',
+	'LBL_DAYS_LATER' => 'N日後',
 	'LBL_LESS_THAN_HOURS_BEFORE' => '現時刻から過去N時以前',
 	'LBL_LESS_THAN_HOURS_LATER' => '現時刻から未来N時以前',
 	'LBL_MORE_THAN_HOURS_BEFORE' => '時以前',
