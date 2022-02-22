@@ -1271,7 +1271,7 @@ $jsLanguageStrings = array(
 	'JS_MAP_NAME_ALREADY_EXISTS' => 'Nazwa szablonu już istnieje',
 	'JS_SELECT_FILE_EXTENSION' => 'Proszę wybrać plik z następującym rozszerzeniem:',
 	'JS_FIELD_MAPPED_MORE_THAN_ONCE' => 'Pole mapowane więcej niż raz',
-	'JS_SUCCESS_COMMENT' => 'Import zakończony',
+	'JS_SUCCESS_IMPORT_COMMENT' => 'Import zakończony',
 	'JS_MAP_MANDATORY_FIELDS' => 'Proszę zmapować pola obowiązkowe',
 	'JS_PLEASE_ENTER_SOME_VALUE' => 'Proszę podać wartość do wyszukiwania',
 

@@ -1298,7 +1298,7 @@ $jsLanguageStrings = array(
 	'JS_UPLOADED_FILE_SIZE_EXCEEDS' => 'Uppladdad filstorleken överskrider',
 	'JS_PLEASE_SPLIT_FILE_AND_IMPORT_AGAIN' => 'Vänligen dela upp filen i mindre filer och importera igen.',
 	'JS_FIELD_MAPPED_MORE_THAN_ONCE' => 'Fält mappas mer än en gång',
-	'JS_SUCCESS_COMMENT' => 'Importen är klar',
+	'JS_SUCCESS_IMPORT_COMMENT' => 'Importen är klar',
 	'JS_MAP_MANDATORY_FIELDS' => 'Vänligen mappa obligatoriska fält',
 	'JS_PLEASE_ENTER_SOME_VALUE' => 'Ange något värde att söka',
 
