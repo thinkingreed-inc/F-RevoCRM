@@ -37,7 +37,7 @@
 			{/if}
 			<div class="list-content row">
 				<div class="col-sm-12 col-xs-12 ">
-					<div id="table-content" class="table-container" style="padding-top:0px !important;">
+					<div id="table-content" class="table-container table-container-of-translation" style="padding-top:0px !important;">
 						<table id="listview-table" class="table listview-table">
 							{assign var="NAME_FIELDS" value=$MODULE_MODEL->getNameFields()}
 							{assign var=WIDTHTYPE value=$CURRENT_USER_MODEL->get('rowheight')}
