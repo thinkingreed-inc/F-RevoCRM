@@ -430,7 +430,7 @@ $languageStrings = array(
 	'LBL_SHOW' => '表示',
 	'LBL_MY' => '自分の',
 	'LBL_SELECT_DATE_RANGE' => '日付の範囲',
- 
+
 	// Basic Strings- custom view
 	'LBL_VIEW_NAME' => 'リスト名',
 	'LBL_CREATE_VIEW' => '新しいリストを作る',
