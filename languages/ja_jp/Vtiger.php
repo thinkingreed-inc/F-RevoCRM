@@ -430,7 +430,7 @@ $languageStrings = array(
 	'LBL_SHOW' => '表示',
 	'LBL_MY' => '自分の',
 	'LBL_SELECT_DATE_RANGE' => '日付の範囲',
-
+ 
 	// Basic Strings- custom view
 	'LBL_VIEW_NAME' => 'リスト名',
 	'LBL_CREATE_VIEW' => '新しいリストを作る',
@@ -2077,6 +2077,7 @@ $jsLanguageStrings = array(
 	'LBL_LIST_DELETE_CONFIRMATION' => '消去してもよろしいですか？',
 	'JS_WIDGET_RESIZING_WAIT_MSG' => 'ウィジェットのコンテンツは、サイズ変更後にロードされます。',
 	'JS_COPIED_SUCCESSFULLY' => 'コピーをしました',
+	'JS_REPEAT_DATE_SHOULD_BE_GREATER_THAN_START_DATE' =>'繰り返しの日付は、開始日以降である必要があります。',
 
 	// F-RevoCRM 7
 	'This field is required.' => '必須入力です',
