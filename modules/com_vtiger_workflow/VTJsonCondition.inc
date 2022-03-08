@@ -160,7 +160,7 @@ class VTJsonCondition {
 
 		$datetimefieldsList = array('date_start', 'due_date'); //「Time & Date」もしくは「Date」として扱いたいフィールド
 		$dateTimePair = array('date_start' => 'time_start', 'due_date' => 'time_end');
-		if(in_array($cond['fieldname'], $datetimefieldsList)) {
+		if(in_array($cond['fieldname'], $datetimefieldsList) && $entityData->getModuleName() == 'Events') {
 			$fieldName = $cond['fieldname'];
 			if(array_key_exists($dateTimePair[$fieldName], $data)) {
 				$fieldValue = $data[$fieldName]." ".$data[$dateTimePair[$fieldName]];
@@ -203,7 +203,7 @@ class VTJsonCondition {
 		$moduleFields = $handler->getMeta()->getModuleFields();
 		$fieldInstance = $moduleFields[$cond['fieldname']];
 
-		if(in_array($cond['fieldname'], $datetimefieldsList)){
+		if(in_array($cond['fieldname'], $datetimefieldsList) && $entityData->getModuleName() == 'Events'){
 			$date = new DateTimeField($fieldValue);
 			$fieldValue = $date->getDisplayDateTimeValue();
 		} else {
@@ -286,13 +286,13 @@ class VTJsonCondition {
 					$fieldValue = $this->getPicklistArray($fieldValue);
 					$value = $this->getPicklistArray($value);
 					return empty(array_diff($fieldValue, $value)) && empty(array_diff($value, $fieldValue));
-				} elseif($fieldInstance && in_array($cond['fieldname'], $datetimefieldsList)){
-					$valueArray = explode(' ', $value);
-					if (count($valueArray) == 1 && $valueArray[0] === date('H:i:s', strtotime($valueArray[0]))) { //タイムスタンプで比較する兼ね合い上、Timeのみの条件は考慮しない
+				} elseif($fieldInstance && in_array($cond['fieldname'], $datetimefieldsList) && $entityData->getModuleName() == 'Events'){
+					if(checkDatetimeFieldvalue($value)){
+						list($format, $value) = checkDatetimeFieldvalue($value);
+						return date($format, strtotime($fieldValue)) == $value;
+					}else{
 						return false;
 					}
-					$value = getValidDBInsertDateTimeValue($value);
-					return date('Y-m-d H:i:s', strtotime($fieldValue)) == date('Y-m-d H:i:s', strtotime($value));
 				} else {
 					if($fieldInstance && $fieldInstance->getFieldDataType() == 'datetime') {
 						$value = getValidDBInsertDateValue($value);
@@ -311,13 +311,13 @@ class VTJsonCondition {
 					$fieldValue = $this->getPicklistArray($fieldValue);
 					$value = $this->getPicklistArray($value);
 					return !empty(array_diff($fieldValue, $value)) || !empty(array_diff($value, $fieldValue));
-				} elseif($fieldInstance && in_array($cond['fieldname'], $datetimefieldsList)){
-					$valueArray = explode(' ', $value);
-					if (count($valueArray) == 1 && $valueArray[0] === date('H:i:s', strtotime($valueArray[0]))) {
+				} elseif($fieldInstance && in_array($cond['fieldname'], $datetimefieldsList) && $entityData->getModuleName() == 'Events'){
+					if(checkDatetimeFieldvalue($value)){
+						list($format, $value) = checkDatetimeFieldvalue($value);
+						return date($format, strtotime($fieldValue)) != $value;
+					}else{
 						return false;
 					}
-					$value = getValidDBInsertDateTimeValue($value);
-					return date('Y-m-d H:i:s', strtotime($fieldValue)) != date('Y-m-d H:i:s', strtotime($value));
 				} else {
 					if($fieldInstance && $fieldInstance->getFieldDataType() == 'datetime') {
 						$value = getValidDBInsertDateValue($value);
@@ -396,7 +396,7 @@ class VTJsonCondition {
 				return preg_match($value, $fieldValue);
 
 			case "has changed" :
-				if($fieldInstance && in_array($cond['fieldname'], $datetimefieldsList)){
+				if($fieldInstance && in_array($cond['fieldname'], $datetimefieldsList) && $entityData->getModuleName() == 'Events'){
 					$entityDelta = new VTEntityDelta();
 					$idParts = vtws_getIdComponents($entityData->getId());
 					$hasChanged_date = $entityDelta->hasChanged($entityData->getModuleName(), $idParts[1], $fieldName);
@@ -426,13 +426,13 @@ class VTJsonCondition {
 				}
 				return true;
 			case "before":
-				if($fieldInstance && in_array($cond['fieldname'], $datetimefieldsList)){
-					$valueArray = explode(' ', $value);
-					if (count($valueArray) == 1 && $valueArray[0] === date('H:i:s', strtotime($valueArray[0]))) {
+				if($fieldInstance && in_array($cond['fieldname'], $datetimefieldsList) && $entityData->getModuleName() == 'Events'){
+					if(checkDatetimeFieldvalue($value)){
+						list($format, $value) = checkDatetimeFieldvalue($value);
+						return date($format, strtotime($fieldValue)) < $value;
+					}else{
 						return false;
 					}
-					$value = getValidDBInsertDateTimeValue($value);
-					return strtotime($fieldValue) < strtotime($value);
 				} else {
 					if(empty($fieldValue)) {
 						return false;
@@ -444,13 +444,13 @@ class VTJsonCondition {
 					return false;
 				}
 			case "after":
-				if($fieldInstance && in_array($cond['fieldname'], $datetimefieldsList)){
-					$valueArray = explode(' ', $value);
-					if (count($valueArray) == 1 && $valueArray[0] === date('H:i:s', strtotime($valueArray[0]))) {
+				if($fieldInstance && in_array($cond['fieldname'], $datetimefieldsList) && $entityData->getModuleName() == 'Events'){
+					if(checkDatetimeFieldvalue($value)){
+						list($format, $value) = checkDatetimeFieldvalue($value);
+						return date($format, strtotime($fieldValue)) > $value;
+					}else{
 						return false;
 					}
-					$value = getValidDBInsertDateTimeValue($value);
-					return strtotime($fieldValue) > strtotime($value);
 				} else {
 					if(empty($fieldValue)) {
 						return false;
@@ -491,20 +491,26 @@ class VTJsonCondition {
 					return false;
 				}
 				$today = date('Y-m-d');
-				$olderDate = date('Y-m-d', strtotime('-'.$value.' days'));
-				$fieldValue = date('Y-m-d', strtotime($fieldValue));
-				if($olderDate <= $fieldValue && $fieldValue <= $today) {
-					return true;
+				if(preg_match("/^[0-9]+$/",$value)){
+					$olderDate = date('Y-m-d', strtotime('-'.$value.' days'));
+					$fieldValue = date('Y-m-d', strtotime($fieldValue));
+					if($olderDate <= $fieldValue && $fieldValue <= $today) {
+						return true;
+					}
+					return false;
 				}
 				return false;
 			case 'more than days ago':
 				if(empty($fieldValue) || empty($value)) {
 					return false;
 				}
-				$olderDate = date('Y-m-d', strtotime('-'.$value.' days'));
-				$fieldValue = date('Y-m-d', strtotime($fieldValue));
-				if($fieldValue <= $olderDate) {
-					return true;
+				if(preg_match("/^[0-9]+$/",$value, $match)){
+					$olderDate = date('Y-m-d', strtotime('-'.$value.' days'));
+					$fieldValue = date('Y-m-d', strtotime($fieldValue));
+					if($fieldValue <= $olderDate) {
+						return true;
+					}
+					return false;
 				}
 				return false;
 			case 'in less than':
@@ -530,45 +536,54 @@ class VTJsonCondition {
 				if(empty($fieldValue) || empty($value)) {
 					return false;
 				}
-				$olderDate = date('Y-m-d', strtotime('-'.$value.' days'));
-				$fieldValue = date('Y-m-d', strtotime($fieldValue));
-				if($fieldValue == $olderDate) {
-					return true;
+				if(preg_match("/^[0-9]+$/",$value)){
+					$olderDate = date('Y-m-d', strtotime('-'.$value.' days'));
+					$fieldValue = date('Y-m-d', strtotime($fieldValue));
+					if($fieldValue == $olderDate) {
+						return true;
+					}
+					return false;
 				}
 				return false;
 			case 'days later':
 				if(empty($fieldValue) || empty($value)) {
 					return false;
 				}
-				$futureDate = date('Y-m-d', strtotime('+'.$value.' days'));
-				$fieldValue = date('Y-m-d', strtotime($fieldValue));
-				if($fieldValue == $futureDate) {
-					return true;
+				if(preg_match("/^[0-9]+$/",$value)){
+					$futureDate = date('Y-m-d', strtotime('+'.$value.' days'));
+					$fieldValue = date('Y-m-d', strtotime($fieldValue));
+					if($fieldValue == $futureDate) {
+						return true;
+					}
+					return false;
 				}
 				return false;
-
 			case 'less than hours before':
 				if(empty($rawFieldValue) || empty($value)) {
 					return false;
 				}
 				$currentTime = date('Y-m-d H:i:s');
-				$olderDateTime = date('Y-m-d H:i:s', strtotime('-'.$value.' hours'));
-				if($olderDateTime <= $rawFieldValue && $rawFieldValue <= $currentTime) {
-					return true;
+				if(preg_match("/^[0-9]+$/",$value)){
+					$olderDateTime = date('Y-m-d H:i:s', strtotime('-'.$value.' hours'));
+					if($olderDateTime <= $rawFieldValue && $rawFieldValue <= $currentTime) {
+						return true;
+					}
+					return false;
 				}
 				return false;
-
 			case 'less than hours later':
 				if(empty($fieldValue) || empty($value)) {
 					return false;
 				}
 				$currentTime = date('Y-m-d H:i:s');
-				$futureDateTime = date('Y-m-d H:i:s', strtotime('+'.$value.' hours'));
-				if($currentTime <= $rawFieldValue && $rawFieldValue <= $futureDateTime) {
-					return true;
+				if(preg_match("/^[0-9]+$/",$value)){
+					$futureDateTime = date('Y-m-d H:i:s', strtotime('+'.$value.' hours'));
+					if($currentTime <= $rawFieldValue && $rawFieldValue <= $futureDateTime) {
+						return true;
+					}
+					return false;
 				}
 				return false;
-
 			case 'more than hours before':
 				if(empty($rawFieldValue) || empty($value)) {
 					return false;
@@ -619,23 +634,28 @@ class VTJsonCondition {
 					return false;
 				}
 				$currentDate = date('Y-m-d');
-				$futureDate = date('Y-m-d', strtotime('+'.$value.' days'));
-				$fieldValue = date('Y-m-d', strtotime($fieldValue));
-				if($currentDate <= $fieldValue && $fieldValue <= $futureDate) {
-					return true;
+				if(preg_match("/^[0-9]+$/",$value)){
+					$futureDate = date('Y-m-d', strtotime('+'.$value.' days'));
+					$fieldValue = date('Y-m-d', strtotime($fieldValue));
+					if($currentDate <= $fieldValue && $fieldValue <= $futureDate) {
+						return true;
+					}
+					return false;
 				}
 				return false;
 			case 'more than days later' :
 				if(empty($fieldValue) || empty($value)) {
 					return false;
 				}
-				$futureDate = date('Y-m-d', strtotime('+'.$value.' days'));
-				$fieldValue = date('Y-m-d', strtotime($fieldValue));
-				if($fieldValue >= $futureDate) {
-					return true;
+				if(preg_match("/^[0-9]+$/",$value)){
+					$futureDate = date('Y-m-d', strtotime('+'.$value.' days'));
+					$fieldValue = date('Y-m-d', strtotime($fieldValue));
+					if($fieldValue >= $futureDate) {
+						return true;
+					}
+					return false;
 				}
 				return false;
-
 			default:
 				//Unexpected condition
 				throw new Exception("Found an unexpected condition: " . $condition);

@@ -1848,6 +1848,34 @@ function getValidDBInsertDateTimeValue($value) {
 	}
 }
 
+// 「日時」フィールドのフォーマットは「Time & Date」もしくは「Date」である必要があるため判別する
+function checkDatetimeFieldvalue($value){
+	if($value == null){
+		return false;
+	}
+	$format = null;
+	$valueArray = explode(' ', $value);
+	if(count($valueArray) == 1){
+		if($value === date('H:i:s', strtotime($value))){
+			return false;
+		}
+		$value = getValidDBInsertDateValue($value);
+		if($value && $value === date('Y-m-d', strtotime($value))){
+			$format = 'Y-m-d';
+		}
+	}elseif(count($valueArray) == 2 || count($valueArray) == 3){
+		$value = getValidDBInsertDateTimeValue($value);
+		if($value && $value === date('Y-m-d H:i:s', strtotime($value))){
+			$format = 'Y-m-d H:i:s';
+		}
+	}
+	if(!empty($format)){
+		return array($format, date($format, strtotime($value)));
+	}else{
+		return false;
+	}
+}
+
 /** Function to set the PHP memory limit to the specified value, if the memory limit set in the php.ini is less than the specified value
  * @param $newvalue -- Required Memory Limit
  */
