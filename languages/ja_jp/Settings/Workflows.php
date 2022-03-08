@@ -203,8 +203,8 @@ $languageStrings = array(
 	'in more than' => 'が未来N日以上',
 	'days ago' => 'がN日前',
 	'days later' => 'がN日以後',
-	'less than hours before' => 'が現在時刻から過去N時以前',
-	'less than hours later' => 'が現在時刻から未来N時以前',
+	'less than hours before' => 'がN時間前から現在時刻まで',
+	'less than hours later' => 'が現在時刻からN時間後まで',
 	'more than hours before' => 'がN時以前',
 	'more than hours later' => 'がN時以降',
 );
