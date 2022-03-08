@@ -949,14 +949,14 @@ $languageStrings = array(
 	'Related To' => '関連',
 
 	// Date Conditions
-	'LBL_LESS_THAN_DAYS_AGO' => 'N日以前から本日まで',
+	'LBL_LESS_THAN_DAYS_AGO' => 'N日前から本日まで',
 	'LBL_MORE_THAN_DAYS_AGO' => '(本日 - N)日以前',
 	'LBL_IN_LESS_THAN' => '本日から未来N日まで',
 	'LBL_IN_MORE_THAN' => '未来N日以上',
 	'LBL_DAYS_AGO' => 'N日前',
 	'LBL_DAYS_LATER' => 'N日後',
-	'LBL_LESS_THAN_HOURS_BEFORE' => '現時刻から過去N時以前',
-	'LBL_LESS_THAN_HOURS_LATER' => '現時刻から未来N時以前',
+	'LBL_LESS_THAN_HOURS_BEFORE' => 'N時間前から現在時刻まで',
+	'LBL_LESS_THAN_HOURS_LATER' => '現在時刻からN時間後まで',
 	'LBL_MORE_THAN_HOURS_BEFORE' => '時以前',
 	'LBL_MORE_THAN_HOURS_LATER' => '時以降',
 	'LBL_INTERNAL_COMMENT' => '内部コメント',
