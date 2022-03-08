@@ -451,7 +451,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				for (var fieldName in moduleSpecificFields) {
 					if (moduleSpecificFields.hasOwnProperty(fieldName)) {
 						options += '<option value="' + fieldName + '" data-viewfieldname="' + fieldName + '">' +
-								moduleSpecificFields[fieldName] + '</option>';
+						app.vtranslate(moduleSpecificFields[fieldName]) + '</option>';
 					}
 				}
 			}

@@ -68,7 +68,7 @@ Vtiger_Edit_Js("EmailTemplates_Edit_Js",{},{
 		}
 		
 		if(options == '')
-			options = '<option value="">NONE</option>';
+			options = '<option value="">vtranslate('NONE')</option>';
 		
 		fieldSelectElement.empty().html(options);
         fieldSelectElement.select2("destroy");

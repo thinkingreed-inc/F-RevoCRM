@@ -20,7 +20,7 @@
             <div class="form-group">
                 <label class="control-label fieldLabel col-sm-4">{vtranslate('LBL_SELECT_MODULE', $MODULE)}</label>
                 <div class="controls fieldValue col-sm-6">
-                    <select id="editModulesList" class="select2" name="modulesList" style="min-width: 250px;">
+                    <select id="editModulesList" class="select2" name="modulesList" style="min-width: 250px;" disabled>
                         {foreach key=MODULE_NAME item=DATE_FIELDS_LIST from=$EDITVIEWS}
                             {assign var=MODULE_LABEL value=vtranslate($MODULE_NAME, $MODULE_NAME)}
                             {if $MODULE_NAME == 'Calendar'}
@@ -34,15 +34,16 @@
             <div class="form-group">
                 <label class="control-label fieldLabel col-sm-4">{vtranslate('LBL_SELECT_FIELD', $MODULE)}</label>
                 <div class="controls fieldValue col-sm-6">
-                    <select id="editFieldsList" class="select2" name="fieldsList" style="min-width: 250px;">
+                    <select id="editFieldsList" class="select2" name="fieldsList" style="min-width: 250px;" disabled>
                         <option value=" ">{vtranslate('LBL_NONE',$MODULE)}</option>
                     </select>
                 </div>
             </div>
+            
             <div id="js-eventtype-condition" class="form-group hide">
                 <label class="control-label fieldLabel col-sm-4">{vtranslate('LBL_SELECT_EVENT_TYPE', $MODULE)}</label>
                 <div class="controls fieldValue col-sm-6">
-                    <select id="calendarviewconditions" class="select2" name="conditions" style="min-width: 250px;">
+                    <select id="calendarviewconditions" class="select2" name="conditions" style="min-width: 250px;" disabled>
                         <option value="">{vtranslate('LBL_ALL', $MODULE)}</option>
                         {foreach key=CONDITION_NAME item=CONDITION from=$VIEWCONDITIONS['Events']}
                             <option value='{if $CONDITION neq ''}{Zend_Json::encode($CONDITION)}{/if}'>{$CONDITION_NAME}</option>
