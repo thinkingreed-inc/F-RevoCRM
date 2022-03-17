@@ -568,7 +568,71 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 		for($i=0; $i<$noOfFields; ++$i) {
 			$columnIndex = $db->query_result($result, $i, 'columnindex');
 			$columnName = $db->query_result($result, $i, 'columnname');
-			$selectedFields[$columnIndex] = decode_html($columnName);
+			if($i == 0)$num = $columnIndex; //$columnIndexが0から始まらないケースがあるため
+			$selectedFields[$columnIndex-$num] = decode_html($columnName);
+		}
+		$selectedFields = self::renameSelectedFields($selectedFields);
+		return $selectedFields;
+	}
+
+    /**
+	 * DBのfieldlabelを直接変更した場合、getSelectedFields()で取得してきたfieldLabelと変更後の名前が異なるため選択項目として表示されないバグがあった。
+	 * そこで、取得してきたfieldLabelをvtiger_fieldテーブルと比較し変更する。
+	 */
+	function renameSelectedFields($selectedFields){
+		if(isset($selectedFields)){
+			$table_array = array();
+			for($i=0; $i<count($selectedFields); ++$i){
+				$columnlist[$i] = explode(':', $selectedFields[$i]);
+				if($columnlist[$i][0]){
+					$moduleFieldLabel_array = explode('_', $columnlist[$i][3]);
+					$fieldlabelLinking = $moduleFieldLabel_array[1];
+					for($j=1; $j<count($moduleFieldLabel_array)-1; ++$j){
+						$fieldlabelLinking .= '_'.$moduleFieldLabel_array[$j+1];
+					}
+					array_push($columnlist[$i],$moduleFieldLabel_array[0],$fieldlabelLinking);
+					if(!in_array($columnlist[$i][0],$table_array)){
+						array_push($table_array,$columnlist[$i][0]);
+					}
+				}
+			}
+			// クエリを何度も飛ばすことを避けるため、$tabid等をまとめて取得する
+			for($i=0; $i<count($table_array); ++$i){
+				$db = PearDatabase::getInstance();
+				$query = 'SELECT tabid,columnname,tablename,fieldname,fieldlabel FROM vtiger_field WHERE tablename = ?';
+				$params = array($table_array[$i]);
+				$result = $db->pquery($query, $params);
+				$rows = $db->num_rows($result);
+				for($j=0; $j<$rows; ++$j){
+					$tabid[$i][] = $db->query_result($result, $j, 'tabid');
+					$columnname[$i][] = $db->query_result($result, $j, 'columnname');
+					$tablename[$i][] = $db->query_result($result, $j, 'tablename');
+					$fieldname[$i][] = $db->query_result($result, $j, 'fieldname');
+					$fieldlabel[$i][] = $db->query_result($result, $j, 'fieldlabel');
+				}
+			}
+			for($i=0; $i<count($columnlist); ++$i){
+				$table_key = array_search($columnlist[$i][0],$table_array);
+				$fieldlabel_key = array();
+				//DBのfieldlabelと比較する
+				for($j=0; $j<count($fieldlabel[$table_key]); ++$j){
+					if(str_replace(' ', '_', $fieldlabel[$table_key][$j]) == $columnlist[$i][6])array_push($fieldlabel_key, $j);
+				}
+				// DBに一致するfieldlabelが無かった場合、$columnname,$tabid,$fieldnameを元にfieldlabelを変更する(3項目が全て一致していなければ変更しない)
+				if(empty($fieldlabel_key)){
+					for($k=0; $k<count($columnname[$table_key]); ++$k){
+						if($columnname[$table_key][$k] == $columnlist[$i][1])$columnname_key = $k; break;
+					}
+					$ExistenceCheck = true;
+					if(isset($columnname_key)){
+						if($tabid[$table_key][$columnname_key] != getTabid($columnlist[$i][5]))$ExistenceCheck = ($ExistenceCheck && false);
+						if($fieldname[$table_key][$columnname_key] != $columnlist[$i][2])$ExistenceCheck = ($ExistenceCheck && false);
+						if($ExistenceCheck){
+							$selectedFields[$i] = $columnlist[$i][0].':'.$columnlist[$i][1].':'.$columnlist[$i][2].':'.$columnlist[$i][5].'_'.$fieldlabel[$table_key][$columnname_key].':'.$columnlist[$i][4];
+						}
+					}
+				}
+			}			
 		}
 		return $selectedFields;
 	}
