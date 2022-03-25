@@ -22,12 +22,18 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
     }
 
     public function add(Vtiger_Request $request) {
+        global $custom_field_limit;
         $type = $request->get('fieldType');
         $moduleName = $request->get('sourceModule');
         $blockId = $request->get('blockid');
         $moduleModel = Settings_LayoutEditor_Module_Model::getInstanceByName($moduleName);
         $response = new Vtiger_Response();
         try{
+            $cf_count = $this->getCustomFieldsCount($moduleName);
+            if (isset($custom_field_limit) && isset($cf_count) && ($cf_count >= $custom_field_limit)) {
+                throw new Exception(vtranslate('LBL_CUSTOM_FIELD_LIMIT'));
+            }
+
             $fieldModel = $moduleModel->addField($type,$blockId,$request->getAll());
             $fieldInfo = $fieldModel->getFieldInfo();
             $responseData = array_merge(array('id'=>$fieldModel->getId(), 'blockid'=>$blockId, 'customField'=>$fieldModel->isCustomField()),$fieldInfo);
@@ -53,6 +59,13 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
             $response->setError($e->getCode(), $e->getMessage());
         }
         $response->emit();
+    }
+
+    private function getCustomFieldsCount($moduleName) {
+        global $adb;
+        $query = "SELECT COUNT(generatedtype) AS cf_count  FROM vtiger_field INNER JOIN vtiger_tab ON vtiger_field.tabid = vtiger_tab.tabid WHERE vtiger_tab.name = ? && vtiger_field.generatedtype = 2";
+        $result = $adb->pquery($query, array($moduleName));
+        return $adb->query_result($result, 0, "cf_count");
     }
 
     public function save(Vtiger_Request $request) {
