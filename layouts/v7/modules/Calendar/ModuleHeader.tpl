@@ -10,7 +10,7 @@
 {strip}
 	<div class="col-sm-12 col-xs-12 module-action-bar coloredBorderTop">
 		<div class="module-action-content clearfix {$MODULE}-module-action-content">
-			<div class="col-lg-7 col-md-7 module-breadcrumb module-breadcrumb-{$smarty.request.view} transitionsAllHalfSecond">
+			<div class="col-lg-4 col-md-4 module-breadcrumb module-breadcrumb-{$smarty.request.view} transitionsAllHalfSecond">
 				{assign var=MODULE_MODEL value=Vtiger_Module_Model::getInstance($MODULE)}
 				{if $MODULE_MODEL->getDefaultViewName() neq 'List'}
 					{assign var=DEFAULT_FILTER_URL value=$MODULE_MODEL->getDefaultUrl()}
@@ -49,7 +49,7 @@
 					<p class="current-filter-name filter-name pull-left"><span class="fa fa-angle-right pull-left" aria-hidden="true"></span><a title="{$RECORD->get('label')}">&nbsp;{$RECORD->get('label')}&nbsp;</a></p>
 				{/if}
 			</div>
-			<div class="col-lg-5 col-md-5 pull-right">
+			<div class="col-lg-8 col-md-8 pull-right">
 				<div id="appnav" class="navbar-right">
 					<ul class="nav navbar-nav">
 						{foreach item=BASIC_ACTION from=$MODULE_BASIC_ACTIONS}
