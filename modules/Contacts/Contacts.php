@@ -1526,7 +1526,6 @@ function get_contactsforol($user_name)
 	$contents = str_replace('$support_team$',getTranslatedString('Support Team', $moduleName),$contents);
 	$contents = str_replace('$logo$','<img src="cid:logo" />',$contents);
 
-		$contents .= $hoge;
 		if($type == "LoginDetails") {
 			$temp=$contents;
 			$value["subject"]=decode_html($adb->query_result($result,0,'subject'));
