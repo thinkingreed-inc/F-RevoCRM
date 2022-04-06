@@ -8,9 +8,8 @@ F-RevoCRM は日本企業に合わせた形で開発された高機能なCRMで�
 途中、PRのマージは行いますが、正式なパッチとしては5月末にまとめた状態でリリースいたしますので少々お待ち下さい。
 
 ## 推奨環境の変更について
-2021年3月26日にアナウンス（ https://github.com/thinkingreed-inc/F-RevoCRM/commit/c33e4e55b7fc83462a60d83fb84215d07796758f ）していたとおり、2022年4月よりIE11のサポートを終了します。  
-※IE11のサポートは2022年3月31日までとなります  
-以降はGoogle Chromeの最新版、またはChromium Edgeをご利用ください。
+2021年3月26日にアナウンス（ https://github.com/thinkingreed-inc/F-RevoCRM/commit/c33e4e55b7fc83462a60d83fb84215d07796758f ）していたとおり、2022年4月1日を持ちましてIE11環境を非推奨と致しました。  
+以降はGoogle Chromeの最新版、またはChromium Edgeの最新版をご利用ください。
 
 ## ライセンス
 Vtiger Public License 1.2
@@ -42,7 +41,7 @@ Vtiger Public License 1.2
 ```
 
 ## PCの推奨環境
-* Windows 10 Google Chrome最新 / Microsoft Edge(Chronium)最新 / Internet Explorer 11（2022年4月 非推奨に移行予定）
+* Windows 10 Google Chrome最新 / Microsoft Edge(Chronium)最新
 * 最低1366×768以上の解像度、推奨1920×1080以上
 * 最低Intel Core iシリーズまたはそれ以上の2コア以上のプロセッサ、推奨4コア以上
 * 最低4GB以上のメモリ、推奨8GB以上
