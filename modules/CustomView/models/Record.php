@@ -616,12 +616,17 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 				$fieldlabel_key = array();
 				//DBのfieldlabelと比較する
 				for($j=0; $j<count($fieldlabel[$table_key]); ++$j){
-					if(str_replace(' ', '_', $fieldlabel[$table_key][$j]) == $columnlist[$i][6])array_push($fieldlabel_key, $j);
+					if(str_replace(' ', '_', $fieldlabel[$table_key][$j]) == $columnlist[$i][6]){
+						array_push($fieldlabel_key, $j);
+					}
 				}
 				// DBに一致するfieldlabelが無かった場合、$columnname,$tabid,$fieldnameを元にfieldlabelを変更する(3項目が全て一致していなければ変更しない)
 				if(empty($fieldlabel_key)){
 					for($k=0; $k<count($columnname[$table_key]); ++$k){
-						if($columnname[$table_key][$k] == $columnlist[$i][1])$columnname_key = $k; break;
+						if($columnname[$table_key][$k] == $columnlist[$i][1]){
+							$columnname_key = $k;
+							break;
+						}
 					}
 					$ExistenceCheck = true;
 					if(isset($columnname_key)){
