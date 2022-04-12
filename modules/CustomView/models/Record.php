@@ -565,7 +565,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 		$result = $db->pquery($query, $params);
 		$noOfFields = $db->num_rows($result);
 		$selectedFields = array();
-		for($i=0; $i<$noOfFields; ++$i) {
+		for($i=0; $i<$noOfFields; $i++) {
 			$columnIndex = $db->query_result($result, $i, 'columnindex');
 			$columnName = $db->query_result($result, $i, 'columnname');
 			if($i == 0)$num = $columnIndex; //$columnIndexが0から始まらないケースがあるため
@@ -582,7 +582,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 	function renameSelectedFields($selectedFields){
 		if(isset($selectedFields)){
 			$table_array = array();
-			for($i=0; $i<count($selectedFields); ++$i){
+			for($i=0; $i<count($selectedFields); $i++){
 				$columnlist[$i] = explode(':', $selectedFields[$i]);
 				if($columnlist[$i][0]){
 					$moduleFieldLabel_array = explode('_', $columnlist[$i][3]);
@@ -597,7 +597,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 				}
 			}
 			// クエリを何度も飛ばすことを避けるため、$tabid等をまとめて取得する
-			for($i=0; $i<count($table_array); ++$i){
+			for($i=0; $i<count($table_array); $i++){
 				$db = PearDatabase::getInstance();
 				$query = 'SELECT tabid,columnname,tablename,fieldname,fieldlabel FROM vtiger_field WHERE tablename = ?';
 				$params = array($table_array[$i]);
@@ -611,7 +611,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 					$fieldlabel[$i][] = $db->query_result($result, $j, 'fieldlabel');
 				}
 			}
-			for($i=0; $i<count($columnlist); ++$i){
+			for($i=0; $i<count($columnlist); $i++){
 				$table_key = array_search($columnlist[$i][0],$table_array);
 				$fieldlabel_key = array();
 				//DBのfieldlabelと比較する
@@ -1187,7 +1187,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 		$result = $db->pquery($sql, $params);
 		$noOfCVs = $db->num_rows($result);
 		$customViews = array();
-		for ($i=0; $i<$noOfCVs; ++$i) {
+		for ($i=0; $i<$noOfCVs; $i++) {
 			$row = $db->query_result_rowdata($result, $i);
 			$customView = new self();
 			$cv = $customView->setData($row)->setModule($row['entitytype']);
