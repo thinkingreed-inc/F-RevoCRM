@@ -1674,6 +1674,28 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var HEADER_HEIGHT = 200;
 		var CalendarHeight = $(window).height() - HEADER_HEIGHT;
 		CalendarHeight = (CalendarHeight < MIN_CALENDAR_HEIGHT) ? MIN_CALENDAR_HEIGHT : CalendarHeight;
+		var defaultDate;
+		var defaultView;
+		var URL_Serarch = new URLSearchParams(location.search);
+		if(location.href.match(/last/)){
+			defaultDate=URL_Serarch.get('lastVIewDate');
+		}switch(URL_Serarch.get('Viewtype')){
+			case 'day':
+				defaultView = 'agendaDay';
+				break;
+			case 'week':
+				defaultView = 'agendaWeek';
+				break;
+			case 'month':
+				defaultView = 'month';
+				break;
+			case 'list':
+				defaultView = 'vtAgendaList';
+				break
+		}
+		if(window.innerWidth < 1020){
+			defaultView = "agendaDay";
+		}
 
 		var calenderConfigs = {
 			header: {
@@ -1709,7 +1731,8 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			scrollTime: thisInstance.getUserPrefered('start_hour'),
 			editable: true,
 			eventLimit: true,
-			defaultView: ($(window).width() > 1020 ? userDefaultActivityView : 'agendaDay'),
+			defaultDate:defaultDate,
+			defaultView:defaultView,
 			slotLabelFormat: userDefaultTimeFormat,
 			timeFormat: userDefaultTimeFormat,
 			events: [],
@@ -1786,6 +1809,31 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				thisInstance.performMouseOutActions(event, jsEvent, view);
 			},
 			viewRender: function (view, element) {
+				var lastviewday;
+				if(document.getElementsByClassName('fc-day-header').item(1)==null){
+					if(document.getElementsByClassName('fc-day-header').item(0)){
+						lastviewday =document.getElementsByClassName('fc-day-header').item(0).dataset.date;
+						history.replaceState('', '','index.php?module=Calendar&view=Calendar&lastVIewDate=' + lastviewday + "&Viewtype=day");
+						
+					}
+					else{
+						history.replaceState('', '','index.php?module=Calendar&view=Calendar&lastVIewDate=' + "&Viewtype=list");
+					}
+
+				}
+				else if(document.getElementsByClassName('fc-day-header').item(1).dataset.date==undefined){
+					var URL_Serarch = new URLSearchParams(location.search);
+					if(URL_Serarch.get('lastVIewDate')!=null){
+						lastviewday =document.getElementsByClassName('fc-day-top').item(7).dataset.date;
+						history.replaceState('', '','index.php?module=Calendar&view=Calendar&lastVIewDate=' + lastviewday.substr(0, lastviewday.lastIndexOf('-')) + "&Viewtype=month");
+
+					}
+					
+				}
+				else if(document.getElementsByClassName('fc-day-header').item(1).dataset.date){
+					lastviewday =document.getElementsByClassName('fc-day-header').item(0).dataset.date;
+					history.replaceState('', '','index.php?module=Calendar&view=Calendar&lastVIewDate=' + lastviewday + "&Viewtype=week");
+				}
 				if (view.name === 'vtAgendaList') {
 					jQuery(".sidebar-essentials").addClass("hide");
 					jQuery(".content-area").addClass("full-width");
