@@ -866,7 +866,7 @@ if (window.jQuery)(function ($) {
 			denied: 'You cannot select a $ext file.\nTry again...',
 			file: '$file',
 			selected: 'File selected: $file',
-			duplicate: 'This file has already been selected:\n$file',
+			duplicate: app.vtranslate('JS_THIS_FILE_HAS_ALREADY_BEEN_SELECTED')+':\n$file',
 			toomuch: 'The files selected exceed the maximum size permited ($size)',
 			toomany: 'Too many files selected (max: $max)',
 			toobig: '$file is too big (max $size)'
