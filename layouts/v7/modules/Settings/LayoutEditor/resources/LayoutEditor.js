@@ -846,6 +846,10 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		var maxLengthValidator = 'maximumlength';
 		var decimalValidator = 'range';
 
+		// 「チェックボックス」→ 他の項目 の変更等でデフォルト値に0やNULLが表示される
+		// 上記を回避するために変更前の項目タイプを保存する
+		var typeBeforeChange;
+
 		//register the change event for field types
 		form.find('[name="fieldType"]').on('change', function (e) {
 			var currentTarget = jQuery(e.currentTarget);
@@ -915,6 +919,8 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 
 				form.find('[name="defaultvalue"]').attr('readonly', 'readonly').removeAttr('checked');
 				form.find('.defaultValueUi').addClass('zeroOpacity');
+			}else{ // 「関連」項目以外はデフォルト値が設定できるためclassを削除している
+				form.find('.defaultValueUi').removeClass('zeroOpacity');
 			}
 
 			if (form.find('input[type="checkbox"][name="defaultvalue"]').data('defaultDisabled') == "1") {
@@ -946,6 +952,10 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 
 				data.name = nameAttr;
 				data.value = defaultValueUi.val();
+				//チェックボックス項目から、または選択肢(複数)からの変更の場合、デフォルト値に何も表示されないようにする
+				if(nameAttr == 'fieldDefaultValue' && (typeBeforeChange == 'Boolean' || typeBeforeChange == 'Multipicklist')){
+					data.value = "";
+				}
 				if (currentTarget.val() == "MultiSelectCombo") {
 					if (data.value != null && data.value.length > 0) {
 						data.value = data.value.join('|##|');
@@ -962,6 +972,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 					case 'MultiSelectCombo':type = 'Multipicklist';break;
 				}
 				data.type = type;
+				typeBeforeChange = type;
 
 				if (typeof data.picklistvalues == "undefined")
 					data.picklistvalues = {};
