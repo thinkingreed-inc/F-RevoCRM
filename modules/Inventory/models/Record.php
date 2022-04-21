@@ -307,6 +307,7 @@ class Inventory_Record_Model extends Vtiger_Record_Model {
 
 		$tcpdf = new TCPDF();
 		$tcpdf->setPrintHeader(false);
+		$tcpdf->setPrintFooter(false);
 		$tcpdf->AddPage();
 		$tcpdf->SetFont('ume-tgo4','B');
 		$tcpdf->writeHTML($template);
