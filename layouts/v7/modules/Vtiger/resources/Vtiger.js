@@ -885,6 +885,8 @@ Vtiger.Class('Vtiger_Index_Js', {
 			inputElement.data('value','');
 			inputElement.val("");
 			parentTdElement.find('input[name="'+fieldName+'"]').val("");
+			parentTdElement.find('input[name="'+fieldName+'_historyback_restore"]').val("");
+			parentTdElement.find('input[name="'+fieldName+'_historyback_restore_name"]').val("");
 			element.addClass('hide');
 			element.trigger(Vtiger_Edit_Js.referenceDeSelectionEvent);
 		});
@@ -1168,6 +1170,11 @@ Vtiger.Class('Vtiger_Index_Js', {
 		var selectedName = params.name;
 		var id = params.id;
 
+		var sourceFieldIdHidden = sourceField+"_historyback_restore";
+		var fieldIdHiddenElement = container.find('input[name="'+sourceFieldIdHidden+'"]');
+		var sourceFieldNameHidden = sourceField+"_historyback_restore_name";
+		var fieldNameHiddenElement = container.find('input[name="'+sourceFieldNameHidden+'"]');
+
 		if (id && selectedName) {
 			if(!fieldDisplayElement.length) {
 				fieldElement.attr('value',id);
@@ -1177,6 +1184,8 @@ Vtiger.Class('Vtiger_Index_Js', {
 				fieldElement.val(id);
 				fieldElement.data('value', id);
 				fieldDisplayElement.val(selectedName);
+				fieldIdHiddenElement.val(id);
+				fieldNameHiddenElement.val(selectedName);
 				if(selectedName) {
 					fieldDisplayElement.attr('readonly', 'readonly');
 				} else {
