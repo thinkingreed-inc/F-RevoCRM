@@ -17,6 +17,7 @@
   {assign var="FIELD_NAME" value=$FIELD_MODEL->getFieldName()}
 {/if}
 <div class="input-group inputElement" style="margin-bottom: 3px">
+<input name="{$FIELD_NAME}_historyback_restore" data-fieldtype="date" style="display:none"></input>
 <input id="{$MODULE}_editView_fieldName_{$FIELD_NAME}" type="text" class="dateField form-control {if $IGNOREUIREGISTRATION}ignore-ui-registration{/if}" data-fieldname="{$FIELD_NAME}" data-fieldtype="date" name="{$FIELD_NAME}" data-date-format="{$dateFormat}"
     value="{$FIELD_MODEL->getEditViewDisplayValue($FIELD_MODEL->get('fieldvalue'))}" {if !empty($SPECIAL_VALIDATOR)}data-validator='{Zend_Json::encode($SPECIAL_VALIDATOR)}'{/if}
     {if $MODE eq 'edit' && $FIELD_NAME eq 'due_date'} data-user-changed-time="true" {/if}

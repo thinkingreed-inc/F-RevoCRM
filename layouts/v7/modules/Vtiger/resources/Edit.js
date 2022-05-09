@@ -365,6 +365,91 @@ Vtiger_Index_Js("Vtiger_Edit_Js",{
         this.registerImageChangeEvent();
         this.registerValidation();
         app.event.trigger('post.editView.load', editViewContainer);
-		this.registerPageLeaveEvents();
+        this.registerPageLeaveEvents();
+
+        this.restoreDateAndTimeField(editViewContainer);
+        this.registerDateAndTimeFieldChangeEvent(editViewContainer);
+    },
+
+    restoreDateAndTimeField : function(container) {
+        thisInstance = this;
+        // onload後に復元対象のvalueが復元されるので少し遅延させる
+        setTimeout(function () {
+            thisInstance.restoreDateField();
+            thisInstance.restoreTimeField();
+            thisInstance.restoreReferenceField();
+            thisInstance.restorePicklistField();
+            thisInstance.restoreMultiPicklistField();
+        }, 10);
+    },
+
+    restoreDateField : function() {
+        var $fields = jQuery('input[data-fieldtype="date"]'+'input[name$="_historyback_restore"]');
+        $fields.each(function(index, element) {
+            var $element = jQuery(element);
+            if ($element.val()) {
+                var fieldname = $element.attr('name');
+                fieldname = fieldname.substring(0, fieldname.indexOf('_historyback_restore'));
+                jQuery('[name='+fieldname+']').val($element.val());
+            }
+        });
+    },
+
+    restoreTimeField : function() {
+        var $fields = jQuery('input[data-fieldtype="time"]'+'input[name$="_historyback_restore"]');
+        $fields.each(function(index, element) {
+            var $element = jQuery(element);
+            if ($element.val()) {
+                var fieldname = $element.attr('name');
+                fieldname = fieldname.substring(0, fieldname.indexOf('_historyback_restore'));
+                jQuery('[name='+fieldname+']').val($element.val());
+            }
+        });
+    },
+
+    restoreReferenceField : function() {
+        var $fields = jQuery('input[data-fieldtype="reference"]'+'input[name$="_historyback_restore"]');
+        $fields.each(function(index, element) {
+            var $element = jQuery(element);
+            if ($element.val()) {
+                var parent = $element.closest('td');
+
+                var fieldname = $element.attr('name');
+                var $name = jQuery('[name='+fieldname+'_name]');
+                thisInstance.setReferenceFieldValue(parent, {'name' : $name.val(), 'id' : $element.val()});
+            }
+        });
+    },
+
+    restorePicklistField : function() {
+        var $fields = jQuery('select[data-fieldtype="picklist"]');
+        $fields.each(function(index, element) {
+            $element = jQuery(element);
+            if ($element.val()) {
+                $element.trigger('change');
+            }
+        });
+    },
+
+    restoreMultiPicklistField : function() {
+        var $fields = jQuery('select[data-fieldtype="multipicklist"]');
+        $fields.each(function(index, element) {
+            $element = jQuery(element);
+            if ($element.val()) {
+                $element.trigger('change');
+            }
+        });
+    },
+
+    registerDateAndTimeFieldChangeEvent : function(container) {
+        container.on('change', 'input[data-fieldtype="date"],input[data-fieldtype="time"]', function(e) {
+            var $this = jQuery(this);
+            var fieldname = $this.attr('name');
+            var fieldvalue = $this.val();
+
+            jQuery('input[name="'+fieldname+'_historyback_restore'+'"]').val(fieldvalue);
+        });
     }
+
+
 });
