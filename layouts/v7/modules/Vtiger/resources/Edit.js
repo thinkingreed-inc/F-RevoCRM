@@ -375,12 +375,20 @@ Vtiger_Index_Js("Vtiger_Edit_Js",{
         thisInstance = this;
         // onload後に復元対象のvalueが復元されるので少し遅延させる
         setTimeout(function () {
+            thisInstance.restoreAssignedUserIdField();
             thisInstance.restoreDateField();
             thisInstance.restoreTimeField();
             thisInstance.restoreReferenceField();
             thisInstance.restorePicklistField();
             thisInstance.restoreMultiPicklistField();
         }, 10);
+    },
+
+    restoreAssignedUserIdField : function() {
+        var $field = jQuery('[data-fieldname="assigned_user_id"]');
+        if ($field && $field.length > 0) {
+            $field.trigger('change');
+        }
     },
 
     restoreDateField : function() {
