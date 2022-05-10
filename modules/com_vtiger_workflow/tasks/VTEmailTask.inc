@@ -141,7 +141,6 @@ class VTEmailTask extends VTTask{
 			$plainBody = decode_html($content);
 			$plainBody = preg_replace(array("/<p>/i","/<br>/i","/<br \/>/i"),array("\n","\n","\n"),$plainBody);
 			$plainBody = strip_tags($plainBody);
-			$plainBody = Emails_Mailer_Model::convertToAscii($plainBody);
 			$plainBody = $emailRecord->convertUrlsToTrackUrls($plainBody,$entityId,'plain');
 			$mailerInstance->AltBody = $plainBody;
 			
