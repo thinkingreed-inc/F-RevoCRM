@@ -466,6 +466,7 @@ class HTTP_Session2
         $return = ini_get('session.use_cookies') ? true : false;
         if (isset($useCookies)) {
             ini_set('session.use_cookies', $useCookies ? 1 : 0);
+        }
     }
 
     /**
