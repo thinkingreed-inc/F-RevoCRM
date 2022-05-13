@@ -41,7 +41,9 @@ class Calendar_Save_Action extends Vtiger_Save_Action {
 				$loadUrl = 'index.php?module=Calendar&view=Calendar&calendarStartDate='. $recordModel->get('date_start');
 			}
 
-			if ($request->get('returntab_label')) {
+			if ($request->get('fromQuickCreate')) {
+				$loadUrl = 'index.php'.$request->get('quickCreateReturnURL');
+			} else if($request->get('returntab_label')) {
 				$loadUrl = 'index.php?'.$request->getReturnURL();
 			} else if($request->get('relationOperation')) {
 				$parentModuleName = $request->get('sourceModule');
