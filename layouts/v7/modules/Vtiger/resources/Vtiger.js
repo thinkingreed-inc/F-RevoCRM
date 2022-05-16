@@ -441,7 +441,10 @@ Vtiger.Class('Vtiger_Index_Js', {
 		var thisInstance = this;
 
 		app.event.on("post.QuickCreateForm.show",function(event,form){
-			form.find('#goToFullForm').on('click', function(e) {
+			jQuery('<input type="hidden" name="returnview" value="Detail" />').appendTo(form);
+			jQuery('<input type="hidden" name="fromQuickCreate" value="true" />').appendTo(form);
+			jQuery('<input type="hidden" name="quickCreateReturnURL" value="'+location.search+'" />').appendTo(form);
+			form.find('#goToFullForm').on('click', function (e) {
 				window.onbeforeunload = true;
 				var form = jQuery(e.currentTarget).closest('form');
 				var editViewUrl = jQuery(e.currentTarget).data('editViewUrl');
