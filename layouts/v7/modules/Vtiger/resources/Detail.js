@@ -2922,7 +2922,7 @@ Vtiger.Class("Vtiger_Detail_Js",{
 		detailContentsHolder.on('click','.deleteComment', function(e){
 			var thisInstance = this;
 			var currentTarget = jQuery(e.currentTarget);
-			var message = app.vtranslate('LBL_DELETE_CONFIRMATION');
+			var message = app.vtranslate('LBL_DELETE_COMMENT_CONFIRMATION_NOTE');
 			app.helper.showConfirmationBox({'message' : message}).then(function(e) {
 					var module = app.getModuleName();
 					var commentInfoBlock = currentTarget.closest('.singleComment');
