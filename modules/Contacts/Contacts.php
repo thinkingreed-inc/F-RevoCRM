@@ -1516,15 +1516,15 @@ function get_contactsforol($user_name)
 						INNER JOIN vtiger_emailtemplates ON vtiger_emailtemplates.templateid=vtiger_notificationscheduler.notificationbody
 					WHERE schedulednotificationid=5';
 
-		$result = $adb->pquery($query, array());
-		$body=decode_html($adb->query_result($result,0,'body'));
-		$contents=$body;
-		$contents = str_replace('$contact_name$',$entityData->get('lastname')." ".$entityData->get('firstname'),$contents);
-		$contents = str_replace('$login_name$',$entityData->get('email'),$contents);
-		$contents = str_replace('$password$',$password,$contents);
-		$contents = str_replace('$URL$',$portalURL,$contents);
-		$contents = str_replace('$support_team$',getTranslatedString('Support Team', $moduleName),$contents);
-		$contents = str_replace('$logo$','<img src="cid:logo" />',$contents);
+	$result = $adb->pquery($query, array());
+	$body=decode_html($adb->query_result($result,0,'body'));
+	$contents=$body;
+	$contents = str_replace('$contact_name$',$entityData->get('lastname')." ".$entityData->get('firstname'),$contents);
+	$contents = str_replace('$login_name_portal$',$entityData->get('email'),$contents);
+	$contents = str_replace('$pw_portalmail$',$password,$contents);
+	$contents = str_replace('$portal_URL$',$portalURL,$contents);
+	$contents = str_replace('$support_team$',getTranslatedString('Support Team', $moduleName),$contents);
+	$contents = str_replace('$logo$','<img src="cid:logo" />',$contents);
 
 		if($type == "LoginDetails") {
 			$temp=$contents;
