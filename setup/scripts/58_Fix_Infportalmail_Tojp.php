@@ -9,7 +9,7 @@ include_once('include/utils/CommonUtils.php');
 
 global $adb;
 
-$sql = "UPDATE vtiger_emailtemplates SET body=? WHERE templateid = 10";
+$sql = "UPDATE vtiger_emailtemplates SET body=?, subject=? WHERE templateid = 10";
 $body = <<<EOF
     <html>
         <head>
@@ -67,6 +67,6 @@ $body = <<<EOF
     </html>
 EOF;
 
-$params = array($body);
+$params = array($body, '顧客ポータルのログイン情報のお知らせ');
 
 $adb->pquery($sql, $params);
