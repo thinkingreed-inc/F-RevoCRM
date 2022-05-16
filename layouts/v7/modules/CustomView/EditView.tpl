@@ -79,7 +79,9 @@
 															{assign var=NUMBER_OF_COLUMNS_SELECTED value=$NUMBER_OF_COLUMNS_SELECTED + 1}
 														{/if}
 													{/if}
-													>{Vtiger_Util_Helper::toSafeHTML(vtranslate($FIELD_MODEL->get('label'), $SOURCE_MODULE))}
+													{assign var=WITH_MODULENAME value="("|cat:{vtranslate($FIELD_MODULE_NAME, $SOURCE_MODULE)}|cat:")-"}
+													>{Vtiger_Util_Helper::toSafeHTML(vtranslate($FIELD_MODEL->get('label'), $SOURCE_MODULE)|replace:"-":$WITH_MODULENAME)}
+													
 													{if $FIELD_MODEL->isMandatory() eq true} <span>*</span> {/if}
 												</option>
 											{/foreach}
