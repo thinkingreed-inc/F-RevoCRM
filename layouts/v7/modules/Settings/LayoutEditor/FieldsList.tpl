@@ -229,7 +229,6 @@
                                 {/if}
                                 {if $FIELD_MODEL->isRelationShipReponsibleField()}
                                   {assign var=RELATION_MODEL value=$FIELD_MODEL->getRelationShipForThisField()}
-
                                   data-relation-field-label="{vtranslate($FIELD_MODEL->get('label'),$RELATION_MODEL->getRelationModuleName())}" 
                                   data-relation-module-label="{vtranslate($RELATION_MODEL->getRelationModuleName(),$RELATION_MODEL->getRelationModuleName())}"
                                   data-current-module-label="{vtranslate($RELATION_MODEL->getParentModuleName(),$RELATION_MODEL->getParentModuleName())}"

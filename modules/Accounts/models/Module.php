@@ -373,7 +373,7 @@ class Accounts_Module_Model extends Vtiger_Module_Model {
 			$model = Vtiger_Record_Model::getCleanInstance('Calendar');
 			$ownerId = $newRow['smownerid'];
 			$currentUser = Users_Record_Model::getCurrentUserModel();
-			$visibleFields = array('activitytype','date_start','time_start','due_date','time_end','assigned_user_id','visibility','smownerid','crmid', 'description');
+			$visibleFields = array('activitytype','date_start','time_start','due_date','time_end','assigned_user_id','visibility','smownerid','crmid');
 			$visibility = true;
 			if(in_array($ownerId, $groupsIds)) {
 				$visibility = false;

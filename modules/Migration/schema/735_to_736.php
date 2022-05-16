@@ -36,4 +36,15 @@ if (defined('VTIGER_UPGRADE')) {
         $tablename_old = $tablename;
         $columnname_old = $columnname;
     }
+
+    //メールアドレスのサイズ上限を拡大
+    $getEmailFieldsQuery = "SELECT tablename, fieldname FROM vtiger_field WHERE uitype IN (13, 104)";
+    $emailFieldsResult = $adb->pquery($getEmailFieldsQuery);
+    $emailFieldsRows = $adb->num_rows($emailFieldsResult);
+    for ($i = 0; $i < $emailFieldsRows; $i++) {
+        $emailFieldsTable = $adb->query_result($emailFieldsResult, $i, 'tablename');
+        $emailFieldsField = $adb->query_result($emailFieldsResult, $i, 'fieldname');
+        $emailFieldsUpdateQuery = "ALTER TABLE ".$emailFieldsTable." MODIFY ".$emailFieldsField." varchar(256)";
+        $db->query($emailFieldsUpdateQuery);
+    }
 }

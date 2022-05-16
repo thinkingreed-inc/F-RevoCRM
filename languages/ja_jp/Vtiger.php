@@ -1140,6 +1140,7 @@ $languageStrings = array(
 	'LBL_UNLINK'=>'関連を外す',
 	'LBL_SWITCH_TO_OLD'=>'過去のバージョンに戻す',
 	'LBL_SLA_INFORMATION' => 'SLA情報',
+	'LBL_CUSTOM_FIELD_LIMIT' => 'カスタムフィールドの登録数上限に達しています',
 
 	//configure columns
 	'LBL_UPDATE_LIST' => 'リストの更新',
@@ -2104,6 +2105,7 @@ $jsLanguageStrings = array(
 	'JS_INVALID_STRENGTH_PASSWORDS'=>'複雑なパスワードを指定してください（アルファベット大文字・小文字、数字、記号を含む8文字以上）',
 	'Changed password successfully'=>'パスワードの変更に成功しました',
 	'LBL_MASS_PDF_EXPORT_CONFIRMATION' => '選択したレコードに関するPDFを生成してもよろしいですか？',
+	'JS_THIS_FILE_HAS_ALREADY_BEEN_SELECTED' => 'このファイルは既に選択されています', 
 
 	//個人カレンダー
 	'Planned' => '計画済み',

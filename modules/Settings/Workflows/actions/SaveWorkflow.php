@@ -135,6 +135,9 @@ class Settings_Workflows_SaveWorkflow_Action extends Vtiger_Action_Controller {
 
 		$returnPage = $request->get("returnpage", null);
 		$returnSourceModule = $request->get("returnsourcemodule", null);
+		if (empty($returnSourceModule)) {
+			$returnSourceModule = $request->get("module_name", null);
+		}
 		$returnSearchValue = $request->get("returnsearch_value", null);
 		$redirectUrl = $moduleModel->getDefaultUrl() . "&sourceModule=$returnSourceModule&page=$returnPage&search_value=$returnSearchValue";
 

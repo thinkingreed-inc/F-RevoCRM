@@ -33,7 +33,7 @@ class Documents_EditRecordStructure_Model extends Vtiger_EditRecordStructure_Mod
 					if($fieldModel->isEditable()) {
 						$fieldValue = $recordModel->get($fieldName);
 
-						if (!$fieldValue && !$recordId) {
+						if ((!$fieldValue && strlen($fieldValue) == 0) && !$recordId) {
 							$fieldValue = $fieldModel->getDefaultFieldValue();
 						}
 
@@ -42,7 +42,7 @@ class Documents_EditRecordStructure_Model extends Vtiger_EditRecordStructure_Mod
 							$fieldValue = true;
 						}
 
-						if ($fieldValue) {
+						if (strlen($fieldValue) > 0) {
 							$fieldModel->set('fieldvalue', $fieldValue);
 						}
 						$values[$blockLabel][$fieldName] = $fieldModel;

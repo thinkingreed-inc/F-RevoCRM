@@ -242,7 +242,7 @@ Vtiger_Field_Js('Vtiger_Picklist_Field_Js',{},{
 		var pickListValues = this.getPickListValues();
 		var selectedOption = app.htmlDecode(this.getValue());
 
-		if(typeof pickListValues[' '] == 'undefined' || pickListValues[' '].length <= 0 || pickListValues[' '] != 'Select an Option') {
+		if (typeof pickListValues[' '] == 'undefined' || pickListValues[' '].length <= 0 || pickListValues[' '] != app.vtranslate('JS_SELECT_OPTION')) {
 			html += '<option value="">'+app.vtranslate('JS_SELECT_OPTION')+'</option>';
 		}
 

@@ -85,6 +85,12 @@ class Settings_Picklist_IndexAjax_View extends Settings_Vtiger_IndexAjax_View {
         $moduleModel = Settings_Picklist_Module_Model::getInstance($sourceModule);
         //TODO: see if you needs to optimize this , since its will gets all the fields and filter picklist fields
         $pickListFields = $moduleModel->getFieldsByType(array('picklist','multipicklist'));
+        // Usersモジュールの場合は標準の選択肢項目をすべて選択できないようにする
+        foreach ($pickListFields as $fieldname => $fieldModel) {
+            if($fieldModel->isUneditableFields()){
+                unset($pickListFields[$fieldname]);
+            }
+        }
 
         $qualifiedName = $request->getModule(false);
 
@@ -98,20 +104,22 @@ class Settings_Picklist_IndexAjax_View extends Settings_Vtiger_IndexAjax_View {
     public function getPickListValueForField(Vtiger_Request $request) {
         $sourceModule = $request->get('source_module');
         $pickFieldId = $request->get('pickListFieldId');
-        $fieldModel = Settings_Picklist_Field_Model::getInstance($pickFieldId);
+        if(!empty($pickFieldId)){
+            $fieldModel = Settings_Picklist_Field_Model::getInstance($pickFieldId);
 
-		$moduleName = $request->getModule();
-        $qualifiedName = $request->getModule(false);
+            $moduleName = $request->getModule();
+            $qualifiedName = $request->getModule(false);
 
-        $selectedFieldAllPickListValues = Vtiger_Util_Helper::getPickListValues($fieldModel->getName());
-        $viewer = $this->getViewer($request);
-        $viewer->assign('SELECTED_PICKLIST_FIELDMODEL',$fieldModel);
-		$viewer->assign('SELECTED_MODULE_NAME',$sourceModule);
-		$viewer->assign('MODULE',$moduleName);
-		$viewer->assign('QUALIFIED_MODULE',$qualifiedName);
-        $viewer->assign('ROLES_LIST', Settings_Roles_Record_Model::getAll());
-        $viewer->assign('SELECTED_PICKLISTFIELD_ALL_VALUES',$selectedFieldAllPickListValues);
-        $viewer->view('PickListValueDetail.tpl',$qualifiedName);
+            $selectedFieldAllPickListValues = Vtiger_Util_Helper::getPickListValues($fieldModel->getName());
+            $viewer = $this->getViewer($request);
+            $viewer->assign('SELECTED_PICKLIST_FIELDMODEL',$fieldModel);
+            $viewer->assign('SELECTED_MODULE_NAME',$sourceModule);
+            $viewer->assign('MODULE',$moduleName);
+            $viewer->assign('QUALIFIED_MODULE',$qualifiedName);
+            $viewer->assign('ROLES_LIST', Settings_Roles_Record_Model::getAll());
+            $viewer->assign('SELECTED_PICKLISTFIELD_ALL_VALUES',$selectedFieldAllPickListValues);
+            $viewer->view('PickListValueDetail.tpl',$qualifiedName);
+        }
     }
 
 
