@@ -16,9 +16,6 @@
                 </button> 
             </div>
             <hr>
-            <div>
-                <input class="search-list" type="text" placeholder="{vtranslate('LBL_SEARCH_FOR_LIST',$MODULE)}">
-            </div>
             <div class="navbar-header">
                 <button type="button" class="listMenu-toggle navbar-toggle btn-group-justified collapsed border0" data-toggle="collapse" data-target="#listMenu-collapse" aria-expanded="false" id="collapse-button">
                     <div id="collapse-button-on" style="display: block;">{vtranslate('LBL_SHOW_LIST',$MODULE)}</div>
@@ -26,6 +23,9 @@
                 </button>
             </div>
             <div class="menu-scroller scrollContainer" style="position:relative; top:0; left:0;" id="listMenu-collapse">
+                <div>
+                    <input class="search-list" type="text" placeholder="{vtranslate('LBL_SEARCH_FOR_LIST',$MODULE)}">
+                </div>
                 <div class="list-menu-content">
                         {assign var="CUSTOM_VIEW_NAMES" value=array()}
                         {if $CUSTOM_VIEWS && count($CUSTOM_VIEWS) > 0}
