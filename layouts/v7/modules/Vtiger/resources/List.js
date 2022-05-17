@@ -2623,6 +2623,8 @@ Vtiger.Class("Vtiger_List_Js", {
 		//END
 
 		this.initializeListFilter();
+		this.initializeSidebarEssentials();
+		this.registerWindowResize();
 	},
 	registerHeaderReflowOnListSearchSelections: function () {
 		var listViewContentDiv = this.getListViewContainer();
@@ -2866,5 +2868,60 @@ Vtiger.Class("Vtiger_List_Js", {
 		if (window.innerWidth > 991) {
 			jQuery('#collapse-button').click();
 		}
+	},
+
+	// サイドメニューの表示/非表示
+	initializeSidebarEssentials : function() {
+		// 画面サイズが991pxより大きい場合
+		if (window.innerWidth > 991) {
+			// サイドメニューの表示・非表示切り替えボタンの表示
+			jQuery('.main-container .essentials-toggle').show();
+			return;
+		}
+		// 991px以下の場合、サイドメニューが表示されていない場合は表示させる
+		if(jQuery('.sidebar-essentials').hasClass('hide')) {
+			jQuery('.main-container .essentials-toggle').click();
+		}
+	},
+	// 画面リサイズ時
+	registerWindowResize : function() {
+		// 画面サイズが991pxの場合はPCサイズ表示のフラグを立てておく
+		if (window.innerWidth > 991) {
+			__window_size_pc_flg = true;
+		}
+		jQuery(window).resize(function() {
+			if (__window_resize_timer > 0) {
+				clearTimeout(__window_resize_timer);
+			}
+			__window_resize_timer = setTimeout(function () {
+				// 991pxより大きい場合
+				if (window.innerWidth > 991) {
+					// サイドメニューのON/OFF用のトグルボタンを表示
+					jQuery('.main-container .essentials-toggle').show();
+					// フィルターが非表示の場合はフィルター表示ボタンを発火
+					if (!jQuery('#listMenu-collapse').hasClass('in')) {
+						jQuery('#collapse-button').click();
+					}
+					__window_size_pc_flg = true;
+				}
+				// 991px以下の場合
+				else {
+					// サイドメニューを表示させる
+					if(jQuery('.sidebar-essentials').hasClass('hide')) {
+						jQuery('.main-container .essentials-toggle').click();
+					}
+					// 991pxより大きい状態からサイズを縮めた場合のみ、フィルター非表示ボタンを発火させてフィルターを非表示にする
+					if (__window_size_pc_flg) {
+						jQuery('#collapse-button').click();
+						// 991px以下から更に縮めた場合に動作しないようにフラグを落とす
+						__window_size_pc_flg = false;
+					}
+					// サイドメニューのON/OFF用のトグルボタンを非表示
+					jQuery('.main-container .essentials-toggle').hide();
+				}
+			}, 200);
+		});
 	}
 });
+var __window_size_pc_flg = false;
+var __window_resize_timer = 0;
