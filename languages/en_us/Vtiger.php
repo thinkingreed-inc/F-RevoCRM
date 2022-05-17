@@ -1393,6 +1393,14 @@ $languageStrings = array(
 	'LBL_DEFAULT_DASHBOARD_TOOLTIP'=>'Make this dashboard as default by reordering it as the first tab!',
 	'LBL_RELATED_MODULES_PERMISSION_DENIED' => 'Related modules permission is denied',
 	'LBL_RECORD_PERMISSION_DENIED' => 'Record permissions denied',
+
+	//Collapse the list on the smartphone screen
+	'LBL_SHOW_LIST' => 'SHOW LISTS',
+	'LBL_HIDE_LIST' => 'HIDE LISTS',
+	'LBL_SHOW_FOLDER' => 'SHOW FOLDERS',
+	'LBL_HIDE_FOLDER' => 'HIDE FOLDERS',
+	'LBL_SHOW_MODULE' => 'SHOW MODULES',
+	'LBL_HIDE_MODULE' => 'HIDE MODULES',
 );
 
 $jsLanguageStrings = array(
