@@ -595,3 +595,10 @@ ul#productsImageContainer > li a{
   background-repeat: no-repeat;
   background-position: center center;
 }
+
+/* 日報の概要・更新履歴(1740pxは文字が重ならない限界値から決定) */
+@media (max-width: 1740px) { 
+  .summaryWidgetContainer #updates .updates_timeline > li .update_time {
+    position: static !important;
+  }
+}
