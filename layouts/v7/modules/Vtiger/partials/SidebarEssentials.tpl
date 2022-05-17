@@ -22,7 +22,7 @@
                     <div id="collapse-button-off" style="display: none;">{vtranslate('LBL_HIDE_LIST',$MODULE)}</div>
                 </button>
             </div>
-            <div class="menu-scroller scrollContainer" style="position:relative; top:0; left:0;" id="listMenu-collapse">
+            <div class="menu-scroller scrollContainer collapse" style="position:relative; top:0; left:0;" id="listMenu-collapse">
                 <div>
                     <input class="search-list" type="text" placeholder="{vtranslate('LBL_SEARCH_FOR_LIST',$MODULE)}">
                 </div>

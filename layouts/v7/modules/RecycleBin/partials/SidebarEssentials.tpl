@@ -17,7 +17,7 @@
                     <div id="collapse-button-off" style="display: none;">{vtranslate('LBL_HIDE_MODULE',$MODULE)}</div>
                 </button>
             </div>
-            <div class="list-menu-content" id="listMenu-collapse">
+            <div class="list-menu-content collapse" id="listMenu-collapse">
                 <div>
                     <input class="search-list" type="text" placeholder="Search for Modules">
                 </div>

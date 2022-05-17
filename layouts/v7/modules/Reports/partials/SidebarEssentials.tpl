@@ -24,7 +24,7 @@
 						<div id="collapse-button-off" style="display: none;">{vtranslate('LBL_HIDE_FOLDER',$MODULE)}</div>
 					</button>
 				</div>
-				<div class="menu-scroller mCustomScrollBox" data-mcs-theme="dark" id="listMenu-collapse">
+				<div class="menu-scroller mCustomScrollBox collapse" data-mcs-theme="dark" id="listMenu-collapse">
 					<div>
 						<input class="search-list" type="text" placeholder="{vtranslate('LBL_SEARCH_FOR_FOLDERS',$MODULE)}">
 					</div>

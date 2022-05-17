@@ -2856,15 +2856,15 @@ Vtiger.Class("Vtiger_List_Js", {
 	},
 	// フィルターの表示/非表示
 	initializeListFilter: function () {
-		// 画面サイズが991px以下の時だけフィルターを初期非表示にする
-		if (window.innerWidth < 991) {
-			var listMenu = jQuery('#listMenu-collapse');
-			listMenu.addClass('collapse');
-		}
 		// 表示/非表示ボタンの文言切替イベントを設定
 		jQuery('#collapse-button').click(function() {
 			jQuery('#collapse-button-on').toggle();
 			jQuery('#collapse-button-off').toggle();
 		});
+		
+		// 画面サイズが991pxより大きい場合は表示/非表示ボタンを発火してフィルターを表示させる
+		if (window.innerWidth > 991) {
+			jQuery('#collapse-button').click();
+		}
 	}
 });
