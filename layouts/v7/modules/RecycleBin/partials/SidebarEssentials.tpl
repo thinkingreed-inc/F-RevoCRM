@@ -14,7 +14,13 @@
             <div>
                 <input class="search-list" type="text" placeholder="Search for Modules">
             </div>
-            <div class="list-menu-content">
+            <div class="navbar-header">
+                <button type="button" class="listMenu-toggle navbar-toggle btn-group-justified collapsed border0" data-toggle="collapse" data-target="#listMenu-collapse" aria-expanded="false" id="collapse-button">
+                    <div id="collapse-button-on" style="display: block;">{vtranslate('LBL_SHOW_MODULE',$MODULE)}</div>
+                    <div id="collapse-button-off" style="display: none;">{vtranslate('LBL_HIDE_MODULE',$MODULE)}</div>
+                </button>
+            </div>
+            <div class="list-menu-content" id="listMenu-collapse">
                 <div class="list-group">   
                     <ul class="lists-menu" style="list-style-type: none; padding-left: 0px;">
                         {if $MODULE_LIST|@count gt 0}

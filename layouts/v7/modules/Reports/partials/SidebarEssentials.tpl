@@ -21,7 +21,13 @@
 				<div>
 					<input class="search-list" type="text" placeholder="{vtranslate('LBL_SEARCH_FOR_FOLDERS',$MODULE)}">
 				</div>
-				<div class="menu-scroller mCustomScrollBox" data-mcs-theme="dark">
+				<div class="navbar-header">
+					<button type="button" class="listMenu-toggle navbar-toggle btn-group-justified collapsed border0" data-toggle="collapse" data-target="#listMenu-collapse" aria-expanded="false" id="collapse-button">
+						<div id="collapse-button-on" style="display: block;">{vtranslate('LBL_SHOW_FOLDER',$MODULE)}</div>
+						<div id="collapse-button-off" style="display: none;">{vtranslate('LBL_HIDE_FOLDER',$MODULE)}</div>
+					</button>
+				</div>
+				<div class="menu-scroller mCustomScrollBox" data-mcs-theme="dark" id="listMenu-collapse">
 					<div class="mCustomScrollBox mCS-light-2 mCSB_inside" tabindex="0">
 						<div class="mCSB_container" style="position:relative; top:0; left:0;">
 							<div class="list-menu-content">

@@ -1528,6 +1528,13 @@ $languageStrings = array(
 	'Templates' => 'テンプレート',
 	//請求
 	'Member Of' => '親企業',
+	//スマホ画面で折りたたまれるリスト
+	'LBL_SHOW_LIST' => 'リストを表示',
+	'LBL_HIDE_LIST' => 'リストを非表示',
+	'LBL_SHOW_FOLDER' => 'フォルダを表示',
+	'LBL_HIDE_FOLDER' => 'フォルダを非表示',
+	'LBL_SHOW_MODULE' => 'モジュールの表示',
+	'LBL_HIDE_MODULE' => 'モジュールの非表示',
 );
 
 $jsLanguageStrings = array(

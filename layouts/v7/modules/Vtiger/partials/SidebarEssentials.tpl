@@ -19,9 +19,15 @@
             <div>
                 <input class="search-list" type="text" placeholder="{vtranslate('LBL_SEARCH_FOR_LIST',$MODULE)}">
             </div>
-            <div class="menu-scroller scrollContainer" style="position:relative; top:0; left:0;">
-				<div class="list-menu-content">
-						{assign var="CUSTOM_VIEW_NAMES" value=array()}
+            <div class="navbar-header">
+                <button type="button" class="listMenu-toggle navbar-toggle btn-group-justified collapsed border0" data-toggle="collapse" data-target="#listMenu-collapse" aria-expanded="false" id="collapse-button">
+                    <div id="collapse-button-on" style="display: block;">{vtranslate('LBL_SHOW_LIST',$MODULE)}</div>
+                    <div id="collapse-button-off" style="display: none;">{vtranslate('LBL_HIDE_LIST',$MODULE)}</div>
+                </button>
+            </div>
+            <div class="menu-scroller scrollContainer" style="position:relative; top:0; left:0;" id="listMenu-collapse">
+                <div class="list-menu-content">
+                        {assign var="CUSTOM_VIEW_NAMES" value=array()}
                         {if $CUSTOM_VIEWS && count($CUSTOM_VIEWS) > 0}
                             {foreach key=GROUP_LABEL item=GROUP_CUSTOM_VIEWS from=$CUSTOM_VIEWS}
                             {if $GROUP_LABEL neq 'Mine' && $GROUP_LABEL neq 'Shared'}
@@ -42,14 +48,14 @@
                                 {foreach item="CUSTOM_VIEW" from=$GROUP_CUSTOM_VIEWS name="customView"}
                                     {assign var=IS_DEFAULT value=$CUSTOM_VIEW->isDefault()}
 									{assign var="CUSTOME_VIEW_RECORD_MODEL" value=CustomView_Record_Model::getInstanceById($CUSTOM_VIEW->getId())}
-									{assign var="MEMBERS" value=$CUSTOME_VIEW_RECORD_MODEL->getMembers()}
-									{assign var="LIST_STATUS" value=$CUSTOME_VIEW_RECORD_MODEL->get('status')}
-									{foreach key=GROUP_LABEL item="MEMBER_LIST" from=$MEMBERS}
-										{if $MEMBER_LIST|@count gt 0}
-										{assign var="SHARED_MEMBER_COUNT" value=1}
-										{/if}
-									{/foreach}
-									<li style="font-size:12px;" class='listViewFilter {if $VIEWID eq $CUSTOM_VIEW->getId() && ($CURRENT_TAG eq '')} active {if $smarty.foreach.customView.iteration gt 10} {assign var=count value=1} {/if} {else if $smarty.foreach.customView.iteration gt 10} filterHidden hide{/if} '> 
+                                    {assign var="MEMBERS" value=$CUSTOME_VIEW_RECORD_MODEL->getMembers()}
+                                    {assign var="LIST_STATUS" value=$CUSTOME_VIEW_RECORD_MODEL->get('status')}
+                                    {foreach key=GROUP_LABEL item="MEMBER_LIST" from=$MEMBERS}
+                                        {if $MEMBER_LIST|@count gt 0}
+                                        {assign var="SHARED_MEMBER_COUNT" value=1}
+                                        {/if}
+                                    {/foreach}
+                                    <li style="font-size:12px;" class='listViewFilter {if $VIEWID eq $CUSTOM_VIEW->getId() && ($CURRENT_TAG eq '')} active {if $smarty.foreach.customView.iteration gt 10} {assign var=count value=1} {/if} {else if $smarty.foreach.customView.iteration gt 10} filterHidden hide{/if} '>
                                         {assign var=VIEWNAME value={vtranslate($CUSTOM_VIEW->get('viewname'), $MODULE)}}
 										{append var="CUSTOM_VIEW_NAMES" value=$VIEWNAME}
                                          <a class="filterName listViewFilterElipsis" href="{$LISTVIEW_URL|cat:'&viewname='|cat:$CUSTOM_VIEW->getId()|cat:'&app='|cat:$SELECTED_MENU_CATEGORY}" oncontextmenu="return false;" data-filter-id="{$CUSTOM_VIEW->getId()}" title="{$VIEWNAME|@escape:'html'}">{$VIEWNAME|@escape:'html'}</a> 
@@ -68,15 +74,15 @@
                                             </li>
                                         {/foreach}
                                     </ul>
-								<div class='clearfix'> 
-									{if $smarty.foreach.customView.iteration - 10 - $count} 
-										<a class="toggleFilterSize" data-more-text=" {$smarty.foreach.customView.iteration - 10 - $count} {vtranslate('LBL_MORE',Vtiger)|@strtolower}" data-less-text="Show less">
-											{if $smarty.foreach.customView.iteration gt 10} 
-												{$smarty.foreach.customView.iteration - 10 - $count} {vtranslate('LBL_MORE',Vtiger)|@strtolower} 
-											{/if} 
-										</a>{/if} 
-									</div>
-                             </div>
+                            <div class='clearfix'> 
+                                {if $smarty.foreach.customView.iteration - 10 - $count} 
+                                    <a class="toggleFilterSize" data-more-text=" {$smarty.foreach.customView.iteration - 10 - $count} {vtranslate('LBL_MORE',Vtiger)|@strtolower}" data-less-text="Show less">
+                                        {if $smarty.foreach.customView.iteration gt 10} 
+                                            {$smarty.foreach.customView.iteration - 10 - $count} {vtranslate('LBL_MORE',Vtiger)|@strtolower} 
+                                        {/if} 
+                                    </a>{/if} 
+                                </div>
+                            </div>
 					{/foreach}
 								
 							<input type="hidden" id='allFilterNames'  value='{Vtiger_Util_Helper::toSafeHTML(Zend_JSON::encode($CUSTOM_VIEWS_NAMES))}'/>
