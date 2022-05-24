@@ -163,6 +163,7 @@ Inventory_Edit_Js("SalesOrder_Edit_Js",{},{
             this._super(container);
             this.registerEventForEnablingRecurrence();
             this.registerForTogglingBillingandShippingAddress();
+			this.registerForTogglingContactAddress();
             this.registerEventForCopyAddress();
         },
     
