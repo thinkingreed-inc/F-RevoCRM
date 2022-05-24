@@ -2704,14 +2704,6 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
             })
         }
     },
-
-	registerForTogglingContactAddress : function(){
-		var checkcontactAddress = document.getElementsByName("contact_id");
-		var toggleDisplaycontactAddress = jQuery('[name="toggleDisplaycontactAddress"]');
-		if(!checkcontactAddress[0] && !toggleDisplaycontactAddress.hasClass('hide')){
-			toggleDisplaycontactAddress.addClass('hide');
-		}
-	},
     
     registerLineItemAutoComplete : function(container) {
 		var self = this;

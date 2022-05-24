@@ -159,6 +159,24 @@ Class Inventory_Edit_View extends Vtiger_Edit_View {
 		$picklistDependencyDatasource = Vtiger_DependencyPicklist::getPicklistDependencyDatasource($moduleName);
 
 		$recordStructure = $recordStructureInstance->getStructure();
+		$tabid = getTabid($moduleName);
+		switch($tabid){
+			case 20:
+				$checkContactid = array_keys($recordStructure['LBL_QUOTE_INFORMATION']);
+				break;
+			case 22:
+				$checkContactid = array_keys($recordStructure['LBL_SO_INFORMATION']);
+				break;
+			case 23:
+				$checkContactid = array_keys($recordStructure['LBL_INVOICE_INFORMATION']);
+				break;
+			default:
+				$checkContactid = null;
+		}
+		$viewer->assign('CHECK_CONTACTID',true);
+		if(!in_array("contact_id", $checkContactid)){
+			$viewer->assign('CHECK_CONTACTID',false);
+		}
 
 		$viewer->assign('PICKIST_DEPENDENCY_DATASOURCE',Vtiger_Functions::jsonEncode($picklistDependencyDatasource));
 		$viewer->assign('RECORD',$recordModel);
