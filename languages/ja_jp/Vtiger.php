@@ -1851,6 +1851,7 @@ $jsLanguageStrings = array(
 	'JS_SAVE_AS_IMAGE' => '画像として保存',
 	'JS_DIRECTORY_IS_EMPTY' => 'ディレクトリが空です',
 	'JS_PLEASE_SELECT_AN_RELATED_TO_COPY_ADDRESS' => '住所コピー元のリードまたは顧客担当者を選択してください',
+	'JS_PLEASE_SELECT_AN_RELATED_TO_COPY_ADDRESS_1' => '住所コピー元のご担当者様を選択してください',
 	'SINGLE_Leads' => 'リード',
 	'JS_SELECTED_LEAD_DOES_NOT_HAVE_AN_ADDRESS' => '選択したリードにはコピーする住所が含まれていません',
 	'JS_INVALID_EMAILS' => 'メールモジュールが無効です',

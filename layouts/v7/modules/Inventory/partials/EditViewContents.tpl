@@ -39,10 +39,10 @@
                                         &nbsp;{vtranslate('SINGLE_Accounts', $MODULE)}
                                     </label>
                                 </div>
-                                <div class="radio">
+                                <div class="radio hide" name="toggleDisplaycontactAddress">
                                     <label> 
                                         {if $MODULE eq 'Quotes'}
-                                            <input type="radio" name="copyAddressFromRight" class="contactAddress" data-copy-address="billing" checked="checked">
+                                            <input type="radio" name="copyAddressFromRight" class="contactAddress1" data-copy-address="billing" checked="checked">
                                             &nbsp;{vtranslate('Related To', $MODULE)}
                                         {else}
                                             <input type="radio" name="copyAddressFromRight" class="contactAddress" data-copy-address="billing" checked="checked">
@@ -73,10 +73,10 @@
                                         &nbsp;{vtranslate('SINGLE_Accounts', $MODULE)}
                                     </label>
                                 </div>
-                                <div class="radio">
+                                <div class="radio hide" name="toggleDisplaycontactAddress">
                                     <label>
                                         {if $MODULE eq 'Quotes'}
-                                            <input type="radio" name="copyAddressFromLeft" class="contactAddress" data-copy-address="shipping" checked="checked">
+                                            <input type="radio" name="copyAddressFromLeft" class="contactAddress1" data-copy-address="shipping" checked="checked">
                                             &nbsp;{vtranslate('Related To', $MODULE)}
                                         {else}
                                             <input type="radio" name="copyAddressFromLeft" class="contactAddress" data-copy-address="shipping" checked="checked">

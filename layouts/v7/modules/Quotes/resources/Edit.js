@@ -126,6 +126,7 @@ Inventory_Edit_Js("Quotes_Edit_Js",{},{
         registerBasicEvents: function(container){
             this._super(container);
             this.registerForTogglingBillingandShippingAddress();
+			this.registerForTogglingContactAddress();
             this.registerEventForCopyAddress();
         },
 });
