@@ -39,7 +39,7 @@
                                         &nbsp;{vtranslate('SINGLE_Accounts', $MODULE)}
                                     </label>
                                 </div>
-                                <div class="radio hide" name="toggleDisplaycontactAddress">
+                                <div class="radio" name="toggleDisplaycontactAddress">
                                     <label> 
                                         {if $MODULE eq 'Quotes'}
                                             <input type="radio" name="copyAddressFromRight" class="contactAddress1" data-copy-address="billing" checked="checked">
@@ -73,7 +73,7 @@
                                         &nbsp;{vtranslate('SINGLE_Accounts', $MODULE)}
                                     </label>
                                 </div>
-                                <div class="radio hide" name="toggleDisplaycontactAddress">
+                                <div class="radio" name="toggleDisplaycontactAddress">
                                     <label>
                                         {if $MODULE eq 'Quotes'}
                                             <input type="radio" name="copyAddressFromLeft" class="contactAddress1" data-copy-address="shipping" checked="checked">
