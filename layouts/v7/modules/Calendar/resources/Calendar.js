@@ -1813,14 +1813,16 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			},
 			viewRender: function (view, element) {
 				var lastviewday;
+				var URL_Serarch_view = new URLSearchParams(location.search);
+				var lastviewtype = URL_Serarch_view.get('view');
 				if(document.getElementsByClassName('fc-day-header').item(1)==null){
 					if(document.getElementsByClassName('fc-day-header').item(0)){
 						lastviewday =document.getElementsByClassName('fc-day-header').item(0).dataset.date;
-						history.replaceState('', '','index.php?module=Calendar&view=Calendar&lastVIewDate=' + lastviewday + "&Viewtype=day");
+						history.replaceState('', '','index.php?module=Calendar&view='+ lastviewtype +'&lastVIewDate=' + lastviewday + "&Viewtype=day");
 						
 					}
 					else{
-						history.replaceState('', '','index.php?module=Calendar&view=Calendar&lastVIewDate=' + "&Viewtype=list");
+						history.replaceState('', '','index.php?module=Calendar&view='+ lastviewtype +'&lastVIewDate=' + "&Viewtype=list");
 					}
 
 				}
@@ -1828,14 +1830,14 @@ Vtiger.Class("Calendar_Calendar_Js", {
 					var URL_Serarch = new URLSearchParams(location.search);
 					if(URL_Serarch.get('lastVIewDate')!=null){
 						lastviewday =document.getElementsByClassName('fc-day-top').item(7).dataset.date;
-						history.replaceState('', '','index.php?module=Calendar&view=Calendar&lastVIewDate=' + lastviewday.substr(0, lastviewday.lastIndexOf('-')) + "&Viewtype=month");
+						history.replaceState('', '','index.php?module=Calendar&view='+ lastviewtype +'&lastVIewDate=' + lastviewday.substr(0, lastviewday.lastIndexOf('-')) + "&Viewtype=month");
 
 					}
 					
 				}
 				else if(document.getElementsByClassName('fc-day-header').item(1).dataset.date){
 					lastviewday =document.getElementsByClassName('fc-day-header').item(0).dataset.date;
-					history.replaceState('', '','index.php?module=Calendar&view=Calendar&lastVIewDate=' + lastviewday + "&Viewtype=week");
+					history.replaceState('', '','index.php?module=Calendar&view='+ lastviewtype +'&lastVIewDate=' + lastviewday + "&Viewtype=week");
 				}
 				if (view.name === 'vtAgendaList') {
 					jQuery(".sidebar-essentials").addClass("hide");
