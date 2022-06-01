@@ -1679,7 +1679,10 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var URL_Serarch = new URLSearchParams(location.search);
 		if(location.href.match(/last/)){
 			defaultDate=URL_Serarch.get('lastVIewDate');
-		}switch(URL_Serarch.get('Viewtype')){
+		}else{
+			defaultView = userDefaultActivityView;
+		}
+		switch(URL_Serarch.get('Viewtype')){
 			case 'day':
 				defaultView = 'agendaDay';
 				break;
