@@ -32,7 +32,7 @@
 												</span>
 												<span class="fieldLabel">
 													{assign var=WITH_MODULENAME value="("|cat:{vtranslate($FIELD_MODULE_NAME, $SOURCE_MODULE)}|cat:")-"}
-													{Vtiger_Util_Helper::toSafeHTML(vtranslate($FIELD_MODEL->get('label'), $SOURCE_MODULE)|replace:"-":$WITH_MODULENAME)}
+													{Vtiger_Util_Helper::toSafeHTML(vtranslate($FIELD_MODEL->get('label'), $FIELD_MODULE_NAME)|replace:"-":$WITH_MODULENAME)}
 												</span>
 												<span class="pull-right removeField"><i class="fa fa-times" title="{vtranslate('LBL_REMOVE',$MODULE)}"></i></span>
 											</li>   
@@ -73,7 +73,7 @@
 																<div class="instafilta-target item {if array_key_exists($FIELD_MODEL->getCustomViewColumnName(), $SELECTED_FIELDS)}hide{/if}" data-cv-columnname="{$FIELD_MODEL->getCustomViewColumnName()}" data-columnname='{$FIELD_MODEL->get('column')}' data-field-id='{$FIELD_MODEL->getId()}'>
 																	<span class="fieldLabel">
 																		{assign var=WITH_MODULENAME value="("|cat:{vtranslate($FIELD_MODULE_NAME, $SOURCE_MODULE)}|cat:")-"}
-																		{Vtiger_Util_Helper::toSafeHTML(vtranslate($FIELD_MODEL->get('label'), $SOURCE_MODULE)|replace:"-":$WITH_MODULENAME)}
+																		{Vtiger_Util_Helper::toSafeHTML(vtranslate($FIELD_MODEL->get('label'), $FIELD_MODULE_NAME)|replace:"-":$WITH_MODULENAME)}
 																	</span>
 																</div>
 															{/foreach} 
