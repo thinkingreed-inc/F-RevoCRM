@@ -2943,13 +2943,28 @@ Vtiger.Class("Vtiger_Detail_Js",{
 					app.request.post({'data': postData}).then(function (error, res) {
 					app.helper.hideProgress();
 					var commentsContainer = detailContentsHolder.find("[data-name='ModComments']");
-					self.loadWidget(commentsContainer).then(function() {
-					app.getModuleName();
-					currentTarget.removeAttr('disabled');
-					app.event.trigger('post.summarywidget.load',commentsContainer);
-					var indexInstance = Vtiger_Index_Js.getInstance();
-					indexInstance.registerMultiUpload();
-					});
+					var afterLoadComment = function () {
+						app.getModuleName();
+						currentTarget.removeAttr('disabled');
+						app.event.trigger('post.summarywidget.load', commentsContainer);
+						var indexInstance = Vtiger_Index_Js.getInstance();
+						indexInstance.registerMultiUpload();
+					}
+					if (commentsContainer.length == 0) {
+						var deleteRelatedModuleComment = function (commentId) {
+							var aDeferred = jQuery.Deferred();
+							try {
+								$('li.commentDetails:has(div.commentInfoHeader[data-commentid="' + commentId + '"])').remove();
+								aDeferred.resolve();
+							} catch (e) {
+								aDeferred.reject();
+							}
+							return aDeferred.promise();
+						}
+						deleteRelatedModuleComment(commentId).then(afterLoadComment);
+					} else {
+						self.loadWidget(commentsContainer).then(afterLoadComment);
+					}
 				},
 						function (error, err) {
 	
