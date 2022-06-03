@@ -1677,27 +1677,62 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var defaultDate;
 		var defaultView;
 		var URL_Serarch = new URLSearchParams(location.search);
-		if(location.href.match(/last/)){
-			defaultDate=URL_Serarch.get('lastVIewDate');
-		}else{
+		var URL_Serarch_PRE = new URLSearchParams(document.referrer);
+		if(location.href.match(/default/)){//ヘッダーのカレンダーボタンからの処理
 			defaultView = userDefaultActivityView;
-		}
-		switch(URL_Serarch.get('Viewtype')){
-			case 'day':
-				defaultView = 'agendaDay';
-				break;
-			case 'week':
-				defaultView = 'agendaWeek';
-				break;
-			case 'month':
-				defaultView = 'month';
-				break;
-			case 'list':
-				defaultView = 'vtAgendaList';
-				break
-		}
-		if(window.innerWidth < 1020){
-			defaultView = "agendaDay";
+			if(URL_Serarch.get('view') ==  'SharedCalendar'){
+				if(userDefaultActivityView == 'vtAgendaList'){
+					defaultView = 'month';
+				}
+			}
+			
+		}else{
+			if(location.href.match(/lastViewDate/)){//リフレッシュしたときの処理
+				switch(URL_Serarch.get('Viewtype')){
+					case 'day':
+						defaultView = 'agendaDay';
+						defaultDate=URL_Serarch.get('lastViewDate');
+						break;
+					case 'week':
+						defaultView = 'agendaWeek';
+						defaultDate=URL_Serarch.get('lastViewDate');
+						break;
+					case 'month':
+						defaultView = 'month';
+						defaultDate=URL_Serarch.get('lastViewDate');
+						break;
+					case 'list':
+						defaultView = 'vtAgendaList';
+						if(URL_Serarch.get('lastViewDate')){
+							defaultDate=URL_Serarch.get('lastViewDate');
+						}
+						break
+				}
+				if(window.innerWidth < 1020){
+					defaultView = "agendaDay";
+				}
+			}else{//個人,共有カレンダー間の遷移
+				switch(URL_Serarch_PRE.get('Viewtype')){
+					case 'day':
+						defaultView = 'agendaDay';
+						defaultDate = URL_Serarch_PRE.get('lastViewDate');
+						break;
+					case 'week':
+						defaultView = 'agendaWeek';
+						defaultDate = URL_Serarch_PRE.get('lastViewDate');
+						break;
+					case 'month':
+						defaultView = 'month';
+						defaultDate = URL_Serarch_PRE.get('lastViewDate');
+						break;
+					case 'list':
+						defaultView = 'month';
+						if(URL_Serarch.get('lastViewDate')){
+							defaultDate=URL_Serarch.get('lastViewDate');
+						}
+						break;
+				}
+			}
 		}
 
 		var calenderConfigs = {
@@ -1813,31 +1848,24 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			},
 			viewRender: function (view, element) {
 				var lastviewday;
-				var URL_Serarch_view = new URLSearchParams(location.search);
-				var lastviewtype = URL_Serarch_view.get('view');
+				var URL_Serarch = new URLSearchParams(location.search);
+				var lastviewtype = URL_Serarch.get('view');
 				if(document.getElementsByClassName('fc-day-header').item(1)==null){
-					if(document.getElementsByClassName('fc-day-header').item(0)){
+					if(document.getElementsByClassName('fc-day-header').item(0)){//表示が日の時の処理
 						lastviewday =document.getElementsByClassName('fc-day-header').item(0).dataset.date;
-						history.replaceState('', '','index.php?module=Calendar&view='+ lastviewtype +'&lastVIewDate=' + lastviewday + "&Viewtype=day");
-						
+						history.replaceState('', '','index.php?module=Calendar&view='+ lastviewtype +'&lastViewDate=' + lastviewday + "&Viewtype=day");
 					}
-					else{
-						history.replaceState('', '','index.php?module=Calendar&view='+ lastviewtype +'&lastVIewDate=' + "&Viewtype=list");
+					else{//表示が概要の時の処理
+						history.replaceState('', '','index.php?module=Calendar&view='+ lastviewtype +'&lastViewDate=' +"&Viewtype=list");
 					}
-
 				}
-				else if(document.getElementsByClassName('fc-day-header').item(1).dataset.date==undefined){
-					var URL_Serarch = new URLSearchParams(location.search);
-					if(URL_Serarch.get('lastVIewDate')!=null){
-						lastviewday =document.getElementsByClassName('fc-day-top').item(7).dataset.date;
-						history.replaceState('', '','index.php?module=Calendar&view='+ lastviewtype +'&lastVIewDate=' + lastviewday.substr(0, lastviewday.lastIndexOf('-')) + "&Viewtype=month");
-
-					}
-					
+				else if(document.getElementsByClassName('fc-day-header').item(1).dataset.date==undefined){//表示が月の時の処理
+					lastviewday =document.getElementsByClassName('fc-day-top').item(7).dataset.date;
+					history.replaceState('', '','index.php?module=Calendar&view='+ lastviewtype +'&lastViewDate=' + lastviewday.substr(0, lastviewday.lastIndexOf('-')) + "&Viewtype=month");
 				}
-				else if(document.getElementsByClassName('fc-day-header').item(1).dataset.date){
+				else if(document.getElementsByClassName('fc-day-header').item(1).dataset.date){//表示が週の時の処理
 					lastviewday =document.getElementsByClassName('fc-day-header').item(0).dataset.date;
-					history.replaceState('', '','index.php?module=Calendar&view='+ lastviewtype +'&lastVIewDate=' + lastviewday + "&Viewtype=week");
+					history.replaceState('', '','index.php?module=Calendar&view='+ lastviewtype +'&lastViewDate=' + lastviewday + "&Viewtype=week");
 				}
 				if (view.name === 'vtAgendaList') {
 					jQuery(".sidebar-essentials").addClass("hide");
