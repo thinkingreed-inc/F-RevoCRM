@@ -1674,6 +1674,66 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var HEADER_HEIGHT = 200;
 		var CalendarHeight = $(window).height() - HEADER_HEIGHT;
 		CalendarHeight = (CalendarHeight < MIN_CALENDAR_HEIGHT) ? MIN_CALENDAR_HEIGHT : CalendarHeight;
+		var defaultDate;
+		var defaultView;
+		var URL_Serarch = new URLSearchParams(location.search);
+		var URL_Serarch_PRE = new URLSearchParams(document.referrer);
+		if(location.href.match(/default/)){//ヘッダーのカレンダーボタンからの処理
+			defaultView = userDefaultActivityView;
+			if(URL_Serarch.get('view') ==  'SharedCalendar'){
+				if(userDefaultActivityView == 'vtAgendaList'){
+					defaultView = 'month';
+				}
+			}
+			
+		}else{
+			if(location.href.match(/lastViewDate/)){//リフレッシュしたときの処理
+				switch(URL_Serarch.get('Viewtype')){
+					case 'day':
+						defaultView = 'agendaDay';
+						defaultDate=URL_Serarch.get('lastViewDate');
+						break;
+					case 'week':
+						defaultView = 'agendaWeek';
+						defaultDate=URL_Serarch.get('lastViewDate');
+						break;
+					case 'month':
+						defaultView = 'month';
+						defaultDate=URL_Serarch.get('lastViewDate');
+						break;
+					case 'list':
+						defaultView = 'vtAgendaList';
+						if(URL_Serarch.get('lastViewDate')){
+							defaultDate=URL_Serarch.get('lastViewDate');
+						}
+						break
+				}
+				if(window.innerWidth < 1020){
+					defaultView = "agendaDay";
+				}
+			}else{//個人,共有カレンダー間の遷移
+				switch(URL_Serarch_PRE.get('Viewtype')){
+					case 'day':
+						defaultView = 'agendaDay';
+						defaultDate = URL_Serarch_PRE.get('lastViewDate');
+						break;
+					case 'week':
+						defaultView = 'agendaWeek';
+						defaultDate = URL_Serarch_PRE.get('lastViewDate');
+						break;
+					case 'month':
+						defaultView = 'month';
+						defaultDate = URL_Serarch_PRE.get('lastViewDate');
+						break;
+					case 'list':
+						defaultView = 'month';
+						if(URL_Serarch.get('lastViewDate')){
+							defaultDate=URL_Serarch.get('lastViewDate');
+						}
+						break;
+				}
+			}
+		}
 
 		// 表示する日付を取得
 		var URL_Serarch = new URLSearchParams(location.search);
@@ -1720,7 +1780,8 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			scrollTime: thisInstance.getUserPrefered('start_hour'),
 			editable: true,
 			eventLimit: true,
-			defaultView: ($(window).width() > 1020 ? userDefaultActivityView : 'agendaDay'),
+			defaultDate:defaultDate,
+			defaultView:defaultView,
 			slotLabelFormat: userDefaultTimeFormat,
 			timeFormat: userDefaultTimeFormat,
 			defaultDate: defaultDate,
@@ -1798,6 +1859,26 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				thisInstance.performMouseOutActions(event, jsEvent, view);
 			},
 			viewRender: function (view, element) {
+				var lastviewday;
+				var URL_Serarch = new URLSearchParams(location.search);
+				var lastviewtype = URL_Serarch.get('view');
+				if(document.getElementsByClassName('fc-day-header').item(1)==null){
+					if(document.getElementsByClassName('fc-day-header').item(0)){//表示が日の時の処理
+						lastviewday =document.getElementsByClassName('fc-day-header').item(0).dataset.date;
+						history.replaceState('', '','index.php?module=Calendar&view='+ lastviewtype +'&lastViewDate=' + lastviewday + "&Viewtype=day");
+					}
+					else{//表示が概要の時の処理
+						history.replaceState('', '','index.php?module=Calendar&view='+ lastviewtype +'&lastViewDate=' +"&Viewtype=list");
+					}
+				}
+				else if(document.getElementsByClassName('fc-day-header').item(1).dataset.date==undefined){//表示が月の時の処理
+					lastviewday =document.getElementsByClassName('fc-day-top').item(7).dataset.date;
+					history.replaceState('', '','index.php?module=Calendar&view='+ lastviewtype +'&lastViewDate=' + lastviewday.substr(0, lastviewday.lastIndexOf('-')) + "&Viewtype=month");
+				}
+				else if(document.getElementsByClassName('fc-day-header').item(1).dataset.date){//表示が週の時の処理
+					lastviewday =document.getElementsByClassName('fc-day-header').item(0).dataset.date;
+					history.replaceState('', '','index.php?module=Calendar&view='+ lastviewtype +'&lastViewDate=' + lastviewday + "&Viewtype=week");
+				}
 				if (view.name === 'vtAgendaList') {
 					jQuery(".sidebar-essentials").addClass("hide");
 					jQuery(".content-area").addClass("full-width");
