@@ -52,7 +52,7 @@
 									<div class="summaryViewEntries">
 										{if $DETAILVIEW_PERMITTED == 'yes'}<a href="{$RECORD->getDetailViewUrl()}" title="{$RECORD->get('subject')}">{$RECORD->get('subject')}</a>{else}{$RECORD->get('subject')}{/if}&nbsp;&nbsp;
 										{if $EDITVIEW_PERMITTED == 'yes'}<a href="{$RECORD->getEditViewUrl()}&sourceModule={$SOURCE_MODEL->getModuleName()}&sourceRecord={$SOURCE_MODEL->getId()}&relationOperation=true" class="fieldValue"><i class="summaryViewEdit fa fa-pencil" title="{vtranslate('LBL_EDIT',$MODULE_NAME)}"></i></a>{/if}&nbsp;
-										{if $DELETE_PERMITTED == 'yes'}<a onclick="Vtiger_Detail_Js.deleteRelatedActivity(event);" data-id="{$RECORD->getId()}" data-recurring-enabled="{$RECORD->isRecurringEnabled()}" class="fieldValue"><i class="summaryViewEdit fa fa-trash " title="{vtranslate('LBL_DELETE',$MODULE_NAME)}"></i></a>{/if}
+										{if $DELETE_PERMITTED == 'yes' && $IS_DAILYREPORT == false}<a onclick="Vtiger_Detail_Js.deleteRelatedActivity(event);" data-id="{$RECORD->getId()}" data-recurring-enabled="{$RECORD->isRecurringEnabled()}" class="fieldValue"><i style="font-size: 12px;" class="summaryViewEdit vicon-linkopen" title="{vtranslate('LBL_UNLINK',$MODULE_NAME)}"></i></a>{/if}
 									</div>
 								{assign var=START_DATE_AND_TIME value=Vtiger_Util_Helper::formatDateTimeIntoDayString("$START_DATE $START_TIME")}
 								{assign var=OWNER value=$RECORD->get('smownerid')}
