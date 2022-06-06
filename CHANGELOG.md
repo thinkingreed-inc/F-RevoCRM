@@ -85,43 +85,43 @@ Thank you for contributing!
 ### 主な変更点
 
 * 機能改善
-  - #346 [要望]通貨項目にマイナス値を入力できるようにしてほしい
-  - #338 [要望]PDFテンプレートによるPDFエクスポートにて、複数レコードで一括エクスポートができるようにしてほしい
-  - #335 [要望]PDFテンプレートモジュールにて、各明細の行番号を表示したい。
-  - #303 [要望]見積もりなどの商品複数追加するUIでの、備考欄の横幅を全体に合わあせて広くする
-  - #285 [不具合]タグのインポートができない
-  - #237 [要望]見積書、発注書などに単位を表示したい
-  - #228 [要望] 概要画面の活動に担当者を表示してほしい
+  - [#346](https://github.com/thinkingreed-inc/F-RevoCRM/issues/346) [要望]通貨項目にマイナス値を入力できるようにしてほしい
+  - [#338](https://github.com/thinkingreed-inc/F-RevoCRM/issues/338) [要望]PDFテンプレートによるPDFエクスポートにて、複数レコードで一括エクスポートができるようにしてほしい
+  - [#335](https://github.com/thinkingreed-inc/F-RevoCRM/issues/335) [要望]PDFテンプレートモジュールにて、各明細の行番号を表示したい。
+  - [#303](https://github.com/thinkingreed-inc/F-RevoCRM/issues/303) [要望]見積もりなどの商品複数追加するUIでの、備考欄の横幅を全体に合わあせて広くする
+  - [#285](https://github.com/thinkingreed-inc/F-RevoCRM/issues/285) [不具合]タグのインポートができない
+  - [#237](https://github.com/thinkingreed-inc/F-RevoCRM/issues/237) [要望]見積書、発注書などに単位を表示したい
+  - [#228](https://github.com/thinkingreed-inc/F-RevoCRM/issues/228) [要望] 概要画面の活動に担当者を表示してほしい
 
 * 不具合
-  - #348 [不具合]顧客企業の概要画面が開くのが遅い
-  - #337 [不具合]文字列項目が多数含まれているモジュールにインポートした場合、インポートに失敗する。
-  - #336 [不具合]WebAPIのQuery処理で受注モジュールの明細行が最終行以外取得できない。
-  - #304 [不具合]タイトルの長いレコードを、別モジュールの関連から表示した際、「詳細」や「×」ボタンが表示されない。
-  - #295 [不具合]詳細画面のアイコンの背景色が消えている
-  - #290 [不具合]ユーザー一覧の”名前とメールアドレス ”の列がズレて表示される
-  - #284 [不具合]パスワード登録、変更の文字数制限が正常に機能していない
-  - #261 [不具合]ワークフローで値を更新すると最終更新者がシステム管理者になる
-  - #238 [不具合]見積書で入力した調整金額がPDF出力すると合計金額に反映されない。
-  - #153 [不具合]ブロック内のテキストエリアしかない場合の表示崩れ
-  - #94 [不具合]私の予定表で「繰り返しの予定の変更/削除」の「×」ボタンを押すと保存できなくなる
-  - #62 [不具合]ユーザー管理のユーザーの画面にて、パスワードの変更等の表示が埋もれている
-  - #381 [不具合]価格表モジュールでレポートを出力する際に、新規作成フィールドを扱うとエラーになる不具合の修正
+  - [#348](https://github.com/thinkingreed-inc/F-RevoCRM/issues/348) [不具合]顧客企業の概要画面が開くのが遅い
+  - [#337](https://github.com/thinkingreed-inc/F-RevoCRM/issues/337) [不具合]文字列項目が多数含まれているモジュールにインポートした場合、インポートに失敗する。
+  - [#336](https://github.com/thinkingreed-inc/F-RevoCRM/issues/336) [不具合]WebAPIのQuery処理で受注モジュールの明細行が最終行以外取得できない。
+  - [#304](https://github.com/thinkingreed-inc/F-RevoCRM/issues/304) [不具合]タイトルの長いレコードを、別モジュールの関連から表示した際、「詳細」や「×」ボタンが表示されない。
+  - [#295](https://github.com/thinkingreed-inc/F-RevoCRM/issues/295) [不具合]詳細画面のアイコンの背景色が消えている
+  - [#290](https://github.com/thinkingreed-inc/F-RevoCRM/issues/290) [不具合]ユーザー一覧の”名前とメールアドレス ”の列がズレて表示される
+  - [#284](https://github.com/thinkingreed-inc/F-RevoCRM/issues/284) [不具合]パスワード登録、変更の文字数制限が正常に機能していない
+  - [#261](https://github.com/thinkingreed-inc/F-RevoCRM/issues/261) [不具合]ワークフローで値を更新すると最終更新者がシステム管理者になる
+  - [#238](https://github.com/thinkingreed-inc/F-RevoCRM/issues/238) [不具合]見積書で入力した調整金額がPDF出力すると合計金額に反映されない。
+  - [#153](https://github.com/thinkingreed-inc/F-RevoCRM/issues/153) [不具合]ブロック内のテキストエリアしかない場合の表示崩れ
+  - [#94](https://github.com/thinkingreed-inc/F-RevoCRM/issues/94) [不具合]私の予定表で「繰り返しの予定の変更/削除」の「×」ボタンを押すと保存できなくなる
+  - [#62](https://github.com/thinkingreed-inc/F-RevoCRM/issues/62) [不具合]ユーザー管理のユーザーの画面にて、パスワードの変更等の表示が埋もれている
+  - [#381](https://github.com/thinkingreed-inc/F-RevoCRM/issues/381) [不具合]価格表モジュールでレポートを出力する際に、新規作成フィールドを扱うとエラーになる不具合の修正
 
 * 翻訳
-  - #260 [不具合]レポートモジュールにおける日本語翻訳漏れ
-  - #259 [不具合]パスワードを日本語翻訳漏れ
-  - #253 [不具合]グループを作成時の日本語未翻訳箇所
-  - #311 [不具合]他の人がインポート中のときにインポートしようとする時に表示される文言の翻訳漏れ
-  - #203 [不具合]リスト作成時のエラーメッセージが未翻訳
-  - #88 [不具合]日本語と英語が混在した文章がある
+  - [#260](https://github.com/thinkingreed-inc/F-RevoCRM/issues/260) [不具合]レポートモジュールにおける日本語翻訳漏れ
+  - [#259](https://github.com/thinkingreed-inc/F-RevoCRM/issues/259) [不具合]パスワードを日本語翻訳漏れ
+  - [#253](https://github.com/thinkingreed-inc/F-RevoCRM/issues/253) [不具合]グループを作成時の日本語未翻訳箇所
+  - [#311](https://github.com/thinkingreed-inc/F-RevoCRM/issues/311) [不具合]他の人がインポート中のときにインポートしようとする時に表示される文言の翻訳漏れ
+  - [#203](https://github.com/thinkingreed-inc/F-RevoCRM/issues/203) [不具合]リスト作成時のエラーメッセージが未翻訳
+  - [#88](https://github.com/thinkingreed-inc/F-RevoCRM/issues/88) [不具合]日本語と英語が混在した文章がある
 
 * 環境
-  - #323 MySQLのDockerfileにnkfが含まれているため削除
+  - [#323](https://github.com/thinkingreed-inc/F-RevoCRM/issues/323) MySQLのDockerfileにnkfが含まれているため削除
 
 * ドキュメンテーション
-  - #171 [要望]マイグレーションをコマンドライン側から叩きたい
-  - #34 [不具合]getTranslatedString関数だと、LanguageConverterで指定した変換がされない
+  - [#171](https://github.com/thinkingreed-inc/F-RevoCRM/issues/171) [要望]マイグレーションをコマンドライン側から叩きたい
+  - [#34](https://github.com/thinkingreed-inc/F-RevoCRM/issues/34) [不具合]getTranslatedString関数だと、LanguageConverterで指定した変換がされない
 
 ### Contributors
 Thank you for contributing!
