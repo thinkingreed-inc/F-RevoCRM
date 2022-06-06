@@ -7,51 +7,52 @@
 - 以下のURLにアクセスし、マイグレーションを実施してください。  
 `https://example.com/frevocrm/index.php?module=Migration&view=Index&mode=step1`
 
+
 * 機能改善
-  - (#503) [要望]リスト作成時の項目選択で関連モジュール名を表示して欲しい
-  - (#424) [要望]カスタムフィールドを追加する上限を設定してほしい
-  - (#391) [要望]ポータルの初期パスワードが簡単な英数で生成される
-  - (#388) [要望]CHANGELOG.mdを作る
-  - (#384) [要望]「すべて」というリストが先頭にならないケースが有る
-  - (#373) [要望]契約モジュールのテーブルにprimary keyがない
-  - (#371) [要望]マイグレーションでINDEXが効いていないuitype10(関連項目)にINDEXを追加したい
-  - (#364) [要望]関連項目を追加した際にINDEXを付与して欲しい
-  - (#358) [要望]活動を完了で作成した際、親レコードの最終活動日の更新条件を変えてほしい
-  - (#328) [要望]コメント削除機能が欲しい
-  - (#315) [要望]項目の並び順変更時の挙動を変えたい
-  - (#297) [要望] インポートのマッピングで自動生成番号の項目を選択できるようにしてほしい
-  - (#289) [要望]ユーザーの管理項目をシステム設定の画面上から変更できるようにしてほしい
+  - [#503](https://github.com/thinkingreed-inc/F-RevoCRM/issues/503) [要望]リスト作成時の項目選択で関連モジュール名を表示して欲しい
+  - [#424](https://github.com/thinkingreed-inc/F-RevoCRM/issues/424) [要望]カスタムフィールドを追加する上限を設定してほしい
+  - [#391](https://github.com/thinkingreed-inc/F-RevoCRM/issues/391) [要望]ポータルの初期パスワードが簡単な英数で生成される
+  - [#388](https://github.com/thinkingreed-inc/F-RevoCRM/issues/388) [要望]CHANGELOG.mdを作る
+  - [#384](https://github.com/thinkingreed-inc/F-RevoCRM/issues/384) [要望]「すべて」というリストが先頭にならないケースが有る
+  - [#373](https://github.com/thinkingreed-inc/F-RevoCRM/issues/373) [要望]契約モジュールのテーブルにprimary keyがない
+  - [#371](https://github.com/thinkingreed-inc/F-RevoCRM/issues/371) [要望]マイグレーションでINDEXが効いていないuitype10(関連項目)にINDEXを追加したい
+  - [#364](https://github.com/thinkingreed-inc/F-RevoCRM/issues/364) [要望]関連項目を追加した際にINDEXを付与して欲しい
+  - [#358](https://github.com/thinkingreed-inc/F-RevoCRM/issues/358) [要望]活動を完了で作成した際、親レコードの最終活動日の更新条件を変えてほしい
+  - [#328](https://github.com/thinkingreed-inc/F-RevoCRM/issues/328) [要望]コメント削除機能が欲しい
+  - [#315](https://github.com/thinkingreed-inc/F-RevoCRM/issues/315) [要望]項目の並び順変更時の挙動を変えたい
+  - [#297](https://github.com/thinkingreed-inc/F-RevoCRM/issues/297) [要望] インポートのマッピングで自動生成番号の項目を選択できるようにしてほしい
+  - [#289](https://github.com/thinkingreed-inc/F-RevoCRM/issues/289) [要望]ユーザーの管理項目をシステム設定の画面上から変更できるようにしてほしい
 * 不具合修正
-  - (#518) [不具合]見積印刷時に下部に線が入ってしまう
-  - (#515) ［質問］WEBフォームから取り込まれた複数選択肢の区切り記号について
-  - (#498) [不具合] 登録/変更画面からuitype10の詳細登録を経由すると入力中のデータが消える
-  - (#480) [不具合] 同じファイルを選択した際の警告の翻訳漏れ
-  - (#474) [不具合]ユーザーをインポートするとカレンダー設定のタイムゾーンがSamoaになる
-  - (#472) [不具合]メールアドレス項目が途中で切れて保存される
-  - (#469) [不具合]docker composeからセットアップができない
-  - (#452) [不具合]F-RevoCRMのワークフロー機能にて送信されるメールにて、TEXT形式部分のマルチバイト文字が欠落している。
-  - (#440) [不具合]概要画面で非公開の活動の「詳細内容」が確認できてしまう
-  - (#421) [不具合]タグを複数設定し、データ編集するとタグが増えてしまう
-  - (#420) [不具合] タグを設定すると、編集内容が反映されない
-  - (#414) [不具合]価格表モジュールに関連フィールドを追加するとレポートが表示されない
-  - (#411) [不具合]大文字の拡張子となっているCSVファイルをインポートしようとするとExeptionが発生する
-  - (#410) [不具合]送信メールサーバーを設定した際に送られるメールの本文が英語になっている
-  - (#404) [不具合]サービスモジュールに関連フィールドを追加するとレポートが表示されない
-  - (#401) [不具合]活動のインポート時、管理画面から追加した項目があるとインポートに失敗する
-  - (#393) [不具合]カスタム項目「選択肢(単数)」のデフォルト値表示がおかしい
-  - (#389) [不具合]一覧画面で一部の区切り線が消える
-  - (#387) [不具合]カレンダー上から詳細入力を行ったあとの戻り先が遷移元のカレンダーにならない
-  - (#385) [不具合]Contactsのportalをonとした際に送られてくるメールがすべて英語。
-  - (#370) [不具合]ワークフロー新規作成・保存後の画面遷移で、フィルタが解除されて「全て　ワークフロー」になってしまう
-  - (#363) [不具合]ユーザー一覧の罫線が消えることがある
-  - (#362) [不具合]活動のリストにToDoのステータスを表示していないと活動の完了アイコンが次の予定登録アイコンに切り替わらない
-  - (#353) [不具合]ドキュメントのリスト表示の翻訳漏れ
-  - (#350) [不具合]項目追加時に項目タイプを何回か切り替えると、デフォルト値の表示がおかしくなる
-  - (#312) [不具合]ワークフローで値の更新を行う際に、更新先がメールアドレスタイプの際に、フィールド名をrawテキストと認識してしまう
-  - (#307) [不具合] カレンダーの詳細編集画面で一部表示が乱れる箇所がある
-  - (#287) [不具合] フォーム入力画面にて変更不可のデフォルト値が変更できてしまう
-  - (#249) [不具合]案件をエクスポートした際に関連項目（ユーザー）の値が正しくない（ver7.3.3）
-  - (#149) [不具合]半角で数字0を入力し保存した場合、編集画面で0の値が表示されずに空となっている。
+  - [#518](https://github.com/thinkingreed-inc/F-RevoCRM/issues/518) [不具合]見積印刷時に下部に線が入ってしまう
+  - [#515](https://github.com/thinkingreed-inc/F-RevoCRM/issues/515) [質問]WEBフォームから取り込まれた複数選択肢の区切り記号について
+  - [#498](https://github.com/thinkingreed-inc/F-RevoCRM/issues/498) [不具合] 登録/変更画面からuitype10の詳細登録を経由すると入力中のデータが消える
+  - [#480](https://github.com/thinkingreed-inc/F-RevoCRM/issues/480) [不具合] 同じファイルを選択した際の警告の翻訳漏れ
+  - [#474](https://github.com/thinkingreed-inc/F-RevoCRM/issues/474) [不具合]ユーザーをインポートするとカレンダー設定のタイムゾーンがSamoaになる
+  - [#472](https://github.com/thinkingreed-inc/F-RevoCRM/issues/472) [不具合]メールアドレス項目が途中で切れて保存される
+  - [#469](https://github.com/thinkingreed-inc/F-RevoCRM/issues/469) [不具合]docker composeからセットアップができない
+  - [#452](https://github.com/thinkingreed-inc/F-RevoCRM/issues/452) [不具合]F-RevoCRMのワークフロー機能にて送信されるメールにて、TEXT形式部分のマルチバイト文字が欠落している。
+  - [#440](https://github.com/thinkingreed-inc/F-RevoCRM/issues/440) [不具合]概要画面で非公開の活動の「詳細内容」が確認できてしまう
+  - [#421](https://github.com/thinkingreed-inc/F-RevoCRM/issues/421) [不具合]タグを複数設定し、データ編集するとタグが増えてしまう
+  - [#420](https://github.com/thinkingreed-inc/F-RevoCRM/issues/420) [不具合] タグを設定すると、編集内容が反映されない
+  - [#414](https://github.com/thinkingreed-inc/F-RevoCRM/issues/414) [不具合]価格表モジュールに関連フィールドを追加するとレポートが表示されない
+  - [#411](https://github.com/thinkingreed-inc/F-RevoCRM/issues/411) [不具合]大文字の拡張子となっているCSVファイルをインポートしようとするとExeptionが発生する
+  - [#410](https://github.com/thinkingreed-inc/F-RevoCRM/issues/410) [不具合]送信メールサーバーを設定した際に送られるメールの本文が英語になっている
+  - [#404](https://github.com/thinkingreed-inc/F-RevoCRM/issues/404) [不具合]サービスモジュールに関連フィールドを追加するとレポートが表示されない
+  - [#401](https://github.com/thinkingreed-inc/F-RevoCRM/issues/401) [不具合]活動のインポート時、管理画面から追加した項目があるとインポートに失敗する
+  - [#393](https://github.com/thinkingreed-inc/F-RevoCRM/issues/393) [不具合]カスタム項目「選択肢(単数)」のデフォルト値表示がおかしい
+  - [#389](https://github.com/thinkingreed-inc/F-RevoCRM/issues/389) [不具合]一覧画面で一部の区切り線が消える
+  - [#387](https://github.com/thinkingreed-inc/F-RevoCRM/issues/387) [不具合]カレンダー上から詳細入力を行ったあとの戻り先が遷移元のカレンダーにならない
+  - [#385](https://github.com/thinkingreed-inc/F-RevoCRM/issues/385) [不具合]Contactsのportalをonとした際に送られてくるメールがすべて英語。
+  - [#370](https://github.com/thinkingreed-inc/F-RevoCRM/issues/370) [不具合]ワークフロー新規作成・保存後の画面遷移で、フィルタが解除されて「全て　ワークフロー」になってしまう
+  - [#363](https://github.com/thinkingreed-inc/F-RevoCRM/issues/363) [不具合]ユーザー一覧の罫線が消えることがある
+  - [#362](https://github.com/thinkingreed-inc/F-RevoCRM/issues/362) [不具合]活動のリストにToDoのステータスを表示していないと活動の完了アイコンが次の予定登録アイコンに切り替わらない
+  - [#353](https://github.com/thinkingreed-inc/F-RevoCRM/issues/353) [不具合]ドキュメントのリスト表示の翻訳漏れ
+  - [#350](https://github.com/thinkingreed-inc/F-RevoCRM/issues/350) [不具合]項目追加時に項目タイプを何回か切り替えると、デフォルト値の表示がおかしくなる
+  - [#312](https://github.com/thinkingreed-inc/F-RevoCRM/issues/312) [不具合]ワークフローで値の更新を行う際に、更新先がメールアドレスタイプの際に、フィールド名をrawテキストと認識してしまう
+  - [#307](https://github.com/thinkingreed-inc/F-RevoCRM/issues/307) [不具合] カレンダーの詳細編集画面で一部表示が乱れる箇所がある
+  - [#287](https://github.com/thinkingreed-inc/F-RevoCRM/issues/287) [不具合] フォーム入力画面にて変更不可のデフォルト値が変更できてしまう
+  - [#249](https://github.com/thinkingreed-inc/F-RevoCRM/issues/249) [不具合]案件をエクスポートした際に関連項目（ユーザー）の値が正しくない（ver7.3.3）
+  - [#149](https://github.com/thinkingreed-inc/F-RevoCRM/issues/149) [不具合]半角で数字0を入力し保存した場合、編集画面で0の値が表示されずに空となっている。
 
 ### Contributors
 Thank you for contributing!
