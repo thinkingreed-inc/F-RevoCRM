@@ -1394,6 +1394,9 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				message: app.vtranslate('LBL_DELETE_CONFIRMATION')
 			}).then(function () {
 				thisInstance._deleteCalendarEvent(eventId, sourceModule);
+				if(app.view() === 'SharedCalendar'){
+					thisInstance._updateAllOnCalendar("Calendar");
+				}
 			});
 		}
 	},
