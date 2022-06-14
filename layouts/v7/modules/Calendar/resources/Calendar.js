@@ -1786,7 +1786,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			editable: true,
 			eventLimit: true,
 			defaultDate:defaultDate,
-			defaultView:defaultView,
+			defaultView: ($(window).width() > 1020 ? userDefaultActivityView : 'agendaDay'),
 			slotLabelFormat: userDefaultTimeFormat,
 			timeFormat: userDefaultTimeFormat,
 			defaultDate: defaultDate,
@@ -1871,7 +1871,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 					if(document.getElementsByClassName('fc-day-header').item(0)){//表示が日の時の処理
 						lastviewday =document.getElementsByClassName('fc-day-header').item(0).dataset.date;
 						history.replaceState('', '','index.php?module=Calendar&view='+ lastviewtype +'&lastViewDate=' + lastviewday + "&Viewtype=day");
-						thisInstance.updateSideberCalendarLinks(lastviewtype, lastviewday);
+						thisInstance.updateSideberCalendarLinks('day', lastviewday);
 					}
 					else{//表示が概要の時の処理
 						history.replaceState('', '','index.php?module=Calendar&view='+ lastviewtype +'&lastViewDate=' +"&Viewtype=list");
