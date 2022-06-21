@@ -255,7 +255,9 @@ class DateTimeField {
 			$user = $current_user;
 		}
 		$timeZone = $user->time_zone ? $user->time_zone : $default_timezone;
-		$value = self::sanitizeDate($value, $user);
+		if(!preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/',$value)) {
+			$value = self::sanitizeDate($value, $user);
+		}
 		return DateTimeField::convertTimeZone($value, $timeZone, self::getDBTimeZone() );
 	}
 
@@ -380,7 +382,7 @@ class DateTimeField {
 					case 'mm.dd.yyyy': list($m, $d, $y) = explode('.', $date); break;
 					case 'dd.mm.yyyy': list($d, $m, $y) = explode('.', $date); break;
 					case 'dd/mm/yyyy': list($d, $m, $y) = explode('/', $date); break;
-					case 'mm/dd/yyyy': list($d, $m, $y) = explode('/', $date); break;
+					case 'mm/dd/yyyy': list($m, $d, $y) = explode('/', $date); break;
 					case 'mm-dd-yyyy': list($m, $d, $y) = explode('-', $date); break;
 					case 'dd-mm-yyyy': list($d, $m, $y) = explode('-', $date); break;
 				}
