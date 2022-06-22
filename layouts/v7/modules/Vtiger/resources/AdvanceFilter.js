@@ -597,6 +597,13 @@ jQuery.Class("Vtiger_AdvanceFilter_Js",{
             }
 			thisInstance.loadConditions(currentElement);
 			thisInstance.loadFieldSpecificUi(currentElement);
+			var popupelementtype = $('.getPopupUi').attr('data-date-format');
+			var selectbycalender = jQuery('.selectbycalender');
+			if(popupelementtype != undefined){
+			   selectbycalender.removeClass('hide');
+			}else{
+			   selectbycalender.addClass('hide');
+			}
 		});
 	},
 

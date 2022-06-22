@@ -190,6 +190,7 @@ class Settings_Workflows_Edit_View extends Settings_Vtiger_Index_View {
 			"modules.Vtiger.resources.CkEditor",
             '~/libraries/jquery/bootstrapswitch/js/bootstrap-switch.min.js',
 			'~libraries/jquery/jquery.datepick.package-4.1.0/jquery.datepick.js',
+			'~libraries/jquery/datetimepicker/js/jquery.datetimepicker.full.min.js',
 		);
 
 		$jsScriptInstances = $this->checkAndConvertJsScripts($jsFileNames);
@@ -203,6 +204,7 @@ class Settings_Workflows_Edit_View extends Settings_Vtiger_Index_View {
 		$cssFileNames = array(
 			'~libraries/jquery/jquery.datepick.package-4.1.0/jquery.datepick.css',
             '~/libraries/jquery/bootstrapswitch/css/bootstrap3/bootstrap-switch.min.css',
+			'~/libraries/jquery/datetimepicker/css/jquery.datetimepicker.css',
 		);
 		$cssInstances = $this->checkAndConvertCssStyles($cssFileNames);
 		$headerCssInstances = array_merge($cssInstances, $headerCssInstances);

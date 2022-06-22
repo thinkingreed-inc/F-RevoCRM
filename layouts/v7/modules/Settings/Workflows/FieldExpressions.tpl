@@ -23,6 +23,7 @@
 						<option data-ui="textarea" value="expression">{vtranslate('LBL_EXPRESSION',$QUALIFIED_MODULE)}</option>
                     </select>
                 </div>
+                <button type="button" class = "useRawtextContainer selectbycalender hide btn btn-default"  >{vtranslate('LBL_SELECT_DATE_BY_CALENDER',$QUALIFIED_MODULE)}</button>
                 <div class="col-sm-4 hide useFieldContainer">
                     <span name="{$MODULE_MODEL->get('name')}" class="useFieldElement">
                         {assign var=MODULE_FIELDS value=$MODULE_MODEL->getFields()}
