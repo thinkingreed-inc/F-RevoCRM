@@ -41,6 +41,7 @@ $languageStrings = array(
 	'LBL_USE_EXISTING_CONDITIONS' => '既存の条件を使用する',
 	'LBL_RECREATE_CONDITIONS' => '条件を再作成する',
 	'LBL_SAVE_AND_CONTINUE' => '保存 & 続行',
+	'LBL_SELECT_DATE_BY_CALENDER' => 'カレンダーから入力',
 
 	//Step3 edit view
 	'LBL_ACTIVE' => '有効',

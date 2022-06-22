@@ -135,6 +135,15 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
          clonedPopupUi.find('select').addClass('select2');
          clonedPopupUi.find('.fieldValue').val(fieldValue);
          clonedPopupUi.find('.fieldValue').removeClass('hide');
+         clonedPopupUi.find('.selectbycalender').datetimepicker({
+            format:'Y-m-d H:i',
+            step:10,
+         });
+         clonedPopupUi.on('click', '.selectbycalender', function () {
+            $(".selectbycalender").change(function(){
+               clonedPopupUi.find('.fieldValue').val(clonedPopupUi.find('.selectbycalender').val());
+            });
+         });
          if (fieldValueElement.hasClass('date')) {
             clonedPopupUi.find('.textType').find('option[value="rawtext"]').attr('data-ui', 'input');
             var dataFormat = fieldValueElement.data('date-format');
@@ -255,15 +264,22 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
          var valueType = jQuery(e.currentTarget).val();
          var useFieldContainer = jQuery('.useFieldContainer', data);
          var useFunctionContainer = jQuery('.useFunctionContainer', data);
+         var useRawtextContainer = jQuery('.useRawtextContainer', data);
          var uiType = jQuery(e.currentTarget).find('option:selected').data('ui');
          jQuery('.fieldValue', data).hide();
          jQuery('[data-' + uiType + ']', data).show();
-         if (valueType == 'fieldname') {
+         if(valueType == 'rawtext'){
+            useRawtextContainer.removeClass('hide');
+            useFieldContainer.addClass('hide');
+            useFunctionContainer.addClass('hide');
+         } else if (valueType == 'fieldname') {
             useFieldContainer.removeClass('hide');
             useFunctionContainer.addClass('hide');
+            useRawtextContainer.addClass('hide');
          } else if (valueType == 'expression') {
             useFieldContainer.removeClass('hide');
             useFunctionContainer.removeClass('hide');
+            useRawtextContainer.addClass('hide');
          } else {
             useFieldContainer.addClass('hide');
             useFunctionContainer.addClass('hide');
