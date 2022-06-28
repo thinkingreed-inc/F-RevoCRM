@@ -135,6 +135,7 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
          clonedPopupUi.find('select').addClass('select2');
          clonedPopupUi.find('.fieldValue').val(fieldValue);
          clonedPopupUi.find('.fieldValue').removeClass('hide');
+         $.datetimepicker.setLocale($('body').attr("data-language").substring(0,2));
          clonedPopupUi.find('.selectbycalender').datetimepicker({
             format:'Y-m-d H:i',
             step:10,
