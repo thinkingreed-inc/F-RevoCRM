@@ -231,6 +231,7 @@ $languageStrings = array(
 );
 $jsLanguageStrings = array(
 	'JS_DUPLICATE_RECORD' => 'レポートの複製',
+	'JS_SAME_REPORT_NAME' => '同名のレポートが存在します。',
 	'JS_CALCULATION_LINE_ITEM_FIELDS_SELECTION_LIMITATION' => '制限事項：  品目の項目 ( 定価、割引と数量 ) は、他の計算項目が選択されていない場合にのみ使用できます',
 	'JS_NO_CHART_DATA_AVAILABLE' => 'データは利用できません。選択した項目を確認してください。',
     'JS_CHART_PINNED_TO_DASHBOARD' => 'グラフをダッシュボードに追加しました',

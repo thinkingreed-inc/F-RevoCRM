@@ -197,7 +197,7 @@ Reports_Edit_Js("Reports_Edit1_Js",{},{
 					title: app.vtranslate('JS_DUPLICATE_RECORD'),
 					text: data['message']
 				};
-				app.helper.showErrorNotification({"message":app.vtranslate("JS_DUPLICATE_RECORD")});
+				app.helper.showErrorNotification({"message":app.vtranslate("JS_SAME_REPORT_NAME")});
 				aDeferred.reject();
 			}
 			);
