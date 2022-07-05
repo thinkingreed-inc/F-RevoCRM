@@ -436,9 +436,9 @@ class ProjectTask extends CRMEntity {
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency('vtiger_crmentityProjectTask', array('vtiger_groupsProjectTask', 'vtiger_usersProjectTask', 'vtiger_lastModifiedByProjectTask'));
 
-		if (!$queryPlanner->requireTable('vtiger_projecttask', $matrix)) {
-			return '';
-		}
+		// if (!$queryPlanner->requireTable('vtiger_projecttask', $matrix)) {
+		// 	return '';
+		// }
 		$matrix->setDependency('vtiger_projecttask', array('vtiger_crmentityProjectTask'));
 
 		$query .= $this->getRelationQuery($module,$secmodule,"vtiger_projecttask","projecttaskid", $queryPlanner);

@@ -294,9 +294,9 @@ class PriceBooks extends CRMEntity {
 		$matrix = $queryPlanner->newDependencyMatrix();
 
 		$matrix->setDependency("vtiger_crmentityPriceBooks",array("vtiger_usersPriceBooks","vtiger_groupsPriceBooks"));
-		if (!$queryPlanner->requireTable('vtiger_pricebook', $matrix)) {
-			return '';
-		}
+		// if (!$queryPlanner->requireTable('vtiger_pricebook', $matrix)) {
+		// 	return '';
+		// }
         $matrix->setDependency("vtiger_pricebook",array("vtiger_crmentityPriceBooks","vtiger_currency_infoPriceBooks"));
 
 		$query = $this->getRelationQuery($module,$secmodule,"vtiger_pricebook","pricebookid", $queryPlanner);

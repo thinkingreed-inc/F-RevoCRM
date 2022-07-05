@@ -595,9 +595,9 @@ case when (vtiger_users.user_name not like '') then $userNameSql else vtiger_gro
 		$matrix->setDependency("vtiger_crmentityHelpDesk",array("vtiger_groupsHelpDesk","vtiger_usersHelpDesk","vtiger_lastModifiedByHelpDesk"));
 		$matrix->setDependency("vtiger_crmentityRelHelpDesk",array("vtiger_accountRelHelpDesk","vtiger_contactdetailsRelHelpDesk"));
 
-		if (!$queryPlanner->requireTable('vtiger_troubletickets', $matrix)) {
-			return '';
-		}
+		// if (!$queryPlanner->requireTable('vtiger_troubletickets', $matrix)) {
+		// 	return '';
+		// }
         
         $matrix->setDependency("vtiger_troubletickets",array("vtiger_crmentityHelpDesk","vtiger_ticketcf","vtiger_crmentityRelHelpDesk","vtiger_productsRel"));
 		

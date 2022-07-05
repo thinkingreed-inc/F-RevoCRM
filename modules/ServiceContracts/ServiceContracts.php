@@ -229,9 +229,9 @@ class ServiceContracts extends CRMEntity {
 
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency('vtiger_crmentityServiceContracts',array('vtiger_groupsServiceContracts','vtiger_usersServiceContracts'));
-		if (!$queryPlanner->requireTable('vtiger_servicecontracts', $matrix)) {
-			return '';
-		}
+		// if (!$queryPlanner->requireTable('vtiger_servicecontracts', $matrix)) {
+		// 	return '';
+		// }
 		$matrix->setDependency('vtiger_servicecontracts',array('vtiger_servicecontractscf','vtiger_crmentityServiceContracts'));
 
 		$query = $this->getRelationQuery($module,$secmodule,"vtiger_servicecontracts","servicecontractsid", $queryPlanner);

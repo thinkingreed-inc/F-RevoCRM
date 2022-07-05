@@ -84,6 +84,7 @@ class ReportRunQueryPlanner {
 	protected static $tempTableCounter = 0;
 	protected $registeredCleanup = false;
 	var $reportRun = false;
+	protected $reportJoinColumn = false;
 
 	function addTable($table) {
 		if (!empty($table))
@@ -276,6 +277,12 @@ class ReportRunQueryPlanner {
 		return $advfiltersql;
 	}
 
+	function setReportJoinColumn($reportJoinColumn) {
+		$this->reportJoinColumn = $reportJoinColumn;
+	}
+	function getReportJoinColumn() {
+		return $this->reportJoinColumn;
+	}
 }
 
 class ReportRun extends CRMEntity {
@@ -334,7 +341,8 @@ class ReportRun extends CRMEntity {
             $this->reportname = $oReport->reportname;
             $this->queryPlanner = new ReportRunQueryPlanner();
             $this->queryPlanner->reportRun = $this;
-        }
+			$this->queryPlanner->setReportJoinColumn($oReport->joinColumn);
+		}
 	function ReportRun($reportid) {
             self::__construct($reportid);
 	}
@@ -1246,7 +1254,7 @@ class ReportRun extends CRMEntity {
 								}
 							}
 						}
-						$commaSeparatedFieldTypes = array('picklist', 'multipicklist', 'owner', 'date', 'datetime', 'time');
+						$commaSeparatedFieldTypes = array('picklist', 'multipicklist', 'owner', 'date', 'datetime', 'time','string','reference');
 						if(in_array($fieldDataType, $commaSeparatedFieldTypes)) {
 							$valuearray = explode(",", trim($value));
 						} else {
@@ -1301,6 +1309,16 @@ class ReportRun extends CRMEntity {
 									$this->queryPlanner->addTable($tableName);
 									$advcolsql[] = 'trim(' . getSqlForNameInDisplayFormat(array('last_name' => "$tableName.last_name", 'first_name' => "$tableName.first_name"), 'Users') . ')' .
 											$this->getAdvComparator($comparator, trim($valuearray[$n]), $datatype);
+								} elseif ($fieldInfo['uitype'] == '10' || isReferenceUIType($fieldInfo['uitype'])) {
+
+									$fieldSqlColumns = $this->getReferenceFieldColumnList($moduleName, $fieldInfo);
+									$comparatorValue = $this->getAdvComparator($comparator, trim($valuearray[$n]), $datatype, $fieldSqlColumns[0]);
+									$fieldSqls = array();
+		
+									foreach ($fieldSqlColumns as $columnSql) {
+										$fieldSqls[] = $columnSql . $comparatorValue;
+									}
+									$advcolsql[] = ' (' . implode(' OR ', $fieldSqls) . ') ';
 								} else {
 									$advcolsql[] = $selectedfields[0] . "." . $selectedfields[1] . $this->getAdvComparator($comparator, trim($valuearray[$n]), $datatype);
 								}
@@ -2014,6 +2032,9 @@ class ReportRun extends CRMEntity {
 				}
 				$fieldModuleName = explode('_',$module_field); 
 				$fieldId = getFieldid(getTabid($fieldModuleName[0]), $fieldname);
+				if(empty($fieldId) && $fieldModuleName[0] == "Calendar") {
+					$fieldId = getFieldid(getTabid("Events"), $fieldname);
+				}
 				$fieldModel = Vtiger_Field_Model::getInstance($fieldId);
 				if($fieldModel && ($fieldModel->getFieldDataType()=='reference' || $fieldModel->getFieldDataType()=='owner')){
 					$sqlvalue = $module_field . ' ' . $sortorder;
@@ -3703,23 +3724,23 @@ class ReportRun extends CRMEntity {
 					$header .= '<th>' . $headerName . '</th>';
 				}
 
-				// グループ化するカラムを判定するラベルをDB(vtiger_reportsortcol,vtiger_reportgroupbycolumn)からアンダーバーの置換で生成しているため，もとからアンダーバーを含むラベルを生成できない
-				// もとからアンダーバーを含むラベル抽出し置換を行うかどうかの判別をする
-				$includeUnderbarResult = $adb->pquery('SELECT DISTINCT fieldlabel FROM vtiger_field WHERE fieldlabel LIKE "%\_%"');
-				$includeUnderbarRows = $adb->num_rows($includeUnderbarResult);
-				for ($i = 0; $i < $includeUnderbarRows; $i++) {
-					$includedUnderbarLabels[] = $adb->query_result($includeUnderbarResult, $i, 'fieldlabel');
-				}
+                // グループ化するカラムを判定するラベルをDB(vtiger_reportsortcol,vtiger_reportgroupbycolumn)からアンダーバーの置換で生成しているため，もとからアンダーバーを含むラベルを生成できない
+                // もとからアンダーバーを含むラベル抽出し置換を行うかどうかの判別をする
+                $includeUnderbarResult = $adb->pquery('SELECT DISTINCT fieldlabel FROM vtiger_field WHERE fieldlabel LIKE "%\_%"');
+                $includeUnderbarRows = $adb->num_rows($includeUnderbarResult);
+                for ($i = 0; $i < $includeUnderbarRows; $i++) {
+                    $includedUnderbarLabels[] = $adb->query_result($includeUnderbarResult, $i, 'fieldlabel');
+                }
 
 				$groupslist = $this->getGroupingList($this->reportid);
 				foreach ($groupslist as $reportFieldName => $reportFieldValue) {
 					$nameParts = explode(":", $reportFieldName);
 					list($groupFieldModuleName, $groupFieldName) = split("_", $nameParts[2], 2);
-					if(in_array($groupFieldName, $includedUnderbarLabels)){
-						$groupByFieldNames[] = vtranslate($groupFieldName, $groupFieldModuleName);
-					} else {
-						$groupByFieldNames[] = vtranslate(str_replace('_', ' ', $groupFieldName), $groupFieldModuleName);
-					}
+                    if(in_array($groupFieldName, $includedUnderbarLabels)){
+                        $groupByFieldNames[] = vtranslate($groupFieldName, $groupFieldModuleName);
+                    } else {
+					$groupByFieldNames[] = vtranslate(str_replace('_', ' ', $groupFieldName), $groupFieldModuleName);
+				}
 				}
 				if (count($groupByFieldNames) > 0) {
 					if (count($groupByFieldNames) == 1) {
@@ -3737,8 +3758,8 @@ class ReportRun extends CRMEntity {
 					$thirdValue = ' ';
 					foreach ($data as $key => $valueArray) {
 						$valtemplate .= '<tr>';
-						$firstIsHead = 0;
-						$secondIsHead = 0;
+                        $firstIsHead = 0;
+                        $secondIsHead = 0;
 						foreach ($valueArray as $fieldName => $fieldValue) {
 							if ($fieldName == 'ACTION' || $fieldName == vtranslate('LBL_ACTION', $this->primarymodule) || $fieldName == vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL_ACTION', $this->primarymodule) || $fieldName == vtranslate('LBL ACTION', $this->primarymodule) || $fieldName == vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL ACTION', $this->primarymodule)) {
 								continue;
@@ -3746,9 +3767,9 @@ class ReportRun extends CRMEntity {
 							if (($fieldName == $firstField || strstr($fieldName, $firstField)) && ($firstValue == $fieldValue || $firstValue == " ")) {
 								if ($firstValue == ' ' || $fieldValue == '-') {
 									$valtemplate .= "<td style='border-bottom: 0;'>" . $fieldValue . "</td>";
-									$firstIsHead = 1;
-								} else if($firstValue == '') {
-									$valtemplate .= "<td></td>";
+                                    $firstIsHead = 1;
+                                } else if($firstValue == '') {
+                                    $valtemplate .= "<td></td>";
 								} else {
 									$valtemplate .= "<td style='border-bottom: 0; border-top: 0;'>&nbsp;</td>";
 								}
@@ -3756,11 +3777,11 @@ class ReportRun extends CRMEntity {
 									$firstValue = $fieldValue;
 								}
 							} else if (($fieldName == $secondField || strstr($fieldName, $secondField)) && ($secondValue == $fieldValue || $secondValue == " ")) {
-								if ($secondValue == ' ' || $secondValue == '-' || $firstIsHead == 1) {
+                                if ($secondValue == ' ' || $secondValue == '-' || $firstIsHead == 1) {
 									$valtemplate .= "<td style='border-bottom: 0;'>" . $fieldValue . "</td>";
-									$secondIsHead = 1;
-								} else if($secondValue == '') {
-									$valtemplate .= "<td></td>";
+                                    $secondIsHead = 1;
+                                } else if($secondValue == '') {
+                                    $valtemplate .= "<td></td>";
 								} else {
 									$valtemplate .= "<td style='border-bottom: 0; border-top: 0;'>&nbsp;</td>";
 								}
@@ -3768,10 +3789,10 @@ class ReportRun extends CRMEntity {
 									$secondValue = $fieldValue;
 								}
 							} else if (($fieldName == $thirdField || strstr($fieldName, $thirdField)) && ($thirdValue == $fieldValue || $thirdValue == " ")) {
-								if ($thirdValue == ' ' || $thirdValue == '-' || $secondIsHead == 1) {
+							    if ($thirdValue == ' ' || $thirdValue == '-' || $secondIsHead == 1) {
 									$valtemplate .= "<td style='border-bottom: 0;'>" . $fieldValue . "</td>";
-								} else if($thirdValue == '') {
-									$valtemplate .= "<td></td>";
+                                } else if($thirdValue == '') {
+                                    $valtemplate .= "<td></td>";
 								} else {
 									$valtemplate .= "<td style='border-bottom: 0; border-top: 0;'>&nbsp;</td>";
 								}
@@ -3781,10 +3802,10 @@ class ReportRun extends CRMEntity {
 							} else {
 								$valtemplate .= "<td style='border-bottom: 0;'>" . $fieldValue . "</td>";
 								if ($fieldName == $firstField || strstr($fieldName, $firstField)) {
-									$firstIsHead = 1;
+                                    $firstIsHead = 1;
 									$firstValue = $fieldValue;
 								} else if ($fieldName == $secondField || strstr($fieldName, $secondField)) {
-									$secondIsHead = 1;
+                                    $secondIsHead = 1;
 									$secondValue = $fieldValue;
 								} else if ($fieldName == $thirdField || strstr($fieldName, $thirdField)) {
 									$thirdValue = $fieldValue;
@@ -4147,6 +4168,7 @@ class ReportRun extends CRMEntity {
 				if ($fieldlist[4] == 5) {
 					$sSQLList[] = "max(" . $fieldlist[1] . "." . $fieldlist[2] . ") " . $fieldlist[3];
 				}
+				$this->queryPlanner->addTable($fieldlist[1]);
 			}
 		}
 		if (isset($sSQLList)) {
@@ -4473,16 +4495,26 @@ class ReportRun extends CRMEntity {
 			$csv_values = array();
 			// Header
 			$csv_values = array_map('decode_html', array_keys($arr_val[0]));
-			$unsetValue = false;
-			// It'll not translate properly if you don't mention module of that string
-			if (end($csv_values) == vtranslate('LBL_ACTION', $this->primarymodule) || end($csv_values) == vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL_ACTION', $this->primarymodule) || end($csv_values) == vtranslate('LBL ACTION', $this->primarymodule) || end($csv_values) == vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL ACTION', $this->primarymodule)) {
-				unset($csv_values[count($csv_values) - 1]); //removed action header in csv file
-				$unsetValue = true;
+			$unset_index = false;
+			$check_values = array (
+				array_search( vtranslate('LBL_ACTION', $this->primarymodule), $csv_values ),
+				array_search( vtranslate('LBL ACTION', $this->primarymodule), $csv_values ),
+				vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL ACTION', $this->primarymodule),
+				vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL_ACTION', $this->primarymodule)
+			);
+			$unset_key = false;
+			foreach( $check_values as $check_value ) {
+				$unset_index = array_search( $check_value, $csv_values );
+				if ( $unset_index !== false ) {
+					$unset_key = $csv_values[$unset_index];
+					unset($csv_values[$unset_index]);
+					break;
+				}
 			}
 			fputcsv($fp, $csv_values);
 			foreach ($arr_val as $key => $array_value) {
-				if ($unsetValue) {
-					array_pop($array_value); //removed action link
+				if ( $unset_key !== false ) {
+					unset($array_value[$unset_key]);
 				}
 				$csv_values = array_map('decode_html', array_values($array_value));
 				fputcsv($fp, $csv_values);
@@ -4571,7 +4603,7 @@ class ReportRun extends CRMEntity {
 		$columnsSqlList = array();
 
 		$fieldInstance = WebserviceField::fromArray($adb, $fieldInfo);
-		$referenceModuleList = $fieldInstance->getReferenceList(false);
+		$referenceModuleList = $fieldInstance->getReferenceList(true);
 		if(in_array('Calendar', $referenceModuleList) && in_array('Events', $referenceModuleList)) {
 			$eventKey = array_keys($referenceModuleList, 'Events');
 			unset($referenceModuleList[$eventKey[0]]);

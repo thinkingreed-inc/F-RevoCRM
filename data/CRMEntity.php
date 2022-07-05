@@ -2335,10 +2335,14 @@ class CRMEntity {
 		$modulecftable = $secondary->customFieldTable[0];
 		$modulecfindex = $secondary->customFieldTable[1];
 
+		$cfquery = '';
+		foreach($this->tab_name_index as $modulecftable => $modulecfindex) {
+			if($modulecftable == 'vtiger_crmentity' || $modulecftable == $tablename) {
+				continue;
+			}
 		if (isset($modulecftable) && $queryPlanner->requireTable($modulecftable)) {
 			$cfquery = "left join $modulecftable as $modulecftable on $modulecftable.$modulecfindex=$tablename.$tableindex";
-		} else {
-			$cfquery = '';
+			}
 		}
 
 		$relquery = '';
@@ -2395,9 +2399,9 @@ class CRMEntity {
 		$matrix->setDependency("vtiger_crmentity$secmodule", array("vtiger_groups$secmodule", "vtiger_users$secmodule", "vtiger_lastModifiedBy$secmodule"));
 		$matrix->addDependency($tablename, "vtiger_crmentity$secmodule");
 
-		if (!$queryPlanner->requireTable($tablename, $matrix) && !$queryPlanner->requireTable($modulecftable)) {
-			return '';
-		}
+		// if (!$queryPlanner->requireTable($tablename, $matrix) && !$queryPlanner->requireTable($modulecftable)) {
+		// 	return '';
+		// }
 
 		$query = $this->getRelationQuery($module, $secmodule, "$tablename", "$tableindex", $queryPlanner);
 
@@ -2555,7 +2559,28 @@ class CRMEntity {
 	 */
 
 	function getRelationQuery($module, $secmodule, $table_name, $column_name, $queryPlanner) {
-		$tab = getRelationTables($module, $secmodule);
+		// selected join column
+		$joinColumn = $queryPlanner->getReportJoinColumn();
+		$joinTypes = explode(",", $joinColumn);
+		foreach($joinTypes as $tmpKey) {
+			if(strpos($tmpKey, $secmodule.'::') === 0) {
+				$joinKey = $tmpKey;
+				break;
+			}
+		}
+		$reportModel = new Reports_Record_Model();
+		$tabs = $reportModel->getRelationTables($module, $secmodule);
+		foreach($tabs as $tmpKey => $tmpTab) {
+			if(strpos($tmpKey, $joinKey) === 0) {
+				$tab = $tmpTab;
+				break;
+			}
+		}
+
+		// default
+		if(empty($tab)) {
+			$tab = getRelationTables($module, $secmodule);
+		}
 
 		foreach ($tab as $key => $value) {
 			$tables[] = $key;
@@ -2567,7 +2592,10 @@ class CRMEntity {
 		$secfieldname = $fields[0][1];
 		$tmpname = $pritablename . 'tmp' . $secmodule;
 		$condition = "";
-		if (!empty($tables[1]) && !empty($fields[1])) {
+		if (!empty($tables[1]) && !empty($fields[1])
+				&& strpos($tables[1], $tables[0]) === false
+				&& strpos($tables[0], $tables[1] === false)
+			) {
 			$condvalue = $tables[1] . "." . $fields[1];
 			$condition = "$table_name.$prifieldname=$condvalue";
 		} else {

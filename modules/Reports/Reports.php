@@ -168,7 +168,8 @@ class Reports extends CRMEntity{
                                         $current_user->id, $reportid, $reportmodulesrow["primarymodule"],
                                         $reportmodulesrow["secondarymodules"], $reportmodulesrow["reporttype"],
                                         $reportmodulesrow["reportname"], $reportmodulesrow["description"],
-                                        $reportmodulesrow["folderid"], $reportmodulesrow["owner"]
+                                        $reportmodulesrow["folderid"], $reportmodulesrow["owner"],
+                                        $reportmodulesrow["join_column"]
                                 );
                         }
 
@@ -183,6 +184,7 @@ class Reports extends CRMEntity{
                         $this->reportname = decode_html($cachedInfo["reportname"]);
                         $this->reportdescription = decode_html($cachedInfo["description"]);
                         $this->folderid = $cachedInfo["folderid"];
+                        $this->joinColumn = $cachedInfo["join_column"];
                         if($is_admin==true || in_array($cachedInfo["owner"],$subordinate_users) || $cachedInfo["owner"]==$current_user->id)
                                 $this->is_editable = 'true';
                         else

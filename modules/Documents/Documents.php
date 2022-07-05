@@ -376,9 +376,9 @@ class Documents extends CRMEntity {
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency("vtiger_crmentityDocuments",array("vtiger_groupsDocuments","vtiger_usersDocuments","vtiger_lastModifiedByDocuments"));
 
-		if (!$queryPlanner->requireTable('vtiger_notes', $matrix)) {
-			return '';
-		}
+		// if (!$queryPlanner->requireTable('vtiger_notes', $matrix)) {
+		// 	return '';
+		// }
 		$matrix->setDependency("vtiger_notes",array("vtiger_crmentityDocuments","vtiger_attachmentsfolder"));
 		// TODO Support query planner
 		$query = $this->getRelationQuery($module,$secmodule,"vtiger_notes","notesid", $queryPlanner);

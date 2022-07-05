@@ -589,9 +589,9 @@ class Emails extends CRMEntity {
 
 		$matrix->setDependency("vtiger_crmentityEmails",array("vtiger_groupsEmails","vtiger_usersEmails","vtiger_lastModifiedByEmails"));
 
-		if (!$queryPlanner->requireTable('vtiger_activity', $matrix)) {
-			return '';
-		}
+		// if (!$queryPlanner->requireTable('vtiger_activity', $matrix)) {
+		// 	return '';
+		// }
 
 		$matrix->setDependency("vtiger_activity",array("vtiger_crmentityEmails","vtiger_email_track"));
 

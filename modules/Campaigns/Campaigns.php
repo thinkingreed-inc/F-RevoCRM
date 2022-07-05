@@ -564,9 +564,9 @@ class Campaigns extends CRMEntity {
 		$matrix = $queryPlanner->newDependencyMatrix();
         $matrix->setDependency('vtiger_crmentityCampaigns',array('vtiger_groupsCampaigns','vtiger_usersCampaignss','vtiger_lastModifiedByCampaigns','vtiger_campaignscf'));
         
-		if (!$queryPlanner->requireTable("vtiger_campaign",$matrix)){
-			return '';
-		}
+		// if (!$queryPlanner->requireTable("vtiger_campaign",$matrix)){
+		// 	return '';
+		// }
 
         $matrix->setDependency('vtiger_campaign', array('vtiger_crmentityCampaigns','vtiger_productsCampaigns'));
 
