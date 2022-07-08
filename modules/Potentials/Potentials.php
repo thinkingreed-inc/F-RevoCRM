@@ -649,9 +649,9 @@ class Potentials extends CRMEntity {
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency('vtiger_crmentityPotentials',array('vtiger_groupsPotentials','vtiger_usersPotentials','vtiger_lastModifiedByPotentials'));
 
-		// if (!$queryPlanner->requireTable("vtiger_potential",$matrix)){
-		// 	return '';
-		// }
+		if (!$queryPlanner->requireTable("vtiger_potential",$matrix)){
+			return '';
+		}
         $matrix->setDependency('vtiger_potential', array('vtiger_crmentityPotentials','vtiger_accountPotentials',
 											'vtiger_contactdetailsPotentials','vtiger_campaignPotentials','vtiger_potentialscf'));
 

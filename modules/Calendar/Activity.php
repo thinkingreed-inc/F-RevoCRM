@@ -1085,9 +1085,9 @@ function insertIntoRecurringTable(& $recurObj)
 								'vtiger_quotesRelCalendar','vtiger_purchaseorderRelCalendar','vtiger_invoiceRelCalendar',
 								'vtiger_salesorderRelCalendar','vtiger_troubleticketsRelCalendar','vtiger_campaignRelCalendar'));
 
-		// if (!$queryPlanner->requireTable('vtiger_activity', $matrix)) {
-		// 	return '';
-		// }
+		if (!$queryPlanner->requireTable('vtiger_activity', $matrix)) {
+			return '';
+		}
 
 		$matrix->setDependency('vtiger_activity',array('vtiger_crmentityCalendar','vtiger_cntactivityrel','vtiger_activitycf',
 								'vtiger_seactivityrel','vtiger_activity_reminder','vtiger_recurringevents'));

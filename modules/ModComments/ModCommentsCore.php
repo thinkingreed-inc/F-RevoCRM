@@ -361,9 +361,9 @@ class ModCommentsCore extends CRMEntity {
 
 		$matrix->setDependency('vtiger_crmentityModComments',array('vtiger_groupsModComments','vtiger_usersModComments', 'vtiger_contactdetailsRelModComments', 'vtiger_modcommentsRelModComments'));
 
-		// if (!$queryPlanner->requireTable("vtiger_modcomments",$matrix)){
-		// 	return '';
-		// }
+		if (!$queryPlanner->requireTable("vtiger_modcomments",$matrix)){
+			return '';
+		}
 		$matrix->setDependency('vtiger_modcomments', array('vtiger_crmentityModComments'));
 
 		$query = $this->getRelationQuery($module,$secmodule,"vtiger_modcomments","modcommentsid", $queryPlanner);

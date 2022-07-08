@@ -440,9 +440,9 @@ class PurchaseOrder extends CRMEntity {
 		$matrix->setDependency('vtiger_crmentityPurchaseOrder', array('vtiger_usersPurchaseOrder', 'vtiger_groupsPurchaseOrder', 'vtiger_lastModifiedByPurchaseOrder'));
 		$matrix->setDependency('vtiger_inventoryproductrelPurchaseOrder', array('vtiger_productsPurchaseOrder', 'vtiger_servicePurchaseOrder'));
 		
-		// if (!$queryPlanner->requireTable('vtiger_purchaseorder', $matrix)) {
-		// 	return '';
-		// }
+		if (!$queryPlanner->requireTable('vtiger_purchaseorder', $matrix)) {
+			return '';
+		}
         $matrix->setDependency('vtiger_purchaseorder',array('vtiger_crmentityPurchaseOrder', "vtiger_currency_info$secmodule",
 				'vtiger_purchaseordercf', 'vtiger_vendorRelPurchaseOrder', 'vtiger_pobillads',
 				'vtiger_poshipads', 'vtiger_inventoryproductrelPurchaseOrder', 'vtiger_contactdetailsPurchaseOrder'));

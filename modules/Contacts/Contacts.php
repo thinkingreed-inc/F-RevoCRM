@@ -1302,9 +1302,9 @@ function get_contactsforol($user_name)
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency('vtiger_crmentityContacts',array('vtiger_groupsContacts','vtiger_usersContacts','vtiger_lastModifiedByContacts'));
 		
-		// if (!$queryPlanner->requireTable('vtiger_contactdetails', $matrix)) {
-		// 	return '';
-		// }
+		if (!$queryPlanner->requireTable('vtiger_contactdetails', $matrix)) {
+			return '';
+		}
 
         $matrix->setDependency('vtiger_contactdetails', array('vtiger_crmentityContacts','vtiger_contactaddress',
 								'vtiger_customerdetails','vtiger_contactsubdetails','vtiger_contactscf'));

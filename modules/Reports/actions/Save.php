@@ -61,8 +61,6 @@ class Reports_Save_Action extends Vtiger_Save_Action {
 		$reportModel->set('advancedGroupFilterConditions', $request->get('advanced_group_condition'));
 		$reportModel->set('members', $request->get('members'));
 
-		$reportModel->setJoinColumn($request->get('joinColumn'));
-
 		$reportModel->save();
 
 		//Scheduled Reports

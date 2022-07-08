@@ -407,9 +407,9 @@ class ProjectMilestone extends CRMEntity {
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency('vtiger_crmentityProjectMilestone', array('vtiger_groupsProjectMilestone', 'vtiger_usersProjectMilestone', 'vtiger_lastModifiedByProjectMilestone'));
 
-		// if (!$queryPlanner->requireTable('vtiger_projectmilestone', $matrix)) {
-		// 	return '';
-		// }
+		if (!$queryPlanner->requireTable('vtiger_projectmilestone', $matrix)) {
+			return '';
+		}
 		$matrix->setDependency('vtiger_projectmilestone', array('vtiger_crmentityProjectMilestone'));
 
 		$query .= $this->getRelationQuery($module,$secmodule,"vtiger_projectmilestone","projectmilestoneid", $queryPlanner);

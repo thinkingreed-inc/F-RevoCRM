@@ -565,10 +565,10 @@ class Leads extends CRMEntity {
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency('vtiger_crmentityLeads',array('vtiger_groupsLeads','vtiger_usersLeads','vtiger_lastModifiedByLeads'));
 
-		// // TODO Support query planner
-		// if (!$queryPlanner->requireTable("vtiger_leaddetails",$matrix)){
-		// 	return '';
-		// }
+		// TODO Support query planner
+		if (!$queryPlanner->requireTable("vtiger_leaddetails",$matrix)){
+			return '';
+		}
 
 		$matrix->setDependency('vtiger_leaddetails',array('vtiger_crmentityLeads', 'vtiger_leadaddress','vtiger_leadsubdetails','vtiger_leadscf','vtiger_email_trackLeads'));
 

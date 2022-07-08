@@ -38,7 +38,6 @@
         <input type="hidden" name="specificemails" value={ZEND_JSON::encode($REPORT_MODEL->get('specificemails'))}>
         <input type="hidden" name="schtypeid" value="{$REPORT_MODEL->get('schtypeid')}">
         <input type="hidden" name="fileformat" value="{$REPORT_MODEL->get('fileformat')}">
-        <input type="hidden" name="joinColumn" value={$REPORT_MODEL->get('joinColumn')}>
 
         <input type="hidden" name="date_filters" data-value='{Vtiger_Util_Helper::toSafeHTML(ZEND_JSON::encode($DATE_FILTERS))}' />
         {assign var=RECORD_STRUCTURE value=array()}

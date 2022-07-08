@@ -88,8 +88,6 @@ $languageStrings = array(
 	'LBL_AVERAGE' => '平均',
 	'LBL_LOWEST_VALUE' => '最小値',
 	'LBL_HIGHEST_VALUE' => '最大値',
-	'LBL_RELATED_FIELD' => '関連の参照先',
-	'LBL_AUTO_SELECT' => '自動選択',
 
 	//Step3 Strings
 	'LBL_GENERATE_REPORT' => '保存とレポートの生成',
