@@ -116,8 +116,8 @@
 							</div>
 							{assign var=SHARED_TYPE value=$SHAREDTYPE}
 							<div class="form-group">
-								<label class="fieldLabel col-lg-4">{vtranslate('LBL_CALENDAR_SHARING',$MODULE)}</label>
-								<div class="fieldValue col-lg-8 col-sm-8 col-xs-8" style="margin-top: -8px; padding-left: 35px;">
+								<label class="fieldLabel col-lg-4 col-sm-4 col-xs-4">{vtranslate('LBL_CALENDAR_SHARING',$MODULE)}</label>
+								<div class="fieldValue col-lg-8 col-sm-8 col-xs-8" style="margin-top: -8px; padding-left: 35px;"> 
 									<label class="radio inline"><input type="radio" value="private"{if $SHARED_TYPE == 'private'} checked="" {/if} name="sharedtype" />&nbsp;{vtranslate('Private',$MODULE)}&nbsp;</label>
 									<label class="radio inline"><input type="radio" value="public" {if $SHARED_TYPE == 'public'} checked="" {/if} name="sharedtype" />&nbsp;{vtranslate('Public',$MODULE)}&nbsp;</label>
 									<label class="radio inline"><input type="radio" value="selectedusers" {if $SHARED_TYPE == 'selectedusers'} checked="" {/if} data-sharingtype="selectedusers" name="sharedtype" id="selectedUsersSharingType" />&nbsp;{vtranslate('Selected Users',$MODULE)}</label><br><br>
