@@ -167,6 +167,10 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 
 				if($type == 'PriceBooks') {
 					$records = $this->queryForRecords($query, false);
+				}else if($type == 'ProjectTask'){
+					$query = "SELECT $selectFields, $fieldsList[0],projecttaskstatus FROM $type";
+					$query.= " WHERE $fieldsList[0] >= '$start' AND $fieldsList[0] <= '$end' ";
+					$records = $this->queryForRecords($query);
 				} else {
 					$records = $this->queryForRecords($query);
 				}
@@ -203,6 +207,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			if ($urlModule === 'Events') {
 				$urlModule = 'Calendar';
 			}
+			$item['status'] = $record['projecttaskstatus'];
 			$item['url']   = sprintf('index.php?module='.$urlModule.'&view=Detail&record=%s', $crmid);
 			$item['color'] = $color;
 			$item['textColor'] = $textColor;
