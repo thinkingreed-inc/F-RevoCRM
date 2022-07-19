@@ -1066,14 +1066,14 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				if (e.isDefaultPrevented()) {
 					return false;
 				}
-				var formData = jQuery(form).serialize();
+				var formData = jQuery(form).serializeFormData();
 				app.helper.showProgress();
 				app.request.post({data: formData}).then(function (err, data) {
 					app.helper.hideProgress();
 					if (!err) {
 						jQuery('.vt-notification').remove();
 						app.helper.hideModal();
-						var message = typeof formData.record !== 'undefined' ? app.vtranslate('JS_EVENT_UPDATED') : app.vtranslate('JS_RECORD_CREATED');
+						var message = formData.record !== "" ? app.vtranslate('JS_EVENT_UPDATED') : app.vtranslate('JS_RECORD_CREATED');
 						app.helper.showSuccessNotification({"message": message});
 						thisInstance.showEventOnCalendar(data);
 					} else {
@@ -1409,7 +1409,8 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			app.helper.hideProgress();
 			if (!err) {
 				jQuery('.vt-notification').remove();
-				app.helper.showSuccessNotification({"message": ''});
+				var message = typeof formData.record !== "" ? app.vtranslate('JS_EVENT_UPDATED') : app.vtranslate('JS_RECORD_CREATED');
+				app.helper.showSuccessNotification({"message": message});
 				app.event.trigger("post.QuickCreateForm.save", data, jQuery(form).serializeFormData());
 				app.helper.hideModal();
 			} else {
