@@ -49,7 +49,7 @@ class Calendar_SaveFollowupAjax_Action extends Calendar_SaveAjax_Action {
         $recordModel->set('subject',$followupSubject);
         //followup event is Planned
         $recordModel->set('eventstatus',"Planned");
-		$recordModel->set('taskstatus',"plannd");
+		$recordModel->set('taskstatus',"Planned");
 
         $activityType = $recordModel->get('activitytype');
         if($activityType == "Call")
