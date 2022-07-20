@@ -53,9 +53,9 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var instance = Calendar_Calendar_Js.getInstance();
 		instance.editCalendarTask(taskId);
 	},
-	markAsHeld: function (recordId,recordModel) {
+	markAsHeld: function (recordId,sourceModule) {
 		var instance = Calendar_Calendar_Js.getInstance();
-		instance.markAsHeld(recordId,recordModel);
+		instance.markAsHeld(recordId,sourceModule);
 	},
 	holdFollowUp: function (eventId) {
 		var instance = Calendar_Calendar_Js.getInstance();
@@ -143,7 +143,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			}
 		}
 	},
-	markAsHeld: function (recordId,recordModel) {
+	markAsHeld: function (recordId,sourceModule) {
 		var thisInstance = this;
 		app.helper.showConfirmationBox({
 			message: app.vtranslate('JS_CONFIRM_MARK_AS_HELD')
@@ -153,7 +153,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				action: "SaveFollowupAjax",
 				mode: "markAsHeldCompleted",
 				record: recordId,
-				recordModel:recordModel
+				sourceModule:sourceModule
 			};
 
 			app.request.post({'data': requestParams}).then(function (e, res) {
@@ -1571,7 +1571,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				if (eventObj.status !== 'Held' && eventObj.status !== 'Completed') {
 					popOverHTML += '' +
 							'<span class="pull-right cursorPointer"' +
-							'onClick="Calendar_Calendar_Js.markAsHeld(\'' + eventObj.id + '\',\'' + eventObj.module + '\');" title="' + app.vtranslate('JS_MARK_AS_HELD') + '">' +
+							'onClick="Calendar_Calendar_Js.markAsHeld(\'' + eventObj.id + '\',\'' + sourceModule + '\');" title="' + app.vtranslate('JS_MARK_AS_HELD') + '">' +
 							'<i class="fa fa-check"></i>' +
 							'</span>';
 				} else if (eventObj.status === 'Held') {

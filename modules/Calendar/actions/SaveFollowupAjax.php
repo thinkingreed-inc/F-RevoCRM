@@ -89,7 +89,7 @@ class Calendar_SaveFollowupAjax_Action extends Calendar_SaveAjax_Action {
     public function markAsHeldCompleted(Vtiger_Request $request) {
         $moduleName = $request->getModule();
         $recordId = $request->get('record');
-		if($request->get('recordModel')=='ProjectTask'){
+		if($request->get('sourceModule')=='ProjectTask'){
 			$recordModel = Vtiger_Record_Model::getInstanceById($recordId,'ProjectTask');
 			$projecttaskstatus = $recordModel->get("projecttaskstatus");
 			$recordModel->set('mode','edit');
