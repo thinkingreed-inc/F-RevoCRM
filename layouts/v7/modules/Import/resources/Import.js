@@ -151,7 +151,7 @@ if (typeof (Vtiger_Import_Js) == 'undefined') {
                     missingMandatoryFields.push('"' + mandatoryFields[mandatoryFieldName] + '"');
                 }
             }
-            if (missingMandatoryFields.length > 0) {
+            if (missingMandatoryFields.length > 0 && jQuery('[name="merge_type"]').val() != 3) {
                 errorMessage = app.vtranslate('JS_MAP_MANDATORY_FIELDS') + missingMandatoryFields.join(',');
                 app.helper.showErrorNotification({'message': errorMessage});
                 return false;
