@@ -202,6 +202,9 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 				$recordDateTime->setDate($calendarYear, $recordDateTime->format('m'), $recordDateTime->format('d'));
 				$item['start'] = $recordDateTime->format('Y-m-d');
 			}
+			if($type == 'ProjectTask'&& $record['projecttaskstatus']!=null){
+				$item['title'] = $item['title'].' - ('.decode_html(vtranslate($record['projecttaskstatus'],'ProjectTask')).')';
+			}
 
 			$urlModule = $type;
 			if ($urlModule === 'Events') {
