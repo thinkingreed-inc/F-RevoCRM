@@ -1572,6 +1572,7 @@ $jsLanguageStrings = array(
 	'LBL_DELETE_USER_CONFIRMATION' => 'ユーザーを削除すると、ユーザーは無効化されログイン不可となり、新たなレコードを割り当てることもできなくなります。本当に削除してもよろしいですか？',
 	'LBL_DELETE_CONFIRMATION_NOTE' => '注意 : 削除されたレコードはごみ箱に保持され、%s日後に消去されます',
 	'LBL_MASS_DELETE_CONFIRMATION' => '選択したレコードを削除しますか？',
+	'LBL_DELETE_COMMENT_CONFIRMATION_NOTE' => 'このコメントを削除しますか？',
 	'JS_LBL_SAVE' => '保存',
 	'JS_LBL_CANCEL' => 'キャンセル',
 	'JS_DUPLICTAE_CREATION_CONFIRMATION' => '顧客企業名は既に存在します。重複したレコードを作成しますか？',

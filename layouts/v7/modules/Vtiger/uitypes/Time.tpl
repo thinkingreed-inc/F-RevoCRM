@@ -16,7 +16,8 @@
 		{assign var="FIELD_NAME" value=$FIELD_MODEL->getFieldName()}
 	{/if}
 	<div class="input-group inputElement time" {if ($IS_ALLDAY == true) && ($FIELD_MODEL->getFieldName()=="time_start" || $FIELD_MODEL->getFieldName("time_end"))} style="display:none;" {/if}>
-		<input id="{$MODULE}_editView_fieldName_{$FIELD_NAME}" type="text" data-format="{$TIME_FORMAT}" class="timepicker-default form-control" value="{$FIELD_VALUE}" name="{$FIELD_NAME}"
+		<input name="{$FIELD_NAME}_historyback_restore" data-fieldtype="time" style="display:none"></input>
+		<input id="{$MODULE}_editView_fieldName_{$FIELD_NAME}" type="text" data-fieldtype="time" data-format="{$TIME_FORMAT}" class="timepicker-default form-control" value="{$FIELD_VALUE}" name="{$FIELD_NAME}"
 		{if !empty($SPECIAL_VALIDATOR)}data-validator='{Zend_Json::encode($SPECIAL_VALIDATOR)}'{/if}
 		{if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if}
 		{if count($FIELD_INFO['validator'])}

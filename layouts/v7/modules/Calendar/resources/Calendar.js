@@ -1674,6 +1674,82 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var HEADER_HEIGHT = 200;
 		var CalendarHeight = $(window).height() - HEADER_HEIGHT;
 		CalendarHeight = (CalendarHeight < MIN_CALENDAR_HEIGHT) ? MIN_CALENDAR_HEIGHT : CalendarHeight;
+		var defaultDate;
+		var defaultView;
+		var URL_Search = new URLSearchParams(location.search);
+		var URL_Search_PRE = new URLSearchParams(document.referrer);
+		if(location.href.match(/default/)){//ヘッダーのカレンダーボタンからの処理
+			defaultView = userDefaultActivityView;
+			if(URL_Search.get('view') ==  'SharedCalendar'){
+				if(userDefaultActivityView == 'vtAgendaList'){
+					defaultView = 'month';
+				}
+			}
+			
+		}else{
+			if(location.href.match(/lastViewDate/)){//リフレッシュしたときの処理
+				switch(URL_Search.get('Viewtype')){
+					case 'day':
+						defaultView = 'agendaDay';
+						defaultDate=URL_Search.get('lastViewDate');
+						break;
+					case 'week':
+						defaultView = 'agendaWeek';
+						defaultDate=URL_Search.get('lastViewDate');
+						break;
+					case 'month':
+						defaultView = 'month';
+						defaultDate=URL_Search.get('lastViewDate');
+						break;
+					case 'list':
+						defaultView = 'vtAgendaList';
+						if(URL_Search.get('lastViewDate')){
+							defaultDate=URL_Search.get('lastViewDate');
+						}
+						break
+				}
+
+			}else{//個人,共有カレンダー間の遷移
+				var quickCreateReturnURL = URL_Search_PRE.get('quickCreateReturnURL');
+				// 直接PREでデータを取得できなかったため、返り値の値を確認して取得する
+				var _urlSearch = new URLSearchParams(quickCreateReturnURL);
+				var _ViewType = _urlSearch.get('Viewtype');
+				switch(_ViewType){
+					case 'day':
+						defaultView = 'agendaDay';
+						defaultDate = URL_Search_PRE.get('lastViewDate');
+						break;
+					case 'week':
+						defaultView = 'agendaWeek';
+						defaultDate = URL_Search_PRE.get('lastViewDate');
+						break;
+					case 'month':
+						defaultView = 'month';
+						defaultDate = URL_Search_PRE.get('lastViewDate');
+						break;
+					case 'list':
+						defaultView = 'month';
+						if(URL_Search.get('lastViewDate')){
+							defaultDate=URL_Search.get('lastViewDate');
+						}
+						break;
+				}
+			}
+		}
+
+		// 表示する日付を取得
+		var URL_Search = new URLSearchParams(location.search);
+		var calendarStartDate = URL_Search.get("calendarStartDate");
+		var lastViewDate = URL_Search.get("lastViewDate");
+		if (calendarStartDate) {
+			var defaultDate = new Date(calendarStartDate);
+		} else if(lastViewDate && lastViewDate != 'default') {
+			var defaultDate = new Date(lastViewDate);
+		} else {
+			var defaultDate = new Date(); // 今日
+		}
+		URL_Search.delete("calendarStartDate");
+		history.replaceState('', '', 'index.php?' + URL_Search.toString());
 
 		var calenderConfigs = {
 			header: {
@@ -1709,9 +1785,11 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			scrollTime: thisInstance.getUserPrefered('start_hour'),
 			editable: true,
 			eventLimit: true,
-			defaultView: ($(window).width() > 1020 ? userDefaultActivityView : 'agendaDay'),
+			defaultDate:defaultDate,
+			defaultView:defaultView,
 			slotLabelFormat: userDefaultTimeFormat,
 			timeFormat: userDefaultTimeFormat,
+			defaultDate: defaultDate,
 			events: [],
 			monthNames: [
 				app.vtranslate('LBL_JANUARY'),
@@ -1786,6 +1864,29 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				thisInstance.performMouseOutActions(event, jsEvent, view);
 			},
 			viewRender: function (view, element) {
+				var lastviewday;
+				var URL_Search = new URLSearchParams(location.search);
+				var lastviewtype = URL_Search.get('view');
+				if(document.getElementsByClassName('fc-day-header').item(1)==null){
+					if(document.getElementsByClassName('fc-day-header').item(0)){//表示が日の時の処理
+						lastviewday =document.getElementsByClassName('fc-day-header').item(0).dataset.date;
+						history.replaceState('', '','index.php?module=Calendar&view='+ lastviewtype +'&lastViewDate=' + lastviewday + "&Viewtype=day");
+						thisInstance.updateSideberCalendarLinks('day', lastviewday);
+					}
+					else{//表示が概要の時の処理
+						history.replaceState('', '','index.php?module=Calendar&view='+ lastviewtype +'&lastViewDate=' +"&Viewtype=list");
+					}
+				}
+				else if(document.getElementsByClassName('fc-day-header').item(1).dataset.date==undefined){//表示が月の時の処理
+					lastviewday =document.getElementsByClassName('fc-day-top').item(7).dataset.date;
+					history.replaceState('', '','index.php?module=Calendar&view='+ lastviewtype +'&lastViewDate=' + lastviewday.substr(0, lastviewday.lastIndexOf('-')) + "&Viewtype=month");
+					thisInstance.updateSideberCalendarLinks('month', lastviewday.substr(0, lastviewday.lastIndexOf('-')));
+				}
+				else if(document.getElementsByClassName('fc-day-header').item(1).dataset.date){//表示が週の時の処理
+					lastviewday =document.getElementsByClassName('fc-day-header').item(0).dataset.date;
+					history.replaceState('', '','index.php?module=Calendar&view='+ lastviewtype +'&lastViewDate=' + lastviewday + "&Viewtype=week");
+					thisInstance.updateSideberCalendarLinks('week', lastviewday);
+				}
 				if (view.name === 'vtAgendaList') {
 					jQuery(".sidebar-essentials").addClass("hide");
 					jQuery(".content-area").addClass("full-width");
@@ -1803,6 +1904,13 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			}
 		};
 		return calenderConfigs;
+	},
+	updateSideberCalendarLinks: function(view, date){
+		$privateCalendarLinkElm = $('#modules-menu .LBL_CALENDAR_VIEW > a');
+		$sharedCalendarLinkElm = $('#modules-menu .LBL_SHARED_CALENDAR > a');
+		
+		$privateCalendarLinkElm.attr('href', 'index.php?module=Calendar&view=Calendar&lastViewDate='+date+'&Viewtype='+view);
+		$sharedCalendarLinkElm.attr('href', 'index.php?module=Calendar&view=SharedCalendar&lastViewDate='+date+'&Viewtype='+view);
 	},
 	fetchAgendaEvents: function (date) {
 		var aDeferred = jQuery.Deferred();

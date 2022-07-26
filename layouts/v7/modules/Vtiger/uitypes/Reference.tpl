@@ -36,6 +36,8 @@
     {/if}
     {assign var="displayId" value=$FIELD_VALUE}
     <div class="input-group">
+        <input name="{$FIELD_MODEL->getFieldName()}_historyback_restore" data-fieldtype="reference" style="display:none"></input>
+        <input name="{$FIELD_MODEL->getFieldName()}_historyback_restore_name" data-fieldtype="reference" style="display:none"></input>
         <input name="{$FIELD_MODEL->getFieldName()}" type="hidden" value="{$FIELD_VALUE}" class="sourceField" data-displayvalue='{$FIELD_MODEL->getEditViewDisplayValue($FIELD_MODEL->get('fieldvalue'))}' {if $AUTOFILL_VALUE} data-autofill={Zend_Json::encode($AUTOFILL_VALUE)} {/if}/>
         <input id="{$FIELD_NAME}_display" name="{$FIELD_MODEL->getFieldName()}_display" data-fieldname="{$FIELD_MODEL->getFieldName()}" data-fieldtype="reference" type="text" 
             class="marginLeftZero autoComplete inputElement" 

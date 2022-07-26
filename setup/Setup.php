@@ -74,6 +74,9 @@ require_once ("scripts/54_Update_SidebarWidget.php");
 // 日本語を追加
 require_once ("scripts/56_Add_JapaneseLanguage.php");
 
+// ポータルをオンにしたときに送られるメールを日本語に修正
+require_once ("scripts/58_Fix_Infportalmail_Tojp.php");
+
 // プロジェクトタスクの終了日をクイッククリエイトに追加
 $db->query('update vtiger_field set quickcreate = 0 where tabid = 41 and fieldname = "enddate"');
 

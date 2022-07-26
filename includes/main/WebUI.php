@@ -167,7 +167,7 @@ class Vtiger_WebUI extends Vtiger_EntryPoint {
 							} else {
 								$view = "Calendar";
 							}
-							$header = 'Location:index.php?module=Calendar&view='.$view;
+							$header = 'Location:index.php?module=Calendar&view='.$view.'&lastViewDate=default';
 							$qualifiedModuleName = 'Calendar';
 							header($header);
 						}
