@@ -24,7 +24,7 @@ class Calendar_ExportData_Action extends Vtiger_ExportData_Action {
 		$moduleName = $request->getModule();
 		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
 
-		return $moduleModel->getExportQuery('');
+		return $moduleModel->getExportQuery('', '');
 	}
 
 	/**
