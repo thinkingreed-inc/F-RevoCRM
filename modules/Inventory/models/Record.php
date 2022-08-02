@@ -292,10 +292,21 @@ class Inventory_Record_Model extends Vtiger_Record_Model {
 	public function getPDF($templateId, $isheader = true) {
 		$recordId = $this->getId();
 		$moduleName = $this->getModuleName();
+		
+		$ordernoarray = array(1=>"quote_no", 2=>"invoice_no", 3=>"salesorder_no", 4=>"purchaseorder_no");
+		$orderidarray = array(1=>"quoteid", 2=>"invoiceid", 3=>"salesorderid", 4=>"purchaseorderid");
+		$ordervtigerarray = array(1=>"vtiger_quotes", 2=>"vtiger_invoice", 3=>"vtiger_salesorder", 4=>"vtiger_purchaseorder");
+		$orderno = $ordernoarray[$templateId];
+		$orderid = $orderidarray[$templateId];
+		$ordervtiger = $ordervtigerarray[$templateId];
 
 		global $adb;
 		$template = null;
-
+		
+		$result2 = $adb->pquery("SELECT $orderno, subject FROM $ordervtiger WHERE $orderid = ?",array($recordId));
+		$orderno = $adb->query_result($result2, 0, $orderno);
+		$subject = $adb->query_result($result2, 0, 'subject');
+		
 		$result = $adb->pquery("SELECT templatename, body FROM vtiger_pdftemplates WHERE templateid = ?", array($templateId));
 		if($adb->num_rows($result) > 0) {
 			$templateName = $adb->query_result($result, 0, 'templatename');
@@ -319,7 +330,7 @@ class Inventory_Record_Model extends Vtiger_Record_Model {
 		header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
 		header("Content-Transfer-Encoding: binary ");
 		header('Content-Type: application/octet-streams');
-		header("Content-Disposition: attachment; filename=\"{$templateName}.pdf\"");
+		header("Content-Disposition: attachment; filename=\"{$templateName}-{$subject}-{$orderno}.pdf\"");
 		echo $pdf;
 	}
 
