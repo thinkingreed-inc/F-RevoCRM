@@ -1057,7 +1057,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 							}
 						} else if (!in_array($fieldName, array('date_start', 'due_date'))) {
 							if ($fieldModel) {
-								if(strpos($fieldName,'status')===false){
+								if(strpos($fieldName,'status')===false && $fieldName != 'description'){
 									$recordData[$fieldName] = $fieldModel->getDisplayValue($fieldValue);
 								}
 							}
