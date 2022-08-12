@@ -20,9 +20,7 @@
 				<span>
 					{$MODULE_LABEL} 
 					{if $VIEWINFO['conditions']['name'] neq ''} ({vtranslate($VIEWINFO['conditions']['name'],$MODULE)}) {/if}-
-					{assign var=splitted_fieldlabel value=","|explode:$VIEWINFO['fieldlabel']}
-					{vtranslate($splitted_fieldlabel[0], $VIEWINFO['module'])}
-					{if $splitted_fieldlabel[1] neq ''},{vtranslate($splitted_fieldlabel[1], $VIEWINFO['module'])} {/if}			
+					{vtranslate($VIEWINFO['fieldlabel'], $VIEWINFO['module'])}
 				</span>
 				<span class="activitytype-actions pull-right">
 					<input class="toggleCalendarFeed cursorPointer" type="checkbox" data-calendar-sourcekey="{$VIEWINFO['module']}_{$VIEWINFO['fieldname']}{if $VIEWINFO['conditions']['name'] neq ''}_{$VIEWINFO['conditions']['name']}{/if}" data-calendar-feed="{$VIEWINFO['module']}" 
