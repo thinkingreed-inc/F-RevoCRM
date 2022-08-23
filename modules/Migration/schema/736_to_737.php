@@ -14,4 +14,5 @@ if (defined('VTIGER_UPGRADE')) {
 
     // PDFテンプレートに大きなサイズの画像を張り付ける場合、bodyが途切れるのでtextからlongtextへ変更する
     $db->query('ALTER TABLE vtiger_pdftemplates MODIFY body longtext;');
+    $db->query("ALTER TABLE vtiger_notes MODIFY filetype varchar(255);");
 }
