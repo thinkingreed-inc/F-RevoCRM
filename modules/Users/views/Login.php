@@ -40,7 +40,7 @@ class Users_Login_View extends Vtiger_View_Controller {
 			$xml = new SimpleXMLElement($rssPath, LIBXML_NOCDATA, true);
 			$jsonData = json_decode(json_encode($xml));
 			$dataCount = count($jsonData->channel->item);
-		}catch(Exception $e){
+		}catch(Throwable $e){
 			$dataCount = 0;
 		}
 
