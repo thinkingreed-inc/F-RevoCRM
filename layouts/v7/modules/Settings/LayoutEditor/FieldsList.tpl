@@ -105,7 +105,7 @@
                             <div class="col-sm-9" style="word-wrap: break-word;">
                               <div class="fieldLabelContainer row">
                                 <span class="fieldLabel">
-                                  <b>{vtranslate($FIELD_MODEL->get('label'), $SELECTED_MODULE_NAME)}</b>&nbsp;
+                                  <b>{vtranslate($FIELD_MODEL->get('label'), $SELECTED_MODULE_NAME)}</b>
                                   {if $IS_MANDATORY}<span class="redColor">*</span>{/if}
                                 </span><br>
                                 <span class="pull-right" style="opacity:0.6;">
