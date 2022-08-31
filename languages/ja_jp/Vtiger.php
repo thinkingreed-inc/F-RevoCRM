@@ -493,6 +493,7 @@ $languageStrings = array(
 	'LBL_BETWEEN' => '範囲',
 	'LBL_IS_EMPTY'=> '空である',
 	'LBL_IS_NOT_EMPTY' => '空ではない',
+	'LBL_IS_OWN' => '自分',
 	'LBL_APPROVE' => '承認',
 	'LBL_HAS_CHANGED' => '変更された',
 	'LBL_HAS_CHANGED_TO' => '～に変更された',

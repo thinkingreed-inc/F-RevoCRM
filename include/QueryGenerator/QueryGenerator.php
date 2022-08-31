@@ -1157,7 +1157,14 @@ class QueryGenerator {
 			if(($this->isNumericType($field->getFieldDataType())) && empty($value)) {				
 				$value = '0';
 			}
-			$sql[] = "$sqlOperator $value";
+			
+			if ($operator === "own") {
+				$currentUser = Users_Record_Model::getCurrentUserModel();
+				$currentUserName = decode_html($currentUser->getName());
+				$sql[] = "= '$currentUserName'";
+			}else{
+				$sql[] = "$sqlOperator $value";
+			}
 		}
 		return $sql;
 	}

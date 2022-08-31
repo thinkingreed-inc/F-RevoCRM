@@ -367,7 +367,7 @@ jQuery.Class("Vtiger_AdvanceFilter_Js",{
 		
 		// Is Empty, today, tomorrow, yesterday conditions does not need any field input value - hide the UI
 		// re-enable if condition element is chosen.
-        var specialConditions = ["y","today","tomorrow","yesterday","ny"];
+        var specialConditions = ["y","today","tomorrow","yesterday","ny","own"];
 		if (specialConditions.indexOf(conditionSelectElement.val()) != -1) {
 			fieldUiHolder.hide();
 		} else {
