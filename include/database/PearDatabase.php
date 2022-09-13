@@ -749,7 +749,8 @@ class PearDatabase{
     }
 
     function fetchByAssoc(&$result, $rowNum = -1, $encode=true) {
-		if($result->EOF) {
+//		if($result->EOF) {
+		if(!$result || $result->EOF) {
 		    $this->println("ADODB fetchByAssoc return null");
 		    return NULL;
 		}

@@ -200,7 +200,8 @@ function __vt_add_days($arr) {
 	}
 	preg_match('/\d\d\d\d-\d\d-\d\d/', $baseDate, $match);
 	$baseDate = strtotime($match[0]);
-	$date = strftime('%Y-%m-%d', $baseDate + ($noOfDays * 24 * 60 * 60));
+//	$date = strftime('%Y-%m-%d', $baseDate + ($noOfDays * 24 * 60 * 60));
+	$date = date('Y-m-d', $baseDate + ($noOfDays * 24 * 60 * 60));
 	return $date;
 }
 
@@ -217,7 +218,8 @@ function __vt_sub_days($arr) {
 	}
 	preg_match('/\d\d\d\d-\d\d-\d\d/', $baseDate, $match);
 	$baseDate = strtotime($match[0]);
-	$date = strftime('%Y-%m-%d', $baseDate - ($noOfDays * 24 * 60 * 60));
+//	$date = strftime('%Y-%m-%d', $baseDate - ($noOfDays * 24 * 60 * 60));
+	$date = date('Y-m-d', $baseDate - ($noOfDays * 24 * 60 * 60));
 	return $date;
 }
 

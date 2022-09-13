@@ -71,12 +71,16 @@ function smarty_function_html_select_date($params, $template)
     $display_days = true;
     $display_months = true;
     $display_years = true;
-    $month_format = "%B";
+//    $month_format = '%B';
+    $month_format = 'F';
     /* Write months as numbers by default  GL */
-    $month_value_format = "%m";
-    $day_format = "%02d";
+//    $month_value_format = '%m';
+//    $day_format = '%02d';
+    $month_value_format = 'm';
+    $day_format = 'd';
     /* Write day values using this format MB */
-    $day_value_format = "%d";
+//    $day_value_format = '%d';
+    $day_value_format = 'd';
     $year_as_text = false;
     /* Display years in reverse order? Ie. 2000,1999,.... */
     $reverse_years = false;
@@ -304,11 +308,13 @@ function smarty_function_html_select_date($params, $template)
         
         for ($i = 1; $i <= 12; $i++) {
             $_val = sprintf('%02d', $i);
-            $_text = isset($month_names) ? smarty_function_escape_special_chars($month_names[$i]) : ($month_format == "%m" ? $_val : strftime($month_format, $_month_timestamps[$i]));
-            $_value = $month_value_format == "%m" ? $_val : strftime($month_value_format, $_month_timestamps[$i]);
-            $_html_months .= '<option value="' . $_value . '"'
-                . ($_val == $_month ? ' selected="selected"' : '')
-                . '>' . $_text . '</option>' . $option_separator;
+            $_text = isset($month_names) ? smarty_function_escape_special_chars($month_names[ $i ]) :
+//                ($month_format === '%m' ? $_val : strftime($month_format, $_month_timestamps[ $i ]));
+                ($month_format === 'm' ? $_val : date($month_format, $_month_timestamps[ $i ]));
+//            $_value = $month_value_format === '%m' ? $_val : strftime($month_value_format, $_month_timestamps[ $i ]);
+            $_value = $month_value_format === 'm' ? $_val : date($month_value_format, $_month_timestamps[ $i ]);
+            $_html_months .= '<option value="' . $_value . '"' . ($_val == $_month ? ' selected="selected"' : '') .
+                             '>' . $_text . '</option>' . $option_separator;
         }
         
         $_html_months .= '</select>';

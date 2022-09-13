@@ -29,8 +29,10 @@ $current_user->id = 1;
 $db = PearDatabase::getInstance();
 
 // カラム名とフィールド名に使える文字数を拡張
+$db->query("SET foreign_key_checks = 0");
 $db->query("alter table vtiger_field modify column fieldname varchar(100)");
 $db->query("alter table vtiger_field modify column columnname varchar(100)");
+$db->query("SET foreign_key_checks = 1");
 
 // ここに新しいモジュールのスクリプトを書いていく
 //require_once ("scripts/01_hoge.php");

@@ -93,8 +93,22 @@ class Smarty_Internal_Config_File_Compiler {
             $parser->doParse($lex->token, $lex->value);
         }
         // finish parsing process
-        $parser->doParse(0, 0);
-        $config->compiled_config = '<?php $_config_vars = ' . var_export($this->config_data, true) . '; ?>';
+        $this->parser->doParse(0, 0);
+        if ($mbEncoding) {
+            mb_internal_encoding($mbEncoding);
+        }
+        if ($this->smarty->debugging) {
+            $this->smarty->_debug->end_compile($this->template);
+        }
+        // template header code
+        $template_header =
+//            "<?php /* Smarty version " . Smarty::SMARTY_VERSION . ", created on " . strftime("%Y-%m-%d %H:%M:%S") .
+            "<?php /* Smarty version " . Smarty::SMARTY_VERSION . ", created on " . date("Y-m-d H:i:s") .
+            "\n";
+        $template_header .= "         compiled from '{$this->template->source->filepath}' */ ?>\n";
+        $code = '<?php $_smarty_tpl->smarty->ext->configLoad->_loadConfigVars($_smarty_tpl, ' .
+                var_export($this->config_data, true) . '); ?>';
+        return $template_header . $this->template->smarty->ext->_codeFrame->create($this->template, $code);
     }
 
     /**

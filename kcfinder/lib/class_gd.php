@@ -52,8 +52,17 @@ class gd {
             $height = @imagesy($image);
 
         } elseif (is_array($image)) {
+/*
             list($key, $width) = each($image);
             list($key, $height) = each($image);
+*/
+            $arr_objref = array();
+            foreach ( $image as $k => $value ) {
+                $arr_objref[$k] = $value;
+            }
+            $width = $arr_objref[1];
+            $height = $arr_objref[1];
+
             $image = imagecreatetruecolor($width, $height);
 
         } elseif (false !== (list($width, $height, $type) = @getimagesize($image))) {

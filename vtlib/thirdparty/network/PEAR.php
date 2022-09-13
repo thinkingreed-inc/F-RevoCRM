@@ -783,7 +783,15 @@ function _PEAR_call_destructors()
         if (PEAR::getStaticProperty('PEAR', 'destructlifo')) {
             $_PEAR_destructor_object_list = array_reverse($_PEAR_destructor_object_list);
         }
-        while (list($k, $objref) = each($_PEAR_destructor_object_list)) {
+//        while (list($k, $objref) = each($_PEAR_destructor_object_list)) {
+        $arr_objref = array();
+        foreach ( $_PEAR_destructor_object_list as $k => $value ) {
+            $arr_objref[$k] = $value;
+        }
+        $arr_objref_cnt = count($arr_objref);
+        for($k = 0; $k < count($arr_objref); $k=$k+2){
+            $objref = $arr_objref[$k];
+
             $classname = get_class($objref);
             while ($classname) {
                 $destructor = "_$classname";
