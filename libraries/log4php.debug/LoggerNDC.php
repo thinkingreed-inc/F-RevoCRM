@@ -4,7 +4,7 @@
  * 
  * <p>This framework is based on log4j (see {@link http://jakarta.apache.org/log4j log4j} for details).</p>
  * <p>Design, strategies and part of the methods documentation are developed by log4j team 
- * (Ceki Gülcü as log4j project founder and 
+ * (Ceki Gï¿½lcï¿½ as log4j project founder and 
  * {@link http://jakarta.apache.org/log4j/docs/contributors.html contributors}).</p>
  *
  * <p>PHP port, extensions and modifications by VxR. All rights reserved.<br>
@@ -107,7 +107,7 @@ class LoggerNDC {
      *
      * @static  
      */
-    function clear()
+    static function clear()
     {
         LoggerLog::debug("LoggerNDC::clear()");
         
@@ -119,7 +119,7 @@ class LoggerNDC {
      * @static
      * @return array
      */
-    function get()
+    static function get()
     {
         LoggerLog::debug("LoggerNDC::get()");
     
@@ -133,7 +133,7 @@ class LoggerNDC {
      * @return integer
      * @static
      */
-    function getDepth()
+    static function getDepth()
     {
         LoggerLog::debug("LoggerNDC::getDepth()");
     
@@ -150,7 +150,7 @@ class LoggerNDC {
      * @return string The innermost diagnostic context.
      * @static
      */
-    function pop()
+    static function pop()
     {
         LoggerLog::debug("LoggerNDC::pop()");
     
@@ -170,7 +170,7 @@ class LoggerNDC {
      * @return string The innermost diagnostic context.
      * @static
      */
-    function peek()
+    static function peek()
     {
         LoggerLog::debug("LoggerNDC::peek()");
     
@@ -190,7 +190,7 @@ class LoggerNDC {
      * @param string $message The new diagnostic context information.
      * @static  
      */
-    function push($message)
+    static function push($message)
     {
         LoggerLog::debug("LoggerNDC::push()");
     
@@ -201,7 +201,7 @@ class LoggerNDC {
      * Remove the diagnostic context for this thread.
      * @static
      */
-    function remove()
+    static function remove()
     {
         LoggerLog::debug("LoggerNDC::remove()");
     
@@ -223,7 +223,7 @@ class LoggerNDC {
      * @see getDepth()
      * @static
      */
-    function setMaxDepth($maxDepth)
+    static function setMaxDepth($maxDepth)
     {
         LoggerLog::debug("LoggerNDC::setMaxDepth() maxDepth='$maxDepth'");
     

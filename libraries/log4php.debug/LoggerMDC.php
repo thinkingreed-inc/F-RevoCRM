@@ -4,7 +4,7 @@
  * 
  * <p>This framework is based on log4j (see {@link http://jakarta.apache.org/log4j log4j} for details).</p>
  * <p>Design, strategies and part of the methods documentation are developed by log4j team 
- * (Ceki Gülcü as log4j project founder and 
+ * (Ceki Gï¿½lcï¿½ as log4j project founder and 
  * {@link http://jakarta.apache.org/log4j/docs/contributors.html contributors}).</p>
  *
  * <p>PHP port, extensions and modifications by VxR. All rights reserved.<br>
@@ -64,7 +64,7 @@ class LoggerMDC {
      * @param string $value the value
      * @static
      */
-    function put($key, $value)
+    static function put($key, $value)
     {
         if ( sizeof($GLOBALS['log4php.LoggerMDC.ht']) < LOGGER_MDC_HT_SIZE ) 
             $GLOBALS['log4php.LoggerMDC.ht'][$key] = $value;
@@ -83,7 +83,7 @@ class LoggerMDC {
      * @return string
      * @static
      */
-    function get($key)
+    static function get($key)
     {
         LoggerLog::debug("LoggerMDC::get() key='$key'");
     
@@ -120,7 +120,7 @@ class LoggerMDC {
      * @return string
      * @static
      */
-    function remove($key)
+    static function remove($key)
     {
         unset($GLOBALS['log4php.LoggerMDC.ht'][$key]);
     }

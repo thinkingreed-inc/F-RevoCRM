@@ -81,7 +81,15 @@ class Zend_Json
     public static function encode($valueToEncode, $cycleCheck = false)
     {
         if (function_exists('json_encode') && self::$useBuiltinEncoderDecoder !== true) {
-            return json_encode($valueToEncode);
+            $objectClass = "";
+            if(!empty($valueToEncode) && is_object($valueToEncode)) {
+                $objectClass = get_class($valueToEncode);
+            }
+            if($objectClass != 'State' && is_array($valueToEncode) && !empty($valueToEncode["error"] && !empty($valueToEncode["error"]["message"])) && preg_match( "/[一-龠]+|[ぁ-ん]+|[ァ-ヴー]+|[ａ-ｚＡ-Ｚ０-９]+/u", $valueToEncode["error"]["message"] ) === 1){
+                return json_encode($valueToEncode, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT);
+            }else{
+                return json_encode($valueToEncode);
+            }
         }
 
         require_once 'include/Zend/Json/Encoder.php';

@@ -4,7 +4,7 @@
  * 
  * <p>This framework is based on log4j (see {@link http://jakarta.apache.org/log4j log4j} for details).</p>
  * <p>Design, strategies and part of the methods documentation are developed by log4j team 
- * (Ceki Gülcü as log4j project founder and 
+ * (Ceki Gï¿½lcï¿½ as log4j project founder and 
  * {@link http://jakarta.apache.org/log4j/docs/contributors.html contributors}).</p>
  *
  * <p>PHP port, extensions and modifications by VxR. All rights reserved.<br>
@@ -99,7 +99,7 @@ class LoggerPropertyConfigurator extends LoggerConfigurator {
     /**
      * Constructor
      */
-    function LoggerPropertyConfigurator()
+    function __construct()
     {
         $this->loggerFactory = new LoggerDefaultCategoryFactory();
     }
@@ -114,7 +114,7 @@ class LoggerPropertyConfigurator extends LoggerConfigurator {
      * @return boolean configuration result
      * @static
      */
-    function configure($url = '')
+    static function configure($url = '')
     {
         $configurator = new LoggerPropertyConfigurator();
         $repository =& LoggerManager::getLoggerRepository();
@@ -445,7 +445,10 @@ class LoggerPropertyConfigurator extends LoggerConfigurator {
      */
     function parseCatsAndRenderers($props, &$hierarchy)
     {
-        while(list($key,$value) = each($props)) {
+        while($current = current($props)) {
+            $key = key($props);
+            $value = $current;
+            next($props);
             if( strpos($key, LOG4PHP_LOGGER_PROPERTY_CONFIGURATOR_CATEGORY_PREFIX) === 0 or 
                 strpos($key, LOG4PHP_LOGGER_PROPERTY_CONFIGURATOR_LOGGER_PREFIX) === 0) {
 	            if(strpos($key, LOG4PHP_LOGGER_PROPERTY_CONFIGURATOR_CATEGORY_PREFIX) === 0) {
@@ -508,6 +511,9 @@ class LoggerPropertyConfigurator extends LoggerConfigurator {
      */
     function &parseCategory($props, &$logger, $optionKey, $loggerName, $value)
     {
+        if(empty($logger)) {
+            return ;
+        }
         LoggerLog::debug(
             "LoggerPropertyConfigurator::parseCategory() ".
             "Parsing for [{$loggerName}] with value=[{$value}]."
@@ -519,7 +525,7 @@ class LoggerPropertyConfigurator extends LoggerConfigurator {
         // If value is not in the form ", appender.." or "", then we should set
         // the level of the loggeregory.
 
-        if(!(@$value{0} == ',' || empty($value))) {
+        if(!(@$value[0] == ',' || empty($value))) {
             // just to be on the safe side...
             if(sizeof($st) == 0)
 	            return;

@@ -4,7 +4,7 @@
  * 
  * <p>This framework is based on log4j (see {@link http://jakarta.apache.org/log4j log4j} for details).</p>
  * <p>Design, strategies and part of the methods documentation are developed by log4j team 
- * (Ceki Gülcü as log4j project founder and 
+ * (Ceki Gï¿½lcï¿½ as log4j project founder and 
  * {@link http://jakarta.apache.org/log4j/docs/contributors.html contributors}).</p>
  *
  * <p>PHP port, extensions and modifications by VxR. All rights reserved.<br>
@@ -44,13 +44,13 @@ class LoggerLog {
      * @param integer $errLevel level to log
      * @static
      */
-    function log($message, $errLevel = E_USER_NOTICE)
+    static function log($message, $errLevel = E_USER_NOTICE)
     {
         if (LoggerLog::internalDebugging())
             trigger_error($message, $errLevel);
     }
     
-    function internalDebugging($value = null)
+    static function internalDebugging($value = null)
     {
         static $debug = false;
 
@@ -66,7 +66,7 @@ class LoggerLog {
      * @static
      * @since 0.3
      */
-    function debug($message)
+    static function debug($message)
     {
         LoggerLog::log($message, E_USER_NOTICE);
     }
@@ -78,7 +78,7 @@ class LoggerLog {
      * @static
      * @since 0.3
      */
-    function error($message)
+    static function error($message)
     {
         trigger_error($message, E_USER_ERROR);
     }
@@ -90,7 +90,7 @@ class LoggerLog {
      * @static
      * @since 0.3
      */
-    function warn($message)
+    static function warn($message)
     {
         trigger_error($message, E_USER_WARNING);
     }

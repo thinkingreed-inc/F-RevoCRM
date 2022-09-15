@@ -4,7 +4,7 @@
  * 
  * <p>This framework is based on log4j (see {@link http://jakarta.apache.org/log4j log4j} for details).</p>
  * <p>Design, strategies and part of the methods documentation are developed by log4j team 
- * (Ceki Gülcü as log4j project founder and 
+ * (Ceki Gï¿½lcï¿½ as log4j project founder and 
  * {@link http://jakarta.apache.org/log4j/docs/contributors.html contributors}).</p>
  *
  * <p>PHP port, extensions and modifications by VxR. All rights reserved.<br>
@@ -38,7 +38,7 @@ class LoggerAppender {
      * @param string $class create an instance of this appender class
      * @return LoggerAppender
      */
-    function factory($name, $class)
+    static function factory($name, $class)
     {
         $class = basename($class);
         if (!empty($class)) {
@@ -57,7 +57,7 @@ class LoggerAppender {
      * @param string $class create or get a reference instance of this class
      * @return LoggerAppender 
      */
-    function &singleton($name, $class = '')
+    static function &singleton($name, $class = '')
     {
         static $instances;
         
