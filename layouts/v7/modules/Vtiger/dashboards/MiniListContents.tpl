@@ -11,7 +11,7 @@
 	{* Comupte the nubmer of columns required *}
 	{assign var="SPANSIZE" value=12}
 	{assign var=HEADER_COUNT value=$MINILIST_WIDGET_MODEL->getHeaderCount()}
-	{if $HEADER_COUNT && $HEADER_COUNT neq '5'}{* 5分割レイアウトは表現できないため、6分割として処理する *}
+	{if $HEADER_COUNT && $HEADER_COUNT eq '5'}{* 5分割レイアウトは表現できないため、6分割として処理する *}
 		{assign var="SPANSIZE" value=12/6}
 	{elseif $HEADER_COUNT}
 		{assign var="SPANSIZE" value=12/$HEADER_COUNT}
