@@ -1852,7 +1852,6 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 		this.taxTypeElement.on('change', function(e){
 			if(self.isIndividualTaxMode()) {
 				jQuery('#group_tax_row').addClass('hide');
-				jQuery('#overall_discount').addClass('hide');
 				self.lineItemsHolder.find('tr.'+self.lineItemDetectingClass).each(function(index,domElement){
 					var lineItemRow = jQuery(domElement);
 					lineItemRow.find('.individualTaxContainer,.productTaxTotal').removeClass('hide');
@@ -1860,7 +1859,6 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 				});
 			}else{
 				jQuery('#group_tax_row').removeClass('hide');
-				jQuery('#overall_discount').removeClass('hide');
 				self.lineItemsHolder.find('tr.'+ self.lineItemDetectingClass).each(function(index,domElement){
 					var lineItemRow = jQuery(domElement);
 					lineItemRow.find('.individualTaxContainer,.productTaxTotal').addClass('hide');
