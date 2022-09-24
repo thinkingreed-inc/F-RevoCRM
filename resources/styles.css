@@ -609,7 +609,6 @@ ul#productsImageContainer > li a{
 /* ダッシュボードのミニリスト */
 @media (max-width: 1200px) {
   .row.minilist-container {
-    color: red;
     display: flex;
     flex-wrap: nowrap;
     flex-direction: column;
