@@ -607,7 +607,7 @@ ul#productsImageContainer > li a{
 }
 
 /* ダッシュボードのミニリスト */
-@media (max-width: 1200px) {
+@media (max-width: 991px) {
   .row.minilist-container {
     display: flex;
     flex-wrap: nowrap;
