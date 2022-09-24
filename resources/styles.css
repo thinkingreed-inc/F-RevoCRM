@@ -605,3 +605,24 @@ ul#productsImageContainer > li a{
   color: #ff0000;
   font-weight: 900;
 }
+
+/* ダッシュボードのミニリスト */
+@media (max-width: 1200px) {
+  .row.minilist-container {
+    color: red;
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: column;
+  }
+  .row.minilist-container > div {
+    width: 100% !important;
+  }
+}
+.row.minilist-container {
+  display: flex;
+  flex-wrap: nowrap;
+}
+.row.minilist-container > div {
+  padding-right: 15px; 
+  padding-left: 15px; 
+}

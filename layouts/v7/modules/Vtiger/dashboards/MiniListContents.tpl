@@ -11,25 +11,24 @@
 	{* Comupte the nubmer of columns required *}
 	{assign var="SPANSIZE" value=12}
 	{assign var=HEADER_COUNT value=$MINILIST_WIDGET_MODEL->getHeaderCount()}
-	{if $HEADER_COUNT && $HEADER_COUNT eq '5'}{* 5分割レイアウトは表現できないため、6分割として処理する *}
-		{assign var="SPANSIZE" value=12/6}
-	{elseif $HEADER_COUNT}
+	{if $HEADER_COUNT}
 		{assign var="SPANSIZE" value=12/$HEADER_COUNT}
+		{assign var="SPANWIDTH" value=100/$HEADER_COUNT}
 	{/if}
 
-	<div class="row" style="padding:5px">
+	<div class="row minilist-container" style="padding:5px">
 		{assign var=HEADER_FIELDS value=$MINILIST_WIDGET_MODEL->getHeaders()}
 		{foreach item=FIELD from=$HEADER_FIELDS}
-		<div class="col-lg-{$SPANSIZE}"><strong>{vtranslate($FIELD->get('label'),$BASE_MODULE)}</strong></div>
+		<div class="" style="width:{$SPANWIDTH}%"><strong>{vtranslate($FIELD->get('label'),$BASE_MODULE)}</strong></div>
 		{/foreach}
 	</div>
 
 	{assign var="MINILIST_WIDGET_RECORDS" value=$MINILIST_WIDGET_MODEL->getRecords()}
 
 	{foreach item=RECORD from=$MINILIST_WIDGET_RECORDS}
-	<div class="row miniListContent" style="padding:5px">
+	<div class="row miniListContent minilist-container" style="padding:5px">
 		{foreach item=FIELD key=NAME from=$HEADER_FIELDS name="minilistWidgetModelRowHeaders"}
-			<div class="col-lg-{$SPANSIZE} textOverflowEllipsis" title="{strip_tags($RECORD->get($NAME))}" style="padding-right: 5px;">
+			<div class="textOverflowEllipsis" title="{strip_tags($RECORD->get($NAME))}" style="width:{$SPANWIDTH}%">
                {if $FIELD->get('uitype') eq '71' || ($FIELD->get('uitype') eq '72' && $FIELD->getName() eq 'unit_price')}
 					{assign var=CURRENCY_ID value=$USER_MODEL->get('currency_id')}
 					{if $FIELD->get('uitype') eq '72' && $NAME eq 'unit_price'}
