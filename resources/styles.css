@@ -595,3 +595,13 @@ ul#productsImageContainer > li a{
   background-repeat: no-repeat;
   background-position: center center;
 }
+
+/* コメントと製品の画像プレビュー */
+.MultiFile-preview {
+  margin: 10px;
+}
+.MultiFile-list .MultiFile-remove {
+  margin: 10px;
+  color: #ff0000;
+  font-weight: 900;
+}

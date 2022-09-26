@@ -155,7 +155,7 @@ Reports_Edit_Js("Reports_Edit2_Js",{},{
 	 */
 	registerSelect2ElementForReportColumns : function() {
 		var selectElement = this.getReportsColumnsList();
-		vtUtils.showSelect2ElementView(selectElement,{maximumSelectionSize: 25});
+		vtUtils.showSelect2ElementView(selectElement,{maximumSelectionSize: 60});
 	},
 
 	/**

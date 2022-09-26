@@ -14,7 +14,7 @@
 	<div class="fileUploadContainer text-left">
 		<div class="fileUploadBtn btn btn-sm btn-primary">
 			<span><i class="fa fa-laptop"></i> {vtranslate('LBL_ATTACH_FILES', $MODULE)}</span>
-			<input type="file" id="{$MODULE}_editView_fieldName_{$FIELD_MODEL->get('name')}" class="inputElement {if $MODULE eq 'ModComments'} multi {/if} " maxlength="6" name="{if $MODULE eq 'ModComments'}{$FIELD_MODEL->getFieldName()}[]{else}{$FIELD_MODEL->getFieldName()}{/if}"
+			<input type="file" id="{$MODULE}_editView_fieldName_{$FIELD_MODEL->get('name')}" class="inputElement {if $MODULE eq 'ModComments'} multi with-preview {/if} " maxlength="6" name="{if $MODULE eq 'ModComments'}{$FIELD_MODEL->getFieldName()}[]{else}{$FIELD_MODEL->getFieldName()}{/if}"
 					value="{$FIELD_VALUE}" {if !empty($SPECIAL_VALIDATOR)}data-validator='{Zend_Json::encode($SPECIAL_VALIDATOR)}'{/if} 
 					{if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if}
 					{if count($FIELD_INFO['validator'])} 

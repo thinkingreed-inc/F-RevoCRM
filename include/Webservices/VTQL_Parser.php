@@ -304,7 +304,7 @@ function buildSelectStmt($sqlDump){
 		$this->query = $this->query.' LIMIT ';
 		foreach($sqlDump['limit'] as $ind=>$field){
 			if(!$offset){
-				$field = ($field>100)? 100: $field;
+				$field = ($field>1000)? 1000: $field;
 			}
 			if($i===0){
 				$this->query = $this->query.$field;
@@ -315,7 +315,7 @@ function buildSelectStmt($sqlDump){
 			}
 		}
 	}else{
-		$this->query = $this->query.' LIMIT 100';
+		$this->query = $this->query.' LIMIT 1000';
 	}
 	$this->query = $this->query.';';
 }

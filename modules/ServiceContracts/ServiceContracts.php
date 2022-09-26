@@ -538,11 +538,11 @@ class ServiceContracts extends CRMEntity {
 		if($contractStatus == 'Complete' || (!empty($usedUnits) && !empty($totalUnits) && $usedUnits >= $totalUnits)) {
 			if(empty($endDate)) {
 				$endDate = date('Y-m-d');
-				$this->db->pquery('UPDATE vtiger_servicecontracts SET end_date=? WHERE servicecontractsid = ?', array(date('Y-m-d'), $this->id));
+				$adb->pquery('UPDATE vtiger_servicecontracts SET end_date=? WHERE servicecontractsid = ?', array(date('Y-m-d'), $this->id));
 			}
 		} else {
 			$endDate = null;
-			$this->db->pquery('UPDATE vtiger_servicecontracts SET end_date=? WHERE servicecontractsid = ?', array(null, $this->id));
+			$adb->pquery('UPDATE vtiger_servicecontracts SET end_date=? WHERE servicecontractsid = ?', array(null, $this->id));
 		}
 
 		// Calculate the Planned Duration based on Due date and Start date. (in days)
@@ -575,7 +575,7 @@ class ServiceContracts extends CRMEntity {
 		if(count($updateCols) > 0) {
 			$updateQuery = 'UPDATE vtiger_servicecontracts SET '. implode(",", $updateCols) .' WHERE servicecontractsid = ?';
 			array_push($updateParams, $this->id);
-			$this->db->pquery($updateQuery, $updateParams);
+			$adb->pquery($updateQuery, $updateParams);
 		}
 	}
 

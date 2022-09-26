@@ -82,7 +82,7 @@ abstract class EntityMeta{
 			
 			$moduleFields = $this->getModuleFields();
 			foreach ($moduleFields as $fieldName=>$webserviceField) {
-				if($webserviceField->isMandatory() === true){
+				if($webserviceField->isMandatory() === true && $webserviceField->getPresence() != 1){
 					array_push($this->mandatoryFields,$fieldName);
 				}
 			}
