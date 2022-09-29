@@ -36,10 +36,4 @@ if (defined('VTIGER_UPGRADE')) {
         $tablename_old = $tablename;
         $columnname_old = $columnname;
     }
-
-    //チケットから資産・レンタルを参照できるようにする
-    $moduleModel = Vtiger_Module_Model::getInstance('HelpDesk');
-    if($moduleModel){
-        $moduleModel->setRelatedList(Vtiger_Module_Model::getInstance('Assets'), 'Assets', 'ADD,SELECT', 'get_related_list');
-    }
 }
