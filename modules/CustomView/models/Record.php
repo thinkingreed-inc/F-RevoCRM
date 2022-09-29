@@ -1196,7 +1196,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 		$result = $db->pquery($sql, $params);
 		$noOfCVs = $db->num_rows($result);
 		$customViews = array();
-		for ($i=0; $i<$noOfCVs; $i++) {
+		for ($i=0; $i<$noOfCVs; ++$i) {
 			$row = $db->query_result_rowdata($result, $i);
 			$customView = new self();
 			$cv = $customView->setData($row)->setModule($row['entitytype']);
