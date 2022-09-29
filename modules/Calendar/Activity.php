@@ -273,8 +273,8 @@ class Activity extends CRMEntity {
 			$cbdate = getValidDBInsertDateValue($this->column_fields['date_start']);
 			$cbtime = $this->column_fields['time_start'];
 
-			$reminder_query = "SELECT reminderid FROM vtiger_activity_reminder_popup WHERE semodule = ? and recordid = ?";
-			$reminder_params = array($cbmodule, $cbrecord);
+			$reminder_query = "SELECT reminderid FROM vtiger_activity_reminder_popup WHERE recordid = ?";
+			$reminder_params = array($cbrecord);
 			$reminderidres = $adb->pquery($reminder_query, $reminder_params);
 
 			$reminderid = null;
@@ -291,7 +291,7 @@ class Activity extends CRMEntity {
 			$reminder = false;
 			if(strtotime($record) > strtotime($current)){
 				$status = 0;
-				if($cbmodule != "Calendar") $reminder = true; // 予定をマウス移動した場合、$cbmoduleが"Calendar"として入ってくる
+				$reminder = true;
 			} else {
 				$status = 1;
 			}
