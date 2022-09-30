@@ -114,9 +114,11 @@ Settings_Vtiger_List_Js("Settings_Workflows_List_Js", {
                     count = 0;
                 }
 
-                return result.text
-                + "&nbsp;&nbsp;<span class='label-success badge' style='display: inline;'>"
+                return "<span style='margin-right:0px;'><span style='max-width: 85%; display:inline-block; margin-right:5px;'>"
+                + result.text
+                + "&nbsp;&nbsp;</span><span class='label-success badge' style='display: inline; vertical-align:super; margin-right:0px;'>"
                 + count
+                + "</span>"
                 + "</span>";
             }
         });
