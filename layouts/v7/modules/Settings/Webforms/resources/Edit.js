@@ -222,12 +222,10 @@ Settings_Vtiger_Edit_Js('Settings_Webforms_Edit_Js', {}, {
 	lockMandatoryOptionInSelect2 : function(mandatoryFieldLabel){
 		var sourceModuleContainer = this.getSourceModuleFieldTable();
 		var fieldsListSelect2Element = sourceModuleContainer.find('#s2id_fieldsList');
-		console.log('Aaaaaaaaaa');
 		var fieldsListSelect2Elementcontext =fieldsListSelect2Element.find('.select2-search-choice');
 		for(var fieldsListSelect2Elementcontextindex =0;fieldsListSelect2Elementcontextindex < fieldsListSelect2Elementcontext.length;fieldsListSelect2Elementcontextindex++){
 
 			if(mandatoryFieldLabel+'*'==fieldsListSelect2Elementcontext[fieldsListSelect2Elementcontextindex].innerText && fieldsListSelect2Elementcontext[fieldsListSelect2Elementcontextindex].querySelector('a')){
-			console.log('fasdfa');
 			fieldsListSelect2Elementcontext[fieldsListSelect2Elementcontextindex].querySelector('a').remove();
 			}
 		}
