@@ -84,11 +84,18 @@
 					</thead>
 					{foreach item=RELATED_RECORD from=$RELATED_RECORDS}
 						<tr class="listViewEntries" data-id='{$RELATED_RECORD->getId()}' 
+							{assign var=CURRENT_USER_MODEL value=Users_Record_Model::getCurrentUserModel()}
+							{assign var=CURRENT_USER_ID value=$CURRENT_USER_MODEL->getId()}
+							{assign var=RAWDATA value=$RELATED_RECORD->getData()}
+							{assign var=OWNER_ID value=$RAWDATA['assigned_user_id']}
 							{if $RELATED_MODULE_NAME eq 'Calendar'}
 								data-recurring-enabled='{$RELATED_RECORD->isRecurringEnabled()}'
-								{assign var=DETAILVIEWPERMITTED value=isPermitted($RELATED_MODULE_NAME, 'DetailView', $RELATED_RECORD->getId())}
-								{if $DETAILVIEWPERMITTED eq 'yes'}
-									data-recordUrl='{$RELATED_RECORD->getDetailViewUrl()}'
+								{if $RELATED_RECORD->get('visibility') == vtranslate('Private', $MODULE ) && $OWNER_ID != $CURRENT_USER_ID && !$CURRENT_USER_MODEL->isAdminUser()}
+									{else}
+										{assign var=DETAILVIEWPERMITTED value=isPermitted($RELATED_MODULE_NAME, 'DetailView', $RELATED_RECORD->getId())}
+										{if $DETAILVIEWPERMITTED eq 'yes'}
+											data-recordUrl='{$RELATED_RECORD->getDetailViewUrl()}'
+										{/if}
 								{/if}
 							{else}
 								data-recordUrl='{$RELATED_RECORD->getDetailViewUrl()}'
@@ -130,7 +137,11 @@
 											<center>{$RELATED_RECORD->get($RELATED_HEADERNAME)}</center>
 											{else}
 												{if $HEADER_FIELD->isNameField() eq true or $HEADER_FIELD->get('uitype') eq '4'}
-												<a href="{$RELATED_RECORD->getDetailViewUrl()}">{$RELATED_RECORD->getDisplayValue($RELATED_HEADERNAME)}</a>
+													{if $RELATED_RECORD->get('visibility') == vtranslate('Private', $MODULE ) && $OWNER_ID != $CURRENT_USER_ID && !$CURRENT_USER_MODEL->isAdminUser()}
+														{$RELATED_RECORD->getDisplayValue($RELATED_HEADERNAME)}
+													{else}
+														<a href="{$RELATED_RECORD->getDetailViewUrl()}">{$RELATED_RECORD->getDisplayValue($RELATED_HEADERNAME)}</a>
+													{/if}
 											{elseif $RELATED_HEADERNAME eq 'access_count'}
 												{$RELATED_RECORD->getAccessCountValue($PARENT_RECORD->getId())}
 											{elseif $RELATED_HEADERNAME eq 'time_start' or $RELATED_HEADERNAME eq 'time_end'}
@@ -174,19 +185,22 @@
 												{/if}
 												<span {if !empty($RELATED_LIST_VALUE)} class="picklist-color picklist-{$PICKLIST_FIELD_ID}-{Vtiger_Util_Helper::convertSpaceToHyphen($RELATED_LIST_VALUE)}" {/if}> {$RELATED_RECORD->getDisplayValue($RELATED_HEADERNAME)} </span>
 											{else}
-												{$RELATED_RECORD->getDisplayValue($RELATED_HEADERNAME)}
-												{* Documents list view special actions "view file" and "download file" *}
-												{if $RELATED_MODULE_NAME eq 'Documents' && $RELATED_HEADERNAME eq 'filename' && isPermitted($RELATED_MODULE_NAME, 'DetailView', $RELATED_RECORD->getId()) eq 'yes'}
-													<span class="actionImages">
-														{assign var=RECORD_ID value=$RELATED_RECORD->getId()}
-														{assign var="DOCUMENT_RECORD_MODEL" value=Vtiger_Record_Model::getInstanceById($RECORD_ID)}
-														{if $DOCUMENT_RECORD_MODEL->get('filename') && $DOCUMENT_RECORD_MODEL->get('filestatus')}
-															<a name="viewfile" href="javascript:void(0)" data-filelocationtype="{$DOCUMENT_RECORD_MODEL->get('filelocationtype')}" data-filename="{$DOCUMENT_RECORD_MODEL->get('filename')}" onclick="Vtiger_Header_Js.previewFile(event)"><i title="{vtranslate('LBL_VIEW_FILE', $RELATED_MODULE_NAME)}" class="icon-picture alignMiddle"></i></a>&nbsp;
-															{/if}
-															{if $DOCUMENT_RECORD_MODEL->get('filename') && $DOCUMENT_RECORD_MODEL->get('filestatus') && $DOCUMENT_RECORD_MODEL->get('filelocationtype') eq 'I'}
-															<a name="downloadfile" href="{$DOCUMENT_RECORD_MODEL->getDownloadFileURL()}"><i title="{vtranslate('LBL_DOWNLOAD_FILE', $RELATED_MODULE_NAME)}" class="icon-download-alt alignMiddle"></i></a>&nbsp;
-															{/if}
-													</span>
+												{if $RELATED_RECORD->get('visibility') == vtranslate('Private', $MODULE ) && $OWNER_ID != $CURRENT_USER_ID && !$CURRENT_USER_MODEL->isAdminUser()}
+													{else}
+														{$RELATED_RECORD->getDisplayValue($RELATED_HEADERNAME)}
+														{* Documents list view special actions "view file" and "download file" *}
+														{if $RELATED_MODULE_NAME eq 'Documents' && $RELATED_HEADERNAME eq 'filename' && isPermitted($RELATED_MODULE_NAME, 'DetailView', $RELATED_RECORD->getId()) eq 'yes'}
+															<span class="actionImages">
+																{assign var=RECORD_ID value=$RELATED_RECORD->getId()}
+																{assign var="DOCUMENT_RECORD_MODEL" value=Vtiger_Record_Model::getInstanceById($RECORD_ID)}
+																{if $DOCUMENT_RECORD_MODEL->get('filename') && $DOCUMENT_RECORD_MODEL->get('filestatus')}
+																	<a name="viewfile" href="javascript:void(0)" data-filelocationtype="{$DOCUMENT_RECORD_MODEL->get('filelocationtype')}" data-filename="{$DOCUMENT_RECORD_MODEL->get('filename')}" onclick="Vtiger_Header_Js.previewFile(event)"><i title="{vtranslate('LBL_VIEW_FILE', $RELATED_MODULE_NAME)}" class="icon-picture alignMiddle"></i></a>&nbsp;
+																	{/if}
+																	{if $DOCUMENT_RECORD_MODEL->get('filename') && $DOCUMENT_RECORD_MODEL->get('filestatus') && $DOCUMENT_RECORD_MODEL->get('filelocationtype') eq 'I'}
+																	<a name="downloadfile" href="{$DOCUMENT_RECORD_MODEL->getDownloadFileURL()}"><i title="{vtranslate('LBL_DOWNLOAD_FILE', $RELATED_MODULE_NAME)}" class="icon-download-alt alignMiddle"></i></a>&nbsp;
+																	{/if}
+															</span>
+														{/if}
 												{/if}
 											{/if}
 										{/if}

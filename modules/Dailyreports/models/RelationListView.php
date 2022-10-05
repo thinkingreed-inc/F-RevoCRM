@@ -39,6 +39,12 @@ class Dailyreports_RelationListView_Model extends Vtiger_RelationListView_Model 
 		if(count($relatedColumnFields) <= 0){
 			$relatedColumnFields = $relationModule->getRelatedHistoryListFields();
 		}
+
+		if($relationModuleName == 'Calendar') {
+			//Adding visibility in the related list, showing records based on the visibility
+			$relatedColumnFields['visibility'] = 'visibility';
+		}
+
 		$query = $this->getRelationQuery();
 
 		if ($this->get('whereCondition') && is_array($this->get('whereCondition'))) {
@@ -101,6 +107,8 @@ class Dailyreports_RelationListView_Model extends Vtiger_RelationListView_Model 
 		$limitQuery = $query .' LIMIT '.$startIndex.','.$pageLimit;
 		$result = $db->pquery($limitQuery, array());
 		$relatedRecordList = array();
+		$currentUser = Users_Record_Model::getCurrentUserModel();
+		$groupsIds = Vtiger_Util_Helper::getGroupsIdsForUsers($currentUser->getId());
 		for($i=0; $i< $db->num_rows($result); $i++ ) {
 			$row = $db->fetch_row($result,$i);
 
@@ -110,8 +118,27 @@ class Dailyreports_RelationListView_Model extends Vtiger_RelationListView_Model 
                     $newRow[$relatedColumnFields[$col]] = $val;
                 }
             }
+
 			//To show the value of "Assigned to"
+			$ownerId = $row['smownerid'];
 			$newRow['assigned_user_id'] = $row['smownerid'];
+			if ($relationModuleName == 'Calendar') {
+				$visibleFields = array('activitytype', 'date_start', 'time_start', 'due_date', 'time_end', 'assigned_user_id', 'visibility', 'smownerid', 'parent_id');
+				$visibility = true;
+				if (in_array($ownerId, $groupsIds)) {
+					$visibility = false;
+				} else if ($ownerId == $currentUser->getId()) {
+					$visibility = false;
+				}
+				if (!$currentUser->isAdminUser() && $newRow['visibility'] == 'Private' && $ownerId && $visibility) {
+					foreach ($newRow as $data => $value) {
+						if (in_array($data, $visibleFields) != -1) {
+							unset($newRow[$data]);
+						}
+					}
+					$newRow['subject'] = vtranslate('Busy', 'Events') . '*';
+				}
+			}
 			$record = Vtiger_Record_Model::getCleanInstance($relationModule->get('name'));
             $record->setData($newRow)->setModuleFromInstance($relationModule);
 			$record->setId($row['crmid']);
