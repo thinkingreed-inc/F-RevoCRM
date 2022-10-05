@@ -1599,7 +1599,9 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		if (calendarView.name === 'agendaDay') {
 			params.constrains = 'vertical';
 		}
-		element.webuiPopover(params);
+		if(app.getUserId() == event.userid || event.visibility != "Private"){
+			element.webuiPopover(params);
+		}
 	},
 	performPreEventRenderActions: function (event, element) {
 		var calendarView = this.getCalendarViewContainer().fullCalendar('getView');

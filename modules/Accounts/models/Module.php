@@ -380,16 +380,13 @@ class Accounts_Module_Model extends Vtiger_Module_Model {
 			} else if($ownerId == $currentUser->getId()){
 				$visibility = false;
 			}
-			if($newRow['activitytype'] != 'Task' && $newRow['visibility'] == 'Private' && $ownerId && $visibility) {
+			if(!$currentUser->isAdminUser() && $newRow['visibility'] == 'Private' && $ownerId && $visibility) {
 				foreach($newRow as $data => $value) {
 					if(in_array($data, $visibleFields) != -1) {
 						unset($newRow[$data]);
 					}
 				}
 				$newRow['subject'] = vtranslate('Busy','Events').'*';
-			}
-			if($newRow['activitytype'] == 'Task') {
-				unset($newRow['visibility']);
 			}
 
 			$model->setData($newRow);
