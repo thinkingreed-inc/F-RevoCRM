@@ -469,6 +469,7 @@ $languageStrings = array(
 	'LBL_BETWEEN' => 'between',
 	'LBL_IS_EMPTY'=> 'is empty',
 	'LBL_IS_NOT_EMPTY' => 'is not empty',
+	'LBL_IS_OWN' => 'own',
 	'LBL_APPROVE' => 'Approve',
 	'LBL_HAS_CHANGED' => 'has changed',
 	'LBL_HAS_CHANGED_TO' => 'has changed to',
