@@ -228,6 +228,11 @@ jQuery.Class("Vtiger_AdvanceFilter_Js",{
 			conditionList['none'] = 'None';
 		}
 
+		// owner以外の場合「自分」を非表示
+		if(fieldType != 'owner' && (fieldSpecificType == 'V' || fieldSpecificType == 'I')){
+			conditionList = conditionList.filter(key => key != 'own');
+		}
+
 		var options = '';
 		for(var key in conditionList) {
 			if (fieldType == 'multipicklist' && (conditionList[key] == "e" || conditionList[key] == "n" )) { continue; } 
