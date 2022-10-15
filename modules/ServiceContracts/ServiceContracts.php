@@ -521,6 +521,7 @@ class ServiceContracts extends CRMEntity {
 
 	// Function to Calculate the End Date, Planned Duration, Actual Duration and Progress of a Service Contract
 	function calculateProgress() {
+		global $adb;
 		$updateCols = array();
 		$updateParams = array();
 
