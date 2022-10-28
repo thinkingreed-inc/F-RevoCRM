@@ -12,6 +12,7 @@ cache/import/*
 !cache/import/.htaccess
 cache/upload/*
 !cache/upload/.htaccess
+cache/*.zip
 storage/*
 !storage/.htaccess
 test/curumeru_csv/*
