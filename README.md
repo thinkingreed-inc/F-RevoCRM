@@ -173,6 +173,15 @@ rm -r frevocrm.20170118
 ## 開発環境の構築
 Dockerで構築する為、[docker/README.md](./docker/README.md)を参照してください。  
 
+### 初期設定
+Gitコマンドを使い以下の設定を行ってください。  
+下記コマンドにより、不要な変更点が表示されなくなります。
+```
+git update-index --assume-unchanged parent_tabdata.php
+git update-index --assume-unchanged tabdata.php
+git update-index --assume-unchanged user_privileges/user_privileges_1.php
+```
+
 ### xdebug
 xdebug3がインストール済みです。
 `docker-compose.yml` の以下の部分を修正してください
