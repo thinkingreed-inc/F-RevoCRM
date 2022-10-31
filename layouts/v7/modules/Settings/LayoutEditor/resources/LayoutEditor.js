@@ -1031,6 +1031,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 						}
 						else{
 							datedefaultvaluebox.classList.remove('ignore-validation');
+							datedefaultvaluebox.classList.remove('input-error');
 						}
 					});	
 				}
