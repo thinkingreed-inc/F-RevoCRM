@@ -423,6 +423,7 @@ class Workflow{
 				}
 				if($task->executeImmediately==true){
 					try {
+						global $log;$log->debug("[".__FUNCTION__."]line:".__LINE__."workflow_id:".$this->id."/workflow_taskid:".$task->id);
 						$task->doTask($entityData);
 					}
 					catch(Exception $e) {
