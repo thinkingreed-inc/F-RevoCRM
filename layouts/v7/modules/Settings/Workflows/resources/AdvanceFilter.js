@@ -295,9 +295,18 @@ Vtiger_Date_Field_Js('Workflows_Date_Field_Js',{},{
         var comparatorSelectedOptionVal = this.get('comparatorElementVal');
         var dateSpecificConditions = this.get('dateSpecificConditions');
         if(comparatorSelectedOptionVal.length > 0) {
-            if(comparatorSelectedOptionVal == 'between' || comparatorSelectedOptionVal == 'custom'){
+            if(comparatorSelectedOptionVal == 'custom'){
                 var html = '<div class="date"><input class="dateField inputElement" style="width:auto;" data-calendar-type="range" name="'+ this.getName() +'" data-date-format="'+ this.getDateFormat() +'" type="text" ReadOnly="true" value="'+  this.getValue() + '"></div>';
                 var element = jQuery(html);
+                return this.addValidationToElement(element);
+            } else if(comparatorSelectedOptionVal == 'between'){
+                var html = '<div class="date"><input class="dateField inputElement" style="width:auto;" data-calendar-type="range" name="'+ this.getName() +'" data-date-format="'+ this.getDateFormat() +'" type="text"  value="'+  this.getValue() + '"></div>';
+                var element = jQuery(html);
+                $(function(){
+                    $(element).keydown(function(event){
+                      return false;
+                    });
+                });
                 return this.addValidationToElement(element);
             } else if(this._specialDateComparator(comparatorSelectedOptionVal)) {
                 var html = '<input name="'+ this.getName() +'" type="text" value="'+this.getValue()+'" data-validation-engine="validate[funcCall[Vtiger_Base_Validator_Js.invokeValidation]]" data-validator="[{"name":"PositiveNumber"}]">\n\
