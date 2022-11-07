@@ -1388,7 +1388,7 @@ Vtiger.Class("Vtiger_List_Js", {
             element.trigger('change');
             listSearchContributorChangeHandler(e);
         });
-		listViewPageDiv.on('keydown','.row-fluid', function(e){
+		listViewPageDiv.on('keydown','.dateField', function(e){
 			return false;
 		});
 	},
