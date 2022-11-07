@@ -43,6 +43,7 @@ class Vtiger_Language_Handler {
 		if ($translatedString === null) {
 			$translatedString = $key;
 		}
+		$translatedString = Settings_LanguageConverter_Module_Model::convertTranslate($translatedString, $module);
 		return $translatedString;
 	}
 
@@ -61,6 +62,7 @@ class Vtiger_Language_Handler {
 			return null;
 		$moduleStrings = self::getModuleStringsFromFile($language, $module);
 		if (!empty($moduleStrings['languageStrings'][$key])) {
+			$moduleStrings['languageStrings'][$key] = Settings_LanguageConverter_Module_Model::convertTranslate($moduleStrings['languageStrings'][$key], $$module);
 			return $moduleStrings['languageStrings'][$key];
 		}
 		// Lookup for the translation in base module, in case of sub modules, before ending up with common strings
@@ -71,14 +73,16 @@ class Vtiger_Language_Handler {
 			}
 			$moduleStrings = self::getModuleStringsFromFile($language, $baseModule);
 			if (!empty($moduleStrings['languageStrings'][$key])) {
+				$moduleStrings['languageStrings'][$key] = Settings_LanguageConverter_Module_Model::convertTranslate($moduleStrings['languageStrings'][$key], $$module);
 				return $moduleStrings['languageStrings'][$key];
 			}
 		}
 
 		$commonStrings = self::getModuleStringsFromFile($language);
-		if (!empty($commonStrings['languageStrings'][$key]))
+		if (!empty($commonStrings['languageStrings'][$key])) {
+			$moduleStrings['languageStrings'][$key] = Settings_LanguageConverter_Module_Model::convertTranslate($moduleStrings['languageStrings'][$key], $$module);
 			return $commonStrings['languageStrings'][$key];
-
+		}
 		return null;
 	}
 
