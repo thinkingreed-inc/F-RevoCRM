@@ -331,13 +331,11 @@ class VTUpdateFieldsTask extends VTTask {
 				if (strpos($fieldInfo['value'], 'aggregate') !== false) {
 					global $VTIGER_BULK_SAVE_MODE;
 					$VTIGER_BULK_SAVE_MODE = true;
-					RelationFieldHandler::$forceOnceAllowCrmId = $focus->id;
 					$focus->workflow_task_id = $this->id;
 					$focus->workflow_skip_field_array = $workflow_skip_field_array;
 					$focus->saveentity($moduleName);
 					$VTIGER_BULK_SAVE_MODE = false;
 				}else{
-					RelationFieldHandler::$forceOnceAllowCrmId = $focus->id;
 					$focus->workflow_task_id = $this->id;
 					$focus->saveentity($moduleName);
 				}
@@ -346,13 +344,8 @@ class VTUpdateFieldsTask extends VTTask {
 				$tmpEntity = VTEntityData::fromCRMEntity($focus);
 
 				$vtEntityDelta = new VTEntityDelta();
-				$vtEntityDelta->setNewEntity($moduleName, $tmpEntity->getId(), $tmpEntity);
 				$vtEntityDelta->computeDelta($moduleName, $tmpEntity->getId());
 
-				$relHandler = new RelationFieldHandler();
-				$relHandler->isWorkFlowFieldUpdate = true;
-				$relHandler->updateFromParent($tmpEntity);
-				$relHandler->updateToChildren($tmpEntity);
 			}
 			if ($entityFields == true) {
 				Vtiger_Functions::updateCRMRecordLabel($moduleName, $focus->id);
@@ -379,12 +372,6 @@ class VTUpdateFieldsTask extends VTTask {
 						// ワークフローで更新された項目を参照している項目に反映させる
 						$tmpEntity = VTEntityData::fromCRMEntity($referenceFocus->id);
 						$vtEntityDelta->setEntityDelta($moduleName, $tmpEntity->getId(), $delta);
-						$vtEntityDelta->setNewEntity($moduleName, $tmpEntity->getId(), $tmpEntity);
-		
-						$relHandler = new RelationFieldHandler();
-						$relHandler->isWorkFlowFieldUpdate = true;
-						$relHandler->updateFromParent($tmpEntity);
-						$relHandler->updateToChildren($tmpEntity);
 
 						if ($referenceEntityFields == true) {
 							Vtiger_Functions::updateCRMRecordLabel($referenceFocus->moduleName, $referenceFocus->id);
