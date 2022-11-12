@@ -1438,6 +1438,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 					});
 				} else {
 					thisInstance._updateEvent(form);
+					jQuery("button[name='saveButton']").prop("disabled", true);
 				}
 			}
 		};
