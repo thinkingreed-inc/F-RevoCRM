@@ -785,7 +785,7 @@ $languageStrings = array(
 	'LBL_Dec' => '12月',
 
 	'LBL_CALENDAR_SETTINGS' => 'カレンダー設定',
-	'Reminder Interval' => 'アラームの表示間隔',
+	'Reminder Interval' => 'アラーム設定時刻',
 
 	//Translations used in inventory modules for address
 	'SINGLE_Accounts' => '顧客企業',
