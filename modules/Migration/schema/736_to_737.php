@@ -19,4 +19,10 @@ if (defined('VTIGER_UPGRADE')) {
     // 過去に通知されなかったリマインダーのステータスを1(通知済み)に変更する
     $query = "UPDATE vtiger_activity_reminder_popup SET status = 1 WHERE concat(cast(date_start as char),' ',cast(time_start as char))<= ?";
     $adb->pquery($query, array(date('Y-m-d H:i:s', strtotime('today'))));
+    
+    //チケットから資産・レンタルを参照できるようにする
+    $moduleModel = Vtiger_Module_Model::getInstance('HelpDesk');
+    if($moduleModel){
+        $moduleModel->setRelatedList(Vtiger_Module_Model::getInstance('Assets'), 'Assets', 'ADD,SELECT', 'get_related_list');
+    }
 }
