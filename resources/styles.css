@@ -285,6 +285,9 @@ div.detailview-content.container-fluid span.value img {
 button#advanceIntiateSave + input {
   margin-left: 10px;
 }
+.timepicker-default{
+  border: 1px solid #ccc;
+}
 /* 概要画面の関連項目 */
 .summaryView .input-group.editElement {
   min-width: auto;
@@ -596,6 +599,13 @@ ul#productsImageContainer > li a{
   background-position: center center;
 }
 
+/* 日報の概要・更新履歴(1740pxは文字が重ならない限界値から決定) */
+@media (max-width: 1740px) { 
+  .summaryWidgetContainer #updates .updates_timeline > li .update_time {
+    position: static !important;
+  }
+}
+
 /* コメントと製品の画像プレビュー */
 .MultiFile-preview {
   margin: 10px;
@@ -624,4 +634,8 @@ ul#productsImageContainer > li a{
 .row.minilist-container > div {
   padding-right: 15px; 
   padding-left: 15px; 
+}
+
+.tag_owner_name p{
+  display: inline;
 }

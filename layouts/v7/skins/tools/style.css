@@ -354,7 +354,7 @@ body > .mCSB_inside > .mCSB_container {
   overflow: hidden;
   max-width: 223px;
   text-overflow: ellipsis;
-  font-size: 15px;
+  font-size: 12px;
 }
 .module-action-bar .module-breadcrumb {
   padding-left: 11px;
@@ -2864,6 +2864,7 @@ th {
   cursor: pointer;
   position: relative;
   width: 18%;
+  min-width: 100px;
 }
 .crumbs li:first-child {
   border-top: 20px solid #ECECEC;

@@ -1076,7 +1076,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 	calculateNetTotal : function() {
 		var self = this
 		var netTotalValue = 0;
-		this.lineItemsHolder.find('tr.'+this.lineItemDetectingClass+' .netPrice').each(function(index,domElement){
+		this.lineItemsHolder.find('tr.'+this.lineItemDetectingClass+' .totalAfterDiscount').each(function(index,domElement){
 			var lineItemNetPriceEle = jQuery(domElement);
 			netTotalValue += self.formatLineItemNetPrice(lineItemNetPriceEle);
 		});
@@ -1243,7 +1243,13 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 	},
     
     calculateGrandTotal : function(){
-        var netTotal = this.getNetTotal();
+		var self = this;
+		var netTotal = 0;
+		this.lineItemsHolder.find('tr.'+this.lineItemDetectingClass+' .netPrice').each(function(index,domElement){
+			var lineItemNetPriceEle = jQuery(domElement);
+			netTotal += self.formatLineItemNetPrice(lineItemNetPriceEle);
+		});
+        // var netTotal = this.getNetTotal();
 		var discountTotal = this.getFinalDiscountTotal();
 		var shippingHandlingCharge = this.getChargesTotal();
 		var shippingHandlingTax = this.getChargeTaxesTotal();
@@ -1852,6 +1858,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 		this.taxTypeElement.on('change', function(e){
 			if(self.isIndividualTaxMode()) {
 				jQuery('#group_tax_row').addClass('hide');
+				jQuery('#overall_discount').addClass('hide');
 				self.lineItemsHolder.find('tr.'+self.lineItemDetectingClass).each(function(index,domElement){
 					var lineItemRow = jQuery(domElement);
 					lineItemRow.find('.individualTaxContainer,.productTaxTotal').removeClass('hide');
@@ -1859,6 +1866,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 				});
 			}else{
 				jQuery('#group_tax_row').removeClass('hide');
+				jQuery('#overall_discount').removeClass('hide');
 				self.lineItemsHolder.find('tr.'+ self.lineItemDetectingClass).each(function(index,domElement){
 					var lineItemRow = jQuery(domElement);
 					lineItemRow.find('.individualTaxContainer,.productTaxTotal').addClass('hide');
@@ -2610,14 +2618,20 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 					self.copyAddressDetails(data,element.closest('table'),objectToMapAddress);
 					element.attr('checked','checked');
 				}
-			}else if(elementClass == "contactAddress"){
+			}else if(elementClass == "contactAddress" || elementClass == "contactAddressWithoutLead"){
 				var recordRelativeContactId = jQuery('[name="contact_id"]').val();
                                 if(typeof recordRelativeContactId == 'undefined'){
                                     app.helper.showErrorNotification({'message':app.vtranslate('JS_RELATED_CONTACT_IS_NOT_AVAILABLE')});
                                     return;
                                 }
+				// 見積の場合、エラーメッセージに表示される文言は「顧客担当者」より「ご担当者様」の方が伝わりやすい
+				// contactAddress : 顧客担当者、contactAddressWithoutLead : ご担当者様
 				if(recordRelativeContactId == "" || recordRelativeContactId == "0"){
-                                    app.helper.showErrorNotification({'message':app.vtranslate('JS_PLEASE_SELECT_AN_RELATED_TO_COPY_ADDRESS')});
+					if(elementClass == "contactAddressWithoutLead"){
+						app.helper.showErrorNotification({'message':app.vtranslate('JS_PLEASE_SELECT_AN_RELATED_TO_COPY_ADDRESS_WITHOUT_LEAD')});
+					}else{
+						app.helper.showErrorNotification({'message':app.vtranslate('JS_PLEASE_SELECT_AN_RELATED_TO_COPY_ADDRESS')});
+					}	
 				} else {
 					var recordRelativeContactName = jQuery('#contact_id_display').val();
 					var editViewLabel = jQuery('#contact_id_display').closest('td');
@@ -2828,4 +2842,6 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
     },
 });
     
+
+
 

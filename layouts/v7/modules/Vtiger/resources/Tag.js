@@ -259,6 +259,7 @@ Vtiger.Class("Vtiger_Tag_Js",{},{
             var editTagContainer = self.editTagContainerCached.clone();
             editTagContainer.find('[name="id"]').val(tag.data('id'));
             editTagContainer.find('[name="tagName"]').val(tag.find('.tagLabel').text());
+            editTagContainer.find(".tagOwnerName").text(tag.find('.tagOwner').val());
             if(tag.attr('data-type') == "public") {
                 editTagContainer.find('[type="checkbox"]').prop('checked',true);
             }else{

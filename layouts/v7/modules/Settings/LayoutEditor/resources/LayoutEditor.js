@@ -1016,6 +1016,24 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 				var dateField = defaultValueUiContainer.find('.dateField')
 				if (dateField.length > 0) {
 					vtUtils.registerEventForDateFields(dateField);
+					var datedefaultvaluebox = document.getElementsByClassName("inputElement dateField form-control")[0];
+					if(datedefaultvaluebox.value == 'TODAY'){
+						datedefaultvaluebox.classList.add('ignore-validation');
+						datedefaultvaluebox.classList.remove('input-error');
+					}
+					else{
+						datedefaultvaluebox.classList.remove('ignore-validation');
+					}
+					dateField.on("change",function (e) {
+						if(datedefaultvaluebox.value == 'TODAY'){
+							datedefaultvaluebox.classList.add('ignore-validation');
+							datedefaultvaluebox.classList.remove('input-error');
+						}
+						else{
+							datedefaultvaluebox.classList.remove('ignore-validation');
+							datedefaultvaluebox.classList.remove('input-error');
+						}
+					});	
 				}
 
 				defaultValueUiContainer.find('[data-rule-required]').removeAttr('data-rule-required');

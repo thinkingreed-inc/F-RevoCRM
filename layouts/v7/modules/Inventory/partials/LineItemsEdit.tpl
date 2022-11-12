@@ -237,7 +237,7 @@
 					</td>
 				</tr>
 				{if $DISCOUNT_AMOUNT_EDITABLE || $DISCOUNT_PERCENT_EDITABLE}
-					<tr>
+					<tr id="overall_discount" valign="top" class="{if $IS_INDIVIDUAL_TAX_TYPE}hide{/if}">
 						<td width="83%">
 							<span class="pull-right">(-)&nbsp;
 								<strong><a href="javascript:void(0)" id="finalDiscount">{vtranslate('LBL_OVERALL_DISCOUNT',$MODULE)}&nbsp;

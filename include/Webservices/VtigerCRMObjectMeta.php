@@ -405,7 +405,7 @@ class VtigerCRMObjectMeta extends EntityMeta {
 				left join vtiger_blocks on vtiger_blocks.blockid = vtiger_field.block
 				where vtiger_field.tabid =? and vtiger_field.block in (".generateQuestionMarks($block).") and vtiger_field.displaytype in (1,2,3,4,5,6) 
 				order by vtiger_blocks.sequence, vtiger_field.sequence";
-			$params = array($tabid, $block);	
+			$params = array($tabid, $block); 
 		}else{
 			$profileList = getCurrentUserProfileList();
 

@@ -220,6 +220,13 @@ function __vt_sub_days($arr) {
 	$date = strftime('%Y-%m-%d', $baseDate - ($noOfDays * 24 * 60 * 60));
 	return $date;
 }
+function __vt_get_age($arr){
+	$time_current = date('Y/m/d');
+	$time_current_int = (int)date('Ymd', strtotime($time_current)); 
+	$time_users_int = (int)date('Ymd', strtotime($arr[0]));   
+	$age = (int)(($time_current_int - $time_users_int) / 10000);
+	return $age;
+}
 
 function __vt_get_date($arr) {
 	$type = $arr[0];
@@ -289,6 +296,7 @@ class VTFieldExpressionEvaluater{
 				'add_days' => '__vt_add_days',
 				'sub_days' => '__vt_sub_days',
 				'get_date' => '__vt_get_date',
+				'get_age'  => '__vt_get_age',
 				'add_time' => '__vt_add_time',
 				'sub_time' => '__vt_sub_time',
 				'power'	   => '__vt_power'

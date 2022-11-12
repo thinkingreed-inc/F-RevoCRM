@@ -55,16 +55,30 @@
 								{/if}
 							</td>
 							<td>
-								{if $FIELD_MODEL->getFieldDataType() eq 'reference'}
-									{assign var=EXPLODED_FIELD_VALUE value = 'x'|explode:$FIELD_MODEL->get('defaultvalue')}
-									{assign var=FIELD_VALUE value=$EXPLODED_FIELD_VALUE[1]}
-									{if !isRecordExists($FIELD_VALUE)}
-										{assign var=FIELD_VALUE value=0}
-									{/if}
+								{if $FIELD_MODEL->getFieldDataType() eq 'multipicklist' || $FIELD_MODEL->getFieldDataType() eq 'picklist'}
+									{assign var=OLD_PICKLIST_VALUE value="initial_val"}
+									{foreach from=" |##| "|explode:$FIELD_MODEL->get('fieldvalue') item="PICKLIST_VALUE"}{*複数選択肢項目の場合、fieldvalueが"a |##| b"のようになるため*}
+										{assign var=PICKLIST_COLOR value=Settings_Picklist_Module_Model::getPicklistColorByValue($FIELD_MODEL->getName(), $PICKLIST_VALUE)}
+										{if ($OLD_PICKLIST_VALUE neq $PICKLIST_VALUE) and  $OLD_PICKLIST_VALUE neq "initial_val"}
+											{", "}
+										{/if}
+										<span class="picklist-color" style="background-color: {$PICKLIST_COLOR};color: {Settings_Picklist_Module_Model::getTextColor($PICKLIST_COLOR)};">
+											{vtranslate($PICKLIST_VALUE, $MODULE)}
+										</span>
+										{assign var=OLD_PICKLIST_VALUE value=$PICKLIST_VALUE}
+									{/foreach}
 								{else}
-									{assign var=FIELD_VALUE value=$FIELD_MODEL->get('defaultvalue')}
+									{if $FIELD_MODEL->getFieldDataType() eq 'reference'}
+										{assign var=EXPLODED_FIELD_VALUE value = 'x'|explode:$FIELD_MODEL->get('defaultvalue')}
+										{assign var=FIELD_VALUE value=$EXPLODED_FIELD_VALUE[1]}
+										{if !isRecordExists($FIELD_VALUE)}
+											{assign var=FIELD_VALUE value=0}
+										{/if}
+									{else}
+										{assign var=FIELD_VALUE value=$FIELD_MODEL->get('defaultvalue')}
+									{/if}
+									{$FIELD_MODEL->getDisplayValue($FIELD_VALUE, $RECORD->getId(), $RECORD)}
 								{/if}
-								{$FIELD_MODEL->getDisplayValue($FIELD_VALUE, $RECORD->getId(), $RECORD)}
 							</td>
 							<td>
 								{$FIELD_MODEL->get('name')}

@@ -14,6 +14,7 @@ $languageStrings = array(
     'LBL_SELECT_INVENTORY_MODULES' => '販売管理に表示するモジュールを選択してください',
     'LBL_SELECT_SUPPORT_MODULES' => 'サポートに表示するモジュールを選択してください',
     'LBL_SELECT_PROJECT_MODULES' => 'プロジェクトに表示するモジュールを選択してください',
+    'LBL_SELECT_TOOLS_MODULES'   => 'ツールに表示するモジュールを選択してください',
     'LBL_SELECT_HIDDEN_MODULE' => '非表示のモジュールを選択',
     'LBL_INFO' => 'メモ',
     'LBL_MENU_EDITOR_INFO' => 'モジュールをドラッグ＆ドロップして、移動/並べ替えます。メニューからモジュールを削除して、後で再び追加することができます。',

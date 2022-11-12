@@ -293,7 +293,13 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 		}
 
 		if($module != 'PurchaseOrder' && $focus->object_name != 'Order') {
-			$product_Detail[$i]['qtyInStock'.$i]=decimalFormat($qtyinstock);
+			$checkpresenceresult = $adb->pquery("SELECT * FROM vtiger_field WHERE fieldname=? AND tabid=?",array("qtyinstock", Vtiger_Functions::getModuleId('Products')));
+			$presence = $adb->query_result($checkpresenceresult,0,'presence');
+			if(in_array($presence, array(0, 2))){
+				$product_Detail[$i]['qtyInStock'.$i]=decimalFormat($qtyinstock);
+			}else{
+				$product_Detail[$i]['qtyInStock'.$i]=false;
+			}
 		}
 		$listprice = number_format($listprice, $no_of_decimal_places,'.','');
 		$product_Detail[$i]['qty'.$i]=decimalFormat($qty);
@@ -411,7 +417,11 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 	$finalDiscount = 0;
 	$product_Detail[1]['final_details']['discount_type_final'] = 'zero';
 
-	$subTotal = ($focus->column_fields['hdnSubTotal'] != '')?$focus->column_fields['hdnSubTotal']:0;
+	//subTotalに消費税のグループに関係なく小計が入っているpre_tax_totalを代入
+	//[消費税個別用]individualTotalに税込み金額が入っているhdnSubTotalを代入
+	$individualTotal = ($focus->column_fields['hdnSubTotal'] != '')?$focus->column_fields['hdnSubTotal']:0;
+	$individualTotal = number_format($individualTotal, $no_of_decimal_places,'.','');
+	$subTotal = ($focus->column_fields['pre_tax_total'] != '')?$focus->column_fields['pre_tax_total']:0;
 	$subTotal = number_format($subTotal, $no_of_decimal_places,'.','');
 
 	$product_Detail[1]['final_details']['hdnSubTotal'] = $subTotal;
@@ -514,6 +524,10 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 		$taxTotal = $taxTotal + $taxDetails[$taxId]['amount'];
 	}
 	$product_Detail[1]['final_details']['taxes'] = $taxDetails;
+	//消費税が「個別」の時に、消費税を正しい数字に上書きする
+	if($taxtype == 'individual'){
+		$taxTotal = $individualTotal - $subTotal;
+	}
 	$product_Detail[1]['final_details']['tax_totalamount'] = number_format($taxTotal, $no_of_decimal_places, '.', '');
 	// 消費税がマイナスとなっている場合、引き算した時に料金が減ってしまうため、0にする
 	if($product_Detail[1]['final_details']['tax_totalamount'] <= 0){

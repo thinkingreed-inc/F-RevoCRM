@@ -281,6 +281,7 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 				var modalContainer = data.find('.recurringEventsUpdation');
 				modalContainer.removeClass('hide');
 				modalContainer.on('click', '.onlyThisEvent', function() {
+					window.onbeforeunload = null;
 					recurringEditMode.val('current');
 					app.helper.hideModal();
 					form.vtValidate({
@@ -291,6 +292,7 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 					form.submit();
 				});
 				modalContainer.on('click', '.futureEvents', function() {
+					window.onbeforeunload = null;
 					recurringEditMode.val('future');
 					app.helper.hideModal();
 					form.vtValidate({
@@ -301,6 +303,7 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 					form.submit();
 				});
 				modalContainer.on('click', '.allEvents', function() {
+					window.onbeforeunload = null;
 					recurringEditMode.val('all');
 					app.helper.hideModal();
 					form.vtValidate({
