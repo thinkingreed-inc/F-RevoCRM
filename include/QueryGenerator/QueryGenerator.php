@@ -739,9 +739,9 @@ class QueryGenerator {
 					}else{
 						$moduleList = $this->referenceFieldInfoList[$fieldName];
 						foreach($moduleList as $module) {
+							$meta = $this->getMeta($module);
 							$nameFields = $this->moduleNameFields[$module];
 							$nameFieldList = explode(',',$nameFields);
-							$meta = $this->getMeta($module);
 							$columnList = array();
 							foreach ($nameFieldList as $column) {
 								if($module == 'Users') {
@@ -836,7 +836,7 @@ class QueryGenerator {
 							$fieldSql .= "$fieldGlue ".$field->getTableName().'.'.$field->getColumnName().' '.$valueSql;
 						}
 					}
-				} else if (($baseModule == 'Events' || $baseModule == 'Calendar') 
+				} else if (($baseModule == 'Events' || $baseModule == 'Calendar')
 						&& ($field->getColumnName() == 'status' || $field->getColumnName() == 'eventstatus')) {
 					$otherFieldName = 'eventstatus';
 					if($field->getColumnName() == 'eventstatus'){
@@ -848,7 +848,7 @@ class QueryGenerator {
 					$specialConditionForOtherField='';
 					$conditionGlue = ' OR ';
 					if($conditionInfo['operator'] == 'n' || $conditionInfo['operator'] == 'k' || $conditionInfo['operator'] == 'y') {
-					   $conditionGlue = ' AND '; 
+					   $conditionGlue = ' AND ';
 					   if($conditionInfo['operator'] == 'n') {
 						   $specialCondition = ' OR '.$field->getTableName().'.'.$field->getColumnName().' IS NULL ';
 						   if(!empty($otherField))
@@ -932,7 +932,7 @@ class QueryGenerator {
 				}
 			}
 		}
-		
+
 		// This is needed as there can be condition in different order and there is an assumption in makeGroupSqlReplacements API
 		// that it expects the array in an order and then replaces the sql with its the corresponding place
 		ksort($fieldSqlList);
@@ -1154,7 +1154,7 @@ class QueryGenerator {
 				$value = "'$value'";
 			}
 
-			if(($this->isNumericType($field->getFieldDataType())) && empty($value)) {				
+			if(($this->isNumericType($field->getFieldDataType())) && empty($value)) {
 				$value = '0';
 			}
 			
