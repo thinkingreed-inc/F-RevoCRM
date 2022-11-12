@@ -377,7 +377,7 @@ body > .mCSB_inside > .mCSB_container {
   overflow: hidden;
   max-width: 223px;
   text-overflow: ellipsis;
-  font-size: 15px;
+  font-size: 12px;
 }
 .module-action-bar .module-breadcrumb {
   padding-left: 11px;
