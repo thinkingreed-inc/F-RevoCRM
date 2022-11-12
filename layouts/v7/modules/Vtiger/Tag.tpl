@@ -10,6 +10,7 @@
  <span class="tag {if $ACTIVE eq true} active {/if}" title="{$TAG_MODEL->getName()}" data-type="{$TAG_MODEL->getType()}" data-id="{$TAG_MODEL->getId()}">
     <i class="activeToggleIcon fa {if $ACTIVE eq true} fa-circle-o {else} fa-circle {/if}"></i>
     <span class="tagLabel display-inline-block textOverflowEllipsis" title="{$TAG_MODEL->getName()}">{$TAG_MODEL->getName()}</span>
+    <input type="hidden" class="tagOwner" value="{getOwnerName($TAG_MODEL->get('owner'))}">
     {if !$NO_EDIT}
         <i class="editTag fa fa-pencil"></i>
     {/if}
