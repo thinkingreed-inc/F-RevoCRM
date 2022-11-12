@@ -28,7 +28,7 @@ class Calendar_DeleteAjax_Action extends Vtiger_DeleteAjax_Action {
 		parent::checkPermission($request);
 		
 		if ($record) {
-			$activityModulesList = array('Calendar', 'Events');
+			$activityModulesList = array('Calendar', 'Events','ProjectTask');
 			$recordEntityName = getSalesEntityType($record);
 
 		if (!in_array($recordEntityName, $activityModulesList)  || (!empty($sourceModule) && !in_array($sourceModule, $activityModulesList))) {
