@@ -1146,6 +1146,7 @@ $jsLanguageStrings = array(
 	'JS_UPLOADED_FILE_SIZE_EXCEEDS' => 'Uploaded file size exceeds'  , // TODO: Review
 	'JS_PLEASE_SPLIT_FILE_AND_IMPORT_AGAIN' => 'Please split the file into smaller files and import again.', // TODO: Review
 	'JS_FIELD_MAPPED_MORE_THAN_ONCE' => 'A mezőt egynél több helyre rendelték hozzá',
+	'JS_SUCCESS_IMPORT_COMMENT' => 'Az importálás befejeződött',
 	'JS_MAP_MANDATORY_FIELDS'      => 'Kérjük, hogy a kötelező mezőket rendeld hozzá a leképezéshez',
 	'JS_PLEASE_ENTER_SOME_VALUE'   => 'Kérjük, hogy adj meg valamit, ami alapján keresni lehet',
 	'JS_YOU_CAN_SELECT_ONLY'       => 'Csak kiválaszthatod'        ,
