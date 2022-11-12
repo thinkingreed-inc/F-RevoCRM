@@ -185,8 +185,8 @@ $default_layout = 'v7';
 // スケジュールワークフローの設定最大数
 $max_scheduled_workflows = 50;
 
-include_once 'config.security.php';
-
 // メールの「クリック数」のカウント
 $email_tracking = 'Yes';
+
+include_once 'config.security.php';
 ?>
