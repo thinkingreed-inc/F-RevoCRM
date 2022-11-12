@@ -785,7 +785,7 @@ $languageStrings = array(
 	'LBL_Dec' => '12月',
 
 	'LBL_CALENDAR_SETTINGS' => 'カレンダー設定',
-	'Reminder Interval' => 'アラームの表示間隔',
+	'Reminder Interval' => 'アラーム設定時刻',
 
 	//Translations used in inventory modules for address
 	'SINGLE_Accounts' => '顧客企業',
@@ -1572,6 +1572,7 @@ $jsLanguageStrings = array(
 	'LBL_DELETE_USER_CONFIRMATION' => 'ユーザーを削除すると、ユーザーは無効化されログイン不可となり、新たなレコードを割り当てることもできなくなります。本当に削除してもよろしいですか？',
 	'LBL_DELETE_CONFIRMATION_NOTE' => '注意 : 削除されたレコードはごみ箱に保持され、%s日後に消去されます',
 	'LBL_MASS_DELETE_CONFIRMATION' => '選択したレコードを削除しますか？',
+	'LBL_DELETE_COMMENT_CONFIRMATION_NOTE' => 'このコメントを削除しますか？',
 	'JS_LBL_SAVE' => '保存',
 	'JS_LBL_CANCEL' => 'キャンセル',
 	'JS_DUPLICTAE_CREATION_CONFIRMATION' => '顧客企業名は既に存在します。重複したレコードを作成しますか？',
@@ -1851,6 +1852,8 @@ $jsLanguageStrings = array(
 	'JS_SAVE_AS_IMAGE' => '画像として保存',
 	'JS_DIRECTORY_IS_EMPTY' => 'ディレクトリが空です',
 	'JS_PLEASE_SELECT_AN_RELATED_TO_COPY_ADDRESS' => '住所コピー元のリードまたは顧客担当者を選択してください',
+	'JS_PLEASE_SELECT_AN_RELATED_TO_COPY_ADDRESS_WITHOUT_LEAD' => '住所コピー元のご担当者様を選択してください',
+	'JS_RELATED_CONTACT_IS_NOT_AVAILABLE' => '住所コピー元のリードまたは顧客担当者が有効ではありません',
 	'SINGLE_Leads' => 'リード',
 	'JS_SELECTED_LEAD_DOES_NOT_HAVE_AN_ADDRESS' => '選択したリードにはコピーする住所が含まれていません',
 	'JS_INVALID_EMAILS' => 'メールモジュールが無効です',

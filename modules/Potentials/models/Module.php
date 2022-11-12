@@ -99,7 +99,7 @@ class Potentials_Module_Model extends Vtiger_Module_Model {
             $params[] = $picklistValue;
         }
 
-		$result = $db->pquery('SELECT COUNT(*) AS count, concat(last_name," "first_name) as last_name, vtiger_potential.sales_stage, vtiger_groups.groupname FROM vtiger_potential
+		$result = $db->pquery('SELECT COUNT(*) AS count, CONCAT(vtiger_users.last_name," ",vtiger_users.first_name) as last_name, vtiger_potential.sales_stage, vtiger_groups.groupname FROM vtiger_potential
 						INNER JOIN vtiger_crmentity ON vtiger_potential.potentialid = vtiger_crmentity.crmid AND vtiger_crmentity.deleted = 0
 						LEFT JOIN vtiger_users ON vtiger_users.id=vtiger_crmentity.smownerid AND vtiger_users.status="Active"
 						LEFT JOIN vtiger_groups ON vtiger_groups.groupid=vtiger_crmentity.smownerid'.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()).'
@@ -189,10 +189,10 @@ class Potentials_Module_Model extends Vtiger_Module_Model {
 	function getTopPotentials($pagingModel) {
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$db = PearDatabase::getInstance();
-		$query = "SELECT crmid, amount, potentialname, related_to FROM vtiger_potential
+		$query = "SELECT vtiger_crmentity.crmid, vtiger_potential.amount, vtiger_potential.potentialname, vtiger_potential.related_to FROM vtiger_potential
 						INNER JOIN vtiger_crmentity ON vtiger_potential.potentialid = vtiger_crmentity.crmid
-							AND deleted = 0 ".Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName())."
-						WHERE sales_stage NOT IN ('Closed Won', 'Closed Lost') AND amount > 0
+							AND vtiger_crmentity.deleted = 0 ".Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName())."
+						WHERE sales_stage NOT IN ('Closed Won', 'Closed Lost') 
 						ORDER BY amount DESC LIMIT ".$pagingModel->getStartIndex().", ".$pagingModel->getPageLimit()."";
 		$result = $db->pquery($query, array());
 

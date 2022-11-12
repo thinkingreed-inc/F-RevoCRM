@@ -215,21 +215,17 @@ Vtiger.Class('Vtiger_Index_Js', {
 	 * Function registers event for Calendar Reminder popups
 	 */
 	registerActivityReminder : function() {
-		var activityReminderInterval = app.getActivityReminderInterval();
-		if(activityReminderInterval != '') {
-			var cacheActivityReminder = app.storage.get('activityReminder', 0);
-			var currentTime = new Date().getTime()/1000;
-			var nextActivityReminderCheck = app.storage.get('nextActivityReminderCheckTime', 0);
-			//If activity Reminder Changed, nextActivityReminderCheck should reset
-			if(activityReminderInterval != cacheActivityReminder) {
-				nextActivityReminderCheck = 0;
-			}
-			if(currentTime >= nextActivityReminderCheck) {
-				Vtiger_Index_Js.requestReminder();
-			} else {
-				var nextInterval = nextActivityReminderCheck - currentTime;
-				setTimeout(function() {Vtiger_Index_Js.requestReminder()}, nextInterval*1000);
-			}
+		var activityReminderInterval = 60;
+		var cacheActivityReminder = app.storage.get('activityReminder', 0);
+		var currentTime = new Date().getTime()/1000;
+		var nextActivityReminderCheck = app.storage.get('nextActivityReminderCheckTime', 0);
+		//If activity Reminder Changed, nextActivityReminderCheck should reset
+		if(activityReminderInterval != cacheActivityReminder) nextActivityReminderCheck = 0; /* キャッシュが残っているため1度だけ実行される */
+		if(currentTime >= nextActivityReminderCheck) {
+			Vtiger_Index_Js.requestReminder();
+		} else {
+			var nextInterval = nextActivityReminderCheck - currentTime;
+			setTimeout(function() {Vtiger_Index_Js.requestReminder()}, nextInterval*1000);
 		}
 	},
 
@@ -237,10 +233,7 @@ Vtiger.Class('Vtiger_Index_Js', {
 	 * Function request for reminder popups
 	 */
 	requestReminder : function() {
-		var activityReminder = app.getActivityReminderInterval();
-		if(!activityReminder) {
-			return;
-		}
+		var activityReminder = 60; /* 分間隔でリクエストを送信. 予定が多く登録された場合、処理が重くなる可能性がある */
 		var currentTime = new Date().getTime()/1000;
 		//requestReminder function should call after activityreminder popup interval
 		setTimeout(function() {Vtiger_Index_Js.requestReminder()}, activityReminder*1000);
@@ -441,7 +434,10 @@ Vtiger.Class('Vtiger_Index_Js', {
 		var thisInstance = this;
 
 		app.event.on("post.QuickCreateForm.show",function(event,form){
-			form.find('#goToFullForm').on('click', function(e) {
+			jQuery('<input type="hidden" name="returnview" value="Detail" />').appendTo(form);
+			jQuery('<input type="hidden" name="fromQuickCreate" value="true" />').appendTo(form);
+			jQuery('<input type="hidden" name="quickCreateReturnURL" value="'+location.search+'" />').appendTo(form);
+			form.find('#goToFullForm').on('click', function (e) {
 				window.onbeforeunload = true;
 				var form = jQuery(e.currentTarget).closest('form');
 				var editViewUrl = jQuery(e.currentTarget).data('editViewUrl');
@@ -458,6 +454,7 @@ Vtiger.Class('Vtiger_Index_Js', {
 	 * @param accepts form element as parameter
 	 */
 	quickCreateGoToFullForm: function(form, editViewUrl) {
+		jQuery('[name=fromQuickCreate]').val("");
 		var formData = form.serializeFormData();
 		//As formData contains information about both view and action removed action and directed to view
 		delete formData.module;
@@ -885,6 +882,8 @@ Vtiger.Class('Vtiger_Index_Js', {
 			inputElement.data('value','');
 			inputElement.val("");
 			parentTdElement.find('input[name="'+fieldName+'"]').val("");
+			parentTdElement.find('input[name="'+fieldName+'_historyback_restore"]').val("");
+			parentTdElement.find('input[name="'+fieldName+'_historyback_restore_name"]').val("");
 			element.addClass('hide');
 			element.trigger(Vtiger_Edit_Js.referenceDeSelectionEvent);
 		});
@@ -1168,6 +1167,11 @@ Vtiger.Class('Vtiger_Index_Js', {
 		var selectedName = params.name;
 		var id = params.id;
 
+		var sourceFieldIdHidden = sourceField+"_historyback_restore";
+		var fieldIdHiddenElement = container.find('input[name="'+sourceFieldIdHidden+'"]');
+		var sourceFieldNameHidden = sourceField+"_historyback_restore_name";
+		var fieldNameHiddenElement = container.find('input[name="'+sourceFieldNameHidden+'"]');
+
 		if (id && selectedName) {
 			if(!fieldDisplayElement.length) {
 				fieldElement.attr('value',id);
@@ -1177,6 +1181,8 @@ Vtiger.Class('Vtiger_Index_Js', {
 				fieldElement.val(id);
 				fieldElement.data('value', id);
 				fieldDisplayElement.val(selectedName);
+				fieldIdHiddenElement.val(id);
+				fieldNameHiddenElement.val(selectedName);
 				if(selectedName) {
 					fieldDisplayElement.attr('readonly', 'readonly');
 				} else {

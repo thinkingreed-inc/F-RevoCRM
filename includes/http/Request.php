@@ -272,5 +272,7 @@ class Vtiger_Request {
 		$viewer->assign('RETURN_MODE', $this->get('returnmode'));
         $viewer->assign('RETURN_RELATION_ID', $this->get('returnrelationId'));
         $viewer->assign('RETURN_PARENT_MODULE', $this->get('returnparent'));
+        $viewer->assign('FROM_QUICK_CREATE', $this->get('fromQuickCreate'));
+        $viewer->assign('QUICK_CREATE_RETURN_URL', $this->get('quickCreateReturnURL'));
 	}
 }

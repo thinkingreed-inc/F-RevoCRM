@@ -22,7 +22,7 @@
 				{assign var=CURRENT_LINK_NAME value="SharedCalendar"}
 				{assign var=VIEW_ICON_CLASS value="vicon-sharedcalendar"}
 			{/if}
-			<li class="module-qtip {if $CURRENT_LINK_NAME eq $CURRENT_VIEW}active{/if}" title="{vtranslate($SIDE_BAR_LINK->get('linklabel'),'Calendar')}">
+			<li class="module-qtip {if $CURRENT_LINK_NAME eq $CURRENT_VIEW}active{/if} {$SIDE_BAR_LINK->get('linklabel')}" title="{vtranslate($SIDE_BAR_LINK->get('linklabel'),'Calendar')}">
 				<a href="{$SIDE_BAR_LINK->get('linkurl')}">
 					<i class="{$VIEW_ICON_CLASS}"></i>
 					<span>{vtranslate($SIDE_BAR_LINK->get('linklabel'),'Calendar')}</span>

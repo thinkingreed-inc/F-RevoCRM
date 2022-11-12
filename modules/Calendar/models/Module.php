@@ -66,11 +66,50 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 	}
 
 	/**
+	 * Function returns the URL for creating Events at QuickCreat
+	 * @return <String>
+	 */
+	public function getQuickCreateEventRecordUrl() {
+		$refererUrl  = $_SERVER['HTTP_REFERER'];
+		$parsedurl = parse_url($refererUrl);
+		$searchParams = explode('&', $parsedurl['query']);
+		foreach ($searchParams as $searchParam) {
+			$explodedParams = explode('=', $searchParam);
+			$parsedParams[$explodedParams[0]] = $explodedParams[1];
+		}
+		$eventRecordUrl = 'index.php?module=' . $this->get('name') . '&view=' . $this->getEditViewName() . '&mode=Events';
+		if ($parsedParams['view'] == 'SharedCalendar') {
+			return $eventRecordUrl . '&referer=SharedCalendar';
+		}
+		return $eventRecordUrl;
+	}
+
+	/**
 	 * Function returns the URL for creating Task
 	 * @return <String>
 	 */
 	public function getCreateTaskRecordUrl() {
 		return 'index.php?module='.$this->get('name').'&view='.$this->getEditViewName().'&mode=Calendar';
+	}
+
+	/**
+	 * Function returns the URL for creating Tasks at QuickCreat
+	 * @return <String>
+	 */
+	public function getQuickCreateTaskRecordUrl()
+	{
+		$refererUrl  = $_SERVER['HTTP_REFERER'];
+		$parsedurl = parse_url($refererUrl);
+		$searchParams = explode('&', $parsedurl['query']);
+		foreach ($searchParams as $searchParam) {
+			$explodedParams = explode('=', $searchParam);
+			$parsedParams[$explodedParams[0]] = $explodedParams[1];
+		}
+		$eventRecordUrl = 'index.php?module=' . $this->get('name') . '&view=' . $this->getEditViewName() . '&mode=Calendar';
+		if ($parsedParams['view'] == 'SharedCalendar') {
+			return $eventRecordUrl . '&referer=SharedCalendar';
+		}
+		return $eventRecordUrl;
 	}
 
 	/**
@@ -906,17 +945,17 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 
 		if($activityReminder != '' ) {
 			$currentTime = time();
-			$date = date('Y-m-d', strtotime("+$activityReminder seconds", $currentTime));
-			$time = date('H:i',   strtotime("+$activityReminder seconds", $currentTime));
+			$when = date('Y-m-d H:i:s', strtotime("+$activityReminder seconds", $currentTime));
 			$reminderActivitiesResult = "SELECT reminderid, recordid FROM vtiger_activity_reminder_popup
 								INNER JOIN vtiger_activity on vtiger_activity.activityid = vtiger_activity_reminder_popup.recordid
 								INNER JOIN vtiger_crmentity ON vtiger_activity_reminder_popup.recordid = vtiger_crmentity.crmid
 								WHERE vtiger_activity_reminder_popup.status = 0
-								AND vtiger_crmentity.smownerid = ? AND vtiger_crmentity.deleted = 0
-								AND ((DATE_FORMAT(vtiger_activity_reminder_popup.date_start,'%Y-%m-%d') <= ?)
-								AND (TIME_FORMAT(vtiger_activity_reminder_popup.time_start,'%H:%i') <= ?))
+								AND vtiger_crmentity.smownerid = ?
+								AND vtiger_crmentity.deleted = 0
+								AND vtiger_activity.sendnotification = 1
+								AND concat(cast(vtiger_activity_reminder_popup.date_start as char),' ',cast(vtiger_activity_reminder_popup.time_start as char)) <= ?
 								AND vtiger_activity.eventstatus <> 'Held' AND (vtiger_activity.status <> 'Completed' OR vtiger_activity.status IS NULL) LIMIT 20";
-			$result = $db->pquery($reminderActivitiesResult, array($currentUserModel->getId(), $date, $time));
+			$result = $db->pquery($reminderActivitiesResult, array($currentUserModel->getId(), $when));
 			$rows = $db->num_rows($result);
 			for($i=0; $i<$rows; $i++) {
 				$recordId = $db->query_result($result, $i, 'recordid');

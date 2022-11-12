@@ -68,6 +68,8 @@
 								<input type="hidden" name="returnmode" value={$RETURN_MODE} />
 								<input type="hidden" name="returnrelationId" value="{$RETURN_RELATION_ID}" />
 								<input type="hidden" name="returnparent" value="{$RETURN_PARENT_MODULE}" />
+								<input type="hidden" name="fromQuickCreate" value="{$FROM_QUICK_CREATE}" />
+								<input type="hidden" name="quickCreateReturnURL" value="{$QUICK_CREATE_RETURN_URL}" />
 							{/if}
 							{include file="partials/EditViewContents.tpl"|@vtemplate_path:$MODULE}
 						</div>

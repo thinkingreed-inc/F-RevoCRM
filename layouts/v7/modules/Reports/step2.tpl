@@ -42,7 +42,7 @@
         <input type="hidden" class="step" value="2" />
         <div class="" style="border:1px solid #ccc;padding:4%;">
             <div class="form-group">
-                <label>{vtranslate('LBL_SELECT_COLUMNS',$MODULE)}({vtranslate('LBL_MAX',$MODULE)} 25)</label>
+                <label>{vtranslate('LBL_SELECT_COLUMNS',$MODULE)}({vtranslate('LBL_MAX',$MODULE)} 60)</label>
                 <select data-placeholder="{vtranslate('LBL_ADD_MORE_COLUMNS',$MODULE)}" id="reportsColumnsList" style="width :100%;" class="select2-container select2 col-lg-11 columns"  data-rule-required="true" multiple="">
                     {foreach key=PRIMARY_MODULE_NAME item=PRIMARY_MODULE from=$PRIMARY_MODULE_FIELDS}
                         {foreach key=BLOCK_LABEL item=BLOCK from=$PRIMARY_MODULE}

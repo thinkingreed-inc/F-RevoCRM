@@ -2919,6 +2919,63 @@ Vtiger.Class("Vtiger_Detail_Js",{
 			editCommentBlock.appendTo(commentInfoBlock).show();
 		});
 
+		detailContentsHolder.on('click','.deleteComment', function(e){
+			var thisInstance = this;
+			var currentTarget = jQuery(e.currentTarget);
+			var message = app.vtranslate('LBL_DELETE_COMMENT_CONFIRMATION_NOTE');
+			app.helper.showConfirmationBox({'message' : message}).then(function(e) {
+					var module = app.getModuleName();
+					var commentInfoBlock = currentTarget.closest('.singleComment');
+					var commentInfoHeader = commentInfoBlock.find('.commentInfoHeader');
+					var commentId = commentInfoHeader.data('commentid');
+					var commentRelatedTo = commentInfoHeader.data('relatedto');
+					if(!commentRelatedTo) commentRelatedTo = self.getRecordId();
+					var postData = {
+						'url': 'index.php',
+						'type': 'POST',
+						'module': 'ModComments',
+						'action': 'DeleteAjax',
+						'related_to': commentRelatedTo,
+						'commentId': commentId,
+					}
+					
+					app.helper.showProgress();
+					app.request.post({'data': postData}).then(function (error, res) {
+					app.helper.hideProgress();
+					var commentsContainer = detailContentsHolder.find("[data-name='ModComments']");
+					var afterLoadComment = function () {
+						app.getModuleName();
+						currentTarget.removeAttr('disabled');
+						app.event.trigger('post.summarywidget.load', commentsContainer);
+						var indexInstance = Vtiger_Index_Js.getInstance();
+						indexInstance.registerMultiUpload();
+					}
+					if (commentsContainer.length == 0) {
+						var deleteRelatedModuleComment = function (commentId) {
+							var aDeferred = jQuery.Deferred();
+							try {
+								$('li.commentDetails:has(div.commentInfoHeader[data-commentid="' + commentId + '"])').remove();
+								aDeferred.resolve();
+							} catch (e) {
+								aDeferred.reject();
+							}
+							return aDeferred.promise();
+						}
+						deleteRelatedModuleComment(commentId).then(afterLoadComment);
+					} else {
+						self.loadWidget(commentsContainer).then(afterLoadComment);
+					}
+				},
+						function (error, err) {
+	
+						}
+					);
+				},
+				function(error, err){
+				}
+			);
+		});
+
 		detailContentsHolder.on('click','.closeCommentBlock', function(e){
 			var currentTarget = jQuery(e.currentTarget);
 			var commentInfoBlock = currentTarget.closest('.singleComment');

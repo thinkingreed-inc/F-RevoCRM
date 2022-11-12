@@ -428,8 +428,15 @@ class Vtiger_InventoryPDFController {
 	}
 
 	public static function getMergedDescription($template, $recordId, $moduleName) {
-		$blocks = preg_split('/<tr((?:(?!<).)*)>((?:(?!<tr).)*)\$loop-products\$.*?<\/tr>/is', $template);
+		// base64データを含むimgタグをpreg_splitで取得した場合、Segmentation fault.が発生する場合がある。
+		// preg_split前にimgタグを置換し、処理後にimgタグの内容を戻すようにする。
+		preg_match_all('/<img.*?[\"|\'][\"|\'].*?>/is',$template,$matches_img);
+		foreach ($matches_img[0] as $key => $imgtag) {
+			$template = str_replace($imgtag, "imgtag".$key,$template);
+		}
 
+		$blocks = preg_split('/<tr((?:(?!<).)*)>((?:(?!<tr).)*)\$loop-products\$.*?<\/tr>/is', $template);
+		
 		$prefix = strtolower($moduleName);
 		$parentRecordModel = Inventory_Record_Model::getInstanceById($recordId);
 		$relatedProducts = $parentRecordModel->getProducts();
@@ -452,7 +459,13 @@ class Vtiger_InventoryPDFController {
 			$cnt += 1;
 		}
 
-		return implode("", $description);
+		//imgタグの内容を戻す
+		$returnstring = implode("", $description);
+		foreach ($matches_img[0] as $key => $imgtag) {
+			$returnstring = str_replace("imgtag".$key,$imgtag,$returnstring);
+		}
+
+		return $returnstring;
 	}
 	private static function getMergeInventoryBlock($blocktemplate, $relatedProducts, $prefix) {
 		$convertedArray = array();

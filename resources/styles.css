@@ -602,3 +602,33 @@ ul#productsImageContainer > li a{
     position: static !important;
   }
 }
+
+/* コメントと製品の画像プレビュー */
+.MultiFile-preview {
+  margin: 10px;
+}
+.MultiFile-list .MultiFile-remove {
+  margin: 10px;
+  color: #ff0000;
+  font-weight: 900;
+}
+
+/* ダッシュボードのミニリスト */
+@media (max-width: 991px) {
+  .row.minilist-container {
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: column;
+  }
+  .row.minilist-container > div {
+    width: 100% !important;
+  }
+}
+.row.minilist-container {
+  display: flex;
+  flex-wrap: nowrap;
+}
+.row.minilist-container > div {
+  padding-right: 15px; 
+  padding-left: 15px; 
+}

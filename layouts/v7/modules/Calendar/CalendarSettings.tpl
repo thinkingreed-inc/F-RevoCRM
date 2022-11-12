@@ -60,7 +60,7 @@
 												<select class="select2" name="{$FIELD_NAME}" {if $FIELD_NAME eq 'time_zone'} style="min-width: 350px" {else} style="min-width: 150px" {/if}>
 													{if $FIELD_MODEL->isEmptyPicklistOptionAllowed()}<option value="">{vtranslate('LBL_SELECT_OPTION','Vtiger')}</option>{/if}
 													{foreach key=ID item=LABEL from=$FIELD_MODEL->getPicklistValues()}
-														<option value="{$ID}" {if $FIELD_VALUE eq $ID} selected="" {/if}>{vtranslate($LABEL,$MODULE)}</option>
+														<option value="{$ID}" {if $FIELD_VALUE eq $ID} selected="" {/if}>{vtranslate($LABEL,$MODULE)}{if $FIELD_NAME eq 'reminder_interval'}{vtranslate('LBL_AGO','Vtiger')}{/if}</option>
 													{/foreach}
 												</select>
 											{/if}

@@ -27,9 +27,23 @@ class Calendar_Save_Action extends Vtiger_Save_Action {
 	public function process(Vtiger_Request $request) {
 		try {
 			$recordModel = $this->saveRecord($request);
-			$loadUrl = $recordModel->getDetailViewUrl();
 
-			if ($request->get('returntab_label')) {
+			$refererUrl  = $_SERVER['HTTP_REFERER'];
+			$parsedurl = parse_url($refererUrl);
+			$searchParams = explode('&', $parsedurl['query']);
+			foreach ($searchParams as $searchParam){
+				$explodedParams = explode('=', $searchParam);
+				$parsedParams[$explodedParams[0]] =$explodedParams[1];
+			}
+			if($parsedParams['referer'] == 'SharedCalendar') {
+				$loadUrl = 'index.php?module=Calendar&view=SharedCalendar&calendarStartDate='. $recordModel->get('date_start');
+			} else {
+				$loadUrl = 'index.php?module=Calendar&view=Calendar&calendarStartDate='. $recordModel->get('date_start');
+			}
+
+			if ($request->get('fromQuickCreate')) {
+				$loadUrl = 'index.php'.$request->get('quickCreateReturnURL');
+			} else if($request->get('returntab_label')) {
 				$loadUrl = 'index.php?'.$request->getReturnURL();
 			} else if($request->get('relationOperation')) {
 				$parentModuleName = $request->get('sourceModule');

@@ -60,8 +60,14 @@ class VTUpdateFieldsTask extends VTTask {
 			$entityFields = $referenceEntityFields = false;
 			$focus->column_fields->resumeTracking();
 
-			foreach ($fieldValueMapping as $fieldInfo) {
+			$workflow_skip_field_array = array();
+
+			foreach ($fieldValueMapping as $fieldInfoKey => $fieldInfo) {
 				$fieldName = $fieldInfo['fieldname'];
+
+				// ワークフローで更新する項目名を取得しておく。
+				$workflow_skip_field_array[] = $fieldName;
+
 				$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
 				if ($moduleModel && in_array($fieldName, $moduleModel->getNameFields())) {
 					$entityFields = true;
@@ -321,7 +327,25 @@ class VTUpdateFieldsTask extends VTTask {
 			$changedFields = $focus->column_fields->getChanged();
 			if(count($changedFields) > 0){
 				// save only if any field is changed
-				$focus->saveentity($moduleName);
+				global $log;$log->debug("[".__FUNCTION__."]line:".__LINE__.":workflow_taskid:".$this->id);
+				if (strpos($fieldInfo['value'], 'aggregate') !== false) {
+					global $VTIGER_BULK_SAVE_MODE;
+					$VTIGER_BULK_SAVE_MODE = true;
+					$focus->workflow_task_id = $this->id;
+					$focus->workflow_skip_field_array = $workflow_skip_field_array;
+					$focus->saveentity($moduleName);
+					$VTIGER_BULK_SAVE_MODE = false;
+				}else{
+					$focus->workflow_task_id = $this->id;
+					$focus->saveentity($moduleName);
+				}
+
+				// ワークフローで更新された項目を参照している項目に反映させる
+				$tmpEntity = VTEntityData::fromCRMEntity($focus);
+
+				$vtEntityDelta = new VTEntityDelta();
+				$vtEntityDelta->computeDelta($moduleName, $tmpEntity->getId());
+
 			}
 			if ($entityFields == true) {
 				Vtiger_Functions::updateCRMRecordLabel($moduleName, $focus->id);
@@ -335,7 +359,20 @@ class VTUpdateFieldsTask extends VTTask {
 						}
 						$referenceFocus->isLineItemUpdate = false;
 						$referenceFocus->isWorkFlowFieldUpdate = true;
-						$referenceFocus->saveentity($referenceFocus->moduleName);
+						$referenceFocus->workflow_task_id = $this->id;
+						$referenceFocus->workflow_skip_field_array = $workflow_skip_field_array;
+						if (strpos($fieldInfo['value'], 'aggregate') !== false) {
+							global $VTIGER_BULK_SAVE_MODE;
+							$VTIGER_BULK_SAVE_MODE = true;
+							$referenceFocus->saveentity($referenceFocus->moduleName);
+							$VTIGER_BULK_SAVE_MODE = false;
+						}else{
+							$referenceFocus->saveentity($referenceFocus->moduleName);
+						}
+						// ワークフローで更新された項目を参照している項目に反映させる
+						$tmpEntity = VTEntityData::fromCRMEntity($referenceFocus->id);
+						$vtEntityDelta->setEntityDelta($moduleName, $tmpEntity->getId(), $delta);
+
 						if ($referenceEntityFields == true) {
 							Vtiger_Functions::updateCRMRecordLabel($referenceFocus->moduleName, $referenceFocus->id);
 						}
