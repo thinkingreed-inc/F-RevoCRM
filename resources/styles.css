@@ -632,3 +632,7 @@ ul#productsImageContainer > li a{
   padding-right: 15px; 
   padding-left: 15px; 
 }
+
+.tag_owner_name p{
+  display: inline;
+}

@@ -138,11 +138,12 @@
             <div class="menu-scroller scrollContainer" style="position:relative; top:0; left:0;">
                 <div class="list-menu-content">
                     <div id="listViewTagContainer" class="multiLevelTagList" 
-                    {if $ALL_CUSTOMVIEW_MODEL} data-view-id="{$ALL_CUSTOMVIEW_MODEL->getId()}" {/if}
-                    data-list-tag-count="{Vtiger_Tag_Model::NUM_OF_TAGS_LIST}">
+                        {if $ALL_CUSTOMVIEW_MODEL} data-view-id="{$ALL_CUSTOMVIEW_MODEL->getId()}" {/if}
+                        data-list-tag-count="{Vtiger_Tag_Model::NUM_OF_TAGS_LIST}">
                         {foreach item=TAG_MODEL from=$TAGS name=tagCounter}
                             {assign var=TAG_LABEL value=$TAG_MODEL->getName()}
                             {assign var=TAG_ID value=$TAG_MODEL->getId()}
+                            {assign var=TAG_OWNER value=$TAG_MODEL->get('owner')}
                             {if $smarty.foreach.tagCounter.iteration gt Vtiger_Tag_Model::NUM_OF_TAGS_LIST}
                                 {break}
                             {/if}
@@ -154,13 +155,13 @@
                                 &nbsp;{vtranslate('LBL_MORE',$MODULE)|strtolower}
                             </a>
                             <div class="moreListTags hide">
-                        {foreach item=TAG_MODEL from=$TAGS name=tagCounter}
-                            {if $smarty.foreach.tagCounter.iteration le Vtiger_Tag_Model::NUM_OF_TAGS_LIST}
-                                {continue}
-                            {/if}
-                            {include file="Tag.tpl"|vtemplate_path:$MODULE NO_DELETE=true ACTIVE= $CURRENT_TAG eq $TAG_ID}
-                        {/foreach}
-                             </div>
+                                {foreach item=TAG_MODEL from=$TAGS name=tagCounter}
+                                    {if $smarty.foreach.tagCounter.iteration le Vtiger_Tag_Model::NUM_OF_TAGS_LIST}
+                                        {continue}
+                                    {/if}
+                                    {include file="Tag.tpl"|vtemplate_path:$MODULE NO_DELETE=true ACTIVE= $CURRENT_TAG eq $TAG_ID}
+                                {/foreach}
+                            </div>
                         </div>
                     </div>
                     {include file="AddTagUI.tpl"|vtemplate_path:$MODULE RECORD_NAME="" TAGS_LIST=array()}
@@ -183,6 +184,10 @@
                                         <input type="checkbox" name="visibility" value="{Vtiger_Tag_Model::PUBLIC_TYPE}" />
                                         &nbsp; {vtranslate('LBL_SHARE_TAG',$MODULE)}
                                     </label>
+                                    <div class="tag_owner_name">
+                                        <p>作成者：</p>
+                                        <p type="text" class="tagOwnerName" value="" style="width:100%" maxlength="25"></p>
+                                    </div>
                                 </div>
                             </div>
                         </div>

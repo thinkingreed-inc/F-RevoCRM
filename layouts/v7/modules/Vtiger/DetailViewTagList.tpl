@@ -57,6 +57,11 @@
 {assign var=TAG_MODEL value=Vtiger_Tag_Model::getCleanInstance()}
 {include file="Tag.tpl"|vtemplate_path:$MODULE}
 </div>
+
+
+
+
+
 <div>
     <div  class="editTagContainer hide" >
         <input type="hidden" name="id" value="" />
@@ -71,6 +76,10 @@
                         <input type="checkbox" name="visibility" value="{Vtiger_Tag_Model::PUBLIC_TYPE}" />
                         &nbsp; {vtranslate('LBL_SHARE_TAG',$MODULE)}
                     </label>
+                </div>
+                <div class="tag_owner_name">
+                    <p>作成者：</p>
+                    <p type="text" class="tagOwnerName" value="" style="width:100%" maxlength="25"></p>
                 </div>
             </div>
         </div>
