@@ -181,7 +181,7 @@ $languageStrings = array(
 	//DropDown Category
 	'LBL_USERS' => 'ユーザー',
 	'LBL_GROUPS' => 'グループ',
-	'LBL_ROLEANDSUBORDINATES' => 'ユーザーとその下位',
+	'LBL_ROLEANDSUBORDINATES' => '役割と部下',
 
 	//EditView Form Links
 	'LBL_FULL_FORM' => '詳細フォーム',
