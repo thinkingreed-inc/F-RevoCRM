@@ -181,6 +181,7 @@ $languageStrings = array(
 	//DropDown Category
 	'LBL_USERS' => 'ユーザー',
 	'LBL_GROUPS' => 'グループ',
+	'LBL_ROLEANDSUBORDINATES' => '役割と部下',
 
 	//EditView Form Links
 	'LBL_FULL_FORM' => '詳細フォーム',
@@ -1336,6 +1337,7 @@ $languageStrings = array(
 	'LBL_ROLES' => '役割',
 	'Roles' => '役割',
 	'LBL_ROLEANDSUBORDINATE' => '役割と部下',
+	'RoleAndSubordinates' => '役割と部下',
 	'LBL_YOUR_LEARNING_SCORE' => 'CRM学習スコア',
 	'LBL_SWITCH_TO_VTIGER7_NOW' => '2月15日までにVtiger7に切り替え',
 	'LBL_VTIGER6_RETIREMENT_NOTICE' => 'このバージョンは2016年2月15日に廃止されます',
