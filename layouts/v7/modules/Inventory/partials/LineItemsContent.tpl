@@ -151,7 +151,7 @@
 
 		{if $MODULE neq 'PurchaseOrder'}
 			<br>
-			<span class="stockAlert redColor {if $data.$qty <= $data.$qtyInStock|| not $data.$qtyInStock}hide{/if}" >
+			<span class="stockAlert redColor {if $data.$qty <= $data.$qtyInStock|| $data.$qtyInStock === false}hide{/if}" >
 				{vtranslate('LBL_STOCK_NOT_ENOUGH',$MODULE)}
 				<br>
 				{vtranslate('LBL_MAX_QTY_SELECT',$MODULE)}&nbsp;<span class="maxQuantity">{$data.$qtyInStock}</span>

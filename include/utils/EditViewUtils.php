@@ -293,7 +293,13 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 		}
 
 		if($module != 'PurchaseOrder' && $focus->object_name != 'Order') {
-			$product_Detail[$i]['qtyInStock'.$i]=decimalFormat($qtyinstock);
+			$checkpresenceresult = $adb->pquery("SELECT * FROM vtiger_field WHERE fieldname=? AND tabid=?",array("qtyinstock", Vtiger_Functions::getModuleId('Products')));
+			$presence = $adb->query_result($checkpresenceresult,0,'presence');
+			if(in_array($presence, array(0, 2))){
+				$product_Detail[$i]['qtyInStock'.$i]=decimalFormat($qtyinstock);
+			}else{
+				$product_Detail[$i]['qtyInStock'.$i]=false;
+			}
 		}
 		$listprice = number_format($listprice, $no_of_decimal_places,'.','');
 		$product_Detail[$i]['qty'.$i]=decimalFormat($qty);
