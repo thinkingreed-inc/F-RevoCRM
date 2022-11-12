@@ -2894,6 +2894,7 @@ input[type="text"]:read-only {
   cursor: pointer;
   position: relative;
   width: 18%;
+  min-width: 100px;
 }
 .crumbs li:first-child {
   border-top: 20px solid #ECECEC;
