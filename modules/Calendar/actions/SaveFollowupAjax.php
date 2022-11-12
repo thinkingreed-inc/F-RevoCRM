@@ -17,7 +17,7 @@ class Calendar_SaveFollowupAjax_Action extends Calendar_SaveAjax_Action {
 		parent::checkPermission($request);
 
 		if ($record) {
-			$activityModulesList = array('Calendar', 'Events');
+			$activityModulesList = array('Calendar', 'Events','ProjectTask');
 			$recordEntityName = getSalesEntityType($record);
 			if (!in_array($recordEntityName, $activityModulesList) || !in_array($moduleName, $activityModulesList)) {
 				throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
@@ -89,43 +89,55 @@ class Calendar_SaveFollowupAjax_Action extends Calendar_SaveAjax_Action {
     public function markAsHeldCompleted(Vtiger_Request $request) {
         $moduleName = $request->getModule();
         $recordId = $request->get('record');
-        $recordModel = Vtiger_Record_Model::getInstanceById($recordId,$moduleName);
-        $recordModel->set('mode','edit');
-        $activityType = $recordModel->get('activitytype');
-        $response = new Vtiger_Response();
-        
-        if($activityType == 'Task'){
-            $status = 'Completed';
-            $recordModel->set('taskstatus',$status);
-            $result = array("valid"=>TRUE,"markedascompleted"=>TRUE,"activitytype"=>"Task");
-        }
-        else{
-            //checking if the event can be marked as Held (status validation)
-            $startDateTime = $this->getFormattedDateTime($recordModel->get('date_start'), $recordModel->get('time_start'));
-            $startDateTime = new DateTime($startDateTime);
-            $currentDateTime = date("Y-m-d H:i:s");
-            $currentDateTime = new DateTime($currentDateTime);
-            if($startDateTime > $currentDateTime){
-                $result = array("valid"=>FALSE,"markedascompleted"=>FALSE);
-                $response->setResult($result);
-                $response->emit();
-                return;
-            }
-            $status = 'Held';
-            $recordModel->set('eventstatus',$status);
-            $result = array("valid"=>TRUE,"markedascompleted"=>TRUE,"activitytype"=>"Event");
-        }
-		$_REQUEST['mode'] = 'edit';
-		$this->setRecurrenceInfo($recordModel);
-		try {
+		if($request->get('sourceModule')=='ProjectTask'){
+			$recordModel = Vtiger_Record_Model::getInstanceById($recordId,'ProjectTask');
+			$projecttaskstatus = $recordModel->get("projecttaskstatus");
+			$recordModel->set('mode','edit');
+			$recordModel->set("projecttaskstatus", "Completed");
 			$recordModel->save();
+			$response = new Vtiger_Response();
+			$result = array("valid"=>TRUE,"markedascompleted"=>TRUE,"activitytype"=>"ProjectTask");
 			$response->setResult($result);
-		} catch (DuplicateException $e) {
-			$response->setError($e->getMessage(), $e->getDuplicationMessage(), $e->getMessage());
-		} catch (Exception $e) {
-			$response->setError($e->getMessage());
+			$response->emit();
+		}else{
+			$recordModel = Vtiger_Record_Model::getInstanceById($recordId,$moduleName);
+			$recordModel->set('mode','edit');
+			$activityType = $recordModel->get('activitytype');
+			$response = new Vtiger_Response();
+			
+			if($activityType == 'Task'){
+				$status = 'Completed';
+				$recordModel->set('taskstatus',$status);
+				$result = array("valid"=>TRUE,"markedascompleted"=>TRUE,"activitytype"=>"Task");
+			}
+			else{
+				//checking if the event can be marked as Held (status validation)
+				$startDateTime = $this->getFormattedDateTime($recordModel->get('date_start'), $recordModel->get('time_start'));
+				$startDateTime = new DateTime($startDateTime);
+				$currentDateTime = date("Y-m-d H:i:s");
+				$currentDateTime = new DateTime($currentDateTime);
+				if($startDateTime > $currentDateTime){
+					$result = array("valid"=>FALSE,"markedascompleted"=>FALSE);
+					$response->setResult($result);
+					$response->emit();
+					return;
+				}
+				$status = 'Held';
+				$recordModel->set('eventstatus',$status);
+				$result = array("valid"=>TRUE,"markedascompleted"=>TRUE,"activitytype"=>"Event");
+			}
+			$_REQUEST['mode'] = 'edit';
+			$this->setRecurrenceInfo($recordModel);
+			try {
+				$recordModel->save();
+				$response->setResult($result);
+			} catch (DuplicateException $e) {
+				$response->setError($e->getMessage(), $e->getDuplicationMessage(), $e->getMessage());
+			} catch (Exception $e) {
+				$response->setError($e->getMessage());
+			}
+			$response->emit();
 		}
-        $response->emit();
     }
 	
 	function setRecurrenceInfo($recordModel) {

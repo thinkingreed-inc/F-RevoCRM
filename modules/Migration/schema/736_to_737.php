@@ -9,6 +9,17 @@
 *********************************************************************************/
 
 if (defined('VTIGER_UPGRADE')) {
+	global $current_user, $adb;
+	$db = PearDatabase::getInstance();
+
+    // PDFテンプレートに大きなサイズの画像を張り付ける場合、bodyが途切れるのでtextからlongtextへ変更する
+    $db->query('ALTER TABLE vtiger_pdftemplates MODIFY body longtext;');
+    $db->query("ALTER TABLE vtiger_notes MODIFY filetype varchar(255);");
+    
+    // 過去に通知されなかったリマインダーのステータスを1(通知済み)に変更する
+    $query = "UPDATE vtiger_activity_reminder_popup SET status = 1 WHERE concat(cast(date_start as char),' ',cast(time_start as char))<= ?";
+    $adb->pquery($query, array(date('Y-m-d H:i:s', strtotime('today'))));
+    
     //チケットから資産・レンタルを参照できるようにする
     $moduleModel = Vtiger_Module_Model::getInstance('HelpDesk');
     if($moduleModel){

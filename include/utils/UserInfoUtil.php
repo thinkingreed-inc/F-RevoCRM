@@ -259,6 +259,11 @@ function getRoleName($roleid)
  */
 function isPermitted($module,$actionname,$record_id='')
 {
+
+	if($module == 'Events'){
+		$module = 'Calendar';
+	}
+
 	global $log;
 	$log->debug("Entering isPermitted(".$module.",".$actionname.",".$record_id.") method ...");
 
@@ -541,7 +546,17 @@ function isPermitted($module,$actionname,$record_id='')
 			{
 				if($module == 'Calendar')
 				{
-					$permission='no';
+					$permission='yes';
+					if($module == 'Calendar') {
+						$activityType = vtws_getCalendarEntityType($record_id);
+						if($activityType == 'Events') {
+							$permission = isCalendarPermittedBySharing($record_id);
+						} else {
+							$permission = isToDoPermittedBySharing($record_id);
+						}
+					}
+					$log->debug("Exiting isPermitted method ...");
+					return $permission;
 				}
 				else
 				{

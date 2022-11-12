@@ -22,12 +22,18 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
     }
 
     public function add(Vtiger_Request $request) {
+        global $custom_field_limit;
         $type = $request->get('fieldType');
         $moduleName = $request->get('sourceModule');
         $blockId = $request->get('blockid');
         $moduleModel = Settings_LayoutEditor_Module_Model::getInstanceByName($moduleName);
         $response = new Vtiger_Response();
         try{
+            $cf_count = $this->getCustomFieldsCount($moduleName);
+            if (isset($custom_field_limit) && isset($cf_count) && ($cf_count >= $custom_field_limit)) {
+                throw new Exception(vtranslate('LBL_CUSTOM_FIELD_LIMIT'));
+            }
+
             $fieldModel = $moduleModel->addField($type,$blockId,$request->getAll());
             $fieldInfo = $fieldModel->getFieldInfo();
             $responseData = array_merge(array('id'=>$fieldModel->getId(), 'blockid'=>$blockId, 'customField'=>$fieldModel->isCustomField()),$fieldInfo);
@@ -55,12 +61,20 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
         $response->emit();
     }
 
+    private function getCustomFieldsCount($moduleName) {
+        global $adb;
+        $query = "SELECT COUNT(generatedtype) AS cf_count  FROM vtiger_field INNER JOIN vtiger_tab ON vtiger_field.tabid = vtiger_tab.tabid WHERE vtiger_tab.name = ? && vtiger_field.generatedtype = 2";
+        $result = $adb->pquery($query, array($moduleName));
+        return $adb->query_result($result, 0, "cf_count");
+    }
+
     public function save(Vtiger_Request $request) {
 		$currentUser = Users_Record_Model::getCurrentUserModel();
         $fieldId = $request->get('fieldid');
         $fieldInstance = Settings_LayoutEditor_Field_Model::getInstance($fieldId);
         
         $fieldLabel = $fieldInstance->get('label');
+        $uitype = $fieldInstance->get('uitype');
         $mandatory = $request->get('mandatory',null);
         $presence = $request->get('presence',null);
         $quickCreate = $request->get('quickcreate',null);
@@ -93,8 +107,12 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
         if(!empty($massEditable)){
             $fieldInstance->set('masseditable', $massEditable);
         }
-
-		$defaultValue = decode_html($request->get('fieldDefaultValue'));
+        
+        if($uitype == 33){
+            $defaultValue = decode_html(implode(' |##| ', $request->get('fieldDefaultValue')));
+        }else{
+            $defaultValue = decode_html($request->get('fieldDefaultValue'));
+        }
 		$fieldInstance->set('defaultvalue', $defaultValue);
 		$response = new Vtiger_Response();
         try{

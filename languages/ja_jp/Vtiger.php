@@ -785,7 +785,7 @@ $languageStrings = array(
 	'LBL_Dec' => '12月',
 
 	'LBL_CALENDAR_SETTINGS' => 'カレンダー設定',
-	'Reminder Interval' => 'アラームの表示間隔',
+	'Reminder Interval' => 'アラーム設定時刻',
 
 	//Translations used in inventory modules for address
 	'SINGLE_Accounts' => '顧客企業',
@@ -1140,6 +1140,7 @@ $languageStrings = array(
 	'LBL_UNLINK'=>'関連を外す',
 	'LBL_SWITCH_TO_OLD'=>'過去のバージョンに戻す',
 	'LBL_SLA_INFORMATION' => 'SLA情報',
+	'LBL_CUSTOM_FIELD_LIMIT' => 'カスタムフィールドの登録数上限に達しています',
 
 	//configure columns
 	'LBL_UPDATE_LIST' => 'リストの更新',
@@ -1571,6 +1572,7 @@ $jsLanguageStrings = array(
 	'LBL_DELETE_USER_CONFIRMATION' => 'ユーザーを削除すると、ユーザーは無効化されログイン不可となり、新たなレコードを割り当てることもできなくなります。本当に削除してもよろしいですか？',
 	'LBL_DELETE_CONFIRMATION_NOTE' => '注意 : 削除されたレコードはごみ箱に保持され、%s日後に消去されます',
 	'LBL_MASS_DELETE_CONFIRMATION' => '選択したレコードを削除しますか？',
+	'LBL_DELETE_COMMENT_CONFIRMATION_NOTE' => 'このコメントを削除しますか？',
 	'JS_LBL_SAVE' => '保存',
 	'JS_LBL_CANCEL' => 'キャンセル',
 	'JS_DUPLICTAE_CREATION_CONFIRMATION' => '顧客企業名は既に存在します。重複したレコードを作成しますか？',
@@ -1613,6 +1615,7 @@ $jsLanguageStrings = array(
 	'JS_UPLOADED_FILE_SIZE_EXCEEDS' => 'アップロードファイルのサイズが超えました',
 	'JS_PLEASE_SPLIT_FILE_AND_IMPORT_AGAIN' => 'ファイルをより小さなファイルに分割してから、再度インポートしてください。',
 	'JS_FIELD_MAPPED_MORE_THAN_ONCE' => '同じ項目が複数回マップされています',
+	'JS_SUCCESS_IMPORT_COMMENT' => 'インポートが成功しました',
 	'JS_MAP_MANDATORY_FIELDS' => '必須項目をマップしてください',
 	'JS_MAP_MERGE_CRITERIA_FIELDS' => 'マッチング項目をマップしてください',
 	'JS_PLEASE_ENTER_SOME_VALUE' => '検索する値をいくつか入力してください',
@@ -1850,6 +1853,8 @@ $jsLanguageStrings = array(
 	'JS_SAVE_AS_IMAGE' => '画像として保存',
 	'JS_DIRECTORY_IS_EMPTY' => 'ディレクトリが空です',
 	'JS_PLEASE_SELECT_AN_RELATED_TO_COPY_ADDRESS' => '住所コピー元のリードまたは顧客担当者を選択してください',
+	'JS_PLEASE_SELECT_AN_RELATED_TO_COPY_ADDRESS_WITHOUT_LEAD' => '住所コピー元のご担当者様を選択してください',
+	'JS_RELATED_CONTACT_IS_NOT_AVAILABLE' => '住所コピー元のリードまたは顧客担当者が有効ではありません',
 	'SINGLE_Leads' => 'リード',
 	'JS_SELECTED_LEAD_DOES_NOT_HAVE_AN_ADDRESS' => '選択したリードにはコピーする住所が含まれていません',
 	'JS_INVALID_EMAILS' => 'メールモジュールが無効です',
@@ -1914,6 +1919,8 @@ $jsLanguageStrings = array(
 	'JS_USER_EXISTS' => 'ユーザーが既に存在します',
 	'JS_ALERT' => 'アラート',
 	'JS_SUCCESS' => '成功',
+	'Import Completed' =>"インポートが完了しました",
+	'Import Completed.' =>"インポート完了しました",
 	'JS_REMOVE_MASS_TAG_WARNING' => '選択したレコードの%sタグを削除してもよろしいですか',
 	'JS_VIEW_ALREADY_EXISTS' => '表示が既に存在します',
 	'JS_PLEASE_ENTER_NUMBER_IN_RANGE' => '範囲内の値を入力してください',
@@ -2077,6 +2084,7 @@ $jsLanguageStrings = array(
 	'LBL_LIST_DELETE_CONFIRMATION' => '消去してもよろしいですか？',
 	'JS_WIDGET_RESIZING_WAIT_MSG' => 'ウィジェットのコンテンツは、サイズ変更後にロードされます。',
 	'JS_COPIED_SUCCESSFULLY' => 'コピーをしました',
+	'JS_REPEAT_DATE_SHOULD_BE_GREATER_THAN_START_DATE' =>'繰り返しの日付は、開始日以降である必要があります。',
 
 	// F-RevoCRM 7
 	'This field is required.' => '必須入力です',
@@ -2104,6 +2112,7 @@ $jsLanguageStrings = array(
 	'JS_INVALID_STRENGTH_PASSWORDS'=>'複雑なパスワードを指定してください（アルファベット大文字・小文字、数字、記号を含む8文字以上）',
 	'Changed password successfully'=>'パスワードの変更に成功しました',
 	'LBL_MASS_PDF_EXPORT_CONFIRMATION' => '選択したレコードに関するPDFを生成してもよろしいですか？',
+	'JS_THIS_FILE_HAS_ALREADY_BEEN_SELECTED' => 'このファイルは既に選択されています', 
 
 	//個人カレンダー
 	'Planned' => '計画済み',

@@ -20,6 +20,7 @@
 			<div>{getDuplicatesPreventionMessage($MODULE, $DUPLICATE_RECORDS)}</div>
 		</div>
 	{/if}
+    {assign var=CHECK_CONTACTID value=$CHECK_CONTACTID}
     {foreach key=BLOCK_LABEL item=BLOCK_FIELDS from=$RECORD_STRUCTURE name=blockIterator}
         {if $BLOCK_LABEL eq 'LBL_ITEM_DETAILS'}{continue}{/if}
          {if $BLOCK_FIELDS|@count gt 0}
@@ -39,10 +40,10 @@
                                         &nbsp;{vtranslate('SINGLE_Accounts', $MODULE)}
                                     </label>
                                 </div>
-                                <div class="radio">
+                                <div class="radio{if $CHECK_CONTACTID eq false} hidden{/if}">
                                     <label> 
                                         {if $MODULE eq 'Quotes'}
-                                            <input type="radio" name="copyAddressFromRight" class="contactAddress" data-copy-address="billing" checked="checked">
+                                            <input type="radio" name="copyAddressFromRight" class="contactAddressWithoutLead" data-copy-address="billing" checked="checked">
                                             &nbsp;{vtranslate('Related To', $MODULE)}
                                         {else}
                                             <input type="radio" name="copyAddressFromRight" class="contactAddress" data-copy-address="billing" checked="checked">
@@ -73,10 +74,10 @@
                                         &nbsp;{vtranslate('SINGLE_Accounts', $MODULE)}
                                     </label>
                                 </div>
-                                <div class="radio">
+                                <div class="radio{if $CHECK_CONTACTID eq false} hidden{/if}">
                                     <label>
                                         {if $MODULE eq 'Quotes'}
-                                            <input type="radio" name="copyAddressFromLeft" class="contactAddress" data-copy-address="shipping" checked="checked">
+                                            <input type="radio" name="copyAddressFromLeft" class="contactAddressWithoutLead" data-copy-address="shipping" checked="checked">
                                             &nbsp;{vtranslate('Related To', $MODULE)}
                                         {else}
                                             <input type="radio" name="copyAddressFromLeft" class="contactAddress" data-copy-address="shipping" checked="checked">

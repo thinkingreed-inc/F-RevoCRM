@@ -1814,8 +1814,19 @@ class Users extends CRMEntity {
 							}
 						}
 						if(empty($selectedValue) && !in_array($fieldName, $emptyValuedPicklistFields)) {
-							$picklistValues = array_keys($picklistValues);
-							$selectedValue = reset($picklistValues);
+							// 空のデータがインポートされた場合、$picklistValuesの先頭要素が格納される
+							// 本来はvtiger_fieldのdefaultvalueを参照すべきであるが、time_zoneとdate_formatは空であったため以下のようにデフォルト値を設定した
+							if($fieldName == 'time_zone'){
+								$selectedValue = date_default_timezone_get();
+								if(empty($selectedValue)) {
+									$selectedValue = '(UTC) Coordinated Universal Time, Greenwich Mean Time';
+								}
+							}else if($fieldName == 'date_format'){
+								$selectedValue = 'yyyy-mm-dd';
+							}else{
+								$picklistValues = array_keys($picklistValues);
+								$selectedValue = reset($picklistValues);
+							}
 						}
 						$fieldValue = $selectedValue;
 						unset($selectedValue);
