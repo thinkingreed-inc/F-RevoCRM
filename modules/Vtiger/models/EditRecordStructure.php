@@ -38,7 +38,13 @@ class Vtiger_EditRecordStructure_Model extends Vtiger_RecordStructure_Model {
 						}else{
 							$defaultValue = $fieldModel->getDefaultFieldValue();
 							if(!empty($defaultValue) && !$recordId)
-								$fieldModel->set('fieldvalue', $defaultValue);
+								if($fieldModel->getFieldDataType() == "date" && $defaultValue == 'TODAY'){
+									$fieldModel->set('fieldvalue', date('Y-m-d'));
+								}
+								else{
+									$fieldModel->set('fieldvalue', $defaultValue);
+								}
+								
 						}
 						$values[$blockLabel][$fieldName] = $fieldModel;
                         if ($fieldName == 'taxclass' && count($recordModel->getTaxClassDetails()) < 1) {
