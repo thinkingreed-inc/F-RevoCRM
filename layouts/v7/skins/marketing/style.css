@@ -2880,6 +2880,10 @@ input[type="text"]:read-only {
   height: auto;
   background: #FBFBFB;
 }
+.header_workflow {
+  white-space: nowrap;
+}
+
 .crumbs {
   height: 40px;
   margin: 0;
