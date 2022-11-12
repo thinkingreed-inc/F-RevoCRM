@@ -1076,7 +1076,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 	calculateNetTotal : function() {
 		var self = this
 		var netTotalValue = 0;
-		this.lineItemsHolder.find('tr.'+this.lineItemDetectingClass+' .netPrice').each(function(index,domElement){
+		this.lineItemsHolder.find('tr.'+this.lineItemDetectingClass+' .totalAfterDiscount').each(function(index,domElement){
 			var lineItemNetPriceEle = jQuery(domElement);
 			netTotalValue += self.formatLineItemNetPrice(lineItemNetPriceEle);
 		});
@@ -1243,7 +1243,13 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 	},
     
     calculateGrandTotal : function(){
-        var netTotal = this.getNetTotal();
+		var self = this;
+		var netTotal = 0;
+		this.lineItemsHolder.find('tr.'+this.lineItemDetectingClass+' .netPrice').each(function(index,domElement){
+			var lineItemNetPriceEle = jQuery(domElement);
+			netTotal += self.formatLineItemNetPrice(lineItemNetPriceEle);
+		});
+        // var netTotal = this.getNetTotal();
 		var discountTotal = this.getFinalDiscountTotal();
 		var shippingHandlingCharge = this.getChargesTotal();
 		var shippingHandlingTax = this.getChargeTaxesTotal();
@@ -2830,4 +2836,6 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
     },
 });
     
+
+
 
