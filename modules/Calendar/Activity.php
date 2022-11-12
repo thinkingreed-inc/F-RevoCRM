@@ -147,14 +147,22 @@ class Activity extends CRMEntity {
 			$selected_users_string =  $_REQUEST['inviteesid'];
 			$this->invitee_array = explode(';',$selected_users_string);
 			$smownerid = $this->column_fields['assigned_user_id'];
+			$request_assigned_user_id = $_REQUEST['assigned_user_id'];
 			if(!in_array($smownerid, $this->invitee_array)) {
 				$this->invitee_array[] = $smownerid;
+			}
+			if(!in_array($request_assigned_user_id, $this->invitee_array)){
+				$this->invitee_array[] = $request_assigned_user_id;
 			}
 		} else if(empty($this->invitee_array) && count($_REQUEST['selectedusers']) > 0){// 概要欄や関連からの遷移の場合
 			$this->invitee_array = $_REQUEST['selectedusers'];
 			$smownerid = $this->column_fields['assigned_user_id'];
+			$request_assigned_user_id = $_REQUEST['assigned_user_id'];
 			if(!in_array($smownerid, $this->invitee_array)) {
 				$this->invitee_array[] = $smownerid;
+			}
+			if(!in_array($request_assigned_user_id, $this->invitee_array)){
+				$this->invitee_array[] = $request_assigned_user_id;
 			}
 		} else {// リクエストに入っていない場合はDBから取得を試みる
 			$this->loadInvitees();
@@ -439,12 +447,20 @@ function insertIntoRecurringTable(& $recurObj)
 	function insertIntoInviteeTable($module,$invitees_array)
 	{
 		global $log,$adb;
+		global $activityarray, $global_workflow_skip_field_array;// $activityarray：ワークフロー実行済みの活動IDを格納。$global_workflow_skip_field_array：ワークフローで更新済みのフィールド名を格納。
 		$log->debug("Entering insertIntoInviteeTable(".$module.",".$invitees_array.") method ...");
 
+		// 一度更新された招待活動の場合は、処理を行わない。
 		if($this->is_not_invitees_update) {
 			return ;
 		}
 
+		// 招待活動でない場合は、処理を行わない。
+		if(empty($this->invitee_parentid)) {
+			return ;
+		}
+
+		// 編集の場合
 		if($this->mode == 'edit'){
 			// 参加者のActivityを更新または削除
 			$result = $adb->pquery("SELECT
@@ -462,37 +478,67 @@ function insertIntoRecurringTable(& $recurObj)
 				$activityid = $adb->query_result($result, $i, "activityid");
 				$smownerid = $adb->query_result($result, $i, "smownerid");
 
+				// ワークフローで更新した項目を取得しておく。
+				if(is_array($global_workflow_skip_field_array[$activityid])){
+					$global_workflow_skip_field_array[$activityid] = array_unique(array_merge($global_workflow_skip_field_array[$activityid], $this->workflow_skip_field_array));
+				}else{
+					$global_workflow_skip_field_array[$activityid] = $this->workflow_skip_field_array;
+				}
+
+				// 自身の活動既に保存済みのため、処理は行わない。
 				if($activityid == $this->id) {
 					continue;
 				}
 
 				$inviteRecord = Vtiger_Record_Model::getInstanceById($activityid);
 				if(in_array($smownerid, $invitees_array)) {
-					foreach($this->column_fields as $field => $value) {
-						if(in_array($field, $this->notCopyFields)) {
-							continue;
-						}
-						$inviteRecord->set($field, $value);
-					}
 					$inviteRecord->set('invitee_parentid', $this->invitee_parentid);
 					$inviteRecord->set('invitees_array', $invitees_array);
 					$inviteRecord->set('is_not_invitees_update', true);
 					$inviteRecord->set('mode', 'edit');
 					$inviteRecord->set('is_allday', $this->is_allday);
-					$inviteRecord->save();
+					$inviteRecord->set('workflow_task_id', $this->workflow_task_id);
+					$inviteRecord->set('workflow_skip_field_array', $this->workflow_skip_field_array);
+					if($this->workflow_task_id && in_array($inviteRecord->getId(), $activityarray[$this->workflow_task_id])){
+						// 実行済みのワークフローによる更新の場合、イベントを発火させない為にsaveentity関数を使用する。
+						$inviteRecord->getEntity()->invitee_parentid = $this->invitee_parentid;
+						$inviteRecord->getEntity()->invitees_array = $invitees_array;
+						$inviteRecord->getEntity()->is_not_invitees_update = true;
+						$inviteRecord->getEntity()->is_allday = $this->is_allday;
+						$inviteRecord->getEntity()->mode = "edit";
+						$inviteRecord->getEntity()->workflow_task_id = $this->workflow_task_id;
+						$inviteRecord->getEntity()->workflow_skip_field_array = $this->workflow_skip_field_array;
+						$inviteRecord->getEntity()->saveentity($module, $inviteRecord->getId());
+					}else{
+						foreach($this->column_fields as $field => $value) {
+							// フィールドの更新ワークフローで既に更新している項目は、招待元からコピーしないようにする。
+							if(in_array($field, $this->notCopyFields) || in_array($field, $global_workflow_skip_field_array[$activityid])) {
+								continue;
+							}
+							$inviteRecord->set($field, $value);
+						}
+						// ワークフロー毎に、実行済みのcrmidを取得しておく。
+						if($this->workflow_task_id) {
+							$activityarray[$this->workflow_task_id][] = $inviteRecord->getId();
+						}
+						$log->debug("activityarray this->workflow_task_id ->>".$this->workflow_task_id);
+						$log->debug("[".__FUNCTION__."]line:".__LINE__.":activityarray:".str_replace(array("\n", "  "), array('',''), print_r($activityarray, true)));
+						$inviteRecord->save();
+					}
 				} else {
 					$inviteRecord->getModule()->deleteRecord($inviteRecord);
 					$adb->pquery("DELETE FROM vtiger_invitees WHERE activityid = ? AND inviteeid = ?", array($this->invitee_parentid, $inviteRecord->get('assigned_user_id')));
 				}
 			}
 		}
+		// 新規作成の場合
 		foreach($invitees_array as $inviteeid)
 		{
 			if(empty($inviteeid)) {
 				continue;
 			}
-
 			$result = $adb->pquery("SELECT 1 FROM vtiger_invitees WHERE activityid = ? AND inviteeid = ?", array($this->invitee_parentid, $inviteeid));
+			// 招待活動が存在しない場合は、作成する。
 			if($adb->num_rows($result) == 0) {
 				$query="INSERT INTO vtiger_invitees VALUES (?,?,?)";
 				$adb->pquery($query, array($this->invitee_parentid, $inviteeid, 'sent'));
@@ -506,7 +552,20 @@ function insertIntoRecurringTable(& $recurObj)
 				$inviteRecord->set('assigned_user_id', $inviteeid);
 				$inviteRecord->set('is_not_invitees_update', true);
 				$inviteRecord->set('is_allday', $this->is_allday);
+				$inviteRecord->set('workflow_task_id', $this->workflow_task_id);
+				$inviteRecord->set('workflow_skip_field_array', $this->workflow_skip_field_array);
 				$inviteRecord->save();
+				// ワークフロー毎に、実行済みのcrmidを取得しておく。
+				if($this->workflow_task_id) {
+					$activityarray[$this->workflow_task_id][] = $inviteRecord->getId();
+				}
+				// ワークフローで更新した項目を取得しておく。
+				if(is_array($global_workflow_skip_field_array[$inviteRecord->getId()])){
+					$global_workflow_skip_field_array[$inviteRecord->getId()] = array_unique(array_merge($global_workflow_skip_field_array[$inviteRecord->getId()], $this->workflow_skip_field_array));
+				}else{
+					$global_workflow_skip_field_array[$inviteRecord->getId()] = $this->workflow_skip_field_array;
+				}
+				$log->debug("[".__FUNCTION__."]line:".__LINE__.":activityarray:".str_replace(array("\n", "  "), array('',''), print_r($activityarray, true)));
 			}
 		}
 		$log->debug("Exiting insertIntoInviteeTable method ...");
@@ -522,10 +581,10 @@ function insertIntoRecurringTable(& $recurObj)
 	{
 			global $adb;
 			global $current_user;
-			if($this->mode == 'edit'){
+			// if($this->mode == 'edit'){
 				$sql = "delete from vtiger_salesmanactivityrel where activityid=?";
 				$adb->pquery($sql, array($this->id));
-			}
+			// }
 
 		$user_sql = $adb->pquery("select count(*) as count from vtiger_users where id=?", array($this->column_fields['assigned_user_id']));
 		if($adb->query_result($user_sql, 0, 'count') != 0) {
@@ -1338,64 +1397,124 @@ function insertIntoRecurringTable(& $recurObj)
 
 	public function updateLastActionDate() {
 		global $adb, $log;
-
-		// 完了の場合は関連の最終活動日を更新する
-		if($this->column_fields["eventstatus"] == "Held") {
-			$accountids = array();
-
-			$result = $adb->pquery("SELECT contactid, activityid FROM vtiger_cntactivityrel WHERE activityid = ?",array($this->id));
-			for($i=0; $i<$adb->num_rows($result); $i++) {
-				$contactid = $adb->query_result($result, $i, "contactid");
-				try {
-					$recordContactModel = Vtiger_Record_Model::getInstanceById($contactid, "Contacts");
-					$recordContactModel->set('id', $contactid);
-					$recordContactModel->set('mode', 'edit');
-					$recordContactModel->set('last_action_date', $this->column_fields["due_date"]);
-					$accountid = $recordContactModel->get("account_id");
-					if( $accountid > 0 ) {
-						$accountids[] = $accountid;
-					}
-					$recordContactModel->save();
-				} catch(Exception $e) {
-				}
-			}			
-
-			$parent_id = $this->column_fields["parent_id"];
-			try {
-				if($parent_id > 0 ) {
-					$recordParentModel = Vtiger_Record_Model::getInstanceById($parent_id);
-					$moduleName = $recordParentModel->getModuleName();
-					if($moduleName == 'Leads' || $moduleName == "Accounts") {
-						$recordParentModel->set('id', $parent_id);
-						$recordParentModel->set('mode', 'edit');
-						$recordParentModel->set('last_action_date', $this->column_fields["due_date"]);
-						$recordParentModel->save();
-					}
-					elseif($moduleName == "Potentials") {
-						$recordParentModel->set('id', $parent_id);
-						$recordParentModel->set('mode', 'edit');
-						$recordParentModel->set('last_action_date', $this->column_fields["due_date"]);
-						$accountid = $recordParentModel->get("related_to");
-						if( $accountid > 0 ) {
-							$accountids[] = $accountid;
-						}
-						$recordParentModel->save();
-					}
-				}
-			} catch(Exception $e) {
+		$accountids = array();
+		$result = $adb->pquery("SELECT contactid, activityid FROM vtiger_cntactivityrel WHERE activityid = ?",array($this->id));
+		for ($i=0; $i<$adb->num_rows($result); $i++) {
+			$moduleName = "Contacts";
+			$contactid = $adb->query_result($result, $i, "contactid");
+			$recordContactModel = Vtiger_Record_Model::getInstanceById($contactid, "Contacts");
+			$recordContactModel->set('id', $contactid);
+			$recordContactModel->set('mode', 'edit');
+			$recordContactModel->set('last_action_date', $this->getParentLastActionDate($contactid, "Contacts"));
+			$accountid = $recordContactModel->get("account_id");
+			if ($accountid > 0) {
+				$accountids[] = $accountid;
 			}
+			$recordContactModel->save();
+		}
 
-			foreach($accountids as $accountid) {
-				try {
-					$recordModel = Vtiger_Record_Model::getInstanceById($accountid);
-					$recordModel->set('mode', 'edit');
-					$recordModel->set('last_action_date', $this->column_fields["due_date"]);
-					$recordModel->save();
-				} catch(Exception $e) {
+		$parent_id = $this->column_fields["parent_id"];
+		if ($parent_id > 0) {
+			$recordParentModel = Vtiger_Record_Model::getInstanceById($parent_id);
+			$moduleName = $recordParentModel->getModuleName();
+			if ($moduleName == 'Leads') {
+				$recordParentModel->set('id', $parent_id);
+				$recordParentModel->set('mode', 'edit');
+				$recordParentModel->set('last_action_date', $this->getParentLastActionDate($parent_id, $moduleName));
+				$recordParentModel->save();
+			} elseif ($moduleName == "Potentials") {
+				$recordParentModel->set('id', $parent_id);
+				$recordParentModel->set('mode', 'edit');
+				$recordParentModel->set('last_action_date', $this->getParentLastActionDate($parent_id, $moduleName));
+				$accountid = $recordParentModel->get("related_to");
+				if($accountid > 0) {
+					$accountids[] = $accountid;
 				}
+				$recordParentModel->save();
+			} elseif ($moduleName == "Accounts") {
+				$accountids[] = $parent_id;
 			}
 		}
-		
+
+		#顧客企業は関連の顧客担当者・案件の活動も含んで処理する
+		foreach($accountids as $accountid) {
+				$accountRecordModel = Vtiger_Record_Model::getInstanceById($accountid);
+				$relatedContactsIdList = $this->getAccountsRelatedIdList($accountid, "Contacts");
+				if ($relatedContactsIdList) {
+					$contactsLastActionDate = $this->getLastActionDateFromList($relatedContactsIdList, "Contacts");
+				}
+				$relatedPotentialsIdList = $this->getAccountsRelatedIdList($accountid, "Potentials");
+				if ($relatedPotentialsIdList) {
+					$potentialLastActionDate = $this->getLastActionDateFromList($relatedPotentialsIdList, "Potentials");
+				}
+				if (strtotime($contactsLastActionDate) > strtotime($potentialLastActionDate)) {
+					$parentLastActionDate = $contactsLastActionDate;
+				} elseif (strtotime($potentialLastActionDate) >= strtotime($contactsLastActionDate)) {
+				$parentLastActionDate =  $potentialLastActionDate;
+				} 
+				$accountLastActionDate = $this->getParentLastActionDate($accountid,"Accounts");
+				$accountRecordModel->set('mode', 'edit');
+				if (isset($parentLastActionDate) && isset($accountLastActionDate)) {
+					if (strtotime($parentLastActionDate) > strtotime($accountLastActionDate)) {
+						$accountRecordModel->set('last_action_date', $parentLastActionDate);
+					} elseif (strtotime($accountLastActionDate) >= strtotime($parentLastActionDate)) {
+						$accountRecordModel->set('last_action_date', $accountLastActionDate);
+					} 
+				} elseif (isset($parentLastActionDate) && is_null($accountLastActionDate)) {
+					$accountRecordModel->set('last_action_date', $parentLastActionDate);
+				} elseif (isset($accountLastActionDate) && is_null($parentLastActionDate)) {
+					$accountRecordModel->set('last_action_date', $accountLastActionDate);
+				} else {
+					$accountRecordModel->set('last_action_date', null);
+				}
+				$accountRecordModel->save();
+		}
+	}
+
+	#関連IDから最終活動日を得る
+	public function getParentLastActionDate($parent_id, $moduleName) {
+		global $adb;
+		if ($moduleName == "Contacts") {
+			$getRelatedActivityQuery = "SELECT vtiger_activity.due_date FROM vtiger_activity INNER JOIN vtiger_crmentity ON vtiger_activity.activityid = vtiger_crmentity.crmid WHERE vtiger_activity.activityid IN (SELECT activityid FROM vtiger_cntactivityrel WHERE contactid = ? ) && vtiger_activity.eventstatus = 'Held' && vtiger_crmentity.deleted = 0 ORDER BY vtiger_activity.due_date DESC LIMIT 1";
+		} else {
+			$getRelatedActivityQuery = "SELECT vtiger_activity.due_date FROM vtiger_activity INNER JOIN vtiger_crmentity ON vtiger_activity.activityid = vtiger_crmentity.crmid WHERE vtiger_activity.activityid IN (SELECT activityid FROM vtiger_seactivityrel WHERE crmid = ? ) && vtiger_activity.eventstatus = 'Held' && vtiger_crmentity.deleted = 0 ORDER BY vtiger_activity.due_date DESC LIMIT 1";
+		}
+		$relatedActivityResult = $adb->pquery($getRelatedActivityQuery, array($parent_id));
+		$relatedActivityRows = $adb->num_rows($relatedActivityResult);
+		$relatedActivity = new DateTime($adb->query_result($relatedActivityResult, 0, "due_date"));
+		if ($relatedActivityRows) {
+			return $relatedActivity->format('Y-m-d');
+		}
+	}
+
+	#顧客企業の関連ID(顧客担当者・案件)の配列を得る
+	public function getAccountsRelatedIdList($accountid, $moduleName) {
+		global $adb;
+		if ($moduleName == "Contacts") {
+			$getRelatedQuery = "SELECT contactid from vtiger_contactdetails where accountid = ?";
+			$columnName = "contactid";
+		} elseif ($moduleName == "Potentials") {
+			$getRelatedQuery = "SELECT potentialid from vtiger_potential where related_to = ?";
+			$columnName = "potentialid";
+		}
+		$relatedResult = $adb->pquery($getRelatedQuery, array($accountid));
+		$relatedRows = $adb->num_rows($relatedResult);
+		for ($i = 0; $i < $relatedRows; $i++) {
+			$relatedIdList[] = $adb->query_result($relatedResult, $i, $columnName);
+		}
+		return $relatedIdList;
+	}
+
+	#関連IDの配列から最終活動日を得る
+	public function getLastActionDateFromList($parentIdList, $moduleName) {
+		foreach ($parentIdList as $parentId) {
+			$parentLastActionDate = $this->getParentLastActionDate($parentId, $moduleName);
+			if ($parentLastActionDate) {
+				$parentLastActionDateList[$parentLastActionDate] = strtotime($parentLastActionDate);
+			}
+		}
+		$last_action_date   = array_keys($parentLastActionDateList, max($parentLastActionDateList));
+		return $last_action_date[0];
 	}
 
 }

@@ -125,8 +125,8 @@ class CRMEntity {
 			}
 		}
 		// tagのテーブルは$table_nameに入ってこないので別途追加
-		if($this->column_fields['tags'] != null){
-			$this->insertIntoTagsTable($module);
+		if($this->column_fields['tags'] != null && $_REQUEST['mode'] == 'import'){
+			$this->insertTags_atImportMode($module);
 		}
 		
 		$columnFields->restartTracking();
@@ -729,7 +729,7 @@ class CRMEntity {
 		}
 	}
 
-	function insertIntoTagsTable($module){
+	function insertTags_atImportMode($module){
         $db = PearDatabase::getInstance();
         $currentUser = Users_Record_Model::getCurrentUserModel();
 
@@ -738,7 +738,16 @@ class CRMEntity {
 		$userId = $currentUser->getId();
 		$now = date("Y-m-d H:i:s");
 
-		$explodedValue = explode(' |##| ', $tagName);
+		//tagNameにカンマと' |##| 'が両方に含まれることは想定していない
+		$explodedValue = array();
+		if($tagName && strpos($tagName, ' |##| ') !== false){
+			$explodedValue = explode(' |##| ', $tagName);
+		}elseif($tagName && strpos($tagName, ',') !== false){
+			$explodedValue = explode(',', $tagName);
+		}elseif($tagName){
+			$explodedValue[0] = $tagName;
+		}
+
 		foreach ($explodedValue as $value) {
 			$id = $db->getUniqueId('vtiger_freetags');
 			$TagNotExist = true;
@@ -761,7 +770,7 @@ class CRMEntity {
 
 			/*タグの新規作成の必要確認
 			1. vtiger_freetagsに同名のタグがない → 作成
-			2. vtiger_freetagsに同名のタグがある → publicである → 作成しない
+			2. vtiger_freetagsに同名のタグがある → publicである  → 作成しない
 			3. 　　　　　　　　　                → privateである → ownerが自身 → 作成しない
 			4. 　　　　　　　　　                  　　　        → ownerが自身でない → 作成
 			*/

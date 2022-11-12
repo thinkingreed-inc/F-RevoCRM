@@ -462,6 +462,9 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		//Update missing seq numbers
 		$focus = CRMEntity::getInstance($moduleName);
 		$focus->updateMissingSeqNumber($moduleName);
+		if($moduleName == "Calendar"){
+			$focus->updateMissingSeqNumber("Events");
+		}
 
 		//Creating entity data of created records for post save events 
 		if (!empty($createdRecords)) {
@@ -486,6 +489,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 
 	public function transformForImport($fieldData, $moduleMeta, $fillDefault = true, $checkMandatoryFieldValues = true) {
 		global $current_user;
+		$adb = PearDatabase::getInstance();
 		$moduleImportableFields = array();
 		$moduleFields = $moduleMeta->getModuleFields();
 		$moduleName = $moduleMeta->getEntityName();
@@ -497,7 +501,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 				$fieldData['visibility'] = $current_user->calendarsharedtype;
 			}
 			foreach ($eventModuleFields as $fieldName => $fieldModel) {
-				if (stripos($fieldName, 'cf_') !== false) {
+				if (empty($moduleFields[$fieldName])) {
 					$moduleFields[$fieldName] = $fieldModel;
 				}
 			}
@@ -568,7 +572,17 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 						$referenceModuleName = trim($fieldValueDetails[0]);
 						if (count($fieldValueDetails) == 2) {
 							$entityLabel = trim($fieldValueDetails[1]);
-							$entityId = getEntityId($referenceModuleName, decode_html($entityLabel));
+							if ($fieldValueDetails[0] == 'Users') {
+								$query = "SELECT id  FROM vtiger_users WHERE trim(concat(last_name,' ',first_name)) = ? ;";
+								$result = $adb->pquery($query, array($entityLabel));
+								if ($adb->num_rows($result) > 0) {
+									$entityId = $adb->query_result($result, 0, "id");
+								} elseif ($adb->num_rows($result) == 0 && $fieldInstance->isMandatory()) {
+									$entityId = $this->user->id;
+								}
+							} else {
+								$entityId = getEntityId($referenceModuleName, decode_html($entityLabel));
+							}
 						} else {//multi reference field
 							$entityIdsList = $this->getEntityIdsList($referenceModuleName, $fieldValueDetails);
 							if ($entityIdsList) {
@@ -616,8 +630,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 						if (isset($defaultFieldValues[$fieldName])) {
 							$fieldData[$fieldName] = $defaultFieldValues[$fieldName];
 						}
-						if (empty($fieldData[$fieldName]) ||
-								!Import_Utils_Helper::hasAssignPrivilege($moduleName, $fieldData[$fieldName])) {
+						if ($fieldInstance->isMandatory() && (empty($fieldData[$fieldName]) || !Import_Utils_Helper::hasAssignPrivilege($moduleName, $fieldData[$fieldName]))) {
 							$fieldData[$fieldName] = $this->user->id;
 						}
 					} else {
@@ -777,10 +790,20 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			}
 			$fieldData['currency_id'] = $this->lineitem_currency_id;
 		}
+
+		$skippedCalendarFields = array('contact_id', 'duration_hours', 'duration_minutes', 'recurringtype', 'reminder_time', 'smcreatorid');
+
 		if ($fieldData != null && $checkMandatoryFieldValues) {
 			foreach ($moduleFields as $fieldName => $fieldInstance) {
+				if($moduleName == "Calendar" && in_array($fieldName, $skippedCalendarFields)) continue;
 				if ((($fieldData[$fieldName] == '') || ($fieldData[$fieldName] == null)) && $fieldInstance->isMandatory()) {
+					if($moduleName == "Calendar" && $fieldData["activitytype"] != "Task" && $fieldName == "eventstatus" && !empty($fieldData["taskstatus"])){
+						$fieldData["eventstatus"] == $fieldData["taskstatus"];
+					}else if($moduleName == "Calendar" && $fieldData["activitytype"] == "Task" && $fieldName == "taskstatus" && !empty($fieldData["eventstatus"])){
+						$fieldData["taskstatus"] == $fieldData["eventstatus"];
+					}else{
 					return null;
+					}
 				}
 			}
 		}

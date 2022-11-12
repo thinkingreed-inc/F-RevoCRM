@@ -302,7 +302,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		var thisInstance = this;
 		var contents = jQuery('#layoutEditorContainer').find('.contents');
 		var table = contents.find('.editFieldsTable');
-		table.find('ul[name=sortable1], ul[name=sortable2]').sortable({
+		table.find('ul[name=sortable1]').sortable({
 			'containment': '#moduleBlocks',
 			'cancel': 'li.dummyRow',
 			'revert': true,
@@ -362,29 +362,11 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 	reArrangeBlockFields: function (block) {
 		// 1.get the containers, 2.compare the length, 3.if uneven then move the last element
 		var leftSideContainer = block.find('ul[name=sortable1]');
-		var rightSideContainer = block.find('ul[name=sortable2]');
 		if (leftSideContainer.length < 1 && rightSideContainer.length < 1) {
 			var leftSideContainer = block.find('ul[name=unSortable1]');
-			var rightSideContainer = block.find('ul[name=unSortable2]');
 		}
-		var dummyRowElement = jQuery();
-		if (leftSideContainer.find('li.dummyRow').length > 0) {
-			dummyRowElement = leftSideContainer.find('li.dummyRow').detach();
-		} else {
-			dummyRowElement = rightSideContainer.find('li.dummyRow').detach();
-		}
-		if (leftSideContainer.children().length < rightSideContainer.children().length) {
-			var lastElementInRightContainer = rightSideContainer.children(':last');
-			leftSideContainer.append(lastElementInRightContainer);
-		} else if (leftSideContainer.children().length > rightSideContainer.children().length+1) {	//greater than 1
-			var lastElementInLeftContainer = leftSideContainer.children(':last');
-			rightSideContainer.append(lastElementInLeftContainer);
-		}
-		if (rightSideContainer.children().length < leftSideContainer.children().length) {
-			rightSideContainer.append(dummyRowElement);
-		} else {
-			leftSideContainer.append(dummyRowElement);
-		}
+		var lastElementInLeftContainer = leftSideContainer.children(':last');
+		leftSideContainer.append(lastElementInLeftContainer);
 	},
 	/**
 	 * Function to create the list of updated blocks with all the fields and their sequences
@@ -403,16 +385,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 				var fieldEle = jQuery(domElement);
 				var fieldId = fieldEle.data('fieldId');
 				thisInstance.updatedBlockFieldsList.push({'fieldid': fieldId, 'sequence': expectedFieldSequence, 'block': updatedBlockId});
-				expectedFieldSequence = expectedFieldSequence+2;
-			});
-			var secondBlockSortFields = updatedBlock.find('ul[name=sortable2]');
-			var secondEditFields = secondBlockSortFields.find('.editFields');
-			var sequenceValue = 2;
-			secondEditFields.each(function (i, domElement) {
-				var fieldEle = jQuery(domElement);
-				var fieldId = fieldEle.data('fieldId');
-				thisInstance.updatedBlockFieldsList.push({'fieldid': fieldId, 'sequence': sequenceValue, 'block': updatedBlockId});
-				sequenceValue = sequenceValue+2;
+				expectedFieldSequence = expectedFieldSequence+1;
 			});
 		}
 	},
@@ -873,6 +846,10 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		var maxLengthValidator = 'maximumlength';
 		var decimalValidator = 'range';
 
+		// 「チェックボックス」→ 他の項目 の変更等でデフォルト値に0やNULLが表示される
+		// 上記を回避するために変更前の項目タイプを保存する
+		var typeBeforeChange;
+
 		//register the change event for field types
 		form.find('[name="fieldType"]').on('change', function (e) {
 			var currentTarget = jQuery(e.currentTarget);
@@ -942,6 +919,8 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 
 				form.find('[name="defaultvalue"]').attr('readonly', 'readonly').removeAttr('checked');
 				form.find('.defaultValueUi').addClass('zeroOpacity');
+			}else{ // 「関連」項目以外はデフォルト値が設定できるためclassを削除している
+				form.find('.defaultValueUi').removeClass('zeroOpacity');
 			}
 
 			if (form.find('input[type="checkbox"][name="defaultvalue"]').data('defaultDisabled') == "1") {
@@ -973,6 +952,10 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 
 				data.name = nameAttr;
 				data.value = defaultValueUi.val();
+				//チェックボックス項目から、または選択肢(複数)からの変更の場合、デフォルト値に何も表示されないようにする
+				if(nameAttr == 'fieldDefaultValue' && (typeBeforeChange == 'Boolean' || typeBeforeChange == 'Multipicklist')){
+					data.value = "";
+				}
 				if (currentTarget.val() == "MultiSelectCombo") {
 					if (data.value != null && data.value.length > 0) {
 						data.value = data.value.join('|##|');
@@ -989,6 +972,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 					case 'MultiSelectCombo':type = 'Multipicklist';break;
 				}
 				data.type = type;
+				typeBeforeChange = type;
 
 				if (typeof data.picklistvalues == "undefined")
 					data.picklistvalues = {};
@@ -1062,33 +1046,17 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		}
 		var block = relatedBlock.find('.blockFieldsList');
 		var sortable1 = block.find('ul[name=sortable1]');
-		var sortable2 = block.find('ul[name=sortable2]');
 
-		if (sortable1.length < 1 && sortable2.length < 1) {
+		if (sortable1.length < 1) {
 			var sortable1 = block.find('ul[name=unSortable1]');
-			var sortable2 = block.find('ul[name=unSortable2]');
 			fieldCopy.find('.dragImage').hide();
 		}
-
+		// 作成したフィールドの追加
+		sortable1.append(fieldCopy.removeClass('hide newCustomFieldCopy'));
+		// 項目作成フィールドの追加
 		var firstSortableChildren = sortable1.children();
-		var secondSortableChildren = sortable2.children();
-		if (firstSortableChildren.filter('li.dummyRow').length > 0) {
-			firstSortableChildren.filter('li.dummyRow').detach().appendTo(sortable2);
-		} else {
-			secondSortableChildren.filter('li.dummyRow').detach().appendTo(sortable1);
-		}
-		firstSortableChildren = sortable1.children();
-		secondSortableChildren = sortable2.children();
+		firstSortableChildren.filter('li.dummyRow').detach().appendTo(sortable1);
 
-		var length1 = firstSortableChildren.filter(':not(l1.dummyRow)').length;
-
-		var length2 = secondSortableChildren.filter(':not(l1.dummyRow)').length;
-		// Deciding where to add the new field
-		if (length1 > length2) {
-			sortable2.append(fieldCopy.removeClass('hide newCustomFieldCopy'));
-		} else {
-			sortable1.append(fieldCopy.removeClass('hide newCustomFieldCopy'));
-		}
 		var form = fieldCopy.find('.fieldProperties');
 		thisInstance.setFieldDetails(result, fieldCopy);
 		thisInstance.makeFieldsListSortable();

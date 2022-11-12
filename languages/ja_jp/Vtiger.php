@@ -1140,6 +1140,7 @@ $languageStrings = array(
 	'LBL_UNLINK'=>'関連を外す',
 	'LBL_SWITCH_TO_OLD'=>'過去のバージョンに戻す',
 	'LBL_SLA_INFORMATION' => 'SLA情報',
+	'LBL_CUSTOM_FIELD_LIMIT' => 'カスタムフィールドの登録数上限に達しています',
 
 	//configure columns
 	'LBL_UPDATE_LIST' => 'リストの更新',
@@ -1571,6 +1572,7 @@ $jsLanguageStrings = array(
 	'LBL_DELETE_USER_CONFIRMATION' => 'ユーザーを削除すると、ユーザーは無効化されログイン不可となり、新たなレコードを割り当てることもできなくなります。本当に削除してもよろしいですか？',
 	'LBL_DELETE_CONFIRMATION_NOTE' => '注意 : 削除されたレコードはごみ箱に保持され、%s日後に消去されます',
 	'LBL_MASS_DELETE_CONFIRMATION' => '選択したレコードを削除しますか？',
+	'LBL_DELETE_COMMENT_CONFIRMATION_NOTE' => 'このコメントを削除しますか？',
 	'JS_LBL_SAVE' => '保存',
 	'JS_LBL_CANCEL' => 'キャンセル',
 	'JS_DUPLICTAE_CREATION_CONFIRMATION' => '顧客企業名は既に存在します。重複したレコードを作成しますか？',
@@ -2104,6 +2106,7 @@ $jsLanguageStrings = array(
 	'JS_INVALID_STRENGTH_PASSWORDS'=>'複雑なパスワードを指定してください（アルファベット大文字・小文字、数字、記号を含む8文字以上）',
 	'Changed password successfully'=>'パスワードの変更に成功しました',
 	'LBL_MASS_PDF_EXPORT_CONFIRMATION' => '選択したレコードに関するPDFを生成してもよろしいですか？',
+	'JS_THIS_FILE_HAS_ALREADY_BEEN_SELECTED' => 'このファイルは既に選択されています', 
 
 	//個人カレンダー
 	'Planned' => '計画済み',

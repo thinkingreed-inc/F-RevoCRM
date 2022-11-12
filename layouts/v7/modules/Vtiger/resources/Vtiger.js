@@ -434,7 +434,10 @@ Vtiger.Class('Vtiger_Index_Js', {
 		var thisInstance = this;
 
 		app.event.on("post.QuickCreateForm.show",function(event,form){
-			form.find('#goToFullForm').on('click', function(e) {
+			jQuery('<input type="hidden" name="returnview" value="Detail" />').appendTo(form);
+			jQuery('<input type="hidden" name="fromQuickCreate" value="true" />').appendTo(form);
+			jQuery('<input type="hidden" name="quickCreateReturnURL" value="'+location.search+'" />').appendTo(form);
+			form.find('#goToFullForm').on('click', function (e) {
 				window.onbeforeunload = true;
 				var form = jQuery(e.currentTarget).closest('form');
 				var editViewUrl = jQuery(e.currentTarget).data('editViewUrl');
@@ -451,6 +454,7 @@ Vtiger.Class('Vtiger_Index_Js', {
 	 * @param accepts form element as parameter
 	 */
 	quickCreateGoToFullForm: function(form, editViewUrl) {
+		jQuery('[name=fromQuickCreate]').val("");
 		var formData = form.serializeFormData();
 		//As formData contains information about both view and action removed action and directed to view
 		delete formData.module;
@@ -878,6 +882,8 @@ Vtiger.Class('Vtiger_Index_Js', {
 			inputElement.data('value','');
 			inputElement.val("");
 			parentTdElement.find('input[name="'+fieldName+'"]').val("");
+			parentTdElement.find('input[name="'+fieldName+'_historyback_restore"]').val("");
+			parentTdElement.find('input[name="'+fieldName+'_historyback_restore_name"]').val("");
 			element.addClass('hide');
 			element.trigger(Vtiger_Edit_Js.referenceDeSelectionEvent);
 		});
@@ -1161,6 +1167,11 @@ Vtiger.Class('Vtiger_Index_Js', {
 		var selectedName = params.name;
 		var id = params.id;
 
+		var sourceFieldIdHidden = sourceField+"_historyback_restore";
+		var fieldIdHiddenElement = container.find('input[name="'+sourceFieldIdHidden+'"]');
+		var sourceFieldNameHidden = sourceField+"_historyback_restore_name";
+		var fieldNameHiddenElement = container.find('input[name="'+sourceFieldNameHidden+'"]');
+
 		if (id && selectedName) {
 			if(!fieldDisplayElement.length) {
 				fieldElement.attr('value',id);
@@ -1170,6 +1181,8 @@ Vtiger.Class('Vtiger_Index_Js', {
 				fieldElement.val(id);
 				fieldElement.data('value', id);
 				fieldDisplayElement.val(selectedName);
+				fieldIdHiddenElement.val(id);
+				fieldNameHiddenElement.val(selectedName);
 				if(selectedName) {
 					fieldDisplayElement.attr('readonly', 'readonly');
 				} else {

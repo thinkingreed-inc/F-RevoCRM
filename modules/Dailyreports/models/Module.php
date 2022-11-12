@@ -90,11 +90,31 @@ class Dailyreports_Module_Model extends Vtiger_Module_Model {
 		$numOfRows = $db->num_rows($result);
 
 		$activities = array();
+		$groupsIds = Vtiger_Util_Helper::getGroupsIdsForUsers($currentUser->getId());
 		for($i=0; $i<$numOfRows; $i++) {
 			$row = $db->query_result_rowdata($result, $i);
 			$model = Vtiger_Record_Model::getCleanInstance('Calendar');
 			$model->setData($row);
 			$model->setId($row['crmid']);
+
+			// 非公開の場合、件名を予定ありにする。
+			$ownerId = $row['smownerid'];
+			$visibleFields = array('activitytype','date_start','time_start','due_date','time_end','assigned_user_id','visibility','smownerid','crmid', 'description');
+			$visibility = true;
+			if(in_array($ownerId, $groupsIds)) {
+				$visibility = false;
+			} else if($ownerId == $currentUser->getId()){
+				$visibility = false;
+			}
+			if(!$currentUser->isAdminUser() && $row['visibility'] == 'Private' && $ownerId && $visibility) {
+				foreach($row as $data => $value) {
+					if(in_array($data, $visibleFields) != -1) {
+						unset($newRow[$data]);
+					}
+				}
+				$model->set('subject', vtranslate('Busy','Events').'*');
+			}
+			
 			$activities[] = $model;
 		}
 

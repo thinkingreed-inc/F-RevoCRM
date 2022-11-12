@@ -36,7 +36,10 @@
 							{foreach item=FIELD_MODEL key=FIELD_NAME from=$FIELD_MODEL_LIST}
 								{if $IS_FIRST}
 									{assign var=IS_FIRST value=false}
-										<td></td><td></td><td></td><td></td>
+										<td class="fieldLabel {$WIDTHTYPE}"></td>
+										<td class="fieldValue {$WIDTHTYPE}"></td>
+										<td class="fieldLabel {$WIDTHTYPE}"></td>
+										<td class="fieldValue {$WIDTHTYPE}"></td>
 									</tr>
 									<tr>
 								{/if}

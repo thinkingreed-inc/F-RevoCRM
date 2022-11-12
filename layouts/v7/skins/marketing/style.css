@@ -5215,7 +5215,6 @@ TN-34230 .row .nav > li > a:hover {
   vertical-align: middle;
 }
 .layoutContent li.dummyRow {
-  border: 1px dotted #DDDDDD;
   min-height: 116px;
   height: auto;
 }
@@ -5276,13 +5275,20 @@ TN-34230 .row .nav > li > a:hover {
   border: 1px solid #CCCCCC;
 }
 .layoutContent .blockFieldsList ul {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: top;
+  justify-content: left;
+
   list-style-type: none;
-  float: left;
   min-height: 1px;
   padding: 2px;
-  margin-left: 4%;
   margin-top: 1%;
+}
+.layoutContent .blockFieldsList ul li {
   width: 44%;
+  margin-left: 4%;
 }
 .layoutContent .blockFieldsList {
   padding: 5px;

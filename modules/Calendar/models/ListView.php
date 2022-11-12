@@ -291,7 +291,7 @@ class Calendar_ListView_Model extends Vtiger_ListView_Model {
 				$visibility = false;
 			}
 
-			if(!$currentUser->isAdminUser() && $rawData['activitytype'] != 'Task' && $rawData['visibility'] == 'Private' && $ownerId && $visibility) {
+			if(!$currentUser->isAdminUser() && $rawData['visibility'] == 'Private' && $ownerId && $visibility) {
 				foreach($record as $data => $value) {
 					if(in_array($data, $visibleFields) != -1) {
 						unset($rawData[$data]);

@@ -309,11 +309,13 @@ class VTSimpleTemplate{
 
 			case 'multipicklist' :  require_once 'includes/runtime/LanguageHandler.php';
 									require_once 'includes/runtime/Globals.php';
-									$fieldValueParts = explode(';',$fieldValue);
+									if(strpos($fieldValue, '|##|') !== false){
+										$fieldValueParts = explode(' |##| ',$fieldValue);
+									}
 									foreach($fieldValueParts as $index=>$fieldValue) {
 										$fieldValueParts[$index] = vtranslate($fieldValue,$moduleName,$ownerObject->column_fields['language']);
 									}
-									$fieldValue = implode(';', $fieldValueParts);
+									$fieldValue = implode(',', $fieldValueParts);
 									break;
 			case 'boolean'		:  require_once 'includes/runtime/LanguageHandler.php';
 									require_once 'includes/runtime/Globals.php';
