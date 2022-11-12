@@ -18,7 +18,7 @@
 				<p>{vtranslate('LBL_MENU_EDITOR_INFO', $QUALIFIED_MODULE_NAME)}</p>
 				</div>
 				<div class="col-lg-12" style="margin-top: 10px;">
-					<div class="row" style="margin-left: -28px;">
+					<div class="row" style="margin-left: -28px; display: flex;flex-wrap: wrap;">
 						{assign var=APP_LIST value=Vtiger_MenuStructure_Model::getAppMenuList()}
 						{foreach item=APP_IMAGE key=APP_NAME from=$APP_IMAGE_MAP name=APP_MAP}
 							{if !in_array($APP_NAME, $APP_LIST)} {continue} {/if}
