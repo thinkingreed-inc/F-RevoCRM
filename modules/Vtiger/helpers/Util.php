@@ -1246,7 +1246,7 @@ class Vtiger_Util_Helper {
         }elseif(!empty($fieldValue) && $fieldDataType == 'multipicklist'){
             if(!empty($editablePicklistValues)){
                 foreach($fieldValue as $key => $value){
-                    if(!isset($editablePicklistValues[$fieldValue])){
+                    if(!isset($editablePicklistValues[$value])){
                         unset($fieldValue[$key]);
                     }
                 }
