@@ -111,7 +111,7 @@
                                     </option>
                             </optgroup>
                             {foreach from=$MEMBER_GROUPS key=GROUP_LABEL item=ALL_GROUP_MEMBERS}
-                                <optgroup label="{$GROUP_LABEL}">
+                                <optgroup label="{vtranslate($GROUP_LABEL)}">
                                     {foreach from=$ALL_GROUP_MEMBERS item=MEMBER}
                                         {if $GROUP_LABEL neq 'Users' || $MEMBER->getId() neq 'Users:'|cat:$CURRENT_USER->getId()}
                                             <option value="{$MEMBER->getId()}"  data-member-type="{$GROUP_LABEL}" {if isset($SELECTED_MEMBERS_GROUP[$GROUP_LABEL][$MEMBER->getId()])}selected="true"{/if}>{$MEMBER->getName()}</option>
