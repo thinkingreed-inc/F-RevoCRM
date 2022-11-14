@@ -29,15 +29,22 @@
 	<select class="select2 listSearchContributor {$ASSIGNED_USER_ID}" name="{$ASSIGNED_USER_ID}"  name="{$ASSIGNED_USER_ID}" multiple>
 		<optgroup label="{vtranslate('LBL_USERS')}">
 			{foreach key=OWNER_ID item=OWNER_NAME from=$ALL_ACTIVEUSER_LIST}
-				<option {if $OWNER_NAME|in_array:$TASK_FILTERS['assigned_user_id']}selected{/if} value="{$OWNER_NAME}" data-picklistvalue= '{$OWNER_NAME}'
-					{if array_key_exists($OWNER_ID, $ACCESSIBLE_USER_LIST)} data-recordaccess=true {else} data-recordaccess=false {/if}
-					data-userId="{$OWNER_ID}">
-					{if $OWNER_ID eq $USER_MODEL->getId()}
-						{vtranslate("LBL_MINE",$MODULE)}
-					{else}
-						{$OWNER_NAME}
-					{/if}
-				</option>
+				{if $OWNER_ID eq $USER_MODEL->getId()}
+					<option {if $OWNER_NAME|in_array:$TASK_FILTERS['assigned_user_id']}selected{/if} value="{$OWNER_NAME}" data-picklistvalue= '{$OWNER_NAME}'
+						{if array_key_exists($OWNER_ID, $ACCESSIBLE_USER_LIST)} data-recordaccess=true {else} data-recordaccess=false {/if}
+						data-userId="{$OWNER_ID}">
+							{$OWNER_NAME}
+					</option>
+				{/if}
+			{/foreach}
+			{foreach key=OWNER_ID item=OWNER_NAME from=$ALL_ACTIVEUSER_LIST}
+				{if $OWNER_ID neq $USER_MODEL->getId()}
+					<option {if $OWNER_NAME|in_array:$TASK_FILTERS['assigned_user_id']}selected{/if} value="{$OWNER_NAME}" data-picklistvalue= '{$OWNER_NAME}'
+						{if array_key_exists($OWNER_ID, $ACCESSIBLE_USER_LIST)} data-recordaccess=true {else} data-recordaccess=false {/if}
+						data-userId="{$OWNER_ID}">
+							{$OWNER_NAME}
+					</option>
+				{/if}
 			{/foreach}
 		</optgroup>
 		{if count($ALL_ACTIVEGROUP_LIST) gt 0}
