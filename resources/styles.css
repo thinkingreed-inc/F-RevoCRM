@@ -639,3 +639,8 @@ ul#productsImageContainer > li a{
 .tag_owner_name p{
   display: inline;
 }
+
+/* メール関連のCC、BCCの隙間を開ける */
+#ccLink{
+  margin-right: 5px;
+}
