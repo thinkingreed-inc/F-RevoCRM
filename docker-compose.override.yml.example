@@ -1,6 +1,6 @@
-version: "3" # docker-compose.yamlの値に合わせる
+version: "3"
 
 services:
-  php: # docker-compose.yamlの適用したいコンテナの名称に合わせる
+  php:
     extra_hosts:
       - "host.docker.internal:host-gateway"
