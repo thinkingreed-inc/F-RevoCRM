@@ -168,6 +168,14 @@ class Activity extends CRMEntity {
 			$this->loadInvitees();
 		}
 
+		// 担当者変更時の参加者削除
+		$database_smownerid = $this->getBeforeAssignedUserID();
+		if ( $database_smownerid > 0 && $smownerid != $database_smownerid ) {
+			//削除してつめる
+			$this->invitee_array = array_diff($this->invitee_array, array($database_smownerid));
+			$this->invitee_array = array_values($this->invitee_array);
+		}
+
 		//Handling module specific save
 		//Insert into seactivity rel
 		$insertion_mode = $this->mode;
@@ -527,22 +535,20 @@ function insertIntoRecurringTable(& $recurObj)
 					}
 				} else {
 					$inviteRecord->getModule()->deleteRecord($inviteRecord);
-					$adb->pquery("DELETE FROM vtiger_invitees WHERE activityid = ? AND inviteeid = ?", array($this->invitee_parentid, $inviteRecord->get('assigned_user_id')));
 				}
 			}
 		}
+		// 担当者変更変更用 一旦すべてのinvitees削除
+		$adb->pquery("DELETE FROM vtiger_invitees WHERE activityid = ?", array($this->invitee_parentid));
+
 		// 新規作成の場合
 		foreach($invitees_array as $inviteeid)
 		{
 			if(empty($inviteeid)) {
 				continue;
 			}
-			$result = $adb->pquery("SELECT 1 FROM vtiger_invitees WHERE activityid = ? AND inviteeid = ?", array($this->invitee_parentid, $inviteeid));
-			// 招待活動が存在しない場合は、作成する。
-			if($adb->num_rows($result) == 0) {
-				$query="INSERT INTO vtiger_invitees VALUES (?,?,?)";
-				$adb->pquery($query, array($this->invitee_parentid, $inviteeid, 'sent'));
-			}
+			$query="INSERT INTO vtiger_invitees VALUES (?,?,?)";
+			$adb->pquery($query, array($this->invitee_parentid, $inviteeid, 'sent'));
 
 			$result = $adb->pquery("SELECT 1 FROM vtiger_activity a INNER JOIN vtiger_crmentity c ON c.crmid = a.activityid WHERE c.deleted = 0 AND c.smownerid = ? AND a.invitee_parentid = ?", array($inviteeid, $this->invitee_parentid));
 			if($adb->num_rows($result) == 0) {
@@ -1515,6 +1521,15 @@ function insertIntoRecurringTable(& $recurObj)
 		}
 		$last_action_date   = array_keys($parentLastActionDateList, max($parentLastActionDateList));
 		return $last_action_date[0];
+	}
+	
+
+	function getBeforeAssignedUserID() {
+		$vtEntityDelta = new VTEntityDelta();
+		$delta = $vtEntityDelta->getEntityDelta('Events', $this->id, true);
+		if(!is_array($delta))						{	return 0;	}
+		if ( empty($delta['assigned_user_id']) )	{	return 0;	}
+		return $delta['assigned_user_id']['oldValue'];
 	}
 
 }
