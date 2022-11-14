@@ -3,4 +3,4 @@ version: "3" # docker-compose.yamlの値に合わせる
 services:
   php: # docker-compose.yamlの適用したいコンテナの名称に合わせる
     extra_hosts:
-      - "host.docker.internal:${DOCKER_HOST_IP}" # 変数にして.envファイルで設定する
+      - "host.docker.internal:host-gateway"
