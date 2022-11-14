@@ -73,6 +73,7 @@ class Documents_QuickCreateAjax_View extends Vtiger_IndexAjax_View {
 		$viewer->assign('QUICK_CREATE_CONTENTS', $quickCreateContents);
 		$viewer->assign('USER_MODEL', Users_Record_Model::getCurrentUserModel());
 		$viewer->assign('FIELDS_INFO', json_encode($fieldsInfo));
+		$viewer->assign('RECORD_STRUCTURE', $recordStructure);
 		$viewer->assign('FIELD_MODELS', $fieldList);
 		$viewer->assign('FILE_LOCATION_TYPE', $request->get('type'));
 		$viewer->assign('SCRIPTS', $this->getHeaderScripts($request));
