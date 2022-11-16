@@ -45,7 +45,7 @@ class Inventory_GetTaxes_Action extends Vtiger_Action_Controller {
 			$quantitiesList[$id]		= $recordModel->get('qtyinstock');
 			$descriptionsList[$id]		= decode_html($recordModel->get('description'));
 			$listPriceValuesList[$id]	= $recordModel->getListPriceValues($recordModel->getId());
-			$reducedtaxrateList[$id]        = $recordModel->get('reducedtaxrate');
+			$reducedtaxrateList[$id]	= $recordModel->get('reducedtaxrate');
 
 			$priceDetails = $recordModel->getPriceDetails();
 			foreach ($priceDetails as $currencyDetails) {
