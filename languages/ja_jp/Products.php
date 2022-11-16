@@ -50,6 +50,7 @@ $languageStrings = array(
 	'Unit Price'=>'単価',
 	'Commission Rate'=>'手数料率 (%)',
 	'Qty/Unit'=>'数量/ユニット',
+	'Reduced TaxRate' =>'軽減税率対象',
 	
 	//Added for existing picklist entries
 
