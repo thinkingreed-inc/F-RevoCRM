@@ -1559,7 +1559,7 @@ $jsLanguageStrings = array(
 	'INVALID_NUMBER_OF' => '無効な数字：',
 	'INVALID_NUMBER' => '無効な数字',
 	'JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE' => '削除しますか？',
-	'JS_LBL_DELETE_RELATED_ACTIVITY' => '関連を外しますか？',
+	'JS_LBL_DELETE_RELATED_ACTIVITY' => '関連を解除しますか？',
 
 	'OVERWRITE_EXISTING_MSG1' => '既存住所を選択した住所の詳細 ( ',
 	'OVERWRITE_EXISTING_MSG2' => ') で上書きしますか？',
