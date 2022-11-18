@@ -62,7 +62,8 @@ $languageStrings = array(
 );
 
 $jsLanguageStrings = array(
-	'LBL_RELATED_RECORD_DELETE_CONFIRMATION' => '削除してもよろしいですか？',
+	'LBL_RELATED_RECORD_DELETE_CONFIRMATION' => '削除しますか？',
+	'LBL_RELATED_RECORD_UNLINK_CONFIRMATION' => '関連を解除しますか？',
 	'LBL_DELETE_CONFIRMATION' => 'この顧客企業を削除すると、関連する案件と見積りも削除されます。 この顧客企業を削除しますか？',
 	'LBL_MASS_DELETE_CONFIRMATION' => 'この顧客企業を削除すると、関連する案件と見積りも削除されます。 選択したレコードを削除しますか？',
 	'JS_DUPLICATE_CREATION_CONFIRMATION' => '顧客企業名は既に存在します。重複したレコードを作成しますか？'

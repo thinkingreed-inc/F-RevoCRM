@@ -711,7 +711,7 @@ Vtiger.Class("Vtiger_Detail_Js",{
 	 * To handle related record delete confirmation message
 	 */
 	getDeleteMessageKey : function() {
-		return 'LBL_DELETE_CONFIRMATION';
+		return 'LBL_UNLINK_CONFIRMATION';
 	},
 
 	/**

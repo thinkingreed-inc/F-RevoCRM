@@ -116,7 +116,13 @@
 									{/if}
 
 									{if $IS_DELETABLE}
-										<a class="relationDelete"><i title="{vtranslate('LBL_UNLINK', $MODULE)}" class="vicon-linkopen"></i></a>
+										{if $MODULE eq "Accounts" && ($RELATED_MODULE_NAME eq 'Potentials' || $RELATED_MODULE_NAME eq  'Quotes' || $RELATED_MODULE_NAME eq 'SalesOrder' || $RELATED_MODULE_NAME eq 'Invoice')}
+											<a class="relationDelete"><i title="{vtranslate('LBL_DELETE', $MODULE)}" class="fa fa-trash"></i></a>
+										{elseif $MODULE eq "Vendors" && $RELATED_MODULE_NAME eq 'PurchaseOrder'}
+											<a class="relationDelete"><i title="{vtranslate('LBL_DELETE', $MODULE)}" class="fa fa-trash"></i></a>
+										{else}
+											<a class="relationDelete"><i title="{vtranslate('LBL_UNLINK', $MODULE)}" class="vicon-linkopen"></i></a>
+										{/if}
 									{/if}
 								</span>
 
