@@ -519,20 +519,12 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 	//消費税率ごとの、小計と消費税の合計を計算する
 	$individualtaxtotal = 0;
 	for($n=1;$n<=$i-1;$n++){
-
-		$productInfo = $product_Detail[1]['final_details']['taxinfo_invoice'][$product_Detail[$n]['taxes'][0]['percentage']];
-		$_totalAfterDiscount = $product_Detail[$n]['totalAfterDiscount'.$n];
-
-		if(!$productInfo['percentage']){
-			$productInfo['percentage'] = $product_Detail[$n]['taxes'][0]['percentage'];
+		if(!$product_Detail[1]['final_details']['taxinfo_invoice'][$product_Detail[$n]['taxes'][0]['percentage']]['percentage']){
+			$product_Detail[1]['final_details']['taxinfo_invoice'][$product_Detail[$n]['taxes'][0]['percentage']]['percentage'] = $product_Detail[$n]['taxes'][0]['percentage'];
 		}
-		$productInfo['taxtotal'] += (float)$_totalAfterDiscount*(float)$product_Detail[$n]['taxes'][0]['percentage']/100;
-		$productInfo['subtotalpertax'] += (float)$_totalAfterDiscount;
-		// }else{
-		// 	$productInfo['taxtotal'] += (float)$_totalAfterDiscount*(float)$product_Detail[$n]['taxes'][0]['percentage']/100;
-		// 	$productInfo['subtotalpertax'] += (float)$_totalAfterDiscount;
-		// }
-	}
+		$product_Detail[1]['final_details']['taxinfo_invoice'][$product_Detail[$n]['taxes'][0]['percentage']]['taxtotal'] += (float)$product_Detail[$n]['totalAfterDiscount'.$n]*(float)$product_Detail[$n]['taxes'][0]['percentage']/100;
+		$product_Detail[1]['final_details']['taxinfo_invoice'][$product_Detail[$n]['taxes'][0]['percentage']]['subtotalpertax'] += (float)$product_Detail[$n]['totalAfterDiscount'.$n];
+		}
 	foreach($product_Detail[1]['final_details']['taxinfo_invoice'] as $key => $data){
 		foreach($data as $item => $num){
 			$product_Detail[1]['final_details']['taxinfo_invoice'][$key][$item] = number_format($num, $no_of_decimal_places, '.', '');

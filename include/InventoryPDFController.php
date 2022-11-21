@@ -637,7 +637,7 @@ class Vtiger_InventoryPDFController {
 	private static function getPreTaxTotal($relatedProducts) {
 		$preTotal = $relatedProducts[1]['final_details']['preTaxTotal'];
 		if($relatedProducts[1]['final_details']['taxtype'] == 'individual'){
-			$preTotal = $relatedProducts[1]['final_details']['preTaxTotal'] - $relatedProducts[1]['final_details']['tax_totalamount'];
+			$preTotal -= $relatedProducts[1]['final_details']['tax_totalamount'];
 		}
 		$currencyField = new CurrencyField($preTotal);
 		$preTotal = $currencyField->getDisplayValueWithSymbol();
@@ -655,11 +655,11 @@ class Vtiger_InventoryPDFController {
 
 	private static function getTotalWithTax($relatedProducts) {
 		$preTotal = $relatedProducts[1]['final_details']['preTaxTotal'];
+		if($relatedProducts[1]['final_details']['taxtype'] == 'individual'){
+			$preTotal -= $relatedProducts[1]['final_details']['tax_totalamount'];
+		}
 		$tax = $relatedProducts[1]['final_details']['tax_totalamount'];
 		$adjustment = $relatedProducts[1]['final_details']['adjustment'];
-		if($relatedProducts[1]['final_details']['taxtype'] == 'individual'){
-			$preTotal = $relatedProducts[1]['final_details']['preTaxTotal'] - $relatedProducts[1]['final_details']['tax_totalamount'];
-		}
 		$currencyField = new CurrencyField($preTotal + $tax + $adjustment);
 		$total = $currencyField->getDisplayValueWithSymbol();
 
