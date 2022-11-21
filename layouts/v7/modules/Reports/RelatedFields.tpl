@@ -12,7 +12,7 @@
 {strip}
     <span>
         <div class="col-lg-6">
-            <select class="select2 col-lg-11 selectedSortFields " name="selectstep2dropdown_{$ROW_VAL}">
+            <select class="select2 col-lg-11 selectedSortFields " name="selectstep2dropdown_{$ROW_VAL}" style="float:left;">
                 <option value="none">{vtranslate('LBL_NONE',$MODULE)}</option>
                 {foreach key=PRIMARY_MODULE_NAME item=PRIMARY_MODULE from=$PRIMARY_MODULE_FIELDS}
                     {foreach key=BLOCK_LABEL item=BLOCK from=$PRIMARY_MODULE}
@@ -36,12 +36,12 @@
         </div>
     </span>
     <span class="col-lg-6">
-        <div class="row">
+        <span class="">
             <span class="col-lg-6">
                 {assign var=ROW value='row_'|cat:$ROW_VAL}
                 <input type="radio" name="{$ROW}" class="sortOrder" value="Ascending" {if $SELECTED_SORT_FIELD_VALUE eq Ascending} checked="" {/if} />&nbsp;<span>{vtranslate('LBL_ASCENDING',$MODULE)}</span>&nbsp;&nbsp;
                 <input type="radio" name="{$ROW}" class="sortOrder" value="Descending" {if $SELECTED_SORT_FIELD_VALUE eq Descending} checked="" {/if}/>&nbsp;<span>{vtranslate('LBL_DESCENDING',$MODULE)}</span>
             </span>
-        </div>
+        </span>
     </span>
 {/strip}

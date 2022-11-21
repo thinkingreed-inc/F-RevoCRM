@@ -21,7 +21,7 @@
 				{/if}
 				{include file="ModalHeader.tpl"|vtemplate_path:$MODULE TITLE=$HEADER_TITLE}
 
-				<div class="modal-body" {if $MODULE=='Events'}style="max-height:800px;"{/if}>
+				<div class="modal-body pre-scrollable" {if $MODULE=='Events'}style="max-height:800px;"{/if}>
 					{if !empty($PICKIST_DEPENDENCY_DATASOURCE)}
 						<input type="hidden" name="picklistDependency" value='{Vtiger_Util_Helper::toSafeHTML($PICKIST_DEPENDENCY_DATASOURCE)}' />
 					{/if}

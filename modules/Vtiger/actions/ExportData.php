@@ -12,7 +12,8 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 
 	var $moduleCall = false;
 	public function requiresPermission(\Vtiger_Request $request) {
-		$permissions = parent::requiresPermission($request);
+//		$permissions = parent::requiresPermission($request);
+		$permissions[] = array('module_parameter' => 'module', 'action' => 'DetailView');
 		$permissions[] = array('module_parameter' => 'module', 'action' => 'Export');
         if (!empty($request->get('source_module'))) {
             $permissions[] = array('module_parameter' => 'source_module', 'action' => 'Export');
@@ -390,8 +391,10 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 
 	function getParentModuleName($value, $fieldName) {
 		$db = PearDatabase::getInstance();
-		$query = "SELECT relmodule  FROM vtiger_fieldmodulerel WHERE fieldid = (SELECT fieldid FROM vtiger_field WHERE columnname = ? );";
-		$result = $db->pquery($query, array($fieldName));
+		$moduleName = $this->moduleInstance->getName();
+ 		$tabid = Vtiger_Functions::getModuleId($moduleName);
+		$query = "SELECT relmodule  FROM vtiger_fieldmodulerel WHERE fieldid = (SELECT fieldid FROM vtiger_field WHERE columnname = ? AND tabid = ?);";
+		$result = $db->pquery($query, array($fieldName, $tabid));
 		if ($db->num_rows($result) > 0) {
 			$columname = $db->query_result($result, 0, "relmodule");
 		}

@@ -64,5 +64,4 @@ if (defined('VTIGER_UPGRADE')) {
         $field->columntype = 'int(1)';
         $blockInstance->addField($field);
     }
-
 }

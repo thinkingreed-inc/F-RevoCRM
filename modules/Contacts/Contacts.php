@@ -424,7 +424,7 @@ class Contacts extends CRMEntity {
 		$query = "SELECT case when (vtiger_users.user_name not like '') then $userNameSql else vtiger_groups.groupname end as user_name," .
 				" vtiger_contactdetails.lastname, vtiger_contactdetails.firstname,  vtiger_activity.activityid ," .
 				" vtiger_activity.subject, vtiger_activity.activitytype, vtiger_activity.date_start, vtiger_activity.due_date," .
-				" vtiger_activity.time_start,vtiger_activity.time_end, vtiger_cntactivityrel.contactid, vtiger_crmentity.crmid," .
+				" vtiger_activity.time_start,vtiger_activity.time_end, vtiger_activity.visibility, vtiger_cntactivityrel.contactid, vtiger_crmentity.crmid," .
 				" vtiger_crmentity.smownerid, vtiger_crmentity.modifiedtime, vtiger_recurringevents.recurringtype," .
 				" case when (vtiger_activity.activitytype = 'Task') then vtiger_activity.status else vtiger_activity.eventstatus end as status, " .
 				" vtiger_seactivityrel.crmid as parent_id " .
@@ -460,7 +460,7 @@ class Contacts extends CRMEntity {
 		$userNameSql = getSqlForNameInDisplayFormat(array('last_name' => 'vtiger_users.last_name', 'first_name' => 'vtiger_users.first_name',), 'Users');
 		$query = "SELECT vtiger_activity.activityid, vtiger_activity.subject, vtiger_activity.status
 			, vtiger_activity.eventstatus,vtiger_activity.activitytype, vtiger_activity.date_start,
-			vtiger_activity.due_date,vtiger_activity.time_start,vtiger_activity.time_end,
+			vtiger_activity.due_date,vtiger_activity.time_start,vtiger_activity.time_end,vtiger_activity.visibility,
 			vtiger_contactdetails.contactid, vtiger_contactdetails.firstname,
 			vtiger_contactdetails.lastname, vtiger_crmentity.modifiedtime,
 			vtiger_crmentity.createdtime, vtiger_crmentity.description,vtiger_crmentity.crmid,
