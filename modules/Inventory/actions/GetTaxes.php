@@ -29,7 +29,7 @@ class Inventory_GetTaxes_Action extends Vtiger_Action_Controller {
 		}
 
 		$response = new Vtiger_Response();
-		$namesList = $purchaseCostsList = $taxesList = $listPricesList = $listPriceValuesList = array();
+		$namesList = $purchaseCostsList = $taxesList = $listPricesList = $listPriceValuesList = $reducedtaxrateList = array();
 		$descriptionsList = $quantitiesList = $imageSourcesList = $productIdsList = $baseCurrencyIdsList = array();
 
 		foreach($idList as $id) {
@@ -45,6 +45,7 @@ class Inventory_GetTaxes_Action extends Vtiger_Action_Controller {
 			$quantitiesList[$id]		= $recordModel->get('qtyinstock');
 			$descriptionsList[$id]		= decode_html($recordModel->get('description'));
 			$listPriceValuesList[$id]	= $recordModel->getListPriceValues($recordModel->getId());
+			$reducedtaxrateList[$id]	= $recordModel->get('reducedtaxrate');
 
 			$priceDetails = $recordModel->getPriceDetails();
 			foreach ($priceDetails as $currencyDetails) {
@@ -93,6 +94,11 @@ class Inventory_GetTaxes_Action extends Vtiger_Action_Controller {
 				$resultData['usageunit'] = vtranslate($recordModel->get('usageunit'), $recordModel->getModuleName());
 			}else if($recordModel->getModuleName() == 'Services'){
 				$resultData['usageunit'] = vtranslate($recordModel->get('service_usageunit'), $recordModel->getModuleName());
+			}
+			if($recordModel->getModuleName() == 'Products'){
+				$resultData['reducedtaxrate'] = vtranslate($recordModel->get('reducedtaxrate'), $recordModel->getModuleName());
+			}else if($recordModel->getModuleName() == 'Services'){
+				$resultData['reducedtaxrate'] = vtranslate($recordModel->get('service_reducedtaxrate'), $recordModel->getModuleName());
 			}
 
 			$info[] = array($id => $resultData);

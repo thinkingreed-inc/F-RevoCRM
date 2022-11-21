@@ -128,7 +128,7 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 	{
 		$query = '(SELECT vtiger_products.productid, vtiger_products.productname, vtiger_products.product_no AS productcode, vtiger_products.purchase_cost,
 					vtiger_products.unit_price, vtiger_products.qtyinstock, vtiger_crmentity.deleted, "Products" AS entitytype,
-					vtiger_products.is_subproducts_viewable, vtiger_crmentity.description, vtiger_products.usageunit '.$additionalProductFieldsString.' FROM vtiger_products
+					vtiger_products.is_subproducts_viewable, vtiger_crmentity.description, vtiger_products.usageunit, vtiger_products.reducedtaxrate, '.$additionalProductFieldsString.' FROM vtiger_products
 					INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid=vtiger_products.productid
 					INNER JOIN vtiger_seproductsrel ON vtiger_seproductsrel.productid=vtiger_products.productid
 					INNER JOIN vtiger_productcf ON vtiger_products.productid = vtiger_productcf.productid
@@ -146,7 +146,7 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 	elseif ($module == 'Vendors') {
 		$query = 'SELECT vtiger_products.productid, vtiger_products.productname, vtiger_products.product_no AS productcode, vtiger_products.purchase_cost,
 					vtiger_products.unit_price, vtiger_products.qtyinstock, vtiger_crmentity.deleted, "Products" AS entitytype,
-					vtiger_products.is_subproducts_viewable, vtiger_crmentity.description, vtiger_products.usageunit '.$additionalServiceFieldsString.' FROM vtiger_products
+					vtiger_products.is_subproducts_viewable, vtiger_crmentity.description, vtiger_products.usageunit, vtiger_products.reducedtaxrate '.$additionalServiceFieldsString.' FROM vtiger_products
 					INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid=vtiger_products.productid
 					INNER JOIN vtiger_vendor ON vtiger_vendor.vendorid = vtiger_products.vendor_id
 					INNER JOIN vtiger_productcf ON vtiger_products.productid = vtiger_productcf.productid
@@ -167,7 +167,7 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 	{
 		$query = 'SELECT vtiger_products.productid, vtiger_products.productname, vtiger_products.product_no AS productcode, vtiger_products.purchase_cost,
 					vtiger_products.unit_price, vtiger_products.qtyinstock, vtiger_crmentity.deleted, "Products" AS entitytype,
-					vtiger_products.is_subproducts_viewable, vtiger_crmentity.description, vtiger_products.usageunit '.$additionalProductFieldsString.' FROM vtiger_products
+					vtiger_products.is_subproducts_viewable, vtiger_crmentity.description, vtiger_products.usageunit, vtiger_products.reducedtaxrate '.$additionalProductFieldsString.' FROM vtiger_products
 					INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid=vtiger_products.productid
 					INNER JOIN vtiger_productcf ON vtiger_products.productid = vtiger_productcf.productid
 					WHERE vtiger_crmentity.deleted=0 AND vtiger_products.productid=?';
@@ -204,6 +204,7 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 		$sequence_no = $adb->query_result($result,$i-1,'sequence_no');
 		$isSubProductsViewable = $adb->query_result($result, $i-1, 'is_subproducts_viewable');
 		$usageunit=$adb->query_result($result,$i-1,'usageunit');
+		$reducedtaxrate=$adb->query_result($result,$i-1,'reducedtaxrate');
 
 		if ($sequence_no) {
 			$product_Detail[$i]['sequence_no' . $i] = $sequence_no;
@@ -346,7 +347,7 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 		$product_Detail[$i]['discountTotal'.$i] = $discountTotal;
 		$product_Detail[$i]['totalAfterDiscount'.$i] = $totalAfterDiscount;
 		$product_Detail[$i]['usageunit'.$i]=$usageunit;
-		
+		$product_Detail[$i]['reducedtaxrate'.$i]=$reducedtaxrate;
 		$taxTotal = 0;
 		$taxTotal = number_format($taxTotal, $no_of_decimal_places,'.','');
 		$product_Detail[$i]['taxTotal'.$i] = $taxTotal;
@@ -524,10 +525,35 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 		$taxTotal = $taxTotal + $taxDetails[$taxId]['amount'];
 	}
 	$product_Detail[1]['final_details']['taxes'] = $taxDetails;
-	//消費税が「個別」の時に、消費税を正しい数字に上書きする
-	if($taxtype == 'individual'){
-		$taxTotal = $individualTotal - $subTotal;
+
+
+	//消費税率ごとの、小計と消費税の合計を計算する
+	$individualtaxtotal = 0;
+	for($n=1;$n<=$i-1;$n++){
+		if(!$product_Detail[1]['final_details']['taxinfo_invoice'][$product_Detail[$n]['taxes'][0]['percentage']]['percentage']){
+			$product_Detail[1]['final_details']['taxinfo_invoice'][$product_Detail[$n]['taxes'][0]['percentage']]['percentage'] = $product_Detail[$n]['taxes'][0]['percentage'];
+		}
+		$product_Detail[1]['final_details']['taxinfo_invoice'][$product_Detail[$n]['taxes'][0]['percentage']]['taxtotal'] += (float)$product_Detail[$n]['totalAfterDiscount'.$n]*(float)$product_Detail[$n]['taxes'][0]['percentage']/100;
+		$product_Detail[1]['final_details']['taxinfo_invoice'][$product_Detail[$n]['taxes'][0]['percentage']]['subtotalpertax'] += (float)$product_Detail[$n]['totalAfterDiscount'.$n];
+		}
+	foreach($product_Detail[1]['final_details']['taxinfo_invoice'] as $key => $data){
+		foreach($data as $item => $num){
+			$product_Detail[1]['final_details']['taxinfo_invoice'][$key][$item] = number_format($num, $no_of_decimal_places, '.', '');
+		}
 	}
+
+	//消費税の合計を計算し、消費税が個別であるときに消費税の合計を書き換える
+	foreach($product_Detail[1]['final_details']['taxinfo_invoice'] as $key => $data){
+		foreach($data as $item => $num){
+			if($item == 'taxtotal'){
+				$individualtaxtotal += $num;
+			}
+		}
+	}
+	if($taxtype == 'individual'){
+		$taxTotal = $individualtaxtotal;
+	}
+
 	$product_Detail[1]['final_details']['tax_totalamount'] = number_format($taxTotal, $no_of_decimal_places, '.', '');
 	// 消費税がマイナスとなっている場合、引き算した時に料金が減ってしまうため、0にする
 	if($product_Detail[1]['final_details']['tax_totalamount'] <= 0){
