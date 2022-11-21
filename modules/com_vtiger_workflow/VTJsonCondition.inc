@@ -158,9 +158,10 @@ class VTJsonCondition {
 		$condition = $cond['operation'];
 		if(empty($condition)) return false;
 
-		if($cond['fieldname'] == 'date_start' || $cond['fieldname'] == 'due_date') {
+		$datetimefieldsList = array('date_start', 'due_date'); //「Time & Date」もしくは「Date」として扱いたいフィールド
+		$dateTimePair = array('date_start' => 'time_start', 'due_date' => 'time_end');
+		if(in_array($cond['fieldname'], $datetimefieldsList)) {
 			$fieldName = $cond['fieldname'];
-			$dateTimePair = array('date_start' => 'time_start', 'due_date' => 'time_end');
 			if(array_key_exists($dateTimePair[$fieldName], $data)) {
 				$fieldValue = $data[$fieldName]." ".$data[$dateTimePair[$fieldName]];
 			} else {
@@ -202,57 +203,62 @@ class VTJsonCondition {
 		$moduleFields = $handler->getMeta()->getModuleFields();
 		$fieldInstance = $moduleFields[$cond['fieldname']];
 
-		if($fieldInstance && $fieldInstance->getFieldDataType() == 'datetime') {
-			//Convert the DB Date Time Format to User Date Time Format
-			$rawFieldValue = $fieldValue;
+		if(in_array($cond['fieldname'], $datetimefieldsList)){
 			$date = new DateTimeField($fieldValue);
 			$fieldValue = $date->getDisplayDateTimeValue();
-			$valueArray = explode(' ', $value);
-			if(count($valueArray) == 1) {
-				$fieldValueArray = explode(' ', $fieldValue);
-				$fieldValue = getValidDBInsertDateValue($fieldValueArray[0]);
-			}
-		}
-		//strtotime condition is added for days before, days after where we give integer values, so strtotime will return 0 for such cases.
-		if($fieldInstance && $fieldInstance->getFieldDataType() == 'date' && $condition != 'between' && strtotime($value)) {
-			//Convert User Date Format filter value to DB date format
-			$value = getValidDBInsertDateValue($value);
-		}
-
-		if($fieldInstance && $fieldInstance->getFieldDataType() == 'time') {
-			if($condition == 'between'){ 
-				$values = explode(',', $value);
-				$values[0] = date('H:i', strtotime($values[0]));
-				$values[1] = date('H:i', strtotime($values[1]));
-				$value = $values[0].':00,'.$values[1].':00';
-			}else{
-				if(strpos($value,'AM') !== false || strpos($value,'PM') !== false){
-					$value = date('H:i', strtotime($value));
+		} else {
+			if($fieldInstance && $fieldInstance->getFieldDataType() == 'datetime') {
+				//Convert the DB Date Time Format to User Date Time Format
+				$rawFieldValue = $fieldValue;
+				$date = new DateTimeField($fieldValue);
+				$fieldValue = $date->getDisplayDateTimeValue();
+				$valueArray = explode(' ', $value);
+				if(count($valueArray) == 1) {
+					$fieldValueArray = explode(' ', $fieldValue);
+					$fieldValue = getValidDBInsertDateValue($fieldValueArray[0]);
 				}
+			}
+			//strtotime condition is added for days before, days after where we give integer values, so strtotime will return 0 for such cases.
+			if($fieldInstance && $fieldInstance->getFieldDataType() == 'date' && $condition != 'between' && strtotime($value)) {
+				//Convert User Date Format filter value to DB date format
+				$value = getValidDBInsertDateValue($value);
+			}
 	
-				if($value){
-					$value = $value.':00';	// time fields will not have seconds appended to it, so we are adding 
+			if($fieldInstance && $fieldInstance->getFieldDataType() == 'time') {
+				if($condition == 'between'){ 
+					$values = explode(',', $value);
+					$values[0] = date('H:i', strtotime($values[0]));
+					$values[1] = date('H:i', strtotime($values[1]));
+					$value = $values[0].':00,'.$values[1].':00';
+				}else{
+					if(strpos($value,'AM') !== false || strpos($value,'PM') !== false){
+						$value = date('H:i', strtotime($value));
+					}
+		
+						if($value){
+							$value = $value.':00';	// time fields will not have seconds appended to it, so we are adding 
+					}
 				}
 			}
-		}
 
-		if ($fieldInstance && ($fieldInstance->getFieldDataType() == 'owner' || $fieldInstance->getFieldDataType() == 'ownergroup')) {
-			if($condition == 'is' || $condition == 'is not') { 
-				//To avoid again checking whether it is user or not 
-				$idList = array();
-				$idList[] = vtws_getWebserviceEntityId('Users',$value); 
-				$idList[] = vtws_getWebserviceEntityId('Groups',$value);
-				$value = $idList;
-				$condition = ($condition == 'is') ? 'contains' : 'does not contain';
+			if ($fieldInstance && ($fieldInstance->getFieldDataType() == 'owner' || $fieldInstance->getFieldDataType() == 'ownergroup')) {
+				if($condition == 'is' || $condition == 'is not') { 
+					//To avoid again checking whether it is user or not 
+					$idList = array();
+					$idList[] = vtws_getWebserviceEntityId('Users',$value); 
+					$idList[] = vtws_getWebserviceEntityId('Groups',$value);
+					$value = $idList;
+					$condition = ($condition == 'is') ? 'contains' : 'does not contain';
+				}
 			}
-		}
-		if($fieldInstance && $fieldInstance->getFieldName() == 'folderid') {
-			$value = vtws_getWebserviceEntityId('DocumentFolders', $value);
-		}
-
-		if(is_numeric($fieldValue) && is_numeric($value)){
-			$fieldValue = round($fieldValue, 8);
-			$value = round($value,8);
+			if($fieldInstance && $fieldInstance->getFieldName() == 'folderid') {
+				$value = vtws_getWebserviceEntityId('DocumentFolders', $value);
+			}
+	
+			if(is_numeric($fieldValue) && is_numeric($value)){
+				$fieldValue = round($fieldValue, 8);
+				$value = round($value,8);
+			}
 		}
 
 		switch ($condition) {
@@ -280,6 +286,13 @@ class VTJsonCondition {
 					$fieldValue = $this->getPicklistArray($fieldValue);
 					$value = $this->getPicklistArray($value);
 					return empty(array_diff($fieldValue, $value)) && empty(array_diff($value, $fieldValue));
+				} elseif($fieldInstance && in_array($cond['fieldname'], $datetimefieldsList)){
+					$valueArray = explode(' ', $value);
+					if (count($valueArray) == 1 && $valueArray[0] === date('H:i:s', strtotime($valueArray[0]))) { //タイムスタンプで比較する兼ね合い上、Timeのみの条件は考慮しない
+						return false;
+					}
+					$value = getValidDBInsertDateTimeValue($value);
+					return date('Y-m-d H:i:s', strtotime($fieldValue)) == date('Y-m-d H:i:s', strtotime($value));
 				} else {
 					if($fieldInstance && $fieldInstance->getFieldDataType() == 'datetime') {
 						$value = getValidDBInsertDateValue($value);
@@ -298,6 +311,13 @@ class VTJsonCondition {
 					$fieldValue = $this->getPicklistArray($fieldValue);
 					$value = $this->getPicklistArray($value);
 					return !empty(array_diff($fieldValue, $value)) || !empty(array_diff($value, $fieldValue));
+				} elseif($fieldInstance && in_array($cond['fieldname'], $datetimefieldsList)){
+					$valueArray = explode(' ', $value);
+					if (count($valueArray) == 1 && $valueArray[0] === date('H:i:s', strtotime($valueArray[0]))) {
+						return false;
+					}
+					$value = getValidDBInsertDateTimeValue($value);
+					return date('Y-m-d H:i:s', strtotime($fieldValue)) != date('Y-m-d H:i:s', strtotime($value));
 				} else {
 					if($fieldInstance && $fieldInstance->getFieldDataType() == 'datetime') {
 						$value = getValidDBInsertDateValue($value);
@@ -376,16 +396,25 @@ class VTJsonCondition {
 				return preg_match($value, $fieldValue);
 
 			case "has changed" :
-				$entityDelta = new VTEntityDelta();
-				$idParts = vtws_getIdComponents($entityData->getId());
-				$hasChanged = $entityDelta->hasChanged($entityData->getModuleName(), $idParts[1], $cond['fieldname']);
-				if (empty($value)) {
-					return $hasChanged;
+				if($fieldInstance && in_array($cond['fieldname'], $datetimefieldsList)){
+					$entityDelta = new VTEntityDelta();
+					$idParts = vtws_getIdComponents($entityData->getId());
+					$hasChanged_date = $entityDelta->hasChanged($entityData->getModuleName(), $idParts[1], $fieldName);
+					$hasChanged_time = $entityDelta->hasChanged($entityData->getModuleName(), $idParts[1], $dateTimePair[$fieldName]);
+					return $hasChanged_date || $hasChanged_time;
+				} else {
+					$entityDelta = new VTEntityDelta();
+					$idParts = vtws_getIdComponents($entityData->getId());
+					$hasChanged = $entityDelta->hasChanged($entityData->getModuleName(), $idParts[1], $cond['fieldname']);
+					if (empty($value)) {
+						return $hasChanged;
 				} else if($fieldInstance && $fieldInstance->getFieldDataType() == 'multipicklist'){
 					return $hasChanged;
-				} else {
-					return $hasChanged && $fieldValue == $value;
+					} else {
+						return $hasChanged && $fieldValue == $value;
+					}
 				}
+				
 			case "is empty":
 				if(empty($fieldValue)) {
 					return true;
@@ -397,23 +426,41 @@ class VTJsonCondition {
 				}
 				return true;
 			case "before":
-				if(empty($fieldValue)) {
+				if($fieldInstance && in_array($cond['fieldname'], $datetimefieldsList)){
+					$valueArray = explode(' ', $value);
+					if (count($valueArray) == 1 && $valueArray[0] === date('H:i:s', strtotime($valueArray[0]))) {
+						return false;
+					}
+					$value = getValidDBInsertDateTimeValue($value);
+					return strtotime($fieldValue) < strtotime($value);
+				} else {
+					if(empty($fieldValue)) {
+						return false;
+					}
+					$value = getValidDBInsertDateValue($value);
+					if($fieldValue < $value) {
+						return true;
+					}
 					return false;
 				}
-				$value = getValidDBInsertDateValue($value);
-				if($fieldValue < $value) {
-					return true;
-				}
-				return false;
 			case "after":
-				if(empty($fieldValue)) {
+				if($fieldInstance && in_array($cond['fieldname'], $datetimefieldsList)){
+					$valueArray = explode(' ', $value);
+					if (count($valueArray) == 1 && $valueArray[0] === date('H:i:s', strtotime($valueArray[0]))) {
+						return false;
+					}
+					$value = getValidDBInsertDateTimeValue($value);
+					return strtotime($fieldValue) > strtotime($value);
+				} else {
+					if(empty($fieldValue)) {
+						return false;
+					}
+					$value = getValidDBInsertDateValue($value);
+					if($fieldValue > $value) {
+						return true;
+					}
 					return false;
 				}
-				$value = getValidDBInsertDateValue($value);
-				if($fieldValue > $value) {
-					return true;
-				}
-				return false;
 			case "between":
 				if(empty($fieldValue)) {
 					return false;
@@ -445,6 +492,7 @@ class VTJsonCondition {
 				}
 				$today = date('Y-m-d');
 				$olderDate = date('Y-m-d', strtotime('-'.$value.' days'));
+				$fieldValue = date('Y-m-d', strtotime($fieldValue));
 				if($olderDate <= $fieldValue && $fieldValue <= $today) {
 					return true;
 				}
@@ -454,6 +502,7 @@ class VTJsonCondition {
 					return false;
 				}
 				$olderDate = date('Y-m-d', strtotime('-'.$value.' days'));
+				$fieldValue = date('Y-m-d', strtotime($fieldValue));
 				if($fieldValue <= $olderDate) {
 					return true;
 				}
@@ -571,6 +620,7 @@ class VTJsonCondition {
 				}
 				$currentDate = date('Y-m-d');
 				$futureDate = date('Y-m-d', strtotime('+'.$value.' days'));
+				$fieldValue = date('Y-m-d', strtotime($fieldValue));
 				if($currentDate <= $fieldValue && $fieldValue <= $futureDate) {
 					return true;
 				}
@@ -580,6 +630,7 @@ class VTJsonCondition {
 					return false;
 				}
 				$futureDate = date('Y-m-d', strtotime('+'.$value.' days'));
+				$fieldValue = date('Y-m-d', strtotime($fieldValue));
 				if($fieldValue >= $futureDate) {
 					return true;
 				}
