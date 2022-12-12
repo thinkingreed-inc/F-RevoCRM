@@ -276,6 +276,12 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 					$result['recurringRecords'] = true;
 				} else {
                     $oldStartDateTime = $this->getFormattedDateTime($record->get('date_start'), $record->get('time_start'));
+					if($activityType == 'Task'){
+						$oldhour = substr($oldStartDateTime,11,2);
+						$oldminute = substr($oldStartDateTime,14,2);
+						$alldaystartdatetime = (60*60*$oldhour) + (60*$oldminute);
+						$secondsDelta = $secondsDelta - $alldaystartdatetime;
+					}
 					$resultDateTime = $this->changeDateTime($oldStartDateTime,$dayDelta,$minuteDelta,$secondsDelta);
 					$parts = explode(' ',$resultDateTime);
 					$record->set('date_start',$parts[0]);
