@@ -332,6 +332,10 @@ jQuery.Class("Vtiger_AdvanceFilter_Js",{
 			fieldSpecificUi.filter('[name="'+ fieldName +'"]').addClass('row-fluid');
 			fieldSpecificUi.find('[name="'+ fieldName +'"]').addClass('row-fluid');
 		}
+		if(comparatorElementVal.indexOf("than") !== -1){
+			fieldSpecificUi.filter('[name="'+ fieldName +'"]').addClass('inputElement');
+
+		}
 		
 		fieldSpecificUi.filter('[name="'+ fieldName +'"]').attr('data-value', 'value').removeAttr('data-validation-engine').addClass('ignore-validation');
 		fieldSpecificUi.find('[name="'+ fieldName +'"]').attr('data-value','value').removeAttr('data-validation-engine').addClass('ignore-validation');
