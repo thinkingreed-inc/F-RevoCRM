@@ -972,7 +972,9 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 					case 'MultiSelectCombo':type = 'Multipicklist';break;
 				}
 				data.type = type;
-				typeBeforeChange = type;
+				if(form.find('[name="fieldType"]').attr('disabled') != 'disabled'){
+					typeBeforeChange = type;
+				}
 
 				if (typeof data.picklistvalues == "undefined")
 					data.picklistvalues = {};
