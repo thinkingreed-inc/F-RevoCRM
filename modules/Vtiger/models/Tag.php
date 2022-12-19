@@ -66,13 +66,8 @@ class Vtiger_Tag_Model extends Vtiger_Base_Model {
 		$tagName = $this->getName();
 		$visibility = $this->getType();
 		$currentUser = Users_Record_Model::getCurrentUserModel();
-		$checkRes = $db->pquery("SELECT id FROM vtiger_freetags WHERE tag=?",array($this->getName()));
-		if($db->num_rows($checkRes) > 0) {
-			$id = $db->query_result($checkRes, 0, 'id');
-		}else{
-			$id = $db->getUniqueId('vtiger_freetags');
-			$db->pquery("INSERT INTO vtiger_freetags values(?,?,?,?,?)", array($id, $tagName, $tagName, $visibility, $currentUser->getId()));
-		}
+		$id = $db->getUniqueId('vtiger_freetags');
+		$db->pquery("INSERT INTO vtiger_freetags values(?,?,?,?,?)", array($id, $tagName, $tagName, $visibility, $currentUser->getId()));	
 		$this->set('id', $id);
 		return $id;
 	}
