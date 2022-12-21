@@ -375,6 +375,16 @@ class Vtiger_List_View extends Vtiger_Index_View {
 			$this->allUserTags = Vtiger_Tag_Model::getAllUserTags($currentUser->getId());
 		}
 
+		foreach ($this->listViewHeaders as $headerFieldModel) {
+			$headerfieldName = $headerFieldModel->name;
+			$parsedFieldName = preg_split("/\s\;\s\(|^\(|\)$/", $headerfieldName, -1, PREG_SPLIT_NO_EMPTY)[0];
+			if (preg_match("/^\(.*\s\;\s\(.*\)\s.*\)$/", $headerfieldName)) {
+				$parsedFieldModuleModel = Vtiger_Module_Model::getInstance($moduleName);
+				$parsedFieldModel = Vtiger_Field_Model::getInstance($parsedFieldName, $parsedFieldModuleModel);
+				$this->listViewHeaders[$headerfieldName]->set("parentFieldName", $parsedFieldModel->get('label'));
+			}
+		}
+
 		$listViewController = $listViewModel->get('listview_controller');
 		$selectedHeaderFields = $listViewController->getListViewHeaderFields();
 

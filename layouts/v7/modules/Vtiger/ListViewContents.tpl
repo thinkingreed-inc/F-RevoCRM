@@ -104,7 +104,10 @@
 									<i class="fa fa-sort customsort"></i>
 								{/if}
 							{/if}
-							&nbsp;{vtranslate($LISTVIEW_HEADER->get('label'), $LISTVIEW_HEADER->getModuleName())}&nbsp;
+							{if $LISTVIEW_HEADER->parentFieldName}
+								{vtranslate($LISTVIEW_HEADER->parentFieldName, $LISTVIEW_HEADER->getModuleName())}&nbsp;-
+							{/if}
+							{vtranslate($LISTVIEW_HEADER->get('label'), $LISTVIEW_HEADER->getModuleName())}
 						</a>
 						{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')}
 							<a href="#" class="removeSorting"><i class="fa fa-remove"></i></a>
