@@ -25,4 +25,14 @@ if (defined('VTIGER_UPGRADE')) {
     if($moduleModel){
         $moduleModel->setRelatedList(Vtiger_Module_Model::getInstance('Assets'), 'Assets', 'ADD,SELECT', 'get_related_list');
     }
+
+    // uitype10の「カレンダー」および「TODO」を非表示に変更する
+    $db->query('UPDATE vtiger_field vf
+        LEFT JOIN vtiger_relatedlists vr 
+        ON vf.fieldid = vr.relationfieldid
+        SET vf.presence = 1
+        WHERE vf.presence = 2
+        AND vf.uitype = 10
+        AND vr.tabid in (9,16);
+    ');
 }
