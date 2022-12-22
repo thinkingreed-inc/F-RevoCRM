@@ -354,8 +354,11 @@ class VTUpdateFieldsTask extends VTTask {
 			foreach($referenceModuleUpdated as $module => $info){
 				foreach($info as $refFieldName => $referenceRecordId){
 					$referenceFocus = $this->referenceFieldFocusList[$refFieldName][$referenceRecordId];
+					$vtEntityDelta = new VTEntityDelta();
+					$delta = $vtEntityDelta->getEntityDelta($moduleName, $entity->getId(), false);
 						foreach ($referenceFocus->column_fields as $fieldName => $fieldValue) {
 							$referenceFocus->column_fields[$fieldName] = html_entity_decode($fieldValue, ENT_QUOTES, $default_charset);
+							$delta[$fieldName]['currentValue'] = html_entity_decode($fieldValue, ENT_QUOTES, $default_charset);
 						}
 						$referenceFocus->isLineItemUpdate = false;
 						$referenceFocus->isWorkFlowFieldUpdate = true;
