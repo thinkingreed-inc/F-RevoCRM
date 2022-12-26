@@ -74,7 +74,7 @@
 									<tr class="listViewEntries" data-id="{$LISTVIEW_ENTRY->getId()}"
 										{if method_exists($LISTVIEW_ENTRY,'getDetailViewUrl')}data-recordurl="{$LISTVIEW_ENTRY->getDetailViewUrl()}"{/if}
 										{if method_exists($LISTVIEW_ENTRY,'getRowInfo')}data-info="{Vtiger_Util_Helper::toSafeHTML(ZEND_JSON::Encode($LISTVIEW_ENTRY->getRowInfo()))}"{/if}>
-										<td width="10%">
+										<td width="10%" class="listViewEntryValue">
 											{include file="ListViewRecordActions.tpl"|vtemplate_path:$QUALIFIED_MODULE}
 										</td>
 										{foreach item=LISTVIEW_HEADER from=$LISTVIEW_HEADERS}
