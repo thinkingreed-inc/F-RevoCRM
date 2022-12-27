@@ -1088,7 +1088,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 	calculateNetTotal : function() {
 		var self = this
 		var netTotalValue = 0;
-		this.lineItemsHolder.find('tr.'+this.lineItemDetectingClass+' .totalAfterDiscount').each(function(index,domElement){
+		this.lineItemsHolder.find('tr.'+this.lineItemDetectingClass+' .netPrice').each(function(index,domElement){
 			var lineItemNetPriceEle = jQuery(domElement);
 			netTotalValue += self.formatLineItemNetPrice(lineItemNetPriceEle);
 		});
