@@ -212,7 +212,7 @@ class Calendar_RepeatEvents {
 					$recordModel = Vtiger_Record_Model::getInstanceById($recordId);
 					$recordModel->set("is_allday", $focus->is_allday); //recordModulにis_alldayが無いので追加
 					$recordModel->set('mode', 'edit');
-					if($focus->column_fields['recurringEditMode'] == 'future' && $recordModel->get('date_start') >= $eventStartDate) {
+					if($focus->column_fields['recurringEditMode'] == 'future' && $recordModel->get('date_start') >= $eventStartDate && $recordModel->get('date_start') != $eventStartDate) {
 						$startDateTimestamp = strtotime($startDate);
 						$endDateTime = $startDateTimestamp + $interval;
 						$endDate = date('Y-m-d', $endDateTime);
@@ -239,7 +239,7 @@ class Calendar_RepeatEvents {
 						if(self::$recurringTypeChanged) {
 							$adb->pquery("INSERT INTO vtiger_activity_recurring_info VALUES (?,?)", array($parentId, $recordId));
 						}
-					} else if($focus->column_fields['recurringEditMode'] == 'all') {
+					} else if($focus->column_fields['recurringEditMode'] == 'all' && $recordModel->get('date_start') != $eventStartDate) {
 						$startDateTimestamp = strtotime($startDate);
 						$endDateTime = $startDateTimestamp + $interval;
 						$endDate = date('Y-m-d', $endDateTime);
