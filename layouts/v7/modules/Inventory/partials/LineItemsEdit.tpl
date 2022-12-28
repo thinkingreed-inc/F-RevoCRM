@@ -420,7 +420,7 @@
 							<span class="pull-right" id="chargeTaxTotal">{if $FINAL.shtax_totalamount}{$FINAL.shtax_totalamount}{else}0{/if}</span>
 						</td>
 					</tr>
-					<tr>
+					<tr id="deduct_taxes" valign="top" class="{if $IS_INDIVIDUAL_TAX_TYPE}hide{/if}">
 						<td width="83%">
 							<span class="pull-right">(-)&nbsp;<strong><a href="javascript:void(0)" id="deductTaxes">{vtranslate('LBL_DEDUCTED_TAXES',$MODULE)} </a></strong></span>
 

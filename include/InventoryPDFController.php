@@ -459,8 +459,23 @@ class Vtiger_InventoryPDFController {
 			$cnt += 1;
 		}
 
+		$description = implode("", $description);
+
+		//消費税内訳の作成
+		$description_details = array();
+		$blocks_details = preg_split('/<tr((?:(?!<).)*)>((?:(?!<tr).)*)\$loop-details\$.*?<\/tr>/is', $description);
+		$cnt = 0;
+		foreach($blocks_details as $block){
+			if($cnt % 2 == 1) {
+				//奇数の場合（ブロック内）
+				$block = self::getMergeTaxInfoBlock($block, $relatedProducts, $prefix);			
+			}
+			$description_details[] = $block;
+			$cnt += 1;
+		}
+
 		//imgタグの内容を戻す
-		$returnstring = implode("", $description);
+		$returnstring = implode("", $description_details);
 		foreach ($matches_img[0] as $key => $imgtag) {
 			$returnstring = str_replace("imgtag".$key,$imgtag,$returnstring);
 		}
@@ -533,7 +548,66 @@ class Vtiger_InventoryPDFController {
 			$product[$fieldName.$number] = $value;
 		}
 
+		//軽減税率対象のとき、マークをつける
+		$reducedtaxrateList = array('reducedtaxrate',);
+		foreach ($reducedtaxrateList as $fieldName) {
+			$value = $product[$fieldName.$number];
+			if($value == "1"){
+				$value = "*";
+			}else{
+				$value = NULL;
+			}
+			$product[$fieldName.$number] = $value;
+		}		
+
 		return $product;
+	}
+
+	//内訳を作成するために追加した変数をPDFテンプレートで表示できるように設定
+	private static function getMergeTaxInfoBlock($blocktemplate, $relatedProducts, $prefix) {
+		$convertedArray = array();
+		$cnt = 1;
+		foreach($relatedProducts[1]['final_details']['taxinfo_invoice'] as $key => $info) {
+			if($key != "0.000"){
+				$block = $blocktemplate;
+				$info = self::getPDFDisplayValuefortax($info, $cnt);
+				foreach($info as $name => $value) {
+					if(is_array($value)) {
+						continue;
+					}
+					$fieldname = strtolower($name);
+					$fieldname = preg_replace('/'.$cnt.'$/', '', $fieldname);
+					// 改行が適用されるように修正
+					$value = nl2br($value);
+					$block = preg_replace('/\$'.$prefix.'\-'.$fieldname.'\$/', $value, $block);
+				}
+				$convertedArray[] = $block;
+				$cnt += 1;
+			}	
+		}
+		return implode("\n", $convertedArray);
+	}
+	private static function getPDFDisplayValuefortax($info, $number) {
+		$currencyFieldsList = array('taxtotal', 'subtotalpertax');
+		foreach ($currencyFieldsList as $fieldName) {
+			$value = $info[$fieldName];
+			// if($fieldName == 'discountTotal' || $fieldName == 'discount_amount' || $fieldName == 'totalAfterDiscount') {
+			// 	$value = '-'.$value;
+			// }
+			$currencyField = new CurrencyField($value);
+			$info[$fieldName] = $currencyField->getDisplayValueWithSymbol();
+		}
+		$percentageFieldsList = array('percentage',);
+
+		foreach ($percentageFieldsList as $fieldName) {
+			$percentageField = new Vtiger_Percentage_UIType(array($info[$fieldName]));
+			$value = $percentageField->getDisplayValue($info[$fieldName]);
+			if(preg_match('/^[0-9.,]*$/', $value)) {
+				$value .= '%';
+			}
+			$info[$fieldName] = $value;
+		}
+		return $info;
 	}
 
 	private static function getDiscountTotal($relatedProducts) {
@@ -561,6 +635,9 @@ class Vtiger_InventoryPDFController {
 
 	private static function getPreTaxTotal($relatedProducts) {
 		$preTotal = $relatedProducts[1]['final_details']['preTaxTotal'];
+		if($relatedProducts[1]['final_details']['taxtype'] == 'individual'){
+			$preTotal -= $relatedProducts[1]['final_details']['tax_totalamount'];
+		}
 		$currencyField = new CurrencyField($preTotal);
 		$preTotal = $currencyField->getDisplayValueWithSymbol();
 
@@ -577,6 +654,9 @@ class Vtiger_InventoryPDFController {
 
 	private static function getTotalWithTax($relatedProducts) {
 		$preTotal = $relatedProducts[1]['final_details']['preTaxTotal'];
+		if($relatedProducts[1]['final_details']['taxtype'] == 'individual'){
+			$preTotal -= $relatedProducts[1]['final_details']['tax_totalamount'];
+		}
 		$tax = $relatedProducts[1]['final_details']['tax_totalamount'];
 		$adjustment = $relatedProducts[1]['final_details']['adjustment'];
 		$currencyField = new CurrencyField($preTotal + $tax + $adjustment);
