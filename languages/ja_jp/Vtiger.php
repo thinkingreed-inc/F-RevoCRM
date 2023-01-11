@@ -1104,6 +1104,7 @@ $languageStrings = array(
 	//others
 	'Engagement Score' => 'エンゲージメントスコア',
 	'group' => 'グループ',
+	'Groups' => 'グループ',
 	'individual' => '個別',
 	'LBL_VIEW_FILE'=>'ファイル表示',
 	'LBL_DOWNLOAD_FILE' => 'ファイルダウンロード',
