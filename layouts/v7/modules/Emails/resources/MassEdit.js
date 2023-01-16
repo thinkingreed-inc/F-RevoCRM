@@ -857,7 +857,7 @@ jQuery.Class("Emails_MassEdit_Js",{},{
 			this.registerSelectEmailTemplateEvent();
 			this.registerEventsForToField();
 			this.registerEventForRemoveCustomAttachments();
-
+			app.event.off("post.DocumentsList.click");
 			app.event.on("post.DocumentsList.click",function(event, data){
 				var responseData = JSON.parse(data);
 				jQuery('.popupModal').modal('hide');
