@@ -1685,7 +1685,7 @@ Vtiger.Class("Vtiger_Detail_Js",{
 				app.helper.showErrorMessage(app.vtranslate('JS_NO_CREATE_OR_NOT_QUICK_CREATE_ENABLED'));
 			}
 			var fieldName = thisInstance.referenceFieldNames[module];
-			if(typeof fieldName == 'undefined' && module != 'Contacts'){
+			if(typeof fieldName == 'undefined' && module != 'Contacts' && module != 'Dailyreports'){
 				fieldName = 'parent_id';
 			}
 

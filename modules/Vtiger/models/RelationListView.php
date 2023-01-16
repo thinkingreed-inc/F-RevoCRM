@@ -367,7 +367,7 @@ class Vtiger_RelationListView_Model extends Vtiger_Base_Model {
 				} else if($ownerId == $currentUser->getId()){
 					$visibility = false;
 				}
-				if(!$currentUser->isAdminUser() && $newRow['activitytype'] != 'Task' && $newRow['visibility'] == 'Private' && $ownerId && $visibility) {
+				if(!$currentUser->isAdminUser() && $newRow['visibility'] == 'Private' && $ownerId && $visibility) {
 					foreach($newRow as $data => $value) {
 						if(in_array($data, $visibleFields) != -1) {
 							unset($newRow[$data]);
@@ -375,10 +375,6 @@ class Vtiger_RelationListView_Model extends Vtiger_Base_Model {
 					}
 					$newRow['subject'] = vtranslate('Busy','Events').'*';
 				}
-				if($newRow['activitytype'] == 'Task') {
-					unset($newRow['visibility']);
-				}
-
 			}
 
 			$record = Vtiger_Record_Model::getCleanInstance($relationModule->get('name'));

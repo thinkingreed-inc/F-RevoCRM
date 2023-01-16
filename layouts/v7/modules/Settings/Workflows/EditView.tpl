@@ -52,7 +52,12 @@
                      <div class="col-sm-5 controls">
                          {if $MODE eq 'edit'}
                              <div class="pull-left">
-                                <input type='text' disabled='disabled' class="inputElement" value="{vtranslate($MODULE_MODEL->getName(), $MODULE_MODEL->getName())}" >
+                                 {if $SELECTED_MODULE == "Calendar" || $SELECTED_MODULE == "Events"}
+                                    {assign var=SINGLE_SELECTED_MODULE value="SINGLE_$SELECTED_MODULE"}
+                                    <input type='text' disabled='disabled' class="inputElement" value="{vtranslate($SINGLE_SELECTED_MODULE, $SELECTED_MODULE)}" >
+                                 {else}
+                                    <input type='text' disabled='disabled' class="inputElement" value="{vtranslate($MODULE_MODEL->getName(), $MODULE_MODEL->getName())}" >
+                                 {/if}
                                 <input type='hidden' id="module_name" name='module_name' value="{$MODULE_MODEL->get('name')}" >
                              </div>
                          {else}

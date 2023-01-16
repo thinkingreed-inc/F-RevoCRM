@@ -182,5 +182,11 @@ if(isset($default_timezone) && function_exists('date_default_timezone_set')) {
 //Set the default layout 
 $default_layout = 'v7';
 
+// スケジュールワークフローの設定最大数
+$max_scheduled_workflows = 50;
+
+// メールの「クリック数」のカウント
+$email_tracking = 'Yes';
+
 include_once 'config.security.php';
 ?>

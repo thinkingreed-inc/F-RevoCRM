@@ -54,7 +54,7 @@
 								{foreach item=FIELD_TYPE from=$ADD_SUPPORTED_FIELD_TYPES}
 									{if !$IS_FIELD_EDIT_MODE and $FIELD_TYPE eq 'Relation'} {continue}{/if}
 									<option value="{$FIELD_TYPE}" 
-											{if ($FIELD_MODEL->getFieldDataTypeLabel() eq $FIELD_TYPE)}selected='selected'{/if}
+											{if ($FIELD_MODEL->getFieldDataTypeLabel() eq $FIELD_TYPE|| $FIELD_MODEL->getFieldDataTypeLabel() eq 'Relation')}selected='selected'{/if}
 											{foreach key=TYPE_INFO item=TYPE_INFO_VALUE from=$FIELD_TYPE_INFO[$FIELD_TYPE]}
 												data-{$TYPE_INFO}="{$TYPE_INFO_VALUE}"
 											{/foreach}>

@@ -980,6 +980,12 @@ class ReportRun extends CRMEntity {
 				continue;
 
 			while ($relcriteriarow = $adb->fetch_array($result)) {
+				if($relcriteriarow["comparator"] === "own"){
+					$currentUser = Users_Record_Model::getCurrentUserModel();
+					$currentUserName = decode_html($currentUser->getName());
+					$relcriteriarow['value'] = $currentUserName;
+					$relcriteriarow["comparator"] = 'e';
+				}
 				$columnIndex = $relcriteriarow["columnindex"];
 				$criteria = array();
 				$criteria['columnname'] = html_entity_decode($relcriteriarow["columnname"]);
@@ -2531,7 +2537,8 @@ class ReportRun extends CRMEntity {
 
 			$query .= " ".$this->getRelatedModulesQuery($module,$this->secondarymodule).
 					getNonAdminAccessControlQuery($this->primarymodule,$current_user).
-					" WHERE vtiger_crmentity.deleted=0 and (vtiger_activity.activitytype != 'Emails')";
+					" WHERE vtiger_crmentity.deleted=0 and (vtiger_activity.activitytype != 'Emails')".
+					" and vtiger_activity.visibility != 'Private'";// カレンダー用 非公開のスケジュールは出力しない
 		} else if ($module == "Quotes") {
 			$matrix = $this->queryPlanner->newDependencyMatrix();
 
@@ -2981,6 +2988,16 @@ class ReportRun extends CRMEntity {
 		}
 		if ($advfiltersql != "") {
 			$wheresql .= " and " . $advfiltersql;
+		}
+
+		// カレンダー用 非公開のスケジュールは出力しない
+		if ($this->secondarymodule != '') {
+			$secondarymodule = explode(":", $this->secondarymodule);
+			foreach ($secondarymodule as $value) {
+				if ($value == 'Calendar') {
+					$wheresql .= " AND vtiger_activity.visibility != 'Private' ";
+				}
+			}
 		}
 
         if($this->_reportquery == false){

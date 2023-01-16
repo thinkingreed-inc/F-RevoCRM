@@ -260,6 +260,7 @@ $languageStrings = array(
 	//CustomRecordNumbering
 	'LBL_SUCCESSFULLY_UPDATED' => '更新しました。',
 	'LBL_CUSTOMIZE_RECORD_NUMBERING' => 'モジュール番号',
+	'LBL_RECORD_NUMBERING' => 'レコード番号',
 	'LBL_MODULE_ENTITY_NUMBER_CUSTOMIZATION' => 'モジュールエンティティ番号の設定',
 	'LBL_UPDATE_MISSING_RECORD_SEQUENCE' => '未割当のレコード番号の更新',
 	'LBL_USE_PREFIX' => '接頭子',
