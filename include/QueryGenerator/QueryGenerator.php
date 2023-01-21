@@ -1030,11 +1030,19 @@ class QueryGenerator {
 				$value = trim($value);
 			}
 			if ($operator == 'empty' || $operator == 'y') {
+				if($this->isDateType($field->getFieldDataType())) {
+					$sql[] = sprintf("IS NULL", $this->getSQLColumn($field->getFieldName(), $field));
+				} else {
 				$sql[] = sprintf("IS NULL OR %s = ''", $this->getSQLColumn($field->getFieldName(), $field));
+				}
 				continue;
 			}
 			if($operator == 'ny'){
+				if($this->isDateType($field->getFieldDataType())) {
+					$sql[] = sprintf("IS NOT NULL", $this->getSQLColumn($field->getFieldName(), $field));
+				} else {
 				$sql[] = sprintf("IS NOT NULL AND %s != ''", $this->getSQLColumn($field->getFieldName(), $field));
+				}
 				continue;
 			}
 			if((strtolower(trim($value)) == 'null') ||
