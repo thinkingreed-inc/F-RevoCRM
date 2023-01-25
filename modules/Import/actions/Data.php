@@ -653,6 +653,13 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 					$allPicklistValues[] = $picklistDetails['value'];
 				}
 
+				//$fieldValueが日本語の場合に翻訳可能か調べる。
+				foreach($allPicklistDetails as $picklistDetails){
+					if($fieldValue == $picklistDetails['label']){
+						$fieldValue = $picklistDetails['value'];
+					}
+				}
+
 				$picklistValueInLowerCase = strtolower($fieldValue);
 				$allPicklistValuesInLowerCase = array_map('strtolower', $allPicklistValues);
 				if (sizeof($allPicklistValuesInLowerCase) > 0 && sizeof($allPicklistValues) > 0) {
@@ -1138,6 +1145,20 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 					$recordData['mode'] = 'edit';
 				}
 
+				//選択肢項目の翻訳前の値を取得
+				foreach ($recordData as $fieldName => $fieldValue) {
+					$fieldModel = $moduleFields[$fieldName];
+					$fieldDataType = ($fieldModel) ? $fieldModel->getFieldDataType() : '';
+					if ($fieldDataType == 'picklist') {
+						$picklistValues = $fieldModel->getPicklistValues();
+						foreach($picklistValues as $key => $value){
+							if($value == $fieldValue){
+								$recordData[$fieldName] = $key;
+							}
+						}
+					}
+				}
+
 				try {
 					if ($recordData['id']) {
 						$recordModel = Vtiger_Record_Model::getInstanceById($recordData['id'], $moduleName);
@@ -1168,6 +1189,23 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 
 		try {
 			if ($recordData) {
+
+				//選択肢項目の翻訳前の値を取得
+				$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
+				$moduleFields = $moduleModel->getFields();
+				foreach ($recordData as $fieldName => $fieldValue) {
+					$fieldModel = $moduleFields[$fieldName];
+					$fieldDataType = ($fieldModel) ? $fieldModel->getFieldDataType() : '';
+					if ($fieldDataType == 'picklist') {
+						$picklistValues = $fieldModel->getPicklistValues();
+						foreach($picklistValues as $key => $value){
+							if($value == $fieldValue){
+								$recordData[$fieldName] = $key;
+							}
+						}
+					}
+				}
+				
 				switch($operation) {
 					case 'create' : $entityInfo = vtws_create($moduleName, $recordData, $user);
 									$entityInfo['status'] = self::$IMPORT_RECORD_CREATED;
