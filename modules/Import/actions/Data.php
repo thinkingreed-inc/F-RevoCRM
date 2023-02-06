@@ -257,6 +257,12 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			$fieldData = array();
 			foreach ($fieldMapping as $fieldName => $index) {
 				$fieldData[$fieldName] = trim($row[$fieldName]);
+				if($fieldData[$fieldName]==''){
+					$lowerfieldName = strtolower($fieldName);
+					if(!empty(trim($row[$lowerfieldName]))){
+						$fieldData[$fieldName] = trim($row[$lowerfieldName]);
+					}
+				}
 			}
 
 			$mergeType = $this->mergeType;
