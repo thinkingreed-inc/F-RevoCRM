@@ -15,7 +15,7 @@
 					<h4 title="{vtranslate($MODULE, $MODULE)}" class="module-title pull-left text-uppercase">&nbsp;{vtranslate($MODULE, $MODULE)}&nbsp;</h4>
 				</span>
 				<span>
-					<p class="current-filter-name pull-left"><span class="fa fa-angle-right" aria-hidden="true"></span>&nbsp;{$VIEW}&nbsp;</p>
+					<p class="current-filter-name pull-left"><span class="fa fa-angle-right" aria-hidden="true"></span>&nbsp;{vtranslate($VIEW,$MODULE)}&nbsp;</p>
 				</span>
 				<span>
 					<p class="current-filter-name pull-left textOverflowEllipsis" style="width:250px;"><span class="fa fa-angle-right" aria-hidden="true"></span>&nbsp;{vtranslate($SOURCE_MODULE,$SOURCE_MODULE)}&nbsp;</p>

@@ -11,6 +11,8 @@
 $languageStrings = Array(
     'Recycle Bin'=> 'ごみ箱' ,
     'RecycleBin' => 'ごみ箱',
+	'List' => 'リスト',
+	'Search for Modules' => 'モジュールから検索',
 	'LBL_SELECT_MODULE' => 'モジュールの選択',
 	'LBL_EMPTY_RECYCLEBIN' => 'ごみ箱を空にする',
 	'LBL_RESTORE' => '復元',
