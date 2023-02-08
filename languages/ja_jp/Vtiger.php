@@ -1150,6 +1150,25 @@ $languageStrings = array(
 	'LBL_SELECTED_FIELDS' => '選択済みの項目',
 	'LBL_AVAILABLE_FIELDS' => '利用可能な項目',
 	'LBL_SEARCH_FIELDS' => '検索項目',
+	'Hot Leads' => '確度の高い顧客',
+	'This Month Leads' => '今月のリード',
+	'Contacts Address' => '郵送先リスト',
+	'Todays Birthday' => '本日誕生日',
+	'Prospect Accounts' => '潜在顧客一覧',
+	'New This Week' => '今週登録された顧客一覧',
+	'Potentials Won' => '受注案件',
+	'Prospecting'=>'発掘',
+	'Open Quotes' => '未承認の見積',
+	'Rejected Quotes' => '却下された見積',
+	'Open Invoices' => '登録済み請求',
+	'Paid Invoices' => '領収済み請求',
+	'Pending Sales Orders' => '登録済み受注',
+	'Open Purchase Orders' => '登録済み発注',
+	'Received Purchase Orders' => '入庫済み受注',
+	'High Prioriy Tickets' => '優先度が高のチケット',
+	'Open Ticket'=>'未解決のチケット',
+	'Drafted FAQ' => '下書き',
+	'Published FAQ' => '公開済み',
 
 	// Extensions
 	'ExtensionStore' =>'Extension Store',
@@ -2116,6 +2135,7 @@ $jsLanguageStrings = array(
 	'Changed password successfully'=>'パスワードの変更に成功しました',
 	'LBL_MASS_PDF_EXPORT_CONFIRMATION' => '選択したレコードに関するPDFを生成してもよろしいですか？',
 	'JS_THIS_FILE_HAS_ALREADY_BEEN_SELECTED' => 'このファイルは既に選択されています', 
+	'JS_ATLEAST_SELECT_ONE_FIELD' => '少なくとも1つの項目を選択してください',
 
 	//個人カレンダー
 	'Planned' => '計画済み',
