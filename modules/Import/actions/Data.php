@@ -1189,23 +1189,6 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 
 		try {
 			if ($recordData) {
-
-				//選択肢項目の翻訳前の値を取得
-				$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
-				$moduleFields = $moduleModel->getFields();
-				foreach ($recordData as $fieldName => $fieldValue) {
-					$fieldModel = $moduleFields[$fieldName];
-					$fieldDataType = ($fieldModel) ? $fieldModel->getFieldDataType() : '';
-					if ($fieldDataType == 'picklist') {
-						$picklistValues = $fieldModel->getPicklistValues();
-						foreach($picklistValues as $key => $value){
-							if($value == $fieldValue){
-								$recordData[$fieldName] = $key;
-							}
-						}
-					}
-				}
-				
 				switch($operation) {
 					case 'create' : $entityInfo = vtws_create($moduleName, $recordData, $user);
 									$entityInfo['status'] = self::$IMPORT_RECORD_CREATED;
