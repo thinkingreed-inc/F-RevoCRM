@@ -42,7 +42,7 @@
                     </div>
                     <div class="form-group">
                         <div class="control-label col-sm-3 col-xs-3"><span class="redColor">*</span>{vtranslate('LBL_ENTER_NEW_NAME',$QUALIFIED_MODULE)}</div>
-                        <div class="controls col-sm-4 col-xs-4"><input class="form-control" type="text"  name="renamedValue" {if in_array($FIELD_VALUE,$SELECTED_PICKLISTFIELD_NON_EDITABLE_VALUES)} disabled='disabled' {/if} data-rule-required="true" value="{Vtiger_Util_Helper::toSafeHTML($FIELD_VALUE)}"></div>
+                        <div class="controls col-sm-4 col-xs-4"><input class="form-control" type="text"  name="renamedValue" {if in_array($FIELD_VALUE,$SELECTED_PICKLISTFIELD_NON_EDITABLE_VALUES)} disabled='disabled' {/if} data-rule-required="true" value="{vtranslate(Vtiger_Util_Helper::toSafeHTML($FIELD_VALUE),$SOURCE_MODULE)}"></div>
                     </div>
                     <div class="form-group">
                         <div class="control-label col-sm-3 col-xs-3">{vtranslate('LBL_SELECT_COLOR', $QUALIFIED_MODULE)}</div>
