@@ -2995,7 +2995,8 @@ class ReportRun extends CRMEntity {
 			$secondarymodule = explode(":", $this->secondarymodule);
 			foreach ($secondarymodule as $value) {
 				if ($value == 'Calendar') {
-					$wheresql .= " AND vtiger_activity.visibility != 'Private' ";
+					$this->queryPlanner->addTable('vtiger_activity');
+					$wheresql .= " AND (vtiger_activity.visibility != 'Private' OR vtiger_activity.visibility IS NULL) ";
 				}
 			}
 		}
