@@ -72,6 +72,16 @@ class VTSimpleTemplate{
 								}
 							}
 							return implode(',', $parts);
+						}elseif($referenceModule === 'Products' || $referenceModule === 'Services'){ //製品とサービスは複数紐づけられるので全て出力する
+							$parts = array(); 
+							foreach ($this->parent->data['LineItems'] as $key=>$value) {
+								$entity = $this->cache->forId($value['productid']);
+								$recordDetails = $entity->getData();
+								if($entity->getModuleName() == $referenceModule){
+									$parts[] = $recordDetails[$fieldname];
+								}
+							}
+							return implode(',', $parts);
 						}
 						$entity = $this->cache->forId($referenceId);
 						if($referenceModule==="Users" && $entity->getModuleName()=="Groups"){
@@ -127,12 +137,36 @@ class VTSimpleTemplate{
 
 	}
 
+	// $loop-products$で囲まれた箇所を各製品・サービスごとに出力する
+	private function matchproductsHandler($match){
+		$str = preg_replace('/\$loop-products\$/','',$match[0]);
+		$matchcount = preg_match_all('/\((\w+) : \(([_\w]+)\) (\w+)\)/',$str,$matches);
+		$result = array();
+		if(!empty($this->parent) && $matchcount != 0){
+			list($full, $referenceField, $referenceModule, $fieldname) = $matches;
+			foreach ($this->parent->data['LineItems'] as $key=>$value) {
+				$entity = $this->cache->forId($value['productid']);
+				$recordDetails = $entity->getData();
+				$parts = array();
+				for($i=0;$i<$matchcount;$i++){
+					if($entity->getModuleName() == $referenceModule[$i]){
+						$parts[] = $recordDetails[$fieldname[$i]];
+					}
+				}
+				$result[] = implode(',', $parts);
+			}
+			return implode(PHP_EOL, array_filter($result, 'strlen'));
+		}
+		return $result;
+	}
+
 	protected function useValue($data, $fieldname) {
 		return true;
 	}
 
 	function parseTemplate(){
-		return preg_replace_callback('/\\$(\w+|\((\w+) : \(([_\w]+)\) (\w+)\))/', array($this,"matchHandler"), $this->template);
+		$str = preg_replace_callback('/\$loop-products\$[\s\S]*\$loop-products\$/', array($this,"matchproductsHandler"), $this->template);
+		return preg_replace_callback('/\\$(\w+|\((\w+) : \(([_\w]+)\) (\w+)\))/', array($this,"matchHandler"), $str);
 	}
 
 	function getCompanySetting($fieldname) {
