@@ -7646,6 +7646,8 @@ body .fc {
 }
 .nav-tabs {
   border-bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
 }
 .commentcontent {
   border: 1px solid #ddd;
