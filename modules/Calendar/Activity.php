@@ -1093,6 +1093,8 @@ function insertIntoRecurringTable(& $recurObj)
 			$this->db->pquery($sql, array($return_id, $id));
 			$sql = 'DELETE FROM vtiger_cntactivityrel WHERE activityid = ? AND contactid IN	(SELECT contactid from vtiger_contactdetails where accountid=?)';
 			$this->db->pquery($sql, array($id, $return_id));
+			$sql = 'DELETE FROM vtiger_seactivityrel WHERE activityid = ? AND crmid IN	(SELECT relcrmid from vtiger_crmentityrel where crmid=?)';
+			$this->db->pquery($sql, array($id, $return_id));
 		} else {
 			$sql='DELETE FROM vtiger_seactivityrel WHERE activityid=?';
 			$this->db->pquery($sql, array($id));
