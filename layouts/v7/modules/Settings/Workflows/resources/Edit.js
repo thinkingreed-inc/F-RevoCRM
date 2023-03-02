@@ -775,8 +775,6 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
             var str = currentElement.val();
             if(inputElement[0].id == 'description' && !regexlp.test(oldValue) && regexPS.test(str)){
                str = '$loop-products$\n'+currentElement.val()+'\n\n$loop-products$\n'
-            }else if(regexPS.test(str)){
-               str = str + '\n';
             }
             var newValue = oldValue.substr(0, inputElement[0].selectionStart) 
                            + str

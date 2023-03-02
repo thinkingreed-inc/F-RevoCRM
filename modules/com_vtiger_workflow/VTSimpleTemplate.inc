@@ -72,16 +72,17 @@ class VTSimpleTemplate{
 								}
 							}
 							return implode(',', $parts);
-						}elseif($referenceModule === 'Products' || $referenceModule === 'Services'){ //製品とサービスは複数紐づけられるので全て出力する
-							$parts = array(); 
+						}elseif($referenceModule === 'Products' || $referenceModule === 'Services'){
+							// 製品とサービスは複数紐づけることができるので先頭のデータを出力する
+							// 全て出力したい場合は$loop-products$で囲む
 							foreach ($this->parent->data['LineItems'] as $key=>$value) {
 								$entity = $this->cache->forId($value['productid']);
 								$recordDetails = $entity->getData();
 								if($entity->getModuleName() == $referenceModule){
-									$parts[] = $recordDetails[$fieldname];
+									return $recordDetails[$fieldname];
 								}
 							}
-							return implode(',', $parts);
+							return '';
 						}
 						$entity = $this->cache->forId($referenceId);
 						if($referenceModule==="Users" && $entity->getModuleName()=="Groups"){
@@ -139,23 +140,30 @@ class VTSimpleTemplate{
 
 	// $loop-products$で囲まれた箇所を各製品・サービスごとに出力する
 	private function matchproductsHandler($match){
-		$str = preg_replace('/\$loop-products\$/','',$match[0]);
-		$matchcount = preg_match_all('/\((\w+) : \(([_\w]+)\) (\w+)\)/',$str,$matches);
-		$result = array();
+		$str_origin = preg_replace('/[\r\n]?\$loop-products\$[\r\n]?/','',$match[0]);
+		$matchcount = preg_match_all('/\((\w+) : \(([_\w]+)\) (\w+)\)/',$str_origin,$matches);
+		$result = '';
 		if(!empty($this->parent) && $matchcount != 0){
 			list($full, $referenceField, $referenceModule, $fieldname) = $matches;
+			$block = array();
 			foreach ($this->parent->data['LineItems'] as $key=>$value) {
 				$entity = $this->cache->forId($value['productid']);
 				$recordDetails = $entity->getData();
-				$parts = array();
+				if($entity->getModuleName() != $referenceModule[0]) continue;
+				$str = $str_origin;
 				for($i=0;$i<$matchcount;$i++){
-					if($entity->getModuleName() == $referenceModule[$i]){
-						$parts[] = $recordDetails[$fieldname[$i]];
+					$regex = '/\$\(('.$referenceField[$i].') : \(('.$referenceModule[$i].')\) ('.$fieldname[$i].')\)/';
+					if($referenceModule[$i] === '__VtigerMeta__' || $fieldname[$i] === 'dbLabel') {
+						$str = preg_replace($regex,$this->getMetaValue($fieldname[$i]),$str);
+					} else if ('__VtigerCompany__' == $referenceModule[$i]) {
+						$str = preg_replace($regex,$this->getCompanySetting($fieldname[$i]),$str);
+					}else{
+						$str = preg_replace($regex,$recordDetails[$fieldname[$i]],$str);
 					}
 				}
-				$result[] = implode(',', $parts);
+				$block[] = $str;
 			}
-			return implode(PHP_EOL, array_filter($result, 'strlen'));
+			$result = implode(PHP_EOL, $block);
 		}
 		return $result;
 	}
@@ -165,7 +173,7 @@ class VTSimpleTemplate{
 	}
 
 	function parseTemplate(){
-		$str = preg_replace_callback('/\$loop-products\$[\s\S]*\$loop-products\$/', array($this,"matchproductsHandler"), $this->template);
+		$str = preg_replace_callback('/\$loop-products\$[\s\S]*?\$loop-products\$/', array($this,"matchproductsHandler"), $this->template);
 		return preg_replace_callback('/\\$(\w+|\((\w+) : \(([_\w]+)\) (\w+)\))/', array($this,"matchHandler"), $str);
 	}
 
