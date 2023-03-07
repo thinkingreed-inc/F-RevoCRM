@@ -666,12 +666,15 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 
 						$moduleObject = Vtiger_Module::getInstance($moduleName);
 						$fieldObject = Vtiger_Field::getInstance($fieldName, $moduleObject);
-						$fieldObject->setPicklistValues(array($fieldValue));
-
+						//$fieldObject->setPicklistValues(array($fieldValue));
 						// Update cache state with new value added.
 						$wsFieldDetails[] = array('label' => $fieldValue, 'value' => $fieldValue);
-						Vtiger_Cache::getInstance()->setPicklistDetails($moduleObject->getId(), $fieldName, $wsFieldDetails);
+						//Vtiger_Cache::getInstance()->setPicklistDetails($moduleObject->getId(), $fieldName, $wsFieldDetails);
+						$fieldData[$fieldName] = $defaultFieldValues[$fieldName];
 
+						unset($this->allPicklistValues[$fieldName]);
+					} else {
+						$fieldData[$fieldName] = $defaultFieldValues[$fieldName];
 						unset($this->allPicklistValues[$fieldName]);
 					}
 				} else {
@@ -1057,7 +1060,9 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 							}
 						} else if (!in_array($fieldName, array('date_start', 'due_date'))) {
 							if ($fieldModel) {
-								$recordData[$fieldName] = $fieldModel->getDisplayValue($fieldValue);
+								if ($fieldDataType != 'picklist'){
+									$recordData[$fieldName] = $fieldModel->getDisplayValue($fieldValue);
+								}
 							}
 						}
 					}
