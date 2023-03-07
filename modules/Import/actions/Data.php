@@ -1064,7 +1064,9 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 							}
 						} else if (!in_array($fieldName, array('date_start', 'due_date'))) {
 							if ($fieldModel) {
-								$recordData[$fieldName] = $fieldModel->getDisplayValue($fieldValue);
+								if ($fieldDataType != 'picklist'){
+									$recordData[$fieldName] = $fieldModel->getDisplayValue($fieldValue);
+								}
 							}
 						}
 					}
@@ -1143,20 +1145,6 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 					$valueComponents = vtws_getIdComponents($recordData['id']);
 					$recordData['id'] = $valueComponents[1];
 					$recordData['mode'] = 'edit';
-				}
-
-				//選択肢項目の翻訳前の値を取得
-				foreach ($recordData as $fieldName => $fieldValue) {
-					$fieldModel = $moduleFields[$fieldName];
-					$fieldDataType = ($fieldModel) ? $fieldModel->getFieldDataType() : '';
-					if ($fieldDataType == 'picklist') {
-						$picklistValues = $fieldModel->getPicklistValues();
-						foreach($picklistValues as $key => $value){
-							if($value == $fieldValue){
-								$recordData[$fieldName] = $key;
-							}
-						}
-					}
 				}
 
 				try {
