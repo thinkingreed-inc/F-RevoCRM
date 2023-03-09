@@ -131,6 +131,25 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
          var conditionsContainer = fieldValueElement.closest('.conditionsContainer');
          var conditionRow = fieldValueElement.closest('.conditionRow');
 
+         var fieldinfo = fieldUiHolder.find('[name="valuetype"]').data('fieldinfo');
+         var listtype = fieldinfo.type;
+         var usePicklist = jQuery('#usePicklist');
+         usePicklist.empty();
+         if(listtype == 'multipicklist' || listtype == 'picklist'){
+            var picklistvalue = fieldinfo.picklistvalues;
+            usePicklist.attr('type', listtype)
+            usePicklist.parent().removeClass('hide');
+            usePicklist.append('<option></option>');
+            Object.keys(picklistvalue).forEach(function(key) {
+               var val = this[key];
+               var str = '<option value="' + key + '">'+ val +'</option>';
+               usePicklist.append(str);
+            }, picklistvalue);
+         }else{
+            usePicklist.removeAttr('type');
+            usePicklist.parent().addClass('hide');
+         }
+
          var clonedPopupUi = conditionsContainer.find('.popupUi').clone(true, true).removeClass('hide').removeClass('popupUi').addClass('clonedPopupUi');
          clonedPopupUi.find('select').addClass('select2');
          clonedPopupUi.find('.fieldValue').val(fieldValue);
@@ -231,7 +250,7 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
    },
    
    registerSelectOptionEvent: function (data) {
-      jQuery('.useField,.useFunction', data).on('change', function (e) {
+      jQuery('.useField,.useFunction,.usePicklist', data).on('change', function (e) {
          var currentElement = jQuery(e.currentTarget);
          var newValue = currentElement.val();
          var oldValue = data.find('.fieldValue').filter(':visible').val();
@@ -241,6 +260,13 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
             if (oldValue != '' && textType != 'fieldname') {
                var concatenatedValue = oldValue + ' ' + newValue;
             } else {
+               concatenatedValue = newValue;
+            }
+         } else if (currentElement.hasClass('usePicklist')) {
+            var listtype = currentElement.closest('.clonedPopupUi').find('select.usePicklist').attr('type');
+            if (oldValue != '' && listtype == 'multipicklist') {
+               concatenatedValue = oldValue + ' |##| ' + newValue;
+            }else {
                concatenatedValue = newValue;
             }
          } else {
@@ -255,18 +281,26 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
          var valueType = jQuery(e.currentTarget).val();
          var useFieldContainer = jQuery('.useFieldContainer', data);
          var useFunctionContainer = jQuery('.useFunctionContainer', data);
+         var usePicklistContainer = jQuery('.usePicklistContainer', data);
          var uiType = jQuery(e.currentTarget).find('option:selected').data('ui');
          jQuery('.fieldValue', data).hide();
          jQuery('[data-' + uiType + ']', data).show();
-         if (valueType == 'fieldname') {
+         if (valueType == 'rawtext' && document.getElementById('usePicklist').childElementCount > 1) {
+            useFieldContainer.addClass('hide');
+            useFunctionContainer.addClass('hide');
+            usePicklistContainer.removeClass('hide');
+         } else if (valueType == 'fieldname') {
             useFieldContainer.removeClass('hide');
             useFunctionContainer.addClass('hide');
+            usePicklistContainer.addClass('hide');
          } else if (valueType == 'expression') {
             useFieldContainer.removeClass('hide');
             useFunctionContainer.removeClass('hide');
+            usePicklistContainer.addClass('hide');
          } else {
             useFieldContainer.addClass('hide');
             useFunctionContainer.addClass('hide');
+            usePicklistContainer.addClass('hide');
          }
          jQuery('.helpmessagebox', data).addClass('hide');
          jQuery('#' + valueType + '_help', data).removeClass('hide');

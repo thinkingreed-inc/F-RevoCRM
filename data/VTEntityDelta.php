@@ -124,7 +124,7 @@ class VTEntityDelta extends VTEventHandler {
 			$fieldDelta_currentValue = explode(' |##| ', $fieldDelta['currentValue']);
 			$result = !empty(array_diff($fieldDelta_oldValue, $fieldDelta_currentValue)) || !empty(array_diff($fieldDelta_currentValue, $fieldDelta_oldValue));
 			if ($fieldValue !== NULL) { //$fieldValueは「～に変更された」条件のとき
-				$fieldValue = explode(',', $fieldValue);
+				$fieldValue = explode(' |##| ', $fieldValue);
 				$result = $result && (empty(array_diff($fieldValue, $fieldDelta_currentValue)) && empty(array_diff($fieldDelta_currentValue, $fieldValue)));
 			}
         }else{
