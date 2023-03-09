@@ -489,7 +489,11 @@ class Settings_Workflows_Record_Model extends Settings_Vtiger_Record_Model {
 						$value = $currencyName[0];
 					}
 					if ($fieldModel && (in_array($fieldDataType, array('picklist', 'multipicklist')))) {
-						$picklistValues = explode(',', $value);
+						if ($value && strpos($value, ' |##| ') !== false){
+							$picklistValues = explode(' |##| ', $value);
+						} else {
+							$picklistValues = explode(',', $value);
+						}
 						if (count($picklistValues) > 1) {
 							$translatedValues = array();
 							foreach ($picklistValues as $selectedValue) {
