@@ -142,59 +142,30 @@ Vtiger_AdvanceFilter_Js('Workflows_AdvanceFilter_Js',{},{
                 var fieldDataInfo = fieldSelectElement.find('option:selected').data('fieldinfo');
                 var fieldType = fieldDataInfo.type;
                 var rowValues = {};
-				if (fieldType == 'picklist' || fieldType == 'multipicklist') {
-                    for(var key in fieldList) {
-                        var field = fieldList[key];
-                        if(field == 'value' && valueSelectElement.is('input')) {
-                            var commaSeperatedValues = valueSelectElement.val();
-                            var pickListValues = valueSelectElement.data('picklistvalues');
-                            var valuesArr = commaSeperatedValues.split(',');
-                            var newvaluesArr = [];
-                            for(i=0;i<valuesArr.length;i++){
-                                if(typeof pickListValues[valuesArr[i]] != 'undefined'){
-                                    newvaluesArr.push(pickListValues[valuesArr[i]]);
-                                } else {
-                                    newvaluesArr.push(valuesArr[i]);
-                                }
-                            }
-                            var reconstructedCommaSeperatedValues = newvaluesArr.join(',');
-                            rowValues[field] = reconstructedCommaSeperatedValues;
-                        } else if(field == 'value' && valueSelectElement.is('select') && fieldType == 'picklist'){
-                            rowValues[field] = valueSelectElement.val();
-                        } else if(field == 'value' && valueSelectElement.is('select') && fieldType == 'multipicklist'){
+
+                // Workflowアクション設定：picklist型処理をString型と同じ処理にするため、条件変更
+                // Workflowアクション設定：multipicklist型処理をString型と同じ処理にするため、条件変更
+				for(var key in fieldList) {
+                    var field = fieldList[key];
+                    if(field == 'value'){
+                        if((fieldType == 'date' || fieldType == 'datetime') && valueSelectElement.length > 0) {
                             var value = valueSelectElement.val();
-                            if(value == null){
-                                rowValues[field] = value;
-                            } else {
-                                rowValues[field] = value.join(',');
-                            }
-                        } else {
-                            rowValues[field] = jQuery('[name="'+field+'"]', rowElement).val();
-                        }
-                    }
-                 } else {
-                    for(var key in fieldList) {
-                        var field = fieldList[key];
-                        if(field == 'value'){
-                            if((fieldType == 'date' || fieldType == 'datetime') && valueSelectElement.length > 0) {
-                                var value = valueSelectElement.val();
-                                var dateFormat = app.getDateFormat();
-                                var dateFormatParts = dateFormat.split("-");
-                                var valueArray = value.split(',');
-                                for(i = 0; i < valueArray.length; i++) {
-                                    var valueParts = valueArray[i].split("-");
-                                    var dateInstance = new Date(valueParts[dateFormatParts.indexOf('yyyy')], parseInt(valueParts[dateFormatParts.indexOf('mm')]) - 1, valueParts[dateFormatParts.indexOf('dd')]);
-                                    if(!isNaN(dateInstance.getTime())) {
-                                        valueArray[i] = app.getDateInVtigerFormat('yyyy-mm-dd', dateInstance);
-                                    }
+                            var dateFormat = app.getDateFormat();
+                            var dateFormatParts = dateFormat.split("-");
+                            var valueArray = value.split(',');
+                            for(i = 0; i < valueArray.length; i++) {
+                                var valueParts = valueArray[i].split("-");
+                                var dateInstance = new Date(valueParts[dateFormatParts.indexOf('yyyy')], parseInt(valueParts[dateFormatParts.indexOf('mm')]) - 1, valueParts[dateFormatParts.indexOf('dd')]);
+                                if(!isNaN(dateInstance.getTime())) {
+                                    valueArray[i] = app.getDateInVtigerFormat('yyyy-mm-dd', dateInstance);
                                 }
-                                rowValues[field] = valueArray.join(',');
-                            } else {
-                                rowValues[field] = valueSelectElement.val();
                             }
-						}  else {
-                            rowValues[field] = jQuery('[name="'+field+'"]', rowElement).val();
+                            rowValues[field] = valueArray.join(',');
+                        } else {
+                            rowValues[field] = valueSelectElement.val();
                         }
+                    }  else {
+                        rowValues[field] = jQuery('[name="'+field+'"]', rowElement).val();
                     }
                 }
 
@@ -488,75 +459,22 @@ Vtiger_Owner_Field_Js('Workflows_Ownergroup_Field_Js',{},{
 AdvanceFilter_Picklist_Field_Js('Workflows_Picklist_Field_Js',{},{
 
     getUi : function(){
-        var selectedOption = app.htmlDecode(this.getValue());
-        var pickListValues = this.getPickListValues();
-        var tagsArray = new Array();
-        jQuery.map( pickListValues, function(val, i) {
-            tagsArray.push(val);
-        });
-        var pickListValuesArrayFlip = {};
-        for(var key in pickListValues){
-            var pickListValue = pickListValues[key];
-            var translatedValues = new Array();
-            var selectedValues = selectedOption.split(",");
-            pickListValuesArrayFlip[pickListValue] = key;
-            if(selectedValues.length > 1){
-                for(var index in selectedValues){
-                    var selectedValue = selectedValues[index];
-                    if(selectedValue == key){
-                        translatedValues.push(pickListValue);
-                    } else {
-                        //if condition is startswith, endswith, contains, doesnot contains should be retain the selected value in the picklist
-                        translatedValues.push(selectedValue);
-                    }
-                }
-            }else{
-                if(selectedOption == key){
-                        selectedOption = pickListValue;
-                }
-            }
-        }
-        if(selectedValues.length > 1){
-            selectedOption = translatedValues.join(",");
-        }
-        var html = '<input type="hidden" class="inputElement select2" name="'+ this.getName() +'" id="'+ this.getName() +'">';
-        var selectContainer = jQuery(html).val(selectedOption);
-        selectContainer.data('tags', tagsArray).data('picklistvalues', pickListValuesArrayFlip).data('maximumSelectionSize', 1);
-        selectContainer.data('placeholder', app.vtranslate('JS_PLEASE_SELECT_ATLEAST_ONE_OPTION')).data('closeOnSelect', true);
-        this.addValidationToElement(selectContainer);
-        return selectContainer;
+        // Workflowアクション設定：picklist型で「項目選択」ができるよう、String型の getUi と同じ処理に変更
+        var html = '<input type="text" class="getPopupUi inputElement" name="'+ this.getName() +'"  /><input type="hidden" name="valuetype" value="'+this.get('workflow_valuetype')+'" />';
+        html = jQuery(html);
+        html.filter('.getPopupUi').val(app.htmlDecode(this.getValue()));
+        return this.addValidationToElement(html);
     }
 });
 
 Vtiger_Multipicklist_Field_Js('Workflows_Multipicklist_Field_Js', {}, {
 
 	getUi : function () {
-		var selectedOptions = new Array();
-		var selectedRawOption = app.htmlDecode(this.getValue());
-		if (selectedRawOption) {
-			var selectedOptions = selectedRawOption.split(',');
-		}
-		var pickListValues = this.getPickListValues();
-
-		var tagsArray = new Array();
-		var pickListValuesArrayFlip = {};
-		var selectedOption = '';
-		jQuery.map(pickListValues, function (pickListValue, key) {
-			(jQuery.inArray(key, selectedOptions) !== -1);
-			if (jQuery.inArray(key, selectedOptions) !== -1) {
-				selectedOption += pickListValue+',';
-			}
-			tagsArray.push(pickListValue);
-			pickListValuesArrayFlip[pickListValue] = key;
-		})
-		selectedOption = selectedOption.substring(0,selectedOption.lastIndexOf(','));
-
-		var html = '<input type="hidden" class="col-lg-12 select2" name="'+this.getName()+'[]" id="'+this.getName()+'" data-fieldtype="multipicklist" >';
-		var selectContainer = jQuery(html).val(selectedOption);
-		selectContainer.data('tags', tagsArray).data('picklistvalues', pickListValuesArrayFlip);
-		selectContainer.data('placeholder', app.vtranslate('JS_PLEASE_SELECT_ATLEAST_ONE_OPTION')).data('closeOnSelect', true);
-		this.addValidationToElement(selectContainer);
-		return selectContainer;
+        // Workflowアクション設定：multipicklist型で「項目選択」ができるよう、String型の getUi と同じ処理に変更
+        var html = '<input type="text" class="getPopupUi inputElement" name="'+ this.getName() +'" data-value="value"  /><input type="hidden" name="valuetype" value="'+this.get('workflow_valuetype')+'" />';
+        html = jQuery(html);
+        html.filter('.getPopupUi').val(app.htmlDecode(this.getValue()));
+        return this.addValidationToElement(html);
 	}
 });
 
