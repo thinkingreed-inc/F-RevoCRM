@@ -1519,12 +1519,12 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			var popOverHTML = '<span>' + timeString;
 
 			if(eventObj.assigned_user_id && eventObj.assigned_user_id != '') {
-				popOverHTML += '  ' + eventObj.assigned_user_id;
+				popOverHTML += '<a href="index.php?module=Users&parent=Settings&view=Detail&record=' + eventObj.userid + '">'+eventObj.assigned_user_id+'</a>';
 				popOverHTML += '<br>';
 			}
 
 			if(eventObj.parent_id && eventObj.parent_id != '') {
-				popOverHTML += eventObj.parent_id;
+				popOverHTML += '<a href="index.php?module=' + eventObj.related_module + '&view=Detail&record=' + eventObj.related_id + '">'+eventObj.parent_id+'</a>';
 				popOverHTML += '<br>';
 			}
 
