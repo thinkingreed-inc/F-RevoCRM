@@ -629,38 +629,9 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
                   rowValues[field] = jQuery('[name="' + field + '"]', rowElement).val();
                }
             }
-         } else if (fieldType == 'picklist' || fieldType == 'multipicklist') {
-            for (var key in fieldList) {
-               var field = fieldList[key];
-               if (field == 'value' && valueSelectElement.is('input')) {
-                  var commaSeperatedValues = valueSelectElement.val();
-                  var pickListValues = valueSelectElement.data('picklistvalues');
-                  var valuesArr = commaSeperatedValues.split(',');
-                  var newvaluesArr = [];
-                  for (i = 0; i < valuesArr.length; i++) {
-                     if (typeof pickListValues[valuesArr[i]] != 'undefined') {
-                        newvaluesArr.push(pickListValues[valuesArr[i]]);
-                     } else {
-                        newvaluesArr.push(valuesArr[i]);
-                     }
-                  }
-                  var reconstructedCommaSeperatedValues = newvaluesArr.join(',');
-                  rowValues[field] = reconstructedCommaSeperatedValues;
-               } else if (field == 'value' && valueSelectElement.is('select') && fieldType == 'picklist') {
-                  rowValues[field] = valueSelectElement.val();
-               } else if (field == 'value' && valueSelectElement.is('select') && fieldType == 'multipicklist') {
-                  var value = valueSelectElement.val();
-                  if (value == null) {
-                     rowValues[field] = value;
-                  } else {
-                     rowValues[field] = value.join(',');
-                  }
-               } else {
-                  rowValues[field] = jQuery('[name="' + field + '"]', rowElement).val();
-               }
-            }
-
          } else if (fieldType == 'text') {
+            // Workflowアクション設定：picklist型処理をString型と同じ処理にするため、条件変更
+            // Workflowアクション設定：multipicklist型処理をString型と同じ処理にするため、条件変更
             for (var key in fieldList) {
                var field = fieldList[key];
                if (field == 'value') {
