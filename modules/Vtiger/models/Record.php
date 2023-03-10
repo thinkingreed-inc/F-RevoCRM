@@ -774,7 +774,7 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
 		header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
 		header("Content-Transfer-Encoding: binary ");
 		header('Content-Type: application/octet-streams');
-		header("Content-Disposition: attachment; filename=\"".$templateName."headless.pdf\"");
+		header("Content-Disposition: attachment; filename=\"".$templateName.".pdf\"");
 		echo file_get_contents($pdfdataarray[array_keys($pdfdataarray)[0]]);
 	}
 
