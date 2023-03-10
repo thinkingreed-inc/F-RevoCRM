@@ -258,9 +258,9 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			foreach ($fieldMapping as $fieldName => $index) {
 				$fieldData[$fieldName] = trim($row[$fieldName]);
 				if($fieldData[$fieldName]==''){
-					$lowerfieldName = strtolower($fieldName);
-					if(!empty(trim($row[$lowerfieldName]))){
-						$fieldData[$fieldName] = trim($row[$lowerfieldName]);
+					$ColumnNamekey = $fieldColumnMapping[$fieldName];
+					if(!empty(trim($row[$ColumnNamekey]))){
+						$fieldData[$fieldName] = trim($row[$ColumnNamekey]);
 					}
 				}
 			}
