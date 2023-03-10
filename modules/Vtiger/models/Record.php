@@ -737,16 +737,46 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
 		return array_merge($relatedModuleRecordIds, $directrelatedModuleRecordIds, $indirectrelatedModuleRecordIds);
 	}
         
-        function getDownloadFileURL($attachmentId = false) {
-            $fileDetails = $this->getFileDetails($attachmentId);
-            if (is_array($fileDetails[0])) {
-                $fileDetails = $fileDetails[0];
-            }
-            if (!empty($fileDetails)) {
-                    return 'index.php?module='. $this->getModuleName() .'&action=DownloadFile&record='. $this->getId() .'&fileid='. $fileDetails['attachmentsid'].'&name='. $fileDetails['name'];
-            } else {
-                    return $this->get('filename');
-            }
+	function getDownloadFileURL($attachmentId = false) {
+		$fileDetails = $this->getFileDetails($attachmentId);
+		if (is_array($fileDetails[0])) {
+			$fileDetails = $fileDetails[0];
+		}
+		if (!empty($fileDetails)) {
+				return 'index.php?module='. $this->getModuleName() .'&action=DownloadFile&record='. $this->getId() .'&fileid='. $fileDetails['attachmentsid'].'&name='. $fileDetails['name'];
+		} else {
+				return $this->get('filename');
+		}
 	}
+	public function getPDFfromheadlesschrome($template,$templateName,$isheader){
+		// $template $templateName
+		global $chromeurl;
+		$hostfiledirectory = "docker/chrome-headless/html2pdf/";
+		$dokerfiledirectory = "/var/www/html/html2pdf/";
+		$pdfdataarray = array();
+		$uniquekey = bin2hex(random_bytes(10)) . uniqid('', true);
+		$hostfilepath = $hostfiledirectory.$uniquekey;
+		$dockerfilepath = $dokerfiledirectory.$uniquekey;
+		file_put_contents($hostfilepath. ".html", $template);
+		$paramsarray = array("filepath" => $dockerfilepath);
+		$curl = curl_init($chromeurl);
+		curl_setopt($curl, CURLOPT_POST, TRUE);
+		curl_setopt($curl, CURLOPT_POSTFIELDS, $paramsarray); // パラメータをセット
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+		$response = curl_exec($curl);
+		curl_close($curl);
+		$pdfdataarray[] = $hostfilepath . ".pdf";
+		unlink($hostfilepath . ".html");
+		if(!$isheader) return file_get_contents($pdfdataarray[0]);
+		header("Pragma: public");
+		header("Expires: 0");
+		header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+		header("Content-Transfer-Encoding: binary ");
+		header('Content-Type: application/octet-streams');
+		header("Content-Disposition: attachment; filename=\"".$templateName."headless.pdf\"");
+		echo file_get_contents($pdfdataarray[array_keys($pdfdataarray)[0]]);
+	}
+
 
 }

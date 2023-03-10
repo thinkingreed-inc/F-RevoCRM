@@ -296,7 +296,7 @@ class Inventory_Record_Model extends Vtiger_Record_Model {
 		$recordId = $this->getId();
 		$moduleName = $this->getModuleName();
 
-		global $adb;
+		global $adb, $is_headlesschrome;
 		$template = null;
 
 		$result = $adb->pquery("SELECT templatename, body FROM vtiger_pdftemplates WHERE templateid = ?", array($templateId));
@@ -308,22 +308,27 @@ class Inventory_Record_Model extends Vtiger_Record_Model {
 			$template = Vtiger_InventoryPDFController::getMergedDescription($template, $recordId, $moduleName);
 		}
 
-		$tcpdf = new TCPDF();
-		$tcpdf->setPrintHeader(false);
-		$tcpdf->setPrintFooter(false);
-		$tcpdf->AddPage();
-		$tcpdf->SetFont('ume-tgo4','B');
-		$tcpdf->writeHTML($template);
-		$pdf = $tcpdf->Output($templateName.'.pdf', 'S');//Dの場合は日本語が消える
-		if(!$isheader) return $pdf;
+		if(!$is_headlesschrome){
+			$tcpdf = new TCPDF();
+			$tcpdf->setPrintHeader(false);
+			$tcpdf->setPrintFooter(false);
+			$tcpdf->AddPage();
+			$tcpdf->SetFont('ume-tgo4','B');
+			$tcpdf->writeHTML($template);
+			$pdf = $tcpdf->Output($templateName.'.pdf', 'S');//Dの場合は日本語が消える
+			if(!$isheader) return $pdf;
 
-		header("Pragma: public");
-		header("Expires: 0");
-		header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-		header("Content-Transfer-Encoding: binary ");
-		header('Content-Type: application/octet-streams');
-		header("Content-Disposition: attachment; filename=\"{$templateName}.pdf\"");
-		echo $pdf;
+			header("Pragma: public");
+			header("Expires: 0");
+			header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+			header("Content-Transfer-Encoding: binary ");
+			header('Content-Type: application/octet-streams');
+			header("Content-Disposition: attachment; filename=\"{$templateName}.pdf\"");
+			echo $pdf;
+		}else{
+			if(!$isheader) return $this->getPDFfromheadlesschrome($template ,$templateName,$isheader);
+			$this->getPDFfromheadlesschrome($template ,$templateName,$isheader);
+		}
 	}
 
 	/**
