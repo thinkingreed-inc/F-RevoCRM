@@ -23,7 +23,7 @@ services:
       # Xdebugの設定を有効にしたい場合は、mode=debug に変更してください
       XDEBUG_CONFIG: "mode=off client_host=host.docker.internal client_port=9003 start_with_request=yes"
       TZ: "Asia/Tokyo"
-  webdb:
+  headlesschrome:
     container_name: headlesschrome
     image: headlesschrome:latest
     build:
