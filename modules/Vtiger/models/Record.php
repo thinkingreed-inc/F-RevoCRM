@@ -768,7 +768,11 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
 		curl_close($curl);
 		$pdfdataarray[] = $hostfilepath . ".pdf";
 		unlink($hostfilepath . ".html");
-		if(!$isheader) return file_get_contents($pdfdataarray[0]);
+		if(!$isheader){
+			$returnpdfdata = file_get_contents($pdfdataarray[0]);
+			shell_exec("rm ".$pdfdataarray[0]);
+			return $returnpdfdata;
+		} 
 		header("Pragma: public");
 		header("Expires: 0");
 		header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
@@ -776,6 +780,7 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
 		header('Content-Type: application/octet-streams');
 		header("Content-Disposition: attachment; filename=\"".$templateName.".pdf\"");
 		echo file_get_contents($pdfdataarray[array_keys($pdfdataarray)[0]]);
+		shell_exec("rm ".$pdfdataarray[0]);
 	}
 
 
