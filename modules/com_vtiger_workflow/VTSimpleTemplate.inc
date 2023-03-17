@@ -75,10 +75,18 @@ class VTSimpleTemplate{
 						}elseif($referenceModule === 'Products' || $referenceModule === 'Services'){
 							// 製品とサービスは複数紐づけることができるので先頭のデータを出力する
 							// 全て出力したい場合は$loop-products$で囲む
-							foreach ($this->parent->data['LineItems'] as $key=>$value) {
+							$Items = $this->parent->data['LineItems'];
+							if(empty($Items)){ // LineItemsを持たない1対1のモジュール(キャンペーン・チケット・FAQなど)の場合
+								$Items[] = array('productid' => $this->parent->data['product_id']);
+							}
+							foreach ($Items as $key=>$value) {
 								$entity = $this->cache->forId($value['productid']);
 								$recordDetails = $entity->getData();
 								if($entity->getModuleName() == $referenceModule){
+									if($fieldname == 'modifiedby'){
+										$idComponents = vtws_getIdComponents($recordDetails[$fieldname]);
+										return getUserFullName($idComponents[1]);
+									}
 									return $recordDetails[$fieldname];
 								}
 							}
@@ -118,6 +126,8 @@ class VTSimpleTemplate{
 									$idComponents = vtws_getIdComponents($webserviceId);
 									if($fieldname == 'currency_id' && $referenceModule == 'Users') {
 										$result = decode_html(getCurrencyName($idComponents[1]));
+									} else if ($fieldname == 'modifiedby') {
+										$result = decode_html(getUserFullName($idComponents[1]));
 									} else {
 										$result = decode_html(Vtiger_Util_Helper::getRecordName($idComponents[1]));
 									}
@@ -157,7 +167,10 @@ class VTSimpleTemplate{
 						$str = preg_replace($regex,$this->getMetaValue($fieldname[$i]),$str);
 					} else if ('__VtigerCompany__' == $referenceModule[$i]) {
 						$str = preg_replace($regex,$this->getCompanySetting($fieldname[$i]),$str);
-					}else{
+					} else if ($fieldname[$i] == 'modifiedby') {
+						$idComponents = vtws_getIdComponents($recordDetails[$fieldname[$i]]);
+						$str = preg_replace($regex,getUserFullName($idComponents[1]),$str);
+					} else{
 						$str = preg_replace($regex,$recordDetails[$fieldname[$i]],$str);
 					}
 				}

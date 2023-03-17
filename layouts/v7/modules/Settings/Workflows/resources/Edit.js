@@ -768,12 +768,14 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
          if (currentElement.hasClass('overwriteSelection')) {
             inputElement.val(currentElement.val());
          } else {
+            var module_name = jQuery('#module_name').val();
+            var inventoryModules = ['Invoice', 'Quotes', 'PurchaseOrder', 'SalesOrder'];
             var oldValue = inputElement.val();
             // 製品とサービスは複数紐づけられるため、$loop-products$で囲み全て出力する
             var regexlp = /\$loop-products\$/;
             var regexPS = /\((\w+) : \((Products|Services)\) (\w+)\)/;
             var str = currentElement.val();
-            if(inputElement[0].id == 'description' && !regexlp.test(oldValue) && regexPS.test(str)){
+            if(inputElement[0].id == 'description' && jQuery.inArray(module_name, inventoryModules) !== -1 && !regexlp.test(oldValue) && regexPS.test(str)){
                str = '$loop-products$\n'+currentElement.val()+'\n\n$loop-products$\n'
             }
             var newValue = oldValue.substr(0, inputElement[0].selectionStart) 
