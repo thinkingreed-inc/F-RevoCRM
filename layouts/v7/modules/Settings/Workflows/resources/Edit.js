@@ -58,6 +58,16 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
         } else {
                 jQuery('[name="filtersavedinnew"]').val("6");
                 var advfilterlist = this.advanceFilterInstance.getValues();
+                // 担当」の場合、担当名からidに変換する
+                for(var i of Object.keys(advfilterlist)){
+                  for(var j of Object.keys(advfilterlist[i].columns)){
+                     if(advfilterlist[i].columns[j].columnname == 'assigned_user_id'){
+                        if(advfilterlist[i].columns[j].value){
+                           advfilterlist[i].columns[j].value = this.getAssignedUserId(advfilterlist[i].columns[j].value, '#advanceFilterContainer');
+                        }
+                     }
+                  }
+                }
                 jQuery('#advanced_filter').val(JSON.stringify(advfilterlist));
         }
     },
@@ -145,6 +155,23 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
                var str = '<option value="' + key + '">'+ val +'</option>';
                usePicklist.append(str);
             }, picklistvalue);
+         }else if(listtype == 'owner'){
+            var picklistvalue = fieldinfo.picklistvalues;
+            usePicklist.attr('type', listtype)
+            usePicklist.parent().removeClass('hide');
+            usePicklist.append('<option></option>');
+            var str='';
+            for(var optGroup in picklistvalue){
+               str += '<optgroup label="'+ optGroup +'">';
+               var optionGroupValues = picklistvalue[optGroup];
+               for(var option in optionGroupValues){
+                  // valueは分かりやすさからIDではなくユーザー名とし、submit時にIDへ変換する
+                  str += '<option value="'+optionGroupValues[option]+'" ';
+                  str += '>'+optionGroupValues[option]+'</option>';
+               }
+               str += '</optgroup>'
+            }
+            usePicklist.append(str);
          }else{
             usePicklist.removeAttr('type');
             usePicklist.parent().addClass('hide');
@@ -602,10 +629,20 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
    },
    preSaveVTUpdateFieldsTask: function (tasktype) {
       var values = this.getValues(tasktype);
+      for(var i of Object.keys(values)){
+         if(values[i].fieldname == 'assigned_user_id'){
+            values[i].value = this.getAssignedUserId(values[i].value, '#save_fieldvaluemapping');
+         }
+      }
       jQuery('[name="field_value_mapping"]').val(JSON.stringify(values));
    },
    preSaveVTCreateEntityTask: function (tasktype) {
       var values = this.getValues(tasktype);
+      for(var i of Object.keys(values)){
+         if(values[i].fieldname == 'assigned_user_id'){
+            values[i].value = this.getAssignedUserId(values[i].value, '#save_fieldvaluemapping');
+         }
+      }
       jQuery('[name="field_value_mapping"]').val(JSON.stringify(values));
    },
    preSaveVTEmailTask: function (tasktype) {
@@ -659,6 +696,8 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
                var field = fieldList[key];
                if (field == 'value' && valueSelectElement.is('select')) {
                   rowValues[field] = valueSelectElement.find('option:selected').val();
+               } else if (field == 'value' && valueSelectElement.is('input')) {
+                  rowValues[field] = valueSelectElement.val();
                } else {
                   rowValues[field] = jQuery('[name="' + field + '"]', rowElement).val();
                }
@@ -706,6 +745,34 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
          app.helper.hideProgress();
          jQuery(".taskStatus").bootstrapSwitch();
       });
+   },
+
+   getAssignedUserId: function (username, selector) {
+      var users = this.getAssignedUsers(selector);
+      values = username.split(' ');
+      if(values.length == 1){
+         if(values[0] in users){ // グループの場合
+            return users[values[0]];
+         }
+         values[1] = '';
+      }
+      return users[values[0]+' '+values[1]];
+   },
+   getAssignedUsers: function (selector) {
+      var advanceFilterContainer = jQuery(selector);
+      var fieldUiHolder = jQuery('input[name="assigned_user_id"]',advanceFilterContainer).closest('.fieldUiHolder');
+      var fieldInfo = fieldUiHolder.find('[name="valuetype"]').data('fieldinfo');
+      var username = new Array;
+      if(fieldInfo){
+         var picklistvalue = fieldInfo.picklistvalues;
+         for(var optGroup in picklistvalue){
+            var optionGroupValues = picklistvalue[optGroup];
+            for(var option in optionGroupValues){
+               username[optionGroupValues[option]] = option;
+            }
+         }
+      }
+      return username;
    },
    
    /**
