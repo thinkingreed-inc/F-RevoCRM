@@ -273,7 +273,7 @@ class Activity extends CRMEntity {
 		$updateQuery = "UPDATE vtiger_activity SET duration_hours = ?, duration_minutes = ? WHERE activityid = ?";
 		$adb->pquery($updateQuery, array($hours, $minutes, $this->id));
 
-		$this->updateLastActionDate();
+		$this->updateLastActionDate($module);
 	}
 
 	/** Function to insert values in vtiger_activity_reminder_popup table for the specified module
@@ -1401,7 +1401,7 @@ function insertIntoRecurringTable(& $recurObj)
 		}
 	}
 
-	public function updateLastActionDate() {
+	public function updateLastActionDate($module) {
 		global $adb, $log;
 		$accountids = array();
 		$result = $adb->pquery("SELECT contactid, activityid FROM vtiger_cntactivityrel WHERE activityid = ?",array($this->id));
@@ -1416,7 +1416,7 @@ function insertIntoRecurringTable(& $recurObj)
 			if ($accountid > 0) {
 				$accountids[] = $accountid;
 			}
-			$recordContactModel->save();
+			$recordContactModel->getEntity()->saveentity($module, $contactid);
 		}
 
 		$parent_id = $this->column_fields["parent_id"];
@@ -1427,7 +1427,7 @@ function insertIntoRecurringTable(& $recurObj)
 				$recordParentModel->set('id', $parent_id);
 				$recordParentModel->set('mode', 'edit');
 				$recordParentModel->set('last_action_date', $this->getParentLastActionDate($parent_id, $moduleName));
-				$recordParentModel->save();
+				$recordParentModel->getEntity()->saveentity($module, $parent_id);
 			} elseif ($moduleName == "Potentials") {
 				$recordParentModel->set('id', $parent_id);
 				$recordParentModel->set('mode', 'edit');
@@ -1436,7 +1436,7 @@ function insertIntoRecurringTable(& $recurObj)
 				if($accountid > 0) {
 					$accountids[] = $accountid;
 				}
-				$recordParentModel->save();
+				$recordParentModel->getEntity()->saveentity($module, $parent_id);
 			} elseif ($moduleName == "Accounts") {
 				$accountids[] = $parent_id;
 			}
@@ -1473,7 +1473,7 @@ function insertIntoRecurringTable(& $recurObj)
 				} else {
 					$accountRecordModel->set('last_action_date', null);
 				}
-				$accountRecordModel->save();
+				$accountRecordModel->getEntity()->saveentity($module, $accountRecordModel->getId());
 		}
 	}
 
