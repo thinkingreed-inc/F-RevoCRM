@@ -412,27 +412,22 @@ Vtiger_Field_Js('Vtiger_Boolean_Field_Js',{},{
 Vtiger_Owner_Field_Js('Workflows_Owner_Field_Js',{},{
 
     getUi : function() {
-        var html = '<select class="inputElement select2" name="'+ this.getName() +'">';
-        html += '<option value="">&nbsp;</option>';
+        // Workflowアクション設定：owner型で「項目選択」ができるよう、String型の getUi と同じ処理に変更
+        var html = '<input type="text" class="getPopupUi inputElement" name="'+ this.getName() +'"  /><input type="hidden" name="valuetype" value="'+this.get('workflow_valuetype')+'" />';
+        html = jQuery(html);
+        // デフォルト値をIDではなくユーザー名で表示する
         var pickListValues = this.getPickListValues();
-        var selectedOption = this.getValue();
+        var pickListValue = this.getValue();
         for(var optGroup in pickListValues){
-            html += '<optgroup label="'+ optGroup +'">';
             var optionGroupValues = pickListValues[optGroup];
-            for(var option in optionGroupValues) {
-                html += '<option value="'+option+'" ';
-                if(option == selectedOption) {
-                    html += ' selected ';
+            for(var option in optionGroupValues){
+                if(option == this.getValue()){
+                    pickListValue = optionGroupValues[this.getValue()];
                 }
-                html += '>'+optionGroupValues[option]+'</option>';
             }
-            html += '</optgroup>'
         }
-
-        html +='</select>';
-        var selectContainer = jQuery(html);
-		this.addValidationToElement(selectContainer);
-        return selectContainer;
+        html.filter('.getPopupUi').val(app.htmlDecode(pickListValue));
+        return this.addValidationToElement(html);
     }
 });
 
