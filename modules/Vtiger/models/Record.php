@@ -757,6 +757,7 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
 		$uniquekey = bin2hex(random_bytes(10)) . uniqid('', true);
 		$hostfilepath = $hostfiledirectory.$uniquekey;
 		$dockerfilepath = $dokerfiledirectory.$uniquekey;
+		$template = str_replace('cellspacing="1"','cellspacing="0"',$template);
 		file_put_contents($hostfilepath. ".html", $template);
 		$paramsarray = array("filepath" => $dockerfilepath);
 		$curl = curl_init($chromeurl);
