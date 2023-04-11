@@ -202,6 +202,7 @@ $languageStrings = array(
 	'Accounts' => '顧客企業',
 	'Assets' => '資産・レンタル管理',
 	'Calendar' => 'カレンダー',
+	'Events' => '活動',
 	'Campaigns' => 'キャンペーン',
 	'Contacts' => '顧客担当者',
 	'Documents' => 'ドキュメント',
