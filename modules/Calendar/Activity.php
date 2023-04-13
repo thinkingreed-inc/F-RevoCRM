@@ -1416,7 +1416,8 @@ function insertIntoRecurringTable(& $recurObj)
 			if ($accountid > 0) {
 				$accountids[] = $accountid;
 			}
-			$recordContactModel->save();
+			$updateQuery = "UPDATE vtiger_contactdetails SET last_action_date = ? WHERE contactid = ?";
+			$adb->pquery($updateQuery, array($this->getParentLastActionDate($contactid, $moduleName), $contactid));
 		}
 
 		$parent_id = $this->column_fields["parent_id"];
@@ -1424,19 +1425,15 @@ function insertIntoRecurringTable(& $recurObj)
 			$recordParentModel = Vtiger_Record_Model::getInstanceById($parent_id);
 			$moduleName = $recordParentModel->getModuleName();
 			if ($moduleName == 'Leads') {
-				$recordParentModel->set('id', $parent_id);
-				$recordParentModel->set('mode', 'edit');
-				$recordParentModel->set('last_action_date', $this->getParentLastActionDate($parent_id, $moduleName));
-				$recordParentModel->save();
+				$updateQuery = "UPDATE vtiger_leaddetails SET last_action_date = ? WHERE leadid = ?";
+				$adb->pquery($updateQuery, array($this->getParentLastActionDate($parent_id, $moduleName), $parent_id));
 			} elseif ($moduleName == "Potentials") {
-				$recordParentModel->set('id', $parent_id);
-				$recordParentModel->set('mode', 'edit');
-				$recordParentModel->set('last_action_date', $this->getParentLastActionDate($parent_id, $moduleName));
 				$accountid = $recordParentModel->get("related_to");
 				if($accountid > 0) {
 					$accountids[] = $accountid;
 				}
-				$recordParentModel->save();
+				$updateQuery = "UPDATE vtiger_potential SET last_action_date = ? WHERE potentialid = ?";
+				$adb->pquery($updateQuery, array($this->getParentLastActionDate($parent_id, $moduleName), $parent_id));
 			} elseif ($moduleName == "Accounts") {
 				$accountids[] = $parent_id;
 			}
@@ -1444,36 +1441,37 @@ function insertIntoRecurringTable(& $recurObj)
 
 		#顧客企業は関連の顧客担当者・案件の活動も含んで処理する
 		foreach($accountids as $accountid) {
-				$accountRecordModel = Vtiger_Record_Model::getInstanceById($accountid);
-				$relatedContactsIdList = $this->getAccountsRelatedIdList($accountid, "Contacts");
-				if ($relatedContactsIdList) {
-					$contactsLastActionDate = $this->getLastActionDateFromList($relatedContactsIdList, "Contacts");
-				}
-				$relatedPotentialsIdList = $this->getAccountsRelatedIdList($accountid, "Potentials");
-				if ($relatedPotentialsIdList) {
-					$potentialLastActionDate = $this->getLastActionDateFromList($relatedPotentialsIdList, "Potentials");
-				}
-				if (strtotime($contactsLastActionDate) > strtotime($potentialLastActionDate)) {
-					$parentLastActionDate = $contactsLastActionDate;
-				} elseif (strtotime($potentialLastActionDate) >= strtotime($contactsLastActionDate)) {
-				$parentLastActionDate =  $potentialLastActionDate;
+			$accountRecordModel = Vtiger_Record_Model::getInstanceById($accountid);
+			$relatedContactsIdList = $this->getAccountsRelatedIdList($accountid, "Contacts");
+			if ($relatedContactsIdList) {
+				$contactsLastActionDate = $this->getLastActionDateFromList($relatedContactsIdList, "Contacts");
+			}
+			$relatedPotentialsIdList = $this->getAccountsRelatedIdList($accountid, "Potentials");
+			if ($relatedPotentialsIdList) {
+				$potentialLastActionDate = $this->getLastActionDateFromList($relatedPotentialsIdList, "Potentials");
+			}
+			if (strtotime($contactsLastActionDate) > strtotime($potentialLastActionDate)) {
+				$parentLastActionDate = $contactsLastActionDate;
+			} elseif (strtotime($potentialLastActionDate) >= strtotime($contactsLastActionDate)) {
+			$parentLastActionDate =  $potentialLastActionDate;
+			} 
+			$accountLastActionDate = $this->getParentLastActionDate($accountid,"Accounts");
+			$accountRecordModel->set('mode', 'edit');
+			if (isset($parentLastActionDate) && isset($accountLastActionDate)) {
+				if (strtotime($parentLastActionDate) > strtotime($accountLastActionDate)) {
+					$last_action_date = $parentLastActionDate;
+				} elseif (strtotime($accountLastActionDate) >= strtotime($parentLastActionDate)) {
+					$last_action_date = $accountLastActionDate;
 				} 
-				$accountLastActionDate = $this->getParentLastActionDate($accountid,"Accounts");
-				$accountRecordModel->set('mode', 'edit');
-				if (isset($parentLastActionDate) && isset($accountLastActionDate)) {
-					if (strtotime($parentLastActionDate) > strtotime($accountLastActionDate)) {
-						$accountRecordModel->set('last_action_date', $parentLastActionDate);
-					} elseif (strtotime($accountLastActionDate) >= strtotime($parentLastActionDate)) {
-						$accountRecordModel->set('last_action_date', $accountLastActionDate);
-					} 
-				} elseif (isset($parentLastActionDate) && is_null($accountLastActionDate)) {
-					$accountRecordModel->set('last_action_date', $parentLastActionDate);
-				} elseif (isset($accountLastActionDate) && is_null($parentLastActionDate)) {
-					$accountRecordModel->set('last_action_date', $accountLastActionDate);
-				} else {
-					$accountRecordModel->set('last_action_date', null);
-				}
-				$accountRecordModel->save();
+			} elseif (isset($parentLastActionDate) && is_null($accountLastActionDate)) {
+				$last_action_date = $parentLastActionDate;
+			} elseif (isset($accountLastActionDate) && is_null($parentLastActionDate)) {
+				$last_action_date = $accountLastActionDate;
+			} else {
+				$last_action_date = null;
+			}
+			$updateQuery = "UPDATE vtiger_account SET last_action_date = ? WHERE accountid = ?";
+			$adb->pquery($updateQuery, array($last_action_date, $accountid));
 		}
 	}
 
