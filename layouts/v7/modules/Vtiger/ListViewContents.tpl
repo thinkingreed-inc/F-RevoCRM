@@ -14,7 +14,7 @@
 <div class="col-sm-12 col-xs-12 ">
 	{if $MODULE neq 'EmailTemplates' && $MODULE neq 'PDFTemplates' && $SEARCH_MODE_RESULTS neq true}
 		{assign var=LEFTPANELHIDE value=$CURRENT_USER_MODEL->get('leftpanelhide')}
-		<div class="essentials-toggle" title="{vtranslate('LBL_LEFT_PANEL_SHOW_HIDE', 'Vtiger')}">
+		<div class="essentials-toggle" title="{vtranslate('LBL_LEFT_PANEL_SHOW_HIDE', 'Vtiger')}" style="display: none;">
 			<span class="essentials-toggle-marker fa {if $LEFTPANELHIDE eq '1'}fa-chevron-right{else}fa-chevron-left{/if} cursorPointer"></span>
 		</div>
 	{/if}
