@@ -12,5 +12,4 @@ RUN dpkg -i google-chrome-stable_current_amd64.deb
 RUN apt -f install -y
 RUN apt install apache2 php -y
 RUN apt-get autoremove -y
-COPY converthtmltopdf.php /var/www/html/converthtmltopdf.php
 RUN chown -R www-data.www-data /var/www/html/
