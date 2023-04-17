@@ -1,6 +1,6 @@
 1. Install Docker (If installed, skip this.)
 1. Execute buildDockerImage.sh
-1. config.inc.phpの編集
+1.  config.customize.phpの編集
 ```php
 $is_headlesschrome = true;// trueの場合：headless chromeを使用。falseの場合：TCPDFを使用。
 $chromeurl = "headlesschrome/converthtmltopdf.php";// headlless chromeの場所 同じdockerネットワークに属している場合は左記のurlになる
