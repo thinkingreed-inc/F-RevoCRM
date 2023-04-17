@@ -296,8 +296,10 @@ class Inventory_Record_Model extends Vtiger_Record_Model {
 		$recordId = $this->getId();
 		$moduleName = $this->getModuleName();
 
-		global $adb, $is_headlesschrome;
+		global $adb;
 		$template = null;
+		include_once('config.customize.php');
+		
 
 		$result = $adb->pquery("SELECT templatename, body FROM vtiger_pdftemplates WHERE templateid = ?", array($templateId));
 		if($adb->num_rows($result) > 0) {

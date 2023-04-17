@@ -750,7 +750,10 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
 	}
 	public function getPDFfromheadlesschrome($template,$templateName,$isheader){
 		// $template $templateName
-		global $chromeurl;
+		if(file_exists('config.customize.php')){
+			include 'config.customize.php';
+		}
+		
 		$hostfiledirectory = "docker/chrome-headless/html2pdf/";
 		$dokerfiledirectory = "/var/www/html/html2pdf/";
 		$pdfdataarray = array();
