@@ -758,6 +758,7 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
 		$hostfilepath = $hostfiledirectory.$uniquekey;
 		$dockerfilepath = $dokerfiledirectory.$uniquekey;
 		$template = str_replace('cellspacing="1"','cellspacing="0"',$template);
+		$template = str_replace('body','body  style="font-family: Noto Sans CJK JP"',$template);
 		file_put_contents($hostfilepath. ".html", $template);
 		$paramsarray = array("filepath" => $dockerfilepath);
 		$curl = curl_init($chromeurl);
