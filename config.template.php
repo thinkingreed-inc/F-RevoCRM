@@ -84,6 +84,11 @@ $site_URL = '_SITE_URL_';
 
 // url for customer portal (Example: http://vtiger.com/portal)
 $PORTAL_URL = $site_URL.'/customerportal';
+
+$is_headlesschrome = false;
+// url for headlesschrome
+$chromeurl = "headlesschrome/converthtmltopdf.php";
+
 // root directory path
 $root_directory = '_VT_ROOTDIR_';
 
