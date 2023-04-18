@@ -1037,6 +1037,23 @@ class ReportRun extends CRMEntity {
 					$selectedFields = explode(':', $fieldcolname);
 					$moduleFieldLabel = $selectedFields[2];
 					list($moduleName, $fieldLabel) = explode('_', $moduleFieldLabel, 2);
+
+					// Calendar(TODO)とEvents(活動)の項目を別々に用意するように変更した
+					// Eventsの場合、$is_Eventsフラグを立たせ、フィールドをCalendarに戻す
+					$is_Events = false;
+					if($moduleName == 'Events'){
+						$is_Events = true;
+
+						$moduleName = 'Calendar';
+						$moduleFieldLabel = implode('_',array($moduleName,$fieldLabel));
+						$selectedFields[2] = $moduleFieldLabel;
+						$str = $selectedFields[0];
+						if(substr($str, -6) === "Events"){
+							$selectedFields[0] = substr($str, 0, strlen($str) - 6) . "Calendar";
+						}
+						$fieldcolname = implode(':',$selectedFields);
+					}
+
 					$emailTableName = '';
 					if ($moduleName == "Emails" && $moduleName != $this->primarymodule && $selectedFields[0] == "vtiger_activity") {
 						$emailTableName = "vtiger_activityEmails";
@@ -1258,6 +1275,7 @@ class ReportRun extends CRMEntity {
 						} else {
 							$valuearray = array($value);
 						}
+						$fieldvalue = "";
 						if (isset($valuearray) && count($valuearray) > 1 && $comparator != 'bw') {
 
 							$advcolumnsql = "";
@@ -1433,6 +1451,13 @@ class ReportRun extends CRMEntity {
 							}
 							$fieldvalue = $selectFieldTableName . "." . $selectedfields[1] . $this->getAdvComparator($comparator, trim($value), $datatype);
 						}
+
+						if(!empty($fieldvalue) && $moduleName == 'Calendar' && !$is_Events){
+							$fieldvalue = "(".$fieldvalue." and vtiger_activity.activitytype = 'Task')";
+						}elseif(!empty($fieldvalue) && $is_Events){
+							$fieldvalue = "(".$fieldvalue." and vtiger_activity.activitytype = 'Call')";
+						}
+
 						$advfiltergroupsql .= $fieldvalue;
 						if (!empty($columncondition)) {
 							$advfiltergroupsql .= ' ' . $columncondition . ' ';
