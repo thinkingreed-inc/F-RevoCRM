@@ -1116,11 +1116,11 @@ class ReportRun extends CRMEntity {
 									}
 
 									$fieldvalue .= "$tableColumnSql BETWEEN $startDateTime AND $endDateTime";
-									
+
 									if(!empty($fieldvalue) && $moduleName == 'Calendar' && !$is_Events){
 										$fieldvalue = "(".$fieldvalue." and vtiger_activity.activitytype = 'Task')";
 									}elseif(!empty($fieldvalue) && $is_Events){
-										$fieldvalue = "(".$fieldvalue." and vtiger_activity.activitytype = 'Call')";
+										$fieldvalue = "(".$fieldvalue." and vtiger_activity.activitytype <> 'Task')";
 									}
 		
 									$advfiltergroupsql .= $fieldvalue;
@@ -1225,7 +1225,7 @@ class ReportRun extends CRMEntity {
 							if(!empty($fieldvalue) && $moduleName == 'Calendar' && !$is_Events){
 								$fieldvalue = "(".$fieldvalue." and vtiger_activity.activitytype = 'Task')";
 							}elseif(!empty($fieldvalue) && $is_Events){
-								$fieldvalue = "(".$fieldvalue." and vtiger_activity.activitytype = 'Call')";
+								$fieldvalue = "(".$fieldvalue." and vtiger_activity.activitytype <> 'Task')";
 							}
 
 							$advfiltergroupsql .= $fieldvalue;
@@ -1479,7 +1479,7 @@ class ReportRun extends CRMEntity {
 						if(!empty($fieldvalue) && $moduleName == 'Calendar' && !$is_Events){
 							$fieldvalue = "(".$fieldvalue." and vtiger_activity.activitytype = 'Task')";
 						}elseif(!empty($fieldvalue) && $is_Events){
-							$fieldvalue = "(".$fieldvalue." and vtiger_activity.activitytype = 'Call')";
+							$fieldvalue = "(".$fieldvalue." and vtiger_activity.activitytype <> 'Task')";
 						}
 
 						$advfiltergroupsql .= $fieldvalue;
@@ -2587,7 +2587,7 @@ class ReportRun extends CRMEntity {
 			$query .= " ".$this->getRelatedModulesQuery($module,$this->secondarymodule).
 					getNonAdminAccessControlQuery($this->primarymodule,$current_user).
 					" WHERE vtiger_crmentity.deleted=0 and (vtiger_activity.activitytype != 'Emails')".
-					" and (( vtiger_activity.visibility != 'Private' and vtiger_activity.activitytype = 'Call' ) or vtiger_activity.activitytype = 'Task' )";// カレンダー用 非公開のスケジュールは出力しない
+					" and (( vtiger_activity.visibility != 'Private' and vtiger_activity.activitytype <> 'Task' ) or vtiger_activity.activitytype = 'Task' )";// カレンダー用 非公開のスケジュールは出力しない
 		} else if ($module == "Quotes") {
 			$matrix = $this->queryPlanner->newDependencyMatrix();
 
@@ -3044,7 +3044,7 @@ class ReportRun extends CRMEntity {
 			$secondarymodule = explode(":", $this->secondarymodule);
 			foreach ($secondarymodule as $value) {
 				if ($value == 'Calendar') {
-					$wheresql .= " AND (( vtiger_activity.visibility != 'Private' AND vtiger_activity.activitytype = 'Call' ) OR vtiger_activity.activitytype = 'Task' )";
+					$wheresql .= " AND (( vtiger_activity.visibility != 'Private' AND vtiger_activity.activitytype <> 'Task' ) OR vtiger_activity.activitytype = 'Task' )";
 				}
 			}
 		}
