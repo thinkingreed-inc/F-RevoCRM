@@ -1059,6 +1059,7 @@ class ReportRun extends CRMEntity {
 						$emailTableName = "vtiger_activityEmails";
 					}
 
+					$fieldvalue = "";
 					if ($fieldcolname != "" && $comparator != "") {
 						if (in_array($comparator, $dateSpecificConditions)) {
 							if ($fieldcolname != 'none') {
@@ -1114,7 +1115,15 @@ class ReportRun extends CRMEntity {
 										$endDateTime = "'$endDateTime'";
 									}
 
-									$advfiltergroupsql .= "$tableColumnSql BETWEEN $startDateTime AND $endDateTime";
+									$fieldvalue .= "$tableColumnSql BETWEEN $startDateTime AND $endDateTime";
+									
+									if(!empty($fieldvalue) && $moduleName == 'Calendar' && !$is_Events){
+										$fieldvalue = "(".$fieldvalue." and vtiger_activity.activitytype = 'Task')";
+									}elseif(!empty($fieldvalue) && $is_Events){
+										$fieldvalue = "(".$fieldvalue." and vtiger_activity.activitytype = 'Call')";
+									}
+		
+									$advfiltergroupsql .= $fieldvalue;
 									if (!empty($columncondition)) {
 										$advfiltergroupsql .= ' ' . $columncondition . ' ';
 									}
@@ -1157,9 +1166,9 @@ class ReportRun extends CRMEntity {
 									$start = "'$start'";
 									$end = "'$end'";
 									if ($comparator == 'e')
-										$advfiltergroupsql .= "$tableColumnSql BETWEEN $start AND $end";
+										$fieldvalue .= "$tableColumnSql BETWEEN $start AND $end";
 									else
-										$advfiltergroupsql .= "$tableColumnSql NOT BETWEEN $start AND $end";
+										$fieldvalue .= "$tableColumnSql NOT BETWEEN $start AND $end";
 								}else if ($comparator == 'bw') {
 									$values = explode(',', $value);
 									$startDateTime = explode(' ', $values[0]);
@@ -1175,16 +1184,16 @@ class ReportRun extends CRMEntity {
 									$userEndDate = $userEndDate . ' 23:59:59';
 									$end = getValidDBInsertDateTimeValue($userEndDate);
 
-									$advfiltergroupsql .= "$tableColumnSql BETWEEN '$start' AND '$end'";
+									$fieldvalue .= "$tableColumnSql BETWEEN '$start' AND '$end'";
 								} else if (in_array($comparator, Vtiger_Functions::getSpecialDateConditions())) {
 									$values = EnhancedQueryGenerator::getSpecialDateConditionValue($comparator, $value, $selectedFields[4]);
 									$tableColumnSql = $selectedFields[0] . '.' . $selectedFields[1];
 									$condtionQuery = EnhancedQueryGenerator::getSpecialDateConditionQuery($values['comparator'], $values['date']);
-									$advfiltergroupsql .= "date($tableColumnSql) $condtionQuery";
+									$fieldvalue .= "date($tableColumnSql) $condtionQuery";
 								} else if (in_array($comparator, Vtiger_Functions::getSpecialTimeConditions())) {
 									$values = EnhancedQueryGenerator::getSpecialDateConditionValue($comparator, $value, $selectedFields[4]);
 									$condtionQuery = EnhancedQueryGenerator::getSpecialDateConditionQuery($values['comparator'], $values['date']);
-									$advfiltergroupsql .= "$tableColumnSql $condtionQuery";
+									$fieldvalue .= "$tableColumnSql $condtionQuery";
 								} else if ($comparator == 'a' || $comparator == 'b') {
 									$value = explode(' ', $value);
 									$dateTime = new DateTime($value[0]);
@@ -1194,26 +1203,34 @@ class ReportRun extends CRMEntity {
 										$temp = strtotime($nextday) - 1;
 										$date = date('Y-m-d H:i:s', $temp);
 										$value = getValidDBInsertDateTimeValue($date);
-										$advfiltergroupsql .= "$tableColumnSql > '$value'";
+										$fieldvalue .= "$tableColumnSql > '$value'";
 									} else {
 										$prevday = $dateTime->format('Y-m-d H:i:s');
 										$temp = strtotime($prevday) - 1;
 										$date = date('Y-m-d H:i:s', $temp);
 										$value = getValidDBInsertDateTimeValue($date);
-										$advfiltergroupsql .= "$tableColumnSql < '$value'";
+										$fieldvalue .= "$tableColumnSql < '$value'";
 									}
-								}
-								if (!empty($columncondition)) {
-									$advfiltergroupsql .= ' ' . $columncondition . ' ';
 								}
 								$this->queryPlanner->addTable($selectedFields[0]);
 							} else if ($value == '') {
 								$sqlComparator = $this->getAdvComparator($comparator, $value, 'DT');
 								if($sqlComparator) {
-									$advfiltergroupsql .= " ".$selectedFields[0].".".$selectedFields[1].$sqlComparator;
+									$fieldvalue .= " ".$selectedFields[0].".".$selectedFields[1].$sqlComparator;
 								} else {
-									$advfiltergroupsql .= " " . $selectedFields[0] . "." . $selectedFields[1] . " = '' ";
+									$fieldvalue .= " " . $selectedFields[0] . "." . $selectedFields[1] . " = '' ";
 								}
+							}
+
+							if(!empty($fieldvalue) && $moduleName == 'Calendar' && !$is_Events){
+								$fieldvalue = "(".$fieldvalue." and vtiger_activity.activitytype = 'Task')";
+							}elseif(!empty($fieldvalue) && $is_Events){
+								$fieldvalue = "(".$fieldvalue." and vtiger_activity.activitytype = 'Call')";
+							}
+
+							$advfiltergroupsql .= $fieldvalue;
+							if (!empty($columncondition)) {
+								$advfiltergroupsql .= ' ' . $columncondition . ' ';
 							}
 							continue;
 						}
@@ -1275,7 +1292,14 @@ class ReportRun extends CRMEntity {
 						} else {
 							$valuearray = array($value);
 						}
-						$fieldvalue = "";
+						
+						if($fieldDataType == 'time') {
+							$value = $value . ':00';
+							$valuearray = array_map(function ($n) {
+								return $n . ':00';
+							}, $valuearray);
+						}
+
 						if (isset($valuearray) && count($valuearray) > 1 && $comparator != 'bw') {
 
 							$advcolumnsql = "";
