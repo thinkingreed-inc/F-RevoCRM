@@ -380,7 +380,9 @@ Vtiger_Field_Js('Vtiger_Multipicklist_Field_Js',{},{
 		var valueArray = selectedOption.split('|##|');
 		var selectedOptionsArray = [];
 		for(var i=0;i<valueArray.length;i++){
-			selectedOptionsArray.push(valueArray[i].trim());
+			if(valueArray[i].trim() != '') {
+				selectedOptionsArray.push(valueArray[i].trim());
+			}
 		}
 		return selectedOptionsArray;
 	},
