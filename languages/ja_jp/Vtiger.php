@@ -1531,6 +1531,12 @@ $languageStrings = array(
 	'Templates' => 'テンプレート',
 	//請求
 	'Member Of' => '親企業',
+
+	'Parent Module' => '【親モジュール】',
+	'Child Module' => '【子モジュール】',
+	'LBL_EXPORT_TO_PDF' => 'PDFにエクスポート',
+    'LBL_SEND_MAIL_PDF' => 'PDFをメール送信',
+
 );
 
 $jsLanguageStrings = array(
