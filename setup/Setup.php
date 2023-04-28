@@ -83,6 +83,9 @@ $db->query('update vtiger_field set quickcreate = 0 where tabid = 41 and fieldna
 // プロジェクトマイルストーンを関連メニューから追加する際、プロジェクトを引き継いで作成できるようにする
 $db->query('update vtiger_relatedlists set relationfieldid = "598" where relation_id = 174');
 
+// PDFテンプレートのアップデート
+require_once ("scripts/64_Update_PDFTemplate.php");
+
 // メニュー設定
 // FRMenuSetting::apply(array(
 //     'Accounts',
