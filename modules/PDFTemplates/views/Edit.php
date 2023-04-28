@@ -81,6 +81,7 @@ Class PDFTemplates_Edit_View extends Vtiger_Index_View {
 	}
 
 	public function initializeContents(Vtiger_Request $request, Vtiger_Viewer $viewer){
+		global $is_headlesschrome;
 		$moduleName = $request->getModule();
 		$record = $request->get('record');
 
@@ -120,6 +121,9 @@ Class PDFTemplates_Edit_View extends Vtiger_Index_View {
 		$viewer->assign('ALL_FIELDS', $moduleFields);
 		$viewer->assign('COMPANY_FIELDS', $pdfTemplateModuleModel->getCompanyMergeTagsInfo());
 		$viewer->assign('GENERAL_FIELDS', $pdfTemplateModuleModel->getCustomMergeTags());
+		$viewer->assign('PDF_FORMATS', $pdfTemplateModuleModel->getPDFFormats());
+		$viewer->assign('CUSTUM_FUNCTIONS', $pdfTemplateModuleModel->getCustomFunctions());
+		$viewer->assign('IS_HEADLESSCHROME', $is_headlesschrome === true ? "true" : "false");
 	}
 
 	/**

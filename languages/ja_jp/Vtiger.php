@@ -1531,6 +1531,9 @@ $languageStrings = array(
 	'Templates' => 'テンプレート',
 	//請求
 	'Member Of' => '親企業',
+
+	'Parent Module' => '【親モジュール】',
+	'Child Module' => '【子モジュール】',
 );
 
 $jsLanguageStrings = array(

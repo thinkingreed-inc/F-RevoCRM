@@ -8,6 +8,7 @@
  * All Rights Reserved.
  *************************************************************************************/
 
+ require_once('modules/Vtiger/helpers/PDF.php');
 /**
  * Vtiger Entity Record Model Class
  */
@@ -747,6 +748,34 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
             } else {
                     return $this->get('filename');
             }
+	}
+
+	/**
+	 * Function to get this record and details as PDF
+	 */
+	public function getPDF($templateId, $is_preview = false) {
+		PDF_helper::getPDF($this, $templateId, $is_preview);
+	}
+
+	public static function createPDF($templateId, $recordIdData, $moduleName, $isMassExport = false, $is_preview = false)
+	{
+		PDF_helper::createPDF($templateId, $recordIdData, $moduleName, $isMassExport, $is_preview);
+	}
+
+	/**
+	 * Function to get URL for Export the record as PDF
+	 * @return <type>
+	 */
+	public function getExportPDFUrl() {
+		return "index.php?module=".$this->getModuleName()."&action=ExportPDF&record=".$this->getId();
+	}
+
+	/**
+	  * Function to get the send email pdf url
+	  * @return <string>
+	  */
+	  public function getSendEmailPDFUrl() {
+		return 'module='.$this->getModuleName().'&view=SendEmail&mode=composeMailData&record='.$this->getId();
 	}
 
 }
