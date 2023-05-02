@@ -3011,11 +3011,6 @@ class ReportRun extends CRMEntity {
 			if ($chartReport == true) {
 				$selectedcolumns .= ", count(*) AS 'groupby_count'";
 			}
-			// レコードが活動なのかTODOなのか判定できるようにするためにactivitytypeを取得する
-			if($this->primarymodule == 'Calendar') {
-				$selectedcolumns .= ", vtiger_activity.activitytype AS 'Calendar_Activity_Type_check'";
-
-			}
 		}
 		//groups list
 		if (isset($groupslist)) {

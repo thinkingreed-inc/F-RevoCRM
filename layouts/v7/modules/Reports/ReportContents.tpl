@@ -150,18 +150,11 @@
                                 {/foreach}
                             </tr>
                         {/foreach}
-                    {else}   
-                        {assign var=ACTIVITYTYPE value=$DATA_ACTIVITYTYPE}
-                        {foreach from=$DATA item=VALUES key=KEY}
+                    {else}    
+                        {foreach from=$DATA item=VALUES}
                             <tr>
-                                {assign var=COUNT value=0}
                                 {foreach from=$VALUES item=VALUE key=NAME}
-                                    {if $COUNT eq 0 && count($ACTIVITYTYPE) > 0} {* 先頭に(活動),(TODO)を追加する *}
-                                        <td>({vtranslate($ACTIVITYTYPE[$KEY],'Calendar')}) {$VALUE}</td>
-                                    {else}
-                                        <td>{$VALUE}</td>
-                                    {/if}
-                                    {assign var=COUNT value=$COUNT+1}
+                                    <td>{$VALUE}</td>
                                 {/foreach}
                             </tr>
                         {/foreach}

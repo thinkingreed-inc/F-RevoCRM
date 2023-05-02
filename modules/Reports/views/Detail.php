@@ -13,7 +13,6 @@ class Reports_Detail_View extends Vtiger_Index_View {
 	protected $reportData;
 	protected $calculationFields;
 	protected $count;
-	protected $activitytype;
 
 	public function requiresPermission(\Vtiger_Request $request) {
 		$permissions = parent::requiresPermission($request);
@@ -59,22 +58,7 @@ class Reports_Detail_View extends Vtiger_Index_View {
 		$pagingModel->set('limit', self::REPORT_LIMIT);
 
 		$reportData = $reportModel->getReportData($pagingModel);
-		$activitytype = array();
-		if($reportModel->getPrimaryModule() == 'Calendar'){
-			// レコードが活動なのかTODOなのか判定するために挿入したactivitytypeを取り出す
-			$translatedLabel = getTranslatedString(str_replace('_', ' ', 'Activity_Type_check'), 'Calendar');
-			foreach($reportData['data'] as &$value){
-				if($value[$translatedLabel] != 'Task'){
-					$activitytype[] = 'LBL_EVENTS';
-				}else{
-					$activitytype[] = 'LBL_TODOS';
-				}
-				unset($value[$translatedLabel]);
-			}
-		}
-
 		$this->reportData = $reportData['data'];
-		$this->activitytype = $activitytype;
 		$this->calculationFields = $reportModel->getReportCalulationData();
 
 		$this->count = $reportData['count'];
@@ -195,7 +179,6 @@ class Reports_Detail_View extends Vtiger_Index_View {
 		$page = $request->get('page');
 
 		$data = $this->reportData;
-		$activitytype = $this->activitytype;
 		$calculation = $this->calculationFields;
 
 		$pagingModel = new Vtiger_Paging_Model();
@@ -230,7 +213,6 @@ class Reports_Detail_View extends Vtiger_Index_View {
 
 		$viewer->assign('CALCULATION_FIELDS',$calculation);
 		$viewer->assign('DATA', $data);
-		$viewer->assign('DATA_ACTIVITYTYPE', $activitytype);
 		$viewer->assign('RECORD_ID', $record);
 		$viewer->assign('PAGING_MODEL', $pagingModel);
 		$viewer->assign('COUNT', $this->count);
