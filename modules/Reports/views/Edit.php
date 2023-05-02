@@ -303,9 +303,11 @@ Class Reports_Edit_View extends Vtiger_Edit_View {
 			$relatedModuleName = 'Events';
 			$relatedModuleModel = Vtiger_Module_Model::getInstance($relatedModuleName);
 			$relatedRecordStructureInstance = Vtiger_RecordStructure_Model::getInstanceForModule($relatedModuleModel, Vtiger_RecordStructure_Model::RECORD_STRUCTURE_MODE_FILTER);
-			$eventBlocksFields = $relatedRecordStructureInstance->getStructure();
+			$eventBlocksFields = Reports_Detail_View::removeUnavailableFields($relatedModuleName, $relatedRecordStructureInstance->getStructure());
 			$viewer->assign('EVENT_RECORD_STRUCTURE_MODEL', $relatedRecordStructureInstance);
 			$viewer->assign('EVENT_RECORD_STRUCTURE', $eventBlocksFields);
+			
+			$primaryModuleRecordStructure = Reports_Detail_View::removeUnavailableFields($primaryModule, $primaryModuleRecordStructure);
 		}
 
 		$viewer->assign('SECONDARY_MODULES',$secondaryModules);

@@ -127,9 +127,11 @@ class Reports_Detail_View extends Vtiger_Index_View {
 			$relatedModuleName = 'Events';
 			$relatedModuleModel = Vtiger_Module_Model::getInstance($relatedModuleName);
 			$relatedRecordStructureInstance = Vtiger_RecordStructure_Model::getInstanceForModule($relatedModuleModel, Vtiger_RecordStructure_Model::RECORD_STRUCTURE_MODE_FILTER);
-			$eventBlocksFields = $relatedRecordStructureInstance->getStructure();
+			$eventBlocksFields = self::removeUnavailableFields($relatedModuleName, $relatedRecordStructureInstance->getStructure());
 			$viewer->assign('EVENT_RECORD_STRUCTURE_MODEL', $relatedRecordStructureInstance);
 			$viewer->assign('EVENT_RECORD_STRUCTURE', $eventBlocksFields);
+
+			$primaryModuleRecordStructure = self::removeUnavailableFields($primaryModule, $primaryModuleRecordStructure);
 		}
 
 		$viewer->assign('PRIMARY_MODULE_RECORD_STRUCTURE', $primaryModuleRecordStructure);
@@ -246,4 +248,26 @@ class Reports_Detail_View extends Vtiger_Index_View {
 		return $headerScriptInstances;
 	}
 
+	// レポート条件に不要な項目を削除する
+	function removeUnavailableFields($moduleName, $fields){
+		
+		if($moduleName == 'Calendar'){
+			$UnavailableFields = array(
+				'visibility', // 非表示に設定されたレコードはレポートに表示されない項目
+				'duration_hours', 'duration_minutes', 'notime', 'source', // 入力できない項目
+				'time_end', 'recurringtype', 'parent_id', 'activitytype', // Eventsには存在するがCalendarには無い項目
+				);
+		}elseif($moduleName == 'Events'){
+			$UnavailableFields = array(
+				'visibility', // 非表示に設定されたレコードはレポートに表示されない
+				'duration_hours', 'duration_minutes', 'notime', 'source', // 入力できない項目
+				);
+		}
+
+		foreach($fields as $blockLabel => $blockFields){
+			$fields[$blockLabel] = array_diff_key($blockFields, array_flip($UnavailableFields));
+		}
+
+		return $fields;
+	}
 }
