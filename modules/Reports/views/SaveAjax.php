@@ -43,25 +43,9 @@ class Reports_SaveAjax_View extends Vtiger_IndexAjax_View {
 		}
 		$calculation = $reportModel->generateCalculationData();
 
-		$activitytype = array();
-		if($reportModel->getPrimaryModule() == 'Calendar'){
-			// レコードが活動なのかTODOなのか判定するために挿入したactivitytypeを取り出す
-			$translatedLabel = getTranslatedString(str_replace('_', ' ', 'Activity_Type_check'), 'Calendar');
-			foreach($reportData['data'] as &$value){
-				if($value[$translatedLabel] != 'Task'){
-					$activitytype[] = 'LBL_EVENTS';
-				}else{
-					$activitytype[] = 'LBL_TODOS';
-				}
-				unset($value[$translatedLabel]);
-			}
-			$data = $reportData['data'];
-		}
-
 		$viewer->assign('PRIMARY_MODULE', $reportModel->getPrimaryModule());
 		$viewer->assign('CALCULATION_FIELDS', $calculation);
 		$viewer->assign('DATA', $data);
-		$viewer->assign('DATA_ACTIVITYTYPE', $activitytype);
 		$viewer->assign('RECORD_ID', $record);
 		$viewer->assign('PAGING_MODEL', $pagingModel);
 		$viewer->assign('MODULE', $moduleName);
