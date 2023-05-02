@@ -35,6 +35,7 @@ $languageStrings = array(
 	'LBL_SET_VALUE' => 'Set Value',
 	'LBL_USE_FIELD' => 'Use Field',
 	'LBL_USE_FUNCTION' => 'Use Function',
+	'LBL_USE_PICKLIST' => 'Use Pick list',
 	'LBL_RAW_TEXT' => 'Raw text',
 	'LBL_ENABLE_TO_CREATE_FILTERS' => 'Enable to create Filters',
 	'LBL_CREATED_IN_OLD_LOOK_CANNOT_BE_EDITED' => 'This workflow was created in older look. Conditions created in older look cannot be edited. You can choose to recreate the conditions, or use the existing conditions without changing them.',

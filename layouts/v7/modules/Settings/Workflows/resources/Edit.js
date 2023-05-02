@@ -58,6 +58,16 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
         } else {
                 jQuery('[name="filtersavedinnew"]').val("6");
                 var advfilterlist = this.advanceFilterInstance.getValues();
+                // 担当」の場合、担当名からidに変換する
+                for(var i of Object.keys(advfilterlist)){
+                  for(var j of Object.keys(advfilterlist[i].columns)){
+                     if(advfilterlist[i].columns[j].columnname == 'assigned_user_id'){
+                        if(advfilterlist[i].columns[j].value){
+                           advfilterlist[i].columns[j].value = this.getAssignedUserId(advfilterlist[i].columns[j].value, '#advanceFilterContainer');
+                        }
+                     }
+                  }
+                }
                 jQuery('#advanced_filter').val(JSON.stringify(advfilterlist));
         }
     },
@@ -130,6 +140,42 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
          }
          var conditionsContainer = fieldValueElement.closest('.conditionsContainer');
          var conditionRow = fieldValueElement.closest('.conditionRow');
+
+         var fieldinfo = fieldUiHolder.find('[name="valuetype"]').data('fieldinfo');
+         var listtype = fieldinfo.type;
+         var usePicklist = jQuery('#usePicklist');
+         usePicklist.empty();
+         if(listtype == 'multipicklist' || listtype == 'picklist'){
+            var picklistvalue = fieldinfo.picklistvalues;
+            usePicklist.attr('type', listtype)
+            usePicklist.parent().removeClass('hide');
+            usePicklist.append('<option></option>');
+            Object.keys(picklistvalue).forEach(function(key) {
+               var val = this[key];
+               var str = '<option value="' + key + '">'+ val +'</option>';
+               usePicklist.append(str);
+            }, picklistvalue);
+         }else if(listtype == 'owner'){
+            var picklistvalue = fieldinfo.picklistvalues;
+            usePicklist.attr('type', listtype)
+            usePicklist.parent().removeClass('hide');
+            usePicklist.append('<option></option>');
+            var str='';
+            for(var optGroup in picklistvalue){
+               str += '<optgroup label="'+ optGroup +'">';
+               var optionGroupValues = picklistvalue[optGroup];
+               for(var option in optionGroupValues){
+                  // valueは分かりやすさからIDではなくユーザー名とし、submit時にIDへ変換する
+                  str += '<option value="'+optionGroupValues[option]+'" ';
+                  str += '>'+optionGroupValues[option]+'</option>';
+               }
+               str += '</optgroup>'
+            }
+            usePicklist.append(str);
+         }else{
+            usePicklist.removeAttr('type');
+            usePicklist.parent().addClass('hide');
+         }
 
          var clonedPopupUi = conditionsContainer.find('.popupUi').clone(true, true).removeClass('hide').removeClass('popupUi').addClass('clonedPopupUi');
          clonedPopupUi.find('select').addClass('select2');
@@ -231,7 +277,7 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
    },
    
    registerSelectOptionEvent: function (data) {
-      jQuery('.useField,.useFunction', data).on('change', function (e) {
+      jQuery('.useField,.useFunction,.usePicklist', data).on('change', function (e) {
          var currentElement = jQuery(e.currentTarget);
          var newValue = currentElement.val();
          var oldValue = data.find('.fieldValue').filter(':visible').val();
@@ -241,6 +287,13 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
             if (oldValue != '' && textType != 'fieldname') {
                var concatenatedValue = oldValue + ' ' + newValue;
             } else {
+               concatenatedValue = newValue;
+            }
+         } else if (currentElement.hasClass('usePicklist')) {
+            var listtype = currentElement.closest('.clonedPopupUi').find('select.usePicklist').attr('type');
+            if (oldValue != '' && listtype == 'multipicklist') {
+               concatenatedValue = oldValue + ' |##| ' + newValue;
+            }else {
                concatenatedValue = newValue;
             }
          } else {
@@ -255,18 +308,26 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
          var valueType = jQuery(e.currentTarget).val();
          var useFieldContainer = jQuery('.useFieldContainer', data);
          var useFunctionContainer = jQuery('.useFunctionContainer', data);
+         var usePicklistContainer = jQuery('.usePicklistContainer', data);
          var uiType = jQuery(e.currentTarget).find('option:selected').data('ui');
          jQuery('.fieldValue', data).hide();
          jQuery('[data-' + uiType + ']', data).show();
-         if (valueType == 'fieldname') {
+         if (valueType == 'rawtext' && document.getElementById('usePicklist').childElementCount > 1) {
+            useFieldContainer.addClass('hide');
+            useFunctionContainer.addClass('hide');
+            usePicklistContainer.removeClass('hide');
+         } else if (valueType == 'fieldname') {
             useFieldContainer.removeClass('hide');
             useFunctionContainer.addClass('hide');
+            usePicklistContainer.addClass('hide');
          } else if (valueType == 'expression') {
             useFieldContainer.removeClass('hide');
             useFunctionContainer.removeClass('hide');
+            usePicklistContainer.addClass('hide');
          } else {
             useFieldContainer.addClass('hide');
             useFunctionContainer.addClass('hide');
+            usePicklistContainer.addClass('hide');
          }
          jQuery('.helpmessagebox', data).addClass('hide');
          jQuery('#' + valueType + '_help', data).removeClass('hide');
@@ -568,10 +629,20 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
    },
    preSaveVTUpdateFieldsTask: function (tasktype) {
       var values = this.getValues(tasktype);
+      for(var i of Object.keys(values)){
+         if(values[i].fieldname == 'assigned_user_id'){
+            values[i].value = this.getAssignedUserId(values[i].value, '#save_fieldvaluemapping');
+         }
+      }
       jQuery('[name="field_value_mapping"]').val(JSON.stringify(values));
    },
    preSaveVTCreateEntityTask: function (tasktype) {
       var values = this.getValues(tasktype);
+      for(var i of Object.keys(values)){
+         if(values[i].fieldname == 'assigned_user_id'){
+            values[i].value = this.getAssignedUserId(values[i].value, '#save_fieldvaluemapping');
+         }
+      }
       jQuery('[name="field_value_mapping"]').val(JSON.stringify(values));
    },
    preSaveVTEmailTask: function (tasktype) {
@@ -625,42 +696,15 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
                var field = fieldList[key];
                if (field == 'value' && valueSelectElement.is('select')) {
                   rowValues[field] = valueSelectElement.find('option:selected').val();
-               } else {
-                  rowValues[field] = jQuery('[name="' + field + '"]', rowElement).val();
-               }
-            }
-         } else if (fieldType == 'picklist' || fieldType == 'multipicklist') {
-            for (var key in fieldList) {
-               var field = fieldList[key];
-               if (field == 'value' && valueSelectElement.is('input')) {
-                  var commaSeperatedValues = valueSelectElement.val();
-                  var pickListValues = valueSelectElement.data('picklistvalues');
-                  var valuesArr = commaSeperatedValues.split(',');
-                  var newvaluesArr = [];
-                  for (i = 0; i < valuesArr.length; i++) {
-                     if (typeof pickListValues[valuesArr[i]] != 'undefined') {
-                        newvaluesArr.push(pickListValues[valuesArr[i]]);
-                     } else {
-                        newvaluesArr.push(valuesArr[i]);
-                     }
-                  }
-                  var reconstructedCommaSeperatedValues = newvaluesArr.join(',');
-                  rowValues[field] = reconstructedCommaSeperatedValues;
-               } else if (field == 'value' && valueSelectElement.is('select') && fieldType == 'picklist') {
+               } else if (field == 'value' && valueSelectElement.is('input')) {
                   rowValues[field] = valueSelectElement.val();
-               } else if (field == 'value' && valueSelectElement.is('select') && fieldType == 'multipicklist') {
-                  var value = valueSelectElement.val();
-                  if (value == null) {
-                     rowValues[field] = value;
-                  } else {
-                     rowValues[field] = value.join(',');
-                  }
                } else {
                   rowValues[field] = jQuery('[name="' + field + '"]', rowElement).val();
                }
             }
-
          } else if (fieldType == 'text') {
+            // Workflowアクション設定：picklist型処理をString型と同じ処理にするため、条件変更
+            // Workflowアクション設定：multipicklist型処理をString型と同じ処理にするため、条件変更
             for (var key in fieldList) {
                var field = fieldList[key];
                if (field == 'value') {
@@ -701,6 +745,34 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
          app.helper.hideProgress();
          jQuery(".taskStatus").bootstrapSwitch();
       });
+   },
+
+   getAssignedUserId: function (username, selector) {
+      var users = this.getAssignedUsers(selector);
+      values = username.split(' ');
+      if(values.length == 1){
+         if(values[0] in users){ // グループの場合
+            return users[values[0]];
+         }
+         values[1] = '';
+      }
+      return users[values[0]+' '+values[1]];
+   },
+   getAssignedUsers: function (selector) {
+      var advanceFilterContainer = jQuery(selector);
+      var fieldUiHolder = jQuery('input[name="assigned_user_id"]',advanceFilterContainer).closest('.fieldUiHolder');
+      var fieldInfo = fieldUiHolder.find('[name="valuetype"]').data('fieldinfo');
+      var username = new Array;
+      if(fieldInfo){
+         var picklistvalue = fieldInfo.picklistvalues;
+         for(var optGroup in picklistvalue){
+            var optionGroupValues = picklistvalue[optGroup];
+            for(var option in optionGroupValues){
+               username[optionGroupValues[option]] = option;
+            }
+         }
+      }
+      return username;
    },
    
    /**
