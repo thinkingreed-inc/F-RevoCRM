@@ -1,6 +1,6 @@
 <?php
 // PDF
-$is_headlesschrome = true;// trueの場合：headless chromeを使用。falseの場合：TCPDFを使用。
+$is_headlesschrome = false;// trueの場合：headless chromeを使用。falseの場合：TCPDFを使用。
 $chromeurl = "http://localhost:30080/converthtmltopdf.php";// headlless chromeの場所またはコマンド
 #$chromeurl = "google-chrome";// headlless chromeの場所（Linux）
 #$chromeurl = "\"C:\Program Files\Google\Chrome\Application\chrome.exe\"";// headlless chromeの場所（Windows）
