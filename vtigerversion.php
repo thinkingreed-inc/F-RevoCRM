@@ -8,9 +8,9 @@
  * All Rights Reserved.
  ************************************************************************************/
 
-$patch_version = '20210907'; // -ve timestamp before release, +ve timestamp after release.
+$patch_version = '20230508'; // -ve timestamp before release, +ve timestamp after release.
 $modified_database = '';
-$vtiger_current_version = '7.3.6';
+$vtiger_current_version = '7.3.7';
 $_SESSION['vtiger_version'] = $vtiger_current_version;
 
 ?>
