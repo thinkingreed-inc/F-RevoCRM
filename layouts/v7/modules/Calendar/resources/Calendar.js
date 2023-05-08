@@ -1519,7 +1519,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			var popOverHTML = '<span>' + timeString;
 
 			if(eventObj.assigned_user_id && eventObj.assigned_user_id != '') {
-				popOverHTML += '<a href="index.php?module=Users&parent=Settings&view=Detail&record=' + eventObj.userid + '">'+eventObj.assigned_user_id+'</a>';
+				popOverHTML += '  ' + eventObj.assigned_user_id;
 				popOverHTML += '<br>';
 			}
 
