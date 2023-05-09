@@ -87,11 +87,13 @@ class Reports_Field_Model extends Vtiger_Field_Model {
 				'visibility', // 非表示に設定されたレコードはレポートに表示されない
 				'duration_hours', 'duration_minutes', 'notime', // 入力できない項目
 				'time_end', 'recurringtype', 'parent_id', 'activitytype', // Eventsには存在するがCalendarには無い項目
+				'starred', // displaytype 6
 				);
 		}elseif($moduleName == 'Events'){
 			$UnavailableFields = array(
 				'visibility',
-				'duration_hours', 'duration_minutes', 'notime', // 入力できない項目
+				'duration_hours', 'duration_minutes', 'notime',
+				'starred',
 				);
 		}
 

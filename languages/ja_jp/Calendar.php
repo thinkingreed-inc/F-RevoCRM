@@ -39,6 +39,7 @@ $languageStrings = array(
 	'Send Notification'=>'通知',
 	'Location'=>'場所',
 	'End Date & Time' => '終了日時',
+	'End Date' => '終了日時',
 	'Visibility' => '表示',
 	'Recurrence' => '繰り返し',
 	
