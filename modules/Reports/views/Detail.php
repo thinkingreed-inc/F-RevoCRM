@@ -254,13 +254,13 @@ class Reports_Detail_View extends Vtiger_Index_View {
 		if($moduleName == 'Calendar'){
 			$UnavailableFields = array(
 				'visibility', // 非表示に設定されたレコードはレポートに表示されない項目
-				'duration_hours', 'duration_minutes', 'notime', 'source', // 入力できない項目
+				'duration_hours', 'duration_minutes', 'notime', // 入力できない項目
 				'time_end', 'recurringtype', 'parent_id', 'activitytype', // Eventsには存在するがCalendarには無い項目
 				);
 		}elseif($moduleName == 'Events'){
 			$UnavailableFields = array(
 				'visibility', // 非表示に設定されたレコードはレポートに表示されない
-				'duration_hours', 'duration_minutes', 'notime', 'source', // 入力できない項目
+				'duration_hours', 'duration_minutes', 'notime', // 入力できない項目
 				);
 		}
 
