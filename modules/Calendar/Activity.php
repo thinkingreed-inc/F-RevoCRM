@@ -547,8 +547,12 @@ function insertIntoRecurringTable(& $recurObj)
 			if(empty($inviteeid)) {
 				continue;
 			}
-			$query="INSERT INTO vtiger_invitees VALUES (?,?,?)";
-			$adb->pquery($query, array($this->invitee_parentid, $inviteeid, 'sent'));
+			$result = $adb->pquery("SELECT 1 FROM vtiger_invitees WHERE activityid = ? AND inviteeid = ?", array($this->invitee_parentid, $inviteeid));
+			// 招待活動が存在しない場合は、作成する。
+			if($adb->num_rows($result) == 0) {
+				$query="INSERT INTO vtiger_invitees VALUES (?,?,?)";
+				$adb->pquery($query, array($this->invitee_parentid, $inviteeid, 'sent'));
+			}
 
 			$result = $adb->pquery("SELECT 1 FROM vtiger_activity a INNER JOIN vtiger_crmentity c ON c.crmid = a.activityid WHERE c.deleted = 0 AND c.smownerid = ? AND a.invitee_parentid = ?", array($inviteeid, $this->invitee_parentid));
 			if($adb->num_rows($result) == 0) {

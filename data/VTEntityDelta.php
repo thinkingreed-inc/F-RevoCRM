@@ -90,6 +90,10 @@ class VTEntityDelta extends VTEventHandler {
 		return self::$entityDelta[$moduleName][$recordId];
 	}
 
+	function setEntityDelta($moduleName, $recordId, $entityDelta) {
+		return self::$entityDelta[$moduleName][$recordId] = $entityDelta;
+	}
+
 	function getOldValue($moduleName, $recordId, $fieldName) {
 		$entityDelta = self::$entityDelta[$moduleName][$recordId];
 		return $entityDelta[$fieldName]['oldValue'];
