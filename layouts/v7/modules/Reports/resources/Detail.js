@@ -68,6 +68,8 @@ Vtiger_Detail_Js("Reports_Detail_Js",{},{
 					// To get total records count
 					var count  = parseInt(jQuery('#updatedCount').val());
 					thisInstance.generateReportCount(count);
+
+                    thisInstance.registerConditionBlockChangeEvent();
 				}
 			);
 		});
