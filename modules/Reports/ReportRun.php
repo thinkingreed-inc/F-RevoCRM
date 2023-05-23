@@ -1294,9 +1294,9 @@ class ReportRun extends CRMEntity {
 						}
 						
 						if($fieldDataType == 'time') {
-							$value = $value . ':00';
+							$value = Vtiger_Time_UIType::getTimeValueWithSeconds($value);
 							$valuearray = array_map(function ($n) {
-								return $n . ':00';
+								return Vtiger_Time_UIType::getTimeValueWithSeconds($n);
 							}, $valuearray);
 						}
 
