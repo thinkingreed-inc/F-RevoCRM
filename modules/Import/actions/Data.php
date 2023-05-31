@@ -653,6 +653,13 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 					$allPicklistValues[] = $picklistDetails['value'];
 				}
 
+				//$fieldValueが日本語の場合に翻訳可能か調べる。
+				foreach($allPicklistDetails as $picklistDetails){
+					if($fieldValue == $picklistDetails['label']){
+						$fieldValue = $picklistDetails['value'];
+					}
+				}
+
 				$picklistValueInLowerCase = strtolower($fieldValue);
 				$allPicklistValuesInLowerCase = array_map('strtolower', $allPicklistValues);
 				if (sizeof($allPicklistValuesInLowerCase) > 0 && sizeof($allPicklistValues) > 0) {
@@ -1057,7 +1064,9 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 							}
 						} else if (!in_array($fieldName, array('date_start', 'due_date'))) {
 							if ($fieldModel) {
-								$recordData[$fieldName] = $fieldModel->getDisplayValue($fieldValue);
+								if ($fieldDataType != 'picklist'){
+									$recordData[$fieldName] = $fieldModel->getDisplayValue($fieldValue);
+								}
 							}
 						}
 					}
