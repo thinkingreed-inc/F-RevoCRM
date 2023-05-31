@@ -13,7 +13,7 @@ Vtiger Public License 1.2
 ## サーバ推奨要件
 * 2コア以上、4GB以上のメモリ、40GB以上の空き容量（利用人数・用途によってスペックが大幅に変わる）
 * Apache 2.4以上
-* PHP 5.6 / 7.2以上（8.0以上は除く）
+* PHP 7.4以上（8.0以上は除く）
   * php-imap
   * php-curl
   * php-xml
@@ -26,6 +26,8 @@ Vtiger Public License 1.2
   * storage_engine = InnoDB
   * local_infile = ON (under [mysqld] section)
   * sql_mode = NO_ENGINE_SUBSTITUTION for MySQL 5.6+
+
+※PHPの下位バージョンでも概ね動作しますが、未検証のため推奨から除外しています。
 
 ## F-RevoCRMへのアクセスについて
 本アプリケーションはWebアプリケーションとなりますので、URLへ直接アクセスしてください。  
