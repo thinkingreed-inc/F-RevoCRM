@@ -86,6 +86,9 @@ $db->query('update vtiger_relatedlists set relationfieldid = "598" where relatio
 // PDFテンプレートのアップデート
 require_once ("scripts/64_Update_PDFTemplate.php");
 
+//祝日管理をシステム設定のメニュー欄に表示
+require_once('setup/scripts/Add_holiday.php');
+
 // メニュー設定
 // FRMenuSetting::apply(array(
 //     'Accounts',
