@@ -70,33 +70,35 @@ class Settings_HolidayManager_Record_Model extends Settings_LanguageConverter_Re
         $adb->pquery("DELETE FROM $table WHERE id = ?", array($this->id));
     }
     
-    public function checkHolidays($year){
+    public function hasRegisteredHolidays($year){
         global $adb;   
         
         $result = $adb->pquery("SELECT  year FROM vtiger_holiday WHERE year = ?", array($year));
         if(!empty($adb->query_result($result, 0, "year"))){
             return true;
         }else{
-            self::getHolidays($year);
-            return true;
+            return false;
         }
     }
 
-    function getHolidays($year){
-        $apiurl = 'https://holidays-jp.github.io/api/v1/'.$year.'/date.json';
-
+    public function RegisterHolidays($year){
         $db = PearDatabase::getInstance();
+        /*
+        Copyright (c) 2023 holidays-jp
+        Released under the MIT license
+        https://github.com/holidays-jp/api/blob/master/LICENCE
+        */
+        $apiurl = 'https://holidays-jp.github.io/api/v1/'.$year.'/date.json';
         $jsonholiday = mb_convert_encoding(file_get_contents($apiurl), 'UTF8', 'ASCII,JIS,UTF-8,EUC-JP,SJIS-WIN');
-        $jsonholiday = json_decode($jsonholiday);
-        
+        $jsonholiday = json_decode($jsonholiday);   
         foreach($jsonholiday as $key => $value){
             $key = DateTimeField::convertToDBTimeZone($key);
             $key = $key->format('Y-m-d H:i:s');
             $query = "INSERT INTO vtiger_holiday (date, holidayname,year) VALUES(?,?,?)";
             $db->pquery($query,array($key,$value,$year));
         }
-
     }
+
     public function getRecordLinks() {
         $editLink = array(
             'linkurl' => "javascript:Settings_HolidayManager_Js.triggerEdit(event, '".$this->getId()."')",

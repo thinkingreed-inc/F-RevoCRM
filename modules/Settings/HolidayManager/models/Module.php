@@ -9,7 +9,7 @@
  * All Rights Reserved.
  ************************************************************************************/
 
-class Settings_HolidayManager_Module_Model extends Settings_LanguageConverter_Module_Model{
+class Settings_HolidayManager_Module_Model extends Settings_Vtiger_Module_Model{
     var $baseTable = 'vtiger_holiday';
 	var $baseIndex = 'id';
 	var $listFields = array( 'holidayname' => 'HolidayName', 'date' => 'HolidayDate',);
@@ -25,11 +25,13 @@ class Settings_HolidayManager_Module_Model extends Settings_LanguageConverter_Mo
         if(!Vtiger_Utils::CheckTable(self::$TABLE_NAME)){
             return;
         }
-        if(!Settings_HolidayManager_Record_Model::checkHolidays(date('Y',strtotime($start)))){
-            return;
+        if(!Settings_HolidayManager_Record_Model::hasRegisteredHolidays(date('Y',strtotime($start)))){
+
+            Settings_HolidayManager_Record_Model::RegisterHolidays(date('Y',strtotime($start)));
         }
-        if(!Settings_HolidayManager_Record_Model::checkHolidays(date('Y',strtotime($end)))){
-            return;
+        if(!Settings_HolidayManager_Record_Model::hasRegisteredHolidays(date('Y',strtotime($end)))){
+
+            Settings_HolidayManager_Record_Model::RegisterHolidays(date('Y',strtotime($end)));
         }
         global $adb;
         $table = self::$TABLE_NAME;
