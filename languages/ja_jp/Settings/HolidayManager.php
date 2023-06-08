@@ -19,6 +19,6 @@ $languageStrings = array(
 );
 
 $jsLanguageStrings = array(
-	'JS_RULE_DETAILS_SAVED' => '文言変更ルールを保存しました。',
-	'JS_RULE_DELETED_SUEESSFULLY' => '文言変更ルールを削除しました。',
+	'JS_HOLIDAY_DETAILS_SAVED' => '祝日を保存しました。',
+	'JS_HOLIDAY_DELETED_SUEESSFULLY' => '祝日を削除しました。',
 );

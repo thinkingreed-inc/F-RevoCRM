@@ -109,4 +109,20 @@ class Settings_HolidayManager_Record_Model extends Settings_LanguageConverter_Re
         $db->pquery("INSERT INTO vtiger_holiday_api (exist, year) VALUES(?,?)",array(1,$year));
 
     }
+    public function getRecordLinks() {
+        $editLink = array(
+            'linkurl' => "javascript:Settings_HolidayManager_Js.triggerEdit(event, '".$this->getId()."')",
+            'linklabel' => 'LBL_EDIT',
+            'linkicon' => 'icon-pencil'
+        );
+        $editLinkInstance = Vtiger_Link_Model::getInstanceFromValues($editLink);
+        
+        $deleteLink = array(
+            'linkurl' => "javascript:Settings_HolidayManager_Js.triggerDelete(event,'".$this->getId()."')",
+            'linklabel' => 'LBL_DELETE',
+            'linkicon' => 'icon-trash'
+        );
+        $deleteLinkInstance = Vtiger_Link_Model::getInstanceFromValues($deleteLink);
+        return array($editLinkInstance,$deleteLinkInstance);
+    }
 }

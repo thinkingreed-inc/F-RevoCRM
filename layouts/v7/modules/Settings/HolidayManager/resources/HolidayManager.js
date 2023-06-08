@@ -49,7 +49,7 @@ Vtiger.Class('Settings_HolidayManager_Js', {
             app.request.post({"data":params}).then(function(error, data){
                 if(error == null){
 					instance.loadListViewContents();
-                    var successfullSaveMessage = app.vtranslate('JS_RULE_DELETED_SUEESSFULLY');
+                    var successfullSaveMessage = app.vtranslate('JS_HOLIDAY_DELETED_SUEESSFULLY');
                     app.helper.showSuccessNotification({'message':successfullSaveMessage});
                 } else {
                     app.helper.showErrorNotification({'message' : error.message});
@@ -119,7 +119,7 @@ Vtiger.Class('Settings_HolidayManager_Js', {
 			function(err,data) {
 				if(err === null) {
                     app.helper.hideModal();
-                    var successfullSaveMessage = app.vtranslate('JS_RULE_DETAILS_SAVED');
+                    var successfullSaveMessage = app.vtranslate('JS_HOLIDAY_DETAILS_SAVED');
                     app.helper.showSuccessNotification({'message':successfullSaveMessage});
 					thisInstance.loadListViewContents();
 				}else {
@@ -164,7 +164,7 @@ Vtiger.Class('Settings_HolidayManager_Js', {
 			function(err,data) {
                 if(err === null){
                     app.helper.hideModal();
-                    var successfullSaveMessage = app.vtranslate('JS_RULE_DELETED_SUEESSFULLY');
+                    var successfullSaveMessage = app.vtranslate('JS_HOLIDAY_DELETED_SUEESSFULLY');
                     app.helper.showSuccessNotification({'message':successfullSaveMessage});
                     currentTrEle.fadeOut('slow').remove();
                 }else {
