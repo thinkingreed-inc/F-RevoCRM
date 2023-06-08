@@ -54,6 +54,9 @@ class Settings_HolidayManager_Module_Model extends Settings_LanguageConverter_Mo
 
 
     }
+    public function getCreateRecordUrl() {
+        return "javascript:Settings_HolidayManager_Js.triggerAdd(event)";
+    }
 
 }
 
