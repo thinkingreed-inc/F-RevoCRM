@@ -21,17 +21,10 @@ $adb->query("CREATE TABLE vtiger_holiday (
     id int(19) NOT NULL AUTO_INCREMENT,
     holidayname varchar(100) NOT NULL,
     date DATE NOT NULL,
-    holidaystatus varchar(100),
-    PRIMARY KEY (id)
+    year int(10) ,
+    PRIMARY KEY (id),
+    INDEX year_index(year)
     ) AUTO_INCREMENT=1 DEFAULT CHARSET=utf8");
-
-$db->query("CREATE TABLE vtiger_holiday_api (
-    id int(19) NOT NULL AUTO_INCREMENT,
-    exist int(10) NOT NULL,
-    year int(100) NOT NULL,
-    PRIMARY KEY (id)
-    ) AUTO_INCREMENT=1 DEFAULT CHARSET=utf8");
-
 
 
 if($adb->num_rows($result) == 0){

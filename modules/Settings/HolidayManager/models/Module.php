@@ -18,35 +18,32 @@ class Settings_HolidayManager_Module_Model extends Settings_LanguageConverter_Mo
 
     public static $TABLE_NAME = "vtiger_holiday";
     public function getEditableFieldsList() {
-        return array('holidayname', 'date', 'holidaystatus');
+        return array('holidayname', 'date');
     }
 
     public static function pullEvent($start,$end){
         if(!Vtiger_Utils::CheckTable(self::$TABLE_NAME)){
             return;
         }
-        if(!Settings_HolidayManager_Record_Model::checkholidayfromapi(date('Y',strtotime($start)))){
+        if(!Settings_HolidayManager_Record_Model::checkHolidays(date('Y',strtotime($start)))){
             return;
         }
-        if(!Settings_HolidayManager_Record_Model::checkholidayfromapi(date('Y',strtotime($end)))){
+        if(!Settings_HolidayManager_Record_Model::checkHolidays(date('Y',strtotime($end)))){
             return;
         }
         global $adb;
         $table = self::$TABLE_NAME;
 
-        $result = $adb->query("SELECT id,holidayname,date,holidaystatus FROM $table WHERE date>='$start' AND date<='$end'");
-        $fdsafsa = $adb->num_rows($result);
+        $result = $adb->query("SELECT id,holidayname,date FROM $table WHERE date>='$start' AND date<='$end'");
         for($i=0; $i<$adb->num_rows($result); $i++) {
             $id = $adb->query_result($result, $i, 'id');
             $holidayname = $adb->query_result($result, $i, 'holidayname');
             $holidaydate = $adb->query_result($result, $i, 'date');
-            $holidaystatus = $adb->query_result($result, $i, 'holidaystatus');
 
             $item[] = array(
                 'id' => $id,
                 'title' => $holidayname,
                 'start' => $holidaydate,
-                'status' => $holidaystatus,
                 'module' => 'HolidayManager'
             );
         }

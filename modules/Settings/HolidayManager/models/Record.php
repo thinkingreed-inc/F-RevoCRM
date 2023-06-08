@@ -19,12 +19,11 @@ class Settings_HolidayManager_Record_Model extends Settings_LanguageConverter_Re
         }
 
         $table = Settings_HolidayManager_Module_Model::$TABLE_NAME;
-        $result = $adb->pquery("SELECT id, holidayname, date, holidaystatus FROM $table WHERE id = ?", array($id));
+        $result = $adb->pquery("SELECT id, holidayname, date FROM $table WHERE id = ?", array($id));
         if($adb->num_rows($result) > 0) {
             $record->set("id", $adb->query_result($result, 0, "id"));
             $record->set("holidayname" ,$adb->query_result($result, 0, "holidayname"));
             $record->set("date", $adb->query_result($result, 0, "date"));
-            $record->set("holidaystatus", $adb->query_result($result, 0, "holidaystatus"));
             $record->id = $record->get("id");
         }
 
@@ -42,11 +41,8 @@ class Settings_HolidayManager_Record_Model extends Settings_LanguageConverter_Re
     private function insert() {
         global $adb;
         $table = Settings_HolidayManager_Module_Model::$TABLE_NAME;
-        $fdsafas = $this->get("holidayname");
-        $fdsa = $this->get("date");
-        $fdsfdfdf =  $this->get("holidaystatus");
-        $adb->pquery("INSERT INTO $table(holidayname, date, holidaystatus) values (?, ?, ?)",
-        array($this->get("holidayname"), $this->get("date"), $this->get("holidaystatus"),));
+        $adb->pquery("INSERT INTO $table(holidayname, date) values (?, ?)",
+        array($this->get("holidayname"), $this->get("date"),));
 
         $result = $adb->query("SELECT MAX(id) as currentid FROM $table");
         if($adb->num_rows($result)) {
@@ -58,8 +54,8 @@ class Settings_HolidayManager_Record_Model extends Settings_LanguageConverter_Re
         global $adb;
         $table = Settings_HolidayManager_Module_Model::$TABLE_NAME;
 
-        $adb->pquery("UPDATE $table SET holidayname = ?, date = ?, holidaystatus =? WHERE id = ?",
-        array($this->get("holidayname"), $this->get("date"), $this->get("holidaystatus"),  $this->getId()));
+        $adb->pquery("UPDATE $table SET holidayname = ?, date = ? WHERE id = ?",
+        array($this->get("holidayname"), $this->get("date"),   $this->getId()));
     }
 
     public function delete() {
@@ -74,26 +70,19 @@ class Settings_HolidayManager_Record_Model extends Settings_LanguageConverter_Re
         $adb->pquery("DELETE FROM $table WHERE id = ?", array($this->id));
     }
     
-    public function checkholidayfromapi($year){
+    public function checkHolidays($year){
         global $adb;   
         
-        if(!Vtiger_Utils::CheckTable('vtiger_holiday_api')){
-            return false;
-        }
-        $result = $adb->pquery("SELECT  exist FROM vtiger_holiday_api WHERE year = ?", array($year));
-        
-            $fadsafa = $adb->num_rows($result);
-            $fasdsasa = $adb->query_result($result, 0, "exist");
-        if($adb->query_result($result, 0, "exist") == 1){
+        $result = $adb->pquery("SELECT  year FROM vtiger_holiday WHERE year = ?", array($year));
+        if(!empty($adb->query_result($result, 0, "year"))){
             return true;
         }else{
-            file_put_contents("sampleholiday.txt",json_encode($year, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE),FILE_APPEND );
-            self::getholidayfromapi($year);
+            self::getHolidays($year);
             return true;
         }
     }
 
-    function getholidayfromapi($year){
+    function getHolidays($year){
         $apiurl = 'https://holidays-jp.github.io/api/v1/'.$year.'/date.json';
 
         $db = PearDatabase::getInstance();
@@ -103,10 +92,9 @@ class Settings_HolidayManager_Record_Model extends Settings_LanguageConverter_Re
         foreach($jsonholiday as $key => $value){
             $key = DateTimeField::convertToDBTimeZone($key);
             $key = $key->format('Y-m-d H:i:s');
-            $query = "INSERT INTO vtiger_holiday (date, holidayname) VALUES(?,?)";
-            $db->pquery($query,array($key,$value));
+            $query = "INSERT INTO vtiger_holiday (date, holidayname,year) VALUES(?,?,?)";
+            $db->pquery($query,array($key,$value,$year));
         }
-        $db->pquery("INSERT INTO vtiger_holiday_api (exist, year) VALUES(?,?)",array(1,$year));
 
     }
     public function getRecordLinks() {

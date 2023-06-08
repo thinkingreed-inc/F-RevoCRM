@@ -15,7 +15,6 @@ $languageStrings = array(
     'LBL_EDIT_HOLIDAY' => '祝日の編集',
     'HolidayName' => '祝日名',
     'HolidayDate' => '日付',
-    'HolidayStatus' => 'ステータス',
 );
 
 $jsLanguageStrings = array(
