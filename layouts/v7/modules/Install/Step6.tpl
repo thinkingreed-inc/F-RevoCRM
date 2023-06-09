@@ -67,6 +67,18 @@
 			<div class="row offset2">
 				<div class="col-sm-2"></div>
 				<div class="col-sm-8">
+					ご入力いただいた個人情報はF-RevoCRMの開発、運営会社であるシンキングリード株式会社（以下、当社）によって<a href='https://f-revocrm.jp/privacy/' target='_blank'>プライバシーポリシー</a>を遵守し適切に管理されます。<br>
+					入力されたメールアドレスは以下の目的及び用途のために利用、管理し、この版にを超える取り扱いは致しません。<br>
+					<ul>
+						<li>当社の製品およびサービスに関する情報提供やアンケート調査</li>
+						<li>当社に関連するセミナーのご案内</li>
+					</ul><br>
+					上記に問題ない場合は次へボタンでお進みください。
+				</div>
+			</div>
+			<div class="row offset2">
+				<div class="col-sm-2"></div>
+				<div class="col-sm-8">
 					<div class="button-container">
 						<input type="button" class="btn btn-large btn-primary" value="{vtranslate('LBL_NEXT','Install')}" name="step7"/>
 					</div>
