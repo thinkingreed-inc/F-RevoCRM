@@ -123,6 +123,17 @@ class Reports_Detail_View extends Vtiger_Index_View {
 		}
 		// End
 
+		if($primaryModule == 'Calendar'){
+			$relatedModuleName = 'Events';
+			$relatedModuleModel = Vtiger_Module_Model::getInstance($relatedModuleName);
+			$relatedRecordStructureInstance = Vtiger_RecordStructure_Model::getInstanceForModule($relatedModuleModel, Vtiger_RecordStructure_Model::RECORD_STRUCTURE_MODE_FILTER);
+			$eventBlocksFields = Reports_Field_Model::removeUnavailableFields($relatedModuleName, $relatedRecordStructureInstance->getStructure());
+			$viewer->assign('EVENT_RECORD_STRUCTURE_MODEL', $relatedRecordStructureInstance);
+			$viewer->assign('EVENT_RECORD_STRUCTURE', $eventBlocksFields);
+
+			$primaryModuleRecordStructure = Reports_Field_Model::removeUnavailableFields($primaryModule, $primaryModuleRecordStructure);
+		}
+
 		$viewer->assign('PRIMARY_MODULE_RECORD_STRUCTURE', $primaryModuleRecordStructure);
 		$viewer->assign('SECONDARY_MODULE_RECORD_STRUCTURES', $secondaryModuleRecordStructures);
 
@@ -236,5 +247,4 @@ class Reports_Detail_View extends Vtiger_Index_View {
 		$headerScriptInstances = array_merge($headerScriptInstances, $jsScriptInstances);
 		return $headerScriptInstances;
 	}
-
 }

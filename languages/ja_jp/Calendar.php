@@ -39,6 +39,7 @@ $languageStrings = array(
 	'Send Notification'=>'通知',
 	'Location'=>'場所',
 	'End Date & Time' => '終了日時',
+	'End Date' => '終了日時',
 	'Visibility' => '表示',
 	'Recurrence' => '繰り返し',
 	
@@ -190,6 +191,10 @@ $languageStrings = array(
 	'Duration' => '期間',
 	'Duration Minutes' => '期間(分)',
 	'No Time' => '時間なし',
+
+	// レポートのカラムをTODOと活動の共通項目とする
+	'LBL_CALENDAR_OR_EVENT' => 'カレンダー / 活動',
+	'DuplicateFields' => '共通項目',
 );
 
 $jsLanguageStrings = array(

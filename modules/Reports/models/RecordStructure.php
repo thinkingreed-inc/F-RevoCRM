@@ -46,6 +46,14 @@ class Reports_RecordStructure_Model extends Vtiger_RecordStructure_Model {
 			$recordStructureInstance = Vtiger_RecordStructure_Model::getInstanceForModule($moduleModel);
 			$moduleRecordStructure = array();
 			$calendarRecordStructure = $recordStructureInstance->getStructure();
+			// カレンダーのステータスが2つ表示されるため、taskstatusのみ表示させる。
+			foreach($calendarRecordStructure as $blockLabel =>$blockFields){
+				foreach($blockFields as $fieldName=>$fieldModel){
+					if($fieldName == "eventstatus"){
+						unset($calendarRecordStructure[$blockLabel][$fieldName]);
+					}
+				}
+			}
 			
 			$eventsModel = Vtiger_Module_Model::getInstance('Events');
 			$recordStructureInstance = Vtiger_RecordStructure_Model::getInstanceForModule($eventsModel);

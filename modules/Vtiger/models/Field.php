@@ -617,7 +617,7 @@ class Vtiger_Field_Model extends Vtiger_Field {
 			$fieldType = ChangeTypeOfData_Filter($tableName, $columnName, $fieldType);
 		}
 		$escapedFieldLabel = str_replace(' ', '_', $fieldLabel);
-		if($moduleName == 'Events') $moduleName = 'Calendar';
+		// if($moduleName == 'Events') $moduleName = 'Calendar';
 		$moduleFieldLabel = $moduleName.'_'.$escapedFieldLabel;
 
 		if($tableName == 'vtiger_crmentity' && $columnName !='smownerid'){

@@ -1037,11 +1037,29 @@ class ReportRun extends CRMEntity {
 					$selectedFields = explode(':', $fieldcolname);
 					$moduleFieldLabel = $selectedFields[2];
 					list($moduleName, $fieldLabel) = explode('_', $moduleFieldLabel, 2);
+
+					// Calendar(TODO)とEvents(活動)の項目を別々に用意するように変更した
+					// Eventsの場合、$is_Eventsフラグを立たせ、フィールドをCalendarに戻す
+					$is_Events = false;
+					if($moduleName == 'Events'){
+						$is_Events = true;
+
+						$moduleName = 'Calendar';
+						$moduleFieldLabel = implode('_',array($moduleName,$fieldLabel));
+						$selectedFields[2] = $moduleFieldLabel;
+						$str = $selectedFields[0];
+						if(substr($str, -6) === "Events"){
+							$selectedFields[0] = substr($str, 0, strlen($str) - 6) . "Calendar";
+						}
+						$fieldcolname = implode(':',$selectedFields);
+					}
+
 					$emailTableName = '';
 					if ($moduleName == "Emails" && $moduleName != $this->primarymodule && $selectedFields[0] == "vtiger_activity") {
 						$emailTableName = "vtiger_activityEmails";
 					}
 
+					$fieldvalue = "";
 					if ($fieldcolname != "" && $comparator != "") {
 						if (in_array($comparator, $dateSpecificConditions)) {
 							if ($fieldcolname != 'none') {
@@ -1097,7 +1115,15 @@ class ReportRun extends CRMEntity {
 										$endDateTime = "'$endDateTime'";
 									}
 
-									$advfiltergroupsql .= "$tableColumnSql BETWEEN $startDateTime AND $endDateTime";
+									$fieldvalue .= "$tableColumnSql BETWEEN $startDateTime AND $endDateTime";
+
+									if(!empty($fieldvalue) && $moduleName == 'Calendar' && !$is_Events){
+										$fieldvalue = "(".$fieldvalue." and vtiger_activity.activitytype = 'Task')";
+									}elseif(!empty($fieldvalue) && $is_Events){
+										$fieldvalue = "(".$fieldvalue." and vtiger_activity.activitytype <> 'Task')";
+									}
+		
+									$advfiltergroupsql .= $fieldvalue;
 									if (!empty($columncondition)) {
 										$advfiltergroupsql .= ' ' . $columncondition . ' ';
 									}
@@ -1140,9 +1166,9 @@ class ReportRun extends CRMEntity {
 									$start = "'$start'";
 									$end = "'$end'";
 									if ($comparator == 'e')
-										$advfiltergroupsql .= "$tableColumnSql BETWEEN $start AND $end";
+										$fieldvalue .= "$tableColumnSql BETWEEN $start AND $end";
 									else
-										$advfiltergroupsql .= "$tableColumnSql NOT BETWEEN $start AND $end";
+										$fieldvalue .= "$tableColumnSql NOT BETWEEN $start AND $end";
 								}else if ($comparator == 'bw') {
 									$values = explode(',', $value);
 									$startDateTime = explode(' ', $values[0]);
@@ -1158,16 +1184,16 @@ class ReportRun extends CRMEntity {
 									$userEndDate = $userEndDate . ' 23:59:59';
 									$end = getValidDBInsertDateTimeValue($userEndDate);
 
-									$advfiltergroupsql .= "$tableColumnSql BETWEEN '$start' AND '$end'";
+									$fieldvalue .= "$tableColumnSql BETWEEN '$start' AND '$end'";
 								} else if (in_array($comparator, Vtiger_Functions::getSpecialDateConditions())) {
 									$values = EnhancedQueryGenerator::getSpecialDateConditionValue($comparator, $value, $selectedFields[4]);
 									$tableColumnSql = $selectedFields[0] . '.' . $selectedFields[1];
 									$condtionQuery = EnhancedQueryGenerator::getSpecialDateConditionQuery($values['comparator'], $values['date']);
-									$advfiltergroupsql .= "date($tableColumnSql) $condtionQuery";
+									$fieldvalue .= "date($tableColumnSql) $condtionQuery";
 								} else if (in_array($comparator, Vtiger_Functions::getSpecialTimeConditions())) {
 									$values = EnhancedQueryGenerator::getSpecialDateConditionValue($comparator, $value, $selectedFields[4]);
 									$condtionQuery = EnhancedQueryGenerator::getSpecialDateConditionQuery($values['comparator'], $values['date']);
-									$advfiltergroupsql .= "$tableColumnSql $condtionQuery";
+									$fieldvalue .= "$tableColumnSql $condtionQuery";
 								} else if ($comparator == 'a' || $comparator == 'b') {
 									$value = explode(' ', $value);
 									$dateTime = new DateTime($value[0]);
@@ -1177,26 +1203,34 @@ class ReportRun extends CRMEntity {
 										$temp = strtotime($nextday) - 1;
 										$date = date('Y-m-d H:i:s', $temp);
 										$value = getValidDBInsertDateTimeValue($date);
-										$advfiltergroupsql .= "$tableColumnSql > '$value'";
+										$fieldvalue .= "$tableColumnSql > '$value'";
 									} else {
 										$prevday = $dateTime->format('Y-m-d H:i:s');
 										$temp = strtotime($prevday) - 1;
 										$date = date('Y-m-d H:i:s', $temp);
 										$value = getValidDBInsertDateTimeValue($date);
-										$advfiltergroupsql .= "$tableColumnSql < '$value'";
+										$fieldvalue .= "$tableColumnSql < '$value'";
 									}
-								}
-								if (!empty($columncondition)) {
-									$advfiltergroupsql .= ' ' . $columncondition . ' ';
 								}
 								$this->queryPlanner->addTable($selectedFields[0]);
 							} else if ($value == '') {
 								$sqlComparator = $this->getAdvComparator($comparator, $value, 'DT');
 								if($sqlComparator) {
-									$advfiltergroupsql .= " ".$selectedFields[0].".".$selectedFields[1].$sqlComparator;
+									$fieldvalue .= " ".$selectedFields[0].".".$selectedFields[1].$sqlComparator;
 								} else {
-									$advfiltergroupsql .= " " . $selectedFields[0] . "." . $selectedFields[1] . " = '' ";
+									$fieldvalue .= " " . $selectedFields[0] . "." . $selectedFields[1] . " = '' ";
 								}
+							}
+
+							if(!empty($fieldvalue) && $moduleName == 'Calendar' && !$is_Events){
+								$fieldvalue = "(".$fieldvalue." and vtiger_activity.activitytype = 'Task')";
+							}elseif(!empty($fieldvalue) && $is_Events){
+								$fieldvalue = "(".$fieldvalue." and vtiger_activity.activitytype <> 'Task')";
+							}
+
+							$advfiltergroupsql .= $fieldvalue;
+							if (!empty($columncondition)) {
+								$advfiltergroupsql .= ' ' . $columncondition . ' ';
 							}
 							continue;
 						}
@@ -1258,6 +1292,14 @@ class ReportRun extends CRMEntity {
 						} else {
 							$valuearray = array($value);
 						}
+						
+						if($fieldDataType == 'time') {
+							$value = Vtiger_Time_UIType::getTimeValueWithSeconds($value);
+							$valuearray = array_map(function ($n) {
+								return Vtiger_Time_UIType::getTimeValueWithSeconds($n);
+							}, $valuearray);
+						}
+
 						if (isset($valuearray) && count($valuearray) > 1 && $comparator != 'bw') {
 
 							$advcolumnsql = "";
@@ -1433,6 +1475,13 @@ class ReportRun extends CRMEntity {
 							}
 							$fieldvalue = $selectFieldTableName . "." . $selectedfields[1] . $this->getAdvComparator($comparator, trim($value), $datatype);
 						}
+
+						if(!empty($fieldvalue) && $moduleName == 'Calendar' && !$is_Events){
+							$fieldvalue = "(".$fieldvalue." and vtiger_activity.activitytype = 'Task')";
+						}elseif(!empty($fieldvalue) && $is_Events){
+							$fieldvalue = "(".$fieldvalue." and vtiger_activity.activitytype <> 'Task')";
+						}
+
 						$advfiltergroupsql .= $fieldvalue;
 						if (!empty($columncondition)) {
 							$advfiltergroupsql .= ' ' . $columncondition . ' ';
@@ -2538,7 +2587,7 @@ class ReportRun extends CRMEntity {
 			$query .= " ".$this->getRelatedModulesQuery($module,$this->secondarymodule).
 					getNonAdminAccessControlQuery($this->primarymodule,$current_user).
 					" WHERE vtiger_crmentity.deleted=0 and (vtiger_activity.activitytype != 'Emails')".
-					" and vtiger_activity.visibility != 'Private'";// カレンダー用 非公開のスケジュールは出力しない
+					" and (( vtiger_activity.visibility != 'Private' and vtiger_activity.activitytype <> 'Task' ) or vtiger_activity.activitytype = 'Task' )";// カレンダー用 非公開のスケジュールは出力しない
 		} else if ($module == "Quotes") {
 			$matrix = $this->queryPlanner->newDependencyMatrix();
 
@@ -2995,7 +3044,7 @@ class ReportRun extends CRMEntity {
 			$secondarymodule = explode(":", $this->secondarymodule);
 			foreach ($secondarymodule as $value) {
 				if ($value == 'Calendar') {
-					$wheresql .= " AND vtiger_activity.visibility != 'Private' ";
+					$wheresql .= " AND (( vtiger_activity.visibility != 'Private' AND vtiger_activity.activitytype <> 'Task' ) OR vtiger_activity.activitytype = 'Task' )";
 				}
 			}
 		}
