@@ -106,4 +106,39 @@ class Calendar_FilterRecordStructure_Model extends Vtiger_FilterRecordStructure_
 		return $values;
 	}
 
+	// TODOと活動で名前が同じ項目を取得
+	public function getDuplicateFields() {
+		$DuplicateFieldsArray = array();
+
+		$eventsModuleModel = Vtiger_Module_Model::getInstance('Events');
+        $eventsStructureModel = Vtiger_RecordStructure_Model::getInstanceForModule($eventsModuleModel, Vtiger_RecordStructure_Model::RECORD_STRUCTURE_MODE_FILTER);
+        $blockModelList = $eventsStructureModel->getModule()->getBlocks();
+		$values = array();
+		foreach ($blockModelList as $blockLabel => $blockModel) {
+			$fieldModelList = $blockModel->getFields();
+			if ($fieldModelList) {
+				foreach ($fieldModelList as $fieldName => $fieldModel) {
+					if ($fieldModel->isViewableInFilterView()) {
+						$values[$fieldName] = $fieldModel;
+					}
+				}
+			}
+		}
+
+		$moduleModel = $this->getModule();
+		$blockModelList = $moduleModel->getBlocks();
+        foreach ($blockModelList as $blockLabel => $blockModel) {
+            $fieldModelList = $blockModel->getFields();
+			if ($fieldModelList) {
+				foreach ($fieldModelList as $fieldName => $fieldModel) {
+					if ($fieldModel->isViewableInFilterView() && array_key_exists($fieldName, $values)) {
+						// 重複しているラベルがある場合
+						$DuplicateFieldsArray[$fieldName] = $fieldModel;
+					}
+				}
+			}
+        }
+
+		return $DuplicateFieldsArray;
+	}
 }
