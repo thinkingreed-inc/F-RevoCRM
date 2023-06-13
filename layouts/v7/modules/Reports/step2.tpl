@@ -45,9 +45,9 @@
                 <label>{vtranslate('LBL_SELECT_COLUMNS',$MODULE)}({vtranslate('LBL_MAX',$MODULE)} 60)</label>
                 <select data-placeholder="{vtranslate('LBL_ADD_MORE_COLUMNS',$MODULE)}" id="reportsColumnsList" style="width :100%;" class="select2-container select2 col-lg-11 columns"  data-rule-required="true" multiple="">
                     {foreach key=PRIMARY_MODULE_NAME item=PRIMARY_MODULE from=$PRIMARY_MODULE_FIELDS}
-                        {* カレンダーとTODOで共通する項目をブロック分けする *}
+                        {* 活動とTODOで共通する項目をブロック分けする *}
                         {if count($PRIMARY_DUPLICATE_FIELDS) > 0}
-                            <optgroup label='{vtranslate('LBL_CALENDAR_OR_EVENT', $PRIMARY_MODULE_NAME)}-{vtranslate('CommonItems',$PRIMARY_MODULE_NAME)}'>
+                            <optgroup label='{vtranslate('LBL_CALENDAR_OR_EVENT', $PRIMARY_MODULE_NAME)}-{vtranslate('DuplicateFields',$PRIMARY_MODULE_NAME)}'>
                                 {foreach key=FIELD_KEY item=FIELD_LABEL from=$PRIMARY_DUPLICATE_FIELDS}
                                     {if $PRIMARY_MODULE_NAME eq 'Calendar'}
                                         <option value="{$FIELD_KEY}" {if !empty($SELECTED_FIELDS) && in_array($FIELD_KEY,array_map('decode_html',$SELECTED_FIELDS))}selected=""{/if}>{vtranslate('LBL_CALENDAR_OR_EVENT', $PRIMARY_MODULE_NAME)}  {vtranslate($FIELD_LABEL, $PRIMARY_MODULE_NAME)}</option>
@@ -58,7 +58,7 @@
                         {foreach key=BLOCK_LABEL item=BLOCK from=$PRIMARY_MODULE}
                             <optgroup label='{vtranslate($PRIMARY_MODULE_NAME,$MODULE)}-{vtranslate($BLOCK_LABEL,$PRIMARY_MODULE_NAME)}'>
                                 {foreach key=FIELD_KEY item=FIELD_LABEL from=$BLOCK}
-                                    {* カレンダーとTODOで共通していない項目を各ブロックで表示する。 *}
+                                    {* 活動とTODOで共通していない項目を各ブロックで表示する。 *}
                                     {if !in_array($FIELD_LABEL, $PRIMARY_DUPLICATE_FIELDS)} 
                                         <option value="{$FIELD_KEY}" {if !empty($SELECTED_FIELDS) && in_array($FIELD_KEY,array_map('decode_html',$SELECTED_FIELDS))}selected=""{/if}>{vtranslate($PRIMARY_MODULE_NAME, $PRIMARY_MODULE_NAME)} {vtranslate($FIELD_LABEL, $PRIMARY_MODULE_NAME)}</option>
                                     {/if}
@@ -67,9 +67,9 @@
                         {/foreach}
                     {/foreach}
                     {foreach key=SECONDARY_MODULE_NAME item=SECONDARY_MODULE from=$SECONDARY_MODULE_FIELDS}
-                        {* カレンダーとTODOで共通する項目をブロック分けする *}
+                        {* 活動とTODOで共通する項目をブロック分けする *}
                         {if count($SECONDARY_DUPLICATE_FIELDS) > 0}
-                            <optgroup label='{vtranslate('LBL_CALENDAR_OR_EVENT', $SECONDARY_MODULE_NAME)}-{vtranslate('CommonItems',$SECONDARY_MODULE_NAME)}'>
+                            <optgroup label='{vtranslate('LBL_CALENDAR_OR_EVENT', $SECONDARY_MODULE_NAME)}-{vtranslate('DuplicateFields',$SECONDARY_MODULE_NAME)}'>
                                 {foreach key=FIELD_KEY item=FIELD_LABEL from=$SECONDARY_DUPLICATE_FIELDS}
                                     {if $SECONDARY_MODULE_NAME eq 'Calendar'}
                                         <option value="{$FIELD_KEY}" {if !empty($SELECTED_FIELDS) && in_array($FIELD_KEY,array_map('decode_html',$SELECTED_FIELDS))}selected=""{/if}>{vtranslate('LBL_CALENDAR_OR_EVENT', $SECONDARY_MODULE_NAME)}  {vtranslate($FIELD_LABEL, $SECONDARY_MODULE_NAME)}</option>
@@ -80,7 +80,7 @@
                         {foreach key=BLOCK_LABEL item=BLOCK from=$SECONDARY_MODULE}
                             <optgroup label='{vtranslate($SECONDARY_MODULE_NAME,$MODULE)}-{vtranslate($BLOCK_LABEL,$SECONDARY_MODULE_NAME)}'>
                                 {foreach key=FIELD_KEY item=FIELD_LABEL from=$BLOCK}
-                                    {* カレンダーとTODOで共通していない項目を各ブロックで表示する。 *}
+                                    {* 活動とTODOで共通していない項目を各ブロックで表示する。 *}
                                     {if !in_array($FIELD_LABEL, $SECONDARY_DUPLICATE_FIELDS)} 
                                         <option value="{$FIELD_KEY}"{if !empty($SELECTED_FIELDS) && in_array($FIELD_KEY,array_map('decode_html',$SELECTED_FIELDS))}selected=""{/if}>{vtranslate($SECONDARY_MODULE_NAME, $SECONDARY_MODULE_NAME)} {vtranslate($FIELD_LABEL, $SECONDARY_MODULE_NAME)}</option>
                                     {/if}

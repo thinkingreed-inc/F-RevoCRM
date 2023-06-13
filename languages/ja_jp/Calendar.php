@@ -194,7 +194,7 @@ $languageStrings = array(
 
 	// レポートのカラムをTODOと活動の共通項目とする
 	'LBL_CALENDAR_OR_EVENT' => 'カレンダー / 活動',
-	'CommonItems' => '共通項目',
+	'DuplicateFields' => '共通項目',
 );
 
 $jsLanguageStrings = array(
