@@ -225,6 +225,46 @@ Class Reports_Edit_View extends Vtiger_Edit_View {
 			$viewer->assign('IS_DUPLICATE', true);
 		}
 
+		// TODOと活動で名前が同じ項目を取得。
+		$primaryCheckDuplicateFieldsArray = array();
+		$primaryDuplicateFieldsArray = array();
+		if ($primaryModule == 'Calendar' || $primaryModule == 'Events') {
+			foreach ($primaryModuleFields as $primaryModuleName => $primaryValue) {
+				foreach ($primaryValue as $blocklabel => $blockdata) {
+					foreach ($blockdata as $fieldKey => $fieldLabel) {
+						if (array_key_exists($fieldLabel, $primaryCheckDuplicateFieldsArray)) {
+							// 重複しているラベルがある場合
+							$primaryDuplicateFieldsArray[$primaryCheckDuplicateFieldsArray[$fieldLabel]] = $fieldLabel;
+							continue;
+						}
+						$primaryCheckDuplicateFieldsArray[$fieldLabel] = $fieldKey;
+					}
+				}
+			}
+		}
+		$viewer->assign('PRIMARY_DUPLICATE_FIELDS', $primaryDuplicateFieldsArray);
+
+		// TODOと活動で名前が同じ項目を取得。
+		$secondaryCheckDuplicateFieldsArray = array();
+		$secondaryDuplicateFieldsArray = array();
+		foreach ($secondaryModules as $key => $secondaryModule) {
+			if ($secondaryModule == 'Calendar' || $secondaryModule == 'Events') {
+				foreach ($secondaryModuleFields as $secondaryModuleName => $secondaryValue) {
+					foreach ($secondaryValue as $blocklabel => $blockdata) {
+						foreach ($blockdata as $fieldKey => $fieldLabel) {
+							if (array_key_exists($fieldLabel, $secondaryCheckDuplicateFieldsArray)) {
+								// 重複しているラベルがある場合
+								$secondaryDuplicateFieldsArray[$secondaryCheckDuplicateFieldsArray[$fieldLabel]] = $fieldLabel;
+								continue;
+							}
+							$secondaryCheckDuplicateFieldsArray[$fieldLabel] = $fieldKey;
+						}
+					}
+				}
+			}
+		}
+		$viewer->assign('SECONDARY_DUPLICATE_FIELDS', $secondaryDuplicateFieldsArray);
+
 		$viewer->view('step2.tpl', $moduleName);
 	}
 

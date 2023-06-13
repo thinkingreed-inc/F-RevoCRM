@@ -740,7 +740,7 @@ class Reports extends CRMEntity{
 
 			//fix for Ticket #4016
 			if($module == "Calendar")
-				$sql.=" group by vtiger_field.fieldlabel order by sequence";
+				$sql.=" group by vtiger_field.fieldlabel, tabid order by sequence";
 			else
 			$sql.=" order by sequence";
 		}
@@ -757,7 +757,7 @@ class Reports extends CRMEntity{
 
 			//fix for Ticket #4016
 			if($module == "Calendar")
-				$sql.=" group by vtiger_field.fieldlabel order by sequence";
+				$sql.=" group by vtiger_field.fieldlabel, tabid order by sequence";
 			else
 				$sql.=" group by vtiger_field.fieldid order by sequence";
 		}
