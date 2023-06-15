@@ -302,11 +302,6 @@ Vtiger_Date_Field_Js('Workflows_Date_Field_Js',{},{
             } else if(comparatorSelectedOptionVal == 'between'){
                 var html = '<div class="date"><input class="dateField inputElement" style="width:auto;" data-calendar-type="range" name="'+ this.getName() +'" data-date-format="'+ this.getDateFormat() +'" type="text"  value="'+  this.getValue() + '"></div>';
                 var element = jQuery(html);
-                $(function(){
-                    $(element).keydown(function(event){
-                      return false;
-                    });
-                });
                 return this.addValidationToElement(element);
             } else if(this._specialDateComparator(comparatorSelectedOptionVal)) {
                 var html = '<input name="'+ this.getName() +'" type="text" value="'+this.getValue()+'" data-validation-engine="validate[funcCall[Vtiger_Base_Validator_Js.invokeValidation]]" data-validator="[{"name":"PositiveNumber"}]">\n\
