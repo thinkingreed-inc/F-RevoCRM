@@ -602,6 +602,8 @@ jQuery.Class("Vtiger_AdvanceFilter_Js",{
             }
 			thisInstance.loadConditions(currentElement);
 			thisInstance.loadFieldSpecificUi(currentElement);
+		});
+		filterContainer.on('change',function(e,data){
 			var popupelementtype = $('.getPopupUi').attr('data-date-format');
 			var selectbycalender = jQuery('.selectbycalender');
 			if(popupelementtype != undefined){
