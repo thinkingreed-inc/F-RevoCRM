@@ -110,7 +110,7 @@
 														{assign var="REFERENCED_MODULE_NAME" value=$REFERENCED_MODULE_STRUCT->get('name')}
 													{/if}
 													<span class="">
-														<select style="width: 150px;" class="select2 referenceModulesList">
+														<select style="width: 150px;" class="select2 referenceModulesList" {if !empty($REFERENCED_MODULE_NAME)} disabled {/if}>
 															{foreach key=index item=value from=$referenceList}
 																<option value="{$value}" {if $value eq $REFERENCED_MODULE_NAME} selected {/if} >{vtranslate($value, $value)}</option>
 															{/foreach}
