@@ -67,8 +67,16 @@ Class CustomView_EditAjax_View extends Vtiger_IndexAjax_View {
 			$itemsBlock = "LBL_ITEM_DETAILS";
 			unset($recordStructure[$itemsBlock]);
 		}
+		// カレンダーのステータスが2つ表示されるため、taskstatusのみ表示させる。
+		foreach($recordStructure as $blockLabel =>$blockFields){
+			foreach($blockFields as $fieldName=>$fieldModel){
+				if($fieldName == 'eventstatus'){
+					unset($recordStructure[$blockLabel][$fieldName]);
+				}
+			}
+		}
 		$viewer->assign('RECORD_STRUCTURE', $recordStructure);
-		// 活動とTODOで名前が同じ項目を取得
+		// 活動とTODOで名前が同じ項目を取得。レポートのstep2と同じ挙動を目指す
 		if($moduleName == 'Calendar'){
 			$DuplicateFieldsArray = $recordStructureInstance->getDuplicateFields();
 			$viewer->assign('DUPLICATE_FIELDS', $DuplicateFieldsArray);

@@ -118,8 +118,9 @@ class Calendar_FilterRecordStructure_Model extends Vtiger_FilterRecordStructure_
 			$fieldModelList = $blockModel->getFields();
 			if ($fieldModelList) {
 				foreach ($fieldModelList as $fieldName => $fieldModel) {
-					if ($fieldModel->isViewableInFilterView()) {
-						$values[$fieldName] = $fieldModel;
+					$fieldlabel = $fieldModel->get('label');
+					if ($fieldModel->isViewableInFilterView() && !empty($fieldlabel)) {
+						$values[] = $fieldlabel;
 					}
 				}
 			}
@@ -131,7 +132,11 @@ class Calendar_FilterRecordStructure_Model extends Vtiger_FilterRecordStructure_
             $fieldModelList = $blockModel->getFields();
 			if ($fieldModelList) {
 				foreach ($fieldModelList as $fieldName => $fieldModel) {
-					if ($fieldModel->isViewableInFilterView() && array_key_exists($fieldName, $values)) {
+					if($fieldName == 'eventstatus') {
+						continue;	
+					}
+					$fieldlabel = $fieldModel->get('label');
+					if ($fieldModel->isViewableInFilterView() && in_array($fieldlabel, $values)) {
 						// 重複しているラベルがある場合
 						$DuplicateFieldsArray[$fieldName] = $fieldModel;
 					}
