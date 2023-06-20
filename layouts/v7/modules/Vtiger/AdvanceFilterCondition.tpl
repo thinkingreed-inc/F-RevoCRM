@@ -59,6 +59,8 @@
                     {if !empty($SPECIAL_VALIDATOR)}data-validator='{Zend_Json::encode($SPECIAL_VALIDATOR)}'{/if}>
 					{if $SOURCE_MODULE neq $MODULE_MODEL->get('name')}
 						({vtranslate($MODULE_MODEL->get('name'), $MODULE_MODEL->get('name'))}) {vtranslate($FIELD_MODEL->get('label'), $MODULE_MODEL->get('name'))}
+					{elseif $SOURCE_MODULE eq 'Calendar'}{* カレンダーはTODOと活動で同名項目があるのでモジュール名を表示させる *}
+						({vtranslate('LBL_TASK', $MODULE_MODEL->get('name'))}) {vtranslate($FIELD_MODEL->get('label'), $MODULE_MODEL->get('name'))}
 					{else}
 						{vtranslate($FIELD_MODEL->get('label'), $SOURCE_MODULE)}
 					{/if}
