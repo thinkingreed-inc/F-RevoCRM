@@ -139,6 +139,7 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
          clonedPopupUi.find('.selectbycalender').datetimepicker({
             format:'Y-m-d H:i',
             step:10,
+            defaultTime:'00:00',
          });
          clonedPopupUi.on('click', '.selectbycalender', function () {
             $(".selectbycalender").change(function(){
