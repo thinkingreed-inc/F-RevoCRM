@@ -25,6 +25,14 @@
 					{else}
 						{assign var=columnNameApi value=getCustomViewColumnName}
 					{/if}
+					{* 使用できない項目を削除し、レポートと同じ挙動を目指す *}
+					{if ($MODULE_MODEL->get('name') eq 'Calendar' || $MODULE_MODEL->get('name') eq 'Events') && $FIELD_MODEL->isUnavailableFields()}
+						{continue}
+					{/if}
+					{* TODOのステータスが2つ表示されるため、taskstatusのみ表示させる。 *}
+					{if $MODULE_MODEL->get('name') eq 'Calendar' && $FIELD_MODEL->getName() eq 'eventstatus'}
+						{continue}
+					{/if}
 					<option value="{$FIELD_MODEL->$columnNameApi()}" data-fieldtype="{$FIELD_MODEL->getFieldType()}" data-field-name="{$FIELD_NAME}"
 					{if decode_html($FIELD_MODEL->$columnNameApi()) eq decode_html($CONDITION_INFO['columnname'])}
 						{assign var=FIELD_TYPE value=$FIELD_MODEL->getFieldType()}

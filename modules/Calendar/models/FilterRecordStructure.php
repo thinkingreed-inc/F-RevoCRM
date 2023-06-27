@@ -132,9 +132,6 @@ class Calendar_FilterRecordStructure_Model extends Vtiger_FilterRecordStructure_
             $fieldModelList = $blockModel->getFields();
 			if ($fieldModelList) {
 				foreach ($fieldModelList as $fieldName => $fieldModel) {
-					if($fieldName == 'eventstatus') {
-						continue;	
-					}
 					$fieldlabel = $fieldModel->get('label');
 					if ($fieldModel->isViewableInFilterView() && in_array($fieldlabel, $values)) {
 						// 重複しているラベルがある場合

@@ -69,6 +69,10 @@
 												{if $FIELD_MODEL->isMandatory()}
 													{array_push($MANDATORY_FIELDS, $FIELD_MODEL->getCustomViewColumnName())}
 												{/if}
+												{* ステータスが2つ表示されるため、taskstatusのみ表示させる。 *}
+												{if $FIELD_MODEL->getName() eq 'eventstatus'}
+													{continue}
+												{/if}
 												{assign var=FIELD_MODULE_NAME value=$FIELD_MODEL->getModule()->getName()}
 												<option value="{$FIELD_MODEL->getCustomViewColumnName()}" data-field-name="{$FIELD_NAME}"
 													{if in_array(decode_html($FIELD_MODEL->getCustomViewColumnName()), $SELECTED_FIELDS)}
