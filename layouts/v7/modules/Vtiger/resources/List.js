@@ -620,10 +620,15 @@ Vtiger.Class("Vtiger_List_Js", {
 					fieldInfo.type == "picklist") {
 				searchOperator = 'e';
 			}
-			var storedOperator = searchContributorElement.parent().parent().find('.operatorValue').val();
-			if (storedOperator) {
-				searchOperator = storedOperator;
-				storedOperator = false;
+			// クリアを押さないと前のsearchOperatorが適用されてしまうためコメントアウト
+			// var storedOperator = searchContributorElement.parent().parent().find('.operatorValue').val();
+			// if (storedOperator) {
+			// 	searchOperator = storedOperator;
+			// 	storedOperator = false;
+			// }
+			if ((fieldInfo.type == 'percentage' || fieldInfo.type == "double" || fieldInfo.type == "integer"
+				|| fieldInfo.type == 'currency') && searchValue.indexOf(',') != -1) {
+				searchOperator = 'range';
 			}
 			searchInfo.push(fieldName);
 			searchInfo.push(searchOperator);

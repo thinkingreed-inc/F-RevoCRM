@@ -821,6 +821,9 @@ class EnhancedQueryGenerator extends QueryGenerator {
 				} else {
 					$fieldGlue = ' OR';
 				}
+				if ($conditionInfo['operator'] == 'range') {
+					$fieldGlue = ' AND';
+				}
 			}
 			$tmpTableName = 'vtiger_crmentity'.$parentReferenceField;
 			if ($tmpTableName == $tableName && $referenceModule) {
