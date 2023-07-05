@@ -247,6 +247,7 @@ function generateIcsAttachment($record, $inviteeid) {
 		$userOffset = str_pad(str_replace("-" , "", $userOffset), 2, 0, STR_PAD_LEFT);
 
     // add timezone
+	fwrite($fp, "BEGIN:VCALENDAR\n");
     fwrite($fp, "BEGIN:VTIMEZONE\n");
     fwrite($fp, "TZID:".$time_zone."\n");
     fwrite($fp, "BEGIN:STANDARD\n");
@@ -256,7 +257,7 @@ function generateIcsAttachment($record, $inviteeid) {
     fwrite($fp, "END:STANDARD\n");
     fwrite($fp, "END:VTIMEZONE\n");
 
-    fwrite($fp, "BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\n");
+    fwrite($fp, "VERSION:2.0\nBEGIN:VEVENT\n");
     fwrite($fp, "ORGANIZER;CN=".$lastName." ".$firstName.":MAILTO:".$email."\n");
     fwrite($fp, "DTSTART;TZID=".$time_zone.":".date('Ymd\THis', strtotime($stDatetime))."\n");
     fwrite($fp, "DTEND;TZID=".$time_zone.":".date('Ymd\THis', strtotime($endDatetime))."\n");
