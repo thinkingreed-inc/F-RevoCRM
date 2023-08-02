@@ -967,6 +967,9 @@ class HTTP_Request
             if (!isset($boundary)) {
                 $postdata = implode('&', array_map(
                     create_function('$a', 'return $a[0] . \'=\' . $a[1];'),
+//                    function($a) {
+//                        return $a[0] . \'=\' . $a[1];
+//                    },
                     $this->_flattenArray('', $this->_postData)
                 ));
 

@@ -170,6 +170,8 @@ abstract class Vtiger_View_Controller extends Vtiger_Action_Controller {
 	}
 
 	function getPageTitle(Vtiger_Request $request) {
+		$recordName = null;
+		
 		$moduleName = $request->getModule();
 		$recordId	= $request->get('record');
 		if($recordId && $moduleName) {
@@ -200,6 +202,14 @@ abstract class Vtiger_View_Controller extends Vtiger_Action_Controller {
 		$viewer->assign('SKIN_PATH', Vtiger_Theme::getCurrentUserThemePath());
 		$viewer->assign('LANGUAGE_STRINGS', $this->getJSLanguageStrings($request));
 		$viewer->assign('LANGUAGE', $currentUser->get('language'));
+
+		$viewer->assign('V7_THEME_PATH', '');
+		$viewer->assign('MODULE_NAME', '');
+		$viewer->assign('MODULE', '');
+		$viewer->assign('VIEW', '');
+		$viewer->assign('PARENT_MODULE', '');
+		$viewer->assign('EXTENSION_MODULE', '');
+
 
 		if ($request->getModule() != 'Install') {
 			$userCurrencyInfo = getCurrencySymbolandCRate($currentUser->get('currency_id'));

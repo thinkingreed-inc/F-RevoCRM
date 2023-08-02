@@ -128,6 +128,9 @@ class Install_Index_view extends Vtiger_View_Controller {
 			$_SESSION['config_file_info'][$name] = $value;
 		}
 
+		$rootUser = '';
+		$rootPassword = '';
+
 		$createDataBase = false;
 		$createDB = $request->get('create_db');
 		if($createDB == 'on') {

@@ -4,7 +4,7 @@
  * 
  * <p>This framework is based on log4j (see {@link http://jakarta.apache.org/log4j log4j} for details).</p>
  * <p>Design, strategies and part of the methods documentation are developed by log4j team 
- * (Ceki Gülcü as log4j project founder and 
+ * (Ceki Gï¿½lcï¿½ as log4j project founder and 
  * {@link http://jakarta.apache.org/log4j/docs/contributors.html contributors}).</p>
  *
  * <p>PHP port, extensions and modifications by VxR. All rights reserved.<br>
@@ -98,7 +98,7 @@ class LoggerHierarchy {
 /* --------------------------------------------------------------------------*/
 /* --------------------------------------------------------------------------*/
 
-    function &singleton()
+    static function &singleton()
     {
         static $instance;
         
@@ -111,7 +111,7 @@ class LoggerHierarchy {
      * Create a new logger hierarchy.
      * @param object $root the root logger
      */
-    function LoggerHierarchy($root)
+    function __construct($root)
     {
         $this->root    =& $root;
         // Enable all level levels by default.
@@ -216,7 +216,7 @@ class LoggerHierarchy {
      */
     function &getLoggerByFactory($name, $factory)
     {
-        if (!isset($this->ht[$name])) {
+        if (!isset($this->ht[$name]) && !empty($factory)) {
             LoggerLog::debug("LoggerHierarchy::getLoggerByFactory():name=[$name]:factory=[".get_class($factory)."] creating a new logger...");
             $this->ht[$name] = $factory->makeNewLoggerInstance($name);
             $this->ht[$name]->setHierarchy($this);

@@ -44,8 +44,8 @@ class VtigerProductOperation extends VtigerModuleOperation {
 		return array_merge($element, $currencyTaxElement);
 	}
 
-	public function retrieve($wsId) {
-		$element = parent::retrieve($wsId);
+	public function retrieve($wsId, $allowDeleted = false) {
+		$element = parent::retrieve($wsId, $allowDeleted);
 		$entityName = $this->meta->getObjectEntityName($element['id']);
 		$currencyTaxElement = $this->retrieveTaxesAndCurrency($wsId, $entityName);
 		return array_merge($element, $currencyTaxElement);

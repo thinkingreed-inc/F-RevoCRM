@@ -4,7 +4,7 @@
  * 
  * <p>This framework is based on log4j (see {@link http://jakarta.apache.org/log4j log4j} for details).</p>
  * <p>Design, strategies and part of the methods documentation are developed by log4j team 
- * (Ceki Gülcü as log4j project founder and 
+ * (Ceki Gï¿½lcï¿½ as log4j project founder and 
  * {@link http://jakarta.apache.org/log4j/docs/contributors.html contributors}).</p>
  *
  * <p>PHP port, extensions and modifications by VxR. All rights reserved.<br>
@@ -37,9 +37,9 @@ class Logger extends LoggerCategory {
      * Constructor
      * @param string $name logger name 
      */    
-    function Logger($name)
+    function __construct($name)
     {
-        $this->LoggerCategory($name);
+        $this->name = $name;
     }
     
     /**
@@ -49,7 +49,7 @@ class Logger extends LoggerCategory {
      * @return Logger
      * @static 
      */    
-    function &getLogger($name, $factory = null)
+    static function &getLogger($name, $factory = null)
     {
         return LoggerManager::getLogger($name, $factory);
     }
@@ -59,7 +59,7 @@ class Logger extends LoggerCategory {
      * @return LoggerRoot
      * @static 
      */    
-    function &getRootLogger()
+    static function &getRootLogger()
     {
         return LoggerManager::getRootLogger();    
     }

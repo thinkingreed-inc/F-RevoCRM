@@ -4,7 +4,7 @@
  * 
  * <p>This framework is based on log4j (see {@link http://jakarta.apache.org/log4j log4j} for details).</p>
  * <p>Design, strategies and part of the methods documentation are developed by log4j team 
- * (Ceki Gülcü as log4j project founder and 
+ * (Ceki Gï¿½lcï¿½ as log4j project founder and 
  * {@link http://jakarta.apache.org/log4j/docs/contributors.html contributors}).</p>
  *
  * <p>PHP port, extensions and modifications by VxR. All rights reserved.<br>
@@ -85,7 +85,8 @@ class LoggerLayoutTTCC extends LoggerLayout {
     /**
      * @var string date format. See {@link PHP_MANUAL#strftime} for details
      */
-    var $dateFormat = '%c';
+//    var $dateFormat = '%c';
+    var $dateFormat = 'D M j h:i:s Y';
 
     /**
      * Constructor
@@ -200,7 +201,8 @@ class LoggerLayoutTTCC extends LoggerLayout {
     function format($event)
     {
         $timeStamp = (float)$event->getTimeStamp();
-        $format = strftime($this->dateFormat, (int)$timeStamp);
+//        $format = strftime($this->dateFormat, (int)$timeStamp);
+        $format = date($this->dateFormat, (int)$timeStamp);
         
         if ($this->microSecondsPrinting) {
             $usecs = round(($timeStamp - (int)$timeStamp) * 1000);

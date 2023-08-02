@@ -132,7 +132,7 @@
 		}
 		
 		function handleType($type,$value){
-			$result;
+			$result = null;
 			$value = stripslashes($value);
 			$type = strtolower($type);
 			if($this->inParamProcess[$type]){

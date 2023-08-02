@@ -4,7 +4,7 @@
  * 
  * <p>This framework is based on log4j (see {@link http://jakarta.apache.org/log4j log4j} for details).</p>
  * <p>Design, strategies and part of the methods documentation are developed by log4j team 
- * (Ceki Gülcü as log4j project founder and 
+ * (Ceki Gï¿½lcï¿½ as log4j project founder and 
  * {@link http://jakarta.apache.org/log4j/docs/contributors.html contributors}).</p>
  *
  * <p>PHP port, extensions and modifications by VxR. All rights reserved.<br>
@@ -56,7 +56,7 @@ class LoggerOptionConverter {
      *
      * @static
      */
-    function concatanateArrays($l, $r)
+    static function concatanateArrays($l, $r)
     {
         return array_merge($l, $r);
     }
@@ -76,7 +76,7 @@ class LoggerOptionConverter {
     *
     * @static
     */
-    function getSystemProperty($key, $def)
+    static function getSystemProperty($key, $def)
     {
         LoggerLog::debug("LoggerOptionConverter::getSystemProperty():key=[{$key}]:def=[{$def}].");
 
@@ -103,7 +103,7 @@ class LoggerOptionConverter {
      *
      * @static
      */
-    function toBoolean($value, $default)
+    static function toBoolean($value, $default)
     {
         if($value === null)
             return $default;
@@ -123,7 +123,7 @@ class LoggerOptionConverter {
      * @return integer
      * @static
      */
-    function toInt($value, $default)
+    static function toInt($value, $default)
     {
         $value = trim($value);
         if (is_numeric($value)) {
@@ -160,7 +160,7 @@ class LoggerOptionConverter {
      * @return LoggerLevel a {@link LoggerLevel} or null
      * @static
      */
-    function toLevel($value, $defaultValue)
+    static function toLevel($value, $defaultValue)
     {
         if($value === null)
             return $defaultValue;
@@ -211,7 +211,7 @@ class LoggerOptionConverter {
      *
      * @static
      */
-    function toFileSize($value, $default)
+    static function toFileSize($value, $default)
     {
         if ($value === null)
             return $default;
@@ -247,7 +247,7 @@ class LoggerOptionConverter {
      *
      * @static
      */
-    function findAndSubst($key, $props)
+    static function findAndSubst($key, $props)
     {
         $value = @$props[$key];
         if(empty($value)) {
@@ -291,7 +291,7 @@ class LoggerOptionConverter {
      *
      * @static
      */
-    function substVars($val, $props = null)
+    static function substVars($val, $props = null)
     {
         LoggerLog::debug("LoggerOptionConverter::substVars():val=[{$val}]");
         

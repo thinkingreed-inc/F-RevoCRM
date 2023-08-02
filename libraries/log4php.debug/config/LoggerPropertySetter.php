@@ -4,7 +4,7 @@
  * 
  * <p>This framework is based on log4j (see {@link http://jakarta.apache.org/log4j log4j} for details).</p>
  * <p>Design, strategies and part of the methods documentation are developed by log4j team 
- * (Ceki Gülcü as log4j project founder and 
+ * (Ceki Gï¿½lcï¿½ as log4j project founder and 
  * {@link http://jakarta.apache.org/log4j/docs/contributors.html contributors}).</p>
  *
  * <p>PHP port, extensions and modifications by VxR. All rights reserved.<br>
@@ -80,7 +80,7 @@ class LoggerPropertySetter {
      * @param string $prefix Only keys having the specified prefix will be set.
      * @static
      */
-    function setPropertiesByObject(&$obj, $properties, $prefix)
+    static function setPropertiesByObject(&$obj, $properties, $prefix)
     {
         $pSetter = new LoggerPropertySetter($obj);
         return $pSetter->setProperties($properties, $prefix);
@@ -99,7 +99,9 @@ class LoggerPropertySetter {
         LoggerLog::debug("LoggerOptionConverter::setProperties():prefix=[{$prefix}]");
 
         $len = strlen($prefix);
-        while (list($key,) = each($properties)) {
+        while ($current = current($properties)) {
+            $key = key($properties);
+            next($properties);
             if (strpos($key, $prefix) === 0) {
                 if (strpos($key, '.', ($len + 1)) > 0)
                     continue;
@@ -137,11 +139,11 @@ class LoggerPropertySetter {
         
         $method = "set" . ucfirst($name);
         
-        if (!method_exists($this->obj, $method)) {
-            LoggerLog::warn(
-                "LoggerOptionConverter::setProperty() No such setter method for [{$name}] property in " .
-		        get_class($this->obj) . "." 
-            );
+        if (empty($this->obj) || !method_exists($this->obj, $method)) {
+            // LoggerLog::warn(
+            //     "LoggerOptionConverter::setProperty() No such setter method for [{$name}] property in " .
+		    //     ($this->obj != null ? get_class($this->obj) : "NULL object") . "." 
+            // );
         } else {
             return call_user_func(array(&$this->obj, $method), $value);
         } 
@@ -151,7 +153,7 @@ class LoggerPropertySetter {
     {
         LoggerLog::debug("LoggerOptionConverter::activate()");
     
-        if (method_exists($this->obj, 'activateoptions')) {
+        if (!empty($this->obj) && method_exists($this->obj, 'activateoptions')) {
             return call_user_func(array(&$this->obj, 'activateoptions'));
         } else {
             LoggerLog::debug("LoggerOptionConverter::activate() Nothing to activate.");

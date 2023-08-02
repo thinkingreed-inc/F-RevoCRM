@@ -103,7 +103,7 @@ class SalesOrder extends CRMEntity {
 	var $isLineItemUpdate = true;
 
 	/** Constructor Function for SalesOrder class
-	 *  This function creates an instance of LoggerManager class using getLogger method
+	 *  This function creates an instance of Logger class using getLogger method
 	 *  creates an instance for PearDatabase class and get values for column_fields array of SalesOrder class.
 	 */
         function __construct() {
@@ -327,7 +327,7 @@ class SalesOrder extends CRMEntity {
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule,$queryPlanner){
+	function generateReportsSecQuery($module,$secmodule,$queryPlanner, $reportid = false){
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency('vtiger_crmentitySalesOrder', array('vtiger_usersSalesOrder', 'vtiger_groupsSalesOrder', 'vtiger_lastModifiedBySalesOrder'));
 		$matrix->setDependency('vtiger_inventoryproductrelSalesOrder', array('vtiger_productsSalesOrder', 'vtiger_serviceSalesOrder'));
@@ -340,7 +340,7 @@ class SalesOrder extends CRMEntity {
 				'vtiger_invoice_recurring_info','vtiger_quotesSalesOrder'));
 
 
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_salesorder","salesorderid", $queryPlanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_salesorder","salesorderid", $queryPlanner, $reportid);
 		if ($queryPlanner->requireTable("vtiger_crmentitySalesOrder",$matrix)){
 			$query .= " left join vtiger_crmentity as vtiger_crmentitySalesOrder on vtiger_crmentitySalesOrder.crmid=vtiger_salesorder.salesorderid and vtiger_crmentitySalesOrder.deleted=0";
 		}

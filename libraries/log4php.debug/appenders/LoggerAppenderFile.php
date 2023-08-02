@@ -4,7 +4,7 @@
  * 
  * <p>This framework is based on log4j (see {@link http://jakarta.apache.org/log4j log4j} for details).</p>
  * <p>Design, strategies and part of the methods documentation are developed by log4j team 
- * (Ceki Gülcü as log4j project founder and 
+ * (Ceki Gï¿½lcï¿½ as log4j project founder and 
  * {@link http://jakarta.apache.org/log4j/docs/contributors.html contributors}).</p>
  *
  * <p>PHP port, extensions and modifications by VxR. All rights reserved.<br>
@@ -65,9 +65,9 @@ class LoggerAppenderFile extends LoggerAppenderSkeleton {
      *
      * @param string $name appender name
      */
-    function LoggerAppenderFile($name)
+    function __construct($name)
     {
-        $this->LoggerAppenderSkeleton($name);
+        parent::__construct($name);
     }
 
     function activateOptions()
@@ -138,7 +138,7 @@ class LoggerAppenderFile extends LoggerAppenderSkeleton {
     {
         $this->closeFile();
         $this->fileName = null;
-        parent::reset();
+        // parent::reset();
     }
 
     function setAppend($flag)

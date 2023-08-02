@@ -336,6 +336,75 @@ class ADODB_sqlite3 extends ADOConnection {
 		return $indexes;
 	}
 
+	/**
+	* Returns the maximum size of a MetaType C field. Because of the
+	* database design, sqlite places no limits on the size of data inserted
+	*
+	* @return int
+	*/
+	function charMax()
+	{
+		return ADODB_STRINGMAX_NOLIMIT;
+	}
+
+	/**
+	* Returns the maximum size of a MetaType X field. Because of the
+	* database design, sqlite places no limits on the size of data inserted
+	*
+	* @return int
+	*/
+	function textMax()
+	{
+		return ADODB_STRINGMAX_NOLIMIT;
+	}
+
+	/**
+	 * Converts a date to a month only field and pads it to 2 characters
+	 *
+	 * This uses the more efficient strftime native function to process
+	 *
+	 * @param 	str		$fld	The name of the field to process
+	 *
+	 * @return	str				The SQL Statement
+	 */
+	function month($fld)
+	{
+//		$x = "strftime('%m',$fld)";
+		$x = "date('m',$fld)";
+		return $x;
+	}
+
+	/**
+	 * Converts a date to a day only field and pads it to 2 characters
+	 *
+	 * This uses the more efficient strftime native function to process
+	 *
+	 * @param 	str		$fld	The name of the field to process
+	 *
+	 * @return	str				The SQL Statement
+	 */
+	function day($fld) {
+//		$x = "strftime('%d',$fld)";
+		$x = "date('d',$fld)";
+		return $x;
+	}
+
+	/**
+	 * Converts a date to a year only field
+	 *
+	 * This uses the more efficient strftime native function to process
+	 *
+	 * @param 	str		$fld	The name of the field to process
+	 *
+	 * @return	str				The SQL Statement
+	 */
+	function year($fld)
+	{
+//		$x = "strftime('%Y',$fld)";
+		$x = "date('Y',$fld)";
+		return $x;
+	}
+
 }
 
 /*--------------------------------------------------------------------------------------

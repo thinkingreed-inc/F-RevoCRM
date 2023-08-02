@@ -4,7 +4,7 @@
  * 
  * <p>This framework is based on log4j (see {@link http://jakarta.apache.org/log4j log4j} for details).</p>
  * <p>Design, strategies and part of the methods documentation are developed by log4j team 
- * (Ceki Gülcü as log4j project founder and 
+ * (Ceki Gï¿½lcï¿½ as log4j project founder and 
  * {@link http://jakarta.apache.org/log4j/docs/contributors.html contributors}).</p>
  *
  * <p>PHP port, extensions and modifications by VxR. All rights reserved.<br>
@@ -46,7 +46,7 @@ class LoggerManager {
      * @static
      * @return boolean
      */
-    function exists($name)
+    static function exists($name)
     {
         $repository =& LoggerManager::getLoggerRepository();
         return $repository->exists($name);
@@ -59,7 +59,7 @@ class LoggerManager {
      * @see Logger
      * @return array
      */
-    function getCurrentLoggers()
+    static function getCurrentLoggers()
     {
         $repository =& LoggerManager::getLoggerRepository();
         return $repository->getCurrentLoggers();
@@ -72,7 +72,7 @@ class LoggerManager {
      * @return object
      * @see LoggerRoot
      */
-    function &getRootLogger()
+    static function &getRootLogger()
     {
         $repository =& LoggerManager::getLoggerRepository();
         return $repository->getRootLogger();
@@ -86,7 +86,7 @@ class LoggerManager {
      * @static
      * @return Logger
      */
-    function &getLogger($name, $factory = null)
+    static function &getLogger($name, $factory = null)
     {
         $repository =& LoggerManager::getLoggerRepository();
         return $repository->getLogger($name, $factory);
@@ -98,7 +98,7 @@ class LoggerManager {
      * @static
      * @return LoggerHierarchy
      */
-    function &getLoggerRepository()
+    static function &getLoggerRepository()
     {
         return LoggerHierarchy::singleton();    
     }
@@ -110,7 +110,7 @@ class LoggerManager {
      * @static
      * @return boolean 
      */
-    function resetConfiguration()
+    static function resetConfiguration()
     {
         $repository =& LoggerManager::getLoggerRepository();    
         return $repository->resetConfiguration();    
@@ -120,7 +120,7 @@ class LoggerManager {
      * Does nothing.
      * @static
      */
-    function setRepositorySelector($selector, $guard)
+    static function setRepositorySelector($selector, $guard)
     {
         return;
     }
@@ -129,7 +129,7 @@ class LoggerManager {
      * Safely close all appenders.
      * @static
      */
-    function shutdown()
+    static function shutdown()
     {
         $repository =& LoggerManager::getLoggerRepository();    
         return $repository->shutdown();    

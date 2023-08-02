@@ -436,7 +436,8 @@ function adodb_date_test_date($y1,$m,$d=13)
 
 function adodb_date_test_strftime($fmt)
 {
-	$s1 = strftime($fmt);
+//	$s1 = strftime($fmt);
+	$s1 = date($fmt);
 	$s2 = adodb_strftime($fmt);
 
 	if ($s1 == $s2) return true;
@@ -471,9 +472,12 @@ function adodb_date_test()
 	echo 'php  : ',date($fmt,$t),'<br>';
 	echo '</pre>';
 
-	adodb_date_test_strftime('%Y %m %x %X');
-	adodb_date_test_strftime("%A %d %B %Y");
-	adodb_date_test_strftime("%H %M S");
+//	adodb_date_test_strftime('%Y %m %x %X');
+//	adodb_date_test_strftime("%A %d %B %Y");
+//	adodb_date_test_strftime("%H %M S");
+	adodb_date_test_strftime('Y m y/m/d h:i:s');
+	adodb_date_test_strftime("l d F Y");
+	adodb_date_test_strftime("h i s");
 
 	$t = adodb_mktime(0,0,0);
 	if (!(adodb_date('Y-m-d') == date('Y-m-d'))) print 'Error in '.adodb_mktime(0,0,0).'<br>';
@@ -1364,7 +1368,8 @@ global $ADODB_DATE_LOCALE;
 	if (!defined('ADODB_TEST_DATES')) {
 		if ((abs($ts) <= 0x7FFFFFFF)) { // check if number in 32-bit signed range
 			if (!defined('ADODB_NO_NEGATIVE_TS') || $ts >= 0) // if windows, must be +ve integer
-				return ($is_gmt)? @gmstrftime($fmt,$ts): @strftime($fmt,$ts);
+//			return ($is_gmt)? @gmstrftime($fmt,$ts): @strftime($fmt,$ts);
+			return ($is_gmt)? @gmstrftime($fmt,$ts): @date($fmt,$ts);
 
 		}
 	}

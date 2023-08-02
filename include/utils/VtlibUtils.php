@@ -883,4 +883,14 @@ function php7_compat_ereg($pattern, $str, $ignore_case=false) {
 
 if (!function_exists('ereg')) { function ereg($pattern, $str) { return php7_compat_ereg($pattern, $str); } }
 if (!function_exists('eregi')) { function eregi($pattern, $str) { return php7_compat_ereg($pattern, $str, true); } }
+
+/**
+ * PHP8 support
+ */
+if (!function_exists('get_magic_quotes_gpc')) {
+	function get_magic_quotes_gpc() {
+		return false;
+	}
+}
+
 ?>

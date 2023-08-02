@@ -4,7 +4,7 @@
  * 
  * <p>This framework is based on log4j (see {@link http://jakarta.apache.org/log4j log4j} for details).</p>
  * <p>Design, strategies and part of the methods documentation are developed by log4j team 
- * (Ceki Gülcü as log4j project founder and 
+ * (Ceki Gï¿½lcï¿½ as log4j project founder and 
  * {@link http://jakarta.apache.org/log4j/docs/contributors.html contributors}).</p>
  *
  * <p>PHP port, extensions and modifications by VxR. All rights reserved.<br>
@@ -225,7 +225,8 @@ class LoggerLayoutHtml extends LoggerLayout {
         $sbuf .= "</head>" . LOG4PHP_LINE_SEP;
         $sbuf .= "<body bgcolor=\"#FFFFFF\" topmargin=\"6\" leftmargin=\"6\">" . LOG4PHP_LINE_SEP;
         $sbuf .= "<hr size=\"1\" noshade>" . LOG4PHP_LINE_SEP;
-        $sbuf .= "Log session start time " . strftime('%c', time()) . "<br>" . LOG4PHP_LINE_SEP;
+//        $sbuf .= "Log session start time " . strftime('%c', time()) . "<br>" . LOG4PHP_LINE_SEP;
+        $sbuf .= "Log session start time " . date('D M j h:i:s Y', time()) . "<br>" . LOG4PHP_LINE_SEP;
         $sbuf .= "<br>" . LOG4PHP_LINE_SEP;
         $sbuf .= "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\" bordercolor=\"#224466\" width=\"100%\">" . LOG4PHP_LINE_SEP;
         $sbuf .= "<tr>" . LOG4PHP_LINE_SEP;
