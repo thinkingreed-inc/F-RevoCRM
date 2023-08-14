@@ -9,5 +9,9 @@
 *********************************************************************************/
 
 if (defined('VTIGER_UPGRADE')) {
-	
+	global $current_user, $adb;
+	$db = PearDatabase::getInstance();
+
+    // 契約からチケットへ関連のラベル名が「サービスリクエスト」であったため「チケット」へ変更する
+    $db->query('UPDATE vtiger_relatedlists SET label = "HelpDesk" WHERE tabid = 34 AND related_tabid = 13 AND name = "get_related_list"');
 }
