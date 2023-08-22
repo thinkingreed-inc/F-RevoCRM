@@ -292,7 +292,7 @@ Calendar_Calendar_Js('Calendar_SharedCalendar_Js', {
 				if($(this).is(".mine")) {
 					myId = currentTarget.attr("data-calendar-userid");
 				} else {
-					thisInstance.disableFeed(sourceKey);
+					// thisInstance.disableFeed(sourceKey);
 					thisInstance.removeEvents(currentTarget);
 					$(this).remove();
 				}
@@ -300,6 +300,7 @@ Calendar_Calendar_Js('Calendar_SharedCalendar_Js', {
 
 			var users = thisInstance.userList['users'];
 			var sharedInfo = thisInstance.userList['sharedinfo'] ? thisInstance.userList['sharedinfo'] : {};
+			var cashDisabledFeedsStorageKey = thisInstance.getDisabledFeeds();
 
 			Object.keys(users).forEach(function (id) {
 				var user = users[id];
@@ -332,7 +333,12 @@ Calendar_Calendar_Js('Calendar_SharedCalendar_Js', {
 
 					thisInstance.colorizeFeed(newFeedCheckbox);
 
-					thisInstance.enableFeed('Events_'+id);
+					if(cashDisabledFeedsStorageKey.indexOf('Events_'+id) !== -1){
+						// thisInstance.disableFeed('Events_'+id);
+						newFeedCheckbox.removeAttr('checked');
+					}else{
+						// thisInstance.enableFeed('Events_'+id);
+					}
 					thisInstance.addEvents(newFeedCheckbox);
 
 					if(target != "Calendar") {
