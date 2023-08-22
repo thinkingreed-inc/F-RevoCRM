@@ -291,6 +291,8 @@ Calendar_Calendar_Js('Calendar_SharedCalendar_Js', {
 				var sourceKey = currentTarget.data('calendarSourcekey');
 				if($(this).is(".mine")) {
 					myId = currentTarget.attr("data-calendar-userid");
+					// 自分以外のユーザーの活動を移動した場合に、自分の予定が変更されないためrefreshFeedを実行する
+					thisInstance.refreshFeed($(".activitytype-indicator.calendar-feed-indicator.mine").find("input[type='checkbox']"));
 				} else {
 					// thisInstance.disableFeed(sourceKey);
 					thisInstance.removeEvents(currentTarget);
