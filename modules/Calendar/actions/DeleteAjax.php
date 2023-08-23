@@ -45,7 +45,12 @@ class Calendar_DeleteAjax_Action extends Vtiger_DeleteAjax_Action {
 		
 		$recordModel = Vtiger_Record_Model::getInstanceById($recordId, $moduleName);
 		$recordModel->set('recurringEditMode', $recurringEditMode);
-		$deletedRecords = $recordModel->delete();
+		if($request->get('view') == 'SharedCalendar'){ // 共有カレンダーの場合, 共同参加者の予定もJavaScript側にて削除する
+			$deletedRecords = $recordModel->getInviteeRecordById($recordId);
+			$recordModel->delete();
+		}else{
+			$deletedRecords = $recordModel->delete();
+		}
 
 		$cvId = $request->get('viewname');
 		deleteRecordFromDetailViewNavigationRecords($recordId, $cvId, $moduleName);
