@@ -180,6 +180,14 @@ class Vtiger_List_View extends Vtiger_Index_View {
 		} else {
 			$listViewModel = $this->listViewModel;
 		}
+		if($orderBy == ''){
+			global $db;
+			$db = PearDatabase::getInstance();
+			$query = "SELECT orderby from vtiger_customview WHERE cvid = ?";
+			$result = $db->pquery($query, array($cvId));//orderbyの連結完了
+			$orderBy = $db->query_result($result,'orderby');
+
+		}
 
 		if(!empty($requestViewName) && empty($tag)) {
 			unset($_SESSION[$tagSessionKey]);

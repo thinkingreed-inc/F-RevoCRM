@@ -110,6 +110,7 @@
 									{/foreach}
 								</select>
 								<input type="hidden" name="columnslist" value='{Vtiger_Functions::jsonEncode($SELECTED_FIELDS)}' />
+								<input type="hidden" name="orderby" value='{Vtiger_Functions::jsonEncode($SELECTED_FIELDS)}' />
 								<input id="mandatoryFieldsList" type="hidden" value='{Vtiger_Util_Helper::toSafeHTML(ZEND_JSON::encode($MANDATORY_FIELDS))}' />
 							</div>
 							<div class="col-lg-2 col-md-2 col-sm-2"></div>
@@ -118,6 +119,17 @@
 							<label class="filterHeaders">{vtranslate('LBL_CHOOSE_FILTER_CONDITIONS', $MODULE)} :</label>
 							<div class="filterElements well filterConditionContainer filterConditionsDiv">
 								{include file='AdvanceFilter.tpl'|@vtemplate_path}
+							</div>
+						</div>
+						<div class="form-group clearfix">
+							<div class="col-sm-1 col-xs-2">
+								<label>
+										{vtranslate('LBL_DEFAULT_SORT',$MODULE)} 
+								</label>
+							</div>
+							<div class=" row col-sm-5 col-xs-5">
+								<select id='orderby' class="select2-container select2">
+								</select>
 							</div>
 						</div>
 						<div class="checkbox">
