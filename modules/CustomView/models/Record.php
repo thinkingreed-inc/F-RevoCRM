@@ -272,6 +272,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 		$setDefault = $this->get('setdefault');
 		$setMetrics = $this->get('setmetrics');
 		$status = $this->get('status');
+		$orderby = $this->get('orderby');
 
 		if($status == self::CV_STATUS_PENDING) {
 			if($currentUserModel->isAdminUser()) {
@@ -283,8 +284,8 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 			$cvId = $db->getUniqueID("vtiger_customview");
 			$this->set('cvid', $cvId);
 
-			$sql = 'INSERT INTO vtiger_customview(cvid, viewname, setdefault, setmetrics, entitytype, status, userid) VALUES (?,?,?,?,?,?,?)';
-			$params = array($cvId, $viewName, $setDefault, $setMetrics, $moduleName, $status, $currentUserModel->getId());
+			$sql = 'INSERT INTO vtiger_customview(cvid, viewname, setdefault, setmetrics, entitytype, status, userid, orderby) VALUES (?,?,?,?,?,?,?,?)';
+			$params = array($cvId, $viewName, $setDefault, $setMetrics, $moduleName, $status, $currentUserModel->getId(),$orderby);
 			$db->pquery($sql, $params);
 
 		} else {
