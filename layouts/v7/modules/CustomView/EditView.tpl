@@ -122,7 +122,7 @@
 							</div>
 						</div>
 						<div class="form-group clearfix">
-							<div class="col-sm-1 col-xs-2">
+							<div class="col-sm-2 col-xs-2">
 								<label>
 										{vtranslate('LBL_DEFAULT_SORT',$MODULE)} 
 								</label>
