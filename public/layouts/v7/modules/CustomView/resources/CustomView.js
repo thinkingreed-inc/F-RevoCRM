@@ -239,6 +239,7 @@ jQuery.Class("Vtiger_CustomView_Js",{
 		this.makeColumnListSortable();
 		this.registerToogleShareList();
 		this.registerOnlyAllUsersInSharedList();
+		this.addColumnsOrderbyList();
 		var customViewForm = jQuery('#CustomView');
 
 		if(customViewForm.length > 0) {
@@ -247,7 +248,7 @@ jQuery.Class("Vtiger_CustomView_Js",{
 					var form = jQuery(form); 
 						  var selectElement = form.find('#viewColumnsSelect'); 
 						  var mandatoryFieldsList = JSON.parse(jQuery('#mandatoryFieldsList').val()); 
-						  var selectedOptions = selectElement.val(); 
+						  var selectedOptions = selectElement.val();
 						  var mandatoryFieldsMissing = true; 
 						  for(var i=0; i<selectedOptions.length; i++) { 
 						if(jQuery.inArray(selectedOptions[i], mandatoryFieldsList) >= 0) { 
@@ -270,6 +271,7 @@ jQuery.Class("Vtiger_CustomView_Js",{
 					}
 					var selectValues = JSON.stringify(selectedValues);
 					jQuery('input[name="columnslist"]', self.getContainer()).val(selectValues);
+					jQuery('input[name="orderby"]').val(jQuery('#orderby').val());
 					var allUsersStatusEle = jQuery('#allUsersStatusValue');
 					if(self.isAllUsersSelected() && (jQuery('[data-toogle-members]').is(":checked"))){
 						allUsersStatusEle.val(allUsersStatusEle.data('public'));
@@ -346,5 +348,40 @@ jQuery.Class("Vtiger_CustomView_Js",{
 				target.trigger('post.ToggleDefault.saved',data);
 			})
 		});
+	},
+
+	addElementsforOrderbyList :function(){
+		selectElement = this.getColumnSelectElement();
+		selectedOptions = selectElement.select2('data');
+		
+		for (var i= 0;i<selectedOptions.length;i++){
+			selectedOptionid = selectedOptions[i].id.split(':');
+			const newOption = document.createElement("option");
+			newOption.value = selectedOptionid[1];
+			newOption.textContent = selectedOptions[i].text;
+			jQuery("#orderby").append(newOption);
+		}
+	},
+
+	addColumnsOrderbyList :function(){
+		selectfield = document.getElementById('s2id_viewColumnsSelect');
+		this.addElementsforOrderbyList();
+
+		var observer = new MutationObserver(function(){
+			customview = new Vtiger_CustomView_Js();
+			var parent = document.getElementById("orderby");
+			
+			while(parent.lastChild){
+				parent.removeChild(parent.lastChild);
+			}
+			customview.addElementsforOrderbyList();
+		});
+		const config = { 
+			attributes: false, 
+			childList: true, 
+			characterData: false,
+			subtree:true
+		};
+		observer.observe(selectfield, config);
 	}
 });
