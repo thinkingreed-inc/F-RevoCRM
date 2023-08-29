@@ -29,6 +29,10 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var instance = Calendar_Calendar_Js.getInstance();
 		instance.showCreateEventModal();
 	},
+	showCreateEventModalforDrag: function () {
+		var instance = Calendar_Calendar_Js.getInstance();
+		instance.showCreateEventModalforDrag();
+	},
 	showCreateTaskModal: function () {
 		var instance = Calendar_Calendar_Js.getInstance();
 		instance.showCreateTaskModal();
@@ -1109,6 +1113,19 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		}
 		startDateElement.trigger('change');
 	},
+	setEndDateTime: function (modalContainer, endDateTime) {
+		var endDateElement = modalContainer.find('input[name="due_date"]');
+		var endTimeElement = modalContainer.find('input[name="time_end"]');
+		//月次カレンダーや週次カレンダー上部の終日エリアをドラッグしたとき、終了側の日にちが１日長くなってしまうので日時を調整する。
+		if(endDateTime._ambigTime){
+			endDateTime.subtract(1,'days');
+		}
+		endDateElement.val(endDateTime.format(vtUtils.getMomentDateFormat()));
+		endTimeElement.val(endDateTime.format(vtUtils.getMomentTimeFormat()));
+		vtUtils.registerEventForDateFields(endDateElement);
+		vtUtils.registerEventForTimeFields(endTimeElement);
+		endDateElement.trigger('change');
+	},
 	showCreateModal: function (moduleName, startDateTime) {
 		var isAllowed = jQuery('#is_record_creation_allowed').val();
 		if (isAllowed) {
@@ -1134,6 +1151,32 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			});
 		}
 	},
+	showCreateModalforDrag: function (moduleName, startDateTime, endDateTime) {
+		var isAllowed = jQuery('#is_record_creation_allowed').val();
+		if (isAllowed) {
+			var thisInstance = this;
+			var quickCreateNode = jQuery('#quickCreateModules').find('[data-name="' + moduleName + '"]');
+			if (quickCreateNode.length <= 0) {
+				app.helper.showAlertNotification({
+					'message': app.vtranslate('JS_NO_CREATE_OR_NOT_QUICK_CREATE_ENABLED')
+				});
+			} else {
+				quickCreateNode.trigger('click');
+			}
+
+			app.event.one('post.QuickCreateForm.show', function (e, form) {
+				thisInstance.performingDayClickOperation = false;
+				var modalContainer = form.closest('.modal');
+				if (typeof endDateTime !== 'undefined' && endDateTime) {
+					thisInstance.setStartDateTime(modalContainer, startDateTime);
+					thisInstance.setEndDateTime(modalContainer, endDateTime);
+				}
+				if (moduleName === 'Events') {
+					thisInstance.registerCreateEventModalEvents(form.closest('.modal'));
+				}
+			});
+		}
+	},	
 	_updateAllOnCalendar: function (calendarModule) {
 		var thisInstance = this;
 		this.getCalendarViewContainer().fullCalendar('addEventSource',
@@ -1189,6 +1232,12 @@ Vtiger.Class("Calendar_Calendar_Js", {
 	showCreateEventModal: function (startDateTime) {
 		this.showCreateModal('Events', startDateTime);
 	},
+	showCreateTaskModalforDrag: function () {
+		this.showCreateModalforDrag('Calendar');
+	},
+	showCreateEventModalforDrag: function (startDateTime,endDateTime) {
+		this.showCreateModalforDrag('Events', startDateTime, endDateTime);
+	},
 	updateAllTasksOnCalendar: function () {
 		this._updateAllOnCalendar("Calendar");
 	},
@@ -1216,6 +1265,16 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			this.performingDayClickOperation = true;
 			// if (date.hasTime() || view.type == 'month') {
 				this.showCreateEventModal(date);
+			// } else {
+			// 	this.showCreateModal('Calendar', date);
+			// }
+		}
+	},
+	performDayDragAction: function (startDate, endDate, jsEvent, view) {
+		if (!this.performingDayClickOperation) {
+			this.performingDayClickOperation = true;
+			// if (date.hasTime() || view.type == 'month') {
+				this.showCreateEventModalforDrag(startDate,endDate);
 			// } else {
 			// 	this.showCreateModal('Calendar', date);
 			// }
@@ -1858,6 +1917,9 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			},
 			eventDrop: function (event, delta, revertFunc, jsEvent, ui, view) {
 				thisInstance.updateEventOnDrop(event, delta, revertFunc, jsEvent, ui, view);
+			},
+			select: function (startDate, endDate, jsEvent, view){
+				thisInstance.performDayDragAction(startDate, endDate, jsEvent, view);
 			},
 			eventRender: function (event, element) {
 				thisInstance.performPreEventRenderActions(event, element);

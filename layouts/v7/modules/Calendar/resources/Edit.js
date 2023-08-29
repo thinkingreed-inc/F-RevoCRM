@@ -522,6 +522,7 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 	registerActivityTypeChangeEvent : function(container) {
 		container.find('[name="activitytype"]').on('change', function() {
 			var time_start_element = container.find('[name="time_start"]');
+				//活動タイプを変更したときに終了側の日付が変更されてしまうためコメントアウト
 				//time_start_element.trigger('changeTime');
 		});
 	},
