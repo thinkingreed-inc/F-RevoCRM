@@ -1525,7 +1525,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			}
 
 			if(eventObj.parent_id && eventObj.parent_id != '') {
-				popOverHTML += eventObj.parent_id;
+				popOverHTML += '<a href="index.php?module=' + eventObj.related_module + '&view=Detail&record=' + eventObj.related_id + '">'+eventObj.parent_id+'</a>';
 				popOverHTML += '<br>';
 			}
 
