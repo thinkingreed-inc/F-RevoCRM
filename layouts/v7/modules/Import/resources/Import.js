@@ -98,7 +98,7 @@ if (typeof (Vtiger_Import_Js) == 'undefined') {
                             Vtiger_Import_Js.isReloadStatusPageStopped = false;
                             Vtiger_Import_Js.timer = setTimeout(Vtiger_Import_Js.scheduledImportRunning, 5000);
                         } else {
-                            app.helper.showSuccessNotification({message:'Import Completed.'});
+                            app.helper.showSuccessNotification({message:app.vtranslate('JS_SUCCESS_IMPORT_COMMENT')});
                         }
                     }
                 });
@@ -151,7 +151,7 @@ if (typeof (Vtiger_Import_Js) == 'undefined') {
                     missingMandatoryFields.push('"' + mandatoryFields[mandatoryFieldName] + '"');
                 }
             }
-            if (missingMandatoryFields.length > 0) {
+            if (missingMandatoryFields.length > 0 && jQuery('[name="merge_type"]').val() != 3) {
                 errorMessage = app.vtranslate('JS_MAP_MANDATORY_FIELDS') + missingMandatoryFields.join(',');
                 app.helper.showErrorNotification({'message': errorMessage});
                 return false;

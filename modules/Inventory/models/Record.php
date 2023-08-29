@@ -136,7 +136,10 @@ class Inventory_Record_Model extends Vtiger_Record_Model {
 		
 		//Updating Total After Discount
 		$totalAfterDiscount = (float)$relatedProducts[1]['final_details']['hdnSubTotal'] - (float)$relatedProducts[1]['final_details']['discountTotal_final'];
-
+		// 消費税が個別のときには、追加で消費税を引く
+		if($taxtype == 'individual'){
+			$totalAfterDiscount -=  (float)$relatedProducts[1]['final_details']['tax_totalamount'];
+		}
 		$relatedProducts[1]['final_details']['totalAfterDiscount'] = number_format($totalAfterDiscount, $numOfCurrencyDecimalPlaces,'.','');
 		$relatedProducts[1]['final_details']['discount_amount_final'] = number_format((float)$relatedProducts[1]['final_details']['discount_amount_final'], $numOfCurrencyDecimalPlaces,'.','');
 
@@ -268,86 +271,6 @@ class Inventory_Record_Model extends Vtiger_Record_Model {
 			}
 		}
 		return $this->setData($data);
-	}
-
-	/**
-	 * Function to get URL for Export the record as PDF
-	 * @return <type>
-	 */
-	public function getExportPDFUrl() {
-		return "index.php?module=".$this->getModuleName()."&action=ExportPDF&record=".$this->getId();
-	}
-
-	/**
-	  * Function to get the send email pdf url
-	  * @return <string>
-	  */
-	public function getSendEmailPDFUrl() {
-		return 'module='.$this->getModuleName().'&view=SendEmail&mode=composeMailData&record='.$this->getId();
-	}
-
-	/**
-	 * Function to get this record and details as PDF
-	 */
-	public function getPDF($templateId, $isheader = true) {
-		$recordId = $this->getId();
-		$moduleName = $this->getModuleName();
-
-		global $adb;
-		$template = null;
-
-		$result = $adb->pquery("SELECT templatename, body FROM vtiger_pdftemplates WHERE templateid = ?", array($templateId));
-		if($adb->num_rows($result) > 0) {
-			$templateName = $adb->query_result($result, 0, 'templatename');
-			$template = $adb->query_result($result, 0, 'body');
-			$template = html_entity_decode($template);
-			$template = preg_replace('/<title>.*<\/title>/i', '', $template);
-			$template = Vtiger_InventoryPDFController::getMergedDescription($template, $recordId, $moduleName);
-		}
-
-		$tcpdf = new TCPDF();
-		$tcpdf->setPrintHeader(false);
-		$tcpdf->setPrintFooter(false);
-		$tcpdf->AddPage();
-		$tcpdf->SetFont('ume-tgo4','B');
-		$tcpdf->writeHTML($template);
-		$pdf = $tcpdf->Output($templateName.'.pdf', 'S');//Dの場合は日本語が消える
-		if(!$isheader) return $pdf;
-
-		header("Pragma: public");
-		header("Expires: 0");
-		header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-		header("Content-Transfer-Encoding: binary ");
-		header('Content-Type: application/octet-streams');
-		header("Content-Disposition: attachment; filename=\"{$templateName}.pdf\"");
-		echo $pdf;
-	}
-
-	/**
-	 * Function to get the pdf file name . This will conver the invoice in to pdf and saves the file
-	 * @return <String>
-	 *
-	 */
-	public function getPDFFileName() {
-		$moduleName = $this->getModuleName();
-		if ($moduleName == 'Quotes') {
-			vimport("~~/modules/$moduleName/QuotePDFController.php");
-			$controllerClassName = "Vtiger_QuotePDFController";
-		} else {
-			vimport("~~/modules/$moduleName/$moduleName" . "PDFController.php");
-			$controllerClassName = "Vtiger_" . $moduleName . "PDFController";
-		}
-
-		$recordId = $this->getId();
-		$controller = new $controllerClassName($moduleName);
-		$controller->loadRecord($recordId);
-
-		$sequenceNo = getModuleSequenceNumber($moduleName,$recordId);
-		$translatedName = vtranslate($moduleName, $moduleName);
-		$filePath = "storage/$translatedName"."_".$sequenceNo.".pdf";
-		//added file name to make it work in IE, also forces the download giving the user the option to save
-		$controller->Output($filePath,'F');
-		return $filePath;
 	}
 
 	/**

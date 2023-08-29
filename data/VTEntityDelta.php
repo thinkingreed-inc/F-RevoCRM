@@ -116,10 +116,23 @@ class VTEntityDelta extends VTEventHandler {
 		if(is_array($fieldDelta)) {
 			$fieldDelta = array_map('decode_html', $fieldDelta);
 		}
-		$result = $fieldDelta['oldValue'] != $fieldDelta['currentValue'];
-		if ($fieldValue !== NULL) {
-			$result = $result && ($fieldDelta['currentValue'] === $fieldValue);
-		}
+		
+		$module = Vtiger_Module::getInstance($moduleName);
+        $fieldModel = Vtiger_Field_Model::getInstance($fieldName, $module);
+        if($fieldModel->getFieldDataType() == "multipicklist") {
+			$fieldDelta_oldValue = explode(' |##| ', $fieldDelta['oldValue']);
+			$fieldDelta_currentValue = explode(' |##| ', $fieldDelta['currentValue']);
+			$result = !empty(array_diff($fieldDelta_oldValue, $fieldDelta_currentValue)) || !empty(array_diff($fieldDelta_currentValue, $fieldDelta_oldValue));
+			if ($fieldValue !== NULL) { //$fieldValueは「～に変更された」条件のとき
+				$fieldValue = explode(' |##| ', $fieldValue);
+				$result = $result && (empty(array_diff($fieldValue, $fieldDelta_currentValue)) && empty(array_diff($fieldDelta_currentValue, $fieldValue)));
+			}
+        }else{
+            $result = $fieldDelta['oldValue'] != $fieldDelta['currentValue'];
+			if ($fieldValue !== NULL) {
+				$result = $result && ($fieldDelta['currentValue'] === $fieldValue);
+			}
+        }
 		return $result;
 	}
 

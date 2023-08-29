@@ -14,7 +14,7 @@ class Vtiger_Popup_View extends Vtiger_Footer_View {
 
 	public function requiresPermission(Vtiger_Request $request){
 		$permissions = parent::requiresPermission($request);
-		
+
 		$permissions[] = array('module_parameter' => 'module', 'action' => 'DetailView');
 		return $permissions;
 	}
@@ -97,7 +97,7 @@ class Vtiger_Popup_View extends Vtiger_Footer_View {
 				$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
 				$searchParams=$request->get('search_params');
 
-		$relationId = $request->get('relationId'); 
+		$relationId = $request->get('relationId');
 
 		//To handle special operation when selecting record from Popup
 		$getUrl = $request->get('get_url');
@@ -167,6 +167,27 @@ class Vtiger_Popup_View extends Vtiger_Footer_View {
 					$listViewModel->set('search_params',$transformedSearchParams);
 				}
 		if(!empty($relatedParentModule) && !empty($relatedParentId)) {
+			$moduleFields = $moduleModel->getFields();
+			$whereCondition = [];
+
+			foreach ($searchParams as $fieldListGroup) {
+				foreach ($fieldListGroup as $fieldSearchInfo) {
+					$fieldModel = $moduleFields[$fieldSearchInfo[0]];
+					$tableName = $fieldModel->get('table');
+					$column = $fieldModel->get('column');
+					$whereCondition[$fieldSearchInfo[0]] = [
+						$tableName . '.' . $column,
+						$fieldSearchInfo[1],
+						$fieldSearchInfo[2],
+						$fieldSearchInfo[3]
+					];
+				}
+			}
+
+			if (!empty($whereCondition)) {
+				$listViewModel->set('whereCondition', $whereCondition);
+			}
+
 			$this->listViewHeaders = $listViewModel->getHeaders();
 
 			$models = $listViewModel->getEntries($pagingModel);
@@ -213,7 +234,7 @@ class Vtiger_Popup_View extends Vtiger_Footer_View {
 			$this->listViewHeaders = $listViewModel->getListViewHeaders();
 			$this->listViewEntries = $listViewModel->getListViewEntries($pagingModel);
 		}
-		// End  
+		// End
 				if(empty($searchParams)) {
 					$searchParams = array();
 				}

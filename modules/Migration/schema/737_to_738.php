@@ -9,5 +9,9 @@
 *********************************************************************************/
 
 if (defined('VTIGER_UPGRADE')) {
-	
+	global $current_user, $adb;
+	$db = PearDatabase::getInstance();
+
+    // PDFテンプレートのアップデート
+    include_once('setup/scripts/64_Update_PDFTemplate.php');
 }

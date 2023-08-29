@@ -13,6 +13,7 @@ vimport ('~~/include/Webservices/Query.php');
 class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 	private $cacheUser = array();
 	private $cacheParent = array();
+	private $cacheModule = array();
 
 	public function process(Vtiger_Request $request) {
 		if($request->get('mode') === 'batch') {
@@ -113,6 +114,10 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			$meta = $queryGenerator->getMeta($moduleModel->get('name'));
 
 			$queryGenerator->setFields(array_merge(array_merge($nameFields, array('id')), $fieldsList));
+			//カレンダー種別でタスク-開始日,終了日を選択している時の処理
+			if($type == 'ProjectTask'){
+				$queryGenerator->setFields(array_merge(array_merge($nameFields, array('id','projecttaskstatus')), $fieldsList));
+			}
 			$query = $queryGenerator->getQuery();
 			$startDateColumn = Vtiger_Util_Helper::validateStringForSql($fieldsList[0]);
 			$endDateColumn = Vtiger_Util_Helper::validateStringForSql($fieldsList[1]);
@@ -167,6 +172,11 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 
 				if($type == 'PriceBooks') {
 					$records = $this->queryForRecords($query, false);
+				//カレンダー種別でタスク-開始日またはタスク-終了日を選択している時の処理
+				}else if($type == 'ProjectTask'){
+					$query = "SELECT $selectFields, $fieldsList[0],projecttaskstatus FROM $type";
+					$query.= " WHERE $fieldsList[0] >= '$start' AND $fieldsList[0] <= '$end' ";
+					$records = $this->queryForRecords($query);
 				} else {
 					$records = $this->queryForRecords($query);
 				}
@@ -198,11 +208,15 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 				$recordDateTime->setDate($calendarYear, $recordDateTime->format('m'), $recordDateTime->format('d'));
 				$item['start'] = $recordDateTime->format('Y-m-d');
 			}
+			if($type == 'ProjectTask'&& $record['projecttaskstatus']!=null){
+				$item['title'] = $item['title'].' - ('.decode_html(vtranslate($record['projecttaskstatus'],'ProjectTask')).')';
+			}
 
 			$urlModule = $type;
 			if ($urlModule === 'Events') {
 				$urlModule = 'Calendar';
 			}
+			$item['status'] = $record['projecttaskstatus'];
 			$item['url']   = sprintf('index.php?module='.$urlModule.'&view=Detail&record=%s', $crmid);
 			$item['color'] = $color;
 			$item['textColor'] = $textColor;
@@ -394,10 +408,15 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			if(!empty($record['crmid'])) {
 				if(!array_key_exists($record['crmid'], $this->cacheParent)) {
 					$this->cacheParent[$record['crmid']] = Vtiger_functions::getCRMRecordLabel($record['crmid']);
+					$this->cacheModule[$record['related_module']] = Vtiger_functions::getCRMRecordType($record['crmid']);
 				}
 				$item['parent_id'] = $this->cacheParent[$record['crmid']];
+				$item['related_id'] = $record['crmid'];
+				$item['related_module'] = $this->cacheModule[$record['related_module']];
 			} else {
 				$item['parent_id'] = '';
+				$item['related_id'] = '';
+				$item['related_module'] = '';
 			}
 			$item['location'] = $record['location'];
 			$item['description'] = $record['description'];

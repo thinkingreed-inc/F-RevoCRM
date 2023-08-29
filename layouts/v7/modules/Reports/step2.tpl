@@ -80,7 +80,7 @@
                     {assign var=SELECTED_SORT_FEILDS_ARRAY value=$SELECTED_SORT_FIELDS}
                     {assign var=SELECTED_SORT_FIELDS_COUNT value=count($SELECTED_SORT_FEILDS_ARRAY)}
                     {while $SELECTED_SORT_FIELDS_COUNT lt 3 }
-                        <div class="row sortFieldRow" style="padding-bottom:10px;">
+                        <div class="row sortFieldRow" style="padding:10px;">
                             {include file='RelatedFields.tpl'|@vtemplate_path:$MODULE ROW_VAL=$ROW_VAL}
                             {assign var=ROW_VAL value=($ROW_VAL+1)}
                             {assign var=SELECTED_SORT_FIELDS_COUNT value=($SELECTED_SORT_FIELDS_COUNT+1)}

@@ -18,11 +18,29 @@ Vtiger_Edit_Js("PDFTemplates_Edit_Js",{},{
 			if(jQuery('#EditView').find('.isSystemTemplate').val() == 1) {
 				templateContentElement.removeAttr('data-validation-engine').addClass('ckEditorSource');
 			}
-            var customConfig = {
-                "height":"600px"
-            }
+			if ($("[name='is_headlesschrome']").val() == "true") {
+				var customConfig = {
+					"height": "600px",
+					"font_names": "明朝体/serif;ゴシック体/sans;",
+				}
+			} else {
+				var customConfig = {
+					"height": "600px"
+				}
+			}
 			var ckEditorInstance = new Vtiger_CkEditor_Js();
 			ckEditorInstance.loadCkEditor(templateContentElement,customConfig);
+			if ($("[name='is_headlesschrome']").val() == "true") {
+				var editor = CKEDITOR.instances.templatecontent;
+				var edata = editor.getData();
+				if (!edata) {
+					var replaced_text = edata + "<style type='text/css'><!-- @font-face { font-family: 'sans'; src: local('Noto Sans CJK JP');font-family: 'serif'; src: local('Noto Serif CJK JP');}html,body {font-family: sans;} --></style></html>";
+					editor.setData(replaced_text);
+				} else if (edata.indexOf("html,body {font-family: sans;}") == -1) {
+					var replaced_text = edata.replace('</html>', "<style type='text/css'><!-- @font-face { font-family: 'sans'; src: local('Noto Sans CJK JP');font-family: 'serif'; src: local('Noto Serif CJK JP');}html,body {font-family: sans;} --></style></html>");
+					editor.setData(replaced_text);
+				}
+			}
 		}
         this.registerFillTemplateContentEvent();
 		
@@ -81,19 +99,19 @@ Vtiger_Edit_Js("PDFTemplates_Edit_Js",{},{
 	registerFillTemplateContentEvent : function() {
 		var thisInstance = this;
 		 CKEDITOR.instances.templatecontent.on('blur', function(){
-			 jQuery('#templateFields,#generalFields').off('change');
-			 jQuery('#templateFields,#generalFields').on('change',function(e){
+			 jQuery('#templateFields,#generalFields,#customFunctions').off('change');
+			 jQuery('#templateFields,#generalFields,#customFunctions').on('change',function(e){
 				var mergeTag = jQuery(e.currentTarget).val();
 				var textarea = CKEDITOR.instances.templatecontent;
 				textarea.insertHtml(mergeTag);
 			 });
 		 });
-		 jQuery('.recordEditView').on('blur','#PDFTemplates_editView_fieldName_subject',function(){
-			 jQuery('#templateFields,#generalFields').off('change');
-			 jQuery('#templateFields,#generalFields').on('change',function(e){
+		 jQuery('.recordEditView').on('blur','#PDFTemplates_editView_fieldName_subject,#PDFTemplates_editView_fieldName_pdffilename',function(){
+			 jQuery('#templateFields,#generalFields,#customFunctions').off('change');
+			 jQuery('#templateFields,#generalFields,#customFunctions').on('change',function(e){
 				var mergeTag = jQuery(e.currentTarget).val();
 				thisInstance.insertValueAtCursorPosition();
-				jQuery('#PDFTemplates_editView_fieldName_subject').insertAtCaret(mergeTag);
+				jQuery('#PDFTemplates_editView_fieldName_subject,#PDFTemplates_editView_fieldName_pdffilename').insertAtCaret(mergeTag);
 			});
 		});
 	},

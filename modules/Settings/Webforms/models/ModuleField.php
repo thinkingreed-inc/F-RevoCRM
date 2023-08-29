@@ -39,9 +39,11 @@ class Settings_Webforms_ModuleField_Model extends Vtiger_Field_Model {
 		);
 
 		$pickListValues = $this->getPicklistValues();
+		$picklistColors = $this->getPicklistColors();
 		if(!empty($pickListValues)) {
 			$fieldInfo['picklistvalues'] = $pickListValues;
             $fieldInfo['editablepicklistvalues'] = $pickListValues;
+			$fieldInfo['picklistColors'] = $picklistColors;
 		}
 
 		if($this->getFieldDataType() == 'date' || $this->getFieldDataType() == 'datetime'){
@@ -93,6 +95,35 @@ class Settings_Webforms_ModuleField_Model extends Vtiger_Field_Model {
 		$pickListValues = array();
 		$pickListValues[""] = vtranslate("LBL_SELECT_OPTION", 'Settings:Webforms');
 		return ($pickListValues + parent::getEditablePicklistValues());
+	}
+
+	public function getPicklistColors() {
+		$picklistColors = array();
+		$fieldDataType = $this->getFieldDataType();
+		if (in_array($fieldDataType, array('picklist', 'multipicklist'))) {
+			$fieldName = $this->getName();
+
+			preg_match('/(\w+) ; \((\w+)\) (\w+)/', $fieldName, $matches);
+			if (count($matches) > 0) {
+				list($full, $referenceParentField, $referenceModule, $referenceFieldName) = $matches;
+				$fieldName = $referenceFieldName;
+			}
+
+			if (!in_array($fieldName, array('hdnTaxType', 'region_id')) && !in_array($this->getModuleName(), array('Users'))) {
+				$db = PearDatabase::getInstance();
+				$picklistValues = $this->getPicklistValues();
+				$tableName = "vtiger_$fieldName";
+				if (Vtiger_Utils::CheckTable($tableName)) {
+					if (is_array($picklistValues) && count($picklistValues)) {
+						$result = $db->pquery("SELECT $fieldName, color FROM $tableName WHERE $fieldName IN (".generateQuestionMarks($picklistValues).")", array_keys($picklistValues));
+						while ($row = $db->fetch_row($result)) {
+							$picklistColors[$row[$fieldName]] = $row['color'];
+						}
+					}
+				}
+			}
+		}
+		return $picklistColors;
 	}
 
 	/**

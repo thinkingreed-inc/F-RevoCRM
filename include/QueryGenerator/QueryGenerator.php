@@ -739,9 +739,9 @@ class QueryGenerator {
 					}else{
 						$moduleList = $this->referenceFieldInfoList[$fieldName];
 						foreach($moduleList as $module) {
+							$meta = $this->getMeta($module);
 							$nameFields = $this->moduleNameFields[$module];
 							$nameFieldList = explode(',',$nameFields);
-							$meta = $this->getMeta($module);
 							$columnList = array();
 							foreach ($nameFieldList as $column) {
 								if($module == 'Users') {
@@ -836,7 +836,7 @@ class QueryGenerator {
 							$fieldSql .= "$fieldGlue ".$field->getTableName().'.'.$field->getColumnName().' '.$valueSql;
 						}
 					}
-				} else if (($baseModule == 'Events' || $baseModule == 'Calendar') 
+				} else if (($baseModule == 'Events' || $baseModule == 'Calendar')
 						&& ($field->getColumnName() == 'status' || $field->getColumnName() == 'eventstatus')) {
 					$otherFieldName = 'eventstatus';
 					if($field->getColumnName() == 'eventstatus'){
@@ -848,7 +848,7 @@ class QueryGenerator {
 					$specialConditionForOtherField='';
 					$conditionGlue = ' OR ';
 					if($conditionInfo['operator'] == 'n' || $conditionInfo['operator'] == 'k' || $conditionInfo['operator'] == 'y') {
-					   $conditionGlue = ' AND '; 
+					   $conditionGlue = ' AND ';
 					   if($conditionInfo['operator'] == 'n') {
 						   $specialCondition = ' OR '.$field->getTableName().'.'.$field->getColumnName().' IS NULL ';
 						   if(!empty($otherField))
@@ -932,7 +932,7 @@ class QueryGenerator {
 				}
 			}
 		}
-		
+
 		// This is needed as there can be condition in different order and there is an assumption in makeGroupSqlReplacements API
 		// that it expects the array in an order and then replaces the sql with its the corresponding place
 		ksort($fieldSqlList);
@@ -1030,11 +1030,19 @@ class QueryGenerator {
 				$value = trim($value);
 			}
 			if ($operator == 'empty' || $operator == 'y') {
+				if($this->isDateType($field->getFieldDataType())) {
+					$sql[] = sprintf("IS NULL", $this->getSQLColumn($field->getFieldName(), $field));
+				} else {
 				$sql[] = sprintf("IS NULL OR %s = ''", $this->getSQLColumn($field->getFieldName(), $field));
+				}
 				continue;
 			}
 			if($operator == 'ny'){
+				if($this->isDateType($field->getFieldDataType())) {
+					$sql[] = sprintf("IS NOT NULL", $this->getSQLColumn($field->getFieldName(), $field));
+				} else {
 				$sql[] = sprintf("IS NOT NULL AND %s != ''", $this->getSQLColumn($field->getFieldName(), $field));
+				}
 				continue;
 			}
 			if((strtolower(trim($value)) == 'null') ||
@@ -1082,7 +1090,7 @@ class QueryGenerator {
 						$value = $dateTime[0];
 					}
 				}
-			} else if ($field->getFieldDataType() === 'currency') {
+			} else if ($field->getFieldDataType() === 'currency' && $operator != 'range') {
 				$uiType = $field->getUIType();
 				if ($uiType == 72) {
 					$value = CurrencyField::convertToDBFormat($value, null, true);
@@ -1109,6 +1117,37 @@ class QueryGenerator {
 			if(trim($value) == '' && ($operator == 'k') &&
 					$this->isStringType($field->getFieldDataType())) {
 				$sql[] = "NOT LIKE ''";
+				continue;
+			}
+
+			if($operator == 'range') {
+				$valueArray = explode(',' , $value);
+				if(count($valueArray) == 2) {
+					if($field->getFieldDataType() === 'currency') {
+						$uiType = $field->getUIType();
+						if($uiType == 72) {
+							if($valueArray[0] != ""){
+								$valueArray[0] = CurrencyField::convertToDBFormat($valueArray[0], null, true);
+							}
+							if($valueArray[1] != ""){
+								$valueArray[1] = CurrencyField::convertToDBFormat($valueArray[1], null, true);
+							}
+						} elseif($uiType == 71) {
+							if($valueArray[0] != ""){
+								$valueArray[0] = (string)CurrencyField::convertToDBFormat($valueArray[0]);
+							}
+							if($valueArray[1] != ""){
+								$valueArray[1] = (string)CurrencyField::convertToDBFormat($valueArray[1]);
+							}
+						}
+					}
+					if($valueArray[0] != "") {
+						$sql[] = ">= $valueArray[0]";
+					}
+					if($valueArray[1] != "") {
+						$sql[] = "<= $valueArray[1]";
+					}
+				}
 				continue;
 			}
 
@@ -1154,10 +1193,17 @@ class QueryGenerator {
 				$value = "'$value'";
 			}
 
-			if(($this->isNumericType($field->getFieldDataType())) && empty($value)) {				
+			if(($this->isNumericType($field->getFieldDataType())) && empty($value)) {
 				$value = '0';
 			}
-			$sql[] = "$sqlOperator $value";
+			
+			if ($operator === "own") {
+				$currentUser = Users_Record_Model::getCurrentUserModel();
+				$currentUserName = decode_html($currentUser->getName());
+				$sql[] = "= '$currentUserName'";
+			}else{
+				$sql[] = "$sqlOperator $value";
+			}
 		}
 		return $sql;
 	}

@@ -299,8 +299,16 @@ class Reports extends CRMEntity{
 					WHERE vtiger_tab.isentitytype = 1
 					AND vtiger_tab.name NOT IN(".generateQuestionMarks($restricted_modules).")
 					AND vtiger_tab.presence = 0
-                    AND vtiger_field.fieldname NOT LIKE ?",
-					array($restricted_modules,$restricted_modules, 'cf_%')
+					UNION
+					SELECT relmodule, vtiger_tab.tabid FROM vtiger_fieldmodulerel
+					INNER JOIN vtiger_tab on vtiger_tab.name = vtiger_fieldmodulerel.module
+					INNER JOIN vtiger_tab AS vtiger_tabrel ON vtiger_tabrel.name = vtiger_fieldmodulerel.relmodule AND vtiger_tabrel.presence = 0
+                    INNER JOIN vtiger_field ON vtiger_field.fieldid = vtiger_fieldmodulerel.fieldid
+					WHERE vtiger_tab.isentitytype = 1
+					AND vtiger_tab.name NOT IN(".generateQuestionMarks($restricted_modules).")
+					AND vtiger_tab.presence = 0
+					",
+					array($restricted_modules,$restricted_modules,$restricted_modules)
 				);
 				if($adb->num_rows($relatedmodules)) {
 					while($resultrow = $adb->fetch_array($relatedmodules)) {
@@ -522,6 +530,50 @@ class Reports extends CRMEntity{
 				array_push($params, $current_user->id);
 			}
 
+			//ALLとshared以外のフォルダを開いたときに、閲覧権限のあるレポートのみ表示させるように修正
+			if ($rpt_fldr_id !== false && $rpt_fldr_id !== 'shared' && $rpt_fldr_id !== 'All') {
+				if (!empty($user_groups)) {
+					$user_group_query = " (shareid IN (".generateQuestionMarks($user_groups).") AND setype='groups') OR";
+					$non_admin_query = " vtiger_report.reportid IN (SELECT reportid FROM vtiger_reportsharing WHERE $user_group_query (shareid=? AND setype='users'))";
+					$non_admin_query = "( $non_admin_query ) OR ";
+					foreach ($user_groups as $userGroup) {
+						array_push($params, $userGroup);
+					}
+					array_push($params, $current_user->id);
+				}
+
+				//現在のユーザーより下の役割のユーザーが作成したレポートを表示
+				$sql .= " AND ($non_admin_query vtiger_report.sharingtype='Public' OR "
+						. "vtiger_report.owner = ? OR vtiger_report.owner IN (SELECT vtiger_user2role.userid "
+						. "FROM vtiger_user2role INNER JOIN vtiger_users ON vtiger_users.id=vtiger_user2role.userid "
+						. "INNER JOIN vtiger_role ON vtiger_role.roleid=vtiger_user2role.roleid "
+						. "WHERE vtiger_role.parentrole LIKE '".$current_user_parent_role_seq."::%'))";
+				array_push($params, $current_user->id);
+
+				//現在のユーザに共有されているレポートを表示
+				$userRole = fetchUserRole($current_user->id);
+            	$parentRoles=getParentRole($userRole);
+            	$parentRolelist= array();
+            	foreach($parentRoles as $par_rol_id)
+            	{
+            	    array_push($parentRolelist, $par_rol_id);		
+           		}
+            	array_push($parentRolelist, $userRole);
+				$sql .= " OR vtiger_report.reportid IN (SELECT vtiger_report_shareusers.reportid FROM vtiger_report_shareusers WHERE vtiger_report_shareusers.userid=?)";
+				array_push($params, $current_user->id);
+
+				if(!empty($user_groups)){
+					$sql .= " OR vtiger_report.reportid IN (SELECT vtiger_report_sharegroups.reportid FROM vtiger_report_sharegroups WHERE vtiger_report_sharegroups.groupid IN (".  generateQuestionMarks($user_groups)."))";
+					$params = array_merge($params,$user_groups);
+				}
+
+				$sql.= " OR vtiger_report.reportid IN (SELECT vtiger_report_sharerole.reportid FROM vtiger_report_sharerole WHERE vtiger_report_sharerole.roleid =?)";
+				array_push($params, $userRole);
+				if(!empty($parentRolelist)){
+					$sql.= " OR vtiger_report.reportid IN (SELECT vtiger_report_sharers.reportid FROM vtiger_report_sharers WHERE vtiger_report_sharers.rsid IN (". generateQuestionMarks($parentRolelist) ."))";
+					$params = array_merge($params,$parentRolelist);
+				}
+			}
 			$queryObj = new stdClass();
             $queryObj->query = $sql;
             $queryObj->queryParams = $params;

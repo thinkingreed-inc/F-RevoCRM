@@ -980,6 +980,12 @@ class ReportRun extends CRMEntity {
 				continue;
 
 			while ($relcriteriarow = $adb->fetch_array($result)) {
+				if($relcriteriarow["comparator"] === "own"){
+					$currentUser = Users_Record_Model::getCurrentUserModel();
+					$currentUserName = decode_html($currentUser->getName());
+					$relcriteriarow['value'] = $currentUserName;
+					$relcriteriarow["comparator"] = 'e';
+				}
 				$columnIndex = $relcriteriarow["columnindex"];
 				$criteria = array();
 				$criteria['columnname'] = html_entity_decode($relcriteriarow["columnname"]);
@@ -2989,7 +2995,8 @@ class ReportRun extends CRMEntity {
 			$secondarymodule = explode(":", $this->secondarymodule);
 			foreach ($secondarymodule as $value) {
 				if ($value == 'Calendar') {
-					$wheresql .= " AND vtiger_activity.visibility != 'Private' ";
+					$this->queryPlanner->addTable('vtiger_activity');
+					$wheresql .= " AND (vtiger_activity.visibility != 'Private' OR vtiger_activity.visibility IS NULL) ";
 				}
 			}
 		}

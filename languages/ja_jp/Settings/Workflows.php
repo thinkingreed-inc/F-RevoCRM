@@ -35,6 +35,7 @@ $languageStrings = array(
 	'LBL_SET_VALUE' => '値の設定',
 	'LBL_USE_FIELD' => '--項目の値を使用--',
 	'LBL_USE_FUNCTION' => '-- 関数を使用 --',
+	'LBL_USE_PICKLIST' => '-- 選択肢を使用 --',
 	'LBL_RAW_TEXT' => 'RAWテキスト',
 	'LBL_ENABLE_TO_CREATE_FILTERS' => 'リストを作成するには有効にします',
 	'LBL_CREATED_IN_OLD_LOOK_CANNOT_BE_EDITED' => 'このワークフローは旧方式にて作成されました 旧方式で作成された条件は編集できません。 条件を再作成するか、既存の条件を変更なしに使用します。',

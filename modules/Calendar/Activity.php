@@ -147,17 +147,33 @@ class Activity extends CRMEntity {
 			$selected_users_string =  $_REQUEST['inviteesid'];
 			$this->invitee_array = explode(';',$selected_users_string);
 			$smownerid = $this->column_fields['assigned_user_id'];
+			$request_assigned_user_id = $_REQUEST['assigned_user_id'];
 			if(!in_array($smownerid, $this->invitee_array)) {
 				$this->invitee_array[] = $smownerid;
+			}
+			if(!in_array($request_assigned_user_id, $this->invitee_array)){
+				$this->invitee_array[] = $request_assigned_user_id;
 			}
 		} else if(empty($this->invitee_array) && count($_REQUEST['selectedusers']) > 0){// 概要欄や関連からの遷移の場合
 			$this->invitee_array = $_REQUEST['selectedusers'];
 			$smownerid = $this->column_fields['assigned_user_id'];
+			$request_assigned_user_id = $_REQUEST['assigned_user_id'];
 			if(!in_array($smownerid, $this->invitee_array)) {
 				$this->invitee_array[] = $smownerid;
 			}
+			if(!in_array($request_assigned_user_id, $this->invitee_array)){
+				$this->invitee_array[] = $request_assigned_user_id;
+			}
 		} else {// リクエストに入っていない場合はDBから取得を試みる
 			$this->loadInvitees();
+		}
+
+		// 担当者変更時の参加者削除
+		$database_smownerid = $this->getBeforeAssignedUserID();
+		if ( $database_smownerid > 0 && $smownerid != $database_smownerid ) {
+			//削除してつめる
+			$this->invitee_array = array_diff($this->invitee_array, array($database_smownerid));
+			$this->invitee_array = array_values($this->invitee_array);
 		}
 
 		//Handling module specific save
@@ -253,11 +269,14 @@ class Activity extends CRMEntity {
 		} else if(!$this->is_allday) {
 			$hours = (int)($time / 3600);
 			$minutes = (int)(($time % 3600) / 60);
+		} else {
+			$hours = (int)($time / 3600) + 24;
+			$minutes = (int)(($time % 3600) / 60);
 		}
 		$updateQuery = "UPDATE vtiger_activity SET duration_hours = ?, duration_minutes = ? WHERE activityid = ?";
 		$adb->pquery($updateQuery, array($hours, $minutes, $this->id));
 
-		$this->updateLastActionDate();
+		$this->updateLastActionDate($module);
 	}
 
 	/** Function to insert values in vtiger_activity_reminder_popup table for the specified module
@@ -273,8 +292,8 @@ class Activity extends CRMEntity {
 			$cbdate = getValidDBInsertDateValue($this->column_fields['date_start']);
 			$cbtime = $this->column_fields['time_start'];
 
-			$reminder_query = "SELECT reminderid FROM vtiger_activity_reminder_popup WHERE semodule = ? and recordid = ?";
-			$reminder_params = array($cbmodule, $cbrecord);
+			$reminder_query = "SELECT reminderid FROM vtiger_activity_reminder_popup WHERE recordid = ?";
+			$reminder_params = array($cbrecord);
 			$reminderidres = $adb->pquery($reminder_query, $reminder_params);
 
 			$reminderid = null;
@@ -439,12 +458,20 @@ function insertIntoRecurringTable(& $recurObj)
 	function insertIntoInviteeTable($module,$invitees_array)
 	{
 		global $log,$adb;
+		global $activityarray, $global_workflow_skip_field_array;// $activityarray：ワークフロー実行済みの活動IDを格納。$global_workflow_skip_field_array：ワークフローで更新済みのフィールド名を格納。
 		$log->debug("Entering insertIntoInviteeTable(".$module.",".$invitees_array.") method ...");
 
+		// 一度更新された招待活動の場合は、処理を行わない。
 		if($this->is_not_invitees_update) {
 			return ;
 		}
 
+		// 招待活動でない場合は、処理を行わない。
+		if(empty($this->invitee_parentid)) {
+			return ;
+		}
+
+		// 編集の場合
 		if($this->mode == 'edit'){
 			// 参加者のActivityを更新または削除
 			$result = $adb->pquery("SELECT
@@ -462,41 +489,69 @@ function insertIntoRecurringTable(& $recurObj)
 				$activityid = $adb->query_result($result, $i, "activityid");
 				$smownerid = $adb->query_result($result, $i, "smownerid");
 
+				// ワークフローで更新した項目を取得しておく。
+				if(is_array($global_workflow_skip_field_array[$activityid])){
+					$global_workflow_skip_field_array[$activityid] = array_unique(array_merge($global_workflow_skip_field_array[$activityid], $this->workflow_skip_field_array));
+				}else{
+					$global_workflow_skip_field_array[$activityid] = $this->workflow_skip_field_array;
+				}
+
+				// 自身の活動既に保存済みのため、処理は行わない。
 				if($activityid == $this->id) {
 					continue;
 				}
 
 				$inviteRecord = Vtiger_Record_Model::getInstanceById($activityid);
 				if(in_array($smownerid, $invitees_array)) {
-					foreach($this->column_fields as $field => $value) {
-						if(in_array($field, $this->notCopyFields)) {
-							continue;
-						}
-						$inviteRecord->set($field, $value);
-					}
 					$inviteRecord->set('invitee_parentid', $this->invitee_parentid);
 					$inviteRecord->set('invitees_array', $invitees_array);
 					$inviteRecord->set('is_not_invitees_update', true);
 					$inviteRecord->set('mode', 'edit');
 					$inviteRecord->set('is_allday', $this->is_allday);
-					$inviteRecord->save();
+					$inviteRecord->set('workflow_task_id', $this->workflow_task_id);
+					$inviteRecord->set('workflow_skip_field_array', $this->workflow_skip_field_array);
+					if($this->workflow_task_id && in_array($inviteRecord->getId(), $activityarray[$this->workflow_task_id])){
+						// 実行済みのワークフローによる更新の場合、イベントを発火させない為にsaveentity関数を使用する。
+						$inviteRecord->getEntity()->invitee_parentid = $this->invitee_parentid;
+						$inviteRecord->getEntity()->invitees_array = $invitees_array;
+						$inviteRecord->getEntity()->is_not_invitees_update = true;
+						$inviteRecord->getEntity()->is_allday = $this->is_allday;
+						$inviteRecord->getEntity()->mode = "edit";
+						$inviteRecord->getEntity()->workflow_task_id = $this->workflow_task_id;
+						$inviteRecord->getEntity()->workflow_skip_field_array = $this->workflow_skip_field_array;
+						$inviteRecord->getEntity()->saveentity($module, $inviteRecord->getId());
+					}else{
+						foreach($this->column_fields as $field => $value) {
+							// フィールドの更新ワークフローで既に更新している項目は、招待元からコピーしないようにする。
+							if(in_array($field, $this->notCopyFields) || in_array($field, $global_workflow_skip_field_array[$activityid])) {
+								continue;
+							}
+							$inviteRecord->set($field, $value);
+						}
+						// ワークフロー毎に、実行済みのcrmidを取得しておく。
+						if($this->workflow_task_id) {
+							$activityarray[$this->workflow_task_id][] = $inviteRecord->getId();
+						}
+						$log->debug("activityarray this->workflow_task_id ->>".$this->workflow_task_id);
+						$log->debug("[".__FUNCTION__."]line:".__LINE__.":activityarray:".str_replace(array("\n", "  "), array('',''), print_r($activityarray, true)));
+						$inviteRecord->save();
+					}
 				} else {
 					$inviteRecord->getModule()->deleteRecord($inviteRecord);
-					$adb->pquery("DELETE FROM vtiger_invitees WHERE activityid = ? AND inviteeid = ?", array($this->invitee_parentid, $inviteRecord->get('assigned_user_id')));
 				}
 			}
 		}
+		// 担当者変更変更用 一旦すべてのinvitees削除
+		$adb->pquery("DELETE FROM vtiger_invitees WHERE activityid = ?", array($this->invitee_parentid));
+
+		// 新規作成の場合
 		foreach($invitees_array as $inviteeid)
 		{
 			if(empty($inviteeid)) {
 				continue;
 			}
-
-			$result = $adb->pquery("SELECT 1 FROM vtiger_invitees WHERE activityid = ? AND inviteeid = ?", array($this->invitee_parentid, $inviteeid));
-			if($adb->num_rows($result) == 0) {
-				$query="INSERT INTO vtiger_invitees VALUES (?,?,?)";
-				$adb->pquery($query, array($this->invitee_parentid, $inviteeid, 'sent'));
-			}
+			$query="INSERT INTO vtiger_invitees VALUES (?,?,?)";
+			$adb->pquery($query, array($this->invitee_parentid, $inviteeid, 'sent'));
 
 			$result = $adb->pquery("SELECT 1 FROM vtiger_activity a INNER JOIN vtiger_crmentity c ON c.crmid = a.activityid WHERE c.deleted = 0 AND c.smownerid = ? AND a.invitee_parentid = ?", array($inviteeid, $this->invitee_parentid));
 			if($adb->num_rows($result) == 0) {
@@ -506,7 +561,20 @@ function insertIntoRecurringTable(& $recurObj)
 				$inviteRecord->set('assigned_user_id', $inviteeid);
 				$inviteRecord->set('is_not_invitees_update', true);
 				$inviteRecord->set('is_allday', $this->is_allday);
+				$inviteRecord->set('workflow_task_id', $this->workflow_task_id);
+				$inviteRecord->set('workflow_skip_field_array', $this->workflow_skip_field_array);
 				$inviteRecord->save();
+				// ワークフロー毎に、実行済みのcrmidを取得しておく。
+				if($this->workflow_task_id) {
+					$activityarray[$this->workflow_task_id][] = $inviteRecord->getId();
+				}
+				// ワークフローで更新した項目を取得しておく。
+				if(is_array($global_workflow_skip_field_array[$inviteRecord->getId()])){
+					$global_workflow_skip_field_array[$inviteRecord->getId()] = array_unique(array_merge($global_workflow_skip_field_array[$inviteRecord->getId()], $this->workflow_skip_field_array));
+				}else{
+					$global_workflow_skip_field_array[$inviteRecord->getId()] = $this->workflow_skip_field_array;
+				}
+				$log->debug("[".__FUNCTION__."]line:".__LINE__.":activityarray:".str_replace(array("\n", "  "), array('',''), print_r($activityarray, true)));
 			}
 		}
 		$log->debug("Exiting insertIntoInviteeTable method ...");
@@ -522,10 +590,10 @@ function insertIntoRecurringTable(& $recurObj)
 	{
 			global $adb;
 			global $current_user;
-			if($this->mode == 'edit'){
+			// if($this->mode == 'edit'){
 				$sql = "delete from vtiger_salesmanactivityrel where activityid=?";
 				$adb->pquery($sql, array($this->id));
-			}
+			// }
 
 		$user_sql = $adb->pquery("select count(*) as count from vtiger_users where id=?", array($this->column_fields['assigned_user_id']));
 		if($adb->query_result($user_sql, 0, 'count') != 0) {
@@ -1336,7 +1404,7 @@ function insertIntoRecurringTable(& $recurObj)
 		}
 	}
 
-	public function updateLastActionDate() {
+	public function updateLastActionDate($module) {
 		global $adb, $log;
 		$accountids = array();
 		$result = $adb->pquery("SELECT contactid, activityid FROM vtiger_cntactivityrel WHERE activityid = ?",array($this->id));
@@ -1351,7 +1419,7 @@ function insertIntoRecurringTable(& $recurObj)
 			if ($accountid > 0) {
 				$accountids[] = $accountid;
 			}
-			$recordContactModel->save();
+			$recordContactModel->getEntity()->saveentity($module, $contactid);
 		}
 
 		$parent_id = $this->column_fields["parent_id"];
@@ -1362,7 +1430,7 @@ function insertIntoRecurringTable(& $recurObj)
 				$recordParentModel->set('id', $parent_id);
 				$recordParentModel->set('mode', 'edit');
 				$recordParentModel->set('last_action_date', $this->getParentLastActionDate($parent_id, $moduleName));
-				$recordParentModel->save();
+				$recordParentModel->getEntity()->saveentity($module, $parent_id);
 			} elseif ($moduleName == "Potentials") {
 				$recordParentModel->set('id', $parent_id);
 				$recordParentModel->set('mode', 'edit');
@@ -1371,7 +1439,7 @@ function insertIntoRecurringTable(& $recurObj)
 				if($accountid > 0) {
 					$accountids[] = $accountid;
 				}
-				$recordParentModel->save();
+				$recordParentModel->getEntity()->saveentity($module, $parent_id);
 			} elseif ($moduleName == "Accounts") {
 				$accountids[] = $parent_id;
 			}
@@ -1408,7 +1476,7 @@ function insertIntoRecurringTable(& $recurObj)
 				} else {
 					$accountRecordModel->set('last_action_date', null);
 				}
-				$accountRecordModel->save();
+				$accountRecordModel->getEntity()->saveentity($module, $accountRecordModel->getId());
 		}
 	}
 
@@ -1456,6 +1524,15 @@ function insertIntoRecurringTable(& $recurObj)
 		}
 		$last_action_date   = array_keys($parentLastActionDateList, max($parentLastActionDateList));
 		return $last_action_date[0];
+	}
+	
+
+	function getBeforeAssignedUserID() {
+		$vtEntityDelta = new VTEntityDelta();
+		$delta = $vtEntityDelta->getEntityDelta('Events', $this->id, true);
+		if(!is_array($delta))						{	return 0;	}
+		if ( empty($delta['assigned_user_id']) )	{	return 0;	}
+		return $delta['assigned_user_id']['oldValue'];
 	}
 
 }

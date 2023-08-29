@@ -21,6 +21,10 @@ require_once 'include/Webservices/VtigerWebserviceObject.php';
 
 require_once("modules/Users/Users.php");
 
+require_once('modules/com_vtiger_workflow/VTEntityCache.inc');
+require_once('modules/com_vtiger_workflow/VTWorkflowUtils.php');
+require_once('modules/com_vtiger_workflow/VTEmailRecipientsTemplate.inc');
+
 class VTCreateEventTask extends VTTask{
 	public $executeImmediately = true;
 
@@ -84,10 +88,21 @@ class VTCreateEventTask extends VTTask{
 		$time = ($this->startTime) ? self::convertToDBFormat($this->startTime) : date('H:i:s');
 		$endTime = ($this->endTime) ? self::convertToDBFormat($this->endTime) : date('H:i:s');
 		
+		$utils = new VTWorkflowUtils();
+		$adminUser = $utils->adminUser();
+		$entityCache = new VTEntityCache($adminUser);
+		
+		$id = $entityData->get('id');
+		$ct = new VTSimpleTemplate($this->eventName);
+		$eventName = $ct->render($entityCache, $id);
+		
+		$ct = new VTSimpleTemplate($this->description);
+		$description = $ct->render($entityCache, $id);
+			
 		$fields = array(
 			'activitytype'=>$this->eventType,
-			'description'=> decode_html($this->description),
-			'subject'=> decode_html($this->eventName),
+			'description'=> decode_html($description),
+			'subject'=> decode_html($eventName),
 			'taskpriority'=>$this->priority,
 			'eventstatus'=>$this->status,
 			'assigned_user_id'=>$userId,

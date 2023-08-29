@@ -53,9 +53,9 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var instance = Calendar_Calendar_Js.getInstance();
 		instance.editCalendarTask(taskId);
 	},
-	markAsHeld: function (recordId) {
+	markAsHeld: function (recordId,sourceModule) {
 		var instance = Calendar_Calendar_Js.getInstance();
-		instance.markAsHeld(recordId);
+		instance.markAsHeld(recordId,sourceModule);
 	},
 	holdFollowUp: function (eventId) {
 		var instance = Calendar_Calendar_Js.getInstance();
@@ -143,7 +143,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			}
 		}
 	},
-	markAsHeld: function (recordId) {
+	markAsHeld: function (recordId,sourceModule) {
 		var thisInstance = this;
 		app.helper.showConfirmationBox({
 			message: app.vtranslate('JS_CONFIRM_MARK_AS_HELD')
@@ -152,7 +152,8 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				module: "Calendar",
 				action: "SaveFollowupAjax",
 				mode: "markAsHeldCompleted",
-				record: recordId
+				record: recordId,
+				sourceModule:sourceModule
 			};
 
 			app.request.post({'data': requestParams}).then(function (e, res) {
@@ -1358,6 +1359,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		}
 		var params = {
 			"module": "Calendar",
+			"view": app.view(),
 			"action": "DeleteAjax",
 			"record": eventId,
 			"sourceModule": sourceModule
@@ -1437,6 +1439,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 					});
 				} else {
 					thisInstance._updateEvent(form);
+					jQuery("button[name='saveButton']").prop("disabled", true);
 				}
 			}
 		};
@@ -1522,7 +1525,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			}
 
 			if(eventObj.parent_id && eventObj.parent_id != '') {
-				popOverHTML += eventObj.parent_id;
+				popOverHTML += '<a href="index.php?module=' + eventObj.related_module + '&view=Detail&record=' + eventObj.related_id + '">'+eventObj.parent_id+'</a>';
 				popOverHTML += '<br>';
 			}
 
@@ -1538,7 +1541,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 
 			popOverHTML += '</span>';
 
-			if (sourceModule === 'Calendar' || sourceModule == 'Events') {
+			if (sourceModule === 'Calendar' || sourceModule == 'Events'||sourceModule =="ProjectTask") {
 				popOverHTML += '' +
 						'<span class="pull-right cursorPointer" ' +
 						'onClick="Calendar_Calendar_Js.deleteCalendarEvent(\'' + eventObj.id +
@@ -1570,7 +1573,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				if (eventObj.status !== 'Held' && eventObj.status !== 'Completed') {
 					popOverHTML += '' +
 							'<span class="pull-right cursorPointer"' +
-							'onClick="Calendar_Calendar_Js.markAsHeld(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_MARK_AS_HELD') + '">' +
+							'onClick="Calendar_Calendar_Js.markAsHeld(\'' + eventObj.id + '\',\'' + sourceModule + '\');" title="' + app.vtranslate('JS_MARK_AS_HELD') + '">' +
 							'<i class="fa fa-check"></i>' +
 							'</span>';
 				} else if (eventObj.status === 'Held') {

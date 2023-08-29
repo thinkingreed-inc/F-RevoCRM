@@ -31,5 +31,5 @@ RUN set -xe; \
     # for imap
     && docker-php-ext-configure imap --with-kerberos --with-imap-ssl && \
     docker-php-ext-install -j$(nproc) imap
-RUN pecl install xdebug \
+RUN pecl install xdebug-3.1.6 \
   && docker-php-ext-enable xdebug

@@ -1786,7 +1786,7 @@ class Users extends CRMEntity {
 							}
 						}
 							if(empty($lang)) {
-								$lang = 'en_us';
+								$lang = 'ja_jp';
 							}
 							$fieldValue = $lang;
 							unset($lang);

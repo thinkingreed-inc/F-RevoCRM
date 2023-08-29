@@ -218,7 +218,8 @@ class iCalendar_component {
     			}
     			$this->add_property($key,$component);
     		} else if(!empty($components['function'])){
-    			$this->$components['function']($activity);
+                $func = $components['function'];
+    			$this->$func($activity);
     		}
     	}
         return true;
@@ -357,7 +358,7 @@ class iCalendar extends iCalendar_component {
         $this->valid_properties = array(
             'CALSCALE'    => RFC2445_OPTIONAL | RFC2445_ONCE,
             'METHOD'      => RFC2445_OPTIONAL | RFC2445_ONCE,
-            'PRODID'      => RFC2445_REQUIRED | RFC2445_ONCE,
+            'PRODID'      => RFC2445_OPTIONAL | RFC2445_ONCE,
             'VERSION'     => RFC2445_REQUIRED | RFC2445_ONCE,
             RFC2445_XNAME => RFC2445_OPTIONAL
         );
@@ -377,6 +378,7 @@ class iCalendar_event extends iCalendar_component {
     var $name       = 'VEVENT';
     var $properties;
     var $mapping_arr = array(
+    	'UID'			=>	array('component'=>'id','type'=>'string'),
     	'CLASS'			=>	array('component'=>'visibility','type'=>'string'),
     	'DESCRIPTION'	=>	array('component'=>'description','type'=>'string'),
     	'DTSTART'		=>	array('component'=>array('date_start','time_start'),'function'=>'iCalendar_event_dtstart','type'=>'datetime'),

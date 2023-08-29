@@ -565,10 +565,83 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 		$result = $db->pquery($query, $params);
 		$noOfFields = $db->num_rows($result);
 		$selectedFields = array();
-		for($i=0; $i<$noOfFields; ++$i) {
+		for($i=0; $i<$noOfFields; $i++) {
 			$columnIndex = $db->query_result($result, $i, 'columnindex');
 			$columnName = $db->query_result($result, $i, 'columnname');
-			$selectedFields[$columnIndex] = decode_html($columnName);
+			if($i == 0)$num = $columnIndex; //$columnIndexが0から始まらないケースがあるため
+			$selectedFields[$columnIndex-$num] = decode_html($columnName);
+		}
+		$selectedFields = self::renameSelectedFields($selectedFields);
+		return $selectedFields;
+	}
+
+    /**
+	 * fieldlabelをDBで直接変更した場合、getSelectedFields()で取得してきたfieldLabelと変更後の名前が異なるため選択項目として表示されないバグがあった。
+	 * そこで、取得してきたfieldLabelをvtiger_fieldテーブルと比較し変更する。
+	 */
+	function renameSelectedFields($selectedFields){
+		if(isset($selectedFields)){
+			$table_array = array();
+			for($i=0; $i<count($selectedFields); $i++){
+				$columnlist[$i] = explode(':', $selectedFields[$i]);
+				if($columnlist[$i][0]){
+					$moduleFieldLabel_array = explode('_', $columnlist[$i][3]);
+					$fieldlabelLinking = $moduleFieldLabel_array[1];
+					for($j=1; $j<count($moduleFieldLabel_array)-1; $j++){
+						$fieldlabelLinking .= '_'.$moduleFieldLabel_array[$j+1];
+					}
+					array_push($columnlist[$i],$moduleFieldLabel_array[0],$fieldlabelLinking);
+					if(!in_array($columnlist[$i][0],$table_array)){
+						array_push($table_array,$columnlist[$i][0]);
+					}
+				}
+			}
+			// クエリを何度も飛ばすことを避けるため、$tabid等をまとめて取得する
+			for($i=0; $i<count($table_array); $i++){
+				$db = PearDatabase::getInstance();
+				$query = 'SELECT tabid,columnname,tablename,fieldname,fieldlabel FROM vtiger_field WHERE tablename = ?';
+				$params = array($table_array[$i]);
+				$result = $db->pquery($query, $params);
+				$rows = $db->num_rows($result);
+				for($j=0; $j<$rows; $j++){
+					$tabid[$i][] = $db->query_result($result, $j, 'tabid');
+					$columnname[$i][] = $db->query_result($result, $j, 'columnname');
+					$tablename[$i][] = $db->query_result($result, $j, 'tablename');
+					$fieldname[$i][] = $db->query_result($result, $j, 'fieldname');
+					$fieldlabel[$i][] = $db->query_result($result, $j, 'fieldlabel');
+				}
+			}
+			for($i=0; $i<count($columnlist); $i++){
+				$table_key = array_search($columnlist[$i][0],$table_array);
+				$fieldlabel_key = array();
+				//DBのfieldlabelと比較する
+				for($j=0; $j<count($fieldlabel[$table_key]); $j++){
+					if(str_replace(' ', '_', $fieldlabel[$table_key][$j]) == $columnlist[$i][6]){
+						array_push($fieldlabel_key, $j);
+					}
+				}
+				// DBに一致するfieldlabelが無かった場合、$columnname,$tabid,$fieldnameを元にfieldlabelを変更する(3項目が全て一致していなければ変更しない)
+				if(empty($fieldlabel_key)){
+					for($k=0; $k<count($columnname[$table_key]); $k++){
+						if($columnname[$table_key][$k] == $columnlist[$i][1]){
+							$columnname_key = $k;
+							break;
+						}
+					}
+					$ExistenceCheck = true;
+					if(isset($columnname_key)){
+						if($tabid[$table_key][$columnname_key] != getTabid($columnlist[$i][5])){
+							$ExistenceCheck = ($ExistenceCheck && false);
+						}
+						if($fieldname[$table_key][$columnname_key] != $columnlist[$i][2]){
+							$ExistenceCheck = ($ExistenceCheck && false);
+						}
+						if($ExistenceCheck){
+							$selectedFields[$i] = $columnlist[$i][0].':'.$columnlist[$i][1].':'.$columnlist[$i][2].':'.$columnlist[$i][5].'_'.$fieldlabel[$table_key][$columnname_key].':'.$columnlist[$i][4];
+						}
+					}
+				}
+			}			
 		}
 		return $selectedFields;
 	}
@@ -1071,6 +1144,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 	 * @return <Array> - Array of Vtiger_CustomView_Record models
 	 */
 	public static function getAll($moduleName='') {
+		require('config.customize.php');
 		$db = PearDatabase::getInstance();
 		$userPrivilegeModel = Users_Privileges_Model::getCurrentUserPrivilegesModel();
 		$currentUser = Users_Record_Model::getCurrentUserModel();
@@ -1082,7 +1156,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 			$sql .= ' WHERE entitytype=?';
 			$params[] = $moduleName;
 		}
-		if(!$userPrivilegeModel->isAdminUser()) {
+		if(!$userPrivilegeModel->isAdminUser() || ($userPrivilegeModel->isAdminUser() && !$show_subordinate_roles_list)) {
 			$userGroups = new GetUserGroups();
 			$userGroups->getAllUserGroups($currentUser->getId());
 			$groups = $userGroups->user_groups;
@@ -1096,14 +1170,16 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 
 			$userParentRoleSeq = $userPrivilegeModel->get('parent_role_seq');
 			$sql .= " AND ( vtiger_customview.userid = ? OR vtiger_customview.status = 0 OR vtiger_customview.status = 3
-							OR vtiger_customview.userid IN (
-								SELECT vtiger_user2role.userid FROM vtiger_user2role
-									INNER JOIN vtiger_users ON vtiger_users.id = vtiger_user2role.userid
-									INNER JOIN vtiger_role ON vtiger_role.roleid = vtiger_user2role.roleid
-								WHERE vtiger_role.parentrole LIKE '".$userParentRoleSeq."::%') 
 							OR vtiger_customview.cvid IN (SELECT vtiger_cv2users.cvid FROM vtiger_cv2users WHERE vtiger_cv2users.userid=?)";
 			$params[] = $currentUser->getId();
 			$params[] = $currentUser->getId();
+			//下位の役割が作成した全てのリストを表示
+			if($show_subordinate_roles_list){
+				$sql .= "OR vtiger_customview.userid IN (SELECT vtiger_user2role.userid FROM vtiger_user2role
+							INNER JOIN vtiger_users ON vtiger_users.id = vtiger_user2role.userid
+							INNER JOIN vtiger_role ON vtiger_role.roleid = vtiger_user2role.roleid
+						WHERE vtiger_role.parentrole LIKE '".$userParentRoleSeq."::%') ";
+			}
 			if(!empty($groups)){
 				$sql .= "OR vtiger_customview.cvid IN (SELECT vtiger_cv2group.cvid FROM vtiger_cv2group WHERE vtiger_cv2group.groupid IN (".  generateQuestionMarks($groups)."))";
 				$params = array_merge($params,$groups);

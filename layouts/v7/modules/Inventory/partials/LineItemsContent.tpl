@@ -42,6 +42,7 @@
     {assign var="FINAL" value=$RELATED_PRODUCTS.1.final_details}
 
 		{assign var="usageunit" value="usageunit"|cat:$row_no}
+		{assign var="reducedtaxrate" value="reducedtaxrate"|cat:$row_no}
 
 	{assign var="productDeleted" value="productDeleted"|cat:$row_no}
 	{assign var="productId" value=$data[$hdnProductId]}
@@ -151,7 +152,7 @@
 
 		{if $MODULE neq 'PurchaseOrder'}
 			<br>
-			<span class="stockAlert redColor {if $data.$qty <= $data.$qtyInStock}hide{/if}" >
+			<span class="stockAlert redColor {if $data.$qty <= $data.$qtyInStock|| $data.$qtyInStock === false}hide{/if}" >
 				{vtranslate('LBL_STOCK_NOT_ENOUGH',$MODULE)}
 				<br>
 				{vtranslate('LBL_MAX_QTY_SELECT',$MODULE)}&nbsp;<span class="maxQuantity">{$data.$qtyInStock}</span>
@@ -303,5 +304,9 @@
 
 	<td>
 		<span id="netPrice{$row_no}" class="pull-right netPrice">{if $data.$netPrice}{$data.$netPrice}{else}0{/if}</span>
+			<br><br>
+		<label  style="font-weight:normal" for='{$reducedtaxrate}'><input type="checkbox" class="reducedtaxrate" id="{$reducedtaxrate}" name="{$reducedtaxrate}" value="{$data.$reducedtaxrate}" {if ($data.$reducedtaxrate)=='1'}checked{/if} style="border:hidden"/>
+			：
+		{vtranslate('Reduced TaxRate', "Products")}</label>
 	</td>
 {/strip}

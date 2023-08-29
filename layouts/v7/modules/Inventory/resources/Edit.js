@@ -358,6 +358,17 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 		lineItemRow.find('.usageunit').val(usageunit);
 		return this;
 	},
+
+	//軽減税率対象ならば、チェックボックスにチェックを入れる
+	formatReducedTaxrate : function(lineItemRow, reducedtaxrate) {
+		var rowNum = this.getLineItemRowNumber(lineItemRow);
+		if(reducedtaxrate=='1'){
+			lineItemRow.find('[name="reducedtaxrate'+rowNum+'"]').prop('checked',true);
+		}else if(reducedtaxrate=='0'){
+			lineItemRow.find('[name="reducedtaxrate'+rowNum+'"]').prop('checked',false);
+		}
+		return lineItemRow.find('.reducedtaxrate').val(reducedtaxrate);
+	},	
     
   getLineItemRowNumber : function(itemRow) {
     return parseInt(itemRow.attr('data-row-num'));
@@ -751,6 +762,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 		jQuery('.subProductIds', lineItemRow).val('');
 		jQuery('.subProductsContainer', lineItemRow).html('');
 		jQuery('input.usageunit',lineItemRow).val('');
+		jQuery('input.reducedtaxrate',lineItemRow).prop('checked',false);
 		this.quantityChangeActions(lineItemRow);
 	},
     
@@ -782,7 +794,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 		var idFields = new Array('productName','subproduct_ids','hdnProductId','purchaseCost','margin',
 									'comment','qty','listPrice','discount_div','discount_type','discount_percentage',
 									'discount_amount','lineItemType','searchIcon','netPrice','subprod_names',
-									'productTotal','discountTotal','totalAfterDiscount','taxTotal', 'usageunit');
+									'productTotal','discountTotal','totalAfterDiscount','taxTotal', 'usageunit','reducedtaxrate');
 
 		var classFields = new Array('taxPercentage');
 		//To handle variable tax ids
@@ -1132,19 +1144,10 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
     /**
 	 * Function to calculate the preTaxTotal value
 	 */
+	//個別の時、「税引き前の合計」の値に税抜きの合計が使用されていたため、税込みの合計を使用するように変更。
 	calculatePreTaxTotal : function() {
         var numberOfDecimal = this.numOfCurrencyDecimals;
-		if (this.isGroupTaxMode()) {
-			var netTotal = this.getNetTotal();
-		} else {
-			var thisInstance = this;
-			var netTotal = 0;
-			var elementsList = this.lineItemsHolder.find('.'+ this.lineItemDetectingClass);
-			jQuery.each(elementsList, function(index, element) {
-				var lineItemRow = jQuery(element);
-				netTotal = netTotal + thisInstance.getTotalAfterDiscount(lineItemRow);
-			});
-		}
+		var netTotal = this.getNetTotal();
 		var chargesTotal = this.getChargesTotal();
 		var finalDiscountValue = this.getFinalDiscountTotal();
 		var preTaxTotal = netTotal + chargesTotal - finalDiscountValue;
@@ -1243,7 +1246,13 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 	},
     
     calculateGrandTotal : function(){
-        var netTotal = this.getNetTotal();
+		var self = this;
+		var netTotal = 0;
+		this.lineItemsHolder.find('tr.'+this.lineItemDetectingClass+' .netPrice').each(function(index,domElement){
+			var lineItemNetPriceEle = jQuery(domElement);
+			netTotal += self.formatLineItemNetPrice(lineItemNetPriceEle);
+		});
+        // var netTotal = this.getNetTotal();
 		var discountTotal = this.getFinalDiscountTotal();
 		var shippingHandlingCharge = this.getChargesTotal();
 		var shippingHandlingTax = this.getChargeTaxesTotal();
@@ -1324,11 +1333,22 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 		this.setGroupTaxTotal(groupTaxTotal.toFixed(this.numOfCurrencyDecimals));
 	},
     
+	//個別の時、項目「控除された税金」を税込み前の小計で計算するように変更(現在非表示に変更)
     calculateDeductTaxes : function() {
 		var self = this;
 		var netTotal = this.getNetTotal();
         var finalDiscountValue = this.getFinalDiscountTotal();
-        var amount = parseFloat(netTotal-finalDiscountValue).toFixed(this.numOfCurrencyDecimals);
+		var TotalAfterDiscount = 0;
+		var elementsList = this.lineItemsHolder.find('.'+ this.lineItemDetectingClass);
+		jQuery.each(elementsList, function(index, element) {
+			var lineItemRow = jQuery(element);
+			TotalAfterDiscount = TotalAfterDiscount + self.getTotalAfterDiscount(lineItemRow);
+		});
+		if(this.isIndividualTaxMode){
+			var amount = parseFloat(TotalAfterDiscount).toFixed(this.numOfCurrencyDecimals);
+		}else{
+			var amount = parseFloat(netTotal-finalDiscountValue).toFixed(this.numOfCurrencyDecimals);
+		}
 
 		var deductTaxesTotalAmount = 0;
 		this.dedutTaxesContainer.find('.deductTaxPercentage').each(function(index, domElement){
@@ -1544,6 +1564,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 			this.setPurchaseCostValue(parentRow, purchaseCost);
 			var imgSrc = recordData.imageSource;
 			var usageunit = recordData.usageunit;
+			var reducedtaxrate = recordData.reducedtaxrate;
 			this.setImageTag(parentRow, imgSrc);
 			if(referenceModule == 'Products') {
 				parentRow.data('quantity-in-stock',recordData.quantityInStock);
@@ -1561,6 +1582,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 				this.lineItemRowCalculations(parentRow);
 			}
 			this.formatUsageUnit(parentRow, usageunit);
+			this.formatReducedTaxrate(parentRow, reducedtaxrate);
 			jQuery('input.listPrice',parentRow).attr('list-info',listPriceValuesJson);
 			jQuery('input.listPrice',parentRow).data('baseCurrencyId', recordData.baseCurrencyId);
 			jQuery('textarea.lineItemCommentBox',parentRow).val(description);
@@ -1750,6 +1772,20 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 		});
 	 },
      
+	 //軽減税率のチェックボックスを変更したときに、変更内容を保存
+	 registerReducedtaxrateChangeEvent : function(){
+		var self = this;
+		this.lineItemsHolder.on('click', 'input.reducedtaxrate',function(e){
+			var element = jQuery(e.currentTarget);
+			var lineItemRow  = element.closest('tr.'+ self.lineItemDetectingClass);
+			if(this.checked){
+				lineItemRow.find('.reducedtaxrate').val('1');
+			}else{
+				lineItemRow.find('.reducedtaxrate').val('0');
+			}
+		});
+	 },
+
      /**
 	 * Function which will regisrer price book popup
 	 */
@@ -1848,10 +1884,12 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
      
      registerTaxTypeChange : function() {
 		var self = this;
-		
+		//消費税を個別にしたとき、「値引き種別」「控除された税金」を非表示に変更
 		this.taxTypeElement.on('change', function(e){
 			if(self.isIndividualTaxMode()) {
 				jQuery('#group_tax_row').addClass('hide');
+				jQuery('#overall_discount').addClass('hide');
+				jQuery('#deduct_taxes').addClass('hide');
 				self.lineItemsHolder.find('tr.'+self.lineItemDetectingClass).each(function(index,domElement){
 					var lineItemRow = jQuery(domElement);
 					lineItemRow.find('.individualTaxContainer,.productTaxTotal').removeClass('hide');
@@ -1859,6 +1897,8 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 				});
 			}else{
 				jQuery('#group_tax_row').removeClass('hide');
+				jQuery('#overall_discount').removeClass('hide');
+				jQuery('#deduct_taxes').removeClass('hide');
 				self.lineItemsHolder.find('tr.'+ self.lineItemDetectingClass).each(function(index,domElement){
 					var lineItemRow = jQuery(domElement);
 					lineItemRow.find('.individualTaxContainer,.productTaxTotal').addClass('hide');
@@ -2324,10 +2364,15 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 			var deductTaxForm = self.dedutTaxesContainer.closest('.lineItemPopover');
 
 			deductTaxForm.find('.popoverButton').on('click', function(e){
-				var validate = deductTaxForm.find('input').valid();
-				if (validate) {
+				var inputEle = deductTaxForm.find('input');
+				if(inputEle.length == 0){
 					deductTaxForm.closest('.popover').css('opacity',0).css('z-index','-1');
-					self.calculateDeductTaxes();
+				}else{
+					var validate = deductTaxForm.find('input').valid();
+					if (validate) {
+						deductTaxForm.closest('.popover').css('opacity',0).css('z-index','-1');
+						self.calculateDeductTaxes();
+					}
 				}
 			});
 		});
@@ -2484,6 +2529,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
         this.registerTaxTypeChange();
         this.registerCurrencyChangeEvent();
         this.registerLineItemDiscountShowEvent();
+		this.registerReducedtaxrateChangeEvent();
         
         this.registerFinalDiscountShowEvent();
         this.registerFinalDiscountChangeEvent();
@@ -2610,14 +2656,20 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 					self.copyAddressDetails(data,element.closest('table'),objectToMapAddress);
 					element.attr('checked','checked');
 				}
-			}else if(elementClass == "contactAddress"){
+			}else if(elementClass == "contactAddress" || elementClass == "contactAddressWithoutLead"){
 				var recordRelativeContactId = jQuery('[name="contact_id"]').val();
                                 if(typeof recordRelativeContactId == 'undefined'){
                                     app.helper.showErrorNotification({'message':app.vtranslate('JS_RELATED_CONTACT_IS_NOT_AVAILABLE')});
                                     return;
                                 }
+				// 見積の場合、エラーメッセージに表示される文言は「顧客担当者」より「ご担当者様」の方が伝わりやすい
+				// contactAddress : 顧客担当者、contactAddressWithoutLead : ご担当者様
 				if(recordRelativeContactId == "" || recordRelativeContactId == "0"){
-                                    app.helper.showErrorNotification({'message':app.vtranslate('JS_PLEASE_SELECT_AN_RELATED_TO_COPY_ADDRESS')});
+					if(elementClass == "contactAddressWithoutLead"){
+						app.helper.showErrorNotification({'message':app.vtranslate('JS_PLEASE_SELECT_AN_RELATED_TO_COPY_ADDRESS_WITHOUT_LEAD')});
+					}else{
+						app.helper.showErrorNotification({'message':app.vtranslate('JS_PLEASE_SELECT_AN_RELATED_TO_COPY_ADDRESS')});
+					}	
 				} else {
 					var recordRelativeContactName = jQuery('#contact_id_display').val();
 					var editViewLabel = jQuery('#contact_id_display').closest('td');
@@ -2806,12 +2858,16 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
             e.preventDefault();
             var element = jQuery(e.currentTarget);
             var popOverEle = element.closest('.popover');
-			var validate = popOverEle.find('input').valid();
-			if (!validate) {
-				popOverEle.find('.input-error').val(0).valid();
+			var inputEle = popOverEle.find('input');
+			if(inputEle.length == 0){
+				popOverEle.css('opacity',0).css('z-index','-1');
+			}else{
+				var validate = popOverEle.find('input').valid();
+				if (!validate) {
+					popOverEle.find('.input-error').val(0).valid();
+				}
+				popOverEle.css('opacity',0).css('z-index','-1');
 			}
-			popOverEle.css('opacity',0).css('z-index','-1');
-
         });
     },
     registerBasicEvents: function(container){
@@ -2828,4 +2884,6 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
     },
 });
     
+
+
 
