@@ -578,7 +578,7 @@ var Settings_Picklist_Js = {
         var template = '<tr class="pickListValue cursorPointer">'+
                             '<td class="textOverflowEllipsis fieldPropertyContainer">'+
                                 '<span class="pull-left">' +
-                                    '<img class="alignMiddle" src="' + dragImagePath + '" />&nbsp;&nbsp;' +
+                                    '<img class="alignMiddle" src="' + dragImagePath + '" /> &nbsp;&nbsp;' +
                                     '<span class="picklist-color" style="background-color: '+ color + ';color: '+ textColor +';">' + value + '</span>' + 
                                 '</span>' +
                                 actionsTemplate +

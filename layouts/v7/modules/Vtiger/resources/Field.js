@@ -246,6 +246,10 @@ Vtiger_Field_Js('Vtiger_Picklist_Field_Js',{},{
 			html += '<option value="">'+app.vtranslate('JS_SELECT_OPTION')+'</option>';
 		}
 
+		if(!pickListValues[selectedOption]) {
+			pickListValues[selectedOption] = selectedOption;
+		}
+
 		var data = this.getData();
 		var picklistColors = data['picklistColors'];
 
@@ -369,14 +373,16 @@ Vtiger_Field_Js('Vtiger_Multipicklist_Field_Js',{},{
 	 * @return <object> key value pair of options
 	 */
 	getPickListValues : function() {
-		return this.get('picklistvalues');
+		return this.get('editablepicklistvalues');
 	},
 
 	getSelectedOptions : function(selectedOption){
 		var valueArray = selectedOption.split('|##|');
 		var selectedOptionsArray = [];
 		for(var i=0;i<valueArray.length;i++){
-			selectedOptionsArray.push(valueArray[i].trim());
+			if(valueArray[i].trim() != '') {
+				selectedOptionsArray.push(valueArray[i].trim());
+			}
 		}
 		return selectedOptionsArray;
 	},
@@ -390,6 +396,13 @@ Vtiger_Field_Js('Vtiger_Multipicklist_Field_Js',{},{
 		var pickListValues = this.getPickListValues();
 		var selectedOption = app.htmlDecode(this.getValue());
 		var selectedOptionsArray = this.getSelectedOptions(selectedOption);
+
+		for(var i=0; i<selectedOptionsArray.length; i++) {
+			var option = selectedOptionsArray[i];
+			if(!pickListValues[option]) {
+				pickListValues[option] = option;
+			}
+		}
 
 		var data = this.getData();
 		var picklistColors = data['picklistColors'];

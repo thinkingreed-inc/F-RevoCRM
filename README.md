@@ -3,6 +3,9 @@
 F-RevoCRM は日本企業に合わせた形で開発された高機能なCRMです。
 あらゆる顧客接点を管理するために、キャンペーン・リード管理から顧客・商談管理、販売管理、サポート管理・プロジェクト管理まで幅広い機能を持ち合わせています。
 
+公式サイト
+https://f-revocrm.jp
+
 ## 推奨環境の変更について
 2021年3月26日にアナウンス（ https://github.com/thinkingreed-inc/F-RevoCRM/commit/c33e4e55b7fc83462a60d83fb84215d07796758f ）していたとおり、2022年4月1日を持ちましてIE11環境を非推奨と致しました。  
 以降はGoogle Chromeの最新版、またはChromium Edgeの最新版をご利用ください。
@@ -13,7 +16,7 @@ Vtiger Public License 1.2
 ## サーバ推奨要件
 * 2コア以上、4GB以上のメモリ、40GB以上の空き容量（利用人数・用途によってスペックが大幅に変わる）
 * Apache 2.4以上
-* PHP 5.6 / 7.2以上（8.0以上は除く）
+* PHP 7.4以上（8.0以上は除く）
   * php-imap
   * php-curl
   * php-xml
@@ -26,6 +29,8 @@ Vtiger Public License 1.2
   * storage_engine = InnoDB
   * local_infile = ON (under [mysqld] section)
   * sql_mode = NO_ENGINE_SUBSTITUTION for MySQL 5.6+
+
+※PHPの下位バージョンでも概ね動作しますが、未検証のため推奨から除外しています。
 
 ## F-RevoCRMへのアクセスについて
 本アプリケーションはWebアプリケーションとなりますので、URLへ直接アクセスしてください。  
@@ -53,6 +58,7 @@ Vtiger Public License 1.2
 * F-RevoCRM6.5からのバージョンアップはインストール方法の後に記載があります。
 * F-RevoCRM7.3のパッチ適用方法については各パッチ付属のREADMEを参照してください。
 * 本レポジトリをDockerで構築する場合は、[docker/README.md](./docker/README.md)を参照してください。
+* PDF出力にheadlesschromeを利用する場合は、[docker/chrome-headless/README.md](./docker/chrome-headless/README.md)を参照してください。
 
 ### configファイルを独自に設定する場合
 configファイルは`config.inc.php`として、インストール後に生成されます。  
@@ -105,6 +111,12 @@ upload_max_filesize = 32M
 max_execution_time = 60
 ```
 * 最低要件のため、利用用途等に合わせて数値を大きくしてください。
+
+***注意点3**
+
+「.htaccess」によるアクセス制限を実施しています。
+「.htacesss」が有効になるようにAllowOverride Allに設定してください。
+
 
 ### 2. F-RevoCRMのZIPファイルを解凍、設置
 

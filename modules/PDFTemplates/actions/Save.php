@@ -36,6 +36,7 @@ class PDFTemplates_Save_Action extends Vtiger_Save_Action {
 		}
 
 		$recordModel->set('templatename', $request->get('templatename'));
+		$recordModel->set('pdffilename', $request->get('pdffilename'));
 		$recordModel->set('description', $request->get('description'));
 		$recordModel->set('subject', $request->get('subject'));
 		$recordModel->set('module', $request->get('modulename'));

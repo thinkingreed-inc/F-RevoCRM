@@ -2364,10 +2364,15 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 			var deductTaxForm = self.dedutTaxesContainer.closest('.lineItemPopover');
 
 			deductTaxForm.find('.popoverButton').on('click', function(e){
-				var validate = deductTaxForm.find('input').valid();
-				if (validate) {
+				var inputEle = deductTaxForm.find('input');
+				if(inputEle.length == 0){
 					deductTaxForm.closest('.popover').css('opacity',0).css('z-index','-1');
-					self.calculateDeductTaxes();
+				}else{
+					var validate = deductTaxForm.find('input').valid();
+					if (validate) {
+						deductTaxForm.closest('.popover').css('opacity',0).css('z-index','-1');
+						self.calculateDeductTaxes();
+					}
 				}
 			});
 		});
@@ -2853,12 +2858,16 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
             e.preventDefault();
             var element = jQuery(e.currentTarget);
             var popOverEle = element.closest('.popover');
-			var validate = popOverEle.find('input').valid();
-			if (!validate) {
-				popOverEle.find('.input-error').val(0).valid();
+			var inputEle = popOverEle.find('input');
+			if(inputEle.length == 0){
+				popOverEle.css('opacity',0).css('z-index','-1');
+			}else{
+				var validate = popOverEle.find('input').valid();
+				if (!validate) {
+					popOverEle.find('.input-error').val(0).valid();
+				}
+				popOverEle.css('opacity',0).css('z-index','-1');
 			}
-			popOverEle.css('opacity',0).css('z-index','-1');
-
         });
     },
     registerBasicEvents: function(container){

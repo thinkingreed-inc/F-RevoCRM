@@ -55,6 +55,10 @@
                             {/foreach}
                     </select>
                 </div>
+                <div class="col-sm-4 hide usePicklistContainer">
+                    <select id="usePicklist" class="usePicklist pull-right" data-placeholder="{vtranslate('LBL_USE_PICKLIST',$QUALIFIED_MODULE)}" style="min-width: 160px;" type="">
+                    </select>
+                </div>
             </div><br>
             <div class="row fieldValueContainer">
                 <div class="col-sm-12">

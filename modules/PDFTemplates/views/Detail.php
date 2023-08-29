@@ -63,6 +63,7 @@ class PDFTemplates_Detail_View extends Vtiger_Index_View {
 	}
 
 	function process(Vtiger_Request $request) {
+		global $is_headlesschrome;
 		$moduleName = $request->getModule();
 		$record = $request->get('record');
 		$viewer = $this->getViewer($request);

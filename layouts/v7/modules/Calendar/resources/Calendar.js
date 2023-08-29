@@ -1329,7 +1329,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				thisInstance.updateAllEventsOnCalendar();
 			}
 			if(thisInstance.changeUserList) {
-				thisInstance.changeUserList();
+				//thisInstance.changeUserList();
 			}
 		});
 	},
@@ -1418,6 +1418,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		}
 		var params = {
 			"module": "Calendar",
+			"view": app.view(),
 			"action": "DeleteAjax",
 			"record": eventId,
 			"sourceModule": sourceModule
@@ -1583,7 +1584,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			}
 
 			if(eventObj.parent_id && eventObj.parent_id != '') {
-				popOverHTML += eventObj.parent_id;
+				popOverHTML += '<a href="index.php?module=' + eventObj.related_module + '&view=Detail&record=' + eventObj.related_id + '">'+eventObj.parent_id+'</a>';
 				popOverHTML += '<br>';
 			}
 

@@ -1615,4 +1615,132 @@ class Vtiger_Functions {
 
         return Vtiger_ShortURL_Helper::generateURL($options);
     }
+
+	/** 
+	 * Function to get children records id
+	 * @param $moduleName     - parent module name
+	 * @param $referenceField - child module reference column
+	 * @param $related_module - child module name
+	 * @param $parentRecordId - parent module record id
+	*/
+	static function getChildReferenceRecordId($moduleName, $referenceField, $related_module, $parentRecordId, $childModuleQuery = "", $sortorderby = "", $looplimit = "", $startcount = false, $limitcount = false)
+	{
+		global $adb;
+
+		$currentModule = CRMEntity::getInstance($moduleName);
+		$other = CRMEntity::getInstance($related_module);
+		$tablenameForRelationField = getTableNameForField($related_module, $referenceField);
+		$looplimitquery = "";
+		if(!empty($looplimit)){
+			$looplimitquery = " LIMIT " . $looplimit . " ";
+		}
+
+		if($startcount !== false){
+			$loopperpagequery = " LIMIT $limitcount OFFSET $startcount ";
+		}
+
+		$query = "SELECT vtiger_crmentity.*, $other->table_name.*";
+
+		$more_relation = '';
+		if (!empty($other->tab_name_index)) {
+			foreach ($other->tab_name_index as $tname => $tindex) {
+				if ($tname == 'vtiger_crmentity' || $tname == 'vtiger_crmentity_user_field' || $tname == $other->table_name) continue;
+				$query .= ", $tname.*";
+
+				$more_relation .= " LEFT JOIN $tname ON $tname.$tindex = $other->table_name.$other->table_index";
+			}
+		}
+
+		$query .= " FROM $other->table_name";
+		$query .= " INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = $other->table_name.$other->table_index";
+		$query .= $more_relation;
+		$query .= " LEFT JOIN vtiger_users ON vtiger_users.id = vtiger_crmentity.smownerid";
+		$query .= " LEFT JOIN vtiger_groups ON vtiger_groups.groupid = vtiger_crmentity.smownerid";
+		$query .= " WHERE vtiger_crmentity.deleted = 0 ";
+		if($moduleName === 'SalesReport') {
+			$query .= "AND exists( SELECT 1 FROM vtiger_crmentityrel rel WHERE (rel.crmid = '".$parentRecordId."' AND rel.relmodule = '".$related_module."' AND rel.relcrmid = vtiger_crmentity.crmid)
+					OR (rel.relcrmid = '".$parentRecordId."' AND rel.module =  '".$related_module."' AND rel.crmid = vtiger_crmentity.crmid))";
+		}else {
+			$query .= "AND $tablenameForRelationField.$referenceField = $parentRecordId";
+		}
+		
+		$query .= $childModuleQuery;
+		$query .= $sortorderby;
+		$query .= $looplimitquery;
+		$query .= $loopperpagequery;
+
+		$result = $adb->query($query);
+		$rows = $adb->num_rows($result);
+		$returnids = array();
+		if ($rows > 0) {
+			for ($i = 0; $i < $rows; $i++) {
+				$crmid = $adb->query_result($result, $i, 'crmid');
+				if($startcount !== false){
+					$returnids[$startcount + $i] = $crmid;
+				}else{
+					$returnids[] = $crmid;
+				}
+
+			}
+		}
+
+		return $returnids;
+	}
+
+	/** 
+	 * Function to get children count id
+	 * @param $moduleName     - parent module name
+	 * @param $referenceField - child module reference column
+	 * @param $related_module - child module name
+	 * @param $parentRecordId - parent module record id
+	*/
+	static function getChildReferenceRecordCount($moduleName, $referenceField, $related_module, $parentRecordId, $childModuleQuery = "")
+	{
+		global $adb;
+
+		$currentModule = CRMEntity::getInstance($moduleName);
+		$other = CRMEntity::getInstance($related_module);
+		$tablenameForRelationField = getTableNameForField($related_module, $referenceField);
+
+		$query = "SELECT vtiger_crmentity.* ";
+
+		$more_relation = '';
+		if (!empty($other->tab_name_index)) {
+			foreach ($other->tab_name_index as $tname => $tindex) {
+				if ($tname == 'vtiger_crmentity' || $tname == 'vtiger_crmentity_user_field' || $tname == $other->table_name) continue;
+				$query .= ", $tname.*";
+
+				$more_relation .= " LEFT JOIN $tname ON $tname.$tindex = $other->table_name.$other->table_index";
+			}
+		}
+
+		$query .= " FROM $other->table_name";
+		$query .= " INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = $other->table_name.$other->table_index";
+		$query .= $more_relation;
+		$query .= " LEFT JOIN vtiger_users ON vtiger_users.id = vtiger_crmentity.smownerid";
+		$query .= " LEFT JOIN vtiger_groups ON vtiger_groups.groupid = vtiger_crmentity.smownerid";
+		$query .= " WHERE vtiger_crmentity.deleted = 0 ";
+		if($moduleName === 'SalesReport') {
+			$query .= "AND exists( SELECT 1 FROM vtiger_crmentityrel rel WHERE (rel.crmid = '".$parentRecordId."' AND rel.relmodule = '".$related_module."' AND rel.relcrmid = vtiger_crmentity.crmid)
+					OR (rel.relcrmid = '".$parentRecordId."' AND rel.module =  '".$related_module."' AND rel.crmid = vtiger_crmentity.crmid))";
+		}else {
+			$query .= "AND $tablenameForRelationField.$referenceField = $parentRecordId";
+		}
+		$query .= $childModuleQuery;
+
+		$result = $adb->query($query);
+		$rows = $adb->num_rows($result);
+		return $rows;
+	}
+
+	static function getModuleNameFromCrmId($crmid)
+	{
+		global $adb;
+		$result = $adb->pquery("SELECT setype FROM vtiger_crmentity WHERE crmid=?", array($crmid));
+		if ($result === false || $adb->num_rows($result) == 0) return "";
+		$moduleName = $adb->query_result($result, 0, 'setype');
+
+		return $moduleName;
+	}
+
 }

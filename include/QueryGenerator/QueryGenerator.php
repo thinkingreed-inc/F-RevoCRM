@@ -1030,11 +1030,19 @@ class QueryGenerator {
 				$value = trim($value);
 			}
 			if ($operator == 'empty' || $operator == 'y') {
+				if($this->isDateType($field->getFieldDataType())) {
+					$sql[] = sprintf("IS NULL", $this->getSQLColumn($field->getFieldName(), $field));
+				} else {
 				$sql[] = sprintf("IS NULL OR %s = ''", $this->getSQLColumn($field->getFieldName(), $field));
+				}
 				continue;
 			}
 			if($operator == 'ny'){
+				if($this->isDateType($field->getFieldDataType())) {
+					$sql[] = sprintf("IS NOT NULL", $this->getSQLColumn($field->getFieldName(), $field));
+				} else {
 				$sql[] = sprintf("IS NOT NULL AND %s != ''", $this->getSQLColumn($field->getFieldName(), $field));
+				}
 				continue;
 			}
 			if((strtolower(trim($value)) == 'null') ||
@@ -1082,7 +1090,7 @@ class QueryGenerator {
 						$value = $dateTime[0];
 					}
 				}
-			} else if ($field->getFieldDataType() === 'currency') {
+			} else if ($field->getFieldDataType() === 'currency' && $operator != 'range') {
 				$uiType = $field->getUIType();
 				if ($uiType == 72) {
 					$value = CurrencyField::convertToDBFormat($value, null, true);
@@ -1109,6 +1117,37 @@ class QueryGenerator {
 			if(trim($value) == '' && ($operator == 'k') &&
 					$this->isStringType($field->getFieldDataType())) {
 				$sql[] = "NOT LIKE ''";
+				continue;
+			}
+
+			if($operator == 'range') {
+				$valueArray = explode(',' , $value);
+				if(count($valueArray) == 2) {
+					if($field->getFieldDataType() === 'currency') {
+						$uiType = $field->getUIType();
+						if($uiType == 72) {
+							if($valueArray[0] != ""){
+								$valueArray[0] = CurrencyField::convertToDBFormat($valueArray[0], null, true);
+							}
+							if($valueArray[1] != ""){
+								$valueArray[1] = CurrencyField::convertToDBFormat($valueArray[1], null, true);
+							}
+						} elseif($uiType == 71) {
+							if($valueArray[0] != ""){
+								$valueArray[0] = (string)CurrencyField::convertToDBFormat($valueArray[0]);
+							}
+							if($valueArray[1] != ""){
+								$valueArray[1] = (string)CurrencyField::convertToDBFormat($valueArray[1]);
+							}
+						}
+					}
+					if($valueArray[0] != "") {
+						$sql[] = ">= $valueArray[0]";
+					}
+					if($valueArray[1] != "") {
+						$sql[] = "<= $valueArray[1]";
+					}
+				}
 				continue;
 			}
 

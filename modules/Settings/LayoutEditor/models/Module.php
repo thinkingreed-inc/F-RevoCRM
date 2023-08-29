@@ -407,10 +407,6 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 	 * @return <Boolean> true/false
 	 */
 	public function isSortableAllowed() {
-		$moduleName = $this->getName();
-		if (in_array($moduleName, array('Calendar', 'Events'))) {
-			return false;
-		}
 		return true;
 	}
 
