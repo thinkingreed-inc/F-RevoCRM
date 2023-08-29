@@ -269,6 +269,9 @@ class Activity extends CRMEntity {
 		} else if(!$this->is_allday) {
 			$hours = (int)($time / 3600);
 			$minutes = (int)(($time % 3600) / 60);
+		} else {
+			$hours = (int)($time / 3600) + 24;
+			$minutes = (int)(($time % 3600) / 60);
 		}
 		$updateQuery = "UPDATE vtiger_activity SET duration_hours = ?, duration_minutes = ? WHERE activityid = ?";
 		$adb->pquery($updateQuery, array($hours, $minutes, $this->id));

@@ -13,6 +13,7 @@ vimport ('~~/include/Webservices/Query.php');
 class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 	private $cacheUser = array();
 	private $cacheParent = array();
+	private $cacheModule = array();
 
 	public function process(Vtiger_Request $request) {
 		if($request->get('mode') === 'batch') {
@@ -407,10 +408,15 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			if(!empty($record['crmid'])) {
 				if(!array_key_exists($record['crmid'], $this->cacheParent)) {
 					$this->cacheParent[$record['crmid']] = Vtiger_functions::getCRMRecordLabel($record['crmid']);
+					$this->cacheModule[$record['related_module']] = Vtiger_functions::getCRMRecordType($record['crmid']);
 				}
 				$item['parent_id'] = $this->cacheParent[$record['crmid']];
+				$item['related_id'] = $record['crmid'];
+				$item['related_module'] = $this->cacheModule[$record['related_module']];
 			} else {
 				$item['parent_id'] = '';
+				$item['related_id'] = '';
+				$item['related_module'] = '';
 			}
 			$item['location'] = $record['location'];
 			$item['description'] = $record['description'];

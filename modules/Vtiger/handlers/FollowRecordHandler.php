@@ -76,7 +76,7 @@ class FollowRecordHandler extends VTEventHandler {
 									$detailViewLink = "$site_URL/index.php?module=$moduleName&view=Detail&record=$recordId";
 									$recordDetailViewLink = '<a style="text-decoration:none;" target="_blank" href="'.$detailViewLink.'">'.$label.'</a>';
 
-									$data = vtranslate('LBL_STARRED_RECORD_UPDATED', $moduleName, $currentUserModel->getName(), $recordDetailViewLink).$changedFieldString;
+									$data = vtranslate('LBL_STARRED_RECORD_UPDATED', $moduleName, $currentUserModel->getName(), $recordDetailViewLink)."<br/><br/>".$changedFieldString;
 									$body = '<table><tbody><tr><td style="padding:10px">'.nl2br(decode_html($data)).'</td></tr></tbody></table>';
 
 									$notificationMessage = ucwords($companyDetails['companyname']).' '.vtranslate('LBL_NOTIFICATION', $moduleName).' - '.$currentUserModel->getName();
@@ -98,24 +98,44 @@ class FollowRecordHandler extends VTEventHandler {
 		$changedFieldString = '';
 		foreach ($fieldModels as $fieldName => $fieldModel) {
 			$moduleName = $fieldModel->getModule()->getName();
+			$fieldOldValue = $changedValues[$fieldName]['oldValue'];
 			$fieldCurrentValue = $changedValues[$fieldName]['currentValue'];
 
+			$fieldDisplayOldValue = '';
+			$fieldDisplayValue = '';
 			if ($fieldModel->isReferenceField()) {
-				$fieldDisplayValue = Vtiger_Util_Helper::getRecordName($fieldCurrentValue);
+				$referenceModules = $fieldModel->getReferenceList();
+				$OldrecordModel = Vtiger_Record_Model::getInstanceById($fieldOldValue, $referenceModules[0]);
+				$CurrentrecordModel = Vtiger_Record_Model::getInstanceById($fieldCurrentValue, $referenceModules[0]);
+
+				if($OldrecordModel && $CurrentrecordModel){
+					$fieldDisplayOldValue = $OldrecordModel->getDisplayName();
+					$fieldDisplayValue = $CurrentrecordModel->getDisplayName();
+				}
 			} else if ($fieldModel->isOwnerField()) {
+				$fieldDisplayOldValue = getOwnerName($fieldOldValue);
 				$fieldDisplayValue = getOwnerName($fieldCurrentValue);
 			} else if ($fieldModel->get('uitype') == 117 && $fieldCurrentValue) {
+				$fieldDisplayOldValue = getCurrencyName($fieldOldValue, FALSE);
 				$fieldDisplayValue = getCurrencyName($fieldCurrentValue, FALSE);
 			} else {
 				$fieldDataType = $fieldModel->getFieldDataType();
 				switch ($fieldDataType) {
 					case 'boolean'		:
-					case 'multipicklist':	$fieldDisplayValue = $fieldModel->getDisplayValue($fieldCurrentValue);break;
-					case 'date'			:	$fieldDisplayValue = DateTimeField::convertToUserFormat($fieldCurrentValue, $userEntity);break;
-					case 'double'		:	$fieldDisplayValue = CurrencyField::convertToUserFormat(decimalFormat($fieldCurrentValue), $userEntity, true);break;
+					case 'multipicklist':	$fieldDisplayOldValue = $fieldModel->getDisplayValue($fieldOldValue);
+											$fieldDisplayValue = $fieldModel->getDisplayValue($fieldCurrentValue);
+											break;
+					case 'date'			:	$fieldDisplayOldValue = DateTimeField::convertToUserFormat($fieldOldValue, $userEntity);	
+											$fieldDisplayValue = DateTimeField::convertToUserFormat($fieldCurrentValue, $userEntity);
+											break;
+					case 'double'		:	$fieldDisplayOldValue = CurrencyField::convertToUserFormat(decimalFormat($fieldOldValue), $userEntity, true);
+											$fieldDisplayValue = CurrencyField::convertToUserFormat(decimalFormat($fieldCurrentValue), $userEntity, true);
+											break;
 					case 'time'			:	if ($userRecordModel->get('hour_format') == '12') {
+												$fieldDisplayOldValue = Vtiger_Time_UIType::getTimeValueInAMorPM($fieldOldValue);
 												$fieldDisplayValue = Vtiger_Time_UIType::getTimeValueInAMorPM($fieldCurrentValue);
 											} else {
+												$fieldDisplayOldValue = $fieldModel->getEditViewDisplayValue($fieldOldValue);
 												$fieldDisplayValue = $fieldModel->getEditViewDisplayValue($fieldCurrentValue);
 											}
 											break;
@@ -123,13 +143,17 @@ class FollowRecordHandler extends VTEventHandler {
 											if ($fieldModel->get('uitype') == 72) {
 												$skipConversion = true;
 											}
+											$fieldDisplayOldValue = CurrencyField::convertToUserFormat($fieldOldValue, $userEntity, $skipConversion);
 											$fieldDisplayValue = CurrencyField::convertToUserFormat($fieldCurrentValue, $userEntity, $skipConversion);
 											break;
 
-					default				:	$fieldDisplayValue = $fieldModel->getEditViewDisplayValue($fieldCurrentValue);break;
+					default				:	$fieldDisplayOldValue = $fieldModel->getEditViewDisplayValue($fieldOldValue);
+											$fieldDisplayValue = $fieldModel->getEditViewDisplayValue($fieldCurrentValue);
+											break;
 				}
 			}
-			$changedFieldString .= '<br/>'.vtranslate('LBL_STARRED_RECORD_TO', $moduleName, vtranslate($fieldModel->get('label'), $moduleName), $fieldDisplayValue);
+			$changedFieldString .= '['.vtranslate('LBL_ITEM_NAME',$moduleName)." : ".vtranslate($fieldModel->get('label'),$moduleName)."]<br/>";
+			$changedFieldString .= vtranslate('LBL_STARRED_RECORD_TO', $moduleName, $fieldDisplayOldValue, $fieldDisplayValue).'<br/><br/>';
 		}
 		return $changedFieldString;
 	}

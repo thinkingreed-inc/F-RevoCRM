@@ -11175,6 +11175,7 @@ Calendar.defaults = {
 	dragScroll: true,
 	
 	//selectable: false,
+	selectable: true,
 	unselectAuto: true,
 	
 	dropAccept: '*',
