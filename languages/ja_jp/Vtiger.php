@@ -1494,7 +1494,7 @@ $languageStrings = array(
 	//ユーザー管理>プロファイル
 	'Import' => 'インポート',
 	'Export' => 'エクスポート',
-	'DuplicatesHandling' => '複製',
+	'DuplicatesHandling' => '重複の検出',
 	'Merge' => 'マージ',
 	'Print' => '印刷',
 	'UserId ' => 'ユーザーID',
