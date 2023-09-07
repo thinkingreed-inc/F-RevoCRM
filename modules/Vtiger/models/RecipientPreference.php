@@ -58,12 +58,18 @@ class Vtiger_RecipientPreference_Model extends Vtiger_Record_Model {
 		}
 	}
 
-	public function delete() {
+	public function delete($moduleName = null) {
+		$currentUserModel = Users_Record_Model::getCurrentUserModel();
 		$db = PearDatabase::getInstance();
-		$sql = 'DELETE FROM ' . self::$table . ' WHERE id = ?';
-		$params = array($this->getId());
-		$db->pquery($sql, $params);
-		return true;
+		if(!empty($moduleName)){
+			$sql = 'DELETE FROM ' . self::$table . ' WHERE tabid = ? AND userid = ?';
+			$params = array(getTabid($moduleName),$currentUserModel->getId());
+			$db->pquery($sql, $params);
+			return true;
+		}else{
+			return false;
+		}
+		
 	}
 
 	public function getPreferences() {

@@ -118,6 +118,14 @@ Vtiger.Class("Vtiger_List_Js", {
 			listInstance.noRecordSelectedAlert();
 		}
 	},
+	triggerDeleteEmailPreference: function(massActionUrl){
+		var message = app.vtranslate('LBL_DELETE_EMAIL_PREFERENCE_CONFIRMATION');
+		app.helper.showConfirmationBox({'message': message}).then(function (e) {
+			var data = app.convertUrlToDataParams(massActionUrl);
+			Vtiger_Index_Js.showDeleteEmailPreferencePopup(data);
+		});
+	},
+
 	triggerTransferOwnership: function (massActionUrl) {
 		var listInstance = window.app.controller();
 		var listSelectParams = listInstance.getListSelectAllParams();
