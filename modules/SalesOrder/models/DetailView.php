@@ -8,7 +8,7 @@
  * All Rights Reserved.
  *************************************************************************************/
 
-class SalesOrder_DetailView_Model extends Inventory_DetailView_Model {
+class SalesOrder_DetailView_Model extends Vtiger_DetailView_Model {
 
 	/**
 	 * Function to get the detail view links (links and widgets)
