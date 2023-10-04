@@ -112,6 +112,12 @@ max_execution_time = 60
 ```
 * 最低要件のため、利用用途等に合わせて数値を大きくしてください。
 
+***注意点3**
+
+「.htaccess」によるアクセス制限を実施しています。
+「.htacesss」が有効になるようにAllowOverride Allに設定してください。
+
+
 ### 2. F-RevoCRMのZIPファイルを解凍、設置
 
 ApacheのDocumentRoot以下に解凍したディレクトリ毎、あるいはファイルを置いて下さい。

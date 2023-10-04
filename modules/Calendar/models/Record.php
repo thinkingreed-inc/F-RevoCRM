@@ -250,6 +250,29 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 		}
 	}
 
+	// 共同参加者のカレンダーidを取得する関数
+	// deleteInviteeRecord()にて削除するカレンダーが対象
+	public function getInviteeRecordById($id) {
+		global $adb;
+		
+		$result = $adb->pquery("SELECT
+									a.activityid
+								FROM
+									vtiger_activity a
+									INNER JOIN vtiger_crmentity c ON c.crmid = a.activityid
+								WHERE
+									c.deleted = 0
+									AND a.invitee_parentid = (SELECT a2.invitee_parentid FROM vtiger_activity a2 WHERE a2.activityid = ?)
+		", array($id));
+
+		$recordids = array();
+		for($i=0; $i<$adb->num_rows($result); $i++) {
+			$recordids[] = $adb->query_result($result, $i, 'activityid');
+		}
+
+		return $recordids;
+	}
+
 	public function isAllDay() {
 		global $adb;
 		$isAllDay = false;
