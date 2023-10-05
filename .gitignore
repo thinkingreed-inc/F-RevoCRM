@@ -5,7 +5,7 @@
 .setting
 .project
 .idea/*
-logs/*
+logs/*.log
 cache/images/*
 !cache/images/.htaccess
 cache/import/*
