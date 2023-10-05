@@ -107,7 +107,7 @@ function export($type){
 		// Refer to the logic in setting $currentModule in index.php
 		$focus = CRMEntity::getInstance($type);
     }
-    $log = LoggerManager::getLogger('export_'.$type);
+    $log = Logger::getLogger('export_'.$type);
     $db = PearDatabase::getInstance();
 
 	$oCustomView = new CustomView("$type");

@@ -1,0 +1,24 @@
+{
+    "name": "thinkingreed/frevocrm",
+    "description": "F-RevoCRM",
+    "type": "project",
+    "license": "VPL",
+    "authors": [
+        {
+            "name": "thinkingreed",
+            "email": "info@thinkingreed.co.jp"
+        }
+    ],
+    "autoload": {
+        "files": ["includes/Loader.php"]
+    },
+    "minimum-stability": "stable",
+    "require": {
+	"ext-mysqli": "*",
+	"ext-imap": "*",
+    "smarty/smarty": "^4.3",
+    "dg/rss-php": "^1.5",
+    "ezyang/htmlpurifier": "^4.16",
+    "tecnickcom/tcpdf": "^6.6"
+    }
+}

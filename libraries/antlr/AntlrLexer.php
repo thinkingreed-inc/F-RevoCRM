@@ -136,7 +136,7 @@ abstract class AntlrLexer extends BaseRecognizer{
 			}
 			$i++;
 			$this->input->consume();
-			$state->failed = false;
+			$this->state->failed = false;
 		}
 	}
 	

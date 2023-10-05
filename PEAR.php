@@ -234,7 +234,7 @@ class PEAR
     * @return mixed   A reference to the variable. If not set it will be
     *                 auto initialised to NULL.
     */
-    function &getStaticProperty($class, $var)
+    static function &getStaticProperty($class, $var)
     {
         static $properties;
         return $properties[$class][$var];
@@ -252,7 +252,7 @@ class PEAR
     * @param  mixed $args  The arguments to pass to the function
     * @return void
     */
-    function registerShutdownFunc($func, $args = array())
+    static function registerShutdownFunc($func, $args = array())
     {
         $GLOBALS['_PEAR_shutdown_funcs'][] = array($func, $args);
     }
@@ -271,7 +271,7 @@ class PEAR
      * @access  public
      * @return  bool    true if parameter is an error
      */
-    function isError($data, $code = null)
+    static function isError($data, $code = null)
     {
         if (is_a($data, 'PEAR_Error')) {
             if (is_null($code)) {
@@ -327,7 +327,7 @@ class PEAR
      * @since PHP 4.0.5
      */
 
-    function setErrorHandling($mode = null, $options = null)
+    static function setErrorHandling($mode = null, $options = null)
     {
         if (isset($this) && is_a($this, 'PEAR')) {
             $setmode     = $this->_default_error_mode;
@@ -516,7 +516,7 @@ class PEAR
      * @see PEAR::setErrorHandling
      * @since PHP 4.0.5
      */
-    function &raiseError($message = null,
+    static function &raiseError($message = null,
                          $code = null,
                          $mode = null,
                          $options = null,
@@ -771,16 +771,7 @@ function _PEAR_call_destructors()
         if (@PEAR::getStaticProperty('PEAR', 'destructlifo')) {
             $_PEAR_destructor_object_list = array_reverse($_PEAR_destructor_object_list);
         }
-//        while (list($k, $objref) = each($_PEAR_destructor_object_list)) {
-
-        $arr_objref = array();
-        foreach ( $_PEAR_destructor_object_list as $k => $value ) {
-            $arr_objref[$k] = $value;
-        }
-        $arr_objref_cnt = count($arr_objref);
-        for($k = 0; $k < count($arr_objref); $k=$k+2){
-            $objref = $arr_objref[$k];
-            
+        while (list($k, $objref) = each($_PEAR_destructor_object_list)) {
             $classname = get_class($objref);
             while ($classname) {
                 $destructor = "_$classname";

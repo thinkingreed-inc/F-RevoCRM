@@ -46,7 +46,7 @@ class Tracker {
     );
 	function __construct()
     {
-        $this->log = LoggerManager::getLogger('Tracker');
+        $this->log = Logger::getLogger('Tracker');
 		// $this->db = PearDatabase::getInstance();
 		global $adb;
         $this->db = $adb;

@@ -42,7 +42,7 @@ if(empty($from)) {
 global $adb;
 global $log;
 global $site_URL;
-$log =& LoggerManager::getLogger('SendReminder');
+$log =Logger::getLogger('SendReminder');
 $log->debug(" invoked SendReminder ");
 
 // retrieve the translated strings.

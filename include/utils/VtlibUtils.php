@@ -504,7 +504,7 @@ function __vtlib_get_modulevar_value($module, $varname) {
 			return '';
 		}
 		$focus = CRMEntity::getInstance($module);
-		$customFieldTable = $focus->customFieldTable;
+		$customFieldTable = isset($focus->customFieldTable) ? $focus->customFieldTable: null;
 		if (!empty($customFieldTable)) {
 			$returnValue = array();
 			$returnValue['related_tables'][$customFieldTable[0]] = array($customFieldTable[1], $focus->table_name, $focus->table_index);
@@ -665,10 +665,11 @@ function vtlib_purify($input, $ignore = false) {
     static $purified_cache = array();
     $value = $input;
 
+	$encryptInput = null;
     if (!is_array($input)) {
-        $md5OfInput = md5($input);
-        if (array_key_exists($md5OfInput, $purified_cache)) {
-            $value = $purified_cache[$md5OfInput];
+        $encryptInput = hash('sha256',$input);
+        if (array_key_exists($encryptInput, $purified_cache)) {
+            $value = $purified_cache[$encryptInput];
             //to escape cleaning up again
             $ignore = true;
         }
@@ -695,8 +696,6 @@ function vtlib_purify($input, $ignore = false) {
                 'data' => true
             );
 
-            include_once ('libraries/htmlpurifier410/library/HTMLPurifier.auto.php');
-
             $config = HTMLPurifier_Config::createDefault();
             $config->set('Core.Encoding', $use_charset);
             $config->set('Cache.SerializerPath', "$use_root_directory/test/vtlib");
@@ -718,9 +717,14 @@ function vtlib_purify($input, $ignore = false) {
                 $value = purifyHtmlEventAttributes($value, true);
             }
         }
-        $purified_cache[$md5OfInput] = $value;
-    }
-    $value = str_replace('&amp;', '&', $value);
+        if ($encryptInput != null) {
+			$purified_cache[$encryptInput] = $value;
+    	}
+	}
+
+	if ($value && !is_array($value)) {
+		$value = str_replace('&amp;', '&', $value);
+	}
     return $value;
 }
 
@@ -729,35 +733,99 @@ function vtlib_purify($input, $ignore = false) {
  * @param <String> $value
  * @return <String>
  */
-function purifyHtmlEventAttributes($value, $replaceAll = false) {
-    $htmlEventAttributes = "onerror|onblur|onchange|oncontextmenu|onfocus|oninput|oninvalid|onresize|onauxclick|oncancel|oncanplay|oncanplaythrough|" .
-            "onreset|onsearch|onselect|onsubmit|onkeydown|onkeypress|onkeyup|onclose|oncuechange|ondurationchange|onemptied|onended|" .
-            "onclick|ondblclick|ondrag|ondragend|ondragenter|ondragleave|ondragover|ondragexit|onformdata|onloadeddata|onloadedmetadata|" .
-            "ondragstart|ondrop|onmousedown|onmousemove|onmouseout|onmouseover|onmouseenter|onmouseleave|onpause|onplay|onplaying|" .
-            "onmouseup|onmousewheel|onscroll|onwheel|oncopy|oncut|onpaste|onload|onprogress|onratechange|onsecuritypolicyviolation|" .
-            "onselectionchange|onabort|onselectstart|onstart|onfinish|onloadstart|onshow|onreadystatechange|onseeked|onslotchange|" .
-            "onseeking|onstalled|onsubmit|onsuspend|ontimeupdate|ontoggle|onvolumechange|onwaiting|onwebkitanimationend|onstorage|" .
-            "onwebkitanimationiteration|onwebkitanimationstart|onwebkittransitionend|onafterprint|onbeforeprint|onbeforeunload|" .
-            "onhashchange|onlanguagechange|onmessage|onmessageerror|onoffline|ononline|onpagehide|onpageshow|onpopstate|onunload" .
-            "onrejectionhandled|onunhandledrejection|onloadend";
+function purifyHtmlEventAttributes($value,$replaceAll = false){
+	
+$tmp_markers = $office365ImageMarkers =  array();
+$value = Vtiger_Functions::strip_base64_data($value,true,$tmp_markers);	
+$value = Vtiger_Functions::stripInlineOffice365Image($value,true,$office365ImageMarkers);		
+$tmp_markers = array_merge($tmp_markers, $office365ImageMarkers);
+
+$htmlEventAttributes = "onerror|onblur|onchange|oncontextmenu|onfocus|oninput|oninvalid|onresize|onauxclick|oncancel|oncanplay|oncanplaythrough|".
+                        "onreset|onsearch|onselect|onsubmit|onkeydown|onkeypress|onkeyup|onclose|oncuechange|ondurationchange|onemptied|onended|".
+                        "onclick|ondblclick|ondrag|ondragend|ondragenter|ondragleave|ondragover|ondragexit|onformdata|onloadeddata|onloadedmetadata|".
+                        "ondragstart|ondrop|onmousedown|onmousemove|onmouseout|onmouseover|onmouseenter|onmouseleave|onpause|onplay|onplaying|".
+                        "onmouseup|onmousewheel|onscroll|onwheel|oncopy|oncut|onpaste|onload|onprogress|onratechange|onsecuritypolicyviolation|".
+                        "onselectionchange|onabort|onselectstart|onstart|onfinish|onloadstart|onshow|onreadystatechange|onseeked|onslotchange|".
+                        "onseeking|onstalled|onsubmit|onsuspend|ontimeupdate|ontoggle|onvolumechange|onwaiting|onwebkitanimationend|onstorage|".
+                        "onwebkitanimationiteration|onwebkitanimationstart|onwebkittransitionend|onafterprint|onbeforeprint|onbeforeunload|".
+                        "onhashchange|onlanguagechange|onmessage|onmessageerror|onoffline|ononline|onpagehide|onpageshow|onpopstate|onunload|".
+                        "onrejectionhandled|onunhandledrejection|onloadend|onpointerenter|ongotpointercapture|onlostpointercapture|onpointerdown|".
+                        "onpointermove|onpointerup|onpointercancel|onpointerover|onpointerout|onpointerleave|onactivate|onafterscriptexecute|".
+                        "onanimationcancel|onanimationend|onanimationiteration|onanimationstart|onbeforeactivate|onbeforedeactivate|onbeforescriptexecute|".
+                        "onbegin|onbounce|ondeactivate|onend|onfocusin|onfocusout|onrepeat|ontransitioncancel|ontransitionend|ontransitionrun|".
+                        "ontransitionstart|onbeforecopy|onbeforecut|onbeforepaste|onfullscreenchange|onmozfullscreenchange|onpointerrawupdate|".
+                        "ontouchend|ontouchmove|ontouchstart";
 
     // remove malicious html attributes with its value.
     if ($replaceAll) {
         $regex = '\s*[=&%#]\s*(?:"[^"]*"[\'"]*|\'[^\']*\'[\'"]*|[^]*[\s\/>])*/i';
         $value = preg_replace("/\s*(" . $htmlEventAttributes . ")" . $regex, '', $value);
-
-        /**
-         * If anchor tag having 'javascript:' string then remove the tag contents.
-         * Right now, we fixed this for anchor tag as we don't see any other such things right now.  
-         * All other event attributes are already handled above. Need to update this if any thing new found
-         */
-        $javaScriptRegex = '/<a [^>]*(j[\s]?a[\s]?v[\s]?a[\s]?s[\s]?c[\s]?r[\s]?i[\s]?p[\s]?t[\s]*[=&%#:])[^>]*?>/i';
-        $value = preg_replace($javaScriptRegex, '<a>', $value);
+		
+        //remove script tag with contents
+        $value = purifyScript($value);
+        //purify javascript alert from the tag contents
+        $value = purifyJavascriptAlert($value); 
+	
     } else {
         if (preg_match("/\s*(" . $htmlEventAttributes . ")\s*=/i", $value)) {
             $value = str_replace("=", "&equals;", $value);
         }
     }
+
+    //Replace any strip-markers
+	if ($tmp_markers){
+		$keys = array();
+		$values = array();
+		foreach ($tmp_markers as $k => $v){
+			$keys[] = $k;
+			$values[] = $v;
+		}
+		$value = str_replace($keys, $values, $value);
+	}
+	
+    return $value;
+}
+
+//function to remove script tag and its contents
+function purifyScript($value){
+    $scriptRegex = '/(&.*?lt;|<)script[\w\W]*?(>|&.*?gt;)[\w\W]*?(&.*?lt;|<)\/script(>|&.*?gt;|\s)/i';
+    $value = preg_replace($scriptRegex,'',$value);
+    return $value;
+}
+
+
+
+//function to purify html tag having 'javascript:' string by removing the tag contents.
+function purifyJavascriptAlert($value){
+    $restrictJavascriptInTags = array('a','iframe','object','embed','animate','set','base','button','input','form');
+    
+    foreach($restrictJavascriptInTags as $tag){
+        
+        if(!empty($value)){
+            $originalValue = $value;
+        }
+        
+        // skip javascript: contents check if tag is not available,as javascript: regex will cause performace issue if the contents will be large 
+        if (preg_match_all('/(&.*?lt;|<)'.$tag.'[^>]*?(>|&.*?gt;)/i', $value,$matches)) {
+            $javaScriptRegex = '/(&.*?lt;|<).?'.$tag.' [^>]*(j[\s]?a[\s]?v[\s]?a[\s]?s[\s]?c[\s]?r[\s]?i[\s]?p[\s]?t[\s]*[=&%#:])[^>]*?(>|&.*?gt;)/i';
+            foreach($matches[0] as $matchedValue){
+                //strict check addded - if &tab;/&newLine added in the above tags we are replacing it to spaces.
+                $purifyContent = preg_replace('/&NewLine;|&amp;NewLine;|&Tab;|&amp;Tab;|\t/i',' ',$matchedValue);
+                $purifyContent = preg_replace($javaScriptRegex,"<$tag>",$purifyContent);
+                $value = str_replace($matchedValue, $purifyContent, $value);
+                
+                /*
+                * if the content length will more. In that case, preg_replace will fail and return Null due to PREG_BACKTRACK_LIMIT_ERROR error
+                * so skipping the validation and reseting the value - TODO
+                */
+               if (preg_last_error() == PREG_BACKTRACK_LIMIT_ERROR) {
+                   $value = $originalValue;
+                   return $value;
+               }
+            }        
+        }
+    }
+    
     return $value;
 }
 
@@ -855,7 +923,7 @@ function vtlib_addSettingsLink($linkName, $linkURL, $blockName = false) {
 				$linkURL = ($linkURL) ? $linkURL : '';
 				$fieldSequence = $db->query_result($fieldSeqResult, 0, 'sequence');
 
-				$db->pquery('INSERT INTO vtiger_settings_field(fieldid, blockid, name, iconpath, description, linkto, sequence, active, pinned) VALUES(?,?,?,?,?,?,?,?,?)', array($fieldId, $blockId, $entryName, '', $entryName, $linkURL, $fieldSequence++, 0, 0));
+				$db->pquery('INSERT INTO vtiger_settings_field(fieldid, blockid, name, iconpath, description, linkto, sequence, active, pinned) VALUES(?,?,?,?,?,?,?,?,?)', array($fieldId, $blockId, $linkName, '', $linkName, $linkURL, $fieldSequence++, 0, 0));
 			}
 		} else {
 			$success = false;
@@ -891,6 +959,11 @@ if (!function_exists('get_magic_quotes_gpc')) {
 	function get_magic_quotes_gpc() {
 		return false;
 	}
+}
+
+function php7_count($value) {
+	// PHP 8.x does not like count(null) or count(string)
+	return is_null($value) || !is_array($value) ? 0 : count($value);
 }
 
 ?>
