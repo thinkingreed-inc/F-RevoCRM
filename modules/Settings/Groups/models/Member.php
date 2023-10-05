@@ -50,7 +50,7 @@ class Settings_Groups_Member_Model extends Vtiger_Base_Model {
 
 	public function getMemberType() {
 		$idComponents = $this->getIdComponents();
-		if($idComponents && count($idComponents) > 0) {
+		if($idComponents && php7_count($idComponents) > 0) {
 			return $idComponents[0];
 		}
 		return false;
@@ -58,7 +58,7 @@ class Settings_Groups_Member_Model extends Vtiger_Base_Model {
 
 	public function getMemberId() {
 		$idComponents = $this->getIdComponents();
-		if($idComponents && count($idComponents) > 1) {
+		if($idComponents && php7_count($idComponents) > 1) {
 			return $idComponents[1];
 		}
 		return false;

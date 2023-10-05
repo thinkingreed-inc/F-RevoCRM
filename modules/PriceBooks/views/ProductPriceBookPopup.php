@@ -119,7 +119,7 @@ class PriceBooks_ProductPriceBookPopup_View extends Vtiger_Popup_View {
 			$recordModel->set('unit_price', $productCurrencyPrice[$priceBookCurrencyId]);
 		}
 		
-		$noOfEntries = count($this->listViewEntries);
+		$noOfEntries = php7_count($this->listViewEntries);
 
 		if(empty($sortOrder)){
 			$sortOrder = "ASC";

@@ -451,7 +451,7 @@ class Settings_Profiles_Record_Model extends Settings_Vtiger_Record_Model {
 
 		$allModuleModules = Vtiger_Module_Model::getAll(array(0), Settings_Profiles_Module_Model::getNonVisibleModulesList());
 		$allModuleModules[$eventModule->getId()] = $eventModule;
-		if(count($allModuleModules) > 0) {
+		if(php7_count($allModuleModules) > 0) {
 			$actionModels = Vtiger_Action_Model::getAll(true);
 			foreach($allModuleModules as $tabId => $moduleModel) {
 				if($moduleModel->isActive()) {
@@ -570,7 +570,7 @@ class Settings_Profiles_Record_Model extends Settings_Vtiger_Record_Model {
 					//Insert Process
 					//Standard permissions
 					$i = 0;
-					$count = count($actionsIdsList);
+					$count = php7_count($actionsIdsList);
                     $actionParams = array();
 					$actionsInsertQuery = 'INSERT INTO vtiger_profile2standardpermissions(profileid, tabid, operation, permissions) VALUES ';
 					foreach ($actionsIdsList as $actionId => $permission) {
@@ -590,7 +590,7 @@ class Settings_Profiles_Record_Model extends Settings_Vtiger_Record_Model {
 
 					//Utility permissions
 					$i = 0;
-					$count = count($utilityIdsList);
+					$count = php7_count($utilityIdsList);
                     $utilityParams = array();
 					$utilityInsertQuery = 'INSERT INTO vtiger_profile2utility(profileid, tabid, activityid, permission) VALUES ';
 					foreach($utilityIdsList as $actionId => $permission) {

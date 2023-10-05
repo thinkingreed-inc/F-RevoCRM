@@ -21,7 +21,7 @@ class Vtiger_Deprecated {
 		$entity_field_info = getEntityFieldNames($module);
 		$fieldsName = $entity_field_info['fieldname'];
 		$name = '';
-		if ($rowdata != '' && count($rowdata) > 0) {
+		if ($rowdata != '' && php7_count($rowdata) > 0) {
 			$name = self::getCurrentUserEntityFieldNameDisplay($module, $fieldsName, $rowdata );
 		}
 		$name = textlength_check($name);
@@ -46,7 +46,7 @@ class Vtiger_Deprecated {
 					$accessibleFieldNames[] = $fieldValues[$field];
 				}
 			}
-			if(count($accessibleFieldNames) > 0) {
+			if(php7_count($accessibleFieldNames) > 0) {
 				return implode(' ', $accessibleFieldNames);
 			}
 		}

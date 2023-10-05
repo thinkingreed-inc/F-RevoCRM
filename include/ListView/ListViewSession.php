@@ -78,7 +78,7 @@ class ListViewSession {
 		if(!empty($_SESSION[$currentModule.'_DetailView_Navigation'.$viewId])){
 			$recordNavigationInfo = Zend_Json::decode($_SESSION[$currentModule.'_DetailView_Navigation'.$viewId]);
 			$pageNumber =0;
-			if(count($recordNavigationInfo) == 1){
+			if(php7_count($recordNavigationInfo) == 1){
 				foreach ($recordNavigationInfo as $recordIdList) {
 					if(in_array($currentRecordId,$recordIdList)){
 						$reUseData = true;
@@ -92,12 +92,12 @@ class ListViewSession {
 						$recordList[] = $recordId;
 						$recordPageMapping[$recordId] = $start;
 						if($recordId == $currentRecordId){
-							$searchKey = count($recordList)-1;
+							$searchKey = php7_count($recordList)-1;
 							$_REQUEST['start'] = $start;
 						}
 					}
 				}
-				if($searchKey > $displayBufferRecordCount -1 && $searchKey < count($recordList)-$displayBufferRecordCount){
+				if($searchKey > $displayBufferRecordCount -1 && $searchKey < php7_count($recordList)-$displayBufferRecordCount){
 					$reUseData= true;
 				}
 			}

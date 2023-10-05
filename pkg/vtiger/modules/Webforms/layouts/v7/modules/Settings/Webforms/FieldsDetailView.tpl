@@ -80,7 +80,7 @@
 			</div>
 		</div>
 	</div>
-	{if Vtiger_Functions::isDocumentsRelated($SOURCE_MODULE) && count($DOCUMENT_FILE_FIELDS)}
+	{if Vtiger_Functions::isDocumentsRelated($SOURCE_MODULE) && php7_count($DOCUMENT_FILE_FIELDS)}
 		<div class="listViewEntriesDiv contents-bottomscroll">
 			<div class="bottomscroll-div">
 				<div class="fieldBlockContainer">

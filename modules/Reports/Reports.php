@@ -601,7 +601,7 @@ class Reports extends CRMEntity{
 		}
 		$result = $adb->pquery($sql, $params);
 		$report = $adb->fetch_array($result);
-		if(count($report)>0)
+		if(php7_count($report)>0)
 		{
 			do
 			{
@@ -699,7 +699,7 @@ class Reports extends CRMEntity{
 		if($module != "")
 		{
 			$secmodule = explode(":",$module);
-			for($i=0;$i < count($secmodule) ;$i++)
+			for($i=0;$i < php7_count($secmodule) ;$i++)
 			{
 				//$this->updateModuleList($secmodule[$i]);
 				if($this->module_list[$secmodule[$i]]){
@@ -793,7 +793,7 @@ class Reports extends CRMEntity{
 
 			$profileList = getCurrentUserProfileList();
 			$sql = "select * from vtiger_field inner join vtiger_profile2field on vtiger_profile2field.fieldid=vtiger_field.fieldid inner join vtiger_def_org_field on vtiger_def_org_field.fieldid=vtiger_field.fieldid where vtiger_field.tabid in (". generateQuestionMarks($tabid) .")  and vtiger_field.block in (". generateQuestionMarks($block) .") and vtiger_field.displaytype in (1,2,3,5) and vtiger_profile2field.visible=0 and vtiger_def_org_field.visible=0 and vtiger_field.presence in (0,2)";
-			if (count($profileList) > 0) {
+			if (php7_count($profileList) > 0) {
 				$sql .= " and vtiger_profile2field.profileid in (". generateQuestionMarks($profileList) .")";
 				array_push($params, $profileList);
 			}
@@ -961,7 +961,7 @@ class Reports extends CRMEntity{
 				"Next 7 Days","Next 30 Days","Next 60 Days","Next 90 Days","Next 120 Days"
 				);
 
-		for($i=0;$i<count($datefiltervalue);$i++)
+		for($i=0;$i<php7_count($datefiltervalue);$i++)
 		{
 			if($selecteddatefilter == $datefiltervalue[$i])
 			{
@@ -1005,7 +1005,7 @@ class Reports extends CRMEntity{
 		{
 			$profileList = getCurrentUserProfileList();
 			$sql = "select * from vtiger_field inner join vtiger_tab on vtiger_tab.tabid = vtiger_field.tabid inner join vtiger_profile2field on vtiger_profile2field.fieldid=vtiger_field.fieldid inner join vtiger_def_org_field on vtiger_def_org_field.fieldid=vtiger_field.fieldid  where vtiger_field.tabid=? and (vtiger_field.uitype =5 or vtiger_field.displaytype=2) and vtiger_profile2field.visible=0 and vtiger_def_org_field.visible=0 and vtiger_field.block in (". generateQuestionMarks($block) .") and vtiger_field.presence in (0,2)";
-			if (count($profileList) > 0) {
+			if (php7_count($profileList) > 0) {
 				$sql .= " and vtiger_profile2field.profileid in (". generateQuestionMarks($profileList) .")";
 				array_push($params, $profileList);
 			}
@@ -1354,7 +1354,7 @@ function getEscapedColumns($selectedfields)
 		if($module == "Calendar")
 		{
 			$query .= " vtiger_field.tabid in (9,16) and vtiger_field.displaytype in (1,2,3) and vtiger_profile2field.visible=0 and vtiger_def_org_field.visible=0 and vtiger_field.presence in (0,2)";
-			if (count($profileList) > 0) {
+			if (php7_count($profileList) > 0) {
 				$query .= " and vtiger_profile2field.profileid in (". generateQuestionMarks($profileList) .")";
 				array_push($params, $profileList);
 			}
@@ -1364,7 +1364,7 @@ function getEscapedColumns($selectedfields)
 		{
 			array_push($params, $this->primodule, $this->secmodule);
 			$query .= " vtiger_field.tabid in (select tabid from vtiger_tab where vtiger_tab.name in (?,?)) and vtiger_field.displaytype in (1,2,3) and vtiger_profile2field.visible=0 and vtiger_def_org_field.visible=0 and vtiger_field.presence in (0,2)";
-			if (count($profileList) > 0) {
+			if (php7_count($profileList) > 0) {
 				$query .= " and vtiger_profile2field.profileid in (". generateQuestionMarks($profileList) .")";
 				array_push($params, $profileList);
 			}
@@ -1540,7 +1540,7 @@ function getEscapedColumns($selectedfields)
                 
 				if(($col[4] == 'D' || ($col[4] == 'T' && $col[1] != 'time_start' && $col[1] != 'time_end') || ($col[4] == 'DT')) && !in_array($criteria['comparator'], $specialDateConditions)) {
 					$val = Array();
-					for($x=0;$x<count($temp_val);$x++) {
+					for($x=0;$x<php7_count($temp_val);$x++) {
                         if($col[4] == 'D') {
 							$date = new DateTimeField(trim($temp_val[$x]));
 							$val[$x] = $date->getDisplayDate();
@@ -1612,7 +1612,7 @@ function getEscapedColumns($selectedfields)
 		if(!empty($secondarymodule))
 		{
 			//$secondarymodule = explode(":",$secondarymodule);
-			for($i=0;$i < count($secondarymodule) ;$i++)
+			for($i=0;$i < php7_count($secondarymodule) ;$i++)
 			{
 				$options []= $this->sgetColumnstoTotalHTML($secondarymodule[$i],($i+1));
 			}
@@ -1651,7 +1651,7 @@ function getEscapedColumns($selectedfields)
 		if($secondarymodule != "")
 		{
 			$secondarymodule = explode(":",$secondarymodule);
-			for($i=0;$i < count($secondarymodule) ;$i++)
+			for($i=0;$i < php7_count($secondarymodule) ;$i++)
 			{
 				$options []= $this->sgetColumnstoTotalHTML($secondarymodule[$i],($i+1));
 			}
@@ -1687,7 +1687,7 @@ function getEscapedColumns($selectedfields)
 		{
 			$profileList = getCurrentUserProfileList();
 			$ssql = "select * from vtiger_field inner join vtiger_tab on vtiger_tab.tabid = vtiger_field.tabid inner join vtiger_def_org_field on vtiger_def_org_field.fieldid=vtiger_field.fieldid inner join vtiger_profile2field on vtiger_profile2field.fieldid=vtiger_field.fieldid  where vtiger_field.uitype != 50 and vtiger_field.tabid=? and vtiger_field.displaytype in (1,2,3) and vtiger_def_org_field.visible=0 and vtiger_profile2field.visible=0 and vtiger_field.presence in (0,2)";
-			if (count($profileList) > 0) {
+			if (php7_count($profileList) > 0) {
 				$ssql .= " and vtiger_profile2field.profileid in (". generateQuestionMarks($profileList) .")";
 				array_push($sparams, $profileList);
 			}
@@ -1750,7 +1750,7 @@ function getEscapedColumns($selectedfields)
 					$selectedcolumn = "";
 					$selectedcolumn1 = "";
 
-					for($i=0;$i < count($this->columnssummary) ;$i++)
+					for($i=0;$i < php7_count($this->columnssummary) ;$i++)
 					{
 						$selectedcolumnarray = explode(":",$this->columnssummary[$i]);
 						$selectedcolumn = $selectedcolumnarray[1].":".$selectedcolumnarray[2].":".
@@ -1931,7 +1931,7 @@ function updateAdvancedCriteria($reportid, $advft_criteria, $advft_criteria_grou
 		if(($column_info[4] == 'D' || ($column_info[4] == 'T' && $column_info[1] != 'time_start' && $column_info[1] != 'time_end') || ($column_info[4] == 'DT')) && ($column_info[4] != '' && $adv_filter_value != '' ))
 		{
 			$val = Array();
-			for($x=0;$x<count($temp_val);$x++) {
+			for($x=0;$x<php7_count($temp_val);$x++) {
 				if(trim($temp_val[$x]) != '') {
 					$date = new DateTimeField(trim($temp_val[$x]));
 					if($column_info[4] == 'D') {

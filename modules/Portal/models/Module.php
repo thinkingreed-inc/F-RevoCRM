@@ -85,16 +85,16 @@ class Portal_Module_Model extends Vtiger_Module_Model {
         $query = 'DELETE FROM vtiger_portal';
         $params = array();
         
-        if(!empty($selectedIds) && $selectedIds != 'all' && count($selectedIds) > 0) {
+        if(!empty($selectedIds) && $selectedIds != 'all' && php7_count($selectedIds) > 0) {
             $query .= " WHERE portalid IN (".generateQuestionMarks($selectedIds).")";
             $params = $selectedIds;
         } else if($selectedIds == 'all') {
-            if(empty($searchValue) && count($excludedIds) > 0) {
+            if(empty($searchValue) && php7_count($excludedIds) > 0) {
                 $query .= " WHERE portalid NOT IN (".generateQuestionMarks($excludedIds).")";
                 $params = $excludedIds;
-            } else if(!empty($searchValue) && count($excludedIds) < 1) {
+            } else if(!empty($searchValue) && php7_count($excludedIds) < 1) {
                 $query .= " WHERE portalname LIKE '%".$searchValue."%'";
-            } else if(!empty($searchValue) && count($excludedIds) > 0) {
+            } else if(!empty($searchValue) && php7_count($excludedIds) > 0) {
                 $query .= " WHERE portalname LIKE '%".$searchValue."%' AND portalid NOT IN (".generateQuestionMarks($excludedIds).")";
                 $params = $excludedIds;
             }

@@ -173,7 +173,7 @@ class Campaigns extends CRMEntity {
 		if($return_value == null)
 			$return_value = Array();
 		else if($is_CampaignStatusAllowed && is_array($return_value['header'])) {
-			$statusPos = count($return_value['header']) - 2; // Last column is for Actions, exclude that. Also the index starts from 0, so reduce one more count.
+			$statusPos = php7_count($return_value['header']) - 2; // Last column is for Actions, exclude that. Also the index starts from 0, so reduce one more count.
 			$return_value = $this->add_status_popup($return_value, $statusPos, 'Accounts');
 		}
 
@@ -272,7 +272,7 @@ class Campaigns extends CRMEntity {
 		if($return_value == null)
 			$return_value = Array();
 		else if($is_CampaignStatusAllowed) {
-			$statusPos = count($return_value['header']) - 2; // Last column is for Actions, exclude that. Also the index starts from 0, so reduce one more count.
+			$statusPos = php7_count($return_value['header']) - 2; // Last column is for Actions, exclude that. Also the index starts from 0, so reduce one more count.
 			$return_value = $this->add_status_popup($return_value, $statusPos, 'Contacts');
 		}
 
@@ -367,7 +367,7 @@ class Campaigns extends CRMEntity {
 		if($return_value == null)
 			$return_value = Array();
 		else if($is_CampaignStatusAllowed) {
-			$statusPos = count($return_value['header']) - 2; // Last column is for Actions, exclude that. Also the index starts from 0, so reduce one more count.
+			$statusPos = php7_count($return_value['header']) - 2; // Last column is for Actions, exclude that. Also the index starts from 0, so reduce one more count.
 			$return_value = $this->add_status_popup($return_value, $statusPos, 'Leads');
 		}
 

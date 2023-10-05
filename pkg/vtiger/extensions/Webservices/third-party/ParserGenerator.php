@@ -228,8 +228,8 @@ class PHP_ParserGenerator
         $errcnt = 0;
         $argv = $a;
         try {
-            if (is_array($argv) && count($argv) && self::$options) {
-                for($i = 1; $i < count($argv); $i++) {
+            if (is_array($argv) && php7_count($argv) && self::$options) {
+                for($i = 1; $i < php7_count($argv); $i++) {
                     if ($argv[$i][0] == '+' || $argv[$i][0] == '-') {
                         $errcnt += $this->handleflags($i, $argv);
                     } elseif (strstr($argv[$i],'=')) {
@@ -254,10 +254,10 @@ class PHP_ParserGenerator
     private function argindex($n, $a)
     {
         $dashdash = 0;
-        if (!is_array($a) || !count($a)) {
+        if (!is_array($a) || !php7_count($a)) {
             return -1;
         }
-        for ($i=1; $i < count($a); $i++) {
+        for ($i=1; $i < php7_count($a); $i++) {
             if ($dashdash || !($a[$i][0] == '-' || $a[$i][0] == '+' ||
                   strchr($a[$i], '='))) {
                 if ($n == 0) {
@@ -293,8 +293,8 @@ class PHP_ParserGenerator
     function OptNArgs($a)
     {
         $cnt = $dashdash = 0;
-        if (is_array($a) && count($a)) {
-            for($i = 1; $i < count($a); $i++) {
+        if (is_array($a) && php7_count($a)) {
+            for($i = 1; $i < php7_count($a); $i++) {
                 if ($dashdash || !($a[$i][0] == '-' || $a[$i][0] == '+' ||
                       strchr($a[$i], '='))) {
                     $cnt++;
@@ -432,7 +432,7 @@ class PHP_ParserGenerator
         }
 
         /* Count and index the symbols of the grammar */
-        $lem->nsymbol = PHP_ParserGenerator_Symbol::Symbol_count();
+        $lem->nsymbol = PHP_ParserGenerator_Symbol::Symbol_php7_count();
         PHP_ParserGenerator_Symbol::Symbol_new("{default}");
         $lem->symbols = PHP_ParserGenerator_Symbol::Symbol_arrayof();
         for ($i = 0; $i <= $lem->nsymbol; $i++) {

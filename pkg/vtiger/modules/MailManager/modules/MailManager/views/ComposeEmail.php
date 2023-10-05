@@ -151,7 +151,7 @@ class MailManager_ComposeEmail_View extends Vtiger_ComposeEmail_View {
 			foreach ($selectIds as $id) {
 				if ($id) {
 					$parentIdComponents = explode('@', $id);
-					if (count($parentIdComponents) > 1) {
+					if (php7_count($parentIdComponents) > 1) {
 						$id = $parentIdComponents[0];
 						if ($parentIdComponents[1] === '-1') {
 							$recordModel = Users_Record_Model::getInstanceById($id, 'Users');

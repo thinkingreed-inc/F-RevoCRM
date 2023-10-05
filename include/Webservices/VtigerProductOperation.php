@@ -119,7 +119,7 @@ class VtigerProductOperation extends VtigerModuleOperation {
 			$ids = vtws_getIdComponents($element['currency_id']);
 			//Import will be sending currency id not in webservice format .	
 			//So we are taking 0th index as value
-			if (count($ids) == 1) {
+			if (php7_count($ids) == 1) {
 				$curId = $ids[0];
 			} else {
 				$curId = $ids[1];

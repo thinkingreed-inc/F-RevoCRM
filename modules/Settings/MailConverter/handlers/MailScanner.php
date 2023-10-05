@@ -99,7 +99,7 @@ class Vtiger_MailScanner {
 
 			// Search for mail in the folder
 			$mailsearch = $mailbox->search($lookAtFolder);
-			$this->log($mailsearch? "Total Mails Found in [$lookAtFolder]: " . count($mailsearch) : "No Mails Found in [$lookAtFolder]");
+			$this->log($mailsearch? "Total Mails Found in [$lookAtFolder]: " . php7_count($mailsearch) : "No Mails Found in [$lookAtFolder]");
 
 			// No emails? Continue with next folder
 			if(empty($mailsearch)) continue;

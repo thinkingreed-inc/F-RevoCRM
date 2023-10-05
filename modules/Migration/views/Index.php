@@ -112,7 +112,7 @@ class Migration_Index_View extends Vtiger_View_Controller {
 		}
 		$migrateVersions[] = $getLatestSourceVersion;
 
-		$patchCount  = count($migrateVersions);
+		$patchCount  = php7_count($migrateVersions);
 
 		define('VTIGER_UPGRADE', true);
 
@@ -169,7 +169,7 @@ class Migration_Index_View extends Vtiger_View_Controller {
 
 	public static function insertSelectColumns($queryid, $columnname) {
 		if ($queryid != "") {
-			for ($i = 0; $i < count($columnname); $i++) {
+			for ($i = 0; $i < php7_count($columnname); $i++) {
 				$icolumnsql = "insert into vtiger_selectcolumn (QUERYID,COLUMNINDEX,COLUMNNAME) values (?,?,?)";
 				self::ExecuteQuery($icolumnsql, array($queryid, $i, $columnname[$i]));
 			}
@@ -218,7 +218,7 @@ class Migration_Index_View extends Vtiger_View_Controller {
 
 				$fieldName = $condition['fieldname'];
 				$fieldNameContents = explode(' ', $fieldName);
-				if (count($fieldNameContents) > 1) {
+				if (php7_count($fieldNameContents) > 1) {
 					$fieldName = '('. $fieldName .')';
 				}
 
@@ -228,7 +228,7 @@ class Migration_Index_View extends Vtiger_View_Controller {
 				}
 
 				$groupCondition = 'or';
-				if ($groupId === $previousConditionGroupId || count($conditions) === 1) {
+				if ($groupId === $previousConditionGroupId || php7_count($conditions) === 1) {
 					$groupCondition = 'and';
 				}
 

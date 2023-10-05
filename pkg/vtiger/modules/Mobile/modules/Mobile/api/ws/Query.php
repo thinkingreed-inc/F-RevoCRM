@@ -39,7 +39,7 @@ class Mobile_WS_Query extends Mobile_WS_FetchRecordWithGrouping {
 			$queryResult = vtws_query($queryWithLimit, $current_user);
 			
 			// Determine paging
-			$hasNextPage = (count($queryResult) > $FETCH_LIMIT);
+			$hasNextPage = (php7_count($queryResult) > $FETCH_LIMIT);
 			if ($hasNextPage) {
 				array_pop($queryResult); // Avoid sending next page record now
 				$nextPage = $currentPage + 1;

@@ -66,7 +66,7 @@ function getKeyMetrics($maxval,$calCnt)
 	
 	// Determine if the KeyMetrics widget should appear or not?
 	if($calCnt == 'calculateCnt') {
-		return count($metriclists);
+		return php7_count($metriclists);
 	}
 	
 	$log->info("Metrics :: Successfully got MetricList to be displayed");
@@ -125,7 +125,7 @@ function getKeyMetrics($maxval,$calCnt)
 
 	}
 	$values=Array('Title'=>$title,'Header'=>$header,'Entries'=>$entries);
-	if ( ($display_empty_home_blocks ) || (count($value)!= 0) )
+	if ( ($display_empty_home_blocks ) || (php7_count($value)!= 0) )
 		return $values;
 
 }

@@ -151,7 +151,7 @@ class CustomerPortal_FetchHistory extends CustomerPortal_FetchRecord {
 
 				// Group the values per basic-transaction
 				foreach ($orderedIds as $id) {
-					if (count($recordValuesMap[$id]['values']) > 0)
+					if (php7_count($recordValuesMap[$id]['values']) > 0)
 						$historyItems[] = $recordValuesMap[$id];
 				}
 			}

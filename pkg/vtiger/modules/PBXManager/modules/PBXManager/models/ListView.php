@@ -127,7 +127,7 @@ class PBXManager_ListView_Model extends Vtiger_ListView_Model {
                         $fieldModel = $referenceModuleModel->getField($nameField);
                         $columnList[] = $fieldModel->get('table') . $orderByFieldModel->getName() . '.' . $fieldModel->get('column');
                     }
-                    if (count($columnList) > 1) {
+                    if (php7_count($columnList) > 1) {
                         $referenceNameFieldOrderBy[] = getSqlForNameInDisplayFormat(array('first_name' => $columnList[0], 'last_name' => $columnList[1]), 'Users') . ' ' . $sortOrder;
                     } else {
                         $referenceNameFieldOrderBy[] = implode('', $columnList) . ' ' . $sortOrder;

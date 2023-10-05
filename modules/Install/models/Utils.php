@@ -497,7 +497,7 @@ class Install_Utils_Model {
 			if ($handle = opendir($moduleFolder)) {
 				while (false !== ($file = readdir($handle))) {
 					$packageNameParts = explode(".",$file);
-					if($packageNameParts[count($packageNameParts)-1] != 'zip'){
+					if($packageNameParts[php7_count($packageNameParts)-1] != 'zip'){
 						continue;
 					}
 					array_pop($packageNameParts);

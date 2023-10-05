@@ -114,11 +114,11 @@ class Settings_Groups_Record_Model extends Settings_Vtiger_Record_Model {
 			$db->pquery('DELETE FROM vtiger_group2role WHERE groupid=?', array($groupId));
 			$db->pquery('DELETE FROM vtiger_group2rs WHERE groupid=?', array($groupId));
 
-			$noOfMembers = count($members);
+			$noOfMembers = php7_count($members);
 			for ($i = 0; $i < $noOfMembers; ++$i) {
 				$id = $members[$i];
 				$idComponents = Settings_Groups_Member_Model::getIdComponentsFromQualifiedId($id);
-				if ($idComponents && count($idComponents) == 2) {
+				if ($idComponents && php7_count($idComponents) == 2) {
 					$memberType = $idComponents[0];
 					$memberId = $idComponents[1];
 

@@ -89,7 +89,7 @@ class PHP_ParserGenerator_ActionTable
     /**
      * The number of slots used in {@link $aLookahead}.
      * 
-     * This is the same as count($aLookahead), but there was no pressing reason
+     * This is the same as php7_count($aLookahead), but there was no pressing reason
      * to change this when porting from C.
      * @see $mnLookahead
      * @var int

@@ -225,11 +225,11 @@ class PHP_ParserGenerator_Config {
      */
     static function Configtable_clear($f)
     {
-        if (!count(self::$x4a)) {
+        if (!php7_count(self::$x4a)) {
             return;
         }
         if ($f) {
-            for ($i = 0; $i < count(self::$x4a); $i++) {
+            for ($i = 0; $i < php7_count(self::$x4a); $i++) {
                 call_user_func($f, self::$x4a[$i]->data);
             }
         }

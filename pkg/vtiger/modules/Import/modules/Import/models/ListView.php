@@ -51,7 +51,7 @@ class Import_ListView_Model extends Vtiger_ListView_Model {
 			$searchParams = array();
 		}
 		$glue = "";
-		if(count($queryGenerator->getWhereFields()) > 0 && (count($searchParams)) > 0) {
+		if(php7_count($queryGenerator->getWhereFields()) > 0 && (php7_count($searchParams)) > 0) {
 			$glue = QueryGenerator::$AND;
 		}
 		$queryGenerator->parseAdvFilterList($searchParams, $glue);
@@ -81,7 +81,7 @@ class Import_ListView_Model extends Vtiger_ListView_Model {
 
 		$importedRecordIds = $this->getLastImportedRecord();
 		$listViewRecordModels = array();
-		if(count($importedRecordIds) != 0) {
+		if(php7_count($importedRecordIds) != 0) {
 			$moduleModel = $this->get('module');
 			$listQuery .= ' AND '.$moduleModel->basetable.'.'.$moduleModel->basetableid.' IN ('. implode(',', $importedRecordIds).')';
 
@@ -133,7 +133,7 @@ class Import_ListView_Model extends Vtiger_ListView_Model {
 		$listQuery = $queryGenerator->getQuery();
 
 		$importedRecordIds = $this->getLastImportedRecord();
-		if(count($importedRecordIds) != 0) {
+		if(php7_count($importedRecordIds) != 0) {
 			$moduleModel = $this->get('module');
 			$listQuery .= ' AND '.$moduleModel->basetable.'.'.$moduleModel->basetableid.' IN ('. implode(',', $importedRecordIds).')';
 		}

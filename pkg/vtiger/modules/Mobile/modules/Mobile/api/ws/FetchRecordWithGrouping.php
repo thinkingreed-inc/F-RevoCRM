@@ -167,7 +167,7 @@ class Mobile_WS_FetchRecordWithGrouping extends Mobile_WS_FetchRecord {
 		foreach($moduleFieldGroupKeys as $blocklabel) {
 			// Eliminate empty blocks
 			if(isset($groups[$blocklabel]) && !empty($groups[$blocklabel])) {
-				$sections[] = array( 'label' => $blocklabel, 'count' => count($groups[$blocklabel]) );
+				$sections[] = array( 'label' => $blocklabel, 'count' => php7_count($groups[$blocklabel]) );
 			}
 		}
 		

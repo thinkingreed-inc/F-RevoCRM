@@ -161,7 +161,7 @@
 									</td>
 								</tr>
 							{/foreach}
-							<tr class="noFileField {if count($DOCUMENT_FILE_FIELDS) gt 0}hide{/if}">
+							<tr class="noFileField {if php7_count($DOCUMENT_FILE_FIELDS) gt 0}hide{/if}">
 								<td colspan="3" style="height: 100px; vertical-align: middle;">
 									<center>{vtranslate('LBL_NO_FILE_FIELD', $QUALIFIED_MODULE)}</center>
 								</td>
@@ -180,8 +180,8 @@
 					</div>
 				</div>
 			</div>
-			<input type="hidden" id='fileFieldNextIndex' value='{count($DOCUMENT_FILE_FIELDS) + 1}'>
-			<input type="hidden" id="fileFieldsCount" value="{count($DOCUMENT_FILE_FIELDS)}">
+			<input type="hidden" id='fileFieldNextIndex' value='{php7_count($DOCUMENT_FILE_FIELDS) + 1}'>
+			<input type="hidden" id="fileFieldsCount" value="{php7_count($DOCUMENT_FILE_FIELDS)}">
 		</div>
 	{/if}
 {/strip}

@@ -264,7 +264,7 @@ class Vtiger_Language_Handler {
 
 function vtranslate($key, $moduleName = '') {
 	$unformattedArgs = func_get_args();
-	if(count($unformattedArgs) > 2){ 
+	if(php7_count($unformattedArgs) > 2){ 
 		// slice an array by taking first 2 values into another array.
 		$formattedArgs = array_slice($unformattedArgs,0,2);
 		// Make third value as empty
@@ -279,7 +279,7 @@ function vtranslate($key, $moduleName = '') {
 	}
 	$formattedString = call_user_func_array(array('Vtiger_Language_Handler', 'getTranslatedString'), $args);
 
-    if(count($unformattedArgs) > 2){
+    if(php7_count($unformattedArgs) > 2){
 		// Remove first three values from an array (key,modulename,languagecode)
 		array_shift($args); array_shift($args);array_shift($args);
 	} else {

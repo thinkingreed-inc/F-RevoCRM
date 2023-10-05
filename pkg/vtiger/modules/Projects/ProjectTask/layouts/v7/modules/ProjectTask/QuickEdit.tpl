@@ -33,7 +33,7 @@
                                 {foreach key=FIELD_NAME item=FIELD_MODEL from=$RECORD_STRUCTURE name=blockfields}
                                     {assign var="isReferenceField" value=$FIELD_MODEL->getFieldDataType()}
                                     {assign var="refrenceList" value=$FIELD_MODEL->getReferenceList()}
-                                    {assign var="refrenceListCount" value=count($refrenceList)}
+                                    {assign var="refrenceListCount" value=php7_count($refrenceList)}
                                     {if $FIELD_MODEL->get('uitype') eq "19"}
                                         {if $COUNTER eq '1'}
                                             <td></td><td></td></tr><tr>

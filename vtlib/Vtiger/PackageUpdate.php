@@ -196,7 +196,7 @@ class Vtiger_PackageUpdate extends Vtiger_PackageImport {
 				}
 			}
 			// Sort the migration details based on version
-			if(count($this->_migrations) > 1) {
+			if(php7_count($this->_migrations) > 1) {
 				uksort($this->_migrations, 'version_compare');
 			}
 		}

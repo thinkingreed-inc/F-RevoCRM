@@ -85,7 +85,7 @@ class WorkFlowScheduler {
 		@date_default_timezone_set($default_timezone);
 
 		$scheduledWorkflows = $vtWorflowManager->getScheduledWorkflows($currentTimestamp);
-		$noOfScheduledWorkflows = count($scheduledWorkflows);
+		$noOfScheduledWorkflows = php7_count($scheduledWorkflows);
 		for ($i = 0; $i < $noOfScheduledWorkflows; ++$i) {
 			$workflow = $scheduledWorkflows[$i];
 			$tm = new VTTaskManager($adb);
@@ -103,7 +103,7 @@ class WorkFlowScheduler {
 				$page = 0;
 				do {
 					$records = $this->getEligibleWorkflowRecords($workflow, $page++, 100);
-					$noOfRecords = count($records);
+					$noOfRecords = php7_count($records);
 					
 					if ($noOfRecords < 1) break;
 					
@@ -193,7 +193,7 @@ class WorkFlowScheduler {
             'less than days later' => 'bw',
             'more than days later' => 'g',
 		);
-		$noOfConditions = count($conditions);
+		$noOfConditions = php7_count($conditions);
 		//Algorithm :
 		//1. If the query has already where condition then start a new group with and condition, else start a group
 		//2. Foreach of the condition, if its a condition in the same group just append with the existing joincondition
@@ -218,7 +218,7 @@ class WorkFlowScheduler {
                 
                 $fieldname = $condition['fieldname'];
 				preg_match('/(\w+) : \((\w+)\) (\w+)/', $condition['fieldname'], $matches);
-				if (count($matches) != 0) {
+				if (php7_count($matches) != 0) {
 					list($full, $referenceField, $referenceModule, $fieldname) = $matches;
 				}
 				if($referenceField) {
@@ -260,7 +260,7 @@ class WorkFlowScheduler {
 				}
 				$value = html_entity_decode($value);
 				preg_match('/(\w+) : \((\w+)\) (\w+)/', $condition['fieldname'], $matches);
-				if (count($matches) != 0) {
+				if (php7_count($matches) != 0) {
 					list($full, $referenceField, $referenceModule, $fieldname) = $matches;
 				}
                 if($fieldname == 'assigned_user_id') {

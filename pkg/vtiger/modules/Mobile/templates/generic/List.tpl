@@ -17,7 +17,7 @@
 			
 			{$_MODULE->label()}
 			
-			{if $_PAGER && $_PAGER->hasNext(count($_RECORDS))}
+			{if $_PAGER && $_PAGER->hasNext(php7_count($_RECORDS))}
 			<a class="link" href="?_operation=listModuleRecords&module={$_MODULE->name()}&page={$_PAGER->next()}&search={$_SEARCH}"><img src="resources/images/iconza/yellow/right_arrow_24x24.png" border="0"></a>
 			{else}
 			<a class="link" href="javascript:void(0);"><img src="resources/images/iconza/white/right_arrow_24x24.png" border="0"></a>

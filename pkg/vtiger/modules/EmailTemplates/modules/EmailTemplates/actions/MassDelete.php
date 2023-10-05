@@ -67,7 +67,7 @@ class EmailTemplates_MassDelete_Action extends Vtiger_Mass_Action {
 		$excludedIds = $request->get('excluded_ids');
 		
 		if(!empty($selectedIds) && $selectedIds != 'all') {
-			if(!empty($selectedIds) && count($selectedIds) > 0) {
+			if(!empty($selectedIds) && php7_count($selectedIds) > 0) {
 				return $selectedIds;
 			}
 		}

@@ -79,7 +79,7 @@ class Import_Map_Model extends Vtiger_Base_Model {
 		$map['content'] = "".$db->getEmptyBlob()."";
 		$columnNames = array_keys($map);
 		$columnValues = array_values($map);
-		if(count($map) > 0) {
+		if(php7_count($map) > 0) {
 			$db->pquery('INSERT INTO '.self::$tableName.' ('. implode(',',$columnNames).') VALUES ('. generateQuestionMarks($columnValues).')', array($columnValues));
 			$db->updateBlob(self::$tableName,"content","name='". $db->sql_escape_string($this->getValue('name')).
 						"' AND module='".$db->sql_escape_string($this->getValue('module'))."'",$this->getStringifiedContent());

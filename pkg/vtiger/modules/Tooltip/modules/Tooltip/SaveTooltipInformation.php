@@ -76,7 +76,7 @@ function getDetailViewForTooltip($fieldid, $checkedFields){
 	$smarty->assign("APP",$app_strings);
 	$smarty->assign("IMAGES", "themes/images/");
 	$smarty->assign("LABELS", $labels);
-	$smarty->assign("COUNT", count($labels));
+	$smarty->assign("COUNT", php7_count($labels));
 	
 	$data = $smarty->fetch("modules/Tooltip/DetailQuickView.tpl");
 	return $data;

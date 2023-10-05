@@ -265,7 +265,7 @@ Class Google_Contacts_Connector extends WSAPP_TargetConnector {
 	 */
 	protected function fireRequest($url,$headers,$params=array(),$method='POST') {
 		$httpClient = new Vtiger_Net_Client($url);
-		if(count($headers)) $httpClient->setHeaders($headers);
+		if(php7_count($headers)) $httpClient->setHeaders($headers);
 		switch ($method) {
 			case 'POST': 
 				$response = $httpClient->doPost($params);
@@ -335,7 +335,7 @@ Class Google_Contacts_Connector extends WSAPP_TargetConnector {
 
 		$this->totalRecords = $feed['openSearch$totalResults']['$t'];
 		$contactRecords = array();
-		if (count($feed['entry']) > 0) {
+		if (php7_count($feed['entry']) > 0) {
 			$lastEntry = end($feed['entry']);
 			$maxModifiedTime = date('Y-m-d H:i:s', strtotime(Google_Contacts_Model::vtigerFormat($lastEntry['updated']['$t'])) + 1);
 			if ($this->totalRecords > $this->maxResults) {
@@ -373,7 +373,7 @@ Class Google_Contacts_Connector extends WSAPP_TargetConnector {
 			}
 			$googleRecords[$contact['id']['$t']] = $recordModel;
 		}
-		$this->createdRecords = count($googleRecords);
+		$this->createdRecords = php7_count($googleRecords);
 		if (isset($maxModifiedTime)) {
 			Google_Utils_Helper::updateSyncTime('Contacts', $maxModifiedTime, $user);
 		} else {
@@ -655,7 +655,7 @@ Class Google_Contacts_Connector extends WSAPP_TargetConnector {
 				xml_parse_into_struct($p, $entryXML, $xmlList, $index);
 				xml_parser_free($p);
 
-				if(count($xmlList)) {
+				if(php7_count($xmlList)) {
 					foreach($xmlList as $tagDetails) {
 
 						if($tagDetails['tag'] == 'ID') {
@@ -776,15 +776,15 @@ Class Google_Contacts_Connector extends WSAPP_TargetConnector {
 			}
 		}
 
-		if(count($deleteRecords)) {
+		if(php7_count($deleteRecords)) {
 			$deletedRecords = $this->batchPush($deleteRecords, $user);
 		}
 
-		if(count($updateRecords)) {
+		if(php7_count($updateRecords)) {
 			$updatedRecords = $this->batchPush($updateRecords, $user);
 		}
 
-		if(count($addRecords)) {
+		if(php7_count($addRecords)) {
 			$addedRecords = $this->batchPush($addRecords, $user);
 		}
 

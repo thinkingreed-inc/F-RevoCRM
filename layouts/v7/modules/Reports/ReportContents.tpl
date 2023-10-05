@@ -61,7 +61,7 @@
                     </thead>
                     {assign var=REPORTRUN value=$REPORT_RUN_INSTANCE}
                     {assign var=GROUPBYFIELDS value=array_keys($REPORTRUN->getGroupingList($RECORD_ID))}
-                    {assign var=GROUPBYFIELDSCOUNT value=count($GROUPBYFIELDS)}
+                    {assign var=GROUPBYFIELDSCOUNT value=php7_count($GROUPBYFIELDS)}
                     {if $GROUPBYFIELDSCOUNT > 0}
                         {assign var=FIELDNAMES value=array()}
                         {for $i=0 to $GROUPBYFIELDSCOUNT-1}
@@ -72,7 +72,7 @@
                             {else}
                                 {assign var=FIELD_EXPLODE value=explode('_',$FIELD[2])}
                             {/if}
-                            {for $j=1 to count($FIELD_EXPLODE)-1}
+                            {for $j=1 to php7_count($FIELD_EXPLODE)-1}
                                 {$FIELDNAMES.$i = $FIELDNAMES.$i|cat:$FIELD_EXPLODE[$j]|cat:" "}
                             {/for}
                         {/for}

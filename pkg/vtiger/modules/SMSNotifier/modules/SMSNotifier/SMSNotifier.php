@@ -149,7 +149,7 @@ class SMSNotifier extends SMSNotifierBase {
 
 		$tonumbers = array();
 
-		if(count($userIds) > 0) {
+		if(php7_count($userIds) > 0) {
 	       	$phoneSqlQuery = "select phone_mobile, id from vtiger_users WHERE status='Active' AND id in(". generateQuestionMarks($userIds) .")";
 	       	$phoneSqlResult = $adb->pquery($phoneSqlQuery, array($userIds));
 	       	while($phoneSqlResultRow = $adb->fetch_array($phoneSqlResult)) {

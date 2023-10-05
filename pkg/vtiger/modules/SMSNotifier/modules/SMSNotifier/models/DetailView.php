@@ -23,7 +23,7 @@ class SMSNotifier_DetailView_Model extends Vtiger_DetailView_Model {
 		$linkModelList['DETAILVIEW'][] = Vtiger_Link_Model::getInstanceFromValues(array('linklabel' => 'LBL_CHECK_STATUS'));
 		unset($linkModelList['DETAILVIEWBASIC']);
 		$linkModelDetailViewList = $linkModelList['DETAILVIEW'];
-		$countOfList = count($linkModelDetailViewList);
+		$countOfList = php7_count($linkModelDetailViewList);
 		
 		for ($i=0; $i<$countOfList; $i++) {
 			$linkModel = $linkModelDetailViewList[$i];

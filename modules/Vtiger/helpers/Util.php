@@ -366,7 +366,7 @@ class Vtiger_Util_Helper {
 		$fileName = rtrim($fileName, '\\/<>?*:"<>|');
 
 		$fileNameParts = explode('.', $fileName);
-		$countOfFileNameParts = count($fileNameParts);
+		$countOfFileNameParts = php7_count($fileNameParts);
 		$badExtensionFound = false;
 
 		for ($i=0; $i<$countOfFileNameParts; $i++) {
@@ -560,7 +560,7 @@ class Vtiger_Util_Helper {
 				   $advFilterFieldInfoFormat = array();
 				   $fieldName = $fieldSearchInfo[0];
 				   preg_match('/(\w+) ; \((\w+)\) (\w+)/', $fieldName, $matches);
-					if (count($matches) != 0) {
+					if (php7_count($matches) != 0) {
 						list($full, $referenceParentField, $referenceModule, $referenceFieldName) = $matches;
 						$referenceModuleModel = Vtiger_Module_Model::getInstance($referenceModule);
 						$fieldInfo = Vtiger_Field_Model::getInstance($referenceFieldName, $referenceModuleModel);
@@ -617,7 +617,7 @@ class Vtiger_Util_Helper {
 				   $advFilterFieldInfoFormat['column_condition'] = $groupConditionGlue;
 				   $groupColumnsInfo[] = $advFilterFieldInfoFormat;
 			}
-			$noOfConditions = count($groupColumnsInfo);
+			$noOfConditions = php7_count($groupColumnsInfo);
 			//to remove the last column condition
 			$groupColumnsInfo[$noOfConditions-1]['column_condition']  = '';
 			$groupConditionInfo['columns'] = $groupColumnsInfo;
@@ -626,7 +626,7 @@ class Vtiger_Util_Helper {
 			$groupIterator++;
 		}
 		//We aer removing last condition since this condition if there is next group and this is the last group
-		unset($advFilterConditionFormat[count($advFilterConditionFormat)-1]['condition']);
+		unset($advFilterConditionFormat[php7_count($advFilterConditionFormat)-1]['condition']);
 		return $advFilterConditionFormat;
 
 	}
@@ -914,7 +914,7 @@ class Vtiger_Util_Helper {
 		}
 
 		// see how many we have
-		$i = count($matches['browser']);
+		$i = php7_count($matches['browser']);
 		if ($i != 1) {
 			//we will have two since we are not using 'other' argument yet
 			//see if version is before or after the name
@@ -1156,7 +1156,7 @@ class Vtiger_Util_Helper {
 									$value = vtws_getWebserviceEntityId("DocumentFolders", "1");
 									break;
 			case 'reference'	:	$referenceFieldModule = $fieldModel->getReferenceList(true);
-									if (count($referenceFieldModule) > 0) {
+									if (php7_count($referenceFieldModule) > 0) {
 										$user = Users_Record_Model::getCurrentUserModel();
 										$referenceModule = $referenceFieldModule[0];
 										$referenceFieldModuleModel = Vtiger_Module_Model::getInstance($referenceModule);

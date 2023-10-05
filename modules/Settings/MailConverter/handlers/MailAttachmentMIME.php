@@ -89,7 +89,7 @@ class mimetype {
       $filename = explode('.', $filename);
 
       // take the last part of the file to get the file extension
-      $filename = $filename[count($filename)-1];   
+      $filename = $filename[php7_count($filename)-1];   
 
       // find mime type
       return $this->privFindType($filename);

@@ -71,7 +71,7 @@ class Mobile_WS_SyncModuleRecords extends Mobile_WS_SaveRecord {
 		$activeResult = vtws_query( $activeQuery, $current_user );
 
 		 // Determine paging
-        $hasNextPage = (count($activeResult) > $FETCH_LIMIT);
+        $hasNextPage = (php7_count($activeResult) > $FETCH_LIMIT);
 
         // Special case handling merge Events records
         if ($module == 'Calendar') {
@@ -80,7 +80,7 @@ class Mobile_WS_SyncModuleRecords extends Mobile_WS_SaveRecord {
                 $activeResult = array_merge($activeResult, $activeResult2);
                 if (!$hasNextPage) {
                     // If there was not Calendar next-page of records - check with Events
-                    $hasNextPage = (count($activeResult) > $FETCH_LIMIT);
+                    $hasNextPage = (php7_count($activeResult) > $FETCH_LIMIT);
                 }
             }
             // Indicator that we fetched both Calendar+Events

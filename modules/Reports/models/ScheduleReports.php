@@ -158,7 +158,7 @@ class Reports_ScheduleReports_Model extends Vtiger_Base_Model {
 		}
 		$recipientsList = array_unique($recipientsList);
 		$recipientsEmails = array();
-		if (!empty($recipientsList) && count($recipientsList) > 0) {
+		if (!empty($recipientsList) && php7_count($recipientsList) > 0) {
 			foreach ($recipientsList as $userId) {
 				if(!Vtiger_Util_Helper::isUserDeleted($userId)) {
 					$userName = getUserFullName($userId);

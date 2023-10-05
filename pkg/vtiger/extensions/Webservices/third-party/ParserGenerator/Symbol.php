@@ -158,7 +158,7 @@ class PHP_ParserGenerator_Symbol
     /**
      * Number of terminal symbols in the MULTITERMINAL
      * 
-     * This is of course the same as count($this->subsym)
+     * This is of course the same as php7_count($this->subsym)
      * @var int
      */
     public $nsubsym;
@@ -205,9 +205,9 @@ class PHP_ParserGenerator_Symbol
      * Return the number of unique symbols
      * @return int
      */
-    public static function Symbol_count()
+    public static function Symbol_php7_count()
     {
-        return count(self::$symbol_table);
+        return php7_count(self::$symbol_table);
     }
 
     public static function Symbol_arrayof()

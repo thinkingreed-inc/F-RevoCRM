@@ -312,7 +312,7 @@ $currency_decimals_field->setPicklistValues(array("1","2","3","4","5"));
 $inventoryModules = array('Invoice','SalesOrder','PurchaseOrder','Quotes');
 $actions = array('Import','Export');
 
-for($i = 0; $i < count($inventoryModules); $i++) {
+for($i = 0; $i < php7_count($inventoryModules); $i++) {
 	$moduleName = $inventoryModules[$i];
 	$moduleInstance = Vtiger_Module::getInstance($moduleName);
 
@@ -334,14 +334,14 @@ $itemFieldsLabel = array('Item Name','Quantity','List Price','Item Comment','Ite
 $itemFieldsTypeOfData = array('V~M','V~M','V~M','V~O','V~O','V~O','V~O','V~O','V~O');
 $itemFieldsDisplayType = array('10','7','19','19','7','7','83','83','83');
 
-for($i=0; $i<count($inventoryModules); $i++) {
+for($i=0; $i<php7_count($inventoryModules); $i++) {
 	$moduleName = $inventoryModules[$i];
 	$moduleInstance = Vtiger_Module::getInstance($moduleName);
 	$blockInstance = Vtiger_Block::getInstance('LBL_ITEM_DETAILS',$moduleInstance);
 
 	$relatedmodules = array('Products','Services');
 
-	for($j=0;$j<count($itemFieldsName);$j++) {
+	for($j=0;$j<php7_count($itemFieldsName);$j++) {
 		$field = new Vtiger_Field();
 
 		$field->name = $itemFieldsName[$j];

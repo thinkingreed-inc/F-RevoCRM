@@ -62,7 +62,7 @@ class Import_VCardReader_Reader extends Import_FileReader_Reader {
 
 		$matches = array();
         preg_match_all($this->vCardPattern, $fileContents, $matches);
-		for($i=0; $i<count($matches[0]); ++$i) {
+		for($i=0; $i<php7_count($matches[0]); ++$i) {
 			$row = $matches[0][$i];
 			$fieldValueMappings = explode("\r\n", $row);
 			$data = array();

@@ -421,7 +421,7 @@ class XML_Util
             if ($sort) {
                 ksort($attributes);
             }
-            if (!$multiline || count($attributes) == 1) {
+            if (!$multiline || php7_count($attributes) == 1) {
                 foreach ($attributes as $key => $value) {
                     if ($entities != XML_UTIL_ENTITIES_NONE) {
                         if ($entities === XML_UTIL_CDATA_SECTION) {

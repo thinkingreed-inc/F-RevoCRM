@@ -26,7 +26,7 @@ class VTSimpleTemplate{
 		}
 		// If parent is empty then we can't do any thing here
 		if(!empty($this->parent)){
-			if(count($matches)==0){
+			if(php7_count($matches)==0){
 				$fieldname = $match[1];
 
 				//To handle comments for this module

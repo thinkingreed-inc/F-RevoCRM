@@ -91,7 +91,7 @@ $log->info("in  track view method ".$current_module);
 			 $fl = array();
 			 foreach($fieldlists as $w => $c)
 			 {
-				 if (count($fl))
+				 if (php7_count($fl))
 				 	$fl[] = "' '";
 				 $fl[] = $c;
 			 }

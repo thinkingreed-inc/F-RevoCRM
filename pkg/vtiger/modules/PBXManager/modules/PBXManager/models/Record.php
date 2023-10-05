@@ -45,7 +45,7 @@ class PBXManager_Record_Model extends Vtiger_Record_Model{
             //END
         }    
         
-        if(count($recordIds)) $this->updateCallStatus($recordIds);
+        if(php7_count($recordIds)) $this->updateCallStatus($recordIds);
         
         return $recordModels;
     }
@@ -249,7 +249,7 @@ class PBXManager_Record_Model extends Vtiger_Record_Model{
         if (!empty($lookupcolumns)) {
             $query .=" WHERE deleted=0 AND ";
             $i = 0;
-            $columnCount = count($lookupcolumns);
+            $columnCount = php7_count($lookupcolumns);
             foreach ($lookupcolumns as $columnname) {
                 if (!empty($columnname)) {
                     if ($i == 0 || $i == ($columnCount))

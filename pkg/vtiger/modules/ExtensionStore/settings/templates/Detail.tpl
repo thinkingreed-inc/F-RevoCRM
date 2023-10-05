@@ -17,7 +17,7 @@
                                 {assign var=ON_RATINGS value=$EXTENSION_DETAIL->get('avgrating')}
                                 <div class="row-fluid">
                                     <span data-score="{$ON_RATINGS}" class="rating span5" data-readonly="true"></span>
-                                    <span class="span6">({count($CUSTOMER_REVIEWS)} {vtranslate('LBL_REVIEWS', $QUALIFIED_MODULE)})</span>
+                                    <span class="span6">({php7_count($CUSTOMER_REVIEWS)} {vtranslate('LBL_REVIEWS', $QUALIFIED_MODULE)})</span>
                                 </div>
                             </div>
                             <div class="span6">

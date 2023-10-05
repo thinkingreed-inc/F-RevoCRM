@@ -52,7 +52,7 @@ class PHP_LexerGenerator_ParseryyToken implements ArrayAccess
                 $this->metadata = array_merge($this->metadata, $x);
                 return;
             }
-            $offset = count($this->metadata);
+            $offset = php7_count($this->metadata);
         }
         if ($value === null) {
             return;
@@ -245,7 +245,7 @@ class PHP_LexerGenerator_Parser#line 171 "LexerGenerator\Parser.php"
                     '), $yymatches)) {
                 $yysubmatches = $yymatches;
                 $yymatches = array_filter($yymatches, \'strlen\'); // remove empty sub-patterns
-                if (!count($yymatches)) {
+                if (!php7_count($yymatches)) {
                     throw new Exception(\'Error: lexing failed because a rule matched\' .
                         \'an empty string.  Input "\' . substr(' . $this->input . ',
                         ' . $this->counter . ', 5) . \'... state ' . $statename . '\');
@@ -280,7 +280,7 @@ class PHP_LexerGenerator_Parser#line 171 "LexerGenerator\Parser.php"
                     continue;
                 } else {');
         fwrite($this->out, '                    $yy_yymore_patterns = array(' . "\n");
-        for($i = 0; count($patterns); $i++) {
+        for($i = 0; php7_count($patterns); $i++) {
             unset($patterns[$i]);
             fwrite($this->out, '        ' . $ruleMap[$i] . ' => "' .
                 implode('|', $patterns) . "\",\n");
@@ -689,7 +689,7 @@ static public $yy_action = array(
         if ($tokenType === 0) {
             return 'End of Input';
         }
-        if ($tokenType > 0 && $tokenType < count(self::$yyTokenName)) {
+        if ($tokenType > 0 && $tokenType < php7_count(self::$yyTokenName)) {
             return self::$yyTokenName[$tokenType];
         } else {
             return "Unknown";
@@ -731,7 +731,7 @@ static public $yy_action = array(
      */
     function yy_pop_parser_stack()
     {
-        if (!count($this->yystack)) {
+        if (!php7_count($this->yystack)) {
             return;
         }
         $yytos = array_pop($this->yystack);
@@ -938,7 +938,7 @@ static public $yy_action = array(
         $i += $iLookAhead;
         if ($i < 0 || $i >= self::YY_SZ_ACTTAB ||
               self::$yy_lookahead[$i] != $iLookAhead) {
-            if (count(self::$yyFallback) && $iLookAhead < count(self::$yyFallback)
+            if (php7_count(self::$yyFallback) && $iLookAhead < php7_count(self::$yyFallback)
                    && ($iFallback = self::$yyFallback[$iLookAhead]) != 0) {
                 if (self::$yyTraceFILE) {
                     fwrite(self::$yyTraceFILE, self::$yyTracePrompt . "FALLBACK " .
@@ -1291,7 +1291,7 @@ static public $yy_action = array(
             unset($expected[$pi['pi']]);
             continue;
         }
-        if (count($expected)) {
+        if (php7_count($expected)) {
             throw new Exception('Processing Instructions "' .
                 implode(', ', array_keys($expected)) . '" must be defined');
         }
@@ -1521,7 +1521,7 @@ static public $yy_action = array(
         //int $yysize;                     /* Amount to pop the stack */
         $yymsp = $this->yystack[$this->yyidx];
         if (self::$yyTraceFILE && $yyruleno >= 0 
-              && $yyruleno < count(self::$yyRuleName)) {
+              && $yyruleno < php7_count(self::$yyRuleName)) {
             fprintf(self::$yyTraceFILE, "%sReduce (%d) [%s].\n",
                 self::$yyTracePrompt, $yyruleno,
                 self::$yyRuleName[$yyruleno]);

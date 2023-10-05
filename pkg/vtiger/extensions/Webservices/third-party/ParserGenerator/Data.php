@@ -376,7 +376,7 @@ class PHP_ParserGenerator_Data
                     } else {
                         //progress += SetUnion(s1->firstset,s2->firstset);
                         $test = array_diff_key($s2->firstset, $s1->firstset);
-                        if (count($test)) {
+                        if (php7_count($test)) {
                             $progress++;
                             $s1->firstset += $test;
                         }
@@ -1015,7 +1015,7 @@ class PHP_ParserGenerator_Data
         $this->tplt_linedir($out, $strln, $this->filename);
         $lineno++;
         fwrite($out, $str);
-        $lineno += count(explode("\n", $str)) - 1;
+        $lineno += php7_count(explode("\n", $str)) - 1;
         $this->tplt_linedir($out, $lineno + 2, $this->outname);
         $lineno += 2;
     }
@@ -1044,7 +1044,7 @@ class PHP_ParserGenerator_Data
                     }
                     for ($plp = $cfp->fplp; $plp; $plp = $plp->next) {
                         $a = array_diff_key($cfp->fws, $plp->cfp->fws);
-                        if (count($a)) {
+                        if (php7_count($a)) {
                             $plp->cfp->fws += $a;
                             $plp->cfp->status = PHP_ParserGenerator_Config::INCOMPLETE;
                             $progress = 1;
@@ -1625,7 +1625,7 @@ class PHP_ParserGenerator_Data
         if ($rp->code) {
             $this->tplt_linedir($out, $rp->line, $this->filename);
             fwrite($out, "    function yy_r$rp->index(){" . $rp->code);
-            $linecnt += count(explode("\n", $rp->code)) - 1;
+            $linecnt += php7_count(explode("\n", $rp->code)) - 1;
             $lineno += 3 + $linecnt;
             fwrite($out, "    }\n");
             $this->tplt_linedir($out, $lineno, $this->outname);

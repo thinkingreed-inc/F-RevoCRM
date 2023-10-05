@@ -137,7 +137,7 @@ class Google_Oauth2_Connector {
     
     protected function fireRequest($url,$headers,$params=array(),$method='POST') {
         $httpClient = new Vtiger_Net_Client($url);
-        if(count($headers)) $httpClient->setHeaders($headers);
+        if(php7_count($headers)) $httpClient->setHeaders($headers);
         switch ($method) {
             case 'POST': 
                 $response = $httpClient->doPost($params);

@@ -23,7 +23,7 @@
 	{/foreach}
 	<select id="{$MODULE}_{$smarty.request.view}_fieldName_{$FIELD_MODEL->getFieldName()}" multiple class="select2" name="{$FIELD_MODEL->getFieldName()}[]" data-fieldtype="multipicklist" style='width:210px;height:30px;' 
 			{if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if}
-			{if count($FIELD_INFO['validator'])} 
+			{if php7_count($FIELD_INFO['validator'])} 
 				data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
 			{/if}
 			>

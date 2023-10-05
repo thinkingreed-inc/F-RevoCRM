@@ -119,7 +119,7 @@ class Inventory_ProductsPopup_View extends Vtiger_Popup_View {
 			}
 		}
 
-		$noOfEntries = count($this->listViewEntries);
+		$noOfEntries = php7_count($this->listViewEntries);
 
 		if(empty($sortOrder)) {
 			$sortOrder = "ASC";

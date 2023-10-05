@@ -402,7 +402,7 @@ class iCalendar_property_geo extends iCalendar_property {
         }
 
         $floats = explode(';', $value);
-        if(count($floats) != 2) {
+        if(php7_count($floats) != 2) {
             return false;
         }
 
@@ -1177,7 +1177,7 @@ class iCalendar_property_request_status extends iCalendar_property {
         // is not the empty string.
         $parts[] = substr($value, $from);
 
-        $count = count($parts);
+        $count = php7_count($parts);
 
         // May have 2 or 3 tokens (last one is optional)
         if($count != 2 && $count != 3) {

@@ -14,7 +14,7 @@
 {assign var=FIELD_NAME value=$FIELD_MODEL->get('name')}
 {assign var=FIELD_VALUE value=$FIELD_MODEL->get('fieldvalue')}
 {assign var="REFERENCE_LIST" value=$FIELD_MODEL->getReferenceList()}
-{assign var="REFERENCE_LIST_COUNT" value=count($REFERENCE_LIST)}
+{assign var="REFERENCE_LIST_COUNT" value=php7_count($REFERENCE_LIST)}
 {assign var="SPECIAL_VALIDATOR" value=$FIELD_MODEL->getValidator()}
 {assign var="AUTOFILL_VALUE" value=$FIELD_MODEL->getAutoFillValue()}
 {assign var="QUICKCREATE_RESTRICTED_MODULES" value=Vtiger_Functions::getNonQuickCreateSupportedModules()}
@@ -45,7 +45,7 @@
             placeholder="{vtranslate('LBL_TYPE_SEARCH',$MODULE)}"
             {if $displayId neq 0}disabled="disabled"{/if}  
             {if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" data-rule-reference_required="true" {/if}
-            {if count($FIELD_INFO['validator'])} 
+            {if php7_count($FIELD_INFO['validator'])} 
                 data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
             {/if}
             />

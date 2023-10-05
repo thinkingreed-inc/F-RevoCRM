@@ -592,7 +592,7 @@ class SalesOrder extends CRMEntity {
 		foreach($tableColumns as $tableColumn){
 			$tableInfo = explode('.', $tableColumn);
 			$duplicateCheckClause .= " ifnull($tableColumn,'null') = ifnull(temp.$tableInfo[1],'null')";
-			if (count($tableColumns) != $i++) $duplicateCheckClause .= " AND ";
+			if (php7_count($tableColumns) != $i++) $duplicateCheckClause .= " AND ";
 		}
 
         $query = $selectClause . $fromClause .

@@ -14,7 +14,7 @@ class Import_CSVReader_Reader extends Import_FileReader_Reader {
 	public function arrayCombine($key, $value) { 
 		$combine = array(); 
 		$dup = array(); 
-		for($i=0;$i<count($key);$i++) { 
+		for($i=0;$i<php7_count($key);$i++) { 
 			if(array_key_exists($key[$i], $combine)){ 
 				if(!$dup[$key[$i]]) $dup[$key[$i]] = 1;
 				$key[$i] = $key[$i]."(".++$dup[$key[$i]].")";
@@ -49,13 +49,13 @@ class Import_CSVReader_Reader extends Import_FileReader_Reader {
 		}
 
 		if($hasHeader) {
-			$noOfHeaders = count($headers);
-			$noOfFirstRowData = count($firstRowData);
+			$noOfHeaders = php7_count($headers);
+			$noOfFirstRowData = php7_count($firstRowData);
 			// Adjust first row data to get in sync with the number of headers
 			if($noOfHeaders > $noOfFirstRowData) {
 				$firstRowData = array_merge($firstRowData, array_fill($noOfFirstRowData, $noOfHeaders-$noOfFirstRowData, ''));
 			} elseif($noOfHeaders < $noOfFirstRowData) {
-				$firstRowData = array_slice($firstRowData, 0, count($headers), true);
+				$firstRowData = array_slice($firstRowData, 0, php7_count($headers), true);
 			}
 			$rowData = $this->arrayCombine($headers, $firstRowData);
 		} else {

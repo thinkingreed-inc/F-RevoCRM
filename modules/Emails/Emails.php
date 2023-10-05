@@ -98,7 +98,7 @@ class Emails extends CRMEntity {
 				$adb->pquery($mysql, array($parentid, $actid));
 			} else {
 				$myids = explode("|", $parentid);  //2@71|
-				for ($i = 0; $i < (count($myids) - 1); $i++) {
+				for ($i = 0; $i < (php7_count($myids) - 1); $i++) {
 					$realid = explode("@", $myids[$i]);
 					$mycrmid = $realid[0];
 					//added to handle the relationship of emails with vtiger_users
@@ -152,7 +152,7 @@ class Emails extends CRMEntity {
 		$recordIds = array();
 		if(strpos($recordIdsStr, '@') !== false && strpos($recordIdsStr, '|') !== false) {
 			$recordIdsParts = explode('|', $recordIdsStr);
-			for ($i = 0; $i < (count($recordIdsParts) - 1); $i++) {
+			for ($i = 0; $i < (php7_count($recordIdsParts) - 1); $i++) {
 				$recordIdParts = explode('@', $recordIdsParts[$i]);
 				//filter user records 
 				if($recordIdParts[1] !== -1) {
@@ -188,7 +188,7 @@ class Emails extends CRMEntity {
 
 		if ($module == 'Emails' && isset($_REQUEST['att_id_list']) && $_REQUEST['att_id_list'] != '') {
 			$att_lists = explode(";", $_REQUEST['att_id_list'], -1);
-			$id_cnt = count($att_lists);
+			$id_cnt = php7_count($att_lists);
 			if ($id_cnt != 0) {
 				for ($i = 0; $i < $id_cnt; $i++) {
 					$sql_rel = 'insert into vtiger_seattachmentsrel values(?,?)';
@@ -535,8 +535,8 @@ class Emails extends CRMEntity {
 			$sharingRuleInfoVariable = $module . '_share_read_permission';
 			$sharingRuleInfo = $sharingRuleInfoVariable;
 			$sharedTabId = null;
-			if (!empty($sharingRuleInfo) && (count($sharingRuleInfo['ROLE']) > 0 ||
-					count($sharingRuleInfo['GROUP']) > 0)) {
+			if (!empty($sharingRuleInfo) && (php7_count($sharingRuleInfo['ROLE']) > 0 ||
+					php7_count($sharingRuleInfo['GROUP']) > 0)) {
 				$tableName = $tableName . '_t' . $tabId;
 				$sharedTabId = $tabId;
 			}
@@ -632,13 +632,13 @@ class Emails extends CRMEntity {
 		$idlists = $adb->query_result($result,0,'idlists');
 		$idlistsArray = explode('|', $idlists);
 
-		for ($i=0; $i<(count($idlistsArray)-1); $i++) {
+		for ($i=0; $i<(php7_count($idlistsArray)-1); $i++) {
 			$crmid = explode("@",$idlistsArray[$i]);
 			array_push($successIds, $crmid[0]);
 		}
 		$successIds = array_unique($successIds);
 		sort($successIds);
-		for ($i=0; $i<count($successIds); $i++) {
+		for ($i=0; $i<php7_count($successIds); $i++) {
 			$adb->pquery("INSERT INTO vtiger_email_track(crmid, mailid,  access_count) VALUES(?,?,?)", array($successIds[$i], $mailid, 0));
 		}
 	}

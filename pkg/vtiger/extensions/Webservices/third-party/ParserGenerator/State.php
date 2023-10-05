@@ -179,7 +179,7 @@ class PHP_ParserGenerator_State {
      */
     static function State_find(PHP_ParserGenerator_Config $key)
     {
-        if (!count(self::$x3a)) {
+        if (!php7_count(self::$x3a)) {
             return 0;
         }
         $h = self::statehash($key);

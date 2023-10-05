@@ -154,7 +154,7 @@ require_once 'PHP/LexerGenerator/Exception.php';
                     '), $yymatches)) {
                 $yysubmatches = $yymatches;
                 $yymatches = array_filter($yymatches, \'strlen\'); // remove empty sub-patterns
-                if (!count($yymatches)) {
+                if (!php7_count($yymatches)) {
                     throw new Exception(\'Error: lexing failed because a rule matched\' .
                         \'an empty string.  Input "\' . substr(' . $this->input . ',
                         ' . $this->counter . ', 5) . \'... state ' . $statename . '\');
@@ -189,7 +189,7 @@ require_once 'PHP/LexerGenerator/Exception.php';
                     continue;
                 } else {');
         fwrite($this->out, '                    $yy_yymore_patterns = array(' . "\n");
-        for($i = 0; count($patterns); $i++) {
+        for($i = 0; php7_count($patterns); $i++) {
             unset($patterns[$i]);
             fwrite($this->out, '        ' . $ruleMap[$i] . ' => "' .
                 implode('|', $patterns) . "\",\n");
@@ -430,7 +430,7 @@ declarations(A) ::= processing_instructions(B) pattern_declarations(C). {
             unset($expected[$pi['pi']]);
             continue;
         }
-        if (count($expected)) {
+        if (php7_count($expected)) {
             throw new Exception('Processing Instructions "' .
                 implode(', ', array_keys($expected)) . '" must be defined');
         }

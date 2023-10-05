@@ -291,7 +291,7 @@ class gd {
         if (!isset($args[0]))
             return false;
 
-        if (count($args[0]) == 3) {
+        if (php7_count($args[0]) == 3) {
             list($r, $g, $b) = $args[0];
 
         } elseif (preg_match($expr_rgb, $args[0])) {
@@ -309,7 +309,7 @@ class gd {
             $g = hexdec($g);
             $b = hexdec($b);
 
-        } elseif ((count($args) == 3) &&
+        } elseif ((php7_count($args) == 3) &&
             preg_match($expr_byte, $args[0]) &&
             preg_match($expr_byte, $args[1]) &&
             preg_match($expr_byte, $args[2])

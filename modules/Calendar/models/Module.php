@@ -584,7 +584,7 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 		if(is_array($visibleList)) {
 			foreach($visibleList as $list) {
 				$fieldsListArray = $moduleViewTypes[$list['module']];
-				if(count($fieldsListArray) == 1) {
+				if(php7_count($fieldsListArray) == 1) {
 					if($list['module'] !== 'Events') {
 						unset($fieldsListArray[$list['fieldname']]);
 					}
@@ -923,7 +923,7 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 			}
 		}
 
-		if(count($tasks[$priority]) > $pageLimit){
+		if(php7_count($tasks[$priority]) > $pageLimit){
 			array_pop($tasks[$priority]);
 			$pagingModel->set('nextPageExists', true);
 		}else{

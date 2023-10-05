@@ -403,7 +403,7 @@ class HTML_Safe
             $this->dcCounter[$name] = isset($this->dcCounter[$name])
                 ? $this->dcCounter[$name]+1 : 1;
         }
-        if (count($this->dcStack) != 0) {
+        if (php7_count($this->dcStack) != 0) {
             return true;
         }
 
@@ -443,8 +443,8 @@ class HTML_Safe
         }
 
         // LISTS: we should close <li> if <li> of the same level opening
-        if (($name == 'li') && count($this->liStack)
-            && ($this->listScope == $this->liStack[count($this->liStack) - 1])
+        if (($name == 'li') && php7_count($this->liStack)
+            && ($this->listScope == $this->liStack[php7_count($this->liStack) - 1])
         ) {
             $this->closeHandler($parser, 'li');
         }
@@ -491,7 +491,7 @@ class HTML_Safe
             --$this->dcCounter[$name];
         }
 
-        if (count($this->dcStack) != 0) {
+        if (php7_count($this->dcStack) != 0) {
             return true;
         }
 
@@ -541,7 +541,7 @@ class HTML_Safe
      */
     public function dataHandler(&$parser, $data)
     {
-        if (count($this->dcStack) == 0) {
+        if (php7_count($this->dcStack) == 0) {
             $this->xhtml .= $data;
         }
 

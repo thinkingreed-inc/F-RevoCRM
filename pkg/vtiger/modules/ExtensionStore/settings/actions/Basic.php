@@ -134,7 +134,7 @@ class Settings_ExtensionStore_Basic_Action extends Settings_Vtiger_IndexAjax_Vie
 		foreach ($files as $file) {
 			(is_dir("$dirName/$file")) ? $this->deleteRecursively("$dirName/$file") : unlink("$dirName/$file");
 			$afterDeletefiles = array_diff(scandir($dirName), array('.', '..'));
-			if (count($afterDeletefiles) == 0) {
+			if (php7_count($afterDeletefiles) == 0) {
 				rmdir($dirName);
 			}
 		}

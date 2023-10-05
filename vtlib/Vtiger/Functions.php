@@ -391,7 +391,7 @@ class Vtiger_Functions {
 				$columns  = explode(',', $metainfo['fieldname']);
 
 				// NOTE: Ignore field-permission check for non-admin (to compute record label).
-				$columnString = count($columns) < 2? $columns[0] :
+				$columnString = php7_count($columns) < 2? $columns[0] :
 					sprintf("concat(%s)", implode(",' ',", $columns));
 
 				$sql = sprintf('SELECT '. implode(',',$columns).', %s AS id FROM %s WHERE %s IN (%s)',
@@ -698,14 +698,14 @@ class Vtiger_Functions {
 		$description = $emailTemplate->getProcessedDescription();
 		$tokenDataPair = explode('$', $description);
 		$fields = Array();
-		for ($i = 1; $i < count($token_data_pair); $i++) {
+		for ($i = 1; $i < php7_count($token_data_pair); $i++) {
 			$module = explode('-', $tokenDataPair[$i]);
 			$fields[$module[0]][] = $module[1];
 		}
-		if (is_array($fields['custom']) && count($fields['custom']) > 0) {
+		if (is_array($fields['custom']) && php7_count($fields['custom']) > 0) {
 			$description = self::getMergedDescriptionCustomVars($fields, $description,$id,$parent_type);
 		}
-		if(is_array($fields['companydetails']) && count($fields['companydetails']) > 0){
+		if(is_array($fields['companydetails']) && php7_count($fields['companydetails']) > 0){
 			$description = self::getMergedDescriptionCompanyDetails($fields,$description);
 		}
 
@@ -1254,7 +1254,7 @@ class Vtiger_Functions {
                     }
             }
             $valueParts = explode('-', $value);
-            if (count($valueParts) == 3 && (strlen($valueParts[0]) == 4 || strlen($valueParts[1]) == 4 || strlen($valueParts[2]) == 4)) {
+            if (php7_count($valueParts) == 3 && (strlen($valueParts[0]) == 4 || strlen($valueParts[1]) == 4 || strlen($valueParts[2]) == 4)) {
                     $time = strtotime($value);
                     if ($time && $time > 0) {
                             return true;

@@ -338,7 +338,7 @@ function rfc2445_is_valid_value($value, $type) {
             }
 
             $parts = explode('/', $value);
-            if(count($parts) != 2) {
+            if(php7_count($parts) != 2) {
                 return false;
             }
 
@@ -368,7 +368,7 @@ function rfc2445_is_valid_value($value, $type) {
             $parts = explode(';', strtoupper($value));
 
             // First of all, we need at least a FREQ and a UNTIL or COUNT part, so...
-            if(count($parts) < 2) {
+            if(php7_count($parts) < 2) {
                 return false;
             }
 
@@ -378,7 +378,7 @@ function rfc2445_is_valid_value($value, $type) {
 
                 $pieces = explode('=', $part);
                 // There must be exactly 2 pieces, e.g. FREQ=WEEKLY
-                if(count($pieces) != 2) {
+                if(php7_count($pieces) != 2) {
                     return false;
                 }
 

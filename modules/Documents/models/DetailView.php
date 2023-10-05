@@ -24,7 +24,7 @@ class Documents_DetailView_Model extends Vtiger_DetailView_Model {
         if($recordModel->get('filestatus') && $recordModel->get('filename')) {
             $previewAvailable = true;
             if($recordModel->get('filelocationtype') === 'I'){
-                if(!count($recordModel->getFileDetails()))
+                if(!php7_count($recordModel->getFileDetails()))
                     $previewAvailable = false;
             }
             if($previewAvailable){
@@ -40,7 +40,7 @@ class Documents_DetailView_Model extends Vtiger_DetailView_Model {
             }
 		}
 
-		if ($recordModel->get('filestatus') && $recordModel->get('filename') && $recordModel->get('filelocationtype') === 'I' && count($recordModel->getFileDetails())) {
+		if ($recordModel->get('filestatus') && $recordModel->get('filename') && $recordModel->get('filelocationtype') === 'I' && php7_count($recordModel->getFileDetails())) {
 			$basicActionLink = array(
 					'linktype' => 'DETAILVIEW',
 					'linklabel' => 'LBL_DOWNLOAD_FILE',

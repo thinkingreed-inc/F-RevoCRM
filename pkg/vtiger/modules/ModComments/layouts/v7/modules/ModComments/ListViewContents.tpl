@@ -159,7 +159,7 @@
                     {/foreach}
                     {if $LISTVIEW_ENTRIES_COUNT eq '0'}
                         <tr class="emptyRecordsDiv">
-                            {assign var=COLSPAN_WIDTH value={count($LISTVIEW_HEADERS)}+1}
+                            {assign var=COLSPAN_WIDTH value={php7_count($LISTVIEW_HEADERS)}+1}
                             <td colspan="{$COLSPAN_WIDTH}">
                                 <div class="emptyRecordsContent">
                                     {assign var=SINGLE_MODULE value="SINGLE_$MODULE"}

@@ -89,7 +89,7 @@ class ModComments_Record_Model extends Vtiger_Record_Model {
 	public function trimFileName($fileName = false){
 		if(!empty($fileName)){
 			$fileDetails = explode('.',$fileName);
-			$noOfParts = count($fileDetails);
+			$noOfParts = php7_count($fileDetails);
 			$fileExtension = $fileDetails[$noOfParts-1];
 			$val = str_replace(".$fileExtension", '', $fileName);
 			$field_val = $val;

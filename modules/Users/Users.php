@@ -582,7 +582,7 @@ class Users extends CRMEntity {
 		$result =$this->db->pquery($query, array(), true, "Error selecting possible duplicate vtiger_users: ");
 		$last_admin = $this->db->fetchByAssoc($result);
 
-		$this->log->debug("last admin length: ".count($last_admin));
+		$this->log->debug("last admin length: ".php7_count($last_admin));
 		$this->log->debug($last_admin['user_name']." == ".$usr_name);
 
 		$verified = true;
@@ -591,9 +591,9 @@ class Users extends CRMEntity {
 			$verified = false;
 		}
 		if(!isset($_REQUEST['is_admin']) &&
-				count($last_admin) == 1 &&
+				php7_count($last_admin) == 1 &&
 				$last_admin['user_name'] == $usr_name) {
-			$this->log->debug("last admin length: ".count($last_admin));
+			$this->log->debug("last admin length: ".php7_count($last_admin));
 
 			$this->error_string .= $mod_strings['ERR_LAST_ADMIN_1'].$usr_name.$mod_strings['ERR_LAST_ADMIN_2'];
 			$verified = false;
@@ -1147,7 +1147,7 @@ class Users extends CRMEntity {
 			for($q=0;$q<$adb->num_rows($res);$q++) {
 				$homeorder[]=$adb->query_result($res,$q,"hometype");
 			}
-			for($i = 0;$i < count($this->homeorder_array);$i++) {
+			for($i = 0;$i < php7_count($this->homeorder_array);$i++) {
 				if(in_array($this->homeorder_array[$i],$homeorder)) {
 					$return_array[$this->homeorder_array[$i]] = $this->homeorder_array[$i];
 				}else {
@@ -1155,7 +1155,7 @@ class Users extends CRMEntity {
 				}
 			}
 		}else {
-			for($i = 0;$i < count($this->homeorder_array);$i++) {
+			for($i = 0;$i < php7_count($this->homeorder_array);$i++) {
 			  if(in_array($this->homeorder_array[$i], $this->default_widgets)){
 				$return_array[$this->homeorder_array[$i]] = $this->homeorder_array[$i];
 			  }else{

@@ -293,7 +293,7 @@ class qCal_Component_Valarm extends qCal_Component {
 				// action, trigger (already covered by parent constructor)
 				// attach can only occur once
 				$attach = $this->getProperty('ATTACH');
-				if (count($attach) > 1) {
+				if (php7_count($attach) > 1) {
 					throw new qCal_Exception_InvalidProperty('VALARM audio component can contain one and only one ATTACH property');
 				}
 				break;
@@ -315,10 +315,10 @@ class qCal_Component_Valarm extends qCal_Component {
 			case "PROCEDURE":
 				// action, attach, trigger
 				$attach = $this->getProperty('ATTACH');
-				if (count($attach) > 1) {
+				if (php7_count($attach) > 1) {
 					throw new qCal_Exception_InvalidProperty('VALARM procedure component can contain one and only one ATTACH property');
 				}
-				if (count($attach) < 1) {
+				if (php7_count($attach) < 1) {
 					throw new qCal_Exception_MissingProperty("PROCEDURE VALARM component requires ATTACH property");
 				}
 				break;

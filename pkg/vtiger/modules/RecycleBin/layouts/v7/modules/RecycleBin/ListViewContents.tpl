@@ -68,11 +68,11 @@
                         <tr class="searchRow listViewSearchContainer">
                             <th class="inline-search-btn">
                                 <div class="table-actions">
-                                    <button class="btn btn-sm btn-success {if count($SEARCH_DETAILS) gt 0}hide{/if}" data-trigger="listSearch">
+                                    <button class="btn btn-sm btn-success {if php7_count($SEARCH_DETAILS) gt 0}hide{/if}" data-trigger="listSearch">
                                         <i class="fa fa-search"></i>&nbsp;
                                         <span class="s2-btn-text">{vtranslate("LBL_SEARCH",$MODULE)}</span>
                                     </button>
-                                    <button class="searchAndClearButton btn btn-sm btn-danger {if count($SEARCH_DETAILS) eq 0}hide{/if}" data-trigger="clearListSearch"><i class="fa fa-close"></i>&nbsp;{vtranslate("LBL_CLEAR",$MODULE)}</button>
+                                    <button class="searchAndClearButton btn btn-sm btn-danger {if php7_count($SEARCH_DETAILS) eq 0}hide{/if}" data-trigger="clearListSearch"><i class="fa fa-close"></i>&nbsp;{vtranslate("LBL_CLEAR",$MODULE)}</button>
                                 </div>
                         </th>
                         {foreach item=LISTVIEW_HEADER from=$LISTVIEW_HEADERS}
@@ -132,7 +132,7 @@
                         {/foreach}
                         {if $LISTVIEW_ENTRIES_COUNT eq '0'}
                             <tr class="emptyRecordsDiv">
-                                {assign var=COLSPAN_WIDTH value={count($LISTVIEW_HEADERS)}+1}
+                                {assign var=COLSPAN_WIDTH value={php7_count($LISTVIEW_HEADERS)}+1}
                                 <td colspan="{$COLSPAN_WIDTH}">
                                     <div class="emptyRecordsContent" style="padding-top:15%;">
                                         {assign var=SINGLE_MODULE value="SINGLE_$MODULE"}

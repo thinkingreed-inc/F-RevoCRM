@@ -144,14 +144,14 @@ class Services extends CRMEntity {
 		//Delete the existing tax if any
 		if($this->mode == 'edit' && $_REQUEST['action'] != 'MassEditSave')
 		{
-			for($i=0;$i<count($tax_details);$i++)
+			for($i=0;$i<php7_count($tax_details);$i++)
 			{
 				$taxid = getTaxId($tax_details[$i]['taxname']);
 				$sql = "DELETE FROM vtiger_producttaxrel WHERE productid=? AND taxid=?";
 				$adb->pquery($sql, array($this->id,$taxid));
 			}
 		}
-		for($i=0;$i<count($tax_details);$i++)
+		for($i=0;$i<php7_count($tax_details);$i++)
 		{
 			$tax_name = $tax_details[$i]['taxname'];
 			$tax_checkname = $tax_details[$i]['taxname']."_check";
@@ -204,7 +204,7 @@ class Services extends CRMEntity {
 		//Delete the existing currency relationship if any
 		if($this->mode == 'edit' &&  $_REQUEST['action'] != 'MassEditSave' && $_REQUEST['action'] != 'ProcessDuplicates')
 		{
-			for($i=0;$i<count($currency_details);$i++)
+			for($i=0;$i<php7_count($currency_details);$i++)
 			{
 				$curid = $currency_details[$i]['curid'];
 				$sql = "delete from vtiger_productcurrencyrel where productid=? and currencyid=?";
@@ -216,7 +216,7 @@ class Services extends CRMEntity {
 
 		$currencySet = 0;
 		//Save the Product - Currency relationship if corresponding currency check box is enabled
-		for($i=0;$i<count($currency_details);$i++)
+		for($i=0;$i<php7_count($currency_details);$i++)
 		{
 			$curid = $currency_details[$i]['curid'];
 			$curname = $currency_details[$i]['currencylabel'];

@@ -113,7 +113,7 @@ class MailManager_Folder_Model {
 		return ($this->mPageStart != $this->mPageEnd) && ($this->mPageEnd < $this->mCount);
 	}
 
-	public function count() {
+	public function php7_count() {
 		return $this->mCount;
 	}
 

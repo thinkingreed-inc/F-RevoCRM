@@ -57,7 +57,7 @@
 		</div>
 	{/foreach}
     </div>
-    {assign var=NUMBER_OF_RECORDS value=count($RELATED_RECORDS)}
+    {assign var=NUMBER_OF_RECORDS value=php7_count($RELATED_RECORDS)}
     {if $NUMBER_OF_RECORDS eq 5}
             <div class="row">
                     <div class="pull-right">

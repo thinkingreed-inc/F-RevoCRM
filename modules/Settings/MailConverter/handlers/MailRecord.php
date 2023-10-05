@@ -163,7 +163,7 @@ class Vtiger_MailRecord {
 		
 		preg_match_all('/=\?([^\?]+)\?([^\?]+)\?([^\?]+)\?=/', $input, $matches);
                 array_filter($matches);
-                if(count($matches[0])>0){
+                if(php7_count($matches[0])>0){
                 $decodedArray=  imap_mime_header_decode($input);
                 foreach($decodedArray as $part=>$prop){
                             $decodevalue=$prop->text;
@@ -257,12 +257,12 @@ class Vtiger_MailRecord {
 		    $filename = array();
 		    $content = array();
 		    $attachmentKeys = array_keys($this->_attachments);
-		    for ($i = 0; $i < count($attachmentKeys); $i++) {
+		    for ($i = 0; $i < php7_count($attachmentKeys); $i++) {
 				$filename[$i] = self::__mime_decode($attachmentKeys[$i]);
 				$content[$i] = $this->_attachments[$attachmentKeys[$i]];
 		    }
 		    unset($this->_attachments);
-		    for ($i = 0; $i < count($attachmentKeys); $i++) {
+		    for ($i = 0; $i < php7_count($attachmentKeys); $i++) {
 				$this->_attachments[$filename[$i]] = $content[$i];
 		    }
 			$this->log(array_keys($this->_attachments));

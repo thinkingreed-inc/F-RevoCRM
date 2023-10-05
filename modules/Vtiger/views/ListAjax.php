@@ -131,7 +131,7 @@ class Vtiger_ListAjax_View extends Vtiger_List_View {
 
 		$matchingRecordsList = array();
 		foreach ($matchingRecords as $module => $recordModelsList) {
-			$recordsCount = count($recordModelsList);
+			$recordsCount = php7_count($recordModelsList);
 			$recordModelsList = array_keys($recordModelsList);
 			$recordModelsList = array_slice($recordModelsList, 0, $pageLimit);
 
@@ -147,7 +147,7 @@ class Vtiger_ListAjax_View extends Vtiger_List_View {
 			$listViewModel->pagingModel = $listviewPagingModel;
 			$listViewModel->recordsCount = $recordsCount;
 
-			if (count($recordModelsList) == $pageLimit) {
+			if (php7_count($recordModelsList) == $pageLimit) {
 				array_pop($recordModelsList);
 			}
 

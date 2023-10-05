@@ -299,7 +299,7 @@ class Vtiger_List_View extends Vtiger_Index_View {
 		if(empty($searchParams)) {
 			$searchParams = array();
 		}
-		if(count($searchParams) == 2 && empty($searchParams[1])) {
+		if(php7_count($searchParams) == 2 && empty($searchParams[1])) {
 			unset($searchParams[1]);
 		}
 
@@ -344,7 +344,7 @@ class Vtiger_List_View extends Vtiger_Index_View {
 			$this->noOfEntries = $pagingModel->get('_listcount');
 		}
 		if(!$this->noOfEntries) {
-			$noOfEntries = count($this->listViewEntries);
+			$noOfEntries = php7_count($this->listViewEntries);
 		} else {
 			$noOfEntries = $this->noOfEntries;
 		}

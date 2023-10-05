@@ -80,7 +80,7 @@ class VTSMSTask extends VTTask {
 		preg_match('/\((\w+) : \(([_\w]+)\) (\w+)\)/', $match[1], $matches);
 		// If parent is empty then we can't do any thing here
 		if(!empty($this->parent)){
-			if(count($matches) != 0){
+			if(php7_count($matches) != 0){
 				list($full, $referenceField, $referenceModule, $fieldname) = $matches;
 				$referenceId = $this->parent->get($referenceField);
 				if($referenceModule==="Users" || $referenceId==null){

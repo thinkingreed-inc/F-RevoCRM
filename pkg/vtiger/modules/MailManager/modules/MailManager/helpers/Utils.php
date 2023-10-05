@@ -30,8 +30,8 @@ class MailManager_Utils_Helper {
 
 	public function allowedFileExtension($filename) {
 		$parts = explode('.', $filename);
-		if (count($parts) > 1) {
-			$extension = $parts[count($parts)-1];
+		if (php7_count($parts) > 1) {
+			$extension = $parts[php7_count($parts)-1];
 			return (in_array(strtolower($extension), vglobal('upload_badext')) === false);
 		}
 		return false;

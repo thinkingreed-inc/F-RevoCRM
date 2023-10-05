@@ -62,7 +62,7 @@
 						<tr>
 							<td>
 								<select name="Calendar[google_group]" class="inputElement select2 row" style="min-width: 250px;">
-									{if count($GOOGLE_CALENDARS) eq 0}
+									{if php7_count($GOOGLE_CALENDARS) eq 0}
 										<option value="primary">{vtranslate('LBL_PRIMARY',$MODULENAME)}</option>
 									{/if}
 									{foreach item=CALENDAR_ITEM from=$GOOGLE_CALENDARS}

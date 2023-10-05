@@ -299,7 +299,7 @@ class MailManager_Connector_Connector {
 	public function deleteMail($msgno) {
 		$msgno = trim($msgno,',');
 		$msgno = explode(',',$msgno);
-		for($i = 0;$i<count($msgno);$i++) {
+		for($i = 0;$i<php7_count($msgno);$i++) {
 			@imap_delete($this->mBox, $msgno[$i]);
 		}
 		imap_expunge($this->mBox);
@@ -315,7 +315,7 @@ class MailManager_Connector_Connector {
 		$msgno = trim($msgno,',');
 		$msgno = explode(',',$msgno);
 		$folder = $this->convertCharacterEncoding(html_entity_decode($folderName),'UTF7-IMAP','UTF-8'); //handle both utf8 characters and html entities
-		for($i = 0;$i<count($msgno);$i++) {
+		for($i = 0;$i<php7_count($msgno);$i++) {
 			@imap_mail_move($this->mBox, $msgno[$i], $folder);
 		}
 		@imap_expunge($this->mBox);
@@ -364,7 +364,7 @@ class MailManager_Connector_Connector {
 		$nos = imap_search($this->mBox, $query);
 
 		if (!empty($nos)) {
-			$nmsgs = count($nos);
+			$nmsgs = php7_count($nos);
 
 			$reverse_start = $nmsgs - ($start*$maxLimit);
 			$reverse_end   = $reverse_start - $maxLimit;

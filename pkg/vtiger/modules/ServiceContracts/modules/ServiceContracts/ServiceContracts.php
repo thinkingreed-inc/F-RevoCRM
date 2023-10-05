@@ -577,7 +577,7 @@ class ServiceContracts extends CRMEntity {
 		array_push($updateCols, $progressUpdate);
 		array_push($updateParams, $progressUpdateParams);
 
-		if(count($updateCols) > 0) {
+		if(php7_count($updateCols) > 0) {
 			$updateQuery = 'UPDATE vtiger_servicecontracts SET '. implode(",", $updateCols) .' WHERE servicecontractsid = ?';
 			array_push($updateParams, $this->id);
 			if ( $ServiceContractExistFlag !== "0") {

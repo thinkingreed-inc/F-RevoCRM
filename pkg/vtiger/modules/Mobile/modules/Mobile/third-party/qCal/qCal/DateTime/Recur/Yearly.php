@@ -26,7 +26,7 @@ class qCal_DateTime_Recur_Yearly extends qCal_DateTime_Recur {
 		while ($year <= $eyear) {
 		
 			// if byMonth is specified...
-			if (count($this->byMonth())) {
+			if (php7_count($this->byMonth())) {
 				// loop over each month
 				for ($month = 1; $month <= 12; $month++) {
 					// if this is the start year still and we haven't reached the start month, skip ahead
@@ -66,7 +66,7 @@ class qCal_DateTime_Recur_Yearly extends qCal_DateTime_Recur {
 						// @todo this is inconsistent, I don't use the getter here because of its special functionality.
 						// I need to either remove the special functionality or not use getters elsewhere in this method
 						$byday = $this->byday;
-						if (count($byday)) {
+						if (php7_count($byday)) {
 							// by day is broken into an array of arrays like array('TH' => 0), array('FR' => 1), array('MO' => -2) etc.
 							// with zero meaning every instance of that particular day should be included and number meaning the Nth of that day
 							foreach ($byday as $val) {
@@ -83,7 +83,7 @@ class qCal_DateTime_Recur_Yearly extends qCal_DateTime_Recur {
 						}
 						
 						// if byMonthDay is specified...
-						if (count($this->byMonthDay())) {
+						if (php7_count($this->byMonthDay())) {
 							foreach ($this->byMonthDay() as $mday) {
 								// only add this day if it hasn't been added already
 								if ($mday == $day && !$alreadyadded) {
@@ -93,7 +93,7 @@ class qCal_DateTime_Recur_Yearly extends qCal_DateTime_Recur {
 						}
 						
 						// now loop over each hour and add hours
-						if (count($this->byHour())) {
+						if (php7_count($this->byHour())) {
 							$hourrecurrences = array();
 							foreach ($this->byHour() as $hour) {
 								$new = new qCal_Date();
@@ -104,7 +104,7 @@ class qCal_DateTime_Recur_Yearly extends qCal_DateTime_Recur {
 						}
 						
 						// now loop over byHours and add byMinutes
-						if (count($this->byMinute())) {
+						if (php7_count($this->byMinute())) {
 							if (!isset($minuterecurrences)) $minuterecurrences = array();
 							foreach ($this->byMinute() as $minute) {
 								$new = new qCal_Date();
@@ -120,7 +120,7 @@ class qCal_DateTime_Recur_Yearly extends qCal_DateTime_Recur {
 			}
 			
 			// if in the first year we don't find an instance, don't do the interval, just increment a year
-			if ($year == $syear && count($recurrences)) $year += $this->interval();
+			if ($year == $syear && php7_count($recurrences)) $year += $this->interval();
 			else ($year++);
 		}
 		

@@ -103,7 +103,7 @@ class Portal_List_View extends Vtiger_Index_View {
 
 		//if list view entries restricted to show, paging should not fail
 		if(!$this->noOfEntries) {
-			$noOfEntries = count($listviewEntries);
+			$noOfEntries = php7_count($listviewEntries);
 		}
 
 		$viewer->assign('PAGE_NUMBER',$pageNumber);
@@ -117,14 +117,14 @@ class Portal_List_View extends Vtiger_Index_View {
 		$viewer->assign('SORT_ORDER', $sortOrder);
 		$viewer->assign('SORT_IMAGE', $sortImage);
 		$viewer->assign('NEXT_SORT_ORDER', $nextSortOrder);
-		$viewer->assign('RECORD_COUNT', count($listviewEntries));
+		$viewer->assign('RECORD_COUNT', php7_count($listviewEntries));
 		$viewer->assign('CURRENT_PAGE', $pageNumber);
 		$viewer->assign('PAGING_INFO', $listViewModel->calculatePageRange($listviewEntries, $pagingModel));
 		$viewer->assign('FASORT_IMAGE',$faSortImage);
 		$viewer->assign('PAGING_MODEL', $pagingModel);
 		$viewer->assign('PAGING_MODEL', $pagingModel);
 		$viewer->assign('PAGE_NUMBER', $pagingModel->get('page'));
-		$viewer->assign('NO_OF_ENTRIES', count($listviewEntries));
+		$viewer->assign('NO_OF_ENTRIES', php7_count($listviewEntries));
 	}
 
 	function getHeaderScripts(Vtiger_Request $request) {

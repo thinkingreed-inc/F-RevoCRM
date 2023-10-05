@@ -26,7 +26,7 @@ class Users_Module_Model extends Vtiger_Module_Model {
 				$currentUser = Users_Record_Model::getCurrentUserModel();
 				$overRideQuery = $overRideQuery. $condition;
 				$allSubordinates = $currentUser->getAllSubordinatesByReportsToField($record);
-				if(count($allSubordinates) > 0) {
+				if(php7_count($allSubordinates) > 0) {
 					$overRideQuery .= " AND vtiger_users.id NOT IN (". implode(',',$allSubordinates) .")"; // do not allow the subordinates
 				}
 			}
@@ -52,7 +52,7 @@ class Users_Module_Model extends Vtiger_Module_Model {
 			$params = array("%$searchValue%", "%$searchValue%", 'Active');
 
 			// do not allow the subordinates
-			if(count($allSubordinates) > 0) {
+			if(php7_count($allSubordinates) > 0) {
 				$query .= " AND vtiger_users.id NOT IN (". implode(',',$allSubordinates) .")";
 			}
 

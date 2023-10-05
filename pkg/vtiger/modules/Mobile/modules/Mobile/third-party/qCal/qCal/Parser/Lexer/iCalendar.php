@@ -53,7 +53,7 @@ class qCal_Parser_Lexer_iCalendar extends qCal_Parser_Lexer {
 				if (empty($stack)) {
 					$tokens = $child;
 				} else {
-					$parent =& $stack[count($stack)-1];
+					$parent =& $stack[php7_count($stack)-1];
 					array_push($parent['children'], $child);
 				}
         	} else {
@@ -61,12 +61,12 @@ class qCal_Parser_Lexer_iCalendar extends qCal_Parser_Lexer {
         		if (preg_match('#^([^:]+):"?([^\n]+)?"?$#i', $line, $matches)) {
 					// @todo What do I do with empty values?
 					$value = isset($matches[2]) ? $matches[2] : "";
-					$component =& $stack[count($stack)-1];
+					$component =& $stack[php7_count($stack)-1];
         			// if line is a property line, start a new property, but first determine if there are any params
 					$property = $matches[1];
 					$params = array();
 					$propparts = explode(";", $matches[1]);
-					if (count($propparts) > 1) {
+					if (php7_count($propparts) > 1) {
 						foreach ($propparts as $key => $part) {
 							// the first one is the property name
 							if ($key == 0) {
@@ -108,7 +108,7 @@ class qCal_Parser_Lexer_iCalendar extends qCal_Parser_Lexer {
 			$therest = substr($line, 1);
 			// if character 1 is a whitespace character... (tab or space)
 			if ($chr1 == chr(9) || $chr1 == chr(32)) {
-				$return[count($return)-1] .= $therest;
+				$return[php7_count($return)-1] .= $therest;
 			} else {
 				$return[] = $line;
 			}

@@ -130,7 +130,7 @@ class OutlookVtigerCRMHandler extends vtigerCRMHandler{
                     foreach ($nameList as $key => $value)
                         $referenceIdsName[$key] = $value;
                 }
-                $recordCount = count($records);
+                $recordCount = php7_count($records);
                 for ($i = 0; $i < $recordCount; $i++) {
                     $record = $records[$i];
                     if (!empty($record[$referenceFieldName])) {
@@ -179,7 +179,7 @@ class OutlookVtigerCRMHandler extends vtigerCRMHandler{
 		$deletedRecords = $recordDetails['deleted'];
 
 
-		if (count($createdRecords) > 0) {
+		if (php7_count($createdRecords) > 0) {
 			$createdRecords = $this->translateReferenceFieldNamesToIds($createdRecords, $user);
 			$createdRecords = $this->fillNonExistingMandatoryPicklistValues($createdRecords);
 			$createdRecords = $this->fillMandatoryFields($createdRecords, $user);
@@ -196,7 +196,7 @@ class OutlookVtigerCRMHandler extends vtigerCRMHandler{
 			}
 		}
 
-		if (count($updatedRecords) > 0) {
+		if (php7_count($updatedRecords) > 0) {
 			$updatedRecords = $this->translateReferenceFieldNamesToIds($updatedRecords, $user);
             $updatedRecords = $this->removeMandatoryEmptyFields($updatedRecords, $user);
 		}

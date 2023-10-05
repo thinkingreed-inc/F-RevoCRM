@@ -535,7 +535,7 @@ class MailManager_Relation_View extends MailManager_Abstract_View {
 			}
 		}
 		//before calling vtws_query, need to check Active Email Fields are there or not
-		if(count($activeEmailFields) > 0) {
+		if(php7_count($activeEmailFields) > 0) {
 			$query = $this->buildSearchQuery($module, $email, 'EMAIL');
 			$qresults = vtws_query( $query, $currentUserModel );
 			$describe = $this->ws_describe($module);

@@ -8,7 +8,7 @@ class FRMenuSetting {
     public static function apply(array $moduleNames) {
         global $adb;
 
-        if(count($moduleNames) == 0) {
+        if(php7_count($moduleNames) == 0) {
             throw new Exception();
         }
 

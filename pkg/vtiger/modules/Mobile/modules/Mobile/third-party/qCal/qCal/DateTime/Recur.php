@@ -107,7 +107,7 @@ abstract class qCal_DateTime_Recur {
 	public function until($until = null) {
 	
 		if (is_null($until)) return $this->until;
-		if ($this->count()) throw new qCal_DateTime_Exception_InvalidRecur('A recurrence count and an until date cannot both be specified');
+		if ($this->php7_count()) throw new qCal_DateTime_Exception_InvalidRecur('A recurrence count and an until date cannot both be specified');
 		$this->until = qCal_DateTime::factory($until);
 		return $this;
 	
@@ -120,7 +120,7 @@ abstract class qCal_DateTime_Recur {
 	 * @throws qCal_Date_Exception_InvalidRecur
 	 * @return self
 	 */
-	public function count($count = null) {
+	public function php7_count($count = null) {
 	
 		if (is_null($count)) return $this->count;
 		if ($this->until()) throw new qCal_DateTime_Exception_InvalidRecur('A recurrence count and an until date cannot both be specified');

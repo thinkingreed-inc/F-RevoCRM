@@ -66,7 +66,7 @@ class qCal_Value_Period extends qCal_Value {
 	protected function doCast($value) {
 	
 		$parts = explode("/", $value);
-		if (count($parts) !== 2) {
+		if (php7_count($parts) !== 2) {
 			throw new qCal_DateTime_Exception_InvalidPeriod("A period must contain a start date and either an end date, or a duration of time.");
 		}
 		$start = qCal_DateTime::factory($parts[0]);

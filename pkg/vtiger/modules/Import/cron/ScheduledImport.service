@@ -12,6 +12,7 @@
 $previousBulkSaveMode = $VTIGER_BULK_SAVE_MODE;
 $VTIGER_BULK_SAVE_MODE = true;
 
+require_once('vendor/autoload.php');
 require_once  'includes/Loader.php';
 require_once 'includes/runtime/Controller.php';
 require_once 'includes/runtime/BaseModel.php';

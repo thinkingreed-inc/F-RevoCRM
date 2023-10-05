@@ -30,7 +30,7 @@ class Settings_ModuleManager_ModuleImport_View extends Settings_Vtiger_Index_Vie
 		$viewer = $this->getViewer($request);
 		$viewer->assign('QUALIFIED_MODULE', $qualifiedModuleName);
 		$viewer->assign('EXTENSIONS', $EXTENSIONS);
-		$viewer->assign('EXTENSIONS_AVAILABLE', (count($EXTENSIONS) > 0)? true :false);
+		$viewer->assign('EXTENSIONS_AVAILABLE', (php7_count($EXTENSIONS) > 0)? true :false);
 		$viewer->view('Step1.tpl', $qualifiedModuleName);
 	}
 

@@ -92,7 +92,7 @@
 								{/if}
 								{assign var="isReferenceField" value=$FIELD_MODEL->getFieldDataType()}
 								{assign var="referenceList" value=$FIELD_MODEL->getReferenceList()}
-								{assign var="referenceListCount" value=count($referenceList)}
+								{assign var="referenceListCount" value=php7_count($referenceList)}
 								{if $FIELD_MODEL->get('uitype') eq "19"}
 								{if $COUNTER eq '1'}
 								<td></td><td></td></tr><tr>

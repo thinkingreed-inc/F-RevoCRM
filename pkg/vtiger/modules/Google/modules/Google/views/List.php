@@ -177,7 +177,7 @@ class Google_List_View extends Vtiger_PopupAjax_View {
 		foreach ($syncRecords as $key => $records) {
 			if ($key == 'push') {
 				$pushRecord = false;
-				if (count($records) == 0) {
+				if (php7_count($records) == 0) {
 					$pushRecord = true;
 				}
 				foreach ($records as $record) {
@@ -195,7 +195,7 @@ class Google_List_View extends Vtiger_PopupAjax_View {
 				}
 			} else if ($key == 'pull') {
 				$pullRecord = false;
-				if (count($records) == 0) {
+				if (php7_count($records) == 0) {
 					$pullRecord = true;
 				}
 				foreach ($records as $type => $record) {

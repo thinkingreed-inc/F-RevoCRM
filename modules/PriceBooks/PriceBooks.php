@@ -465,7 +465,7 @@ class PriceBooks extends CRMEntity {
 	}
 
 	function relatePriceBookWithProduct($entityinfo, $productList) {
-		if(count($productList) > 0){
+		if(php7_count($productList) > 0){
 			foreach($productList as $product){
 				if(!$product['relatedto'])
 					continue;

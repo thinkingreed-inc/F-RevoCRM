@@ -193,7 +193,7 @@ class Vtiger_PackageImport extends Vtiger_PackageExport {
 		foreach($filelist as $filename=>$fileinfo) {
 			$matches = Array();
 			preg_match('/manifest.xml/', $filename, $matches);
-			if(count($matches)) {
+			if(php7_count($matches)) {
 				$manifestxml_found = true;
 				$this->__parseManifestFile($unzip);
 				$modulename = $this->_modulexml->name;
@@ -223,12 +223,12 @@ class Vtiger_PackageImport extends Vtiger_PackageExport {
 			// Language file present in en_us folder
 			$pattern = '/languages\/en_us\/([^\/]+).php/';
 			preg_match($pattern, $filename, $matches);
-			if(count($matches)) { $language_modulename = $matches[1]; }
+			if(php7_count($matches)) { $language_modulename = $matches[1]; }
 
 			// or Language file may be present in en_us/Settings folder
 			$settingsPattern = '/languages\/en_us\/Settings\/([^\/]+).php/';
 			preg_match($settingsPattern, $filename, $matches);
-			if(count($matches)) { $language_modulename = $matches[1]; }
+			if(php7_count($matches)) { $language_modulename = $matches[1]; }
 		}
 
 		// Verify module language file.

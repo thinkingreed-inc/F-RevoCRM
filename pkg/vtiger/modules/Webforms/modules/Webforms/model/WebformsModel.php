@@ -149,10 +149,10 @@ class Webforms_Model {
         $roundrobin_userid = vtlib_purify($this->data["roundrobin_userid"]);
         $roundrobin_logic = vtlib_purify($this->data["roundrobin_logic"]);
         $useridList = json_decode($roundrobin_userid,true);
-        if($roundrobin_logic >= count($useridList))
+        if($roundrobin_logic >= php7_count($useridList))
             $roundrobin_logic=0;
         $roundrobinOwnerId = $useridList[$roundrobin_logic];
-        $nextRoundrobinLogic = ($roundrobin_logic+1)%count($useridList);
+        $nextRoundrobinLogic = ($roundrobin_logic+1)%php7_count($useridList);
         $adb->pquery("UPDATE vtiger_webforms SET roundrobin_logic = ? WHERE id = ?", array($nextRoundrobinLogic,$this->getId()));
         return vtlib_purify($roundrobinOwnerId);
     }

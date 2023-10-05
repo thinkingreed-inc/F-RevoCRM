@@ -121,7 +121,7 @@ class Users_List_View extends Settings_Vtiger_List_View {
 		if(!$this->listViewEntries){
 			$this->listViewEntries = $listViewModel->getListViewEntries($pagingModel);
 		}
-		$noOfEntries = count($this->listViewEntries);
+		$noOfEntries = php7_count($this->listViewEntries);
 
 		$viewer->assign('MODULE', $moduleName);
 

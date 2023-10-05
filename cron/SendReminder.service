@@ -194,7 +194,7 @@ if($adb->num_rows($result) >= 1)
 			$recordModel = Vtiger_Record_Model::getInstanceById($activity_id, 'Calendar');
 			$recordDetailViewLink = $recordModel->getDetailViewUrl();
 			$contents = $contents."<br/> ".vtranslate('LBL_CLICK_HERE_TO_VIEW', 'Calendar')."&nbsp;<a href=$site_URL/$recordDetailViewLink>".vtranslate('LBL_RECORD', 'Calendar')."</a>";
-			if(count($to_addr) >=1)
+			if(php7_count($to_addr) >=1)
 			{
 				send_email($to_addr,$from,$subject,$contents,$mail_server,$mail_server_username,$mail_server_password);
 				$upd_query = "UPDATE vtiger_activity_reminder SET reminder_sent = ?";

@@ -52,7 +52,7 @@ class VTQL_ParseryyToken implements ArrayAccess
                 $this->metadata = array_merge($this->metadata, $x);
                 return;
             }
-            $offset = count($this->metadata);
+            $offset = php7_count($this->metadata);
         }
         if ($value === null) {
             return;
@@ -718,7 +718,7 @@ static public $yy_action = array(
         if ($tokenType === 0) {
             return 'End of Input';
         }
-        if ($tokenType > 0 && $tokenType < count(self::$yyTokenName)) {
+        if ($tokenType > 0 && $tokenType < php7_count(self::$yyTokenName)) {
             return self::$yyTokenName[$tokenType];
         } else {
             return "Unknown";
@@ -760,7 +760,7 @@ static public $yy_action = array(
      */
     function yy_pop_parser_stack()
     {
-        if (!count($this->yystack)) {
+        if (!php7_count($this->yystack)) {
             return;
         }
         $yytos = array_pop($this->yystack);
@@ -967,7 +967,7 @@ static public $yy_action = array(
         $i += $iLookAhead;
         if ($i < 0 || $i >= self::YY_SZ_ACTTAB ||
               self::$yy_lookahead[$i] != $iLookAhead) {
-            if (count(self::$yyFallback) && $iLookAhead < count(self::$yyFallback)
+            if (php7_count(self::$yyFallback) && $iLookAhead < php7_count(self::$yyFallback)
                    && ($iFallback = self::$yyFallback[$iLookAhead]) != 0) {
                 if (self::$yyTraceFILE) {
                     fwrite(self::$yyTraceFILE, self::$yyTracePrompt . "FALLBACK " .
@@ -1416,7 +1416,7 @@ if($firstTable!=$table){
         //int $yysize;                     /* Amount to pop the stack */
         $yymsp = $this->yystack[$this->yyidx];
         if (self::$yyTraceFILE && $yyruleno >= 0 
-              && $yyruleno < count(self::$yyRuleName)) {
+              && $yyruleno < php7_count(self::$yyRuleName)) {
             fprintf(self::$yyTraceFILE, "%sReduce (%d) [%s].\n",
                 self::$yyTracePrompt, $yyruleno,
                 self::$yyRuleName[$yyruleno]);

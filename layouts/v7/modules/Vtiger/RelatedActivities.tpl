@@ -34,7 +34,7 @@
 			{assign var=SOURCE_MODEL value=$RECORD}
 		</div>
 		<div class="widget_contents">
-			{if count($ACTIVITIES) neq '0'}
+			{if php7_count($ACTIVITIES) neq '0'}
 				{foreach item=RECORD key=KEY from=$ACTIVITIES}
 					{assign var=START_DATE value=$RECORD->get('date_start')}
 					{assign var=START_TIME value=$RECORD->get('time_start')}

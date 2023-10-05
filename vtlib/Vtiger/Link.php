@@ -188,19 +188,19 @@ class Vtiger_Link {
 				$multitype = true;
 				if($tabid === self::IGNORE_MODULE) {
 					$sql = 'SELECT * FROM vtiger_links WHERE linktype IN ('.
-						Vtiger_Utils::implodestr('?', count($type), ',') .') ';
+						Vtiger_Utils::implodestr('?', php7_count($type), ',') .') ';
 					$params = $type;
 					$permittedTabIdList = getPermittedModuleIdList();
 					if(count($permittedTabIdList) > 0 && $current_user->is_admin !== 'on') {
 						array_push($permittedTabIdList, 0);	// Added to support one link for all modules
 						$sql .= ' and tabid IN ('.
-							Vtiger_Utils::implodestr('?', count($permittedTabIdList), ',').')';
+							Vtiger_Utils::implodestr('?', php7_count($permittedTabIdList), ',').')';
 						$params[] = $permittedTabIdList;
 					}
 					$result = $adb->pquery($sql, Array($adb->flatten_array($params)));
 				} else {
 					$result = $adb->pquery('SELECT * FROM vtiger_links WHERE (tabid=? OR tabid=0) AND linktype IN ('.
-						Vtiger_Utils::implodestr('?', count($type), ',') .')',
+						Vtiger_Utils::implodestr('?', php7_count($type), ',') .')',
 							Array($tabid, $adb->flatten_array($type)));
 				}			
 			} else {

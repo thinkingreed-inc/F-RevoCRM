@@ -303,7 +303,7 @@ class PHP_ParserGenerator_Parser
                 $cp += 2;
                 $z = strpos(substr($filebuf, $cp), '*/');
                 if ($z !== false) {
-                    $lineno += count(explode("\n", substr($filebuf, $cp, $z))) - 1;
+                    $lineno += php7_count(explode("\n", substr($filebuf, $cp, $z))) - 1;
                 }
                 $cp += $z + 1;
                 continue;
@@ -323,7 +323,7 @@ class PHP_ParserGenerator_Parser
                     $cp += $test;
                     $nextcp = $cp + 1;
                 }
-                $lineno += count(explode("\n", substr($filebuf, $oldcp, $cp - $oldcp))) - 1;
+                $lineno += php7_count(explode("\n", substr($filebuf, $oldcp, $cp - $oldcp))) - 1;
             } elseif ($filebuf[$cp] == '{') {               /* A block of C code */
                 $cp++;
                 for ($level = 1; $cp < strlen($filebuf) && ($level > 1 || $filebuf[$cp] != '}'); $cp++) {
@@ -338,7 +338,7 @@ class PHP_ParserGenerator_Parser
                         $cp += 2;
                         $z = strpos(substr($filebuf, $cp), '*/');
                         if ($z !== false) {
-                            $lineno += count(explode("\n", substr($filebuf, $cp, $z))) - 1;
+                            $lineno += php7_count(explode("\n", substr($filebuf, $cp, $z))) - 1;
                         }
                         $cp += $z + 2;
                     } elseif ($filebuf[$cp] == '/' && $filebuf[$cp + 1] == '/') {

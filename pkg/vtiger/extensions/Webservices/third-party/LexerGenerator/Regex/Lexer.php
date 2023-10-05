@@ -110,7 +110,7 @@ class PHP_LexerGenerator_Regex_Lexer
         do {
             if (preg_match($yy_global_pattern, substr($this->input, $this->N), $yymatches)) {
                 $yymatches = array_filter($yymatches, 'strlen'); // remove empty sub-patterns
-                if (!count($yymatches)) {
+                if (!php7_count($yymatches)) {
                     throw new Exception('Error: lexing failed because a rule matched' .
                         'an empty string.  Input "' . substr($this->input,
                         $this->N, 5) . '... state INITIAL');
@@ -329,7 +329,7 @@ class PHP_LexerGenerator_Regex_Lexer
         do {
             if (preg_match($yy_global_pattern, substr($this->input, $this->N), $yymatches)) {
                 $yymatches = array_filter($yymatches, 'strlen'); // remove empty sub-patterns
-                if (!count($yymatches)) {
+                if (!php7_count($yymatches)) {
                     throw new Exception('Error: lexing failed because a rule matched' .
                         'an empty string.  Input "' . substr($this->input,
                         $this->N, 5) . '... state CHARACTERCLASSSTART');
@@ -433,7 +433,7 @@ class PHP_LexerGenerator_Regex_Lexer
         do {
             if (preg_match($yy_global_pattern, substr($this->input, $this->N), $yymatches)) {
                 $yymatches = array_filter($yymatches, 'strlen'); // remove empty sub-patterns
-                if (!count($yymatches)) {
+                if (!php7_count($yymatches)) {
                     throw new Exception('Error: lexing failed because a rule matched' .
                         'an empty string.  Input "' . substr($this->input,
                         $this->N, 5) . '... state CHARACTERCLASS');
@@ -569,7 +569,7 @@ class PHP_LexerGenerator_Regex_Lexer
         do {
             if (preg_match($yy_global_pattern, substr($this->input, $this->N), $yymatches)) {
                 $yymatches = array_filter($yymatches, 'strlen'); // remove empty sub-patterns
-                if (!count($yymatches)) {
+                if (!php7_count($yymatches)) {
                     throw new Exception('Error: lexing failed because a rule matched' .
                         'an empty string.  Input "' . substr($this->input,
                         $this->N, 5) . '... state RANGE');
@@ -690,7 +690,7 @@ class PHP_LexerGenerator_Regex_Lexer
         do {
             if (preg_match($yy_global_pattern, substr($this->input, $this->N), $yymatches)) {
                 $yymatches = array_filter($yymatches, 'strlen'); // remove empty sub-patterns
-                if (!count($yymatches)) {
+                if (!php7_count($yymatches)) {
                     throw new Exception('Error: lexing failed because a rule matched' .
                         'an empty string.  Input "' . substr($this->input,
                         $this->N, 5) . '... state ASSERTION');
