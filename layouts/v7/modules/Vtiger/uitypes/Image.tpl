@@ -35,7 +35,7 @@
 			<div class="uploadedFileDetails {if $IS_EXTERNAL_LOCATION_TYPE}hide{/if}">
 				<div class="uploadedFileSize"></div>
 				<div class="uploadedFileName">
-					{if !empty($FIELD_VALUE) && !$smarty.request['isDuplicate']}
+					{if !empty($FIELD_VALUE) && !$REQ['isDuplicate']}
 						[{$FIELD_MODEL->getDisplayValue($FIELD_VALUE)}]
 					{/if}
 				</div>

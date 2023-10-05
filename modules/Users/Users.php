@@ -1313,7 +1313,7 @@ class Users extends CRMEntity {
 
 		 if($this->mode == 'edit')
 		 {
-			 for($i = 0;$i < count($this->homeorder_array);$i++)
+			 for($i = 0;$i < php7_count($this->homeorder_array);$i++)
 			 {
 				 if($_REQUEST[$this->homeorder_array[$i]] != '')
 				 {

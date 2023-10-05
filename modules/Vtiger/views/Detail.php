@@ -528,7 +528,7 @@ class Vtiger_Detail_View extends Vtiger_Index_View {
 		}
 
 		$pagingModel->calculatePageRange($recentComments);
-		if ($pagingModel->get('limit') < count($recentComments)) {
+		if ($pagingModel->get('limit') < php7_count($recentComments)) {
 			array_pop($recentComments);
 		}
 

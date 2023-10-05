@@ -158,13 +158,75 @@ abstract class Vtiger_View_Controller extends Vtiger_Action_Controller {
 
 	function getViewer(Vtiger_Request $request) {
 		if(!$this->viewer) {
-			global $vtiger_current_version, $vtiger_display_version, $onlyV7Instance;
+			global $vtiger_current_version, $vtiger_display_version, $onlyV7Instance, $current_user, $maxListFieldsSelectionSize;
 			$viewer = new Vtiger_Viewer();
+
+			// Secure request access within template.
+			$viewer->assign('REQ', $request);
+
 			$viewer->assign('APPTITLE', getTranslatedString('APPTITLE'));
 			$viewer->assign('VTIGER_VERSION', $vtiger_current_version);
 			$viewer->assign('VTIGER_DISPLAY_VERSION', $vtiger_display_version);
+			$viewer->assign('MAX_LISTFIELDS_SELECTION_SIZE', isset($maxListFieldsSelectionSize)? max(3, $maxListFieldsSelectionSize) : 15);
             $viewer->assign('ONLY_V7_INSTANCE', $onlyV7Instance);
 			$this->viewer = $viewer;
+
+			// Defaults to avoid warning
+			// General
+			$viewer->assign('V7_THEME_PATH', '');
+			$viewer->assign('MODULE_NAME', '');
+			$viewer->assign('MODULE', '');
+			$viewer->assign('QUALIFIED_MODULE', '');
+			$viewer->assign('VIEW', '');
+			$viewer->assign('PARENT_MODULE', '');
+			$viewer->assign('EXTENSION_MODULE', '');
+			$viewer->assign('moduleName', '');
+			$viewer->assign('CURRENT_USER_ID', $current_user ? $current_user->id : "");
+
+			$viewer->assign('NOTIFIER_URL', '');
+			$viewer->assign('GLOBAL_SEARCH_VALUE', '');
+			$_REQUEST["view"] = isset($_REQUEST["view"])? $_REQUEST["view"] : "";
+
+			// Listview
+			$viewer->assign('SEARCH_MODE_RESULTS', null);
+			$viewer->assign('SHARED_MEMBER_COUNT', 0);
+			$viewer->assign('CUSTOM_VIEWS_NAMES', array());
+			$viewer->assign('ACTIVE', false);   // Tag
+			$viewer->assign('BUTTON_NAME', ''); // footer Buttom (for custom action)
+			$viewer->assign('BUTTON_ID', '');
+			$viewer->assign('NO_EDIT', '');
+			$viewer->assign('SOURCE_MODULE', '');
+			$viewer->assign('OPERATOR', '');
+			$viewer->assign('LISTVIEW_COUNT', 0);
+			$viewer->assign('FOLDER_ID', 0);
+			$viewer->assign('FOLDER_VALUE', '');
+			$viewer->assign('VIEWTYPE', '');
+			$viewer->assign('PRINT_TEMPLATE', '');
+			$viewer->assign('CLASS_VIEW_ACTION', '');
+			$viewer->assign('RELATED_MODULE_NAME', '');
+
+			// Editview
+			$viewer->assign('LEFTPANELHIDE', false);
+			$viewer->assign('RECORD_ID', '');
+			$viewer->assign('RETURN_VIEW', '');
+			$viewer->assign('MASS_EDITION_MODE', false);
+			$viewer->assign('OCCUPY_COMPLETE_WIDTH', true);
+			$viewer->assign('VIEW_SOURCE', false);
+			
+			// DetailView
+			$viewer->assign('MORE_TAB_ACTIVE', false);
+			$viewer->assign('NO_DELETE', false);
+			$viewer->assign('IS_EXTERNAL_LOCATION_TYPE', false);
+
+			// EditView
+			$viewer->assign('IGNOREUIREGISTRATION', false);
+			$viewer->assign('IMAGE_DETAILS', null);
+
+			// RelatedLists
+			$viewer->assign('TOTAL_ENTRIES', 0);
+
+			// Popupview
+			$viewer->assign('IS_MODULE_DISABLED', false);
 		}
 		return $this->viewer;
 	}
@@ -202,15 +264,7 @@ abstract class Vtiger_View_Controller extends Vtiger_Action_Controller {
 		$viewer->assign('SKIN_PATH', Vtiger_Theme::getCurrentUserThemePath());
 		$viewer->assign('LANGUAGE_STRINGS', $this->getJSLanguageStrings($request));
 		$viewer->assign('LANGUAGE', $currentUser->get('language'));
-
-		$viewer->assign('V7_THEME_PATH', '');
-		$viewer->assign('MODULE_NAME', '');
-		$viewer->assign('MODULE', '');
-		$viewer->assign('VIEW', '');
-		$viewer->assign('PARENT_MODULE', '');
-		$viewer->assign('EXTENSION_MODULE', '');
-
-
+		
 		if ($request->getModule() != 'Install') {
 			$userCurrencyInfo = getCurrencySymbolandCRate($currentUser->get('currency_id'));
 			$viewer->assign('USER_CURRENCY_SYMBOL', $userCurrencyInfo['symbol']);
