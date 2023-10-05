@@ -27,16 +27,15 @@ class LoggerPropertyConfigurator {
 				$name = 'ROOT';
 				list($level, $appender) = explode(',', $v);
 				$types[$name]['level'] = $level;
-				$types[$name]['appender'] = $appender;
+				$types[$name]['MaxBackupIndex'] = $configinfo['log4php.appender.'.$appender.'.MaxBackupIndex'];
+				$types[$name]['File'] = $configinfo['log4php.appender.'.$appender.'.File'];
 			}
 			if(preg_match("/log4php.logger.(.*)/i", $k, $m)) {
 				$name = $m[1];
 				list($level, $appender) = explode(',', $v);
 				$types[$name]['level'] = $level;
-				$types[$name]['appender'] = $appender;
-			}
-			if(preg_match("/log4php.appender.([^.]+).?(.*)/i", $k, $m)) {
-				$appenders[$m[1]][$m[2]] = $v;
+				$types[$name]['MaxBackupIndex'] = $configinfo['log4php.appender.'.$appender.'.MaxBackupIndex'];
+				$types[$name]['File'] = $configinfo['log4php.appender.'.$appender.'.File'];
 			}
 			
 		}
@@ -48,13 +47,10 @@ class LoggerPropertyConfigurator {
 	function getConfigInfo($type) {
 		if(isset($this->types[$type])) {
 			$typeinfo = $this->types[$type];
-			return array (
-				'level'   => $typeinfo['level'],
-				'appender'=> $this->appenders[$typeinfo['appender']]
-		
-			);
+			return $typeinfo;
+		} else {
+			return $this->types['ROOT'];
 		}
-		return false;
 	}
 	
 	static function getInstance() {

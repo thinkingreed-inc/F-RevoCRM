@@ -74,7 +74,7 @@ class Products extends CRMEntity {
 	/**	Constructor which will set the column_fields in this object
 	 */
         function __construct() {
-            $this->log =LoggerManager::getLogger('product');
+            $this->log =Logger::getLogger('product');
             $this->log->debug("Entering Products() method ...");
             $this->db = PearDatabase::getInstance();
             $this->column_fields = getColumnFields('Products');

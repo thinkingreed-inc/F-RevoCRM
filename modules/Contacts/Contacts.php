@@ -145,7 +145,7 @@ class Contacts extends CRMEntity {
         'Vendors' => array('table_name' => 'vtiger_vendorcontactrel', 'table_index' => 'vendorid', 'rel_index' => 'contactid'),
 	);
         function __construct() {
-            $this->log = LoggerManager::getLogger('contact');
+            $this->log = Logger::getLogger('contact');
             $this->db = PearDatabase::getInstance();
             $this->column_fields = getColumnFields('Contacts');
         }       

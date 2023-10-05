@@ -60,7 +60,7 @@ function getKeyMetrics($maxval,$calCnt)
 	$metricviewnames = "'Hot Leads'";
 
 	$current_module_strings = return_module_language($current_language, "CustomView");
-	$log = LoggerManager::getLogger('metrics');
+	$log = Logger::getLogger('metrics');
 
 	$metriclists = getMetricList();
 	

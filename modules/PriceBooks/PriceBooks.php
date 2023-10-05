@@ -55,7 +55,7 @@ class PriceBooks extends CRMEntity {
 	/**	Constructor which will set the column_fields in this object
 	 */
         function __construct() {
-            $this->log =LoggerManager::getLogger('pricebook');
+            $this->log =Logger::getLogger('pricebook');
             $this->log->debug("Entering PriceBooks() method ...");
             $this->db = PearDatabase::getInstance();
             $this->column_fields = getColumnFields('PriceBooks');

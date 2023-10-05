@@ -68,9 +68,9 @@ class Emails extends CRMEntity {
 	/** This function will set the columnfields for Email module
 	 */
         function __construct() {
-            $this->log = LoggerManager::getLogger('email');
+            $this->log = Logger::getLogger('email');
             $this->log->debug("Entering Emails() method ...");
-            $this->log = LoggerManager::getLogger('email');
+            $this->log = Logger::getLogger('email');
             $this->db = PearDatabase::getInstance();
             $this->column_fields = getColumnFields('Emails');
             $this->log->debug("Exiting Email method ...");

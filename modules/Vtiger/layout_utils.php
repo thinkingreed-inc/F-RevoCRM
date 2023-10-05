@@ -22,7 +22,7 @@
 require_once('include/logging.php');
 global $app_strings;
 
-$log = LoggerManager::getLogger('layout_utils');	
+$log = Logger::getLogger('layout_utils');	
 
 /**
  * Create HTML to display formatted form title of a form in the left pane

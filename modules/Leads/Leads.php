@@ -86,7 +86,7 @@ class Leads extends CRMEntity {
 	//var $groupTable = Array('vtiger_leadgrouprelation','leadid');
 
         function __construct() {
-            $this->log = LoggerManager::getLogger('lead');
+            $this->log = Logger::getLogger('lead');
             $this->log->debug("Entering Leads() method ...");
             $this->db = PearDatabase::getInstance();
             $this->column_fields = getColumnFields('Leads');

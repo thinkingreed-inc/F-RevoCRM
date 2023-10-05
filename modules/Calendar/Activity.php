@@ -124,7 +124,7 @@ class Activity extends CRMEntity {
 				//var $groupTable = Array('vtiger_activitygrouprelation','activityid');
         function __construct()
         {
-            $this->log = LoggerManager::getLogger('Calendar');
+            $this->log = Logger::getLogger('Calendar');
             $this->db = PearDatabase::getInstance();
             $this->column_fields = getColumnFields('Calendar');
         }

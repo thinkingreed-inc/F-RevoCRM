@@ -104,7 +104,7 @@ class Accounts extends CRMEntity {
 	);
         function __construct()
         {
-            $this->log =LoggerManager::getLogger('account');
+            $this->log =Logger::getLogger('account');
             $this->db = PearDatabase::getInstance();
             $this->column_fields = getColumnFields('Accounts');
         }

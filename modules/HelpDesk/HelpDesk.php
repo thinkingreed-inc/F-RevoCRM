@@ -101,7 +101,7 @@ class HelpDesk extends CRMEntity {
 	/**	Constructor which will set the column_fields in this object
 	 */
         function __construct() {
-            $this->log =LoggerManager::getLogger('helpdesk');
+            $this->log =Logger::getLogger('helpdesk');
             $this->log->debug("Entering HelpDesk() method ...");
             $this->db = PearDatabase::getInstance();
             $this->column_fields = getColumnFields('HelpDesk');
