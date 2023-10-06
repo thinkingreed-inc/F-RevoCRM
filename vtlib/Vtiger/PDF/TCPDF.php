@@ -7,8 +7,6 @@
  * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
  ************************************************************************************/
-//require_once 'libraries/tcpdf/config/lang/eng.php';
-require_once 'libraries/tcpdf/tcpdf.php';
 
 class Vtiger_PDF_TCPDF extends TCPDF {
 
@@ -28,7 +26,7 @@ class Vtiger_PDF_TCPDF extends TCPDF {
 		$this->FontFamily = $family;
 	}
 
-	function GetStringHeight($sa,$w) {
+	function GetStringHeight($sa,$w,$reseth = false, $autopadding = true, $cellpadding = NULL, $border = 0) {
 		if(empty($sa)) return 0;
 		
 		$sa = str_replace("\r","",$sa);
@@ -65,7 +63,7 @@ class Vtiger_PDF_TCPDF extends TCPDF {
 		return ($lines * ($this->FontSize * $this->cell_height_ratio)) + 2;
 	}
 
-	function SetFont($family, $style='', $size='') {
+	function SetFont($family, $style='', $size=0, $fontfile='', $subset = 'default', $out = true) {
 		if($family == '') {
 			$family = $this->FontFamily;
 		}
@@ -80,5 +78,13 @@ class Vtiger_PDF_TCPDF extends TCPDF {
 		$this->CurrentFont = &$this->fonts[$fontdata['fontkey']];
 		$this->SetFontSize($size);
 	}
+
+	public function Output($name='doc.pdf', $dest='I') {
+		/* Enforce local-file scheme if not specified */
+		if (strpos($name, "://") === false) {
+			global $root_directory;
+			$name = "file://". $root_directory . "/" . $name;
+		}
+		return parent::Output($name, $dest);
+	}
 }
-?>

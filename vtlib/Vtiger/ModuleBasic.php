@@ -91,9 +91,10 @@ class Vtiger_ModuleBasic {
 			$this->initialize2();
 		}
 		$this->source = $valuemap['source'];
-		$this->isSyncable = $valuemap['issyncable'];
-		$this->allowDuplicates = $valuemap['allowduplicates'];
-		$this->syncActionForDuplicate = $valuemap['sync_action_for_duplicates'];
+
+		if (isset($valuemap['issyncable'])) $this->isSyncable = $valuemap['issyncable'];
+		if (isset($valuemap['allowduplicates'])) $this->allowDuplicates = $valuemap['allowduplicates'];
+		if (isset($valuemap['sync_action_for_duplicates'])) $this->syncActionForDuplicate = $valuemap['sync_action_for_duplicates'];
 	}
 
 	/**

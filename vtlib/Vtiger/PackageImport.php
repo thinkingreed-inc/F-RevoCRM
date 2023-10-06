@@ -316,7 +316,7 @@ class Vtiger_PackageImport extends Vtiger_PackageExport {
 	 */
 	function initImport($zipfile, $overwrite=true) {
 		$module = $this->getModuleNameFromZip($zipfile);
-		if($module != null && $overwrite) {
+		if($module != null) {
 
 			$unzip = new Vtiger_Unzip($zipfile, $overwrite);
 

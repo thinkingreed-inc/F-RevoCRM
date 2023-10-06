@@ -120,7 +120,7 @@ class Vtiger_Functions {
 				self::$currencyInfoCache[$row['id']] = $row;
 			}
 		}
-		return self::$currencyInfoCache[$currencyid];
+		return isset(self::$currencyInfoCache[$currencyid])? self::$currencyInfoCache[$currencyid] : null;
 	}
 
 	static function getCurrencyName($currencyid, $show_symbol = true) {
@@ -134,8 +134,8 @@ class Vtiger_Functions {
 	static function getCurrencySymbolandRate($currencyid) {
 		$currencyInfo = self::getCurrencyInfo($currencyid);
 		$currencyRateSymbol = array(
-			'rate' => $currencyInfo['conversion_rate'],
-			'symbol'=>$currencyInfo['currency_symbol']
+			'rate' => $currencyInfo ? $currencyInfo['conversion_rate'] : 0,
+			'symbol'=>$currencyInfo ? $currencyInfo['currency_symbol'] : ""
 		);
 		return $currencyRateSymbol;
 	}
@@ -174,7 +174,7 @@ class Vtiger_Functions {
 
 		if ($name && !isset(self::$moduleNameIdCache[$name])) {$reload = true;}
 		else if ($id && !isset(self::$moduleIdNameCache[$id])) {$reload = true;}
-		else {
+		else if ($name) {
 			if (!$id) $id = self::$moduleNameIdCache[$name]['tabid'];
 			if (!isset(self::$moduleIdDataCache[$id])) { $reload = true; }
 		}
@@ -269,7 +269,7 @@ class Vtiger_Functions {
 		}
 
 		if ($missing) {
-			$sql = sprintf("SELECT crmid, setype, label FROM vtiger_crmentity WHERE %s", implode(' OR ', array_fill(0, count($missing), 'crmid=?')));
+			$sql = sprintf("SELECT crmid, setype, label FROM vtiger_crmentity WHERE %s", implode(' OR ', array_fill(0, php7_count($missing), 'crmid=?')));
 			$result = $adb->pquery($sql, $missing);
 			while ($row = $adb->fetch_array($result)) {
 				self::$crmRecordIdMetadataCache[$row['crmid']] = $row;
@@ -662,7 +662,8 @@ class Vtiger_Functions {
 		}
 
 		//metadata check
-		$shortTagSupported = ini_get('short_open_tag') ? true : false;
+		$shortTag = strtolower(ini_get('short_open_tag'));
+		$shortTagSupported = ($shortTag == '1' || $shortTag == 'on') ? TRUE : FALSE;
 		if ($saveimage == 'true') {
                     $tmpFileName = $file_details['tmp_name'];
                     if($file_details['type'] == 'image/jpeg' || $file_details['type'] == 'image/tiff') {
@@ -1518,7 +1519,7 @@ class Vtiger_Functions {
     protected static $type = array(
 	'record' => 'id',
 	'src_record' => 'id',
-	// 'parent_id' => 'id',
+	'parent_id' => 'id',
         '_mfrom' => 'email',
         '_mto' => 'email',
         'sequencesList' => 'idlist',
@@ -1550,7 +1551,7 @@ class Vtiger_Functions {
         switch ($type) {
             case 'id' : $ok = (preg_match('/[^0-9xH]/', $value)) ? false : $ok;
                 break;
-            case 'email' : $ok = (!filter_var($value, FILTER_VALIDATE_EMAIL)) ? false : $ok;
+            case 'email' : $ok = self::validateTypeEmail($value);
                 break;
             case 'idlist' : $ok = (preg_match('/[a-zA-Z]/', $value)) ? false : $ok;
                 break;
@@ -1565,6 +1566,16 @@ class Vtiger_Functions {
                 break;
         }
         return $ok;
+    }
+
+    public static function validateTypeEmail(string $value) {
+      $ok = TRUE;
+      $mailaddresses = explode(',', $value);
+
+      foreach($mailaddresses as $mailaddress){
+        if(!filter_var($mailaddress, FILTER_VALIDATE_EMAIL)) $ok = FALSE;
+      }
+      return $ok;
     }
 
     /**
@@ -1582,12 +1593,12 @@ class Vtiger_Functions {
 		}
 		return $publicUrl;
 	}
-    
+
     /**
      * Function to get the attachmentsid to given crmid
      * @param type $crmid
      * @param type $webaservice entity id
-     * @return <Array> 
+     * @return <Array>
      */
     static function getAttachmentIds($crmid, $WsEntityId) {
         $adb = PearDatabase::getInstance();
@@ -1604,7 +1615,7 @@ class Vtiger_Functions {
         }
         return $attachmentIds;
     }
-    
+
     static function generateTrackingURL($params = []){
         $options = array(
             'handler_path' => 'modules/Emails/handlers/Tracker.php',
@@ -1615,6 +1626,137 @@ class Vtiger_Functions {
 
         return Vtiger_ShortURL_Helper::generateURL($options);
     }
+    
+    	/*
+	 * function to strip base64 data of the image from the content ($input)
+	 * if mark will be true, then we are keeping the strip details in the $markers variable
+	 */
+	public static function strip_base64_data ($input, $mark = false, &$markers = null) {
+		if ($markers === null) {
+			$markers = array();
+		}
+
+		// Alternative function for:
+		// $input = preg_replace("/(\(data:\w+\/\w+;base64,[^\)]+\))/", "", $input);
+		// Regex failed when $input had large-base64 content.
+		$parts = [];
+
+		if ($mark) {
+			if (!is_string($mark)) {
+				$mark = "__VTIGERB64STRIPMARK_";
+			}
+		}
+
+		$markindex = 0;
+		$startidx = 0;
+		$endidx = 0;
+		$offset = 0;
+		do {
+			/* Determine basd on text-embed or html-embed of base64 */
+			$endchar = "";
+
+			// HTML embed in attributes (eg. img src="...").
+			$startidx = strpos($input, '"data:', $offset);
+			if ($startidx !== false) {
+				$endchar = '"';
+			} else {
+				// HTML embed in attributes (eg. img src='...').
+				$startidx = strpos($input, "'data:", $offset);
+				if ($startidx !== false) {
+					$endchar = "'";
+				} else {
+					// TEXT embed with wrap [eg. (data...)]
+					$startidx = strpos($input, "(data:", $offset);
+					if ($startidx !== false) {
+						$endchar = ")";
+					} else {
+						break;
+					}
+				}
+			}
+
+			$skipidx = strpos($input, ";base64,", $startidx);
+			if ($skipidx === false) {
+				break;
+			}
+			$endidx = strpos($input, $endchar, $skipidx);
+			if ($endidx === false) {
+				break;
+			}
+
+			$parts[] = substr($input, $offset, ($startidx - $offset));
+
+			// Retain marker if requested.
+			if ($mark) {
+				$marker = $mark . ($markindex++);
+				$parts[] = $marker;
+				$markers[$marker] = substr($input, min($startidx, $startidx), ($endidx - $startidx)+1);
+			}
+			$offset = $endidx + 1;
+		} while (true);
+
+		if ($offset < strlen($input)) {
+			$parts[] = substr($input, $offset);
+		}
+				return implode("", $parts);
+	}
+	
+	/*
+	 * function to strip office365 inline image src data(https://sc.vtiger.in/screenshots/amitr-sc-at-01-04-2021-11-57-00.png) from the content ($input)
+	 * if mark will be true, then we are keeping the strip details in the $markers variable
+	 */
+	public static function stripInlineOffice365Image ($input, $mark = false, &$markers = null) {
+		if ($markers === null) {
+			$markers = array();
+		}
+		
+		$parts = [];
+
+		if ($mark) {
+			if (!is_string($mark)) {
+				$mark = "__VTIGERO365STRIPMARK_";
+			}
+		}
+
+		$markindex = 0;
+		$startidx = 0;
+		$endidx = 0;
+		$offset = 0;
+		
+		do {
+			$endchar = "";
+			$startidx = strpos($input, '(https://attachments.office.net/owa/', $offset);
+			if ($startidx !== false) {
+				$endchar = ")";
+			} else {
+				break;
+			}
+
+			$skipidx = strpos($input, "(https://attachments.office.net/owa/", $startidx);
+			if ($skipidx === false) {
+				break;
+			}
+			$endidx = strpos($input, $endchar, $skipidx);
+			if ($endidx === false) {
+				break;
+			}
+
+			$parts[] = substr($input, $offset, ($startidx - $offset));
+
+			// Retain marker if requested.
+			if ($mark) {
+				$marker = $mark . ($markindex++);
+				$parts[] = $marker;
+				$markers[$marker] = substr($input, min($startidx, $startidx), ($endidx - $startidx) + 1);
+			}
+			$offset = $endidx + 1;
+		} while (true);
+
+		if ($offset < strlen($input)) {
+			$parts[] = substr($input, $offset);
+		}
+		return implode("", $parts);
+	}
 
 	/** 
 	 * Function to get children records id

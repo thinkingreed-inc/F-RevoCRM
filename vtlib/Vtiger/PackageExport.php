@@ -108,7 +108,7 @@ class Vtiger_PackageExport {
 	 * @param String Zipfilename to use
 	 * @param Boolean True for sending the output as download
 	 */
-	function export($moduleInstance, $todir='', $zipfilename='', $directDownload=false) {
+	function export($moduleInstance, $todir='', $zipfilename='', $directDownload=false, $extra=false) {
 
 		$module = $moduleInstance->name;
 

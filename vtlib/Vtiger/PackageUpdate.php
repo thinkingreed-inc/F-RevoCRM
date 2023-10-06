@@ -39,7 +39,7 @@ class Vtiger_PackageUpdate extends Vtiger_PackageImport {
 			return false;
 		}
 
-		if($module != null && $overwrite) {
+		if($module != null) {
 			$unzip = new Vtiger_Unzip($zipfile, $overwrite);
 
 			// Unzip selectively
