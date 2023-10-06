@@ -22,6 +22,7 @@ require_once 'modules/Reports/ReportUtils.php';
 require_once("vtlib/Vtiger/Module.php");
 require_once('modules/Vtiger/helpers/Util.php');
 require_once('include/RelatedListView.php');
+require_once('vtlib/Vtiger/PDF/TCPDF.php');
 
 /*
  * Helper class to determine the associative dependency between tables.
@@ -3095,6 +3096,7 @@ class ReportRun extends CRMEntity {
 				$modules_selected[] = $sec_modules[$i];
 			}
 		}
+		static $mod_query_details = array();
 
 		$userCurrencyInfo = getCurrencySymbolandCRate($current_user->currency_id);
 		$userCurrencySymbol = $userCurrencyInfo['symbol'];
@@ -3199,7 +3201,6 @@ class ReportRun extends CRMEntity {
 					$y = $adb->num_fields($result);
 					$custom_field_values = $adb->fetch_array($result);
 
-					static $mod_query_details = array();
 					foreach ($this->totallist as $key => $value) {
 						$fieldlist = explode(":", $key);
 						$key = $fieldlist[1] . '_' . $fieldlist[2];
@@ -3374,7 +3375,6 @@ class ReportRun extends CRMEntity {
 					$y = $adb->num_fields($result);
 					$custom_field_values = $adb->fetch_array($result);
 
-					static $mod_query_details = array();
 					foreach ($this->totallist as $key => $value) {
 						$fieldlist = explode(':', $key);
 						$key = $fieldlist[1].'_'.$fieldlist[2];
@@ -3848,7 +3848,6 @@ class ReportRun extends CRMEntity {
 					}
 					// END
 
-					static $mod_query_details = array();
 					foreach ($this->totallist as $key => $value) {
 						$fieldlist = explode(":", $key);
 						$detailsKey = implode('_', array($fieldlist[1], $fieldlist[2]));
@@ -4273,8 +4272,6 @@ class ReportRun extends CRMEntity {
 	}
 
 	function getReportPDF($filterlist = false) {
-		require_once 'libraries/tcpdf/tcpdf.php';
-
 		$reportData = $this->GenerateReport("PDF", $filterlist);
 		$arr_val = $reportData['data'];
 
@@ -4331,23 +4328,23 @@ class ReportRun extends CRMEntity {
 			die("<br><br><center>" . $app_strings['LBL_PDF'] . " <a href='javascript:window.history.back()'>" . $app_strings['LBL_GO_BACK'] . ".</a></center>");
 		}
 		if ($columnlength <= 420) {
-			$pdf = new TCPDF('P', 'mm', 'A5', true);
+			$pdf = new Vtiger_PDF_TCPDF('P', 'mm', 'A5', true);
 		} elseif ($columnlength >= 421 && $columnlength <= 1120) {
-			$pdf = new TCPDF('L', 'mm', 'A3', true);
+			$pdf = new Vtiger_PDF_TCPDF('L', 'mm', 'A3', true);
 		} elseif ($columnlength >= 1121 && $columnlength <= 1600) {
-			$pdf = new TCPDF('L', 'mm', 'A2', true);
+			$pdf = new Vtiger_PDF_TCPDF('L', 'mm', 'A2', true);
 		} elseif ($columnlength >= 1601 && $columnlength <= 2200) {
-			$pdf = new TCPDF('L', 'mm', 'A1', true);
+			$pdf = new Vtiger_PDF_TCPDF('L', 'mm', 'A1', true);
 		} elseif ($columnlength >= 2201 && $columnlength <= 3370) {
-			$pdf = new TCPDF('L', 'mm', 'A0', true);
+			$pdf = new Vtiger_PDF_TCPDF('L', 'mm', 'A0', true);
 		} elseif ($columnlength >= 3371 && $columnlength <= 4690) {
-			$pdf = new TCPDF('L', 'mm', '2A0', true);
+			$pdf = new Vtiger_PDF_TCPDF('L', 'mm', '2A0', true);
 		} elseif ($columnlength >= 4691 && $columnlength <= 6490) {
-			$pdf = new TCPDF('L', 'mm', '4A0', true);
+			$pdf = new Vtiger_PDF_TCPDF('L', 'mm', '4A0', true);
 		} else {
 			$columnhight = php7_count($arr_val) * 15;
 			$format = array($columnhight, $columnlength);
-			$pdf = new TCPDF('L', 'mm', $format, true);
+			$pdf = new Vtiger_PDF_TCPDF('L', 'mm', $format, true);
 		}
 		$pdf->SetMargins(10, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
 		$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);

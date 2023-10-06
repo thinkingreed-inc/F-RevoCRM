@@ -351,7 +351,7 @@ class ExportUtils{
 	/**
 	 * this function takes in a module name and returns the field information for it
 	 */
-	function getInformationArray($module){
+	static function getInformationArray($module){
 		require_once 'include/utils/utils.php';
 		global $adb;
 		$tabid = getTabid($module);

@@ -599,7 +599,7 @@ class Vtiger_RelationListView_Model extends Vtiger_Base_Model {
 		return $updatedQuery;
 	}
 
-	public function getCurrencySymbol($recordId, $fieldModel) {
+	public static function getCurrencySymbol($recordId, $fieldModel) {
 		$db = PearDatabase::getInstance();
 		$moduleName = $fieldModel->getModuleName();
 		$fieldName = $fieldModel->get('name');

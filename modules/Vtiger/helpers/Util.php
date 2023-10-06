@@ -150,6 +150,7 @@ class Vtiger_Util_Helper {
 	 * @return <String>
 	 */
 	public static function formatDateIntoStrings($date, $time = false) {
+		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$dateTimeInUserFormat = Vtiger_Datetime_UIType::getDisplayDateTimeValue($date . ' ' . $time);
 
 		require_once 'includes/runtime/LanguageHandler.php';
@@ -676,7 +677,7 @@ class Vtiger_Util_Helper {
 	* @return returns default value for data type if match case found
 	* else returns empty string
 	*/
-   function getDefaultMandatoryValue($dataType) {
+   static function getDefaultMandatoryValue($dataType) {
 	   $value;
 	   switch ($dataType) {
 		   case 'date':
@@ -1192,7 +1193,7 @@ class Vtiger_Util_Helper {
 												if (isset($source) && !empty($source)) {
 													$element['source'] = $source;
 												}
-												if (!function_exists(vtws_create)) {
+												if (!function_exists("vtws_create")) {
 													include_once 'include/Webservices/Create.php';
 												}
 												$entity = vtws_create($referenceModule, $element, $user);
@@ -1238,7 +1239,7 @@ class Vtiger_Util_Helper {
     public static function validateFieldValue($fieldValue,$fieldModel){
         $fieldDataType = $fieldModel->getFieldDataType();
         $fieldInfo = $fieldModel->getFieldInfo();
-        $editablePicklistValues = $fieldInfo['editablepicklistvalues'];
+        $editablePicklistValues = isset($fieldInfo['editablepicklistvalues'])? $fieldInfo['editablepicklistvalues'] : null;
         if($fieldValue && $fieldDataType == 'picklist'){
            if(!empty($editablePicklistValues) && !isset($editablePicklistValues[$fieldValue])){
                 $fieldValue = null;

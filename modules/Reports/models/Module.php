@@ -137,7 +137,7 @@ class Reports_Module_Model extends Vtiger_Module_Model {
 	 * Function is a callback from Vtiger_Link model to check permission for the links
 	 * @param type $linkData
 	 */
-	public function checkLinkAccess($linkData) {
+	public static function checkLinkAccess($linkData) {
 		$privileges = Users_Privileges_Model::getCurrentUserPrivilegesModel();
 		$reportModuleModel = Vtiger_Module_Model::getInstance('Reports');
 		return $privileges->hasModulePermission($reportModuleModel->getId());

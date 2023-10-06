@@ -39,7 +39,7 @@ class Vtiger_List_View extends Vtiger_Index_View {
 		}
 
 		$viewer = $this->getViewer($request);
-		$cvId = $this->viewName;
+		$cvId = isset($this->viewName) ? $this->viewName : 0;
 
 		if(!$cvId) {
 			$customView = new CustomView();
@@ -56,7 +56,7 @@ class Vtiger_List_View extends Vtiger_Index_View {
                 $this->listViewModel = Vtiger_ListView_Model::getInstance($moduleName, $cvId, $listHeaders);
 		$orderParams = $this->listViewModel->getSortParamsSession($listViewSessionKey);
 
-		if(empty($listHeaders)) {
+		if(empty($listHeaders) && is_array($orderParams)) {
 			$listHeaders = $orderParams['list_headers'];
 		}
 
@@ -216,12 +216,12 @@ class Vtiger_List_View extends Vtiger_Index_View {
 			$orderBy = '';
 			$sortOrder = '';
 		}
-		if(empty($listHeaders)) {
+		if(empty($listHeaders) && is_array($orderParams)) {
 			$listHeaders = $orderParams['list_headers'];
 		}
                 
                 
-		if(!empty($tag) && empty($tagParams)){
+		if(!empty($tag) && empty($tagParams) && is_array($orderParams)){
                     $tagParams = $orderParams['tag_params'];
 		}
                 
@@ -363,15 +363,15 @@ class Vtiger_List_View extends Vtiger_Index_View {
 		}
 		$viewer->assign('PAGE_NUMBER',$pageNumber);
 
-		if(!$this->moduleFieldStructure) {
+		if(!isset($this->moduleFieldStructure) || !$this->moduleFieldStructure) {
 			$recordStructure = Vtiger_RecordStructure_Model::getInstanceForModule($listViewModel->getModule(), Vtiger_RecordStructure_Model::RECORD_STRUCTURE_MODE_FILTER);
 			$this->moduleFieldStructure = $recordStructure->getStructure();   
 		}
 
-		if(!$this->tags) {
+		if(!isset($this->tags) || !$this->tags) {
 			$this->tags = Vtiger_Tag_Model::getAllAccessible($currentUser->id, $moduleName);
 		}
-		if(!$this->allUserTags) {
+		if(!isset($this->allUserTags) || !$this->allUserTags) {
 			$this->allUserTags = Vtiger_Tag_Model::getAllUserTags($currentUser->getId());
 		}
 

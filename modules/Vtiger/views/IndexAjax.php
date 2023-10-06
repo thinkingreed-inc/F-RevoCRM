@@ -47,7 +47,7 @@ class Vtiger_IndexAjax_View extends Vtiger_Index_View {
 		echo $viewer->view('RecordNamesList.tpl', $moduleName, true);
 	}
 
-	function getRecordsListFromRequest(Vtiger_Request $request) {
+	function getRecordsListFromRequest(Vtiger_Request $request, $model = false) {
 		$cvId = $request->get('cvid');
 		$selectedIds = $request->get('selected_ids');
 		$excludedIds = $request->get('excluded_ids');

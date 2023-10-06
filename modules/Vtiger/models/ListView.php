@@ -144,7 +144,7 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 		$headerFields = $listViewContoller->getListViewHeaderFields();
 		foreach($headerFields as $fieldName => $webserviceField) {
 			if($webserviceField && !in_array($webserviceField->getPresence(), array(0,2))) continue;
-			if($webserviceField && $webserviceField->parentReferenceField && !in_array($webserviceField->parentReferenceField->getPresence(), array(0,2))){
+			if($webserviceField && isset($webserviceField->parentReferenceField) && !in_array($webserviceField->parentReferenceField->getPresence(), array(0,2))){
 				continue;
 			}
 			if($webserviceField->getDisplayType() == '6') continue;
@@ -206,7 +206,7 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 			$queryGenerator->addUserSearchConditions(array('search_field' => $searchKey, 'search_text' => $searchValue, 'operator' => $operator));
 		}
 
-		$orderBy = $this->get('orderby');
+		$orderBy = $this->getForSql('orderby');
 		$sortOrder = $this->getForSql('sortorder');
 
 		if(!empty($orderBy)){
@@ -533,15 +533,15 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 		$this->get('query_generator', $queryGenerator);
 	}
 
-	public function getSortParamsSession($key) {
-		return $_SESSION[$key];
+	public static function getSortParamsSession($key) {
+		return isset($_SESSION[$key]) ? $_SESSION[$key] : null;
 			}
 
-	public function setSortParamsSession($key, $params) {
+	public static function setSortParamsSession($key, $params) {
 		$_SESSION[$key] = $params;
 	}
 
-	public function deleteParamsSession($key, $params) {
+	public static function deleteParamsSession($key, $params) {
 		if(!is_array($params)) {
 			$params = array($params);
 		}

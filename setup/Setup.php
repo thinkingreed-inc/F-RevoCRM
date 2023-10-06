@@ -1,10 +1,10 @@
 <?php
 
-ini_set('error_reporting', E_ALL ^ E_NOTICE ^ E_DEPRECATED);
-ini_set('display_errors', 1 );
+ini_set('display_errors','on'); error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
 
 echo "Start Script";
 
+require_once 'vendor/autoload.php';
 require_once('include/logging.php');
 require_once 'vtlib/Vtiger/Module.php';
 require_once 'includes/main/WebUI.php';

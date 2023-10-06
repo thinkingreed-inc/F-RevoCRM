@@ -124,7 +124,7 @@ class Portal_List_View extends Vtiger_Index_View {
 		$viewer->assign('PAGING_MODEL', $pagingModel);
 		$viewer->assign('PAGING_MODEL', $pagingModel);
 		$viewer->assign('PAGE_NUMBER', $pagingModel->get('page'));
-		$viewer->assign('NO_OF_ENTRIES', php7_count($listviewEntries));
+		$viewer->assign('NO_OF_ENTRIES', count($listviewEntries));
 	}
 
 	function getHeaderScripts(Vtiger_Request $request) {

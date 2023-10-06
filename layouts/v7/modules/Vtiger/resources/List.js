@@ -1424,7 +1424,7 @@ Vtiger.Class("Vtiger_List_Js", {
 					form_update_data += key + '=' + newData[key] + '&';
 				}
 			});
-			
+
 			//add url params for fields that will be updated
 			changedFields.each(function(i, obj){
 				var key = $(this).data("update-field");
@@ -1999,6 +1999,7 @@ Vtiger.Class("Vtiger_List_Js", {
 		var totalNumberOfRecords = jQuery('#totalCount', listViewContainer).val();
 		var pageNumberElement = jQuery('.pageNumbersText', listViewContainer);
 		var pageRange = pageNumberElement.text();
+		totalNumberOfRecords = app.helper.purifyContent(totalNumberOfRecords);
 		var newPagingInfo = pageRange.trim() + " " + app.vtranslate('of') + " " + totalNumberOfRecords + "  ";
 		var listViewEntriesCount = parseInt(jQuery('#noOfEntries', listViewContainer).val());
 
@@ -2574,7 +2575,7 @@ Vtiger.Class("Vtiger_List_Js", {
 			self.registerFloatingThead();
 		});
 	},
-
+	
 	registerEvents: function () {
 		var thisInstance = this;
 		this._super();

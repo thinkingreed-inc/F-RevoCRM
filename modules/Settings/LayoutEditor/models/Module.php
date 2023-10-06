@@ -21,7 +21,7 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 	 * Function that returns all the fields for the module
 	 * @return <Array of Vtiger_Field_Model> - list of field models
 	 */
-	public function getFields() {
+	public function getFields($blockInstance = false) {
 		if(empty($this->fields)){
 			$fieldList = array();
 			$blocks = $this->getBlocks();
@@ -33,7 +33,7 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 				}
 				$blockId[] = $block->get('id');
 			}
-			if(count($blockId) > 0) {
+			if(php7_count($blockId) > 0) {
 				$fieldList = Settings_LayoutEditor_Field_Model::getInstanceFromBlockIdList($blockId,$moduleModel);
 			}
 			//To handle special case for invite users
@@ -490,7 +490,7 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 		}
 
 		//Fields Info
-		if (count($fieldIdsList) < 4) {//Maximum 3 fields are allowed
+		if (php7_count($fieldIdsList) < 4) {//Maximum 3 fields are allowed
 			$query = 'UPDATE vtiger_field SET isunique = CASE WHEN fieldid IN ('.  generateQuestionMarks($fieldIdsList).') THEN 1 ELSE 0 END WHERE tabid=?';
 			$params = array_merge($fieldIdsList, array($tabId));
 			$db->pquery($query, $params);

@@ -576,7 +576,7 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 		return $moduleFieldsList;
 	}
 
-	function getCalendarViewTypesToAdd($userId) {
+	public static function getCalendarViewTypesToAdd($userId) {
 		$calendarViewTypes = self::getCalendarViewTypes($userId);
 		$moduleViewTypes = self::getDateFieldModulesList();
 
@@ -744,7 +744,7 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 	 *  Function to get all calendar view conditions
 	 * @return <string>
 	 */
-	public function getCalendarViewConditions() {
+	public static  function getCalendarViewConditions() {
 		$eventsModuleModel = Vtiger_Module_Model::getInstance('Events');
 		$eventTypePicklistValues = $eventsModuleModel->getField('activitytype')->getPicklistValues();
 		$eventsModuleConditions = array();

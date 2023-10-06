@@ -68,7 +68,7 @@ class Settings_Webforms_Field_Model extends Vtiger_Field_Model {
 	 * @return <Array> Picklist values
 	 */
 	public function getPicklistValues() {
-		if ($this->get('name') === 'targetmodule') {
+		if ($this->getName() === 'targetmodule') {
 			return Settings_Webforms_Module_Model::getsupportedModulesList();
 		}
 		return array();

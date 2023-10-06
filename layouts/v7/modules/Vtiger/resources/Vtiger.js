@@ -56,6 +56,7 @@ Vtiger.Class('Vtiger_Index_Js', {
 			var frameElement = jQuery("#emailPreviewIframe")[0].contentWindow.document;
 			frameElement.open();
 			frameElement.close();
+			descriptionContent = app.helper.purifyContent(descriptionContent);
 			jQuery('#emailPreviewIframe').contents().find('html').html(descriptionContent);
 			jQuery("#emailPreviewIframe").height(jQuery('#emailPreviewIframe').contents().find('html').height());
 			jQuery('#emailPreviewIframe').contents().find('html').find('a').on('click', function(e) {
@@ -1342,7 +1343,9 @@ Vtiger.Class('Vtiger_Index_Js', {
 	registerMoreRecentUpdatesClickEvent: function (container, recordId) {
 		var moduleName = container.find('#sourceModuleName').val();
 		container.find('.moreRecentUpdates').on('click', function () {
-			var recentUpdateURL = "index.php?view=Detail&mode=showRecentActivities&page=1&module=" + moduleName + "&record=" + recordId + "&tab_label=LBL_UPDATES";
+			moduleName = app.helper.purifyContent(moduleName);
+			recordId = app.helper.purifyContent(recordId);
+			var recentUpdateURL = "index.php?view=Detail&mode=showRecentActivities&page=1&module=" + encodeURIComponent(moduleName) + "&record=" + encodeURIComponent(recordId) + "&tab_label=LBL_UPDATES";
 			window.location.href = recentUpdateURL;
 		});
 	},

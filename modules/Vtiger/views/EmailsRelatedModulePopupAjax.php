@@ -17,7 +17,7 @@ class Vtiger_EmailsRelatedModulePopupAjax_View extends Vtiger_EmailsRelatedModul
 		$this->exposeMethod('getPageCount');
 	}
 
-	function preProcess(Vtiger_Request $request) {
+	function preProcess(Vtiger_Request $request, $display=true) {
 		return true;
 	}
 

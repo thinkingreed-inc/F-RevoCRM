@@ -1054,6 +1054,10 @@ jQuery.Class("Vtiger_Helper_Js",{
             return false;
         }
         return true;
+    },
+
+    purifyContent: function(content) {
+        return DOMPurify.sanitize(content);
     }
 });
 

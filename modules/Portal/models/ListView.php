@@ -44,6 +44,7 @@ class Portal_ListView_Model extends Vtiger_ListView_Model {
         }
         $pagingModel->calculatePageRange($listViewEntries);
         $index = 0;
+        $listViewRecordModels = array();
 		foreach($listViewEntries as $recordId => $record) {
 			$rawData = $db->query_result_rowdata($listResult, $index++);
 			$record['id'] = $recordId;
@@ -74,7 +75,7 @@ class Portal_ListView_Model extends Vtiger_ListView_Model {
         
         $startSequence = ($page - 1) * $pageLimit + 1;
         $endSequence = $startSequence + php7_count($record) - 1;
-        $recordCount = Portal_ListView_Model::getRecordCount();
+        $recordCount = $this->getRecordCount();
         
         $pageCount = intval($recordCount / $pageLimit);
         if(($recordCount % $pageLimit) != 0)

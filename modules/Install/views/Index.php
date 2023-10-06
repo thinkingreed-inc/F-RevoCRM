@@ -114,6 +114,10 @@ class Install_Index_view extends Vtiger_View_Controller {
 		$viewer->assign('ADMIN_LASTNAME', $defaultParameters['admin_lastname']);
 		$viewer->assign('ADMIN_PASSWORD', $defaultParameters['admin_password']);
 		$viewer->assign('ADMIN_EMAIL', $defaultParameters['admin_email']);
+                
+		$runtime_configs = Vtiger_Runtime_Configs::getInstance();
+		$password_regex = $runtime_configs->getValidationRegex('password_regex');
+		$viewer->assign('PWD_REGEX', $password_regex);
 
 		$viewer->view('Step4.tpl', $moduleName);
 	}
@@ -205,9 +209,11 @@ class Install_Index_view extends Vtiger_View_Controller {
 
 			// Install all the available modules
 //			Install_Utils_Model::installModules();
-			Install_Utils_Model::initSchemas();
+//			Install_Utils_Model::initSchemas();
 
 			Install_InitSchema_Model::upgrade();
+
+			Install_Utils_Model::registerUser($request->get("myname"), $request->get("myemail"), $request->get("industry"));
 
 			$viewer = $this->getViewer($request);
 			$viewer->assign('PASSWORD', $_SESSION['config_file_info']['password']);
