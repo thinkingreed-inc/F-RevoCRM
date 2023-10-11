@@ -2303,7 +2303,16 @@ class CRMEntity {
 					$matrix->addDependency($tab_name, $crmentityRelModuleFieldTable);
 
 					if ($queryPlanner->requireTable($crmentityRelModuleFieldTable, $matrix)) {
-						$relquery.= " left join vtiger_crmentity as $crmentityRelModuleFieldTable on $crmentityRelModuleFieldTable.crmid = $tab_name.$field_name and vtiger_crmentityRel$module$field_id.deleted=0";
+						// Usersを関連にした場合、vtiger_crmentityをJoinするとレコードがないため、vtiger_usersを一度JOINする
+						if($rel_mod == "Users"){
+							// vtiger_crmentityの代わりとして動かすため、
+							//   - vtiger_users.id as `crmid` として振る舞わせる
+							//   - deleted = 0となっていた箇所は、vtiger_users.status = 'Active'で判定する
+							// [TODO] Usersの場合、通常のレコードとは異なり過去のユーザーも見せたいのであれば、この判定は無く必要がある
+							$relquery.= " LEFT JOIN (select u.*, u.id as `crmid` from vtiger_users u) AS $crmentityRelModuleFieldTable ON $crmentityRelModuleFieldTable.id = $tab_name.$field_name AND vtiger_crmentityRel$module$field_id.status='Active'";
+						}else{
+//							$relquery.= " LEFT JOIN vtiger_crmentity AS $crmentityRelModuleFieldTable ON $crmentityRelModuleFieldTable.crmid = $tab_name.$field_name AND vtiger_crmentityRel$module$field_id.deleted=0";
+						}
 					}
 
 					for ($j = 0; $j < $adb->num_rows($ui10_modules_query); $j++) {
@@ -2317,7 +2326,7 @@ class CRMEntity {
 						$rel_tab_name_rel_module_table_alias = $rel_tab_name . "Rel$module$field_id";
 
 						if ($queryPlanner->requireTable($rel_tab_name_rel_module_table_alias)) {
-							$relquery.= " left join $rel_tab_name as $rel_tab_name_rel_module_table_alias  on $rel_tab_name_rel_module_table_alias.$rel_tab_index = $crmentityRelModuleFieldTable.crmid";
+							$relquery.= " left join $rel_tab_name as $rel_tab_name_rel_module_table_alias  on $rel_tab_name_rel_module_table_alias.$rel_tab_index = $tab_name.$field_name";
 						}
 					}
 				}
@@ -2330,21 +2339,21 @@ class CRMEntity {
 		$query .= " "."$cfquery";
 
 		if ($queryPlanner->requireTable('vtiger_groups'.$module)) {
-			$query .= " left join vtiger_groups as vtiger_groups" . $module . " on vtiger_groups" . $module . ".groupid = vtiger_crmentity.smownerid";
+			$query .= " left join vtiger_groups as vtiger_groups" . $module . " on vtiger_groups" . $module . ".groupid = $moduletable.smownerid";
 		}
 
 		if ($queryPlanner->requireTable('vtiger_users'.$module)) {
-			$query .= " left join vtiger_users as vtiger_users" . $module . " on vtiger_users" . $module . ".id = vtiger_crmentity.smownerid";
+			$query .= " left join vtiger_users as vtiger_users" . $module . " on vtiger_users" . $module . ".id = $moduletable.smownerid";
 		}
 		if ($queryPlanner->requireTable('vtiger_lastModifiedBy'.$module)) {
-			$query .= " left join vtiger_users as vtiger_lastModifiedBy" . $module . " on vtiger_lastModifiedBy" . $module . ".id = vtiger_crmentity.modifiedby";
+			$query .= " left join vtiger_users as vtiger_lastModifiedBy" . $module . " on vtiger_lastModifiedBy" . $module . ".id = $moduletable.modifiedby";
 		}
 		if ($queryPlanner->requireTable('vtiger_createdby'.$module)) {
-			$query .= " LEFT JOIN vtiger_users AS vtiger_createdby$module ON vtiger_createdby$module.id=vtiger_crmentity.smcreatorid";
+			$query .= " LEFT JOIN vtiger_users AS vtiger_createdby$module ON vtiger_createdby$module.id=$moduletable.smcreatorid";
 		}
 		// TODO Optimize the tables below based on requirement
-		$query .= "	left join vtiger_groups on vtiger_groups.groupid = vtiger_crmentity.smownerid";
-		$query .= " left join vtiger_users on vtiger_users.id = vtiger_crmentity.smownerid";
+		$query .= "	left join vtiger_groups on vtiger_groups.groupid = $moduletable.smownerid";
+		$query .= " left join vtiger_users on vtiger_users.id = $moduletable.smownerid";
 
 		// Add the pre-joined relation table query
 		$query .= " " . $relquery;
@@ -2437,7 +2446,7 @@ class CRMEntity {
 		$query = $this->getRelationQuery($module, $secmodule, "$tablename", "$tableindex", $queryPlanner);
 
 		if ($queryPlanner->requireTable("vtiger_crmentity$secmodule", $matrix)) {
-			$query .= " left join vtiger_crmentity as vtiger_crmentity$secmodule on vtiger_crmentity$secmodule.crmid = $tablename.$tableindex AND vtiger_crmentity$secmodule.deleted=0";
+			// $query .= " left join vtiger_crmentity as vtiger_crmentity$secmodule on vtiger_crmentity$secmodule.crmid = $tablename.$tableindex AND vtiger_crmentity$secmodule.deleted=0";
 		}
 
 		// Add the pre-joined custom table query
@@ -2517,7 +2526,7 @@ class CRMEntity {
 							// [TODO] Usersの場合、通常のレコードとは異なり過去のユーザーも見せたいのであれば、この判定は無く必要がある
 							$relquery.= " LEFT JOIN (select u.*, u.id as `crmid` from vtiger_users u) AS $crmentityRelModuleFieldTable ON $crmentityRelModuleFieldTable.id = $tab_name.$field_name AND vtiger_crmentityRel$module$field_id.status='Active'";
 						}else{
-							$relquery.= " LEFT JOIN vtiger_crmentity AS $crmentityRelModuleFieldTable ON $crmentityRelModuleFieldTable.crmid = $tab_name.$field_name AND vtiger_crmentityRel$module$field_id.deleted=0";
+							// $relquery.= " LEFT JOIN vtiger_crmentity AS $crmentityRelModuleFieldTable ON $crmentityRelModuleFieldTable.crmid = $tab_name.$field_name AND $tab_name.deleted=0";
 						}
 					}
 
@@ -2540,7 +2549,7 @@ class CRMEntity {
 							$rel_tab_name_rel_module_table_alias = $rel_tab_name . "Rel$module$field_id";
 
 							if ($queryPlanner->requireTable($rel_tab_name_rel_module_table_alias)) {
-								$relquery.= " LEFT JOIN $rel_tab_name AS $rel_tab_name_rel_module_table_alias ON $rel_tab_name_rel_module_table_alias.$rel_tab_index = $crmentityRelModuleFieldTable.crmid";
+								$relquery.= " LEFT JOIN $rel_tab_name AS $rel_tab_name_rel_module_table_alias ON $rel_tab_name_rel_module_table_alias.$rel_tab_index = $tab_name.$field_name AND $rel_tab_name_rel_module_table_alias.deleted = 0";
 							}
 						}
 					}
@@ -2613,8 +2622,7 @@ class CRMEntity {
 		$selectColumns = "$table_name.*";
 
 		// Look forward for temporary table usage as defined by the QueryPlanner
-		$secQueryFrom = " FROM $table_name INNER JOIN vtiger_crmentity ON " .
-				"vtiger_crmentity.crmid=$table_name.$column_name AND vtiger_crmentity.deleted=0 ";
+		$secQueryFrom = " FROM $table_name ";
 
 		//The relation field exists in custom field . relation field added from layout editor
 		if($pritablename != $table_name) {
@@ -2635,7 +2643,7 @@ class CRMEntity {
 			}
 		}
 
-		$secQuery = 'SELECT '.$selectColumns.' '.$secQueryFrom;
+		$secQuery = 'SELECT '.$selectColumns.' '.$secQueryFrom.' '."WHERE $table_name.deleted = 0";
 
 		$secQueryTempTableQuery = $queryPlanner->registerTempTable($secQuery, array($column_name, $fields[1], $prifieldname),$secmodule);
 
@@ -3041,7 +3049,7 @@ class CRMEntity {
 		$query = preg_replace('/\s+/', ' ', $query);
 		if (strripos($query, ' WHERE ') !== false) {
 			vtlib_setup_modulevars($this->moduleName, $this);
-			$query = str_ireplace(' where ', " WHERE $this->table_name.$this->table_index > 0  AND ", $query);
+			$query = str_ireplace(' where ', " WHERE ", $query);
 		}
 		return $query;
 	}
