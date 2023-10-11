@@ -129,6 +129,7 @@ class CRMEntity {
 			$this->insertTags_atImportMode($module);
 		}
 		
+		$this->updateInfomation($module);
 		$columnFields->restartTracking();
 		//Calling the Module specific save code
 		$this->save_module($module);
@@ -797,6 +798,40 @@ class CRMEntity {
 			$db->pquery("INSERT INTO vtiger_freetagged_objects values(?,?,?,?,?)", array($id, $userId, $this->id, $now, $module));
 		}
     }
+
+	function updateInfomation($modulename) {
+		global $adb;
+
+		$module = CRMEntity::getInstance($modulename);
+		$baseTable = $module->table_name;
+		$baseTableid = $module->table_index;
+
+		if(empty($baseTable)) {
+			return ;
+		}
+	
+		// vtiger_crmentityの情報を反映
+		$adb->pquery("UPDATE
+				$baseTable,
+				vtiger_crmentity
+			SET
+				$baseTable.smcreatorid = vtiger_crmentity.smcreatorid,
+				$baseTable.smownerid = vtiger_crmentity.smownerid,
+				$baseTable.modifiedby = vtiger_crmentity.modifiedby,
+				$baseTable.description = vtiger_crmentity.description,
+				$baseTable.createdtime = vtiger_crmentity.createdtime,
+				$baseTable.modifiedtime = vtiger_crmentity.modifiedtime,
+				$baseTable.viewedtime = vtiger_crmentity.viewedtime,
+				$baseTable.deleted = vtiger_crmentity.deleted,
+				$baseTable.label = vtiger_crmentity.label,
+				$baseTable.smgroupid = vtiger_crmentity.smgroupid,
+				$baseTable.source = vtiger_crmentity.source,
+				$baseTable.locked = vtiger_crmentity.locked,
+				$baseTable.lockeduserid = vtiger_crmentity.lockeduserid
+			WHERE
+				$baseTable.$baseTableid = vtiger_crmentity.crmid
+				AND $baseTable.$baseTableid = ?", array($this->id));
+	}
 
 	/** Function to delete a record in the specifed table
 	 * @param $table_name -- table name:: Type varchar
