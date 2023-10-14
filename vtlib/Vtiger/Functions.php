@@ -1520,7 +1520,7 @@ class Vtiger_Functions {
 	'record' => 'id',
 	'src_record' => 'id',
 	'parent_id' => 'id',
-        '_mfrom' => 'email',
+        // '_mfrom' => 'email',
         '_mto' => 'email',
         'sequencesList' => 'idlist',
         'search_value' => 'keyword',

@@ -205,6 +205,9 @@ function buildSelectStmt($sqlDump){
 	$accessControlQuery = $meta->getEntityAccessControlQuery();
 	$this->query = $this->query.' '.$accessControlQuery;
 	if($sqlDump['where_condition']){
+		// ensure init before use
+		if(!isset($sqlDump['where_condition']['operators'])) $sqlDump['where_condition']['operators'] = array();
+
 		if((sizeof($sqlDump['where_condition']['column_names']) == 
 		sizeof($sqlDump['where_condition']['column_values'])) && 
 		(sizeof($sqlDump['where_condition']['column_operators']) == sizeof($sqlDump['where_condition']['operators'])+1)){
