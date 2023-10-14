@@ -95,6 +95,9 @@
 					{else}
 						{assign var=NO_SORTING value=0}
 					{/if}
+					{if $LISTVIEW_HEADER->get('uitype') eq '666'}
+						{continue}
+					{/if}
 					<th {if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')} nowrap="nowrap" {/if}>
 						<a href="#" class="{if $NO_SORTING}noSorting{else}listViewContentHeaderValues{/if}" {if !$NO_SORTING}data-nextsortorderval="{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')}{$NEXT_SORT_ORDER}{else}ASC{/if}" data-columnname="{$LISTVIEW_HEADER->get('name')}"{/if} data-field-id='{$LISTVIEW_HEADER->getId()}'>
 							{if !$NO_SORTING}
@@ -212,6 +215,7 @@
 													{if !empty($MULTI_PICKLIST_VALUES[$MULTI_PICKLIST_INDEX + 1])},{/if}
 												</span>
 											{/foreach}
+										{else if $LISTVIEW_HEADER->get('uitype') eq '360'}
 										{else}
 											{$LISTVIEW_ENTRY_VALUE}
 										{/if}
