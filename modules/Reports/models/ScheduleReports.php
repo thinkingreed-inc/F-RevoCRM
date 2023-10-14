@@ -414,7 +414,7 @@ class Reports_ScheduleReports_Model extends Vtiger_Base_Model {
 		$dateTime = new DateTimeField($this->get('next_trigger_time'));
 		$nextTriggerTime = $dateTime->getDisplayDateTimeValue();
 		$valueParts = explode(' ', $nextTriggerTime);
-		$value = $valueParts[0].' '.Vtiger_Time_UIType::getDisplayValue($valueParts[1]);
+		$value = $valueParts[0].' '.Vtiger_Time_UIType::getDisplayValueUserFormat($valueParts[1]);
 		return $value;
 	}
 

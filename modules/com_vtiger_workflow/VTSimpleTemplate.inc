@@ -385,7 +385,7 @@ class VTSimpleTemplate{
 				$dateTime = new DateTimeField($adb->query_result($result, $i, 'createdtime'));
 				$dateTimeValue = $dateTime->getDisplayDateTimeValue();
 				$dateTimeParts = explode(' ', $dateTimeValue);
-				$createdTime = $dateTimeParts[0].' '.Vtiger_Time_UIType::getDisplayValue($dateTimeParts[1]);
+				$createdTime = $dateTimeParts[0].' '.Vtiger_Time_UIType::getDisplayValueUserFormat($dateTimeParts[1]);
 				$timeZone = vtranslate($current_user->time_zone, 'Users');
 				$userId = $adb->query_result($result, $i, 'userid');
 				$commenter = getOwnerName($userId);

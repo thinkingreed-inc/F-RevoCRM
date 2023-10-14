@@ -250,7 +250,7 @@ class Emails_Record_Model extends Vtiger_Record_Model {
 	 * Returns the From Email address that will be used for the sent mails
 	 * @return <String> - from email address
 	 */
-	function getFromEmailAddress() {
+	public static function getFromEmailAddress() {
 		$db = PearDatabase::getInstance();
 		$currentUserModel = Users_Record_Model::getCurrentUserModel();
 
