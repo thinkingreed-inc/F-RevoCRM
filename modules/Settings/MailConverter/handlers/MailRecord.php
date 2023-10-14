@@ -162,12 +162,15 @@ class Vtiger_MailRecord {
 		$returnvalue = $input;
 		
 		preg_match_all('/=\?([^\?]+)\?([^\?]+)\?([^\?]+)\?=/', $input, $matches);
-                array_filter($matches);
+                if($matches) array_filter($matches);
                 if(php7_count($matches[0])>0){
                 $decodedArray=  imap_mime_header_decode($input);
                 foreach($decodedArray as $part=>$prop){
                             $decodevalue=$prop->text;
                             $charset=$prop->charset;
+				if($charset == "default") {
+					$charset = "UTF-8";
+				}
 				$value = self::__convert_encoding($decodevalue, $targetEncoding, $charset);				
 				array_push($words, $value);				
 			}

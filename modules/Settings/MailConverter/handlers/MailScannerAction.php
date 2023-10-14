@@ -148,6 +148,17 @@ class Vtiger_MailScannerAction {
 				$returnid = $this->__UpdateTicket($mailscanner, $mailrecord, $mailscannerrule->hasRegexMatch($matchresult),$mailscannerrule);
 			}
 		}
+		else if (!empty($this->actiontype)) {
+            $action = $this;
+
+            $params = array($action,$mailscanner, $mailrecord, $mailscannerrule);
+            require 'modules/Settings/MailConverter/handlers/MailScannerEntityMethodManager.inc';
+            global $adb;
+            $emm = new MailScannerEntityMethodManager($adb);
+
+            $returnid = $emm->executeMethod($this->module,$this->actiontype, $params);
+
+        }
 		return $returnid;
 	}
 
