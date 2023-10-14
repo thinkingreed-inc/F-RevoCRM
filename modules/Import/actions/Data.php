@@ -270,7 +270,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 				}
 			} else {
 				if (!empty($mergeType) && $mergeType != Import_Utils_Helper::$AUTO_MERGE_NONE) {
-					if (count($this->mergeFields) == 0) {
+					if (php7_count($this->mergeFields) == 0) {
 						$mergeType = Import_Utils_Helper::$AUTO_MERGE_IGNORE;
 					}
 					$index = 0;
@@ -290,7 +290,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 												} else {
 													$referenceFileValueComponents = explode(':::', $comparisonValue);
 												}
-												if (count($referenceFileValueComponents) > 1) {
+												if (php7_count($referenceFileValueComponents) > 1) {
 													$comparisonValue = trim($referenceFileValueComponents[1]);
 												}
 												break;
@@ -568,9 +568,9 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 					} else {
 						$fieldValueDetails = $fieldValue;
 					}
-					if (count($fieldValueDetails) > 1) {
+					if (php7_count($fieldValueDetails) > 1) {
 						$referenceModuleName = trim($fieldValueDetails[0]);
-						if (count($fieldValueDetails) == 2) {
+						if (php7_count($fieldValueDetails) == 2) {
 							$entityLabel = trim($fieldValueDetails[1]);
 							if ($fieldValueDetails[0] == 'Users') {
 								$query = "SELECT id  FROM vtiger_users WHERE trim(concat(last_name,' ',first_name)) = ? ;";
@@ -714,7 +714,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 						$fieldValue = '';
 					} 
 					$valuesList = explode(' ', $fieldValue);
-					if(count($valuesList) == 1) $fieldValue = '';
+					if(php7_count($valuesList) == 1) $fieldValue = '';
 					$fieldValue = getValidDBInsertDateTimeValue($fieldValue);
 					if (preg_match("/^[0-9]{2,4}[-][0-1]{1,2}?[0-9]{1,2}[-][0-3]{1,2}?[0-9]{1,2} ([0-1][0-9]|[2][0-3])([:][0-5][0-9]){1,2}$/",
 							$fieldValue) == 0) {
@@ -734,7 +734,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 					}
 
 					$valuesList = explode(' ', $fieldValue);
-					if (count($valuesList) > 1) {
+					if (php7_count($valuesList) > 1) {
 						$fieldValue = $valuesList[0];
 					}
 
@@ -1095,7 +1095,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 				unset($_REQUEST['contactidlist']);
 				if ($recordData['contact_id']) {
 					$contactIdsList = explode(', ', $recordData['contact_id']);
-					if (count($contactIdsList) > 1) {
+					if (php7_count($contactIdsList) > 1) {
 						$_REQUEST['contactidlist'] = implode(';', $contactIdsList);
 					}
 				}
