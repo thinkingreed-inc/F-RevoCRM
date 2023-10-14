@@ -24,6 +24,6 @@ class Vtiger_Empty_UIType extends Vtiger_Base_UIType {
 	 * @return <String> - Template Name
 	 */
 	public function getTemplateName() {
-		return 'uitypes/String.tpl';
+		return 'uitypes/Empty.tpl';
 	}
 }

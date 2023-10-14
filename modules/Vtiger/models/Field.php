@@ -105,6 +105,7 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	const UITYPE_USER_STATUS = 115;
 	const UITYPE_USER_END_HOUR = 116;
 	const UITYPE_USER_IS_ADMIN = 156;
+	const UITYPE_BLANK =666;
 	
 	
 	/**
@@ -247,7 +248,7 @@ class Vtiger_Field_Model extends Vtiger_Field {
 				$fieldDataType = 'salutation';
 			} else if($uiType == self::UITYPE_SALUTATION_OR_FIRSTNAME && stripos($this->getName(), 'roundrobin_userid') !== false) {
                 $fieldDataType = 'multiowner';
-			} else if($uiType == '666'){
+			} else if($uiType == self::UITYPE_BLANK){
 				$fieldDataType = 'empty';
 			} else {
 				$webserviceField = $this->getWebserviceFieldObject();
@@ -525,7 +526,8 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	        self::UITYPE_LINEITEMS_CURRENCY_AMOUNT, 
 	        self::UITYPE_ATTACHMENT, 
 	        self::UITYPE_DOWNLOAD_TYPE,
-	        self::UITYPE_FILENAME
+	        self::UITYPE_FILENAME,
+			self::UITYPE_BLANK
 	    );
 
         // リッチテキストは概要・詳細画面での編集不可
