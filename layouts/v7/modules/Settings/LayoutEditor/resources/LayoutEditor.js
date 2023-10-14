@@ -857,6 +857,12 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 			var selectedOption = currentTarget.find('option:selected');
 			var maxlengthValue = selectedOption.data('maxlength');
 			form.find('[name="fieldLabel"]').attr('data-rule-illegal', "true");
+			form.find('.emptyValueUi').closest('.form-group').removeClass('hide');
+			form.find('.defaultValueUi').closest('.form-group').removeClass('hide');
+			form.find('input[type="checkbox"][name="mandatory"]').removeClass('cursorPointerNotAllowed').removeAttr('readonly', 'readonly');
+			form.find('input[type="checkbox"][name="headerfield"]').removeClass('cursorPointerNotAllowed').removeAttr('readonly', 'readonly');
+			form.find('input[type="checkbox"][name="masseditable"]').removeClass('cursorPointerNotAllowed').removeAttr('readonly', 'readonly');
+			form.find('input[type="checkbox"][name="masseditable"]').attr('checked', 'checked');
 
 			if (typeof maxlengthValue === 'undefined')
 				maxlengthValue = "255";
@@ -985,6 +991,15 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 					if (form.find('input[type="checkbox"][name="' + nameAttr + '"]').is(":checked")) {
 						data.value = '1';
 					}
+				}
+
+				if (type == 'Empty') {
+					form.find('.defaultValueUi').closest('.form-group').addClass('hide');
+					form.find('.emptyValueUi').closest('.form-group').addClass('hide');
+					form.find('input[type="checkbox"][name="mandatory"]').addClass('cursorPointerNotAllowed').attr('readonly', 'readonly');
+					form.find('input[type="checkbox"][name="headerfield"]').addClass('cursorPointerNotAllowed').attr('readonly', 'readonly');
+					form.find('input[type="checkbox"][name="masseditable"]').addClass('cursorPointerNotAllowed').attr('readonly', 'readonly');
+					form.find('input[type="checkbox"][name="masseditable"]').removeAttr('checked', 'checked');
 				}
 
 				var defaultValueUiContainer = defaultValueUi.closest('.defaultValueUi');
