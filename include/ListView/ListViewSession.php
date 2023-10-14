@@ -49,7 +49,7 @@ class ListViewSession {
 		return 1;
 	}
 
-	function getRequestStartPage(){
+	public static function getRequestStartPage(){
 		$start = $_REQUEST['start'];
 		if(!is_numeric($start)){
 			$start = 1;
