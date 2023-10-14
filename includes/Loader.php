@@ -11,6 +11,10 @@
 global $LOADER_FILE_DIR;
 $LOADER_FILE_DIR = dirname(__FILE__);
 
+//TCPDF fonts
+global $root_directory;
+define('K_PATH_FONTS', $root_directory."libraries/tcpdf/fonts/");
+
 class Vtiger_Loader {
 	protected static $includeCache = array();
 	protected static $includePathCache = array();
