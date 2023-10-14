@@ -871,6 +871,7 @@ a {
 }
 .emptyField{
   border: none;
+  cursor: default;
 }
 input[type="text"].inputElement,
 input[type="password"].inputElement {
