@@ -869,6 +869,10 @@ a {
   border: 1px solid #cccccc;
   border-width: thin;
 }
+.emptyField{
+  border: none;
+  cursor: default;
+}
 input[type="text"].inputElement,
 input[type="password"].inputElement {
   padding: 3px 8px;
