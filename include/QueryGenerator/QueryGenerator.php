@@ -1414,7 +1414,7 @@ class QueryGenerator {
 			if(isset($input['search_text']) && $input['search_text']!="") {
 				// search other characters like "|, ?, ?" by jagi
 				$value = $input['search_text'];
-				$stringConvert = function_exists(iconv) ? @iconv("UTF-8",$default_charset,$value)
+				$stringConvert = function_exists("iconv") ? @iconv("UTF-8",$default_charset,$value)
 						: $value;
 				if(!$this->isStringType($type)) {
 					$value=trim($stringConvert);

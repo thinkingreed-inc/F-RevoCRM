@@ -46,10 +46,10 @@ class Users_Module_Model extends Vtiger_Module_Model {
 		if(!empty($searchValue)) {
 			$db = PearDatabase::getInstance();
 
-			$query = 'SELECT * FROM vtiger_users WHERE (first_name LIKE ? OR last_name LIKE ?) AND status = ?';
+			$query = 'SELECT * FROM vtiger_users WHERE userlabel LIKE ? AND status = ?';
 			$currentUser = Users_Record_Model::getCurrentUserModel();
 			$allSubordinates = $currentUser->getAllSubordinatesByReportsToField($currentUser->getId());
-			$params = array("%$searchValue%", "%$searchValue%", 'Active');
+			$params = array("%$searchValue%", 'Active');
 
 			// do not allow the subordinates
 			if(php7_count($allSubordinates) > 0) {
