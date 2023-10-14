@@ -25,6 +25,9 @@
 					{else}
 						{assign var=columnNameApi value=getCustomViewColumnName}
 					{/if}
+					{if $FIELD_MODEL->getFieldDataType() == 'empty'}
+						{continue}
+					{/if}
 					<option value="{$FIELD_MODEL->$columnNameApi()}" data-fieldtype="{$FIELD_MODEL->getFieldType()}" data-field-name="{$FIELD_NAME}"
 					{if decode_html($FIELD_MODEL->$columnNameApi()) eq $CONDITION_INFO['columnname']}
 						{assign var=FIELD_TYPE value=$FIELD_MODEL->getFieldDataType()}
