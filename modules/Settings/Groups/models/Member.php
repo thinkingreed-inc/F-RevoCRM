@@ -102,7 +102,7 @@ class Settings_Groups_Member_Model extends Vtiger_Base_Model {
             $tableName = $tables[self::MEMBER_TYPE_USERS]['table'];
             $tableIndex = $tables[self::MEMBER_TYPE_USERS]['index'];
             $refIndex = $tables[self::MEMBER_TYPE_USERS]['refIndex'];
-			$sql = "SELECT vtiger_users.id, vtiger_users.last_name, vtiger_users.first_name FROM vtiger_users
+			$sql = "SELECT vtiger_users.id, vtiger_users.last_name, vtiger_users.first_name, vtiger_users.userlabel FROM vtiger_users
 							INNER JOIN $tableName ON $tableName.$refIndex = vtiger_users.id
 							WHERE $tableName.$tableIndex = ?";
 			$params = array($groupModel->getId());
@@ -113,7 +113,7 @@ class Settings_Groups_Member_Model extends Vtiger_Base_Model {
 				$row = $db->query_result_rowdata($result, $i);
 				$userId = $row['id'];
 				$qualifiedId = self::getQualifiedId(self::MEMBER_TYPE_USERS, $userId);
-				$name = getFullNameFromArray('Users', $row);
+				$name = $row['userlabel'];
 				$member = new self();
 				$members[$qualifiedId] = $member->set('id', $qualifiedId)->set('name', $name)->set('userId', $userId);
 			}

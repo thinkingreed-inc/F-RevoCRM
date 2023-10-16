@@ -545,7 +545,7 @@ class Settings_Profiles_Record_Model extends Settings_Vtiger_Record_Model {
 					foreach ($actionsIdsList as $actionId => $permission) {
 						$permissionValue = $this->tranformInputPermissionValue($permission);
 						if(isset(Vtiger_Action_Model::$standardActions[$actionId])) {
-							if($permission == Settings_Profiles_Module_Model::IS_PERMITTED_VALUE) {
+							if($permissionValue == Settings_Profiles_Module_Model::IS_PERMITTED_VALUE) {
 								$actionEnabled = true;
 							}
 							$actionsUpdateQuery .= " WHEN operation = $actionId THEN $permissionValue ";
