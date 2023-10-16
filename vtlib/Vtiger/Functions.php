@@ -335,6 +335,7 @@ class Vtiger_Functions {
 				'crmid'  => $id,
 				'label'  => $labelInfo[$id]
 			);
+			CRMEntity::updateBasicInformation($module, $id);
 		}
 	}
 

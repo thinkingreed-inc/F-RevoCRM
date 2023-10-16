@@ -129,7 +129,7 @@ class CRMEntity {
 			$this->insertTags_atImportMode($module);
 		}
 		
-		$this->updateInfomation($module);
+		self::updateBasicInformation($module, $this->id);
 		$columnFields->restartTracking();
 		//Calling the Module specific save code
 		$this->save_module($module);
@@ -799,40 +799,6 @@ class CRMEntity {
 		}
     }
 
-	function updateInfomation($modulename) {
-		global $adb;
-
-		$module = CRMEntity::getInstance($modulename);
-		$baseTable = $module->table_name;
-		$baseTableid = $module->table_index;
-
-		if(empty($baseTable)) {
-			return ;
-		}
-	
-		// vtiger_crmentityの情報を反映
-		$adb->pquery("UPDATE
-				$baseTable,
-				vtiger_crmentity
-			SET
-				$baseTable.smcreatorid = vtiger_crmentity.smcreatorid,
-				$baseTable.smownerid = vtiger_crmentity.smownerid,
-				$baseTable.modifiedby = vtiger_crmentity.modifiedby,
-				$baseTable.description = vtiger_crmentity.description,
-				$baseTable.createdtime = vtiger_crmentity.createdtime,
-				$baseTable.modifiedtime = vtiger_crmentity.modifiedtime,
-				$baseTable.viewedtime = vtiger_crmentity.viewedtime,
-				$baseTable.deleted = vtiger_crmentity.deleted,
-				$baseTable.label = vtiger_crmentity.label,
-				$baseTable.smgroupid = vtiger_crmentity.smgroupid,
-				$baseTable.source = vtiger_crmentity.source,
-				$baseTable.locked = vtiger_crmentity.locked,
-				$baseTable.lockeduserid = vtiger_crmentity.lockeduserid
-			WHERE
-				$baseTable.$baseTableid = vtiger_crmentity.crmid
-				AND $baseTable.$baseTableid = ?", array($this->id));
-	}
-
 	/** Function to delete a record in the specifed table
 	 * @param $table_name -- table name:: Type varchar
 	 * The function will delete a record .The id is obtained from the class variable $this->id and the columnname got from $this->tab_name_index[$table_name]
@@ -1175,6 +1141,8 @@ class CRMEntity {
 		$date_var = date("Y-m-d H:i:s");
 		$query = "UPDATE vtiger_crmentity set deleted=1,modifiedtime=?,modifiedby=? where crmid=?";
 		$this->db->pquery($query, array($this->db->formatDate($date_var, true), $current_user->id, $id), true, "Error marking record deleted: ");
+
+		self::updateBasicInformation($this->moduleName, $id);
 	}
 
 	function retrieve_by_string_fields($fields_array, $encode = true) {
@@ -1510,6 +1478,9 @@ class CRMEntity {
 		$date_var = date("Y-m-d H:i:s");
 		$query = 'UPDATE vtiger_crmentity SET deleted=0,modifiedtime=?,modifiedby=? WHERE crmid = ?';
 		$this->db->pquery($query, array($this->db->formatDate($date_var, true), $current_user->id, $id), true, "Error restoring records :");
+
+		self::updateBasicInformation($module, $id);
+
 		//Restore related entities/records
 		$this->restoreRelatedRecords($module, $id);
 
@@ -1718,6 +1689,14 @@ class CRMEntity {
 						$value = "$prefix" . "$cur_id";
 						$adb->pquery("UPDATE $fld_table SET $fld_column = ? WHERE $this->table_index = ?", Array($value, $recordinfo['recordid']));
 						$cur_id = $this->getSequnceNumber($cur_id);
+						$ui4_result = $adb->pquery("SELECT fieldname FROM vtiger_entityname WHERE modulename = ?", Array($module));
+						if($fld_column == $ui4_result->fields['fieldname']){
+							$field_ui4 = $adb->pquery("SELECT $fld_column FROM $fld_table WHERE $this->table_index = ?", array($recordinfo['recordid']));
+							$label = $field_ui4->fields[0];
+							$label = trim($label);
+							$adb->pquery('UPDATE vtiger_crmentity SET label=? WHERE crmid=?', array($label, $recordinfo['recordid']));
+							self::updateBasicInformation($module, $recordinfo['recordid']);
+						}
 						$returninfo['updatedrecords'] = $returninfo['updatedrecords'] + 1;
 					}
 					if ($old_cur_id != $cur_id) {
@@ -1857,6 +1836,8 @@ class CRMEntity {
 	function markAsViewed($userid) {
 		global $adb;
 		$adb->pquery("UPDATE vtiger_crmentity set viewedtime=? WHERE crmid=? AND smownerid=?", Array(date('Y-m-d H:i:s', time()), $this->id, $userid));
+
+		self::updateBasicInformation($this->moduleName, $this->id);
 	}
 
 	/**
@@ -3159,6 +3140,7 @@ class CRMEntity {
 		$currentTime = date('Y-m-d H:i:s');
 
 		$adb->pquery('UPDATE vtiger_crmentity SET modifiedtime = ?, modifiedby = ? WHERE crmid = ?', array($currentTime, $current_user->id, $crmid));
+		self::updateBasicInformation($module, $crmid);
 
 		// @Note: We should extend this to event handlers
 		if(vtlib_isModuleActive('ModTracker')) {
@@ -3285,6 +3267,73 @@ class CRMEntity {
 			$query .= " AND related_to = ".$relatedRecordId." ORDER BY vtiger_crmentity.createdtime DESC";
 		}
 		return $query;
+	}
+
+	/**
+	 * 基本情報をvtiger_crmentityから各テーブルのカラムにコピーする
+	 * @params $modulename モジュール名、未指定の場合は全モジュール
+	 * @params $id レコードID、未指定の場合は全レコード
+	 */
+	public static function updateBasicInformation($modulename = null, $id = null, $ignoreModules = array()) {
+		global $adb;
+
+		$modules = array();
+
+		if(empty($modulename)) {
+			$ignoreModules = array_merge($ignoreModules, array('SMSNotifier', 'PBXManager', "Webmails"));
+			$result = $adb->pquery('SELECT name FROM vtiger_tab WHERE isentitytype=? AND name NOT IN ('.generateQuestionMarks($ignoreModules).')', array(1, $ignoreModules));
+			while ($row = $adb->fetchByAssoc($result)) {
+				$modules[] = $row['name'];
+			}
+		} else {
+			$modules[] = $modulename;
+		}
+		
+		$executedTables = array();
+		
+		foreach ($modules as $modulename) {
+			$module = CRMEntity::getInstance($modulename);
+			$baseTable = $module->table_name;
+			$baseTableid = $module->table_index;
+		
+			if(empty($baseTable)) {
+				continue;
+			}
+		
+			if(in_array($baseTable, $executedTables)) {
+				continue;
+			}
+
+			$params = array();
+
+			$sql = "UPDATE
+						$baseTable,
+						vtiger_crmentity
+					SET
+						$baseTable.smcreatorid = vtiger_crmentity.smcreatorid,
+						$baseTable.smownerid = vtiger_crmentity.smownerid,
+						$baseTable.modifiedby = vtiger_crmentity.modifiedby,
+						$baseTable.description = vtiger_crmentity.description,
+						$baseTable.createdtime = vtiger_crmentity.createdtime,
+						$baseTable.modifiedtime = vtiger_crmentity.modifiedtime,
+						$baseTable.viewedtime = vtiger_crmentity.viewedtime,
+						$baseTable.deleted = vtiger_crmentity.deleted,
+						$baseTable.label = vtiger_crmentity.label,
+						$baseTable.smgroupid = vtiger_crmentity.smgroupid,
+						$baseTable.source = vtiger_crmentity.source,
+						$baseTable.locked = vtiger_crmentity.locked,
+						$baseTable.lockeduserid = vtiger_crmentity.lockeduserid
+					WHERE
+						$baseTable.$baseTableid = vtiger_crmentity.crmid";
+
+			if(!empty($id)) {
+				$sql .= " AND vtiger_crmentity.crmid = ?";
+				$params[] = $id;
+			}
+			$adb->pquery($sql, $params);
+		
+			$executedTables[] = $baseTable;
+		}
 	}
 }
 

@@ -1329,6 +1329,7 @@ class Accounts extends CRMEntity {
 			$pot_ids_list[] = $pot_id;
 			$sql = 'UPDATE vtiger_crmentity SET deleted = 1 WHERE crmid = ?';
 			$this->db->pquery($sql, array($pot_id));
+			CRMEntity::updateBasicInformation('Potentials', $pot_id);
 		}
 		//Backup deleted Account related Potentials.
 		$params = array($id, RB_RECORD_UPDATED, 'vtiger_crmentity', 'deleted', 'crmid', implode(",", $pot_ids_list));
@@ -1346,6 +1347,7 @@ class Accounts extends CRMEntity {
 			$quo_id = $this->db->query_result($quo_res,$k,"crmid");
 			$quo_ids_list[] = $quo_id;
 			$sql = 'UPDATE vtiger_crmentity SET deleted = 1 WHERE crmid = ?';
+			CRMEntity::updateBasicInformation('Quotes', $quo_id);
 			$this->db->pquery($sql, array($quo_id));
 		}
 		//Backup deleted Account related Quotes.

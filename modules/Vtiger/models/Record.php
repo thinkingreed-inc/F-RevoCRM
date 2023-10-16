@@ -777,5 +777,13 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
 	  public function getSendEmailPDFUrl() {
 		return 'module='.$this->getModuleName().'&view=SendEmail&mode=composeMailData&record='.$this->getId();
 	}
+    /**
+     * ドキュメントを削除する
+     */
+    public static function deleteDocument($notesid) {
+        global $adb;
+        $adb->pquery("UPDATE vtiger_crmentity SET deleted=1 WHERE crmid= ?", array($notesid));
+		CRMEntity::updateBasicInformation('Documents', $notesid);
+    }
 
 }

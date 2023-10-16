@@ -1393,6 +1393,7 @@ function get_contactsforol($user_name)
 			$pot_id = $this->db->query_result($pot_res,$k,"crmid");
 			$pot_ids_list[] = $pot_id;
 			$sql = 'UPDATE vtiger_crmentity SET deleted = 1 WHERE crmid = ?';
+			CRMEntity::updateBasicInformation('Potentials', $pot_id);
 			$this->db->pquery($sql, array($pot_id));
 		}
 		//Backup deleted Contact related Potentials.
