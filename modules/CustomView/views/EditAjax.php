@@ -68,14 +68,10 @@ Class CustomView_EditAjax_View extends Vtiger_IndexAjax_View {
 			unset($recordStructure[$itemsBlock]);
 		}
 		$viewer->assign('RECORD_STRUCTURE', $recordStructure);
-		// Added to show event module custom fields
+		// 活動とTODOで名前が同じ項目を取得。レポートのstep2と同じ挙動を目指す
 		if($moduleName == 'Calendar'){
-			$relatedModuleName = 'Events';
-			$relatedModuleModel = Vtiger_Module_Model::getInstance($relatedModuleName);
-			$relatedRecordStructureInstance = Vtiger_RecordStructure_Model::getInstanceForModule($relatedModuleModel, Vtiger_RecordStructure_Model::RECORD_STRUCTURE_MODE_FILTER);
-			$eventBlocksFields = $relatedRecordStructureInstance->getStructure();
-			$viewer->assign('EVENT_RECORD_STRUCTURE_MODEL', $relatedRecordStructureInstance);
-			$viewer->assign('EVENT_RECORD_STRUCTURE', $eventBlocksFields);
+			$DuplicateFieldsArray = $recordStructureInstance->getDuplicateFields();
+			$viewer->assign('DUPLICATE_FIELDS', $DuplicateFieldsArray);
 		}
 		$currentUserModel = Users_Record_Model::getCurrentUserModel();
 

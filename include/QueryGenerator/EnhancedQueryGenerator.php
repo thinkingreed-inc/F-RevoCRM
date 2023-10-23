@@ -19,6 +19,9 @@ class EnhancedQueryGenerator extends QueryGenerator {
 
 		$this->getModuleFields();
 		$this->referenceFieldList = array_keys($this->referenceFieldInfoList);
+
+		$this->EventsIndexList = array();
+		$this->CalendarIndexList = array();
 	}
 
 	function addTableIndexList($tablesList) {
@@ -92,6 +95,8 @@ class EnhancedQueryGenerator extends QueryGenerator {
 		foreach ($advFilterList as $groupindex => $groupcolumns) {
 			$filtercolumns = $groupcolumns['columns'];
 			if (count($filtercolumns) > 0) {
+				$isEvents = array();
+				$isCalendar = array();
 				$this->startGroup('');
 				foreach ($filtercolumns as $index => $filter) {
 					//If comparator is "e" or "n" then do not escapeSqlString.
@@ -194,12 +199,21 @@ class EnhancedQueryGenerator extends QueryGenerator {
 					if ($columncondition) {
 						$this->addConditionGlue($columncondition);
 					}
+					// Calendar(TODO)とEvents(活動)の項目を別々に判定するために、Eventsのindex番号を保持する
+					list($moduleName, $fieldLabel) = explode('_', $nameComponents[3], 2);
+					if($moduleName == 'Events'){
+						$isEvents[] = $index;
+					}else if($moduleName == 'Calendar'){
+						$isCalendar[] = $index;
+					}
 				}
 				$this->endGroup();
 				$groupConditionGlue = $groupcolumns['condition'];
 				if ($groupConditionGlue) {
 					$this->addConditionGlue($groupConditionGlue);
 				}
+				$this->EventsIndexList = array_merge($this->EventsIndexList, $isEvents);
+				$this->CalendarIndexList = array_merge($this->CalendarIndexList, $isCalendar);
 			}
 		}
 	}
@@ -634,7 +648,7 @@ class EnhancedQueryGenerator extends QueryGenerator {
 
 			if (empty($field) || $conditionInfo['operator'] == 'None') {
 				continue;
-			}
+			}	
 
 			$tableName = $field->getTableName().$parentReferenceField;
 			$fieldSql = '(';
@@ -828,6 +842,11 @@ class EnhancedQueryGenerator extends QueryGenerator {
 			$tmpTableName = 'vtiger_crmentity'.$parentReferenceField;
 			if ($tmpTableName == $tableName && $referenceModule) {
 				$fieldSql .= " and ".$tmpTableName.".setype = '".$referenceModule."'";
+			}
+			if (getTabModuleName($field->getTabId()) == 'Events' && in_array($index,$this->EventsIndexList)) {
+				$fieldSql .= " and vtiger_activity.activitytype <> 'Task' ";
+			}elseif (getTabModuleName($field->getTabId()) == 'Events' && in_array($index,$this->CalendarIndexList)) {
+				$fieldSql .= " and vtiger_activity.activitytype = 'Task' ";
 			}
 			$fieldSql .= ')';
 			$fieldSqlList[$index] = $fieldSql;

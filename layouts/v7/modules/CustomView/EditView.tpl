@@ -59,11 +59,46 @@
 								{assign var=NUMBER_OF_COLUMNS_SELECTED value=0}
 								{assign var=MAX_ALLOWED_COLUMNS value=15}
 								<select name="selectColumns" data-rule-required="true" data-msg-required="{vtranslate('LBL_PLEASE_SELECT_ATLEAST_ONE_OPTION',$SOURCE_MODULE)}" data-placeholder="{vtranslate('LBL_ADD_MORE_COLUMNS',$MODULE)}" multiple class="select2 columnsSelect col-lg-10" id="viewColumnsSelect" >
+									{* 活動とTODOで共通する項目をブロック分けする *}
+                        			{if count($DUPLICATE_FIELDS) > 0}
+										<optgroup label='{vtranslate('LBL_EVENT_OR_TASK', $SOURCE_MODULE)}-{vtranslate('DuplicateFields', $SOURCE_MODULE)}'>
+											{foreach key=FIELD_NAME item=FIELD_MODEL from=$DUPLICATE_FIELDS}
+												{if $FIELD_MODEL->getDisplayType() == '6'}
+													{continue}
+												{/if}
+												{if $FIELD_MODEL->isMandatory()}
+													{array_push($MANDATORY_FIELDS, $FIELD_MODEL->getCustomViewColumnName())}
+												{/if}
+												{* ステータスが2つ表示されるため、taskstatusのみ表示させる。 *}
+												{if $FIELD_MODEL->getName() eq 'eventstatus'}
+													{continue}
+												{/if}
+												{assign var=FIELD_MODULE_NAME value=$FIELD_MODEL->getModule()->getName()}
+												<option value="{$FIELD_MODEL->getCustomViewColumnName()}" data-field-name="{$FIELD_NAME}"
+													{if in_array(decode_html($FIELD_MODEL->getCustomViewColumnName()), $SELECTED_FIELDS)}
+														selected
+													{elseif $MODE_DUPLICATE eq false}{* 複製モードの場合は、元となったリストに格納されているフィールドだけを表示したい為、新規作成時に自動追加されるフィールドは除外する *}
+														{if (!$RECORD_ID) && ($FIELD_MODEL->isSummaryField() || $FIELD_MODEL->isHeaderField()) && ($FIELD_MODULE_NAME eq $SOURCE_MODULE) && (!(preg_match("/\([A-Za-z_0-9]* \; \([A-Za-z_0-9]*\) [A-Za-z_0-9]*\)/", $FIELD_NAME))) && $NUMBER_OF_COLUMNS_SELECTED < $MAX_ALLOWED_COLUMNS}
+															selected
+															{assign var=NUMBER_OF_COLUMNS_SELECTED value=$NUMBER_OF_COLUMNS_SELECTED + 1}
+														{/if}
+													{/if}
+													>{Vtiger_Util_Helper::toSafeHTML(vtranslate($FIELD_MODEL->get('label'), $SOURCE_MODULE))}
+													
+													{if $FIELD_MODEL->isMandatory() eq true} <span>*</span> {/if}
+												</option>
+											{/foreach}
+										</optgroup>
+									{/if}
 									{foreach key=BLOCK_LABEL item=BLOCK_FIELDS from=$RECORD_STRUCTURE}
 										<optgroup label='{vtranslate($BLOCK_LABEL, $SOURCE_MODULE)}'>
 											{foreach key=FIELD_NAME item=FIELD_MODEL from=$BLOCK_FIELDS}
 												{* To not show star field in filter select view*}
 												{if $FIELD_MODEL->getDisplayType() == '6'}
+													{continue}
+												{/if}
+												{* 活動とTODOで共通していない項目だけを各ブロックで表示する *}
+												{if array_key_exists($FIELD_NAME, $DUPLICATE_FIELDS)}
 													{continue}
 												{/if}
 												{if $FIELD_MODEL->isMandatory()}

@@ -25,6 +25,14 @@
 					{else}
 						{assign var=columnNameApi value=getCustomViewColumnName}
 					{/if}
+					{* 使用できない項目を削除し、レポートと同じ挙動を目指す *}
+					{if ($MODULE_MODEL->get('name') eq 'Calendar' || $MODULE_MODEL->get('name') eq 'Events') && $FIELD_MODEL->isUnavailableFields()}
+						{continue}
+					{/if}
+					{* TODOのステータスが2つ表示されるため、taskstatusのみ表示させる。 *}
+					{if $MODULE_MODEL->get('name') eq 'Calendar' && $FIELD_MODEL->getName() eq 'eventstatus'}
+						{continue}
+					{/if}
 					<option value="{$FIELD_MODEL->$columnNameApi()}" data-fieldtype="{$FIELD_MODEL->getFieldType()}" data-field-name="{$FIELD_NAME}"
 					{if decode_html($FIELD_MODEL->$columnNameApi()) eq decode_html($CONDITION_INFO['columnname'])}
 						{assign var=FIELD_TYPE value=$FIELD_MODEL->getFieldType()}
@@ -59,6 +67,8 @@
                     {if !empty($SPECIAL_VALIDATOR)}data-validator='{Zend_Json::encode($SPECIAL_VALIDATOR)}'{/if}>
 					{if $SOURCE_MODULE neq $MODULE_MODEL->get('name')}
 						({vtranslate($MODULE_MODEL->get('name'), $MODULE_MODEL->get('name'))}) {vtranslate($FIELD_MODEL->get('label'), $MODULE_MODEL->get('name'))}
+					{elseif $SOURCE_MODULE eq 'Calendar'}{* カレンダーはTODOと活動で同名項目があるのでモジュール名を表示させる *}
+						({vtranslate('LBL_TASK', $MODULE_MODEL->get('name'))}) {vtranslate($FIELD_MODEL->get('label'), $MODULE_MODEL->get('name'))}
 					{else}
 						{vtranslate($FIELD_MODEL->get('label'), $SOURCE_MODULE)}
 					{/if}

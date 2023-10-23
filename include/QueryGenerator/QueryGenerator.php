@@ -52,6 +52,8 @@ class QueryGenerator {
 	public static $AND = 'AND';
 	public static $OR = 'OR';
 	protected $customViewFields;
+	protected $EventsIndexList;
+	protected $CalendarIndexList;
 	/**
 	 * Import Feature
 	 */

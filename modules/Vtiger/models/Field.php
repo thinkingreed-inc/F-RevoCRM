@@ -534,6 +534,32 @@ class Vtiger_Field_Model extends Vtiger_Field {
 		return false;
 	}
 
+	/*
+	 * レポート及びリストの条件で使用できない項目を削除する
+	 * displaytypeで判定したかったが、意図しない項目も非表示になってしまうため関数を用意した
+	 */
+	public function isUnavailableFields () {
+		$moduleName = $this->getModuleName();
+		$fieldName = $this->get('name');
+
+		if($moduleName == 'Calendar'){
+			$UnavailableFields = array(
+				'visibility', // 非表示に設定されたレコードはレポートに表示されない
+				'duration_hours', 'duration_minutes', 'notime', // 入力できない項目
+				'time_end', 'recurringtype', 'parent_id', 'activitytype', // Eventsには存在するがCalendarには無い項目
+				'starred', // displaytype 6
+				);
+		}elseif($moduleName == 'Events'){
+			$UnavailableFields = array(
+				'visibility',
+				'duration_hours', 'duration_minutes', 'notime',
+				'starred',
+				);
+		}
+
+		return in_array($fieldName,$UnavailableFields);;
+	}
+
 	/**
 	 * Static Function to get the instance fo Vtiger Field Model from a given Vtiger_Field object
 	 * @param Vtiger_Field $fieldObj - vtlib field object

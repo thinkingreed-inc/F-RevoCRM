@@ -190,6 +190,10 @@ $languageStrings = array(
 	'Duration' => '期間',
 	'Duration Minutes' => '期間(分)',
 	'No Time' => '時間なし',
+
+	// レポートのカラムをTODOと活動の共通項目とする
+	'LBL_CALENDAR_OR_EVENT' => 'カレンダー / 活動',
+	'DuplicateFields' => '共通項目',
 );
 
 $jsLanguageStrings = array(
