@@ -162,7 +162,7 @@ class VTSimpleTemplate{
 
 	// $loop-products$で囲まれた箇所を各製品・サービスごとに出力する
 	private function matchproductsHandler($match){
-		$str_origin = preg_replace('/[\r\n]?\$loop-products\$[\r\n]?/','',$match[0]);
+		$str_origin = preg_replace('/\$loop-products\$(<br\s*\/?>|[\r\n])?/','',$match[0]);
 		$matchcount = preg_match_all('/\((\w+) : \(([_\w]+)\) (\w+)\)/',$str_origin,$matches);
 		$result = '';
 		if(!empty($this->parent) && $matchcount != 0){
@@ -199,7 +199,7 @@ class VTSimpleTemplate{
 				}
 				$block[] = $str;
 			}
-			$result = implode(PHP_EOL, $block);
+			$result = implode('', $block);
 		}
 		return $result;
 	}
@@ -209,7 +209,7 @@ class VTSimpleTemplate{
 	}
 
 	function parseTemplate(){
-		$str = preg_replace_callback('/\$loop-products\$[\s\S]*?\$loop-products\$/', array($this,"matchproductsHandler"), $this->template);
+		$str = preg_replace_callback('/\$loop-products\$[\s\S]*?\$loop-products\$(<br\s*\/?>|[\r\n])?/', array($this,"matchproductsHandler"), $this->template);
 		return preg_replace_callback('/\\$(\w+|\((\w+) : \(([_\w]+)\) (\w+)\))/', array($this,"matchHandler"), $str);
 	}
 

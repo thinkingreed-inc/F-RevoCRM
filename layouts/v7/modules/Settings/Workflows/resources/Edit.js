@@ -790,6 +790,15 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
          var textarea = CKEDITOR.instances.content;
          var value = jQuery(e.currentTarget).val();
          if (textarea != undefined) {
+            var module_name = jQuery('#module_name').val();
+            var inventoryModules = ['Invoice', 'Quotes', 'PurchaseOrder', 'SalesOrder'];
+            var oldValue = textarea.getData();
+            // 製品とサービスは複数紐づけられるため、$loop-products$で囲み全て出力する
+            var regexlp = /\$loop-products\$/;
+            var regexPS = /\((\w+) : \((Products|Services)\) (\w+)\)/;
+            if(jQuery.inArray(module_name, inventoryModules) !== -1 && !regexlp.test(oldValue) && regexPS.test(value)){
+               value = '$loop-products$<br />'+value+'<br /><br>$loop-products$<br>';
+            }
             textarea.insertHtml(value);
          } else if (jQuery('textarea[name="content"]')) {
             var textArea = jQuery('textarea[name="content"]');
