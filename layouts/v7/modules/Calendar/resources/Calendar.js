@@ -400,6 +400,30 @@ Vtiger.Class("Calendar_Calendar_Js", {
 						thisInstance.removeEvents(curentTarget);
 					}
 				});
+		// すべて選択・解除
+		jQuery('#calendarview-feeds-all').on('change',
+		'input[type="checkbox"].toggleCalendarFeed',
+				function () {
+					var feedCheckbox = jQuery(this);
+					var $area = $(".list-group.feedslist");
+
+					$area.children().each(function(){
+						var currentTarget = jQuery(this).find("input");
+						var sourceKey = currentTarget.data('calendarSourcekey');
+			
+						if (sourceKey !== undefined) {
+							if (feedCheckbox.is(':checked') && !currentTarget.is(':checked')) {
+								currentTarget.attr('checked','checked');
+								thisInstance.enableFeed(sourceKey);
+								thisInstance.addEvents(currentTarget);
+							} else if (!feedCheckbox.is(':checked') && currentTarget.is(':checked')) {
+								currentTarget.removeAttr('checked');
+								thisInstance.disableFeed(sourceKey);
+								thisInstance.removeEvents(currentTarget);
+							}
+						}
+					})
+				});
 	},
 	updateRangeFields: function (container, options) {
 		var moduleName = container.find('select[name="modulesList"]').val();

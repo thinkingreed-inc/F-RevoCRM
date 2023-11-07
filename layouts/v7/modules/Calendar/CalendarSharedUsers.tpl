@@ -10,7 +10,12 @@
 {strip}
 
 <div class="calendarGroupSelect">
-<select id="calendar-groups" class="select2">
+	<div id="calendarview-feeds-all">
+		<span> {* すべて選択・解除用のチェックボックス *}
+			<input class="toggleCalendarFeed cursorPointer" type="checkbox">&nbsp;&nbsp;
+		</span>
+	</div>
+<select id="calendar-groups" class="select2" style="flex-grow: 1;">
 <option value="default">{vtranslate('My Group', $MODULE)}</option>
 <optgroup label="-- {vtranslate('Role', 'Users')} --">
 {foreach key=ROLE_ID item=ROLE from=$ALL_ROLES}

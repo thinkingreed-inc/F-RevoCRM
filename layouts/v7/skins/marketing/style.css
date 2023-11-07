@@ -3917,6 +3917,11 @@ th {
 .calendar-sidebar-tabs .active-link {
   color: white;
 }
+.calendarGroupSelect {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+}
 .activitytypes .activitytype-indicator {
   padding: 5%;
   margin: 8px;
