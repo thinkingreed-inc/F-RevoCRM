@@ -395,7 +395,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 	},
 	getCheckedCheckboxCounts: function () {
 		var checkedCount = 0;
-		var $area = $(".list-group.feedslist");
+		var $area = jQuery("#calendarview-feeds .feedslist");
 		$area.children().each(function(){
 			var currentTarget = jQuery(this).find("input");
 			var sourceKey = currentTarget.data('calendarSourcekey');
@@ -438,7 +438,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		'input[type="checkbox"].toggleCalendarFeed',
 				function () {
 					var feedCheckbox = jQuery(this);
-					var $area = $(".list-group.feedslist");
+					var $area = jQuery("#calendarview-feeds .feedslist");
 
 					$area.children().each(function(){
 						var currentTarget = jQuery(this).find("input");
