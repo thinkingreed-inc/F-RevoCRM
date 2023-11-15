@@ -121,13 +121,7 @@ class Vtiger_ListAjax_View extends Vtiger_List_View {
 		$pagingModel->set('limit', $pageLimit-1);
 
 		$searchableModules = Vtiger_Module_Model::getSearchableModules();
-		$matchingRecords = array();
-		foreach ($searchableModules as $searchModule => $searchModuleModel) {
-			$searchedRecords = Vtiger_Record_Model::getSearchResult($searchValue, $searchModule);
-			if ($searchedRecords[$searchModule]) {
-				$matchingRecords[$searchModule] = $searchedRecords[$searchModule];
-			}
-		}
+		$matchingRecords = Vtiger_Record_Model::getSearchResult($searchValue, array_keys($searchableModules));
 
 		$matchingRecordsList = array();
 		foreach ($matchingRecords as $module => $recordModelsList) {

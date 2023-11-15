@@ -641,7 +641,7 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 	 *  Function to check duplicate activity view while adding
 	 * @return <boolean>
 	 */
-	public function checkDuplicateView(Vtiger_Request $request) {
+	public static function checkDuplicateView(Vtiger_Request $request) {
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$userId = $currentUser->getId();
 		$viewmodule = $request->get('viewmodule');
@@ -798,7 +798,7 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 	 * @param type $currentUserId
 	 * @param type $sharedIds
 	 */
-	public function getSharedType($currentUserId){
+	public static function getSharedType($currentUserId){
 		$db = PearDatabase::getInstance();
 
 		$query = "SELECT calendarsharedtype FROM vtiger_users WHERE id=?";

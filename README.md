@@ -16,10 +16,16 @@ Vtiger Public License 1.2
 ## サーバ推奨要件
 * 2コア以上、4GB以上のメモリ、40GB以上の空き容量（利用人数・用途によってスペックが大幅に変わる）
 * Apache 2.4以上
-* PHP 7.4以上（8.0以上は除く）
+* PHP 7.4～8.3
+  * php-gd
+  * php-mysqlnd
   * php-imap
-  * php-curl
+  * php-mbstring
   * php-xml
+  * php-bcmath
+  * php-opcache
+  * php-zip
+  * php-curl
   * memory_limit = 512M(min. 256MB)
   * max_execution_time = 0 (min. 60 seconds、0は無制限)
   * error_reporting (E_ERROR & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED)

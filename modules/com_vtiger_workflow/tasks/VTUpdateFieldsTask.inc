@@ -371,7 +371,9 @@ class VTUpdateFieldsTask extends VTTask {
 						}
 						// ワークフローで更新された項目を参照している項目に反映させる
 						$tmpEntity = VTEntityData::fromCRMEntity($referenceFocus->id);
-						$vtEntityDelta->setEntityDelta($moduleName, $tmpEntity->getId(), $delta);
+						if(!empty($vtEntityDelta)) {
+							$vtEntityDelta->setEntityDelta($moduleName, $tmpEntity->getId(), $delta);
+						}
 
 						if ($referenceEntityFields == true) {
 							Vtiger_Functions::updateCRMRecordLabel($referenceFocus->moduleName, $referenceFocus->id);

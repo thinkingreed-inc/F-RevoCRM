@@ -7,6 +7,7 @@
  * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
  ************************************************************************************/
+require_once 'vendor/autoload.php';
 
 global $LOADER_FILE_DIR;
 $LOADER_FILE_DIR = dirname(__FILE__);
