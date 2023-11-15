@@ -36,7 +36,7 @@ class DateTimeField {
 		global $log;
 		$log->debug("Entering getDBInsertDateValue(" . $this->datetime . ") method ...");
 		$value = explode(' ', $this->datetime);
-		if (count($value) == 2) {
+		if (php7_count($value) == 2) {
 			$value[0] = self::convertToUserFormat($value[0]);
 		}
 

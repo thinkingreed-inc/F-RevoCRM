@@ -45,7 +45,7 @@ class VtigerWebserviceObject{
 		
 		// If the information not available in cache?
 		if(!isset(self::$_fromNameCache[$entityName])) {
-			$cacheLength = count(self::$_fromNameCache);
+			$cacheLength = php7_count(self::$_fromNameCache);
 			
 			$result = null;
 			if ($cacheLength == 0) {

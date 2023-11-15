@@ -94,11 +94,11 @@ class PurchaseOrder extends CRMEntity {
 
 	//var $groupTable = Array('vtiger_pogrouprelation','purchaseorderid');
 	/** Constructor Function for Order class
-	 *  This function creates an instance of LoggerManager class using getLogger method
+	 *  This function creates an instance of Logger class using getLogger method
 	 *  creates an instance for PearDatabase class and get values for column_fields array of Order class.
 	 */
         function __construct() {
-            $this->log =LoggerManager::getLogger('PurchaseOrder');
+            $this->log =Logger::getLogger('PurchaseOrder');
             $this->db = PearDatabase::getInstance();
             $this->column_fields = getColumnFields('PurchaseOrder');
         }
@@ -434,7 +434,7 @@ class PurchaseOrder extends CRMEntity {
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule,$queryPlanner){
+	function generateReportsSecQuery($module,$secmodule,$queryPlanner, $reportid = false){
 
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency('vtiger_crmentityPurchaseOrder', array('vtiger_usersPurchaseOrder', 'vtiger_groupsPurchaseOrder', 'vtiger_lastModifiedByPurchaseOrder'));
@@ -447,7 +447,7 @@ class PurchaseOrder extends CRMEntity {
 				'vtiger_purchaseordercf', 'vtiger_vendorRelPurchaseOrder', 'vtiger_pobillads',
 				'vtiger_poshipads', 'vtiger_inventoryproductrelPurchaseOrder', 'vtiger_contactdetailsPurchaseOrder'));
 
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_purchaseorder","purchaseorderid",$queryPlanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_purchaseorder","purchaseorderid",$queryPlanner, $reportid);
 		if ($queryPlanner->requireTable("vtiger_crmentityPurchaseOrder", $matrix)){
 			$query .= " left join vtiger_crmentity as vtiger_crmentityPurchaseOrder on vtiger_crmentityPurchaseOrder.crmid=vtiger_purchaseorder.purchaseorderid and vtiger_crmentityPurchaseOrder.deleted=0";
 		}

@@ -167,8 +167,8 @@ class Vtiger_PDF_Generator {
 	}
 	
 	function generate($name, $outputMode='D') {
-		$this->contentViewer->display($this);
-		$this->pdf->SetFont('ume-tgo4');	
+		$this->contentViewer->display($this);		
+		$this->pdf->SetFont('ume-tgo4');
 		$this->pdf->Output($name, $outputMode);
 	}
 

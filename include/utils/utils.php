@@ -40,6 +40,7 @@ require_once 'vtlib/Vtiger/Deprecated.php';
 require_once 'includes/runtime/Cache.php';
 require_once 'modules/Vtiger/helpers/Util.php';
 require_once 'vtlib/Vtiger/AccessControl.php';
+require_once 'includes/runtime/Configs.php';
 // Constants to be defined here
 
 // For Migration status.
@@ -136,24 +137,24 @@ function get_user_array($add_blank=true, $status="Active", $assigned_user="",$pr
 		$temp_result = Array();
 		// Including deleted vtiger_users for now.
 		if (empty($status)) {
-				$query = "SELECT id, user_name from vtiger_users";
+				$query = "SELECT id, user_name, userlabel from vtiger_users";
 				$params = array();
 		}
 		else {
 				if($private == 'private')
 				{
 					$log->debug("Sharing is Private. Only the current user should be listed");
-					$query = "select id as id,user_name as user_name,last_name,first_name from vtiger_users where id=? and status='Active' union select vtiger_user2role.userid as id,vtiger_users.user_name as user_name ,
-							  vtiger_users.first_name as first_name ,vtiger_users.last_name as last_name
+					$query = "select id as id,user_name as user_name,last_name,first_name,userlabel from vtiger_users where id=? and status='Active' union select vtiger_user2role.userid as id,vtiger_users.user_name as user_name ,
+							  vtiger_users.last_name as last_name, vtiger_users.first_name as first_name ,vtiger_users.userlabel AS userlabel 
 							  from vtiger_user2role inner join vtiger_users on vtiger_users.id=vtiger_user2role.userid inner join vtiger_role on vtiger_role.roleid=vtiger_user2role.roleid where vtiger_role.parentrole like ? and status='Active' union
 							  select shareduserid as id,vtiger_users.user_name as user_name ,
-							  vtiger_users.first_name as first_name ,vtiger_users.last_name as last_name  from vtiger_tmp_write_user_sharing_per inner join vtiger_users on vtiger_users.id=vtiger_tmp_write_user_sharing_per.shareduserid where status='Active' and vtiger_tmp_write_user_sharing_per.userid=? and vtiger_tmp_write_user_sharing_per.tabid=? and (user_name != 'admin' OR is_owner=1)";
+							  vtiger_users.last_name as last_name,vtiger_users.first_name as first_name ,vtiger_users.userlabel AS userlabel from vtiger_tmp_write_user_sharing_per inner join vtiger_users on vtiger_users.id=vtiger_tmp_write_user_sharing_per.shareduserid where status='Active' and vtiger_tmp_write_user_sharing_per.userid=? and vtiger_tmp_write_user_sharing_per.tabid=? and (user_name != 'admin' OR is_owner=1)";
 					$params = array($current_user->id, $current_user_parent_role_seq."::%", $current_user->id, getTabid($module));
 				}
 				else
 				{
 					$log->debug("Sharing is Public. All vtiger_users should be listed");
-					$query = "SELECT id, user_name,last_name,first_name from vtiger_users WHERE status=? and (user_name != 'admin' OR is_owner=1)";
+					$query = "SELECT id, user_name,last_name,first_name,userlabel from vtiger_users WHERE status=? and (user_name != 'admin' OR is_owner=1)";
 					$params = array($status);
 				}
 		}
@@ -174,7 +175,7 @@ function get_user_array($add_blank=true, $status="Active", $assigned_user="",$pr
 		// Get the id and the name.
 		while($row = $db->fetchByAssoc($result))
 		{
-			$temp_result[$row['id']] = getFullNameFromArray('Users', $row);
+			$temp_result[$row['id']] = $row['userlabel'];
 		}
 
 		$user_array = &$temp_result;
@@ -214,7 +215,7 @@ function get_group_array($add_blank=true, $status="Active", $assigned_user="",$p
 			$query .= " WHERE groupid=?";
 			$params = array( $current_user->id);
 
-			if(!empty($current_user_groups) && (count($current_user_groups) != 0)) {
+			if(!empty($current_user_groups) && (php7_count($current_user_groups) != 0)) {
 				$query .= " OR vtiger_groups.groupid in (".generateQuestionMarks($current_user_groups).")";
 				array_push($params, $current_user_groups);
 			}
@@ -222,7 +223,7 @@ function get_group_array($add_blank=true, $status="Active", $assigned_user="",$p
 			$query .= " union select vtiger_group2role.groupid as groupid,vtiger_groups.groupname as groupname from vtiger_group2role inner join vtiger_groups on vtiger_groups.groupid=vtiger_group2role.groupid inner join vtiger_role on vtiger_role.roleid=vtiger_group2role.roleid where vtiger_role.parentrole like ?";
 			array_push($params, $current_user_parent_role_seq."::%");
 
-			if(!empty($current_user_groups) && (count($current_user_groups) != 0)) {
+			if(!empty($current_user_groups) && (php7_count($current_user_groups) != 0)) {
 				$query .= " union select vtiger_groups.groupid as groupid,vtiger_groups.groupname as groupname from vtiger_groups inner join vtiger_group2rs on vtiger_groups.groupid=vtiger_group2rs.groupid where vtiger_group2rs.roleandsubid in (".generateQuestionMarks($parent_roles).")";
 				array_push($params, $parent_roles);
 			}
@@ -557,7 +558,7 @@ function getActionid($action)
 	if(file_exists('tabdata.php') && (filesize('tabdata.php') != 0))
 	{
 		include('tabdata.php');
-		$actionid= $action_id_array[$action];
+		$actionid= isset($action_id_array[$action])? $action_id_array[$action] : 0;
 	}
 	else
 	{
@@ -1217,7 +1218,7 @@ function getAccessPickListValues($module)
 	$roleid = $current_user->roleid;
 	$subrole = getRoleSubordinates($roleid);
 
-	if(!empty($subrole) && (count($subrole)> 0))
+	if(!empty($subrole) && (php7_count($subrole)> 0))
 {
 		$roleids = $subrole;
 		array_push($roleids, $roleid);
@@ -1238,9 +1239,9 @@ function getAccessPickListValues($module)
 
 		$keyvalue = $columnname;
 		$fieldvalues = Array();
-		if (!empty($roleids) && (count($roleids) > 1))
+		if (!empty($roleids) && (php7_count($roleids) > 1))
 	{
-			$mulsel="select distinct $fieldname from vtiger_$fieldname inner join vtiger_role2picklist on vtiger_role2picklist.picklistvalueid = vtiger_$fieldname.picklist_valueid where roleid in (\"". implode($roleids,"\",\"") ."\") and picklistid in (select picklistid from vtiger_$fieldname) order by sortid asc";
+			$mulsel="select distinct $fieldname from vtiger_$fieldname inner join vtiger_role2picklist on vtiger_role2picklist.picklistvalueid = vtiger_$fieldname.picklist_valueid where roleid in (\"". implode("\",\"", $roleids) ."\") and picklistid in (select picklistid from vtiger_$fieldname) order by sortid asc";
 	}
 	else
 	{
@@ -1252,10 +1253,10 @@ function getAccessPickListValues($module)
 		{
 			$fieldvalues[] = $adb->query_result($mulselresult,$j,$fieldname);
 }
-		$field_count = count($fieldvalues);
+		$field_count = php7_count($fieldvalues);
 		if($uitype == 15 && $field_count > 0 && ($fieldname == 'taskstatus' || $fieldname == 'eventstatus'))
 		{
-			$temp_count =count($temp_status[$keyvalue]);
+			$temp_count =php7_count($temp_status[$keyvalue]);
 			if($temp_count > 0)
 {
 				for($t=0;$t < $field_count;$t++)
@@ -1326,7 +1327,7 @@ function get_on_clause($field_list,$uitype_arr,$module)
 
 		$ret_str .= " ifnull($tbl_name.$col_name,'null') = ifnull(temp.$col_name,'null')";
 
-		if (count($field_array) != $i) $ret_str .= " and ";
+		if (php7_count($field_array) != $i) $ret_str .= " and ";
 		$i++;
 	}
 	return $ret_str;
@@ -1376,10 +1377,10 @@ function transferProductCurrency($old_cur, $new_cur) {
 	for($i=0;$i<$numRows;$i++) {
 		$prod_ids[] = $adb->query_result($prod_res,$i,'productid');
 	}
-	if(!empty($prod_ids) && (count($prod_ids) > 0)) {
+	if(!empty($prod_ids) && (php7_count($prod_ids) > 0)) {
 		$prod_price_list = getPricesForProducts($new_cur,$prod_ids);
 
-		for($i=0;$i<count($prod_ids);$i++) {
+		for($i=0;$i<php7_count($prod_ids);$i++) {
 			$product_id = $prod_ids[$i];
 			$unit_price = $prod_price_list[$product_id];
 			$query = "update vtiger_products set currency_id=?, unit_price=? where productid=?";
@@ -1400,12 +1401,12 @@ function transferPriceBookCurrency($old_cur, $new_cur) {
 	$pb_ids = array();
 	for($i=0;$i<$numRows;$i++) {
 		$pb_ids[] = $adb->query_result($pb_res,$i,'pricebookid');
-}
+	}
 
-	if(!empty($pb_ids) && (count($pb_ids) > 0)) {
+	if(!empty($pb_ids) && (php7_count($pb_ids) > 0)) {
 		require_once('modules/PriceBooks/PriceBooks.php');
 
-		for($i=0;$i<count($pb_ids);$i++) {
+		for($i=0;$i<php7_count($pb_ids);$i++) {
 			$pb_id = $pb_ids[$i];
 			$focus = new PriceBooks();
 			$focus->id = $pb_id;
@@ -1413,8 +1414,8 @@ function transferPriceBookCurrency($old_cur, $new_cur) {
 			$focus->retrieve_entity_info($pb_id, "PriceBooks");
 			$focus->column_fields['currency_id'] = $new_cur;
 			$focus->save("PriceBooks");
-}
-}
+		}
+	}
 
 	$log->debug("Exiting function updatePriceBookCurrency...");
 }
@@ -1429,9 +1430,9 @@ function transferServicesCurrency($old_cur, $new_cur) {
     for ($i = 0; $i < $numRows; $i++) {
         $ser_ids[] = $adb->query_result($ser_res, $i, 'serviceid');
     }
-    if (!empty($ser_ids) && (count($ser_ids) > 0)) {
+    if (!empty($ser_ids) && (php7_count($ser_ids) > 0)) {
         $ser_price_list = getPricesForProducts($new_cur, $ser_ids, 'Services');
-        for ($i = 0; $i < count($ser_ids); $i++) {
+        for ($i = 0; $i < php7_count($ser_ids); $i++) {
             $service_id = $ser_ids[$i];
             $unit_price = $ser_price_list[$service_id];
 			$query = 'UPDATE vtiger_service SET currency_id=?, unit_price=? WHERE serviceid=?';
@@ -1655,7 +1656,7 @@ $_installOrUpdateVtlibModule = array();
  * @param - $packagename - Name of the module
  * @param - $packagepath - Complete path to the zip file of the Module
   */
-  function installVtlibModule($packagename, $packagepath, $customized=false, $overwrite = true) {
+function installVtlibModule($packagename, $packagepath, $customized=false) {
 	global $log, $Vtiger_Utils_Log, $_installOrUpdateVtlibModule;
 	if(!file_exists($packagepath)) return;
 
@@ -1693,7 +1694,7 @@ $_installOrUpdateVtlibModule = array();
 	}
 	if($module_exists == false) {
 		$log->debug("$module - Installation starts here");
-		$package->import($packagepath, $overwrite);
+		$package->import($packagepath, true);
 		$moduleInstance = Vtiger_Module::getInstance($module);
 		if (empty($moduleInstance)) {
 			$log->fatal("$module module installation failed!");
@@ -1705,7 +1706,7 @@ $_installOrUpdateVtlibModule = array();
  * @param - $module - Name of the module
  * @param - $packagepath - Complete path to the zip file of the Module
  */
-function updateVtlibModule($module, $packagepath, $overwrite = true) {
+function updateVtlibModule($module, $packagepath) {
 	global $log, $_installOrUpdateVtlibModule;
 	if(!file_exists($packagepath)) return;
 
@@ -1717,7 +1718,7 @@ function updateVtlibModule($module, $packagepath, $overwrite = true) {
 	$Vtiger_Utils_Log = defined('INSTALLATION_MODE_DEBUG')? INSTALLATION_MODE_DEBUG : true;
 	$package = new Vtiger_Package();
 
-	if($package->isLanguageType($packagepath) && $overwrite) {
+	if($package->isLanguageType($packagepath)) {
 		require_once('vtlib/Vtiger/Language.php');
 		$languagePack = new Vtiger_Language();
 		$languagePack->update(null, $packagepath, true);
@@ -1730,7 +1731,7 @@ function updateVtlibModule($module, $packagepath, $overwrite = true) {
 		$moduleInstance = Vtiger_Module::getInstance($module);
 		if($moduleInstance || $package->isModuleBundle($packagepath)) {
 			$log->debug("$module - Module instance found - Update starts here");
-			$package->update($moduleInstance, $packagepath, $overwrite);
+			$package->update($moduleInstance, $packagepath);
 		} else {
 			$log->fatal("$module doesn't exists!");
 		}
@@ -1803,7 +1804,12 @@ function getValidDBInsertDateValue($value) {
 			break;
 		}
 	}
-	list($y,$m,$d) = explode('-',$value);
+	global $current_user;
+	$formate=$current_user->date_format;
+	list($d,$m,$y) = explode('-',$value);
+	if(strlen($d) == 4 || $formate == 'mm-dd-yyyy'){
+		list($y,$m,$d)=explode('-',$value);
+	}
 	if(strlen($y) == 1) $y = '0'.$y;
 	if(strlen($m) == 1) $m = '0'.$m;
 	if(strlen($d) == 1) $d = '0'.$d;
@@ -1827,7 +1833,7 @@ function getValidDBInsertDateTimeValue($value) {
 	$value = trim($value);
 	$valueList = explode(' ',$value);
     //checking array count = 3 if datatime format is 12hr.
-	if(is_array($valueList) && (count($valueList) == 2 || count($valueList) == 3)) {
+	if(is_array($valueList) && (php7_count($valueList) == 2 || php7_count($valueList) == 3)) {
 		$dbDateValue = getValidDBInsertDateValue($valueList[0]);
 		$dbTimeValue = $valueList[1];
 		if(!empty($dbTimeValue) && strpos($dbTimeValue, ':') === false) {
@@ -1843,7 +1849,7 @@ function getValidDBInsertDateTimeValue($value) {
 		} catch (Exception $ex) {
 			return '';
 		}
-	} elseif(is_array($valueList) && count($valueList) == 1) {
+	} elseif(is_array($valueList) && php7_count($valueList) == 1) {
 		return getValidDBInsertDateValue($value);
 	}
 }
@@ -1871,7 +1877,7 @@ function sanitizeUploadFileName($fileName, $badFileExtensions) {
 	$fileName = rtrim($fileName, '\\/<>?*:"<>|');
 
 	$fileNameParts = explode(".", $fileName);
-	$countOfFileNameParts = count($fileNameParts);
+	$countOfFileNameParts = php7_count($fileNameParts);
 	$badExtensionFound = false;
 
 	for ($i=0;$i<$countOfFileNameParts;++$i) {
@@ -1929,7 +1935,7 @@ function getBlockName($blockid) {
 
 function validateAlphaNumericInput($string){
     preg_match('/^[\w _\-]+$/', $string, $matches);
-    if(count($matches) == 0) {
+    if(php7_count($matches) == 0) {
         return false;
 	}
     return true;
@@ -1937,7 +1943,7 @@ function validateAlphaNumericInput($string){
 
 function validateServerName($string){
     preg_match('/^[\w\-\.\\/:]+$/', $string, $matches);
-    if(count($matches) == 0) {
+    if(php7_count($matches) == 0) {
         return false;
 		}
     return true;
@@ -1945,7 +1951,7 @@ function validateServerName($string){
 
 function validateEmailId($string){
     preg_match('/^[a-zA-Z0-9]+([\_\-\.]*[a-zA-Z0-9]+[\_\-]?)*@[a-zA-Z0-9]+([\_\-]?[a-zA-Z0-9]+)*\.+([\-\_]?[a-zA-Z0-9])+(\.?[a-zA-Z0-9]+)*$/', $string, $matches);
-    if(count($matches) == 0) {
+    if(php7_count($matches) == 0) {
         return false;
     }
 		return true;
@@ -2010,16 +2016,14 @@ function getEmailRelatedModules() {
 //Get the User selected NumberOfCurrencyDecimals
 function getCurrencyDecimalPlaces($user = null) {
     global $current_user;
+
+	$currency_decimal_places = 2;
     if (!empty($user)) {
         $currency_decimal_places = $user->no_of_currency_decimals;
-    } else {
+    } else if ($current_user) {
         $currency_decimal_places = $current_user->no_of_currency_decimals;
     }
-    if (isset($currency_decimal_places)) {
-        return $currency_decimal_places;
-    } else {
-        return 2;
-    }
+    return (int)$currency_decimal_places;
 }
 
 function getInventoryModules() {
@@ -2290,10 +2294,10 @@ function getExportRecordIds($moduleName, $viewid, $input) {
  * @return <Array>
  */
 function getCombinations($array, $tempString = '') {
-	for ($i=0; $i<count($array); $i++) {
+	for ($i=0; $i<php7_count($array); $i++) {
 		$splicedArray = $array;
 		$element = array_splice($splicedArray, $i, 1);// removes and returns the i'th element
-		if (count($splicedArray) > 0) {
+		if (php7_count($splicedArray) > 0) {
 			 if(!is_array($result)) {
 				 $result = array();
 			 }
@@ -2430,7 +2434,7 @@ function getRecordGroupId($record) {
  */
 function deleteRecordFromDetailViewNavigationRecords($recordId, $cvId, $moduleName) {
 	$recordNavigationInfo = Zend_Json::decode($_SESSION[$moduleName . '_DetailView_Navigation' . $cvId]);
-	if (!empty($recordNavigationInfo) && (count($recordNavigationInfo) != 0)) {
+	if (!empty($recordNavigationInfo) && (php7_count($recordNavigationInfo) != 0)) {
 		foreach ($recordNavigationInfo as $key => $recordIdList) {
 			$recordIdList = array_diff($recordIdList, array($recordId));
 			$recordNavigationInfo[$key] = $recordIdList;
@@ -2526,7 +2530,7 @@ function getDuplicatesPreventionMessage($moduleName, $duplicateRecordsList) {
 	}
 
 	$fieldsString = '';
-	$uniqueFieldsCount = count($uniqueFields);
+	$uniqueFieldsCount = php7_count($uniqueFields);
 	for($i=0; $i<$uniqueFieldsCount; $i++) {
 		$fieldModel = $uniqueFields[$i];
 		$fieldLabel = $fieldModel->get('label');
@@ -2542,7 +2546,7 @@ function getDuplicatesPreventionMessage($moduleName, $duplicateRecordsList) {
 
 	$singleModuleName = vtranslate('SINGLE_'.$moduleName, $moduleName);
 	$translatedModuleName = $singleModuleName;
-	$duplicateRecordsCount = count($duplicateRecordsList);
+	$duplicateRecordsCount = php7_count($duplicateRecordsList);
 	if ($duplicateRecordsCount > 1) {
 		$translatedModuleName = vtranslate($moduleName, $moduleName);
 	}

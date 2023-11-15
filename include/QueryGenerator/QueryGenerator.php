@@ -222,12 +222,12 @@ class QueryGenerator {
 				$this->addCondition($name, $value, 'BETWEEN');
 			}
 		}
-		if($this->conditionInstanceCount <= 0 && is_array($this->advFilterList) && count($this->advFilterList) > 0) {
+		if($this->conditionInstanceCount <= 0 && is_array($this->advFilterList) && php7_count($this->advFilterList) > 0) {
 			$this->startGroup('');
-		} elseif($this->conditionInstanceCount > 0 && is_array($this->advFilterList) && count($this->advFilterList) > 0) {
+		} elseif($this->conditionInstanceCount > 0 && is_array($this->advFilterList) && php7_count($this->advFilterList) > 0) {
 			$this->addConditionGlue(self::$AND);
 		}
-		if(is_array($this->advFilterList) && count($this->advFilterList) > 0) {
+		if(is_array($this->advFilterList) && php7_count($this->advFilterList) > 0) {
 			$this->parseAdvFilterList($this->advFilterList);
 		}
 		if($this->conditionInstanceCount > 0) {
@@ -242,7 +242,7 @@ class QueryGenerator {
 		$dateSpecificConditions = $customView->getStdFilterConditions();
 		foreach ($advFilterList as $groupindex=>$groupcolumns) {
 			$filtercolumns = $groupcolumns['columns'];
-			if(count($filtercolumns) > 0) {
+			if(php7_count($filtercolumns) > 0) {
 				$this->startGroup('');
 				foreach ($filtercolumns as $index=>$filter) {
 					$nameComponents = explode(':',$filter['columnname']);
@@ -316,7 +316,7 @@ class QueryGenerator {
 						$value = array();
 						$value[] = $this->fixDateTimeValue($name, $date, false);
 						// Still fixDateTimeValue returns only date value, we need to append time because it is DT type
-						for($i=0;$i<count($value);$i++){
+						for($i=0;$i<php7_count($value);$i++){
 							$values = explode(' ', $value[$i]);
 							if($values[1] == ''){
 								$values[1] = '00:00:00';
@@ -569,7 +569,7 @@ class QueryGenerator {
 			}
 		}
 		$ownerFields = $this->meta->getOwnerFields();
-		if (count($ownerFields) > 0) {
+		if (php7_count($ownerFields) > 0) {
 			$ownerField = $ownerFields[0];
 		}
 		$baseTable = $this->meta->getEntityBaseTable();
@@ -705,12 +705,12 @@ class QueryGenerator {
 			$operator = strtolower($conditionInfo['operator']);
 			if($operator == 'between' && $this->isDateType($field->getFieldDataType())){
 				$start = explode(' ', $conditionInfo['value'][0]);
-				if(count($start) == 2)
+				if(php7_count($start) == 2)
 					$conditionInfo['value'][0] = getValidDBInsertDateTimeValue($start[0].' '.$start[1]);
 
 				$end = explode(' ', $conditionInfo['values'][1]);
 				// Dates will be equal for Today, Tomorrow, Yesterday.
-				if(count($end) == 2){
+				if(php7_count($end) == 2){
 					if($start[0] == $end[0]){
 						$dateTime = new DateTime($conditionInfo['value'][0]);
 						$nextDay = $dateTime->modify('+1 days');
@@ -748,7 +748,7 @@ class QueryGenerator {
 									$instance = CRMEntity::getInstance($module);
 									$referenceTable = $instance->table_name;
 									// PriceBook don't have any owner fields
-									if(count($this->ownerFields) > 0 ||
+									if(php7_count($this->ownerFields) > 0 ||
 											$this->getModule() == 'Quotes' || $this->getModule() == 'PriceBooks') {
 										$referenceTable .= $fieldName;
 									}
@@ -761,7 +761,7 @@ class QueryGenerator {
 								}
 								$columnList[] = "$referenceTable.$column";
 							}
-							if(count($columnList) > 1) {
+							if(php7_count($columnList) > 1) {
 								$columnSql = getSqlForNameInDisplayFormat(array('last_name'=>$columnList[1],'first_name'=>$columnList[0],),'Users');
 							} else {
 								$columnSql = implode('', $columnList);
@@ -798,7 +798,7 @@ class QueryGenerator {
 						$values = explode(',', $value);
 						$startDateValue = explode(' ', $values[0]);
 						$endDateValue = explode(' ', $values[1]);
-						if(count($startDateValue) == 2 && count($endDateValue) == 2) {
+						if(php7_count($startDateValue) == 2 && php7_count($endDateValue) == 2) {
 							$fieldSql .= " CAST(CONCAT($dateFieldColumnName,' ',$timeFieldColumnName) AS DATETIME) $valueSql";
 						} else {
 							$fieldSql .= "$dateFieldColumnName $valueSql";
@@ -808,7 +808,7 @@ class QueryGenerator {
 							$value = $value[0];
 						}
 						$values = explode(' ', $value);
-						if(count($values) == 2) {
+						if(php7_count($values) == 2) {
 								$fieldSql .= "$fieldGlue CAST(CONCAT($dateFieldColumnName,' ',$timeFieldColumnName) AS DATETIME) $valueSql ";
 						} else {
 								$fieldSql .= "$fieldGlue $dateFieldColumnName $valueSql";
@@ -986,7 +986,7 @@ class QueryGenerator {
 				if($this->isDateType($field->getFieldDataType())) {
 					$start = explode(' ', $valueArray[0]);
 					$end = explode(' ',$valueArray[1]);
-					if(($operator == 'between' || $operator == 'bw') && count($start) == 2 && count($end) == 2){
+					if(($operator == 'between' || $operator == 'bw') && php7_count($start) == 2 && php7_count($end) == 2){
 							$valueArray[0] = getValidDBInsertDateTimeValue($start[0].' '.$start[1]);
 
 							if($start[0] == $end[0]){
@@ -1067,7 +1067,7 @@ class QueryGenerator {
 			} elseif($this->isDateType($field->getFieldDataType())) {
 				// For "after" and "before" conditions
 				$values = explode(' ',$value);
-				if(($operator == 'a' || $operator == 'b') && count($values) == 2){
+				if(($operator == 'a' || $operator == 'b') && php7_count($values) == 2){
 					if($operator == 'a'){
 						// for after comparator we should check the date after the given
 						$dateTime = new DateTime($value);
@@ -1277,7 +1277,7 @@ class QueryGenerator {
 	}
 
 	public function hasConditionals() {
-		if(count($this->conditionals) > 0) {
+		if(php7_count($this->conditionals) > 0) {
 			return true;
 		}
 		return false;
@@ -1331,13 +1331,13 @@ class QueryGenerator {
 			$advft_criteria_groups = $_REQUEST['advft_criteria_groups'];
 			if(!empty($advft_criteria_groups))	$advft_criteria_groups = $json->decode($advft_criteria_groups);
 
-			if(empty($advft_criteria) || count($advft_criteria) <= 0) {
+			if(empty($advft_criteria) || php7_count($advft_criteria) <= 0) {
 				return ;
 			}
 
 			$advfilterlist = getAdvancedSearchCriteriaList($advft_criteria, $advft_criteria_groups, $this->getModule());
 
-			if(empty($advfilterlist) || count($advfilterlist) <= 0) {
+			if(empty($advfilterlist) || php7_count($advfilterlist) <= 0) {
 				return ;
 			}
 
@@ -1348,7 +1348,7 @@ class QueryGenerator {
 			}
 			foreach ($advfilterlist as $groupindex=>$groupcolumns) {
 				$filtercolumns = $groupcolumns['columns'];
-				if(count($filtercolumns) > 0) {
+				if(php7_count($filtercolumns) > 0) {
 					$this->startGroup('');
 					foreach ($filtercolumns as $index=>$filter) {
 						$name = explode(':',$filter['columnname']);
@@ -1379,8 +1379,8 @@ class QueryGenerator {
 			$allConditionsList = $this->getDashBoardConditionList();
 			$conditionList = $allConditionsList['conditions'];
 			$relatedConditionList = $allConditionsList['relatedConditions'];
-			$noOfConditions = count($conditionList);
-			$noOfRelatedConditions = count($relatedConditionList);
+			$noOfConditions = php7_count($conditionList);
+			$noOfRelatedConditions = php7_count($relatedConditionList);
 			foreach ($conditionList as $index=>$conditionInfo) {
 				$this->addCondition($conditionInfo['fieldname'], $conditionInfo['value'],
 						$conditionInfo['operator']);
@@ -1414,7 +1414,7 @@ class QueryGenerator {
 			if(isset($input['search_text']) && $input['search_text']!="") {
 				// search other characters like "|, ?, ?" by jagi
 				$value = $input['search_text'];
-				$stringConvert = function_exists(iconv) ? @iconv("UTF-8",$default_charset,$value)
+				$stringConvert = function_exists("iconv") ? @iconv("UTF-8",$default_charset,$value)
 						: $value;
 				if(!$this->isStringType($type)) {
 					$value=trim($stringConvert);

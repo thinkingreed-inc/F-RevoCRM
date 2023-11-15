@@ -72,7 +72,7 @@ class Documents extends CRMEntity {
 	var $default_sort_order = 'ASC';
         
         function __construct() {
-            $this->log = LoggerManager::getLogger('notes');
+            $this->log = Logger::getLogger('notes');
             $this->log->debug("Entering Documents() method ...");
             $this->db = PearDatabase::getInstance();
             $this->column_fields = getColumnFields('Documents');

@@ -42,10 +42,10 @@ class PurchaseOrderHandler extends VTEventHandler {
             $wsrecord = vtws_retrieve($wsid,$current_user);
             if ($oldCurrency != $newCurrency && $oldCurrency != '') {
                 if($oldConversionRate != ''){
-                    $wsrecord['paid'] = floatval(($wsrecord['paid']/$oldConversionRate) * $wsrecord['conversion_rate']);
+                    $wsrecord['paid'] = floatval(($wsrecord['paid']/$oldConversionRate)) * floatval($wsrecord['conversion_rate']);
                 } 
             }
-            $wsrecord['balance'] = floatval($wsrecord['hdnGrandTotal'] - $wsrecord['paid']);
+            $wsrecord['balance'] = floatval($wsrecord['hdnGrandTotal']) - floatval($wsrecord['paid']);
             if ($wsrecord['balance'] == 0)
                 $wsrecord['postatus'] = 'Received Shipment';
             $query = "UPDATE vtiger_purchaseorder SET balance=?,paid=? WHERE purchaseorderid=?";

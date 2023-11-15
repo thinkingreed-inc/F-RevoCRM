@@ -22,7 +22,7 @@ if (defined('VTIGER_UPGRADE')) {
     foreach ($modulearray as $key => $modulename) {
         $moduleInstance = Vtiger_Module::getInstance($modulename);
         $blockInstance = Vtiger_Block::getInstance('LBL_ITEM_DETAILS', $moduleInstance);
-        for ($j=0;$j<count($itemFieldsName);$j++) {
+        for ($j=0;$j<php7_count($itemFieldsName);$j++) {
             //追加
             $field = new Vtiger_Field();
             $field->name = $itemFieldsName[$j];

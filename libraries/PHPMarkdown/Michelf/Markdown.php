@@ -774,7 +774,7 @@ class Markdown implements MarkdownInterface {
 		if ($matches[2] == '-' && preg_match('{^-(?: |$)}', $matches[1]))
 			return $matches[0];
 		
-		$level = $matches[2]{0} == '=' ? 1 : 2;
+		$level = $matches[2][0] == '=' ? 1 : 2;
 		$block = "<h$level>".$this->runSpanGamut($matches[1])."</h$level>";
 		return "\n" . $this->hashBlock($block) . "\n\n";
 	}
@@ -1069,7 +1069,7 @@ class Markdown implements MarkdownInterface {
 				} else {
 					# Other closing marker: close one em or strong and
 					# change current token state to match the other
-					$token_stack[0] = str_repeat($token{0}, 3-$token_len);
+					$token_stack[0] = str_repeat($token[0], 3-$token_len);
 					$tag = $token_len == 2 ? "strong" : "em";
 					$span = $text_stack[0];
 					$span = $this->runSpanGamut($span);
@@ -1094,7 +1094,7 @@ class Markdown implements MarkdownInterface {
 				} else {
 					# Reached opening three-char emphasis marker. Push on token 
 					# stack; will be handled by the special condition above.
-					$em = $token{0};
+					$em = $token[0];
 					$strong = "$em$em";
 					array_unshift($token_stack, $token);
 					array_unshift($text_stack, '');
@@ -1435,9 +1435,9 @@ class Markdown implements MarkdownInterface {
 	# Handle $token provided by parseSpan by determining its nature and 
 	# returning the corresponding value that should replace it.
 	#
-		switch ($token{0}) {
+		switch ($token[0]) {
 			case "\\":
-				return $this->hashPart("&#". ord($token{1}). ";");
+				return $this->hashPart("&#". ord($token[1]). ";");
 			case "`":
 				# Search for end marker in remaining text.
 				if (preg_match('/^(.*?[^`])'.preg_quote($token).'(?!`)(.*)$/sm', 
@@ -1671,9 +1671,9 @@ abstract class _MarkdownExtra_TmpImpl extends \Michelf\Markdown {
 		$classes = array();
 		$id = false;
 		foreach ($elements as $element) {
-			if ($element{0} == '.') {
+			if ($element[0] == '.') {
 				$classes[] = substr($element, 1);
-			} else if ($element{0} == '#') {
+			} else if ($element[0] == '#') {
 				if ($id === false) $id = substr($element, 1);
 			}
 		}
@@ -1936,7 +1936,7 @@ abstract class _MarkdownExtra_TmpImpl extends \Michelf\Markdown {
 			#
 			# Check for: Indented code block.
 			#
-			else if ($tag{0} == "\n" || $tag{0} == " ") {
+			else if ($tag[0] == "\n" || $tag[0] == " ") {
 				# Indented code block: pass it unchanged, will be handled 
 				# later.
 				$parsed .= $tag;
@@ -1945,7 +1945,7 @@ abstract class _MarkdownExtra_TmpImpl extends \Michelf\Markdown {
 			# Check for: Code span marker
 			# Note: need to check this after backtick fenced code blocks
 			#
-			else if ($tag{0} == "`") {
+			else if ($tag[0] == "`") {
 				# Find corresponding end marker.
 				$tag_re = preg_quote($tag);
 				if (preg_match('{^(?>.+?|\n(?!\n))*?(?<!`)'.$tag_re.'(?!`)}',
@@ -1983,7 +1983,7 @@ abstract class _MarkdownExtra_TmpImpl extends \Michelf\Markdown {
 			#            HTML Comments, processing instructions.
 			#
 			else if (preg_match('{^<(?:'.$this->clean_tags_re.')\b}', $tag) ||
-				$tag{1} == '!' || $tag{1} == '?')
+				$tag[1] == '!' || $tag[1] == '?')
 			{
 				# Need to parse tag and following text using the HTML parser.
 				# (don't check for markdown attribute)
@@ -2002,8 +2002,8 @@ abstract class _MarkdownExtra_TmpImpl extends \Michelf\Markdown {
 				#
 				# Increase/decrease nested tag count.
 				#
-				if ($tag{1} == '/')						$depth--;
-				else if ($tag{strlen($tag)-2} != '/')	$depth++;
+				if ($tag[1] == '/')						$depth--;
+				else if ($tag[strlen($tag)-2] != '/')	$depth++;
 
 				if ($depth < 0) {
 					#
@@ -2107,7 +2107,7 @@ abstract class _MarkdownExtra_TmpImpl extends \Michelf\Markdown {
 				# first character as filtered to prevent an infinite loop in the 
 				# parent function.
 				#
-				return array($original_text{0}, substr($original_text, 1));
+				return array($original_text[0], substr($original_text, 1));
 			}
 			
 			$block_text .= $parts[0]; # Text before current tag.
@@ -2119,7 +2119,7 @@ abstract class _MarkdownExtra_TmpImpl extends \Michelf\Markdown {
 			#			 Comments and Processing Instructions.
 			#
 			if (preg_match('{^</?(?:'.$this->auto_close_tags_re.')\b}', $tag) ||
-				$tag{1} == '!' || $tag{1} == '?')
+				$tag[1] == '!' || $tag[1] == '?')
 			{
 				# Just add the tag to the block as if it was text.
 				$block_text .= $tag;
@@ -2130,8 +2130,8 @@ abstract class _MarkdownExtra_TmpImpl extends \Michelf\Markdown {
 				# the tag's name match base tag's.
 				#
 				if (preg_match('{^</?'.$base_tag_name_re.'\b}', $tag)) {
-					if ($tag{1} == '/')						$depth--;
-					else if ($tag{strlen($tag)-2} != '/')	$depth++;
+					if ($tag[1] == '/')						$depth--;
+					else if ($tag[strlen($tag)-2] != '/')	$depth++;
 				}
 				
 				#
@@ -2494,7 +2494,7 @@ abstract class _MarkdownExtra_TmpImpl extends \Michelf\Markdown {
 	protected function _doHeaders_callback_setext($matches) {
 		if ($matches[3] == '-' && preg_match('{^- }', $matches[1]))
 			return $matches[0];
-		$level = $matches[3]{0} == '=' ? 1 : 2;
+		$level = $matches[3][0] == '=' ? 1 : 2;
 		$attr  = $this->doExtraAttributes("h$level", $dummy =& $matches[2]);
 		$block = "<h$level$attr>".$this->runSpanGamut($matches[1])."</h$level>";
 		return "\n" . $this->hashBlock($block) . "\n\n";
@@ -2824,7 +2824,7 @@ abstract class _MarkdownExtra_TmpImpl extends \Michelf\Markdown {
 			array($this, '_doFencedCodeBlocks_newlines'), $codeblock);
 
 		if ($classname != "") {
-			if ($classname{0} == '.')
+			if ($classname[0] == '.')
 				$classname = substr($classname, 1);
 			$attr_str = ' class="'.$this->code_class_prefix.$classname.'"';
 		} else {

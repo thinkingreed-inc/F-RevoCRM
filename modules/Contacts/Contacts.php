@@ -145,7 +145,7 @@ class Contacts extends CRMEntity {
         'Vendors' => array('table_name' => 'vtiger_vendorcontactrel', 'table_index' => 'vendorid', 'rel_index' => 'contactid'),
 	);
         function __construct() {
-            $this->log = LoggerManager::getLogger('contact');
+            $this->log = Logger::getLogger('contact');
             $this->db = PearDatabase::getInstance();
             $this->column_fields = getColumnFields('Contacts');
         }       
@@ -257,7 +257,7 @@ class Contacts extends CRMEntity {
               $profileList = getCurrentUserProfileList();
               $sql1 = "select columnname from vtiger_field inner join vtiger_profile2field on vtiger_profile2field.fieldid=vtiger_field.fieldid inner join vtiger_def_org_field on vtiger_def_org_field.fieldid=vtiger_field.fieldid where vtiger_field.tabid=4 and vtiger_field.block <> 6 and vtiger_field.block <> 75 and vtiger_field.displaytype in (1,2,4,3) and vtiger_profile2field.visible=0 and vtiger_def_org_field.visible=0 and vtiger_field.presence in (0,2)";
 			  $params1 = array();
-			  if (count($profileList) > 0) {
+			  if (php7_count($profileList) > 0) {
 			  	 $sql1 .= " and vtiger_profile2field.profileid in (". generateQuestionMarks($profileList) .")";
 			  	 array_push($params1, $profileList);
 			  }
@@ -1051,7 +1051,7 @@ function getColumnNames()
 	 $profileList = getCurrentUserProfileList();
 	 $sql1 = "select vtiger_field.fieldid,fieldlabel from vtiger_field inner join vtiger_profile2field on vtiger_profile2field.fieldid=vtiger_field.fieldid inner join vtiger_def_org_field on vtiger_def_org_field.fieldid=vtiger_field.fieldid where vtiger_field.tabid=4 and vtiger_field.block <> 75 and vtiger_field.displaytype in (1,2,4,3) and vtiger_profile2field.visible=0 and vtiger_def_org_field.visible=0 and vtiger_field.presence in (0,2)";
 	 $params1 = array();
-	 if (count($profileList) > 0) {
+	 if (php7_count($profileList) > 0) {
 	 	$sql1 .= " and vtiger_profile2field.profileid in (". generateQuestionMarks($profileList) .") group by fieldid";
   	 	array_push($params1, $profileList);
 	 }
@@ -1139,7 +1139,7 @@ function get_contactsforol($user_name)
     $profileList = getCurrentUserProfileList();
     $sql1 = "select tablename,columnname from vtiger_field inner join vtiger_profile2field on vtiger_profile2field.fieldid=vtiger_field.fieldid inner join vtiger_def_org_field on vtiger_def_org_field.fieldid=vtiger_field.fieldid where vtiger_field.tabid=4 and vtiger_field.displaytype in (1,2,4,3) and vtiger_profile2field.visible=0 and vtiger_def_org_field.visible=0 and vtiger_field.presence in (0,2)";
 	$params1 = array();
-	if (count($profileList) > 0) {
+	if (php7_count($profileList) > 0) {
 		$sql1 .= " and vtiger_profile2field.profileid in (". generateQuestionMarks($profileList) .")";
 		array_push($params1, $profileList);
 	}
@@ -1157,7 +1157,7 @@ function get_contactsforol($user_name)
   }
 	$permitted_lists = array_chunk($permitted_lists,2);
 	$column_table_lists = array();
-	for($i=0;$i < count($permitted_lists);$i++)
+	for($i=0;$i < php7_count($permitted_lists);$i++)
 	{
 	   $column_table_lists[] = implode(".",$permitted_lists[$i]);
   }

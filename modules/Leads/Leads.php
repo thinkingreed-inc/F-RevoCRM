@@ -86,7 +86,7 @@ class Leads extends CRMEntity {
 	//var $groupTable = Array('vtiger_leadgrouprelation','leadid');
 
         function __construct() {
-            $this->log = LoggerManager::getLogger('lead');
+            $this->log = Logger::getLogger('lead');
             $this->log->debug("Entering Leads() method ...");
             $this->db = PearDatabase::getInstance();
             $this->column_fields = getColumnFields('Leads');
@@ -496,7 +496,7 @@ class Leads extends CRMEntity {
 			$profileList = getCurrentUserProfileList();
 			$sql1 = "select vtiger_field.fieldid,fieldlabel from vtiger_field inner join vtiger_profile2field on vtiger_profile2field.fieldid=vtiger_field.fieldid inner join vtiger_def_org_field on vtiger_def_org_field.fieldid=vtiger_field.fieldid where vtiger_field.tabid=7 and vtiger_field.displaytype in (1,2,3,4) and vtiger_profile2field.visible=0 and vtiger_def_org_field.visible=0 and vtiger_field.presence in (0,2)";
 			$params1 = array();
-			if (count($profileList) > 0) {
+			if (php7_count($profileList) > 0) {
 				$sql1 .= " and vtiger_profile2field.profileid in (". generateQuestionMarks($profileList) .")  group by fieldid";
 				array_push($params1, $profileList);
 			}
@@ -726,7 +726,7 @@ class Leads extends CRMEntity {
 		foreach($tableColumns as $tableColumn){
 			$tableInfo = explode('.', $tableColumn);
 			$duplicateCheckClause .= " ifnull($tableColumn,'null') = ifnull(temp.$tableInfo[1],'null')";
-			if (count($tableColumns) != $i++) $duplicateCheckClause .= " AND ";
+			if (php7_count($tableColumns) != $i++) $duplicateCheckClause .= " AND ";
 		}
 
 		$query = $selectClause . $fromClause .

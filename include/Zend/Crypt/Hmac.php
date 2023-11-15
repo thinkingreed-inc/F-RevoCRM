@@ -154,9 +154,11 @@ class Zend_Crypt_Hmac extends Zend_Crypt
 
         if (function_exists('mhash')) {
             if ($output == self::BINARY) {
-                return mhash(self::_getMhashDefinition(self::$_hashAlgorithm), $data, self::$_key);
+//                return mhash(self::_getMhashDefinition(self::$_hashAlgorithm), $data, self::$_key);
+                return hash_hmac(self::$_hashAlgorithm, $data, self::$_key);
             }
-            $bin = mhash(self::_getMhashDefinition(self::$_hashAlgorithm), $data, self::$_key);
+//            $bin = mhash(self::_getMhashDefinition(self::$_hashAlgorithm), $data, self::$_key);
+            $bin = hash_hmac(self::$_hashAlgorithm, $data, self::$_key);
             return bin2hex($bin);
         }
     }

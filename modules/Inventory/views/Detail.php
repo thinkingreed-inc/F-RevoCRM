@@ -87,7 +87,7 @@ class Inventory_Detail_View extends Vtiger_Detail_View {
 		$taxtype = $finalDetails['taxtype'];
 		if ($taxtype == 'group') {
 			$taxDetails = $finalDetails['taxes'];
-			$taxCount = count($taxDetails);
+			$taxCount = php7_count($taxDetails);
 			foreach ($taxDetails as $key => $taxInfo) {
 				$taxDetails[$key]['amount'] = Vtiger_Currency_UIType::transformDisplayValue($taxInfo['amount'], null, true);
 			}
@@ -113,14 +113,14 @@ class Inventory_Detail_View extends Vtiger_Detail_View {
 		//##Final details convertion ended
 
 		//##Product details convertion started
-		$productsCount = count($relatedProducts);
+		$productsCount = php7_count($relatedProducts);
 		for ($i=1; $i<=$productsCount; $i++) {
 			$product = $relatedProducts[$i];
 
 			//Product tax details convertion started
 			if ($taxtype == 'individual') {
 				$taxDetails = $product['taxes'];
-				$taxCount = count($taxDetails);
+				$taxCount = php7_count($taxDetails);
 				for($j=0; $j<$taxCount; $j++) {
 					$taxDetails[$j]['amount'] = Vtiger_Currency_UIType::transformDisplayValue($taxDetails[$j]['amount'], null, true);
 				}

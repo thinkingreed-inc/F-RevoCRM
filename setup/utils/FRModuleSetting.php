@@ -6,7 +6,7 @@ class FRModuleSetting {
     public static function hide(array $moduleNames) {
         global $adb;
 
-        if(count($moduleNames) == 0) {
+        if(php7_count($moduleNames) == 0) {
             throw new Exception();
         }
 
@@ -23,7 +23,7 @@ class FRModuleSetting {
     public static function show(array $moduleNames, $category = 'Sales') {
         global $adb;
 
-        if(count($moduleNames) == 0) {
+        if(php7_count($moduleNames) == 0) {
             throw new Exception();
         }
 
@@ -40,7 +40,7 @@ class FRModuleSetting {
     public static function enable(array $moduleNames) {
         global $adb;
 
-        if(count($moduleNames) == 0) {
+        if(php7_count($moduleNames) == 0) {
             throw new Exception();
         }
 
@@ -57,7 +57,7 @@ class FRModuleSetting {
     public static function disable(array $moduleNames) {
         global $adb;
 
-        if(count($moduleNames) == 0) {
+        if(php7_count($moduleNames) == 0) {
             throw new Exception();
         }
 

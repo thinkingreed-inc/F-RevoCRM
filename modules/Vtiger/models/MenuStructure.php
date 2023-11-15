@@ -95,7 +95,7 @@ class Vtiger_MenuStructure_Model extends Vtiger_Base_Model {
 			$menuGroupedListByParent[strtoupper($parent)][$menuModel->get('name')] = $menuModel;
 		}
 
-		if(!empty($selectedMenu) && !array_key_exists($selectedMenu, $menuListArray[self::TOP_MENU_INDEX])) {
+		if(!empty($selectedMenu) && isset($menuModelList[$selectedMenu]) && !array_key_exists($selectedMenu, $menuListArray[self::TOP_MENU_INDEX])) {
 			$selectedMenuModel = $menuModelList[$selectedMenu];
 			if($selectedMenuModel) {
 				$menuListArray[self::TOP_MENU_INDEX][$selectedMenuModel->get('name')] = $selectedMenuModel;

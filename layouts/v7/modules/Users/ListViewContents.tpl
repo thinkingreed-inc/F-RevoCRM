@@ -65,7 +65,7 @@
                                                     <th class="user-inline-search-btn">
                                                         <div class="table-actions">
                                                                 {assign var=HIDE_CLEAR_SEARCH value=false}
-                                                                {if count($SEARCH_DETAILS) eq 0 || (is_array($SEARCH_DETAILS[0]) && count($SEARCH_DETAILS[0]) eq 0 && count($SEARCH_DETAILS) eq 1)}
+                                                                {if php7_count($SEARCH_DETAILS) eq 0 || (is_array($SEARCH_DETAILS[0]) && php7_count($SEARCH_DETAILS[0]) eq 0 && php7_count($SEARCH_DETAILS) eq 1)}
                                                                         {assign var=HIDE_CLEAR_SEARCH value=true}
                                                                 {/if}
                                                                 <button class="btn btn-sm btn-success {if !$HIDE_CLEAR_SEARCH}hide{/if}" data-trigger="listSearch">
@@ -140,7 +140,7 @@
 					{/foreach}
 					{if $LISTVIEW_ENTRIES_COUNT eq '0'}
 						<tr class="emptyRecordsDiv">
-							{assign var=COLSPAN_WIDTH value={count($LISTVIEW_HEADERS)}}
+							{assign var=COLSPAN_WIDTH value={php7_count($LISTVIEW_HEADERS)}}
 							<td colspan="{$COLSPAN_WIDTH}">
 								<div class="emptyRecordsContent">
 									<center>

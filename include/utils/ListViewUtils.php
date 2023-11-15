@@ -777,7 +777,7 @@ function listQueryNonAdminChange($query, $module, $scope = '') {
 
 function html_strlen($str) {
 	$chars = preg_split('/(&[^;\s]+;)|/', $str, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
-	return count($chars);
+	return php7_count($chars);
 }
 
 function html_substr($str, $start, $length = NULL) {
@@ -793,7 +793,7 @@ function html_substr($str, $start, $length = NULL) {
 
 	// create our array of characters and html entities
 	$chars = preg_split('/(&[^;\s]+;)|/', $str, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_OFFSET_CAPTURE);
-	$html_length = count($chars);
+	$html_length = php7_count($chars);
 	// check if we can predict the return value and save some processing time
 	if (($html_length === 0) or ($start >= $html_length) or (isset($length) and ($length <= -$html_length)))
 		return "";

@@ -39,7 +39,7 @@ class Users_Login_View extends Vtiger_View_Controller {
 			$rssPath = "https://f-revocrm.jp/?feed=rss2";
 			$xml = new SimpleXMLElement($rssPath, LIBXML_NOCDATA, true);
 			$jsonData = json_decode(json_encode($xml));
-			$dataCount = count($jsonData->channel->item);
+			$dataCount = php7_count($jsonData->channel->item);
 		}catch(Throwable $e){
 			$dataCount = 0;
 			global $log;
@@ -61,7 +61,7 @@ class Users_Login_View extends Vtiger_View_Controller {
 				$blockData['displayTitle'] = textlength_check($item->title);
 
 				vglobal('listview_max_textlength', 200);
-				$blockData['displaySummary'] = textlength_check(strip_tags($item->description));
+				$blockData['displaySummary'] = textlength_check(strip_tags(print_r($item->description, true)));
 				$finalJsonData[$blockData['type']][] = $blockData;
 			}
 		}

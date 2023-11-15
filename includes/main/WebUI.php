@@ -151,7 +151,7 @@ class Vtiger_WebUI extends Vtiger_EntryPoint {
 
 			if(empty($module)) {
 				if ($this->hasLogin()) {
-					$defaultModule = $currentUser->defaultlandingpage;
+					$defaultModule = isset($currentUser->defaultlandingpage) ? $currentUser->defaultlandingpage : null;
 					$moduleModel = Vtiger_Module_Model::getInstance($defaultModule);
 					if(!empty($defaultModule) && $defaultModule != 'Home' && $moduleModel && $moduleModel->isActive()) {
 						$module = $defaultModule; $qualifiedModuleName = $defaultModule; $view = 'List';
@@ -229,11 +229,10 @@ class Vtiger_WebUI extends Vtiger_EntryPoint {
 				throw new AppException(vtranslate('LBL_HANDLER_NOT_FOUND'));
 			}
 		} catch(Exception $e) {
+			// log for development
+			global $log;
+			$log->error($e->getMessage().":".$e->getTraceAsString());
 			if ($view) {
-				// log for development
-				global $log;
-				$log->debug($e->getMessage().":".$e->getTraceAsString());
-
 				$viewer = new Vtiger_Viewer();
 				$viewer->assign('MESSAGE', $e->getMessage());
 				$viewer->view('OperationNotPermitted.tpl', 'Vtiger');

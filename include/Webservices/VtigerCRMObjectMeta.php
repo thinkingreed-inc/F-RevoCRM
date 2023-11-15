@@ -409,7 +409,7 @@ class VtigerCRMObjectMeta extends EntityMeta {
 		}else{
 			$profileList = getCurrentUserProfileList();
 
-			if (count($profileList) > 0) {
+			if (php7_count($profileList) > 0) {
 				$sql = "SELECT vtiger_field.*, vtiger_profile2field.readonly
 						FROM vtiger_field
 						INNER JOIN vtiger_profile2field

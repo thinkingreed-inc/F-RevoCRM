@@ -42,7 +42,7 @@
                                 {foreach key=FIELD_NAME item=FIELD_MODEL from=$RECORD_STRUCTURE name=blockfields}
                                     {assign var="isReferenceField" value=$FIELD_MODEL->getFieldDataType()}
                                     {assign var="referenceList" value=$FIELD_MODEL->getReferenceList()}
-                                    {assign var="referenceListCount" value=count($referenceList)}
+                                    {assign var="referenceListCount" value=php7_count($referenceList)}
                                     {if $FIELD_MODEL->get('uitype') eq "19"}
                                         {if $COUNTER eq '1'}
                                             <td></td><td></td></tr><tr>
@@ -77,7 +77,7 @@
                                             {else if $FIELD_MODEL->get('uitype') eq '83'}
 												{include file=vtemplate_path($FIELD_MODEL->getUITypeModel()->getTemplateName(),$MODULE) COUNTER=$COUNTER MODULE=$MODULE PULL_RIGHT=true}
 												{if $TAXCLASS_DETAILS}
-                                                    {assign 'taxCount' count($TAXCLASS_DETAILS)%2}
+                                                    {assign 'taxCount' php7_count($TAXCLASS_DETAILS)%2}
 													{if $taxCount eq 0}
                                                         {if $COUNTER eq 2}
                                                             {assign var=COUNTER value=1}

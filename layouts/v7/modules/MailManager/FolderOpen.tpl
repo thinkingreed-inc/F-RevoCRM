@@ -109,7 +109,7 @@
                         <div class="col-lg-4 padding0px">
                             {assign var=ATTACHMENT value=$MAIL->attachments()}
                             {assign var=INLINE_ATTCH value=$MAIL->inlineAttachments()}
-                            {assign var=ATTCHMENT_COUNT value=(count($ATTACHMENT) - count($INLINE_ATTCH))}
+                            {assign var=ATTCHMENT_COUNT value=(php7_count($ATTACHMENT) - php7_count($INLINE_ATTCH))}
                             <span class="pull-right">
                                 {if $ATTCHMENT_COUNT}
                                     <i class="fa fa-paperclip font14px"></i>&nbsp;

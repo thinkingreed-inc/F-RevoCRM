@@ -95,7 +95,7 @@ class Settings_SharingAccess_Rule_Model extends Vtiger_Base_Model {
 
 	public function getRuleType() {
 		$idComponents = $this->getIdComponents();
-		if($idComponents && count($idComponents) > 0) {
+		if($idComponents && php7_count($idComponents) > 0) {
 			return $idComponents[0];
 		}
 		return false;

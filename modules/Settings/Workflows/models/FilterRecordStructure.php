@@ -81,7 +81,7 @@ class Settings_Workflows_FilterRecordStructure_Model extends Settings_Workflows_
 				foreach($blockModelList as $blockLabel=>$blockModel) {
 					$fieldModelList = $blockModel->getFields();
 					if (!empty ($fieldModelList)) {
-						if(count($referenceModules) > 1) {
+						if(php7_count($referenceModules) > 1) {
 							// block label format : reference field label (modulename) - block label. Eg: Related To (Organization) Address Details
 							$newblockLabel = vtranslate($field->get('label'), $baseModuleModel->getName()).' ('.vtranslate($refModule, $refModule).') - '.
 												vtranslate($blockLabel, $refModule);

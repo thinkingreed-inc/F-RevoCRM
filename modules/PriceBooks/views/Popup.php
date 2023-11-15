@@ -99,7 +99,7 @@ class PriceBooks_Popup_View extends Vtiger_Popup_View {
 			$recordModel->set('listprice', $recordModel->getProductsListPrice($sourceRecord));
 		}
 		
-		$noOfEntries = count($this->listViewEntries);
+		$noOfEntries = php7_count($this->listViewEntries);
 		if(empty($searchParams)) {
 			$searchParams = array();
 		}

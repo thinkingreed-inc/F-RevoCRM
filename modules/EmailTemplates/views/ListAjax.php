@@ -16,7 +16,7 @@ class EmailTemplates_ListAjax_View extends EmailTemplates_List_View {
 		$this->exposeMethod('previewTemplate');
 	}
 
-	function preProcess(Vtiger_Request $request) {
+	function preProcess(Vtiger_Request $request, $display = true) {
 		return true;
 	}
 

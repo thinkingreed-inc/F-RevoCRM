@@ -311,7 +311,7 @@ function getRoleBasesdPickList($fldname,$exist_val)
 				$roleid=$current_user->roleid;
 				$roleids = Array();
 				$subrole = getRoleSubordinates($roleid);
-				if(count($subrole)> 0)
+				if(php7_count($subrole)> 0)
 				$roleids = $subrole;
 				array_push($roleids, $roleid);
 

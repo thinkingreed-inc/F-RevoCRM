@@ -21,7 +21,7 @@ class Vtiger_Tag_Model extends Vtiger_Base_Model {
 
 	static $TAG_FETCH_LIMIT = 100;
 
-	function __construct() {
+	function __construct($values = array()) {
 		$this->_freetag = new freetag();
 	}
 
@@ -307,7 +307,7 @@ class Vtiger_Tag_Model extends Vtiger_Base_Model {
      */
     public static function getAllAccessibleTags($records) {
         $tagsList = array();
-        if(count($records) == 0) return $tagsList;
+        if(php7_count($records) == 0) return $tagsList;
         
         $currentUser = Users_Record_Model::getCurrentUserModel();
         

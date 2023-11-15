@@ -78,7 +78,7 @@ class dir {
             $failed[] = $dir;
         }
 
-        return count($failed) ? $failed : true;
+        return php7_count($failed) ? $failed : true;
     }
 
   /** Get the content of the given directory. Returns an array with filenames

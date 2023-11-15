@@ -22,7 +22,7 @@ class Emails_List_View extends Vtiger_List_View {
 		return parent::checkPermission($request);
 	}
 	
-	public function preProcess(Vtiger_Request $request) {
+	public function preProcess(Vtiger_Request $request, $display = true) {
 	}
 
 	public function process(Vtiger_Request $request) {

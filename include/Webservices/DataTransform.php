@@ -14,7 +14,7 @@
 		public static $recordModuleString = 'record_module';
 		public static $recordSource = 'WEBSERVICE';
 
-		function sanitizeDataWithColumn($row,$meta){
+		static function sanitizeDataWithColumn($row,$meta){
 
 			$newRow = array();
 			if(isset($row['count(*)'])){
@@ -30,7 +30,7 @@
 			return $newRow;
 		}
 
-		function sanitizeDataWithCountColumn($row,$meta){
+		static function sanitizeDataWithCountColumn($row,$meta){
 			$newRow = array();
 			foreach($row as $col=>$val){
 				$newRow['count'] = $val;
@@ -38,7 +38,7 @@
 			return $newRow;
 		}
 
-		function filterAndSanitize($row,$meta){
+		static function filterAndSanitize($row,$meta){
 			$recordLabel = $row['label'];
 			$row = DataTransform::filterAllColumns($row,$meta);
 			$row = DataTransform::sanitizeData($row,$meta);
@@ -48,7 +48,7 @@
 			return $row;
 		}
 
-		function sanitizeData($newRow,$meta,$t=null){
+		static function sanitizeData($newRow,$meta,$t=null){
 
 			$newRow = DataTransform::sanitizeReferences($newRow,$meta);
 			$newRow = DataTransform::sanitizeOwnerFields($newRow,$meta,$t);
@@ -57,7 +57,7 @@
 			return $newRow;
 		}
 
-		function sanitizeForInsert($row,$meta){
+		static function sanitizeForInsert($row,$meta){
 			global $adb;
 			$associatedToUser = false;
 			$parentTypeId = null;
@@ -149,7 +149,7 @@
 
 		}
 
-		function filterAllColumns($row,$meta){
+		static function filterAllColumns($row,$meta){
 
 			$recordString = DataTransform::$recordString;
 
@@ -165,7 +165,7 @@
 
 		}
 
-		function sanitizeFields($row,$meta){
+		static function sanitizeFields($row,$meta){
 			$default_charset = VTWS_PreserveGlobal::getGlobal('default_charset');
 			$recordString = DataTransform::$recordString;
 
@@ -203,7 +203,7 @@
 			return $row;
 		}
 
-		function sanitizeReferences($row,$meta){
+		static function sanitizeReferences($row,$meta){
 			global $adb,$log;
 			$references = $meta->getReferenceFieldDetails();
 			foreach($references as $field=>$typeList){
@@ -242,7 +242,7 @@
 			return $row;
 		}
 
-		function sanitizeOwnerFields($row,$meta,$t=null){
+		static function sanitizeOwnerFields($row,$meta,$t=null){
 			global $adb;
 			$ownerFields = $meta->getOwnerFields();
 			foreach($ownerFields as $index=>$field){
@@ -288,7 +288,7 @@
             return $row;
         }
 
-		function sanitizeDateFieldsForInsert($row,$meta){
+		static function sanitizeDateFieldsForInsert($row,$meta){
 			global $current_user;
 			$moduleFields = $meta->getModuleFields();
 			foreach($moduleFields as $fieldName=>$fieldObj){
@@ -302,7 +302,7 @@
 			return $row;
 		}
 
-		function sanitizeCurrencyFieldsForInsert($row,$meta){
+		static function sanitizeCurrencyFieldsForInsert($row,$meta){
 			global $current_user;
 			$moduleFields = $meta->getModuleFields();
 			foreach($moduleFields as $fieldName=>$fieldObj){
@@ -320,10 +320,6 @@
 							}
 							$row[$fieldName] = CurrencyField::convertToUserFormat($row[$fieldName],$current_user,true);
 						}
-					} else if($fieldObj->getUIType() == 7 && in_array($fieldObj->getFieldType(), array('N', 'NN'))) {
-						$row[$fieldName] = CurrencyField::convertToUserFormat($row[$fieldName],$current_user,true);
-					} else if($fieldObj->getUIType() == 1 && in_array($fieldObj->getFieldType(), array('N', 'NN')) && in_array($fieldObj->getFieldName(), array('qty_per_unit', 'qtyinstock'))) {
-						$row[$fieldName] = CurrencyField::convertToUserFormat($row[$fieldName],$current_user,true);
 					}
 				}
 			}

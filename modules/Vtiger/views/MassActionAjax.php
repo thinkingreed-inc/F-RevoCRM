@@ -262,7 +262,7 @@ class Vtiger_MassActionAjax_View extends Vtiger_IndexAjax_View {
         }
 		
         $emailFields = $accesibleEmailFields;
-        if(count($emailFields) > 0) {
+        if(php7_count($emailFields) > 0) {
             $recordIds = $this->getRecordsListFromRequest($request);
 			global $current_user;
             $baseTableId = $moduleModel->get('basetableid');
@@ -298,7 +298,7 @@ class Vtiger_MassActionAjax_View extends Vtiger_IndexAjax_View {
 			}
         }
 		$viewer = $this->getViewer($request);
-		$viewer->assign('RECORDS_COUNT', count($recordIds));
+		$viewer->assign('RECORDS_COUNT', php7_count($recordIds));
 		
 		if($recipientPrefModel && !empty($recipientPrefs)) {
 			$viewer->assign('RECIPIENT_PREF_ENABLED',true);
@@ -366,7 +366,7 @@ class Vtiger_MassActionAjax_View extends Vtiger_IndexAjax_View {
         $moduleModel = Vtiger_Module_Model::getInstance($sourceModule);
         $phoneFields = $moduleModel->getFieldsByType('phone');
 		
-		if(count($selectedIds) == 1){
+		if(php7_count($selectedIds) == 1){
 			$recordId = $selectedIds[0];
 			$selectedRecordModel = Vtiger_Record_Model::getInstanceById($recordId, $sourceModule);
 			$viewer->assign('SINGLE_RECORD', $selectedRecordModel);
@@ -409,7 +409,7 @@ class Vtiger_MassActionAjax_View extends Vtiger_IndexAjax_View {
             $module = $request->getModule();
         }
 		if(!empty($selectedIds) && $selectedIds != 'all') {
-			if(!empty($selectedIds) && count($selectedIds) > 0) {
+			if(!empty($selectedIds) && php7_count($selectedIds) > 0) {
 				return $selectedIds;
 			}
 		}

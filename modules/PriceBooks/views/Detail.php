@@ -75,7 +75,7 @@ class PriceBooks_Detail_View extends Vtiger_Detail_View {
 		$models = $relationListView->getEntries($pagingModel);
 		$links = $relationListView->getLinks();
 		$header = $relationListView->getHeaders();
-		$noOfEntries = count($models);
+		$noOfEntries = php7_count($models);
 
 		$parentRecordCurrencyId = $parentRecordModel->get('currency_id');
 		if ($parentRecordCurrencyId) {

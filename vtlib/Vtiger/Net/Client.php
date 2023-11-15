@@ -7,7 +7,7 @@
  * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
  *************************************************************************************/
-include 'vtlib/thirdparty/network/Request.php';
+include_once 'vtlib/thirdparty/network/Request.php';
 
 /**
  * Provides API to work with HTTP Connection.

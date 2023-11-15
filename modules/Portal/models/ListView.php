@@ -44,12 +44,13 @@ class Portal_ListView_Model extends Vtiger_ListView_Model {
         }
         $pagingModel->calculatePageRange($listViewEntries);
         $index = 0;
+        $listViewRecordModels = array();
 		foreach($listViewEntries as $recordId => $record) {
 			$rawData = $db->query_result_rowdata($listResult, $index++);
 			$record['id'] = $recordId;
 			$listViewRecordModels[$recordId] = $moduleModel->getRecordFromArray($record, $rawData);
 		}
-		if(count($listViewRecordModels) > $pageLimit) {
+		if(php7_count($listViewRecordModels) > $pageLimit) {
 			array_pop($listViewRecordModels);
 			$pagingModel->set('nextPageExists', true);
 		} else {
@@ -73,8 +74,8 @@ class Portal_ListView_Model extends Vtiger_ListView_Model {
         $page = $pagingModel->get('page');
         
         $startSequence = ($page - 1) * $pageLimit + 1;
-        $endSequence = $startSequence + count($record) - 1;
-        $recordCount = Portal_ListView_Model::getRecordCount();
+        $endSequence = $startSequence + php7_count($record) - 1;
+        $recordCount = $this->getRecordCount();
         
         $pageCount = intval($recordCount / $pageLimit);
         if(($recordCount % $pageLimit) != 0)

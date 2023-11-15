@@ -63,7 +63,7 @@ class CheckDuplicateHandler extends VTEventHandler {
 				}
 			}
 
-			if (count($uniqueFields) > 0) {
+			if (php7_count($uniqueFields) > 0) {
 				$checkDuplicates = false;
 				$uniqueFieldsData = array();
 				foreach ($uniqueFields as $fieldName => $fieldModel) {
@@ -153,7 +153,7 @@ class CheckDuplicateHandler extends VTEventHandler {
 						}
 					}
 
-					if (count($conditions) > 0) {
+					if (php7_count($conditions) > 0) {
 						$conditionsSql = implode(" AND ", $conditions);
 						$query .= " AND ($conditionsSql)";
 					}
@@ -186,7 +186,7 @@ class CheckDuplicateHandler extends VTEventHandler {
 						$duplicateRecordsList[$row['crmid']] = $row['label'];
 					}
 
-					if (count($duplicateRecordsList) > 0) {
+					if (php7_count($duplicateRecordsList) > 0) {
 						$exception = new DuplicateException(vtranslate('LBL_DUPLICATES_DETECTED'));
 						$exception->setModule($moduleName)
 								  ->setDuplicateRecordLabels($duplicateRecordsList)
