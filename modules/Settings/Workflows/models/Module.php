@@ -108,7 +108,7 @@ class Settings_Workflows_Module_Model extends Settings_Vtiger_Module_Model {
 	 * Function to get the count of active workflows
 	 * @return <Integer> count of active workflows
 	 */
-	public function getActiveWorkflowCount($moduleCount = false){
+	public static function getActiveWorkflowCount($moduleCount = false){
 		$db = PearDatabase::getInstance();
 
 		$query = 'SELECT count(*) AS count, vtiger_tab.tabid FROM com_vtiger_workflows 

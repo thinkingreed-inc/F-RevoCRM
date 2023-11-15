@@ -79,7 +79,7 @@ class Vtiger_FindDuplicate_Model extends Vtiger_Base_Model {
         } else {
             $paging->set('nextPageExists', false);
         }
-		$rows = count($entries);
+		$rows = php7_count($entries);
         $paging->recordCount = $rows;
 
 		for ($i=0; $i<$rows; $i++) {
@@ -89,7 +89,7 @@ class Vtiger_FindDuplicate_Model extends Vtiger_Base_Model {
                 array_walk($temp, 'lower_array');
                 array_walk($slicedArray, 'lower_array');
                 $arrDiff = array_diff($temp, $slicedArray);
-                if(count($arrDiff) > 0) {
+                if(php7_count($arrDiff) > 0) {
                     $groupCount++;
                     $temp = $slicedArray;
                     $groupRecordCount = 0;
@@ -140,7 +140,7 @@ class Vtiger_FindDuplicate_Model extends Vtiger_Base_Model {
 			$position = stripos($query, 'from');
 			if ($position) {
 				$split = preg_split('/from/i', $query);
-				$splitCount = count($split);
+				$splitCount = php7_count($split);
 				$query = 'SELECT count(*) AS count ';
 				for ($i=1; $i<$splitCount; $i++) {
 					$query = $query. ' FROM ' .$split[$i];
@@ -153,7 +153,7 @@ class Vtiger_FindDuplicate_Model extends Vtiger_Base_Model {
 		return $rows;
 	}
     
-    public function getMassDeleteRecords(Vtiger_Request $request) {
+    public static function getMassDeleteRecords(Vtiger_Request $request) {
         $db = PearDatabase::getInstance();
         $module = $request->getModule();
         $moduleModel = Vtiger_Module_Model::getInstance($module);

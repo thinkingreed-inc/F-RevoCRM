@@ -273,7 +273,7 @@ class Emails_MassSaveAjax_View extends Vtiger_Footer_View {
 		$excludedIds = $request->get('excluded_ids');
 
 		if(!empty($selectedIds) && $selectedIds != 'all') {
-			if(!empty($selectedIds) && count($selectedIds) > 0) {
+			if(!empty($selectedIds) && php7_count($selectedIds) > 0) {
 				return $selectedIds;
 			}
 		}

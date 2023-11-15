@@ -292,7 +292,7 @@ function transformAdvFilterListToDBFormat($advFilterList) {
             if(($columnInfo[4] == 'D' || ($columnInfo[4] == 'T' && $columnInfo[1] != 'time_start' && $columnInfo[1] != 'time_end') ||
                             ($columnInfo[4] == 'DT')) && ($columnInfo[4] != '' && $advFilterValue != '' ) && !in_array($advFilterComparator, $specialDateConditions)) {
                 $val = Array();
-                for($i=0; $i<count($tempVal); $i++) {
+                for($i=0; $i<php7_count($tempVal); $i++) {
                     if(trim($tempVal[$i]) != '') {
                         $date = new DateTimeField(trim($tempVal[$i]));
                         if($columnInfo[4] == 'D') {
@@ -353,7 +353,7 @@ function getReportSearchCondition($searchParams, $filterId) {
 					array_push($params, $value);
 				}
 			}
-			if ($i < (count($searchParams) - 1)) {
+			if ($i < (php7_count($searchParams) - 1)) {
 				$conditionQuery .= ' AND ';
 			}
 		}

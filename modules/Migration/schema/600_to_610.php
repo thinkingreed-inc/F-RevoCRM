@@ -116,7 +116,7 @@ $unWanted=array(
  "modules/FieldFormulas/functional.js"
 );
 
-for($i=0;$i<=count($unWanted);$i++){
+for($i=0;$i<=php7_count($unWanted);$i++){
     if(file_exists($unWanted[$i])){
         unlink($unWanted[$i]);
     }
@@ -198,7 +198,7 @@ for($i=0; $i<$numOfRows; $i++) {
 
                                             $fieldName = $condition['fieldname'];
                                             $fieldNameContents = explode(' ', $fieldName);
-                                            if (count($fieldNameContents) > 1) {
+                                            if (php7_count($fieldNameContents) > 1) {
                                                     $fieldName = '('. $fieldName .')';
                                             }
 
@@ -208,7 +208,7 @@ for($i=0; $i<$numOfRows; $i++) {
                                             }
 
                                             $groupCondition = 'or';
-                                            if ($groupId === $previousConditionGroupId || count($conditions) === 1) {
+                                            if ($groupId === $previousConditionGroupId || php7_count($conditions) === 1) {
                                                     $groupCondition = 'and';
                                             }
 
@@ -293,7 +293,7 @@ for($i=0; $i<$numOfRows; $i++) {
 
                                             $fieldName = $condition['fieldname'];
                                             $fieldNameContents = explode(' ', $fieldName);
-                                            if (count($fieldNameContents) > 1) {
+                                            if (php7_count($fieldNameContents) > 1) {
                                                     $fieldName = '('. $fieldName .')';
                                             }
 
@@ -303,7 +303,7 @@ for($i=0; $i<$numOfRows; $i++) {
                                             }
 
                                             $groupCondition = 'or';
-                                            if ($groupId === $previousConditionGroupId || count($conditions) === 1) {
+                                            if ($groupId === $previousConditionGroupId || php7_count($conditions) === 1) {
                                                     $groupCondition = 'and';
                                             }
 
@@ -483,7 +483,7 @@ for($i=0; $i<$numOfRows; $i++) {
 
                                             $fieldName = $condition['fieldname'];
                                             $fieldNameContents = explode(' ', $fieldName);
-                                            if (count($fieldNameContents) > 1) {
+                                            if (php7_count($fieldNameContents) > 1) {
                                                     $fieldName = '('. $fieldName .')';
                                             }
 
@@ -493,7 +493,7 @@ for($i=0; $i<$numOfRows; $i++) {
                                             }
 
                                             $groupCondition = 'or';
-                                            if ($groupId === $previousConditionGroupId || count($conditions) === 1) {
+                                            if ($groupId === $previousConditionGroupId || php7_count($conditions) === 1) {
                                                     $groupCondition = 'and';
                                             }
 

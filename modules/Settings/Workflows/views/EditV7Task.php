@@ -178,7 +178,7 @@ class Settings_Workflows_EditV7Task_View extends Settings_Vtiger_Index_View {
 			if ($nameFields) {
 				$nameFieldValues = '';
 					foreach (array_keys($nameFields) as $fieldName) {
-					if (strstr($fieldName, $relationFieldName) || (count(explode(' ', $metaKey)) === 1 && count(explode(' ', $fieldName)) === 1)) {
+					if (strstr($fieldName, $relationFieldName) || (php7_count(explode(' ', $metaKey)) === 1 && php7_count(explode(' ', $fieldName)) === 1)) {
 						$fieldName = '$'.$fieldName;
 						$nameFieldValues .= ' '.$fieldName;
 					}

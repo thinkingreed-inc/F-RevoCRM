@@ -450,7 +450,7 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 		
 		$members = $this->get('members',array());
 		
-		if($members && count($members) == 1){
+		if($members && php7_count($members) == 1){
 			if($members[0] == 'All::Users'){
 				$sharingType = 'Public';
 			}
@@ -552,7 +552,7 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 		$db = PearDatabase::getInstance();
 
 		$calculationFields = $this->get('calculationFields');
-		for ($i=0; $i<count($calculationFields); $i++) {
+		for ($i=0; $i<php7_count($calculationFields); $i++) {
 			$db->pquery('INSERT INTO vtiger_reportsummary (reportsummaryid, summarytype, columnname) VALUES (?,?,?)',
 					array($this->getId(), $i, $calculationFields[$i]));
 		}
@@ -580,7 +580,7 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 
 		$reportId = $this->getId();
 		$sharingInfo = $this->get('sharingInfo');
-		for($i=0; $i<count($sharingInfo); $i++) {
+		for($i=0; $i<php7_count($sharingInfo); $i++) {
 			$db->pquery('INSERT INTO vtiger_reportsharing(reportid, shareid, setype) VALUES (?,?,?)',
 					array($reportId, $sharingInfo[$i]['id'], $sharingInfo[$i]['type']));
 		}
@@ -594,11 +594,11 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 		
 		$members = $this->get('members',array());
 		if(!empty($members)) {
-			$noOfMembers = count($members);
+			$noOfMembers = php7_count($members);
 			for ($i = 0; $i < $noOfMembers; ++$i) {
 				$id = $members[$i];
 				$idComponents = Settings_Groups_Member_Model::getIdComponentsFromQualifiedId($id);
-				if ($idComponents && count($idComponents) == 2) {
+				if ($idComponents && php7_count($idComponents) == 2) {
 					$memberType = $idComponents[0];
 					$memberId = $idComponents[1];
 
@@ -628,7 +628,7 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 		$selectedFields = $this->get('selectedFields');
 
 		if(!empty($selectedFields)){
-		   for($i=0 ;$i<count($selectedFields);$i++) {
+		   for($i=0 ;$i<php7_count($selectedFields);$i++) {
 				if(!empty($selectedFields[$i])) {
 					$db->pquery("INSERT INTO vtiger_selectcolumn(queryid, columnindex, columnname) VALUES (?,?,?)",
 							array($this->getId(), $i, decode_html($selectedFields[$i])));
@@ -689,7 +689,7 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 					if(($columnInfo[4] == 'D' || ($columnInfo[4] == 'T' && $columnInfo[1] != 'time_start' && $columnInfo[1] != 'time_end') ||
 									($columnInfo[4] == 'DT')) && ($columnInfo[4] != '' && $advFilterValue != '' ) && !in_array($advFilterComparator, $specialDateConditions)) {
 						$val = Array();
-						for($i=0; $i<count($tempVal); $i++) {
+						for($i=0; $i<php7_count($tempVal); $i++) {
 							if(trim($tempVal[$i]) != '') {
 								$date = new DateTimeField(trim($tempVal[$i]));
 								if($columnInfo[4] == 'D') {
@@ -953,7 +953,7 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 		$secondaryModules = $this->getSecondaryModules();
 		if (!empty ($secondaryModules)) {
 			$secondaryModulesList = explode(':', $secondaryModules);
-			$count = count($secondaryModulesList);
+			$count = php7_count($secondaryModulesList);
 
 			$secondaryModuleFields = $this->getSecondaryModuleFields();
 
@@ -1009,7 +1009,7 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 			$columns = $group['columns'];
 			$and = $or = 0;
 			$block = $group['condition'];
-			if(count($columns) != 1) {
+			if(php7_count($columns) != 1) {
 				foreach($columns as $column) {
 					if($column['column_condition'] == 'and') {
 						++$and;
@@ -1017,7 +1017,7 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 						++$or;
 					}
 				}
-				if($and == count($columns)-1 && count($columns) != 1) {
+				if($and == php7_count($columns)-1 && php7_count($columns) != 1) {
 					$allGroupColumns = array_merge($allGroupColumns, $group['columns']);
 				} else {
 					$anyGroupColumns = array_merge($anyGroupColumns, $group['columns']);
@@ -1186,7 +1186,7 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 		$searchParams = $searchParams[0];
 
 		if(!empty($selectedIds) && $selectedIds != 'all') {
-			if(!empty($selectedIds) && count($selectedIds) > 0) {
+			if(!empty($selectedIds) && php7_count($selectedIds) > 0) {
 				return $selectedIds;
 			}
 		}

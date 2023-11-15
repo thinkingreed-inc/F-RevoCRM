@@ -195,7 +195,7 @@ class MailManager_Connector_Connector {
 	 * @param $options imap_status flags like SA_UNSEEN, SA_MESSAGES etc
 	 */
 	public function updateFolder($folder, $options) {
-		$mailbox = $this->convertCharacterEncoding($folder->name($this->mBoxUrl), "UTF7-IMAP","ISO_8859-1"); //Encode folder name
+		$mailbox = $this->convertCharacterEncoding($folder->name($this->mBoxUrl), "UTF7-IMAP","ISO-8859-1"); //Encode folder name
 		$result = @imap_status($this->mBox, $mailbox, $options);
 		if ($result) {
 			if (isset($result->unseen)) $folder->setUnreadCount($result->unseen);
@@ -299,7 +299,7 @@ class MailManager_Connector_Connector {
 	public function deleteMail($msgno) {
 		$msgno = trim($msgno,',');
 		$msgno = explode(',',$msgno);
-		for($i = 0;$i<count($msgno);$i++) {
+		for($i = 0;$i<php7_count($msgno);$i++) {
 			@imap_delete($this->mBox, $msgno[$i]);
 		}
 		imap_expunge($this->mBox);
@@ -315,7 +315,7 @@ class MailManager_Connector_Connector {
 		$msgno = trim($msgno,',');
 		$msgno = explode(',',$msgno);
 		$folder = $this->convertCharacterEncoding(html_entity_decode($folderName),'UTF7-IMAP','UTF-8'); //handle both utf8 characters and html entities
-		for($i = 0;$i<count($msgno);$i++) {
+		for($i = 0;$i<php7_count($msgno);$i++) {
 			@imap_mail_move($this->mBox, $msgno[$i], $folder);
 		}
 		@imap_expunge($this->mBox);
@@ -364,7 +364,7 @@ class MailManager_Connector_Connector {
 		$nos = imap_search($this->mBox, $query);
 
 		if (!empty($nos)) {
-			$nmsgs = count($nos);
+			$nmsgs = php7_count($nos);
 
 			$reverse_start = $nmsgs - ($start*$maxLimit);
 			$reverse_end   = $reverse_start - $maxLimit;

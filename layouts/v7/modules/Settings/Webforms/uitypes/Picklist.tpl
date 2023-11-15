@@ -14,7 +14,7 @@
 	{assign var="SPECIAL_VALIDATOR" value=$FIELD_MODEL->getValidator()}
 	<select data-fieldname="{$FIELD_MODEL->getFieldName()}" data-fieldtype="picklist" class="inputElement select2 {if $OCCUPY_COMPLETE_WIDTH} row {/if}" type="picklist" data-field-id= '{$FIELD_MODEL->get('id')}' name="{$FIELD_MODEL->getFieldName()}" {if !empty($SPECIAL_VALIDATOR)}data-validator='{Zend_Json::encode($SPECIAL_VALIDATOR)}'{/if} data-selected-value='{$FIELD_MODEL->get('fieldvalue')}'
 			{if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if}
-			{if count($FIELD_INFO['validator'])}
+			{if php7_count($FIELD_INFO['validator'])}
 				data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
 			{/if}
 			{if $FIELD_MODEL->getFieldName() eq 'targetmodule' and $MODE eq 'edit'}disabled='disabled'{/if}

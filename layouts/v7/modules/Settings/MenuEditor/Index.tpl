@@ -22,7 +22,7 @@
 						{assign var=APP_LIST value=Vtiger_MenuStructure_Model::getAppMenuList()}
 						{foreach item=APP_IMAGE key=APP_NAME from=$APP_IMAGE_MAP name=APP_MAP}
 							{if !in_array($APP_NAME, $APP_LIST)} {continue} {/if}
-							<div class="col-lg-2{if $smarty.foreach.APP_MAP.index eq 0 or count($APP_LIST) eq 1}{/if}">
+							<div class="col-lg-2{if $smarty.foreach.APP_MAP.index eq 0 or php7_count($APP_LIST) eq 1}{/if}">
 								<div class="menuEditorItem app-{$APP_NAME}" data-app-name="{$APP_NAME}">
 									<span class="fa {$APP_IMAGE}"></span>
 									{assign var=TRANSLATED_APP_NAME value={vtranslate("LBL_$APP_NAME")}}

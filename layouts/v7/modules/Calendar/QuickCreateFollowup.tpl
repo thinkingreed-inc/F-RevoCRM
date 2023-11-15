@@ -18,7 +18,7 @@
 			{assign var="timeformat" value=$USER_MODEL->get('hour_format')}
 			{assign var="currentDate" value=Vtiger_Date_UIType::getDisplayDateValue('')}
 			{assign var="time" value=Vtiger_Time_UIType::getDisplayTimeValue(null)}
-			{assign var="currentTimeInVtigerFormat" value=Vtiger_Time_UIType::getDisplayValue($time)}
+			{assign var="currentTimeInVtigerFormat" value=Vtiger_Time_UIType::getDisplayValueUserFormat($time)}
 			{assign var=FOLLOW_UP_LABEL value={vtranslate('LBL_HOLD_FOLLOWUP_ON',"Events")}}
 			<input type="hidden" name="module" value="{$MODULE}">
 			<input type="hidden" name="action" value="SaveFollowupAjax" />

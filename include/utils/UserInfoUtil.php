@@ -131,7 +131,7 @@ function getDefaultSharingEditAction()
 	$permissionRow=$adb->fetch_array($result);
 	do
 	{
-		for($j=0;$j<count($permissionRow);$j++)
+		for($j=0;$j<php7_count($permissionRow);$j++)
 		{
 			$copy[$permissionRow[1]]=$permissionRow[2];
 		}
@@ -162,7 +162,7 @@ function getDefaultSharingAction()
 	$permissionRow=$adb->fetch_array($result);
 	do
 	{
-		for($j=0;$j<count($permissionRow);$j++)
+		for($j=0;$j<php7_count($permissionRow);$j++)
 		{
 			$copy[$permissionRow[1]]=$permissionRow[2];
 		}
@@ -1988,21 +1988,21 @@ function get_current_user_access_groups($module)
 	$sharing_write_group_list=getWriteSharingGroupsList($module);
 	$query ="select groupname,groupid from vtiger_groups";
 	$params = array();
-	if(count($current_user_group_list) > 0 && count($sharing_write_group_list) > 0)
+	if(php7_count($current_user_group_list) > 0 && php7_count($sharing_write_group_list) > 0)
 	{
 		$query .= " where (groupid in (". generateQuestionMarks($current_user_group_list) .") or groupid in (". generateQuestionMarks($sharing_write_group_list) ."))";
 		array_push($params, $current_user_group_list, $sharing_write_group_list);
 		$result = $adb->pquery($query, $params);
 		$noof_group_rows=$adb->num_rows($result);
 	}
-	elseif(count($current_user_group_list) > 0)
+	elseif(php7_count($current_user_group_list) > 0)
 	{
 		$query .= " where groupid in (". generateQuestionMarks($current_user_group_list) .")";
 		array_push($params, $current_user_group_list);
 		$result = $adb->pquery($query, $params);
 		$noof_group_rows=$adb->num_rows($result);
 	}
-	elseif(count($sharing_write_group_list) > 0)
+	elseif(php7_count($sharing_write_group_list) > 0)
 	{
 		$query .= " where groupid in (". generateQuestionMarks($sharing_write_group_list) .")";
 		array_push($params, $sharing_write_group_list);
@@ -2069,7 +2069,7 @@ function getFieldVisibilityPermission($fld_module, $userid, $fieldname, $accessm
 		//get tabid
 		$tabid = getTabid($fld_module);
 
-			if (count($profilelist) > 0) {
+			if (php7_count($profilelist) > 0) {
 			if($accessmode == 'readonly') {
 				$query="SELECT vtiger_profile2field.visible FROM vtiger_field INNER JOIN vtiger_profile2field ON vtiger_profile2field.fieldid=vtiger_field.fieldid INNER JOIN vtiger_def_org_field ON vtiger_def_org_field.fieldid=vtiger_field.fieldid WHERE vtiger_field.tabid=? AND vtiger_profile2field.visible=0 AND vtiger_def_org_field.visible=0  AND vtiger_profile2field.profileid in (". generateQuestionMarks($profilelist) .") AND vtiger_field.fieldname= ? and vtiger_field.presence in (0,2) GROUP BY vtiger_field.fieldid";
 				} else {

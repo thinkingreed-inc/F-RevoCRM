@@ -51,7 +51,7 @@ class Vtiger_RelatedRecordsAjax_Action extends Vtiger_Action_Controller {
 	 * @param type $request
 	 */
 	function getRelatedRecordsCount($request) {
-		$parentRecordId = $request->get("recordId");
+		$parentRecordId = $request->getForSql("recordId");
 		$parentModule = $request->get("module");
 		$parentModuleModel = Vtiger_Module_Model::getInstance($parentModule);
 		$parentRecordModel = Vtiger_Record_Model::getInstanceById($parentRecordId, $parentModuleModel);

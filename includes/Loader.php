@@ -7,9 +7,14 @@
  * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
  ************************************************************************************/
+require_once 'vendor/autoload.php';
 
 global $LOADER_FILE_DIR;
 $LOADER_FILE_DIR = dirname(__FILE__);
+
+//TCPDF fonts
+global $root_directory;
+define('K_PATH_FONTS', $root_directory."libraries/tcpdf/fonts/");
 
 class Vtiger_Loader {
 	protected static $includeCache = array();

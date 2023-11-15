@@ -266,7 +266,7 @@ class VtigerInventoryOperation extends VtigerModuleOperation {
 		}
 
 		$lineItems = $element['LineItems'];
-		$totalNoOfProducts = count($lineItems);
+		$totalNoOfProducts = php7_count($lineItems);
 		$_REQUEST['totalProductCount'] = $totalNoOfProducts;
 		$_REQUEST['REQUEST_FROM_WS'] = true;
 

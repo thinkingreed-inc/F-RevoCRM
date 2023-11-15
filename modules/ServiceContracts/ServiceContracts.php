@@ -521,7 +521,6 @@ class ServiceContracts extends CRMEntity {
 
 	// Function to Calculate the End Date, Planned Duration, Actual Duration and Progress of a Service Contract
 	function calculateProgress() {
-		global $adb;
 		$updateCols = array();
 		$updateParams = array();
 
@@ -533,17 +532,22 @@ class ServiceContracts extends CRMEntity {
 		$totalUnits = decimalFormat($this->column_fields['total_units']);
 
 		$contractStatus = $this->column_fields['contract_status'];
+        
+        $checkServiceContractExistence = $this->db->pquery('SELECT if (EXISTS (select vsc.servicecontractsid from vtiger_servicecontracts  vsc WHERE vsc.servicecontractsid = ?), 1, 0) AS exist_sc', array($this->id));
+        $ServiceContractExistFlag = isset($checkServiceContractExistence->fields['exist_sc']) ? $checkServiceContractExistence->fields['exist_sc'] : "1";
 
-		// Update the End date if the status is Complete or if the Used Units reaches/exceeds Total Units
+        // Update the End date if the status is Complete or if the Used Units reaches/exceeds Total Units
 		// We need to do this first to make sure Actual duration is computed properly
 		if($contractStatus == 'Complete' || (!empty($usedUnits) && !empty($totalUnits) && $usedUnits >= $totalUnits)) {
 			if(empty($endDate)) {
 				$endDate = date('Y-m-d');
-				$adb->pquery('UPDATE vtiger_servicecontracts SET end_date=? WHERE servicecontractsid = ?', array(date('Y-m-d'), $this->id));
+				$this->db->pquery('UPDATE vtiger_servicecontracts SET end_date=? WHERE servicecontractsid = ?', array(date('Y-m-d'), $this->id));
 			}
 		} else {
 			$endDate = null;
-			$adb->pquery('UPDATE vtiger_servicecontracts SET end_date=? WHERE servicecontractsid = ?', array(null, $this->id));
+			if ( $ServiceContractExistFlag !== "0") {
+				$this->db->pquery('UPDATE vtiger_servicecontracts SET end_date=? WHERE servicecontractsid = ?', array(null, $this->id));
+			}
 		}
 
 		// Calculate the Planned Duration based on Due date and Start date. (in days)
@@ -576,7 +580,9 @@ class ServiceContracts extends CRMEntity {
 		if(count($updateCols) > 0) {
 			$updateQuery = 'UPDATE vtiger_servicecontracts SET '. implode(",", $updateCols) .' WHERE servicecontractsid = ?';
 			array_push($updateParams, $this->id);
-			$adb->pquery($updateQuery, $updateParams);
+			if ( $ServiceContractExistFlag !== "0") {
+				$this->db->pquery($updateQuery, $updateParams);
+			}
 		}
 	}
 

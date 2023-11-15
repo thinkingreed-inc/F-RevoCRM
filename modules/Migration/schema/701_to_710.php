@@ -374,7 +374,7 @@ if (defined('VTIGER_UPGRADE')) {
 			if (!array_key_exists($columnName, $updatedColumnsList)) {
 				if (preg_match('/vtiger_crmentity:createdtime:(\w*\:)*T/', $columnName) || preg_match('/vtiger_crmentity:modifiedtime:(\w*\:)*T/', $columnName)) {
 					$columnParts = explode(':', $columnName);
-					$lastKey = count($columnParts)-1;
+					$lastKey = php7_count($columnParts)-1;
 
 					if ($columnParts[$lastKey] == 'T') {
 						$columnParts[$lastKey] = 'DT';
@@ -404,7 +404,7 @@ if (defined('VTIGER_UPGRADE')) {
 			if (!array_key_exists($columnName, $updatedColumnsList)) {
 				if (preg_match('/vtiger_crmentity(\w*):createdtime:(\w*\:)*T/', $columnName) || preg_match('/vtiger_crmentity(\w*):modifiedtime:(\w*\:)*T/', $columnName)) {
 					$columnParts = explode(':', $columnName);
-					$lastKey = count($columnParts)-1;
+					$lastKey = php7_count($columnParts)-1;
 
 					if ($columnParts[$lastKey] == 'T') {
 						$columnParts[$lastKey] = 'DT';

@@ -22,7 +22,7 @@
         <link type='text/css' rel='stylesheet' href='{vresource_url('layouts/v7/lib/jquery/select2/select2.css')}'>
         <link type='text/css' rel='stylesheet' href='{vresource_url('layouts/v7/lib/select2-bootstrap/select2-bootstrap.css')}'>
         <link type='text/css' rel='stylesheet' href='{vresource_url('libraries/bootstrap/js/eternicode-bootstrap-datepicker/css/datepicker3.css')}'>
-        <link type='text/css' rel='stylesheet' href='{vresource_url('layouts/v7/lib/jquery/jquery-ui-1.11.3.custom/jquery-ui.css')}'>
+        <link type='text/css' rel='stylesheet' href='{vresource_url('layouts/v7/lib/jquery/jquery-ui-1.12.0.custom/jquery-ui.css')}'>
         <link type='text/css' rel='stylesheet' href='{vresource_url('layouts/v7/lib/vt-icons/style.css')}'>
         <link type='text/css' rel='stylesheet' href='{vresource_url('layouts/v7/lib/animate/animate.min.css')}'>
         <link type='text/css' rel='stylesheet' href='{vresource_url('layouts/v7/lib/jquery/malihu-custom-scrollbar/jquery.mCustomScrollbar.css')}'>
@@ -51,7 +51,7 @@
 		</style>
 		<script type="text/javascript">var __pageCreationTime = (new Date()).getTime();</script>
 		<script src="{vresource_url('layouts/v7/lib/jquery/jquery.min.js')}"></script>
-		<script src="{vresource_url('layouts/v7/lib/jquery/jquery-migrate-1.0.0.js')}"></script>
+		<script src="{vresource_url('layouts/v7/lib/jquery/jquery-migrate-1.4.1.js')}"></script>
 		<script type="text/javascript">
 			var _META = { 'module': "{$MODULE}", view: "{$VIEW}", 'parent': "{$PARENT_MODULE}", 'notifier':"{$NOTIFIER_URL}", 'app':"{$SELECTED_MENU_CATEGORY}" };
             {if $EXTENSION_MODULE}

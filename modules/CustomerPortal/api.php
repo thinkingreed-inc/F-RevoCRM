@@ -8,10 +8,10 @@
  * All Rights Reserved.
  * ***********************************************************************************/
 
-ini_set('display_errors','off');
+ ini_set('display_errors','off');
 
-include_once 'include.inc';
-
+ include_once 'include.inc';
+ 
 class CustomerPortal_API_EntryPoint {
 
 	protected static function authenticate(CustomerPortal_API_Abstract $controller, CustomerPortal_API_Request $request) {

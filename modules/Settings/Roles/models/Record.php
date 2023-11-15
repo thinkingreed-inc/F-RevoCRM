@@ -62,7 +62,7 @@ class Settings_Roles_Record_Model extends Settings_Vtiger_Record_Model {
 		if(!$this->parent) {
 			$parentRoleString = $this->getParentRoleString();
 			$parentComponents = explode('::', $parentRoleString);
-			$noOfRoles = count($parentComponents);
+			$noOfRoles = php7_count($parentComponents);
 			// $currentRole = $parentComponents[$noOfRoles-1];
 			if($noOfRoles > 1) {
 				$this->parent = self::getInstanceById($parentComponents[$noOfRoles-2]);
@@ -313,12 +313,12 @@ class Settings_Roles_Record_Model extends Settings_Vtiger_Record_Model {
 		$profileIds = $this->get('profileIds');
 		if(empty($profileIds)) {
 			$profiles = $this->getProfiles();
-			if(!empty($profiles) && count($profiles) > 0) {
+			if(!empty($profiles) && php7_count($profiles) > 0) {
 				$profileIds = array_keys($profiles);
 			}
 		}
 		if(!empty($profileIds)) {
-			$noOfProfiles = count($profileIds);
+			$noOfProfiles = php7_count($profileIds);
 			if($noOfProfiles > 0) {
 				$db->pquery('DELETE FROM vtiger_role2profile WHERE roleid=?', array($roleId));
 
@@ -367,7 +367,7 @@ class Settings_Roles_Record_Model extends Settings_Vtiger_Record_Model {
 		foreach($allChildren as $roleId => $roleModel) {
 			$oldChildParentRoleString = $roleModel->getParentRoleString();
 			$newChildParentRoleString = str_replace($currentParentRoleSequence, $transferParentRoleSequence, $oldChildParentRoleString);
-			$newChildDepth = count(explode('::', $newChildParentRoleString))-1;
+			$newChildDepth = php7_count(explode('::', $newChildParentRoleString))-1;
 			$roleModel->set('depth', $newChildDepth);
 			$roleModel->set('parentrole', $newChildParentRoleString);
 			$roleModel->save();

@@ -16,6 +16,8 @@
         include_once 'config_override.php';
     }
 
+	require_once "vendor/autoload.php";
+
 	//Overrides GetRelatedList : used to get related query
 	//TODO : Eliminate below hacking solution
 	include_once 'include/Webservices/Relation.php';
@@ -34,8 +36,8 @@
 	$API_VERSION = "0.22";
 
 	global $seclog,$log;
-	$seclog =& LoggerManager::getLogger('SECURITY');
-	$log =& LoggerManager::getLogger('webservice');
+	$seclog =Logger::getLogger('SECURITY');
+	$log = Logger::getLogger('webservice');
 
 	function getRequestParamsArrayForOperation($operation){
 		global $operationInput;

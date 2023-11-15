@@ -28,7 +28,7 @@ class Google_Map_View extends Vtiger_Detail_View {
 	 * @param Vtiger_Request $request
 	 * @return boolean 
 	 */
-	function preProcess(Vtiger_Request $request) {
+	function preProcess(Vtiger_Request $request, $display = true) {
 		return true;
 	}
 

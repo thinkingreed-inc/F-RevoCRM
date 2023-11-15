@@ -27,7 +27,7 @@
 								<h6>{vtranslate('ONE_ONE_AND_MANY_ONE_RELATIONSHIP',$QUALIFIED_MODULE)}</h6>
 							</div>
 							<div style="list-style: none;">
-								{if count($RELATION_FIELDS) eq 0}
+								{if php7_count($RELATION_FIELDS) eq 0}
 									<div class="well" style="height:72px;opacity:0.6;text-align:center;padding-top: 30px;"> 
 										<div>{vtranslate('LBL_NO_RELATION_TYPE',$QUALIFIED_MODULE)}.</div>
 									</div>
@@ -69,7 +69,7 @@
 								</span>
 							</div>
 							<div class="row">
-								{if count($RELATED_MODULES) eq 0}
+								{if php7_count($RELATED_MODULES) eq 0}
 									<div class="well" style="height:72px;opacity:0.6;text-align:center;padding-top: 30px;"> 
 										<div> {vtranslate('LBL_NO_RELATION_TYPE',$QUALIFIED_MODULE)}.</div>
 									</div>
@@ -129,7 +129,7 @@
 										</div>
 										<div class="relationListInfoWrapper">
 											<div class="col-sm-10 relationListInfo" style="margin-left: 40px;">
-												{if count($RELATED_MODULES) neq 0}
+												{if php7_count($RELATED_MODULES) neq 0}
 													<div style="margin: 5px 0px;">
 														<div class="relatedListInfoHeader"><i class="fa fa-info-circle"></i>&nbsp;{vtranslate('LBL_INFO', $QUALIFIED_MODULE)}</div><br>
 														<div>{vtranslate('LBL_RELATED_LIST_INFO', $QUALIFIED_MODULE)}.</div><br>

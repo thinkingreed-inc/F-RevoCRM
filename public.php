@@ -8,6 +8,7 @@
  * All Rights Reserved.
  *************************************************************************************/
 
+require_once 'vendor/autoload.php';
 include_once 'vtlib/Vtiger/Module.php';
 include_once 'includes/Loader.php';
 vimport('includes.runtime.EntryPoint');

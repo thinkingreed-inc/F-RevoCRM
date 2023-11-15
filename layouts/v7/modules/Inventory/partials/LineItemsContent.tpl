@@ -258,7 +258,7 @@
 					<p class="popover_title hide">
 						{vtranslate('LBL_SET_TAX_FOR',$MODULE)} : <span class="variable">{$data.$totalAfterDiscount}</span>
 					</p>
-					{if count($data.taxes) > 0}
+					{if php7_count($data.taxes) > 0}
 						<div class="individualTaxDiv">
 							<!-- we will form the table with all taxes -->
 							<table width="100%" border="0" cellpadding="5" cellspacing="0" class="table table-nobordered popupTable" id="tax_table{$row_no}">

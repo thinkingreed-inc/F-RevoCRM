@@ -256,7 +256,7 @@ class Vtiger_FieldBasic {
 	 * Get module name to which this field instance is associated
 	 */
 	function getModuleName() {
-		return $this->block->module->name;
+		return $this->block && $this->block->module ? $this->block->module->name : "";
 	}
 
 	/**

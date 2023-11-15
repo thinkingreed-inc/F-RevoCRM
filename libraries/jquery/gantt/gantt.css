@@ -8,8 +8,8 @@
 .gdfTable td, .gdfTable th {
   vertical-align: middle;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: normal;
+  text-overflow: clip;
+  white-space: nowrap;
   font-size: 14px
 }
 

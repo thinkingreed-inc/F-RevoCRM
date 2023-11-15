@@ -731,7 +731,7 @@ class Zend_Gdata_YouTube extends Zend_Gdata_Media
         if ($username instanceof Zend_Gdata_Query) {
             $uri = $username->getQueryUrl($this->getMajorProtocolVersion());
         } else {
-            if (count(explode(',', $username)) >
+            if (php7_count(explode(',', $username)) >
                 self::ACTIVITY_FEED_MAX_USERS) {
                 require_once 'Zend/Gdata/App/InvalidArgumentException.php';
                 throw new Zend_Gdata_App_InvalidArgumentException(

@@ -17,7 +17,7 @@ class Dailyreports_RelationListView_Model extends Vtiger_RelationListView_Model 
 		$summaryFieldsList = $relatedModuleModel->getSummaryViewFieldsList();
 
 		$headerFields = array();
-		if(count($summaryFieldsList) > 0) {
+		if(php7_count($summaryFieldsList) > 0) {
 			foreach($summaryFieldsList as $fieldName => $fieldModel) {
 				$headerFields[$fieldName] = $fieldModel;
 			}
@@ -36,7 +36,7 @@ class Dailyreports_RelationListView_Model extends Vtiger_RelationListView_Model 
 		$relationModule = $this->getRelationModel()->getRelationModuleModel();
 		$relationModuleName = $relationModule->get('name');
 		$relatedColumnFields = $relationModule->getConfigureRelatedListFields();
-		if(count($relatedColumnFields) <= 0){
+		if(php7_count($relatedColumnFields) <= 0){
 			$relatedColumnFields = $relationModule->getRelatedHistoryListFields();
 		}
 

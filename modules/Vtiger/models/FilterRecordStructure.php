@@ -53,7 +53,7 @@ class Vtiger_FilterRecordStructure_Model extends Vtiger_RecordStructure_Model {
 					foreach($blockModelList as $blockLabel=>$blockModel) {
 						$fieldModelList = $blockModel->getFields();
 						if (!empty ($fieldModelList)) {
-							if(count($referenceModules) > 1) {
+							if(php7_count($referenceModules) > 1) {
 								// block label format : reference field label (modulename) - block label. Eg: Related To (Organization) Address Details
 								$newblockLabel = vtranslate($field->get('label'), $baseModuleName).' ('.vtranslate($refModule, $refModule).') - '.
 													vtranslate($blockLabel, $refModule);

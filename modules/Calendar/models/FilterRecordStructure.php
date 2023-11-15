@@ -79,7 +79,7 @@ class Calendar_FilterRecordStructure_Model extends Vtiger_FilterRecordStructure_
 					foreach ($blockModelList as $blockLabel => $blockModel) {
 						$fieldModelList = $blockModel->getFields();
 						if ($fieldModelList) {
-							if (count($referenceModules) > 1) {
+							if (php7_count($referenceModules) > 1) {
 								// block label format : reference field label (modulename) - block label. Eg: Related To (Organization) Address Details
 								$newblockLabel = vtranslate($field->get('label'), $baseModuleName).' ('.vtranslate($refModule, $refModule).') - '.vtranslate($blockLabel, $refModule);
 							} else {

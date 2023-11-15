@@ -52,7 +52,7 @@ class Settings_Picklist_Module_Model extends Vtiger_Module_Model {
 			$result = $db->pquery($sql, array($pickListFieldName));
 			$picklistid = $db->query_result($result,0,"picklistid");
 			//add the picklist values to the selected roles
-			for($j=0;$j<count($rolesSelected);$j++){
+			for($j=0;$j<php7_count($rolesSelected);$j++){
 				$roleid = $rolesSelected[$j];
 				Vtiger_Cache::delete('PicklistRoleBasedValues',$pickListFieldName.$roleid);
 				$sql ="SELECT max(sortid)+1 as sortid

@@ -38,7 +38,7 @@ function getConvertSoToInvoice($focus,$so_focus,$soid)
 	$log->debug("Entering getConvertSoToInvoice(".get_class($focus).",".get_class($so_focus).",".$soid.") method ...");
     $log->info("in getConvertSoToInvoice ".$soid);
     $xyz=array('bill_street','bill_city','bill_code','bill_pobox','bill_country','bill_state','ship_street','ship_city','ship_code','ship_pobox','ship_country','ship_state');
-	for($i=0;$i<count($xyz);$i++){
+	for($i=0;$i<php7_count($xyz);$i++){
 		if (getFieldVisibilityPermission('SalesOrder', $current_user->id,$xyz[$i]) == '0'){
 			$so_focus->column_fields[$xyz[$i]] = $so_focus->column_fields[$xyz[$i]];
 		}
@@ -380,7 +380,7 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 			$regionsList[$taxInfo['taxid']] = $regionsInfo;
 		}
 		//Now retrieve the tax values from the current query with the name
-		for($tax_count=0;$tax_count<count($tax_details);$tax_count++)
+		for($tax_count=0;$tax_count<php7_count($tax_details);$tax_count++)
 		{
 			$tax_name = $tax_details[$tax_count]['taxname'];
 			$tax_label = $tax_details[$tax_count]['taxlabel'];
@@ -464,7 +464,7 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 	$tax_details = getAllTaxes('available','','edit',$focus->id);
 	$taxDetails = array();
 
-	for($tax_count=0;$tax_count<count($tax_details);$tax_count++)
+	for($tax_count=0;$tax_count<php7_count($tax_details);$tax_count++)
 	{
 		if ($tax_details[$tax_count]['method'] === 'Deducted') {
 			continue;
@@ -567,7 +567,7 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 	$shtax_details = getAllTaxes('available','sh','edit',$focus->id);
 
 	//if taxtype is group then the tax should be same for all products in vtiger_inventoryproductrel table
-	for($shtax_count=0;$shtax_count<count($shtax_details);$shtax_count++)
+	for($shtax_count=0;$shtax_count<php7_count($shtax_details);$shtax_count++)
 	{
 		$shtax_name = $shtax_details[$shtax_count]['taxname'];
 		$shtax_label = $shtax_details[$shtax_count]['taxlabel'];
@@ -619,7 +619,7 @@ function split_validationdataArray($validationData)
 	$fieldName = '';
 	$fieldLabel = '';
 	$fldDataType = '';
-	$rows = count($validationData);
+	$rows = php7_count($validationData);
 	foreach($validationData as $fldName => $fldLabel_array)
 	{
 		if($fieldName == '')

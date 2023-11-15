@@ -69,9 +69,14 @@ class Install_InitSchema_Model {
 					$oldVersion = $newVersion;
 					break;
 				}
+				// Fix version numbering
+				if (strlen($oldVersion."") < 3) $oldVersion .= "0";
+				if (strlen($newVersion."") < 3) $newVersion .= "0";
+
 				$oldVersion = str_replace(array('.', ' '), '', $oldVersion);
 				$newVersion = str_replace(array('.', ' '), '', $newVersion);
 				$filename =  "modules/Migration/schema/".$oldVersion."_to_".$newVersion.".php";
+				
 				if(is_file($filename)) {
 					include($filename);
 				}

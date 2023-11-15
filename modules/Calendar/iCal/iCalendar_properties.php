@@ -99,6 +99,8 @@ class iCalendar_property {
 
         // Undo transparent formatting
         $replace_function = create_function('$a', 'return rfc2445_undo_value_formatting($a, '.$this->val_type.');');
+//        $replace_function = function($a) { return rfc2445_undo_value_formatting($a, '.$this->val_type.'); };
+
         $valarray = array_map($replace_function, $valarray);
 
         // Now, if this property cannot have multiple values, don't return as an array
@@ -400,7 +402,7 @@ class iCalendar_property_geo extends iCalendar_property {
         }
 
         $floats = explode(';', $value);
-        if(count($floats) != 2) {
+        if(php7_count($floats) != 2) {
             return false;
         }
 
@@ -1175,7 +1177,7 @@ class iCalendar_property_request_status extends iCalendar_property {
         // is not the empty string.
         $parts[] = substr($value, $from);
 
-        $count = count($parts);
+        $count = php7_count($parts);
 
         // May have 2 or 3 tokens (last one is optional)
         if($count != 2 && $count != 3) {

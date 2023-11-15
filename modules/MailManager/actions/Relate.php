@@ -14,7 +14,7 @@ require_once 'modules/MailManager/MailManager.php';
 
 class MailManager_Relate_Action extends Vtiger_MailScannerAction {
 
-	public function __construct() {
+	public function __construct($foractionid = 0) {
 	}
 
 	/**

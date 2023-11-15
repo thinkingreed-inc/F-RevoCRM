@@ -68,7 +68,7 @@ class HelpDesk_Module_Model extends Vtiger_Module_Model {
 		$picklistvaluesmap = getAllPickListValues("ticketstatus");
         if(in_array('Open', $picklistvaluesmap)) $params[] = 'Open';
 
-		if(count($params) > 0) {
+		if(php7_count($params) > 0) {
 		$result = $db->pquery('SELECT count(*) AS count, COALESCE(vtiger_groups.groupname,concat(vtiger_users.last_name, " " ,vtiger_users.first_name)) as name, COALESCE(vtiger_groups.groupid,vtiger_users.id) as id  FROM vtiger_troubletickets
 						INNER JOIN vtiger_crmentity ON vtiger_troubletickets.ticketid = vtiger_crmentity.crmid
 						LEFT JOIN vtiger_users ON vtiger_users.id=vtiger_crmentity.smownerid AND vtiger_users.status="Active"
@@ -211,13 +211,13 @@ class HelpDesk_Module_Model extends Vtiger_Module_Model {
 		$headerViewFields = $this->getHeaderViewFieldsList();
 		$allRelationListViewFields = array_merge($headerViewFields,$summaryViewFields);
 		$relatedListFields = array();
-		if(count($allRelationListViewFields) > 0) {
+		if(php7_count($allRelationListViewFields) > 0) {
 			foreach ($allRelationListViewFields as $key => $field) {
 				$relatedListFields[$field->get('column')] = $field->get('name');
 			}
 		}
 
-		if(count($relatedListFields)>0) {
+		if(php7_count($relatedListFields)>0) {
 			$nameFields = $this->getNameFields();
 			foreach($nameFields as $fieldName){
 				if(!$relatedListFields[$fieldName]) {

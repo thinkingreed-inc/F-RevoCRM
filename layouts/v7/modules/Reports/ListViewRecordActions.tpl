@@ -32,7 +32,7 @@
             <span title="{if $PIN_CLASS eq 'vicon-pin'}{vtranslate('LBL_PIN_CHART_TO_DASHBOARD',$MODULE)}{else}{vtranslate('LBL_UNPIN_CHART_FROM_DASHBOARD',$MODULE)}{/if}" 
                   class="pinToDashboard dropdown-toggle"  data-recordid="{$LISTVIEW_ENTRY->get('reportid')}" 
                   data-primemodule="{$LISTVIEW_ENTRY->get('primarymodule')}" data-toggle="dropdown"
-                  data-dashboard-tab-count='{count($DASHBOARD_TABS)}'>
+                  data-dashboard-tab-count='{php7_count($DASHBOARD_TABS)}'>
                 <i class="fa icon {$PIN_CLASS} action" style="font-size:13px;"></i>
             </span>
             <ul class="dropdown-menu dashBoardTabMenu">

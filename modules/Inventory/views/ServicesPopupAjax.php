@@ -17,7 +17,7 @@ class Inventory_ServicesPopupAjax_View extends Inventory_ServicesPopup_View {
 		$this->exposeMethod('getPageCount');
 	}
 
-	function preProcess(Vtiger_Request $request) {
+	function preProcess(Vtiger_Request $request, $display = true) {
 		return true;
 	}
 

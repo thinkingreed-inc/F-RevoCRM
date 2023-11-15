@@ -9,7 +9,7 @@
 
 var vtJqPlotInterface = function() {
 
-    this.legendPlacement = 'inside'; /* refer: http://www.jqplot.com/docs/files/jqplot-core-js.html#Legend.placement */
+    this.legendPlacement = 'outside'; /* refer: http://www.jqplot.com/docs/files/jqplot-core-js.html#Legend.placement */
 
     this.renderPie = function() {
         this.element.jqplot([this.data['chartData']], {
@@ -22,7 +22,7 @@ var vtJqPlotInterface = function() {
             },
             legend: {
                 show: true,
-                location: 'n'
+                location: 'e'
             },
             title : this.data['title']
         });

@@ -82,7 +82,7 @@ require_once 'include/Webservices/DescribeObject.php';
 
 		$accessableModules = array_diff($accessableModules,$ignoreModules);
 
-		if(count($accessableModules)<=0)
+		if(php7_count($accessableModules)<=0)
 		{
 				$output['lastModifiedTime'] = $mtime;
 				$output['more'] = false;

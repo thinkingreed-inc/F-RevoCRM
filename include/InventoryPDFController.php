@@ -114,7 +114,7 @@ class Vtiger_InventoryPDFController {
 			$taxable_total = number_format($taxable_total, $no_of_decimal_places,'.','');
 			$producttotal = $taxable_total;
 			if($this->focus->column_fields["hdnTaxType"] == "individual") {
-				for($tax_count=0;$tax_count<count($productLineItem['taxes']);$tax_count++) {
+				for($tax_count=0;$tax_count<php7_count($productLineItem['taxes']);$tax_count++) {
 					$tax_percent = $productLineItem['taxes'][$tax_count]['percentage'];
 					$total_tax_percent += $tax_percent;
 					$tax_amount = (($taxable_total*$tax_percent)/100);
@@ -201,14 +201,14 @@ class Vtiger_InventoryPDFController {
 		//To calculate the group tax amount
 		if($final_details['taxtype'] == 'group') {
 			$group_tax_details = $final_details['taxes'];
-			for($i=0;$i<count($group_tax_details);$i++) {
+			for($i=0;$i<php7_count($group_tax_details);$i++) {
 				$group_total_tax_percent += $group_tax_details[$i]['percentage'];
 			}
 			$summaryModel->set(getTranslatedString("Tax:", $this->moduleName)."($group_total_tax_percent%)", $this->formatPrice($final_details['tax_totalamount']));
 		}
 		//Shipping & Handling taxes
 		$sh_tax_details = $final_details['sh_taxes'];
-		for($i=0;$i<count($sh_tax_details);$i++) {
+		for($i=0;$i<php7_count($sh_tax_details);$i++) {
 			$sh_tax_percent = $sh_tax_percent + $sh_tax_details[$i]['percentage'];
 		}
 		//obtain the Currency Symbol
@@ -475,7 +475,7 @@ class Vtiger_InventoryPDFController {
 				$blankrowscount = $minrows[0][0];
 				if ($resultchild != 0) {
 					$templateVariablePairChild = $matcheschild[0];
-					for ($i = 0; $i < count($templateVariablePairChild); $i++) {
+					for ($i = 0; $i < php7_count($templateVariablePairChild); $i++) {
 						$templateVariablePairChild[$i] = str_replace("​", "", str_replace('$', '', $templateVariablePairChild[$i]));
 						list($childModuleName, $columnNameChild) = explode('-', $templateVariablePairChild[$i]);
 						list($childModuleReferenceColumn, $childModuleColumnName) = explode(':', $columnNameChild);
@@ -501,7 +501,7 @@ class Vtiger_InventoryPDFController {
 
 						// $loop-minrows-x$ 子レコード表示時に表示する最小行数。足りない分は空行を入れる。
 						if($blankrowscount){
-							$limitremainingcount = $blankrowscount - count($referenceRecordIds);
+							$limitremainingcount = $blankrowscount - php7_count($referenceRecordIds);
 							if($limitremainingcount > 0){
 								for ($k=0; $k < $limitremainingcount; $k++) { 
 									$loopChildBlockForLimit = $childblock;
@@ -569,7 +569,7 @@ class Vtiger_InventoryPDFController {
 		$childMouleSortQuery = "";
 		foreach ($matchChildCondition[0] as $key => $matchChildConditionValue) {
 			$matchingvaluearray = explode("|", $matchChildConditionValue);
-			$ifcount = count($matchingvaluearray);
+			$ifcount = php7_count($matchingvaluearray);
 			$ifjoincount = floor($ifcount / 4);
 			$functionname = $matchingvaluearray[0];
 
@@ -641,7 +641,7 @@ class Vtiger_InventoryPDFController {
 		$childMouleSortQuery = "";
 		foreach ($matchChildCondition[0] as $key => $matchChildConditionValue) {
 			$matchingvaluearray = explode("|", $matchChildConditionValue);
-			$ifcount = count($matchingvaluearray);
+			$ifcount = php7_count($matchingvaluearray);
 			$ifjoincount = floor($ifcount / 4);
 			$functionname = $matchingvaluearray[0];
 
@@ -1114,7 +1114,7 @@ class Vtiger_InventoryPDFController {
 	}
 
 	private static function customFunction_ifs($matchingvaluearray){
-		$ifcount = count($matchingvaluearray);
+		$ifcount = php7_count($matchingvaluearray);
 		$ifjoincount = floor(($ifcount - 2) / 4);
 		$iftrue = $matchingvaluearray[$ifcount - 2];
 		$iffalse = $matchingvaluearray[$ifcount - 1];
@@ -1175,7 +1175,7 @@ class Vtiger_InventoryPDFController {
 
 	private static function customFunction_aggset_sum($matchingvaluearray, $recordId)
 	{
-		$ifcount = count($matchingvaluearray);
+		$ifcount = php7_count($matchingvaluearray);
 		$ifjoincount = floor(($ifcount - 1) / 4);
 
 		$aggrcolumnname = $matchingvaluearray[1]; // 集計対象の項目名
@@ -1187,7 +1187,7 @@ class Vtiger_InventoryPDFController {
 
 	private static function customFunction_aggset_average($matchingvaluearray, $recordId)
 	{
-		$ifcount = count($matchingvaluearray);
+		$ifcount = php7_count($matchingvaluearray);
 		$ifjoincount = floor(($ifcount - 1) / 4);
 
 		$aggrcolumnname = $matchingvaluearray[1]; // 集計対象の項目名
@@ -1199,7 +1199,7 @@ class Vtiger_InventoryPDFController {
 
 	private static function customFunction_aggset_min($matchingvaluearray, $recordId)
 	{
-		$ifcount = count($matchingvaluearray);
+		$ifcount = php7_count($matchingvaluearray);
 		$ifjoincount = floor(($ifcount - 1) / 4);
 
 		$aggrcolumnname = $matchingvaluearray[1]; // 集計対象の項目名
@@ -1211,7 +1211,7 @@ class Vtiger_InventoryPDFController {
 
 	private static function customFunction_aggset_max($matchingvaluearray, $recordId)
 	{
-		$ifcount = count($matchingvaluearray);
+		$ifcount = php7_count($matchingvaluearray);
 		$ifjoincount = floor(($ifcount - 1) / 4);
 
 		$aggrcolumnname = $matchingvaluearray[1]; // 集計対象の項目名
@@ -1322,7 +1322,7 @@ class Vtiger_InventoryPDFController {
 			$resultvalue[] = self::convertComparator($childModuleRecordModel->get($childModuleColumnName), 'int');
 		}
 
-		$resultvalue = array_sum($resultvalue) / count($resultvalue);
+		$resultvalue = array_sum($resultvalue) / php7_count($resultvalue);
 
 		$modulemodel = Vtiger_Module::getInstance($childModuleName);
 		$field = Vtiger_Field_Model::getInstance($childModuleColumnName, $modulemodel);
@@ -1439,7 +1439,7 @@ class Vtiger_InventoryPDFController {
 				$resultchild = preg_match_all("/\\$\[(?:[a-zA-Z0-9]+)\](?:[a-zA-Z0-9]+)-(?:[a-zA-Z0-9]+)(?:_[a-zA-Z0-9]+)?(?::[a-zA-Z0-9]+)?(?:_[a-zA-Z0-9]+)*\\$/", $childblock, $matcheschild);
 				if ($resultchild != 0) {
 					$templateVariablePairChild = $matcheschild[0];
-					for ($i = 0; $i < count($templateVariablePairChild); $i++) {
+					for ($i = 0; $i < php7_count($templateVariablePairChild); $i++) {
 						$templateVariablePairChild[$i] = str_replace("​", "", str_replace('$', '', $templateVariablePairChild[$i]));
 						list($childModuleName, $columnNameChild) = explode('-', $templateVariablePairChild[$i]);
 						list($childModuleReferenceColumn, $childModuleColumnName) = explode(':', $columnNameChild);

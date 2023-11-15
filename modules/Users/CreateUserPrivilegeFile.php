@@ -39,7 +39,9 @@ function createUserPrivilegesfile($userid)
 		$user_focus->id = $userid; 
 		foreach($user_focus->column_fields as $field=>$value_iter)
         	{
-               		$userInfo[$field]= $user_focus->$field;
+               		if (property_exists($user_focus, $field)) {
+						$userInfo[$field]= $user_focus->$field;
+					}
         	}
 
 		if($user_focus->is_admin == 'on')
@@ -372,7 +374,7 @@ if($handle)
 				Array('Leads', 'Accounts', 'Contacts', 'Potentials', 'HelpDesk', 
 				'Emails', 'Campaigns','Quotes', 'PurchaseOrder', 'SalesOrder', 'Invoice'));
 
-			for($idx = 0; $idx < count($custom_modules); ++$idx) {
+			for($idx = 0; $idx < php7_count($custom_modules); ++$idx) {
 				$module_name = $custom_modules[$idx];
 				$mod_share_perm_array = getUserModuleSharingObjects($module_name,$userid,
 					$def_org_share,$current_user_roles,$parent_roles,$current_user_groups);
@@ -544,7 +546,7 @@ function getUserModuleSharingObjects($module,$userid,$def_org_share,$current_use
 			$query="select vtiger_datashare_role2group.* from vtiger_datashare_role2group inner join vtiger_datashare_module_rel on vtiger_datashare_module_rel.shareid=vtiger_datashare_role2group.shareid where vtiger_datashare_module_rel.tabid=?";
 			$qparams = array($mod_tabid);
 
-			if (count($groupList) > 0) {
+			if (php7_count($groupList) > 0) {
 				$query .= " and vtiger_datashare_role2group.to_groupid in (". generateQuestionMarks($groupList) .")";
 				array_push($qparams, $groupList);
 			}
@@ -711,7 +713,7 @@ function getUserModuleSharingObjects($module,$userid,$def_org_share,$current_use
 
 		$query="select vtiger_datashare_rs2grp.* from vtiger_datashare_rs2grp inner join vtiger_datashare_module_rel on vtiger_datashare_module_rel.shareid=vtiger_datashare_rs2grp.shareid where vtiger_datashare_module_rel.tabid=?";
 		$qparams = array($mod_tabid);
-		if (count($groupList) > 0) {
+		if (php7_count($groupList) > 0) {
 			$query .= " and vtiger_datashare_rs2grp.to_groupid in (". generateQuestionMarks($groupList) .")";
 			array_push($qparams, $groupList);
 		}
@@ -978,7 +980,7 @@ function getUserModuleSharingObjects($module,$userid,$def_org_share,$current_use
 
 		$query="select vtiger_datashare_grp2grp.* from vtiger_datashare_grp2grp inner join vtiger_datashare_module_rel on vtiger_datashare_module_rel.shareid=vtiger_datashare_grp2grp.shareid where vtiger_datashare_module_rel.tabid=?";
 		$qparams = array($mod_tabid);
-		if (count($groupList) > 0) {
+		if (php7_count($groupList) > 0) {
 			$query .= " and vtiger_datashare_grp2grp.to_groupid in (". generateQuestionMarks($groupList) .")";
 			array_push($qparams, $groupList);
 		}

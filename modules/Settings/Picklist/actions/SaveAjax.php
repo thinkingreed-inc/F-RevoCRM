@@ -43,10 +43,10 @@ class Settings_Picklist_SaveAjax_Action extends Settings_Vtiger_Basic_Action {
             $queryToGetId = "SELECT id FROM vtiger_users WHERE ".$defaultFieldName." IN (";
             $params = array();
              if(is_array($oldValue)) {
-                 for($i=0;$i<count($oldValue);$i++) {
+                 for($i=0;$i<php7_count($oldValue);$i++) {
                      $queryToGetId .= "?";
                      array_push($params, $oldValue[$i]);
-                     if($i<(count($oldValue)-1)) {
+                     if($i<(php7_count($oldValue)-1)) {
                          $queryToGetId .= ",";
                      }
                  }

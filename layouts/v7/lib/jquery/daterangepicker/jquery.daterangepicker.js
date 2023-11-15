@@ -351,41 +351,6 @@
 			'default-less' : 'Válassz ki egy időszakot ami rövidebb mint %d nap',
 			'default-range' : 'Válassz ki egy %d - %d nap hosszú időszakot',
 			'default-default': 'Válassz ki egy időszakot'
-		},
-		'ja':
-		{
-			'selected': '選択:',
-			'day':'日',
-			'days': '日',
-			'apply': '閉じる',
-			'week-1' : '月',
-			'week-2' : '火',
-			'week-3' : '水',
-			'week-4' : '木',
-			'week-5' : '金',
-			'week-6' : '土',
-			'week-7' : '日',
-			'month-name': ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
-			'shortcuts' : '',
-			'custom-values': 'カスタム値',
-			'past': 'ペースト',
-			'following':'',
-			'previous' : '前へ',
-			'prev-week' : '週',
-			'prev-month' : '月',
-			'prev-year' : '年',
-			'next':'次へ',
-			'next-week':'週',
-			'next-month':'月',
-			'next-year':'年',
-			'less-than' : '%d 日以上を選択してください',
-			'more-than' : '%d 日未満を選択してください',
-			'default-more' : '%d 日以上を選択してください',
-			'default-single' : '日付を選択してください',
-			'default-less' : '%d 日未満を選択してください',
-			'default-range' : '%d と %d の範囲で選択してください',
-			'default-default': '範囲を選択してください',
-			'year': '年'
 		}
 	};
 
@@ -1259,12 +1224,7 @@
 		{
 			date = moment(date).toDate();
 			var monthName = nameMonth(date.getMonth());
-			var label = lang('year');
-			if(label != 'year') {
-				box.find('.'+month+' .month-name').html(date.getFullYear() + label + ' ' + monthName);
-			} else {
-				box.find('.'+month+' .month-name').html(monthName+' '+date.getFullYear());
-			}
+			box.find('.'+month+' .month-name').html(monthName+' '+date.getFullYear());
 			box.find('.'+month+' tbody').html(createMonthHTML(date));
 			opt[month] = date;
 		}

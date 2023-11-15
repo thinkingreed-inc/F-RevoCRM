@@ -36,7 +36,7 @@ class iCalLastImport {
 	function save() {
 		$adb = PearDatabase::getInstance();
 
-		if(count($this->fieldData) == 0) return;
+		if(php7_count($this->fieldData) == 0) return;
 		
 		if(!Vtiger_Utils::CheckTable($this->tableName)) {
 			Vtiger_Utils::CreateTable(

@@ -209,7 +209,7 @@ class Settings_Vtiger_MenuItem_Model extends Vtiger_Base_Model {
 		if($onlyActive) {
 			$conditionsSqls[] = 'active = 0';
 		}
-		if(count($conditionsSqls) > 0) {
+		if(php7_count($conditionsSqls) > 0) {
 			$sql .= ' WHERE '. implode(' AND ', $conditionsSqls);
 		}
 		$sql .= ' AND name NOT IN ('.generateQuestionMarks($skipMenuItemList).')';
