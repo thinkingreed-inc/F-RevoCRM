@@ -477,6 +477,7 @@ class Vendors extends CRMEntity {
 			$po_ids_list[] = $po_id;
 			$sql = 'UPDATE vtiger_crmentity SET deleted = 1 WHERE crmid = ?';
 			$this->db->pquery($sql, array($po_id));
+			CRMEntity::updateBasicInformation('PurchaseOrder', $po_id);
 		}
 		//Backup deleted Vendors related Potentials.
 		$params = array($id, RB_RECORD_UPDATED, 'vtiger_crmentity', 'deleted', 'crmid', implode(",", $po_ids_list));

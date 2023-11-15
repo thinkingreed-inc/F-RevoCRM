@@ -522,6 +522,7 @@ class Emails extends CRMEntity {
 		parent::unlinkRelationship($id, $return_module, $return_id);
 
 		$this->db->pquery('UPDATE vtiger_crmentity SET modifiedtime = ? WHERE crmid = ?', array(date('y-m-d H:i:d'), $id));
+		CRMEntity::updateBasicInformation(null, $id);
 	}
 
 	public function getNonAdminAccessControlQuery($module, $user, $scope='') {
