@@ -22,7 +22,7 @@ class Settings_PickListDependency_Edit_View extends Settings_Vtiger_Index_View {
 		}
 		$sourceField = $request->get('sourcefield');
 		$targetField = $request->get('targetfield');
-		$recordModel = Settings_PickListDependency_Record_Model::getInstance($selectedModule, $sourceField, $targetField);
+		$recordModel = Settings_PickListDependency_Record_Model::getInstanceWith($selectedModule, $sourceField, $targetField);
 
 		$dependencyGraph = false;
 		if(!empty($sourceField) && !empty($targetField)) {
@@ -56,7 +56,7 @@ class Settings_PickListDependency_Edit_View extends Settings_Vtiger_Index_View {
 		$module = $request->get('sourceModule');
 		$sourceField = $request->get('sourcefield');
 		$targetField = $request->get('targetfield');
-		$recordModel = Settings_PickListDependency_Record_Model::getInstance($module, $sourceField, $targetField);
+		$recordModel = Settings_PickListDependency_Record_Model::getInstanceWith($module, $sourceField, $targetField);
 		$valueMapping = $recordModel->getPickListDependency();
 		$sourcePicklistValues = $recordModel->getSourcePickListValues();
 		$safeHtmlSourcePicklistValues = array();
