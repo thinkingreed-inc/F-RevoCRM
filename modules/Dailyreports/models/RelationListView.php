@@ -144,7 +144,7 @@ class Dailyreports_RelationListView_Model extends Vtiger_RelationListView_Model 
 			$record->setId($row['crmid']);
 			if($relationModule->get('name') == 'Calendar'){
 				$activityid = $row['crmid'];
-				$activitytyperesult = $db->pquery("select activitytype from vtiger_activity left join vtiger_crmentity on vtiger_crmentity.crmid=vtiger_activity.activityid where deleted <> 1 and activityid=$activityid");
+				$activitytyperesult = $db->pquery("select activitytype from vtiger_activity left join vtiger_crmentity on vtiger_crmentity.crmid=vtiger_activity.activityid where vtiger_activity.deleted <> 1 and activityid=$activityid");
 				$activitytype = $db->query_result($activitytyperesult, 0, 'activitytype');
 				$record->set('CalendarModule', $activitytype == 'Task' ? 'Calendar' : 'Events');
 			}

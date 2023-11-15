@@ -824,6 +824,7 @@ function vtws_transferOwnership($ownerId, $newOwnerId, $delete=true) {
 	//Updating the smownerid, modifiedby in vtiger_crmentity
 	$db->pquery('UPDATE vtiger_crmentity SET smownerid=?, modifiedtime = ? WHERE smownerid=? AND setype<>?', array($newOwnerId, date('Y-m-d H:i:s'), $ownerId, 'ModComments'));
 	$db->pquery('UPDATE vtiger_crmentity SET modifiedby=? WHERE modifiedby=?', array($newOwnerId, $ownerId));
+	CRMEntity::updateBasicInformation(null, null, array('ModComments'));
 
 	//deleting from vtiger_tracker
 	$db->pquery('DELETE FROM vtiger_tracker WHERE user_id=?', array($ownerId));

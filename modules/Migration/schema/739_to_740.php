@@ -50,4 +50,6 @@ if (defined('VTIGER_UPGRADE')) {
     //復活してしまうことがあるので再度削除
     include_once 'setup/scripts/10_Delete_Modules.php';
 
+    // vtiger_crmentityテーブルの内容をモジュール毎のメインテーブルにコピーする
+    require_once 'setup/scripts/75_Update_CRMEntity.php';
 }

@@ -271,7 +271,7 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 		$query = "SELECT vtiger_activity.*, vtiger_crmentity.description, vtiger_activity_reminder.reminder_time FROM vtiger_activity
 					INNER JOIN vtiger_crmentity ON vtiger_activity.activityid = vtiger_crmentity.crmid
 					LEFT JOIN vtiger_activity_reminder ON vtiger_activity_reminder.activity_id = vtiger_activity.activityid AND vtiger_activity_reminder.recurringid = 0
-					WHERE vtiger_crmentity.deleted = 0 AND vtiger_crmentity.smownerid IN ($value) AND vtiger_activity.activitytype NOT IN ('Emails')";
+					WHERE vtiger_crmentity.deleted = 0 AND vtiger_activity.smownerid IN ($value) AND vtiger_activity.activitytype NOT IN ('Emails')";
 		return $query;
 	}
 

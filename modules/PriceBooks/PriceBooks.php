@@ -417,6 +417,8 @@ class PriceBooks extends CRMEntity {
                     }
 
                     $adb->pquery('UPDATE vtiger_crmentity SET label=? WHERE crmid=?', array(trim($label), $recordId));
+					CRMEntity::updateBasicInformation($moduleName, $recordId);
+
                     //updating solr while import records
                     $recordModel = Vtiger_Record_Model::getCleanInstance($moduleName);
                     $focus = $recordModel->getEntity();
@@ -427,7 +429,9 @@ class PriceBooks extends CRMEntity {
 
                 $label = trim($label);
                 $adb->pquery('UPDATE vtiger_crmentity SET label=? WHERE crmid=?', array($label, $recordId));
-                //Creating entity data of updated records for post save events
+				CRMEntity::updateBasicInformation($moduleName, $recordId);
+
+				//Creating entity data of updated records for post save events
                 if ($entityInfo['status'] !== Import_Data_Action::$IMPORT_RECORD_CREATED) {
                     $recordModel = Vtiger_Record_Model::getCleanInstance($moduleName);
                     $focus = $recordModel->getEntity();

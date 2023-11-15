@@ -245,8 +245,11 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 				$listQuery .= ' , last_name '.' '. $sortOrder .' ,  email1 '. ' '. $sortOrder;
 			} 
 		} else if(empty($orderBy) && empty($sortOrder) && $moduleName != "Users"){
-			//List view will be displayed on recently created/modified records
-			$listQuery .= ' ORDER BY vtiger_crmentity.modifiedtime DESC';
+			$baseTable = $moduleFocus->table_name;
+			if(empty($baseTable)) {
+				$baseTable = "vtiger_crmentity";
+			}
+			$listQuery .= " ORDER BY ".$baseTable.".modifiedtime DESC";
 		}
 
 		$viewid = ListViewSession::getCurrentView($moduleName);

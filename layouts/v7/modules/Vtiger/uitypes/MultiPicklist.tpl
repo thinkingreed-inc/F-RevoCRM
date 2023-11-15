@@ -17,7 +17,7 @@
 	{assign var=PICKLIST_COLORS value=$FIELD_INFO['picklistColors']}
 	<input type="hidden" name="{$FIELD_MODEL->getFieldName()}" value=""  data-fieldtype="multipicklist"/>
 	{foreach item=FIELD_VALUE from=$FIELD_VALUE_LIST}
-		{if !empty($FIELD_VALUE) && !array_key_exists($FIELD_VALUE, $PICKLIST_VALUES)}
+		{if !empty(trim($FIELD_VALUE)) && !array_key_exists($FIELD_VALUE, $PICKLIST_VALUES)}
 			{append var="PICKLIST_VALUES" $FIELD_VALUE index=$FIELD_VALUE}
 		{/if}
 	{/foreach}
