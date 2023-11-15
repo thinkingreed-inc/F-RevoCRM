@@ -518,6 +518,7 @@ class PurchaseOrder extends CRMEntity {
 		if($return_module == 'Vendors') {
 			$sql_req ='UPDATE vtiger_crmentity SET deleted = 1 WHERE crmid= ?';
 			$this->db->pquery($sql_req, array($id));
+			CRMEntity::updateBasicInformation(null, $id);
 		} elseif($return_module == 'Contacts') {
 			$sql_req ='UPDATE vtiger_purchaseorder SET contactid=? WHERE purchaseorderid = ?';
 			$this->db->pquery($sql_req, array(null, $id));

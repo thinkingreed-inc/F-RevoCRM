@@ -251,11 +251,12 @@ abstract class EntityMeta{
 	}
 
 	public function getEntityDeletedQuery(){
+		$baseTable = $this->getEntityBaseTable();
 		if($this->getEntityName() == 'Leads') {
-			return "vtiger_crmentity.deleted=0 and vtiger_leaddetails.converted=0";
+			return "$baseTable.deleted=0 and vtiger_leaddetails.converted=0";
 		}
 		if($this->getEntityName() != "Users"){
-			return "vtiger_crmentity.deleted=0";
+			return "$baseTable.deleted=0";
 		}
 		// not sure whether inactive users should be considered deleted or not.
 		return "vtiger_users.status='Active'";
