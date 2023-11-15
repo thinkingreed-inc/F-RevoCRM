@@ -55,8 +55,6 @@ foreach ($modules as $modulename) {
     $adb->pquery('ALTER TABLE '.$baseTable.' ADD COLUMN `label` varchar(255)', array());
     $adb->pquery('ALTER TABLE '.$baseTable.' ADD COLUMN `smgroupid` INT', array());
     $adb->pquery('ALTER TABLE '.$baseTable.' ADD COLUMN `source` varchar(100)', array());
-    $adb->pquery('ALTER TABLE '.$baseTable.' ADD COLUMN `locked` INT', array());
-    $adb->pquery('ALTER TABLE '.$baseTable.' ADD COLUMN `lockeduserid` INT', array());
 
     $adb->query("UPDATE
                     $baseTable,
@@ -72,9 +70,7 @@ foreach ($modules as $modulename) {
                     $baseTable.deleted = vtiger_crmentity.deleted,
                     $baseTable.label = vtiger_crmentity.label,
                     $baseTable.smgroupid = vtiger_crmentity.smgroupid,
-                    $baseTable.source = vtiger_crmentity.source,
-                    $baseTable.locked = vtiger_crmentity.locked,
-                    $baseTable.lockeduserid = vtiger_crmentity.lockeduserid
+                    $baseTable.source = vtiger_crmentity.source
                 WHERE
                     $baseTable.$baseTableid = vtiger_crmentity.crmid
                     AND $baseTable.deleted is null

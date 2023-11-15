@@ -3320,9 +3320,7 @@ class CRMEntity {
 						$baseTable.deleted = vtiger_crmentity.deleted,
 						$baseTable.label = vtiger_crmentity.label,
 						$baseTable.smgroupid = vtiger_crmentity.smgroupid,
-						$baseTable.source = vtiger_crmentity.source,
-						$baseTable.locked = vtiger_crmentity.locked,
-						$baseTable.lockeduserid = vtiger_crmentity.lockeduserid
+						$baseTable.source = vtiger_crmentity.source
 					WHERE
 						$baseTable.$baseTableid = vtiger_crmentity.crmid";
 
