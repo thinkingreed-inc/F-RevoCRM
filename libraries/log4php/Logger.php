@@ -18,7 +18,7 @@ class Logger {
 		$level = $this->getLogLevel($configinfo['level']);
 
 		// RotatingFileHandler追加。日単位でログファイルを残す。
-		$rotatingFileHandler = new Monolog\Handler\RotatingFileHandler($filepath, $maxbackup, $level);
+		$rotatingFileHandler = new Monolog\Handler\RotatingFileHandler($filepath, $maxbackup, $level, true, 666);
 		$rotatingFileHandler->setFilenameFormat('{filename}_{date}', 'Ymd');
 		$rotatingFileHandler->setFormatter($formatter); // ログ書式
 		$log = new Monolog\Logger($name);
