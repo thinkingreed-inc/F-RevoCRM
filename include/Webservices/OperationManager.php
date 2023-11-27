@@ -145,6 +145,10 @@
 		
 		function runOperation($params,$user){
 			global $API_VERSION;
+			$funcArgs = array();//PHP8の場合はArrayのKeyを参照してエラーが発生するため、Keyを削除する
+			foreach($params as $key => $value) {
+				$funcArgs[] = $value;
+			}
 			try{
 				$operation = strtolower($this->operationName);
 				if(!$this->preLogin){
