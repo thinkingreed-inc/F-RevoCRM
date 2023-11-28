@@ -2285,7 +2285,7 @@ class ReportRun extends CRMEntity {
 
 			$query .= " ".$this->getRelatedModulesQuery($module,$this->secondarymodule).
 					getNonAdminAccessControlQuery($this->primarymodule,$current_user).
-					" where vtiger_contactdetails.deleted=0 ";
+					" where vtiger_account.deleted=0 ";
 		} else if ($module == "Contacts") {
 			$query = "from vtiger_contactdetails
 				inner join vtiger_crmentity on vtiger_crmentity.crmid = vtiger_contactdetails.contactid";
@@ -2331,7 +2331,7 @@ class ReportRun extends CRMEntity {
 
 			$query .= " ".$this->getRelatedModulesQuery($module,$this->secondarymodule).
 					getNonAdminAccessControlQuery($this->primarymodule,$current_user).
-					" where vtiger_potential.deleted=0";
+					" where vtiger_contactdetails.deleted=0";
 		} else if ($module == "Potentials") {
 			$query = "from vtiger_potential
 				inner join vtiger_crmentity on vtiger_crmentity.crmid=vtiger_potential.potentialid";
