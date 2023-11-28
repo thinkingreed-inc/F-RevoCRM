@@ -522,6 +522,9 @@ function insertIntoRecurringTable(& $recurObj)
 						$inviteRecord->getEntity()->saveentity($module, $inviteRecord->getId());
 					}else{
 						foreach($this->column_fields as $field => $value) {
+							if(empty($global_workflow_skip_field_array[$activityid])) {
+								$global_workflow_skip_field_array[$activityid] = array();
+							}
 							// フィールドの更新ワークフローで既に更新している項目は、招待元からコピーしないようにする。
 							if(in_array($field, $this->notCopyFields) || in_array($field, $global_workflow_skip_field_array[$activityid])) {
 								continue;
