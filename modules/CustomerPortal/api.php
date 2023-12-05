@@ -60,9 +60,11 @@ class CustomerPortal_API_EntryPoint {
 
 				//setting active user language as Portal user language 
 				$current_user = $operationController->getActiveUser();
-				$portal_language = $request->getLanguage();
-				$current_user->column_fields["language"] = $portal_language;
-				$current_user->language = $portal_language;
+				if(!empty($current_user)) {
+					$portal_language = $request->getLanguage();
+					$current_user->column_fields["language"] = $portal_language;
+					$current_user->language = $portal_language;
+				}
 
 				$response = $operationController->process($request);
 			} catch (Exception $e) {
