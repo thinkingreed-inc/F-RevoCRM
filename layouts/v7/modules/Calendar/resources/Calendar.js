@@ -1329,7 +1329,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				thisInstance.updateAllEventsOnCalendar();
 			}
 			if(thisInstance.changeUserList) {
-				//thisInstance.changeUserList();
+				thisInstance.changeUserList();
 			}
 		});
 	},

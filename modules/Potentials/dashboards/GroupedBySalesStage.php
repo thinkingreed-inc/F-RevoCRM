@@ -74,6 +74,7 @@ class Potentials_GroupedBySalesStage_Dashboard extends Vtiger_IndexAjax_View {
 
 		$viewer->assign('WIDGET', $widget);
 		$viewer->assign('MODULE_NAME', $moduleName);
+		$sort_keys = array();
 		foreach($data as $key => $value)
 		{
 			$sort_keys[$key] = $value['1'];

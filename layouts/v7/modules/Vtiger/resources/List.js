@@ -1978,7 +1978,7 @@ Vtiger.Class("Vtiger_List_Js", {
 			return;
 		}
 		currentEle.find('.showTotalCountIcon').addClass('hide');
-		if (totalNumberOfRecords === '') {
+		if (totalNumberOfRecords == 0) {
 			thisInstance.totalNumOfRecords_performingAsyncAction = true;
 			thisInstance.getPageCount().then(function (data) {
 				currentEle.addClass('hide');
