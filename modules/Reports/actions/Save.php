@@ -34,11 +34,10 @@ class Reports_Save_Action extends Vtiger_Save_Action {
 
 		$record = $request->get('record');
 		$reportModel = new Reports_Record_Model();
+		$reportModel->report = new Reports();
 		$reportModel->setModule('Reports');
 		if(!empty($record) && !$request->get('isDuplicate')) {
 			$reportModel->setId($record);
-		} else {
-			$reportModel->report = new Reports();
 		}
 
 		$reporttype = $request->get('reporttype');
