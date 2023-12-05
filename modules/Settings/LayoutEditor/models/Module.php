@@ -145,7 +145,7 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 		$db = PearDatabase::getInstance();
 
 		$label = $params['fieldLabel'] = trim($params['fieldLabel']);
-		if($this->checkFieldExists($label)){
+		if($params['fieldType'] !== 'Empty' && $this->checkFieldExists($label)){
 			throw new Exception(vtranslate('LBL_DUPLICATE_FIELD_EXISTS', 'Settings::LayoutEditor'), 513);
 		}
 		$supportedFieldTypes = $this->getAddSupportedFieldTypes();
