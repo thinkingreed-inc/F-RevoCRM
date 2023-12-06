@@ -1702,6 +1702,47 @@ function installVtlibModule($packagename, $packagepath, $customized=false) {
 	}
 }
 
+function installVtlibModuleWithoutFiles($packagename, $packagepath, $customized=false) {
+	global $log, $Vtiger_Utils_Log, $_installOrUpdateVtlibModule;
+	if(!file_exists($packagepath)) return;
+
+	if (isset($_installOrUpdateVtlibModule[$packagename.$packagepath])) return;
+	$_installOrUpdateVtlibModule[$packagename.$packagepath] = 'install';
+
+	require_once('vtlib/Vtiger/Package.php');
+	require_once('vtlib/Vtiger/Module.php');
+	$Vtiger_Utils_Log = defined('INSTALLATION_MODE_DEBUG')? INSTALLATION_MODE_DEBUG : true;
+	$package = new Vtiger_Package();
+
+	if($package->isLanguageType($packagepath)) {
+		return;
+	}
+	$module = $package->getModuleNameFromZip($packagepath);
+
+	// Customization
+	if($package->isLanguageType()) {
+		return;
+	}
+	// END
+
+	$module_exists = false;
+	$module_dir_exists = false;
+	if($module == null) {
+		$log->fatal("$packagename Module zipfile is not valid!");
+	} else if(Vtiger_Module::getInstance($module)) {
+		$log->fatal("$module already exists!");
+		$module_exists = true;
+	}
+	if($module_exists == false) {
+		$log->debug("$module - Installation starts here");
+		$package->import($packagepath, false);
+		$moduleInstance = Vtiger_Module::getInstance($module);
+		if (empty($moduleInstance)) {
+			$log->fatal("$module module installation failed!");
+		}
+	}
+}
+
 /* Function to update Vtlib Compliant modules
  * @param - $module - Name of the module
  * @param - $packagepath - Complete path to the zip file of the Module
@@ -1732,6 +1773,38 @@ function updateVtlibModule($module, $packagepath) {
 		if($moduleInstance || $package->isModuleBundle($packagepath)) {
 			$log->debug("$module - Module instance found - Update starts here");
 			$package->update($moduleInstance, $packagepath);
+		} else {
+			$log->fatal("$module doesn't exists!");
+		}
+	}
+}
+
+function updateVtlibModuleWithoutFiles($module, $packagepath) {
+	global $log, $_installOrUpdateVtlibModule;
+	if(!file_exists($packagepath)) return;
+
+	if (isset($_installOrUpdateVtlibModule[$module.$packagepath])) return;
+	$_installOrUpdateVtlibModule[$module.$packagepath] = 'update';
+
+	require_once('vtlib/Vtiger/Package.php');
+	require_once('vtlib/Vtiger/Module.php');
+	$Vtiger_Utils_Log = defined('INSTALLATION_MODE_DEBUG')? INSTALLATION_MODE_DEBUG : true;
+	$package = new Vtiger_Package();
+
+	if($package->isLanguageType($packagepath)) {
+		require_once('vtlib/Vtiger/Language.php');
+		$languagePack = new Vtiger_Language();
+		$languagePack->update(null, $packagepath, true);
+		return;
+	}
+
+	if($module == null) {
+		$log->fatal("Module name is invalid");
+	} else {
+		$moduleInstance = Vtiger_Module::getInstance($module);
+		if($moduleInstance || $package->isModuleBundle($packagepath)) {
+			$log->debug("$module - Module instance found - Update starts here");
+			$package->update($moduleInstance, $packagepath, false);
 		} else {
 			$log->fatal("$module doesn't exists!");
 		}

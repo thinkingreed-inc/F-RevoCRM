@@ -9,6 +9,17 @@ mv config.inc.php config.inc.php.bak
 ```bash
 docker-compose up
 ```
+
+## composer installの実行
+```bash
+# Dockerコンテナにログインして、Composerで関連ファイルをInstallする
+docker ps
+docker exec -it [container_id] bash
+# ここからコンテナ内
+cd /var/www/html/
+composer install
+```
+
 ## F-RevoCRMのインストール
 1. ブラウザで `http://localhost` へアクセス
 1. 指示に従って必要情報を入力

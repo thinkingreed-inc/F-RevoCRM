@@ -1,4 +1,4 @@
-# F-RevoCRM 7.3
+# F-RevoCRM 7.4
 
 F-RevoCRM は日本企業に合わせた形で開発された高機能なCRMです。
 あらゆる顧客接点を管理するために、キャンペーン・リード管理から顧客・商談管理、販売管理、サポート管理・プロジェクト管理まで幅広い機能を持ち合わせています。
@@ -60,9 +60,9 @@ Vtiger Public License 1.2
 ## インストール方法（概要）
 以下、F-RevoCRMのインストール方法になります。
 
-* F-RevoCRM7.3のインストール方法はそのまま読み進めてください。
-* F-RevoCRM6.5からのバージョンアップはインストール方法の後に記載があります。
-* F-RevoCRM7.3のパッチ適用方法については各パッチ付属のREADMEを参照してください。
+* F-RevoCRM7.4のインストール方法はそのまま読み進めてください。
+* F-RevoCRM6.5からのバージョンアップはインストール方法の後に記載があります。（F-RevoCRM7.3からのバージョンアップはパッチ適用方法を参照してください。）
+* F-RevoCRM7.4のパッチ適用方法については各パッチ付属のREADMEを参照してください。
 * 本レポジトリをDockerで構築する場合は、[docker/README.md](./docker/README.md)を参照してください。
 * PDF出力にheadlesschromeを利用する場合は、[docker/chrome-headless/README.md](./docker/chrome-headless/README.md)を参照してください。
 
@@ -129,7 +129,16 @@ max_execution_time = 60
 ApacheのDocumentRoot以下に解凍したディレクトリ毎、あるいはファイルを置いて下さい。
 ここでは仮に/var/www/frevocrmに設置したものをとして進めます。
 
-### 3. 初期設定
+### 3. composer installの実行
+
+F-RevoCRMはPHPの各種ライブラリをcomposer経由でインストールする必要があります。
+
+```bash
+cd /var/www/html/frevocrm
+composer install
+```
+
+### 4. 初期設定
 
 3.で設置したF-RevoCRMのURLを開きます。
 * http://example.com/frevocrm
@@ -138,7 +147,7 @@ ApacheのDocumentRoot以下に解凍したディレクトリ毎、あるいは�
 
 
 ## バージョンアップ方法
-F-RevoCRM 6.5 を F-RevoCRM 7.3 にバージョンアップする手順になります。
+F-RevoCRM 6.5 を F-RevoCRM 7.4 にバージョンアップする手順になります。
 
 ### 前提条件
 * F-RevoCRM 6.5 であること（パッチバージョンは問わない）
@@ -154,7 +163,7 @@ F-RevoCRMのデータベース、ファイルを全てバックアップを取�
 # コマンド例
 mv frevocrm frevocrm.20201001
 ```
-2. F-RevoCRM 7.3 インストール直後のファイルをもともとのF-RevoCRMのディレクトリとしてコピーします。
+2. F-RevoCRM 7.4 インストール直後のファイルをもともとのF-RevoCRMのディレクトリとしてコピーします。
 ```
 # コマンド例
 cp -r frevocrm73 frevocrm
@@ -173,7 +182,7 @@ cp -r frevocrm.20201001/storage/* frevocrm/storage/
 ```
 
 ### 3. マイグレーションツールの実行
-タグとしてv7.3.xが追加されるまで、Migrationは実行されません。  
+タグとしてv7.4.xが追加されるまで、Migrationは実行されません。  
 最新のバージョンで実行したい場合は、`vtigerversion.php`のファイルを編集し、次のバージョンを指定してから以下のマイグレーション用のURLを実行してください。
 
 1. アクセスすると自動でマイグレーションが実行されます。
