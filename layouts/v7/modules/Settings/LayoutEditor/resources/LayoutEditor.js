@@ -1588,6 +1588,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 			var currentTarget = jQuery(e.currentTarget);
 			var fieldId = currentTarget.data('fieldId');
 			var message = app.vtranslate('JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE');
+			var empty = true;
 			if (currentTarget.data('oneOneRelationship') == "1") {
 				message = app.vtranslate('JS_ONE_ONE_RELATION_FIELD_DELETE', currentTarget.data('currentFieldLabel'), currentTarget.data('currentModuleLabel'),
 						currentTarget.data('relationFieldLabel'), currentTarget.data('relationModuleLabel'));
@@ -1599,6 +1600,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 
 			app.helper.showConfirmationBox({'title': app.vtranslate('LBL_WARNING'),
 				'message'	: message,
+				'empty' 	: empty,
 				buttons		:{
 								cancel	: {label: 'No', className: 'btn-default confirm-box-btn-pad pull-right'},
 								confirm	: {label: app.vtranslate('JS_FIELD_DELETE_CONFIRMATION'), className: 'confirm-box-ok confirm-box-btn-pad btn-primary'}
@@ -1623,9 +1625,11 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 	 * Function to delete the custom field
 	 */
 	deleteCustomField: function (fieldId) {
+		debugger;
 		var thisInstance = this;
 		var aDeferred = jQuery.Deferred();
 		app.helper.showProgress();
+		var isReplaceEmpty = $('.bootbox-body input').is(":checked");
 
 		var params = {};
 		params['module'] = thisInstance.getModuleName();
@@ -1633,6 +1637,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		params['action'] = 'Field';
 		params['mode'] = 'delete';
 		params['fieldid'] = fieldId;
+		params['isReplaceEmptyColumn'] = isReplaceEmpty;
 
 		app.request.post({'data': params}).then(
 			function (err, data) {
