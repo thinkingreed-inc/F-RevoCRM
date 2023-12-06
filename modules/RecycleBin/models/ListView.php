@@ -81,7 +81,7 @@ class RecycleBin_ListView_Model extends Vtiger_ListView_Model {
 		}
 
 		$listQuery = $this->getQuery();
-		$listQuery = preg_replace("/vtiger_crmentity.deleted\s*=\s*0/i", 'vtiger_crmentity.deleted = 1', $listQuery);
+		$listQuery = preg_replace("/.deleted\s*=\s*0/i", '.deleted = 1', $listQuery);
 
 		$startIndex = $pagingModel->getStartIndex();
 		$pageLimit = $pagingModel->getPageLimit();
@@ -137,7 +137,7 @@ class RecycleBin_ListView_Model extends Vtiger_ListView_Model {
 		$queryGenerator->parseAdvFilterList($searchParams, $glue);
 
 		$listQuery = $queryGenerator->getQuery();
-		$listQuery = preg_replace("/vtiger_crmentity.deleted\s*=\s*0/i", 'vtiger_crmentity.deleted = 1', $listQuery);
+		$listQuery = preg_replace("/.deleted\s*=\s*0/i", '.deleted = 1', $listQuery);
 
 		$position = stripos($listQuery, ' from ');
 		if ($position) {
