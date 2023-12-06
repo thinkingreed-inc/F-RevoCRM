@@ -85,7 +85,7 @@ class Vtiger_ModuleMeta_Model extends Vtiger_Base_Model {
 		$accessibleFields = $this->getAccessibleFields($this->moduleName);
 		$mergableFields = array();
 		foreach($accessibleFields as $fieldName => $fieldInstance) {
-			if(intval($fieldInstance->getPresence()) === 1) { 
+			if(intval($fieldInstance->getPresence()) === 1 || $fieldInstance->getUIType() === "666") { 
                             continue;
 			}
 			// We need to avoid Last Modified by or any such User reference field
