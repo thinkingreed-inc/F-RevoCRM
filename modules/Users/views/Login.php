@@ -61,7 +61,11 @@ class Users_Login_View extends Vtiger_View_Controller {
 				$blockData['displayTitle'] = textlength_check($item->title);
 
 				vglobal('listview_max_textlength', 200);
-				$blockData['displaySummary'] = textlength_check(strip_tags(print_r($item->description, true)));
+				if(count((array)$item->description) > 0){
+					$blockData['displaySummary'] = textlength_check(strip_tags(print_r($item->description, true)));
+				}else{
+					$blockData['displaySummary'] = '';
+				}
 				$finalJsonData[$blockData['type']][] = $blockData;
 			}
 		}
