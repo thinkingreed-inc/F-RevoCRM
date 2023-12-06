@@ -8,7 +8,7 @@
  * All Rights Reserved.
  * ******************************************************************************* */
 if(defined('VTIGER_UPGRADE')) {
-     updateVtlibModule('Google', 'packages/vtiger/optional/Google.zip', false);
+     updateVtlibModuleWithoutFiles('Google', 'packages/vtiger/optional/Google.zip', false);
 }
 if(defined('INSTALLATION_MODE')) {
 		// Set of task to be taken care while specifically in installation mode.

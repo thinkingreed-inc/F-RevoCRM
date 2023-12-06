@@ -529,22 +529,22 @@ class Install_Utils_Model {
 	}
 
 	public static function initSchemas() {
-		installVtlibModule('Import', 'packages/vtiger/mandatory/Import.zip', false, false);
-		installVtlibModule('ModTracker', 'packages/vtiger/mandatory/ModTracker.zip', false, false);
-		installVtlibModule('MailManager', 'packages/vtiger/mandatory/MailManager.zip', false, false);
-		installVtlibModule('WSAPP', 'packages/vtiger/mandatory/WSAPP.zip', false, false);
-		installVtlibModule('ServiceContracts', "packages/vtiger/mandatory/ServiceContracts.zip", false, false);
-		installVtlibModule('Services', "packages/vtiger/mandatory/Services.zip", false, false);
-		installVtlibModule('Mobile', 'packages/vtiger/mandatory/Mobile.zip', false, false);
-		installVtlibModule('ModComments', "packages/vtiger/optional/ModComments.zip", false, false);
-		installVtlibModule('RecycleBin', 'packages/vtiger/optional/RecycleBin.zip', false, false);
-		installVtlibModule('ProjectMilestone', "packages/vtiger/optional/Projects/ProjectMilestone.zip", false, false);
-		installVtlibModule('ProjectTask', "packages/vtiger/optional/Projects/ProjectTask.zip", false, false);
-		installVtlibModule('Project', "packages/vtiger/optional/Projects/Project.zip", false, false);
-		installVtlibModule('SMSNotifier', "packages/vtiger/optional/SMSNotifier.zip", false, false);
-		installVtlibModule('Assets', 'packages/vtiger/optional/Assets.zip', false, false);
-		installVtlibModule("Webforms","packages/vtiger/optional/Webforms.zip", false, false);
-		installVtlibModule('CustomerPortal', 'packages/vtiger/optional/CustomerPortal.zip', false, false);
+		installVtlibModuleWithoutFiles('Import', 'packages/vtiger/mandatory/Import.zip', false, false);
+		installVtlibModuleWithoutFiles('ModTracker', 'packages/vtiger/mandatory/ModTracker.zip', false, false);
+		installVtlibModuleWithoutFiles('MailManager', 'packages/vtiger/mandatory/MailManager.zip', false, false);
+		installVtlibModuleWithoutFiles('WSAPP', 'packages/vtiger/mandatory/WSAPP.zip', false, false);
+		installVtlibModuleWithoutFiles('ServiceContracts', "packages/vtiger/mandatory/ServiceContracts.zip", false, false);
+		installVtlibModuleWithoutFiles('Services', "packages/vtiger/mandatory/Services.zip", false, false);
+		installVtlibModuleWithoutFiles('Mobile', 'packages/vtiger/mandatory/Mobile.zip', false, false);
+		installVtlibModuleWithoutFiles('ModComments', "packages/vtiger/optional/ModComments.zip", false, false);
+		installVtlibModuleWithoutFiles('RecycleBin', 'packages/vtiger/optional/RecycleBin.zip', false, false);
+		installVtlibModuleWithoutFiles('ProjectMilestone', "packages/vtiger/optional/Projects/ProjectMilestone.zip", false, false);
+		installVtlibModuleWithoutFiles('ProjectTask', "packages/vtiger/optional/Projects/ProjectTask.zip", false, false);
+		installVtlibModuleWithoutFiles('Project', "packages/vtiger/optional/Projects/Project.zip", false, false);
+		installVtlibModuleWithoutFiles('SMSNotifier', "packages/vtiger/optional/SMSNotifier.zip", false, false);
+		installVtlibModuleWithoutFiles('Assets', 'packages/vtiger/optional/Assets.zip', false, false);
+		installVtlibModuleWithoutFiles("Webforms","packages/vtiger/optional/Webforms.zip", false, false);
+		installVtlibModuleWithoutFiles('CustomerPortal', 'packages/vtiger/optional/CustomerPortal.zip', false, false);
 	}
 
 /*
