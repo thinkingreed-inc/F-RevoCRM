@@ -140,6 +140,10 @@ class Vtiger_ModuleMeta_Model extends Vtiger_Base_Model {
 			$moduleFields = $this->getAccessibleFields($moduleName);
 			$importableFields = array();
 			foreach($moduleFields as $fieldName => $fieldInstance) {
+				// 空白項目はスキップ
+				if($fieldInstance->getUIType() === "666"){
+					continue;
+				}
 				if(($this->isEditableField($fieldInstance)) || ($fieldInstance->getUIType() == 4) && ($fieldInstance->getTableName() != 'vtiger_crmentity' || $fieldInstance->getColumnName() != 'modifiedby')
                                    || ($fieldInstance->getUIType() == '70' && $fieldName != 'modifiedtime')) {
 					$importableFields[$fieldName] = $fieldInstance;
