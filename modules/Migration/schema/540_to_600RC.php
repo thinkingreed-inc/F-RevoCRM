@@ -18,22 +18,22 @@ vimport('~~modules/Users/Users.php');
 
 if(defined('VTIGER_UPGRADE')) {
 	//Collating all module package updates here
-	updateVtlibModule('Import', 'packages/vtiger/mandatory/Import.zip', false);
-	updateVtlibModule('MailManager', 'packages/vtiger/mandatory/MailManager.zip', false);
-	updateVtlibModule('Mobile', 'packages/vtiger/mandatory/Mobile.zip', false);
-	updateVtlibModule('ModTracker', 'packages/vtiger/mandatory/ModTracker.zip', false);
-	updateVtlibModule('Services', "packages/vtiger/mandatory/Services.zip", false);
-	updateVtlibModule('ServiceContracts', "packages/vtiger/mandatory/ServiceContracts.zip", false);
-	updateVtlibModule('WSAPP', 'packages/vtiger/mandatory/WSAPP.zip', false);
-	updateVtlibModule('Assets', 'packages/vtiger/optional/Assets.zip', false);
-	updateVtlibModule('CustomerPortal', 'packages/vtiger/optional/CustomerPortal.zip', false);
-	updateVtlibModule('ModComments', "packages/vtiger/optional/ModComments.zip", false);
-	updateVtlibModule('Projects', "packages/vtiger/optional/Projects.zip", false);
-	updateVtlibModule('RecycleBin', 'packages/vtiger/optional/RecycleBin.zip', false);
-	updateVtlibModule('SMSNotifier', "packages/vtiger/optional/SMSNotifier.zip", false);
-	updateVtlibModule("Webforms","packages/vtiger/optional/Webforms.zip", false);
-	installVtlibModule('Google', 'packages/vtiger/optional/Google.zip', false, false);
-	installVtlibModule('EmailTemplates', 'packages/vtiger/optional/EmailTemplates.zip', false, false);
+	updateVtlibModuleWithoutFiles('Import', 'packages/vtiger/mandatory/Import.zip', false);
+	updateVtlibModuleWithoutFiles('MailManager', 'packages/vtiger/mandatory/MailManager.zip', false);
+	updateVtlibModuleWithoutFiles('Mobile', 'packages/vtiger/mandatory/Mobile.zip', false);
+	updateVtlibModuleWithoutFiles('ModTracker', 'packages/vtiger/mandatory/ModTracker.zip', false);
+	updateVtlibModuleWithoutFiles('Services', "packages/vtiger/mandatory/Services.zip", false);
+	updateVtlibModuleWithoutFiles('ServiceContracts', "packages/vtiger/mandatory/ServiceContracts.zip", false);
+	updateVtlibModuleWithoutFiles('WSAPP', 'packages/vtiger/mandatory/WSAPP.zip', false);
+	updateVtlibModuleWithoutFiles('Assets', 'packages/vtiger/optional/Assets.zip', false);
+	updateVtlibModuleWithoutFiles('CustomerPortal', 'packages/vtiger/optional/CustomerPortal.zip', false);
+	updateVtlibModuleWithoutFiles('ModComments', "packages/vtiger/optional/ModComments.zip", false);
+	updateVtlibModuleWithoutFiles('Projects', "packages/vtiger/optional/Projects.zip", false);
+	updateVtlibModuleWithoutFiles('RecycleBin', 'packages/vtiger/optional/RecycleBin.zip', false);
+	updateVtlibModuleWithoutFiles('SMSNotifier', "packages/vtiger/optional/SMSNotifier.zip", false);
+	updateVtlibModuleWithoutFiles("Webforms","packages/vtiger/optional/Webforms.zip", false);
+	installVtlibModuleWithoutFiles('Google', 'packages/vtiger/optional/Google.zip', false, false);
+	installVtlibModuleWithoutFiles('EmailTemplates', 'packages/vtiger/optional/EmailTemplates.zip', false, false);
 
 	// updated language packs.
 
