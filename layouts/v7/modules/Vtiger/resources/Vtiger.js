@@ -594,6 +594,15 @@ Vtiger.Class('Vtiger_Index_Js', {
 	 * @returns {undefined}
 	 */
 	quickCreateSave : function(form,invokeParams){
+		//ckeditorで入力された値をupdateElement()でtextareaへ反映させるイベントをセット
+		$("[name=\"saveButton\"]").on("click", function(){
+			if (typeof CKEDITOR != 'undefined') {
+				for (var idx in CKEDITOR.instances) {
+					CKEDITOR.instances[idx].updateElement();
+				}
+			}
+		});
+
 		var params = {
 			submitHandler: function(form) {
 				// to Prevent submit if already submitted
