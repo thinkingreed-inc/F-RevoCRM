@@ -655,7 +655,7 @@ Vtiger_Field_Js('AdvanceFilter_Field_Js',{},{
 		var currentModule = app.getModuleName();
 
 		var type = this.getType();
-		if(type == 'picklist' || type == 'multipicklist' || type == 'owner' || type == 'ownergroup' || type == 'date' || type == 'datetime' || type == 'currencyList') {
+		if(type == 'picklist' || type == 'multipicklist' || type == 'owner' || type == 'ownergroup' || type == 'date' || type == 'datetime' || type == 'currencyList' || type == 'documentsFolder') {
             currentModule = 'AdvanceFilter';
 		}
 		return currentModule;
@@ -791,6 +791,40 @@ Vtiger_Multipicklist_Field_Js('AdvanceFilter_Multipicklist_Field_Js',{},{
 		} else {	
 			return this._super();
 		} 
+	}
+});
+
+Vtiger_Documentsfolder_Field_Js('AdvanceFilter_Documentsfolder_Field_Js',{},{
+
+	/**
+	 * Function to get the ui
+	 * @return - select element and chosen element
+	 */
+	getUi : function() {
+		//added class inlinewidth
+		var html = '<select class="select2 inputElement inlinewidth" name="'+ this.getName() +'" id="field_Documents_'+this.getName()+'">';
+		var pickListValues = this.getPickListValues();
+		var selectedOption = app.htmlDecode(this.getValue());
+
+		if(typeof pickListValues[' '] == 'undefined' || pickListValues[' '].length <= 0 || pickListValues[' '] != 'Select an Option') {
+			html += '<option value="">'+app.vtranslate('JS_SELECT_OPTION')+'</option>';
+		}
+
+		var data = this.getData();
+
+		var fieldName = this.getName();
+		for(var option in pickListValues) {
+			html += '<option value="'+pickListValues[option]+'" ';
+			if(pickListValues[option] == selectedOption) {
+				html += ' selected ';
+			}
+			html += '>'+pickListValues[option]+'</option>';
+		}
+		html +='</select>';
+
+		var selectContainer = jQuery(html);
+		this.addValidationToElement(selectContainer);
+		return selectContainer;
 	}
 });
 
