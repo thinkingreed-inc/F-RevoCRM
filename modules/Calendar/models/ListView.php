@@ -183,7 +183,9 @@ class Calendar_ListView_Model extends Vtiger_ListView_Model {
 		$queryGenerator = $this->get('query_generator');
 		$listViewContoller = $this->get('listview_controller');
 		$listViewFields = array('visibility','assigned_user_id');
-		$queryGenerator->setFields(array_unique(array_merge($queryGenerator->getFields(), $listViewFields)));
+		
+		$querySetFields = $queryGenerator->getFields();
+		$queryGenerator->setFields(array_unique(array_merge($querySetFields, $listViewFields)));
 		
         $searchParams = $this->get('search_params');
         if(empty($searchParams)) {
@@ -204,6 +206,10 @@ class Calendar_ListView_Model extends Vtiger_ListView_Model {
 		}
         
         $orderBy = $this->getForSql('orderby');
+		if(is_countable($querySetFields) && !in_array($orderBy, $querySetFields, true)) {
+			$orderBy = '';
+		}
+		
 		$sortOrder = $this->getForSql('sortorder');
         if(empty($sortOrder)) {
             $sortOrder = 'DESC';
