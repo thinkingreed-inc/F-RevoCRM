@@ -124,7 +124,7 @@ class Activity extends CRMEntity {
 				//var $groupTable = Array('vtiger_activitygrouprelation','activityid');
         function __construct()
         {
-            $this->log = LoggerManager::getLogger('Calendar');
+            $this->log = Logger::getLogger('Calendar');
             $this->db = PearDatabase::getInstance();
             $this->column_fields = getColumnFields('Calendar');
         }
@@ -154,7 +154,7 @@ class Activity extends CRMEntity {
 			if(!in_array($request_assigned_user_id, $this->invitee_array)){
 				$this->invitee_array[] = $request_assigned_user_id;
 			}
-		} else if(empty($this->invitee_array) && count($_REQUEST['selectedusers']) > 0){// 概要欄や関連からの遷移の場合
+		} else if(empty($this->invitee_array) && php7_count($_REQUEST['selectedusers']) > 0){// 概要欄や関連からの遷移の場合
 			$this->invitee_array = $_REQUEST['selectedusers'];
 			$smownerid = $this->column_fields['assigned_user_id'];
 			$request_assigned_user_id = $_REQUEST['assigned_user_id'];
@@ -195,7 +195,7 @@ class Activity extends CRMEntity {
 			if(isset($_REQUEST['contactidlist']) && $_REQUEST['contactidlist'] != '') {
 				$adb->pquery( 'DELETE from vtiger_cntactivityrel WHERE activityid = ?', array($recordId));
 				$contactIdsList = explode (';', $_REQUEST['contactidlist']);
-				$count = count($contactIdsList);
+				$count = php7_count($contactIdsList);
 				$params=array();
 				$sql = 'INSERT INTO vtiger_cntactivityrel VALUES ';
 				for($i=0; $i<$count; $i++) {
@@ -522,6 +522,9 @@ function insertIntoRecurringTable(& $recurObj)
 						$inviteRecord->getEntity()->saveentity($module, $inviteRecord->getId());
 					}else{
 						foreach($this->column_fields as $field => $value) {
+							if(empty($global_workflow_skip_field_array[$activityid])) {
+								$global_workflow_skip_field_array[$activityid] = array();
+							}
 							// フィールドの更新ワークフローで既に更新している項目は、招待元からコピーしないようにする。
 							if(in_array($field, $this->notCopyFields) || in_array($field, $global_workflow_skip_field_array[$activityid])) {
 								continue;
@@ -600,7 +603,7 @@ function insertIntoRecurringTable(& $recurObj)
 		$sql_qry = "insert into vtiger_salesmanactivityrel (smid,activityid) values(?,?)";
 			$adb->pquery($sql_qry, array($this->column_fields['assigned_user_id'], $this->id));
 
-		if(isset($invitees_array) && count($invitees_array) > 0)
+		if(isset($invitees_array) && php7_count($invitees_array) > 0)
 		{
 			// $selected_users_string =  $_REQUEST['inviteesid'];
 			// $invitees_array = explode(';',$selected_users_string);
@@ -965,7 +968,7 @@ function insertIntoRecurringTable(& $recurObj)
 		$profileList = getCurrentUserProfileList();
 		$sql1 = "select tablename,columnname from vtiger_field inner join vtiger_profile2field on vtiger_profile2field.fieldid=vtiger_field.fieldid inner join vtiger_def_org_field on vtiger_def_org_field.fieldid=vtiger_field.fieldid where vtiger_field.tabid=9 and tablename <> 'vtiger_recurringevents' and tablename <> 'vtiger_activity_reminder' and vtiger_field.displaytype in (1,2,4,3) and vtiger_profile2field.visible=0 and vtiger_def_org_field.visible=0 and vtiger_field.presence in (0,2)";
 		$params1 = array();
-		if (count($profileList) > 0) {
+		if (php7_count($profileList) > 0) {
 			$sql1 .= " and vtiger_profile2field.profileid in (". generateQuestionMarks($profileList) .")";
 			array_push($params1, $profileList);
 		}
@@ -983,7 +986,7 @@ function insertIntoRecurringTable(& $recurObj)
 		}
 		$permitted_lists = array_chunk($permitted_lists,2);
 		$column_table_lists = array();
-		for($i=0;$i < count($permitted_lists);$i++)
+		for($i=0;$i < php7_count($permitted_lists);$i++)
 		{
 			$column_table_lists[] = implode(".",$permitted_lists[$i]);
 		}
@@ -1024,7 +1027,7 @@ function insertIntoRecurringTable(& $recurObj)
 			$profileList = getCurrentUserProfileList();
 			$sql1 = "select tablename,columnname from vtiger_field inner join vtiger_profile2field on vtiger_profile2field.fieldid=vtiger_field.fieldid inner join vtiger_def_org_field on vtiger_def_org_field.fieldid=vtiger_field.fieldid where vtiger_field.tabid=9 and tablename <> 'vtiger_recurringevents' and tablename <> 'vtiger_activity_reminder' and vtiger_field.displaytype in (1,2,4,3) and vtiger_profile2field.visible=0 and vtiger_def_org_field.visible=0 and vtiger_field.presence in (0,2)";
 			$params1 = array();
-			if (count($profileList) > 0) {
+			if (php7_count($profileList) > 0) {
 				$sql1 .= " and vtiger_profile2field.profileid in (". generateQuestionMarks($profileList) .")";
 				array_push($params1,$profileList);
 			}
@@ -1047,7 +1050,7 @@ function insertIntoRecurringTable(& $recurObj)
 		}
 		$permitted_lists = array_chunk($permitted_lists,2);
 		$column_table_lists = array();
-		for($i=0;$i < count($permitted_lists);$i++)
+		for($i=0;$i < php7_count($permitted_lists);$i++)
 		{
 			$column_table_lists[] = implode(".",$permitted_lists[$i]);
 		}

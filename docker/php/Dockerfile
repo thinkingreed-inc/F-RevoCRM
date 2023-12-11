@@ -1,4 +1,4 @@
-FROM php:7.4-apache
+FROM php:8.3-apache
 RUN usermod -u 1000 www-data
 RUN groupmod -g 1000 www-data
 RUN set -xe; \
@@ -31,5 +31,14 @@ RUN set -xe; \
     # for imap
     && docker-php-ext-configure imap --with-kerberos --with-imap-ssl && \
     docker-php-ext-install -j$(nproc) imap
-RUN pecl install xdebug-3.1.6 \
-  && docker-php-ext-enable xdebug
+#RUN pecl install xdebug-3.1.6 \
+#  && docker-php-ext-enable xdebug
+
+COPY --from=composer/composer /usr/bin/composer /usr/bin/composer
+
+ENV COMPOSER_ALLOW_SUPERUSER 1
+ENV COMPOSER_HOME /composer
+ENV PATH $PATH:/composer/vendor/bin
+
+WORKDIR /var/www/html
+#RUN composer install

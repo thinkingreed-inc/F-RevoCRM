@@ -26,7 +26,7 @@ class Vtiger_Mailer extends PHPMailer {
 	/**
 	 * Constructor
 	 */
-	function __construct() {
+	function __construct($exceptions=null) {
 		global $default_charset;
 		parent::__construct();
 		$this->initialize();
@@ -261,10 +261,10 @@ class Vtiger_Mailer extends PHPMailer {
 				$emails = $adb->pquery('SELECT * FROM vtiger_mailer_queueinfo WHERE id=?', Array($queueid));
 				for($eidx = 0; $eidx < $adb->num_rows($emails); ++$eidx) {
 					$email_record = $adb->fetch_array($emails, $eidx);
-					if($email_record[type] == 'TO')     $mailer->AddAddress($email_record[email], $email_record[name]);
-					else if($email_record[type] == 'CC')$mailer->AddCC($email_record[email], $email_record[name]);
-					else if($email_record[type] == 'BCC')$mailer->AddBCC($email_record[email], $email_record[name]);
-					else if($email_record[type] == 'RPLYTO')$mailer->AddReplyTo($email_record[email], $email_record[name]);
+					if($email_record['type'] == 'TO')     $mailer->AddAddress($email_record['email'], $email_record['name']);
+					else if($email_record['type'] == 'CC')$mailer->AddCC($email_record['email'], $email_record['name']);
+					else if($email_record['type'] == 'BCC')$mailer->AddBCC($email_record['email'], $email_record['name']);
+					else if($email_record['type'] == 'RPLYTO')$mailer->AddReplyTo($email_record['email'], $email_record['name']);
 				}
 
 				$attachments = $adb->pquery('SELECT * FROM vtiger_mailer_queueattachments WHERE id=?', Array($queueid));

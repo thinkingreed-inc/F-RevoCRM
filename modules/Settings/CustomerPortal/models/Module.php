@@ -228,7 +228,7 @@ class Settings_CustomerPortal_Module_Model extends Settings_Vtiger_Module_Model 
 		return $fieldInfo;
 	}
 
-	public function updateFields($tabId, $fieldJson) {
+	public static function updateFields($tabId, $fieldJson) {
 		$db = PearDatabase::getInstance();
 		$db->pquery('INSERT INTO vtiger_customerportal_fields(tabid, fieldinfo) VALUES(?,?) ON DUPLICATE KEY UPDATE fieldinfo = ?', array($tabId, $fieldJson, $fieldJson));
 	}
@@ -272,7 +272,7 @@ class Settings_CustomerPortal_Module_Model extends Settings_Vtiger_Module_Model 
 	//Function to check if the field is editable on Portal depending on its
 	//module field name and wether it is editable in CRM or No.,
 
-	public function isFieldCustomerPortalEditable($crmStatus, $value, $module) {
+	public static function isFieldCustomerPortalEditable($crmStatus, $value, $module) {
 		$isFieldEditable = 0;
 		if ($crmStatus && $value->name !== 'assigned_user_id' && $value->name !== 'contact_id') {
 			$isFieldEditable = 1;

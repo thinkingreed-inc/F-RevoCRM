@@ -78,7 +78,7 @@
                         </div>
                     {/foreach}
                     {assign var=SELECTED_SORT_FEILDS_ARRAY value=$SELECTED_SORT_FIELDS}
-                    {assign var=SELECTED_SORT_FIELDS_COUNT value=count($SELECTED_SORT_FEILDS_ARRAY)}
+                    {assign var=SELECTED_SORT_FIELDS_COUNT value=php7_count($SELECTED_SORT_FEILDS_ARRAY)}
                     {while $SELECTED_SORT_FIELDS_COUNT lt 3 }
                         <div class="row sortFieldRow" style="padding:10px;">
                             {include file='RelatedFields.tpl'|@vtemplate_path:$MODULE ROW_VAL=$ROW_VAL}

@@ -70,7 +70,7 @@ class Inventory_Record_Model extends Vtiger_Record_Model {
 	function getProducts() {
 		$numOfCurrencyDecimalPlaces = getCurrencyDecimalPlaces();
 		$relatedProducts = getAssociatedProducts($this->getModuleName(), $this->getEntity());
-		$productsCount = count($relatedProducts);
+		$productsCount = php7_count($relatedProducts);
 
 		//Updating Tax details
 		$taxtype = $relatedProducts[1]['final_details']['taxtype'];
@@ -82,7 +82,7 @@ class Inventory_Record_Model extends Vtiger_Record_Model {
 
 			if ($taxtype == 'individual') {
 				$taxDetails = getTaxDetailsForProduct($productId, 'all');
-				$taxCount = count($taxDetails);
+				$taxCount = php7_count($taxDetails);
 				$taxTotal = '0';
 
 				for($j=0; $j<$taxCount; $j++) {
@@ -385,7 +385,7 @@ class Inventory_Record_Model extends Vtiger_Record_Model {
 	public function getProductsForPurchaseOrder() {
 		$relatedProducts = $this->getProducts();
 
-		$productsCount = count($relatedProducts);
+		$productsCount = php7_count($relatedProducts);
 		for ($i = 1; $i <= $productsCount; $i++) {
 			$relatedProducts[$i]['discountTotal'.$i] = 0;
 			$relatedProducts[$i]['discount_percent'.$i] = 0;
@@ -470,7 +470,9 @@ class Inventory_Record_Model extends Vtiger_Record_Model {
 		$selectedCharges = $this->getCharges();
 		$conversionRateInfo = getCurrencySymbolandCRate($this->get('currency_id'));
 		foreach ($selectedCharges as $chargeId => $chargeInfo) {
-			$selectedCharges[$chargeId]['value'] = (float)$chargeInfo['value'] / (float)$conversionRateInfo['rate'];
+			if($conversionRateInfo['rate'] != 0) {
+				$selectedCharges[$chargeId]['value'] = (float)$chargeInfo['value'] / (float)$conversionRateInfo['rate'];
+			}
 		}
 
 		foreach (Inventory_TaxRegion_Model::getAllTaxRegions() as $regionId => $regionModel) {

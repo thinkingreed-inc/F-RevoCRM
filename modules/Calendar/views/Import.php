@@ -61,7 +61,7 @@ class Calendar_Import_View extends Vtiger_Import_View {
 
 			$ical = new iCal();
 			$icalActivities = $ical->iCalReader("IMPORT_".$userId);
-			$noOfActivities = count($icalActivities);
+			$noOfActivities = php7_count($icalActivities);
 
 			for($i=0; $i<$noOfActivities; $i++) {
 				if($icalActivities[$i]['TYPE'] == 'VEVENT') {

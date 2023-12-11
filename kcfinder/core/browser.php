@@ -56,7 +56,7 @@ class browser extends uploader {
             'pattern' => '/^.*\.zip$/i'
         ));
 
-        if (is_array($files) && count($files)) {
+        if (is_array($files) && php7_count($files)) {
             $time = time();
             foreach ($files as $file)
                 if (is_file($file) && ($time - filemtime($file) > 3600))
@@ -123,7 +123,7 @@ class browser extends uploader {
     protected function act_init() {
         $tree = $this->getDirInfo($this->typeDir);
         $tree['dirs'] = $this->getTree($this->session['dir']);
-        if (!is_array($tree['dirs']) || !count($tree['dirs']))
+        if (!is_array($tree['dirs']) || !php7_count($tree['dirs']))
             unset($tree['dirs']);
         $tree = $this->xmlTree($tree);
         $files = $this->getFiles($this->session['dir']);
@@ -237,9 +237,9 @@ class browser extends uploader {
         if (!dir::isWritable($dir))
             $this->errorMsg("Cannot delete the folder.");
         $result = !dir::prune($dir, false);
-        if (is_array($result) && count($result))
+        if (is_array($result) && php7_count($result))
             $this->errorMsg("Failed to delete {count} files/folders.",
-                array('count' => count($result)));
+                array('count' => php7_count($result)));
         $thumbDir = "$this->thumbsTypeDir/{$this->post['dir']}";
         if (is_dir($thumbDir)) dir::prune($thumbDir);
         return $this->output();
@@ -370,7 +370,7 @@ class browser extends uploader {
             !isset($this->post['dir']) ||
             !is_dir($dir) || !is_readable($dir) || !dir::isWritable($dir) ||
             !isset($this->post['files']) || !is_array($this->post['files']) ||
-            !count($this->post['files'])
+            !php7_count($this->post['files'])
         )
             $this->errorMsg("Unknown error.");
 
@@ -410,7 +410,7 @@ class browser extends uploader {
                 }
             }
         }
-        if (count($error))
+        if (php7_count($error))
             return $this->output(array('message' => $error), "error");
         return true;
     }
@@ -421,7 +421,7 @@ class browser extends uploader {
             !isset($this->post['dir']) ||
             !is_dir($dir) || !is_readable($dir) || !dir::isWritable($dir) ||
             !isset($this->post['files']) || !is_array($this->post['files']) ||
-            !count($this->post['files'])
+            !php7_count($this->post['files'])
         )
             $this->errorMsg("Unknown error.");
 
@@ -461,7 +461,7 @@ class browser extends uploader {
                 }
             }
         }
-        if (count($error))
+        if (php7_count($error))
             return $this->output(array('message' => $error), "error");
         return true;
     }
@@ -470,7 +470,7 @@ class browser extends uploader {
         if ($this->config['readonly'] ||
             !isset($this->post['files']) ||
             !is_array($this->post['files']) ||
-            !count($this->post['files'])
+            !php7_count($this->post['files'])
         )
             $this->errorMsg("Unknown error.");
 
@@ -493,7 +493,7 @@ class browser extends uploader {
                 if (is_file($thumb)) @unlink($thumb);
             }
         }
-        if (count($error))
+        if (php7_count($error))
             return $this->output(array('message' => $error), "error");
         return true;
     }
@@ -649,7 +649,7 @@ class browser extends uploader {
 
     protected function xmlTree(array $tree) {
         $xml = '<dir readable="' . ($tree['readable'] ? "yes" : "no") . '" writable="' . ($tree['writable'] ? "yes" : "no") . '" removable="' . ($tree['removable'] ? "yes" : "no") . '" hasDirs="' . ($tree['hasDirs'] ? "yes" : "no") . '"' . (isset($tree['current']) ? ' current="yes"' : '') . '><name>' . text::xmlData($tree['name']) . '</name>';
-        if (isset($tree['dirs']) && is_array($tree['dirs']) && count($tree['dirs'])) {
+        if (isset($tree['dirs']) && is_array($tree['dirs']) && php7_count($tree['dirs'])) {
             $xml .= "<dirs>";
             foreach ($tree['dirs'] as $dir)
                 $xml .= $this->xmlTree($dir);
@@ -663,7 +663,7 @@ class browser extends uploader {
         $path = explode("/", $dir);
 
         $pdir = "";
-        for ($i = 0; ($i <= $index && $i < count($path)); $i++)
+        for ($i = 0; ($i <= $index && $i < php7_count($path)); $i++)
             $pdir .= "/{$path[$i]}";
         if (strlen($pdir))
             $pdir = substr($pdir, 1);
@@ -672,17 +672,17 @@ class browser extends uploader {
 
         $dirs = $this->getDirs($fdir);
 
-        if (is_array($dirs) && count($dirs) && ($index <= count($path) - 1)) {
+        if (is_array($dirs) && php7_count($dirs) && ($index <= php7_count($path) - 1)) {
 
             foreach ($dirs as $i => $cdir) {
                 if ($cdir['hasDirs'] &&
                     (
-                        ($index == count($path) - 1) ||
+                        ($index == php7_count($path) - 1) ||
                         ($cdir['name'] == $path[$index + 1])
                     )
                 ) {
                     $dirs[$i]['dirs'] = $this->getTree($dir, $index + 1);
-                    if (!is_array($dirs[$i]['dirs']) || !count($dirs[$i]['dirs'])) {
+                    if (!is_array($dirs[$i]['dirs']) || !php7_count($dirs[$i]['dirs'])) {
                         unset($dirs[$i]['dirs']);
                         continue;
                     }
@@ -735,7 +735,7 @@ class browser extends uploader {
             foreach ($dirs as $key => $cdir)
                 if (substr(basename($cdir), 0, 1) == ".")
                     unset($dirs[$key]);
-            $hasDirs = count($dirs) ? true : false;
+            $hasDirs = php7_count($dirs) ? true : false;
         } else
             $hasDirs = false;
 

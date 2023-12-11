@@ -488,7 +488,7 @@ function insertSelectColumns($queryid,$columnname)
 	global $adb;
 	if($queryid != "")
 	{
-		for($i=0;$i < count($columnname);$i++)
+		for($i=0;$i < php7_count($columnname);$i++)
 		{
 			$icolumnsql = "insert into vtiger_selectcolumn (QUERYID,COLUMNINDEX,COLUMNNAME) values (?,?,?)";
 			$icolumnsqlresult = $adb->pquery($icolumnsql, array($queryid, $i, $columnname[$i]));

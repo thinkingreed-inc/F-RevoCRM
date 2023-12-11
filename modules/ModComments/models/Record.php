@@ -118,14 +118,14 @@ class ModComments_Record_Model extends Vtiger_Record_Model {
 			if (!empty($customer)) {
 				$recordModel = Vtiger_Record_Model::getInstanceById($customer);
 				$imageDetails = $recordModel->getImageDetails();
-				if(!empty($imageDetails)) {
+				if (!empty($imageDetails[0]['url'])) {
 					return $imageDetails[0]['url'];
 				} else
 					return vimage_path('CustomerPortal.png');
 			} else {
-				$imagePath = $commentor->getImageDetails();
-				if (!empty($imagePath[0]['name'])) {
-					return $imagePath[0]['url'];
+				$imageDetails = $commentor->getImageDetails();
+				if (!empty($imageDetails[0]['url'])) {
+					return $imageDetails[0]['url'];
 				}
 			}
 		} elseif ($isMailConverterType) {
@@ -141,10 +141,10 @@ class ModComments_Record_Model extends Vtiger_Record_Model {
 	 */
 	public static function getInstanceById($record, $module=null) {
 		$db = PearDatabase::getInstance();
-		$result = $db->pquery('SELECT vtiger_modcomments.*, vtiger_crmentity.smownerid,
+		$result = $db->pquery('SELECT vtiger_modcomments.*, vtiger_modcomments.smownerid,
 					vtiger_crmentity.createdtime, vtiger_crmentity.modifiedtime FROM vtiger_modcomments
 					INNER JOIN vtiger_crmentity ON vtiger_modcomments.modcommentsid = vtiger_crmentity.crmid
-					WHERE modcommentsid = ? AND deleted = 0', array($record));
+					WHERE modcommentsid = ? AND vtiger_modcomments.deleted = 0', array($record));
 		if($db->num_rows($result)) {
 			$row = $db->query_result_rowdata($result, $i);
 			$self = new self();

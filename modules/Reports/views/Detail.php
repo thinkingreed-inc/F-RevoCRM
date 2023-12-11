@@ -211,7 +211,7 @@ class Reports_Detail_View extends Vtiger_Index_View {
 		$viewer->assign('GROUPING_MODULES', $groupingModules);
 		$viewer->assign('INCLUDED_UNDERBAR_LABELS', $includedUnderbar);
 		$viewer->assign('REPORT_RUN_INSTANCE', ReportRun::getInstance($record));
-		if (count($data) > self::REPORT_LIMIT) {
+		if (php7_count($data) > self::REPORT_LIMIT) {
 			$viewer->assign('LIMIT_EXCEEDED', true);
 		}
 

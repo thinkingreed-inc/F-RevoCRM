@@ -5,7 +5,7 @@
 .setting
 .project
 .idea/*
-logs/*
+logs/*.log
 cache/images/*
 !cache/images/.htaccess
 cache/import/*
@@ -35,3 +35,4 @@ config.inc.php
 .vscode
 docker-compose.override.yml
 .env
+/vendor

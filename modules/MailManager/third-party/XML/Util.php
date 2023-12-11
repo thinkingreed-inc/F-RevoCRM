@@ -421,7 +421,7 @@ class XML_Util
             if ($sort) {
                 ksort($attributes);
             }
-            if (!$multiline || count($attributes) == 1) {
+            if (!$multiline || php7_count($attributes) == 1) {
                 foreach ($attributes as $key => $value) {
                     if ($entities != XML_UTIL_ENTITIES_NONE) {
                         if ($entities === XML_UTIL_CDATA_SECTION) {
@@ -882,7 +882,7 @@ class XML_Util
     public static function isValidName($string)
     {
         // check for invalid chars
-        if (!preg_match('/^[[:alpha:]_]\\z/', $string{0})) {
+        if (!preg_match('/^[[:alpha:]_]\\z/', $string[0])) {
             return XML_Util::raiseError(
                 'XML names may only start with letter or underscore',
                 XML_UTIL_ERROR_INVALID_START

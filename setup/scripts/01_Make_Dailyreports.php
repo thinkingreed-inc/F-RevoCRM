@@ -244,7 +244,7 @@ $module->enableTools(array('Import', 'Export', 'Merge'));
  */
 $log->debug("[START] Add Comments function");
 $modules = array('Dailyreports');
-for( $i=0; $i<count($modules); $i++) {
+for( $i=0; $i<php7_count($modules); $i++) {
     $modulename = $modules[$i];
     $moduleinstance = vtiger_module::getinstance($modulename);
 

@@ -37,7 +37,7 @@ class Leads_LeadsByIndustry_Dashboard extends Vtiger_IndexAjax_View {
 		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
 		$data = $moduleModel->getLeadsByIndustry($request->get('smownerid'),$dates);
         $listViewUrl = $moduleModel->getListViewUrlWithAllFilter();
-        for($i = 0;$i<count($data);$i++){
+        for($i = 0;$i<php7_count($data);$i++){
             $data[$i]["links"] = $listViewUrl.$this->getSearchParams($data[$i][2],$request->get('smownerid'), $request->get('dateFilter')).'&nolistcache=1';
         }
 

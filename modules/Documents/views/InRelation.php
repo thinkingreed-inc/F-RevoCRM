@@ -76,7 +76,7 @@ class Documents_InRelation_View extends Vtiger_RelatedList_View {
 		$header = $relationListView->getHeaders();
 		$noOfEntries = $pagingModel->get('_relatedlistcount');
 		if (!$noOfEntries) {
-			$noOfEntries = count($models);
+			$noOfEntries = php7_count($models);
 		}
 		$relationModel = $relationListView->getRelationModel();
 		$relatedModuleModel = $relationModel->getRelationModuleModel();

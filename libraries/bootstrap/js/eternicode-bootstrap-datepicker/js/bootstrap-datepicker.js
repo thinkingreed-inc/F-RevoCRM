@@ -910,13 +910,8 @@
 				tooltip;
 			if (isNaN(year) || isNaN(month))
 				return;
-			if (this.o.language == 'ja') {
-				this.picker.find('.datepicker-days thead .datepicker-switch')
-				.text((this.o.maxViewMode < 2 ? '' : year) + dates[this.o.language].year + ' ' + dates[this.o.language].months[month]);
-			} else {
-				this.picker.find('.datepicker-days thead .datepicker-switch')
-				.text(dates[this.o.language].months[month]+' '+ (this.o.maxViewMode < 2 ? '' : year));
-			}
+			this.picker.find('.datepicker-days thead .datepicker-switch')
+            .text(dates[this.o.language].months[month]+' '+ (this.o.maxViewMode < 2 ? '' : year));
       this.picker.find('tfoot .today')
 						.text(todaytxt)
 						.toggle(this.o.todayBtn !== false);

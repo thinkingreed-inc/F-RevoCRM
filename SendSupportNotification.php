@@ -28,7 +28,7 @@ require("config.php");
 global $adb;
 global $log;
 global $HELPDESK_SUPPORT_EMAIL_ID,$HELPDESK_SUPPORT_NAME;
-$log =& LoggerManager::getLogger('SendSupportNotification');
+$log = Logger::getLogger('SendSupportNotification');
 $log->debug(" invoked SendSupportNotification ");
 
 // retrieve the translated strings.

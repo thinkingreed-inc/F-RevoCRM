@@ -233,8 +233,8 @@ class Services extends CRMEntity {
 			if($_REQUEST[$cur_checkname] == 'on' || $_REQUEST[$cur_checkname] == 1 || $isQuickCreate)
 			{
 				$conversion_rate = $currency_details[$i]['conversionrate'];
-				$actual_conversion_rate = $service_base_conv_rate * $conversion_rate;
-				$converted_price = $actual_conversion_rate * $requestPrice;
+				$actual_conversion_rate = (float)$service_base_conv_rate * (float)$conversion_rate;
+				$converted_price = (float)$actual_conversion_rate * (float)$requestPrice;
 
 				$log->debug("Going to save the Product - $curname currency relationship");
 

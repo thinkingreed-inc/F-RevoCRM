@@ -132,8 +132,8 @@ Vtiger_List_Js("MailManager_List_Js", {}, {
 				settingContainer.find('.additional_settings').addClass('hide');
 			} else if(serverType == 'fastmail') {
 				useServer = 'mail.messagingengine.com';
-				useProtocol = 'IMAP2';
-				useSSLType = 'tls';
+				useProtocol = 'IMAP4';
+				useSSLType = 'ssl';
 				useCert = 'novalidate-cert';
 				settingContainer.find('.settings_details').removeClass('hide');
 				settingContainer.find('.additional_settings').addClass('hide');

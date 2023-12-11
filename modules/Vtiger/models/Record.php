@@ -15,6 +15,7 @@
 class Vtiger_Record_Model extends Vtiger_Base_Model {
 
 	protected $module = false;
+	protected $entity = false;
 
 	/**
 	 * Function to get the id of the record
@@ -213,7 +214,7 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
 		if($fieldName == "time_start" && $this->getModule()->getName() == "Emails"){
 			$date = new DateTime();
 			$dateTime = new DateTimeField($date->format('Y-m-d').' '.$this->get($fieldName));
-			$value = Vtiger_Time_UIType::getDisplayValue($dateTime->getDisplayTime());
+			$value = Vtiger_Time_UIType::getDisplayValueUserFormat($dateTime->getDisplayTime());
 			$this->set($fieldName, $value);
 			return $value;
 		}else if($fieldName == "date_start" && $this->getModule()->getName() == "Emails"){
@@ -777,5 +778,13 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
 	  public function getSendEmailPDFUrl() {
 		return 'module='.$this->getModuleName().'&view=SendEmail&mode=composeMailData&record='.$this->getId();
 	}
+    /**
+     * ドキュメントを削除する
+     */
+    public static function deleteDocument($notesid) {
+        global $adb;
+        $adb->pquery("UPDATE vtiger_crmentity SET deleted=1 WHERE crmid= ?", array($notesid));
+		CRMEntity::updateBasicInformation('Documents', $notesid);
+    }
 
 }

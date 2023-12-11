@@ -144,13 +144,13 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 		$headerFields = $listViewContoller->getListViewHeaderFields();
 		foreach($headerFields as $fieldName => $webserviceField) {
 			if($webserviceField && !in_array($webserviceField->getPresence(), array(0,2))) continue;
-			if($webserviceField && $webserviceField->parentReferenceField && !in_array($webserviceField->parentReferenceField->getPresence(), array(0,2))){
+			if($webserviceField && isset($webserviceField->parentReferenceField) && !in_array($webserviceField->parentReferenceField->getPresence(), array(0,2))){
 				continue;
 			}
 			if($webserviceField->getDisplayType() == '6') continue;
 			// check if the field is reference field
 			preg_match('/(\w+) ; \((\w+)\) (\w+)/', $fieldName, $matches);
-			if(count($matches) > 0) {
+			if(php7_count($matches) > 0) {
 				list($full, $referenceParentField, $referenceModule, $referenceFieldName) = $matches;
 				$referenceModuleModel = Vtiger_Module_Model::getInstance($referenceModule);
 				$referenceFieldModel = Vtiger_Field_Model::getInstance($referenceFieldName, $referenceModuleModel);
@@ -167,6 +167,12 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 				$matches=null;
 			} else {
 				$fieldInstance = Vtiger_Field_Model::getInstance($fieldName,$module);
+				
+				if(!$fieldInstance && $module->getName() === 'Calendar') {
+					$eventsModule = Vtiger_Module_Model::getInstance('Events');
+					$fieldInstance = Vtiger_Field_Model::getInstance($fieldName,$eventsModule);
+				}
+				
 				$fieldInstance->set('listViewRawFieldName', $fieldInstance->get('column'));
 				$headerFieldModels[$fieldName] = $fieldInstance;
 			}
@@ -194,7 +200,7 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 			$searchParams = array();
 		}
 		$glue = "";
-		if(count($queryGenerator->getWhereFields()) > 0 && (count($searchParams)) > 0) {
+		if(php7_count($queryGenerator->getWhereFields()) > 0 && (php7_count($searchParams)) > 0) {
 			$glue = QueryGenerator::$AND;
 		}
 		$queryGenerator->parseAdvFilterList($searchParams, $glue);
@@ -206,7 +212,7 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 			$queryGenerator->addUserSearchConditions(array('search_field' => $searchKey, 'search_text' => $searchValue, 'operator' => $operator));
 		}
 
-		$orderBy = $this->get('orderby');
+		$orderBy = $this->getForSql('orderby');
 		$sortOrder = $this->getForSql('sortorder');
 
 		if(!empty($orderBy)){
@@ -245,8 +251,11 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 				$listQuery .= ' , last_name '.' '. $sortOrder .' ,  email1 '. ' '. $sortOrder;
 			} 
 		} else if(empty($orderBy) && empty($sortOrder) && $moduleName != "Users"){
-			//List view will be displayed on recently created/modified records
-			$listQuery .= ' ORDER BY vtiger_crmentity.modifiedtime DESC';
+			$baseTable = $moduleFocus->table_name;
+			if(empty($baseTable)) {
+				$baseTable = "vtiger_crmentity";
+			}
+			$listQuery .= " ORDER BY ".$baseTable.".modifiedtime DESC";
 		}
 
 		$viewid = ListViewSession::getCurrentView($moduleName);
@@ -308,7 +317,7 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 		}
 
 		$glue = "";
-		if(count($queryGenerator->getWhereFields()) > 0 && (count($searchParams)) > 0) {
+		if(php7_count($queryGenerator->getWhereFields()) > 0 && (php7_count($searchParams)) > 0) {
 			$glue = QueryGenerator::$AND;
 		}
 		$queryGenerator->parseAdvFilterList($searchParams, $glue);
@@ -336,7 +345,7 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 		$position = stripos($listQuery, ' from ');
 		if ($position) {
 			$split = preg_split('/ from /i', $listQuery);
-			$splitCount = count($split);
+			$splitCount = php7_count($split);
 			// If records is related to two records then we'll get duplicates. Then count will be wrong
 			$meta = $queryGenerator->getMeta($this->getModule()->getName());
 			$columnIndex = $meta->getObectIndexColumn();
@@ -393,7 +402,7 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 		}
 
 		$fieldsList = $queryGenerator->getFields();
-		if(!empty($listHeaders) && is_array($listHeaders) && count($listHeaders) > 0) {
+		if(!empty($listHeaders) && is_array($listHeaders) && php7_count($listHeaders) > 0) {
 			$fieldsList = $listHeaders;
 			$fieldsList[] = 'id';
 		}
@@ -533,15 +542,15 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 		$this->get('query_generator', $queryGenerator);
 	}
 
-	public function getSortParamsSession($key) {
-		return $_SESSION[$key];
+	public static function getSortParamsSession($key) {
+		return isset($_SESSION[$key]) ? $_SESSION[$key] : null;
 			}
 
-	public function setSortParamsSession($key, $params) {
+	public static function setSortParamsSession($key, $params) {
 		$_SESSION[$key] = $params;
 	}
 
-	public function deleteParamsSession($key, $params) {
+	public static function deleteParamsSession($key, $params) {
 		if(!is_array($params)) {
 			$params = array($params);
 		}

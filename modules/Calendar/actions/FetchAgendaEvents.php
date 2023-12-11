@@ -29,8 +29,8 @@ class Calendar_FetchAgendaEvents_Action extends Vtiger_BasicAjax_Action {
 						vtiger_crmentity.smownerid, vtiger_activity.activityid, vtiger_activity.activitytype, vtiger_activity.recurringtype,
 						vtiger_activity.location FROM vtiger_activity
 						INNER JOIN vtiger_crmentity ON vtiger_activity.activityid = vtiger_crmentity.crmid
-						LEFT JOIN vtiger_users ON vtiger_crmentity.smownerid = vtiger_users.id
-						LEFT JOIN vtiger_groups ON vtiger_crmentity.smownerid = vtiger_groups.groupid
+						LEFT JOIN vtiger_users ON vtiger_activity.smownerid = vtiger_users.id
+						LEFT JOIN vtiger_groups ON vtiger_activity.smownerid = vtiger_groups.groupid
 						WHERE vtiger_crmentity.deleted=0 AND vtiger_activity.activityid > 0 AND vtiger_activity.activitytype NOT IN ("Emails","Task") AND ';
 
 		$hideCompleted = $currentUser->get('hidecompletedevents');
@@ -43,7 +43,7 @@ class Calendar_FetchAgendaEvents_Action extends Vtiger_BasicAjax_Action {
 
 		$eventUserId = $currentUser->getId();
 		$userIds = array_merge(array($eventUserId), $this->getGroupsIdsForUsers($eventUserId));
-		$query.= " AND vtiger_crmentity.smownerid IN (".generateQuestionMarks($userIds).")";
+		$query.= " AND vtiger_activity.smownerid IN (".generateQuestionMarks($userIds).")";
 		$query.= ' ORDER BY time_start';
 
 		$params = array_merge($params, $userIds);

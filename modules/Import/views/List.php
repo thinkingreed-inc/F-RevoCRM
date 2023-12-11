@@ -74,7 +74,7 @@ class Import_List_View extends Vtiger_Popup_View{
 		}
 
 		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
-		$listViewModel = Import_ListView_Model::getInstance($moduleName, $cvId);
+		$listViewModel = Import_ListView_Model::getInstanceWith($moduleName, $cvId);
 		$recordStructureInstance = Vtiger_RecordStructure_Model::getInstanceForModule($moduleModel);
 
 		$pagingModel = new Vtiger_Paging_Model();
@@ -142,7 +142,7 @@ class Import_List_View extends Vtiger_Popup_View{
 		$searchKey = $request->get('search_key');
 		$searchValue = $request->get('search_value');
 
-		$listViewModel = Import_ListView_Model::getInstance($moduleName);
+		$listViewModel = Import_ListView_Model::getInstanceWith($moduleName);
 		$listViewModel->set('search_key', $searchKey);
 		$listViewModel->set('search_value', $searchValue);
 

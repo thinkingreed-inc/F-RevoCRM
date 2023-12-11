@@ -121,7 +121,7 @@ class Users_List_View extends Settings_Vtiger_List_View {
 		if(!$this->listViewEntries){
 			$this->listViewEntries = $listViewModel->getListViewEntries($pagingModel);
 		}
-		$noOfEntries = count($this->listViewEntries);
+		$noOfEntries = php7_count($this->listViewEntries);
 
 		$viewer->assign('MODULE', $moduleName);
 
@@ -167,6 +167,10 @@ class Users_List_View extends Settings_Vtiger_List_View {
 		$viewer->assign('USER_MODEL', Users_Record_Model::getCurrentUserModel());
 		$viewer->assign('SEARCH_VALUE', $searchValue);
 		$viewer->assign('SEARCH_DETAILS', $searchParams);
+                
+                $runtime_configs = Vtiger_Runtime_Configs::getInstance();
+                $password_regex = $runtime_configs->getValidationRegex('password_regex');
+                $viewer->assign('PWD_REGEX', $password_regex);
 	}
 
 	/**

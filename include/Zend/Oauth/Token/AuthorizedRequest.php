@@ -47,7 +47,7 @@ class Zend_Oauth_Token_AuthorizedRequest extends Zend_Oauth_Token
         if ($data !== null) {
             $this->_data = $data;
             $params = $this->_parseData();
-            if (count($params) > 0) {
+            if (php7_count($params) > 0) {
                 $this->setParams($params);
             }
         }

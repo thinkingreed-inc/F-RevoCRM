@@ -333,14 +333,22 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var disabledFeeds = this.getDisabledFeeds();
 		var feedsList = widgetContainer.find('#calendarview-feeds > ul.feedslist');
 		var calendarfeeds = feedsList.find('[data-calendar-feed]');
+		var checkedCount = 0;
 		calendarfeeds.each(function () {
 			var feedCheckbox = jQuery(this);
 			var sourceKey = feedCheckbox.data('calendarSourcekey');
 			if (disabledFeeds.indexOf(sourceKey) === -1) {
 				feedCheckbox.attr('checked', true);
+				checkedCount++;
 			}
 			thisInstance.colorizeFeed(feedCheckbox);
 		});
+		
+		// 全選択チェックボックスを選択する（現時点では共有カレンダーにのみ実装）
+		var feedCheckbox = jQuery('#calendarview-feeds-all .toggleCalendarFeed');
+		if (feedCheckbox.length > 0 && calendarfeeds.length == checkedCount) {
+			feedCheckbox.attr('checked', true);
+		}
 	},
 	fetchEvents: function (feedCheckbox) {
 		var thisInstance = this;
@@ -385,6 +393,21 @@ Vtiger.Class("Calendar_Calendar_Js", {
 					return module === eventObj.module && eventObj.conditions === conditions && fieldName === eventObj.fieldName;
 				});
 	},
+	getCheckedCheckboxCounts: function () {
+		var checkedCount = 0;
+		var $area = jQuery("#calendarview-feeds .feedslist");
+		$area.children().each(function(){
+			var currentTarget = jQuery(this).find("input");
+			var sourceKey = currentTarget.data('calendarSourcekey');
+			if (sourceKey !== undefined && currentTarget.is(':checked')) {
+				checkedCount++;
+			}
+		})
+		return {
+			checkboxCount: $area.children().length,
+			checkedCount: checkedCount
+		}
+	},
 	registerFeedChangeEvent: function () {
 		var thisInstance = this;
 		jQuery('#calendarview-feeds').on('change',
@@ -399,6 +422,40 @@ Vtiger.Class("Calendar_Calendar_Js", {
 						thisInstance.disableFeed(sourceKey);
 						thisInstance.removeEvents(curentTarget);
 					}
+					// 全選択チェックボックスを選択・解除する
+					var feedCheckbox = jQuery('#calendarview-feeds-all .toggleCalendarFeed');
+					var params = thisInstance.getCheckedCheckboxCounts();
+					if (feedCheckbox.length > 0) {
+						if (params.checkboxCount > params.checkedCount) {
+							feedCheckbox.removeAttr('checked');
+						}else if (params.checkboxCount == params.checkedCount) {
+							feedCheckbox.attr('checked','checked');
+						}
+					}
+				});
+		// 全選択チェックボックス（現時点では共有カレンダーにのみ実装）
+		jQuery('#calendarview-feeds-all').on('change',
+		'input[type="checkbox"].toggleCalendarFeed',
+				function () {
+					var feedCheckbox = jQuery(this);
+					var $area = jQuery("#calendarview-feeds .feedslist");
+
+					$area.children().each(function(){
+						var currentTarget = jQuery(this).find("input");
+						var sourceKey = currentTarget.data('calendarSourcekey');
+			
+						if (sourceKey !== undefined) {
+							if (feedCheckbox.is(':checked') && !currentTarget.is(':checked')) {
+								currentTarget.attr('checked','checked');
+								thisInstance.enableFeed(sourceKey);
+								thisInstance.addEvents(currentTarget);
+							} else if (!feedCheckbox.is(':checked') && currentTarget.is(':checked')) {
+								currentTarget.removeAttr('checked');
+								thisInstance.disableFeed(sourceKey);
+								thisInstance.removeEvents(currentTarget);
+							}
+						}
+					})
 				});
 	},
 	updateRangeFields: function (container, options) {
@@ -1329,7 +1386,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				thisInstance.updateAllEventsOnCalendar();
 			}
 			if(thisInstance.changeUserList) {
-				//thisInstance.changeUserList();
+				thisInstance.changeUserList();
 			}
 		});
 	},

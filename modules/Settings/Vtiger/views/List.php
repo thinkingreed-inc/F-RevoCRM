@@ -92,7 +92,7 @@ class Settings_Vtiger_List_View extends Settings_Vtiger_Index_View {
 			$this->listViewEntries = $listViewModel->getListViewEntries($pagingModel);
             $this->pagingModel = $pagingModel;
 		}
-		$noOfEntries = count($this->listViewEntries);
+		$noOfEntries = php7_count($this->listViewEntries);
 		if(!$this->listViewLinks){
 			$this->listViewLinks = $listViewModel->getListViewLinks();
 		}

@@ -46,9 +46,9 @@ class Vtiger_Reference_UIType extends Vtiger_Base_UIType {
 			$referenceModuleName = $referenceModule->get('name');
 			if($referenceModuleName == 'Users') {
 				$db = PearDatabase::getInstance();
-				$nameResult = $db->pquery('SELECT first_name, last_name FROM vtiger_users WHERE id = ?', array($value));
+				$nameResult = $db->pquery('SELECT userlabel FROM vtiger_users WHERE id = ?', array($value));
 				if($db->num_rows($nameResult)) {
-					return $db->query_result($nameResult, 0, 'last_name').' '.$db->query_result($nameResult, 0, 'first_name');
+					return $db->query_result($nameResult, 0, 'userlabel');
 				}
 			} else {
 				$fieldModel = $this->get('field');

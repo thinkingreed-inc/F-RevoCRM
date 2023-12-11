@@ -18,22 +18,22 @@ vimport('~~modules/Users/Users.php');
 
 if(defined('VTIGER_UPGRADE')) {
 	//Collating all module package updates here
-	updateVtlibModule('Import', 'packages/vtiger/mandatory/Import.zip', false);
-	updateVtlibModule('MailManager', 'packages/vtiger/mandatory/MailManager.zip', false);
-	updateVtlibModule('Mobile', 'packages/vtiger/mandatory/Mobile.zip', false);
-	updateVtlibModule('ModTracker', 'packages/vtiger/mandatory/ModTracker.zip', false);
-	updateVtlibModule('Services', "packages/vtiger/mandatory/Services.zip", false);
-	updateVtlibModule('ServiceContracts', "packages/vtiger/mandatory/ServiceContracts.zip", false);
-	updateVtlibModule('WSAPP', 'packages/vtiger/mandatory/WSAPP.zip', false);
-	updateVtlibModule('Assets', 'packages/vtiger/optional/Assets.zip', false);
-	updateVtlibModule('CustomerPortal', 'packages/vtiger/optional/CustomerPortal.zip', false);
-	updateVtlibModule('ModComments', "packages/vtiger/optional/ModComments.zip", false);
-	updateVtlibModule('Projects', "packages/vtiger/optional/Projects.zip", false);
-	updateVtlibModule('RecycleBin', 'packages/vtiger/optional/RecycleBin.zip', false);
-	updateVtlibModule('SMSNotifier', "packages/vtiger/optional/SMSNotifier.zip", false);
-	updateVtlibModule("Webforms","packages/vtiger/optional/Webforms.zip", false);
-	installVtlibModule('Google', 'packages/vtiger/optional/Google.zip', false, false);
-	installVtlibModule('EmailTemplates', 'packages/vtiger/optional/EmailTemplates.zip', false, false);
+	updateVtlibModuleWithoutFiles('Import', 'packages/vtiger/mandatory/Import.zip', false);
+	updateVtlibModuleWithoutFiles('MailManager', 'packages/vtiger/mandatory/MailManager.zip', false);
+	updateVtlibModuleWithoutFiles('Mobile', 'packages/vtiger/mandatory/Mobile.zip', false);
+	updateVtlibModuleWithoutFiles('ModTracker', 'packages/vtiger/mandatory/ModTracker.zip', false);
+	updateVtlibModuleWithoutFiles('Services', "packages/vtiger/mandatory/Services.zip", false);
+	updateVtlibModuleWithoutFiles('ServiceContracts', "packages/vtiger/mandatory/ServiceContracts.zip", false);
+	updateVtlibModuleWithoutFiles('WSAPP', 'packages/vtiger/mandatory/WSAPP.zip', false);
+	updateVtlibModuleWithoutFiles('Assets', 'packages/vtiger/optional/Assets.zip', false);
+	updateVtlibModuleWithoutFiles('CustomerPortal', 'packages/vtiger/optional/CustomerPortal.zip', false);
+	updateVtlibModuleWithoutFiles('ModComments', "packages/vtiger/optional/ModComments.zip", false);
+	updateVtlibModuleWithoutFiles('Projects', "packages/vtiger/optional/Projects.zip", false);
+	updateVtlibModuleWithoutFiles('RecycleBin', 'packages/vtiger/optional/RecycleBin.zip', false);
+	updateVtlibModuleWithoutFiles('SMSNotifier', "packages/vtiger/optional/SMSNotifier.zip", false);
+	updateVtlibModuleWithoutFiles("Webforms","packages/vtiger/optional/Webforms.zip", false);
+	installVtlibModuleWithoutFiles('Google', 'packages/vtiger/optional/Google.zip', false, false);
+	installVtlibModuleWithoutFiles('EmailTemplates', 'packages/vtiger/optional/EmailTemplates.zip', false, false);
 
 	// updated language packs.
 
@@ -312,7 +312,7 @@ $currency_decimals_field->setPicklistValues(array("1","2","3","4","5"));
 $inventoryModules = array('Invoice','SalesOrder','PurchaseOrder','Quotes');
 $actions = array('Import','Export');
 
-for($i = 0; $i < count($inventoryModules); $i++) {
+for($i = 0; $i < php7_count($inventoryModules); $i++) {
 	$moduleName = $inventoryModules[$i];
 	$moduleInstance = Vtiger_Module::getInstance($moduleName);
 
@@ -334,14 +334,14 @@ $itemFieldsLabel = array('Item Name','Quantity','List Price','Item Comment','Ite
 $itemFieldsTypeOfData = array('V~M','V~M','V~M','V~O','V~O','V~O','V~O','V~O','V~O');
 $itemFieldsDisplayType = array('10','7','19','19','7','7','83','83','83');
 
-for($i=0; $i<count($inventoryModules); $i++) {
+for($i=0; $i<php7_count($inventoryModules); $i++) {
 	$moduleName = $inventoryModules[$i];
 	$moduleInstance = Vtiger_Module::getInstance($moduleName);
 	$blockInstance = Vtiger_Block::getInstance('LBL_ITEM_DETAILS',$moduleInstance);
 
 	$relatedmodules = array('Products','Services');
 
-	for($j=0;$j<count($itemFieldsName);$j++) {
+	for($j=0;$j<php7_count($itemFieldsName);$j++) {
 		$field = new Vtiger_Field();
 
 		$field->name = $itemFieldsName[$j];

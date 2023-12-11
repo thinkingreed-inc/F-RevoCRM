@@ -17,8 +17,8 @@
                 {include file="Tag.tpl"|vtemplate_path:$MODULE}
             {/foreach}
 
-            <a href="javascript:void(0);" class="moreTags {if count($TAGS_LIST) <= Vtiger_Tag_Model::NUM_OF_TAGS_DETAIL } hide {/if}">
-                <span class="tagMoreCount">{count($TAGS_LIST)-Vtiger_Tag_Model::NUM_OF_TAGS_DETAIL}</span>
+            <a href="javascript:void(0);" class="moreTags {if php7_count($TAGS_LIST) <= Vtiger_Tag_Model::NUM_OF_TAGS_DETAIL } hide {/if}">
+                <span class="tagMoreCount">{php7_count($TAGS_LIST)-Vtiger_Tag_Model::NUM_OF_TAGS_DETAIL}</span>
                 &nbsp;{vtranslate('LBL_MORE',$MODULE)|strtolower}
             </a>
         </div>

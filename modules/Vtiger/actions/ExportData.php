@@ -154,7 +154,7 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 			}
 
 			$glue = '';
-			if($searchParams && count($queryGenerator->getWhereFields())) {
+			if($searchParams && php7_count($queryGenerator->getWhereFields())) {
 				$glue = QueryGenerator::$AND;
 			}
 			$searchParams = array_merge($searchParams, $tagParams);

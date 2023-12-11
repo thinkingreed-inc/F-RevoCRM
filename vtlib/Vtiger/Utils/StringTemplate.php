@@ -82,7 +82,7 @@ class Vtiger_StringTemplate {
 			preg_match_all($this->_lookfor, $instring, $matches);
 
 			/** Replace variables found with value assigned. */
-			$matchcount = count($matches[1]);
+			$matchcount = php7_count($matches[1]);
 			for($index = 0; $index < $matchcount; ++$index) {
 				$matchstr = $matches[0][$index];
 				$matchkey = $matches[1][$index];

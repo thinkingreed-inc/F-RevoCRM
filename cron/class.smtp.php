@@ -895,7 +895,7 @@ class SMTP
         $matches = array();
         if (preg_match("/^([0-9]{3})[ -](?:([0-9]\\.[0-9]\\.[0-9]) )?/", $this->last_reply, $matches)) {
             $code = $matches[1];
-            $code_ex = (count($matches) > 2 ? $matches[2] : null);
+            $code_ex = (php7_count($matches) > 2 ? $matches[2] : null);
             // Cut off error code from each response line
             $detail = preg_replace(
                 "/{$code}[ -]" .

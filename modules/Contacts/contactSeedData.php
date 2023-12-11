@@ -21179,11 +21179,11 @@ $campaign_status_array = Array(
 );
  
 
-$last_name_count = count($last_name_array);
-$first_name_count = count($first_name_array);
-$company_name_count = count($company_name_array);
-$street_address_count = count($street_address_array);
-$city_array_count = count($city_array);
+$last_name_count = php7_count($last_name_array);
+$first_name_count = php7_count($first_name_array);
+$company_name_count = php7_count($company_name_array);
+$street_address_count = php7_count($street_address_array);
+$city_array_count = php7_count($city_array);
 
 
 

@@ -7,7 +7,7 @@
  * All Rights Reserved.
  ************************************************************************************}
 
-{strip}
+ {strip}
 	<!DOCTYPE html>
 	<html>
 		<head>
@@ -21,7 +21,7 @@
 			<link type='text/css' rel='stylesheet' href='layouts/v7/lib/font-awesome/css/font-awesome.min.css'/>
 			<link type='text/css' rel='stylesheet' href='layouts/v7/lib/jquery/select2/select2.css'/>
 			<link type='text/css' rel='stylesheet' href='libraries/bootstrap/js/eternicode-bootstrap-datepicker/css/datepicker3.css'/>
-			<link type='text/css' rel='stylesheet' href='layouts/v7/lib/jquery/jquery-ui-1.11.3.custom/jquery-ui.css'/>
+			<link type='text/css' rel='stylesheet' href='layouts/v7/lib/jquery/jquery-ui-1.12.0.custom/jquery-ui.css'/>
 			<link type='text/css' rel='stylesheet' href='layouts/v7/lib/vt-icons/style.css'/>
 
 			{if strpos($V7_THEME_PATH,".less")!== false}

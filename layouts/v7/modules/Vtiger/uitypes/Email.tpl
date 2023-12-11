@@ -18,7 +18,7 @@
 <input id="{$MODULE}_editView_fieldName_{$FIELD_NAME}" class="inputElement" name="{$FIELD_NAME}" type="text"
  value="{$FIELD_MODEL->get('fieldvalue')}" {if $MODE eq 'edit' && $FIELD_MODEL->get('uitype') eq '106'} readonly {/if} {if !empty($SPECIAL_VALIDATOR)}data-validator="{Zend_Json::encode($SPECIAL_VALIDATOR)}"{/if}
 {if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if} data-rule-email="true" data-rule-illegal="true"
-{if count($FIELD_INFO['validator'])}
+{if php7_count($FIELD_INFO['validator'])}
     data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
 {/if}
  />

@@ -10,7 +10,7 @@
 {strip}
 	<div class="col-sm-12 col-xs-12 module-action-bar coloredBorderTop">
 		<div class="module-action-content clearfix">
-			<span class="col-lg-7 col-md-7 module-breadcrumb module-breadcrumb-{$smarty.request.view}">
+			<span class="col-lg-7 col-md-7 module-breadcrumb module-breadcrumb-{$REQ.view}">
 				<span>
 					<h4 title="{vtranslate($MODULE, $MODULE)}" class="module-title pull-left text-uppercase">&nbsp;{vtranslate($MODULE, $MODULE)}&nbsp;</h4>
 				</span>

@@ -10,7 +10,7 @@
 ********************************************************************************/
 -->*}
 {strip}
-    {if count($DATA) gt 0 }
+    {if php7_count($DATA) gt 0 }
         <input class="widgetData" type=hidden value='{Vtiger_Util_Helper::toSafeHTML(ZEND_JSON::encode($DATA))}' />
         <input class="yAxisFieldType" type="hidden" value="{$YAXIS_FIELD_TYPE}" />
         <div class="row" style="margin:0px 10px;">

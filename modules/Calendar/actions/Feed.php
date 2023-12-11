@@ -19,7 +19,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 		if($request->get('mode') === 'batch') {
 			$feedsRequest = $request->get('feedsRequest',array());
 			$result = array();
-			if(count($feedsRequest)) {
+			if(php7_count($feedsRequest)) {
 				foreach($feedsRequest as $key=>$value) {
 					$requestParams = array();
 					$requestParams['start'] = $value['start'];
@@ -106,7 +106,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 		$nameFields = array_values($nameFields);
 		$selectFields = implode(',', $nameFields);		
 		$fieldsList = explode(',', $fieldName);
-		if(count($fieldsList) == 2) {
+		if(php7_count($fieldsList) == 2) {
 			$db = PearDatabase::getInstance();
 			$user = Users_Record_Model::getCurrentUserModel();
 			$userAndGroupIds = array_merge(array($user->getId()),$this->getGroupsIdsForUsers($user->getId()));
@@ -187,7 +187,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			list ($modid, $crmid) = vtws_getIdComponents($record['id']);
 			$item['id'] = $crmid;
 			$item['title'] = decode_html($record[$nameFields[0]]);
-			if(count($nameFields) > 1) {
+			if(php7_count($nameFields) > 1) {
 				$item['title'] = decode_html(trim($record[$nameFields[0]].' '.$record[$nameFields[1]]));
 			}
 			if(!empty($record[$fieldsList[0]])) {
@@ -195,7 +195,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			} else {
 				$item['start'] = $record[$fieldsList[1]];
 			}
-			if(count($fieldsList) == 2) {
+			if(php7_count($fieldsList) == 2) {
 				$item['end'] = $record[$fieldsList[1]];
 			}
 			if($fieldName == 'birthday') {
@@ -454,7 +454,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 		$query.= " ((date_start >= ? AND due_date < ? ) OR ( due_date >= ? ))";
 		$params=array($start,$end,$start);
 		$userIds = $userAndGroupIds;
-		$query.= " AND vtiger_crmentity.smownerid IN (".generateQuestionMarks($userIds).")";
+		$query.= " AND vtiger_activity.smownerid IN (".generateQuestionMarks($userIds).")";
 		$params=array_merge($params,$userIds);
 		$queryResult = $db->pquery($query,$params);
 

@@ -115,19 +115,19 @@ class Users_Privileges_Model extends Users_Record_Model {
 
 		$valueMap = array();
 		$valueMap['id'] = $userId;
-		$valueMap['is_admin'] = (bool) $acl->is_admin;
-		$valueMap['roleid'] = $acl->current_user_roles;
-		$valueMap['parent_role_seq'] = $acl->current_user_parent_role_seq;
-		$valueMap['profiles'] = $acl->current_user_profiles;
-		$valueMap['profile_global_permission'] = $acl->profileGlobalPermission;
-		$valueMap['profile_tabs_permission'] = $acl->profileTabsPermission;
-		$valueMap['profile_action_permission'] = $acl->profileActionPermission;
-		$valueMap['groups'] = $acl->current_user_groups;
-		$valueMap['subordinate_roles'] = $acl->subordinate_roles;
-		$valueMap['parent_roles'] = $acl->parent_roles;
-		$valueMap['subordinate_roles_users'] = $acl->subordinate_roles_users;
-		$valueMap['defaultOrgSharingPermission'] = $defaultOrgSharingPermission;
-		$valueMap['related_module_share'] = $related_module_share;
+		$valueMap['is_admin'] = isset($acl->is_admin) ? (bool) $acl->is_admin : false;
+		$valueMap['roleid'] = isset($acl->current_user_roles) ? $acl->current_user_roles : null;
+		$valueMap['parent_role_seq'] = isset($acl->current_user_parent_role_seq) ? $acl->current_user_parent_role_seq : null;
+		$valueMap['profiles'] = isset($acl->current_user_profiles) ? $acl->current_user_profiles : null;
+		$valueMap['profile_global_permission'] = isset($acl->profileGlobalPermission) ? $acl->profileGlobalPermission : null;
+		$valueMap['profile_tabs_permission'] = isset($acl->profileTabsPermission) ? $acl->profileTabsPermission : null;
+		$valueMap['profile_action_permission'] = isset($acl->profileActionPermission) ? $acl->profileActionPermission : null;
+		$valueMap['groups'] = isset($acl->current_user_groups)? $acl->current_user_groups : null;
+		$valueMap['subordinate_roles'] = isset($acl->subordinate_roles)? $acl->subordinate_roles : null;
+		$valueMap['parent_roles'] = isset($acl->parent_roles)? $acl->parent_roles : null;
+		$valueMap['subordinate_roles_users'] = isset($acl->subordinate_roles_users) ? $acl->subordinate_roles_users : null;
+		$valueMap['defaultOrgSharingPermission'] = isset($defaultOrgSharingPermission) ? $defaultOrgSharingPermission : null;
+		$valueMap['related_module_share'] = isset($related_module_share)? $related_module_share : null;
 
 		if(is_array($acl->user_info)) {
 			$valueMap = array_merge($valueMap, $acl->user_info);

@@ -8,7 +8,7 @@ CKEDITOR.editorConfig = function( config ) {
 	// config.language = 'fr';
 	// config.uiColor = '#AADC6E';
     //vtiger editor toolbar configuration 
- 		    config.removePlugins = 'save,maximize,magicline'; 
+ 		    config.removePlugins = 'save,maximize,magicline,wsc,scayt'; 
 			config.fullPage = true; 
  		    config.allowedContent = true; 
 			config.disableNativeSpellChecker = false;
@@ -16,8 +16,8 @@ CKEDITOR.editorConfig = function( config ) {
 			config.shiftEnterMode = CKEDITOR.ENTER_P; 
 			config.autoParagraph = false;
 			config.fillEmptyBlocks = false;
-			// config.filebrowserBrowseUrl = 'kcfinder/browse.php?type=images'; 
-			// config.filebrowserUploadUrl = 'kcfinder/upload.php?type=images'; 
+			config.filebrowserBrowseUrl = 'kcfinder/browse.php?type=images'; 
+			config.filebrowserUploadUrl = 'kcfinder/upload.php?type=images'; 
  	        config.plugins = 'dialogui,dialog,docprops,about,a11yhelp,dialogadvtab,basicstyles,bidi,blockquote,clipboard,button,panelbutton,panel,floatpanel,colorbutton,colordialog,menu,contextmenu,div,resize,toolbar,elementspath,enterkey,entities,popup,filebrowser,find,fakeobjects,floatingspace,listblock,richcombo,font,format,horizontalrule,htmlwriter,wysiwygarea,image,indent,indentblock,indentlist,justify,link,list,liststyle,magicline,pagebreak,preview,removeformat,selectall,showborders,sourcearea,specialchar,menubutton,stylescombo,tab,table,tabletools,undo,wsc'; 
  		    config.toolbarGroups = [ 
  		        { name: 'clipboard', groups: [ 'clipboard', 'undo' ] }, 

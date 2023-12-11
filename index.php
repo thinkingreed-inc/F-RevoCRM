@@ -8,9 +8,15 @@
  * All Rights Reserved.
  ************************************************************************************/
 
+if (!file_exists("vendor/autoload.php")) {
+   echo "Please install composer dependencies.";
+   exit;
+}
+
 //Overrides GetRelatedList : used to get related query
 //TODO : Eliminate below hacking solution
 include_once 'config.php';
+require_once 'vendor/autoload.php';
 include_once 'include/Webservices/Relation.php';
 
 include_once 'vtlib/Vtiger/Module.php';
