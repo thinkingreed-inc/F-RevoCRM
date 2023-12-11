@@ -644,3 +644,10 @@ ul#productsImageContainer > li a{
 #ccLink{
   margin-right: 5px;
 }
+
+/* 共有カレンダーのグループ選択の横にチェックボックスを追加する */
+.calendarGroupSelect {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+}
