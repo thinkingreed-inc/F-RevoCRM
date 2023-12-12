@@ -363,7 +363,7 @@ class CurrencyField {
 		}
 		//$value = round($value, $this->maxNumberOfDecimals);
 
-        return $value;
+        return (float)$value;
     }
 
     /**
@@ -415,7 +415,7 @@ class CurrencyField {
 	
 	public static function convertFromDollar($amount, $conversionRate) {
 		$currencyField = new CurrencyField($amount);
-		return round($amount * $conversionRate, $currencyField->maxNumberOfDecimals);
+		return round( (float)$amount * (float)$conversionRate, $currencyField->maxNumberOfDecimals);
 	}
 	
 	/** This function returns the amount converted from master currency.
@@ -423,7 +423,7 @@ class CurrencyField {
 	 * param $crate - conversion rate.
 	 */
 	public static function convertFromMasterCurrency($amount, $conversionRate) {
-		return $amount * $conversionRate;
+		return (float)$amount * (float)$conversionRate;
 	}
 	
 	function currencyDecimalFormat($value, $user = null){
@@ -464,4 +464,3 @@ class CurrencyField {
 		}
 	}
 }
-?>
