@@ -727,7 +727,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 					$fieldData[$fieldName] = $fieldValue;
 				}
 				if ($fieldDataType == 'time' && !empty($fieldValue)) {
-					if($fieldValue == null || $fieldValue == '00:00:00') {
+					if($fieldValue == null) {
 						$fieldValue = '';
 						$fieldData[$fieldName] = $fieldValue;
 					}

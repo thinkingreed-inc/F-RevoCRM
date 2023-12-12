@@ -167,6 +167,12 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 				$matches=null;
 			} else {
 				$fieldInstance = Vtiger_Field_Model::getInstance($fieldName,$module);
+				
+				if(!$fieldInstance && $module->getName() === 'Calendar') {
+					$eventsModule = Vtiger_Module_Model::getInstance('Events');
+					$fieldInstance = Vtiger_Field_Model::getInstance($fieldName,$eventsModule);
+				}
+				
 				$fieldInstance->set('listViewRawFieldName', $fieldInstance->get('column'));
 				$headerFieldModels[$fieldName] = $fieldInstance;
 			}

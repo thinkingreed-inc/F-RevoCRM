@@ -64,7 +64,7 @@ Vtiger Public License 1.2
 * F-RevoCRM6.5からのバージョンアップはインストール方法の後に記載があります。（F-RevoCRM7.3からのバージョンアップはパッチ適用方法を参照してください。）
 * F-RevoCRM7.4のパッチ適用方法については各パッチ付属のREADMEを参照してください。
 * 本レポジトリをDockerで構築する場合は、[docker/README.md](./docker/README.md)を参照してください。
-* PDF出力にheadlesschromeを利用する場合は、[docker/chrome-headless/README.md](./docker/chrome-headless/README.md)を参照してください。
+* PDF出力にheadlesschromeを利用する場合は、[docker/headlesschrome/README.md](./docker/headlesschrome/README.md)を参照してください。
 
 ### configファイルを独自に設定する場合
 configファイルは`config.inc.php`として、インストール後に生成されます。  
