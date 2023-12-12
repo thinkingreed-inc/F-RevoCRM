@@ -335,7 +335,7 @@ class CRMEntity {
 				}
 			}
 
-			if($label) {
+			if(!empty(trim($label))) {
 				$sql .= ", label = ? ";
 				array_push($params, trim($label));
 			}
