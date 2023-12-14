@@ -185,6 +185,7 @@ class Dailyreports_Detail_View extends Vtiger_Detail_View {
 			$viewer->assign('PAGING_MODEL', $pagingModel);
 			$viewer->assign('PAGE_NUMBER', $pageNumber);
 			$viewer->assign('ACTIVITIES', $relatedActivities);
+			$viewer->assign('IS_DAILYREPORT', True);
 
 			return $viewer->view('RelatedActivities.tpl', $moduleName, true);
 		}
