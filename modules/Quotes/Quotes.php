@@ -356,7 +356,7 @@ class Quotes extends CRMEntity {
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule,$queryPlanner){
+	function generateReportsSecQuery($module,$secmodule,$queryPlanner, $reportid = false){
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency('vtiger_crmentityQuotes', array('vtiger_usersQuotes', 'vtiger_groupsQuotes', 'vtiger_lastModifiedByQuotes'));
 		$matrix->setDependency('vtiger_inventoryproductrelQuotes', array('vtiger_productsQuotes', 'vtiger_serviceQuotes'));
@@ -369,7 +369,7 @@ class Quotes extends CRMEntity {
 				'vtiger_inventoryproductrelQuotes', 'vtiger_contactdetailsQuotes', 'vtiger_accountQuotes',
 				'vtiger_invoice_recurring_info','vtiger_quotesQuotes','vtiger_usersRel1'));
 
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_quotes","quoteid", $queryPlanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_quotes","quoteid", $queryPlanner, $reportid);
 		if ($queryPlanner->requireTable("vtiger_crmentityQuotes", $matrix)){
 			$query .= " left join vtiger_crmentity as vtiger_crmentityQuotes on vtiger_crmentityQuotes.crmid=vtiger_quotes.quoteid and vtiger_crmentityQuotes.deleted=0";
 		}
