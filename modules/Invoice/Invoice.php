@@ -357,7 +357,7 @@ class Invoice extends CRMEntity {
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule,$queryPlanner){
+	function generateReportsSecQuery($module,$secmodule,$queryPlanner, $reportid = false){
 
 		// Define the dependency matrix ahead
 		$matrix = $queryPlanner->newDependencyMatrix();
@@ -372,7 +372,7 @@ class Invoice extends CRMEntity {
 				'vtiger_invoicecf', 'vtiger_salesorderInvoice', 'vtiger_invoicebillads',
 				'vtiger_invoiceshipads', 'vtiger_inventoryproductrelInvoice', 'vtiger_contactdetailsInvoice', 'vtiger_accountInvoice'));
 
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_invoice","invoiceid", $queryPlanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_invoice","invoiceid", $queryPlanner, $reportid);
 
 		if ($queryPlanner->requireTable('vtiger_crmentityInvoice', $matrix)) {
 			$query .= " left join vtiger_crmentity as vtiger_crmentityInvoice on vtiger_crmentityInvoice.crmid=vtiger_invoice.invoiceid and vtiger_crmentityInvoice.deleted=0";

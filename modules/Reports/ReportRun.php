@@ -85,6 +85,7 @@ class ReportRunQueryPlanner {
 	protected static $tempTableCounter = 0;
 	protected $registeredCleanup = false;
 	var $reportRun = false;
+	protected $reportJoinColumn = false;
 
 	function addTable($table) {
 		if (!empty($table))
@@ -277,6 +278,12 @@ class ReportRunQueryPlanner {
 		return $advfiltersql;
 	}
 
+	function setReportJoinColumn($reportJoinColumn) {
+		$this->reportJoinColumn = $reportJoinColumn;
+	}
+	function getReportJoinColumn() {
+		return $this->reportJoinColumn;
+	}
 }
 
 class ReportRun extends CRMEntity {
@@ -335,6 +342,7 @@ class ReportRun extends CRMEntity {
             $this->reportname = $oReport->reportname;
             $this->queryPlanner = new ReportRunQueryPlanner();
             $this->queryPlanner->reportRun = $this;
+			$this->queryPlanner->setReportJoinColumn($oReport->joinColumn);
         }
 	function ReportRun($reportid) {
             self::__construct($reportid);
@@ -360,6 +368,19 @@ class ReportRun extends CRMEntity {
 		// Have we initialized information already?
 		if ($this->_columnslist !== false) {
 			return $this->_columnslist;
+		}
+
+		// レポートのカラムに関連項目が選択されていない場合cfテーブルがjoinされないため、
+		// $columnslistrowのループにてcfテーブルが必要であるか判定を行う. 
+		$joincftableflag = false; // 判定フラグ
+		$joinColumn = $this->queryPlanner->getReportJoinColumn();
+		$joinTypes = explode(",", $joinColumn);
+		$secmodulelists_joincftable = [];
+		foreach ($joinTypes as $tmpKey) {
+			list($secmodule, $primodule, $column) = split("::", $tmpKey);
+			if (stripos($column, 'cf_') !== false) {
+				$secmodulelists_joincftable[] = $secmodule;
+			}
 		}
 
 		global $adb;
@@ -441,8 +462,19 @@ class ReportRun extends CRMEntity {
 					$columnslist[$fieldcolname] = $querycolumns;
 				}
 
+				if (in_array($module, $secmodulelists_joincftable)) {
+					$joincftableflag = true;
+				}
+
 				$this->queryPlanner->addTable($targetTableName);
 			}
+		}
+
+		// cfテーブルを追加する
+		if ($joincftableflag) {
+			$focus = CRMEntity::getInstance($this->primarymodule);
+			$customFieldTable = $focus->customFieldTable;
+			$this->queryPlanner->addTable($customFieldTable[0]);
 		}
 
 		if ($outputformat == "HTML" || $outputformat == "PDF" || $outputformat == "PRINT") {
@@ -2128,7 +2160,7 @@ class ReportRun extends CRMEntity {
 				// Case handling: Force table requirement ahead of time.
 				$this->queryPlanner->addTable('vtiger_crmentity' . $value);
 
-				$focQuery = $foc->generateReportsSecQuery($module, $value, $this->queryPlanner);
+				$focQuery = $foc->generateReportsSecQuery($module, $value, $this->queryPlanner, $this->reportid);
 				
 				if ($focQuery) {
 					if (php7_count($secondarymodule) > 1) {

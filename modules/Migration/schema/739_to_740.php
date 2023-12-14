@@ -52,4 +52,7 @@ if (defined('VTIGER_UPGRADE')) {
 
     // vtiger_crmentityテーブルの内容をモジュール毎のメインテーブルにコピーする
     require_once 'setup/scripts/75_Update_CRMEntity.php';
+
+    // レポートの関連の参照元を格納するカラムの追加
+    $db->pquery("alter table vtiger_reportmodules add column join_column text", array());
 }

@@ -431,7 +431,7 @@ class ProjectTask extends CRMEntity {
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule,$queryPlanner){
+	function generateReportsSecQuery($module,$secmodule,$queryPlanner, $reportid = false){
 
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency('vtiger_crmentityProjectTask', array('vtiger_groupsProjectTask', 'vtiger_usersProjectTask', 'vtiger_lastModifiedByProjectTask'));
@@ -441,7 +441,7 @@ class ProjectTask extends CRMEntity {
 		}
 		$matrix->setDependency('vtiger_projecttask', array('vtiger_crmentityProjectTask'));
 
-		$query .= $this->getRelationQuery($module,$secmodule,"vtiger_projecttask","projecttaskid", $queryPlanner);
+		$query .= $this->getRelationQuery($module,$secmodule,"vtiger_projecttask","projecttaskid", $queryPlanner, $reportid);
 
 		if ($queryPlanner->requireTable('vtiger_crmentityProjectTask', $matrix)) {
 			$query .= " left join vtiger_crmentity as vtiger_crmentityProjectTask on vtiger_crmentityProjectTask.crmid=vtiger_projecttask.projecttaskid and vtiger_crmentityProjectTask.deleted=0";

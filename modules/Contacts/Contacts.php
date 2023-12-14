@@ -1298,7 +1298,7 @@ function get_contactsforol($user_name)
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule,$queryPlanner){
+	function generateReportsSecQuery($module,$secmodule,$queryPlanner, $reportid = false){
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency('vtiger_crmentityContacts',array('vtiger_groupsContacts','vtiger_usersContacts','vtiger_lastModifiedByContacts'));
 		
@@ -1309,7 +1309,7 @@ function get_contactsforol($user_name)
         $matrix->setDependency('vtiger_contactdetails', array('vtiger_crmentityContacts','vtiger_contactaddress',
 								'vtiger_customerdetails','vtiger_contactsubdetails','vtiger_contactscf'));
 
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_contactdetails","contactid", $queryPlanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_contactdetails","contactid", $queryPlanner, $reportid);
 
 		if ($queryPlanner->requireTable("vtiger_crmentityContacts",$matrix)){
 			$query .= " left join vtiger_crmentity as vtiger_crmentityContacts on vtiger_crmentityContacts.crmid = vtiger_contactdetails.contactid  and vtiger_crmentityContacts.deleted=0";

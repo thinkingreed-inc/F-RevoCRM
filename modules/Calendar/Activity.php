@@ -1147,7 +1147,7 @@ function insertIntoRecurringTable(& $recurObj)
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule,$queryPlanner){
+	function generateReportsSecQuery($module,$secmodule,$queryPlanner, $reportid = false){
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency('vtiger_crmentityCalendar',array('vtiger_groupsCalendar','vtiger_usersCalendar','vtiger_lastModifiedByCalendar'));
 		$matrix->setDependency('vtiger_cntactivityrel',array('vtiger_contactdetailsCalendar'));
@@ -1164,7 +1164,7 @@ function insertIntoRecurringTable(& $recurObj)
 								'vtiger_seactivityrel','vtiger_activity_reminder','vtiger_recurringevents'));
 
 
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_activity","activityid", $queryPlanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_activity","activityid", $queryPlanner, $reportid);
 
 		if ($queryPlanner->requireTable("vtiger_crmentityCalendar",$matrix)){
 			$query .=" left join vtiger_crmentity as vtiger_crmentityCalendar on vtiger_crmentityCalendar.crmid=vtiger_activity.activityid and vtiger_crmentityCalendar.deleted=0";
