@@ -429,4 +429,41 @@ class ModComments_Record_Model extends Vtiger_Record_Model {
 		$htmlParser = new Vtiger_MailParser($this->getName());
 		return $htmlParser->parseHtml();
 	}
+
+	public function delete() {
+		global $adb;
+
+		$childComments = $this->getChildComments();
+
+		$attachmentRes = $adb->pquery("SELECT * FROM vtiger_attachments
+						INNER JOIN vtiger_seattachmentsrel ON vtiger_attachments.attachmentsid = vtiger_seattachmentsrel.attachmentsid
+						WHERE vtiger_seattachmentsrel.crmid = ?", array($this->getId()));
+		$numOfRows = $adb->num_rows($attachmentRes);
+		$attachmentsList = array();
+		if($numOfRows) {
+			for($i=0; $i<$numOfRows; $i++) {
+				$attachmentsList[$i]['fileid'] = $adb->query_result($attachmentRes, $i, 'attachmentsid');
+				$attachmentsList[$i]['attachment'] = decode_html($adb->query_result($attachmentRes, $i, 'name'));
+				$path = $adb->query_result($attachmentRes, $i, 'path');
+				$attachmentsList[$i]['path'] = $path;
+				$attachmentsList[$i]['size'] = filesize($path.$attachmentsList[$i]['fileid'].'_'.$attachmentsList[$i]['attachment']);
+				$attachmentsList[$i]['type'] = $adb->query_result($attachmentRes, $i, 'type');
+				$attachmentsList[$i]['cid'] = $adb->query_result($attachmentRes, $i, 'cid');
+				$storedname = $adb->query_result($attachmentRes, $i, 'storedname');
+
+				unlink($path.$attachmentsList[$i]['fileid'].'_'.$storedname);
+				$adb->pquery("DELETE FROM vtiger_attachments WHERE attachmentsid = ?", array($attachmentsList[$i]['fileid']));
+				$adb->pquery("DELETE FROM vtiger_seattachmentsrel WHERE attachmentsid = ?", array($attachmentsList[$i]['fileid']));
+				$adb->pquery("DELETE FROM vtiger_crmentity WHERE crmid = ?", array($attachmentsList[$i]['fileid']));
+			}
+		}
+		$adb->pquery("DELETE FROM vtiger_modcomments WHERE modcommentsid = ?", array($this->getId()));
+		$adb->pquery("DELETE FROM vtiger_crmentity WHERE crmid = ?", array($this->getId()));
+
+		// 子コメントを削除する。
+		foreach ($childComments as $key => $childComment) {
+			$childComment->delete();
+		}
+	}
+	
 }
