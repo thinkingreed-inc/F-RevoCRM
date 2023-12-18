@@ -69,10 +69,10 @@
                                         {/foreach}
                                     </ul>
 								<div class='clearfix'> 
-									{if $smarty.foreach.customView.iteration - 10 - $count} 
-										<a class="toggleFilterSize" data-more-text=" {$smarty.foreach.customView.iteration - 10 - $count} {vtranslate('LBL_MORE',Vtiger)|@strtolower}" data-less-text="Show less">
-											{if $smarty.foreach.customView.iteration gt 10} 
-												{$smarty.foreach.customView.iteration - 10 - $count} {vtranslate('LBL_MORE',Vtiger)|@strtolower} 
+									{if php7_count($GROUP_CUSTOM_VIEWS) gt 10} 
+										<a class="toggleFilterSize" data-more-text=" {php7_count($GROUP_CUSTOM_VIEWS) - 10 - $count} {vtranslate('LBL_MORE',Vtiger)|@strtolower}" data-less-text="{vtranslate('LBL_LESS',Vtiger)|@strtolower}">
+											{if php7_count($GROUP_CUSTOM_VIEWS) gt 10} 
+												{php7_count($GROUP_CUSTOM_VIEWS) - 10 - $count} {vtranslate('LBL_MORE',Vtiger)|@strtolower} 
 											{/if} 
 										</a>{/if} 
 									</div>
