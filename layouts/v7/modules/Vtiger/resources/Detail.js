@@ -2736,7 +2736,7 @@ Vtiger.Class("Vtiger_Detail_Js",{
 		var detailContentsHolder = this.getContentHolder();
 		var self = this;
 		this.registerSendSmsSubmitEvent();
-		detailContentsHolder.on('click','.viewThread', function(e){
+		detailContentsHolder.on('click','.hideThread', function(e){
 			var currentTarget = jQuery(e.currentTarget);
 			var currentTargetParent = currentTarget.parent();
 			var commentActionsBlock = currentTarget.closest('.commentActions');
@@ -2744,25 +2744,20 @@ Vtiger.Class("Vtiger_Detail_Js",{
 			var ulElements = currentCommentBlock.find('ul');
 			if(ulElements.length > 0){
 				ulElements.show();
-				commentActionsBlock.find('.hideThreadBlock').show();
+				commentActionsBlock.find('.viewThreadBlock').show();
 				currentTargetParent.hide();
 				return;
 			}
 			var commentId = currentTarget.closest('.commentDiv').find('.commentInfoHeader').data('commentid');
-			self.getChildComments(commentId).then(function(data){
-				jQuery(data).appendTo(jQuery(e.currentTarget).closest('.commentDetails'));
-				commentActionsBlock.find('.hideThreadBlock').show();
-				currentTargetParent.hide();
-			});
 		});
-		detailContentsHolder.on('click','.hideThread', function(e){
+		detailContentsHolder.on('click','.viewThread', function(e){
 			var currentTarget = jQuery(e.currentTarget);
 			var currentTargetParent = currentTarget.parent();
 			var commentActionsBlock = currentTarget.closest('.commentActions');
 			var currentCommentBlock = currentTarget.closest('.commentDetails');
 			currentCommentBlock.find('ul').hide();
 			currentTargetParent.hide();
-			commentActionsBlock.find('.viewThreadBlock').show();
+			commentActionsBlock.find('.hideThreadBlock').show();
 		});
 		detailContentsHolder.on('click','.detailViewThread',function(e){
 			var recentCommentsTab = self.getTabByLabel(self.detailViewRecentCommentsTabLabel);
@@ -2858,11 +2853,6 @@ Vtiger.Class("Vtiger_Detail_Js",{
 									var newChildCommentCount = currentChildCommentsCount + 1;
 									commentInfoBlock.find('.childCommentsCount').text(newChildCommentCount);
 									var parentCommentId = commentInfoBlock.find('.commentInfoHeader').data('commentid');
-									self.getChildComments(parentCommentId).then(function(responsedata){
-										jQuery(responsedata).appendTo(commentBlock);
-										commentInfoBlock.find('.viewThreadBlock').hide();
-										commentInfoBlock.find('.hideThreadBlock').show();
-									});
 								}else {
 									jQuery(html).appendTo(commentBlock);
 								}
