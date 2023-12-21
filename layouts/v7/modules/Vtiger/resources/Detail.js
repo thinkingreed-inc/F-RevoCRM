@@ -2853,6 +2853,11 @@ Vtiger.Class("Vtiger_Detail_Js",{
 									var newChildCommentCount = currentChildCommentsCount + 1;
 									commentInfoBlock.find('.childCommentsCount').text(newChildCommentCount);
 									var parentCommentId = commentInfoBlock.find('.commentInfoHeader').data('commentid');
+									self.getChildComments(parentCommentId).then(function(responsedata){
+										jQuery(responsedata).appendTo(commentBlock);
+										commentInfoBlock.find('.viewThreadBlock').hide();
+										commentInfoBlock.find('.hideThreadBlock').show();
+									});
 								}else {
 									jQuery(html).appendTo(commentBlock);
 								}
