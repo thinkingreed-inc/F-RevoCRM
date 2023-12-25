@@ -317,19 +317,6 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 							$baseEntityId = vtws_getId($moduleObjectId, $baseRecordId);
 							$baseRecordModel = Vtiger_Record_Model::getInstanceById($baseRecordId);
 
-							for ($index = 0; $index < $noOfDuplicates - 1; ++$index) {
-								$duplicateRecordId = $adb->query_result($duplicatesResult, $index, $fieldColumnMapping['id']);
-								$entityId = vtws_getId($moduleObjectId, $duplicateRecordId);
-								if ($userPriviligesModel->hasModuleActionPermission($tabId, 'Delete')) {
-									$baseRecordModel->transferRelationInfoOfRecords(array($duplicateRecordId));
-									if ($moduleName == 'Calendar') {
-										$recordModel = Vtiger_Record_Model::getInstanceById($duplicateRecordId);
-										$recordModel->delete();
-									} else {
-										vtws_delete($entityId, $this->user);
-									}
-								}
-							}
 
 							if ($mergeType == Import_Utils_Helper::$AUTO_MERGE_OVERWRITE) {
 								$fieldData = $this->transformForImport($fieldData, $moduleMeta);
