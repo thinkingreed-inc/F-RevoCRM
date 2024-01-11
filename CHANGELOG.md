@@ -1,5 +1,88 @@
 # 更新履歴
 
+# F-RevoCRM7.4.0
+## パッチ適用方法
+- ファイル、DBのバックアップを確実に取得してください
+- 差分ファイルを上書き更新してください
+- 以下のURLにアクセスし、マイグレーションを実施してください。  
+`https://example.com/frevocrm/index.php?module=Migration&view=Index&mode=step1`
+
+* 機能改善
+  - #872 [要望]共有カレンダーの全チェックON/OFF機能の追加
+  - #897 [要望]関連のコメントを開いた際に子コメント全てが表示された状態にしてほしい
+  - #570 [要望]同名のレポートが存在した場合の警告文を変更
+  - #887 [要望]適格請求書のテンプレートを追加
+  - #892 [要望]日報モジュールの概要画面の「活動」部分が読みづらい
+  - #856 [要望]PHP8.x対応
+
+* 不具合修正
+  - #894 [不具合]子コメントのついた親コメントを削除すると、コメント件数がおかしくなる箇所の修正
+  - #591 [不具合]活動のインポートでの不具合を修正
+  - #728 [不具合]作成するタグが他タグと同名でも、別IDになるように修正
+  - #489 [不具合]一部罫線のスタイルの崩れを修正
+  - #877 [不具合]プロファイルの権限は「複製」の作成を制御するものではなく、「重複の検出」を制御するための権限であるため、翻訳を修正
+  - #878 [不具合]ユーザー名の変更モーダルの「新しいユーザー名」にinputElementクラスが当たっていなかったので追加
+  - #879 [不具合]選択肢の入力画面で空にも関わらず「オプションの選択」になるケースがある
+
+## Contributors
+Thank you for contributing!
+<div>
+<a href="https://github.com/K-Haruto"><img src="https://github.com/K-Haruto.png" title="K-Haruto" width="40" height="40" style="border-radius: 50%;"></a>
+<a href="https://github.com/kkouta"><img src="https://github.com/kkouta.png" title="kkouta" width="40" height="40" style="border-radius: 50%;"></a>
+<a href="https://github.com/kento-yn"><img src="https://github.com/kento-yn.png" title="kento-yn" width="40" height="40" style="border-radius: 50%;"></a>
+<a href="https://github.com/Remicck"><img src="https://github.com/Remicck.png" title="Remicck" width="40" height="40" style="border-radius: 50%;"></a>
+<a href="https://github.com/Ryon1211"><img src="https://github.com/Ryon1211.png" title="Ryon1211" width="40" height="40" style="border-radius: 50%;"></a>
+<a href="https://github.com/junmt"><img src="https://github.com/junmt.png" title="junmt" width="40" height="40" style="border-radius: 50%;"></a>
+</div>
+
+# F-RevoCRM7.3.9
+## パッチ適用方法
+- ファイル、DBのバックアップを確実に取得してください
+- 差分ファイルを上書き更新してください
+- 以下のURLにアクセスし、マイグレーションを実施してください。  
+`https://example.com/frevocrm/index.php?module=Migration&view=Index&mode=step1`
+
+* 機能改善
+  - #847 [要望]リストで数値を範囲検索できるようにしてほしい
+  - #742 [要望]カレンダー上の予定から、顧客企業などの関連リンクに飛べる機能を追加
+  - #767 [要望]翻訳がかかっている選択肢項目のエクスポート、インポートについての修正
+  - #766 [要望]活動モジュール項目の並べ替えができるように修正
+  - #743 [要望]カレンダーをドラッグで指定した範囲の予定を作成できる機能を追加
+* 不具合修正
+  - #873 [不具合]コマンドインジェクションの脆弱性
+  - #874 [不具合]ラベル項目に対するXSSの脆弱性
+  - #774 [不具合]日またぎの終日の活動の期間が計算されていない問題を修正
+  - #574 [不具合]共有カレンダーにて、予定をマウス移動すると非表示にしていたユーザーの予定も表示される
+  - #549 [不具合]共有カレンダーにて、現在のログインユーザーの予定が参加者の予定と一緒に移動しない
+  - #325 [不具合]カレンダーのスケジュール削除時に共同参加者も削除するように修正
+  - #854 [不具合]参照フィールドを編集した際に送信されるメールにて編集後の値が表示されるように修正
+  - #854 [不具合]メールタイトルの日本語翻訳を修正
+  - #840 [不具合]閲覧権限のないレポートを非表示にするように修正
+  - #829 [不具合]レポートの保存ボタンが表示されるように修正
+  - #835 [不具合]見積の新規作成画面にて控除された税金のキャンセルが効くように修正
+  - #826 [不具合]ダッシュボードのセールスファネルのグラフの数値がずれている問題を修正
+  - #793 [不具合]選択肢エディタで色を設定すると項目名が英語になる不具合を修正
+  - #539 [不具合]繰り返し予定の担当者を変更時、「以降の～」「全て」を選択すると一日だけ変更前・変更後の担当者が参加者に残る
+  - #610 [不具合]契約からチケットへ関連のラベル名修正
+  - #744 [不具合]マイグループのチェックボックスが変化しないよう修正
+  - #746 [不具合]活動を作成している途中で活動タイプを変更しても終了側の日付が変更されないように修正
+  - #894 [不具合]子コメントのついた親コメントを削除すると、コメント件数がおかしくなる箇所の修正
+
+* その他
+  - Readmeに「.htaccess」に関する注意書きを追記
+
+## Contributors
+Thank you for contributing!
+<div>
+<a href="https://github.com/K-Haruto"><img src="https://github.com/K-Haruto.png" title="K-Haruto" width="40" height="40" style="border-radius: 50%;"></a>
+<a href="https://github.com/kkouta"><img src="https://github.com/kkouta.png" title="kkouta" width="40" height="40" style="border-radius: 50%;"></a>
+<a href="https://github.com/pavish69"><img src="https://github.com/pavish69.png" title="pavish69" width="40" height="40" style="border-radius: 50%;"></a>
+<a href="https://github.com/kento-yn"><img src="https://github.com/kento-yn.png" title="kento-yn" width="40" height="40" style="border-radius: 50%;"></a>
+<a href="https://github.com/Remicck"><img src="https://github.com/Remicck.png" title="Remicck" width="40" height="40" style="border-radius: 50%;"></a>
+<a href="https://github.com/Sota-Miyamoto"><img src="https://github.com/Sota-Miyamoto.png" title="Sota-Miyamoto" width="40" height="40" style="border-radius: 50%;"></a>
+<a href="https://github.com/junmt"><img src="https://github.com/junmt.png" title="junmt" width="40" height="40" style="border-radius: 50%;"></a>
+</div>
+
 # F-RevoCRM7.3.8
 ## パッチ適用方法
 - ファイル、DBのバックアップを確実に取得してください

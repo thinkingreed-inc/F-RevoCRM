@@ -196,6 +196,8 @@ $languageStrings = array(
 	'LBL_NO_COMMENTS' => 'コメントはありません。',
 	'LBL_REPLIES' => '返信',
 	'LBL_REPLY_ALL' => '全員に返信',
+	'LBL_HIDDEN' => '非表示',
+	'LBL_DISPLAY' => '表示',
 
 	//Translation for all modules
 	'Dashboards' => 'ダッシュボード',
