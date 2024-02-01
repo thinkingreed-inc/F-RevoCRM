@@ -1446,8 +1446,8 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 			$ui10_module = $adb->query_result($ui10_query,$i,'module');
 			$ui10_fieldlabel = $adb->query_result($ui10_query,$i,'fieldlabel');
 
-			if($primary_obj->table_name == $ui10_tablename){
-				$reltables = array($ui10_tablename=>array("".$primary_obj->table_index."","$ui10_columnname"));
+			if(in_array($ui10_tablename, $primary_obj->tab_name)){
+				$reltables = array($ui10_tablename=>array("".$ui10_tablename."","$ui10_columnname"));
 			} else if($secondary_obj->table_name == $ui10_tablename){
 				$reltables = array($ui10_tablename=>array("$ui10_columnname","".$secondary_obj->table_index.""),"".$primary_obj->table_name."" => "".$primary_obj->table_index."");
 			} else {
