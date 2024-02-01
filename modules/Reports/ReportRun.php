@@ -370,19 +370,6 @@ class ReportRun extends CRMEntity {
 			return $this->_columnslist;
 		}
 
-		// レポートのカラムに関連項目が選択されていない場合cfテーブルがjoinされないため、
-		// $columnslistrowのループにてcfテーブルが必要であるか判定を行う. 
-		$joincftableflag = false; // 判定フラグ
-		$joinColumn = $this->queryPlanner->getReportJoinColumn();
-		$joinTypes = explode(",", $joinColumn);
-		$secmodulelists_joincftable = [];
-		foreach ($joinTypes as $tmpKey) {
-			list($secmodule, $primodule, $column) = split("::", $tmpKey);
-			if (stripos($column, 'cf_') !== false) {
-				$secmodulelists_joincftable[] = $secmodule;
-			}
-		}
-
 		global $adb;
 		global $modules;
 		global $log, $current_user, $current_language;
@@ -462,20 +449,15 @@ class ReportRun extends CRMEntity {
 					$columnslist[$fieldcolname] = $querycolumns;
 				}
 
-				if (in_array($module, $secmodulelists_joincftable)) {
-					$joincftableflag = true;
-				}
-
 				$this->queryPlanner->addTable($targetTableName);
 			}
 		}
 
 		// cfテーブルを追加する
-		if ($joincftableflag) {
-			$focus = CRMEntity::getInstance($this->primarymodule);
-			$customFieldTable = $focus->customFieldTable;
-			$this->queryPlanner->addTable($customFieldTable[0]);
-		}
+		// [TODO] 関連の参照先として選択されていなければ不要
+		$focus = CRMEntity::getInstance($this->primarymodule);
+		$customFieldTable = $focus->customFieldTable;
+		$this->queryPlanner->addTable($customFieldTable[0]);
 
 		if ($outputformat == "HTML" || $outputformat == "PDF" || $outputformat == "PRINT") {
 			if($this->primarymodule == 'ModComments') {
