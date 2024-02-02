@@ -2853,6 +2853,7 @@ Vtiger.Class("Vtiger_List_Js", {
 				return $table.closest('.table-container');
 			}
 		});
+		$(".floatThead-floatContainer").css("margin-left","0px");
 	},
 	getSelectedRecordCount: function () {
 		var count = 0;
