@@ -57,11 +57,13 @@ if (defined('VTIGER_UPGRADE')) {
     $db->pquery("alter table vtiger_reportmodules add column join_column text", array());
 
     // Reports_Record_Model::getRelationTables()にて, vtiger_fieldmodulerelを参照しているため足りないフィールドを追加
-    $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(279,'Faq','Products')", array());
+    $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(72,'Contacts','Accounts')", array());
     $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(129,'Campaigns','Products')", array());
     $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(159,'HelpDesk','Products')", array());
-    $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(330,'Quotes','Accounts')", array());
+    $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(279,'Faq','Products')", array());
     $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(316,'Quotes','Potentials')", array());
+    $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(319,'Quotes','Contacts')", array());
+    $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(330,'Quotes','Accounts')", array());
+    $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(356,'PurchaseOrder','Contacts')", array());
     $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(452,'Invoice','Accounts')", array());
-    $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(72,'Contacts','Accounts')", array());
 }
