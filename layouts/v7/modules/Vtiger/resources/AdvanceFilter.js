@@ -543,7 +543,22 @@ jQuery.Class("Vtiger_AdvanceFilter_Js",{
 						}
 					}
 
-				} else {
+				}
+				 else if (fieldType == 'time' && fieldDataInfo.comparatorElementVal == 'bw'){
+					var timeRange = {};
+					for(var key in fieldList) {
+						var field = fieldList[key];
+						if(field == 'value'){
+							valueSelectElement.each(function(i, timeRangeValueElement){
+								timeRange[i] = jQuery(timeRangeValueElement).val();
+							});
+							rowValues[field] = timeRange[0]+','+timeRange[1];
+						}  else {
+							rowValues[field] = jQuery('[name="'+field+'"]', rowElement).val();
+						}
+					}
+				}
+				 else {
 					for(var key in fieldList) {
 						var field = fieldList[key];
 						if(field == 'value'){
@@ -648,7 +663,7 @@ Vtiger_Field_Js('AdvanceFilter_Field_Js',{},{
 
 	getUiTypeSpecificHtml : function() {
 		var uiTypeModel = this.getUiTypeModel();
-		return uiTypeModel.getUi();
+		return uiTypeModel.getUi(this.get('comparatorElementVal'));
 	},
 	
 	getModuleName : function() {
