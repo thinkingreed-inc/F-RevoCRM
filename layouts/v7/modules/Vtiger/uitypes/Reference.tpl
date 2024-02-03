@@ -54,8 +54,26 @@
                 <i id="{$MODULE}_editView_fieldName_{$FIELD_NAME}_select" class="fa fa-search"></i>
             </span>
         {if (($REQ.view eq 'Edit') or ($MODULE_NAME eq 'Webforms')) && !in_array($REFERENCE_LIST[0],$QUICKCREATE_RESTRICTED_MODULES)}
+            {if $REFERENCE_LIST[0] eq 'Documents'}
+                <span class="input-group-addon cursorPointer clearfix dropdown" title="{vtranslate('LBL_CREATE', $MODULE)}">
+                <i id="{$MODULE}_editView_fieldName_{$FIELD_NAME}_create" class="fa fa-plus" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>
+                <ul class="dropdown-menu quickcreateMoreDropdown" aria-labelledby="menubar_quickCreate_Documents">
+                    <li class="dropdown-header"><i class="fa fa-upload"></i> {vtranslate('LBL_FILE_UPLOAD', 'Documents')}</li>
+                    <li id="VtigerAction">
+                        <a href="javascript:Documents_Index_Js.uploadTo('Vtiger')">
+                            <img style="  margin-top: -3px;margin-right: 10px;margin-left:3px; width:15px; height:15px;" title="F-RevoCRM" alt="F-RevoCRM" src="layouts/v7/skins//images/Vtiger.png">
+                            {vtranslate('LBL_TO_SERVICE', 'Documents', {vtranslate('LBL_VTIGER', 'Documents')})}
+                        </a>
+                    </li>
+                    <li class="dropdown-header"><i class="fa fa-link"></i> {vtranslate('LBL_LINK_EXTERNAL_DOCUMENT', 'Documents')}</li>
+                    <li id="shareDocument"><a href="javascript:Documents_Index_Js.createDocument('E')">&nbsp;<i class="fa fa-external-link"></i>&nbsp;&nbsp; {vtranslate('LBL_FROM_SERVICE', 'Documents', {vtranslate('LBL_FILE_URL', 'Documents')})}</a></li>
+					<li role="separator" class="divider"></li>
+                    <li id="createDocument"><a href="javascript:Documents_Index_Js.createDocument('W')"><i class="fa fa-file-text"></i> {vtranslate('LBL_CREATE_NEW', 'Documents', {vtranslate('SINGLE_Documents', 'Documents')})}</a></li>
+                </ul>
+            {else}
             <span class="input-group-addon createReferenceRecord cursorPointer clearfix" title="{vtranslate('LBL_CREATE', $MODULE)}">
             <i id="{$MODULE}_editView_fieldName_{$FIELD_NAME}_create" class="fa fa-plus"></i>
+            {/if}
         </span>
         {/if}
     </div>
