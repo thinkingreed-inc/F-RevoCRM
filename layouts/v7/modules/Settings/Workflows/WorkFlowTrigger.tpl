@@ -20,8 +20,8 @@
             {assign var=SINGLE_SELECTED_MODULE value="SINGLE_$SELECTED_MODULE"}
             <span><input type="radio" name="workflow_trigger" value="1" {if $EXECUTION_CONDITION eq '1'} checked="" {/if}> <span id="workflowTriggerCreate">{vtranslate($SINGLE_SELECTED_MODULE, $SELECTED_MODULE)} {vtranslate('LBL_CREATION', $QUALIFIED_MODULE)}</span></span><br>
             <span><input type="radio" name="workflow_trigger" value="3" {if $EXECUTION_CONDITION eq '3' or $EXECUTION_CONDITION eq '2'} checked="" {/if}> <span id="workflowTriggerUpdate">{vtranslate($SINGLE_SELECTED_MODULE, $SELECTED_MODULE)} {vtranslate('LBL_UPDATED', $QUALIFIED_MODULE)}</span> &nbsp;({vtranslate('LBL_INCLUDES_CREATION', $QUALIFIED_MODULE)})</span><br>
-			<span><input type="radio" name="workflow_trigger" value="6" {if $EXECUTION_CONDITION eq '6'} checked="" {else if $SCHEDULED_WORKFLOW_COUNT >= $MAX_ALLOWED_SCHEDULED_WORKFLOWS} disabled="disabled" {/if}> {vtranslate('LBL_TIME_INTERVAL', $QUALIFIED_MODULE)}
-				{if $SCHEDULED_WORKFLOW_COUNT >= $MAX_ALLOWED_SCHEDULED_WORKFLOWS}
+			<span><input type="radio" name="workflow_trigger" value="6" {if $EXECUTION_CONDITION eq '6'} checked="" {else if $SCHEDULED_WORKFLOW_COUNT >= $MAX_ALLOWED_SCHEDULED_WORKFLOWS && !is_null($MAX_ALLOWED_SCHEDULED_WORKFLOWS)} disabled="disabled" {/if}> {vtranslate('LBL_TIME_INTERVAL', $QUALIFIED_MODULE)}
+				{if $SCHEDULED_WORKFLOW_COUNT >= $MAX_ALLOWED_SCHEDULED_WORKFLOWS && !is_null($MAX_ALLOWED_SCHEDULED_WORKFLOWS)}
 					&nbsp;&nbsp;<span class="alert-info textAlignCenter"><i class="fa fa-info-circle"></i>&nbsp;&nbsp;({vtranslate('LBL_MAX_SCHEDULED_WORKFLOWS_EXCEEDED', $QUALIFIED_MODULE, $MAX_ALLOWED_SCHEDULED_WORKFLOWS)})</span>
 				{/if}
 			</span>
@@ -38,7 +38,7 @@
        </div>
     </div>
 
-    {if $SCHEDULED_WORKFLOW_COUNT < $MAX_ALLOWED_SCHEDULED_WORKFLOWS}
+    {if $SCHEDULED_WORKFLOW_COUNT < $MAX_ALLOWED_SCHEDULED_WORKFLOWS || is_null($MAX_ALLOWED_SCHEDULED_WORKFLOWS)}
         <div id="scheduleBox" class='contentsBackground {if $WORKFLOW_MODEL_OBJ->executionCondition neq 6} hide {/if}'>
             <div class="form-group">
                 <label class="col-sm-3 control-label"> {vtranslate('LBL_FREQUENCY', $QUALIFIED_MODULE)} </label>
