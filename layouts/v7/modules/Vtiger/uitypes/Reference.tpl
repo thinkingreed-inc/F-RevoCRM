@@ -60,7 +60,7 @@
                 <i id="{$MODULE}_editView_fieldName_{$FIELD_NAME}_create" class="fa fa-plus" 
                     {if $REFERENCE_LIST[0] eq 'Documents'} data-toggle="dropdown" style="padding: 5px 8px;"
                     {else} style="pointer-events: none;" {/if}></i> {*ドキュメント以外でドロップダウンメニューが表示されないようにする*}
-                <ul class="dropdown-menu quickcreateMoreDropdown" aria-labelledby="menubar_quickCreate_Documents">
+                <ul class="dropdown-menu dropdown-menu-right quickcreateMoreDropdown" aria-labelledby="menubar_quickCreate_Documents">
                     <li class="dropdown-header"><i class="fa fa-upload"></i> {vtranslate('LBL_FILE_UPLOAD', 'Documents')}</li>
                     <li id="VtigerAction">
                         <a href="javascript:Documents_Index_Js.uploadTo('Vtiger','{$RECORD_ID}','{$MODULE}','{$FIELD_NAME}')">
