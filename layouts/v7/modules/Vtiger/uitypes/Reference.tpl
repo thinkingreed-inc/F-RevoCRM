@@ -54,9 +54,12 @@
                 <i id="{$MODULE}_editView_fieldName_{$FIELD_NAME}_select" class="fa fa-search"></i>
             </span>
         {if (($REQ.view eq 'Edit') or ($MODULE_NAME eq 'Webforms')) && !in_array($REFERENCE_LIST[0],$QUICKCREATE_RESTRICTED_MODULES)}
-            {if $REFERENCE_LIST[0] eq 'Documents'}
-                <span class="input-group-addon cursorPointer clearfix dropdown" title="{vtranslate('LBL_CREATE', $MODULE)}" name="{$FIELD_NAME}" style="padding: 0px;">
-                <i id="{$MODULE}_editView_fieldName_{$FIELD_NAME}_create" class="fa fa-plus" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="padding: 5px 8px;"></i>
+            {if in_array('Documents', $REFERENCE_LIST)}
+                <span class="input-group-addon {if $REFERENCE_LIST[0] eq 'Documents'} dropdown {else} createReferenceRecord {/if} cursorPointer clearfix" title="{vtranslate('LBL_CREATE', $MODULE)}" name="{$FIELD_NAME}"
+                    {if $REFERENCE_LIST[0] eq 'Documents'} style="padding: 0px;" {/if}>
+                <i id="{$MODULE}_editView_fieldName_{$FIELD_NAME}_create" class="fa fa-plus" 
+                    {if $REFERENCE_LIST[0] eq 'Documents'} data-toggle="dropdown" style="padding: 5px 8px;"
+                    {else} style="pointer-events: none;" {/if}></i> {*ドキュメント以外でドロップダウンメニューが表示されないようにする*}
                 <ul class="dropdown-menu quickcreateMoreDropdown" aria-labelledby="menubar_quickCreate_Documents">
                     <li class="dropdown-header"><i class="fa fa-upload"></i> {vtranslate('LBL_FILE_UPLOAD', 'Documents')}</li>
                     <li id="VtigerAction">
