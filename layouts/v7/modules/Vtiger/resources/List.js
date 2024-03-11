@@ -2797,6 +2797,13 @@ Vtiger.Class("Vtiger_List_Js", {
 		var height = this.getListViewContentHeight();
 		var width = this.getListViewContentWidth();
 		var tableContainer = $table.closest('.table-container');
+		var thead = $table.find('thead');
+		thead.css({
+			'position':'sticky',
+			'top': 0,
+			'z-index':'2',
+            'background-color': 'white' /* ヘッダーの背景色 */
+		});
 		var form = $table.parent();
 		tableContainer.css({
 			'position': 'relative',
@@ -2847,12 +2854,30 @@ Vtiger.Class("Vtiger_List_Js", {
 				leftPos += $column.width();//どちらかゼロ
 			}
 		});
-
-		$table.floatThead({
-			scrollContainer: function ($table) {
-				return $table.closest('.table-container');
-			}
+		//テーブルからカラム名を取得，各カラムの幅を保存するために一意のidを生成
+		var module = app.getModuleName();
+		tableContainer.find("tr").each(function(){
+			var $tr = $(this);
+			$tr.find("th").each(function(){
+				var $header = $(this);
+				var $columnname = $header.find('a').data('columnname');
+				var $columnid = '';
+				if ($columnname) {
+					$columnid += module + '-' + $columnname;
+				}
+				$header.attr('data-resizable-column-id', $columnid);
+			});
 		});
+
+		$table.resizableColumns({
+			store:store
+		});
+
+		// $table.floatThead({
+		// 	scrollContainer: function ($table) {
+		// 		return $table.closest('.table-container');
+		// 	}
+		// });
 	},
 	getSelectedRecordCount: function () {
 		var count = 0;
