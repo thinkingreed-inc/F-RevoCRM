@@ -582,7 +582,11 @@ function isPermitted($module,$actionname,$record_id='')
 			$permission = "yes";
 		}
 	}else {
-		$permission = "no";
+		if($module === 'PDFTemplates' && $profileTabsPermission[$tabid] === 0) {
+			$permission = "yes";
+		}else {
+			$permission = "no";
+		}
 	}
 
 	$log->debug("Exiting isPermitted method ...");
