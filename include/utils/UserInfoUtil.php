@@ -1569,6 +1569,7 @@ function getCombinedUserActionPermissions($userId)
 		for($i=1;$i<$no_of_profiles;$i++)
 		{
 			$tempActionPerrArr=getProfileAllActionPermission($profArr[$i]);
+			$tempTabPerArr=getProfileTabsPermission($profArr[$i]);
 
 			foreach($actionPerrArr as $tabId=>$perArr)
 			{
@@ -1577,7 +1578,7 @@ function getCombinedUserActionPermissions($userId)
 					if($per == 1)
 					{
 						$now_permission = $tempActionPerrArr[$tabId][$actionid];
-						if($now_permission == 0 && $now_permission != "")
+						if($now_permission == 0 && $now_permission != "" && $tempTabPerArr[$tabId] == 0)
 						{
 							$actionPerrArr[$tabId][$actionid]=$now_permission;
 						}
