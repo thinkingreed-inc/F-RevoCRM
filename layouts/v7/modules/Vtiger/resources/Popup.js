@@ -433,16 +433,17 @@ jQuery.Class("Vtiger_Popup_Js",{
 		if(typeof dataUrl != 'undefined'){
 			dataUrl = dataUrl+'&currency_id='+jQuery('#currencyId').val();
             
-		    app.request.post({"url":dataUrl}).then(
-			function(err,data){
-                            for(var id in data){
-				    if(typeof data[id] == "object"){
-					var recordData = data[id];
-				    }
+			app.request.post({"url":dataUrl}).then(
+				function(err,data){
+					for(var id in data){
+						if(typeof data[id] == "object"){
+							var recordData = data[id];
+						}
+					}
+					thisInstance.done(data,thisInstance.getEventName());
 				}
-                thisInstance.done(data,thisInstance.getEventName());
-			});
-                         e.preventDefault();
+			);
+			e.preventDefault();
 		} else {
 		    var id = row.data('id');
 		    var recordName = row.attr('data-name');

@@ -1540,6 +1540,7 @@ Vtiger.Class('Vtiger_Index_Js', {
 
 	registerPostReferenceEvent : function(container) {
 		var thisInstance = this;
+		console.log('registerPostReferenceEvent', this);
 
 		container.find('.sourceField').on(Vtiger_Edit_Js.postReferenceSelectionEvent,function(e,result){
 			var dataList = result.data;

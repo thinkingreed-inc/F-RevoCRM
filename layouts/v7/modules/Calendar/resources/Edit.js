@@ -66,42 +66,33 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 	getDirectListViewEntries: function(recordId) {
 		var sourceFieldElement = jQuery('input[name="parent_id"]');
 
-		var popupInstance = Vtiger_Popup_Js.getInstance("Calendar");
-		console.log(popupInstance);
+		const selectedItemData = {
+			id:"2",
+			label:"TEST記号",
+			record:"2",
+			selectedName:"TEST記号",
+			source_module:"Accounts",
+			value:"TEST記号",
+		}
 
-		console.log(recordId);
-		var id = "Accounts_popUpListView_row_1";
-		var recordName = "TEST記号";
-		var recordInfo = {
-			"0":"TEST企業",
-			"accountname":"TEST企業",
-			"1":"",
-			"website":"",
-			"2":"",
-			"phone":"",
-			"3":"",
-			"email1":"",
-			"4":"1",
-			"smownerid":"1",
-			"5":null,
-			"last_action_date":null,
-			"6":"",
-			"bill_city":"",
-			"7":"2",
-			"accountid":"2"
-		};
-		var referenceModule = 'Accounts';
-		var response = {};
-		response[2] = {
-			'name' : recordName,
-			'info' : recordInfo,
-			'module' : referenceModule
-		};
-		console.log(response);
-		
-		sourceFieldElement.trigger(Vtiger_Edit_Js.postReferenceSelectionEvent,{'data':response});
-		// popupInstance.event(JSON.stringify(response));
-		// e.preventDefault();
+		var element = sourceFieldElement;
+		var parent = element.closest('td');
+		if(parent.length == 0){
+			parent = element.closest('.fieldValue');
+		}
+		var sourceField = parent.find('.sourceField');
+		var fieldName = sourceField.attr("name");
+		parent.find('input[name="'+fieldName+'"]').val(selectedItemData.id);
+		element.attr("value",selectedItemData.id);
+		element.data("value",selectedItemData.id);
+		parent.find('.clearReferenceSelection').removeClass('hide');
+		parent.find('.referencefield-wrapper').addClass('selected');
+		element.attr("disabled","disabled");
+		$("$parent_id_display").val()
+		//trigger reference field selection event
+		sourceField.trigger(Vtiger_Edit_Js.referenceSelectionEvent,selectedItemData);
+		//trigger post reference selection
+		sourceField.trigger(Vtiger_Edit_Js.postReferenceSelectionEvent,{'data':selectedItemData});
 	},
 	
 

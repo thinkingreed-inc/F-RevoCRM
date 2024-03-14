@@ -1088,9 +1088,7 @@ function calculateValidationRules(form,params,meta){
 
 		//invoke validation on reference post selection
 		this.on('Vtiger.PostReference.Selection Vtiger.PostReference.QuickCreateSave', function (e) {
-			console.log(e, 'kokoha???');
 			var referenceWrapper = jQuery(e.target).closest('.referencefield-wrapper');
-			console.log(referenceWrapper);
 			var referenceElement = referenceWrapper.find('[data-fieldtype="reference"]').length ?
 					referenceWrapper.find('[data-fieldtype="reference"]') :
 					referenceWrapper.find('[data-fieldtype="multireference"]');
