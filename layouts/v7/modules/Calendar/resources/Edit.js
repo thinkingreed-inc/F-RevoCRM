@@ -60,7 +60,50 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 		jQuery("#alldayEvent").attr('data-validation-engine','change');
 	},
 
-	userChangedTimeDiff:false
+	userChangedTimeDiff:false,
+
+		
+	getDirectListViewEntries: function(recordId) {
+		var sourceFieldElement = jQuery('input[name="parent_id"]');
+
+		var popupInstance = Vtiger_Popup_Js.getInstance("Calendar");
+		console.log(popupInstance);
+
+		console.log(recordId);
+		var id = "Accounts_popUpListView_row_1";
+		var recordName = "TEST記号";
+		var recordInfo = {
+			"0":"TEST企業",
+			"accountname":"TEST企業",
+			"1":"",
+			"website":"",
+			"2":"",
+			"phone":"",
+			"3":"",
+			"email1":"",
+			"4":"1",
+			"smownerid":"1",
+			"5":null,
+			"last_action_date":null,
+			"6":"",
+			"bill_city":"",
+			"7":"2",
+			"accountid":"2"
+		};
+		var referenceModule = 'Accounts';
+		var response = {};
+		response[2] = {
+			'name' : recordName,
+			'info' : recordInfo,
+			'module' : referenceModule
+		};
+		console.log(response);
+		
+		sourceFieldElement.trigger(Vtiger_Edit_Js.postReferenceSelectionEvent,{'data':response});
+		// popupInstance.event(JSON.stringify(response));
+		// e.preventDefault();
+	},
+	
 
 },{
 
@@ -114,6 +157,8 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 			if(isMultiple) {
 				sourceFieldElement.trigger(Vtiger_Edit_Js.refrenceMultiSelectionEvent,{'data':dataList});
 			}
+			console.log(responseData);
+
 			sourceFieldElement.trigger(Vtiger_Edit_Js.postReferenceSelectionEvent,{'data':responseData});
 		});
 	},

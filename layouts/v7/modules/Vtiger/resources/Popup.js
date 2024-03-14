@@ -25,7 +25,7 @@ jQuery.Class("Vtiger_Popup_Js",{
 			var instance = new fallbackClassName();
 		}
 	    return instance;
-	}
+	},
 
 },{
     
@@ -391,6 +391,10 @@ jQuery.Class("Vtiger_Popup_Js",{
         if(typeof eventToTrigger !== 'undefined'){
             event = eventToTrigger;
         }
+				console.log(eventToTrigger);
+				console.log(event);
+				console.log(JSON.stringify(result));
+
         if(typeof event == 'function') {
             event(JSON.stringify(result));
         } else {
@@ -442,15 +446,14 @@ jQuery.Class("Vtiger_Popup_Js",{
 		} else {
 		    var id = row.data('id');
 		    var recordName = row.attr('data-name');
-			var recordInfo = row.data('info');
-			var referenceModule = jQuery('#popupPageContainer').find('#module').val();
+				var recordInfo = row.data('info');
+				var referenceModule = jQuery('#popupPageContainer').find('#module').val();
 		    var response ={};
 		    response[id] = {'name' : recordName,'info' : recordInfo, 'module' : referenceModule};
             thisInstance.done(response,thisInstance.getEventName());
             e.preventDefault();
 		}
 	},
-    
 
 	registerEventForListViewEntryClick : function(){
 		var thisInstance = this;
@@ -983,6 +986,7 @@ jQuery.Class("Vtiger_Popup_Js",{
         
 jQuery(document).ready(function() {
 	app.event.on("post.Popup.Load",function(event,params){
+		console.log(params);
         vtUtils.applyFieldElementsView(jQuery('.myModal'));
 
 		var popupInstance = Vtiger_Popup_Js.getInstance(params.module);

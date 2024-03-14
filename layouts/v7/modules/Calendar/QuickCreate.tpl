@@ -116,6 +116,7 @@
 															{/foreach}
 														</select>
 													</span>
+													<div onClick="Calendar_Edit_Js.getDirectListViewEntries(2)">顧客企業をセットする</div>
 												{else}
 													<label class="muted">{vtranslate($FIELD_MODEL->get('label'), $MODULE)} &nbsp;{if $FIELD_MODEL->isMandatory() eq true} <span class="redColor">*</span> {/if}</label>
 												{/if}
