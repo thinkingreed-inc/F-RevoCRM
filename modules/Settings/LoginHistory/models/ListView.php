@@ -59,11 +59,18 @@ class Settings_LoginHistory_ListView_Model extends Settings_Vtiger_ListView_Mode
 	public function getListViewCount() {
 		$db = PearDatabase::getInstance();
 
-		$module = $this->getModule();
-		$listQuery = "SELECT count(*) AS count FROM $module->baseTable INNER JOIN vtiger_users ON vtiger_users.user_name = $module->baseTable.user_name";
+		if(empty($search_key)) {
+			$search_key = 'is_portal';
+			$value = 'false';
+		}
 
-		$search_key = $this->get('search_key');
-		$value = $this->get('search_value');
+		if($value === 'true') {
+			$value = '1';
+		}
+
+		$module = $this->getModule();
+		$listQuery = "SELECT count(*) AS count FROM $module->baseTable LEFT JOIN vtiger_users ON vtiger_users.user_name = $module->baseTable.user_name";
+
 		$params = array();
 		if(!empty($search_key) && !empty($value)) {
 			$listQuery .= " WHERE $module->baseTable.$search_key = ?";
