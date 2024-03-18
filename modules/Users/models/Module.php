@@ -183,6 +183,10 @@ class Users_Module_Model extends Vtiger_Module_Model {
 	public function saveLoginHistory($username, $isCustomerPortal = false){
 		$adb = PearDatabase::getInstance();
 
+		if(empty($username)) {
+			return false;
+		}
+
 		if($isCustomerPortal) {
 			$userIPAddress = $_SERVER['HTTP_X_PORTAL_REMOTE_ADDR'];
 		}
@@ -229,6 +233,10 @@ class Users_Module_Model extends Vtiger_Module_Model {
 	 */
 	public function saveLoginErrorHistory($username, $isCustomerPortal = false){
 		$adb = PearDatabase::getInstance();
+
+		if(empty($username)) {
+			return false;
+		}
 
 		if($isCustomerPortal) {
 			$userIPAddress = $_SERVER['HTTP_X_PORTAL_REMOTE_ADDR'];
