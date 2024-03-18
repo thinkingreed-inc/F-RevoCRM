@@ -1509,6 +1509,7 @@ $languageStrings = array(
 	//ユーザー管理>ログイン履歴
 	'Signed in' => 'ログイン',
 	'Signed off' => 'ログアウト',
+	'Signed in error' => 'ログインエラー',
 	//モジュール管理
 	'Existing Business' => '既存ビジネス',
 	'New Business' => '新規ビジネス',
