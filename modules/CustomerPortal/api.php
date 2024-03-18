@@ -32,12 +32,19 @@ class CustomerPortal_API_EntryPoint {
 		} else {
 			// Handling the case Contacts module is disabled 
 			if (!vtlib_isModuleActive("Contacts")) {
+				$module = Users_Module_Model::getInstance('Users');
+				$module->saveLoginErrorHistory($request->get('username'), true);
 				throw new Exception("Contacts module is disabled", 1412);
 			}
 
 			$ok = $controller->authenticatePortalUser($request->get('username'), $request->get('password'));
 			if (!$ok) {
+				$module = Users_Module_Model::getInstance('Users');
+				$module->saveLoginErrorHistory($request->get('username'), true);
 				throw new Exception("Login failed", 1412);
+			} else {
+				$module = Users_Module_Model::getInstance('Users');
+				$module->saveLoginHistory($request->get('username'), true);
 			}
 		}
 	}
