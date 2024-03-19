@@ -63,18 +63,15 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 	userChangedTimeDiff:false,
 
 		
-	getDirectListViewEntries: function(recordId) {
+	getDirectListViewEntries: function(id, label, source_module) {
 		var sourceFieldElement = jQuery('input[name="parent_id"]');
 
-		const selectedItemData = {
-			id:"2",
-			label:"TEST記号",
-			record:"2",
-			selectedName:"TEST記号",
-			source_module:"Accounts",
-			value:"TEST記号",
-		}
-
+		var selectedItemData = {
+			id: id,
+			label: label,
+			source_module: source_module
+		};
+		
 		var element = sourceFieldElement;
 		var parent = element.closest('td');
 		if(parent.length == 0){
@@ -88,7 +85,10 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 		parent.find('.clearReferenceSelection').removeClass('hide');
 		parent.find('.referencefield-wrapper').addClass('selected');
 		element.attr("disabled","disabled");
-		$("$parent_id_display").val()
+		$("#parent_id_display").val(selectedItemData.label);
+		$("#parent_id_display").attr('readonly', true);
+		$("[name='parent_id']").val(selectedItemData.id);
+		$("[name='parent_id']").attr('disabled', false);
 		//trigger reference field selection event
 		sourceField.trigger(Vtiger_Edit_Js.referenceSelectionEvent,selectedItemData);
 		//trigger post reference selection
@@ -148,7 +148,6 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 			if(isMultiple) {
 				sourceFieldElement.trigger(Vtiger_Edit_Js.refrenceMultiSelectionEvent,{'data':dataList});
 			}
-			console.log(responseData);
 
 			sourceFieldElement.trigger(Vtiger_Edit_Js.postReferenceSelectionEvent,{'data':responseData});
 		});

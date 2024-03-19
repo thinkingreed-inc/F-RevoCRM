@@ -116,7 +116,6 @@
 															{/foreach}
 														</select>
 													</span>
-													<div onClick="Calendar_Edit_Js.getDirectListViewEntries(2)">顧客企業をセットする</div>
 												{else}
 													<label class="muted">{vtranslate($FIELD_MODEL->get('label'), $MODULE)} &nbsp;{if $FIELD_MODEL->isMandatory() eq true} <span class="redColor">*</span> {/if}</label>
 												{/if}
@@ -127,6 +126,16 @@
 									</td>
 									<td class="fieldValue col-lg-9" {if $FIELD_MODEL->get('uitype') eq '19'} colspan="3" {assign var=COUNTER value=$COUNTER+1} {/if}>
 										{include file=vtemplate_path($FIELD_MODEL->getUITypeModel()->getTemplateName(),$MODULE)}
+										{if $FIELD_MODEL->get('name') eq 'parent_id'}
+											<div class="recent_selected_records_wrap">
+												{foreach key=index from=$RECENT_SELECTED_RECORDS item=value}
+													<div class="recent_selected_record" onClick="Calendar_Edit_Js.getDirectListViewEntries('{$value['id']}', '{$value['label']}', '{$value['setype']}')">
+														<p class="module_name">{$value['module']}</p>
+														<p class="record_label">{$value['label']}</p>
+													</div>
+												{/foreach}
+											</div>
+										{/if}
 									</td>
 									{/foreach}
 								</tr>
