@@ -391,9 +391,6 @@ jQuery.Class("Vtiger_Popup_Js",{
         if(typeof eventToTrigger !== 'undefined'){
             event = eventToTrigger;
         }
-				console.log(eventToTrigger);
-				console.log(event);
-				console.log(JSON.stringify(result));
 
         if(typeof event == 'function') {
             event(JSON.stringify(result));
