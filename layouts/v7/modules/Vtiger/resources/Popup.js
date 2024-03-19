@@ -984,7 +984,6 @@ jQuery.Class("Vtiger_Popup_Js",{
         
 jQuery(document).ready(function() {
 	app.event.on("post.Popup.Load",function(event,params){
-		console.log(params);
         vtUtils.applyFieldElementsView(jQuery('.myModal'));
 
 		var popupInstance = Vtiger_Popup_Js.getInstance(params.module);
