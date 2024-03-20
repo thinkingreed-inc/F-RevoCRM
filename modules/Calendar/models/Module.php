@@ -299,6 +299,38 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 	}
 
 	/**
+	 * Function to get recent related records
+	 */
+	public function getRecentSelectedRelatedRecords() {
+		global $adb, $current_user, $log;
+		$userId = $current_user->id;
+
+		$query = "
+		select distinct
+			ce1.crmid as id,
+			ce1.label as label,
+			ce1.setype
+		from vtiger_seactivityrel sea
+		inner join vtiger_crmentity ce1 on sea.crmid = ce1.crmid and ce1.deleted = 0
+		inner join vtiger_activity a on sea.activityid = a.activityid
+		inner join vtiger_crmentity ce2 on a.activityid = ce2.crmid and ce2.deleted = 0
+		where
+			ce1.smownerid = ?
+		order by sea.activityid desc
+		limit 10;
+		";
+
+		$result = $adb->pquery($query, array($userId));
+		$records = array();
+		while($row = $adb->fetchByAssoc($result)) {
+			$row['module'] = vtranslate($row['setype'], 'Vtiger');
+			$records[] = $row;
+		}
+		return $records;
+	}
+
+
+	/**
 	 * Function to set todo fields for export
 	 */
 	public function setTodoFieldsForExport() {
