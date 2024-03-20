@@ -656,9 +656,16 @@ ul#productsImageContainer > li a{
 .recent_selected_records_wrap{
   margin: 5px;
   display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.recent_selected_record:hover{
+  background-color: #f5f5f5;
 }
 
 .recent_selected_record{
+  max-width: calc(50% - 20px);
   margin-right: 10px;
   padding: 5px;
   border: 1px solid #ccc;
