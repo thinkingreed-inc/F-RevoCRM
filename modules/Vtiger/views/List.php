@@ -147,7 +147,9 @@ class Vtiger_List_View extends Vtiger_Index_View {
 			"~layouts/v7/lib/jquery/Lightweight-jQuery-In-page-Filtering-Plugin-instaFilta/instafilta.min.js",
 			'modules.Vtiger.resources.Tag',
 			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/jquery/floatThead/jquery.floatThead.js",
-			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/jquery/perfect-scrollbar/js/perfect-scrollbar.jquery.js"
+			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/jquery/perfect-scrollbar/js/perfect-scrollbar.jquery.js",
+			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/jquery/resizableColumns/js/jquery.resizableColumns.js",
+			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/store_js/store.legacy.min.js",
 		);
 
 		$jsScriptInstances = $this->checkAndConvertJsScripts($jsFileNames);
@@ -551,6 +553,7 @@ class Vtiger_List_View extends Vtiger_Index_View {
 		$headerCssInstances = parent::getHeaderCss($request);
 		$cssFileNames = array(
 			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/jquery/perfect-scrollbar/css/perfect-scrollbar.css",
+			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/jquery/resizableColumns/css/jquery.resizableColumns.css",
 		);
 		$cssInstances = $this->checkAndConvertCssStyles($cssFileNames);
 		$headerCssInstances = array_merge($headerCssInstances, $cssInstances);
