@@ -51,11 +51,37 @@ Vtiger_Edit_Js("Contacts_Edit_Js",{},{
 	 */
 	referenceSelectionEventHandler :  function(data, container) {
 		var thisInstance = this;
+		if(!thisInstance.checkAddressFields(container)) {
+			return ;
+		}
 		var message = app.vtranslate('OVERWRITE_EXISTING_MSG1')+app.vtranslate('SINGLE_'+data['source_module'])+' ('+data['selectedName']+') '+app.vtranslate('OVERWRITE_EXISTING_MSG2');
 		app.helper.showConfirmationBox({'message' : message}).then(function(e){
 			thisInstance.copyAddressDetails(data, container);
 		},
 		function(error,err){});
+	},
+
+	/**
+	 * Function to check the address fields in conatiner
+	 * @param container - element in which the address fields are present
+	 * @return flag - boolean value
+	 */
+	checkAddressFields : function(container) {
+		var thisInstance = this;
+		var addressMapping = this.addressFieldsMapping;
+		var flag = false;
+		for(var key in addressMapping) {
+			for(var field in addressMapping[key]) {
+				if(container.find('[name="'+field+'"]').length > 0) {
+					flag = true;
+					break;
+				}
+			}
+			if(flag) {
+				break;
+			}
+		}
+		return flag;
 	},
 	
 	/**
