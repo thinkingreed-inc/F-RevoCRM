@@ -473,7 +473,16 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			$dataBaseDateFormatedString = DateTimeField::__convertToDBFormat($dateComponent, $user->get('date_format'));
 			$item['start'] = $dataBaseDateFormatedString.' '. $dateTimeComponents[1];
 
-			$item['end']   = $record['due_date'];
+			$dueDate = new DateTime($record['due_date'].' '.$record['time_end']);
+			$dueDate = $dueDate->modify('+1 day')->format('Y-m-d');
+			$dateTimeFieldInstance = new DateTimeField($dueDate.' '.$record['time_start']);
+			$userDateTimeString = $dateTimeFieldInstance->getDisplayDateTimeValue();
+			$dateTimeComponents = explode(' ',$userDateTimeString);
+			$dateComponent = $dateTimeComponents[0];
+			//Conveting the date format in to Y-m-d.since full calendar expects in the same format
+			$dataBaseDateFormatedString = DateTimeField::__convertToDBFormat($dateComponent, $user->get('date_format'));
+			$item['end']   = $dataBaseDateFormatedString.' '. $dateTimeComponents[1];
+
 			$item['url']   = sprintf('index.php?module=Calendar&view=Detail&record=%s', $crmid);
 			$item['color'] = $color;
 			$item['textColor'] = $textColor;
