@@ -14,4 +14,7 @@ if (defined('VTIGER_UPGRADE')) {
 
     //ログイン履歴のテーブル変更
     include_once 'setup/scripts/76_Update_LoginHistory.php';
+
+    //個人カレンダーの設定テーブル変更
+    include_once 'setup/scripts/77_Update_CalendarUserActivityTypes.php';
 }

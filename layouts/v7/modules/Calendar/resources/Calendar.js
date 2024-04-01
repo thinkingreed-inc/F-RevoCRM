@@ -275,7 +275,8 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			'fieldname': feedCheckbox.data('calendarFieldname'),
 			'color': feedCheckbox.data('calendarFeedColor'),
 			'textColor': feedCheckbox.data('calendarFeedTextcolor'),
-			'conditions': feedCheckbox.data('calendarFeedConditions')
+			'conditions': feedCheckbox.data('calendarFeedConditions'),
+			'is_own': feedCheckbox.data('calendarIs_own')
 		};
 	},
 	renderEvents: function () {
@@ -588,6 +589,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var moduleName = modulesList.val();
 		var fieldName = modalContainer.find('select[name="fieldsList"]').val();
 		var selectedColor = modalContainer.find('input.selectedColor').val();
+		var isOwn = modalContainer.find('input[name="is_own"]').is(':checked') ? 1 : 0;
 		var conditions = '';
 		if (moduleName === 'Events') {
 			conditions = modalContainer.find('[name="conditions"]').val();
@@ -614,7 +616,8 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			viewmodule: moduleName,
 			viewfieldname: fieldName,
 			viewColor: selectedColor,
-			viewConditions: conditions
+			viewConditions: conditions,
+			viewIsOwn: isOwn
 		};
 
 		app.helper.showProgress();
@@ -645,6 +648,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 							attr('data-calendar-feed', moduleName).
 							attr('data-calendar-fieldlabel', translatedFieldName).
 							attr('data-calendar-fieldname', fieldName).
+							attr('data-calendar-is_own', isOwn).
 							attr('title', translatedModuleName).
 							attr('checked', 'checked');
 					if (data['type']) {
@@ -656,6 +660,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				} else {
 					feedIndicator = jQuery('#calendarview-feeds')
 							.find('[data-calendar-sourcekey="' + calendarSourceKey + '"]')
+							.data('calendarIs_own', isOwn)
 							.closest('.calendar-feed-indicator');
 				}
 
@@ -720,6 +725,11 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			var selectedColorCode = '#' + hex;
 			selectedColor.val(selectedColorCode);
 		});
+
+		modalContainer.find('input[name="is_own"]').attr('checked', feedIndicator.find('.toggleCalendarFeed').data('calendarIs_own') === 1);
+		if(feedIndicator.find('.toggleCalendarFeed').data('calendarIsdefault') === 1) {
+			modalContainer.find('input[name="is_own"]').parents('.form-group').hide();
+		}
 
 		thisInstance.registerDateFieldChangeEvent(modalContainer);
 
@@ -894,8 +904,10 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			var module = jQuery(this).val();
 			if (module === 'Events') {
 				modalContainer.find('#js-eventtype-condition').removeClass('hide');
+				modalContainer.find('#is_own').parents('.form-group:first').addClass('hide');
 			} else {
 				modalContainer.find('#js-eventtype-condition').addClass('hide');
+				modalContainer.find('#is_own').parents('.form-group:first').removeClass('hide');
 			}
 		}).trigger('change');
 
