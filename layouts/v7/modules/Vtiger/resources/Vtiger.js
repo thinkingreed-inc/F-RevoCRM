@@ -601,14 +601,14 @@ Vtiger.Class('Vtiger_Index_Js', {
 				if(this.numberOfInvalids() > 0) {
 					return false;
 				}
-				var formData = jQuery(form).serialize();
+				var formData = jQuery(form).serializeFormData();
 				app.request.post({data:formData}).then(function(err,data){
 					app.helper.hideProgress();
 					if(err === null) {
 						jQuery('.vt-notification').remove();
 						app.event.trigger("post.QuickCreateForm.save",data,jQuery(form).serializeFormData());
 						app.helper.hideModal();
-						var message = typeof formData.record !== 'undefined' ? app.vtranslate('JS_RECORD_UPDATED'):app.vtranslate('JS_RECORD_CREATED');
+						var message = formData.record !== "" ? app.vtranslate('JS_RECORD_UPDATED'):app.vtranslate('JS_RECORD_CREATED');
 						app.helper.showSuccessNotification({"message":message},{delay:4000});
 						invokeParams.callbackFunction(data, err);
 						//To unregister onbefore unload event registered for quickcreate
