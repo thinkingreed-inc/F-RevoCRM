@@ -318,10 +318,6 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 		}
 		$query.= " ((concat(date_start, '', time_start)  >= ? AND concat(due_date, '', time_end) < ? ) OR ( due_date >= ? ))";
 
-		$lastMonth = date('Y-m-d H:i:s', strtotime('-2 month', strtotime($dbStartDateTime)));
-		$nextMonth = date('Y-m-d H:i:s', strtotime('+2 month', strtotime($dbStartDateTime)));
-		$query.= " AND concat(date_start, '', time_start) >= '$lastMonth' AND concat(date_start, '', time_start) <= '$nextMonth'";
-
 		$params=array($dbStartDateTime,$dbEndDateTime,$dbStartDate);
 		if(empty($userid)){
 			$eventUserId  = $currentUser->getId();
