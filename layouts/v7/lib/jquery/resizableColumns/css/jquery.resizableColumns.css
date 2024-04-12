@@ -6,7 +6,7 @@
   width: 7px;
   cursor: ew-resize;
   margin-left: -3px;
-  z-index: 2;
+  z-index: 4;
 }
 table.rc-table-resizing {
   cursor: ew-resize;

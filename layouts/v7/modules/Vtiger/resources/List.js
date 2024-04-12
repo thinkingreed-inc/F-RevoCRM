@@ -2820,6 +2820,29 @@ Vtiger.Class("Vtiger_List_Js", {
 			'wheelPropagation': true
 		});
 
+		//テーブルからカラム名を取得，各カラムの幅を保存するために一意のidを生成
+		var module = app.getModuleName();
+		$table.attr('data-resizable-column-id', module);
+		tableContainer.find("tr").each(function(){
+			var $tr = $(this);
+			$tr.find("th").each(function(){
+				var $header = $(this);
+				var $columnname = $header.find('a').data('columnname');
+				var $columnid = '';
+				var $tableactions = $header.find('.table-actions');
+				if ($columnname) {
+					$columnid += module + '-' + $columnname;
+				} else if ($tableactions) {
+					$columnid += module + '-actions';
+				}
+				$header.attr('data-resizable-column-id', $columnid);
+			});
+		});
+
+		$table.resizableColumns({
+			store:store
+		});
+
 		// 列の固定処理
 		var staticCol = 2;
 		tableContainer.find("tr").each(function(){
@@ -2854,24 +2877,7 @@ Vtiger.Class("Vtiger_List_Js", {
 				leftPos += $column.width();//どちらかゼロ
 			}
 		});
-		//テーブルからカラム名を取得，各カラムの幅を保存するために一意のidを生成
-		var module = app.getModuleName();
-		tableContainer.find("tr").each(function(){
-			var $tr = $(this);
-			$tr.find("th").each(function(){
-				var $header = $(this);
-				var $columnname = $header.find('a').data('columnname');
-				var $columnid = '';
-				if ($columnname) {
-					$columnid += module + '-' + $columnname;
-				}
-				$header.attr('data-resizable-column-id', $columnid);
-			});
-		});
 
-		$table.resizableColumns({
-			store:store
-		});
 
 		// $table.floatThead({
 		// 	scrollContainer: function ($table) {

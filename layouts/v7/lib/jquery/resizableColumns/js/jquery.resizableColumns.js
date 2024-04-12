@@ -30,6 +30,9 @@ $.fn.resizableColumns = function (optionsOrMethod) {
 			$table.data(_constants.DATA_API, api);
 		} else if (typeof optionsOrMethod === 'string') {
 			return api[optionsOrMethod].apply(api, args);
+			// var _api;
+
+			// return (_api = api)[optionsOrMethod].apply(_api, args);
 		}
 	});
 };
@@ -64,6 +67,7 @@ var ResizableColumns = (function () {
 
 		this.ns = '.rc' + this.count++;
 
+		this.originalTableLayout = $table.css('table-layout');
 		this.options = $.extend({}, ResizableColumns.defaults, options);
 
 		this.$window = $(window);
@@ -109,6 +113,8 @@ var ResizableColumns = (function () {
 			// Assign percentage widths first, then create drag handles
 			this.assignPercentageWidths();
 			this.createHandles();
+			//fixed table
+			this.$table.css("table-layout", "fixed");
 		}
 	}, {
 		key: 'createHandles',
@@ -126,7 +132,8 @@ var ResizableColumns = (function () {
 			}
 
 			this.$handleContainer = $('<div class=\'' + _constants.CLASS_HANDLE_CONTAINER + '\' />');
-			this.$table.before(this.$handleContainer);
+			// this.$table.before(this.$handleContainer);
+			this.options.handleContainer ? this.options.handleContainer.before(this.$handleContainer) : this.$table.before(this.$handleContainer);
 
 			this.$tableHeaders.each(function (i, el) {
 				var $current = _this.$tableHeaders.eq(i);
@@ -153,7 +160,8 @@ var ResizableColumns = (function () {
 
 			this.$tableHeaders.each(function (_, el) {
 				var $el = $(el);
-				_this2.setWidth($el[0], $el.outerWidth() / _this2.$table.width() * 100);
+				// _this2.setWidth($el[0], $el.outerWidth() / _this2.$table.width() * 100);
+				_this2.setWidth($el[0], $el.outerWidth() + _this2.options.padding);
 			});
 		}
 	}, {
@@ -295,7 +303,9 @@ var ResizableColumns = (function () {
 			}
 
 			// Determine the delta change between start and new mouse position, as a percentage of the table width
-			var difference = (this.getPointerX(event) - op.startX) / this.$table.width() * 100;
+			// var difference = (this.getPointerX(event) - op.startX) / this.$table.width() * 100;
+			var difference = this.getPointerX(event) - op.startX;
+
 			if (difference === 0) {
 				return;
 			}
@@ -305,13 +315,15 @@ var ResizableColumns = (function () {
 			var widthLeft = undefined,
 			    widthRight = undefined;
 
-			if (difference > 0) {
-				widthLeft = this.constrainWidth(op.widths.left + (op.widths.right - op.newWidths.right));
-				widthRight = this.constrainWidth(op.widths.right - difference);
-			} else if (difference < 0) {
-				widthLeft = this.constrainWidth(op.widths.left + difference);
-				widthRight = this.constrainWidth(op.widths.right + (op.widths.left - op.newWidths.left));
-			}
+			// if (difference > 0) {
+			// 	widthLeft = this.constrainWidth(op.widths.left + (op.widths.right - op.newWidths.right));
+			// 	widthRight = this.constrainWidth(op.widths.right - difference);
+			// } else if (difference < 0) {
+			// 	widthLeft = this.constrainWidth(op.widths.left + difference);
+			// 	widthRight = this.constrainWidth(op.widths.right + (op.widths.left - op.newWidths.left));
+			// }
+			widthLeft = this.constrainWidth(op.widths.left + difference);
+			widthRight = this.constrainWidth(op.widths.right);
 
 			if (leftColumn) {
 				this.setWidth(leftColumn, widthLeft);
@@ -322,8 +334,6 @@ var ResizableColumns = (function () {
 
 			op.newWidths.left = widthLeft;
 			op.newWidths.right = widthRight;
-			// console.log(widthLeft);
-			// console.log(widthRight);
 
 			return this.triggerEvent(_constants.EVENT_RESIZE, [op.$leftColumn, op.$rightColumn, widthLeft, widthRight], event);
 		}
@@ -458,7 +468,8 @@ var ResizableColumns = (function () {
   @return {String} Column ID
   **/
 		value: function generateColumnId($el) {
-			return this.$table.data(_constants.DATA_COLUMNS_ID) + '-' + $el.data(_constants.DATA_COLUMN_ID);
+			// return this.$table.data(_constants.DATA_COLUMNS_ID) + '-' + $el.data(_constants.DATA_COLUMN_ID);
+			return $el.data(_constants.DATA_COLUMN_ID);
 		}
 	}, {
 		key: 'parseWidth',
@@ -471,7 +482,8 @@ var ResizableColumns = (function () {
   @return {Number} Element's width as a float
   **/
 		value: function parseWidth(element) {
-			return element ? parseFloat(element.style.width.replace('%', '')) : 0;
+			// return element ? parseFloat(element.style.width.replace('%', '')) : 0;
+			return element ? parseFloat(element.style.width) : 0;
 		}
 	}, {
 		key: 'setWidth',
@@ -486,7 +498,9 @@ var ResizableColumns = (function () {
 		value: function setWidth(element, width) {
 			width = width.toFixed(2);
 			width = width > 0 ? width : 0;
-			element.style.width = width + '%';
+			width = width < 200 ? width : 200; 
+			// element.style.width = width + '%';
+			$(element).width(width);
 		}
 	}, {
 		key: 'constrainWidth',
@@ -500,8 +514,6 @@ var ResizableColumns = (function () {
   @return {Number} Constrained width
   **/
 		value: function constrainWidth(width) {
-			console.log('before');
-			console.log(width);
 			if (this.options.minWidth != undefined) {
 				width = Math.max(this.options.minWidth, width);
 			}
@@ -509,8 +521,6 @@ var ResizableColumns = (function () {
 			if (this.options.maxWidth != undefined) {
 				width = Math.min(this.options.maxWidth, width);
 			}
-			console.log('after');
-			console.log(width);
 
 			return width;
 		}
@@ -547,11 +557,14 @@ ResizableColumns.defaults = {
 
 		return _constants.SELECTOR_TD;
 	},
+	//jquery element of the handleContainer position,handleContainer will before the element, default will be this table
+	handleContainer: null,
+	padding: 0,
 	store: window.store,
 	syncHandlers: true,
 	resizeFromBody: true,
 	maxWidth: null,
-	minWidth: 0.01
+	minWidth: 10
 };
 
 ResizableColumns.count = 0;
