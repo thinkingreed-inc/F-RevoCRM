@@ -861,8 +861,8 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 //		$fileSize = @filesize($tempFileName) + 8;
 		header('Content-Encoding: UTF-8');
 		header('Content-type: text/csv; charset=UTF-8');
-		header('Transfer-Encoding: chuncked');
-//		header('Content-Length: '.$fileSize);
+//		header('Transfer-Encoding: chuncked');
+		header('Content-Length: '.@filesize($tempFileName));
 //		header('Content-disposition: attachment; filename="'.$fileName.'"');
 		header('Content-Disposition: attachment; filename="'.$fileName.'.csv";filename*=UTF-8\'ja\''.urlencode($fileName).".csv");
 		// UTF-8 Byte Order Mark - BOM (Source : http://stackoverflow.com/questions/4348802/how-can-i-output-a-utf-8-csv-in-php-that-excel-will-read-properly)
