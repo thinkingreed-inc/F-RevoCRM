@@ -229,7 +229,8 @@ jQuery.Class("Vtiger_AdvanceFilter_Js",{
 		}
 
 		// owner以外の場合「自分」を非表示
-		if(fieldType != 'owner' && (fieldSpecificType == 'V' || fieldSpecificType == 'I')){
+		if(fieldType != 'owner' && (fieldSpecificType == 'V' || fieldSpecificType == 'I')
+				&& !(fieldInfo.referencemodules instanceof Array && fieldInfo.referencemodules.includes('Users'))){
 			conditionList = conditionList.filter(key => key != 'own');
 		}
 
