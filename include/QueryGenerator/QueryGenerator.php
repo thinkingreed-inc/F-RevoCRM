@@ -1197,10 +1197,14 @@ class QueryGenerator {
 				$value = '0';
 			}
 			
-			if ($operator === "own") {
+			if ($operator === "own" && !$field->getUIType() !== 10) {
 				$currentUser = Users_Record_Model::getCurrentUserModel();
 				$currentUserName = decode_html($currentUser->getName());
 				$sql[] = "= '$currentUserName'";
+			}else if($operator === "own" && $field->getUIType() === 10) {
+				$currentUser = Users_Record_Model::getCurrentUserModel();
+				$currentUserId = $currentUser->id;
+				$sql[] = "= '$currentUserId'";
 			}else{
 				$sql[] = "$sqlOperator $value";
 			}
