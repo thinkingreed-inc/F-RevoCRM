@@ -499,7 +499,6 @@ var ResizableColumns = (function () {
 		value: function setWidth(element, width) {
 			width = width.toFixed(2);
 			width = width > 0 ? width : 0;
-			width = width < 200 ? width : 200; 
 			// element.style.width = width + '%';
 			$(element).width(width);
 		}
