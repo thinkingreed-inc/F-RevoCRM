@@ -2797,13 +2797,6 @@ Vtiger.Class("Vtiger_List_Js", {
 		var height = this.getListViewContentHeight();
 		var width = this.getListViewContentWidth();
 		var tableContainer = $table.closest('.table-container');
-		var thead = $table.find('thead');
-		thead.css({
-			'position':'sticky',
-			'top': 0,
-			'z-index':'2',
-            'background-color': 'white' /* ヘッダーの背景色 */
-		});
 		var form = $table.parent();
 		tableContainer.css({
 			'position': 'relative',
@@ -2818,29 +2811,6 @@ Vtiger.Class("Vtiger_List_Js", {
 
 		tableContainer.perfectScrollbar({
 			'wheelPropagation': true
-		});
-
-		//テーブルからカラム名を取得，各カラムの幅を保存するために一意のidを生成
-		var module = app.getModuleName();
-		$table.attr('data-resizable-column-id', module);
-		tableContainer.find("tr").each(function(){
-			var $tr = $(this);
-			$tr.find("th").each(function(){
-				var $header = $(this);
-				var $columnname = $header.find('a').data('columnname');
-				var $columnid = '';
-				var $tableactions = $header.find('.table-actions');
-				if ($columnname) {
-					$columnid += module + '-' + $columnname;
-				} else if ($tableactions) {
-					$columnid += module + '-actions';
-				}
-				$header.attr('data-resizable-column-id', $columnid);
-			});
-		});
-
-		$table.resizableColumns({
-			store:store
 		});
 
 		// 列の固定処理
@@ -2878,12 +2848,11 @@ Vtiger.Class("Vtiger_List_Js", {
 			}
 		});
 
-
-		// $table.floatThead({
-		// 	scrollContainer: function ($table) {
-		// 		return $table.closest('.table-container');
-		// 	}
-		// });
+		$table.floatThead({
+			scrollContainer: function ($table) {
+				return $table.closest('.table-container');
+			}
+		});
 	},
 	getSelectedRecordCount: function () {
 		var count = 0;
