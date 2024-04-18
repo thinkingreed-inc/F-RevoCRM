@@ -323,7 +323,8 @@ var ResizableColumns = (function () {
 			// 	widthRight = this.constrainWidth(op.widths.right + (op.widths.left - op.newWidths.left));
 			// }
 			widthLeft = this.constrainWidth(op.widths.left + difference);
-			widthRight = this.constrainWidth(op.widths.right);
+			// widthRight = this.constrainWidth(op.widths.right);
+			widthRight = this.constrainWidth(op.widths.right - difference);
 
 			if (leftColumn) {
 				this.setWidth(leftColumn, widthLeft);
