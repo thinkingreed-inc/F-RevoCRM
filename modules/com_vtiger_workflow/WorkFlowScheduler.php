@@ -172,7 +172,7 @@ class WorkFlowScheduler {
 			"starts with" => 's',
 			"ends with" => 'ew',
 			"is not" => 'n',
-			"is not empty" => 'n',
+			"is not empty" => 'ny',
 			'before' => 'l',
 			'after' => 'g',
 			'between' => 'bw',
