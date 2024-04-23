@@ -2462,9 +2462,12 @@ Vtiger.Class("Vtiger_List_Js", {
 						return false;
 					}
 					var ele = jQuery(e.currentTarget);
+					var cvid = thisInstance.getCurrentCvId();
 					var sourceFieldEle = ele.parent('.item');
 					var targetFieldEle = availFieldsListContainer.find('.item[data-cv-columnname="' + sourceFieldEle.attr('data-cv-columnname') + '"]');
 					targetFieldEle.removeClass('hide');
+					// 項目を削除したときに保存している列幅も削除
+					window.localStorage.removeItem(cvid + '-' + sourceFieldEle.attr('data-field-id'));
 					sourceFieldEle.remove();
 				});
 
@@ -2820,18 +2823,19 @@ Vtiger.Class("Vtiger_List_Js", {
 			'wheelPropagation': true
 		});
 
-		//テーブルからカラム名を取得，各カラムの幅を保存するために一意のidを生成
+		// 現在有効になっているcvidとテーブルのfieldidから，リストごとに各カラムの幅を保存するための一意のidを生成
 		var module = app.getModuleName();
+		var cvId = this.getCurrentCvId();
 		$table.attr('data-resizable-column-id', module);
 		tableContainer.find("tr").each(function(){
 			var $tr = $(this);
 			$tr.find("th").each(function(){
 				var $header = $(this);
-				var $columnname = $header.find('a').data('columnname');
+				var $fieldid = $header.find('a').data('field-id');
 				var $columnid = '';
 				var $tableactions = $header.find('.table-actions');
-				if ($columnname) {
-					$columnid += module + '-' + $columnname;
+				if ($fieldid) {
+					$columnid += cvId + '-' + $fieldid;
 				} else if ($tableactions) {
 					$columnid += module + '-actions';
 				}
