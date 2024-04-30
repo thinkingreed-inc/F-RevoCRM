@@ -902,13 +902,19 @@ input[type="password"].inputElement {
   padding: 0px;
 }
 .listSearchContributor {
+  /* 検索ボックスの最小値をresizabldcolumnsと統一 */
   min-height: 28px;
   width: 100%;
-  min-width: 100px;
+  min-width: 10px;
 }
 .listViewContentHeaderValues {
+  /* ヘッダーの文字を切り詰め */
+  display: inline-block;
   vertical-align: middle;
   white-space: nowrap;
+  width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 #convertLeadContainer .inputElement,
 #editCurrency .inputElement {
@@ -1495,6 +1501,10 @@ ul.unstyled {
   width: 100%;
   display: inline-block;
   word-break: normal;
+  /* 項目の文字を切り詰め */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .listViewEntries .relatedListEntryValues .value {
   vertical-align: middle;
@@ -1583,6 +1593,9 @@ input[type=checkbox]:checked {
   width: 85%;
   text-shadow: none;
   padding: 3px;
+}
+.listview-table tr th:first-child{
+  width: 130px ! important;
 }
 .relatedContents .listview-table tr.searchRow th.inline-search-btn button {
   width: 95px;
@@ -6574,10 +6587,10 @@ a.cp-modules:hover {
   z-index: 1100 !important;
 }
 /*****RSS Changes****/
-.feedListContainer .listview-table tr td:first-child,
+/* .feedListContainer .listview-table tr td:first-child,
 .listview-table tr th:first-child {
   width: inherit ! important;
-}
+} */
 .feedListContainer .listViewEntries .listViewEntryValue {
   max-width: inherit ! important;
 }
@@ -6625,6 +6638,7 @@ a.cp-modules:hover {
 }
 .listViewPageDiv .ps-scrollbar-x-rail {
   opacity: 1 !important;
+  z-index: 1000;
 }
 li.select2-search-choice div {
   white-space: nowrap;
