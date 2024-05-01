@@ -455,15 +455,30 @@ Vtiger.Class('Vtiger_Index_Js', {
 	 * @param accepts form element as parameter
 	 */
 	quickCreateGoToFullForm: function(form, editViewUrl) {
+		app.helper.showProgress();
 		jQuery('[name=fromQuickCreate]').val("");
 		var formData = form.serializeFormData();
 		//As formData contains information about both view and action removed action and directed to view
 		delete formData.module;
 		delete formData.action;
 		delete formData.picklistDependency;
-		var formDataUrl = jQuery.param(formData);
-		var completeUrl = editViewUrl + "&" + formDataUrl;
-		window.location.href = completeUrl;
+		// var formDataUrl = jQuery.param(formData);
+		// var completeUrl = editViewUrl + "&" + formDataUrl;
+//		window.location.href = completeUrl;
+		var editForm = $("<form>");
+		editForm.attr('method', 'POST');
+		editForm.attr('action', editViewUrl);
+		// formDataの中身をhiddenのinputにしてeditFormに入れる
+		for(var key in formData) {
+			var value = formData[key];
+			var input = document.createElement('input');
+			input.type = 'hidden';
+			input.name = key;
+			input.value = value;
+			editForm.append(input);
+		}
+		$('body').append(editForm);
+		editForm.submit();
 	},
 
 	registerQuickCreateSubMenus : function() {
