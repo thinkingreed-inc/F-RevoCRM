@@ -654,7 +654,7 @@ ul#productsImageContainer > li a{
 
 /* レコード編集画面のpadding-leftを可変ではなく固定にする */
 @media (min-width: 992px) {
-  .main-container > .viewContent > .content-area {
+  .editViewPageDiv.viewContent > .content-area {
     padding-left: 57px;
   }
 }
