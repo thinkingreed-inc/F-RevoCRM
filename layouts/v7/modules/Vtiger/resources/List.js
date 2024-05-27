@@ -325,6 +325,29 @@ Vtiger.Class("Vtiger_List_Js", {
 			thisInstance.loadFilter(cvId, {'mode': 'removeSorting'});
 		});
 	},
+	registerResetColumnWidths: function () {
+		var thisInstance = this;
+		var cvid = thisInstance.getCurrentCvId();
+		jQuery('.btn-group.listViewActionsContainer').find('#resetColumnWidths').on('click', function(e) {
+			var substring = cvid + '-'
+			keysToRemove = [];
+
+			// ローカルストレージ内のcvidを含むkeyを取得
+			for (let i = 0; i < localStorage.length; i++) {
+				const key = localStorage.key(i);
+				
+				if (key.includes(substring)) {
+					keysToRemove.push(key);
+				}
+			}
+			
+			// 該当するすべてのkeyを削除
+			keysToRemove.forEach(key => {
+				localStorage.removeItem(key);
+			});
+			thisInstance.loadListViewRecords();
+		});
+	},
 	performMassDeleteRecords: function (url) {
 		var listInstance = this;
 		var params = {};
@@ -2366,9 +2389,11 @@ Vtiger.Class("Vtiger_List_Js", {
 		jQuery('.btn-group.listViewActionsContainer').find('li').addClass('hide');
 		var selectFreeRecords = jQuery('.btn-group.listViewActionsContainer').find('li.selectFreeRecords');
 		selectFreeRecords.removeClass('hide');
-		if (selectFreeRecords.length == 0) {
-			jQuery('.btn-group.listViewActionsContainer').find('.dropdown-toggle').attr('disabled', "disabled");
-		}
+		var resetColumns = jQuery('.btn-group.listViewActionsContainer').find('#resetColumnWidths');
+		resetColumns.parent().removeClass('hide');
+		// if (selectFreeRecords.length == 0) {
+		// 	jQuery('.btn-group.listViewActionsContainer').find('.dropdown-toggle').attr('disabled', "disabled");
+		// }
 	},
 	/*
 	 * Function to register the click event of email field
@@ -2580,6 +2605,7 @@ Vtiger.Class("Vtiger_List_Js", {
 				vtUtils.applyFieldElementsView(searchRow);
 				self.filterClick = false;
 			}
+			self.registerResetColumnWidths();
 			self.registerDummyColumn();
 			self.registerFloatingThead();
 		});
@@ -2590,6 +2616,7 @@ Vtiger.Class("Vtiger_List_Js", {
 		this._super();
 		this.registerListViewSort();
 		this.registerRemoveListViewSort();
+		this.registerResetColumnWidths();
 		this.registerRowClickEvent();
 		this.registerRowDoubleClickEvent();
 		this.registerListViewBasicActions();
