@@ -2462,9 +2462,17 @@ Vtiger.Class("Vtiger_List_Js", {
 						return false;
 					}
 					var ele = jQuery(e.currentTarget);
+					var cvid = thisInstance.getCurrentCvId();
 					var sourceFieldEle = ele.parent('.item');
 					var targetFieldEle = availFieldsListContainer.find('.item[data-cv-columnname="' + sourceFieldEle.attr('data-cv-columnname') + '"]');
 					targetFieldEle.removeClass('hide');
+
+					// 削除した項目の列幅をダミーカラムの列幅に追加する．
+					var removedColumn = Number(window.localStorage.getItem(cvid + '-' + sourceFieldEle.attr('data-field-id')));
+					var dummyColumn = Number(window.localStorage.getItem(cvid + '-dummy'));
+					window.localStorage.removeItem(cvid + '-' + sourceFieldEle.attr('data-field-id'));
+					window.localStorage.setItem(cvid + '-dummy',removedColumn + dummyColumn);
+
 					sourceFieldEle.remove();
 				});
 
@@ -2572,6 +2580,7 @@ Vtiger.Class("Vtiger_List_Js", {
 				vtUtils.applyFieldElementsView(searchRow);
 				self.filterClick = false;
 			}
+			self.registerDummyColumn();
 			self.registerFloatingThead();
 		});
 	},
@@ -2602,6 +2611,7 @@ Vtiger.Class("Vtiger_List_Js", {
 		var recordSelectTrackerObj = this.getRecordSelectTrackerInstance();
 		recordSelectTrackerObj.registerEvents();
 
+		this.registerDummyColumn();
 		this.registerPostListLoadListener();
 		this.registerPostLoadListViewActions();
 
@@ -2820,22 +2830,28 @@ Vtiger.Class("Vtiger_List_Js", {
 			'wheelPropagation': true
 		});
 
-		//テーブルからカラム名を取得，各カラムの幅を保存するために一意のidを生成
+		// 現在有効になっているcvidとテーブルのfieldidから，リストごとに各カラムの幅を保存するための一意のidを生成
 		var module = app.getModuleName();
+		var cvId = this.getCurrentCvId();
 		$table.attr('data-resizable-column-id', module);
 		tableContainer.find("tr").each(function(){
 			var $tr = $(this);
 			$tr.find("th").each(function(){
 				var $header = $(this);
-				var $columnname = $header.find('a').data('columnname');
+				var $fieldid = $header.find('a').data('field-id');
 				var $columnid = '';
-				var $tableactions = $header.find('.table-actions');
-				if ($columnname) {
-					$columnid += module + '-' + $columnname;
-				} else if ($tableactions) {
-					$columnid += module + '-actions';
+				var $tableactions = $header.find('div').attr("class");
+
+				if ($fieldid) {
+					$columnid += cvId + '-' + $fieldid;
+				} else if ($header.hasClass("dummy")) {
+					$columnid += cvId + '-dummy';
+				} else if ($tableactions == "table-actions") {
+					$columnid += cvId + '-' + $tableactions;
 				}
-				$header.attr('data-resizable-column-id', $columnid);
+				if ($columnid){
+					$header.attr('data-resizable-column-id', $columnid);
+				}
 			});
 		});
 
@@ -2899,5 +2915,29 @@ Vtiger.Class("Vtiger_List_Js", {
 		}
 
 		return count;
-	}
+	},
+	registerDummyColumn: function () {
+		var $table = jQuery('#listview-table');
+		if (!$table.length)
+			return;
+		var tableContainer = $table.closest('.table-container');
+		var listViewContentHeader = tableContainer.find('.listViewContentHeader');
+		var listViewSearchHeader = tableContainer.find('.listViewSearchContainer');
+		var rows = tableContainer.find('tr.listViewEntries');
+
+		var thDummy = ''+
+        '<th class="dummy">'+
+		'</th>';
+
+		var tdDummy = ''+
+        '<td class="dummy">'+
+		'</td>';
+
+        listViewContentHeader.append(thDummy);
+		listViewSearchHeader.append(thDummy);
+		rows.each(function(){
+			var $row = $(this);
+			$row.append(tdDummy);
+		})
+	},
 });
