@@ -152,7 +152,14 @@ class Activity extends CRMEntity {
 				$this->invitee_array[] = $smownerid;
 			}
 			if(!in_array($request_assigned_user_id, $this->invitee_array)){
-				$this->invitee_array[] = $request_assigned_user_id;
+				require_once 'include/utils/GetGroupUsers.php';
+				$userGroups = new GetGroupUsers();
+				$userGroups->getAllUsersInGroup($request_assigned_user_id);
+				if(!empty($userGroups->group_users)){ // 担当がグループである場合
+					$this->invitee_array = array_unique(array_merge($this->invitee_array, $userGroups->group_users));
+				}else{
+					$this->invitee_array[] = $request_assigned_user_id;
+				}
 			}
 		} else if(empty($this->invitee_array) && count($_REQUEST['selectedusers']) > 0){// 概要欄や関連からの遷移の場合
 			$this->invitee_array = $_REQUEST['selectedusers'];
@@ -162,7 +169,14 @@ class Activity extends CRMEntity {
 				$this->invitee_array[] = $smownerid;
 			}
 			if(!in_array($request_assigned_user_id, $this->invitee_array)){
-				$this->invitee_array[] = $request_assigned_user_id;
+				require_once 'include/utils/GetGroupUsers.php';
+				$userGroups = new GetGroupUsers();
+				$userGroups->getAllUsersInGroup($request_assigned_user_id);
+				if(!empty($userGroups->group_users)){ // 担当がグループである場合
+					$this->invitee_array = array_unique(array_merge($this->invitee_array, $userGroups->group_users));
+				}else{
+					$this->invitee_array[] = $request_assigned_user_id;
+				}
 			}
 		} else {// リクエストに入っていない場合はDBから取得を試みる
 			$this->loadInvitees();
