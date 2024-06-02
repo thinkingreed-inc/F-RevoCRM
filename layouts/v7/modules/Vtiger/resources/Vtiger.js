@@ -602,6 +602,9 @@ Vtiger.Class('Vtiger_Index_Js', {
 					return false;
 				}
 				var formData = jQuery(form).serializeFormData();
+				if(formData['module']=="HelpDesk"){
+					formData['description']=formData['description'].replace(/\n/g,'<br>');
+				}
 				app.request.post({data:formData}).then(function(err,data){
 					app.helper.hideProgress();
 					if(err === null) {
