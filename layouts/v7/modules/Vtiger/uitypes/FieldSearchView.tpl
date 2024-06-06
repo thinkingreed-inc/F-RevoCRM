@@ -12,6 +12,6 @@
 {strip}
     {assign var="FIELD_INFO" value=Zend_Json::encode($FIELD_MODEL->getFieldInfo())}
     <div class="">
-        <input type="text" name="{$FIELD_MODEL->get('name')}" class="listSearchContributor inputElement" value="{$SEARCH_INFO['searchValue']}" data-field-type="{$FIELD_MODEL->getFieldDataType()}" data-fieldinfo='{$FIELD_INFO|escape}'/>
+        <input type="text" name="{$FIELD_MODEL->get('name')}" class="listSearchContributor inputElement reflowInterrupted" value="{$SEARCH_INFO['searchValue']}" data-field-type="{$FIELD_MODEL->getFieldDataType()}" data-fieldinfo='{$FIELD_INFO|escape}'/>
     </div>
 {/strip}

@@ -511,6 +511,14 @@
                 $tableCells.eq(i).css('width', '');
               }
             }
+
+            // 検索欄にフォーカスが設定されている場合, reflow()処理を中断する. 
+            // スマホ画面での入力中やウィンドウサイズの変更時にフォーカスが失われてしまうため. 
+            var activeElement = document.activeElement;
+            if(activeElement && jQuery(activeElement).hasClass('reflowInterrupted')) {
+              return;
+            }
+
             unfloat();
             var widths = [];
             for(i=0; i < numCols; i++){
