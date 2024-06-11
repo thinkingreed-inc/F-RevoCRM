@@ -589,10 +589,21 @@ Vtiger_Field_Js('Vtiger_Text_Field_Js',{},{
 	 * @return - input text field
 	 */
 	getUi : function() {
-		var html = '<textarea class="input-xxlarge form-control inputElement" name="'+ this.getName() +'" value="'+ this.getValue() + '" >'+ this.getValue() + '</textarea>';
+		// value エスケープ処理
+		var textValue = this.htmlEscape(this.getValue());
+		var html = '<textarea class="input-xxlarge form-control inputElement" name="'+ this.getName() +'" value="'+ textValue + '" >'+ textValue + '</textarea>';
 		var element = jQuery(html);
 		element.css({'cssText': 'height:250px; max-width: initial;'});
 		return this.addValidationToElement(element);
+	},
+
+	htmlEscape : function(str) {
+	return str
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#039;");
 	}
 });
 
