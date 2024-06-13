@@ -130,6 +130,25 @@ Vtiger.Class('Vtiger_Index_Js', {
 		});
 	},
 
+	showDeleteEmailPreferencePopup : function(params){
+		var currentModule = "Emails";
+		app.helper.showProgress();
+		app.helper.checkServerConfig(currentModule).then(function(data){
+			if(data == true){
+				app.request.post({data:params}).then(function(err,data){
+					if(err === null) {
+						jQuery('.vt-notification').remove();
+						app.helper.hideProgress();
+						app.helper.showSuccessNotification({"message":data});
+					}else{
+						app.event.trigger('post.save.failed', err);
+						app.helper.hideProgress();
+					}
+				});
+			}
+		});
+	},
+
 	showRecipientPreferences: function (module) {
 		var params = {
 			module: module,
