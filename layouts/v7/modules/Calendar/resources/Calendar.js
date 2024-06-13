@@ -1920,7 +1920,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			editable: true,
 			eventLimit: true,
 			defaultDate:defaultDate,
-			defaultView:defaultView,
+			defaultView: ($(window).width() > 1020 ? userDefaultActivityView : 'agendaDay'),
 			slotLabelFormat: userDefaultTimeFormat,
 			timeFormat: userDefaultTimeFormat,
 			defaultDate: defaultDate,
