@@ -1403,11 +1403,6 @@ Vtiger.Class("Vtiger_Detail_Js",{
 								thisInstance.handlePickListDependencyMap(sourcePicklistname);
 								thisInstance.sourcePicklistname = false;
 							}
-
-							if(fieldType == 'text'){
-								// リッチテキスト再表示のため、リロード
-								window.location.reload();
-							}
 						});
 					}
 				};
