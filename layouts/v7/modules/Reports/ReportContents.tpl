@@ -46,7 +46,7 @@
             {/if}
         </div>
     </div>
-    <div id="reportDetails" class="contents-bottomscroll">
+    <div id="reportDetails" class="contents-bottomscroll table-container">
         <div class="bottomscroll-div">
             <input type="hidden" id="updatedCount" value="{$NEW_COUNT}" />
             {if $DATA neq ''}
