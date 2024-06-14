@@ -81,6 +81,7 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
         $summaryField = $request->get('summaryfield',null);
         $massEditable = $request->get('masseditable',null);
         $headerField = $request->get('headerfield',null);
+        $fieldDefaultValue = $request->get('fieldDefaultValue', null);
 
 		if (!$fieldLabel) {
 			$fieldInstance->set('label', $fieldLabel);
@@ -108,12 +109,15 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
             $fieldInstance->set('masseditable', $massEditable);
         }
         
-        if($uitype == 33){
-            $defaultValue = decode_html(implode(' |##| ', $request->get('fieldDefaultValue')));
-        }else{
-            $defaultValue = decode_html($request->get('fieldDefaultValue'));
+        if(isset($fieldDefaultValue) && $fieldDefaultValue !== null) {
+            $fieldDataType = $fieldInstance->getFieldDataType();
+            if($fieldDataType == 'multipicklist'){
+                $defaultValue = decode_html(implode(' |##| ', $request->get('fieldDefaultValue')));
+            }else{
+                $defaultValue = decode_html($request->get('fieldDefaultValue'));
+            }
+            $fieldInstance->set('defaultvalue', $defaultValue);
         }
-		$fieldInstance->set('defaultvalue', $defaultValue);
 		$response = new Vtiger_Response();
         try{
             $fieldInstance->save();
@@ -122,6 +126,7 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
 			$fieldInfo = $fieldInstance->getFieldInfo();
 			$fieldInfo['id'] = $fieldInstance->getId();
 
+            $defaultValue = $fieldInstance->getDefaultFieldValue();
 			$fieldInfo['fieldDefaultValueRaw'] = $defaultValue;
 			if (isset($defaultValue)) {
 				if ($defaultValue && $fieldInfo['type'] == 'date') {
