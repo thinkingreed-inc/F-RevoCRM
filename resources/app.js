@@ -1104,6 +1104,27 @@ var app = {
 		exdate.setDate(exdate.getDate() + exdays);
 		var c_value=escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
 		document.cookie=c_name + "=" + c_value;
+	},
+
+	isMobile : function() {
+		var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+		var smartphones = [
+			/android/i,
+			/webos/i,
+			/iphone/i,
+			/ipad/i,
+			/ipod/i,
+			/blackberry/i,
+			/windows phone/i
+		];
+
+		for (var i = 0; i < smartphones.length; i++) {
+			if (smartphones[i].test(userAgent)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 }
