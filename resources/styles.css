@@ -102,33 +102,42 @@
 /*
  * モバイル表示
  */
-@media (max-width: 768px) { 
-  .settingsIcon {
-    display: none;
-  }
+@media (max-width: 991px) {
   .calendarview {
     padding-bottom: 25px;
   }
-  div.CalendarViewPageDiv {
-    padding-top: 30px;
+  
+  .main-container.calendarview #modnavigator.module-nav {
+    width: 100%;
+    position: relative;
   }
+  
+  .main-container.calendarview{
+    padding-top: 5px;
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: column-reverse;
+  }
+  .main-container.calendarview 
+  .module-nav .mod-switcher-container{
+    display: block;
+    width: 100%;
+    height: auto;
+  }  
+  /* div.CalendarViewPageDiv {
+    padding-top: 75px;
+  } */
   .list-menu-content.calendar_view_events .mCustomScrollBox {
-    max-height: none!important;
-    overflow: scroll;
     -webkit-overflow-scrolling: touch
   }
   .main-container .module-nav {
     width: 100%;
-    z-index: 1100;
     background-color: #2C3B49;
     background: #2C3B49;
   }
   .module-nav div.modules-menu {
     position: relative;
     left: auto;
-  }
-  .module-nav div.mod-switcher-container {
-    width: 100%;
   }
   .modules-menu ul li {
     display: inline-block;
@@ -157,22 +166,9 @@
   }
   .updates_timeline > li .update_time {
   position: static !important;
-}
-}
-@media (max-width: 991px) { 
-  .main-container.calendarview{
-    display: flex;
-    flex-wrap: nowrap;
-    flex-direction: column-reverse;
-  } 
-  .list-menu-content .activitytypes .activitytype-indicator {
-    padding: 14px 5%;
-    margin: 8px;
-    font-size: 80%;
-    min-height: 35px;
-    word-wrap: break-word;
   }
 }
+
 div.summaryView span.value.textOverflowEllipsis img {
   max-width: 100%;
 }
@@ -261,7 +257,8 @@ div.detailview-content.container-fluid span.value img {
   height: 100px;
 }
 .module-action-bar.coloredBorderTop {
-  width: calc(100% - 42px);
+  /* width: calc(100% - 42px); */
+  width: 100%;
 }
 @media all and (min-width:992px) and (max-width: 1290px) {
     .global-nav .app-list {
@@ -499,6 +496,7 @@ button#advanceIntiateSave + input {
   float: right;
   height: auto;
   max-height: 42px;
+  margin-right: 10px;
   }
 }
 
@@ -650,4 +648,371 @@ ul#productsImageContainer > li a{
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
+}
+
+@media (min-width: 768px) and (max-width: 830px) {
+  .container-fluid #appnavcontent {
+    border: none;
+    background: transparent;
+    padding: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .navbar-nav .open .detailViewSetting.dropdown-menu {
+    background-color: #fff;
+    border: 1px solid rgba(0,0,0,.2);
+  }
+}
+
+@media (max-width: 1345px) {
+  #search-links-container {
+    padding: 0;
+  }
+  .app-modules-dropdown-container-global .dropdown-toggle {
+    padding: 13px 8px;
+  }
+}
+
+.specificFieldArea .specificFieldArea-tr td,
+.CompanyArea .companyFieldArea-tr td,
+.GeneralArea .generalFieldArea-tr td,
+.funciton-area .funcitonieldArea-tr td {
+  padding: 10px;
+}
+
+.specificFieldArea-tr:hover,
+.companyFieldArea-tr:hover,
+.generalFieldArea-tr:hover,
+.funcitonieldArea-tr:hover {
+  background-color: rgba(210, 243, 193, 0.43);
+}
+.copy_to_clipbord-btn {
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+.copy_to_clipbord-icon {
+  margin-right: 4px;
+}
+
+.copy_to_clipbord-msg {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  height: auto;
+  background: rgba(182, 241, 152, 0.749);
+  padding: 10px 20px;
+  transform: translate(-50%);
+}
+
+@media (max-width: 991px) {
+  .navbar .app-nav .app-indicator-icon-container {
+    display: none;
+  }
+  
+  #listViewContent.listViewPageDiv.content-area.full-width {
+    padding-left: 0;
+  }
+  
+  .essentials-toggle { 
+    display: block;
+    top: auto;
+    left: auto;
+    z-index: 10;
+    width: 100%;
+    height: 30px;
+    border: 1px solid #DDDDDD;
+    border-left: 0;
+    border-right: 0;
+  }
+  
+  #listViewContent .listViewPageDiv .content-area {
+    padding-top: 30px;
+  }
+}
+
+.copy_to_clipbord-msg.is-active {
+  display: inline-block;
+}
+
+.template_header_modulename {
+  color: #596875;
+  font-size: 1.3em;
+  font-weight: bold;
+}
+
+.tr-header_field {
+  font-size: 1.1em;
+  font-weight: 800;
+  color:#596875;
+  background:#efefef;
+}
+
+.btn-list-toggle {
+  display: none;
+  position: relative;
+  float: right;
+  padding: 5px 10px;
+  margin-top: 1px;
+  margin-bottom: 1px;
+  background-color: transparent;
+  background-image: none;
+  border: 0;
+  border-bottom: .5px solid #ddd;
+}
+
+.icon-deg-reversal {
+  transform: rotate(180deg);
+}
+
+@media (max-width: 991px) {
+  .btn-list-toggle {
+    display: block;
+  }
+  
+  .essentials-toggle {
+    display: none!important;
+  }
+  
+  .sidebar-essentials {
+    display: none!important;
+  }
+  
+  .sidebar-essentials.visible {
+    display: block!important;
+  }
+  
+  .main-container-Documents div.sidebar-essentials,
+  .main-container-Reports div.sidebar-essentials {
+    width: 100%;
+  }
+}
+
+.btn-list-toggle {
+  display: none;
+  position: relative;
+  float: right;
+  padding: 5px 10px;
+  margin-top: 1px;
+  margin-bottom: 1px;
+  background-color: transparent;
+  background-image: none;
+  border: 0;
+  border-bottom: .5px solid #ddd;
+}
+
+.icon-deg-reversal {
+  transform: rotate(180deg);
+}
+
+@media (max-width: 991px) {
+  .btn-list-toggle {
+    display: block;
+  }
+  
+  .essentials-toggle {
+    display: none!important;
+    padding: 0;
+  }
+}
+
+.feedslist .activitytype-indicator.calendar-feed-indicator {
+  padding: 12px 5%;
+}
+.feedslist .activitytype-indicator.calendar-feed-indicator {
+  padding: 12px 5%;
+}
+
+.editViewPageDiv.viewContent .reports-content-area {
+  padding-top: 5px;
+}
+.reportHeader h3 {
+  font-size: 18px;
+  padding-top: 3px;
+  margin-bottom: 5px;
+}
+
+.reports-content-area .filterConditionContainer.row {
+  width: 100%;
+  margin: 0;
+}
+
+.reports-content-area .filterConditionContainer .col-md-8,
+.reports-content-area .filterConditionContainer .col-md-4 {
+  padding: 0;
+  margin: 0;
+}
+
+.reports-content-area .filterElements.filterConditionsDiv .filterContainer.filterConditionContainer.well {
+  margin-bottom: 0;
+  padding: 8px 20px;
+}
+
+.reports-content-area .summaryWidgetContainer,
+.reports-content-area .summaryWidgetContainer .commentTitle {
+  margin-bottom: 0;
+}
+
+.reportHeader .detailViewButtoncontainer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn-toolbar.report_left_buttons {
+  margin-bottom: 8px;
+  flex-basis: 30%;
+  order: 0;
+}
+
+.textAlignCenter.report_title {
+  margin-bottom: 8px;
+  padding: 0 10px;
+  flex-basis: 40%;  
+  order: 1;
+}
+
+.btn-toolbar.report_right_buttons {
+  margin-bottom: 8px;
+  flex-basis: 30%;  
+  order: 2;
+}
+
+.btn-toolbar.buttons_align-right {
+  display: flex;
+  justify-content: end;
+  align-items: baseline;
+}
+
+@media (max-width: 1200px) {
+  .reportHeader .detailViewButtoncontainer {
+    flex-wrap: wrap;
+  }
+  
+  .btn-toolbar.report_left_buttons {
+    flex-basis: 40%;
+    order: 0;
+  }
+  
+  .textAlignCenter.report_title {
+    flex-basis: 100%;  
+    order: 2;
+  }
+  
+  .btn-toolbar.report_right_buttons {
+    flex-basis: 60%;  
+    order: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .btn-toolbar.report_left_buttons {
+    margin-bottom: 0;
+    flex-basis: 100%;
+  }
+  
+  .btn-toolbar.report_right_buttons {
+    flex-basis: 100%;  
+  }
+  
+  .btn-toolbar.buttons_align-right {
+    justify-content: start;
+  }
+}
+
+.editViewPageDiv.viewContent .reports-content-area {
+  padding-top: 5px;
+}
+.reportHeader h3 {
+  font-size: 18px;
+  padding-top: 3px;
+  margin-bottom: 5px;
+}
+
+.reports-content-area .filterConditionContainer.row {
+  width: 100%;
+  margin: 0;
+}
+
+.reports-content-area .filterConditionContainer .col-md-8,
+.reports-content-area .filterConditionContainer .col-md-4 {
+  padding: 0;
+  margin: 0;
+}
+
+.reports-content-area .filterElements.filterConditionsDiv .filterContainer.filterConditionContainer.well {
+  margin-bottom: 0;
+  padding: 8px 20px;
+}
+
+.reports-content-area .summaryWidgetContainer,
+.reports-content-area .summaryWidgetContainer .commentTitle {
+  margin-bottom: 0;
+}
+
+.reportHeader .detailViewButtoncontainer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn-toolbar.report_left_buttons {
+  margin-bottom: 8px;
+  flex-basis: 30%;
+  order: 0;
+}
+
+.textAlignCenter.report_title {
+  margin-bottom: 8px;
+  padding: 0 10px;
+  flex-basis: 40%;  
+  order: 1;
+}
+
+.btn-toolbar.report_right_buttons {
+  margin-bottom: 8px;
+  flex-basis: 30%;  
+  order: 2;
+}
+
+.btn-toolbar.buttons_align-right {
+  display: flex;
+  justify-content: end;
+  align-items: baseline;
+}
+
+@media (max-width: 1200px) {
+  .reportHeader .detailViewButtoncontainer {
+    flex-wrap: wrap;
+  }
+  
+  .btn-toolbar.report_left_buttons {
+    flex-basis: 40%;
+    order: 0;
+  }
+  
+  .textAlignCenter.report_title {
+    flex-basis: 100%;  
+    order: 2;
+  }
+  
+  .btn-toolbar.report_right_buttons {
+    flex-basis: 60%;  
+    order: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .btn-toolbar.report_left_buttons {
+    margin-bottom: 0;
+    flex-basis: 100%;
+  }
+  
+  .btn-toolbar.report_right_buttons {
+    flex-basis: 100%;  
+  }
+  
+  .btn-toolbar.buttons_align-right {
+    justify-content: start;
+  }
 }
