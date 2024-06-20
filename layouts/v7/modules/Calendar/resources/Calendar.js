@@ -1913,7 +1913,9 @@ Vtiger.Class("Calendar_Calendar_Js", {
                                 columnFormat: dateFormat + ' dddd'
                             }
 			},
-			height: (CalendarHeight),
+			height: ($(window).width() > 1020 
+					? $(window).height() - 90 - 45 
+					: $(window).height() - 90 - 45 - 45 -30),
 			fixedWeekCount: false,
 			firstDay: thisInstance.daysOfWeek[thisInstance.getUserPrefered('start_day')],
 			scrollTime: thisInstance.getUserPrefered('start_hour'),
