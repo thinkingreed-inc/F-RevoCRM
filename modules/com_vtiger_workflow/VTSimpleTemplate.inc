@@ -72,6 +72,37 @@ class VTSimpleTemplate{
 								}
 							}
 							return implode(',', $parts);
+						}elseif($referenceModule === 'Products' || $referenceModule === 'Services'){
+							// 製品とサービスは複数紐づけることができるので先頭のデータを出力する
+							// 全て出力したい場合は$loop-products$で囲む
+							$module = Vtiger_Module::getInstance($referenceModule);
+							$fieldModel = Vtiger_Field_Model::getInstance($fieldname, $module);
+							$Items = $this->parent->data['LineItems'];
+							if(empty($Items)){ // LineItemsを持たない1対1のモジュール(キャンペーン・チケット・FAQなど)の場合
+								$Items[] = array('productid' => $this->parent->data['product_id']);
+							}
+							foreach ($Items as $key=>$value) {
+								$entity = $this->cache->forId($value['productid']);
+								$recordDetails = $entity->getData();
+								if($entity->getModuleName() == $referenceModule){
+									if($fieldname == 'modifiedby' || $fieldname == 'assigned_user_id'){
+										$idComponents = vtws_getIdComponents($recordDetails[$fieldname]);
+										return getUserFullName($idComponents[1]);
+									} else if ($fieldname == 'vendor_id'){
+										$idComponents = vtws_getIdComponents($recordDetails[$fieldname]);
+										return getVendorName($idComponents[1]);
+									} else if ($fieldModel->get('uitype') == 56) {
+										if($recordDetails[$fieldname] == 1){
+											return vtranslate('LBL_YES',$referenceModule);
+										}else{
+											return vtranslate('LBL_NO',$referenceModule);
+										}
+									}else {
+										return vtranslate($recordDetails[$fieldname],$referenceModule);
+									}
+								}
+							}
+							return '';
 						}
 						$entity = $this->cache->forId($referenceId);
 						if($referenceModule==="Users" && $entity->getModuleName()=="Groups"){
@@ -107,6 +138,8 @@ class VTSimpleTemplate{
 									$idComponents = vtws_getIdComponents($webserviceId);
 									if($fieldname == 'currency_id' && $referenceModule == 'Users') {
 										$result = decode_html(getCurrencyName($idComponents[1]));
+									} else if ($fieldname == 'modifiedby') {
+										$result = decode_html(getUserFullName($idComponents[1]));
 									} else {
 										$result = decode_html(Vtiger_Util_Helper::getRecordName($idComponents[1]));
 									}
@@ -127,12 +160,57 @@ class VTSimpleTemplate{
 
 	}
 
+	// $loop-products$で囲まれた箇所を各製品・サービスごとに出力する
+	private function matchproductsHandler($match){
+		$str_origin = preg_replace('/\$loop-products\$(<br\s*\/?>|[\r\n])?/','',$match[0]);
+		$matchcount = preg_match_all('/\((\w+) : \(([_\w]+)\) (\w+)\)/',$str_origin,$matches);
+		$result = '';
+		if(!empty($this->parent) && $matchcount != 0){
+			list($full, $referenceField, $referenceModule, $fieldname) = $matches;
+			$block = array();
+			foreach ($this->parent->data['LineItems'] as $key=>$value) {
+				$entity = $this->cache->forId($value['productid']);
+				$recordDetails = $entity->getData();
+				if($entity->getModuleName() != $referenceModule[0]) continue;
+				$str = $str_origin;
+				for($i=0;$i<$matchcount;$i++){
+					$module = Vtiger_Module::getInstance($referenceModule[$i]);
+					$fieldModel = Vtiger_Field_Model::getInstance($fieldname[$i], $module);
+					$regex = '/\$\(('.$referenceField[$i].') : \(('.$referenceModule[$i].')\) ('.$fieldname[$i].')\)/';
+					if($referenceModule[$i] === '__VtigerMeta__' || $fieldname[$i] === 'dbLabel') {
+						$str = preg_replace($regex,$this->getMetaValue($fieldname[$i]),$str);
+					} else if ('__VtigerCompany__' == $referenceModule[$i]) {
+						$str = preg_replace($regex,$this->getCompanySetting($fieldname[$i]),$str);
+					} else if ($fieldname[$i] == 'modifiedby' || $fieldname[$i] == 'assigned_user_id') {
+						$idComponents = vtws_getIdComponents($recordDetails[$fieldname[$i]]);
+						$str = preg_replace($regex,getUserFullName($idComponents[1]),$str);
+					} else if ($fieldname[$i] == 'vendor_id') {
+						$idComponents = vtws_getIdComponents($recordDetails[$fieldname[$i]]);
+						$str = preg_replace($regex,getVendorName($idComponents[1]),$str);
+					} else if ($fieldModel->get('uitype') == 56) {
+						if($recordDetails[$fieldname[$i]] == 1){
+							$str = preg_replace($regex,vtranslate('LBL_YES',$referenceModule[$i]),$str);
+						}else{
+							$str = preg_replace($regex,vtranslate('LBL_NO',$referenceModule[$i]),$str);
+						}
+					} else {
+						$str = preg_replace($regex,vtranslate($recordDetails[$fieldname[$i]],$referenceModule[$i]),$str);
+					}
+				}
+				$block[] = $str;
+			}
+			$result = implode('', $block);
+		}
+		return $result;
+	}
+
 	protected function useValue($data, $fieldname) {
 		return true;
 	}
 
 	function parseTemplate(){
-		return preg_replace_callback('/\\$(\w+|\((\w+) : \(([_\w]+)\) (\w+)\))/', array($this,"matchHandler"), $this->template);
+		$str = preg_replace_callback('/\$loop-products\$[\s\S]*?\$loop-products\$(<br\s*\/?>|[\r\n])?/', array($this,"matchproductsHandler"), $this->template);
+		return preg_replace_callback('/\\$(\w+|\((\w+) : \(([_\w]+)\) (\w+)\))/', array($this,"matchHandler"), $str);
 	}
 
 	function getCompanySetting($fieldname) {
