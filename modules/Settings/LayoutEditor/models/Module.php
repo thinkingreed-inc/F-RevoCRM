@@ -416,9 +416,6 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 		}
 		// Usersの追加
 		$modulesList["Users"] = vtranslate("Users", "Users");	
-		//関連項目に、活動・カレンダーはあまり必要ではないため選択肢から除外する。
-		unset($modulesList['Events']);
-		unset($modulesList['Calendar']);
 		return $modulesList;
 	}
 
