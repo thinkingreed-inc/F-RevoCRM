@@ -572,11 +572,32 @@ Vtiger_Field_Js('Vtiger_Time_Field_Js',{},{
 	 * Function to get the ui
 	 * @return - input text field
 	 */
-	getUi : function() {
+	getUi : function(comparatorElementVal) {
 		var html = '<div class="referencefield-wrapper">'+'<div class="input-group time">'+
 						'<input class="timepicker-default form-control inputElement" type="text" data-format="'+ this.getTimeFormat() +'" name="'+ this.getName() +'" value="'+ this.getValue() + '" />'+
 						'<span class="input-group-addon"><i class="fa fa-clock-o"></i></span>'+
 					'</div>'+'</div>';
+
+		if(comparatorElementVal == 'bw'){
+			timeRange=this.getValue().split(',');
+			if(timeRange.length == 1){
+				timeRange[1]='';
+			}
+			var starttime = '<div class="referencefield-wrapper">'+
+								'<div class="input-group time" style="min-width: 80px ! important">'+
+									'<input class="timepicker-default form-control inputElement" type="text" data-format="'+ this.getTimeFormat() +'" name="'+ this.getName() +'" value="'+ timeRange[0] + '" />'+
+									'<span class="input-group-addon"><i class="fa fa-clock-o"></i></span>'+
+								'</div>'+
+							'</div>';
+			var endttime = '<div class="referencefield-wrapper">'+
+								'<div class="input-group time" style="min-width: 80px ! important">'+
+									'<input class="timepicker-default form-control inputElement" type="text" data-format="'+ this.getTimeFormat() +'" name="'+ this.getName() +'" value="'+ timeRange[1] + '" />'+
+									'<span class="input-group-addon"><i class="fa fa-clock-o"></i></span>'+
+								'</div>'+
+							'</div>';
+			html = '<div style="display:flex">'+starttime+'<div style="left: 20px; padding: 2%;">~</div>'+endttime+'</div>';
+		}
+		
 		var element = jQuery(html);
 		return this.addValidationToElement(element);
 	}
