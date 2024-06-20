@@ -10,19 +10,16 @@
 
 Class PDFTemplates_Edit_View extends Vtiger_Index_View {
 
-	public function requiresPermission(\Vtiger_Request $request) {
-		return array();
-	}
-    
-    public function checkPermission($request) {
+	public function checkPermission($request) {
         $moduleName = $request->getModule();
 		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
-        if(!$moduleModel->isActive()){
-            return false;
-        }
-        return true;
+		if($moduleModel->isActive()) {
+			return parent::checkPermission($request);
+		}
+		
+		throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
     }
-    
+
     public function preProcess(Vtiger_Request $request, $display = true) {
 		$record = $request->get('record');
 		if (!empty($record)) {
