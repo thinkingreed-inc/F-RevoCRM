@@ -106,6 +106,9 @@ class Calendar_QuickCreateAjax_View extends Vtiger_QuickCreateAjax_View {
 			$viewer->assign('INVITEES_DETAILS', $recordModel->getInviteesDetails());
 		}
 
+		// 直前に作成した関連項目の一覧をViewへ渡す
+		$viewer->assign('RECENT_SELECTED_RECORDS', $moduleModel->getRecentSelectedRelatedRecords());
+
 		$viewer->assign('CURRENTDATE', date('Y-n-j'));
 		$viewer->assign('MODULE', $moduleName);
 		$viewer->assign('SINGLE_MODULE', 'SINGLE_'.$moduleName);

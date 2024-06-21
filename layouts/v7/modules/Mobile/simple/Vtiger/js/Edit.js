@@ -231,7 +231,7 @@ mobileapp.controller('VtigerEditController', function ($scope, $api, $mdToast, $
         if(item){
             field.raw = item.value;
             field.display = item.label;
-            field.selectedItem = { 'id' : item.id,  'label' : item.label };
+            field.selectedItem = {'id' : item.id, 'label' : item.label};
         }
     };
 });

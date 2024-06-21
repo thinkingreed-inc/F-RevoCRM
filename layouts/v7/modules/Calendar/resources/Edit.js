@@ -60,7 +60,47 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 		jQuery("#alldayEvent").attr('data-validation-engine','change');
 	},
 
-	userChangedTimeDiff:false
+	userChangedTimeDiff:false,
+
+		
+	getDirectListViewEntries: function(id, label, source_module) {
+		var sourceFieldElement = jQuery('input[name="parent_id"]');
+
+		var selectedItemData = {
+			id: id,
+			label: label,
+			source_module: source_module
+		};
+		
+		var element = sourceFieldElement;
+		var parent = element.closest('td');
+		if(parent.length == 0){
+			parent = element.closest('.fieldValue');
+		}
+		var sourceField = parent.find('.sourceField');
+		var fieldName = sourceField.attr("name");
+
+		// select2のトリガーで内部データが初期化されるため、Valueをセットする前にSelect2のデータをChangeで反映させる
+		$(".select2.referenceModulesList").val(selectedItemData.source_module);
+		$(".select2.referenceModulesList").trigger("change");
+
+		parent.find('input[name="'+fieldName+'"]').val(selectedItemData.id);
+		element.attr("value",selectedItemData.id);
+		element.data("value",selectedItemData.id);
+		parent.find('.clearReferenceSelection').removeClass('hide');
+		parent.find('.referencefield-wrapper').addClass('selected');
+		element.attr("disabled","disabled");
+		$("#parent_id_display").val(selectedItemData.label);
+		$("#parent_id_display").attr('readonly', true);
+		$("[name='parent_id']").val(selectedItemData.id);
+		$("[name='parent_id']").attr('disabled', false);
+
+		//trigger reference field selection event
+		sourceField.trigger(Vtiger_Edit_Js.referenceSelectionEvent,selectedItemData);
+		//trigger post reference selection
+		sourceField.trigger(Vtiger_Edit_Js.postReferenceSelectionEvent,{'data':selectedItemData});
+	},
+	
 
 },{
 
@@ -114,6 +154,7 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 			if(isMultiple) {
 				sourceFieldElement.trigger(Vtiger_Edit_Js.refrenceMultiSelectionEvent,{'data':dataList});
 			}
+
 			sourceFieldElement.trigger(Vtiger_Edit_Js.postReferenceSelectionEvent,{'data':responseData});
 		});
 	},
