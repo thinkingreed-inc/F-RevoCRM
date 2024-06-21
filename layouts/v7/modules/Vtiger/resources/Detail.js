@@ -73,7 +73,7 @@ Vtiger.Class("Vtiger_Detail_Js",{
 			function(error, err) {
 			});
 		} else {
-			var message = app.vtranslate('JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE');
+			var message = app.vtranslate('JS_LBL_DELETE_RELATED_ACTIVITY');
 			app.helper.showConfirmationBox({'message' : message}).then(function(data) {
 				thisInstance.deleteActivityRelation(postData);
 			},
@@ -723,7 +723,7 @@ Vtiger.Class("Vtiger_Detail_Js",{
 	 * To handle related record delete confirmation message
 	 */
 	getDeleteMessageKey : function() {
-		return 'LBL_DELETE_CONFIRMATION';
+		return 'LBL_UNLINK_CONFIRMATION';
 	},
 
 	/**
