@@ -212,6 +212,8 @@
 													{if !empty($MULTI_PICKLIST_VALUES[$MULTI_PICKLIST_INDEX + 1])},{/if}
 												</span>
 											{/foreach}
+										{else if $LISTVIEW_HEADER->getFieldDataType() eq 'reference'}
+											{$LISTVIEW_ENTRY->getTitle($LISTVIEW_HEADER)}
 										{else}
 											{$LISTVIEW_ENTRY_VALUE}
 										{/if}
