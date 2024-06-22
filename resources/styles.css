@@ -35,6 +35,12 @@
   .listViewEntries:last-child {
     border-bottom: 0px;
   }
+  .dummy {
+    right: 0;
+    z-index: 1;
+    /* border-top: 1px solid #ddd; */
+    background: #fff;
+  }
 }
 /*
  * モーダルウインドウの背景を黒ベースに変更
@@ -650,4 +656,9 @@ ul#productsImageContainer > li a{
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
+}
+/* rc-handleと重ならないように調整 */
+.fa-remove {
+  position: relative;
+  right: 15px;
 }

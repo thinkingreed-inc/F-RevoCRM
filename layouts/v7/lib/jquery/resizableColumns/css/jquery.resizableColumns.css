@@ -20,3 +20,7 @@ table.rc-table-resizing thead > th > a {
 .rc-handle:hover {
   background-color:rgb(166, 190, 241);
 }
+/* 検索欄の列幅を調整できないように変更 */
+.rc-handle:first-child {
+  display:none;
+}
