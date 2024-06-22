@@ -46,6 +46,12 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 		return 'Events';
 	}
 
+    //一覧表示からTODO編集を行った際に、詳細画面に戻ってこれるようにrefererを追加
+	public function getEditViewUrl() {
+		$module = $this->getModule();
+		return 'index.php?module=Calendar&view='.$module->getEditViewName().'&referer=Detail&record='.$this->getId();
+	}
+
 	/**
 	 * Function to get the Detail View url for the record
 	 * @return <String> - Record Detail View Url
