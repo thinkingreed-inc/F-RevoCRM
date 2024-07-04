@@ -2822,7 +2822,8 @@ Vtiger.Class("Vtiger_List_Js", {
 			'width': width
 		});
 		tableContainer.perfectScrollbar('update');
-		$table.floatThead('reflow');
+		// $table.floatThead('reflow');
+		$table.resizableColumns('syncHandleWidths');
 	},
 	registerFloatingThead: function () {
 		if (typeof $.fn.perfectScrollbar !== 'function' || typeof $.fn.floatThead !== 'function') {
