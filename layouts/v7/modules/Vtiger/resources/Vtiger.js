@@ -471,6 +471,13 @@ Vtiger.Class('Vtiger_Index_Js', {
 		// formDataの中身をhiddenのinputにしてeditFormに入れる
 		for(var key in formData) {
 			var value = formData[key];
+			// 複数選択肢の場合のみ
+			if ( jQuery('select[name="'+key+'"]').length && key.includes("[]") ) {
+				key = key.replace("[]", "");
+				if(Array.isArray(value)) {
+					value = value.join(" |##| ");
+				}
+			}
 			var input = document.createElement('input');
 			input.type = 'hidden';
 			input.name = key;
