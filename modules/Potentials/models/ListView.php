@@ -20,12 +20,22 @@ class Potentials_ListView_Model extends Vtiger_ListView_Model {
 
 		$currentUserModel = Users_Privileges_Model::getCurrentUserPrivilegesModel();
 		$emailModuleModel = Vtiger_Module_Model::getInstance('Emails');
+		$moduleModel = $this->getModule();
 
 		if($currentUserModel->hasModulePermission($emailModuleModel->getId())) {
 			$massActionLink = array(
 				'linktype' => 'LISTVIEWMASSACTION',
 				'linklabel' => 'LBL_SEND_EMAIL',
 				'linkurl' => 'javascript:Vtiger_List_Js.triggerSendEmail("index.php?module='.$this->getModule()->getName().'&view=MassActionAjax&mode=showComposeEmailForm&step=step1","Emails");',
+				'linkicon' => ''
+			);
+			$massActionLinks['LISTVIEWMASSACTION'][] = Vtiger_Link_Model::getInstanceFromValues($massActionLink);
+		}
+		if($currentUserModel->hasModulePermission($emailModuleModel->getId())){
+			$massActionLink = array(
+				'linktype' => 'LISTVIEWMASSACTION',
+				'linklabel' => 'LBL_DELETE_EMAIL_PREFERENCE',
+				'linkurl' => 'javascript:Vtiger_List_Js.triggerDeleteEmailPreference("index.php?module='.$moduleModel->getName().'&view=MassActionAjax&mode=deleteemailpreference")',
 				'linkicon' => ''
 			);
 			$massActionLinks['LISTVIEWMASSACTION'][] = Vtiger_Link_Model::getInstanceFromValues($massActionLink);
