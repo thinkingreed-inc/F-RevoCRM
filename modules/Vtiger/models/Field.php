@@ -525,6 +525,12 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	        self::UITYPE_DOWNLOAD_TYPE,
 	        self::UITYPE_FILENAME
 	    );
+
+        // リッチテキストは概要・詳細画面での編集不可
+        if ($this->isCkeditor() === true) {
+            return false;
+        }
+
 		if(!$this->isEditable() || in_array($this->get('uitype'), $ajaxRestrictedFields)) {
 			return false;
 		}

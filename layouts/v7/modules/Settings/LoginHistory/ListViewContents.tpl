@@ -26,17 +26,27 @@
         <div id="listview-actions" class="listview-actions-container">
             <div class = "row">
                 <div class='col-md-6 usersListDiv'>
-                    <select class="select2 col-md-4" id="usersFilter" >
-                        <option value="">{vtranslate('LBL_ALL', $QUALIFIED_MODULE)}</option>
-                        {foreach item=USERNAME key=USER from=$USERSLIST}
-                            <option value="{$USER}" name="{$USERNAME}" {if $USERNAME eq $SELECTED_USER} selected {/if}>{$USERNAME}</option>
-                        {/foreach}
-                    </select>
-                </div>
-                <div class="col-md-6 pull-right">
-                    {assign var=RECORD_COUNT value=$LISTVIEW_ENTRIES_COUNT}
-                    {include file="Pagination.tpl"|vtemplate_path:$MODULE SHOWPAGEJUMP=true}
-                </div>
+                  {* <select class="select2 col-md-4" id="usersFilter" >
+                     <option value="">{vtranslate('LBL_ALL', $QUALIFIED_MODULE)}</option>
+                     {foreach item=USERNAME key=USER from=$USERSLIST}
+                           <option value="{$USER}" name="{$USERNAME}" {if $USERNAME eq $SELECTED_USER} selected {/if}>{$USERNAME}</option>
+                     {/foreach}
+                  </select> *}
+                  <div class="btn-group userFilter" style="text-align: center;">
+                     <button class="btn btn-default {if empty($IS_PORTAL) || $IS_PORTAL=='false'}btn-primary{/if}" id="frUsers" data-searchvalue="false">
+                        {vtranslate('Users', $MODULE)}
+                     </button>
+                     <button class="btn btn-default {if $IS_PORTAL=='true'}btn-primary"{/if}" id="portalUsers" data-searchvalue="true">
+                        {vtranslate('Portal', $MODULE)}
+                     </button>
+                  </div>
+                  &nbsp;
+                  <button class="btn" id="exportData">{vtranslate('Export', $QUALIFIED_MODULE)}</button>
+               </div>
+               <div class="col-md-6 pull-right">
+                  {assign var=RECORD_COUNT value=$LISTVIEW_ENTRIES_COUNT}
+                  {include file="Pagination.tpl"|vtemplate_path:$MODULE SHOWPAGEJUMP=true}
+               </div>
             </div>
             <div class="list-content row">
                 <div class="col-sm-12 col-xs-12 ">

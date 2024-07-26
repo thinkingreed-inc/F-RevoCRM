@@ -89,8 +89,12 @@ abstract class CustomerPortal_API_Abstract {
 					$isAuthenticated = true;
 				}
 			} else if ($isActive && $support_end_date <= $current_date) {
+				$module = Users_Module_Model::getInstance('Users');
+				$module->saveLoginErrorHistory($username, true);
 				throw new Exception("Access to the portal was disabled on ".$support_end_date, 1413);
 			} else if ($isActive == 0) {
+				$module = Users_Module_Model::getInstance('Users');
+				$module->saveLoginErrorHistory($username, true);
 				throw new Exception("Portal access has not been enabled for this account.", 1414);
 			}
 		}

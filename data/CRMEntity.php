@@ -2681,6 +2681,15 @@ class CRMEntity {
 				 */
 				$query = " left join $pritablename as $tmpname ON ($sectablename.$sectableindex=$tmpname.$prifieldname AND $tmpname.id in 
 						(select crmid from vtiger_crmentity where setype='$secmodule' and deleted=0))";
+			} else if($pritablename == 'vtiger_inventoryproductrel' && ($secmodule =="Products" || $secmodule =="Services") && ($module == "Invoice" || $module == "SalesOrder" || $module == "PurchaseOrder" || $module == "Quotes")) {
+				$matrix = $queryPlanner->newDependencyMatrix();
+				$matrix->setDependency('vtiger_inventoryproductreltmp'.$module, array('vtiger_productsQuotes', 'vtiger_serviceQuotes'));
+				if ($queryPlanner->requireTable("vtiger_inventoryproductreltmp".$module, $matrix)) {
+					$tmpname = $pritablename . 'tmp' . $module;
+					$condition = "$table_name.$column_name=$tmpname.$secfieldname";
+				} else {
+					$query = " LEFT JOIN $pritablename AS $tmpname ON ($sectablename.$sectableindex=$tmpname.$prifieldname)";
+				}
 			} else if($pritablename == 'vtiger_cntactivityrel') {
 				if($queryPlanner->requireTable('vtiger_cntactivityrel') && $secmodule == 'Contacts') {
 					$tmpname = 'vtiger_cntactivityrel';

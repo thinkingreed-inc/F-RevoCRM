@@ -57,6 +57,7 @@ class Migration_Module_Model extends Vtiger_Module_Model {
 			array('7381' => '7.3.8.1'),
 			array('739' => '7.3.9'),
 			array('740' => '7.4.0'),
+			array('741' => '7.4.1'),
 		);
 		return $versions;
 	}

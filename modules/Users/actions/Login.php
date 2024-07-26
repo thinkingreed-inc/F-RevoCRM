@@ -58,6 +58,10 @@ class Users_Login_Action extends Vtiger_Action_Controller {
 			header ('Location: index.php?module=Users&parent=Settings&view=SystemSetup');
 			exit();
 		} else {
+			//Track the login History
+			$moduleModel = Users_Module_Model::getInstance('Users');
+			$moduleModel->saveLoginErrorHistory($username);
+			//End
 			header ('Location: index.php?module=Users&parent=Settings&view=Login&error=login');
 			exit;
 		}

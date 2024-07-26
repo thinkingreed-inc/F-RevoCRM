@@ -785,7 +785,7 @@ Vtiger.Class("Vtiger_List_Js", {
 
 			var value = jQuery.trim(valueElement.text());
 			//adding string,text,url,currency in customhandling list as string will be textlengthchecked
-			var customHandlingFields = ['owner', 'ownergroup', 'picklist', 'multipicklist', 'reference', 'string', 'url', 'currency', 'text', 'email'];
+			var customHandlingFields = ['owner', 'ownergroup', 'picklist', 'multipicklist', 'reference', 'string', 'url', 'currency', 'text', 'email','boolean'];
 			if (jQuery.inArray(fieldType, customHandlingFields) !== -1) {
 				value = tdElement.data('rawvalue');
 			}
@@ -2767,6 +2767,9 @@ Vtiger.Class("Vtiger_List_Js", {
 		if (typeof $.fn.perfectScrollbar !== 'function' || typeof $.fn.floatThead !== 'function') {
 			return;
 		}
+		if(app.isMobile()) {
+			return;
+		}
 		var $table = jQuery('#listview-table');
 		if (!$table.length)
 			return;
@@ -2791,12 +2794,22 @@ Vtiger.Class("Vtiger_List_Js", {
 		if (typeof $.fn.perfectScrollbar !== 'function' || typeof $.fn.floatThead !== 'function') {
 			return;
 		}
+		if(app.isMobile()) {
+			return;
+		}
 		var $table = jQuery('#listview-table');
 		if (!$table.length)
 			return;
 		var height = this.getListViewContentHeight();
 		var width = this.getListViewContentWidth();
 		var tableContainer = $table.closest('.table-container');
+		var thead = $table.find('thead');
+		thead.css({
+			'position':'sticky',
+			'top': 0,
+			'z-index':'2',
+            'background-color': 'white' /* ヘッダーの背景色 */
+		});
 		var form = $table.parent();
 		tableContainer.css({
 			'position': 'relative',
@@ -2811,6 +2824,29 @@ Vtiger.Class("Vtiger_List_Js", {
 
 		tableContainer.perfectScrollbar({
 			'wheelPropagation': true
+		});
+
+		//テーブルからカラム名を取得，各カラムの幅を保存するために一意のidを生成
+		var module = app.getModuleName();
+		$table.attr('data-resizable-column-id', module);
+		tableContainer.find("tr").each(function(){
+			var $tr = $(this);
+			$tr.find("th").each(function(){
+				var $header = $(this);
+				var $columnname = $header.find('a').data('columnname');
+				var $columnid = '';
+				var $tableactions = $header.find('.table-actions');
+				if ($columnname) {
+					$columnid += module + '-' + $columnname;
+				} else if ($tableactions) {
+					$columnid += module + '-actions';
+				}
+				$header.attr('data-resizable-column-id', $columnid);
+			});
+		});
+
+		$table.resizableColumns({
+			store:store
 		});
 
 		// 列の固定処理
@@ -2848,11 +2884,12 @@ Vtiger.Class("Vtiger_List_Js", {
 			}
 		});
 
-		$table.floatThead({
-			scrollContainer: function ($table) {
-				return $table.closest('.table-container');
-			}
-		});
+
+		// $table.floatThead({
+		// 	scrollContainer: function ($table) {
+		// 		return $table.closest('.table-container');
+		// 	}
+		// });
 	},
 	getSelectedRecordCount: function () {
 		var count = 0;

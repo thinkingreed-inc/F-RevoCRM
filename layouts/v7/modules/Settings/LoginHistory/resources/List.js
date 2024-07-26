@@ -38,14 +38,15 @@ Settings_Vtiger_List_Js("Settings_LoginHistory_List_Js",{},{
 		var pageNumber = jQuery('#pageNumber').val();
 		var module = app.getModuleName();
 		var parent = app.getParentModuleName();
+		var urlParams = this.getParamsFromURL(location.href);
 		var params = {
 			'module': module,
 			'parent' : parent,
 			'page' : pageNumber,
 			'view' : "List",
 			'user_name' : jQuery('select[id=usersFilter] option:selected').attr('name'),
-			'search_key' : 'user_name',
-			'search_value' : jQuery('#usersFilter').val()
+			'search_key' : urlParams['search_key'],
+			'search_value' : urlParams['search_value']
 		};
 
 		return params;
@@ -69,6 +70,9 @@ Settings_Vtiger_List_Js("Settings_LoginHistory_List_Js",{},{
 					vtUtils.showSelect2ElementView(jQuery('#usersFilter'));
 					thisInstance.registerFilterChangeEvent();
 					thisInstance.updatePagination();
+
+					thisInstance.registerUserToggleEvent();
+					thisInstance.registerExportData();
 				}else {
 					app.helper.showErrorNotification({'message':err.message});
 				}
@@ -83,13 +87,14 @@ Settings_Vtiger_List_Js("Settings_LoginHistory_List_Js",{},{
 	getPageJumpParams : function(){
 		var module = app.getModuleName();
 		var parent = app.getParentModuleName();
+		var urlParams = this.getParamsFromURL(location.href);
 		var pageJumpParams = {
 			'module' : module,
 			'parent' : parent,
 			'action' : "ListAjax",
 			'mode' : "getPageCount",
-			'search_value' : jQuery('#usersFilter').val(),
-			'search_key' : 'user_name'
+			'search_key' : urlParams['search_key'],
+			'search_value' : urlParams['search_value']
 		};
 		return pageJumpParams;
 	},
@@ -120,6 +125,16 @@ Settings_Vtiger_List_Js("Settings_LoginHistory_List_Js",{},{
 		thisInstance.loadListViewRecords(urlParams, value).then(function(data){
 			element.closest('.btn-group ').removeClass('open');
 		});
+	},
+
+	getParamsFromURL: function(url) {
+		var urlParams = url.slice(url.indexOf('?') + 1).split('&');
+		var params = {};
+		for (var i = 0; i < urlParams.length; i++) {
+			var param = urlParams[i].split('=');
+			params[param[0]] = param[1];
+		}
+		return params;
 	},
 	
 	initializePaginationEvents : function() {
@@ -168,10 +183,50 @@ Settings_Vtiger_List_Js("Settings_LoginHistory_List_Js",{},{
 		});
 	},
 	
+	 registerUserToggleEvent : function() {
+		jQuery('#frUsers, #portalUsers').on('click', function(e) {
+			var currentEle = jQuery(e.currentTarget);
+			//If it is already selected then you dont need to load again
+			if(currentEle.hasClass('btn-primary')) {
+				return;
+			}
+
+			app.helper.showProgress();
+			if(currentEle.attr('id') === 'frUsers') {
+				jQuery('#portalUsers').removeClass('btn-primary');
+			}else {
+				jQuery('#frUsers').removeClass('btn-primary');
+			}
+			currentEle.addClass('btn-primary');
+
+			var url = 'index.php?module=LoginHistory&parent=Settings&view=List&search_key=is_portal&operator=e&search_value='+currentEle.data('searchvalue');
+			window.location.href = url;
+		});
+	},
+
+	registerExportData : function() {
+		var thisInstance = this;
+		jQuery('#exportData').on('click', function(e){
+			var urlParams = thisInstance.getParamsFromURL(location.href);
+
+			urlParams['module'] = 'LoginHistory';
+			urlParams['parent'] = 'Settings';
+			urlParams['action'] = 'ExportData';
+			urlParams['view'] = '';
+			urlParams['source_module'] = 'LoginHistory';
+
+			var requestString = jQuery.param(urlParams);
+	
+			var url = 'index.php?' + requestString;
+			window.location.href = url;
+		});
+	},
+
 	registerEvents : function() {
         this.initializePaginationEvents();
         this.registerFilterChangeEvent();
-
+		this.registerUserToggleEvent();
+		this.registerExportData();
 
 	}
     

@@ -12,7 +12,7 @@
  * A wrapper around CRMEntity instances
  */
 class VTEntityData{
-	private $isNew = false;
+	public $isNew = false;
 
 	/**
 	 * Get an entity data object.

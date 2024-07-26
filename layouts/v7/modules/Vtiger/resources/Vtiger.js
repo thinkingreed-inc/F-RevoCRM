@@ -455,15 +455,37 @@ Vtiger.Class('Vtiger_Index_Js', {
 	 * @param accepts form element as parameter
 	 */
 	quickCreateGoToFullForm: function(form, editViewUrl) {
+		app.helper.showProgress();
 		jQuery('[name=fromQuickCreate]').val("");
 		var formData = form.serializeFormData();
 		//As formData contains information about both view and action removed action and directed to view
 		delete formData.module;
 		delete formData.action;
 		delete formData.picklistDependency;
-		var formDataUrl = jQuery.param(formData);
-		var completeUrl = editViewUrl + "&" + formDataUrl;
-		window.location.href = completeUrl;
+		// var formDataUrl = jQuery.param(formData);
+		// var completeUrl = editViewUrl + "&" + formDataUrl;
+//		window.location.href = completeUrl;
+		var editForm = $("<form>");
+		editForm.attr('method', 'POST');
+		editForm.attr('action', editViewUrl);
+		// formDataの中身をhiddenのinputにしてeditFormに入れる
+		for(var key in formData) {
+			var value = formData[key];
+			// 複数選択肢の場合のみ
+			if ( jQuery('select[name="'+key+'"]').length && key.includes("[]") ) {
+				key = key.replace("[]", "");
+				if(Array.isArray(value)) {
+					value = value.join(" |##| ");
+				}
+			}
+			var input = document.createElement('input');
+			input.type = 'hidden';
+			input.name = key;
+			input.value = value;
+			editForm.append(input);
+		}
+		$('body').append(editForm);
+		editForm.submit();
 	},
 
 	registerQuickCreateSubMenus : function() {
@@ -601,14 +623,14 @@ Vtiger.Class('Vtiger_Index_Js', {
 				if(this.numberOfInvalids() > 0) {
 					return false;
 				}
-				var formData = jQuery(form).serialize();
+				var formData = jQuery(form).serializeFormData();
 				app.request.post({data:formData}).then(function(err,data){
 					app.helper.hideProgress();
 					if(err === null) {
 						jQuery('.vt-notification').remove();
 						app.event.trigger("post.QuickCreateForm.save",data,jQuery(form).serializeFormData());
 						app.helper.hideModal();
-						var message = typeof formData.record !== 'undefined' ? app.vtranslate('JS_RECORD_UPDATED'):app.vtranslate('JS_RECORD_CREATED');
+						var message = formData.record !== "" ? app.vtranslate('JS_RECORD_UPDATED'):app.vtranslate('JS_RECORD_CREATED');
 						app.helper.showSuccessNotification({"message":message},{delay:4000});
 						invokeParams.callbackFunction(data, err);
 						//To unregister onbefore unload event registered for quickcreate
