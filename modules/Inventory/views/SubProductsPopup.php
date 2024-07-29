@@ -131,7 +131,7 @@ class Inventory_SubProductsPopup_View extends Vtiger_Popup_View {
 			$nextSortOrder = "ASC";
 			$sortImage = "upArrowSmall.png";
 		}
-		if(empty($searchParams)) {
+		if(empty($searchParams) || !is_array($searchParams)){
 			$searchParams = array();
 		}
 				//To make smarty to get the details easily accesible

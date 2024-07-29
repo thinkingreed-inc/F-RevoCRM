@@ -298,7 +298,7 @@ class Vtiger_List_View extends Vtiger_Index_View {
 			$listViewModel->set('search_value', $searchValue);
 		}
 
-		if(empty($searchParams)) {
+		if(empty($searchParams) || !is_array($searchParams)) {
 			$searchParams = array();
 		}
 		if(php7_count($searchParams) == 2 && empty($searchParams[1])) {

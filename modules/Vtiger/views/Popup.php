@@ -236,7 +236,7 @@ class Vtiger_Popup_View extends Vtiger_Footer_View {
 			$this->listViewEntries = $listViewModel->getListViewEntries($pagingModel);
 		}
 		// End  
-				if(empty($searchParams)) {
+				if(empty($searchParams) || !is_array($searchParams)) {
 					$searchParams = array();
 				}
 			   //To make smarty to get the details easily accesible
