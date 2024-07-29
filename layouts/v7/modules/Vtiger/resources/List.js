@@ -2767,6 +2767,9 @@ Vtiger.Class("Vtiger_List_Js", {
 		if (typeof $.fn.perfectScrollbar !== 'function' || typeof $.fn.floatThead !== 'function') {
 			return;
 		}
+		if(app.isMobile()) {
+			return;
+		}
 		var $table = jQuery('#listview-table');
 		if (!$table.length)
 			return;
@@ -2789,6 +2792,9 @@ Vtiger.Class("Vtiger_List_Js", {
 	},
 	registerFloatingThead: function () {
 		if (typeof $.fn.perfectScrollbar !== 'function' || typeof $.fn.floatThead !== 'function') {
+			return;
+		}
+		if(app.isMobile()) {
 			return;
 		}
 		var $table = jQuery('#listview-table');

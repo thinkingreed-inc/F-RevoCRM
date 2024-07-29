@@ -519,6 +519,27 @@ window.app = (function () {
 			var yiq = ((r*299)+(g*587)+(b*114))/1000;
 
 			return (yiq >= 128) ? 'black' : 'white';
+		},
+
+		isMobile : function() {
+			var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+			var smartphones = [
+				/android/i,
+				/webos/i,
+				/iphone/i,
+				/ipad/i,
+				/ipod/i,
+				/blackberry/i,
+				/windows phone/i
+			];
+	
+			for (var i = 0; i < smartphones.length; i++) {
+				if (smartphones[i].test(userAgent)) {
+					return true;
+				}
+			}
+	
+			return false;
 		}
 
 	}

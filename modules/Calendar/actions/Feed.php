@@ -285,6 +285,8 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 
 		$dbEndDateObject = DateTimeField::convertToDBTimeZone($end);
 		$dbEndDateTime = $dbEndDateObject->format('Y-m-d H:i:s');
+		$dbEndDateTimeComponents = explode(' ', $dbEndDateTime);
+		$dbEndDate = $dbEndDateTimeComponents[0];
 
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$db = PearDatabase::getInstance();
@@ -316,9 +318,9 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			$conditions = Zend_Json::decode(Zend_Json::decode($conditions));
 			$query .=  $this->generateCalendarViewConditionQuery($conditions).'AND ';
 		}
-		$query.= " ((concat(date_start, '', time_start)  >= ? AND concat(due_date, '', time_end) < ? ) OR ( due_date >= ? ))";
+		$query.= " ((concat(date_start, '', time_start)  >= ? AND concat(due_date, '', time_end) < ? ) OR ( due_date >= ? AND due_date <= ?))";
 
-		$params=array($dbStartDateTime,$dbEndDateTime,$dbStartDate);
+		$params=array($dbStartDateTime,$dbEndDateTime,$dbStartDate, $dbEndDate);
 		if(empty($userid)){
 			$eventUserId  = $currentUser->getId();
 		}else{
