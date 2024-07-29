@@ -10,8 +10,8 @@
 require_once 'include/events/VTEntityData.inc';
 
 class VTEntityDelta extends VTEventHandler {
-	private static $oldEntity;
-	private static $newEntity;
+	private static $oldEntity = array();
+	private static $newEntity = array();
 	private static $entityDelta;
 
 	function  __construct() {
@@ -51,7 +51,7 @@ class VTEntityDelta extends VTEventHandler {
 		} elseif($moduleName == 'Invoice') {
 			$entityData->set('invoicestatus', getInvoiceStatus($recordId));
 		}
-		if(!array_key_exists($moduleName, self::$newEntity) && !array_key_exists($recordId, self::$newEntity[$moduleName])) {
+		if(!array_key_exists($moduleName, self::$newEntity) && !isset(self::$newEntity[$moduleName][$recordId])) {
 			self::$newEntity[$moduleName][$recordId."_org"] = $entityData;
 		}
 		self::$newEntity[$moduleName][$recordId] = $entityData;
@@ -138,7 +138,7 @@ class VTEntityDelta extends VTEventHandler {
 		if(is_array($fieldDelta)) {
 			$fieldDelta = array_map('decode_html', $fieldDelta);
 		}
-
+				
 		$module = Vtiger_Module::getInstance($moduleName);
         $fieldModel = Vtiger_Field_Model::getInstance($fieldName, $module);
         if($fieldModel->getFieldDataType() == "multipicklist") {
@@ -149,13 +149,12 @@ class VTEntityDelta extends VTEventHandler {
 				$fieldValue = explode(' |##| ', $fieldValue);
 				$result = $result && (empty(array_diff($fieldValue, $fieldDelta_currentValue)) && empty(array_diff($fieldDelta_currentValue, $fieldValue)));
 			}
-        }else{
+		} else {
 			$result = str_replace(array("\r\n","\r","\n"), "", $fieldDelta['oldValue']) != str_replace(array("\r\n","\r","\n"), "", $fieldDelta['currentValue']);
-			if ($fieldValue !== NULL) {
-				$result = $result && ($fieldDelta['currentValue'] === $fieldValue);
-			}
 		}
-
+		if ($fieldValue !== NULL) {
+			$result = $result && ($fieldDelta['currentValue'] === $fieldValue);
+		}
 		return $result;
 	}
 
