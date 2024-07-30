@@ -41,6 +41,10 @@ class Vtiger_SummaryRecordStructure_Model extends Vtiger_DetailRecordStructure_M
 		$blockSeqSortSummaryFields = array();
 		if ($summaryFieldsList) {
 			foreach ($summaryFieldsList as $fieldName => $fieldModel) {
+				if(!is_a($fieldModel, 'Vtiger_Field_Model')) {
+					continue;
+				}
+				
 				if($fieldModel->isViewableInDetailView()) {
 					$fieldModel->set('fieldvalue', $recordModel->get($fieldName));
 					$blockSequence = $fieldModel->block->sequence;
