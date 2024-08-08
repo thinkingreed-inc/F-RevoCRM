@@ -780,6 +780,9 @@ class Vtiger_InventoryPDFController {
 		else if($name == 'discount_percent'){
 			$name = "discount_itempercent";
 		}
+		else if($name == 'purchasecost'){
+			$name = "purchase_cost";
+		}
 		return $name;
 	}
 
