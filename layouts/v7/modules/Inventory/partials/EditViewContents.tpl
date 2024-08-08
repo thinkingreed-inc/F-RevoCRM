@@ -34,7 +34,7 @@
                                 <label  name="togglingHeader">{vtranslate('LBL_BILLING_ADDRESS_FROM', $MODULE)}</label>
                             </td>
                             <td class="fieldValue" name="copyAddress1">
-                                <div class="radio">
+                                <div class="radio{if $CHECK_ACCOUNTID eq false} hidden{/if}">
                                     <label>
                                         <input type="radio" name="copyAddressFromRight" class="accountAddress" data-copy-address="billing" checked="checked">
                                         &nbsp;{vtranslate('SINGLE_Accounts', $MODULE)}
@@ -68,7 +68,7 @@
                                 <label  name="togglingHeader">{vtranslate('LBL_SHIPPING_ADDRESS_FROM', $MODULE)}</label>
                             </td>
                             <td class="fieldValue" name="copyAddress2">
-                                <div class="radio">
+                                <div class="radio{if $CHECK_ACCOUNTID eq false} hidden{/if}">
                                     <label>
                                         <input type="radio" name="copyAddressFromLeft" class="accountAddress" data-copy-address="shipping" checked="checked">
                                         &nbsp;{vtranslate('SINGLE_Accounts', $MODULE)}
