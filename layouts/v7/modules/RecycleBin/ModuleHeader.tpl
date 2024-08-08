@@ -12,7 +12,7 @@
 		<div class="module-action-content clearfix">
 			<span class="col-lg-7 col-md-7 module-breadcrumb module-breadcrumb-{$REQ.view}">
 				<span>
-					<h4 title="{vtranslate($MODULE, $MODULE)}" class="module-title pull-left text-uppercase">&nbsp;{vtranslate($MODULE, $MODULE)}&nbsp;</h4>
+					<a title="{vtranslate($MODULE, $MODULE)}"> <h4 class="module-title pull-left text-uppercase">{vtranslate($MODULE, $MODULE)}</h4>&nbsp;&nbsp;</a>
 				</span>
 				<span>
 					<p class="current-filter-name pull-left"><span class="fa fa-angle-right" aria-hidden="true"></span>&nbsp;{vtranslate($VIEW,$MODULE)}&nbsp;</p>
