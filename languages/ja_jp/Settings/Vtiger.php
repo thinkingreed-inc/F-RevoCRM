@@ -396,6 +396,7 @@ $languageStrings = array(
 	'Workflow' => 'ワークフロー',
 	'LanguageConverter' => '文言変更',
 	'LBL_LANGUAGECONVERTER_DESCRIPTION' => '表示文言を変更します',
+	'HolidayManager' => '祝日管理',
 );
 
 $jsLanguageStrings = array(
