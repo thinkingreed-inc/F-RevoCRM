@@ -9,6 +9,7 @@
 Vtiger.Class('Vtiger_Index_Js', {
 	files: [],
 	hideNC: true,
+	sidePanelVisible: true,
 
 	getInstance : function() {
 		return new Vtiger_Index_Js();
@@ -315,6 +316,7 @@ Vtiger.Class('Vtiger_Index_Js', {
 	},
 
 	registerListEssentialsToggleEvent : function() {
+		thisInstance = this;
 		jQuery('.main-container').on('click', '.essentials-toggle', function() {
 			jQuery('.sidebar-essentials').toggleClass('hide');
 			jQuery(".content-area").toggleClass("full-width");
@@ -325,6 +327,7 @@ Vtiger.Class('Vtiger_Index_Js', {
 				'showPanel' : +jQuery('.sidebar-essentials').hasClass('hide')
 			}
 			app.request.post({data: params});
+			thisInstance.sidePanelVisible = $('.sidebar-essentials').hasClass('hide');
 			if(jQuery('.sidebar-essentials').hasClass('hide')) {
 				jQuery('.essentials-toggle-marker').removeClass('fa-chevron-left')
 					.addClass('fa-chevron-right');
@@ -332,6 +335,48 @@ Vtiger.Class('Vtiger_Index_Js', {
 				jQuery('.essentials-toggle-marker').removeClass('fa-chevron-right')
 					.addClass('fa-chevron-left');
 			}
+			app.event.trigger("Vtiger.Post.MenuToggle");
+		});
+	},
+	
+	registerListVisibleToggleEvent : function() {
+		thisInstance = this;
+		// PCレイアウトの表示非表示の状態を記録
+		thisInstance.sidePanelVisible = $('.sidebar-essentials').hasClass('hide');
+		var toggleSidebar = function(ev) {
+			if(ev.matches){	
+				// 解像度が対象の解像度以下になった場合
+				$('.sidebar-essentials').removeClass('hide');
+				$('.sidebar-essentials').removeClass('visible');
+				$('.content-area').addClass('full-width');
+			}else {
+				// 解像度が対象の解像度ではなくなった場合
+				$('.sidebar-essentials').removeClass('visible');
+				
+				// 記録したPCレイアウトの表示非表示の状態を復元
+				if(thisInstance.sidePanelVisible) {
+					$('.sidebar-essentials').addClass('hide');
+					$('.content-area').addClass('full-width');
+				}else {
+					$('.content-area').removeClass('full-width');
+				}
+			}
+			$('.list-visible-toggle-icon').removeClass('icon-deg-reversal');
+			app.event.trigger("Vtiger.Post.MenuToggle");
+		}
+		
+		if($('.sidebar-essentials').length) {
+			// mediaQueryから判定する
+			var mediaQuery = window.matchMedia('(max-width:991px)');
+			mediaQuery.addEventListener('change', toggleSidebar)
+			toggleSidebar(mediaQuery)
+		}
+		
+		// リスト格納切替ボタン操作用の処理
+		$('.main-container').on('click', '.list-visible-toggle', function() {
+			$('.sidebar-essentials').toggleClass('visible');
+			$('.content-area').toggleClass('full-width');
+			$('.list-visible-toggle-icon').toggleClass('icon-deg-reversal');
 			app.event.trigger("Vtiger.Post.MenuToggle");
 		});
 	},
@@ -375,6 +420,7 @@ Vtiger.Class('Vtiger_Index_Js', {
 		//reference preview event registeration
 		this.registerReferencePreviewEvent();
 		this.registerEventForPostSaveFail();
+		this.registerListVisibleToggleEvent();
 
 		vtUtils.enableTooltips();
 	},

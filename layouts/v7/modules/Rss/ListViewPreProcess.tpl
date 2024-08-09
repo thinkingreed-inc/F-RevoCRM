@@ -34,7 +34,11 @@
         <div id="sidebar-essentials" class="sidebar-essentials {if $LEFTPANELHIDE eq '1'} hide {/if}">
             {include file='RssWidgetContents.tpl'|@vtemplate_path:$MODULE}
         </div>
-            
+        <div>
+			<button type="button" class="list-visible-toggle btn-list-toggle btn-group-justified">
+				<i class="list-visible-toggle-icon fa fa-chevron-down"></i>
+			</button>
+		</div>
         <div class="listViewPageDiv content-area {if $LEFTPANELHIDE eq '1'} full-width {/if}" id="listViewContent">
                 
     
