@@ -284,4 +284,11 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 
 		return $isAllDay;
 	}
+
+	// HTMLタグを除外してDescriptionのデータを取得する
+	public function getPlainTextDescription(){
+		$html = html_entity_decode($this->get('description'), ENT_QUOTES, 'UTF-8');
+		$plainText = trim(strip_tags(preg_replace('/<(head|title|style|script)[^>]*>.*?<\/\\1>/si', '', $html)));
+		return nl2br($plainText);
+	}
 }

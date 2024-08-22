@@ -72,8 +72,13 @@
 										<td class="relatedActivitiesValue">{vtranslate($ACTIVITYTYPE,$MODULE_NAME)}</td>
 									</tr>
 									<tr class="relatedActivitiesEntries">
-										<td class="relatedActivitiesLabel" valign="top">{vtranslate('Description')}</td>
-										<td class="relatedActivitiesValue">{$DESCRIPTION|nl2br}</td>
+										{if $ACTIVITYTYPE eq 'Emails'}
+											<td class="relatedActivitiesLabel" valign="top">{vtranslate('Description')}</td>
+											<td class="relatedActivitiesValue">{$RECORD->getPlainTextDescription()}</td>
+										{else}
+											<td class="relatedActivitiesLabel" valign="top">{vtranslate('Description')}</td>
+											<td class="relatedActivitiesValue">{$DESCRIPTION|nl2br}</td>
+										{/if}
 									</tr>
 								</table>
 							</div>

@@ -134,7 +134,7 @@ class PriceBooks_ProductPriceBookPopup_View extends Vtiger_Popup_View {
 			$faSortImage = "fa-sort-asc";
 		}
 
-		if(empty($searchParams)) {
+		if(empty($searchParams) || !is_array($searchParams)){
 			$searchParams = array();
 		}
 		//To make smarty to get the details easily accesible

@@ -149,7 +149,7 @@ class RecycleBin_List_View extends Vtiger_Index_View {
 			$listViewModel->set('sortorder',$sortOrder);
 		}
 
-		if (empty($searchParams)) {
+		if (empty($searchParams) || !is_array($searchParams)) {
 			$searchParams = array();
 		}
 		$transformedSearchParams = Vtiger_Util_Helper::transferListSearchParamsToFilterCondition($searchParams, $listViewModel->getModule());
