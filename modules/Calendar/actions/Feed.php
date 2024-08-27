@@ -426,6 +426,24 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			$item['location'] = $record['location'];
 			$item['description'] = $record['description'];
 
+			$inviteeDetails = $this->getInviteeNames($record['activityid']);
+			$group = Settings_Groups_Record_Model::getInstance($ownerId);
+			if(!empty($group)) {
+				$inviteeDetails[$ownerId] = $group->getName();
+			}
+			if(php7_count($inviteeDetails) > 0) {
+				$inviteeMessage = '';
+				if(count($inviteeDetails) == 1 && array_key_exists($currentUser->getId(), $inviteeDetails)) {
+					$inviteeMessage = '';
+				} else {
+					$inviteeMessage = '<br>'.vtranslate('LBL_INVITE_USERS', 'Events').'<br>'.implode(', ', $inviteeDetails).'';
+				}
+				if(!empty($record['description']) && !empty($inviteeMessage)) {
+					$inviteeMessage ='<br>'.$inviteeMessage;
+				}
+				$item['description'] = $record['description'].$inviteeMessage;
+			}
+
 			$result[] = $item;
 		}
 	}
@@ -448,7 +466,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 		$userAndGroupIds = array_merge(array($user->getId()),$this->getGroupsIdsForUsers($user->getId()));
 		$queryGenerator = new QueryGenerator($moduleModel->get('name'), $user);
 
-		$queryGenerator->setFields(array('activityid','subject', 'taskstatus','activitytype', 'date_start','time_start','due_date','time_end','id', 'smownerid','parent_id','description'));
+		$queryGenerator->setFields(array('activityid','subject', 'taskstatus','activitytype', 'date_start','time_start','due_date','time_end','id', 'assigned_user_id','parent_id','description'));
 		$query = $queryGenerator->getQuery();
 
 		$query.= " AND vtiger_activity.activitytype = 'Task' AND ";
@@ -501,10 +519,59 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			} else {
 				$item['parent_id'] = '';
 			}
-			$item['description'] = $record['description'];
+
+			$ownerId = $record['smownerid'];
+
+			$inviteeDetails = $this->getInviteeNames($record['activityid']);
+			$group = Settings_Groups_Record_Model::getInstance($ownerId);
+			if(!empty($group)) {
+				$inviteeDetails[$ownerId] = $group->getName();
+			}
+			if(php7_count($inviteeDetails) > 0) {
+				$inviteeMessage = '';
+				if(count($inviteeDetails) == 1 && array_key_exists($currentUser->getId(), $inviteeDetails)) {
+					$inviteeMessage = '';
+				} else {
+					$inviteeMessage = '<br>'.vtranslate('LBL_INVITE_USERS', 'Events').'<br>'.implode(', ', $inviteeDetails).'';
+				}
+				if(!empty($record['description']) && !empty($inviteeMessage)) {
+					$inviteeMessage ='<br>'.$inviteeMessage;
+				}
+				$item['description'] = $record['description'].$inviteeMessage;
+			}
 
 			$result[] = $item;
 		}
 	}
 
+	private function getInviteeNames($activityid) {
+		global $adb;
+
+		$inviteeDetails = array();
+
+		$sql = "SELECT
+					i.*,
+					u.first_name,
+					u.last_name
+				FROM
+					vtiger_invitees i
+					INNER JOIN vtiger_users u ON u.id = i.inviteeid
+				WHERE
+					i.activityid=(SELECT invitee_parentid FROM vtiger_activity WHERE activityid = ?)";
+
+		$result = $adb->pquery($sql, array($activityid));
+		$num_rows = $adb->num_rows($result);
+
+		for($i=0; $i<$num_rows; $i++) {
+			$userid = $adb->query_result($result, $i, 'inviteeid');
+			$name = $adb->query_result($result, $i, 'last_name').''.$adb->query_result($result, $i, 'first_name');
+			if(empty($name)) {
+				$group = Settings_Groups_Record_Model::getInstance($userid);
+				$name = $group->getName();
+			}
+			$inviteeDetails[$userid] = $name;
+		}
+
+		return $inviteeDetails;
+	}
 }
