@@ -1096,9 +1096,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 		$query .= Users_Privileges_Model::getNonAdminAccessControlQuery('Calendar');
 
 		$query .= " WHERE vtiger_crmentity.deleted=0
-					AND (vtiger_activity.activitytype NOT IN ('Emails'))
-					AND (vtiger_activity.status is NULL OR vtiger_activity.status NOT IN ('Completed', 'Deferred', 'Cancelled'))
-					AND (vtiger_activity.eventstatus is NULL OR vtiger_activity.eventstatus NOT IN ('Held','Cancelled'))";
+					AND (vtiger_activity.activitytype NOT IN ('Emails'))";
 
 		if(!$currentUser->isAdminUser()) {
 			$moduleFocus = CRMEntity::getInstance('Calendar');
@@ -1124,7 +1122,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 			array_push($params, $user);
 		}
 
-		$query .= " ORDER BY date_start, time_start LIMIT ". $pagingModel->getStartIndex() .", ". ($pagingModel->getPageLimit()+1);
+		$query .= " ORDER BY date_start DESC, time_start DESC LIMIT ". $pagingModel->getStartIndex() .", ". ($pagingModel->getPageLimit()+1);
 
 
 		$result = $db->pquery($query, $params);
