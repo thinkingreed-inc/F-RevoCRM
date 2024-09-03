@@ -80,6 +80,8 @@ var ResizableColumns = (function () {
 		this.adjustDummyColumnWidth();
 		this.syncHandleWidths();
 
+		this.bindEvents(this.$window, 'resize', this.refreshContainerSize.bind(this));
+		this.bindEvents(this.$window, 'resize', this.adjustDummyColumnWidth.bind(this));
 		this.bindEvents(this.$window, 'resize', this.syncHandleWidths.bind(this));
 
 		if (this.options.start) {
@@ -134,7 +136,7 @@ var ResizableColumns = (function () {
 			}
 
 			this.$handleContainer = $('<div class=\'' + _constants.CLASS_HANDLE_CONTAINER + '\' />');
-			// this.$table.before(this.$handleContainer);
+			this.$table.before(this.$handleContainer);
 			this.options.handleContainer ? this.options.handleContainer.before(this.$handleContainer) : this.$table.before(this.$handleContainer);
 
 			this.$tableHeaders.each(function (i, el) {
@@ -239,7 +241,7 @@ var ResizableColumns = (function () {
   **/
 		value: function adjustDummyColumnWidth() {
 			var _this6 = this;
-			var containerWidth = this.originalTableWidth
+			var containerWidth = this.originalTableWidth;
 			var $dummyColumn = this.$tableHeaders.eq(-1);
 			var dummyWidth = this.parseWidth($dummyColumn[0]);
 
@@ -255,7 +257,18 @@ var ResizableColumns = (function () {
 				_this6.setWidth($dummyColumn, 20); 
 			}
 		}
-	}, {
+	},{
+		key: 'refreshContainerSize',
+
+		/**
+  refresh original container size 
+  	@method refreshContainerSize
+  **/
+		value: function refreshContainerSize() {
+			var tableContainer = this.$table.closest('.table-container');
+			this.originalTableWidth = tableContainer.width();
+		}
+	},{
 		key: 'onPointerDown',
 
 		/**
@@ -398,6 +411,8 @@ var ResizableColumns = (function () {
 			this.adjustDummyColumnWidth();
 			this.syncHandleWidths();
 			this.saveColumnWidths();
+			var tableContainer = this.$table.closest('.table-container');
+			tableContainer.perfectScrollbar('update');
 
 			this.operation = null;
 

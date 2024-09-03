@@ -2821,9 +2821,11 @@ Vtiger.Class("Vtiger_List_Js", {
 			'height': height,
 			'width': width
 		});
-		tableContainer.perfectScrollbar('update');
-		// $table.floatThead('reflow');
+		$table.resizableColumns('refreshContainerSize');
+		$table.resizableColumns('adjustDummyColumnWidth');
 		$table.resizableColumns('syncHandleWidths');
+		// $table.floatThead('reflow');
+		tableContainer.perfectScrollbar('update');
 	},
 	registerFloatingThead: function () {
 		if (typeof $.fn.perfectScrollbar !== 'function' || typeof $.fn.floatThead !== 'function') {
@@ -2854,9 +2856,6 @@ Vtiger.Class("Vtiger_List_Js", {
 			'width': width
 		});
 
-		tableContainer.perfectScrollbar({
-			'wheelPropagation': true
-		});
 
 		// 現在有効になっているcvidとテーブルのfieldidから，リストごとに各カラムの幅を保存するための一意のidを生成
 		var module = app.getModuleName();
@@ -2885,6 +2884,14 @@ Vtiger.Class("Vtiger_List_Js", {
 
 		$table.resizableColumns({
 			store:store
+		});
+
+		tableContainer.perfectScrollbar({
+			'wheelPropagation': true
+		});
+
+		window.addEventListener('resize',function(){
+			tableContainer.perfectScrollbar('update');
 		});
 
 		// 列の固定処理
@@ -2921,7 +2928,9 @@ Vtiger.Class("Vtiger_List_Js", {
 				leftPos += $column.width();//どちらかゼロ
 			}
 		});
-
+		$table.resizableColumns('refreshContainerSize');
+		$table.resizableColumns('adjustDummyColumnWidth');
+		$table.resizableColumns('syncHandleWidths');
 
 		// $table.floatThead({
 		// 	scrollContainer: function ($table) {
