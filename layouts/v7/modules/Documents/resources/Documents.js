@@ -58,10 +58,10 @@ Vtiger.Class('Documents_Index_Js', {
 		var activeFolderEle = jQuery("#folders-list").find('li.documentFolder.active');
 		var params = {};
 		if(activeFolderEle.length) {
-			var activeFolderName = activeFolderEle.find('.filterName').data('folderName');
+			var activeFolderId = activeFolderEle.find('.filterName').data('filterId');
 			params ={
 				"folder_id" : 'folderid',
-				"folder_value" : activeFolderName
+				"folder_value" : activeFolderId
 			};
 		}
 

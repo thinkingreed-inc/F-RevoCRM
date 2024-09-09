@@ -156,7 +156,7 @@ Vtiger_List_Js("Documents_List_Js", {
             
             self.loadFilter(jQuery('input[name="allCvId"]').val(), {
                 folder_id : 'folderid',
-                folder_value : el.data('folderName')
+                folder_value : el.data('filterId')
             });
             
 			var filtername = jQuery('a[class="filterName"]',element).text();
@@ -371,7 +371,7 @@ Vtiger_List_Js("Documents_List_Js", {
     },
 
 	getDefaultParams: function() {
-		var search_value = jQuery('.sidebar-menu').find('.documentFolder.active').find('.filterName').data('folder-name');
+		var search_value = jQuery('.sidebar-menu').find('.documentFolder.active').find('.filterName').data('filterId');
 		var customParams = {
 			'folder_id' : 'folderid',
 			'folder_value' : search_value
