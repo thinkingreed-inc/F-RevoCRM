@@ -105,10 +105,10 @@
                     <ul id="folders-list"  class="lists-menu">
                     {foreach item="FOLDER" from=$FOLDERS  name="folderView"}
                          {assign var=FOLDERNAME value={vtranslate($FOLDER->get('foldername'), $MODULE)}} 
-                        <li style="font-size:12px;" class='documentFolder {if $FOLDER_VALUE eq $FOLDER->getName()} active{/if} {if $smarty.foreach.folderView.iteration gt 5} filterHidden hide{/if}'>
+                        <li style="font-size:12px;" class='documentFolder {if $FOLDER_VALUE eq $FOLDER->get('folderid')} active{/if} {if $smarty.foreach.folderView.iteration gt 5} filterHidden hide{/if}'>
                             <a class="filterName" href="javascript:void(0);" data-filter-id="{$FOLDER->get('folderid')}" data-folder-name="{$FOLDER->get('foldername')}" title="{$FOLDERNAME}">
-                                <i class="fa {if $FOLDER_VALUE eq $FOLDER->getName()}fa-folder-open{else}fa-folder{/if}"></i> 
-                                <span class="foldername">{if {$FOLDERNAME|strlen} > 40 } {$FOLDERNAME|substr:0:40|@escape:'html'}..{else}{$FOLDERNAME|@escape:'html'}{/if}</span>
+                                <i class="fa {if $FOLDER_VALUE eq $FOLDER->get('folderid')}fa-folder-open{else}fa-folder{/if}"></i> 
+                                <span class="foldername">{$FOLDERNAME|@escape:'html'}</span>
                             </a>
                             {if $FOLDER->getName() neq 'Default' && $FOLDER->getName() neq 'Google Drive' && $FOLDER->getName() neq 'Dropbox'}
                                 <div class="dropdown pull-right">
