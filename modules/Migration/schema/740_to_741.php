@@ -23,5 +23,5 @@ if (defined('VTIGER_UPGRADE')) {
     include_once 'setup/scripts/77_Update_CalendarUserActivityTypes.php';
 
     //F-RevoCRM REST APIにて、SyncAPIの引数を追加
-    include_once 'setup/scripts/78_Update_SyncAPI.php';
+    include_once 'setup/scripts/78_Update_RESTAPI.php';
 }
