@@ -21,4 +21,7 @@ if (defined('VTIGER_UPGRADE')) {
 
     //個人カレンダーの設定テーブル変更
     include_once 'setup/scripts/77_Update_CalendarUserActivityTypes.php';
+
+    //F-RevoCRM REST APIにて、SyncAPIの引数を追加
+    include_once 'setup/scripts/78_Update_SyncAPI.php';
 }
