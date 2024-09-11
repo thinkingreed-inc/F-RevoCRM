@@ -20,19 +20,19 @@ global $adb, $log;
 /**
  * sync.syncType
  */
-$result = $adb->query("SELECT wso.operationid FROM vtiger_ws_operation wso LEFT JOIN vtiger_ws_operation_parameters wsop ON wso.operationid = wsop.operationid WHERE name = 'sync'");
-$count = $adb->num_rows($result);
+$syncTypeResult = $adb->query("SELECT wso.operationid FROM vtiger_ws_operation wso LEFT JOIN vtiger_ws_operation_parameters wsop ON wso.operationid = wsop.operationid WHERE wso.name = 'sync'");
+$count = $adb->num_rows($syncTypeResult);
 if ($count > 0) {
-  $operationId = $adb->query_result($result, 0, 'operationid');
+  $operationId = $adb->query_result($syncTypeResult, 0, 'operationid');
 
   // syncTypeがあるか確認する
-  $result = $adb->query("SELECT * FROM vtiger_ws_operation_parameters WHERE operationid = ? AND name = 'syncType'", array($operationId));
-  if ($adb->num_rows($result) == 0) {
-    $adb->query("INSERT INTO vtiger_ws_operation_parameters (operationid, name, type, sequence) VALUES (?, 'syncType', 'string', ?)", array($operationId, ($count + 1)));
+  $syncTypeCheckresult = $adb->pquery("SELECT * FROM vtiger_ws_operation_parameters WHERE operationid = ? AND name = 'syncType';", array($operationId));
+  if ($adb->num_rows($syncTypeCheckresult) == 0) {
+    $adb->pquery("INSERT INTO vtiger_ws_operation_parameters (operationid, name, type, sequence) VALUES (?, 'syncType', 'string', ?)", array($operationId, ($count + 1)));
   }
   echo "実行が完了しました。<br>".PHP_EOL;  
 } else {
-  echo "実行が完了しました。<br>".PHP_EOL;  
+  echo "実行しませんでした。<br>".PHP_EOL;  
 }
 
 
@@ -40,18 +40,17 @@ if ($count > 0) {
 /**
  * convertlead.element
  */
-$result = $adb->query("SELECT wso.operationid FROM vtiger_ws_operation wso LEFT JOIN vtiger_ws_operation_parameters wsop ON wso.operationid = wsop.operationid WHERE name = 'convertlead'");
-$count = $adb->num_rows($result);
+$convertleadElementResult = $adb->query("SELECT wso.operationid FROM vtiger_ws_operation wso LEFT JOIN vtiger_ws_operation_parameters wsop ON wso.operationid = wsop.operationid WHERE wso.name = 'convertlead'");
+$count = $adb->num_rows($convertleadElementResult);
 if ($count > 0) {
-  $operationId = $adb->query_result($result, 0, 'operationid');
+  $operationId = $adb->query_result($convertleadElementResult, 0, 'operationid');
 
   // syncTypeがあるか確認する
-  $result = $adb->query("SELECT * FROM vtiger_ws_operation_parameters WHERE operationid = ? AND name = 'element'", array($operationId));
-  if ($adb->num_rows($result) == 0) {
-    $adb->query("INSERT INTO vtiger_ws_operation_parameters (operationid, name, type, sequence) VALUES (?, 'element', 'encoded', ?)", array($operationId, ($count + 1)));
+  $checkSyncTyperesult = $adb->pquery("SELECT * FROM vtiger_ws_operation_parameters WHERE operationid = ? AND name = 'element';", array($operationId));
+  if ($adb->num_rows($checkSyncTyperesult) == 0) {
+    $adb->pquery("INSERT INTO vtiger_ws_operation_parameters (operationid, name, type, sequence) VALUES (?, 'element', 'encoded', ?)", array($operationId, ($count + 1)));
   }
   echo "実行が完了しました。<br>".PHP_EOL;  
 } else {
-  echo "実行が完了しました。<br>".PHP_EOL;  
+  echo "実行しませんでした。<br>".PHP_EOL;  
 }
-
