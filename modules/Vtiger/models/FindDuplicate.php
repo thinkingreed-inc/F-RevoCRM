@@ -98,7 +98,7 @@ class Vtiger_FindDuplicate_Model extends Vtiger_Base_Model {
             }
             $fieldValues[$group][$groupRecordCount]['recordid'] = $row['recordid'];
             foreach($row as $field => $value) {
-                if($i == 0 && $field != 'recordid') $temp[$field] = $value;
+                if($i == 0 && $field != 'recordid' && $field != 0) $temp[$field] = $value;
                 $fieldModel = $fieldModels[$field];
                 $resultRow[$field] = $value;
             }
