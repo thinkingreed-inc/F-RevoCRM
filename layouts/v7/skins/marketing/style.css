@@ -6700,7 +6700,7 @@ a.cp-modules:hover {
   padding-left: 230px;
 }
 .listViewPageDiv .ps-scrollbar-x-rail {
-  opacity: 1 !important;
+  /* opacity: 1 !important; */
   z-index: 1000;
 }
 li.select2-search-choice div {
@@ -6812,9 +6812,9 @@ li.select2-search-choice div {
 .main-container-Reports .full-width {
   padding-left: 0px !important;
 }
-.listViewPageDiv .ps-scrollbar-x-rail {
+/* .listViewPageDiv .ps-scrollbar-x-rail {
   opacity: 1 !important;
-}
+} */
 li.select2-search-choice div {
   white-space: nowrap;
 }
