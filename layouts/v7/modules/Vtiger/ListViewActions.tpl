@@ -115,6 +115,11 @@
                                     {/if}  
                                 {/if}
                             {/foreach}
+                            <li>
+                                <a id="resetColumnWidths" >
+                                    {vtranslate('LBL_RESET_COLUMN_WIDTHS',$MODULE)}
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 {/if}

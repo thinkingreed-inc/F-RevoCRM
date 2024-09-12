@@ -68,6 +68,7 @@ var ResizableColumns = (function () {
 		this.ns = '.rc' + this.count++;
 
 		this.originalTableLayout = $table.css('table-layout');
+		this.originalTableWidth = $table.width();
 		this.options = $.extend({}, ResizableColumns.defaults, options);
 
 		this.$window = $(window);
@@ -76,8 +77,11 @@ var ResizableColumns = (function () {
 
 		this.refreshHeaders();
 		this.restoreColumnWidths();
+		this.adjustDummyColumnWidth();
 		this.syncHandleWidths();
 
+		this.bindEvents(this.$window, 'resize', this.refreshContainerSize.bind(this));
+		this.bindEvents(this.$window, 'resize', this.adjustDummyColumnWidth.bind(this));
 		this.bindEvents(this.$window, 'resize', this.syncHandleWidths.bind(this));
 
 		if (this.options.start) {
@@ -132,7 +136,7 @@ var ResizableColumns = (function () {
 			}
 
 			this.$handleContainer = $('<div class=\'' + _constants.CLASS_HANDLE_CONTAINER + '\' />');
-			// this.$table.before(this.$handleContainer);
+			this.$table.before(this.$handleContainer);
 			this.options.handleContainer ? this.options.handleContainer.before(this.$handleContainer) : this.$table.before(this.$handleContainer);
 
 			this.$tableHeaders.each(function (i, el) {
@@ -229,6 +233,42 @@ var ResizableColumns = (function () {
 			});
 		}
 	}, {
+		key: 'adjustDummyColumnWidth',
+
+		/**
+  adjust the dummyColumn width to match all other column widths and container width
+  	@method adjustDummyColumnWidth
+  **/
+		value: function adjustDummyColumnWidth() {
+			var _this6 = this;
+			var containerWidth = this.originalTableWidth;
+			var $dummyColumn = this.$tableHeaders.eq(-1);
+			var dummyWidth = this.parseWidth($dummyColumn[0]);
+
+			var sumWithoutDummy = -dummyWidth;
+
+			this.$tableHeaders.each(function (_, el) {
+				sumWithoutDummy += _this6.parseWidth(el);
+			});
+			
+			if (sumWithoutDummy < containerWidth) { 
+				_this6.setWidth($dummyColumn, containerWidth-sumWithoutDummy); 
+			} else {
+				_this6.setWidth($dummyColumn, 20); 
+			}
+		}
+	},{
+		key: 'refreshContainerSize',
+
+		/**
+  refresh original container size 
+  	@method refreshContainerSize
+  **/
+		value: function refreshContainerSize() {
+			var tableContainer = this.$table.closest('.table-container');
+			this.originalTableWidth = tableContainer.width();
+		}
+	},{
 		key: 'onPointerDown',
 
 		/**
@@ -258,22 +298,26 @@ var ResizableColumns = (function () {
 			var gripIndex = $currentGrip.index();
 			var $leftColumn = this.$tableHeaders.eq(gripIndex).not(_constants.SELECTOR_UNRESIZABLE);
 			var $rightColumn = this.$tableHeaders.eq(gripIndex + 1).not(_constants.SELECTOR_UNRESIZABLE);
+			var $dummyColumn = this.$tableHeaders.eq(-1);
 
 			var leftWidth = this.parseWidth($leftColumn[0]);
 			var rightWidth = this.parseWidth($rightColumn[0]);
+			var dummyWidth = this.parseWidth($dummyColumn[0]);
 
 			this.operation = {
-				$leftColumn: $leftColumn, $rightColumn: $rightColumn, $currentGrip: $currentGrip,
+				$leftColumn: $leftColumn, $rightColumn: $rightColumn, $dummyColumn: $dummyColumn, $currentGrip: $currentGrip,
 
 				startX: this.getPointerX(event),
 
 				widths: {
 					left: leftWidth,
-					right: rightWidth
+					right: rightWidth,
+					dummy: dummyWidth
 				},
 				newWidths: {
 					left: leftWidth,
-					right: rightWidth
+					right: rightWidth,
+					dummy: dummyWidth
 				}
 			};
 
@@ -284,7 +328,7 @@ var ResizableColumns = (function () {
 
 			$leftColumn.add($rightColumn).add($currentGrip).addClass(_constants.CLASS_COLUMN_RESIZING);
 
-			this.triggerEvent(_constants.EVENT_RESIZE_START, [$leftColumn, $rightColumn, leftWidth, rightWidth], event);
+			this.triggerEvent(_constants.EVENT_RESIZE_START, [$leftColumn, $rightColumn, $dummyColumn, leftWidth, rightWidth, dummyWidth], event);
 
 			event.preventDefault();
 		}
@@ -312,8 +356,10 @@ var ResizableColumns = (function () {
 
 			var leftColumn = op.$leftColumn[0];
 			var rightColumn = op.$rightColumn[0];
+			var dummyColumn = op.$dummyColumn[0];
 			var widthLeft = undefined,
-			    widthRight = undefined;
+			    widthRight = undefined,
+				widthDummy = undefined;
 
 			// if (difference > 0) {
 			// 	widthLeft = this.constrainWidth(op.widths.left + (op.widths.right - op.newWidths.right));
@@ -323,8 +369,8 @@ var ResizableColumns = (function () {
 			// 	widthRight = this.constrainWidth(op.widths.right + (op.widths.left - op.newWidths.left));
 			// }
 			widthLeft = this.constrainWidth(op.widths.left + difference);
-			// widthRight = this.constrainWidth(op.widths.right);
-			widthRight = this.constrainWidth(op.widths.right - difference);
+			widthRight = this.constrainWidth(op.widths.right);
+			widthDummy = this.constrainWidth(op.widths.dummy - difference);
 
 			if (leftColumn) {
 				this.setWidth(leftColumn, widthLeft);
@@ -332,11 +378,15 @@ var ResizableColumns = (function () {
 			if (rightColumn) {
 				this.setWidth(rightColumn, widthRight);
 			}
+			if (dummyColumn) { 
+				this.setWidth(dummyColumn, widthDummy);
+			}
 
 			op.newWidths.left = widthLeft;
 			op.newWidths.right = widthRight;
+			op.newWidths.dummy = widthDummy;
 
-			return this.triggerEvent(_constants.EVENT_RESIZE, [op.$leftColumn, op.$rightColumn, widthLeft, widthRight], event);
+			return this.triggerEvent(_constants.EVENT_RESIZE, [op.$leftColumn, op.$rightColumn, op.$dummyColumn ,widthLeft, widthRight, widthDummy], event);
 		}
 	}, {
 		key: 'onPointerUp',
@@ -358,12 +408,15 @@ var ResizableColumns = (function () {
 
 			op.$leftColumn.add(op.$rightColumn).add(op.$currentGrip).removeClass(_constants.CLASS_COLUMN_RESIZING);
 
+			this.adjustDummyColumnWidth();
 			this.syncHandleWidths();
 			this.saveColumnWidths();
+			var tableContainer = this.$table.closest('.table-container');
+			tableContainer.perfectScrollbar('update');
 
 			this.operation = null;
 
-			return this.triggerEvent(_constants.EVENT_RESIZE_STOP, [op.$leftColumn, op.$rightColumn, op.newWidths.left, op.newWidths.right], event);
+			return this.triggerEvent(_constants.EVENT_RESIZE_STOP, [op.$leftColumn, op.$rightColumn, op.$dummyColumn, op.newWidths.left, op.newWidths.right, op.newWidths.dummy], event);
 		}
 	}, {
 		key: 'destroy',
