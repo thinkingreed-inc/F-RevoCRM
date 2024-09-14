@@ -20,6 +20,7 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
         $this->exposeMethod('unHide');
 		$this->exposeMethod('updateDuplicateHandling');
     }
+    private $newEmptyColumnData;
 
     public function add(Vtiger_Request $request) {
         global $custom_field_limit;
@@ -58,6 +59,7 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
         }catch(Exception $e) {
             $response->setError($e->getCode(), $e->getMessage());
         }
+        $this->newEmptyColumnData = $responseData; 
         $response->emit();
     }
 
@@ -155,8 +157,17 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
             return;
         }
 
+        $block = $fieldInstance->get('block');
+        $blockId = $block->id;
+        $sourceModule = $block->module->name;
+        $preSequence = $fieldInstance->get('sequence');
+
         try{
             $this->_deleteField($fieldInstance);
+            // 空白項目に置き換える場合
+            if($request->get('isReplaceEmptyColumn') === "true"){
+                $this->replaceEmptyColumn($blockId, $sourceModule, $preSequence);
+            }
         }catch(Exception $e) {
             $response->setError($e->getCode(), $e->getMessage());
         }
@@ -229,5 +240,87 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
 
     public function validateRequest(Vtiger_Request $request) {
         $request->validateWriteAccess();
+    }
+
+    // 削除した項目の場所に空白項目を置き換える
+    private function replaceEmptyColumn($blockId, $sourceModule, $preSequence) {
+        $values = array("fieldid" => "","addToBaseTable" => "","source" => "","fieldname" => "","blockid" => "","fieldType" => "Empty","fieldLabel" => "","fieldLength" => "NaN","decimal" => "","pickListValues" => "","fieldDefaultValue" => "","presence" => "2","mandatory" => "O","quickcreate" => "1","isquickcreatesupported" => "1","summaryfield" => "0","headerfield" => "0","masseditable" => "2","module" => "LayoutEditor","parent" => "Settings","action" => "Field","mode" => "add","sourceModule" => "Faq",);
+        $values['blockid'] = $blockId;
+        $values['sourceModule'] = $sourceModule;
+        $rawvalues = $values;
+        $emptyRequest = new Vtiger_Request($values, $rawvalues);
+
+        // 空白項目を追加
+        $this->add($emptyRequest);
+        $responceData = $this->newEmptyColumnData;
+        $newfieldid = $responceData['id'];
+        $newBlockid = $responceData['blockid'];
+
+        // 全フィールドリストを取得
+        $moduleModel = Settings_LayoutEditor_Module_Model::getInstanceByName($sourceModule);
+        $fieldList = $moduleModel->getFields();
+        if(!is_countable($fieldList)) {
+            return ;
+        }
+
+        // 並び順を調査
+        $isMatch = false;
+        for ($i=0; $i < count($fieldList); $i++) {
+            $fieldid = $fieldList[$i]->get('id');
+            $sequence = $fieldList[$i]->get('sequence');
+            $blockid = $fieldList[$i]->get('block')->id;
+
+            if($newBlockid !== $blockid){
+                continue ;
+            }
+
+            // 削除した項目より前にある項目のidもしくは重複する並び順を取得
+            if($preSequence > $sequence){
+                $previousId = $fieldid;
+            }else if($preSequence === $sequence){
+                $previousId = $fieldid;
+                $isMatch = true;
+            }
+        }
+
+        // フィールドリストの並び替え
+        $updatedFieldsList = array();
+        $isNext = false;
+        $count = count($fieldList);
+        // 置き換える項目の直前までループして項目を挿入する
+        for ($i=0; $i < $count; $i++) {
+            $fieldid = $fieldList[$i]->get('id');
+            if($fieldid === $previousId && $isMatch === false){
+                $isNext = true;
+            }else if($fieldid === $previousId && $isMatch === true || $isNext === true){
+                $fieldid = $newfieldid;
+                $sequence = $preSequence;
+                $blockid = $newBlockid;
+                $updatedFieldsList[$i] = array('fieldid' => $fieldid, 'sequence' => $sequence, 'block' => $blockid);
+                break ;
+            }
+            $fieldid = $fieldList[$i]->get('id');
+            $sequence = $fieldList[$i]->get('sequence');
+            $blockid = $fieldList[$i]->get('block')->id;
+            $updatedFieldsList[$i] = array('fieldid' => $fieldid, 'sequence' => $sequence, 'block' => $blockid);
+            unset($fieldList[$i]);
+        }
+
+        // 残りのフィールドと合わせる
+        if(!is_countable($fieldList)) {
+            return ;
+        }
+        foreach ($fieldList as $key => $value) {
+            $fieldid = $fieldList[$key]->get('id');
+            $sequence = $fieldList[$key]->get('sequence');
+            $blockid = $fieldList[$key]->get('block')->id;
+            array_push($updatedFieldsList,array('fieldid' => $fieldid, 'sequence' => $sequence, 'block' => $blockid));
+        }
+
+        // 並び替えの登録
+        $moduleModel = Vtiger_Module_Model::getInstance($sourceModule);
+        Settings_LayoutEditor_Block_Model::updateFieldSequenceNumber($updatedFieldsList,$moduleModel);
+        $response = new Vtiger_Response();
+        $response->setResult(array('success'=>true));
     }
 }
