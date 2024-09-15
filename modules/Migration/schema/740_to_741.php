@@ -21,4 +21,7 @@ if (defined('VTIGER_UPGRADE')) {
 
     //個人カレンダーの設定テーブル変更
     include_once 'setup/scripts/77_Update_CalendarUserActivityTypes.php';
+
+    // 'vtiger_activity' テーブルに 'smcreatorid' フィールドを追加
+    include_once 'setup/scripts/78_Add_smcreatorid.php';
 }
