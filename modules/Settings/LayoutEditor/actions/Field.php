@@ -20,7 +20,6 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
         $this->exposeMethod('unHide');
 		$this->exposeMethod('updateDuplicateHandling');
     }
-    private $newEmptyColumnData;
 
     public function add(Vtiger_Request $request) {
         global $custom_field_limit;
@@ -54,12 +53,12 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
 				}
 			}
 			$responseData['fieldDefaultValue'] = $defaultValue;
+            $responseData['sequence'] = $fieldModel->get('sequence');
 
             $response->setResult($responseData);
         }catch(Exception $e) {
             $response->setError($e->getCode(), $e->getMessage());
         }
-        $this->newEmptyColumnData = $responseData; 
         $response->emit();
     }
 
@@ -161,12 +160,13 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
         $blockId = $block->id;
         $sourceModule = $block->module->name;
         $preSequence = $fieldInstance->get('sequence');
-
+        $targetTable = $fieldInstance->get('table');
         try{
             $this->_deleteField($fieldInstance);
             // 余白項目に置き換える場合
             if($request->get('isReplaceEmptyColumn') === "true"){
-                $this->replaceEmptyColumn($blockId, $sourceModule, $preSequence);
+                $emptyFieldArray = $this->replaceEmptyColumn($blockId, $sourceModule, $preSequence, $targetTable);
+                $response->setResult($emptyFieldArray);
             }
         }catch(Exception $e) {
             $response->setError($e->getCode(), $e->getMessage());
@@ -243,84 +243,61 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
     }
 
     // 削除した項目の場所に余白項目を置き換える
-    private function replaceEmptyColumn($blockId, $sourceModule, $preSequence) {
-        $values = array("fieldid" => "","addToBaseTable" => "","source" => "","fieldname" => "","blockid" => "","fieldType" => "Empty","fieldLabel" => "","fieldLength" => "NaN","decimal" => "","pickListValues" => "","fieldDefaultValue" => "","presence" => "2","mandatory" => "O","quickcreate" => "1","isquickcreatesupported" => "1","summaryfield" => "0","headerfield" => "0","masseditable" => "2","module" => "LayoutEditor","parent" => "Settings","action" => "Field","mode" => "add","sourceModule" => "Faq",);
-        $values['blockid'] = $blockId;
-        $values['sourceModule'] = $sourceModule;
-        $rawvalues = $values;
-        $emptyRequest = new Vtiger_Request($values, $rawvalues);
-
-        // 余白項目を追加
-        $this->add($emptyRequest);
-        $responceData = $this->newEmptyColumnData;
-        $newfieldid = $responceData['id'];
-        $newBlockid = $responceData['blockid'];
-
-        // 全フィールドリストを取得
+    private function replaceEmptyColumn($blockId, $sourceModule, $preSequence, $targetTable)
+    {
         $moduleModel = Settings_LayoutEditor_Module_Model::getInstanceByName($sourceModule);
-        $fieldList = $moduleModel->getFields();
-        if(!is_countable($fieldList)) {
-            return ;
+        $max_fieldid = $moduleModel->getSequenceNumber() + 1;
+        if (empty($max_fieldid)) {
+            global $adb;
+            $max_fieldid = $adb->getUniqueID("vtiger_field");
         }
+        $columnName = 'cf_' . $max_fieldid;
 
-        // 並び順を調査
-        $isMatch = false;
-        for ($i=0; $i < count($fieldList); $i++) {
-            $fieldid = $fieldList[$i]->get('id');
-            $sequence = $fieldList[$i]->get('sequence');
-            $blockid = $fieldList[$i]->get('block')->id;
+        $blockInstance = Vtiger_Block::getInstance($blockId);
 
-            if($newBlockid !== $blockid){
-                continue ;
+        $emptyField = new Vtiger_Field_Model();
+        $emptyField->name = $columnName;
+        $emptyField->label = '';
+        $emptyField->table = $targetTable;
+        $emptyField->uitype = 666;
+        $emptyField->typeofdata = 'V~O';
+        $emptyField->displaytype = 1;
+        $emptyField->defaultvalue = "";
+        $emptyField->sequence = $preSequence;
+        $emptyField->readonly = 1;
+        $emptyField->presence = 2;
+        $emptyField->quickcreate = 1;
+        $emptyField->masseditable = 2;
+        $emptyField->summaryfield = 0;
+        $emptyField->generatedtype = 2;
+
+        $blockInstance->addField($emptyField);
+
+
+        // 追加した余白項目の情報を取得
+        $fieldModel = Settings_LayoutEditor_Field_Model::getInstance($emptyField->getId());
+
+        $fieldInfo = $fieldModel->getFieldInfo();
+        $responseData = array_merge(array('id' => $fieldModel->getId(), 'blockid' => $blockId, 'customField' => $fieldModel->isCustomField()), $fieldInfo);
+
+        $defaultValue = $fieldModel->get('defaultvalue');
+        $responseData['fieldDefaultValueRaw'] = $defaultValue;
+        if (isset($defaultValue)) {
+            if ($defaultValue && $fieldInfo['type'] == 'date') {
+                $defaultValue = DateTimeField::convertToUserFormat($defaultValue);
+            } else if (!$defaultValue) {
+                $defaultValue = $fieldModel->getDisplayValue($defaultValue);
+            } else if (is_array($defaultValue)) {
+                foreach ($defaultValue as $key => $value) {
+                    $defaultValue[$key] = $fieldModel->getDisplayValue($value);
+                }
+                $defaultValue = Zend_Json::encode($defaultValue);
             }
-
-            // 削除した項目より前にある項目のidもしくは重複する並び順を取得
-            if($preSequence > $sequence){
-                $previousId = $fieldid;
-            }else if($preSequence === $sequence){
-                $previousId = $fieldid;
-                $isMatch = true;
-            }
         }
+        $responseData['fieldDefaultValue'] = $defaultValue;
+        $responseData['emptyFieldName'] = $emptyField->getFieldName();
+        $responseData['emptyFieldId'] = $emptyField->getId();
 
-        // フィールドリストの並び替え
-        $updatedFieldsList = array();
-        $isNext = false;
-        $count = count($fieldList);
-        // 置き換える項目の直前までループして項目を挿入する
-        for ($i=0; $i < $count; $i++) {
-            $fieldid = $fieldList[$i]->get('id');
-            if($fieldid === $previousId && $isMatch === false){
-                $isNext = true;
-            }else if($fieldid === $previousId && $isMatch === true || $isNext === true){
-                $fieldid = $newfieldid;
-                $sequence = $preSequence;
-                $blockid = $newBlockid;
-                $updatedFieldsList[$i] = array('fieldid' => $fieldid, 'sequence' => $sequence, 'block' => $blockid);
-                break ;
-            }
-            $fieldid = $fieldList[$i]->get('id');
-            $sequence = $fieldList[$i]->get('sequence');
-            $blockid = $fieldList[$i]->get('block')->id;
-            $updatedFieldsList[$i] = array('fieldid' => $fieldid, 'sequence' => $sequence, 'block' => $blockid);
-            unset($fieldList[$i]);
-        }
-
-        // 残りのフィールドと合わせる
-        if(!is_countable($fieldList)) {
-            return ;
-        }
-        foreach ($fieldList as $key => $value) {
-            $fieldid = $fieldList[$key]->get('id');
-            $sequence = $fieldList[$key]->get('sequence');
-            $blockid = $fieldList[$key]->get('block')->id;
-            array_push($updatedFieldsList,array('fieldid' => $fieldid, 'sequence' => $sequence, 'block' => $blockid));
-        }
-
-        // 並び替えの登録
-        $moduleModel = Vtiger_Module_Model::getInstance($sourceModule);
-        Settings_LayoutEditor_Block_Model::updateFieldSequenceNumber($updatedFieldsList,$moduleModel);
-        $response = new Vtiger_Response();
-        $response->setResult(array('success'=>true));
+        return $responseData;
     }
 }
