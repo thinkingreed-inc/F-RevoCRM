@@ -820,6 +820,16 @@ jQuery.Class("Vtiger_Popup_Js",{
 		});
 	},
 
+	registerSelectAllButton : function(){
+		var popupPageContentsContainer = this.getPopupPageContainer();
+		popupPageContentsContainer.on('click','button.selectAll', function(e){
+			app.helper.showConfirmationBox({'message' : app.vtranslate('JS_LBL_CONFIRMALL')}).then(function(e) {
+				app.event.trigger("post.AddAllRecords.click");
+				app.helper.hidePopup();
+			});
+		});
+	},
+
 	selectAllHandler : function(e){
 		var thisInstance = this;
 		var currentElement = jQuery(e.currentTarget);
@@ -977,6 +987,7 @@ jQuery.Class("Vtiger_Popup_Js",{
 		//for record selection
 		this.registerEventForSelectAllInCurrentPage();
 		this.registerSelectButton();
+		this.registerSelectAllButton();
 		this.registerEventForCheckboxChange();
 	}
 });
