@@ -241,6 +241,9 @@ function generateIcsAttachment($record, $inviteeid) {
     $fp = fopen($ics_filename, "w");
 
 		// TZ OFFSETを設定
+		if(empty($time_zone)) {
+			$time_zone = DateTimeField::getDBTimeZone();
+		}
     $userTz = new DateTime(date('Y/m/d H:i:s', strtotime($stDatetime)), new DateTimeZone($time_zone));
 		$userOffset = $userTz->getOffset() / 3600;
 		$code = ($userOffset < 0) ? "-" : "+";

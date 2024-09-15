@@ -308,6 +308,12 @@ Vtiger_Field_Js('Vtiger_Documentsfolder_Field_Js',{},{
 	 * @return - select element and chosen element
 	 */
 	getUi : function() {
+		// リストの条件によって表示を変える
+		if(this.get('comparatorElementVal') != 'e' && this.get('comparatorElementVal') != 'n') {
+			var html = '<input class="inputElement" type="text" name="'+ this.getName() +'" value="'+ this.getValue() + '" />';
+			return jQuery(html);
+		}
+
 		//added class inlinewidth
 		var html = '<select class="select2 inputElement inlinewidth" name="'+ this.getName() +'" id="field_'+this.getModuleName()+'_'+this.getName()+'">';
 		var pickListValues = this.getPickListValues();

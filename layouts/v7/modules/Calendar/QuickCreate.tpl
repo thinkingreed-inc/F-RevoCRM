@@ -131,7 +131,7 @@
 								</tr>
 								{if $MODULE == 'Events'}
 								<tr>
-									<td class="fieldLabel alignMiddle">{vtranslate('LBL_INVITE_USERS', $MODULE)}</td>
+									<td class="fieldLabel alignMiddle"><label class="muted">{vtranslate('LBL_INVITE_USERS', $MODULE)}</label></td>
 									<td class="fieldValue">
 										<select id="selectedUsers" class="select2 inputElement" multiple name="selectedusers[]">
 											{foreach key=USER_ID item=USER_NAME from=$ACCESSIBLE_USERS}
