@@ -164,7 +164,7 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
 
         try{
             $this->_deleteField($fieldInstance);
-            // 空白項目に置き換える場合
+            // 余白項目に置き換える場合
             if($request->get('isReplaceEmptyColumn') === "true"){
                 $this->replaceEmptyColumn($blockId, $sourceModule, $preSequence);
             }
@@ -242,7 +242,7 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
         $request->validateWriteAccess();
     }
 
-    // 削除した項目の場所に空白項目を置き換える
+    // 削除した項目の場所に余白項目を置き換える
     private function replaceEmptyColumn($blockId, $sourceModule, $preSequence) {
         $values = array("fieldid" => "","addToBaseTable" => "","source" => "","fieldname" => "","blockid" => "","fieldType" => "Empty","fieldLabel" => "","fieldLength" => "NaN","decimal" => "","pickListValues" => "","fieldDefaultValue" => "","presence" => "2","mandatory" => "O","quickcreate" => "1","isquickcreatesupported" => "1","summaryfield" => "0","headerfield" => "0","masseditable" => "2","module" => "LayoutEditor","parent" => "Settings","action" => "Field","mode" => "add","sourceModule" => "Faq",);
         $values['blockid'] = $blockId;
@@ -250,7 +250,7 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
         $rawvalues = $values;
         $emptyRequest = new Vtiger_Request($values, $rawvalues);
 
-        // 空白項目を追加
+        // 余白項目を追加
         $this->add($emptyRequest);
         $responceData = $this->newEmptyColumnData;
         $newfieldid = $responceData['id'];

@@ -140,7 +140,7 @@ class Vtiger_ModuleMeta_Model extends Vtiger_Base_Model {
 			$moduleFields = $this->getAccessibleFields($moduleName);
 			$importableFields = array();
 			foreach($moduleFields as $fieldName => $fieldInstance) {
-				// 空白項目はスキップ
+				// 余白項目はスキップ
 				if($fieldInstance->getUIType() === "666"){
 					continue;
 				}
