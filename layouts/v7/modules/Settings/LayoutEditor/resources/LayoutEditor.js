@@ -1000,6 +1000,12 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 					form.find('input[type="checkbox"][name="headerfield"]').addClass('cursorPointerNotAllowed').attr('readonly', 'readonly');
 					form.find('input[type="checkbox"][name="masseditable"]').addClass('cursorPointerNotAllowed').attr('readonly', 'readonly');
 					form.find('input[type="checkbox"][name="masseditable"]').removeAttr('checked', 'checked');
+
+					// 入力値をクリア
+					form.find('input[name="fieldLabel"]').val("");
+					form.find('input[name="fieldLength"]').val("");
+					form.find('input[name="decimal"]').val("");
+					form.find('input[name="fieldDefaultValue"]').val("");
 				}
 
 				var defaultValueUiContainer = defaultValueUi.closest('.defaultValueUi');
