@@ -24,4 +24,8 @@ if (defined('VTIGER_UPGRADE')) {
 
     // 'vtiger_activity' テーブルに 'smcreatorid' フィールドを追加
     include_once 'setup/scripts/78_Add_smcreatorid.php';
+
+    //F-RevoCRM REST APIにて、足りていない引数を追加
+    include_once 'setup/scripts/78_Update_RESTAPI.php';
+
 }
