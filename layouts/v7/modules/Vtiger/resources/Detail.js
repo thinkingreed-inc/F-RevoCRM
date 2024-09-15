@@ -73,7 +73,7 @@ Vtiger.Class("Vtiger_Detail_Js",{
 			function(error, err) {
 			});
 		} else {
-			var message = app.vtranslate('JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE');
+			var message = app.vtranslate('JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE').replace(/\n/g, "<br>");
 			app.helper.showConfirmationBox({'message' : message}).then(function(data) {
 				thisInstance.deleteActivityRelation(postData);
 			},

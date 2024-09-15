@@ -1532,7 +1532,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 			var table = currentTarget.closest('div.editFieldsTable');
 			var blockId = table.data('blockId');
 
-			var message = app.vtranslate('JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE');
+			var message = app.vtranslate('JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE').replace(/\n/g, "<br>");
 			app.helper.showConfirmationBox({'message': message}).then(
 				function (data) {
 					thisInstance.deleteCustomBlock(blockId);
@@ -1587,7 +1587,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		contents.find('a.deleteCustomField').click(function (e) {
 			var currentTarget = jQuery(e.currentTarget);
 			var fieldId = currentTarget.data('fieldId');
-			var message = app.vtranslate('JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE');
+			var message = app.vtranslate('JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE').replace(/\n/g, "<br>");
 			var fieldDataType = currentTarget.data('fieldDataType');
 			var empty = fieldDataType == "empty" ? true : false;
 			if (currentTarget.data('oneOneRelationship') == "1") {
