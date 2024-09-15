@@ -1588,7 +1588,8 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 			var currentTarget = jQuery(e.currentTarget);
 			var fieldId = currentTarget.data('fieldId');
 			var message = app.vtranslate('JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE');
-			var empty = true;
+			var fieldDataType = currentTarget.data('fieldDataType');
+			var empty = fieldDataType == "empty" ? true : false;
 			if (currentTarget.data('oneOneRelationship') == "1") {
 				message = app.vtranslate('JS_ONE_ONE_RELATION_FIELD_DELETE', currentTarget.data('currentFieldLabel'), currentTarget.data('currentModuleLabel'),
 						currentTarget.data('relationFieldLabel'), currentTarget.data('relationModuleLabel'));
@@ -1625,7 +1626,6 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 	 * Function to delete the custom field
 	 */
 	deleteCustomField: function (fieldId) {
-		debugger;
 		var thisInstance = this;
 		var aDeferred = jQuery.Deferred();
 		app.helper.showProgress();
