@@ -596,10 +596,10 @@
     // Vtiger Customization
     var isEmpty = $(options.empty)[0];
     if(options.htmlSupportEnable) {
-      if(isEmpty){
+      if(!isEmpty){
         body.find(".bootbox-body").html(options.message + "<br><br><input type='checkbox' /><label>&nbsp;&nbsp;" + app.vtranslate('LBL_REPLACE_EMPTY_COLUMN') +"</label>");
       }else{
-        body.find(".bootbox-body").html(options.message + emptyColumn);
+        body.find(".bootbox-body").html(options.message);
       }
     } else {
         body.find(".bootbox-body").text(options.message);
