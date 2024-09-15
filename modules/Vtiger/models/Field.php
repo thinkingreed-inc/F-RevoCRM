@@ -464,7 +464,7 @@ class Vtiger_Field_Model extends Vtiger_Field {
 		}
 
 		if($this->getFieldDataType() == 'empty'){
-			// 空白項目の場合、フィルターに表示しない
+			// 余白項目の場合、フィルターに表示しない
 			return false;
 		}
 

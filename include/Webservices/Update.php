@@ -88,13 +88,13 @@
 			}
 		}
 
-		// 空白項目のfieldNameを取得
+		// 余白項目のfieldNameを取得
 		$emptyFields = $meta->getEmptyFields();
 
 		// fieldNameををキーにした配列に変換
 		$emptyFieldsFlipped = array_flip($emptyFields);
 
-		// 空白項目を除外する
+		// 余白項目を除外する
 		$element = array_diff_key($element, $emptyFieldsFlipped);
 
 		$entity = $handler->update($element);

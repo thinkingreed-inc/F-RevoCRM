@@ -262,7 +262,7 @@ class VtigerActorOperation extends WebserviceEntityOperation {
 			$moduleFields = $this->meta->getModuleFields();
 			foreach ($moduleFields as $fieldName=>$webserviceField) {
 				
-				// 空白項目を除外する。
+				// 余白項目を除外する。
 				if ($webserviceField->getFieldDataType() === "empty") {
 					continue;
 				}
