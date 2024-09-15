@@ -257,6 +257,11 @@ class VtigerModuleOperation extends WebserviceEntityOperation {
 			if(((int)$webserviceField->getPresence()) == 1) {
 				continue;
 			}
+
+			// 空白項目を除外する。
+			if ($webserviceField->getFieldDataType() === "empty") {
+				continue;
+			}
 			array_push($fields,$this->getDescribeFieldArray($webserviceField));
 		}
 		array_push($fields,$this->getIdField($this->meta->getObectIndexColumn()));
