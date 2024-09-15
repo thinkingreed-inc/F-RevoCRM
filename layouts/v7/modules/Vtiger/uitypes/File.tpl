@@ -20,6 +20,7 @@
 					{if php7_count($FIELD_INFO['validator'])} 
 						data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
 					{/if}
+					{if $FIELD_MODEL->isReadonlyEditView() eq true} disabled style='background-color:#d3d3d3;opacity:0.8;'{/if}
 					/>
 		</div>&nbsp;&nbsp;
 		<span class="uploadFileSizeLimit fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{vtranslate('LBL_MAX_UPLOAD_SIZE',$MODULE)} {$MAX_UPLOAD_LIMIT_MB} {vtranslate('MB',$MODULE)}">
