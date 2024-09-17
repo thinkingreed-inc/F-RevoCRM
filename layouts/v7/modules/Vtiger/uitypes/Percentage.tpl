@@ -21,6 +21,7 @@
 			{if php7_count($FIELD_INFO['validator'])}
 				data-specific-rules="{ZEND_JSON::encode($FIELD_INFO["validator"])}"
 			{/if}
+			{if $FIELD_MODEL->isReadonlyEditView() eq true} disabled style='background-color:#d3d3d3;opacity:0.8;'{/if}
 			/>
 		<span class="input-group-addon">%</span>
 	</div>

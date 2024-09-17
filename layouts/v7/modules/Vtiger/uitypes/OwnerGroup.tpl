@@ -22,7 +22,9 @@
 		{if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if}
 		{if php7_count($FIELD_INFO['validator'])} 
 			data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
-		{/if}>
+		{/if}
+		{if $FIELD_MODEL->isReadonlyEditView() eq true} disabled style='background-color:#d3d3d3;opacity:0.8;'{/if}
+		>
 		<option value="">{vtranslate('LBL_SELECT_OPTION','Vtiger')}</option>
 		{foreach key=OWNER_ID item=OWNER_NAME from=$ALL_ACTIVEGROUP_LIST}
 			<option value="{$OWNER_ID}" data-picklistvalue='{$OWNER_NAME}' {if $VIEW_SOURCE neq 'MASSEDIT' && $FIELD_MODEL->get('fieldvalue') eq $OWNER_ID} selected {/if}

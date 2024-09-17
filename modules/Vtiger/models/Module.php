@@ -2067,4 +2067,20 @@ class Vtiger_Module_Model extends Vtiger_Module {
 		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
 		return $moduleModel->getModuleIcon();
 	}
+
+	public function isEditReadonlyDisplay() {
+		return $this->editReadonlyDisplay;
+	}
+
+	public function updateEditreadonlydisplay($editReadonlyDisplay) {
+		global $adb;
+
+		if ($editReadonlyDisplay == 1) {
+			$editReadonlyDisplay = true;
+		} else {
+			$editReadonlyDisplay = false;
+		}
+
+		$adb->pquery("UPDATE vtiger_tab SET editreadonlydisplay = ? WHERE tabid = ?", array($editReadonlyDisplay, $this->getId()));
+	}
 }

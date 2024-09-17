@@ -24,6 +24,7 @@
     {if php7_count($FIELD_INFO['validator'])}
         data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
     {/if}
+    {if $FIELD_MODEL->isReadonlyEditView() eq true} disabled style='background-color:#d3d3d3;opacity:0.8;'{/if}
     />
 </div>
 {else if ($FIELD_MODEL->get('uitype') eq '72') && ($FIELD_NAME eq 'unit_price')}
@@ -36,6 +37,7 @@
             {if php7_count($FIELD_INFO['validator'])}
                 data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
             {/if}
+        {if $FIELD_MODEL->isReadonlyEditView() eq true} disabled style='background-color:#d3d3d3;opacity:0.8;'{/if}
         />
           <input type="hidden" name="base_currency" value="{$BASE_CURRENCY_NAME}">
           <input type="hidden" name="cur_{$BASE_CURRENCY_ID}_check" value="on">
@@ -56,6 +58,7 @@
         {if php7_count($FIELD_INFO['validator'])}
             data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
         {/if}
+    {if $FIELD_MODEL->isReadonlyEditView() eq true} disabled style='background-color:#d3d3d3;opacity:0.8;'{/if}
           />
 </div>
 {/if}

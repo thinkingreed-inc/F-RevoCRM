@@ -20,7 +20,7 @@
 {assign var="QUICKCREATE_RESTRICTED_MODULES" value=Vtiger_Functions::getNonQuickCreateSupportedModules()}
 <div class="referencefield-wrapper {if $FIELD_VALUE neq 0} selected {/if}">
     {if {$REFERENCE_LIST_COUNT} eq 1}
-        <input name="popupReferenceModule" type="hidden" value="{$REFERENCE_LIST[0]}"/>
+        <input name="popupReferenceModule" type="hidden" value="{$REFERENCE_LIST[0]}" {if $FIELD_MODEL->isReadonlyEditView() eq true} disabled style='background-color:#d3d3d3;opacity:0.8;'{/if}/>
     {/if}
     {if {$REFERENCE_LIST_COUNT} gt 1}
         {assign var="DISPLAYID" value=$FIELD_MODEL->get('fieldvalue')}
@@ -29,9 +29,9 @@
             {assign var="REFERENCED_MODULE_NAME" value=$REFERENCED_MODULE_STRUCT->get('name')}
         {/if}
         {if in_array($REFERENCED_MODULE_NAME, $REFERENCE_LIST)}
-            <input name="popupReferenceModule" type="hidden" value="{$REFERENCED_MODULE_NAME}" />
+            <input name="popupReferenceModule" type="hidden" value="{$REFERENCED_MODULE_NAME}" {if $FIELD_MODEL->isReadonlyEditView() eq true} disabled style='background-color:#d3d3d3;opacity:0.8;'{/if}/>
         {else}
-            <input name="popupReferenceModule" type="hidden" value="{$REFERENCE_LIST[0]}" />
+            <input name="popupReferenceModule" type="hidden" value="{$REFERENCE_LIST[0]}" {if $FIELD_MODEL->isReadonlyEditView() eq true} disabled style='background-color:#d3d3d3;opacity:0.8;'{/if}/>
         {/if}
     {/if}
     {assign var="displayId" value=$FIELD_VALUE}
@@ -48,13 +48,14 @@
             {if php7_count($FIELD_INFO['validator'])} 
                 data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
             {/if}
+            {if $FIELD_MODEL->isReadonlyEditView() eq true} disabled style='background-color:#d3d3d3;opacity:0.8;'{/if}
             />
-        <a href="#" class="clearReferenceSelection {if empty($FIELD_VALUE)}hide{/if}"> x </a>
+        <a href="#" class="clearReferenceSelection {if empty($FIELD_VALUE)}hide{/if}" {if $FIELD_MODEL->isReadonlyEditView() eq true} disabled  style="display:none;" {/if}> x </a>
             <span class="input-group-addon relatedPopup cursorPointer" title="{vtranslate('LBL_SELECT', $MODULE)}">
                 <i id="{$MODULE}_editView_fieldName_{$FIELD_NAME}_select" class="fa fa-search"></i>
             </span>
         {if (($REQ.view eq 'Edit') or ($MODULE_NAME eq 'Webforms')) && !in_array($REFERENCE_LIST[0],$QUICKCREATE_RESTRICTED_MODULES)}
-            <span class="input-group-addon createReferenceRecord cursorPointer clearfix" title="{vtranslate('LBL_CREATE', $MODULE)}">
+            <span class="input-group-addon createReferenceRecord cursorPointer clearfix" title="{vtranslate('LBL_CREATE', $MODULE)}" {if $FIELD_MODEL->isReadonlyEditView() eq true}  style="display:none;"  {/if}>
             <i id="{$MODULE}_editView_fieldName_{$FIELD_NAME}_create" class="fa fa-plus"></i>
         </span>
         {/if}
