@@ -53,6 +53,7 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
 				}
 			}
 			$responseData['fieldDefaultValue'] = $defaultValue;
+            $responseData['sequence'] = $fieldModel->get('sequence');
 
             $response->setResult($responseData);
         }catch(Exception $e) {
@@ -155,8 +156,18 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
             return;
         }
 
+        $block = $fieldInstance->get('block');
+        $blockId = $block->id;
+        $sourceModule = $block->module->name;
+        $preSequence = $fieldInstance->get('sequence');
+        $targetTable = $fieldInstance->get('table');
         try{
             $this->_deleteField($fieldInstance);
+            // 余白項目に置き換える場合
+            if($request->get('isReplaceEmptyColumn') === "true"){
+                $emptyFieldArray = $this->replaceEmptyColumn($blockId, $sourceModule, $preSequence, $targetTable);
+                $response->setResult($emptyFieldArray);
+            }
         }catch(Exception $e) {
             $response->setError($e->getCode(), $e->getMessage());
         }
@@ -229,5 +240,64 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
 
     public function validateRequest(Vtiger_Request $request) {
         $request->validateWriteAccess();
+    }
+
+    // 削除した項目の場所に余白項目を置き換える
+    private function replaceEmptyColumn($blockId, $sourceModule, $preSequence, $targetTable)
+    {
+        $moduleModel = Settings_LayoutEditor_Module_Model::getInstanceByName($sourceModule);
+        $max_fieldid = $moduleModel->getSequenceNumber() + 1;
+        if (empty($max_fieldid)) {
+            global $adb;
+            $max_fieldid = $adb->getUniqueID("vtiger_field");
+        }
+        $columnName = 'cf_' . $max_fieldid;
+
+        $blockInstance = Vtiger_Block::getInstance($blockId);
+
+        $emptyField = new Vtiger_Field_Model();
+        $emptyField->name = $columnName;
+        $emptyField->label = '';
+        $emptyField->table = $targetTable;
+        $emptyField->uitype = 666;
+        $emptyField->typeofdata = 'V~O';
+        $emptyField->displaytype = 1;
+        $emptyField->defaultvalue = "";
+        $emptyField->sequence = $preSequence;
+        $emptyField->readonly = 1;
+        $emptyField->presence = 2;
+        $emptyField->quickcreate = 1;
+        $emptyField->masseditable = 2;
+        $emptyField->summaryfield = 0;
+        $emptyField->generatedtype = 2;
+
+        $blockInstance->addField($emptyField);
+
+
+        // 追加した余白項目の情報を取得
+        $fieldModel = Settings_LayoutEditor_Field_Model::getInstance($emptyField->getId());
+
+        $fieldInfo = $fieldModel->getFieldInfo();
+        $responseData = array_merge(array('id' => $fieldModel->getId(), 'blockid' => $blockId, 'customField' => $fieldModel->isCustomField()), $fieldInfo);
+
+        $defaultValue = $fieldModel->get('defaultvalue');
+        $responseData['fieldDefaultValueRaw'] = $defaultValue;
+        if (isset($defaultValue)) {
+            if ($defaultValue && $fieldInfo['type'] == 'date') {
+                $defaultValue = DateTimeField::convertToUserFormat($defaultValue);
+            } else if (!$defaultValue) {
+                $defaultValue = $fieldModel->getDisplayValue($defaultValue);
+            } else if (is_array($defaultValue)) {
+                foreach ($defaultValue as $key => $value) {
+                    $defaultValue[$key] = $fieldModel->getDisplayValue($value);
+                }
+                $defaultValue = Zend_Json::encode($defaultValue);
+            }
+        }
+        $responseData['fieldDefaultValue'] = $defaultValue;
+        $responseData['emptyFieldName'] = $emptyField->getFieldName();
+        $responseData['emptyFieldId'] = $emptyField->getId();
+
+        return $responseData;
     }
 }

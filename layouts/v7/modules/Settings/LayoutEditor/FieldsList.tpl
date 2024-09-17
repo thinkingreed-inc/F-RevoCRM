@@ -233,7 +233,8 @@
                                   data-relation-module-label="{vtranslate($RELATION_MODEL->getRelationModuleName(),$RELATION_MODEL->getRelationModuleName())}"
                                   data-current-module-label="{vtranslate($RELATION_MODEL->getParentModuleName(),$RELATION_MODEL->getParentModuleName())}"
                                   data-current-tab-label="{vtranslate($RELATION_MODEL->get('label'), $RELATION_MODEL->getRelationModuleName())}"
-                                {/if} >
+                                {/if} 
+								data-field-data-type="{$FIELD_MODEL->getFieldDataType()}">
                                 <i class="fa fa-trash" title="{vtranslate('LBL_DELETE', $QUALIFIED_MODULE)}"></i>
                               </a>
                             {/if}

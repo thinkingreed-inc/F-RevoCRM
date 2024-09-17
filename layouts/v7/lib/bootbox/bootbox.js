@@ -32,7 +32,10 @@
       "<div class='bootbox modal' tabindex='-1' role='dialog'>" +
         "<div class='modal-dialog'>" +
           "<div class='modal-content'>" +
-            "<div class='modal-body'><div class='bootbox-body'></div></div>" +
+            "<div class='modal-body'><div class='bootbox-body'>" +
+            "<div class='empty-body'></div>" +
+            "</div>" +
+          "</div>" +
           "</div>" +
         "</div>" +
       "</div>",
@@ -590,10 +593,14 @@
       buttonStr += "<button data-bb-handler='" + key + "' type='button' class='btn " + button.className + "'>" + button.label + "</button>";
       callbacks[key] = button.callback;
     });
-    
-     // Vtiger Customization
+    // Vtiger Customization
+    var isEmpty = $(options.empty)[0];
     if(options.htmlSupportEnable) {
+      if(!isEmpty){
+        body.find(".bootbox-body").html(options.message + "<br><br><input type='checkbox' /><label>&nbsp;&nbsp;" + app.vtranslate('LBL_REPLACE_EMPTY_COLUMN') +"</label>");
+      }else{
         body.find(".bootbox-body").html(options.message);
+      }
     } else {
         body.find(".bootbox-body").text(options.message);
     }

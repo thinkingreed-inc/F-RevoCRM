@@ -1840,6 +1840,7 @@ $jsLanguageStrings = array(
 	'JS_EXCEEDS_MAX_UPLOAD_SIZE' => 'アップロードサイズの最大を超えました',
 	'JS_FUTURE_EVENT_CANNOT_BE_HELD' => '未来の活動は完了にできません',
 	'LBL_WARNING' => '注意',
+	'LBL_REPLACE_EMPTY_COLUMN' => '削除する項目と同じ場所に余白項目を追加しますか？',
 	'DELETE_USER_PERMANENT_WARNING' => 'ユーザーを完全に削除すると、コメントや履歴を含むすべてのレコードが新しいユーザーに変更されます。',
 	'JS_DECIMAL_SEPARATOR_AND_GROUPING_SEPARATOR_CANT_BE_SAME' => '小数点区切りとグループ区切りに同じものは選択できません。',
 	'JS_FUTURE_EVENT_CANNOT_BE_HELD' => '未来の活動は完了にできません',

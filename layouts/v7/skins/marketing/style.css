@@ -892,6 +892,10 @@ a {
   border: 1px solid #cccccc;
   border-width: thin;
 }
+.emptyField{
+  border: none;
+  cursor: default;
+}
 input[type="text"].inputElement,
 input[type="password"].inputElement {
   padding: 3px 8px;
@@ -2444,7 +2448,7 @@ th {
   max-width: 325px;
 }
 
-input[type="text"]:read-only {
+input[type="text"]:read-only:not(.emptyField) {
   cursor: not-allowed;
   color: #b3b3b3;
   background-color: #eeeeee;
