@@ -1667,6 +1667,10 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				popOverHTML += eventObj.description;
 				popOverHTML += '<br>';
 			}
+			if(event.creator && event.creator != '') {
+				popOverHTML += '  ' + event.creator_field_label + ': ' + event.creator;
+				popOverHTML += '<br>';
+			}
 
 			popOverHTML += '</span>';
 
