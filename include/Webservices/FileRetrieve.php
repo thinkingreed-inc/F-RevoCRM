@@ -8,11 +8,11 @@
  * All Rights Reserved.
  *************************************************************************************/
 
-function vtws_file_retrieve($file_id, $user) {
+function vtws_file_retrieve($id, $user) {
 
     global $log, $adb;
 
-    $idComponents = vtws_getIdComponents($file_id);
+    $idComponents = vtws_getIdComponents($id);
     $attachmentId = $idComponents[1];
     
     $id = vtws_getAttachmentRecordId($attachmentId);

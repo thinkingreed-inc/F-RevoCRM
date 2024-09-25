@@ -306,7 +306,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			$queryGenerator = new QueryGenerator($moduleModel->get('name'), $currentUser);
 		// }
 
-		$queryGenerator->setFields(array('subject', 'eventstatus', 'visibility','date_start','time_start','due_date','time_end','assigned_user_id','id','activitytype','recurringtype','parent_id','description', 'location'));
+		$queryGenerator->setFields(array('subject', 'eventstatus', 'visibility','date_start','time_start','due_date','time_end','assigned_user_id','id','activitytype','recurringtype','parent_id','description', 'location', 'creator'));
 		$query = $queryGenerator->getQuery();
 
 		$query.= " AND vtiger_activity.activitytype NOT IN ('Emails','Task') AND ";
@@ -332,9 +332,14 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 		$params= array_merge($params,$userIds);
 		$queryResult = $db->pquery($query, $params);
 
+		$creatorfield = Vtiger_Field_Model::getInstance('creator', $moduleModel);
+
 		while($record = $db->fetchByAssoc($queryResult)){
-			if(!array_key_exists($record['smonwerid'], $this->cacheUser)) {
+			if(!array_key_exists($record['smownerid'], $this->cacheUser)) {
 				$this->cacheUser[$record['smownerid']] = Vtiger_functions::getUserRecordLabel($record['smownerid']);
+			}
+			if(!array_key_exists($record['smcreatorid'], $this->cacheUser)) {
+				$this->cacheUser[$record['smcreatorid']] = Vtiger_functions::getUserRecordLabel($record['smcreatorid']);
 			}
 			$item = array();
 			$crmid = $record['activityid'];
@@ -410,6 +415,8 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			}
 
 			$item['assigned_user_id'] = $this->cacheUser[$record['smownerid']];
+			$item['creator'] = $this->cacheUser[$record['smcreatorid']];
+			$item['creator_field_label'] = $creatorfield->get('label');
 			if(!empty($record['crmid'])) {
 				if(!array_key_exists($record['crmid'], $this->cacheParent)) {
 					$this->cacheParent[$record['crmid']] = Vtiger_functions::getCRMRecordLabel($record['crmid']);
