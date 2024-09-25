@@ -149,11 +149,12 @@ class Leads_Module_Model extends Vtiger_Module_Model {
         }
 
 		$result = $db->pquery('SELECT COUNT(*) as count, CASE WHEN vtiger_leadstatus.leadstatus IS NULL OR vtiger_leadstatus.leadstatus = "" THEN "" ELSE 
-						vtiger_leadstatus.leadstatus END AS leadstatusvalue FROM vtiger_leaddetails 
-						INNER JOIN vtiger_crmentity ON vtiger_leaddetails.leadid = vtiger_crmentity.crmid
-						AND deleted=0 AND converted = 0 '.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()). $ownerSql .' '.$dateFilterSql.
+						vtiger_leadstatus.leadstatus END AS leadstatusvalue FROM vtiger_leaddetails'
+						.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()). $ownerSql .' '.$dateFilterSql.
 						'INNER JOIN vtiger_leadstatus ON vtiger_leaddetails.leadstatus = vtiger_leadstatus.leadstatus 
-                        WHERE vtiger_leaddetails.leadstatus IN ('.generateQuestionMarks($picklistvaluesmap).') 
+                        WHERE vtiger_leaddetails.leadstatus IN ('.generateQuestionMarks($picklistvaluesmap).')
+						AND vtiger_leaddetails.deleted = 0 
+						AND vtiger_leaddetails.converted = 0 
 						GROUP BY leadstatusvalue ORDER BY vtiger_leadstatus.sortorderid', $params);
 
 		$response = array();
@@ -198,10 +199,12 @@ class Leads_Module_Model extends Vtiger_Module_Model {
         
 		$result = $db->pquery('SELECT COUNT(*) as count, CASE WHEN vtiger_leaddetails.leadsource IS NULL OR vtiger_leaddetails.leadsource = "" THEN "" 
 						ELSE vtiger_leaddetails.leadsource END AS leadsourcevalue FROM vtiger_leaddetails 
-						INNER JOIN vtiger_crmentity ON vtiger_leaddetails.leadid = vtiger_crmentity.crmid
-						AND deleted=0 AND converted = 0 '.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()). $ownerSql .' '.$dateFilterSql.
+						INNER JOIN vtiger_crmentity ON vtiger_leaddetails.leadid = vtiger_crmentity.crmid'
+						.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()). $ownerSql .' '.$dateFilterSql.
 						'INNER JOIN vtiger_leadsource ON vtiger_leaddetails.leadsource = vtiger_leadsource.leadsource 
                         WHERE vtiger_leaddetails.leadsource IN ('.generateQuestionMarks($picklistvaluesmap).') 
+						AND vtiger_leaddetails.deleted = 0 
+						AND vtiger_leaddetails.converted = 0 
 						GROUP BY leadsourcevalue ORDER BY vtiger_leadsource.sortorderid', $params);
 		
 		$response = array();
@@ -245,10 +248,12 @@ class Leads_Module_Model extends Vtiger_Module_Model {
 		
 		$result = $db->pquery('SELECT COUNT(*) as count, CASE WHEN vtiger_leaddetails.industry IS NULL OR vtiger_leaddetails.industry = "" THEN "" 
 						ELSE vtiger_leaddetails.industry END AS industryvalue FROM vtiger_leaddetails 
-						INNER JOIN vtiger_crmentity ON vtiger_leaddetails.leadid = vtiger_crmentity.crmid
-						AND deleted=0 AND converted = 0 '.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()). $ownerSql .' '.$dateFilterSql.'
+						INNER JOIN vtiger_crmentity ON vtiger_leaddetails.leadid = vtiger_crmentity.crmid'
+						.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()). $ownerSql .' '.$dateFilterSql.'
 						INNER JOIN vtiger_industry ON vtiger_leaddetails.industry = vtiger_industry.industry 
                         WHERE vtiger_leaddetails.industry IN ('.generateQuestionMarks($picklistvaluesmap).') 
+						AND vtiger_leaddetails.deleted = 0 
+						AND vtiger_leaddetails.converted = 0 
 						GROUP BY industryvalue ORDER BY vtiger_industry.sortorderid', $params);
 		
 		$response = array();
