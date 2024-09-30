@@ -71,7 +71,7 @@ class Leads_SaveConvertLead_View extends Vtiger_View_Controller {
 			}
 		}
 		try {
-			$result = vtws_convertlead($entityValues, $currentUser);
+			$result = vtws_convertlead($entityValues, $recordId, null, null, null, null, $currentUser);
 		} catch(Exception $e) {
 			$this->showError($request, $e);
 			exit;
