@@ -2888,9 +2888,11 @@ Vtiger.Class("Vtiger_List_Js", {
 			});
 		});
 
-		$table.resizableColumns({
-			store:store
-		});
+		if(typeof store !== 'undefined') {
+			$table.resizableColumns({
+				store:store
+			});
+		}
 
 		tableContainer.perfectScrollbar({
 			'wheelPropagation': true
@@ -2934,9 +2936,12 @@ Vtiger.Class("Vtiger_List_Js", {
 				leftPos += $column.width();//どちらかゼロ
 			}
 		});
-		$table.resizableColumns('refreshContainerSize');
-		$table.resizableColumns('adjustDummyColumnWidth');
-		$table.resizableColumns('syncHandleWidths');
+
+		if(typeof store !== 'undefined') {
+			$table.resizableColumns('refreshContainerSize');
+			$table.resizableColumns('adjustDummyColumnWidth');
+			$table.resizableColumns('syncHandleWidths');
+		}
 
 		// $table.floatThead({
 		// 	scrollContainer: function ($table) {
