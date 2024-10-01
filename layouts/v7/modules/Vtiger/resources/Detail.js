@@ -3215,6 +3215,16 @@ Vtiger.Class("Vtiger_Detail_Js",{
 				});
 			}
 		});
+		
+		app.event.on("post.AddAllRecords.click", function() {
+			var relatedController = self.getRelatedController();
+			if (relatedController) {
+				relatedController.addRelationsForAllRecords().then(function() {
+					relatedController.loadRelatedList();
+				});
+			}
+		});
+		
 		this.registerBlockAnimationEvent();
 		this.registerBlockStatusCheckOnLoad();
 		this.registerClearReferenceSelectionEvent();
