@@ -111,10 +111,11 @@ class Vtiger_TagCloud_Action extends Vtiger_Mass_Action {
 		}
 
 		$result = array();
+		$invalidTagName = array();
 		foreach($newTags as $tagName) {
 			if(empty($tagName)) continue;
-			if(!self::checkTagExistence(array('tagId' => '', 'tagName' => $tagName, 'visibility' => ''))) {
-				$result['successfullSaveMessage'] = 'JS_TAG_SAVED_EXCLUDING_DUPLICATES';
+			if(!self::checkTagExistence(array('tagName' => $tagName))) {
+				$invalidTagName[] = $tagName;
 				continue;
 			}
 			$tagModel = new Vtiger_Tag_Model();
@@ -125,6 +126,14 @@ class Vtiger_TagCloud_Action extends Vtiger_Mass_Action {
 			$result['new'][$tagId] = array('name'=> decode_html($tagName), 'type' => $newTagType);
 		}
 		$existingTags = array_unique($existingTags);
+
+		if(!empty($invalidTagName)){
+			if(count($invalidTagName) != count($newTags)){ // 一部のタグ名が無効
+				$result['saveMessage'] = vtranslate('SAVED_EXCLUDING_INVALID_TAG', $module) . ' ' . implode(',', $invalidTagName);
+			}else{ // 全てのタグ名が無効
+				$result['saveMessage'] = vtranslate('INVALID_TAG_EXISTS', $module) . ' ' . implode(',', $invalidTagName);
+			}
+		}
 
 		foreach($recordIds as $recordId) {
 			if(!empty($recordId)){
@@ -229,10 +238,10 @@ class Vtiger_TagCloud_Action extends Vtiger_Mass_Action {
 		}
 
 		$tagName = $TagValue['tagName'];
-		$tagId = $TagValue['tagId'];
+		$tagId = isset($TagValue['tagId']) ? $TagValue['tagId'] : '';
 		$previousVisibility = '';
 		$OtherTagsWithSameName = array_filter($DBTagsValue, function($item) use ($tagName, $tagId, &$previousVisibility) {
-			if($item['id'] == $tagId){
+			if($tagId && $item['id'] == $tagId){
 				$previousVisibility = $item['visibility'];
 				return false;
 			}
