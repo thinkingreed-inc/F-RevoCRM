@@ -180,7 +180,11 @@ Settings_Vtiger_List_Js('Settings_Tags_List_Js',{
 				if(err === null) {
                     app.helper.hideModal();
 					
-                    var successfullSaveMessage = app.vtranslate('JS_TAG_SAVED_SUCCESSFULLY');
+                    if(data['successfullSaveMessage']){
+                        var successfullSaveMessage = app.vtranslate(data['successfullSaveMessage']);
+                    }else{
+                        var successfullSaveMessage = app.vtranslate('JS_TAG_SAVED_SUCCESSFULLY');
+                    }
                     app.helper.showSuccessNotification({'message':successfullSaveMessage});
 					thisInstance.loadListViewRecords();
 				}else {

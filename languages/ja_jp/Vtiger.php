@@ -1592,6 +1592,7 @@ $jsLanguageStrings = array(
 	'JS_PLEASE_ENTER_VALID_VALUE' => '有効な値を入れてください',
 	'JS_PLEASE_ENTER_VALID_TAG_NAME' => '有効なタグ名を入れてください',
 	'JS_TAG_SAVED_SUCCESSFULLY' => 'タグを保存しました',
+	'JS_TAG_SAVED_EXCLUDING_DUPLICATES' => '重複を除いてタグを保存しました',
 	'JS_PLEASE_ENTER_VALID_EMAIL_ADDRESS' => '有効なメールアドレスを入力してください',
 	'JS_CONTAINS_ILLEGAL_CHARACTERS' => '不正な文字が含まれています',
 	'JS_PHONE_NUMBER_LENGTH_EXCEEDED' => '電話番号の長さが制限を超えています',

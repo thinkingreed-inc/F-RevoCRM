@@ -1408,6 +1408,7 @@ $jsLanguageStrings = array(
 	'JS_PLEASE_ENTER_VALID_VALUE' => 'Please enter a valid value',
 	'JS_PLEASE_ENTER_VALID_TAG_NAME' => 'Please enter valid tag name',
 	'JS_TAG_SAVED_SUCCESSFULLY' => 'Tag Saved Successfully',
+	'JS_TAG_SAVED_EXCLUDING_DUPLICATES' => 'Tag Saved Excluding Duplicates',
 	'JS_PLEASE_ENTER_VALID_EMAIL_ADDRESS' => 'Please enter a valid email address',
 	'JS_CONTAINS_ILLEGAL_CHARACTERS' => 'Contains illegal characters',
 	'JS_PHONE_NUMBER_LENGTH_EXCEEDED' => 'Phone number length exceeded limit',

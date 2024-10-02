@@ -113,10 +113,15 @@ class Vtiger_TagCloud_Action extends Vtiger_Mass_Action {
 		$result = array();
 		foreach($newTags as $tagName) {
 			if(empty($tagName)) continue;
+			if(!self::checkTagExistence(array('tagId' => '', 'tagName' => $tagName, 'visibility' => ''))) {
+				$result['successfullSaveMessage'] = 'JS_TAG_SAVED_EXCLUDING_DUPLICATES';
+				continue;
+			}
 			$tagModel = new Vtiger_Tag_Model();
 			$tagModel->set('tag', $tagName)->setType($newTagType);
 			$tagId = $tagModel->create();
 			array_push($existingTags, $tagId);
+			self::updateCachedDBTags(array('tagId' => $tagId, 'tagName' => $tagName, 'visibility' => $newTagType, 'owner' => $userId));
 			$result['new'][$tagId] = array('name'=> decode_html($tagName), 'type' => $newTagType);
 		}
 		$existingTags = array_unique($existingTags);
@@ -152,8 +157,7 @@ class Vtiger_TagCloud_Action extends Vtiger_Mass_Action {
 		$response = new Vtiger_Response();
 		try{
 			$tagModel = Vtiger_Tag_Model::getInstanceById($tagId);
-			$otherTagModelWithSameName = Vtiger_Tag_Model::getInstanceByName($tagName, $currentUser->getId(), $tagId);
-			if($otherTagModelWithSameName !== false) {
+			if(!self::checkTagExistence(array('tagId' => $tagId, 'tagName' => $tagName, 'visibility' => $visibility))) {
 				throw new Exception(vtranslate('LBL_SAME_TAG_EXISTS', $module, $tagName));
 			}
 			if($tagModel->getType() == Vtiger_Tag_Model::PUBLIC_TYPE && $visibility == Vtiger_Tag_Model::PRIVATE_TYPE) {
@@ -196,5 +200,77 @@ class Vtiger_TagCloud_Action extends Vtiger_Mass_Action {
 
 	public function validateRequest(Vtiger_Request $request) {
 		$request->validateWriteAccess();
+	}
+
+	/*
+	新規作成・再編集・インポート時の確認チャート(TRUE: 作成許可)
+	1. vtiger_freetagsに同名のタグがない -> TRUE
+	2. vtiger_freetagsに同名のタグがある -> 同名タグがpublicである  -> FALSE※
+	3.                　　　　　　　　　 -> 同名タグがprivateである -> ownerが自身 → FALSE
+	4.                　　　　　　　　　 -> 　　　　　       　　　 -> ownerが自身でない → TRUE
+	※ 再編集時にprivateからpublicへ変更する場合は, 運用負荷の観点からFALSEとせずにownerの判定(3)へ進める
+	*/
+	public function checkTagExistence($TagValue){
+		// tagデータをキャッシュに登録
+		$adb = PearDatabase::getInstance();
+		$DBTagsValue = Vtiger_Cache::get('DBTags', 'DBTagsValue');
+		if(!$DBTagsValue){
+			$result = $adb->pquery("SELECT id,tag,visibility,owner FROM vtiger_freetags;", array());
+			$DBTagsValue = array();
+			for ($i = 0; $i < $adb->num_rows($result); $i++){
+				$DBTagsValue[$i] = array(
+					'id' => $adb->query_result($result, $i, 'id'),
+					'tag' => $adb->query_result($result, $i, 'tag'),
+					'owner' => $adb->query_result($result, $i, 'owner'),
+					'visibility' => $adb->query_result($result, $i, 'visibility')
+				);
+			}
+			Vtiger_Cache::set('DBTags', 'DBTagsValue', $DBTagsValue);
+		}
+
+		$tagName = $TagValue['tagName'];
+		$tagId = $TagValue['tagId'];
+		$previousVisibility = '';
+		$OtherTagsWithSameName = array_filter($DBTagsValue, function($item) use ($tagName, $tagId, &$previousVisibility) {
+			if($item['id'] == $tagId){
+				$previousVisibility = $item['visibility'];
+				return false;
+			}
+			return $item['tag'] == $tagName;
+		});
+		$OtherTagsWithSameName = array_values($OtherTagsWithSameName);
+
+		// 確認チャート1 ~ 4に従い, 新規作成・再編集・インポートの許可判定を行う
+		if(empty($OtherTagsWithSameName)){ // 1
+			return true;
+		}
+		$currentUser = Users_Record_Model::getCurrentUserModel();
+		$userId = $currentUser->getId();
+		for($i = 0; $i < count($OtherTagsWithSameName); $i++){
+			$OtherTagValue = $OtherTagsWithSameName[$i];
+			if($OtherTagValue['visibility'] == 'public'){ // 2
+				if($previousVisibility == 'private' && $TagValue['visibility'] == 'public'){ // 再編集時の例外判定
+					continue;
+				}else{
+					return false;
+				}
+			}
+			if($OtherTagValue['owner'] == $userId){ // 3
+				return false;
+			}
+		}
+		return true; // 4
+	}
+
+	// タグが複数登録される場合に備え, キャッシュを更新する
+	public function updateCachedDBTags($TagValue){
+		$DBTagsValue = Vtiger_Cache::get('DBTags', 'DBTagsValue');
+		$DBTagsValue[] = array(
+			'id' => $TagValue['tagId'],
+			'tag' => $TagValue['tagName'],
+			'owner' => $TagValue['owner'],
+			'visibility' => $TagValue['visibility']
+		);
+		Vtiger_Cache::set('DBTags', 'DBTagsValue', $DBTagsValue);
 	}
 }
