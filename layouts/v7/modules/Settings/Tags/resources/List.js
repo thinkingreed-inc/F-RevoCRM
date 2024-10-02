@@ -98,7 +98,7 @@ Settings_Vtiger_List_Js('Settings_Tags_List_Js',{
     registerEditTagSaveEvent : function() {
         var editTagContainer = this.getEditTagContainer();
         var self = this;
-        this.getEditTagContainer().find('.saveTag').on('click', function(e){
+        this.getEditTagContainer().find('.saveTag').off('click').on('click', function(e){
             
             var tagName = editTagContainer.find('[name="tagName"]').val();
             if(tagName.trim() == ""){
