@@ -91,7 +91,7 @@
                         <tr class="searchRow">
                             <th class="inline-search-btn">
                                 <div class="table-actions">
-                                    <button class="btn btn-success btn-sm" data-trigger="listSearch">{vtranslate("LBL_SEARCH",$MODULE)}</button>
+                                    <button type="button" class="btn btn-success btn-sm" data-trigger="listSearch">{vtranslate("LBL_SEARCH",$MODULE)}</button>
                                 </div>
                             </th>
                             {foreach item=LISTVIEW_HEADER from=$LISTVIEW_HEADERS}

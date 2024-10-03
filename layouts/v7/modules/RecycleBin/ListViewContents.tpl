@@ -68,11 +68,11 @@
                         <tr class="searchRow listViewSearchContainer">
                             <th class="inline-search-btn">
                                 <div class="table-actions">
-                                    <button class="btn btn-sm btn-success {if count($SEARCH_DETAILS) gt 0}hide{/if}" data-trigger="listSearch">
+                                    <button type="button" class="btn btn-sm btn-success {if count($SEARCH_DETAILS) gt 0}hide{/if}" data-trigger="listSearch">
                                         <i class="fa fa-search"></i>&nbsp;
                                         <span class="s2-btn-text">{vtranslate("LBL_SEARCH",$MODULE)}</span>
                                     </button>
-                                    <button class="searchAndClearButton btn btn-sm btn-danger {if count($SEARCH_DETAILS) eq 0}hide{/if}" data-trigger="clearListSearch"><i class="fa fa-close"></i>&nbsp;{vtranslate("LBL_CLEAR",$MODULE)}</button>
+                                    <button type="button" class="searchAndClearButton btn btn-sm btn-danger {if count($SEARCH_DETAILS) eq 0}hide{/if}" data-trigger="clearListSearch"><i class="fa fa-close"></i>&nbsp;{vtranslate("LBL_CLEAR",$MODULE)}</button>
                                 </div>
                         </th>
                         {foreach item=LISTVIEW_HEADER from=$LISTVIEW_HEADERS}
