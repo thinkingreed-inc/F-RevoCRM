@@ -294,6 +294,78 @@ class Vtiger_Tag_Model extends Vtiger_Base_Model {
 		$result = $db->pquery($checkQuery, array($tagId, $userIdToExclude));
 		return $db->num_rows($result) > 0 ? true : false;
 	}
+
+	/*
+	新規作成・再編集・インポート時の確認チャート(TRUE: 作成許可)
+	1. vtiger_freetagsに同名のタグがない -> TRUE
+	2. vtiger_freetagsに同名のタグがある -> 同名タグがpublicである  -> FALSE※
+	3.                　　　　　　　　　 -> 同名タグがprivateである -> ownerが自身 → FALSE
+	4.                　　　　　　　　　 -> 　　　　　       　　　 -> ownerが自身でない → TRUE
+	※ 再編集時にprivateからpublicへ変更する場合は, 運用負荷の観点からFALSEとせずにownerの判定(3)へ進める
+	*/
+	public static function checkTagExistence($TagValue){
+		// tagデータをキャッシュに登録
+		$adb = PearDatabase::getInstance();
+		$DBTagsValue = Vtiger_Cache::get('DBTags', 'DBTagsValue');
+		if(!$DBTagsValue){
+			$result = $adb->pquery("SELECT id,tag,visibility,owner FROM vtiger_freetags;", array());
+			$DBTagsValue = array();
+			for ($i = 0; $i < $adb->num_rows($result); $i++){
+				$DBTagsValue[$i] = array(
+					'id' => $adb->query_result($result, $i, 'id'),
+					'tag' => $adb->query_result($result, $i, 'tag'),
+					'owner' => $adb->query_result($result, $i, 'owner'),
+					'visibility' => $adb->query_result($result, $i, 'visibility')
+				);
+			}
+			Vtiger_Cache::set('DBTags', 'DBTagsValue', $DBTagsValue);
+		}
+
+		$tagName = $TagValue['tagName'];
+		$tagId = isset($TagValue['tagId']) ? $TagValue['tagId'] : '';
+		$previousVisibility = '';
+		$otherTagsWithSameName = array_filter($DBTagsValue, function($item) use ($tagName, $tagId, &$previousVisibility) {
+			if($tagId && $item['id'] == $tagId){
+				$previousVisibility = $item['visibility'];
+				return false;
+			}
+			return $item['tag'] == $tagName;
+		});
+		$otherTagsWithSameName = array_values($otherTagsWithSameName);
+
+		// 確認チャート1 ~ 4に従い, 新規作成・再編集・インポートの許可判定を行う
+		if(empty($otherTagsWithSameName)){ // 1
+			return true;
+		}
+		$currentUser = Users_Record_Model::getCurrentUserModel();
+		$userId = $currentUser->getId();
+		for($i = 0; $i < count($otherTagsWithSameName); $i++){
+			$OtherTagValue = $otherTagsWithSameName[$i];
+			if($OtherTagValue['visibility'] == 'public'){ // 2
+				if($previousVisibility == 'private' && $TagValue['visibility'] == 'public'){ // 再編集時の例外判定
+					continue;
+				}else{
+					return false;
+				}
+			}
+			if($OtherTagValue['owner'] == $userId){ // 3
+				return false;
+			}
+		}
+		return true; // 4
+	}
+
+	// タグが複数登録される場合に備え, キャッシュを更新する
+	public static function updateCachedDBTags($TagValue){
+		$DBTagsValue = Vtiger_Cache::get('DBTags', 'DBTagsValue');
+		$DBTagsValue[] = array(
+			'id' => $TagValue['tagId'],
+			'tag' => $TagValue['tagName'],
+			'owner' => $TagValue['owner'],
+			'visibility' => $TagValue['visibility']
+		);
+		Vtiger_Cache::set('DBTags', 'DBTagsValue', $DBTagsValue);
+	}
     
     /**
      * Function used to return tags for list for records
