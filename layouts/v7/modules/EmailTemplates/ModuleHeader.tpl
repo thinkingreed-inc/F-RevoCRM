@@ -13,7 +13,7 @@
 			<div class="col-lg-5 col-md-5 module-breadcrumb">
 				{assign var=MODULE_MODEL value=Vtiger_Module_Model::getInstance($MODULE)}
 				<a title="{vtranslate($MODULE, $MODULE)}" href='{$MODULE_MODEL->getDefaultUrl()}'>
-					<h4 class="module-title pull-left text-uppercase">&nbsp;{vtranslate($MODULE, $MODULE)}&nbsp;</h4>
+					<h4 class="module-title pull-left text-uppercase">{vtranslate($MODULE, $MODULE)}</h4>&nbsp;&nbsp;
 				</a>
 				<p class="current-filter-name filter-name pull-left cursorPointer">&nbsp;&nbsp;
 					<span class="fa fa-angle-right pull-left" aria-hidden="true"></span> 
