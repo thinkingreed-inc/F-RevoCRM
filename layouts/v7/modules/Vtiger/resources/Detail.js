@@ -296,6 +296,15 @@ Vtiger.Class("Vtiger_Detail_Js",{
 		registerRelatedRecordSave: function(){
 			var thisInstance = this;
 			app.event.on('post.overLayEditView.loaded',function(e, container){
+				//ckeditorで入力された値をupdateElement()でtextareaへ反映させるイベントをセット
+				$(".saveButton").on("click", function(){
+					if (typeof CKEDITOR != 'undefined') {
+						for (var idx in CKEDITOR.instances) {
+							CKEDITOR.instances[idx].updateElement();
+						}
+					}
+				});
+
 				jQuery('#EditView').vtValidate({
 					submitHandler : function(form){
 						window.onbeforeunload = null;
