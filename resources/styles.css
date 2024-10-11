@@ -658,7 +658,8 @@ ul#productsImageContainer > li a{
   align-items: center;
 }
 /* rc-handleと重ならないように調整 */
-.fa-remove {
+.listview-table tr.listViewContentHeader .fa-remove{
   position: relative;
   right: 15px;
-}
+  z-index: 1;
+} 
