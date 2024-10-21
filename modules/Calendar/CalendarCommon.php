@@ -226,10 +226,10 @@ function generateIcsAttachment($record, $inviteeid) {
     $assignedUserId = $record['user_id'];
     $userModel = Users_Record_Model::getInstanceById($assignedUserId, 'Users');
     $inviteeUserModel = Users_Record_Model::getInstanceById($inviteeid, 'Users');
-    $firstName = $userModel->entity->column_fields['first_name'];
-    $lastName = $userModel->entity->column_fields['last_name'];
-    $email = $userModel->entity->column_fields['email1'];
-    $time_zone = $inviteeUserModel->entity->column_fields['time_zone'];
+		$firstName = $userModel->getEntity()->column_fields['first_name'];
+    $lastName = $userModel->getEntity()->column_fields['last_name'];
+    $email = $userModel->getEntity()->column_fields['email1'];
+    $time_zone = $inviteeUserModel->getEntity()->column_fields['time_zone'];
 
 		// ユーザーのTIMEZONEを取る
 		$inviteeUser = CRMEntity::getInstance('Users');
