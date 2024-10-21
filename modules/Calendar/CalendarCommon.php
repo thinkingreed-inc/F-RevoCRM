@@ -237,7 +237,8 @@ function generateIcsAttachment($record, $inviteeid) {
 
 		$stDatetime = date_format(DateTimeField::convertToUserTimeZone($record['st_date_time'], $inviteeUser), "Y/m/d H:i:s");
 		$endDatetime = date_format(DateTimeField::convertToUserTimeZone($record['end_date_time'], $inviteeUser), "Y/m/d H:i:s");
-		$ics_filename = 'test/upload/'.$fileName.'_'.$inviteeid.'.ics';
+		$sanitizedFileName = preg_replace('/[\/\\\\]/', '_', $fileName);
+		$ics_filename = 'test/upload/'.$sanitizedFileName.'_'.$inviteeid.'.ics';
     $fp = fopen($ics_filename, "w");
 
 		// TZ OFFSETを設定
