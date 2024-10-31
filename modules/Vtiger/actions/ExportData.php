@@ -218,7 +218,7 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 											$query .= ' ORDER BY '.$queryGenerator->getOrderByColumn($orderBy).' '.$sortOrder;
 										}
 										$batchOffset = $request->get('batchoffset');
-										if($batchOffset){
+										if(isset($batchOffset)){
 											$query .= ' LIMIT '.$this->exportBatchLimit.' OFFSET '.$batchOffset;
 										}
 										break;
@@ -256,7 +256,7 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 												$query .= ' ORDER BY '.$queryGenerator->getOrderByColumn($orderBy).' '.$sortOrder;
 											}
 											$batchOffset = $request->get('batchoffset');
-											if($batchOffset){
+											if(isset($batchOffset)){
 												$query .= ' LIMIT '.$this->exportBatchLimit.' OFFSET '.$batchOffset;
 											}
 											break;
