@@ -24,4 +24,7 @@ if (defined('VTIGER_UPGRADE')) {
 
     //F-RevoCRM REST APIにて、足りていない引数を追加
     include_once 'setup/scripts/78_Update_RESTAPI.php';
+
+    // 空白項目の追加
+    include_once 'setup/scripts/2023_Insert_EmptyField.php';
 }
