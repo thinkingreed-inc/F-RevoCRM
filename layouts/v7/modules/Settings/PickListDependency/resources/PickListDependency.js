@@ -55,7 +55,7 @@ Vtiger.Class('Settings_PickListDependency_Js', {
 		var currentTrEle = currentTarget.closest('tr');
 		var instance = Settings_PickListDependency_Js.pickListDependencyInstance;
 		
-		var message = app.vtranslate('JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE');
+		var message = app.vtranslate('JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE').replace(/\n/g, "<br>");
 		app.helper.showConfirmationBox({'message' : message}).then(
 			function(e) {
 				instance.deleteDependency(module, sourceField, targetField).then(

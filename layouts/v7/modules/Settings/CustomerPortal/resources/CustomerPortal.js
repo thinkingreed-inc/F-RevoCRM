@@ -298,7 +298,7 @@ Vtiger.Class('Settings_Customer_Portal_Js', {}, {
 			}
 			jQuery.each(defaultFields, function (index, value) {
 				var fieldStatusValue = 0;
-				if (jQuery.inArray(value['fieldname'], selectedFields) === -1) {
+				if (jQuery.inArray(value['fieldname'], selectedFields) === -1 && value['fieldlabel']) {
 					if (value['mandatory'] && value['iseditable'])
 						jQuery('select#addField_'+targetModule).append('<option  value="'+value['fieldname']+'##'+value['fieldlabel']+'">'+value['fieldlabel']+'*</option>');
 					else

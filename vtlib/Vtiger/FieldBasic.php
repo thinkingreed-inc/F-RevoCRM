@@ -177,14 +177,14 @@ class Vtiger_FieldBasic {
 		if (!$this->columntype)
 			$this->columntype = 'VARCHAR(100)';
 
-        if (!$this->label)
+        if (!$this->label && !$this->uitype === 666)
             $this->label = $this->name;
 
 		if (!empty($this->columntype)) {
 			Vtiger_Utils::AddColumn($this->table, $this->column, $this->columntype);
 		}
 
-		if (!$this->label) {
+		if (!$this->label && !$this->uitype === 666) {
 			$this->label = $this->name;
 		}
 
