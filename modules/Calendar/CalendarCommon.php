@@ -226,10 +226,10 @@ function generateIcsAttachment($record, $inviteeid) {
     $assignedUserId = $record['user_id'];
     $userModel = Users_Record_Model::getInstanceById($assignedUserId, 'Users');
     $inviteeUserModel = Users_Record_Model::getInstanceById($inviteeid, 'Users');
-    $firstName = $userModel->entity->column_fields['first_name'];
-    $lastName = $userModel->entity->column_fields['last_name'];
-    $email = $userModel->entity->column_fields['email1'];
-    $time_zone = $inviteeUserModel->entity->column_fields['time_zone'];
+		$firstName = $userModel->getEntity()->column_fields['first_name'];
+    $lastName = $userModel->getEntity()->column_fields['last_name'];
+    $email = $userModel->getEntity()->column_fields['email1'];
+    $time_zone = $inviteeUserModel->getEntity()->column_fields['time_zone'];
 
 		// ユーザーのTIMEZONEを取る
 		$inviteeUser = CRMEntity::getInstance('Users');
@@ -237,7 +237,8 @@ function generateIcsAttachment($record, $inviteeid) {
 
 		$stDatetime = date_format(DateTimeField::convertToUserTimeZone($record['st_date_time'], $inviteeUser), "Y/m/d H:i:s");
 		$endDatetime = date_format(DateTimeField::convertToUserTimeZone($record['end_date_time'], $inviteeUser), "Y/m/d H:i:s");
-		$ics_filename = 'test/upload/'.$fileName.'_'.$inviteeid.'.ics';
+		$sanitizedFileName = preg_replace('/[\/\\\\]/', '_', $fileName);
+		$ics_filename = 'test/upload/'.$sanitizedFileName.'_'.$inviteeid.'.ics';
     $fp = fopen($ics_filename, "w");
 
 		// TZ OFFSETを設定
