@@ -2824,9 +2824,12 @@ Vtiger.Class("Vtiger_List_Js", {
 			'height': height,
 			'width': width
 		});
-		$table.resizableColumns('refreshContainerSize');
-		$table.resizableColumns('adjustDummyColumnWidth');
-		$table.resizableColumns('syncHandleWidths');
+		
+		if(typeof $table.resizableColumns === 'Object') {
+			$table.resizableColumns('refreshContainerSize');
+			$table.resizableColumns('adjustDummyColumnWidth');
+			$table.resizableColumns('syncHandleWidths');
+		}
 		// $table.floatThead('reflow');
 		tableContainer.perfectScrollbar('update');
 	},

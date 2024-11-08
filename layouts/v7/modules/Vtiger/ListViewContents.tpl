@@ -54,7 +54,7 @@
 			<table id="listview-table" class="table {if $LISTVIEW_ENTRIES_COUNT eq '0'}listview-table-norecords {/if} listview-table column-2-fixed">
 				<thead>
 					<tr class="listViewContentHeader">
-						<th>
+				<th {if !$MODULE_MODEL->isFilterColumnEnabled() && !$LISTVIEW_ENTRIES_COUNT eq '0' }class="table-bottom-border"{/if}>
 							{if !$SEARCH_MODE_RESULTS}
 					<div class="table-actions">
 						<div class="dropdown" style="float:left;">
@@ -95,7 +95,7 @@
 					{else}
 						{assign var=NO_SORTING value=0}
 					{/if}
-					<th {if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')} nowrap="nowrap" {/if}>
+					<th {if !$MODULE_MODEL->isFilterColumnEnabled() && !$LISTVIEW_ENTRIES_COUNT eq '0'}class="table-bottom-border" {/if}{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')} nowrap="nowrap" {/if}>
 						<a href="#" class="{if $NO_SORTING}noSorting{else}listViewContentHeaderValues{/if}" {if !$NO_SORTING}data-nextsortorderval="{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')}{$NEXT_SORT_ORDER}{else}ASC{/if}" data-columnname="{$LISTVIEW_HEADER->get('name')}"{/if} data-field-id='{$LISTVIEW_HEADER->getId()}'>
 							{if !$NO_SORTING}
 								{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')}
