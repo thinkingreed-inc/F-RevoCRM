@@ -12,18 +12,24 @@ table#listview-table {
 table#listview-table tr{
   border-bottom: #ddd 1px solid;
 }
-tr.searchRow.listViewSearchContainer > th{
+tr.listViewContentHeader > th {
+  border-bottom: #ddd 1px solid;
+}
+tr.searchRow.listViewSearchContainer > th {
   border-bottom: #ddd 1px solid;
 }
 tbody tr.listViewEntries:first-child {
   border-top: none !important;
   border-bottom: none !important;
 }
-tr.listViewEntries:nth-of-type(1) > td.listViewRecordActions.fix-data-column {
+tr.listViewEntries:nth-of-type(1) > td.listViewRecordActions {
   border-top: 0px !important;
 }
 tr.listViewEntries:nth-of-type(1) > td.listViewEntryValue {
   border-top: 0px !important;
+}
+thead > tr.listViewContentHeader > th.table-bottom-border {
+  border-bottom: #ddd 1px solid;
 }
 
 /*
