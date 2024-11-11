@@ -38,6 +38,10 @@ table#listview-table .emptyRecordsDiv > td {
 tr.listViewEntries:nth-of-type(1) > td.dummy {
   border-top: none;
 }
+td.listViewEntryValue  .fieldValue .value {
+  max-width: 98%;
+}
+
 
 /*
  * 一覧の左側の列固定（IE11非対応）
