@@ -42,6 +42,11 @@ td.listViewEntryValue  .fieldValue .value {
   max-width: 98%;
 }
 
+@media (min-width: 0px) and (max-width: 830px) {
+  .listViewPageDiv #table-content.table-container {
+    scrollbar-width: none;
+  }
+}
 
 /*
  * 一覧の左側の列固定（IE11非対応）
