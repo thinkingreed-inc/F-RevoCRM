@@ -2974,15 +2974,18 @@ Vtiger.Class("Vtiger_List_Js", {
 		var tableContainer = $table.closest('.table-container');
 		var listViewContentHeader = tableContainer.find('.listViewContentHeader');
 		var listViewSearchHeader = tableContainer.find('.listViewSearchContainer');
+		var isEmptyRecord = tableContainer.find('.emptyRecordsContent').length;
 		var rows = tableContainer.find('tr.listViewEntries');
 
-		var thDummy = ''+
-        '<th class="dummy">'+
-		'</th>';
+		var borderOptionClass = '';
+		if(listViewSearchHeader.length <= 0) {
+			borderOptionClass = ' table-bottom-border';
+		}else if(app.getModuleName() === 'RecycleBin' && isEmptyRecord) {
+			borderOptionClass = ' none-border-bottom';
+		}
 
-		var tdDummy = ''+
-        '<td class="dummy">'+
-		'</td>';
+		var thDummy = `<th class="dummy${borderOptionClass}"></th>`;
+		var tdDummy = '<td class="dummy"></td>';
 
         listViewContentHeader.append(thDummy);
 		listViewSearchHeader.append(thDummy);
