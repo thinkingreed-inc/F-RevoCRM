@@ -471,6 +471,19 @@ function insertIntoRecurringTable(& $recurObj)
 			return ;
 		}
 
+		// 初回$activityarrayが配列化されていないとin_arrayでExceptionが発生するので初期化する
+		if (empty($activityarray)) {
+			$activityarray = array();
+		}
+
+		if (empty($this->workflow_skip_field_array)){
+			$this->workflow_skip_field_array = array();
+		}
+
+		if (empty($activityarray[$this->workflow_task_id])) {
+			$activityarray[$this->workflow_task_id] = array();
+		}
+
 		// 編集の場合
 		if($this->mode == 'edit'){
 			// 参加者のActivityを更新または削除

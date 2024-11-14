@@ -325,6 +325,29 @@ Vtiger.Class("Vtiger_List_Js", {
 			thisInstance.loadFilter(cvId, {'mode': 'removeSorting'});
 		});
 	},
+	registerResetColumnWidths: function () {
+		var thisInstance = this;
+		var cvid = thisInstance.getCurrentCvId();
+		jQuery('.btn-group.listViewActionsContainer').find('#resetColumnWidths').on('click', function(e) {
+			var substring = cvid + '-'
+			keysToRemove = [];
+
+			// ローカルストレージ内のcvidを含むkeyを取得
+			for (let i = 0; i < localStorage.length; i++) {
+				const key = localStorage.key(i);
+				
+				if (key.includes(substring)) {
+					keysToRemove.push(key);
+				}
+			}
+			
+			// 該当するすべてのkeyを削除
+			keysToRemove.forEach(key => {
+				localStorage.removeItem(key);
+			});
+			thisInstance.loadListViewRecords();
+		});
+	},
 	performMassDeleteRecords: function (url) {
 		var listInstance = this;
 		var params = {};
@@ -2366,9 +2389,11 @@ Vtiger.Class("Vtiger_List_Js", {
 		jQuery('.btn-group.listViewActionsContainer').find('li').addClass('hide');
 		var selectFreeRecords = jQuery('.btn-group.listViewActionsContainer').find('li.selectFreeRecords');
 		selectFreeRecords.removeClass('hide');
-		if (selectFreeRecords.length == 0) {
-			jQuery('.btn-group.listViewActionsContainer').find('.dropdown-toggle').attr('disabled', "disabled");
-		}
+		var resetColumns = jQuery('.btn-group.listViewActionsContainer').find('#resetColumnWidths');
+		resetColumns.parent().removeClass('hide');
+		// if (selectFreeRecords.length == 0) {
+		// 	jQuery('.btn-group.listViewActionsContainer').find('.dropdown-toggle').attr('disabled', "disabled");
+		// }
 	},
 	/*
 	 * Function to register the click event of email field
@@ -2462,9 +2487,17 @@ Vtiger.Class("Vtiger_List_Js", {
 						return false;
 					}
 					var ele = jQuery(e.currentTarget);
+					var cvid = thisInstance.getCurrentCvId();
 					var sourceFieldEle = ele.parent('.item');
 					var targetFieldEle = availFieldsListContainer.find('.item[data-cv-columnname="' + sourceFieldEle.attr('data-cv-columnname') + '"]');
 					targetFieldEle.removeClass('hide');
+
+					// 削除した項目の列幅をダミーカラムの列幅に追加する．
+					var removedColumn = Number(window.localStorage.getItem(cvid + '-' + sourceFieldEle.attr('data-field-id')));
+					var dummyColumn = Number(window.localStorage.getItem(cvid + '-dummy'));
+					window.localStorage.removeItem(cvid + '-' + sourceFieldEle.attr('data-field-id'));
+					window.localStorage.setItem(cvid + '-dummy',removedColumn + dummyColumn);
+
 					sourceFieldEle.remove();
 				});
 
@@ -2572,6 +2605,8 @@ Vtiger.Class("Vtiger_List_Js", {
 				vtUtils.applyFieldElementsView(searchRow);
 				self.filterClick = false;
 			}
+			self.registerResetColumnWidths();
+			self.registerDummyColumn();
 			self.registerFloatingThead();
 		});
 	},
@@ -2581,6 +2616,7 @@ Vtiger.Class("Vtiger_List_Js", {
 		this._super();
 		this.registerListViewSort();
 		this.registerRemoveListViewSort();
+		this.registerResetColumnWidths();
 		this.registerRowClickEvent();
 		this.registerRowDoubleClickEvent();
 		this.registerListViewBasicActions();
@@ -2602,6 +2638,7 @@ Vtiger.Class("Vtiger_List_Js", {
 		var recordSelectTrackerObj = this.getRecordSelectTrackerInstance();
 		recordSelectTrackerObj.registerEvents();
 
+		this.registerDummyColumn();
 		this.registerPostListLoadListener();
 		this.registerPostLoadListViewActions();
 
@@ -2767,6 +2804,9 @@ Vtiger.Class("Vtiger_List_Js", {
 		if (typeof $.fn.perfectScrollbar !== 'function' || typeof $.fn.floatThead !== 'function') {
 			return;
 		}
+		if(app.isMobile()) {
+			return;
+		}
 		var $table = jQuery('#listview-table');
 		if (!$table.length)
 			return;
@@ -2784,11 +2824,20 @@ Vtiger.Class("Vtiger_List_Js", {
 			'height': height,
 			'width': width
 		});
+		
+		if(typeof $table.resizableColumns === 'Object') {
+			$table.resizableColumns('refreshContainerSize');
+			$table.resizableColumns('adjustDummyColumnWidth');
+			$table.resizableColumns('syncHandleWidths');
+		}
+		// $table.floatThead('reflow');
 		tableContainer.perfectScrollbar('update');
-		$table.floatThead('reflow');
 	},
 	registerFloatingThead: function () {
 		if (typeof $.fn.perfectScrollbar !== 'function' || typeof $.fn.floatThead !== 'function') {
+			return;
+		}
+		if(app.isMobile()) {
 			return;
 		}
 		var $table = jQuery('#listview-table');
@@ -2816,31 +2865,44 @@ Vtiger.Class("Vtiger_List_Js", {
 			'width': width
 		});
 
-		tableContainer.perfectScrollbar({
-			'wheelPropagation': true
-		});
 
-		//テーブルからカラム名を取得，各カラムの幅を保存するために一意のidを生成
+		// 現在有効になっているcvidとテーブルのfieldidから，リストごとに各カラムの幅を保存するための一意のidを生成
 		var module = app.getModuleName();
+		var cvId = this.getCurrentCvId();
 		$table.attr('data-resizable-column-id', module);
 		tableContainer.find("tr").each(function(){
 			var $tr = $(this);
 			$tr.find("th").each(function(){
 				var $header = $(this);
-				var $columnname = $header.find('a').data('columnname');
+				var $fieldid = $header.find('a').data('field-id');
 				var $columnid = '';
-				var $tableactions = $header.find('.table-actions');
-				if ($columnname) {
-					$columnid += module + '-' + $columnname;
-				} else if ($tableactions) {
-					$columnid += module + '-actions';
+				var $tableactions = $header.find('div').attr("class");
+
+				if ($fieldid) {
+					$columnid += cvId + '-' + $fieldid;
+				} else if ($header.hasClass("dummy")) {
+					$columnid += cvId + '-dummy';
+				} else if ($tableactions == "table-actions") {
+					$columnid += cvId + '-' + $tableactions;
 				}
-				$header.attr('data-resizable-column-id', $columnid);
+				if ($columnid){
+					$header.attr('data-resizable-column-id', $columnid);
+				}
 			});
 		});
 
-		$table.resizableColumns({
-			store:store
+		if(typeof store !== 'undefined') {
+			$table.resizableColumns({
+				store:store
+			});
+		}
+
+		tableContainer.perfectScrollbar({
+			'wheelPropagation': true
+		});
+
+		window.addEventListener('resize',function(){
+			tableContainer.perfectScrollbar('update');
 		});
 
 		// 列の固定処理
@@ -2878,6 +2940,11 @@ Vtiger.Class("Vtiger_List_Js", {
 			}
 		});
 
+		if(typeof store !== 'undefined') {
+			$table.resizableColumns('refreshContainerSize');
+			$table.resizableColumns('adjustDummyColumnWidth');
+			$table.resizableColumns('syncHandleWidths');
+		}
 
 		// $table.floatThead({
 		// 	scrollContainer: function ($table) {
@@ -2899,5 +2966,32 @@ Vtiger.Class("Vtiger_List_Js", {
 		}
 
 		return count;
-	}
+	},
+	registerDummyColumn: function () {
+		var $table = jQuery('#listview-table');
+		if (!$table.length)
+			return;
+		var tableContainer = $table.closest('.table-container');
+		var listViewContentHeader = tableContainer.find('.listViewContentHeader');
+		var listViewSearchHeader = tableContainer.find('.listViewSearchContainer');
+		var isEmptyRecord = tableContainer.find('.emptyRecordsContent').length;
+		var rows = tableContainer.find('tr.listViewEntries');
+
+		var borderOptionClass = '';
+		if(listViewSearchHeader.length <= 0) {
+			borderOptionClass = ' table-bottom-border';
+		}else if(app.getModuleName() === 'RecycleBin' && isEmptyRecord) {
+			borderOptionClass = ' none-border-bottom';
+		}
+
+		var thDummy = `<th class="dummy${borderOptionClass}"></th>`;
+		var tdDummy = '<td class="dummy"></td>';
+
+        listViewContentHeader.append(thDummy);
+		listViewSearchHeader.append(thDummy);
+		rows.each(function(){
+			var $row = $(this);
+			$row.append(tdDummy);
+		})
+	},
 });

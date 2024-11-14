@@ -1145,6 +1145,7 @@ $languageStrings = array(
 	'LBL_SWITCH_TO_OLD'=>'過去のバージョンに戻す',
 	'LBL_SLA_INFORMATION' => 'SLA情報',
 	'LBL_CUSTOM_FIELD_LIMIT' => 'カスタムフィールドの登録数上限に達しています',
+	'LBL_RESET_COLUMN_WIDTHS' => "列幅をリセット",
 
 	//configure columns
 	'LBL_UPDATE_LIST' => 'リストの更新',

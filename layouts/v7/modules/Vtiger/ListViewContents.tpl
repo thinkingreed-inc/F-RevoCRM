@@ -54,7 +54,7 @@
 			<table id="listview-table" class="table {if $LISTVIEW_ENTRIES_COUNT eq '0'}listview-table-norecords {/if} listview-table column-2-fixed">
 				<thead>
 					<tr class="listViewContentHeader">
-						<th>
+				<th {if !$MODULE_MODEL->isFilterColumnEnabled() && !$LISTVIEW_ENTRIES_COUNT eq '0' }class="table-bottom-border"{/if}>
 							{if !$SEARCH_MODE_RESULTS}
 					<div class="table-actions">
 						<div class="dropdown" style="float:left;">
@@ -95,7 +95,7 @@
 					{else}
 						{assign var=NO_SORTING value=0}
 					{/if}
-					<th {if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')} nowrap="nowrap" {/if}>
+					<th {if !$MODULE_MODEL->isFilterColumnEnabled() && !$LISTVIEW_ENTRIES_COUNT eq '0'}class="table-bottom-border" {/if}{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')} nowrap="nowrap" {/if}>
 						<a href="#" class="{if $NO_SORTING}noSorting{else}listViewContentHeaderValues{/if}" {if !$NO_SORTING}data-nextsortorderval="{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')}{$NEXT_SORT_ORDER}{else}ASC{/if}" data-columnname="{$LISTVIEW_HEADER->get('name')}"{/if} data-field-id='{$LISTVIEW_HEADER->getId()}'>
 							{if !$NO_SORTING}
 								{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')}
@@ -117,11 +117,11 @@
                                     <tr class="searchRow listViewSearchContainer">
                                         <th class="inline-search-btn">
                                             <div class="table-actions">
-                                                <button class="btn btn-success btn-sm {if php7_count($SEARCH_DETAILS) gt 0}hide{/if}" data-trigger="listSearch">
+                                                <button type="button" class="btn btn-success btn-sm {if php7_count($SEARCH_DETAILS) gt 0}hide{/if}" data-trigger="listSearch">
                                                     <i class="fa fa-search"></i> &nbsp;
                                                     <span class="s2-btn-text">{vtranslate("LBL_SEARCH",$MODULE)}</span>
                                                 </button>
-                                                <button class="searchAndClearButton t-btn-sm btn btn-danger {if php7_count($SEARCH_DETAILS) eq 0}hide{/if}" data-trigger="clearListSearch"><i class="fa fa-close"></i>&nbsp;{vtranslate("LBL_CLEAR",$MODULE)}</button>
+                                                <button type="button" class="searchAndClearButton t-btn-sm btn btn-danger {if php7_count($SEARCH_DETAILS) eq 0}hide{/if}" data-trigger="clearListSearch"><i class="fa fa-close"></i>&nbsp;{vtranslate("LBL_CLEAR",$MODULE)}</button>
                                             </div>
                                         </th>
                                     {foreach item=LISTVIEW_HEADER from=$LISTVIEW_HEADERS}

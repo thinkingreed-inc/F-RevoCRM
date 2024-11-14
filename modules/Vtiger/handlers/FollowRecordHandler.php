@@ -93,7 +93,7 @@ class FollowRecordHandler extends VTEventHandler {
 	}
 
 	public function getChangedFieldString($fieldModels, $changedValues, $userRecordModel) {
-		$userEntity = $userRecordModel->entity;
+		$userEntity = $userRecordModel->getEntity();
 
 		$changedFieldString = '';
 		foreach ($fieldModels as $fieldName => $fieldModel) {
