@@ -695,6 +695,14 @@ ul#productsImageContainer > li a{
   flex-wrap: nowrap;
   align-items: center;
 }
+
+/* レコード編集画面のpadding-leftを可変ではなく固定にする */
+@media (min-width: 992px) {
+  .editViewPageDiv.viewContent > .content-area {
+    padding-left: 57px;
+  }
+}
+
 /* rc-handleと重ならないように調整 */
 .listview-table tr.listViewContentHeader .fa-remove{
   position: relative;
