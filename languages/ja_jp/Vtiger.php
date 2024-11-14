@@ -1610,6 +1610,7 @@ $jsLanguageStrings = array(
 	'INVALID_NUMBER_OF' => '無効な数字：',
 	'INVALID_NUMBER' => '無効な数字',
 	'JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE' => '削除しますか？',
+	'JS_LBL_DELETE_RELATED_ACTIVITY' => '関連を解除しますか？',
 
 	'OVERWRITE_EXISTING_MSG1' => '既存住所を選択した住所の詳細 ( ',
 	'OVERWRITE_EXISTING_MSG2' => ') で上書きしますか？',
@@ -1619,7 +1620,7 @@ $jsLanguageStrings = array(
 	'SINGLE_ProjectMilestone' => 'プロジェクトマイルストーン',
 
 	'LBL_DELETE_CONFIRMATION' => '削除しますか？', // This is added as duplicate as we need to show different message for different modules. Ex:Accounts has different message
-	'LBL_UNLINK_CONFIRMATION' => 'リンクを解除しますか？',
+	'LBL_UNLINK_CONFIRMATION' => '関連を解除しますか？',
 	'LBL_DELETE_USER_CONFIRMATION' => 'ユーザーを削除すると、ユーザーは無効化されログイン不可となり、新たなレコードを割り当てることもできなくなります。本当に削除してもよろしいですか？',
 	'LBL_DELETE_CONFIRMATION_NOTE' => '注意 : 削除されたレコードはごみ箱に保持され、%s日後に消去されます',
 	'LBL_MASS_DELETE_CONFIRMATION' => '選択したレコードを削除しますか？',
