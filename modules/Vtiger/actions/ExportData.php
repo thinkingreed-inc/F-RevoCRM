@@ -31,7 +31,7 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 
 	private $moduleInstance;
 	private $focus;
-	private $exportBatchLimit = 100; // 1回のクエリで取得するデータ数上限
+	private $exportBatchLimit = 10_000; // 1回のクエリで取得するデータ数上限
 
 	/**
 	 * Function exports the data based on the mode
