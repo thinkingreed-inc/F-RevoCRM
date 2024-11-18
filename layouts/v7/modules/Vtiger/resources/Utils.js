@@ -60,8 +60,10 @@ var vtUtils = {
         if(selectElement.attr('multiple') != 'undefined' && typeof params.closeOnSelect == 'undefined') {
             params.closeOnSelect = false;
 		}
-		
-		if(selectElement.is('input') && !params.hasOwnProperty('createSearchChoice')) {
+		console.log(app.getModuleName(),app.getParentModuleName());
+		if(selectElement.is('input') 
+		&& !params.hasOwnProperty('createSearchChoice')
+		&& app.getParentModuleName() !== 'Settings') {
 			params.createSearchChoice =  null;
 		}
 		
