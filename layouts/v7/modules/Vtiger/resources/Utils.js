@@ -60,10 +60,11 @@ var vtUtils = {
         if(selectElement.attr('multiple') != 'undefined' && typeof params.closeOnSelect == 'undefined') {
             params.closeOnSelect = false;
 		}
-		console.log(app.getModuleName(),app.getParentModuleName());
+		
+		// 複数選択肢項目で自由に選択肢を追加できないようにする（設定は除く）
 		if(selectElement.is('input') 
-		&& !params.hasOwnProperty('createSearchChoice')
-		&& app.getParentModuleName() !== 'Settings') {
+			&& !params.hasOwnProperty('createSearchChoice')
+			&& app.getParentModuleName() !== 'Settings') {
 			params.createSearchChoice =  null;
 		}
 		

@@ -278,7 +278,10 @@ var app = {
 			params.closeOnSelect = false;
 		}
 
-		if(selectElement.is('input') && !params.hasOwnProperty('createSearchChoice')) {
+		// 複数選択肢項目で自由に選択肢を追加できないようにする（設定は除く）
+		if(selectElement.is('input') 
+			&& !params.hasOwnProperty('createSearchChoice')
+			&& app.getParentModuleName() !== 'Settings') {
 			params.createSearchChoice =  null;
 		}
 
