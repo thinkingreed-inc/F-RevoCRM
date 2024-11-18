@@ -60,6 +60,11 @@ var vtUtils = {
         if(selectElement.attr('multiple') != 'undefined' && typeof params.closeOnSelect == 'undefined') {
             params.closeOnSelect = false;
 		}
+		
+		if(selectElement.is('input') && !params.hasOwnProperty('createSearchChoice')) {
+			params.createSearchChoice =  null;
+		}
+		
         selectElement.select2(params)
 					 .on("open", function(e) {
 						 var element = jQuery(e.currentTarget);
