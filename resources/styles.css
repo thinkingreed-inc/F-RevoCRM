@@ -729,3 +729,7 @@ ul#productsImageContainer > li a{
     max-width: 200px;
   }
 }
+
+.calendarview div.sidebar-essentials {
+  overflow: hidden;
+}
