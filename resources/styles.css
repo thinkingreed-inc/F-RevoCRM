@@ -711,8 +711,13 @@ ul#productsImageContainer > li a{
 } 
 
 /* カレンダーユーザーの選択リスト */
+
+.sidebar-essentials {
+  scrollbar-width: thin;
+}
 .activitytypes .activitytype-indicator .userName.textOverflowEllipsis {
   vertical-align: middle;
+  max-width: 90px;
 }
 @media (min-width: 767px) and (max-width: 991px) {
   .activitytypes .activitytype-indicator .userName.textOverflowEllipsis {
