@@ -134,7 +134,7 @@ Calendar_Calendar_Js('Calendar_SharedCalendar_Js', {
 					var feedIndicatorTemplate = jQuery('#calendarview-feeds').find('ul.dummy > li.feed-indicator-template');
 					feedIndicatorTemplate.removeClass('.feed-indicator-template');
 					var newFeedIndicator = feedIndicatorTemplate.clone(true,true);
-					newFeedIndicator.find('span:first').text(selectedUserName);
+					newFeedIndicator.find('span:first').addClass('userName textOverflowEllipsis').text(selectedUserName).attr('title',selectedUserName);
 					var newFeedCheckbox = newFeedIndicator.find('.toggleCalendarFeed');
 					newFeedCheckbox.attr('data-calendar-sourcekey','Events_'+selectedUserId).
 					attr('data-calendar-feed','Events').
