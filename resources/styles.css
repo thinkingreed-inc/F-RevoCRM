@@ -711,8 +711,8 @@ ul#productsImageContainer > li a{
 } 
 
 /* カレンダーユーザーの選択リスト */
-
-.sidebar-essentials {
+div.main-container .sidebar-essentials {
+  overflow-x: hidden;
   scrollbar-width: thin;
 }
 .activitytypes .activitytype-indicator .userName.textOverflowEllipsis {
