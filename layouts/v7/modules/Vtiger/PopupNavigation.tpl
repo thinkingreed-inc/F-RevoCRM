@@ -10,14 +10,20 @@
 -->*}
 
 {strip}
-    <div class="col-md-2">
+    <div class="col-md-4">
         {if $MULTI_SELECT}
-            {if !empty($LISTVIEW_ENTRIES)}<button class="select btn btn-default" disabled="disabled"><strong>{vtranslate('LBL_ADD', $MODULE)}</strong></button>{/if}
+            {if !empty($LISTVIEW_ENTRIES)}
+            <div class="btn-group">
+                <button class="select btn btn-default" disabled="disabled"><strong>{vtranslate('LBL_ADD', $MODULE)}</strong></button>
+                <button class="selectAll btn btn-default"><strong>{vtranslate('LBL_ALL', $MODULE)}{vtranslate('LBL_ADD', $MODULE)}</strong></button>
+            </div>
+            {/if}
+            
         {else}
             &nbsp;
         {/if}
     </div>
-    <div class="col-md-10">
+    <div class="col-md-8">
         {assign var=RECORD_COUNT value=$LISTVIEW_ENTRIES_COUNT}
         {include file="Pagination.tpl"|vtemplate_path:$MODULE SHOWPAGEJUMP=true}
     </div>

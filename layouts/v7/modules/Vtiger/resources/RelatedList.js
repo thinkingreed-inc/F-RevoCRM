@@ -359,6 +359,39 @@ jQuery.Class("Vtiger_RelatedList_Js",{
 		return aDeferred.promise();
 	},
     
+	addRelationsForAllRecords : function () {
+		var aDeferred = jQuery.Deferred();
+		var sourceRecordId = this.parentRecordId;
+		var sourceModuleName = this.parentModuleName;
+		var relatedModuleName = this.relatedModulename;
+		var relationId = $('#relationId').val();
+		var popupInstance = Vtiger_Popup_Js.getInstance();
+		var searchParams = popupInstance.getPopupListSearchParams();
+		
+		var params = {};
+		params['mode'] = "addRelationsForAllRecords";
+		params['module'] = sourceModuleName;
+		params['action'] = 'RelationAjax';
+		params['relationId'] = relationId;
+		params['related_module'] = relatedModuleName;
+		params['src_record'] = sourceRecordId;
+		params['search_params'] = searchParams;
+		
+        app.helper.showProgress();
+        
+		app.request.post({"data":params}).then(
+			function(responseData){
+                app.helper.hideProgress();
+				aDeferred.resolve(responseData);
+			},
+
+			function(textStatus, errorThrown){
+                app.helper.hideProgress();
+				aDeferred.reject(textStatus, errorThrown);
+			}
+		);
+		return aDeferred.promise();
+	},
     
     
     triggerRelationAdditionalActions : function() {
