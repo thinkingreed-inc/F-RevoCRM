@@ -498,7 +498,7 @@ class ListViewController {
 					$value = "<span align='right'>".textlength_check($value)."</span>";
 				} elseif($field && $field->isNameField) {
 					$value = "<a href='index.php?module=$field->moduleName&view=Detail&".
-								"record=$recordId' title=title='".vtranslate($referenceModuleName, $referenceModuleName).":". $entityNames[$value] ."'>$value</a>";
+								"record=$recordId' title='".vtranslate($field->moduleName, $field->moduleName).":". $value ."'>$value</a>";
 				} elseif($field->getUIType() == 61) {
 					$attachmentId = (int)$value;
 					$displayValue = '--';
