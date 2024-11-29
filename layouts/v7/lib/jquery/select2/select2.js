@@ -3165,7 +3165,7 @@ the specific language governing permissions and limitations under the Apache Lic
                 }
             });
 
-            if (this.highlight() == -1 && noHighlightUpdate !== false && this.opts.closeOnSelect === true){
+            if (this.highlight() == -1 && noHighlightUpdate !== false) {
                 self.highlight(0);
             }
 
