@@ -58,6 +58,7 @@ Reports_Edit_Js("Reports_Edit3_Js",{},{
 		var thisInstance = this;
 		var form = this.getContainer();
 		form.submit(function(e){
+			$(this).find('input[type="submit"], button[type="submit"]').prop('disabled', 'true');
 			thisInstance.calculateValues();
 		});
 	},

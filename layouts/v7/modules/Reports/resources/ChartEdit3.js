@@ -126,7 +126,9 @@ Reports_Edit3_Js("Reports_ChartEdit3_Js",{
 			if(sector && legend) {
 				vtUtils.hideValidationMessage(jQuery('#s2id_groupbyfield'));
 				vtUtils.hideValidationMessage(jQuery('#s2id_datafields'));
-				form.submit();
+				form.submit(function() {
+					$(this).find('input[type="submit"], button[type="submit"]').prop('disabled', 'true');
+				});
 			} else if(!legend){
 				vtUtils.showValidationMessage(jQuery('#s2id_groupbyfield'), app.vtranslate('JS_PLEASE_SELECT_ATLEAST_ONE_OPTION'));
 				e.preventDefault();
