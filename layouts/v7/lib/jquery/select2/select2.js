@@ -871,7 +871,8 @@ the specific language governing permissions and limitations under the Apache Lic
                 select2.liveRegion.remove();
                 select2.dropdown.remove();
                 element
-                    .show()
+                    // .show()
+                    .removeClass("select2-offscreen")
                     .removeData("select2")
                     .off(".select2")
                     .prop("autofocus", this.autofocus || false);
@@ -2273,7 +2274,8 @@ the specific language governing permissions and limitations under the Apache Lic
             }));
 
             this.initContainerWidth();
-            this.opts.element.hide();
+            // this.opts.element.hide();
+            this.opts.element.addClass("select2-offscreen");
             this.setPlaceholder();
 
         },
@@ -2856,7 +2858,8 @@ the specific language governing permissions and limitations under the Apache Lic
             }));
 
             this.initContainerWidth();
-            this.opts.element.hide();
+            // this.opts.element.hide();
+            this.opts.element.addClass("select2-offscreen");
 
             // set the placeholder if necessary
             this.clearSearch();
