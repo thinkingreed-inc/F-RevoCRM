@@ -69,43 +69,40 @@ class Events_SaveAjax_Action extends Events_Save_Action {
 			$result['calendarModule'] = $request->get('calendarModule');
 			$result['sourceModule'] = $request->get('calendarModule');
 
-            // Handled to save follow up event
-            $followupMode = $request->get('followup');
+			// Handled to save follow up event
+			$followupMode = $request->get('followup');
 
-            if ($followupMode == 'on') {
-                //Start Date and Time values
-                $startTime = Vtiger_Time_UIType::getTimeValueWithSeconds($request->get('followup_time_start'));
-                $startDateTime = Vtiger_Datetime_UIType::getDBDateTimeValue($request->get('followup_date_start') . " " . $startTime);
-                list($startDate, $startTime) = explode(' ', $startDateTime);
+			if ($followupMode == 'on') {
+				//Start Date and Time values
+				$startTime = Vtiger_Time_UIType::getTimeValueWithSeconds($request->get('followup_time_start'));
+				$startDateTime = Vtiger_Datetime_UIType::getDBDateTimeValue($request->get('followup_date_start') . " " . $startTime);
+				list($startDate, $startTime) = explode(' ', $startDateTime);
 
-                $subject = $request->get('subject');
-                if ($startTime != '' && $startDate != '') {
-                    $recordModel->set('eventstatus', 'Planned');
-                    $recordModel->set('subject', '[Followup] ' . $subject);
-                    $recordModel->set('date_start', $startDate);
-                    $recordModel->set('time_start', $startTime);
+				$subject = $request->get('subject');
+				if ($startTime != '' && $startDate != '') {
+					$recordModel->set('eventstatus', 'Planned');
+					$recordModel->set('subject', '[Followup] ' . $subject);
+					$recordModel->set('date_start', $startDate);
+					$recordModel->set('time_start', $startTime);
 
-                    $currentUser = Users_Record_Model::getCurrentUserModel();
-                    $activityType = $recordModel->get('activitytype');
-                    if ($activityType == 'Call') {
-                        $minutes = $currentUser->get('callduration');
-                    } else {
-                        $minutes = $currentUser->get('othereventduration');
-                    }
-                    $dueDateTime = date('Y-m-d H:i:s', strtotime("$startDateTime+$minutes minutes"));
-                    list($endDate, $endTime) = explode(' ', $dueDateTime);
+					$currentUser = Users_Record_Model::getCurrentUserModel();
+					$activityType = $recordModel->get('activitytype');
+					if ($activityType == 'Call') {
+						$minutes = $currentUser->get('callduration');
+					} else {
+						$minutes = $currentUser->get('othereventduration');
+					}
+					$dueDateTime = date('Y-m-d H:i:s', strtotime("$startDateTime+$minutes minutes"));
+					list($endDate, $endTime) = explode(' ', $dueDateTime);
 
-                    $recordModel->set('due_date', $endDate);
-                    $recordModel->set('time_end', $endTime);
-                    $recordModel->set('mode', 'create');
-                    $recordModel->save();
-                }
-            }
-            $response->setEmitType(Vtiger_Response::$EMIT_JSON);
-            $response->setResult($result);
-
-            $this->isDuplicateCheck($recordModel);
-
+					$recordModel->set('due_date', $endDate);
+					$recordModel->set('time_end', $endTime);
+					$recordModel->set('mode', 'create');
+					$recordModel->save();
+				}
+			}
+			$response->setEmitType(Vtiger_Response::$EMIT_JSON);
+			$response->setResult($result);
 		} catch (DuplicateException $e) {
 			$response->setError($e->getMessage(), $e->getDuplicationMessage(), $e->getMessage());
 		} catch (Exception $e) {
@@ -227,24 +224,4 @@ class Events_SaveAjax_Action extends Events_Save_Action {
 		return $recordModel;
 	}
 
-    /**
-     * 重複チェック
-     *
-     * @param Vtiger_Record_Model $recordModel
-     * @param Users_Record_Model $user
-     * @return void
-     *
-    */
-    function isDuplicateCheck( Vtiger_Record_Model $recordModel )
-    {
-        // 同じ共有IDで同じ登録者の場合のデータを削除します。
-        global $adb;
-        $result = $adb->pquery("SELECT `activityid`,`invitee_parentid` FROM `vtiger_activity` GROUP BY `smownerid`,`invitee_parentid` HAVING COUNT(*) > 1");
-        for($index = 0;$index < $adb->num_rows($result);$index++)
-        {
-            $activityidId = $adb->query_result($result,$index,'activityid');
-            $adb->pquery("DELETE FROM `vtiger_activity` WHERE `activityid`= ". $activityidId);
-        }
-        return true;
-    }
 }
