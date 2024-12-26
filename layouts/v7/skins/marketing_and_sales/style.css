@@ -3033,6 +3033,7 @@ th {
   left: 19%;
 }
 .updates_timeline > li {
+  padding-bottom: 10px;
   position: static;
   top: 0;
   display: block;
