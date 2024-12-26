@@ -7,6 +7,7 @@
  * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
  *************************************************************************************/
+require_once('modules/Calendar/CalendarCommon.php');
 
 class Events_Save_Action extends Calendar_Save_Action {
 	public function process(Vtiger_Request $request) {
@@ -215,7 +216,7 @@ class Events_Save_Action extends Calendar_Save_Action {
     */
     public function deleteDuplicateInviteeEvent(Vtiger_Record_Model $recordModel)
     {
-		global $adb;
+		global $adb, $log;
 		$recordId = $recordModel->getId();
 		$ownerId  = $recordModel->get('assigned_user_id');
 		
@@ -237,6 +238,7 @@ class Events_Save_Action extends Calendar_Save_Action {
 		
 		// 参加者が重複している活動レコードがあれば論理削除する
 		// 親レコードと招待レコードが重複している場合は招待レコードを削除する制御を行う
+
 		$isDuplicateParentRecord = false;
 		for($i=0; $i<$duplicateResultCount; $i++) {
 			$activityId       = $adb->query_result($duplicateResult, $i, 'activityid');
@@ -255,68 +257,29 @@ class Events_Save_Action extends Calendar_Save_Action {
 				continue;
 			}
 			
-			// 削除する招待レコードのRecordModelを取得
-			$recordModel  = Vtiger_Record_Model::getInstanceById($activityId, 'Events');
-			
-			// 削除する招待レコードの繰り返し情報を削除
-			$deleteRecurringQuery  = "DELETE 
-									  FROM vtiger_activity_recurring_info 
-									  WHERE recurrenceid= ?";
-			$deleteRecurringParams = [ $activityId ]; 
-			$adb->pquery($deleteRecurringQuery, $deleteRecurringParams);
-			
-			// 削除する招待レコードの参加者を除いて、参加者情報（vtiger_invitees）を再作成
-			$this->reCreateInviteesRecord($activityId, $inviteeParentId);
-			
-			// 招待レコードの削除
-			$recordModel->getModule()->deleteRecord($recordModel);
-		}
-    }
-	
-	/**
-     * 参加者情報を再度作成する
-
-     * @param $activityId
-	 * @param $inviteeParentId
-     * @return void
-    */
-	public function reCreateInviteesRecord($activityId, $inviteeParentId)
-	{
-		global $adb;
-		// 招待レコードの参加者（ユーザーのID）を取得する
-		$getInviteesQuery  = "SELECT smownerid 
-							  FROM vtiger_activity 
-							  WHERE deleted = 0 
-								  AND invitee_parentid = ? AND activityid <> ?";
-		$getInviteesParams = [ $inviteeParentId, $activityId ];
-		$inviteesResult    = $adb->pquery($getInviteesQuery, $getInviteesParams);
-		$inviteesCount     = $adb->num_rows($inviteesResult);
-		
-		if($inviteesCount > 0) {
-			// 既存の参加者情報を一度削除する
-			$inviteeQuery  = "DELETE FROM vtiger_invitees WHERE activityid = ?";
-			$inviteeParams = [ $inviteeParentId ]; 
-			$adb->pquery($inviteeQuery, $inviteeParams);
-			
-			// 参加者情報を再度作り直す
-			//（招待レコードで更新が発生した場合に参加者情報が完全に消えることがあるため）
-			$newInviteeQuery  = "INSERT INTO vtiger_invitees VALUES ";
-			$placeHolder      = "(?,?,?)";
-			$newInviteeParams = [];
-			
-			for($i=0; $i<$inviteesCount; $i++) {
-				$smownerId = $adb->query_result($inviteesResult, $i, 'smownerid');
-				$newParams = [ $inviteeParentId, $smownerId, 'sent' ];
-				$newInviteeParams = array_merge($newInviteeParams, $newParams); 
+			try {
+				// 削除する招待レコードのRecordModelを取得
+				$recordModel  = Vtiger_Record_Model::getInstanceById($activityId, 'Events');
 				
-				// クエリ作成（最後だけ,を付けない）
-				$newInviteeQuery .= $placeHolder;
-				if($inviteesCount - 1 !== $i) {
-					$newInviteeQuery .= ', ';
-				}
+				// 削除する招待レコードの繰り返し情報を削除
+				$deleteRecurringQuery  = "DELETE 
+										  FROM vtiger_activity_recurring_info 
+										  WHERE recurrenceid= ?";
+				$deleteRecurringParams = [ $activityId ]; 
+				$adb->pquery($deleteRecurringQuery, $deleteRecurringParams);
+				
+				// 削除する招待レコードの参加者を除いて、参加者情報（vtiger_invitees）を再作成
+				reCreateInviteesRecord($activityId, $inviteeParentId);
+				
+				// 招待レコードの削除
+				$recordModel->getModule()->deleteRecord($recordModel);
+				
+			} catch(Exception $e) {
+				$errMsg = "deleteDuplicateInviteeEvent error  "
+						.$e->getMessage().":".$e->getTraceAsString();
+				$log->error($errMsg);
+				throw new Exception($errMsg);
 			}
-			
-			$adb->pquery($newInviteeQuery, $newInviteeParams);
-		}
-	}
+		} 
+    }
 }
