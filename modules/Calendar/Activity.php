@@ -640,52 +640,57 @@ function insertIntoRecurringTable(& $recurObj)
 		// 活動のparentidが共通のレコードでsmowneridが一致するものがある場合は復元しない
 		if($module === 'Calendar') {
 			// 同じparent id で参加者が重複している招待レコードを探す
-			$query = "SELECT activityid
-					  FROM vtiger_activity 
-					  WHERE invitee_parentid = (SELECT invitee_parentid
-									 			FROM vtiger_activity 
-									 			WHERE activityid = ?) 
-						AND smownerid = (SELECT smownerid
-										 FROM vtiger_activity 
-										 WHERE activityid = ?) 
-						AND deleted = 0";
-			$params      = [ $id, $id ];
-			$result      = $adb->pquery($query, $params);
-			$resultCount = $adb->num_rows($result);
+			$getDuplicateQuery    = "SELECT va.activityid
+									 FROM vtiger_activity AS va
+										JOIN vtiger_activity AS va2 
+										ON va2.activityid = ?
+									 WHERE va.invitee_parentid = va2.invitee_parentid
+										AND va.smownerid = va2.smownerid
+										AND va.deleted = 0";
+										
+			$duplicateResult      = $adb->pquery($getDuplicateQuery, [ $id ]);
+			$duplicateResultCount = $adb->num_rows($duplicateResult);
 			
-			if($resultCount === 0) {
-				// レコードのparentid
-				$recordInfo       = "SELECT invitee_parentid, smownerid
-									 FROM vtiger_activity 
-									 WHERE activityid = ?";
-				$recordInfoParams = [ $id ];
-				$result = $adb->pquery($recordInfo, $recordInfoParams);
-				
-				// 復活させた場合にvtiger_invtiteeに再度入れる
-				for($i=0; $i<$adb->num_rows($result); $i++) {
-					$inviteeParentId = $adb->query_result($result, $i, 'invitee_parentid');
-					$smownerId       = $adb->query_result($result, $i, 'smownerid');
-					// 参加者情報を復元
-					$inviteeQuery  = "INSERT INTO vtiger_invitees VALUES (?,?,?)";
-					$inviteeParams = [ $inviteeParentId, $smownerId, 'sent' ]; 
-					$adb->pquery($inviteeQuery, $inviteeParams);
-				}
-				
-			}else {
-				// 重複したレコードは復元せずに削除
-				$recordIds = [];
-				for($i=0; $i<$resultCount; $i++) {
-					$recordIds[]     = $adb->query_result($result, $i, 'activityid');
-				}
-				
+			// 重複したレコードは復元せずに削除
+			if($duplicateResultCount !== 0) {
 				$recycleBinModule = new RecycleBin_Module_Model();
-				$recycleBinModule->deleteRecords($recordIds);
+				$recycleBinModule->deleteRecords([ $id ]);
 				
 				return;
 			}
+			
+			// vtiger_invtiteeに再度入れる
+			$this->restoreInviteeInformation($id);
 		}
 		
+		// レコードの復元処理
 		parent::restore($module, $id);
+	}
+
+	public function restoreInviteeInformation($id) 
+	{
+		global $adb;
+		// レコードのparentidとユーザーIDを取得する
+		$getRecordInfo       = "SELECT invitee_parentid, smownerid
+								FROM vtiger_activity 
+								WHERE activityid = ?";
+		$getRecordInfoParams = [ $id ];
+		$recordInfoResult    = $adb->pquery($getRecordInfo, $getRecordInfoParams);
+		$recordInfoCount     = $adb->num_rows($recordInfoResult);
+		
+		if($recordInfoCount > 0) {
+			return;
+		}
+
+		//vtiger_invtiteeに入れる
+		for($i=0; $i<$recordInfoCount; $i++) {
+			$inviteeParentId = $adb->query_result($recordInfoResult, $i, 'invitee_parentid');
+			$smownerId       = $adb->query_result($recordInfoResult, $i, 'smownerid');
+			// 参加者情報を復元
+			$inviteeQuery  = "INSERT INTO vtiger_invitees VALUES (?,?,?)";
+			$inviteeParams = [ $inviteeParentId, $smownerId, 'sent' ]; 
+			$adb->pquery($inviteeQuery, $inviteeParams);
+		}
 	}
 
 	/**
