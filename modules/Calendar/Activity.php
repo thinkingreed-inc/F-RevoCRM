@@ -659,12 +659,9 @@ function insertIntoRecurringTable(& $recurObj)
 		$duplicateResult      = $adb->pquery($getDuplicateQuery, [ $id ]);
 		$duplicateResultCount = $adb->num_rows($duplicateResult);
 		
-		// 重複したレコードは復元せずに削除
+		// 重複したレコードは復元しない
 		if($duplicateResultCount !== 0) {
-			$recycleBinModule = new RecycleBin_Module_Model();
-			$recycleBinModule->deleteRecords([ $id ]);
-			
-			return;
+			throw new Exception(vtranslate('LBL_DUPULICATE_EVENT_EXISTS', $module));
 		}
 		
 		// レコードの復元処理
