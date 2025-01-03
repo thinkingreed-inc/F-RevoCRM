@@ -305,7 +305,7 @@ Calendar_Calendar_Js('Calendar_SharedCalendar_Js', {
 			var cashDisabledFeedsStorageKey = thisInstance.getDisabledFeeds();
 
 			Object.keys(users).forEach(function (id) {
-				var user = users[id];
+				var user = app.getDecodedValue(users[id]);
 				if(id == myId) {
 					thisInstance.refreshFeed($(".activitytype-indicator.calendar-feed-indicator.mine").find("input[type='checkbox']"));
 					return ;//continue
