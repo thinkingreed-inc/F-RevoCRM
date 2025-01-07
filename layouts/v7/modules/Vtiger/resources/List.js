@@ -1227,8 +1227,11 @@ Vtiger.Class("Vtiger_List_Js", {
 				thisInstance.registerInlineEdit(currentTrElement);
 			}
 		});
-		this.registerInlineEditSaveEvent();
-		this.registerInlineEditCancelEvent();
+		
+		if (listViewContainer.find('#isExcelEditSupported').val() !== 'no') {
+			this.registerInlineEditSaveEvent();
+			this.registerInlineEditCancelEvent();
+		}
 
 		app.event.on('post.listViewInlineEdit.click', function (event, editedRow) {
 			vtUtils.applyFieldElementsView(editedRow);
