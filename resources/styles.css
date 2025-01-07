@@ -709,3 +709,32 @@ ul#productsImageContainer > li a{
   right: 15px;
   z-index: 1;
 } 
+
+/* カレンダーユーザーの選択リスト */
+div.main-container .sidebar-essentials {
+  overflow-x: hidden;
+  scrollbar-width: thin;
+}
+.activitytypes .activitytype-indicator .userName.textOverflowEllipsis {
+  vertical-align: middle;
+  max-width: 90px;
+}
+@media (min-width: 767px) and (max-width: 991px) {
+  .activitytypes .activitytype-indicator .userName.textOverflowEllipsis {
+    max-width: 600px;
+  } 
+}
+@media (min-width: 575px) and (max-width: 768px) {
+  .activitytypes .activitytype-indicator .userName.textOverflowEllipsis {
+    max-width: 400px;
+  }
+}
+@media (min-width: 401px) and (max-width: 576px) {
+  .activitytypes .activitytype-indicator .userName.textOverflowEllipsis {
+    max-width: 200px;
+  }
+}
+
+.calendarview div.sidebar-essentials {
+  overflow: hidden;
+}
