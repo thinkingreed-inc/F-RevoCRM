@@ -190,6 +190,7 @@ $languageStrings = array(
 	'Duration' => '期間',
 	'Duration Minutes' => '期間(分)',
 	'No Time' => '時間なし',
+	'LBL_DUPULICATE_EVENT_EXISTS'=> 'この活動は復元できません。活動の参加者が重複しています。',
 );
 
 $jsLanguageStrings = array(
