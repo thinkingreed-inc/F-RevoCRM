@@ -279,10 +279,10 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 
 	protected function pullEvents($start, $end, &$result, $userid = false, $color = null, $textColor = 'white', $isGroupId = false, $conditions = '') {
 		$dbStartDateOject = DateTimeField::convertToDBTimeZone($start);
-		$dbStartDateTime = $dbStartDateOject->format('Y-m-d H:i:s');
+		$dbStartDate = $dbStartDateOject->format('Y-m-d');
 
 		$dbEndDateObject = DateTimeField::convertToDBTimeZone($end);
-		$dbEndDateTime = $dbEndDateObject->format('Y-m-d H:i:s');
+		$dbEndDate = $dbEndDateObject->format('Y-m-d');
 
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$db = PearDatabase::getInstance();
@@ -315,7 +315,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			$query .=  $this->generateCalendarViewConditionQuery($conditions).'AND ';
 		}
 		
-		$query.= " CONCAT(date_start, '', time_start)  <= ? AND CONCAT(due_date, '', time_end) >= ?";
+		$query.= " date_start <= ? AND due_date >= ?";
 		
 		if(empty($userid)){
 			$eventUserId  = $currentUser->getId();
@@ -326,7 +326,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 		
 		$query.= " AND vtiger_crmentity.smownerid IN (".  generateQuestionMarks($userIds).")";
 		
-		$params = array($dbEndDateTime, $dbStartDateTime, $userIds);
+		$params = array($dbEndDate, $dbStartDate, $userIds);
 		$queryResult = $db->pquery($query, $params);
 
 		$creatorfield = Vtiger_Field_Model::getInstance('creator', $moduleModel);
