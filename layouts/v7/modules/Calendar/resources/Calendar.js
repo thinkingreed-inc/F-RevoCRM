@@ -1480,6 +1480,16 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				'</span>&nbsp;'
 				);
 	},
+	
+	// 月表示終了時間を追加
+	addMonthViewEventEndTime: function (event, element, viewName) {
+		if (viewName !== 'month') return;
+		
+		var timeFormat = this.getDefaultCalendarTimeFormat();
+		var endTimeText = ' - ' + moment(event.end).format(timeFormat);
+		element.find('.fc-content > .fc-time').append(endTimeText);
+	},
+	
 	_deleteCalendarEvent: function (eventId, sourceModule, extraParams) {
 		var thisInstance = this;
 		if (typeof extraParams === 'undefined') {
@@ -1741,6 +1751,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 	},
 	performPreEventRenderActions: function (event, element) {
 		var calendarView = this.getCalendarViewContainer().fullCalendar('getView');
+		this.addMonthViewEventEndTime(event, element, calendarView.name);
 		this.addActivityTypeIcons(event, element);
 		this.registerPopoverEvent(event, element, calendarView);
 	},
