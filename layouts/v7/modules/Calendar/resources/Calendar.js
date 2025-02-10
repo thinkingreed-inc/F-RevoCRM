@@ -1917,12 +1917,12 @@ Vtiger.Class("Calendar_Calendar_Js", {
                                 columnFormat: dateFormat + ' dddd'
                             }
 			},
-			height: (CalendarHeight),
+			contentHeight: CalendarHeight,
 			fixedWeekCount: false,
 			firstDay: thisInstance.daysOfWeek[thisInstance.getUserPrefered('start_day')],
 			scrollTime: thisInstance.getUserPrefered('start_hour'),
 			editable: true,
-			eventLimit: true,
+			eventLimit: false,
 			defaultDate:defaultDate,
 			defaultView:defaultView,
 			slotLabelFormat: userDefaultTimeFormat,
