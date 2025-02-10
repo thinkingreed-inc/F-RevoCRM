@@ -1483,10 +1483,13 @@ Vtiger.Class("Calendar_Calendar_Js", {
 	
 	// 月表示終了時間を追加
 	addMonthViewEventEndTime: function (event, element, viewName) {
-		if (viewName !== 'month') return;
+		if (viewName !== 'month' || !event.end) return;
+		
+		var endDateTime =  moment(event.end);
+		if(!endDateTime.isValid()) return;
 		
 		var timeFormat = this.getDefaultCalendarTimeFormat();
-		var endTimeText = ' - ' + moment(event.end).format(timeFormat);
+		var endTimeText = ' - ' + endDateTime.format(timeFormat);
 		element.find('.fc-content > .fc-time').append(endTimeText);
 	},
 	
