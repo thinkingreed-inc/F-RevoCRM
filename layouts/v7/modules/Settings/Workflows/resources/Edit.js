@@ -207,7 +207,7 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
             } else {
                value = '';
             }
-            var clonedBooleanElement = '<input type="checkbox" style="width: 30%;" class="fieldValue inputElement" value="' + value + '" data-input="true" >';
+            var clonedBooleanElement = '<input type="checkbox" style="width:15px; height:15px;" class="fieldValue inputElement" value="' + value + '" data-input="true" >';
             clonedPopupUi.find('.fieldValueContainer div').prepend(clonedBooleanElement);
 
             var fieldValue = clonedPopupUi.find('.fieldValueContainer input').val();
