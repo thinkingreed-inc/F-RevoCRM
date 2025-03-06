@@ -12,6 +12,7 @@ class Vtiger_RelationAjax_Action extends Vtiger_Action_Controller {
 	function __construct() {
 		parent::__construct();
 		$this->exposeMethod('addRelation');
+		$this->exposeMethod('addRelationsForAllRecords');
 		$this->exposeMethod('deleteRelation');
 		$this->exposeMethod('getRelatedListPageCount');
 		$this->exposeMethod('getRelatedRecordInfo');
@@ -85,6 +86,196 @@ class Vtiger_RelationAjax_Action extends Vtiger_Action_Controller {
 		$response = new Vtiger_Response();
 		$response->setResult(true);
 		$response->emit();
+	}
+
+	function addRelationsForAllRecords(Vtiger_Request $request) {
+		$allRecordIds = $this->getNoRelatedRecordIds($request);		
+		$request->set('related_record_list', $allRecordIds);
+		$this->addRelation($request);
+	}
+	
+	public function getNoRelatedRecordIds(Vtiger_Request $request) {
+		global $adb;
+
+		$moduleName =  $request->get('related_module');
+		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
+		
+		$sourceModule = $request->getModule();
+		$sourceField = $request->get('src_field');
+		$sourceRecord = $request->get('src_record');
+		
+		$relatedParentModule = $request->get('related_parent_module');
+		$relatedParentId = $request->get('related_parent_id');
+		
+		$relationId = $request->get('relationId'); 
+		
+		$orderBy = $request->get('orderby');
+		$sortOrder = $request->get('sortorder');
+		
+		$searchKey = $request->get('search_key');
+		$searchValue = $request->get('search_value');
+		$searchParams=$request->get('search_params');
+		
+		$isRecordExists = Vtiger_Util_Helper::checkRecordExistance($relatedParentId);
+
+		if($isRecordExists) {
+			$relatedParentModule = '';
+			$relatedParentId = '';
+		} else if($isRecordExists === NULL) {
+			$relatedParentModule = '';
+			$relatedParentId = '';
+		}
+
+		if(!empty($relatedParentModule) && !empty($relatedParentId)) {
+			$parentRecordModel = Vtiger_Record_Model::getInstanceById($relatedParentId, $relatedParentModule);
+			$listViewModel = Vtiger_RelationListView_Model::getInstance($parentRecordModel, $moduleName);
+			$searchModuleModel = $listViewModel->getRelatedModuleModel();
+		}else{
+			$listViewModel = Vtiger_ListView_Model::getInstanceForPopup($moduleName);
+			$searchModuleModel = $listViewModel->getModule();
+		}
+
+		if($moduleName == 'Documents' && $sourceModule == 'Emails') {
+			$listViewModel->extendPopupFields(array('filename'=>'filename'));
+		}
+		
+		if(!empty($orderBy)) {
+			$listViewModel->set('orderby', $orderBy);
+			$listViewModel->set('sortorder', $sortOrder);
+		}
+		
+		if(!empty($sourceModule)) {
+			$listViewModel->set('src_module', $sourceModule);
+			$listViewModel->set('src_field', $sourceField);
+			$listViewModel->set('src_record', $sourceRecord);
+		}
+		
+		if((!empty($searchKey)) && (!empty($searchValue)))  {
+			$listViewModel->set('search_key', $searchKey);
+			$listViewModel->set('search_value', $searchValue);
+		}
+		
+		$listViewModel->set('relationId',$relationId);
+
+		if(!empty($searchParams)){
+			$transformedSearchParams = Vtiger_Util_Helper::transferListSearchParamsToFilterCondition($searchParams, $searchModuleModel);
+			$listViewModel->set('search_params',$transformedSearchParams);
+		}
+		
+		if(!empty($relatedParentModule) && !empty($relatedParentId)) {
+			$moduleFields = $moduleModel->getFields();
+			$whereCondition = [];
+
+			foreach ($searchParams as $fieldListGroup) {
+				foreach ($fieldListGroup as $fieldSearchInfo) {
+					$fieldModel = $moduleFields[$fieldSearchInfo[0]];
+					$tableName = $fieldModel->get('table');
+					$column = $fieldModel->get('column');
+					$whereCondition[$fieldSearchInfo[0]] = [
+						$tableName . '.' . $column,
+						$fieldSearchInfo[1],
+						$fieldSearchInfo[2],
+						$fieldSearchInfo[3]
+					];
+				}
+			}
+
+			if (!empty($whereCondition)) {
+				$listViewModel->set('whereCondition', $whereCondition);
+			}
+		}
+
+		if((!isset($parent_related_records) || !$parent_related_records) && 
+			!empty($relatedParentModule) && !empty($relatedParentId)){
+			$relatedParentModule = null;
+			$relatedParentId = null;
+			$listViewModel = Vtiger_ListView_Model::getInstanceForPopup($moduleName);
+
+			if(!empty($orderBy)) {
+				$listViewModel->set('orderby', $orderBy);
+				$listViewModel->set('sortorder', $sortOrder);
+			}
+			if(!empty($sourceModule)) {
+				$listViewModel->set('src_module', $sourceModule);
+				$listViewModel->set('src_field', $sourceField);
+				$listViewModel->set('src_record', $sourceRecord);
+			}
+			if((!empty($searchKey)) && (!empty($searchValue)))  {
+				$listViewModel->set('search_key', $searchKey);
+				$listViewModel->set('search_value', $searchValue);
+			}
+
+			if(!empty($searchParams)) {
+				$transformedSearchParams = Vtiger_Util_Helper::transferListSearchParamsToFilterCondition($searchParams, $searchModuleModel);
+				$listViewModel->set('search_params',$transformedSearchParams);
+			}
+		}  
+		
+		if(empty($searchParams) || !is_array($searchParams)) {
+			$searchParams = array();
+		}
+
+		$queryGenerator = $listViewModel->get('query_generator');
+
+		 $searchParams = $listViewModel->get('search_params');
+		if(empty($searchParams)) {
+			$searchParams = array();
+		}
+		$glue = "";
+		if(php7_count($queryGenerator->getWhereFields()) > 0 && (php7_count($searchParams)) > 0) {
+			$glue = QueryGenerator::$AND;
+		}
+		$queryGenerator->parseAdvFilterList($searchParams, $glue);
+
+		$searchKey = $listViewModel->get('search_key');
+		$searchValue = $listViewModel->get('search_value');
+		$operator = $listViewModel->get('operator');
+		if(!empty($searchKey)) {
+			$queryGenerator->addUserSearchConditions(array('search_field' => $searchKey, 'search_text' => $searchValue, 'operator' => $operator));
+		}
+
+		$orderBy = $listViewModel->getForSql('orderby');
+		$sortOrder = $listViewModel->getForSql('sortorder');
+
+		if(!empty($orderBy)){
+			$queryGenerator = $listViewModel->get('query_generator');
+			$fieldModels = $queryGenerator->getModuleFields();
+			$orderByFieldModel = $fieldModels[$orderBy];
+			if($orderByFieldModel && ($orderByFieldModel->getFieldDataType() == Vtiger_Field_Model::REFERENCE_TYPE ||
+					$orderByFieldModel->getFieldDataType() == Vtiger_Field_Model::OWNER_TYPE)){
+				$queryGenerator->addWhereField($orderBy);
+			}
+		}
+		$listQuery = $listViewModel->getQuery();
+		$sourceModule = $listViewModel->get('src_module');
+		if(!empty($sourceModule) && method_exists($moduleModel, 'getQueryByModuleField')) {
+			$overrideQuery = $moduleModel->getQueryByModuleField(
+										$sourceModule, $listViewModel->get('src_field'), 
+										$listViewModel->get('src_record'), 
+										$listQuery,
+										$listViewModel->get('relationId')
+							 );
+			if(!empty($overrideQuery)) {
+				$listQuery = $overrideQuery;
+			}
+		}
+		
+		// 取得するカラムをcrmidのみにする
+		$split = preg_split('/ FROM /i', $listQuery) ?: [];
+		$splitCount = count($split);
+		$listQuery = "SELECT vtiger_crmentity.crmid ";
+		for ($i=1; $i<$splitCount; $i++) {
+			$listQuery = $listQuery. ' FROM ' .$split[$i];
+		}
+		
+		// IDを取得
+		$result = $adb->query($listQuery);
+		$ids = [];
+		for($i=0; $i<$adb->num_rows($result); $i++) {
+			$ids[] = $adb->query_result($result, $i, 'crmid');
+		}
+		
+		return $ids;
 	}
 
 	/**
