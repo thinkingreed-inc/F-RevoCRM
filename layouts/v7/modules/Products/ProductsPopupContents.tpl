@@ -80,7 +80,7 @@
                                 {assign var="ROW_NUMBER" value={$smarty.foreach.listViewEntry.index}}
                                 {assign var=LISTVIEW_HEADERNAME value=$LISTVIEW_HEADER->get('name')}
                                 {assign var=LISTVIEW_ENTRY_VALUE value=$LISTVIEW_ENTRY->get($LISTVIEW_HEADERNAME)}
-                                <td class="listViewEntryValue textOverflowEllipsis" title="{$RECORD_DATA[$LISTVIEW_HEADERNAME]}">
+                                <td class="listViewEntryValue textOverflowEllipsis" title="{$RECORD_DATA[$LISTVIEW_HEADERNAME]|strip_tags}">
                                     {if $LISTVIEW_HEADER->isNameField() eq true or $LISTVIEW_HEADER->get('uitype') eq '4'}
                                         <a>{$LISTVIEW_ENTRY->get($LISTVIEW_HEADERNAME)}</a>
                                     {else if $LISTVIEW_HEADER->get('uitype') eq '72'}
