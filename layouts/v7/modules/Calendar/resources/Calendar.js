@@ -1685,6 +1685,11 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				popOverHTML += '<br>';
 			}
 
+			if(event.modifiedby && event.modifiedby != '') {
+				popOverHTML += '  ' + event.modifiedby_field_label + ': ' + event.modifiedby;
+				popOverHTML += '<br>';
+			}
+
 			popOverHTML += '</span>';
 
 			if (sourceModule === 'Calendar' || sourceModule == 'Events'||sourceModule =="ProjectTask") {
