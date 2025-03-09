@@ -139,6 +139,48 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
         this.formValidatorInstance = editViewForm.vtValidate(params);
     },
 
+	/**
+	 * Register Quick Create Save Event
+	 * @param {type} form
+	 * @returns {undefined}
+	 */
+	quickCreateSave : function(form,invokeParams){
+		var params = {
+			submitHandler: function(form) {
+				if(this.numberOfInvalids() > 0) {
+					return false;
+				}
+				var formData = jQuery(form).serializeFormData();
+				Calendar_Edit_Js.FetchOverlappingEventsBeforeSave(formData).then(function () {
+					// to Prevent submit if already submitted
+					jQuery("button[name='saveButton']").attr("disabled","disabled");
+					
+					if(formData['module']=="HelpDesk"){
+						formData['description']=formData['description'].replace(/\n/g,'<br>');
+					}
+					app.request.post({data:formData}).then(function(err,data){
+						app.helper.hideProgress();
+						if(err === null) {
+							jQuery('.vt-notification').remove();
+							app.event.trigger("post.QuickCreateForm.save",data,jQuery(form).serializeFormData());
+							app.helper.hideModal();
+							var message = formData.record !== "" ? app.vtranslate('JS_RECORD_UPDATED'):app.vtranslate('JS_RECORD_CREATED');
+							app.helper.showSuccessNotification({"message":message},{delay:4000});
+							invokeParams.callbackFunction(data, err);
+							//To unregister onbefore unload event registered for quickcreate
+							window.onbeforeunload = null;
+						}else{
+							app.event.trigger('post.save.failed', err);
+							jQuery("button[name='saveButton']").removeAttr('disabled');
+						}
+					});
+				});
+			},
+			validationMeta: quickcreate_uimeta
+		};
+		form.vtValidate(params);
+	},
+
 	openPopUp : function(e){
 		var thisInstance = this;
 		var parentElem = thisInstance.getParentElement(jQuery(e.target));
