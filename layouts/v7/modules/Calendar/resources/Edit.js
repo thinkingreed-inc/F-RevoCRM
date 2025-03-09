@@ -60,6 +60,44 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 		jQuery("#alldayEvent").attr('data-validation-engine','change');
 	},
 
+	// 活動期間が重なる活動を取得し, 重複があれば確認ダイアログを表示する(Yes/No)
+	FetchOverlappingEventsBeforeSave: function (formData) {
+		if (formData.module != "Events") {
+			return Promise.resolve();
+		}
+		var requestParams = {
+			'module': 'Calendar',
+			'action': 'FetchOverlappingEventsBeforeSave',
+			'start': `${formData.date_start} ${formData.time_start}`,
+			'end': `${formData.due_date} ${formData.time_end}`,
+			'is_allday': formData.is_allday,
+		};
+		app.helper.showProgress();
+		return app.request.post({data: requestParams}).then(function (err, data) {
+			if (!err) {
+				app.helper.hideProgress();
+				if (data.message) {
+					// 重複活動がある場合, 確認ダイアログを表示
+					return app.helper.showConfirmationBox({message: data.message}).then(
+						function () {
+							return Promise.resolve();
+						},
+						function () {
+							// No を選択した場合は処理を中断
+							return;
+						}
+					);
+				}
+				// 重複活動が無い場合はそのまま続行
+				return Promise.resolve();
+			} else {
+				app.helper.hideProgress();
+				console.error("Error in FetchOverlappingEventsBeforeSave:", error);
+				return Promise.reject(error);
+			}
+		});
+	},
+
 	userChangedTimeDiff:false
 
 },{
