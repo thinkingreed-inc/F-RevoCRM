@@ -100,4 +100,5 @@ $languageStrings = array(
 	'INVITATION'=>' Invitation ',
 	'Busy' => 'Busy',
 
+	'OVERLAPPING_TAG_EXISTS' => 'There are events with overlapping periods<br>Event Name: ',
 );
