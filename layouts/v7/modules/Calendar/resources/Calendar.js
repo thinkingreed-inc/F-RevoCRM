@@ -1560,19 +1560,23 @@ Vtiger.Class("Calendar_Calendar_Js", {
 					jQuery("button[name='saveButton']").removeAttr("disabled");
 					return false;
 				}
-				var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
-				app.event.trigger(e);
-				if (e.isDefaultPrevented()) {
-					return false;
-				}
-				if (isRecurring) {
-					app.helper.showConfirmationForRepeatEvents().then(function (postData) {
-						thisInstance._updateEvent(form, postData);
-					});
-				} else {
-					thisInstance._updateEvent(form);
-					jQuery("button[name='saveButton']").prop("disabled", true);
-				}
+
+				var formData = jQuery(form).serializeFormData();
+				Calendar_Edit_Js.FetchOverlappingEventsBeforeSave(formData).then(function () {
+					var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
+					app.event.trigger(e);
+					if (e.isDefaultPrevented()) {
+						return false;
+					}
+					if (isRecurring) {
+						app.helper.showConfirmationForRepeatEvents().then(function (postData) {
+							thisInstance._updateEvent(form, postData);
+						});
+					} else {
+						thisInstance._updateEvent(form);
+						jQuery("button[name='saveButton']").prop("disabled", true);
+					}
+				});
 			}
 		};
 		modalContainer.find('form').vtValidate(params);
