@@ -113,6 +113,31 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 		this.relatedContactElement =  jQuery('#contact_id_display', form);
 		return this.relatedContactElement;
 	},
+	
+	/**
+     * Function to Validate and Save Event 
+     * @returns {undefined}
+     */
+    registerValidation : function () {
+        var editViewForm = this.getForm();
+		var params = {
+			submitHandler : function(form) {
+				var formData = jQuery(form).serializeFormData();
+				Calendar_Edit_Js.FetchOverlappingEventsBeforeSave(formData).then(function () {
+					var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
+					app.event.trigger(e);
+					if(e.isDefaultPrevented()) {
+						return false;
+					}
+					window.onbeforeunload = null;
+					editViewForm.find('.saveButton').attr('disabled',true);
+					form.submit();
+				});
+				return false;
+            }
+		};
+        this.formValidatorInstance = editViewForm.vtValidate(params);
+    },
 
 	openPopUp : function(e){
 		var thisInstance = this;
