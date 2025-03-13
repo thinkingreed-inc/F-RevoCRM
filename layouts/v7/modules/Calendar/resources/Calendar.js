@@ -1677,7 +1677,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			}
 
 			if(eventObj.description && eventObj.description != '') {
-				popOverHTML += eventObj.description;
+				popOverHTML += '<div class="description-info">' + eventObj.description + '</div>';
 				popOverHTML += '<br>';
 			}
 			if(event.creator && event.creator != '') {
