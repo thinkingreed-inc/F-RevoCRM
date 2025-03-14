@@ -592,6 +592,10 @@ temporary rendered events).
 	margin-top: -20px;
 }
 
+.calendar-space {
+    margin-top: 20px;
+}
+
 
 /* Event Selection (only for touch devices)
 --------------------------------------------------------------------------------------------------*/
