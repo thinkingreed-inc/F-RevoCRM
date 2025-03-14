@@ -1677,17 +1677,22 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			}
 
 			if(eventObj.description && eventObj.description != '') {
-				popOverHTML += '<div class="description-info">' + eventObj.description + '</div>';
-			}
-			
-			if(event.creator && event.creator != '') {
-				popOverHTML += '  ' + event.creator_field_label + ': ' + event.creator;
-				popOverHTML += '<br>';
+				popOverHTML += eventObj.description;
 			}
 
-			if(event.modifiedby && event.modifiedby != '') {
-				popOverHTML += '  ' + event.modifiedby_field_label + ': ' + event.modifiedby;
-				popOverHTML += '<br>';
+			if(event.creator && event.creator != '' || event.modifiedby && event.modifiedby != '') {
+				popOverHTML += '<div class="calendar-space">';
+
+				if(event.creator && event.creator != '') {
+					popOverHTML += '  ' + event.creator_field_label + ': ' + event.creator;
+					popOverHTML += '<br>';
+				}
+
+				if(event.modifiedby && event.modifiedby != '') {
+					popOverHTML += '  ' + event.modifiedby_field_label + ': ' + event.modifiedby;
+					popOverHTML += '<br>';
+				}
+				popOverHTML += '</div>';
 			}
 
 			popOverHTML += '</span>';
