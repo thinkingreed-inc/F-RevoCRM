@@ -545,7 +545,11 @@ Vtiger.Class('Vtiger_Index_Js', {
 				app.helper.showVerticalScroll(jQuery('form[name="QuickCreate"] .modal-body'), Options);
 
 				var targetInstance = thisInstance;
-				var moduleInstance = Vtiger_Edit_Js.getInstanceByModuleName(moduleName);
+				if(moduleName == 'Calendar' || moduleName == 'Events'){
+					var moduleInstance = Calendar_Edit_Js.getInstanceByModuleName(moduleName);
+				}else{
+					var moduleInstance = Vtiger_Edit_Js.getInstanceByModuleName(moduleName);
+				}
 				if(typeof(moduleInstance.quickCreateSave) === 'function'){
 					targetInstance = moduleInstance;
 					targetInstance.registerBasicEvents(form);

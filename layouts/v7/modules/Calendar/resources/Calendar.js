@@ -1131,29 +1131,32 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var thisInstance = this;
 		var params = {
 			submitHandler: function (form) {
-				jQuery("button[name='saveButton']").attr("disabled", "disabled");
 				if (this.numberOfInvalids() > 0) {
 					return false;
 				}
-				var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
-				app.event.trigger(e);
-				if (e.isDefaultPrevented()) {
-					return false;
-				}
+
 				var formData = jQuery(form).serializeFormData();
-				app.helper.showProgress();
-				app.request.post({data: formData}).then(function (err, data) {
-					app.helper.hideProgress();
-					if (!err) {
-						jQuery('.vt-notification').remove();
-						app.helper.hideModal();
-						var message = formData.record !== "" ? app.vtranslate('JS_EVENT_UPDATED') : app.vtranslate('JS_RECORD_CREATED');
-						app.helper.showSuccessNotification({"message": message});
-						thisInstance.showEventOnCalendar(data);
-					} else {
-						app.event.trigger('post.save.failed', err);
-						jQuery("button[name='saveButton']").removeAttr('disabled');
+				Calendar_Edit_Js.FetchOverlappingEventsBeforeSave(formData).then(function () {
+					jQuery("button[name='saveButton']").attr("disabled", "disabled");
+					var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
+					app.event.trigger(e);
+					if (e.isDefaultPrevented()) {
+						return false;
 					}
+					app.helper.showProgress();
+					app.request.post({data: formData}).then(function (err, data) {
+						app.helper.hideProgress();
+						if (!err) {
+							jQuery('.vt-notification').remove();
+							app.helper.hideModal();
+							var message = formData.record !== "" ? app.vtranslate('JS_EVENT_UPDATED') : app.vtranslate('JS_RECORD_CREATED');
+							app.helper.showSuccessNotification({"message": message});
+							thisInstance.showEventOnCalendar(data);
+						} else {
+							app.event.trigger('post.save.failed', err);
+							jQuery("button[name='saveButton']").removeAttr('disabled');
+						}
+					});
 				});
 			}
 		};
@@ -1570,19 +1573,23 @@ Vtiger.Class("Calendar_Calendar_Js", {
 					jQuery("button[name='saveButton']").removeAttr("disabled");
 					return false;
 				}
-				var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
-				app.event.trigger(e);
-				if (e.isDefaultPrevented()) {
-					return false;
-				}
-				if (isRecurring) {
-					app.helper.showConfirmationForRepeatEvents().then(function (postData) {
-						thisInstance._updateEvent(form, postData);
-					});
-				} else {
-					thisInstance._updateEvent(form);
-					jQuery("button[name='saveButton']").prop("disabled", true);
-				}
+
+				var formData = jQuery(form).serializeFormData();
+				Calendar_Edit_Js.FetchOverlappingEventsBeforeSave(formData).then(function () {
+					var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
+					app.event.trigger(e);
+					if (e.isDefaultPrevented()) {
+						return false;
+					}
+					if (isRecurring) {
+						app.helper.showConfirmationForRepeatEvents().then(function (postData) {
+							thisInstance._updateEvent(form, postData);
+						});
+					} else {
+						thisInstance._updateEvent(form);
+						jQuery("button[name='saveButton']").prop("disabled", true);
+					}
+				});
 			}
 		};
 		modalContainer.find('form').vtValidate(params);
