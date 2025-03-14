@@ -831,6 +831,20 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 		return $sharedType;
 	}
 
+	public function deleteOverlappedUsers($currentUserId){
+		$db = PearDatabase::getInstance();
+		$delquery = "DELETE FROM vtiger_calendar_overlaps WHERE userid=?";
+		$db->pquery($delquery, array($currentUserId));
+	}
+
+	public function insertOverlappedUsers($currentUserId, $overlappedIds){
+		$db = PearDatabase::getInstance();
+		foreach ($overlappedIds as $overlappedId) {
+			$sql = "INSERT INTO vtiger_calendar_overlaps VALUES (?,?)";
+			$db->pquery($sql, array($currentUserId, $overlappedId));
+		}
+	}
+
 	/**
 	 * Function to get Alphabet Search Field
 	 */
