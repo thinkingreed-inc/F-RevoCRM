@@ -19,6 +19,7 @@ $languageStrings = array(
 	'LBL_TODOS' => 'TODO',
 	'LBL_CALENDAR_SETTINGS' => 'カレンダー設定',
 	'LBL_CALENDAR_SHARING' => 'カレンダー共有',
+	'LBL_CALENDAR_TIME_OVERLAP_DETECTION' => '重複活動チェック対象',
 	'LBL_DEFAULT_EVENT_DURATION' => 'デフォルトの活動周期',
 	'LBL_CALL' => 'デフォルトの連絡の時間 ( 分 )',
 	'LBL_OTHER_EVENTS' => '他の活動の時間 ( 分 )',

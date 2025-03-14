@@ -444,6 +444,25 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 		return $sharedUsers;
 	}
 
+
+	// #1030 ユーザーが活動を作成した際, 他ユーザーの活動と時間的に重複している場合に確認ダイアログを表示する.
+    // vtiger_calendar_overlapsテーブルを参照することで, ダイアログに表示すべきユーザーを判断する.
+	public static function getOverlapUsers($id){
+		$db = PearDatabase::getInstance();
+
+		$query = "SELECT u.user_name, o.* FROM vtiger_calendar_overlaps o
+				LEFT JOIN vtiger_users u ON o.overlap_userid=u.id WHERE userid=?";
+		$result = $db->pquery($query, array($id));
+		$rows = $db->num_rows($result);
+
+		$overlappedIds = Array();
+		for($i=0; $i<$rows; $i++){
+			$overlappedId = $db->query_result($result,$i,'overlap_userid');
+			$userId = $db->query_result($result, $i, 'userid');
+			$overlappedIds[$overlappedId]=$userId;
+		}
+		return $overlappedIds;
+	}
 	/**
 	* To get the lists of sharedids and colors
 	* @param $id --  user id
