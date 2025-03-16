@@ -1136,7 +1136,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				}
 
 				var formData = jQuery(form).serializeFormData();
-				Calendar_Edit_Js.FetchOverlappingEventsBeforeSave(formData).then(function () {
+				Calendar_Edit_Js.FetchOverlapEventsBeforeSave(formData).then(function () {
 					jQuery("button[name='saveButton']").attr("disabled", "disabled");
 					var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
 					app.event.trigger(e);
@@ -1562,7 +1562,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				}
 
 				var formData = jQuery(form).serializeFormData();
-				Calendar_Edit_Js.FetchOverlappingEventsBeforeSave(formData).then(function () {
+				Calendar_Edit_Js.FetchOverlapEventsBeforeSave(formData).then(function () {
 					var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
 					app.event.trigger(e);
 					if (e.isDefaultPrevented()) {
