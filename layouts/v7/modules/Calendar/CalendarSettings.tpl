@@ -143,14 +143,14 @@
 
 											{* 自分以外のユーザーを順番に表示する *}
 											{foreach key=ID item=USER_NAME from=$SHAREDUSERS_CURRENTUSER}
-												<option value="{$ID}"  {if array_key_exists($ID, $OVERLAPPEDUSERS)} selected="" {/if}>
+												<option value="{$ID}" {if array_key_exists($ID, $OVERLAPPEDUSERS)} selected="" {/if}>
 													{$USER_NAME}
 												</option>
 											{/foreach}
 										</optgroup>
 										<optgroup label="{vtranslate('LBL_GROUPS')}">
 											{foreach key=ID item=GROUP_NAME from=$SHAREGROUPS_CURRENTUSER}
-												<option value="{$ID}">
+												<option value="{$ID}" {if array_key_exists($ID, $OVERLAPPEDUSERS)} selected="" {/if}>
 													{$GROUP_NAME}
 												</option>
 											{/foreach}
