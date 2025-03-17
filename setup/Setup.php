@@ -93,7 +93,7 @@ require_once ("scripts/78_Add_smcreatorid.php");
 
 // #1030 ユーザーが活動を作成した際, 他ユーザーの活動と時間的に重複している場合に確認ダイアログを表示する.
 // vtiger_calendar_overlapsテーブルを参照することで, ダイアログに表示すべきユーザーを判断する.
-require_once ("scripts/Add_vtiger_calendar_overlaps.php");
+require_once ("scripts/81_Add_vtiger_calendar_overlaps.php");
 
 // メニュー設定
 // FRMenuSetting::apply(array(

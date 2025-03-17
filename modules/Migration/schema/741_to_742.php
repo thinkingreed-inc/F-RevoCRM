@@ -14,5 +14,5 @@ if (defined('VTIGER_UPGRADE')) {
 
     // #1030 ユーザーが活動を作成した際, 他ユーザーの活動と時間的に重複している場合に確認ダイアログを表示する.
     // vtiger_calendar_overlapsテーブルを参照することで, ダイアログに表示すべきユーザーを判断する.
-    include_once 'setup/scripts/Add_vtiger_calendar_overlaps.php';
+    include_once 'setup/scripts/81_Add_vtiger_calendar_overlaps.php';
 }
