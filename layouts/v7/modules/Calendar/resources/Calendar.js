@@ -1412,26 +1412,43 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			return;
 		}
 
-		var postData = {
-			'module': app.getModuleName(),
-			'action': 'DragDropAjax',
-			'mode': 'updateDeltaOnResize',
-			'id': event.id,
-			'activitytype': event.activitytype,
-			'secondsDelta': delta.asSeconds(),
-			'view': view.name,
-			'userid': event.userid,
-			'allday': event.allDay,
-		};
-
-		if (event.recurringcheck) {
-			app.helper.showConfirmationForRepeatEvents().then(function (recurringData) {
-				jQuery.extend(postData, recurringData);
-				thisInstance._updateEventOnResize(postData, revertFunc);
-			});
-		} else {
-			thisInstance._updateEventOnResize(postData, revertFunc);
+		var dateFormat = this.getUserPrefered('date_format').toUpperCase();
+		var hourFormat = this.getUserPrefered('time_format');
+		var timeFormat = 'HH:mm';
+		if (hourFormat === '12') {
+			timeFormat = 'hh:mm a';
 		}
+
+		Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave({
+			module: 'Events',
+			record: event.id,
+			date_start: event.start.format(dateFormat),
+			time_start: event.start.format(timeFormat),
+			due_date: event.end ? event.end.format(dateFormat) : null,
+			time_end: event.end ? event.end.format(timeFormat) : null,
+			is_allday: event.allDay
+		}).then(function () {
+			var postData = {
+				'module': app.getModuleName(),
+				'action': 'DragDropAjax',
+				'mode': 'updateDeltaOnResize',
+				'id': event.id,
+				'activitytype': event.activitytype,
+				'secondsDelta': delta.asSeconds(),
+				'view': view.name,
+				'userid': event.userid,
+				'allday': event.allDay,
+			};
+	
+			if (event.recurringcheck) {
+				app.helper.showConfirmationForRepeatEvents().then(function (recurringData) {
+					jQuery.extend(postData, recurringData);
+					thisInstance._updateEventOnResize(postData, revertFunc);
+				});
+			} else {
+				thisInstance._updateEventOnResize(postData, revertFunc);
+			}
+		});
 	},
 	updateEventOnDrop: function (event, delta, revertFunc, jsEvent, ui, view) {
 		var thisInstance = this;
@@ -1440,26 +1457,43 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			return;
 		}
 
-		var postData = {
-			'module': 'Calendar',
-			'action': 'DragDropAjax',
-			'mode': 'updateDeltaOnDrop',
-			'id': event.id,
-			'activitytype': event.activitytype,
-			'secondsDelta': delta.asSeconds(),
-			'view': view.name,
-			'userid': event.userid,
-			'allday': event.allDay,
-		};
-
-		if (event.recurringcheck) {
-			app.helper.showConfirmationForRepeatEvents().then(function (recurringData) {
-				jQuery.extend(postData, recurringData);
-				thisInstance._updateEventOnResize(postData, revertFunc);
-			});
-		} else {
-			thisInstance._updateEventOnResize(postData, revertFunc);
+		var dateFormat = this.getUserPrefered('date_format').toUpperCase();
+		var hourFormat = this.getUserPrefered('time_format');
+		var timeFormat = 'HH:mm';
+		if (hourFormat === '12') {
+			timeFormat = 'hh:mm a';
 		}
+
+		Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave({
+			module: 'Events',
+			record: event.id,
+			date_start: event.start.format(dateFormat),
+			time_start: event.start.format(timeFormat),
+			due_date: event.end ? event.end.format(dateFormat) : null,
+			time_end: event.end ? event.end.format(timeFormat) : null,
+			is_allday: event.allDay
+		}).then(function () {
+			var postData = {
+				'module': 'Calendar',
+				'action': 'DragDropAjax',
+				'mode': 'updateDeltaOnDrop',
+				'id': event.id,
+				'activitytype': event.activitytype,
+				'secondsDelta': delta.asSeconds(),
+				'view': view.name,
+				'userid': event.userid,
+				'allday': event.allDay,
+			};
+	
+			if (event.recurringcheck) {
+				app.helper.showConfirmationForRepeatEvents().then(function (recurringData) {
+					jQuery.extend(postData, recurringData);
+					thisInstance._updateEventOnResize(postData, revertFunc);
+				});
+			} else {
+				thisInstance._updateEventOnResize(postData, revertFunc);
+			}
+		});
 	},
 	getActivityTypeClassName: function (activitytype) {
 		var className = 'fa fa-calendar';
