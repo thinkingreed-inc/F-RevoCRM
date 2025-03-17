@@ -61,7 +61,7 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 	},
 
 	// 活動期間が重なる活動を取得し, 重複があれば確認ダイアログを表示する(Yes/No)
-	FetchOverlapEventsBeforeSave: function (formData) {
+	showOverlapEventConfirmationBeforeSave: function (formData) {
 		if (formData.module != "Events") {
 			return Promise.resolve();
 		}
@@ -123,7 +123,7 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 		var params = {
 			submitHandler : function(form) {
 				var formData = jQuery(form).serializeFormData();
-				Calendar_Edit_Js.FetchOverlapEventsBeforeSave(formData).then(function () {
+				Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(formData).then(function () {
 					var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
 					app.event.trigger(e);
 					if(e.isDefaultPrevented()) {
@@ -151,7 +151,7 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 					return false;
 				}
 				var formData = jQuery(form).serializeFormData();
-				Calendar_Edit_Js.FetchOverlapEventsBeforeSave(formData).then(function () {
+				Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(formData).then(function () {
 					// to Prevent submit if already submitted
 					jQuery("button[name='saveButton']").attr("disabled","disabled");
 					
