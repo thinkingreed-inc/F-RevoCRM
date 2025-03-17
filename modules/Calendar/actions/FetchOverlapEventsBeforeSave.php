@@ -23,7 +23,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 				$message = vtranslate('OVERLAPPING_TAG_EXISTS', 'Events');
 				foreach ($overlap_events as $id => $subject) {
 					$recordModel = Vtiger_Record_Model::getInstanceById($id, $moduleName);
-					$message .= '<a href="'.$recordModel->getDetailViewUrl().'" target="_blank" style="color:#15c !important">'.$subject.' </a>';
+					$message .= '<a href="'.$recordModel->getDetailViewUrl().'" target="_blank" style="color:#15c !important">'.$subject.'&nbsp;&nbsp;</a>';
 				}
 			}
 		}
