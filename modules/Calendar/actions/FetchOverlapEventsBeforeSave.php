@@ -17,7 +17,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		$overlap_userids = $this->getOverlapUserIds($currentUser->getId());
 
 		$message = '';
-		if (!empty($overlap_userids)) { // 重複活動チェック対象が設定されている場合
+		if (!empty($overlap_userids)) {
 			$overlap_events = $this->getOverlapEvents($request, $overlap_userids);
 			if (!empty($overlap_events)) { // 重複活動が存在する場合
 				$message = vtranslate('OVERLAPPING_TAG_EXISTS', 'Events');
