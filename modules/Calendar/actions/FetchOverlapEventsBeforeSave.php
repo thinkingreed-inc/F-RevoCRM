@@ -89,6 +89,12 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 			$overlap_userids,
 			[$start,$end, $start,$end, $start,$end,$start, $start,$end,$end, $start,$end]
 		);
+
+		if (!empty($request->get('record'))) { // 編集中の活動を含めない
+			$query .= ' AND activityid != ?';
+			$params[] = $request->get('record');
+		}
+		
 		$queryResult = $db->pquery($query, $params);
 		$num_rows = $db->num_rows($queryResult);
 		$overlap_events = array();

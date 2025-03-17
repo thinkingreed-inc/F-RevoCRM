@@ -68,6 +68,7 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 		var requestParams = {
 			'module': 'Calendar',
 			'action': 'FetchOverlapEventsBeforeSave',
+			'record': formData.record,
 			'start': `${formData.date_start} ${formData.time_start}`,
 			'end': `${formData.due_date} ${formData.time_end}`,
 			'is_allday': formData.is_allday,
