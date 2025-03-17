@@ -15,15 +15,16 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$overlap_userids = $this->getOverlapUserIds($currentUser->getId());
-		if (empty($overlap_userids)) { // 重複活動チェック対象が設定されていない場合
-			$message = '';
-		} else {
-			$message = vtranslate('OVERLAPPING_TAG_EXISTS', 'Events');
-			
+
+		$message = '';
+		if (!empty($overlap_userids)) { // 重複活動チェック対象が設定されている場合
 			$overlap_events = $this->getOverlapEvents($request, $overlap_userids);
-			foreach ($overlap_events as $id => $subject) {
-				$recordModel = Vtiger_Record_Model::getInstanceById($id, $moduleName);
-				$message .= '<a href="'.$recordModel->getDetailViewUrl().'" target="_blank" style="color:#15c !important">'.$subject.' </a>';
+			if (!empty($overlap_events)) { // 重複活動が存在する場合
+				$message = vtranslate('OVERLAPPING_TAG_EXISTS', 'Events');
+				foreach ($overlap_events as $id => $subject) {
+					$recordModel = Vtiger_Record_Model::getInstanceById($id, $moduleName);
+					$message .= '<a href="'.$recordModel->getDetailViewUrl().'" target="_blank" style="color:#15c !important">'.$subject.' </a>';
+				}
 			}
 		}
 
@@ -73,20 +74,20 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 						WHERE deleted = 0 '.
 						'AND smownerid IN ('.generateQuestionMarks($overlap_userids).') '.
 						'AND (
-							-- 1. 活動が指定期間の開始前に始まり, 終了後に終わる場合
+							-- 1. 活動が$start前に始まり, $end後に終わる場合
 							(TIMESTAMP(date_start, time_start) <= ? AND TIMESTAMP(due_date, time_end) >= ?)
-							-- 2. 活動が指定期間の完全に中に収まる場合	
-							OR (TIMESTAMP(date_start, time_start) >= ? AND TIMESTAMP(due_date, time_end) <= ?)
+							-- 2. 活動が指定期間内に収まる場合	
+							OR (TIMESTAMP(date_start, time_start) > ? AND TIMESTAMP(due_date, time_end) < ?)
 							-- 3. 活動が指定期間の開始にかかる場合
-							OR (TIMESTAMP(date_start, time_start) <= ? AND TIMESTAMP(due_date, time_end) <= ? AND TIMESTAMP(due_date, time_end) >= ?)
+							OR (TIMESTAMP(date_start, time_start) < ? AND TIMESTAMP(due_date, time_end) < ? AND TIMESTAMP(due_date, time_end) > ?)
 							-- 4. 活動が指定期間の終了にかかる場合
-							OR (TIMESTAMP(date_start, time_start) >= ? AND TIMESTAMP(due_date, time_end) >= ? AND TIMESTAMP(date_start, time_start) <= ?)
-							-- 5. 終日の予定が指定期間に重なる場合
+							OR (TIMESTAMP(date_start, time_start) > ? AND TIMESTAMP(due_date, time_end) > ? AND TIMESTAMP(date_start, time_start) < ?)
+							-- 5. 終日の活動が指定期間に重なる場合
 							OR (allday = 1 AND (date_start <= DATE(?) AND due_date >= DATE(?)))
 						)';
 		$params = array_merge(
 			$overlap_userids,
-			[$start, $end, $start, $end, $start, $end, $start, $start, $end, $end, $start, $end]
+			[$start,$end, $start,$end, $start,$end,$start, $start,$end,$end, $start,$end]
 		);
 		$queryResult = $db->pquery($query, $params);
 		$num_rows = $db->num_rows($queryResult);
