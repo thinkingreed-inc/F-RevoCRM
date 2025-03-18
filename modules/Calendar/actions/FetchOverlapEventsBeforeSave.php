@@ -92,8 +92,13 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 			[$start,$end, $start,$end, $start,$end,$start, $start,$end,$end, $start,$end]
 		);
 
-		if (!empty($request->get('record'))) { // 編集中の活動を含めない
+		if (!empty($request->get('record'))) {
+			// 編集中の活動を含めない
 			$query .= ' AND activityid != ?';
+			$params[] = $request->get('record');
+
+			// 参加者の活動を含めない
+			$query .= ' AND invitee_parentid != (SELECT invitee_parentid from vtiger_activity WHERE activityid = ?)';
 			$params[] = $request->get('record');
 		}
 		
