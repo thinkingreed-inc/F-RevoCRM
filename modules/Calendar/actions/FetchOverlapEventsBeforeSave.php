@@ -63,7 +63,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 
 		$dbStartDateOject = DateTimeField::convertToDBTimeZone($request->get('start'));
 		$start = $dbStartDateOject->format('Y-m-d H:i:s');
-		if ($request->get('is_allday') === 'true') {
+		if ($request->get('is_allday') === 'on' || $request->get('is_allday') === 'true') {
 			$dbEndDateOject = clone $dbStartDateOject;
 			$dbEndDateOject->modify('+1 day');
 			$end = $dbEndDateOject->format('Y-m-d H:i:s');
