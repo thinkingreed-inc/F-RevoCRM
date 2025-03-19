@@ -414,8 +414,8 @@ class Documents extends CRMEntity {
 	 * returns the array with table names and fieldnames storing relations between module and this module
 	 */
 	function setRelationTables($secmodule){
-		$rel_tables = array();
-		return $rel_tables[$secmodule];
+		// どのモジュールと紐づいてもvtiger_senotesrelで紐づけられている
+		return array("vtiger_senotesrel"=>array("notesid","crmid"),"".$this->table_name."" => "".$this->table_index."");
 	}
 
 	// Function to unlink all the dependent entities of the given Entity by Id
