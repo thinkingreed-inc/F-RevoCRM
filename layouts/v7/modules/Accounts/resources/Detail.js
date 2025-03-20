@@ -63,8 +63,13 @@ Vtiger_Detail_Js("Accounts_Detail_Js",{
 	/**
 	 * To handle related record delete confirmation message
 	 */
-	getDeleteMessageKey : function() {
-		return 'LBL_RELATED_RECORD_DELETE_CONFIRMATION';
+	getDeleteMessageKey: function () {
+		var relatedModuleName = this.getRelatedModuleName();
+		if (relatedModuleName == 'Potentials' || relatedModuleName == 'Quotes' || relatedModuleName == 'SalesOrder' || relatedModuleName == 'Invoice') {
+			return 'LBL_RELATED_RECORD_DELETE_CONFIRMATION';
+		} else {
+			return 'LBL_RELATED_RECORD_UNLINK_CONFIRMATION';
+		}
 	},
 
 	/**
