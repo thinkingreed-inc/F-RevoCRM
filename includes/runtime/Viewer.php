@@ -82,13 +82,13 @@ class Vtiger_Viewer extends Smarty {
 			'Vtiger_Functions', 'Users', 'CurrencyField', 'Reports_Field_Model', 
 			'DateTimeField', 'Calendar_Time_UIType', 'Calendar_Field_Model',
 			'Vtiger_Date_UIType', 'Vtiger_Time_UIType', 'Vtiger_RelationListView_Model',
-			'Inventory_TaxRegion_Model', 'EmailTemplates_Module_Model');
+			'Inventory_TaxRegion_Model', 'EmailTemplates_Module_Model', 'Project_Record_Model', 'Settings_SMSNotifier_ProviderField_Model',);
 
 		if ($inSettings) {
 			$classes = array_merge($classes, array(
 				'getInventoryModules', 'Settings_Vtiger_MenuItem_Model', 'Settings_Webforms_Record_Model',
 				'Settings_Vtiger_CompanyDetails_Model', 'Inventory_Charges_Model', 'Settings_PBXManager_Module_Model',
-				'PBXManager_PBXManager_Connector', 'Settings_Webforms_Record_Model', 'Google_Config_Connector'
+				'PBXManager_PBXManager_Connector', 'Settings_Webforms_Record_Model', 'Google_Config_Connector', 'Settings_LayoutEditor_Module_Model',
 			));
 		}
 
@@ -98,12 +98,13 @@ class Vtiger_Viewer extends Smarty {
 			}
 		}
 
-		$modifiers = array('vtranslate', 'vtlib_isModuleActive', 'vimage_path', 'strstr', 'stripos', 'strpos', 'date', 'vtemplate_path', 'vresource_url', 
+		$modifiers = array('vtranslate', 'vtlib_isModuleActive', 'vimage_path', 
+			'strstr', 'stripos', 'strpos', 'date', 'vtemplate_path', 'vresource_url', 
 			'html_entity_decode', 'decode_html', 'vtlib_purify', 'php7_count', 'getUserFullName', 'array_flip', 'explode', 'trim', 'array_push', 'array_merge',
 			'array_map', 'array_key_exists', 'get_class', 'vtlib_array', 'getDuplicatesPreventionMessage', 'htmlentities', 'purifyHtmlEventAttributes',
 			'getCurrencySymbolandCRate', 'getProductBaseCurrency', 'mb_substr', 'isPermitted', 'getOwnerName', 'getEntityName', 'function_exists', 'php7_trim', 'php7_htmlentities',
 			'strtolower', 'strtoupper', 'str_replace', 'urlencode', 'getTranslatedCurrencyString', 'getTranslatedString', 'is_object', 'is_numeric','preg_match',
-			'php7_sizeof', 'method_exists','implode','mt_rand','substr','in_array','array_keys', 'json_decode', 'getCurrencyDecimalPlaces', 'number_format', 'isRecordExists');
+			'php7_sizeof', 'method_exists','implode','mt_rand','substr','in_array','array_keys', 'json_decode', 'getCurrencyDecimalPlaces', 'number_format', 'isRecordExists', 'vtws_getOwnerType', 'ucwords', 'array_reverse', 'end', 'textlength_check', 'is_null', 'getTabid', 'array_slice', 'mb_strlen', 'strtotime');
 		
 		foreach ($modifiers as $modifier) {
 			if (function_exists($modifier)) {
