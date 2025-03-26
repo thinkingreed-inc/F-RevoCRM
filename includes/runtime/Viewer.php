@@ -104,7 +104,7 @@ class Vtiger_Viewer extends Smarty {
 			'array_map', 'array_key_exists', 'get_class', 'vtlib_array', 'getDuplicatesPreventionMessage', 'htmlentities', 'purifyHtmlEventAttributes',
 			'getCurrencySymbolandCRate', 'getProductBaseCurrency', 'mb_substr', 'isPermitted', 'getOwnerName', 'getEntityName', 'function_exists', 'php7_trim', 'php7_htmlentities',
 			'strtolower', 'strtoupper', 'str_replace', 'urlencode', 'getTranslatedCurrencyString', 'getTranslatedString', 'is_object', 'is_numeric','preg_match',
-			'php7_sizeof', 'method_exists','implode','mt_rand','substr','in_array','array_keys', 'json_decode', 'getCurrencyDecimalPlaces', 'number_format', 'isRecordExists', 'vtws_getOwnerType', 'ucwords', 'array_reverse', 'end', 'textlength_check', 'is_null', 'getTabid', 'array_slice', 'mb_strlen', 'strtotime');
+			'php7_sizeof', 'method_exists','implode','mt_rand','substr','in_array','array_keys', 'json_decode', 'getCurrencyDecimalPlaces', 'number_format', 'isRecordExists', 'vtws_getOwnerType', 'ucwords', 'array_reverse', 'end', 'textlength_check', 'is_null', 'getTabid', 'array_slice', 'mb_strlen', 'strtotime', 'sizeof', 'vJsTranslate');
 		
 		foreach ($modifiers as $modifier) {
 			if (function_exists($modifier)) {
