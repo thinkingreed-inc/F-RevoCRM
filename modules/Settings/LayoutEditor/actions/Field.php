@@ -259,7 +259,7 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
         $emptyField->name = $columnName;
         $emptyField->label = '';
         $emptyField->table = $targetTable;
-        $emptyField->uitype = 666;
+        $emptyField->uitype = 999;
         $emptyField->typeofdata = 'V~O';
         $emptyField->displaytype = 1;
         $emptyField->defaultvalue = "";

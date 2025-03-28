@@ -356,7 +356,7 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 							   $uichekdata='I~O';
 							   break;
 				Case 'Empty' :
-							   $uitype = 666;
+							   $uitype = 999;
 							   $type = "VARCHAR(0) default ''"; //adodb type
 							   $uichekdata='V~O';
 							   break;

@@ -145,7 +145,7 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 		$moduleModel = $this->getModule();
 		$complusoryMandatoryFieldList = $moduleModel->getCompulsoryMandatoryFieldList();
 		//uitypes for which mandatory switch is disabled
-		$mandatoryRestrictedUitypes = array('4','70','666');
+		$mandatoryRestrictedUitypes = array('4','70','999');
 		if(in_array($this->getName(), $complusoryMandatoryFieldList) || $this->isOptionsRestrictedField()){
 			return true;
 		}
@@ -199,7 +199,7 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 	 */
 	public function isMassEditOptionDisabled() {
 		//uitypes for which mandatory switch is disabled
-		$headerFieldOptionUitypes = array('666');
+		$headerFieldOptionUitypes = array('999');
 		if(in_array($this->get('uitype'),$headerFieldOptionUitypes) || (in_array($this->get('displaytype'), array(2,4)))) {
 			return true;
 		}
@@ -257,7 +257,7 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 
 	public function isHeaderFieldOptionDisabled() {
 		//uitypes for which mandatory switch is disabled
-		$headerFieldOptionUitypes = array('666');
+		$headerFieldOptionUitypes = array('999');
 		if(in_array($this->get('uitype'),$headerFieldOptionUitypes) || (in_array($this->get('displaytype'), array(2,4)))) {
 			return true;
 		}

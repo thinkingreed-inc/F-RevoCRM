@@ -105,7 +105,7 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	const UITYPE_USER_STATUS = 115;
 	const UITYPE_USER_END_HOUR = 116;
 	const UITYPE_USER_IS_ADMIN = 156;
-	const UITYPE_BLANK =666;
+	const UITYPE_BLANK = 999;
 	
 	
 	/**

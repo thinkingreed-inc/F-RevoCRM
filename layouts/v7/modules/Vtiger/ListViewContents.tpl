@@ -95,7 +95,7 @@
 					{else}
 						{assign var=NO_SORTING value=0}
 					{/if}
-					{if $LISTVIEW_HEADER->get('uitype') eq '666'}
+					{if $LISTVIEW_HEADER->get('uitype') eq '999'}
 						{continue}
 					{/if}
 					<th {if !$MODULE_MODEL->isFilterColumnEnabled() && !$LISTVIEW_ENTRIES_COUNT eq '0'}class="table-bottom-border" {/if}{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')} nowrap="nowrap" {/if}>

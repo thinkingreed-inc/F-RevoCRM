@@ -130,7 +130,7 @@
 													<input type="hidden" class="fieldBasicData" data-name='{$FIELD_MODEL->get('name')}' data-type="{$fieldDataType}" data-displayvalue='{$FIELD_DISPLAY_VALUE}' data-value="{$FIELD_VALUE}" />
 												{/if}
 											</span>
-											{* {if $FIELD_MODEL->get('uitype') neq '666'} *}
+											{* {if $FIELD_MODEL->get('uitype') neq '999'} *}
 												<span class="action pull-right"><a href="#" onclick="return false;" class="editAction fa fa-pencil"></a></span>
 											{* {/if} *}
 										{/if}

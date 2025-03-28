@@ -76,7 +76,7 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 				}else{
 					foreach($moduleFields as $key => $fieldinfo){
 						if($fieldinfo->column == $columnName){
-							if($fieldinfo->uitype == "666"){
+							if($fieldinfo->uitype == "999"){
 								unset($entries[$i][$columnName]);
 							}
 						}
@@ -104,13 +104,13 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 				$fieldModel = $this->moduleFieldInstances[$fieldName];
 				// Check added as querygenerator is not checking this for admin users
 				$presence = $fieldModel->get('presence');
-				if(in_array($presence, $accessiblePresenceValue) && $fieldModel->get('displaytype') != '6' && $fieldModel->get('uitype') != '666') {
+				if(in_array($presence, $accessiblePresenceValue) && $fieldModel->get('displaytype') != '6' && $fieldModel->get('uitype') != '999') {
 					$headers[] = $fieldModel->get('label');
 				}
 			}
 		} else {
 			foreach($this->moduleFieldInstances as $field) {
-				if($field->get('uitype') != '666'){
+				if($field->get('uitype') != '999'){
 					$headers[] = $field->get('label');
 				}
 			}
