@@ -60,6 +60,45 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 		jQuery("#alldayEvent").attr('data-validation-engine','change');
 	},
 
+	// 活動期間が重なる活動を取得し, 重複があれば確認ダイアログを表示する(Yes/No)
+	showOverlapEventConfirmationBeforeSave: function (formData) {
+		if (formData.module != "Events") {
+			return Promise.resolve();
+		}
+		var requestParams = {
+			'module': 'Calendar',
+			'action': 'FetchOverlapEventsBeforeSave',
+			'record': formData.record,
+			'start': `${formData.date_start} ${formData.time_start}`,
+			'end': `${formData.due_date} ${formData.time_end}`,
+			'is_allday': formData.is_allday,
+		};
+		app.helper.showProgress();
+		return app.request.post({data: requestParams}).then(function (err, data) {
+			if (!err) {
+				app.helper.hideProgress();
+				if (data.message) {
+					// 重複活動がある場合, 確認ダイアログを表示
+					return app.helper.showConfirmationBox({message: data.message}).then(
+						function () {
+							return Promise.resolve();
+						},
+						function () {
+							// No を選択した場合は処理を中断
+							return;
+						}
+					);
+				}
+				// 重複活動が無い場合はそのまま続行
+				return Promise.resolve();
+			} else {
+				app.helper.hideProgress();
+				console.error("Error in FetchOverlapEventsBeforeSave:", error);
+				return Promise.reject(error);
+			}
+		});
+	},
+
 	userChangedTimeDiff:false
 
 },{
@@ -74,6 +113,73 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 		}
 		this.relatedContactElement =  jQuery('#contact_id_display', form);
 		return this.relatedContactElement;
+	},
+	
+	/**
+     * Function to Validate and Save Event 
+     * @returns {undefined}
+     */
+    registerValidation : function () {
+        var editViewForm = this.getForm();
+		var params = {
+			submitHandler : function(form) {
+				var formData = jQuery(form).serializeFormData();
+				Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(formData).then(function () {
+					var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
+					app.event.trigger(e);
+					if(e.isDefaultPrevented()) {
+						return false;
+					}
+					window.onbeforeunload = null;
+					editViewForm.find('.saveButton').attr('disabled',true);
+					form.submit();
+				});
+				return false;
+            }
+		};
+        this.formValidatorInstance = editViewForm.vtValidate(params);
+    },
+
+	/**
+	 * Register Quick Create Save Event
+	 * @param {type} form
+	 * @returns {undefined}
+	 */
+	quickCreateSave : function(form,invokeParams){
+		var params = {
+			submitHandler: function(form) {
+				if(this.numberOfInvalids() > 0) {
+					return false;
+				}
+				var formData = jQuery(form).serializeFormData();
+				Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(formData).then(function () {
+					// to Prevent submit if already submitted
+					jQuery("button[name='saveButton']").attr("disabled","disabled");
+					
+					if(formData['module']=="HelpDesk"){
+						formData['description']=formData['description'].replace(/\n/g,'<br>');
+					}
+					app.request.post({data:formData}).then(function(err,data){
+						app.helper.hideProgress();
+						if(err === null) {
+							jQuery('.vt-notification').remove();
+							app.event.trigger("post.QuickCreateForm.save",data,jQuery(form).serializeFormData());
+							app.helper.hideModal();
+							var message = formData.record !== "" ? app.vtranslate('JS_RECORD_UPDATED'):app.vtranslate('JS_RECORD_CREATED');
+							app.helper.showSuccessNotification({"message":message},{delay:4000});
+							invokeParams.callbackFunction(data, err);
+							//To unregister onbefore unload event registered for quickcreate
+							window.onbeforeunload = null;
+						}else{
+							app.event.trigger('post.save.failed', err);
+							jQuery("button[name='saveButton']").removeAttr('disabled');
+						}
+					});
+				});
+			},
+			validationMeta: quickcreate_uimeta
+		};
+		form.vtValidate(params);
 	},
 
 	openPopUp : function(e){

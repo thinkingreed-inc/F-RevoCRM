@@ -107,4 +107,6 @@ $languageStrings = array(
 	'Duration' => '期間',
 	'Duration Minutes' => '期間(分)',
 	'No Time' => '時間なし',
+
+	'OVERLAPPING_TAG_EXISTS' => '期間が重複する活動が存在します<br>活動名: ',
 );
