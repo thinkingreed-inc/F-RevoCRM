@@ -1479,12 +1479,20 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		};
 
 		if (event.recurringcheck) {
-			app.helper.showConfirmationForRepeatEvents().then(function (recurringData) {
-				jQuery.extend(postData, recurringData);
-				thisInstance._updateEventOnResize(postData, revertFunc);
+			this.confirmEditOthersEvent(event.id).then(function () {
+				return app.helper.showConfirmationForRepeatEvents().then(function (recurringData) {
+					jQuery.extend(postData, recurringData);
+					thisInstance._updateEventOnResize(postData, revertFunc);
+				}).fail(function () {
+					revertFunc();
+				});
 			});
 		} else {
-			thisInstance._updateEventOnResize(postData, revertFunc);
+			this.confirmEditOthersEvent(event.id).then(function () {
+				return thisInstance._updateEventOnResize(postData, revertFunc);
+			}).fail(function () {
+				revertFunc();
+			});
 		}
 	},
 	getActivityTypeClassName: function (activitytype) {
