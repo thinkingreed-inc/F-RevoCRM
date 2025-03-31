@@ -14,4 +14,4 @@ include_once('modules/Vtiger/models/Record.php');
 include_once('modules/Vtiger/models/Module.php');
 
 global $adb;
-$adb->query("INSERT INTO vtiger_ws_fieldtype VALUES (90, 999, 'empty')");
+$adb->query("INSERT INTO vtiger_ws_fieldtype VALUES (90, 999, 'blank')");

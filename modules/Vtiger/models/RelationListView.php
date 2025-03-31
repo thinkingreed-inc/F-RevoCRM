@@ -412,7 +412,7 @@ class Vtiger_RelationListView_Model extends Vtiger_Base_Model {
 		$headerFields = array();
 		if(php7_count($summaryFieldsList) > 0) {
 			foreach($summaryFieldsList as $fieldName => $fieldModel) {
-				if($fieldModel->getFieldDataType() == 'empty'){
+				if($fieldModel->getFieldDataType() == 'blank'){
 					continue;
 				}
 				$headerFields[$fieldName] = $fieldModel;

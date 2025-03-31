@@ -25,7 +25,7 @@
 							data-rule-required="true">
 							{foreach from=$FIELDS item=FIELD}
 								{if $FIELD->isViewableInDetailView()}
-                                    {if $FIELD->getFieldDataType() == 'empty'}
+                                    {if $FIELD->getFieldDataType() == 'blank'}
                                         {continue}
                                     {/if}
 									<option value="{$FIELD->getName()}">{vtranslate($FIELD->get('label'), $MODULE)}</option>

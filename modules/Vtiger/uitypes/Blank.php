@@ -8,7 +8,7 @@
  * All Rights Reserved.
  *************************************************************************************/
 
-class Vtiger_Empty_UIType extends Vtiger_Base_UIType {
+class Vtiger_Blank_UIType extends Vtiger_Base_UIType {
 
 	/**
 	 * Function to get the Display Value, for the current field type with given DB Insert Value
@@ -24,6 +24,6 @@ class Vtiger_Empty_UIType extends Vtiger_Base_UIType {
 	 * @return <String> - Template Name
 	 */
 	public function getTemplateName() {
-		return 'uitypes/Empty.tpl';
+		return 'uitypes/Blank.tpl';
 	}
 }

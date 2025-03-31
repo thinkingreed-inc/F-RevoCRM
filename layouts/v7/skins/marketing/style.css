@@ -892,7 +892,7 @@ a {
   border: 1px solid #cccccc;
   border-width: thin;
 }
-.emptyField{
+.blankField{
   border: none;
   cursor: default;
 }
@@ -2448,7 +2448,7 @@ th {
   max-width: 325px;
 }
 
-input[type="text"]:read-only:not(.emptyField) {
+input[type="text"]:read-only:not(.blankField) {
   cursor: not-allowed;
   color: #b3b3b3;
   background-color: #eeeeee;

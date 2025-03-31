@@ -33,7 +33,7 @@
         "<div class='modal-dialog'>" +
           "<div class='modal-content'>" +
             "<div class='modal-body'><div class='bootbox-body'>" +
-            "<div class='empty-body'></div>" +
+            "<div class='blank-body'></div>" +
             "</div>" +
           "</div>" +
           "</div>" +
@@ -594,10 +594,10 @@
       callbacks[key] = button.callback;
     });
     // Vtiger Customization
-    var isEmpty = $(options.empty)[0];
+    var isBlank = $(options.blank)[0];
     if(options.htmlSupportEnable) {
-      if(!isEmpty){
-        body.find(".bootbox-body").html(options.message + "<br><br><input type='checkbox' /><label>&nbsp;&nbsp;" + app.vtranslate('LBL_REPLACE_EMPTY_COLUMN') +"</label>");
+      if(!isBlank){
+        body.find(".bootbox-body").html(options.message + "<br><br><input type='checkbox' /><label>&nbsp;&nbsp;" + app.vtranslate('LBL_REPLACE_BLANK_COLUMN') +"</label>");
       }else{
         body.find(".bootbox-body").html(options.message);
       }

@@ -88,14 +88,14 @@
 			}
 		}
 
-		// 余白項目のfieldNameを取得
-		$emptyFields = $meta->getEmptyFields();
+		// 空白項目のfieldNameを取得
+		$blankFields = $meta->getBlankFields();
 
 		// fieldNameををキーにした配列に変換
-		$emptyFieldsFlipped = array_flip($emptyFields);
+		$blankFieldsFlipped = array_flip($blankFields);
 
-		// 余白項目を除外する
-		$element = array_diff_key($element, $emptyFieldsFlipped);
+		// 空白項目を除外する
+		$element = array_diff_key($element, $blankFieldsFlipped);
 
 		$entity = $handler->update($element);
 		VTWS_PreserveGlobal::flush();

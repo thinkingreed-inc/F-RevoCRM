@@ -249,7 +249,7 @@ class Vtiger_Field_Model extends Vtiger_Field {
 			} else if($uiType == self::UITYPE_SALUTATION_OR_FIRSTNAME && stripos($this->getName(), 'roundrobin_userid') !== false) {
                 $fieldDataType = 'multiowner';
 			} else if($uiType == self::UITYPE_BLANK){
-				$fieldDataType = 'empty';
+				$fieldDataType = 'blank';
 			} else {
 				$webserviceField = $this->getWebserviceFieldObject();
 				$fieldDataType = $webserviceField->getFieldDataType();
@@ -463,8 +463,8 @@ class Vtiger_Field_Model extends Vtiger_Field {
 			return false;
 		}
 
-		if($this->getFieldDataType() == 'empty'){
-			// 余白項目の場合、フィルターに表示しない
+		if($this->getFieldDataType() == 'blank'){
+			// 空白項目の場合、フィルターに表示しない
 			return false;
 		}
 

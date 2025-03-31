@@ -193,7 +193,7 @@ class Settings_Workflows_EditV7Task_View extends Settings_Vtiger_Index_View {
 		$structure = $recordStructureInstance->getStructure();
 		foreach ($structure as $fields) {
 			foreach ($fields as $field) {
-				if($field->getFieldDataType() == 'empty'){
+				if($field->getFieldDataType() == 'blank'){
 					continue;
 				}
 				if ($field->get('workflow_pt_lineitem_field')) {

@@ -66,7 +66,7 @@
 												{if $FIELD_MODEL->getDisplayType() == '6'}
 													{continue}
 												{/if}
-												{if $FIELD_MODEL->getFieldDataType() == 'empty'}
+												{if $FIELD_MODEL->getFieldDataType() == 'blank'}
 													{continue}
 												{/if}
 												{if $FIELD_MODEL->isMandatory()}

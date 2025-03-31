@@ -163,10 +163,10 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
         $targetTable = $fieldInstance->get('table');
         try{
             $this->_deleteField($fieldInstance);
-            // 余白項目に置き換える場合
-            if($request->get('isReplaceEmptyColumn') === "true"){
-                $emptyFieldArray = $this->replaceEmptyColumn($blockId, $sourceModule, $preSequence, $targetTable);
-                $response->setResult($emptyFieldArray);
+            // 空白項目に置き換える場合
+            if($request->get('isReplaceBlankColumn') === "true"){
+                $blankFieldArray = $this->replaceBlankColumn($blockId, $sourceModule, $preSequence, $targetTable);
+                $response->setResult($blankFieldArray);
             }
         }catch(Exception $e) {
             $response->setError($e->getCode(), $e->getMessage());
@@ -242,8 +242,8 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
         $request->validateWriteAccess();
     }
 
-    // 削除した項目の場所に余白項目を置き換える
-    private function replaceEmptyColumn($blockId, $sourceModule, $preSequence, $targetTable)
+    // 削除した項目の場所に空白項目を置き換える
+    private function replaceBlankColumn($blockId, $sourceModule, $preSequence, $targetTable)
     {
         $moduleModel = Settings_LayoutEditor_Module_Model::getInstanceByName($sourceModule);
         $max_fieldid = $moduleModel->getSequenceNumber() + 1;
@@ -255,27 +255,27 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
 
         $blockInstance = Vtiger_Block::getInstance($blockId);
 
-        $emptyField = new Vtiger_Field_Model();
-        $emptyField->name = $columnName;
-        $emptyField->label = '';
-        $emptyField->table = $targetTable;
-        $emptyField->uitype = 999;
-        $emptyField->typeofdata = 'V~O';
-        $emptyField->displaytype = 1;
-        $emptyField->defaultvalue = "";
-        $emptyField->sequence = $preSequence;
-        $emptyField->readonly = 1;
-        $emptyField->presence = 2;
-        $emptyField->quickcreate = 1;
-        $emptyField->masseditable = 2;
-        $emptyField->summaryfield = 0;
-        $emptyField->generatedtype = 2;
+        $blankField = new Vtiger_Field_Model();
+        $blankField->name = $columnName;
+        $blankField->label = '';
+        $blankField->table = $targetTable;
+        $blankField->uitype = 999;
+        $blankField->typeofdata = 'V~O';
+        $blankField->displaytype = 1;
+        $blankField->defaultvalue = "";
+        $blankField->sequence = $preSequence;
+        $blankField->readonly = 1;
+        $blankField->presence = 2;
+        $blankField->quickcreate = 1;
+        $blankField->masseditable = 2;
+        $blankField->summaryfield = 0;
+        $blankField->generatedtype = 2;
 
-        $blockInstance->addField($emptyField);
+        $blockInstance->addField($blankField);
 
 
-        // 追加した余白項目の情報を取得
-        $fieldModel = Settings_LayoutEditor_Field_Model::getInstance($emptyField->getId());
+        // 追加した空白項目の情報を取得
+        $fieldModel = Settings_LayoutEditor_Field_Model::getInstance($blankField->getId());
 
         $fieldInfo = $fieldModel->getFieldInfo();
         $responseData = array_merge(array('id' => $fieldModel->getId(), 'blockid' => $blockId, 'customField' => $fieldModel->isCustomField()), $fieldInfo);
@@ -295,8 +295,8 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
             }
         }
         $responseData['fieldDefaultValue'] = $defaultValue;
-        $responseData['emptyFieldName'] = $emptyField->getFieldName();
-        $responseData['emptyFieldId'] = $emptyField->getId();
+        $responseData['blankFieldName'] = $blankField->getFieldName();
+        $responseData['blankFieldId'] = $blankField->getId();
 
         return $responseData;
     }

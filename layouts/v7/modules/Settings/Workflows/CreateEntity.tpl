@@ -30,7 +30,7 @@
 						<option value="none"></option>
 						{foreach from=$RELATED_MODULE_MODEL->getFields() item=FIELD_MODEL}
 							{assign var=FIELD_INFO value=$FIELD_MODEL->getFieldInfoForWfEditTask()}
-							{if $FIELD_MODEL->getFieldDataType() == 'empty'}
+							{if $FIELD_MODEL->getFieldDataType() == 'blank'}
 								{continue}
 							{/if}
 							<option value="{$FIELD_MODEL->get('name')}" {if $FIELD_MAP['fieldname'] eq $FIELD_MODEL->get('name')} {if $FIELD_MODEL->isMandatory()}{assign var=MANDATORY_FIELD value=true} {else} {assign var=MANDATORY_FIELD value=false} {/if}{assign var=FIELD_TYPE value=$FIELD_MODEL->getFieldDataType()} selected=""{/if} data-fieldtype="{$FIELD_MODEL->getFieldType()}" data-field-name="{$FIELD_MODEL->get('name')}" data-fieldinfo='{ZEND_JSON::encode($FIELD_INFO)}' >
@@ -73,7 +73,7 @@
 						<select name="fieldname" class="select2" disabled="" style="min-width: 250px">
 							<option value="none"></option>
 							{foreach from=$RELATED_MODULE_MODEL->getFields() item=FIELD_MODEL}
-								{if $FIELD_MODEL->getFieldDataType() == 'empty'}
+								{if $FIELD_MODEL->getFieldDataType() == 'blank'}
 									{continue}
 								{/if}
 								{assign var=FIELD_INFO value=$FIELD_MODEL->getFieldInfoForWfEditTask()}
@@ -106,7 +106,7 @@
 			<select name="fieldname" style="min-width: 250px">
 				<option value="none">{vtranslate('LBL_NONE',$QUALIFIED_MODULE)}</option>
 				{foreach from=$RELATED_MODULE_MODEL->getFields() item=FIELD_MODEL}
-					{if $FIELD_MODEL->getFieldDataType() == 'empty'}
+					{if $FIELD_MODEL->getFieldDataType() == 'blank'}
 						{continue}
 					{/if}
 					{assign var=FIELD_INFO value=$FIELD_MODEL->getFieldInfoForWfEditTask()}

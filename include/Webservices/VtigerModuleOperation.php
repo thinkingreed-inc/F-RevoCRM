@@ -258,8 +258,8 @@ class VtigerModuleOperation extends WebserviceEntityOperation {
 				continue;
 			}
 
-			// 余白項目を除外する。
-			if ($webserviceField->getFieldDataType() === "empty") {
+			// 空白項目を除外する。
+			if ($webserviceField->getFieldDataType() === "blank") {
 				continue;
 			}
 			array_push($fields,$this->getDescribeFieldArray($webserviceField));

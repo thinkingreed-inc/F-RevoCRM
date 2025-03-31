@@ -93,7 +93,7 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 	public function getAddSupportedFieldTypes() {
 		return array(
 			'Text','Decimal','Integer','Percent','Currency','Date','Email','Phone','Picklist',
-			'URL','Checkbox','TextArea','MultiSelectCombo','Skype','Time','Reference','Empty'
+			'URL','Checkbox','TextArea','MultiSelectCombo','Skype','Time','Reference','Blank'
 		);
 	}
 
@@ -131,7 +131,7 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 				$details['isrelation'] = true;
 				$details['defaultDisabled'] = true;
 			}
-			if($fieldType == 'Empty'){
+			if($fieldType == 'Blank'){
 				// empty field
 			}
 			$fieldTypesInfo[$fieldType] = $details;
@@ -145,7 +145,7 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 		$db = PearDatabase::getInstance();
 
 		$label = $params['fieldLabel'] = trim($params['fieldLabel']);
-		if($params['fieldType'] !== 'Empty' && $this->checkFieldExists($label)){
+		if($params['fieldType'] !== 'Blank' && $this->checkFieldExists($label)){
 			throw new Exception(vtranslate('LBL_DUPLICATE_FIELD_EXISTS', 'Settings::LayoutEditor'), 513);
 		}
 		$supportedFieldTypes = $this->getAddSupportedFieldTypes();
@@ -355,7 +355,7 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 							   $type = "INT(19)"; //adodb type
 							   $uichekdata='I~O';
 							   break;
-				Case 'Empty' :
+				Case 'Blank' :
 							   $uitype = 999;
 							   $type = "VARCHAR(0) default ''"; //adodb type
 							   $uichekdata='V~O';

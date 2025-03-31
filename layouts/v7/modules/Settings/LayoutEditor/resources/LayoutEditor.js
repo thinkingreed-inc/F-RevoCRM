@@ -857,7 +857,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 			var selectedOption = currentTarget.find('option:selected');
 			var maxlengthValue = selectedOption.data('maxlength');
 			form.find('[name="fieldLabel"]').attr('data-rule-illegal', "true");
-			form.find('.emptyValueUi').closest('.form-group').removeClass('hide');
+			form.find('.blankValueUi').closest('.form-group').removeClass('hide');
 			form.find('.defaultValueUi').closest('.form-group').removeClass('hide');
 			form.find('input[type="checkbox"][name="mandatory"]').removeClass('cursorPointerNotAllowed').removeAttr('readonly', 'readonly');
 			form.find('input[type="checkbox"][name="headerfield"]').removeClass('cursorPointerNotAllowed').removeAttr('readonly', 'readonly');
@@ -993,9 +993,9 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 					}
 				}
 
-				if (type == 'Empty') {
+				if (type == 'Blank') {
 					form.find('.defaultValueUi').closest('.form-group').addClass('hide');
-					form.find('.emptyValueUi').closest('.form-group').addClass('hide');
+					form.find('.blankValueUi').closest('.form-group').addClass('hide');
 					form.find('input[type="checkbox"][name="mandatory"]').addClass('cursorPointerNotAllowed').attr('readonly', 'readonly');
 					form.find('input[type="checkbox"][name="headerfield"]').addClass('cursorPointerNotAllowed').attr('readonly', 'readonly');
 					form.find('input[type="checkbox"][name="masseditable"]').addClass('cursorPointerNotAllowed').attr('readonly', 'readonly');
@@ -1263,7 +1263,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		form.find('.header').attr('data-original-title', hTitle);
 	},
 
-	insertEmptyField: function (result, sequence) {
+	insertBlankField: function (result, sequence) {
 		var thisInstance = this;
 		var contents = jQuery('#layoutEditorContainer').find('.contents');
 		var relatedBlock = contents.find('.block_' + result['blockid']);
@@ -1624,7 +1624,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 			var fieldId = currentTarget.data('fieldId');
 			var message = app.vtranslate('JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE').replace(/\n/g, "<br>");
 			var fieldDataType = currentTarget.data('fieldDataType');
-			var empty = fieldDataType == "empty" ? true : false;
+			var blank = fieldDataType == "blank" ? true : false;
 			if (currentTarget.data('oneOneRelationship') == "1") {
 				message = app.vtranslate('JS_ONE_ONE_RELATION_FIELD_DELETE', currentTarget.data('currentFieldLabel'), currentTarget.data('currentModuleLabel'),
 						currentTarget.data('relationFieldLabel'), currentTarget.data('relationModuleLabel'));
@@ -1636,7 +1636,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 
 			app.helper.showConfirmationBox({'title': app.vtranslate('LBL_WARNING'),
 				'message'	: message,
-				'empty' 	: empty,
+				'blank' 	: blank,
 				buttons		:{
 								cancel	: {label: 'No', className: 'btn-default confirm-box-btn-pad pull-right'},
 								confirm	: {label: app.vtranslate('JS_FIELD_DELETE_CONFIRMATION'), className: 'confirm-box-ok confirm-box-btn-pad btn-primary'}
@@ -1652,9 +1652,9 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 								var customFieldsCount = block.data('customFieldsCount');
 								block.data('customFieldsCount', (customFieldsCount - 1));
 								thisInstance.reArrangeBlockFields(block);
-								if (data["emptyFieldId"]) {
+								if (data["blankFieldId"]) {
 									// 空白項目の差し替えの場合
-									thisInstance.insertEmptyField(data, targetSequence - 1)
+									thisInstance.insertBlankField(data, targetSequence - 1)
 								}
 								app.helper.showSuccessNotification({'message': app.vtranslate('JS_CUSTOM_FIELD_DELETED')});
 							}, function (error, err) {
@@ -1669,7 +1669,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		var thisInstance = this;
 		var aDeferred = jQuery.Deferred();
 		app.helper.showProgress();
-		var isReplaceEmpty = $('.bootbox-body input').is(":checked");
+		var isReplaceBlank = $('.bootbox-body input').is(":checked");
 
 		var params = {};
 		params['module'] = thisInstance.getModuleName();
@@ -1677,7 +1677,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		params['action'] = 'Field';
 		params['mode'] = 'delete';
 		params['fieldid'] = fieldId;
-		params['isReplaceEmptyColumn'] = isReplaceEmpty;
+		params['isReplaceBlankColumn'] = isReplaceBlank;
 
 		app.request.post({'data': params}).then(
 			function (err, data) {
@@ -1687,9 +1687,9 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 						thisInstance.headerFieldsCount--;
 						thisInstance.headerFieldsMeta[fieldId] = 0;
 					}
-					if (data["emptyFieldId"]) {
-						// 余白項目
-						thisInstance.headerFieldsMeta[data["emptyFieldId"]] = 0;
+					if (data["blankFieldId"]) {
+						// 空白項目
+						thisInstance.headerFieldsMeta[data["blankFieldId"]] = 0;
 						thisInstance.headerFieldsCount++;
 					}
 					aDeferred.resolve(data);
