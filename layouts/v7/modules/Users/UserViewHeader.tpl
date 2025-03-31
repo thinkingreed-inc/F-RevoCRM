@@ -14,7 +14,7 @@
     <div class="col-sm-12 col-xs-12">
         <div class="detailViewTitle" id="userPageHeader">
             <div class = "row">
-                <div class="col-md-5">
+                <div class="col-md-5" style="margin-top: 18px;">
                     <div class="col-md-5 recordImage" style="height: 50px;width: 50px;">
                         {assign var=NOIMAGE value=0}
                         {foreach key=ITER item=IMAGE_INFO from=$RECORD->getImageDetails()}
