@@ -1571,21 +1571,23 @@ Vtiger.Class("Calendar_Calendar_Js", {
 	},
 	_updateEvent: function (form, extraParams) {
 		var formData = jQuery(form).serializeFormData();
-		extraParams = extraParams || {};
-		jQuery.extend(formData, extraParams);
-		app.helper.showProgress();
-		app.request.post({data: formData}).then(function (err, data) {
-			app.helper.hideProgress();
-			if (!err) {
-				jQuery('.vt-notification').remove();
-				var message = typeof formData.record !== "" ? app.vtranslate('JS_EVENT_UPDATED') : app.vtranslate('JS_RECORD_CREATED');
-				app.helper.showSuccessNotification({"message": message});
-				app.event.trigger("post.QuickCreateForm.save", data, jQuery(form).serializeFormData());
-				app.helper.hideModal();
-			} else {
-				app.event.trigger('post.save.failed', err);
-				jQuery("button[name='saveButton']").removeAttr("disabled");
-			}
+		this.confirmEditOthersEvent(formData.record).then(function () {
+			extraParams = extraParams || {};
+			jQuery.extend(formData, extraParams);
+			app.helper.showProgress();
+			app.request.post({data: formData}).then(function (err, data) {
+				app.helper.hideProgress();
+				if (!err) {
+					jQuery('.vt-notification').remove();
+					var message = typeof formData.record !== "" ? app.vtranslate('JS_EVENT_UPDATED') : app.vtranslate('JS_RECORD_CREATED');
+					app.helper.showSuccessNotification({"message": message});
+					app.event.trigger("post.QuickCreateForm.save", data, jQuery(form).serializeFormData());
+					app.helper.hideModal();
+				} else {
+					app.event.trigger('post.save.failed', err);
+					jQuery("button[name='saveButton']").removeAttr("disabled");
+				}
+			});
 		});
 	},
 	validateAndUpdateEvent: function (modalContainer, isRecurring) {
@@ -1649,9 +1651,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		this.showEditModal('Events', eventId, isRecurring, isDuplicate);
 	},
 	editCalendarEvent: function (eventId, isRecurring) {
-		this.confirmEditOthersEvent(eventId).then(function () {
-			this.showEditEventModal(eventId, isRecurring);
-		}.bind(this));		
+		this.showEditEventModal(eventId, isRecurring);
 	},
 	copyCalendarEvent: function (eventId, isRecurring, isDuplicate) {
 		this.showEditEventModal(eventId, isRecurring, isDuplicate);
