@@ -57,7 +57,7 @@ html {
 body {
   margin: 0;
   padding: 0;
-  font-family: 'OpenSans-Regular', sans-serif;
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Hiragino Kaku Gothic Pro", "Noto Sans JP", "Noto Sans CJK JP", "Meiryo", "MS PGothic", "MS Gothic", sans-serif;
   font-size: 12px;
   font-weight: normal;
   font-style: normal;
@@ -72,7 +72,7 @@ body > .mCSB_inside > .mCSB_container {
   height: inherit;
 }
 .select2-container .select2-choice {
-  font-family: 'OpenSans-Regular', sans-serif;
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Hiragino Kaku Gothic Pro", "Noto Sans JP", "Noto Sans CJK JP", "Meiryo", "MS PGothic", "MS Gothic", sans-serif;
 }
 .app-fixed-navbar {
   background: #fff;
@@ -2466,6 +2466,7 @@ input[type="text"]:read-only {
   min-width: 100px;
   width: 20%;
   word-break: break-all;
+  font-weight: bold;
 }
 .editViewContents .fieldValue {
   width: 30%;
@@ -7585,7 +7586,7 @@ input:focus:-ms-input-placeholder {
   padding: 4px 10px 4px 5px !important;
 }
 .menu-item .custom-module {
-  font-family: 'OpenSans-Regular', sans-serif;
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Hiragino Kaku Gothic Pro", "Noto Sans JP", "Noto Sans CJK JP", "Meiryo", "MS PGothic", "MS Gothic", sans-serif;
   font-size: 12px;
   border-radius: 4px;
   padding: 2px;
