@@ -99,13 +99,14 @@
 									<hr/>
 									<li id="quickCreateModules" style="padding: 0 5px;">
 										<div class="col-lg-12" style="padding-bottom:15px;">
+											{assign var='count' value=0}
 											{foreach key=moduleName item=moduleModel from=$QUICK_CREATE_MODULES}
 												{if $moduleModel->isPermitted('CreateView') || $moduleModel->isPermitted('EditView')}
 													{assign var='quickCreateModule' value=$moduleModel->isQuickCreateSupported()}
 													{assign var='singularLabel' value=$moduleModel->getSingularLabelKey()}
 													{assign var=hideDiv value={!$moduleModel->isPermitted('CreateView') && $moduleModel->isPermitted('EditView')}}
 													{if $quickCreateModule == '1'}
-														{if $count % 3 == 0}
+														{if !$hideDiv && $count % 3 == 0}
 															<div class="row">
 															{/if}
 															{* Adding two links,Event and Task if module is Calendar *}
@@ -115,7 +116,7 @@
 																	<a id="menubar_quickCreate_Events" class="quickCreateModule" data-name="Events"
 																	   data-url="index.php?module=Events&view=QuickCreateAjax" href="javascript:void(0)">{$moduleModel->getModuleIcon('Event')}<span class="quick-create-module">{vtranslate('LBL_EVENT',$moduleName)}</span></a>
 																</div>
-																{if $count % 3 == 2}
+																{if !$hideDiv && $count % 3 == 2}
 																	</div>
 																	<br>
 																	<div class="row">
@@ -160,7 +161,7 @@
 																	</a>
 																</div>
 															{/if}
-															{if $count % 3 == 2}
+															{if !$hideDiv && $count % 3 == 2}
 																</div>
 																<br>
 															{/if}
