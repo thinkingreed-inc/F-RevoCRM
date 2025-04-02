@@ -49,6 +49,13 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var instance = Calendar_Calendar_Js.getInstance();
 		instance.editCalendarEvent(eventId, isRecurring);
 	},
+	editCalendarEventFromContent: function (eventId, isRecurring) {
+		if (window.innerWidth >= 650) {
+			var instance = Calendar_Calendar_Js.getInstance();
+			instance.editCalendarEvent(eventId, isRecurring);
+			return;
+		}
+	},
 	copyCalendarEvent: function (eventId, isRecurring) {
 		var instance = Calendar_Calendar_Js.getInstance();
 		instance.copyCalendarEvent(eventId, isRecurring, true);
@@ -1712,46 +1719,91 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			popOverHTML += '</span>';
 			
 			if (sourceModule === 'Calendar' || sourceModule == 'Events'||sourceModule =="ProjectTask") {
-				popOverHTML += '' +
+				if (window.innerWidth < 650) {
+					popOverHTML += '' +
 						'<span class="pull-right cursorPointer" ' +
 						'onClick="Calendar_Calendar_Js.deleteCalendarEvent(\'' + eventObj.id +
 						'\',\'' + sourceModule + '\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_DELETE') + '">' +
-						'&nbsp;&nbsp;<i class="fa fa-trash"></i>' +
+						'&nbsp;&nbsp;<i class="fa fa-trash fa-2x"></i>' +
 						'</span> &nbsp;&nbsp;';
 
-				if (sourceModule === 'Events') {
-					popOverHTML += '' +
-							'<span class="pull-right cursorPointer" ' +
-							'onClick="Calendar_Calendar_Js.editCalendarEvent(\'' + eventObj.id +
-							'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_EDIT') + '">' +
-							'&nbsp;&nbsp;<i class="fa fa-pencil"></i>' +
-							'</span>';
-							popOverHTML += '' +
-							'<span class="pull-right cursorPointer" ' +
-							'onClick="Calendar_Calendar_Js.copyCalendarEvent(\'' + eventObj.id +
-							'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_COPY') + '">' +
-							'&nbsp;&nbsp;<i class="fa fa-copy"></i>' +
-							'</span>';
-				} else if (sourceModule === 'Calendar') {
-					popOverHTML += '' +
-							'<span class="pull-right cursorPointer" ' +
-							'onClick="Calendar_Calendar_Js.editCalendarTask(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_EDIT') + '">' +
-							'&nbsp;&nbsp;<i class="fa fa-pencil"></i>' +
-							'</span>';
-				}
+					if (sourceModule === 'Events') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.editCalendarEvent(\'' + eventObj.id +
+								'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_EDIT') + '">' +
+								'&nbsp;&nbsp;<i class="fa fa-pencil fa-2x"></i>' +
+								'</span>';
+								popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.copyCalendarEvent(\'' + eventObj.id +
+								'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_COPY') + '">' +
+								'&nbsp;&nbsp;<i class="fa fa-copy fa-2x"></i>' +
+								'</span>';
+					} else if (sourceModule === 'Calendar') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.editCalendarTask(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_EDIT') + '">' +
+								'&nbsp;&nbsp;<i class="fa fa-pencil fa-2x"></i>' +
+								'</span>';
+					}
 
-				if (eventObj.status !== 'Held' && eventObj.status !== 'Completed') {
-					popOverHTML += '' +
-							'<span class="pull-right cursorPointer"' +
-							'onClick="Calendar_Calendar_Js.markAsHeld(\'' + eventObj.id + '\',\'' + sourceModule + '\');" title="' + app.vtranslate('JS_MARK_AS_HELD') + '">' +
-							'<i class="fa fa-check"></i>' +
-							'</span>';
-				} else if (eventObj.status === 'Held') {
+					if (eventObj.status !== 'Held' && eventObj.status !== 'Completed') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer"' +
+								'onClick="Calendar_Calendar_Js.markAsHeld(\'' + eventObj.id + '\',\'' + sourceModule + '\');" title="' + app.vtranslate('JS_MARK_AS_HELD') + '">' +
+								'<i class="fa fa-check fa-2x"></i>' +
+								'</span>';
+					} else if (eventObj.status === 'Held') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.holdFollowUp(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_CREATE_FOLLOW_UP') + '">' +
+								'<i class="fa fa-flag fa-2x"></i>' +
+								'</span>';
+					}
+				}
+				else{
 					popOverHTML += '' +
 							'<span class="pull-right cursorPointer" ' +
-							'onClick="Calendar_Calendar_Js.holdFollowUp(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_CREATE_FOLLOW_UP') + '">' +
-							'<i class="fa fa-flag"></i>' +
-							'</span>';
+							'onClick="Calendar_Calendar_Js.deleteCalendarEvent(\'' + eventObj.id +
+							'\',\'' + sourceModule + '\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_DELETE') + '">' +
+							'&nbsp;&nbsp;<i class="fa fa-trash"></i>' +
+							'</span> &nbsp;&nbsp;';
+
+					if (sourceModule === 'Events') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.editCalendarEvent(\'' + eventObj.id +
+								'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_EDIT') + '">' +
+								'&nbsp;&nbsp;<i class="fa fa-pencil"></i>' +
+								'</span>';
+								popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.copyCalendarEvent(\'' + eventObj.id +
+								'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_COPY') + '">' +
+								'&nbsp;&nbsp;<i class="fa fa-copy"></i>' +
+								'</span>';
+					} else if (sourceModule === 'Calendar') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.editCalendarTask(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_EDIT') + '">' +
+								'&nbsp;&nbsp;<i class="fa fa-pencil"></i>' +
+								'</span>';
+					}
+
+					if (eventObj.status !== 'Held' && eventObj.status !== 'Completed') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer"' +
+								'onClick="Calendar_Calendar_Js.markAsHeld(\'' + eventObj.id + '\',\'' + sourceModule + '\');" title="' + app.vtranslate('JS_MARK_AS_HELD') + '">' +
+								'<i class="fa fa-check"></i>' +
+								'</span>';
+					} else if (eventObj.status === 'Held') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.holdFollowUp(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_CREATE_FOLLOW_UP') + '">' +
+								'<i class="fa fa-flag"></i>' +
+								'</span>';
+					}
 				}
 			}
 			return popOverHTML;
