@@ -2,6 +2,11 @@
   clear: both;
 }
 
+body {
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Hiragino Kaku Gothic Pro", "Meiryo", "MS PGothic", "MS Gothic", sans-serif;
+  font-weight: 400;
+}
+
 /* 
  *一覧画面の列幅可変機能追加に伴う修正
  */
