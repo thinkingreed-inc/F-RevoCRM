@@ -61,18 +61,26 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 	},
 
 	// 活動期間が重なる活動を取得し, 重複があれば確認ダイアログを表示する(Yes/No)
-	showOverlapEventConfirmationBeforeSave: function (formData) {
+	showOverlapEventConfirmationBeforeSave: function (formData, optionParam) {
+		optionParam = optionParam || {};
+		jQuery.extend(formData, optionParam);
+		
 		if (formData.module != "Events") {
 			return Promise.resolve();
 		}
+		
 		var requestParams = {
 			'module': 'Calendar',
 			'action': 'FetchOverlapEventsBeforeSave',
 			'record': formData.record,
+			'assigned_user_id': formData.assigned_user_id,
+			'inviteesid': formData['selectedusers[]'],
 			'start': `${formData.date_start} ${formData.time_start}`,
 			'end': `${formData.due_date} ${formData.time_end}`,
 			'is_allday': formData.is_allday,
+			'recurringEditMode': formData.recurringEditMode,
 		};
+		
 		app.helper.showProgress();
 		return app.request.post({data: requestParams}).then(function (err, data) {
 			if (!err) {
@@ -123,14 +131,16 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
         var editViewForm = this.getForm();
 		var params = {
 			submitHandler : function(form) {
+				var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
+				app.event.trigger(e);
+				if(e.isDefaultPrevented()) {
+					return false;
+				}
+				window.onbeforeunload = null;
+				
 				var formData = jQuery(form).serializeFormData();
-				Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(formData).then(function () {
-					var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
-					app.event.trigger(e);
-					if(e.isDefaultPrevented()) {
-						return false;
-					}
-					window.onbeforeunload = null;
+				Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(formData)
+				.then(function () {
 					editViewForm.find('.saveButton').attr('disabled',true);
 					form.submit();
 				});
@@ -395,7 +405,12 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 							return true;
 						}
 					});
-					form.submit();
+					
+					var formData = jQuery(form).serializeFormData();
+					Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(formData)
+					.then(function () {
+						form.submit();
+					});
 				});
 				modalContainer.on('click', '.futureEvents', function() {
 					window.onbeforeunload = null;
@@ -406,7 +421,12 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 							return true;
 						}
 					});
-					form.submit();
+					
+					var formData = jQuery(form).serializeFormData();
+					Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(formData)
+					.then(function () {
+						form.submit();
+					});
 				});
 				modalContainer.on('click', '.allEvents', function() {
 					window.onbeforeunload = null;
@@ -417,7 +437,12 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 							return true;
 						}
 					});
-					form.submit();
+					
+					var formData = jQuery(form).serializeFormData();
+					Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(formData)
+					.then(function () {
+						form.submit();
+					});
 				});
 			};
 
