@@ -25,7 +25,7 @@
 					<a title="{vtranslate($MODULE, $MODULE)}" href='{$DEFAULT_FILTER_URL}'><h4 class="module-title pull-left text-uppercase">&nbsp;{vtranslate($MODULE, $MODULE)}&nbsp;</h4></a>
 				</span>
 				<span>
-					<p class="current-filter-name pull-left">&nbsp;<span class="fa fa-angle-right" aria-hidden="true"></span>&nbsp;{$VIEW}&nbsp;</p>
+					<p class="current-filter-name pull-left">&nbsp;<span class="fa fa-angle-right" aria-hidden="true"></span>&nbsp;{vtranslate($VIEW, $MODULE)}&nbsp;</p>
 				</span>
 				{if $VIEWID}
 					{foreach item=FILTER_TYPES from=$CUSTOM_VIEWS}
