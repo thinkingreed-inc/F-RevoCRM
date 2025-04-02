@@ -242,7 +242,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 
 		$listQuery = $queryGenerator->getQuery();
 		if($module == 'RecycleBin'){
-			$listQuery = preg_replace("/vtiger_crmentity.deleted\s*=\s*0/i", 'vtiger_crmentity.deleted = 1', $listQuery);
+			$listQuery = preg_replace("/$baseTableName.deleted\s*=\s*0/i", "$baseTableName.deleted = 1", $listQuery);
 		}
 
 		if($skipRecords && !empty($skipRecords) && is_array($skipRecords) && php7_count($skipRecords) > 0) {
