@@ -1,4 +1,5 @@
 <?php
+
 /*+***********************************************************************************
  * The contents of this file are subject to the vtiger CRM Public License Version 1.0
  * ("License"); You may not use this file except in compliance with the License
@@ -9,72 +10,331 @@
  *************************************************************************************/
 
 class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Action {
+	
+	/**
+	 * 重複している活動の最大表示件数
+	 * @var int
+	 */
+	const DISPLAY_OVERLAP_EVENTS = 10;
+	
+	/**
+	 * 繰り返し活動を検索する最大の期間(日数)
+	 * @var int
+	 */
+	const RECURRING_DATE_LIMIT = 365;
 
-	function process(Vtiger_Request $request) {
-		$moduleName = $request->get('module');
-
-		$currentUser = Users_Record_Model::getCurrentUserModel();
-		$overlap_userids = $this->getOverlapUserIds($currentUser->getId());
-
-		$message = '';
-		if (!empty($overlap_userids)) {
-			$overlap_events = $this->getOverlapEvents($request, $overlap_userids);
-			if (!empty($overlap_events)) { // 重複活動が存在する場合
-				$message = vtranslate('OVERLAPPING_TAG_EXISTS', 'Events');
-				$message .= '<ul>';
-				foreach ($overlap_events as $id => $subject) {
-					$recordModel = Vtiger_Record_Model::getInstanceById($id, $moduleName);
-					$message .= '<li><a href="'.$recordModel->getDetailViewUrl().'" target="_blank" style="color:#15c !important">'.$subject.'&nbsp;&nbsp;</a></li>';
-				}
-				$message .= '</ul>';
-			}
-		}
-
+	public function process(Vtiger_Request $request) 
+	{
+		global $log;
 		$response = new Vtiger_Response();
-		$response->setResult((array('message' => $message)));
-		$response->emit();
+		try {
+			$checkOverlapUserIds = $this->getTargetUserIds($request);
+			$recurringDays = $this->getRecurringType($request);
+			$overlapEvents = $this->getOverlapEventIds($request, $checkOverlapUserIds, $recurringDays);
+			$response->setResult(['message' => $this->buildOverlapMessageHTML($overlapEvents)]);
+			
+		}catch (Exception $e) {
+			$log->error('Calendar_FetchOverlapEventsBeforeSave_Action: '.$e->getCode().':  '.$e->getMessage());
+			$log->error($e->getTraceAsString());
+			$response->setError($e->getMessage());			
+		}finally {
+			$response->emit();
+		}
 	}
-
-	// カレンダー共有設定を参照しつつ, 確認ダイアログに表示するoverlap_useridを取得する
-	private function getOverlapUserIds($userId) {
+	
+	/*
+	 * 期間重複を確認するユーザのIDを取得
+	 * formからの入力を優先する 
+	 * 
+	 * @param Vtigerrequest $request
+	 * @return array
+	 */
+	private function getTargetUserIds(Vtiger_Request $request) :array
+	{
+		// formからの入力
+		$ownerId     = (int)$request->get('assigned_user_id');
+		$invitiesIds = !empty($request->get('selectedusers')) 
+					 ? $request->get('selectedusers') 
+					 : [];
+		$recordId    = $request->get('record_id');
+		
+		// 参加者が一人の場合文字列になっている
+		if (!empty($invitiesIds) && !is_array($invitiesIds)) {
+			$invitiesIds = explode(',', $invitiesIds);
+		}
+		
+		// ドラッグアンドドロップなどマウス操作のみの入力
+		if((empty($ownerId) || empty($invitiesIds)) && !empty($recordId)) {
+			$recordModel = Vtiger_Record_Model::getInstanceById($recordId, 'Events');
+			
+			$ownerId     = !empty($ownerId) 
+						 ? (int)$ownerId 
+						 : (int)$recordModel->get('assigned_user_id');
+			$invitiesIds = !empty($invitiesIds) 
+						 ? $invitiesIds 
+						 : $recordModel->getInvities();
+		}
+		
+		return array_unique(array_merge($invitiesIds, [$ownerId]));
+	}
+	
+	/**
+	 * 繰り返し活動の設定を取得
+	 * 
+	 */
+	private function getNextRecurringDates(string $recordId) :string
+	{
 		$db = PearDatabase::getInstance();
-		$sharedUsers = Calendar_Module_Model::getSharedUsersOfCurrentUser($userId);
-		$sharedGroups = Calendar_Module_Model::getSharedCalendarGroupsList($userId);
+		$nextRecordTime = '';
 
-		$query = 'SELECT overlap_userid FROM vtiger_calendar_overlaps WHERE userid = ?;';
-		$queryResult = $db->pquery($query, array($userId));
-		$num_rows = $db->num_rows($queryResult);
-		$overlap_userids = array();
-		if ($num_rows > 0) {
-			for ($i = 0; $i < $num_rows; $i++) {
-				$overlap_userid = $db->query_result($queryResult, $i, 'overlap_userid');
-				if ($overlap_userid == $userId || array_key_exists($overlap_userid, $sharedUsers) || array_key_exists($overlap_userid, $sharedGroups)) {
-					$overlap_userids[] = $overlap_userid;
+		$query = 'SELECT recurrenceid 
+				  FROM vtiger_activity_recurring_info 
+				  WHERE activityid = (SELECT activityid 
+									  FROM vtiger_activity_recurring_info 
+									  WHERE recurrenceid = ?) AND recurrenceid > ?';
+		$result = $db->pquery($query, [$recordId, $recordId]);
+		if($db->num_rows($result) > 0) {
+			$nextRecordId = $db->query_result($result, 0,"recurrenceid");
+			$nextRecordModel = Vtiger_Record_Model::getInstanceById($nextRecordId, 'Events');
+			$nextRecordTime = $nextRecordModel->get('date_start');
+		}
+		
+		return $nextRecordTime;
+	}
+	
+	/*
+	 * Formからの繰り返し活動の設定を取得
+	 * 
+	 * @param Vtiger_Request $request
+	 * @return array
+	 */
+	private function getRecurringTypeFromRequest(Vtiger_Request $request) : array
+	{
+		$recurringData = [];
+		
+		// 繰り返し周期の単位設定（日、週、月）
+		$type = $request->get('recurringtype');
+		if (empty($type) && $type !== '--None--') {
+			return [];
+		}
+		$recurringData['type'] = $type;
+		
+		// 繰り返し周期の頻度設定
+		$frequency = $request->get('repeat_frequency');
+		if (!empty($frequency)) {
+			$recurringData['repeat_frequency'] = $frequency;
+		}
+		
+		// 繰り返し終了日の設定（繰り返しを検索する範囲は制限する）
+		$limitDate = $request->get('calendar_repeat_limit_date');
+		if (!empty($limitDate)) {
+			// $limitDateが一年以内の日付か判定する
+			$limitDateTimeObj  = new DateTime($limitDate);
+			$targetDateTimeObj = (new DateTime('today'))
+							   ->modify('+'.self::RECURRING_DATE_LIMIT.' days');
+			
+			$recurringData['recurringenddate'] = $limitDateTimeObj <= $targetDateTimeObj 
+											   ? $limitDate 
+											   : $targetDateTimeObj->format('Y-m-d');
+		} 
+		
+		// 活動の開始日時の設定
+		$recurringData['startdate'] = $request->get('date_start');
+		$recurringData['starttime'] = $request->get('time_start');
+		
+		// 繰り返し予定が「以降の活動を含む」
+		$editMode = $request->get('recurringEditMode');
+		if($editMode === 'future') {
+			$nextRecordStartDateTime = $this->getNextRecurringDates($request->get('record_id'));
+			
+			if(!empty($nextRecordStartDateTime)) {
+				$recurringData['startdate'] = $nextRecordStartDateTime;
+			}
+		}
+		
+		// 活動の終了日時の設定
+		if (!empty($limitDate) ) {
+			$recurringData['enddate']   = $limitDate;
+		}else {
+			$recurringData['enddate']   = $request->get('due_date');
+		}
+		
+		$recurringData['endtime']   = $request->get('time_end');
+
+		// 繰り返し周期の単位設定が「週」の場合
+		if ($type === 'Weekly') {
+			$recurringWeekdays = [];
+			if(!empty($request->get('recurring_weekdays'))) {
+				$recurringWeekdays = $request->get('recurring_weekdays');
+			}
+			// 曜日フラグ項目の設定
+			foreach($recurringWeekdays as $day) {
+				if(isset($recurringData[$day])) {
+					$recurringData[$day] = true;
+				}
+			}
+		}
+		
+		// 繰り返し周期の単位設定が「月」の場合
+		if ($type === 'Monthly') {
+			$repeatMonth = $request->get('repeatMonth');
+			$recurringData['repeatmonth_type'] = $repeatMonth;
+			if ($repeatMonth === 'date') {
+				$repeatMonthDate = $request->get('repeatMonth_date');
+				$recurringData['repeatmonth_date'] = empty($repeatMonthDate) 
+												   ? $repeatMonthDate 
+												   : 1;
+			}
+			
+			if ($repeatMonth === 'day') {
+				$recurringData['repeatmonth_daytype'] = $request->get('repeatMonth_daytype');
+				$weeks = [
+					0 => 'sun_flag',
+					1 => 'mon_flag',
+					2 => 'tue_flag',
+					3 => 'wed_flag',
+					4 => 'thu_flag',
+					5 => 'fri_flag',
+					6 => 'sat_flag'
+				];
+				if(isset($weeks[$recurringData['repeatmonth_daytype']])) {
+					$recurringData[$weeks[$recurringData['repeatmonth_daytype']]] = true;
 				}
 			}
 		}
 
-		return $overlap_userids;
+		$recurringType = RecurringType::fromUserRequest($recurringData);
+		return $recurringType->recurringdates ?? [];
 	}
-
-	// 活動期間が重なる活動を取得する
-	private function getOverlapEvents($request, $overlap_userids) {
+	
+	/*
+	 * DBからの繰り返し活動の設定を取得
+	 * 
+	 * @param Vtiger_Request $request
+	 * @return array
+	 */
+	private function getRecurringTypeFromDB(Vtiger_Request $request) : array
+	{
 		$db = PearDatabase::getInstance();
-
-		$dbStartDateOject = DateTimeField::convertToDBTimeZone($request->get('start'));
-		$start = $dbStartDateOject->format('Y-m-d H:i:s');
-		if ($request->get('is_allday') === 'on' || $request->get('is_allday') === 'true') {
+		$recurringDates = [];
+		
+		$recordId = $request->get('record_id');
+		$editMode = $request->get('recurringEditMode');
+		
+		$query = 'SELECT 
+					vre.*, 
+					va.date_start, 
+					va.time_start, 
+					va.due_date, 
+					va.time_end 
+				  FROM vtiger_recurringevents AS vre
+					INNER JOIN vtiger_activity AS va
+						ON va.activityid = vre.activityid
+				  WHERE vre.activityid = ?';
+		$result = $db->pquery($query, [$recordId]);
+		
+		if ($db->num_rows($result)) {
+			$recurringDataRow = $db->query_result_rowdata($result, 0);
+			
+			if($editMode === 'future') {
+				$nextRecordStartDateTime = $this->getNextRecurringDates($request->get('record_id'));
+				
+				if(!empty($nextRecordStartDateTime)) {
+					$recurringDataRow['date_start'] = $nextRecordStartDateTime;
+				}
+			}
+			
+			$recurringType = RecurringType::fromDBRequest($recurringDataRow);
+			$recurringDates = $recurringType->recurringdates ?? [];
+			
+			if(count($recurringDates) > self::RECURRING_DATE_LIMIT) {
+				$recurringDates = array_slice($recurringDates, 0, self::RECURRING_DATE_LIMIT);
+			}
+		}
+		
+		return $recurringDates;
+	}
+	
+	/*
+	 * 繰り返し活動の日付を取得
+	 * 
+	 * @param Vtigerrequest $request
+	 * @return array
+	 */
+	private function getRecurringType(Vtiger_Request $request): array
+	{
+		$recurringDays = [];
+		// 繰り返しの他の予定を更新しない場合
+		if($request->get('recurringEditMode') === 'current'){
+			return $recurringDays;
+		}		
+		
+		// Requestからの取得
+		$recurringDays = $this->getRecurringTypeFromRequest($request);
+		
+		// DBからの取得
+		if (count($recurringDays) === 0 && !empty($request->get('record_id'))) {
+			$recurringDays = $this->getRecurringTypeFromDB($request);
+		}
+		
+		return $recurringDays;
+	}
+	
+	/*
+	 * 開始日と終了日を取得または計算
+	 * 
+	 * @param string $startDateTime
+	 * @param string $endDateTime
+	 * @param string $allDayFlg
+	 * @return array
+	 */
+	private function getDateTimeValues(
+		string $startDateTime, 
+		string $endDateTime, 
+		string $allDayFlg): array
+	{
+		$dbStartDateOject = DateTimeField::convertToDBTimeZone($startDateTime);
+		$startDateTime = $dbStartDateOject->format('Y-m-d H:i:s');
+		if ($allDayFlg === 'on' || $allDayFlg === 'true') {
 			$dbEndDateOject = clone $dbStartDateOject;
 			$dbEndDateOject->modify('+1 day');
-			$end = $dbEndDateOject->format('Y-m-d H:i:s');
+			$endDateTime = $dbEndDateOject->format('Y-m-d H:i:s');
 		} else {
-			$dbEndDateOject = DateTimeField::convertToDBTimeZone($request->get('end'));
-			$end = $dbEndDateOject->format('Y-m-d H:i:s');
+			$dbEndDateOject = DateTimeField::convertToDBTimeZone($endDateTime);
+			$endDateTime = $dbEndDateOject->format('Y-m-d H:i:s');
 		}
-
-		$query = 'SELECT activityid, subject FROM vtiger_activity
-						WHERE deleted = 0 '.
-						'AND smownerid IN ('.generateQuestionMarks($overlap_userids).') '.
+		
+		return ['start' => $startDateTime, 'end' => $endDateTime];
+	}	
+	
+	/*
+	 * 活動期間が重なる活動を取得する
+	 * 
+	 * @param string $start
+	 * @param string $end
+	 * @param array $checkOverlapUserIds
+	 * @param string $recordId
+	 * @param bool $isReccurring
+	 * @return array 
+	 */
+	private function fetchOverlapEventIds(
+		string $start, 
+		string $end, 
+		array $checkOverlapUserIds, 
+		string $recordId = '', 
+		bool $isReccurring = false) :array
+	{
+		$db = PearDatabase::getInstance();
+		$overlapEventIds = [];		
+		
+		$query      = 'SELECT distinct vac.activityid FROM vtiger_activity AS vac ';
+		
+		if($isReccurring) {
+			$query .= 'LEFT JOIN vtiger_activity_recurring_info AS vri ON vac.activityid = vri.recurrenceid ';
+		}
+		
+		$query     .= 'WHERE deleted = 0 '.
+						'AND smownerid IN ('.generateQuestionMarks($checkOverlapUserIds).') '.
 						'AND (
 							-- 1. 活動が$start前に始まり, $end後に終わる場合
 							(TIMESTAMP(date_start, time_start) <= ? AND TIMESTAMP(due_date, time_end) >= ?)
@@ -88,31 +348,143 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 							OR (allday = 1 AND (date_start <= DATE(?) AND due_date >= DATE(?)))
 						)';
 		$params = array_merge(
-			$overlap_userids,
-			[$start,$end, $start,$end, $start,$end,$start, $start,$end,$end, $start,$end]
+			$checkOverlapUserIds,
+			[
+				$start, $end, // 1 
+				$start, $end, // 2
+				$start, $end, $start, // 3 
+				$start, $end, $end, // 4
+				$start, $end // 5
+			]
 		);
 
-		if (!empty($request->get('record'))) {
+		if (!empty($recordId)) {
 			// 編集中の活動を含めない
-			$query .= ' AND activityid != ?';
-			$params[] = $request->get('record');
+			$query .= ' AND vac.activityid != ?';
+			$params[] = $recordId;
 
 			// 参加者の活動を含めない
 			$query .= ' AND invitee_parentid != (SELECT invitee_parentid from vtiger_activity WHERE activityid = ?)';
-			$params[] = $request->get('record');
+			$params[] = $recordId;
+			
+			// 繰り返しの活動を含めない
+			if($isReccurring) {
+				$query .= ' AND ( (vri.activityid != ? AND vri.recurrenceid != ?) OR (vri.activityid IS NULL AND vri.recurrenceid IS NULL) )';
+				$params[] = $recordId;
+				$params[] = $recordId;
+			}
 		}
 		
 		$queryResult = $db->pquery($query, $params);
 		$num_rows = $db->num_rows($queryResult);
-		$overlap_events = array();
 		if ($num_rows > 0) {
 			for ($i = 0; $i < $num_rows; $i++) {
 				$id = $db->query_result($queryResult, $i, 'activityid');
-				$subject = $db->query_result($queryResult, $i, 'subject');
-				$overlap_events[$id] = $subject;
+				$overlapEventIds[] = $id;
 			}
 		}
 
-		return $overlap_events;
+		return $overlapEventIds;
 	}
+	
+	/*
+	 * 活動期間が重なる活動を取得する
+	 * 
+	 * @param Vtigerrequest $request
+	 * @param array $checkOverlapUserIds
+	 * @param array $recurringDays
+	 * @return array 
+	 */
+	private function getOverlapEventIds(
+		Vtiger_Request $request, 
+		array $checkOverlapUserIds, 
+		array $recurringDays) :array
+	{
+		$overlapEvents = [];
+		
+		if (empty($checkOverlapUserIds)) {
+			return $overlapEvents;
+		}
+		
+		$dateStart = $request->get('date_start');
+		$dateEnd   = $request->get('due_date');
+		$timeStart = $request->get('time_start');
+		$timeEnd   = $request->get('time_end');
+		$allDayFlg = $request->get('is_allday');
+		$recordId  = $request->get('record_id');
+		$startDateTime = $dateStart.' '.$timeStart;
+		$endDateTime   = $dateEnd.' '.$timeEnd;
+		
+		// 繰り返し活動場合
+		if(count($recurringDays) > 1) {
+			$intervalSec = strtotime($endDateTime) - strtotime($startDateTime);
+			foreach($recurringDays as $startDay) {
+				$recurringStartDateTime = $startDay.' '.$timeStart;
+				$recurringEndDateTime = (new DateTime($recurringStartDateTime))
+						->modify(+$intervalSec.' seconds')
+						->format('Y-m-d H:i:s');
+				
+				[ 'start' => $start, 'end' => $end ] = 
+					$this->getDateTimeValues($recurringStartDateTime, $recurringEndDateTime, $allDayFlg);
+				$result = $this->fetchOverlapEventIds($start, $end, $checkOverlapUserIds, $recordId, true);
+				$overlapEvents = array_unique(array_merge($overlapEvents, $result));
+			}
+		}else {
+			[ 'start' => $start, 'end' => $end ] = 
+				$this->getDateTimeValues($startDateTime, $endDateTime, $allDayFlg);
+			$overlapEvents = $this->fetchOverlapEventIds($start, $end, $checkOverlapUserIds, $recordId);
+		}
+		
+		return $overlapEvents;
+	}
+	
+	/*
+	 * 重複している活動のメッセージをHTML形式で作成
+	 * 
+	 * @param array $overlapEvents
+	 * @return string
+	 */
+	private function buildOverlapMessageHTML(array $overlapEvents) :string
+	{
+		$message = '';
+
+		if (!empty($overlapEvents)) { // 重複活動が存在する場合
+			$message = vtranslate('OVERLAPPING_TAG_EXISTS', 'Events');
+			$message .= '<ul>';
+			
+			$countNum = 1;
+			foreach ($overlapEvents as $id) {
+				$recordModel = Vtiger_Record_Model::getInstanceById($id, 'Events');
+				$startDateTimeStr = $recordModel->get('date_start').' '.$recordModel->get('time_start');
+				$isAllDayformat = $recordModel-> isAllDay() 
+								? 'Y-m-d'.' '.vtranslate('LBL_ALL_DAY', 'Events') 
+								: 'Y-m-d H:i';
+				$startDateTime = (new DateTime($startDateTimeStr))->format($isAllDayformat);
+								
+				$message .= '<li>';
+				$message .= '<a href="'.$recordModel->getDetailViewUrl()
+							.'" target="_blank" style="color:#15c !important">';
+				$message .= $startDateTime. '&nbsp;&nbsp;';
+				$message .= $recordModel->get('subject').'&nbsp;&nbsp;';
+				$message .= '</a>';
+				$message .= '</li>';
+				
+				$countNum++;
+				if ($countNum > self::DISPLAY_OVERLAP_EVENTS) {
+					break;
+				}
+			}
+			
+			$message .= '</ul>';
+			
+			if (count($overlapEvents) > self::DISPLAY_OVERLAP_EVENTS) {
+				// 重複活動が5件以上ある場合
+				$message .= '<p>他に'
+							.vtranslate(count($overlapEvents) - self::DISPLAY_OVERLAP_EVENTS
+							.'件の活動が重複しています。', 'Events').'</p>';
+			}
+		}
+		
+		return $message;
+	}	
 }

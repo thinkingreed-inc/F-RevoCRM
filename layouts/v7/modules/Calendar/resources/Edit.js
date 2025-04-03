@@ -69,16 +69,36 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 			return Promise.resolve();
 		}
 		
+		// formDataから以下のプロパティが存在するか確認して存在する場合はプロパティの値を取得して配列にする
+		var weekDays = ['sun_flag', 'mon_flag', 'tue_flag', 'wed_flag', 'thu_flag', 'fri_flag', 'sat_flag'];
+		var weekDaysArray = [];
+		for (var i = 0; i < weekDays.length; i++) {
+			if (formData[weekDays[i]]) {
+				weekDaysArray.push(weekDays[i]);
+			}
+		}
+		
 		var requestParams = {
 			'module': 'Calendar',
 			'action': 'FetchOverlapEventsBeforeSave',
-			'record': formData.record,
+			'record_id': formData.record,
 			'assigned_user_id': formData.assigned_user_id,
-			'inviteesid': formData['selectedusers[]'],
-			'start': `${formData.date_start} ${formData.time_start}`,
-			'end': `${formData.due_date} ${formData.time_end}`,
+			'selectedusers': formData['selectedusers[]'],
+			'date_start': formData.date_start,
+			'time_start':formData.time_start,
+			'due_date': formData.due_date,
+			'time_end': formData.time_end,
 			'is_allday': formData.is_allday,
 			'recurringEditMode': formData.recurringEditMode,
+			'repeat_frequency': formData.repeat_frequency,
+			'recurringtype': formData.recurringtype,
+			'calendar_repeat_limit_date': formData.calendar_repeat_limit_date,
+			'recurring_weekdays': weekDaysArray,
+			'repeatmonth_type': formData.repeatmonth_type,
+			'repeatMonth': formData.repeatMonth,
+			'repeatMonth_date': formData.repeatMonth_date,
+			'repeatmonth_daytype': formData.repeatmonth_daytype,
+			'repeatMonth_day': formData.repeatMonth_day,
 		};
 		
 		app.helper.showProgress();
@@ -101,8 +121,10 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 				return Promise.resolve();
 			} else {
 				app.helper.hideProgress();
-				console.error("Error in FetchOverlapEventsBeforeSave:", error);
-				return Promise.reject(error);
+				app.helper.showErrorNotification(err);
+				console.error("Error in FetchOverlapEventsBeforeSave:", err);
+				
+				return Promise.reject(err);
 			}
 		});
 	},
