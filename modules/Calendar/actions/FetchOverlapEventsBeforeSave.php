@@ -31,7 +31,8 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 			$checkOverlapUserIds = $this->getTargetUserIds($request);
 			$recurringDays = $this->getRecurringType($request);
 			$overlapEvents = $this->getOverlapEventIds($request, $checkOverlapUserIds, $recurringDays);
-			$response->setResult(['message' => $this->buildOverlapMessageHTML($overlapEvents)]);
+			$overlapEventUsers = $this->getOverlapEventUsers($overlapEvents);
+			$response->setResult(['message' => $this->buildOverlapMessageHTML($overlapEvents, $overlapEventUsers)]);
 			
 		}catch (Exception $e) {
 			$log->error('Calendar_FetchOverlapEventsBeforeSave_Action: '.$e->getCode().':  '.$e->getMessage());
@@ -253,6 +254,12 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 			// 繰り返し予定が「以降の活動を含む」場合
 			if($editMode === 'future') {
 				$nextRecordStartDateTime = $this->getNextRecurringDates($request->get('record_id'));
+				if($diffDate !== 0) {
+					$nextRecordStartDateTime = 
+							(new DateTime($nextRecordStartDateTime))
+								->modify('-'.$diffDate.' seconds')
+								->format('Y-m-d');
+				}
 				
 				if(!empty($nextRecordStartDateTime)) {
 					$recurringDataRow['date_start'] = $nextRecordStartDateTime;
@@ -361,7 +368,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		$db = PearDatabase::getInstance();
 		$overlapEventIds = [];		
 		
-		$query      = 'SELECT distinct vac.activityid 
+		$query      = 'SELECT vac.activityid 
 						FROM vtiger_activity AS vac ';
 		
 		if($isReccurring) {
@@ -417,7 +424,8 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 							SELECT invitee_parentid 
 							FROM vtiger_activity 
 							WHERE activityid = ?
-						)';
+						) 
+						AND invitee_parentid = vac.activityid';
 			$params[] = $recordId;
 			
 			// 繰り返しの活動を含めない
@@ -446,6 +454,8 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 				$params[] = $recordId;
 				$params[] = $recordId;
 			}
+			
+			$query     .= ' ORDER BY date_start, time_start';
 		}
 		
 		$queryResult = $db->pquery($query, $params);
@@ -512,41 +522,93 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 	}
 	
 	/*
+	 * 重複している活動のユーザを取得
+	 * 
+	 * @param array $overlapEvents
+	 * @return array
+	 */
+	private function getOverlapEventUsers(array $overlapEvents) :array
+	{
+		$overlapEventUsers = [];
+		
+		if (empty($overlapEvents)) {
+			return $overlapEventUsers;
+		}
+		
+		$db = PearDatabase::getInstance();
+		$query   = 'SELECT DISTINCT smownerid 
+					FROM vtiger_activity 
+					WHERE deleted = 0 
+						AND invitee_parentid IN ('.generateQuestionMarks($overlapEvents).')';
+		$result = $db->pquery($query, [$overlapEvents]);
+		
+		if ($db->num_rows($result) > 0) {
+			for ($i = 0; $i < $db->num_rows($result); $i++) {
+				$ownerId = $db->query_result($result, $i, 'smownerid');
+				$overlapEventUsers[$ownerId] = getUserFullName($ownerId); 
+			}
+		}
+		
+		return array_unique($overlapEventUsers);
+	}
+	
+	/*
 	 * 重複している活動のメッセージをHTML形式で作成
 	 * 
 	 * @param array $overlapEvents
 	 * @return string
 	 */
-	private function buildOverlapMessageHTML(array $overlapEvents) :string
+	private function buildOverlapMessageHTML(array $overlapEvents, array $overlapEventUsers) :string
 	{
 		$message = '';
 
 		if (!empty($overlapEvents)) { // 重複活動が存在する場合
-		
-			$message  = '<div style="margin-bottom:10px;">';
-			if(count($overlapEvents) < self::DISPLAY_OVERLAP_EVENTS) {
-				$message .= vtranslate('OVERLAPPING_EXISTS', 'Events');
-			}else {
-				$message .= sprintf(vtranslate('OVERLAPPING_EXISTS_WITH_COUNT', 'Events'), self::DISPLAY_OVERLAP_EVENTS);
-			}
+			
+			// ヘッダーのメッセージ
+			$message  = '<div style="margin-bottom:10px;font-weight:bold;font-size:1.4rem;color:#333;">';
+			$message .= vtranslate('OVERLAPPING_EXISTS', 'Events').'<br>';
+			$message .= vtranslate('OVERLAPPING_CONFIRME_MSG', 'Events');
 			$message .= '</div>';
 			
-			$message .= '<ul>';
+			$message .= '<hr>';
+			
+			// 重複している活動のリスト
+			$message .= '<div style="margin-bottom:5px;font-weight:bold;color:#333;">';
+			$message .= sprintf(vtranslate('期間が重複している活動（最大%s件まで表示）', 'Events'), self::DISPLAY_OVERLAP_EVENTS);
+			$message .= '</div>';
+			$message .= '<ul style="list-style:none;margin: 0 0 20px 20px;padding: 0;">';
 			
 			$countNum = 1;
 			foreach ($overlapEvents as $id) {
-				$recordModel = Vtiger_Record_Model::getInstanceById($id, 'Events');
-				$startDateTimeStr = $recordModel->get('date_start').' '.$recordModel->get('time_start');
-				$isAllDayformat = $recordModel-> isAllDay() 
-								? 'Y-m-d'.' '.vtranslate('LBL_ALL_DAY', 'Events') 
-								: 'Y-m-d H:i';
-				$startDateTime = (new DateTime($startDateTimeStr))->format($isAllDayformat);
-								
-				$message .= '<li style="margin-bottom:3px;">';
-				$message .= '<a href="'.$recordModel->getDetailViewUrl()
-							.'" target="_blank" style="color:#15c !important">';
-				$message .= $startDateTime. '&nbsp;&nbsp;';
-				$message .= $recordModel->get('subject').'&nbsp;&nbsp;';
+				$recordModel   = Vtiger_Record_Model::getInstanceById($id, 'Events');
+				$startDateTime = new DateTime($recordModel->get('date_start').' '.$recordModel->get('time_start'));
+				$endDateTime   = new DateTime($recordModel->get('due_date').' '.$recordModel->get('time_end'));
+				$isSameDay     = $startDateTime->format('Y-m-d') === $endDateTime->format('Y-m-d');
+				$isAllDay      = $recordModel->isAllDay();
+				
+				$message .= '<li style="margin-bottom: 8px;">';
+				$message .= '<a href="'
+								.$recordModel->getDetailViewUrl()
+								.'" target="_blank" style="color:#15c !important">';
+				$message .= $startDateTime->format('Y-m-d');
+				
+				// 終日の場合は開始時刻と終了日時を表示しない
+				if($isAllDay) {
+					$message .= '<span style="margin-left: 1.5rem">'.vtranslate('LBL_ALL_DAY', 'Events').'</span>';
+				} else {
+					$message .= '<span style="margin-left: 1.5rem">';
+					$message .= $startDateTime->format('H:i').'&nbsp; - &nbsp;';
+					
+					// 開始日と終了日が同日の場合は日付を表示しない
+					if(!$isSameDay) {
+						$message .= $endDateTime->format('Y-m-d H:i');
+					}else {
+						$message .= $endDateTime->format('H:i');
+					}
+					$message .= '</span>';
+				}
+				
+				$message .= '<div style="margin:0 0 5px 0;font-weight:bold;">'.$recordModel->get('subject').'</div>';
 				$message .= '</a>';
 				$message .= '</li>';
 				
@@ -557,8 +619,15 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 			}
 			
 			$message .= '</ul>';
-			$message .= '<div style="margin-bottom:5px;">';
-			$message .= vtranslate('OVERLAPPING_CONFIRME_MSG', 'Events').'</div>';
+			
+			// 重複している活動のユーザ
+			$message .= '<div style="margin-bottom:5px;font-weight:bold;color:#333;">';
+			$message .= vtranslate('期間が重複する活動の担当者・参加者', 'Events');
+			$message .= '</div>';
+			$message .= '<div style="margin: 0 0 5px 20px;">';
+			$message .= implode('&nbsp;,&nbsp;&nbsp;&nbsp;', $overlapEventUsers);
+			$message .= '</div>';
+			
 		}
 		
 		return $message;
