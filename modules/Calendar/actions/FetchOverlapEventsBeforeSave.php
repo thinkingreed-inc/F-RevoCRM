@@ -217,6 +217,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 	{
 		$db = PearDatabase::getInstance();
 		$recurringDates = [];
+		$diffDate = 0;
 		
 		$recordId = $request->get('record_id');
 		$editMode = $request->get('recurringEditMode');
@@ -235,13 +236,46 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		
 		if ($db->num_rows($result)) {
 			$recurringDataRow = $db->query_result_rowdata($result, 0);
+			// 開始日時、終了日時はFormからのリクエスト値がある場合は優先する
+			// 活動の開始日時の設定
+			$requestDateStart = $request->get('date_start');
+			if(!empty($requestDateStart)) {
+				// DBからの開始日とRequestからの開始日に差分があれば取得
+				$diffDate = strtotime($recurringDataRow['date_start']) - strtotime($requestDateStart);
+				$recurringDataRow['date_start'] = $requestDateStart;
+			}
 			
+			$requestTimeStart = $request->get('time_start');
+			if(!empty($requestTimeStart)) {
+				$recurringDataRow['time_start'] = $requestTimeStart;
+			}
+			
+			// 繰り返し予定が「以降の活動を含む」場合
 			if($editMode === 'future') {
 				$nextRecordStartDateTime = $this->getNextRecurringDates($request->get('record_id'));
 				
 				if(!empty($nextRecordStartDateTime)) {
 					$recurringDataRow['date_start'] = $nextRecordStartDateTime;
 				}
+			}
+			
+			// 活動の終了日時の設定
+			$requestDueDate = $request->get('due_date');
+			if (!empty($requestDueDate) ) {
+				$recurringDataRow['enddate']   = $requestDueDate;
+			}
+			
+			$requestEndTime = $request->get('time_end');
+			if (!empty($requestEndTime) ) {
+				$recurringDataRow['endtime']   = $requestEndTime;
+			}
+			
+			// DBからの開始日とRequestからの開始日の差分があれば反映
+			if($diffDate !== 0) {
+				$recurringDataRow['recurringenddate'] = 
+						(new DateTime($recurringDataRow['recurringenddate']))
+							->modify('-'.$diffDate.' seconds')
+							->format('Y-m-d');
 			}
 			
 			$recurringType = RecurringType::fromDBRequest($recurringDataRow);
@@ -327,25 +361,35 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		$db = PearDatabase::getInstance();
 		$overlapEventIds = [];		
 		
-		$query      = 'SELECT distinct vac.activityid FROM vtiger_activity AS vac ';
+		$query      = 'SELECT distinct vac.activityid 
+						FROM vtiger_activity AS vac ';
 		
 		if($isReccurring) {
-			$query .= 'LEFT JOIN vtiger_activity_recurring_info AS vri ON vac.activityid = vri.recurrenceid ';
+			$query .= 'LEFT JOIN vtiger_activity_recurring_info AS vri 
+						ON vac.activityid = vri.recurrenceid ';
 		}
 		
 		$query     .= 'WHERE deleted = 0 '.
 						'AND smownerid IN ('.generateQuestionMarks($checkOverlapUserIds).') '.
 						'AND (
 							-- 1. 活動が$start前に始まり, $end後に終わる場合
-							(TIMESTAMP(date_start, time_start) <= ? AND TIMESTAMP(due_date, time_end) >= ?)
+							(TIMESTAMP(date_start, time_start) <= ? 
+								AND TIMESTAMP(due_date, time_end) >= ?)
 							-- 2. 活動が指定期間内に収まる場合	
-							OR (TIMESTAMP(date_start, time_start) > ? AND TIMESTAMP(due_date, time_end) < ?)
+							OR (TIMESTAMP(date_start, time_start) > ? 
+								AND TIMESTAMP(due_date, time_end) < ?)
 							-- 3. 活動が指定期間の開始にかかる場合
-							OR (TIMESTAMP(date_start, time_start) < ? AND TIMESTAMP(due_date, time_end) < ? AND TIMESTAMP(due_date, time_end) > ?)
+							OR (TIMESTAMP(date_start, time_start) < ? 
+								AND TIMESTAMP(due_date, time_end) < ? 
+								AND TIMESTAMP(due_date, time_end) > ?)
 							-- 4. 活動が指定期間の終了にかかる場合
-							OR (TIMESTAMP(date_start, time_start) > ? AND TIMESTAMP(due_date, time_end) > ? AND TIMESTAMP(date_start, time_start) < ?)
+							OR (TIMESTAMP(date_start, time_start) > ? 
+								AND TIMESTAMP(due_date, time_end) > ? 
+								AND TIMESTAMP(date_start, time_start) < ?)
 							-- 5. 終日の活動が指定期間に重なる場合
-							OR (allday = 1 AND (date_start <= DATE(?) AND due_date >= DATE(?)))
+							OR (allday = 1 
+								AND (date_start <= DATE(?) 
+								AND due_date >= DATE(?)))
 						)';
 		$params = array_merge(
 			$checkOverlapUserIds,
@@ -364,12 +408,36 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 			$params[] = $recordId;
 
 			// 参加者の活動を含めない
-			$query .= ' AND invitee_parentid != (SELECT invitee_parentid from vtiger_activity WHERE activityid = ?)';
+			$query .= ' AND invitee_parentid != (
+							SELECT invitee_parentid 
+							FROM vtiger_activity 
+							WHERE activityid = ?
+						)';
 			$params[] = $recordId;
 			
 			// 繰り返しの活動を含めない
-			if($isReccurring) {
-				$query .= ' AND ( (vri.activityid != ? AND vri.recurrenceid != ?) OR (vri.activityid IS NULL AND vri.recurrenceid IS NULL) )';
+			if($isReccurring) {			
+				// 繰り返しの親レコ―ドIDを取得し除外する	
+				$query .= ' AND invitee_parentid NOT IN (
+								SELECT recurrenceid 
+								FROM vtiger_activity_recurring_info 
+								WHERE activityid = (
+									SELECT activityid 
+									FROM vtiger_activity_recurring_info 
+									WHERE recurrenceid = (
+										SELECT invitee_parentid 
+										FROM vtiger_activity 
+										WHERE activityid = ?
+									)
+								)
+							)';
+
+				$params[] = $recordId;
+				
+				$query .= ' AND ( 
+								vri.activityid != ? AND vri.recurrenceid != ? 
+								OR (vri.activityid IS NULL AND vri.recurrenceid IS NULL) 
+							)';
 				$params[] = $recordId;
 				$params[] = $recordId;
 			}
