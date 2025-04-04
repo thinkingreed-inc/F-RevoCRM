@@ -109,7 +109,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 	 * @param Vtiger_Request $request
 	 * @return array
 	 */
-	private function getRecurringTypeFromRequest(Vtiger_Request $request) : array
+	private function getRecurringTypeFromRequest(Vtiger_Request $request) :array
 	{
 		$recurringData = [];
 		
@@ -214,7 +214,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 	 * @param Vtiger_Request $request
 	 * @return array
 	 */
-	private function getRecurringTypeFromDB(Vtiger_Request $request) : array
+	private function getRecurringTypeFromDB(Vtiger_Request $request) :array
 	{
 		$db = PearDatabase::getInstance();
 		$recurringDates = [];
@@ -302,7 +302,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 	 * @param Vtigerrequest $request
 	 * @return array
 	 */
-	private function getRecurringType(Vtiger_Request $request): array
+	private function getRecurringType(Vtiger_Request $request) :array
 	{
 		$recurringDays = [];
 		// 繰り返しの他の予定を更新しない場合
@@ -574,8 +574,9 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 			
 			// 重複している活動のリスト
 			$message .= '<div style="margin-bottom:5px;font-weight:bold;color:#333;">';
-			$message .= sprintf(vtranslate('期間が重複している活動（最大%s件まで表示）', 'Events'), self::DISPLAY_OVERLAP_EVENTS);
+			$message .= sprintf(vtranslate('OVERLAPPING_EVENTS', 'Events'), self::DISPLAY_OVERLAP_EVENTS);
 			$message .= '</div>';
+			
 			$message .= '<ul style="list-style:none;margin: 0 0 20px 20px;padding: 0;">';
 			
 			$countNum = 1;
@@ -622,7 +623,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 			
 			// 重複している活動のユーザ
 			$message .= '<div style="margin-bottom:5px;font-weight:bold;color:#333;">';
-			$message .= vtranslate('期間が重複する活動の担当者・参加者', 'Events');
+			$message .= vtranslate('OVERLAPPING_EVENT_USERS', 'Events');
 			$message .= '</div>';
 			$message .= '<div style="margin: 0 0 5px 20px;">';
 			$message .= implode('&nbsp;,&nbsp;&nbsp;&nbsp;', $overlapEventUsers);

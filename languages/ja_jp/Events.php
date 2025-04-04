@@ -108,7 +108,8 @@ $languageStrings = array(
 	'Duration Minutes' => '期間(分)',
 	'No Time' => '時間なし',
 
-	'OVERLAPPING_EXISTS' => '期間が重複する活動が存在します',
-	'OVERLAPPING_EXISTS_WITH_COUNT' => '%s件以上の期間が重複する活動が存在します',
-	'OVERLAPPING_CONFIRME_MSG' => '期間が重複した状態で登録を行う場合は「Yes」、登録をしない場合は「No」を押してください',
+	'OVERLAPPING_EXISTS' => '期間の重複する活動が登録されています',
+	'OVERLAPPING_CONFIRME_MSG' => '活動を保存しますか？',
+	'OVERLAPPING_EVENTS' => '期間が重複している活動（最大%s件まで表示）',
+	'OVERLAPPING_EVENT_USERS' => '期間が重複する活動の担当者・参加者',
 );

@@ -100,7 +100,8 @@ $languageStrings = array(
 	'INVITATION'=>' Invitation ',
 	'Busy' => 'Busy',
 
-	'OVERLAPPING_EXISTS' => 'There are events with overlapping periods',
-	'OVERLAPPING_EXISTS_WITH_COUNT' => '%s or more activities with overlapping periods exist',
-	'OVERLAPPING_CONFIRME_MSG' =>"Press 'Yes' to save with overlapping periods, press 'No' to cancel the registration",
+	'OVERLAPPING_EXISTS' => 'Activities with overlapping periods are registered',
+	'OVERLAPPING_CONFIRME_MSG' => 'Do you want to save this activity?',
+	'OVERLAPPING_EVENTS' => 'Activities with overlapping periods (showing up to %s)',
+	'OVERLAPPING_EVENT_USERS' => 'Users and participants of overlapping activities',
 );
