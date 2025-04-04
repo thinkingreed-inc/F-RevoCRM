@@ -88,7 +88,6 @@ class Calendar_Calendar_View extends Vtiger_Index_View {
 		$recordStructure = $userRecordStructure->getStructure();
 		$allUsers = Users_Record_Model::getAll(true);
 		$sharedUsers = Calendar_Module_Model::getCaledarSharedUsers($currentUserModel->id);
-		$overlappedUsers = Calendar_Module_Model::getOverlapUsers($currentUserModel->id);
 		$sharedType = Calendar_Module_Model::getSharedType($currentUserModel->id);
 		$dayStartPicklistValues = Users_Record_Model::getDayStartsPicklistValues($recordStructure);
 
@@ -103,9 +102,6 @@ class Calendar_Calendar_View extends Vtiger_Index_View {
 		$viewer->assign('RECORD', $currentUserModel->id);
 		$viewer->assign('SHAREDTYPE', $sharedType);
 		$viewer->assign('HOUR_FORMAT_VALUE', $hourFormatFeildModel->get('fieldvalue'));
-		$viewer->assign('SHAREDUSERS_CURRENTUSER', Calendar_Module_Model::getSharedUsersOfCurrentUser($currentUserModel->id));
-		$viewer->assign('SHAREGROUPS_CURRENTUSER', Calendar_Module_Model::getSharedCalendarGroupsList($currentUserModel->id));
-		$viewer->assign('OVERLAPPEDUSERS', $overlappedUsers);
 
 		$viewer->view('CalendarSettings.tpl', $request->getModule());
 	}

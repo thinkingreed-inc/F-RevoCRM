@@ -16,7 +16,6 @@ class Users_SaveCalendarSettings_Action extends Users_Save_Action {
 		
 		$recordModel->save();
 		$this->saveCalendarSharing($request);
-		$this->saveCalendarOverlapping($request);
 		header("Location: index.php?module=Calendar&view=Calendar");
 	}
 
@@ -50,20 +49,6 @@ class Users_SaveCalendarSettings_Action extends Users_Save_Action {
 			}else{
 				$calendarModuleModel->deleteSharedUsers($currentUserModel->id);
 			}
-		}
-	}
-
-	public function saveCalendarOverlapping(Vtiger_Request $request){
-
-		$overlappedIds = $request->get('overlappedIds');
-		$currentUserModel = Users_Record_Model::getCurrentUserModel();
-		$calendarModuleModel = Vtiger_Module_Model::getInstance('Calendar');
-
-		if(!empty($overlappedIds)){
-			$calendarModuleModel->deleteOverlappedUsers($currentUserModel->id);
-			$calendarModuleModel->insertOverlappedUsers($currentUserModel->id, $overlappedIds);
-		}else{
-			$calendarModuleModel->deleteOverlappedUsers($currentUserModel->id);
 		}
 	}
 }

@@ -130,34 +130,6 @@
 									</select>
 								</div>
 								</div>
-							<div class="form-group">
-								<label class="fieldLabel col-lg-4 col-sm-4 col-xs-4">{vtranslate('LBL_CALENDAR_TIME_OVERLAP_DETECTION',$MODULE)}</label>
-								<div class="fieldValue col-lg-8 col-sm-8 col-xs-8">
-									<select class="select2 listSearchContributor" id="overlappedusers" name="overlappedIds[]" multiple>
-										<optgroup label="{vtranslate('LBL_USERS')}">
-											{* 一人目に自分を表示する *}
-											{assign var=LOGIN_USER_ID value=$CURRENTUSER_MODEL->get('id')}
-											<option value="{$LOGIN_USER_ID}" {if array_key_exists($LOGIN_USER_ID, $OVERLAPPEDUSERS)} selected="" {/if}>
-												{vtranslate($CURRENTUSER_MODEL->getName(),$MODULE)}
-											</option>
-
-											{* 自分以外のユーザーを順番に表示する *}
-											{foreach key=ID item=USER_NAME from=$SHAREDUSERS_CURRENTUSER}
-												<option value="{$ID}" {if array_key_exists($ID, $OVERLAPPEDUSERS)} selected="" {/if}>
-													{$USER_NAME}
-												</option>
-											{/foreach}
-										</optgroup>
-										<optgroup label="{vtranslate('LBL_GROUPS')}">
-											{foreach key=ID item=GROUP_NAME from=$SHAREGROUPS_CURRENTUSER}
-												<option value="{$ID}" {if array_key_exists($ID, $OVERLAPPEDUSERS)} selected="" {/if}>
-													{$GROUP_NAME}
-												</option>
-											{/foreach}
-										</optgroup>
-									</select>
-								</div>
-							</div>
 							<br>
 						</div>
 					</div>
