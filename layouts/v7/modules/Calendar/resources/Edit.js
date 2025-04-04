@@ -60,6 +60,75 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 		jQuery("#alldayEvent").attr('data-validation-engine','change');
 	},
 
+	// 活動期間が重なる活動を取得し, 重複があれば確認ダイアログを表示する(Yes/No)
+	showOverlapEventConfirmationBeforeSave: function (formData, optionParam) {
+		optionParam = optionParam || {};
+		jQuery.extend(formData, optionParam);
+		
+		if (formData.module != "Events") {
+			return Promise.resolve();
+		}
+		
+		// formDataから以下のプロパティが存在するか確認して存在する場合はプロパティの値を取得して配列にする
+		var weekDays = ['sun_flag', 'mon_flag', 'tue_flag', 'wed_flag', 'thu_flag', 'fri_flag', 'sat_flag'];
+		var weekDaysArray = [];
+		for (var i = 0; i < weekDays.length; i++) {
+			if (formData[weekDays[i]]) {
+				weekDaysArray.push(weekDays[i]);
+			}
+		}
+		
+		var requestParams = {
+			'module': 'Calendar',
+			'action': 'FetchOverlapEventsBeforeSave',
+			'record_id': formData.record,
+			'assigned_user_id': formData.assigned_user_id,
+			'selectedusers': formData['selectedusers[]'],
+			'date_start': formData.date_start,
+			'time_start':formData.time_start,
+			'due_date': formData.due_date,
+			'time_end': formData.time_end,
+			'is_allday': formData.is_allday,
+			'recurringEditMode': formData.recurringEditMode,
+			'repeat_frequency': formData.repeat_frequency,
+			'recurringtype': formData.recurringtype,
+			'calendar_repeat_limit_date': formData.calendar_repeat_limit_date,
+			'recurring_weekdays': weekDaysArray,
+			'repeatmonth_type': formData.repeatmonth_type,
+			'repeatMonth': formData.repeatMonth,
+			'repeatMonth_date': formData.repeatMonth_date,
+			'repeatmonth_daytype': formData.repeatmonth_daytype,
+			'repeatMonth_day': formData.repeatMonth_day,
+		};
+		
+		app.helper.showProgress();
+		return app.request.post({data: requestParams}).then(function (err, data) {
+			if (!err) {
+				app.helper.hideProgress();
+				if (data.message) {
+					// 重複活動がある場合, 確認ダイアログを表示
+					return app.helper.showConfirmationBox({message: data.message}).then(
+						function () {
+							return Promise.resolve();
+						},
+						function () {
+							// No を選択した場合は処理を中断
+							return;
+						}
+					);
+				}
+				// 重複活動が無い場合はそのまま続行
+				return Promise.resolve();
+			} else {
+				app.helper.hideProgress();
+				app.helper.showErrorNotification(err);
+				console.error("Error in FetchOverlapEventsBeforeSave:", err);
+				
+				return Promise.reject(err);
+			}
+		});
+	},
+
 	userChangedTimeDiff:false
 
 },{
@@ -74,6 +143,75 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 		}
 		this.relatedContactElement =  jQuery('#contact_id_display', form);
 		return this.relatedContactElement;
+	},
+	
+	/**
+     * Function to Validate and Save Event 
+     * @returns {undefined}
+     */
+    registerValidation : function () {
+        var editViewForm = this.getForm();
+		var params = {
+			submitHandler : function(form) {
+				var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
+				app.event.trigger(e);
+				if(e.isDefaultPrevented()) {
+					return false;
+				}
+				window.onbeforeunload = null;
+				
+				var formData = jQuery(form).serializeFormData();
+				Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(formData)
+				.then(function () {
+					editViewForm.find('.saveButton').attr('disabled',true);
+					form.submit();
+				});
+				return false;
+            }
+		};
+        this.formValidatorInstance = editViewForm.vtValidate(params);
+    },
+
+	/**
+	 * Register Quick Create Save Event
+	 * @param {type} form
+	 * @returns {undefined}
+	 */
+	quickCreateSave : function(form,invokeParams){
+		var params = {
+			submitHandler: function(form) {
+				if(this.numberOfInvalids() > 0) {
+					return false;
+				}
+				var formData = jQuery(form).serializeFormData();
+				Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(formData).then(function () {
+					// to Prevent submit if already submitted
+					jQuery("button[name='saveButton']").attr("disabled","disabled");
+					
+					if(formData['module']=="HelpDesk"){
+						formData['description']=formData['description'].replace(/\n/g,'<br>');
+					}
+					app.request.post({data:formData}).then(function(err,data){
+						app.helper.hideProgress();
+						if(err === null) {
+							jQuery('.vt-notification').remove();
+							app.event.trigger("post.QuickCreateForm.save",data,jQuery(form).serializeFormData());
+							app.helper.hideModal();
+							var message = formData.record !== "" ? app.vtranslate('JS_RECORD_UPDATED'):app.vtranslate('JS_RECORD_CREATED');
+							app.helper.showSuccessNotification({"message":message},{delay:4000});
+							invokeParams.callbackFunction(data, err);
+							//To unregister onbefore unload event registered for quickcreate
+							window.onbeforeunload = null;
+						}else{
+							app.event.trigger('post.save.failed', err);
+							jQuery("button[name='saveButton']").removeAttr('disabled');
+						}
+					});
+				});
+			},
+			validationMeta: quickcreate_uimeta
+		};
+		form.vtValidate(params);
 	},
 
 	openPopUp : function(e){
@@ -240,9 +378,14 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 			if(inviteeIdsList) {
 				inviteeIdsList = jQuery('#selectedUsers').val().join(';')
 			}
-			jQuery('<input type="hidden" name="inviteesid" />').
-					appendTo(form).
-					val(inviteeIdsList);
+			
+			var inviteeIdsInput = form.find('input[name="inviteesid"]');
+			if(inviteeIdsInput.length === 0) {	
+				jQuery('<input type="hidden" name="inviteesid" />')
+					.appendTo(form).val(inviteeIdsList);
+			}else {
+				inviteeIdsInput.val(inviteeIdsList);
+			}
 		}
 	},
 
@@ -257,9 +400,16 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 	initializeContactIdList : function(form) {
 		var relatedContactElement = this.getRelatedContactElement(form);
 		if(this.isEvents(form) && relatedContactElement.length) {
-			jQuery('<input type="hidden" name="contactidlist" /> ').appendTo(form).val(relatedContactElement.val().split(',').join(';'));
-			form.find('[name="contact_id"]').attr('name','');
+
+			var contactListInput = form.find('input[name="contactidlist"]');
+			if(contactListInput.length === 0) {
+				jQuery('<input type="hidden" name="contactidlist" /> ')
+					.appendTo(form).val(relatedContactElement.val().split(',').join(';'));
+			}else {
+				contactListInput.val(relatedContactElement.val().split(',').join(';'));
+			}
 		}
+			form.find('[name="contact_id"]').attr('name','');
 	},
 
 	registerRecurringEditOptions : function(e,form,InitialFormData) {
@@ -289,7 +439,12 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 							return true;
 						}
 					});
-					form.submit();
+					
+					var formData = jQuery(form).serializeFormData();
+					Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(formData)
+					.then(function () {
+						form.submit();
+					});
 				});
 				modalContainer.on('click', '.futureEvents', function() {
 					window.onbeforeunload = null;
@@ -300,7 +455,12 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 							return true;
 						}
 					});
-					form.submit();
+					
+					var formData = jQuery(form).serializeFormData();
+					Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(formData)
+					.then(function () {
+						form.submit();
+					});
 				});
 				modalContainer.on('click', '.allEvents', function() {
 					window.onbeforeunload = null;
@@ -311,7 +471,12 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 							return true;
 						}
 					});
-					form.submit();
+					
+					var formData = jQuery(form).serializeFormData();
+					Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(formData)
+					.then(function () {
+						form.submit();
+					});
 				});
 			};
 
@@ -327,7 +492,7 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 			form = this.getForm();
 		}
 		var InitialFormData = form.serialize();
-		app.event.one(Vtiger_Edit_Js.recordPresaveEvent,function(e) {
+		app.event.on(Vtiger_Edit_Js.recordPresaveEvent,function(e) {
 			thisInstance.registerRecurringEditOptions(e,form,InitialFormData);
 			thisInstance.addInviteesIds(form);
 			thisInstance.resetRecurringDetailsIfDisabled(form);
