@@ -379,17 +379,21 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 							OR (TIMESTAMP(date_start, time_start) > ? 
 								AND TIMESTAMP(due_date, time_end) < ?)
 							-- 3. 活動が指定期間の開始にかかる場合
-							OR (TIMESTAMP(date_start, time_start) < ? 
+							OR (TIMESTAMP(date_start, time_start) <= ? 
 								AND TIMESTAMP(due_date, time_end) < ? 
 								AND TIMESTAMP(due_date, time_end) > ?)
 							-- 4. 活動が指定期間の終了にかかる場合
-							OR (TIMESTAMP(date_start, time_start) > ? 
-								AND TIMESTAMP(due_date, time_end) > ? 
+							OR (TIMESTAMP(date_start, time_start) >= ? 
+								AND TIMESTAMP(due_date, time_end) >= ? 
 								AND TIMESTAMP(date_start, time_start) < ?)
 							-- 5. 終日の活動が指定期間に重なる場合
 							OR (allday = 1 
 								AND (date_start <= DATE(?) 
 								AND due_date >= DATE(?)))
+							-- 6. 終日の活動が指定期間の開始または終了にかかる場合
+							OR (allday = 1 
+								AND (date_start = DATE(?) 
+								OR due_date = DATE(?)))
 						)';
 		$params = array_merge(
 			$checkOverlapUserIds,
@@ -398,7 +402,8 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 				$start, $end, // 2
 				$start, $end, $start, // 3 
 				$start, $end, $end, // 4
-				$start, $end // 5
+				$start, $end, // 5
+				$start, $start // 6
 			]
 		);
 
