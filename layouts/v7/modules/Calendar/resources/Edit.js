@@ -378,9 +378,14 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 			if(inviteeIdsList) {
 				inviteeIdsList = jQuery('#selectedUsers').val().join(';')
 			}
-			jQuery('<input type="hidden" name="inviteesid" />').
-					appendTo(form).
-					val(inviteeIdsList);
+			
+			var inviteeIdsInput = form.find('input[name="inviteesid"]');
+			if(inviteeIdsInput.length === 0) {	
+				jQuery('<input type="hidden" name="inviteesid" />')
+					.appendTo(form).val(inviteeIdsList);
+			}else {
+				inviteeIdsInput.val(inviteeIdsList);
+			}
 		}
 	},
 
@@ -395,9 +400,16 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 	initializeContactIdList : function(form) {
 		var relatedContactElement = this.getRelatedContactElement(form);
 		if(this.isEvents(form) && relatedContactElement.length) {
-			jQuery('<input type="hidden" name="contactidlist" /> ').appendTo(form).val(relatedContactElement.val().split(',').join(';'));
-			form.find('[name="contact_id"]').attr('name','');
+
+			var contactListInput = form.find('input[name="contactidlist"]');
+			if(contactListInput.length === 0) {
+				jQuery('<input type="hidden" name="contactidlist" /> ')
+					.appendTo(form).val(relatedContactElement.val().split(',').join(';'));
+			}else {
+				contactListInput.val(relatedContactElement.val().split(',').join(';'));
+			}
 		}
+			form.find('[name="contact_id"]').attr('name','');
 	},
 
 	registerRecurringEditOptions : function(e,form,InitialFormData) {
@@ -480,7 +492,7 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 			form = this.getForm();
 		}
 		var InitialFormData = form.serialize();
-		app.event.one(Vtiger_Edit_Js.recordPresaveEvent,function(e) {
+		app.event.on(Vtiger_Edit_Js.recordPresaveEvent,function(e) {
 			thisInstance.registerRecurringEditOptions(e,form,InitialFormData);
 			thisInstance.addInviteesIds(form);
 			thisInstance.resetRecurringDetailsIfDisabled(form);
