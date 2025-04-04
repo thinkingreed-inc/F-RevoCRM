@@ -522,7 +522,15 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		$message = '';
 
 		if (!empty($overlapEvents)) { // 重複活動が存在する場合
-			$message = vtranslate('OVERLAPPING_TAG_EXISTS', 'Events');
+		
+			$message  = '<div style="margin-bottom:10px;">';
+			if(count($overlapEvents) < self::DISPLAY_OVERLAP_EVENTS) {
+				$message .= vtranslate('OVERLAPPING_EXISTS', 'Events');
+			}else {
+				$message .= sprintf(vtranslate('OVERLAPPING_EXISTS_WITH_COUNT', 'Events'), self::DISPLAY_OVERLAP_EVENTS);
+			}
+			$message .= '</div>';
+			
 			$message .= '<ul>';
 			
 			$countNum = 1;
@@ -534,7 +542,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 								: 'Y-m-d H:i';
 				$startDateTime = (new DateTime($startDateTimeStr))->format($isAllDayformat);
 								
-				$message .= '<li>';
+				$message .= '<li style="margin-bottom:3px;">';
 				$message .= '<a href="'.$recordModel->getDetailViewUrl()
 							.'" target="_blank" style="color:#15c !important">';
 				$message .= $startDateTime. '&nbsp;&nbsp;';
@@ -549,13 +557,8 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 			}
 			
 			$message .= '</ul>';
-			
-			if (count($overlapEvents) > self::DISPLAY_OVERLAP_EVENTS) {
-				// 重複活動が5件以上ある場合
-				$message .= '<p>他に'
-							.vtranslate(count($overlapEvents) - self::DISPLAY_OVERLAP_EVENTS
-							.'件の活動が重複しています。', 'Events').'</p>';
-			}
+			$message .= '<div style="margin-bottom:5px;">';
+			$message .= vtranslate('OVERLAPPING_CONFIRME_MSG', 'Events').'</div>';
 		}
 		
 		return $message;
