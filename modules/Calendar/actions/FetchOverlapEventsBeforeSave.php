@@ -115,7 +115,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		
 		// 繰り返し周期の単位設定（日、週、月）
 		$type = $request->get('recurringtype');
-		if (empty($type) && $type !== '--None--') {
+		if (empty($type) || $type === '--None--') {
 			return [];
 		}
 		$recurringData['type'] = $type;
