@@ -29,9 +29,10 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		$response = new Vtiger_Response();
 		try {
 			$checkOverlapUserIds = $this->getTargetUserIds($request);
-			$recurringDays = $this->getRecurringType($request);
-			$overlapEvents = $this->getOverlapEventIds($request, $checkOverlapUserIds, $recurringDays);
-			$overlapEventUsers = $this->getOverlapEventUsers($overlapEvents);
+			$recurringDays       = $this->getRecurringType($request);
+			$overlapEvents       = $this->getOverlapEventIds($request, $checkOverlapUserIds, $recurringDays);
+			$overlapEventUsers   = $this->getOverlapEventUserNames($overlapEvents, $checkOverlapUserIds);
+			
 			$response->setResult(['message' => $this->buildOverlapMessageHTML($overlapEvents, $overlapEventUsers)]);
 			
 		}catch (Exception $e) {
@@ -60,7 +61,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		$recordId    = $request->get('record_id');
 		
 		// 参加者が一人の場合文字列になっている
-		if (!empty($invitiesIds) && !is_array($invitiesIds)) {
+		if(!empty($invitiesIds) && !is_array($invitiesIds)) {
 			$invitiesIds = explode(',', $invitiesIds);
 		}
 		
@@ -82,6 +83,8 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 	/**
 	 * 繰り返し活動の設定を取得
 	 * 
+	 * @param string $recordId
+	 * @return string
 	 */
 	private function getNextRecurringDates(string $recordId) :string
 	{
@@ -95,9 +98,9 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 									  WHERE recurrenceid = ?) AND recurrenceid > ?';
 		$result = $db->pquery($query, [$recordId, $recordId]);
 		if($db->num_rows($result) > 0) {
-			$nextRecordId = $db->query_result($result, 0,"recurrenceid");
+			$nextRecordId    = $db->query_result($result, 0,"recurrenceid");
 			$nextRecordModel = Vtiger_Record_Model::getInstanceById($nextRecordId, 'Events');
-			$nextRecordTime = $nextRecordModel->get('date_start');
+			$nextRecordTime  = $nextRecordModel->get('date_start');
 		}
 		
 		return $nextRecordTime;
@@ -115,20 +118,20 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		
 		// 繰り返し周期の単位設定（日、週、月）
 		$type = $request->get('recurringtype');
-		if (empty($type) || $type === '--None--') {
+		if(empty($type) || $type === '--None--') {
 			return [];
 		}
 		$recurringData['type'] = $type;
 		
 		// 繰り返し周期の頻度設定
 		$frequency = $request->get('repeat_frequency');
-		if (!empty($frequency)) {
+		if(!empty($frequency)) {
 			$recurringData['repeat_frequency'] = $frequency;
 		}
 		
 		// 繰り返し終了日の設定（繰り返しを検索する範囲は制限する）
 		$limitDate = $request->get('calendar_repeat_limit_date');
-		if (!empty($limitDate)) {
+		if(!empty($limitDate)) {
 			// $limitDateが一年以内の日付か判定する
 			$limitDateTimeObj  = new DateTime($limitDate);
 			$targetDateTimeObj = (new DateTime('today'))
@@ -154,7 +157,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		}
 		
 		// 活動の終了日時の設定
-		if (!empty($limitDate) ) {
+		if(!empty($limitDate) ) {
 			$recurringData['enddate']   = $limitDate;
 		}else {
 			$recurringData['enddate']   = $request->get('due_date');
@@ -163,7 +166,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		$recurringData['endtime']   = $request->get('time_end');
 
 		// 繰り返し周期の単位設定が「週」の場合
-		if ($type === 'Weekly') {
+		if($type === 'Weekly') {
 			$recurringWeekdays = [];
 			if(!empty($request->get('recurring_weekdays'))) {
 				$recurringWeekdays = $request->get('recurring_weekdays');
@@ -177,17 +180,17 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		}
 		
 		// 繰り返し周期の単位設定が「月」の場合
-		if ($type === 'Monthly') {
+		if($type === 'Monthly') {
 			$repeatMonth = $request->get('repeatMonth');
 			$recurringData['repeatmonth_type'] = $repeatMonth;
-			if ($repeatMonth === 'date') {
-				$repeatMonthDate = $request->get('repeatMonth_date');
+			if($repeatMonth === 'date') {
+				$repeatMonthDate                   = $request->get('repeatMonth_date');
 				$recurringData['repeatmonth_date'] = empty($repeatMonthDate) 
 												   ? $repeatMonthDate 
 												   : 1;
 			}
 			
-			if ($repeatMonth === 'day') {
+			if($repeatMonth === 'day') {
 				$recurringData['repeatmonth_daytype'] = $request->get('repeatMonth_daytype');
 				$weeks = [
 					0 => 'sun_flag',
@@ -235,7 +238,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 				  WHERE vre.activityid = ?';
 		$result = $db->pquery($query, [$recordId]);
 		
-		if ($db->num_rows($result)) {
+		if($db->num_rows($result)) {
 			$recurringDataRow = $db->query_result_rowdata($result, 0);
 			// 開始日時、終了日時はFormからのリクエスト値がある場合は優先する
 			// 活動の開始日時の設定
@@ -268,12 +271,12 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 			
 			// 活動の終了日時の設定
 			$requestDueDate = $request->get('due_date');
-			if (!empty($requestDueDate) ) {
+			if(!empty($requestDueDate) ) {
 				$recurringDataRow['enddate']   = $requestDueDate;
 			}
 			
 			$requestEndTime = $request->get('time_end');
-			if (!empty($requestEndTime) ) {
+			if(!empty($requestEndTime) ) {
 				$recurringDataRow['endtime']   = $requestEndTime;
 			}
 			
@@ -285,7 +288,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 							->format('Y-m-d');
 			}
 			
-			$recurringType = RecurringType::fromDBRequest($recurringDataRow);
+			$recurringType  = RecurringType::fromDBRequest($recurringDataRow);
 			$recurringDates = $recurringType->recurringdates ?? [];
 			
 			if(count($recurringDates) > self::RECURRING_DATE_LIMIT) {
@@ -314,7 +317,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		$recurringDays = $this->getRecurringTypeFromRequest($request);
 		
 		// DBからの取得
-		if (count($recurringDays) === 0 && !empty($request->get('record_id'))) {
+		if(count($recurringDays) === 0 && !empty($request->get('record_id'))) {
 			$recurringDays = $this->getRecurringTypeFromDB($request);
 		}
 		
@@ -336,11 +339,11 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 	{
 		$dbStartDateOject = DateTimeField::convertToDBTimeZone($startDateTime);
 		$startDateTime = $dbStartDateOject->format('Y-m-d H:i:s');
-		if ($allDayFlg === 'on' || $allDayFlg === 'true') {
+		if($allDayFlg === 'on' || $allDayFlg === 'true') {
 			$dbEndDateOject = clone $dbStartDateOject;
 			$dbEndDateOject->modify('+1 day');
 			$endDateTime = $dbEndDateOject->format('Y-m-d H:i:s');
-		} else {
+		}else {
 			$dbEndDateOject = DateTimeField::convertToDBTimeZone($endDateTime);
 			$endDateTime = $dbEndDateOject->format('Y-m-d H:i:s');
 		}
@@ -414,7 +417,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 			]
 		);
 
-		if (!empty($recordId)) {
+		if(!empty($recordId)) {
 			// 編集中の活動を含めない
 			$query .= ' AND vac.activityid != ?';
 			$params[] = $recordId;
@@ -460,8 +463,8 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		
 		$queryResult = $db->pquery($query, $params);
 		$num_rows = $db->num_rows($queryResult);
-		if ($num_rows > 0) {
-			for ($i = 0; $i < $num_rows; $i++) {
+		if($num_rows > 0) {
+			for($i = 0; $i < $num_rows; $i++) {
 				$id = $db->query_result($queryResult, $i, 'activityid');
 				$overlapEventIds[] = $id;
 			}
@@ -485,7 +488,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 	{
 		$overlapEvents = [];
 		
-		if (empty($checkOverlapUserIds)) {
+		if(empty($checkOverlapUserIds)) {
 			return $overlapEvents;
 		}
 		
@@ -525,13 +528,14 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 	 * 重複している活動のユーザを取得
 	 * 
 	 * @param array $overlapEvents
+	 * @param array $checkOverlapUserIds
 	 * @return array
 	 */
-	private function getOverlapEventUsers(array $overlapEvents) :array
+	private function getOverlapEventUserNames(array $overlapEvents, array $checkOverlapUserIds) :array
 	{
 		$overlapEventUsers = [];
 		
-		if (empty($overlapEvents)) {
+		if(empty($overlapEvents)) {
 			return $overlapEventUsers;
 		}
 		
@@ -542,14 +546,18 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 						AND invitee_parentid IN ('.generateQuestionMarks($overlapEvents).')';
 		$result = $db->pquery($query, [$overlapEvents]);
 		
-		if ($db->num_rows($result) > 0) {
-			for ($i = 0; $i < $db->num_rows($result); $i++) {
+		if($db->num_rows($result) > 0) {
+			// 対象のユーザーのみを返却する
+			$userIds = array_flip($checkOverlapUserIds);
+			for($i = 0; $i < $db->num_rows($result); $i++) {
 				$ownerId = $db->query_result($result, $i, 'smownerid');
-				$overlapEventUsers[$ownerId] = getUserFullName($ownerId); 
+				if(array_key_exists($ownerId, $userIds)) {
+					$overlapEventUsers[$ownerId] = getUserFullName($ownerId); 
+				}
 			}
 		}
 		
-		return array_unique($overlapEventUsers);
+		return $overlapEventUsers;
 	}
 	
 	/*
@@ -562,7 +570,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 	{
 		$message = '';
 
-		if (!empty($overlapEvents)) { // 重複活動が存在する場合
+		if(!empty($overlapEvents)) { // 重複活動が存在する場合
 			
 			// ヘッダーのメッセージ
 			$message  = '<div style="margin-bottom:10px;font-weight:bold;font-size:1.4rem;color:#333;">';
@@ -580,7 +588,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 			$message .= '<ul style="list-style:none;margin: 0 0 20px 20px;padding: 0;">';
 			
 			$countNum = 1;
-			foreach ($overlapEvents as $id) {
+			foreach($overlapEvents as $id) {
 				$recordModel   = Vtiger_Record_Model::getInstanceById($id, 'Events');
 				$startDateTime = new DateTime($recordModel->get('date_start').' '.$recordModel->get('time_start'));
 				$endDateTime   = new DateTime($recordModel->get('due_date').' '.$recordModel->get('time_end'));
@@ -596,7 +604,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 				// 終日の場合は開始時刻と終了日時を表示しない
 				if($isAllDay) {
 					$message .= '<span style="margin-left: 1.5rem">'.vtranslate('LBL_ALL_DAY', 'Events').'</span>';
-				} else {
+				}else {
 					$message .= '<span style="margin-left: 1.5rem">';
 					$message .= $startDateTime->format('H:i').'&nbsp; - &nbsp;';
 					
@@ -614,7 +622,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 				$message .= '</li>';
 				
 				$countNum++;
-				if ($countNum > self::DISPLAY_OVERLAP_EVENTS) {
+				if($countNum > self::DISPLAY_OVERLAP_EVENTS) {
 					break;
 				}
 			}
