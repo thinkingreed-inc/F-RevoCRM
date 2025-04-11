@@ -82,7 +82,7 @@ jQuery.Class("Vtiger_CustomView_Js",{
 			var option = selectedOptions.filter('[value="'+value+'"]');
 			choicesList.each(function(choiceListIndex,element){
 				var liElement = jQuery(element);
-				if(liElement.find('div').html() == option.html()){
+				if(liElement.find('div').text() == option.text()){
 					choicesContainer.prepend(liElement);
 					return false;
 				}
