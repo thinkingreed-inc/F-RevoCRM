@@ -1045,7 +1045,7 @@ class Users extends CRMEntity {
 		if($module == 'Users') {
 			$save_file = validateImageFile($file_details);
 		}
-		if ($save_file == 'false') {
+		if ($save_file === false) {
 			return;
 		}
 
