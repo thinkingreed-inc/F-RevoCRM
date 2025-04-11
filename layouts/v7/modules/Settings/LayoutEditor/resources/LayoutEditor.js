@@ -950,10 +950,20 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 					data = {};
 				}
 
+				//編集か追加かを確認し、追加の時のみデフォルト値のリセットを行う
+				form.attr('id', 'createFieldForm');
+				var isEditMode = false;
+				var formFieldId = form.find('input[name="fieldid"]').val();
+				if (formFieldId.length > 0) {
+					isEditMode = true;
+				}
+
 				data.name = nameAttr;
 				data.value = defaultValueUi.val();
 				//チェックボックス項目から、または選択肢(複数)からの変更の場合、デフォルト値に何も表示されないようにする
-				if(nameAttr == 'fieldDefaultValue' && (typeBeforeChange == 'Boolean' || typeBeforeChange == 'Multipicklist')){
+				//選択肢(複数)で編集を開いたとき、デフォルト値が空になってしまうため、編集の時はデフォルトを空にしないようにする
+				if(nameAttr == 'fieldDefaultValue' && (typeBeforeChange == 'Boolean' || typeBeforeChange == 'Multipicklist')
+						&& !isEditMode){
 					data.value = "";
 				}
 				if (currentTarget.val() == "MultiSelectCombo") {
