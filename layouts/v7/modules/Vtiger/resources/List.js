@@ -1438,8 +1438,11 @@ Vtiger.Class("Vtiger_List_Js", {
             element.trigger('change');
             listSearchContributorChangeHandler(e);
         });
-    },
-    
+		listViewPageDiv.on('keydown','.dateField', function(e){
+			return false;
+		});
+	},
+
 	saveMassEdit: function (event, form_original_data, isOwnerChanged) {
 		event.preventDefault();
 		var form = $('#massEdit');
