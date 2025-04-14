@@ -371,7 +371,9 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		$db = PearDatabase::getInstance();
 		$overlapEventIds = [];		
 		
-		$query      = 'SELECT vac.activityid 
+		$query      = 'SELECT 
+							vac.activityid, 
+							invitee_parentid
 						FROM vtiger_activity AS vac ';
 		
 		if($isReccurring) {
@@ -465,7 +467,9 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		if($num_rows > 0) {
 			for($i = 0; $i < $num_rows; $i++) {
 				$id = $db->query_result($queryResult, $i, 'activityid');
-				$overlapEventIds[] = $id;
+				$parrnetId = $db->query_result($queryResult, $i, 'invitee_parentid');
+
+				$overlapEventIds[$parrnetId][] = $id;
 			}
 		}
 
@@ -512,7 +516,8 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 				[ 'start' => $start, 'end' => $end ] = 
 					$this->getDateTimeValues($recurringStartDateTime, $recurringEndDateTime, $allDayFlg);
 				$result = $this->fetchOverlapEventIds($start, $end, $checkOverlapUserIds, $recordId, true);
-				$overlapEvents = array_unique(array_merge($overlapEvents, $result));
+				// $overlapEvents = array_unique(array_merge($overlapEvents, $result));
+				$overlapEvents += $result;
 			}
 		}else {
 			[ 'start' => $start, 'end' => $end ] = 
@@ -538,12 +543,19 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 			return $overlapEventUsers;
 		}
 		
+		$overlapEventIds = [];
+		foreach($overlapEvents as $ids) {
+			foreach($ids as $id) {
+				$overlapEventIds[] = $id;
+			}
+		}
+		
 		$db = PearDatabase::getInstance();
 		$query   = 'SELECT DISTINCT smownerid 
 					FROM vtiger_activity 
 					WHERE deleted = 0 
-						AND activityid IN ('.generateQuestionMarks($overlapEvents).')';
-		$result = $db->pquery($query, [$overlapEvents]);
+						AND activityid IN ('.generateQuestionMarks($overlapEventIds).')';
+		$result = $db->pquery($query, [$overlapEventIds]);
 		
 		if($db->num_rows($result) > 0) {
 			// 対象のユーザーのみを返却する
@@ -587,7 +599,12 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 			$message .= '<ul style="list-style:none;margin: 0 0 20px 20px;padding: 0;">';
 			
 			$countNum = 1;
-			foreach($overlapEvents as $id) {
+			foreach($overlapEvents as $ids) {
+				$id = $ids[0];
+				if(empty($id)) {
+					continue;
+				}
+				
 				$recordModel   = Vtiger_Record_Model::getInstanceById($id, 'Events');
 				$startDateTime = new DateTime($recordModel->get('date_start').' '.$recordModel->get('time_start'));
 				$endDateTime   = new DateTime($recordModel->get('due_date').' '.$recordModel->get('time_end'));
