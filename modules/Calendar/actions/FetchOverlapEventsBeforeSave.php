@@ -427,8 +427,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 							SELECT invitee_parentid 
 							FROM vtiger_activity 
 							WHERE activityid = ?
-						) 
-						AND invitee_parentid = vac.activityid';
+						)';
 			$params[] = $recordId;
 			
 			// 繰り返しの活動を含めない
@@ -543,7 +542,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		$query   = 'SELECT DISTINCT smownerid 
 					FROM vtiger_activity 
 					WHERE deleted = 0 
-						AND invitee_parentid IN ('.generateQuestionMarks($overlapEvents).')';
+						AND activityid IN ('.generateQuestionMarks($overlapEvents).')';
 		$result = $db->pquery($query, [$overlapEvents]);
 		
 		if($db->num_rows($result) > 0) {
