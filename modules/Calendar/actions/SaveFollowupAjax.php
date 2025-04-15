@@ -28,6 +28,7 @@ class Calendar_SaveFollowupAjax_Action extends Calendar_SaveAjax_Action {
     function __construct() {
         $this->exposeMethod('createFollowupEvent');
         $this->exposeMethod('markAsHeldCompleted');
+        $this->exposeMethod('checkNotificationOthersEvents');
     }
     
     public function process(Vtiger_Request $request) {  
@@ -173,6 +174,26 @@ class Calendar_SaveFollowupAjax_Action extends Calendar_SaveAjax_Action {
 				$_REQUEST['repeatMonth_daytype'] = $recurringInfo['repeatMonth_daytype'];
 				$_REQUEST['repeatMonth_day'] = $recurringInfo['repeatMonth_day'];
 			}
+		}
+	}
+
+	function checkNotificationOthersEvents(Vtiger_Request $request){
+		global $adb, $current_user;
+		$response = new Vtiger_Response();
+
+		$record = $request->get('record');
+		$query = "SELECT smownerid FROM vtiger_crmentity WHERE crmid = ?";
+
+		$check_activity = array($record);
+		$result = $adb->pquery($query, $check_activity);
+		$currentUserId = $current_user->id;
+		$smownerId = $adb->query_result($result,0,"smownerid");
+		if($currentUserId != $smownerId){			
+			$response->setResult(array("own"=>FALSE));
+			$response->emit();
+		}else if ($currentUserId == $smownerId){
+			$response->setResult(array("own"=>TRUE));
+			$response->emit();
 		}
 	}
 }
