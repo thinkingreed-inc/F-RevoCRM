@@ -8,7 +8,7 @@ on:
       - '.github/workflows/**'
 
 permissions:
-  issues: write
+  contents: read  # 最小限の読み取り権限のみ
 
 jobs:
   check-workflow-changes:
@@ -30,30 +30,23 @@ jobs:
           CHANGED_FILES=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }}...pr | grep '^.github/workflows/')
           if [ -n "$CHANGED_FILES" ]; then
             echo "changes_detected=true" >> $GITHUB_ENV
-            echo "changed_files=$CHANGED_FILES" >> $GITHUB_ENV
+            echo "changed_files<<EOF" >> $GITHUB_ENV
+            echo "$CHANGED_FILES" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
           else
             echo "changes_detected=false" >> $GITHUB_ENV
           fi
 
-      - name: Post comment on PR
-        if: env.changes_detected == 'true'
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const changedFiles = process.env.changed_files
-              .split('\n')
-              .filter(file => file.trim() !== '')
-              .map(file => `- \`${file}\``)
-              .join('\n');
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `⚠️ \`.github/workflows\` ディレクトリに変更が加えられています。 よく確認を行ってください。\n\n### Changed Files:\n${changedFiles}`
-            })
-
       - name: Fail the job if changes are detected
         if: env.changes_detected == 'true'
         run: |
-          echo "Error: Changes detected in .github/workflows directory. Failing the job."
+          echo "❌ Detected changes in '.github/workflows' directory."
+          echo
+          echo "### Changed Files:"
+          echo
+          while IFS= read -r file; do
+            echo "- \`$file\`"
+          done <<< "${{ env.changed_files }}"
+          echo
+          echo "Failing the job intentionally due to workflow file changes."
           exit 1
