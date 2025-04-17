@@ -49,7 +49,7 @@
 	{assign var="listPriceValues" value=Products_Record_Model::getListPriceValues($productId)}
 	{if $MODULE eq 'PurchaseOrder'}
 		{assign var="listPriceValues" value=array()}
-		{assign var="purchaseCost" value="{if $data.$purchaseCost}{((float)$data.$purchaseCost) / ((float)$data.$qty * {$RECORD_CURRENCY_RATE})}{else}0{/if}"}
+		{assign var="purchaseCost" value="{if !empty($data.$purchaseCost) && !empty($data.$qty)}{((float)$data.$purchaseCost) / ((float)$data.$qty * {$RECORD_CURRENCY_RATE})}{else}0{/if}"}
 		{foreach item=currency_details from=$CURRENCIES}
 			{append var='listPriceValues' value=$currency_details.conversionrate * $purchaseCost index=$currency_details.currency_id}
 		{/foreach}
@@ -138,7 +138,7 @@
 			   {if $QUANTITY_EDITABLE eq false} disabled=disabled {/if} />
 
 		{if $PURCHASE_COST_EDITABLE eq false and $MODULE neq 'PurchaseOrder'}
-			<input id="{$purchaseCost}" type="hidden" value="{if ((float)$data.$purchaseCost)}{((float)$data.$purchaseCost) / ((float)$data.$qty)}{else}0{/if}" />
+			<input id="{$purchaseCost}" type="hidden" value="{if !empty($data.$purchaseCost) && !empty($data.$qty)}{((float)$data.$purchaseCost) / ((float)$data.$qty)}{else}0{/if}" />
             <span style="display:none" class="purchaseCost">0</span>
 			<input name="{$purchaseCost}" type="hidden" value="{if $data.$purchaseCost}{$data.$purchaseCost}{else}0{/if}" />
 		{/if}
@@ -162,7 +162,7 @@
 
 	{if $PURCHASE_COST_EDITABLE}
 		<td>
-			<input id="{$purchaseCost}" type="hidden" value="{if $data.$purchaseCost}{((float)$data.$purchaseCost) / ((float)$data.$qty)}{else}0{/if}" />
+			<input id="{$purchaseCost}" type="hidden" value="{if !empty($data.$purchaseCost) && !empty($data.$qty)}{((float)$data.$purchaseCost) / ((float)$data.$qty)}{else}0{/if}" />
 			<input name="{$purchaseCost}" type="hidden" value="{if $data.$purchaseCost}{$data.$purchaseCost}{else}0{/if}" />
 			<span class="pull-right purchaseCost">{if $data.$purchaseCost}{$data.$purchaseCost}{else}0{/if}</span>
 		</td>

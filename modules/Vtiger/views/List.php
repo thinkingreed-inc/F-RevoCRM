@@ -561,15 +561,17 @@ class Vtiger_List_View extends Vtiger_Index_View {
 	}
 
 	public function getRecordActionsFromModule($moduleModel) {
-		$editPermission = $deletePermission = 0;
+		$editPermission = $deletePermission = $duplicatePermission = 0;
 		if ($moduleModel) {
 			$editPermission	= $moduleModel->isPermitted('EditView');
 			$deletePermission = $moduleModel->isPermitted('Delete');
+			$duplicatePermission = $moduleModel->isPermitted('Duplicates');
 		}
 
 		$recordActions = array();
 		$recordActions['edit'] = $editPermission;
 		$recordActions['delete'] = $deletePermission;
+		$recordActions['duplicate'] = $duplicatePermission;
 
 		return $recordActions;
 	}

@@ -134,7 +134,7 @@ Calendar_Calendar_Js('Calendar_SharedCalendar_Js', {
 					var feedIndicatorTemplate = jQuery('#calendarview-feeds').find('ul.dummy > li.feed-indicator-template');
 					feedIndicatorTemplate.removeClass('.feed-indicator-template');
 					var newFeedIndicator = feedIndicatorTemplate.clone(true,true);
-					newFeedIndicator.find('span:first').text(selectedUserName);
+					newFeedIndicator.find('span:first').addClass('userName textOverflowEllipsis').text(selectedUserName).attr('title',selectedUserName);
 					var newFeedCheckbox = newFeedIndicator.find('.toggleCalendarFeed');
 					newFeedCheckbox.attr('data-calendar-sourcekey','Events_'+selectedUserId).
 					attr('data-calendar-feed','Events').
@@ -305,7 +305,7 @@ Calendar_Calendar_Js('Calendar_SharedCalendar_Js', {
 			var cashDisabledFeedsStorageKey = thisInstance.getDisabledFeeds();
 
 			Object.keys(users).forEach(function (id) {
-				var user = users[id];
+				var user = app.getDecodedValue(users[id]);
 				if(id == myId) {
 					thisInstance.refreshFeed($(".activitytype-indicator.calendar-feed-indicator.mine").find("input[type='checkbox']"));
 					return ;//continue
@@ -316,7 +316,7 @@ Calendar_Calendar_Js('Calendar_SharedCalendar_Js', {
 					var feedIndicatorTemplate = jQuery('#calendarview-feeds').find('ul.dummy > li.feed-indicator-template');
 					feedIndicatorTemplate.removeClass('.feed-indicator-template');
 					var newFeedIndicator = feedIndicatorTemplate.clone(true,true);
-					newFeedIndicator.find('span:first').text(user);
+					newFeedIndicator.find('span:first').addClass('userName textOverflowEllipsis').text(user).attr('title',user);
 					var newFeedCheckbox = newFeedIndicator.find('.toggleCalendarFeed');
 					newFeedCheckbox.attr('data-calendar-sourcekey','Events_'+id).
 					attr('data-calendar-feed','Events').

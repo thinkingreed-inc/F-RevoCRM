@@ -1227,8 +1227,11 @@ Vtiger.Class("Vtiger_List_Js", {
 				thisInstance.registerInlineEdit(currentTrElement);
 			}
 		});
-		this.registerInlineEditSaveEvent();
-		this.registerInlineEditCancelEvent();
+		
+		if (listViewContainer.find('#isExcelEditSupported').val() !== 'no') {
+			this.registerInlineEditSaveEvent();
+			this.registerInlineEditCancelEvent();
+		}
 
 		app.event.on('post.listViewInlineEdit.click', function (event, editedRow) {
 			vtUtils.applyFieldElementsView(editedRow);
@@ -1259,11 +1262,15 @@ Vtiger.Class("Vtiger_List_Js", {
 			var editInstance = Vtiger_Edit_Js.getInstance();
 			editInstance.registerBasicEvents(container);
 			var form_original_data = $("#massEdit").serialize();
-			$('#massEdit').on('submit', function (event) {
-				thisInstance.saveMassEdit(event, form_original_data, isOwnerChanged);
-				isOwnerChanged = false;
+			$('#massEdit').vtValidate({
+				ignore: '.ignore-validation',
+				submitHandler: function (form) {
+					thisInstance.saveMassEdit(e, form_original_data, isOwnerChanged);
+					isOwnerChanged = false;
+					return false; 
+				}
 			});
-			
+
 			//automatically select fields for mass edit when updated
 			$('#massEdit :input').change(function() {
 				var _replacedName =  $(this).attr('name').replace('[]', "");
@@ -1272,6 +1279,17 @@ Vtiger.Class("Vtiger_List_Js", {
 				}
 				$(this).closest('tr').find("input[id^=include_in_mass_edit_" + _replacedName + "]").prop( "checked", true );
 			});
+
+			function addIgnoreValidation() {
+				$('#massEdit input[type="checkbox"]').each(function() {
+					let fieldname = $(this).attr('data-update-field');
+					$(`[name="${fieldname}"]`)[$(this).is(':checked') ? 'removeClass' : 'addClass']('ignore-validation');
+					$(`[name="${fieldname}_display"]`)[$(this).is(':checked') ? 'removeClass' : 'addClass']('ignore-validation');
+				});
+			}
+			
+			addIgnoreValidation();
+			$('#massEdit').on('change', 'input[type="checkbox"]', addIgnoreValidation);
 			
 			app.helper.registerLeavePageWithoutSubmit($("#massEdit"));
 			app.helper.registerModalDismissWithoutSubmit($("#massEdit"));
@@ -2824,9 +2842,12 @@ Vtiger.Class("Vtiger_List_Js", {
 			'height': height,
 			'width': width
 		});
-		$table.resizableColumns('refreshContainerSize');
-		$table.resizableColumns('adjustDummyColumnWidth');
-		$table.resizableColumns('syncHandleWidths');
+		
+		if(typeof $table.resizableColumns === 'Object') {
+			$table.resizableColumns('refreshContainerSize');
+			$table.resizableColumns('adjustDummyColumnWidth');
+			$table.resizableColumns('syncHandleWidths');
+		}
 		// $table.floatThead('reflow');
 		tableContainer.perfectScrollbar('update');
 	},
@@ -2971,15 +2992,18 @@ Vtiger.Class("Vtiger_List_Js", {
 		var tableContainer = $table.closest('.table-container');
 		var listViewContentHeader = tableContainer.find('.listViewContentHeader');
 		var listViewSearchHeader = tableContainer.find('.listViewSearchContainer');
+		var isEmptyRecord = tableContainer.find('.emptyRecordsContent').length;
 		var rows = tableContainer.find('tr.listViewEntries');
 
-		var thDummy = ''+
-        '<th class="dummy">'+
-		'</th>';
+		var borderOptionClass = '';
+		if(listViewSearchHeader.length <= 0) {
+			borderOptionClass = ' table-bottom-border';
+		}else if(app.getModuleName() === 'RecycleBin' && isEmptyRecord) {
+			borderOptionClass = ' none-border-bottom';
+		}
 
-		var tdDummy = ''+
-        '<td class="dummy">'+
-		'</td>';
+		var thDummy = `<th class="dummy${borderOptionClass}"></th>`;
+		var tdDummy = '<td class="dummy"></td>';
 
         listViewContentHeader.append(thDummy);
 		listViewSearchHeader.append(thDummy);

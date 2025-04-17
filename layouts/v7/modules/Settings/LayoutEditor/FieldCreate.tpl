@@ -123,7 +123,9 @@
 							<div class="controls col-sm-7">
 								<select class="col-sm-6 relationModule" name="relationmodule[]" multiple data-rule-required='true'>
 									{foreach key=RELATION_MODULE_NAME item=TRANS_RELATION_MODULE_NAME from=$FIELD_TYPE_INFO['Relation']['relationModules']}
-										<option value="{$RELATION_MODULE_NAME}">{$TRANS_RELATION_MODULE_NAME}</option>
+										{if $RELATION_MODULE_NAME neq 'Calendar' && $RELATION_MODULE_NAME neq 'Events'} {* 関連項目にカレンダー・活動は不要 *}
+											<option value="{$RELATION_MODULE_NAME}">{$TRANS_RELATION_MODULE_NAME}</option>
+										{/if}
 									{/foreach}
 								</select>
 								<p class="related_field_caution">{vtranslate('Users', 'Vtiger')}{vtranslate('LBL_CANT_SELECT_THE_OTHER_MODULE_WITH_USERS_FOR_RELFIELD', 'Vtiger')}</p>

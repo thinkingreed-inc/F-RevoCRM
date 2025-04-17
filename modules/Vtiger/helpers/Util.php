@@ -140,7 +140,7 @@ class Vtiger_Util_Helper {
 		global $adb;
 		$query = 'Select deleted from vtiger_crmentity where crmid=?';
 		$result = $adb->pquery($query, array($recordId));
-		return $adb->query_result($result, 'deleted');
+		return $adb->query_result($result, 0, 'deleted');
 	}
 
 	/**

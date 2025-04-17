@@ -1480,6 +1480,19 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				'</span>&nbsp;'
 				);
 	},
+	
+	// 月表示終了時間を追加
+	addMonthViewEventEndTime: function (event, element, viewName) {
+		if (viewName !== 'month' || !event.end) return;
+		
+		var endDateTime =  moment(event.end);
+		if(!endDateTime.isValid()) return;
+		
+		var timeFormat = this.getDefaultCalendarTimeFormat();
+		var endTimeText = ' - ' + endDateTime.format(timeFormat);
+		element.find('.fc-content > .fc-time').append(endTimeText);
+	},
+	
 	_deleteCalendarEvent: function (eventId, sourceModule, extraParams) {
 		var thisInstance = this;
 		if (typeof extraParams === 'undefined') {
@@ -1665,11 +1678,21 @@ Vtiger.Class("Calendar_Calendar_Js", {
 
 			if(eventObj.description && eventObj.description != '') {
 				popOverHTML += eventObj.description;
-				popOverHTML += '<br>';
 			}
-			if(event.creator && event.creator != '') {
-				popOverHTML += '  ' + event.creator_field_label + ': ' + event.creator;
-				popOverHTML += '<br>';
+
+			if(event.creator && event.creator != '' || event.modifiedby && event.modifiedby != '') {
+				popOverHTML += '<div class="calendar-space">';
+
+				if(event.creator && event.creator != '') {
+					popOverHTML += '  ' + event.creator_field_label + ': ' + event.creator;
+					popOverHTML += '<br>';
+				}
+
+				if(event.modifiedby && event.modifiedby != '') {
+					popOverHTML += '  ' + event.modifiedby_field_label + ': ' + event.modifiedby;
+					popOverHTML += '<br>';
+				}
+				popOverHTML += '</div>';
 			}
 
 			popOverHTML += '</span>';
@@ -1741,6 +1764,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 	},
 	performPreEventRenderActions: function (event, element) {
 		var calendarView = this.getCalendarViewContainer().fullCalendar('getView');
+		this.addMonthViewEventEndTime(event, element, calendarView.name);
 		this.addActivityTypeIcons(event, element);
 		this.registerPopoverEvent(event, element, calendarView);
 	},
@@ -1917,12 +1941,12 @@ Vtiger.Class("Calendar_Calendar_Js", {
                                 columnFormat: dateFormat + ' dddd'
                             }
 			},
-			height: (CalendarHeight),
+			contentHeight: CalendarHeight,
 			fixedWeekCount: false,
 			firstDay: thisInstance.daysOfWeek[thisInstance.getUserPrefered('start_day')],
 			scrollTime: thisInstance.getUserPrefered('start_hour'),
 			editable: true,
-			eventLimit: true,
+			eventLimit: false,
 			defaultDate:defaultDate,
 			defaultView:defaultView,
 			slotLabelFormat: userDefaultTimeFormat,

@@ -36,7 +36,7 @@
                 <table id="listview-table"  class="table {if $LISTVIEW_ENTRIES_COUNT eq '0'}listview-table-norecords {else} listview-table{/if} ">
                     <thead>
                         <tr class="listViewContentHeader">
-                            <th>
+                            <th class="none-border-bottom">
                                 {if !$SEARCH_MODE_RESULTS}
                         <div class="table-actions">
                             <span class="input">
@@ -48,7 +48,7 @@
                     {/if}
                     </th>
                     {foreach item=LISTVIEW_HEADER from=$LISTVIEW_HEADERS}
-                        <th>
+                        <th class="none-border-bottom" nowrap="nowrap">
                             <a href="#" class="listViewContentHeaderValues" data-nextsortorderval="{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')}{$NEXT_SORT_ORDER}{else}ASC{/if}" data-columnname="{$LISTVIEW_HEADER->get('name')}">
                                 {if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')}
                                     <i class="fa fa-sort {$FASORT_IMAGE}"></i>

@@ -727,8 +727,6 @@ class Users extends CRMEntity {
 				$this->insertIntoEntityTable($table_name, $module);
 			}
 		}
-		require_once('modules/Users/CreateUserPrivilegeFile.php');
-		createUserPrivilegesfile($this->id);
 		unset($_SESSION['next_reminder_interval']);
 		unset($_SESSION['next_reminder_time']);
 		if($insertion_mode != 'edit') {
