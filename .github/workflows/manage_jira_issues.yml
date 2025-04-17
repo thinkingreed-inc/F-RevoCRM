@@ -1,0 +1,125 @@
+# Thinkingreedの社内管理用のGitHub Actions
+# 本コードは社内管理用のため、基本的にサポートの対象外となります。
+name: Manage Jira Issues
+
+# githubのissueが開かれたとき、編集されたとき、削除されたとき、またはクローズされたときに作動
+on:
+  issues:
+    types: [opened, edited, deleted, closed, reopened]
+
+permissions:
+  issues: read
+
+# ここからworkflow
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Manage Jira Issues
+    steps:
+    - name: Check Secrets
+      run: |
+        if [ -z "${{ secrets.JIRA_BASE_URL }}" ] || [ -z "${{ secrets.JIRA_USER_EMAIL }}" ] || [ -z "${{ secrets.JIRA_API_TOKEN }}" ] || [ -z "${{ secrets.JIRA_PROJECT }}" ]; then
+          echo "JIRA登録用のSecretsが登録されていません。"
+          exit 1
+        fi
+
+    - name: Manage Jira Issue
+      if: success() # Check Secretsが成功した場合のみ実行
+      run: |
+        ISSUE_KEY=$(curl --request GET \
+        --url "${{ secrets.JIRA_BASE_URL }}/rest/api/3/search?jql=project%20%3D%20'${{ secrets.JIRA_PROJECT }}'%20AND%20summary%20~%20%22%5C%22github%23${{ github.event.issue.number }}*%5C%22%22" \
+        --user "${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }}" \
+        --header 'Accept: application/json' \
+        --header 'Content-Type: application/json' \
+          | jq -r '.issues[0].key // empty')
+
+        GITHUB_ISSUE_TITLE="${GITHUB_ISSUE_TITLE}"
+        GITHUB_ISSUE_BODY="${GITHUB_ISSUE_BODY}"
+
+        if [ "${{ github.event.action }}" = "opened" ] || [ "${{ github.event.action }}" = "edited" ]; then
+          if [ -z "$ISSUE_KEY" ]; then
+            # チケットが存在しない場合は新規作成
+            curl -X POST \
+              -H "Content-Type: application/json" \
+              -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+              -d "{
+                \"fields\": {
+                  \"project\": {
+                    \"key\": \"${{ secrets.JIRA_PROJECT }}\"
+                  },
+                  \"issuetype\": {
+                    \"name\": \"Task\"
+                  },
+                  \"summary\": \"github#${{ github.event.issue.number }} $GITHUB_ISSUE_TITLE\",
+                  \"description\": \"${{ github.event.issue.html_url }}\n\n$GITHUB_ISSUE_BODY\",
+                  \"labels\": [
+                    \"github-issue\"
+                  ]
+                }
+              }" \
+              ${{ secrets.JIRA_BASE_URL }}/rest/api/2/issue/
+          else
+            # チケットが存在する場合は更新
+            curl -X PUT \
+              -H "Content-Type: application/json" \
+              -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+              -d "{
+                \"fields\": {
+                  \"summary\": \"github#${{ github.event.issue.number }} $GITHUB_ISSUE_TITLE\",
+                  \"description\": \"${{ github.event.issue.html_url }}\n\n$GITHUB_ISSUE_BODY\",
+                  \"labels\": [
+                    \"github-issue\"
+                  ]
+                }
+              }" \
+              ${{ secrets.JIRA_BASE_URL }}/rest/api/2/issue/$ISSUE_KEY
+          fi
+        elif [ "${{ github.event.action }}" = "deleted" ]; then
+          if [ -n "$ISSUE_KEY" ]; then
+            # チケットが存在する場合、ラベルにgithub-deletedを追加
+            curl -X PUT \
+              -H "Content-Type: application/json" \
+              -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+              -d '{
+                "update": {
+                  "labels": [
+                    { "add": "github-deleted" }
+                  ]
+                }
+              }' \
+              ${{ secrets.JIRA_BASE_URL }}/rest/api/2/issue/$ISSUE_KEY
+          fi
+        elif [ "${{ github.event.action }}" = "closed" ]; then
+          if [ -n "$ISSUE_KEY" ]; then
+            # チケットが存在する場合、ラベルにgithub-closedを追加
+            curl -X PUT \
+              -H "Content-Type: application/json" \
+              -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+              -d '{
+                "update": {
+                  "labels": [
+                    { "add": "github-closed" }
+                  ]
+                }
+              }' \
+              ${{ secrets.JIRA_BASE_URL }}/rest/api/2/issue/$ISSUE_KEY
+          fi
+        elif [ "${{ github.event.action }}" = "reopened" ]; then
+          if [ -n "$ISSUE_KEY" ]; then
+            # チケットが存在する場合、ラベルからgithub-closedを削除
+            curl -X PUT \
+              -H "Content-Type: application/json" \
+              -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+              -d '{
+                "update": {
+                  "labels": [
+                    { "remove": "github-closed" }
+                  ]
+                }
+              }' \
+              ${{ secrets.JIRA_BASE_URL }}/rest/api/2/issue/$ISSUE_KEY
+          fi
+        fi
+      env:
+        GITHUB_ISSUE_TITLE: "${{ github.event.issue.title }}"
+        GITHUB_ISSUE_BODY: "${{ github.event.issue.body }}"
