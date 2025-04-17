@@ -73,8 +73,8 @@ $languageStrings = array(
 	'Symbol Placement'  =>  '記号位置',
 	'Number Of Currency Decimals'  =>  '通貨の小数点桁数',
 	'Truncate Trailing Zeros'  =>   '末尾のゼロを切り捨て',
-	'Default Call Duration' => 'デフォルトの連絡の時間 ( 分 )',
-	'Other Event Duration' => '他の活動の時間 ( 分 )',
+	'Default Call Duration' => '既定の電話時間 ( 分 )',
+	'Other Event Duration' => '電話以外の活動時間 ( 分 )',
 	'Calendar Hour Format' => 'カレンダーの時間形式',
 	'Tag Cloud' => 'タグクラウド',
 
