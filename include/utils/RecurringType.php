@@ -182,6 +182,9 @@ class RecurringType {
 		$repeatInfo['type'] = $resultRow['recurringtype'];
 		$repeatInfo['repeat_frequency'] = $resultRow['recurringfreq'];
 		$repeatInfo['recurringenddate'] = $resultRow['recurringenddate']; 
+		if(!empty($resultRow['recurringenddate'])) {
+			$repeatInfo['enddate'] = $resultRow['recurringenddate'];
+		}
 
 		$recurringInfoString = $resultRow['recurringinfo'];
 		$recurringInfo = explode('::', $recurringInfoString);
