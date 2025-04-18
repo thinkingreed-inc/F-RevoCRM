@@ -44,6 +44,51 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		}
 	}
 	
+	/**
+	 * idがグループか判定する
+	 *
+	 * @param string $id
+	 * @return boolean
+	 */
+	private function isUsersGroup(string $id) : bool
+	{
+		$db = PearDatabase::getInstance();
+		$query = 'SELECT 1 FROM vtiger_groups WHERE groupid = ?';
+		$result = $db->pquery($query, [$id]);
+		
+		return $result && $db->num_rows($result) > 0;
+	}
+	
+	/**
+	 * ユーザが所属しているグループのユーザを取得
+	 * 
+	 * @param string $groupId
+	 * @return array
+	 */
+	private function getGroupUsers(string $groupId) :array
+	{
+		require_once 'include/utils/GetGroupUsers.php';
+
+		$getUsersInstance = new GetGroupUsers();
+		$getUsersInstance->getAllUsersInGroup($groupId);
+		return $getUsersInstance->group_users;
+	}
+	
+	/**
+	 * ユーザが所属しているグループの取得
+	 * 
+	 * @param string $userId
+	 * @return array
+	 */
+	private function getUserGroups(string $userId) :array
+	{
+		require_once 'include/utils/GetUserGroups.php';
+
+		$getGroupsInstance = new GetUserGroups();
+		$getGroupsInstance->getAllUserGroups($userId);
+		return $getGroupsInstance->user_groups;
+	}
+	
 	/*
 	 * 期間重複を確認するユーザのIDを取得
 	 * formからの入力を優先する 
@@ -77,7 +122,12 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 						 : $recordModel->getInvities();
 		}
 		
-		return array_unique(array_merge($invitiesIds, [$ownerId]));
+		// グループの場合はユーザーID、ユーザーの場合はグループIDを取得する
+		$userOrGroupIds = $this->isUsersGroup($ownerId) 
+						? $this->getGroupUsers($ownerId) 
+						: $this->getUserGroups($ownerId);
+		
+		return array_unique(array_merge($invitiesIds, $userOrGroupIds, [$ownerId]));
 	}
 	
 	/**
@@ -562,8 +612,13 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 			$userIds = array_flip($checkOverlapUserIds);
 			for($i = 0; $i < $db->num_rows($result); $i++) {
 				$ownerId = $db->query_result($result, $i, 'smownerid');
-				if(array_key_exists($ownerId, $userIds)) {
-					$overlapEventUsers[$ownerId] = getUserFullName($ownerId); 
+				$userOrGroupIds = $this->isUsersGroup($ownerId) 
+								? $this->getGroupUsers($ownerId) 
+								: [$ownerId];
+				foreach($userOrGroupIds as $userId) {
+					if(array_key_exists($userId, $userIds)) {
+						$overlapEventUsers[$userId] = getUserFullName($userId); 
+					}
 				}
 			}
 		}
