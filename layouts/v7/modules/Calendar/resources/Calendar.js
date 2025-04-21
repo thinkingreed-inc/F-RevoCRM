@@ -1131,29 +1131,36 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var thisInstance = this;
 		var params = {
 			submitHandler: function (form) {
-				jQuery("button[name='saveButton']").attr("disabled", "disabled");
 				if (this.numberOfInvalids() > 0) {
 					return false;
 				}
+
+				var formData = jQuery(form).serializeFormData();
+				jQuery("button[name='saveButton']").attr("disabled", "disabled");
 				var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
 				app.event.trigger(e);
 				if (e.isDefaultPrevented()) {
 					return false;
 				}
-				var formData = jQuery(form).serializeFormData();
-				app.helper.showProgress();
-				app.request.post({data: formData}).then(function (err, data) {
-					app.helper.hideProgress();
-					if (!err) {
-						jQuery('.vt-notification').remove();
-						app.helper.hideModal();
-						var message = formData.record !== "" ? app.vtranslate('JS_EVENT_UPDATED') : app.vtranslate('JS_RECORD_CREATED');
-						app.helper.showSuccessNotification({"message": message});
-						thisInstance.showEventOnCalendar(data);
-					} else {
-						app.event.trigger('post.save.failed', err);
-						jQuery("button[name='saveButton']").removeAttr('disabled');
-					}
+				Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(formData)
+				.then(function () {
+					app.helper.showProgress();
+					app.request.post({data: formData}).then(function (err, data) {
+						app.helper.hideProgress();
+						if (!err) {
+							jQuery('.vt-notification').remove();
+							app.helper.hideModal();
+							var message = formData.record !== "" ? app.vtranslate('JS_EVENT_UPDATED') : app.vtranslate('JS_RECORD_CREATED');
+							app.helper.showSuccessNotification({"message": message});
+							thisInstance.showEventOnCalendar(data);
+						} else {
+							app.event.trigger('post.save.failed', err);
+							jQuery("button[name='saveButton']").removeAttr('disabled');
+						}
+					});
+				}).fail(function () {
+					app.helper.hideProgress();		
+					jQuery("button[name='saveButton']").removeAttr('disabled');
 				});
 			}
 		};
@@ -1409,6 +1416,13 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			return;
 		}
 
+		var dateFormat = this.getUserPrefered('date_format').toUpperCase();
+		var hourFormat = this.getUserPrefered('time_format');
+		var timeFormat = 'HH:mm';
+		if (hourFormat === '12') {
+			timeFormat = 'hh:mm a';
+		}
+
 		var postData = {
 			'module': app.getModuleName(),
 			'action': 'DragDropAjax',
@@ -1421,13 +1435,34 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			'allday': event.allDay,
 		};
 
+		var overlapData = {
+			module: 'Events',
+			record: event.id,
+			date_start: event.start.format(dateFormat),
+			time_start: event.start.format(timeFormat),
+			due_date: event.end ? event.end.format(dateFormat) : null,
+			time_end: event.end ? event.end.format(timeFormat) : null,
+			is_allday: event.allDay
+		};
+		
 		if (event.recurringcheck) {
-			app.helper.showConfirmationForRepeatEvents().then(function (recurringData) {
+			app.helper.showConfirmationForRepeatEvents()
+			.then(function (recurringData) {
 				jQuery.extend(postData, recurringData);
-				thisInstance._updateEventOnResize(postData, revertFunc);
+				Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(overlapData, recurringData)
+				.then(function () {
+					thisInstance._updateEventOnResize(postData, revertFunc);
+				}).fail(function () {
+					revertFunc();
+				});
 			});
 		} else {
-			thisInstance._updateEventOnResize(postData, revertFunc);
+			Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(overlapData)
+			.then(function () {
+				thisInstance._updateEventOnResize(postData, revertFunc);
+			}).fail(function () {
+				revertFunc();
+			});
 		}
 	},
 	updateEventOnDrop: function (event, delta, revertFunc, jsEvent, ui, view) {
@@ -1435,6 +1470,13 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		if (event.module !== 'Calendar' && event.module !== 'Events') {
 			revertFunc();
 			return;
+		}
+
+		var dateFormat = this.getUserPrefered('date_format').toUpperCase();
+		var hourFormat = this.getUserPrefered('time_format');
+		var timeFormat = 'HH:mm';
+		if (hourFormat === '12') {
+			timeFormat = 'hh:mm a';
 		}
 
 		var postData = {
@@ -1448,14 +1490,34 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			'userid': event.userid,
 			'allday': event.allDay,
 		};
+		
+		var overlapData = {
+			module: 'Events',
+			record: event.id,
+			date_start: event.start.format(dateFormat),
+			time_start: event.start.format(timeFormat),
+			due_date: event.end ? event.end.format(dateFormat) : null,
+			time_end: event.end ? event.end.format(timeFormat) : null,
+			is_allday: event.allDay
+		};
 
 		if (event.recurringcheck) {
 			app.helper.showConfirmationForRepeatEvents().then(function (recurringData) {
 				jQuery.extend(postData, recurringData);
-				thisInstance._updateEventOnResize(postData, revertFunc);
+				Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(overlapData, recurringData)
+				.then(function () {
+					thisInstance._updateEventOnResize(postData, revertFunc);
+				}).fail(function () {
+					revertFunc();
+				});
 			});
 		} else {
-			thisInstance._updateEventOnResize(postData, revertFunc);
+			Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(overlapData)
+			.then(function () {
+				thisInstance._updateEventOnResize(postData, revertFunc);
+			}).fail(function () {
+				revertFunc();
+			});
 		}
 	},
 	getActivityTypeClassName: function (activitytype) {
@@ -1570,18 +1632,28 @@ Vtiger.Class("Calendar_Calendar_Js", {
 					jQuery("button[name='saveButton']").removeAttr("disabled");
 					return false;
 				}
+				
+				var overlapData = jQuery(form).serializeFormData();
 				var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
 				app.event.trigger(e);
+				
 				if (e.isDefaultPrevented()) {
 					return false;
 				}
 				if (isRecurring) {
-					app.helper.showConfirmationForRepeatEvents().then(function (postData) {
-						thisInstance._updateEvent(form, postData);
+					app.helper.showConfirmationForRepeatEvents()
+					.then(function (postData) {
+						Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(overlapData, postData)
+						.then(function () {
+							thisInstance._updateEvent(form, postData);
+						});
 					});
 				} else {
-					thisInstance._updateEvent(form);
-					jQuery("button[name='saveButton']").prop("disabled", true);
+					Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(overlapData)
+					.then(function () {
+						thisInstance._updateEvent(form);
+						jQuery("button[name='saveButton']").prop("disabled", true);
+					});
 				}
 			}
 		};
