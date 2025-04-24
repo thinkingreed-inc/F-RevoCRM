@@ -122,7 +122,7 @@
 									{assign var=LISTVIEW_HEADERNAME value=$LISTVIEW_HEADER_KEY}
 									{assign var=LISTVIEW_ENTRY_RAWVALUE value=$LISTVIEW_ENTRY->getRaw($LISTVIEW_HEADER_KEY)}
 									{assign var=LISTVIEW_ENTRY_VALUE value=$LISTVIEW_ENTRY->get($LISTVIEW_HEADERNAME)}
-									<td class="listViewEntryValue" data-name="{$LISTVIEW_HEADERNAME}" title="{$LISTVIEW_ENTRY_RAWVALUE}" data-rawvalue="{$LISTVIEW_ENTRY_RAWVALUE}" data-field-type="">
+									<td class="listViewEntryValue" data-name="{$LISTVIEW_HEADERNAME}" title="{$LISTVIEW_ENTRY_RAWVALUE|strip_tags}" data-rawvalue="{$LISTVIEW_ENTRY_RAWVALUE}" data-field-type="">
 										<span class="fieldValue">
 											<span class="value textOverflowEllipsis">
 												{if $LISTVIEW_HEADERNAME eq 'reporttype'}
