@@ -594,13 +594,8 @@
       callbacks[key] = button.callback;
     });
     // Vtiger Customization
-    var isBlank = $(options.blank)[0];
     if(options.htmlSupportEnable) {
-      if(!isBlank){
-        body.find(".bootbox-body").html(options.message + "<br><br><input type='checkbox' /><label>&nbsp;&nbsp;" + app.vtranslate('LBL_REPLACE_BLANK_COLUMN') +"</label>");
-      }else{
         body.find(".bootbox-body").html(options.message);
-      }
     } else {
         body.find(".bootbox-body").text(options.message);
     }

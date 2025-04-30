@@ -1623,8 +1623,6 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 			var currentTarget = jQuery(e.currentTarget);
 			var fieldId = currentTarget.data('fieldId');
 			var message = app.vtranslate('JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE').replace(/\n/g, "<br>");
-			var fieldDataType = currentTarget.data('fieldDataType');
-			var blank = fieldDataType == "blank" ? true : false;
 			if (currentTarget.data('oneOneRelationship') == "1") {
 				message = app.vtranslate('JS_ONE_ONE_RELATION_FIELD_DELETE', currentTarget.data('currentFieldLabel'), currentTarget.data('currentModuleLabel'),
 						currentTarget.data('relationFieldLabel'), currentTarget.data('relationModuleLabel'));
@@ -1634,9 +1632,14 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 						, currentTarget.data('currentTabLabel'), currentTarget.data('currentModuleLabel'));
 			}
 
+			var fieldDataType = currentTarget.data('fieldDataType');
+			var isBlankField = fieldDataType == "blank" ? true : false;
+			if (!isBlankField) {
+				message = message + "<br><br><input name='replaceBlank' type='checkbox' /><label>&nbsp;&nbsp;" + app.vtranslate('LBL_REPLACE_BLANK_COLUMN') +"</label>";
+			}
+
 			app.helper.showConfirmationBox({'title': app.vtranslate('LBL_WARNING'),
 				'message'	: message,
-				'blank' 	: blank,
 				buttons		:{
 								cancel	: {label: 'No', className: 'btn-default confirm-box-btn-pad pull-right'},
 								confirm	: {label: app.vtranslate('JS_FIELD_DELETE_CONFIRMATION'), className: 'confirm-box-ok confirm-box-btn-pad btn-primary'}
@@ -1669,7 +1672,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		var thisInstance = this;
 		var aDeferred = jQuery.Deferred();
 		app.helper.showProgress();
-		var isReplaceBlank = $('.bootbox-body input').is(":checked");
+		var isReplaceBlank = $('input[name="replaceBlank"]').is(':checked');
 
 		var params = {};
 		params['module'] = thisInstance.getModuleName();
