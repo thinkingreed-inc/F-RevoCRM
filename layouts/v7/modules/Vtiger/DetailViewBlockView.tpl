@@ -86,6 +86,14 @@
 										</ul>
 									</td>
 									{assign var=COUNTER value=$COUNTER+1}
+								{else if $FIELD_MODEL->get('uitype') eq "999"}
+									{if $COUNTER eq 2}
+										</tr><tr>
+										{assign var="COUNTER" value=1}
+									{else}
+										{assign var="COUNTER" value=$COUNTER+1}
+									{/if}
+									<td class="blankField"></td><td class="blankField"></td>
 								{else}
 									{if $FIELD_MODEL->get('uitype') eq "20" or $FIELD_MODEL->get('uitype') eq "19" or $fieldDataType eq 'reminder' or $fieldDataType eq 'recurrence'}
 										{if $COUNTER eq '1'}
