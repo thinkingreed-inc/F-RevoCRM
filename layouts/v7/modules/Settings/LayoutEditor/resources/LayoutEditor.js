@@ -996,10 +996,12 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 				if (type == 'Blank') {
 					form.find('.defaultValueUi').closest('.form-group').addClass('hide');
 					form.find('.blankValueUi').closest('.form-group').addClass('hide');
-					form.find('input[type="checkbox"][name="mandatory"]').addClass('cursorPointerNotAllowed').attr('readonly', 'readonly');
-					form.find('input[type="checkbox"][name="headerfield"]').addClass('cursorPointerNotAllowed').attr('readonly', 'readonly');
-					form.find('input[type="checkbox"][name="masseditable"]').addClass('cursorPointerNotAllowed').attr('readonly', 'readonly');
-					form.find('input[type="checkbox"][name="masseditable"]').removeAttr('checked', 'checked');
+
+					// type="checkbox"のnameが"mandatory"、"summaryfield"、"headerfield"、"masseditable"をuncheckedにし、readonlyに設定する
+					form.find('input[type="checkbox"][name="mandatory"]').addClass('cursorPointerNotAllowed').removeAttr('checked').attr('readonly', 'readonly');
+					form.find('input[type="checkbox"][name="summaryfield"]').addClass('cursorPointerNotAllowed').removeAttr('checked').attr('readonly', 'readonly');
+					form.find('input[type="checkbox"][name="headerfield"]').addClass('cursorPointerNotAllowed').removeAttr('checked').attr('readonly', 'readonly'); 
+					form.find('input[type="checkbox"][name="masseditable"]').addClass('cursorPointerNotAllowed').removeAttr('checked').attr('readonly', 'readonly');
 
 					// 入力値をクリア
 					form.find('input[name="fieldLabel"]').val("");
