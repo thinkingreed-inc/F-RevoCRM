@@ -153,10 +153,8 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 			throw new Exception(vtranslate('LBL_WRONG_FIELD_TYPE', 'Settings::LayoutEditor'), 513);
 		}
 
-		$max_fieldid = $this->getSequenceNumber() + 1;
-		if(empty($max_fieldid)){
-			$max_fieldid = $db->getUniqueID("vtiger_field");
-		}
+		// getUniqueIDで取得すると、vtiger_field_seqがインクリメントされるので、ここで取得した値はfieldidとして使用する
+		$max_fieldid = $db->getUniqueID("vtiger_field");
 		$columnName = 'cf_'.$max_fieldid;
 		$custfld_fieldid = $max_fieldid;
 		$moduleName = $this->getName();
@@ -181,7 +179,8 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 		$quickCreate = in_array($moduleName,  getInventoryModules()) ? 3 : $params['quickcreate'];
 
 		$fieldModel = new Settings_LayoutEditor_Field_Model();
-		$fieldModel->set('name', $columnName)
+		$fieldModel->set('addNewId', $custfld_fieldid)
+				   ->set('name', $columnName)
 				   ->set('table', $tableName)
 				   ->set('generatedtype',2)
 				   ->set('uitype', $uitype)
@@ -240,21 +239,6 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 			}
 		}
 		return $fieldModel;
-	}
-
-	// getUniqueID()などは実行時にインクリメントされてしまう.
-	// columnName(cf_xxx)を決定するときなどのインクリメント不要時に使用する.
-	public function getSequenceNumber(){
-		if($this->hasSequenceNumberField()){
-			global $adb;
-			$query = 'SELECT id FROM vtiger_field_seq';
-			$result = $adb->pquery($query, array());
-			$rows = $adb->num_rows($result);
-			if($rows > 0){
-				return $adb->query_result($result, 0, 'id');
-			}
-		}
-		return null;
 	}
 
 	public function getTypeDetailsForAddField($fieldType,$params) {

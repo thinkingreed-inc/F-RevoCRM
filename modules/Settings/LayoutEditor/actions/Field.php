@@ -245,17 +245,14 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
     // 削除した項目の場所に空白項目を置き換える
     private function replaceBlankColumn($blockId, $sourceModule, $preSequence, $targetTable)
     {
-        $moduleModel = Settings_LayoutEditor_Module_Model::getInstanceByName($sourceModule);
-        $max_fieldid = $moduleModel->getSequenceNumber() + 1;
-        if (empty($max_fieldid)) {
-            global $adb;
-            $max_fieldid = $adb->getUniqueID("vtiger_field");
-        }
+        global $adb;
+        $max_fieldid = $adb->getUniqueID("vtiger_field");
         $columnName = 'cf_' . $max_fieldid;
 
         $blockInstance = Vtiger_Block::getInstance($blockId);
 
         $blankField = new Vtiger_Field_Model();
+        $blankField->addNewId = $max_fieldid;
         $blankField->name = $columnName;
         $blankField->label = '';
         $blankField->table = $targetTable;
