@@ -249,11 +249,12 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 			return true;
 		}
 		if (in_array($this->get('displaytype'), array(4, 5)) || in_array($this->block->module->name, array('Events', 'Calendar'))
-				|| ($this->get('uitype') == '83' && $this->getName() == 'taxclass' && in_array($this->block->module->name, array('Products', 'Services')))) {
+				|| ($this->get('uitype') == '83' && $this->getName() == 'taxclass' && in_array($this->block->module->name, array('Products', 'Services')))
+				|| $this->get('uitype') == '999') {
 			return true;
 		}
 		return false;
-	}
+	}	
 
 	public function isHeaderFieldOptionDisabled() {
 		//uitypes for which mandatory switch is disabled
