@@ -237,7 +237,7 @@ class PDFTemplates_Module_Model extends Vtiger_Module_Model {
 
 		$returnData = array();
 		foreach ($moduleFields as $key => $field) {
-			if(!in_array($field->getPresence(), array(0,2))){
+			if(!in_array($field->getPresence(), array(0,2)) || $field->getFieldDataType() === "blank"){
 				continue;
 			}
 			$referencelist = array();
