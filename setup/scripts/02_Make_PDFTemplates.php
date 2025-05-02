@@ -98,7 +98,7 @@ $db->pquery($sql, $params);
 
 $foldername = '';
 $module = 'SalesOrder';
-$templatename = 'LBL_REQUEST_FOR_ANNOTATION';
+$templatename = vtranslate('LBL_REQUEST_FOR_ANNOTATION');
 $subject = '';
 $description = '';
 $body = file_get_contents('layouts/v7/modules/PDFTemplates/templates/SalesOrderTemplate.tpl');
@@ -111,7 +111,7 @@ $db->pquery($sql, $params);
 
 $foldername = '';
 $module = 'PurchaseOrder';
-$templatename = 'LBL_PURCHASE_ORDER';
+$templatename = vtranslate('LBL_PURCHASE_ORDER');
 $subject = '';
 $description = '';
 $body = file_get_contents('layouts/v7/modules/PDFTemplates/templates/PurchaseOrderTemplate.tpl');
