@@ -52,15 +52,12 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 			$handler->ExportData($request);
 			return;
 		}
-		$translatedHeaders = $this->getHeaders();
 
 		$batchoffset = 0;
 		while(true){ // 取得するデータが無い場合に終了
 			$request->set('batchoffset', $batchoffset);
 			$query = $this->getExportQuery($request);
 			$result = $db->pquery($query, array());
-			global $log;
-			$log->debug($query);
 			$entries = array();
 			for ($j = 0; $j < $db->num_rows($result); $j++) {
 				$entries[] = $this->sanitizeValues($db->fetchByAssoc($result, $j));
