@@ -60,33 +60,25 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 			$entries[] = $this->sanitizeValues($db->fetchByAssoc($result, $j));
 		}
 
-		//エクスポート時の選択肢項目の翻訳処理
+		//エクスポート時の選択肢項目の翻訳処理及び空白項目の除外
 		for ($i = 0; $i < $j; $i++){
-			$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
-			$moduleFields = $moduleModel->getFields();
 			foreach ($entries[$i] as $columnName => $fieldValue) {
-				$fieldModel = $moduleFields[$columnName];
+				$fieldModel = $this->moduleFieldInstances[$columnName];
 				if(empty($fieldModel)){
-					foreach($moduleFields as $key => $fieldinfo){
+					foreach($this->moduleFieldInstances as $key => $fieldinfo){
 						if($fieldinfo->column == $columnName){
 							$fieldName = $fieldinfo->name;
 						}
 					}
-					$fieldModel = $moduleFields[$fieldName];
-				}else{
-					foreach($moduleFields as $key => $fieldinfo){
-						if($fieldinfo->column == $columnName){
-							if($fieldinfo->uitype == "999"){
-								unset($entries[$i][$columnName]);
-							}
-						}
-					}
+					$fieldModel = $this->moduleFieldInstances[$fieldName];
 				}
 
 				$fieldDataType = ($fieldModel) ? $fieldModel->getFieldDataType() : '';
 
 				if ($fieldDataType == 'picklist') {
 					$entries[$i][$columnName] = vtranslate($fieldValue,$moduleName);
+				} else if ($fieldDataType == 'blank') {
+					unset($entries[$i][$columnName]);
 				}
 			}
 
