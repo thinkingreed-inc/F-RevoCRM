@@ -72,7 +72,7 @@ $languageStrings = array(
 	'Skype'=>'Skype',
 	'Time'=>'時刻',
 	'Reference'=>'関連',
-	
+	'Blank'=>'空白',
 	//Translation for module
 	'Calendar' => 'TODO',
 	'LBL_FIELD_COULD_NOT_BE_CREATED'=>'項目 %s は作成できませんでした',

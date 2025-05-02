@@ -391,6 +391,7 @@ $languageStrings = array(
 	'Owner' => 'ユーザー',
 	'MultiSelectCombo' => '選択肢（複数）',
 	'integer' => '整数',
+	'Blank'=>'空白',
 	'My Preferences' => 'ユーザー情報',
 	'Calendar Settings' => 'カレンダー設定',
 	'Workflow' => 'ワークフロー',
