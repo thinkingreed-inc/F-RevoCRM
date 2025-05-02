@@ -175,7 +175,7 @@
                         {if $QUANTITY_VIEWABLE}
                             <td>
                                 {$LINE_ITEM_DETAIL["qty$INDEX"]}
-                                <br><br><span>{vtranslate('Usage Unit', "Products")}：</span>{$LINE_ITEM_DETAIL["usageunit$INDEX"]}
+                                <br><br><span>{vtranslate('Usage Unit', "Products")}:</span>{$LINE_ITEM_DETAIL["usageunit$INDEX"]}
                             </td>
                         {/if}
 
@@ -225,7 +225,7 @@
 							{/if}
                         <td>
                             <div align = "right">{$LINE_ITEM_DETAIL["netPrice$INDEX"]}</div>
-                            <div>{vtranslate('Reduced TaxRate', "Products")}：
+                            <div>{vtranslate('Reduced TaxRate', "Products")}:
                                 {if $LINE_ITEM_DETAIL["reducedtaxrate$INDEX"] eq true}{vtranslate('LBL_YES',$MODULE)}{else if  $LINE_ITEM_DETAIL["reducedtaxrate$INDEX"] eq false}{vtranslate('LBL_NO',$MODULE)}{/if}</div>
                         </td>
                     </tr>

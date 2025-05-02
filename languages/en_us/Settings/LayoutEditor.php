@@ -71,6 +71,7 @@ $languageStrings = array(
 	'TextArea' => 'Text Area',
 	'Skype'=>'Skype',
 	'Time'=>'Time',
+	'Reference'=>'Reference',
 	
 	//Translation for module
 	'Calendar' => 'Task',

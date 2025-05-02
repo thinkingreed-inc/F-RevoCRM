@@ -45,7 +45,8 @@ $languageStrings = array(
 	//Visibility picklist values
 	'Private' => 'Private',
 	'Public' => 'Public',
-	
+	'Selected Users' => 'Selected Users',
+
 	//Side Bar Names
 	'LBL_ACTIVITY_TYPES' => 'Activity Types',
 	'LBL_CONTACTS_SUPPORT_END_DATE' => 'Support End Date',
@@ -178,13 +179,25 @@ $languageStrings = array(
 	'LBL_NOVEMBER' => 'November',
 	'LBL_DECEMBER' => 'December',
 	'LBL_CLICK_HERE_TO_VIEW' => 'Click here to view',
+
+	//F-RevoCRM
+	'Send Reminder' => 'Send Reminder',
+	'Start Date & Time,Due Date' => 'Start Date & Time, Due Date',
+	'My Group' => 'My Group',
+	'Accept - Add Event to F-RevoCRM Calendar' => 'Click here to accept the invitation',
+	'Time Start' => 'Start Time',
+	'End Time' => 'End Time',
+	'Duration' => 'Duration',
+	'Duration Minutes' => 'Duration (Minutes)',
+	'No Time' => 'No Time',
+	'LBL_DUPULICATE_EVENT_EXISTS'=> 'This activity cannot be restored. Duplicate participants exist for the activity.',
 );
 
 $jsLanguageStrings = array(
 	'LBL_ADD_EVENT_TASK' => 'Add Event/Task',
 	'JS_TASK_IS_SUCCESSFULLY_ADDED_TO_YOUR_CALENDAR' => 'Task is successfully added to your Calendar',
-        'LBL_CANT_SELECT_CONTACT_FROM_LEADS' => 'Cannot select related Contacts for Leads',
-        'JS_FUTURE_EVENT_CANNOT_BE_HELD' => 'Cannot Be Held For Future',
+	'LBL_CANT_SELECT_CONTACT_FROM_LEADS' => 'Cannot select related Contacts for Leads',
+	'JS_FUTURE_EVENT_CANNOT_BE_HELD' => 'Cannot Be Held For Future',
 	
 	//Calendar view label translation
 	'LBL_MONTH' => 'Month',
@@ -253,10 +266,15 @@ $jsLanguageStrings = array(
     
     'JS_DELETE' => 'Delete',
     'JS_EDIT' => 'Edit',
+	'JS_COPY' => 'Copy',
     'JS_MARK_AS_HELD' => 'Mark as held',
     'JS_CREATE_FOLLOW_UP' => 'Create follow up',
     'JS_RECURRING_EVENT' => 'Recurring event',
     'JS_DETAILS' => 'More&nbsp;Details',
     'JS_CHECK_START_AND_END_DATE'=>'End Date & Time should be greater than or equal to Start Date & Time',
     'JS_CHECK_START_AND_END_DATE_SHOULD_BE_GREATER'=> 'End Date & Time should be greater than Start Date & Time',
+	'My Group'=> 'My Group',
+	'JS_MONTHTITLEFORMAT' => 'YYYY-MM',
+	'JS_DAYTITLEFORMAT' => 'YYYY-MM-DD',
+	'JS_WEEKTITLEFORMAT' => 'YYYY-MM-DD',
 );

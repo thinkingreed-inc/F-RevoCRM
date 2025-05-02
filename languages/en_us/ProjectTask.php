@@ -47,4 +47,7 @@ $languageStrings = array(
 	'Deferred' => 'Deferred',
 	'Canceled ' => 'Canceled',
     'LBL_NO_DATE_VALUE_MSG' => 'or Project Tasks do not have Start and/or End Date',
+
+    //F-RevoCRM
+    'Start Date,End Date' => 'Start Date,End Date',
 );

@@ -26,6 +26,11 @@ $languageStrings = array(
 	'LBL_SELECT_ALL_VALUES' => 'Select All',
 	'LBL_UNSELECT_ALL_VALUES' => 'Unselect All',
     'LBL_CYCLIC_DEPENDENCY_ERROR' => 'This could end up in cyclic redundancy as %s field is already configured for %s field',
+
+	//F-RevoCRM
+	'Module' => 'Module',
+	'Source Field' => 'Source Field',
+	'Target Field' => 'Target Field',
 );
 
 $jsLanguageStrings = array(

@@ -104,12 +104,12 @@ class Users_Login_View extends Vtiger_View_Controller {
 		$message = '';
 		if ($error) {
 			switch ($error) {
-				case 'login'		:	$message = '無効なユーザー名またはパスワード';						break;
-				case 'fpError'		:	$message = '無効なユーザー名またはE-mailアドレス';			break;
-				case 'statusError'	:	$message = 'メールサーバが設定されていません';	break;
+				case 'login'		:	$message = vtranslate('LBL_INVALID_USERNAME_OR_PASSWORD');						break;
+				case 'fpError'		:	$message = vtranslate('LBL_INVALID_USERNAME_OR_MAILADDRESS');			break;
+				case 'statusError'	:	$message = vtranslate('LBL_MAIL_SERVER_NOT_CONFIGURED');	break;
 			}
 		} else if ($mailStatus) {
-			$message = 'アドレスにメールを送信しました';
+			$message = vtranslate('LBL_AN_EMAIL_WAS_SENT_TO_THE_ADDRESS');
 		}
 
 		$viewer->assign('ERROR', $error);
