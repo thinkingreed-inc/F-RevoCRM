@@ -17,6 +17,7 @@ class Vtiger_MassActionAjax_View extends Vtiger_IndexAjax_View {
 		$this->exposeMethod('showSendSMSForm');
 		$this->exposeMethod('showDuplicatesSearchForm');
 		$this->exposeMethod('transferOwnership');
+		$this->exposeMethod('deleteemailpreference');
 	}
 
 	public function requiresPermission(Vtiger_Request $request){
@@ -237,6 +238,18 @@ class Vtiger_MassActionAjax_View extends Vtiger_IndexAjax_View {
 			echo $viewer->view('SelectEmailFields.tpl', $request->getModule(), true);
 			exit;
 		}
+	}
+
+	function deleteEmailPreference(Vtiger_Request $request) {
+		$response = new Vtiger_Response();
+		$moduleName=$request->getModule();
+		if(Vtiger_RecipientPreference_Model::delete($moduleName)){
+			$response->setResult(vtranslate('LBL_PREF_RESET_MESSAGE', $request->getModule()));
+		}
+		else{
+			$response->setError(vtranslate('LBL_ERROR_SAVING_PREF',$request->getModule()));
+		}
+		$response->emit();
 	}
 	
 	protected function getEmailFieldsInfo(Vtiger_Request $request) {

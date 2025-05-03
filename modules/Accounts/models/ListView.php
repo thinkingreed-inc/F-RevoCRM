@@ -52,6 +52,15 @@ class Accounts_ListView_Model extends Vtiger_ListView_Model {
 			);
 			$massActionLinks['LISTVIEWMASSACTION'][] = Vtiger_Link_Model::getInstanceFromValues($massActionLink);
 		}
+		if($currentUserModel->hasModulePermission($emailModuleModel->getId())){
+			$massActionLink = array(
+				'linktype' => 'LISTVIEWMASSACTION',
+				'linklabel' => 'LBL_DELETE_EMAIL_PREFERENCE',
+				'linkurl' => 'javascript:Vtiger_List_Js.triggerDeleteEmailPreference("index.php?module='.$moduleModel->getName().'&view=MassActionAjax&mode=deleteemailpreference")',
+				'linkicon' => ''
+			);
+			$massActionLinks['LISTVIEWMASSACTION'][] = Vtiger_Link_Model::getInstanceFromValues($massActionLink);
+		}
 
 		return $massActionLinks;
 	}
