@@ -2173,4 +2173,6 @@ $jsLanguageStrings = array(
 	
 	//ユーザー管理>グループ作成
 	'JS_DUPLICATES_EXIST' => '既に存在しています',
+	
+	'JS_LBL_CONFIRMALL' => '全件追加しますか？',
 );
