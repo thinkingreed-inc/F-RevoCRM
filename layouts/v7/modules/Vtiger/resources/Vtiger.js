@@ -951,6 +951,17 @@ Vtiger.Class('Vtiger_Index_Js', {
 			var prevSelectedReferenceModule = referenceModuleElement.val();
 			referenceModuleElement.val(popupReferenceModule);
 
+			// ドキュメントの作成ボタンの挙動は他モジュールと異なるためテンプレートを変更する
+			if(popupReferenceModule == 'Documents') { // 他モジュール->ドキュメント
+				var createReferenceRecordElement = closestTD.find('.createReferenceRecord');
+				createReferenceRecordElement.addClass('dropdown').removeClass('createReferenceRecord').css('padding', '0px');
+				createReferenceRecordElement.find('.fa-plus').css('pointer-events', 'auto').css('padding', '5px 8px').attr('data-toggle', 'dropdown');
+			} else if(prevSelectedReferenceModule == 'Documents') { // ドキュメント->他モジュール
+				var createReferenceRecordElement = closestTD.find('.dropdown');
+				createReferenceRecordElement.addClass('createReferenceRecord').removeClass('dropdown').removeAttr('style');
+				createReferenceRecordElement.find('.fa-plus').removeAttr('style').removeAttr('data-toggle').css('pointer-events', 'none');
+			}
+
 			//If Reference module is changed then we should clear the previous value
 			if(prevSelectedReferenceModule != popupReferenceModule) {
 				closestTD.find('.clearReferenceSelection').trigger('click');
