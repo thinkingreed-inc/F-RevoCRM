@@ -13,7 +13,7 @@
 	<div class="row">
         <div class="col-lg-9">
             <div class="row">
-                <div class="col-lg-2" style="position:relative;top:4px;padding-right: 0px;">
+                <div class="col-lg-2" style="position:relative;top:-8px;padding-right: 0px;">
                     {vtranslate('LBL_MODULES_TO_CREATE_RECORD',$QUALIFIED_MODULE)} <span class="redColor">*</span>
                 </div>
                 <div class="col-lg-10">
