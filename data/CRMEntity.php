@@ -2653,10 +2653,8 @@ class CRMEntity {
 			if($secmodule == "Emails") {
 				$tableName .='Emails';
 			}
-			$condition = "($tableName.$column_name={$tmpname}.{$secfieldname} " .
-					"OR $tableName.$column_name={$tmpname}.{$prifieldname})";
-			$query = " left join vtiger_crmentityrel as $tmpname ON (($condvalue={$tmpname}.{$secfieldname} " .
-					"OR $condvalue={$tmpname}.{$prifieldname})) AND ({$tmpname}.module='{$secmodule}' OR {$tmpname}.relmodule='{$secmodule}') ";
+			$condition = " $tableName.$column_name={$tmpname}.{$prifieldname} ";
+			$query = " left join (SELECT crmid as crmid, module as module, relcrmid as relcrmid FROM vtiger_crmentityrel UNION SELECT relcrmid as crmid, relmodule as module, crmid as relcrmid FROM vtiger_crmentityrel) as $tmpname ON $condvalue={$tmpname}.relcrmid AND {$tmpname}.module='{$secmodule}'";
 		} elseif (strripos($pritablename, 'rel') === (strlen($pritablename) - 3)) {
 			$instance = self::getInstance($module);
 			$sectableindex = $instance->tab_name_index[$sectablename];
