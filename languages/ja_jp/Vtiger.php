@@ -1870,6 +1870,8 @@ $jsLanguageStrings = array(
 	'LBL_SIGN_IN_AS_USER'=>'別のユーザーとしてログインすると、現在のセッションが終了します。続行してもよろしいですか？',
 	'JS_REENTER_PASSWORDS' => 'パスワードを再入力してください',
 	'SINGLE_Vendors' => '発注先',
+	'JS_SELECT_AN_USER' => 'ユーザー選択',
+	'Status : All' => 'ステータス : 全て',
 
 	//Feedback on removing old version
 	'JS_PLEASE_GIVE_YOUR_FEEDBACK' => 'フィードバックを記入してください',

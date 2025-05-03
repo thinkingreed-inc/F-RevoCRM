@@ -419,8 +419,8 @@ Vtiger.Class('Vtiger_Index_Js', {
 						$('#overlayPage').find(".arrow").css("left",taskManagementPageOffset.left+13);
 						$('#overlayPage').find(".arrow").addClass("show");
 
-						vtUtils.showSelect2ElementView($('#overlayPage .data-header').find('select[name="assigned_user_id"]'),{placeholder:"ユーザー選択"});
-						vtUtils.showSelect2ElementView($('#overlayPage .data-header').find('select[name="taskstatus"]'),{placeholder:"Status : All"});
+						vtUtils.showSelect2ElementView($('#overlayPage .data-header').find('select[name="assigned_user_id"]'),{placeholder: app.vtranslate('JS_SELECT_AN_USER')});
+						vtUtils.showSelect2ElementView($('#overlayPage .data-header').find('select[name="taskstatus"]'),{placeholder: app.vtranslate('Status : All')});
 						var js = new Vtiger_TaskManagement_Js();
 						js.registerEvents();
 					});
