@@ -1352,6 +1352,40 @@ Vtiger.Class("Vtiger_List_Js", {
         var thisInstance = this;
         listViewPageDiv.on('click','[data-trigger="listSearch"]',function(e){
             e.preventDefault();
+
+			// 日付と時刻のフィールドに対して検索値のチェックを行う
+			var isValidDate = true;
+			var listSearchParams = thisInstance.getListSearchParams()[0];
+			if (listSearchParams) {
+				for(var i=0; i<listSearchParams.length; i++) {
+					var params = listSearchParams[i];
+					var fieldInfo = uimeta.field.get(params[0]);
+					if (fieldInfo.type == 'date' || fieldInfo.type == 'datetime') {
+						params[2].split(',').forEach(function(param){
+							var date = new Date(param);
+							if (isNaN(date.getDate())) {
+								isValidDate = false;
+								app.helper.showErrorNotification({message: app.vtranslate('JS_PLEASE_ENTER_VALID_DATE')});
+								return;
+							}
+						});
+					} else if (fieldInfo.type == 'time') {
+						params[2].split(',').forEach(function(param){
+							var baseDate = new Date(0); // 年月日の部分に仮のデータを入れる
+							var date = new Date(baseDate.toDateString()+ ' ' + param);
+							if (isNaN(date.getDate())) {
+								isValidDate = false;
+								app.helper.showErrorNotification({message: app.vtranslate('JS_PLEASE_ENTER_VALID_TIME')});
+								return;
+							}
+						});
+					}
+				}
+			}
+			if (!isValidDate) {
+				return;
+			}
+			
             var params = {
                 'page': '1'
             }
