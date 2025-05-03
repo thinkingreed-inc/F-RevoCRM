@@ -11,18 +11,18 @@ require_once('include/database/PearDatabase.php');
 //require_once('modules/Reports/CannedReports.php');
 global $adb;
 
-$rptfolder = Array(Array(vtranslate('Account and Contact Reports') => vtranslate('Account and Contact Reports')),
-		   		Array(vtranslate('Lead Reports') => vtranslate('Lead Reports')),
-	           	Array(vtranslate('Potential Reports') => vtranslate('Potential Reports')),
-				Array(vtranslate('Activity Reports') => vtranslate('Activity Reports')),
-				Array(vtranslate('HelpDesk Reports') => vtranslate('HelpDesk Reports')),
-				Array(vtranslate('Product Reports') => vtranslate('Product Reports')),
-				Array(vtranslate('Quote Reports') => vtranslate('Quote Reports')),
-				Array(vtranslate('PurchaseOrder Reports') => vtranslate('PurchaseOrder Reports')),
-				Array(vtranslate('Invoice Reports') => vtranslate('Invoice Reports')),
-				Array(vtranslate('SalesOrder Reports') => vtranslate('SalesOrder Reports')),
-				Array(vtranslate('Campaign Reports') => vtranslate('Campaign Reports')),
-				Array(vtranslate('Email Reports') => vtranslate('Email Reports')),
+$rptfolder = Array(Array('Account and Contact Reports' => 'Account and Contact Reports'),
+		   		Array('Lead Reports' => 'Lead Reports'),
+	           	Array('Potential Reports' => 'Potential Reports'),
+				Array('Activity Reports' => 'Activity Reports'),
+				Array('HelpDesk Reports' => 'HelpDesk Reports'),
+				Array('Product Reports' => 'Product Reports'),
+				Array('Quote Reports' => 'Quote Reports'),
+				Array('PurchaseOrder Reports' => 'PurchaseOrder Reports'),
+				Array('Invoice Reports' => 'Invoice Reports'),
+				Array('SalesOrder Reports' => 'SalesOrder Reports'),
+				Array('Campaign Reports' => 'Campaign Reports'),
+				Array('Email Reports' => 'Email Reports'),
 			);
 
 $reportmodules = Array(Array('primarymodule'=>'Contacts','secondarymodule'=>'Accounts'),
@@ -296,7 +296,7 @@ $reports = Array(Array('reportname'=>vtranslate('Contacts by Accounts'),
 
 		 Array('reportname'=>vtranslate('Open Quotes'),
                        'reportfolder'=>vtranslate('Quote Reports'),
-                       'description'=>'Quotes that are Open',
+                       'description'=>vtranslate('Quotes that are Open'),
                        'reporttype'=>'tabular',
                        'sortid'=>'','stdfilterid'=>'','advfilterid'=>'5'),
 
