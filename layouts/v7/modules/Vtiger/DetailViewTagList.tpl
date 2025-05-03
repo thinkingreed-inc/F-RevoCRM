@@ -78,7 +78,7 @@
                     </label>
                 </div>
                 <div class="tag_owner_name">
-                    <p>{vtranslate('LBL_CREATOR', $MODULE))}</p>
+                    <p>{vtranslate('LBL_CREATOR', $MODULE)}</p>
                     <p type="text" class="tagOwnerName" value="" style="width:100%" maxlength="25"></p>
                 </div>
             </div>
