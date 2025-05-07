@@ -185,7 +185,7 @@
                                         &nbsp; {vtranslate('LBL_SHARE_TAG',$MODULE)}
                                     </label>
                                     <div class="tag_owner_name">
-                                        <p>作成者：</p>
+                                        <p>{vtranslate("LBL_CREATOR", $MODULE)}</p>
                                         <p type="text" class="tagOwnerName" value="" style="width:100%" maxlength="25"></p>
                                     </div>
                                 </div>

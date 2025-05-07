@@ -18,6 +18,7 @@ $languageStrings = array(
 	'LBL_CONFIGURE_DEPENDENCY_INFO' => '各セルをクリックして、連動先の項目の選択肢のマッピングを変更します。',
 	'LBL_CONFIGURE_DEPENDENCY_HELP_1' => '連動元の項目のマッピングされた選択肢のみが以下に表示されます (初回を除く)',
 	'LBL_CONFIGURE_DEPENDENCY_HELP_2' => "連動元の項目の他の選択肢のマッピングを参照するか、または変更したい場合は、<b>右端にある[連動元の項目の選択]</b>のボタンをクリックし連動元の選択肢を選択します",
+	
 	'LBL_CONFIGURE_DEPENDENCY_HELP_3' => '選択した依存先フィールド値は次のようにハイライトされます：',
 	'LBL_SELECT_SOURCE_VALUES' => '連動元の選択肢の選択',
 	'LBL_SELECT_SOURCE_PICKLIST_VALUES' => '連動元の選択肢の選択',

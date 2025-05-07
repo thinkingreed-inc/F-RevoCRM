@@ -194,6 +194,22 @@ $languageStrings = array(
     'LBL_DUPLICATE_USERNAME_ERROR' => 'There is already a Mail Converter configured with this email address. You cannot create duplicate Mail Converter with same email address.',
     'LBL_DUPLICATE_SCANNERNAME_ERROR' => 'There is already a Mail Converter configured with this name. You cannot create Mail Converter with duplicate name.',
        
+	//F-RevoCRM
+	'Scanner Name'=>'Scanner Name',
+	'Server'=>'IMAP Server Name',
+	'User Name'=>'User Name',
+	'Password'=>'Password',
+	'Protocol'=>'Protocol',
+	'SSL Type'=>'SSL Type',
+	'SSL Method'=>'SSL Method',
+	'Validate SSL Certificate'=>'Validate SSL Certificate',
+	'Do Not Validate SSL Certificate'=>'Do Not Validate SSL Certificate',
+	'Look For'=>'Look For',
+	'After Scan'=>'After Scan',
+	'UNCHANGED'=>'Unchanged',
+	'Time Zone'=>'Mail Server Timezone',
+	'Status'=>'Status',
+	'Has Ticket Number'=>'Has Ticket Number',
 );
 $jsLanguageStrings = array(
 	'JS_MAILBOX_DELETED_SUCCESSFULLY' => 'MailBox deleted Successfully',

@@ -75,7 +75,6 @@ $languageStrings = array(
 	'LBL_MAX' => '最大',
 	'LBL_NEXT' => '次へ',
 	'LBL_REPORTS' => 'レポートの一覧',
-	'LBL_SELECT_RELATED_MODULES' => '関連モジュールの選択',
 
 	//Step2 Strings
 	'LBL_GROUP_BY' => 'グループ化',
@@ -229,6 +228,7 @@ $languageStrings = array(
 	'LBL_UNPIN_CHART_FROM_DASHBOARD' => 'ダッシュボードから取り除きました',
 	'LBL_REPORTS_DELETED_SUCCESSFULLY' => 'レポートを削除しました',
 );
+
 $jsLanguageStrings = array(
 	'JS_DUPLICATE_RECORD' => 'レポートの複製',
 	'JS_SAME_REPORT_NAME' => '同名のレポートが存在します。',

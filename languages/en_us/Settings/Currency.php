@@ -152,6 +152,11 @@ $languageStrings = array(
 	'Malawi, kwacha'		=> 'Malawi, kwacha',
 	'Tunisian, Dinar'		=> 'Tunisian, Dinar',
 	'Moroccan, Dirham'		=> 'Moroccan, Dirham',
+	
+	//F-RevoCRM
+	'Currency Name' => 'Currency Name',
+	'Currency Code' => 'Currency Code',
+	'Symbol' => 'Symbol',
 );
 
 $jsLanguageStrings = array(

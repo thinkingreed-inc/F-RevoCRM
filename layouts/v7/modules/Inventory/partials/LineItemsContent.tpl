@@ -147,7 +147,7 @@
 			<span class="margin pull-right" style="display:none">{if $data.$margin}{$data.$margin}{else}0{/if}</span>
 		{/if}
 		<br><br>
-		<span>{vtranslate('Usage Unit', "Products")}：</span>
+		<span>{vtranslate('Usage Unit', "Products")}:</span>
 		<input id="{$usageunit}" name="{$usageunit}" value="{if !empty($data.$usageunit)}{$data.$usageunit}{/if}" type="text" class="usageunit smallInputBox inputElement" readonly style="border:hidden"/>
 
 		{if $MODULE neq 'PurchaseOrder'}
@@ -306,7 +306,7 @@
 		<span id="netPrice{$row_no}" class="pull-right netPrice">{if $data.$netPrice}{$data.$netPrice}{else}0{/if}</span>
 			<br><br>
 		<label  style="font-weight:normal" for='{$reducedtaxrate}'><input type="checkbox" class="reducedtaxrate" id="{$reducedtaxrate}" name="{$reducedtaxrate}" value="{$data.$reducedtaxrate}" {if ($data.$reducedtaxrate)=='1'}checked{/if} style="border:hidden"/>
-			：
+			:
 		{vtranslate('Reduced TaxRate', "Products")}</label>
 	</td>
 {/strip}

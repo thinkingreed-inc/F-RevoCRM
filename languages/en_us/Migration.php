@@ -23,4 +23,6 @@ $languageStrings = array(
 	'LBL_WAIT' => 'Please wait ...',
 	'LBL_INPROGRESS' => 'Migration Inprogress',
 	'LBL_DATABASE_CHANGE_LOG' => 'Migration : Database Changes Log',
+	'Finish' => 'Finish',
+	'Connect with us' => 'Connect with us',
 );

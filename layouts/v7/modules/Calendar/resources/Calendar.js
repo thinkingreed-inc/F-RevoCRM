@@ -1898,9 +1898,9 @@ Vtiger.Class("Calendar_Calendar_Js", {
 
 		var lang = (navigator.language) ? navigator.language : navigator.userLanguage;
 		if (lang.toLowerCase().indexOf("ja") !== -1) {
-			monthTitleFormat = 'YYYY年MM月';
-			weekTitleFormat = 'YYYY年MM月DD日';
-			dayTitleFormat = 'YYYY年MM月DD日';
+			monthTitleFormat = app.vtranslate('JS_MONTHTITLEFORMAT');
+			weekTitleFormat = app.vtranslate('JS_WEEKTITLEFORMAT');
+			dayTitleFormat = app.vtranslate('JS_DAYTITLEFORMAT');
 		}
 
 		// 縦が短い端末を考慮して，表示するカレンダーの最低の高さを設定(500px)

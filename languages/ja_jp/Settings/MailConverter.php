@@ -209,8 +209,7 @@ $languageStrings = array(
     'UNCHANGED'=>'変更しない',
     'Time Zone'=>'メールサーバのタイムゾーン',
     'Status'=>'有効',
-    'Has Ticket Number'=>'チケット番号を含む',
-       
+    'Has Ticket Number'=>'チケット番号を含む', 
 );
 $jsLanguageStrings = array(
 	'JS_MAILBOX_DELETED_SUCCESSFULLY' => 'メールボックスが正しく削除されました',
