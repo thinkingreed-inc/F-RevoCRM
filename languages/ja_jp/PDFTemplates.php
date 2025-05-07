@@ -78,6 +78,7 @@ $languageStrings = array(
 	"LBL_INVOICE" => "御請求書",
 	"LBL_FOR_THE_ATTENTION_OF" => "御中",
 	"LBL_PLEASEFINDOURINVOICEBELOW"=>"下記の通り御請求申し上げます。",
+	'LBL_TOTAL_AMOUNT_BILLED' => 'ご請求金額',
 	'TOTAL_AMOUNT_BILLED' => 'ご請求金額',
 	'LBL_DUE_DATE' => 'お支払い期限',
 	'LBL_ITEM' => '項目',
