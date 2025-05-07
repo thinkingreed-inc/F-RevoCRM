@@ -46,6 +46,10 @@
                              {else}
                                  {assign var=COUNTER value=$COUNTER+1}
                              {/if}
+                            {if $FIELD_MODEL->get('uitype') eq "999"}
+                                <td class="blankField"></td><td class="blankField"></td>
+                                {continue}
+                            {/if}
                              <td class="fieldLabel alignMiddle">
                             
                              {if $isReferenceField eq "reference"}

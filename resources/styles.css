@@ -51,6 +51,12 @@ td.listViewEntryValue  .fieldValue .value {
   .listViewPageDiv #table-content.table-container {
     scrollbar-width: none;
   }
+
+  .quickCreateContent > table.table > tbody > tr > td.blankField,
+  .fieldBlockContainer>table.table:not(#lineItemResult)>tbody>tr>td.blankField,
+  .detailview-table>tbody>tr>td.blankField {
+    display: none;
+  }
 }
 
 /*

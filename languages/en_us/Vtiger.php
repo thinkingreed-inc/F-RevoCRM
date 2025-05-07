@@ -1922,6 +1922,7 @@ $jsLanguageStrings = array(
 	'JS_EXCEEDS_MAX_UPLOAD_SIZE' => 'Exceeded maximum upload size',
 	'JS_FUTURE_EVENT_CANNOT_BE_HELD' => 'Cannot Be Held For Future',
 	'LBL_WARNING' => 'Warning',
+	'LBL_REPLACE_BLANK_COLUMN' => 'Insert a blank field in the same location as the deleted item.',
 	'DELETE_USER_PERMANENT_WARNING' => 'Deleting a user permanently will transfer all records including comments and history to new user.',
 	'JS_DECIMAL_SEPARATOR_AND_GROUPING_SEPARATOR_CANT_BE_SAME' => 'Decimal separator and Grouping separator cant be same',
 	'JS_FUTURE_EVENT_CANNOT_BE_HELD' => 'Cannot Be Held For Future',

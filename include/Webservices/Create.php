@@ -80,6 +80,17 @@ function vtws_create($elementType, $element, $user) {
 				}
 			}
 		}
+
+		
+		// 空白項目のfieldNameを取得
+		$blankFields = $meta->getBlankFields();
+
+		// fieldNameををキーにした配列に変換
+		$blankFieldsFlipped = array_flip($blankFields);
+
+		// 空白項目を除外する
+		$element = array_diff_key($element, $blankFieldsFlipped);
+
 		$entity = $handler->create($elementType, $element);
 		VTWS_PreserveGlobal::flush();
 		return $entity;

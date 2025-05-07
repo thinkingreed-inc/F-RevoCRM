@@ -95,6 +95,9 @@
 					{else}
 						{assign var=NO_SORTING value=0}
 					{/if}
+					{if $LISTVIEW_HEADER->get('uitype') eq '999'}
+						{continue}
+					{/if}
 					<th {if !$MODULE_MODEL->isFilterColumnEnabled() && !$LISTVIEW_ENTRIES_COUNT eq '0'}class="table-bottom-border" {/if}{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')} nowrap="nowrap" {/if}>
 						<a href="#" class="{if $NO_SORTING}noSorting{else}listViewContentHeaderValues{/if}" {if !$NO_SORTING}data-nextsortorderval="{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')}{$NEXT_SORT_ORDER}{else}ASC{/if}" data-columnname="{$LISTVIEW_HEADER->get('name')}"{/if} data-field-id='{$LISTVIEW_HEADER->getId()}'>
 							{if !$NO_SORTING}
@@ -157,7 +160,7 @@
 							{assign var=LISTVIEW_ENTRY_RAWVALUE value=$LISTVIEW_ENTRY->getTitle($LISTVIEW_HEADER)}
 						{/if}
 						{assign var=LISTVIEW_ENTRY_VALUE value=$LISTVIEW_ENTRY->get($LISTVIEW_HEADERNAME)}
-						<td class="listViewEntryValue" data-name="{$LISTVIEW_HEADER->get('name')}" title="{$LISTVIEW_ENTRY->getTitle($LISTVIEW_HEADER)}" data-rawvalue="{$LISTVIEW_ENTRY_RAWVALUE}" data-field-type="{$LISTVIEW_HEADER->getFieldDataType()}">
+						<td class="listViewEntryValue" data-name="{$LISTVIEW_HEADER->get('name')}" title="{$LISTVIEW_ENTRY->getTitle($LISTVIEW_HEADER)|strip_tags}" data-rawvalue="{$LISTVIEW_ENTRY_RAWVALUE}" data-field-type="{$LISTVIEW_HEADER->getFieldDataType()}">
 							<span class="fieldValue">
 								<span class="value">
 									{if ($LISTVIEW_HEADER->isNameField() eq true or $LISTVIEW_HEADER->get('uitype') eq '4') and $MODULE_MODEL->isListViewNameFieldNavigationEnabled() eq true }
@@ -214,6 +217,7 @@
 											{/foreach}
 										{else if $LISTVIEW_HEADER->getFieldDataType() eq 'reference'}
 											{$LISTVIEW_ENTRY->getTitle($LISTVIEW_HEADER)}
+										{else if $LISTVIEW_HEADER->get('uitype') eq '360'}
 										{else}
 											{$LISTVIEW_ENTRY_VALUE}
 										{/if}

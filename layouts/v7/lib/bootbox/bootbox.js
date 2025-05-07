@@ -32,7 +32,10 @@
       "<div class='bootbox modal' tabindex='-1' role='dialog'>" +
         "<div class='modal-dialog'>" +
           "<div class='modal-content'>" +
-            "<div class='modal-body'><div class='bootbox-body'></div></div>" +
+            "<div class='modal-body'><div class='bootbox-body'>" +
+            "<div class='blank-body'></div>" +
+            "</div>" +
+          "</div>" +
           "</div>" +
         "</div>" +
       "</div>",
@@ -590,8 +593,7 @@
       buttonStr += "<button data-bb-handler='" + key + "' type='button' class='btn " + button.className + "'>" + button.label + "</button>";
       callbacks[key] = button.callback;
     });
-    
-     // Vtiger Customization
+    // Vtiger Customization
     if(options.htmlSupportEnable) {
         body.find(".bootbox-body").html(options.message);
     } else {
