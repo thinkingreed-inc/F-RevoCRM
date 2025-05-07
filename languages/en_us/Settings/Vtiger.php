@@ -392,6 +392,7 @@ $languageStrings = array(
 	'Owner' => 'User',
 	'MultiSelectCombo' => 'Picklist (Multiple)',
 	'integer' => 'Integer',
+	'Blank'=>'空白',
 	'My Preferences' => 'My Preferences',
 	'Calendar Settings' => 'Calendar Settings',
 	'Workflow' => 'Workflow',

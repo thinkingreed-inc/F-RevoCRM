@@ -72,7 +72,7 @@ $languageStrings = array(
 	'Skype'=>'Skype',
 	'Time'=>'Time',
 	'Reference'=>'Reference',
-	
+	'Blank'=>'Blank',
 	//Translation for module
 	'Calendar' => 'Task',
 	'LBL_FIELD_COULD_NOT_BE_CREATED'=>'Field %s could not be created',
