@@ -338,13 +338,13 @@
 					var result = true;
 					var errorMessage = '';
 					if (username === '' & password === '') {
-						errorMessage = '{vtranslate('LBL_ENTER_USERNAME_AND_PASSWORD','Users')}";
+						errorMessage = "{vtranslate('LBL_ENTER_USERNAME_AND_PASSWORD','Users')}";
 						result = false;
 					} else if (username === '') {
-						errorMessage = '{vtranslate('LBL_USER_NAME','Users')}";
+						errorMessage = "{vtranslate('LBL_USER_NAME','Users')}";
 						result = false;
 					} else if (password === '') {
-						errorMessage = ' {vtranslate('LBL_ENTER_PASSWORD','Users')}';
+						errorMessage = "{vtranslate('LBL_ENTER_PASSWORD','Users')}";
 						result = false;
 					}
 					if (errorMessage) {
