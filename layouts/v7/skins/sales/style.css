@@ -869,6 +869,10 @@ a {
   border: 1px solid #cccccc;
   border-width: thin;
 }
+.blankField{
+  border: none;
+  cursor: default;
+}
 input[type="text"].inputElement,
 input[type="password"].inputElement {
   padding: 3px 8px;
@@ -6525,7 +6529,7 @@ div.tooltip-inner {
 #quickCreateModules .quick-create-module {
   color: black;
   padding: 0 0 0 12px;
-  overflow-x: hidden;
+  overflow: hidden;
   width: 80%;
   display: inline-block;
   vertical-align: middle;

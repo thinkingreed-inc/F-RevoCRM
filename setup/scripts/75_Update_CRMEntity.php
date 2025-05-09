@@ -86,4 +86,4 @@ foreach ($modules as $modulename) {
     $executedTables[] = $baseTable;
 }
 
-echo "実行が完了しました。<br>";
+echo vtranslate('LBL_ITS_OVER');

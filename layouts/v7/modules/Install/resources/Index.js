@@ -17,7 +17,7 @@ jQuery.Class('Install_Index_Js', {}, {
 		jQuery('input[name="step4"]').on('click', function (e) {
 			var elements = jQuery('.no')
 			if (elements.length > 0) {
-				var msg = "いくつかの設定が異なりますが、このまま進めますか？";
+				var msg = app.vtranslate('JS_SETTING_NOT_SAME');
 				if (confirm(msg)) {
 					jQuery('form[name="step3"]').submit();
 					return true;
@@ -67,7 +67,7 @@ jQuery.Class('Install_Index_Js', {}, {
 			var password = jQuery('input[name="password"]').val();
 			var retypePassword = jQuery('input[name="retype_password"]').val();
 			if (password !== retypePassword && password != '' && retypePassword != '') {
-				setPasswordError('パスワードが正しくありません。再度入力してください。');
+				setPasswordError(app.vtranslate('JS_PASSWORD_NOT_MATCH'));
 				return false;
 			}
 			return true;
@@ -76,7 +76,7 @@ jQuery.Class('Install_Index_Js', {}, {
 		function checkStrengthPassword() {
 			var password = jQuery('input[name="password"]').val();
 			if(password.length < 8) {
-				setPasswordError('8文字以上のパスワードにしてください。');
+				setPasswordError(app.vtranslate('JS_ERR_PASSWORD_LENGTH'));
 				return false;
 			}
 			if(!/[a-z]/.test(password)
@@ -84,7 +84,7 @@ jQuery.Class('Install_Index_Js', {}, {
 					|| !/([0-9])/.test(password)
 					|| !/[!"#$%&'()\*\+\-\.,\/:;<=>?@\[\\\]^_`{|}~]/.test(password)
 				) {
-				setPasswordError('複雑なパスワードを指定してください（アルファベット大文字・小文字、数字、記号を含む8文字以上）');
+				setPasswordError(app.vtranslate('JS_ERR_PASSWORD_COMPLEXITY'));
 				return false;
 			}
 			return true;
@@ -155,14 +155,14 @@ jQuery.Class('Install_Index_Js', {}, {
 					content = '<div class="col-sm-12">' +
 							'<div class="alert errorMessageContent">' +
 							'<button class="close" data-dismiss="alert" type="button">x</button>' +
-							'メールアドレスが正しくありません。' +
+							app.vtranslate("JS_ERR_EMAIL_ADDRESS") +
 							'</div>' +
 							'</div>';
 				} else {
 					content = '<div class="col-sm-12">' +
 							'<div class="alert errorMessageContent">' +
 							'<button class="close" data-dismiss="alert" type="button">x</button>' +
-							'必須の入力がされていません。' +
+							app.vtranslate("JS_ERR_REQUIRED") +
 							'</div>' +
 							'</div>';
 				}
@@ -189,12 +189,12 @@ jQuery.Class('Install_Index_Js', {}, {
 		jQuery('input[name="step7"]').on('click', function () {
 			var lastname = jQuery('input[name="lastname"]').val();
 			if (lastname == "") {
-				alert('氏名を入力してください。');
+				alert(app.vtranslate('JS_ERR_NAME'));
 				return;
 			}
 			var email = jQuery('input[name="email"]').val();
 			if (email == "") {
-				alert('メールアドレスを入力してください。');
+				alert(app.vtranslate('JS_ERR_EMAIL_ADDRESS_NOTINPUT'));
 				return;
 			}
 			var reg_survey = "";
@@ -203,7 +203,7 @@ jQuery.Class('Install_Index_Js', {}, {
 				reg_survey += $this.val();
 			});
 			if (reg_survey == "") {
-				alert('一つ以上チェックを付けてください。');
+				alert(app.vtranslate('JS_ERR_CHECKBOX'));
 				return;
 			}
 			jQuery('#progressIndicator').removeClass('hide').addClass('show');

@@ -66,27 +66,28 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 				break;
 			}
 
-			//エクスポート時の選択肢項目の翻訳処理
+			//エクスポート時の選択肢項目の翻訳処理及び空白項目の除外
 			for ($i = 0; $i < $j; $i++){
-				$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
-				$moduleFields = $moduleModel->getFields();
 				foreach ($entries[$i] as $columnName => $fieldValue) {
-					$fieldModel = $moduleFields[$columnName];
+					$fieldModel = $this->moduleFieldInstances[$columnName];
 					if(empty($fieldModel)){
-						foreach($moduleFields as $key => $fieldinfo){
+						foreach($this->moduleFieldInstances as $key => $fieldinfo){
 							if($fieldinfo->column == $columnName){
 								$fieldName = $fieldinfo->name;
 							}
 						}
-						$fieldModel = $moduleFields[$fieldName];
+						$fieldModel = $this->moduleFieldInstances[$fieldName];
 					}
 
 					$fieldDataType = ($fieldModel) ? $fieldModel->getFieldDataType() : '';
 
 					if ($fieldDataType == 'picklist') {
 						$entries[$i][$columnName] = vtranslate($fieldValue,$moduleName);
+					} else if ($fieldDataType == 'blank') {
+						unset($entries[$i][$columnName]);
 					}
 				}
+
 			}
 
 			if($batchoffset == 0){
@@ -108,13 +109,15 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 				$fieldModel = $this->moduleFieldInstances[$fieldName];
 				// Check added as querygenerator is not checking this for admin users
 				$presence = $fieldModel->get('presence');
-				if(in_array($presence, $accessiblePresenceValue) && $fieldModel->get('displaytype') != '6') {
+				if(in_array($presence, $accessiblePresenceValue) && $fieldModel->get('displaytype') != '6' && $fieldModel->get('uitype') != '999') {
 					$headers[] = $fieldModel->get('label');
 				}
 			}
 		} else {
 			foreach($this->moduleFieldInstances as $field) {
-				$headers[] = $field->get('label');
+				if($field->get('uitype') != '999'){
+					$headers[] = $field->get('label');
+				}
 			}
 		}
 

@@ -183,24 +183,31 @@ $languageStrings = array(
 	'has changed to' => 'が次に変更された',
 	'is empty' => 'が空である',
 	'is not empty' => 'が空でない',
+	'equal to' => 'が次と等しい %s',
 	'less than' => 'が次より小さい',
 	'greater than' => 'が次より大きい',
 	'does not equal' => 'が次と等しくない',
 	'equal to' => 'が次と等しい',
-	'greater than or equal to' => 'がN以上',
+
 	'less than or equal to' => 'がN以下',
+	'greater than or equal to' => 'がN以上',
 	'between' => 'が次の範囲内',
 	'before' => 'が次より前',
 	'after' => 'が次より後',
+	'has changed from' => 'が次から変更された',
 	'is today' => 'が本日',
 	'is tomorrow' => 'が明日',
 	'is yesterday' => 'が昨日',
+
 	'less than days ago' => 'が本日からN日以前まで',
 	'more than days ago' => 'が過去N日以前',
 	'less than days later' => 'が以前',
 	'more than days later' => 'が以降',
-	'in less than' => 'が本日から未来N日まで',
-	'more than days ago' => 'が過去N日以前',
+
+	'previous month' => '前月',
+	'current month' => '今月',
+	'next month' => '翌月',
+
 	'in less than' => 'が本日から未来N日まで',
 	'in more than' => 'が未来N日以上',
 	'days ago' => 'がN日前',
@@ -209,6 +216,13 @@ $languageStrings = array(
 	'less than hours later' => 'が現在時刻から未来B時以前',
 	'more than hours before' => 'がN時以前',
 	'more than hours later' => 'がN時以降',
+
+	'week days later' => '営業日後',
+	'more than week days later' => '営業日以上後',
+	'less than week days later' => '営業日未満後',
+	'week days ago' => '営業日前',
+	'more than week days ago' => '営業日以上前',
+	'less than week days ago' => '営業日未満前',
 );
 
 $jsLanguageStrings = array(

@@ -204,6 +204,7 @@ jQuery.Class("Vtiger_Helper_Js",{
             title : title,
 			buttons: buttonsInfo,
 			message: data['message'],
+            blank: data['blank'],
             htmlSupportEnable: data.hasOwnProperty('htmlSupportEnable') ? data['htmlSupportEnable'] : true,
 			callback: function(result) {
 				if (result) {

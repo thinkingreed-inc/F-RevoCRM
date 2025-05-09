@@ -271,6 +271,21 @@ $languageStrings = array(
 	'LBL_TEMPLATES' => 'テンプレート',
 	'Default Landing Page' => '初期表示',
 	'CRM Phone Extension' => '内線番号',
+
+	'LBL_LOGIN' => 'ログイン',
+	'LBL_MAILADDRESS' => 'メールアドレス',
+	'LBL_SUBMIT' => '送信',
+	'LBL_F-Revo_Notice' => 'F-RevoCRMに関するお知らせ',
+	'LBL_ENTER_USERNAME_AND_PASSWORD' => 'ユーザー名とパスワードを入力してください',
+	'LBL_ENTER_USERNAME' => 'ユーザー名を入力してください。',
+	'LBL_ENTER_PASSWORD' => 'パスワードを入力してください。',
+	'LBL_ENTER_USERNAME_AND_MAILADDRESS' => 'ユーザー名とメールアドレスを入力してください',
+	'LBL_INVALID_MAILADDRESS' => 'パスワードを入力してください。',
+
+	'LBL_INVALID_USERNAME_OR_PASSWORD' => '無効なユーザー名またはパスワード',
+	'LBL_INVALID_USERNAME_OR_MAILADDRESS' => '無効なユーザー名またはE-mailアドレス',
+	'LBL_MAIL_SERVER_NOT_CONFIGURED' => 'メールサーバが設定されていません',
+	'LBL_AN_EMAIL_WAS_SENT_TO_THE_ADDRESS' => 'アドレスにメールを送信しました',
 );
 
 $jsLanguageStrings = array(
@@ -287,4 +302,8 @@ $jsLanguageStrings = array(
 	'JS_ENTERED_CURRENT_USERNAME_MSG' => '古いユーザー名と同じです。新しいユーザー名を入力してください。',
 	'JS_NEW_ACCESS_KEY_REQUESTED' => '新しいアクセスキーは必須です',
 	'JS_CHANGE_ACCESS_KEY_CONFIRMATION' => '新しいアクセスキーをリクエストしました。古いアクセスキーを利用しているアプリケーションやすべての拡張機能の新しいアクセスキーに置き換える必要があります。続行しますか？',
+
+	'JS_ENTER_NEW_PASSWORD' => '新しいパスワードを入力してください。',
+	'JS_REENTER_PASSWORDS' => '新しいパスワードとパスワードの確認は同じ文字列を入力してください。',
+	'JS_PASSWORD_COMPLEXITY' => '複雑なパスワードを指定してください（アルファベット大文字・小文字、数字、記号を含む8文字以上）。',
 );

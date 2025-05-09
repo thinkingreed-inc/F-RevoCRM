@@ -19,4 +19,4 @@ global $adb, $log;
 
 $adb->query("ALTER TABLE vtiger_calendar_user_activitytypes ADD COLUMN `is_own` tinyint(1) DEFAULT 1");
 
-echo "実行が完了しました。<br>".PHP_EOL;
+echo vtranslate('LBL_ITS_OVER') . PHP_EOL;

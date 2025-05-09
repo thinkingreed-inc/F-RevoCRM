@@ -50,8 +50,8 @@ $languageStrings = array(
 	'Email' => 'Primary Email',
 	'Secondary Email' => 'Secondary Email',
 	'Contact Id' => 'Contact Id',
-    'Support Start Date' => 'Support Start Date',
-    'Support End Date'   => 'Support End Date',
+	'Support Start Date' => 'Support Start Date',
+	'Support End Date'   => 'Support End Date',
 	
 	//Added for Picklist Values
 	'Mr.'=>'Mr.',
@@ -61,6 +61,12 @@ $languageStrings = array(
 	'Prof.'=>'Prof.',
 	
 	'User List'=>'User List',
+	
+	//F-RevoCRM
+	'Contacts Address' => 'Mailing List',
+	'Todays Birthday' => 'Todays Birthday',
+	'last_action_date' => 'Last Activity Date',
+	'Customer Portal Login Details' => 'Customer Portal Login Information Notification',
 );
 
 $jsLanguageStrings = array(

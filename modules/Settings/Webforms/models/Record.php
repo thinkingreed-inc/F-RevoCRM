@@ -212,7 +212,7 @@ class Settings_Webforms_Record_Model extends Settings_Vtiger_Record_Model {
 			$targetModule = $this->get('targetmodule');
 		}
 		$targetModuleModel = Vtiger_Module_Model::getInstance($targetModule);
-		$restrictedFields = array('70','52','4','53');
+		$restrictedFields = array('70','52','4','53','999');
 		$blocks = $targetModuleModel->getBlocks();
 		foreach ($blocks as $blockLabel => $blockModel) {
 			$fieldModelsList = $blockModel->getFields();
