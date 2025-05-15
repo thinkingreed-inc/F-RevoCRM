@@ -280,6 +280,11 @@
 							</table>
 						</div>
 					{/if}
+					{if !isset($data.taxes)}
+						<div class="textAlignCenter">
+							<span>{vtranslate('LBL_NO_TAXES_EXISTS',$MODULE)}</span>
+						</div>
+					{/if}
 				</div>
 			</span>
 		</td>
