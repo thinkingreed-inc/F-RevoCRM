@@ -1774,7 +1774,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 						'<span class="pull-right cursorPointer" ' +
 						'onClick="Calendar_Calendar_Js.deleteCalendarEvent(\'' + eventObj.id +
 						'\',\'' + sourceModule + '\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_DELETE') + '">' +
-						'&nbsp;&nbsp;<i class="fa fa-trash"></i>' +
+						'&nbsp;<i class="fa fa-trash"></i>' +
 						'</span> &nbsp;&nbsp;';
 
 				if (sourceModule === 'Events') {
@@ -1782,19 +1782,19 @@ Vtiger.Class("Calendar_Calendar_Js", {
 							'<span class="pull-right cursorPointer" ' +
 							'onClick="Calendar_Calendar_Js.editCalendarEvent(\'' + eventObj.id +
 							'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_EDIT') + '">' +
-							'&nbsp;&nbsp;<i class="fa fa-pencil"></i>' +
+							'&nbsp;<i class="fa fa-pencil"></i>&nbsp;' +
 							'</span>';
 							popOverHTML += '' +
 							'<span class="pull-right cursorPointer" ' +
 							'onClick="Calendar_Calendar_Js.copyCalendarEvent(\'' + eventObj.id +
 							'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_COPY') + '">' +
-							'&nbsp;&nbsp;<i class="fa fa-copy"></i>' +
+							'&nbsp;<i class="fa fa-copy"></i>&nbsp;' +
 							'</span>';
 				} else if (sourceModule === 'Calendar') {
 					popOverHTML += '' +
 							'<span class="pull-right cursorPointer" ' +
 							'onClick="Calendar_Calendar_Js.editCalendarTask(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_EDIT') + '">' +
-							'&nbsp;&nbsp;<i class="fa fa-pencil"></i>' +
+							'&nbsp;<i class="fa fa-pencil"></i>&nbsp;' +
 							'</span>';
 				}
 
@@ -1802,13 +1802,13 @@ Vtiger.Class("Calendar_Calendar_Js", {
 					popOverHTML += '' +
 							'<span class="pull-right cursorPointer"' +
 							'onClick="Calendar_Calendar_Js.markAsHeld(\'' + eventObj.id + '\',\'' + sourceModule + '\');" title="' + app.vtranslate('JS_MARK_AS_HELD') + '">' +
-							'<i class="fa fa-check"></i>' +
+							'<i class="fa fa-check"></i>&nbsp;' +
 							'</span>';
 				} else if (eventObj.status === 'Held') {
 					popOverHTML += '' +
 							'<span class="pull-right cursorPointer" ' +
 							'onClick="Calendar_Calendar_Js.holdFollowUp(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_CREATE_FOLLOW_UP') + '">' +
-							'<i class="fa fa-flag"></i>' +
+							'<i class="fa fa-flag"></i>&nbsp;' +
 							'</span>';
 				}
 			}
