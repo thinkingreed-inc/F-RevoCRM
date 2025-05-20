@@ -89,7 +89,8 @@ class Vtiger_Report_Model extends Reports {
 							$userId, $reportId, $reportModulesRow["primarymodule"],
 							$reportModulesRow["secondarymodules"], $reportModulesRow["reporttype"],
 							$reportModulesRow["reportname"], $reportModulesRow["description"],
-							$reportModulesRow["folderid"], $reportModulesRow["owner"]
+							$reportModulesRow["folderid"], $reportModulesRow["owner"],
+							$reportModulesRow["join_column"]
 					);
 				}
 
@@ -120,6 +121,7 @@ class Vtiger_Report_Model extends Reports {
 				$this->reportname = decode_html($cachedInfo["reportname"]);
 				$this->reportdescription = decode_html($cachedInfo["description"]);
 				$this->folderid = $cachedInfo["folderid"];
+				$this->joinColumn = $cachedInfo["join_column"];
 				if($currentUser->isAdminUser() == true || in_array($cachedInfo["owner"], $subOrdinateUsers) || $cachedInfo["owner"]==$userId) {
 					$this->is_editable = true;
 				}else{

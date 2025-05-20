@@ -289,7 +289,7 @@ class PriceBooks extends CRMEntity {
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule,$queryPlanner) {
+	function generateReportsSecQuery($module,$secmodule,$queryPlanner, $reportid = false) {
 
 		$matrix = $queryPlanner->newDependencyMatrix();
 
@@ -299,7 +299,7 @@ class PriceBooks extends CRMEntity {
 		}
         $matrix->setDependency("vtiger_pricebook",array("vtiger_crmentityPriceBooks","vtiger_currency_infoPriceBooks"));
 
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_pricebook","pricebookid", $queryPlanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_pricebook","pricebookid", $queryPlanner, $reportid);
 		// TODO Support query planner
 		if ($queryPlanner->requireTable('vtiger_pricebookcf')) {
 			$query .= " left join vtiger_pricebookcf on vtiger_pricebook.pricebookid = vtiger_pricebookcf.pricebookid";

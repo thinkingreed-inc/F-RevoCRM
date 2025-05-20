@@ -1013,7 +1013,7 @@ class Services extends CRMEntity {
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule, $queryPlanner) {
+	function generateReportsSecQuery($module,$secmodule, $queryPlanner, $reportid = false) {
 		global $current_user;
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency('vtiger_crmentityServices',array('vtiger_usersServices','vtiger_groupsServices','vtiger_lastModifiedByServices'));
@@ -1022,7 +1022,7 @@ class Services extends CRMEntity {
 		}
 		$matrix->setDependency('vtiger_service',array('actual_unit_price','vtiger_currency_info','vtiger_productcurrencyrel','vtiger_servicecf','vtiger_crmentityServices'));
 
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_service","serviceid", $queryPlanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_service","serviceid", $queryPlanner, $reportid);
 		if ($queryPlanner->requireTable("innerService")){
 			$query .= " LEFT JOIN (
 			SELECT vtiger_service.serviceid,

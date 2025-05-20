@@ -371,7 +371,7 @@ class Documents extends CRMEntity {
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule,$queryPlanner) {
+	function generateReportsSecQuery($module,$secmodule,$queryPlanner, $reportid = false) {
 
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency("vtiger_crmentityDocuments",array("vtiger_groupsDocuments","vtiger_usersDocuments","vtiger_lastModifiedByDocuments"));
@@ -381,7 +381,7 @@ class Documents extends CRMEntity {
 		}
 		$matrix->setDependency("vtiger_notes",array("vtiger_crmentityDocuments","vtiger_attachmentsfolder"));
 		// TODO Support query planner
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_notes","notesid", $queryPlanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_notes","notesid", $queryPlanner, $reportid);
 		$query .= " left join vtiger_notescf on vtiger_notes.notesid = vtiger_notescf.notesid";
 		if ($queryPlanner->requireTable("vtiger_crmentityDocuments",$matrix)){
 			$query .=" left join vtiger_crmentity as vtiger_crmentityDocuments on vtiger_crmentityDocuments.crmid=vtiger_notes.notesid and vtiger_crmentityDocuments.deleted=0";
