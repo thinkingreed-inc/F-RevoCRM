@@ -471,6 +471,19 @@ function insertIntoRecurringTable(& $recurObj)
 			return ;
 		}
 
+		// 初回$activityarrayが配列化されていないとin_arrayでExceptionが発生するので初期化する
+		if (empty($activityarray)) {
+			$activityarray = array();
+		}
+
+		if (empty($this->workflow_skip_field_array)){
+			$this->workflow_skip_field_array = array();
+		}
+
+		if (empty($activityarray[$this->workflow_task_id])) {
+			$activityarray[$this->workflow_task_id] = array();
+		}
+
 		// 編集の場合
 		if($this->mode == 'edit'){
 			// 参加者のActivityを更新または削除
@@ -621,6 +634,58 @@ function insertIntoRecurringTable(& $recurObj)
 		}
 	}
 }
+
+	function restore($module, $id) {
+		if($module === 'Calendar') {
+			$this->restoreCalenderEvent($module, $id);
+		}else {
+			parent::restore($module, $id);
+		}
+	}
+
+	public function restoreCalenderEvent($module, $id)
+	{
+		global $adb;
+		// 活動のparentidが共通のレコードでsmowneridが一致するものがある場合は復元しない
+		// 同じparent id で参加者が重複している招待レコードを探す
+		$getDuplicateQuery    = "SELECT va.activityid
+									FROM vtiger_activity AS va
+									JOIN vtiger_activity AS va2 
+									ON va2.activityid = ?
+									WHERE va.invitee_parentid = va2.invitee_parentid
+									AND va.smownerid = va2.smownerid
+									AND va.deleted = 0";
+									
+		$duplicateResult      = $adb->pquery($getDuplicateQuery, [ $id ]);
+		$duplicateResultCount = $adb->num_rows($duplicateResult);
+		
+		// 重複したレコードは復元しない
+		if($duplicateResultCount !== 0) {
+			throw new Exception(vtranslate('LBL_DUPULICATE_EVENT_EXISTS', $module));
+		}
+		
+		// レコードの復元処理
+		parent::restore($module, $id);
+		
+		// vtiger_invtiteeに再度入れる
+		$this->restoreInviteeInformation($id);
+	}
+
+	public function restoreInviteeInformation($id) 
+	{
+		global $adb;
+		// レコードのparentidとユーザーIDを取得する
+		$getRecordInfo       = "SELECT invitee_parentid
+								FROM vtiger_activity 
+								WHERE activityid = ?";
+		$recordInfoResult    = $adb->pquery($getRecordInfo, [ $id ]);
+				
+		if($adb->num_rows($recordInfoResult) > 0) {
+			// 参加者情報を復元
+			$inviteeParentId = $adb->query_result($recordInfoResult, 0, 'invitee_parentid');
+			reCreateInviteesRecord($id, $inviteeParentId, true);
+		}
+	}
 
 	/**
 	 *

@@ -147,7 +147,9 @@ class Vtiger_List_View extends Vtiger_Index_View {
 			"~layouts/v7/lib/jquery/Lightweight-jQuery-In-page-Filtering-Plugin-instaFilta/instafilta.min.js",
 			'modules.Vtiger.resources.Tag',
 			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/jquery/floatThead/jquery.floatThead.js",
-			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/jquery/perfect-scrollbar/js/perfect-scrollbar.jquery.js"
+			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/jquery/perfect-scrollbar/js/perfect-scrollbar.jquery.js",
+			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/jquery/resizableColumns/js/jquery.resizableColumns.js",
+			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/store_js/store.legacy.min.js",
 		);
 
 		$jsScriptInstances = $this->checkAndConvertJsScripts($jsFileNames);
@@ -296,7 +298,7 @@ class Vtiger_List_View extends Vtiger_Index_View {
 			$listViewModel->set('search_value', $searchValue);
 		}
 
-		if(empty($searchParams)) {
+		if(empty($searchParams) || !is_array($searchParams)) {
 			$searchParams = array();
 		}
 		if(php7_count($searchParams) == 2 && empty($searchParams[1])) {
@@ -551,6 +553,7 @@ class Vtiger_List_View extends Vtiger_Index_View {
 		$headerCssInstances = parent::getHeaderCss($request);
 		$cssFileNames = array(
 			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/jquery/perfect-scrollbar/css/perfect-scrollbar.css",
+			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/jquery/resizableColumns/css/jquery.resizableColumns.css",
 		);
 		$cssInstances = $this->checkAndConvertCssStyles($cssFileNames);
 		$headerCssInstances = array_merge($headerCssInstances, $cssInstances);
@@ -558,15 +561,17 @@ class Vtiger_List_View extends Vtiger_Index_View {
 	}
 
 	public function getRecordActionsFromModule($moduleModel) {
-		$editPermission = $deletePermission = 0;
+		$editPermission = $deletePermission = $duplicatePermission = 0;
 		if ($moduleModel) {
 			$editPermission	= $moduleModel->isPermitted('EditView');
 			$deletePermission = $moduleModel->isPermitted('Delete');
+			$duplicatePermission = $moduleModel->isPermitted('Duplicates');
 		}
 
 		$recordActions = array();
 		$recordActions['edit'] = $editPermission;
 		$recordActions['delete'] = $deletePermission;
+		$recordActions['duplicate'] = $duplicatePermission;
 
 		return $recordActions;
 	}

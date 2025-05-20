@@ -325,6 +325,29 @@ Vtiger.Class("Vtiger_List_Js", {
 			thisInstance.loadFilter(cvId, {'mode': 'removeSorting'});
 		});
 	},
+	registerResetColumnWidths: function () {
+		var thisInstance = this;
+		var cvid = thisInstance.getCurrentCvId();
+		jQuery('.btn-group.listViewActionsContainer').find('#resetColumnWidths').on('click', function(e) {
+			var substring = cvid + '-'
+			keysToRemove = [];
+
+			// ローカルストレージ内のcvidを含むkeyを取得
+			for (let i = 0; i < localStorage.length; i++) {
+				const key = localStorage.key(i);
+				
+				if (key.includes(substring)) {
+					keysToRemove.push(key);
+				}
+			}
+			
+			// 該当するすべてのkeyを削除
+			keysToRemove.forEach(key => {
+				localStorage.removeItem(key);
+			});
+			thisInstance.loadListViewRecords();
+		});
+	},
 	performMassDeleteRecords: function (url) {
 		var listInstance = this;
 		var params = {};
@@ -785,7 +808,7 @@ Vtiger.Class("Vtiger_List_Js", {
 
 			var value = jQuery.trim(valueElement.text());
 			//adding string,text,url,currency in customhandling list as string will be textlengthchecked
-			var customHandlingFields = ['owner', 'ownergroup', 'picklist', 'multipicklist', 'reference', 'string', 'url', 'currency', 'text', 'email'];
+			var customHandlingFields = ['owner', 'ownergroup', 'picklist', 'multipicklist', 'reference', 'string', 'url', 'currency', 'text', 'email','boolean'];
 			if (jQuery.inArray(fieldType, customHandlingFields) !== -1) {
 				value = tdElement.data('rawvalue');
 			}
@@ -1204,8 +1227,11 @@ Vtiger.Class("Vtiger_List_Js", {
 				thisInstance.registerInlineEdit(currentTrElement);
 			}
 		});
-		this.registerInlineEditSaveEvent();
-		this.registerInlineEditCancelEvent();
+		
+		if (listViewContainer.find('#isExcelEditSupported').val() !== 'no') {
+			this.registerInlineEditSaveEvent();
+			this.registerInlineEditCancelEvent();
+		}
 
 		app.event.on('post.listViewInlineEdit.click', function (event, editedRow) {
 			vtUtils.applyFieldElementsView(editedRow);
@@ -1236,11 +1262,15 @@ Vtiger.Class("Vtiger_List_Js", {
 			var editInstance = Vtiger_Edit_Js.getInstance();
 			editInstance.registerBasicEvents(container);
 			var form_original_data = $("#massEdit").serialize();
-			$('#massEdit').on('submit', function (event) {
-				thisInstance.saveMassEdit(event, form_original_data, isOwnerChanged);
-				isOwnerChanged = false;
+			$('#massEdit').vtValidate({
+				ignore: '.ignore-validation',
+				submitHandler: function (form) {
+					thisInstance.saveMassEdit(e, form_original_data, isOwnerChanged);
+					isOwnerChanged = false;
+					return false; 
+				}
 			});
-			
+
 			//automatically select fields for mass edit when updated
 			$('#massEdit :input').change(function() {
 				var _replacedName =  $(this).attr('name').replace('[]', "");
@@ -1249,6 +1279,17 @@ Vtiger.Class("Vtiger_List_Js", {
 				}
 				$(this).closest('tr').find("input[id^=include_in_mass_edit_" + _replacedName + "]").prop( "checked", true );
 			});
+
+			function addIgnoreValidation() {
+				$('#massEdit input[type="checkbox"]').each(function() {
+					let fieldname = $(this).attr('data-update-field');
+					$(`[name="${fieldname}"]`)[$(this).is(':checked') ? 'removeClass' : 'addClass']('ignore-validation');
+					$(`[name="${fieldname}_display"]`)[$(this).is(':checked') ? 'removeClass' : 'addClass']('ignore-validation');
+				});
+			}
+			
+			addIgnoreValidation();
+			$('#massEdit').on('change', 'input[type="checkbox"]', addIgnoreValidation);
 			
 			app.helper.registerLeavePageWithoutSubmit($("#massEdit"));
 			app.helper.registerModalDismissWithoutSubmit($("#massEdit"));
@@ -1311,6 +1352,40 @@ Vtiger.Class("Vtiger_List_Js", {
         var thisInstance = this;
         listViewPageDiv.on('click','[data-trigger="listSearch"]',function(e){
             e.preventDefault();
+
+			// 日付と時刻のフィールドに対して検索値のチェックを行う
+			var isValidDate = true;
+			var listSearchParams = thisInstance.getListSearchParams()[0];
+			if (listSearchParams) {
+				for(var i=0; i<listSearchParams.length; i++) {
+					var params = listSearchParams[i];
+					var fieldInfo = uimeta.field.get(params[0]);
+					if (fieldInfo.type == 'date' || fieldInfo.type == 'datetime') {
+						params[2].split(',').forEach(function(param){
+							var date = new Date(param);
+							if (isNaN(date.getDate())) {
+								isValidDate = false;
+								app.helper.showErrorNotification({message: app.vtranslate('JS_PLEASE_ENTER_VALID_DATE')});
+								return;
+							}
+						});
+					} else if (fieldInfo.type == 'time') {
+						params[2].split(',').forEach(function(param){
+							var baseDate = new Date(0); // 年月日の部分に仮のデータを入れる
+							var date = new Date(baseDate.toDateString()+ ' ' + param);
+							if (isNaN(date.getDate())) {
+								isValidDate = false;
+								app.helper.showErrorNotification({message: app.vtranslate('JS_PLEASE_ENTER_VALID_TIME')});
+								return;
+							}
+						});
+					}
+				}
+			}
+			if (!isValidDate) {
+				return;
+			}
+			
             var params = {
                 'page': '1'
             }
@@ -2366,9 +2441,11 @@ Vtiger.Class("Vtiger_List_Js", {
 		jQuery('.btn-group.listViewActionsContainer').find('li').addClass('hide');
 		var selectFreeRecords = jQuery('.btn-group.listViewActionsContainer').find('li.selectFreeRecords');
 		selectFreeRecords.removeClass('hide');
-		if (selectFreeRecords.length == 0) {
-			jQuery('.btn-group.listViewActionsContainer').find('.dropdown-toggle').attr('disabled', "disabled");
-		}
+		var resetColumns = jQuery('.btn-group.listViewActionsContainer').find('#resetColumnWidths');
+		resetColumns.parent().removeClass('hide');
+		// if (selectFreeRecords.length == 0) {
+		// 	jQuery('.btn-group.listViewActionsContainer').find('.dropdown-toggle').attr('disabled', "disabled");
+		// }
 	},
 	/*
 	 * Function to register the click event of email field
@@ -2462,9 +2539,17 @@ Vtiger.Class("Vtiger_List_Js", {
 						return false;
 					}
 					var ele = jQuery(e.currentTarget);
+					var cvid = thisInstance.getCurrentCvId();
 					var sourceFieldEle = ele.parent('.item');
 					var targetFieldEle = availFieldsListContainer.find('.item[data-cv-columnname="' + sourceFieldEle.attr('data-cv-columnname') + '"]');
 					targetFieldEle.removeClass('hide');
+
+					// 削除した項目の列幅をダミーカラムの列幅に追加する．
+					var removedColumn = Number(window.localStorage.getItem(cvid + '-' + sourceFieldEle.attr('data-field-id')));
+					var dummyColumn = Number(window.localStorage.getItem(cvid + '-dummy'));
+					window.localStorage.removeItem(cvid + '-' + sourceFieldEle.attr('data-field-id'));
+					window.localStorage.setItem(cvid + '-dummy',removedColumn + dummyColumn);
+
 					sourceFieldEle.remove();
 				});
 
@@ -2572,6 +2657,8 @@ Vtiger.Class("Vtiger_List_Js", {
 				vtUtils.applyFieldElementsView(searchRow);
 				self.filterClick = false;
 			}
+			self.registerResetColumnWidths();
+			self.registerDummyColumn();
 			self.registerFloatingThead();
 		});
 	},
@@ -2581,6 +2668,7 @@ Vtiger.Class("Vtiger_List_Js", {
 		this._super();
 		this.registerListViewSort();
 		this.registerRemoveListViewSort();
+		this.registerResetColumnWidths();
 		this.registerRowClickEvent();
 		this.registerRowDoubleClickEvent();
 		this.registerListViewBasicActions();
@@ -2602,6 +2690,7 @@ Vtiger.Class("Vtiger_List_Js", {
 		var recordSelectTrackerObj = this.getRecordSelectTrackerInstance();
 		recordSelectTrackerObj.registerEvents();
 
+		this.registerDummyColumn();
 		this.registerPostListLoadListener();
 		this.registerPostLoadListViewActions();
 
@@ -2767,28 +2856,7 @@ Vtiger.Class("Vtiger_List_Js", {
 		if (typeof $.fn.perfectScrollbar !== 'function' || typeof $.fn.floatThead !== 'function') {
 			return;
 		}
-		var $table = jQuery('#listview-table');
-		if (!$table.length)
-			return;
-		var height = this.getListViewContentHeight();
-		var width = this.getListViewContentWidth();
-		var tableContainer = $table.closest('.table-container');
-		var form = $table.parent();
-		tableContainer.css({
-			'position': 'relative',
-			'height': height,
-			'width': width
-		});
-		form.css({
-			'position': 'relative',
-			'height': height,
-			'width': width
-		});
-		tableContainer.perfectScrollbar('update');
-		$table.floatThead('reflow');
-	},
-	registerFloatingThead: function () {
-		if (typeof $.fn.perfectScrollbar !== 'function' || typeof $.fn.floatThead !== 'function') {
+		if(app.isMobile()) {
 			return;
 		}
 		var $table = jQuery('#listview-table');
@@ -2808,9 +2876,85 @@ Vtiger.Class("Vtiger_List_Js", {
 			'height': height,
 			'width': width
 		});
+		
+		if(typeof $table.resizableColumns === 'Object') {
+			$table.resizableColumns('refreshContainerSize');
+			$table.resizableColumns('adjustDummyColumnWidth');
+			$table.resizableColumns('syncHandleWidths');
+		}
+		// $table.floatThead('reflow');
+		tableContainer.perfectScrollbar('update');
+	},
+	registerFloatingThead: function () {
+		if (typeof $.fn.perfectScrollbar !== 'function' || typeof $.fn.floatThead !== 'function') {
+			return;
+		}
+		if(app.isMobile()) {
+			return;
+		}
+		var $table = jQuery('#listview-table');
+		if (!$table.length)
+			return;
+		var height = this.getListViewContentHeight();
+		var width = this.getListViewContentWidth();
+		var tableContainer = $table.closest('.table-container');
+		var thead = $table.find('thead');
+		thead.css({
+			'position':'sticky',
+			'top': 0,
+			'z-index':'2',
+            'background-color': 'white' /* ヘッダーの背景色 */
+		});
+		var form = $table.parent();
+		tableContainer.css({
+			'position': 'relative',
+			'height': height,
+			'width': width
+		});
+		form.css({
+			'position': 'relative',
+			'height': height,
+			'width': width
+		});
+
+
+		// 現在有効になっているcvidとテーブルのfieldidから，リストごとに各カラムの幅を保存するための一意のidを生成
+		var module = app.getModuleName();
+		var cvId = this.getCurrentCvId();
+		$table.attr('data-resizable-column-id', module);
+		tableContainer.find("tr").each(function(){
+			var $tr = $(this);
+			$tr.find("th").each(function(){
+				var $header = $(this);
+				var $fieldid = $header.find('a').data('field-id');
+				var $columnid = '';
+				var $tableactions = $header.find('div').attr("class");
+
+				if ($fieldid) {
+					$columnid += cvId + '-' + $fieldid;
+				} else if ($header.hasClass("dummy")) {
+					$columnid += cvId + '-dummy';
+				} else if ($tableactions == "table-actions") {
+					$columnid += cvId + '-' + $tableactions;
+				}
+				if ($columnid){
+					$header.attr('data-resizable-column-id', $columnid);
+				}
+			});
+		});
+
+		if(typeof store !== 'undefined') {
+			$table.resizableColumns({
+				store:store
+			});
+		}
 
 		tableContainer.perfectScrollbar({
 			'wheelPropagation': true
+		});
+
+		window.addEventListener('resize',function(){
+			tableContainer.perfectScrollbar('update');
 		});
 
 		// 列の固定処理
@@ -2848,11 +2992,17 @@ Vtiger.Class("Vtiger_List_Js", {
 			}
 		});
 
-		$table.floatThead({
-			scrollContainer: function ($table) {
-				return $table.closest('.table-container');
-			}
-		});
+		if(typeof store !== 'undefined') {
+			$table.resizableColumns('refreshContainerSize');
+			$table.resizableColumns('adjustDummyColumnWidth');
+			$table.resizableColumns('syncHandleWidths');
+		}
+
+		// $table.floatThead({
+		// 	scrollContainer: function ($table) {
+		// 		return $table.closest('.table-container');
+		// 	}
+		// });
 	},
 	getSelectedRecordCount: function () {
 		var count = 0;
@@ -2868,5 +3018,32 @@ Vtiger.Class("Vtiger_List_Js", {
 		}
 
 		return count;
-	}
+	},
+	registerDummyColumn: function () {
+		var $table = jQuery('#listview-table');
+		if (!$table.length)
+			return;
+		var tableContainer = $table.closest('.table-container');
+		var listViewContentHeader = tableContainer.find('.listViewContentHeader');
+		var listViewSearchHeader = tableContainer.find('.listViewSearchContainer');
+		var isEmptyRecord = tableContainer.find('.emptyRecordsContent').length;
+		var rows = tableContainer.find('tr.listViewEntries');
+
+		var borderOptionClass = '';
+		if(listViewSearchHeader.length <= 0) {
+			borderOptionClass = ' table-bottom-border';
+		}else if(app.getModuleName() === 'RecycleBin' && isEmptyRecord) {
+			borderOptionClass = ' none-border-bottom';
+		}
+
+		var thDummy = `<th class="dummy${borderOptionClass}"></th>`;
+		var tdDummy = '<td class="dummy"></td>';
+
+        listViewContentHeader.append(thDummy);
+		listViewSearchHeader.append(thDummy);
+		rows.each(function(){
+			var $row = $(this);
+			$row.append(tdDummy);
+		})
+	},
 });

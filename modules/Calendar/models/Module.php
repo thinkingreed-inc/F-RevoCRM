@@ -496,6 +496,8 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 								'visible'	=> $activityTypes['visible'],
 								'color'		=> $activityTypes['color'],
 								'type'		=> $type,
+								'is_own'	=> $activityTypes['is_own'],
+								'isdefault'	=> $activityTypes['isdefault'],
 								'conditions'=> array(
 												'name' => $conditionsName,
 												'rules' => $activityTypes['conditions']
@@ -599,7 +601,7 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 		return $moduleViewTypes;
 	}
 
-	function getVisibleCalendarViewTypes($userId) {
+	public static function getVisibleCalendarViewTypes($userId) {
 		$db = PearDatabase::getInstance();
 
 		$query = "SELECT * FROM vtiger_calendar_user_activitytypes 
@@ -666,7 +668,7 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 	/**
 	 *  Function to delete calendar view
 	 */
-	public function deleteCalendarView(Vtiger_Request $request) {
+	public static function deleteCalendarView(Vtiger_Request $request) {
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$userId = $currentUser->getId();
 		$viewmodule = $request->get('viewmodule');
@@ -698,13 +700,14 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 	 *  Function to add calendar view
 	 * @return <string>
 	 */
-	public function addCalendarView(Vtiger_Request $request) {
+	public static function addCalendarView(Vtiger_Request $request) {
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$userId = $currentUser->getId();
 		$viewmodule = $request->get('viewmodule');
 		$fieldName = $request->get('viewfieldname');
 		$viewcolor = $request->get('viewColor');
 		$viewconditions = $request->get('viewConditions','');
+		$viewIsOwn = $request->get('viewIsOwn','0');
 		$viewfieldname = Array();
 		$viewfieldname = Zend_Json::encode(explode(',',$fieldName));
 
@@ -723,10 +726,10 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 			if($db->num_rows($query) > 0) {
 				$db->pquery('UPDATE vtiger_calendar_user_activitytypes 
 							INNER JOIN vtiger_calendar_default_activitytypes ON vtiger_calendar_default_activitytypes.id = vtiger_calendar_user_activitytypes.defaultid
-							SET vtiger_calendar_user_activitytypes.color=?, vtiger_calendar_user_activitytypes.visible=? 
+							SET vtiger_calendar_user_activitytypes.color=?, vtiger_calendar_user_activitytypes.visible=?, vtiger_calendar_user_activitytypes.is_own=? 
 							WHERE vtiger_calendar_user_activitytypes.userid=? AND vtiger_calendar_default_activitytypes.module=? AND vtiger_calendar_default_activitytypes.fieldname=? 
 							AND vtiger_calendar_default_activitytypes.conditions=?',
-								array($viewcolor, '1', $userId, $viewmodule, $viewfieldname, $viewconditions));
+								array($viewcolor, '1', $viewIsOwn, $userId, $viewmodule, $viewfieldname, $viewconditions));
 			} else {
 				$db->pquery('INSERT INTO vtiger_calendar_user_activitytypes (id, defaultid, userid, color) VALUES (?,?,?,?)', array($db->getUniqueID('vtiger_calendar_user_activitytypes'), $defaultId, $userId, $viewcolor));
 			}
@@ -734,7 +737,7 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 			$defaultId = $db->getUniqueID('vtiger_calendar_default_activitytypes');
 			$db->pquery('INSERT INTO vtiger_calendar_default_activitytypes (id, module, fieldname, defaultcolor, isdefault, conditions) VALUES (?,?,?,?,?,?)', array($defaultId, $viewmodule, $viewfieldname, $viewcolor, '0', $viewconditions));
 
-			$db->pquery('INSERT INTO vtiger_calendar_user_activitytypes (id, defaultid, userid, color) VALUES (?,?,?,?)', array($db->getUniqueID('vtiger_calendar_user_activitytypes'), $defaultId, $userId, $viewcolor));
+			$db->pquery('INSERT INTO vtiger_calendar_user_activitytypes (id, defaultid, userid, color, is_own) VALUES (?,?,?,?,?)', array($db->getUniqueID('vtiger_calendar_user_activitytypes'), $defaultId, $userId, $viewcolor, $viewIsOwn));
 		}
 
 		return $type;

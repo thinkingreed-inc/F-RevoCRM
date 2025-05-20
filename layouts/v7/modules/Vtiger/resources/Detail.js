@@ -73,7 +73,7 @@ Vtiger.Class("Vtiger_Detail_Js",{
 			function(error, err) {
 			});
 		} else {
-			var message = app.vtranslate('JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE');
+			var message = app.vtranslate('JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE').replace(/\n/g, "<br>");
 			app.helper.showConfirmationBox({'message' : message}).then(function(data) {
 				thisInstance.deleteActivityRelation(postData);
 			},
@@ -304,6 +304,18 @@ Vtiger.Class("Vtiger_Detail_Js",{
 						if(e.isDefaultPrevented()) {
 							return false;
 						}
+
+						// ckEditorの値をセット
+						var ckeditor_columns = ['description', 'solution'];
+						ckeditor_columns.forEach(function (ckeditor_column) {
+							// 対象モジュールがHelpDesk && 対象カラムが存在する && 対象カラムのCKEDITORが存在する
+							if ($(form.module).val() === 'HelpDesk' && $(form).find('textarea[name="'+ckeditor_column+'"]') && CKEDITOR.instances[$(form.module).val()+'_editView_fieldName_'+ckeditor_column]) {
+								// CKEDITORの値をtextareaにセット
+								var ckeditorText = CKEDITOR.instances[$(form.module).val()+'_editView_fieldName_'+ckeditor_column].getData();
+								$(form).find('textarea[name="'+ckeditor_column+'"]').val(ckeditorText);
+							}
+						});
+
 						var formData = new FormData(form);
 						var postParams = {
 							data: formData,
@@ -2736,7 +2748,7 @@ Vtiger.Class("Vtiger_Detail_Js",{
 		var detailContentsHolder = this.getContentHolder();
 		var self = this;
 		this.registerSendSmsSubmitEvent();
-		detailContentsHolder.on('click','.viewThread', function(e){
+		detailContentsHolder.on('click','.hideThread', function(e){
 			var currentTarget = jQuery(e.currentTarget);
 			var currentTargetParent = currentTarget.parent();
 			var commentActionsBlock = currentTarget.closest('.commentActions');
@@ -2744,25 +2756,20 @@ Vtiger.Class("Vtiger_Detail_Js",{
 			var ulElements = currentCommentBlock.find('ul');
 			if(ulElements.length > 0){
 				ulElements.show();
-				commentActionsBlock.find('.hideThreadBlock').show();
+				commentActionsBlock.find('.viewThreadBlock').show();
 				currentTargetParent.hide();
 				return;
 			}
 			var commentId = currentTarget.closest('.commentDiv').find('.commentInfoHeader').data('commentid');
-			self.getChildComments(commentId).then(function(data){
-				jQuery(data).appendTo(jQuery(e.currentTarget).closest('.commentDetails'));
-				commentActionsBlock.find('.hideThreadBlock').show();
-				currentTargetParent.hide();
-			});
 		});
-		detailContentsHolder.on('click','.hideThread', function(e){
+		detailContentsHolder.on('click','.viewThread', function(e){
 			var currentTarget = jQuery(e.currentTarget);
 			var currentTargetParent = currentTarget.parent();
 			var commentActionsBlock = currentTarget.closest('.commentActions');
 			var currentCommentBlock = currentTarget.closest('.commentDetails');
 			currentCommentBlock.find('ul').hide();
 			currentTargetParent.hide();
-			commentActionsBlock.find('.viewThreadBlock').show();
+			commentActionsBlock.find('.hideThreadBlock').show();
 		});
 		detailContentsHolder.on('click','.detailViewThread',function(e){
 			var recentCommentsTab = self.getTabByLabel(self.detailViewRecentCommentsTabLabel);

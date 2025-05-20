@@ -66,6 +66,9 @@
 												{if $FIELD_MODEL->getDisplayType() == '6'}
 													{continue}
 												{/if}
+												{if $FIELD_MODEL->getFieldDataType() == 'blank'}
+													{continue}
+												{/if}
 												{if $FIELD_MODEL->isMandatory()}
 													{array_push($MANDATORY_FIELDS, $FIELD_MODEL->getCustomViewColumnName())}
 												{/if}

@@ -46,6 +46,9 @@ $languageStrings = array(
 	/*Vtiger7 Strings*/
 	'LBL_EDIT_PROFILE' => 'Edit Profile',
 	'LBL_GLOBAL_PERMISSION_WARNING' => 'Warning : Users associated with this profile can access all records in the CRM',
+
+	//F-RevoCRM
+	'Name' => 'Profile name',
 );
 
 $jsLanguageStrings = array(

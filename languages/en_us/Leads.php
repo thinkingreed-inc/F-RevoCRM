@@ -64,6 +64,11 @@ $languageStrings = array(
 	'LBL_CUSTOM_FIELD_MAPPING'=> 'Lead Conversion Data Mapping',
 	'LBL_IMAGE_INFORMATION' => 'Profile Picture',
 	'Lead Image' => 'Lead Image',
+
+	//F-RevoCRM
+	'Hot Leads' => 'High Potential Customers',
+	'This Month Leads' => 'Leads of This Month',
+	'last_action_date' => 'Last Activity Date',
 );
 $jsLanguageStrings = array(
 	'JS_SELECT_CONTACTS' => 'Select Contacts to proceed',

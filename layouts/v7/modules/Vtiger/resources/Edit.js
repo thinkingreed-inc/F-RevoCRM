@@ -224,21 +224,29 @@ Vtiger_Index_Js("Vtiger_Edit_Js",{
 					listOfAvailableOptions = jQuery('option',targetPickList);
 					targetPickList.data('available-options', listOfAvailableOptions);
 				}
-				
-				var targetOptions = new jQuery();
+
+				var targetOptions = [];                
 				var optionSelector = [];
+                var targetPickListSelectedValue = '';
+                
 				optionSelector.push('');
 				for(var i=0; i<targetPickListMap.length; i++){
 					optionSelector.push(targetPickListMap[i]);
 				}
+                
 				jQuery.each(listOfAvailableOptions, function(i,e) {
 					var picklistValue = jQuery(e).val();
 					if(jQuery.inArray(picklistValue, optionSelector) != -1) {
-						targetOptions = targetOptions.add(jQuery(e));
+                        var optionObj = jQuery(e);
+                        // 選択済みの選択肢の値を取得する
+                        // あとで選択状態にするため
+                        if(optionObj.prop("selected")) {
+                            targetPickListSelectedValue = optionObj.val();
+                        }
+                        targetOptions.push(optionObj);
 					}
 				})
-				var targetPickListSelectedValue = '';
-				var targetPickListSelectedValue = targetOptions.filter('[selected]').val();
+                
                 if(targetPickListMap.length == 1) { 
                     var targetPickListSelectedValue = targetPickListMap[0]; // to automatically select picklist if only one picklistmap is present.
                 }

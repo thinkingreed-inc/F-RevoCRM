@@ -183,7 +183,7 @@ class CRMEntity {
 		}
 
 		// Check 1
-		$save_file = 'true';
+		$save_file = true;
 		//only images are allowed for Image Attachmenttype
 		$mimeType = vtlib_mime_content_type($file_details['tmp_name']);
 		$mimeTypeContents = explode('/', $mimeType);
@@ -192,12 +192,12 @@ class CRMEntity {
 			$save_file = validateImageFile($file_details);
 		}
                 $log->debug("File Validation status in Check1 save_file => $save_file");
-		if ($save_file == 'false') {
+		if ($save_file == false) {
 			return false;
 		}
 
 		// Check 2
-		$save_file = 'true';
+		$save_file = true;
 		//only images are allowed for these modules
 		if ($module == 'Contacts' || $module == 'Products') {
 			$save_file = validateImageFile($file_details);
@@ -219,7 +219,7 @@ class CRMEntity {
 		$upload_status = copy($filetmp_name, $upload_file_path . $current_id . "_" . $encryptFileName);
 		// temporary file will be deleted at the end of request
                 $log->debug("Upload status of file => $upload_status");
-		if ($save_file == 'true' && $upload_status == 'true') {
+		if ($save_file == true && $upload_status == true) {
 			if($attachmentType != 'Image' && $this->mode == 'edit') {
 				//Only one Attachment per entity delete previous attachments
 				$res = $adb->pquery('SELECT vtiger_seattachmentsrel.attachmentsid FROM vtiger_seattachmentsrel 
@@ -2745,6 +2745,15 @@ class CRMEntity {
 				 */
 				$query = " left join $pritablename as $tmpname ON ($sectablename.$sectableindex=$tmpname.$prifieldname AND $tmpname.id in 
 						(select crmid from vtiger_crmentity where setype='$secmodule' and deleted=0))";
+			} else if($pritablename == 'vtiger_inventoryproductrel' && ($secmodule =="Products" || $secmodule =="Services") && ($module == "Invoice" || $module == "SalesOrder" || $module == "PurchaseOrder" || $module == "Quotes")) {
+				$matrix = $queryPlanner->newDependencyMatrix();
+				$matrix->setDependency('vtiger_inventoryproductreltmp'.$module, array('vtiger_productsQuotes', 'vtiger_serviceQuotes'));
+				if ($queryPlanner->requireTable("vtiger_inventoryproductreltmp".$module, $matrix)) {
+					$tmpname = $pritablename . 'tmp' . $module;
+					$condition = "$table_name.$column_name=$tmpname.$secfieldname";
+				} else {
+					$query = " LEFT JOIN $pritablename AS $tmpname ON ($sectablename.$sectableindex=$tmpname.$prifieldname)";
+				}
 			} else if($pritablename == 'vtiger_cntactivityrel') {
 				if($queryPlanner->requireTable('vtiger_cntactivityrel') && $secmodule == 'Contacts') {
 					$tmpname = 'vtiger_cntactivityrel';

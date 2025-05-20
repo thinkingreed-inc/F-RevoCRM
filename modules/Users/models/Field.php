@@ -66,7 +66,20 @@ class Users_Field_Model extends Vtiger_Field_Model {
 		if(!$this->isEditable() || $this->get('uitype') == 105 || $this->get('uitype') == 106 || $this->get('uitype') == 98 || $this->get('uitype') == 101) {
 			return false;
 		}
+
+		// リッチテキストは概要・詳細画面での編集不可
+		if ($this->isCkeditor() === true) {
+			return false;
+		}
+
 		return true;
+	}
+
+	public function isCkEditor() {
+		if($this->getName() == 'signature') {
+			return true;
+		}
+		return false;
 	}
 
 	/**

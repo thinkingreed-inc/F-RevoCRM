@@ -172,7 +172,7 @@ class Documents_List_View extends Vtiger_List_View {
 			$listViewModel->set('search_value', $searchValue);
 		}
 
-		if(empty($searchParams)) {
+		if(empty($searchParams) || !is_array($searchParams)){
 			$searchParams = array();
 		}
 

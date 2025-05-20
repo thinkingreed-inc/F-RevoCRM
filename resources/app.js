@@ -278,6 +278,13 @@ var app = {
 			params.closeOnSelect = false;
 		}
 
+		// 複数選択肢項目で自由に選択肢を追加できないようにする（設定は除く）
+		if(selectElement.is('input') 
+			&& !params.hasOwnProperty('createSearchChoice')
+			&& app.getParentModuleName() !== 'Settings') {
+			params.createSearchChoice =  null;
+		}
+
 		selectElement.select2(params)
 					 .on("open", function(e) {
 						 var element = jQuery(e.currentTarget);
@@ -1104,6 +1111,27 @@ var app = {
 		exdate.setDate(exdate.getDate() + exdays);
 		var c_value=escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
 		document.cookie=c_name + "=" + c_value;
+	},
+
+	isMobile : function() {
+		var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+		var smartphones = [
+			/android/i,
+			/webos/i,
+			/iphone/i,
+			/ipad/i,
+			/ipod/i,
+			/blackberry/i,
+			/windows phone/i
+		];
+
+		for (var i = 0; i < smartphones.length; i++) {
+			if (smartphones[i].test(userAgent)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 }

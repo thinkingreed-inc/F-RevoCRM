@@ -14,7 +14,7 @@ require_once 'include/Webservices/Retrieve.php';
 /**
  * Retrieve inventory record with LineItems
  */
-function vtws_retrieve_inventory($id){
+function vtws_retrieve_inventory($id, $user){
 	global $current_user;
 
 	$record = vtws_retrieve($id, $current_user);

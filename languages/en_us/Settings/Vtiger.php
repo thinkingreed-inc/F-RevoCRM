@@ -261,6 +261,7 @@ $languageStrings = array(
 	//CustomRecordNumbering
 	'LBL_SUCCESSFULLY_UPDATED' => 'Successfully Updated',
 	'LBL_CUSTOMIZE_RECORD_NUMBERING' => 'Module Numbering',
+	'LBL_RECORD_NUMBERING' => 'Record Numbering',
 	'LBL_MODULE_ENTITY_NUMBER_CUSTOMIZATION' => 'Module Entity Number customization',
 	'LBL_UPDATE_MISSING_RECORD_SEQUENCE' => 'Update Missing Record Sequence',
 	'LBL_USE_PREFIX' => 'Use Prefix',
@@ -274,6 +275,7 @@ $languageStrings = array(
 	'city' => 'City',
 	'state' => 'State',
 	'code'  => 'Postal Code',
+	'logo' => 'logo',
 	'country' => 'Country',
 	'phone' => 'Phone',
 	'fax' => 'Fax',
@@ -382,6 +384,20 @@ $languageStrings = array(
     'LBL_TALLY' => 'Tally',
     'LBL_SHOPPINGCART' => 'ShoppingCart',
 	'LBL_PHONE_CONFIGURATION' => 'Phone Configuration',
+
+	//added F-RevoCRM
+	'Picklist' => 'Picklist (Single)',
+	'Relation' => 'Relation',
+	'Datetime' => 'Date & Time',
+	'Owner' => 'User',
+	'MultiSelectCombo' => 'Picklist (Multiple)',
+	'integer' => 'Integer',
+	'Blank'=>'Blank',
+	'My Preferences' => 'My Preferences',
+	'Calendar Settings' => 'Calendar Settings',
+	'Workflow' => 'Workflow',
+	'LanguageConverter' => 'Language Converter',
+	'LBL_LANGUAGECONVERTER_DESCRIPTION' => 'Modify displayed text',
 );
 
 $jsLanguageStrings = array(

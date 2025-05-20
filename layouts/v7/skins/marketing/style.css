@@ -57,7 +57,7 @@ html {
 body {
   margin: 0;
   padding: 0;
-  font-family: 'OpenSans-Regular', sans-serif;
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Hiragino Kaku Gothic Pro", "Meiryo", "MS PGothic", "MS Gothic", sans-serif;
   font-size: 12px;
   font-weight: normal;
   font-style: normal;
@@ -72,7 +72,7 @@ body > .mCSB_inside > .mCSB_container {
   height: inherit;
 }
 .select2-container .select2-choice {
-  font-family: 'OpenSans-Regular', sans-serif;
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Hiragino Kaku Gothic Pro", "Meiryo", "MS PGothic", "MS Gothic", sans-serif;
 }
 .app-fixed-navbar {
   background: #fff;
@@ -892,6 +892,10 @@ a {
   border: 1px solid #cccccc;
   border-width: thin;
 }
+.blankField{
+  border: none;
+  cursor: default;
+}
 input[type="text"].inputElement,
 input[type="password"].inputElement {
   padding: 3px 8px;
@@ -925,13 +929,19 @@ input[type="password"].inputElement {
   padding: 0px;
 }
 .listSearchContributor {
+  /* 検索ボックスの最小値をresizabldcolumnsと統一 */
   min-height: 28px;
   width: 100%;
-  min-width: 100px;
+  min-width: 10px;
 }
 .listViewContentHeaderValues {
+  /* ヘッダーの文字を切り詰め */
+  display: inline-block;
   vertical-align: middle;
   white-space: nowrap;
+  width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 #convertLeadContainer .inputElement,
 #editCurrency .inputElement {
@@ -1534,6 +1544,10 @@ ul.unstyled {
   width: 100%;
   display: inline-block;
   word-break: normal;
+  /* 項目の文字を切り詰め */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .listViewEntries .relatedListEntryValues .value {
   vertical-align: middle;
@@ -1622,6 +1636,9 @@ input[type=checkbox]:checked {
   width: 85%;
   text-shadow: none;
   padding: 3px;
+}
+.listview-table tr th:first-child{
+  width: 130px ! important;
 }
 .relatedContents .listview-table tr.searchRow th.inline-search-btn button {
   width: 95px;
@@ -2431,7 +2448,7 @@ th {
   max-width: 325px;
 }
 
-input[type="text"]:read-only {
+input[type="text"]:read-only:not(.blankField) {
   cursor: not-allowed;
   color: #b3b3b3;
   background-color: #eeeeee;
@@ -2453,6 +2470,7 @@ input[type="text"]:read-only {
   min-width: 100px;
   width: 20%;
   word-break: break-all;
+  font-weight: bold;
 }
 .editViewContents .fieldValue {
   width: 30%;
@@ -6567,7 +6585,7 @@ div.tooltip-inner {
 #quickCreateModules .quick-create-module {
   color: black;
   padding: 0 0 0 12px;
-  overflow-x: hidden;
+  overflow: hidden;
   width: 80%;
   display: inline-block;
   vertical-align: middle;
@@ -6637,10 +6655,10 @@ a.cp-modules:hover {
   z-index: 1100 !important;
 }
 /*****RSS Changes****/
-.feedListContainer .listview-table tr td:first-child,
+/* .feedListContainer .listview-table tr td:first-child,
 .listview-table tr th:first-child {
   width: inherit ! important;
-}
+} */
 .feedListContainer .listViewEntries .listViewEntryValue {
   max-width: inherit ! important;
 }
@@ -6687,7 +6705,8 @@ a.cp-modules:hover {
   padding-left: 230px;
 }
 .listViewPageDiv .ps-scrollbar-x-rail {
-  opacity: 1 !important;
+  /* opacity: 1 !important; */
+  z-index: 1000;
 }
 li.select2-search-choice div {
   white-space: nowrap;
@@ -6798,9 +6817,9 @@ li.select2-search-choice div {
 .main-container-Reports .full-width {
   padding-left: 0px !important;
 }
-.listViewPageDiv .ps-scrollbar-x-rail {
+/* .listViewPageDiv .ps-scrollbar-x-rail {
   opacity: 1 !important;
-}
+} */
 li.select2-search-choice div {
   white-space: nowrap;
 }
@@ -7571,7 +7590,7 @@ input:focus:-ms-input-placeholder {
   padding: 4px 10px 4px 5px !important;
 }
 .menu-item .custom-module {
-  font-family: 'OpenSans-Regular', sans-serif;
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Hiragino Kaku Gothic Pro", "Meiryo", "MS PGothic", "MS Gothic", sans-serif;
   font-size: 12px;
   border-radius: 4px;
   padding: 2px;

@@ -245,6 +245,12 @@ $languageStrings = array(
 	'Starting Day of the week' => 'Starting Day of the week',
 	'Day starts at' => 'Day starts at',
 	'Default Event Status' => 'Default Event Status',
+	'Planned' => 'Planned',
+	'Held' => 'Held',
+	'Not Held' => 'Not Held',
+	'Call' => 'Call',
+	'Meeting' => 'Meeting',
+	'Mobile Call' => 'Mobile Call',
 	'Default Activity Type' => 'Default Activity Type',
 	'Default Record View' => 'Default Record View',
 	'Left Panel Hide' => 'Left Panel Hide',
@@ -254,6 +260,7 @@ $languageStrings = array(
 	'LBL_CHANGE_USERNAME' => 'Change Username',
 	'LBL_USERNAME_CHANGED' => 'Username changed successfully',
 	'ERROR_CHANGE_USERNAME' => 'Error in change username. Please try later',
+	'New Username' => 'New Username',
 
 	'LBL_RESTORE_USER_FAILED' => 'Failed to restore user. There is already a CRM user with this user name.',
 
@@ -262,6 +269,23 @@ $languageStrings = array(
 	/* For Vtiger7*/
 	'LBL_USERS_SETTINGS' => 'USERS SETTINGS',
 	'LBL_TEMPLATES' => 'Templates',
+	'Default Landing Page' => 'Default Landing Page',
+	'CRM Phone Extension' => 'CRM Phone Extension',
+
+	'LBL_LOGIN' => 'Login',
+	'LBL_MAILADDRESS' => 'Email Address',
+	'LBL_SUBMIT' => 'Submit',
+	'LBL_F-Revo_Notice' => 'F-RevoCRM Notices',
+	'LBL_ENTER_USERNAME_AND_PASSWORD' => 'Please enter your username and password',
+	'LBL_ENTER_USERNAME' => 'Please enter your username.',
+	'LBL_ENTER_PASSWORD' => 'Please enter your password.',
+	'LBL_ENTER_USERNAME_AND_MAILADDRESS' => 'Please enter your username and email address',
+	'LBL_INVALID_MAILADDRESS' => 'Invalid email address.',
+	
+	'LBL_INVALID_USERNAME_OR_PASSWORD' => 'Invalid username or password',
+	'LBL_INVALID_USERNAME_OR_MAILADDRESS' => 'Invalid username or email address',
+	'LBL_MAIL_SERVER_NOT_CONFIGURED' => 'Mail server is not configured',
+	'LBL_AN_EMAIL_WAS_SENT_TO_THE_ADDRESS' => 'An email was sent to the address',
 );
 
 $jsLanguageStrings = array(
@@ -278,4 +302,8 @@ $jsLanguageStrings = array(
 	'JS_ENTERED_CURRENT_USERNAME_MSG' => 'You entered the current username. Please enter new username.',
 	'JS_NEW_ACCESS_KEY_REQUESTED' => 'New Access key requested',
 	'JS_CHANGE_ACCESS_KEY_CONFIRMATION' => 'You have requested for a new Access key.&lt;br&gt;&lt;br&gt;With the new Access key provision, you have to replace the old access key with the new one in all installed extensions.&lt;br&gt;&lt;br&gt;Do you want to continue?',
+
+	'JS_ENTER_NEW_PASSWORD' => 'Please enter your new password.',
+	'JS_REENTER_PASSWORDS' => 'Please ensure the new password and confirmation password match.',
+	'JS_PASSWORD_COMPLEXITY' => 'Please specify a complex password (at least 8 characters, including uppercase, lowercase, numbers, and symbols).',
 );

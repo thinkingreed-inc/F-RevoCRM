@@ -674,7 +674,11 @@ class EnhancedQueryGenerator extends QueryGenerator {
 						$columnSql = getSqlForNameInDisplayFormat(array('last_name'=>$columnSqlTable.'.last_name',
 																		'first_name'=>$columnSqlTable.'.first_name'),'Users');
 					} else if(in_array('DocumentFolders', $moduleList)) {
-						$columnSql = "vtiger_attachmentsfolder".$fieldName.".foldername";
+						if($conditionInfo['operator'] == 'e' || $conditionInfo['operator'] == 'n') {
+							$columnSql = "vtiger_attachmentsfolder".$fieldName.".folderid";
+						} else {
+							$columnSql = "vtiger_attachmentsfolder".$fieldName.".foldername";
+						}
 					} else if(in_array('Currency', $moduleList)) {
 						$columnSql = "vtiger_currency_info$parentReferenceField$fieldName.currency_name";
 						if($fieldName == 'currency_id' && is_numeric($conditionInfo['value'])){

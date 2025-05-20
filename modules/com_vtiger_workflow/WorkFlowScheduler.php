@@ -172,7 +172,7 @@ class WorkFlowScheduler {
 			"starts with" => 's',
 			"ends with" => 'ew',
 			"is not" => 'n',
-			"is not empty" => 'n',
+			"is not empty" => 'ny',
 			'before' => 'l',
 			'after' => 'g',
 			'between' => 'bw',
@@ -190,7 +190,7 @@ class WorkFlowScheduler {
             'is empty' => 'y',
             'is tomorrow' => 'c',
             'is yesterday' => 'c',
-            'less than days later' => 'bw',
+            'less than days later' => 'l',
             'more than days later' => 'g',
 		);
 		$noOfConditions = php7_count($conditions);
@@ -326,7 +326,7 @@ class WorkFlowScheduler {
 		switch($operation) {
 			case 'less than days ago' :		//between current date and (currentdate - givenValue)
 				$days = $condition['value'];
-				$value = date('Y-m-d', strtotime('-'.$days.' days')).','.date('Y-m-d', strtotime('+1 day'));
+				$value = date('Y-m-d', strtotime('-'.$days.' days')).','.date('Y-m-d');
 				break;
 
 			case 'more than days ago' :		// less than (current date - givenValue)
@@ -335,8 +335,8 @@ class WorkFlowScheduler {
 				break;
 
 			case 'in less than' :			// between current date and future date(current date + givenValue)
-				$days = $condition['value']+1;
-				$value = date('Y-m-d', strtotime('-1 day')).','.date('Y-m-d', strtotime('+'.$days.' days'));
+				$days = $condition['value'];
+				$value = date('Y-m-d').','.date('Y-m-d', strtotime('+'.$days.' days'));
 				break;
 
 			case 'in more than' :			// greater than future date(current date + givenValue)
@@ -387,17 +387,12 @@ class WorkFlowScheduler {
                 break;
             
            case 'less than days later' :
-                $days = $condition['value']+1;
-				if($fieldType[0] == 'D'){
-					$value = date('Y-m-d').','.date('Y-m-d', strtotime('+'.$days.' days'));
-				}else if($fieldType[0] == 'DT'){
-					$value = date('Y-m-d', strtotime('-1 day')).','.date('Y-m-d', strtotime('+'.$days.' days'));
-					$startDate = date('Y-m-d').' '.'00:00:00';
-					$endDate = date('Y-m-d',strtotime('+'.$days.' days')).' '.'23:59:59';
-					$value = $startDate.','.$endDate;
-				}else{
-					$value = date('Y-m-d', strtotime('-1 day')).','.date('Y-m-d', strtotime('+'.$days.' days'));
-				}
+               $days = $condition['value']-1;
+               if($fieldType[0] == 'DT'){
+                   $value = date('Y-m-d', strtotime('-'.$days.' days')).' '.'23:59:59';
+               }else{
+                   $value = date('Y-m-d', strtotime('-'.$days.' days'));
+               }
                 break;
 				
             case 'more than days later' :

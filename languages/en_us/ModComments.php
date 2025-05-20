@@ -11,6 +11,12 @@ $languageStrings = array(
 	// Basic Strings
 	'SINGLE_ModComments' => 'Comment',
 	'LBL_RECORDS_LIST' => 'Comments List',
+	'Customer' => 'Customer',
+	'UserId' => 'UserId',
+	'ReasonToEdit' => 'ReasonToEdit',
+	'Is Private' => 'Private',
+	'Attachment' => 'Attachment',
+	'Related Email Id' => 'Related Email Id',
 
 	// Blocks
 	'LBL_MODCOMMENTS_INFORMATION' => 'Comments',

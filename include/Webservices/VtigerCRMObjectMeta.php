@@ -335,6 +335,13 @@ class VtigerCRMObjectMeta extends EntityMeta {
 		return parent::getOwnerFields();
 	}
 
+	function getBlankFields(){
+		if(!$this->meta){
+			$this->retrieveMeta();
+		}
+		return parent::getBlankFields();
+	}
+
 	function getEntityName(){
 		return $this->objectName;
 	}

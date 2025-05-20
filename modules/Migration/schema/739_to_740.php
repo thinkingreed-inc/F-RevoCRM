@@ -53,17 +53,26 @@ if (defined('VTIGER_UPGRADE')) {
     // vtiger_crmentityテーブルの内容をモジュール毎のメインテーブルにコピーする
     require_once 'setup/scripts/75_Update_CRMEntity.php';
 
-    // レポートの関連の参照元を格納するカラムの追加
-    $db->pquery("alter table vtiger_reportmodules add column join_column text", array());
+    // 親コメントが削除されている子コメントを削除する
+    $result = $adb->pquery('SELECT crmid FROM vtiger_crmentity
+                    INNER JOIN vtiger_modcomments ON vtiger_modcomments.modcommentsid = vtiger_crmentity.crmid
+                    WHERE vtiger_crmentity.setype = "ModComments"
+                    AND vtiger_crmentity.deleted = 1
+                    AND vtiger_modcomments.parent_comments = 0', array());
+    $rows = $adb->num_rows($result);
+    for ($i = 0; $i < $rows; $i++) { // 削除済みの親コメントid
+        $deletedparentId[] = $adb->query_result($result, $i, 'crmid');
+    }
 
-    // Reports_Record_Model::getRelationTables()にて, vtiger_fieldmodulerelを参照しているため足りないフィールドを追加
-    $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(72,'Contacts','Accounts')", array());
-    $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(129,'Campaigns','Products')", array());
-    $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(159,'HelpDesk','Products')", array());
-    $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(279,'Faq','Products')", array());
-    $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(316,'Quotes','Potentials')", array());
-    $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(319,'Quotes','Contacts')", array());
-    $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(330,'Quotes','Accounts')", array());
-    $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(356,'PurchaseOrder','Contacts')", array());
-    $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(452,'Invoice','Accounts')", array());
+    if($rows > 0){
+        $result = $adb->pquery('SELECT modcommentsid FROM vtiger_modcomments
+                    WHERE parent_comments IN ('.generateQuestionMarks($deletedparentId).')', $deletedparentId);
+        for ($i = 0; $i < $adb->num_rows($result); $i++) { // 子コメントを削除する
+            $commentId = $adb->query_result($result, $i, 'modcommentsid');
+            $recordModel = ModComments_Record_Model::getInstanceById($commentId, 'ModComments');
+            if($recordModel) {
+                $recordModel->delete();
+            }
+        }
+    }
 }

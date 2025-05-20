@@ -263,7 +263,7 @@ Vtiger_List_Js("Reports_List_Js",{
 			// To close the custom filter Select Element drop down
 			thisInstance.getFilterSelectElement().data('select2').close();
 			var liElement = jQuery(event.currentTarget).closest('.select2-result-selectable');
-			var message = app.vtranslate('JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE');
+			var message = app.vtranslate('JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE').replace(/\n/g, "<br>");
 			app.helper.showConfirmationBox({'message' : message}).then(
 				function(e) {
 					var currentOptionElement = thisInstance.getSelectOptionFromChosenOption(liElement);
@@ -435,7 +435,7 @@ Vtiger_List_Js("Reports_List_Js",{
             var element = jQuery(e.target);
 			var url = jQuery(e.currentTarget).data('url');
 			var folderId = jQuery(e.currentTarget).data('id');
-			var message = app.vtranslate('JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE');
+			var message = app.vtranslate('JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE').replace(/\n/g, "<br>");
 			app.helper.showConfirmationBox({'message' : message}).then(function(e) {
 				app.request.post({url:url}).then(function(error,data){
 					if(data.success){

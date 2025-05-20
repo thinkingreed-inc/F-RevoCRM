@@ -208,8 +208,8 @@
 			<div class="loginDiv widgetHeight">
 				<img class="img-responsive user-logo" src="{$COMPANY_LOGO->get('imagepath')}" alt="{$COMPANY_LOGO->get('alt')}">
 				<div>
-					<span class="{if !$ERROR}hide{/if} failureMessage" id="validationMessage">{$MESSAGE}</span>
-					<span class="{if !$MAIL_STATUS}hide{/if} successMessage">{$MESSAGE}</span>
+					<span class="{if !$ERROR}hide{/if} failureMessage" id="validationMessage">{vtranslate($MESSAGE,'Users')}</span>
+					<span class="{if !$MAIL_STATUS}hide{/if} successMessage">{vtranslate($MESSAGE,'Users')}</span>
 				</div>
 
 				<div id="loginFormDiv">
@@ -217,17 +217,17 @@
 						<input type="hidden" name="module" value="Users"/>
 						<input type="hidden" name="action" value="Login"/>
 						<div class="group">
-							<input id="username" type="text" name="username" placeholder="ユーザー名">
+							<input id="username" type="text" name="username" placeholder="{vtranslate('User Name','Users')}">
 							<span class="bar"></span>
-							<label>ユーザー名</label>
+							<label>{vtranslate('User Name','Users')}</label>
 						</div>
 						<div class="group">
-							<input id="password" type="password" name="password" placeholder="パスワード">
+							<input id="password" type="password" name="password" placeholder="{vtranslate('Password','Users')}" >
 							<span class="bar"></span>
-							<label>パスワード</label>
+							<label>{vtranslate('Password','Users')}</label>
 						</div>
 						<div class="group">
-							<button type="submit" class="button buttonBlue">ログイン</button><br>
+							<button type="submit" class="button buttonBlue">{vtranslate('LBL_LOGIN','Users')}</button><br>
 							<a class="forgotPasswordLink" style="color: #15c;">パスワードを忘れた場合は</a>
 						</div>
 					</form>
@@ -236,17 +236,17 @@
 				<div id="forgotPasswordDiv" class="hide">
 					<form class="form-horizontal" action="forgotPassword.php" method="POST">
 						<div class="group">
-							<input id="fusername" type="text" name="username" placeholder="ユーザー名" >
+							<input id="fusername" type="text" name="username" placeholder="{vtranslate('User Name','Users')}<" >
 							<span class="bar"></span>
-							<label>ユーザー名</label>
+							<label>{vtranslate('User Name','Users')}<</label>
 						</div>
 						<div class="group">
-							<input id="email" type="email" name="emailId" placeholder="メールアドレス" >
+							<input id="email" type="email" name="emailId" placeholder="{vtranslate('LBL_MAILADDRESS','Users')}<" >
 							<span class="bar"></span>
-							<label>メールアドレス</label>
+							<label>{vtranslate('LBL_MAILADDRESS','Users')}</label>
 						</div>
 						<div class="group">
-							<button type="submit" class="button buttonBlue forgot-submit-btn">送信</button><br>
+							<button type="submit" class="button buttonBlue forgot-submit-btn">{vtranslate('LBL_MAILADDRESS','Users')}</button><br>
 							<span>パスワードをメールで送信します<a class="forgotPasswordLink pull-right" style="color: #15c;">戻る</a></span>
 						</div>
 					</form>
@@ -303,7 +303,7 @@
 				{else}
 					<div class="inActiveImgDiv">
 						<div>
-							<h4>F-RevoCRMに関するお知らせ</h4>
+							<h4>{vtranslate("LBL_F-Revo_Notice","Users")}</h4>
 						</div>
 						<a href="https://f-revocrm.jp" target="_blank" style="margin-right: 25px;"><img src="https://f-revocrm.jp/frevowp/wp-content/uploads/2021/09/image_frevo_top.png" style="width: 85%; height: 100%; margin-top: 25px;"/></a>
 					</div>
@@ -338,13 +338,13 @@
 					var result = true;
 					var errorMessage = '';
 					if (username === '' & password === '') {
-						errorMessage = 'ユーザー名とパスワードを入力してください';
+						errorMessage = "{vtranslate('LBL_ENTER_USERNAME_AND_PASSWORD','Users')}";
 						result = false;
 					} else if (username === '') {
-						errorMessage = 'ユーザー名を入力してください';
+						errorMessage = "{vtranslate('LBL_USER_NAME','Users')}";
 						result = false;
 					} else if (password === '') {
-						errorMessage = 'パスワードを入力してください';
+						errorMessage = "{vtranslate('LBL_ENTER_PASSWORD','Users')}";
 						result = false;
 					}
 					if (errorMessage) {
@@ -364,16 +364,16 @@
 					var result = true;
 					var errorMessage = '';
 					if (username === '' & (!emailFilter.test(email1) || email == '')) {
-						errorMessage = 'ユーザー名とメールアドレスを入力してください';
+						errorMessage = '{vtranslate('LBL_ENTER_USERNAME_AND_MAILADDRESS','Users')}";';
 						result = false;
 					} else if (username === '') {
-						errorMessage = 'ユーザー名を入力してください';
+						errorMessage = '{vtranslate('LBL_ENTER_USERNAME','Users')}";';
 						result = false;
 					} else if (!emailFilter.test(email1) || email == '') {
-						errorMessage = 'メールアドレスを入力してください';
+						errorMessage = '{vtranslate('LBL_ENTER_MAILADDRESS','Users')}";';
 						result = false;
 					} else if (email.match(illegalChars)) {
-						errorMessage = '不正なメールアドレスです';
+						errorMessage = '{vtranslate('LBL_INVALID_MAILADDRESS','Users')}";';
 						result = false;
 					}
 					if (errorMessage) {

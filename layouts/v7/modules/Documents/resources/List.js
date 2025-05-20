@@ -156,7 +156,7 @@ Vtiger_List_Js("Documents_List_Js", {
             
             self.loadFilter(jQuery('input[name="allCvId"]').val(), {
                 folder_id : 'folderid',
-                folder_value : el.data('folderName')
+                folder_value : el.data('filterId')
             });
             
 			var filtername = jQuery('a[class="filterName"]',element).text();
@@ -276,7 +276,7 @@ Vtiger_List_Js("Documents_List_Js", {
             var deletable = element.data('deletable');
             if(deletable == '1') {
                 app.helper.showConfirmationBox({
-                    'message' : app.vtranslate('JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE')
+                    'message' : app.vtranslate('JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE').replace(/\n/g, "<br>")
                 }).then(function() {
                     var folderId = element.data('folderId');
                     var params = {
@@ -371,7 +371,7 @@ Vtiger_List_Js("Documents_List_Js", {
     },
 
 	getDefaultParams: function() {
-		var search_value = jQuery('.sidebar-menu').find('.documentFolder.active').find('.filterName').data('folder-name');
+		var search_value = jQuery('.sidebar-menu').find('.documentFolder.active').find('.filterName').data('filterId');
 		var customParams = {
 			'folder_id' : 'folderid',
 			'folder_value' : search_value
