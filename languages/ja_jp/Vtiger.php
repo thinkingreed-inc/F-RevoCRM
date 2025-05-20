@@ -843,6 +843,7 @@ $languageStrings = array(
 	'LBL_RECORD' => 'レコード',
 	'LBL_NO_DUPLICATED_FOUND' => '重複が見つかりません',
 	'LBL_MERGE_SELECT' => 'マージ対象の選択',
+	'LBL_ALLOWED_TO_SELECT_MAX_OF_THREE_RECORDS' => '最大3つのレコードを選択できます',
 
 	//sbproducts translation
 	'LBL_BACK_TO_PRODUCTS' => '製品に戻る',
