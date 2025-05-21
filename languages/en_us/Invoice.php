@@ -50,6 +50,8 @@ $languageStrings = array(
 	//F-RevoCRM
 	'Open Invoices' => 'Open Invoices',
 	'Paid Invoices' => 'Paid Invoices',
+
+	'LBL_JAPAN' => 'japan',
 );
 
 $jsLanguageStrings = array(
