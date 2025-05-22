@@ -566,6 +566,12 @@ function insertIntoRecurringTable(& $recurObj)
 			if(empty($inviteeid)) {
 				continue;
 			}
+
+			$result = $adb->pquery("SELECT 1 FROM vtiger_invitees WHERE activityid = ? AND inviteeid = ?", array($this->invitee_parentid, $inviteeid));
+			if($adb->num_rows($result) > 0) {
+				continue;
+			}
+
 			$query="INSERT INTO vtiger_invitees VALUES (?,?,?)";
 			$adb->pquery($query, array($this->invitee_parentid, $inviteeid, 'sent'));
 
