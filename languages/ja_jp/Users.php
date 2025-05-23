@@ -273,6 +273,7 @@ $languageStrings = array(
 	'CRM Phone Extension' => '内線番号',
 
 	'LBL_LOGIN' => 'ログイン',
+	'LBL_FORGET_PASSWORD' => 'パスワードを忘れた場合は',
 	'LBL_MAILADDRESS' => 'メールアドレス',
 	'LBL_SUBMIT' => '送信',
 	'LBL_F-Revo_Notice' => 'F-RevoCRMに関するお知らせ',

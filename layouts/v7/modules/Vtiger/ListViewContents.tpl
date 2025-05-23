@@ -219,7 +219,7 @@
 											{$LISTVIEW_ENTRY->getTitle($LISTVIEW_HEADER)}
 										{else if $LISTVIEW_HEADER->get('uitype') eq '360'}
 										{else}
-											{$LISTVIEW_ENTRY_VALUE}
+											{vtranslate($LISTVIEW_ENTRY_VALUE, $MODULE)}
 										{/if}
 									{/if}
 								</span>

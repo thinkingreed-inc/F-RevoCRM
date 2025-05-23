@@ -273,6 +273,7 @@ $languageStrings = array(
 	'CRM Phone Extension' => 'CRM Phone Extension',
 
 	'LBL_LOGIN' => 'Login',
+	'LBL_FORGET_PASSWORD' => 'If you forgot your password',
 	'LBL_MAILADDRESS' => 'Email Address',
 	'LBL_SUBMIT' => 'Submit',
 	'LBL_F-Revo_Notice' => 'F-RevoCRM Notices',

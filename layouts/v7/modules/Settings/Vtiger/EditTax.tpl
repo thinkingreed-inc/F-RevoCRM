@@ -35,7 +35,7 @@
                                 <label class="pull-right">{vtranslate('LBL_TAX_NAME', $QUALIFIED_MODULE)}&nbsp;<span class="redColor">*</span></label>
                             </div>
                             <div class="col-lg-5">
-                                <input class="inputElement" type="text" name="taxlabel" placeholder="{vtranslate('LBL_ENTER_TAX_NAME', $QUALIFIED_MODULE)}" value="{$TAX_RECORD_MODEL->getName()}" data-rule-required="true" data-prompt-position="bottomLeft" />
+                                <input class="inputElement" type="text" name="taxlabel" placeholder="{vtranslate('LBL_ENTER_TAX_NAME', $QUALIFIED_MODULE)}" value="{vtranslate($TAX_RECORD_MODEL->getName())}" data-rule-required="true" data-prompt-position="bottomLeft" />
                             </div>
                             <div class="col-lg-3"></div>
                         </div>

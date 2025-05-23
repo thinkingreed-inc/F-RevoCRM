@@ -184,10 +184,10 @@ Vtiger_List_Js("Documents_List_Js", {
                 '<span class="fa fa-caret-down dropdown-toggle" data-toggle="dropdown" aria-expanded="true"></span>'+
                 '<ul class="dropdown-menu dropdown-menu-right vtDropDown" role="menu">'+
 					'<li class="editFolder " data-folder-id="'+folderDetails.folderid+'">'+
-						'<a role="menuitem" ><i class="fa fa-pencil-square-o"></i>&nbsp;Edit</a>'+
+						'<a role="menuitem" ><i class="fa fa-pencil-square-o"></i>&nbsp;'+app.vtranslate('JS_EDIT')+'</a>'+
 					'</li>'+
                     '<li class="deleteFolder" data-deletable="1" data-folder-id="'+folderDetails.folderid+'">'+
-                        '<a role="menuitem"><i class="fa fa-trash"></i>&nbsp;Delete</a>'+
+                        '<a role="menuitem"><i class="fa fa-trash"></i>&nbsp;'+app.vtranslate('JS_DELETE')+'</a>'+
                     '</li>'+
                 '</ul>'+
             '</div>'+

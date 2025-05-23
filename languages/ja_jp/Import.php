@@ -73,7 +73,7 @@ $languageStrings = array(
 	'skipped' => 'スキップしたレコード',
 	'failed' => '失敗したレコード',
 	
-	'LBL_IMPORT_LINEITEMS_CURRENCY'=> '通貨(For Line Items Fields)',
+	'LBL_IMPORT_LINEITEMS_CURRENCY'=> '通貨(明細項目用)',
 	'LBL_USE_SAVED_MAPS'=>'保存されたマッピング',
 	'LBL_IMPORT_MAP_FIELDS'=>'列を項目にマッピング',
 	'LBL_UPLOAD_CSV'=>'CSVファイルをアップロード', 

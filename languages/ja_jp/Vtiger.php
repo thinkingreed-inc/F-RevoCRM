@@ -235,6 +235,8 @@ $languageStrings = array(
 	'Recycle Bin' => 'ごみ箱',
 	'Events' => '活動',
 	'Dailyreports' => '日報',
+	'Groups' => 'グループ',
+	'Webforms' => 'Webフォーム',
 
 	//Basic String Translation
 	'LBL_ADD_RECORD' => '追加',
@@ -371,10 +373,10 @@ $languageStrings = array(
 	'LBL_TO' => 'To',
 	'LBL_to' => 'to',
 	'LBL_ON' => 'on',
-	'LBL_OF' => 'of',//共有ルールで使われている
+	'LBL_OF' => '-',//共有ルールで使われている
 	'LBL_BY' => 'by',
 	'LBL_ADDED' => '追加',
-	'LBL_FOR' => 'for',
+	'LBL_FOR' => '-',
 	'LBL_CREATED' => '作成',
 	'LBL_DELETED' => '削除',
 	'LBL_RESTORED' => '復元',
@@ -854,6 +856,7 @@ $languageStrings = array(
 	'Issued Date' => '発行日',
 	'Shipping & Handling Charges' => '送料と取扱手数料',
 	'Shipping & Handling Tax:' => '送料と取扱手数料の課税',
+	'Shipping & Handling' => '送料と取扱手数料',
 	'Discount'=>'割引額',
 	'Net Total' => '合計額',
 	'Product Code'=>'製品コード',
@@ -1119,6 +1122,7 @@ $languageStrings = array(
 	'LBL_NEXT' => '次へ',
 	'Workflows' => 'ワークフロー',
 	'Primary Twitter' => 'Twitterユーザー名',
+	'Record Id' => 'レコードID',
 
 	/* Vtiger7 Language Strings */
 	'LBL_CLICK_HERE_TO_SELECT_ALL_RECORDS'=>'このページのレコードを選択',
@@ -1585,13 +1589,19 @@ $languageStrings = array(
 	// リスト名を入力
 	'LBL_ENTER_LISTNAME' => 'リスト名を入力',
 
-	// 作成者
-	'LBL_CREATOR' => '作成者：',
+	// フィールド
+	'LBL_CREATOR' => '作成者',
+
+	// 役割
+	'LBL_ADMIN' => '管理者',
+	'LBL_MANAGER' => 'マネージャー',
+	'LBL_GENERAL' => '一般',
+	'LBL_PART-TIME_JOB' => 'パート・アルバイト',
 
 	// 販売管理の製品を保存毎に更新するワークフロー
 	'LBL_WORKFLOW_TO_UPDATE_SALES_MANAGEMENT' => '販売管理の製品を保存毎に更新するワークフロー',
 	'LBL_A_WORKFLOW_SENDS_EMAIL_TO_NOTIFICATION_PERSON_CHARGE_TURNED_ON'=>'担当者に通知がオンの場合，ユーザーにメールを送るワークフロー',
-	'LBL_A_WORKFLOW_SENDS_EMAIL_TO_PORTALUSER_IS_ON.' => 'ポータルユーザーがオン場合，ユーザーにメールを送るワークフロー',
+	'LBL_A_WORKFLOW_SENDS_EMAIL_TO_PORTALUSER_IS_ON' => 'ポータルユーザーがオン場合，ユーザーにメールを送るワークフロー',
 	'LBL_WORKFLOW_CUSTOMER_CONTACT_IS_CREATED_OR_UPDATED' => '顧客担当者が作成・更新された際のワークフロー',
 	'LBL_WORKFLOW_FOR_ACTIVITIES_WHEN_NOTIFICATIONS_ARE_ON' => '通知がオンの際の活動のワークフロー',
 	'LBL_ACTIVITY_NOTIFICATION_EMAIL' => '活動のお知らせメール',
@@ -2261,4 +2271,16 @@ $jsLanguageStrings = array(
 	
 	//ユーザー管理>グループ作成
 	'JS_DUPLICATES_EXIST' => '既に存在しています',
+
+	// ダッシュボード
+	'Default' => 'デフォルト',
+
+	// モジュール名
+	'Accounts' => '顧客企業',
+	'Contacts' => '顧客担当者',
+	'Leads' => 'リード',
+
+	// アクション名
+	'JS_EDIT' => '編集',
+	'JS_DELETE' => '削除',
 );

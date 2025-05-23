@@ -398,6 +398,10 @@ $languageStrings = array(
 	'Workflow' => 'ワークフロー',
 	'LanguageConverter' => '文言変更',
 	'LBL_LANGUAGECONVERTER_DESCRIPTION' => '表示文言を変更します',
+	'LBL_JAPAN' => '日本',
+	
+	// Edit Charge
+	'Japan, Yen : ¥' => '日本、円 : ¥',
 );
 
 $jsLanguageStrings = array(
@@ -432,4 +436,9 @@ $jsLanguageStrings = array(
 	'JS_INVALID_URL' => '無効なURL',
 	'JS_LBL_TAX_REGION_EXIST' => '税地域の名前が既に存在しています',
 	'JS_LOGO_IMAGE_DIMENSIONS_WRONG' => 'ロゴ画像の寸法が許容寸法と一致しませんでした。画像のサイズを変更して、もう一度お試しください。',
+	'Fixed' => '固定(Fixed)',
+	'Variable' => '変動(Variable)',
+	'Simple' => '単純(Simple)',
+	'Compound' => '複合(Compound)',
+	'Deducted' => '差し引く(Deducted)',
 );
