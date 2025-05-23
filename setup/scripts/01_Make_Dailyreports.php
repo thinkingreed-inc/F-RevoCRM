@@ -54,7 +54,7 @@ $field->typeofdata = 'V~M';
 $field->masseditable = 1;
 $field->quickcreate = 1;
 $field->summaryfield = 1;
-$field->label = vtranslate('LBL_SUBJECT');
+$field->label = 'LBL_SUBJECT';
 $blockInstance->addField($field);
 
 /*

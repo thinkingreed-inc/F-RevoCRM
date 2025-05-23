@@ -76,7 +76,7 @@ $sql = "INSERT INTO vtiger_pdftemplates(foldername, module, templatename, subjec
 
 $foldername = '';
 $module = 'Quotes';
-$templatename = vtranslate('LBL_EXPERIENCE_BOOK');
+$templatename = 'LBL_EXPERIENCE_BOOK';
 $subject = '';
 $description = '';
 $body = file_get_contents('layouts/v7/modules/PDFTemplates/templates/QuotesTemplate.tpl');
@@ -118,7 +118,7 @@ $db->pquery($sql, $params);
 
 $foldername = '';
 $module = 'SalesOrder';
-$templatename = vtranslate('LBL_REQUEST_FOR_ANNOTATION');
+$templatename = 'LBL_REQUEST_FOR_ANNOTATION';
 $subject = '';
 $description = '';
 $body = file_get_contents('layouts/v7/modules/PDFTemplates/templates/SalesOrderTemplate.tpl');
@@ -139,7 +139,7 @@ $db->pquery($sql, $params);
 
 $foldername = '';
 $module = 'PurchaseOrder';
-$templatename = vtranslate('LBL_PURCHASE_ORDER');
+$templatename = 'LBL_PURCHASE_ORDER';
 $subject = '';
 $description = '';
 $body = file_get_contents('layouts/v7/modules/PDFTemplates/templates/PurchaseOrderTemplate.tpl');
@@ -158,5 +158,5 @@ $templateid = $db->getUniqueID('vtiger_pdftemplates');
 $params = array($foldername, $module, $templatename, $subject, $description, $body, $deleted, $systemtemplate, $templatename);
 $db->pquery($sql, $params);
 
-echo vtranslate("LBL_ITS_OVER");
+echo "LBL_ITS_OVER";
 $log->debug("[END] Add Comments function");

@@ -637,7 +637,7 @@ Vtiger.Class("Vtiger_DashBoard_Js",{
 			var tab = currentTarget.closest(".dashboardTab");
 
 			var tabId = tab.data("tabid");
-			var tabName = tab.data("tabname");
+			var tabName = app.vtranslate(tab.data("tabname"));
 			var message = app.vtranslate('JS_ARE_YOU_SURE_TO_DELETE_DASHBOARDTAB', tabName);
 			app.helper.showConfirmationBox({'message' : message, 'htmlSupportEnable' : false}).then(function(e) {
 				app.helper.showProgress();

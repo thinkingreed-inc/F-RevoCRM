@@ -309,7 +309,7 @@
 												{assign var=CHARGE_PERCENT value=$CHARGE_AND_CHARGETAX_VALUES[$CHARGE_ID]['percent']}
 											{/if}
 
-											<td class="lineOnTop chargeName" data-charge-id="{$CHARGE_ID}">{$CHARGE_MODEL->getName()}</td>
+											<td class="lineOnTop chargeName" data-charge-id="{$CHARGE_ID}">{vtranslate($CHARGE_MODEL->getName())}</td>
 											<td class="lineOnTop">
 												{if $CHARGE_MODEL->get('format') eq 'Percent'}
 													<input type="text" class="span1 chargePercent" size="5" data-rule-positive=true data-rule-inventory_percentage=true name="charges[{$CHARGE_ID}][percent]" value="{if $CHARGE_PERCENT}{$CHARGE_PERCENT}{else if $RECORD_ID}0{else}{$CHARGE_MODEL->getValue()}{/if}" />&nbsp;%
@@ -350,7 +350,7 @@
 							<table width="100%" border="0" cellpadding="5" cellspacing="0" class="table table-nobordered popupTable">
 								{foreach item=tax_detail name=group_tax_loop key=loop_count from=$TAXES}
 									<tr>
-										<td class="lineOnTop">{$tax_detail.taxlabel}</td>
+										<td class="lineOnTop">{vtranslate($tax_detail.taxlabel,$MODULE)}</td>
 										<td class="lineOnTop">
 											<input type="text" size="5" data-compound-on="{if $tax_detail['method'] eq 'Compound'}{Vtiger_Util_Helper::toSafeHTML(Zend_Json::encode($tax_detail['compoundon']))}{/if}"
 												   name="{$tax_detail.taxname}_group_percentage" id="group_tax_percentage{$smarty.foreach.group_tax_loop.iteration}" value="{$tax_detail.percentage}" class="span1 groupTaxPercentage"
@@ -398,7 +398,7 @@
 														{/if}
 													{/if}
 
-													<td class="lineOnTop">{$CHARGE_MODEL->getName()} - {$CHARGE_TAX_MODEL->getName()}</td>
+													<td class="lineOnTop">{vtranslate($CHARGE_MODEL->getName(), $MODULE)} - {vtranslate($CHARGE_TAX_MODEL->getName(), $MODULE)}</td>
 													<td class="lineOnTop">
 														<input type="text" data-charge-id="{$CHARGE_ID}" data-compound-on="{if $CHARGE_TAX_MODEL->getTaxMethod() eq 'Compound'}{$CHARGE_TAX_MODEL->get('compoundon')}{/if}"
 															   class="span1 chargeTaxPercentage" name="charges[{$CHARGE_ID}][taxes][{$CHARGE_TAX_ID}]" value="{$SH_TAX_VALUE}"

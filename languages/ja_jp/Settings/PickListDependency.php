@@ -31,6 +31,7 @@ $languageStrings = array(
 	'Module' => 'モジュール',
 	'Source Field' => '連動元の項目',
 	'Target Field' => '連動先の項目',
+	'Selected Values' => '選択した値',
 );
 
 $jsLanguageStrings = array(

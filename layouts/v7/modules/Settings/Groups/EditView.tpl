@@ -65,7 +65,7 @@
 												<optgroup label="{vtranslate({$GROUP_LABEL}, $QUALIFIED_MODULE)}" class="{$GROUP_LABEL}">
 													{foreach from=$ALL_GROUP_MEMBERS item=MEMBER}
 														{if $MEMBER->getName() neq $RECORD_MODEL->getName()}
-															<option value="{$MEMBER->getId()}" data-member-type="{$GROUP_LABEL}" {if isset($GROUP_MEMBERS[$GROUP_LABEL][$MEMBER->getId()])} selected="true"{/if}>{trim($MEMBER->getName())}</option>
+															<option value="{$MEMBER->getId()}" data-member-type="{$GROUP_LABEL}" {if isset($GROUP_MEMBERS[$GROUP_LABEL][$MEMBER->getId()])} selected="true"{/if}>{vtranslate(trim($MEMBER->getName()), $QUALIFIED_MODULE)}</option>
 														{/if}
 													{/foreach}
 												</optgroup>

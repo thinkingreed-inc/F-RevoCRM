@@ -11,7 +11,8 @@
 	<div class="modal-dialog modal-lg configColumnsContainer">
 		<div class="modal-content">
 			{assign var=HEADER_TITLE value={vtranslate('LBL_CONFIG_COLUMNS', $MODULE)}}
-			{include file="ModalHeader.tpl"|vtemplate_path:$MODULE TITLE=$HEADER_TITLE|cat:' - '|cat:$CV_MODEL->get('viewname')}
+			{assign var=VIEW_NAME value={vtranslate($CV_MODEL->get('viewname'), $MODULE)}}
+			{include file="ModalHeader.tpl"|vtemplate_path:$MODULE TITLE=$HEADER_TITLE|cat:' - '|cat:$VIEW_NAME}
 			<form class="form-horizontal configColumnsForm" method="post" action="index.php">
 				<input type="hidden" name="module" value="CustomView"/>
 				<input type="hidden" name="action" value="SaveAjax"/>

@@ -997,7 +997,7 @@ class Install_InitSchema_Model {
 		$vtWorkFlow = new VTWorkflowManager($adb);
 		$invWorkFlow = $vtWorkFlow->newWorkFlow("Invoice");
 		$invWorkFlow->test = '[{"fieldname":"subject","operation":"does not contain","value":"`!`"}]';
-		$invWorkFlow->description = vtranslate("LBL_WORKFLOW_TO_UPDATE_SALES_MANAGEMENT","Install");
+		$invWorkFlow->description = "LBL_WORKFLOW_TO_UPDATE_SALES_MANAGEMENT";
 		$invWorkFlow->defaultworkflow = 1;
 		$vtWorkFlow->save($invWorkFlow);
 
@@ -1037,7 +1037,7 @@ class Install_InitSchema_Model {
 		$conWorkFlow->summary="A contact has been created ";
 		$conWorkFlow->executionCondition=2;
 		$conWorkFlow->test = '[{"fieldname":"notify_owner","operation":"is","value":"true:boolean"}]';
-		$conWorkFlow->description = vtranslate("LBL_A_WORKFLOW_SENDS_EMAIL_TO_NOTIFICATION_PERSON_CHARGE_TURNED_ON","Install");
+		$conWorkFlow->description = "LBL_A_WORKFLOW_SENDS_EMAIL_TO_NOTIFICATION_PERSON_CHARGE_TURNED_ON";
 		$conWorkFlow->defaultworkflow = 1;
 		$vtcWorkFlow->save($conWorkFlow);
 		$id1=$conWorkFlow->id;
@@ -1062,7 +1062,7 @@ class Install_InitSchema_Model {
 		$vtcWorkFlow = new VTWorkflowManager($adb);
 		$conpuWorkFlow = $vtcWorkFlow->newWorkFlow("Contacts");
 		$conpuWorkFlow->test = '[{"fieldname":"portal","operation":"is","value":"true:boolean"}]';
-		$conpuWorkFlow->description = vtranslate("LBL_A_WORKFLOW_SENDS_EMAIL_TO_PORTALUSER_IS_ON","Install");
+		$conpuWorkFlow->description = "LBL_A_WORKFLOW_SENDS_EMAIL_TO_PORTALUSER_IS_ON";
 		$conpuWorkFlow->executionCondition=2;
 		$conpuWorkFlow->defaultworkflow = 1;
 		$vtcWorkFlow->save($conpuWorkFlow);
@@ -1106,7 +1106,7 @@ class Install_InitSchema_Model {
 		// Contact workflow on creation/modification
 		$contactWorkFlow = $workflowManager->newWorkFlow("Contacts");
 		$contactWorkFlow->test = '';
-		$contactWorkFlow->description = vtranslate("LBL_WORKFLOW_CUSTOMER_CONTACT_IS_CREATED_OR_UPDATED","Install");
+		$contactWorkFlow->description = "LBL_WORKFLOW_CUSTOMER_CONTACT_IS_CREATED_OR_UPDATED";
 		$contactWorkFlow->executionCondition = VTWorkflowManager::$ON_EVERY_SAVE;
 		$contactWorkFlow->defaultworkflow = 1;
 		$workflowManager->save($contactWorkFlow);
@@ -1179,33 +1179,33 @@ class Install_InitSchema_Model {
 		// Events workflow when Send Notification is checked
 		$eventsWorkflow = $workflowManager->newWorkFlow("Events");
 		$eventsWorkflow->test = '[{"fieldname":"sendnotification","operation":"is","value":"true:boolean"}]';
-		$eventsWorkflow->description = vtranslate("LBL_WORKFLOW_FOR_ACTIVITIES_WHEN_NOTIFICATIONS_ARE_ON","Install");
+		$eventsWorkflow->description = "LBL_WORKFLOW_FOR_ACTIVITIES_WHEN_NOTIFICATIONS_ARE_ON";
 		$eventsWorkflow->executionCondition = VTWorkflowManager::$ON_EVERY_SAVE;
 		$eventsWorkflow->defaultworkflow = 1;
 		$workflowManager->save($eventsWorkflow);
 
 		$task = $taskManager->createTask('VTEmailTask', $eventsWorkflow->id);
 		$task->active = true;
-		$task->summary = vtranslate('LBL_ACTIVITY_NOTIFICATION_EMAIL',"Install");
+		$task->summary = 'LBL_ACTIVITY_NOTIFICATION_EMAIL';
 		$task->recepient = "\$(assigned_user_id : (Users) email1)";
-		$task->subject = vtranslate('LBL_ANNOUNCEMENT_OF_ACTIVITIES','Install');
-		$task->content = vtranslate('LBL_ACTIVITY_NOTIFICATION_FROM_F-RevoCRM','Install');
+		$task->subject = 'LBL_ANNOUNCEMENT_OF_ACTIVITIES';
+		$task->content = 'LBL_ACTIVITY_NOTIFICATION_FROM_F-RevoCRM';
 		$taskManager->saveTask($task);
 
 		// Calendar workflow when Send Notification is checked
 		$calendarWorkflow = $workflowManager->newWorkFlow("Calendar");
 		$calendarWorkflow->test = '[{"fieldname":"sendnotification","operation":"is","value":"true:boolean"}]';
-		$calendarWorkflow->description = vtranslate("LBL_TODO_WORKFLOW_WHEN_NOTIFICATIONS_ARE_ON","Install");
+		$calendarWorkflow->description = "LBL_TODO_WORKFLOW_WHEN_NOTIFICATIONS_ARE_ON";
 		$calendarWorkflow->executionCondition = VTWorkflowManager::$ON_EVERY_SAVE;
 		$calendarWorkflow->defaultworkflow = 1;
 		$workflowManager->save($calendarWorkflow);
 
 		$task = $taskManager->createTask('VTEmailTask', $calendarWorkflow->id);
 		$task->active = true;
-		$task->summary = vtranslate('LBL_TODO_NOTIFICATION_EMAIL',"Install");
+		$task->summary = 'LBL_TODO_NOTIFICATION_EMAIL';
 		$task->recepient = "\$(assigned_user_id : (Users) email1)";
-		$task->subject = vtranslate("LBL_TODO_NOTICE",'Install');
-		$task->content = vtranslate('LBL_TODO_NOTIFICATION_FROM_F-REVOCRM','Install');
+		$task->subject = "LBL_TODO_NOTICE";
+		$task->content = 'LBL_TODO_NOTIFICATION_FROM_F-REVOCRM';
 		$taskManager->saveTask($task);
 	}
 
@@ -1219,22 +1219,22 @@ class Install_InitSchema_Model {
 		$accountInstance = Vtiger_Module::getInstance('Accounts');
 		// Detail View Custom link
 		$accountInstance->addLink(
-			'DETAILVIEWBASIC', vtranslate('LBL_ADD_NOTE','Install'),
+			'DETAILVIEWBASIC', 'LBL_ADD_NOTE',
 			'index.php?module=Documents&action=EditView&return_module=$MODULE$&return_action=DetailView&return_id=$RECORD$&parent_id=$RECORD$',
 			'themes/images/bookMark.gif'
 		);
-		$accountInstance->addLink('DETAILVIEWBASIC', vtranslate('LBL_SHOW_ACCOUNT_HIERARCHY','Install'), 'index.php?module=Accounts&action=AccountHierarchy&accountid=$RECORD$');
+		$accountInstance->addLink('DETAILVIEWBASIC', 'LBL_SHOW_ACCOUNT_HIERARCHY', 'index.php?module=Accounts&action=AccountHierarchy&accountid=$RECORD$');
 
 		$leadInstance = Vtiger_Module::getInstance('Leads');
 		$leadInstance->addLink(
-			'DETAILVIEWBASIC', vtranslate('LBL_ADD_NOTE','Install'),
+			'DETAILVIEWBASIC', 'LBL_ADD_NOTE',
 			'index.php?module=Documents&action=EditView&return_module=$MODULE$&return_action=DetailView&return_id=$RECORD$&parent_id=$RECORD$',
 			'themes/images/bookMark.gif'
 		);
 
 		$contactInstance = Vtiger_Module::getInstance('Contacts');
 		$contactInstance->addLink(
-			'DETAILVIEWBASIC', vtranslate('LBL_ADD_NOTE','Install'),
+			'DETAILVIEWBASIC', 'LBL_ADD_NOTE',
 			'index.php?module=Documents&action=EditView&return_module=$MODULE$&return_action=DetailView&return_id=$RECORD$&parent_id=$RECORD$',
 			'themes/images/bookMark.gif'
 		);

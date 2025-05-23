@@ -10,7 +10,7 @@
 <table border="0" cellpadding="0" cellspacing="0" style="width:100%;">
 	<tbody>
 		<tr>
-			<td style="text-align: center;"><strong style="font-size: 20px; text-align: center;">{vtranslate("LBL_PURCHASE_ORDER", "PDFTemplates"}</strong></td>
+			<td style="text-align: center;"><strong style="font-size: 20px; text-align: center;">{vtranslate("LBL_PURCHASE_ORDER", "PDFTemplates")}</strong></td>
 		</tr>
 		<tr>
 			<td style="text-align: right;"><span style="text-align: right;">$custom-currentdate$&nbsp;</span>$purchaseorder-purchaseorder_no$</td>
@@ -22,7 +22,7 @@
 <table border="0" cellpadding="0" cellspacing="0" style="width:100%;">
 	<tbody>
 		<tr>
-			<td style="width: 350px;">$purchaseorder-vendorid$&nbsp;{vtranslate("LBL_FOR_THE_ATTENTION_OF", "PDFTemplate")}<br />
+			<td style="width: 350px;">$purchaseorder-vendorid$&nbsp;{vtranslate("LBL_FOR_THE_ATTENTION_OF", "PDFTemplates")}<br />
 			<br />
 			<span style="font-size:9px;">{vtranslate("LBL_PLEASEFINDOURINVOICEBELOW","PDFTemplates")}</span><br />
 			<br />

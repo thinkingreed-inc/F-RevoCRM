@@ -59,7 +59,8 @@ Vtiger_RelatedList_Js("Campaigns_RelatedList_Js",{
 		filterSelectElement.change(function(e){
 			var element = jQuery(e.currentTarget);
 			if (jQuery('.bootbox-confirm .in').length == 0) {
-				var message = app.vtranslate('JS_APPENDED_TO_EXISTING_LIST',self.relatedModulename)+'<br><br>'+app.vtranslate('JS_WISH_TO_PROCEED');
+				var moduleName = app.vtranslate(self.relatedModulename);
+				var message = app.vtranslate('JS_APPENDED_TO_EXISTING_LIST',moduleName)+'<br><br>'+app.vtranslate('JS_WISH_TO_PROCEED');
 				app.helper.showConfirmationBox({'message':message}).then(function(e){
 					var cvId = element.find('option:selected').data('id');
 					var params = {

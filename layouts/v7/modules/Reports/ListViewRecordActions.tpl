@@ -41,7 +41,7 @@
                 </li>
                 {foreach from=$DASHBOARD_TABS item=TAB_INFO}
                     <li class='dashBoardTab' data-tab-id='{$TAB_INFO.id}'>
-                        <a href='javascript:void(0);' class="dropdown-item">{$TAB_INFO.tabname}</a>
+                        <a href='javascript:void(0);' class="dropdown-item">{vtranslate($TAB_INFO.tabname,$MODULE)}</a>
                     </li>
                 {/foreach}
             </ul>

@@ -17,7 +17,7 @@
 			<div class="col-lg-5">
 				<div class="alert alert-static">
 					<span class="fa fa-info-circle icon"></span>
-					<span class="message">{vJsTranslate('JS_ALLOWED_TO_SELECT_MAX_OF_THREE_RECORDS',$MODULE)}</span>
+					<span class="message">{vtranslate('LBL_ALLOWED_TO_SELECT_MAX_OF_THREE_RECORDS',$MODULE)}</span>
 				</div>
 			</div>
 		</h3>

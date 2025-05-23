@@ -287,6 +287,7 @@ var Settings_Picklist_Js = {
 			var params = {
 				module : app.getModuleName(),
 				parent : app.getParentModuleName(),
+				source_module : jQuery('#pickListModules').val(),
 				view : 'IndexAjax',
 				mode : 'getPickListValueByRole',
 				rolesSelected : rolesList.val(),

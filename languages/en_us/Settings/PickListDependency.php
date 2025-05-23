@@ -31,6 +31,8 @@ $languageStrings = array(
 	'Module' => 'Module',
 	'Source Field' => 'Source Field',
 	'Target Field' => 'Target Field',
+	'Selected Values' => 'Selected Values',
+
 );
 
 $jsLanguageStrings = array(

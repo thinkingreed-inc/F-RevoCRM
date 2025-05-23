@@ -42,7 +42,7 @@
 							</tr>
 							{foreach item=PRODUCT_SERVICE_TAX_MODEL from=$PRODUCT_AND_SERVICES_TAXES}
 								<tr class="opacity" data-taxid="{$PRODUCT_SERVICE_TAX_MODEL->get('taxid')}" data-taxtype="{$PRODUCT_SERVICE_TAX_MODEL->getType()}">
-									<td style="border-left:none;border-right:none;" class="{$WIDTHTYPE}"><span class="taxLabel" style="width:120px">{$PRODUCT_SERVICE_TAX_MODEL->getName()}</span></td>
+									<td style="border-left:none;border-right:none;" class="{$WIDTHTYPE}"><span class="taxLabel" style="width:120px">{vtranslate($PRODUCT_SERVICE_TAX_MODEL->getName())}</span></td>
 									<td style="border-left:none;border-right:none;" class="{$WIDTHTYPE}"><span class="taxType">{vtranslate($PRODUCT_SERVICE_TAX_MODEL->getTaxType())}</span></td>
 									<td style="border-left:none;border-right:none;" class="{$WIDTHTYPE}"><span class="taxMethod">{vtranslate($PRODUCT_SERVICE_TAX_MODEL->getTaxMethod())}</span></td>
 									<td style="border-left:none;border-right:none;" class="{$WIDTHTYPE}"><span class="taxPercentage">{$PRODUCT_SERVICE_TAX_MODEL->getTax()}%</span></td>
