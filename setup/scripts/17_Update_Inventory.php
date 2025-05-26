@@ -26,7 +26,7 @@ $adb->query("update vtiger_inventorytaxinfo set deleted = 1");
 
 require_once('modules/Settings/Vtiger/models/TaxRecord.php');
 $record = new Inventory_TaxRecord_Model();
-$record->set('taxlabel', vtranslate('LBL_CONSUMPTION_TAX'));
+$record->set('taxlabel', 'LBL_CONSUMPTION_TAX');
 $record->set('percentage', 10.000);
 $record->set('deleted', 0);
 $record->set('type', 'Fixed');

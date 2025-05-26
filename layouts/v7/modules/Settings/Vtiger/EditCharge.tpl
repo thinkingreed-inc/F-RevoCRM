@@ -158,7 +158,7 @@
                             <div class="col-lg-1"></div>
                         </div>
                             
-                        <div style="padding: 0px 40px;"><i class="fa fa-info-circle"></i> {vtranslate('LBL_CHARGE_STORE_DISC', $QUALIFIED_MODULE)} ({Vtiger_Functions::getCurrencyName(CurrencyField::getDBCurrencyId())})</div>
+                        <div style="padding: 0px 40px;"><i class="fa fa-info-circle"></i> {vtranslate('LBL_CHARGE_STORE_DISC', $QUALIFIED_MODULE)} ({vtranslate(Vtiger_Functions::getCurrencyName(CurrencyField::getDBCurrencyId()), $QUALIFIED_MODULE)})</div>
                         <br><br>
                     </div>
                 </div>

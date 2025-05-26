@@ -51,7 +51,7 @@ $languageStrings = array(
 	'Open Invoices' => 'Open Invoices',
 	'Paid Invoices' => 'Paid Invoices',
 
-	'LBL_JAPAN' => 'japan',
+	'LBL_JAPAN' => 'Japan',
 );
 
 $jsLanguageStrings = array(

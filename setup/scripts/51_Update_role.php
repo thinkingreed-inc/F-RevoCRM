@@ -28,11 +28,11 @@ global $adb;
 
 $roles = Settings_Roles_Record_Model::getAll();
 $transRole = null;
-$H1_role = vtranslate("LBL_ORGANIZATION", 'Settings/Roles');
-$H2_role = vtranslate("LBL_ADMIN", 'Settings/Roles');
-$H3_role = vtranslate("LBL_MANAGER", 'Settings/Roles');
-$H4_role = vtranslate("LBL_GENERAL", 'Settings/Roles');
-$H5_role = vtranslate("LBL_PART-TIME_JOB", 'Settings/Roles');
+$H1_role = "LBL_ORGANIZATION";
+$H2_role = "LBL_ADMIN";
+$H3_role = "LBL_MANAGER";
+$H4_role = "LBL_GENERAL";
+$H5_role = "LBL_PART-TIME_JOB";
 foreach($roles as $r) {
     if($r->getId() == 'H1') {//Organaization ここは入ってこないかも。
         $r->set('rolename', $H1_role);
