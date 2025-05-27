@@ -416,7 +416,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 
 			$item['assigned_user_id'] = $this->cacheUser[$record['smownerid']];
 			$item['creator'] = $this->cacheUser[$record['smcreatorid']];
-			$item['creator_field_label'] = $creatorfield->get('label');
+			$item['creator_field_label'] = vtranslate($creatorfield->get('label'));
 			$item['modifiedby'] = $this->cacheUser[$record['modifiedby']];
 			$item['modifiedby_field_label'] = vtranslate('Last Modified By', 'Events');
 			if(!empty($record['crmid'])) {

@@ -81,7 +81,7 @@ class Settings_LayoutEditor_Block_Action extends Settings_Vtiger_Index_Action {
         $blockId = $request->get('blockid');
         $checkIfFieldsExists = Vtiger_Block_Model::checkFieldsExists($blockId);
         if($checkIfFieldsExists) {
-            $response->setError('502', vtranslate('LBL_DUPLICATES_EXIST', $request->getModule(false)));
+            $response->setError('502', vtranslate('LBL_FIELDS_EXIST_FOR_THE_BLOCK', $request->getModule(false)));
             $response->emit();
             return;
         }

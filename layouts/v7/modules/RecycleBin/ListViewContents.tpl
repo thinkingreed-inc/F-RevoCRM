@@ -55,7 +55,7 @@
                                 {else}
                                     <i class="fa fa-sort customsort"></i>
                                 {/if}
-                                &nbsp;{vtranslate($LISTVIEW_HEADER->get('label'), $MODULE)}&nbsp;
+                                &nbsp;{vtranslate($LISTVIEW_HEADER->get('label'), $SOURCE_MODULE)}&nbsp;
                             </a>
                             {if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')}
                                 <a href="#" class="removeSorting"><i class="fa fa-remove"></i></a>

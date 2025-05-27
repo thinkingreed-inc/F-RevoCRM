@@ -100,7 +100,7 @@
                                             <select id="{$i}" data-placeholder="{vtranslate('LBL_SELECT_REGIONS', $QUALIFIED_MODULE)}" name="regions[{$i}][list]" class="regions select2 columns span3" multiple="" data-rule-required="true" style="width:90%;">'
                                                 {foreach item=TAX_REGION_MODEL from=$TAX_REGIONS}
                                                     {assign var=TAX_REGION_ID value=$TAX_REGION_MODEL->getId()}
-                                                    <option value="{$TAX_REGION_ID}" {if in_array($TAX_REGION_ID, $REGIONS_INFO['list'])}selected{/if}>{$TAX_REGION_MODEL->getName()}</option>
+                                                    <option value="{$TAX_REGION_ID}" {if in_array($TAX_REGION_ID, $REGIONS_INFO['list'])}selected{/if}>{vtranslate($TAX_REGION_MODEL->getName(), $QUALIFIED_MODULE)}</option>
                                                 {/foreach}
                                             </select>
                                         </td>
@@ -116,7 +116,7 @@
                             <span class="addNewTaxBracket"><a href="#"><u>{vtranslate('LBL_ADD_TAX_BRACKET', $QUALIFIED_MODULE)}</u></a>
                                 <select class="taxRegionElements hide">
                                     {foreach item=TAX_REGION_MODEL from=$TAX_REGIONS}
-                                        <option value="{$TAX_REGION_MODEL->getId()}">{$TAX_REGION_MODEL->getName()}</option>
+                                        <option value="{$TAX_REGION_MODEL->getId()}">{vtranslate($TAX_REGION_MODEL->getName(), $QUALIFIED_MODULE)}</option>
                                     {/foreach}
                                 </select>
                             </span>
@@ -148,7 +148,7 @@
                                     <select data-placeholder="{vtranslate('LBL_SELECT_TAXES', $QUALIFIED_MODULE)}" id="selectTax" class="select2 columns inputEle" multiple="" name="taxes" data-rule-required="true">
                                         {foreach key=TAX_ID item=CHARGE_TAX_MODEL from=$CHARGE_TAXES}
                                             {if $CHARGE_TAX_MODEL->isDeleted() eq false}
-                                                <option value="{$TAX_ID}" {if !empty($SELECTED_TAXES) && in_array($TAX_ID, $SELECTED_TAXES)}selected=""{/if}>{$CHARGE_TAX_MODEL->getName()} ({$CHARGE_TAX_MODEL->getTax()}%)</option>
+                                                <option value="{$TAX_ID}" {if !empty($SELECTED_TAXES) && in_array($TAX_ID, $SELECTED_TAXES)}selected=""{/if}>{vtranslate($CHARGE_TAX_MODEL->getName(), $QUALIFIED_MODULE)} ({$CHARGE_TAX_MODEL->getTax()}%)</option>
                                             {/if}
                                         {/foreach}
                                     </select>
