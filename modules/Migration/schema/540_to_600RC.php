@@ -1190,7 +1190,7 @@ $emm->addEntityMethod($moduleName,"UpdateInventory","include/InventoryHandler.ph
 
 $vtWorkFlow = new VTWorkflowManager($adb);
 $poWorkFlow = $vtWorkFlow->newWorkFlow($moduleName);
-$poWorkFlow->description = vtranslate("LBL_A_WORKFLOW_TO_UPDATE_INVENTORY_PRODUCTS_ON_EVERY_SAVE");
+$poWorkFlow->description = 'LBL_A_WORKFLOW_TO_UPDATE_INVENTORY_PRODUCTS_ON_EVERY_SAVE';
 $poWorkFlow->defaultworkflow = 1;
 $poWorkFlow->executionCondition = 3;
 $vtWorkFlow->save($poWorkFlow);
@@ -1198,7 +1198,7 @@ $vtWorkFlow->save($poWorkFlow);
 $tm = new VTTaskManager($adb);
 $task = $tm->createTask('VTEntityMethodTask', $poWorkFlow->id);
 $task->active = true;
-$task->summary = vtranslate("LBL_UPDATE_INVENTORY_PRODUCTS");
+$task->summary = 'LBL_UPDATE_INVENTORY_PRODUCTS';
 $task->methodName = "UpdateInventory";
 $tm->saveTask($task);
 
@@ -2002,13 +2002,13 @@ for ($i = 0; $i < $numOfRows; $i++) {
 
 				unset($newWorkflowModel->id);
 				$newWorkflowModel->test = Zend_Json::encode($newWorkflowConditions);
-				$newWorkflowModel->description = 'LBL_A_WORKFLOW_TO_SEND_AN_EMAIL_TO_THE_RECORD_OWNER_WHEN_A_COMMENT_IS_ADDED_FROM_THE_PORTAL';
+				$newWorkflowModel->description = 'LBL_TASK_SEND_EMAIL_WHEN_COMMENTED_FROM_PORTAL';
 
 				$wfs->save($newWorkflowModel);
 
 				$emailTask->id = '';
 				$emailTask->workflowId = $newWorkflowModel->id;
-				$emailTask->summary = 'LBL_A_WORKFLOW_TO_SEND_AN_EMAIL_TO_THE_RECORD_OWNER_WHEN_A_COMMENT_IS_ADDED_FROM_THE_PORTAL';
+				$emailTask->summary = 'LBL_TASK_SEND_EMAIL_WHEN_COMMENTED_FROM_PORTAL';
 				$emailTask->fromEmail = '$(contact_id : (Contacts) lastname) $(contact_id : (Contacts) firstname)&lt;$(contact_id : (Contacts) email)&gt;';
 				$emailTask->recepient = ',$(assigned_user_id : (Users) email1)';
 				$emailTask->subject = 'Respond to Ticket ID## $(general : (__VtigerMeta__) recordId) ## in Customer Portal - URGENT';
@@ -2057,12 +2057,12 @@ for ($i = 0; $i < $numOfRows; $i++) {
 
 				unset($newWorkflowModel->id);
 				$newWorkflowModel->test = Zend_Json::encode(array_merge($portalCondition, $newWorkflowConditions));
-				$newWorkflowModel->description = vtranslate('LBL_A_WORKFLOW_TO_SEND_AN_EMAIL_TO_A_CUSTOMER_REPRESENTATIVE_WHO_IS_NOT_A_PORTAL_USER_WHEN_A_COMMENT_IS_ADDED');
+				$newWorkflowModel->description = 'LBL_TASK_SEND_EMAIL_TO_A_CUSTOMER_REPRESENTATIVE_WHEN_A_COMMENT_IS_ADDED';
 				$wfs->save($newWorkflowModel);
 
 				$emailTask->id = '';
 				$emailTask->workflowId = $newWorkflowModel->id;
-				$emailTask->summary = vtranslate('LBL_A_WORKFLOW_TO_SEND_AN_EMAIL_TO_A_CUSTOMER_REPRESENTATIVE_WHO_IS_NOT_A_PORTAL_USER_WHEN_A_COMMENT_IS_ADDED');
+				$emailTask->summary = 'LBL_TASK_SEND_EMAIL_TO_A_CUSTOMER_REPRESENTATIVE_WHEN_A_COMMENT_IS_ADDED';
 				$emailTask->fromEmail = '$(general : (__VtigerMeta__) supportName)&lt;$(general : (__VtigerMeta__) supportEmailId)&gt;';
 				$emailTask->recepient = ',$(contact_id : (Contacts) email)';
 				$emailTask->subject = '$ticket_no [ Ticket Id : $(general : (__VtigerMeta__) recordId) ] $ticket_title';
@@ -2092,12 +2092,12 @@ for ($i = 0; $i < $numOfRows; $i++) {
 
 				unset($newWorkflowModel->id);
 				$newWorkflowModel->test = Zend_Json::encode(array_merge($portalCondition, $newWorkflowConditions));
-				$newWorkflowModel->description = 'LBL_A_WORKFLOW_THAT_SENDS_AN_EMAIL_TO_A_PORTAL_USER_WHO_IS_A_CUSTOMER_REPRESENTATIVE_WHEN_A_COMMENT_IS_ADDED';
+				$newWorkflowModel->description = 'LBL_TASK_SEND_EMAIL_WHEN_COMMENTED';
 				$wfs->save($newWorkflowModel);
 
 				$emailTask->id = '';
 				$emailTask->workflowId = $newWorkflowModel->id;
-				$emailTask->summary = 'LBL_A_WORKFLOW_THAT_SENDS_AN_EMAIL_TO_A_PORTAL_USER_WHO_IS_A_CUSTOMER_REPRESENTATIVE_WHEN_A_COMMENT_IS_ADDED';
+				$emailTask->summary = 'LBL_TASK_SEND_EMAIL_WHEN_COMMENTED';
 				$emailTask->content = 'Ticket No : $ticket_no<br>
 										Ticket Id : $(general : (__VtigerMeta__) recordId)<br>
 										Subject : $ticket_title<br><br>
