@@ -233,8 +233,8 @@ $languageStrings = array(
 	'Portal' => 'Our Sites',
 	'Email Templates' => 'Email Templates',
 	'Recycle Bin' => 'Recycle Bin',
-	'Events' => '活動',
-	'Dailyreports' => '日報',
+	'Events' => 'Events',
+	'Dailyreports' => 'Daily Reports',
 	'Groups' => 'Groups',
 	'Webforms' => 'Webforms',
 
