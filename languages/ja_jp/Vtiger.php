@@ -919,6 +919,7 @@ $languageStrings = array(
 	'LBL_SETUP_WEBFORMS' => 'Webフォームの設定',
 	'LBL_SPECIAL_OPTIONS' => '特別なオプション',
 	'LBL_PARENT_OWNER' => '親レコード担当者',
+	'LBL_LOGIN_USER' => 'ログインユーザー',
 	'LBL_PASSWORD_LINK_EXPIRED_OR_INVALID_PASSWORD' => 'パスワードリンクの有効期限が切れているか、無効なパスワードが入力されました',
 
 	// Recurring Invoice
