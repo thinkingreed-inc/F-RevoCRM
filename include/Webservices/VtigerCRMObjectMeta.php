@@ -268,7 +268,7 @@ class VtigerCRMObjectMeta extends EntityMeta {
 			}
 			return false;
 		}
-
+		return false;
 	}
 
 	function getUserAccessibleColumns(){

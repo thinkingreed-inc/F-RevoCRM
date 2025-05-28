@@ -9,13 +9,12 @@
  ************************************************************************************ */
 
 function vtws_create($elementType, $element, $user) {
+	global $adb, $app_strings, $log;
 
 	$types = vtws_listtypes(null, $user);
 	if (!in_array($elementType, $types['types'])) {
 		throw new WebServiceException(WebServiceErrorCode::$ACCESSDENIED, "Permission to perform the operation is denied");
 	}
-
-	global $log, $adb, $app_strings;
 
 	//setting $app_strings 
 	if(empty($app_strings)) { 

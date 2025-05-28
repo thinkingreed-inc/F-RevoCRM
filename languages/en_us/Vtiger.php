@@ -919,6 +919,7 @@ $languageStrings = array(
 	'LBL_SETUP_WEBFORMS' => 'Setup Webforms',
 	'LBL_SPECIAL_OPTIONS' => 'Special Options',
 	'LBL_PARENT_OWNER' => 'Parent Record Owner',
+	'LBL_LOGIN_USER' => 'Login User',
 	'LBL_PASSWORD_LINK_EXPIRED_OR_INVALID_PASSWORD' => 'Password link has expired or you have entered invalid password',
 
 	// Recurring Invoice
