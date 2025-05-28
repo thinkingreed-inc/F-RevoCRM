@@ -199,15 +199,11 @@ class VTCreateEventTask extends VTTask{
 
 		try {
 			$fields['source'] = 'WORKFLOW';
-			$log->debug('loginUser aaaaaa -----: ' . print_r($fields, true));
 			$event = vtws_create($moduleName, $fields, $adminUser);
-			$log->debug('event aaaaaa -----: create event');
 			$eventIdDetails = vtws_getIdComponents($event['id']);
 			$entityIdDetails = vtws_getIdComponents($id);
-			$log->debug('loginUser aaaaaa -----: koko001');
 
 			relateEntities(CRMEntity::getInstance($parentModuleName), $parentModuleName, $entityIdDetails[1], 'Calendar', $eventIdDetails[1]);
-			$log->debug('loginUser aaaaaa -----: koko002');
 
 			$handler = vtws_getModuleHandlerFromName($moduleName, $adminUser);
 			$meta = $handler->getMeta();
@@ -219,7 +215,6 @@ class VTCreateEventTask extends VTTask{
 				$event->column_fields[$recordFieldname] = $recordFieldValue;
 			}
 			$event->column_fields['id'] = $event->id;
-			$log->debug('loginUser aaaaaa -----: koko003');
 
 			if($this->recurringcheck && !empty($startDate) &&
 					($this->calendar_repeat_limit_date)) {
