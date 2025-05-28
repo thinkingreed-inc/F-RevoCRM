@@ -915,6 +915,7 @@ $languageStrings = array(
 	'LBL_SPECIAL_OPTIONS' => '特別なオプション',
 	'LBL_PARENT_OWNER' => '親レコード担当者',
 	'LBL_PASSWORD_LINK_EXPIRED_OR_INVALID_PASSWORD' => 'パスワードリンクの有効期限が切れているか、無効なパスワードが入力されました',
+	'LBL_WARN_ON_EDIT_OTHER_MOBILE' => 'モバイル操作で他人の予定を編集する際に警告'	,
 
 	// Recurring Invoice
 	'Half-Yearly' => '半期',

@@ -37,8 +37,10 @@
 									{assign var=DEFAULT_ACTIVITY_TYPE_MODEL value=$FIELD_MODEL}
 								{elseif $FIELD_NAME eq 'hidecompletedevents'}
 									{assign var=HIDE_COMPLETED_EVENTS_MODEL value=$FIELD_MODEL}
+								{elseif $FIELD_NAME eq 'confirmonmobileeditother'}
+									{assign var=CONFIRM_ON_MOBILE_EDIT_OTHER value=$FIELD_MODEL}
 								{/if}
-								{if $FIELD_NAME neq 'callduration' && $FIELD_NAME neq 'othereventduration' && $FIELD_NAME neq 'defaulteventstatus' && $FIELD_NAME neq 'defaultactivitytype' && $FIELD_NAME neq 'hidecompletedevents'}
+								{if $FIELD_NAME neq 'callduration' && $FIELD_NAME neq 'othereventduration' && $FIELD_NAME neq 'defaulteventstatus' && $FIELD_NAME neq 'defaultactivitytype' && $FIELD_NAME neq 'hidecompletedevents' && $FIELD_NAME neq 'confirmonmobileeditother'}
 									<div class="form-group">
 										<label class="fieldLabel col-lg-4 col-sm-4 col-xs-4">{vtranslate($FIELD_MODEL->get('label'),$TRANSLATION_MODULE)}</label>
 										<div class="fieldValue col-lg-8 col-sm-8 col-xs-8">
@@ -112,6 +114,12 @@
 								<label class="fieldLabel col-lg-4 col-sm-4 col-xs-4">{vtranslate($HIDE_COMPLETED_EVENTS_MODEL->get('label'),$MODULE)}</label>
 								<div class="fieldValue col-lg-8 col-sm-8 col-xs-8">
 									{include file=vtemplate_path($HIDE_COMPLETED_EVENTS_MODEL->getUITypeModel()->getTemplateName(),$MODULE) FIELD_MODEL=$HIDE_COMPLETED_EVENTS_MODEL FIELD_NAME='hidecompletedevents'}
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="fieldLabel col-lg-4 col-sm-4 col-xs-4">{vtranslate($CONFIRM_ON_MOBILE_EDIT_OTHER->get('label'),$MODULE)}</label>
+								<div class="fieldValue col-lg-8 col-sm-8 col-xs-8">
+									{include file=vtemplate_path($CONFIRM_ON_MOBILE_EDIT_OTHER->getUITypeModel()->getTemplateName(),$MODULE) FIELD_MODEL=$CONFIRM_ON_MOBILE_EDIT_OTHER FIELD_NAME='confirmonmobileeditother'}
 								</div>
 							</div>
 							{assign var=SHARED_TYPE value=$SHAREDTYPE}
