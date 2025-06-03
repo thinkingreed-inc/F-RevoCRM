@@ -16,12 +16,12 @@ if ($adb->num_rows($result) == 0) {
 }
 // 各タスクに対するリトライタイムアウトを設定
 $tasks = array(
-    'Workflow' => 60*60,
-    'RecurringInvoice' => 5*60*60,
-    'SendReminder' => 60*60,
-    'MailScanner' => 60*60,
-    'Scheduled Import' => 24*60*60,
-    'ScheduleReports' => 3*60*60,
+    'Workflow' => 60*60,            // 1 hour
+    'RecurringInvoice' => 24*60*60, // 24 hours
+    'SendReminder' => 60*60,        // 1 hour
+    'MailScanner' => 60*60,         // 1 hour
+    'Scheduled Import' => 6*60*60,  // 6 hours
+    'ScheduleReports' => 3*60*60,   // 3 hours
 );
 foreach ($tasks as $task => $timeout) {
     $adb->pquery('UPDATE vtiger_cron_task SET retry_timeout = ? WHERE name = ?', array($timeout, $task));
