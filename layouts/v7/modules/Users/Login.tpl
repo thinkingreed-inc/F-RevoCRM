@@ -228,7 +228,7 @@
 						</div>
 						<div class="group">
 							<button type="submit" class="button buttonBlue">{vtranslate('LBL_LOGIN','Users')}</button><br>
-							<a class="forgotPasswordLink" style="color: #15c;">パスワードを忘れた場合は</a>
+							<a class="forgotPasswordLink" style="color: #15c;">{vtranslate('LBL_FORGET_PASSWORD','Users')}</a>
 						</div>
 					</form>
 				</div>

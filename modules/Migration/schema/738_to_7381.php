@@ -63,7 +63,7 @@ if (defined('VTIGER_UPGRADE')) {
         //追加
         $field = new Vtiger_Field();
         $field->name = 'reducedtaxrate';
-        $field->label = vtranslate('LBL_ELIGIBLE_FOR_REDUCED_TAX_RATE');
+        $field->label = 'LBL_ELIGIBLE_FOR_REDUCED_TAX_RATE';
         $field->column = 'reducedtaxrate';
         $field->table = 'vtiger_inventoryproductrel';
         $field->uitype = 56;

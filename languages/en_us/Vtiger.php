@@ -233,8 +233,10 @@ $languageStrings = array(
 	'Portal' => 'Our Sites',
 	'Email Templates' => 'Email Templates',
 	'Recycle Bin' => 'Recycle Bin',
-	'Events' => '活動',
-	'Dailyreports' => '日報',
+	'Events' => 'Events',
+	'Dailyreports' => 'Daily Reports',
+	'Groups' => 'Groups',
+	'Webforms' => 'Webforms',
 
 	//Basic String Translation
 	'LBL_ADD_RECORD' => 'Add Record',
@@ -843,6 +845,7 @@ $languageStrings = array(
 	'LBL_RECORD' => 'Record',
 	'LBL_NO_DUPLICATED_FOUND' => 'No duplicates found',
 	'LBL_MERGE_SELECT' => 'Merge Select',
+	'LBL_ALLOWED_TO_SELECT_MAX_OF_THREE_RECORDS' => 'Usted puede seleccionar un máximo de tres registros',
 
 	//sbproducts translation
 	'LBL_BACK_TO_PRODUCTS' => 'Back to products',
@@ -853,6 +856,7 @@ $languageStrings = array(
 	'Issued Date' => 'Issued Date',
 	'Shipping & Handling Charges' => 'Shipping & Handling Charges',
 	'Shipping & Handling Tax:' => 'Shipping & Handling Tax:',
+	'Shipping & Handling' => 'Shipping & Handling',
 	'Discount'=>'Discount',
 	'Net Total' => 'Net Total',
 	'Product Code'=>'Product Code',
@@ -915,6 +919,7 @@ $languageStrings = array(
 	'LBL_SETUP_WEBFORMS' => 'Setup Webforms',
 	'LBL_SPECIAL_OPTIONS' => 'Special Options',
 	'LBL_PARENT_OWNER' => 'Parent Record Owner',
+	'LBL_LOGIN_USER' => 'Login User',
 	'LBL_PASSWORD_LINK_EXPIRED_OR_INVALID_PASSWORD' => 'Password link has expired or you have entered invalid password',
 
 	// Recurring Invoice
@@ -1118,6 +1123,7 @@ $languageStrings = array(
 	'LBL_NEXT' => 'Next',
 	'Workflows' => 'Workflows',
 	'Primary Twitter' => 'Twitter Username',
+	'Record Id' => 'Record ID',
 
 	/* Vtiger7 Language Strings */
 	'LBL_CLICK_HERE_TO_SELECT_ALL_RECORDS'=>'Select all records in this page',
@@ -1585,12 +1591,18 @@ $languageStrings = array(
 	'LBL_ENTER_LISTNAME' => 'Enter list name',
 
 
-	'LBL_CREATOR' => 'Creator:',
+	'LBL_CREATOR' => 'Creator',
+
+	// Roles
+	'LBL_ADMIN' => 'Administrator',
+	'LBL_MANAGER' => 'Manager',
+	'LBL_GENERAL' => 'General',
+	'LBL_PART-TIME_JOB' => 'Part-Time Job',
 
 
 	'LBL_WORKFLOW_TO_UPDATE_SALES_MANAGEMENT' => 'Workflow to update sales management products upon saving',
 	'LBL_A_WORKFLOW_SENDS_EMAIL_TO_NOTIFICATION_PERSON_CHARGE_TURNED_ON'=>'Workflow to send email to user when notifications are turned on for the person in charge',
-	'LBL_A_WORKFLOW_SENDS_EMAIL_TO_PORTALUSER_IS_ON.' => 'Workflow to send email to user when portal user is turned on',
+	'LBL_A_WORKFLOW_SENDS_EMAIL_TO_PORTALUSER_IS_ON' => 'Workflow to send email to user when portal user is turned on',
 	'LBL_WORKFLOW_CUSTOMER_CONTACT_IS_CREATED_OR_UPDATED' => 'Workflow when customer contact is created or updated',
 	'LBL_WORKFLOW_FOR_ACTIVITIES_WHEN_NOTIFICATIONS_ARE_ON' => 'Workflow for activities when notifications are on',
 	'LBL_ACTIVITY_NOTIFICATION_EMAIL' => 'Activity notification email',
@@ -1633,9 +1645,9 @@ $languageStrings = array(
 	'LBL_REPORTING_EMAILS_TO_SUPPLIERS' => 'Reporting Emails to Suppliers',
 	'LBL_A_WORKFLOW_TO_UPDATE_INVENTORY_PRODUCTS_ON_EVERY_SAVE' => 'Workflow to Update Inventory Products on Every Save',
 	'LBL_UPDATE_INVENTORY_PRODUCTS' => 'Update Inventory Products',
-	'LBL_A_WORKFLOW_TO_SEND_AN_EMAIL_TO_THE_RECORD_OWNER_WHEN_A_COMMENT_IS_ADDED_FROM_THE_PORTAL' => 'Workflow to Send an Email to the Record Owner When a Comment is Added from the Portal',
-	'LBL_A_WORKFLOW_TO_SEND_AN_EMAIL_TO_A_CUSTOMER_REPRESENTATIVE_WHO_IS_NOT_A_PORTAL_USER_WHEN_A_COMMENT_IS_ADDED' => 'Workflow to Send an Email to a Customer Representative Who Is Not a Portal User When a Comment Is Added',
-	'LBL_A_WORKFLOW_THAT_SENDS_AN_EMAIL_TO_A_PORTAL_USER_WHO_IS_A_CUSTOMER_REPRESENTATIVE_WHEN_A_COMMENT_IS_ADDED' => 'Workflow to Send an Email to a Portal User Who Is a Customer Representative When a Comment Is Added',
+	'LBL_TASK_SEND_EMAIL_WHEN_COMMENTED_FROM_PORTAL' => 'Workflow to Send an Email to the Record Owner When a Comment is Added from the Portal',
+	'LBL_TASK_SEND_EMAIL_TO_A_CUSTOMER_REPRESENTATIVE_WHEN_A_COMMENT_IS_ADDED' => 'Workflow to Send an Email to a Customer Representative Who Is Not a Portal User When a Comment Is Added',
+	'LBL_TASK_SEND_EMAIL_WHEN_COMMENTED' => 'Workflow to Send an Email to a Portal User Who Is a Customer Representative When a Comment Is Added',
 	'LBL_A_WORKFLOW_TO_SEND_AN_EMAIL_WHEN_A_COMMENT_IS_ADDED' => 'Workflow to Send an Email When a Comment Is Added',
 	'LBL_ELIGIBLE_FOR_REDUCED_TAX_RATE' => 'Eligible for Reduced Tax Rate',
 	'LBL_TESTMAIL_SMTP_BODY' => 'Dear <br><br><b>This is a test email sent to verify if the configured SMTP server is working correctly.</b><br>You may delete this email.<br><br>Best regards,<br>F-RevoCRM<br><br>',
@@ -2260,4 +2272,16 @@ $jsLanguageStrings = array(
 	
 	// User Management > Group Creation
 	'JS_DUPLICATES_EXIST' => 'Already exists',
+
+	//Dashboard
+	'Default' => 'デフォルト',
+
+	// Module names
+	'Accounts' => 'Accounts',
+	'Contacts' => 'Contacts',
+	'Leads' => 'Leads',
+
+	// Actions
+	'JS_EDIT' => 'Edit',
+	'JS_DELETE' => 'Delete',
 );

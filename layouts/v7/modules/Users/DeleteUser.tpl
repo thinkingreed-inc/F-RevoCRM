@@ -11,7 +11,7 @@
 {* START YOUR IMPLEMENTATION FROM BELOW. Use {debug} for information *}
 {strip}
     <div class="modal-dialog modelContainer">
-        {assign var=HEADER_TITLE value={vtranslate('Transfer records to user', $MODULE)}}
+        {assign var=HEADER_TITLE value={vtranslate('LBL_TRANSFER_RECORDS_TO_USER', $MODULE)}}
         {include file="ModalHeader.tpl"|vtemplate_path:$MODULE TITLE=$HEADER_TITLE}
         <div class="modal-content">
         <form class="form-horizontal" id="deleteUser" name="deleteUser" method="post" action="index.php">
@@ -20,12 +20,12 @@
             <div name='massEditContent'>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label class="control-label fieldLabel col-sm-5">{vtranslate('User to be deleted', $MODULE)}</label>
+                        <label class="control-label fieldLabel col-sm-5">{vtranslate('LBL_USER_TO_BE_DELETED', $MODULE)}</label>
                         <label class="control fieldValue col-sm-5" style="padding-top: 6PX;">{$DELETE_USER_NAME}</label>
                     </div>
                         
                     <div class="form-group">
-                       <label class="control-label fieldLabel col-sm-5">{vtranslate('Transfer records to user', $MODULE)}</label>
+                       <label class="control-label fieldLabel col-sm-5">{vtranslate('LBL_TRANSFER_RECORDS_TO_USER', $MODULE)}</label>
                        <div class="controls fieldValue col-xs-6">
                            <select class="select2 {if $OCCUPY_COMPLETE_WIDTH} row-fluid {/if}" name="tranfer_owner_id" data-validation-engine="validate[ required]" >
                                {foreach item=USER_MODEL key=USER_ID from=$USER_LIST}

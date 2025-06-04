@@ -351,7 +351,41 @@
 			'default-less' : 'Válassz ki egy időszakot ami rövidebb mint %d nap',
 			'default-range' : 'Válassz ki egy %d - %d nap hosszú időszakot',
 			'default-default': 'Válassz ki egy időszakot'
-		}
+		},
+		'ja':
+		{
+			'selected': '選択:',
+			'day':'日',
+			'days': '日',
+			'apply': 'Close',
+			'week-1' : '月',
+			'week-2' : '火',
+			'week-3' : '水',
+			'week-4' : '木',
+			'week-5' : '金',
+			'week-6' : '土',
+			'week-7' : '日',
+			'month-name': ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
+			'shortcuts' : 'ショートカット',
+			'custom-values': 'カスタム値',
+			'past': '過去',
+			'following':'翌日から',
+			'previous' : '前日より',
+			'prev-week' : '1週',
+			'prev-month' : '1月',
+			'prev-year' : '1年',
+			'next':'期間(～まで)',
+			'next-week':'翌週',
+			'next-month':'翌月',
+			'next-year':'翌年',
+			'less-than' : '日付の範囲は%d日以上を選択できません',
+			'more-than' : '日付の範囲は%d日未満を選択できません',
+			'default-more' : '%d日以上の期間を選択してください',
+			'default-single' : '日付を選択してください',
+			'default-less' : '%d日未満の期間を選択してください',
+			'default-range' : '%d日から%d日までの期間を選択してください',
+			'default-default': '期間を選択してください'
+		},
 	};
 
 	$.fn.dateRangePicker = function(opt)

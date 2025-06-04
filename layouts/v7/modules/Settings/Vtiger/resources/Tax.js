@@ -297,8 +297,8 @@ Vtiger.Class("Settings_Vtiger_TaxIndex_Js",{
 		var trElementForTax =
 				jQuery('<tr class="opacity" data-taxid="'+details.taxid+'" data-taxtype="'+details.type+'">\n\
 					<td style="border-left: none;border-right: none;" '+details.row_type+'"><span class="taxLabel">'+details.taxlabel+'</span></td>\n\
-					<td style="border-left: none;border-right: none;" '+details.row_type+'"><span class="taxType">'+details.taxType+'</span></td>\n\
-					<td style="border-left: none;border-right: none;" '+details.row_type+'"><span class="taxMethod">'+details.method+'</span></td>\n\
+					<td style="border-left: none;border-right: none;" '+details.row_type+'"><span class="taxType">'+app.vtranslate(details.taxType)+'</span></td>\n\
+					<td style="border-left: none;border-right: none;" '+details.row_type+'"><span class="taxMethod">'+app.vtranslate(details.method)+'</span></td>\n\
 					<td style="border-left: none;border-right: none;" '+details.row_type+'"><span class="taxPercentage">'+details.percentage+'%</span></td>\n\
 					<td style="border-left: none;border-right: none;" '+details.row_type+'"><input class="editTaxStatus" type="checkbox" '+isChecked+' >\n\
 					</td><td style="border-left: none;border-right: none;">\n\

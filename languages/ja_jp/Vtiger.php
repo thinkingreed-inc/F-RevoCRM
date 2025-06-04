@@ -235,6 +235,8 @@ $languageStrings = array(
 	'Recycle Bin' => 'ごみ箱',
 	'Events' => '活動',
 	'Dailyreports' => '日報',
+	'Groups' => 'グループ',
+	'Webforms' => 'Webフォーム',
 
 	//Basic String Translation
 	'LBL_ADD_RECORD' => '追加',
@@ -371,10 +373,10 @@ $languageStrings = array(
 	'LBL_TO' => 'To',
 	'LBL_to' => 'to',
 	'LBL_ON' => 'on',
-	'LBL_OF' => 'of',//共有ルールで使われている
+	'LBL_OF' => '-',//共有ルールで使われている
 	'LBL_BY' => 'by',
 	'LBL_ADDED' => '追加',
-	'LBL_FOR' => 'for',
+	'LBL_FOR' => '-',
 	'LBL_CREATED' => '作成',
 	'LBL_DELETED' => '削除',
 	'LBL_RESTORED' => '復元',
@@ -843,6 +845,7 @@ $languageStrings = array(
 	'LBL_RECORD' => 'レコード',
 	'LBL_NO_DUPLICATED_FOUND' => '重複が見つかりません',
 	'LBL_MERGE_SELECT' => 'マージ対象の選択',
+	'LBL_ALLOWED_TO_SELECT_MAX_OF_THREE_RECORDS' => '最大3つのレコードを選択できます',
 
 	//sbproducts translation
 	'LBL_BACK_TO_PRODUCTS' => '製品に戻る',
@@ -853,6 +856,7 @@ $languageStrings = array(
 	'Issued Date' => '発行日',
 	'Shipping & Handling Charges' => '送料と取扱手数料',
 	'Shipping & Handling Tax:' => '送料と取扱手数料の課税',
+	'Shipping & Handling' => '送料と取扱手数料',
 	'Discount'=>'割引額',
 	'Net Total' => '合計額',
 	'Product Code'=>'製品コード',
@@ -915,6 +919,7 @@ $languageStrings = array(
 	'LBL_SETUP_WEBFORMS' => 'Webフォームの設定',
 	'LBL_SPECIAL_OPTIONS' => '特別なオプション',
 	'LBL_PARENT_OWNER' => '親レコード担当者',
+	'LBL_LOGIN_USER' => 'ログインユーザー',
 	'LBL_PASSWORD_LINK_EXPIRED_OR_INVALID_PASSWORD' => 'パスワードリンクの有効期限が切れているか、無効なパスワードが入力されました',
 
 	// Recurring Invoice
@@ -1118,6 +1123,7 @@ $languageStrings = array(
 	'LBL_NEXT' => '次へ',
 	'Workflows' => 'ワークフロー',
 	'Primary Twitter' => 'Twitterユーザー名',
+	'Record Id' => 'レコードID',
 
 	/* Vtiger7 Language Strings */
 	'LBL_CLICK_HERE_TO_SELECT_ALL_RECORDS'=>'このページのレコードを選択',
@@ -1584,13 +1590,19 @@ $languageStrings = array(
 	// リスト名を入力
 	'LBL_ENTER_LISTNAME' => 'リスト名を入力',
 
-	// 作成者
-	'LBL_CREATOR' => '作成者：',
+	// フィールド
+	'LBL_CREATOR' => '作成者',
+
+	// 役割
+	'LBL_ADMIN' => '管理者',
+	'LBL_MANAGER' => 'マネージャー',
+	'LBL_GENERAL' => '一般',
+	'LBL_PART-TIME_JOB' => 'パート・アルバイト',
 
 	// 販売管理の製品を保存毎に更新するワークフロー
 	'LBL_WORKFLOW_TO_UPDATE_SALES_MANAGEMENT' => '販売管理の製品を保存毎に更新するワークフロー',
 	'LBL_A_WORKFLOW_SENDS_EMAIL_TO_NOTIFICATION_PERSON_CHARGE_TURNED_ON'=>'担当者に通知がオンの場合，ユーザーにメールを送るワークフロー',
-	'LBL_A_WORKFLOW_SENDS_EMAIL_TO_PORTALUSER_IS_ON.' => 'ポータルユーザーがオン場合，ユーザーにメールを送るワークフロー',
+	'LBL_A_WORKFLOW_SENDS_EMAIL_TO_PORTALUSER_IS_ON' => 'ポータルユーザーがオン場合，ユーザーにメールを送るワークフロー',
 	'LBL_WORKFLOW_CUSTOMER_CONTACT_IS_CREATED_OR_UPDATED' => '顧客担当者が作成・更新された際のワークフロー',
 	'LBL_WORKFLOW_FOR_ACTIVITIES_WHEN_NOTIFICATIONS_ARE_ON' => '通知がオンの際の活動のワークフロー',
 	'LBL_ACTIVITY_NOTIFICATION_EMAIL' => '活動のお知らせメール',
@@ -1633,9 +1645,9 @@ $languageStrings = array(
 	'LBL_REPORTING_EMAILS_TO_SUPPLIERS' => '発注先へのメールのレポート',
 	'LBL_A_WORKFLOW_TO_UPDATE_INVENTORY_PRODUCTS_ON_EVERY_SAVE' => '保存されるごとに在庫製品を更新するワークフロー',
 	'LBL_UPDATE_INVENTORY_PRODUCTS' => '在庫製品を更新する',
-	'LBL_A_WORKFLOW_TO_SEND_AN_EMAIL_TO_THE_RECORD_OWNER_WHEN_A_COMMENT_IS_ADDED_FROM_THE_PORTAL' => 'ポータルからコメントが追加されたときレコードの担当にメールを送るワークフロー',
-	'LBL_A_WORKFLOW_TO_SEND_AN_EMAIL_TO_A_CUSTOMER_REPRESENTATIVE_WHO_IS_NOT_A_PORTAL_USER_WHEN_A_COMMENT_IS_ADDED' => 'コメントが追加されたときポータルユーザーでない顧客担当者にメールを送るワークフロー',
-	'LBL_A_WORKFLOW_THAT_SENDS_AN_EMAIL_TO_A_PORTAL_USER_WHO_IS_A_CUSTOMER_REPRESENTATIVE_WHEN_A_COMMENT_IS_ADDED' => 'コメントが追加されたときポータルユーザーである顧客担当者にメールを送るワークフロー',
+	'LBL_TASK_SEND_EMAIL_WHEN_COMMENTED_FROM_PORTAL' => 'ポータルからコメントが追加されたときレコードの担当にメールを送るワークフロー',
+	'LBL_TASK_SEND_EMAIL_TO_A_CUSTOMER_REPRESENTATIVE_WHEN_A_COMMENT_IS_ADDED' => 'コメントが追加されたときポータルユーザーでない顧客担当者にメールを送るワークフロー',
+	'LBL_TASK_SEND_EMAIL_WHEN_COMMENTED' => 'コメントが追加されたときポータルユーザーである顧客担当者にメールを送るワークフロー',
 	'LBL_A_WORKFLOW_TO_SEND_AN_EMAIL_WHEN_A_COMMENT_IS_ADDED' => 'コメントが追加された際にメールを送るワークフロー',
 	'LBL_ELIGIBLE_FOR_REDUCED_TAX_RATE' => '軽減税率対象',
 	'LBL_TESTMAIL_SMTP_BODY' => 'さん <br><br><b> これは、設定したSMTPサーバーを介してメールが実際に送信され' .
@@ -2260,4 +2272,16 @@ $jsLanguageStrings = array(
 	
 	//ユーザー管理>グループ作成
 	'JS_DUPLICATES_EXIST' => '既に存在しています',
+
+	// ダッシュボード
+	'Default' => 'デフォルト',
+
+	// モジュール名
+	'Accounts' => '顧客企業',
+	'Contacts' => '顧客担当者',
+	'Leads' => 'リード',
+
+	// アクション名
+	'JS_EDIT' => '編集',
+	'JS_DELETE' => '削除',
 );

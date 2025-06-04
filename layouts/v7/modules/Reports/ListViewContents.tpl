@@ -136,7 +136,7 @@
 												{else if $LISTVIEW_HEADERNAME eq 'foldername'}
 													{Vtiger_Util_Helper::tosafeHTML(vtranslate($LISTVIEW_ENTRY_VALUE, $MODULE))}
 												{else}
-													{Vtiger_Util_Helper::tosafeHTML($LISTVIEW_ENTRY_VALUE)}
+													{Vtiger_Util_Helper::tosafeHTML(vtranslate($LISTVIEW_ENTRY_VALUE, $MODULE))}
 												{/if}
 											</span>
 										</span>
