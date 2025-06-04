@@ -318,10 +318,13 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
 		$query = 'SELECT label, crmid, setype, createdtime FROM vtiger_crmentity WHERE label LIKE ? AND vtiger_crmentity.deleted = 0';
 		$params = array("%$searchKey%");
 
-		if($module !== false) {
+		// $moduleには配列が含まれるため、特定のモジュールを指定していない場合はすべてを検索対象とする
+		// そのため、setypeによる制御を入れない
+		if($module !== false && is_string($module)) {
 			$query .= ' AND setype = ?';
 			$params[] = $module;
 		}
+
 		//Remove the ordering for now to improve the speed
 		$query .= ' ORDER BY modifiedtime DESC';
 
