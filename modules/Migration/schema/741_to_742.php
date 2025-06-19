@@ -25,4 +25,7 @@ if (defined('VTIGER_UPGRADE')) {
     $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(330,'Quotes','Accounts')", array());
     $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(356,'PurchaseOrder','Contacts')", array());
     $db->pquery("INSERT INTO vtiger_fieldmodulerel(fieldid, module, relmodule) VALUES(452,'Invoice','Accounts')", array());
+
+    // システム変数モジュールの追加
+    require_once ("setup/scripts/03_Make_Parameters.php");
 }
