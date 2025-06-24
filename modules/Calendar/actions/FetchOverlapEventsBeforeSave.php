@@ -89,7 +89,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		return $getGroupsInstance->user_groups;
 	}
 	
-	/*
+	/**
 	 * 期間重複を確認するユーザのIDを取得
 	 * formからの入力を優先する 
 	 * 
@@ -122,12 +122,18 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 						 : $recordModel->getInvities();
 		}
 		
-		// グループの場合はユーザーID、ユーザーの場合はグループIDを取得する
+		// 所有者がグループの場合はユーザーID、ユーザーの場合はグループIDを取得する
 		$userOrGroupIds = $this->isUsersGroup($ownerId) 
 						? $this->getGroupUsers($ownerId) 
 						: $this->getUserGroups($ownerId);
 		
-		return array_unique(array_merge($invitiesIds, $userOrGroupIds, [$ownerId]));
+		// 参加者の各ユーザーが所属するグループのIDを取得する
+		$invitiesOrGroupIds = [];
+		foreach($invitiesIds as $id) {
+			$invitiesOrGroupIds = array_merge($invitiesOrGroupIds, $this->getUserGroups($id));
+		}
+		
+		return array_unique(array_merge($invitiesIds, $userOrGroupIds, $invitiesOrGroupIds, [$ownerId]));
 	}
 	
 	/**
@@ -156,7 +162,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		return $nextRecordTime;
 	}
 	
-	/*
+	/**
 	 * Formからの繰り返し活動の設定を取得
 	 * 
 	 * @param Vtiger_Request $request
@@ -261,7 +267,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		return $recurringType->recurringdates ?? [];
 	}
 	
-	/*
+	/**
 	 * DBからの繰り返し活動の設定を取得
 	 * 
 	 * @param Vtiger_Request $request
@@ -349,7 +355,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		return $recurringDates;
 	}
 	
-	/*
+	/**
 	 * 繰り返し活動の日付を取得
 	 * 
 	 * @param Vtigerrequest $request
@@ -374,7 +380,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		return $recurringDays;
 	}
 	
-	/*
+	/**
 	 * 開始日と終了日を取得または計算
 	 * 
 	 * @param string $startDateTime
@@ -401,7 +407,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		return ['start' => $startDateTime, 'end' => $endDateTime];
 	}	
 	
-	/*
+	/**
 	 * 活動期間が重なる活動を取得する
 	 * 
 	 * @param string $start
@@ -526,7 +532,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		return $overlapEventIds;
 	}
 	
-	/*
+	/**
 	 * 活動期間が重なる活動を取得する
 	 * 
 	 * @param Vtigerrequest $request
@@ -578,7 +584,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		return $overlapEvents;
 	}
 	
-	/*
+	/**
 	 * 重複している活動のユーザを取得
 	 * 
 	 * @param array $overlapEvents
@@ -626,7 +632,7 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		return $overlapEventUsers;
 	}
 	
-	/*
+	/**
 	 * 重複している活動のメッセージをHTML形式で作成
 	 * 
 	 * @param array $overlapEvents
@@ -665,11 +671,15 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 				$endDateTime   = new DateTime($recordModel->get('due_date').' '.$recordModel->get('time_end'));
 				$isSameDay     = $startDateTime->format('Y-m-d') === $endDateTime->format('Y-m-d');
 				$isAllDay      = $recordModel->isAllDay();
+				$isVisible     = $this->canVisiblePrivateEvent($recordModel);
+				$eventElmStart = $isVisible 
+								? '<a href="'.$recordModel->getDetailViewUrl().'" target="_blank" style="color:#15c !important">'
+								: '<span>'; 
+				$eventElmEnd   = $isVisible ?  '</a>' : '</span>';
+				$subject       = $isVisible ? $recordModel->get('subject') : vtranslate('Busy', 'Events');
 				
 				$message .= '<li style="margin-bottom: 8px;">';
-				$message .= '<a href="'
-								.$recordModel->getDetailViewUrl()
-								.'" target="_blank" style="color:#15c !important">';
+				$message .= $eventElmStart;
 				$message .= $startDateTime->format('Y-m-d');
 				
 				// 終日の場合は開始時刻と終了日時を表示しない
@@ -680,16 +690,12 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 					$message .= $startDateTime->format('H:i').'&nbsp; - &nbsp;';
 					
 					// 開始日と終了日が同日の場合は日付を表示しない
-					if(!$isSameDay) {
-						$message .= $endDateTime->format('Y-m-d H:i');
-					}else {
-						$message .= $endDateTime->format('H:i');
-					}
+					$message .= !$isSameDay ? $endDateTime->format('Y-m-d H:i') : $endDateTime->format('H:i');
 					$message .= '</span>';
 				}
 				
-				$message .= '<div style="margin:0 0 5px 0;font-weight:bold;">'.$recordModel->get('subject').'</div>';
-				$message .= '</a>';
+				$message .= '<div style="margin:0 0 5px 0;font-weight:bold;">' . $subject . '</div>';
+				$message .= $eventElmEnd;
 				$message .= '</li>';
 				
 				$countNum++;
@@ -707,9 +713,52 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 			$message .= '<div style="margin: 0 0 5px 20px;">';
 			$message .= implode('&nbsp;,&nbsp;&nbsp;&nbsp;', $overlapEventUsers);
 			$message .= '</div>';
-			
 		}
 		
 		return $message;
-	}	
+	}
+	
+	/**
+	 * 非公開イベントを公開するか判定する
+	 *
+	 * @param Vtiger_Record_Model $recordModel
+	 * @return bool
+	 */
+	private function canVisiblePrivateEvent(Vtiger_Record_Model $recordModel) : bool
+	{
+		$userModel     = Users_Record_Model::getCurrentUserModel();
+		$currentUserId = $userModel->getId();
+		$eventOwnerId  = $recordModel->get('assigned_user_id');
+		
+		// 非公開イベントではない
+		if($recordModel->get('visibility') !== 'Private') {
+			return true;
+		}
+		
+		// システム管理者ユーザは非公開イベントも閲覧できる
+		if($userModel->isAdminUser()) {
+			return true;
+		}
+		
+		// イベントの所有者が現在のユーザと同じであればは非公開イベントを閲覧できる
+		if($eventOwnerId === $currentUserId) {
+			return true;
+        }
+		
+		// 所有者のグループに現在のユーザが所属していれば非公開イベントを閲覧できる
+		if(in_array(
+			$eventOwnerId, 
+			Vtiger_Util_Helper::getGroupsIdsForUsers($currentUserId))) {
+			return true;
+		}
+		
+		// 管理者プロファイルのすべて表示orすべて編集権限がある場合は非公開イベントを閲覧できる
+		$userPrivilege = Vtiger_AccessControl::loadUserPrivileges($currentUserId);
+		if($userPrivilege->profileGlobalPermission[1] === 0 
+			|| $userPrivilege->profileGlobalPermission[2] === 0) {
+			return true;
+		}
+
+		return false;
+	}
 }
