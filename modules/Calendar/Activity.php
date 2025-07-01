@@ -1393,7 +1393,20 @@ function insertIntoRecurringTable(& $recurObj)
 		$query = "CREATE TEMPORARY TABLE IF NOT EXISTS $tableName(id INT(11) PRIMARY KEY, shared ".
 			"int(1) DEFAULT 0) IGNORE ".$query;
 		$db = PearDatabase::getInstance();
-		$db->pquery($query, array());
+		$result = $db->pquery($query, array());
+		if(is_object($result)) {
+			$query = "REPLACE INTO $tableName (id) SELECT userid as id FROM vtiger_sharedcalendar WHERE sharedid = ?";
+			$result = $db->pquery($query, array($user->id));
+
+			//For newly created users, entry will not be there in vtiger_sharedcalendar table
+			//so, consider the users whose having the calendarsharedtype is public
+			$query = "REPLACE INTO $tableName (id) SELECT id FROM vtiger_users WHERE calendarsharedtype = ?";
+			$result = $db->pquery($query, array('public'));
+
+			if(is_object($result)) {
+				return true;
+			}
+		}
 	}
 
 	protected function getListViewAccessibleUsers($sharedid) {

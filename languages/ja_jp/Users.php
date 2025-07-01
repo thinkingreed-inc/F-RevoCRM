@@ -28,6 +28,7 @@ $languageStrings = array(
 	'User Name' => 'ユーザー名',
 	'Default Activity View' => 'カレンダーのデフォルト表示',
 	'Default Calendar View' => 'カレンダーのデフォルト表示',
+	'Shared Calendar Todo View' => '共有カレンダーのToDo表示',
 	'Default Lead View' => 'リードのデフォルト表示',
 	'Title' => '役職',
 	'Office Phone' => '会社電話番号',
@@ -235,6 +236,9 @@ $languageStrings = array(
 	'ListView' => 'リスト表示',
 	'MyCalendar' => '個人カレンダー',
 	'SharedCalendar' => '共有カレンダー',
+	'Hidden' => '非表示',
+	'Self Todo' => '自分のToDo',
+	'All Todo' => '全てのToDo',
 
 	'LBL_CHANGE_OWNER' => '担当の変更',
 	'LBL_TRANSFER_OWNERSHIP' => '所有者を変更',

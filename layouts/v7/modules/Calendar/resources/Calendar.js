@@ -416,13 +416,34 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				function () {
 					var curentTarget = jQuery(this);
 					var sourceKey = curentTarget.data('calendarSourcekey');
-					if (curentTarget.is(':checked')) {
+					var curentTargetIsChecked = curentTarget.is(':checked');
+					if (curentTargetIsChecked) {
 						thisInstance.enableFeed(sourceKey);
 						thisInstance.addEvents(curentTarget);
 					} else {
 						thisInstance.disableFeed(sourceKey);
 						thisInstance.removeEvents(curentTarget);
 					}
+
+					// 共有カレンダーの場合はToDoを連動させる
+					// toggleTodoFeed(bootstrap-switch)がYesの場合
+					if (jQuery('input[type="checkbox"].toggleTodoFeed').bootstrapSwitch('state')) {
+						var parent = curentTarget.closest('.calendar-feed-indicator');
+						var sharedTodoInput = parent.find('input.toggleSharedTodo');
+						if (sharedTodoInput.length > 0) {
+							var sharedTodosourceKey = sharedTodoInput.data('calendarSourcekey');
+							if (curentTargetIsChecked) {
+								sharedTodoInput.attr('checked','checked');
+								thisInstance.enableFeed(sharedTodosourceKey);
+								thisInstance.addEvents(sharedTodoInput);
+							} else {
+								sharedTodoInput.removeAttr('checked');
+								thisInstance.disableFeed(sharedTodosourceKey);
+								thisInstance.removeEvents(sharedTodoInput);
+							}
+						}
+					}
+
 					// 全選択チェックボックスを選択・解除する
 					var feedCheckbox = jQuery('#calendarview-feeds-all .toggleCalendarFeed');
 					var params = thisInstance.getCheckedCheckboxCounts();
@@ -434,26 +455,63 @@ Vtiger.Class("Calendar_Calendar_Js", {
 						}
 					}
 				});
+
+		// TODOチェックボックス
+		jQuery('input[type="checkbox"].toggleTodoFeed').on('switchChange.bootstrapSwitch', function (e) {
+			var todoCheckbox = jQuery(this).bootstrapSwitch('state');
+			var $area = jQuery("#calendarview-feeds .feedslist");
+
+			$area.children().each(function(){
+				var eventsTarget = jQuery(this).find('input[type="checkbox"].toggleCalendarFeed:not(.toggleSharedTodo)');
+				var todoTarget = jQuery(this).find('input[type="checkbox"].toggleCalendarFeed.toggleSharedTodo');
+				var sourceKey = todoTarget.data('calendarSourcekey');
+	
+				if (sourceKey !== undefined) {
+					if (todoCheckbox && eventsTarget.is(':checked') && !todoTarget.is(':checked')) {
+						todoTarget.attr('checked','checked');
+						thisInstance.enableFeed(sourceKey);
+						thisInstance.addEvents(todoTarget);
+					} else if (!todoCheckbox && todoTarget.is(':checked')) {
+						todoTarget.removeAttr('checked');
+						thisInstance.disableFeed(sourceKey);
+						thisInstance.removeEvents(todoTarget);
+					}
+				}
+			})
+		});
+
 		// 全選択チェックボックス（現時点では共有カレンダーにのみ実装）
 		jQuery('#calendarview-feeds-all').on('change',
-		'input[type="checkbox"].toggleCalendarFeed',
+				'input[type="checkbox"].toggleCalendarFeed',
 				function () {
 					var feedCheckbox = jQuery(this);
+					var todoCheckbox = jQuery('input[type="checkbox"].toggleTodoFeed').bootstrapSwitch('state');
 					var $area = jQuery("#calendarview-feeds .feedslist");
 
 					$area.children().each(function(){
-						var currentTarget = jQuery(this).find("input");
-						var sourceKey = currentTarget.data('calendarSourcekey');
+						var eventsTarget = jQuery(this).find('input[type="checkbox"].toggleCalendarFeed:not(.toggleSharedTodo)');
+						var todoTarget = jQuery(this).find('input[type="checkbox"].toggleCalendarFeed.toggleSharedTodo');
+						var sourceKey = eventsTarget.data('calendarSourcekey');
 			
 						if (sourceKey !== undefined) {
-							if (feedCheckbox.is(':checked') && !currentTarget.is(':checked')) {
-								currentTarget.attr('checked','checked');
+							if (feedCheckbox.is(':checked') && !eventsTarget.is(':checked')) {
+								eventsTarget.attr('checked','checked');
 								thisInstance.enableFeed(sourceKey);
-								thisInstance.addEvents(currentTarget);
-							} else if (!feedCheckbox.is(':checked') && currentTarget.is(':checked')) {
-								currentTarget.removeAttr('checked');
+								thisInstance.addEvents(eventsTarget);
+								if (todoCheckbox && !todoTarget.is(':checked')) {
+									todoTarget.attr('checked','checked');
+									thisInstance.enableFeed(sourceKey);
+									thisInstance.addEvents(todoTarget);
+								}
+							} else if (!feedCheckbox.is(':checked') && eventsTarget.is(':checked')) {
+								eventsTarget.removeAttr('checked');
 								thisInstance.disableFeed(sourceKey);
-								thisInstance.removeEvents(currentTarget);
+								thisInstance.removeEvents(eventsTarget);
+								if (todoTarget.is(':checked')) {
+									todoTarget.removeAttr('checked');
+									thisInstance.disableFeed(sourceKey);
+									thisInstance.removeEvents(todoTarget);
+								}
 							}
 						}
 					})
@@ -1006,6 +1064,10 @@ Vtiger.Class("Calendar_Calendar_Js", {
 					if(thisInstance.registerGroupChangeEvent) {
 						thisInstance.registerGroupChangeEvent();
 					}
+					jQuery('input[type="checkbox"].toggleTodoFeed').bootstrapSwitch();
+					jQuery('input[type="checkbox"].toggleTodoFeed').bootstrapSwitch('handleWidth', '37px');
+					jQuery('input[type="checkbox"].toggleTodoFeed').bootstrapSwitch('labelWidth', '35px');
+					jQuery('input[type="checkbox"].toggleTodoFeed').bootstrapSwitch('disabled', false);
 				});
 	},
 	changeWidgetDisplayState: function (widget, state) {
@@ -1532,17 +1594,39 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			case 'Mobile Call' :
 				className = 'fa fa-mobile';
 				break;
+			case 'Task' :
+				className = 'fa fa-check';
+				break;
 		}
 		return className;
 	},
 	addActivityTypeIcons: function (event, element) {
-		element.find('.fc-content > .fc-time').prepend(
+		if (event.activitytype === 'Task') {
+			element.find('.fc-content').prepend(
 				'<span>' +
-				'<i class="' + this.getActivityTypeClassName(event.activitytype) + '"></i>' +
+				'<i class="' + this.getTaskCompleteTypeClassName(event.status) + '"></i>' +
 				'</span>&nbsp;'
 				);
+		} else {
+			element.find('.fc-content > .fc-time').prepend(
+					'<span>' +
+					'<i class="' + this.getActivityTypeClassName(event.activitytype) + '"></i>' +
+					'</span>&nbsp;'
+					);
+		}
 	},
-	
+	getTaskCompleteTypeClassName: function (status) {
+		var className = '';
+		switch (status) {
+			case 'Completed' :
+				className = 'fa fa-check-square';
+				break;
+			default:
+				className = 'fa fa-square';
+				break;
+		}
+		return className;
+	},
 	// 月表示終了時間を追加
 	addMonthViewEventEndTime: function (event, element, viewName) {
 		if (viewName !== 'month' || !event.end) return;
