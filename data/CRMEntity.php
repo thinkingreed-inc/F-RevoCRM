@@ -220,7 +220,8 @@ class CRMEntity {
 		// temporary file will be deleted at the end of request
                 $log->debug("Upload status of file => $upload_status");
 		if ($save_file == true && $upload_status == true) {
-			if($attachmentType != 'Image' && $this->mode == 'edit') {
+			// Emailsモジュールでは複数の添付ファイルを付けることが可能なので、明示的削除したもの以外は消さない
+			if($attachmentType != 'Image' && $this->mode == 'edit' && $module !== 'Emails') {
 				//Only one Attachment per entity delete previous attachments
 				$res = $adb->pquery('SELECT vtiger_seattachmentsrel.attachmentsid FROM vtiger_seattachmentsrel 
 									INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_seattachmentsrel.attachmentsid AND vtiger_crmentity.setype = ? 
