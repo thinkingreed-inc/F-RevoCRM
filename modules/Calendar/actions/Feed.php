@@ -523,6 +523,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 				$taskpriority = '('.decode_html(vtranslate($taskpriority, 'Calendar')).') ';
 			}
 
+			$crmid = $record['activityid'];
 			if(!$currentUser->isAdminUser() && $visibility == 'Private' && $userid && $userid != $currentUser->getId() && $recordHidden) {
 				continue;
 			} else if ($userid && $userid != $currentUser->getId()) {
@@ -533,7 +534,6 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 				$item['url']   = sprintf('index.php?module=Calendar&view=Detail&record=%s', $crmid);
 			}
 
-			$crmid = $record['activityid'];
 			$item['status'] = $record['status'];
 			$item['activitytype'] = vtranslate($record['activitytype'], 'Calendar');
 			$item['id'] = $crmid;
