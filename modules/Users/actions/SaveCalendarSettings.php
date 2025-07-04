@@ -16,7 +16,17 @@ class Users_SaveCalendarSettings_Action extends Users_Save_Action {
 		
 		$recordModel->save();
 		$this->saveCalendarSharing($request);
-		header("Location: index.php?module=Calendar&view=Calendar");
+
+		$arrayofViews = array('ListView' => 'List', 'MyCalendar' => 'Calendar','SharedCalendar'=>'SharedCalendar');
+		$calendarViewName = $recordModel->get('defaultcalendarview');
+		if(array_key_exists($calendarViewName, $arrayofViews)) {
+			$calendarViewName = $arrayofViews[$calendarViewName];
+		}
+		if(empty($calendarViewName)) {
+			$calendarViewName = 'Calendar';
+		}
+
+		header("Location: index.php?module=Calendar&view=$calendarViewName");
 	}
 
 	/**

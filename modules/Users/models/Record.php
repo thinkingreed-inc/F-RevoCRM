@@ -973,4 +973,15 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		return $userModuleModel->checkDuplicateUser($userName);
 	}
 
+	public function getSharedCalendarTodoView() {
+		global $adb;
+
+		$result = $adb->pquery('SELECT sharedcalendartodoview FROM vtiger_users WHERE id = ?', array($this->getId()));
+		$sharedcalendartodoview = $adb->query_result($result, 0, 'sharedcalendartodoview');
+		if(empty($sharedcalendartodoview)) {
+			$sharedcalendartodoview = 'Hidden';
+		}
+
+		return $sharedcalendartodoview;
+	}
 }

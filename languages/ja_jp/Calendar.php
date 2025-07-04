@@ -17,6 +17,7 @@ $languageStrings = array(
 	'LBL_RECORDS_LIST' => '活動一覧',
 	'LBL_EVENTS' => '活動',
 	'LBL_TODOS' => 'TODO',
+	'LBL_SHOW_TODOS' => 'TODOの表示',
 	'LBL_CALENDAR_SETTINGS' => 'カレンダー設定',
 	'LBL_CALENDAR_SHARING' => 'カレンダー共有',
 	'LBL_DEFAULT_EVENT_DURATION' => 'デフォルトの活動周期',

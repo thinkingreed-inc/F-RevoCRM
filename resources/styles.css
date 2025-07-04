@@ -707,6 +707,15 @@ ul#productsImageContainer > li a{
   align-items: center;
 }
 
+.calendarTodoSelect {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  margin: 8px;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
 /* レコード編集画面のpadding-leftを可変ではなく固定にする */
 @media (min-width: 992px) {
   .editViewPageDiv.viewContent > .content-area {

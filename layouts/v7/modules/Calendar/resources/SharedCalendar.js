@@ -14,6 +14,13 @@ Calendar_Calendar_Js('Calendar_SharedCalendar_Js', {
 	},
 
 	getFeedRequestParams : function(start,end,feedCheckbox) {
+		var thisInstance = this;
+		var URL_Search = new URLSearchParams(location.search);
+		var isSharedCalendar = (URL_Search.get('view') == 'SharedCalendar');
+		if (isSharedCalendar && feedCheckbox.data('calendarFeed') === 'Calendar') {
+			return thisInstance.getToDoFeedRequestParams(start, end, feedCheckbox);
+		}
+
 		var dateFormat = 'YYYY-MM-DD';
 		var startDate = start.format(dateFormat);
 		var endDate = end.format(dateFormat);
@@ -28,11 +35,29 @@ Calendar_Calendar_Js('Calendar_SharedCalendar_Js', {
 		};
 	},
 
+	getToDoFeedRequestParams : function(start,end,feedCheckbox) {
+		var dateFormat = 'YYYY-MM-DD';
+		var startDate = start.format(dateFormat);
+		var endDate = end.format(dateFormat);
+		return {
+			'start': startDate,
+			'end': endDate,
+			'type': feedCheckbox.data('calendarFeed'),
+			'fieldname': feedCheckbox.data('calendarFieldname'),
+			'color': feedCheckbox.data('calendarFeedColor'),
+			'textColor': feedCheckbox.data('calendarFeedTextcolor'),
+			'conditions': feedCheckbox.data('calendarFeedConditions'),
+			'userid' : feedCheckbox.data('calendarUserid')
+		};
+	},
+
 	removeEvents : function(feedCheckbox) {
+		var module = feedCheckbox.data('calendarFeed');
 		var userId = feedCheckbox.data('calendarUserid');
 		this.getCalendarViewContainer().fullCalendar('removeEvents', 
 		function(eventObj) {
-			return parseInt(userId) === parseInt(eventObj.userid);
+			// ここでIDのみでON/OFFしてるのでカレンダーとTODOでいい感じに切り分ける必要ある
+			return module === eventObj.module && parseInt(userId) === parseInt(eventObj.userid);
 		});
 	},
 
@@ -43,9 +68,27 @@ Calendar_Calendar_Js('Calendar_SharedCalendar_Js', {
 		if(color === '' || typeof color === 'undefined') {
 			color = app.storage.get(sourcekey);
 			if(!color) {
-				color = thisInstance.getRandomColor();
+				// feedCheckbox.closest('.calendar-feed-indicator')のbackground-colorを取得し、存在すればそのcolorを使用
+				var bgColor = feedCheckbox.closest('.calendar-feed-indicator').css('background-color');
+				if (bgColor && bgColor !== 'rgba(0, 0, 0, 0)' && bgColor !== 'transparent') {
+					color = bgColor;
+					app.storage.set(sourcekey, color);
+				} else {
+					color = thisInstance.getRandomColor();
+					app.storage.set(sourcekey, color);
+				}
+			}
+
+			if (color && color.startsWith('rgb')) {
+				// rgbまたはrgbaをhexに変換
+				var rgb = color.replace(/[^\d,]/g, '').split(',');
+				var r = parseInt(rgb[0], 10);
+				var g = parseInt(rgb[1], 10);
+				var b = parseInt(rgb[2], 10);
+				color = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 				app.storage.set(sourcekey, color);
 			}
+
 			feedCheckbox.data('calendarFeedColor',color);
 			feedCheckbox.closest('.calendar-feed-indicator').css({'background-color':color});
 		}
@@ -287,15 +330,18 @@ Calendar_Calendar_Js('Calendar_SharedCalendar_Js', {
 			var $area = $(".list-group.feedslist");
 			var myId = null;
 			$area.children().each(function(){
-				var currentTarget = jQuery(this).find("input");
-				var sourceKey = currentTarget.data('calendarSourcekey');
+				var eventsTargets = jQuery(this).find('input[type="checkbox"].toggleCalendarFeed:not(.toggleSharedTodo)');
+				var todoTargets = jQuery(this).find('input[type="checkbox"].toggleCalendarFeed.toggleSharedTodo');
 				if($(this).is(".mine")) {
-					myId = currentTarget.attr("data-calendar-userid");
+					myId = eventsTargets.attr("data-calendar-userid");
 					// 自分以外のユーザーの活動を移動した場合に、自分の予定が変更されないためrefreshFeedを実行する
 					thisInstance.refreshFeed($(".activitytype-indicator.calendar-feed-indicator.mine").find("input[type='checkbox']"));
 				} else {
 					// thisInstance.disableFeed(sourceKey);
-					thisInstance.removeEvents(currentTarget);
+					thisInstance.removeEvents(eventsTargets);
+					if (todoTargets.length) {
+						thisInstance.removeEvents(todoTargets);
+					}
 					$(this).remove();
 				}
 			})
@@ -317,7 +363,7 @@ Calendar_Calendar_Js('Calendar_SharedCalendar_Js', {
 					feedIndicatorTemplate.removeClass('.feed-indicator-template');
 					var newFeedIndicator = feedIndicatorTemplate.clone(true,true);
 					newFeedIndicator.find('span:first').addClass('userName textOverflowEllipsis').text(user).attr('title',user);
-					var newFeedCheckbox = newFeedIndicator.find('.toggleCalendarFeed');
+					var newFeedCheckbox = newFeedIndicator.find('input[type="checkbox"].toggleCalendarFeed:not(.toggleSharedTodo)');
 					newFeedCheckbox.attr('data-calendar-sourcekey','Events_'+id).
 					attr('data-calendar-feed','Events').
 					attr('data-calendar-fieldlabel',user).
@@ -342,6 +388,24 @@ Calendar_Calendar_Js('Calendar_SharedCalendar_Js', {
 						// thisInstance.enableFeed('Events_'+id);
 					}
 					thisInstance.addEvents(newFeedCheckbox);
+
+					var todoFeedCheckbox = newFeedIndicator.find('input[type="checkbox"].toggleCalendarFeed.toggleSharedTodo');
+					if(todoFeedCheckbox.length && jQuery('input[type="checkbox"].toggleTodoFeed').bootstrapSwitch('state')) {
+						todoFeedCheckbox.attr('data-calendar-sourcekey','Calendar_'+id).
+						attr('data-calendar-feed','Calendar').
+						attr('data-calendar-fieldlabel',user).
+						attr('data-calendar-fieldname','date_start,due_date').
+						attr('data-calendar-type','Calendar_'+id).
+						attr('data-calendar-userid',id).
+						attr('data-calendar-group',"").
+						attr('checked','checked');
+
+						todoFeedCheckbox.data('calendarFeedColor',color)
+							.data('calendarFeedTextcolor',textColor);
+
+						thisInstance.addEvents(todoFeedCheckbox);
+					}
+
 
 					if(target != "Calendar") {
 						newFeedIndicator.find("i").remove();

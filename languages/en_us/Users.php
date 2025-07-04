@@ -28,6 +28,7 @@ $languageStrings = array(
 	'User Name' => 'User Name',
 	'Default Activity View' => 'Default MyCalendar View',
 	'Default Calendar View' => 'Default Calendar View',
+	'Shared Calendar Todo View' => 'Shared Calendar Todo View',
 	'Default Lead View' => 'Default Lead View',
 	'Title' => 'Title',
 	'Office Phone' => 'Office Phone',
@@ -235,6 +236,9 @@ $languageStrings = array(
 	'ListView' => 'List View',
 	'MyCalendar' => 'My Calendar',
 	'SharedCalendar' => 'Shared Calendar',
+	'Hidden' => 'Hidden',
+	'Self Todo' => 'Self Todo',
+	'All Todo' => 'All Todo',
 
 	'LBL_CHANGE_OWNER' => 'Change Owner',
 	'LBL_TRANSFER_OWNERSHIP' => 'Transfer Ownership',
