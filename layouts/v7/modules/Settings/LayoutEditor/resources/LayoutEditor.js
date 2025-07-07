@@ -974,6 +974,11 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 					case 'MultiSelectCombo':type = 'Multipicklist';break;
 				}
 				data.type = type;
+
+				//チェックボックス項目から、または選択肢(複数)からの変更の場合、デフォルト値に何も表示されないようにする
+				if(nameAttr == 'fieldDefaultValue' && type != typeBeforeChange && (typeBeforeChange == 'Boolean' || typeBeforeChange == 'Multipicklist')){
+					data.value = "";
+				}
 				typeBeforeChange = type;
 
 				if (typeof data.picklistvalues == "undefined")
