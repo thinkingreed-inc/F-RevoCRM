@@ -142,7 +142,9 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
 	 */
 	public function getDetailViewUrl() {
 		$module = $this->getModule();
-		return 'index.php?module='.$this->getModuleName().'&view='.$module->getDetailViewName().'&record='.$this->getId();
+		$cv = new CustomView();
+		$viewId = $cv->getViewId($module->getName());
+		return 'index.php?module='.$this->getModuleName().'&view='.$module->getDetailViewName().'&record='.$this->getId().'&viewname='.$viewId;
 	}
 
 	/**
@@ -163,7 +165,9 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
 	 */
 	public function getEditViewUrl() {
 		$module = $this->getModule();
-		return 'index.php?module='.$this->getModuleName().'&view='.$module->getEditViewName().'&record='.$this->getId();
+		$cv = new CustomView();
+		$viewId = $cv->getViewId($module->getName());
+		return 'index.php?module='.$this->getModuleName().'&view='.$module->getEditViewName().'&record='.$this->getId().'&viewname='.$viewId;
 	}
 
 	/**

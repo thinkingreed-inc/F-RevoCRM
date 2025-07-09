@@ -154,14 +154,40 @@ Vtiger_List_Js("Documents_List_Js", {
             el.closest('li').addClass('active');
             el.closest('li').find('i').removeClass('fa-folder').addClass('fa-folder-open');
             
+            defferred = jQuery.Deferred();
             self.loadFilter(jQuery('input[name="allCvId"]').val(), {
                 folder_id : 'folderid',
                 folder_value : el.data('filterId')
             });
-            
-			var filtername = jQuery('a[class="filterName"]',element).text();
-			jQuery('.module-action-content').find('.filter-name')
-            .html('&nbsp;&nbsp;<span class="fa fa-chevron-right" aria-hidden="true"></span> ').text(filtername);
+
+            if(element.parent('#folders-list').size() === 0) {
+                var selectedFilter = element.find('a.filterName').andSelf().filter('a.filterName');
+                var filtername =selectedFilter.text();
+                var listName = jQuery('<a></a>').attr('href', selectedFilter.attr('href')).html('&nbsp;&nbsp;' + filtername);
+                listName.on('click', function(e) {
+                    e.preventDefault();
+                    element.click();
+                });
+                var navi = jQuery('.module-action-content').find('.filter-name');
+                navi.find('a').remove();
+                navi.append(listName);
+            } else {
+                //フォルダを選択した場合はAllのリストにする
+                var viewName = jQuery('input[name="allCvId"]').val()
+                console.log(viewName);
+                var selectedFilter = jQuery('.lists-menu .filterName[data-filter-id="'+viewName+'"]');
+                if(selectedFilter.size() > 0) {
+                    var filtername =selectedFilter.text();
+                    var listName = jQuery('<a></a>').attr('href', selectedFilter.attr('href')).html('&nbsp;&nbsp;' + filtername);
+                    listName.on('click', function(e) {
+                        e.preventDefault();
+                        element.click();
+                    });
+                    var navi = jQuery('.module-action-content').find('.filter-name');
+                    navi.find('a').remove();
+                    navi.append(listName);
+                }
+            }
         });
     },
     
