@@ -49,7 +49,7 @@ class Users_Login_Action extends Vtiger_Action_Controller {
             $userCredentialsDate = $currentUser->getUserCredential($userid);
 
             // TODO::parameterモジュールから取得するように変更
-            $forceMultiFactorAuth = true;
+            $forceMultiFactorAuth = Settings_Parameters_Record_Model::getParameterValue("FORCE_MULTI_FACTOR_AUTH");
             if( $forceMultiFactorAuth === true ) {
                 Vtiger_Session::set('first_login', true);
                 Vtiger_Session::set('registration_userid', $userid);

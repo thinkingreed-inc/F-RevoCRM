@@ -35,3 +35,16 @@ if($adb->num_rows($result) == 0) {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
     ");
 }
+
+$record = Settings_Parameters_Record_Model::getInstanceByKey("FORCE_MULTI_FACTOR_AUTH");
+$record->set("key", "FORCE_MULTI_FACTOR_AUTH");
+$record->set("value", "false");
+$record->set("description", "多要素認証を強制するかどうか");
+$record->save();
+
+
+$record = Settings_Parameters_Record_Model::getInstanceByKey("USER_LOCK_TIME");
+$record->set("key", "USER_LOCK_TIME");
+$record->set("value", "30");
+$record->set("description", "ユーザーロック時間（分）");
+$record->save();

@@ -37,13 +37,27 @@ class Users_Login_View extends Vtiger_View_Controller {
 
 		try{
 			$rssPath = "https://f-revocrm.jp/?feed=rss2";
-			$xml = new SimpleXMLElement($rssPath, LIBXML_NOCDATA, true);
-			$jsonData = json_decode(json_encode($xml));
-			$dataCount = php7_count($jsonData->channel->item);
-		}catch(Throwable $e){
-			$dataCount = 0;
-			global $log;
-			$log->error($e->getMessage());
+
+			$context = stream_context_create([
+					'http' => [
+							'timeout' => 3
+					]
+			]);
+			$data = file_get_contents($rssPath, false, $context);
+
+			if ($data === false) {
+					// エラー処理
+					$dataCount = 0;
+			} else {
+					$xml = new SimpleXMLElement($data);
+					$jsonData = json_decode(json_encode($xml));
+					$dataCount = php7_count($jsonData->channel->item);
+			}
+
+		}catch(Exception $e){
+				$dataCount = 0;
+				global $log;
+				$log->error($e->getMessage());
 		}
 
 		$oldTextLength = vglobal('listview_max_textlength');

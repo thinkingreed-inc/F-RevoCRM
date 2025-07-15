@@ -19,7 +19,7 @@
 <option value="default">{vtranslate('My Group', $MODULE)}</option>
 <optgroup label="-- {vtranslate('Role', 'Users')} --">
 {foreach key=ROLE_ID item=ROLE from=$ALL_ROLES}
-<option value="{$ROLE_ID}">{$ROLE->get('rolename')}</option>
+<option value="{$ROLE_ID}">{vtranslate($ROLE->get('rolename'))}</option>
 {/foreach}
 </optgroup>
 <optgroup label="-- {vtranslate('LBL_GROUPS', $MODULE)} --">

@@ -1116,7 +1116,12 @@ class Users_Record_Model extends Vtiger_Record_Model {
 				$interval = $currentTime->diff($lockDateTime);
 				$minutesPassed = ($interval->days * 24 * 60) + ($interval->h * 60) + $interval->i;
 
-				if ($minutesPassed >= 30) {
+                $lock_time = Settings_Parameters_Record_Model::getParameterValue("USER_LOCK_TIME");
+                if($lock_time === null || $lock_time === '' || !is_numeric($lock_time) || $lock_time === -1) {
+                    return true;
+                }
+                $lock_time = (int)$lock_time; 
+				if ($minutesPassed >= $lock_time) {
 					// 30分以上経過している場合、ロックを解除
 					$deleteQuery = "DELETE FROM `vtiger_user_lock` WHERE `userid` = ?";
 					$db->pquery($deleteQuery, array($userid));
