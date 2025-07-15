@@ -209,7 +209,19 @@ Vtiger_Detail_Js("Users_Detail_Js",{
 			}
 		});
 	},
-	
+
+    triggerAddMultiFactorAuthenticationNextStep: function (url) {
+        app.helper.showProgress();
+        app.request.post({'url': url}).then(function (err, data) {
+            if (err === null) {
+                app.helper.hideProgress();
+                app.helper.loadPageContentOverlay(data);
+            } else {
+                app.helper.showErrorNotification({'message': err.message});
+            }
+        });
+        return false;
+    },
 },{
 	registerAjaxPreSaveEvent: function () {
 		var self = this;

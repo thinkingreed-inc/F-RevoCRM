@@ -287,10 +287,35 @@ $languageStrings = array(
 	'LBL_INVALID_USERNAME_OR_MAILADDRESS' => '無効なユーザー名またはE-mailアドレス',
 	'LBL_MAIL_SERVER_NOT_CONFIGURED' => 'メールサーバが設定されていません',
 	'LBL_AN_EMAIL_WAS_SENT_TO_THE_ADDRESS' => 'アドレスにメールを送信しました',
+    'LBL_FORCE_TWO_FACTOR_SETUP_STEP1' => '2要素認証の設定 ステップ1',
+    'LBL_FORCE_TWO_FACTOR_SETUP_STEP2' => '2要素認証の設定 ステップ2',
+    'LBL_ADD_PASSKEY' => 'パスキー認証の設定を追加する',
+    'LBL_ADD_TOTP' => 'タイムベース認証の設定を追加する',
+    'LBL_FORCE_TWO_FACTOR_SETUP_STEP1_DESCRIPTION' => '2要素認証を有効にするには、以下の手順に従ってください。<br>1. パスキーまたはTOTPを追加します。<br>2. 2要素認証を有効にします。',
+    'LBL_TWO_FACTOR_TYPE' => '2要素認証のタイプ',
+    'LBL_TWO_FACTOR_TOTP_DESCRIPTION_1' => '以下のQRコードを認証アプリ（Google Authenticator、Authyなど）でスキャンします。',
+    'LBL_TWO_FACTOR_TOTP_DESCRIPTION_2' => 'または、このシークレットキーを手動で入力してください。',
+    'LBL_TWO_FACTOR_TOTP_DESCRIPTION_3' => '下にアプリで発行されたコードを入力し、関連付けが正常に行われていることを確認してください。',
+    'LBL_ENTER_TOTP_CODE' => 'TOTPコードを入力してください',
+    'LBL_DEVICE_NAME' => 'デバイス名',
+    'LBL_FAILED_TO_REGISTER_USER_AUTHENTICATION' => 'ユーザー認証情報の登録に失敗しました。',
+    'LBL_FAILED_TO_PASSKEY_VERIFYKEY' => 'パスキーの検証に失敗しました。もう一度お試しください。',
+    'LBL_USE_PASSKEY' => 'パスキーを使用する',
+    'LBL_MULTI_FACTOR_AUTH' => '多要素認証',
+    'LBL_USER_CREDENTIAL_TYPE' => 'ユーザー認証情報タイプ',
+    'LBL_USER_CREDENTIAL_DEVICE_NAME' => 'デバイス名',
+    'LBL_USER_CREDENTIAL_CREATE_AT' => '登録日時',
+    'LBL_USER_CREDENTIAL_DELETE_FAILED_NOT_FOUND' => 'ユーザー認証情報が見つかりません。',
+    'LBL_ADD_MULTI_FACTOR_AUTHENTICATION' => '多要素認証の追加',
+    'LBL_ADD_DEVICE_NAME' => 'どのデバイスと関連付けたかわかるような名前を登録してください。',
+    'LBL_ERROR_ADD_USER_CREDENTIAL' => 'ユーザー認証情報の登録に失敗しました。',
+    'LBL_TOTP_CODE_INCORRECT' => 'TOTPコードが正しくありません。もう一度お試しください。',
+    'LBL_PASSKEY_CODE_INCORRECT' => 'PassKey認証に失敗しました。もう一度お試しください。',
+    'LBL_TOTP_CODE_TRY_LIMIT_EXCEEDED' => 'TOTPコードの試行回数が制限を超えました。',
+    'LBL_PASSKEY_TRY_LIMIT_EXCEEDED' => 'PassKey認証の試行回数が制限を超えました。',
 );
 
 $jsLanguageStrings = array(
-
 	//Curency seperator validation messages
 	'JS_ENTER_OLD_PASSWORD'=>'古いパスワードを入力してください。',
 	'JS_ENTER_NEW_PASSWORD'=>'新しいパスワードを入力してください。',
@@ -307,4 +332,9 @@ $jsLanguageStrings = array(
 	'JS_ENTER_NEW_PASSWORD' => '新しいパスワードを入力してください。',
 	'JS_REENTER_PASSWORDS' => '新しいパスワードとパスワードの確認は同じ文字列を入力してください。',
 	'JS_PASSWORD_COMPLEXITY' => '複雑なパスワードを指定してください（アルファベット大文字・小文字、数字、記号を含む8文字以上）。',
+    
+    'JS_WEBAUTHN_ERROR' => 'WebAuthn未対応ブラウザ、またはHTTPSでアクセスしてください',
+    'JS_CONFIRM_DELETE_CREDENTIAL' => 'ユーザー認証情報を削除しますか？',
+    'JS_USER_CREDENTIAL_DELETE_SUCCESS' => 'ユーザー認証情報を削除しました。',
+    'JS_USER_CREDENTIAL_DELETE_FAILED' => 'ユーザー認証情報の削除に失敗しました。',
 );

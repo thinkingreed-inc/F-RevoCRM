@@ -8,6 +8,11 @@
  * All Rights Reserved.
  *************************************************************************************/
 
+use Webauthn\PublicKeyCredentialSource;
+use Webauthn\Denormalizer\WebauthnSerializerFactory;
+use Webauthn\AttestationStatement\AttestationStatementSupportManager;
+use Webauthn\AttestationStatement\NoneAttestationStatementSupport;
+
 class Users_Record_Model extends Vtiger_Record_Model {
 	
 	/**
@@ -973,4 +978,196 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		return $userModuleModel->checkDuplicateUser($userName);
 	}
 
+    /**
+     * Undocumented function
+     *
+     * @param int $userid
+     * @return array|bool
+     */
+    public function getUserCredential($userid = null) {
+        if(!$userid) {
+            $userid = $this->getId();
+        }
+        $db = PearDatabase::getInstance();
+        $query = "SELECT * FROM `vtiger_user_credentials` WHERE `userid` = ?";
+        $result = $db->pquery($query, array($userid));
+        $MultiFactorAuth = array();
+        if ($db->num_rows($result) > 0) {
+            while($row = $db->fetch_array($result))
+            {
+                $MultiFactorAuth[] = array(
+                    "id" => $row['id'],
+                    "userid" => $userid,
+                    "type" => $row['type'],
+                    "device_name" => $row['device_name'],
+                    "totp_secret" => $row['totp_secret'],
+                    "credential_id" => $row['credential_id'],
+                    "public_key" => $row['public_key'],
+                    "signature_count" => $row['signature_count'],
+                    "created_at" => $row['created_at']
+                );
+            }
+
+            return $MultiFactorAuth;
+        }
+        return false;
+    }
+
+    public function getTotpSecret()
+    {
+        $userid = $this->getId();
+        $db = PearDatabase::getInstance();
+        $query = "SELECT `totp_secret` FROM `vtiger_user_credentials` WHERE `userid` = ? AND `type` = 'totp'";
+        $result = $db->pquery($query, array($userid));
+        if ($db->num_rows($result) > 0) {
+            $row = $db->fetch_array($result);
+            return $row['totp_secret'];
+        }
+        return false;
+    }
+
+    // 試行回数のカウントアップ
+    public function countUpSignatureCount()
+    {
+        $db = PearDatabase::getInstance();
+        $query = "UPDATE `vtiger_user_credentials` SET `signature_count` = `signature_count` + 1 WHERE `userid` = ?";
+        $params = array($this->getId());
+        try {
+            $db->pquery($query, $params);
+            return true;
+        } catch (Exception $e) {
+            global $log;
+            $errMsg = "User credential error: "
+                        .$e->getMessage().":".$e->getTraceAsString();
+            $log->error($errMsg);
+            return false;
+        }
+    }
+
+    // 試行回数のリセット
+    public function resetSignatureCount()   
+    {
+        $db = PearDatabase::getInstance();
+        $query = "UPDATE `vtiger_user_credentials` SET `signature_count` = 0 WHERE `userid` = ?";
+        $params = array($this->getId());
+        try {
+            $db->pquery($query, $params);
+            return true;
+        } catch (Exception $e) {
+            global $log;
+            $errMsg = "User credential error: "
+                        .$e->getMessage().":".$e->getTraceAsString();
+            $log->error($errMsg);
+            return false;
+        }
+    }
+
+    // 試行回数の制限を超えた場合はエラー
+    public function isMultiFactorLoginLimitExceeded($type)
+    {
+        $userid = $_SESSION['authenticated_user_id'];
+        $db = PearDatabase::getInstance();
+        $query = "SELECT `signature_count` FROM `vtiger_user_credentials` WHERE `userid` = ? AND `type` = ?";
+        $params = array($userid, $type);
+        $result = $db->pquery($query, $params);
+        
+        if ($db->num_rows($result) > 0) {
+            $row = $db->fetch_array($result);
+            if ($row['signature_count'] >= 5) { // 5回以上の試行で制限
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function userLock()
+    {
+
+    }
+
+    /**
+     * 多要素の削除を行うメソッド
+     * @param int $id
+     * @return bool 成功した場合はtrue、失敗した場合はfalse
+     */
+    public function deleteMultiFactorAuthentication($id) {
+        $db = PearDatabase::getInstance();
+        $sql = "DELETE FROM `vtiger_user_credentials` WHERE `id` = ?";
+        $params = array($id);
+        
+        try {
+            $db->pquery($sql, $params);
+            return true;
+        } catch (Exception $e) {
+            global $log;
+            $errMsg = "User credential error: "
+                        .$e->getMessage().":".$e->getTraceAsString();
+            $log->error($errMsg);
+            return false;
+        }
+    }
+    /**
+     * Passkeyの登録を行うメソッド
+     *
+     * @param int $userid ユーザーID
+     * @param string $device_name デバイス名
+     * @param PublicKeyCredentialSource $publicKeyCredentialSource 登録するパブリックキー認証情報
+     * @return bool 成功した場合はtrue、失敗した場合はfalse
+     */
+    public function passkeyRegisterUserCredential($userid, $device_name, $publicKeyCredentialSource) {
+        $attestationStatementSupportManager = new AttestationStatementSupportManager();
+        $attestationStatementSupportManager->add(new NoneAttestationStatementSupport());
+        
+        $serializer = (new WebauthnSerializerFactory($attestationStatementSupportManager))->create();
+
+        // JSON 文字列にシリアライズ
+        $credentialJson = $serializer->serialize(
+            $publicKeyCredentialSource,
+            'json'
+        );
+        // データベースに保存
+        $db = PearDatabase::getInstance();
+        $sql = "INSERT INTO `vtiger_user_credentials` (`userid`, `type`, `device_name`, `passkey_credential`, `signature_count`)
+                VALUES (?, ?, ?, ?, ?)";
+        $params = array(
+            $userid,
+            'passkey',
+            $device_name,
+            $credentialJson,
+            0
+        );
+
+        try {
+            $db->pquery($sql, $params);
+            return true;
+        } catch (Exception $e) {
+            global $log;
+            $errMsg = "User credential error: "
+                        .$e->getMessage().":".$e->getTraceAsString();
+            $log->error($errMsg);
+            return false;
+        }
+    }
+
+    public function totpRegisterUserCredential($userid, $totp_secret, $device_name)
+    {
+        $sql = "INSERT INTO `vtiger_user_credentials` (`userid`, `type`, `device_name`, `totp_secret`) VALUES (?, ?, ?, ?)";
+        $db = PearDatabase::getInstance();
+        $params = array(
+            $userid,
+            'totp',
+            $device_name,
+            $totp_secret 
+        );
+        try {
+            $db->pquery($sql, $params);
+            return true;
+        } catch (Exception $e) {
+            global $log;
+            $errMsg = "User credential error: "
+                        .$e->getMessage().":".$e->getTraceAsString();
+            $log->error($errMsg);
+            return false;
+        }
+    }
 }

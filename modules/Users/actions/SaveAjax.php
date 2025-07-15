@@ -19,6 +19,7 @@ class Users_SaveAjax_Action extends Vtiger_SaveAjax_Action {
 		$this->exposeMethod('transferOwner');
 		$this->exposeMethod('changeUsername');
 		$this->exposeMethod('changeAccessKey');
+        $this->exposeMethod('saveMultiFactorAuthentication');
 	}
     
     public function requiresPermission(\Vtiger_Request $request) {
@@ -290,4 +291,63 @@ class Users_SaveAjax_Action extends Vtiger_SaveAjax_Action {
 		}
 		$response->emit();
 	}
+
+     public function saveMultiFactorAuthentication(Vtiger_Request $request) {
+        $viewer = $this->getViewer($request);
+        $moduleName = $request->get('module');
+        $userId = $request->get('userid');
+        $type = $request->get('type');
+        $username = $request->get('username');
+        $userCredentialHelper = new Users_MultiFactorAuthentication_Helper();
+
+        $currentUser = Users_Record_Model::getCurrentUserModel();
+        $device_name = $request->get('device_name');
+        $response = new Vtiger_Response();
+        if( $type == "totp") {
+            $totp_code = $request->get('totp_code');
+            $totp_secret = $request->get('secret');
+            $verifyKey = $userCredentialHelper->totpVerifyKey($totp_secret, $totp_code);
+            if( $verifyKey === false )
+            {
+                $response->setError(vtranslate("LBL_TOTP_CODE_INCORRECT"), 'Users');
+            } else {
+                $result = $currentUser->totpRegisterUserCredential($userId, $totp_secret, $device_name);
+                if($result === false)
+                {
+                    $response->setError(vtranslate("LBL_ERROR_ADD_USER_CREDENTIAL"), 'Users');
+                }
+                else {
+                    if( $_SESSION['first_login'] == true ) {
+                        $response->setResult(array('success' => true, 'login' => 'true', 'link' => "index.php?module=Users&view=ForceAddMultiFactorAuthentication&step=step3&userid=" . $userId));
+                    } else {
+                        // 通常の登録処理
+                        $response->setResult(array('success' => true));
+                    }
+                }
+            }
+        } else {
+            $challenge = $request->get('challenge');
+            $credential = $request->get('credential');
+            $verifyKey = $userCredentialHelper->passkeyRegisterVerifyKey($challenge,$credential,$userId,$username);
+            if($verifyKey === false)
+            {
+                $viewer->assign("ERROR", "LBL_FAILED_TO_PASSKEY_VERIFYKEY");
+            } else {
+                $result = $currentUser->passkeyRegisterUserCredential($userId,$device_name, $verifyKey);
+                if($result === false)
+                {
+                    $response->setError(vtranslate("LBL_FAILED_TO_REGISTER_USER_AUTHENTICATION"), 'Users');
+                } else {
+                    if( $_SESSION['first_login'] == true ) {
+                        // 初回ログイン時はログイン処理を行う
+                        $response->setResult(array('success' => true, 'login' => 'true', 'link' => "index.php?module=Users&view=ForceAddMultiFactorAuthentication&step=step3&userid=" . $userId));
+                    } else {
+                        // 通常の登録処理
+                        $response->setResult(array('success' => true));
+                    }
+                }
+            }
+        }
+        $response->emit();
+    }
 }

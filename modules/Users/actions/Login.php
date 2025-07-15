@@ -26,36 +26,64 @@ class Users_Login_Action extends Vtiger_Action_Controller {
 		$user->column_fields['user_name'] = $username;
 
 		if ($user->doLogin($password)) {
-			session_regenerate_id(true); // to overcome session id reuse.
-
-			$userid = $user->retrieve_user_id($username);
-			Vtiger_Session::set('AUTHUSERID', $userid);
-
-			// For Backward compatability
-			// TODO Remove when switch-to-old look is not needed
-			$_SESSION['authenticated_user_id'] = $userid;
-			$_SESSION['app_unique_key'] = vglobal('application_unique_key');
-			$_SESSION['authenticated_user_language'] = vglobal('default_language');
-
-			//Enabled session variable for KCFINDER 
-			$_SESSION['KCFINDER'] = array(); 
-			$_SESSION['KCFINDER']['disabled'] = false; 
-			$_SESSION['KCFINDER']['uploadURL'] = "test/upload"; 
-			$_SESSION['KCFINDER']['uploadDir'] = "../test/upload";
-			$deniedExts = implode(" ", vglobal('upload_badext'));
-			$_SESSION['KCFINDER']['deniedExts'] = $deniedExts;
-			// End
-
-			//Track the login History
+            $userid = $user->retrieve_user_id($username);
 			$moduleModel = Users_Module_Model::getInstance('Users');
 			$moduleModel->saveLoginHistory($user->column_fields['user_name']);
-			//End
-						
+
+            $currentUser = Users_Record_Model::getCurrentUserModel();
+
+            session_regenerate_id(true);
+			
+
 			if(isset($_SESSION['return_params'])){
 				$return_params = $_SESSION['return_params'];
 			}
 
-			header ('Location: index.php?module=Users&parent=Settings&view=SystemSetup');
+            $userCredentialsDate = $currentUser->getUserCredential($userid);
+
+            // TODO::parameterモジュールから取得するように変更
+            $forceMultiFactorAuth = true;
+            if( $forceMultiFactorAuth === true ) {
+                Vtiger_Session::set('first_login', true);
+                Vtiger_Session::set('registration_userid', $userid);
+                Vtiger_Session::set('registration_username', $username);
+            }
+
+            if( $forceMultiFactorAuth === true && $userCredentialsDate === false )
+            {
+                // 2要素認証の設定ページへリダイレクト
+                header ('Location: index.php?module=Users&view=ForceAddMultiFactorAuthentication&step=step1');
+            } else if( $userCredentialsDate !== false ) {
+                // 2要素認証の認証ページへリダイレクト
+                header ('Location: index.php?module=Users&view=MultiFactorAuth');
+            } else {
+                Vtiger_Session::set('AUTHUSERID', $userid);
+
+                // For Backward compatability
+                // TODO Remove when switch-to-old look is not needed
+                $_SESSION['authenticated_user_id'] = $userid;
+                $_SESSION['app_unique_key'] = vglobal('application_unique_key');
+                $_SESSION['authenticated_user_language'] = vglobal('default_language');
+
+                //Enabled session variable for KCFINDER 
+                $_SESSION['KCFINDER'] = array(); 
+                $_SESSION['KCFINDER']['disabled'] = false; 
+                $_SESSION['KCFINDER']['uploadURL'] = "test/upload"; 
+                $_SESSION['KCFINDER']['uploadDir'] = "../test/upload";
+                $deniedExts = implode(" ", vglobal('upload_badext'));
+                $_SESSION['KCFINDER']['deniedExts'] = $deniedExts;
+                // End
+
+                //Track the login History
+                $moduleModel = Users_Module_Model::getInstance('Users');
+                $moduleModel->saveLoginHistory($user->column_fields['user_name']);
+                //End
+                            
+                if(isset($_SESSION['return_params'])){
+                    $return_params = $_SESSION['return_params'];
+                }
+                header ('Location: index.php?module=Users&parent=Settings&view=SystemSetup');
+            }
 			exit();
 		} else {
 			//Track the login History

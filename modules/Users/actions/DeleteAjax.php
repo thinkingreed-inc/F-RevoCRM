@@ -24,7 +24,36 @@ class Users_DeleteAjax_Action extends Vtiger_Delete_Action {
 			throw new AppException(vtranslate('LBL_PERMISSION_DENIED', 'Vtiger'));
 		}
 	}
-	
+
+    public function deleteUserCredential($credentialId) {
+        $response = new Vtiger_Response();
+
+        if (empty($credentialId)) {
+            $response->setResult(['success' => false, 'message' => 'Invalid parameters.']);
+            $response->emit();
+            return;
+        }
+
+        $currentUser = Users_Record_Model::getCurrentUserModel();
+        try {
+            $result = $currentUser->deleteMultiFactorAuthentication($credentialId);
+            if ($result === true) {
+                $response->setResult(['success' => true]);
+            } else {
+                $response->setResult([
+                    'success' => false,
+                    'message' => 'LBL_USER_CREDENTIAL_DELETE_FAILED_NOT_FOUND',
+                ]);
+            }
+        } catch (Exception $e) {
+            $response->setResult([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ]);
+        }
+        $response->emit();
+    }
+
 	public function process(Vtiger_Request $request) {
 		$moduleName = $request->getModule();
         $ownerId = $request->get('userid');
@@ -36,6 +65,10 @@ class Users_DeleteAjax_Action extends Vtiger_Delete_Action {
 
 		if($mode == 'permanent'){
             Users_Record_Model::deleteUserPermanently($ownerId, $newOwnerId);
+        } elseif($mode == 'credential') {
+            $credentialId = $request->get('credential_id');
+            $this->deleteUserCredential($credentialId);
+            exit;
         } else {
             $userId = vtws_getWebserviceEntityId($moduleName, $ownerId);
             $transformUserId = vtws_getWebserviceEntityId($moduleName, $newOwnerId);

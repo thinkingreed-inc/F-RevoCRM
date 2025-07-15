@@ -204,7 +204,7 @@
 
 	<span class="app-nav"></span>
 	<div class="container-fluid loginPageContainer">
-		<div class="col-lg-5 col-md-12 col-sm-12 col-xs-12">
+		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 			<div class="loginDiv widgetHeight">
 				<img class="img-responsive user-logo" src="{$COMPANY_LOGO->get('imagepath')}" alt="{$COMPANY_LOGO->get('alt')}">
 				<div>
@@ -250,64 +250,6 @@
 							<span>パスワードをメールで送信します<a class="forgotPasswordLink pull-right" style="color: #15c;">戻る</a></span>
 						</div>
 					</form>
-				</div>
-			</div>
-		</div>
-
-		<div class="col-lg-1 hidden-xs hidden-sm hidden-md">
-			<div class="separatorDiv"></div>
-		</div>
-
-		<div class="col-lg-5 hidden-xs hidden-sm hidden-md">
-			<div class="marketingDiv widgetHeight">
-				{if $JSON_DATA}
-					<div class="scrollContainer">
-						{assign var=ALL_BLOCKS_COUNT value=0}
-						{foreach key=BLOCK_NAME item=BLOCKS_DATA from=$JSON_DATA}
-							{if $BLOCKS_DATA}
-								<div>
-									<h4>{$BLOCKS_DATA[0].heading}</h4>
-									<ul class="bxslider">
-										{foreach item=BLOCK_DATA from=$BLOCKS_DATA}
-											<li class="slide">
-												{assign var=ALL_BLOCKS_COUNT value=$ALL_BLOCKS_COUNT+1}
-												{if $BLOCK_DATA.image}
-													<div class="col-lg-3" style="min-height: 100px;"><img src="{$BLOCK_DATA.image}" style="width: 100%;height: 100%;margin-top: 10px;"/></div>
-													<div class="col-lg-9">
-												{else}
-													<div class="col-lg-12">
-												{/if}
-												<div title="{$BLOCK_DATA.summary}">
-													<h3><b>{$BLOCK_DATA.displayTitle}</b></h3>
-													{$BLOCK_DATA.displaySummary}<br><br>
-													{$BLOCK_DATA.pubDate}<br>
-													<a href="{$BLOCK_DATA.url}" target="_blank"><u>{$BLOCK_DATA.urlalt}</u></a>
-													<br><br>
-												</div>
-												{if $BLOCK_DATA.image}
-													</div>
-												{else}
-													</div>
-												{/if}
-											</li>
-										{/foreach}
-									</ul>
-								</div>
-								{if $ALL_BLOCKS_COUNT neq $DATA_COUNT}
-									<br>
-									<hr>
-								{/if}
-							{/if}
-						{/foreach}
-					</div>
-				{else}
-					<div class="inActiveImgDiv">
-						<div>
-							<h4>{vtranslate("LBL_F-Revo_Notice","Users")}</h4>
-						</div>
-						<a href="https://f-revocrm.jp" target="_blank" style="margin-right: 25px;"><img src="https://f-revocrm.jp/frevowp/wp-content/uploads/2021/09/image_frevo_top.png" style="width: 85%; height: 100%; margin-top: 25px;"/></a>
-					</div>
-				{/if}
 				</div>
 			</div>
 		</div>

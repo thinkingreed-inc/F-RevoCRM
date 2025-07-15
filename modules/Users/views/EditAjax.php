@@ -15,6 +15,8 @@ Class Users_EditAjax_View extends Vtiger_IndexAjax_View {
 		parent::__construct();
 		$this->exposeMethod('changePassword');
 		$this->exposeMethod('changeUsername');
+        $this->exposeMethod('addMultiFactorAuthenticationStep1');
+        $this->exposeMethod('addMultiFactorAuthenticationStep2');
 	}
 
 	public function checkPermission(Vtiger_Request $request){
@@ -56,4 +58,51 @@ Class Users_EditAjax_View extends Vtiger_IndexAjax_View {
 		$viewer->view('ChangeUsername.tpl', $moduleName);
 	}
 
+    public function addMultiFactorAuthenticationStep1(Vtiger_Request $request) {
+        $viewer = $this->getViewer($request);
+		$moduleName = $request->get('module');
+		$userId = $request->get('record');
+
+        $passkeyurl = "javascript:Users_Detail_Js.triggerAddMultiFactorAuthenticationNextStep('index.php?module=Users&view=EditAjax&mode=addMultiFactorAuthenticationStep2&type=passkey&userid=$userId')";
+        $totpurl = "javascript:Users_Detail_Js.triggerAddMultiFactorAuthenticationNextStep('index.php?module=Users&view=EditAjax&mode=addMultiFactorAuthenticationStep2&type=totp&userid=$userId')";
+
+        $viewer->assign('PASSKEY_URL', $passkeyurl);
+        $viewer->assign('TOTP_URL', $totpurl);
+		$viewer->assign('MODULE', $moduleName);
+		$viewer->assign('USERID', $userId);
+		$viewer->assign('CURRENT_USER_MODEL', Users_Record_Model::getCurrentUserModel());
+        return $viewer->view('AddMultiFactorAuthenticationStep1.tpl', 'Users');
+    }
+
+    
+    public function addMultiFactorAuthenticationStep2(Vtiger_Request $request) {
+        $viewer = $this->getViewer($request);
+		$moduleName = $request->get('module');
+        $userId = $request->get('userid');
+        $type = $request->get('type');
+        // 現在のURLを取得
+        $currentUrl = $request->get('current_url');
+
+        $currentUserModel = Users_Record_Model::getCurrentUserModel();
+        $username = $currentUserModel->get('user_name');
+
+        $userCredentialHelper = new Users_MultiFactorAuthentication_Helper();
+		
+        if( $type == "totp") { 
+            $secret = $userCredentialHelper->getSecret($type);
+            $viewer->assign('SECRET', $secret);
+            $viewer->assign('QRCODEURL',$userCredentialHelper->getQRcodeUrl($username, $secret));
+        }
+
+        $viewer->assign('VIEW', 'EditAjax');
+        $viewer->assign('TYPE', $type);
+        
+        $viewer->assign('BACK_URL', "javascript:Users_Detail_Js.triggerAddMultiFactorAuthenticationNextStep('index.php?module=Users&view=EditAjax&mode=addMultiFactorAuthenticationStep1&record='.$userId.')");
+        $viewer->assign('HOSTNAME', $_SERVER['SERVER_NAME']);
+		$viewer->assign('MODULE', $moduleName);
+		$viewer->assign('USERID', $userId);
+        $viewer->assign('USERNAME', $username);
+		$viewer->assign('CURRENT_USER_MODEL', Users_Record_Model::getCurrentUserModel());
+        return $viewer->view('AddMultiFactorAuthenticationStep2.tpl', 'Users');
+    }
 }
