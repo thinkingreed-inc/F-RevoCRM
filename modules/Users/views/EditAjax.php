@@ -97,7 +97,7 @@ Class Users_EditAjax_View extends Vtiger_IndexAjax_View {
         $viewer->assign('VIEW', 'EditAjax');
         $viewer->assign('TYPE', $type);
         
-        $viewer->assign('BACK_URL', "javascript:Users_Detail_Js.triggerAddMultiFactorAuthenticationNextStep('index.php?module=Users&view=EditAjax&mode=addMultiFactorAuthenticationStep1&record='.$userId.')");
+        $viewer->assign('BACK_URL', "javascript:Users_Detail_Js.triggerAddMultiFactorAuthenticationNextStep('index.php?module=Users&view=EditAjax&mode=addMultiFactorAuthenticationStep1&record=$userId')");
         $viewer->assign('HOSTNAME', $_SERVER['SERVER_NAME']);
 		$viewer->assign('MODULE', $moduleName);
 		$viewer->assign('USERID', $userId);

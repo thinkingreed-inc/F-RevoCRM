@@ -57,7 +57,6 @@ class Users_ForceAddMultiFactorAuthentication_View extends Vtiger_View_Controlle
             $viewer->assign('TOTP_URL', $totpUrl);
             $viewer->view('ForceMultiFactorAuthenticationStep1.tpl', $moduleName);
         } elseif ($step == 'step2') {
-            $viewer->assign('VIEW', 'ForceAddMultiFactorAuthentication');
             if( $type == "totp") { 
                 $secret = $userCredentialHelper->getSecret($type);
                 $viewer->assign('SECRET', $secret);

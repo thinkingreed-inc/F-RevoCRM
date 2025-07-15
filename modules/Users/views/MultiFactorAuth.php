@@ -58,12 +58,13 @@ class Users_MultiFactorAuth_View extends Vtiger_View_Controller {
             if( $passkeyData !== false && count($passkeyData) > 0 ) {
                 // PassKey認証ページへリダイレクト
                 $viewer->assign('type', "passkey");
-            } 
-            $totpData = array_filter($userCredentialData, function($data) {
-                return $data['type'] === 'totp';
-            });
-            if( $totpData !== false && count($totpData) > 0 ) {
-                $viewer->assign('type', "totp");
+            } else{
+                $totpData = array_filter($userCredentialData, function($data) {
+                    return $data['type'] === 'totp';
+                });
+                if( $totpData !== false && count($totpData) > 0 ) {
+                    $viewer->assign('type', "totp");
+                }
             }
         }
         

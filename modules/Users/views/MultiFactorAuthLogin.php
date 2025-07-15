@@ -11,25 +11,25 @@
 class Users_MultiFactorAuthLogin_View extends Vtiger_View_Controller {
 
     function loginRequired() {
-		return false;
-	}
+        return false;
+    }
 
-	function checkPermission(Vtiger_Request $request) {
-		return true;
-	}
+    function checkPermission(Vtiger_Request $request) {
+        return true;
+    }
 
     function preProcess(Vtiger_Request $request, $display = true) {
-		$viewer = $this->getViewer($request);
-		$viewer->assign('PAGETITLE', $this->getPageTitle($request));
-		$viewer->assign('SCRIPTS', $this->getHeaderScripts($request));
-		$viewer->assign('STYLES', $this->getHeaderCss($request));
-		$viewer->assign('MODULE', $request->getModule());
-		$viewer->assign('VIEW', $request->get('view'));
-		$viewer->assign('LANGUAGE_STRINGS', array());
-		if ($display) {
-			$this->preProcessDisplay($request);
-		}
-	}
+        $viewer = $this->getViewer($request);
+        $viewer->assign('PAGETITLE', $this->getPageTitle($request));
+        $viewer->assign('SCRIPTS', $this->getHeaderScripts($request));
+        $viewer->assign('STYLES', $this->getHeaderCss($request));
+        $viewer->assign('MODULE', $request->getModule());
+        $viewer->assign('VIEW', $request->get('view'));
+        $viewer->assign('LANGUAGE_STRINGS', array());
+        if ($display) {
+            $this->preProcessDisplay($request);
+        }
+    }
 
     public function process(Vtiger_Request $request)
     {
@@ -45,66 +45,41 @@ class Users_MultiFactorAuthLogin_View extends Vtiger_View_Controller {
         $username = $_SESSION['registration_username'];
         $type = $request->get('type');
         $userCredentialHelper = new Users_MultiFactorAuthentication_Helper();
-
-        if( $type == 'totp' ) {
-            // TOTP認証の場合
+        $loginResult = false;
+        // 認証種別ごとに認証処理
+        if ($type == 'totp') {
             $totp_code = $request->get('totp_code');
             $secret = $userCredentialHelper->getTotpSecret($userid);
             $loginResult = $userCredentialHelper->totpVerifyKey($secret, $totp_code);
-            if( $loginResult !== false )
-            {
-                // 試行回数のリセット
-                $currentUser->resetSignatureCount($userid);
-                // ログイン処理
-                $userCredentialHelper->LoginProcess($userid, $username);
-                exit;
-            }
-            else
-            {
-                // 試行回数の制限を超えた場合はエラー
-                if( $currentUser->isMultiFactorLoginLimitExceeded($userid,$type) ) {
-                    $viewer->assign("ERROR", "LBL_TOTP_CODE_TRY_LIMIT_EXCEEDED");
-                    //ログインロック状態をセッションに保存
-                    $_SESSION['login_locked'] = true;
-                    #ログインページにリダイレクト
-                    header('Location:index.php?module=Users&view=Login');
-                    exit;
-                }
-                $viewer->assign("ERROR", "LBL_TOTP_CODE_INCORRECT");
-                #ログインページにリダイレクト
-                header('Location:index.php?module=Users&view=Login');
-                exit;
-            }
+            $errorTryLimit = "LBL_TOTP_CODE_TRY_LIMIT_EXCEEDED";
+            $errorIncorrect = "LBL_TOTP_CODE_INCORRECT";
         } else {
-            // PassKey認証の場合
             $credential = $request->get('credential');
             $challenge = $request->get('challenge');
-
             $loginResult = $userCredentialHelper->passkeyLoginVerifyKey($challenge, $credential, $userid, $username);
-            if( $loginResult !== false )
-            {
-                // 試行回数のリセット
-                $currentUser->resetSignatureCount();
-                // ログイン処理
-                $userCredentialHelper->LoginProcess($userid, $username);
-                exit;
-            }
-            else
-            {
-                // 試行回数の制限を超えた場合はエラー
-                if( $currentUser->isPasskeyLoginLimitExceeded($userid,$type) ) {
-                    $viewer->assign("ERROR", "LBL_PASSKEY_TRY_LIMIT_EXCEEDED");
-                    //ログインロック状態をセッションに保存
-                    $_SESSION['login_locked'] = true;
-                    #ログインページにリダイレクト
-                    header('Location:index.php?module=Users&view=Login');
-                    exit;
-                }
-                $viewer->assign("ERROR", "LBL_PASSKEY_CODE_INCORRECT");
-                #ログインページにリダイレクト
+            $errorTryLimit = "LBL_PASSKEY_TRY_LIMIT_EXCEEDED";
+            $errorIncorrect = "LBL_PASSKEY_CODE_INCORRECT";
+        }
+
+        if ($loginResult !== false) {
+            // 試行回数のリセット
+            $currentUser->resetSignatureCount();
+            // ログイン処理
+            $userCredentialHelper->LoginProcess($userid, $username);
+            exit;
+        } else {
+            // 試行回数のカウントアップ
+            $currentUser->countUpSignatureCount($type);
+            // 試行回数の制限を超えた場合はエラー
+            if ($currentUser->isMultiFactorLoginLimitExceeded($type)) {
+                $viewer->assign("ERROR", $errorTryLimit);
+                $_SESSION['login_locked'] = true;
                 header('Location:index.php?module=Users&view=Login');
                 exit;
             }
+            $viewer->assign("ERROR", $errorIncorrect);
+            header('Location:index.php?module=Users&view=Login');
+            exit;
         }
 
         if(isset($_SESSION['return_params'])) {
@@ -118,8 +93,8 @@ class Users_MultiFactorAuthLogin_View extends Vtiger_View_Controller {
     }
 
     function postProcess(Vtiger_Request $request) {
-		$moduleName = $request->getModule();
-		$viewer = $this->getViewer($request);
-		$viewer->view('Footer.tpl', $moduleName);
-	}
+        $moduleName = $request->getModule();
+        $viewer = $this->getViewer($request);
+        $viewer->view('Footer.tpl', $moduleName);
+    }
 }

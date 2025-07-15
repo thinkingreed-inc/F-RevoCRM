@@ -196,20 +196,25 @@ class Users_MultiFactorAuthentication_Helper {
                 );
             
             foreach ($passkey_credential_list as $credentialFromDb) {
-                $userHandle = property_exists($credentialFromDb, 'userHandle') ? $credentialFromDb->userHandle : null;
-                $publicKeyCredentialSource = $authenticatorAssertionResponseValidator->check(
-                    $credentialFromDb,
-                    $requestPublicKeyCredential->response,
-                    $publicKeyCredentialRequestOptions,
-                    $_SERVER['SERVER_NAME'],
-                    $userHandle
-                );
-                
-                if( $publicKeyCredentialSource ) {
-                    return $publicKeyCredentialSource; 
+                try {
+                    $userHandle = property_exists($credentialFromDb, 'userHandle') ? $credentialFromDb->userHandle : null;
+                    $publicKeyCredentialSource = $authenticatorAssertionResponseValidator->check(
+                        $credentialFromDb,
+                        $requestPublicKeyCredential->response,
+                        $publicKeyCredentialRequestOptions,
+                        $_SERVER['SERVER_NAME'],
+                        $userHandle
+                    );
+                    if ($publicKeyCredentialSource) {
+                        return $publicKeyCredentialSource;
+                    }
+                } catch (Exception $e) {
+                    global $log;
+                    $log->error("Credential check failed for one credential: " . $e->getMessage());
+                    // 例外は握りつぶして次のcredentialへ
                 }
             }
-
+            // 全件失敗した場合のみfalseを返す
             return false;
         } catch (Exception $e) {
             global $log;
@@ -375,7 +380,7 @@ class Users_MultiFactorAuthentication_Helper {
 
         //Track the login History
         $moduleModel = Users_Module_Model::getInstance('Users');
-        $moduleModel->saveLoginHistory($user->column_fields['user_name']);
+        $moduleModel->saveLoginHistory($username);
         //End
                     
         if(isset($_SESSION['return_params'])){

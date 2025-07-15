@@ -21,6 +21,13 @@ class Users_SaveAjax_Action extends Vtiger_SaveAjax_Action {
 		$this->exposeMethod('changeAccessKey');
         $this->exposeMethod('saveMultiFactorAuthentication');
 	}
+
+    function loginRequired() {
+        if($_SESSION['first_login'] == true) {
+            return false;
+        }
+        return true;
+	}
     
     public function requiresPermission(\Vtiger_Request $request) {
 		return array();
@@ -293,8 +300,6 @@ class Users_SaveAjax_Action extends Vtiger_SaveAjax_Action {
 	}
 
      public function saveMultiFactorAuthentication(Vtiger_Request $request) {
-        $viewer = $this->getViewer($request);
-        $moduleName = $request->get('module');
         $userId = $request->get('userid');
         $type = $request->get('type');
         $username = $request->get('username');
@@ -309,12 +314,12 @@ class Users_SaveAjax_Action extends Vtiger_SaveAjax_Action {
             $verifyKey = $userCredentialHelper->totpVerifyKey($totp_secret, $totp_code);
             if( $verifyKey === false )
             {
-                $response->setError(vtranslate("LBL_TOTP_CODE_INCORRECT"), 'Users');
+                $response->setError(vtranslate("LBL_TOTP_CODE_INCORRECT", 'Users'));
             } else {
                 $result = $currentUser->totpRegisterUserCredential($userId, $totp_secret, $device_name);
                 if($result === false)
                 {
-                    $response->setError(vtranslate("LBL_ERROR_ADD_USER_CREDENTIAL"), 'Users');
+                    $response->setError(vtranslate("LBL_ERROR_ADD_USER_CREDENTIAL", 'Users'));
                 }
                 else {
                     if( $_SESSION['first_login'] == true ) {
@@ -331,7 +336,7 @@ class Users_SaveAjax_Action extends Vtiger_SaveAjax_Action {
             $verifyKey = $userCredentialHelper->passkeyRegisterVerifyKey($challenge,$credential,$userId,$username);
             if($verifyKey === false)
             {
-                $viewer->assign("ERROR", "LBL_FAILED_TO_PASSKEY_VERIFYKEY");
+                $response->setError(vtranslate("LBL_FAILED_TO_PASSKEY_VERIFYKEY"), 'Users');
             } else {
                 $result = $currentUser->passkeyRegisterUserCredential($userId,$device_name, $verifyKey);
                 if($result === false)

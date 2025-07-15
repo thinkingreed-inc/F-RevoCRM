@@ -25,6 +25,8 @@ class Users_Login_Action extends Vtiger_Action_Controller {
 		$user = CRMEntity::getInstance('Users');
 		$user->column_fields['user_name'] = $username;
 
+        
+
 		if ($user->doLogin($password)) {
             $userid = $user->retrieve_user_id($username);
 			$moduleModel = Users_Module_Model::getInstance('Users');
@@ -32,9 +34,14 @@ class Users_Login_Action extends Vtiger_Action_Controller {
 
             $currentUser = Users_Record_Model::getCurrentUserModel();
 
-            session_regenerate_id(true);
-			
+            // ユーザーがロックされていないかisLockTimeExpired
+            if (!$currentUser->isLockTimeExpired()) {
+                // ユーザーがロックされている場合はログインを拒否
+                header ('Location: index.php?module=Users&parent=Settings&view=Login&error=user_locked');
+                exit;
+            }
 
+            session_regenerate_id(true);
 			if(isset($_SESSION['return_params'])){
 				$return_params = $_SESSION['return_params'];
 			}

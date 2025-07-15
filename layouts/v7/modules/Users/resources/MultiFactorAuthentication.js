@@ -74,7 +74,7 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
                             return;
                         }
 
-                        Settings_Users_MultiFactorAuthentication_Js.createCredentials(challengeBytes).then(function(cred) {
+                        self.createCredentials(challengeBytes).then(function(cred) {
                             var clientDataJSON = self.arrayBufferToBase64(cred.response.clientDataJSON);
                             var attestationObject = self.arrayBufferToBase64(cred.response.attestationObject);
                             var rawId = self.arrayBufferToBase64(cred.rawId);
@@ -90,32 +90,28 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
                                 clientExtensionResults: cred.clientExtensionResults
                             };
                             // #passkeyFormをpostする
+                            var params = {};
                             var form = $("#passkeyForm");
-                            var params = {
-                                'data': {
-                                    'module': 'Users',
-                                    'action': 'SaveAjax',
-                                    'mode': 'addMultiFactorAuthenticationStep3',
-                                    'challenge': challengeBytes,
-                                    'credential': JSON.stringify(credentialForServer),
-                                    'device_name': form.find('[name="device_name"]').val(),
-                                    'userid': form.find('[name="userid"]').val(),
-                                    'username': form.find('[name="username"]').val()
-                                }
+                            params.url = 'index.php';
+                            params.data = {
+                                'module': 'Users',
+                                'action': 'SaveAjax',
+                                'mode': 'saveMultiFactorAuthentication',
+                                'challenge': challengeBytes,
+                                'credential': JSON.stringify(credentialForServer),
+                                'device_name': form.find('[name="device_name"]').val(),
+                                'userid': form.find('[name="userid"]').val(),
+                                'username': form.find('[name="username"]').val()
                             };
                             app.request.post(params).then(function(err, data) {
                                 if (err === null) {
                                     if( data.login === 'true' ) {
-                                        // 初回ログイン時はログイン処理を行う
-                                        var link = '' + form.find('[name="userid"]').val();
                                         // link先へリダイレクト
-                                        window.location.href = link;
+                                        window.location.href = data.link;
                                     }
                                     else
                                     {
                                         app.helper.hideModal();
-                                        var successMessage = app.vtranslate(data.message);
-                                        app.helper.showSuccessNotification({"message": successMessage});
                                         location.reload();
                                     }
                                     
@@ -126,12 +122,44 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
                         }).catch(function(error) {
                             console.error("Error creating credentials:", error);
                         });
-                    } else {
-                        alert(response.error);
                     }
                 },
                 error: function(xhr, status, error) {
                     console.error('AJAX Error:', error);
+                }
+            });
+        });
+    },
+
+    registerTotpEvents: function() {
+        $(document).on("click", "#totpAdd", function(e) {
+            e.preventDefault();
+            var form = $("#totpForm");
+            var params = {
+                url: 'index.php',
+                data: {
+                    'module': 'Users',
+                    'action': 'SaveAjax',
+                    'mode': 'saveMultiFactorAuthentication',
+                    'secret' : form.find('[name="secret"]').val(),
+                    'view' : form.find('[name="view"]').val(),
+                    'userid' : form.find('[name="userid"]').val(),
+                    'type' : 'totp',
+                    'device_name': form.find('[name="device_name"]').val(),
+                    'totp_code': form.find('[name="totp_code"]').val()
+                }
+            };
+            
+            app.request.post(params).then(function(err, data) {
+                if (err === null) {
+                    if( data.login === 'true' ) {
+                        window.location.href = data.link;
+                    } else{
+                        app.helper.hideModal();
+                        location.reload();
+                    }
+                } else {
+                    app.helper.showErrorNotification({'message': err});
                 }
             });
         });
@@ -175,5 +203,60 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
                 }
             });
         }
+    },
+
+    // ログイン処理
+    authenticationPasskeyEvent: function() {
+        var self = this;
+        $(document).on("click", "#passkeyLoginBtn", function(e){
+            e.preventDefault();
+            $.ajax({
+                url: 'index.php',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    module: 'Users',
+                    action: 'ChallengePasskeyAjax',
+                },
+                success: function(response) {
+                    if (response.success) {
+                        var challenge = response.result;
+                        var challengeBytes = self.base64ToUint8Array(challenge);
+                        $('input[name="challenge"]').val(challengeBytes);
+
+                            if (!navigator.credentials || !navigator.credentials.create) {
+                            console.error(app.vtranslate('JS_WEBAUTHN_ERROR','Users'));
+                            return;
+                        }
+                        try {
+                            navigator.credentials.get({
+                                publicKey: {
+                                    challenge: challengeBytes,
+                                    allowCredentials: response.allowCredentials,
+                                    userVerification: 'required'
+                                }
+                            }).then(function(credential) {
+                                var credentialData = JSON.stringify(credential);
+                                $('input[name="credential"]').val(credentialData);
+                                $('#passkeyForm').submit();
+                            }).catch(function(error) {
+                                console.error('WebAuthn Error:', error);
+                                alert(app.vtranslate('JS_WEBAUTHN_ERROR','Users'));
+                            });
+                        } catch (error) {
+                            console.error('WebAuthn Error:', error);
+                            alert(app.vtranslate('JS_WEBAUTHN_ERROR','Users'));
+                        }
+                    
+                    } else {
+                        alert(response.error);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', error);
+                    alert('通信エラーが発生しました');
+                }
+            });
+        });
     }
 };

@@ -13,7 +13,7 @@ $result = $adb->query("SHOW TABLES LIKE 'vtiger_user_credentials'");
 if($adb->num_rows($result) == 0) {
     $adb->query("
         CREATE TABLE `vtiger_user_credentials` (
-        `id` int NOT NULL AUTO_INCREMENT,
+        `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
         `userid` int NOT NULL,
         `type` varchar(7) NOT NULL,
         `device_name` varchar(64) DEFAULT NULL,
