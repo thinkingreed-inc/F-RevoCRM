@@ -313,6 +313,9 @@ $languageStrings = array(
     'LBL_PASSKEY_CODE_INCORRECT' => 'PassKey認証に失敗しました。もう一度お試しください。',
     'LBL_TOTP_CODE_TRY_LIMIT_EXCEEDED' => 'TOTPコードの試行回数が制限を超えました。',
     'LBL_PASSKEY_TRY_LIMIT_EXCEEDED' => 'PassKey認証の試行回数が制限を超えました。',
+    'LBL_USE_PASSKEY' => 'パスキーを使用する',
+    'LBL_USE_TOTP' => 'TOTPを使用する',
+    'LBL_TOTP_CODE_SUBMIT' => 'TOTPコードを送信',
 );
 
 $jsLanguageStrings = array(

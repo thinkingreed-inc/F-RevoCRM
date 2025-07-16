@@ -189,6 +189,13 @@
         -ms-flex-pack: center!important;
         justify-content: center !important;
     }
+    .center_line {
+        text-align: center;
+        width: 100px;
+        height: 20px;
+        margin: -20px auto 0px;
+        background-color: #FFF;
+    }
 
     //Animations
     @keyframes inputHighlighter {
@@ -226,8 +233,8 @@
                     {if isset($ERROR)}
                         <div class="failureMessage">{$ERROR}</div>
                     {/if}
-                    {if $type == 'passkey'}
-                        <div class="group">
+                    {if isset($SETPASSKEY)}
+                        <div class="form-horizontal">
                             <form id="passkeyForm" action="index.php" method="post">
                                 <input type="hidden" name="module" value="Users">
                                 <input type="hidden" name="view" value="MultiFactorAuthLogin">
@@ -241,21 +248,25 @@
                                 </button>
                             </form>
                         </div>
-                    {else}
+                    {/if}
+                    {if isset($SETPASSKEY) && isset($SETTOTP)}
+                        <hr>
+                        <div class="center_line">or</div>
+                    {/if}
+                    {if isset($SETTOTP)}
                         <div class="form-horizontal">
-                            <form action="index.php" method="post">
+                            <form id="totpForm" action="index.php" method="post">
                                 <input type="hidden" name="module" value="Users">
                                 <input type="hidden" name="view" value="MultiFactorAuthLogin">
                                 <input type="hidden" name="userid" value="{$userid}">
-                                <input type="hidden" name="type" value="{$type}">
-                                <div class="form-group">
-                                    <div><p class="text-left">{vtranslate('LBL_ENTER_TOTP_CODE','Users')}</p></div>
-                                    <input type="text" id="totp_code" name="totp_code" required>
-                                </div>
-                                <div class="form-group">
-                                    <div class="text-right">
-                                        <button type="submit">{vtranslate('LBL_SUBMIT','Users')}</button>
-                                    </div>
+                                <input type="hidden" name="type" value="totp">
+                                <div><p class="text-left">{vtranslate('LBL_ENTER_TOTP_CODE','Users')}</p></div>
+                                <input type="text" id="totp_code" name="totp_code" required>
+                                <div class="text-right">
+                                    <button type="submit" class="d-flex justify-content-center button buttonBlue">
+                                    <div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock8-icon lucide-clock-8"><path d="M12 6v6l-4 2"/><circle cx="12" cy="12" r="10"/></svg></div>
+                                    <div><span>{vtranslate('LBL_TOTP_CODE_SUBMIT','Users')}</span></div>
+                                </button>
                                 </div>
                             </form>
                             <a href="index.php">{vtranslate('LBL_BACK','Vtiger')}</a>

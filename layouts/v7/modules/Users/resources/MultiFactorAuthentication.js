@@ -101,7 +101,8 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
                                 'credential': JSON.stringify(credentialForServer),
                                 'device_name': form.find('[name="device_name"]').val(),
                                 'userid': form.find('[name="userid"]').val(),
-                                'username': form.find('[name="username"]').val()
+                                'username': form.find('[name="username"]').val(),
+                                'type': 'passkey'
                             };
                             app.request.post(params).then(function(err, data) {
                                 if (err === null) {
@@ -144,9 +145,9 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
                     'secret' : form.find('[name="secret"]').val(),
                     'view' : form.find('[name="view"]').val(),
                     'userid' : form.find('[name="userid"]').val(),
-                    'type' : 'totp',
                     'device_name': form.find('[name="device_name"]').val(),
-                    'totp_code': form.find('[name="totp_code"]').val()
+                    'totp_code': form.find('[name="totp_code"]').val(),
+                    'type' : 'totp',
                 }
             };
             app.request.post(params).then(function(err, data) {
