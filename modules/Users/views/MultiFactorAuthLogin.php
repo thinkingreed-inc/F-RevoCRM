@@ -37,11 +37,9 @@ class Users_MultiFactorAuthLogin_View extends Vtiger_View_Controller {
         $moduleName = $request->getModule(false);
         $moduleModel = Vtiger_Module_Model::getInstance($moduleName);
         $currentUser = Users_Record_Model::getCurrentUserModel();
-
-        $viewer->assign('userid',$_SESSION['registration_userid']);
+        $userid = $request->get('userid');
         $viewer->assign('MODULE_MODEL',$moduleModel);
 
-        $userid = $_SESSION['registration_userid'];
         $username = $_SESSION['registration_username'];
         $type = $request->get('type');
         $userCredentialHelper = new Users_MultiFactorAuthentication_Helper();

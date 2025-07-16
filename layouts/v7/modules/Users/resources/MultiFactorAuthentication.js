@@ -149,7 +149,6 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
                     'totp_code': form.find('[name="totp_code"]').val()
                 }
             };
-            
             app.request.post(params).then(function(err, data) {
                 if (err === null) {
                     if( data.login === 'true' ) {

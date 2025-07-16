@@ -49,20 +49,17 @@ class Users_Login_Action extends Vtiger_Action_Controller {
             $userCredentialsDate = $currentUser->getUserCredential($userid);
 
             // TODO::parameterモジュールから取得するように変更
-            $forceMultiFactorAuth = Settings_Parameters_Record_Model::getParameterValue("FORCE_MULTI_FACTOR_AUTH");
-            if( $forceMultiFactorAuth === true ) {
+            $forceMultiFactorAuth = filter_var(Settings_Parameters_Record_Model::getParameterValue("FORCE_MULTI_FACTOR_AUTH"), FILTER_VALIDATE_BOOLEAN);
+            if( $forceMultiFactorAuth === true && $userCredentialsDate === false )
+            {
                 Vtiger_Session::set('first_login', true);
                 Vtiger_Session::set('registration_userid', $userid);
                 Vtiger_Session::set('registration_username', $username);
-            }
-
-            if( $forceMultiFactorAuth === true && $userCredentialsDate === false )
-            {
                 // 2要素認証の設定ページへリダイレクト
                 header ('Location: index.php?module=Users&view=ForceAddMultiFactorAuthentication&step=step1');
             } else if( $userCredentialsDate !== false ) {
                 // 2要素認証の認証ページへリダイレクト
-                header ('Location: index.php?module=Users&view=MultiFactorAuth');
+                header ('Location: index.php?module=Users&view=MultiFactorAuth&userid='.$userid.'&username='.$username);
             } else {
                 Vtiger_Session::set('AUTHUSERID', $userid);
 
