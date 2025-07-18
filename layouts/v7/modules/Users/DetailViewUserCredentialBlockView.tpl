@@ -8,12 +8,13 @@
 *************************************************************************************}
 
 {strip}
+<input type="hidden" name="recode_id" value="{$RECODEID}">
 <div class="block block_LBL_MULTI_FACTOR_AUTH" data-block="LBL_MULTI_FACTOR_AUTH">
     <div>
         <h4>{vtranslate("LBL_MULTI_FACTOR_AUTH","Users")}</h4>
     </div>
     <hr>
-    <div class="blockData">
+    <div class="blockData multi_factor_credentialList">
         <table class="table detailview-table no-border">
             <thead>
                 <tr>

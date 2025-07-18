@@ -85,13 +85,11 @@ Class Users_EditAjax_View extends Vtiger_IndexAjax_View {
 
         $currentUserModel = Users_Record_Model::getCurrentUserModel();
         $username = $currentUserModel->get('user_name');
-
-        $userCredentialHelper = new Users_MultiFactorAuthentication_Helper();
 		
         if( $type == "totp") { 
-            $secret = $userCredentialHelper->getSecret($type);
+            $secret = Users_MultiFactorAuthentication_Helper::getSecret($type);
             $viewer->assign('SECRET', $secret);
-            $viewer->assign('QRCODEURL',$userCredentialHelper->getQRcodeUrl($username, $secret));
+            $viewer->assign('QRCODEURL',Users_MultiFactorAuthentication_Helper::getQRcodeUrl($username, $secret));
         }
 
         $viewer->assign('VIEW', 'EditAjax');

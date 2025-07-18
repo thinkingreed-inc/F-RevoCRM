@@ -8,7 +8,7 @@
 ************************************************************************************}
 {strip}
 	<script type="text/javascript" src="{vresource_url('libraries/qrcodejs/qrcode.js')}"></script>
-	<style>
+<style>
 		body {
 			background: url(layouts/v7/resources/Images/login-background.jpg);
 			background-position: center;
@@ -55,32 +55,13 @@
 	</style>
 	<span class="app-nav"></span>
 	<div class="container-fluid loginPageContainer">
-		<div class="loginDiv{if $TYPE == "totp"} add-totp-login-page{/if}">
+		<div class="loginDiv">
 			<div id="loginFormDiv">
 				<div class="panel panel-default"">
-					<div class="panel-heading">
-						<h1><img class="img-responsive user-logo" src="{$COMPANY_LOGO->get('imagepath')}" alt="{$COMPANY_LOGO->get('alt')}"></h1>
-					</div>
-					{include file="partials/MultiFactorAuthenticationStep2.tpl"|vtemplate_path:$MODULE ERROR=$ERROR TYPE=$TYPE USERID=$USERID VIEW=$VIEW USERNAME=$USERNAME SECRET=$SECRET QRCODEURL=$QRCODEURL BACK_URL=$BACK_URL}
-					<div class="multi-factor-login-footer">
-						<div class="row">
-							<center>
-								{if $TYPE == "totp"}<button id="totpAdd" class="btn btn-success" onclick="Settings_Users_MultiFactorAuthentication_Js.registerTotpEvents(); return false;">{vtranslate('LBL_SAVE','Users')}</button>{/if}
-								<a href="{$BACK_URL}">{vtranslate('LBL_BACK', $MODULE)}</a>
-							</center>
-						</div>
-					</div>
+					<p>{vtranslate('LBL_SUCCESSFULLY_ADDED_USER_MULTI_FACTOR_AUTHENTICATION', $MODULE)}</p>
+					<a href="index.php">{vtranslate('LBL_BACK_TO_LOGIN','User')}</a>
 				</div>
 			</div>
 		</div>
 	</div>
-
-	<script type="text/javascript" src="layouts/v7/modules/Users/resources/MultiFactorAuthentication.js"></script>
-	<script type="text/javascript">
-	{if isset($QRCODEURL)}
-		$(function(){
-			Settings_Users_MultiFactorAuthentication_Js.createQRCode("{$QRCODEURL}");
-		});
-	{/if}
-	</script>
 {/strip}

@@ -17,15 +17,17 @@ class Users_DeleteAjax_Action extends Vtiger_Delete_Action {
     
 	public function checkPermission(Vtiger_Request $request) {
 		$currentUser = Users_Record_Model::getCurrentUserModel();
-		 $ownerId = $request->get('userid');
-		if(!$currentUser->isAdminUser()) {
+		$ownerId = $request->get('userid');
+		$mode = $request->get('mode');
+
+		if(!$currentUser->isAdminUser() && $mode !== 'credential') {
 			throw new AppException(vtranslate('LBL_PERMISSION_DENIED', 'Vtiger'));
 		} else if($currentUser->isAdminUser() && ($currentUser->getId() == $ownerId)) {
 			throw new AppException(vtranslate('LBL_PERMISSION_DENIED', 'Vtiger'));
-		}
+		} 
 	}
 
-    public function deleteUserCredential($credentialId) {
+    public function deleteUserCredential($userid, $credentialId) {
         $response = new Vtiger_Response();
 
         if (empty($credentialId)) {
@@ -33,8 +35,8 @@ class Users_DeleteAjax_Action extends Vtiger_Delete_Action {
             $response->emit();
             return;
         }
+        $currentUser = Users_Record_Model::getInstanceById($userid, 'Users');
 
-        $currentUser = Users_Record_Model::getCurrentUserModel();
         try {
             $result = $currentUser->deleteMultiFactorAuthentication($credentialId);
             if ($result === true) {
@@ -57,6 +59,7 @@ class Users_DeleteAjax_Action extends Vtiger_Delete_Action {
 	public function process(Vtiger_Request $request) {
 		$moduleName = $request->getModule();
         $ownerId = $request->get('userid');
+		$recodeid = $request->get('recodeid');
         $newOwnerId = $request->get('transfer_user_id');
         
         $mode = $request->get('mode');
@@ -66,8 +69,8 @@ class Users_DeleteAjax_Action extends Vtiger_Delete_Action {
 		if($mode == 'permanent'){
             Users_Record_Model::deleteUserPermanently($ownerId, $newOwnerId);
         } elseif($mode == 'credential') {
-            $credentialId = $request->get('credential_id');
-            $this->deleteUserCredential($credentialId);
+            $credentialId = $request->get('credentialid');
+            $this->deleteUserCredential($recodeid, $credentialId);
             exit;
         } else {
             $userId = vtws_getWebserviceEntityId($moduleName, $ownerId);

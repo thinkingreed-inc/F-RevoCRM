@@ -1,6 +1,4 @@
 <?php
-require_once 'include/database/PearDatabase.php';
-
 use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialRpEntity;
@@ -35,20 +33,9 @@ use Cose\Algorithm\Signature\ECDSA\ES256;
 use PragmaRX\Google2FA\Google2FA;
 
 class Users_MultiFactorAuthentication_Helper {
-    protected $userid = null;
-    protected $type = null;
-    protected $device_name = null;
-    protected $totp_secret = null;
-    protected $passkey_credential_id = null;
-    protected $signature_count = 0;
-    protected $created_at = null;
-
-    // Table name
-
-    protected $table_name = 'vtiger_user_credentials';
     // ここのCompany name or identifierを変更すると、google authenticatorの登録名が変わります。
     // 変更しない場合は、F-revocrm:「ユーザー名」
-    public function getQRcodeUrl($username, $totp_secret) {
+    public static function getQRcodeUrl($username, $totp_secret) {
         $google2fa = new Google2FA;
         return $google2fa->getQRCodeUrl(
                 'F-revocrm', // Company name or identifier
@@ -57,7 +44,7 @@ class Users_MultiFactorAuthentication_Helper {
             );
     }
 
-    public function getSecret($type){
+    public static function getSecret($type){
         try {
             if( $type == "totp" )
             {
@@ -75,33 +62,32 @@ class Users_MultiFactorAuthentication_Helper {
         
     }
 
-    public function totpVerifyKey($totp_secret, $totp_code)
+    public static function totpVerifyKey($totp_secret, $totp_code)
     {
         $google2fa = new Google2FA;
         return $google2fa->verifyKey($totp_secret, $totp_code);
     }
 
     // セッションチャンレンジが成功するかどうか比較するメソッド
-    public function challengeCompare($challenge) {
+    public static function challengeCompare($challenge) {
+        global $log;
         $session_challenge = $_SESSION['challenge'] ?? '';
-        $decoded_challenge = $this->decodeChallenge($challenge);
-        $decoded_session_challenge = $this->decodeChallenge($session_challenge);
+        $decoded_challenge = self::decodeChallenge($challenge);
+        $decoded_session_challenge = self::decodeChallenge($session_challenge);
         if (!$decoded_challenge || !$decoded_session_challenge) {
-            global $log;
             $log->error("Challenge decode failed");
             return false;
         }
 
         // チャレンジトークンの検証
         if ($decoded_challenge !== $decoded_session_challenge) {
-            global $log;
             $log->error("Challenge mismatch");
             return false;
         }
         return true;
     }
 
-    public function algorithmManager() {
+    public static function algorithmManager() {
         $algorithmManager = Manager::create()
             ->add(
                 ES256::create(),
@@ -124,8 +110,9 @@ class Users_MultiFactorAuthentication_Helper {
         return $algorithmManager;
     }
 
-    public function passkeyLoginVerifyKey($challenge, $credential, $userid, $username) {
-        $sessionChallengeResult = $this->challengeCompare($challenge);
+    public static function passkeyLoginVerifyKey($challenge, $credential, $userid) {
+        global $log, $adb;
+        $sessionChallengeResult = self::challengeCompare($challenge);
         if( !$sessionChallengeResult ) {
             global $log;
             $log->error("Session challenge mismatch");
@@ -133,11 +120,9 @@ class Users_MultiFactorAuthentication_Helper {
         }
 
         try {
-            $db = PearDatabase::getInstance();
             $query = "SELECT `passkey_credential`,`signature_count` FROM `vtiger_user_credentials` WHERE `userid` = ? AND `type` = 'passkey' AND `signature_count` < 5";
-            $result = $db->pquery($query, array($userid));
-            if ($db->num_rows($result) === 0) {
-                global $log;
+            $result = $adb->pquery($query, array($userid));
+            if ($adb->num_rows($result) === 0) {
                 $log->error("No passkey credential found for user: $userid");
                 return false;
             }
@@ -147,9 +132,9 @@ class Users_MultiFactorAuthentication_Helper {
             $attestationStatementSupportManager->add(new NoneAttestationStatementSupport());
             $serializer = (new WebauthnSerializerFactory($attestationStatementSupportManager))->create();
 
-            for($i=0;$i< $db->num_rows($result);$i++)
+            for($i=0;$i< $adb->num_rows($result);$i++)
             {
-                $row = $db->fetch_array($result, $i);
+                $row = $adb->fetch_array($result, $i);
                 $passkey_credential = html_entity_decode($row['passkey_credential']);
                 $passkey_credential_list[] = $serializer->deserialize(
                     $passkey_credential,
@@ -164,7 +149,6 @@ class Users_MultiFactorAuthentication_Helper {
             );
 
             if (!$requestPublicKeyCredential->response instanceof AuthenticatorAssertionResponse) {
-                global $log;
                 $log->error("Invalid credential response type for user: $userid");
                 return false;
             }
@@ -173,7 +157,7 @@ class Users_MultiFactorAuthentication_Helper {
             // ここは実際の環境に合わせて変更する必要があります。
             // プルリクの時にコメントアウトされているので、必要に応じて変更してください。
             $csmFactory = new CeremonyStepManagerFactory();
-            $csmFactory->setAlgorithmManager($this->algorithmManager());
+            $csmFactory->setAlgorithmManager(self::algorithmManager());
             $csmFactory->setAllowedOrigins([
                 'http://localhost',
             ]);
@@ -191,7 +175,7 @@ class Users_MultiFactorAuthentication_Helper {
 
             $publicKeyCredentialRequestOptions =
                 PublicKeyCredentialRequestOptions::create(
-                    $this->decodeChallenge($_SESSION['challenge']),
+                    self::decodeChallenge($_SESSION['challenge']),
                     allowCredentials: $allowedCredentials
                 );
             
@@ -209,15 +193,12 @@ class Users_MultiFactorAuthentication_Helper {
                         return $publicKeyCredentialSource;
                     }
                 } catch (Exception $e) {
-                    global $log;
-                    $log->error("Credential check failed for one credential: " . $e->getMessage());
-                    // 例外は握りつぶして次のcredentialへ
+                    // passkeyは複数あるため、一致パターン以外は例外処理されてしまうため、例外を握りつぶす形で対応。
                 }
             }
             // 全件失敗した場合のみfalseを返す
             return false;
         } catch (Exception $e) {
-            global $log;
             $errMsg = "User credential error: "
                         .$e->getMessage().":".$e->getTraceAsString();
             $log->error($errMsg);
@@ -225,8 +206,8 @@ class Users_MultiFactorAuthentication_Helper {
         }
     }
 
-    public function passkeyRegisterVerifyKey($challenge,$credential,$userid,$username) {
-        $sessionChallengeResult = $this->challengeCompare($challenge);
+    public static function passkeyRegisterVerifyKey($challenge,$credential,$userid,$username) {
+        $sessionChallengeResult = self::challengeCompare($challenge);
         if( !$sessionChallengeResult ) {
             global $log;
             $log->error("Session challenge mismatch");
@@ -238,7 +219,7 @@ class Users_MultiFactorAuthentication_Helper {
             $attestationStatementSupportManager->add(new NoneAttestationStatementSupport());
             
             $serializer = (new WebauthnSerializerFactory($attestationStatementSupportManager))->create();
-            $cleanCredential = $this->cleanBase64Padding($credential);
+            $cleanCredential = self::cleanBase64Padding($credential);
         
             // 受け取った認証情報をデシリアライズ
             $publicKeyCredential = $serializer->deserialize(
@@ -254,7 +235,7 @@ class Users_MultiFactorAuthentication_Helper {
             }
 
             $csmFactory = new CeremonyStepManagerFactory();
-            $csmFactory->setAlgorithmManager($this->algorithmManager());
+            $csmFactory->setAlgorithmManager(self::algorithmManager());
             // localhostを許可オリジンとして設定
             // ここは実際の環境に合わせて変更する必要があります。
             // プルリクの時にコメントアウトされているので、必要に応じて変更してください。
@@ -274,7 +255,7 @@ class Users_MultiFactorAuthentication_Helper {
             $publicKeyCredentialCreationOptions = new PublicKeyCredentialCreationOptions(
                 $rpEntity,
                 $userEntity,
-                $this->decodeChallenge($_SESSION['challenge'])
+                self::decodeChallenge($_SESSION['challenge'])
             );
 
             $publicKeyCredentialSource = $authenticatorAttestationResponseValidator->check(
@@ -289,13 +270,11 @@ class Users_MultiFactorAuthentication_Helper {
             $errMsg = "User credential error: "
                         .$e->getMessage().":".$e->getTraceAsString();
             $log->error($errMsg);
-            var_dump($errMsg);
-            exit;
             return false; // 検証失敗
         }
     }
 
-    private function cleanBase64Padding($credential) {
+    private static function cleanBase64Padding($credential) {
         $cleanCredential = $credential;
         
         // rawIdのパディングを削除
@@ -316,7 +295,7 @@ class Users_MultiFactorAuthentication_Helper {
         return $cleanCredential;
     }
 
-    private function decodeChallenge($challenge) {
+    private static function decodeChallenge($challenge) {
         try {
             if (empty($challenge)) {
                 return false;
@@ -355,8 +334,8 @@ class Users_MultiFactorAuthentication_Helper {
         }
     }
 
-    public function LoginProcess($userid, $username){
-        unset($_SESSION['first_login']);
+    public static function LoginProcess($userid, $username){
+        unset($_SESSION['force_2fa_registration']);
         unset($_SESSION['registration_userid']);
 
         session_regenerate_id(true); // to overcome session id reuse.

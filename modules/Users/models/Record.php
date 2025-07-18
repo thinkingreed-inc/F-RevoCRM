@@ -978,260 +978,204 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		return $userModuleModel->checkDuplicateUser($userName);
 	}
 
-    /**
-     * Undocumented function
-     *
-     * @param int $userid
-     * @return array|bool
-     */
-    public function getUserCredential($userid = null) {
-        if(!$userid) {
-            $userid = $this->getId();
-        }
-        $db = PearDatabase::getInstance();
-        $query = "SELECT * FROM `vtiger_user_credentials` WHERE `userid` = ?";
-        $result = $db->pquery($query, array($userid));
-        $MultiFactorAuth = array();
-        if ($db->num_rows($result) > 0) {
-            while($row = $db->fetch_array($result))
-            {
-                $MultiFactorAuth[] = array(
-                    "id" => $row['id'],
-                    "userid" => $userid,
-                    "type" => $row['type'],
-                    "device_name" => $row['device_name'],
-                    "totp_secret" => $row['totp_secret'],
-                    "credential_id" => $row['credential_id'],
-                    "public_key" => $row['public_key'],
-                    "signature_count" => $row['signature_count'],
-                    "created_at" => $row['created_at']
-                );
-            }
-
-            return $MultiFactorAuth;
-        }
-        return false;
-    }
-
-    public function getTotpSecret()
-    {
-        $userid = $this->getId();
-        $db = PearDatabase::getInstance();
-        $query = "SELECT `totp_secret` FROM `vtiger_user_credentials` WHERE `userid` = ? AND `type` = 'totp'";
-        $result = $db->pquery($query, array($userid));
-        if ($db->num_rows($result) > 0) {
-            $row = $db->fetch_array($result);
-            return $row['totp_secret'];
-        }
-        return false;
-    }
-
-    // 試行回数のカウントアップ
-    public function countUpSignatureCount($type)
-    {
-        $db = PearDatabase::getInstance();
-        $query = "UPDATE `vtiger_user_credentials` SET `signature_count` = `signature_count` + 1 WHERE `userid` = ? AND `type` = ?";
-        $params = array($this->getId(), $type);
-        try {
-            $db->pquery($query, $params);
-            return true;
-        } catch (Exception $e) {
-            global $log;
-            $errMsg = "User credential error: "
-                        .$e->getMessage().":".$e->getTraceAsString();
-            $log->error($errMsg);
-            return false;
-        }
-    }
-
-    // 試行回数のリセット
-    public function resetSignatureCount()   
-    {
-        $db = PearDatabase::getInstance();
-        $query = "UPDATE `vtiger_user_credentials` SET `signature_count` = 0 WHERE `userid` = ?";
-        $params = array($this->getId());
-        try {
-            $db->pquery($query, $params);
-            return true;
-        } catch (Exception $e) {
-            global $log;
-            $errMsg = "User credential error: "
-                        .$e->getMessage().":".$e->getTraceAsString();
-            $log->error($errMsg);
-            return false;
-        }
-    }
-
-    // 試行回数の制限を超えた場合はエラー
-    public function isMultiFactorLoginLimitExceeded($type)
-    {
-        $userid = $this->getId();
-        $db = PearDatabase::getInstance();
-        $query = "SELECT `signature_count` FROM `vtiger_user_credentials` WHERE `userid` = ? AND `type` = ?";
-        $params = array($userid, $type);
-        $result = $db->pquery($query, $params);
-        
-        if ($db->num_rows($result) > 0) {
-            $row = $db->fetch_array($result);
-            if ($row['signature_count'] >= 5) { // 5回以上の試行で制限
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public function userLock()
-    {
-        $db = PearDatabase::getInstance();
-        $userid = $this->getId();
-        $query = "UPDATE `vtiger_user_lock` SET `locktime` = ? WHERE `userid` = ?";
-        $params = array(date('Y-m-d H:i:s'), $userid);
-        try {
-            $db->pquery($query, $params);
-            return true;
-        } catch (Exception $e) {
-            global $log;
-            $errMsg = "User lock error: "
-                        .$e->getMessage().":".$e->getTraceAsString();
-            $log->error($errMsg);
-            return false;
-        }
-    }
-
-	// lock された時刻から30分経過しているかどうかをチェックし、経過していたらuserLockテーブルからレコードを削除する
-	// 30分経過していなければfalseを返す
-	public function isLockTimeExpired()
-	{
-		$db = PearDatabase::getInstance();
+	/**
+	 * Undocumented function
+	 *
+	 * @param int $userid
+	 * @return array
+	 */
+	public function getUserCredential() {
+		global $adb;
 		$userid = $this->getId();
-		$query = "SELECT `locktime` FROM `vtiger_user_lock` WHERE `userid` = ?";
-		$params = array($userid);
-		$result = $db->pquery($query, $params);
-
-		if ($db->num_rows($result) > 0) {
-			$lockTime = $db->query_result($result, 0, 'locktime');
-			if (!empty($lockTime)) {
-				$lockDateTime = new DateTime($lockTime);
-				$currentTime = new DateTime();
-				$interval = $currentTime->diff($lockDateTime);
-				$minutesPassed = ($interval->days * 24 * 60) + ($interval->h * 60) + $interval->i;
-
-                $lock_time = Settings_Parameters_Record_Model::getParameterValue("USER_LOCK_TIME");
-                if($lock_time === null || $lock_time === '' || !is_numeric($lock_time) || $lock_time === -1) {
-                    return true;
-                }
-                $lock_time = (int)$lock_time; 
-				if ($minutesPassed >= $lock_time) {
-					// 30分以上経過している場合、ロックを解除
-					$deleteQuery = "DELETE FROM `vtiger_user_lock` WHERE `userid` = ?";
-					$db->pquery($deleteQuery, array($userid));
-					return true; // ロックが期限切れ
-				}
-				return false; // ロックはまだ有効
+		$query = "SELECT * FROM `vtiger_user_credentials` WHERE `userid` = ?";
+		$result = $adb->pquery($query, array($userid));
+		$MultiFactorAuth = array();
+		if ($adb->num_rows($result) > 0) {
+			while($row = $adb->fetch_array($result))
+			{
+				$MultiFactorAuth[] = array(
+					"id" => $row['id'],
+					"userid" => $userid,
+					"type" => $row['type'],
+					"device_name" => $row['device_name'],
+					"totp_secret" => $row['totp_secret'],
+					"credentialid" => $row['credentialid'],
+					"public_key" => $row['public_key'],
+					"signature_count" => $row['signature_count'],
+					"created_at" => $row['created_at']
+				);
 			}
 		}
-		return true; // ロックされていない
+		return $MultiFactorAuth;
 	}
 
-    /**
-     * 多要素の削除を行うメソッド
-     * @param int $id
-     * @return bool 成功した場合はtrue、失敗した場合はfalse
-     */
-    public function deleteMultiFactorAuthentication($id) {
-        $db = PearDatabase::getInstance();
-        $sql = "DELETE FROM `vtiger_user_credentials` WHERE `id` = ?";
-        $params = array($id);
-        
-        try {
-            $db->pquery($sql, $params);
-            return true;
-        } catch (Exception $e) {
-            global $log;
-            $errMsg = "User credential error: "
-                        .$e->getMessage().":".$e->getTraceAsString();
-            $log->error($errMsg);
-            return false;
-        }
-    }
-    /**
-     * Passkeyの登録を行うメソッド
-     *
-     * @param int $userid ユーザーID
-     * @param string $device_name デバイス名
-     * @param PublicKeyCredentialSource $publicKeyCredentialSource 登録するパブリックキー認証情報
-     * @return bool 成功した場合はtrue、失敗した場合はfalse
-     */
-    public function passkeyRegisterUserCredential($userid, $device_name, $publicKeyCredentialSource) {
-        $attestationStatementSupportManager = new AttestationStatementSupportManager();
-        $attestationStatementSupportManager->add(new NoneAttestationStatementSupport());
-        
-        $serializer = (new WebauthnSerializerFactory($attestationStatementSupportManager))->create();
+	public function getTotpSecret()
+	{
+		global $adb;
+		$userid = $this->getId();
+		$query = "SELECT `totp_secret` FROM `vtiger_user_credentials` WHERE `userid` = ? AND `type` = 'totp'";
+		$result = $adb->pquery($query, array($userid));
+		if ($adb->num_rows($result) > 0) {
+			$row = $adb->fetch_array($result);
+			return $adb['totp_secret'];
+		}
+		return false;
+	}
 
-        // JSON 文字列にシリアライズ
-        $credentialJson = $serializer->serialize(
-            $publicKeyCredentialSource,
-            'json'
-        );
-        // データベースに保存
-        $db = PearDatabase::getInstance();
-        $sql = "INSERT INTO `vtiger_user_credentials` (`userid`, `type`, `device_name`, `passkey_credential`, `signature_count`)
-                VALUES (?, ?, ?, ?, ?)";
-        $params = array(
-            $userid,
-            'passkey',
-            $device_name,
-            $credentialJson,
-            0
-        );
+	// 試行回数のカウントアップ
+	public function countUpSignatureCount($type)
+	{
+		global $adb;
+		$query = "UPDATE `vtiger_user_credentials` SET `signature_count` = `signature_count` + 1 WHERE `userid` = ? AND `type` = ?";
+		$params = array($this->getId(), $type);
+		$adb->pquery($query, $params);
+	}
 
-        try {
-            $db->pquery($sql, $params);
-            return true;
-        } catch (Exception $e) {
-            global $log;
-            $errMsg = "User credential error: "
-                        .$e->getMessage().":".$e->getTraceAsString();
-            $log->error($errMsg);
-            return false;
-        }
-    }
+	// 試行回数のリセット
+	public function resetSignatureCount()   
+	{
+		global $adb;
+		$query = "UPDATE `vtiger_user_credentials` SET `signature_count` = 0 WHERE `userid` = ?";
+		$params = array($this->getId());
+		$adb->pquery($query, $params);
+	}
 
-    public function totpRegisterUserCredential($userid, $totp_secret, $device_name)
-    {
-        if (empty($totp_secret) || empty($device_name)) {
-            global $log;
-            $log->error("TOTP secret or device name is empty.");
-            return false;
-        }
-        // すでにTOTPが登録されているか確認
-        $existingCredentials = $this->getUserCredential($userid);
-        if (!empty($existingCredentials)) {
-            foreach ($existingCredentials as $credential) {
-                if ($credential['type'] === 'totp') {
-                    global $log;
-                    $log->error("TOTP already registered for user ID: $userid");
-                    return false; // 既にTOTPが登録されている場合はエラー
-                }
-            }
-        }
-        $sql = "INSERT INTO `vtiger_user_credentials` (`userid`, `type`, `device_name`, `totp_secret`) VALUES (?, ?, ?, ?)";
-        $db = PearDatabase::getInstance();
-        $params = array(
-            $userid,
-            'totp',
-            $device_name,
-            $totp_secret 
-        );
-        try {
-            $db->pquery($sql, $params);
-            return true;
-        } catch (Exception $e) {
-            global $log;
-            $errMsg = "User credential error: "
-                        .$e->getMessage().":".$e->getTraceAsString();
-            $log->error($errMsg);
-            return false;
-        }
-    }
+	// 試行回数の制限を超えた場合はエラー
+	public function isMultiFactorLoginLimitExceeded($type)
+	{
+		global $adb;
+		$userid = $this->getId();
+		$query = "SELECT `signature_count` FROM `vtiger_user_credentials` WHERE `userid` = ? AND `type` = ?";
+		$params = array($userid, $type);
+		$result = $adb->pquery($query, $params);
+		
+
+        $failureCount = Settings_Parameters_Record_Model::getParameterValue("USER_LOCK_COUNT", "5");
+		// 数値に変換できない文字だった場合は5回をデフォルト値として使用
+		if (!is_numeric($failureCount) || $failureCount <= 0) {
+			$failureCount = 5; // デフォルト値
+		}
+		// 数値に変換
+		$failureCount = (int)$failureCount;
+
+		if ($adb->num_rows($result) > 0) {
+			$row = $adb->fetch_array($result);
+			if ($row['signature_count'] >= $failureCount) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public function userLock()
+	{
+		global $adb;
+		$userid = $this->getId();
+		$query = "INSERT INTO `vtiger_user_lock` (`userid`, `locktime`) 
+				  VALUES (?, ?)";
+		$params = array($userid, date('Y-m-d H:i:s'));
+		$adb->pquery($query, $params);
+	}
+
+	/**
+	 * ロックされているかどうかを確認するメソッド
+	 *
+	 * @return boolean true: ロックされている、false: ロックされていない
+	 */
+	public function isLoginLockedByMFA()
+	{
+		global $adb;
+		$userid = $this->getId();
+		// システム変数からロック時間を取得
+        $lockTimeMin = Settings_Parameters_Record_Model::getParameterValue("USER_LOCK_TIME", "30");
+		// 数値に変換できない文字だった場合は30分をデフォルト値として使用
+		if (!is_numeric($lockTimeMin) || $lockTimeMin <= 0) {
+			$lockTimeMin = 30; // デフォルト値
+		}
+		// 数値に変換
+		$lockTimeMin = (int)$lockTimeMin;
+		$query = "SELECT `locktime` FROM `vtiger_user_lock` WHERE `userid` = ? AND `locktime` > (NOW() - INTERVAL $lockTimeMin MINUTE)";
+		$params = array($userid);
+		$result = $adb->pquery($query, $params);
+
+		if ($adb->num_rows($result) > 0) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * 多要素の削除を行うメソッド
+	 * @param int $id
+	 */
+	public function deleteMultiFactorAuthentication($id) {
+		global $adb;
+		$sql = "DELETE FROM `vtiger_user_credentials` WHERE `id` = ?";
+		$params = array($id);
+		
+		$adb->pquery($sql, $params);
+	}
+	/**
+	 * Passkeyの登録を行うメソッド
+	 *
+	 * @param int $userid ユーザーID
+	 * @param string $device_name デバイス名
+	 * @param PublicKeyCredentialSource $publicKeyCredentialSource 登録するパブリックキー認証情報
+	 * @return bool 成功した場合はtrue、失敗した場合はfalse
+	 */
+	public function passkeyRegisterUserCredential($userid, $device_name, $publicKeyCredentialSource) {
+		global $adb;
+		$attestationStatementSupportManager = new AttestationStatementSupportManager();
+		$attestationStatementSupportManager->add(new NoneAttestationStatementSupport());
+		
+		$serializer = (new WebauthnSerializerFactory($attestationStatementSupportManager))->create();
+
+		// JSON 文字列にシリアライズ
+		$credentialJson = $serializer->serialize(
+			$publicKeyCredentialSource,
+			'json'
+		);
+		// データベースに保存
+		$sql = "INSERT INTO `vtiger_user_credentials` (`userid`, `type`, `device_name`, `passkey_credential`, `signature_count`)
+				VALUES (?, ?, ?, ?, ?)";
+		$params = array(
+			$userid,
+			'passkey',
+			$device_name,
+			$credentialJson,
+			0
+		);
+
+		$adb->pquery($sql, $params);
+			
+	}
+
+	public function totpRegisterUserCredential($totp_secret, $device_name)
+	{
+		global $log, $adb;
+		$userid = $this->getId();
+		if (empty($totp_secret) || empty($device_name)) {
+			global $log;
+			$log->error("TOTP secret or device name is empty.");
+			return false;
+		}
+		// すでにTOTPが登録されているか確認
+		$existingCredentials = $this->getUserCredential();
+		if (!empty($existingCredentials)) {
+			foreach ($existingCredentials as $credential) {
+				if ($credential['type'] === 'totp') {
+					$log->error("TOTP already registered for user ID: $userid");
+					return false; // 既にTOTPが登録されている場合はエラー
+				}
+			}
+		}
+		$sql = "INSERT INTO `vtiger_user_credentials` (`userid`, `type`, `device_name`, `totp_secret`) VALUES (?, ?, ?, ?)";
+		$params = array(
+			$userid,
+			'totp',
+			$device_name,
+			$totp_secret 
+		);
+		$adb->pquery($sql, $params);
+	}
 }

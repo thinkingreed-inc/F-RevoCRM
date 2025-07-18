@@ -25,39 +25,28 @@ class Users_Login_Action extends Vtiger_Action_Controller {
 		$user = CRMEntity::getInstance('Users');
 		$user->column_fields['user_name'] = $username;
 
-        
-
 		if ($user->doLogin($password)) {
             $userid = $user->retrieve_user_id($username);
-			$moduleModel = Users_Module_Model::getInstance('Users');
-			$moduleModel->saveLoginHistory($user->column_fields['user_name']);
+            $currentUser = Users_Record_Model::getInstanceById($userid, 'Users');
 
-            $currentUser = Users_Record_Model::getCurrentUserModel();
-
-            // ユーザーがロックされていないかisLockTimeExpired
-            if (!$currentUser->isLockTimeExpired()) {
+            if ($currentUser->isLoginLockedByMFA()) {
                 // ユーザーがロックされている場合はログインを拒否
                 header ('Location: index.php?module=Users&parent=Settings&view=Login&error=user_locked');
                 exit;
             }
 
             session_regenerate_id(true);
-			if(isset($_SESSION['return_params'])){
-				$return_params = $_SESSION['return_params'];
-			}
+            $userCredentialsData = $currentUser->getUserCredential();
 
-            $userCredentialsDate = $currentUser->getUserCredential($userid);
-
-            // TODO::parameterモジュールから取得するように変更
-            $forceMultiFactorAuth = filter_var(Settings_Parameters_Record_Model::getParameterValue("FORCE_MULTI_FACTOR_AUTH"), FILTER_VALIDATE_BOOLEAN);
-            if( $forceMultiFactorAuth === true && $userCredentialsDate === false )
+            $forceMultiFactorAuth = Settings_Parameters_Record_Model::getParameterValue("FORCE_MULTI_FACTOR_AUTH", "false");
+            if( $forceMultiFactorAuth === "true" && empty($userCredentialsData))
             {
-                Vtiger_Session::set('first_login', true);
+                Vtiger_Session::set('force_2fa_registration', true);
                 Vtiger_Session::set('registration_userid', $userid);
                 Vtiger_Session::set('registration_username', $username);
                 // 2要素認証の設定ページへリダイレクト
                 header ('Location: index.php?module=Users&view=ForceAddMultiFactorAuthentication&step=step1');
-            } else if( $userCredentialsDate !== false ) {
+            } else if( !empty($userCredentialsData) ) {
                 // 2要素認証の認証ページへリダイレクト
                 header ('Location: index.php?module=Users&view=MultiFactorAuth&userid='.$userid.'&username='.$username);
             } else {
@@ -82,10 +71,7 @@ class Users_Login_Action extends Vtiger_Action_Controller {
                 $moduleModel = Users_Module_Model::getInstance('Users');
                 $moduleModel->saveLoginHistory($user->column_fields['user_name']);
                 //End
-                            
-                if(isset($_SESSION['return_params'])){
-                    $return_params = $_SESSION['return_params'];
-                }
+
                 header ('Location: index.php?module=Users&parent=Settings&view=SystemSetup');
             }
 			exit();

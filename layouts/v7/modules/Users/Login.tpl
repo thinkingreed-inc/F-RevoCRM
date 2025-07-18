@@ -23,106 +23,16 @@
 			height: 2px;
 			border-width: 0;
 		}
-		h3, h4 {
-			margin-top: 0px;
-		}
-		hgroup {
-			text-align:center;
-			margin-top: 4em;
-		}
-		input {
-			font-size: 16px;
-			padding: 10px 10px 10px 0px;
-			-webkit-appearance: none;
-			display: block;
-			color: #636363;
-			width: 100%;
-			border: none;
-			border-radius: 0;
-			border-bottom: 1px solid #757575;
-		}
-		input:focus {
-			outline: none;
-		}
-		label {
-			font-size: 16px;
-			font-weight: normal;
-			position: absolute;
-			pointer-events: none;
-			left: 0px;
-			top: 10px;
-			transition: all 0.2s ease;
-		}
-		input:focus ~ label, input.used ~ label {
-			top: -20px;
-			transform: scale(.75);
-			left: -12px;
-			font-size: 18px;
-		}
-		input:focus ~ .bar:before, input:focus ~ .bar:after {
-			width: 50%;
-		}
-		#page {
-			padding-top: 86px;
-		}
-		.widgetHeight {
-			height: 410px;
-			margin-top: 20px !important;
-		}
-		.loginDiv {
-			max-width: 380px;
-			margin: 0 auto;
-			border-radius: 4px;
-			box-shadow: 0 0 10px gray;
-			background-color: #FFFFFF;
-		}
-		.marketingDiv {
-			color: #303030;
-		}
-		.separatorDiv {
-			background-color: #7C7C7C;
-			width: 2px;
-			height: 460px;
-			margin-left: 20px;
-		}
-		.user-logo {
-			height: 110px;
-			margin: 0 auto;
-			padding-top: 40px;
-			padding-bottom: 20px;
-		}
-		.blockLink {
-			border: 1px solid #303030;
-			padding: 3px 5px;
-		}
-		.group {
-			position: relative;
-			margin: 20px 20px 40px;
-		}
-		.failureMessage {
-			color: red;
-			display: block;
-			text-align: center;
-			padding: 0px 0px 10px;
-		}
-		.successMessage {
-			color: green;
-			display: block;
-			text-align: center;
-			padding: 0px 0px 10px;
-		}
-		.inActiveImgDiv {
-			padding: 5px;
-			text-align: center;
-			margin: 30px 0px;
-		}
+
 		.app-footer p {
 			margin-top: 0px;
 		}
+
 		.footer {
 			background-color: #fbfbfb;
 			height:26px;
 		}
+		
 		.bar {
 			position: relative;
 			display: block;
@@ -143,69 +53,12 @@
 		.bar:after {
 			right: 50%;
 		}
-		.button {
-			position: relative;
-			display: inline-block;
-			padding: 9px;
-			margin: .3em 0 1em 0;
-			width: 100%;
-			vertical-align: middle;
-			color: #fff;
-			font-size: 16px;
-			line-height: 20px;
-			-webkit-font-smoothing: antialiased;
-			text-align: center;
-			letter-spacing: 1px;
-			background: transparent;
-			border: 0;
-			cursor: pointer;
-			transition: all 0.15s ease;
-		}
-		.button:focus {
-			outline: 0;
-		}
-		.buttonBlue {
-			background-image: linear-gradient(to bottom, #35aa47 0px, #35aa47 100%)
-		}
-		.ripples {
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			overflow: hidden;
-			background: transparent;
-		}
-
-		//Animations
-		@keyframes inputHighlighter {
-			from {
-				background: #4a89dc;
-			}
-			to 	{
-				width: 0;
-				background: transparent;
-			}
-		}
-		@keyframes ripples {
-			0% {
-				opacity: 0;
-			}
-			25% {
-				opacity: 1;
-			}
-			100% {
-				width: 200%;
-				padding-bottom: 200%;
-				opacity: 0;
-			}
-		}
 	</style>
 
 	<span class="app-nav"></span>
 	<div class="container-fluid loginPageContainer">
-		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-			<div class="loginDiv widgetHeight">
+		<div class="col-lg-5 col-md-12 col-sm-12 col-xs-12">
+			<div class="loginDiv login-widgetHeight">
 				<img class="img-responsive user-logo" src="{$COMPANY_LOGO->get('imagepath')}" alt="{$COMPANY_LOGO->get('alt')}">
 				<div>
 					<span class="{if !$ERROR}hide{/if} failureMessage" id="validationMessage">{vtranslate($MESSAGE,'Users')}</span>
@@ -214,20 +67,20 @@
 
 				<div id="loginFormDiv">
 					<form class="form-horizontal" method="POST" action="index.php">
-						<input type="hidden" name="module" value="Users"/>
-						<input type="hidden" name="action" value="Login"/>
+						<input class="login-input" type="hidden" name="module" value="Users"/>
+						<input class="login-input" type="hidden" name="action" value="Login"/>
 						<div class="group">
-							<input id="username" type="text" name="username" placeholder="{vtranslate('User Name','Users')}">
+							<input class="login-input" id="username" type="text" name="username" placeholder="{vtranslate('User Name','Users')}">
 							<span class="bar"></span>
-							<label>{vtranslate('User Name','Users')}</label>
+							<label class="login-label">{vtranslate('User Name','Users')}</label>
 						</div>
 						<div class="group">
-							<input id="password" type="password" name="password" placeholder="{vtranslate('Password','Users')}" >
+							<input class="login-input" id="password" type="password" name="password" placeholder="{vtranslate('Password','Users')}" >
 							<span class="bar"></span>
-							<label>{vtranslate('Password','Users')}</label>
+							<label class="login-label">{vtranslate('Password','Users')}</label>
 						</div>
 						<div class="group">
-							<button type="submit" class="button buttonBlue">{vtranslate('LBL_LOGIN','Users')}</button><br>
+							<button type="submit" class="login-button login-buttonBlue">{vtranslate('LBL_LOGIN','Users')}</button><br>
 							<a class="forgotPasswordLink" style="color: #15c;">{vtranslate('LBL_FORGET_PASSWORD','Users')}</a>
 						</div>
 					</form>
@@ -236,20 +89,78 @@
 				<div id="forgotPasswordDiv" class="hide">
 					<form class="form-horizontal" action="forgotPassword.php" method="POST">
 						<div class="group">
-							<input id="fusername" type="text" name="username" placeholder="{vtranslate('User Name','Users')}<" >
+							<input class="login-input" id="fusername" type="text" name="username" placeholder="{vtranslate('User Name','Users')}<" >
 							<span class="bar"></span>
-							<label>{vtranslate('User Name','Users')}<</label>
+							<label class="login-label">{vtranslate('User Name','Users')}</label>
 						</div>
 						<div class="group">
-							<input id="email" type="email" name="emailId" placeholder="{vtranslate('LBL_MAILADDRESS','Users')}<" >
+							<input class="login-input" id="email" type="email" name="emailId" placeholder="{vtranslate('LBL_MAILADDRESS','Users')}<" >
 							<span class="bar"></span>
-							<label>{vtranslate('LBL_MAILADDRESS','Users')}</label>
+							<label class="login-label">{vtranslate('LBL_MAILADDRESS','Users')}</label>
 						</div>
 						<div class="group">
-							<button type="submit" class="button buttonBlue forgot-submit-btn">{vtranslate('LBL_MAILADDRESS','Users')}</button><br>
+							<button type="submit" class="login-button login-buttonBlue forgot-submit-btn">{vtranslate('LBL_MAILADDRESS','Users')}</button><br>
 							<span>パスワードをメールで送信します<a class="forgotPasswordLink pull-right" style="color: #15c;">戻る</a></span>
 						</div>
 					</form>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-lg-1 hidden-xs hidden-sm hidden-md">
+		<div class="separatorDiv"></div>
+		</div>
+
+		<div class="col-lg-5 hidden-xs hidden-sm hidden-md">
+			<div class="marketingDiv widgetHeight">
+				{if $JSON_DATA}
+					<div class="scrollContainer">
+						{assign var=ALL_BLOCKS_COUNT value=0}
+						{foreach key=BLOCK_NAME item=BLOCKS_DATA from=$JSON_DATA}
+							{if $BLOCKS_DATA}
+								<div>
+									<h4>{$BLOCKS_DATA[0].heading}</h4>
+									<ul class="bxslider">
+										{foreach item=BLOCK_DATA from=$BLOCKS_DATA}
+											<li class="slide">
+												{assign var=ALL_BLOCKS_COUNT value=$ALL_BLOCKS_COUNT+1}
+												{if $BLOCK_DATA.image}
+													<div class="col-lg-3" style="min-height: 100px;"><img src="{$BLOCK_DATA.image}" style="width: 100%;height: 100%;margin-top: 10px;"/></div>
+													<div class="col-lg-9">
+												{else}
+													<div class="col-lg-12">
+												{/if}
+												<div title="{$BLOCK_DATA.summary}">
+													<h3><b>{$BLOCK_DATA.displayTitle}</b></h3>
+													{$BLOCK_DATA.displaySummary}<br><br>
+													{$BLOCK_DATA.pubDate}<br>
+													<a href="{$BLOCK_DATA.url}" target="_blank"><u>{$BLOCK_DATA.urlalt}</u></a>
+													<br><br>
+												</div>
+												{if $BLOCK_DATA.image}
+													</div>
+												{else}
+													</div>
+												{/if}
+											</li>
+										{/foreach}
+									</ul>
+								</div>
+								{if $ALL_BLOCKS_COUNT neq $DATA_COUNT}
+									<br>
+									<hr>
+								{/if}
+							{/if}
+						{/foreach}
+					</div>
+				{else}
+					<div class="inActiveImgDiv">
+						<div>
+							<h4>{vtranslate("LBL_F-Revo_Notice","Users")}</h4>
+						</div>
+						<a href="https://f-revocrm.jp" target="_blank" style="margin-right: 25px;"><img src="https://f-revocrm.jp/frevowp/wp-content/uploads/2021/09/image_frevo_top.png" style="width: 85%; height: 100%; margin-top: 25px;"/></a>
+					</div>
+				{/if}
 				</div>
 			</div>
 		</div>

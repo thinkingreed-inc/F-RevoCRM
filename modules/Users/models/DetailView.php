@@ -83,13 +83,14 @@ class Users_DetailView_Model extends Vtiger_DetailView_Model {
 										'linkurl'	=> "javascript:Users_Detail_Js.triggerChangeAccessKey('index.php?module=Users&action=SaveAjax&mode=changeAccessKey&record=$recordId')",
 										'linkicon'	=> ''
 									);
-            $detailViewActionLinks[] = array(
-                                        'linktype'	=> 'DETAILVIEW',
-                                        'linklabel' => 'LBL_ADD_MULTI_FACTOR_AUTHENTICATION',
-                                        'linkurl'	=> "javascript:Users_Detail_Js.triggerAddMultiFactorAuthenticationNextStep('index.php?module=Users&view=EditAjax&mode=addMultiFactorAuthenticationStep1&record=$recordId')",
-                                        'linkicon'	=> ''
-                                    );         
-
+			if($currentUserModel->get('id') === $recordId){
+				$detailViewActionLinks[] = array(
+											'linktype'	=> 'DETAILVIEW',
+											'linklabel' => 'LBL_ADD_MULTI_FACTOR_AUTHENTICATION',
+											'linkurl'	=> "javascript:Users_Detail_Js.triggerAddMultiFactorAuthenticationNextStep('index.php?module=Users&view=EditAjax&mode=addMultiFactorAuthenticationStep1&record=$recordId')",
+											'linkicon'	=> ''
+										);
+			}
 			foreach ($detailViewActionLinks as $detailViewLink) {
 				$linkModelList['DETAILVIEW'][] = Vtiger_Link_Model::getInstanceFromValues($detailViewLink);
 			}

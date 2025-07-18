@@ -7,7 +7,7 @@
 * All Rights Reserved.
 ************************************************************************************}
 {strip}
-	<style>
+		<style>
 		body {
 			background: url(layouts/v7/resources/Images/login-background.jpg);
 			background-position: center;
@@ -21,106 +21,16 @@
 			height: 2px;
 			border-width: 0;
 		}
-		h3, h4 {
-			margin-top: 0px;
-		}
-		hgroup {
-			text-align:center;
-			margin-top: 4em;
-		}
-		input {
-			font-size: 16px;
-			padding: 10px 10px 10px 0px;
-			-webkit-appearance: none;
-			display: block;
-			color: #636363;
-			width: 100%;
-			border: none;
-			border-radius: 0;
-			border-bottom: 1px solid #757575;
-		}
-		input:focus {
-			outline: none;
-		}
-		label {
-			font-size: 16px;
-			font-weight: normal;
-			position: absolute;
-			pointer-events: none;
-			left: 0px;
-			top: 10px;
-			transition: all 0.2s ease;
-		}
-		input:focus ~ label, input.used ~ label {
-			top: -20px;
-			transform: scale(.75);
-			left: -12px;
-			font-size: 18px;
-		}
-		input:focus ~ .bar:before, input:focus ~ .bar:after {
-			width: 50%;
-		}
-		#page {
-			padding-top: 86px;
-		}
-		.widgetHeight {
-			height: 410px;
-			margin-top: 20px !important;
-		}
-		.loginDiv {
-			max-width: 380px;
-			margin: 0 auto;
-			border-radius: 4px;
-			box-shadow: 0 0 10px gray;
-			background-color: #FFFFFF;
-		}
-		.marketingDiv {
-			color: #303030;
-		}
-		.separatorDiv {
-			background-color: #7C7C7C;
-			width: 2px;
-			height: 460px;
-			margin-left: 20px;
-		}
-		.user-logo {
-			height: 110px;
-			margin: 0 auto;
-			padding-top: 40px;
-			padding-bottom: 20px;
-		}
-		.blockLink {
-			border: 1px solid #303030;
-			padding: 3px 5px;
-		}
-		.group {
-			position: relative;
-			margin: 20px 20px 40px;
-		}
-		.failureMessage {
-			color: red;
-			display: block;
-			text-align: center;
-			padding: 0px 0px 10px;
-		}
-		.successMessage {
-			color: green;
-			display: block;
-			text-align: center;
-			padding: 0px 0px 10px;
-		}
-		.inActiveImgDiv {
-			padding: 5px;
-			text-align: center;
-			margin: 30px 0px;
-		}
+
 		.app-footer p {
 			margin-top: 0px;
 		}
+
 		.footer {
 			background-color: #fbfbfb;
 			height:26px;
 		}
+		
 		.bar {
 			position: relative;
 			display: block;
@@ -141,88 +51,24 @@
 		.bar:after {
 			right: 50%;
 		}
-		.button {
-			position: relative;
-			display: inline-block;
-			padding: 9px;
-			margin: .3em 0 1em 0;
-			width: 100%;
-			vertical-align: middle;
-			color: #fff;
-			font-size: 16px;
-			line-height: 20px;
-			-webkit-font-smoothing: antialiased;
-			text-align: center;
-			letter-spacing: 1px;
-			background: transparent;
-			border: 0;
-			cursor: pointer;
-			transition: all 0.15s ease;
-		}
-		.button:focus {
-			outline: 0;
-		}
-		.buttonBlue {
-			background-image: linear-gradient(to bottom, #35aa47 0px, #35aa47 100%)
-		}
-		.ripples {
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			overflow: hidden;
-			background: transparent;
-		}
-
-        .d-flex {
-            display: -ms-flexbox!important;
-            display: flex !important;
-        }
-
-        .d-flex div {
-            display: -ms-flexbox!important;
-            display: flex !important;
-            align-items: center;
-        }
-
-        .justify-content-center {
-            -ms-flex-pack: center!important;
-            justify-content: center !important;
-        }
-
-		//Animations
-		@keyframes inputHighlighter {
-			from {
-				background: #4a89dc;
-			}
-			to 	{
-				width: 0;
-				background: transparent;
-			}
-		}
-		@keyframes ripples {
-			0% {
-				opacity: 0;
-			}
-			25% {
-				opacity: 1;
-			}
-			100% {
-				width: 200%;
-				padding-bottom: 200%;
-				opacity: 0;
-			}
-		}
 	</style>
 
 	<span class="app-nav"></span>
-	<div class="container-fluid loginPageContainer">
-        <div class="loginDiv widgetHeight">
-            <img class="img-responsive user-logo" src="{$COMPANY_LOGO->get('imagepath')}" alt="{$COMPANY_LOGO->get('alt')}">
-            <div id="loginFormDiv">
-                {include file="partials/MultiFactorAuthenticationStep1.tpl"|vtemplate_path:$MODULE PASSKEY_URL=$PASSKEY_URL TOTP_URL=$TOTP_URL}
-            </div>
-        </div>
-    </div>
+		<div class="container-fluid loginPageContainer">
+			<div class="row" style="width:100%;">
+				<div class="loginDiv panel panel-default">
+					<img class="img-responsive user-logo center-block" src="{$COMPANY_LOGO->get('imagepath')}" alt="{$COMPANY_LOGO->get('alt')}" style="margin-bottom:24px;">
+					<div id="loginFormDiv" style="flex: 1 0 auto;">
+						{include file="partials/MultiFactorAuthenticationStep1.tpl"|vtemplate_path:$MODULE PASSKEY_URL=$PASSKEY_URL TOTP_URL=$TOTP_URL}
+					</div>
+					<div class="multi-factor-login-footer">
+						<div class="row">
+							<center>
+								<a href="index.php?module=Users&view=Login">{vtranslate('LBL_BACK_TO_LOGIN', 'Users')}</a>
+							</center>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 {/strip}

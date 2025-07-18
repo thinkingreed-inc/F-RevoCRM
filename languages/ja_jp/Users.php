@@ -289,8 +289,8 @@ $languageStrings = array(
 	'LBL_AN_EMAIL_WAS_SENT_TO_THE_ADDRESS' => 'アドレスにメールを送信しました',
     'LBL_FORCE_TWO_FACTOR_SETUP_STEP1' => '2要素認証の設定 ステップ1',
     'LBL_FORCE_TWO_FACTOR_SETUP_STEP2' => '2要素認証の設定 ステップ2',
-    'LBL_ADD_PASSKEY' => 'パスキー認証の設定を追加する',
-    'LBL_ADD_TOTP' => 'タイムベース認証の設定を追加する',
+    'LBL_ADD_PASSKEY' => 'パスキー認証を追加',
+    'LBL_ADD_TOTP' => 'タイムベース認証を追加',
     'LBL_FORCE_TWO_FACTOR_SETUP_STEP1_DESCRIPTION' => '2要素認証を有効にするには、以下の手順に従ってください。<br>1. パスキーまたはTOTPを追加します。<br>2. 2要素認証を有効にします。',
     'LBL_TWO_FACTOR_TYPE' => '2要素認証のタイプ',
     'LBL_TWO_FACTOR_TOTP_DESCRIPTION_1' => '以下のQRコードを認証アプリ（Google Authenticator、Authyなど）でスキャンします。',
@@ -307,7 +307,7 @@ $languageStrings = array(
     'LBL_USER_CREDENTIAL_CREATE_AT' => '登録日時',
     'LBL_USER_CREDENTIAL_DELETE_FAILED_NOT_FOUND' => 'ユーザー認証情報が見つかりません。',
     'LBL_ADD_MULTI_FACTOR_AUTHENTICATION' => '多要素認証の追加',
-    'LBL_ADD_DEVICE_NAME' => 'どのデバイスと関連付けたかわかるような名前を登録してください。',
+    'LBL_ADD_DEVICE_NAME' => '登録デバイス名を入力してください。',
     'LBL_ERROR_ADD_USER_CREDENTIAL' => 'ユーザー認証情報の登録に失敗しました。',
     'LBL_TOTP_CODE_INCORRECT' => 'TOTPコードが正しくありません。もう一度お試しください。',
     'LBL_PASSKEY_CODE_INCORRECT' => 'PassKey認証に失敗しました。もう一度お試しください。',
@@ -316,6 +316,24 @@ $languageStrings = array(
     'LBL_USE_PASSKEY' => 'パスキーを使用する',
     'LBL_USE_TOTP' => 'TOTPを使用する',
     'LBL_TOTP_CODE_SUBMIT' => 'TOTPコードを送信',
+	'LBL_BACK_TO_LOGIN' => 'ログイン画面に戻る',
+	'LBL_QR_CODE_READING_MESSAGE1' => 'QRコードをスマートフォンの',
+	'LBL_CREADENTIAL_APPLICATION' => '認証アプリ',
+	'LBL_QR_CODE_READING_MESSAGE2' => 'で読み取ってください。',
+	'LBL_TOTP_CODE_INPUT_MESSAGE' => '認証アプリで生成された6桁の数字を有効期限内に入力し、保存を押してください。',
+	'LBL_TOTP_SIX_CODE' => '6桁の数字',
+	'LBL_TOTP_CAMERA_OR_SECRET_INPUT_MESSAGE' => 'カメラで読み取るか、以下のコードを手動入力',
+	'LBL_SUCCESSFULLY_ADDED_USER_MULTI_FACTOR_AUTHENTICATION' => 'ユーザーの多要素認証情報を正常に追加しました。',
+	'LBL_PASSKEY_BUTTON_PUSH' => 'パスキーを使用して認証する場合は、以下のボタンを押してください。',
+	'LBL_TOTP_BUTTON_PUSH' => 'TOTPを使用して認証する場合は、登録時に使用した認証アプリケーションに表示されている6桁の数字を入力し、以下のボタンを押してください。',
+	'LBL_SETUP_PARAMETER_MESSAGE_FORCE_MULTI_FACTOR_AUTH' => '多要素認証を強制するフラグです。
+強制しない場合もユーザーが多要素認証を設定している場合は、ログイン時に多要素認証が要求されます。
+true: 強制する
+false: 強制しない',
+	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_TIME' => 'ユーザーのログインをロックする時間です。入力は（分）で行ってください。',
+	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_COUNT' => 'ユーザーのログインをロックするまでの回数です。
+多要素認証の失敗をする毎に一回カウントアップし、ここで指定した回数失敗すると、ユーザーのログインにロックがかかります。
+ロックがかかったユーザーは、USER_LOCK_TIMEで指定した時間が経過するまでログインできません。',
 );
 
 $jsLanguageStrings = array(

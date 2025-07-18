@@ -10,7 +10,7 @@
 
 class Users_MultiFactorAuth_View extends Vtiger_View_Controller {
 
-    function loginRequired() {
+	function loginRequired() {
 		return false;
 	}
 
@@ -18,7 +18,7 @@ class Users_MultiFactorAuth_View extends Vtiger_View_Controller {
 		return true;
 	}
 
-    function preProcess(Vtiger_Request $request, $display = true) {
+	function preProcess(Vtiger_Request $request, $display = true) {
 		$viewer = $this->getViewer($request);
 		$viewer->assign('PAGETITLE', $this->getPageTitle($request));
 		$viewer->assign('SCRIPTS', $this->getHeaderScripts($request));
@@ -31,52 +31,50 @@ class Users_MultiFactorAuth_View extends Vtiger_View_Controller {
 		}
 	}
 
-    public function process(Vtiger_Request $request)
-    {
-        $viewer = $this->getViewer($request);
-        $moduleName = $request->getModule(false);
-        $moduleModel = Vtiger_Module_Model::getInstance($moduleName);
-        $currentUser = Users_Record_Model::getCurrentUserModel();
-        $userid = $request->get('userid');
-        $username = $currentUser->get('user_name');
-        $viewer->assign('userid',$userid);
-        $viewer->assign('username',$username);
-        $viewer->assign('MODULE_MODEL',$moduleModel);
+	public function process(Vtiger_Request $request)
+	{
+		$viewer = $this->getViewer($request);
+		$moduleName = $request->getModule(false);
+		$userid = $request->get('userid');
+		$currentUser = Users_Record_Model::getInstanceById($userid, 'Users');
+		$username = $currentUser->get('user_name');
+		$viewer->assign('USERID',$userid);
 
-        $userCredentialData = $currentUser->getUserCredential($userid);
+		$userCredentialData = $currentUser->getUserCredential();
+		$forceMultiFactorAuth = Settings_Parameters_Record_Model::getParameterValue("FORCE_MULTI_FACTOR_AUTH", "false");
+            
+		// 多要素が強制されていて、ユーザー認証情報が存在しない場合は、設定ページへリダイレクト
+		if( $forceMultiFactorAuth == "true" && empty($userCredentialData)) {
+			header('Location: index.php?module=Users&view=ForceAddMultiFactorAuthentication&step=step1');
+			exit;
+		}
+		else
+		{
+			// 複数のデータを持っていてTypeがTOTPとPassKeyの入っている場合はPassKeyの認証ページに遷移
+			$passkeyData = array_filter($userCredentialData, function($data) {
+				return $data['type'] === 'passkey';
+			});
+			if( $passkeyData !== false && count($passkeyData) > 0 ) {
+				$viewer->assign('SETPASSKEY', true);
+			}
+			$totpData = array_filter($userCredentialData, function($data) {
+				return $data['type'] === 'totp';
+			});
+			if( $totpData !== false && count($totpData) > 0 ) {
+				$viewer->assign('SETTOTP', true);
+			}
+		}
+		
 
-        if( $userCredentialData === false ) {
-            // ユーザー認証情報が存在しない場合は、設定ページへリダイレクト
-            header('Location: index.php?module=Users&view=ForceAddMultiFactorAuthentication&step=step1');
-            exit;
-        }
-        else
-        {
-            // 複数のデータを持っていてTypeがTOTPとPassKeyの入っている場合はPassKeyの認証ページに遷移
-            $passkeyData = array_filter($userCredentialData, function($data) {
-                return $data['type'] === 'passkey';
-            });
-            if( $passkeyData !== false && count($passkeyData) > 0 ) {
-                $viewer->assign('SETPASSKEY', true);
-            }
-            $totpData = array_filter($userCredentialData, function($data) {
-                return $data['type'] === 'totp';
-            });
-            if( $totpData !== false && count($totpData) > 0 ) {
-                $viewer->assign('SETTOTP', true);
-            }
-        }
-        
-
-        $companyDetails = Vtiger_CompanyDetails_Model::getInstanceById();
+		$companyDetails = Vtiger_CompanyDetails_Model::getInstanceById();
 		$companyLogo = $companyDetails->getLogo();
 		$viewer->assign('COMPANY_LOGO',$companyLogo);
 
-        // 2要素認証のページを表示
-        $viewer->view('MultiFactorAuth.tpl', $moduleName);
-    }
+		// 2要素認証のページを表示
+		$viewer->view('MultiFactorAuth.tpl', $moduleName);
+	}
 
-     function postProcess(Vtiger_Request $request) {
+	 function postProcess(Vtiger_Request $request) {
 		$moduleName = $request->getModule();
 		$viewer = $this->getViewer($request);
 		$viewer->view('Footer.tpl', $moduleName);

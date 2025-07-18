@@ -15,7 +15,7 @@ class Users_ForceAddMultiFactorAuthentication_View extends Vtiger_View_Controlle
 	}
 
 	function checkPermission(Vtiger_Request $request) {
-		return true;
+        return true;
 	}
 
     function preProcess(Vtiger_Request $request, $display = true) {
@@ -38,7 +38,6 @@ class Users_ForceAddMultiFactorAuthentication_View extends Vtiger_View_Controlle
         $moduleName = $request->getModule(false);
         $moduleModel = Vtiger_Module_Model::getInstance($moduleName);
         $username = $_SESSION['registration_username'];
-        $userCredentialHelper = new Users_MultiFactorAuthentication_Helper();
         $userid = $_SESSION['registration_userid'];
         $viewer->assign('USERID', $userid);
         $viewer->assign('USERNAME', $username);
@@ -58,9 +57,9 @@ class Users_ForceAddMultiFactorAuthentication_View extends Vtiger_View_Controlle
             $viewer->view('ForceMultiFactorAuthenticationStep1.tpl', $moduleName);
         } elseif ($step == 'step2') {
             if( $type == "totp") { 
-                $secret = $userCredentialHelper->getSecret($type);
+                $secret = Users_MultiFactorAuthentication_Helper::getSecret($type);
                 $viewer->assign('SECRET', $secret);
-                $viewer->assign('QRCODEURL',$userCredentialHelper->getQRcodeUrl($username, $secret));
+                $viewer->assign('QRCODEURL', Users_MultiFactorAuthentication_Helper::getQRcodeUrl($username, $secret));
                 $viewer->assign('BACK_URL', 'index.php?module=Users&view=ForceAddMultiFactorAuthentication&step=step1&type=totp');
             } else {
                 $viewer->assign('BACK_URL', 'index.php?module=Users&view=ForceAddMultiFactorAuthentication&step=step1&type=passkey');
@@ -69,7 +68,7 @@ class Users_ForceAddMultiFactorAuthentication_View extends Vtiger_View_Controlle
             $viewer->assign('TYPE',$type);
             $viewer->view('ForceMultiFactorAuthenticationStep2.tpl', $moduleName);
         } elseif($step == 'step3') {
-            $userCredentialHelper->LoginProcess($userid, $username);
+            $viewer->view('ForceMultiFactorAuthenticationStep3.tpl', $moduleName);
         } else {
             // 不正なステップの場合はエラーを表示
             $viewer->assign("ERROR", "不正なステップが指定されました。");

@@ -87,6 +87,7 @@ Vtiger_Detail_Js("Users_Detail_Js",{
 						accessKeyEle.find('.value').html(data.accessKey);
 					}
 				} else {
+					app.helper.hideProgress();
 					app.helper.showErrorNotification({'message': err.message});
 				}
 			});
@@ -142,6 +143,7 @@ Vtiger_Detail_Js("Users_Detail_Js",{
 					var url = data.listViewUrl;
 					window.location.href=url;
 				}else {
+					app.helper.hideProgress();
 					app.helper.showErrorNotification({'message': err.message});
 				}
 			}
@@ -170,8 +172,12 @@ Vtiger_Detail_Js("Users_Detail_Js",{
 					cb : callback
 				};
 				app.helper.showModal(data, params);
+			} else {
+				app.helper.hideProgress();
+				app.helper.showErrorNotification({'message': err.message});
 			}
 		});
+		
 	},
 	
 	changeUserName: function (form) {
@@ -196,7 +202,8 @@ Vtiger_Detail_Js("Users_Detail_Js",{
 				app.helper.showSuccessNotification({'message' : app.vtranslate(data)});
 				app.helper.hideModal();
 				location.reload();
-			}else {
+			} else {
+				app.helper.hideModal();
 				var params = {
 					position: {
 						my: 'bottom left',
@@ -217,6 +224,7 @@ Vtiger_Detail_Js("Users_Detail_Js",{
                 app.helper.hideProgress();
                 app.helper.loadPageContentOverlay(data);
             } else {
+				app.helper.hideProgress();
                 app.helper.showErrorNotification({'message': err.message});
             }
         });

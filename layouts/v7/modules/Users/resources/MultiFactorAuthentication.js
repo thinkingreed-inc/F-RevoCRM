@@ -169,8 +169,8 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
         var qrcode = new QRCode(document.getElementById("qrcode"), {
             text: qrcodeURL,
             cls: "img-responsive",
-            width: 256,
-            height: 256,
+            width: 200,
+            height: 200,
             colorDark: "#000000",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.H
@@ -185,17 +185,19 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
                 url: 'index.php',
                 type: 'POST',
                 data: {
+					// recordを取得
+					recodeid: $('input[name="recode_id"]').val(),
                     module: 'Users',
                     action: 'DeleteAjax',
                     mode: 'credential',
-                    credential_id: credentialId,
+                    credentialid: credentialId,
                 },
                 success: function(response) {
                     if (response.success) {
                         alert(app.vtranslate('JS_USER_CREDENTIAL_DELETE_SUCCESS', 'Users'));
                         location.reload();
                     } else {
-                        alert(app.vtranslate('JS__USER_CREDENTIAL_DELETE_FAILED', 'Users'));
+                        alert(app.vtranslate('JS_USER_CREDENTIAL_DELETE_FAILED', 'Users'));
                     }
                 },
                 error: function() {
@@ -244,8 +246,7 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
                                 alert(app.vtranslate('JS_WEBAUTHN_ERROR','Users'));
                             });
                         } catch (error) {
-                            console.error('WebAuthn Error:', error);
-                            alert(app.vtranslate('JS_WEBAUTHN_ERROR','Users'));
+                            alert(response.error);
                         }
                     
                     } else {
@@ -254,7 +255,6 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
                 },
                 error: function(xhr, status, error) {
                     console.error('AJAX Error:', error);
-                    alert('通信エラーが発生しました');
                 }
             });
         });
