@@ -19,14 +19,6 @@ class Users_SaveAjax_Action extends Vtiger_SaveAjax_Action {
 		$this->exposeMethod('transferOwner');
 		$this->exposeMethod('changeUsername');
 		$this->exposeMethod('changeAccessKey');
-        $this->exposeMethod('saveMultiFactorAuthentication');
-	}
-
-    function loginRequired() {
-        if($_SESSION['force_2fa_registration'] == true) {
-            return false;
-        }
-        return true;
 	}
     
     public function requiresPermission(\Vtiger_Request $request) {
@@ -34,15 +26,12 @@ class Users_SaveAjax_Action extends Vtiger_SaveAjax_Action {
 	}
 
 	public function checkPermission(Vtiger_Request $request) {
-        $mode = $request->getMode();
-        if($_SESSION['force_2fa_registration'] == true && $mode !== "saveMultiFactorAuthentication") {
-            throw new AppException(vtranslate('LBL_PERMISSION_DENIED', 'Vtiger'));
-        }
+		$currentUserModel = Users_Record_Model::getCurrentUserModel();
 
-        $currentUserModel = Users_Record_Model::getCurrentUserModel();
 		$userId = $request->get('userid');
 		if(!$currentUserModel->isAdminUser()) {
-            if($mode == 'savePassword' && (isset($userId) && $currentUserModel->getId() != $userId)) {
+			$mode = $request->getMode();
+			if($mode == 'savePassword' && (isset($userId) && $currentUserModel->getId() != $userId)) {
 				throw new AppException(vtranslate('LBL_PERMISSION_DENIED', 'Vtiger'));
 			} else if(in_array($mode, array('userExists','restoreUser','transferOwner','changeUsername'))) {
 				throw new AppException(vtranslate('LBL_PERMISSION_DENIED', 'Vtiger'));
@@ -301,62 +290,4 @@ class Users_SaveAjax_Action extends Vtiger_SaveAjax_Action {
 		}
 		$response->emit();
 	}
-
-     public function saveMultiFactorAuthentication(Vtiger_Request $request) {
-        $userId = $request->get('userid');
-        $type = $request->get('type');
-        $username = $request->get('username');
-
-        // TODO::getbyInstance $userId, 
-        $currentUser = Users_Record_Model::getCurrentUserModel();
-        $device_name = $request->get('device_name');
-        $response = new Vtiger_Response();
-        if( $type == "totp") {
-            $totp_code = $request->get('totp_code');
-            $totp_secret = $request->get('secret');
-            $verifyKey = Users_MultiFactorAuthentication_Helper::totpVerifyKey($totp_secret, $totp_code);
-            if( $verifyKey === false )
-            {
-                $response->setError(vtranslate("LBL_TOTP_CODE_INCORRECT", 'Users'));
-            } else {
-                $result = $currentUser->totpRegisterUserCredential($totp_secret, $device_name);
-                if($result === false)
-                {
-                    $response->setError(vtranslate("LBL_ERROR_ADD_USER_CREDENTIAL", 'Users'));
-                }
-                else 
-                {
-                    if( $_SESSION['force_2fa_registration'] == true ) {
-                        $response->setResult(array('success' => true, 'login' => 'true', 'link' => "index.php?module=Users&view=ForceAddMultiFactorAuthentication&step=step3&userid=" . $userId));
-                    } else {
-                        // 通常の登録処理
-                        $response->setResult(array('success' => true));
-                    }
-                }
-            }
-        } else {
-            $challenge = $request->get('challenge');
-            $credential = $request->get('credential');
-            $verifyKey = Users_MultiFactorAuthentication_Helper::passkeyRegisterVerifyKey($challenge,$credential,$userId,$username);
-            if($verifyKey === false)
-            {
-                $response->setError(vtranslate("LBL_FAILED_TO_PASSKEY_VERIFYKEY"), 'Users');
-            } else {
-                $result = $currentUser->passkeyRegisterUserCredential($userId,$device_name, $verifyKey);
-                if($result === false)
-                {
-                    $response->setError(vtranslate("LBL_FAILED_TO_REGISTER_USER_AUTHENTICATION"), 'Users');
-                } else {
-                    if( $_SESSION['force_2fa_registration'] == true ) {
-                        // 初回ログイン時はログイン処理を行う
-                        $response->setResult(array('success' => true, 'login' => 'true', 'link' => "index.php?module=Users&view=ForceAddMultiFactorAuthentication&step=step3&userid=" . $userId));
-                    } else {
-                        // 通常の登録処理
-                        $response->setResult(array('success' => true));
-                    }
-                }
-            }
-        }
-        $response->emit();
-    }
 }

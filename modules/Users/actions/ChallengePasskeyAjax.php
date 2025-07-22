@@ -26,12 +26,6 @@ class Users_ChallengePasskeyAjax_Action extends Vtiger_Action_Controller {
         // チャレンジトークンを生成
         $challenge = base64_encode(random_bytes(32));
         $_SESSION['challenge'] = $challenge;
-
-        $result = json_encode([
-            'success' => true,
-            'challenge' => $challenge
-        ]);
-
         $response = new Vtiger_Response();
         $response->setResult($challenge);
         $response->emit();

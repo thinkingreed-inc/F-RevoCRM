@@ -374,4 +374,5 @@ $jsLanguageStrings = array(
 	'JS_CONFIRM_DELETE_CREDENTIAL' => 'Are you sure you want to delete the user credential?',
 	'JS_USER_CREDENTIAL_DELETE_SUCCESS' => 'User credential deleted successfully.',
 	'JS_USER_CREDENTIAL_DELETE_FAILED' => 'Failed to delete user credential.',
+	'JS_ADD_MULTI_FACTOR_AUTHENTICATION_FINISH' => 'Multi-factor authentication added successfully.',
 );

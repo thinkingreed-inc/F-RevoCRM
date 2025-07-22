@@ -34,11 +34,11 @@ use PragmaRX\Google2FA\Google2FA;
 
 class Users_MultiFactorAuthentication_Helper {
     // ここのCompany name or identifierを変更すると、google authenticatorの登録名が変わります。
-    // 変更しない場合は、F-revocrm:「ユーザー名」
+    // 変更しない場合は、'F-RevoCRM:「ユーザー名」
     public static function getQRcodeUrl($username, $totp_secret) {
         $google2fa = new Google2FA;
         return $google2fa->getQRCodeUrl(
-                'F-revocrm', // Company name or identifier
+                'F-RevoCRM', // Company name or identifier
                 $username,                   // User's email or username
                 $totp_secret
             );
@@ -113,6 +113,7 @@ class Users_MultiFactorAuthentication_Helper {
     public static function passkeyLoginVerifyKey($challenge, $credential, $userid) {
         global $log, $adb;
         $sessionChallengeResult = self::challengeCompare($challenge);
+		$userRecordModel = Users_Record_Model::getInstanceById($userid, 'Users');
         if( !$sessionChallengeResult ) {
             global $log;
             $log->error("Session challenge mismatch");
@@ -120,22 +121,14 @@ class Users_MultiFactorAuthentication_Helper {
         }
 
         try {
-            $query = "SELECT `passkey_credential`,`signature_count` FROM `vtiger_user_credentials` WHERE `userid` = ? AND `type` = 'passkey' AND `signature_count` < 5";
-            $result = $adb->pquery($query, array($userid));
-            if ($adb->num_rows($result) === 0) {
-                $log->error("No passkey credential found for user: $userid");
-                return false;
-            }
+			$passkeyList = $userRecordModel->getPasskeyCredentialById($userid);
             $passkey_credential_list = array();
 
             $attestationStatementSupportManager = new AttestationStatementSupportManager();
             $attestationStatementSupportManager->add(new NoneAttestationStatementSupport());
             $serializer = (new WebauthnSerializerFactory($attestationStatementSupportManager))->create();
 
-            for($i=0;$i< $adb->num_rows($result);$i++)
-            {
-                $row = $adb->fetch_array($result, $i);
-                $passkey_credential = html_entity_decode($row['passkey_credential']);
+            foreach ($passkeyList as $passkey_credential) {
                 $passkey_credential_list[] = $serializer->deserialize(
                     $passkey_credential,
                     PublicKeyCredentialSource::class,
@@ -159,7 +152,7 @@ class Users_MultiFactorAuthentication_Helper {
             $csmFactory = new CeremonyStepManagerFactory();
             $csmFactory->setAlgorithmManager(self::algorithmManager());
             $csmFactory->setAllowedOrigins([
-                'http://localhost',
+                //'http://localhost',
             ]);
             $requestCSM = $csmFactory->requestCeremony();
             $authenticatorAssertionResponseValidator = new AuthenticatorAssertionResponseValidator(
@@ -240,7 +233,7 @@ class Users_MultiFactorAuthentication_Helper {
             // ここは実際の環境に合わせて変更する必要があります。
             // プルリクの時にコメントアウトされているので、必要に応じて変更してください。
             $csmFactory->setAllowedOrigins([
-                'http://localhost',
+                //'http://localhost',
             ]);
             $creationCSM = $csmFactory->creationCeremony();
             $authenticatorAttestationResponseValidator = new AuthenticatorAttestationResponseValidator(

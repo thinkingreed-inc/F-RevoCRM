@@ -8,7 +8,7 @@
 *************************************************************************************}
 
 {strip}
-<input type="hidden" name="recode_id" value="{$RECODEID}">
+<input type="hidden" name="record_id" value="{$RECORDID}">
 <div class="block block_LBL_MULTI_FACTOR_AUTH" data-block="LBL_MULTI_FACTOR_AUTH">
     <div>
         <h4>{vtranslate("LBL_MULTI_FACTOR_AUTH","Users")}</h4>

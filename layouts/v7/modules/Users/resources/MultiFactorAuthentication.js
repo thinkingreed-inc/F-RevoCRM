@@ -27,7 +27,7 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
                 challenge: challenge,
                 rp: {
                     id: hostname,
-                    name: "F-revocrm",
+                    name: "F-RevoCRM",
                 },
                 user: {
                     id: Uint8Array.from( userid, function(c) { return c.charCodeAt(0); }),
@@ -95,8 +95,7 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
                             params.url = 'index.php';
                             params.data = {
                                 'module': 'Users',
-                                'action': 'SaveAjax',
-                                'mode': 'saveMultiFactorAuthentication',
+                                'action': 'SaveMultiFactorAuthenticationAjax',
                                 'challenge': challengeBytes,
                                 'credential': JSON.stringify(credentialForServer),
                                 'device_name': form.find('[name="device_name"]').val(),
@@ -112,6 +111,7 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
                                     }
                                     else
                                     {
+										app.helper.showSuccessNotification({'message': app.vtranslate('JS_ADD_MULTI_FACTOR_AUTHENTICATION_FINISH', 'Users')});
                                         app.helper.hideModal();
                                         location.reload();
                                     }
@@ -140,8 +140,7 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
                 url: 'index.php',
                 data: {
                     'module': 'Users',
-                    'action': 'SaveAjax',
-                    'mode': 'saveMultiFactorAuthentication',
+                    'action': 'SaveMultiFactorAuthenticationAjax',
                     'secret' : form.find('[name="secret"]').val(),
                     'view' : form.find('[name="view"]').val(),
                     'userid' : form.find('[name="userid"]').val(),
@@ -155,6 +154,7 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
                     if( data.login === 'true' ) {
                         window.location.href = data.link;
                     } else{
+						app.helper.showSuccessNotification({'message': app.vtranslate('JS_ADD_MULTI_FACTOR_AUTHENTICATION_FINISH', 'Users')});
                         app.helper.hideModal();
                         location.reload();
                     }
@@ -185,8 +185,8 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
                 url: 'index.php',
                 type: 'POST',
                 data: {
-					// recordを取得
-					recodeid: $('input[name="recode_id"]').val(),
+                    // recordを取得
+                    recordid: $('input[name="record_id"]').val(),
                     module: 'Users',
                     action: 'DeleteAjax',
                     mode: 'credential',

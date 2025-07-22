@@ -168,7 +168,6 @@ class Users_PreferenceDetail_View extends Vtiger_Detail_View {
 		$recordStructureInstance = Vtiger_RecordStructure_Model::getInstanceFromRecordModel($recordModel, Vtiger_RecordStructure_Model::RECORD_STRUCTURE_MODE_EDIT);
 		$dayStartPicklistValues = Users_Record_Model::getDayStartsPicklistValues($recordStructureInstance->getStructure());
 
-        // userのrecodeモデルを取得
         $currentUserRecordModel = Users_Record_Model::getInstanceById($recordId, 'Users');
         $userMultiFactorAuthenticationList = $currentUserRecordModel->getUserCredential();
 
@@ -176,7 +175,7 @@ class Users_PreferenceDetail_View extends Vtiger_Detail_View {
 		$viewer->assign("DAY_STARTS", Zend_Json::encode($dayStartPicklistValues));
 		$viewer->assign('IMAGE_DETAILS', $recordModel->getImageDetails());
         $viewer->assign('USER_MULTI_FACTOR_CREDENTIAL_LIST', $userMultiFactorAuthenticationList);
-		$viewer->assign('RECODEID', $recordId);
+		$viewer->assign('RECORDID', $recordId);
 
         $runtime_configs = Vtiger_Runtime_Configs::getInstance();
         $password_regex = $runtime_configs->getValidationRegex('password_regex');

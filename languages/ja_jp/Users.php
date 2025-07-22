@@ -373,4 +373,5 @@ $jsLanguageStrings = array(
 	'JS_CONFIRM_DELETE_CREDENTIAL' => 'ユーザー認証情報を削除しますか？',
 	'JS_USER_CREDENTIAL_DELETE_SUCCESS' => 'ユーザー認証情報を削除しました。',
 	'JS_USER_CREDENTIAL_DELETE_FAILED' => 'ユーザー認証情報の削除に失敗しました。',
+	'JS_ADD_MULTI_FACTOR_AUTHENTICATION_FINISH' => '多要素認証の追加が完了しました',
 );

@@ -59,7 +59,7 @@ class Users_DeleteAjax_Action extends Vtiger_Delete_Action {
 	public function process(Vtiger_Request $request) {
 		$moduleName = $request->getModule();
         $ownerId = $request->get('userid');
-		$recodeid = $request->get('recodeid');
+		$recordid = $request->get('recordid');
         $newOwnerId = $request->get('transfer_user_id');
         
         $mode = $request->get('mode');
@@ -70,7 +70,7 @@ class Users_DeleteAjax_Action extends Vtiger_Delete_Action {
             Users_Record_Model::deleteUserPermanently($ownerId, $newOwnerId);
         } elseif($mode == 'credential') {
             $credentialId = $request->get('credentialid');
-            $this->deleteUserCredential($recodeid, $credentialId);
+            $this->deleteUserCredential($recordid, $credentialId);
             exit;
         } else {
             $userId = vtws_getWebserviceEntityId($moduleName, $ownerId);

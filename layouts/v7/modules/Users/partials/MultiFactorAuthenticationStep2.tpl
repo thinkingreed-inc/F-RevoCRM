@@ -56,9 +56,7 @@
 						</div>
 						<div class="totp-second-input">
 							<div class="totp-flex-row">
-								<div class="circle_number">2</div><div class="totp-step-message"><span>{vtranslate('LBL_QR_CODE_READING_MESSAGE1','Users')}
-								<strong class="primary">{vtranslate('LBL_CREADENTIAL_APPLICATION','Users')}</strong>
-								{vtranslate('LBL_QR_CODE_READING_MESSAGE2','Users')}</span></div>
+								<div class="circle_number">2</div><div class="totp-step-message"><span>{vtranslate('LBL_QR_CODE_READING_MESSAGE1','Users')}{vtranslate('LBL_CREADENTIAL_APPLICATION','Users')}{vtranslate('LBL_QR_CODE_READING_MESSAGE2','Users')}</span></div>
 							</div>
 							<div class="totp-form-group-mobile">
 								<div id="qrcode-mobile" class="text-center"></div>

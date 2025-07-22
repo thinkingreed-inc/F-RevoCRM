@@ -1017,7 +1017,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$result = $adb->pquery($query, array($userid));
 		if ($adb->num_rows($result) > 0) {
 			$row = $adb->fetch_array($result);
-			return $adb['totp_secret'];
+			return $row['totp_secret'];
 		}
 		return false;
 	}
@@ -1177,5 +1177,24 @@ class Users_Record_Model extends Vtiger_Record_Model {
 			$totp_secret 
 		);
 		$adb->pquery($sql, $params);
+	}
+
+	public function getPasskeyCredentialById($id) {
+		global $adb;
+		$failureCount = Settings_Parameters_Record_Model::getParameterValue("USER_LOCK_COUNT", "5");
+		// 数値に変換できない文字だった場合は5回をデフォルト値として使用
+		if (!is_numeric($failureCount) || $failureCount <= 0) {
+			$failureCount = 5; // デフォルト値
+		}
+		// 数値に変換
+		$failureCount = (int)$failureCount;
+		$query = "SELECT `passkey_credential`,`signature_count` FROM `vtiger_user_credentials` WHERE `userid` = ? AND `type` = 'passkey' AND `signature_count` < $failureCount";
+		$result = $adb->pquery($query, array($id));
+		$passkeyList = array();
+		if ($adb->num_rows($result) > 0) {
+			$row = $adb->fetch_array($result);
+			$passkeyList[] = $row['passkey_credential'];
+		}
+		return $passkeyList;
 	}
 }

@@ -46,7 +46,7 @@ class Users_Login_Action extends Vtiger_Action_Controller {
                 Vtiger_Session::set('registration_username', $username);
                 // 2要素認証の設定ページへリダイレクト
                 header ('Location: index.php?module=Users&view=ForceAddMultiFactorAuthentication&step=step1');
-            } else if( $forceMultiFactorAuth === "true" && !empty($userCredentialsData) ) {
+            } else if( !empty($userCredentialsData) ) {
                 // 2要素認証の認証ページへリダイレクト
                 header ('Location: index.php?module=Users&view=MultiFactorAuth&userid='.$userid.'&username='.$username);
             } else {
