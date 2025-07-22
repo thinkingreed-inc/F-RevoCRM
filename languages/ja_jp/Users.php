@@ -349,6 +349,8 @@ false: 強制しない',
 	'LBL_TOTP_DESCRIPTION4' => '幅広いデバイスに対応',
 	'LBL_ADD_MULTI_FACTOR_AUTHENTICATION_FINISH' => '多要素認証の追加が完了しました',
 	'LBL_BACKTO_LOGIN_MESSAGE' => '以下のボタンを押してログインページへ戻ってください。',
+	'LBL_USER_LOCKED_ERROR_MESSAGE' => '多要素認証で定められた試行回数失敗したため、<br>現在ユーザーはロックされています。<br>
+時間をおいて再度試してみるか、管理者に連絡してください。'
 );
 
 $jsLanguageStrings = array(

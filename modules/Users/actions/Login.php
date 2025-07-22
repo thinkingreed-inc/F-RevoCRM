@@ -31,7 +31,7 @@ class Users_Login_Action extends Vtiger_Action_Controller {
 
             if ($currentUser->isLoginLockedByMFA()) {
                 // ユーザーがロックされている場合はログインを拒否
-                header ('Location: index.php?module=Users&parent=Settings&view=Login&error=user_locked');
+                header ('Location: index.php?module=Users&parent=Settings&view=Login&error=userLocked');
                 exit;
             }
 

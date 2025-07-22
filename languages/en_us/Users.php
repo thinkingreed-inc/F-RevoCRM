@@ -349,6 +349,7 @@ A locked user cannot log in until the time specified in USER_LOCK_TIME has passe
 	'LBL_TOTP_DESCRIPTION4' => 'Compatible with a wide range of devices',
 	'LBL_ADD_MULTI_FACTOR_AUTHENTICATION_FINISH' => 'Multi-factor authentication setup is complete',
 	'LBL_BACKTO_LOGIN_MESSAGE' => 'Press the button below to return to the login page.',
+	'LBL_USER_LOCKED_ERROR_MESSAGE' => 'The user is currently locked due to repeated multi-factor authentication failures.Please try again later or contact an administrator.'
 );
 
 $jsLanguageStrings = array(
