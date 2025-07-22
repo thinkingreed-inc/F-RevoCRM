@@ -1231,6 +1231,9 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
 .multi-factor-area > div.multi-factor-warning-label {
   margin-bottom: 20px;
   color: #999;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .multi-factor-description {
@@ -1242,68 +1245,68 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
 }
 
 @media (min-width: 0px) and (max-width: 830px) {
-	.multifactor-modal {
-		width: 100%;
-		max-width: 100%;
-	}
+  .multifactor-modal {
+    width: 100%;
+    max-width: 100%;
+  }
 
-	.overlay-container-300 {
-		margin-left: 0 !important;
-	}
+  .overlay-container-300 {
+    margin-left: 0 !important;
+  }
 
-	.multi-factor-flex-row {
-		flex-direction: column;
-		align-items: center;
-	}
+  .multi-factor-flex-row {
+    flex-direction: column;
+    align-items: center;
+  }
 
-	.multi-factor-area {
-		width: 100%;
-	}
+  .multi-factor-area {
+    width: 100%;
+  }
 
-	.totp-modal {
-		width: 100%;
-		max-width: 100%;
-	}
+  .totp-modal {
+    width: 100%;
+    max-width: 100%;
+  }
 
-	.totp-container {
-		flex-direction: column;
-		align-items: center;
-	}
+  .totp-container {
+    flex-direction: column;
+    align-items: center;
+  }
 
-	.totp-form-group-mobile {
-		display: block;
-	}
+  .totp-form-group-mobile {
+    display: block;
+  }
 
-	.totp-right-content {
-		display: none;
-	}
+  .totp-right-content {
+    display: none;
+  }
 
-	.totp-left-content {
-    	white-space: normal;
-    	width: 100%;
-	}
+  .totp-left-content {
+      white-space: normal;
+      width: 100%;
+  }
 
-	.totp-form-group-mobile {
-		display: flex;
-		justify-content: center;
-		flex-direction: column;
-		align-items: center;
+  .totp-form-group-mobile {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
         width: 100%;
         margin: 10px 0 0;
     }
 
-	.totp-secret-code {
-		margin: 10px 0 0;
-	}
+  .totp-secret-code {
+    margin: 10px 0 0;
+  }
 
-	.multifactor-container {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		width: 100%;
-	}
+  .multifactor-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
 
-	.add-totp-login-page {
-		width: 100%;
-	}
+  .add-totp-login-page {
+    width: 100%;
+  }
 }
