@@ -165,8 +165,8 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
         });
     },
 
-    createQRCode: function(qrcodeURL) {
-        var qrcode = new QRCode(document.getElementById("qrcode"), {
+    createQRCode: function( elementId, qrcodeURL) {
+        var qrcode = new QRCode(document.getElementById(elementId), {
             text: qrcodeURL,
             cls: "img-responsive",
             width: 200,
@@ -258,5 +258,5 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
                 }
             });
         });
-    }
+    },
 };

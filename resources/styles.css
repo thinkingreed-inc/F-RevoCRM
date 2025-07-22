@@ -1236,3 +1236,74 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
 .multi-factor-description {
   color: #999;
 }
+
+.totp-form-group-mobile {
+  display: none;
+}
+
+@media (min-width: 0px) and (max-width: 830px) {
+	.multifactor-modal {
+		width: 100%;
+		max-width: 100%;
+	}
+
+	.overlay-container-300 {
+		margin-left: 0 !important;
+	}
+
+	.multi-factor-flex-row {
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.multi-factor-area {
+		width: 100%;
+	}
+
+	.totp-modal {
+		width: 100%;
+		max-width: 100%;
+	}
+
+	.totp-container {
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.totp-form-group-mobile {
+		display: block;
+	}
+
+	.totp-right-content {
+		display: none;
+	}
+
+	.totp-left-content {
+    	white-space: normal;
+    	width: 100%;
+	}
+
+	.totp-form-group-mobile {
+		display: flex;
+		justify-content: center;
+		flex-direction: column;
+		align-items: center;
+        width: 100%;
+        margin: 10px 0 0;
+    }
+
+	.totp-secret-code {
+		margin: 10px 0 0;
+	}
+
+	.multifactor-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		width: 100%;
+	}
+
+	.add-totp-login-page {
+		width: 100%;
+	}
+}

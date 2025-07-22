@@ -130,7 +130,8 @@
 Settings_Users_MultiFactorAuthentication_Js.registerTotpEvents();
 {if isset($QRCODEURL)}
 	$(function(){
-		Settings_Users_MultiFactorAuthentication_Js.createQRCode("{$QRCODEURL}");
+		Settings_Users_MultiFactorAuthentication_Js.createQRCode("qrcode","{$QRCODEURL}");
+		Settings_Users_MultiFactorAuthentication_Js.createQRCode("qrcode-mobile","{$QRCODEURL}");
 	});
 {/if}
 </script>

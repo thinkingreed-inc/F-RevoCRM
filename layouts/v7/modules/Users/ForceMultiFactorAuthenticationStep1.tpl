@@ -54,7 +54,7 @@
 	</style>
 
 	<span class="app-nav"></span>
-	<div class="container-fluid loginPageContainer">
+	<div class="container-fluid loginPageContainer multifactor-container">
 		<div class="row" style="width:100%;">
 			<div class="loginDiv panel panel-default multifactor-modal">
 				<img class="img-responsive user-logo center-block" src="{$COMPANY_LOGO->get('imagepath')}" alt="{$COMPANY_LOGO->get('alt')}" style="margin-bottom:24px;">

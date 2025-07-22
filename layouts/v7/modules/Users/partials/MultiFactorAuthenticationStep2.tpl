@@ -60,6 +60,15 @@
 								<strong class="primary">{vtranslate('LBL_CREADENTIAL_APPLICATION','Users')}</strong>
 								{vtranslate('LBL_QR_CODE_READING_MESSAGE2','Users')}</span></div>
 							</div>
+							<div class="totp-form-group-mobile">
+								<div id="qrcode-mobile" class="text-center"></div>
+								<div class="qrcode-text-message">
+									<span>{vtranslate('LBL_TOTP_CAMERA_OR_SECRET_INPUT_MESSAGE','Users')}</span>
+								</div>
+								<div class="totp-secret-code">
+									<span>{$SECRET}</span>
+								</div>
+							</div>
 						</div>
 						<div class="totp-third-input">
 							<div class="totp-flex-row">
