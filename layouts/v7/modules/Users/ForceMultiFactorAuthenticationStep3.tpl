@@ -55,11 +55,32 @@
 	</style>
 	<span class="app-nav"></span>
 	<div class="container-fluid loginPageContainer">
-		<div class="loginDiv">
+		<div class="loginDiv{if $TYPE == "totp"} add-totp-login-page{/if}">
 			<div id="loginFormDiv">
 				<div class="panel panel-default"">
-					<p>{vtranslate('LBL_SUCCESSFULLY_ADDED_USER_MULTI_FACTOR_AUTHENTICATION', $MODULE)}</p>
-					<a href="index.php">{vtranslate('LBL_BACK_TO_LOGIN','User')}</a>
+					<div class="panel-heading">
+						<h1><img class="img-responsive user-logo" src="{$COMPANY_LOGO->get('imagepath')}" alt="{$COMPANY_LOGO->get('alt')}"></h1>
+					</div>
+					<div name="massEditContainer">
+						<div class="modal-body">
+							<div class="multi-factor-area-full">
+								<div>
+									<h4>{vtranslate('LBL_ADD_MULTI_FACTOR_AUTHENTICATION_FINISH', $MODULE)}</h4>
+								</div>
+								<div>
+									<span>{vtranslate('LBL_BACKTO_LOGIN_MESSAGE', 'Users')}</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="multi-factor-login-footer">
+						<div class="row">
+							<center>
+								{if $TYPE == "totp"}<button id="totpAdd" class="btn btn-success" onclick="Settings_Users_MultiFactorAuthentication_Js.registerTotpEvents(); return false;">{vtranslate('LBL_SAVE','Users')}</button>{/if}
+								<a href="index.php">{vtranslate('LBL_BACK', $MODULE)}</a>
+							</center>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

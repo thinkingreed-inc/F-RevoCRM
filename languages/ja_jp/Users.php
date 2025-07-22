@@ -334,6 +334,21 @@ false: 強制しない',
 	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_COUNT' => 'ユーザーのログインをロックするまでの回数です。
 多要素認証の失敗をする毎に一回カウントアップし、ここで指定した回数失敗すると、ユーザーのログインにロックがかかります。
 ロックがかかったユーザーは、USER_LOCK_TIMEで指定した時間が経過するまでログインできません。',
+	'LBL_PASSKEY' => 'パスキー認証',
+	'LBL_TOTP' => 'タイムベース認証',
+	'LBL_PASSKEY_DESCRIPTION' => '整体認証やデバイス認証を使用した、最新のパスワードレス認証方式です。',
+	'LBL_TOTP_DESCRIPTION' => '認証アプリで生成される6桁の数字を使用する、標準的な認証方式です。',
+	'LBL_PASSKEY_DESCRIPTION1' => '指紋・顔認証・PINで簡単ログイン',
+	'LBL_PASSKEY_DESCRIPTION2' => 'Apple IDやGoogleアカウントにログインしている端末間で同期も可能',
+	'LBL_PASSKEY_DESCRIPTION3' => '複数のデバイスに登録可能',
+	'LBL_PASSKEY_WARNING1' => '*複数デバイスで利用するには、予めタイムベース認証の設定が必要です。',
+	'LBL_PASSKEY_WARNING2' => '*一部の古い端末やブラウザではご利用いただけない場合があります。',
+	'LBL_TOTP_DESCRIPTION1' => '30秒ごとに更新される6桁コード',
+	'LBL_TOTP_DESCRIPTION2' => 'Google Authenticator等のアプリを使用',
+	'LBL_TOTP_DESCRIPTION3' => '一つの認証アプリで全デバイス対応',
+	'LBL_TOTP_DESCRIPTION4' => '幅広いデバイスに対応',
+	'LBL_ADD_MULTI_FACTOR_AUTHENTICATION_FINISH' => '多要素認証の追加が完了しました',
+	'LBL_BACKTO_LOGIN_MESSAGE' => '以下のボタンを押してログインページへ戻ってください。',
 );
 
 $jsLanguageStrings = array(
@@ -353,9 +368,9 @@ $jsLanguageStrings = array(
 	'JS_ENTER_NEW_PASSWORD' => '新しいパスワードを入力してください。',
 	'JS_REENTER_PASSWORDS' => '新しいパスワードとパスワードの確認は同じ文字列を入力してください。',
 	'JS_PASSWORD_COMPLEXITY' => '複雑なパスワードを指定してください（アルファベット大文字・小文字、数字、記号を含む8文字以上）。',
-    
-    'JS_WEBAUTHN_ERROR' => 'WebAuthn未対応ブラウザ、またはHTTPSでアクセスしてください',
-    'JS_CONFIRM_DELETE_CREDENTIAL' => 'ユーザー認証情報を削除しますか？',
-    'JS_USER_CREDENTIAL_DELETE_SUCCESS' => 'ユーザー認証情報を削除しました。',
-    'JS_USER_CREDENTIAL_DELETE_FAILED' => 'ユーザー認証情報の削除に失敗しました。',
+
+	'JS_WEBAUTHN_ERROR' => 'WebAuthn未対応ブラウザ、またはHTTPSでアクセスしてください',
+	'JS_CONFIRM_DELETE_CREDENTIAL' => 'ユーザー認証情報を削除しますか？',
+	'JS_USER_CREDENTIAL_DELETE_SUCCESS' => 'ユーザー認証情報を削除しました。',
+	'JS_USER_CREDENTIAL_DELETE_FAILED' => 'ユーザー認証情報の削除に失敗しました。',
 );

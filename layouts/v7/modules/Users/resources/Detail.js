@@ -217,19 +217,22 @@ Vtiger_Detail_Js("Users_Detail_Js",{
 		});
 	},
 
-    triggerAddMultiFactorAuthenticationNextStep: function (url) {
-        app.helper.showProgress();
-        app.request.post({'url': url}).then(function (err, data) {
-            if (err === null) {
-                app.helper.hideProgress();
-                app.helper.loadPageContentOverlay(data);
-            } else {
+
+	triggerAddMultiFactorAuthenticationNextStep: function (url) {
+	app.helper.showProgress();
+		app.request.post({'url': url}).then(function (err, data) {
+			if (err === null) {
 				app.helper.hideProgress();
-                app.helper.showErrorNotification({'message': err.message});
-            }
-        });
-        return false;
-    },
+				app.helper.loadPageContentOverlay(data);
+				$('.overlayPageContent').css('background-color', 'rgba(255, 255, 255, 0)');
+			} else {
+				app.helper.hideProgress();
+				app.helper.showErrorNotification({'message': err.message});
+				$('.overlayPageContent').css('background-color', 'rgba(255, 255, 255, 1)');
+			}
+		});
+		return false;
+	},
 },{
 	registerAjaxPreSaveEvent: function () {
 		var self = this;

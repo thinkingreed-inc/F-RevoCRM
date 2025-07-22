@@ -11,7 +11,7 @@
 {* START YOUR IMPLEMENTATION FROM BELOW. Use {debug} for information *}
 
 {strip}
-	<div id="massEditContainer" class="modal-dialog modelContainer">
+	<div id="massEditContainer" class="modal-dialog modelContainer multifactor-modal">
         {assign var=HEADER_TITLE value={vtranslate('LBL_ADD_MULTI_FACTOR_AUTHENTICATION', $MODULE)}}
         {include file="ModalHeader.tpl"|vtemplate_path:$MODULE TITLE=$HEADER_TITLE}
         <div class="modal-content">

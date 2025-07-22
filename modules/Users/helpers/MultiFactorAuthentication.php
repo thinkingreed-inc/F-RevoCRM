@@ -362,10 +362,6 @@ class Users_MultiFactorAuthentication_Helper {
         $moduleModel->saveLoginHistory($username);
         //End
                     
-        if(isset($_SESSION['return_params'])){
-            $return_params = $_SESSION['return_params'];
-        }
-
         header ('Location: index.php?module=Users&parent=Settings&view=SystemSetup');
         exit();
     }

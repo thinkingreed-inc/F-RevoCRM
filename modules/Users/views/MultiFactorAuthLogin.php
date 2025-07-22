@@ -46,7 +46,7 @@ class Users_MultiFactorAuthLogin_View extends Vtiger_View_Controller {
         // 認証種別ごとに認証処理
         if ($type == 'totp') {
             $totp_code = $request->get('totp_code');
-            $secret = Users_MultiFactorAuthentication_Helper::getTotpSecret($userid);
+            $secret = $currentUser->getTotpSecret();
             $loginResult = Users_MultiFactorAuthentication_Helper::totpVerifyKey($secret, $totp_code);
             $errorTryLimit = "LBL_TOTP_CODE_TRY_LIMIT_EXCEEDED";
             $errorIncorrect = "LBL_TOTP_CODE_INCORRECT";

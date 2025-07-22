@@ -54,21 +54,21 @@
 	</style>
 
 	<span class="app-nav"></span>
-		<div class="container-fluid loginPageContainer">
-			<div class="row" style="width:100%;">
-				<div class="loginDiv panel panel-default">
-					<img class="img-responsive user-logo center-block" src="{$COMPANY_LOGO->get('imagepath')}" alt="{$COMPANY_LOGO->get('alt')}" style="margin-bottom:24px;">
-					<div id="loginFormDiv" style="flex: 1 0 auto;">
-						{include file="partials/MultiFactorAuthenticationStep1.tpl"|vtemplate_path:$MODULE PASSKEY_URL=$PASSKEY_URL TOTP_URL=$TOTP_URL}
-					</div>
-					<div class="multi-factor-login-footer">
-						<div class="row">
-							<center>
-								<a href="index.php?module=Users&view=Login">{vtranslate('LBL_BACK_TO_LOGIN', 'Users')}</a>
-							</center>
-						</div>
+	<div class="container-fluid loginPageContainer">
+		<div class="row" style="width:100%;">
+			<div class="loginDiv panel panel-default multifactor-modal">
+				<img class="img-responsive user-logo center-block" src="{$COMPANY_LOGO->get('imagepath')}" alt="{$COMPANY_LOGO->get('alt')}" style="margin-bottom:24px;">
+				<div id="loginFormDiv" style="flex: 1 0 auto;">
+					{include file="partials/MultiFactorAuthenticationStep1.tpl"|vtemplate_path:$MODULE PASSKEY_URL=$PASSKEY_URL TOTP_URL=$TOTP_URL}
+				</div>
+				<div class="multi-factor-login-footer">
+					<div class="row">
+						<center>
+							<a href="index.php?module=Users&view=Login">{vtranslate('LBL_BACK_TO_LOGIN', 'Users')}</a>
+						</center>
 					</div>
 				</div>
 			</div>
 		</div>
+	</div>
 {/strip}
