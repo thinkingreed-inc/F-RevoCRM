@@ -80,8 +80,6 @@ Class Users_EditAjax_View extends Vtiger_IndexAjax_View {
 		$moduleName = $request->get('module');
         $userId = $request->get('userid');
         $type = $request->get('type');
-        // 現在のURLを取得
-        $currentUrl = $request->get('current_url');
 
         $currentUserModel = Users_Record_Model::getCurrentUserModel();
         $username = $currentUserModel->get('user_name');

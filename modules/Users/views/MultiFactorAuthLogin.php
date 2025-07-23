@@ -69,8 +69,8 @@ class Users_MultiFactorAuthLogin_View extends Vtiger_View_Controller {
             $currentUser->countUpSignatureCount($type);
             // 試行回数の制限を超えた場合はエラー
             if ($currentUser->isMultiFactorLoginLimitExceeded($type)) {
-				$currentUser->userLock();
-				$currentUser->resetSignatureCount();
+                $currentUser->userLock();
+                $currentUser->resetSignatureCount();
                 $viewer->assign("ERROR", $errorTryLimit);
                 $_SESSION['login_locked'] = true;
                 header('Location:index.php?module=Users&view=Login');

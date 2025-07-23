@@ -11,25 +11,25 @@
 class Users_ForceAddMultiFactorAuthentication_View extends Vtiger_View_Controller {
 
     function loginRequired() {
-		return false;
-	}
+        return false;
+    }
 
-	function checkPermission(Vtiger_Request $request) {
+    function checkPermission(Vtiger_Request $request) {
         return true;
-	}
+    }
 
     function preProcess(Vtiger_Request $request, $display = true) {
-		$viewer = $this->getViewer($request);
-		$viewer->assign('PAGETITLE', $this->getPageTitle($request));
-		$viewer->assign('SCRIPTS', $this->getHeaderScripts($request));
-		$viewer->assign('STYLES', $this->getHeaderCss($request));
-		$viewer->assign('MODULE', $request->getModule());
-		$viewer->assign('VIEW', $request->get('view'));
-		$viewer->assign('LANGUAGE_STRINGS', array());
-		if ($display) {
-			$this->preProcessDisplay($request);
-		}
-	}
+        $viewer = $this->getViewer($request);
+        $viewer->assign('PAGETITLE', $this->getPageTitle($request));
+        $viewer->assign('SCRIPTS', $this->getHeaderScripts($request));
+        $viewer->assign('STYLES', $this->getHeaderCss($request));
+        $viewer->assign('MODULE', $request->getModule());
+        $viewer->assign('VIEW', $request->get('view'));
+        $viewer->assign('LANGUAGE_STRINGS', array());
+        if ($display) {
+            $this->preProcessDisplay($request);
+        }
+    }
 
     public function process(Vtiger_Request $request)
     {
@@ -76,8 +76,8 @@ class Users_ForceAddMultiFactorAuthentication_View extends Vtiger_View_Controlle
     }
 
     function postProcess(Vtiger_Request $request) {
-		$moduleName = $request->getModule();
-		$viewer = $this->getViewer($request);
-		$viewer->view('Footer.tpl', $moduleName);
-	}
+        $moduleName = $request->getModule();
+        $viewer = $this->getViewer($request);
+        $viewer->view('Footer.tpl', $moduleName);
+    }
 }

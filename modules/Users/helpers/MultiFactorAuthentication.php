@@ -113,7 +113,7 @@ class Users_MultiFactorAuthentication_Helper {
     public static function passkeyLoginVerifyKey($challenge, $credential, $userid) {
         global $log, $adb;
         $sessionChallengeResult = self::challengeCompare($challenge);
-		$userRecordModel = Users_Record_Model::getInstanceById($userid, 'Users');
+        $userRecordModel = Users_Record_Model::getInstanceById($userid, 'Users');
         if( !$sessionChallengeResult ) {
             global $log;
             $log->error("Session challenge mismatch");
@@ -121,7 +121,7 @@ class Users_MultiFactorAuthentication_Helper {
         }
 
         try {
-			$passkeyList = $userRecordModel->getPasskeyCredentialById($userid);
+            $passkeyList = $userRecordModel->getPasskeyCredentialById($userid);
             $passkey_credential_list = array();
 
             $attestationStatementSupportManager = new AttestationStatementSupportManager();

@@ -11,15 +11,15 @@
 {* START YOUR IMPLEMENTATION FROM BELOW. Use {debug} for information *}
 
 {strip}
-	<div id="massEditContainer" class="modal-dialog modelContainer multifactor-modal">
+    <div id="massEditContainer" class="modal-dialog modelContainer multifactor-modal">
         {assign var=HEADER_TITLE value={vtranslate('LBL_ADD_MULTI_FACTOR_AUTHENTICATION', $MODULE)}}
         {include file="ModalHeader.tpl"|vtemplate_path:$MODULE TITLE=$HEADER_TITLE}
         <div class="modal-content">
-			<div name="massEditContainer">
-				<div class="modal-body">
-						{include file="partials/MultiFactorAuthenticationStep1.tpl"|vtemplate_path:$MODULE PASSKEY_URL=$PASSKEY_URL TOTP_URL=$TOTP_URL}
-				</div>
-			</div>
+            <div name="massEditContainer">
+                <div class="modal-body">
+                        {include file="partials/MultiFactorAuthenticationStep1.tpl"|vtemplate_path:$MODULE PASSKEY_URL=$PASSKEY_URL TOTP_URL=$TOTP_URL}
+                </div>
+            </div>
         </div>
-	</div>
+    </div>
 {/strip}
