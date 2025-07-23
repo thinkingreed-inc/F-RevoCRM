@@ -1123,8 +1123,9 @@ class Users_Record_Model extends Vtiger_Record_Model {
 	 * @param PublicKeyCredentialSource $publicKeyCredentialSource 登録するパブリックキー認証情報
 	 * @return bool 成功した場合はtrue、失敗した場合はfalse
 	 */
-	public function passkeyRegisterUserCredential($userid, $device_name, $publicKeyCredentialSource) {
+	public function passkeyRegisterUserCredential($device_name, $publicKeyCredentialSource) {
 		global $adb;
+		$userid = $this->getId();
 		$attestationStatementSupportManager = new AttestationStatementSupportManager();
 		$attestationStatementSupportManager->add(new NoneAttestationStatementSupport());
 		
