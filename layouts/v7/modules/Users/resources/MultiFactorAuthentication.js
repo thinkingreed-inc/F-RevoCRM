@@ -111,7 +111,7 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
                                     }
                                     else
                                     {
-										app.helper.showSuccessNotification({'message': app.vtranslate('JS_ADD_MULTI_FACTOR_AUTHENTICATION_FINISH', 'Users')});
+                                        app.helper.showSuccessNotification({'message': app.vtranslate('JS_ADD_MULTI_FACTOR_AUTHENTICATION_FINISH')});
                                         app.helper.hideModal();
                                         location.reload();
                                     }
@@ -154,7 +154,7 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
                     if( data.login === 'true' ) {
                         window.location.href = data.link;
                     } else{
-						app.helper.showSuccessNotification({'message': app.vtranslate('JS_ADD_MULTI_FACTOR_AUTHENTICATION_FINISH', 'Users')});
+                        app.helper.showSuccessNotification({'message': app.vtranslate('JS_ADD_MULTI_FACTOR_AUTHENTICATION_FINISH', 'Users')});
                         app.helper.hideModal();
                         location.reload();
                     }
@@ -226,8 +226,8 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
                         var challengeBytes = self.base64ToUint8Array(challenge);
                         $('input[name="challenge"]').val(challengeBytes);
 
-                            if (!navigator.credentials || !navigator.credentials.create) {
-                            console.error(app.vtranslate('JS_WEBAUTHN_ERROR','Users'));
+                        if (!navigator.credentials || !navigator.credentials.create) {
+                            app.helper.showErrorNotification({'message': app.vtranslate('JS_WEBAUTHN_ERROR')});
                             return;
                         }
                         try {
@@ -242,19 +242,22 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
                                 $('input[name="credential"]').val(credentialData);
                                 $('#passkeyForm').submit();
                             }).catch(function(error) {
-                                console.error('WebAuthn Error:', error);
-                                alert(app.vtranslate('JS_WEBAUTHN_ERROR','Users'));
+                                if (error.name === 'NotAllowedError') {
+                                    app.helper.showErrorNotification({'message': app.vtranslate('JS_MULTI_FACTOR_AUTHENTICATION_USER_CHANCELED')});
+                                } else if (error.name === 'AbortError') {
+                                    app.helper.showErrorNotification({'message': app.vtranslate('JS_MULTI_FACTOR_AUTHENTICATION_CHANCELED')});
+                                } else {
+                                    app.helper.showErrorNotification({'message': app.vtranslate('JS_WEBAUTHN_ERROR')});
+                                }
+                                return;
                             });
                         } catch (error) {
-                            alert(response.error);
+                            app.helper.showErrorNotification({'message': app.vtranslate('JS_WEBAUTHN_ERROR')});
+                            return;
                         }
-                    
                     } else {
                         alert(response.error);
                     }
-                },
-                error: function(xhr, status, error) {
-                    console.error('AJAX Error:', error);
                 }
             });
         });

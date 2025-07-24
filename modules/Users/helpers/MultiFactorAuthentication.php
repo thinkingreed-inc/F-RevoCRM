@@ -65,7 +65,15 @@ class Users_MultiFactorAuthentication_Helper {
     public static function totpVerifyKey($totp_secret, $totp_code)
     {
         $google2fa = new Google2FA;
-        return $google2fa->verifyKey($totp_secret, $totp_code);
+        try {
+            return $google2fa->verifyKey($totp_secret, $totp_code);
+        } catch (Exception $e) {
+            global $log;
+            $errMsg = "TOTP verification error: "
+                        .$e->getMessage().":".$e->getTraceAsString();
+            $log->error($errMsg);
+            return false;
+        }
     }
 
     // セッションチャンレンジが成功するかどうか比較するメソッド
@@ -121,7 +129,7 @@ class Users_MultiFactorAuthentication_Helper {
         }
 
         try {
-            $passkeyList = $userRecordModel->getPasskeyCredentialById($userid);
+            $passkeyList = $userRecordModel->getPasskeyCredentialById();
             $passkey_credential_list = array();
 
             $attestationStatementSupportManager = new AttestationStatementSupportManager();
@@ -152,7 +160,7 @@ class Users_MultiFactorAuthentication_Helper {
             $csmFactory = new CeremonyStepManagerFactory();
             $csmFactory->setAlgorithmManager(self::algorithmManager());
             $csmFactory->setAllowedOrigins([
-                //'http://localhost',
+                'http://localhost',
             ]);
             $requestCSM = $csmFactory->requestCeremony();
             $authenticatorAssertionResponseValidator = new AuthenticatorAssertionResponseValidator(
@@ -233,7 +241,7 @@ class Users_MultiFactorAuthentication_Helper {
             // ここは実際の環境に合わせて変更する必要があります。
             // プルリクの時にコメントアウトされているので、必要に応じて変更してください。
             $csmFactory->setAllowedOrigins([
-                //'http://localhost',
+                'http://localhost',
             ]);
             $creationCSM = $csmFactory->creationCeremony();
             $authenticatorAttestationResponseValidator = new AuthenticatorAttestationResponseValidator(

@@ -69,6 +69,7 @@ class Users_MultiFactorAuth_View extends Vtiger_View_Controller {
         $companyDetails = Vtiger_CompanyDetails_Model::getInstanceById();
         $companyLogo = $companyDetails->getLogo();
         $viewer->assign('COMPANY_LOGO',$companyLogo);
+        $viewer->assign('LANGUAGE_STRINGS', Vtiger_Language_Handler::export('Users', 'jsLanguageStrings'));
 
         // 2要素認証のページを表示
         $viewer->view('MultiFactorAuth.tpl', $moduleName);

@@ -889,6 +889,9 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
 .login-d-flex {
   display: -ms-flexbox!important;
   display: flex !important;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
 }
 
 .login-d-flex-column {
@@ -910,6 +913,12 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
   align-items: flex-end;
   margin-top: auto;
   margin-bottom: 20px;
+}
+
+.login-button span {
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 24px;
 }
 
 .login-justify-content-center {
@@ -1155,6 +1164,12 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
   font-size: 10pt;
 }
 
+.auth-multi-factor-area {
+	border: 0;
+	width: 100%;
+	margin: 0;
+}
+
 .multi-factor-area-full {
   display: flex;
   flex: 1 1 0;
@@ -1236,12 +1251,24 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
   gap: 5px;
 }
 
+.multifactor-button-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
 .multi-factor-description {
   color: #999;
 }
 
 .totp-form-group-mobile {
   display: none;
+}
+
+.modal-footer .login-button {
+	width: auto;
 }
 
 @media (min-width: 0px) and (max-width: 830px) {

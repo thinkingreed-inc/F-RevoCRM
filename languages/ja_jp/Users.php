@@ -333,7 +333,8 @@ false: 強制しない',
 	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_TIME' => 'ユーザーのログインをロックする時間です。入力は（分）で行ってください。',
 	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_COUNT' => 'ユーザーのログインをロックするまでの回数です。
 多要素認証の失敗をする毎に一回カウントアップし、ここで指定した回数失敗すると、ユーザーのログインにロックがかかります。
-ロックがかかったユーザーは、USER_LOCK_TIMEで指定した時間が経過するまでログインできません。',
+ロックがかかったユーザーは、USER_LOCK_TIMEで指定した時間が経過するまでログインできません。
+また数値として認識できない文字列、0以下の値を指定した場合は、ログインロックは行われません。',
 	'LBL_PASSKEY' => 'パスキー認証',
 	'LBL_TOTP' => 'タイムベース認証',
 	'LBL_PASSKEY_DESCRIPTION' => '整体認証やデバイス認証を使用した、最新のパスワードレス認証方式です。',
@@ -350,7 +351,9 @@ false: 強制しない',
 	'LBL_ADD_MULTI_FACTOR_AUTHENTICATION_FINISH' => '多要素認証の追加が完了しました',
 	'LBL_BACKTO_LOGIN_MESSAGE' => '以下のボタンを押してログインページへ戻ってください。',
 	'LBL_USER_LOCKED_ERROR_MESSAGE' => '多要素認証で定められた試行回数失敗したため、<br>現在ユーザーはロックされています。<br>
-時間をおいて再度試してみるか、管理者に連絡してください。'
+時間をおいて再度試してみるか、管理者に連絡してください。',
+	'LBL_PASSKEY_AUTHENTICATION_MESSAGE' => '生体認証やデバイス認証を使用した、最新のパスワードレス認証方式です。',
+	'LBL_TOTP_AUTHENTICATION_MESSAGE' => '認証アプリで生成される6桁の数字を使用した、標準的な認証方式です。',
 );
 
 $jsLanguageStrings = array(
@@ -376,4 +379,6 @@ $jsLanguageStrings = array(
 	'JS_USER_CREDENTIAL_DELETE_SUCCESS' => 'ユーザー認証情報を削除しました。',
 	'JS_USER_CREDENTIAL_DELETE_FAILED' => 'ユーザー認証情報の削除に失敗しました。',
 	'JS_ADD_MULTI_FACTOR_AUTHENTICATION_FINISH' => '多要素認証の追加が完了しました',
+	'JS_MULTI_FACTOR_AUTHENTICATION_USER_CHANCELED' => 'ユーザーによって多要素認証がキャンセルされました',
+	'JS_MULTI_FACTOR_AUTHENTICATION_CHANCELED' => '多要素認証がキャンセルされました',
 );

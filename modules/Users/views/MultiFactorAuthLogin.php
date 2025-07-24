@@ -35,12 +35,13 @@ class Users_MultiFactorAuthLogin_View extends Vtiger_View_Controller {
     {
         $viewer = $this->getViewer($request);
         $moduleName = $request->getModule(false);
-        $userid = $request->get('userid');
+        $userid = $_SESSION['multi_factor_auth_userid'];
+        $username = $_SESSION['multi_factor_auth_username'];
+
         $moduleModel = Vtiger_Module_Model::getInstance($moduleName);
         $currentUser = Users_Record_Model::getInstanceById($userid, 'Users');
         $viewer->assign('MODULE_MODEL',$moduleModel);
 
-        $username = $_SESSION['registration_username'];
         $type = $request->get('type');
         $loginResult = false;
         // 認証種別ごとに認証処理
@@ -48,37 +49,41 @@ class Users_MultiFactorAuthLogin_View extends Vtiger_View_Controller {
             $totp_code = $request->get('totp_code');
             $secret = $currentUser->getTotpSecret();
             $loginResult = Users_MultiFactorAuthentication_Helper::totpVerifyKey($secret, $totp_code);
-            $errorTryLimit = "LBL_TOTP_CODE_TRY_LIMIT_EXCEEDED";
             $errorIncorrect = "LBL_TOTP_CODE_INCORRECT";
         } else {
             $credential = $request->get('credential');
             $challenge = $request->get('challenge');
-            $loginResult = Users_MultiFactorAuthentication_Helper::passkeyLoginVerifyKey($challenge, $credential, $userid, $username);
-            $errorTryLimit = "LBL_PASSKEY_TRY_LIMIT_EXCEEDED";
+            $loginResult = Users_MultiFactorAuthentication_Helper::passkeyLoginVerifyKey($challenge, $credential, $userid);
             $errorIncorrect = "LBL_PASSKEY_CODE_INCORRECT";
         }
 
-        if ($loginResult !== false) {
+		$lockResult = $currentUser->isLoginLockedByMFA();
+        if ($loginResult !== false && !$lockResult) {
             // 試行回数のリセット
             $currentUser->resetSignatureCount();
+            $currentUser->resetLockTime();
             // ログイン処理
             Users_MultiFactorAuthentication_Helper::LoginProcess($userid, $username);
             exit;
         } else {
             // 試行回数のカウントアップ
-            $currentUser->countUpSignatureCount($type);
+            $currentUser->countUpSignatureCount();
+			$lockResult = $currentUser->isLoginLockedByMFA();
             // 試行回数の制限を超えた場合はエラー
-            if ($currentUser->isMultiFactorLoginLimitExceeded($type)) {
-                $currentUser->userLock();
-                $currentUser->resetSignatureCount();
-                $viewer->assign("ERROR", $errorTryLimit);
-                $_SESSION['login_locked'] = true;
-                header('Location:index.php?module=Users&view=Login');
+            if ($lockResult) {
+				$currentUser->setLockTime();
+				$currentUser->resetSignatureCount();
+                header('Location:index.php?module=Users&view=Login&error=userLocked');
                 exit;
             }
-            $viewer->assign("ERROR", $errorIncorrect);
-            header('Location:index.php?module=Users&view=Login');
-            exit;
+			$companyDetails = Vtiger_CompanyDetails_Model::getInstanceById();
+			$companyLogo = $companyDetails->getLogo();
+			$viewer->assign('COMPANY_LOGO',$companyLogo);
+			$viewer->assign("USERID", $userid);
+			$viewer->assign("USERNAME", $username);
+			$viewer->assign("TYPE", $type);
+            $viewer->assign("ERROR", vtranslate($errorIncorrect, "Users"));
+        	$viewer->view('MultiFactorAuth.tpl', $moduleName);
         }
     }
 

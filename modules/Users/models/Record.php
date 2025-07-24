@@ -1001,7 +1001,6 @@ class Users_Record_Model extends Vtiger_Record_Model {
 					"totp_secret" => $row['totp_secret'],
 					"credentialid" => $row['credentialid'],
 					"public_key" => $row['public_key'],
-					"signature_count" => $row['signature_count'],
 					"created_at" => $row['created_at']
 				);
 			}
@@ -1022,79 +1021,112 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		return false;
 	}
 
-	// 試行回数のカウントアップ
-	public function countUpSignatureCount($type)
+	// ユーザーのロック情報を取得するメソッド
+	public function getUserLock()
 	{
 		global $adb;
-		$query = "UPDATE `vtiger_user_credentials` SET `signature_count` = `signature_count` + 1 WHERE `userid` = ? AND `type` = ?";
-		$params = array($this->getId(), $type);
-		$adb->pquery($query, $params);
+		$userid = $this->getId();
+		$query = "SELECT `signature_count`,`lock_time` FROM `vtiger_user_lock` WHERE `userid` = ?";
+		$result = $adb->pquery($query, array($userid));
+		$userLockList = array();
+		if ($adb->num_rows($result) > 0) {
+			$row = $adb->fetch_array($result);
+			$userLockList = array(
+				'signature_count' => $row['signature_count'],
+				'lock_time' => $row['lock_time']
+			);
+		}
+		return $userLockList;
 	}
 
-	// 試行回数のリセット
-	public function resetSignatureCount()   
+	// 試行回数のカウントアップ
+	public function countUpSignatureCount()
 	{
 		global $adb;
-		$query = "UPDATE `vtiger_user_credentials` SET `signature_count` = 0 WHERE `userid` = ?";
+		$query = "INSERT INTO `vtiger_user_lock` (`userid`, `signature_count`, `lock_time`) VALUES (?, 1, NULL)
+			ON DUPLICATE KEY UPDATE `signature_count` = `signature_count` + 1, `lock_time` = NULL";
 		$params = array($this->getId());
 		$adb->pquery($query, $params);
 	}
 
-	// 試行回数の制限を超えた場合はエラー
-	public function isMultiFactorLoginLimitExceeded($type)
+	public function setLockTime()
 	{
 		global $adb;
 		$userid = $this->getId();
-		$query = "SELECT `signature_count` FROM `vtiger_user_credentials` WHERE `userid` = ? AND `type` = ?";
-		$params = array($userid, $type);
-		$result = $adb->pquery($query, $params);
-		
-
-        $failureCount = Settings_Parameters_Record_Model::getParameterValue("USER_LOCK_COUNT", "5");
-		// 数値に変換できない文字だった場合は5回をデフォルト値として使用
-		if (!is_numeric($failureCount) || $failureCount <= 0) {
-			$failureCount = 5; // デフォルト値
-		}
-		// 数値に変換
-		$failureCount = (int)$failureCount;
-
-		if ($adb->num_rows($result) > 0) {
-			$row = $adb->fetch_array($result);
-			if ($row['signature_count'] >= $failureCount) {
-				return true;
-			}
-		}
-		return false;
+		$lockTime = date('Y-m-d H:i:s'); // 現在の日時を取得
+		$query = "UPDATE `vtiger_user_lock` SET `lock_time` = ? WHERE `userid` = ?";
+		$params = array($lockTime, $userid);
+		$adb->pquery($query, $params);
 	}
 
-	public function userLock()
+	public function resetSignatureCount()
 	{
 		global $adb;
-		$userid = $this->getId();
-		$query = "INSERT INTO `vtiger_user_lock` (`userid`, `locktime`) 
-				  VALUES (?, ?)";
-		$params = array($userid, date('Y-m-d H:i:s'));
+		$query = "UPDATE `vtiger_user_lock` SET `signature_count` = 0 WHERE `userid` = ?";
+		$params = array($this->getId());
+		$adb->pquery($query, $params);
+	}
+
+	public function resetLockTime()
+	{
+		global $adb;
+		$query = "UPDATE `vtiger_user_lock` SET `lock_time` = NULL WHERE `userid` = ?";
+		$params = array($this->getId());
 		$adb->pquery($query, $params);
 	}
 
 	/**
-	 * ロックされているかどうかを確認するメソッド
+	 * 多要素認証の試行回数が制限を超えたかどうかを確認するメソッド
 	 *
-	 * @return boolean true: ロックされている、false: ロックされていない
+	 * @param string $type 認証タイプ（例: 'totp', 'passkey'）
+	 * @return boolean true: 制限を超えた、false: 制限内/ロックしない
 	 */
 	public function isLoginLockedByMFA()
 	{
 		global $adb;
 		$userid = $this->getId();
-		// システム変数からロック時間を取得
-        $lockTimeMin = Settings_Parameters_Record_Model::getParameterValue("USER_LOCK_TIME", "30");
-		// 数値に変換できない文字だった場合は30分をデフォルト値として使用
-		if (!is_numeric($lockTimeMin) || $lockTimeMin <= 0) {
-			$lockTimeMin = 30; // デフォルト値
+		$query = "SELECT `signature_count` FROM `vtiger_user_lock` WHERE `userid` = ?";
+		$params = array($userid);
+		$result = $adb->pquery($query, $params);
+
+		$failureCount = Settings_Parameters_Record_Model::getParameterValue("USER_LOCK_COUNT");
+		if (!is_numeric($failureCount) || $failureCount <= 0) {
+			// 数値に変換できない文字だった場合はロックしない
+			return false;
 		}
 		// 数値に変換
-		$lockTimeMin = (int)$lockTimeMin;
-		$query = "SELECT `locktime` FROM `vtiger_user_lock` WHERE `userid` = ? AND `locktime` > (NOW() - INTERVAL $lockTimeMin MINUTE)";
+		$failureCount = (int)$failureCount;
+		$totalCount = 0;
+		while ($row = $adb->fetch_array($result)) {
+			$totalCount += $row['signature_count'];
+		}
+		if ($totalCount >= $failureCount) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * ユーザーのロック時間が経過しているかどうかを確認するメソッド
+	 * ロック時間が設定されていない場合は、ロックされていないとみなす
+	 *
+	 * @return boolean true: ロック時間が経過している、false: ロックされていない
+	 */
+	public function isLocked()
+	{
+		global $adb;
+		$userid = $this->getId();
+		$lock_time = Settings_Parameters_Record_Model::getParameterValue("USER_LOCK_TIME");
+		// 数値に変換できない文字だった場合はロック時間が設定されていないとみなす
+		if (!is_numeric($lock_time) || $lock_time <= 0) {
+			// ロック時間が設定されていない場合は、ロックされて
+			return false; // ロック時間が設定されていない場合は、ロックされていないとみなす
+		}
+		// 数値に変換
+		$lock_time = (int)$lock_time;
+		// テーブルのlock_timeと$lock_timeを比較して、現在の日時から$lock_time分経過しているかどうかを確認
+		$query = "SELECT `lock_time` FROM `vtiger_user_lock` WHERE `userid` = ? AND `lock_time` IS NOT NULL AND `lock_time` > (NOW() - INTERVAL $lock_time MINUTE)";
+
 		$params = array($userid);
 		$result = $adb->pquery($query, $params);
 
@@ -1102,6 +1134,26 @@ class Users_Record_Model extends Vtiger_Record_Model {
 			return true;
 		}
 		return false;
+	}
+
+	// ユーザーをロックするメソッド
+	public function setUserLock()
+	{
+		global $adb;
+		$userid = $this->getId();
+		// lock_timeに現在の日時をDATETIME型で設定し、signature_countを0にリセット
+		// ただし、すでにロックされている場合は更新しない
+		if ($this->isLoginLockedByMFA()) {
+			return; // すでにロックされている場合は何もしない
+		}
+		// ユーザーがロックされていない場合は、ロック時間を現在の日時に設定し、signature_countを0にリセット
+		// ここでロック時間を設定し、signature_countをリセット
+		// これにより、ユーザーがロックされている場合は、次回のログイン時にロック時間が更新され、signature_countは0にリセットされます
+		$userid = $this->getId();
+		$lockTime = date('Y-m-d H:i:s'); // 現在の日時を取得
+		$query = "UPDATE `vtiger_user_lock` SET `lock_time` = ?, `signature_count` = 0 WHERE `userid` = ?";
+		$params = array($lockTime, $userid);
+		$adb->pquery($query, $params);
 	}
 
 	/**
@@ -1137,14 +1189,13 @@ class Users_Record_Model extends Vtiger_Record_Model {
 			'json'
 		);
 		// データベースに保存
-		$sql = "INSERT INTO `vtiger_user_credentials` (`userid`, `type`, `device_name`, `passkey_credential`, `signature_count`)
-				VALUES (?, ?, ?, ?, ?)";
+		$sql = "INSERT INTO `vtiger_user_credentials` (`userid`, `type`, `device_name`, `passkey_credential`)
+				VALUES (?, ?, ?, ?)";
 		$params = array(
 			$userid,
 			'passkey',
 			$device_name,
 			$credentialJson,
-			0
 		);
 
 		$adb->pquery($sql, $params);
@@ -1180,20 +1231,20 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$adb->pquery($sql, $params);
 	}
 
-	public function getPasskeyCredentialById($id) {
+	public function getPasskeyCredentialById() {
 		global $adb;
-		$failureCount = Settings_Parameters_Record_Model::getParameterValue("USER_LOCK_COUNT", "5");
+		$userId = $this->getId();
+		$failureCount = Settings_Parameters_Record_Model::getParameterValue("USER_LOCK_COUNT");
 		// 数値に変換できない文字だった場合は5回をデフォルト値として使用
 		if (!is_numeric($failureCount) || $failureCount <= 0) {
-			$failureCount = 5; // デフォルト値
+			$failureCount = null; // デフォルト値
 		}
 		// 数値に変換
 		$failureCount = (int)$failureCount;
-		$query = "SELECT `passkey_credential`,`signature_count` FROM `vtiger_user_credentials` WHERE `userid` = ? AND `type` = 'passkey' AND `signature_count` < $failureCount";
-		$result = $adb->pquery($query, array($id));
+		$query = "SELECT `passkey_credential` FROM `vtiger_user_credentials` WHERE `userid` = ? AND `type` = 'passkey'";
+		$result = $adb->pquery($query, array($userId));
 		$passkeyList = array();
-		if ($adb->num_rows($result) > 0) {
-			$row = $adb->fetch_array($result);
+		while ($row = $adb->fetch_array($result)) {
 			$passkeyList[] = $row['passkey_credential'];
 		}
 		return $passkeyList;

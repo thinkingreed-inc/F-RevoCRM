@@ -29,7 +29,7 @@ class Users_Login_Action extends Vtiger_Action_Controller {
             $userid = $user->retrieve_user_id($username);
             $currentUser = Users_Record_Model::getInstanceById($userid, 'Users');
 
-            if ($currentUser->isLoginLockedByMFA()) {
+            if ($currentUser->isLocked()) {
                 // ユーザーがロックされている場合はログインを拒否
                 header ('Location: index.php?module=Users&parent=Settings&view=Login&error=userLocked');
                 exit;
@@ -47,6 +47,8 @@ class Users_Login_Action extends Vtiger_Action_Controller {
                 // 2要素認証の設定ページへリダイレクト
                 header ('Location: index.php?module=Users&view=ForceAddMultiFactorAuthentication&step=step1');
             } else if( !empty($userCredentialsData) ) {
+				Vtiger_Session::set('multi_factor_auth_userid', $userid);
+				Vtiger_Session::set('multi_factor_auth_username', $username);
                 // 2要素認証の認証ページへリダイレクト
                 header ('Location: index.php?module=Users&view=MultiFactorAuth&userid='.$userid.'&username='.$username);
             } else {

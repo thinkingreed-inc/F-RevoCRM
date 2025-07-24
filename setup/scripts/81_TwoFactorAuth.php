@@ -23,7 +23,6 @@ $adb->query("
     `device_name` varchar(64) DEFAULT NULL,
     `totp_secret` varchar(32) DEFAULT NULL,
     `passkey_credential` json DEFAULT NULL,
-    `signature_count` tinyint(1) NOT NULL,
     `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 ");
@@ -33,7 +32,8 @@ if($adb->num_rows($result) == 0) {
     $adb->query("
         CREATE TABLE `vtiger_user_lock` (
         `userid` int NOT NULL,
-        `locktime` datetime NOT NULL
+        `signature_count` tinyint(1) NOT NULL,
+        `lock_time` datetime NOT NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
     ");
 }

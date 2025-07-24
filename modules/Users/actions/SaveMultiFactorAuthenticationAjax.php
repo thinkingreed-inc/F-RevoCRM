@@ -13,22 +13,23 @@ class Users_SaveMultiFactorAuthenticationAjax_Action extends Vtiger_SaveAjax_Act
 
     public function process(Vtiger_Request $request) {
 
-        $userId = null;
         if( isset($_SESSION['registration_userid']) )
         {
             $userId = $_SESSION['registration_userid'];
+			$currentUser = Users_Record_Model::getInstanceById($userId, 'Users');
         }
         else
         {
-            $userId = $request->get('userid');
+            $currentUser = Users_Record_Model::getCurrentUserModel();
+            $userId = $currentUser->getId();
         }
         
         $type = $request->get('type');
         $username = $request->get('username');
 
-        $currentUser = Users_Record_Model::getInstanceById($userId, 'Users');
         $device_name = $request->get('device_name');
-        $response = new Vtiger_Response();
+		$response = new Vtiger_Response();
+		$response->setEmitType(Vtiger_Response::$EMIT_JSON);
         if( $type == "totp") {
             $totp_code = $request->get('totp_code');
             $totp_secret = $request->get('secret');
@@ -60,7 +61,7 @@ class Users_SaveMultiFactorAuthenticationAjax_Action extends Vtiger_SaveAjax_Act
             {
                 $response->setError(vtranslate("LBL_FAILED_TO_PASSKEY_VERIFYKEY"), 'Users');
             } else {
-                $result = $currentUser->passkeyRegisterUserCredential($userId,$device_name, $verifyKey);
+                $result = $currentUser->passkeyRegisterUserCredential($device_name, $verifyKey);
                 if($result === false)
                 {
                     $response->setError(vtranslate("LBL_FAILED_TO_REGISTER_USER_AUTHENTICATION"), 'Users');
@@ -75,6 +76,7 @@ class Users_SaveMultiFactorAuthenticationAjax_Action extends Vtiger_SaveAjax_Act
                 }
             }
         }
+
         $response->emit();
     }
 }
