@@ -76,7 +76,7 @@
                     <div class="multi-factor-login-footer">
                         <div class="row">
                             <center>
-                                {if $TYPE == "totp"}<button id="totpAdd" class="btn btn-success" onclick="Settings_Users_MultiFactorAuthentication_Js.registerTotpEvents(); return false;">{vtranslate('LBL_SAVE','Users')}</button>{/if}
+                                {if $TYPE == "totp"}<button id="totpAdd" class="btn btn-success">{vtranslate('LBL_SAVE','Users')}</button>{/if}
                                 <a href="index.php">{vtranslate('LBL_BACK', $MODULE)}</a>
                             </center>
                         </div>

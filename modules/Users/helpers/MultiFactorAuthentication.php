@@ -137,6 +137,7 @@ class Users_MultiFactorAuthentication_Helper {
             $serializer = (new WebauthnSerializerFactory($attestationStatementSupportManager))->create();
 
             foreach ($passkeyList as $passkey_credential) {
+                $passkey_credential = html_entity_decode($passkey_credential, ENT_QUOTES, 'UTF-8');
                 $passkey_credential_list[] = $serializer->deserialize(
                     $passkey_credential,
                     PublicKeyCredentialSource::class,

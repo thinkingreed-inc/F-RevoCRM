@@ -269,6 +269,9 @@ Vtiger_Detail_Js("Users_Detail_Js",{
 	registerEvents: function () {
 		this._super();
 		this.registerAjaxPreSaveEvent();
+		FR_MultiFactorAuthentication_Js.registerDeleteCredentialEvent();
+		FR_MultiFactorAuthentication_Js.registerTotpEvents();
+		FR_MultiFactorAuthentication_Js.registerPasskeyEvents();
 	}
 });
 

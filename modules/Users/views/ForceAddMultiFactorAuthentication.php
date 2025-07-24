@@ -48,6 +48,7 @@ class Users_ForceAddMultiFactorAuthentication_View extends Vtiger_View_Controlle
         $viewer->assign('COMPANY_LOGO',$companyLogo);
 
         $viewer->assign('MODULE_MODEL',$moduleModel);
+        $viewer->assign('LANGUAGE_STRINGS', Vtiger_Language_Handler::export('Users', 'jsLanguageStrings'));
         $step = $request->get('step');
          if ($step == 'step1') {
             $passkeyUrl = "window.location.href='index.php?module=Users&view=ForceAddMultiFactorAuthentication&step=step2&type=passkey'";

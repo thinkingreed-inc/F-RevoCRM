@@ -1,4 +1,4 @@
-window.Settings_Users_MultiFactorAuthentication_Js = {
+window.FR_MultiFactorAuthentication_Js = {
     base64ToUint8Array: function(str) {
         var binaryString = atob(str);
         var bytes = new Uint8Array(binaryString.length);
@@ -54,6 +54,7 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
     registerPasskeyEvents: function() {
         var self = this;
         $(document).on("click", "#passkeyAdd", function(e) {
+            $(this).prop('disabled', true);
             e.preventDefault();
             $.ajax({
                 url: 'index.php',
@@ -118,15 +119,18 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
                                     
                                 } else {
                                     app.helper.showErrorNotification({"message": err});
+                                    $(this).prop('disabled', false);
                                 }
                             });
                         }).catch(function(error) {
                             console.error("Error creating credentials:", error);
+                            $(this).prop('disabled', false);
                         });
                     }
                 },
                 error: function(xhr, status, error) {
                     console.error('AJAX Error:', error);
+                    $(this).prop('disabled', false);
                 }
             });
         });
@@ -179,39 +183,44 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
     },
 
     registerDeleteCredentialEvent: function(element) {
-        var credentialId = $(element).data('id');
-        if (confirm(app.vtranslate('JS_CONFIRM_DELETE_CREDENTIAL', 'Users'))) {
-            $.ajax({
-                url: 'index.php',
-                type: 'POST',
-                data: {
-                    // recordを取得
-                    recordid: $('input[name="record_id"]').val(),
-                    module: 'Users',
-                    action: 'DeleteAjax',
-                    mode: 'credential',
-                    credentialid: credentialId,
-                },
-                success: function(response) {
-                    if (response.success) {
-                        alert(app.vtranslate('JS_USER_CREDENTIAL_DELETE_SUCCESS', 'Users'));
-                        location.reload();
-                    } else {
-                        alert(app.vtranslate('JS_USER_CREDENTIAL_DELETE_FAILED', 'Users'));
-                    }
-                },
-                error: function() {
-                    alert(app.vtranslate('JS_USER_CREDENTIAL_DELETE_FAILED', 'Users'));
-                }
-            });
-        }
-    },
+		$(document).on('click', '.deleteCredential', function(){
+			var $this = $(this);
+            $this.prop('disabled', true);
+			var credentialId = $(this).data('id');
+			if (confirm(app.vtranslate('JS_CONFIRM_DELETE_CREDENTIAL', 'Users'))) {
+				$.ajax({
+					url: 'index.php',
+					type: 'POST',
+					data: {
+						recordid: $('input[name="record_id"]').val(),
+						module: 'Users',
+						action: 'DeleteAjax',
+						mode: 'credential',
+						credentialid: credentialId,
+					},
+					success: function(response) {
+						if (response.success) {
+							alert(app.vtranslate('JS_USER_CREDENTIAL_DELETE_SUCCESS', 'Users'));
+							location.reload();
+						} else {
+							alert(app.vtranslate('JS_USER_CREDENTIAL_DELETE_FAILED', 'Users'));
+						}
+					},
+					error: function() {
+						alert(app.vtranslate('JS_USER_CREDENTIAL_DELETE_FAILED', 'Users'));
+					}
+				});
+			}
+			$this.prop('disabled', false);
+		});
+	},
 
     // ログイン処理
     authenticationPasskeyEvent: function() {
         var self = this;
         $(document).on("click", "#passkeyLoginBtn", function(e){
-            e.preventDefault();
+            var $this = $(this);
+            $this.prop('disabled', true);
             $.ajax({
                 url: 'index.php',
                 type: 'POST',
@@ -228,6 +237,7 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
 
                         if (!navigator.credentials || !navigator.credentials.create) {
                             app.helper.showErrorNotification({'message': app.vtranslate('JS_WEBAUTHN_ERROR')});
+                            $(this).prop('disabled', false);
                             return;
                         }
                         try {
@@ -249,15 +259,13 @@ window.Settings_Users_MultiFactorAuthentication_Js = {
                                 } else {
                                     app.helper.showErrorNotification({'message': app.vtranslate('JS_WEBAUTHN_ERROR')});
                                 }
-                                return;
+                                
                             });
                         } catch (error) {
                             app.helper.showErrorNotification({'message': app.vtranslate('JS_WEBAUTHN_ERROR')});
-                            return;
                         }
-                    } else {
-                        alert(response.error);
                     }
+                    $this.prop('disabled', false);
                 }
             });
         });

@@ -1160,7 +1160,7 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
   border: #CCC solid 2px;
   border-radius: 10px;
   margin: 0 20px;
-  padding: 25px;
+  padding: 10px 25px;
   font-size: 10pt;
 }
 
@@ -1178,7 +1178,7 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
   justify-content: center;
   border: #CCC solid 2px;
   border-radius: 10px;
-  padding: 25px;
+  padding: 10px 25px;
   font-size: 10pt;
   gap: 5px;
 }
@@ -1244,7 +1244,6 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
 }
 
 .multi-factor-area > div.multi-factor-warning-label {
-  margin-bottom: 20px;
   color: #999;
   display: flex;
   flex-direction: column;
@@ -1268,6 +1267,10 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
 }
 
 .modal-footer .login-button {
+	width: auto;
+}
+
+.multi-factor-login-footer .login-button {
 	width: auto;
 }
 

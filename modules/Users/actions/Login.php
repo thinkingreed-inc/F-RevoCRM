@@ -50,7 +50,7 @@ class Users_Login_Action extends Vtiger_Action_Controller {
 				Vtiger_Session::set('multi_factor_auth_userid', $userid);
 				Vtiger_Session::set('multi_factor_auth_username', $username);
                 // 2要素認証の認証ページへリダイレクト
-                header ('Location: index.php?module=Users&view=MultiFactorAuth&userid='.$userid.'&username='.$username);
+                header ('Location: index.php?module=Users&view=MultiFactorAuth');
             } else {
                 Vtiger_Session::set('AUTHUSERID', $userid);
 

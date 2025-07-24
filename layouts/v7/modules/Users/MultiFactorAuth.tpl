@@ -65,56 +65,52 @@
     <div class="loginDiv">
         <div id="loginFormDiv">
             <div class="panel">
-                <div class="panel-heading">
-                    <h1><img class="img-responsive user-logo" src="{$COMPANY_LOGO->get('imagepath')}" alt="{$COMPANY_LOGO->get('alt')}"></h1>
-                </div>
-                <div class="panel-body">
-                    {if isset($ERROR)}
-                        <div class="failureMessage">{$ERROR}</div>
-                    {/if}
+                <img class="img-responsive user-logo" src="{$COMPANY_LOGO->get('imagepath')}" alt="{$COMPANY_LOGO->get('alt')}">
+                {if isset($ERROR)}
+                    <div class="failureMessage">{$ERROR}</div>
+                {/if}
 
-                    <form id="passkeyForm" action="index.php" method="post">
-                        <div class="multi-factor-area auth-multi-factor-area">
-                            <input type="hidden" name="module" value="Users">
-                            <input type="hidden" name="view" value="MultiFactorAuthLogin">
-                            <input type="hidden" name="userid" value="{$USERID}">
-                            <input type="hidden" name="type" value="passkey">
-                            <input type="hidden" name="credential" id="credential">
-                            <input type="hidden" name="challenge" id="challenge">
-                            <h4><div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-key-round-icon lucide-key-round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg></div>{vtranslate('LBL_PASSKEY','Users')}</h4>
-                            <div class="multi-factor-warning-label">
-                                <span>{vtranslate('LBL_PASSKEY_AUTHENTICATION_MESSAGE','Users')}</span>
-                            </div>
-                            <button id="passkeyLoginBtn" class="login-d-flex justify-content-center login-button login-buttonBlue" type="button" onclick="Settings_Users_MultiFactorAuthentication_Js.authenticationPasskeyEvent(); return false;">
-                                <div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-key-round-icon lucide-key-round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg></div>
-                                <span>{vtranslate('LBL_USE_PASSKEY','Users')}</span>
-                            </button>
+                <form id="passkeyForm" action="index.php" method="post">
+                    <div class="multi-factor-area auth-multi-factor-area">
+                        <input type="hidden" name="module" value="Users">
+                        <input type="hidden" name="view" value="MultiFactorAuthLogin">
+                        <input type="hidden" name="userid" value="{$USERID}">
+                        <input type="hidden" name="type" value="passkey">
+                        <input type="hidden" name="credential" id="credential">
+                        <input type="hidden" name="challenge" id="challenge">
+                        <h4><div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-key-round-icon lucide-key-round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg></div>{vtranslate('LBL_PASSKEY','Users')}</h4>
+                        <div class="multi-factor-warning-label">
+                            <span>{vtranslate('LBL_PASSKEY_AUTHENTICATION_MESSAGE','Users')}</span>
                         </div>
-                    </form>
+                        <button id="passkeyLoginBtn" class="login-d-flex justify-content-center login-button login-buttonBlue" type="button">
+                            <div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-key-round-icon lucide-key-round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg></div>
+                            <span>{vtranslate('LBL_USE_PASSKEY','Users')}</span>
+                        </button>
+                    </div>
+                </form>
 
-                    <hr>
-                    
-                    <form id="totpForm" action="index.php" method="post">
-                        <div class="multi-factor-area auth-multi-factor-area">
-                            <input type="hidden" name="module" value="Users">
-                            <input type="hidden" name="view" value="MultiFactorAuthLogin">
-                            <input type="hidden" name="userid" value="{$USERID}">
-                            <input type="hidden" name="type" value="totp">
-                            <h4><div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock8-icon lucide-clock-8"><path d="M12 6v6l-4 2"/><circle cx="12" cy="12" r="10"/></svg></div>{vtranslate('LBL_TOTP','Users')}</h4>
-                            <div class="multi-factor-warning-label">
-                                <span>{vtranslate('LBL_TOTP_AUTHENTICATION_MESSAGE','Users')}</span>
-                            </div>
-                            <div class="totp-form-group">
-                                <label for="totp_code">{vtranslate('LBL_TOTP_SIX_CODE','Users')}</label>
-                                <input type="text" id="totp_code" name="totp_code" class="form-control inputElement" pattern="[0-9]*" maxlength="6" required>
-                            </div>
-                            <button type="submit" class="login-d-flex justify-content-center login-button login-buttonBlue">
-                                <div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock8-icon lucide-clock-8"><path d="M12 6v6l-4 2"/><circle cx="12" cy="12" r="10"/></svg></div>
-                                <span>{vtranslate('LBL_TOTP_CODE_SUBMIT','Users')}</span>
-                            </button>
+                <hr>
+                
+                <form id="totpForm" action="index.php" method="post">
+                    <div class="multi-factor-area auth-multi-factor-area">
+                        <input type="hidden" name="module" value="Users">
+                        <input type="hidden" name="view" value="MultiFactorAuthLogin">
+                        <input type="hidden" name="userid" value="{$USERID}">
+                        <input type="hidden" name="type" value="totp">
+                        <h4><div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock8-icon lucide-clock-8"><path d="M12 6v6l-4 2"/><circle cx="12" cy="12" r="10"/></svg></div>{vtranslate('LBL_TOTP','Users')}</h4>
+                        <div class="multi-factor-warning-label">
+                            <span>{vtranslate('LBL_TOTP_AUTHENTICATION_MESSAGE','Users')}</span>
                         </div>
-                    </form>
-                </div>
+                        <div class="totp-form-group">
+                            <label for="totp_code">{vtranslate('LBL_TOTP_SIX_CODE','Users')}</label>
+                            <input type="text" id="totp_code" name="totp_code" class="form-control inputElement" pattern="[0-9]*" maxlength="6" required>
+                        </div>
+                        <button type="submit" class="login-d-flex justify-content-center login-button login-buttonBlue">
+                            <div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock8-icon lucide-clock-8"><path d="M12 6v6l-4 2"/><circle cx="12" cy="12" r="10"/></svg></div>
+                            <span>{vtranslate('LBL_TOTP_CODE_SUBMIT','Users')}</span>
+                        </button>
+                    </div>
+                </form>
             </div>
             <div class="multi-factor-login-footer">
                 <div class="row">
@@ -126,13 +122,8 @@
         </div>
     </div>
 </div>
-<script type="text/javascript" src="layouts/v7/modules/Users/resources/MultiFactorAuthentication.js"></script>
 <script type="text/javascript">
-Settings_Users_MultiFactorAuthentication_Js.registerTotpEvents();
-{if isset($QRCODEURL)}
-    $(function(){
-        Settings_Users_MultiFactorAuthentication_Js.createQRCode("qrcode","{$QRCODEURL}");
-        Settings_Users_MultiFactorAuthentication_Js.createQRCode("qrcode-mobile","{$QRCODEURL}");
-    });
-{/if}
+window.onload = (event) => {
+    FR_MultiFactorAuthentication_Js.authenticationPasskeyEvent();
+};
 </script>

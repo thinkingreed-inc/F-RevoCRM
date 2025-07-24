@@ -45,7 +45,7 @@
                         </td>
                         <td class="fieldValue">
                             <span class="value textOverflowEllipsis" data-field-type="{$CREDENTIAL_item.delete}">
-                                <button class="btn btn-danger deleteCredential" data-id="{$CREDENTIAL_item.id}" onclick="Settings_Users_MultiFactorAuthentication_Js.registerDeleteCredentialEvent(this); return false;">
+                                <button class="btn btn-danger deleteCredential" data-id="{$CREDENTIAL_item.id}">
                                     {vtranslate("LBL_DELETE", "Users")}
                                 </button>
                             </span>
@@ -63,5 +63,4 @@
         </table>
     </div>
 </div>
-<script type="text/javascript" src="layouts/v7/modules/Users/resources/MultiFactorAuthentication.js"></script>
 {/strip}
