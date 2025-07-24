@@ -35,6 +35,10 @@ class Users_MultiFactorAuthLogin_View extends Vtiger_View_Controller {
     {
         $viewer = $this->getViewer($request);
         $moduleName = $request->getModule(false);
+		if (empty($_SESSION['multi_factor_auth_userid']) && empty($_SESSION['multi_factor_auth_username'])) {
+			header('Location: index.php?module=Users&view=Login');
+			exit;
+		}
         $userid = $_SESSION['multi_factor_auth_userid'];
         $username = $_SESSION['multi_factor_auth_username'];
 

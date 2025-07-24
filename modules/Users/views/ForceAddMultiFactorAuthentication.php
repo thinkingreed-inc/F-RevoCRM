@@ -37,8 +37,12 @@ class Users_ForceAddMultiFactorAuthentication_View extends Vtiger_View_Controlle
         $type = $request->get('type');
         $moduleName = $request->getModule(false);
         $moduleModel = Vtiger_Module_Model::getInstance($moduleName);
-        $username = $_SESSION['registration_username'];
+		if( empty($_SESSION['registration_userid']) && empty($_SESSION['registration_username'])) {
+			header('Location: index.php?module=Users&view=Login');
+			exit;
+		}
         $userid = $_SESSION['registration_userid'];
+        $username = $_SESSION['registration_username'];
         $viewer->assign('USERID', $userid);
         $viewer->assign('USERNAME', $username);
         $viewer->assign('HOSTNAME', $_SERVER['SERVER_NAME']);
