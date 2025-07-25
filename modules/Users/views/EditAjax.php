@@ -61,15 +61,14 @@ Class Users_EditAjax_View extends Vtiger_IndexAjax_View {
     public function addMultiFactorAuthenticationStep1(Vtiger_Request $request) {
         $viewer = $this->getViewer($request);
 		$moduleName = $request->get('module');
-		$userId = $request->get('record');
+		$userId = $request->get('recordId');
 
-        $passkeyurl = "javascript:Users_Detail_Js.triggerAddMultiFactorAuthenticationNextStep('index.php?module=Users&view=EditAjax&mode=addMultiFactorAuthenticationStep2&type=passkey&userid=$userId')";
-        $totpurl = "javascript:Users_Detail_Js.triggerAddMultiFactorAuthenticationNextStep('index.php?module=Users&view=EditAjax&mode=addMultiFactorAuthenticationStep2&type=totp&userid=$userId')";
+        $passkeyurl = "javascript:Users_Detail_Js.triggerAddMultiFactorAuthenticationNextStep('index.php?module=Users&view=EditAjax&mode=addMultiFactorAuthenticationStep2&type=passkey&recordId=$userId')";
+        $totpurl = "javascript:Users_Detail_Js.triggerAddMultiFactorAuthenticationNextStep('index.php?module=Users&view=EditAjax&mode=addMultiFactorAuthenticationStep2&type=totp&recordId=$userId')";
 
         $viewer->assign('PASSKEY_URL', $passkeyurl);
         $viewer->assign('TOTP_URL', $totpurl);
 		$viewer->assign('MODULE', $moduleName);
-		$viewer->assign('USERID', $userId);
 		$viewer->assign('CURRENT_USER_MODEL', Users_Record_Model::getCurrentUserModel());
         return $viewer->view('AddMultiFactorAuthenticationStep1.tpl', 'Users');
     }
@@ -78,7 +77,7 @@ Class Users_EditAjax_View extends Vtiger_IndexAjax_View {
     public function addMultiFactorAuthenticationStep2(Vtiger_Request $request) {
         $viewer = $this->getViewer($request);
 		$moduleName = $request->get('module');
-        $userId = $request->get('userid');
+        $userId = $request->get('recordId');
         $type = $request->get('type');
 
         $currentUserModel = Users_Record_Model::getCurrentUserModel();
@@ -93,7 +92,7 @@ Class Users_EditAjax_View extends Vtiger_IndexAjax_View {
         $viewer->assign('VIEW', 'EditAjax');
         $viewer->assign('TYPE', $type);
         
-        $viewer->assign('BACK_URL', "javascript:Users_Detail_Js.triggerAddMultiFactorAuthenticationNextStep('index.php?module=Users&view=EditAjax&mode=addMultiFactorAuthenticationStep1&record=$userId')");
+        $viewer->assign('BACK_URL', "javascript:Users_Detail_Js.triggerAddMultiFactorAuthenticationNextStep('index.php?module=Users&view=EditAjax&mode=addMultiFactorAuthenticationStep1&recordId=$userId')");
         $viewer->assign('HOSTNAME', $_SERVER['SERVER_NAME']);
 		$viewer->assign('MODULE', $moduleName);
 		$viewer->assign('USERID', $userId);
