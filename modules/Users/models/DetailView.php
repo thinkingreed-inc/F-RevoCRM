@@ -87,7 +87,7 @@ class Users_DetailView_Model extends Vtiger_DetailView_Model {
 				$detailViewActionLinks[] = array(
 											'linktype'	=> 'DETAILVIEW',
 											'linklabel' => 'LBL_ADD_MULTI_FACTOR_AUTHENTICATION',
-											'linkurl'	=> "javascript:Users_Detail_Js.triggerAddMultiFactorAuthenticationNextStep('index.php?module=Users&view=EditAjax&mode=addMultiFactorAuthenticationStep1&record=$recordId')",
+											'linkurl'	=> "javascript:Users_Detail_Js.triggerAddMultiFactorAuthenticationNextStep('index.php?module=Users&view=EditAjax&mode=addMultiFactorAuthenticationStep1&recordId=$recordId')",
 											'linkicon'	=> ''
 										);
 			}
