@@ -121,6 +121,7 @@ class Users_Login_View extends Vtiger_View_Controller {
 				case 'login'		:	$message = vtranslate('LBL_INVALID_USERNAME_OR_PASSWORD');						break;
 				case 'fpError'		:	$message = vtranslate('LBL_INVALID_USERNAME_OR_MAILADDRESS');			break;
 				case 'statusError'	:	$message = vtranslate('LBL_MAIL_SERVER_NOT_CONFIGURED');	break;
+				case 'userLocked'	:	$message = vtranslate('LBL_USER_LOCKED_ERROR_MESSAGE', 'Users');	break;
 			}
 		} else if ($mailStatus) {
 			$message = vtranslate('LBL_AN_EMAIL_WAS_SENT_TO_THE_ADDRESS');

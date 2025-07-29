@@ -87,6 +87,7 @@ Vtiger_Detail_Js("Users_Detail_Js",{
 						accessKeyEle.find('.value').html(data.accessKey);
 					}
 				} else {
+					app.helper.hideProgress();
 					app.helper.showErrorNotification({'message': err.message});
 				}
 			});
@@ -142,6 +143,7 @@ Vtiger_Detail_Js("Users_Detail_Js",{
 					var url = data.listViewUrl;
 					window.location.href=url;
 				}else {
+					app.helper.hideProgress();
 					app.helper.showErrorNotification({'message': err.message});
 				}
 			}
@@ -170,8 +172,12 @@ Vtiger_Detail_Js("Users_Detail_Js",{
 					cb : callback
 				};
 				app.helper.showModal(data, params);
+			} else {
+				app.helper.hideProgress();
+				app.helper.showErrorNotification({'message': err.message});
 			}
 		});
+		
 	},
 	
 	changeUserName: function (form) {
@@ -196,7 +202,8 @@ Vtiger_Detail_Js("Users_Detail_Js",{
 				app.helper.showSuccessNotification({'message' : app.vtranslate(data)});
 				app.helper.hideModal();
 				location.reload();
-			}else {
+			} else {
+				app.helper.hideModal();
 				var params = {
 					position: {
 						my: 'bottom left',
@@ -209,7 +216,23 @@ Vtiger_Detail_Js("Users_Detail_Js",{
 			}
 		});
 	},
-	
+
+
+	triggerAddMultiFactorAuthenticationNextStep: function (url) {
+	app.helper.showProgress();
+		app.request.post({'url': url}).then(function (err, data) {
+			if (err === null) {
+				app.helper.hideProgress();
+				app.helper.loadPageContentOverlay(data);
+				$('.overlayPageContent').css('background-color', 'rgba(255, 255, 255, 0)');
+			} else {
+				app.helper.hideProgress();
+				app.helper.showErrorNotification({'message': err.message});
+				$('.overlayPageContent').css('background-color', 'rgba(255, 255, 255, 1)');
+			}
+		});
+		return false;
+	},
 },{
 	registerAjaxPreSaveEvent: function () {
 		var self = this;
@@ -246,6 +269,9 @@ Vtiger_Detail_Js("Users_Detail_Js",{
 	registerEvents: function () {
 		this._super();
 		this.registerAjaxPreSaveEvent();
+		FR_MultiFactorAuthentication_Js.registerDeleteCredentialEvent();
+		FR_MultiFactorAuthentication_Js.registerTotpEvents();
+		FR_MultiFactorAuthentication_Js.registerPasskeyEvents();
 	}
 });
 
