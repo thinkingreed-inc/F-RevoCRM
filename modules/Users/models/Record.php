@@ -1248,6 +1248,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 			$passkeyList[] = $row['passkey_credential'];
 		}
 		return $passkeyList;
+	}
 
 	public function getSharedCalendarTodoView() {
 		global $adb;
