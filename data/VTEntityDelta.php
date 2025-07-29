@@ -31,8 +31,6 @@ class VTEntityDelta extends VTEventHandler {
 					$entityData->set('comments', getTicketComments($recordId));
 				} elseif($moduleName == 'Invoice'){
 					$entityData->set('invoicestatus', getInvoiceStatus($recordId));
-				} elseif($moduleName == 'Payment'){
-					$entityData->set('paymentstatus', getPaymentStatus($recordId));
 				}
 				self::$oldEntity[$moduleName][$recordId] = $entityData;
 			}
@@ -51,8 +49,6 @@ class VTEntityDelta extends VTEventHandler {
 			$entityData->set('comments', getTicketComments($recordId));
 		} elseif($moduleName == 'Invoice') {
 			$entityData->set('invoicestatus', getInvoiceStatus($recordId));
-		} elseif($moduleName == 'Payment') {
-			$entityData->set('paymentstatus', getPaymentStatus($recordId));
 		}
 		self::$newEntity[$moduleName][$recordId] = $entityData;
 	}
