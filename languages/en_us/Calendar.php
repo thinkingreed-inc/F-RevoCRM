@@ -17,6 +17,7 @@ $languageStrings = array(
 	'LBL_RECORDS_LIST' => 'Calendar List',
 	'LBL_EVENTS' => 'Events',
 	'LBL_TODOS' => 'Task',
+	'LBL_SHOW_TODOS' => 'Show Task',
 	'LBL_CALENDAR_SETTINGS' => 'Calendar Settings',
 	'LBL_CALENDAR_SHARING' => 'Calendar Sharing',
 	'LBL_DEFAULT_EVENT_DURATION' => 'Default Event Duration',

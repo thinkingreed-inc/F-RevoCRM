@@ -69,8 +69,12 @@ Vtiger.Class('Vtiger_ListSidebar_Js',{},{
             el.closest('li').addClass('active');
             self.getParentInstance().filterClick = true;
             self.getParentInstance().loadFilter(el.data('filter-id'), {'page' : ''});
-			var filtername = jQuery('a[class="filterName"]',element).text();
-			jQuery('.module-action-content').find('.filter-name').html('&nbsp;&nbsp;<span class="fa fa-angle-right" aria-hidden="true"></span>').text(filtername);
+            var selectedFilter = element.find('a.filterName').andSelf().filter('a.filterName');
+			var filtername =selectedFilter.text();
+            var listName = jQuery('<a></a>').attr('href', selectedFilter.attr('href')).html('&nbsp;&nbsp;' + filtername);
+			var navi = jQuery('.module-action-content').find('.filter-name');
+            navi.find('a').remove();
+            navi.append(listName);
         });
         
         jQuery('#createFilter').on('click',function(e){

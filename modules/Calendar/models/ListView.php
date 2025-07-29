@@ -306,14 +306,10 @@ class Calendar_ListView_Model extends Vtiger_ListView_Model {
 				}
 				$record['subject'] = vtranslate('Busy','Events').'*';
 			}
-			if($record['activitytype'] == 'Task') {
-				unset($record['visibility']);
-				unset($rawData['visibility']);
-			}
-			
+
 			$record['id'] = $recordId;
             $listViewRecordModels[$recordId] = $moduleModel->getRecordFromArray($record, $rawData);
-            if(!$currentUser->isAdminUser() && $rawData['activitytype'] == 'Task' && isToDoPermittedBySharing($recordId) == 'no') {
+            if($rawData['activitytype'] == 'Task' && !$currentUser->isAdminUser() && $rawData['visibility'] == 'Private' && $ownerId && $visibility) {
 				$recordsToUnset[] = $recordId;
 			}
 		}
