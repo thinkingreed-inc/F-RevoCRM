@@ -23,11 +23,21 @@ class Calendar_SharedCalendar_View extends Calendar_Calendar_View {
 		$headerScriptInstances = parent::getHeaderScripts($request);
 		$jsFileNames = array(
 			'modules.Calendar.resources.SharedCalendar',
+			'~/libraries/jquery/bootstrapswitch/js/bootstrap-switch.min.js',
 		);
 
 		$jsScriptInstances = $this->checkAndConvertJsScripts($jsFileNames);
 		$headerScriptInstances = array_merge($headerScriptInstances, $jsScriptInstances);
 		return $headerScriptInstances;
 	}
-	
+
+	public function getHeaderCss(Vtiger_Request $request) {
+		$headerCssInstances = parent::getHeaderCss($request);
+		$cssFileNames = array(
+			'~/libraries/jquery/bootstrapswitch/css/bootstrap2/bootstrap-switch.min.css',
+		);
+		$cssInstances = $this->checkAndConvertCssStyles($cssFileNames);
+		$headerCssInstances = array_merge($headerCssInstances, $cssInstances);
+		return $headerCssInstances;
+	}	
 }

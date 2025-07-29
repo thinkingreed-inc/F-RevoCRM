@@ -196,8 +196,8 @@ class Vtiger_List_View extends Vtiger_Index_View {
 			$listViewModel->setSortParamsSession($tagSessionKey, $tag);
 		}
 
-                if(empty($cvId)) {
-			$customView = new CustomView();
+		$customView = new CustomView();
+		if(empty($cvId) || $customView->isPermittedCustomView($cvId, 'List', $moduleName) != 'yes') {
 			$cvId = $customView->getViewId($moduleName);
 		}
                 

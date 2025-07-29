@@ -75,6 +75,12 @@ Class Vtiger_Edit_View extends Vtiger_Index_View {
 
 		$viewer = $this->getViewer($request);
 		$viewer->assign('DUPLICATE_RECORDS', $duplicateRecordsList);
+
+		$cv = new CustomView();
+		$viewId = $cv->getViewId($moduleName);
+		$_SESSION['lvs'][$moduleName]['viewname'] = $viewId;
+		$viewer->assign('VIEWID', $viewId);
+
 		parent::preProcess($request, $display); 
 	}
 

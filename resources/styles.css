@@ -707,6 +707,15 @@ ul#productsImageContainer > li a{
   align-items: center;
 }
 
+.calendarTodoSelect {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  margin: 8px;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
 /* レコード編集画面のpadding-leftを可変ではなく固定にする */
 @media (min-width: 992px) {
   .editViewPageDiv.viewContent > .content-area {
@@ -748,4 +757,595 @@ div.main-container .sidebar-essentials {
 
 .calendarview div.sidebar-essentials {
   overflow: hidden;
+}
+
+
+/* ログイン画面のスタイル */
+.login-button {
+  position: relative;
+  display: inline-block;
+  padding: 9px;
+  margin: .3em 0 1em 0;
+  width: 100%;
+  vertical-align: middle;
+  color: #fff;
+  font-size: 16px;
+  line-height: 20px;
+  -webkit-font-smoothing: antialiased;
+  text-align: center;
+  letter-spacing: 1px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.login-button:focus {
+  outline: 0;
+}
+
+.login-buttonBlue {
+  background-image: linear-gradient(to bottom, #35aa47 0px, #35aa47 100%)
+}
+
+.login-input {
+  font-size: 16px;
+  padding: 10px 10px 10px 0px;
+  -webkit-appearance: none;
+  display: block;
+  color: #636363;
+  width: 100%;
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid #757575;
+}
+.login-input:focus {
+  outline: none;
+}
+.login-label {
+  font-size: 16px;
+  font-weight: normal;
+  position: absolute;
+  pointer-events: none;
+  left: 0px;
+  top: 10px;
+  transition: all 0.2s ease;
+}
+.login-input:focus ~ label, input.used ~ label {
+  top: -20px;
+  transform: scale(.75);
+  left: -12px;
+  font-size: 18px;
+}
+input:focus ~ .bar:before, input:focus ~ .bar:after {
+  width: 50%;
+}
+
+.login-widgetHeight {
+  height: 410px;
+  margin-top: 20px !important;
+}
+
+.loginDiv {
+  max-width: 380px;
+  margin: 0 auto;
+  border-radius: 4px;
+  box-shadow: 0 0 10px gray;
+  background-color: #FFFFFF;
+}
+.marketingDiv {
+  color: #303030;
+}
+
+.separatorDiv {
+  background-color: #7C7C7C;
+  width: 2px;
+  height: 460px;
+  margin-left: 20px;
+}
+
+.user-logo {
+  height: 110px;
+  margin: 0 auto;
+  padding-top: 40px;
+  padding-bottom: 20px;
+}
+
+.blockLink {
+  border: 1px solid #303030;
+  padding: 3px 5px;
+}
+
+.group {
+  position: relative;
+  margin: 20px 20px 40px;
+}
+.failureMessage {
+  color: red;
+  display: block;
+  text-align: center;
+  padding: 0px 0px 10px;
+}
+
+.successMessage {
+  color: green;
+  display: block;
+  text-align: center;
+  padding: 0px 0px 10px;
+}
+
+.inActiveImgDiv {
+  padding: 5px;
+  text-align: center;
+  margin: 30px 0px;
+}
+
+.ripples {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+}
+
+.widgetHeight {
+  height: 410px;
+  margin-top: 20px !important;
+}
+
+.login-d-flex {
+  display: -ms-flexbox!important;
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}
+
+.login-d-flex-column {
+  .container {
+    display: flex;
+    flex-direction: column;
+}
+}
+
+.login-d-flex div {
+  display: -ms-flexbox!important;
+  display: flex !important;
+  align-items: center;
+}
+
+.login-d-flex-bottom div {
+  display: -ms-flexbox!important;
+  display: flex !important;
+  align-items: flex-end;
+  margin-top: auto;
+  margin-bottom: 20px;
+}
+
+.login-button span {
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 24px;
+}
+
+.login-justify-content-center {
+  -ms-flex-pack: center!important;
+  justify-content: center !important;
+}
+
+.login-justify-content-right {
+  -ms-flex-pack: right!important;
+  justify-content: right !important;
+}
+
+@keyframes ripples {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    width: 200%;
+    padding-bottom: 200%;
+    opacity: 0;
+  }
+}
+
+
+@media (min-width: 0px) and (max-width: 830px) {
+  .multi_factor_credentialList {
+    overflow-x: auto !important;
+    width: 100vw !important;
+    display: block !important;
+  }
+
+  .multi_factor_credentialList > table {
+    display: table !important;
+    table-layout: fixed !important;
+  width: 100% !important;
+  white-space: nowrap !important;
+  overflow-x: auto !important;
+  }
+  .multi_factor_credentialList > table tr,
+  .multi_factor_credentialList > table td,
+  .multi_factor_credentialList > table th {
+    white-space: nowrap !important;
+  }
+  .multi_factor_credentialList > table td,
+  .multi_factor_credentialList > table th {
+    display: table-cell !important;
+    width: 100% !important;
+  }
+}
+
+.add-totp-login-page {
+  width: 900px;
+  max-width:900px;
+  margin: 0 auto;	
+}
+
+.totp-modal {
+  width: 900px;
+  margin: 0 auto;	
+}
+
+.passkey-container {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: center;
+  padding: 20px;
+}
+
+.totp-container {
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+  justify-content: center;
+  padding: 20px;
+}
+
+.totp-left-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  white-space: nowrap;
+}
+
+.totp-right-content {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  align-items: center;
+  width: auto;
+  margin-left: 40px;
+}
+
+.totp-left-content > div {
+  display: flex;
+  width: 100%;
+  text-align: left;
+  flex-direction: column;
+  align-items: start;
+  margin: 15px 0;
+}
+
+.totp-left-content > div:first-child {
+  margin-top: 0;
+}
+
+.passkey-step-message {
+	margin-left: 10px;
+}
+
+.totp-left-content > div > div > span {
+  font-weight: bold;
+  color: #333;
+  margin-left: 10px;
+}
+
+.totp-left-content strong {
+  color: #0078A8;
+  font-weight: bold;
+}
+
+.passkey-flex-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: start;
+  gap: 5px;
+}
+
+.totp-flex-row {
+  display: flex;
+  flex-direction: row;
+  align-items: first baseline;
+  justify-content: center;
+  gap: 5px;
+}
+
+.passkey-form-group {
+  display: flex;
+  flex-direction: row;
+  margin-left: 35px;
+  margin-bottom: 15px;
+  justify-content: flex-start;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.totp-form-group {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  margin-left: 35px;
+  margin-top: 15px;
+}
+
+.totp-form-group > label, .passkey-form-group > label {
+  width: 50%;
+  text-align: left;
+  margin-right: 10px;
+}
+
+.totp-form-group > label::after, .passkey-form-group > label::after {
+  content: ":";
+  margin-left: 5px;
+}
+
+.circle_number {
+  width: 25px;
+  height: 25px;
+  line-height: 25px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+  display: inline-block;
+  background-color:  #0078A8;
+  border-radius: 50%;
+  text-align: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.qrcode-text-message {
+	margin: 20px 0 10px 0;
+	font-weight: bold;
+}
+
+.totp-secret-code {
+  display: flex;
+  width: 200px;
+  height: 32px;
+  margin: 10px 0;
+  padding: 0 10px;
+  font-size: 14px;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  background-color: #fff;
+  font-weight: bold;
+  align-items: center;
+  justify-content: center;
+}
+
+.multi-factor-login-footer {
+  padding: 15px;
+  background: #EFEFEF;
+}
+
+#totpAdd {
+	margin: 0 20px;
+}
+
+.multifactor-modal {
+  width: 800px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.multi-factor-flex-row {
+  display: flex;
+  flex-direction: row;
+  min-height: 400px; /* 必要に応じて調整 */
+  align-items: stretch;
+  justify-content: center;
+  gap: 32px;
+}
+
+.multi-factor-area {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  width: 40%;
+  border: #CCC solid 2px;
+  border-radius: 10px;
+  margin: 0 20px;
+  padding: 10px 25px;
+  font-size: 10pt;
+}
+
+.auth-multi-factor-area {
+	border: 0;
+	width: 100%;
+	margin: 0;
+}
+
+.multi-factor-area-full {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: #CCC solid 2px;
+  border-radius: 10px;
+  padding: 10px 25px;
+  font-size: 10pt;
+  gap: 5px;
+}
+
+.multi-factor-area-full svg {
+  flex-shrink: 0;
+}
+
+.multi-factor-area h4 {
+  display: flex;
+  flex-direction: row;
+  font-size: 18px;
+  font-weight: bold;
+  align-items: center;
+  gap: 5px;
+}
+
+.multi-factor-area h4 svg {
+  stroke: #35aa47;
+}
+
+.warning-label p {
+  color: #999;
+  margin: 0;
+}
+
+.multi-factor-area ul {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.multi-factor-area li {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin: 15px 0;
+  justify-content: flex-start;
+  gap: 5px;
+}
+
+.multi-factor-area li:first-child {
+  margin-top: 0;
+}
+
+.multi-factor-area li:last-child {
+  margin-bottom: 0;
+}
+
+.multi-factor-area svg {
+  flex-shrink: 0;
+}
+
+.multi-factor-area button {
+  margin-top: auto;
+  margin-bottom: 0;
+}
+
+.multi-factor-area > div {
+  margin: 10px 0;
+}
+
+.multi-factor-area > div.multi-factor-warning-label {
+  color: #999;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.multifactor-button-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.multi-factor-description {
+  color: #999;
+}
+
+.totp-form-group-mobile {
+  display: none;
+}
+
+.modal-footer .login-button {
+	width: auto;
+}
+
+.multi-factor-login-footer .login-button {
+	width: auto;
+}
+
+@media (min-width: 0px) and (max-width: 830px) {
+  .multifactor-modal {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .overlay-container-300 {
+    margin-left: 0 !important;
+  }
+
+  .multi-factor-flex-row {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .multi-factor-area {
+    width: 100%;
+  }
+
+  .totp-modal {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .totp-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .totp-form-group-mobile {
+    display: block;
+  }
+
+  .totp-right-content {
+    display: none;
+  }
+
+  .totp-left-content {
+      white-space: normal;
+      width: 100%;
+  }
+
+  .totp-form-group-mobile {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+        width: 100%;
+        margin: 10px 0 0;
+    }
+
+  .totp-secret-code {
+    margin: 10px 0 0;
+  }
+
+  .multifactor-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  .add-totp-login-page {
+    width: 100%;
+  }
 }

@@ -42,6 +42,7 @@
     <script type="text/javascript" src="{vresource_url('layouts/v7/modules/Vtiger/resources/Class.js')}"></script>
     <script type='text/javascript' src="{vresource_url('layouts/v7/resources/helper.js')}"></script>
     <script type="text/javascript" src="{vresource_url('layouts/v7/resources/application.js')}"></script>
+	<script type="text/javascript" src="{vresource_url('layouts/v7/resources/MultiFactorAuthentication.js')}"></script>
     <script type="text/javascript" src="{vresource_url('layouts/v7/modules/Vtiger/resources/Utils.js')}"></script>
     <script type='text/javascript' src="{vresource_url('layouts/v7/modules/Vtiger/resources/validation.js')}"></script>
     <script type="text/javascript" src="{vresource_url('layouts/v7/lib/bootbox/bootbox.js')}"></script>
