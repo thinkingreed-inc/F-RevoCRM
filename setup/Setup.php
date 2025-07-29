@@ -91,9 +91,6 @@ require_once ("scripts/64_Update_PDFTemplate.php");
 // 'vtiger_activity' テーブルに 'smcreatorid' フィールドを追加
 require_once ("scripts/78_Add_smcreatorid.php");
 
-// Multi-Factor Authencitaion テーブルの設定
-require_once ("scripts/81_TwoFactorAuth.php");
-
 // メニュー設定
 // FRMenuSetting::apply(array(
 //     'Accounts',

@@ -28,4 +28,16 @@ if (defined('VTIGER_UPGRADE')) {
 
     // システム変数モジュールの追加
     require_once ("setup/scripts/03_Make_Parameters.php");
+
+    // 空白項目の追加
+    require_once ("setup/scripts/79_Add_BlankField.php");
+
+    // cronタスクのリトライタイムアウトの追加
+    require_once ("setup/scripts/80_Add_CronRetryTimeout.php");
+
+    // 共有カレンダーへToDoの追加
+    require_once ("setup/scripts/81_Add_SharedCalendarTodo.php");
+
+    // 二要素認証の追加
+    require_once ("setup/scripts/82_Add_TwoFactorAuth.php");
 }
