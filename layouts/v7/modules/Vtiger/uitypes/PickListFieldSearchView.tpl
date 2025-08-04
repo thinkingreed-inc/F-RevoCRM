@@ -11,7 +11,7 @@
 -->*}
 {strip}
     {assign var=FIELD_INFO value=$FIELD_MODEL->getFieldInfo()}
-	{assign var=PICKLIST_VALUES value=$FIELD_INFO['picklistvalues']}
+	{assign var=PICKLIST_VALUES value=$FIELD_INFO['editablepicklistvalues']}
 	{assign var=FIELD_INFO value=Vtiger_Util_Helper::toSafeHTML(Zend_Json::encode($FIELD_INFO))}
     {assign var=SEARCH_VALUES value=explode(',',$SEARCH_INFO['searchValue'])}
     <div class="select2_search_div">
