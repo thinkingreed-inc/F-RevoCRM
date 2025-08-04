@@ -36,3 +36,6 @@ config.inc.php
 docker-compose.override.yml
 .env
 /vendor
+parent_tabdata.php
+tabdata.php
+user_privileges/user_privileges_1.php
