@@ -57,7 +57,7 @@ class Users_MultiFactorAuthLogin_View extends Vtiger_View_Controller {
         } else {
             $credential = $request->get('credential');
             $challenge = $request->get('challenge');
-            $loginResult = Users_MultiFactorAuthentication_Helper::passkeyLoginVerifyKey($challenge, $credential, $userid);
+            $loginResult = Users_MultiFactorAuthentication_Helper::passkeyLoginVerifyKey($challenge, $credential, $userid, $username);
             $errorIncorrect = "LBL_PASSKEY_CODE_INCORRECT";
         }
 
