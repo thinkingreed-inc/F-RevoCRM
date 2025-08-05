@@ -1,34 +1,29 @@
 <?php
-use Webauthn\PublicKeyCredential;
+use Cose\Algorithm\Manager;
+use Cose\Algorithm\Signature\ECDSA;
+use Cose\Algorithm\Signature\EdDSA;
+use Cose\Algorithm\Signature\RSA;
 use Webauthn\PublicKeyCredentialCreationOptions;
-use Webauthn\PublicKeyCredentialRpEntity;
-use Webauthn\PublicKeyCredentialUserEntity;
-use Webauthn\AuthenticatorAttestationResponse;
+use Webauthn\PublicKeyCredentialParameters;
+use Webauthn\AuthenticatorSelectionCriteria;
 use Webauthn\AuthenticatorAttestationResponseValidator;
+use Webauthn\AuthenticatorAttestationResponse;
 use Webauthn\AuthenticatorAssertionResponse;
-use Webauthn\Denormalizer\WebauthnSerializerFactory;
-use Webauthn\CeremonyStep\CeremonyStepManagerFactory;
-use Webauthn\PublicKeyCredentialRequestOptions;
-use Webauthn\PublicKeyCredentialDescriptor;
-use Webauthn\AuthenticatorAssertionResponseValidator;
+use Webauthn\AttestationStatement\AttestationObjectLoader;
+use Webauthn\PublicKeyCredentialLoader;
 use Webauthn\PublicKeyCredentialSource;
-
+use Webauthn\PublicKeyCredentialRequestOptions;
+use Webauthn\AuthenticationExtensions\ExtensionOutputCheckerHandler;
+use Nyholm\Psr7\Factory\Psr17Factory;
+use Nyholm\Psr7Server\ServerRequestCreator;
 use Webauthn\AttestationStatement\AttestationStatementSupportManager;
 use Webauthn\AttestationStatement\NoneAttestationStatementSupport;
-
-use Cose\Algorithm\Manager;
-use Cose\Algorithm\Signature\ECDSA\ES256K;
-use Cose\Algorithm\Signature\ECDSA\ES384;
-use Cose\Algorithm\Signature\ECDSA\ES512;
-use Cose\Algorithm\Signature\EdDSA\Ed256;
-use Cose\Algorithm\Signature\EdDSA\Ed512;
-use Cose\Algorithm\Signature\RSA\PS256;
-use Cose\Algorithm\Signature\RSA\PS384;
-use Cose\Algorithm\Signature\RSA\PS512;
-use Cose\Algorithm\Signature\RSA\RS256;
-use Cose\Algorithm\Signature\RSA\RS384;
-use Cose\Algorithm\Signature\RSA\RS512;
-use Cose\Algorithm\Signature\ECDSA\ES256;
+use Webauthn\TokenBinding\TokenBindingNotSupportedHandler;
+use Webauthn\AuthenticatorAssertionResponseValidator;
+use Webauthn\PublicKeyCredentialUserEntity;
+use Webauthn\PublicKeyCredentialRpEntity;
+use Symfony\Component\HttpFoundation\Request;
+use Webauthn\PublicKeyCredentialDescriptor; 
 
 use PragmaRX\Google2FA\Google2FA;
 
@@ -95,30 +90,7 @@ class Users_MultiFactorAuthentication_Helper {
         return true;
     }
 
-    public static function algorithmManager() {
-        $algorithmManager = Manager::create()
-            ->add(
-                ES256::create(),
-                ES256K::create(),
-                ES384::create(),
-                ES512::create(),
-
-                RS256::create(),
-                RS384::create(),
-                RS512::create(),
-
-                PS256::create(),
-                PS384::create(),
-                PS512::create(),
-
-                Ed256::create(),
-                Ed512::create(),
-            )
-        ;
-        return $algorithmManager;
-    }
-
-    public static function passkeyLoginVerifyKey($challenge, $credential, $userid) {
+    public static function passkeyLoginVerifyKey($challenge, $credential, $userid, $username) {
         global $log, $adb;
         $sessionChallengeResult = self::challengeCompare($challenge);
         $userRecordModel = Users_Record_Model::getInstanceById($userid, 'Users');
@@ -129,77 +101,83 @@ class Users_MultiFactorAuthentication_Helper {
         }
 
         try {
-            $passkeyList = $userRecordModel->getPasskeyCredentialById();
-            $passkey_credential_list = array();
-
             $attestationStatementSupportManager = new AttestationStatementSupportManager();
             $attestationStatementSupportManager->add(new NoneAttestationStatementSupport());
-            $serializer = (new WebauthnSerializerFactory($attestationStatementSupportManager))->create();
+            
+            $attestationObjectLoader = new AttestationObjectLoader($attestationStatementSupportManager);
+            $publicKeyCredentialLoader = new PublicKeyCredentialLoader($attestationObjectLoader);
+            $publicKeyCredential = $publicKeyCredentialLoader->load(json_encode($credential));
 
-            foreach ($passkeyList as $passkey_credential) {
-                $passkey_credential = html_entity_decode($passkey_credential, ENT_QUOTES, 'UTF-8');
-                $passkey_credential_list[] = $serializer->deserialize(
-                    $passkey_credential,
-                    PublicKeyCredentialSource::class,
-                    'json');
-            }
-
-            $requestPublicKeyCredential = $serializer->deserialize(
-                json_encode($credential), 
-                PublicKeyCredential::class, 
-                'json'
-            );
-
-            if (!$requestPublicKeyCredential->response instanceof AuthenticatorAssertionResponse) {
-                $log->error("Invalid credential response type for user: $userid");
+            $authenticatorAssertionResponse = $publicKeyCredential->getResponse();
+            if (!$authenticatorAssertionResponse instanceof AuthenticatorAssertionResponse) {
+                $log->error("Invalid credential response type");
                 return false;
             }
 
-            // localhostを許可オリジンとして設定
-            // ここは実際の環境に合わせて変更する必要があります。
-            // プルリクの時にコメントアウトされているので、必要に応じて変更してください。
-            $csmFactory = new CeremonyStepManagerFactory();
-            $csmFactory->setAlgorithmManager(self::algorithmManager());
-            $csmFactory->setAllowedOrigins([
-                'http://localhost',
-            ]);
-            $requestCSM = $csmFactory->requestCeremony();
-            $authenticatorAssertionResponseValidator = new AuthenticatorAssertionResponseValidator(
-                $requestCSM
-            );
-            
-            $allowedCredentials = array_map(
-                static function (PublicKeyCredentialSource $credential): PublicKeyCredentialDescriptor {
-                    return $credential->getPublicKeyCredentialDescriptor();
-                },
-                $passkey_credential_list
+            $psr17Factory = new Psr17Factory();
+            $creator = new ServerRequestCreator(
+                $psr17Factory, // ServerRequestFactory
+                $psr17Factory, // UriFactory
+                $psr17Factory, // UploadedFileFactory
+                $psr17Factory  // StreamFactory
             );
 
-            $publicKeyCredentialRequestOptions =
-                PublicKeyCredentialRequestOptions::create(
-                    self::decodeChallenge($_SESSION['challenge']),
-                    allowCredentials: $allowedCredentials
-                );
-            
-            foreach ($passkey_credential_list as $credentialFromDb) {
-                try {
-                    $userHandle = property_exists($credentialFromDb, 'userHandle') ? $credentialFromDb->userHandle : null;
-                    $publicKeyCredentialSource = $authenticatorAssertionResponseValidator->check(
-                        $credentialFromDb,
-                        $requestPublicKeyCredential->response,
-                        $publicKeyCredentialRequestOptions,
-                        $_SERVER['SERVER_NAME'],
-                        $userHandle
+            $publicKeyCredentialSourceRepository = new Users_PublicKeyCredentialSourceRepository_Model();
+            $userEntity = new PublicKeyCredentialUserEntity(
+                $username,
+                $userid,
+                $username
+            );
+
+            $serverRequest = $creator->fromGlobals();
+
+            $excludeCredentials  = $publicKeyCredentialSourceRepository->findAllForUserEntity($userEntity);
+            if (!is_array($excludeCredentials)) {
+                $excludeCredentials = [];
+            }
+
+            // PublicKeyCredentialDescriptor配列に変換
+            $excludeCredentialDescriptors = [];
+            foreach ($excludeCredentials as $credential) {
+                if ($credential instanceof PublicKeyCredentialSource) {
+                    $excludeCredentialDescriptors[] = new PublicKeyCredentialDescriptor(
+                        'public-key',
+                        $credential->getPublicKeyCredentialId()
                     );
-                    if ($publicKeyCredentialSource) {
-                        return $publicKeyCredentialSource;
-                    }
-                } catch (Exception $e) {
-                    // passkeyは複数あるため、一致パターン以外は例外処理されてしまうため、例外を握りつぶす形で対応。
                 }
             }
-            // 全件失敗した場合のみfalseを返す
-            return false;
+
+            $coseAlgorithmManager = new Manager();
+            $coseAlgorithmManager->add(new ECDSA\ES256());
+            $coseAlgorithmManager->add(new RSA\RS256());
+
+            $publicKeyCredentialSourceRepository = new Users_PublicKeyCredentialSourceRepository_Model();
+            $authenticatorAssertionResponseValidator = new AuthenticatorAssertionResponseValidator(
+                $publicKeyCredentialSourceRepository,
+                new TokenBindingNotSupportedHandler(),
+                new ExtensionOutputCheckerHandler(),
+                $coseAlgorithmManager,
+                null,
+                null
+            );
+            
+            $publicKeyCredentialRequestOptions = new PublicKeyCredentialRequestOptions(
+                self::decodeChallenge($challenge),
+                60000,
+                $_SERVER['SERVER_NAME'], 
+                $excludeCredentialDescriptors,
+                null,
+                null
+            );
+
+            $publicKeyCredentialSource = $authenticatorAssertionResponseValidator->check(
+                $publicKeyCredential->getRawId(),
+                $authenticatorAssertionResponse,
+                $publicKeyCredentialRequestOptions,
+                $serverRequest,
+                null,
+                ['localhost']
+            );
         } catch (Exception $e) {
             $errMsg = "User credential error: "
                         .$e->getMessage().":".$e->getTraceAsString();
@@ -209,7 +187,9 @@ class Users_MultiFactorAuthentication_Helper {
     }
 
     public static function passkeyRegisterVerifyKey($challenge,$credential,$userid,$username) {
+        global $log;
         $sessionChallengeResult = self::challengeCompare($challenge);
+
         if( !$sessionChallengeResult ) {
             global $log;
             $log->error("Session challenge mismatch");
@@ -217,55 +197,93 @@ class Users_MultiFactorAuthentication_Helper {
         }
 
         try {
+            // The manager will receive data to load and select the appropriate 
             $attestationStatementSupportManager = new AttestationStatementSupportManager();
             $attestationStatementSupportManager->add(new NoneAttestationStatementSupport());
             
-            $serializer = (new WebauthnSerializerFactory($attestationStatementSupportManager))->create();
-            $cleanCredential = self::cleanBase64Padding($credential);
-        
-            // 受け取った認証情報をデシリアライズ
-            $publicKeyCredential = $serializer->deserialize(
-                json_encode($cleanCredential), 
-                PublicKeyCredential::class, 
-                'json'
-            );
+            $attestationObjectLoader = new AttestationObjectLoader($attestationStatementSupportManager);
+            $publicKeyCredentialLoader = new PublicKeyCredentialLoader($attestationObjectLoader);
+            $publicKeyCredential = $publicKeyCredentialLoader->load(json_encode($credential));
 
-            if (!$publicKeyCredential->response instanceof AuthenticatorAttestationResponse) {
-                global $log;
+            $authenticatorAttestationResponse = $publicKeyCredential->getResponse();
+            if (!$authenticatorAttestationResponse instanceof Webauthn\AuthenticatorAttestationResponse) {
                 $log->error("Invalid credential response type");
                 return false;
             }
 
-            $csmFactory = new CeremonyStepManagerFactory();
-            $csmFactory->setAlgorithmManager(self::algorithmManager());
-            // localhostを許可オリジンとして設定
-            // ここは実際の環境に合わせて変更する必要があります。
-            // プルリクの時にコメントアウトされているので、必要に応じて変更してください。
-            $csmFactory->setAllowedOrigins([
-                'http://localhost',
-            ]);
-            $creationCSM = $csmFactory->creationCeremony();
-            $authenticatorAttestationResponseValidator = new AuthenticatorAttestationResponseValidator(
-                $creationCSM
+            $psr17Factory = new Psr17Factory();
+            $creator = new ServerRequestCreator(
+                $psr17Factory, // ServerRequestFactory
+                $psr17Factory, // UriFactory
+                $psr17Factory, // UploadedFileFactory
+                $psr17Factory  // StreamFactory
             );
-            $rpEntity = new PublicKeyCredentialRpEntity($_SERVER['SERVER_NAME'], $_SERVER['SERVER_NAME']);
+
+            $publicKeyCredentialSourceRepository = new Users_PublicKeyCredentialSourceRepository_Model();
             $userEntity = new PublicKeyCredentialUserEntity(
-                $username, 
-                (string)$userid, 
+                $username,
+                $userid,
                 $username
             );
+
+            $serverRequest = $creator->fromGlobals();
+            $relyingrpEntityParty = new PublicKeyCredentialRpEntity(
+                'F-RevoCRM', // The application name
+                $_SERVER['SERVER_NAME']
+            );
+            $tokenBindingHandler = new TokenBindingNotSupportedHandler();
+            $extensionOutputCheckerHandler = new ExtensionOutputCheckerHandler();
+            $pubKeyCredParams = 
+            [
+                new PublicKeyCredentialParameters("public-key", -7), // ES256
+                new PublicKeyCredentialParameters("public-key", -8), // EdDSA
+                new PublicKeyCredentialParameters("public-key", -257), // RS256
+            ];
+            $excludeCredentials  = $publicKeyCredentialSourceRepository->findAllForUserEntity($userEntity);
+            if (!is_array($excludeCredentials)) {
+                $excludeCredentials = [];
+            }
+
+            // PublicKeyCredentialDescriptor配列に変換
+            $excludeCredentialDescriptors = [];
+            foreach ($excludeCredentials as $credential) {
+                if ($credential instanceof PublicKeyCredentialSource) {
+                    $excludeCredentialDescriptors[] = new PublicKeyCredentialDescriptor(
+                        'public-key',
+                        $credential->getPublicKeyCredentialId()
+                    );
+                }
+            }
+            $authenticatorSelection = new AuthenticatorSelectionCriteria(
+                AuthenticatorSelectionCriteria::AUTHENTICATOR_ATTACHMENT_PLATFORM,
+                AuthenticatorSelectionCriteria::USER_VERIFICATION_REQUIREMENT_REQUIRED,
+                AuthenticatorSelectionCriteria::RESIDENT_KEY_REQUIREMENT_DISCOURAGED
+            );
+                
             $publicKeyCredentialCreationOptions = new PublicKeyCredentialCreationOptions(
-                $rpEntity,
+                $relyingrpEntityParty,
                 $userEntity,
-                self::decodeChallenge($_SESSION['challenge'])
+                self::decodeChallenge($challenge),
+                $pubKeyCredParams,
+                60000,
+                $excludeCredentialDescriptors,
+                $authenticatorSelection
+            );
+
+            $authenticatorAttestationResponseValidator = new AuthenticatorAttestationResponseValidator(
+                $attestationStatementSupportManager,
+                $publicKeyCredentialSourceRepository,
+                $tokenBindingHandler,
+                $extensionOutputCheckerHandler
             );
 
             $publicKeyCredentialSource = $authenticatorAttestationResponseValidator->check(
-                $publicKeyCredential->response,
+                $authenticatorAttestationResponse,
                 $publicKeyCredentialCreationOptions,
-                $_SERVER['SERVER_NAME']
+                $serverRequest,
+                ['localhost']
             );
-        
+
             return $publicKeyCredentialSource; // 検証成功
         } catch (Exception $e) {
             global $log;
@@ -274,27 +292,6 @@ class Users_MultiFactorAuthentication_Helper {
             $log->error($errMsg);
             return false; // 検証失敗
         }
-    }
-
-    private static function cleanBase64Padding($credential) {
-        $cleanCredential = $credential;
-        
-        // rawIdのパディングを削除
-        if (isset($cleanCredential['rawId'])) {
-            $cleanCredential['rawId'] = rtrim($cleanCredential['rawId'], '=');
-        }
-        
-        // responseのBase64データのパディングを削除
-        if (isset($cleanCredential['response'])) {
-            if (isset($cleanCredential['response']['clientDataJSON'])) {
-                $cleanCredential['response']['clientDataJSON'] = rtrim($cleanCredential['response']['clientDataJSON'], '=');
-            }
-            if (isset($cleanCredential['response']['attestationObject'])) {
-                $cleanCredential['response']['attestationObject'] = rtrim($cleanCredential['response']['attestationObject'], '=');
-            }
-        }
-        
-        return $cleanCredential;
     }
 
     private static function decodeChallenge($challenge) {

@@ -999,8 +999,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 					"type" => $row['type'],
 					"device_name" => $row['device_name'],
 					"totp_secret" => $row['totp_secret'],
-					"credentialid" => $row['credentialid'],
-					"public_key" => $row['public_key'],
+					"passkey_credential" => $row['passkey_credential'],
 					"created_at" => $row['created_at']
 				);
 			}
@@ -1178,16 +1177,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 	public function passkeyRegisterUserCredential($device_name, $publicKeyCredentialSource) {
 		global $adb;
 		$userid = $this->getId();
-		$attestationStatementSupportManager = new AttestationStatementSupportManager();
-		$attestationStatementSupportManager->add(new NoneAttestationStatementSupport());
 		
-		$serializer = (new WebauthnSerializerFactory($attestationStatementSupportManager))->create();
-
-		// JSON 文字列にシリアライズ
-		$credentialJson = $serializer->serialize(
-			$publicKeyCredentialSource,
-			'json'
-		);
 		// データベースに保存
 		$sql = "INSERT INTO `vtiger_user_credentials` (`userid`, `type`, `device_name`, `passkey_credential`)
 				VALUES (?, ?, ?, ?)";
@@ -1195,7 +1185,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 			$userid,
 			'passkey',
 			$device_name,
-			$credentialJson,
+			json_encode($publicKeyCredentialSource) // パブリックキー認証情報をJSON形式で保存
 		);
 
 		$adb->pquery($sql, $params);
@@ -1248,6 +1238,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 			$passkeyList[] = $row['passkey_credential'];
 		}
 		return $passkeyList;
+	}
 
 	public function getSharedCalendarTodoView() {
 		global $adb;
