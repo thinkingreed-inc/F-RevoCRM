@@ -30,7 +30,7 @@
                     <tr>
                         <td class="fieldValue">
                             <span class="value textOverflowEllipsis" data-field-type="{$CREDENTIAL_item.type}">
-                                {$CREDENTIAL_item.type}
+                                {vtranslate($CREDENTIAL_item.type, "Users")}
                             </span>
                         </td>
                         <td class="fieldValue">
