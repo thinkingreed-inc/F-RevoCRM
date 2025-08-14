@@ -318,11 +318,13 @@ $languageStrings = array(
 Even if not enforced, if a user has set up multi-factor authentication, it will be required at login.
 true: Enforce
 false: Do not enforce',
-	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_TIME' => 'This is the time to lock a user\'s login. Please enter in minutes.',
-	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_COUNT' => 'This is the number of attempts before a user\'s login is locked.
-The count increments by one for each multi-factor authentication failure. When the number of failures reaches the value specified here, the user\'s login will be locked.
-A locked user cannot log in until the time specified in USER_LOCK_TIME has elapsed.
-If a non-numeric string or a value of 0 or less is specified, the login lock will not be activated.',
+	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_TIME' => 'This is the time (in minutes) that a user\'s login will be locked after failing multi-factor authentication USER_LOCK_COUNT times.
+Please set a positive integer value using half-width characters.
+If you specify a full-width number, a string that cannot be recognized as a number, or a value less than or equal to 0, the login lock will not be activated.',
+	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_COUNT' => 'This is the number of failed multi-factor authentication attempts before a user\'s login is locked.
+If the specified number of consecutive multi-factor authentication failures occurs, the user\'s login will be locked and cannot log in until the time specified by USER_LOCK_TIME has passed.
+Please set a positive integer value using half-width characters.
+If you specify a full-width number, a string that cannot be recognized as a number, or a value less than or equal to 0, the login lock will not be activated.',
 	'LBL_PASSKEY' => 'Passkey Authentication',
 	'LBL_TOTP' => 'Time-based Authentication',
 	'LBL_PASSKEY_DESCRIPTION' => 'The latest passwordless authentication method using biometric or device authentication.',
