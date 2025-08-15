@@ -50,6 +50,7 @@ if (typeof (Vtiger_Import_Js) == 'undefined') {
 				jQuery('#step2').addClass('active');
 
 				jQuery('#importStep2Conatiner').addClass('show');
+                jQuery('#available_fields').removeClass('select2-offscreen');
 
 				jQuery('#importStepTwoButtonsDiv').removeClass('hide');
 				jQuery('#importStepTwoButtonsDiv').addClass('show');
@@ -377,6 +378,7 @@ if (typeof (Vtiger_Import_Js) == 'undefined') {
                     }
                 }
             }
+            $('#available_fields').val(null).trigger('change');
             return false;
         },
         //TODO move to a common file

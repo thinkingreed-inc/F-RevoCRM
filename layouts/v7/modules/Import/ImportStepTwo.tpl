@@ -39,7 +39,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <select id="available_fields" multiple size="10" name="available_fields" class="txtBox" style="width: 100%">
+                            <select id="available_fields" multiple size="10" name="available_fields" class="txtBox select2 form-control" style="width: 100%">
                                 {foreach key=_FIELD_NAME item=_FIELD_INFO from=$AVAILABLE_FIELDS}
                                     {if $_FIELD_NAME eq 'tags'} {continue} {/if}
                                     <option value="{$_FIELD_NAME}">{$_FIELD_INFO->getFieldLabelKey()|@vtranslate:$FOR_MODULE}</option>
