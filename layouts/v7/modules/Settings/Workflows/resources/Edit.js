@@ -840,8 +840,19 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
          if (currentElement.hasClass('overwriteSelection')) {
             inputElement.val(currentElement.val());
          } else {
+            var module_name = jQuery('#module_name').val();
+            var inventoryModules = ['Invoice', 'Quotes', 'PurchaseOrder', 'SalesOrder'];
             var oldValue = inputElement.val();
-            var newValue = oldValue + currentElement.val();
+            // 製品とサービスは複数紐づけられるため、$loop-products$で囲み全て出力する
+            var regexlp = /\$loop-products\$/;
+            var regexPS = /\((\w+) : \((Products|Services)\) (\w+)\)/;
+            var str = currentElement.val();
+            if(inputElement[0].id == 'description' && jQuery.inArray(module_name, inventoryModules) !== -1 && !regexlp.test(oldValue) && regexPS.test(str)){
+               str = '$loop-products$\n'+currentElement.val()+'\n\n$loop-products$\n'
+            }
+            var newValue = oldValue.substr(0, inputElement[0].selectionStart) 
+                           + str
+                           + oldValue.substr(inputElement[0].selectionStart);
             inputElement.val(newValue);
          }
       });
@@ -851,6 +862,15 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
          var textarea = CKEDITOR.instances.content;
          var value = jQuery(e.currentTarget).val();
          if (textarea != undefined) {
+            var module_name = jQuery('#module_name').val();
+            var inventoryModules = ['Invoice', 'Quotes', 'PurchaseOrder', 'SalesOrder'];
+            var oldValue = textarea.getData();
+            // 製品とサービスは複数紐づけられるため、$loop-products$で囲み全て出力する
+            var regexlp = /\$loop-products\$/;
+            var regexPS = /\((\w+) : \((Products|Services)\) (\w+)\)/;
+            if(jQuery.inArray(module_name, inventoryModules) !== -1 && !regexlp.test(oldValue) && regexPS.test(value)){
+               value = '$loop-products$<br />'+value+'<br /><br>$loop-products$<br>';
+            }
             textarea.insertHtml(value);
          } else if (jQuery('textarea[name="content"]')) {
             var textArea = jQuery('textarea[name="content"]');
