@@ -338,7 +338,7 @@ $languageStrings = array(
 	'LBL_DIRECT_AMOUNT_DISCOUNT' => '金額指定割引',
 	'LBL_FINAL_DISCOUNT_AMOUNT' => '総割引額',
 	'LBL_MORE_CURRENCIES' => '他の通貨',
-	'LBL_SET_TAX_FOR' => '課税対象：',
+	'LBL_SET_TAX_FOR' => '課税対象',
 	'LBL_GROUP_TAX' => 'グループ課税',
 	'LBL_BILLING_ADDRESS_FROM' => '次から請求先住所からコピーする：',
 	'LBL_SHIPPING_ADDRESS_FROM' => '次から発送先住所からコピーする：',
@@ -353,6 +353,7 @@ $languageStrings = array(
 	'LBL_DEFAULT' => 'デフォルト',
 	'LBL_ITEM' => 'Item',
 	'LBL_ADD_DASHBOARD' =>'ダッシュボードの追加',
+	'LBL_NO_TAXES_EXISTS' => '税金はありません',
 
 	//DetailView Actions
 	'LBL_CREATE' => '作成',
@@ -2018,6 +2019,7 @@ $jsLanguageStrings = array(
 	'JS_FAILED_TO_SEND_FOR_SIGNATURE' => '署名のために送信できませんでした',
 	'JS_SUITABLE_VTIGER_FIELD_NOT_AVAILABLE_FOR_MAPPING' => 'マッピングに利用できる項目がありません',
 	'JS_SAVED_SUCCESSFULLY' => '設定を保存しました',
+	'JS_SET_TAX_FOR' => '課税対象',
 	'phone' => '電話番号',
 	'email' => 'メールアドレス',
 	'url' => 'URL',

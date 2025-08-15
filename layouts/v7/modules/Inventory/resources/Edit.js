@@ -1515,7 +1515,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 		var loopIterator = 1;
 		var taxDiv =
 				'<div class="taxUI hide" id="tax_div'+rowNumber+'">'+
-                     '<p class="popover_title hide"> Set Tax for : <span class="variable"></span></p>';
+                     '<p class="popover_title hide">'+app.vtranslate('JS_SET_TAX_FOR')+' : <span class="variable"></span></p>';
 			if(!jQuery.isEmptyObject(taxObj)){
 				taxDiv +=
 					'<div class="individualTaxDiv">'+
@@ -1840,6 +1840,11 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 				});
 
 				data.find('.popoverButton').on('click', function(e){
+					var inputTax = data.find('input');
+					if(inputTax.length == 0){
+						self.getForm().find("div[id^=qtip-]").qtip('destroy');
+						element.popover('destroy');
+					}
 					var validate = data.find('input').valid();
 					if (validate) {
 						element.popover('destroy');
