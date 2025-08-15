@@ -9,6 +9,8 @@
  *************************************************************************************/
 $languageStrings = array(
 	'Portal' => 'ブックマーク',
+	'List' => 'リスト',
+	'Detail' => '詳細',
 	'LBL_ADD_BOOKMARK' => 'ブックマークの追加',
 	'LBL_BOOKMARK_NAME' => 'サイト名',
 	'LBL_BOOKMARK_URL' => 'URL',
