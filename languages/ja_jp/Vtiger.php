@@ -1230,6 +1230,7 @@ $languageStrings = array(
 	'LBL_MARKET_PLACE' => 'Market Place',
 
 	'LBL_SHARE_THIS_LIST' => 'リストを共有',
+	'LBL_DEFAULT_SORT' => 'デフォルトのソートを設定',
 	'LBL_ADD_USERS_ROLES' => 'ユーザー、役割の追加',
 	'EmailTemplates' => 'メールテンプレート',
 	'LBL_BILLING' => '請求',
