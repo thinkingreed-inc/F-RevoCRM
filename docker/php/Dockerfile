@@ -1,44 +1,58 @@
-FROM php:8.3-apache
+FROM php:8.3-apache-bookworm
 RUN usermod -u 1000 www-data
 RUN groupmod -g 1000 www-data
-RUN set -xe; \
-    apt-get update -yqq && \
-    apt-get install -yqq --no-install-recommends \
-      apt-utils vim gettext git \
-      default-mysql-client \
-      # for gd
-      libfreetype6-dev \
-      libjpeg62-turbo-dev \
-      libpng-dev \
-      libwebp-dev \
-      libxpm-dev \
-      # for imap
-      libc-client-dev libkrb5-dev \
-      # for ImageMagick
-      libmagickwand-dev \
-      # for oniguruma
-      libonig-dev \
-      # for zip
-      libzip-dev zip unzip && \
-      # Install the zip extension
-      docker-php-ext-install zip \
-    && docker-php-ext-install bcmath gettext mbstring mysqli pdo pdo_mysql zip \
-    && docker-php-ext-configure mbstring --disable-mbregex \
-    # gd exif
-    && docker-php-ext-install -j$(nproc) iconv \
-    && docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/include/ \
-    && docker-php-ext-install -j$(nproc) gd exif \
-    # for imap
-    && docker-php-ext-configure imap --with-kerberos --with-imap-ssl && \
-    docker-php-ext-install -j$(nproc) imap
-#RUN pecl install xdebug-3.1.6 \
-#  && docker-php-ext-enable xdebug
 
-COPY --from=composer/composer /usr/bin/composer /usr/bin/composer
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    vim \
+    unzip \
+    zip \
+    default-mysql-client \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libpng-dev \
+    libwebp-dev \
+    libxpm-dev \
+    libzip-dev \
+    libonig-dev \
+    libc-client2007e-dev \
+    libkrb5-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-ENV COMPOSER_ALLOW_SUPERUSER 1
-ENV COMPOSER_HOME /composer
-ENV PATH $PATH:/composer/vendor/bin
+# Configure and install PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-xpm \
+    && docker-php-ext-configure imap --with-kerberos --with-imap-ssl \
+    && docker-php-ext-install -j$(nproc) \
+        bcmath \
+        gd \
+        exif \
+        gettext \
+        imap \
+        mbstring \
+        mysqli \
+        pdo \
+        pdo_mysql \
+        zip
 
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Optional: Install Xdebug (uncomment for development)
+# RUN pecl install xdebug \
+#     && docker-php-ext-enable xdebug \
+#     && echo "xdebug.mode=debug" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+#     && echo "xdebug.start_with_request=yes" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+#     && echo "xdebug.client_host=host.docker.internal" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+#     && echo "xdebug.client_port=9003" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+
+# Set Composer environment variables
+ENV COMPOSER_ALLOW_SUPERUSER=1 \
+    COMPOSER_HOME=/composer \
+    PATH=$PATH:/composer/vendor/bin
+
+# Set working directory
 WORKDIR /var/www/html
-#RUN composer install
+
+# Enable Apache modules
+RUN a2enmod rewrite
