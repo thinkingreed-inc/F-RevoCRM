@@ -2665,11 +2665,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 				// 見積の場合、エラーメッセージに表示される文言は「顧客担当者」より「ご担当者様」の方が伝わりやすい
 				// contactAddress : 顧客担当者、contactAddressWithoutLead : ご担当者様
 				if(recordRelativeContactId == "" || recordRelativeContactId == "0"){
-					if(elementClass == "contactAddressWithoutLead"){
-						app.helper.showErrorNotification({'message':app.vtranslate('JS_PLEASE_SELECT_AN_RELATED_TO_COPY_ADDRESS_WITHOUT_LEAD')});
-					}else{
-						app.helper.showErrorNotification({'message':app.vtranslate('JS_PLEASE_SELECT_AN_RELATED_TO_COPY_ADDRESS')});
-					}	
+						app.helper.showErrorNotification({'message':app.vtranslate('JS_PLEASE_SELECT_AN_RELATED_TO_COPY_ADDRESS_WITHOUT_LEAD')});					
 				} else {
 					var recordRelativeContactName = jQuery('#contact_id_display').val();
 					var editViewLabel = jQuery('#contact_id_display').closest('td');
