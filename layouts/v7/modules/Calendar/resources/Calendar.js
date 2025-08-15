@@ -1746,8 +1746,13 @@ Vtiger.Class("Calendar_Calendar_Js", {
 	registerEditEventModalEvents: function (modalContainer, isRecurring) {
 		this.validateAndUpdateEvent(modalContainer, isRecurring);
 	},
+	showEditModalOperation: false,
 	showEditModal: function (moduleName, record, isRecurring, isDuplicate) {
 		var thisInstance = this;
+		if (thisInstance.showEditModalOperation) {
+			return;
+		}
+		thisInstance.showEditModalOperation = true;
 		var quickCreateNode = jQuery('#quickCreateModules').find('[data-name="' + moduleName + '"]');
 		if (quickCreateNode.length <= 0) {
 			app.helper.showAlertNotification({
@@ -1764,6 +1769,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 
 			if (moduleName === 'Events') {
 				app.event.one('post.QuickCreateForm.show', function (e, form) {
+					thisInstance.showEditModalOperation = false;
 					thisInstance.registerEditEventModalEvents(form.closest('.modal'), isRecurring);
 				});
 			}
