@@ -291,17 +291,8 @@ $languageStrings = array(
 	'LBL_INVALID_USERNAME_OR_MAILADDRESS' => '無効なユーザー名またはE-mailアドレス',
 	'LBL_MAIL_SERVER_NOT_CONFIGURED' => 'メールサーバが設定されていません',
 	'LBL_AN_EMAIL_WAS_SENT_TO_THE_ADDRESS' => 'アドレスにメールを送信しました',
-    'LBL_FORCE_TWO_FACTOR_SETUP_STEP1' => '2要素認証の設定 ステップ1',
-    'LBL_FORCE_TWO_FACTOR_SETUP_STEP2' => '2要素認証の設定 ステップ2',
     'LBL_ADD_PASSKEY' => 'パスキー認証を追加',
     'LBL_ADD_TOTP' => 'タイムベース認証を追加',
-    'LBL_FORCE_TWO_FACTOR_SETUP_STEP1_DESCRIPTION' => '2要素認証を有効にするには、以下の手順に従ってください。<br>1. パスキーまたはTOTPを追加します。<br>2. 2要素認証を有効にします。',
-    'LBL_TWO_FACTOR_TYPE' => '2要素認証のタイプ',
-    'LBL_TWO_FACTOR_TOTP_DESCRIPTION_1' => '以下のQRコードを認証アプリ（Google Authenticator、Authyなど）でスキャンします。',
-    'LBL_TWO_FACTOR_TOTP_DESCRIPTION_2' => 'または、このシークレットキーを手動で入力してください。',
-    'LBL_TWO_FACTOR_TOTP_DESCRIPTION_3' => '下にアプリで発行されたコードを入力し、関連付けが正常に行われていることを確認してください。',
-    'LBL_ENTER_TOTP_CODE' => 'TOTPコードを入力してください',
-    'LBL_DEVICE_NAME' => 'デバイス名',
     'LBL_FAILED_TO_REGISTER_USER_AUTHENTICATION' => 'ユーザー認証情報の登録に失敗しました。',
     'LBL_FAILED_TO_PASSKEY_VERIFYKEY' => 'パスキーの検証に失敗しました。もう一度お試しください。',
     'LBL_USE_PASSKEY' => 'パスキーを使用する',
@@ -313,13 +304,9 @@ $languageStrings = array(
     'LBL_ADD_MULTI_FACTOR_AUTHENTICATION' => '多要素認証の追加',
     'LBL_ADD_DEVICE_NAME' => '登録デバイス名を入力してください。',
     'LBL_ERROR_ADD_USER_CREDENTIAL' => 'ユーザー認証情報の登録に失敗しました。',
-    'LBL_TOTP_CODE_INCORRECT' => 'TOTPコードが正しくありません。もう一度お試しください。',
-    'LBL_PASSKEY_CODE_INCORRECT' => 'PassKey認証に失敗しました。もう一度お試しください。',
-    'LBL_TOTP_CODE_TRY_LIMIT_EXCEEDED' => 'TOTPコードの試行回数が制限を超えました。',
-    'LBL_PASSKEY_TRY_LIMIT_EXCEEDED' => 'PassKey認証の試行回数が制限を超えました。',
-    'LBL_USE_PASSKEY' => 'パスキーを使用する',
-    'LBL_USE_TOTP' => 'TOTPを使用する',
-    'LBL_TOTP_CODE_SUBMIT' => 'TOTPコードを送信',
+    'LBL_TOTP_CODE_INCORRECT' => 'ワンタイムパスワード認証に失敗しました。もう一度お試しください。',
+    'LBL_PASSKEY_CODE_INCORRECT' => 'パスキー認証に失敗しました。もう一度お試しください。',
+    'LBL_TOTP_CODE_SUBMIT' => 'ワンタイムパスワードを送信',
 	'LBL_BACK_TO_LOGIN' => 'ログイン画面に戻る',
 	'LBL_QR_CODE_READING_MESSAGE1' => 'QRコードをスマートフォンの',
 	'LBL_CREADENTIAL_APPLICATION' => '認証アプリ',
@@ -327,22 +314,21 @@ $languageStrings = array(
 	'LBL_TOTP_CODE_INPUT_MESSAGE' => '認証アプリで生成された6桁の数字を有効期限内に入力し、保存を押してください。',
 	'LBL_TOTP_SIX_CODE' => '6桁の数字',
 	'LBL_TOTP_CAMERA_OR_SECRET_INPUT_MESSAGE' => 'カメラで読み取るか、以下のコードを手動入力',
-	'LBL_SUCCESSFULLY_ADDED_USER_MULTI_FACTOR_AUTHENTICATION' => 'ユーザーの多要素認証情報を正常に追加しました。',
-	'LBL_PASSKEY_BUTTON_PUSH' => 'パスキーを使用して認証する場合は、以下のボタンを押してください。',
-	'LBL_TOTP_BUTTON_PUSH' => 'TOTPを使用して認証する場合は、登録時に使用した認証アプリケーションに表示されている6桁の数字を入力し、以下のボタンを押してください。',
 	'LBL_SETUP_PARAMETER_MESSAGE_FORCE_MULTI_FACTOR_AUTH' => '多要素認証を強制するフラグです。
 強制しない場合もユーザーが多要素認証を設定している場合は、ログイン時に多要素認証が要求されます。
 true: 強制する
 false: 強制しない',
-	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_TIME' => 'ユーザーのログインをロックする時間です。入力は（分）で行ってください。',
-	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_COUNT' => 'ユーザーのログインをロックするまでの回数です。
-多要素認証の失敗をする毎に一回カウントアップし、ここで指定した回数失敗すると、ユーザーのログインにロックがかかります。
-ロックがかかったユーザーは、USER_LOCK_TIMEで指定した時間が経過するまでログインできません。
-また数値として認識できない文字列、0以下の値を指定した場合は、ログインロックは行われません。',
+	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_TIME' => '多要素認証でUSER_LOCK_COUNTの回数ログインに失敗した際、ユーザーのログインをロックする時間（分）です。
+設定は半角の正の整数値で行ってください。
+全角数値、数値として認識できない文字列、0以下の値を指定した場合などは、ログインロックは行われません。',
+	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_COUNT' => '多要素認証でログインに失敗した際、ユーザーのログインをロックするまでの回数です。
+設定した回数連続で多要素認証に失敗するとユーザーのログインにロックがかかり、USER_LOCK_TIMEで指定した時間が経過するまでログインできません。
+設定は半角の正の整数値で行ってください。
+全角数値、数値として認識できない文字列、0以下の値を指定した場合などは、ログインロックは行われません。',
 	'LBL_PASSKEY' => 'パスキー認証',
 	'LBL_TOTP' => 'タイムベース認証',
-	'LBL_PASSKEY_DESCRIPTION' => '整体認証やデバイス認証を使用した、最新のパスワードレス認証方式です。',
-	'LBL_TOTP_DESCRIPTION' => '認証アプリで生成される6桁の数字を使用する、標準的な認証方式です。',
+	'LBL_PASSKEY_DESCRIPTION' => '生体認証やデバイス認証を使用した、最新のパスワードレス認証方式です。',
+	'LBL_TOTP_DESCRIPTION' => '認証アプリで生成される6桁の数字（ワンタイムパスワード）を使用する、標準的な認証方式です。',
 	'LBL_PASSKEY_DESCRIPTION1' => '指紋・顔認証・PINで簡単ログイン',
 	'LBL_PASSKEY_DESCRIPTION2' => 'Apple IDやGoogleアカウントにログインしている端末間で同期も可能',
 	'LBL_PASSKEY_DESCRIPTION3' => '複数のデバイスに登録可能',
@@ -357,7 +343,9 @@ false: 強制しない',
 	'LBL_USER_LOCKED_ERROR_MESSAGE' => '多要素認証で定められた試行回数失敗したため、<br>現在ユーザーはロックされています。<br>
 時間をおいて再度試してみるか、管理者に連絡してください。',
 	'LBL_PASSKEY_AUTHENTICATION_MESSAGE' => '生体認証やデバイス認証を使用した、最新のパスワードレス認証方式です。',
-	'LBL_TOTP_AUTHENTICATION_MESSAGE' => '認証アプリで生成される6桁の数字を使用した、標準的な認証方式です。',
+	'LBL_TOTP_AUTHENTICATION_MESSAGE' => '認証アプリで生成される6桁の数字（ワンタイムパスワード）を使用する、標準的な認証方式です。',
+	'passkey' => 'パスキー認証',
+	'totp' => 'タイムベース認証',
 );
 
 $jsLanguageStrings = array(
