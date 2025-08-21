@@ -96,6 +96,11 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 			}else{
 				$this->output($request, '', $entries);
 			}
+
+            if($request->getMode()== 'ExportCurrentPage'){
+                      break;
+            }
+			
 			$batchoffset = $batchoffset + $this->exportBatchLimit; // オフセットの更新
 		}
 	}
