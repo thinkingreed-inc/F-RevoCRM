@@ -97,6 +97,7 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 				$this->output($request, '', $entries);
 			}
 
+			//現在のページをエクスポートする場合はオフセットを使用していないため、ここで終了
             if($request->getMode()== 'ExportCurrentPage'){
                 break;
             }
