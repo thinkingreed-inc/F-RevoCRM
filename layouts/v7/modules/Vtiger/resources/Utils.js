@@ -151,6 +151,50 @@ var vtUtils = {
                         autoClose : false,
                         duration : 500
                     });
+
+					element.on('datepicker-open', function(event, element) {
+						// 日付選択ボックス
+						var target = element.relatedTarget;
+						// 日付選択ボックスの現在の表示位置
+						var offset = target.offset();
+						var offsetLeft = offset.left;
+
+						// クリックされたテキストエリアの横幅
+						var inputSize = jQuery(event.currentTarget).outerWidth();
+						// 日付選択ボックスの横幅
+						var targetWidth = target.outerWidth();
+						// ウィンドウの横幅
+						var windowWidth = window.innerWidth;
+
+						// ウィンドウの横幅が日付選択ボックスの横幅以下の場合や、現在の表示位置が画面外の場合は常に0pxを起点に日付選択ボックスを表示する
+						if (windowWidth < targetWidth || offsetLeft < 0) {
+							offsetLeft = 0;
+						} else {
+							// 日付選択ボックスの現在の表示位置 + 横幅（＝終端）がウィンドウサイズを超える場合は日付選択ボックスの表示位置をずらす
+							if (offsetLeft + targetWidth > windowWidth) {
+								// 基本はクリックされたテキストエリアの右端に日付選択ボックスの右端を合わせる
+								// 日付選択ボックスの現在の表示位置を横幅ぶん、左にスライド→テキストエリア分、右にスライド
+								offsetLeft = offsetLeft - targetWidth + inputSize;
+
+								// クリックされたテキストエリアが見切れている場合はそれでも外に出てしまうので
+								// ウィンドウの右端と日付選択ボックスの終端を合わせる（ただしマージンを考慮）
+								if (offsetLeft + targetWidth > windowWidth) {
+									var marginRight = 20;
+									offsetLeft = windowWidth - targetWidth - marginRight;
+								}
+
+								// ただし、ずらした結果がウィンドウ外に出てしまう場合は強制的にウィンドウの左端を起点として表示する
+								if (offsetLeft < 0) {
+									offsetLeft = 0;
+								}
+							}
+						}
+
+						target.css({
+							top: offset.top,
+							left: offsetLeft
+						});
+					});	
                 }else{
                     var elementDateFormat = element.data('dateFormat');
                     if(typeof elementDateFormat !== 'undefined') {
