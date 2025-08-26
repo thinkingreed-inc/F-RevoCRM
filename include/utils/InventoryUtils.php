@@ -1473,52 +1473,57 @@ function importRecord($obj, $inventoryFieldData, $lineItemDetails) {
 	$moduleName = $obj->module;
 	$fieldMapping = $obj->fieldMapping;
 
-	$inventoryHandler = vtws_getModuleHandlerFromName($moduleName, $obj->user);
-	$inventoryMeta = $inventoryHandler->getMeta();
-	$moduleFields = $inventoryMeta->getModuleFields();
-	$isRecordExist = isRecordExistInDB($inventoryFieldData, $inventoryMeta, $obj->user);
-	$lineItemHandler = vtws_getModuleHandlerFromName('LineItem', $obj->user);
-	$lineItemMeta = $lineItemHandler->getMeta();
-
-	$lineItems = array();
-	foreach ($lineItemDetails as $index => $lineItemFieldData) {
-		$isLineItemExist = isRecordExistInDB($lineItemFieldData, $lineItemMeta, $obj->user);
-		if($isLineItemExist) {
-			$count = $index;
-			$lineItemData = array();
-			$lineItemFieldData = $obj->transformForImport($lineItemFieldData, $lineItemMeta);
-			foreach ($fieldMapping as $fieldName => $index) {
-				if($moduleFields[$fieldName]->getTableName() == 'vtiger_inventoryproductrel') {
-					$lineItemData[$fieldName] = $lineItemFieldData[$fieldName];
-					if($fieldName != 'productid')
-						$inventoryFieldData[$fieldName] = '';
+	try {
+		$inventoryHandler = vtws_getModuleHandlerFromName($moduleName, $obj->user);
+		$inventoryMeta = $inventoryHandler->getMeta();
+		$moduleFields = $inventoryMeta->getModuleFields();
+		$isRecordExist = isRecordExistInDB($inventoryFieldData, $inventoryMeta, $obj->user);
+		$lineItemHandler = vtws_getModuleHandlerFromName('LineItem', $obj->user);
+		$lineItemMeta = $lineItemHandler->getMeta();
+		
+		$lineItems = array();
+		foreach ($lineItemDetails as $index => $lineItemFieldData) {
+			$isLineItemExist = isRecordExistInDB($lineItemFieldData, $lineItemMeta, $obj->user);
+			if($isLineItemExist) {
+				$count = $index;
+				$lineItemData = array();
+				$lineItemFieldData = $obj->transformForImport($lineItemFieldData, $lineItemMeta);
+				foreach ($fieldMapping as $fieldName => $index) {
+					if($moduleFields[$fieldName]->getTableName() == 'vtiger_inventoryproductrel') {
+						$lineItemData[$fieldName] = $lineItemFieldData[$fieldName];
+						if($fieldName != 'productid')
+							$inventoryFieldData[$fieldName] = '';
+					}
 				}
+				array_push($lineItems,$lineItemData);
 			}
-			array_push($lineItems,$lineItemData);
 		}
-	}
-	if (empty ($lineItems)) {
-		return null;
-	} elseif ($isRecordExist == false) {
-		foreach ($lineItemDetails[$count] as $key => $value) {
-			$inventoryFieldData[$key] = $value;
+		if (empty ($lineItems)) {
+			return null;
+		} elseif ($isRecordExist == false) {
+			foreach ($lineItemDetails[$count] as $key => $value) {
+				$inventoryFieldData[$key] = $value;
+			}
 		}
+
+		$fieldData = $obj->transformForImport($inventoryFieldData, $inventoryMeta);
+		if(empty($fieldData) || empty($lineItemDetails)) {
+			return null;
+		}
+		if ($fieldData['currency_id'] == ' ') {
+			$fieldData['currency_id'] = '1';
+		}
+		$fieldData['LineItems'] = $lineItems;
+		
+		$webserviceObject = VtigerWebserviceObject::fromName($adb, $moduleName);
+		$inventoryOperation = new VtigerInventoryOperation($webserviceObject, $obj->user, $adb, $log);
+		
+		$entityInfo = $inventoryOperation->create($moduleName, $fieldData);
+		$entityInfo['status'] = $obj->getImportRecordStatus('created');
+	} catch (ImportException $e) {
+		$entityInfo['status'] = $obj->getImportRecordStatus('skipped');
 	}
 
-	$fieldData = $obj->transformForImport($inventoryFieldData, $inventoryMeta);
-	if(empty($fieldData) || empty($lineItemDetails)) {
-		return null;
-	}
-	if ($fieldData['currency_id'] == ' ') {
-		$fieldData['currency_id'] = '1';
-	}
-	$fieldData['LineItems'] = $lineItems;
-
-	$webserviceObject = VtigerWebserviceObject::fromName($adb, $moduleName);
-	$inventoryOperation = new VtigerInventoryOperation($webserviceObject, $obj->user, $adb, $log);
-
-	$entityInfo = $inventoryOperation->create($moduleName, $fieldData);
-	$entityInfo['status'] = $obj->getImportRecordStatus('created');
 	return $entityInfo;
 }
 

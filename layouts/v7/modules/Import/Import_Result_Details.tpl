@@ -28,12 +28,6 @@
 		</td>
 
 	</tr>
-	{if in_array($FOR_MODULE, $INVENTORY_MODULES) eq FALSE}
-		<tr>
-			<td>{'LBL_NUMBER_OF_RECORDS_UPDATED'|@vtranslate:$MODULE}</td>
-			<td width="10%">:</td>
-			<td width="30%">{$IMPORT_RESULT.UPDATED}</td>
-		</tr>
 		<tr>
 			<td>{'LBL_NUMBER_OF_RECORDS_SKIPPED'|@vtranslate:$MODULE}</td>
 			<td width="10%">:</td>
@@ -42,6 +36,12 @@
 					&nbsp;&nbsp;&nbsp;&nbsp;<a class="cursorPointer" onclick="return Vtiger_Import_Js.showSkippedRecords('index.php?module={$MODULE}&view=List&mode=getImportDetails&type=skipped&start=1&foruser={$OWNER_ID}&_showContents=0&for_module={$FOR_MODULE}')">{'LBL_DETAILS'|@vtranslate:$MODULE}</a>
 				{/if}
 			</td>
+		</tr>
+	{if in_array($FOR_MODULE, $INVENTORY_MODULES) eq FALSE}
+		<tr>
+			<td>{'LBL_NUMBER_OF_RECORDS_UPDATED'|@vtranslate:$MODULE}</td>
+			<td width="10%">:</td>
+			<td width="30%">{$IMPORT_RESULT.UPDATED}</td>
 		</tr>
 		<tr>
 			<td>{'LBL_NUMBER_OF_RECORDS_MERGED'|@vtranslate:$MODULE}</td>

@@ -323,13 +323,17 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 
 
 							if ($mergeType == Import_Utils_Helper::$AUTO_MERGE_OVERWRITE) {
-								$fieldData = $this->transformForImport($fieldData, $moduleMeta);
-								$fieldData['id'] = $baseEntityId;
-								$entityInfo = $this->importRecord($fieldData, 'update');
-								if ($entityInfo) {
-									$entityIdComponents = vtws_getIdComponents($entityInfo['id']);
-									$createdRecords[] = $entityIdComponents[1];
-									$mergedRecords[] = $entityIdComponents[1];
+								try {
+									$fieldData = $this->transformForImport($fieldData, $moduleMeta);
+									$fieldData['id'] = $baseEntityId;
+									$entityInfo = $this->importRecord($fieldData, 'update');
+									if ($entityInfo) {
+										$entityIdComponents = vtws_getIdComponents($entityInfo['id']);
+										$createdRecords[] = $entityIdComponents[1];
+										$mergedRecords[] = $entityIdComponents[1];
+									}
+								} catch (ImportException $e) {
+									$entityInfo['status'] = self::$IMPORT_RECORD_SKIPPED;
 								}
 							}
 
@@ -361,19 +365,23 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 									}
 								}
 
-								$filteredFieldData = $this->transformForImport($filteredFieldData, $moduleMeta, $fillDefault, $mandatoryValueChecks);
-								$filteredFieldData['id'] = $baseEntityId;
-								if ($userPriviligesModel->hasModuleActionPermission($tabId, 'EditView')) {
-									$entityInfo = $this->importRecord($filteredFieldData, 'revise');
-									if ($entityInfo) {
-										$entityIdComponents = vtws_getIdComponents($entityInfo['id']);
-										$createdRecords[] = $entityIdComponents[1];
-										$mergedRecords[] = $entityIdComponents[1];
+								try {
+									$filteredFieldData = $this->transformForImport($filteredFieldData, $moduleMeta, $fillDefault, $mandatoryValueChecks);
+									$filteredFieldData['id'] = $baseEntityId;
+									if ($userPriviligesModel->hasModuleActionPermission($tabId, 'EditView')) {
+										$entityInfo = $this->importRecord($filteredFieldData, 'revise');
+										if ($entityInfo) {
+											$entityIdComponents = vtws_getIdComponents($entityInfo['id']);
+											$createdRecords[] = $entityIdComponents[1];
+											$mergedRecords[] = $entityIdComponents[1];
+										}
+									} else {
+										$entityInfo['status'] = self::$IMPORT_RECORD_SKIPPED;
 									}
-								} else {
+									$fieldData = $filteredFieldData;
+								} catch (ImportException $e) {
 									$entityInfo['status'] = self::$IMPORT_RECORD_SKIPPED;
 								}
-								$fieldData = $filteredFieldData;
 							}
 						} else {
 							$createRecord = true;
@@ -385,27 +393,30 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 					$createRecord = true;
 				}
 				if ($createRecord) {
-					$fieldData = $this->transformForImport($fieldData, $moduleMeta);
-					if ($fieldData == null) {
-						$entityInfo = null;
-					} else {
-						try {
-							// to save Source of Record while Creating
-							$fieldData['source'] = $this->recordSource;
-							$entityInfo = $this->importRecord($fieldData, 'create');
-							if ($entityInfo) {
-								$entityIdComponents = vtws_getIdComponents($entityInfo['id']);
-								$createdRecords[] = $entityIdComponents[1];
+					try {
+						$fieldData = $this->transformForImport($fieldData, $moduleMeta);
+						if ($fieldData == null) {
+							$entityInfo = null;
+						} else {
+							try {
+								// to save Source of Record while Creating
+								$fieldData['source'] = $this->recordSource;
+								$entityInfo = $this->importRecord($fieldData, 'create');
+								if ($entityInfo) {
+									$entityIdComponents = vtws_getIdComponents($entityInfo['id']);
+									$createdRecords[] = $entityIdComponents[1];
+								}
+							} catch (Exception $e) {
 							}
-						} catch (Exception $e) {
-
 						}
+					} catch (ImportException $e) {
+						$entityInfo['status'] = self::$IMPORT_RECORD_SKIPPED;
 					}
 				}
 			}
 			if ($entityInfo == null) {
 				$entityInfo = array('id' => null, 'status' => self::$IMPORT_RECORD_FAILED);
-			} else if ($createRecord) {
+			} else if ($createRecord && $entityInfo['status'] != self::$IMPORT_RECORD_SKIPPED) {
 				$entityInfo['status'] = self::$IMPORT_RECORD_CREATED;
 			}
 			if ($createRecord || $mergeType == Import_Utils_Helper::$AUTO_MERGE_MERGEFIELDS || $mergeType == Import_Utils_Helper::$AUTO_MERGE_OVERWRITE) {
@@ -606,18 +617,18 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 							}
 						}
 					}
-					if ((empty($entityId) || $entityId == 0) && !empty($referenceModuleName)) {
-						if (isPermitted($referenceModuleName, 'CreateView') == 'yes') {
-							try {
-								$wsEntityIdInfo = $this->createEntityRecord($referenceModuleName, $entityLabel);
-								$wsEntityId = $wsEntityIdInfo['id'];
-								$entityIdComponents = vtws_getIdComponents($wsEntityId);
-								$entityId = $entityIdComponents[1];
-							} catch (Exception $e) {
-								$entityId = false;
-							}
-						}
-					}
+					// if ((empty($entityId) || $entityId == 0) && !empty($referenceModuleName)) {
+					// 	if (isPermitted($referenceModuleName, 'CreateView') == 'yes') {
+					// 		try {
+					// 			$wsEntityIdInfo = $this->createEntityRecord($referenceModuleName, $entityLabel);
+					// 			$wsEntityId = $wsEntityIdInfo['id'];
+					// 			$entityIdComponents = vtws_getIdComponents($wsEntityId);
+					// 			$entityId = $entityIdComponents[1];
+					// 		} catch (Exception $e) {
+					// 			$entityId = false;
+					// 		}
+					// 	}
+					// }
 					$fieldData[$fieldName] = $entityId;
 				} else {
 					$referencedModules = $fieldInstance->getReferenceList();

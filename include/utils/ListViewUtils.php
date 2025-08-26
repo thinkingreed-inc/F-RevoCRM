@@ -652,6 +652,9 @@ function getEntityId($module, $entityName) {
 		$sql = "select $entityidfield from $tablename INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = $tablename.$entityidfield " .
 				" WHERE vtiger_crmentity.deleted = 0 and $fieldsname=?";
 		$result = $adb->pquery($sql, array($entityName));
+		if ($adb->num_rows($result) == 0) {
+			throw new ImportException("No reference exists");
+		}
 		if ($adb->num_rows($result) > 0) {
 			$entityId = $adb->query_result($result, 0, $entityidfield);
 		}

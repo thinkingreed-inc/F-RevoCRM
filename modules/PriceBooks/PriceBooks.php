@@ -455,16 +455,22 @@ class PriceBooks extends CRMEntity {
 		$moduleName = 'PriceBooks';
 		$moduleHandler = vtws_getModuleHandlerFromName($moduleName, $obj->user);
 		$moduleMeta = $moduleHandler->getMeta();
+		$isProductsExist = true;
 		unset($fieldData['listprice']); unset($fieldData['relatedto']);
-		$fieldData = $obj->transformForImport($fieldData, $moduleMeta);
-		try{
+		try {
+			if(php7_count($productList) > 0){
+				$isProductsExist = $this->isProductsExistInDB($productList);
+			}
+			$fieldData = $obj->transformForImport($fieldData, $moduleMeta);
 			$entityInfo = vtws_create($moduleName, $fieldData, $obj->user);
-			if($entityInfo && $productList){
+			if($entityInfo && $productList && $isProductsExist){
 				$this->relatePriceBookWithProduct($entityInfo, $productList);
 			}
-		} catch (Exception $e){
+			$entityInfo['status'] = $obj->getImportRecordStatus('created');
+		} catch (ImportException $e){
+			$entityInfo['status'] = $obj->getImportRecordStatus('skipped');
 		}
-		$entityInfo['status'] = $obj->getImportRecordStatus('created');
+
 		return $entityInfo;
 	}
 
@@ -487,6 +493,23 @@ class PriceBooks extends CRMEntity {
                 }
 			}
 		}
+	}
+
+	function isProductsExistInDB($productList) {
+		$isProductsExist = false;
+		$entityIds = array();
+		foreach($productList as $product){
+			$productName = $product['relatedto'];
+			$productName = explode('::::', $productName);
+			$productId = getEntityId($productName[0], $productName[1]);
+			array_push($entityIds, $productId);
+		}
+
+		if (!in_array(0,$entityIds)) {
+			$isProductsExist = true;
+		}
+		
+		return $isProductsExist;
 	}
 
 	function getGroupQuery($tableName){
