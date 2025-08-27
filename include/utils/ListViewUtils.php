@@ -666,22 +666,22 @@ function getEntityId($module, $entityName) {
 }
 
 // カラム名から関連項目を取得
-function getEntityIdByColumns($module, $referenceValueList, $cash) {
+function getEntityIdByColumns($module, $referenceValueList, $cache) {
 	global $log, $adb;
 	$log->info("in getEntityIdByColumns " . $referenceValueList);
 
-	if (empty($cash[$module])||empty($referenceValueList)){
+	if (empty($cache[$module])||empty($referenceValueList)){
 		throw new ImportException("No reference exists");
 	}
 
     $matchedIds = [];
-    foreach ($cash[$module] as $recordModel) {
-        $filterCash = array_intersect_key($recordModel, $referenceValueList);
+    foreach ($cache[$module] as $recordModel) {
+        $filterCache = array_intersect_key($recordModel, $referenceValueList);
 		ksort($referenceValueList);
-		ksort($filterCash);
-        if ($filterCash === $referenceValueList) {
-            $cashValues = array_values($recordModel);
-			$matchedIds[] = $cashValues[0];
+		ksort($filterCache);
+        if ($filterCache === $referenceValueList) {
+            $cacheValues = array_values($recordModel);
+			$matchedIds[] = $cacheValues[0];
         }
     }
 

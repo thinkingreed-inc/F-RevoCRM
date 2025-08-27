@@ -369,7 +369,7 @@ class PriceBooks extends CRMEntity {
 		}
 
 		// 関連項目のキャッシュを作成
-		$cash = $obj->createCashForReference($moduleFields);
+		$cache = $obj->createCacheForReference($moduleFields);
 	
 		$bookNameList = array();
 		$fieldMapping = $obj->fieldMapping;
@@ -399,7 +399,7 @@ class PriceBooks extends CRMEntity {
 				$fieldData[$fieldName] = $row[strtolower($fieldName)];
 			}
 
-            $entityInfo = $this->importRecord($obj, $fieldData, $productList, $cash);
+            $entityInfo = $this->importRecord($obj, $fieldData, $productList, $cache);
             unset($productList);
 			if ($entityInfo == null) {
                 $entityInfo = array('id' => null, 'status' => Import_Data_Action::$IMPORT_RECORD_FAILED);
@@ -455,7 +455,7 @@ class PriceBooks extends CRMEntity {
 		return true;
 	}
 
-	function importRecord($obj, $fieldData, $productList, $cash) {
+	function importRecord($obj, $fieldData, $productList, $cache) {
 		$moduleName = 'PriceBooks';
 		$moduleHandler = vtws_getModuleHandlerFromName($moduleName, $obj->user);
 		$moduleMeta = $moduleHandler->getMeta();
@@ -463,12 +463,12 @@ class PriceBooks extends CRMEntity {
 		unset($fieldData['listprice']); unset($fieldData['relatedto']);
 		try {
 			if(php7_count($productList) > 0 && !empty($productList[0]['relatedto'])){
-				$isProductsExist = $this->isProductsExistInDB($productList, $cash);
+				$isProductsExist = $this->isProductsExistInDB($productList, $cache);
 			}
-			$fieldData = $obj->transformForImport($fieldData, $moduleMeta, $cash);
+			$fieldData = $obj->transformForImport($fieldData, $moduleMeta, $cache);
 			$entityInfo = vtws_create($moduleName, $fieldData, $obj->user);
 			if($entityInfo && $productList && $isProductsExist){
-				$this->relatePriceBookWithProduct($entityInfo, $productList, $cash);
+				$this->relatePriceBookWithProduct($entityInfo, $productList, $cache);
 			}
 			$entityInfo['status'] = $obj->getImportRecordStatus('created');
 		} catch (ImportException $e){
@@ -478,7 +478,7 @@ class PriceBooks extends CRMEntity {
 		return $entityInfo;
 	}
 
-	function relatePriceBookWithProduct($entityinfo, $productList, $cash) {
+	function relatePriceBookWithProduct($entityinfo, $productList, $cache) {
 		if(php7_count($productList) > 0){
 			foreach($productList as $product){
 				if(!$product['relatedto'])
@@ -492,7 +492,7 @@ class PriceBooks extends CRMEntity {
 						$productValueDetails[$productValueDetail[0]] = $productValueDetail[1];
 					}
 				}
-				$productId = getEntityIdByColumns($productDetails[0], $productValueDetails, $cash);
+				$productId = getEntityIdByColumns($productDetails[0], $productValueDetails, $cache);
                 $presence = isRecordExists($productId);
                 if($presence){
                     $productInstance = Vtiger_Record_Model::getInstanceById($productId);
@@ -506,7 +506,7 @@ class PriceBooks extends CRMEntity {
 		}
 	}
 
-	function isProductsExistInDB($productList, $cash) {
+	function isProductsExistInDB($productList, $cache) {
 		$isProductsExist = false;
 		$entityIds = array();
 		foreach($productList as $product){
@@ -519,7 +519,7 @@ class PriceBooks extends CRMEntity {
 					$productValueDetails[$productValueDetail[0]] = $productValueDetail[1];
 				}
 			}
-			$productId = getEntityIdByColumns($productDetails[0], $productValueDetails, $cash);
+			$productId = getEntityIdByColumns($productDetails[0], $productValueDetails, $cache);
 			array_push($entityIds, $productId);
 		}
 

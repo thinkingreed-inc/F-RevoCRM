@@ -550,8 +550,8 @@ class PurchaseOrder extends CRMEntity {
 
 	/*Function returns the record information which means whether the record is imported or not
 	**This function called while importing records to this module*/
-	function importRecord($obj, $inventoryFieldData, $lineItemDetails, $cash) {
-		$entityInfo = importRecord($obj, $inventoryFieldData, $lineItemDetails, $cash);
+	function importRecord($obj, $inventoryFieldData, $lineItemDetails, $cache) {
+		$entityInfo = importRecord($obj, $inventoryFieldData, $lineItemDetails, $cache);
 		return $entityInfo;
 	}
 

@@ -231,7 +231,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		}
 		
 		// 関連項目のキャッシュを作成
-		$cash = $this->createCashForReference($moduleFields);
+		$cache = $this->createCacheForReference($moduleFields);
 
 		$fieldMapping = $this->fieldMapping;
 		$fieldColumnMapping = $moduleMeta->getFieldColumnMapping();
@@ -327,7 +327,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 
 							if ($mergeType == Import_Utils_Helper::$AUTO_MERGE_OVERWRITE) {
 								try {
-									$fieldData = $this->transformForImport($fieldData, $moduleMeta, $cash);
+									$fieldData = $this->transformForImport($fieldData, $moduleMeta, $cache);
 									$fieldData['id'] = $baseEntityId;
 									$entityInfo = $this->importRecord($fieldData, 'update');
 									if ($entityInfo) {
@@ -369,7 +369,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 								}
 
 								try {
-									$filteredFieldData = $this->transformForImport($filteredFieldData, $moduleMeta, $cash, $fillDefault, $mandatoryValueChecks);
+									$filteredFieldData = $this->transformForImport($filteredFieldData, $moduleMeta, $cache, $fillDefault, $mandatoryValueChecks);
 									$filteredFieldData['id'] = $baseEntityId;
 									if ($userPriviligesModel->hasModuleActionPermission($tabId, 'EditView')) {
 										$entityInfo = $this->importRecord($filteredFieldData, 'revise');
@@ -397,7 +397,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 				}
 				if ($createRecord) {
 					try {
-						$fieldData = $this->transformForImport($fieldData, $moduleMeta, $cash);
+						$fieldData = $this->transformForImport($fieldData, $moduleMeta, $cache);
 						if ($fieldData == null) {
 							$entityInfo = null;
 						} else {
@@ -496,7 +496,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		return true;
 	}
 
-	public function transformForImport($fieldData, $moduleMeta, $cash, $fillDefault = true, $checkMandatoryFieldValues = true) {
+	public function transformForImport($fieldData, $moduleMeta, $cache, $fillDefault = true, $checkMandatoryFieldValues = true) {
 		global $current_user;
 		$adb = PearDatabase::getInstance();
 		$moduleImportableFields = array();
@@ -589,7 +589,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 					if (php7_count($fieldValueDetails) > 1) {
 						$referenceModuleName = trim($fieldValueDetails[0]);
 						$referenceValueList = $fieldDetails;
-						$entityId = getEntityIdByColumns($referenceModuleName, $referenceValueList, $cash);
+						$entityId = getEntityIdByColumns($referenceModuleName, $referenceValueList, $cache);
 						// if (php7_count($fieldValueDetails) == 2) {
 						// 	$entityLabel = trim($fieldValueDetails[1]);
 						// 	if ($fieldValueDetails[0] == 'Users') {
@@ -1277,7 +1277,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		return $entityIdsList;
 	}
 
-	public function createCashForReference($moduleFields) {
+	public function createCacheForReference($moduleFields) {
 		$adb = PearDatabase::getInstance();
 
 		$params = array();
@@ -1312,7 +1312,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		}
 
 		//すべての行をチェックし出現した関連項目のカラム名をモジュールごとに取得
-		$columnsForCash = array();
+		$columnsForCache = array();
 		for ($i = 0; $i < $numberOfRecords; ++$i) {
 			$row = $adb->raw_query_result_rowdata($result, $i);
 			foreach($referenceColumns as $referenceColumn) {
@@ -1329,11 +1329,11 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 					foreach($fieldValueDetails as $fieldValueDetail){
 						if (strpos($fieldValueDetail, '====') > 0) {
 							$fieldDetail = explode('====', $fieldValueDetail);
-							if ((!$columnsForCash[$fieldValueDetails[0]])){
-								$columnsForCash[$fieldValueDetails[0]] = array();
+							if ((!$columnsForCache[$fieldValueDetails[0]])){
+								$columnsForCache[$fieldValueDetails[0]] = array();
 							}
-							if (!in_array($fieldDetail[0],$columnsForCash[$fieldValueDetails[0]])){
-								array_push($columnsForCash[$fieldValueDetails[0]],$fieldDetail[0]);
+							if (!in_array($fieldDetail[0],$columnsForCache[$fieldValueDetails[0]])){
+								array_push($columnsForCache[$fieldValueDetails[0]],$fieldDetail[0]);
 							}
 						}
 					}
@@ -1342,8 +1342,8 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		}
 		
 		// キャッシュを作成
-		$cash = array();
-		foreach($columnsForCash as $module => $columns){
+		$cache = array();
+		foreach($columnsForCache as $module => $columns){
 			$query = "select fieldname,tablename,entityidfield from vtiger_entityname where modulename = ?";
 			$result = $adb->pquery($query, array($module));
 			$tablename = $adb->query_result($result, 0, 'tablename');
@@ -1366,10 +1366,10 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 				}
 				$recordModels[] = $recordModel;
 			}
-			$cash[$module] = $recordModels; 
+			$cache[$module] = $recordModels; 
 		}
 
-		return $cash;
+		return $cache;
 	}
 }
 ?>

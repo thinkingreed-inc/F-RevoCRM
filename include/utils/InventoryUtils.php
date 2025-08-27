@@ -1334,7 +1334,7 @@ function createRecords($obj) {
 	}
 		
 	// 関連項目のキャッシュを作成
-	$cash = $obj->createCashForReference($moduleFields);
+	$cache = $obj->createCacheForReference($moduleFields);
 
 	$fieldMapping = $obj->fieldMapping;
 	$fieldColumnMapping = $moduleMeta->getFieldColumnMapping();
@@ -1379,7 +1379,7 @@ function createRecords($obj) {
 
 		if (!empty($lineItems)) {
 			if(method_exists($focus, 'importRecord')) {
-				$entityInfo = $focus->importRecord($obj, $fieldData, $lineItems, $cash);
+				$entityInfo = $focus->importRecord($obj, $fieldData, $lineItems, $cache);
 			}
 		}
 
@@ -1423,7 +1423,7 @@ function createRecords($obj) {
 	unset($result);
 	return true;
 }
-function isRecordExistInDB($fieldData, $moduleMeta, $user, $cash) {
+function isRecordExistInDB($fieldData, $moduleMeta, $user, $cache) {
 	global $adb, $log;
 	$moduleFields = $moduleMeta->getModuleFields();
 	$isRecordExist = false;
@@ -1450,13 +1450,13 @@ function isRecordExistInDB($fieldData, $moduleMeta, $user, $cash) {
 				if (php7_count($fieldValueDetails) > 1) {
 					$referenceModuleName = trim($fieldValueDetails[0]);
 					$referenceValueList = $fieldDetails;
-					$entityId = getEntityIdByColumns($referenceModuleName, $referenceValueList, $cash);
+					$entityId = getEntityIdByColumns($referenceModuleName, $referenceValueList, $cache);
 				} else {
 					$referencedModules = $fieldInstance->getReferenceList();
 					$entityLabel = $fieldValue;
 					foreach ($referencedModules as $referenceModule) {
 						$referenceModuleName = $referenceModule;
-						$referenceEntityId = getEntityIdByColumns($referenceModule, $entityLabel,$cash);
+						$referenceEntityId = getEntityIdByColumns($referenceModule, $entityLabel,$cache);
 						if ($referenceEntityId != 0) {
 							$entityId = $referenceEntityId;
 							break;
@@ -1476,7 +1476,7 @@ function isRecordExistInDB($fieldData, $moduleMeta, $user, $cash) {
 	return $isRecordExist;
 }
 
-function importRecord($obj, $inventoryFieldData, $lineItemDetails, $cash) {
+function importRecord($obj, $inventoryFieldData, $lineItemDetails, $cache) {
 	global $adb, $log;
 	$moduleName = $obj->module;
 	$fieldMapping = $obj->fieldMapping;
@@ -1485,17 +1485,17 @@ function importRecord($obj, $inventoryFieldData, $lineItemDetails, $cash) {
 		$inventoryHandler = vtws_getModuleHandlerFromName($moduleName, $obj->user);
 		$inventoryMeta = $inventoryHandler->getMeta();
 		$moduleFields = $inventoryMeta->getModuleFields();
-		$isRecordExist = isRecordExistInDB($inventoryFieldData, $inventoryMeta, $obj->user, $cash);
+		$isRecordExist = isRecordExistInDB($inventoryFieldData, $inventoryMeta, $obj->user, $cache);
 		$lineItemHandler = vtws_getModuleHandlerFromName('LineItem', $obj->user);
 		$lineItemMeta = $lineItemHandler->getMeta();
 		
 		$lineItems = array();
 		foreach ($lineItemDetails as $index => $lineItemFieldData) {
-			$isLineItemExist = isRecordExistInDB($lineItemFieldData, $lineItemMeta, $obj->user, $cash);
+			$isLineItemExist = isRecordExistInDB($lineItemFieldData, $lineItemMeta, $obj->user, $cache);
 			if($isLineItemExist) {
 				$count = $index;
 				$lineItemData = array();
-				$lineItemFieldData = $obj->transformForImport($lineItemFieldData, $lineItemMeta, $cash);
+				$lineItemFieldData = $obj->transformForImport($lineItemFieldData, $lineItemMeta, $cache);
 				foreach ($fieldMapping as $fieldName => $index) {
 					if($moduleFields[$fieldName]->getTableName() == 'vtiger_inventoryproductrel') {
 						$lineItemData[$fieldName] = $lineItemFieldData[$fieldName];
@@ -1514,7 +1514,7 @@ function importRecord($obj, $inventoryFieldData, $lineItemDetails, $cash) {
 			}
 		}
 
-		$fieldData = $obj->transformForImport($inventoryFieldData, $inventoryMeta, $cash);
+		$fieldData = $obj->transformForImport($inventoryFieldData, $inventoryMeta, $cache);
 		if(empty($fieldData) || empty($lineItemDetails)) {
 			return null;
 		}
