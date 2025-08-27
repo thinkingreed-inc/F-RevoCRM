@@ -229,6 +229,9 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		if ($numberOfRecords <= 0) {
 			return;
 		}
+		
+		// 関連項目のキャッシュを作成
+		$cache = $this->createCacheForReference($moduleFields);
 
 		$fieldMapping = $this->fieldMapping;
 		$fieldColumnMapping = $moduleMeta->getFieldColumnMapping();
@@ -323,13 +326,17 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 
 
 							if ($mergeType == Import_Utils_Helper::$AUTO_MERGE_OVERWRITE) {
-								$fieldData = $this->transformForImport($fieldData, $moduleMeta);
-								$fieldData['id'] = $baseEntityId;
-								$entityInfo = $this->importRecord($fieldData, 'update');
-								if ($entityInfo) {
-									$entityIdComponents = vtws_getIdComponents($entityInfo['id']);
-									$createdRecords[] = $entityIdComponents[1];
-									$mergedRecords[] = $entityIdComponents[1];
+								try {
+									$fieldData = $this->transformForImport($fieldData, $moduleMeta, $cache);
+									$fieldData['id'] = $baseEntityId;
+									$entityInfo = $this->importRecord($fieldData, 'update');
+									if ($entityInfo) {
+										$entityIdComponents = vtws_getIdComponents($entityInfo['id']);
+										$createdRecords[] = $entityIdComponents[1];
+										$mergedRecords[] = $entityIdComponents[1];
+									}
+								} catch (ImportException $e) {
+									$entityInfo['status'] = self::$IMPORT_RECORD_SKIPPED;
 								}
 							}
 
@@ -361,19 +368,23 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 									}
 								}
 
-								$filteredFieldData = $this->transformForImport($filteredFieldData, $moduleMeta, $fillDefault, $mandatoryValueChecks);
-								$filteredFieldData['id'] = $baseEntityId;
-								if ($userPriviligesModel->hasModuleActionPermission($tabId, 'EditView')) {
-									$entityInfo = $this->importRecord($filteredFieldData, 'revise');
-									if ($entityInfo) {
-										$entityIdComponents = vtws_getIdComponents($entityInfo['id']);
-										$createdRecords[] = $entityIdComponents[1];
-										$mergedRecords[] = $entityIdComponents[1];
+								try {
+									$filteredFieldData = $this->transformForImport($filteredFieldData, $moduleMeta, $cache, $fillDefault, $mandatoryValueChecks);
+									$filteredFieldData['id'] = $baseEntityId;
+									if ($userPriviligesModel->hasModuleActionPermission($tabId, 'EditView')) {
+										$entityInfo = $this->importRecord($filteredFieldData, 'revise');
+										if ($entityInfo) {
+											$entityIdComponents = vtws_getIdComponents($entityInfo['id']);
+											$createdRecords[] = $entityIdComponents[1];
+											$mergedRecords[] = $entityIdComponents[1];
+										}
+									} else {
+										$entityInfo['status'] = self::$IMPORT_RECORD_SKIPPED;
 									}
-								} else {
+									$fieldData = $filteredFieldData;
+								} catch (ImportException $e) {
 									$entityInfo['status'] = self::$IMPORT_RECORD_SKIPPED;
 								}
-								$fieldData = $filteredFieldData;
 							}
 						} else {
 							$createRecord = true;
@@ -385,27 +396,30 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 					$createRecord = true;
 				}
 				if ($createRecord) {
-					$fieldData = $this->transformForImport($fieldData, $moduleMeta);
-					if ($fieldData == null) {
-						$entityInfo = null;
-					} else {
-						try {
-							// to save Source of Record while Creating
-							$fieldData['source'] = $this->recordSource;
-							$entityInfo = $this->importRecord($fieldData, 'create');
-							if ($entityInfo) {
-								$entityIdComponents = vtws_getIdComponents($entityInfo['id']);
-								$createdRecords[] = $entityIdComponents[1];
+					try {
+						$fieldData = $this->transformForImport($fieldData, $moduleMeta, $cache);
+						if ($fieldData == null) {
+							$entityInfo = null;
+						} else {
+							try {
+								// to save Source of Record while Creating
+								$fieldData['source'] = $this->recordSource;
+								$entityInfo = $this->importRecord($fieldData, 'create');
+								if ($entityInfo) {
+									$entityIdComponents = vtws_getIdComponents($entityInfo['id']);
+									$createdRecords[] = $entityIdComponents[1];
+								}
+							} catch (Exception $e) {
 							}
-						} catch (Exception $e) {
-
 						}
+					} catch (ImportException $e) {
+						$entityInfo['status'] = self::$IMPORT_RECORD_SKIPPED;
 					}
 				}
 			}
 			if ($entityInfo == null) {
 				$entityInfo = array('id' => null, 'status' => self::$IMPORT_RECORD_FAILED);
-			} else if ($createRecord) {
+			} else if ($createRecord && $entityInfo['status'] != self::$IMPORT_RECORD_SKIPPED) {
 				$entityInfo['status'] = self::$IMPORT_RECORD_CREATED;
 			}
 			if ($createRecord || $mergeType == Import_Utils_Helper::$AUTO_MERGE_MERGEFIELDS || $mergeType == Import_Utils_Helper::$AUTO_MERGE_OVERWRITE) {
@@ -482,7 +496,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		return true;
 	}
 
-	public function transformForImport($fieldData, $moduleMeta, $fillDefault = true, $checkMandatoryFieldValues = true) {
+	public function transformForImport($fieldData, $moduleMeta, $cache, $fillDefault = true, $checkMandatoryFieldValues = true) {
 		global $current_user;
 		$adb = PearDatabase::getInstance();
 		$moduleImportableFields = array();
@@ -555,6 +569,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 				$fieldData[$fieldName] = $implodeValue;
 			} elseif ($fieldDataType == 'reference') {
 				$entityId = false;
+				$fieldDetails = false;
 				if (!empty($fieldValue)) {
 					if (strpos($fieldValue, '::::') > 0) {
 						$fieldValueDetails = explode('::::', $fieldValue);
@@ -563,27 +578,38 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 					} else {
 						$fieldValueDetails = $fieldValue;
 					}
+
+					foreach($fieldValueDetails as $fieldValueDetail){
+						if (strpos($fieldValueDetail, '====') > 0) {
+							$fieldDetail = explode('====', $fieldValueDetail);
+							$fieldDetails[$fieldDetail[0]] = decode_html(trim($fieldDetail[1]));
+						}
+					}
+
 					if (php7_count($fieldValueDetails) > 1) {
 						$referenceModuleName = trim($fieldValueDetails[0]);
-						if (php7_count($fieldValueDetails) == 2) {
-							$entityLabel = trim($fieldValueDetails[1]);
-							if ($fieldValueDetails[0] == 'Users') {
-								$query = "SELECT id  FROM vtiger_users WHERE trim(concat(last_name,' ',first_name)) = ? ;";
-								$result = $adb->pquery($query, array($entityLabel));
-								if ($adb->num_rows($result) > 0) {
-									$entityId = $adb->query_result($result, 0, "id");
-								} elseif ($adb->num_rows($result) == 0 && $fieldInstance->isMandatory()) {
-									$entityId = $this->user->id;
-								}
-							} else {
-								$entityId = getEntityId($referenceModuleName, decode_html($entityLabel));
-							}
-						} else {//multi reference field
-							$entityIdsList = $this->getEntityIdsList($referenceModuleName, $fieldValueDetails);
-							if ($entityIdsList) {
-								$entityId = implode(', ', $entityIdsList);
-							}
-						}
+						$referenceValueList = $fieldDetails;
+						$entityId = getEntityIdByColumns($referenceModuleName, $referenceValueList, $cache);
+						// if (php7_count($fieldValueDetails) == 2) {
+						// 	$entityLabel = trim($fieldValueDetails[1]);
+						// 	if ($fieldValueDetails[0] == 'Users') {
+						// 		$query = "SELECT id  FROM vtiger_users WHERE trim(concat(last_name,' ',first_name)) = ? ;";
+						// 		$result = $adb->pquery($query, array($entityLabel));
+						// 		if ($adb->num_rows($result) > 0) {
+						// 			$entityId = $adb->query_result($result, 0, "id");
+						// 		} elseif ($adb->num_rows($result) == 0 && $fieldInstance->isMandatory()) {
+						// 			$entityId = $this->user->id;
+						// 		}
+						// 	} else {
+						// 		$entityId = getEntityId($referenceModuleName, decode_html($entityLabel));
+						// 	}
+						// } else {//multi reference field
+						// 	$entityIdsList = $this->getEntityIdsList($referenceModuleName, $fieldValueDetails);
+						// 	if ($entityIdsList) {
+						// 		$entityId = implode(', ', $entityIdsList);
+						// 	}
+						// }
+
 					} else {
 						$referencedModules = $fieldInstance->getReferenceList();
 						$entityLabel = $fieldValue;
@@ -606,18 +632,18 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 							}
 						}
 					}
-					if ((empty($entityId) || $entityId == 0) && !empty($referenceModuleName)) {
-						if (isPermitted($referenceModuleName, 'CreateView') == 'yes') {
-							try {
-								$wsEntityIdInfo = $this->createEntityRecord($referenceModuleName, $entityLabel);
-								$wsEntityId = $wsEntityIdInfo['id'];
-								$entityIdComponents = vtws_getIdComponents($wsEntityId);
-								$entityId = $entityIdComponents[1];
-							} catch (Exception $e) {
-								$entityId = false;
-							}
-						}
-					}
+					// if ((empty($entityId) || $entityId == 0) && !empty($referenceModuleName)) {
+					// 	if (isPermitted($referenceModuleName, 'CreateView') == 'yes') {
+					// 		try {
+					// 			$wsEntityIdInfo = $this->createEntityRecord($referenceModuleName, $entityLabel);
+					// 			$wsEntityId = $wsEntityIdInfo['id'];
+					// 			$entityIdComponents = vtws_getIdComponents($wsEntityId);
+					// 			$entityId = $entityIdComponents[1];
+					// 		} catch (Exception $e) {
+					// 			$entityId = false;
+					// 		}
+					// 	}
+					// }
 					$fieldData[$fieldName] = $entityId;
 				} else {
 					$referencedModules = $fieldInstance->getReferenceList();
@@ -1249,6 +1275,101 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			}
 		}
 		return $entityIdsList;
+	}
+
+	public function createCacheForReference($moduleFields) {
+		$adb = PearDatabase::getInstance();
+
+		$params = array();
+		$tableName = Import_Utils_Helper::getDbTableName($this->user);
+		$sql = 'SELECT * FROM ' . $tableName . ' WHERE status = ?';
+		array_push($params, Import_Data_Action::$IMPORT_RECORD_NONE);
+		$result = $adb->pquery($sql, $params);
+		$numberOfRecords = $adb->num_rows($result);
+		if ($numberOfRecords <= 0) {
+			return;
+		}
+
+		//関連項目が入っている項目を取得
+		$referenceColumns = array();
+		foreach($moduleFields as $fieldname => $moduleField){
+			if($moduleField != null){
+				$fieldDataType = $moduleField->getFieldDataType();
+				if ($fieldDataType == 'reference'){
+					array_push($referenceColumns, $fieldname);
+				}
+			}			
+		}
+
+		// 価格表の時はrelatedtoを追加
+		$moduleName = $this->module;
+		if ($moduleName === 'PriceBooks') {
+			array_push($referenceColumns, 'relatedto');
+		}
+
+		if (empty($referenceColumns)){
+			return null;
+		}
+
+		//すべての行をチェックし出現した関連項目のカラム名をモジュールごとに取得
+		$columnsForCache = array();
+		for ($i = 0; $i < $numberOfRecords; ++$i) {
+			$row = $adb->raw_query_result_rowdata($result, $i);
+			foreach($referenceColumns as $referenceColumn) {
+				$referencevalue = $row[$referenceColumn];
+				if (!empty($referencevalue)){
+					if (strpos($referencevalue, '::::') > 0) {
+						$fieldValueDetails = explode('::::', $referencevalue);
+					} else if (strpos($referencevalue, ':::') > 0) {
+						$fieldValueDetails = explode(':::', $referencevalue);
+					} else {
+						$fieldValueDetails = $referencevalue;
+					}
+
+					foreach($fieldValueDetails as $fieldValueDetail){
+						if (strpos($fieldValueDetail, '====') > 0) {
+							$fieldDetail = explode('====', $fieldValueDetail);
+							if ((!$columnsForCache[$fieldValueDetails[0]])){
+								$columnsForCache[$fieldValueDetails[0]] = array();
+							}
+							if (!in_array($fieldDetail[0],$columnsForCache[$fieldValueDetails[0]])){
+								array_push($columnsForCache[$fieldValueDetails[0]],$fieldDetail[0]);
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		// キャッシュを作成
+		$cache = array();
+		foreach($columnsForCache as $module => $columns){
+			$query = "select fieldname,tablename,entityidfield from vtiger_entityname where modulename = ?";
+			$result = $adb->pquery($query, array($module));
+			$tablename = $adb->query_result($result, 0, 'tablename');
+			$entityidfield = $adb->query_result($result, 0, 'entityidfield');
+
+			$sql = "select * from $tablename INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = $tablename.$entityidfield WHERE vtiger_crmentity.deleted = 0";
+			$result = $adb->pquery($sql,array());
+
+			$noOfRows = $adb->num_rows($result);
+			$recordModels = [];
+			$recordModel = [];
+			for ($i = 0; $i < $noOfRows; ++$i) {	
+				$row = $adb->query_result_rowdata($result, $i,);
+				$recordId = $row[$entityidfield];
+				$recordModel[$entityidfield] = $recordId;
+				foreach($columns as $column){
+					if(isset($row[$column])){
+						$recordModel[$column] = $row[$column];
+					}
+				}
+				$recordModels[] = $recordModel;
+			}
+			$cache[$module] = $recordModels; 
+		}
+
+		return $cache;
 	}
 }
 ?>

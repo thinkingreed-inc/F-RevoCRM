@@ -256,3 +256,7 @@ class Import_Utils_Helper {
 		return $errorMessage;
 	}
 }
+
+class ImportException extends Exception
+{
+}
