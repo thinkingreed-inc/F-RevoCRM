@@ -665,6 +665,33 @@ function getEntityId($module, $entityName) {
 		return 0;
 }
 
+// カラム名から関連項目を取得
+function getEntityIdByColumns($module, $referenceValueList, $cash) {
+	global $log, $adb;
+	$log->info("in getEntityIdByColumns " . $referenceValueList);
+
+	if (empty($cash[$module])||empty($referenceValueList)){
+		throw new ImportException("No reference exists");
+	}
+
+    $matchedIds = [];
+    foreach ($cash[$module] as $recordModel) {
+        $filterCash = array_intersect_key($recordModel, $referenceValueList);
+		ksort($referenceValueList);
+		ksort($filterCash);
+        if ($filterCash === $referenceValueList) {
+            $cashValues = array_values($recordModel);
+			$matchedIds[] = $cashValues[0];
+        }
+    }
+
+	if (count($matchedIds) !== 1) {
+		throw new ImportException("No reference exists");
+    }
+
+    return $matchedIds[0];
+}
+
 function decode_emptyspace_html($str){
 	$str = str_replace("&nbsp;", "*#chr*#",$str); // (*#chr*#) used as jargan to replace it back with &nbsp;
 	$str = str_replace("\xc2", "*#chr*#",$str); // Ã (for special chrtr)

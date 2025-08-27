@@ -367,6 +367,10 @@ class PriceBooks extends CRMEntity {
 		if ($numberOfRecords <= 0) {
 			return;
 		}
+
+		// 関連項目のキャッシュを作成
+		$cash = $obj->createCashForReference($moduleFields);
+	
 		$bookNameList = array();
 		$fieldMapping = $obj->fieldMapping;
 		$fieldColumnMapping = $moduleMeta->getFieldColumnMapping();
@@ -395,7 +399,7 @@ class PriceBooks extends CRMEntity {
 				$fieldData[$fieldName] = $row[strtolower($fieldName)];
 			}
 
-            $entityInfo = $this->importRecord($obj, $fieldData, $productList);
+            $entityInfo = $this->importRecord($obj, $fieldData, $productList, $cash);
             unset($productList);
 			if ($entityInfo == null) {
                 $entityInfo = array('id' => null, 'status' => Import_Data_Action::$IMPORT_RECORD_FAILED);
@@ -451,20 +455,20 @@ class PriceBooks extends CRMEntity {
 		return true;
 	}
 
-	function importRecord($obj, $fieldData, $productList) {
+	function importRecord($obj, $fieldData, $productList, $cash) {
 		$moduleName = 'PriceBooks';
 		$moduleHandler = vtws_getModuleHandlerFromName($moduleName, $obj->user);
 		$moduleMeta = $moduleHandler->getMeta();
 		$isProductsExist = true;
 		unset($fieldData['listprice']); unset($fieldData['relatedto']);
 		try {
-			if(php7_count($productList) > 0){
-				$isProductsExist = $this->isProductsExistInDB($productList);
+			if(php7_count($productList) > 0 && !empty($productList[0]['relatedto'])){
+				$isProductsExist = $this->isProductsExistInDB($productList, $cash);
 			}
-			$fieldData = $obj->transformForImport($fieldData, $moduleMeta);
+			$fieldData = $obj->transformForImport($fieldData, $moduleMeta, $cash);
 			$entityInfo = vtws_create($moduleName, $fieldData, $obj->user);
 			if($entityInfo && $productList && $isProductsExist){
-				$this->relatePriceBookWithProduct($entityInfo, $productList);
+				$this->relatePriceBookWithProduct($entityInfo, $productList, $cash);
 			}
 			$entityInfo['status'] = $obj->getImportRecordStatus('created');
 		} catch (ImportException $e){
@@ -474,14 +478,21 @@ class PriceBooks extends CRMEntity {
 		return $entityInfo;
 	}
 
-	function relatePriceBookWithProduct($entityinfo, $productList) {
+	function relatePriceBookWithProduct($entityinfo, $productList, $cash) {
 		if(php7_count($productList) > 0){
 			foreach($productList as $product){
 				if(!$product['relatedto'])
 					continue;
-				$productName = $product['relatedto'];
-				$productName = explode('::::', $productName);
-				$productId = getEntityId($productName[0], $productName[1]);
+				$productDetails = $product['relatedto'];
+				$productDetails = explode('::::', $productDetails);
+				$productValueDetails = false;
+				foreach($productDetails as $productDetail){
+					if (strpos($productDetail, '====') > 0) {
+						$productValueDetail = explode('====', $productDetail);
+						$productValueDetails[$productValueDetail[0]] = $productValueDetail[1];
+					}
+				}
+				$productId = getEntityIdByColumns($productDetails[0], $productValueDetails, $cash);
                 $presence = isRecordExists($productId);
                 if($presence){
                     $productInstance = Vtiger_Record_Model::getInstanceById($productId);
@@ -495,13 +506,20 @@ class PriceBooks extends CRMEntity {
 		}
 	}
 
-	function isProductsExistInDB($productList) {
+	function isProductsExistInDB($productList, $cash) {
 		$isProductsExist = false;
 		$entityIds = array();
 		foreach($productList as $product){
-			$productName = $product['relatedto'];
-			$productName = explode('::::', $productName);
-			$productId = getEntityId($productName[0], $productName[1]);
+			$productDetails = $product['relatedto'];
+			$productDetails = explode('::::', $productDetails);
+			$productValueDetails = false;
+			foreach($productDetails as $productDetail){
+				if (strpos($productDetail, '====') > 0) {
+					$productValueDetail = explode('====', $productDetail);
+					$productValueDetails[$productValueDetail[0]] = $productValueDetail[1];
+				}
+			}
+			$productId = getEntityIdByColumns($productDetails[0], $productValueDetails, $cash);
 			array_push($entityIds, $productId);
 		}
 

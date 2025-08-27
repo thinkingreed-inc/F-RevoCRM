@@ -1332,6 +1332,9 @@ function createRecords($obj) {
 	if ($numberOfRecords <= 0) {
 		return;
 	}
+		
+	// 関連項目のキャッシュを作成
+	$cash = $obj->createCashForReference($moduleFields);
 
 	$fieldMapping = $obj->fieldMapping;
 	$fieldColumnMapping = $moduleMeta->getFieldColumnMapping();
@@ -1376,7 +1379,7 @@ function createRecords($obj) {
 
 		if (!empty($lineItems)) {
 			if(method_exists($focus, 'importRecord')) {
-				$entityInfo = $focus->importRecord($obj, $fieldData, $lineItems);
+				$entityInfo = $focus->importRecord($obj, $fieldData, $lineItems, $cash);
 			}
 		}
 
@@ -1420,8 +1423,7 @@ function createRecords($obj) {
 	unset($result);
 	return true;
 }
-
-function isRecordExistInDB($fieldData, $moduleMeta, $user) {
+function isRecordExistInDB($fieldData, $moduleMeta, $user, $cash) {
 	global $adb, $log;
 	$moduleFields = $moduleMeta->getModuleFields();
 	$isRecordExist = false;
@@ -1439,16 +1441,22 @@ function isRecordExistInDB($fieldData, $moduleMeta, $user) {
 				} else {
 					$fieldValueDetails = $fieldValue;
 				}
+				foreach($fieldValueDetails as $fieldValueDetail){
+					if (strpos($fieldValueDetail, '====') > 0) {
+						$fieldDetail = explode('====', $fieldValueDetail);
+						$fieldDetails[$fieldDetail[0]] = $fieldDetail[1];
+					}
+				}
 				if (php7_count($fieldValueDetails) > 1) {
 					$referenceModuleName = trim($fieldValueDetails[0]);
-					$entityLabel = trim($fieldValueDetails[1]);
-					$entityId = getEntityId($referenceModuleName, decode_html($entityLabel));
+					$referenceValueList = $fieldDetails;
+					$entityId = getEntityIdByColumns($referenceModuleName, $referenceValueList, $cash);
 				} else {
 					$referencedModules = $fieldInstance->getReferenceList();
 					$entityLabel = $fieldValue;
 					foreach ($referencedModules as $referenceModule) {
 						$referenceModuleName = $referenceModule;
-						$referenceEntityId = getEntityId($referenceModule, $entityLabel);
+						$referenceEntityId = getEntityIdByColumns($referenceModule, $entityLabel,$cash);
 						if ($referenceEntityId != 0) {
 							$entityId = $referenceEntityId;
 							break;
@@ -1468,7 +1476,7 @@ function isRecordExistInDB($fieldData, $moduleMeta, $user) {
 	return $isRecordExist;
 }
 
-function importRecord($obj, $inventoryFieldData, $lineItemDetails) {
+function importRecord($obj, $inventoryFieldData, $lineItemDetails, $cash) {
 	global $adb, $log;
 	$moduleName = $obj->module;
 	$fieldMapping = $obj->fieldMapping;
@@ -1477,17 +1485,17 @@ function importRecord($obj, $inventoryFieldData, $lineItemDetails) {
 		$inventoryHandler = vtws_getModuleHandlerFromName($moduleName, $obj->user);
 		$inventoryMeta = $inventoryHandler->getMeta();
 		$moduleFields = $inventoryMeta->getModuleFields();
-		$isRecordExist = isRecordExistInDB($inventoryFieldData, $inventoryMeta, $obj->user);
+		$isRecordExist = isRecordExistInDB($inventoryFieldData, $inventoryMeta, $obj->user, $cash);
 		$lineItemHandler = vtws_getModuleHandlerFromName('LineItem', $obj->user);
 		$lineItemMeta = $lineItemHandler->getMeta();
 		
 		$lineItems = array();
 		foreach ($lineItemDetails as $index => $lineItemFieldData) {
-			$isLineItemExist = isRecordExistInDB($lineItemFieldData, $lineItemMeta, $obj->user);
+			$isLineItemExist = isRecordExistInDB($lineItemFieldData, $lineItemMeta, $obj->user, $cash);
 			if($isLineItemExist) {
 				$count = $index;
 				$lineItemData = array();
-				$lineItemFieldData = $obj->transformForImport($lineItemFieldData, $lineItemMeta);
+				$lineItemFieldData = $obj->transformForImport($lineItemFieldData, $lineItemMeta, $cash);
 				foreach ($fieldMapping as $fieldName => $index) {
 					if($moduleFields[$fieldName]->getTableName() == 'vtiger_inventoryproductrel') {
 						$lineItemData[$fieldName] = $lineItemFieldData[$fieldName];
@@ -1506,7 +1514,7 @@ function importRecord($obj, $inventoryFieldData, $lineItemDetails) {
 			}
 		}
 
-		$fieldData = $obj->transformForImport($inventoryFieldData, $inventoryMeta);
+		$fieldData = $obj->transformForImport($inventoryFieldData, $inventoryMeta, $cash);
 		if(empty($fieldData) || empty($lineItemDetails)) {
 			return null;
 		}

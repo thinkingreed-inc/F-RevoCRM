@@ -463,8 +463,8 @@ class SalesOrder extends CRMEntity {
 
 	/*Function returns the record information which means whether the record is imported or not
 	**This function called while importing records to this module*/
-	function importRecord($obj, $inventoryFieldData, $lineItemDetails) {
-		$entityInfo = importRecord($obj, $inventoryFieldData, $lineItemDetails);
+	function importRecord($obj, $inventoryFieldData, $lineItemDetails, $cash) {
+		$entityInfo = importRecord($obj, $inventoryFieldData, $lineItemDetails, $cash);
 		return $entityInfo;
 	}
 
