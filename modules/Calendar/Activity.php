@@ -1530,18 +1530,29 @@ function insertIntoRecurringTable(& $recurObj)
 		foreach($accountids as $accountid) {
 				$accountRecordModel = Vtiger_Record_Model::getInstanceById($accountid);
 				$relatedContactsIdList = $this->getAccountsRelatedIdList($accountid, "Contacts");
+				$contactsLastActionDate = null;
 				if ($relatedContactsIdList) {
 					$contactsLastActionDate = $this->getLastActionDateFromList($relatedContactsIdList, "Contacts");
 				}
 				$relatedPotentialsIdList = $this->getAccountsRelatedIdList($accountid, "Potentials");
+				$potentialLastActionDate = null;
 				if ($relatedPotentialsIdList) {
 					$potentialLastActionDate = $this->getLastActionDateFromList($relatedPotentialsIdList, "Potentials");
 				}
-				if (strtotime($contactsLastActionDate) > strtotime($potentialLastActionDate)) {
+				
+				$parentLastActionDate = null;
+				if ($contactsLastActionDate && $potentialLastActionDate) {
+					if (strtotime($contactsLastActionDate) > strtotime($potentialLastActionDate)) {
+						$parentLastActionDate = $contactsLastActionDate;
+					} else {
+						$parentLastActionDate = $potentialLastActionDate;
+					}
+				} elseif ($contactsLastActionDate) {
 					$parentLastActionDate = $contactsLastActionDate;
-				} elseif (strtotime($potentialLastActionDate) >= strtotime($contactsLastActionDate)) {
-				$parentLastActionDate =  $potentialLastActionDate;
-				} 
+				} elseif ($potentialLastActionDate) {
+					$parentLastActionDate = $potentialLastActionDate;
+				}
+				
 				$accountLastActionDate = $this->getParentLastActionDate($accountid,"Accounts");
 				$accountRecordModel->set('mode', 'edit');
 				if (isset($parentLastActionDate) && isset($accountLastActionDate)) {
@@ -1571,10 +1582,18 @@ function insertIntoRecurringTable(& $recurObj)
 		}
 		$relatedActivityResult = $adb->pquery($getRelatedActivityQuery, array($parent_id));
 		$relatedActivityRows = $adb->num_rows($relatedActivityResult);
-		$relatedActivity = new DateTime($adb->query_result($relatedActivityResult, 0, "due_date"));
-		if ($relatedActivityRows) {
-			return $relatedActivity->format('Y-m-d');
+		if ($relatedActivityRows > 0) {
+			$dueDate = $adb->query_result($relatedActivityResult, 0, "due_date");
+			if ($dueDate) {
+				try {
+					$relatedActivity = new DateTime($dueDate);
+					return $relatedActivity->format('Y-m-d');
+				} catch (Exception $e) {
+					return null;
+				}
+			}
 		}
+		return null;
 	}
 
 	#顧客企業の関連ID(顧客担当者・案件)の配列を得る
@@ -1586,24 +1605,41 @@ function insertIntoRecurringTable(& $recurObj)
 		} elseif ($moduleName == "Potentials") {
 			$getRelatedQuery = "SELECT potentialid from vtiger_potential where related_to = ?";
 			$columnName = "potentialid";
+		} else {
+			return array();
 		}
 		$relatedResult = $adb->pquery($getRelatedQuery, array($accountid));
 		$relatedRows = $adb->num_rows($relatedResult);
+		$relatedIdList = array();
 		for ($i = 0; $i < $relatedRows; $i++) {
-			$relatedIdList[] = $adb->query_result($relatedResult, $i, $columnName);
+			$relatedId = $adb->query_result($relatedResult, $i, $columnName);
+			if ($relatedId) {
+				$relatedIdList[] = $relatedId;
+			}
 		}
 		return $relatedIdList;
 	}
 
 	#関連IDの配列から最終活動日を得る
 	public function getLastActionDateFromList($parentIdList, $moduleName) {
+		$parentLastActionDateList = array();
 		foreach ($parentIdList as $parentId) {
 			$parentLastActionDate = $this->getParentLastActionDate($parentId, $moduleName);
 			if ($parentLastActionDate) {
 				$parentLastActionDateList[$parentLastActionDate] = strtotime($parentLastActionDate);
 			}
 		}
-		$last_action_date   = array_keys($parentLastActionDateList, max($parentLastActionDateList));
+		if (empty($parentLastActionDateList)) {
+			return null;
+		}
+		$maxTimestamp = max($parentLastActionDateList);
+		if ($maxTimestamp === false) {
+			return null;
+		}
+		$last_action_date = array_keys($parentLastActionDateList, $maxTimestamp);
+		if (empty($last_action_date)) {
+			return null;
+		}
 		return $last_action_date[0];
 	}
 	
