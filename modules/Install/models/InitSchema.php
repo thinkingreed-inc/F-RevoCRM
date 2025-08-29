@@ -83,6 +83,9 @@ class Install_InitSchema_Model {
 				$oldVersion = $newVersion;
 			}
 		}
+		
+		// F-RevoCRMマイグレーションシステムの実行
+		self::executeFRMigrations();
 	}
 
 	/**
@@ -1292,5 +1295,112 @@ class Install_InitSchema_Model {
 											"<b>Eg:</b> <br/>".
 											"$1.0 => $123,456,789.50 <br/>".
 											"1.0$ => 123,456,789.50$ <br/>");
+	}
+
+	/**
+	 * F-RevoCRMマイグレーションシステムを実行する
+	 * setup/migration/scripts/以下のマイグレーションファイルをすべて実行する
+	 */
+	public static function executeFRMigrations() {
+		// マイグレーションシステムのパスを設定
+		$migrationDir = dirname(dirname(dirname(dirname(__FILE__)))) . '/setup/migration';
+		$scriptsDir = $migrationDir . '/scripts';
+		
+		// FRMigrationClassを読み込み
+		require_once $migrationDir . '/FRMigrationClass.php';
+		
+		// scriptsディレクトリが存在しない場合は何もしない
+		if (!is_dir($scriptsDir)) {
+			return;
+		}
+		
+		// マイグレーションファイルを取得
+		$files = scandir($scriptsDir);
+		$migrationFiles = array();
+		
+		foreach ($files as $file) {
+			// タイムスタンプパターンのマイグレーションファイルにマッチ
+			if (preg_match('/^\d{14}_.*\.php$/', $file)) {
+				$migrationFiles[] = $file;
+			}
+		}
+		
+		// 時系列順に実行するためファイルをソート
+		sort($migrationFiles);
+		
+		if (empty($migrationFiles)) {
+			return;
+		}
+		
+		echo "F-RevoCRM マイグレーションシステム: " . count($migrationFiles) . " 個のマイグレーションが見つかりました。\n";
+		
+		$successCount = 0;
+		$skipCount = 0;
+		
+		// 各マイグレーションファイルを実行
+		foreach ($migrationFiles as $file) {
+			$result = self::executeSingleFRMigration($scriptsDir . '/' . $file);
+			if ($result === true) {
+				$successCount++;
+			} elseif ($result === false) {
+				$skipCount++;
+			} else {
+				// エラーが発生した場合は処理を停止
+				echo "F-RevoCRM マイグレーションエラー: {$file} でエラーが発生したため処理を停止します。\n";
+				throw new Exception("Migration failed at file: {$file}");
+			}
+		}
+		
+		echo "F-RevoCRM マイグレーション実行結果: 実行済み={$successCount}, スキップ={$skipCount}, 合計=" . count($migrationFiles) . "\n";
+	}
+	
+	/**
+	 * 単一のF-RevoCRMマイグレーションファイルを実行する
+	 * 
+	 * @param string $migrationPath マイグレーションファイルの絶対パス
+	 * @return boolean|null true=実行成功, false=スキップ, null=エラー
+	 */
+	private static function executeSingleFRMigration($migrationPath) {
+		if (!file_exists($migrationPath)) {
+			echo "エラー: マイグレーションファイルが見つかりません: {$migrationPath}\n";
+			return null;
+		}
+		
+		// マイグレーションファイルをinclude
+		require_once $migrationPath;
+		
+		// ファイル名からクラス名を抽出
+		$className = self::extractClassNameFromFRMigrationFile($migrationPath);
+		
+		if (!$className || !class_exists($className)) {
+			echo "エラー: マイグレーションクラスが見つかりません: {$migrationPath}\n";
+			return null;
+		}
+		
+		try {
+			$migration = new $className();
+			return $migration->execute();
+		} catch (Exception $e) {
+			echo "マイグレーション実行エラー {$migrationPath}: " . $e->getMessage() . "\n";
+			// 例外を再スローしてメイン処理で停止させる
+			throw $e;
+		}
+	}
+	
+	/**
+	 * F-RevoCRMマイグレーションファイルからクラス名を抽出する
+	 * 
+	 * @param string $filePath マイグレーションファイルのパス
+	 * @return string|null クラス名、見つからない場合はnull
+	 */
+	private static function extractClassNameFromFRMigrationFile($filePath) {
+		$content = file_get_contents($filePath);
+		
+		// クラス定義を検索（クラス名はMigrationで始まる）
+		if (preg_match('/class\s+(Migration[a-zA-Z0-9_]+)\s+extends\s+FRMigrationClass/', $content, $matches)) {
+			return $matches[1];
+		}
+		
+		return null;
 	}
 }
