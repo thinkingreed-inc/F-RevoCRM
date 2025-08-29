@@ -36,6 +36,10 @@ class Users_Calendar_View extends Vtiger_Detail_View {
 	 * @return <String>
 	 */
 	public function preProcessTplName(Vtiger_Request $request) {
+		// 編集画面ではヘッダーを表示しない
+		if ($request->getMode() === 'Edit') {
+        	return 'CalendarEditViewPreProcess.tpl';
+    	}
 		return 'CalendarDetailViewPreProcess.tpl';
 	}
 
@@ -171,7 +175,7 @@ class Users_Calendar_View extends Vtiger_Detail_View {
 		$recordId = $request->get('record');
 		$currentUserModel = Users_Record_Model::getCurrentUserModel();
 		$module = $request->getModule();
-		$detailViewModel = Vtiger_DetailView_Model::getInstance('Users', $currentUserModel->id);
+		$detailViewModel = Vtiger_DetailView_Model::getInstance('Users', $recordId);
 		$userRecordStructure = Vtiger_RecordStructure_Model::getInstanceFromRecordModel($detailViewModel->getRecord(), Vtiger_RecordStructure_Model::RECORD_STRUCTURE_MODE_EDIT);
 		$recordStructure = $userRecordStructure->getStructure();
 //		$allUsers = Users_Record_Model::getAll(true);
@@ -202,6 +206,14 @@ class Users_Calendar_View extends Vtiger_Detail_View {
 	
 	public function calendarSettingsEdit(Vtiger_Request $request){
 		$viewer = $this->getViewer($request);
+
+		//　対象者の情報を取得
+		$moduleName = $request->getModule();
+		$record = $request->get('record');
+		$recordModel = $this->record?$this->record:Vtiger_Record_Model::getInstanceById($record, $moduleName);
+		$recordStructureInstance = Vtiger_RecordStructure_Model::getInstanceFromRecordModel($recordModel, Vtiger_RecordStructure_Model::RECORD_STRUCTURE_MODE_EDIT);
+		$viewer->assign('RECORD_STRUCTURE_MODEL', $recordStructureInstance);
+
 		$this->initializeView($viewer,$request);
 		$viewer->view('CalendarSettingsEditView.tpl', $request->getModule());
 	}
@@ -210,6 +222,14 @@ class Users_Calendar_View extends Vtiger_Detail_View {
 	
 	public function calendarSettingsDetail(Vtiger_Request $request){
 		$viewer = $this->getViewer($request);
+
+		//　対象者の情報を取得
+		$moduleName = $request->getModule();
+		$record = $request->get('record');
+		$recordModel = $this->record?$this->record:Vtiger_Record_Model::getInstanceById($record, $moduleName);
+		$recordStructureInstance = Vtiger_RecordStructure_Model::getInstanceFromRecordModel($recordModel, Vtiger_RecordStructure_Model::RECORD_STRUCTURE_MODE_EDIT);
+		$viewer->assign('RECORD_STRUCTURE_MODEL', $recordStructureInstance);
+
 		$this->initializeView($viewer,$request);
 		$viewer->view('CalendarSettingsDetailView.tpl', $request->getModule());
 	}

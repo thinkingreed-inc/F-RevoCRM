@@ -21,13 +21,6 @@
                 <input type=hidden name="timeFormatOptions" data-value='{$DAY_STARTS}' />
                 <div class="row">
                     <h4 class="col-xs-8">{vtranslate({$BLOCK_LABEL_KEY},{$MODULE_NAME})}</h4>
-                    <div class="col-xs-4 marginTop5px">
-                        <div class=" pull-right detailViewButtoncontainer">
-                            <div class="btn-group  pull-right">
-                                <a class="btn btn-default" href="{$RECORD->getCalendarSettingsEditViewUrl()}">{vtranslate('LBL_EDIT', $MODULE_NAME)}</a>
-                            </div>  
-                        </div>
-                    </div>
                 </div>
                 <hr>
                 <div class="blockData row">
