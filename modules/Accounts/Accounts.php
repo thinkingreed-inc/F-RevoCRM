@@ -619,6 +619,9 @@ class Accounts extends CRMEntity {
 				LEFT JOIN vtiger_quotesbillads ON vtiger_quotesbillads.quotebilladdressid = vtiger_quotes.quoteid
 				LEFT JOIN vtiger_quotesshipads ON vtiger_quotesshipads.quoteshipaddressid = vtiger_quotes.quoteid
 				LEFT JOIN vtiger_users ON vtiger_crmentity.smownerid = vtiger_users.id
+				LEFT JOIN vtiger_contactdetails AS vtiger_contactdetailscontact_id ON vtiger_contactdetailscontact_id.contactid = vtiger_quotes.contactid
+				LEFT JOIN vtiger_account AS vtiger_accountaccount_id ON vtiger_accountaccount_id.accountid = vtiger_quotes.accountid
+				LEFT JOIN vtiger_potential AS vtiger_potentialpotential_id ON vtiger_potentialpotential_id.potentialid = vtiger_quotes.potentialid
 				WHERE vtiger_crmentity.deleted = 0 AND (vtiger_account.accountid = $id";
 
 		if(!empty ($entityIds)){

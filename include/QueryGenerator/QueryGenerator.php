@@ -758,6 +758,7 @@ class QueryGenerator {
 							}
 							if(php7_count($columnList) > 1) {
 								$columnSql = getSqlForNameInDisplayFormat(array('last_name'=>$columnList[1],'first_name'=>$columnList[0],),'Users');
+								$columnSql = str_replace('userlabel', 'label', $columnSql);
 							} else {
 								$columnSql = implode('', $columnList);
 							}
