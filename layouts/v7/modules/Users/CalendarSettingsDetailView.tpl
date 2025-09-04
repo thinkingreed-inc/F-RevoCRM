@@ -137,4 +137,65 @@
             </div>
             <br>
         {/foreach}
+
+        {* カレンダー共有ブロック *}
+        {foreach key=BLOCK_LABEL_KEY item=FIELD_MODEL_LIST from=$RECORD_STRUCTURE}
+			{assign var=SHARED_TYPE value=$SHAREDTYPE}
+			{assign var=CALENDAR_MODULE_NAME value='Calendar'}
+			{assign var=LBL_CALENDAR__SHARING value='LBL_CALENDAR_SHARING'}
+            {assign var=COUNTER value=0}
+            <div class="block block_{$BLOCK_LABEL_KEY}" data-block="{$BLOCK_LABEL_KEY}">
+                <div class="row">
+                    <h4 class="col-xs-8">{vtranslate($LBL_CALENDAR__SHARING,$CALENDAR_MODULE_NAME)}</h4>
+                </div>
+                <hr>
+                <div class="blockData row">
+                    <table class="table detailview-table no-border">
+                        <tbody>
+                            <tr>
+                                {* 共有タイプの表示 *}
+                                <td class="fieldLabel textOverflowEllipsis {$WIDTHTYPE}" id="{$MODULE_NAME}_detailView_fieldLabel_calendarsharedtype">
+                                    <span class="muted">
+                                        {vtranslate($LBL_CALENDAR__SHARING,$CALENDAR_MODULE_NAME)}
+                                    </span>
+                                </td>
+                                <td class="fieldValue {$WIDTHTYPE}" id="{$MODULE_NAME}_detailView_fieldValue_calendarsharedtype" >                          
+                                        <span class="value textOverflowEllipsis" data-field-type="">
+                                            {if $SHARED_TYPE eq 'selectedusers'}
+                                                {vtranslate('Selected Users',$CALENDAR_MODULE_NAME)}
+                                            {else}
+                                                {vtranslate($SHARED_TYPE,$CALENDAR_MODULE_NAME)}
+                                            {/if}
+                                        </span>
+                                    <br><br>
+                                </td>
+                                {assign var=COUNTER value=$COUNTER+1}
+                                {* 共有ユーザーの表示 *}
+                                {if $SHARED_TYPE == 'selectedusers'}
+                                    <td class="fieldLabel textOverflowEllipsis {$WIDTHTYPE}" id="{$MODULE_NAME}_detailView_fieldLabel_calendarsharedtype">
+                                        <span class="muted">
+                                            {vtranslate('LBL_SELECT_USERS',$CALENDAR_MODULE_NAME)}
+                                        </span>
+                                    </td>
+                                    <td class="fieldValue {$WIDTHTYPE}" id="{$MODULE_NAME}_detailView_fieldValue_calendarsharedtype">
+                                        {foreach from=$SHAREDUSERS key=SHAREDUSERS_ID item=RECORDUSER_ID name=SHAREDUSERS_LOOP}
+                                            <span>
+                                                {trim(vtranslate($ALL_USERS[$SHAREDUSERS_ID]->getName(),$CALENDAR_MODULE_NAME))}
+                                            </span>
+                                            {if !$smarty.foreach.SHAREDUSERS_LOOP.last},{/if}
+                                        {/foreach}
+                                    </td>
+                                    {assign var=COUNTER value=$COUNTER+1}
+                                {/if}
+                                {if $COUNTER is odd}
+                                    <td></td>
+                                    <td></td>
+                                {/if}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <br>
+        {/foreach}
     {/strip}

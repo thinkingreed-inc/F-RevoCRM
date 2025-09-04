@@ -178,9 +178,9 @@ class Users_Calendar_View extends Vtiger_Detail_View {
 		$detailViewModel = Vtiger_DetailView_Model::getInstance('Users', $recordId);
 		$userRecordStructure = Vtiger_RecordStructure_Model::getInstanceFromRecordModel($detailViewModel->getRecord(), Vtiger_RecordStructure_Model::RECORD_STRUCTURE_MODE_EDIT);
 		$recordStructure = $userRecordStructure->getStructure();
-//		$allUsers = Users_Record_Model::getAll(true);
-		$sharedUsers = Calendar_Module_Model::getCaledarSharedUsers($currentUserModel->id);
-		$sharedType = Calendar_Module_Model::getSharedType($currentUserModel->id);
+		$allUsers = Users_Record_Model::getAll(true);
+		$sharedUsers = Calendar_Module_Model::getCaledarSharedUsers($recordId);
+		$sharedType = Calendar_Module_Model::getSharedType($recordId);
 		$dayStartPicklistValues = Users_Record_Model::getDayStartsPicklistValues($recordStructure);
         $hourFormatFeildModel = $recordStructure['LBL_CALENDAR_SETTINGS']['hour_format'];
 		$calendarSettings['LBL_CALENDAR_SETTINGS'] = $recordStructure['LBL_CALENDAR_SETTINGS'];
@@ -192,7 +192,7 @@ class Users_Calendar_View extends Vtiger_Detail_View {
 		$viewer->assign('BLOCK_LIST',$blocksList);
 		$viewer->assign('SHAREDUSERS', $sharedUsers);
 		$viewer->assign("DAY_STARTS", Zend_Json::encode($dayStartPicklistValues));
-//		$viewer->assign('ALL_USERS',$allUsers);
+		$viewer->assign('ALL_USERS',$allUsers);
 		$viewer->assign('RECORD_STRUCTURE',$calendarSettings);
 		$viewer->assign('MODULE',$module);
 		$viewer->assign('MODULE_NAME',$module);
@@ -206,14 +206,6 @@ class Users_Calendar_View extends Vtiger_Detail_View {
 	
 	public function calendarSettingsEdit(Vtiger_Request $request){
 		$viewer = $this->getViewer($request);
-
-		//　対象者の情報を取得
-		$moduleName = $request->getModule();
-		$record = $request->get('record');
-		$recordModel = $this->record?$this->record:Vtiger_Record_Model::getInstanceById($record, $moduleName);
-		$recordStructureInstance = Vtiger_RecordStructure_Model::getInstanceFromRecordModel($recordModel, Vtiger_RecordStructure_Model::RECORD_STRUCTURE_MODE_EDIT);
-		$viewer->assign('RECORD_STRUCTURE_MODEL', $recordStructureInstance);
-
 		$this->initializeView($viewer,$request);
 		$viewer->view('CalendarSettingsEditView.tpl', $request->getModule());
 	}
@@ -222,14 +214,6 @@ class Users_Calendar_View extends Vtiger_Detail_View {
 	
 	public function calendarSettingsDetail(Vtiger_Request $request){
 		$viewer = $this->getViewer($request);
-
-		//　対象者の情報を取得
-		$moduleName = $request->getModule();
-		$record = $request->get('record');
-		$recordModel = $this->record?$this->record:Vtiger_Record_Model::getInstanceById($record, $moduleName);
-		$recordStructureInstance = Vtiger_RecordStructure_Model::getInstanceFromRecordModel($recordModel, Vtiger_RecordStructure_Model::RECORD_STRUCTURE_MODE_EDIT);
-		$viewer->assign('RECORD_STRUCTURE_MODEL', $recordStructureInstance);
-
 		$this->initializeView($viewer,$request);
 		$viewer->view('CalendarSettingsDetailView.tpl', $request->getModule());
 	}

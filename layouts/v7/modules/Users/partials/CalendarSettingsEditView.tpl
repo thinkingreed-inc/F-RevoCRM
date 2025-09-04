@@ -76,4 +76,48 @@
                 <br>
             {/if}
         {/foreach}
+
+        {* カレンダー共有設定 *}
+		{assign var=SHARED_TYPE value=$SHAREDTYPE}
+		{assign var=CALENDAR_MODULE_NAME value='Calendar'}
+		{assign var=LBL_CALENDAR__SHARING value='LBL_CALENDAR_SHARING'}
+        <div class='fieldBlockContainer'>
+            <h4 class='fieldBlockHeader' >{vtranslate($LBL_CALENDAR__SHARING, $CALENDAR_MODULE_NAME)}</h4>
+            <hr>
+            <table class="table table-borderless">
+                <tr>
+                    {* 共有タイプの編集 *}
+                    <td class="fieldLabel alignMiddle">
+                        {vtranslate($LBL_CALENDAR__SHARING, $CALENDAR_MODULE_NAME)}
+                    </td>
+                    <td class="fieldValue">
+                        <div class="select2-container inputElement select2 row" data-field-type="">
+                            <select class="select2 form-control" name="sharedtype" id="sharedType">
+                                <option value="private" {if $SHARED_TYPE == 'private'} selected {/if}>&nbsp;{vtranslate('Private',$CALENDAR_MODULE_NAME)}</option>
+                                <option value="public" {if $SHARED_TYPE == 'public'} selected {/if}>&nbsp;{vtranslate('Public',$CALENDAR_MODULE_NAME)}</option>
+                                <option value="selectedusers" {if $SHARED_TYPE == 'selectedusers'} selected {/if}data-sharingtype="selectedusers" name="sharedtype" id="selectedUsersSharingType">
+                                    &nbsp;{vtranslate('Selected Users',$CALENDAR_MODULE_NAME)}
+                                </option>
+                            </select>
+                        </div>
+                    </td>
+                    {* 共有ユーザーの編集 *}
+                    <td class="fieldLabel alignMiddle">
+                        <span class="muted"id="selectedUsersLabel">
+                            {vtranslate('LBL_SELECT_USERS',$CALENDAR_MODULE_NAME)}
+                        </span>
+                    </td>
+                    <td class="fieldValue">
+                        <select class="select2 row" name="sharedIds[]" multiple="" data-placeholder="{vtranslate('LBL_SELECT_USERS',$CALENDAR_MODULE_NAME)}" style="display:block;width:90%" id="selectedUsersValue">
+					        {foreach key=ID item=USER_MODEL from=$ALL_USERS}
+							    {if $ID neq $CURRENTUSER_MODEL->get('id')}
+								    <option value="{$ID}" {if array_key_exists($ID, $SHAREDUSERS)} selected=""{/if}>{vtranslate($USER_MODEL->getName(),$CALENDAR_MODULE_NAME)}</option>
+							    {/if}
+						    {/foreach}
+					    </select>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <br>
     </div> 
