@@ -41,7 +41,7 @@
 						<span class="current-filter-name settingModuleName filter-name pull-left">
 							{if $REQ.view eq 'Calendar'}
 
-								<!--ユーザー詳細から他ユーザーのカレンダーを開いた場合-->
+								{*他ユーザーのカレンダー設定を開いた場合*}
 								{if $RECORD->getId() neq $USER_MODEL->getId()}
 									<a href="{$URL}">
 										{if $REQ.extensionModule}{$REQ.extensionModule}{else}{vtranslate({$PAGETITLE}, $QUALIFIED_MODULE)}{/if}

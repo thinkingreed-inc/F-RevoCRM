@@ -142,11 +142,11 @@
         {foreach key=BLOCK_LABEL_KEY item=FIELD_MODEL_LIST from=$RECORD_STRUCTURE}
 			{assign var=SHARED_TYPE value=$SHAREDTYPE}
 			{assign var=CALENDAR_MODULE_NAME value='Calendar'}
-			{assign var=LBL_CALENDAR__SHARING value='LBL_CALENDAR_SHARING'}
+			{assign var=LBL_CALENDAR_SHARING value='LBL_CALENDAR_SHARING'}
             {assign var=COUNTER value=0}
             <div class="block block_{$BLOCK_LABEL_KEY}" data-block="{$BLOCK_LABEL_KEY}">
                 <div class="row">
-                    <h4 class="col-xs-8">{vtranslate($LBL_CALENDAR__SHARING,$CALENDAR_MODULE_NAME)}</h4>
+                    <h4 class="col-xs-8">{vtranslate($LBL_CALENDAR_SHARING,$CALENDAR_MODULE_NAME)}</h4>
                 </div>
                 <hr>
                 <div class="blockData row">
@@ -156,7 +156,7 @@
                                 {* 共有タイプの表示 *}
                                 <td class="fieldLabel textOverflowEllipsis {$WIDTHTYPE}" id="{$MODULE_NAME}_detailView_fieldLabel_calendarsharedtype">
                                     <span class="muted">
-                                        {vtranslate($LBL_CALENDAR__SHARING,$CALENDAR_MODULE_NAME)}
+                                        {vtranslate($LBL_CALENDAR_SHARING,$CALENDAR_MODULE_NAME)}
                                     </span>
                                 </td>
                                 <td class="fieldValue {$WIDTHTYPE}" id="{$MODULE_NAME}_detailView_fieldValue_calendarsharedtype" >                          
