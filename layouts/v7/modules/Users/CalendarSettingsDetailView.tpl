@@ -161,10 +161,12 @@
                                 </td>
                                 <td class="fieldValue {$WIDTHTYPE}" id="{$MODULE_NAME}_detailView_fieldValue_calendarsharedtype" >                          
                                         <span class="value textOverflowEllipsis" data-field-type="">
-                                            {if $SHARED_TYPE eq 'selectedusers'}
+                                            {if $SHARED_TYPE eq 'public'}
+                                                {vtranslate('Public',$CALENDAR_MODULE_NAME)}
+                                            {else if $SHARED_TYPE eq 'private'}
+                                                {vtranslate('Private',$CALENDAR_MODULE_NAME)}
+                                            {else if $SHARED_TYPE eq 'selectedusers'}
                                                 {vtranslate('Selected Users',$CALENDAR_MODULE_NAME)}
-                                            {else}
-                                                {vtranslate($SHARED_TYPE,$CALENDAR_MODULE_NAME)}
                                             {/if}
                                         </span>
                                     <br><br>
