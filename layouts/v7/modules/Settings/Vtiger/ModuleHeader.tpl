@@ -59,8 +59,9 @@
                                     {/if}
 
 								{if $REQ.mode eq 'Edit'}
-									<a href="{"index.php?module="|cat:$REQ.module|cat:'&parent='|cat:$REQ.parent|cat:'&view='|cat:$REQ.view}">
-										{vtranslate({$PAGETITLE}, $QUALIFIED_MODULE)}
+									{assign var=LBL_CALENDAR_SETTINGS value='LBL_CALENDAR_SETTINGS'}
+									<a href="{"index.php?module="|cat:$REQ.module|cat:'&parent='|cat:$REQ.parent|cat:'&view='|cat:$REQ.view|cat:'&record='|cat:$REQ.record}">
+										{vtranslate($LBL_CALENDAR_SETTINGS, $QUALIFIED_MODULE)}
 									</a>&nbsp;
                                                                         <a href="">
                                                                             <span class="fa fa-angle-right" aria-hidden="true"></span>&nbsp;
