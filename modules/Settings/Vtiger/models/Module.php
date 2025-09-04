@@ -189,6 +189,12 @@ class Settings_Vtiger_Module_Model extends Vtiger_Base_Model {
 			}
 			$finalResult = $moduleModel->getSettingsActiveBlock($view);
 		}
+		
+		$currentUserModel = Users_Record_Model::getCurrentUserModel();
+		if($moduleName === 'Users' && $view == 'Calendar' && $request->get('record') != $currentUserModel->id) {
+			$finalResult = array('block' => 'LBL_USER_MANAGEMENT', 'menu' => 'LBL_USERS');
+		}
+
 		return $finalResult;
 	}
 

@@ -125,6 +125,12 @@ class Users_Save_Action extends Vtiger_Save_Action {
 		}
 		$recordModel = $this->saveRecord($request);
 
+		// カレンダー共有ユーザーを保存する
+		if ($request->get('mode') === 'Calendar') {
+			$calendarSettingsAction = new Users_SaveCalendarSettings_Action();
+			$calendarSettingsAction->saveCalendarSharing($request);
+		}
+
 		if ($request->get('relationOperation')) {
 			$parentRecordModel = Vtiger_Record_Model::getInstanceById($request->get('sourceRecord'), $request->get('sourceModule'));
 			$loadUrl = $parentRecordModel->getDetailViewUrl();

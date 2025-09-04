@@ -83,6 +83,12 @@ class Users_DetailView_Model extends Vtiger_DetailView_Model {
 										'linkurl'	=> "javascript:Users_Detail_Js.triggerChangeAccessKey('index.php?module=Users&action=SaveAjax&mode=changeAccessKey&record=$recordId')",
 										'linkicon'	=> ''
 									);
+			$detailViewActionLinks[] = array(
+										'linktype' => 'DETAILVIEW',
+										'linklabel' => 'LBL_CALENDAR_SETTINGS',
+										'linkurl' => "index.php?module=Users&parent=Settings&view=Calendar&record=$recordId",
+										'linkicon' => ''
+			);
 			if($currentUserModel->get('id') === $recordId){
 				$detailViewActionLinks[] = array(
 											'linktype'	=> 'DETAILVIEW',

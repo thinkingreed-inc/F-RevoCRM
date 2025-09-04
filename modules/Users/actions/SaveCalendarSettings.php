@@ -40,24 +40,27 @@ class Users_SaveCalendarSettings_Action extends Users_Save_Action {
 
 		$currentUserModel = Users_Record_Model::getCurrentUserModel();
 		$calendarModuleModel = Vtiger_Module_Model::getInstance('Calendar');
-		$accessibleUsers = $currentUserModel->getAccessibleUsersForModule('Calendar');
+		$recordId = $request->get('record');
+		if (empty($recordId)) {
+			$recordId = $currentUserModel->id;
+		}
 
 		if($sharedType == 'private'){
-			$calendarModuleModel->deleteSharedUsers($currentUserModel->id);
+			$calendarModuleModel->deleteSharedUsers($recordId);
 		}else if($sharedType == 'public'){
-            $allUsers = $currentUserModel->getAll(true);
+            $allUsers = Users_Record_Model::getAll(true);
 			$accessibleUsers = array();
 			foreach ($allUsers as $id => $userModel) {
 				$accessibleUsers[$id] = $id;
 			}
-			$calendarModuleModel->deleteSharedUsers($currentUserModel->id);
-			$calendarModuleModel->insertSharedUsers($currentUserModel->id, array_keys($accessibleUsers));
+			$calendarModuleModel->deleteSharedUsers($recordId);
+			$calendarModuleModel->insertSharedUsers($recordId, array_keys($accessibleUsers));
 		}else{
 			if(!empty($sharedIds)){
-				$calendarModuleModel->deleteSharedUsers($currentUserModel->id);
-				$calendarModuleModel->insertSharedUsers($currentUserModel->id, $sharedIds);
+				$calendarModuleModel->deleteSharedUsers($recordId);
+				$calendarModuleModel->insertSharedUsers($recordId, $sharedIds);
 			}else{
-				$calendarModuleModel->deleteSharedUsers($currentUserModel->id);
+				$calendarModuleModel->deleteSharedUsers($recordId);
 			}
 		}
 	}
