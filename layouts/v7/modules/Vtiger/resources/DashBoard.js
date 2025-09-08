@@ -20,6 +20,12 @@ Vtiger.Class("Vtiger_DashBoard_Js",{
 		var linkId = element.data('linkid');
 		var name = element.data('name');
 
+		// Handle IFrameWidget specially to show configuration modal
+		if (name == 'IFrameWidget') {
+			Vtiger_DashBoard_Js.addIFrameWidget(element, url);
+			return;
+		}
+
 		// After adding widget, we should remove that widget from Add Widget drop down menu from active tab
 		var activeTabId = Vtiger_DashBoard_Js.currentInstance.getActiveTabId();
 		jQuery('a[data-name="'+name+'"]',"#tab_"+activeTabId).parent().hide();
@@ -177,6 +183,58 @@ Vtiger.Class("Vtiger_DashBoard_Js",{
 						}
 						app.request.post({"data":noteBookParams}).then(function(err,data) {
 							if(data){
+								var widgetId = data.widgetId;
+								app.helper.hideModal();
+
+								url += '&widgetid='+widgetId;
+
+								var name = element.data('name');
+								var widgetContainer = jQuery('<li class="new dashboardWidget loadcompleted" id="'+ linkId +"-" + widgetId +'" data-name="'+name+'" data-mode="open"></li>');
+								widgetContainer.data('url', url);
+								var width = element.data('width');
+								var height = element.data('height');
+								Vtiger_DashBoard_Js.gridster.add_widget(widgetContainer, width, height);
+								Vtiger_DashBoard_Js.currentInstance.loadWidget(widgetContainer);
+							}
+						});
+						return false;
+					}
+				}
+				form.vtValidate(params);
+			}
+			app.helper.showModal(res,{"cb":callback});
+		});
+
+	},
+
+	addIFrameWidget : function(element, url) {
+		// Show popup window for IFrame widget configuration
+		element = jQuery(element);
+
+		app.request.get({"url":"index.php?module=Home&view=AddIFrameWidget"}).then(function(err,res){
+			var callback = function(data){
+				var wizardContainer = jQuery(data);
+				var form = jQuery('form', wizardContainer);
+				var params = {
+					submitHandler : function(form){
+						//To prevent multiple click on save
+						var form = jQuery(form);
+						jQuery("[name='saveButton']").attr('disabled','disabled');
+						var iframeTitle = form.find('[name="iframeWidgetTitle"]').val();
+						var iframeUrl = form.find('[name="iframeWidgetUrl"]').val();
+						var linkId = element.data('linkid');
+						var iframeParams = {
+							'module' : 'Home',
+							'action' : 'DashboardAjax',
+							'mode' : 'addWidget',
+							'name' : 'IFrameWidget',
+							'linkid' : linkId,
+							'title' : iframeTitle,
+							'url' : iframeUrl,
+							'tab' : jQuery(".tab-pane.active").data("tabid")
+						}
+						app.request.post({"data":iframeParams}).then(function(err,data) {
+							if(data && data.success){
 								var widgetId = data.widgetId;
 								app.helper.hideModal();
 
@@ -495,7 +553,7 @@ Vtiger.Class("Vtiger_DashBoard_Js",{
 					function(err,response) {
 						if (err == null) {
 
-							var nonReversableWidgets = ['MiniList','Notebook','ChartReportWidget']
+							var nonReversableWidgets = ['MiniList','Notebook','ChartReportWidget','IFrameWidget']
 
 							parent.fadeOut('slow', function() {
 								Vtiger_DashBoard_Js.gridster.remove_widget(parent);

@@ -67,9 +67,10 @@ class Vtiger_DashBoard_Model extends Vtiger_Base_Model {
 		$params = array_merge($params, $moduleTabIdList);
 		$params = array_merge($params, array($currentUser->getId(), $dashBoardTabId));
 
-		$sql .= ' UNION SELECT * FROM vtiger_links WHERE linklabel in (?,?)';
+		$sql .= ' UNION SELECT * FROM vtiger_links WHERE linklabel in (?,?,?)';
 		$params[] = 'Mini List';
 		$params[] = 'Notebook';
+		$params[] = 'IFrame Widget';
 		$result = $db->pquery($sql, $params);
 
 		$widgets = array();
