@@ -3,8 +3,8 @@
  * F-RevoCRM マイグレーション実行ツール
  * 
  * 使用方法: 
- *   php setup/migration/run_migration.php migration/scripts/マイグレーションファイル.php    - 特定のマイグレーションを実行
- *   php setup/migration/run_migration.php --all                                           - すべての未実行マイグレーションを実行
+ *   php setup/migration/run_migration.php setup/migration/scripts/マイグレーションファイル.php    - 特定のマイグレーションを実行
+ *   php setup/migration/run_migration.php --all                                                   - すべての未実行マイグレーションを実行
  */
 
 // このスクリプトファイルのパスを基準にして適切なパスを取得
@@ -21,15 +21,15 @@ require_once 'include/database/PearDatabase.php';
 function runSingleMigration($migrationFile) {
     global $scriptDir;
     
-    // migration/scripts/ で始まるパスのみ許容
-    if (strpos($migrationFile, 'migration/scripts/') !== 0) {
-        echo "エラー: マイグレーションファイルは 'migration/scripts/' で始まる必要があります: {$migrationFile}\n";
-        echo "正しい形式: migration/scripts/YYYYMMDDHHmmss_migration_name.php\n";
+    // setup/migration/scripts/ で始まるパスのみ許容
+    if (strpos($migrationFile, 'setup/migration/scripts/') !== 0) {
+        echo "エラー: マイグレーションファイルは 'setup/migration/scripts/' で始まる必要があります: {$migrationFile}\n";
+        echo "正しい形式: setup/migration/scripts/YYYYMMDDHHmmss_migration_name.php\n";
         return false;
     }
     
-    // migration/scripts/ を scripts/ に変換してパスを構築
-    $scriptsRelativePath = substr($migrationFile, strlen('migration/'));
+    // setup/migration/scripts/ を scripts/ に変換してパスを構築
+    $scriptsRelativePath = substr($migrationFile, strlen('setup/migration/'));
     $migrationPath = $scriptDir . '/' . $scriptsRelativePath;
     
     if (!file_exists($migrationPath)) {
@@ -92,7 +92,7 @@ function runAllMigrations() {
     
     foreach ($migrationFiles as $file) {
         echo "\n" . str_repeat('-', 50) . "\n";
-        $result = runSingleMigration('migration/scripts/' . $file);
+        $result = runSingleMigration('setup/migration/scripts/' . $file);
         if ($result === true) {
             $successCount++;
         } elseif ($result === false) {
@@ -125,8 +125,8 @@ function extractClassNameFromFile($filePath) {
 // メイン実行部分
 if ($argc < 2) {
     echo "使用方法:\n";
-    echo "  php setup/migration/run_migration.php migration/scripts/マイグレーションファイル.php    - 特定のマイグレーションを実行\n";
-    echo "  php setup/migration/run_migration.php --all                                           - すべての未実行マイグレーションを実行\n";
+    echo "  php setup/migration/run_migration.php setup/migration/scripts/マイグレーションファイル.php    - 特定のマイグレーションを実行\n";
+    echo "  php setup/migration/run_migration.php --all                                                   - すべての未実行マイグレーションを実行\n";
     exit(1);
 }
 
