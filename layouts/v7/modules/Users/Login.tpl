@@ -89,18 +89,18 @@
 				<div id="forgotPasswordDiv" class="hide">
 					<form class="form-horizontal" action="forgotPassword.php" method="POST">
 						<div class="group">
-							<input class="login-input" id="fusername" type="text" name="username" placeholder="{vtranslate('User Name','Users')}<" >
+							<input class="login-input" id="fusername" type="text" name="username" placeholder="{vtranslate('User Name','Users')}" >
 							<span class="bar"></span>
 							<label class="login-label">{vtranslate('User Name','Users')}</label>
 						</div>
 						<div class="group">
-							<input class="login-input" id="email" type="email" name="emailId" placeholder="{vtranslate('LBL_MAILADDRESS','Users')}<" >
+							<input class="login-input" id="email" type="email" name="emailId" placeholder="{vtranslate('LBL_MAILADDRESS','Users')}" >
 							<span class="bar"></span>
 							<label class="login-label">{vtranslate('LBL_MAILADDRESS','Users')}</label>
 						</div>
 						<div class="group">
-							<button type="submit" class="login-button login-buttonBlue forgot-submit-btn">{vtranslate('LBL_MAILADDRESS','Users')}</button><br>
-							<span>パスワードをメールで送信します<a class="forgotPasswordLink pull-right" style="color: #15c;">戻る</a></span>
+							<button type="submit" class="login-button login-buttonBlue forgot-submit-btn">{vtranslate('LBL_SUBMIT','Users')}</button><br>
+							<span>{vtranslate('LBL_SEND_PASSWORD','Users')}<a class="forgotPasswordLink pull-right" style="color: #15c;">{vtranslate('LBL_BACK_TO_LOGIN','Users')}</a></span>
 						</div>
 					</form>
 				</div>
