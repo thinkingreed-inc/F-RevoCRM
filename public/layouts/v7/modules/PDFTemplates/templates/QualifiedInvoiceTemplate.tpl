@@ -42,7 +42,7 @@
 				</tbody>
 			</table>
 			</td>
-			<td style="width: 150px;"><img alt="" src="test/logo/frevocrm-logo.png" style="text-align: right; width: 200px; height: 40px; float: right;" />$companydetails-organizationname$<br />
+			<td style="width: 150px;"><img alt="" src="logo/frevocrm-logo.png" style="text-align: right; width: 200px; height: 40px; float: right;" />$companydetails-organizationname$<br />
 			<span style="font-size:10px;">$companydetails-code$<br />
 			$companydetails-state$ $companydetails-city$<br />
 			$companydetails-address$<br />

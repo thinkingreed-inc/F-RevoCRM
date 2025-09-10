@@ -31,7 +31,7 @@ class Install_Utils_Model {
 		'Product Image Directory' => './test/product/',
 		'User Image Directory' => './test/user/',
 		'Contact Image Directory' => './test/contact/',
-		'Logo Directory' => './test/logo/',
+		'Logo Directory' => './public/logo/',
 		'Logs Directory' => './logs/',
 	);
 
