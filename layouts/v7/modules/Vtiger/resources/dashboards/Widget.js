@@ -900,3 +900,71 @@ Vtiger_History_Widget_Js('Vtiger_OverdueActivities_Widget_Js', {}, {
 });
 
 Vtiger_OverdueActivities_Widget_Js('Vtiger_CalendarActivities_Widget_Js', {}, {});
+
+Vtiger_Widget_Js('Vtiger_IFrameWidget_Widget_Js', {
+	
+}, {
+
+	postLoadWidget: function() {
+		this.registerEvents();
+		var widgetContent = jQuery('.dashboardWidgetContent', this.getContainer());
+		var adjustedHeight = this.getContainer().height()-50;
+		widgetContent.css({height: adjustedHeight});
+	},
+	
+	postResizeWidget: function() {
+		var widgetContent = jQuery('.dashboardWidgetContent', this.getContainer());
+		var adjustedHeight = this.getContainer().height()-50;
+		widgetContent.css({height: adjustedHeight});
+	},
+	
+	registerEvents: function() {
+		var container = this.getContainer();
+		var widgetHeaderContainer = jQuery('.dashboardWidgetHeader', container);
+		var widgetContent = jQuery('.dashboardWidgetContent', container);
+		
+		// Add settings icon to header
+		if (widgetHeaderContainer.find('.fa-cog').length === 0) {
+			var settingsIcon = jQuery('<i class="fa fa-cog pull-right cursorPointer" title="Settings" style="margin-left:5px;"></i>');
+			widgetHeaderContainer.find('.dashboardWidgetTitle').after(settingsIcon);
+			
+			settingsIcon.on('click', function() {
+				jQuery('.iframeConfigForm', container).toggle();
+			});
+		}
+	},
+	
+	saveIFrameWidget: function(widgetId) {
+		var title = jQuery('#iframeTitle_' + widgetId).val();
+		var url = jQuery('#iframeUrl_' + widgetId).val();
+		var height = jQuery('#iframeHeight_' + widgetId).val();
+		
+		if (!url || url.trim() === '') {
+			alert('Please enter a valid URL');
+			return;
+		}
+		
+		var params = {
+			module: 'Vtiger',
+			parent: 'Settings',
+			action: 'IFrameWidgetAjax',
+			mode: 'save',
+			widgetid: widgetId,
+			title: title,
+			url: url,
+			height: height
+		};
+		
+		AppConnector.request(params).then(function(data) {
+			if (data.success) {
+				location.reload();
+			}
+		});
+	},
+	
+	cancelEdit: function(widgetId) {
+		var container = this.getContainer();
+		jQuery('.iframeConfigForm', container).hide();
+	}
+	
+});

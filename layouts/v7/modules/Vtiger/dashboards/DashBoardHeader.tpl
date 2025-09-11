@@ -25,6 +25,8 @@
 							{assign var="MINILISTWIDGET" value=$WIDGET} {* Defer to display as a separate group *}
 						{elseif $WIDGET->getName() eq 'Notebook'}
 							{assign var="NOTEBOOKWIDGET" value=$WIDGET} {* Defer to display as a separate group *}
+						{elseif $WIDGET->getName() eq 'IFrameWidget'}
+							{assign var="IFRAMEWIDGET" value=$WIDGET} {* Defer to display as a separate group *}
 						{else}
 							<li>
 								<a onclick="Vtiger_DashBoard_Js.addWidget(this, '{$WIDGET->getUrl()}')" href="javascript:void(0);"
@@ -45,6 +47,11 @@
 							<a onclick="Vtiger_DashBoard_Js.addNoteBookWidget(this, '{$NOTEBOOKWIDGET->getUrl()}')" href="javascript:void(0);"
 								data-linkid="{$NOTEBOOKWIDGET->get('linkid')}" data-name="{$NOTEBOOKWIDGET->getName()}" data-width="{$NOTEBOOKWIDGET->getWidth()}" data-height="{$NOTEBOOKWIDGET->getHeight()}">
 								{vtranslate($NOTEBOOKWIDGET->getTitle(), $MODULE_NAME)}</a>
+						</li>
+						<li>
+							<a onclick="Vtiger_DashBoard_Js.addIFrameWidget(this, '{$IFRAMEWIDGET->getUrl()}')" href="javascript:void(0);"
+								data-linkid="{$IFRAMEWIDGET->get('linkid')}" data-name="{$IFRAMEWIDGET->getName()}" data-width="{$IFRAMEWIDGET->getWidth()}" data-height="{$IFRAMEWIDGET->getHeight()}">
+								IFrame Widget</a>
 						</li>
 					{/if}
 
