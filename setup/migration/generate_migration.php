@@ -88,7 +88,7 @@ if (file_put_contents($filePath, $template) !== false) {
     echo "パス: {$filePath}\n";
     echo "\n";
     echo "このマイグレーションを実行するには:\n";
-    echo "php setup/migration/run_migration.php migration/scripts/{$filename}\n";
+    echo "php setup/migration/run_migration.php setup/migration/scripts/{$filename}\n";
 } else {
     echo "エラー: マイグレーションファイルを作成できませんでした。\n";
     exit(1);

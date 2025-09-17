@@ -16,5 +16,24 @@ Settings_Users_PreferenceDetail_Js("Settings_Users_Calendar_Js",{},{
 		this._super();
 		Settings_Users_PreferenceEdit_Js.registerChangeEventForCurrencySeparator();
 		Settings_Users_PreferenceEdit_Js.registerNameFieldChangeEvent();
-	}
+		this.registerCalendarSharingTypeChangeEvent(this.getForm());
+	},
+
+	registerCalendarSharingTypeChangeEvent: function (url) {
+		jQuery('#sharedType').on('change', function () {
+			var sharingType = jQuery(this).val();
+
+			var selectedUsersValue = jQuery('#selectedUsersValue');
+			var selectedUsersLabel = jQuery('#selectedUsersLabel');
+
+			if (sharingType === 'selectedusers') {
+				selectedUsersValue.removeClass('hide');
+				selectedUsersLabel.removeClass('hide');
+			} else {
+				selectedUsersValue.addClass('hide');
+				selectedUsersLabel.addClass('hide');
+			}
+		});
+		jQuery('#sharedType').trigger('change');
+	},
 });

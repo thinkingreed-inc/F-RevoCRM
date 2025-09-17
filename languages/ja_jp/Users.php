@@ -208,6 +208,7 @@ $languageStrings = array(
 	'ForgotPassword' => 'パスワードをお忘れですか？',
 	'LBL_CONNECT_WITH_US' => 'F-RevoCRM Facebook',
 	'LBL_GET_MORE' => 'F-RevoCRMをもっと使い込む',
+	'LBL_SEND_PASSWORD' => 'パスワードをメールで送信します',
 
 	'LBL_TRANSFER_RECORDS_TO_USER' => 'レコードの担当を変更',
 	'LBL_USER_TO_BE_DELETED' => '削除されるユーザー',

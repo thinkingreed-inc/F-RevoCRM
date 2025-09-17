@@ -59,7 +59,7 @@ public function process() {
 
 #### 特定のマイグレーションを実行
 ```bash
-php setup/migration/run_migration.php migration/scripts/20250825123456_add_custom_field_to_accounts.php
+php setup/migration/run_migration.php setup/migration/scripts/20250825123456_add_custom_field_to_accounts.php
 ```
 
 #### すべての未実行マイグレーションを実行

@@ -9,8 +9,8 @@
  * ********************************************************************************** */
 // Switch the working directory to base
 chdir(dirname(__FILE__) . '/../..');
+ini_set('display_errors','on'); error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT & ~E_USER_NOTICE & ~E_USER_DEPRECATED);
 
-include_once 'includes/Loader.php';
 include_once 'include/Zend/Json.php';
 include_once 'vtlib/Vtiger/Module.php';
 include_once 'include/utils/VtlibUtils.php';

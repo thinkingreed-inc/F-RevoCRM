@@ -3,8 +3,9 @@
  * F-RevoCRM マイグレーション実行ツール
  * 
  * 使用方法: 
- *   php setup/migration/run_migration.php migration/scripts/マイグレーションファイル.php    - 特定のマイグレーションを実行
- *   php setup/migration/run_migration.php --all                                           - すべての未実行マイグレーションを実行
+ *   php setup/migration/run_migration.php setup/migration/scripts/マイグレーションファイル.php    - 特定のマイグレーションを実行
+ *   php setup/migration/run_migration.php setup/migration/scripts/マイグレーションファイル.php -d - 特定のマイグレーションの実行記録を削除
+ *   php setup/migration/run_migration.php --all                                                   - すべての未実行マイグレーションを実行
  */
 
 // このスクリプトファイルのパスを基準にして適切なパスを取得
@@ -21,15 +22,15 @@ require_once 'include/database/PearDatabase.php';
 function runSingleMigration($migrationFile) {
     global $scriptDir;
     
-    // migration/scripts/ で始まるパスのみ許容
-    if (strpos($migrationFile, 'migration/scripts/') !== 0) {
-        echo "エラー: マイグレーションファイルは 'migration/scripts/' で始まる必要があります: {$migrationFile}\n";
-        echo "正しい形式: migration/scripts/YYYYMMDDHHmmss_migration_name.php\n";
+    // setup/migration/scripts/ で始まるパスのみ許容
+    if (strpos($migrationFile, 'setup/migration/scripts/') !== 0) {
+        echo "エラー: マイグレーションファイルは 'setup/migration/scripts/' で始まる必要があります: {$migrationFile}\n";
+        echo "正しい形式: setup/migration/scripts/YYYYMMDDHHmmss_migration_name.php\n";
         return false;
     }
     
-    // migration/scripts/ を scripts/ に変換してパスを構築
-    $scriptsRelativePath = substr($migrationFile, strlen('migration/'));
+    // setup/migration/scripts/ を scripts/ に変換してパスを構築
+    $scriptsRelativePath = substr($migrationFile, strlen('setup/migration/'));
     $migrationPath = $scriptDir . '/' . $scriptsRelativePath;
     
     if (!file_exists($migrationPath)) {
@@ -92,7 +93,7 @@ function runAllMigrations() {
     
     foreach ($migrationFiles as $file) {
         echo "\n" . str_repeat('-', 50) . "\n";
-        $result = runSingleMigration('migration/scripts/' . $file);
+        $result = runSingleMigration('setup/migration/scripts/' . $file);
         if ($result === true) {
             $successCount++;
         } elseif ($result === false) {
@@ -122,15 +123,96 @@ function extractClassNameFromFile($filePath) {
     return null;
 }
 
+function deleteMigrationRecord($migrationFile) {
+    global $scriptDir;
+    
+    // setup/migration/scripts/ で始まるパスのみ許容
+    if (strpos($migrationFile, 'setup/migration/scripts/') !== 0) {
+        echo "エラー: マイグレーションファイルは 'setup/migration/scripts/' で始まる必要があります: {$migrationFile}\n";
+        echo "正しい形式: setup/migration/scripts/YYYYMMDDHHmmss_migration_name.php\n";
+        return false;
+    }
+    
+    // setup/migration/scripts/ を scripts/ に変換してパスを構築
+    $scriptsRelativePath = substr($migrationFile, strlen('setup/migration/'));
+    $migrationPath = $scriptDir . '/' . $scriptsRelativePath;
+    
+    if (!file_exists($migrationPath)) {
+        echo "エラー: マイグレーションファイルが見つかりません: {$migrationFile}\n";
+        return false;
+    }
+    
+    // ファイル名からクラス名を抽出
+    $className = extractClassNameFromFile($migrationPath);
+    
+    if (!$className) {
+        echo "エラー: ファイルからマイグレーションクラスが見つかりません: {$migrationFile}\n";
+        return false;
+    }
+    
+    try {
+        // データベース接続を取得
+        global $adb;
+        if (!$adb) {
+            $adb = PearDatabase::getInstance();
+        }
+        
+        // マイグレーション履歴テーブルの存在確認
+        $checkTableSql = "SHOW TABLES LIKE 'com_vtiger_migrations'";
+        $checkResult = $adb->query($checkTableSql);
+        
+        if ($adb->num_rows($checkResult) === 0) {
+            echo "マイグレーション履歴テーブルが存在しません。削除する記録がありません。\n";
+            return false;
+        }
+        
+        // 実行済み記録の確認
+        $checkSql = "SELECT migration_name FROM com_vtiger_migrations WHERE migration_name = ?";
+        $checkResult = $adb->pquery($checkSql, array($className));
+        
+        if ($adb->num_rows($checkResult) === 0) {
+            echo "マイグレーション '{$className}' の実行記録が見つかりません。\n";
+            return false;
+        }
+        
+        // 実行済み記録を削除
+        $deleteSql = "DELETE FROM com_vtiger_migrations WHERE migration_name = ?";
+        $adb->pquery($deleteSql, array($className));
+        
+        echo "マイグレーション '{$className}' の実行記録を削除しました。\n";
+        return true;
+        
+    } catch (Exception $e) {
+        echo "マイグレーション記録削除エラー {$migrationFile}: " . $e->getMessage() . "\n";
+        return false;
+    }
+}
+
 // メイン実行部分
 if ($argc < 2) {
     echo "使用方法:\n";
-    echo "  php setup/migration/run_migration.php migration/scripts/マイグレーションファイル.php    - 特定のマイグレーションを実行\n";
-    echo "  php setup/migration/run_migration.php --all                                           - すべての未実行マイグレーションを実行\n";
+    echo "  php setup/migration/run_migration.php setup/migration/scripts/マイグレーションファイル.php    - 特定のマイグレーションを実行\n";
+    echo "  php setup/migration/run_migration.php setup/migration/scripts/マイグレーションファイル.php -d - 特定のマイグレーションの実行記録を削除\n";
+    echo "  php setup/migration/run_migration.php --all                                                   - すべての未実行マイグレーションを実行\n";
     exit(1);
 }
 
 $argument = $argv[1];
+$deleteMode = false;
+
+// -dオプションの確認
+if ($argc >= 3 && $argv[2] === '-d') {
+    $deleteMode = true;
+} elseif ($argc >= 3 && $argv[1] === '-d') {
+    $deleteMode = true;
+    $argument = $argv[2];
+}
+
+// --allオプションと-dオプションの併用チェック
+if ($argument === '--all' && $deleteMode) {
+    echo "エラー: --allオプションと-dオプションは併用できません。\n";
+    exit(1);
+}
 
 echo "F-RevoCRM マイグレーション実行ツール\n";
 echo "==================================\n\n";
@@ -138,6 +220,11 @@ echo "==================================\n\n";
 if ($argument === '--all') {
     runAllMigrations();
 } else {
-    echo "マイグレーションを実行中: {$argument}\n";
-    runSingleMigration($argument);
+    if ($deleteMode) {
+        echo "マイグレーション記録を削除中: {$argument}\n";
+        deleteMigrationRecord($argument);
+    } else {
+        echo "マイグレーションを実行中: {$argument}\n";
+        runSingleMigration($argument);
+    }
 }
