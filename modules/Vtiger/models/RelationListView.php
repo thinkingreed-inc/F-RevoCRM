@@ -313,7 +313,7 @@ class Vtiger_RelationListView_Model extends Vtiger_Base_Model {
 		if($orderBy) {
 
 			$orderByFieldModuleModel = $relationModule->getFieldByColumn($orderBy);
-			if($orderByFieldModuleModel && $orderByFieldModuleModel->isReferenceField()) {
+			if($orderByFieldModuleModel) {
 				//If reference field then we need to perform a join with crmentity with the related to field
 				$queryComponents = $split = preg_split('/ where /i', $query);
 				$selectAndFromClause = $queryComponents[0];
