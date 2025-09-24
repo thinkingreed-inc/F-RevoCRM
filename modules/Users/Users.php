@@ -1536,13 +1536,13 @@ class Users extends CRMEntity {
 
 		if ($file_size != 0 && in_array($file_type_val, $validFileFormats)) {
 			//Uploading the selected Image
-			move_uploaded_file($file['tmp_name'], 'test/logo/'.$logo_name);
+			move_uploaded_file($file['tmp_name'], 'public/logo/'.$logo_name);
 
 			//Updating Database
 			$sql = 'UPDATE vtiger_organizationdetails SET logoname = ? WHERE organization_id = ?';
 			$params = array(decode_html($logo_name), '1');
 			$adb->pquery($sql, $params);
-			copy('test/logo/'.$logo_name, 'test/logo/application.ico');
+			copy('public/logo/'.$logo_name, 'public/logo/application.ico');
 		}
 	}
 
