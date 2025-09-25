@@ -150,7 +150,7 @@ class Import_FileReader_Reader {
 		$columnsListQuery = '';
 		$fieldName = $fieldObject->getName();
 		$dataType = $fieldObject->getFieldDataType();
-		$skipDataType = array('reference','owner', 'currencyList', 'date', 'datetime', 'productTax', 'ownergroup');
+		$skipDataType = array('reference','owner', 'currencyList', 'date', 'datetime', 'productTax', 'ownergroup','multireference');
 		if($fieldObject->get('name') == 'tags' && $fieldObject->get('displaytype') == 6){
 			$columnsListQuery .= ','.$fieldName.' varchar(500)';
 		} elseif(in_array($dataType, $skipDataType)){
