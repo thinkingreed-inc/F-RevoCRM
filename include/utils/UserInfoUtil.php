@@ -424,7 +424,7 @@ function isPermitted($module,$actionname,$record_id='')
 				return $permission;
 			}
 			//共有されたカレンダーは編集可能にする。
-			if(isCalendarParticipantPermittedBySharing($module, $record_id)){
+			if(isCalendarPermittedForInvitee($module, $record_id)){
 				$permission = "yes";
 				$log->debug("Exiting isPermitted method ...");
 				return $permission;
@@ -461,7 +461,7 @@ function isPermitted($module,$actionname,$record_id='')
 				return $permission;
 			}
 			//共有されたカレンダーは編集可能にする。
-			if(isCalendarParticipantPermittedBySharing($module, $record_id)){
+			if(isCalendarPermittedForInvitee($module, $record_id)){
 				$permission = "yes";
 				$log->debug("Exiting isPermitted method ...");
 				return $permission;
@@ -2295,7 +2295,7 @@ function isCalendarPermittedBySharing($recordId)
 	return $permission;
 }
 
-function isCalendarParticipantPermittedBySharing($module, $recordId)
+function isCalendarPermittedForInvitee($module, $recordId)
 {
 
 	$activityType = vtws_getCalendarEntityType($recordId);
