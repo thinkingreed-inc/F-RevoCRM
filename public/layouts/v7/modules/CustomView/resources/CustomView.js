@@ -151,8 +151,28 @@ jQuery.Class("Vtiger_CustomView_Js",{
 	saveFilter : function() {
 		var aDeferred = jQuery.Deferred();
 		var formElement = jQuery("#CustomView");
+
+		// Temporarily disable filter value inputs to prevent them from being serialized
+		var filterValueInputs = formElement.find('.filterConditionsDiv [data-value="value"]');
+		filterValueInputs.each(function() {
+			var input = jQuery(this);
+			if (input.attr('name')) {
+				input.data('temp-name', input.attr('name'));
+				input.removeAttr('name');
+			}
+		});
+
 		var formData = formElement.serializeFormData();
-        
+
+		// Restore name attributes
+		filterValueInputs.each(function() {
+			var input = jQuery(this);
+			if (input.data('temp-name')) {
+				input.attr('name', input.data('temp-name'));
+				input.removeData('temp-name');
+			}
+		});
+
 		app.helper.showProgress();
 
 		app.request.post({'data':formData}).then(
