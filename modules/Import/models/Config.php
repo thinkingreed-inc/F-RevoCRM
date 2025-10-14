@@ -25,6 +25,7 @@ class Import_Config_Model extends Vtiger_Base_Model {
 			// Threshold record limit for immediate import. If record count is more than this, then the import is scheduled through cron job
 			'immediateImportLimit' => '1000',
 			'importPagingLimit' => '10000',
+			'importLogLimit' => '5',
 		);
 
 		$this->setData($ImportConfig);

@@ -66,18 +66,61 @@ class Import_Queue_Action extends Vtiger_Action_Controller {
 						$request->get('lineitem_currency'),
 						$paging));
 	}
+	
+	public static function finish($user, $importId) {
+		// キューをcomplete
+		$db = PearDatabase::getInstance();
+		$configReader = new Import_Config_Model();
 
-	public static function remove($importId) {
+		if(Vtiger_Utils::CheckTable('vtiger_import_queue')) {
+			$db->pquery('UPDATE vtiger_import_queue SET status = ? WHERE importid=?', array(self::$IMPORT_STATUS_COMPLETED, $importId));
+		}
+
+		// ログを削除
+		$importLogLimit = $configReader->get('importLogLimit');
+		if(method_exists($user, 'getId')){
+			$userId = $user->getId();
+		} else {
+			$userId = $user->id;
+		}		
+		$queueList = $db->pquery("SELECT COUNT(*) AS count FROM vtiger_import_queue WHERE userid = ? AND status = ?", array($userId, self::$IMPORT_STATUS_COMPLETED));
+		$queueCount = $db->query_result($queueList, 0, 'count');
+
+		if ($queueCount > $importLogLimit){
+			$deleteCount = max($queueCount - $importLogLimit, 0);
+			$result = $db->pquery("SELECT importid, userid FROM vtiger_import_queue WHERE userid = ? AND status = ? ORDER BY importid ASC LIMIT ?", array($userId, self::$IMPORT_STATUS_COMPLETED, $deleteCount));
+			$noofrows = $db->num_rows($result);
+			for ($i = 0; $i < $noofrows; $i++) {
+				$importid = $db->query_result($result, $i, 'importid');
+				$userid = $db->query_result($result, $i, 'userid');
+				self::remove($importid, $userid);
+			}
+		}
+	}
+
+	public static function remove($importId, $userid = null) {
 		$db = PearDatabase::getInstance();
 		if(Vtiger_Utils::CheckTable('vtiger_import_queue')) {
 			$db->pquery('DELETE FROM vtiger_import_queue WHERE importid=?', array($importId));
 		}
+		
+		$user = new Users();
+		if(method_exists($userid, 'getId')){
+			$user->id = $userid->getId();
+		} else if (!empty($userid->id)) {
+			$user->id = $userid->id;
+		} else {
+			$user->id = $userid;
+		}
+
+		$db->pquery('DROP TABLE IF EXISTS '.Import_Utils_Helper::getDbTableName($user, $importId), array());
+
 	}
 
 	public static function removeForUser($user) {
 		$db = PearDatabase::getInstance();
 		if(Vtiger_Utils::CheckTable('vtiger_import_queue')) {
-			$db->pquery('DELETE FROM vtiger_import_queue WHERE userid=?', array($user->id));
+			$db->pquery('UPDATE vtiger_import_queue SET status = ? WHERE userid=?', array(self::$IMPORT_STATUS_COMPLETED, $user->id));
 		}
 	}
 
@@ -85,7 +128,7 @@ class Import_Queue_Action extends Vtiger_Action_Controller {
 		$db = PearDatabase::getInstance();
 
 		if(Vtiger_Utils::CheckTable('vtiger_import_queue')) {
-			$queueResult = $db->pquery('SELECT * FROM vtiger_import_queue WHERE userid=? LIMIT 1', array($user->id));
+			$queueResult = $db->pquery('SELECT * FROM vtiger_import_queue WHERE status!=? AND userid=? ORDER BY importid DESC LIMIT 1', array(self::$IMPORT_STATUS_COMPLETED, $user->id));
 
 			if($queueResult && $db->num_rows($queueResult) > 0) {
 				$rowData = $db->raw_query_result_rowdata($queueResult, 0);
@@ -99,8 +142,8 @@ class Import_Queue_Action extends Vtiger_Action_Controller {
 		$db = PearDatabase::getInstance();
 
 		if(Vtiger_Utils::CheckTable('vtiger_import_queue')) {
-			$queueResult = $db->pquery('SELECT * FROM vtiger_import_queue WHERE tabid=? AND userid=?',
-											array(getTabid($module), $user->id));
+			$queueResult = $db->pquery('SELECT * FROM vtiger_import_queue WHERE status != ? AND tabid=? AND userid=?',
+											array(self::$IMPORT_STATUS_COMPLETED, getTabid($module), $user->id));
 
 			if($queueResult && $db->num_rows($queueResult) > 0) {
 				$rowData = $db->raw_query_result_rowdata($queueResult, 0);
@@ -162,6 +205,23 @@ class Import_Queue_Action extends Vtiger_Action_Controller {
 	static function updateStatus($importId, $status) {
 		$db = PearDatabase::getInstance();
 		$db->pquery('UPDATE vtiger_import_queue SET status=? WHERE importid=?', array($status, $importId));
+	}
+
+	static function updateQueueInfo($importId, $request) {
+		$db = PearDatabase::getInstance();
+
+		if($request->get('is_scheduled')) {
+			$status = self::$IMPORT_STATUS_SCHEDULED;
+		} else {
+			$status = self::$IMPORT_STATUS_NONE;
+		}
+		if($request->get('paging_enabled')){
+			$paging = 1;
+		}else{
+			$paging = 0;
+		}
+
+		$db->pquery('UPDATE vtiger_import_queue SET status=?, paging=? WHERE importid=?', array($status, $paging, $importId));
 	}
 
 }

@@ -163,7 +163,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 
 	public function finishImport() {
 		Import_Lock_Action::unLock($this->user, $this->module);
-		Import_Queue_Action::remove($this->id);
+		Import_Queue_Action::finish($this->user, $this->id);
 	}
 
 	public function updateModuleSequenceNumber() {
@@ -965,7 +965,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			$vtigerMailer->Send(true);
 
 			//未完了のインポートがない場合のみ終了する
-			$importTable = 'vtiger_import_' . $current_user->id;
+			$importTable = Import_Utils_Helper::getDbTableName($user);
 			$unfinishedImportQuery = 'SELECT count(status) FROM ' . $importTable . ' WHERE status = 0 GROUP BY status';
 			$unfinishedImportResult = $adb->pquery($unfinishedImportQuery, array());
 			$unfinishedImportCount = $adb->query_result($unfinishedImportResult, 0, 'count(status)');
@@ -1014,9 +1014,9 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 	 * @parms $user <User Record Model> Current Users
 	 * @returns <Array> Import Records with the list of skipped records and failed records
 	 */
-	public static function getImportDetails($user, $moduleName) {
+	public static function getImportDetails($user, $moduleName, $importid) {
 		$adb = PearDatabase::getInstance();
-		$tableName = Import_Utils_Helper::getDbTableName($user);
+		$tableName = Import_Utils_Helper::getDbTableName($user, $importid);
 		$result = $adb->pquery("SELECT * FROM $tableName where status IN (?,?)", array(self::$IMPORT_RECORD_SKIPPED, self::$IMPORT_RECORD_FAILED));
 		$importRecords = array();
 		if ($result) {
