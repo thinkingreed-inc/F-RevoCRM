@@ -1646,7 +1646,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		}
 		var params = {
 			"module": "Calendar",
-			"view": app.view(),
+			"calendarType": app.view(),
 			"action": "DeleteAjax",
 			"record": eventId,
 			"sourceModule": sourceModule
