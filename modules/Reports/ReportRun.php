@@ -4493,7 +4493,7 @@ class ReportRun extends CRMEntity {
 		}
 		//Reference Article:  http://phpexcel.codeplex.com/discussions/389578
 		ob_clean();
-		$workbookWriter = PHPExcel_IOFactory::createWriter($workbook, 'Excel5');
+		$workbookWriter = PHPExcel_IOFactory::createWriter($workbook, 'Excel2007');
 		$workbookWriter->save($fileName);
 	}
 
