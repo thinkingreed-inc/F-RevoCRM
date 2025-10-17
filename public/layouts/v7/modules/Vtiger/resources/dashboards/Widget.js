@@ -900,3 +900,31 @@ Vtiger_History_Widget_Js('Vtiger_OverdueActivities_Widget_Js', {}, {
 });
 
 Vtiger_OverdueActivities_Widget_Js('Vtiger_CalendarActivities_Widget_Js', {}, {});
+
+Vtiger_Widget_Js('Vtiger_IFrameWidget_Widget_Js', {
+
+}, {
+
+	postLoadWidget: function() {
+		var widgetContent = jQuery('.dashboardWidgetContent', this.getContainer());
+		var adjustedHeight = this.getContainer().height()-50;
+		widgetContent.css({height: adjustedHeight});
+	},
+
+	postResizeWidget: function() {
+		var widgetContent = jQuery('.dashboardWidgetContent', this.getContainer());
+		var adjustedHeight = this.getContainer().height()-50;
+		widgetContent.css({height: adjustedHeight});
+	},
+
+	refreshWidget: function() {
+		var container = this.getContainer();
+		var iframe = container.find('iframe');
+		if (iframe.length > 0) {
+			// Reload iframe by resetting src
+			var currentSrc = iframe.attr('src');
+			iframe.attr('src', currentSrc);
+		}
+	}
+
+});

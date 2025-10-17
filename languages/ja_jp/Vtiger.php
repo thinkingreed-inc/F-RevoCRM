@@ -435,6 +435,9 @@ $languageStrings = array(
 	'LBL_SHOW' => '表示',
 	'LBL_MY' => '自分の',
 	'LBL_SELECT_DATE_RANGE' => '日付の範囲',
+	'LBL_IFRAME_WIDGET' => 'IFrameウィジェット',
+	'LBL_ADD_IFRAME_WIDGET' => 'IFrameウィジェットの登録',
+	'LBL_IFRAME_NAME' => 'サイト名',
 
 	// Basic Strings- custom view
 	'LBL_VIEW_NAME' => 'リスト名',
