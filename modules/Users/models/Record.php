@@ -1039,13 +1039,12 @@ class Users_Record_Model extends Vtiger_Record_Model {
 	}
 
 	// 試行回数のカウントアップ
+	/**
+	 * @deprecated Use countUpLoginAttempt() instead
+	 */
 	public function countUpSignatureCount()
 	{
-		global $adb;
-		$query = "INSERT INTO `vtiger_user_lock` (`userid`, `signature_count`, `lock_time`) VALUES (?, 1, NULL)
-			ON DUPLICATE KEY UPDATE `signature_count` = `signature_count` + 1, `lock_time` = NULL";
-		$params = array($this->getId());
-		$adb->pquery($query, $params);
+		return $this->countUpLoginAttempt();
 	}
 
 	public function setLockTime()
@@ -1058,12 +1057,12 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$adb->pquery($query, $params);
 	}
 
+	/**
+	 * @deprecated Use resetLoginAttempt() instead
+	 */
 	public function resetSignatureCount()
 	{
-		global $adb;
-		$query = "UPDATE `vtiger_user_lock` SET `signature_count` = 0 WHERE `userid` = ?";
-		$params = array($this->getId());
-		$adb->pquery($query, $params);
+		return $this->resetLoginAttempt();
 	}
 
 	public function resetLockTime()
@@ -1077,10 +1076,22 @@ class Users_Record_Model extends Vtiger_Record_Model {
 	/**
 	 * 多要素認証の試行回数が制限を超えたかどうかを確認するメソッド
 	 *
+	 * @deprecated Use isLoginAttemptLocked() instead
 	 * @param string $type 認証タイプ（例: 'totp', 'passkey'）
 	 * @return boolean true: 制限を超えた、false: 制限内/ロックしない
 	 */
 	public function isLoginLockedByMFA()
+	{
+		return $this->isLoginAttemptLocked();
+	}
+
+	/**
+	 * ログイン試行回数が制限を超えたかどうかを確認
+	 * MFA・通常ログイン両方に対応
+	 *
+	 * @return boolean true: 制限超過、false: 制限内
+	 */
+	public function isLoginAttemptLocked()
 	{
 		global $adb;
 		$userid = $this->getId();
@@ -1090,19 +1101,42 @@ class Users_Record_Model extends Vtiger_Record_Model {
 
 		$failureCount = Settings_Parameters_Record_Model::getParameterValue("USER_LOCK_COUNT");
 		if (!is_numeric($failureCount) || $failureCount <= 0) {
-			// 数値に変換できない文字だった場合はロックしない
-			return false;
+			return false; // 設定なしの場合はロックしない
 		}
-		// 数値に変換
+
 		$failureCount = (int)$failureCount;
 		$totalCount = 0;
 		while ($row = $adb->fetch_array($result)) {
 			$totalCount += $row['signature_count'];
 		}
-		if ($totalCount >= $failureCount) {
-			return true;
-		}
-		return false;
+
+		return ($totalCount >= $failureCount);
+	}
+
+	/**
+	 * ログイン試行回数をカウントアップ
+	 * パスワード認証・MFA両方で使用
+	 */
+	public function countUpLoginAttempt()
+	{
+		global $adb;
+		$query = "INSERT INTO `vtiger_user_lock` (`userid`, `signature_count`, `lock_time`)
+		          VALUES (?, 1, NULL)
+		          ON DUPLICATE KEY UPDATE `signature_count` = `signature_count` + 1";
+		$params = array($this->getId());
+		$adb->pquery($query, $params);
+	}
+
+	/**
+	 * ログイン試行回数をリセット
+	 * ログイン成功時に呼び出し
+	 */
+	public function resetLoginAttempt()
+	{
+		global $adb;
+		$query = "UPDATE `vtiger_user_lock` SET `signature_count` = 0 WHERE `userid` = ?";
+		$params = array($this->getId());
+		$adb->pquery($query, $params);
 	}
 
 	/**
