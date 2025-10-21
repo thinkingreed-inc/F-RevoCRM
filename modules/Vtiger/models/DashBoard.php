@@ -70,7 +70,7 @@ class Vtiger_DashBoard_Model extends Vtiger_Base_Model {
 		$sql .= ' UNION SELECT * FROM vtiger_links WHERE linklabel in (?,?,?)';
 		$params[] = 'Mini List';
 		$params[] = 'Notebook';
-		$params[] = 'IFrame Widget';
+		$params[] = 'iframe Widget';
 		$result = $db->pquery($sql, $params);
 
 		$widgets = array();

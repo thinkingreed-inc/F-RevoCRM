@@ -53,8 +53,8 @@ class Vtiger_IFrameWidget_Action extends Vtiger_Action_Controller {
 		}
 
 		$dataValue = array();
-		$dataValue['title'] = $iframeWidgetTitle ? $iframeWidgetTitle : 'IFrame Widget';
-		$dataValue['url'] = $iframeWidgetUrl ? $iframeWidgetUrl : 'https://www.example.com';
+		$dataValue['title'] = $iframeWidgetTitle ? $iframeWidgetTitle : 'iframe Widget';
+		$dataValue['url'] = $iframeWidgetUrl;
 
 		$data = Zend_Json::encode((object) $dataValue);
 
