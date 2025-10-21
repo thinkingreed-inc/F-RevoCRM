@@ -435,6 +435,9 @@ $languageStrings = array(
 	'LBL_SHOW' => 'Show',
 	'LBL_MY' => 'My',
 	'LBL_SELECT_DATE_RANGE' => 'Select Date Range',
+	'LBL_IFRAME_WIDGET' => 'IFrame Widget',
+	'LBL_ADD_IFRAME_WIDGET' => 'Add IFrame Widget',
+	'LBL_IFRAME_NAME' => 'IFrame Name',
 
 	// Basic Strings- custom view
 	'LBL_VIEW_NAME' => 'List Name',
