@@ -52,9 +52,44 @@ class Vtiger_IFrameWidget_Action extends Vtiger_Action_Controller {
 			$tabId = $defaultTab['id'];
 		}
 
+		if (empty($iframeWidgetUrl)) {
+			$result = array();
+			$result['success'] = false;
+			$result['message'] = vtranslate('LBL_INVALID_URL', $moduleName);
+			$response = new Vtiger_Response();
+			$response->setResult($result);
+			$response->emit();
+			return;
+		}
+
+		$parsedUrl = parse_url(trim($iframeWidgetUrl));
+		if ($parsedUrl === false || !isset($parsedUrl['scheme']) || !isset($parsedUrl['host'])) {
+			$result = array();
+			$result['success'] = false;
+			$result['message'] = vtranslate('LBL_INVALID_URL', $moduleName);
+			$response = new Vtiger_Response();
+			$response->setResult($result);
+			$response->emit();
+			return;
+		}
+
+		$scheme = strtolower($parsedUrl['scheme']);
+		if (!in_array($scheme, array('http', 'https'))) {
+			$result = array();
+			$result['success'] = false;
+			$result['message'] = vtranslate('LBL_INVALID_URL', $moduleName);
+			$response = new Vtiger_Response();
+			$response->setResult($result);
+			$response->emit();
+			return;
+		}
+
+		$sanitizedUrl = vtlib_purify($iframeWidgetUrl);
+		$sanitizedTitle = vtlib_purify($iframeWidgetTitle);
+
 		$dataValue = array();
-		$dataValue['title'] = $iframeWidgetTitle ? $iframeWidgetTitle : 'iframe Widget';
-		$dataValue['url'] = $iframeWidgetUrl;
+		$dataValue['title'] = $sanitizedTitle ? $sanitizedTitle : 'iframe Widget';
+		$dataValue['url'] = $sanitizedUrl;
 
 		$data = Zend_Json::encode((object) $dataValue);
 

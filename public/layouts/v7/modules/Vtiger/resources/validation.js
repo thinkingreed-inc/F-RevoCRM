@@ -287,6 +287,30 @@ jQuery.validator.addMethod("currencyList", function(value, element, params) {
 	}, jQuery.validator.format("Please enter the valid value")
 );
 
+jQuery.validator.addMethod("iframeUrlScheme", function(value, element, params) {
+	// Skip validation if empty (handled by required rule)
+	if (!value) {
+		return true;
+	}
+
+	// Parse URL using URL API
+	var parsedUrl;
+	try {
+		parsedUrl = new URL(value.trim());
+	} catch (e) {
+		return false;
+	}
+
+	// Only allow http and https schemes
+	var scheme = parsedUrl.protocol.toLowerCase();
+	if (scheme !== 'http:' && scheme !== 'https:') {
+		return false;
+	}
+
+	return true;
+	}, jQuery.validator.format(app.vtranslate('JS_INVALID_URL'))
+);
+
 jQuery.validator.addMethod("integer", function(value, element, params) {
 		var integerRegex= /(^[-+]?\d+)$/ ;
 		var decimalIntegerRegex = /(^[-+]?\d*).\d+$/ ;

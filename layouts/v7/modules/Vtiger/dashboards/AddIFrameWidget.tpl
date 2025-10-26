@@ -34,7 +34,7 @@
                         <label class="pull-right">URL<span class="redColor">*</span></label>
                     </label>
                     <div class="fieldValue col-lg-6">
-                        <input type="text" name="iframeWidgetUrl" class="inputElement" data-rule-required="true" />
+                        <input type="text" name="iframeWidgetUrl" class="inputElement" data-rule-required="true" data-rule-iframeUrlScheme="true" />
                     </div>
                 </div>
                 

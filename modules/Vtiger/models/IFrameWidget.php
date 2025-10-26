@@ -21,7 +21,7 @@ class Vtiger_IFrameWidget_Model extends Vtiger_Widget_Model {
 	public function getUrl() {
 		$data = $this->getData();
 		if (isset($data['url']) && !empty($data['url'])) {
-			return $data['url'];
+			return htmlspecialchars($data['url'], ENT_QUOTES);
 		}
 		return 'https://www.example.com';
 	}

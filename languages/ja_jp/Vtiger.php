@@ -438,6 +438,7 @@ $languageStrings = array(
 	'LBL_IFRAME_WIDGET' => 'iframeウィジェット',
 	'LBL_ADD_IFRAME_WIDGET' => 'iframeウィジェットの登録',
 	'LBL_IFRAME_NAME' => 'サイト名',
+	'LBL_INVALID_URL' => '無効なURL',
 
 	// Basic Strings- custom view
 	'LBL_VIEW_NAME' => 'リスト名',

@@ -438,6 +438,7 @@ $languageStrings = array(
 	'LBL_IFRAME_WIDGET' => 'IFrame Widget',
 	'LBL_ADD_IFRAME_WIDGET' => 'Add IFrame Widget',
 	'LBL_IFRAME_NAME' => 'IFrame Name',
+	'LBL_INVALID_URL' => 'Invalid URL',
 
 	// Basic Strings- custom view
 	'LBL_VIEW_NAME' => 'List Name',

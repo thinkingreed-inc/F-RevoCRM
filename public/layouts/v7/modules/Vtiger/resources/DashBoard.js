@@ -240,6 +240,13 @@ Vtiger.Class("Vtiger_DashBoard_Js",{
 								var height = element.data('height');
 								Vtiger_DashBoard_Js.gridster.add_widget(widgetContainer, width, height);
 								Vtiger_DashBoard_Js.currentInstance.loadWidget(widgetContainer);
+							} else if(data && !data.success && data.message) {
+								var params = {
+									text: data.message,
+									type: 'error'
+								};
+								Vtiger_Helper_Js.showPnotify(params);
+								jQuery("[name='saveButton']").removeAttr('disabled');
 							}
 						});
 						return false;
