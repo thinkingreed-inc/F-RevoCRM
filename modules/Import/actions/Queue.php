@@ -78,7 +78,8 @@ class Import_Queue_Action extends Vtiger_Action_Controller {
 		$configReader = new Import_Config_Model();
 
 		if(Vtiger_Utils::CheckTable('vtiger_import_queue')) {
-			$db->pquery('UPDATE vtiger_import_queue SET status = ? WHERE importid=?', array(self::$IMPORT_STATUS_COMPLETED, $importId));
+			$date_var = date("Y-m-d H:i:s");
+			$db->pquery('UPDATE vtiger_import_queue SET status = ?, time_end = ? WHERE importid=?', array(self::$IMPORT_STATUS_COMPLETED, $db->formatDate($date_var, true), $importId));
 		}
 
 		// ログを削除
@@ -104,11 +105,6 @@ class Import_Queue_Action extends Vtiger_Action_Controller {
 				$userid = $db->query_result($result, $i, 'userid');
 				self::remove($importid, $userid);
 			}
-		}
-
-		if(Vtiger_Utils::CheckTable('vtiger_import_queue')) {
-			$date_var = date("Y-m-d H:i:s");
-			$db->pquery('UPDATE vtiger_import_queue SET time_end = ? WHERE importid=?', array($db->formatDate($date_var, true), $importId));
 		}
 
 	}
@@ -244,14 +240,10 @@ class Import_Queue_Action extends Vtiger_Action_Controller {
 
 		if(Vtiger_Utils::CheckTable('vtiger_import_queue')) {
 			$queueResult = $db->pquery('SELECT tabid FROM vtiger_import_queue WHERE importid=?', array($importid));
-
 			if($queueResult && $db->num_rows($queueResult) > 0) {
-				$noofrows = $db->num_rows($queueResult);
-				for ($i = 0; $i < $noofrows; $i++) {
-					$rowData = $db->raw_query_result_rowdata($queueResult, 0);
-					$rowdata = self::getImportInfoFromResult($rowData);
-					return $rowdata['module'];
-				}
+				$rowData = $db->raw_query_result_rowdata($queueResult, 0);
+				$rowdata = self::getImportInfoFromResult($rowData);
+				return $rowdata['module'];
 			}
 		}
 		return null;
