@@ -25,6 +25,7 @@ class Import_Queue_Action extends Vtiger_Action_Controller {
 
 	public static function add($request, $user) {
 		$db = PearDatabase::getInstance();
+		$date_var = date("Y-m-d H:i:s");
 
 		if (!Vtiger_Utils::CheckTable('vtiger_import_queue')) {
 			Vtiger_Utils::CreateTable(
@@ -38,7 +39,9 @@ class Import_Queue_Action extends Vtiger_Action_Controller {
 								merge_fields TEXT,
 								status INT default 0,
 								lineitem_currency_id INT(5),
-								paging INT(1))",
+								paging INT(1),
+								time_start datetime,
+								time_end datetime)",
 							true);
 		}
 
@@ -54,7 +57,7 @@ class Import_Queue_Action extends Vtiger_Action_Controller {
 			$paging = 0;
 		}
 
-		$db->pquery('INSERT INTO vtiger_import_queue VALUES(?,?,?,?,?,?,?,?,?,?)',
+		$db->pquery('INSERT INTO vtiger_import_queue VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
 				array($db->getUniqueID('vtiger_import_queue'),
 						$user->id,
 						getTabid($request->get('module')),
@@ -64,7 +67,9 @@ class Import_Queue_Action extends Vtiger_Action_Controller {
 						Zend_Json::encode($request->get('merge_fields')),
 						$status,
 						$request->get('lineitem_currency'),
-						$paging));
+						$paging,
+						$db->formatDate($date_var, true),
+						null));
 	}
 	
 	public static function finish($user, $importId) {
@@ -96,6 +101,12 @@ class Import_Queue_Action extends Vtiger_Action_Controller {
 				self::remove($importid, $userid);
 			}
 		}
+
+		if(Vtiger_Utils::CheckTable('vtiger_import_queue')) {
+			$date_var = date("Y-m-d H:i:s");
+			$db->pquery('UPDATE vtiger_import_queue SET time_end = ? WHERE importid=?', array($db->formatDate($date_var, true), $importId));
+		}
+
 	}
 
 	public static function remove($importId, $userid = null) {
@@ -224,4 +235,22 @@ class Import_Queue_Action extends Vtiger_Action_Controller {
 		$db->pquery('UPDATE vtiger_import_queue SET status=?, paging=? WHERE importid=?', array($status, $paging, $importId));
 	}
 
+	static function getModulenameByImportid($importid) {
+		$db = PearDatabase::getInstance();
+
+		if(Vtiger_Utils::CheckTable('vtiger_import_queue')) {
+			$queueResult = $db->pquery('SELECT tabid FROM vtiger_import_queue WHERE importid=?', array($importid));
+
+			if($queueResult && $db->num_rows($queueResult) > 0) {
+				$noofrows = $db->num_rows($queueResult);
+				for ($i = 0; $i < $noofrows; $i++) {
+					$rowData = $db->raw_query_result_rowdata($queueResult, 0);
+					$rowdata = self::getImportInfoFromResult($rowData);
+					return $rowdata['module'];
+				}
+			}
+		}
+		return null;
+
+	}
 }

@@ -1766,6 +1766,7 @@ $jsLanguageStrings = array(
 	'JS_PLEASE_ENTER_SOME_VALUE' => '検索する値をいくつか入力してください',
 	'JS_VCF_FILE_IMPORT_WARNING' => 'VCFファイルが選択されました。VCFファイルからインポートできるのは顧客担当者のみです。このファイルをインポートするには顧客担当者からインポートを開始してください。',
 	'JS_ICS_FILE_IMPORT_WARNING' => 'ICSファイルが選択されました。ICSファイルからインポートできるのはカレンダーのみです。このファイルをインポートするには、カレンダーモジュールからインポートを開始してください',
+	'JS_IMPORT_HISTORY'=> 'インポート 履歴',
 
 	//Select2 elements validation message
 	'JS_YOU_CAN_SELECT_ONLY'=> '選択可能：',
