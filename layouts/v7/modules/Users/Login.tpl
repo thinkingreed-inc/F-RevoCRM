@@ -194,7 +194,7 @@
 						errorMessage = "{vtranslate('LBL_ENTER_USERNAME_AND_PASSWORD','Users')}";
 						result = false;
 					} else if (username === '') {
-						errorMessage = "{vtranslate('LBL_USER_NAME','Users')}";
+						errorMessage = "{vtranslate('LBL_ENTER_USERNAME','Users')}";
 						result = false;
 					} else if (password === '') {
 						errorMessage = "{vtranslate('LBL_ENTER_PASSWORD','Users')}";
@@ -216,17 +216,17 @@
 
 					var result = true;
 					var errorMessage = '';
-					if (username === '' & (!emailFilter.test(email1) || email == '')) {
-						errorMessage = '{vtranslate('LBL_ENTER_USERNAME_AND_MAILADDRESS','Users')}";';
+					if (username === '' & email == '') {
+						errorMessage = "{vtranslate('LBL_ENTER_USERNAME_AND_MAILADDRESS','Users')}";
 						result = false;
 					} else if (username === '') {
-						errorMessage = '{vtranslate('LBL_ENTER_USERNAME','Users')}";';
+						errorMessage = "{vtranslate('LBL_ENTER_USERNAME','Users')}";
 						result = false;
-					} else if (!emailFilter.test(email1) || email == '') {
-						errorMessage = '{vtranslate('LBL_ENTER_MAILADDRESS','Users')}";';
+					} else if (email == '') {
+						errorMessage = "{vtranslate('LBL_ENTER_MAILADDRESS','Users')}";
 						result = false;
-					} else if (email.match(illegalChars)) {
-						errorMessage = '{vtranslate('LBL_INVALID_MAILADDRESS','Users')}";';
+					} else if (email.match(illegalChars) || !emailFilter.test(email1)) {
+						errorMessage = "{vtranslate('LBL_INVALID_MAILADDRESS','Users')}";
 						result = false;
 					}
 					if (errorMessage) {
