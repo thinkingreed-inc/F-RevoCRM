@@ -137,4 +137,7 @@ $languageStrings = array(
 	'LBL_IMPORT_RECORD_UPDATED' => 'Overwritten',
 	'LBL_IMPORT_RECORD_MERGED'  => 'Merged',
 	'LBL_IMPORT_RECORD_FAILED'  => 'Failed',
+
+	'LBL_SETUP_PARAMETER_MESSAGE_IMPORT_MAX_HISTORY_COUNT' => 'The maximum number of import history records that can be retained per user.',
+
 );

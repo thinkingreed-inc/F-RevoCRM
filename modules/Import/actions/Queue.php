@@ -82,7 +82,11 @@ class Import_Queue_Action extends Vtiger_Action_Controller {
 		}
 
 		// ログを削除
-		$importLogLimit = $configReader->get('importLogLimit');
+		$importLogLimit = Settings_Parameters_Record_Model::getParameterValue("IMPORT_MAX_HISTORY_COUNT");
+		if (empty($importLogLimit) || !is_numeric($importLogLimit)) {
+			// 最大件数を取得できなかった場合は10とする
+			$importLogLimit = 10;
+		}
 		if(method_exists($user, 'getId')){
 			$userId = $user->getId();
 		} else {

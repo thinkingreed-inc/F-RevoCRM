@@ -138,4 +138,6 @@ $languageStrings = array(
 	'LBL_IMPORT_RECORD_MERGED'=> 'マージ',
 	'LBL_IMPORT_RECORD_FAILED'=> '失敗',
 
+	'LBL_SETUP_PARAMETER_MESSAGE_IMPORT_MAX_HISTORY_COUNT' => 'ユーザー単位で保持できるインポート履歴の最大件数です。',
+
 );
