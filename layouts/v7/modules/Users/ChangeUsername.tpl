@@ -24,7 +24,7 @@
                                 <span class="redColor">*</span>
                             </label>
                             <div class="controls col-sm-6">
-                                <input type="text" name="new_username" class="form-control inputElement" data-rule-required="true"/>
+                                <input type="text" name="new_username" class="form-control inputElement" data-rule-required="true" data-rule-illegal="true"/>
                             </div>
                         </div>
                     </div>
