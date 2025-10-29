@@ -104,7 +104,8 @@ class Vtiger_Import_View extends Vtiger_Index_View {
 		$viewer = $this->getViewer($request);
 		$moduleName = $request->getModule();
 		$user = Users_Record_Model::getCurrentUserModel();
-		$histories =  Import_HistoryView_Model::getImportHistory($user);
+		$tabid = getTabid($moduleName);
+		$histories =  Import_HistoryView_Model::getImportHistory($user, $tabid);
 
 		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
 		$moduleMeta = $moduleModel->getModuleMeta();

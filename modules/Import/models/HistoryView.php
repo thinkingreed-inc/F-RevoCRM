@@ -13,15 +13,14 @@
  */
 class Import_HistoryView_Model extends Vtiger_Base_Model {
 
-    public static function getImportHistory($user) {
+    public static function getImportHistory($user, $tabid) {
         $db = PearDatabase::getInstance();
-		$result = $db->pquery('SELECT importid, tabid FROM vtiger_import_queue WHERE userid = ? ORDER BY importid DESC', array($user->id));
+		$result = $db->pquery('SELECT importid FROM vtiger_import_queue WHERE userid = ? AND tabid = ? ORDER BY importid DESC', array($user->id, $tabid));
 		$histories = array();
 		if($result && $db->num_rows($result) > 0) {
 			$noofrows = $db->num_rows($result);
 			for ($i = 0; $i < $noofrows; $i++) {
 				$importid = $db->query_result($result, $i, 'importid');
-				$tabid = $db->query_result($result, $i, 'tabid');
 				$status = self::getImportStatusCount($importid, $user);
 				$histories[] = array(
 					'module' => getTabname($tabid),

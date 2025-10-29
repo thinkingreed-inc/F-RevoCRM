@@ -12,7 +12,7 @@ include_once('includes/runtime/Globals.php');
 class Migration20251028162441_AddImportSystemVariable extends FRMigrationClass {
     
     /**
-     * ユーザーごとの最大履歴件数をシステム変数として保持
+     * ユーザーかつモジュールごとの最大履歴件数をシステム変数として保持
      * 
      */
     public function process() {

@@ -92,13 +92,17 @@ class Import_Queue_Action extends Vtiger_Action_Controller {
 			$userId = $user->getId();
 		} else {
 			$userId = $user->id;
-		}		
-		$queueList = $db->pquery("SELECT COUNT(*) AS count FROM vtiger_import_queue WHERE userid = ? AND status = ?", array($userId, self::$IMPORT_STATUS_COMPLETED));
+		}
+		
+		$queueResult = $db->pquery('SELECT tabid FROM vtiger_import_queue WHERE importid=?', array($importId));
+		$tabid = $db->query_result($queueResult, 0, 'tabid');
+
+		$queueList = $db->pquery("SELECT COUNT(*) AS count FROM vtiger_import_queue WHERE userid = ? AND tabid = ? AND status = ?", array($userId, $tabid, self::$IMPORT_STATUS_COMPLETED));
 		$queueCount = $db->query_result($queueList, 0, 'count');
 
 		if ($queueCount > $importLogLimit){
 			$deleteCount = max($queueCount - $importLogLimit, 0);
-			$result = $db->pquery("SELECT importid, userid FROM vtiger_import_queue WHERE userid = ? AND status = ? ORDER BY importid ASC LIMIT ?", array($userId, self::$IMPORT_STATUS_COMPLETED, $deleteCount));
+			$result = $db->pquery("SELECT importid, userid FROM vtiger_import_queue WHERE userid = ? AND tabid = ? AND status = ? ORDER BY importid ASC LIMIT ?", array($userId, $tabid, self::$IMPORT_STATUS_COMPLETED, $deleteCount));
 			$noofrows = $db->num_rows($result);
 			for ($i = 0; $i < $noofrows; $i++) {
 				$importid = $db->query_result($result, $i, 'importid');
