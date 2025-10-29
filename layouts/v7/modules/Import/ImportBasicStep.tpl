@@ -48,7 +48,7 @@
 				</div>
 			</form>
 		</div>
-		{include file='ImportHistory.tpl'|@vtemplate_path:'Import' HISTORIES=$HISTORIES}
+		{include file='ImportHistory.tpl'|@vtemplate_path:'Import' HISTORIES=$HISTORIES CURRENT_USER_MODEL=$CURRENT_USER_MODEL}
 
 		<div class='modal-overlay-footer border1px clearfix'>
 			<div class="row clearfix">

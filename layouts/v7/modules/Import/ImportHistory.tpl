@@ -9,19 +9,22 @@
 <div class='importHistoryContainer hide' id ="importHistoryContainer" style="margin-bottom:100px">
     <div style="padding: 0 10px;">
         <div class="importview-content">
-            <table class="table table-bordered table-striped">
+            <table class="table table-bordered table-striped" style="table-layout: auto; width:100%">
                 <thead>
                     <tr>
-                        <th style = "width: 7%";>{vtranslate('LBL_MODULE', $MODULE)}</th>
-                        <th style = "width: 7%";>{vtranslate('LBL_IMPORT_ID', $MODULE)}</th>
-                        <th style = "width: 12%";>{vtranslate('LBL_TOTAL_RECORDS_IMPORTED', $MODULE)}</th>
-                        <th style = "width: 10%";>{vtranslate('LBL_NUMBER_OF_RECORDS_CREATED', $MODULE)}</th>
-                        <th style = "width: 10%";>{vtranslate('LBL_NUMBER_OF_RECORDS_SKIPPED', $MODULE)}</th>
-                        <th style = "width: 10%";>{vtranslate('LBL_NUMBER_OF_RECORDS_UPDATED', $MODULE)}</th>
-                        <th style = "width: 10%";>{vtranslate('LBL_NUMBER_OF_RECORDS_MERGED', $MODULE)}</th>
-                        <th style = "width: 14%";>{vtranslate('LBL_TOTAL_RECORDS_FAILED', $MODULE)}</th>
-                        <th style = "width: 10%";>{vtranslate('LBL_IMPORT_START_TIME', $MODULE)}</th>
-                        <th style = "width: 10%";>{vtranslate('LBL_EXPORT_HISTORY', $MODULE)}</th>
+                        <th>{vtranslate('LBL_MODULE', $MODULE)}</th>
+						{if $CURRENT_USER_MODEL->isAdminUser()}
+                            <th>{vtranslate('LBL_USER', $MODULE)}</th>
+                        {/if}
+                        <th>{vtranslate('LBL_IMPORT_ID', $MODULE)}</th>
+                        <th>{vtranslate('LBL_TOTAL_RECORDS_IMPORTED', $MODULE)}</th>
+                        <th>{vtranslate('LBL_NUMBER_OF_RECORDS_CREATED', $MODULE)}</th>
+                        <th>{vtranslate('LBL_NUMBER_OF_RECORDS_SKIPPED', $MODULE)}</th>
+                        <th>{vtranslate('LBL_NUMBER_OF_RECORDS_UPDATED', $MODULE)}</th>
+                        <th>{vtranslate('LBL_NUMBER_OF_RECORDS_MERGED', $MODULE)}</th>
+                        <th>{vtranslate('LBL_TOTAL_RECORDS_FAILED', $MODULE)}</th>
+                        <th>{vtranslate('LBL_IMPORT_START_TIME', $MODULE)}</th>
+                        <th>{vtranslate('LBL_EXPORT_HISTORY', $MODULE)}</th>
                     </tr>
                 </thead>
                     <tbody>
@@ -29,6 +32,9 @@
                             {foreach item=HISTORY from=$HISTORIES}
                                 <tr>
                                     <td>{vtranslate($HISTORY.module,$HISTORY.module)}</td>
+                                    {if $CURRENT_USER_MODEL->isAdminUser()}
+                                        <td>{$HISTORY.username}</td>   
+                                    {/if}                                
                                     <td>{$HISTORY.importid}</td>
                                     <td>{$HISTORY.imported} / {$HISTORY.total}</td>
                                     <td>{$HISTORY.created}</td>
@@ -45,11 +51,19 @@
                                 </tr>
                             {/foreach}
                         {else}
-                            <tr>
-                                <td colspan="10" class="text-center">
-                                    {vtranslate('LBL_NO_HISTORY_FOUND', $MODULE)}
-                                </td>
-                            </tr>
+                            {if $CURRENT_USER_MODEL->isAdminUser()}
+                                <tr>
+                                    <td colspan="11" class="text-center">
+                                        {vtranslate('LBL_NO_HISTORY_FOUND', $MODULE)}
+                                    </td>
+                                </tr>
+                            {else}    
+                                <tr>
+                                    <td colspan="10" class="text-center">
+                                        {vtranslate('LBL_NO_HISTORY_FOUND', $MODULE)}
+                                    </td>
+                                </tr>
+                            {/if}
                         {/if}
                     </tbody>
                 </thead>

@@ -122,6 +122,7 @@ class Vtiger_Import_View extends Vtiger_Index_View {
 		$viewer->assign('SUPPORTED_DELIMITERS', Import_Utils_Helper::getSupportedDelimiters());
 		$viewer->assign('AUTO_MERGE_TYPES', Import_Utils_Helper::getAutoMergeTypes($moduleName));
 		$viewer->assign('HISTORIES', $histories);
+		$viewer->assign('CURRENT_USER_MODEL', $user);
 
 		//Duplicate records handling not supported for inventory moduels
 		$duplicateHandlingNotSupportedModules = $this->getUnsupportedDuplicateHandlingModules();

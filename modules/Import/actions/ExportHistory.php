@@ -14,12 +14,19 @@ class Import_ExportHistory_Action extends Vtiger_Action_Controller {
         $db = PearDatabase::getInstance();        
         $obj = new Vtiger_ExportData_Action();
 
-        $user = Users_Record_Model::getCurrentUserModel();
+        $current_user = Users_Record_Model::getCurrentUserModel();
         $importid = $request->get('importid');
+        $userid = $request->get('userid');
+        if ($current_user->isAdminUser()) {
+			$importUser = Users_Record_Model::getInstanceById($userid, 'Users');
+        } else {
+            $importUser = $current_user;
+        }
+
         $moduleName = Import_Queue_Action::getModulenameByImportid($importid);
         $request->set('source_module',$moduleName);
 
-        $tableName = Import_Utils_Helper::getDbTableName($user,$importid);
+        $tableName = Import_Utils_Helper::getDbTableName($importUser,$importid);
         $query = "select * from $tableName";
 		$result = $db->pquery($query, array());
         $entries = array();

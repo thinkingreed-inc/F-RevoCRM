@@ -15,15 +15,23 @@ class Import_HistoryView_Model extends Vtiger_Base_Model {
 
     public static function getImportHistory($user, $tabid) {
         $db = PearDatabase::getInstance();
-		$result = $db->pquery('SELECT importid FROM vtiger_import_queue WHERE userid = ? AND tabid = ? ORDER BY importid DESC', array($user->id, $tabid));
+		// システム管理者の場合は全ユーザーの履歴を表示
+		if(is_admin($user)){
+			$result = $db->pquery('SELECT importid, userid FROM vtiger_import_queue WHERE tabid = ? ORDER BY importid DESC', array($tabid));
+		} else {
+			$result = $db->pquery('SELECT importid, userid FROM vtiger_import_queue WHERE userid = ? AND tabid = ? ORDER BY importid DESC', array($user->id, $tabid));
+		}
 		$histories = array();
 		if($result && $db->num_rows($result) > 0) {
 			$noofrows = $db->num_rows($result);
 			for ($i = 0; $i < $noofrows; $i++) {
 				$importid = $db->query_result($result, $i, 'importid');
 				$status = self::getImportStatusCount($importid, $user);
+				$username = self::getUsernameByImportid($importid);
+				$userid = $db->query_result($result, $i, 'userid');
 				$histories[] = array(
 					'module' => getTabname($tabid),
+					'username' => $username,
 					'importid' => $importid,
 					'total'    => $status['TOTAL'],
 					'imported' => $status['IMPORTED'],					
@@ -34,7 +42,7 @@ class Import_HistoryView_Model extends Vtiger_Base_Model {
 					'failed'   => $status['FAILED'],
 					'pending'  => $status['PENDING'],
 					'starttime'  => self::getImportStartTime($importid),
-					'link' => self::getHistoryLink($importid),
+					'link' => self::getHistoryLink($importid,$userid),
 				);
 			}
 			return $histories;
@@ -74,8 +82,8 @@ class Import_HistoryView_Model extends Vtiger_Base_Model {
 		return $statusCount;
 	}	
 
-    private static function getHistoryLink($importid){
-		return "index.php?module=Import&action=ExportHistory&importid={$importid}";			
+    private static function getHistoryLink($importid, $userid){
+		return "index.php?module=Import&action=ExportHistory&importid={$importid}&userid={$userid}";			
 	}	
 
 	private static function getImportStartTime($importid){
@@ -85,6 +93,15 @@ class Import_HistoryView_Model extends Vtiger_Base_Model {
 		$startTime = $db->query_result($result, $i, 'time_start');
 
 		return $startTime;			
-	}	
+	}
+	
+	private static function getUsernameByImportid($importid){
+		$db = PearDatabase::getInstance();
+		$result = $db->pquery('SELECT userid FROM vtiger_import_queue WHERE importid = ?', array($importid));
+		$userid = $db->query_result($result, $i, 'userid');
+		$username = getUserFullName($userid);
+
+		return $username;
+	}
 
 }
