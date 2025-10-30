@@ -199,6 +199,64 @@ Vtiger.Class("Vtiger_DashBoard_Js",{
 			app.helper.showModal(res,{"cb":callback});
 		});
 
+	},
+
+	addIFrameWidget : function(element, url) {
+		// Show popup window for IFrame widget configuration
+		element = jQuery(element);
+
+		app.request.get({"url":"index.php?module=Home&view=AddIFrameWidget"}).then(function(err,res){
+			var callback = function(data){
+				var wizardContainer = jQuery(data);
+				var form = jQuery('form', wizardContainer);
+				var params = {
+					submitHandler : function(form){
+						//To prevent multiple click on save
+						var form = jQuery(form);
+						jQuery("[name='saveButton']").attr('disabled','disabled');
+						var iframeTitle = form.find('[name="iframeWidgetTitle"]').val();
+						var iframeUrl = form.find('[name="iframeWidgetUrl"]').val();
+						var linkId = element.data('linkid');
+						var iframeParams = {
+							'module' : app.getModuleName(),
+							'action' : 'IFrameWidget',
+							'mode' : 'IFrameWidgetCreate',
+							'linkId' : linkId,
+							'iframeWidgetTitle' : iframeTitle,
+							'iframeWidgetUrl' : iframeUrl,
+							'tab' : jQuery(".tab-pane.active").data("tabid")
+						}
+						app.request.post({"data":iframeParams}).then(function(err,data) {
+							if(data && data.success){
+								var widgetId = data.widgetId;
+								app.helper.hideModal();
+
+								url += '&widgetid='+widgetId;
+
+								var name = element.data('name');
+								var widgetContainer = jQuery('<li class="new dashboardWidget loadcompleted" id="'+ linkId +"-" + widgetId +'" data-name="'+name+'" data-mode="open"></li>');
+								widgetContainer.data('url', url);
+								var width = element.data('width');
+								var height = element.data('height');
+								Vtiger_DashBoard_Js.gridster.add_widget(widgetContainer, width, height);
+								Vtiger_DashBoard_Js.currentInstance.loadWidget(widgetContainer);
+							} else if(data && !data.success && data.message) {
+								var params = {
+									text: data.message,
+									type: 'error'
+								};
+								Vtiger_Helper_Js.showPnotify(params);
+								jQuery("[name='saveButton']").removeAttr('disabled');
+							}
+						});
+						return false;
+					}
+				}
+				form.vtValidate(params);
+			}
+			app.helper.showModal(res,{"cb":callback});
+		});
+
 	}
 
 },{
@@ -495,7 +553,7 @@ Vtiger.Class("Vtiger_DashBoard_Js",{
 					function(err,response) {
 						if (err == null) {
 
-							var nonReversableWidgets = ['MiniList','Notebook','ChartReportWidget']
+							var nonReversableWidgets = ['MiniList','Notebook','ChartReportWidget','IFrameWidget']
 
 							parent.fadeOut('slow', function() {
 								Vtiger_DashBoard_Js.gridster.remove_widget(parent);
