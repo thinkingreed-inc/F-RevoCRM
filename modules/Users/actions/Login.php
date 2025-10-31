@@ -30,10 +30,22 @@ class Users_Login_Action extends Vtiger_Action_Controller {
             $currentUser = Users_Record_Model::getInstanceById($userid, 'Users');
 
             if ($currentUser->isLocked()) {
-                // ユーザーがロックされている場合はログインを拒否
-                header ('Location: index.php?module=Users&parent=Settings&view=Login&error=userLocked');
+                // セキュリティ: ユーザー列挙攻撃を防ぐため、ロック状態を明示しない
+                // 通常のログインエラーと同じメッセージを返す
+                global $log;
+                $log->info("Login attempt blocked due to account lock: userid=$userid, username=$username");
+
+                //Track the login History
+                $moduleModel = Users_Module_Model::getInstance('Users');
+                $moduleModel->saveLoginErrorHistory($username);
+
+                header ('Location: index.php?module=Users&parent=Settings&view=Login&error=login');
                 exit;
             }
+
+            // ログイン成功時に試行回数とロック時刻をリセット
+            $currentUser->resetLoginAttempt();
+            $currentUser->resetLockTime();
 
             session_regenerate_id(true);
             $userCredentialsData = $currentUser->getUserCredential();
@@ -60,10 +72,10 @@ class Users_Login_Action extends Vtiger_Action_Controller {
                 $_SESSION['app_unique_key'] = vglobal('application_unique_key');
                 $_SESSION['authenticated_user_language'] = vglobal('default_language');
 
-                //Enabled session variable for KCFINDER 
-                $_SESSION['KCFINDER'] = array(); 
-                $_SESSION['KCFINDER']['disabled'] = false; 
-                $_SESSION['KCFINDER']['uploadURL'] = "test/upload"; 
+                //Enabled session variable for KCFINDER
+                $_SESSION['KCFINDER'] = array();
+                $_SESSION['KCFINDER']['disabled'] = false;
+                $_SESSION['KCFINDER']['uploadURL'] = "test/upload";
                 $_SESSION['KCFINDER']['uploadDir'] = "../test/upload";
                 $deniedExts = implode(" ", vglobal('upload_badext'));
                 $_SESSION['KCFINDER']['deniedExts'] = $deniedExts;
@@ -78,6 +90,30 @@ class Users_Login_Action extends Vtiger_Action_Controller {
             }
 			exit();
 		} else {
+			// ログイン失敗時の処理
+			// ユーザーIDを取得（ユーザー名が存在する場合のみ）
+			$userid = $user->retrieve_user_id($username);
+            global $log;
+            $log->debug('Login.php:89: userid: ' . $userid);
+
+			if ($userid) {
+				$currentUser = Users_Record_Model::getInstanceById($userid, 'Users');
+
+				// 試行回数をカウントアップ
+				$currentUser->countUpLoginAttempt();
+
+				// 制限チェック
+				if ($currentUser->isLoginAttemptLocked()) {
+					// ロック時刻を設定
+					$currentUser->setLockTime();
+
+					// セキュリティ: ユーザー列挙攻撃を防ぐため、ロック状態を明示しない
+					global $log;
+					$log->info("Account locked due to too many failed attempts: userid=$userid, username=$username");
+					// 通常のログインエラーと同じメッセージを返す（次のheaderで統一）
+				}
+			}
+
 			//Track the login History
 			$moduleModel = Users_Module_Model::getInstance('Users');
 			$moduleModel->saveLoginErrorHistory($username);

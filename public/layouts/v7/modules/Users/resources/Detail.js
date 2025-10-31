@@ -233,6 +233,37 @@ Vtiger_Detail_Js("Users_Detail_Js",{
 		});
 		return false;
 	},
+
+	/**
+	 * Trigger unlock user action
+	 * @param {number} recordId - User record ID
+	 */
+	triggerUnlockUser: function (recordId) {
+		var message = app.vtranslate('LBL_CONFIRM_UNLOCK_USER');
+		app.helper.showConfirmationBox({'message': message}).then(function (data) {
+			app.helper.showProgress();
+
+			var params = {
+				'data': {
+					'module': 'Users',
+					'parent': 'Settings',
+					'action': 'UnlockUserAjax',
+					'record': recordId
+				}
+			};
+
+			app.request.post(params).then(function (err, data) {
+				app.helper.hideProgress();
+				if (err === null) {
+					app.helper.showSuccessNotification({'message': data.message});
+					// Reload page to reflect unlocked status
+					window.location.reload();
+				} else {
+					app.helper.showErrorNotification({'message': err.message});
+				}
+			});
+		});
+	},
 },{
 	registerAjaxPreSaveEvent: function () {
 		var self = this;
@@ -266,9 +297,19 @@ Vtiger_Detail_Js("Users_Detail_Js",{
 			e.preventDefault();
 		}
 	},
+	registerUnlockUserEvent: function () {
+		var self = this;
+		jQuery('#unlockUserButton').on('click', function (e) {
+			e.preventDefault();
+			var recordId = jQuery(this).data('record-id');
+			Users_Detail_Js.triggerUnlockUser(recordId);
+		});
+	},
+
 	registerEvents: function () {
 		this._super();
 		this.registerAjaxPreSaveEvent();
+		this.registerUnlockUserEvent();
 		FR_MultiFactorAuthentication_Js.registerDeleteCredentialEvent();
 		FR_MultiFactorAuthentication_Js.registerTotpEvents();
 		FR_MultiFactorAuthentication_Js.registerPasskeyEvents();
