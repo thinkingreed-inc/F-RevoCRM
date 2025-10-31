@@ -285,8 +285,9 @@ $languageStrings = array(
 	'LBL_ENTER_USERNAME_AND_PASSWORD' => 'ユーザー名とパスワードを入力してください',
 	'LBL_ENTER_USERNAME' => 'ユーザー名を入力してください。',
 	'LBL_ENTER_PASSWORD' => 'パスワードを入力してください。',
+	'LBL_ENTER_MAILADDRESS' => 'メールアドレスを入力してください。',
 	'LBL_ENTER_USERNAME_AND_MAILADDRESS' => 'ユーザー名とメールアドレスを入力してください',
-	'LBL_INVALID_MAILADDRESS' => 'パスワードを入力してください。',
+	'LBL_INVALID_MAILADDRESS' => '無効なメールアドレスです。',
 
 	'LBL_INVALID_USERNAME_OR_PASSWORD' => '無効なユーザー名またはパスワード',
 	'LBL_INVALID_USERNAME_OR_MAILADDRESS' => '無効なユーザー名またはE-mailアドレス',
