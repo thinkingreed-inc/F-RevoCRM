@@ -228,16 +228,19 @@ jQuery.Class("Vtiger_AdvanceFilter_Js",{
 			conditionList['none'] = 'None';
 		}
 
-		// owner以外の場合「自分」を非表示
-		if(fieldType != 'owner' && (fieldSpecificType == 'V' || fieldSpecificType == 'I')
-				&& !(fieldInfo.referencemodules instanceof Array && fieldInfo.referencemodules.includes('Users'))){
+		//fieldがusersモジュールの関連フィールドの場合はTrue
+		var isUsersField = fieldInfo.referencemodules instanceof Array && fieldInfo.referencemodules.includes('Users'); 
+		// owner、usersモジュールの関連フィールドの場合「自分」を非表示
+		if(fieldType != 'owner' && !isUsersField && (fieldSpecificType == 'V' || fieldSpecificType == 'I')){
 			conditionList = conditionList.filter(key => key != 'own');
 		}
 
 		var options = '';
 		for(var key in conditionList) {
-			if (fieldType == 'multipicklist' && (conditionList[key] == "e" || conditionList[key] == "n" )) { continue; } 
-			
+			//項目に合わせて不要な条件を除外
+			if (fieldType == 'multipicklist' && ['e','n','s','ew'].includes(conditionList[key])) { continue; } 
+			if (fieldType == 'owner'		 && ['s','ew','c','k'].includes(conditionList[key])) { continue; } 
+			if (isUsersField				 && ['l','g' ,'m','h'].includes(conditionList[key])) { continue; } 
 			//IE Browser consider the prototype properties also, it should consider has own properties only.
 			if(conditionList.hasOwnProperty(key)) {
 				var conditionValue = conditionList[key];

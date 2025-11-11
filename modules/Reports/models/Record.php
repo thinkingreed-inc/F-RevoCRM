@@ -836,8 +836,8 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 		$rootDirectory = vglobal('root_directory');
 		$tmpDir = vglobal('tmp_dir');
 
-		$tempFileName = tempnam($rootDirectory.$tmpDir, 'xls');
-		$fileName = decode_html($this->getName()).'.xls';
+		$tempFileName = tempnam($rootDirectory.$tmpDir, 'xlsx');
+		$fileName = decode_html($this->getName()).'.xlsx';
 		$reportRun->writeReportToExcelFile($tempFileName, $advanceFilterSql);
 
 		if(isset($_SERVER['HTTP_USER_AGENT']) && strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE')) {
@@ -845,9 +845,9 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 			header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 		}
 
-		header('Content-Type: application/x-msexcel');
+		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 		header('Content-Length: '.@filesize($tempFileName));
-		header('Content-disposition: attachment; filename="'.$fileName.'"');
+		header('Content-Disposition: attachment; filename="'.$fileName.'"');
 
 		$fp = fopen($tempFileName, 'rb');
 		fpassthru($fp);

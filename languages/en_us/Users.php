@@ -285,6 +285,7 @@ $languageStrings = array(
 	'LBL_ENTER_USERNAME_AND_PASSWORD' => 'Please enter your username and password',
 	'LBL_ENTER_USERNAME' => 'Please enter your username.',
 	'LBL_ENTER_PASSWORD' => 'Please enter your password.',
+	'LBL_ENTER_MAILADDRESS' => 'Please enter your email address.',
 	'LBL_ENTER_USERNAME_AND_MAILADDRESS' => 'Please enter your username and email address',
 	'LBL_INVALID_MAILADDRESS' => 'Invalid email address.',
 	
