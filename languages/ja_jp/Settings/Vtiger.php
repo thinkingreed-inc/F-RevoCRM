@@ -264,8 +264,8 @@ $languageStrings = array(
 	'LBL_RECORD_NUMBERING' => 'レコード番号',
 	'LBL_MODULE_ENTITY_NUMBER_CUSTOMIZATION' => 'モジュールエンティティ番号の設定',
 	'LBL_UPDATE_MISSING_RECORD_SEQUENCE' => '未割当のレコード番号の更新',
-	'LBL_USE_PREFIX' => '接頭子',
-	'LBL_PREFIX_IN_USE' => '接頭子は既に利用されています',
+	'LBL_USE_PREFIX' => '接頭辞',
+	'LBL_PREFIX_IN_USE' => '接頭辞は既に利用されています',
 	'LBL_START_SEQUENCE' => '開始番号',
 
 	//Company Details
