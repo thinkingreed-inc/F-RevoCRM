@@ -652,6 +652,9 @@ function getEntityId($module, $entityName) {
 		$sql = "select $entityidfield from $tablename INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = $tablename.$entityidfield " .
 				" WHERE vtiger_crmentity.deleted = 0 and $fieldsname=?";
 		$result = $adb->pquery($sql, array($entityName));
+		if ($adb->num_rows($result) == 0) {
+			throw new ImportException("No reference exists");
+		}
 		if ($adb->num_rows($result) > 0) {
 			$entityId = $adb->query_result($result, 0, $entityidfield);
 		}
@@ -660,6 +663,33 @@ function getEntityId($module, $entityName) {
 		return $entityId;
 	else
 		return 0;
+}
+
+// カラム名から関連項目を取得
+function getEntityIdByColumns($module, $referenceValueList, $cache) {
+	global $log, $adb;
+	$log->info("in getEntityIdByColumns " . $referenceValueList);
+
+	if (empty($cache[$module])||empty($referenceValueList)){
+		throw new ImportException("No reference exists");
+	}
+
+    $matchedIds = [];
+    foreach ($cache[$module] as $recordModel) {
+        $filterCache = array_intersect_key($recordModel, $referenceValueList);
+		ksort($referenceValueList);
+		ksort($filterCache);
+        if ($filterCache === $referenceValueList) {
+            $cacheValues = array_values($recordModel);
+			$matchedIds[] = $cacheValues[0];
+        }
+    }
+
+	if (count($matchedIds) !== 1) {
+		throw new ImportException("No reference exists");
+    }
+
+    return $matchedIds[0];
 }
 
 function decode_emptyspace_html($str){
