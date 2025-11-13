@@ -67,7 +67,7 @@ class Users_MultiFactorAuthLogin_View extends Vtiger_View_Controller {
             $currentUser->resetSignatureCount();
             $currentUser->resetLockTime();
             // ログイン処理
-            Users_MultiFactorAuthentication_Helper::LoginProcess($userid, $username);
+            Users_MultiFactorAuthentication_Helper::LoginProcess($userid, $username, $type);
             exit;
         } else {
             // 試行回数のカウントアップ

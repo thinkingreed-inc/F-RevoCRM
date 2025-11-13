@@ -180,7 +180,7 @@ class Users_Module_Model extends Vtiger_Module_Model {
 	 * Function to store the login history
 	 * @param type $username
 	 */
-	public function saveLoginHistory($username, $isCustomerPortal = false){
+	public function saveLoginHistory($username, $isCustomerPortal = false, $loginType = 'password'){
 		$adb = PearDatabase::getInstance();
 
 		if(empty($username)) {
@@ -194,8 +194,8 @@ class Users_Module_Model extends Vtiger_Module_Model {
 			$userIPAddress = $_SERVER['REMOTE_ADDR'];
 		}
 		$loginTime = date("Y-m-d H:i:s");
-		$query = "INSERT INTO vtiger_loginhistory (user_name, user_ip, logout_time, login_time, status, is_portal) VALUES (?,?,?,?,?,?)";
-		$params = array($username, $userIPAddress, $loginTime,  $loginTime, 'Signed in', $isCustomerPortal);
+		$query = "INSERT INTO vtiger_loginhistory (user_name, user_ip, logout_time, login_time, status, is_portal, login_type) VALUES (?,?,?,?,?,?,?)";
+		$params = array($username, $userIPAddress, $loginTime,  $loginTime, 'Signed in', $isCustomerPortal, $loginType);
 		//Mysql 5.7 doesn't support invalid date in Timestamp field
 		//$params = array($username, $userIPAddress, '0000-00-00 00:00:00',  $loginTime, 'Signed in');
 		$adb->pquery($query, $params);
