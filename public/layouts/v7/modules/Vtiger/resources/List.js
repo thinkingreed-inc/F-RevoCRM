@@ -1359,17 +1359,44 @@ Vtiger.Class("Vtiger_List_Js", {
 			if (listSearchParams) {
 				for(var i=0; i<listSearchParams.length; i++) {
 					var params = listSearchParams[i];
-					var fieldInfo = uimeta.field.get(params[0]);
-					if (fieldInfo.type == 'date' || fieldInfo.type == 'datetime') {
+					var fieldName = params[0];  
+					var searchContributorElement = listViewPageDiv.find('.listSearchContributor[name="' + fieldName + '"]');
+			     	var	fieldType = searchContributorElement.data('field-type')
+					if (fieldType == 'date' || fieldType == 'datetime') {
 						params[2].split(',').forEach(function(param){
-							var date = new Date(param);
-							if (isNaN(date.getDate())) {
+							var value = (param || '').trim();
+
+							if (fieldType == 'datetime') {
+								value = value.split(' ')[0];
+							}
+
+							if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
 								isValidDate = false;
-								app.helper.showErrorNotification({message: app.vtranslate('JS_PLEASE_ENTER_VALID_DATE')});
+								app.helper.showErrorNotification({
+									message: app.vtranslate('JS_PLEASE_ENTER_VALID_DATE')
+								});
+								return;
+							}
+
+							var parts = value.split('-');
+							var y = parseInt(parts[0], 10);
+							var m = parseInt(parts[1], 10);
+							var d = parseInt(parts[2], 10);
+
+							var date = new Date(y, m - 1, d);  
+
+							if (date.getFullYear() !== y ||
+								(date.getMonth() + 1) !== m ||
+								date.getDate() !== d) {
+
+								isValidDate = false;
+								app.helper.showErrorNotification({
+									message: app.vtranslate('JS_PLEASE_ENTER_VALID_DATE')
+								});
 								return;
 							}
 						});
-					} else if (fieldInfo.type == 'time') {
+					} else if (fieldType == 'time') {
 						params[2].split(',').forEach(function(param){
 							var baseDate = new Date(0); // 年月日の部分に仮のデータを入れる
 							var date = new Date(baseDate.toDateString()+ ' ' + param);
