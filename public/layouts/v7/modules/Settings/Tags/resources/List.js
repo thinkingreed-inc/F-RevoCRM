@@ -99,7 +99,7 @@ Settings_Vtiger_List_Js('Settings_Tags_List_Js',{
         var editTagContainer = this.getEditTagContainer();
         var self = this;
 
-        this.getEditTagContainer().find('.saveTag').off('click').on('click', function(e){
+        this.getEditTagContainer().find('.saveTag').on('click', function(e){
 
             var tagName = editTagContainer.find('[name="tagName"]').val();
             if(tagName.trim() == ""){
@@ -197,7 +197,7 @@ Settings_Vtiger_List_Js('Settings_Tags_List_Js',{
         app.event.on('post.listViewFilter.click', function(e){
             //clearing cached dom element. Since it will be replaced with ajax request
             self.editTagContainer = null;
-            self.registerEditTagSaveEvent();
+            // self.registerEditTagSaveEvent();
         })
     }
 });
