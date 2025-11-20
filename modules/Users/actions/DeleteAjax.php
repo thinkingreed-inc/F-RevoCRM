@@ -22,9 +22,11 @@ class Users_DeleteAjax_Action extends Vtiger_Delete_Action {
 
 		if(!$currentUser->isAdminUser() && $mode !== 'credential') {
 			throw new AppException(vtranslate('LBL_PERMISSION_DENIED', 'Vtiger'));
-		} else if($currentUser->isAdminUser() && ($currentUser->getId() == $ownerId)) {
+		} else if($currentUser->isAdminUser() && ($currentUser->getId() == $ownerId) ){
 			throw new AppException(vtranslate('LBL_PERMISSION_DENIED', 'Vtiger'));
-		} 
+		} else if ($ownerId == 1) {
+            throw new AppException(vtranslate('LBL_PERMISSION_DENIED', 'Vtiger'));
+        }
 	}
 
     public function deleteUserCredential($userid, $credentialId) {
