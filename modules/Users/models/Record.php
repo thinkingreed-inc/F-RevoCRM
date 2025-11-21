@@ -786,6 +786,14 @@ class Users_Record_Model extends Vtiger_Record_Model {
 	public static function deleteUserPermanently($userId, $newOwnerId) {
 		$db = PearDatabase::getInstance();
 
+		$userRecord = Users_Record_Model::getInstanceById($userId, 'Users');
+        $credentials = $userRecord->getUserCredential();
+
+        foreach ($credentials as $credential) {
+            $credentialId = $credential['id'];
+            $userRecord->deleteMultiFactorAuthentication($credentialId);
+        }
+
 		$sql = "UPDATE vtiger_crmentity SET smcreatorid=?,smownerid=?,modifiedtime=? WHERE smcreatorid=? AND setype=?";
 		$db->pquery($sql, array($newOwnerId, $newOwnerId, date('Y-m-d H:i:s'), $userId,'ModComments'));
 
