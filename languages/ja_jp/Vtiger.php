@@ -560,6 +560,11 @@ $languageStrings = array(
 	'LBL_EXPORT_RECORD_CURRENCY'=>'レコードで指定された通貨',
 	'LBL_EXPORT_FORMAT' => 'エクスポート形式',
 	'LBL_EXPORT_DATA' => 'エクスポートデータ',
+	'LBL_RELATED_RECORDS_EXPORT_FORMAT' => '関連項目のエクスポート形式',
+	'LBL_IMPORTABLE_FORMAT' => 'インポート可能な形式',
+	'LBL_LABEL_ONLY' => 'ラベルのみ',
+	'LBL_LABEL' => 'ラベル',
+
 
 	'LBL_CUSTOMIZE' => 'カスタマイズ',
 	'LBL_ADD_MANAGE_MODULES' => 'モジュール',
