@@ -45,6 +45,7 @@ class Users_MultiFactorAuthLogin_View extends Vtiger_View_Controller {
         $moduleModel = Vtiger_Module_Model::getInstance($moduleName);
         $currentUser = Users_Record_Model::getInstanceById($userid, 'Users');
         $viewer->assign('MODULE_MODEL',$moduleModel);
+        $viewer->assign('PREFERRED_MFA', null);
 
         $type = $request->get('type');
         $loginResult = false;
