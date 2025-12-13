@@ -1060,12 +1060,13 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 							}
 						} else if (!in_array($fieldName, array('date_start', 'due_date'))) {
 							if ($fieldModel) {
-								$recordData[$fieldName] = $fieldModel->getDisplayValue($fieldValue);
+								if(strpos($fieldName,'status')===false && $fieldName != 'description'){
+									$recordData[$fieldName] = $fieldModel->getDisplayValue($fieldValue);
+								}
 							}
 						}
 					}
 				}
-
 				foreach ($recordData as $fieldName => $fieldValue) {
 					if (in_array($fieldName, array('date_start', 'due_date'))) {
 						$timeField = 'time_start';
