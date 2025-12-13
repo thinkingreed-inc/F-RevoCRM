@@ -5280,7 +5280,6 @@ TN-34230 .row .nav > li > a:hover {
 .layoutContent .editFields {
   min-height: 116px;
   height: auto;
-  border-right: 1px solid #DDDDDD;
 }
 .layoutContent .fieldLabelContainer {
   padding-top: 15px;

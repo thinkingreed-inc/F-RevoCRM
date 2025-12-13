@@ -654,40 +654,192 @@ ul#productsImageContainer > li a{
   background-position: center center;
 }
 
-/* 項目設定でuitype=19 or 20 の行を広げる*/
-.layoutContent .blockFieldsList ul li.wideField {
-  width: 92%;
-}
-
-/* 項目設定画面の罫線*/
-.layoutContent .blockFieldsList ul li div {
-  height: 100%;
-}
-
-/* 項目設定画面のモバイル表示*/
+/* 項目設定画面のレイアウト */
 .layoutContent .blockFieldsList {
-  display: initial;
+  width: 100%;
 }
-.layoutContent .blockFieldsList ul li > div {
+
+.layoutContent .blockFieldsList ul.connectedSortable {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  list-style: none;
 }
-@media (max-width: 768px) { 
+
+/* 通常フィールド（2列表示） */
+.layoutContent .blockFieldsList ul li {
+  width: 49%;
+  margin-bottom: 6px;
+  box-sizing: border-box;
+}
+
+/* ワイドフィールド（uitype=19 or 20、1列表示） */
+.layoutContent .blockFieldsList ul li.wideField {
+  width: 100%;
+}
+
+/* ダミー行（フィールド追加用） */
+.layoutContent .blockFieldsList ul li.dummyRow {
+  width: 49%;
+}
+
+/* ドラッグ中のプレースホルダー */
+.layoutContent .blockFieldsList ul li.ui-sortable-placeholder {
+  visibility: visible !important;
+  background: #f0f0f0;
+  border: 2px dashed #ccc;
+  height: auto;
+  min-height: 100px;
+}
+
+/* ドラッグ中の要素 */
+.layoutContent .blockFieldsList ul li.ui-sortable-helper {
+  opacity: 0.9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+}
+
+/* フィールド内の行レイアウト */
+.layoutContent .blockFieldsList ul li > div.row.border1px {
+  display: flex;
+  flex-wrap: nowrap;
+  min-height: 120px;
+  align-items: stretch;
+}
+
+/* ラベル部分 */
+.layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel {
+  flex: 0 0 150px;
+  width: 150px;
+  max-width: 150px;
+  display: flex;
+  align-items: stretch;
+  border-right: 1px solid #ddd;
+}
+
+.layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel .editFields {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+/* プロパティ部分 */
+.layoutContent .blockFieldsList ul li > div.row > div.fieldPropertyContainer {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: stretch;
+}
+
+.layoutContent .blockFieldsList ul li > div.row > div.fieldPropertyContainer > div.row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+/* アクションボタン（編集・削除） */
+.layoutContent .blockFieldsList ul li .fieldPropertyContainer .actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 5px;
+}
+
+.layoutContent .blockFieldsList ul li .fieldPropertyContainer .actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  color: #555;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.layoutContent .blockFieldsList ul li .fieldPropertyContainer .actions a:hover {
+  background-color: #e8e8e8;
+  border-color: #ccc;
+  color: #333;
+}
+
+.layoutContent .blockFieldsList ul li .fieldPropertyContainer .actions a.deleteCustomField:hover {
+  background-color: #fee;
+  border-color: #fcc;
+  color: #c00;
+}
+
+/* ワイドフィールドの場合の調整 */
+.layoutContent .blockFieldsList ul li.wideField > div.row > div.layoutEditFieldLabel {
+  flex: 0 0 150px;
+  width: 150px;
+  max-width: 150px;
+}
+
+.layoutContent .blockFieldsList ul li.wideField > div.row > div.fieldPropertyContainer {
+  flex: 1 1 auto;
+}
+
+/* 中サイズ画面 */
+@media (min-width: 769px) and (max-width: 1200px) {
+  .layoutContent .blockFieldsList ul li {
+    width: calc(50% - 6px);
+  }
+  .layoutContent .blockFieldsList ul li.wideField {
+    width: calc(100% - 6px);
+  }
+  .layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel,
+  .layoutContent .blockFieldsList ul li.wideField > div.row > div.layoutEditFieldLabel {
+    flex: 0 0 130px;
+    width: 130px;
+    max-width: 130px;
+  }
+  .layoutContent .blockFieldsList ul li > div.row > div.fieldPropertyContainer,
+  .layoutContent .blockFieldsList ul li.wideField > div.row > div.fieldPropertyContainer {
+    flex: 1 1 auto;
+  }
+}
+
+/* モバイル表示 */
+@media (max-width: 768px) {
   .layoutContent .blockFieldsList ul {
     margin-left: 5px;
   }
-  .layoutContent .blockFieldsList ul li.ui-sortable-handle {
-    width: 90%;
+  .layoutContent .blockFieldsList ul li,
+  .layoutContent .blockFieldsList ul li.wideField,
+  .layoutContent .blockFieldsList ul li.dummyRow {
+    width: calc(100% - 10px);
+    float: none;
   }
-  .layoutContent .blockFieldsList ul li div > div.layoutEditFieldLabel {
-  width: calc(100% / 3);
+  .layoutContent .blockFieldsList ul li > div.row.border1px {
+    flex-wrap: wrap;
+    position: relative;
+    min-height: auto;
   }
-  .layoutContent .blockFieldsList ul li div > div.fieldPropertyContainer {
-  width: calc(100% / 3 * 2);
+  .layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel,
+  .layoutContent .blockFieldsList ul li.wideField > div.row > div.layoutEditFieldLabel {
+    flex: 0 0 100%;
+    width: 100%;
+    max-width: 100%;
+    padding-bottom: 5px;
+    border-right: none;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 5px;
   }
-  .layoutContent .blockFieldsList ul li div div.fieldPropertyContainer div > span.col-sm-2.actions{
+  .layoutContent .blockFieldsList ul li > div.row > div.fieldPropertyContainer,
+  .layoutContent .blockFieldsList ul li.wideField > div.row > div.fieldPropertyContainer {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  .layoutContent .blockFieldsList ul li .fieldPropertyContainer .actions {
     position: absolute;
     top: 10px;
     right: 10px;
+    flex-direction: row;
   }
 }
 

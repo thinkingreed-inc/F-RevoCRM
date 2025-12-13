@@ -5326,7 +5326,7 @@ TN-34230 .row .nav > li > a:hover {
   margin-top: 1%;
 }
 .layoutContent .blockFieldsList ul li {
-  width: 44%;
+  width: 45%;
   margin-left: 4%;
 }
 .layoutContent .blockFieldsList {
@@ -5336,7 +5336,6 @@ TN-34230 .row .nav > li > a:hover {
 .layoutContent .editFields {
   min-height: 116px;
   height: auto;
-  border-right: 1px solid #DDDDDD;
 }
 .layoutContent .fieldLabelContainer {
   padding-top: 15px;
