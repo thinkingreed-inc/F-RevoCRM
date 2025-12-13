@@ -11,7 +11,7 @@
  
 <div class="col-sm-12 col-xs-12 app-indicator-icon-container app-{$SELECTED_MENU_CATEGORY}">
     <div class="row" title="{vtranslate($MODULE,$MODULE)}">
-        <span class="app-indicator-icon fa fa-wrench"></span>
+        <span class="app-indicator-icon fa vicon-pdftemplates"></span>
     </div>
 </div>
     

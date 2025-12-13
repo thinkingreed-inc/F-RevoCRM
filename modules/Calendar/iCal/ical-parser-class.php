@@ -20,14 +20,14 @@ class iCal {
         $ical = file_get_contents($root_directory.$this->folders.$file);
         preg_match_all('/BEGIN:VEVENT.*?END:VEVENT/si', $ical, $eventresult, PREG_PATTERN_ORDER);
         preg_match_all('/BEGIN:VTODO.*?END:VTODO/si', $ical, $todoresult, PREG_PATTERN_ORDER);
-        for ($i = 0; $i < count($eventresult[0]); $i++) {
+        for ($i = 0; $i < php7_count($eventresult[0]); $i++) {
             $tmpbyline = explode("\r\n", $eventresult[0][$i]);
             $begin = false;
             $key=NULL;
             foreach ($tmpbyline as $item) {
                 $tmpholderarray = explode(":",$item,2);
                 
-                if (count($tmpholderarray) >1) { 
+                if (php7_count($tmpholderarray) >1) { 
                     if($tmpholderarray[0]=='BEGIN'){
                  		if($begin==false){
                  			$begin = true;
@@ -54,14 +54,14 @@ class iCal {
             unset($majorarray);
         }
         
-        for ($i = 0; $i < count($todoresult[0]); $i++) {
+        for ($i = 0; $i < php7_count($todoresult[0]); $i++) {
             $tmpbyline = explode("\r\n", $todoresult[0][$i]);
             $begin = false;
             $key=NULL;
             foreach ($tmpbyline as $item) {
                 $tmpholderarray = explode(":",$item);
                 
-                if (count($tmpholderarray) >1) { 
+                if (php7_count($tmpholderarray) >1) { 
                     if($tmpholderarray[0]=='BEGIN'){
                  		if($begin==false){
                  			$begin = true;

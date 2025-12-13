@@ -13,7 +13,7 @@ class Vtiger_DeleteAjax_Action extends Vtiger_Delete_Action {
 	public function process(Vtiger_Request $request) {
 		$moduleName = $request->getModule();
 		if($commentId = $request->get('commentId')){
-			$recordModel = Vtiger_Record_Model::getInstanceById($commentId, $moduleName);
+			$recordModel = ModComments_Record_Model::getInstanceById($commentId, $moduleName);
 			$recordModel->delete();
 			
 			$response = new Vtiger_Response();

@@ -8,12 +8,27 @@
  * All Rights Reserved.
  ************************************************************************************/
 
-class Vtiger_Request {
+class Vtiger_Request implements ArrayAccess {
 
 	// Datastore
 	private $valuemap;
 	private $rawvaluemap;
 	private $defaultmap = array();
+
+	// ArrayAccess Start
+	public function offsetExists($key) {
+		return $this->has($key);
+	}
+	public function offsetSet($key, $value) {
+		$this->set($key, $value);
+	}
+	public function offsetGet($key) {
+		return $this->get($key);
+	}
+	public function offsetUnset($key) {
+		// Ignore
+	}
+	// ArrayAccess End
 
 	/**
 	 * Default constructor
@@ -272,7 +287,5 @@ class Vtiger_Request {
 		$viewer->assign('RETURN_MODE', $this->get('returnmode'));
         $viewer->assign('RETURN_RELATION_ID', $this->get('returnrelationId'));
         $viewer->assign('RETURN_PARENT_MODULE', $this->get('returnparent'));
-        $viewer->assign('FROM_QUICK_CREATE', $this->get('fromQuickCreate'));
-        $viewer->assign('QUICK_CREATE_RETURN_URL', $this->get('quickCreateReturnURL'));
 	}
 }

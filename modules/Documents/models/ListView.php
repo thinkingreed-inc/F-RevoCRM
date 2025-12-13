@@ -149,7 +149,7 @@ class Documents_ListView_Model extends Vtiger_ListView_Model {
         if(!empty($folderValue)) {
             // added to check if there are filter conditions already there then we need to add a glue between them
             $glue = "";
-            if(count($queryGenerator->getWhereFields()) > 0) {
+            if(php7_count($queryGenerator->getWhereFields()) > 0) {
                 $glue = QueryGenerator::$AND;
             }
             $queryGenerator->addCondition($folderKey,$folderValue,'e',$glue);
@@ -161,7 +161,7 @@ class Documents_ListView_Model extends Vtiger_ListView_Model {
         }
 
         $glue = "";
-        if(count($queryGenerator->getWhereFields()) > 0 && (count($searchParams)) == 1 && count($searchParams[0]) > 0) { // searchParams do exist but first array is empty, so added a check
+        if(php7_count($queryGenerator->getWhereFields()) > 0 && (php7_count($searchParams)) == 1 && php7_count($searchParams[0]) > 0) { // searchParams do exist but first array is empty, so added a check
             $glue = QueryGenerator::$AND;
         }
         $queryGenerator->parseAdvFilterList($searchParams, $glue);

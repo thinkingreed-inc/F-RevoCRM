@@ -21,13 +21,13 @@
             </div>
             <div class="menu-scroller scrollContainer" style="position:relative; top:0; left:0;">
                         <div class="list-menu-content">
-                                {if $CUSTOM_VIEWS && count($CUSTOM_VIEWS) > 0}
+                                {if $CUSTOM_VIEWS && php7_count($CUSTOM_VIEWS) > 0}
                                     {foreach key=GROUP_LABEL item=GROUP_CUSTOM_VIEWS from=$CUSTOM_VIEWS}
                                     {if $GROUP_LABEL neq 'Mine' && $GROUP_LABEL neq 'Shared'}
                                         {continue}
                                      {/if}
                                     <div class="list-group">   
-                                        <h6 class="lists-header {if count($GROUP_CUSTOM_VIEWS) <=0} hide {/if}" >
+                                        <h6 class="lists-header {if php7_count($GROUP_CUSTOM_VIEWS) <=0} hide {/if}" >
                                             {if $GROUP_LABEL eq 'Mine'}
                                                 {vtranslate('LBL_MY_LIST',$MODULE)}
                                             {else}
@@ -105,10 +105,10 @@
                     <ul id="folders-list"  class="lists-menu">
                     {foreach item="FOLDER" from=$FOLDERS  name="folderView"}
                          {assign var=FOLDERNAME value={vtranslate($FOLDER->get('foldername'), $MODULE)}} 
-                        <li style="font-size:12px;" class='documentFolder {if $FOLDER_VALUE eq $FOLDER->getName()} active{/if} {if $smarty.foreach.folderView.iteration gt 5} filterHidden hide{/if}'>
+                        <li style="font-size:12px;" class='documentFolder {if $FOLDER_VALUE eq $FOLDER->get('folderid')} active{/if} {if $smarty.foreach.folderView.iteration gt 5} filterHidden hide{/if}'>
                             <a class="filterName" href="javascript:void(0);" data-filter-id="{$FOLDER->get('folderid')}" data-folder-name="{$FOLDER->get('foldername')}" title="{$FOLDERNAME}">
-                                <i class="fa {if $FOLDER_VALUE eq $FOLDER->getName()}fa-folder-open{else}fa-folder{/if}"></i> 
-                                <span class="foldername">{if {$FOLDERNAME|strlen} > 40 } {$FOLDERNAME|substr:0:40|@escape:'html'}..{else}{$FOLDERNAME|@escape:'html'}{/if}</span>
+                                <i class="fa {if $FOLDER_VALUE eq $FOLDER->get('folderid')}fa-folder-open{else}fa-folder{/if}"></i> 
+                                <span class="foldername">{$FOLDERNAME|@escape:'html'}</span>
                             </a>
                             {if $FOLDER->getName() neq 'Default' && $FOLDER->getName() neq 'Google Drive' && $FOLDER->getName() neq 'Dropbox'}
                                 <div class="dropdown pull-right">
@@ -163,8 +163,8 @@
                                     {include file="Tag.tpl"|vtemplate_path:$MODULE NO_DELETE=true ACTIVE= $CURRENT_TAG eq $TAG_ID}
                                 {/foreach}
                                 <div> 
-                                    <a class="moreTags {if (count($TAGS) - Vtiger_Tag_Model::NUM_OF_TAGS_LIST) le 0} hide {/if}">
-                                        <span class="moreTagCount">{count($TAGS) - Vtiger_Tag_Model::NUM_OF_TAGS_LIST}</span>
+                                    <a class="moreTags {if (php7_count($TAGS) - Vtiger_Tag_Model::NUM_OF_TAGS_LIST) le 0} hide {/if}">
+                                        <span class="moreTagCount">{php7_count($TAGS) - Vtiger_Tag_Model::NUM_OF_TAGS_LIST}</span>
                                         &nbsp;{vtranslate('LBL_MORE',$MODULE)|strtolower}
                                     </a>
                                     <div class="moreListTags hide">

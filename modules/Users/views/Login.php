@@ -37,11 +37,27 @@ class Users_Login_View extends Vtiger_View_Controller {
 
 		try{
 			$rssPath = "https://f-revocrm.jp/?feed=rss2";
-			$xml = new SimpleXMLElement($rssPath, LIBXML_NOCDATA, true);
-			$jsonData = json_decode(json_encode($xml));
-			$dataCount = count($jsonData->channel->item);
+
+			$context = stream_context_create([
+					'http' => [
+							'timeout' => 3
+					]
+			]);
+			$data = file_get_contents($rssPath, false, $context);
+
+			if ($data === false) {
+					// エラー処理
+					$dataCount = 0;
+			} else {
+					$xml = new SimpleXMLElement($data);
+					$jsonData = json_decode(json_encode($xml));
+					$dataCount = php7_count($jsonData->channel->item);
+			}
+
 		}catch(Exception $e){
-			$dataCount = 0;
+				$dataCount = 0;
+				global $log;
+				$log->error($e->getMessage());
 		}
 
 		$oldTextLength = vglobal('listview_max_textlength');
@@ -59,7 +75,11 @@ class Users_Login_View extends Vtiger_View_Controller {
 				$blockData['displayTitle'] = textlength_check($item->title);
 
 				vglobal('listview_max_textlength', 200);
-				$blockData['displaySummary'] = textlength_check(strip_tags($item->description));
+				if(count((array)$item->description) > 0){
+					$blockData['displaySummary'] = textlength_check(strip_tags(print_r($item->description, true)));
+				}else{
+					$blockData['displaySummary'] = '';
+				}
 				$finalJsonData[$blockData['type']][] = $blockData;
 			}
 		}
@@ -98,12 +118,13 @@ class Users_Login_View extends Vtiger_View_Controller {
 		$message = '';
 		if ($error) {
 			switch ($error) {
-				case 'login'		:	$message = '無効なユーザー名またはパスワード';						break;
-				case 'fpError'		:	$message = '無効なユーザー名またはE-mailアドレス';			break;
-				case 'statusError'	:	$message = 'メールサーバが設定されていません';	break;
+				case 'login'		:	$message = vtranslate('LBL_INVALID_USERNAME_OR_PASSWORD');						break;
+				case 'fpError'		:	$message = vtranslate('LBL_INVALID_USERNAME_OR_MAILADDRESS');			break;
+				case 'statusError'	:	$message = vtranslate('LBL_MAIL_SERVER_NOT_CONFIGURED');	break;
+				case 'userLocked'	:	$message = vtranslate('LBL_USER_LOCKED_ERROR_MESSAGE', 'Users');	break;
 			}
 		} else if ($mailStatus) {
-			$message = 'アドレスにメールを送信しました';
+			$message = vtranslate('LBL_AN_EMAIL_WAS_SENT_TO_THE_ADDRESS');
 		}
 
 		$viewer->assign('ERROR', $error);

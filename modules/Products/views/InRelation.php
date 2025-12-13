@@ -25,7 +25,7 @@ class Products_InRelation_View extends Vtiger_RelatedList_View {
 		}
 
 		$searchParams = $request->get('search_params');
-		if (empty($searchParams)) {
+		if (empty($searchParams) || !is_array($searchParams)) {
 			$searchParams = array();
 		}
 
@@ -72,7 +72,7 @@ class Products_InRelation_View extends Vtiger_RelatedList_View {
 		$models = $relationListView->getEntries($pagingModel);
 		$links = $relationListView->getLinks();
 		$header = $relationListView->getHeaders();
-		$noOfEntries = count($models);
+		$noOfEntries = php7_count($models);
 
 		$relationModel = $relationListView->getRelationModel();
 		$relationField = $relationModel->getRelationField();

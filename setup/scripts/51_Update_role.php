@@ -28,16 +28,20 @@ global $adb;
 
 $roles = Settings_Roles_Record_Model::getAll();
 $transRole = null;
-
+$H1_role = "LBL_ORGANIZATION";
+$H2_role = "LBL_ADMIN";
+$H3_role = "LBL_MANAGER";
+$H4_role = "LBL_GENERAL";
+$H5_role = "LBL_PART-TIME_JOB";
 foreach($roles as $r) {
     if($r->getId() == 'H1') {//Organaization ここは入ってこないかも。
-        $r->set('rolename', '組織');
+        $r->set('rolename', $H1_role);
         $r->set('mode', 'edit');
         $r->save();
         continue;
     }
     else if($r->getId() == 'H2') {//CEO
-        $r->set('rolename', '管理者');
+        $r->set('rolename', $H2_role);
         $r->set('parentrole', 'H1::H2');
         $r->set('depth', '1');
         $r->set('mode', 'edit');
@@ -46,7 +50,7 @@ foreach($roles as $r) {
         continue;
     }
     else if($r->getId() == 'H3') {//Vice President
-        $r->set('rolename', 'マネージャー');
+        $r->set('rolename', $H3_role);
         // $r->set('parentrole', 'H1::H3');
         // $r->set('depth', '1');
         $r->set('mode', 'edit');
@@ -55,7 +59,7 @@ foreach($roles as $r) {
         continue;
     }
     else if($r->getId() == 'H4') {//Sales Manager
-        $r->set('rolename', '一般');
+        $r->set('rolename', $H4_role);
         // $r->set('parentrole', 'H1::H4');
         // $r->set('depth', '1');
         $r->set('mode', 'edit');
@@ -64,7 +68,7 @@ foreach($roles as $r) {
         continue;
     }
     else if($r->getId() == 'H5') {//Sales Person
-        $r->set('rolename', 'パート・アルバイト');
+        $r->set('rolename', $H5_role);
         // $r->set('parentrole', 'H1::H5');
         // $r->set('depth', '1');
         $r->set('mode', 'edit');

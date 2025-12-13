@@ -52,7 +52,7 @@ class Vtiger_LanguageExport extends Vtiger_Package {
 	 * @param String Zipfilename to use
 	 * @param Boolean True for sending the output as download
 	 */
-	function export($languageCode, $todir='', $zipfilename='', $directDownload=false) {
+	function export($languageCode, $todir='', $zipfilename='', $directDownload=false, $extra=false) {
 
 		$this->__initExport($languageCode);
 		

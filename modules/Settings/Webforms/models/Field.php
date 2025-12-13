@@ -103,4 +103,61 @@ class Settings_Webforms_Field_Model extends Vtiger_Field_Model {
     public function isEmptyPicklistOptionAllowed() {
         return false;
     }
+
+	/**
+	 * Function to get the field details
+	 * @return <Array> - array of field values
+	 */
+	public function getFieldInfo() {
+		$currentUser = Users_Record_Model::getCurrentUserModel();
+		$fieldInfo =  array(
+			'mandatory' => $this->isMandatory(),
+			'type' => $this->getFieldDataType(),
+			'name' => $this->getFieldName(),
+			'label' => vtranslate($this->get('label'), $this->getModuleName()),
+			'defaultValue' => $this->getEditViewDisplayValue($this->getDefaultFieldValue()),
+			'customField' => Settings_Webforms_Record_Model::isCustomField($this->get('name')),
+			'specialValidator' => $this->getValidator()
+		);
+		$pickListValues = $this->getPicklistValues();
+		$picklistColors = $this->getPicklistColors();
+		if(!empty($pickListValues)) {
+			$fieldInfo['picklistvalues'] = $pickListValues;
+            $fieldInfo['editablepicklistvalues'] = $pickListValues;
+			$fieldInfo['picklistColors'] = $picklistColors;
+		}
+		if($this->getFieldDataType() == 'date' || $this->getFieldDataType() == 'datetime'){
+			$currentUser = Users_Record_Model::getCurrentUserModel();
+			$fieldInfo['date-format'] = $currentUser->get('date_format');
+		}
+		if($this->getFieldDataType() == 'currency') {
+			$currentUser = Users_Record_Model::getCurrentUserModel();
+			$fieldInfo['currency_symbol'] = $currentUser->get('currency_symbol');
+			$fieldInfo['decimalSeparator'] = $currentUser->get('currency_decimal_separator');
+			$fieldInfo['groupSeparator'] = $currentUser->get('currency_grouping_separator');
+		}
+		if($this->getFieldDataType() == 'owner') {
+			$userList = $currentUser->getAccessibleUsers();
+			$groupList = $currentUser->getAccessibleGroups();
+			$pickListValues = array();
+			$pickListValues[vtranslate('LBL_USERS', $this->getModuleName())] = $userList;
+			$pickListValues[vtranslate('LBL_GROUPS', $this->getModuleName())] = $groupList;
+			$fieldInfo['picklistvalues'] = $pickListValues;
+		}
+		if($this->getFieldDataType() == 'reference') {
+			$referenceList = $this->getReferenceList();
+			$fieldInfo['referencemodules']= $referenceList;
+		}
+		if($this->getFieldDataType() == 'ownergroup') {
+			$groupList = $currentUser->getAccessibleGroups();
+			$pickListValues = array();
+			$fieldInfo['picklistvalues'] = $groupList;
+		}
+		if($fieldInfo['type'] == 'boolean') {
+			$fieldInfo['type'] = 'picklist';
+			$fieldInfo['picklistvalues'] = array('' => vtranslate('LBL_SELECT_OPTION'), 'on' => vtranslate('LBL_YES'), 'off' => vtranslate('LBL_NO'));
+		}
+		return $fieldInfo;
+	}
+
 }

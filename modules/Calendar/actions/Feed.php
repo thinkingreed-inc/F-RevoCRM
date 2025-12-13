@@ -13,12 +13,13 @@ vimport ('~~/include/Webservices/Query.php');
 class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 	private $cacheUser = array();
 	private $cacheParent = array();
+	private $cacheModule = array();
 
 	public function process(Vtiger_Request $request) {
 		if($request->get('mode') === 'batch') {
 			$feedsRequest = $request->get('feedsRequest',array());
 			$result = array();
-			if(count($feedsRequest)) {
+			if(php7_count($feedsRequest)) {
 				foreach($feedsRequest as $key=>$value) {
 					$requestParams = array();
 					$requestParams['start'] = $value['start'];
@@ -32,6 +33,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 					$requestParams['group'] = $value['group'];
 					$requestParams['mapping'] = $value['mapping'];
 					$requestParams['conditions'] = $value['conditions'];
+					$requestParams['is_own'] = $value['is_own'];
 					$result[$key] = $this->_process($requestParams);
 				}
 			}
@@ -49,6 +51,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			$requestParams['group'] = $request->get('group');
 			$requestParams['mapping'] = $request->get('mapping');
 			$requestParams['conditions'] = $request->get('conditions','');
+			$requestParams['is_own'] = $request->get('is_own','1');
 			echo $this->_process($requestParams);
 		}
 	}
@@ -66,6 +69,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			$isGroupId = $request['group'];
 			$mapping = $request['mapping'];
 			$conditions = $request['conditions'];
+			$isOwn = $request['is_own'];
 			$result = array();
 			switch ($type) {
 				case 'Events'			:	if($fieldName == 'date_start,due_date' || $userid) {
@@ -75,13 +79,13 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 											}
 											break;
 				case 'Calendar'			:	if($fieldName == 'date_start,due_date') {
-												$this->pullTasks($start, $end, $result,$color,$textColor);
+												$this->pullTasks($start, $end, $result,$color,$textColor,$userid);
 											} else {
 												$this->pullDetails($start, $end, $result, $type, $fieldName, $color, $textColor);
 											}
 											break;
 				case 'MultipleEvents'	:	$this->pullMultipleEvents($start,$end, $result,$mapping);break;
-				case $type				:	$this->pullDetails($start, $end, $result, $type, $fieldName, $color, $textColor);break;
+				case $type				:	$this->pullDetails($start, $end, $result, $type, $fieldName, $color, $textColor, $conditions ,$isOwn);break;
 			}
 			return json_encode($result);
 		} catch (Exception $ex) {
@@ -93,7 +97,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 		return Vtiger_Util_Helper::validateStringForSql($value);
 	}
 
-	protected function pullDetails($start, $end, &$result, $type, $fieldName, $color = null, $textColor = 'white', $conditions = '') {
+	protected function pullDetails($start, $end, &$result, $type, $fieldName, $color = null, $textColor = 'white', $conditions = '', $isOwn = '1') {
 		$moduleModel = Vtiger_Module_Model::getInstance($type);
 		$nameFields = $moduleModel->getNameFields();
 		foreach($nameFields as $i => $nameField) {
@@ -105,7 +109,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 		$nameFields = array_values($nameFields);
 		$selectFields = implode(',', $nameFields);		
 		$fieldsList = explode(',', $fieldName);
-		if(count($fieldsList) == 2) {
+		if(php7_count($fieldsList) == 2) {
 			$db = PearDatabase::getInstance();
 			$user = Users_Record_Model::getCurrentUserModel();
 			$userAndGroupIds = array_merge(array($user->getId()),$this->getGroupsIdsForUsers($user->getId()));
@@ -113,13 +117,19 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			$meta = $queryGenerator->getMeta($moduleModel->get('name'));
 
 			$queryGenerator->setFields(array_merge(array_merge($nameFields, array('id')), $fieldsList));
+			//カレンダー種別でタスク-開始日,終了日を選択している時の処理
+			if($type == 'ProjectTask'){
+				$queryGenerator->setFields(array_merge(array_merge($nameFields, array('id','projecttaskstatus')), $fieldsList));
+			}
 			$query = $queryGenerator->getQuery();
 			$startDateColumn = Vtiger_Util_Helper::validateStringForSql($fieldsList[0]);
 			$endDateColumn = Vtiger_Util_Helper::validateStringForSql($fieldsList[1]);
 			$query.= " AND (($startDateColumn >= ? AND $endDateColumn < ?) OR ($endDateColumn >= ?)) ";
 			$params = array($start,$end,$start);
-			$query.= " AND vtiger_crmentity.smownerid IN (".generateQuestionMarks($userAndGroupIds).")";
-			$params = array_merge($params, $userAndGroupIds);
+			if(!empty($isOwn)) {
+				$query.= " AND vtiger_crmentity.smownerid IN (".generateQuestionMarks($userAndGroupIds).")";
+				$params = array_merge($params, $userAndGroupIds);
+			}
 			$queryResult = $db->pquery($query, $params);
 
 			$records = array();
@@ -148,8 +158,10 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 					$params = array_merge($params,array("$endDateYear-",$start,"$endDateYear-",$end));
 				} 
 				$query .= ")";
-				$query.= " AND vtiger_crmentity.smownerid IN (".  generateQuestionMarks($userAndGroupIds).")";
-				$params = array_merge($params,$userAndGroupIds);
+				if(!empty($isOwn)) {
+					$query.= " AND vtiger_crmentity.smownerid IN (".  generateQuestionMarks($userAndGroupIds).")";
+					$params = array_merge($params,$userAndGroupIds);
+				}
 				$queryResult = $db->pquery($query, $params);
 				$records = array();
 				while($rowData = $db->fetch_array($queryResult)) {
@@ -167,8 +179,13 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 
 				if($type == 'PriceBooks') {
 					$records = $this->queryForRecords($query, false);
+				//カレンダー種別でタスク-開始日またはタスク-終了日を選択している時の処理
+				}else if($type == 'ProjectTask'){
+					$query = "SELECT $selectFields, $fieldsList[0],projecttaskstatus FROM $type";
+					$query.= " WHERE $fieldsList[0] >= '$start' AND $fieldsList[0] <= '$end' ";
+					$records = $this->queryForRecords($query, !empty($isOwn));
 				} else {
-					$records = $this->queryForRecords($query);
+					$records = $this->queryForRecords($query, !empty($isOwn));
 				}
 			}
 		}
@@ -177,7 +194,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			list ($modid, $crmid) = vtws_getIdComponents($record['id']);
 			$item['id'] = $crmid;
 			$item['title'] = decode_html($record[$nameFields[0]]);
-			if(count($nameFields) > 1) {
+			if(php7_count($nameFields) > 1) {
 				$item['title'] = decode_html(trim($record[$nameFields[0]].' '.$record[$nameFields[1]]));
 			}
 			if(!empty($record[$fieldsList[0]])) {
@@ -185,7 +202,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			} else {
 				$item['start'] = $record[$fieldsList[1]];
 			}
-			if(count($fieldsList) == 2) {
+			if(php7_count($fieldsList) == 2) {
 				$item['end'] = $record[$fieldsList[1]];
 			}
 			if($fieldName == 'birthday') {
@@ -198,11 +215,15 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 				$recordDateTime->setDate($calendarYear, $recordDateTime->format('m'), $recordDateTime->format('d'));
 				$item['start'] = $recordDateTime->format('Y-m-d');
 			}
+			if($type == 'ProjectTask'&& $record['projecttaskstatus']!=null){
+				$item['title'] = $item['title'].' - ('.decode_html(vtranslate($record['projecttaskstatus'],'ProjectTask')).')';
+			}
 
 			$urlModule = $type;
 			if ($urlModule === 'Events') {
 				$urlModule = 'Calendar';
 			}
+			$item['status'] = $record['projecttaskstatus'];
 			$item['url']   = sprintf('index.php?module='.$urlModule.'&view=Detail&record=%s', $crmid);
 			$item['color'] = $color;
 			$item['textColor'] = $textColor;
@@ -258,12 +279,10 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 
 	protected function pullEvents($start, $end, &$result, $userid = false, $color = null, $textColor = 'white', $isGroupId = false, $conditions = '') {
 		$dbStartDateOject = DateTimeField::convertToDBTimeZone($start);
-		$dbStartDateTime = $dbStartDateOject->format('Y-m-d H:i:s');
-		$dbStartDateTimeComponents = explode(' ', $dbStartDateTime);
-		$dbStartDate = $dbStartDateTimeComponents[0];
+		$dbStartDate = $dbStartDateOject->format('Y-m-d');
 
 		$dbEndDateObject = DateTimeField::convertToDBTimeZone($end);
-		$dbEndDateTime = $dbEndDateObject->format('Y-m-d H:i:s');
+		$dbEndDate = $dbEndDateObject->format('Y-m-d');
 
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$db = PearDatabase::getInstance();
@@ -283,7 +302,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			$queryGenerator = new QueryGenerator($moduleModel->get('name'), $currentUser);
 		// }
 
-		$queryGenerator->setFields(array('subject', 'eventstatus', 'visibility','date_start','time_start','due_date','time_end','assigned_user_id','id','activitytype','recurringtype','parent_id','description', 'location'));
+		$queryGenerator->setFields(array('subject', 'eventstatus', 'visibility','date_start','time_start','due_date','time_end','assigned_user_id','id','activitytype','recurringtype','parent_id','description', 'location', 'creator', 'modifiedby'));
 		$query = $queryGenerator->getQuery();
 
 		$query.= " AND vtiger_activity.activitytype NOT IN ('Emails','Task') AND ";
@@ -295,13 +314,9 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			$conditions = Zend_Json::decode(Zend_Json::decode($conditions));
 			$query .=  $this->generateCalendarViewConditionQuery($conditions).'AND ';
 		}
-		$query.= " ((concat(date_start, '', time_start)  >= ? AND concat(due_date, '', time_end) < ? ) OR ( due_date >= ? ))";
-
-		$lastMonth = date('Y-m-d H:i:s', strtotime('-2 month', strtotime($dbStartDateTime)));
-		$nextMonth = date('Y-m-d H:i:s', strtotime('+2 month', strtotime($dbStartDateTime)));
-		$query.= " AND concat(date_start, '', time_start) >= '$lastMonth' AND concat(date_start, '', time_start) <= '$nextMonth'";
-
-		$params=array($dbStartDateTime,$dbEndDateTime,$dbStartDate);
+		
+		$query.= " date_start <= ? AND due_date >= ?";
+		
 		if(empty($userid)){
 			$eventUserId  = $currentUser->getId();
 		}else{
@@ -310,12 +325,21 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 		$userIds = array_merge(array($eventUserId), $this->getGroupsIdsForUsers($eventUserId));
 		
 		$query.= " AND vtiger_crmentity.smownerid IN (".  generateQuestionMarks($userIds).")";
-		$params= array_merge($params,$userIds);
+		
+		$params = array($dbEndDate, $dbStartDate, $userIds);
 		$queryResult = $db->pquery($query, $params);
 
+		$creatorfield = Vtiger_Field_Model::getInstance('creator', $moduleModel);
+
 		while($record = $db->fetchByAssoc($queryResult)){
-			if(!array_key_exists($record['smonwerid'], $this->cacheUser)) {
+			if(!array_key_exists($record['smownerid'], $this->cacheUser)) {
 				$this->cacheUser[$record['smownerid']] = Vtiger_functions::getUserRecordLabel($record['smownerid']);
+			}
+			if(!array_key_exists($record['smcreatorid'], $this->cacheUser)) {
+				$this->cacheUser[$record['smcreatorid']] = Vtiger_functions::getUserRecordLabel($record['smcreatorid']);
+			}
+			if(!array_key_exists($record['modifiedby'], $this->cacheUser)) {
+				$this->cacheUser[$record['modifiedby']] = Vtiger_functions::getUserRecordLabel($record['modifiedby']);
 			}
 			$item = array();
 			$crmid = $record['activityid'];
@@ -391,16 +415,43 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			}
 
 			$item['assigned_user_id'] = $this->cacheUser[$record['smownerid']];
+			$item['creator'] = $this->cacheUser[$record['smcreatorid']];
+			$item['creator_field_label'] = vtranslate($creatorfield->get('label'));
+			$item['modifiedby'] = $this->cacheUser[$record['modifiedby']];
+			$item['modifiedby_field_label'] = vtranslate('Last Modified By', 'Events');
 			if(!empty($record['crmid'])) {
 				if(!array_key_exists($record['crmid'], $this->cacheParent)) {
 					$this->cacheParent[$record['crmid']] = Vtiger_functions::getCRMRecordLabel($record['crmid']);
+					$this->cacheModule[$record['related_module']] = Vtiger_functions::getCRMRecordType($record['crmid']);
 				}
 				$item['parent_id'] = $this->cacheParent[$record['crmid']];
+				$item['related_id'] = $record['crmid'];
+				$item['related_module'] = $this->cacheModule[$record['related_module']];
 			} else {
 				$item['parent_id'] = '';
+				$item['related_id'] = '';
+				$item['related_module'] = '';
 			}
 			$item['location'] = $record['location'];
 			$item['description'] = $record['description'];
+
+			$inviteeDetails = $this->getInviteeNames($record['activityid']);
+			$group = Settings_Groups_Record_Model::getInstance($ownerId);
+			if(!empty($group)) {
+				$inviteeDetails[$ownerId] = $group->getName();
+			}
+			if(php7_count($inviteeDetails) > 0) {
+				$inviteeMessage = '';
+				if(count($inviteeDetails) == 1 && array_key_exists($currentUser->getId(), $inviteeDetails)) {
+					$inviteeMessage = '';
+				} else {
+					$inviteeMessage = '<br>'.vtranslate('LBL_INVITE_USERS', 'Events').'<br>'.implode(', ', $inviteeDetails).'';
+				}
+				if(!empty($record['description']) && !empty($inviteeMessage)) {
+					$inviteeMessage ='<br>'.$inviteeMessage;
+				}
+				$item['description'] = $record['description'].$inviteeMessage;
+			}
 
 			$result[] = $item;
 		}
@@ -416,33 +467,73 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 		}
 	}
 
-	protected function pullTasks($start, $end, &$result, $color = null,$textColor = 'white') {
+	protected function pullTasks($start, $end, &$result, $color = null,$textColor = 'white',$userid = null) {
 		$user = Users_Record_Model::getCurrentUserModel();
 		$db = PearDatabase::getInstance();
+		if (empty($userid)) {
+			$userid = $user->getId();
+		}
 
 		$moduleModel = Vtiger_Module_Model::getInstance('Calendar');
-		$userAndGroupIds = array_merge(array($user->getId()),$this->getGroupsIdsForUsers($user->getId()));
+		$userAndGroupIds = array_merge(array($userid),$this->getGroupsIdsForUsers($userid));
 		$queryGenerator = new QueryGenerator($moduleModel->get('name'), $user);
 
-		$queryGenerator->setFields(array('activityid','subject', 'taskstatus','activitytype', 'date_start','time_start','due_date','time_end','id', 'smownerid','parent_id','description'));
+		$queryGenerator->setFields(array('activityid','subject', 'taskstatus','activitytype', 'date_start','time_start','due_date','time_end','id', 'assigned_user_id','parent_id','description','visibility','taskpriority'));
 		$query = $queryGenerator->getQuery();
 
-		$query.= " AND vtiger_activity.activitytype = 'Task' AND ";
 		$currentUser = Users_Record_Model::getCurrentUserModel();
+		$groupsIds = Vtiger_Util_Helper::getGroupsIdsForUsers($currentUser->getId());
+		require('user_privileges/user_privileges_'.$currentUser->id.'.php');
+		require('user_privileges/sharing_privileges_'.$currentUser->id.'.php');
+
+		$query.= " AND vtiger_activity.activitytype = 'Task' AND ";
 		$hideCompleted = $currentUser->get('hidecompletedevents');
 		if($hideCompleted)
 			$query.= "vtiger_activity.status != 'Completed' AND ";
 		$query.= " ((date_start >= ? AND due_date < ? ) OR ( due_date >= ? ))";
 		$params=array($start,$end,$start);
 		$userIds = $userAndGroupIds;
-		$query.= " AND vtiger_crmentity.smownerid IN (".generateQuestionMarks($userIds).")";
+		$query.= " AND vtiger_activity.smownerid IN (".generateQuestionMarks($userIds).")";
 		$params=array_merge($params,$userIds);
 		$queryResult = $db->pquery($query,$params);
 
 		while($record = $db->fetchByAssoc($queryResult)){
+			if(!array_key_exists($record['smownerid'], $this->cacheUser)) {
+				$this->cacheUser[$record['smownerid']] = Vtiger_functions::getUserRecordLabel($record['smownerid']);
+			}
+
 			$item = array();
+			$visibility = $record['visibility'];
+			$item['visibility'] = $visibility;
+			$ownerId = $record['smownerid'];
+			$recordHidden = true;
+			if(in_array($ownerId, $groupsIds)) {
+				$recordHidden = false;
+			} else if($ownerId == $currentUser->getId()){
+				$recordHidden = false;
+			}
+			// if the user is having view all permission then it should show the record
+			// as we are showing in detail view
+			if($profileGlobalPermission[1] ==0 || $profileGlobalPermission[2] ==0) {
+				$recordHidden = false;
+			}
+
+			$taskpriority = $record['priority'];
+			if (!empty($taskpriority)) {
+				$taskpriority = '('.decode_html(vtranslate($taskpriority, 'Calendar')).') ';
+			}
+
 			$crmid = $record['activityid'];
-			$item['title'] = decode_html($record['subject']).' - ('.decode_html(vtranslate($record['status'],'Calendar')).')';
+			if(!$currentUser->isAdminUser() && $visibility == 'Private' && $userid && $userid != $currentUser->getId() && $recordHidden) {
+				continue;
+			} else if ($userid && $userid != $currentUser->getId()) {
+				$item['title'] = $taskpriority.decode_html($record['subject']).' - ('.decode_html(vtranslate($record['status'],'Calendar')).')';
+				$item['url']   = '';
+			} else {
+				$item['title'] = $taskpriority.decode_html($record['subject']).' - ('.decode_html(vtranslate($record['status'],'Calendar')).')';
+				$item['url']   = sprintf('index.php?module=Calendar&view=Detail&record=%s', $crmid);
+			}
+
 			$item['status'] = $record['status'];
 			$item['activitytype'] = vtranslate($record['activitytype'], 'Calendar');
 			$item['id'] = $crmid;
@@ -454,8 +545,16 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			$dataBaseDateFormatedString = DateTimeField::__convertToDBFormat($dateComponent, $user->get('date_format'));
 			$item['start'] = $dataBaseDateFormatedString.' '. $dateTimeComponents[1];
 
-			$item['end']   = $record['due_date'];
-			$item['url']   = sprintf('index.php?module=Calendar&view=Detail&record=%s', $crmid);
+			$dueDate = new DateTime($record['due_date'].' '.$record['time_end']);
+			$dueDate = $dueDate->modify('+1 day')->format('Y-m-d');
+			$dateTimeFieldInstance = new DateTimeField($dueDate.' '.$record['time_start']);
+			$userDateTimeString = $dateTimeFieldInstance->getDisplayDateTimeValue();
+			$dateTimeComponents = explode(' ',$userDateTimeString);
+			$dateComponent = $dateTimeComponents[0];
+			//Conveting the date format in to Y-m-d.since full calendar expects in the same format
+			$dataBaseDateFormatedString = DateTimeField::__convertToDBFormat($dateComponent, $user->get('date_format'));
+			$item['end']   = $dataBaseDateFormatedString.' '. $dateTimeComponents[1];
+
 			$item['color'] = $color;
 			$item['textColor'] = $textColor;
 			$item['module'] = $moduleModel->getName();
@@ -463,15 +562,69 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			$item['fieldName'] = 'date_start,due_date';
 			$item['conditions'] = '';
 
+			if ($userid) {
+				$item['userid'] = $userid;
+			}
+
 			if(!empty($record['parent_id'])) {
 				$item['parent_id'] = Vtiger_functions::getCRMRecordLabel($record['parent_id']);
 			} else {
 				$item['parent_id'] = '';
 			}
-			$item['description'] = $record['description'];
+
+			$ownerId = $record['smownerid'];
+			$item['assigned_user_id'] = $this->cacheUser[$record['smownerid']];
+
+			$inviteeDetails = $this->getInviteeNames($record['activityid']);
+			$group = Settings_Groups_Record_Model::getInstance($ownerId);
+			if(!empty($group)) {
+				$inviteeDetails[$ownerId] = $group->getName();
+			}
+			if(php7_count($inviteeDetails) > 0) {
+				$inviteeMessage = '';
+				if(count($inviteeDetails) == 1 && array_key_exists($currentUser->getId(), $inviteeDetails)) {
+					$inviteeMessage = '';
+				} else {
+					$inviteeMessage = '<br>'.vtranslate('LBL_INVITE_USERS', 'Events').'<br>'.implode(', ', $inviteeDetails).'';
+				}
+				if(!empty($record['description']) && !empty($inviteeMessage)) {
+					$inviteeMessage ='<br>'.$inviteeMessage;
+				}
+				$item['description'] = $record['description'].$inviteeMessage;
+			}
 
 			$result[] = $item;
 		}
 	}
 
+	private function getInviteeNames($activityid) {
+		global $adb;
+
+		$inviteeDetails = array();
+
+		$sql = "SELECT
+					i.*,
+					u.first_name,
+					u.last_name
+				FROM
+					vtiger_invitees i
+					INNER JOIN vtiger_users u ON u.id = i.inviteeid
+				WHERE
+					i.activityid=(SELECT invitee_parentid FROM vtiger_activity WHERE activityid = ?)";
+
+		$result = $adb->pquery($sql, array($activityid));
+		$num_rows = $adb->num_rows($result);
+
+		for($i=0; $i<$num_rows; $i++) {
+			$userid = $adb->query_result($result, $i, 'inviteeid');
+			$name = $adb->query_result($result, $i, 'last_name').''.$adb->query_result($result, $i, 'first_name');
+			if(empty($name)) {
+				$group = Settings_Groups_Record_Model::getInstance($userid);
+				$name = $group->getName();
+			}
+			$inviteeDetails[$userid] = $name;
+		}
+
+		return $inviteeDetails;
+	}
 }

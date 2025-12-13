@@ -230,12 +230,12 @@ function setMailerProperties($mail,$subject,$contents,$from_email,$from_name,$to
 	if($to_email != '')
 	{
 		if(is_array($to_email)) {
-			for($j=0,$num=count($to_email);$j<$num;$j++) {
+			for($j=0,$num=php7_count($to_email);$j<$num;$j++) {
 				$mail->addAddress($to_email[$j]);
 			}
 		} else {
 			$_tmp = explode(",",$to_email);
-			for($j=0,$num=count($_tmp);$j<$num;$j++) {
+			for($j=0,$num=php7_count($_tmp);$j<$num;$j++) {
 				$mail->addAddress($_tmp[$j]);
 			}
 		}
@@ -406,7 +406,7 @@ function setCCAddress($mail,$cc_mod,$cc_val)
 	if($cc_val != '')
 	{
 		$ccmail = explode(",",trim($cc_val,","));
-		for($i=0;$i<count($ccmail);$i++)
+		for($i=0;$i<php7_count($ccmail);$i++)
 		{
 			$addr = $ccmail[$i];
 			$cc_name = preg_replace('/([^@]+)@(.*)/', '$1', $addr); // First Part Of Email
@@ -621,7 +621,7 @@ function getDefaultAssigneeEmailIds($groupId) {
 
 		//Clearing static cache for sub groups
 		GetGroupUsers::$groupIdsList = array();
-		if(count($userGroups->group_users) == 0) return array();
+		if(php7_count($userGroups->group_users) == 0) return array();
 
 		$result = $adb->pquery('SELECT email1,email2,secondaryemail FROM vtiger_users WHERE vtiger_users.id IN
 											('.  generateQuestionMarks($userGroups->group_users).') AND vtiger_users.status= ?',

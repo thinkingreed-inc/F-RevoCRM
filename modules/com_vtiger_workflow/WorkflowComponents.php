@@ -67,7 +67,7 @@ function vtJsonDependentModules($adb, $request) {
 		}
 	}
     
-	$returnValue = array('count' => count($dependentFields), 'entities' => $dependentFields);
+	$returnValue = array('count' => php7_count($dependentFields), 'entities' => $dependentFields);
     
 	echo Zend_Json::encode($returnValue);
 }

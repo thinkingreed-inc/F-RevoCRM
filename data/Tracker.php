@@ -46,7 +46,7 @@ class Tracker {
     );
 	function __construct()
     {
-        $this->log = LoggerManager::getLogger('Tracker');
+        $this->log = Logger::getLogger('Tracker');
 		// $this->db = PearDatabase::getInstance();
 		global $adb;
         $this->db = $adb;
@@ -91,7 +91,7 @@ $log->info("in  track view method ".$current_module);
 			 $fl = array();
 			 foreach($fieldlists as $w => $c)
 			 {
-				 if (count($fl))
+				 if (php7_count($fl))
 				 	$fl[] = "' '";
 				 $fl[] = $c;
 			 }
@@ -144,7 +144,7 @@ $log->info("in  track view method ".$current_module);
 
 
             // If the module was not specified or the module matches the module of the row, add the row to the list
-            if($module_name == "" || $row[module_name] == $module_name)
+            if($module_name == "" || $row[$module_name] == $module_name)
             {
 		//Adding Security check
 		require_once('include/utils/utils.php');

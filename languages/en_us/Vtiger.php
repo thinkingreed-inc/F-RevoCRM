@@ -25,9 +25,11 @@ $languageStrings = array(
 	'LBL_EDITING' => 'Editing',
 	'LBL_SAVE' => 'Save',
 	'LBL_CANCEL' => 'Cancel',
+	'Canceled ' => 'Cancel',
 	'LBL_BACK' => 'Back',
 	'LBL_IMPORT' => 'Import',
 	'LBL_EXPORT' => 'Export',
+	'LBL_PDF_EXPORT' => 'Export PDF',
 	'LBL_FIND_DUPLICATES' => 'Find Duplicates',
 	'LBL_MORE' => 'More',
 	'LBL_LESS' => 'Less',
@@ -52,12 +54,15 @@ $languageStrings = array(
 	'LBL_RECORD_DELETE' => 'The record you are trying to view has been deleted.',
 	'LBL_RECORD_NOT_FOUND' => 'Record you are trying to access is not found',
 	'LBL_EDIT_REASON' => 'Edit reason',
+	'Result' => 'Result',
 	//'LBL_EDIT_CURRENT_FILTER' => 'Edit Current Filter',
 	//'LBL_DELETE_CURRENT_FILTER' => 'Delete Current Filter',
 	'LBL_SELECT' => 'Select',
 	'LBL_CLEAR' => 'Clear',
 	'LBL_YES' => 'Yes',
+	'yes' => 'Yes',
 	'LBL_NO' => 'No',
+	'no' => 'No',
 	'LBL_SHOW_COMPLETE_DETAILS' => 'Complete Details',
 	'LBL_MINILIST_FIELDS_ARE_NOT_AVAILABLE_FOR_YOU' => 'Sorry! Minilist fields are not available for you.',
 	'LBL_MASS_EDITING' => 'Mass Editing',
@@ -96,6 +101,8 @@ $languageStrings = array(
 	'LBL_TODOS' => 'Tasks',
 	'LBL_LAST_VIEWED_RECORDS' => 'Last Viewed Records',
 	'LBL_DASHBOARD' => 'Dashboard',
+	'My Dashboard' => 'My Dashboard',
+	'Default' => 'Default',
 	'LBL_USER_SETTINGS' => 'User Settings',
 	'LBL_MY_PREFERENCES' => 'My Preferences',
 	'LBL_SIGN_OUT' => 'Sign Out',
@@ -106,6 +113,7 @@ $languageStrings = array(
 	'LBL_CHAT_SUPPORT'=>'Chat Support',
 	'LBL_CRM_SETTINGS' => 'CRM Settings',
 	'LBL_ON_DEMAND_ADMIN' => 'Add / Delete Users',
+	'Faq_user' => 'User FAQ',
 	'LBL_ANNOUNCEMENT' => 'Announcement',
 	'LBL_CALENDAR' => 'Calendar',
 	'LBL_POST' => 'Post',
@@ -127,6 +135,7 @@ $languageStrings = array(
 	'LBL_EDIT_TAG'=>'Edit Tag',
 	'LBL_NO_TAG_EXISTS' => 'No Tag Exists' ,
 	'LBL_RELATED_USERS' => 'Related Users',
+	'Primary Module' => 'Module',
 	'LBL_TAGS_IMPORT_MESSAGE' => 'If you import tags, they become Public tags.',
 
 	// Common Fields
@@ -152,6 +161,8 @@ $languageStrings = array(
 	'LBL_NO_UPDATES' => 'No Updates',
 	'LBL_ACTIVITIES' => 'Activities',
 	'LBL_NO_PENDING_ACTIVITIES' => 'No pending activities',
+	'LBL_ACTIVITIES_HISTORY' => 'Activity History',
+	'LBL_NO_ACTIVITIES_HISTORY' => 'No Activity History',
 	'LBL_SUMMARY' => 'Summary',
 	'LBL_KEY_FIELD' => 'Key Field',
 	'LBL_DETAILS' => 'Details',
@@ -170,6 +181,7 @@ $languageStrings = array(
 	//DropDown Category
 	'LBL_USERS' => 'Users',
 	'LBL_GROUPS' => 'Groups',
+	'LBL_ROLEANDSUBORDINATES' => 'Role and Subordinates',
 
 	//EditView Form Links
 	'LBL_FULL_FORM' => 'Full Form',
@@ -184,8 +196,11 @@ $languageStrings = array(
 	'LBL_NO_COMMENTS' => 'No comments',
 	'LBL_REPLIES' => 'replies',
 	'LBL_REPLY_ALL' => 'Reply all',
+	'LBL_HIDDEN' => 'Hidden',
+	'LBL_DISPLAY' => 'Display',
 
 	//Translation for all modules
+	'Dashboards' => 'Dashboards',
 	'Accounts' => 'Organizations',
 	'Assets' => 'Assets',
 	'Calendar' => 'Calendar',
@@ -193,14 +208,19 @@ $languageStrings = array(
 	'Contacts' => 'Contacts',
 	'Documents' => 'Documents',
 	'Leads' => 'Leads',
+	'lead日' => 'Lead date',
+	'Faq_lead日' => 'FAQ - Lead date',
 	'ModComments' => 'Comments',
+	'Comments' => 'Comments',
 	'Potentials' => 'Opportunities',
 	'PriceBooks' => 'Price Books',
+	'Unit Price' => 'Unit Price',
 	'Products' => 'Products',
 	'Project' => 'Projects',
 	'ProjectMilestone' => 'Project Milestones',
 	'ProjectTask' => 'Project Tasks',
 	'ServiceContracts' => 'Service Contracts',
+	'Service Requests' => 'Service Requests',
 	'Services' => 'Services',
 	'Vendors' => 'Vendors',
 	'Rss' => 'RSS',
@@ -213,6 +233,10 @@ $languageStrings = array(
 	'Portal' => 'Our Sites',
 	'Email Templates' => 'Email Templates',
 	'Recycle Bin' => 'Recycle Bin',
+	'Events' => 'Events',
+	'Dailyreports' => 'Daily Reports',
+	'Groups' => 'Groups',
+	'Webforms' => 'Webforms',
 
 	//Basic String Translation
 	'LBL_ADD_RECORD' => 'Add Record',
@@ -277,6 +301,7 @@ $languageStrings = array(
 	'LBL_ITEM_DETAILS'=> 'Item Details',
 	'LBL_CURRENCY' => 'Currency',
 	'LBL_TAX_MODE' => 'Tax Mode',
+	'Taxes' => 'Taxes',
 	'LBL_INDIVIDUAL' => 'Individual',
 	'LBL_GROUP' => 'Group',
 	'LBL_TOOLS' => 'Tools',
@@ -288,6 +313,7 @@ $languageStrings = array(
 	'LBL_NET_PRICE' => 'Net Price',
 	'LBL_DISCOUNT' => 'Discount',
 	'LBL_TOTAL_AFTER_DISCOUNT' => 'Total After Discount',
+	'Discount Amount Final' => 'Total Discount Amount',
 	'LBL_TAX' => 'Tax',
 	'LBL_ADD_PRODUCT' => 'Add Product',
 	'LBL_ADD_SERVICE' => 'Add Service',
@@ -359,6 +385,8 @@ $languageStrings = array(
 	'LBL_REMOVE' => 'Remove',
 	'LBL_AT' => 'at',
 	'LBL_MINE' => 'Mine',
+	'Mine' => 'Mine', 
+	'Shared' => 'Shared',
 	'LBL_ME' => 'Me',
 	'History' => 'History',
 	'Upcoming Tasks' => 'Upcoming Tasks',
@@ -389,6 +417,7 @@ $languageStrings = array(
 	'LBL_AGO' => 'ago',
 	'LBL_CHANGED' => 'changed',
 	'SINGLE_Users' => 'User',
+	'user' => 'user',
 	'LBL_MATCHED_THIS_CRITERIA'=> 'matched this criteria',
 	'LBL_NO_SCHEDULED_ACTIVITIES' => 'No scheduled activities',
 	'LBL_NO_OVERDUE_ACTIVITIES' => 'No overdue activities',
@@ -406,6 +435,10 @@ $languageStrings = array(
 	'LBL_SHOW' => 'Show',
 	'LBL_MY' => 'My',
 	'LBL_SELECT_DATE_RANGE' => 'Select Date Range',
+	'LBL_IFRAME_WIDGET' => 'IFrame Widget',
+	'LBL_ADD_IFRAME_WIDGET' => 'Add IFrame Widget',
+	'LBL_IFRAME_NAME' => 'IFrame Name',
+	'LBL_INVALID_URL' => 'Invalid URL',
 
 	// Basic Strings- custom view
 	'LBL_VIEW_NAME' => 'List Name',
@@ -469,6 +502,7 @@ $languageStrings = array(
 	'LBL_BETWEEN' => 'between',
 	'LBL_IS_EMPTY'=> 'is empty',
 	'LBL_IS_NOT_EMPTY' => 'is not empty',
+	'LBL_IS_OWN' => 'own',
 	'LBL_APPROVE' => 'Approve',
 	'LBL_HAS_CHANGED' => 'has changed',
 	'LBL_HAS_CHANGED_TO' => 'has changed to',
@@ -509,7 +543,7 @@ $languageStrings = array(
 	'Leads by Industry' => 'Leads by Industry',
 	'Tickets by Status' => 'Tickets by Status',
 	'Open Tickets' => 'Open Tickets',
-	'Funnel Amount' => 'Total Amount by Sales stage',
+	'総額 ( ステージ別 )' => 'Total Amount by Sales stage',
 	'Key Metrics' => 'Key Metrics',
 	'Mini List' => 'Mini List',
 	'Tag Cloud' => 'Tag Cloud',
@@ -524,10 +558,10 @@ $languageStrings = array(
 	'LBL_CAN_NOT_REMOVE_DEFAULT_WIDGET' => 'Cannot remove default widget',
 	'LBL_CUSTOM_VIEW_NAME_DUPLICATES_EXIST' => 'List already exists',
 	'LBL_TYPE_AND_SEARCH' => 'Type and Search',
-		'LBL_EXPORT_CURRENCY_TOOLTIP_TEXT'=>'For exporting Currency values in Line items, Vtiger will use this setting to export as this currency. Any currency values outside the line items tables, will be exported as in User\'s preferred currency (selected in \'My Preferences\')',
-		'LBL_EXPORT_LINEITEM_CURRENCY'=>'Choose Currency (For Line Item Values)',
-		'LBL_EXPORT_USER_CURRENCY' =>'My preferred Currency',
-		'LBL_EXPORT_RECORD_CURRENCY'=>'Currency specified in Record',
+	'LBL_EXPORT_CURRENCY_TOOLTIP_TEXT'=>'For exporting Currency values in Line items, Vtiger will use this setting to export as this currency. Any currency values outside the line items tables, will be exported as in User\'s preferred currency (selected in \'My Preferences\')',
+	'LBL_EXPORT_LINEITEM_CURRENCY'=>'Choose Currency (For Line Item Values)',
+	'LBL_EXPORT_USER_CURRENCY' =>'My preferred Currency',
+	'LBL_EXPORT_RECORD_CURRENCY'=>'Currency specified in Record',
 	'LBL_EXPORT_FORMAT' => 'Export format',
 	'LBL_EXPORT_DATA' => 'Export Data',
 
@@ -581,6 +615,7 @@ $languageStrings = array(
 	'--None--'=>'--None--',
 	'Acquired'=>'Acquired',
 	'Active'=>'Active',
+	'Inactive'=>'Inactive',
 	'Market Failed'=>'Market Failed',
 	'Project Cancelled'=>'Project Cancelled',
 	'Shutdown'=>'Shutdown',
@@ -814,6 +849,7 @@ $languageStrings = array(
 	'LBL_RECORD' => 'Record',
 	'LBL_NO_DUPLICATED_FOUND' => 'No duplicates found',
 	'LBL_MERGE_SELECT' => 'Merge Select',
+	'LBL_ALLOWED_TO_SELECT_MAX_OF_THREE_RECORDS' => 'Usted puede seleccionar un máximo de tres registros',
 
 	//sbproducts translation
 	'LBL_BACK_TO_PRODUCTS' => 'Back to products',
@@ -824,6 +860,7 @@ $languageStrings = array(
 	'Issued Date' => 'Issued Date',
 	'Shipping & Handling Charges' => 'Shipping & Handling Charges',
 	'Shipping & Handling Tax:' => 'Shipping & Handling Tax:',
+	'Shipping & Handling' => 'Shipping & Handling',
 	'Discount'=>'Discount',
 	'Net Total' => 'Net Total',
 	'Product Code'=>'Product Code',
@@ -886,6 +923,7 @@ $languageStrings = array(
 	'LBL_SETUP_WEBFORMS' => 'Setup Webforms',
 	'LBL_SPECIAL_OPTIONS' => 'Special Options',
 	'LBL_PARENT_OWNER' => 'Parent Record Owner',
+	'LBL_LOGIN_USER' => 'Login User',
 	'LBL_PASSWORD_LINK_EXPIRED_OR_INVALID_PASSWORD' => 'Password link has expired or you have entered invalid password',
 
 	// Recurring Invoice
@@ -961,8 +999,7 @@ $languageStrings = array(
 
 	'LBL_COMPANY_DETAILS' => 'Company Details',
 	'COMPANY_LOGO_HELP_TEXT' => 'Please upload your lovely company logo. <br>Besides showing your company logo on your CRM,<br>
-									your company name and address details are used in <br>Email Campaigns (required to meet span regulations)<br>
-									and in Quotes.',
+									your company name and address details are used in <br>Email Campaigns (required to meet span regulations)<br>and in Quotes.',
 	'COMPANY_LOGO_HELP_TEXT_2' =>"You can edit company details later from <br>
 									'CRM Settings > Templates > Company Details' page",
 	'LBL_CHOOSE_PREFERENCES' => 'Choose your Preferences',
@@ -984,6 +1021,7 @@ $languageStrings = array(
 	'LBL_DOEST_FIRST_ROW_HEADER' => 'Does first row in your file contains column headers?',
 	'LBL_SELECT_CSV_FILE' => 'Select CSV file',
 	'LBL_START_IMPORTING' => 'Start Importing',
+	'LBL_IMPORT_ERROR_MULTIPLE_ACCOUNTS' => '%s is importing %s. Please try again later.',
 	'LBL_PRIMARY' => 'Primary',
 	'LBL_GOOGLE_SYNC_INTIATED_MSG' => 'Your import is scheduled, Your contacts will be imported shortly.<br> Proceeding to Next step will not interrupt the import.',
 	'LBL_IMPORT_SYNC_INTIATED_MSG' => 'Your import is in progress. You will receive an email when import is completed.<br> Proceeding to Next step will not interrupt the import.',
@@ -1009,7 +1047,6 @@ $languageStrings = array(
 	'LBL_SOCIAL_LINKED' => 'Your Vtiger is now linked to',
 	'LBL_ENTER_KEYWORDS_HELP'=>'Vtiger will scan twitter and find messages with these words',
 	'LBL_ENTER_KEYWORDS' => 'Enter Keywords',
-	'LBL_IMPORT_ERROR_MULTIPLE_ACCOUNTS' => '%s is importing %s. Please try after some time.',
 
 	 // Social Module Strings
 	'LBL_TWEETS' => 'Tweets',
@@ -1090,6 +1127,7 @@ $languageStrings = array(
 	'LBL_NEXT' => 'Next',
 	'Workflows' => 'Workflows',
 	'Primary Twitter' => 'Twitter Username',
+	'Record Id' => 'Record ID',
 
 	/* Vtiger7 Language Strings */
 	'LBL_CLICK_HERE_TO_SELECT_ALL_RECORDS'=>'Select all records in this page',
@@ -1117,6 +1155,8 @@ $languageStrings = array(
 	'LBL_UNLINK'=>'Unlink',
 	'LBL_SWITCH_TO_OLD'=>'Switch to old version',
 	'LBL_SLA_INFORMATION' => 'SLA Information',
+	'LBL_CUSTOM_FIELD_LIMIT' => 'The limit for registering custom fields has been reached',
+	'LBL_RESET_COLUMN_WIDTHS' => 'Reset column widths',
 
 	//configure columns
 	'LBL_UPDATE_LIST' => 'Update List',
@@ -1169,6 +1209,7 @@ $languageStrings = array(
 	'LBL_PROJECT' => 'PROJECTS',
 	'LBL_TOOLS' => 'TOOLS',
 	'LBL_TAGS' => 'Tags',
+	'tags' => 'tags',
 	'LBL_SHARE_TAGS' => 'Public Tags',
 	'LBL_SHARE_TAG' => 'Shared Tag(s)',
 	'private' => 'private',
@@ -1309,13 +1350,15 @@ $languageStrings = array(
 	'LBL_CHAT_WITH_SUPPORT' => 'Live chat with CRM expert',
 
 	'LBL_ROLES' => 'Roles',
+	'Roles' => 'Roles',
 	'LBL_ROLEANDSUBORDINATE' => 'Role and Subordinates',
+	'RoleAndSubordinates' => 'Role and Subordinates',
 	'LBL_YOUR_LEARNING_SCORE' => 'Your CRM learning score',
 	'LBL_SWITCH_TO_VTIGER7_NOW' => 'Switch to Vtiger7 by Feb 15th',
 	'LBL_VTIGER6_RETIREMENT_NOTICE' => 'This version will be retired on Feb 15th 2016',
 	'ModTracker' => 'Updates',
 	'LBL_MAIL_SENT_SUCCESSFULLY' => 'Mail Sent Successfully',
-        'LBL_MAIL_SAVED_SUCCESSFULLY' => 'Mail Saved Successfully',
+	'LBL_MAIL_SAVED_SUCCESSFULLY' => 'Mail Saved Successfully',
 	'LBL_FAILED_TO_SEND' => 'Failed to Send',
 
 	'LBL_ESSENTIALS' => 'Essentials',
@@ -1385,7 +1428,7 @@ $languageStrings = array(
 	'Busy' => 'Busy',
 	'LBL_BETA'=>'BETA',
 	'JS_SHARED_WITH'=>'Shared with',
-	 'LBL_REPLY_TO' =>'Reply to',
+	'LBL_REPLY_TO' =>'Reply to',
 	'LBL_MODULE_ASSIGNMENT_RULES' => '%s Assignment Rules',
 
 	'LBL_RECENT_UPDATES' => 'Recent Updates',
@@ -1393,6 +1436,247 @@ $languageStrings = array(
 	'LBL_DEFAULT_DASHBOARD_TOOLTIP'=>'Make this dashboard as default by reordering it as the first tab!',
 	'LBL_RELATED_MODULES_PERMISSION_DENIED' => 'Related modules permission is denied',
 	'LBL_RECORD_PERMISSION_DENIED' => 'Record permissions denied',
+	
+	//F-RevoCRM
+	'Is Converted From Opportunity' => 'Created from Opportunity',
+	'Project Milestone Name' => 'Milestone Name',
+	'Milestone Date' => 'Milestone Date',
+	'Progress' => 'Progress',
+	'LBL_UPDATE_FROM' => 'Before Update:',
+	'LBL_UPDATE_TO' => 'After Update:',
+	'Template Name' => 'Template Name',
+	'Module Name' => 'Module Name',
+	'Tickets by Status' => 'Tickets by Status',
+	'Funnel Amount' => 'Sales Funnel',
+	'Proposal or Price Quote' => 'Proposal or Quote',
+	'Select from My Computer' => 'Select File',
+	'vtiger' => 'F-RevoCRM',
+	'LBL_ALL_DAY' => 'All Day',
+	'TASK MANAGEMENT' => 'Task Management',
+	'Tasks' => 'Tasks',
+	'Medium' => 'Medium',
+	'Please ' => 'Login Now ⇒ ',
+	'Dear ' => 'TO: ',
+	'Here is your self service portal login details:' => 'Here are your customer portal login details.',
+	'User ID' => 'Login ID',
+	'Password' => 'Password',
+	'We suggest you to change your password after logging in first time' => 'For security, please change your password after logging in.',
+	'click here' => 'Click here',
+	'Dear CRM User,<br><br> 
+						You recently requested a password reset for your F-RevoCRM Open source Account.<br> 
+						To create a new password, click on the link <a target="_blank" href="%s">here</a>. 
+						<br><br> 
+						This request was made on %s and will expire in next 24 hours.<br><br> 
+						Regards,<br> 
+						F-RevoCRM Open source Support Team.<br>' => 'Here is the password reset URL for your F-RevoCRM account.
+						<br><br><a target="_blank" href="%s">Click here</a><br><br>
+						※ This URL is valid for 24 hours.<br>
+						※ If you did not request a password reset, please do not click the link.',
+	'Vtiger CRM: Password Reset' => 'F-RevoCRM Password Reset URL Notification',
+	'Today' => 'Today',
+	'This Week' => 'This Week',
+	'This Month' => 'This Month',
+	'This Year' => 'This Year',
+	'Last 2 Days' => 'Last 2 Days',
+	'Last Week' => 'Last Week',
+	'Agenda' => 'Agenda',
+	'1 Minute' => '1 Minute',
+	'5 Minutes' => '5 Minutes',
+	'15 Minutes' => '15 Minutes',
+	'30 Minutes' => '30 Minutes',
+	'45 Minutes' => '45 Minutes',
+	'1 Hour' => '1 Hour',
+	'1 Day' => '1 Day',
+	'Sunday' => 'Sunday',
+	'Monday' => 'Monday',
+	'Tuesday' => 'Tuesday',
+	'Wednesday' => 'Wednesday',
+	'Thursday' => 'Thursday',
+	'Friday' => 'Friday',
+	'Saturday' => 'Saturday',
+	'LBL_EXTENSIONS' => 'Extensions',
+	'LBL_FILTER_NOT_DELETE' => 'This filter cannot be deleted',
+	'starred' => 'Follow',
+	'Users' => 'Users',
+	'LBL_BILLING_ADDRESS' => 'Billing Address',
+	'LBL_VENDOR_ADDRESS' => 'Shipping Address',
+	'PDFTemplates' => 'PDF Templates',
+	'Item net price' => 'Item Net Price',
+	'Item total price' => 'Item Total Price Before Discount',
+	'List columns saved successfully' => 'Columns saved successfully',
+	'Sequence no' => 'Line Item Number',
+
+	// User Management > Profile
+	'Import' => 'Import',
+	'Export' => 'Export',
+	'DuplicatesHandling' => 'Duplicate Detection',
+	'Merge' => 'Merge',
+	'Print' => 'Print',
+	'UserId ' => 'User ID',
+	'ConvertLead' => 'Convert Lead',
+	// Profile Details
+	'Admin Profile' => 'Admin Profile',
+	'Profile Related to Sales' => 'Sales Profile',
+	'Profile Related to Support' => 'Support Profile',
+	'Guest Profile for Test Users' => 'Guest Profile for Test Users',
+	// User Management > Login History
+	'Signed in' => 'Signed In',
+	'Signed off' => 'Signed Off',
+	'Signed in error' => 'Login Error',
+	// Module Management
+	'Existing Business' => 'Existing Business',
+	'New Business' => 'New Business',
+	// Automation > Scheduler
+	'Workflow' => 'Workflow',
+	'RecurringInvoice' => 'Recurring Invoice',
+	'SendReminder' => 'Send Reminder',
+	'MailScanner' => 'Mail Converter',
+	'Scheduled Import' => 'Scheduled Import',
+	'ScheduleReports' => 'Scheduled Reports',
+	// Settings > Sales Management
+	'Compound' => 'Compound',
+	'Simple' => 'Simple',
+	'Deducted' => 'Deducted',
+	'Fixed' => 'Fixed',
+	'Variable' => 'Variable',
+	// Personal Settings > Personal Tags
+	'Private/Public' => 'Private/Public',
+	// Tools > Recycle Bin
+	'Sales Stage' => 'Sales Stage',
+	'Amount' => 'Amount',
+	'Templates' => 'Templates',
+	'Title' => 'Title',
+	'Office Phone' => 'Office Phone',
+	'Website' => 'Website',
+	'Company' => 'Company',
+	'File Name' => 'File Name',
+	'Download Type' => 'Download Type',
+	'Activity Type' => 'Activity Type',
+	'Start Date & Time' => 'Start Date',
+	'Part Number' => 'Part Number',
+	'Commission Rate' => 'Commission Rate (%)',
+	'Qty In Stock' => 'Stock Quantity',
+	'Qty/Unit' => 'Quantity/Unit',
+	'Question' => 'Question',
+	'Price Book Name' => 'Price Book Name',
+	'Quote Stage' => 'Quote Stage',
+	'Tracking Number' => 'Tracking Number',
+	'Quote Name' => 'Quote Name',
+	'Campaign Name' => 'Campaign Name',
+	'Campaign Type' => 'Campaign Type',
+	'Campaign Status' => 'Campaign Status',
+	'Expected Revenue' => 'Expected Revenue',
+	'Related to' => 'Related To',
+	'Start Date' => 'Start Date',
+	'Due date' => 'Due Date',
+	'Service Name' => 'Service Name',
+	'Usage Unit' => 'Usage Unit',
+	'No of Units' => 'Number of Units',
+	'Service Category' => 'Category',
+	'Owner' => 'Owner',
+	'Project Task Name' => 'Task Name',
+	'Worked Hours' => 'Worked Hours',
+	'End Date' => 'End Date',
+	'Project Name' => 'Project Name',
+	'Target End Date' => 'Target End Date',
+	'Actual End Date' => 'Actual End Date',
+	'Target Budget' => 'Target Budget',
+	'message' => 'Message',
+	'Asset Name' => 'Asset/Rental Name',
+	// Billing
+	'Member Of' => 'Parent Organization',
+
+	'Parent Module' => '[Parent Module]',
+	'Child Module' => '[Child Module]',
+	'LBL_EXPORT_TO_PDF' => 'Export to PDF',
+	'LBL_SEND_MAIL_PDF' => 'Send PDF via Email',
+
+
+	'LBL_ENTER_LISTNAME' => 'Enter list name',
+
+
+	'LBL_CREATOR' => 'Creator',
+
+	// Roles
+	'LBL_ADMIN' => 'Administrator',
+	'LBL_MANAGER' => 'Manager',
+	'LBL_GENERAL' => 'General',
+	'LBL_PART-TIME_JOB' => 'Part-Time Job',
+
+
+	'LBL_WORKFLOW_TO_UPDATE_SALES_MANAGEMENT' => 'Workflow to update sales management products upon saving',
+	'LBL_A_WORKFLOW_SENDS_EMAIL_TO_NOTIFICATION_PERSON_CHARGE_TURNED_ON'=>'Workflow to send email to user when notifications are turned on for the person in charge',
+	'LBL_A_WORKFLOW_SENDS_EMAIL_TO_PORTALUSER_IS_ON' => 'Workflow to send email to user when portal user is turned on',
+	'LBL_WORKFLOW_CUSTOMER_CONTACT_IS_CREATED_OR_UPDATED' => 'Workflow when customer contact is created or updated',
+	'LBL_WORKFLOW_FOR_ACTIVITIES_WHEN_NOTIFICATIONS_ARE_ON' => 'Workflow for activities when notifications are on',
+	'LBL_ACTIVITY_NOTIFICATION_EMAIL' => 'Activity notification email',
+	'LBL_ANNOUNCEMENT_OF_ACTIVITIES' => 'Activity Announcement:  \$subject',
+	'LBL_ACTIVITY_NOTIFICATION_FROM_F-RevoCRM' => '$(assigned_user_id : (Users) first_name) $(assigned_user_id : (Users) last_name),<br/>'
+						.'<b>Activity notification from F-RevoCRM.</b><br/>'
+						.'Subject       : $subject<br/>'
+						.'Start Date/Time   : $date_start  $time_start ( $(general : (__VtigerMeta__) dbtimezone) ) <br/>'
+						.'End Date/Time   : $due_date  $time_end ( $(general : (__VtigerMeta__) dbtimezone) ) <br/>'
+						.'Status  : $eventstatus <br/>'
+						.'Priority     : $taskpriority <br/>'
+						.'Related       : $(parent_id : (Leads) lastname) $(parent_id : (Leads) firstname) $(parent_id : (Accounts) accountname) '
+												.'$(parent_id : (Potentials) potentialname) $(parent_id : (HelpDesk) ticket_title) <br/>'
+						.'Customer Contact  : $(contact_id : (Contacts) lastname) $(contact_id : (Contacts) firstname) <br/>'
+						.'Location       : $location <br/>'
+						.'Details    : $description',
+	'LBL_TODO_WORKFLOW_WHEN_NOTIFICATIONS_ARE_ON' => 'Workflow for TODOs when notifications are on',
+	'LBL_TODO_NOTIFICATION_EMAIL' => 'TODO notification email',
+	'LBL_TODO_NOTICE' => 'TODO Notice:  \$subject',
+	'LBL_TODO_NOTIFICATION_FROM_F-REVOCRM' => '$(assigned_user_id : (Users) first_name) $(assigned_user_id : (Users) last_name),<br/>'
+						.'<b>TODO notification from F-RevoCRM.</b><br/>'
+						.'Subject : $subject<br/>'
+						.'Start Date/Time   : $date_start  $time_start ( $(general : (__VtigerMeta__) dbtimezone) ) <br/>'
+						.'End Date   : $due_date ( $(general : (__VtigerMeta__) dbtimezone) ) <br/>'
+						.'Status : $taskstatus <br/>'
+						.'Priority     : $taskpriority <br/>'
+						.'Related       : $(parent_id : (Leads) lastname) $(parent_id : (Leads) firstname) $(parent_id : (Accounts) accountname) '
+						.'$(parent_id : (Potentials) potentialname) $(parent_id : (HelpDesk) ticket_title) <br/>'
+						.'Customer Contact  : $(contact_id : (Contacts) lastname) $(contact_id : (Contacts) firstname) <br/>'
+						.'Location        : $location <br/>'
+						.'Details        : $description',
+	'LBL_SYSTEM_ADMINISTRATOR' => 'System Administrator',
+	'LBL_USAGE_UNIT' => 'Usage Unit',
+	'LBL_WORKFLOW_TO_UPDATE_FORECAST_AMOUNTS' => 'Workflow to Update Forecast Amounts',
+	'LBL_UPDATE_ESTIMATED_AMOUNT' => 'Update Estimated Amount',
+	'LBL_REPORTING_EMAILS_TO_CUSTOMER_REPRESENTATIVES' => 'Reporting Emails to Customer Representatives',
+	'LBL_MAIL_REPORT' => 'Mail Report',
+	'LBL_REPORTING_EMAILS_TO_CLIENT_COMPANIES' => 'Reporting Emails to Client Companies',
+	'LBL_LEAD_EMAIL_REPORTING' => 'Lead Email Reporting',
+	'LBL_REPORTING_EMAILS_TO_SUPPLIERS' => 'Reporting Emails to Suppliers',
+	'LBL_A_WORKFLOW_TO_UPDATE_INVENTORY_PRODUCTS_ON_EVERY_SAVE' => 'Workflow to Update Inventory Products on Every Save',
+	'LBL_UPDATE_INVENTORY_PRODUCTS' => 'Update Inventory Products',
+	'LBL_TASK_SEND_EMAIL_WHEN_COMMENTED_FROM_PORTAL' => 'Workflow to Send an Email to the Record Owner When a Comment is Added from the Portal',
+	'LBL_TASK_SEND_EMAIL_TO_A_CUSTOMER_REPRESENTATIVE_WHEN_A_COMMENT_IS_ADDED' => 'Workflow to Send an Email to a Customer Representative Who Is Not a Portal User When a Comment Is Added',
+	'LBL_TASK_SEND_EMAIL_WHEN_COMMENTED' => 'Workflow to Send an Email to a Portal User Who Is a Customer Representative When a Comment Is Added',
+	'LBL_A_WORKFLOW_TO_SEND_AN_EMAIL_WHEN_A_COMMENT_IS_ADDED' => 'Workflow to Send an Email When a Comment Is Added',
+	'LBL_ELIGIBLE_FOR_REDUCED_TAX_RATE' => 'Eligible for Reduced Tax Rate',
+	'LBL_TESTMAIL_SMTP_BODY' => 'Dear <br><br><b>This is a test email sent to verify if the configured SMTP server is working correctly.</b><br>You may delete this email.<br><br>Best regards,<br>F-RevoCRM<br><br>',
+	
+	
+	'LBL_DAILY_WEEKLY_REPORT' => 'Daily/Weekly Report',
+	'LBL_SUBMISSION_DATE' => 'Submission Date',
+	'LBL_SUBMITTING' => 'Submitting',
+	'LBL_APPROVED' => 'Approved',
+	'LBL_WHERE_TO_SUBMIT' => 'Where to Submit',
+	'LBL_CREATE_DATETIME' => 'Creation Date and Time',
+	'LBL_UPDATE_DATETIME' => 'Update Date and Time',
+	'LBL_ITS_OVER' => 'Execution is complete.<br>',
+	'LBL_NOT_EXECUTED' => 'Not executed.<br>',
+	'LBL_EXPERIENCE_BOOK' => 'Quotation',
+	'LBL_REQUEST_FOR_ANNOTATION' => 'Order Acknowledgment',
+	'LBL_PURCHASE_ORDER' => 'Purchase Order',
+	'LBL_CONSUMPTION_TAX' => 'Consumption Tax',
+	'LBL_TO_YOU' => 'To You',
+	'LBL_SIDEMENU_GOOGLE_DELETE' => 'Remove Google-related Menu from Sidebar',
+	'LBL_THANK_YOU_ALWAYS_USING_OUR_SERVICES.' => 'Thank you for always using our services.',
+	'LBL_INVITATION_EMAIL_TO_OUR_CUSTOMER_PORTAL_BODY' => 'This email is an invitation to our customer portal.<br />'
+			. 'In the customer portal, you can manage your inquiries and check past FAQs and answers.<br />'
+			. 'Please use the URL, ID, and password provided in this email to log in to the portal.',
+	'LBL_CUSTOMER_PORTAL_LOGIN_INFORMATION' => 'Customer Portal Login Information Notification',
 );
 
 $jsLanguageStrings = array(
@@ -1446,6 +1730,7 @@ $jsLanguageStrings = array(
 	'JS_PLEASE_SELECT_ATLEAST_ONE_OPTION' => 'Please select at least one option',
 	'JS_SELECT_MODULE' => 'Please Select Module',
 	'JS_PLEASE_SELECT_ATLEAST_ONE_MANDATORY_FIELD' => 'Please select at least one Mandatory Field',
+	// 'Select atleast one mandatory value.' => '少なくとも 1 つの必須項目を選択してください',
 	'JS_SELECT_MODULE' => 'Please select a module',
 	'JS_PLEASE_ENTER_INTEGER_VALUE' => 'Please enter integer value',
 	'JS_PLEASE_ENTER_DECIMAL_VALUE' => 'Please enter decimal value',
@@ -1479,11 +1764,13 @@ $jsLanguageStrings = array(
 	'JS_UPLOADED_FILE_SIZE_EXCEEDS' => 'Uploaded file size exceeds',
 	'JS_PLEASE_SPLIT_FILE_AND_IMPORT_AGAIN' => 'Please split the file into smaller files and import again.',
 	'JS_FIELD_MAPPED_MORE_THAN_ONCE' => 'Field mapped more than once',
+	'JS_SUCCESS_IMPORT_COMMENT' => 'Import is complete',
 	'JS_MAP_MANDATORY_FIELDS' => 'Please map mandatory fields',
 	'JS_MAP_MERGE_CRITERIA_FIELDS' => 'Please map matching fields',
 	'JS_PLEASE_ENTER_SOME_VALUE' => 'Please enter some value to search',
 	'JS_VCF_FILE_IMPORT_WARNING' => 'You have selected a VCF file. Only Contacts can be imported from VCF file. To import this file, please initiate import from Contact module',
 	'JS_ICS_FILE_IMPORT_WARNING' => 'You have selected a ICS file. Only Calendar can be imported from ICS file. To import this file, please initiate import from Calendar module',
+	
 	//Select2 elements validation message
 	'JS_YOU_CAN_SELECT_ONLY'=> 'You can select only',
 	'JS_ITEMS' => 'items',
@@ -1599,6 +1886,8 @@ $jsLanguageStrings = array(
 	'LBL_SIGN_IN_AS_USER'=>'Logging in as another user will terminate the current session. Are you sure want to continue?',
 	'JS_REENTER_PASSWORDS' => 'Renter Passwords',
 	'SINGLE_Vendors' => 'Vendor',
+	'JS_SELECT_AN_USER' => 'Select User',
+	'Status : All' => 'Status : All',
 
 	//Feedback on removing old version
 	'JS_PLEASE_GIVE_YOUR_FEEDBACK' => 'Please Fill your Feedback',
@@ -1651,6 +1940,7 @@ $jsLanguageStrings = array(
 	'JS_EXCEEDS_MAX_UPLOAD_SIZE' => 'Exceeded maximum upload size',
 	'JS_FUTURE_EVENT_CANNOT_BE_HELD' => 'Cannot Be Held For Future',
 	'LBL_WARNING' => 'Warning',
+	'LBL_REPLACE_BLANK_COLUMN' => 'Insert a blank field in the same location as the deleted item.',
 	'DELETE_USER_PERMANENT_WARNING' => 'Deleting a user permanently will transfer all records including comments and history to new user.',
 	'JS_DECIMAL_SEPARATOR_AND_GROUPING_SEPARATOR_CANT_BE_SAME' => 'Decimal separator and Grouping separator cant be same',
 	'JS_FUTURE_EVENT_CANNOT_BE_HELD' => 'Cannot Be Held For Future',
@@ -1715,6 +2005,8 @@ $jsLanguageStrings = array(
 	'JS_SAVE_AS_IMAGE' => 'Save As Image',
 	'JS_DIRECTORY_IS_EMPTY' => 'Directory is empty',
 	'JS_PLEASE_SELECT_AN_RELATED_TO_COPY_ADDRESS' => 'Please select a Lead / Contact Module to copy address',
+	'JS_PLEASE_SELECT_AN_RELATED_TO_COPY_ADDRESS_WITHOUT_LEAD' => 'Please select a Contact Module to copy address',
+	'JS_RELATED_CONTACT_IS_NOT_AVAILABLE' => 'Related contact is not avalable',
 	'SINGLE_Leads' => 'Lead',
 	'JS_SELECTED_LEAD_DOES_NOT_HAVE_AN_ADDRESS' => 'Selected Lead does not contain address to copy',
 	'JS_INVALID_EMAILS' => 'Invalid Emails',
@@ -1779,6 +2071,8 @@ $jsLanguageStrings = array(
 	'JS_USER_EXISTS' => 'User already exists',
 	'JS_ALERT' => 'Alert',
 	'JS_SUCCESS' => 'Success',
+	'Import Completed' =>"Import Completed",
+	'Import Completed.' =>"Import Completed.",
 	'JS_REMOVE_MASS_TAG_WARNING' => 'Are you sure you want to remove %s tag for selected records',
 	'JS_VIEW_ALREADY_EXISTS' => 'View already exists',
 	'JS_PLEASE_ENTER_NUMBER_IN_RANGE' => 'Please enter value in the range',
@@ -1941,9 +2235,57 @@ $jsLanguageStrings = array(
 	'JS_PASSWORD_MISMATCH_ERROR' => 'Please re-enter passwords. The "new password" and "confirm password" values do not match.',
 	'LBL_LIST_DELETE_CONFIRMATION' => 'Are you sure you want to delete?',
 	'JS_WIDGET_RESIZING_WAIT_MSG' => 'Widget contents will load after resizing.',
-        'JS_COPIED_SUCCESSFULLY' => 'Copied successfully',
-        'JS_ATLEAST_SELECT_ONE_FIELD' => 'At least one field should be selected',
-        'JS_RELATED_ACCOUNT_IS_NOT_AVAILABLE' => 'Related Organization record is not available',
-        'JS_RELATED_CONTACT_IS_NOT_AVAILABLE' => 'Related Contact record is not available',
-        'JS_REPEAT_DATE_SHOULD_BE_GREATER_THAN_START_DATE' => 'Repeat date should be greater than or equal to Start Date',
+	'JS_COPIED_SUCCESSFULLY' => 'Copied successfully',
+	'JS_ATLEAST_SELECT_ONE_FIELD' => 'At least one field should be selected',
+	'JS_RELATED_ACCOUNT_IS_NOT_AVAILABLE' => 'Related Organization record is not available',
+	'JS_RELATED_CONTACT_IS_NOT_AVAILABLE' => 'Related Contact record is not available',
+	'JS_REPEAT_DATE_SHOULD_BE_GREATER_THAN_START_DATE' => 'Repeat date should be greater than or equal to Start Date',
+
+	// F-RevoCRM 7
+	'This field is required.' => 'This field is required.',
+	'Please fix this field.' => 'Please fix this field.',
+	'Please enter a valid email address.' => 'Please enter a valid email address.',
+	'Please enter a valid URL.' => 'Please enter a valid URL.',
+	'Please enter a valid date.' => 'Please enter a valid date.',
+	'Please enter a valid date ( ISO ).' => 'Please enter a valid date ( ISO ).',
+	'Please enter a valid number.' => 'Please enter a valid number.',
+	'Please enter only digits.' => 'Please enter only digits.',
+	'Please enter a valid credit card number.' => 'Please enter a valid credit card number.',
+	'Please enter the same value again.' => 'Please enter the same value again.',
+	"Please enter the correct date" => 'Please enter the correct date.',
+	'LBL_日' => 'Sun',
+	'LBL_月' => 'Mon',
+	'LBL_火' => 'Tue',
+	'LBL_水' => 'Wed',
+	'LBL_木' => 'Thu',
+	'LBL_金' => 'Fri',
+	'LBL_土' => 'Sat',
+	'LBL_NO_MATCHES_FOUND' => 'No matches found',
+	'LBL_PLEASE_ENTER_MORE' => 'Please enter more characters',
+	'LBL_LOADING' => 'Loading',
+	'JS_NO_RESULTS_FOUND' => 'No results found',
+	'JS_INVALID_STRENGTH_PASSWORDS'=>'Please specify a complex password (at least 8 characters including uppercase, lowercase, numbers, and symbols)',
+	'Changed password successfully'=>'Password changed successfully',
+	'LBL_MASS_PDF_EXPORT_CONFIRMATION' => 'Are you sure you want to generate PDFs for the selected records?',
+	'JS_THIS_FILE_HAS_ALREADY_BEEN_SELECTED' => 'This file has already been selected.', 
+
+	// Personal Calendar
+	'Planned' => 'Planned',
+	'Held' => 'Held',
+	'Not Held' => 'Not Held',
+	
+	// User Management > Group Creation
+	'JS_DUPLICATES_EXIST' => 'Already exists',
+
+	//Dashboard
+	'Default' => 'デフォルト',
+
+	// Module names
+	'Accounts' => 'Accounts',
+	'Contacts' => 'Contacts',
+	'Leads' => 'Leads',
+
+	// Actions
+	'JS_EDIT' => 'Edit',
+	'JS_DELETE' => 'Delete',
 );

@@ -147,7 +147,7 @@ class Zend_Oauth_Http_Utility
         $className = '';
         $hashAlgo  = null;
         $parts     = explode('-', $signatureMethod);
-        if (count($parts) > 1) {
+        if (php7_count($parts) > 1) {
             $className = 'Zend_Oauth_Signature_' . ucfirst(strtolower($parts[0]));
             $hashAlgo  = $parts[1];
         } else {

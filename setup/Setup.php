@@ -1,10 +1,10 @@
 <?php
 
-ini_set('error_reporting', E_ALL ^ E_NOTICE ^ E_DEPRECATED);
-ini_set('display_errors', 1 );
+ini_set('display_errors','on'); error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
 
 echo "Start Script";
 
+require_once 'vendor/autoload.php';
 require_once('include/logging.php');
 require_once 'vtlib/Vtiger/Module.php';
 require_once 'includes/main/WebUI.php';
@@ -29,8 +29,10 @@ $current_user->id = 1;
 $db = PearDatabase::getInstance();
 
 // カラム名とフィールド名に使える文字数を拡張
+$db->query("SET foreign_key_checks = 0");
 $db->query("alter table vtiger_field modify column fieldname varchar(100)");
 $db->query("alter table vtiger_field modify column columnname varchar(100)");
+$db->query("SET foreign_key_checks = 1");
 
 // ここに新しいモジュールのスクリプトを書いていく
 //require_once ("scripts/01_hoge.php");
@@ -82,6 +84,12 @@ $db->query('update vtiger_field set quickcreate = 0 where tabid = 41 and fieldna
 
 // プロジェクトマイルストーンを関連メニューから追加する際、プロジェクトを引き継いで作成できるようにする
 $db->query('update vtiger_relatedlists set relationfieldid = "598" where relation_id = 174');
+
+// PDFテンプレートのアップデート
+require_once ("scripts/64_Update_PDFTemplate.php");
+
+// 'vtiger_activity' テーブルに 'smcreatorid' フィールドを追加
+require_once ("scripts/78_Add_smcreatorid.php");
 
 // メニュー設定
 // FRMenuSetting::apply(array(

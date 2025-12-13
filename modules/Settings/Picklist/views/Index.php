@@ -33,7 +33,7 @@ class Settings_Picklist_Index_View extends Settings_Vtiger_Index_View {
                 unset($pickListFields[$fieldname]);
             }
         }
-        if(count($pickListFields) > 0) {
+        if(php7_count($pickListFields) > 0) {
             $defaultField = $request->get('fieldname');
             if(!empty($defaultField)) {
                 $selectedPickListFieldModel = $pickListFields[$defaultField];

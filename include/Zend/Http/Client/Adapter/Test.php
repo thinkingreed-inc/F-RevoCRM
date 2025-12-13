@@ -178,7 +178,7 @@ class Zend_Http_Client_Adapter_Test implements Zend_Http_Client_Adapter_Interfac
      */
     public function read()
     {
-        if ($this->responseIndex >= count($this->responses)) {
+        if ($this->responseIndex >= php7_count($this->responses)) {
             $this->responseIndex = 0;
         }
         return $this->responses[$this->responseIndex++];
@@ -228,7 +228,7 @@ class Zend_Http_Client_Adapter_Test implements Zend_Http_Client_Adapter_Interfac
      */
     public function setResponseIndex($index)
     {
-        if ($index < 0 || $index >= count($this->responses)) {
+        if ($index < 0 || $index >= php7_count($this->responses)) {
             require_once 'Zend/Http/Client/Adapter/Exception.php';
             throw new Zend_Http_Client_Adapter_Exception(
                 'Index out of range of response buffer size');

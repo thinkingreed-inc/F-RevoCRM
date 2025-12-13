@@ -71,7 +71,7 @@ class Settings_ExtensionStore_ExtensionStore_View extends Settings_Vtiger_Index_
 		return $this->modelInstance;
 	}
 
-	function preProcess(Vtiger_Request $request) {
+	function preProcess(Vtiger_Request $request, $display = true) {
 		parent::preProcess($request, false);
 		$extensionStoreModuleModel = Settings_ExtensionStore_Module_Model::getInstance();
 		$viewer = $this->getViewer($request);

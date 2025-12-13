@@ -27,8 +27,8 @@ class HelpDesk_OpenTickets_Dashboard extends Vtiger_IndexAjax_View {
 		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
 		$data = $moduleModel->getOpenTickets();
         $listViewUrl = $moduleModel->getListViewUrlWithAllFilter();
-        for($i = 0;$i<count($data);$i++){
-            $data[$i]["links"] = $listViewUrl.$this->getSearchParams($data[$i][name]).'&nolistcache=1';
+        for($i = 0;$i<php7_count($data);$i++){
+            $data[$i]["links"] = $listViewUrl.$this->getSearchParams($data[$i]['name']).'&nolistcache=1';
         }
 
 		$widget = Vtiger_Widget_Model::getInstance($linkId, $currentUser->getId());

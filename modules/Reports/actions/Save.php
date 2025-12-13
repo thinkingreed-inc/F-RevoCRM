@@ -34,6 +34,7 @@ class Reports_Save_Action extends Vtiger_Save_Action {
 
 		$record = $request->get('record');
 		$reportModel = new Reports_Record_Model();
+		$reportModel->report = new Reports();
 		$reportModel->setModule('Reports');
 		if(!empty($record) && !$request->get('isDuplicate')) {
 			$reportModel->setId($record);
@@ -60,6 +61,25 @@ class Reports_Save_Action extends Vtiger_Save_Action {
 		$reportModel->set('advancedFilter', $request->get('advanced_filter'));
 		$reportModel->set('advancedGroupFilterConditions', $request->get('advanced_group_condition'));
 		$reportModel->set('members', $request->get('members'));
+
+		// 自動選択の場合、１番目の選択肢項目をjoincolumnに設定する。
+		$joinColumn = $request->get('joinColumn');
+		$joinColumnArray = explode(",", $joinColumn);
+		$joinkeynames = array();
+		foreach ($request->get('secondary_modules') as $key => $secondaryModule) {
+			if ($joinColumnArray[$key]) {
+				$joinkeynames[] = $joinColumnArray[$key];
+			} else {
+				$relationTables = $reportModel->getRelationTables($request->get('primary_module'), $secondaryModule);
+				foreach ($relationTables as $joinkey => $relationTable) {
+					$keyvalue = explode("::", $joinkey);
+					$joinkeyname = $keyvalue[0] . "::" . $keyvalue[1] . "::" . $keyvalue[2];
+					$joinkeynames[] = $joinkeyname;
+					break;
+				}
+			}
+		}
+		$reportModel->setJoinColumn(implode(",", $joinkeynames));
 
 		$reportModel->save();
 

@@ -21,7 +21,7 @@
 	<input id="{$MODULE}_editView_fieldName_{$FIELD_NAME}" type="text" class="inputElement currencyField" name="{$FIELD_NAME}"
 	value="{$FIELD_MODEL->getEditViewDisplayValue($FIELD_MODEL->get('fieldvalue'))}" {if !empty($SPECIAL_VALIDATOR)}data-validator='{Zend_Json::encode($SPECIAL_VALIDATOR)}'{/if}
     {if $FIELD_INFO["mandatory"] eq true} data-rule-required = "true" {/if} data-rule-currency='true'
-    {if count($FIELD_INFO['validator'])}
+    {if php7_count($FIELD_INFO['validator'])}
         data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
     {/if}
     />
@@ -33,7 +33,7 @@
             value="{$FIELD_MODEL->getDisplayValue($FIELD_MODEL->get('fieldvalue'))}" {if !empty($SPECIAL_VALIDATOR)}data-validator='{Zend_Json::encode($SPECIAL_VALIDATOR)}'{/if}
             data-decimal-separator='{$USER_MODEL->get('currency_decimal_separator')}' data-group-separator='{$USER_MODEL->get('currency_grouping_separator')}' data-number-of-decimal-places='{$USER_MODEL->get('no_of_currency_decimals')}'
             {if $FIELD_INFO["mandatory"] eq true} data-rule-required = "true" {/if} data-rule-currency='true'
-            {if count($FIELD_INFO['validator'])}
+            {if php7_count($FIELD_INFO['validator'])}
                 data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
             {/if}
         />
@@ -41,7 +41,7 @@
           <input type="hidden" name="cur_{$BASE_CURRENCY_ID}_check" value="on">
           <input type="hidden" id="requstedUnitPrice" name="{$BASE_CURRENCY_NAME}" value="">
 	</div>
-    {if $smarty.request.view eq 'Edit'}
+    {if $REQ.view eq 'Edit'}
     <div class="clearfix">
         <a id="moreCurrencies" class="span cursorPointer">{vtranslate('LBL_MORE_CURRENCIES', $MODULE)}>></a>
         <span id="moreCurrenciesContainer" class="hide"></span>
@@ -53,7 +53,7 @@
     <input type="text" class="input-lg currencyField" name="{$FIELD_NAME}"
         value="{$FIELD_MODEL->getEditViewDisplayValue($FIELD_MODEL->get('fieldvalue'))}" {if !empty($SPECIAL_VALIDATOR)}data-validator={Zend_Json::encode($SPECIAL_VALIDATOR)}{/if}
         {if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if} data-rule-currency='true'
-        {if count($FIELD_INFO['validator'])}
+        {if php7_count($FIELD_INFO['validator'])}
             data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
         {/if}
           />

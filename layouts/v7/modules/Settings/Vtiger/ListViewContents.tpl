@@ -37,7 +37,7 @@
 			{/if}
 			<div class="list-content row">
 				<div class="col-sm-12 col-xs-12 ">
-					<div id="table-content" class="table-container" style="padding-top:0px !important;">
+					<div id="table-content" class="table-container table-container-of-translation" style="padding-top:0px !important;">
 						<table id="listview-table" class="table listview-table">
 							{assign var="NAME_FIELDS" value=$MODULE_MODEL->getNameFields()}
 							{assign var=WIDTHTYPE value=$CURRENT_USER_MODEL->get('rowheight')}
@@ -74,14 +74,14 @@
 									<tr class="listViewEntries" data-id="{$LISTVIEW_ENTRY->getId()}"
 										{if method_exists($LISTVIEW_ENTRY,'getDetailViewUrl')}data-recordurl="{$LISTVIEW_ENTRY->getDetailViewUrl()}"{/if}
 										{if method_exists($LISTVIEW_ENTRY,'getRowInfo')}data-info="{Vtiger_Util_Helper::toSafeHTML(ZEND_JSON::Encode($LISTVIEW_ENTRY->getRowInfo()))}"{/if}>
-										<td width="10%">
+										<td width="10%" class="listViewEntryValue">
 											{include file="ListViewRecordActions.tpl"|vtemplate_path:$QUALIFIED_MODULE}
 										</td>
 										{foreach item=LISTVIEW_HEADER from=$LISTVIEW_HEADERS}
 											{assign var=LISTVIEW_HEADERNAME value=$LISTVIEW_HEADER->get('name')}
 											{assign var=LAST_COLUMN value=$LISTVIEW_HEADER@last}
 											<td class="listViewEntryValue textOverflowEllipsis {$WIDTHTYPE}" width="{$WIDTH}%" nowrap>
-												{$LISTVIEW_ENTRY->getDisplayValue($LISTVIEW_HEADERNAME)}
+												{vtranslate($LISTVIEW_ENTRY->getDisplayValue($LISTVIEW_HEADERNAME), $QUALIFIED_MODULE)}
 												{if $LAST_COLUMN && $LISTVIEW_ENTRY->getRecordLinks()}
 													</td>
 												{/if}
@@ -91,7 +91,7 @@
 								{/foreach}
 								{if $LISTVIEW_ENTRIES_COUNT eq '0'}
 									<tr class="emptyRecordsDiv">
-										{assign var=COLSPAN_WIDTH value={count($LISTVIEW_HEADERS)+1}}
+										{assign var=COLSPAN_WIDTH value={php7_count($LISTVIEW_HEADERS)+1}}
 										<td colspan="{$COLSPAN_WIDTH}" style="vertical-align:inherit !important;">
 											<center>{vtranslate('LBL_NO')} {vtranslate($MODULE, $QUALIFIED_MODULE)} {vtranslate('LBL_FOUND')}</center>
 										</td>

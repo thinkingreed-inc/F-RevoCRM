@@ -1,0 +1,6 @@
+version: "3"
+
+services:
+  php:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

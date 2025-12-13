@@ -423,6 +423,7 @@ class Workflow{
 				}
 				if($task->executeImmediately==true){
 					try {
+						global $log;$log->debug("[".__FUNCTION__."]line:".__LINE__."workflow_id:".$this->id."/workflow_taskid:".$task->id);
 						$task->doTask($entityData);
 					}
 					catch(Exception $e) {
@@ -568,7 +569,7 @@ class Workflow{
 							break;
 						} else {
 							//current time greater than scheduled time, get the next weekday
-							if (count($scheduledDaysOfWeek) == 1) { //if only one weekday selected, then get next week
+							if (php7_count($scheduledDaysOfWeek) == 1) { //if only one weekday selected, then get next week
 								$nextTime = date('Y-m-d', strtotime('next ' . $weekDays[$weekDay])) . ' ' . $scheduledTime;
 							} else {
 								$nextWeekDay = $scheduledDaysOfWeek[$index + 1]; // its the last day of the week i.e. sunday
@@ -697,7 +698,7 @@ class Workflow{
 				$j = 1;
 				$currentDateTime = date('Y:m:d H:i:s', $currentTime);
 				do{
-					for($i = 0; $i < count($annualDates); $i++) {
+					for($i = 0; $i < php7_count($annualDates); $i++) {
 						$nextTriggerDay = $annualDates[$i];
 						$nextTime = date('Y:m:d H:i:s', strtotime($nextTriggerDay.' '.$scheduledTime.'+'.$j.' year'));
 						if($nextTime > $currentDateTime) {

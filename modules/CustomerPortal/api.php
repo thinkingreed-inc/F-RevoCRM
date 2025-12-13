@@ -8,10 +8,10 @@
  * All Rights Reserved.
  * ***********************************************************************************/
 
-ini_set('display_errors','off');
+ ini_set('display_errors','off');
 
-include_once 'include.inc';
-
+ include_once 'include.inc';
+ 
 class CustomerPortal_API_EntryPoint {
 
 	protected static function authenticate(CustomerPortal_API_Abstract $controller, CustomerPortal_API_Request $request) {
@@ -32,12 +32,19 @@ class CustomerPortal_API_EntryPoint {
 		} else {
 			// Handling the case Contacts module is disabled 
 			if (!vtlib_isModuleActive("Contacts")) {
+				$module = Users_Module_Model::getInstance('Users');
+				$module->saveLoginErrorHistory($request->get('username'), true);
 				throw new Exception("Contacts module is disabled", 1412);
 			}
 
 			$ok = $controller->authenticatePortalUser($request->get('username'), $request->get('password'));
 			if (!$ok) {
+				$module = Users_Module_Model::getInstance('Users');
+				$module->saveLoginErrorHistory($request->get('username'), true);
 				throw new Exception("Login failed", 1412);
+			} else {
+				$module = Users_Module_Model::getInstance('Users');
+				$module->saveLoginHistory($request->get('username'), true);
 			}
 		}
 	}
@@ -60,9 +67,11 @@ class CustomerPortal_API_EntryPoint {
 
 				//setting active user language as Portal user language 
 				$current_user = $operationController->getActiveUser();
-				$portal_language = $request->getLanguage();
-				$current_user->column_fields["language"] = $portal_language;
-				$current_user->language = $portal_language;
+				if(!empty($current_user)) {
+					$portal_language = $request->getLanguage();
+					$current_user->column_fields["language"] = $portal_language;
+					$current_user->language = $portal_language;
+				}
 
 				$response = $operationController->process($request);
 			} catch (Exception $e) {

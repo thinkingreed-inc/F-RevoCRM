@@ -1,6 +1,7 @@
 <?php
 
 $Vtiger_Utils_Log = true;
+require_once 'vendor/autoload.php';
 include_once 'config.php';
 //include_once 'include/Webservices/Relation.php';
 
@@ -22,15 +23,21 @@ require_once 'includes/Loader.php';
 $db = PearDatabase::getInstance();
 
 $module = Vtiger_Module::getInstance('ExtensionStore');
-$module->delete();
+if($module) {
+    $module->delete();
+}
 
 $db->query("delete from vtiger_links where linklabel like 'ExtensionStoreCommonHeaderScript'");
 
 $module = Vtiger_Module::getInstance('PBXManager');
-$module->delete();
+if($module) {
+    $module->delete();
+}
 
 $module = Vtiger_Module::getInstance('Google');
-$module->delete();
+if($module) {
+    $module->delete();
+}
 
 $db->query("delete from vtiger_settings_blocks where label like 'LBL_EXTENSIONS'");
 

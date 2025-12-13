@@ -36,7 +36,7 @@ class DateTimeField {
 		global $log;
 		$log->debug("Entering getDBInsertDateValue(" . $this->datetime . ") method ...");
 		$value = explode(' ', $this->datetime);
-		if (count($value) == 2) {
+		if (php7_count($value) == 2) {
 			$value[0] = self::convertToUserFormat($value[0]);
 		}
 
@@ -188,36 +188,37 @@ class DateTimeField {
     {
         $date = self::convertToInternalFormat($date);
         list($y, $m, $d) = explode('-', $date[0]);
-
-        switch ($format) {
-            case 'dd.mm.yyyy':
-                $date[0] = $d . '.' . $m . '.' . $y;
-				break;
-			case 'mm.dd.yyyy':
-                $date[0] = $m . '.' . $d . '.' . $y;
-				break;
-			case 'yyyy.mm.dd':
-                $date[0] = $y . '.' . $m . '.' . $d;
-				break;
-			case 'dd/mm/yyyy':
-                $date[0] = $d . '/' . $m . '/' . $y;
-				break;
-			case 'mm/dd/yyyy':
-                $date[0] = $m . '/' . $d . '/' . $y;
-				break;
-			case 'yyyy/mm/dd':
-                $date[0] = $y . '/' . $m . '/' . $d;
-                break;
-            case 'dd-mm-yyyy':
-                $date[0] = $d . '-' . $m . '-' . $y;
-                break;
-            case 'mm-dd-yyyy':
-                $date[0] = $m . '-' . $d . '-' . $y;
-                break;
-            case 'yyyy-mm-dd':
-                $date[0] = $y . '-' . $m . '-' . $d;
-                break;
-        }
+		if($date[0]!='TODAY'){
+			switch ($format) {
+				case 'dd.mm.yyyy':
+					$date[0] = $d . '.' . $m . '.' . $y;
+					break;
+				case 'mm.dd.yyyy':
+					$date[0] = $m . '.' . $d . '.' . $y;
+					break;
+				case 'yyyy.mm.dd':
+					$date[0] = $y . '.' . $m . '.' . $d;
+					break;
+				case 'dd/mm/yyyy':
+					$date[0] = $d . '/' . $m . '/' . $y;
+					break;
+				case 'mm/dd/yyyy':
+					$date[0] = $m . '/' . $d . '/' . $y;
+					break;
+				case 'yyyy/mm/dd':
+					$date[0] = $y . '/' . $m . '/' . $d;
+					break;
+				case 'dd-mm-yyyy':
+					$date[0] = $d . '-' . $m . '-' . $y;
+					break;
+				case 'mm-dd-yyyy':
+					$date[0] = $m . '-' . $d . '-' . $y;
+					break;
+				case 'yyyy-mm-dd':
+					$date[0] = $y . '-' . $m . '-' . $d;
+					break;
+			}
+		}
 
         if ($date[1] != '') {
             $userDate = $date[0] . ' ' . $date[1];

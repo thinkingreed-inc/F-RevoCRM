@@ -100,7 +100,7 @@ class Settings_Vtiger_ListView_Model extends Vtiger_Base_Model {
 		}
 		if($module->isPagingSupported()) {
 			$pagingModel->calculatePageRange($listViewRecordModels);
-			if(count($listViewRecordModels) > $pageLimit) {
+			if(php7_count($listViewRecordModels) > $pageLimit) {
 				array_pop($listViewRecordModels);
 				$pagingModel->set('nextPageExists', true);
 			} else {
@@ -151,7 +151,7 @@ class Settings_Vtiger_ListView_Model extends Vtiger_Base_Model {
         $position = stripos($listQuery, ' from ');
 		if ($position) {
 			$split = preg_split('/ from /i', $listQuery);
-			$splitCount = count($split);
+			$splitCount = php7_count($split);
 			$listQuery = 'SELECT count(*) AS count ';
 			for ($i=1; $i<$splitCount; $i++) {
 				$listQuery = $listQuery. ' FROM ' .$split[$i];

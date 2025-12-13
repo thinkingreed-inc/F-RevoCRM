@@ -51,7 +51,7 @@ class Vtiger_ThemeExport extends Vtiger_Package {
      * @param String Zipfilename to use
      * @param Boolean True for sending the output as download
      */
-    function export($layoutName, $themeName, $todir='', $zipfilename='', $directDownload=false) {
+    function export($layoutName, $themeName='', $todir='', $zipfilename='', $directDownload=false) {
             $this->__initExport($layoutName, $themeName);
 
             // Call layout export function
@@ -132,7 +132,7 @@ class Vtiger_ThemeExport extends Vtiger_Package {
      * Export vtiger dependencies
      * @access private
      */
-    function export_Dependencies() {
+    function export_Dependencies($theme = false) {
             global $vtiger_current_version, $adb;
 
             $vtigerMinVersion = $vtiger_current_version;

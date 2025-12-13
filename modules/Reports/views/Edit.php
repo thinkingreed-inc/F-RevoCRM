@@ -32,7 +32,7 @@ Class Reports_Edit_View extends Vtiger_Edit_View {
 		return true;
 	}
 
-	public function preProcess(Vtiger_Request $request) {
+	public function preProcess(Vtiger_Request $request, $display = true) {
 		$viewer = $this->getViewer($request);
 		$record = $request->get('record');
 		$moduleName = $request->getModule();
@@ -239,6 +239,7 @@ Class Reports_Edit_View extends Vtiger_Edit_View {
 			$viewer->assign('SELECTED_ADVANCED_FILTER_FIELDS', $reportModel->transformToNewAdvancedFilter());
 		}
 		$data = $request->getAll();
+		$joinColumn = array();
 		foreach ($data as $name => $value) {
 			if($name == 'schdayoftheweek' || $name == 'schdayofthemonth' || $name == 'schannualdates' || $name == 'recipients' || $name == 'members') {
 				$value = Zend_Json::decode($value);
@@ -246,8 +247,12 @@ Class Reports_Edit_View extends Vtiger_Edit_View {
 					$value = array($value);
 				}
 			}
+			if(strpos($name, "joinfield_") !== false) {
+				$joinColumn[] = $value;
+			}
 			$reportModel->set($name, $value);
 		}
+		$reportModel->set("joinColumn", implode(",", $joinColumn));
 		$primaryModule = $request->get('primary_module');
 		$secondaryModules = $request->get('secondary_modules');
 		$reportModel->setPrimaryModule($primaryModule);

@@ -74,7 +74,7 @@ class Products extends CRMEntity {
 	/**	Constructor which will set the column_fields in this object
 	 */
         function __construct() {
-            $this->log =LoggerManager::getLogger('product');
+            $this->log =Logger::getLogger('product');
             $this->log->debug("Entering Products() method ...");
             $this->db = PearDatabase::getInstance();
             $this->column_fields = getColumnFields('Products');
@@ -124,14 +124,14 @@ class Products extends CRMEntity {
 		//Delete the existing tax if any
 		if($this->mode == 'edit' && $_REQUEST['action'] != 'MassEditSave')
 		{
-			for($i=0;$i<count($tax_details);$i++)
+			for($i=0;$i<php7_count($tax_details);$i++)
 			{
 				$taxid = getTaxId($tax_details[$i]['taxname']);
 				$sql = "DELETE FROM vtiger_producttaxrel WHERE productid=? AND taxid=?";
 				$adb->pquery($sql, array($this->id,$taxid));
 			}
 		}
-		for($i=0;$i<count($tax_details);$i++)
+		for($i=0;$i<php7_count($tax_details);$i++)
 		{
 			$tax_name = $tax_details[$i]['taxname'];
 			$tax_checkname = $tax_details[$i]['taxname']."_check";
@@ -183,7 +183,7 @@ class Products extends CRMEntity {
 		//Delete the existing currency relationship if any
 		if($this->mode == 'edit' && $_REQUEST['action'] !== 'CurrencyUpdate')
 		{
-			for($i=0;$i<count($currency_details);$i++)
+			for($i=0;$i<php7_count($currency_details);$i++)
 			{
 				$curid = $currency_details[$i]['curid'];
 				$sql = "delete from vtiger_productcurrencyrel where productid=? and currencyid=?";
@@ -194,7 +194,7 @@ class Products extends CRMEntity {
 		$product_base_conv_rate = getBaseConversionRateForProduct($this->id, $this->mode);
 		$currencySet = 0;
 		//Save the Product - Currency relationship if corresponding currency check box is enabled
-		for($i=0;$i<count($currency_details);$i++)
+		for($i=0;$i<php7_count($currency_details);$i++)
 		{
 			$curid = $currency_details[$i]['curid'];
 			$curname = $currency_details[$i]['currencylabel'];
@@ -211,8 +211,8 @@ class Products extends CRMEntity {
 			if($_REQUEST[$cur_checkname] == 'on' || $_REQUEST[$cur_checkname] == 1 || $isQuickCreate)
 			{
 				$conversion_rate = $currency_details[$i]['conversionrate'];
-				$actual_conversion_rate = $product_base_conv_rate * $conversion_rate;
-				$converted_price = $actual_conversion_rate * $requestPrice;
+				$actual_conversion_rate = (float)$product_base_conv_rate * (float)$conversion_rate;
+				$converted_price = (float)$actual_conversion_rate * (float)$requestPrice;
 
 				$log->debug("Going to save the Product - $curname currency relationship");
 
@@ -1180,7 +1180,7 @@ class Products extends CRMEntity {
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule,$queryPlanner) {
+	function generateReportsSecQuery($module,$secmodule,$queryPlanner, $reportid = false) {
 		global $current_user;
 		$matrix = $queryPlanner->newDependencyMatrix();
 
@@ -1191,7 +1191,7 @@ class Products extends CRMEntity {
 		}
 		$matrix->setDependency("vtiger_products",array("innerProduct","vtiger_crmentityProducts","vtiger_productcf","vtiger_vendorRelProducts"));
 
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_products","productid", $queryPlanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_products","productid", $queryPlanner, $reportid);
 		if ($queryPlanner->requireTable("innerProduct")){
 			$query .= " LEFT JOIN (
 					SELECT vtiger_products.productid,

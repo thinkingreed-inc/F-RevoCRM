@@ -24,11 +24,11 @@ class Vtiger_AccessControl {
 		if (!isset($this->privileges[$id])) {
 			checkFileAccessForInclusion('user_privileges/user_privileges_'.$id.'.php');
 			require('user_privileges/user_privileges_'.$id.'.php');
-
+			$vars = get_defined_vars();
 			$privilege = new stdClass;
 			foreach (self::$PRIVILEGE_ATTRS as $attr) {
-				if (isset($attr))
-					$privilege->$attr = $$attr;
+				if (isset($attr) && isset($vars[$attr]))
+					$privilege->$attr = $vars[$attr];
 			}
 
 			$this->privileges[$id] = $privilege;
@@ -49,7 +49,7 @@ class Vtiger_AccessControl {
 			self::$singleton = new self();
 		}
 
-		if (self::$singleton->privileges[$id]) {
+		if (self::$singleton->privileges && self::$singleton->privileges[$id]) {
 			unset(self::$singleton->privileges[$id]);
 		}
 	}

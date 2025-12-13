@@ -109,7 +109,7 @@ class Contacts_Module_Model extends Vtiger_Module_Model {
 			} else if($ownerId == $currentUser->getId()){
 				$visibility = false;
 			}
-			if(!$currentUser->isAdminUser() && $newRow['activitytype'] != 'Task' && $newRow['visibility'] == 'Private' && $ownerId && $visibility) {
+			if(!$currentUser->isAdminUser() && $newRow['visibility'] == 'Private' && $ownerId && $visibility) {
 				foreach($newRow as $data => $value) {
 					if(in_array($data, $visibleFields) != -1) {
 						unset($newRow[$data]);
@@ -118,7 +118,6 @@ class Contacts_Module_Model extends Vtiger_Module_Model {
 				$newRow['subject'] = vtranslate('Busy','Events').'*';
 			}
 			if($newRow['activitytype'] == 'Task') {
-				unset($newRow['visibility']);
 
 				$due_date = $newRow["due_date"];
 				$dayEndTime = "23:59:59";

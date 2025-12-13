@@ -26,7 +26,7 @@ class Leads_ConvertLead_View extends Vtiger_Index_View {
 
 		$recordModel = Vtiger_Record_Model::getInstanceById($recordId);
         $imageDetails = $recordModel->getImageDetails();
-        if(count($imageDetails)) {
+        if(php7_count($imageDetails)) {
             $imageAttachmentId = $imageDetails[0]['id'];
             $viewer->assign('IMAGE_ATTACHMENT_ID', $imageAttachmentId);
         }

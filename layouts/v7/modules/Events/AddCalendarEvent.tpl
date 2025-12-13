@@ -170,7 +170,7 @@
                                 {assign var="FIELD_MODEL" value=$FIELDS['parent_id']}
                                 {assign var="isReferenceField" value=$FIELD_MODEL->getFieldDataType()}
                                 {assign var="refrenceList" value=$FIELD_MODEL->getReferenceList()}
-                                {assign var="refrenceListCount" value=count($refrenceList)}
+                                {assign var="refrenceListCount" value=php7_count($refrenceList)}
                                 {*<td class="fieldLabel col-lg-2">
                                     <label class="muted pull-right">
                                         {vtranslate($FIELD_MODEL->get('label'), $MODULE)}&nbsp;

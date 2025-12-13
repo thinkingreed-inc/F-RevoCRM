@@ -12,7 +12,8 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 
 	var $moduleCall = false;
 	public function requiresPermission(\Vtiger_Request $request) {
-		$permissions = parent::requiresPermission($request);
+//		$permissions = parent::requiresPermission($request);
+		$permissions[] = array('module_parameter' => 'module', 'action' => 'DetailView');
 		$permissions[] = array('module_parameter' => 'module', 'action' => 'Export');
         if (!empty($request->get('source_module'))) {
             $permissions[] = array('module_parameter' => 'source_module', 'action' => 'Export');
@@ -30,6 +31,7 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 
 	private $moduleInstance;
 	private $focus;
+	private $exportBatchLimit = 10_000; // 1回のクエリで取得するデータ数上限
 
 	/**
 	 * Function exports the data based on the mode
@@ -43,9 +45,6 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 		$this->moduleFieldInstances = $this->moduleFieldInstances($moduleName);
 		$this->focus = CRMEntity::getInstance($moduleName);
 
-		$query = $this->getExportQuery($request);
-		$result = $db->pquery($query, array());
-
 		$redirectedModules = array('Users', 'Calendar');
 		if($request->getModule() != $moduleName && in_array($moduleName, $redirectedModules) && !$this->moduleCall){
 			$handlerClass = Vtiger_Loader::getComponentClassName('Action', 'ExportData', $moduleName);
@@ -53,13 +52,58 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 			$handler->ExportData($request);
 			return;
 		}
-		$translatedHeaders = $this->getHeaders();
-		$entries = array();
-		for ($j = 0; $j < $db->num_rows($result); $j++) {
-			$entries[] = $this->sanitizeValues($db->fetchByAssoc($result, $j));
-		}
 
-		$this->output($request, $translatedHeaders, $entries);
+		$batchoffset = 0;
+		while(true){ // 取得するデータが無い場合に終了
+			$request->set('batchoffset', $batchoffset);
+			$query = $this->getExportQuery($request);
+			$result = $db->pquery($query, array());
+			$entries = array();
+			for ($j = 0; $j < $db->num_rows($result); $j++) {
+				$entries[] = $this->sanitizeValues($db->fetchByAssoc($result, $j));
+			}
+			if(empty($entries)){
+				break;
+			}
+
+			//エクスポート時の選択肢項目の翻訳処理及び空白項目の除外
+			for ($i = 0; $i < $j; $i++){
+				foreach ($entries[$i] as $columnName => $fieldValue) {
+					$fieldModel = $this->moduleFieldInstances[$columnName];
+					if(empty($fieldModel)){
+						foreach($this->moduleFieldInstances as $key => $fieldinfo){
+							if($fieldinfo->column == $columnName){
+								$fieldName = $fieldinfo->name;
+							}
+						}
+						$fieldModel = $this->moduleFieldInstances[$fieldName];
+					}
+
+					$fieldDataType = ($fieldModel) ? $fieldModel->getFieldDataType() : '';
+
+					if ($fieldDataType == 'picklist') {
+						$entries[$i][$columnName] = vtranslate($fieldValue,$moduleName);
+					} else if ($fieldDataType == 'blank') {
+						unset($entries[$i][$columnName]);
+					}
+				}
+
+			}
+
+			if($batchoffset == 0){
+				$translatedHeaders = $this->getHeaders();
+				$this->output($request, $translatedHeaders, $entries);
+			}else{
+				$this->output($request, '', $entries);
+			}
+
+			//現在のページをエクスポートする場合はオフセットを使用していないため、ここで終了
+            if($request->getMode()== 'ExportCurrentPage'){
+                break;
+            }
+
+			$batchoffset = $batchoffset + $this->exportBatchLimit; // オフセットの更新
+		}
 	}
 
 	public function getHeaders() {
@@ -71,13 +115,15 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 				$fieldModel = $this->moduleFieldInstances[$fieldName];
 				// Check added as querygenerator is not checking this for admin users
 				$presence = $fieldModel->get('presence');
-				if(in_array($presence, $accessiblePresenceValue) && $fieldModel->get('displaytype') != '6') {
+				if(in_array($presence, $accessiblePresenceValue) && $fieldModel->get('displaytype') != '6' && $fieldModel->get('uitype') != '999') {
 					$headers[] = $fieldModel->get('label');
 				}
 			}
 		} else {
 			foreach($this->moduleFieldInstances as $field) {
-				$headers[] = $field->get('label');
+				if($field->get('uitype') != '999'){
+					$headers[] = $field->get('label');
+				}
 			}
 		}
 
@@ -129,7 +175,7 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 			}
 
 			$glue = '';
-			if($searchParams && count($queryGenerator->getWhereFields())) {
+			if($searchParams && php7_count($queryGenerator->getWhereFields())) {
 				$glue = QueryGenerator::$AND;
 			}
 			$searchParams = array_merge($searchParams, $tagParams);
@@ -180,6 +226,10 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 			case 'ExportAllData'	:	if ($orderBy && $orderByFieldModel) {
 											$query .= ' ORDER BY '.$queryGenerator->getOrderByColumn($orderBy).' '.$sortOrder;
 										}
+										$batchOffset = $request->get('batchoffset');
+										if(isset($batchOffset)){
+											$query .= ' LIMIT '.$this->exportBatchLimit.' OFFSET '.$batchOffset;
+										}
 										break;
 
 			case 'ExportCurrentPage' :	$pagingModel = new Vtiger_Paging_Model();
@@ -214,6 +264,10 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 											if ($orderBy && $orderByFieldModel) {
 												$query .= ' ORDER BY '.$queryGenerator->getOrderByColumn($orderBy).' '.$sortOrder;
 											}
+											$batchOffset = $request->get('batchoffset');
+											if(isset($batchOffset)){
+												$query .= ' LIMIT '.$this->exportBatchLimit.' OFFSET '.$batchOffset;
+											}
 											break;
 
 
@@ -247,16 +301,18 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 		$fileName = str_replace(',', '_', $fileName);
 		$exportType = $this->getExportContentType($request);
 
-		header("Content-Disposition:attachment;filename=$fileName.csv");
-		header("Content-Type:$exportType;charset=UTF-8");
-		header("Expires: Mon, 31 Dec 2000 00:00:00 GMT" );
-		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT" );
-		header("Cache-Control: post-check=0, pre-check=0", false );
+		if(!empty($headers)){ // 最初のバッチ処理で実行
+			header("Content-Disposition:attachment;filename=$fileName.csv");
+			header("Content-Type:$exportType;charset=UTF-8");
+			header("Expires: Mon, 31 Dec 2000 00:00:00 GMT" );
+			header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT" );
+			header("Cache-Control: post-check=0, pre-check=0", false );
 
-		$header = implode("\",\"", $headers);
-		$header = "\"" .$header;
-		$header .= "\"\r\n";
-		echo chr(0xEF).chr(0xBB).chr(0xBF).$header;
+			$header = implode("\",\"", $headers);
+			$header = "\"" .$header;
+			$header .= "\"\r\n";
+			echo chr(0xEF).chr(0xBB).chr(0xBF).$header;
+		}
 
 		$cnt = 0;
 		foreach($entries as $row) {
@@ -390,8 +446,10 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 
 	function getParentModuleName($value, $fieldName) {
 		$db = PearDatabase::getInstance();
-		$query = "SELECT relmodule  FROM vtiger_fieldmodulerel WHERE fieldid = (SELECT fieldid FROM vtiger_field WHERE columnname = ? );";
-		$result = $db->pquery($query, array($fieldName));
+		$moduleName = $this->moduleInstance->getName();
+ 		$tabid = Vtiger_Functions::getModuleId($moduleName);
+		$query = "SELECT relmodule  FROM vtiger_fieldmodulerel WHERE fieldid = (SELECT fieldid FROM vtiger_field WHERE columnname = ? AND tabid = ?);";
+		$result = $db->pquery($query, array($fieldName, $tabid));
 		if ($db->num_rows($result) > 0) {
 			$columname = $db->query_result($result, 0, "relmodule");
 		}

@@ -34,7 +34,7 @@
                         <span class="redColor">*</span>
                      </label>
                      <div class="col-sm-5 controls">
-                        <input class="form-control" id="name"  name="workflowname" value="{$WORKFLOW_MODEL_OBJ->workflowname}" data-rule-required="true">
+                        <input class="form-control" id="name"  name="workflowname" value="{vtranslate($WORKFLOW_MODEL_OBJ->workflowname, $QUALIFIED_MODULE)}" data-rule-required="true">
                      </div>
                   </div>
                   <div class="form-group">
@@ -42,7 +42,7 @@
                         {vtranslate('LBL_DESCRIPTION', $QUALIFIED_MODULE)}
                      </label>
                      <div class="col-sm-5 controls">
-                        <textarea class="form-control" name="summary" id="summary">{$WORKFLOW_MODEL->get('summary')}</textarea>
+                        <textarea class="form-control" name="summary" id="summary">{vtranslate($WORKFLOW_MODEL->get('summary'), $QUALIFIED_MODULE)}</textarea>
                      </div>
                   </div>
                   <div class="form-group">
@@ -52,7 +52,12 @@
                      <div class="col-sm-5 controls">
                          {if $MODE eq 'edit'}
                              <div class="pull-left">
-                                <input type='text' disabled='disabled' class="inputElement" value="{vtranslate($MODULE_MODEL->getName(), $MODULE_MODEL->getName())}" >
+                                 {if $SELECTED_MODULE == "Calendar" || $SELECTED_MODULE == "Events"}
+                                    {assign var=SINGLE_SELECTED_MODULE value="SINGLE_$SELECTED_MODULE"}
+                                    <input type='text' disabled='disabled' class="inputElement" value="{vtranslate($SINGLE_SELECTED_MODULE, $SELECTED_MODULE)}" >
+                                 {else}
+                                    <input type='text' disabled='disabled' class="inputElement" value="{vtranslate($MODULE_MODEL->getName(), $MODULE_MODEL->getName())}" >
+                                 {/if}
                                 <input type='hidden' id="module_name" name='module_name' value="{$MODULE_MODEL->get('name')}" >
                              </div>
                          {else}

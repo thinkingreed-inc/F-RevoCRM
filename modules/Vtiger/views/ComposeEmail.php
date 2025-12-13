@@ -174,7 +174,7 @@ class Vtiger_ComposeEmail_View extends Vtiger_Footer_View {
 			foreach($selectIds as $id) { 
 				  if ($id) { 
 						$parentIdComponents = explode('@', $id); 
-						if (count($parentIdComponents) > 1) { 
+						if (php7_count($parentIdComponents) > 1) { 
 								$id = $parentIdComponents[0]; 
 								if ($parentIdComponents[1] === '-1') { 
 										$recordModel = Users_Record_Model::getInstanceById($id, 'Users'); 
@@ -269,7 +269,7 @@ class Vtiger_ComposeEmail_View extends Vtiger_Footer_View {
 		return;
 	}
 
-	public function getRecordsListFromRequest(Vtiger_Request $request) {
+	public function getRecordsListFromRequest(Vtiger_Request $request, $model = false) {
 		$cvId = $request->get('viewname');
 		$selectedIds = $request->get('selected_ids');
 		$excludedIds = $request->get('excluded_ids');
@@ -296,7 +296,7 @@ class Vtiger_ComposeEmail_View extends Vtiger_Footer_View {
         }
 
 		if(!empty($selectedIds) && $selectedIds != 'all') {
-			if(!empty($selectedIds) && count($selectedIds) > 0) {
+			if(!empty($selectedIds) && php7_count($selectedIds) > 0) {
 				return $selectedIds;
 			}
 		}

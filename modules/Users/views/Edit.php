@@ -10,7 +10,7 @@
 
 Class Users_Edit_View extends Users_PreferenceEdit_View {
 
-	public function preProcess(Vtiger_Request $request) {
+	public function preProcess(Vtiger_Request $request, $display=true) {
 		parent::preProcess($request, false);
 		$this->preProcessSettings($request);
 	}
