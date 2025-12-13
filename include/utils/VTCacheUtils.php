@@ -356,7 +356,7 @@ class VTCacheUtils {
 		return false;
 	}
 	static function updateReport_Info($userid, $reportid, $primarymodule, $secondarymodules, $reporttype,
-	$reportname, $description, $folderid, $owner) {
+	$reportname, $description, $folderid, $owner, $joinColumn) {
 		if(!isset(self::$_reportmodule_infoperuser_cache[$userid])) {
 			self::$_reportmodule_infoperuser_cache[$userid] = array();
 		}
@@ -369,7 +369,8 @@ class VTCacheUtils {
 				'reportname'      => $reportname,
 				'description'     => $description,
 				'folderid'        => $folderid,
-				'owner'           => $owner
+				'owner'           => $owner,
+				'join_column'     => $joinColumn
 			);
 		}
 	}

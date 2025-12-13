@@ -70,7 +70,7 @@ class PDF_helper {
 				$recordIdData = array($recordIdData);
 			}
 			$pdfdataarray = array();
-			// shell_exec("/usr/bin/google-chrome --headless --no-sandbox --disable-setuid-sandbox --disable-software-rasterizer --disable-gpu --virtual-time-budget=9999999 --run-all-compositor-stages-before-draw --print-to-pdf-no-header --print-to-pdf=" . $filepath . ".pdf" . " " . $filepath . ".html");
+			// shell_exec("/usr/bin/google-chrome --headless --no-sandbox --disable-setuid-sandbox --disable-software-rasterizer --disable-gpu --virtual-time-budget=9999999 --run-all-compositor-stages-before-draw --no-pdf-header-footer --print-to-pdf=" . $filepath . ".pdf" . " " . $filepath . ".html");
 			// shell_exec("chmod a+r ".$filepath . ".pdf");
 			foreach ($recordIdData as $key => $recordId) {
 				$result = $adb->pquery("SELECT templatename, body FROM vtiger_pdftemplates WHERE templateid = ?", array($templateId));
@@ -146,7 +146,7 @@ class PDF_helper {
 
 				// headlesschrome側にてPDF変換処理を行う
 				if(empty($dokerfiledirectory)) {
-					$command = $chromeurl." --headless --disable-gpu --print-to-pdf-no-header --print-to-pdf=" . $hostfilepath . ".pdf " . $hostfilepath . ".html";
+					$command = $chromeurl." --headless --disable-gpu --no-pdf-header-footer --print-to-pdf=" . $hostfilepath . ".pdf " . $hostfilepath . ".html";
 					exec($command);
 				} else {
 					$paramsarray = array("filepath" => $dockerfilepath);

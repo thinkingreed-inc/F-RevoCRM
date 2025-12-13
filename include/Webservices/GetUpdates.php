@@ -13,14 +13,14 @@ require_once 'include/utils/CommonUtils.php';
 require_once('include/utils/GetUserGroups.php');
 require_once 'include/Webservices/DescribeObject.php';
 
-	function vtws_sync($mtime,$elementType,$syncType,$user){
+	function vtws_sync($modifiedTime,$elementType,$syncType,$user){
 		global $adb, $recordString,$modifiedTimeString;
         
 		$numRecordsLimit = 100;
 		$ignoreModules = array("Users");
 		$typed = true;
 		$dformat = "Y-m-d H:i:s";
-		$datetime = date($dformat, $mtime);
+		$datetime = date($dformat, $modifiedTime);
 		$setypeArray = array();
 		$setypeData = array();
 		$setypeHandler = array();
@@ -84,7 +84,7 @@ require_once 'include/Webservices/DescribeObject.php';
 
 		if(php7_count($accessableModules)<=0)
 		{
-				$output['lastModifiedTime'] = $mtime;
+				$output['lastModifiedTime'] = $modifiedTime;
 				$output['more'] = false;
 				return $output;
 		}
@@ -222,7 +222,7 @@ require_once 'include/Webservices/DescribeObject.php';
 			$output['more'] = false;
 		}
 		if(!$maxModifiedTime){
-			$modifiedtime = $mtime;
+			$modifiedtime = $modifiedTime;
 		}else{
 			$modifiedtime = vtws_getSeconds($maxModifiedTime);
 		}
@@ -244,9 +244,9 @@ require_once 'include/Webservices/DescribeObject.php';
 		return $output;
 	}
 	
-	function vtws_getSeconds($mtimeString){
+	function vtws_getSeconds($modifiedTimeString){
 		//TODO handle timezone and change time to gmt.
-		return strtotime($mtimeString);
+		return strtotime($modifiedTimeString);
 	}
 
 	function vtws_isRecordDeleted($recordDetails,$deleteColumnDetails,$deletedValues){

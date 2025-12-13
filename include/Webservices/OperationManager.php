@@ -125,7 +125,7 @@
 			$sanitizedInput = array();
 			foreach($this->operationParams as $ind=>$columnDetails){
 				foreach ($columnDetails as $columnName => $type) {
-					$sanitizedInput[$columnName] = $this->handleType($type,vtws_getParameter($input,$columnName));;
+					$sanitizedInput[$columnName] = $this->handleType($type,vtws_getParameter($input,$columnName));
 				}
 			}
 			return $sanitizedInput;
@@ -152,7 +152,7 @@
 			try{
 				$operation = strtolower($this->operationName);
 				if(!$this->preLogin){
-					$params[] = $user;
+					$params['user'] = $user;
 					return call_user_func_array($this->handlerMethod,$params);
 				}else{
 					$userDetails = call_user_func_array($this->handlerMethod,$params);

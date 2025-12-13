@@ -29,7 +29,7 @@
 						{assign var=TAX_REGION_NAME value=$TAX_REGION_MODEL->getName()}
 						<tr class="opacity" data-key-name="{$TAX_REGION_NAME}" data-key="{$TAX_REGION_NAME}">
 							<td class="{$WIDTHTYPE}" style="border-right:none;border-left:none;">
-								<span class="taxRegionName">{$TAX_REGION_NAME}</span>
+								<span class="taxRegionName">{vtranslate($TAX_REGION_NAME, $QUALIFIED_MODULE)}</span>
 							</td>
 							<td class="{$WIDTHTYPE}" style="border-right:none;border-left:none">
 								<div class="pull-right actions">

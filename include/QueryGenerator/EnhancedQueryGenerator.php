@@ -269,12 +269,7 @@ class EnhancedQueryGenerator extends QueryGenerator {
 					$sql = $this->getSQLColumn($timeField);
 				} else if ($field == 'taskstatus' || $field == 'eventstatus') {
 					//In calendar list view, Status value = Planned is not displaying
-					$sql = "CASE WHEN (vtiger_activity.status not like '') THEN vtiger_activity.status ELSE vtiger_activity.eventstatus END AS ";
-					if ($field == 'taskstatus') {
-						$sql .= "status";
-					} else {
-						$sql .= $field;
-					}
+					$sql = "CASE WHEN (vtiger_activity.status not like '') THEN vtiger_activity.status ELSE vtiger_activity.eventstatus END AS status";
 				}
 				$columns[] = $sql;
 			}
@@ -674,7 +669,11 @@ class EnhancedQueryGenerator extends QueryGenerator {
 						$columnSql = getSqlForNameInDisplayFormat(array('last_name'=>$columnSqlTable.'.last_name',
 																		'first_name'=>$columnSqlTable.'.first_name'),'Users');
 					} else if(in_array('DocumentFolders', $moduleList)) {
-						$columnSql = "vtiger_attachmentsfolder".$fieldName.".foldername";
+						if($conditionInfo['operator'] == 'e' || $conditionInfo['operator'] == 'n') {
+							$columnSql = "vtiger_attachmentsfolder".$fieldName.".folderid";
+						} else {
+							$columnSql = "vtiger_attachmentsfolder".$fieldName.".foldername";
+						}
 					} else if(in_array('Currency', $moduleList)) {
 						$columnSql = "vtiger_currency_info$parentReferenceField$fieldName.currency_name";
 						if($fieldName == 'currency_id' && is_numeric($conditionInfo['value'])){

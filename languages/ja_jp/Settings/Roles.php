@@ -40,6 +40,12 @@ $languageStrings = array(
     /*Vtiger7 String*/
     'LBL_EDIT_ROLE' => '役割の編集',
 	'LBL_CREATE_ROLE' => '役割の作成',
+
+	'LBL_ORGANIZATION' => '組織',
+	'LBL_ADMIN' => '管理者',
+	'LBL_MANAGER' => 'マネージャー',
+	'LBL_GENERAL' => '一般',
+	'LBL_PART-TIME_JOB' => 'パート・アルバイト',
 );
 
 $jsLanguageStrings = array(

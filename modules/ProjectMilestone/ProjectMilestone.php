@@ -403,7 +403,7 @@ class ProjectMilestone extends CRMEntity {
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module, $secmodule, $queryPlanner) {
+	function generateReportsSecQuery($module, $secmodule, $queryPlanner, $reportid = false) {
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency('vtiger_crmentityProjectMilestone', array('vtiger_groupsProjectMilestone', 'vtiger_usersProjectMilestone', 'vtiger_lastModifiedByProjectMilestone'));
 
@@ -412,7 +412,7 @@ class ProjectMilestone extends CRMEntity {
 		}
 		$matrix->setDependency('vtiger_projectmilestone', array('vtiger_crmentityProjectMilestone'));
 
-		$query .= $this->getRelationQuery($module,$secmodule,"vtiger_projectmilestone","projectmilestoneid", $queryPlanner);
+		$query .= $this->getRelationQuery($module,$secmodule,"vtiger_projectmilestone","projectmilestoneid", $queryPlanner, $reportid);
 
 		if ($queryPlanner->requireTable('vtiger_crmentityProjectMilestone', $matrix)) {
 			$query .= " LEFT JOIN vtiger_crmentity AS vtiger_crmentityProjectMilestone ON vtiger_crmentityProjectMilestone.crmid=vtiger_projectmilestone.projectmilestoneid and vtiger_crmentityProjectMilestone.deleted=0";

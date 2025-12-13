@@ -183,7 +183,7 @@ class CRMEntity {
 		}
 
 		// Check 1
-		$save_file = 'true';
+		$save_file = true;
 		//only images are allowed for Image Attachmenttype
 		$mimeType = vtlib_mime_content_type($file_details['tmp_name']);
 		$mimeTypeContents = explode('/', $mimeType);
@@ -192,12 +192,12 @@ class CRMEntity {
 			$save_file = validateImageFile($file_details);
 		}
                 $log->debug("File Validation status in Check1 save_file => $save_file");
-		if ($save_file == 'false') {
+		if ($save_file == false) {
 			return false;
 		}
 
 		// Check 2
-		$save_file = 'true';
+		$save_file = true;
 		//only images are allowed for these modules
 		if ($module == 'Contacts' || $module == 'Products') {
 			$save_file = validateImageFile($file_details);
@@ -219,7 +219,7 @@ class CRMEntity {
 		$upload_status = copy($filetmp_name, $upload_file_path . $current_id . "_" . $encryptFileName);
 		// temporary file will be deleted at the end of request
                 $log->debug("Upload status of file => $upload_status");
-		if ($save_file == 'true' && $upload_status == 'true') {
+		if ($save_file == true && $upload_status == true) {
 			if($attachmentType != 'Image' && $this->mode == 'edit') {
 				//Only one Attachment per entity delete previous attachments
 				$res = $adb->pquery('SELECT vtiger_seattachmentsrel.attachmentsid FROM vtiger_seattachmentsrel 
@@ -2301,8 +2301,9 @@ class CRMEntity {
 						$rel_obj = CRMEntity::getInstance($rel_mod);
 						vtlib_setup_modulevars($rel_mod, $rel_obj);
 
-						$rel_tab_name = $rel_obj->table_name;
-						$rel_tab_index = $rel_obj->table_index;
+						$entityTableFieldNames = getEntityFieldNames($rel_mod);
+						$rel_tab_name = $entityTableFieldNames['tablename'];
+						$rel_tab_index = $entityTableFieldNames['entityidfield'];
 
 						$rel_tab_name_rel_module_table_alias = $rel_tab_name . "Rel$module$field_id";
 
@@ -2349,7 +2350,7 @@ class CRMEntity {
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
 
-	function generateReportsSecQuery($module, $secmodule,$queryPlanner) {
+	function generateReportsSecQuery($module, $secmodule,$queryPlanner, $reportid = false) {
 		global $adb;
 		$secondary = CRMEntity::getInstance($secmodule);
 
@@ -2360,10 +2361,14 @@ class CRMEntity {
 		$modulecftable = $secondary->customFieldTable[0];
 		$modulecfindex = $secondary->customFieldTable[1];
 
+		$cfquery = '';
+		foreach($this->tab_name_index as $modulecftable => $modulecfindex) {
+			if($modulecftable == 'vtiger_crmentity' || $modulecftable == $tablename) {
+				continue;
+			}
 		if (isset($modulecftable) && $queryPlanner->requireTable($modulecftable)) {
 			$cfquery = "left join $modulecftable as $modulecftable on $modulecftable.$modulecfindex=$tablename.$tableindex";
-		} else {
-			$cfquery = '';
+			}
 		}
 
 		$relquery = '';
@@ -2397,7 +2402,16 @@ class CRMEntity {
 					$matrix->addDependency($tab_name, $crmentityRelSecModuleTable);
 
 					if ($queryPlanner->requireTable($crmentityRelSecModuleTable, $matrix)) {
-						$relquery .= " left join vtiger_crmentity as $crmentityRelSecModuleTable on $crmentityRelSecModuleTable.crmid = $tab_name.$field_name and $crmentityRelSecModuleTable.deleted=0";
+						// Usersを関連にした場合、vtiger_crmentityをJoinするとレコードがないため、vtiger_usersを一度JOINする
+						if($rel_mod == "Users"){
+							// vtiger_crmentityの代わりとして動かすため、
+							//   - vtiger_users.id as `crmid` として振る舞わせる
+							//   - deleted = 0となっていた箇所は、vtiger_users.status = 'Active'で判定する
+							// [TODO] Usersの場合、通常のレコードとは異なり過去のユーザーも見せたいのであれば、この判定は無く必要がある
+							$relquery.= " LEFT JOIN (select u.*, u.id as `crmid` from vtiger_users u) AS $crmentityRelSecModuleTable ON $crmentityRelSecModuleTable.id = $tab_name.$field_name AND vtiger_crmentityRel$secmodule$field_id.status='Active'";
+						}else{
+							$relquery .= " left join vtiger_crmentity as $crmentityRelSecModuleTable on $crmentityRelSecModuleTable.crmid = $tab_name.$field_name and $crmentityRelSecModuleTable.deleted=0";
+						}
 					}
 					for ($j = 0; $j < $adb->num_rows($ui10_modules_query); $j++) {
 						$rel_mod = $adb->query_result($ui10_modules_query, $j, 'relmodule');
@@ -2420,11 +2434,11 @@ class CRMEntity {
 		$matrix->setDependency("vtiger_crmentity$secmodule", array("vtiger_groups$secmodule", "vtiger_users$secmodule", "vtiger_lastModifiedBy$secmodule"));
 		$matrix->addDependency($tablename, "vtiger_crmentity$secmodule");
 
-		if (!$queryPlanner->requireTable($tablename, $matrix) && !$queryPlanner->requireTable($modulecftable)) {
-			return '';
-		}
+		// if (!$queryPlanner->requireTable($tablename, $matrix) && !$queryPlanner->requireTable($modulecftable)) {
+		// 	return '';
+		// }
 
-		$query = $this->getRelationQuery($module, $secmodule, "$tablename", "$tableindex", $queryPlanner);
+		$query = $this->getRelationQuery($module, $secmodule, "$tablename", "$tableindex", $queryPlanner, $reportid);
 
 		if ($queryPlanner->requireTable("vtiger_crmentity$secmodule", $matrix)) {
 			// $query .= " left join vtiger_crmentity as vtiger_crmentity$secmodule on vtiger_crmentity$secmodule.crmid = $tablename.$tableindex AND vtiger_crmentity$secmodule.deleted=0";
@@ -2524,7 +2538,12 @@ class CRMEntity {
 							$rel_obj = CRMEntity::getInstance($rel_mod);
 							vtlib_setup_modulevars($rel_mod, $rel_obj);
 
-							$rel_tab_name = $rel_obj->table_name;
+							$rel_module_entityname_query = $adb->pquery("SELECT tablename FROM vtiger_entityname WHERE modulename=?", array($rel_mod));
+							if ($adb->num_rows($rel_module_entityname_query) > 0) {
+								for ($j = 0; $j < $adb->num_rows($rel_module_entityname_query); $j++) {
+									$rel_tab_name = $adb->query_result($rel_module_entityname_query, $j, 'tablename');
+								}
+							}
 							$rel_tab_index = $rel_obj->table_index;
 
 							$rel_tab_name_rel_module_table_alias = $rel_tab_name . "Rel$module$field_id";
@@ -2579,8 +2598,31 @@ class CRMEntity {
 	 * returns the query string formed on relating the primary module and secondary module
 	 */
 
-	function getRelationQuery($module, $secmodule, $table_name, $column_name, $queryPlanner) {
-		$tab = getRelationTables($module, $secmodule);
+	function getRelationQuery($module, $secmodule, $table_name, $column_name, $queryPlanner, $reportid = false) {
+		global $adb;
+
+		// selected join column
+		$joinColumn = $queryPlanner->getReportJoinColumn();
+		$joinTypes = explode(",", $joinColumn);
+		foreach($joinTypes as $tmpKey) {
+			if(strpos($tmpKey, $secmodule.'::') === 0) {
+				$joinKey = $tmpKey;
+				break;
+			}
+		}
+		$reportModel = new Reports_Record_Model();
+		$tabs = $reportModel->getRelationTables($module, $secmodule);
+		foreach($tabs as $tmpKey => $tmpTab) {
+			if(strpos($tmpKey, $joinKey) === 0) {
+				$tab = $tmpTab;
+				break;
+			}
+		}
+
+		// default
+		if(empty($tab)) {
+			$tab = getRelationTables($module, $secmodule);
+		}
 
 		foreach ($tab as $key => $value) {
 			$tables[] = $key;
@@ -2592,14 +2634,38 @@ class CRMEntity {
 		$secfieldname = $fields[0][1];
 		$tmpname = $pritablename . 'tmp' . $secmodule;
 		$condition = "";
-		if (!empty($tables[1]) && !empty($fields[1])) {
+
+		// 選択している関連項目が親か子かを判断する
+		$join_column_result = $adb->query("select join_column from vtiger_reportmodules where reportmodulesid=$reportid");
+		$join_column = $adb->query_result($join_column_result, 0, 'join_column');
+		$join_column_array = explode(",", $join_column);
+		foreach ($join_column_array as $key => $value) {
+			if(!$value) continue;
+			$valuearray = explode("::", $value);
+			$join_column_array[$valuearray[0]] = $valuearray;
+		}
+
+		$ischild_selectedjoin = false;
+		if($join_column_array[$secmodule] != "" && (count($join_column_array[$secmodule]) == 0 || $join_column_array[$secmodule][1] != $module)){
+			// 関連先の項目を指定していて、子の場合
+			$ischild_selectedjoin = true;
+		}
+
+		$ischild_firstjoincolum = false;
+		if(!empty($tables[1]) && !empty($fields[1]) && (strpos($tables[1], $tables[0]) === false) && (strpos($tables[0], $tables[1]) === false)){
+			// 関連先の1つ目の選択肢が子の場合
+			$ischild_firstjoincolum = true;
+		}
+
+		if ($ischild_selectedjoin || $ischild_firstjoincolum) {
+			//子の場合
 			$condvalue = $tables[1] . "." . $fields[1];
 			$condition = "$table_name.$prifieldname=$condvalue";
 		} else {
+			//親の場合
 			$condvalue = $table_name . "." . $column_name;
 			$condition = "$pritablename.$secfieldname=$condvalue";
 		}
-
 		$selectColumns = "$table_name.*";
 
 		// Look forward for temporary table usage as defined by the QueryPlanner
@@ -2634,10 +2700,8 @@ class CRMEntity {
 			if($secmodule == "Emails") {
 				$tableName .='Emails';
 			}
-			$condition = "($tableName.$column_name={$tmpname}.{$secfieldname} " .
-					"OR $tableName.$column_name={$tmpname}.{$prifieldname})";
-			$query = " left join vtiger_crmentityrel as $tmpname ON (($condvalue={$tmpname}.{$secfieldname} " .
-					"OR $condvalue={$tmpname}.{$prifieldname})) AND ({$tmpname}.module='{$secmodule}' OR {$tmpname}.relmodule='{$secmodule}') ";
+			$condition = " $tableName.$column_name={$tmpname}.{$prifieldname} ";
+			$query = " left join (SELECT crmid as crmid,module as module FROM vtiger_crmentityrel UNION SELECT relcrmid as crmid,relmodule as module FROM vtiger_crmentityrel) as $tmpname ON $condvalue={$tmpname}.{$prifieldname} AND {$tmpname}.module='{$secmodule}'";
 		} elseif (strripos($pritablename, 'rel') === (strlen($pritablename) - 3)) {
 			$instance = self::getInstance($module);
 			$sectableindex = $instance->tab_name_index[$sectablename];

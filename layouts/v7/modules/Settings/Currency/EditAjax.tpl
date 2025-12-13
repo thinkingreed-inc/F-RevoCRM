@@ -60,7 +60,7 @@
                             <div class="controls fieldValue col-xs-6">
                                 <input type="text" class="inputElement" name="conversion_rate" data-rule-required = "true" data-rule-positive ="true" data-rule-greater_than_zero = "true" placeholder="{vtranslate('LBL_ENTER_CONVERSION_RATE', $QUALIFIED_MODULE)}" 
                                        value="{$RECORD_MODEL->get('conversion_rate')}"/>
-                                <br><span class="muted">({vtranslate('LBL_BASE_CURRENCY', $QUALIFIED_MODULE)} - {$BASE_CURRENCY_MODEL->get('currency_name')})</span>
+                                <br><span class="muted">({vtranslate('LBL_BASE_CURRENCY', $QUALIFIED_MODULE)} - {vtranslate($BASE_CURRENCY_MODEL->get('currency_name'), $QUALIFIED_MODULE)})</span>
                             </div>	
                         </div>
                         <div class="form-group">

@@ -169,9 +169,7 @@ class Calendar_ExportData_Action extends Vtiger_ExportData_Action {
 		$orderByComponents = preg_split('/ ORDER BY /i', $exportQuery);
 		if (php7_count($orderByComponents) == 1) {
 			$limitQuery = '';
-			if ($request->getMode() == 'ExportCurrentPage') {
-				list($exportQuery, $limitQuery) = preg_split('/ LIMIT /i', $exportQuery);
-			}
+			list($exportQuery, $limitQuery) = preg_split('/ LIMIT /i', $exportQuery);
 			$exportQuery = "$exportQuery ORDER BY str_to_date(concat(date_start,time_start),'%Y-%m-%d %H:%i:%s') DESC";
 
 			if ($limitQuery) {

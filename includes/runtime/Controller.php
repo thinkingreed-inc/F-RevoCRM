@@ -303,6 +303,10 @@ abstract class Vtiger_View_Controller extends Vtiger_Action_Controller {
         $moduleName = $request->getModule();
 		$viewer = $this->getViewer($request);
 		$currentUser = Users_Record_Model::getCurrentUserModel();
+		$userLanguage = $currentUser->get('language');
+		$select2Locale = is_string($userLanguage) ? explode('_',$userLanguage)[0] : 'en';
+		
+		$viewer->assign('SELECT2_LOCALE', $select2Locale);
 		$viewer->assign('ACTIVITY_REMINDER', $currentUser->getCurrentUserActivityReminderInSeconds());
 		$viewer->view('Footer.tpl', $moduleName);
 	}

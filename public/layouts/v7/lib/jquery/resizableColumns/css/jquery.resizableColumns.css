@@ -1,0 +1,26 @@
+.rc-handle-container {
+  position: relative;
+}
+.rc-handle {
+  position: absolute;
+  width: 7px;
+  cursor: ew-resize;
+  margin-left: -3px;
+  z-index: 4;
+}
+table.rc-table-resizing {
+  cursor: ew-resize;
+}
+table.rc-table-resizing thead,
+table.rc-table-resizing thead > th,
+table.rc-table-resizing thead > th > a {
+  cursor: ew-resize;
+}
+/* カーソルを合わせたときに青く表示 */
+.rc-handle:hover {
+  background-color:rgb(166, 190, 241);
+}
+/* 検索欄の列幅を調整できないように変更 */
+.rc-handle:first-child {
+  display:none;
+}

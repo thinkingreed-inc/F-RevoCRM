@@ -40,16 +40,35 @@
 						{/if}
 						<span class="current-filter-name settingModuleName filter-name pull-left">
 							{if $REQ.view eq 'Calendar'}
+
+								{*他ユーザーのカレンダー設定を開いた場合*}
+								{if $RECORD->getId() neq $USER_MODEL->getId()}
+									<a href="{$URL}">
+										{if $REQ.extensionModule}{$REQ.extensionModule}{else}{vtranslate({$PAGETITLE}, $QUALIFIED_MODULE)}{/if}
+										&nbsp;<span class="fa fa-angle-right" aria-hidden="true"></span>&nbsp;
+									</a>
+                                    <a  href="{"index.php?module="|cat:$REQ.module|cat:'&parent='|cat:$REQ.parent|cat:'&view=Detail&record='|cat:$REQ.record}">
+                                        {if $RECORD}
+                                            {if $REQ.view eq 'Edit'}
+                                                {vtranslate('LBL_EDITING', $MODULE)} :&nbsp;
+                                            {/if}
+                                        	{$RECORD->getName()}
+											&nbsp;<span class="fa fa-angle-right" aria-hidden="true"></span>&nbsp;
+                                        {/if}
+									</a>
+                                    {/if}
+
 								{if $REQ.mode eq 'Edit'}
-									<a href="{"index.php?module="|cat:$REQ.module|cat:'&parent='|cat:$REQ.parent|cat:'&view='|cat:$REQ.view}">
-										{vtranslate({$PAGETITLE}, $QUALIFIED_MODULE)}
+									{assign var=LBL_CALENDAR_SETTINGS value='LBL_CALENDAR_SETTINGS'}
+									<a href="{"index.php?module="|cat:$REQ.module|cat:'&parent='|cat:$REQ.parent|cat:'&view='|cat:$REQ.view|cat:'&record='|cat:$REQ.record}">
+										{vtranslate($LBL_CALENDAR_SETTINGS, $QUALIFIED_MODULE)}
 									</a>&nbsp;
                                                                         <a href="">
                                                                             <span class="fa fa-angle-right" aria-hidden="true"></span>&nbsp;
                                                                             {vtranslate('LBL_EDITING', $MODULE)} :&nbsp;{vtranslate({$PAGETITLE}, $QUALIFIED_MODULE)}&nbsp;{vtranslate('LBL_OF',$QUALIFIED_MODULE)}&nbsp;{$USER_MODEL->getName()}
                                                                         </a>
 								{else}
-                                                                    <a href="">{vtranslate({$PAGETITLE}, $QUALIFIED_MODULE)}&nbsp;<span class="fa fa-angle-right" aria-hidden="true"></span>&nbsp;{$USER_MODEL->getName()}</a>
+                                                                    <a href="">{vtranslate({$PAGETITLE}, $QUALIFIED_MODULE)}:&nbsp;{$USER_MODEL->getName()}</a>
 								{/if}
 							{else if $REQ.view neq 'List' and $REQ.module eq 'Users'}
 								{if $REQ.view eq 'PreferenceEdit'}
