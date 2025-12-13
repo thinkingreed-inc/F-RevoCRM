@@ -32,7 +32,7 @@ class Vtiger_RelatedList_View extends Vtiger_Index_View {
 		$moduleFields = $relatedModuleModel->getFields();
         $searchParams = $request->get('search_params');
         
-        if(empty($searchParams)) {
+        if(empty($searchParams) || !is_array($searchParams)) {
             $searchParams = array();
         }
         
@@ -87,19 +87,19 @@ class Vtiger_RelatedList_View extends Vtiger_Index_View {
 		$header = $relationListView->getHeaders();
 		$noOfEntries = $pagingModel->get('_relatedlistcount');
 		if(!$noOfEntries) {
-			$noOfEntries = count($models);
+			$noOfEntries = php7_count($models);
 		}
 		$relationModel = $relationListView->getRelationModel();
 		$relatedModuleModel = $relationModel->getRelationModuleModel();
 		$relationField = $relationModel->getRelationField();
         
-		$fieldsInfo = array();
-		foreach($moduleFields as $fieldName => $fieldModel){
-				$fieldsInfo[$fieldName] = $fieldModel->getFieldInfo();
-		}
+        $fieldsInfo = array();
+        foreach($moduleFields as $fieldName => $fieldModel){
+            $fieldsInfo[$fieldName] = $fieldModel->getFieldInfo();
+        }
 
 		$viewer = $this->getViewer($request);
-		$viewer->assign('RELATED_FIELDS_INFO', json_encode($fieldsInfo));
+        $viewer->assign('RELATED_FIELDS_INFO', json_encode($fieldsInfo));
 		$viewer->assign('IS_CREATE_PERMITTED', isPermitted($relatedModuleName, 'CreateView'));
 		$viewer->assign('RELATED_RECORDS' , $models);
 		$viewer->assign('PARENT_RECORD', $parentRecordModel);

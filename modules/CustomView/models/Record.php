@@ -235,17 +235,17 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 		}
 		$transformedSearchParams = Vtiger_Util_Helper::transferListSearchParamsToFilterCondition($searchParams, $moduleModel);
 		$glue = "";
-		if(count($queryGenerator->getWhereFields()) > 0 && (count($transformedSearchParams)) > 0) {
+		if(php7_count($queryGenerator->getWhereFields()) > 0 && (php7_count($transformedSearchParams)) > 0) {
 			$glue = QueryGenerator::$AND;
 		}
 		$queryGenerator->parseAdvFilterList($transformedSearchParams, $glue);
 
 		$listQuery = $queryGenerator->getQuery();
 		if($module == 'RecycleBin'){
-			$listQuery = preg_replace("/vtiger_crmentity.deleted\s*=\s*0/i", 'vtiger_crmentity.deleted = 1', $listQuery);
+			$listQuery = preg_replace("/$baseTableName.deleted\s*=\s*0/i", "$baseTableName.deleted = 1", $listQuery);
 		}
 
-		if($skipRecords && !empty($skipRecords) && is_array($skipRecords) && count($skipRecords) > 0) {
+		if($skipRecords && !empty($skipRecords) && is_array($skipRecords) && php7_count($skipRecords) > 0) {
 			$listQuery .= ' AND '.$baseTableName.'.'.$baseTableId.' NOT IN ('. generateQuestionMarks($skipRecords) .')';
             $params = array($skipRecords);
 		}
@@ -335,7 +335,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 
 		$selectedColumnsList = $this->get('columnslist');
 		if(!empty($selectedColumnsList)) {
-			$noOfColumns = count($selectedColumnsList);
+			$noOfColumns = php7_count($selectedColumnsList);
 			for($i=0; $i<$noOfColumns; $i++) {
 				$columnSql = 'INSERT INTO vtiger_cvcolumnlist (cvid, columnindex, columnname) VALUES (?,?,?)';
 				$columnParams = array($cvId, $i, $selectedColumnsList[$i]);
@@ -395,7 +395,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 					$columnInfo = explode(":",$advFilterColumn);
 					$fieldName = $columnInfo[2];
 					preg_match('/(\w+) ; \((\w+)\) (\w+)/', $fieldName, $matches);
-					if (count($matches) != 0) {
+					if (php7_count($matches) != 0) {
 						list($full, $referenceParentField, $referenceModule, $referenceFieldName) = $matches;
 					}
 					if($referenceParentField) {
@@ -427,7 +427,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 					$specialDateConditions = Vtiger_Functions::getSpecialDateTimeCondtions();
 					if(($fieldType == 'date' || ($fieldType == 'time' && $fieldName != 'time_start' && $fieldName != 'time_end') || ($fieldType == 'datetime')) && ($fieldType != '' && $advFitlerValue != '' ) && !in_array($advFilterComparator, $specialDateConditions)) {
 						$val = Array();
-						for($x=0;$x<count($temp_val);$x++) {
+						for($x=0;$x<php7_count($temp_val);$x++) {
 							//if date and time given then we have to convert the date and
 							//leave the time as it is, if date only given then temp_time
 							//value will be empty
@@ -486,11 +486,11 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 			$db->pquery('DELETE FROM vtiger_cv2rs WHERE cvid=?',array($cvId));
 			$members = $this->get('members',array());
 
-			$noOfMembers = count($members);
+			$noOfMembers = php7_count($members);
 			for ($i = 0; $i < $noOfMembers; ++$i) {
 				$id = $members[$i];
 				$idComponents = Settings_Groups_Member_Model::getIdComponentsFromQualifiedId($id);
-				if ($idComponents && count($idComponents) == 2) {
+				if ($idComponents && php7_count($idComponents) == 2) {
 					$memberType = $idComponents[0];
 					$memberId = $idComponents[1];
 
@@ -515,7 +515,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 		if(!empty($selectedColumnsList)) {
 			$db = PearDatabase::getInstance();
 			$cvId = $this->getId();
-			$noOfColumns = count($selectedColumnsList);
+			$noOfColumns = php7_count($selectedColumnsList);
 			for($i=0; $i<$noOfColumns; $i++) {
 				$columnSql = 'INSERT INTO vtiger_cvcolumnlist (cvid, columnindex, columnname) VALUES (?,?,?)';
 				$columnParams = array($cvId, $i, $selectedColumnsList[$i]);
@@ -582,12 +582,12 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 	function renameSelectedFields($selectedFields){
 		if(isset($selectedFields)){
 			$table_array = array();
-			for($i=0; $i<count($selectedFields); $i++){
+			for($i=0; $i<php7_count($selectedFields); $i++){
 				$columnlist[$i] = explode(':', $selectedFields[$i]);
 				if($columnlist[$i][0]){
 					$moduleFieldLabel_array = explode('_', $columnlist[$i][3]);
 					$fieldlabelLinking = $moduleFieldLabel_array[1];
-					for($j=1; $j<count($moduleFieldLabel_array)-1; $j++){
+					for($j=1; $j<php7_count($moduleFieldLabel_array)-1; $j++){
 						$fieldlabelLinking .= '_'.$moduleFieldLabel_array[$j+1];
 					}
 					array_push($columnlist[$i],$moduleFieldLabel_array[0],$fieldlabelLinking);
@@ -597,7 +597,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 				}
 			}
 			// クエリを何度も飛ばすことを避けるため、$tabid等をまとめて取得する
-			for($i=0; $i<count($table_array); $i++){
+			for($i=0; $i<php7_count($table_array); $i++){
 				$db = PearDatabase::getInstance();
 				$query = 'SELECT tabid,columnname,tablename,fieldname,fieldlabel FROM vtiger_field WHERE tablename = ?';
 				$params = array($table_array[$i]);
@@ -611,18 +611,18 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 					$fieldlabel[$i][] = $db->query_result($result, $j, 'fieldlabel');
 				}
 			}
-			for($i=0; $i<count($columnlist); $i++){
+			for($i=0; $i<php7_count($columnlist); $i++){
 				$table_key = array_search($columnlist[$i][0],$table_array);
 				$fieldlabel_key = array();
 				//DBのfieldlabelと比較する
-				for($j=0; $j<count($fieldlabel[$table_key]); $j++){
+				for($j=0; $j<php7_count($fieldlabel[$table_key]); $j++){
 					if(str_replace(' ', '_', $fieldlabel[$table_key][$j]) == $columnlist[$i][6]){
 						array_push($fieldlabel_key, $j);
 					}
 				}
 				// DBに一致するfieldlabelが無かった場合、$columnname,$tabid,$fieldnameを元にfieldlabelを変更する(3項目が全て一致していなければ変更しない)
 				if(empty($fieldlabel_key)){
-					for($k=0; $k<count($columnname[$table_key]); $k++){
+					for($k=0; $k<php7_count($columnname[$table_key]); $k++){
 						if($columnname[$table_key][$k] == $columnlist[$i][1]){
 							$columnname_key = $k;
 							break;
@@ -740,7 +740,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 				$moduleModel = $this->getModule();
 				$moduleName = $moduleModel->get('name');
 				preg_match('/(\w+) ; \((\w+)\) (\w+)/', $fieldName, $matches);
-				if (count($matches) != 0) {
+				if (php7_count($matches) != 0) {
 					list($full, $referenceParentField, $referenceModule, $referenceFieldName) = $matches;
 				}
 				if ($referenceParentField) {
@@ -771,7 +771,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 				$specialDateConditions = Vtiger_Functions::getSpecialDateTimeCondtions();
 				if (($col[4] == 'D' || ($col[4] == 'T' && $col[1] != 'time_start' && $col[1] != 'time_end') || ($col[4] == 'DT')) && !in_array($criteria['comparator'],$specialDateConditions)) {
 					$val = Array();
-					for ($x = 0; $x < count($temp_val); $x++) {
+					for ($x = 0; $x < php7_count($temp_val); $x++) {
 						if(empty($temp_val[$x])) {
 							$val[$x] = '';
 						} else if ($col[4] == 'D') {
@@ -1144,6 +1144,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 	 * @return <Array> - Array of Vtiger_CustomView_Record models
 	 */
 	public static function getAll($moduleName='') {
+		require('config.customize.php');
 		$db = PearDatabase::getInstance();
 		$userPrivilegeModel = Users_Privileges_Model::getCurrentUserPrivilegesModel();
 		$currentUser = Users_Record_Model::getCurrentUserModel();
@@ -1155,7 +1156,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 			$sql .= ' WHERE entitytype=?';
 			$params[] = $moduleName;
 		}
-		if(!$userPrivilegeModel->isAdminUser()) {
+		if(!$userPrivilegeModel->isAdminUser() || ($userPrivilegeModel->isAdminUser() && !$show_subordinate_roles_list)) {
 			$userGroups = new GetUserGroups();
 			$userGroups->getAllUserGroups($currentUser->getId());
 			$groups = $userGroups->user_groups;
@@ -1169,14 +1170,16 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 
 			$userParentRoleSeq = $userPrivilegeModel->get('parent_role_seq');
 			$sql .= " AND ( vtiger_customview.userid = ? OR vtiger_customview.status = 0 OR vtiger_customview.status = 3
-							OR vtiger_customview.userid IN (
-								SELECT vtiger_user2role.userid FROM vtiger_user2role
-									INNER JOIN vtiger_users ON vtiger_users.id = vtiger_user2role.userid
-									INNER JOIN vtiger_role ON vtiger_role.roleid = vtiger_user2role.roleid
-								WHERE vtiger_role.parentrole LIKE '".$userParentRoleSeq."::%') 
 							OR vtiger_customview.cvid IN (SELECT vtiger_cv2users.cvid FROM vtiger_cv2users WHERE vtiger_cv2users.userid=?)";
 			$params[] = $currentUser->getId();
 			$params[] = $currentUser->getId();
+			//下位の役割が作成した全てのリストを表示
+			if($show_subordinate_roles_list){
+				$sql .= "OR vtiger_customview.userid IN (SELECT vtiger_user2role.userid FROM vtiger_user2role
+							INNER JOIN vtiger_users ON vtiger_users.id = vtiger_user2role.userid
+							INNER JOIN vtiger_role ON vtiger_role.roleid = vtiger_user2role.roleid
+						WHERE vtiger_role.parentrole LIKE '".$userParentRoleSeq."::%') ";
+			}
 			if(!empty($groups)){
 				$sql .= "OR vtiger_customview.cvid IN (SELECT vtiger_cv2group.cvid FROM vtiger_cv2group WHERE vtiger_cv2group.groupid IN (".  generateQuestionMarks($groups)."))";
 				$params = array_merge($params,$groups);
@@ -1311,7 +1314,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 			$columns = $group['columns'];
 			$and = $or = 0;
 			$block = $group['condition'];
-			if(count($columns) != 1) {
+			if(php7_count($columns) != 1) {
 				foreach($columns as $column) {
 					if($column['column_condition'] == 'and') {
 						++$and;
@@ -1319,7 +1322,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 						++$or;
 					}
 				}
-				if($and == count($columns)-1 && count($columns) != 1) {
+				if($and == php7_count($columns)-1 && php7_count($columns) != 1) {
 					$allGroupColumns = array_merge($allGroupColumns, $group['columns']);
 				} else {
 					$anyGroupColumns = array_merge($anyGroupColumns, $group['columns']);

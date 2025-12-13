@@ -62,7 +62,7 @@ class MailManager_Folder_View extends MailManager_Abstract_View {
 			$viewer->assign('FOLDER', $folder);
 			$viewer->assign('FOLDERLIST',  $folderList);
 			$viewer->assign('SEARCHOPTIONS' ,self::getSearchOptions());
-			$viewer->assign("JS_DATEFORMAT",parse_calendardate(getTranslatedString('NTC_DATE_FORMAT')));
+			$viewer->assign('JS_DATEFORMAT', parse_calendardate());
 			$viewer->assign('USER_DATE_FORMAT', $currentUserModel->get('date_format'));
 			$viewer->assign('MODULE', $moduleName);
 			$response->setResult($viewer->view( 'FolderOpen.tpl', $moduleName, true ));

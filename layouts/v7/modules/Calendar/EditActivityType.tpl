@@ -39,6 +39,12 @@
                     </select>
                 </div>
             </div>
+            <div class="form-group">
+                <label class="control-label fieldLabel col-sm-4">{vtranslate('LBL_OWNER', $MODULE)}</label>
+                <div class="controls fieldValue col-sm-6">
+                    <input id="is_own" class="form-input" name="is_own" type="checkbox" />{vtranslate('LBL_IS_OWN', $MODULE)}
+                </div>
+            </div>
             <div id="js-eventtype-condition" class="form-group hide">
                 <label class="control-label fieldLabel col-sm-4">{vtranslate('LBL_SELECT_EVENT_TYPE', $MODULE)}</label>
                 <div class="controls fieldValue col-sm-6">

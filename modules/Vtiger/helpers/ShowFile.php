@@ -36,7 +36,7 @@ class Vtiger_ShowFile_Helper {
 			 * While saving the document applying decode_html to save in DB, but this is not happening for the images
 			 * This save happens from mailroom, inbox, record save, document save etc..
 			 */
-			if (!empty($encFileName)) {
+			if (md5($fileName) == $encFileName || md5($sanitizedFileName) == $encFileName) {
                 if(!empty($storedFileName)){
                     $finalFilePath = $filePath.$fileId.'_'.$storedFileName;
                 }else if(is_null($storedFileName)){

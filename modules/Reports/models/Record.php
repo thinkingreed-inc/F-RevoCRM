@@ -188,6 +188,14 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 	}
 
 	/**
+	 * Function returns Join Columns of the Report
+	 * @return <String>
+	 */
+	function getJoinColumn() {
+		return $this->report->joinColumn;
+	}
+
+	/**
 	 * Function sets the Primary Module of the Report
 	 * @param <String> $module
 	 */
@@ -201,6 +209,14 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 	 */
 	function setSecondaryModule($modules) {
 		$this->report->secmodule = $modules;
+	}
+
+	/**
+	 * Function sets the Primary and Secondary join column for the Report
+	 * @param <String> $joinColumn, secondary_module_name@join_key separated with comma(,), and join_key is $this->getRelationTables().
+	 */
+	function setJoinColumn($joinColumn) {
+		$this->report->joinColumn = $joinColumn;
 	}
 
 	/**
@@ -450,7 +466,7 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 		
 		$members = $this->get('members',array());
 		
-		if($members && count($members) == 1){
+		if($members && php7_count($members) == 1){
 			if($members[0] == 'All::Users'){
 				$sharingType = 'Public';
 			}
@@ -470,8 +486,8 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 
 
 			$secondaryModule = $this->getSecondaryModules();
-			$db->pquery('INSERT INTO vtiger_reportmodules(reportmodulesid, primarymodule, secondarymodules) VALUES(?,?,?)',
-					array($reportId, $this->getPrimaryModule(), $secondaryModule));
+			$db->pquery('INSERT INTO vtiger_reportmodules(reportmodulesid, primarymodule, secondarymodules, join_column) VALUES(?,?,?,?)',
+					array($reportId, $this->getPrimaryModule(), $secondaryModule, $this->getJoinColumn()));
 
 			$this->saveSelectedFields();
 
@@ -496,8 +512,8 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 			$this->saveSharingInformation();
 
 
-			$db->pquery('UPDATE vtiger_reportmodules SET primarymodule = ?,secondarymodules = ? WHERE reportmodulesid = ?',
-					array($this->getPrimaryModule(), $this->getSecondaryModules(), $reportId));
+			$db->pquery('UPDATE vtiger_reportmodules SET primarymodule = ?,secondarymodules = ?, join_column = ? WHERE reportmodulesid = ?',
+					array($this->getPrimaryModule(), $this->getSecondaryModules(), $this->getJoinColumn(), $reportId));
 
 			$db->pquery('UPDATE vtiger_report SET reportname = ?, description = ?, reporttype = ?, folderid = ?,sharingtype = ? WHERE
 				reportid = ?', array(decode_html($this->get('reportname')), decode_html($this->get('description')),
@@ -552,7 +568,7 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 		$db = PearDatabase::getInstance();
 
 		$calculationFields = $this->get('calculationFields');
-		for ($i=0; $i<count($calculationFields); $i++) {
+		for ($i=0; $i<php7_count($calculationFields); $i++) {
 			$db->pquery('INSERT INTO vtiger_reportsummary (reportsummaryid, summarytype, columnname) VALUES (?,?,?)',
 					array($this->getId(), $i, $calculationFields[$i]));
 		}
@@ -580,7 +596,7 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 
 		$reportId = $this->getId();
 		$sharingInfo = $this->get('sharingInfo');
-		for($i=0; $i<count($sharingInfo); $i++) {
+		for($i=0; $i<php7_count($sharingInfo); $i++) {
 			$db->pquery('INSERT INTO vtiger_reportsharing(reportid, shareid, setype) VALUES (?,?,?)',
 					array($reportId, $sharingInfo[$i]['id'], $sharingInfo[$i]['type']));
 		}
@@ -594,11 +610,11 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 		
 		$members = $this->get('members',array());
 		if(!empty($members)) {
-			$noOfMembers = count($members);
+			$noOfMembers = php7_count($members);
 			for ($i = 0; $i < $noOfMembers; ++$i) {
 				$id = $members[$i];
 				$idComponents = Settings_Groups_Member_Model::getIdComponentsFromQualifiedId($id);
-				if ($idComponents && count($idComponents) == 2) {
+				if ($idComponents && php7_count($idComponents) == 2) {
 					$memberType = $idComponents[0];
 					$memberId = $idComponents[1];
 
@@ -628,7 +644,7 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 		$selectedFields = $this->get('selectedFields');
 
 		if(!empty($selectedFields)){
-		   for($i=0 ;$i<count($selectedFields);$i++) {
+		   for($i=0 ;$i<php7_count($selectedFields);$i++) {
 				if(!empty($selectedFields[$i])) {
 					$db->pquery("INSERT INTO vtiger_selectcolumn(queryid, columnindex, columnname) VALUES (?,?,?)",
 							array($this->getId(), $i, decode_html($selectedFields[$i])));
@@ -689,7 +705,7 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 					if(($columnInfo[4] == 'D' || ($columnInfo[4] == 'T' && $columnInfo[1] != 'time_start' && $columnInfo[1] != 'time_end') ||
 									($columnInfo[4] == 'DT')) && ($columnInfo[4] != '' && $advFilterValue != '' ) && !in_array($advFilterComparator, $specialDateConditions)) {
 						$val = Array();
-						for($i=0; $i<count($tempVal); $i++) {
+						for($i=0; $i<php7_count($tempVal); $i++) {
 							if(trim($tempVal[$i]) != '') {
 								$date = new DateTimeField(trim($tempVal[$i]));
 								if($columnInfo[4] == 'D') {
@@ -820,8 +836,8 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 		$rootDirectory = vglobal('root_directory');
 		$tmpDir = vglobal('tmp_dir');
 
-		$tempFileName = tempnam($rootDirectory.$tmpDir, 'xls');
-		$fileName = decode_html($this->getName()).'.xls';
+		$tempFileName = tempnam($rootDirectory.$tmpDir, 'xlsx');
+		$fileName = decode_html($this->getName()).'.xlsx';
 		$reportRun->writeReportToExcelFile($tempFileName, $advanceFilterSql);
 
 		if(isset($_SERVER['HTTP_USER_AGENT']) && strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE')) {
@@ -829,9 +845,9 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 			header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 		}
 
-		header('Content-Type: application/x-msexcel');
+		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 		header('Content-Length: '.@filesize($tempFileName));
-		header('Content-disposition: attachment; filename="'.$fileName.'"');
+		header('Content-Disposition: attachment; filename="'.$fileName.'"');
 
 		$fp = fopen($tempFileName, 'rb');
 		fpassthru($fp);
@@ -861,8 +877,8 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 //		$fileSize = @filesize($tempFileName) + 8;
 		header('Content-Encoding: UTF-8');
 		header('Content-type: text/csv; charset=UTF-8');
-		header('Transfer-Encoding: chuncked');
-//		header('Content-Length: '.$fileSize);
+//		header('Transfer-Encoding: chuncked');
+		header('Content-Length: '.@filesize($tempFileName));
 //		header('Content-disposition: attachment; filename="'.$fileName.'"');
 		header('Content-Disposition: attachment; filename="'.$fileName.'.csv";filename*=UTF-8\'ja\''.urlencode($fileName).".csv");
 		// UTF-8 Byte Order Mark - BOM (Source : http://stackoverflow.com/questions/4348802/how-can-i-output-a-utf-8-csv-in-php-that-excel-will-read-properly)
@@ -953,7 +969,7 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 		$secondaryModules = $this->getSecondaryModules();
 		if (!empty ($secondaryModules)) {
 			$secondaryModulesList = explode(':', $secondaryModules);
-			$count = count($secondaryModulesList);
+			$count = php7_count($secondaryModulesList);
 
 			$secondaryModuleFields = $this->getSecondaryModuleFields();
 
@@ -1009,7 +1025,7 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 			$columns = $group['columns'];
 			$and = $or = 0;
 			$block = $group['condition'];
-			if(count($columns) != 1) {
+			if(php7_count($columns) != 1) {
 				foreach($columns as $column) {
 					if($column['column_condition'] == 'and') {
 						++$and;
@@ -1017,7 +1033,7 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 						++$or;
 					}
 				}
-				if($and == count($columns)-1 && count($columns) != 1) {
+				if($and == php7_count($columns)-1 && php7_count($columns) != 1) {
 					$allGroupColumns = array_merge($allGroupColumns, $group['columns']);
 				} else {
 					$anyGroupColumns = array_merge($anyGroupColumns, $group['columns']);
@@ -1177,7 +1193,7 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 		return Reports_ScheduleReports_Model::getInstanceById($this->getId());
 	}
 
-	public function getRecordsListFromRequest(Vtiger_Request $request) {
+	public static function getRecordsListFromRequest(Vtiger_Request $request) {
 		$folderId = $request->get('viewname');
 		$module = $request->get('module');
 		$selectedIds = $request->get('selected_ids');
@@ -1186,7 +1202,7 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 		$searchParams = $searchParams[0];
 
 		if(!empty($selectedIds) && $selectedIds != 'all') {
-			if(!empty($selectedIds) && count($selectedIds) > 0) {
+			if(!empty($selectedIds) && php7_count($selectedIds) > 0) {
 				return $selectedIds;
 			}
 		}
@@ -1382,5 +1398,86 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 		}
 
 		return false;
+	}
+
+	public function getRelationTables($primaryModuleName, $secondaryModuleName) {
+		global $adb;
+		$primary_obj = CRMEntity::getInstance($primaryModuleName);
+		$secondary_obj = CRMEntity::getInstance($secondaryModuleName);
+
+		$array = array();
+
+		$ui10_query = $adb->pquery("SELECT
+										vtiger_field.tabid AS tabid,
+										vtiger_field.tablename AS tablename,
+										vtiger_field.columnname AS columnname,
+										vtiger_field.fieldname AS fieldname,
+										vtiger_field.fieldlabel AS fieldlabel,
+										vtiger_fieldmodulerel.module AS module
+									FROM
+										vtiger_field
+										INNER JOIN vtiger_fieldmodulerel ON vtiger_fieldmodulerel.fieldid = vtiger_field.fieldid
+									WHERE
+										vtiger_field.presence <> 1
+										AND (
+											( 
+												vtiger_fieldmodulerel.module = ? 
+												AND vtiger_fieldmodulerel.relmodule = ?
+											) 
+											OR ( 
+												vtiger_fieldmodulerel.module = ? 
+												AND vtiger_fieldmodulerel.relmodule = ?
+											)
+										)
+									ORDER BY vtiger_field.fieldid", array(
+											$primaryModuleName,
+											$secondaryModuleName,
+											$secondaryModuleName,
+											$primaryModuleName
+										));
+
+		$cnt = $adb->num_rows($ui10_query);
+		for($i = 0; $i<$cnt; $i++) {
+			$reltables = array();
+			$ui10_tablename = $adb->query_result($ui10_query,$i,'tablename');
+			$ui10_columnname = $adb->query_result($ui10_query,$i,'columnname');
+			$ui10_tabid = $adb->query_result($ui10_query,$i,'tabid');
+			$ui10_fieldname = $adb->query_result($ui10_query,$i,'fieldname');
+			$ui10_module = $adb->query_result($ui10_query,$i,'module');
+			$ui10_fieldlabel = $adb->query_result($ui10_query,$i,'fieldlabel');
+
+			if(in_array($ui10_tablename, $primary_obj->tab_name)){
+				$reltables = array($ui10_tablename=>array("".$ui10_tablename."","$ui10_columnname"));
+			} else if($secondary_obj->table_name == $ui10_tablename){
+				$reltables = array($ui10_tablename=>array("$ui10_columnname","".$secondary_obj->table_index.""),"".$primary_obj->table_name."" => "".$primary_obj->table_index."");
+			} else {
+				if(isset($secondary_obj->tab_name_index[$ui10_tablename])){
+					$rel_field = $secondary_obj->tab_name_index[$ui10_tablename];
+					$reltables = array($ui10_tablename=>array("$ui10_columnname","$rel_field"),"".$primary_obj->table_name."" => "".$primary_obj->table_index."");
+				} else {
+					$rel_field = $primary_obj->tab_name_index[$ui10_tablename];
+					$reltables = array($ui10_tablename=>array("$rel_field","$ui10_columnname"),"".$primary_obj->table_name."" => "".$primary_obj->table_index."");
+				}
+			}
+			$array[$secondaryModuleName.'::'.$ui10_module.'::'.$ui10_fieldname.'::'.$ui10_fieldlabel] = $reltables;
+		}
+
+		if($cnt == 0) {
+			if(method_exists($primary_obj,'setRelationTables')){
+				$reltables = $primary_obj->setRelationTables($secondaryModuleName);
+				$array[$secondaryModuleName.'::'.$primaryModuleName."::default::LBL_DEFAULT"] = $reltables;
+			} else {
+				$reltables = '';
+			}
+		}
+
+		if(is_array($reltables) && !empty($reltables)){
+			$rel_array = $reltables;
+		} else {
+			$rel_array = array("vtiger_crmentityrel"=>array("crmid","relcrmid"),"".$primary_obj->table_name."" => "".$primary_obj->table_index."");
+			$array[$secondaryModuleName.'::'.$primaryModuleName."::default::LBL_DEFAULT"] = $rel_array;
+		}
+
+		return $array;	
 	}
 }

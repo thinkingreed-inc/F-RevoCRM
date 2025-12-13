@@ -83,13 +83,13 @@
                 var password = document.getElementById('password').value;
                 var confirmPassword = document.getElementById('confirmPassword').value;
                 if (password == '' && confirmPassword == '') {
-                    alert('新しいパスワードを入力してください');
+                    alert(app.vtranslate('JS_ENTER_NEW_PASSWORD'));
                     return false;
                 } else if (password != confirmPassword) {
-                    alert('新しいパスワードとパスワードの確認は同じ文字列を入力してください');
+                    alert(app.vtranslate('JS_REENTER_PASSWORDS'));
                     return false;
                 } else if (!checkStrengthPassword(password)){
-                    alert('複雑なパスワードを指定してください（アルファベット大文字・小文字、数字、記号を含む8文字以上）');
+                    alert(app.vtranslate('JS_PASSWORD_COMPLEXITY'));
                     return false;
                 } else {
                     return true;

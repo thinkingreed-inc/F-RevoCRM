@@ -34,7 +34,7 @@
 			{assign var=SOURCE_MODEL value=$RECORD}
 		</div>
 		<div class="widget_contents">
-			{if count($ACTIVITIES) neq '0'}
+			{if php7_count($ACTIVITIES) neq '0'}
 				{foreach item=RECORD key=KEY from=$ACTIVITIES}
 					{assign var=START_DATE value=$RECORD->get('date_start')}
 					{assign var=START_TIME value=$RECORD->get('time_start')}
@@ -48,7 +48,7 @@
 								<div class='media-left module-icon col-lg-1 col-md-1 col-sm-1 textAlignCenter'>
 									<span class='vicon-{strtolower($RECORD->get('activitytype'))}'></span>
 								</div>
-								<div class='media-body col-lg-7 col-md-7 col-sm-7'>
+								<div class='media-body col-lg-11 col-md-11 col-sm-11'>
 									<div class="summaryViewEntries">
 										{if $DETAILVIEW_PERMITTED == 'yes'}<a href="{$RECORD->getDetailViewUrl()}" title="{$RECORD->get('subject')}">{$RECORD->get('subject')}</a>{else}{$RECORD->get('subject')}{/if}&nbsp;&nbsp;
 										{if $EDITVIEW_PERMITTED == 'yes'}<a href="{$RECORD->getEditViewUrl()}&sourceModule={$SOURCE_MODEL->getModuleName()}&sourceRecord={$SOURCE_MODEL->getId()}&relationOperation=true" class="fieldValue"><i class="summaryViewEdit fa fa-pencil" title="{vtranslate('LBL_EDIT',$MODULE_NAME)}"></i></a>{/if}&nbsp;
@@ -72,13 +72,18 @@
 										<td class="relatedActivitiesValue">{vtranslate($ACTIVITYTYPE,$MODULE_NAME)}</td>
 									</tr>
 									<tr class="relatedActivitiesEntries">
-										<td class="relatedActivitiesLabel" valign="top">{vtranslate('Description')}</td>
-										<td class="relatedActivitiesValue">{$DESCRIPTION|nl2br}</td>
+										{if $ACTIVITYTYPE eq 'Emails'}
+											<td class="relatedActivitiesLabel" valign="top">{vtranslate('Description')}</td>
+											<td class="relatedActivitiesValue">{$RECORD->getPlainTextDescription()}</td>
+										{else}
+											<td class="relatedActivitiesLabel" valign="top">{vtranslate('Description')}</td>
+											<td class="relatedActivitiesValue">{$DESCRIPTION|nl2br}</td>
+										{/if}
 									</tr>
 								</table>
 							</div>
 
-							<div class='col-lg-4 col-md-4 col-sm-4 activityStatus' style='line-height: 0px;padding-right:30px;'>
+							<div class='activityStatus pull-right' style='line-height: 0px;padding-right:30px;'>
 								<div class="row">
 									{if $RECORD->get('activitytype') eq 'Task'}
 										{assign var=MODULE_NAME value=$RECORD->getModuleName()}

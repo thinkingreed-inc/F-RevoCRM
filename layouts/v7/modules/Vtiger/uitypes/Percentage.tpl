@@ -18,7 +18,7 @@
 		<input id="{$MODULE}_editView_fieldName_{$FIELD_NAME}" type="text" class="form-control" data-field-id="{$FIELD_MODEL->get('id')}" name="{$FIELD_NAME}"
 			value="{if !empty($FIELD_VALUE) or $FIELD_VALUE neq NULL}{$FIELD_MODEL->getEditViewDisplayValue($FIELD_VALUE)}{/if}" {if !empty($SPECIAL_VALIDATOR)}data-validator="{Zend_Json::encode($SPECIAL_VALIDATOR)}"{/if} step="any"
 			{if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if}
-			{if count($FIELD_INFO['validator'])}
+			{if php7_count($FIELD_INFO['validator'])}
 				data-specific-rules="{ZEND_JSON::encode($FIELD_INFO["validator"])}"
 			{/if}
 			/>

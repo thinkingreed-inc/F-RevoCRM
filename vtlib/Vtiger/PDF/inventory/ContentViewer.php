@@ -80,7 +80,7 @@ class Vtiger_PDF_InventoryContentViewer extends Vtiger_PDF_ContentViewer {
 
 		$models = $this->contentModels;
 
-		$totalModels = count($models);
+		$totalModels = php7_count($models);
 		$pdf = $parent->getPDF();
 
 		$parent->createPage();
@@ -145,7 +145,7 @@ class Vtiger_PDF_InventoryContentViewer extends Vtiger_PDF_ContentViewer {
 		$cellHeights = array();
 		
 		if ($this->contentSummaryModel) {
-			$summaryCellKeys = $this->contentSummaryModel->keys(); $summaryCellCount = count($summaryCellKeys);
+			$summaryCellKeys = $this->contentSummaryModel->keys(); $summaryCellCount = php7_count($summaryCellKeys);
 		
 			$summaryCellLabelWidth = $this->cells['Quantity'] + $this->cells['Price'] + $this->cells['Discount'] + $this->cells['Tax'];
 			$summaryCellHeight = $pdf->GetStringHeight("TEST", $summaryCellLabelWidth); // Pre-calculate cell height

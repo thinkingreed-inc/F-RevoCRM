@@ -73,7 +73,7 @@ class Vtiger_ModCommentsDetailAjax_View extends Vtiger_IndexAjax_View {
 	function getNextGroupOfRollupComments(Vtiger_Request $request) {
 		$moduleName = $request->getModule();
 		$viewer = $this->getRollupComments($request);
-		if (count($viewer->tpl_vars['PARENT_COMMENTS']->value))
+		if (php7_count($viewer->tpl_vars['PARENT_COMMENTS']->value))
 			echo $viewer->view('CommentsList.tpl', $moduleName, true);
 	}
 

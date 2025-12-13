@@ -39,7 +39,7 @@ class Vtiger_List_View extends Vtiger_Index_View {
 		}
 
 		$viewer = $this->getViewer($request);
-		$cvId = $this->viewName;
+		$cvId = isset($this->viewName) ? $this->viewName : 0;
 
 		if(!$cvId) {
 			$customView = new CustomView();
@@ -56,7 +56,7 @@ class Vtiger_List_View extends Vtiger_Index_View {
                 $this->listViewModel = Vtiger_ListView_Model::getInstance($moduleName, $cvId, $listHeaders);
 		$orderParams = $this->listViewModel->getSortParamsSession($listViewSessionKey);
 
-		if(empty($listHeaders)) {
+		if(empty($listHeaders) && is_array($orderParams)) {
 			$listHeaders = $orderParams['list_headers'];
 		}
 
@@ -147,7 +147,9 @@ class Vtiger_List_View extends Vtiger_Index_View {
 			"~layouts/v7/lib/jquery/Lightweight-jQuery-In-page-Filtering-Plugin-instaFilta/instafilta.min.js",
 			'modules.Vtiger.resources.Tag',
 			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/jquery/floatThead/jquery.floatThead.js",
-			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/jquery/perfect-scrollbar/js/perfect-scrollbar.jquery.js"
+			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/jquery/perfect-scrollbar/js/perfect-scrollbar.jquery.js",
+			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/jquery/resizableColumns/js/jquery.resizableColumns.js",
+			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/store_js/store.legacy.min.js",
 		);
 
 		$jsScriptInstances = $this->checkAndConvertJsScripts($jsFileNames);
@@ -194,8 +196,8 @@ class Vtiger_List_View extends Vtiger_Index_View {
 			$listViewModel->setSortParamsSession($tagSessionKey, $tag);
 		}
 
-                if(empty($cvId)) {
-			$customView = new CustomView();
+		$customView = new CustomView();
+		if(empty($cvId) || $customView->isPermittedCustomView($cvId, 'List', $moduleName) != 'yes') {
 			$cvId = $customView->getViewId($moduleName);
 		}
                 
@@ -216,12 +218,12 @@ class Vtiger_List_View extends Vtiger_Index_View {
 			$orderBy = '';
 			$sortOrder = '';
 		}
-		if(empty($listHeaders)) {
+		if(empty($listHeaders) && is_array($orderParams)) {
 			$listHeaders = $orderParams['list_headers'];
 		}
                 
                 
-		if(!empty($tag) && empty($tagParams)){
+		if(!empty($tag) && empty($tagParams) && is_array($orderParams)){
                     $tagParams = $orderParams['tag_params'];
 		}
                 
@@ -296,10 +298,10 @@ class Vtiger_List_View extends Vtiger_Index_View {
 			$listViewModel->set('search_value', $searchValue);
 		}
 
-		if(empty($searchParams)) {
+		if(empty($searchParams) || !is_array($searchParams)) {
 			$searchParams = array();
 		}
-		if(count($searchParams) == 2 && empty($searchParams[1])) {
+		if(php7_count($searchParams) == 2 && empty($searchParams[1])) {
 			unset($searchParams[1]);
 		}
 
@@ -344,7 +346,7 @@ class Vtiger_List_View extends Vtiger_Index_View {
 			$this->noOfEntries = $pagingModel->get('_listcount');
 		}
 		if(!$this->noOfEntries) {
-			$noOfEntries = count($this->listViewEntries);
+			$noOfEntries = php7_count($this->listViewEntries);
 		} else {
 			$noOfEntries = $this->noOfEntries;
 		}
@@ -363,15 +365,15 @@ class Vtiger_List_View extends Vtiger_Index_View {
 		}
 		$viewer->assign('PAGE_NUMBER',$pageNumber);
 
-		if(!$this->moduleFieldStructure) {
+		if(!isset($this->moduleFieldStructure) || !$this->moduleFieldStructure) {
 			$recordStructure = Vtiger_RecordStructure_Model::getInstanceForModule($listViewModel->getModule(), Vtiger_RecordStructure_Model::RECORD_STRUCTURE_MODE_FILTER);
 			$this->moduleFieldStructure = $recordStructure->getStructure();   
 		}
 
-		if(!$this->tags) {
+		if(!isset($this->tags) || !$this->tags) {
 			$this->tags = Vtiger_Tag_Model::getAllAccessible($currentUser->id, $moduleName);
 		}
-		if(!$this->allUserTags) {
+		if(!isset($this->allUserTags) || !$this->allUserTags) {
 			$this->allUserTags = Vtiger_Tag_Model::getAllUserTags($currentUser->getId());
 		}
 
@@ -551,6 +553,7 @@ class Vtiger_List_View extends Vtiger_Index_View {
 		$headerCssInstances = parent::getHeaderCss($request);
 		$cssFileNames = array(
 			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/jquery/perfect-scrollbar/css/perfect-scrollbar.css",
+			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/jquery/resizableColumns/css/jquery.resizableColumns.css",
 		);
 		$cssInstances = $this->checkAndConvertCssStyles($cssFileNames);
 		$headerCssInstances = array_merge($headerCssInstances, $cssInstances);
@@ -558,15 +561,17 @@ class Vtiger_List_View extends Vtiger_Index_View {
 	}
 
 	public function getRecordActionsFromModule($moduleModel) {
-		$editPermission = $deletePermission = 0;
+		$editPermission = $deletePermission = $duplicatePermission = 0;
 		if ($moduleModel) {
 			$editPermission	= $moduleModel->isPermitted('EditView');
 			$deletePermission = $moduleModel->isPermitted('Delete');
+			$duplicatePermission = $moduleModel->isPermitted('Duplicates');
 		}
 
 		$recordActions = array();
 		$recordActions['edit'] = $editPermission;
 		$recordActions['delete'] = $deletePermission;
+		$recordActions['duplicate'] = $duplicatePermission;
 
 		return $recordActions;
 	}

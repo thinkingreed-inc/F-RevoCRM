@@ -162,7 +162,7 @@ abstract class Zend_Gdata_App_BaseMediaSource implements Zend_Gdata_App_MediaSou
         } else {
             if (isset($this->{$privName})) {
                 if (is_array($this->{$privName})) {
-                    if (count($this->{$privName}) > 0) {
+                    if (php7_count($this->{$privName}) > 0) {
                         return true;
                     } else {
                         return false;

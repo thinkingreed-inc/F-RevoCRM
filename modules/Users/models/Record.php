@@ -8,8 +8,13 @@
  * All Rights Reserved.
  *************************************************************************************/
 
-class Users_Record_Model extends Vtiger_Record_Model {
+use Webauthn\PublicKeyCredentialSource;
+use Webauthn\Denormalizer\WebauthnSerializerFactory;
+use Webauthn\AttestationStatement\AttestationStatementSupportManager;
+use Webauthn\AttestationStatement\NoneAttestationStatementSupport;
 
+class Users_Record_Model extends Vtiger_Record_Model {
+	
 	/**
 	 * Checks if the key is in property or data.
 	 */
@@ -29,7 +34,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		}
 		return parent::get($key);
 	}
-
+    
     /**
      * Sets the value of the key . First it will check whether specified key is a property if not it
      * will set from normal set from base class
@@ -52,7 +57,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$module = $this->getModule();
 		return 'index.php?module='.$this->getModuleName().'&parent=Settings&view='.$module->getDetailViewName().'&record='.$this->getId();
 	}
-
+	
 	/**
 	 * Function to get the Detail View url for the Preferences page
 	 * @return <String> - Record Detail View Url
@@ -61,15 +66,15 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$module = $this->getModule();
 		return 'index.php?module='.$this->getModuleName().'&view=PreferenceDetail&parent=Settings&record='.$this->getId();
 	}
-
+	
 	public function getCalendarSettingsDetailViewUrl(){
 		return 'index.php?module=' .$this->getModuleName() . '&parent=Settings&view=Calendar&record='.$this->getId();
 	}
-
+	
 	public function getCalendarSettingsEditViewUrl(){
 		return 'index.php?module='.$this->getModuleName() . '&parent=Settings&view=Calendar&mode=Edit&record='.$this->getId();
 	}
-
+    
     public function getMyTagSettingsListUrl() {
         return 'index.php?module=Tags&parent=Settings&view=List&record='.$this->getId();
     }
@@ -81,7 +86,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$module = $this->getModule();
 		return 'index.php?module=Users&view=ChangePassword&mode=Profile';
 	}
-
+	
 	/**
 	 * Function to get the Edit View url for the record
 	 * @return <String> - Record Edit View Url
@@ -148,7 +153,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 	public function save() {
         $newUser = false;
         $userId = $this->getId();
-
+        
         if(empty($userId)) {
             $newUser = true;
         }
@@ -156,7 +161,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$this->saveTagCloud();
         $this->addDashboardTabs();
 	}
-
+    
     /**
      * Funtion to add default Dashboard Tab in Vtiger7 Home Page
      */
@@ -170,7 +175,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
                 $moduleName = $tabName['module'];
                 $tabName = $tabName['name'];
             }
-
+           
             $db->pquery("INSERT INTO vtiger_dashboard_tabs(tabname,userid,isdefault,sequence,appname,modulename) VALUES(?,?,?,?,?,?) ON DUPLICATE KEY UPDATE tabname=?,userid=?,appname=?,modulename=?",
                     array($tabName, $this->getId(),$isDefault,$seq,$appName,$moduleName,$tabName, $this->getId(),$appName, $moduleName));
         }
@@ -195,7 +200,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		//TODO : Remove the global dependency
 		$currentUser = vglobal('current_user');
 		if(!empty($currentUser)) {
-
+			
 			// Optimization to avoid object creation every-time
 			// Caching is per-id as current_user can get swapped at runtime (ex. workflow)
 			$currentUserModel = NULL;
@@ -275,7 +280,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		if($subordinateRoleUsers) {
 			foreach($subordinateRoleUsers as $role=>$users) {
 				foreach($users as $user) {
-					$subordinateUsers[$user] = $privilegesModel->get('last_name').' '.$privilegesModel->get('first_name');
+					$subordinateUsers[$user] = $privilegesModel->get('userlabel');
 				}
 			}
 		}
@@ -311,7 +316,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 
 		return $privilegesModel->get('roleid');
 	}
-
+    
     /**
      * Function returns User Current Role Name
      * @return <String>
@@ -327,7 +332,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
         }
         return $roleName;
     }
-
+    
 
 	/**
 	 * Function returns List of Accessible Users for a Module
@@ -424,7 +429,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$accessibleUser = Vtiger_Cache::get('vtiger-'.$this->getRole().'-'.$currentUserRoleModel->get('allowassignedrecordsto'), 'accessibleusers');
         if(empty($accessibleUser)) {
 			if($currentUserRoleModel->get('allowassignedrecordsto') === '1' || $private == 'Public') {
-				$accessibleUser = get_user_array(false, "Active", "", $private,$module);
+				$accessibleUser = get_user_array(false, "ACTIVE", "", $private,$module);
 			} else if($currentUserRoleModel->get('allowassignedrecordsto') === '2'){
 				$accessibleUser = $this->getSameLevelUsersWithSubordinates();
 			} else if($currentUserRoleModel->get('allowassignedrecordsto') === '3') {
@@ -449,7 +454,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		}
 		return $sameLevelUsers;
 	}
-
+	
 	/**
 	 * Function to get subordinates Users
 	 * @return <array> Users
@@ -458,7 +463,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$currentUserRoleModel = Settings_Roles_Record_Model::getInstanceById($this->getRole());
 		$childernRoles = $currentUserRoleModel->getAllChildren();
 		$users = $this->getAllUsersOnRoles($childernRoles);
-        $currentUserDetail = array($this->getId() => $this->get('last_name').' '.$this->get('first_name'));
+        $currentUserDetail = array($this->getId() => $this->get('userlabel'));
         $users = $currentUserDetail + $users;
         return $users;
 	}
@@ -474,11 +479,11 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		foreach ($roles as $key => $role) {
 			$roleIds[] = $role->getId();
 		}
-
+        
         if(empty($roleIds)) {
             return array();
         }
-
+        
 		$sql = 'SELECT userid FROM vtiger_user2role WHERE roleid IN ('.  generateQuestionMarks($roleIds).')';
 		$result = $db->pquery($sql, $roleIds);
 		$noOfUsers = $db->num_rows($result);
@@ -488,19 +493,17 @@ class Users_Record_Model extends Vtiger_Record_Model {
 			for($i=0; $i<$noOfUsers; ++$i) {
 				$userIds[] = $db->query_result($result, $i, 'userid');
 			}
-			$query = 'SELECT id, first_name, last_name FROM vtiger_users WHERE status = ? AND id IN ('.  generateQuestionMarks($userIds).')';
-			$result = $db->pquery($query, array("Active", $userIds));
+			$query = 'SELECT id, userlabel FROM vtiger_users WHERE status = ? AND id IN ('.  generateQuestionMarks($userIds).')';
+			$result = $db->pquery($query, array('ACTIVE', $userIds));
 			$noOfUsers = $db->num_rows($result);
 			for($j=0; $j<$noOfUsers; ++$j) {
 				$userId = $db->query_result($result, $j,'id');
-				$firstName = $db->query_result($result, $j, 'first_name');
-				$lastName = $db->query_result($result, $j, 'last_name');
-				$subUsers[$userId] = $lastName .' '.$firstName;
+				$subUsers[$userId] = $db->query_result($result, $j, 'userlabel');
 			}
 		}
 		return $subUsers;
 	}
-
+	
 	/**
 	 * Function to get all the accessible groups
 	 * @return <Array>
@@ -510,7 +513,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		//TODO:Remove dependence on $_REQUEST for the module name in the below API
         $accessibleGroups = Vtiger_Cache::get('vtiger-'.$private, 'accessiblegroups');
         if(!$accessibleGroups){
-            $accessibleGroups = get_group_array(false, "Active", "", $private,$module);
+            $accessibleGroups = get_group_array(false, "ACTIVE", "", $private,$module);
             Vtiger_Cache::set('vtiger-'.$private, 'accessiblegroups',$accessibleGroups);
         }
         if (!empty($accessibleGroups)) {
@@ -603,8 +606,8 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$visibility = $db->query_result($db->pquery($query, array($this->getId())), 0, 'visible');
 		if($visibility == 0) {
 			return true;
-		}
-		return false;
+		} 
+		return false; 
 	}
 
 	/**
@@ -625,7 +628,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
         self::getAllUserGroups();
         return self::$allUserGroups[$userId];
 	}
-
+    
     /**
 	 * Function to get all users groups
 	 * @return <array> - all users groupId's
@@ -655,7 +658,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 	 * @return string
 	 */
 	function getCurrentUserActivityReminderInSeconds() {
-		$activityReminder = $this->reminder_interval;
+		$activityReminder = isset($this->reminder_interval) ? $this->reminder_interval : 0;
 		$activityReminderInSeconds = '';
 		if($activityReminder != 'None') {
 			preg_match('/([0-9]+)[\s]([a-zA-Z]+)/', $activityReminder, $matches);
@@ -674,8 +677,8 @@ class Users_Record_Model extends Vtiger_Record_Model {
 			}
 		}
 		return $activityReminderInSeconds;
-	}
-
+	}	
+    
     /**
      * Function to get the users count
      * @param <Boolean> $onlyActive - If true it returns count of only acive users else only inactive users
@@ -685,18 +688,18 @@ class Users_Record_Model extends Vtiger_Record_Model {
         $db = PearDatabase::getInstance();
         $query = 'SELECT 1 FROM vtiger_users ';
         $params = array();
-
+        
         if($onlyActive) {
             $query.= ' WHERE status=? ';
             array_push($params,'active');
         }
 
         $result = $db->pquery($query,$params);
-
+        
         $numOfUsers = $db->num_rows($result);
         return $numOfUsers;
     }
-
+	
 	/**
 	 * Funtion to get Duplicate Record Url
 	 * @return <String>
@@ -706,7 +709,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		return 'index.php?module='.$this->getModuleName().'&parent=Settings&view='.$module->getEditViewName().'&record='.$this->getId().'&isDuplicate=true';
 
 	}
-
+	
 	/**
 	 * Function to get instance of user model by name
 	 * @param <String> $userName
@@ -721,29 +724,29 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		}
 		return false;
 	}
-
+	
 	/**
 	 * Function to delete the current Record Model
 	 */
 	public function delete() {
 		$this->getModule()->deleteRecord($this);
 	}
-
+	
 	public function isAccountOwner() {
 		$db = PearDatabase::getInstance();
 		$query = 'SELECT is_owner FROM vtiger_users WHERE id = ?';
 		$isOwner = $db->query_result($db->pquery($query, array($this->getId())), 0, 'is_owner');
 		if($isOwner == 1) {
 			return true;
-		}
+		} 
 		return false;
 	}
-
-	public function getActiveAdminUsers() {
+	
+	public static function getActiveAdminUsers() {
 		$db = PearDatabase::getInstance();
 
 		$sql = 'SELECT id FROM vtiger_users WHERE status=? AND is_admin=?';
-		$result = $db->pquery($sql, array("Active", 'on'));
+		$result = $db->pquery($sql, array('ACTIVE', 'on'));
 
 		$noOfUsers = $db->num_rows($result);
 		$users = array();
@@ -760,7 +763,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		}
 		return $users;
 	}
-
+	
 	public function isFirstTimeLogin($userId) {
 		$db = PearDatabase::getInstance();
 
@@ -771,16 +774,16 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		}
 		return false;
     }
-
+	
 	/*
 	 * Function to delete user permanemtly from CRM and
 	 * assign all record which are assigned to that user
 	 * and not transfered to other user to other user
-	 *
+	 * 
 	 * @param User Ids of user to be deleted and user
 	 * to whom records should be assigned
 	 */
-	public function deleteUserPermanently($userId, $newOwnerId) {
+	public static function deleteUserPermanently($userId, $newOwnerId) {
 		$db = PearDatabase::getInstance();
 
 		$sql = "UPDATE vtiger_crmentity SET smcreatorid=?,smownerid=?,modifiedtime=? WHERE smcreatorid=? AND setype=?";
@@ -790,12 +793,12 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$sql = "UPDATE vtiger_crmentity SET smcreatorid = ? WHERE smcreatorid = ? AND setype <> ?";
 		$db->pquery($sql, array($newOwnerId, $userId,'ModComments'));
 
-		//update history details in vtiger_modtracker_basic
-		$sql ="update vtiger_modtracker_basic set whodid=? where whodid=?";
-		$db->pquery($sql, array($newOwnerId, $userId));
+		//update history details in vtiger_modtracker_basic 
+		$sql ="update vtiger_modtracker_basic set whodid=? where whodid=?"; 
+		$db->pquery($sql, array($newOwnerId, $userId)); 
 
-		//update comments details in vtiger_modcomments
-		$sql ="update vtiger_modcomments set userid=? where userid=?";
+		//update comments details in vtiger_modcomments 
+		$sql ="update vtiger_modcomments set userid=? where userid=?"; 
 		$db->pquery($sql, array($newOwnerId, $userId));
 
 		$sql = "DELETE FROM vtiger_users WHERE id=?";
@@ -807,7 +810,12 @@ class Users_Record_Model extends Vtiger_Record_Model {
 	 * @return <String> - Entity Display Name for the record
 	 */
 	public function getDisplayName() {
-		return getFullNameFromArray($this->getModuleName(),$this->getData());
+		$userLabel = $this->get('userlabel');
+
+		if (!$userLabel) {
+			$userLabel = getFullNameFromArray($this->getModuleName(),$this->getData());
+		}
+		return $userLabel;
 	}
 
 	/**
@@ -818,7 +826,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$focusObj->retrieveCurrentUserInfoFromFile($userId);
 		return self::getInstanceFromUserObject($focusObj);
 	}
-
+    
     /**
      * Function returns all the subordinates based on Reports To field
      * @return Array
@@ -841,7 +849,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
         $subUsers = array_diff($subUsers, array($forUserId));
         return $subUsers;
     }
-
+    
      /**
 	 * Function returns List of Accessible Users given Group
 	 * @param <String> groupid
@@ -868,7 +876,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 
 
 	/**
-	 * Function to change username
+	 * Function to change username 
 	 * @param <string> $newUsername
 	 * @param <string> $newpassword
 	 * @param <string> $oldPassword
@@ -879,7 +887,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$response = array('success'=> false,'message' => 'error');
 		$record = self::getInstanceFromPreferenceFile($forUserId);
 		$moduleName = $record->getModuleName();
-
+		
 		if(!Users_Privileges_Model::isPermittedToChangeUsername($forUserId)) {
 			$response['message'] = vtranslate('LBL_PERMISSION_DENIED', $moduleName);
 			return $response;
@@ -901,7 +909,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 					$changePwdResponse = $users->change_password($oldPassword,$newpassword);
 					if($changePwdResponse) {
 						$response['success'] = true;
-						$response['message'] = vtranslate('LBL_USERNAME_CHANGED',  $moduleName);
+						$response['message'] = vtranslate('LBL_USERNAME_CHANGED',  $moduleName);	
 					}else{
 						$response['message'] = vtranslate('ERROR_CHANGE_USERNAME',  $moduleName);
 					}
@@ -947,7 +955,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 					$users->retrieveCurrentUserInfoFromFile($forUserId);
                     $response['success'] = true;
                     $response['message'] = vtranslate('LBL_USERNAME_CHANGED',  $moduleName);	
-            }  catch (Exception $e) {
+				}  catch (Exception $e) {
 					$response['success'] = false;
 					$response['message'] = vtranslate('ERROR_CHANGE_USERNAME',  $moduleName);
 				}		
@@ -970,4 +978,277 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		return $userModuleModel->checkDuplicateUser($userName);
 	}
 
+	/**
+	 * Undocumented function
+	 *
+	 * @param int $userid
+	 * @return array
+	 */
+	public function getUserCredential() {
+		global $adb;
+		$userid = $this->getId();
+		$query = "SELECT * FROM `vtiger_user_credentials` WHERE `userid` = ?";
+		$result = $adb->pquery($query, array($userid));
+		$MultiFactorAuth = array();
+		if ($adb->num_rows($result) > 0) {
+			while($row = $adb->fetch_array($result))
+			{
+				$MultiFactorAuth[] = array(
+					"id" => $row['id'],
+					"userid" => $userid,
+					"type" => $row['type'],
+					"device_name" => $row['device_name'],
+					"totp_secret" => $row['totp_secret'],
+					"passkey_credential" => $row['passkey_credential'],
+					"created_at" => $row['created_at']
+				);
+			}
+		}
+		return $MultiFactorAuth;
+	}
+
+	public function getTotpSecret()
+	{
+		global $adb;
+		$userid = $this->getId();
+		$query = "SELECT `totp_secret` FROM `vtiger_user_credentials` WHERE `userid` = ? AND `type` = 'totp'";
+		$result = $adb->pquery($query, array($userid));
+		if ($adb->num_rows($result) > 0) {
+			$row = $adb->fetch_array($result);
+			return $row['totp_secret'];
+		}
+		return false;
+	}
+
+	// ユーザーのロック情報を取得するメソッド
+	public function getUserLock()
+	{
+		global $adb;
+		$userid = $this->getId();
+		$query = "SELECT `signature_count`,`lock_time` FROM `vtiger_user_lock` WHERE `userid` = ?";
+		$result = $adb->pquery($query, array($userid));
+		$userLockList = array();
+		if ($adb->num_rows($result) > 0) {
+			$row = $adb->fetch_array($result);
+			$userLockList = array(
+				'signature_count' => $row['signature_count'],
+				'lock_time' => $row['lock_time']
+			);
+		}
+		return $userLockList;
+	}
+
+	// 試行回数のカウントアップ
+	public function countUpSignatureCount()
+	{
+		global $adb;
+		$query = "INSERT INTO `vtiger_user_lock` (`userid`, `signature_count`, `lock_time`) VALUES (?, 1, NULL)
+			ON DUPLICATE KEY UPDATE `signature_count` = `signature_count` + 1, `lock_time` = NULL";
+		$params = array($this->getId());
+		$adb->pquery($query, $params);
+	}
+
+	public function setLockTime()
+	{
+		global $adb;
+		$userid = $this->getId();
+		$lockTime = date('Y-m-d H:i:s'); // 現在の日時を取得
+		$query = "UPDATE `vtiger_user_lock` SET `lock_time` = ? WHERE `userid` = ?";
+		$params = array($lockTime, $userid);
+		$adb->pquery($query, $params);
+	}
+
+	public function resetSignatureCount()
+	{
+		global $adb;
+		$query = "UPDATE `vtiger_user_lock` SET `signature_count` = 0 WHERE `userid` = ?";
+		$params = array($this->getId());
+		$adb->pquery($query, $params);
+	}
+
+	public function resetLockTime()
+	{
+		global $adb;
+		$query = "UPDATE `vtiger_user_lock` SET `lock_time` = NULL WHERE `userid` = ?";
+		$params = array($this->getId());
+		$adb->pquery($query, $params);
+	}
+
+	/**
+	 * 多要素認証の試行回数が制限を超えたかどうかを確認するメソッド
+	 *
+	 * @param string $type 認証タイプ（例: 'totp', 'passkey'）
+	 * @return boolean true: 制限を超えた、false: 制限内/ロックしない
+	 */
+	public function isLoginLockedByMFA()
+	{
+		global $adb;
+		$userid = $this->getId();
+		$query = "SELECT `signature_count` FROM `vtiger_user_lock` WHERE `userid` = ?";
+		$params = array($userid);
+		$result = $adb->pquery($query, $params);
+
+		$failureCount = Settings_Parameters_Record_Model::getParameterValue("USER_LOCK_COUNT");
+		if (!is_numeric($failureCount) || $failureCount <= 0) {
+			// 数値に変換できない文字だった場合はロックしない
+			return false;
+		}
+		// 数値に変換
+		$failureCount = (int)$failureCount;
+		$totalCount = 0;
+		while ($row = $adb->fetch_array($result)) {
+			$totalCount += $row['signature_count'];
+		}
+		if ($totalCount >= $failureCount) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * ユーザーのロック時間が経過しているかどうかを確認するメソッド
+	 * ロック時間が設定されていない場合は、ロックされていないとみなす
+	 *
+	 * @return boolean true: ロック時間が経過している、false: ロックされていない
+	 */
+	public function isLocked()
+	{
+		global $adb;
+		$userid = $this->getId();
+		$lock_time = Settings_Parameters_Record_Model::getParameterValue("USER_LOCK_TIME");
+		// 数値に変換できない文字だった場合はロック時間が設定されていないとみなす
+		if (!is_numeric($lock_time) || $lock_time <= 0) {
+			// ロック時間が設定されていない場合は、ロックされて
+			return false; // ロック時間が設定されていない場合は、ロックされていないとみなす
+		}
+		// 数値に変換
+		$lock_time = (int)$lock_time;
+		// テーブルのlock_timeと$lock_timeを比較して、現在の日時から$lock_time分経過しているかどうかを確認
+		$query = "SELECT `lock_time` FROM `vtiger_user_lock` WHERE `userid` = ? AND `lock_time` IS NOT NULL AND `lock_time` > (NOW() - INTERVAL $lock_time MINUTE)";
+
+		$params = array($userid);
+		$result = $adb->pquery($query, $params);
+
+		if ($adb->num_rows($result) > 0) {
+			return true;
+		}
+		return false;
+	}
+
+	// ユーザーをロックするメソッド
+	public function setUserLock()
+	{
+		global $adb;
+		$userid = $this->getId();
+		// lock_timeに現在の日時をDATETIME型で設定し、signature_countを0にリセット
+		// ただし、すでにロックされている場合は更新しない
+		if ($this->isLoginLockedByMFA()) {
+			return; // すでにロックされている場合は何もしない
+		}
+		// ユーザーがロックされていない場合は、ロック時間を現在の日時に設定し、signature_countを0にリセット
+		// ここでロック時間を設定し、signature_countをリセット
+		// これにより、ユーザーがロックされている場合は、次回のログイン時にロック時間が更新され、signature_countは0にリセットされます
+		$userid = $this->getId();
+		$lockTime = date('Y-m-d H:i:s'); // 現在の日時を取得
+		$query = "UPDATE `vtiger_user_lock` SET `lock_time` = ?, `signature_count` = 0 WHERE `userid` = ?";
+		$params = array($lockTime, $userid);
+		$adb->pquery($query, $params);
+	}
+
+	/**
+	 * 多要素の削除を行うメソッド
+	 * @param int $id
+	 */
+	public function deleteMultiFactorAuthentication($id) {
+		global $adb;
+		$sql = "DELETE FROM `vtiger_user_credentials` WHERE `id` = ?";
+		$params = array($id);
+		
+		$adb->pquery($sql, $params);
+	}
+	/**
+	 * Passkeyの登録を行うメソッド
+	 *
+	 * @param int $userid ユーザーID
+	 * @param string $device_name デバイス名
+	 * @param PublicKeyCredentialSource $publicKeyCredentialSource 登録するパブリックキー認証情報
+	 * @return bool 成功した場合はtrue、失敗した場合はfalse
+	 */
+	public function passkeyRegisterUserCredential($device_name, $publicKeyCredentialSource) {
+		global $adb;
+		$userid = $this->getId();
+		
+		// データベースに保存
+		$sql = "INSERT INTO `vtiger_user_credentials` (`userid`, `type`, `device_name`, `passkey_credential`)
+				VALUES (?, ?, ?, ?)";
+		$params = array(
+			$userid,
+			'passkey',
+			$device_name,
+			json_encode($publicKeyCredentialSource) // パブリックキー認証情報をJSON形式で保存
+		);
+
+		$adb->pquery($sql, $params);
+			
+	}
+
+	public function totpRegisterUserCredential($totp_secret, $device_name)
+	{
+		global $log, $adb;
+		$userid = $this->getId();
+		if (empty($totp_secret) || empty($device_name)) {
+			global $log;
+			$log->error("TOTP secret or device name is empty.");
+			return false;
+		}
+		// すでにTOTPが登録されているか確認
+		$existingCredentials = $this->getUserCredential();
+		if (!empty($existingCredentials)) {
+			foreach ($existingCredentials as $credential) {
+				if ($credential['type'] === 'totp') {
+					$log->error("TOTP already registered for user ID: $userid");
+					return false; // 既にTOTPが登録されている場合はエラー
+				}
+			}
+		}
+		$sql = "INSERT INTO `vtiger_user_credentials` (`userid`, `type`, `device_name`, `totp_secret`) VALUES (?, ?, ?, ?)";
+		$params = array(
+			$userid,
+			'totp',
+			$device_name,
+			$totp_secret 
+		);
+		$adb->pquery($sql, $params);
+	}
+
+	public function getPasskeyCredentialById() {
+		global $adb;
+		$userId = $this->getId();
+		$failureCount = Settings_Parameters_Record_Model::getParameterValue("USER_LOCK_COUNT");
+		// 数値に変換できない文字だった場合は5回をデフォルト値として使用
+		if (!is_numeric($failureCount) || $failureCount <= 0) {
+			$failureCount = null; // デフォルト値
+		}
+		// 数値に変換
+		$failureCount = (int)$failureCount;
+		$query = "SELECT `passkey_credential` FROM `vtiger_user_credentials` WHERE `userid` = ? AND `type` = 'passkey'";
+		$result = $adb->pquery($query, array($userId));
+		$passkeyList = array();
+		while ($row = $adb->fetch_array($result)) {
+			$passkeyList[] = $row['passkey_credential'];
+		}
+		return $passkeyList;
+	}
+
+	public function getSharedCalendarTodoView() {
+		global $adb;
+
+		$result = $adb->pquery('SELECT sharedcalendartodoview FROM vtiger_users WHERE id = ?', array($this->getId()));
+		$sharedcalendartodoview = $adb->query_result($result, 0, 'sharedcalendartodoview');
+		if(empty($sharedcalendartodoview)) {
+			$sharedcalendartodoview = 'Hidden';
+		}
+
+		return $sharedcalendartodoview;
+	}
 }

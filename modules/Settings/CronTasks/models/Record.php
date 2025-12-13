@@ -81,9 +81,15 @@ class Settings_CronTasks_Record_Model extends Settings_Vtiger_Record_Model {
      * Detect if the task was started by never finished.
      */
     function hadTimedout() {
-        if($this->get('lastend') === 0 && $this->get('laststart') != 0)
-        return intval($this->get('lastend'));
-    }
+		$laststart = intval($this->get('laststart'));
+		$lastend = intval($this->get('lastend'));
+		$retryTimeout = intval($this->get('retry_timeout'));
+		$currentTime = time();
+		if($laststart > 0 && $lastend === 0 && $currentTime - $laststart > $retryTimeout) {
+			return true;
+		}
+		return false;
+	}
     
     /**
      * Get the user datetimefeild

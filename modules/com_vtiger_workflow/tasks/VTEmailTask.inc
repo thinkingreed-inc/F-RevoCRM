@@ -141,6 +141,7 @@ class VTEmailTask extends VTTask{
 			$plainBody = decode_html($content);
 			$plainBody = preg_replace(array("/<p>/i","/<br>/i","/<br \/>/i"),array("\n","\n","\n"),$plainBody);
 			$plainBody = strip_tags($plainBody);
+			$plainBody = Emails_Mailer_Model::convertToAscii($plainBody);
 			$plainBody = $emailRecord->convertUrlsToTrackUrls($plainBody,$entityId,'plain');
 			$mailerInstance->AltBody = $plainBody;
 			
@@ -255,11 +256,11 @@ class VTEmailTask extends VTTask{
 			} else {
 				if ($userObj) {
 					$fromEmail = $userObj->email1;
-					$fromName =	trim($userObj->last_name.' '.$userObj->first_name);
+					$fromName =	$userObj->userlabel;
 				} else {
 					$fromEmail = $this->getDefaultFromEmail();
 					$userObj = Users::getActiveAdminUser();
-					$fromName =	trim($userObj->last_name.' '.$userObj->first_name);
+					$fromName =	$userObj->userlabel;
 				}
 			}
 

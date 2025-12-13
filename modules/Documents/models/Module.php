@@ -26,6 +26,10 @@ class Documents_Module_Model extends Vtiger_Module_Model {
 		return false;
 	}
 	
+	public function isExcelEditAllowed() {
+		return false;
+	}
+	
 	/**
 	 * Function returns the url which gives Documents that have Internal file upload
 	 * @return string
@@ -176,7 +180,7 @@ class Documents_Module_Model extends Vtiger_Module_Model {
 		$showRelatedFieldModel = $this->getHeaderAndSummaryViewFieldsList();
 		$relatedListFields = array();
         $defaultFields = array();
-		if(count($showRelatedFieldModel) > 0) {
+		if(php7_count($showRelatedFieldModel) > 0) {
 			foreach ($showRelatedFieldModel as $key => $field) {
 				$relatedListFields[$field->get('column')] = $field->get('name');
 			}

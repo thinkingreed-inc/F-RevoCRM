@@ -62,7 +62,7 @@ class Settings_Picklist_Field_Model extends Vtiger_Field_Model {
             $rowData = $db->query_result_rowdata($result, $i);
             if($intersectionMode) {
                 //not equal if specify that the picklistvalue is not present for all the roles
-                if($rowData['rolecount'] != count($roleIdList)){
+                if($rowData['rolecount'] != php7_count($roleIdList)){
                     continue;
                 }
             }

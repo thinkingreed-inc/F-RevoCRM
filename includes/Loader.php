@@ -7,9 +7,14 @@
  * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
  ************************************************************************************/
+require_once 'vendor/autoload.php';
 
 global $LOADER_FILE_DIR;
 $LOADER_FILE_DIR = dirname(__FILE__);
+
+//TCPDF fonts
+global $root_directory;
+define('K_PATH_FONTS', $root_directory."libraries/tcpdf/fonts/");
 
 class Vtiger_Loader {
 	protected static $includeCache = array();
@@ -23,22 +28,38 @@ class Vtiger_Loader {
 	 */
 	static function resolveNameToPath($qualifiedName, $fileExtension='php') {
 		global $LOADER_FILE_DIR;
-		$allowedExtensions = array('php', 'js', 'css', 'less');
+		$allowedExtensions = array('php');
+		$publicAccessExtensions = array('js', 'css', 'less', 'image');
 
 		$file = '';
-		if(!in_array($fileExtension, $allowedExtensions)) {
+		if(!in_array($fileExtension, $allowedExtensions) && !in_array($fileExtension, $publicAccessExtensions)) {
 			return '';
 		}
-		// TO handle loading vtiger files
-		if (strpos($qualifiedName, '~~') === 0) {
-			$file = str_replace('~~', '', $qualifiedName);
-			$file = $LOADER_FILE_DIR . DIRECTORY_SEPARATOR .'..' . DIRECTORY_SEPARATOR . $file;
-		} else if (strpos($qualifiedName, '~') === 0) {
-			$file = str_replace('~', '', $qualifiedName);
-			$file = $LOADER_FILE_DIR . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . $file;
+
+		if (in_array($fileExtension, $allowedExtensions)) {
+			// TO handle loading vtiger files
+			if (strpos($qualifiedName, '~~') === 0) {
+				$file = str_replace('~~', '', $qualifiedName);
+				$file = $LOADER_FILE_DIR . DIRECTORY_SEPARATOR .'..' . DIRECTORY_SEPARATOR . $file;
+			} else if (strpos($qualifiedName, '~') === 0) {
+				$file = str_replace('~', '', $qualifiedName);
+				$file = $LOADER_FILE_DIR . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . $file;
+			} else {
+				$file = str_replace('.', DIRECTORY_SEPARATOR, $qualifiedName) . '.' .$fileExtension;
+				$file = $LOADER_FILE_DIR . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . $file;
+			}
 		} else {
-			$file = str_replace('.', DIRECTORY_SEPARATOR, $qualifiedName) . '.' .$fileExtension;
-			$file = $LOADER_FILE_DIR . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . $file;
+			// TO handle loading vtiger files
+			if (strpos($qualifiedName, '~~') === 0) {
+				$file = str_replace('~~', '', $qualifiedName);
+				$file = $LOADER_FILE_DIR . DIRECTORY_SEPARATOR .'..' . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $file;
+			} else if (strpos($qualifiedName, '~') === 0) {
+				$file = str_replace('~', '', $qualifiedName);
+				$file = $LOADER_FILE_DIR . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR .$file;
+			} else {
+				$file = str_replace('.', DIRECTORY_SEPARATOR, $qualifiedName) . '.' .$fileExtension;
+				$file = $LOADER_FILE_DIR . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $file;
+			}	
 		}
 		return $file;
 	}

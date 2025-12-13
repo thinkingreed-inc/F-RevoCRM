@@ -156,7 +156,7 @@ class VtigerLineItemOperation extends VtigerActorOperation {
 			list($typeId,$recordId) = vtws_getIdComponents($element['productid']);
 			$productTaxInfo = $this->getProductTaxList($recordId);
 		}
-		if(count($productTaxInfo) == 0 && strcasecmp($parent['hdnTaxType'], $this->Individual) !==0) {
+		if(php7_count($productTaxInfo) == 0 && strcasecmp($parent['hdnTaxType'], $this->Individual) !==0) {
 			$meta = $this->getMeta();
 			$moduleFields = $meta->getModuleFields();
 			foreach ($moduleFields as $fieldName=>$field) {
@@ -169,9 +169,9 @@ class VtigerLineItemOperation extends VtigerActorOperation {
 	}
 
 	private function updateTaxes($createdElement){
-		if (count($this->taxList) > 0 || (is_array($this->inActiveTaxList) && count($this->inActiveTaxList) > 0)) {
+		if (php7_count($this->taxList) > 0 || (is_array($this->inActiveTaxList) && php7_count($this->inActiveTaxList) > 0)) {
 			$taxList = $this->taxList;
-			if (is_array($this->inActiveTaxList) && count($this->inActiveTaxList) > 0) {
+			if (is_array($this->inActiveTaxList) && php7_count($this->inActiveTaxList) > 0) {
 				$taxList = array_merge($taxList, $this->inActiveTaxList);
 			}
 			$id = vtws_getIdComponents($createdElement['id']);
@@ -206,7 +206,7 @@ class VtigerLineItemOperation extends VtigerActorOperation {
 			$meta = $this->getMeta();
 			$moduleFields = $meta->getModuleFields();
 			$productTaxList = $this->getProductTaxList($productId);
-			if (count($productTaxList) > 0) {
+			if (php7_count($productTaxList) > 0) {
 				$this->providedTaxList = array();
 				foreach ($moduleFields as $fieldName => $field) {
 					if (preg_match('/tax\d+/', $fieldName) != 0) {
@@ -383,7 +383,7 @@ class VtigerLineItemOperation extends VtigerActorOperation {
 			$this->newId = $id[1];
 			$updatedLineItemList[] = $this->_create($elementType, $lineItem);
 			if($element == $lineItem){
-				$createdElement = $updatedLineItemList[count($updatedLineItemList) - 1];
+				$createdElement = $updatedLineItemList[php7_count($updatedLineItemList) - 1];
 			}
 		}
 		$this->setCache($parentId, $updatedLineItemList);

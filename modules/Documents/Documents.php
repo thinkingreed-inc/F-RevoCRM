@@ -72,7 +72,7 @@ class Documents extends CRMEntity {
 	var $default_sort_order = 'ASC';
         
         function __construct() {
-            $this->log = LoggerManager::getLogger('notes');
+            $this->log = Logger::getLogger('notes');
             $this->log->debug("Entering Documents() method ...");
             $this->db = PearDatabase::getInstance();
             $this->column_fields = getColumnFields('Documents');
@@ -371,7 +371,7 @@ class Documents extends CRMEntity {
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule,$queryPlanner) {
+	function generateReportsSecQuery($module,$secmodule,$queryPlanner, $reportid = false) {
 
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency("vtiger_crmentityDocuments",array("vtiger_groupsDocuments","vtiger_usersDocuments","vtiger_lastModifiedByDocuments"));
@@ -381,7 +381,7 @@ class Documents extends CRMEntity {
 		}
 		$matrix->setDependency("vtiger_notes",array("vtiger_crmentityDocuments","vtiger_attachmentsfolder"));
 		// TODO Support query planner
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_notes","notesid", $queryPlanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_notes","notesid", $queryPlanner, $reportid);
 		$query .= " left join vtiger_notescf on vtiger_notes.notesid = vtiger_notescf.notesid";
 		if ($queryPlanner->requireTable("vtiger_crmentityDocuments",$matrix)){
 			$query .=" left join vtiger_crmentity as vtiger_crmentityDocuments on vtiger_crmentityDocuments.crmid=vtiger_notes.notesid and vtiger_crmentityDocuments.deleted=0";
@@ -414,8 +414,8 @@ class Documents extends CRMEntity {
 	 * returns the array with table names and fieldnames storing relations between module and this module
 	 */
 	function setRelationTables($secmodule){
-		$rel_tables = array();
-		return $rel_tables[$secmodule];
+		// どのモジュールと紐づいてもvtiger_senotesrelで紐づけられている
+		return array("vtiger_senotesrel"=>array("notesid","crmid"),"".$this->table_name."" => "".$this->table_index."");
 	}
 
 	// Function to unlink all the dependent entities of the given Entity by Id

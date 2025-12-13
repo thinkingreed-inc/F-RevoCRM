@@ -208,7 +208,7 @@ class VtigerModuleOperation extends WebserviceEntityOperation {
 		}
 		
 		$newOutput = array();
-        if(count($output)) {
+        if(php7_count($output)) {
             //Added check if tags was requested or not
             if(stripos($mysql_query, $meta->getEntityBaseTable().'.tags') !== false) $tags = Vtiger_Tag_Model::getAllAccessibleTags(array_keys($output));
             foreach($output as $id => $row1) {
@@ -255,6 +255,11 @@ class VtigerModuleOperation extends WebserviceEntityOperation {
 		$moduleFields = $this->meta->getModuleFields();
 		foreach ($moduleFields as $fieldName=>$webserviceField) {
 			if(((int)$webserviceField->getPresence()) == 1) {
+				continue;
+			}
+
+			// 空白項目を除外する。
+			if ($webserviceField->getFieldDataType() === "blank") {
 				continue;
 			}
 			array_push($fields,$this->getDescribeFieldArray($webserviceField));

@@ -180,7 +180,7 @@ class Products_Record_Model extends Vtiger_Record_Model {
 
 		$productTaxes = $productDetails[1]['taxes'];
 		if (!empty ($productDetails)) {
-			$taxCount = count($productTaxes);
+			$taxCount = php7_count($productTaxes);
 			$taxTotal = 0;
 
 			for($i=0; $i<$taxCount; $i++) {
@@ -198,7 +198,7 @@ class Products_Record_Model extends Vtiger_Record_Model {
 			$productDetails[1]['final_details']['grandTotal'] = $netPrice;
 		}
 
-		for ($i=1; $i<=count($productDetails); $i++) {
+		for ($i=1; $i<=php7_count($productDetails); $i++) {
 			$productId = $productDetails[$i]['hdnProductId'.$i];
 			$productPrices = $this->getModule()->getPricesForProducts($currentUser->get('currency_id'), array($productId), $this->getModuleName());
 			$productDetails[$i]['listPrice'.$i] = number_format($productPrices[$productId], $currentUser->get('no_of_currency_decimals'),'.','');
@@ -238,7 +238,7 @@ class Products_Record_Model extends Vtiger_Record_Model {
 		}
 
 		$taxClassDetails = getTaxDetailsForProduct($record, 'available_associated');
-		$noOfTaxes = count($taxClassDetails);
+		$noOfTaxes = php7_count($taxClassDetails);
 
 		for($i=0; $i<$noOfTaxes; $i++) {
 			$taxValueDetails = getProductTaxPercentage($taxClassDetails[$i]['taxname'], $this->getId());
@@ -262,7 +262,7 @@ class Products_Record_Model extends Vtiger_Record_Model {
 
 			if ($taxClassDetails[$i]['regions']) {
 				foreach ($taxClassDetails[$i]['regions'] as $regions) {
-					$isFound = (count(array_intersect($regions['list'], $regionsList))) ? true : false;
+					$isFound = (php7_count(array_intersect($regions['list'], $regionsList))) ? true : false;
 					if (!$isFound) {
 						$regionDetails[] = $regions;
 					}
@@ -286,7 +286,7 @@ class Products_Record_Model extends Vtiger_Record_Model {
 		}
 
 		$allTaxesList = getAllTaxes('available');
-		$noOfTaxes = count($allTaxesList);
+		$noOfTaxes = php7_count($allTaxesList);
 
 		for($i=0; $i<$noOfTaxes; $i++) {
 			$allTaxesList[$i]['check_name'] = $allTaxesList[$i]['taxname'].'_check';
@@ -372,7 +372,7 @@ class Products_Record_Model extends Vtiger_Record_Model {
 			}
 
 			if(is_array($imageOriginalNamesList)) {
-				$countOfImages = count($imageOriginalNamesList);
+				$countOfImages = php7_count($imageOriginalNamesList);
 				for($j=0; $j<$countOfImages; $j++) {
 					$imageDetails[] = array(
 							'id' => $imageIdsList[$j],
@@ -421,7 +421,7 @@ class Products_Record_Model extends Vtiger_Record_Model {
 
 			if(is_array($imageOriginalNamesList)) {
 				foreach ($imageOriginalNamesList as $productId => $originalNamesList) {
-					$countOfImages = count($originalNamesList);
+					$countOfImages = php7_count($originalNamesList);
 					for($j=0; $j<$countOfImages; $j++) {
 						$imageDetails[$productId][] = array(
 														'id'		=> $imageIdsList[$productId][$j],

@@ -145,7 +145,7 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 		$moduleModel = $this->getModule();
 		$complusoryMandatoryFieldList = $moduleModel->getCompulsoryMandatoryFieldList();
 		//uitypes for which mandatory switch is disabled
-		$mandatoryRestrictedUitypes = array('4','70');
+		$mandatoryRestrictedUitypes = array('4','70','999');
 		if(in_array($this->getName(), $complusoryMandatoryFieldList) || $this->isOptionsRestrictedField()){
 			return true;
 		}
@@ -198,6 +198,11 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 	 * @return boolean
 	 */
 	public function isMassEditOptionDisabled() {
+		//uitypes for which mandatory switch is disabled
+		$headerFieldOptionUitypes = array('999');
+		if(in_array($this->get('uitype'),$headerFieldOptionUitypes) || (in_array($this->get('displaytype'), array(2,4)))) {
+			return true;
+		}
 		if($this->isUneditableFields()){
 			return true;
 		}
@@ -244,13 +249,19 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 			return true;
 		}
 		if (in_array($this->get('displaytype'), array(4, 5)) || in_array($this->block->module->name, array('Events', 'Calendar'))
-				|| ($this->get('uitype') == '83' && $this->getName() == 'taxclass' && in_array($this->block->module->name, array('Products', 'Services')))) {
+				|| ($this->get('uitype') == '83' && $this->getName() == 'taxclass' && in_array($this->block->module->name, array('Products', 'Services')))
+				|| $this->get('uitype') == '999') {
 			return true;
 		}
 		return false;
-	}
+	}	
 
 	public function isHeaderFieldOptionDisabled() {
+		//uitypes for which mandatory switch is disabled
+		$headerFieldOptionUitypes = array('999');
+		if(in_array($this->get('uitype'),$headerFieldOptionUitypes) || (in_array($this->get('displaytype'), array(2,4)))) {
+			return true;
+		}
 		if($this->isUneditableFields()){
 			return true;
 		}

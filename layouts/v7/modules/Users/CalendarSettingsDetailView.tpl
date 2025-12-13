@@ -21,13 +21,6 @@
                 <input type=hidden name="timeFormatOptions" data-value='{$DAY_STARTS}' />
                 <div class="row">
                     <h4 class="col-xs-8">{vtranslate({$BLOCK_LABEL_KEY},{$MODULE_NAME})}</h4>
-                    <div class="col-xs-4 marginTop5px">
-                        <div class=" pull-right detailViewButtoncontainer">
-                            <div class="btn-group  pull-right">
-                                <a class="btn btn-default" href="{$RECORD->getCalendarSettingsEditViewUrl()}">{vtranslate('LBL_EDIT', $MODULE_NAME)}</a>
-                            </div>  
-                        </div>
-                    </div>
                 </div>
                 <hr>
                 <div class="blockData row">
@@ -137,6 +130,69 @@
                                     {if $FIELD_MODEL_LIST|@end eq true and $FIELD_MODEL_LIST|@count neq 1 and $COUNTER eq 1}
                                     <td class="fieldLabel {$WIDTHTYPE}"></td><td class="{$WIDTHTYPE}"></td>
                                     {/if}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <br>
+        {/foreach}
+
+        {* カレンダー共有ブロック *}
+        {foreach key=BLOCK_LABEL_KEY item=FIELD_MODEL_LIST from=$RECORD_STRUCTURE}
+			{assign var=SHARED_TYPE value=$SHAREDTYPE}
+			{assign var=CALENDAR_MODULE_NAME value='Calendar'}
+			{assign var=LBL_CALENDAR_SHARING value='LBL_CALENDAR_SHARING'}
+            {assign var=COUNTER value=0}
+            <div class="block block_{$BLOCK_LABEL_KEY}" data-block="{$BLOCK_LABEL_KEY}">
+                <div class="row">
+                    <h4 class="col-xs-8">{vtranslate($LBL_CALENDAR_SHARING,$CALENDAR_MODULE_NAME)}</h4>
+                </div>
+                <hr>
+                <div class="blockData row">
+                    <table class="table detailview-table no-border">
+                        <tbody>
+                            <tr>
+                                {* 共有タイプの表示 *}
+                                <td class="fieldLabel textOverflowEllipsis {$WIDTHTYPE}" id="{$MODULE_NAME}_detailView_fieldLabel_calendarsharedtype">
+                                    <span class="muted">
+                                        {vtranslate($LBL_CALENDAR_SHARING,$CALENDAR_MODULE_NAME)}
+                                    </span>
+                                </td>
+                                <td class="fieldValue {$WIDTHTYPE}" id="{$MODULE_NAME}_detailView_fieldValue_calendarsharedtype" >                          
+                                        <span class="value textOverflowEllipsis" data-field-type="">
+                                            {if $SHARED_TYPE eq 'public'}
+                                                {vtranslate('Public',$CALENDAR_MODULE_NAME)}
+                                            {else if $SHARED_TYPE eq 'private'}
+                                                {vtranslate('Private',$CALENDAR_MODULE_NAME)}
+                                            {else if $SHARED_TYPE eq 'selectedusers'}
+                                                {vtranslate('Selected Users',$CALENDAR_MODULE_NAME)}
+                                            {/if}
+                                        </span>
+                                    <br><br>
+                                </td>
+                                {assign var=COUNTER value=$COUNTER+1}
+                                {* 共有ユーザーの表示 *}
+                                {if $SHARED_TYPE == 'selectedusers'}
+                                    <td class="fieldLabel textOverflowEllipsis {$WIDTHTYPE}" id="{$MODULE_NAME}_detailView_fieldLabel_calendarsharedtype">
+                                        <span class="muted">
+                                            {vtranslate('LBL_SELECT_USERS',$CALENDAR_MODULE_NAME)}
+                                        </span>
+                                    </td>
+                                    <td class="fieldValue {$WIDTHTYPE}" id="{$MODULE_NAME}_detailView_fieldValue_calendarsharedtype">
+                                        {foreach from=$SHAREDUSERS key=SHAREDUSERS_ID item=RECORDUSER_ID name=SHAREDUSERS_LOOP}
+                                            <span>
+                                                {trim(vtranslate($ALL_USERS[$SHAREDUSERS_ID]->getName(),$CALENDAR_MODULE_NAME))}
+                                            </span>
+                                            {if !$smarty.foreach.SHAREDUSERS_LOOP.last},{/if}
+                                        {/foreach}
+                                    </td>
+                                    {assign var=COUNTER value=$COUNTER+1}
+                                {/if}
+                                {if $COUNTER is odd}
+                                    <td></td>
+                                    <td></td>
+                                {/if}
                             </tr>
                         </tbody>
                     </table>

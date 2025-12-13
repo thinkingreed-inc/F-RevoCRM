@@ -44,5 +44,11 @@ class Documents_Field_Model extends Vtiger_Field_Model {
         }
         return false;
     }
-    
+
+    public function isCkEditor() {
+        if($this->getName() == 'notecontent') {
+            return true;
+        }
+        return false;
+    }
 }

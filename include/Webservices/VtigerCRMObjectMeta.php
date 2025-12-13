@@ -268,7 +268,7 @@ class VtigerCRMObjectMeta extends EntityMeta {
 			}
 			return false;
 		}
-
+		return false;
 	}
 
 	function getUserAccessibleColumns(){
@@ -333,6 +333,13 @@ class VtigerCRMObjectMeta extends EntityMeta {
 			$this->retrieveMeta();
 		}
 		return parent::getOwnerFields();
+	}
+
+	function getBlankFields(){
+		if(!$this->meta){
+			$this->retrieveMeta();
+		}
+		return parent::getBlankFields();
 	}
 
 	function getEntityName(){
@@ -409,7 +416,7 @@ class VtigerCRMObjectMeta extends EntityMeta {
 		}else{
 			$profileList = getCurrentUserProfileList();
 
-			if (count($profileList) > 0) {
+			if (php7_count($profileList) > 0) {
 				$sql = "SELECT vtiger_field.*, vtiger_profile2field.readonly
 						FROM vtiger_field
 						INNER JOIN vtiger_profile2field

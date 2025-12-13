@@ -67,7 +67,7 @@
 	<div class="commentsBody">
 		{if !empty($COMMENTS)}
 			<div class="recentCommentsBody container-fluid">
-				{assign var=COMMENTS_COUNT value=count($COMMENTS)}
+				{assign var=COMMENTS_COUNT value=php7_count($COMMENTS)}
 				{foreach key=index item=COMMENT from=$COMMENTS}
 					{assign var=CREATOR_NAME value={decode_html($COMMENT->getCommentedByName())}}
 					<div class="commentDetails">

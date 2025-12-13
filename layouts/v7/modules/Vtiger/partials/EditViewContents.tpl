@@ -32,7 +32,7 @@
 								{assign var="isReferenceField" value=$FIELD_MODEL->getFieldDataType()}
                                                                 {assign var=FIELD_INFO value=$FIELD_MODEL->getFieldInfo()}
 								{assign var="refrenceList" value=$FIELD_MODEL->getReferenceList()}
-								{assign var="refrenceListCount" value=count($refrenceList)}
+								{assign var="refrenceListCount" value=php7_count($refrenceList)}
 								{if $FIELD_MODEL->isEditable() eq true}
 									{if $FIELD_MODEL->get('uitype') eq "19" || ($FIELD_MODEL->isCkEditor())}
 										{if $COUNTER eq '1'}
@@ -45,6 +45,10 @@
 										{assign var=COUNTER value=1}
 									{else}
 										{assign var=COUNTER value=$COUNTER+1}
+									{/if}
+									{if $FIELD_MODEL->get('uitype') eq "999"}
+										<td class="blankField"></td><td class="blankField"></td>
+										{continue}
 									{/if}
 									<td class="fieldLabel alignMiddle">
 										{if $MASS_EDITION_MODE}
@@ -68,7 +72,7 @@
 										{else if $FIELD_MODEL->get('uitype') eq "83"}
 											{include file=vtemplate_path($FIELD_MODEL->getUITypeModel()->getTemplateName(),$MODULE) COUNTER=$COUNTER MODULE=$MODULE}
 											{if $TAXCLASS_DETAILS}
-												{assign 'taxCount' count($TAXCLASS_DETAILS)%2}
+												{assign 'taxCount' php7_count($TAXCLASS_DETAILS)%2}
 												{if $taxCount eq 0}
 													{if $COUNTER eq 2}
 														{assign var=COUNTER value=1}

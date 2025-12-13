@@ -121,7 +121,7 @@ function getSecondaryColumns_AdvFilterHTML($module,$selected="")
     if($module != "")
     {
     	$secmodule = explode(":",$module);
-    	for($i=0;$i < count($secmodule) ;$i++)
+    	for($i=0;$i < php7_count($secmodule) ;$i++)
     	{
             $mod_strings = return_module_language($current_language,$secmodule[$i]);
             if(vtlib_isModuleActive($secmodule[$i])){

@@ -95,7 +95,7 @@ class Reports_Folder_Model extends Vtiger_Base_Model {
 		$paramsList['searchParams'] = $this->get('search_params');
 
 		$reportsList = $reportClassInstance->sgetRptsforFldr($fldrId, $paramsList);
-		$reportsCount = count($reportsList);
+		$reportsCount = php7_count($reportsList);
 
 		$pageLimit = $pagingModel->getPageLimit();
 		if($reportsCount > $pageLimit){
@@ -111,7 +111,7 @@ class Reports_Folder_Model extends Vtiger_Base_Model {
 			return $this->getAllReportModels($reportsList, $reportModuleModel);
 		} else {
 			$reportModels = array();
-			for($i=0; $i < count($reportsList); $i++) {
+			for($i=0; $i < php7_count($reportsList); $i++) {
 				$reportModel = new Reports_Record_Model();
 
 				$reportModel->setData($reportsList[$i])->setModuleFromInstance($reportModuleModel);
@@ -373,7 +373,7 @@ class Reports_Folder_Model extends Vtiger_Base_Model {
 		$folderId = $this->getId();
 		$listQuery = $this->getListViewQuery($folderId, $searchParams);
 
-		if($skipRecords && !empty($skipRecords) && is_array($skipRecords) && count($skipRecords) > 0) {
+		if($skipRecords && !empty($skipRecords) && is_array($skipRecords) && php7_count($skipRecords) > 0) {
 			$listQuery .= ' AND '.$baseTableName.'.'.$baseTableId.' NOT IN ('. generateQuestionMarks($skipRecords) .')';
 		}
 		$result = $db->pquery($listQuery, $skipRecords);

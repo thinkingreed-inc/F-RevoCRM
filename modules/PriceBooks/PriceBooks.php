@@ -55,7 +55,7 @@ class PriceBooks extends CRMEntity {
 	/**	Constructor which will set the column_fields in this object
 	 */
         function __construct() {
-            $this->log =LoggerManager::getLogger('pricebook');
+            $this->log =Logger::getLogger('pricebook');
             $this->log->debug("Entering PriceBooks() method ...");
             $this->db = PearDatabase::getInstance();
             $this->column_fields = getColumnFields('PriceBooks');
@@ -289,7 +289,7 @@ class PriceBooks extends CRMEntity {
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule,$queryPlanner) {
+	function generateReportsSecQuery($module,$secmodule,$queryPlanner, $reportid = false) {
 
 		$matrix = $queryPlanner->newDependencyMatrix();
 
@@ -299,7 +299,7 @@ class PriceBooks extends CRMEntity {
 		}
         $matrix->setDependency("vtiger_pricebook",array("vtiger_crmentityPriceBooks","vtiger_currency_infoPriceBooks"));
 
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_pricebook","pricebookid", $queryPlanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_pricebook","pricebookid", $queryPlanner, $reportid);
 		// TODO Support query planner
 		if ($queryPlanner->requireTable('vtiger_pricebookcf')) {
 			$query .= " left join vtiger_pricebookcf on vtiger_pricebook.pricebookid = vtiger_pricebookcf.pricebookid";
@@ -417,6 +417,8 @@ class PriceBooks extends CRMEntity {
                     }
 
                     $adb->pquery('UPDATE vtiger_crmentity SET label=? WHERE crmid=?', array(trim($label), $recordId));
+					CRMEntity::updateBasicInformation($moduleName, $recordId);
+
                     //updating solr while import records
                     $recordModel = Vtiger_Record_Model::getCleanInstance($moduleName);
                     $focus = $recordModel->getEntity();
@@ -427,7 +429,9 @@ class PriceBooks extends CRMEntity {
 
                 $label = trim($label);
                 $adb->pquery('UPDATE vtiger_crmentity SET label=? WHERE crmid=?', array($label, $recordId));
-                //Creating entity data of updated records for post save events
+				CRMEntity::updateBasicInformation($moduleName, $recordId);
+
+				//Creating entity data of updated records for post save events
                 if ($entityInfo['status'] !== Import_Data_Action::$IMPORT_RECORD_CREATED) {
                     $recordModel = Vtiger_Record_Model::getCleanInstance($moduleName);
                     $focus = $recordModel->getEntity();
@@ -465,7 +469,7 @@ class PriceBooks extends CRMEntity {
 	}
 
 	function relatePriceBookWithProduct($entityinfo, $productList) {
-		if(count($productList) > 0){
+		if(php7_count($productList) > 0){
 			foreach($productList as $product){
 				if(!$product['relatedto'])
 					continue;

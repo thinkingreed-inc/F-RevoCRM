@@ -85,7 +85,7 @@ class Vtiger_ShortURL_Helper {
 		echo base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=');
 	}
 
-	function getInstance($id) {
+	static function getInstance($id) {
 		$db = PearDatabase::getInstance();
 		$self = new self();
 		$rs = $db->pquery('SELECT * FROM vtiger_shorturls WHERE uid=?', array($id));

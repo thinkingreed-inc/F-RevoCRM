@@ -101,7 +101,7 @@ class HelpDesk extends CRMEntity {
 	/**	Constructor which will set the column_fields in this object
 	 */
         function __construct() {
-            $this->log =LoggerManager::getLogger('helpdesk');
+            $this->log =Logger::getLogger('helpdesk');
             $this->log->debug("Entering HelpDesk() method ...");
             $this->db = PearDatabase::getInstance();
             $this->column_fields = getColumnFields('HelpDesk');
@@ -183,7 +183,7 @@ class HelpDesk extends CRMEntity {
 
 		$file_saved = false;
 		
-		if(count($_FILES)) {
+		if(php7_count($_FILES)) {
 			foreach($_FILES as $fileindex => $files)
 			{
 				if($files['name'] != '' && $files['size'] > 0)
@@ -357,7 +357,7 @@ class HelpDesk extends CRMEntity {
 			$profileList = getCurrentUserProfileList();
 			$sql1 = "select vtiger_field.fieldid,fieldlabel from vtiger_field inner join vtiger_profile2field on vtiger_profile2field.fieldid=vtiger_field.fieldid inner join vtiger_def_org_field on vtiger_def_org_field.fieldid=vtiger_field.fieldid where vtiger_field.tabid=13 and vtiger_field.block <> 30 and vtiger_field.uitype <> '61' and vtiger_field.displaytype in (1,2,3,4) and vtiger_profile2field.visible=0 and vtiger_def_org_field.visible=0 and vtiger_field.presence in (0,2)";
 			$params1 = array();
-			if (count($profileList) > 0) {
+			if (php7_count($profileList) > 0) {
 				$sql1 .= " and vtiger_profile2field.profileid in (". generateQuestionMarks($profileList) .")  group by fieldid";
 				array_push($params1, $profileList);
 			}
@@ -590,7 +590,7 @@ case when (vtiger_users.user_name not like '') then $userNameSql else vtiger_gro
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule, $queryPlanner) {
+	function generateReportsSecQuery($module,$secmodule, $queryPlanner, $reportid = false) {
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency("vtiger_crmentityHelpDesk",array("vtiger_groupsHelpDesk","vtiger_usersHelpDesk","vtiger_lastModifiedByHelpDesk"));
 		$matrix->setDependency("vtiger_crmentityRelHelpDesk",array("vtiger_accountRelHelpDesk","vtiger_contactdetailsRelHelpDesk"));
@@ -602,7 +602,7 @@ case when (vtiger_users.user_name not like '') then $userNameSql else vtiger_gro
         $matrix->setDependency("vtiger_troubletickets",array("vtiger_crmentityHelpDesk","vtiger_ticketcf","vtiger_crmentityRelHelpDesk","vtiger_productsRel"));
 		
 		// TODO Support query planner
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_troubletickets","ticketid", $queryPlanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_troubletickets","ticketid", $queryPlanner, $reportid);
 
 		if ($queryPlanner->requireTable("vtiger_crmentityHelpDesk",$matrix)){
 		    $query .=" left join vtiger_crmentity as vtiger_crmentityHelpDesk on vtiger_crmentityHelpDesk.crmid=vtiger_troubletickets.ticketid and vtiger_crmentityHelpDesk.deleted=0";

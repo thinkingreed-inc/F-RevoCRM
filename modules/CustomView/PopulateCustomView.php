@@ -598,7 +598,7 @@ function insertCvColumns($CVid,$columnslist)
 	global $adb;
 	if($CVid != "")
 	{
-		for($i=0;$i<count($columnslist);$i++)
+		for($i=0;$i<php7_count($columnslist);$i++)
 		{
 			$columnsql = "insert into vtiger_cvcolumnlist (cvid,columnindex,columnname) values(?,?,?)";
 			$columnparams = array($CVid, $i, $columnslist[$i]);

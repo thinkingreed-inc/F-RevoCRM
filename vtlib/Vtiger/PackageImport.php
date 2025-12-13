@@ -193,7 +193,7 @@ class Vtiger_PackageImport extends Vtiger_PackageExport {
 		foreach($filelist as $filename=>$fileinfo) {
 			$matches = Array();
 			preg_match('/manifest.xml/', $filename, $matches);
-			if(count($matches)) {
+			if(php7_count($matches)) {
 				$manifestxml_found = true;
 				$this->__parseManifestFile($unzip);
 				$modulename = $this->_modulexml->name;
@@ -223,12 +223,12 @@ class Vtiger_PackageImport extends Vtiger_PackageExport {
 			// Language file present in en_us folder
 			$pattern = '/languages\/en_us\/([^\/]+).php/';
 			preg_match($pattern, $filename, $matches);
-			if(count($matches)) { $language_modulename = $matches[1]; }
+			if(php7_count($matches)) { $language_modulename = $matches[1]; }
 
 			// or Language file may be present in en_us/Settings folder
 			$settingsPattern = '/languages\/en_us\/Settings\/([^\/]+).php/';
 			preg_match($settingsPattern, $filename, $matches);
-			if(count($matches)) { $language_modulename = $matches[1]; }
+			if(php7_count($matches)) { $language_modulename = $matches[1]; }
 		}
 
 		// Verify module language file.
@@ -316,44 +316,46 @@ class Vtiger_PackageImport extends Vtiger_PackageExport {
 	 */
 	function initImport($zipfile, $overwrite=true) {
 		$module = $this->getModuleNameFromZip($zipfile);
-		if($module != null && $overwrite) {
+		if($module != null) {
 
 			$unzip = new Vtiger_Unzip($zipfile, $overwrite);
 
-			// Unzip selectively
-			$unzip->unzipAllEx( ".",
-				Array(
-					// Include only file/folders that need to be extracted
-					'include' => Array('templates', "modules/$module", 'cron', 'languages', 'settings', 
-						'settings/actions', 'settings/views', 'settings/models', 'settings/templates',
-						'settings/connectors', 'settings/libraries', 'settings/handlers', "$module.png", "images", 'layouts'),
-					// NOTE: If excludes is not given then by those not mentioned in include are ignored.
-				),
-				// What files needs to be renamed?
-				Array(
-					// Templates folder
-					'templates' => "layouts/vlayout/modules/$module",
-					// Cron folder
-					'cron' => "cron/modules/$module",
-					// Settings folder
-					'settings/actions' => "modules/Settings/$module/actions",
-					'settings/views' => "modules/Settings/$module/views",
-					'settings/models' => "modules/Settings/$module/models",
-					'settings/connectors' => "modules/Settings/$module/connectors",
-					'settings/libraries' => "modules/Settings/$module/libraries",
-					'settings/handlers' => "modules/Settings/$module/handlers",
+			if($overwrite) {
+				// Unzip selectively
+				$unzip->unzipAllEx( ".",
+					Array(
+						// Include only file/folders that need to be extracted
+						'include' => Array('templates', "modules/$module", 'cron', 'languages', 'settings', 
+							'settings/actions', 'settings/views', 'settings/models', 'settings/templates',
+							'settings/connectors', 'settings/libraries', 'settings/handlers', "$module.png", "images", 'layouts'),
+						// NOTE: If excludes is not given then by those not mentioned in include are ignored.
+					),
+					// What files needs to be renamed?
+					Array(
+						// Templates folder
+						'templates' => "layouts/vlayout/modules/$module",
+						// Cron folder
+						'cron' => "cron/modules/$module",
+						// Settings folder
+						'settings/actions' => "modules/Settings/$module/actions",
+						'settings/views' => "modules/Settings/$module/views",
+						'settings/models' => "modules/Settings/$module/models",
+						'settings/connectors' => "modules/Settings/$module/connectors",
+						'settings/libraries' => "modules/Settings/$module/libraries",
+						'settings/handlers' => "modules/Settings/$module/handlers",
 
-					// Settings templates folder
-					'settings/templates' => "layouts/vlayout/modules/Settings/$module",
-					//module images
-					'images' =>   "layouts/vlayout/skins/images/$module",
-					'settings' => "modules/Settings",
-					'layouts' => 'layouts'
-				)
-			);
+						// Settings templates folder
+						'settings/templates' => "layouts/vlayout/modules/Settings/$module",
+						//module images
+						'images' =>   "layouts/vlayout/skins/images/$module",
+						'settings' => "modules/Settings",
+						'layouts' => 'layouts'
+					)
+				);
 
-			if($unzip->checkFileExistsInRootFolder("$module.png")) {
-				$unzip->unzip("$module.png", "layouts/vlayout/skins/images/$module.png");
+				if($unzip->checkFileExistsInRootFolder("$module.png")) {
+					$unzip->unzip("$module.png", "layouts/vlayout/skins/images/$module.png");
+				}
 			}
 
 			if($unzip) $unzip->close();

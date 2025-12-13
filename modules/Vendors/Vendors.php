@@ -65,7 +65,7 @@ class Vendors extends CRMEntity {
 	/**	Constructor which will set the column_fields in this object
 	 */
         function __construct() {
-            $this->log =LoggerManager::getLogger('vendor');
+            $this->log =Logger::getLogger('vendor');
             $this->log->debug("Entering Vendors() method ...");
             $this->db = PearDatabase::getInstance();
             $this->column_fields = getColumnFields('Vendors');
@@ -411,7 +411,7 @@ class Vendors extends CRMEntity {
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule, $queryPlanner) {
+	function generateReportsSecQuery($module,$secmodule, $queryPlanner, $reportid = false) {
 
 		$matrix = $queryPlanner->newDependencyMatrix();
 
@@ -420,7 +420,7 @@ class Vendors extends CRMEntity {
 			return '';
 		}
         $matrix->setDependency("vtiger_vendor",array("vtiger_crmentityVendors","vtiger_vendorcf","vtiger_email_trackVendors"));
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_vendor","vendorid", $queryPlanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_vendor","vendorid", $queryPlanner, $reportid);
 		// TODO Support query planner
 		if ($queryPlanner->requireTable("vtiger_crmentityVendors",$matrix)){
 		    $query .=" left join vtiger_crmentity as vtiger_crmentityVendors on vtiger_crmentityVendors.crmid=vtiger_vendor.vendorid and vtiger_crmentityVendors.deleted=0";
@@ -477,6 +477,7 @@ class Vendors extends CRMEntity {
 			$po_ids_list[] = $po_id;
 			$sql = 'UPDATE vtiger_crmentity SET deleted = 1 WHERE crmid = ?';
 			$this->db->pquery($sql, array($po_id));
+			CRMEntity::updateBasicInformation('PurchaseOrder', $po_id);
 		}
 		//Backup deleted Vendors related Potentials.
 		$params = array($id, RB_RECORD_UPDATED, 'vtiger_crmentity', 'deleted', 'crmid', implode(",", $po_ids_list));

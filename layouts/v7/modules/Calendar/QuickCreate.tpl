@@ -92,7 +92,7 @@
 								{/if}
 								{assign var="isReferenceField" value=$FIELD_MODEL->getFieldDataType()}
 								{assign var="referenceList" value=$FIELD_MODEL->getReferenceList()}
-								{assign var="referenceListCount" value=count($referenceList)}
+								{assign var="referenceListCount" value=php7_count($referenceList)}
 								{if $FIELD_MODEL->get('uitype') eq "19"}
 								{if $COUNTER eq '1'}
 								<td></td><td></td></tr><tr>
@@ -131,7 +131,7 @@
 								</tr>
 								{if $MODULE == 'Events'}
 								<tr>
-									<td class="fieldLabel alignMiddle">{vtranslate('LBL_INVITE_USERS', $MODULE)}</td>
+									<td class="fieldLabel alignMiddle"><label class="muted">{vtranslate('LBL_INVITE_USERS', $MODULE)}</label></td>
 									<td class="fieldValue">
 										<select id="selectedUsers" class="select2 inputElement" multiple name="selectedusers[]">
 											{foreach key=USER_ID item=USER_NAME from=$ACCESSIBLE_USERS}

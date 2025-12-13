@@ -121,7 +121,7 @@
 												{elseif $LISTVIEW_HEADERNAME eq 'execution_condition'}
 													{$LISTVIEW_ENTRY->getDisplayValue('v7_execution_condition')}
 												{else}
-													{$LISTVIEW_ENTRY->getDisplayValue($LISTVIEW_HEADERNAME)}
+													{vtranslate($LISTVIEW_ENTRY->getDisplayValue($LISTVIEW_HEADERNAME), $QUALIFIED_MODULE)}
 												{/if}
 											</td>
 										{elseif $LISTVIEW_HEADERNAME eq 'module_name' && empty($SOURCE_MODULE)}
@@ -144,7 +144,7 @@
 							{/foreach}
 							{if $LISTVIEW_ENTRIES_COUNT eq '0'}
 								<tr class="emptyRecordsDiv">
-									{assign var=COLSPAN_WIDTH value={count($LISTVIEW_HEADERS)+1}}
+									{assign var=COLSPAN_WIDTH value={php7_count($LISTVIEW_HEADERS)+1}}
 									<td colspan="{$COLSPAN_WIDTH}" style="vertical-align:inherit !important;">
 										<center>{vtranslate('LBL_NO')} {vtranslate($MODULE, $QUALIFIED_MODULE)} {vtranslate('LBL_FOUND')}</center>
 									</td>

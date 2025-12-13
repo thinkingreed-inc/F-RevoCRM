@@ -70,7 +70,7 @@ class Inventory_Record_Model extends Vtiger_Record_Model {
 	function getProducts() {
 		$numOfCurrencyDecimalPlaces = getCurrencyDecimalPlaces();
 		$relatedProducts = getAssociatedProducts($this->getModuleName(), $this->getEntity());
-		$productsCount = count($relatedProducts);
+		$productsCount = php7_count($relatedProducts);
 
 		//Updating Tax details
 		$taxtype = $relatedProducts[1]['final_details']['taxtype'];
@@ -82,7 +82,7 @@ class Inventory_Record_Model extends Vtiger_Record_Model {
 
 			if ($taxtype == 'individual') {
 				$taxDetails = getTaxDetailsForProduct($productId, 'all');
-				$taxCount = count($taxDetails);
+				$taxCount = php7_count($taxDetails);
 				$taxTotal = '0';
 
 				for($j=0; $j<$taxCount; $j++) {
@@ -274,86 +274,6 @@ class Inventory_Record_Model extends Vtiger_Record_Model {
 	}
 
 	/**
-	 * Function to get URL for Export the record as PDF
-	 * @return <type>
-	 */
-	public function getExportPDFUrl() {
-		return "index.php?module=".$this->getModuleName()."&action=ExportPDF&record=".$this->getId();
-	}
-
-	/**
-	  * Function to get the send email pdf url
-	  * @return <string>
-	  */
-	public function getSendEmailPDFUrl() {
-		return 'module='.$this->getModuleName().'&view=SendEmail&mode=composeMailData&record='.$this->getId();
-	}
-
-	/**
-	 * Function to get this record and details as PDF
-	 */
-	public function getPDF($templateId, $isheader = true) {
-		$recordId = $this->getId();
-		$moduleName = $this->getModuleName();
-
-		global $adb;
-		$template = null;
-
-		$result = $adb->pquery("SELECT templatename, body FROM vtiger_pdftemplates WHERE templateid = ?", array($templateId));
-		if($adb->num_rows($result) > 0) {
-			$templateName = $adb->query_result($result, 0, 'templatename');
-			$template = $adb->query_result($result, 0, 'body');
-			$template = html_entity_decode($template);
-			$template = preg_replace('/<title>.*<\/title>/i', '', $template);
-			$template = Vtiger_InventoryPDFController::getMergedDescription($template, $recordId, $moduleName);
-		}
-
-		$tcpdf = new TCPDF();
-		$tcpdf->setPrintHeader(false);
-		$tcpdf->setPrintFooter(false);
-		$tcpdf->AddPage();
-		$tcpdf->SetFont('ume-tgo4','B');
-		$tcpdf->writeHTML($template);
-		$pdf = $tcpdf->Output($templateName.'.pdf', 'S');//Dの場合は日本語が消える
-		if(!$isheader) return $pdf;
-
-		header("Pragma: public");
-		header("Expires: 0");
-		header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-		header("Content-Transfer-Encoding: binary ");
-		header('Content-Type: application/octet-streams');
-		header("Content-Disposition: attachment; filename=\"{$templateName}.pdf\"");
-		echo $pdf;
-	}
-
-	/**
-	 * Function to get the pdf file name . This will conver the invoice in to pdf and saves the file
-	 * @return <String>
-	 *
-	 */
-	public function getPDFFileName() {
-		$moduleName = $this->getModuleName();
-		if ($moduleName == 'Quotes') {
-			vimport("~~/modules/$moduleName/QuotePDFController.php");
-			$controllerClassName = "Vtiger_QuotePDFController";
-		} else {
-			vimport("~~/modules/$moduleName/$moduleName" . "PDFController.php");
-			$controllerClassName = "Vtiger_" . $moduleName . "PDFController";
-		}
-
-		$recordId = $this->getId();
-		$controller = new $controllerClassName($moduleName);
-		$controller->loadRecord($recordId);
-
-		$sequenceNo = getModuleSequenceNumber($moduleName,$recordId);
-		$translatedName = vtranslate($moduleName, $moduleName);
-		$filePath = "storage/$translatedName"."_".$sequenceNo.".pdf";
-		//added file name to make it work in IE, also forces the download giving the user the option to save
-		$controller->Output($filePath,'F');
-		return $filePath;
-	}
-
-	/**
 	 * Function to get related line items of parent record
 	 * @param <Vtiger_Record_Model> $parentRecordModel
 	 * @return <Array>
@@ -465,7 +385,7 @@ class Inventory_Record_Model extends Vtiger_Record_Model {
 	public function getProductsForPurchaseOrder() {
 		$relatedProducts = $this->getProducts();
 
-		$productsCount = count($relatedProducts);
+		$productsCount = php7_count($relatedProducts);
 		for ($i = 1; $i <= $productsCount; $i++) {
 			$relatedProducts[$i]['discountTotal'.$i] = 0;
 			$relatedProducts[$i]['discount_percent'.$i] = 0;
@@ -550,7 +470,9 @@ class Inventory_Record_Model extends Vtiger_Record_Model {
 		$selectedCharges = $this->getCharges();
 		$conversionRateInfo = getCurrencySymbolandCRate($this->get('currency_id'));
 		foreach ($selectedCharges as $chargeId => $chargeInfo) {
-			$selectedCharges[$chargeId]['value'] = (float)$chargeInfo['value'] / (float)$conversionRateInfo['rate'];
+			if($conversionRateInfo['rate'] != 0) {
+				$selectedCharges[$chargeId]['value'] = (float)$chargeInfo['value'] / (float)$conversionRateInfo['rate'];
+			}
 		}
 
 		foreach (Inventory_TaxRegion_Model::getAllTaxRegions() as $regionId => $regionModel) {

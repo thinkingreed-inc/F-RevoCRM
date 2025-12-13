@@ -21,7 +21,7 @@ class Users_ForgotPassword_Handler {
         $logoTitle = $organisationDetails->get('title');
 		$logoName = $organisationDetails->get('imagename');
         $moduleName = 'Users';
-		$viewer->assign('LOGOURL', $site_URL.'/test/logo/'.$logoName);
+		$viewer->assign('LOGOURL', $site_URL.'/logo/'.$logoName);
 		$viewer->assign('TITLE', $logoTitle);
 		$viewer->assign('COMPANYNAME', $companyName);
 		$viewer->assign('USERNAME', $userName);

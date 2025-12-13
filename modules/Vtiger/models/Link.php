@@ -130,7 +130,7 @@ class Vtiger_Link_Model extends Vtiger_Link {
 	 * @return <Boolean> true/false
 	 */
 	public function hasChild() {
-		(count($this->childlinks) > 0)? true : false;
+		(php7_count($this->childlinks) > 0)? true : false;
 	}
 
 	public function isPageLoadLink() {

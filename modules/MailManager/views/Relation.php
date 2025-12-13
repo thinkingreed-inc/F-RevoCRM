@@ -70,7 +70,7 @@ class MailManager_Relation_View extends MailManager_Abstract_View {
 					$foldername = $request->get('_folder');
 					$connector = $this->getConnector($foldername);
 					$folder = $connector->folderInstance($foldername);
-					$isSentFolder = $folder->isSentFolder();
+					$isSentFolder = $lookupEmail == $currentUserModel->get('email1') || $folder->isSentFolder();
 					//if its sent folder, lookup email will be first TO email
 					if($isSentFolder) {
 						$toEmail = $request->get('_mto');
@@ -141,7 +141,7 @@ class MailManager_Relation_View extends MailManager_Abstract_View {
 			$connector = $this->getConnector($foldername);
 			$mail = $connector->openMail($request->get('_msgno'), $foldername);
 			$folder = $connector->folderInstance($foldername);
-			$isSentFolder = $folder->isSentFolder();
+			$isSentFolder = $mail->from()[0] == $currentUserModel->get('email1') || $folder->isSentFolder();
 			$formData = $this->processFormData($mail, $isSentFolder);
 			foreach ($formData as $key => $value) {
 				$request->set($key, $value);
@@ -535,7 +535,7 @@ class MailManager_Relation_View extends MailManager_Abstract_View {
 			}
 		}
 		//before calling vtws_query, need to check Active Email Fields are there or not
-		if(count($activeEmailFields) > 0) {
+		if(php7_count($activeEmailFields) > 0) {
 			$query = $this->buildSearchQuery($module, $email, 'EMAIL');
 			$qresults = vtws_query( $query, $currentUserModel );
 			$describe = $this->ws_describe($module);
@@ -581,7 +581,13 @@ class MailManager_Relation_View extends MailManager_Abstract_View {
 		 * below $relModules array as modules which support emails and related to 
 		 * parent module.
 		 */
+
+		/* [20180601 Softar TODO #1002] This causes and exception and total failure to fetch the related items
+		 if the Projects module is disabled or not in user permissions list
 		$relModules = array('Project');
+		*/
+
+		$relModules = [];
 		$db = PearDatabase::getInstance();
 		$wsObject = VtigerWebserviceObject::fromId($db, $wsId);
 		$entityName = $wsObject->getEntityName();
