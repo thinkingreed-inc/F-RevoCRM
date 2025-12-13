@@ -776,68 +776,49 @@ class CRMEntity {
         $db = PearDatabase::getInstance();
         $currentUser = Users_Record_Model::getCurrentUserModel();
 
-        $tagName = $this->column_fields['tags'];
+        $implodeTagName = $this->column_fields['tags'];
         $visibility = 'public'; //インポートしたタグはpublicで固定
 		$userId = $currentUser->getId();
 		$now = date("Y-m-d H:i:s");
 
 		//tagNameにカンマと' |##| 'が両方に含まれることは想定していない
-		$explodedValue = array();
-		if($tagName && strpos($tagName, ' |##| ') !== false){
-			$explodedValue = explode(' |##| ', $tagName);
-		}elseif($tagName && strpos($tagName, ',') !== false){
-			$explodedValue = explode(',', $tagName);
-		}elseif($tagName){
-			$explodedValue[0] = $tagName;
+		$explodetagName = array();
+		if($implodeTagName && strpos($implodeTagName, ' |##| ') !== false){
+			$explodetagName = explode(' |##| ', $implodeTagName);
+		}elseif($implodeTagName && strpos($implodeTagName, ',') !== false){
+			$explodetagName = explode(',', $implodeTagName);
+		}elseif($implodeTagName){
+			$explodetagName[0] = $implodeTagName;
 		}
 
-		foreach ($explodedValue as $value) {
-			$id = $db->getUniqueId('vtiger_freetags');
-			$TagNotExist = true;
-			$tagName = $value;
-
-			//タグデータをcacheに登録
-			$checkcache = Vtiger_Cache::get('DBTags', $tagName);
-			if(!$checkcache){
-				$result = $db->pquery("SELECT id,tag,visibility,owner FROM vtiger_freetags;", array());
-				$rows = $db->num_rows($result);
-				for ($i = 0; $i < $rows; $i++) {
-					$DBtagName = $db->query_result($result, $i, 'tag');
-					$Tagvalue[0] = $db->query_result($result, $i, 'visibility');
-					$Tagvalue[1] = $db->query_result($result, $i, 'owner');
-					$Tagvalue[2] = $db->query_result($result, $i, 'id');
-					Vtiger_Cache::set('DBTags',$DBtagName,$Tagvalue);
-				}
-				$Tagvalue = [];
-			}
-
-			/*タグの新規作成の必要確認
-			1. vtiger_freetagsに同名のタグがない → 作成
-			2. vtiger_freetagsに同名のタグがある → publicである  → 作成しない
-			3. 　　　　　　　　　                → privateである → ownerが自身 → 作成しない
-			4. 　　　　　　　　　                  　　　        → ownerが自身でない → 作成
-			*/
-			$Tagvalue = Vtiger_Cache::get('DBTags',$tagName);
-			if(!$Tagvalue){ // 1
-				$TagNotExist = true;
-			}else{
-				if($Tagvalue[0] == "public"){ // 2
-					$TagNotExist = false;
-					$id = $Tagvalue[2];
-				}else if($Tagvalue[0] == "private"){
-					if($Tagvalue[1] == $userId){ // 3
-						$TagNotExist = false;
-						$id = $Tagvalue[2];
-					}else{ // 4
-						$TagNotExist = true;
+		foreach($explodetagName as $tagName){
+			if(Vtiger_Tag_Model::checkTagExistence(array('tagName' => $tagName))){ // 新規作成
+				$id = $db->getUniqueId('vtiger_freetags');
+				$db->pquery("INSERT INTO vtiger_freetags values(?,?,?,?,?)", array($id, $tagName, $tagName, $visibility, $userId));	
+				$db->pquery("INSERT INTO vtiger_freetagged_objects values(?,?,?,?,?)", array($id, $userId, $this->id, $now, $module));
+				Vtiger_Tag_Model::updateCachedDBTags(array('tagId' => $id, 'tagName' => $tagName, 'visibility' => $visibility, 'owner' => $userId));
+			}else{ // 同名タグに紐づける. 作成者が自分のタグを優先する.
+				$otherTagsWithSameName = Vtiger_Tag_Model::getInstanceByName($tagName, $userId);
+				if($otherTagsWithSameName !== false){
+					$id = $otherTagsWithSameName->getId();
+					$db->pquery("INSERT INTO vtiger_freetagged_objects values(?,?,?,?,?)", array($id, $userId, $this->id, $now, $module));
+				}else{
+					$DBTagsValue = Vtiger_Cache::get('DBTags', 'DBTagsValue'); // Vtiger_Tag_Model::checkTagExistence()にてキャッシュが用意される
+					$otherTagsWithSameName = array_filter($DBTagsValue, function($item) use ($tagName, $userId) {
+						if($item['tag'] == $tagName && $item['owner'] == $userId){
+							return true;
+						}elseif($item['tag'] == $tagName && $item['visibility'] == 'public'){
+							return true;
+						}
+						return false;
+					});
+					$otherTagsWithSameName = array_values($otherTagsWithSameName);
+					if(!empty($otherTagsWithSameName)){
+						$id = $otherTagsWithSameName[0]['id'];
+						$db->pquery("INSERT INTO vtiger_freetagged_objects values(?,?,?,?,?)", array($id, $userId, $this->id, $now, $module));
 					}
 				}
 			}
-
-			if($TagNotExist){
-				$db->pquery("INSERT INTO vtiger_freetags values(?,?,?,?,?)", array($id, $tagName, $tagName, $visibility, $userId));	
-			}
-			$db->pquery("INSERT INTO vtiger_freetagged_objects values(?,?,?,?,?)", array($id, $userId, $this->id, $now, $module));
 		}
     }
 
