@@ -408,8 +408,10 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 			}else {
 				contactListInput.val(relatedContactElement.val().split(',').join(';'));
 			}
-		}
+			// Eventsの場合のみcontact_idのname属性を削除（複数連絡先はcontactidlistで送信するため）
 			form.find('[name="contact_id"]').attr('name','');
+		}
+		// TODOの場合はcontact_idをそのまま送信する
 	},
 
 	registerRecurringEditOptions : function(e,form,InitialFormData) {
