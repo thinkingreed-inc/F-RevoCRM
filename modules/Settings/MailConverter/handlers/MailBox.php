@@ -92,13 +92,13 @@ class Vtiger_MailBox {
 		}
 
 		if(!$imap) {
-			$connectString = '{'. "$mailboxsettings[server]:$mailboxsettings[port]/$mailboxsettings[protocol]/$mailboxsettings[ssltype]/$mailboxsettings[sslmethod]" .$mailboxsettings[readonly] ."}";
-			$connectStringShort = '{'. "$mailboxsettings[server]/$mailboxsettings[protocol]:$mailboxsettings[port]" .$mailboxsettings[readonly] ."}";
+			$connectString = '{'. $mailboxsettings['server'].':'.$mailboxsettings['port'].'/'.$mailboxsettings['protocol'].'/'.$mailboxsettings['ssltype'].'/'.$mailboxsettings['sslmethod'] .$mailboxsettings['readonly'] ."}";
+			$connectStringShort = '{'. $mailboxsettings['server'].'/'.$mailboxsettings['protocol'].':'.$mailboxsettings['port'] .$mailboxsettings['readonly'] ."}";
 
 			$this->log("Trying to connect using $connectString$folder", true);
-			if(!$imap = @imap_open("$connectString$folder", $mailboxsettings[username], $mailboxsettings[password])) {
+			if(!$imap = @imap_open("$connectString$folder", $mailboxsettings["username"], $mailboxsettings["password"])) {
 				$this->log("Connect failed using $connectString$folder, trying with $connectStringShort$folder...", true);
-				$imap = @imap_open("$connectStringShort$folder", $mailboxsettings[username], $mailboxsettings[password]);
+				$imap = @imap_open("$connectStringShort$folder", $mailboxsettings["username"], $mailboxsettings["password"]);
 				if($imap) {
 					$this->_imapurl = $connectStringShort;
 					$this->_imapfolder = $folder;
@@ -136,7 +136,7 @@ class Vtiger_MailBox {
 		$isconnected = false;
 		$connectString = $this->_imapurl;
 		$this->log("Trying to open folder using $connectString$folder");
-		$imap = @imap_open("$connectString$folder", $mailboxsettings[username], $mailboxsettings[password]);
+		$imap = @imap_open("$connectString$folder", $mailboxsettings["username"], $mailboxsettings["password"]);
 		if($imap) {
 
 			// Perform cleanup task before re-initializing the connection

@@ -20,6 +20,7 @@ class Calendar_FilterRecordStructure_Model extends Vtiger_FilterRecordStructure_
 		}
 
 		$values = array();
+		$taskstatusFieldModel = null;
 		$recordModel = $this->getRecord();
 		$recordExists = !empty($recordModel);
 		$baseModuleModel = $moduleModel = $this->getModule();
@@ -30,8 +31,12 @@ class Calendar_FilterRecordStructure_Model extends Vtiger_FilterRecordStructure_
 			if ($fieldModelList) {
 				$values[vtranslate($blockLabel, $baseModuleName)] = array();
 				foreach ($fieldModelList as $fieldName => $fieldModel) {
-					if ($fieldModel->isViewableInFilterView()) {
+					if ($fieldModel->isViewableInFilterView() && $fieldName !== 'eventstatus') {
 						$newFieldModel = clone $fieldModel;
+						if($fieldName === 'taskstatus') {
+							$taskstatusFieldModel = clone $fieldModel;
+						}
+						
 						if ($recordExists) {
 							$newFieldModel->set('fieldvalue', $recordModel->get($fieldName));
 						}
@@ -50,7 +55,12 @@ class Calendar_FilterRecordStructure_Model extends Vtiger_FilterRecordStructure_
                 $values[vtranslate($blockLabel, 'Events')] = array();
                 foreach ($fieldModelList as $fieldName => $fieldModel) {
                     if ($fieldModel->isViewableInFilterView()) {
-                        $newFieldModel = clone $fieldModel;
+						if($fieldName === 'eventstatus' && $taskstatusFieldModel) {
+							$newFieldModel = $taskstatusFieldModel;
+						}else {
+							$newFieldModel = clone $fieldModel;
+						}
+						
                         if ($recordExists) {
                             $newFieldModel->set('fieldvalue', $recordModel->get($fieldName));
                         }
@@ -79,7 +89,7 @@ class Calendar_FilterRecordStructure_Model extends Vtiger_FilterRecordStructure_
 					foreach ($blockModelList as $blockLabel => $blockModel) {
 						$fieldModelList = $blockModel->getFields();
 						if ($fieldModelList) {
-							if (count($referenceModules) > 1) {
+							if (php7_count($referenceModules) > 1) {
 								// block label format : reference field label (modulename) - block label. Eg: Related To (Organization) Address Details
 								$newblockLabel = vtranslate($field->get('label'), $baseModuleName).' ('.vtranslate($refModule, $refModule).') - '.vtranslate($blockLabel, $refModule);
 							} else {

@@ -58,6 +58,7 @@ class Vtiger_DashboardTab_View extends Vtiger_Index_View {
          
         $viewer = $this->getViewer($request);
 		$viewer->assign('MODULE_NAME', $moduleName);
+        $viewer->assign("MODULE",$moduleName);
 		$viewer->assign('WIDGETS', $widgets);        
 		$viewer->assign('SELECTABLE_WIDGETS', $selectableWidgets);
 		$viewer->assign('TABID',$tabId);

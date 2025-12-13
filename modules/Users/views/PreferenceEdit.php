@@ -121,7 +121,7 @@ Class Users_PreferenceEdit_View extends Vtiger_Edit_View {
 				$fieldsInfo[$fieldName] = $fieldModel->getFieldInfo();
 			}
 			$viewer->assign('FIELDS_INFO', json_encode($fieldsInfo));
-
+                        
 			if($display) {
 				$this->preProcessDisplay($request);
 			}
@@ -150,6 +150,10 @@ Class Users_PreferenceEdit_View extends Vtiger_Edit_View {
 		$viewer->assign("DAY_STARTS", Zend_Json::encode($dayStartPicklistValues));
 		$viewer->assign('TAG_CLOUD', $recordModel->getTagCloudStatus());
 		$viewer->assign('USER_MODEL', Users_Record_Model::getCurrentUserModel());
+                
+                $runtime_configs = Vtiger_Runtime_Configs::getInstance();
+                $password_regex = $runtime_configs->getValidationRegex('password_regex');
+                $viewer->assign('PWD_REGEX', $password_regex);
 
 		parent::process($request);
 	}

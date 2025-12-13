@@ -26,7 +26,7 @@ class Users_Module_Model extends Vtiger_Module_Model {
 				$currentUser = Users_Record_Model::getCurrentUserModel();
 				$overRideQuery = $overRideQuery. $condition;
 				$allSubordinates = $currentUser->getAllSubordinatesByReportsToField($record);
-				if(count($allSubordinates) > 0) {
+				if(php7_count($allSubordinates) > 0) {
 					$overRideQuery .= " AND vtiger_users.id NOT IN (". implode(',',$allSubordinates) .")"; // do not allow the subordinates
 				}
 			}
@@ -46,13 +46,13 @@ class Users_Module_Model extends Vtiger_Module_Model {
 		if(!empty($searchValue)) {
 			$db = PearDatabase::getInstance();
 
-			$query = 'SELECT * FROM vtiger_users WHERE (first_name LIKE ? OR last_name LIKE ?) AND status = ?';
+			$query = 'SELECT * FROM vtiger_users WHERE userlabel LIKE ? AND status = ?';
 			$currentUser = Users_Record_Model::getCurrentUserModel();
 			$allSubordinates = $currentUser->getAllSubordinatesByReportsToField($currentUser->getId());
-			$params = array("%$searchValue%", "%$searchValue%", 'Active');
+			$params = array("%$searchValue%", 'Active');
 
 			// do not allow the subordinates
-			if(count($allSubordinates) > 0) {
+			if(php7_count($allSubordinates) > 0) {
 				$query .= " AND vtiger_users.id NOT IN (". implode(',',$allSubordinates) .")";
 			}
 
@@ -180,13 +180,22 @@ class Users_Module_Model extends Vtiger_Module_Model {
 	 * Function to store the login history
 	 * @param type $username
 	 */
-	public function saveLoginHistory($username){
+	public function saveLoginHistory($username, $isCustomerPortal = false, $loginType = 'password'){
 		$adb = PearDatabase::getInstance();
 
-		$userIPAddress = $_SERVER['REMOTE_ADDR'];
+		if(empty($username)) {
+			return false;
+		}
+
+		if($isCustomerPortal) {
+			$userIPAddress = $_SERVER['HTTP_X_PORTAL_REMOTE_ADDR'];
+		}
+		if(empty($userIPAddress)) {
+			$userIPAddress = $_SERVER['REMOTE_ADDR'];
+		}
 		$loginTime = date("Y-m-d H:i:s");
-		$query = "INSERT INTO vtiger_loginhistory (user_name, user_ip, logout_time, login_time, status) VALUES (?,?,?,?,?)";
-		$params = array($username, $userIPAddress, $loginTime,  $loginTime, 'Signed in');
+		$query = "INSERT INTO vtiger_loginhistory (user_name, user_ip, logout_time, login_time, status, is_portal, login_type) VALUES (?,?,?,?,?,?,?)";
+		$params = array($username, $userIPAddress, $loginTime,  $loginTime, 'Signed in', $isCustomerPortal, $loginType);
 		//Mysql 5.7 doesn't support invalid date in Timestamp field
 		//$params = array($username, $userIPAddress, '0000-00-00 00:00:00',  $loginTime, 'Signed in');
 		$adb->pquery($query, $params);
@@ -196,11 +205,16 @@ class Users_Module_Model extends Vtiger_Module_Model {
 	 * Function to store the logout history
 	 * @param type $username
 	 */
-	public function saveLogoutHistory(){
+	public function saveLogoutHistory($isCustomerPortal = false){
 		$adb = PearDatabase::getInstance();
 
 		$userRecordModel = Users_Record_Model::getCurrentUserModel();
-		$userIPAddress = $_SERVER['REMOTE_ADDR'];
+		if($isCustomerPortal) {
+			$userIPAddress = $_SERVER['HTTP_X_PORTAL_REMOTE_ADDR'];
+		}
+		if(empty($userIPAddress)) {
+			$userIPAddress = $_SERVER['REMOTE_ADDR'];
+		}
 		$outtime = date("Y-m-d H:i:s");
 
 		$loginIdQuery = "SELECT MAX(login_id) AS login_id FROM vtiger_loginhistory WHERE user_name=? AND user_ip=?";
@@ -212,6 +226,32 @@ class Users_Module_Model extends Vtiger_Module_Model {
 			$result = $adb->pquery($query, array($outtime, 'Signed off', $loginid));
 		}
 	}
+
+	/**
+	 * Function to store the login error history
+	 * @param type $username
+	 */
+	public function saveLoginErrorHistory($username, $isCustomerPortal = false){
+		$adb = PearDatabase::getInstance();
+
+		if(empty($username)) {
+			return false;
+		}
+
+		if($isCustomerPortal) {
+			$userIPAddress = $_SERVER['HTTP_X_PORTAL_REMOTE_ADDR'];
+		}
+		if(empty($userIPAddress)) {
+			$userIPAddress = $_SERVER['REMOTE_ADDR'];
+		}
+		$loginTime = date("Y-m-d H:i:s");
+		$query = "INSERT INTO vtiger_loginhistory (user_name, user_ip, logout_time, login_time, status, is_portal) VALUES (?,?,?,?,?,?)";
+		$params = array($username, $userIPAddress, $loginTime,  $loginTime, 'Signed in error', $isCustomerPortal);
+		//Mysql 5.7 doesn't support invalid date in Timestamp field
+		//$params = array($username, $userIPAddress, '0000-00-00 00:00:00',  $loginTime, 'Signed in error');
+		$adb->pquery($query, $params);
+	}
+
 
 	/**
 	 * Function to save packages info

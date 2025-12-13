@@ -31,7 +31,7 @@ function getComboArray($combofieldNames)
 		if(!is_admin($current_user))
 		{
 			$subrole = getRoleSubordinates($roleid);
-			if(count($subrole)> 0)
+			if(php7_count($subrole)> 0)
 			{
 				$roleids = $subrole;
 				array_push($roleids, $roleid);

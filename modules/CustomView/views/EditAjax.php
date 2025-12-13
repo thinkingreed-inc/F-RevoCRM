@@ -103,7 +103,7 @@ Class CustomView_EditAjax_View extends Vtiger_IndexAjax_View {
 		$customViewSharedMembers = $customViewModel->getMembers();
 		$listShared = ($customViewModel->get('status') == CustomView_Record_Model::CV_STATUS_PUBLIC) ? true : false;
 		foreach ($customViewSharedMembers as $memberGroupLabel => $membersList) {
-			if(count($membersList) > 0){
+			if(php7_count($membersList) > 0){
 				$listShared = true;
 				break;
 			}

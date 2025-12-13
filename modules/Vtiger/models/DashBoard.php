@@ -67,9 +67,10 @@ class Vtiger_DashBoard_Model extends Vtiger_Base_Model {
 		$params = array_merge($params, $moduleTabIdList);
 		$params = array_merge($params, array($currentUser->getId(), $dashBoardTabId));
 
-		$sql .= ' UNION SELECT * FROM vtiger_links WHERE linklabel in (?,?)';
+		$sql .= ' UNION SELECT * FROM vtiger_links WHERE linklabel in (?,?,?)';
 		$params[] = 'Mini List';
 		$params[] = 'Notebook';
+		$params[] = 'iframe Widget';
 		$result = $db->pquery($sql, $params);
 
 		$widgets = array();
@@ -311,8 +312,8 @@ class Vtiger_DashBoard_Model extends Vtiger_Base_Model {
 		$currentUserPrivilegeModel = Users_Privileges_Model::getCurrentUserPrivilegesModel();
 		$linkUrl = $resultData['linkurl'];
 		$linkLabel = $resultData['linklabel'];
-		$filterId = $resultData['filterid'];
-		$data = decode_html($resultData['data']);
+		$filterId = isset($resultData['filterid'])? $resultData['filterid'] : null;
+		$data = decode_html(isset($resultData['data'])? $resultData['data'] : null);
 		$module = $this->getModuleNameFromLink($linkUrl, $linkLabel);
 
 		if($module == 'Home' && !empty($filterId) && !empty($data)) {

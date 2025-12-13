@@ -11,7 +11,7 @@
 	{assign var="FIELD_INFO" value=$FIELD_MODEL->getFieldInfo()}
 	{assign var=FIELD_NAME value=$FIELD_MODEL->get('name')}
 	{assign var="REFERENCE_LIST" value=$FIELD_MODEL->getReferenceList()}
-	{assign var="REFERENCE_LIST_COUNT" value=count($REFERENCE_LIST)}
+	{assign var="REFERENCE_LIST_COUNT" value=php7_count($REFERENCE_LIST)}
 	{assign var="SPECIAL_VALIDATOR" value=$FIELD_MODEL->getValidator()}
 	<div class="referencefield-wrapper">
 		{if {$REFERENCE_LIST_COUNT} eq 1}
@@ -43,7 +43,7 @@
 
 			<input type="hidden" name="relatedContactInfo" data-value='{json_encode($RELATED_CONTACTS, $smarty.const.JSON_HEX_APOS)}' />
                         <!-- Show the add button only if it is edit view  -->
-                        {if $smarty.request.view eq 'Edit'}
+                        {if $REQ.view eq 'Edit'}
                             <span class="input-group-addon createReferenceRecord cursorPointer clearfix" title="{vtranslate('LBL_CREATE', $MODULE)}">
                                     <i id="{$MODULE}_editView_fieldName_{$FIELD_NAME}_create" class="fa fa-plus"></i>
                             </span>

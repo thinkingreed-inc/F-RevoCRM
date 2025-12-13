@@ -131,30 +131,33 @@ class Leads_Module_Model extends Vtiger_Module_Model {
 	public function getLeadsByStatus($owner,$dateFilter) {
 		$db = PearDatabase::getInstance();
 
-		$ownerSql = $this->getOwnerWhereConditionForDashBoards($owner);
-		if(!empty($ownerSql)) {
-			$ownerSql = ' AND '.$ownerSql;
-		}
-		
 		$params = array();
-		if(!empty($dateFilter)) {
-			$dateFilterSql = ' AND createdtime BETWEEN ? AND ? ';
-			//appended time frame and converted to db time zone in showwidget.php
-			$params[] = $dateFilter['start'];
-			$params[] = $dateFilter['end'];
-		}
         $picklistvaluesmap = getAllPickListValues("leadstatus");
         foreach($picklistvaluesmap as $picklistValue) {
             $params[] = $picklistValue;
         }
 
+		$ownerSql = $this->getOwnerWhereConditionForDashBoards($owner);
+		if(!empty($ownerSql)) {
+			$ownerSql = ' AND vtiger_leaddetails.'.$ownerSql;
+		}
+		
+		if(!empty($dateFilter)) {
+			$dateFilterSql = ' AND vtiger_leaddetails.createdtime BETWEEN ? AND ? ';
+			//appended time frame and converted to db time zone in showwidget.php
+			$params[] = $dateFilter['start'];
+			$params[] = $dateFilter['end'];
+		}
+
 		$result = $db->pquery('SELECT COUNT(*) as count, CASE WHEN vtiger_leadstatus.leadstatus IS NULL OR vtiger_leadstatus.leadstatus = "" THEN "" ELSE 
-						vtiger_leadstatus.leadstatus END AS leadstatusvalue FROM vtiger_leaddetails 
-						INNER JOIN vtiger_crmentity ON vtiger_leaddetails.leadid = vtiger_crmentity.crmid
-						AND deleted=0 AND converted = 0 '.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()). $ownerSql .' '.$dateFilterSql.
-						'INNER JOIN vtiger_leadstatus ON vtiger_leaddetails.leadstatus = vtiger_leadstatus.leadstatus 
-                        WHERE vtiger_leaddetails.leadstatus IN ('.generateQuestionMarks($picklistvaluesmap).') 
-						GROUP BY leadstatusvalue ORDER BY vtiger_leadstatus.sortorderid', $params);
+						vtiger_leadstatus.leadstatus END AS leadstatusvalue FROM vtiger_leaddetails'
+						.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()). 
+						' INNER JOIN vtiger_leadstatus ON vtiger_leaddetails.leadstatus = vtiger_leadstatus.leadstatus 
+                        WHERE vtiger_leaddetails.leadstatus IN ('.generateQuestionMarks($picklistvaluesmap).')
+						AND vtiger_leaddetails.deleted = 0 
+						AND vtiger_leaddetails.converted = 0'
+						.$ownerSql.$dateFilterSql.
+						' GROUP BY leadstatusvalue ORDER BY vtiger_leadstatus.sortorderid', $params);
 
 		$response = array();
 		
@@ -179,30 +182,33 @@ class Leads_Module_Model extends Vtiger_Module_Model {
 	public function getLeadsBySource($owner,$dateFilter) {
 		$db = PearDatabase::getInstance();
 
-		$ownerSql = $this->getOwnerWhereConditionForDashBoards($owner);
-		if(!empty($ownerSql)) {
-			$ownerSql = ' AND '.$ownerSql;
-		}
-		
 		$params = array();
-		if(!empty($dateFilter)) {
-			$dateFilterSql = ' AND createdtime BETWEEN ? AND ? ';
-			//appended time frame and converted to db time zone in showwidget.php
-			$params[] = $dateFilter['start'];
-			$params[] = $dateFilter['end'];
-		}
         $picklistvaluesmap = getAllPickListValues("leadsource");
         foreach($picklistvaluesmap as $picklistValue) {
             $params[] = $picklistValue;
         }
+
+		$ownerSql = $this->getOwnerWhereConditionForDashBoards($owner);
+		if(!empty($ownerSql)) {
+			$ownerSql = ' AND vtiger_leaddetails.'.$ownerSql;
+		}
+		
+		if(!empty($dateFilter)) {
+			$dateFilterSql = ' AND vtiger_leaddetails.createdtime BETWEEN ? AND ? ';
+			//appended time frame and converted to db time zone in showwidget.php
+			$params[] = $dateFilter['start'];
+			$params[] = $dateFilter['end'];
+		}
         
 		$result = $db->pquery('SELECT COUNT(*) as count, CASE WHEN vtiger_leaddetails.leadsource IS NULL OR vtiger_leaddetails.leadsource = "" THEN "" 
-						ELSE vtiger_leaddetails.leadsource END AS leadsourcevalue FROM vtiger_leaddetails 
-						INNER JOIN vtiger_crmentity ON vtiger_leaddetails.leadid = vtiger_crmentity.crmid
-						AND deleted=0 AND converted = 0 '.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()). $ownerSql .' '.$dateFilterSql.
-						'INNER JOIN vtiger_leadsource ON vtiger_leaddetails.leadsource = vtiger_leadsource.leadsource 
+						ELSE vtiger_leaddetails.leadsource END AS leadsourcevalue FROM vtiger_leaddetails'
+						.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()).
+						' INNER JOIN vtiger_leadsource ON vtiger_leaddetails.leadsource = vtiger_leadsource.leadsource 
                         WHERE vtiger_leaddetails.leadsource IN ('.generateQuestionMarks($picklistvaluesmap).') 
-						GROUP BY leadsourcevalue ORDER BY vtiger_leadsource.sortorderid', $params);
+						AND vtiger_leaddetails.deleted = 0 
+						AND vtiger_leaddetails.converted = 0'
+						.$ownerSql.$dateFilterSql.
+						' GROUP BY leadsourcevalue ORDER BY vtiger_leadsource.sortorderid', $params);
 		
 		$response = array();
 		for($i=0; $i<$db->num_rows($result); $i++) {
@@ -226,30 +232,33 @@ class Leads_Module_Model extends Vtiger_Module_Model {
 	public function getLeadsByIndustry($owner,$dateFilter) {
 		$db = PearDatabase::getInstance();
 
-		$ownerSql = $this->getOwnerWhereConditionForDashBoards($owner);
-		if(!empty($ownerSql)) {
-			$ownerSql = ' AND '.$ownerSql;
-		}
-		
 		$params = array();
-		if(!empty($dateFilter)) {
-			$dateFilterSql = ' AND createdtime BETWEEN ? AND ? ';
-			//appended time frame and converted to db time zone in showwidget.php
-			$params[] = $dateFilter['start'];
-			$params[] = $dateFilter['end'];
-		}
         $picklistvaluesmap = getAllPickListValues("industry");
         foreach($picklistvaluesmap as $picklistValue) {
             $params[] = $picklistValue;
         }
+
+		$ownerSql = $this->getOwnerWhereConditionForDashBoards($owner);
+		if(!empty($ownerSql)) {
+			$ownerSql = ' AND vtiger_leaddetails.'.$ownerSql;
+		}
+		
+		if(!empty($dateFilter)) {
+			$dateFilterSql = ' AND vtiger_leaddetails.createdtime BETWEEN ? AND ? ';
+			//appended time frame and converted to db time zone in showwidget.php
+			$params[] = $dateFilter['start'];
+			$params[] = $dateFilter['end'];
+		}
 		
 		$result = $db->pquery('SELECT COUNT(*) as count, CASE WHEN vtiger_leaddetails.industry IS NULL OR vtiger_leaddetails.industry = "" THEN "" 
-						ELSE vtiger_leaddetails.industry END AS industryvalue FROM vtiger_leaddetails 
-						INNER JOIN vtiger_crmentity ON vtiger_leaddetails.leadid = vtiger_crmentity.crmid
-						AND deleted=0 AND converted = 0 '.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()). $ownerSql .' '.$dateFilterSql.'
-						INNER JOIN vtiger_industry ON vtiger_leaddetails.industry = vtiger_industry.industry 
+						ELSE vtiger_leaddetails.industry END AS industryvalue FROM vtiger_leaddetails'
+						.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()).
+						' INNER JOIN vtiger_industry ON vtiger_leaddetails.industry = vtiger_industry.industry 
                         WHERE vtiger_leaddetails.industry IN ('.generateQuestionMarks($picklistvaluesmap).') 
-						GROUP BY industryvalue ORDER BY vtiger_industry.sortorderid', $params);
+						AND vtiger_leaddetails.deleted = 0 
+						AND vtiger_leaddetails.converted = 0'
+						.$ownerSql.$dateFilterSql.
+						' GROUP BY industryvalue ORDER BY vtiger_industry.sortorderid', $params);
 		
 		$response = array();
 		for($i=0; $i<$db->num_rows($result); $i++) {
@@ -319,11 +328,12 @@ class Leads_Module_Model extends Vtiger_Module_Model {
 		$convertedInfo = array();
 		if ($recordIdsList) {
 			$db = PearDatabase::getInstance();
-			$result = $db->pquery("SELECT converted FROM vtiger_leaddetails WHERE leadid IN (".generateQuestionMarks($recordIdsList).")", $recordIdsList);
+			$result = $db->pquery("SELECT leadid, converted FROM vtiger_leaddetails WHERE leadid IN (".generateQuestionMarks($recordIdsList).")", $recordIdsList);
 			$numOfRows = $db->num_rows($result);
 
 			for ($i=0; $i<$numOfRows; $i++) {
-				$convertedInfo[$recordIdsList[$i]] = $db->query_result($result, $i, 'converted');
+				$leadid = $db->query_result($result, $i, 'leadid');
+				$convertedInfo[$leadid] = $db->query_result($result, $i, 'converted');
 			}
 		}
 		return $convertedInfo;

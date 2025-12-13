@@ -52,7 +52,7 @@ class Emails_InRelation_View extends Vtiger_RelatedList_View {
 		}
 		$links = $relationListView->getLinks();
 		$header = $relationListView->getHeaders();
-		$noOfEntries = count($models);
+		$noOfEntries = php7_count($models);
 
 		$relationModel = $relationListView->getRelationModel();
 		$relatedModuleModel = $relationModel->getRelationModuleModel();

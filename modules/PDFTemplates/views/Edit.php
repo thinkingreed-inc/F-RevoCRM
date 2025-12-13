@@ -10,19 +10,16 @@
 
 Class PDFTemplates_Edit_View extends Vtiger_Index_View {
 
-	public function requiresPermission(\Vtiger_Request $request) {
-		return array();
-	}
-    
-    public function checkPermission($request) {
+	public function checkPermission($request) {
         $moduleName = $request->getModule();
 		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
-        if(!$moduleModel->isActive()){
-            return false;
-        }
-        return true;
+		if($moduleModel->isActive()) {
+			return parent::checkPermission($request);
+		}
+		
+		throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
     }
-    
+
     public function preProcess(Vtiger_Request $request, $display = true) {
 		$record = $request->get('record');
 		if (!empty($record)) {
@@ -81,6 +78,7 @@ Class PDFTemplates_Edit_View extends Vtiger_Index_View {
 	}
 
 	public function initializeContents(Vtiger_Request $request, Vtiger_Viewer $viewer){
+		global $is_headlesschrome;
 		$moduleName = $request->getModule();
 		$record = $request->get('record');
 
@@ -120,6 +118,9 @@ Class PDFTemplates_Edit_View extends Vtiger_Index_View {
 		$viewer->assign('ALL_FIELDS', $moduleFields);
 		$viewer->assign('COMPANY_FIELDS', $pdfTemplateModuleModel->getCompanyMergeTagsInfo());
 		$viewer->assign('GENERAL_FIELDS', $pdfTemplateModuleModel->getCustomMergeTags());
+		$viewer->assign('PDF_FORMATS', $pdfTemplateModuleModel->getPDFFormats());
+		$viewer->assign('CUSTUM_FUNCTIONS', $pdfTemplateModuleModel->getCustomFunctions());
+		$viewer->assign('IS_HEADLESSCHROME', $is_headlesschrome === true ? "true" : "false");
 	}
 
 	/**

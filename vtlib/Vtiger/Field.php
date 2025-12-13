@@ -214,6 +214,17 @@ class Vtiger_Field extends Vtiger_FieldBasic {
 	static function getInstance($value, $moduleInstance=false) {
 		global $adb;
 		$instance = false;
+		if (!$moduleInstance) {
+			// Derive moduleInstance based on FieldId.
+			if (is_numeric($value)) {
+				$fieldInfo = Vtiger_Functions::getModuleFieldInfoWithId($value);
+				if ($fieldInfo) {
+					$moduleInstance = Vtiger_Module_Model::getInstance($fieldInfo["tabid"]);
+				} 
+			}
+		}
+		if (!$moduleInstance) return null;
+
 		$data = Vtiger_Functions::getModuleFieldInfo($moduleInstance->id, $value);
 		if ($data) {
             $instance = new self();
@@ -285,4 +296,3 @@ class Vtiger_Field extends Vtiger_FieldBasic {
 		self::log("Deleting fields of the module ... DONE");
 	}
 }
-?>

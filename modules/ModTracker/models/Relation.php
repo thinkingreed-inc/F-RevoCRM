@@ -24,6 +24,9 @@ class ModTracker_Relation_Model extends Vtiger_Record_Model {
 		$targetId = $this->get('targetid');
 		$targetModule = $this->get('targetmodule');
         
+        if(!Users_Privileges_Model::isPermitted($targetModule, 'DetailView', $targetId)) {
+			return false;
+		}
         $query = 'SELECT * FROM vtiger_crmentity WHERE crmid = ?';
 		$params = array($targetId);
 		$result = $db->pquery($query, $params);

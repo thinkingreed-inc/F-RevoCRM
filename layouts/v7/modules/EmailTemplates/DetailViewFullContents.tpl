@@ -22,11 +22,11 @@
 					<tbody> 
 						<tr>
 							<td class="fieldLabel {$WIDTHTYPE}"><label class="muted marginRight10px">{vtranslate('Templatename', $MODULE_NAME)}</label></td>
-							<td class="fieldValue {$WIDTHTYPE}">{$RECORD->get('templatename')}</td>
+							<td class="fieldValue {$WIDTHTYPE}">{vtranslate($RECORD->get('templatename'), $MODULE_NAME)}</td>
 						</tr>
 						<tr>
 							<td class="fieldLabel {$WIDTHTYPE}"><label class="muted marginRight10px">{vtranslate('Description', $MODULE_NAME)}</label></td>
-							<td class="fieldValue {$WIDTHTYPE}">{nl2br($RECORD->get('description'))}</td>
+							<td class="fieldValue {$WIDTHTYPE}">{vtranslate(nl2br($RECORD->get('description')), $MODULE_NAME)}</td>
 						</tr>
 						<tr>
 							<td class="fieldLabel {$WIDTHTYPE}"><label class="muted marginRight10px">{vtranslate('LBL_MODULE_NAME', $MODULE_NAME)}</label></td>

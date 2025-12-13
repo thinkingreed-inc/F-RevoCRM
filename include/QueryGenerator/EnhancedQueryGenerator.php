@@ -91,7 +91,7 @@ class EnhancedQueryGenerator extends QueryGenerator {
 		$specialDateTimeConditions = Vtiger_Functions::getSpecialDateTimeCondtions();
 		foreach ($advFilterList as $groupindex => $groupcolumns) {
 			$filtercolumns = $groupcolumns['columns'];
-			if (count($filtercolumns) > 0) {
+			if (php7_count($filtercolumns) > 0) {
 				$this->startGroup('');
 				foreach ($filtercolumns as $index => $filter) {
 					//If comparator is "e" or "n" then do not escapeSqlString.
@@ -172,7 +172,7 @@ class EnhancedQueryGenerator extends QueryGenerator {
 						$value = array();
 						$value[] = $this->fixDateTimeValue($name, $date, true);
 						// Still fixDateTimeValue returns only date value, we need to append time because it is DT type
-						for ($i = 0; $i < count($value); $i++) {
+						for ($i = 0; $i < php7_count($value); $i++) {
 							$values = explode(' ', $value[$i]);
 							if ($values[1] == '') {
 								$values[1] = '00:00:00';
@@ -219,7 +219,7 @@ class EnhancedQueryGenerator extends QueryGenerator {
 		if ($fieldObject && isset($fieldObject->referenceFieldName)) {
 			// if its a reference field then we need to add the fieldname to table name
 			preg_match('/(\w+) ; \((\w+)\) (\w+)/', $fieldObject->referenceFieldName, $matches);
-			if (count($matches) != 0) {
+			if (php7_count($matches) != 0) {
 				list($full, $referenceField, $referenceModule, $fieldname) = $matches;
 			}
 			$field = $fieldObject;
@@ -241,7 +241,7 @@ class EnhancedQueryGenerator extends QueryGenerator {
 		foreach ($this->fields as $field) {
 			// handle for reference field
 			preg_match('/(\w+) ; \((\w+)\) (\w+)/', $field, $matches);
-			if (count($matches) != 0) {
+			if (php7_count($matches) != 0) {
 				list($full, $referenceField, $referenceModule, $fieldname) = $matches;
 				$parentReferenceFieldModel = null;
 				$parentReferenceFieldModel = $moduleFields[$field];
@@ -269,12 +269,7 @@ class EnhancedQueryGenerator extends QueryGenerator {
 					$sql = $this->getSQLColumn($timeField);
 				} else if ($field == 'taskstatus' || $field == 'eventstatus') {
 					//In calendar list view, Status value = Planned is not displaying
-					$sql = "CASE WHEN (vtiger_activity.status not like '') THEN vtiger_activity.status ELSE vtiger_activity.eventstatus END AS ";
-					if ($field == 'taskstatus') {
-						$sql .= "status";
-					} else {
-						$sql .= $field;
-					}
+					$sql = "CASE WHEN (vtiger_activity.status not like '') THEN vtiger_activity.status ELSE vtiger_activity.eventstatus END AS status";
 				}
 				$columns[] = $sql;
 			}
@@ -311,7 +306,7 @@ class EnhancedQueryGenerator extends QueryGenerator {
 			$referenceParentFieldName = '';
 			// for reference field do not add the table names to the list
 			preg_match('/(\w+) ; \((\w+)\) (\w+)/', $fieldName, $matches);
-			if (count($matches) != 0) {
+			if (php7_count($matches) != 0) {
 				list($full, $referenceParentFieldName, $referenceModuleName, $fieldName) = $matches;
 			}
 
@@ -402,7 +397,7 @@ class EnhancedQueryGenerator extends QueryGenerator {
 			$referenceParentFieldName = '';
 			// for reference field do not add the table names to the list
 			preg_match('/(\w+) ; \((\w+)\) (\w+)/', $fieldName, $matches);
-			if (count($matches) != 0) {
+			if (php7_count($matches) != 0) {
 				list($full, $referenceParentFieldName, $referenceModuleName, $fieldName) = $matches;
 			}
 
@@ -531,7 +526,7 @@ class EnhancedQueryGenerator extends QueryGenerator {
 			$tableJoinMapping[$table] = 'INNER JOIN';
 		}
 		$ownerFields = $this->meta->getOwnerFields();
-		if (count($ownerFields) > 0) {
+		if (php7_count($ownerFields) > 0) {
 			$ownerField = $ownerFields[0];
 		}
 
@@ -628,7 +623,7 @@ class EnhancedQueryGenerator extends QueryGenerator {
 
 			// if its a reference field then we need to add the fieldname to table name
 			preg_match('/(\w+) ; \((\w+)\) (\w+)/', $baseFieldName, $matches);
-			if (count($matches) != 0) {
+			if (php7_count($matches) != 0) {
 				list($full, $parentReferenceField, $referenceModule, $fieldName) = $matches;
 			}
 
@@ -643,12 +638,12 @@ class EnhancedQueryGenerator extends QueryGenerator {
 			$operator = strtolower($conditionInfo['operator']);
 			if ($operator == 'between' && $this->isDateType($field->getFieldDataType())) {
 				$start = explode(' ', $conditionInfo['value'][0]);
-				if (count($start) == 2)
+				if (php7_count($start) == 2)
 					$conditionInfo['value'][0] = getValidDBInsertDateTimeValue($start[0].' '.$start[1]);
 
 				$end = explode(' ', $conditionInfo['values'][1]);
 				// Dates will be equal for Today, Tomorrow, Yesterday.
-				if (count($end) == 2) {
+				if (php7_count($end) == 2) {
 					if ($start[0] == $end[0]) {
 						$dateTime = new DateTime($conditionInfo['value'][0]);
 						$nextDay = $dateTime->modify('+1 days');
@@ -674,7 +669,11 @@ class EnhancedQueryGenerator extends QueryGenerator {
 						$columnSql = getSqlForNameInDisplayFormat(array('last_name'=>$columnSqlTable.'.last_name',
 																		'first_name'=>$columnSqlTable.'.first_name'),'Users');
 					} else if(in_array('DocumentFolders', $moduleList)) {
-						$columnSql = "vtiger_attachmentsfolder".$fieldName.".foldername";
+						if($conditionInfo['operator'] == 'e' || $conditionInfo['operator'] == 'n') {
+							$columnSql = "vtiger_attachmentsfolder".$fieldName.".folderid";
+						} else {
+							$columnSql = "vtiger_attachmentsfolder".$fieldName.".foldername";
+						}
 					} else if(in_array('Currency', $moduleList)) {
 						$columnSql = "vtiger_currency_info$parentReferenceField$fieldName.currency_name";
 						if($fieldName == 'currency_id' && is_numeric($conditionInfo['value'])){
@@ -725,7 +724,7 @@ class EnhancedQueryGenerator extends QueryGenerator {
 						$values = explode(',', $value);
 						$startDateValue = explode(' ', $values[0]);
 						$endDateValue = explode(' ', $values[1]);
-						if (count($startDateValue) == 2 && count($endDateValue) == 2) {
+						if (php7_count($startDateValue) == 2 && php7_count($endDateValue) == 2) {
 							$fieldSql .= " CAST(CONCAT($dateFieldColumnName,' ',$timeFieldColumnName) AS DATETIME) $valueSql";
 						} else {
 							$fieldSql .= "$dateFieldColumnName $valueSql";
@@ -735,7 +734,7 @@ class EnhancedQueryGenerator extends QueryGenerator {
 							$value = $value[0];
 						}
 						$values = explode(' ', $value);
-						if (count($values) == 2) {
+						if (php7_count($values) == 2) {
 							$fieldSql .= "$fieldGlue CAST(CONCAT($dateFieldColumnName,' ',$timeFieldColumnName) AS DATETIME) $valueSql ";
 						} else {
 							$fieldSql .= "$fieldGlue $dateFieldColumnName $valueSql";
@@ -821,6 +820,9 @@ class EnhancedQueryGenerator extends QueryGenerator {
 				} else {
 					$fieldGlue = ' OR';
 				}
+				if ($conditionInfo['operator'] == 'range') {
+					$fieldGlue = ' AND';
+				}
 			}
 			$tmpTableName = 'vtiger_crmentity'.$parentReferenceField;
 			if ($tmpTableName == $tableName && $referenceModule) {
@@ -877,7 +879,7 @@ class EnhancedQueryGenerator extends QueryGenerator {
 
 		$parentReferenceField = '';
 		preg_match('/(\w+) ; \((\w+)\) (\w+)/', $fieldName, $matches);
-		if (count($matches) != 0) {
+		if (php7_count($matches) != 0) {
 			list($full, $parentReferenceField, $referenceModule, $fieldName) = $matches;
 		}
 		if ($orderByFieldModel && $orderByFieldModel->getFieldDataType() == 'reference') {

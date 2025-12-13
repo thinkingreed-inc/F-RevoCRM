@@ -1,0 +1,5 @@
+RewriteEngine On
+
+# Force all requests to go to public directory (except public itself)
+RewriteCond %{REQUEST_URI} !public/
+RewriteRule ^(.*)$ public/$1 [L,QSA]

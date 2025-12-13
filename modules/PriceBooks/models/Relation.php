@@ -34,7 +34,7 @@ class PriceBooks_Relation_Model extends Vtiger_Relation_Model{
 
 		//modify query if any module has summary fields, those fields we are displayed in related list of that module
 		$relatedListFields = $relatedModuleModel->getConfigureRelatedListFields();
-		if(count($relatedListFields) > 0) {
+		if(php7_count($relatedListFields) > 0) {
 			$currentUser = Users_Record_Model::getCurrentUserModel();
 			$queryGenerator = new QueryGenerator($relatedModuleName, $currentUser);
 			$queryGenerator->setFields($relatedListFields);

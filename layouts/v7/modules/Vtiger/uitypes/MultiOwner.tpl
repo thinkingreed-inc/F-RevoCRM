@@ -23,7 +23,7 @@
 	{assign var=ACCESSIBLE_GROUP_LIST value=$USER_MODEL->getAccessibleGroupForModule($MODULE)}
 	<select class="select2 inputElement" data-name="{$ASSIGNED_USER_ID}" name="{$ASSIGNED_USER_ID}[]" multiple 
             {if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if}
-            {if count($FIELD_INFO['validator'])} 
+            {if php7_count($FIELD_INFO['validator'])} 
                 data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
             {/if}
             >

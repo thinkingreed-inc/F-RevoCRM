@@ -269,8 +269,8 @@ class Vtiger_MailScannerInfo {
 			global $adb;
 			$adb->pquery("UPDATE vtiger_mailscanner_folders set enabled=0 WHERE scannerid=?", Array($this->scannerid));
 			foreach($folderinfo as $foldername=>$foldervalue) {
-				$folderid = $foldervalue[folderid];
-				$enabled  = $foldervalue[enabled];
+				$folderid = $foldervalue["folderid"];
+				$enabled  = $foldervalue["enabled"];
 				$adb->pquery("UPDATE vtiger_mailscanner_folders set enabled=? WHERE folderid=? AND scannerid=?",
 					Array($enabled,$folderid,$this->scannerid));
 			}

@@ -30,7 +30,7 @@
 					{assign var=HIDDEN_MODULES value=Settings_MenuEditor_Module_Model::getHiddenModulesForApp($APP_NAME)}
 					<div class="row modulesContainer {if $APP_NAME neq $SELECTED_APP_NAME} hide {/if}" data-appname="{$APP_NAME}">
 						<div class="col-lg-12 col-md-12 col-sm-12">
-							{if count($HIDDEN_MODULES) gt 0}
+							{if php7_count($HIDDEN_MODULES) gt 0}
 								{foreach item=MODULE_NAME from=$HIDDEN_MODULES}
 									<span class="btn-group" style="margin-bottom: 10px; margin-left: 25px; margin-right: -15px;">
 										<buttton class="btn addButton btn-default module-buttons addModule" data-module="{$MODULE_NAME}" style="text-transform: inherit;margin-right:15px">{vtranslate($MODULE_NAME, $MODULE_NAME)}&nbsp;&nbsp;

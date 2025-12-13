@@ -124,7 +124,7 @@ class RecurringType {
 				$userStartDateTime = DateTimeField::convertToUserTimeZone($startDate . ' ' . $startTime);
 				$dayOfWeek = $requestArray['dayofweek_to_repeat'];
 				$dbDaysOfWeek = array();
-				for ($i = 0; $i < count($dayOfWeek); ++$i) {
+				for ($i = 0; $i < php7_count($dayOfWeek); ++$i) {
 					$selectedDayOfWeek = $dayOfWeek[$i];
 					$currentDayOfWeek = $userStartDateTime->format('w');
 					$newDate = $userStartDateTime->format('d') + ($selectedDayOfWeek - $currentDayOfWeek);
@@ -182,13 +182,16 @@ class RecurringType {
 		$repeatInfo['type'] = $resultRow['recurringtype'];
 		$repeatInfo['repeat_frequency'] = $resultRow['recurringfreq'];
 		$repeatInfo['recurringenddate'] = $resultRow['recurringenddate']; 
+		if(!empty($resultRow['recurringenddate'])) {
+			$repeatInfo['enddate'] = $resultRow['recurringenddate'];
+		}
 
 		$recurringInfoString = $resultRow['recurringinfo'];
 		$recurringInfo = explode('::', $recurringInfoString);
 
 		if ($repeatInfo['type'] == 'Weekly') {
 			$startIndex = 1; // 0 is for Recurring Type
-			$length = count($recurringInfo);
+			$length = php7_count($recurringInfo);
 			$j = 0;
 			for ($i = $startIndex; $i < $length; ++$i) {
 				$repeatInfo['dayofweek_to_repeat'][$j++] = $recurringInfo[$i];
@@ -297,7 +300,7 @@ class RecurringType {
 		$displayRecurringData['recurringtype'] = $this->getRecurringType();
 
 		if ($this->getRecurringType() == 'Weekly') {
-			$noOfDays = count($recurringInfo['dayofweek_to_repeat']);
+			$noOfDays = php7_count($recurringInfo['dayofweek_to_repeat']);
 			$translatedRepeatDays = array();
 			for ($i = 0; $i < $noOfDays; ++$i) {
 				$translatedRepeatDays[] = getTranslatedString('LBL_DAY' . $recurringInfo['dayofweek_to_repeat'][$i], $currentModule);
@@ -365,11 +368,11 @@ class RecurringType {
 					$recurringDates[] = $tempdate;
 				}
 			} elseif ($this->recur_type == 'Weekly') {
-				if (count($this->dayofweek_to_rpt) == 0) {
+				if (php7_count($this->dayofweek_to_rpt) == 0) {
 					$this->dayofweek_to_rpt[] = $this->startdate->dayofweek;
 				}
 
-				for ($i = 0; $i < count($this->dayofweek_to_rpt); $i++) {
+				for ($i = 0; $i < php7_count($this->dayofweek_to_rpt); $i++) {
 					$repeat = $this->dayofweek_to_rpt[$i];
 					if ($repeat == 0) {
 						$repeat = $repeat+1;

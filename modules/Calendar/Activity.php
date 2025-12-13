@@ -124,7 +124,7 @@ class Activity extends CRMEntity {
 				//var $groupTable = Array('vtiger_activitygrouprelation','activityid');
         function __construct()
         {
-            $this->log = LoggerManager::getLogger('Calendar');
+            $this->log = Logger::getLogger('Calendar');
             $this->db = PearDatabase::getInstance();
             $this->column_fields = getColumnFields('Calendar');
         }
@@ -154,7 +154,7 @@ class Activity extends CRMEntity {
 			if(!in_array($request_assigned_user_id, $this->invitee_array)){
 				$this->invitee_array[] = $request_assigned_user_id;
 			}
-		} else if(empty($this->invitee_array) && count($_REQUEST['selectedusers']) > 0){// 概要欄や関連からの遷移の場合
+		} else if(empty($this->invitee_array) && php7_count($_REQUEST['selectedusers']) > 0){// 概要欄や関連からの遷移の場合
 			$this->invitee_array = $_REQUEST['selectedusers'];
 			$smownerid = $this->column_fields['assigned_user_id'];
 			$request_assigned_user_id = $_REQUEST['assigned_user_id'];
@@ -195,7 +195,7 @@ class Activity extends CRMEntity {
 			if(isset($_REQUEST['contactidlist']) && $_REQUEST['contactidlist'] != '') {
 				$adb->pquery( 'DELETE from vtiger_cntactivityrel WHERE activityid = ?', array($recordId));
 				$contactIdsList = explode (';', $_REQUEST['contactidlist']);
-				$count = count($contactIdsList);
+				$count = php7_count($contactIdsList);
 				$params=array();
 				$sql = 'INSERT INTO vtiger_cntactivityrel VALUES ';
 				for($i=0; $i<$count; $i++) {
@@ -269,11 +269,14 @@ class Activity extends CRMEntity {
 		} else if(!$this->is_allday) {
 			$hours = (int)($time / 3600);
 			$minutes = (int)(($time % 3600) / 60);
+		} else {
+			$hours = (int)($time / 3600) + 24;
+			$minutes = (int)(($time % 3600) / 60);
 		}
 		$updateQuery = "UPDATE vtiger_activity SET duration_hours = ?, duration_minutes = ? WHERE activityid = ?";
 		$adb->pquery($updateQuery, array($hours, $minutes, $this->id));
 
-		$this->updateLastActionDate();
+		$this->updateLastActionDate($module);
 	}
 
 	/** Function to insert values in vtiger_activity_reminder_popup table for the specified module
@@ -468,6 +471,19 @@ function insertIntoRecurringTable(& $recurObj)
 			return ;
 		}
 
+		// 初回$activityarrayが配列化されていないとin_arrayでExceptionが発生するので初期化する
+		if (empty($activityarray)) {
+			$activityarray = array();
+		}
+
+		if (empty($this->workflow_skip_field_array)){
+			$this->workflow_skip_field_array = array();
+		}
+
+		if (empty($activityarray[$this->workflow_task_id])) {
+			$activityarray[$this->workflow_task_id] = array();
+		}
+
 		// 編集の場合
 		if($this->mode == 'edit'){
 			// 参加者のActivityを更新または削除
@@ -519,6 +535,9 @@ function insertIntoRecurringTable(& $recurObj)
 						$inviteRecord->getEntity()->saveentity($module, $inviteRecord->getId());
 					}else{
 						foreach($this->column_fields as $field => $value) {
+							if(empty($global_workflow_skip_field_array[$activityid])) {
+								$global_workflow_skip_field_array[$activityid] = array();
+							}
 							// フィールドの更新ワークフローで既に更新している項目は、招待元からコピーしないようにする。
 							if(in_array($field, $this->notCopyFields) || in_array($field, $global_workflow_skip_field_array[$activityid])) {
 								continue;
@@ -547,6 +566,12 @@ function insertIntoRecurringTable(& $recurObj)
 			if(empty($inviteeid)) {
 				continue;
 			}
+
+			$result = $adb->pquery("SELECT 1 FROM vtiger_invitees WHERE activityid = ? AND inviteeid = ?", array($this->invitee_parentid, $inviteeid));
+			if($adb->num_rows($result) > 0) {
+				continue;
+			}
+
 			$query="INSERT INTO vtiger_invitees VALUES (?,?,?)";
 			$adb->pquery($query, array($this->invitee_parentid, $inviteeid, 'sent'));
 
@@ -597,7 +622,7 @@ function insertIntoRecurringTable(& $recurObj)
 		$sql_qry = "insert into vtiger_salesmanactivityrel (smid,activityid) values(?,?)";
 			$adb->pquery($sql_qry, array($this->column_fields['assigned_user_id'], $this->id));
 
-		if(isset($invitees_array) && count($invitees_array) > 0)
+		if(isset($invitees_array) && php7_count($invitees_array) > 0)
 		{
 			// $selected_users_string =  $_REQUEST['inviteesid'];
 			// $invitees_array = explode(';',$selected_users_string);
@@ -615,6 +640,58 @@ function insertIntoRecurringTable(& $recurObj)
 		}
 	}
 }
+
+	function restore($module, $id) {
+		if($module === 'Calendar') {
+			$this->restoreCalenderEvent($module, $id);
+		}else {
+			parent::restore($module, $id);
+		}
+	}
+
+	public function restoreCalenderEvent($module, $id)
+	{
+		global $adb;
+		// 活動のparentidが共通のレコードでsmowneridが一致するものがある場合は復元しない
+		// 同じparent id で参加者が重複している招待レコードを探す
+		$getDuplicateQuery    = "SELECT va.activityid
+									FROM vtiger_activity AS va
+									JOIN vtiger_activity AS va2 
+									ON va2.activityid = ?
+									WHERE va.invitee_parentid = va2.invitee_parentid
+									AND va.smownerid = va2.smownerid
+									AND va.deleted = 0";
+									
+		$duplicateResult      = $adb->pquery($getDuplicateQuery, [ $id ]);
+		$duplicateResultCount = $adb->num_rows($duplicateResult);
+		
+		// 重複したレコードは復元しない
+		if($duplicateResultCount !== 0) {
+			throw new Exception(vtranslate('LBL_DUPULICATE_EVENT_EXISTS', $module));
+		}
+		
+		// レコードの復元処理
+		parent::restore($module, $id);
+		
+		// vtiger_invtiteeに再度入れる
+		$this->restoreInviteeInformation($id);
+	}
+
+	public function restoreInviteeInformation($id) 
+	{
+		global $adb;
+		// レコードのparentidとユーザーIDを取得する
+		$getRecordInfo       = "SELECT invitee_parentid
+								FROM vtiger_activity 
+								WHERE activityid = ?";
+		$recordInfoResult    = $adb->pquery($getRecordInfo, [ $id ]);
+				
+		if($adb->num_rows($recordInfoResult) > 0) {
+			// 参加者情報を復元
+			$inviteeParentId = $adb->query_result($recordInfoResult, 0, 'invitee_parentid');
+			reCreateInviteesRecord($id, $inviteeParentId, true);
+		}
+	}
 
 	/**
 	 *
@@ -962,7 +1039,7 @@ function insertIntoRecurringTable(& $recurObj)
 		$profileList = getCurrentUserProfileList();
 		$sql1 = "select tablename,columnname from vtiger_field inner join vtiger_profile2field on vtiger_profile2field.fieldid=vtiger_field.fieldid inner join vtiger_def_org_field on vtiger_def_org_field.fieldid=vtiger_field.fieldid where vtiger_field.tabid=9 and tablename <> 'vtiger_recurringevents' and tablename <> 'vtiger_activity_reminder' and vtiger_field.displaytype in (1,2,4,3) and vtiger_profile2field.visible=0 and vtiger_def_org_field.visible=0 and vtiger_field.presence in (0,2)";
 		$params1 = array();
-		if (count($profileList) > 0) {
+		if (php7_count($profileList) > 0) {
 			$sql1 .= " and vtiger_profile2field.profileid in (". generateQuestionMarks($profileList) .")";
 			array_push($params1, $profileList);
 		}
@@ -980,7 +1057,7 @@ function insertIntoRecurringTable(& $recurObj)
 		}
 		$permitted_lists = array_chunk($permitted_lists,2);
 		$column_table_lists = array();
-		for($i=0;$i < count($permitted_lists);$i++)
+		for($i=0;$i < php7_count($permitted_lists);$i++)
 		{
 			$column_table_lists[] = implode(".",$permitted_lists[$i]);
 		}
@@ -1021,7 +1098,7 @@ function insertIntoRecurringTable(& $recurObj)
 			$profileList = getCurrentUserProfileList();
 			$sql1 = "select tablename,columnname from vtiger_field inner join vtiger_profile2field on vtiger_profile2field.fieldid=vtiger_field.fieldid inner join vtiger_def_org_field on vtiger_def_org_field.fieldid=vtiger_field.fieldid where vtiger_field.tabid=9 and tablename <> 'vtiger_recurringevents' and tablename <> 'vtiger_activity_reminder' and vtiger_field.displaytype in (1,2,4,3) and vtiger_profile2field.visible=0 and vtiger_def_org_field.visible=0 and vtiger_field.presence in (0,2)";
 			$params1 = array();
-			if (count($profileList) > 0) {
+			if (php7_count($profileList) > 0) {
 				$sql1 .= " and vtiger_profile2field.profileid in (". generateQuestionMarks($profileList) .")";
 				array_push($params1,$profileList);
 			}
@@ -1044,7 +1121,7 @@ function insertIntoRecurringTable(& $recurObj)
 		}
 		$permitted_lists = array_chunk($permitted_lists,2);
 		$column_table_lists = array();
-		for($i=0;$i < count($permitted_lists);$i++)
+		for($i=0;$i < php7_count($permitted_lists);$i++)
 		{
 			$column_table_lists[] = implode(".",$permitted_lists[$i]);
 		}
@@ -1141,7 +1218,7 @@ function insertIntoRecurringTable(& $recurObj)
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule,$queryPlanner){
+	function generateReportsSecQuery($module,$secmodule,$queryPlanner, $reportid = false){
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency('vtiger_crmentityCalendar',array('vtiger_groupsCalendar','vtiger_usersCalendar','vtiger_lastModifiedByCalendar'));
 		$matrix->setDependency('vtiger_cntactivityrel',array('vtiger_contactdetailsCalendar'));
@@ -1158,7 +1235,7 @@ function insertIntoRecurringTable(& $recurObj)
 								'vtiger_seactivityrel','vtiger_activity_reminder','vtiger_recurringevents'));
 
 
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_activity","activityid", $queryPlanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_activity","activityid", $queryPlanner, $reportid);
 
 		if ($queryPlanner->requireTable("vtiger_crmentityCalendar",$matrix)){
 			$query .=" left join vtiger_crmentity as vtiger_crmentityCalendar on vtiger_crmentityCalendar.crmid=vtiger_activity.activityid and vtiger_crmentityCalendar.deleted=0";
@@ -1322,7 +1399,20 @@ function insertIntoRecurringTable(& $recurObj)
 		$query = "CREATE TEMPORARY TABLE IF NOT EXISTS $tableName(id INT(11) PRIMARY KEY, shared ".
 			"int(1) DEFAULT 0) IGNORE ".$query;
 		$db = PearDatabase::getInstance();
-		$db->pquery($query, array());
+		$result = $db->pquery($query, array());
+		if(is_object($result)) {
+			$query = "REPLACE INTO $tableName (id) SELECT userid as id FROM vtiger_sharedcalendar WHERE sharedid = ?";
+			$result = $db->pquery($query, array($user->id));
+
+			//For newly created users, entry will not be there in vtiger_sharedcalendar table
+			//so, consider the users whose having the calendarsharedtype is public
+			$query = "REPLACE INTO $tableName (id) SELECT id FROM vtiger_users WHERE calendarsharedtype = ?";
+			$result = $db->pquery($query, array('public'));
+
+			if(is_object($result)) {
+				return true;
+			}
+		}
 	}
 
 	protected function getListViewAccessibleUsers($sharedid) {
@@ -1401,7 +1491,7 @@ function insertIntoRecurringTable(& $recurObj)
 		}
 	}
 
-	public function updateLastActionDate() {
+	public function updateLastActionDate($module) {
 		global $adb, $log;
 		$accountids = array();
 		$result = $adb->pquery("SELECT contactid, activityid FROM vtiger_cntactivityrel WHERE activityid = ?",array($this->id));
@@ -1416,7 +1506,7 @@ function insertIntoRecurringTable(& $recurObj)
 			if ($accountid > 0) {
 				$accountids[] = $accountid;
 			}
-			$recordContactModel->save();
+			$recordContactModel->getEntity()->saveentity($module, $contactid);
 		}
 
 		$parent_id = $this->column_fields["parent_id"];
@@ -1427,7 +1517,7 @@ function insertIntoRecurringTable(& $recurObj)
 				$recordParentModel->set('id', $parent_id);
 				$recordParentModel->set('mode', 'edit');
 				$recordParentModel->set('last_action_date', $this->getParentLastActionDate($parent_id, $moduleName));
-				$recordParentModel->save();
+				$recordParentModel->getEntity()->saveentity($module, $parent_id);
 			} elseif ($moduleName == "Potentials") {
 				$recordParentModel->set('id', $parent_id);
 				$recordParentModel->set('mode', 'edit');
@@ -1436,7 +1526,7 @@ function insertIntoRecurringTable(& $recurObj)
 				if($accountid > 0) {
 					$accountids[] = $accountid;
 				}
-				$recordParentModel->save();
+				$recordParentModel->getEntity()->saveentity($module, $parent_id);
 			} elseif ($moduleName == "Accounts") {
 				$accountids[] = $parent_id;
 			}
@@ -1446,18 +1536,29 @@ function insertIntoRecurringTable(& $recurObj)
 		foreach($accountids as $accountid) {
 				$accountRecordModel = Vtiger_Record_Model::getInstanceById($accountid);
 				$relatedContactsIdList = $this->getAccountsRelatedIdList($accountid, "Contacts");
+				$contactsLastActionDate = null;
 				if ($relatedContactsIdList) {
 					$contactsLastActionDate = $this->getLastActionDateFromList($relatedContactsIdList, "Contacts");
 				}
 				$relatedPotentialsIdList = $this->getAccountsRelatedIdList($accountid, "Potentials");
+				$potentialLastActionDate = null;
 				if ($relatedPotentialsIdList) {
 					$potentialLastActionDate = $this->getLastActionDateFromList($relatedPotentialsIdList, "Potentials");
 				}
-				if (strtotime($contactsLastActionDate) > strtotime($potentialLastActionDate)) {
+				
+				$parentLastActionDate = null;
+				if ($contactsLastActionDate && $potentialLastActionDate) {
+					if (strtotime($contactsLastActionDate) > strtotime($potentialLastActionDate)) {
+						$parentLastActionDate = $contactsLastActionDate;
+					} else {
+						$parentLastActionDate = $potentialLastActionDate;
+					}
+				} elseif ($contactsLastActionDate) {
 					$parentLastActionDate = $contactsLastActionDate;
-				} elseif (strtotime($potentialLastActionDate) >= strtotime($contactsLastActionDate)) {
-				$parentLastActionDate =  $potentialLastActionDate;
-				} 
+				} elseif ($potentialLastActionDate) {
+					$parentLastActionDate = $potentialLastActionDate;
+				}
+				
 				$accountLastActionDate = $this->getParentLastActionDate($accountid,"Accounts");
 				$accountRecordModel->set('mode', 'edit');
 				if (isset($parentLastActionDate) && isset($accountLastActionDate)) {
@@ -1473,7 +1574,7 @@ function insertIntoRecurringTable(& $recurObj)
 				} else {
 					$accountRecordModel->set('last_action_date', null);
 				}
-				$accountRecordModel->save();
+				$accountRecordModel->getEntity()->saveentity($module, $accountRecordModel->getId());
 		}
 	}
 
@@ -1487,10 +1588,18 @@ function insertIntoRecurringTable(& $recurObj)
 		}
 		$relatedActivityResult = $adb->pquery($getRelatedActivityQuery, array($parent_id));
 		$relatedActivityRows = $adb->num_rows($relatedActivityResult);
-		$relatedActivity = new DateTime($adb->query_result($relatedActivityResult, 0, "due_date"));
-		if ($relatedActivityRows) {
-			return $relatedActivity->format('Y-m-d');
+		if ($relatedActivityRows > 0) {
+			$dueDate = $adb->query_result($relatedActivityResult, 0, "due_date");
+			if ($dueDate) {
+				try {
+					$relatedActivity = new DateTime($dueDate);
+					return $relatedActivity->format('Y-m-d');
+				} catch (Exception $e) {
+					return null;
+				}
+			}
 		}
+		return null;
 	}
 
 	#顧客企業の関連ID(顧客担当者・案件)の配列を得る
@@ -1502,24 +1611,41 @@ function insertIntoRecurringTable(& $recurObj)
 		} elseif ($moduleName == "Potentials") {
 			$getRelatedQuery = "SELECT potentialid from vtiger_potential where related_to = ?";
 			$columnName = "potentialid";
+		} else {
+			return array();
 		}
 		$relatedResult = $adb->pquery($getRelatedQuery, array($accountid));
 		$relatedRows = $adb->num_rows($relatedResult);
+		$relatedIdList = array();
 		for ($i = 0; $i < $relatedRows; $i++) {
-			$relatedIdList[] = $adb->query_result($relatedResult, $i, $columnName);
+			$relatedId = $adb->query_result($relatedResult, $i, $columnName);
+			if ($relatedId) {
+				$relatedIdList[] = $relatedId;
+			}
 		}
 		return $relatedIdList;
 	}
 
 	#関連IDの配列から最終活動日を得る
 	public function getLastActionDateFromList($parentIdList, $moduleName) {
+		$parentLastActionDateList = array();
 		foreach ($parentIdList as $parentId) {
 			$parentLastActionDate = $this->getParentLastActionDate($parentId, $moduleName);
 			if ($parentLastActionDate) {
 				$parentLastActionDateList[$parentLastActionDate] = strtotime($parentLastActionDate);
 			}
 		}
-		$last_action_date   = array_keys($parentLastActionDateList, max($parentLastActionDateList));
+		if (empty($parentLastActionDateList)) {
+			return null;
+		}
+		$maxTimestamp = max($parentLastActionDateList);
+		if ($maxTimestamp === false) {
+			return null;
+		}
+		$last_action_date = array_keys($parentLastActionDateList, $maxTimestamp);
+		if (empty($last_action_date)) {
+			return null;
+		}
 		return $last_action_date[0];
 	}
 	

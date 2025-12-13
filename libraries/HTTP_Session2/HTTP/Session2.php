@@ -463,22 +463,9 @@ class HTTP_Session2
      */
     public static function useCookies($useCookies = null)
     {
-        $return = false;
-        if (ini_get('session.use_cookies') == '1') {
-            $return = true;
-        }
-        if ($useCookies !== null) {
-            if ($useCookies === true) {
-                $status = ini_set('session.use_cookies', 1);
-            } else {
-                $status = ini_set('session.use_cookies', 0);
-            }
-            if ($status === false) {
-                $msg  = "Could not set 'session.use_cookies'. Please check your ";
-                $msg .= 'permissions to override php.ini-settings. E.g. a possible ';
-                $msg .= 'php_admin_value setting or blocked ini_set() calls ';
-                throw new HTTP_Session2_Exception($msg, self::ERR_SYSTEM_PERM);
-            }
+        $return = ini_get('session.use_cookies') ? true : false;
+        if (isset($useCookies)) {
+            ini_set('session.use_cookies', $useCookies ? 1 : 0);
         }
         return $return;
     }

@@ -9,6 +9,7 @@
  ************************************************************************************/
 require_once('modules/com_vtiger_workflow/VTEntityCache.inc');
 require_once('modules/com_vtiger_workflow/VTWorkflowUtils.php');
+require_once('modules/ModTracker/ModTrackerHandler.php');
 
 class VTUpdateFieldsTask extends VTTask {
 
@@ -16,11 +17,13 @@ class VTUpdateFieldsTask extends VTTask {
 	//array which contains the focus instances of reference fields 
 	private $referenceFieldFocusList = array();
 
+	public static $executedTasks = array();
+
 	public function getFieldNames() {
 		return array('field_value_mapping');
 	}
 
-	public function doTask($entity) {
+	public function doTask($entity, $allowDeleted = false, &$aggregateArray = false) {
 		$tmpFiles = $_FILES;
 		unset($_FILES);
 		global $adb, $current_user, $default_charset,$default_timezone;
@@ -33,6 +36,15 @@ class VTUpdateFieldsTask extends VTTask {
 		$recordId = vtws_getIdComponents($entityId);
 		$recordId = $recordId[1];
 
+		$workflowId = $this->workflowId;
+		$taskId = $this->id;
+		$taskKey = $workflowId."_".$taskId."_".$recordId;
+
+		// if(in_array($taskKey, self::$executedTasks)) {
+		// 	return ;
+		// }
+		// self::$executedTasks[] = $taskKey;
+
 		$moduleHandler = vtws_getModuleHandlerFromName($moduleName, $current_user);
 		$handlerMeta = $moduleHandler->getMeta();
 		$moduleFields = $handlerMeta->getModuleFields();
@@ -43,15 +55,15 @@ class VTUpdateFieldsTask extends VTTask {
 		}
 
 		$referenceFieldFocus = array();
-		if (!empty($fieldValueMapping) && count($fieldValueMapping) > 0) {
+		if (!empty($fieldValueMapping) && php7_count($fieldValueMapping) > 0) {
 			require_once('data/CRMEntity.php');
 			$focus = CRMEntity::getInstance($moduleName);
 			$focus->id = $recordId;
 			$focus->mode = 'edit';
-			$focus->retrieve_entity_info($recordId, $moduleName);
+			$focus->retrieve_entity_info($recordId, $moduleName, $allowDeleted);
 			$focus->clearSingletonSaveFields();
 
-			$util->loggedInUser();
+			//$util->loggedInUser();
 
 			// The data is transformed from db format to user format, there is a chance that date and currency fields might get tracked for changes which should be avoided
 			$focus->column_fields->pauseTracking();
@@ -60,8 +72,23 @@ class VTUpdateFieldsTask extends VTTask {
 			$entityFields = $referenceEntityFields = false;
 			$focus->column_fields->resumeTracking();
 
-			$workflow_skip_field_array = array();
+			//ここまでの内容を保存する
+			$handler = new ModTrackerHandler();
+			$entityData = VTEntityData::fromCRMEntity($focus);
+			$entityData->isNew = $entity->isNew();
 
+			if(!$entity->isNew()){
+				// 編集の場合、且つoldEntityがない場合、oldEntityを設定する。
+				$vtEntityDelta = new VTEntityDelta();
+				$oldEntity = $vtEntityDelta->getOldEntity($moduleName, $entityData->getId());
+				if(!$oldEntity){
+					$vtEntityDelta->handleEvent("vtiger.entity.beforesave", $entityData);
+				}
+			}
+
+			$handler->handleEvent("vtiger.entity.aftersave.final", $entityData);
+			
+			$workflow_skip_field_array = array();
 			foreach ($fieldValueMapping as $fieldInfoKey => $fieldInfo) {
 				$fieldName = $fieldInfo['fieldname'];
 
@@ -74,17 +101,31 @@ class VTUpdateFieldsTask extends VTTask {
 				}
 				$fieldValueType = $fieldInfo['valuetype'];
 				$fieldValue = trim($fieldInfo['value']);
-				preg_match('/\((\w+) : \((\w+)\) (\w+)\)/',$fieldName,$matches);
-				if(count($matches) > 0){
+				preg_match('/\((\w+) : \((\w+)\) (\w+) (\w+)\)/',$fieldName,$matches);
+				if (php7_count($matches) == 0) {
+					preg_match('/\((\w+) : \((\w+)\) (\w+)/',$fieldName,$matches);
+				}
+				if(php7_count($matches) > 0){
 					//reference field update
 					$referenceField = $matches[1];
 					$referencedModule = $matches[2];
 					$referencedFieldName = $matches[3];
+					$isChildModule = empty($matches[4]) ? false: true; // 子モジュールかどうか
+					if($isChildModule){
+						//子モジュールのIDを取得する
+						$referenceField;//子モジュールの親モジュールに対する関連項目
+						$referencedModule;//子モジュールの英語名
+						$recordId;//親モジュールのID
+						$referenceRecordIds = $this->getChildReferenceRecordId($moduleName, $referenceField, $referencedModule, $recordId, $referencedFieldName);
+					}else{
+						$referenceRecordIds = array($focus->column_fields[$referenceField]);
+					}
 					$refModuleModel = Vtiger_Module_Model::getInstance($referencedModule);
 					if ($refModuleModel && in_array($referencedFieldName,$refModuleModel->getNameFields())) {
 						$referenceEntityFields = true;
 					}
-					$referenceRecordId = $focus->column_fields[$referenceField];
+					$moduleFocus = array();
+					foreach ($referenceRecordIds as $key => $referenceRecordId) {
 					if(empty($referenceRecordId) || isRecordExists($referenceRecordId) === false || 
 							getSalesEntityType($referenceRecordId) !== $referencedModule){ // if the record belongs to other module, for ex in events we have related to field
 						//if no value exists for the reference field then we dont have to update
@@ -93,44 +134,67 @@ class VTUpdateFieldsTask extends VTTask {
 					}
 					$referenceRecordFocus = $this->getReferenceFieldFocus($referencedModule, $referenceField, $referenceRecordId);
 
-					$moduleFocus = $referenceRecordFocus;
+						$moduleFocus[] = $referenceRecordFocus;
 
 					$referenceModuleHandler = vtws_getModuleHandlerFromName($referencedModule, $current_user);
 					$referenceHandlerMeta = $referenceModuleHandler->getMeta();
 					$referenceModuleFields = $referenceHandlerMeta->getModuleFields();
 					$fieldInstance = $referenceModuleFields[$referencedFieldName];
-					$referenceModuleUpdated[$referencedModule][$referenceField] = $referenceRecordId;
+					$referenceModuleUpdated[$referencedModule][][$referenceField] = $referenceRecordId;
 					$fieldName = $referencedFieldName;
+					}
 				}else{
-					$moduleFocus = $focus;
+					$moduleFocus[] = $focus;
 					$fieldInstance = $moduleFields[$fieldName];
 				}
 
 				if ($fieldValueType == 'fieldname') {
+					//$fieldInstanceが空の場合は処理を行わない。
+					if(!$fieldInstance) continue;
+
 					$fieldDataType = $fieldInstance->getFieldDataType();
-					preg_match('/\((\w+) : \((\w+)\) (\w+)\)/',$fieldValue,$matches1);
-					if(count($matches1) > 0){
+
+					preg_match('/\((\w+) : \((\w+)\) (\w+) (\w+)\)/',$fieldValue,$matches1);
+                    if (php7_count($matches1) == 0) {
+                        preg_match('/\((\w+) : \((\w+)\) (\w+)/', $fieldValue, $matches1);
+                    }
+					if(php7_count($matches1) > 0){
 						$referenceField = $matches1[1];
 						$referencedModule = $matches1[2];
 						$referencedFieldName = $matches1[3];
-						$referenceRecordId = $focus->column_fields[$referenceField];
-						if(empty($referenceRecordId)){
+						$isChildModule = empty($matches1[4]) ? false: true; // 子モジュールかどうか
+						if($isChildModule){
+							//子モジュールのIDを取得する
+							$referenceField;//子モジュールの親モジュールに対する関連項目
+							$referencedModule;//子モジュールの英語名
+							$recordId;//親モジュールのID
+							$referenceRecordIds = $this->getChildReferenceRecordId($moduleName, $referenceField, $referencedModule, $recordId, $referencedFieldName);
+						}else{
+							$referenceRecordIds = array($focus->column_fields[$referenceField]);
+						}
+						if(empty($referenceRecordIds)){
 							//if no value exists for the reference field then we dont have to update
 							continue;
 						}else{
-							$referenceFocus = $this->getReferenceFieldFocus($referencedModule, $referenceField, $referenceRecordId);
-							$fieldValue= $referenceFocus->column_fields[$referencedFieldName];
-
-							// while getting the focus currency fields are converted to user format
-							$currencyfieldValueInDB = $referenceFocus->column_fields[$referencedFieldName . "_raw"];
-							$currencyfieldConvertedValue = $referenceFocus->column_fields[$referencedFieldName . "_raw_converted"];
-
-							$rightOperandReferenceModuleHandler = vtws_getModuleHandlerFromName($referencedModule, $current_user);
-							$rightOperandReferenceHandlerMeta = $rightOperandReferenceModuleHandler->getMeta();
-							$rightOperandReferenceModuleFields = $rightOperandReferenceHandlerMeta->getModuleFields();
-							$rightOperandFieldInstance = $rightOperandReferenceModuleFields[$referencedFieldName];
-							if($rightOperandFieldInstance){
-								$rightOperandFieldType = $rightOperandFieldInstance->getFieldDataType();
+							foreach ($referenceRecordIds as $key => $referenceRecordId) {
+								$referenceFocus = $this->getReferenceFieldFocus($referencedModule, $referenceField, $referenceRecordId);
+								$fieldValue= $referenceFocus->column_fields[$referencedFieldName];
+								if($fieldValue == null && trim($fieldInfo['value']) == $referenceFocus->table_index){
+									$fieldValue = $referenceFocus->id;
+									$rightOperandFieldType = 'selfRecordId';
+								}
+	
+								// while getting the focus currency fields are converted to user format
+								$currencyfieldValueInDB = $referenceFocus->column_fields[$referencedFieldName . "_raw"];
+								$currencyfieldConvertedValue = $referenceFocus->column_fields[$referencedFieldName . "_raw_converted"];
+	
+								$rightOperandReferenceModuleHandler = vtws_getModuleHandlerFromName($referencedModule, $current_user);
+								$rightOperandReferenceHandlerMeta = $rightOperandReferenceModuleHandler->getMeta();
+								$rightOperandReferenceModuleFields = $rightOperandReferenceHandlerMeta->getModuleFields();
+								$rightOperandFieldInstance = $rightOperandReferenceModuleFields[$referencedFieldName];
+								if($rightOperandFieldInstance){
+									$rightOperandFieldType = $rightOperandFieldInstance->getFieldDataType();
+								}
 							}
 						}
 					}else{
@@ -144,6 +208,10 @@ class VTUpdateFieldsTask extends VTTask {
 						$currencyfieldConvertedValue = $focus->column_fields[$fieldValue . "_raw_converted"];
 
 						$fieldValue = $focus->column_fields[$fieldValue];
+						if($fieldValue == null && trim($fieldInfo['value']) == $focus->table_index){
+							$fieldValue = $focus->id;
+							$rightOperandFieldType = 'selfRecordId';
+						}
 					}
 					$fieldValueInDB = $fieldValue;
 
@@ -186,21 +254,25 @@ class VTUpdateFieldsTask extends VTTask {
 						}
 					}
 
-					if($rightOperandFieldType == "reference") {
+					if($rightOperandFieldType == "reference" || $rightOperandFieldType == "owner") {
 						if(!empty($fieldValue)) {
 							if(!empty($rightOperandFieldInstance)){
 								$referenceList = $rightOperandFieldInstance->getReferenceList();
-								if((count($referenceList) == 1) && $referenceList[0] == "Users") {
+								if(((php7_count($referenceList) == 1) && $referenceList[0] == "Users") || $rightOperandFieldType == "owner") {
 									$userRecordLabels = Vtiger_Functions::getOwnerRecordLabels($fieldValue);
+									$fieldValueRaw = $fieldValue;
 									$fieldValue = $userRecordLabels[$fieldValue];
-								}elseif((count($referenceList) == 1) && $referenceList[0] == "Currency"){
+								}elseif((php7_count($referenceList) == 1) && $referenceList[0] == "Currency"){
 									$fieldValue = getCurrencyName($fieldValue);
 								}elseif($rightOperandFieldInstance->getFieldName()=="roleid"){
+									$fieldValueRaw = $fieldValue;
 									$fieldValue = getRoleName($fieldValue);
 								}else{
+									$fieldValueRaw = $fieldValue;
 									$fieldValue = Vtiger_Util_Helper::getRecordName($fieldValue);
 								}
 							}else{
+								$fieldValueRaw = $fieldValue;
 								$fieldValue = Vtiger_Util_Helper::getRecordName($fieldValue);
 							}
 						}else{
@@ -210,6 +282,13 @@ class VTUpdateFieldsTask extends VTTask {
 					}
 					// End
 				} elseif ($fieldValueType == 'expression') {
+					//関連項目に値が入っていない場合は処理しない。
+					if(strpos($fieldInfo['value'], 'aggregate') !== false && !$entity->get($referenceField)) return;
+
+					//既に実行済の場合は処理は行わない。
+					$referenceFieldId = explode("x", $entity->get($referenceField))[1];
+					if(strpos($fieldInfo['value'], 'aggregate') !== false && is_array($aggregateArray[$this->id][$fieldInfoKey][$fieldInfo['value']]) && in_array($referenceFieldId,$aggregateArray[$this->id][$fieldInfoKey][$fieldInfo['value']])) return;
+
 					require_once 'modules/com_vtiger_workflow/expression_engine/include.inc';
 					//Added to generate date value in user timezone.
 					date_default_timezone_set($current_user->time_zone);
@@ -217,7 +296,10 @@ class VTUpdateFieldsTask extends VTTask {
 					$expression = $parser->expression();
 					$exprEvaluater = new VTFieldExpressionEvaluater($expression);
 					$exprEvaluater->fieldInstance = $fieldInstance;
-					$fieldValue = $exprEvaluater->evaluate($entity);
+					$fieldValue = $exprEvaluater->evaluate($entity, $this->workflowId, $referenceField);
+					if (is_array($fieldValue)) {
+						list($fieldValue, $fieldValueRaw, $sourceFieldName, $sourceModuleName) = $fieldValue;
+					}
 					$fieldValueInDB = $fieldValue;
 
 					date_default_timezone_set($default_timezone);
@@ -227,7 +309,17 @@ class VTUpdateFieldsTask extends VTTask {
 					}else{
 						$fieldValue = $this->convertValueToUserFormat($fieldInstance, $fieldValue);
 					}
+
+					//実行した集計関数を保存する。
+					if(strpos($fieldInfo['value'], 'aggregate') !== false){
+						$referenceFieldId = explode("x", $entity->get($referenceField))[1];
+						$aggregateArray[$this->id][$fieldInfoKey][$fieldInfo['value']][] = $referenceFieldId;
+					}
 				} else {
+					if(trim($fieldInfo['value']) == $focus->table_index){
+						$fieldValue = $focus->id;
+						$rightOperandFieldType = 'selfRecordId';
+					}
 					if (preg_match('/([^:]+):boolean$/', $fieldValue, $match)) {
 						$fieldValue = $match[1];
 						if ($fieldValue == 'true') {
@@ -246,11 +338,11 @@ class VTUpdateFieldsTask extends VTTask {
 				if ($fieldInstance && $fieldInstance->getFieldDataType() === 'owner') {
 					if(!is_numeric($fieldValue)){
 						//If name is given
-						$userId = getUserId_Ol($fieldValue);
+						$userId = empty($fieldValueRaw) ? $fieldValueRaw : getUserId_Ol($fieldValue);
 						$groupId = getGrpId($fieldValue);
 
 						if ($userId == 0 && $groupId == 0) {
-							$fieldValue = $moduleFocus->column_fields[$fieldName];
+							$fieldValue = $moduleFocus[0]->column_fields[$fieldName];
 						} else {
 							$fieldValue = ($userId == 0) ? $groupId : $userId;
 						}
@@ -281,13 +373,47 @@ class VTUpdateFieldsTask extends VTTask {
 						$recordId = Vtiger_Util_Helper::getRecordId($fieldValue, $fieldReferenceModule,true);
 						if(!empty($recordId)) {
 							$fieldValue = $recordId;
-						} else {
+						} elseif($rightOperandFieldType == 'selfRecordId' || $fieldReferenceModule == 'Users'){
+							if(!empty($fieldValueRaw)){
+								$webserviceObject = VtigerWebserviceObject::fromName($adb, 'Users');
+								$fieldValueInDB = vtws_getId($webserviceObject->getEntityId(), $fieldValueRaw);
+								$fieldValueInDBArray = vtws_getIdComponents($fieldValueInDB);
+								$fieldValueInDB = $fieldValueInDBArray[php7_count($fieldValueInDBArray) - 1];
+							}
+						}else {
 							$fieldValue = '';
 						}
 					}
+				foreach ($moduleFocus as $key => $_moduleFocus) {
+					$tmpEntity = VTEntityData::fromCRMEntity($_moduleFocus);
+					$vtEntityDelta = new VTEntityDelta();
+					$vtEntityDelta->handleEvent("vtiger.entity.beforesave", $tmpEntity);
+					if($fieldValueType == 'expression' && isset($fieldValueRaw)){
+						$sourceModuleHandler = vtws_getModuleHandlerFromName($sourceModuleName, $current_user);
+						$sourceHandlerMeta = $sourceModuleHandler->getMeta();
+						$sourceModuleFields = $sourceHandlerMeta->getModuleFields();
 
-				$moduleFocus->column_fields[$fieldName] = $fieldValue;
-				if (count($matches) > 0) {
+						$moduleFieldInstance = $sourceModuleFields[$sourceFieldName];
+						$referenceList = $moduleFieldInstance->getReferenceList();
+					}
+
+					if (
+						$fieldValueType == 'fieldname'
+						&& (php7_count($referenceList) > 0 || $rightOperandFieldType == "owner")
+						&& $fieldInstance->getFieldDataType() == 'reference'
+					) {
+						$_moduleFocus->column_fields[$fieldName] = $fieldValueRaw;
+					} else if (
+						$fieldValueType == 'expression'
+						&& (php7_count($referenceList) > 0 || ($moduleFieldInstance && $moduleFieldInstance->getFieldDataType() == 'owner'))
+						&& $fieldInstance->getFieldDataType() == 'reference'
+					) {
+						$_moduleFocus->column_fields[$fieldName] = $fieldValueRaw;
+					} else {
+						$_moduleFocus->column_fields[$fieldName] = $fieldValue;
+					}
+				}
+				if (php7_count($matches) > 0) {
 					$wsReferenceRecordId = vtws_getWebserviceEntityId($referencedModule, $referenceRecordId);
 					$referenceRecordEntity = VTEntityCache::getCachedEntity($wsReferenceRecordId);
 					if (empty($referenceRecordEntity)) {
@@ -325,42 +451,66 @@ class VTUpdateFieldsTask extends VTTask {
 			//permission or not.
 			$focus->isWorkFlowFieldUpdate = true;
 			$changedFields = $focus->column_fields->getChanged();
-			if(count($changedFields) > 0){
+			if(php7_count($changedFields) > 0){
 				// save only if any field is changed
-				global $log;$log->debug("[".__FUNCTION__."]line:".__LINE__.":workflow_taskid:".$this->id);
 				if (strpos($fieldInfo['value'], 'aggregate') !== false) {
 					global $VTIGER_BULK_SAVE_MODE;
 					$VTIGER_BULK_SAVE_MODE = true;
+					global $log;$log->debug("[".__FUNCTION__."]line:".__LINE__.":workflow_taskid:".$this->id);
 					$focus->workflow_task_id = $this->id;
 					$focus->workflow_skip_field_array = $workflow_skip_field_array;
 					$focus->saveentity($moduleName);
 					$VTIGER_BULK_SAVE_MODE = false;
 				}else{
+					global $log;$log->debug("[".__FUNCTION__."]line:".__LINE__.":workflow_taskid:".$this->id);
 					$focus->workflow_task_id = $this->id;
+					$focus->workflow_skip_field_array = $workflow_skip_field_array;
 					$focus->saveentity($moduleName);
+				}
+
+				$tmpEntity = VTEntityData::fromCRMEntity($focus);
+				$vtEntityDelta->setNewEntity($moduleName, $tmpEntity->getId(), $tmpEntity);
+
+				// 更新履歴保存の為、ModTrackerHandlerを呼び出す。
+				if (in_array($moduleName, array("Calendar", "Events", "Activity"))) {
+					// カレンダーの場合
+					if (!$tmpEntity->get("is_not_invitees_update")) {
+						$handler = new ModTrackerHandler();
+						$handler->handleEvent("vtiger.entity.aftersave.final", $tmpEntity);
+					}
+				} else {
+					// カレンダー以外の場合
+					$handler = new ModTrackerHandler();
+					$handler->handleEvent("vtiger.entity.aftersave.final", $tmpEntity);
 				}
 
 				// ワークフローで更新された項目を参照している項目に反映させる
 				$tmpEntity = VTEntityData::fromCRMEntity($focus);
-
-				$vtEntityDelta = new VTEntityDelta();
-				$vtEntityDelta->computeDelta($moduleName, $tmpEntity->getId());
-
 			}
 			if ($entityFields == true) {
 				Vtiger_Functions::updateCRMRecordLabel($moduleName, $focus->id);
 			}
 				$referenceIds = array();
-			foreach($referenceModuleUpdated as $module => $info){
-				foreach($info as $refFieldName => $referenceRecordId){
-					$referenceFocus = $this->referenceFieldFocusList[$refFieldName][$referenceRecordId];
+			foreach($referenceModuleUpdated as $module => $key){
+				foreach ($key as $info) {
+					foreach($info as $refFieldName => $referenceRecordId){
+						$referenceFocus = $this->referenceFieldFocusList[$refFieldName][$referenceRecordId];
+						$vtEntityDelta = new VTEntityDelta();
+						$delta = $vtEntityDelta->getEntityDelta($moduleName, $entity->getId(), false);
 						foreach ($referenceFocus->column_fields as $fieldName => $fieldValue) {
 							$referenceFocus->column_fields[$fieldName] = html_entity_decode($fieldValue, ENT_QUOTES, $default_charset);
+							$delta[$fieldName]['currentValue'] = html_entity_decode($fieldValue, ENT_QUOTES, $default_charset);
 						}
 						$referenceFocus->isLineItemUpdate = false;
 						$referenceFocus->isWorkFlowFieldUpdate = true;
 						$referenceFocus->workflow_task_id = $this->id;
 						$referenceFocus->workflow_skip_field_array = $workflow_skip_field_array;
+
+						// ワークフローで更新された項目を参照している項目に反映させる
+						$tmpEntity = VTEntityData::fromCRMEntity($referenceFocus);
+						$vtEntityDelta = new VTEntityDelta();
+						$vtEntityDelta->handleEvent("vtiger.entity.beforesave", $tmpEntity);
+						
 						if (strpos($fieldInfo['value'], 'aggregate') !== false) {
 							global $VTIGER_BULK_SAVE_MODE;
 							$VTIGER_BULK_SAVE_MODE = true;
@@ -370,8 +520,9 @@ class VTUpdateFieldsTask extends VTTask {
 							$referenceFocus->saveentity($referenceFocus->moduleName);
 						}
 						// ワークフローで更新された項目を参照している項目に反映させる
-						$tmpEntity = VTEntityData::fromCRMEntity($referenceFocus->id);
+						$tmpEntity = VTEntityData::fromCRMEntity($referenceFocus);
 						$vtEntityDelta->setEntityDelta($moduleName, $tmpEntity->getId(), $delta);
+						$vtEntityDelta->setNewEntity($moduleName, $tmpEntity->getId(), $tmpEntity);
 
 						if ($referenceEntityFields == true) {
 							Vtiger_Functions::updateCRMRecordLabel($referenceFocus->moduleName, $referenceFocus->id);
@@ -379,6 +530,7 @@ class VTUpdateFieldsTask extends VTTask {
 						$referenceIds[] = $referenceFocus->id;
 					}
 				}
+			}
 
 			// Reverting back the action name as there can be some dependencies on this.
 			$_REQUEST['action'] = $actionName;
@@ -418,7 +570,7 @@ class VTUpdateFieldsTask extends VTTask {
 	 */
 	public function calculateProductUnitPrice($fieldValue) {
 		$currency_details = getAllCurrencies('all');
-		for($i=0;$i<count($currency_details);$i++)  {
+		for($i=0;$i<php7_count($currency_details);$i++)  {
 			$curid = $currency_details[$i]['curid'];
 			$cur_checkname = 'cur_' . $curid . '_check';
 			$cur_valuename = 'curname' . $curid;
@@ -433,11 +585,11 @@ class VTUpdateFieldsTask extends VTTask {
 	public function getReferenceFieldFocus($referencedModule,$referenceField,$referenceRecordId){
 		global $current_user;
 		$referenceRecordFocus = $this->referenceFieldFocusList[$referenceField][$referenceRecordId];
-		if(empty($referenceRecordFocus)){
+        if (empty($referenceRecordFocus)) {
 		$referenceRecordFocus = CRMEntity::getInstance($referencedModule);
 		$referenceRecordFocus->id = $referenceRecordId;
 		$referenceRecordFocus->mode = 'edit';
-		if(isRecordExists($referenceRecordId) || $referencedModule=="Users") {
+		if (isRecordExists($referenceRecordId) || $referencedModule=="Users") {
 			$referenceRecordFocus->retrieve_entity_info($referenceRecordId, $referencedModule);
 		}
 		$referenceRecordFocus->clearSingletonSaveFields();
@@ -445,14 +597,53 @@ class VTUpdateFieldsTask extends VTTask {
 		$referenceModuleHandler = vtws_getModuleHandlerFromName($referencedModule, $current_user);
 		$referenceHandlerMeta = $referenceModuleHandler->getMeta();
 		$referenceRecordFocus->column_fields->pauseTracking();
-		$referenceRecordFocus->column_fields = DataTransform::sanitizeDateFieldsForInsert($referenceRecordFocus->column_fields,$referenceHandlerMeta);
-		$referenceRecordFocus->column_fields = DataTransform::sanitizeCurrencyFieldsForInsert($referenceRecordFocus->column_fields,$referenceHandlerMeta);
+		$referenceRecordFocus->column_fields = DataTransform::sanitizeDateFieldsForInsert($referenceRecordFocus->column_fields, $referenceHandlerMeta);
+		$referenceRecordFocus->column_fields = DataTransform::sanitizeCurrencyFieldsForInsert($referenceRecordFocus->column_fields, $referenceHandlerMeta);
 		$referenceRecordFocus->column_fields->resumeTracking();
 			$this->referenceFieldFocusList[$referenceField][$referenceRecordId] = $referenceRecordFocus;
 		}
+
 		return $referenceRecordFocus;
 	}
 
+	//子モジュールのIDを取得する
+	public function getChildReferenceRecordId($moduleName, $referenceField, $related_module, $parentRecordId){
+		global $currentModule, $adb;
+
+		$currentModule = CRMEntity::getInstance($moduleName);
+        $other = CRMEntity::getInstance($related_module);
+
+        $query = "SELECT vtiger_crmentity.*, $other->table_name.*";
+
+        $more_relation = '';
+        if (!empty($other->tab_name_index)) {
+            foreach ($other->tab_name_index as $tname => $tindex) {
+				if($tname == 'vtiger_crmentity' || $tname == $other->table_name) continue;
+                $query .= ", $tname.*";
+
+                $more_relation .= " LEFT JOIN $tname ON $tname.$tindex = $other->table_name.$other->table_index";
+            }
+        }
+
+        $query .= " FROM $other->table_name";
+        $query .= " INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = $other->table_name.$other->table_index";
+        $query .= $more_relation;
+        $query .= " LEFT JOIN vtiger_users ON vtiger_users.id = vtiger_crmentity.smownerid";
+        $query .= " LEFT JOIN vtiger_groups ON vtiger_groups.groupid = vtiger_crmentity.smownerid";
+        $query .= " WHERE vtiger_crmentity.deleted = 0 AND $other->table_name.$referenceField = $parentRecordId";
+
+		$result = $adb->query($query);
+		$rows = $adb->num_rows($result);
+		$returnids = array();
+		if($rows > 0){
+			for ($i=0; $i < $rows; $i++) { 
+				$crmid = $adb->query_result($result, $i, 'crmid');
+				$returnids[] = $crmid;
+			}
+		}
+
+		return $returnids;
+	}
 }
 
 ?>

@@ -69,15 +69,23 @@ class Install_InitSchema_Model {
 					$oldVersion = $newVersion;
 					break;
 				}
+				// Fix version numbering
+				if (strlen($oldVersion."") < 3) $oldVersion .= "0";
+				if (strlen($newVersion."") < 3) $newVersion .= "0";
+
 				$oldVersion = str_replace(array('.', ' '), '', $oldVersion);
 				$newVersion = str_replace(array('.', ' '), '', $newVersion);
 				$filename =  "modules/Migration/schema/".$oldVersion."_to_".$newVersion.".php";
+				
 				if(is_file($filename)) {
 					include($filename);
 				}
 				$oldVersion = $newVersion;
 			}
 		}
+		
+		// F-RevoCRMマイグレーションシステムの実行
+		self::executeFRMigrations();
 	}
 
 	/**
@@ -992,7 +1000,7 @@ class Install_InitSchema_Model {
 		$vtWorkFlow = new VTWorkflowManager($adb);
 		$invWorkFlow = $vtWorkFlow->newWorkFlow("Invoice");
 		$invWorkFlow->test = '[{"fieldname":"subject","operation":"does not contain","value":"`!`"}]';
-		$invWorkFlow->description = "販売管理の製品を保存毎に更新するワークフロー";
+		$invWorkFlow->description = "LBL_WORKFLOW_TO_UPDATE_SALES_MANAGEMENT";
 		$invWorkFlow->defaultworkflow = 1;
 		$vtWorkFlow->save($invWorkFlow);
 
@@ -1032,7 +1040,7 @@ class Install_InitSchema_Model {
 		$conWorkFlow->summary="A contact has been created ";
 		$conWorkFlow->executionCondition=2;
 		$conWorkFlow->test = '[{"fieldname":"notify_owner","operation":"is","value":"true:boolean"}]';
-		$conWorkFlow->description = "担当者に通知がオンの場合，ユーザーにメールを送るワークフロー";
+		$conWorkFlow->description = "LBL_A_WORKFLOW_SENDS_EMAIL_TO_NOTIFICATION_PERSON_CHARGE_TURNED_ON";
 		$conWorkFlow->defaultworkflow = 1;
 		$vtcWorkFlow->save($conWorkFlow);
 		$id1=$conWorkFlow->id;
@@ -1057,7 +1065,7 @@ class Install_InitSchema_Model {
 		$vtcWorkFlow = new VTWorkflowManager($adb);
 		$conpuWorkFlow = $vtcWorkFlow->newWorkFlow("Contacts");
 		$conpuWorkFlow->test = '[{"fieldname":"portal","operation":"is","value":"true:boolean"}]';
-		$conpuWorkFlow->description = "ポータルユーザーがオン場合，ユーザーにメールを送るワークフロー";
+		$conpuWorkFlow->description = "LBL_A_WORKFLOW_SENDS_EMAIL_TO_PORTALUSER_IS_ON";
 		$conpuWorkFlow->executionCondition=2;
 		$conpuWorkFlow->defaultworkflow = 1;
 		$vtcWorkFlow->save($conpuWorkFlow);
@@ -1101,7 +1109,7 @@ class Install_InitSchema_Model {
 		// Contact workflow on creation/modification
 		$contactWorkFlow = $workflowManager->newWorkFlow("Contacts");
 		$contactWorkFlow->test = '';
-		$contactWorkFlow->description = "顧客担当者が作成・更新された際のワークフロー";
+		$contactWorkFlow->description = "LBL_WORKFLOW_CUSTOMER_CONTACT_IS_CREATED_OR_UPDATED";
 		$contactWorkFlow->executionCondition = VTWorkflowManager::$ON_EVERY_SAVE;
 		$contactWorkFlow->defaultworkflow = 1;
 		$workflowManager->save($contactWorkFlow);
@@ -1174,55 +1182,33 @@ class Install_InitSchema_Model {
 		// Events workflow when Send Notification is checked
 		$eventsWorkflow = $workflowManager->newWorkFlow("Events");
 		$eventsWorkflow->test = '[{"fieldname":"sendnotification","operation":"is","value":"true:boolean"}]';
-		$eventsWorkflow->description = "通知がオンの際の活動のワークフロー";
+		$eventsWorkflow->description = "LBL_WORKFLOW_FOR_ACTIVITIES_WHEN_NOTIFICATIONS_ARE_ON";
 		$eventsWorkflow->executionCondition = VTWorkflowManager::$ON_EVERY_SAVE;
 		$eventsWorkflow->defaultworkflow = 1;
 		$workflowManager->save($eventsWorkflow);
 
 		$task = $taskManager->createTask('VTEmailTask', $eventsWorkflow->id);
 		$task->active = true;
-		$task->summary = '活動のお知らせメール';
+		$task->summary = 'LBL_ACTIVITY_NOTIFICATION_EMAIL';
 		$task->recepient = "\$(assigned_user_id : (Users) email1)";
-		$task->subject = "活動のお知らせ :  \$subject";
-		$task->content = '$(assigned_user_id : (Users) first_name) $(assigned_user_id : (Users) last_name) ,<br/>'
-						.'<b>F-RevoCRMから活動の通知です。</b><br/>'
-						.'件名       : $subject<br/>'
-						.'開始日時   : $date_start  $time_start ( $(general : (__VtigerMeta__) dbtimezone) ) <br/>'
-						.'終了日時   : $due_date  $time_end ( $(general : (__VtigerMeta__) dbtimezone) ) <br/>'
-						.'ステータス  : $eventstatus <br/>'
-						.'優先度     : $taskpriority <br/>'
-						.'関連       : $(parent_id : (Leads) lastname) $(parent_id : (Leads) firstname) $(parent_id : (Accounts) accountname) '
-												.'$(parent_id : (Potentials) potentialname) $(parent_id : (HelpDesk) ticket_title) <br/>'
-						.'顧客担当者  : $(contact_id : (Contacts) lastname) $(contact_id : (Contacts) firstname) <br/>'
-						.'場所       : $location <br/>'
-						.'詳細内容    : $description';
+		$task->subject = 'LBL_ANNOUNCEMENT_OF_ACTIVITIES';
+		$task->content = 'LBL_ACTIVITY_NOTIFICATION_FROM_F-RevoCRM';
 		$taskManager->saveTask($task);
 
 		// Calendar workflow when Send Notification is checked
 		$calendarWorkflow = $workflowManager->newWorkFlow("Calendar");
 		$calendarWorkflow->test = '[{"fieldname":"sendnotification","operation":"is","value":"true:boolean"}]';
-		$calendarWorkflow->description = "通知がオンの際のTODOのワークフロー";
+		$calendarWorkflow->description = "LBL_TODO_WORKFLOW_WHEN_NOTIFICATIONS_ARE_ON";
 		$calendarWorkflow->executionCondition = VTWorkflowManager::$ON_EVERY_SAVE;
 		$calendarWorkflow->defaultworkflow = 1;
 		$workflowManager->save($calendarWorkflow);
 
 		$task = $taskManager->createTask('VTEmailTask', $calendarWorkflow->id);
 		$task->active = true;
-		$task->summary = 'TODOのお知らせメール';
+		$task->summary = 'LBL_TODO_NOTIFICATION_EMAIL';
 		$task->recepient = "\$(assigned_user_id : (Users) email1)";
-		$task->subject = "TODOのお知らせ :  \$subject";
-		$task->content = '$(assigned_user_id : (Users) first_name) $(assigned_user_id : (Users) last_name) ,<br/>'
-						.'<b>F-RevoCRMからTODOの通知です。</b><br/>'
-						.'件名 : $subject<br/>'
-						.'開始日時   : $date_start  $time_start ( $(general : (__VtigerMeta__) dbtimezone) ) <br/>'
-						.'終了日時   : $due_date ( $(general : (__VtigerMeta__) dbtimezone) ) <br/>'
-						.'ステータス : $taskstatus <br/>'
-						.'優先度     : $taskpriority <br/>'
-						.'関連       : $(parent_id : (Leads) lastname) $(parent_id : (Leads) firstname) $(parent_id : (Accounts) accountname) '
-						.'$(parent_id : (Potentials) potentialname) $(parent_id : (HelpDesk) ticket_title) <br/>'
-						.'顧客担当者  : $(contact_id : (Contacts) lastname) $(contact_id : (Contacts) firstname) <br/>'
-						.'場所        : $location <br/>'
-						.'詳細        : $description';
+		$task->subject = "LBL_TODO_NOTICE";
+		$task->content = 'LBL_TODO_NOTIFICATION_FROM_F-REVOCRM';
 		$taskManager->saveTask($task);
 	}
 
@@ -1309,5 +1295,112 @@ class Install_InitSchema_Model {
 											"<b>Eg:</b> <br/>".
 											"$1.0 => $123,456,789.50 <br/>".
 											"1.0$ => 123,456,789.50$ <br/>");
+	}
+
+	/**
+	 * F-RevoCRMマイグレーションシステムを実行する
+	 * setup/migration/scripts/以下のマイグレーションファイルをすべて実行する
+	 */
+	public static function executeFRMigrations() {
+		// マイグレーションシステムのパスを設定
+		$migrationDir = dirname(dirname(dirname(dirname(__FILE__)))) . '/setup/migration';
+		$scriptsDir = $migrationDir . '/scripts';
+		
+		// FRMigrationClassを読み込み
+		require_once $migrationDir . '/FRMigrationClass.php';
+		
+		// scriptsディレクトリが存在しない場合は何もしない
+		if (!is_dir($scriptsDir)) {
+			return;
+		}
+		
+		// マイグレーションファイルを取得
+		$files = scandir($scriptsDir);
+		$migrationFiles = array();
+		
+		foreach ($files as $file) {
+			// タイムスタンプパターンのマイグレーションファイルにマッチ
+			if (preg_match('/^\d{14}_.*\.php$/', $file)) {
+				$migrationFiles[] = $file;
+			}
+		}
+		
+		// 時系列順に実行するためファイルをソート
+		sort($migrationFiles);
+		
+		if (empty($migrationFiles)) {
+			return;
+		}
+		
+		echo "F-RevoCRM マイグレーションシステム: " . count($migrationFiles) . " 個のマイグレーションが見つかりました。\n";
+		
+		$successCount = 0;
+		$skipCount = 0;
+		
+		// 各マイグレーションファイルを実行
+		foreach ($migrationFiles as $file) {
+			$result = self::executeSingleFRMigration($scriptsDir . '/' . $file);
+			if ($result === true) {
+				$successCount++;
+			} elseif ($result === false) {
+				$skipCount++;
+			} else {
+				// エラーが発生した場合は処理を停止
+				echo "F-RevoCRM マイグレーションエラー: {$file} でエラーが発生したため処理を停止します。\n";
+				throw new Exception("Migration failed at file: {$file}");
+			}
+		}
+		
+		echo "F-RevoCRM マイグレーション実行結果: 実行済み={$successCount}, スキップ={$skipCount}, 合計=" . count($migrationFiles) . "\n";
+	}
+	
+	/**
+	 * 単一のF-RevoCRMマイグレーションファイルを実行する
+	 * 
+	 * @param string $migrationPath マイグレーションファイルの絶対パス
+	 * @return boolean|null true=実行成功, false=スキップ, null=エラー
+	 */
+	private static function executeSingleFRMigration($migrationPath) {
+		if (!file_exists($migrationPath)) {
+			echo "エラー: マイグレーションファイルが見つかりません: {$migrationPath}\n";
+			return null;
+		}
+		
+		// マイグレーションファイルをinclude
+		require_once $migrationPath;
+		
+		// ファイル名からクラス名を抽出
+		$className = self::extractClassNameFromFRMigrationFile($migrationPath);
+		
+		if (!$className || !class_exists($className)) {
+			echo "エラー: マイグレーションクラスが見つかりません: {$migrationPath}\n";
+			return null;
+		}
+		
+		try {
+			$migration = new $className();
+			return $migration->execute();
+		} catch (Exception $e) {
+			echo "マイグレーション実行エラー {$migrationPath}: " . $e->getMessage() . "\n";
+			// 例外を再スローしてメイン処理で停止させる
+			throw $e;
+		}
+	}
+	
+	/**
+	 * F-RevoCRMマイグレーションファイルからクラス名を抽出する
+	 * 
+	 * @param string $filePath マイグレーションファイルのパス
+	 * @return string|null クラス名、見つからない場合はnull
+	 */
+	private static function extractClassNameFromFRMigrationFile($filePath) {
+		$content = file_get_contents($filePath);
+		
+		// クラス定義を検索（クラス名はMigrationで始まる）
+		if (preg_match('/class\s+(Migration[a-zA-Z0-9_]+)\s+extends\s+FRMigrationClass/', $content, $matches)) {
+			return $matches[1];
+		}
+		
+		return null;
 	}
 }

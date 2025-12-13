@@ -15,6 +15,7 @@
 class Vtiger_Functions {
 
 	const LINK_TO_ANCHOR_TEXT_SYMBOL = '#';
+    static $supportedImageFormats = array('jpeg', 'png', 'jpg', 'pjpeg', 'x-png', 'gif', 'bmp', 'vnd.adobe.photoshop', 'tiff', 'svg+xml', 'x-eps', 'x-dwg', 'vnd.dwg', 'webp', 'x-ms-bmp', 'ico', 'vnd.microsoft.icon', 'x-icon');
 
 	static function userIsAdministrator($user) {
 		return (isset($user->is_admin) && $user->is_admin == 'on');
@@ -120,7 +121,7 @@ class Vtiger_Functions {
 				self::$currencyInfoCache[$row['id']] = $row;
 			}
 		}
-		return self::$currencyInfoCache[$currencyid];
+		return isset(self::$currencyInfoCache[$currencyid])? self::$currencyInfoCache[$currencyid] : null;
 	}
 
 	static function getCurrencyName($currencyid, $show_symbol = true) {
@@ -134,8 +135,8 @@ class Vtiger_Functions {
 	static function getCurrencySymbolandRate($currencyid) {
 		$currencyInfo = self::getCurrencyInfo($currencyid);
 		$currencyRateSymbol = array(
-			'rate' => $currencyInfo['conversion_rate'],
-			'symbol'=>$currencyInfo['currency_symbol']
+			'rate' => $currencyInfo ? $currencyInfo['conversion_rate'] : 0,
+			'symbol'=>$currencyInfo ? $currencyInfo['currency_symbol'] : ""
 		);
 		return $currencyRateSymbol;
 	}
@@ -174,7 +175,7 @@ class Vtiger_Functions {
 
 		if ($name && !isset(self::$moduleNameIdCache[$name])) {$reload = true;}
 		else if ($id && !isset(self::$moduleIdNameCache[$id])) {$reload = true;}
-		else {
+		else if ($name) {
 			if (!$id) $id = self::$moduleNameIdCache[$name]['tabid'];
 			if (!isset(self::$moduleIdDataCache[$id])) { $reload = true; }
 		}
@@ -269,7 +270,7 @@ class Vtiger_Functions {
 		}
 
 		if ($missing) {
-			$sql = sprintf("SELECT crmid, setype, label FROM vtiger_crmentity WHERE %s", implode(' OR ', array_fill(0, count($missing), 'crmid=?')));
+			$sql = sprintf("SELECT crmid, setype, label FROM vtiger_crmentity WHERE %s", implode(' OR ', array_fill(0, php7_count($missing), 'crmid=?')));
 			$result = $adb->pquery($sql, $missing);
 			while ($row = $adb->fetch_array($result)) {
 				self::$crmRecordIdMetadataCache[$row['crmid']] = $row;
@@ -335,6 +336,7 @@ class Vtiger_Functions {
 				'crmid'  => $id,
 				'label'  => $labelInfo[$id]
 			);
+			CRMEntity::updateBasicInformation($module, $id);
 		}
 	}
 
@@ -391,7 +393,7 @@ class Vtiger_Functions {
 				$columns  = explode(',', $metainfo['fieldname']);
 
 				// NOTE: Ignore field-permission check for non-admin (to compute record label).
-				$columnString = count($columns) < 2? $columns[0] :
+				$columnString = php7_count($columns) < 2? $columns[0] :
 					sprintf("concat(%s)", implode(",' ',", $columns));
 
 				$sql = sprintf('SELECT '. implode(',',$columns).', %s AS id FROM %s WHERE %s IN (%s)',
@@ -622,75 +624,84 @@ class Vtiger_Functions {
 		return $filepath;
 	}
 
-	static function validateImageMetadata($data, $short=true) {
-		if (is_array($data)) {
-			foreach ($data as $key => $value) {
-				$ok = self::validateImageMetadata($value);
-				if (!$ok) return false;
-			}
-		} else {
-			if (stripos($data, $short ? "<?" : "<?php") !== false) { // suspicious dynamic content
-				return false;
-			}
-		}
-		return true;
-	}
+    static function validateImageMetadata($data, $short = true) {
+        if (is_array($data)) {
+            foreach ($data as $key => $value) {
+                $ok = self::validateImageMetadata($value, $short);
+                if (!$ok)
+                    return false;
+            }
+        } else {
+            if (stripos($data, $short ? "<?" : "<?php") !== false) { // suspicious dynamic content 
+                return false;
+            }
+        }
+        return true;
+    }
 
-	static function validateImage($file_details) {
-		global $app_strings, $log;
-		$allowedImageFormats = array('jpeg', 'png', 'jpg', 'pjpeg', 'x-png', 'gif', 'bmp');
+    static function validateImage($file_details) {
+        global $app_strings;
+        $allowedImageFormats = Vtiger_Functions::$supportedImageFormats;
 
-		$mimeTypesList = array_merge($allowedImageFormats, array('x-ms-bmp'));//bmp another format
-		$file_type_details = explode("/", $file_details['type']);
-		$filetype = $file_type_details['1'];
-		if ($filetype) {
-			$filetype = strtolower($filetype);
-		}
+        // Determine mime-types based on file-content for generic type (Outlook add-on).
+        if ($file_details['type'] == 'application/octet-stream' && function_exists('mime_content_type')) {
+            $file_details['type'] = mime_content_type($file_details['tmp_name']);
+        }
 
-		$saveimage = 'true';
-		if (!in_array($filetype, $allowedImageFormats)) {
-                        $log->debug('file type not matched allowed formats');
-			$saveimage = 'false';
-		}
+        $filetype = strtolower(pathinfo($file_details['name'], PATHINFO_EXTENSION));
+        $saveimage = in_array($filetype, $allowedImageFormats);
 
-		//mime type check
-		$mimeType = self::mime_content_type($file_details['tmp_name']);
-		$mimeTypeContents = explode('/', $mimeType);
-		if (!$file_details['size'] || strtolower($mimeTypeContents[0]) !== 'image' || !in_array($mimeTypeContents[1], $mimeTypesList)) {
-                    $log->debug('Failed because of size or image not supported types');
-			$saveimage = 'false';
-		}
+        if ($saveimage) {
+            $mimeType = mime_content_type($file_details['tmp_name']);
+            list($mimeTypeContents, $mimeSubtype) = explode('/', $mimeType);
+            if (strtolower($mimeTypeContents) !== 'image' || !in_array($mimeSubtype, $allowedImageFormats)) {
+                $saveimage = false;
+            }
+        }
 
-		//metadata check
-		$shortTagSupported = ini_get('short_open_tag') ? true : false;
-		if ($saveimage == 'true') {
-                    $tmpFileName = $file_details['tmp_name'];
-                    if($file_details['type'] == 'image/jpeg' || $file_details['type'] == 'image/tiff') {
-                        $exifdata = @exif_read_data($file_details['tmp_name']);
-                        if($exifdata && !self::validateImageMetadata($exifdata, $shortTagSupported)) {
-                            $log->debug('Image metadata validation failed');
-                            $saveimage = 'false';
-                        }
-                        //remove sensitive information(like,GPS or camera information) from the image
-                        if(($saveimage == 'true' ) && ($file_details['type'] == 'image/jpeg' ) && extension_loaded('gd') && function_exists('gd_info')) {
-                            $img = imagecreatefromjpeg($tmpFileName);
-                            imagejpeg ($img, $tmpFileName);
-                        }
-                    }
-		}
+        $shortTagSupported = ini_get('short_open_tag') ? true : false;
 
-		// Check for php code injection
-		if ($saveimage == 'true') {
-                    $imageContents = file_get_contents($file_details['tmp_name']);
-                    if (stripos($imageContents, $shortTagSupported ? "<?" : "<?php") !== false) { // suspicious dynamic content.
-                        $log->debug('Php injection suspected');
-                        $saveimage = 'false';
-                    }
-		}
-		return $saveimage;
-	}
+        if ($saveimage) {
+            $tmpFileName = $file_details['tmp_name'];
 
-	static function getMergedDescription($description, $id, $parent_type, $removeTags = false) {
+            if (in_array($file_details['type'], ['image/jpeg', 'image/tiff'])) {
+                $exifdata = @exif_read_data($tmpFileName);
+                if ($exifdata && !self::validateImageMetadata($exifdata, $shortTagSupported)) {
+                    $saveimage = false;
+                }
+
+                if ($saveimage && $file_details['type'] == 'image/jpeg' && extension_loaded('gd') && function_exists('gd_info')) {
+                    $img = imagecreatefromjpeg($tmpFileName);
+                    imagejpeg($img, $tmpFileName);
+                }
+            }
+        }
+
+        if ($saveimage) {
+            $imageContents = file_get_contents($tmpFileName);
+            $shortTag = $shortTagSupported ? "<?" : "<?php";
+            if (stripos($imageContents, $shortTag) !== false) {
+                $saveimage = false;
+            }
+        }
+
+        if ($saveimage && in_array($filetype, ['svg+xml', $mimeSubtype])) {
+            // Remove malicious HTML attributes with values from the contents.
+            $imageContents = purifyHtmlEventAttributes($imageContents, true);
+            file_put_contents($tmpFileName, $imageContents);
+        }
+
+        if ($saveimage) {
+            /*
+             * File functions like  filegroup(), fileowner(), filesize(), filetype(), fileperms() and few others,caches file information, we need to clear the cache so it will not return the cache value if we perform/call same function after updating the file
+            */
+            clearstatcache();
+        }
+
+        return $saveimage;
+    }
+
+    static function getMergedDescription($description, $id, $parent_type, $removeTags = false) {
 		global $current_user;
 		$token_data_pair = explode('$', $description);
 		$emailTemplate = new EmailTemplate($parent_type, $description, $id, $current_user);
@@ -698,14 +709,14 @@ class Vtiger_Functions {
 		$description = $emailTemplate->getProcessedDescription();
 		$tokenDataPair = explode('$', $description);
 		$fields = Array();
-		for ($i = 1; $i < count($token_data_pair); $i++) {
+		for ($i = 1; $i < php7_count($token_data_pair); $i++) {
 			$module = explode('-', $tokenDataPair[$i]);
 			$fields[$module[0]][] = $module[1];
 		}
-		if (is_array($fields['custom']) && count($fields['custom']) > 0) {
+		if (is_array($fields['custom']) && php7_count($fields['custom']) > 0) {
 			$description = self::getMergedDescriptionCustomVars($fields, $description,$id,$parent_type);
 		}
-		if(is_array($fields['companydetails']) && count($fields['companydetails']) > 0){
+		if(is_array($fields['companydetails']) && php7_count($fields['companydetails']) > 0){
 			$description = self::getMergedDescriptionCompanyDetails($fields,$description);
 		}
 
@@ -1254,7 +1265,7 @@ class Vtiger_Functions {
                     }
             }
             $valueParts = explode('-', $value);
-            if (count($valueParts) == 3 && (strlen($valueParts[0]) == 4 || strlen($valueParts[1]) == 4 || strlen($valueParts[2]) == 4)) {
+            if (php7_count($valueParts) == 3 && (strlen($valueParts[0]) == 4 || strlen($valueParts[1]) == 4 || strlen($valueParts[2]) == 4)) {
                     $time = strtotime($value);
                     if ($time && $time > 0) {
                             return true;
@@ -1518,7 +1529,7 @@ class Vtiger_Functions {
     protected static $type = array(
 	'record' => 'id',
 	'src_record' => 'id',
-	// 'parent_id' => 'id',
+	'parent_id' => 'id',
         '_mfrom' => 'email',
         '_mto' => 'email',
         'sequencesList' => 'idlist',
@@ -1550,7 +1561,7 @@ class Vtiger_Functions {
         switch ($type) {
             case 'id' : $ok = (preg_match('/[^0-9xH]/', $value)) ? false : $ok;
                 break;
-            case 'email' : $ok = (!filter_var($value, FILTER_VALIDATE_EMAIL)) ? false : $ok;
+            case 'email' : $ok = self::validateTypeEmail($value);
                 break;
             case 'idlist' : $ok = (preg_match('/[a-zA-Z]/', $value)) ? false : $ok;
                 break;
@@ -1565,6 +1576,16 @@ class Vtiger_Functions {
                 break;
         }
         return $ok;
+    }
+
+    public static function validateTypeEmail(string $value) {
+      $ok = TRUE;
+      $mailaddresses = explode(',', $value);
+
+      foreach($mailaddresses as $mailaddress){
+        if(!filter_var($mailaddress, FILTER_VALIDATE_EMAIL)) $ok = FALSE;
+      }
+      return $ok;
     }
 
     /**
@@ -1582,12 +1603,12 @@ class Vtiger_Functions {
 		}
 		return $publicUrl;
 	}
-    
+
     /**
      * Function to get the attachmentsid to given crmid
      * @param type $crmid
      * @param type $webaservice entity id
-     * @return <Array> 
+     * @return <Array>
      */
     static function getAttachmentIds($crmid, $WsEntityId) {
         $adb = PearDatabase::getInstance();
@@ -1604,7 +1625,7 @@ class Vtiger_Functions {
         }
         return $attachmentIds;
     }
-    
+
     static function generateTrackingURL($params = []){
         $options = array(
             'handler_path' => 'modules/Emails/handlers/Tracker.php',
@@ -1615,4 +1636,263 @@ class Vtiger_Functions {
 
         return Vtiger_ShortURL_Helper::generateURL($options);
     }
+    
+    	/*
+	 * function to strip base64 data of the image from the content ($input)
+	 * if mark will be true, then we are keeping the strip details in the $markers variable
+	 */
+	public static function strip_base64_data ($input, $mark = false, &$markers = null) {
+		if ($markers === null) {
+			$markers = array();
+		}
+
+		// Alternative function for:
+		// $input = preg_replace("/(\(data:\w+\/\w+;base64,[^\)]+\))/", "", $input);
+		// Regex failed when $input had large-base64 content.
+		$parts = [];
+
+		if ($mark) {
+			if (!is_string($mark)) {
+				$mark = "__VTIGERB64STRIPMARK_";
+			}
+		}
+
+		$markindex = 0;
+		$startidx = 0;
+		$endidx = 0;
+		$offset = 0;
+		do {
+			/* Determine basd on text-embed or html-embed of base64 */
+			$endchar = "";
+
+			// HTML embed in attributes (eg. img src="...").
+			$startidx = strpos($input, '"data:', $offset);
+			if ($startidx !== false) {
+				$endchar = '"';
+			} else {
+				// HTML embed in attributes (eg. img src='...').
+				$startidx = strpos($input, "'data:", $offset);
+				if ($startidx !== false) {
+					$endchar = "'";
+				} else {
+					// TEXT embed with wrap [eg. (data...)]
+					$startidx = strpos($input, "(data:", $offset);
+					if ($startidx !== false) {
+						$endchar = ")";
+					} else {
+						break;
+					}
+				}
+			}
+
+			$skipidx = strpos($input, ";base64,", $startidx);
+			if ($skipidx === false) {
+				break;
+			}
+			$endidx = strpos($input, $endchar, $skipidx);
+			if ($endidx === false) {
+				break;
+			}
+
+			$parts[] = substr($input, $offset, ($startidx - $offset));
+
+			// Retain marker if requested.
+			if ($mark) {
+				$marker = $mark . ($markindex++);
+				$parts[] = $marker;
+				$markers[$marker] = substr($input, min($startidx, $startidx), ($endidx - $startidx)+1);
+			}
+			$offset = $endidx + 1;
+		} while (true);
+
+		if ($offset < strlen($input)) {
+			$parts[] = substr($input, $offset);
+		}
+				return implode("", $parts);
+	}
+	
+	/*
+	 * function to strip office365 inline image src data(https://sc.vtiger.in/screenshots/amitr-sc-at-01-04-2021-11-57-00.png) from the content ($input)
+	 * if mark will be true, then we are keeping the strip details in the $markers variable
+	 */
+	public static function stripInlineOffice365Image ($input, $mark = false, &$markers = null) {
+		if ($markers === null) {
+			$markers = array();
+		}
+		
+		$parts = [];
+
+		if ($mark) {
+			if (!is_string($mark)) {
+				$mark = "__VTIGERO365STRIPMARK_";
+			}
+		}
+
+		$markindex = 0;
+		$startidx = 0;
+		$endidx = 0;
+		$offset = 0;
+		
+		do {
+			$endchar = "";
+			$startidx = strpos($input, '(https://attachments.office.net/owa/', $offset);
+			if ($startidx !== false) {
+				$endchar = ")";
+			} else {
+				break;
+			}
+
+			$skipidx = strpos($input, "(https://attachments.office.net/owa/", $startidx);
+			if ($skipidx === false) {
+				break;
+			}
+			$endidx = strpos($input, $endchar, $skipidx);
+			if ($endidx === false) {
+				break;
+			}
+
+			$parts[] = substr($input, $offset, ($startidx - $offset));
+
+			// Retain marker if requested.
+			if ($mark) {
+				$marker = $mark . ($markindex++);
+				$parts[] = $marker;
+				$markers[$marker] = substr($input, min($startidx, $startidx), ($endidx - $startidx) + 1);
+			}
+			$offset = $endidx + 1;
+		} while (true);
+
+		if ($offset < strlen($input)) {
+			$parts[] = substr($input, $offset);
+		}
+		return implode("", $parts);
+	}
+	
+	/** 
+	 * Function to get children records id
+	 * @param $moduleName     - parent module name
+	 * @param $referenceField - child module reference column
+	 * @param $related_module - child module name
+	 * @param $parentRecordId - parent module record id
+	*/
+	static function getChildReferenceRecordId($moduleName, $referenceField, $related_module, $parentRecordId, $childModuleQuery = "", $sortorderby = "", $looplimit = "", $startcount = false, $limitcount = false)
+	{
+		global $adb;
+
+		$currentModule = CRMEntity::getInstance($moduleName);
+		$other = CRMEntity::getInstance($related_module);
+		$tablenameForRelationField = getTableNameForField($related_module, $referenceField);
+		$looplimitquery = "";
+		if(!empty($looplimit)){
+			$looplimitquery = " LIMIT " . $looplimit . " ";
+		}
+
+		if($startcount !== false){
+			$loopperpagequery = " LIMIT $limitcount OFFSET $startcount ";
+		}
+
+		$query = "SELECT vtiger_crmentity.*, $other->table_name.*";
+
+		$more_relation = '';
+		if (!empty($other->tab_name_index)) {
+			foreach ($other->tab_name_index as $tname => $tindex) {
+				if ($tname == 'vtiger_crmentity' || $tname == 'vtiger_crmentity_user_field' || $tname == $other->table_name) continue;
+				$query .= ", $tname.*";
+
+				$more_relation .= " LEFT JOIN $tname ON $tname.$tindex = $other->table_name.$other->table_index";
+			}
+		}
+
+		$query .= " FROM $other->table_name";
+		$query .= " INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = $other->table_name.$other->table_index";
+		$query .= $more_relation;
+		$query .= " LEFT JOIN vtiger_users ON vtiger_users.id = vtiger_crmentity.smownerid";
+		$query .= " LEFT JOIN vtiger_groups ON vtiger_groups.groupid = vtiger_crmentity.smownerid";
+		$query .= " WHERE vtiger_crmentity.deleted = 0 ";
+		if($moduleName === 'SalesReport') {
+			$query .= "AND exists( SELECT 1 FROM vtiger_crmentityrel rel WHERE (rel.crmid = '".$parentRecordId."' AND rel.relmodule = '".$related_module."' AND rel.relcrmid = vtiger_crmentity.crmid)
+					OR (rel.relcrmid = '".$parentRecordId."' AND rel.module =  '".$related_module."' AND rel.crmid = vtiger_crmentity.crmid))";
+		}else {
+			$query .= "AND $tablenameForRelationField.$referenceField = $parentRecordId";
+		}
+		
+		$query .= $childModuleQuery;
+		$query .= $sortorderby;
+		$query .= $looplimitquery;
+		$query .= $loopperpagequery;
+
+		$result = $adb->query($query);
+		$rows = $adb->num_rows($result);
+		$returnids = array();
+		if ($rows > 0) {
+			for ($i = 0; $i < $rows; $i++) {
+				$crmid = $adb->query_result($result, $i, 'crmid');
+				if($startcount !== false){
+					$returnids[$startcount + $i] = $crmid;
+				}else{
+					$returnids[] = $crmid;
+				}
+
+			}
+		}
+
+		return $returnids;
+	}
+
+	/** 
+	 * Function to get children count id
+	 * @param $moduleName     - parent module name
+	 * @param $referenceField - child module reference column
+	 * @param $related_module - child module name
+	 * @param $parentRecordId - parent module record id
+	*/
+	static function getChildReferenceRecordCount($moduleName, $referenceField, $related_module, $parentRecordId, $childModuleQuery = "")
+	{
+		global $adb;
+
+		$currentModule = CRMEntity::getInstance($moduleName);
+		$other = CRMEntity::getInstance($related_module);
+		$tablenameForRelationField = getTableNameForField($related_module, $referenceField);
+
+		$query = "SELECT vtiger_crmentity.* ";
+
+		$more_relation = '';
+		if (!empty($other->tab_name_index)) {
+			foreach ($other->tab_name_index as $tname => $tindex) {
+				if ($tname == 'vtiger_crmentity' || $tname == 'vtiger_crmentity_user_field' || $tname == $other->table_name) continue;
+				$query .= ", $tname.*";
+
+				$more_relation .= " LEFT JOIN $tname ON $tname.$tindex = $other->table_name.$other->table_index";
+			}
+		}
+
+		$query .= " FROM $other->table_name";
+		$query .= " INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = $other->table_name.$other->table_index";
+		$query .= $more_relation;
+		$query .= " LEFT JOIN vtiger_users ON vtiger_users.id = vtiger_crmentity.smownerid";
+		$query .= " LEFT JOIN vtiger_groups ON vtiger_groups.groupid = vtiger_crmentity.smownerid";
+		$query .= " WHERE vtiger_crmentity.deleted = 0 ";
+		if($moduleName === 'SalesReport') {
+			$query .= "AND exists( SELECT 1 FROM vtiger_crmentityrel rel WHERE (rel.crmid = '".$parentRecordId."' AND rel.relmodule = '".$related_module."' AND rel.relcrmid = vtiger_crmentity.crmid)
+					OR (rel.relcrmid = '".$parentRecordId."' AND rel.module =  '".$related_module."' AND rel.crmid = vtiger_crmentity.crmid))";
+		}else {
+			$query .= "AND $tablenameForRelationField.$referenceField = $parentRecordId";
+		}
+		$query .= $childModuleQuery;
+
+		$result = $adb->query($query);
+		$rows = $adb->num_rows($result);
+		return $rows;
+	}
+
+	static function getModuleNameFromCrmId($crmid)
+	{
+		global $adb;
+		$result = $adb->pquery("SELECT setype FROM vtiger_crmentity WHERE crmid=?", array($crmid));
+		if ($result === false || $adb->num_rows($result) == 0) return "";
+		$moduleName = $adb->query_result($result, 0, 'setype');
+
+		return $moduleName;
+	}
+
 }

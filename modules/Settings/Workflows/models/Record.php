@@ -240,7 +240,7 @@ class Settings_Workflows_Record_Model extends Settings_Vtiger_Record_Model {
 				// To convert date value from yyyy-mm-dd format to user format
 				$valueArray = explode(',', $value);
 				$isDateValue = false;
-				for($i = 0; $i < count($valueArray); $i++) {
+				for($i = 0; $i < php7_count($valueArray); $i++) {
 					if(Vtiger_Functions::isDateValue($valueArray[$i])) {
 						$isDateValue = true;
 						$valueArray[$i] = DateTimeField::convertToUserFormat($valueArray[$i]);
@@ -431,11 +431,11 @@ class Settings_Workflows_Record_Model extends Settings_Vtiger_Record_Model {
 		$wfCond = json_decode($test,true);
 		$conditionList = array();
 		if(is_array($wfCond)) {
-			for ($k=0; $k<(count($wfCond)); ++$k){
+			for ($k=0; $k<(php7_count($wfCond)); ++$k){
 				$fieldName = $wfCond[$k]['fieldname'];
 				preg_match('/\((\w+) : \(([_\w]+)\) (\w+)\)/', $fieldName, $matches);
 
-				if(count($matches)==0){
+				if(php7_count($matches)==0){
 					$fieldModel = Vtiger_Field_Model::getInstance($fieldName, $moduleModel);
 					if($fieldModel) {
 						$fieldLabel = vtranslate($fieldModel->get('label'), $moduleName);
@@ -489,8 +489,12 @@ class Settings_Workflows_Record_Model extends Settings_Vtiger_Record_Model {
 						$value = $currencyName[0];
 					}
 					if ($fieldModel && (in_array($fieldDataType, array('picklist', 'multipicklist')))) {
-						$picklistValues = explode(',', $value);
-						if (count($picklistValues) > 1) {
+						if ($value && strpos($value, ' |##| ') !== false){
+							$picklistValues = explode(' |##| ', $value);
+						} else {
+							$picklistValues = explode(',', $value);
+						}
+						if (php7_count($picklistValues) > 1) {
 							$translatedValues = array();
 							foreach ($picklistValues as $selectedValue) {
 								array_push($translatedValues, vtranslate($selectedValue, $moduleName));

@@ -99,7 +99,7 @@ class Vtiger_MailScanner {
 
 			// Search for mail in the folder
 			$mailsearch = $mailbox->search($lookAtFolder);
-			$this->log($mailsearch? "Total Mails Found in [$lookAtFolder]: " . count($mailsearch) : "No Mails Found in [$lookAtFolder]");
+			$this->log($mailsearch? "Total Mails Found in [$lookAtFolder]: " . php7_count($mailsearch) : "No Mails Found in [$lookAtFolder]");
 
 			// No emails? Continue with next folder
 			if(empty($mailsearch)) continue;
@@ -371,13 +371,13 @@ class Vtiger_MailScanner {
 		if($accountid) {
 			if($this->_cachedAccounts[$accountid]) {
 				$account_focus = $this->_cachedAccounts[$accountid];
-				$this->log("Reusing Cached Account [" . $account_focus->column_fields[accountname] . "]");
+				$this->log("Reusing Cached Account [" . $account_focus->column_fields["accountname"] . "]");
 			} else {
 				$account_focus = CRMEntity::getInstance('Accounts');
 				$account_focus->retrieve_entity_info($accountid, 'Accounts');
 				$account_focus->id = $accountid;
 
-				$this->log("Caching Account [" . $account_focus->column_fields[accountname] . "]");
+				$this->log("Caching Account [" . $account_focus->column_fields["accountname"] . "]");
 				$this->_cachedAccounts[$accountid] = $account_focus;
 			}
 		}
@@ -395,15 +395,15 @@ class Vtiger_MailScanner {
 		if($contactid) {
 			if($this->_cachedContacts[$contactid]) {
 				$contact_focus = $this->_cachedContacts[$contactid];
-				$this->log("Reusing Cached Contact [" . $contact_focus->column_fields[lastname] .
-				   	'-' . $contact_focus->column_fields[firstname] . "]");
+				$this->log("Reusing Cached Contact [" . $contact_focus->column_fields["lastname"] .
+				   	'-' . $contact_focus->column_fields["firstname"] . "]");
 			} else {
 				$contact_focus = CRMEntity::getInstance('Contacts');
 				$contact_focus->retrieve_entity_info($contactid, 'Contacts');
 				$contact_focus->id = $contactid;
 
-				$this->log("Caching Contact [" . $contact_focus->column_fields[lastname] .
-				   	'-' . $contact_focus->column_fields[firstname] . "]");
+				$this->log("Caching Contact [" . $contact_focus->column_fields["lastname"] .
+				   	'-' . $contact_focus->column_fields["firstname"] . "]");
 				$this->_cachedContacts[$contactid] = $contact_focus;
 			}
 		}
@@ -420,15 +420,15 @@ class Vtiger_MailScanner {
 		if ($leadid) {
 			if ($this->_cachedLeads[$leadid]) {
 				$lead_focus = $this->_cachedLeads[$leadid];
-				$this->log("Reusing Cached Lead [" . $lead_focus->column_fields[lastname] .
-						'-' . $lead_focus->column_fields[firstname] . "]");
+				$this->log("Reusing Cached Lead [" . $lead_focus->column_fields["lastname"] .
+						'-' . $lead_focus->column_fields["firstname"] . "]");
 			} else {
 				$lead_focus = CRMEntity::getInstance('Leads');
 				$lead_focus->retrieve_entity_info($leadid, 'Leads');
 				$lead_focus->id = $leadid;
 
-				$this->log("Caching Lead [" . $lead_focus->column_fields[lastname] .
-						'-' . $lead_focus->column_fields[firstname] . "]");
+				$this->log("Caching Lead [" . $lead_focus->column_fields["lastname"] .
+						'-' . $lead_focus->column_fields["firstname"] . "]");
 				$this->_cachedLeads[$leadid] = $lead_focus;
 			}
 		}
@@ -463,7 +463,7 @@ class Vtiger_MailScanner {
 					$ticket_focus = false;
 				}
 				if($ticket_focus) {
-					$this->log("Reusing Cached Ticket [" . $ticket_focus->column_fields[ticket_title] ."]");
+					$this->log("Reusing Cached Ticket [" . $ticket_focus->column_fields["ticket_title"] ."]");
 				}
 			} else {
 				$ticket_focus = CRMEntity::getInstance('HelpDesk');
@@ -474,7 +474,7 @@ class Vtiger_MailScanner {
 					$ticket_focus = false;
 				}
 				if($ticket_focus) {
-					$this->log("Caching Ticket [" . $ticket_focus->column_fields[ticket_title] . "]");
+					$this->log("Caching Ticket [" . $ticket_focus->column_fields["ticket_title"] . "]");
 					$this->_cachedTickets[$ticketid] = $ticket_focus;
 				}
 			}

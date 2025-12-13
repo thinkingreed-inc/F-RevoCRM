@@ -58,6 +58,7 @@
 								<input type="hidden" name="returnsortorder" value={$RETURN_SORTBY} />
 								<input type="hidden" name="returnorderby" value={$RETURN_ORDERBY} />
 							{/if}
+							<input type="hidden" name="is_headlesschrome" value={$IS_HEADLESSCHROME} />
 							{include file="partials/EditViewContents.tpl"|@vtemplate_path:$MODULE}
 						</div>
 						<div class="modal-overlay-footer clearfix" style="border-left-width: 0px;">

@@ -137,7 +137,7 @@ class Calendar_ListView_Model extends Vtiger_ListView_Model {
             if($webserviceField->getDisplayType() == '6') continue;
 			// check if the field is reference field
 			preg_match('/(\w+) ; \((\w+)\) (\w+)/', $fieldName, $matches);
-			if(count($matches) > 0) {
+			if(php7_count($matches) > 0) {
 				list($full, $referenceParentField, $referenceModule, $referenceFieldName) = $matches;
 				$referenceModuleModel = Vtiger_Module_Model::getInstance($referenceModule);
 				$referenceFieldModel = Vtiger_Field_Model::getInstance($referenceFieldName, $referenceModuleModel);
@@ -183,7 +183,9 @@ class Calendar_ListView_Model extends Vtiger_ListView_Model {
 		$queryGenerator = $this->get('query_generator');
 		$listViewContoller = $this->get('listview_controller');
 		$listViewFields = array('visibility','assigned_user_id');
-		$queryGenerator->setFields(array_unique(array_merge($queryGenerator->getFields(), $listViewFields)));
+		
+		$querySetFields = $queryGenerator->getFields();
+		$queryGenerator->setFields(array_unique(array_merge($querySetFields, $listViewFields)));
 		
         $searchParams = $this->get('search_params');
         if(empty($searchParams)) {
@@ -191,7 +193,7 @@ class Calendar_ListView_Model extends Vtiger_ListView_Model {
         }
         
         $glue = "";
-        if(count($queryGenerator->getWhereFields()) > 0 && (count($searchParams)) > 0) {
+        if(php7_count($queryGenerator->getWhereFields()) > 0 && (php7_count($searchParams)) > 0) {
             $glue = QueryGenerator::$AND;
         }
         $queryGenerator->parseAdvFilterList($searchParams, $glue);
@@ -204,6 +206,10 @@ class Calendar_ListView_Model extends Vtiger_ListView_Model {
 		}
         
         $orderBy = $this->getForSql('orderby');
+		if(is_countable($querySetFields) && !in_array($orderBy, $querySetFields, true)) {
+			$orderBy = '';
+		}
+		
 		$sortOrder = $this->getForSql('sortorder');
         if(empty($sortOrder)) {
             $sortOrder = 'DESC';
@@ -300,19 +306,15 @@ class Calendar_ListView_Model extends Vtiger_ListView_Model {
 				}
 				$record['subject'] = vtranslate('Busy','Events').'*';
 			}
-			if($record['activitytype'] == 'Task') {
-				unset($record['visibility']);
-				unset($rawData['visibility']);
-			}
-			
+
 			$record['id'] = $recordId;
             $listViewRecordModels[$recordId] = $moduleModel->getRecordFromArray($record, $rawData);
-            if(!$currentUser->isAdminUser() && $rawData['activitytype'] == 'Task' && isToDoPermittedBySharing($recordId) == 'no') {
+            if($rawData['activitytype'] == 'Task' && !$currentUser->isAdminUser() && $rawData['visibility'] == 'Private' && $ownerId && $visibility) {
 				$recordsToUnset[] = $recordId;
 			}
 		}
 		//setting list view count before unsetting permission denied records - to make sure paging should not fail
-		$pagingModel->set('_listcount', count($listViewRecordModels));
+		$pagingModel->set('_listcount', php7_count($listViewRecordModels));
 		foreach($recordsToUnset as $record) {
 			unset($listViewRecordModels[$record]);
 		}

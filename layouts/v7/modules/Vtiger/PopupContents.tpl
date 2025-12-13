@@ -70,14 +70,18 @@
                         {foreach item=LISTVIEW_HEADER from=$LISTVIEW_HEADERS}
                             <td>
                             {assign var=FIELD_UI_TYPE_MODEL value=$LISTVIEW_HEADER->getUITypeModel()}
+                            {assign var=SEARCH_DETAILS_FIELD_INFO value=array('searchValue' => '', 'comparator' => '')}
+                            {if isset($SEARCH_DETAILS[$LISTVIEW_HEADER->getName()])}
+                                {assign var=SEARCH_DETAILS_FIELD_INFO value=$SEARCH_DETAILS[$LISTVIEW_HEADER->getName()]}
+                            {/if}
                             {include file=vtemplate_path($FIELD_UI_TYPE_MODEL->getListSearchTemplateName(),$MODULE_NAME)
-                            FIELD_MODEL= $LISTVIEW_HEADER SEARCH_INFO=$SEARCH_DETAILS[$LISTVIEW_HEADER->getName()] USER_MODEL=$CURRENT_USER_MODEL}
+                            FIELD_MODEL= $LISTVIEW_HEADER SEARCH_INFO=$SEARCH_DETAILS_FIELD_INFO USER_MODEL=$CURRENT_USER_MODEL}
                             </td>
                         {/foreach}
                     </tr>
                 {/if}
                 {foreach item=LISTVIEW_ENTRY from=$LISTVIEW_ENTRIES name=popupListView}
-                    {assign var="RECORD_DATA" value="{$LISTVIEW_ENTRY->getRawData()}"}
+                    {assign var="RECORD_DATA" value=$LISTVIEW_ENTRY->getRawData()}
                     <tr class="listViewEntries" data-id="{$LISTVIEW_ENTRY->getId()}" {if $MODULE eq 'EmailTemplates' || $MODULE eq 'PDFTemplates'} data-name="{$RECORD_DATA['subject']}" data-info="{$LISTVIEW_ENTRY->get('body')}" {else} data-name="{$LISTVIEW_ENTRY->getName()}" data-info='{Vtiger_Util_Helper::toSafeHTML(ZEND_JSON::encode($LISTVIEW_ENTRY->getRawData()))}' {/if}
                     {if $GETURL neq ''} data-url='{$LISTVIEW_ENTRY->$GETURL()}' {/if}  id="{$MODULE}_popUpListView_row_{$smarty.foreach.popupListView.index+1}">
                     {if $MULTI_SELECT}
@@ -90,7 +94,11 @@
                     {foreach item=LISTVIEW_HEADER from=$LISTVIEW_HEADERS}
                     {assign var=LISTVIEW_HEADERNAME value=$LISTVIEW_HEADER->get('name')}
                     {assign var=LISTVIEW_ENTRY_VALUE value=$LISTVIEW_ENTRY->get($LISTVIEW_HEADERNAME)}
-                    <td class="listViewEntryValue value textOverflowEllipsis {$WIDTHTYPE}" title="{$RECORD_DATA[$LISTVIEW_HEADERNAME]}">
+                    {assign var=RECORD_DATA_LISTVIEW_HEADERNAME value=""}
+                    {if isset($RECORD_DATA[$LISTVIEW_HEADERNAME])}
+                        {assign var=RECORD_DATA_LISTVIEW_HEADERNAME value=$RECORD_DATA[$LISTVIEW_HEADERNAME]}
+                    {/if}
+                    <td class="listViewEntryValue value textOverflowEllipsis {$WIDTHTYPE}" title="{$RECORD_DATA_LISTVIEW_HEADERNAME}">
                         {if $LISTVIEW_HEADER->isNameField() eq true or $LISTVIEW_HEADER->get('uitype') eq '4'}
                             <a>{$LISTVIEW_ENTRY->get($LISTVIEW_HEADERNAME)}</a>
                         {else if $LISTVIEW_HEADER->get('uitype') eq '72'}
@@ -133,7 +141,7 @@
                 </div>
             </div>
         {/if}
-        {if $FIELDS_INFO neq null}
+        {if isset($FIELDS_INFO) && $FIELDS_INFO neq null}
             <script type="text/javascript">
                 var popup_uimeta = (function() {
                     var fieldInfo  = {$FIELDS_INFO};

@@ -38,7 +38,7 @@
 						{foreach item=RELATED_LINK from=$RELATED_LIST_LINKS['LISTVIEWBASIC']}
 							<div class="btn-group">
 								{assign var=DROPDOWNS value=$RELATED_LINK->get('linkdropdowns')}
-								{if count($DROPDOWNS) gt 0}
+								{if php7_count($DROPDOWNS) gt 0}
 									<div class="btn-group">
 										<a class="btn dropdown-toggle" href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-delay="200" data-close-others="false" style="width:20px;height:18px;">
 											<img title="{$RELATED_LINK->getLabel()}" alt="{$RELATED_LINK->getLabel()}" src="{vimage_path("{$RELATED_LINK->getIcon()}")}">

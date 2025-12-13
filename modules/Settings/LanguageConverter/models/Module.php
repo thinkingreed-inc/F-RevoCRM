@@ -55,7 +55,7 @@ class Settings_LanguageConverter_Module_Model extends Settings_Vtiger_Module_Mod
         if(!self::$isLoaded) {
             self::loadAll();
         }
-        if(count(self::$cache) == 0) {
+        if(php7_count(self::$cache) == 0) {
             return $str;
         }
         // 全モジュール共通の変換

@@ -129,9 +129,9 @@ class Zend_Gdata_App_Feed extends Zend_Gdata_App_FeedSourceParent
      *
      * @return integer Entry count.
      */
-    public function count()
+    public function php7_count()
     {
-        return count($this->_entry);
+        return php7_count($this->_entry);
     }
 
     /**
@@ -181,7 +181,7 @@ class Zend_Gdata_App_Feed extends Zend_Gdata_App_FeedSourceParent
      */
     public function valid()
     {
-        return 0 <= $this->_entryIndex && $this->_entryIndex < $this->count();
+        return 0 <= $this->_entryIndex && $this->_entryIndex < $this->php7_count();
     }
 
     /**

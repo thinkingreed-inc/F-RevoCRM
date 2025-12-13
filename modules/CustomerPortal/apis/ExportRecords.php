@@ -72,6 +72,8 @@ class CustomerPortal_ExportRecords extends CustomerPortal_API_Abstract {
 				if (!empty($fieldsArray)) {
 					$countSql = sprintf('SELECT count(*) FROM %s WHERE ', $module);
 					foreach ($fieldsArray as $key => $value) {
+						$value = preg_replace('/[\']/', "''", $value);
+						$value = preg_replace('/["]/', '""', $value);
 						$countSql.= $key.'=\''.$value."' ".$groupConditionsBy." ";
 					}
 					$countSql = CustomerPortal_Utils::str_replace_last($groupConditionsBy, '', $countSql);
@@ -89,6 +91,8 @@ class CustomerPortal_ExportRecords extends CustomerPortal_API_Abstract {
 				if (!empty($fieldsArray)) {
 					$sql = sprintf('SELECT %s FROM %s WHERE ', $fields, $module);
 					foreach ($fieldsArray as $key => $value) {
+						$value = preg_replace('/[\']/', "''", $value);
+						$value = preg_replace('/["]/', '""', $value);
 						$sql.= $key.'=\''.$value."' ".$groupConditionsBy." ";
 					}
 					$sql = CustomerPortal_Utils::str_replace_last($groupConditionsBy, '', $sql);

@@ -37,7 +37,7 @@ class Vtiger_UserRole_UIType extends Vtiger_Base_UIType {
 	 * @return <String> display value
 	 */
 	public function getDisplayValue($value, $recordId=false, $recordInstance=false) {
-		$displayValue = $this->getEditViewDisplayValue($value);
+		$displayValue = vtranslate($this->getEditViewDisplayValue($value), 'Vtiger');
 		$currentUserModel = Users_Record_Model::getCurrentUserModel();
 		if ($currentUserModel->isAdminUser()) {
 			$roleRecordModel = new Settings_Roles_Record_Model();

@@ -32,6 +32,7 @@ abstract class EntityMeta{
 	protected $referenceFieldDetails;
 	protected $emailFields;
 	protected $ownerFields;
+	protected $blankFields;
 	protected $moduleFields = null;
 	
 	protected function __construct($webserviceObject,$user)
@@ -117,7 +118,22 @@ abstract class EntityMeta{
 		}
 		return $this->ownerFields;
 	}
-	
+
+	public function getBlankFields()
+	{
+		if ($this->blankFields === null) {
+			$this->blankFields =  array();
+
+			$moduleFields = $this->getModuleFields();
+			foreach ($moduleFields as $fieldName => $webserviceField) {
+				if (strcasecmp($webserviceField->getFieldDataType(), 'blank') === 0) {
+					array_push($this->blankFields, $fieldName);
+				}
+			}
+		}
+		return $this->blankFields;
+	}
+
 	public function getObectIndexColumn(){
 		return $this->idColumn;
 	}
@@ -251,11 +267,12 @@ abstract class EntityMeta{
 	}
 
 	public function getEntityDeletedQuery(){
+		$baseTable = $this->getEntityBaseTable();
 		if($this->getEntityName() == 'Leads') {
-			return "vtiger_crmentity.deleted=0 and vtiger_leaddetails.converted=0";
+			return "$baseTable.deleted=0 and vtiger_leaddetails.converted=0";
 		}
 		if($this->getEntityName() != "Users"){
-			return "vtiger_crmentity.deleted=0";
+			return "$baseTable.deleted=0";
 		}
 		// not sure whether inactive users should be considered deleted or not.
 		return "vtiger_users.status='Active'";

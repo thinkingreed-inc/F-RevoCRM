@@ -608,7 +608,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 			$list_fields = $entityInstance->list_fields;
 			foreach ($list_fields as $key => $fieldInfo) {
 				foreach ($fieldInfo as $columnName) {
-					if(array_key_exists($key, $list_fields_name)){
+					if(array_key_exists($key, $list_fields_name) && $list_fields_name[$key] !== ""){
 						$relatedListFields[$columnName] = $list_fields_name[$key];
 					}
 				}
@@ -620,16 +620,16 @@ class Vtiger_Module_Model extends Vtiger_Module {
 	public function getConfigureRelatedListFields(){
 		$showRelatedFieldModel = $this->getHeaderAndSummaryViewFieldsList();
 		$relatedListFields = array();
-		if(count($showRelatedFieldModel) > 0) {
+		if(php7_count($showRelatedFieldModel) > 0) {
 			foreach ($showRelatedFieldModel as $key => $field) {
 				$relatedListFields[$field->get('column')] = $field->get('name');
 			}
 		}
 
-		if(count($relatedListFields)>0) {
+		if(php7_count($relatedListFields)>0) {
 			$nameFields = $this->getNameFields();
 			foreach($nameFields as $fieldName){
-				if(!$relatedListFields[$fieldName]) {
+				if(!isset($relatedListFields[$fieldName]) || !$relatedListFields[$fieldName]) {
 					$fieldModel = $this->getField($fieldName);
 					$relatedListFields[$fieldModel->get('column')] = $fieldModel->get('name');
 				}
@@ -1087,7 +1087,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 		$nowInDBFormat = Vtiger_Datetime_UIType::getDBDateTimeValue($nowInUserFormat);
 		list($currentDate, $currentTime) = explode(' ', $nowInDBFormat);
 
-		$query = "SELECT vtiger_crmentity.crmid, crmentity2.crmid AS parent_id, vtiger_crmentity.smownerid, vtiger_crmentity.setype, vtiger_crmentity.description, vtiger_activity.* FROM vtiger_activity
+		$query = "SELECT vtiger_crmentity.crmid, crmentity2.crmid AS parent_id, vtiger_crmentity.smownerid, vtiger_crmentity.setype, vtiger_activity.* FROM vtiger_activity
 					INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_activity.activityid
 					INNER JOIN vtiger_seactivityrel ON vtiger_seactivityrel.activityid = vtiger_activity.activityid
 					INNER JOIN vtiger_crmentity AS crmentity2 ON vtiger_seactivityrel.crmid = crmentity2.crmid AND crmentity2.deleted = 0 AND crmentity2.setype = ?
@@ -1096,8 +1096,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 		$query .= Users_Privileges_Model::getNonAdminAccessControlQuery('Calendar');
 
 		$query .= " WHERE vtiger_crmentity.deleted=0
-					AND (vtiger_activity.activitytype NOT IN ('Emails'))
-					";
+					AND (vtiger_activity.activitytype NOT IN ('Emails'))";
 
 		if(!$currentUser->isAdminUser()) {
 			$moduleFocus = CRMEntity::getInstance('Calendar');
@@ -1144,7 +1143,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 			} else if($ownerId == $currentUser->getId()){
 				$visibility = false;
 			}
-			if(!$currentUser->isAdminUser() && $newRow['visibility'] == 'Private' && $ownerId && $visibility) {
+			if(!$currentUser->isAdminUser() && $newRow['activitytype'] != 'Task' && $newRow['visibility'] == 'Private' && $ownerId && $visibility) {
 				foreach($newRow as $data => $value) {
 					if(in_array($data, $visibleFields) != -1) {
 						unset($newRow[$data]);
@@ -1153,6 +1152,8 @@ class Vtiger_Module_Model extends Vtiger_Module {
 				$newRow['subject'] = vtranslate('Busy','Events').'*';
 			}
 			if($newRow['activitytype'] == 'Task') {
+				unset($newRow['visibility']);
+
 				$due_date = $newRow["due_date"];
 				$dayEndTime = "23:59:59";
 				$EndDateTime = Vtiger_Datetime_UIType::getDBDateTimeValue($due_date." ".$dayEndTime);
@@ -1232,7 +1233,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 		$sharingAccessModel = Settings_SharingAccess_Module_Model::getInstance($this->getName());
 		$params = array();
 		if(!empty($owner) && $currentUserModel->isAdminUser()) {//If admin user, then allow users data
-			$ownerSql =  ' smownerid = '. $owner;
+			$ownerSql =  'smownerid = '. $owner;
 			$params[] = $owner;
 		} else if(!empty($owner)){//If not admin user, then check sharing access for that module
 			if($sharingAccessModel->isPrivate()) {
@@ -1242,12 +1243,12 @@ class Vtiger_Module_Model extends Vtiger_Module {
 					$subordinateUsers[] = $id;
 				}
 				if(in_array($owner, $subordinateUsers)) {
-					$ownerSql = ' smownerid = '. $owner ;
+					$ownerSql = 'smownerid = '. $owner ;
 				} else {
-					$ownerSql = ' smownerid = '. $currentUserModel->getId();
+					$ownerSql = 'smownerid = '. $currentUserModel->getId();
 				}
 			} else {
-				$ownerSql = ' smownerid = '. $owner ;
+				$ownerSql = 'smownerid = '. $owner ;
 			}
 		} else {//If no owner filter, then check if the module access is Private
 			if($sharingAccessModel->isPrivate() && (!$currentUserModel->isAdminUser())) {
@@ -1258,9 +1259,9 @@ class Vtiger_Module_Model extends Vtiger_Module {
 				}
 				if($subordinateUsers) {
                     array_push($subordinateUsers, $currentUserModel->getId());
-					$ownerSql =  ' smownerid IN ('. implode(',' , $subordinateUsers) .')';
+					$ownerSql =  'smownerid IN ('. implode(',' , $subordinateUsers) .')';
 				} else {
-					$ownerSql =  ' smownerid = '.$currentUserModel->getId();
+					$ownerSql =  'smownerid = '.$currentUserModel->getId();
 				}
 			}
 		}
@@ -1394,7 +1395,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 	 * @return <Array> list of field models <Vtiger_Field_Model>
 	 */
 	public function getSummaryViewFieldsList() {
-		if (!$this->summaryFields) {
+		if (!isset($this->summaryFields) || !$this->summaryFields) {
 			$summaryFields = array();
 			$fields = $this->getFields();
 			foreach ($fields as $fieldName => $fieldModel) {
@@ -1412,7 +1413,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 	 * @return <Array> list of field models <Vtiger_Field_Model>
 	 */
 	public function getHeaderViewFieldsList() {
-		if (!$this->headerFields) {
+		if (!isset($this->headerFields) || !$this->headerFields) {
 			$headerFields = array();
 			$fields = $this->getFields();
 			foreach ($fields as $fieldName => $fieldModel) {
@@ -1430,7 +1431,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 	 * @return <Array> list of field models <Vtiger_Field_Model>
 	 */
 	public function getHeaderAndSummaryViewFieldsList() {
-		if(!$this->relationListViewFields) {
+		if(!isset($this->relationListViewFields) || !$this->relationListViewFields) {
 			$summaryViewFields = $this->getSummaryViewFieldsList();
 			$headerViewFields = $this->getHeaderViewFieldsList();
 			$allRelationListViewFields = array_merge($headerViewFields,$summaryViewFields);
@@ -1528,7 +1529,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 			$relatedListFields['filestatus'] = 'filestatus';
 		}
 
-		if(count($relatedListFields) > 0) {
+		if(php7_count($relatedListFields) > 0) {
 			$currentUser = Users_Record_Model::getCurrentUserModel();
 			$queryGenerator = new QueryGenerator($relatedModuleName, $currentUser);
 			$queryGenerator->setFields($relatedListFields);
@@ -1788,7 +1789,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 	public function getPopupViewFieldsList(){
 		$summaryFieldsList = $this->getHeaderAndSummaryViewFieldsList();
 
-		if(count($summaryFieldsList) > 0){
+		if(php7_count($summaryFieldsList) > 0){
 			 $popupFields = array_keys($summaryFieldsList);
 		}else{
 			$popupFields = array_values($this->getRelatedListFields());
@@ -2051,12 +2052,12 @@ class Vtiger_Module_Model extends Vtiger_Module {
 		$moduleIcon = "<i class='vicon-$lowerModuleName' title='$title'></i>";
 		if ($this->source == 'custom') {
 			$moduleShortName = mb_substr(trim($title), 0, 1);
-			$moduleIcon = "<span class='custom-module' title='$title'><span>$moduleShortName</span></span>";
+			$moduleIcon = "<span class='custom-module' title='$title'>$moduleShortName</span>";
 		}
 
 		$imageFilePath = 'layouts/'.Vtiger_Viewer::getLayoutName()."/modules/$moduleName/$moduleName.png";
 		if (file_exists($imageFilePath)) {
-			$moduleIcon = "<img src='$imageFilePath' title='$title' width='1'/>";
+			$moduleIcon = "<img src='$imageFilePath' title='$title'/>";
 		}
 
 		return $moduleIcon;

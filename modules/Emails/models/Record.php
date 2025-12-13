@@ -79,6 +79,7 @@ class Emails_Record_Model extends Vtiger_Record_Model {
 		// Merge Users module merge tags based on current user.
 		$mergedDescription = getMergedDescription($this->get('description'), $currentUserModel->getId(), 'Users');
 		$mergedSubject = getMergedDescription($this->get('subject'),$currentUserModel->getId(), 'Users');
+        $selectedIds = array();
         
         // push all emails to one single array
 		foreach($toEmailInfo as $selectedId => $selectedEmails) {
@@ -99,8 +100,8 @@ class Emails_Record_Model extends Vtiger_Record_Model {
                 if(trim($selectedEmail)){
                     array_push($emails, $selectedEmail);
                 }
-			}
-			$id = $selectedId;
+      //      }
+      //  }
         
 			$inReplyToMessageId = ''; 
 			$generatedMessageId = '';
@@ -126,8 +127,8 @@ class Emails_Record_Model extends Vtiger_Record_Model {
 						$inReplyToMessageId = $generatedMessageId;
 					}
 					// Apply merge for non-Users module merge tags.
-					$description = getMergedDescription($mergedDescriptionWithHyperLinkConversion, $id, $parentModule);
-					$subject = getMergedDescription($mergedSubject, $id, $parentModule);
+					$description = getMergedDescription($mergedDescriptionWithHyperLinkConversion, $selectedId, $parentModule);
+					$subject = getMergedDescription($mergedSubject, $selectedId, $parentModule);
 				} else {
 					// Re-merge the description for user tags based on actual user.
 					$description = getMergedDescription($mergedDescriptionWithHyperLinkConversion, $id, 'Users');
@@ -176,12 +177,12 @@ class Emails_Record_Model extends Vtiger_Record_Model {
             $plainBody = Emails_Mailer_Model::convertToAscii($plainBody);
             $plainBody = $this->convertUrlsToTrackUrls($plainBody, $id,'plain');
             $mailer->AltBody = $plainBody;
-            $mailer->AddAddress($email);
+     //       $mailer->AddAddress($email);
 
             //Adding attachments to mail
             if(is_array($attachments)) {
                 foreach($attachments as $attachment) {
-                    $fileNameWithPath = $rootDirectory.$attachment['path'].$attachment['fileid']."_".$attachment['storedname'];
+                    $fileNameWithPath = $rootDirectory.$attachment['filenamewithpath'];
                     if(is_file($fileNameWithPath)) {
                         $mailer->AddAttachment($fileNameWithPath, $attachment['attachment']);
                     }
@@ -243,6 +244,7 @@ class Emails_Record_Model extends Vtiger_Record_Model {
 				}
 			}
 		}
+	}
 		return $status;
 	}
 
@@ -250,7 +252,7 @@ class Emails_Record_Model extends Vtiger_Record_Model {
 	 * Returns the From Email address that will be used for the sent mails
 	 * @return <String> - from email address
 	 */
-	function getFromEmailAddress() {
+	public static function getFromEmailAddress() {
 		$db = PearDatabase::getInstance();
 		$currentUserModel = Users_Record_Model::getCurrentUserModel();
 
@@ -277,12 +279,24 @@ class Emails_Record_Model extends Vtiger_Record_Model {
 		$attachmentsList = array();
 		if($numOfRows) {
 			for($i=0; $i<$numOfRows; $i++) {
-				$attachmentsList[$i]['fileid'] = $db->query_result($attachmentRes, $i, 'attachmentsid');
-				$attachmentsList[$i]['attachment'] = decode_html($db->query_result($attachmentRes, $i, 'name'));
-                $attachmentsList[$i]['storedname'] = decode_html($db->query_result($attachmentRes, $i, 'storedname'));
-				$path = $db->query_result($attachmentRes, $i, 'path');
+                                $attachmentId = $db->query_result($attachmentRes, $i, 'attachmentsid');
+                                $rawFileName = $db->query_result($attachmentRes, $i, 'name');
+                                $storedName = $db->query_result($attachmentRes, $i, 'storedname');
+                                $path = $db->query_result($attachmentRes, $i, 'path');
+                                if($storedName) { 
+                                    $filename = $storedName;
+                                } else {
+                                    $filename = $rawFileName;
+                                }
+                                $attachmentsList[$i]['attachment'] = decode_html($rawFileName);
+                                $attachmentsList[$i]['fileid'] = $attachmentId;
+                                $attachmentsList[$i]['storedname'] = decode_html($storedName);
 				$attachmentsList[$i]['path'] = $path;
-				$attachmentsList[$i]['size'] = filesize($path.$attachmentsList[$i]['fileid'].'_'.$attachmentsList[$i]['storedname']);
+                                $saved_filename = $attachmentId."_".$filename;
+                                $filenamewithpath = $path.$saved_filename;
+                                $filesize = filesize($filenamewithpath);
+                                $attachmentsList[$i]['filenamewithpath'] = $filenamewithpath;
+				$attachmentsList[$i]['size'] = $filesize;
 				$attachmentsList[$i]['type'] = $db->query_result($attachmentRes, $i, 'type');
 				$attachmentsList[$i]['cid'] = $db->query_result($attachmentRes, $i, 'cid');
 			}
@@ -334,6 +348,7 @@ class Emails_Record_Model extends Vtiger_Record_Model {
 				$documentsList[$i]['attachment'] = decode_html($db->query_result($documentRes, $i, 'name'));
                 $documentsList[$i]['storedname'] = decode_html($db->query_result($documentRes, $i, 'storedname'));
 				$documentsList[$i]['type'] = $db->query_result($documentRes, $i, 'type');
+				$documentsList[$i]['filenamewithpath'] = $documentsList[$i]['path'].$documentsList[$i]['fileid'].'_'.$documentsList[$i]['storedname'];
 			}
 		}
 		return $documentsList;
@@ -364,7 +379,7 @@ class Emails_Record_Model extends Vtiger_Record_Model {
 
 		$documentIds = array_unique($this->get('documentids'));
 
-		$count = count($documentIds);
+		$count = php7_count($documentIds);
 		for ($i=0; $i<$count; $i++) {
 			$db->pquery("INSERT INTO vtiger_senotesrel(crmid, notesid) VALUES(?, ?)", array($record, $documentIds[$i]));
 		}
@@ -378,7 +393,7 @@ class Emails_Record_Model extends Vtiger_Record_Model {
 		$db = PearDatabase::getInstance();
 		$query = 'DELETE FROM vtiger_senotesrel where crmid=?';
 		$params = array($this->getId());
-		if(count($idList) > 0) {
+		if(php7_count($idList) > 0) {
 			$query .= 'AND notesid IN ('.generateQuestionMarks($idList).')';
 			$params = array_merge($params,$idList);
 		}
@@ -392,7 +407,7 @@ class Emails_Record_Model extends Vtiger_Record_Model {
 	public function deleteAttachment($emailAttachmentDetails = array()) {
 		$db = PearDatabase::getInstance();
 
-		if(count($emailAttachmentDetails) <= 0) {
+		if(php7_count($emailAttachmentDetails) <= 0) {
 			return;
 		}
 		$attachmentIdList = array();
@@ -420,7 +435,7 @@ class Emails_Record_Model extends Vtiger_Record_Model {
 			}
 		}
 		if (!empty ($documentIds)) {
-			$count = count($documentIds);
+			$count = php7_count($documentIds);
 			for ($i=0; $i<$count; $i++) {
 				try {
 					$documentRecordModel = Vtiger_Record_Model::getInstanceById($documentIds[$i], 'Documents');

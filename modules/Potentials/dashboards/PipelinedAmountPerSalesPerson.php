@@ -27,7 +27,7 @@ class Potentials_PipelinedAmountPerSalesPerson_Dashboard extends Vtiger_IndexAja
 		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
 		$data = $moduleModel->getPotentialsPipelinedAmountPerSalesPerson();
         $listViewUrl = $moduleModel->getListViewUrlWithAllFilter();
-        for($i = 0;$i<count($data);$i++){
+        for($i = 0;$i<php7_count($data);$i++){
             $data[$i]["links"] = $listViewUrl.$this->getSearchParams($data[$i]["last_name"],$data[$i]["link"]).'&nolistcache=1';
         }
 

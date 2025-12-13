@@ -30,7 +30,9 @@ class Settings_MailConverter_RuleField_Model extends Vtiger_Field_Model {
 			}
 		} else if ($fieldName == 'action') {
 			$optionList = array('CREATE_HelpDesk_FROM', 'UPDATE_HelpDesk_SUBJECT', 'CREATE_Leads_SUBJECT', 'CREATE_Contacts_SUBJECT', 'CREATE_Accounts_SUBJECT', 'LINK_Contacts_FROM', 'LINK_Contacts_TO', 'LINK_Leads_FROM', 'LINK_Leads_TO', 'LINK_Accounts_FROM', 'LINK_Accounts_TO');
-			foreach ($optionList as $option) {
+            $optionListCustom= Settings_MailConverter_RuleRecord_Model::getCustomActions();
+            $optionList=array_merge($optionList,$optionListCustom);
+            foreach ($optionList as $option) {
 				$pickListValues[$option] = vtranslate($option, 'Settings::MailConverter');
             }
 		}

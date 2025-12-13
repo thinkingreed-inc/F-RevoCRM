@@ -14,7 +14,7 @@ class Vtiger_Popup_View extends Vtiger_Footer_View {
 
 	public function requiresPermission(Vtiger_Request $request){
 		$permissions = parent::requiresPermission($request);
-
+		
 		$permissions[] = array('module_parameter' => 'module', 'action' => 'DetailView');
 		return $permissions;
 	}
@@ -97,7 +97,7 @@ class Vtiger_Popup_View extends Vtiger_Footer_View {
 				$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
 				$searchParams=$request->get('search_params');
 
-		$relationId = $request->get('relationId');
+		$relationId = $request->get('relationId'); 
 
 		//To handle special operation when selecting record from Popup
 		$getUrl = $request->get('get_url');
@@ -191,7 +191,7 @@ class Vtiger_Popup_View extends Vtiger_Footer_View {
 			$this->listViewHeaders = $listViewModel->getHeaders();
 
 			$models = $listViewModel->getEntries($pagingModel);
-			$noOfEntries = count($models);
+			$noOfEntries = php7_count($models);
 			foreach ($models as $recordId => $recordModel) {
 				foreach ($this->listViewHeaders as $fieldName => $fieldModel) {
 					$recordModel->set($fieldName, $recordModel->getDisplayValue($fieldName));
@@ -199,7 +199,7 @@ class Vtiger_Popup_View extends Vtiger_Footer_View {
 				$models[$recordId] = $recordModel;
 			}
 			$this->listViewEntries = $models;
-			if(count($this->listViewEntries) > 0 ){
+			if(php7_count($this->listViewEntries) > 0 ){
 				$parent_related_records = true;
 			}
 		}else{
@@ -208,7 +208,8 @@ class Vtiger_Popup_View extends Vtiger_Footer_View {
 		}
 
 		// If there are no related records with parent module then, we should show all the records
-		if(!$parent_related_records && !empty($relatedParentModule) && !empty($relatedParentId)){
+		if((!isset($parent_related_records) || !$parent_related_records) && 
+			!empty($relatedParentModule) && !empty($relatedParentId)){
 			$relatedParentModule = null;
 			$relatedParentId = null;
 			$listViewModel = Vtiger_ListView_Model::getInstanceForPopup($moduleName);
@@ -234,8 +235,8 @@ class Vtiger_Popup_View extends Vtiger_Footer_View {
 			$this->listViewHeaders = $listViewModel->getListViewHeaders();
 			$this->listViewEntries = $listViewModel->getListViewEntries($pagingModel);
 		}
-		// End
-				if(empty($searchParams)) {
+		// End  
+				if(empty($searchParams) || !is_array($searchParams)) {
 					$searchParams = array();
 				}
 			   //To make smarty to get the details easily accesible
@@ -248,7 +249,7 @@ class Vtiger_Popup_View extends Vtiger_Footer_View {
 					}
 		}
 
-		$noOfEntries = count($this->listViewEntries);
+		$noOfEntries = php7_count($this->listViewEntries);
 
 		if(empty($sortOrder)){
 			$sortOrder = "ASC";

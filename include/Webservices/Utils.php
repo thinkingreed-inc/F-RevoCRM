@@ -477,7 +477,7 @@ function vtws_getModuleHandlerFromId($id,$user){
 
 function vtws_CreateCompanyLogoFile($fieldname) {
 	global $root_directory;
-	$uploaddir = $root_directory ."/test/logo/";
+	$uploaddir = $root_directory ."/public/logo/";
 	$allowedFileTypes = array("jpeg", "png", "jpg", "pjpeg" ,"x-png");
 	$binFile = $_FILES[$fieldname]['name'];
 	$fileType = $_FILES[$fieldname]['type'];
@@ -503,7 +503,7 @@ function vtws_CreateCompanyLogoFile($fieldname) {
 
 function vtws_getActorEntityName ($name, $idList) {
 	$db = PearDatabase::getInstance();
-	if (!is_array($idList) && count($idList) == 0) {
+	if (!is_array($idList) && php7_count($idList) == 0) {
 		return array();
 	}
 	$entity = VtigerWebserviceObject::fromName($db, $name);
@@ -512,7 +512,7 @@ function vtws_getActorEntityName ($name, $idList) {
 
 function vtws_getActorEntityNameById ($entityId, $idList) {
 	$db = PearDatabase::getInstance();
-	if (!is_array($idList) && count($idList) == 0) {
+	if (!is_array($idList) && php7_count($idList) == 0) {
 		return array();
 	}
 	$nameList = array();
@@ -824,6 +824,7 @@ function vtws_transferOwnership($ownerId, $newOwnerId, $delete=true) {
 	//Updating the smownerid, modifiedby in vtiger_crmentity
 	$db->pquery('UPDATE vtiger_crmentity SET smownerid=?, modifiedtime = ? WHERE smownerid=? AND setype<>?', array($newOwnerId, date('Y-m-d H:i:s'), $ownerId, 'ModComments'));
 	$db->pquery('UPDATE vtiger_crmentity SET modifiedby=? WHERE modifiedby=?', array($newOwnerId, $ownerId));
+	CRMEntity::updateBasicInformation(null, null, array('ModComments'));
 
 	//deleting from vtiger_tracker
 	$db->pquery('DELETE FROM vtiger_tracker WHERE user_id=?', array($ownerId));
@@ -918,7 +919,7 @@ function vtws_updateWebformsRoundrobinUsersLists($ownerId, $newOwnerId) {
 					}
 					$usersList = $revisedUsersList;
 				}
-				if (count($usersList) == 0) {
+				if (php7_count($usersList) == 0) {
 					$db->pquery('UPDATE vtiger_webforms SET roundrobin_userid = ?,roundrobin = ? where id =?', array("--None--", 0, $webformId));
 				} else {
 					$usersList = json_encode($usersList);
@@ -962,7 +963,7 @@ function vtws_transferOwnershipForWorkflowTasks($ownerModel, $newOwnerModel) {
 		require_once("modules/com_vtiger_workflow/VTTaskManager.inc");
 		require_once 'modules/com_vtiger_workflow/tasks/'.$className.'.inc';
 		$unserializeTask = unserialize($task);
-		if(array_key_exists("field_value_mapping",$unserializeTask)) {
+		if(property_exists($unserializeTask, "field_value_mapping")) {
 			$fieldMapping = Zend_Json::decode($unserializeTask->field_value_mapping);
 			if (!empty($fieldMapping)) {
 				foreach ($fieldMapping as $key => $condition) {
@@ -985,7 +986,7 @@ function vtws_transferOwnershipForWorkflowTasks($ownerModel, $newOwnerModel) {
 			}
 		} else {
 			//For VTCreateTodoTask and VTCreateEventTask
-			if(array_key_exists('assigned_user_id', $unserializeTask)){
+			if(property_exists($unserializeTask, 'assigned_user_id')){
 				$value = $unserializeTask->assigned_user_id;
 				if($value == $ownerId) {
 					$unserializeTask->assigned_user_id = $newOwnerId;
@@ -1254,7 +1255,7 @@ function vtws_getConvertEntityFieldInfo($module, $fieldname) {
 
 function vtws_getCompanyEncodedImage($logoname) {
 	global $root_directory;
-	$image = "$root_directory/test/logo/$logoname";
+	$image = "$root_directory/public/logo/$logoname";
 	$image_data = file_get_contents($image);
 	$encoded_image = base64_encode($image_data);
 	return $encoded_image;
@@ -1291,7 +1292,7 @@ function vtws_filedetails($fileData){
         $fileName = $fileData['name'];
         $fileType = $fileData['type'];
         $fileName = html_entity_decode($fileName, ENT_QUOTES, vglobal('default_charset'));
-        $filenamewithpath = $fileData['path'].'_'.$fileData['encName'];
+        $filenamewithpath = $fileData['path'].$fileData['attachmentsid'].'_'.$fileData['storedname'];
         $filesize = filesize($filenamewithpath);
         $fileDetails['fileid'] = $fileData['attachmentsid'];
         $fileDetails['filename'] = $fileName;

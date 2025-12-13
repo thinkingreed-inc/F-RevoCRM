@@ -78,7 +78,7 @@ class Vtiger_Utils {
                         $backtrace .= "FileAccessForInclusion - \n";
                         foreach ($a as $b) {
                              $backtrace .=  $b['file'] . '::' . $b['function'] . '::' . $b['line'] . '<br>'.PHP_EOL;
-						}
+                        }
 						$backtrace .= $filepath.PHP_EOL;
                         Vtiger_Utils::writeLogFile('fileMissing.log', $backtrace);
                         die('Sorry! Attempt to access restricted file.');
@@ -304,7 +304,7 @@ class Vtiger_Utils {
      * @param <boolean> $request flag to enable or disable request in log
      */
     static function ModuleLog($module, $mixed, $extra = array()) {
-        if (ALLOW_MODULE_LOGGING) { 
+        if (defined('ALLOW_MODULE_LOGGING')) { 
             global $site_URL;
             $date = date('Y-m-d H:i:s');
             $log = array($site_URL,$module, $date);
