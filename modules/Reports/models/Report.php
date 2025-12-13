@@ -21,8 +21,8 @@ class Vtiger_Report_Model extends Reports {
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$userId = $currentUser->getId();
 		$currentUserRoleId = $currentUser->get('roleid');
-		$subordinateRoles = getRoleSubordinates($currentUserRoleId);
-		array_push($subordinateRoles, $currentUserRoleId);
+		$parentRoles = getParentRole($currentUserRoleId);
+		array_push($parentRoles, $currentUserRoleId);
 
 		$this->initListOfModules();
 
@@ -68,14 +68,14 @@ class Vtiger_Report_Model extends Reports {
 					}
 					$ssql .= " OR (vtiger_report.reportid IN (SELECT reportid FROM vtiger_report_sharerole WHERE roleid = ?))
 							   OR (vtiger_report.reportid IN (SELECT reportid FROM vtiger_report_sharers 
-								WHERE rsid IN (".generateQuestionMarks($subordinateRoles).")))
+								WHERE rsid IN (".generateQuestionMarks($parentRoles).")))
 							  )";
 					array_push($params, $userId, $userId, $userId);
 					foreach($userGroupsList as $groups) {
 						array_push($params, $groups);
 					}
 					array_push($params, $currentUserRoleId);
-					foreach($subordinateRoles as $role) {
+					foreach($parentRoles as $role) {
 						array_push($params, $role);
 					}
 				}
@@ -89,7 +89,8 @@ class Vtiger_Report_Model extends Reports {
 							$userId, $reportId, $reportModulesRow["primarymodule"],
 							$reportModulesRow["secondarymodules"], $reportModulesRow["reporttype"],
 							$reportModulesRow["reportname"], $reportModulesRow["description"],
-							$reportModulesRow["folderid"], $reportModulesRow["owner"]
+							$reportModulesRow["folderid"], $reportModulesRow["owner"],
+							$reportModulesRow["join_column"]
 					);
 				}
 
@@ -120,6 +121,7 @@ class Vtiger_Report_Model extends Reports {
 				$this->reportname = decode_html($cachedInfo["reportname"]);
 				$this->reportdescription = decode_html($cachedInfo["description"]);
 				$this->folderid = $cachedInfo["folderid"];
+				$this->joinColumn = $cachedInfo["join_column"];
 				if($currentUser->isAdminUser() == true || in_array($cachedInfo["owner"], $subOrdinateUsers) || $cachedInfo["owner"]==$userId) {
 					$this->is_editable = true;
 				}else{

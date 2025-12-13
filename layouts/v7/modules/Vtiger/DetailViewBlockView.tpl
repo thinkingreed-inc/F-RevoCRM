@@ -36,7 +36,10 @@
 							{foreach item=FIELD_MODEL key=FIELD_NAME from=$FIELD_MODEL_LIST}
 								{if $IS_FIRST}
 									{assign var=IS_FIRST value=false}
-										<td></td><td></td><td></td><td></td>
+										<td class="fieldLabel {$WIDTHTYPE}"></td>
+										<td class="fieldValue {$WIDTHTYPE}"></td>
+										<td class="fieldLabel {$WIDTHTYPE}"></td>
+										<td class="fieldValue {$WIDTHTYPE}"></td>
 									</tr>
 									<tr>
 								{/if}
@@ -83,6 +86,14 @@
 										</ul>
 									</td>
 									{assign var=COUNTER value=$COUNTER+1}
+								{else if $FIELD_MODEL->get('uitype') eq "999"}
+									{if $COUNTER eq 2}
+										</tr><tr>
+										{assign var="COUNTER" value=1}
+									{else}
+										{assign var="COUNTER" value=$COUNTER+1}
+									{/if}
+									<td class="blankField"></td><td class="blankField"></td>
 								{else}
 									{if $FIELD_MODEL->get('uitype') eq "20" or $FIELD_MODEL->get('uitype') eq "19" or $fieldDataType eq 'reminder' or $fieldDataType eq 'recurrence'}
 										{if $COUNTER eq '1'}
@@ -127,7 +138,9 @@
 													<input type="hidden" class="fieldBasicData" data-name='{$FIELD_MODEL->get('name')}' data-type="{$fieldDataType}" data-displayvalue='{$FIELD_DISPLAY_VALUE}' data-value="{$FIELD_VALUE}" />
 												{/if}
 											</span>
-											<span class="action pull-right"><a href="#" onclick="return false;" class="editAction fa fa-pencil"></a></span>
+											{* {if $FIELD_MODEL->get('uitype') neq '999'} *}
+												<span class="action pull-right"><a href="#" onclick="return false;" class="editAction fa fa-pencil"></a></span>
+											{* {/if} *}
 										{/if}
 									</td>
 								{/if}

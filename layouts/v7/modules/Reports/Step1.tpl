@@ -66,7 +66,7 @@
             </div>
             <div class="row">
                 <div class="form-group">
-                    <label class="col-lg-3 control-label textAlignLeft">{vtranslate('LBL_SELECT_RELATED_MODULES',$MODULE)}&nbsp;({vtranslate('LBL_MAX',$MODULE)}&nbsp;2)</label>
+                    <label class="col-lg-3 control-label textAlignLeft">{vtranslate('LBL_SELECT_RELATED_MODULES',$MODULE)}&nbsp;({vtranslate('LBL_MAX',$MODULE)}&nbsp;4)</label>
                     <div class="col-lg-4">
                         {assign var=SECONDARY_MODULES_ARR value=explode(':',$REPORT_MODEL->getSecondaryModules())}
                         {assign var=PRIMARY_MODULE value=$REPORT_MODEL->getPrimaryModule()}
@@ -111,7 +111,7 @@
                                     </option>
                             </optgroup>
                             {foreach from=$MEMBER_GROUPS key=GROUP_LABEL item=ALL_GROUP_MEMBERS}
-                                <optgroup label="{$GROUP_LABEL}">
+                                <optgroup label="{vtranslate($GROUP_LABEL)}">
                                     {foreach from=$ALL_GROUP_MEMBERS item=MEMBER}
                                         {if $GROUP_LABEL neq 'Users' || $MEMBER->getId() neq 'Users:'|cat:$CURRENT_USER->getId()}
                                             <option value="{$MEMBER->getId()}"  data-member-type="{$GROUP_LABEL}" {if isset($SELECTED_MEMBERS_GROUP[$GROUP_LABEL][$MEMBER->getId()])}selected="true"{/if}>{$MEMBER->getName()}</option>

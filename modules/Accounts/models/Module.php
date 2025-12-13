@@ -165,9 +165,6 @@ class Accounts_Module_Model extends Vtiger_Module_Model {
 			"SELECT distinct
 				vtiger_crmentity.crmid
 				, crmentity2.crmid AS parent_id
-				, vtiger_crmentity.smownerid
-				, vtiger_crmentity.setype
-				, vtiger_crmentity.description
 				, vtiger_activity.* 
 			FROM
 				vtiger_activity 
@@ -229,9 +226,6 @@ class Accounts_Module_Model extends Vtiger_Module_Model {
 			"SELECT distinct
 				vtiger_crmentity.crmid
 				, crmentity2.crmid AS parent_id
-				, vtiger_crmentity.smownerid
-				, vtiger_crmentity.setype
-				, vtiger_crmentity.description
 				, vtiger_activity.* 
 			FROM
 				vtiger_activity 
@@ -300,9 +294,6 @@ class Accounts_Module_Model extends Vtiger_Module_Model {
 				"SELECT distinct
 					vtiger_crmentity.crmid
 					, null AS parent_id
-					, vtiger_crmentity.smownerid
-					, vtiger_crmentity.setype
-					, vtiger_crmentity.description
 					, vtiger_activity.* 
 				FROM
 					vtiger_activity 
@@ -323,9 +314,6 @@ class Accounts_Module_Model extends Vtiger_Module_Model {
 				"SELECT distinct
 					vtiger_crmentity.crmid
 					, null AS parent_id
-					, vtiger_crmentity.smownerid
-					, vtiger_crmentity.setype
-					, vtiger_crmentity.description
 					, vtiger_activity.* 
 				FROM
 					vtiger_activity 
@@ -373,23 +361,20 @@ class Accounts_Module_Model extends Vtiger_Module_Model {
 			$model = Vtiger_Record_Model::getCleanInstance('Calendar');
 			$ownerId = $newRow['smownerid'];
 			$currentUser = Users_Record_Model::getCurrentUserModel();
-			$visibleFields = array('activitytype','date_start','time_start','due_date','time_end','assigned_user_id','visibility','smownerid','crmid', 'description');
+			$visibleFields = array('activitytype','date_start','time_start','due_date','time_end','assigned_user_id','visibility','smownerid','crmid');
 			$visibility = true;
 			if(in_array($ownerId, $groupsIds)) {
 				$visibility = false;
 			} else if($ownerId == $currentUser->getId()){
 				$visibility = false;
 			}
-			if($newRow['activitytype'] != 'Task' && $newRow['visibility'] == 'Private' && $ownerId && $visibility) {
+			if(!$currentUser->isAdminUser() && $newRow['visibility'] == 'Private' && $ownerId && $visibility) {
 				foreach($newRow as $data => $value) {
 					if(in_array($data, $visibleFields) != -1) {
 						unset($newRow[$data]);
 					}
 				}
 				$newRow['subject'] = vtranslate('Busy','Events').'*';
-			}
-			if($newRow['activitytype'] == 'Task') {
-				unset($newRow['visibility']);
 			}
 
 			$model->setData($newRow);

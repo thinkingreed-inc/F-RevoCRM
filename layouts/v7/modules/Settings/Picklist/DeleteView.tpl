@@ -30,7 +30,7 @@
                                     <option {if in_array($PICKLIST_VALUE,$FIELD_VALUES)} selected="" {/if} value="{$PICKLIST_VALUE_KEY}">{vtranslate($PICKLIST_VALUE,$SOURCE_MODULE)}</option>
                                 {/foreach}
                             </select>
-                            <input id="pickListValuesCount" type="hidden" value="{count($SELECTED_PICKLISTFIELD_EDITABLE_VALUES)+count($SELECTED_PICKLISTFIELD_NON_EDITABLE_VALUES)}"/>
+                            <input id="pickListValuesCount" type="hidden" value="{php7_count($SELECTED_PICKLISTFIELD_EDITABLE_VALUES)+php7_count($SELECTED_PICKLISTFIELD_NON_EDITABLE_VALUES)}"/>
                         </div>
                     </div>
                     <br>

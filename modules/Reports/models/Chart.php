@@ -364,7 +364,7 @@ abstract class Base_Chart extends Vtiger_Base_Model{
 		$dataFieldInfo = @explode(':', $field);
 		if(($dataFieldInfo[4] == 'D' || $dataFieldInfo[4] == 'DT') && !empty($dataFieldInfo[5])) {
 			$dataValue = explode(' ',$value);
-			if(count($dataValue) > 1) {
+			if(php7_count($dataValue) > 1) {
 				$comparator = 'bw';
 				if($dataFieldInfo[4] == 'D') {
 					$value = date('Y-m-d', strtotime($value)).','.date('Y-m-d', strtotime('last day of'.$value));
@@ -389,7 +389,7 @@ abstract class Base_Chart extends Vtiger_Base_Model{
 
 		$advancedFilterConditions = $reportModel->transformToNewAdvancedFilter();
 		//Step 1. Add the filter condition for the field
-		if(count($advancedFilterConditions[1]['columns']) < 1) {
+		if(php7_count($advancedFilterConditions[1]['columns']) < 1) {
 			//If count is less than 1 that means there is only ANY conditions in report. There is no ALL conditions selected.
 			$groupCondition = array();
 			$groupCondition['columns'][] = array(
@@ -680,7 +680,7 @@ class VerticalbarChart extends Base_Chart {
 		$data = array(	'labels' => $labels,
 						'values' => $values,
 						'links' => $links,
-						'type' => (count($values[0]) == 1) ? 'singleBar' : 'multiBar',
+						'type' => (php7_count($values[0]) == 1) ? 'singleBar' : 'multiBar',
 						'data_labels' => $this->getDataLabels(),
 						'data_type' => $this->getDataTypes(),
 						'graph_label' => $this->getGraphLabel()

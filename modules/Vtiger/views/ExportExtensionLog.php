@@ -21,7 +21,7 @@ class Vtiger_ExportExtensionLog_View extends Vtiger_View_Controller {
 	public function checkPermission(Vtiger_Request $request) {
 		parent::checkPermission($request);
 	}
-	function preProcess(Vtiger_Request $request) {
+	function preProcess(Vtiger_Request $request, $display=true) {
 		return false;
 	}
 

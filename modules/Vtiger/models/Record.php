@@ -8,12 +8,14 @@
  * All Rights Reserved.
  *************************************************************************************/
 
+ require_once('modules/Vtiger/helpers/PDF.php');
 /**
  * Vtiger Entity Record Model Class
  */
 class Vtiger_Record_Model extends Vtiger_Base_Model {
 
 	protected $module = false;
+	protected $entity = false;
 
 	/**
 	 * Function to get the id of the record
@@ -140,7 +142,9 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
 	 */
 	public function getDetailViewUrl() {
 		$module = $this->getModule();
-		return 'index.php?module='.$this->getModuleName().'&view='.$module->getDetailViewName().'&record='.$this->getId();
+		$cv = new CustomView();
+		$viewId = $cv->getViewId($module->getName());
+		return 'index.php?module='.$this->getModuleName().'&view='.$module->getDetailViewName().'&record='.$this->getId().'&viewname='.$viewId;
 	}
 
 	/**
@@ -161,7 +165,9 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
 	 */
 	public function getEditViewUrl() {
 		$module = $this->getModule();
-		return 'index.php?module='.$this->getModuleName().'&view='.$module->getEditViewName().'&record='.$this->getId();
+		$cv = new CustomView();
+		$viewId = $cv->getViewId($module->getName());
+		return 'index.php?module='.$this->getModuleName().'&view='.$module->getEditViewName().'&record='.$this->getId().'&viewname='.$viewId;
 	}
 
 	/**
@@ -212,7 +218,7 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
 		if($fieldName == "time_start" && $this->getModule()->getName() == "Emails"){
 			$date = new DateTime();
 			$dateTime = new DateTimeField($date->format('Y-m-d').' '.$this->get($fieldName));
-			$value = Vtiger_Time_UIType::getDisplayValue($dateTime->getDisplayTime());
+			$value = Vtiger_Time_UIType::getDisplayValueUserFormat($dateTime->getDisplayTime());
 			$this->set($fieldName, $value);
 			return $value;
 		}else if($fieldName == "date_start" && $this->getModule()->getName() == "Emails"){
@@ -316,10 +322,13 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
 		$query = 'SELECT label, crmid, setype, createdtime FROM vtiger_crmentity WHERE label LIKE ? AND vtiger_crmentity.deleted = 0';
 		$params = array("%$searchKey%");
 
-		if($module !== false) {
+		// $moduleには配列が含まれるため、特定のモジュールを指定していない場合はすべてを検索対象とする
+		// そのため、setypeによる制御を入れない
+		if($module !== false && is_string($module)) {
 			$query .= ' AND setype = ?';
 			$params[] = $module;
 		}
+
 		//Remove the ordering for now to improve the speed
 		$query .= ' ORDER BY modifiedtime DESC';
 
@@ -748,5 +757,41 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
                     return $this->get('filename');
             }
 	}
+
+	/**
+	 * Function to get this record and details as PDF
+	 */
+	public function getPDF($templateId, $is_preview = false) {
+		PDF_helper::getPDF($this, $templateId, $is_preview);
+	}
+
+	public static function createPDF($templateId, $recordIdData, $moduleName, $isMassExport = false, $is_preview = false)
+	{
+		PDF_helper::createPDF($templateId, $recordIdData, $moduleName, $isMassExport, $is_preview);
+	}
+
+	/**
+	 * Function to get URL for Export the record as PDF
+	 * @return <type>
+	 */
+	public function getExportPDFUrl() {
+		return "index.php?module=".$this->getModuleName()."&action=ExportPDF&record=".$this->getId();
+	}
+
+	/**
+	  * Function to get the send email pdf url
+	  * @return <string>
+	  */
+	  public function getSendEmailPDFUrl() {
+		return 'module='.$this->getModuleName().'&view=SendEmail&mode=composeMailData&record='.$this->getId();
+	}
+    /**
+     * ドキュメントを削除する
+     */
+    public static function deleteDocument($notesid) {
+        global $adb;
+        $adb->pquery("UPDATE vtiger_crmentity SET deleted=1 WHERE crmid= ?", array($notesid));
+		CRMEntity::updateBasicInformation('Documents', $notesid);
+    }
 
 }

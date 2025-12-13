@@ -66,11 +66,50 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 	}
 
 	/**
+	 * Function returns the URL for creating Events at QuickCreat
+	 * @return <String>
+	 */
+	public function getQuickCreateEventRecordUrl() {
+		$refererUrl  = $_SERVER['HTTP_REFERER'];
+		$parsedurl = parse_url($refererUrl);
+		$searchParams = explode('&', $parsedurl['query']);
+		foreach ($searchParams as $searchParam) {
+			$explodedParams = explode('=', $searchParam);
+			$parsedParams[$explodedParams[0]] = $explodedParams[1];
+		}
+		$eventRecordUrl = 'index.php?module=' . $this->get('name') . '&view=' . $this->getEditViewName() . '&mode=Events';
+		if ($parsedParams['view'] == 'SharedCalendar') {
+			return $eventRecordUrl . '&referer=SharedCalendar';
+		}
+		return $eventRecordUrl;
+	}
+
+	/**
 	 * Function returns the URL for creating Task
 	 * @return <String>
 	 */
 	public function getCreateTaskRecordUrl() {
 		return 'index.php?module='.$this->get('name').'&view='.$this->getEditViewName().'&mode=Calendar';
+	}
+
+	/**
+	 * Function returns the URL for creating Tasks at QuickCreat
+	 * @return <String>
+	 */
+	public function getQuickCreateTaskRecordUrl()
+	{
+		$refererUrl  = $_SERVER['HTTP_REFERER'];
+		$parsedurl = parse_url($refererUrl);
+		$searchParams = explode('&', $parsedurl['query']);
+		foreach ($searchParams as $searchParam) {
+			$explodedParams = explode('=', $searchParam);
+			$parsedParams[$explodedParams[0]] = $explodedParams[1];
+		}
+		$eventRecordUrl = 'index.php?module=' . $this->get('name') . '&view=' . $this->getEditViewName() . '&mode=Calendar';
+		if ($parsedParams['view'] == 'SharedCalendar') {
+			return $eventRecordUrl . '&referer=SharedCalendar';
+		}
+		return $eventRecordUrl;
 	}
 
 	/**
@@ -232,7 +271,7 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 		$query = "SELECT vtiger_activity.*, vtiger_crmentity.description, vtiger_activity_reminder.reminder_time FROM vtiger_activity
 					INNER JOIN vtiger_crmentity ON vtiger_activity.activityid = vtiger_crmentity.crmid
 					LEFT JOIN vtiger_activity_reminder ON vtiger_activity_reminder.activity_id = vtiger_activity.activityid AND vtiger_activity_reminder.recurringid = 0
-					WHERE vtiger_crmentity.deleted = 0 AND vtiger_crmentity.smownerid IN ($value) AND vtiger_activity.activitytype NOT IN ('Emails')";
+					WHERE vtiger_crmentity.deleted = 0 AND vtiger_activity.smownerid IN ($value) AND vtiger_activity.activitytype NOT IN ('Emails')";
 		return $query;
 	}
 
@@ -457,6 +496,8 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 								'visible'	=> $activityTypes['visible'],
 								'color'		=> $activityTypes['color'],
 								'type'		=> $type,
+								'is_own'	=> $activityTypes['is_own'],
+								'isdefault'	=> $activityTypes['isdefault'],
 								'conditions'=> array(
 												'name' => $conditionsName,
 												'rules' => $activityTypes['conditions']
@@ -537,7 +578,7 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 		return $moduleFieldsList;
 	}
 
-	function getCalendarViewTypesToAdd($userId) {
+	public static function getCalendarViewTypesToAdd($userId) {
 		$calendarViewTypes = self::getCalendarViewTypes($userId);
 		$moduleViewTypes = self::getDateFieldModulesList();
 
@@ -545,7 +586,7 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 		if(is_array($visibleList)) {
 			foreach($visibleList as $list) {
 				$fieldsListArray = $moduleViewTypes[$list['module']];
-				if(count($fieldsListArray) == 1) {
+				if(php7_count($fieldsListArray) == 1) {
 					if($list['module'] !== 'Events') {
 						unset($fieldsListArray[$list['fieldname']]);
 					}
@@ -560,7 +601,7 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 		return $moduleViewTypes;
 	}
 
-	function getVisibleCalendarViewTypes($userId) {
+	public static function getVisibleCalendarViewTypes($userId) {
 		$db = PearDatabase::getInstance();
 
 		$query = "SELECT * FROM vtiger_calendar_user_activitytypes 
@@ -602,7 +643,7 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 	 *  Function to check duplicate activity view while adding
 	 * @return <boolean>
 	 */
-	public function checkDuplicateView(Vtiger_Request $request) {
+	public static function checkDuplicateView(Vtiger_Request $request) {
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$userId = $currentUser->getId();
 		$viewmodule = $request->get('viewmodule');
@@ -627,7 +668,7 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 	/**
 	 *  Function to delete calendar view
 	 */
-	public function deleteCalendarView(Vtiger_Request $request) {
+	public static function deleteCalendarView(Vtiger_Request $request) {
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$userId = $currentUser->getId();
 		$viewmodule = $request->get('viewmodule');
@@ -659,13 +700,14 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 	 *  Function to add calendar view
 	 * @return <string>
 	 */
-	public function addCalendarView(Vtiger_Request $request) {
+	public static function addCalendarView(Vtiger_Request $request) {
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$userId = $currentUser->getId();
 		$viewmodule = $request->get('viewmodule');
 		$fieldName = $request->get('viewfieldname');
 		$viewcolor = $request->get('viewColor');
 		$viewconditions = $request->get('viewConditions','');
+		$viewIsOwn = $request->get('viewIsOwn','0');
 		$viewfieldname = Array();
 		$viewfieldname = Zend_Json::encode(explode(',',$fieldName));
 
@@ -684,10 +726,10 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 			if($db->num_rows($query) > 0) {
 				$db->pquery('UPDATE vtiger_calendar_user_activitytypes 
 							INNER JOIN vtiger_calendar_default_activitytypes ON vtiger_calendar_default_activitytypes.id = vtiger_calendar_user_activitytypes.defaultid
-							SET vtiger_calendar_user_activitytypes.color=?, vtiger_calendar_user_activitytypes.visible=? 
+							SET vtiger_calendar_user_activitytypes.color=?, vtiger_calendar_user_activitytypes.visible=?, vtiger_calendar_user_activitytypes.is_own=? 
 							WHERE vtiger_calendar_user_activitytypes.userid=? AND vtiger_calendar_default_activitytypes.module=? AND vtiger_calendar_default_activitytypes.fieldname=? 
 							AND vtiger_calendar_default_activitytypes.conditions=?',
-								array($viewcolor, '1', $userId, $viewmodule, $viewfieldname, $viewconditions));
+								array($viewcolor, '1', $viewIsOwn, $userId, $viewmodule, $viewfieldname, $viewconditions));
 			} else {
 				$db->pquery('INSERT INTO vtiger_calendar_user_activitytypes (id, defaultid, userid, color) VALUES (?,?,?,?)', array($db->getUniqueID('vtiger_calendar_user_activitytypes'), $defaultId, $userId, $viewcolor));
 			}
@@ -695,7 +737,7 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 			$defaultId = $db->getUniqueID('vtiger_calendar_default_activitytypes');
 			$db->pquery('INSERT INTO vtiger_calendar_default_activitytypes (id, module, fieldname, defaultcolor, isdefault, conditions) VALUES (?,?,?,?,?,?)', array($defaultId, $viewmodule, $viewfieldname, $viewcolor, '0', $viewconditions));
 
-			$db->pquery('INSERT INTO vtiger_calendar_user_activitytypes (id, defaultid, userid, color) VALUES (?,?,?,?)', array($db->getUniqueID('vtiger_calendar_user_activitytypes'), $defaultId, $userId, $viewcolor));
+			$db->pquery('INSERT INTO vtiger_calendar_user_activitytypes (id, defaultid, userid, color, is_own) VALUES (?,?,?,?,?)', array($db->getUniqueID('vtiger_calendar_user_activitytypes'), $defaultId, $userId, $viewcolor, $viewIsOwn));
 		}
 
 		return $type;
@@ -705,7 +747,7 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 	 *  Function to get all calendar view conditions
 	 * @return <string>
 	 */
-	public function getCalendarViewConditions() {
+	public static  function getCalendarViewConditions() {
 		$eventsModuleModel = Vtiger_Module_Model::getInstance('Events');
 		$eventTypePicklistValues = $eventsModuleModel->getField('activitytype')->getPicklistValues();
 		$eventsModuleConditions = array();
@@ -759,7 +801,7 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 	 * @param type $currentUserId
 	 * @param type $sharedIds
 	 */
-	public function getSharedType($currentUserId){
+	public static function getSharedType($currentUserId){
 		$db = PearDatabase::getInstance();
 
 		$query = "SELECT calendarsharedtype FROM vtiger_users WHERE id=?";
@@ -884,7 +926,7 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 			}
 		}
 
-		if(count($tasks[$priority]) > $pageLimit){
+		if(php7_count($tasks[$priority]) > $pageLimit){
 			array_pop($tasks[$priority]);
 			$pagingModel->set('nextPageExists', true);
 		}else{
@@ -906,17 +948,17 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 
 		if($activityReminder != '' ) {
 			$currentTime = time();
-			$date = date('Y-m-d', strtotime("+$activityReminder seconds", $currentTime));
-			$time = date('H:i',   strtotime("+$activityReminder seconds", $currentTime));
+			$when = date('Y-m-d H:i:s', strtotime("+$activityReminder seconds", $currentTime));
 			$reminderActivitiesResult = "SELECT reminderid, recordid FROM vtiger_activity_reminder_popup
 								INNER JOIN vtiger_activity on vtiger_activity.activityid = vtiger_activity_reminder_popup.recordid
 								INNER JOIN vtiger_crmentity ON vtiger_activity_reminder_popup.recordid = vtiger_crmentity.crmid
 								WHERE vtiger_activity_reminder_popup.status = 0
-								AND vtiger_crmentity.smownerid = ? AND vtiger_crmentity.deleted = 0
-								AND ((DATE_FORMAT(vtiger_activity_reminder_popup.date_start,'%Y-%m-%d') <= ?)
-								AND (TIME_FORMAT(vtiger_activity_reminder_popup.time_start,'%H:%i') <= ?))
+								AND vtiger_crmentity.smownerid = ?
+								AND vtiger_crmentity.deleted = 0
+								AND vtiger_activity.sendnotification = 1
+								AND concat(cast(vtiger_activity_reminder_popup.date_start as char),' ',cast(vtiger_activity_reminder_popup.time_start as char)) <= ?
 								AND vtiger_activity.eventstatus <> 'Held' AND (vtiger_activity.status <> 'Completed' OR vtiger_activity.status IS NULL) LIMIT 20";
-			$result = $db->pquery($reminderActivitiesResult, array($currentUserModel->getId(), $date, $time));
+			$result = $db->pquery($reminderActivitiesResult, array($currentUserModel->getId(), $when));
 			$rows = $db->num_rows($result);
 			for($i=0; $i<$rows; $i++) {
 				$recordId = $db->query_result($result, $i, 'recordid');

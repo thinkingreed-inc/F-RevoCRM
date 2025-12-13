@@ -49,7 +49,7 @@ class Vtiger_Filter {
 	function initialize($valuemap, $moduleInstance=false) {
 		$this->id = $valuemap['cvid'];
 		$this->name= $valuemap['viewname'];
-		$this->module=$moduleInstance? $moduleInstance: Vtiger_Module::getInstance($valuemap[tabid]);
+		$this->module=$moduleInstance? $moduleInstance: Vtiger_Module::getInstance($valuemap['tabid']);
 	}
 
 	/**

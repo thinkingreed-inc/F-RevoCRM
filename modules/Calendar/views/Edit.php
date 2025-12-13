@@ -201,7 +201,11 @@ Class Calendar_Edit_View extends Vtiger_Edit_View {
 		$viewer->assign('PICKIST_DEPENDENCY_DATASOURCE',Vtiger_Functions::jsonEncode($picklistDependencyDatasource));
 		$viewer->assign('ACCESSIBLE_USERS', $accessibleUsers);
 		if($request->get('selectedusers')) {
-			$viewer->assign('INVITIES_SELECTED', $request->get('selectedusers'));
+			$invetees = $request->get('selectedusers');
+			if(!is_array($invetees)) {
+				$invetees = explode(' |##| ', $invetees);
+			}
+			$viewer->assign('INVITIES_SELECTED', $invetees);
 		} else {
 			$viewer->assign('INVITIES_SELECTED', $recordModel->getInvities());
 		}

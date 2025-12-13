@@ -256,11 +256,11 @@ class VTEmailTask extends VTTask{
 			} else {
 				if ($userObj) {
 					$fromEmail = $userObj->email1;
-					$fromName =	trim($userObj->last_name.' '.$userObj->first_name);
+					$fromName =	$userObj->userlabel;
 				} else {
 					$fromEmail = $this->getDefaultFromEmail();
 					$userObj = Users::getActiveAdminUser();
-					$fromName =	trim($userObj->last_name.' '.$userObj->first_name);
+					$fromName =	$userObj->userlabel;
 				}
 			}
 

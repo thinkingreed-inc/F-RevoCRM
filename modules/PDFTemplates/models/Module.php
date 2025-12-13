@@ -36,26 +36,27 @@ class PDFTemplates_Module_Model extends Vtiger_Module_Model {
 		$db = PearDatabase::getInstance();
 		$recordId = $templateid = $recordModel->getId();
 		$systemtemplate = $recordModel->get('systemtemplate');
+		$pdffilename = $recordModel->get('pdffilename');
 		if (empty($systemtemplate)) {
 			$systemtemplate = '0';
 		}
 		if(empty($templateid)){
 			$templateid = $db->getUniqueID('vtiger_pdftemplates');
-			$sql = "INSERT INTO vtiger_pdftemplates(templatename, subject, description, module, body, deleted, systemtemplate, templateid) VALUES (?,?,?,?,?,?,?,?)";
+			$sql = "INSERT INTO vtiger_pdftemplates(templatename, subject, description, module, body, deleted, systemtemplate, pdffilename, templateid) VALUES (?,?,?,?,?,?,?,?,?)";
 		}else{
 			if($systemtemplate) {
-				$sql = "UPDATE vtiger_pdftemplates SET templatename=?, description=?, module=?, body=?, deleted=?, systemtemplate=? WHERE templateid = ?";
+				$sql = "UPDATE vtiger_pdftemplates SET templatename=?, description=?, module=?, body=?, deleted=?, systemtemplate=?, pdffilename=? WHERE templateid = ?";
 			} else {
-				$sql = "UPDATE vtiger_pdftemplates SET templatename=?, subject=?, description=?, module=?, body=?, deleted=?, systemtemplate=? WHERE templateid = ?";
+				$sql = "UPDATE vtiger_pdftemplates SET templatename=?, subject=?, description=?, module=?, body=?, deleted=?, systemtemplate=?, pdffilename=? WHERE templateid = ?";
 			}
 		}
 		if(!empty($recordId) && $systemtemplate) {
 			$params = array(decode_html($recordModel->get('templatename')), decode_html($recordModel->get('description')),
-				$recordModel->get('module'),$recordModel->get('body'), 0, $systemtemplate, $templateid);
+				$recordModel->get('module'),$recordModel->get('body'), 0, $systemtemplate, $pdffilename,  $templateid);
 		} else {
 			$params = array(decode_html($recordModel->get('templatename')), decode_html($recordModel->get('subject')),
 				decode_html($recordModel->get('description')), $recordModel->get('module'),$recordModel->get('body'), 0, 
-				$systemtemplate, $templateid);
+				$systemtemplate, $pdffilename, $templateid);
 		}
 		$db->pquery($sql, $params);
 		return $recordModel->setId($templateid);
@@ -101,24 +102,9 @@ class PDFTemplates_Module_Model extends Vtiger_Module_Model {
 			}else{
 				$fieldList = $this->getRelatedFields($module, $currentUserModel);
 			}
-			//fieldListに総割引額(合計金額からの割引額)が無かったので追加
-			$fieldList[] = array(
-				'module' => $module,
-				'fieldname' => 'hdnDiscountAmountFinal',
-				'columnname' => 'discount_amount_final',
-				'fieldlabel' => 'Discount Amount Final'
-			);
-
 			$allFields = array();
 			foreach ($fieldList as $key => $field) {
-				if($field['module'] == ('Quotes' || 'Invoice' || 'SalesORder' || 'PurchaseORder') &&  $field['fieldlabel'] == 'Item Discount Amount'){
-					$option = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate($field['fieldlabel'], $field['module']), "$" . strtolower($field['module']) . "-" . "discount_itemamount" . "$");
-				}else if($field['module'] == ('Quotes' || 'Invoice' || 'SalesORder' || 'PurchaseORder') &&  $field['fieldlabel'] == 'Item Discount Percent'){
-					$option = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate($field['fieldlabel'], $field['module']), "$" . strtolower($field['module']) . "-" . "discount_itempercent" . "$");
-				}else{
-					$option = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate($field['fieldlabel'], $field['module']), "$" . strtolower($field['module']) . "-" . $field['columnname'] . "$");
-				}
-
+				$option = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate($field['fieldlabel'], $field['module']), "$" . strtolower($field['module']) . "-" . $field['columnname'] . "$");
 				$allFields[] = $option;
 				if (!empty($field['referencelist'])) {
 					foreach ($field['referencelist'] as $referenceList) {
@@ -136,10 +122,44 @@ class PDFTemplates_Module_Model extends Vtiger_Module_Model {
 			$allFields[] = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate('Item total price', $field['module']), "$" . strtolower($field['module']) . "-producttotal$");
 			$allFields[] = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate('Item net price', $field['module']), "$" . strtolower($field['module']) . "-netprice$");
 			$allFields[] = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate('Tax', $field['module']), "$" . strtolower($field['module']) . "-tax_totalamount$");
+			$allFields[] = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate('Child key no', $field['module']), "$" . strtolower($field['module']) . "-child_key_no$");
 			if(is_array($allFields) && is_array($allRelFields)){
 				$allFields = array_merge($allFields, $allRelFields);
 				$allRelFields= array();
 			}
+
+			$childRefModules = $this->getChildReferenceModules($module);
+
+			$allChildFields = array();
+			foreach ($childRefModules as $childRefModule => $childRefFieldnameAndModules) {
+				foreach ($childRefFieldnameAndModules as $key => $childRefFieldnameAndModule) {
+					list($relfieldname, $relfieldlabel, $columnname) = $childRefFieldnameAndModule;
+					$moduleModel = Vtiger_Module_Model::getInstance($childRefModule);
+					if (!$moduleModel) continue;
+					$blockModelList = $moduleModel->getBlocks();
+					foreach ($blockModelList as $blockLabel => $blockModel) {
+						$fieldModelList = $blockModel->getFields();
+						if (!empty($fieldModelList)) {
+							foreach ($fieldModelList as $fieldName => $fieldModel) {
+								if ($fieldModel->isViewable()) {
+									//Should not show starred and tag fields in edit task view
+									if ($fieldModel->getDisplayType() == '6') {
+										continue;
+									}
+	
+									$option = array(vtranslate("Child Module") . vtranslate($childRefModule, $childRefModule) . '-' . vtranslate($relfieldlabel, $childRefModule) . ':' . vtranslate($fieldModel->get('label'), $childRefModule), "$[".$module."]" . $childRefModule . "-" . $columnname . ":" .  $fieldModel->get('column') . "$");
+									$allChildFields[] = $option;
+								}
+							}
+						}
+					}
+				}
+			}
+			if (is_array($allFields) && is_array($allChildFields)) {
+				$allFields = array_merge($allFields, $allChildFields);
+				$allChildFields = array();
+			}
+
 			$allOptions[$module] = $allFields;
 			$allFields = array();
 		}
@@ -217,7 +237,7 @@ class PDFTemplates_Module_Model extends Vtiger_Module_Model {
 
 		$returnData = array();
 		foreach ($moduleFields as $key => $field) {
-			if(!in_array($field->getPresence(), array(0,2))){
+			if(!in_array($field->getPresence(), array(0,2)) || $field->getFieldDataType() === "blank"){
 				continue;
 			}
 			$referencelist = array();
@@ -269,35 +289,24 @@ class PDFTemplates_Module_Model extends Vtiger_Module_Model {
 		return $relModuleFieldList;
 	}
 
+
 	/**
 	 * Function to get module list which has the pdf field.
 	 * @return type
 	 */
 	public function getAllModuleList(){
-		// $db = PearDatabase::getInstance();
-		// // Get modules names only those are active
-		// $query = 'SELECT DISTINCT(name) AS modulename FROM vtiger_tab 
-		// 			LEFT JOIN vtiger_field ON vtiger_field.tabid = vtiger_tab.tabid
-		// 			WHERE (vtiger_field.uitype = ? AND vtiger_tab.presence = ?) ';
-		// $params = array('13',0);
-		// // Check whether calendar module is active or not.
-		// if(vtlib_isModuleActive("Calendar")){
-		// 	$eventsTabid = getTabid('Events');
-		// 	$query .= ' OR vtiger_tab.tabid IN (?, ?)';
-		// 	array_push($params, $eventsTabid, getTabid('Calendar'));
-		// }
-		// $result = $db->pquery($query, $params);
-		// $num_rows = $db->num_rows($result);
-		// $moduleList = array();
-		// for($i=0; $i<$num_rows; $i++){
-		// 	$moduleList[] = $db->query_result($result, $i, 'modulename');
-		// }
-		$moduleList = array(
-			'Quotes',
-			'Invoice',
-			'SalesOrder',
-			'PurchaseOrder',
+		$restrictedModulesList = array(
+			'Emails', 'ModComments', 'Integration', 'PBXManager', 'Dashboard',
+			'Home', 'Reports', 'Import', 'ModTracker', 'WSAPP', 'CustomerPortal',
+			'Users', 'Mobile', 'RecycleBin', 'EmailTemplates', 'PDFTemplates',
+			'SMSNotifier', 'Rss', 'Events', 'Calendar', 'ExtensionStore',
+			'CTILink','Portal','Webmails','MailManager','Webforms',
 		);
+		$modules = Vtiger_Module_Model::getAll(array(0,2), $restrictedModulesList);
+		$moduleList = array();
+		foreach($modules as $m) {
+			$moduleList[] = $m->getName();
+		}
 		return $moduleList;
 	}
 
@@ -390,5 +399,62 @@ class PDFTemplates_Module_Model extends Vtiger_Module_Model {
 
 	function isFilterColumnEnabled() {
 		return false;
+	}
+
+	function getPDFFormats()
+	{
+		$pdfFormats = array('A0', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6','Letter', 'Legal', 'Tabloid', 'Ledger');
+		return $pdfFormats;
+	}
+
+	function getCustomFunctions()
+	{
+		$customFunctions = array(
+			array(vtranslate("Conditional branching (if)", "PDFTemplates"), vtranslate("[FUNCTION|if|columnname|==|value|iftrue|iffalse|FUNCTION]", "PDFTemplates")),// 条件分岐（if）
+			array(vtranslate("Conditional branching (ifs)", "PDFTemplates"), vtranslate("[FUNCTION|ifs|columnname1|==|value1|ANDOR|columnname2|==|value2|iftrue|iffalse|FUNCTION]", "PDFTemplates")),// 条件分岐（ifs）
+			array(vtranslate("Date format conversion (datefmt)", "PDFTemplates"), vtranslate("[FUNCTION|datefmt|columnname|formatstring|FUNCTION]", "PDFTemplates")),// 日付フォーマット変換（datefmt）
+			array(vtranslate("String replacement (strreplace)", "PDFTemplates"), vtranslate("[FUNCTION|strreplace|columnname|searchstring|replacestring|FUNCTION]", "PDFTemplates")),// 文字列置換（strreplace）
+			array(vtranslate("Aggregating the sum of child records (aggset_sum)", "PDFTemplates"), vtranslate("[FUNCTION|aggset_sum|aggrcolumnname|columnname1|==|value1|ANDOR|columnname2|==|value2|FUNCTION]", "PDFTemplates")),// 子レコードの合計値を集計（aggset_sum）
+			array(vtranslate("Aggregate average value of child records (aggset_average)", "PDFTemplates"), vtranslate("[FUNCTION|aggset_average|aggrcolumnname|columnname1|==|value1|ANDOR|columnname2|==|value2|FUNCTION]", "PDFTemplates")),// 子レコードの平均値を集計（aggset_average）
+			array(vtranslate("Aggregate the minimum value of child records (aggset_min)", "PDFTemplates"), vtranslate("[FUNCTION|aggset_min|aggrcolumnname|columnname1|==|value1|ANDOR|columnname2|==|value2|FUNCTION]", "PDFTemplates")),// 子レコードの最小値を集計（aggset_min）
+			array(vtranslate("Aggregate the minimum value of a child record (aggset_max)", "PDFTemplates"), vtranslate("[FUNCTION|aggset_max|aggrcolumnname|columnname1|==|value1|ANDOR|columnname2|==|value2|FUNCTION]", "PDFTemplates")),// 子レコードの最小値を集計（aggset_max）
+
+			array(vtranslate('Conditional setting for child records (loop-child_where) *must be on the same line as the line containing $loop-child$.', "PDFTemplates"), vtranslate("[FUNCTION|loop-child_where|columnname|==|value|FUNCTION]", "PDFTemplates")),// 子レコードの条件設定（loop-child_where）※$loop-child$が記載されている行と同じ行に記載する事
+			array(vtranslate('Setting the sort order of child records (loop-child_sortorder) *must be on the same line as the line containing $loop-child$.', "PDFTemplates"), vtranslate("[FUNCTION|loop-child_sortorder|columnname|sortorder|FUNCTION]", "PDFTemplates")),// 子レコードの並び順設定（loop-child_sortorder）※$loop-child$が記載されている行と同じ行に記載する事
+		);
+		return $customFunctions;
+	}
+
+	public function getChildReferenceModules($moduleName)
+	{
+		$returnarray = array();
+		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
+		$tabid = $moduleModel->getId();
+		$relmodulename = $moduleModel->getName();
+
+		global $adb;
+		$result = $adb->query("SELECT
+			vtiger_field.fieldname
+			, vtiger_field.fieldlabel
+			, vtiger_field.columnname
+			, vtiger_fieldmodulerel.module 
+		FROM
+			vtiger_fieldmodulerel 
+			LEFT JOIN vtiger_field 
+				ON vtiger_field.fieldid = vtiger_fieldmodulerel.fieldid 
+		WHERE
+			relmodule = '$relmodulename'");
+		$rows = $adb->num_rows($result);
+		if ($rows == 0) return $returnarray;
+
+		for ($i = 0; $i < $rows; $i++) {
+			$fieldname = $adb->query_result($result, $i, 'fieldname');
+			$fieldlabel = $adb->query_result($result, $i, 'fieldlabel');
+			$columnName = $adb->query_result($result, $i, 'columnname');
+			$related_modulename = $adb->query_result($result, $i, 'module');
+			$returnarray[$related_modulename][] = array($fieldname, $fieldlabel, $columnName);
+		}
+
+		return $returnarray;
 	}
 }

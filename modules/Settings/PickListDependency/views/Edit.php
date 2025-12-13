@@ -22,18 +22,28 @@ class Settings_PickListDependency_Edit_View extends Settings_Vtiger_Index_View {
 		}
 		$sourceField = $request->get('sourcefield');
 		$targetField = $request->get('targetfield');
-		$recordModel = Settings_PickListDependency_Record_Model::getInstance($selectedModule, $sourceField, $targetField);
+		$recordModel = Settings_PickListDependency_Record_Model::getInstanceWith($selectedModule, $sourceField, $targetField);
 
 		$dependencyGraph = false;
 		if(!empty($sourceField) && !empty($targetField)) {
 			$dependencyGraph = $this->getDependencyGraph($request);
 		}
 
+		$picklistFields = $recordModel->getAllPickListFields();
+		// Usersモジュールの場合は標準の選択肢項目をすべて選択できないようにする
+		foreach ($picklistFields as $fieldname => $fieldlabel) {
+			$moduleModel = Vtiger_Module_Model::getInstance($selectedModule);
+			$fieldModel = Vtiger_Field_Model::getInstance($fieldname, $moduleModel);
+			if($fieldModel->isUneditableFields()){
+					unset($picklistFields[$fieldname]);
+			}
+		}
+
 		$viewer = $this->getViewer($request);
 		$viewer->assign('MODULE', $moduleName);
 		$viewer->assign('RECORD_MODEL', $recordModel);
 		$viewer->assign('SELECTED_MODULE',$selectedModule);
-		$viewer->assign('PICKLIST_FIELDS',$recordModel->getAllPickListFields());
+		$viewer->assign('PICKLIST_FIELDS',$picklistFields);
 		$viewer->assign('PICKLIST_MODULES_LIST',$moduleModelList);
 		$viewer->assign('DEPENDENCY_GRAPH', $dependencyGraph);
 		$viewer->assign('QUALIFIED_MODULE', $qualifiedModuleName);
@@ -46,7 +56,7 @@ class Settings_PickListDependency_Edit_View extends Settings_Vtiger_Index_View {
 		$module = $request->get('sourceModule');
 		$sourceField = $request->get('sourcefield');
 		$targetField = $request->get('targetfield');
-		$recordModel = Settings_PickListDependency_Record_Model::getInstance($module, $sourceField, $targetField);
+		$recordModel = Settings_PickListDependency_Record_Model::getInstanceWith($module, $sourceField, $targetField);
 		$valueMapping = $recordModel->getPickListDependency();
 		$sourcePicklistValues = $recordModel->getSourcePickListValues();
 		$safeHtmlSourcePicklistValues = array();

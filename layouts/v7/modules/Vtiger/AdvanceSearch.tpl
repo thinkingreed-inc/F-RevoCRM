@@ -64,7 +64,7 @@
                                     <button class="btn btn-success" id="advanceSearchButton" type="submit"><strong>{vtranslate('LBL_SEARCH', $MODULE)}</strong></button>
                                     {if $SAVE_FILTER_PERMITTED}
                                         <button class="btn btn-success marginLeft10px" id="advanceIntiateSave"><strong>{vtranslate('LBL_SAVE_AS_FILTER', $MODULE)}</strong></button>
-                                        <input class="hide marginLeft10px" type="text" value="" name="viewname" placeholder="リスト名を入力" />
+                                        <input class="hide marginLeft10px" type="text" value="" name="viewname" placeholder="{vtranslate('LBL_ENTER_LISTNAME', $MODULE)}" />
                                         <button class="btn btn-success hide marginLeft10px"  id="advanceSave"><strong>{vtranslate('LBL_SAVE', $MODULE)}</strong></button>
                                     {/if}
                                 </div>

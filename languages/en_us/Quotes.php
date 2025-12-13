@@ -37,6 +37,9 @@ $languageStrings = array(
 	'LBL_IS_DELETED_FROM_THE_SYSTEM_PLEASE_REMOVE_OR_REPLACE_THIS_ITEM' => 'is deleted from the system.please remove or replace this item',
 	'LBL_THIS_LINE_ITEM_IS_DELETED_FROM_THE_SYSTEM_PLEASE_REMOVE_THIS_LINE_ITEM' => 'This line item is deleted from the system,please remove this line items',
 
+	//F-RevoCRM
+	'Open Quotes' => 'Unapproved Quotes',
+	'Rejected Quotes' => 'Rejected Quotes',
 );
 
 $jsLanguageStrings = array(

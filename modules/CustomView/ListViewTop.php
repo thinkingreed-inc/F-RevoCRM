@@ -60,13 +60,13 @@ function getKeyMetrics($maxval,$calCnt)
 	$metricviewnames = "'Hot Leads'";
 
 	$current_module_strings = return_module_language($current_language, "CustomView");
-	$log = LoggerManager::getLogger('metrics');
+	$log = Logger::getLogger('metrics');
 
 	$metriclists = getMetricList();
 	
 	// Determine if the KeyMetrics widget should appear or not?
 	if($calCnt == 'calculateCnt') {
-		return count($metriclists);
+		return php7_count($metriclists);
 	}
 	
 	$log->info("Metrics :: Successfully got MetricList to be displayed");
@@ -125,7 +125,7 @@ function getKeyMetrics($maxval,$calCnt)
 
 	}
 	$values=Array('Title'=>$title,'Header'=>$header,'Entries'=>$entries);
-	if ( ($display_empty_home_blocks ) || (count($value)!= 0) )
+	if ( ($display_empty_home_blocks ) || (php7_count($value)!= 0) )
 		return $values;
 
 }

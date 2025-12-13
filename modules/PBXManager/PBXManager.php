@@ -74,9 +74,12 @@ class PBXManager extends CRMEntity {
     var $default_order_by = 'customernumber';
     var $default_sort_order = 'ASC';
     
-    function PBXManager(){
+    function __construct() {
         $this->db = PearDatabase::getInstance();
         $this->column_fields = getColumnFields('PBXManager');
+    }
+    function PBXManager(){
+        self::__construct();
     }
     
      /**

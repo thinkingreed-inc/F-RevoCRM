@@ -303,8 +303,8 @@ function getAllTaxes($available='all', $sh='',$mode='',$id='')
 			}
 			//We are selecting taxes using that taxids. So It will get the tax even if the tax is disabled.
 			$where_ids = '';
-			if (count($result_ids) > 0) {
-				$insert_str = str_repeat("?,", count($result_ids) - 1);
+			if (php7_count($result_ids) > 0) {
+				$insert_str = str_repeat("?,", php7_count($result_ids) - 1);
 				$insert_str .= "?";
 				$where_ids = "taxid in ($insert_str) or";
 			}
@@ -664,6 +664,7 @@ function saveInventoryProductDetails(&$focus, $module, $update_prod_stock='false
 		$purchaseCost = vtlib_purify($_REQUEST['purchaseCost'.$i]);
 		$margin = vtlib_purify($_REQUEST['margin'.$i]);
 		$usageunit = vtlib_purify($_REQUEST['usageunit'.$i]);
+		$reducedtaxrate = vtlib_purify($_REQUEST['reducedtaxrate'.$i]);
 
 		if($module == 'SalesOrder') {
 			if($updateDemand == '-')
@@ -676,9 +677,9 @@ function saveInventoryProductDetails(&$focus, $module, $update_prod_stock='false
 			}
 		}
 
-		$query = 'INSERT INTO vtiger_inventoryproductrel(id, productid, sequence_no, quantity, listprice, comment, description, purchase_cost, margin, usageunit)
-		VALUES(?,?,?,?,?,?,?,?,?,?)';
-		$qparams = array($focus->id,$prod_id,$prod_seq,$qty,$listprice,$comment,$description, $purchaseCost, $margin, $usageunit);
+		$query = 'INSERT INTO vtiger_inventoryproductrel(id, productid, sequence_no, quantity, listprice, comment, description, purchase_cost, margin, usageunit, reducedtaxrate)
+		VALUES(?,?,?,?,?,?,?,?,?,?,?)';
+		$qparams = array($focus->id,$prod_id,$prod_seq,$qty,$listprice,$comment,$description, $purchaseCost, $margin, $usageunit, $reducedtaxrate);
 		$adb->pquery($query,$qparams);
 
 		$lineitem_id = $adb->getLastInsertID();
@@ -724,7 +725,7 @@ function saveInventoryProductDetails(&$focus, $module, $update_prod_stock='false
 		$compoundTaxesInfo = getCompoundTaxesInfoForInventoryRecord($focus->id, $module);
 		if($_REQUEST['taxtype'] == 'group')
 		{
-			for($tax_count=0;$tax_count<count($all_available_taxes);$tax_count++)
+			for($tax_count=0;$tax_count<php7_count($all_available_taxes);$tax_count++)
 			{
 				$taxDetails = $all_available_taxes[$tax_count];
 				if ($taxDetails['method'] === 'Deducted') {
@@ -752,7 +753,7 @@ function saveInventoryProductDetails(&$focus, $module, $update_prod_stock='false
 		else
 		{
 			$taxes_for_product = getTaxDetailsForProduct($prod_id,'all');
-			for($tax_count=0;$tax_count<count($taxes_for_product);$tax_count++)
+			for($tax_count=0;$tax_count<php7_count($taxes_for_product);$tax_count++)
 			{
 				$taxDetails = $taxes_for_product[$tax_count];
 				if ($taxDetails['method'] === 'Compound') {
@@ -773,7 +774,7 @@ function saveInventoryProductDetails(&$focus, $module, $update_prod_stock='false
 		}
 
 		//Adding deduct tax value to query
-		for($taxCount=0; $taxCount<count($all_available_taxes); $taxCount++) {
+		for($taxCount=0; $taxCount<php7_count($all_available_taxes); $taxCount++) {
 			if ($all_available_taxes[$taxCount]['method'] === 'Deducted') {
 				$taxName = $all_available_taxes[$taxCount]['taxname'];
 				$requestTaxName = $taxName.'_group_percentage';
@@ -1190,7 +1191,7 @@ function getPricesForProducts($currencyid, $product_ids, $module='Products', $sk
 	global $adb,$log,$current_user;
 
 	$price_list = array();
-	if (count($product_ids) > 0) {
+	if (php7_count($product_ids) > 0) {
 		if ($module == 'Services') {
 			$query = "SELECT vtiger_currency_info.id, vtiger_currency_info.conversion_rate, " .
 					"vtiger_service.serviceid AS productid, vtiger_service.unit_price, " .
@@ -1438,7 +1439,7 @@ function isRecordExistInDB($fieldData, $moduleMeta, $user) {
 				} else {
 					$fieldValueDetails = $fieldValue;
 				}
-				if (count($fieldValueDetails) > 1) {
+				if (php7_count($fieldValueDetails) > 1) {
 					$referenceModuleName = trim($fieldValueDetails[0]);
 					$entityLabel = trim($fieldValueDetails[1]);
 					$entityId = getEntityId($referenceModuleName, decode_html($entityLabel));

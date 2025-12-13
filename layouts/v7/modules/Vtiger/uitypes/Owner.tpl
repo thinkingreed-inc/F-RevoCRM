@@ -27,11 +27,26 @@
 	{/if}
 	<select class="inputElement select2" type="owner" data-fieldtype="owner" data-fieldname="{$ASSIGNED_USER_ID}" data-name="{$ASSIGNED_USER_ID}" name="{$ASSIGNED_USER_ID}" 
             {if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if}
-            {if count($FIELD_INFO['validator'])} 
+            {if php7_count($FIELD_INFO['validator'])} 
                 data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
             {/if}
             >
 		{if $FIELD_MODEL->isCustomField() || $VIEW_SOURCE eq 'MASSEDIT'} <option value="">{vtranslate('LBL_SELECT_OPTION','Vtiger')}</option> {/if}
+
+			{if !array_key_exists($FIELD_VALUE, $ACCESSIBLE_USER_LIST) && !array_key_exists($FIELD_VALUE, $ACCESSIBLE_GROUP_LIST)}
+				{assign var=OWNER_ID value=$FIELD_VALUE}
+				{if vtws_getOwnerType($OWNER_ID)=="Users"}
+					{assign var=OWNER_NAME value=Vtiger_Functions::getUserRecordLabel($OWNER_ID)}	
+				{else}
+					{assign var=OWNER_NAME value=Vtiger_Functions::getGroupRecordLabel($OWNER_ID)}	
+				{/if}
+				<option value="{$OWNER_ID}" data-picklistvalue= '{$OWNER_NAME}' {if $FIELD_VALUE eq $OWNER_ID && $VIEW_SOURCE neq 'MASSEDIT'} selected {/if}
+					data-recordaccess=true
+					{if vtws_getOwnerType($OWNER_ID)=="Users"} data-userId="{$CURRENT_USER_ID}" data-userkbn="{Users_Privileges_Model::getInstanceById($OWNER_ID)->get('user_kbn')}"{/if}>
+				{$OWNER_NAME}
+				</option>
+			{/if}
+			
 		<optgroup label="{vtranslate('LBL_USERS')}">
 			{foreach key=OWNER_ID item=OWNER_NAME from=$ALL_ACTIVEUSER_LIST}
                     <option value="{$OWNER_ID}" data-picklistvalue= '{$OWNER_NAME}' {if $FIELD_VALUE eq $OWNER_ID && $VIEW_SOURCE neq 'MASSEDIT'} selected {/if}

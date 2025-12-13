@@ -70,7 +70,7 @@ class Vtiger_PDF_ContentViewer extends Vtiger_PDF_Viewer {
 	function display($parent) {
 		$models = $this->contentModels;
 
-		$totalModels = count($models);
+		$totalModels = php7_count($models);
 		$pdf = $parent->getPDF();
 		
 		$parent->createPage();

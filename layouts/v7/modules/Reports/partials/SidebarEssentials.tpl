@@ -33,7 +33,7 @@
 										{foreach item=FOLDER from=$FOLDERS name="folderview"}
 											<li style="font-size:12px;" class="listViewFilter {if $smarty.foreach.folderview.iteration gt 5} filterHidden hide{/if}" >
 												{assign var=VIEWNAME value={vtranslate($FOLDER->getName(),$MODULE)}}
-												<a href="#" class='filterName' data-filter-id={$FOLDER->getId()}><i class="fa fa-folder foldericon"></i>&nbsp;{if {$VIEWNAME|strlen} > 50 }{$VIEWNAME|substr:0:45}..{else}{$VIEWNAME}{/if}</a> 
+												<a href="#" class='filterName' data-filter-id={$FOLDER->getId()}><i class="fa fa-folder foldericon"></i>&nbsp;{if {$VIEWNAME|strlen} > 50 }{vtranslate($VIEWNAME)|substr:0:45}..{else}{vtranslate($VIEWNAME)}{/if}</a> 
 												<div class="pull-right">
 													{assign var="FOLDERID" value=$FOLDER->get('folderid')}
 													<span class="js-popover-container">

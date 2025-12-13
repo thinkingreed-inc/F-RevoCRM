@@ -254,7 +254,7 @@ class Vtiger_RelationListView_Model extends Vtiger_Base_Model {
 		$relationModule = $this->getRelationModel()->getRelationModuleModel();
 		$relationModuleName = $relationModule->get('name');
 		$relatedColumnFields = $relationModule->getConfigureRelatedListFields();
-		if(count($relatedColumnFields) <= 0){
+		if(php7_count($relatedColumnFields) <= 0){
 			$relatedColumnFields = $relationModule->getRelatedListFields();
 		}
 
@@ -367,7 +367,7 @@ class Vtiger_RelationListView_Model extends Vtiger_Base_Model {
 				} else if($ownerId == $currentUser->getId()){
 					$visibility = false;
 				}
-				if(!$currentUser->isAdminUser() && $newRow['activitytype'] != 'Task' && $newRow['visibility'] == 'Private' && $ownerId && $visibility) {
+				if(!$currentUser->isAdminUser() && $newRow['visibility'] == 'Private' && $ownerId && $visibility) {
 					foreach($newRow as $data => $value) {
 						if(in_array($data, $visibleFields) != -1) {
 							unset($newRow[$data]);
@@ -375,10 +375,6 @@ class Vtiger_RelationListView_Model extends Vtiger_Base_Model {
 					}
 					$newRow['subject'] = vtranslate('Busy','Events').'*';
 				}
-				if($newRow['activitytype'] == 'Task') {
-					unset($newRow['visibility']);
-				}
-
 			}
 
 			$record = Vtiger_Record_Model::getCleanInstance($relationModule->get('name'));
@@ -399,7 +395,7 @@ class Vtiger_RelationListView_Model extends Vtiger_Base_Model {
 			$pagingModel->set('nextPageExists', false);
 		}
 		//setting related list view count before unsetting permission denied records - to make sure paging should not fail
-		$pagingModel->set('_relatedlistcount', count($relatedRecordList));
+		$pagingModel->set('_relatedlistcount', php7_count($relatedRecordList));
 		foreach($recordsToUnset as $record) {
 			unset($relatedRecordList[$record]);
 		}
@@ -414,8 +410,11 @@ class Vtiger_RelationListView_Model extends Vtiger_Base_Model {
 		$summaryFieldsList = $relatedModuleModel->getHeaderAndSummaryViewFieldsList();
 
 		$headerFields = array();
-		if(count($summaryFieldsList) > 0) {
+		if(php7_count($summaryFieldsList) > 0) {
 			foreach($summaryFieldsList as $fieldName => $fieldModel) {
+				if($fieldModel->getFieldDataType() == 'blank'){
+					continue;
+				}
 				$headerFields[$fieldName] = $fieldModel;
 			}
 		} else {
@@ -524,7 +523,7 @@ class Vtiger_RelationListView_Model extends Vtiger_Base_Model {
 		$position = stripos($relationQuery,' from ');
 		if ($position) {
 			$split = preg_split('/ FROM /i', $relationQuery);
-			$splitCount = count($split);
+			$splitCount = php7_count($split);
 			if($relatedModuleName == 'Calendar') {
 				$relationQuery = 'SELECT DISTINCT vtiger_crmentity.crmid, vtiger_activity.activitytype ';
 			} else {
@@ -569,7 +568,7 @@ class Vtiger_RelationListView_Model extends Vtiger_Base_Model {
 		$condition = '';
 
 		$whereCondition = $this->get("whereCondition");
-		$count = count($whereCondition);
+		$count = php7_count($whereCondition);
 		if ($count > 1) {
 			$appendAndCondition = true;
 		}
@@ -603,7 +602,7 @@ class Vtiger_RelationListView_Model extends Vtiger_Base_Model {
 		return $updatedQuery;
 	}
 
-	public function getCurrencySymbol($recordId, $fieldModel) {
+	public static function getCurrencySymbol($recordId, $fieldModel) {
 		$db = PearDatabase::getInstance();
 		$moduleName = $fieldModel->getModuleName();
 		$fieldName = $fieldModel->get('name');

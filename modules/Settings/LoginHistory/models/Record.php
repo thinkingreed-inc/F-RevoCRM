@@ -53,7 +53,7 @@ class Settings_LoginHistory_Record_Model extends Settings_Vtiger_Record_Model {
 				$fieldValue = '---';
 			}
 		} else if ($fieldName == 'logout_time') {
-			if ($fieldValue != '0000-00-00 00:00:00' && $this->get('status') != 'Signed in') {
+			if ($fieldValue != '0000-00-00 00:00:00' && $this->get('status') === 'Signed off') {
 				$fieldValue = Vtiger_Datetime_UIType::getDateTimeValue($fieldValue);
 			} else {
 				$fieldValue = '---';

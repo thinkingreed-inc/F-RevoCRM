@@ -35,7 +35,7 @@ class HelpDesk_TicketsByStatus_Dashboard extends Vtiger_IndexAjax_View {
 		$data = $moduleModel->getTicketsByStatus($request->get('owner'), $dates);
 
         $listViewUrl = $moduleModel->getListViewUrlWithAllFilter();
-        for($i = 0;$i<count($data);$i++){
+        for($i = 0;$i<php7_count($data);$i++){
             $data[$i]["links"] = $listViewUrl.$this->getSearchParams($data[$i][2],$request->get('owner'), $request->get('dateFilter')).'&nolistcache=1';
         }
 		$widget = Vtiger_Widget_Model::getInstance($linkId, $currentUser->getId());

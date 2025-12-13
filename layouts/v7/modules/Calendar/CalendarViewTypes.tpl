@@ -26,7 +26,8 @@
 					<input class="toggleCalendarFeed cursorPointer" type="checkbox" data-calendar-sourcekey="{$VIEWINFO['module']}_{$VIEWINFO['fieldname']}{if $VIEWINFO['conditions']['name'] neq ''}_{$VIEWINFO['conditions']['name']}{/if}" data-calendar-feed="{$VIEWINFO['module']}" 
 						   data-calendar-feed-color="{$VIEWINFO['color']}" data-calendar-fieldlabel="{vtranslate($VIEWINFO['fieldlabel'], $VIEWINFO['module'])}" 
 						   data-calendar-fieldname="{$VIEWINFO['fieldname']}" title="{$MODULE_LABEL} " data-calendar-type="{$VIEWINFO['type']}" 
-						   data-calendar-feed-textcolor="white" data-calendar-feed-conditions='{$VIEWINFO['conditions']['rules']}' />&nbsp;&nbsp;
+						   data-calendar-feed-textcolor="white" data-calendar-feed-conditions='{$VIEWINFO['conditions']['rules']}'
+						   data-calendar-is_own="{$VIEWINFO['is_own']}" data-calendar-isdefault="{$VIEWINFO['isdefault']}"/>&nbsp;&nbsp;
 					<i class="fa fa-pencil editCalendarFeedColor cursorPointer"></i>&nbsp;&nbsp;
 					<i class="fa fa-trash deleteCalendarFeed cursorPointer"></i>
 				</span>

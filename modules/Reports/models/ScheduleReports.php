@@ -158,7 +158,7 @@ class Reports_ScheduleReports_Model extends Vtiger_Base_Model {
 		}
 		$recipientsList = array_unique($recipientsList);
 		$recipientsEmails = array();
-		if (!empty($recipientsList) && count($recipientsList) > 0) {
+		if (!empty($recipientsList) && php7_count($recipientsList) > 0) {
 			foreach ($recipientsList as $userId) {
 				if(!Vtiger_Util_Helper::isUserDeleted($userId)) {
 					$userName = getUserFullName($userId);
@@ -341,7 +341,7 @@ class Reports_ScheduleReports_Model extends Vtiger_Base_Model {
 		$site_URL = vglobal('site_URL');
 		$currentModule = vglobal('currentModule');
 		$companydetails = getCompanyDetails();
-		$logo = $site_URL.'/test/logo/'.$companydetails['logoname'];
+		$logo = $site_URL.'/logo/'.$companydetails['logoname'];
 
 		$body = '<table width="700" cellspacing="0" cellpadding="0" border="0" align="center" style="font-family: Arial,Helvetica,sans-serif; font-size: 12px; font-weight: normal; text-decoration: none; ">
 			<tr>
@@ -414,7 +414,7 @@ class Reports_ScheduleReports_Model extends Vtiger_Base_Model {
 		$dateTime = new DateTimeField($this->get('next_trigger_time'));
 		$nextTriggerTime = $dateTime->getDisplayDateTimeValue();
 		$valueParts = explode(' ', $nextTriggerTime);
-		$value = $valueParts[0].' '.Vtiger_Time_UIType::getDisplayValue($valueParts[1]);
+		$value = $valueParts[0].' '.Vtiger_Time_UIType::getDisplayValueUserFormat($valueParts[1]);
 		return $value;
 	}
 

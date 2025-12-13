@@ -84,6 +84,10 @@ $languageStrings = array(
 	'LBL_SELECT_PROJECT_TASK_STATUS_COLOR' => 'Select Project Task Status Color',
 	'LBL_SELECT_STATUS' => 'Select Status',
 	'LBL_EDIT_COLOR' => 'Edit Color',
+	'Add Project Task' => 'Add Project Task',
+
+	//F-RevoCRM
+	'Start Date,Target End Date' => 'Start Date,Target End Date',
 );
 
 $jsLanguageStrings = array(

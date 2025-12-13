@@ -38,8 +38,8 @@ class MailManager_Draft_Model {
 
 	public function constructAllClause($query) {
 		$fields = array('bccmail','ccmail','subject','saved_toid','description');
-		for($i=0; $i<count($fields); $i++) {
-			if($i == count($fields)-1) {
+		for($i=0; $i<php7_count($fields); $i++) {
+			if($i == php7_count($fields)-1) {
 				$clause .=  $fields[$i]." LIKE '%".$query."%'";
 			} else {
 				$clause .=  $fields[$i]." LIKE '%".$query."%' OR ";
@@ -63,7 +63,7 @@ class MailManager_Draft_Model {
 		}
 		$query = "SELECT * FROM Emails where email_flag='SAVED' $where ORDER BY modifiedtime DESC $limitClause;";
 		$draftMails = vtws_query($query, $currentUserModel);
-		for($i=0; $i<count($draftMails); $i++) {
+		for($i=0; $i<php7_count($draftMails); $i++) {
 			foreach($draftMails[$i] as $fieldname=>$fieldvalue) {
 				if($fieldname == "saved_toid" || $fieldname == "ccmail" || $fieldname == "bccmail") {
 					if(!empty($fieldvalue)) {
@@ -85,7 +85,7 @@ class MailManager_Draft_Model {
 			}
 		}
 		if($where) {
-			$folder->setPaging($limit*$page+1, $limit*$page+$limit, $limit, count($draftMails), $page);
+			$folder->setPaging($limit*$page+1, $limit*$page+$limit, $limit, php7_count($draftMails), $page);
 		} else {
 			$total = $this->getTotalDraftCount();
 			$folder->setPaging($limit*$page+1, $limit*$page+$limit, $limit, $total, $page);
@@ -101,7 +101,7 @@ class MailManager_Draft_Model {
 		if(empty(self::$totalDraftCount)) {
 			$DraftRes = $query = "SELECT * FROM Emails where email_flag='SAVED';";
 			$draftMails = vtws_query($query, $currentUserModel);
-			self::$totalDraftCount = count($draftMails);
+			self::$totalDraftCount = php7_count($draftMails);
 			return self::$totalDraftCount;
 		} else {
 			return self::$totalDraftCount;
@@ -203,7 +203,7 @@ class MailManager_Draft_Model {
 		if(!empty($emailId)) {
 			$db->pquery("delete from vtiger_seactivityrel where activityid=?",array($emailId)); //remove all previous relation
 		}
-		for ($i=0; $i<(count($myids)); $i++) {
+		for ($i=0; $i<(php7_count($myids)); $i++) {
 			$realid = explode("@",$myids[$i]);
 			if(!empty($realid[0]) && !empty($emailId)) {
 				// this is needed as we might save the mail in draft mode earlier
@@ -262,7 +262,7 @@ class MailManager_Draft_Model {
 			foreach($toArray as $to) {
 				$relatedtos = MailManager::lookupMailInVtiger(trim($to), $currentUserModel);
 				if (!empty($relatedtos) && is_array($relatedtos)) {
-					for($i=0; $i<count($relatedtos); $i++) {
+					for($i=0; $i<php7_count($relatedtos); $i++) {
 						$relateto = vtws_getIdComponents($relatedtos[$i]['record']);
 						$parentIds .= $relateto[1]."@1|";
 					}

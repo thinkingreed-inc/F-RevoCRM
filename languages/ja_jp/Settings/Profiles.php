@@ -49,7 +49,6 @@ $languageStrings = array(
 
 	//F-RevoCRM
 	'Name' => 'プロファイル名',
-	
 );
 
 $jsLanguageStrings = array(

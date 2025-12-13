@@ -16,13 +16,13 @@
 {if $FIELD_MODEL->get('uitype') eq '19' || $FIELD_MODEL->get('uitype') eq '20'}
     <textarea style="height:250px; max-width: initial; width:100%;" rows="3" id="{$MODULE}_editView_fieldName_{$FIELD_NAME}" class="inputElement textAreaElement col-lg-12 {if $FIELD_MODEL->isNameField()}nameField{/if}" name="{$FIELD_MODEL->getFieldName()}" {if $FIELD_NAME eq "notecontent"}id="{$FIELD_NAME}"{/if} {if !empty($SPECIAL_VALIDATOR)}data-validator='{Zend_Json::encode($SPECIAL_VALIDATOR)}'{/if} 
         {if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if}
-        {if count($FIELD_INFO['validator'])} 
+        {if php7_count($FIELD_INFO['validator'])} 
             data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
         {/if}
         >
     {$FIELD_MODEL->get('fieldvalue')}</textarea>
 {else}
-    {if $smarty.request.view neq 'Detail'} 
+    {if $REQ.view neq 'Detail'} 
     {assign var=blockLabel value=$RECORD_STRUCTURE['LBL_PO_INFORMATION']}
     {assign var=fieldModel value=$blockLabel['accountid']}
 	{$pickList = ['' => 'LBL_SELECT_ADDRESS_OPTION', 'company'=> 'LBL_COMPANY_ADDRESS',
@@ -64,7 +64,7 @@
 	{/if}
     <textarea rows="5" id="{$MODULE}_editView_fieldName_{$FIELD_NAME}" class="inputElement {if $FIELD_MODEL->isNameField()}nameField{/if}" name="{$FIELD_MODEL->getFieldName()}" {if !empty($SPECIAL_VALIDATOR)}data-validator='{Zend_Json::encode($SPECIAL_VALIDATOR)}'{/if} 
         {if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if}
-        {if count($FIELD_INFO['validator'])} 
+        {if php7_count($FIELD_INFO['validator'])} 
             data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
         {/if}
         >

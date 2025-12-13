@@ -66,7 +66,20 @@ class Users_Field_Model extends Vtiger_Field_Model {
 		if(!$this->isEditable() || $this->get('uitype') == 105 || $this->get('uitype') == 106 || $this->get('uitype') == 98 || $this->get('uitype') == 101) {
 			return false;
 		}
+
+		// リッチテキストは概要・詳細画面での編集不可
+		if ($this->isCkeditor() === true) {
+			return false;
+		}
+
 		return true;
+	}
+
+	public function isCkEditor() {
+		if($this->getName() == 'signature') {
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -180,7 +193,13 @@ class Users_Field_Model extends Vtiger_Field_Model {
 	 * Function which will check if empty piclist option should be given
 	 */
 	public function isEmptyPicklistOptionAllowed() {
-		if($this->getFieldName() == 'reminder_interval') {
+		// cf関連のフィールドの場合は、空の値を許可する
+		$fieldname = $this->getFieldName();
+		if(strpos($fieldname, 'cf_') !== false){
+			return true;
+		}
+		// 空も許可する項目の場合はtrueを返す
+		if($fieldname == 'reminder_interval') {
 			return true;
 		}
 		return false;

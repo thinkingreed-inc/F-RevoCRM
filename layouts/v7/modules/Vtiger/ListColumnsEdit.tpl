@@ -11,7 +11,8 @@
 	<div class="modal-dialog modal-lg configColumnsContainer">
 		<div class="modal-content">
 			{assign var=HEADER_TITLE value={vtranslate('LBL_CONFIG_COLUMNS', $MODULE)}}
-			{include file="ModalHeader.tpl"|vtemplate_path:$MODULE TITLE=$HEADER_TITLE|cat:' - '|cat:$CV_MODEL->get('viewname')}
+			{assign var=VIEW_NAME value={vtranslate($CV_MODEL->get('viewname'), $MODULE)}}
+			{include file="ModalHeader.tpl"|vtemplate_path:$MODULE TITLE=$HEADER_TITLE|cat:' - '|cat:$VIEW_NAME}
 			<form class="form-horizontal configColumnsForm" method="post" action="index.php">
 				<input type="hidden" name="module" value="CustomView"/>
 				<input type="hidden" name="action" value="SaveAjax"/>
@@ -30,7 +31,10 @@
 												<span class="dragContainer">
 													<img src="{vimage_path('drag.png')}" class="cursorPointerMove" border="0" title="{vtranslate('LBL_DRAG',$MODULE)}">
 												</span>
-												<span class="fieldLabel">{vtranslate($FIELD_MODEL->get('label'),$FIELD_MODULE_NAME)}</span>
+												<span class="fieldLabel">
+													{assign var=WITH_MODULENAME value="("|cat:{vtranslate($FIELD_MODULE_NAME, $SOURCE_MODULE)}|cat:")-"}
+													{Vtiger_Util_Helper::toSafeHTML(vtranslate($FIELD_MODEL->get('label'), $FIELD_MODULE_NAME)|replace:"-":$WITH_MODULENAME)}
+												</span>
 												<span class="pull-right removeField"><i class="fa fa-times" title="{vtranslate('LBL_REMOVE',$MODULE)}"></i></span>
 											</li>   
 										{/if}
@@ -68,7 +72,10 @@
 																	{continue}
 																{/if}
 																<div class="instafilta-target item {if array_key_exists($FIELD_MODEL->getCustomViewColumnName(), $SELECTED_FIELDS)}hide{/if}" data-cv-columnname="{$FIELD_MODEL->getCustomViewColumnName()}" data-columnname='{$FIELD_MODEL->get('column')}' data-field-id='{$FIELD_MODEL->getId()}'>
-																	<span class="fieldLabel">{vtranslate($FIELD_MODEL->get('label'),$FIELD_MODULE_NAME)}</span>
+																	<span class="fieldLabel">
+																		{assign var=WITH_MODULENAME value="("|cat:{vtranslate($FIELD_MODULE_NAME, $SOURCE_MODULE)}|cat:")-"}
+																		{Vtiger_Util_Helper::toSafeHTML(vtranslate($FIELD_MODEL->get('label'), $FIELD_MODULE_NAME)|replace:"-":$WITH_MODULENAME)}
+																	</span>
 																</div>
 															{/foreach} 
 														</div>

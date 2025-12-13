@@ -101,6 +101,7 @@
 		<field name="currency_decimal_separator" type="C" size="2" />
 		<field name="currency_grouping_separator" type="C" size="2" />
 		<field name="currency_symbol_placement" type="C" size="20" />
+		<field name="userlabel" type="C" size="255" />
 
 		<index name="user_user_name_idx">
 			<col>user_name</col>

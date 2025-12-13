@@ -38,7 +38,7 @@
 							<label>{vtranslate('LBL_VIEW_NAME',$MODULE)}&nbsp;<span class="redColor">*</span> </label>
 							<div class="row">
 								<div class="col-lg-5 col-md-5 col-sm-5">
-									<input class="form-control" type="text" data-record-id="{$RECORD_ID}" id="viewname" name="viewname" value="{$CUSTOMVIEW_MODEL->get('viewname')}" data-rule-required="true" data-rule-maxsize="100" data-rule-check-filter-duplicate='{Vtiger_Util_Helper::toSafeHTML(Zend_JSON::encode($CUSTOM_VIEWS_LIST))}'>
+									<input class="form-control" type="text" data-record-id="{$RECORD_ID}" id="viewname" name="viewname" value="{vtranslate($CUSTOMVIEW_MODEL->get('viewname'),$SOURCE_MODULE)}" data-rule-required="true" data-rule-maxsize="100" data-rule-check-filter-duplicate='{Vtiger_Util_Helper::toSafeHTML(Zend_JSON::encode($CUSTOM_VIEWS_LIST))}'>
 								</div>
 								<div class="col-lg-5 col-md-5 col-sm-5">
 									<label class="checkbox-inline">
@@ -66,6 +66,9 @@
 												{if $FIELD_MODEL->getDisplayType() == '6'}
 													{continue}
 												{/if}
+												{if $FIELD_MODEL->getFieldDataType() == 'blank'}
+													{continue}
+												{/if}
 												{if $FIELD_MODEL->isMandatory()}
 													{array_push($MANDATORY_FIELDS, $FIELD_MODEL->getCustomViewColumnName())}
 												{/if}
@@ -79,7 +82,9 @@
 															{assign var=NUMBER_OF_COLUMNS_SELECTED value=$NUMBER_OF_COLUMNS_SELECTED + 1}
 														{/if}
 													{/if}
-													>{Vtiger_Util_Helper::toSafeHTML(vtranslate($FIELD_MODEL->get('label'), $SOURCE_MODULE))}
+													{assign var=WITH_MODULENAME value="("|cat:{vtranslate($FIELD_MODULE_NAME, $SOURCE_MODULE)}|cat:")-"}
+													>{Vtiger_Util_Helper::toSafeHTML(vtranslate($FIELD_MODEL->get('label'), $SOURCE_MODULE)|replace:"-":$WITH_MODULENAME)}
+													
 													{if $FIELD_MODEL->isMandatory() eq true} <span>*</span> {/if}
 												</option>
 											{/foreach}

@@ -168,7 +168,8 @@ class Reports extends CRMEntity{
                                         $current_user->id, $reportid, $reportmodulesrow["primarymodule"],
                                         $reportmodulesrow["secondarymodules"], $reportmodulesrow["reporttype"],
                                         $reportmodulesrow["reportname"], $reportmodulesrow["description"],
-                                        $reportmodulesrow["folderid"], $reportmodulesrow["owner"]
+                                        $reportmodulesrow["folderid"], $reportmodulesrow["owner"],
+                                        $reportmodulesrow["join_column"]
                                 );
                         }
 
@@ -183,6 +184,7 @@ class Reports extends CRMEntity{
                         $this->reportname = decode_html($cachedInfo["reportname"]);
                         $this->reportdescription = decode_html($cachedInfo["description"]);
                         $this->folderid = $cachedInfo["folderid"];
+						$this->joinColumn = $cachedInfo["join_column"];
                         if($is_admin==true || in_array($cachedInfo["owner"],$subordinate_users) || $cachedInfo["owner"]==$current_user->id)
                                 $this->is_editable = 'true';
                         else
@@ -299,8 +301,16 @@ class Reports extends CRMEntity{
 					WHERE vtiger_tab.isentitytype = 1
 					AND vtiger_tab.name NOT IN(".generateQuestionMarks($restricted_modules).")
 					AND vtiger_tab.presence = 0
-                    AND vtiger_field.fieldname NOT LIKE ?",
-					array($restricted_modules,$restricted_modules, 'cf_%')
+					UNION
+					SELECT relmodule, vtiger_tab.tabid FROM vtiger_fieldmodulerel
+					INNER JOIN vtiger_tab on vtiger_tab.name = vtiger_fieldmodulerel.module
+					INNER JOIN vtiger_tab AS vtiger_tabrel ON vtiger_tabrel.name = vtiger_fieldmodulerel.relmodule AND vtiger_tabrel.presence = 0
+                    INNER JOIN vtiger_field ON vtiger_field.fieldid = vtiger_fieldmodulerel.fieldid
+					WHERE vtiger_tab.isentitytype = 1
+					AND vtiger_tab.name NOT IN(".generateQuestionMarks($restricted_modules).")
+					AND vtiger_tab.presence = 0
+					",
+					array($restricted_modules,$restricted_modules,$restricted_modules)
 				);
 				if($adb->num_rows($relatedmodules)) {
 					while($resultrow = $adb->fetch_array($relatedmodules)) {
@@ -522,6 +532,50 @@ class Reports extends CRMEntity{
 				array_push($params, $current_user->id);
 			}
 
+			//ALLとshared以外のフォルダを開いたときに、閲覧権限のあるレポートのみ表示させるように修正
+			if ($rpt_fldr_id !== false && $rpt_fldr_id !== 'shared' && $rpt_fldr_id !== 'All') {
+				if (!empty($user_groups)) {
+					$user_group_query = " (shareid IN (".generateQuestionMarks($user_groups).") AND setype='groups') OR";
+					$non_admin_query = " vtiger_report.reportid IN (SELECT reportid FROM vtiger_reportsharing WHERE $user_group_query (shareid=? AND setype='users'))";
+					$non_admin_query = "( $non_admin_query ) OR ";
+					foreach ($user_groups as $userGroup) {
+						array_push($params, $userGroup);
+					}
+					array_push($params, $current_user->id);
+				}
+
+				//現在のユーザーより下の役割のユーザーが作成したレポートを表示
+				$sql .= " AND ($non_admin_query vtiger_report.sharingtype='Public' OR "
+						. "vtiger_report.owner = ? OR vtiger_report.owner IN (SELECT vtiger_user2role.userid "
+						. "FROM vtiger_user2role INNER JOIN vtiger_users ON vtiger_users.id=vtiger_user2role.userid "
+						. "INNER JOIN vtiger_role ON vtiger_role.roleid=vtiger_user2role.roleid "
+						. "WHERE vtiger_role.parentrole LIKE '".$current_user_parent_role_seq."::%'))";
+				array_push($params, $current_user->id);
+
+				//現在のユーザに共有されているレポートを表示
+				$userRole = fetchUserRole($current_user->id);
+            	$parentRoles=getParentRole($userRole);
+            	$parentRolelist= array();
+            	foreach($parentRoles as $par_rol_id)
+            	{
+            	    array_push($parentRolelist, $par_rol_id);		
+           		}
+            	array_push($parentRolelist, $userRole);
+				$sql .= " OR vtiger_report.reportid IN (SELECT vtiger_report_shareusers.reportid FROM vtiger_report_shareusers WHERE vtiger_report_shareusers.userid=?)";
+				array_push($params, $current_user->id);
+
+				if(!empty($user_groups)){
+					$sql .= " OR vtiger_report.reportid IN (SELECT vtiger_report_sharegroups.reportid FROM vtiger_report_sharegroups WHERE vtiger_report_sharegroups.groupid IN (".  generateQuestionMarks($user_groups)."))";
+					$params = array_merge($params,$user_groups);
+				}
+
+				$sql.= " OR vtiger_report.reportid IN (SELECT vtiger_report_sharerole.reportid FROM vtiger_report_sharerole WHERE vtiger_report_sharerole.roleid =?)";
+				array_push($params, $userRole);
+				if(!empty($parentRolelist)){
+					$sql.= " OR vtiger_report.reportid IN (SELECT vtiger_report_sharers.reportid FROM vtiger_report_sharers WHERE vtiger_report_sharers.rsid IN (". generateQuestionMarks($parentRolelist) ."))";
+					$params = array_merge($params,$parentRolelist);
+				}
+			}
 			$queryObj = new stdClass();
             $queryObj->query = $sql;
             $queryObj->queryParams = $params;
@@ -549,7 +603,7 @@ class Reports extends CRMEntity{
 		}
 		$result = $adb->pquery($sql, $params);
 		$report = $adb->fetch_array($result);
-		if(count($report)>0)
+		if(php7_count($report)>0)
 		{
 			do
 			{
@@ -647,7 +701,7 @@ class Reports extends CRMEntity{
 		if($module != "")
 		{
 			$secmodule = explode(":",$module);
-			for($i=0;$i < count($secmodule) ;$i++)
+			for($i=0;$i < php7_count($secmodule) ;$i++)
 			{
 				//$this->updateModuleList($secmodule[$i]);
 				if($this->module_list[$secmodule[$i]]){
@@ -728,7 +782,7 @@ class Reports extends CRMEntity{
 		//Security Check
 		if($is_admin == true || $profileGlobalPermission[1] == 0 || $profileGlobalPermission[2] ==0)
 		{
-			$sql = "select * from vtiger_field where vtiger_field.tabid in (". generateQuestionMarks($tabid) .") and vtiger_field.block in (". generateQuestionMarks($block) .") and vtiger_field.displaytype in (1,2,3,5) and vtiger_field.presence in (0,2) AND tablename NOT IN (".generateQuestionMarks($skipTalbes).") ";
+			$sql = "select * from vtiger_field where vtiger_field.tabid in (". generateQuestionMarks($tabid) .") and vtiger_field.block in (". generateQuestionMarks($block) .") and vtiger_field.displaytype in (1,2,3,5) and vtiger_field.presence in (0,2) AND tablename NOT IN (".generateQuestionMarks($skipTalbes).") AND uitype != 999";
 
 			//fix for Ticket #4016
 			if($module == "Calendar")
@@ -740,8 +794,8 @@ class Reports extends CRMEntity{
 		{
 
 			$profileList = getCurrentUserProfileList();
-			$sql = "select * from vtiger_field inner join vtiger_profile2field on vtiger_profile2field.fieldid=vtiger_field.fieldid inner join vtiger_def_org_field on vtiger_def_org_field.fieldid=vtiger_field.fieldid where vtiger_field.tabid in (". generateQuestionMarks($tabid) .")  and vtiger_field.block in (". generateQuestionMarks($block) .") and vtiger_field.displaytype in (1,2,3,5) and vtiger_profile2field.visible=0 and vtiger_def_org_field.visible=0 and vtiger_field.presence in (0,2)";
-			if (count($profileList) > 0) {
+			$sql = "select * from vtiger_field inner join vtiger_profile2field on vtiger_profile2field.fieldid=vtiger_field.fieldid inner join vtiger_def_org_field on vtiger_def_org_field.fieldid=vtiger_field.fieldid where vtiger_field.tabid in (". generateQuestionMarks($tabid) .")  and vtiger_field.block in (". generateQuestionMarks($block) .") and vtiger_field.displaytype in (1,2,3,5) and vtiger_profile2field.visible=0 and vtiger_def_org_field.visible=0 and vtiger_field.presence in (0,2) AND uitype != 999";
+			if (php7_count($profileList) > 0) {
 				$sql .= " and vtiger_profile2field.profileid in (". generateQuestionMarks($profileList) .")";
 				array_push($params, $profileList);
 			}
@@ -909,7 +963,7 @@ class Reports extends CRMEntity{
 				"Next 7 Days","Next 30 Days","Next 60 Days","Next 90 Days","Next 120 Days"
 				);
 
-		for($i=0;$i<count($datefiltervalue);$i++)
+		for($i=0;$i<php7_count($datefiltervalue);$i++)
 		{
 			if($selecteddatefilter == $datefiltervalue[$i])
 			{
@@ -953,7 +1007,7 @@ class Reports extends CRMEntity{
 		{
 			$profileList = getCurrentUserProfileList();
 			$sql = "select * from vtiger_field inner join vtiger_tab on vtiger_tab.tabid = vtiger_field.tabid inner join vtiger_profile2field on vtiger_profile2field.fieldid=vtiger_field.fieldid inner join vtiger_def_org_field on vtiger_def_org_field.fieldid=vtiger_field.fieldid  where vtiger_field.tabid=? and (vtiger_field.uitype =5 or vtiger_field.displaytype=2) and vtiger_profile2field.visible=0 and vtiger_def_org_field.visible=0 and vtiger_field.block in (". generateQuestionMarks($block) .") and vtiger_field.presence in (0,2)";
-			if (count($profileList) > 0) {
+			if (php7_count($profileList) > 0) {
 				$sql .= " and vtiger_profile2field.profileid in (". generateQuestionMarks($profileList) .")";
 				array_push($params, $profileList);
 			}
@@ -1302,7 +1356,7 @@ function getEscapedColumns($selectedfields)
 		if($module == "Calendar")
 		{
 			$query .= " vtiger_field.tabid in (9,16) and vtiger_field.displaytype in (1,2,3) and vtiger_profile2field.visible=0 and vtiger_def_org_field.visible=0 and vtiger_field.presence in (0,2)";
-			if (count($profileList) > 0) {
+			if (php7_count($profileList) > 0) {
 				$query .= " and vtiger_profile2field.profileid in (". generateQuestionMarks($profileList) .")";
 				array_push($params, $profileList);
 			}
@@ -1312,7 +1366,7 @@ function getEscapedColumns($selectedfields)
 		{
 			array_push($params, $this->primodule, $this->secmodule);
 			$query .= " vtiger_field.tabid in (select tabid from vtiger_tab where vtiger_tab.name in (?,?)) and vtiger_field.displaytype in (1,2,3) and vtiger_profile2field.visible=0 and vtiger_def_org_field.visible=0 and vtiger_field.presence in (0,2)";
-			if (count($profileList) > 0) {
+			if (php7_count($profileList) > 0) {
 				$query .= " and vtiger_profile2field.profileid in (". generateQuestionMarks($profileList) .")";
 				array_push($params, $profileList);
 			}
@@ -1488,7 +1542,7 @@ function getEscapedColumns($selectedfields)
                 
 				if(($col[4] == 'D' || ($col[4] == 'T' && $col[1] != 'time_start' && $col[1] != 'time_end') || ($col[4] == 'DT')) && !in_array($criteria['comparator'], $specialDateConditions)) {
 					$val = Array();
-					for($x=0;$x<count($temp_val);$x++) {
+					for($x=0;$x<php7_count($temp_val);$x++) {
                         if($col[4] == 'D') {
 							$date = new DateTimeField(trim($temp_val[$x]));
 							$val[$x] = $date->getDisplayDate();
@@ -1560,7 +1614,7 @@ function getEscapedColumns($selectedfields)
 		if(!empty($secondarymodule))
 		{
 			//$secondarymodule = explode(":",$secondarymodule);
-			for($i=0;$i < count($secondarymodule) ;$i++)
+			for($i=0;$i < php7_count($secondarymodule) ;$i++)
 			{
 				$options []= $this->sgetColumnstoTotalHTML($secondarymodule[$i],($i+1));
 			}
@@ -1599,7 +1653,7 @@ function getEscapedColumns($selectedfields)
 		if($secondarymodule != "")
 		{
 			$secondarymodule = explode(":",$secondarymodule);
-			for($i=0;$i < count($secondarymodule) ;$i++)
+			for($i=0;$i < php7_count($secondarymodule) ;$i++)
 			{
 				$options []= $this->sgetColumnstoTotalHTML($secondarymodule[$i],($i+1));
 			}
@@ -1635,7 +1689,7 @@ function getEscapedColumns($selectedfields)
 		{
 			$profileList = getCurrentUserProfileList();
 			$ssql = "select * from vtiger_field inner join vtiger_tab on vtiger_tab.tabid = vtiger_field.tabid inner join vtiger_def_org_field on vtiger_def_org_field.fieldid=vtiger_field.fieldid inner join vtiger_profile2field on vtiger_profile2field.fieldid=vtiger_field.fieldid  where vtiger_field.uitype != 50 and vtiger_field.tabid=? and vtiger_field.displaytype in (1,2,3) and vtiger_def_org_field.visible=0 and vtiger_profile2field.visible=0 and vtiger_field.presence in (0,2)";
-			if (count($profileList) > 0) {
+			if (php7_count($profileList) > 0) {
 				$ssql .= " and vtiger_profile2field.profileid in (". generateQuestionMarks($profileList) .")";
 				array_push($sparams, $profileList);
 			}
@@ -1698,7 +1752,7 @@ function getEscapedColumns($selectedfields)
 					$selectedcolumn = "";
 					$selectedcolumn1 = "";
 
-					for($i=0;$i < count($this->columnssummary) ;$i++)
+					for($i=0;$i < php7_count($this->columnssummary) ;$i++)
 					{
 						$selectedcolumnarray = explode(":",$this->columnssummary[$i]);
 						$selectedcolumn = $selectedcolumnarray[1].":".$selectedcolumnarray[2].":".
@@ -1879,7 +1933,7 @@ function updateAdvancedCriteria($reportid, $advft_criteria, $advft_criteria_grou
 		if(($column_info[4] == 'D' || ($column_info[4] == 'T' && $column_info[1] != 'time_start' && $column_info[1] != 'time_end') || ($column_info[4] == 'DT')) && ($column_info[4] != '' && $adv_filter_value != '' ))
 		{
 			$val = Array();
-			for($x=0;$x<count($temp_val);$x++) {
+			for($x=0;$x<php7_count($temp_val);$x++) {
 				if(trim($temp_val[$x]) != '') {
 					$date = new DateTimeField(trim($temp_val[$x]));
 					if($column_info[4] == 'D') {

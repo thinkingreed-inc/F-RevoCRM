@@ -16,5 +16,6 @@
 	{/if}
     <form id="detailView" data-name-fields='{ZEND_JSON::encode($NAME_FIELDS)}' method="POST">
         {include file='DetailViewBlockView.tpl'|@vtemplate_path:$MODULE_NAME RECORD_STRUCTURE=$RECORD_STRUCTURE MODULE_NAME=$MODULE_NAME}
+        {include file='DetailViewUserCredentialBlockView.tpl'|@vtemplate_path:$MODULE_NAME RECORD_STRUCTURE=$RECORD_STRUCTURE MODULE_NAME=$MODULE_NAME USER_MULTI_FACTOR_CREDENTIAL_LIST=$USER_MULTI_FACTOR_CREDENTIAL_LIST RECORDID=$RECORDID}
     </form>
 {/strip}

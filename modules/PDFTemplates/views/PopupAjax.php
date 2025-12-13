@@ -17,7 +17,7 @@ class PDFTemplates_PopupAjax_View extends PDFTemplates_Popup_View {
 		$this->exposeMethod('getPageCount');
 	}
 
-	function preProcess(Vtiger_Request $request) {
+	function preProcess(Vtiger_Request $request, $display = true) {
 		return true;
 	}
 

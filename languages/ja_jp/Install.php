@@ -72,4 +72,37 @@ $languageStrings = array(
 	'LBL_OPEN_SSL'=>'Openssl support',
 	'LBL_CURL'=>'Curl support',
 	'LBL_MB_STRING'=>'Mbstring support',
+	'LBL_COMPANY'=>'会社名',
+	'LBL_NAME'=>'氏名',
+	'LBL_LAST_NAME'=>'姓',
+	'LBL_FIRST_NAME'=>'名',
+	'LBL_PHONE'=>'電話番号',
+	'LBL_EMAIL_ADDRESS'=>'メールアドレス',
+	'LBL_PURPOSE'=>'用途',
+	'LBL_PURPOSE_CHECKBOX_1'=>'CRM導入が決まっていて、ニーズを満たす製品を探している',
+	'LBL_PURPOSE_CHECKBOX_2'=>'CRM導入を検討しているため、各社製品を調査している',
+	'LBL_PURPOSE_CHECKBOX_3'=>'オープンソースを活用してなるべく安くCRMを導入したい',
+	'LBL_PURPOSE_CHECKBOX_4'=>'ソリューションとして自社で商品化したい',
+	'LBL_PURPOSE_CHECKBOX_5'=>'お客様にF-RevoCRMを提案したい',
+	'LBL_PURPOSE_CHECKBOX_6'=>'F-RevoCRMの技術に興味がある',
+	'LBL_PURPOSE_CHECKBOX_7'=>'無料相談会があれば参加してみたい',
+	'LBL_PRIVACY_POLICY'=>'ご入力いただいた個人情報はF-RevoCRMの開発、運営会社であるシンキングリード株式会社（以下、当社）によって<a href="https://f-revocrm.jp/privacy/" target="_blank">プライバシーポリシー</a>を遵守し適切に管理されます。<br>入力されたメールアドレスは以下の目的及び用途のために利用、管理し、この版にを超える取り扱いは致しません。<br><ul><li>当社の製品およびサービスに関する情報提供やアンケート調査</li><li>当社の製品およびサービスに関するお知らせ</li><li>当社の製品およびサービスに関するサポート</li><<li>当社に関連するセミナーのご案内</li>/ul><br>上記に問題ない場合は次へボタンでお進みください。',
+	
+	'LBL_FR_INSTALLATION_SURVEY' => 'FRインストール時のアンケート（v7以降）',
+	'LBL_F-RevoCRM_INSTALL_ENQUETE' => 'F-RevoCRMインストールアンケート\n".$description',
+	'LBL_SYSTEMADMINISTRATOR' => 'システム管理者',
+	
+);
+
+$jsLanguageStrings = array(
+	'JS_SETTING_NOT_SAME' => 'いくつかの設定が異なりますが、このまま進めますか？',
+	'JS_ERR_PASSWORD_INCORRECT' => 'パスワードが正しくありません。再度入力してください。',
+	'JS_ERR_PASSWORD_LENGTH' => '8文字以上のパスワードにしてください。',
+	'JS_ERR_PASSWORD_COMPLEXITY' => '複雑なパスワードを指定してください（アルファベット大文字・小文字、数字、記号を含む8文字以上）。',
+	'JS_ERR_EMAIL_ADDRESS' => 'メールアドレスが正しくありません。',
+	'JS_ERR_REQUIRED' => '必須の入力がされていません。',
+	'JS_ERR_NAME' => '氏名を入力してください。',
+	'JS_ERR_EMAIL_ADDRESS_NOTINPUT' => 'メールアドレスを入力してください。',
+	'JS_ERR_CHECKBOX' => '一つ以上チェックを付けてください。',
+	'JS_PASSWORD_NOT_MATCH' => 'パスワードが正しくありません。再度入力してください。',
 );

@@ -22,12 +22,18 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
     }
 
     public function add(Vtiger_Request $request) {
+        global $custom_field_limit;
         $type = $request->get('fieldType');
         $moduleName = $request->get('sourceModule');
         $blockId = $request->get('blockid');
         $moduleModel = Settings_LayoutEditor_Module_Model::getInstanceByName($moduleName);
         $response = new Vtiger_Response();
         try{
+            $cf_count = $this->getCustomFieldsCount($moduleName);
+            if (isset($custom_field_limit) && isset($cf_count) && ($cf_count >= $custom_field_limit)) {
+                throw new Exception(vtranslate('LBL_CUSTOM_FIELD_LIMIT'));
+            }
+
             $fieldModel = $moduleModel->addField($type,$blockId,$request->getAll());
             $fieldInfo = $fieldModel->getFieldInfo();
             $responseData = array_merge(array('id'=>$fieldModel->getId(), 'blockid'=>$blockId, 'customField'=>$fieldModel->isCustomField()),$fieldInfo);
@@ -47,6 +53,7 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
 				}
 			}
 			$responseData['fieldDefaultValue'] = $defaultValue;
+            $responseData['sequence'] = $fieldModel->get('sequence');
 
             $response->setResult($responseData);
         }catch(Exception $e) {
@@ -55,18 +62,27 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
         $response->emit();
     }
 
+    private function getCustomFieldsCount($moduleName) {
+        global $adb;
+        $query = "SELECT COUNT(generatedtype) AS cf_count  FROM vtiger_field INNER JOIN vtiger_tab ON vtiger_field.tabid = vtiger_tab.tabid WHERE vtiger_tab.name = ? && vtiger_field.generatedtype = 2";
+        $result = $adb->pquery($query, array($moduleName));
+        return $adb->query_result($result, 0, "cf_count");
+    }
+
     public function save(Vtiger_Request $request) {
 		$currentUser = Users_Record_Model::getCurrentUserModel();
         $fieldId = $request->get('fieldid');
         $fieldInstance = Settings_LayoutEditor_Field_Model::getInstance($fieldId);
         
         $fieldLabel = $fieldInstance->get('label');
+        $uitype = $fieldInstance->get('uitype');
         $mandatory = $request->get('mandatory',null);
         $presence = $request->get('presence',null);
         $quickCreate = $request->get('quickcreate',null);
         $summaryField = $request->get('summaryfield',null);
         $massEditable = $request->get('masseditable',null);
         $headerField = $request->get('headerfield',null);
+        $fieldDefaultValue = $request->get('fieldDefaultValue', null);
 
 		if (!$fieldLabel) {
 			$fieldInstance->set('label', $fieldLabel);
@@ -93,9 +109,16 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
         if(!empty($massEditable)){
             $fieldInstance->set('masseditable', $massEditable);
         }
-
-		$defaultValue = decode_html($request->get('fieldDefaultValue'));
-		$fieldInstance->set('defaultvalue', $defaultValue);
+        
+        if(isset($fieldDefaultValue) && $fieldDefaultValue !== null) {
+            $fieldDataType = $fieldInstance->getFieldDataType();
+            if($fieldDataType == 'multipicklist'){
+                $defaultValue = decode_html(implode(' |##| ', $request->get('fieldDefaultValue')));
+            }else{
+                $defaultValue = decode_html($request->get('fieldDefaultValue'));
+            }
+            $fieldInstance->set('defaultvalue', $defaultValue);
+        }
 		$response = new Vtiger_Response();
         try{
             $fieldInstance->save();
@@ -104,6 +127,7 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
 			$fieldInfo = $fieldInstance->getFieldInfo();
 			$fieldInfo['id'] = $fieldInstance->getId();
 
+            $defaultValue = $fieldInstance->getDefaultFieldValue();
 			$fieldInfo['fieldDefaultValueRaw'] = $defaultValue;
 			if (isset($defaultValue)) {
 				if ($defaultValue && $fieldInfo['type'] == 'date') {
@@ -137,8 +161,18 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
             return;
         }
 
+        $block = $fieldInstance->get('block');
+        $blockId = $block->id;
+        $sourceModule = $block->module->name;
+        $preSequence = $fieldInstance->get('sequence');
+        $targetTable = $fieldInstance->get('table');
         try{
             $this->_deleteField($fieldInstance);
+            // 空白項目に置き換える場合
+            if($request->get('isReplaceBlankColumn') === "true"){
+                $blankFieldArray = $this->replaceBlankColumn($blockId, $sourceModule, $preSequence, $targetTable);
+                $response->setResult($blankFieldArray);
+            }
         }catch(Exception $e) {
             $response->setError($e->getCode(), $e->getMessage());
         }
@@ -211,5 +245,61 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
 
     public function validateRequest(Vtiger_Request $request) {
         $request->validateWriteAccess();
+    }
+
+    // 削除した項目の場所に空白項目を置き換える
+    private function replaceBlankColumn($blockId, $sourceModule, $preSequence, $targetTable)
+    {
+        global $adb;
+        $max_fieldid = $adb->getUniqueID("vtiger_field");
+        $columnName = 'cf_' . $max_fieldid;
+
+        $blockInstance = Vtiger_Block::getInstance($blockId);
+
+        $blankField = new Vtiger_Field_Model();
+        $blankField->addNewId = $max_fieldid;
+        $blankField->name = $columnName;
+        $blankField->label = '';
+        $blankField->table = $targetTable;
+        $blankField->uitype = 999;
+        $blankField->typeofdata = 'V~O';
+        $blankField->displaytype = 1;
+        $blankField->defaultvalue = "";
+        $blankField->sequence = $preSequence;
+        $blankField->readonly = 1;
+        $blankField->presence = 2;
+        $blankField->quickcreate = 1;
+        $blankField->masseditable = 2;
+        $blankField->summaryfield = 0;
+        $blankField->generatedtype = 2;
+
+        $blockInstance->addField($blankField);
+
+
+        // 追加した空白項目の情報を取得
+        $fieldModel = Settings_LayoutEditor_Field_Model::getInstance($blankField->getId());
+
+        $fieldInfo = $fieldModel->getFieldInfo();
+        $responseData = array_merge(array('id' => $fieldModel->getId(), 'blockid' => $blockId, 'customField' => $fieldModel->isCustomField()), $fieldInfo);
+
+        $defaultValue = $fieldModel->get('defaultvalue');
+        $responseData['fieldDefaultValueRaw'] = $defaultValue;
+        if (isset($defaultValue)) {
+            if ($defaultValue && $fieldInfo['type'] == 'date') {
+                $defaultValue = DateTimeField::convertToUserFormat($defaultValue);
+            } else if (!$defaultValue) {
+                $defaultValue = $fieldModel->getDisplayValue($defaultValue);
+            } else if (is_array($defaultValue)) {
+                foreach ($defaultValue as $key => $value) {
+                    $defaultValue[$key] = $fieldModel->getDisplayValue($value);
+                }
+                $defaultValue = Zend_Json::encode($defaultValue);
+            }
+        }
+        $responseData['fieldDefaultValue'] = $defaultValue;
+        $responseData['blankFieldName'] = $blankField->getFieldName();
+        $responseData['blankFieldId'] = $blankField->getId();
+
+        return $responseData;
     }
 }

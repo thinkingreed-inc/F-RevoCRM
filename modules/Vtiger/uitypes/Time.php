@@ -99,6 +99,14 @@ class Vtiger_Time_UIType extends Vtiger_Base_UIType {
 	}
 
 	/**
+	 * Helper static function.
+	 */
+	public static function getDisplayValueUserFormat($value, $record = false, $recordInstance = false) {
+		$instance = new static();
+		return $instance->getDisplayValue($value, $record, $recordInstance);
+	}
+
+	/**
 	 * Function to get the display value in edit view
 	 * @param $value
 	 * @return converted value

@@ -73,6 +73,12 @@
 														{vtranslate('LBL_EDIT',$MODULE_NAME)}
 													</a>
 												{/if}
+												{if $CURRENTUSER->getId() eq $COMMENT->get('userid') || $CURRENTUSER->isAdminUser()}
+													&nbsp;&nbsp;&nbsp;
+													<a href="javascript:void(0);" class="cursorPointer deleteComment feedback" style="color: blue;">
+														{vtranslate('LBL_DELETE',$MODULE_NAME)}
+													</a>
+												{/if}
 											{/if}
 
 											{assign var=CHILD_COMMENTS_COUNT value=$COMMENT->getChildCommentsCount()}
@@ -80,24 +86,24 @@
 												{if $COMMENTS_MODULE_MODEL->isPermitted('EditView')}&nbsp;&nbsp;&nbsp;{/if}
 												<span class="viewThreadBlock" data-child-comments-count="{$CHILD_COMMENTS_COUNT}">
 													<a href="javascript:void(0)" class="cursorPointer viewThread" style="color: blue;">
-														<span class="childCommentsCount">{$CHILD_COMMENTS_COUNT}</span>&nbsp;{if $CHILD_COMMENTS_COUNT eq 1}{vtranslate('LBL_REPLY',$MODULE_NAME)}{else}{vtranslate('LBL_REPLIES',$MODULE_NAME)}{/if}&nbsp;
+														{vtranslate('LBL_HIDDEN',$MODULE_NAME)}&nbsp;
 													</a>
 												</span>
 												<span class="hideThreadBlock" data-child-comments-count="{$CHILD_COMMENTS_COUNT}" style="display:none;">
 													<a href="javascript:void(0)" class="cursorPointer hideThread" style="color: blue;">
-														<span class="childCommentsCount">{$CHILD_COMMENTS_COUNT}</span>&nbsp;{if $CHILD_COMMENTS_COUNT eq 1}{vtranslate('LBL_REPLY',$MODULE_NAME)}{else}{vtranslate('LBL_REPLIES',$MODULE_NAME)}{/if}&nbsp;
+														{vtranslate('LBL_DISPLAY',$MODULE_NAME)}&nbsp;
 													</a>
 												</span>
 											{elseif $CHILD_COMMENTS_MODEL neq null and ($CHILDS_ROOT_PARENT_ID eq $PARENT_COMMENT_ID)}
 												{if $COMMENTS_MODULE_MODEL->isPermitted('EditView')}&nbsp;&nbsp;&nbsp;{/if}
 												<span class="viewThreadBlock" data-child-comments-count="{$CHILD_COMMENTS_COUNT}" style="display:none;">
 													<a href="javascript:void(0)" class="cursorPointer viewThread" style="color: blue;">
-														<span class="childCommentsCount">{$CHILD_COMMENTS_COUNT}</span>&nbsp;{if $CHILD_COMMENTS_COUNT eq 1}{vtranslate('LBL_REPLY',$MODULE_NAME)}{else}{vtranslate('LBL_REPLIES',$MODULE_NAME)}{/if}&nbsp;
+														{vtranslate('LBL_HIDDEN',$MODULE_NAME)}&nbsp;
 													</a>
 												</span>
 												<span class="hideThreadBlock" data-child-comments-count="{$CHILD_COMMENTS_COUNT}">
 													<a href="javascript:void(0)" class="cursorPointer hideThread" style="color: blue;">
-														<span class="childCommentsCount">{$CHILD_COMMENTS_COUNT}</span>&nbsp;{if $CHILD_COMMENTS_COUNT eq 1}{vtranslate('LBL_REPLY',$MODULE_NAME)}{else}{vtranslate('LBL_REPLIES',$MODULE_NAME)}{/if}&nbsp;
+														{vtranslate('LBL_DISPLAY',$MODULE_NAME)}&nbsp;
 													</a>
 												</span>
 											{/if}

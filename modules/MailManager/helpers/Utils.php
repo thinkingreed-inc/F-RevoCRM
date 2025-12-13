@@ -13,7 +13,7 @@ include_once dirname(__FILE__) . '/../third-party/HTML.Safe.php';
 
 class MailManager_Utils_Helper {
 
-	public function safe_html_string( $string) {
+	public static function safe_html_string( $string) {
 		$htmlSafe = new HTML_Safe();
 		// Mails coming from HipChat has xml tag in body content. It has tag like <?xml encoding="utf-8"> and no closing tag for this
 		// But HTML_Safe considers xml tag as dangerous tag and removes content between these tags.
@@ -28,16 +28,16 @@ class MailManager_Utils_Helper {
 		return $htmlSafe->parse($string);
 	}
 
-	public function allowedFileExtension($filename) {
+	public static function allowedFileExtension($filename) {
 		$parts = explode('.', $filename);
-		if (count($parts) > 1) {
-			$extension = $parts[count($parts)-1];
+		if (php7_count($parts) > 1) {
+			$extension = $parts[php7_count($parts)-1];
 			return (in_array(strtolower($extension), vglobal('upload_badext')) === false);
 		}
 		return false;
 	}
 
-	public function emitJSON($object) {
+	public static function emitJSON($object) {
 		Zend_Json::$useBuiltinEncoderDecoder = true;
 		echo Zend_Json::encode($object);
 	}

@@ -135,7 +135,7 @@ class Zend_Gdata_MediaMimeStream
      */
     public function read($bytesRequested)
     {
-        if($this->_currentPart >= count($this->_parts)) {
+        if($this->_currentPart >= php7_count($this->_parts)) {
           return FALSE;
         }
 

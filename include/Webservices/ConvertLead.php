@@ -16,14 +16,14 @@ require_once 'includes/Loader.php';
 vimport ('includes.runtime.Globals');
 vimport ('includes.runtime.BaseModel');
 
-function vtws_convertlead($entityvalues, $user) {
+function vtws_convertlead($element, $leadId, $assignedTo, $accountName, $avoidPotential, $potential, $user) {
 
 	global $adb, $log;
-	if (empty($entityvalues['assignedTo'])) {
-		$entityvalues['assignedTo'] = vtws_getWebserviceEntityId('Users', $user->id);
+	if (empty($element['assignedTo'])) {
+		$element['assignedTo'] = vtws_getWebserviceEntityId('Users', $user->id);
 	}
-	if (empty($entityvalues['transferRelatedRecordsTo'])) {
-		$entityvalues['transferRelatedRecordsTo'] = 'Contacts';
+	if (empty($element['transferRelatedRecordsTo'])) {
+		$element['transferRelatedRecordsTo'] = 'Contacts';
 	}
 	$activeAdminUser = Users::getActiveAdminUser();
 
@@ -36,9 +36,9 @@ function vtws_convertlead($entityvalues, $user) {
 	$leadHandler = new $handlerClass($leadObject, $activeAdminUser, $adb, $log);
 
 
-	$leadInfo = vtws_retrieve($entityvalues['leadId'], $activeAdminUser);
+	$leadInfo = vtws_retrieve($element['leadId'], $activeAdminUser);
 	$sql = "select converted from vtiger_leaddetails where converted = 1 and leadid=?";
-	$leadIdComponents = vtws_getIdComponents($entityvalues['leadId']);
+	$leadIdComponents = vtws_getIdComponents($element['leadId']);
 	$result = $adb->pquery($sql, array($leadIdComponents[1]));
 	if ($result === false) {
 		throw new WebServiceException(WebServiceErrorCode::$DATABASEQUERYERROR,
@@ -52,15 +52,15 @@ function vtws_convertlead($entityvalues, $user) {
 	}
 
 	$leadHasImage = false;
-	if($leadInfo['imagename'] && $entityvalues['imageAttachmentId']) {
+	if($leadInfo['imagename'] && $element['imageAttachmentId']) {
 		$leadHasImage = true;
-		$imageAttachmentId = $entityvalues['imageAttachmentId'];
+		$imageAttachmentId = $element['imageAttachmentId'];
 	}
 	$entityIds = array();
 
 	$availableModules = array('Accounts', 'Contacts', 'Potentials');
 
-	if (!(($entityvalues['entities']['Accounts']['create']) || ($entityvalues['entities']['Contacts']['create']))) {
+	if (!(($element['entities']['Accounts']['create']) || ($element['entities']['Contacts']['create']))) {
 		return null;
 	}
 
@@ -76,9 +76,9 @@ function vtws_convertlead($entityvalues, $user) {
 	}
 
 	foreach ($availableModules as $entityName) {
-		if ($entityvalues['entities'][$entityName]['create']) {
-			$entityvalue = $entityvalues['entities'][$entityName];
-			$entityObject = VtigerWebserviceObject::fromName($adb, $entityvalue['name']);
+		if ($element['entities'][$entityName]['create']) {
+			$entityvalue = $element['entities'][$entityName];
+			$entityObject = VtigerWebserviceObject::fromName($adb, $entityName);
 			$handlerPath = $entityObject->getHandlerPath();
 			$handlerClass = $entityObject->getHandlerClass();
 
@@ -87,11 +87,11 @@ function vtws_convertlead($entityvalues, $user) {
 			$entityHandler = new $handlerClass($entityObject, $activeAdminUser, $adb, $log);
 
 			$entityObjectValues = array();
-			$entityObjectValues['assigned_user_id'] = $entityvalues['assignedTo'];
-			$entityObjectValues = vtws_populateConvertLeadEntities($entityvalue, $entityObjectValues, $entityHandler, $leadHandler, $leadInfo);
+			$entityObjectValues['assigned_user_id'] = $element['assignedTo'];
+			$entityObjectValues = vtws_populateConvertLeadEntities($entityvalue, $entityObjectValues, $entityHandler, $leadHandler, $leadInfo, $entityName);
 
 			//update potential related to property
-			if ($entityvalue['name'] == 'Potentials') {
+			if ($entityName == 'Potentials') {
 				if (!empty($entityIds['Accounts'])) {
 					$entityObjectValues['related_to'] = $entityIds['Accounts'];
 				}
@@ -101,7 +101,7 @@ function vtws_convertlead($entityvalues, $user) {
 			}
 
 			//update the contacts relation
-			if ($entityvalue['name'] == 'Contacts') {
+			if ($entityName == 'Contacts') {
 				if (!empty($entityIds['Accounts'])) {
 					$entityObjectValues['account_id'] = $entityIds['Accounts'];
 				}
@@ -109,7 +109,7 @@ function vtws_convertlead($entityvalues, $user) {
 
 			try {
 				$create = true;
-				if ($entityvalue['name'] == 'Accounts') {
+				if ($entityName == 'Accounts') {
 					$sql = "SELECT vtiger_account.accountid FROM vtiger_account,vtiger_crmentity WHERE vtiger_crmentity.crmid=vtiger_account.accountid AND vtiger_account.accountname=? AND vtiger_crmentity.deleted=0";
 					$result = $adb->pquery($sql, array($entityvalue['accountname']));
 					if ($adb->num_rows($result) > 0) {
@@ -119,13 +119,13 @@ function vtws_convertlead($entityvalues, $user) {
 				}
 				if ($create) {
 					$entityObjectValues['imagename'] = '';
-					if(($leadHasImage) && ((($entityName == 'Contacts') || ($entityName == 'Accounts' && !$entityvalues['entities']['Contacts']['create'])))) {
+					if(($leadHasImage) && ((($entityName == 'Contacts') || ($entityName == 'Accounts' && !$element['entities']['Contacts']['create'])))) {
 						$imageName = $adb->query_result($adb->pquery('SELECT name FROM vtiger_attachments 
 							WHERE attachmentsid = ?',array($imageAttachmentId)),0,'name');
 						$entityObjectValues['imagename'] = $imageName;
 					}
 					$entityObjectValues['isconvertedfromlead'] = 1;
-					$entityRecord = vtws_create($entityvalue['name'], $entityObjectValues, $activeAdminUser);
+					$entityRecord = vtws_create($entityName, $entityObjectValues, $activeAdminUser);
 					$entityIds[$entityName] = $entityRecord['id'];
 					if($leadHasImage && in_array($entityName,array('Accounts','Contacts'))) {
 						$idComponents = explode('x',$entityIds[$entityName]);
@@ -138,7 +138,7 @@ function vtws_convertlead($entityvalues, $user) {
 				throw $e;
 			} catch (Exception $e) {
 				throw new WebServiceException(WebServiceErrorCode::$UNKNOWNOPERATION,
-						$e->getMessage().' : '.$entityvalue['name']);
+						$e->getMessage().' : '.$entityName);
 			}
 		}
 	}
@@ -173,11 +173,11 @@ function vtws_convertlead($entityvalues, $user) {
 				$adb->pquery($queryUpdate, array($accountId, $quoteIds));
 			}
 		}
-		$transfered = vtws_convertLeadTransferHandler($leadIdComponents, $entityIds, $entityvalues);
+		$transfered = vtws_convertLeadTransferHandler($leadIdComponents, $entityIds, $element);
 
-		$relatedIdComponents = vtws_getIdComponents($entityIds[$entityvalues['transferRelatedRecordsTo']]);
+		$relatedIdComponents = vtws_getIdComponents($entityIds[$element['transferRelatedRecordsTo']]);
 		vtws_getRelatedActivities($leadIdComponents[1], $accountId, $contactId, $relatedIdComponents[1]);
-		vtws_updateConvertLeadStatus($entityIds, $entityvalues['leadId'], $user);
+		vtws_updateConvertLeadStatus($entityIds, $element['leadId'], $user);
 	} catch (Exception $e) {
 		foreach ($entityIds as $entity => $id) {
 			vtws_delete($id, $user);
@@ -185,14 +185,14 @@ function vtws_convertlead($entityvalues, $user) {
 		return null;
 	}
 
-	$leadId = explode("x",$entityvalues['leadId']);
+	$leadId = explode("x",$element['leadId']);
 	if($leadId[1]) {
 		$em = new VTEventsManager($adb);
 		$em->initTriggerCache();
 
 		$entityData = VTEntityData::fromEntityId($adb, $leadId[1], 'Leads');
 		$entityData->entityIds = $entityIds;
-		$entityData->transferRelatedRecordsTo = $entityvalues['transferRelatedRecordsTo'];
+		$entityData->transferRelatedRecordsTo = $element['transferRelatedRecordsTo'];
 
 		$em->triggerEvent('vtiger.lead.convertlead', $entityData);
 	}
@@ -206,10 +206,9 @@ function vtws_convertlead($entityvalues, $user) {
  * returns the entity array.
  */
 
-function vtws_populateConvertLeadEntities($entityvalue, $entity, $entityHandler, $leadHandler, $leadinfo) {
+function vtws_populateConvertLeadEntities($entityvalue, $entity, $entityHandler, $leadHandler, $leadinfo, $entityName) {
 	global $adb, $log;
-	$column;
-	$entityName = $entityvalue['name'];
+	$column = "";
 	$sql = "SELECT * FROM vtiger_convertleadmapping";
 	$result = $adb->pquery($sql, array());
 	if ($adb->num_rows($result)) {
@@ -265,11 +264,11 @@ function vtws_populateConvertLeadEntities($entityvalue, $entity, $entityHandler,
 }
 
 //function to handle the transferring of related records for lead
-function vtws_convertLeadTransferHandler($leadIdComponents, $entityIds, $entityvalues) {
+function vtws_convertLeadTransferHandler($leadIdComponents, $entityIds, $element) {
 
 	try {
-		$entityidComponents = vtws_getIdComponents($entityIds[$entityvalues['transferRelatedRecordsTo']]);
-		vtws_transferLeadRelatedRecords($leadIdComponents[1], $entityidComponents[1], $entityvalues['transferRelatedRecordsTo']);
+		$entityidComponents = vtws_getIdComponents($entityIds[$element['transferRelatedRecordsTo']]);
+		vtws_transferLeadRelatedRecords($leadIdComponents[1], $entityidComponents[1], $element['transferRelatedRecordsTo']);
 	} catch (Exception $e) {
 		return false;
 	}

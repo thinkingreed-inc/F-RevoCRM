@@ -7,13 +7,17 @@
  * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
  *************************************************************************************/
-require_once('libraries/magpierss/rss_fetch.inc');
-require_once('include/simplehtmldom/simple_html_dom.php');
 
-// for rss caching 
-define('MAGPIE_CACHE_DIR', '/tmp/magpie_cache');
-define('MAGPIE_CACHE_ON', 1);
-define('MAGPIE_CACHE_AGE', 1800);
+function fetch_feed_and_transform($url) {
+    $reader = \Feed::load($url);
+    $return = [];
+    $return["channel"] = ["title" => (string)$reader->title, "link" => (string)$reader->link];
+    $return["items"] = [];
+    foreach ($reader->item as $item) {
+        $return["items"][] = $reader->toArray($item);
+    }
+    return (object) $return;
+}
 
 class Rss_Record_Model extends Vtiger_Record_Model {
     
@@ -69,9 +73,10 @@ class Rss_Record_Model extends Vtiger_Record_Model {
 
 	/**
 	 * Function to save the record
-     * @param <string> $url
 	 */
-	public function save($url) {
+	public function save() {
+        $url = $this->get('url');
+        
         $db = PearDatabase::getInstance();
         $title = $this->getName();
         $id = $db->getUniqueID("vtiger_rss");
@@ -123,7 +128,7 @@ class Rss_Record_Model extends Vtiger_Record_Model {
 	 * @param <String> $qualifiedModuleName
 	 * @return <Rss_Record_Model> RecordModel
 	 */
-	static public function getInstanceById($recordId, $qualifiedModuleName) {
+	static public function getInstanceById($recordId, $qualifiedModuleName = null) {
 		$db = PearDatabase::getInstance();
 		$result = $db->pquery('SELECT * FROM vtiger_rss WHERE rssid = ?', array($recordId));
 
@@ -133,7 +138,7 @@ class Rss_Record_Model extends Vtiger_Record_Model {
 			$recordModel = new self();
 			$recordModel->setData($rowData);
             $recordModel->setModule($qualifiedModuleName);
-            $rss = fetch_rss(decode_html($recordModel->get('rssurl')));
+            $rss = fetch_feed_and_transform(decode_html($recordModel->get('rssurl')));
             $rss->items = $recordModel->setSenderInfo($rss->items);
             $recordModel->setRssValues($rss);
             $recordModel->setRssObject($rss);
@@ -175,7 +180,7 @@ class Rss_Record_Model extends Vtiger_Record_Model {
      * @return <boolean> 
      */
     public function validateRssUrl($url) {
-        $rss = fetch_rss($url);
+        $rss = fetch_feed_and_transform($url);
 	
 		if($rss) {
             $this->setRssValues($rss);

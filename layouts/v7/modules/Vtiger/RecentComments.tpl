@@ -67,7 +67,7 @@
 	<div class="commentsBody">
 		{if !empty($COMMENTS)}
 			<div class="recentCommentsBody container-fluid">
-				{assign var=COMMENTS_COUNT value=count($COMMENTS)}
+				{assign var=COMMENTS_COUNT value=php7_count($COMMENTS)}
 				{foreach key=index item=COMMENT from=$COMMENTS}
 					{assign var=CREATOR_NAME value={decode_html($COMMENT->getCommentedByName())}}
 					<div class="commentDetails">
@@ -159,6 +159,12 @@
 															{if $IS_CREATABLE}&nbsp;&nbsp;&nbsp;{/if}
 															<a href="javascript:void(0);" class="cursorPointer editComment feedback" style="color: blue;">
 																{vtranslate('LBL_EDIT',$MODULE_NAME)}
+															</a>
+														{/if}
+														{if $CURRENTUSER->getId() eq $COMMENT->get('userid') || $CURRENTUSER->isAdminUser()}
+															{if $IS_CREATABLE}&nbsp;&nbsp;&nbsp;{/if}
+															<a href="javascript:void(0);" class="cursorPointer deleteComment feedback" style="color: blue;">
+																{vtranslate('LBL_DELETE',$MODULE_NAME)}
 															</a>
 														{/if}
 													</span>

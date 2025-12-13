@@ -16,7 +16,7 @@ class Calendar_SaveAjax_Action extends Vtiger_SaveAjax_Action {
 		
 		parent::checkPermission($request);
 		if ($record) {
-			$activityModulesList = array('Calendar', 'Events');
+			$activityModulesList = array('Calendar', 'Events','ProjectTask');
 			$recordEntityName = getSalesEntityType($record);
 
 			if (!in_array($recordEntityName, $activityModulesList) || !in_array($moduleName, $activityModulesList)) {
@@ -203,8 +203,6 @@ class Calendar_SaveAjax_Action extends Vtiger_SaveAjax_Action {
 		$visibility = $request->get('visibility');
 		if(empty($activityType)) {
 			$recordModel->set('activitytype', 'Task');
-			$visibility = 'Private';
-			$recordModel->set('visibility', $visibility);
 		}
 
 		if(empty($visibility)) {

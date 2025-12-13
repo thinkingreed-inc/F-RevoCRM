@@ -8,12 +8,27 @@
  * All Rights Reserved.
  ************************************************************************************/
 
-class Vtiger_Request {
+class Vtiger_Request implements ArrayAccess {
 
 	// Datastore
 	private $valuemap;
 	private $rawvaluemap;
 	private $defaultmap = array();
+
+	// ArrayAccess Start
+	public function offsetExists($key) {
+		return $this->has($key);
+	}
+	public function offsetSet($key, $value) {
+		$this->set($key, $value);
+	}
+	public function offsetGet($key) {
+		return $this->get($key);
+	}
+	public function offsetUnset($key) {
+		// Ignore
+	}
+	// ArrayAccess End
 
 	/**
 	 * Default constructor

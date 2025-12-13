@@ -21,7 +21,7 @@
 				{/if}
 				{include file="ModalHeader.tpl"|vtemplate_path:$MODULE TITLE=$HEADER_TITLE}
 
-				<div class="modal-body" {if $MODULE=='Events'}style="max-height:800px;"{/if}>
+				<div class="modal-body pre-scrollable" {if $MODULE=='Events'}style="max-height:800px;"{/if}>
 					{if !empty($PICKIST_DEPENDENCY_DATASOURCE)}
 						<input type="hidden" name="picklistDependency" value='{Vtiger_Util_Helper::toSafeHTML($PICKIST_DEPENDENCY_DATASOURCE)}' />
 					{/if}
@@ -92,7 +92,7 @@
 								{/if}
 								{assign var="isReferenceField" value=$FIELD_MODEL->getFieldDataType()}
 								{assign var="referenceList" value=$FIELD_MODEL->getReferenceList()}
-								{assign var="referenceListCount" value=count($referenceList)}
+								{assign var="referenceListCount" value=php7_count($referenceList)}
 								{if $FIELD_MODEL->get('uitype') eq "19"}
 								{if $COUNTER eq '1'}
 								<td></td><td></td></tr><tr>
@@ -131,7 +131,7 @@
 								</tr>
 								{if $MODULE == 'Events'}
 								<tr>
-									<td class="fieldLabel alignMiddle">{vtranslate('LBL_INVITE_USERS', $MODULE)}</td>
+									<td class="fieldLabel alignMiddle"><label class="muted">{vtranslate('LBL_INVITE_USERS', $MODULE)}</label></td>
 									<td class="fieldValue">
 										<select id="selectedUsers" class="select2 inputElement" multiple name="selectedusers[]">
 											{foreach key=USER_ID item=USER_NAME from=$ACCESSIBLE_USERS}
@@ -159,9 +159,9 @@
 							{assign var=BUTTON_LABEL value={vtranslate('LBL_SAVE', $MODULE)}}
 						{/if}
 						{assign var="CALENDAR_MODULE_MODEL" value=$QUICK_CREATE_CONTENTS['Calendar']['moduleModel']}
-						{assign var="EDIT_VIEW_URL" value=$CALENDAR_MODULE_MODEL->getCreateTaskRecordUrl()}
+						{assign var="EDIT_VIEW_URL" value=$CALENDAR_MODULE_MODEL->getQuickCreateTaskRecordUrl()}
 						{if $MODULE eq 'Events'}
-							{assign var="EDIT_VIEW_URL" value=$CALENDAR_MODULE_MODEL->getCreateEventRecordUrl()}
+							{assign var="EDIT_VIEW_URL" value=$CALENDAR_MODULE_MODEL->getQuickCreateEventRecordUrl()}
 						{/if}
 						<button class="btn btn-default" id="goToFullForm" data-edit-view-url="{$EDIT_VIEW_URL}" type="button"><strong>{vtranslate('LBL_GO_TO_FULL_FORM', $MODULE)}</strong></button>
 						<button {if $BUTTON_ID neq null} id="{$BUTTON_ID}" {/if} class="btn btn-success" type="submit" name="saveButton"><strong>{$BUTTON_LABEL}</strong></button>

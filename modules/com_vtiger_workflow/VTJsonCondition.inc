@@ -31,7 +31,7 @@ class VTJsonCondition {
 					$conditionGroup = 0;
 				}
 				preg_match('/(\w+) : \((\w+)\) (\w+)/', $cond['fieldname'], $matches);
-				if (count($matches) == 0) {
+				if (php7_count($matches) == 0) {
 					if ($cond['fieldname'] == '_VT_add_comment' && $cond['isEvaluated']) {
 						$expressionResults[$conditionGroup][$i]['result'] = $cond['isEvaluated'];
 					} else {
@@ -143,6 +143,15 @@ class VTJsonCondition {
 		}
 	}
 
+	function getPicklistArray($value){
+		if ($value && strpos($value, ' |##| ') !== false){
+			$value = explode(' |##| ', $value);
+		} else {
+			$value = explode(',', $value);
+		}
+		return $value;
+	}
+
 	function checkCondition($entityData, $cond, $referredEntityData=null) {
 		$data = $entityData->getData();
 
@@ -199,7 +208,7 @@ class VTJsonCondition {
 			$date = new DateTimeField($fieldValue);
 			$fieldValue = $date->getDisplayDateTimeValue();
 			$valueArray = explode(' ', $value);
-			if(count($valueArray) == 1) {
+			if(php7_count($valueArray) == 1) {
 				$fieldValueArray = explode(' ', $fieldValue);
 				$fieldValue = getValidDBInsertDateValue($fieldValueArray[0]);
 			}
@@ -256,6 +265,10 @@ class VTJsonCondition {
 					} else {
 						return $fieldValue === 'off' || $fieldValue === 0 || $fieldValue === '0' || $fieldValue === '';
 					}
+				} else if($fieldInstance && $fieldInstance->getFieldDataType() == 'multipicklist'){
+					$fieldValue = $this->getPicklistArray($fieldValue);
+					$value = $this->getPicklistArray($value);
+					return empty(array_diff($fieldValue, $value)) && empty(array_diff($value, $fieldValue));
 				} else {
 					if($fieldInstance && $fieldInstance->getFieldDataType() == 'datetime') {
 						$value = getValidDBInsertDateValue($value);
@@ -270,6 +283,10 @@ class VTJsonCondition {
 					} else {
 						return $fieldValue === 'on' || $fieldValue === 1 || $fieldValue === '1';
 					}
+				} else if($fieldInstance && $fieldInstance->getFieldDataType() == 'multipicklist'){
+					$fieldValue = $this->getPicklistArray($fieldValue);
+					$value = $this->getPicklistArray($value);
+					return !empty(array_diff($fieldValue, $value)) || !empty(array_diff($value, $fieldValue));
 				} else {
 					if($fieldInstance && $fieldInstance->getFieldDataType() == 'datetime') {
 						$value = getValidDBInsertDateValue($value);
@@ -281,22 +298,23 @@ class VTJsonCondition {
 					if(empty($fieldValue) && empty($value)) {
 						return true;
 					} else if(!empty($fieldValue)) {
-						$fieldValue = explode(' |##| ', $fieldValue);
+						$fieldValue = $this->getPicklistArray($fieldValue);
 						if(is_array($fieldValue)) {
-							$conditionMatched = false;
-							$valueExplodedArr = explode(',',$value);
-							foreach ($fieldValue as $arrayValue) {
-								foreach($valueExplodedArr as $val){
-									if(strpos($arrayValue,$val) !== false) {
-									$conditionMatched = true;
+							$valueExplodedArr = $this->getPicklistArray($value);
+							$matchcount = 0;
+							foreach($valueExplodedArr as $val){
+								foreach ($fieldValue as $arrayValue) {
+									if($val == $arrayValue){
+										$matchcount++;
 										break;
 									}
 								}
-								if($conditionMatched){
-									break;
-								}
 							}
-							return $conditionMatched;
+							if($matchcount == php7_count($valueExplodedArr)){
+								return true;
+							}else{
+								return false;
+							}
 						}
 					}
 					return false;
@@ -313,22 +331,23 @@ class VTJsonCondition {
 					if(empty($fieldValue) && empty($value)) {
 						return false;
 					} else if(!empty($fieldValue)) {
-						$fieldValue = explode(' |##| ', $fieldValue);
+						$fieldValue = $this->getPicklistArray($fieldValue);
 						if(is_array($fieldValue)) {
-							$conditionMatched = true;
-							$valueExplodedArr = explode(',',$value);
-							foreach ($fieldValue as $arrayValue) {
-								foreach($valueExplodedArr as $val){
-									if(strpos($arrayValue,$val) !== false) {
-										$conditionMatched = false;
+							$valueExplodedArr = $this->getPicklistArray($value);
+							$matchcount = 0;
+							foreach($valueExplodedArr as $val){
+								foreach ($fieldValue as $arrayValue) {
+									if($val == $arrayValue){
+										$matchcount++;
 										break;
 									}
 								}
-								if(!$conditionMatched) {
-									break;
-								}
 							}
-							return $conditionMatched;
+							if($matchcount == php7_count($valueExplodedArr)){
+								return false;
+							}else{
+								return true;
+							}
 						}
 					}
 					return true;
@@ -350,6 +369,8 @@ class VTJsonCondition {
 				$idParts = vtws_getIdComponents($entityData->getId());
 				$hasChanged = $entityDelta->hasChanged($entityData->getModuleName(), $idParts[1], $cond['fieldname']);
 				if (empty($value)) {
+					return $hasChanged;
+				} else if($fieldInstance && $fieldInstance->getFieldDataType() == 'multipicklist'){
 					return $hasChanged;
 				} else {
 					return $hasChanged && $fieldValue == $value;
@@ -535,9 +556,8 @@ class VTJsonCondition {
 				if(empty($fieldValue) || empty($value)) {
 					return false;
 				}
-				$currentDate = date('Y-m-d');
-				$futureDate = date('Y-m-d', strtotime('+'.$value.' days'));
-				if($currentDate <= $fieldValue && $fieldValue <= $futureDate) {
+				$futureDate = date('Y-m-d', strtotime('-'.$value.' days'));
+				if($fieldValue <= $futureDate) {
 					return true;
 				}
 				return false;

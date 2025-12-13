@@ -178,7 +178,7 @@ class Settings_Workflows_EditV7Task_View extends Settings_Vtiger_Index_View {
 			if ($nameFields) {
 				$nameFieldValues = '';
 					foreach (array_keys($nameFields) as $fieldName) {
-					if (strstr($fieldName, $relationFieldName) || (count(explode(' ', $metaKey)) === 1 && count(explode(' ', $fieldName)) === 1)) {
+					if (strstr($fieldName, $relationFieldName) || (php7_count(explode(' ', $metaKey)) === 1 && php7_count(explode(' ', $fieldName)) === 1)) {
 						$fieldName = '$'.$fieldName;
 						$nameFieldValues .= ' '.$fieldName;
 					}
@@ -193,6 +193,9 @@ class Settings_Workflows_EditV7Task_View extends Settings_Vtiger_Index_View {
 		$structure = $recordStructureInstance->getStructure();
 		foreach ($structure as $fields) {
 			foreach ($fields as $field) {
+				if($field->getFieldDataType() == 'blank'){
+					continue;
+				}
 				if ($field->get('workflow_pt_lineitem_field')) {
 					$allFieldoptions .= '<option value="' . $field->get('workflow_columnname') . '">' .
 							$field->get('workflow_columnlabel') . '</option>';

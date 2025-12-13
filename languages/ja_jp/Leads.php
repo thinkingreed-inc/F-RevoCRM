@@ -26,7 +26,7 @@ $languageStrings = array(
 	'Lead Status' => 'ステータス',
 	'No Of Employees' => '従業員数',
 	'Phone' => '電話番号',
-	'Secondary Email' => '電話番号(予備)',
+	'Secondary Email' => 'メールアドレス(予備)',
 	'Email' => 'メールアドレス',
 
 	//Added for Existing Picklist Entries

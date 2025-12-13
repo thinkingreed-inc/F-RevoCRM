@@ -83,6 +83,8 @@ class CustomerPortal_FetchRecords extends CustomerPortal_API_Abstract {
 					$sql = sprintf('SELECT %s FROM Faq WHERE faqstatus=\'Published\' AND ', $fields);
 
 					foreach ($fieldsArray as $key => $value) {
+						$value = preg_replace('/[\']/', "''", $value);
+						$value = preg_replace('/["]/', '""', $value);
 						$countSql.= $key.'=\''.$value."' ".$groupConditionsBy." ";
 						$sql.= $key.'=\''.$value."' ".$groupConditionsBy." ";
 					}
@@ -110,6 +112,8 @@ class CustomerPortal_FetchRecords extends CustomerPortal_API_Abstract {
 					$sql = sprintf('SELECT %s FROM %s WHERE ', $fields, $module);
 
 					foreach ($fieldsArray as $key => $value) {
+						$value = preg_replace('/[\']/', "''", $value);
+						$value = preg_replace('/["]/', '""', $value);
 						$countSql.= $key.'=\''.$value."' ".$groupConditionsBy." ";
 						$sql.= $key.'=\''.$value."' ".$groupConditionsBy." ";
 					}

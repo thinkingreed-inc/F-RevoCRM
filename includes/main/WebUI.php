@@ -151,7 +151,7 @@ class Vtiger_WebUI extends Vtiger_EntryPoint {
 
 			if(empty($module)) {
 				if ($this->hasLogin()) {
-					$defaultModule = $currentUser->defaultlandingpage;
+					$defaultModule = isset($currentUser->defaultlandingpage) ? $currentUser->defaultlandingpage : null;
 					$moduleModel = Vtiger_Module_Model::getInstance($defaultModule);
 					if(!empty($defaultModule) && $defaultModule != 'Home' && $moduleModel && $moduleModel->isActive()) {
 						$module = $defaultModule; $qualifiedModuleName = $defaultModule; $view = 'List';
@@ -167,7 +167,7 @@ class Vtiger_WebUI extends Vtiger_EntryPoint {
 							} else {
 								$view = "Calendar";
 							}
-							$header = 'Location:index.php?module=Calendar&view='.$view;
+							$header = 'Location:index.php?module=Calendar&view='.$view.'&lastViewDate=default';
 							$qualifiedModuleName = 'Calendar';
 							header($header);
 						}
@@ -203,7 +203,6 @@ class Vtiger_WebUI extends Vtiger_EntryPoint {
 				if ($handler->loginRequired()) {
 					$this->checkLogin ($request);
 				}
-
 				//TODO : Need to review the design as there can potential security threat
 //				$skipList = array('Users', 'Home', 'CustomView', 'Import', 'Export', 'Inventory', 'Vtiger', 'PriceBooks', 'Migration', 'Install');
 //
@@ -215,7 +214,6 @@ class Vtiger_WebUI extends Vtiger_EntryPoint {
 //				if(stripos($qualifiedModuleName, 'Settings') === 0 || ($module == 'Users')) {
 				$handler->checkPermission($request);
 //				}
-
 				$notPermittedModules = array('ModComments','Integration','DashBoard');
 
 				if(in_array($module, $notPermittedModules) && $view == 'List'){
@@ -229,11 +227,10 @@ class Vtiger_WebUI extends Vtiger_EntryPoint {
 				throw new AppException(vtranslate('LBL_HANDLER_NOT_FOUND'));
 			}
 		} catch(Exception $e) {
+			// log for development
+			global $log;
+			$log->error($e->getMessage().":".$e->getTraceAsString());
 			if ($view) {
-				// log for development
-				global $log;
-				$log->debug($e->getMessage().":".$e->getTraceAsString());
-
 				$viewer = new Vtiger_Viewer();
 				$viewer->assign('MESSAGE', $e->getMessage());
 				$viewer->view('OperationNotPermitted.tpl', 'Vtiger');

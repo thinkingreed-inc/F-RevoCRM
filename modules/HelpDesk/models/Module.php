@@ -68,13 +68,13 @@ class HelpDesk_Module_Model extends Vtiger_Module_Model {
 		$picklistvaluesmap = getAllPickListValues("ticketstatus");
         if(in_array('Open', $picklistvaluesmap)) $params[] = 'Open';
 
-		if(count($params) > 0) {
+		if(php7_count($params) > 0) {
 		$result = $db->pquery('SELECT count(*) AS count, COALESCE(vtiger_groups.groupname,concat(vtiger_users.last_name, " " ,vtiger_users.first_name)) as name, COALESCE(vtiger_groups.groupid,vtiger_users.id) as id  FROM vtiger_troubletickets
 						INNER JOIN vtiger_crmentity ON vtiger_troubletickets.ticketid = vtiger_crmentity.crmid
 						LEFT JOIN vtiger_users ON vtiger_users.id=vtiger_crmentity.smownerid AND vtiger_users.status="Active"
 						LEFT JOIN vtiger_groups ON vtiger_groups.groupid=vtiger_crmentity.smownerid
 						'.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()).
-						' WHERE vtiger_troubletickets.status = ? AND vtiger_crmentity.deleted = 0 GROUP BY smownerid', $params);
+						' WHERE vtiger_troubletickets.status = ? AND vtiger_crmentity.deleted = 0 GROUP BY vtiger_troubletickets.smownerid', $params);
 		}
 		$data = array();
 		for($i=0; $i<$db->num_rows($result); $i++) {
@@ -95,12 +95,12 @@ class HelpDesk_Module_Model extends Vtiger_Module_Model {
 
 		$ownerSql = $this->getOwnerWhereConditionForDashBoards($owner);
 		if(!empty($ownerSql)) {
-			$ownerSql = ' AND '.$ownerSql;
+			$ownerSql = ' AND vtiger_troubletickets.'.$ownerSql;
 		}
 
 		$params = array();
 		if(!empty($dateFilter)) {
-			$dateFilterSql = ' AND createdtime BETWEEN ? AND ? ';
+			$dateFilterSql = ' AND vtiger_troubletickets.createdtime BETWEEN ? AND ? ';
 			//appended time frame and converted to db time zone in showwidget.php
 			$params[] = $dateFilter['start'];
 			$params[] = $dateFilter['end'];
@@ -211,13 +211,13 @@ class HelpDesk_Module_Model extends Vtiger_Module_Model {
 		$headerViewFields = $this->getHeaderViewFieldsList();
 		$allRelationListViewFields = array_merge($headerViewFields,$summaryViewFields);
 		$relatedListFields = array();
-		if(count($allRelationListViewFields) > 0) {
+		if(php7_count($allRelationListViewFields) > 0) {
 			foreach ($allRelationListViewFields as $key => $field) {
 				$relatedListFields[$field->get('column')] = $field->get('name');
 			}
 		}
 
-		if(count($relatedListFields)>0) {
+		if(php7_count($relatedListFields)>0) {
 			$nameFields = $this->getNameFields();
 			foreach($nameFields as $fieldName){
 				if(!$relatedListFields[$fieldName]) {

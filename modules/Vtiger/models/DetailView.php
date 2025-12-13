@@ -56,6 +56,8 @@ class Vtiger_DetailView_Model extends Vtiger_Base_Model {
 	 *                   array('linktype'=>list of link models);
 	 */
 	public function getDetailViewLinks($linkParams) {
+		global $adb;
+
 		$linkTypes = array('DETAILVIEWBASIC','DETAILVIEW');
 		$moduleModel = $this->getModule();
 		$recordModel = $this->getRecord();
@@ -137,6 +139,28 @@ class Vtiger_DetailView_Model extends Vtiger_Base_Model {
 			$settingsLinks = $moduleModel->getSettingLinks();
 			foreach($settingsLinks as $settingsLink) {
 				$linkModelList['DETAILVIEWSETTING'][] = Vtiger_Link_Model::getInstanceFromValues($settingsLink);
+			}
+		}
+
+		if(Users_Privileges_Model::isPermitted($moduleName, 'DetailView', $recordModel->getId())) {
+			$result = $adb->pquery("SELECT templateid, templatename FROM vtiger_pdftemplates WHERE module = ?",array($moduleName));
+			for($i=0; $i<$adb->num_rows($result); $i++) {
+				$templateId = $adb->query_result($result, $i, 'templateid');
+				$templateName = $adb->query_result($result, $i, 'templatename');
+				$detailViewLinks = array(
+					'linklabel' => vtranslate('LBL_EXPORT_TO_PDF', $moduleName).'('.vtranslate(htmlentities($templateName), $moduleName).')',
+					'linkurl' => $recordModel->getExportPDFUrl().'&template='.$templateId,
+					'linkicon' => ''
+				);
+				$linkModelList['DETAILVIEW'][] = Vtiger_Link_Model::getInstanceFromValues($detailViewLinks);
+
+				// $sendEmailLink = array(
+				// 	'linklabel' => vtranslate('LBL_SEND_MAIL_PDF', $moduleName),
+				// 	'linkurl' => 'javascript:Inventory_Detail_Js.sendEmailPDFClickHandler(\''.$recordModel->getSendEmailPDFUrl().'\')',
+				// 	'linkicon' => ''
+				// );
+
+				// $linkModelList['DETAILVIEW'][] = Vtiger_Link_Model::getInstanceFromValues($sendEmailLink);
 			}
 		}
 

@@ -24,9 +24,9 @@ class Vtiger_Theme extends Vtiger_Viewer {
 		$lessFilePath = self::getThemePath($theme) . '/style.less' ;
 		$fallbackPath = self::getBaseThemePath() . '/' . self::getDefaultThemeName() .'/' .'style.less' ;
 
-		$completeFilePath = Vtiger_Loader::resolveNameToPath('~'.$filePath);
-		$completeLessFilePath = Vtiger_Loader::resolveNameToPath('~'.$lessFilePath);
-		$completeFallBackPath = Vtiger_Loader::resolveNameToPath('~'.$fallbackPath);
+		$completeFilePath = Vtiger_Loader::resolveNameToPath('~'.$filePath, 'css');
+		$completeLessFilePath = Vtiger_Loader::resolveNameToPath('~'.$lessFilePath, 'less');
+		$completeFallBackPath = Vtiger_Loader::resolveNameToPath('~'.$fallbackPath, 'css');
 
 		if(file_exists($completeFilePath)){
 			return $filePath;
@@ -48,8 +48,8 @@ class Vtiger_Theme extends Vtiger_Viewer {
 	public static function getImagePath($imageFileName){
 		$imageFilePath = self::getThemePath() . '/' . 'images' . '/' . $imageFileName;
 		$fallbackPath = self::getBaseThemePath() . '/' . 'images' . '/' . $imageFileName;
-		$completeImageFilePath = Vtiger_Loader::resolveNameToPath('~'.$imageFilePath);
-		$completeFallBackThemePath = Vtiger_Loader::resolveNameToPath('~'.$fallbackPath);
+		$completeImageFilePath = Vtiger_Loader::resolveNameToPath('~'.$imageFilePath, 'image');
+		$completeFallBackThemePath = Vtiger_Loader::resolveNameToPath('~'.$fallbackPath, 'image');
 
 		if(file_exists($completeImageFilePath)){
 			return $imageFilePath;
@@ -81,8 +81,8 @@ class Vtiger_Theme extends Vtiger_Viewer {
 		$selectedThemePath = self::getBaseThemePath() . '/' . $theme;
 		$fallBackThemePath = self::getBaseThemePath() . '/' . self::getDefaultThemeName();
 
-		$completeSelectedThemePath = Vtiger_Loader::resolveNameToPath('~'.$selectedThemePath);
-		$completeFallBackThemePath = Vtiger_Loader::resolveNameToPath('~'.$fallBackThemePath);
+		$completeSelectedThemePath = Vtiger_Loader::resolveNameToPath('~'.$selectedThemePath, 'css');
+		$completeFallBackThemePath = Vtiger_Loader::resolveNameToPath('~'.$fallBackThemePath, 'css');
 
 		if(file_exists($completeSelectedThemePath)){
 			return $selectedThemePath;

@@ -43,7 +43,7 @@
                                 <strong>{vtranslate('LBL_NAME', $QUALIFIED_MODULE)}&nbsp;<span class="redColor">*</span></strong>
                             </label>
                             <div class="controls fieldValue col-lg-4 col-md-4 col-sm-4" >
-                                <div class=""> <input type="text" class="inputElement" name="rolename" id="profilename" value="{$RECORD_MODEL->getName()}" data-rule-required='true'  />
+                                <div class=""> <input type="text" class="inputElement" name="rolename" id="profilename" value="{vtranslate($RECORD_MODEL->getName(),$QUALIFIED_MODULE)}" data-rule-required='true'  />
                                 </div> </div>
                         </div>
                         <div class="form-group">
@@ -52,7 +52,7 @@
                             </label>
                             <div class="controls fieldValue col-lg-4 col-md-4 col-sm-4" >
                                 <input type="hidden" name="parent_roleid" {if $HAS_PARENT}value="{$RECORD_MODEL->getParent()->getId()}"{/if}>
-                                <div class=""> <input type="text" class="inputElement" name="parent_roleid_display" {if $HAS_PARENT}value="{$RECORD_MODEL->getParent()->getName()}"{/if} readonly>
+                                <div class=""> <input type="text" class="inputElement" name="parent_roleid_display" {if $HAS_PARENT}value="{vtranslate($RECORD_MODEL->getParent()->getName(),$QUALIFIED_MODULE)}"{/if} readonly>
                                 </div></div>
                         </div>
                         <div class="form-group">

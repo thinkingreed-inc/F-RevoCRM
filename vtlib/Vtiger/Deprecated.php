@@ -21,7 +21,7 @@ class Vtiger_Deprecated {
 		$entity_field_info = getEntityFieldNames($module);
 		$fieldsName = $entity_field_info['fieldname'];
 		$name = '';
-		if ($rowdata != '' && count($rowdata) > 0) {
+		if ($rowdata != '' && php7_count($rowdata) > 0) {
 			$name = self::getCurrentUserEntityFieldNameDisplay($module, $fieldsName, $rowdata );
 		}
 		$name = textlength_check($name);
@@ -46,7 +46,7 @@ class Vtiger_Deprecated {
 					$accessibleFieldNames[] = $fieldValues[$field];
 				}
 			}
-			if(count($accessibleFieldNames) > 0) {
+			if(php7_count($accessibleFieldNames) > 0) {
 				return implode(' ', $accessibleFieldNames);
 			}
 		}
@@ -295,6 +295,7 @@ class Vtiger_Deprecated {
 
 	static function getAnnouncements() {
 		global $adb;
+		$announcement = "";
 		$sql = " select * from vtiger_announcement inner join vtiger_users on vtiger_announcement.creatorid=vtiger_users.id";
 		$sql.=" AND vtiger_users.is_admin='on' AND vtiger_users.status='Active' AND vtiger_users.deleted = 0";
 		$result = $adb->pquery($sql, array());
@@ -341,7 +342,7 @@ class Vtiger_Deprecated {
 
 	static function SaveTagCloudView($id = "") {
 		global $adb;
-		$tag_cloud_status = $_REQUEST['tagcloudview'];
+		$tag_cloud_status = isset($_REQUEST['tagcloudview']) ? $_REQUEST['tagcloudview'] : false;
 		if ($tag_cloud_status == "true") {
 			$tag_cloud_view = 0;
 		} else {
@@ -443,7 +444,7 @@ class Vtiger_Deprecated {
                         $backtrace .= "FileAccessForInclusion - \n";
                         foreach ($a as $b) {
                             $backtrace .=  $b['file'] . '::' . $b['function'] . '::' . $b['line'] . '<br>'.PHP_EOL;
-						}
+                        }
 						$backtrace .= $filepath.PHP_EOL;
                         Vtiger_Utils::writeLogFile('fileMissing.log', $backtrace);
                         die('Sorry! Attempt to access restricted file.');
@@ -545,6 +546,23 @@ class Vtiger_Deprecated {
 	}
 
 	static function getSqlForNameInDisplayFormat($input, $module, $glue = ' ') {
+		if ($module == 'Users') {
+			if (is_string($input)) {
+				$input = array($input);
+			}
+
+			$tableName = '';
+			foreach ($input as $fieldTableColumn) {
+				if ($fieldTableColumn) {
+					list($tableName, $columnName) = explode('.', $fieldTableColumn);
+					break;
+				}
+			}
+			if ($tableName) {
+				return "$tableName.userlabel";
+			}
+		}
+
 		$entity_field_info = Vtiger_Functions::getEntityModuleInfoFieldsFormatted($module);
 		$fieldsName = $entity_field_info['fieldname'];
 		if(is_array($fieldsName)) {

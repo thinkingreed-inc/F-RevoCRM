@@ -26,7 +26,7 @@ class VTSimpleTemplate{
 		}
 		// If parent is empty then we can't do any thing here
 		if(!empty($this->parent)){
-			if(count($matches)==0){
+			if(php7_count($matches)==0){
 				$fieldname = $match[1];
 
 				//To handle comments for this module
@@ -309,12 +309,13 @@ class VTSimpleTemplate{
 
 			case 'multipicklist' :  require_once 'includes/runtime/LanguageHandler.php';
 									require_once 'includes/runtime/Globals.php';
-									$fieldValueParts = explode(';',$fieldValue);
+									$fieldValueParts = explode(' |##| ',$fieldValue);
 									foreach($fieldValueParts as $index=>$fieldValue) {
 										$fieldValueParts[$index] = vtranslate($fieldValue,$moduleName,$ownerObject->column_fields['language']);
 									}
-									$fieldValue = implode(';', $fieldValueParts);
+									$fieldValue = implode(',', $fieldValueParts);
 									break;
+									
 			case 'boolean'		:  require_once 'includes/runtime/LanguageHandler.php';
 									require_once 'includes/runtime/Globals.php';
 									if($fieldValue == 1){
@@ -383,7 +384,7 @@ class VTSimpleTemplate{
 				$dateTime = new DateTimeField($adb->query_result($result, $i, 'createdtime'));
 				$dateTimeValue = $dateTime->getDisplayDateTimeValue();
 				$dateTimeParts = explode(' ', $dateTimeValue);
-				$createdTime = $dateTimeParts[0].' '.Vtiger_Time_UIType::getDisplayValue($dateTimeParts[1]);
+				$createdTime = $dateTimeParts[0].' '.Vtiger_Time_UIType::getDisplayValueUserFormat($dateTimeParts[1]);
 				$timeZone = vtranslate($current_user->time_zone, 'Users');
 				$userId = $adb->query_result($result, $i, 'userid');
 				$commenter = getOwnerName($userId);

@@ -24,7 +24,7 @@ class Calendar_ExportData_Action extends Vtiger_ExportData_Action {
 		$moduleName = $request->getModule();
 		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
 
-		return $moduleModel->getExportQuery('');
+		return $moduleModel->getExportQuery('', '');
 	}
 
 	/**
@@ -159,7 +159,7 @@ class Calendar_ExportData_Action extends Vtiger_ExportData_Action {
 		$query = parent::getExportQuery($request);
 
 		$queryComponents = preg_split('/ FROM /i', $query);
-		if (count($queryComponents) == 2) {
+		if (php7_count($queryComponents) == 2) {
 			$exportQuery = "$queryComponents[0], vtiger_activity.activityid FROM $queryComponents[1]";
 		}
 
@@ -167,11 +167,9 @@ class Calendar_ExportData_Action extends Vtiger_ExportData_Action {
 		$exportQuery = "$queryComponents[0] WHERE vtiger_activity.activitytype != 'Emails' AND $queryComponents[1]";
 
 		$orderByComponents = preg_split('/ ORDER BY /i', $exportQuery);
-		if (count($orderByComponents) == 1) {
+		if (php7_count($orderByComponents) == 1) {
 			$limitQuery = '';
-			if ($request->getMode() == 'ExportCurrentPage') {
-				list($exportQuery, $limitQuery) = preg_split('/ LIMIT /i', $exportQuery);
-			}
+			list($exportQuery, $limitQuery) = preg_split('/ LIMIT /i', $exportQuery);
 			$exportQuery = "$exportQuery ORDER BY str_to_date(concat(date_start,time_start),'%Y-%m-%d %H:%i:%s') DESC";
 
 			if ($limitQuery) {
