@@ -167,6 +167,23 @@ td.listViewEntryValue  .fieldValue .value {
   div.CalendarViewPageDiv {
     padding-top: 30px;
   }
+  .main-container.main-container-Calendar{
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: column;
+  }
+  .main-container.main-container-Calendar 
+  .sidebar-essentials {
+    order: 0;
+  }  
+  .main-container.main-container-Calendar 
+  .listViewPageDiv {
+    order: 1;
+  }  
+  .main-container.main-container-Calendar 
+  .module-nav {
+    order: 2;
+  }  
   .list-menu-content.calendar_view_events .mCustomScrollBox {
     max-height: none!important;
     overflow: scroll;
