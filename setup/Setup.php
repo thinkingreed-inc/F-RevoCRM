@@ -88,9 +88,6 @@ $db->query('update vtiger_relatedlists set relationfieldid = "598" where relatio
 // PDFテンプレートのアップデート
 require_once ("scripts/64_Update_PDFTemplate.php");
 
-// vtiger_tabにeditReadonlyDisplayカラムを追加
-require_once ("scripts/78_Add_EditReadonlyDisplay.php");
-
 // 'vtiger_activity' テーブルに 'smcreatorid' フィールドを追加
 require_once ("scripts/78_Add_smcreatorid.php");
 

@@ -27,7 +27,4 @@ if (defined('VTIGER_UPGRADE')) {
 
     //F-RevoCRM REST APIにて、足りていない引数を追加
     include_once 'setup/scripts/78_Update_RESTAPI.php';
-
-    //vtiger_tabにeditReadonlyDisplayカラムを追加
-    include_once 'setup/scripts/79_Add_EditReadonlyDisplay.php';
 }
