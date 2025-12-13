@@ -347,7 +347,7 @@ false: 強制しない',
 	'LBL_PASSKEY_AUTHENTICATION_MESSAGE' => '生体認証やデバイス認証を使用した、最新のパスワードレス認証方式です。',
 	'LBL_TOTP_AUTHENTICATION_MESSAGE' => '認証アプリで生成される6桁の数字（ワンタイムパスワード）を使用する、標準的な認証方式です。',
 	'passkey' => 'パスキー認証',
-	'totp' => 'タイムベース認証',
+	'totp' => 'タイムベース認証',	
 );
 
 $jsLanguageStrings = array(

@@ -1677,6 +1677,7 @@ $languageStrings = array(
 			. 'In the customer portal, you can manage your inquiries and check past FAQs and answers.<br />'
 			. 'Please use the URL, ID, and password provided in this email to log in to the portal.',
 	'LBL_CUSTOMER_PORTAL_LOGIN_INFORMATION' => 'Customer Portal Login Information Notification',
+	'LBL_SETUP_PARAMETER_MESSAGE_SHOW_SCHEDULE_CONFIRM_FLAG' => 'Confirmation flag when modifying another user\'s calendar. true: confirm, false: no confirmation',
 );
 
 $jsLanguageStrings = array(
@@ -1708,6 +1709,7 @@ $jsLanguageStrings = array(
 	'INVALID_NUMBER_OF' => 'Invalid number of',
 	'INVALID_NUMBER' => 'Invalid number',
 	'JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE' => 'Are you sure that you want to delete?',
+	'JS_EDIT_OTHERS_EVENT_CONFIRMATION' => 'Do you want to modify another user\'s activity?',
 
 	'OVERWRITE_EXISTING_MSG1' => 'Overwrite the existing address with the selected ',
 	'OVERWRITE_EXISTING_MSG2' => 'address details?',
