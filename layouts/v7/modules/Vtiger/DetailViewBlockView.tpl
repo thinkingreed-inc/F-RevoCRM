@@ -130,14 +130,7 @@
 													<input type="hidden" class="fieldBasicData" data-name='{$FIELD_MODEL->get('name')}' data-type="{$fieldDataType}" data-displayvalue='{$FIELD_DISPLAY_VALUE}' data-value="{$FIELD_VALUE}" />
 												{/if}
 											</span>
-
-											{if $FIELD_MODEL->get('name') eq "enable_recurring"}
-												{assign var=recurringValue value=$FIELD_MODEL->get('fieldvalue')}
-											{/if}
-
-											{if $BLOCK_LABEL_KEY neq "Recurring Invoice Information" or $FIELD_MODEL->get('name') eq "enable_recurring" or $recurringValue eq 1}
-												<span class="action pull-right"><a href="#" onclick="return false;" class="editAction fa fa-pencil"></a></span>
-											{/if}
+											<span class="action pull-right"><a href="#" onclick="return false;" class="editAction fa fa-pencil"></a></span>
 										{/if}
 									</td>
 								{/if}
