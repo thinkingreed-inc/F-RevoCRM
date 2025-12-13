@@ -79,7 +79,7 @@ class Vtiger_Viewer extends Smarty {
 		$inSettings = isset($_REQUEST["parent"]) && $_REQUEST["parent"] == "Settings";
 
 		$classes = array('Vtiger_MenuStructure_Model', 'Users_Privileges_Model', 
-			'Vtiger_Module_Model', 'Settings_MenuEditor_Module_Model', 'Vtiger_Util_Helper', 
+			'Settings_MenuEditor_Module_Model', 'Vtiger_Util_Helper', 
 			'ZEND_JSON', 'Zend_Json', 'Zend_JSON', 'ZEND_json',
 			'Vtiger_Theme', 'Users_Record_Model', 'Vtiger_Module_Model', 'Vtiger_Field_Model', 'Vtiger_Record_Model',
 			'Settings_Picklist_Module_Model', 'CustomView_Record_Model', 'Vtiger_Extension_View',
@@ -91,7 +91,7 @@ class Vtiger_Viewer extends Smarty {
 
 		if ($inSettings) {
 			$classes = array_merge($classes, array(
-				'getInventoryModules', 'Settings_Vtiger_MenuItem_Model', 'Settings_Webforms_Record_Model',
+				'Settings_Vtiger_MenuItem_Model', 'Settings_Webforms_Record_Model',
 				'Settings_Vtiger_CompanyDetails_Model', 'Inventory_Charges_Model', 'Settings_PBXManager_Module_Model',
 				'PBXManager_PBXManager_Connector', 'Settings_Webforms_Record_Model', 'Google_Config_Connector', 'Settings_LayoutEditor_Module_Model',
 			));
