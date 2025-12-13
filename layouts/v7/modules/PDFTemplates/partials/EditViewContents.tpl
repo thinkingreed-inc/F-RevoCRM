@@ -25,6 +25,12 @@
                         </td>
                     </tr>
                     <tr>
+                        <td class="fieldLabel {$WIDTHTYPE} alignMiddle">{vtranslate('LBL_PDF_FILE_NAME', $MODULE)}</td>
+                        <td class="fieldValue {$WIDTHTYPE}">
+                            <input id="{$MODULE}_editView_fieldName_pdffilename" type="text" class="inputElement" name="pdffilename" value="{$RECORD->get('pdffilename')}">
+                        </td>
+                    </tr>
+                    <tr>
                         <td class="fieldLabel {$WIDTHTYPE} alignMiddle">{vtranslate('LBL_DESCRIPTION', $MODULE)}</td>
                         <td class="fieldValue {$WIDTHTYPE}">
                             <textarea class="inputElement col-lg-12" id="description" name="description">{$RECORD->get('description')}</textarea>
@@ -81,6 +87,19 @@
                             </span>
                         </td>
                     </tr>
+                    <tr>
+                        <td class="fieldLabel {$WIDTHTYPE}">{vtranslate('LBL_CUSTOM_FUNCTIONS', $MODULE)}</td>
+                        <td class="fieldValue {$WIDTHTYPE}">
+                            <span class="col-sm-6 col-xs-6">
+                                <select class="inputElement select2 col-sm5 col-xs-5" id="customFunctions" name="customFunctions">
+                                    <option value="">{vtranslate('LBL_NONE',$MODULE)}</option>
+                                        {foreach key=index item=CUSTUM_FUNCTION from=$CUSTUM_FUNCTIONS}
+                                            <option value="{$CUSTUM_FUNCTION[1]}">{vtranslate($CUSTUM_FUNCTION[0], $MODULE)}</option>
+                                        {/foreach}
+                                </select>
+                            </span>
+                        </td>
+                    </tr>
                     {* <tr>
                         <td class="fieldLabel {$WIDTHTYPE}">{vtranslate('LBL_SUBJECT', $MODULE)}&nbsp;<span class="redColor">*</span></td>
                         <td class="fieldValue {$WIDTHTYPE}">
@@ -90,7 +109,7 @@
                         </td>
                     </tr> *}
                     <tr>
-                        <td colspan="2" class="fieldLabel">{vtranslate('LBL_BLOCK_MESSAGE', $MODULE)}</td>
+                        <td colspan="2" class="fieldLabel textAlignLeft">{vtranslate('LBL_BLOCK_MESSAGE', $MODULE)}</td>
                     </tr>
                 </tbody>
             </table>

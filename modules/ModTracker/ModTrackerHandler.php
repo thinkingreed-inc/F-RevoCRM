@@ -13,7 +13,11 @@ require_once 'data/VTEntityDelta.php';
 class ModTrackerHandler extends VTEventHandler {
 
 	function handleEvent($eventName, $data) {
-		global $adb, $current_user;
+		global $adb;
+		$current_user_id=$_SESSION["authenticated_user_id"];
+		$current_user = Users_Record_Model::getInstanceById($current_user_id, 'Users');
+		$curid=$current_user->get('id'); 
+		global $current_user;
 		$moduleName = $data->getModuleName();
 		$isTrackingEnabled = ModTracker::isTrackingEnabledForModule($moduleName);
 		if(!$isTrackingEnabled) {
@@ -47,7 +51,7 @@ class ModTrackerHandler extends VTEventHandler {
 							}
 							$adb->pquery('INSERT INTO vtiger_modtracker_basic(id, crmid, module, whodid, changedon, status)
 										VALUES(?,?,?,?,?,?)', Array($this->id, $recordId, $moduleName,
-										$current_user->id, $changedOn, $status));
+										$curid, $changedOn, $status));
 							$inserted = true;
 						}
 						$adb->pquery('INSERT INTO vtiger_modtracker_detail(id,fieldname,prevalue,postvalue) VALUES(?,?,?,?)',
@@ -62,7 +66,7 @@ class ModTrackerHandler extends VTEventHandler {
 			$columnFields = $data->getData();
 			$id = $adb->getUniqueId('vtiger_modtracker_basic');
 			$adb->pquery('INSERT INTO vtiger_modtracker_basic(id, crmid, module, whodid, changedon, status)
-				VALUES(?,?,?,?,?,?)', Array($id, $recordId, $moduleName, $current_user->id, date('Y-m-d H:i:s',time()), ModTracker::$DELETED));
+				VALUES(?,?,?,?,?,?)', Array($id, $recordId, $moduleName, $curid, date('Y-m-d H:i:s',time()), ModTracker::$DELETED));
 		}
 
 		if($eventName == 'vtiger.entity.afterrestore') {
@@ -70,7 +74,7 @@ class ModTrackerHandler extends VTEventHandler {
 			$columnFields = $data->getData();
 			$id = $adb->getUniqueId('vtiger_modtracker_basic');
 			$adb->pquery('INSERT INTO vtiger_modtracker_basic(id, crmid, module, whodid, changedon, status)
-				VALUES(?,?,?,?,?,?)', Array($id, $recordId, $moduleName, $current_user->id, date('Y-m-d H:i:s',time()), ModTracker::$RESTORED));
+				VALUES(?,?,?,?,?,?)', Array($id, $recordId, $moduleName, $curid, date('Y-m-d H:i:s',time()), ModTracker::$RESTORED));
 		}
 	}
 }

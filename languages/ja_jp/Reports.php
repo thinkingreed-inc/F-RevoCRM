@@ -75,7 +75,6 @@ $languageStrings = array(
 	'LBL_MAX' => '最大',
 	'LBL_NEXT' => '次へ',
 	'LBL_REPORTS' => 'レポートの一覧',
-	'LBL_SELECT_RELATED_MODULES' => '関連モジュールの選択',
 
 	//Step2 Strings
 	'LBL_GROUP_BY' => 'グループ化',
@@ -88,6 +87,9 @@ $languageStrings = array(
 	'LBL_AVERAGE' => '平均',
 	'LBL_LOWEST_VALUE' => '最小値',
 	'LBL_HIGHEST_VALUE' => '最大値',
+	'LBL_HIGHEST_VALUE' => '最大値',
+	'LBL_RELATED_FIELD' => '関連の参照先',
+	'LBL_AUTO_SELECT' => '自動選択',
 
 	//Step3 Strings
 	'LBL_GENERATE_REPORT' => '保存とレポートの生成',
@@ -229,8 +231,10 @@ $languageStrings = array(
 	'LBL_UNPIN_CHART_FROM_DASHBOARD' => 'ダッシュボードから取り除きました',
 	'LBL_REPORTS_DELETED_SUCCESSFULLY' => 'レポートを削除しました',
 );
+
 $jsLanguageStrings = array(
 	'JS_DUPLICATE_RECORD' => 'レポートの複製',
+	'JS_SAME_REPORT_NAME' => '同名のレポートが存在します。',
 	'JS_CALCULATION_LINE_ITEM_FIELDS_SELECTION_LIMITATION' => '制限事項：  品目の項目 ( 定価、割引と数量 ) は、他の計算項目が選択されていない場合にのみ使用できます',
 	'JS_NO_CHART_DATA_AVAILABLE' => 'データは利用できません。選択した項目を確認してください。',
     'JS_CHART_PINNED_TO_DASHBOARD' => 'グラフをダッシュボードに追加しました',

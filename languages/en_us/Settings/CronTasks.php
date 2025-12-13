@@ -24,4 +24,12 @@ $languageStrings = array(
 	'LBL_RUNNING' => 'Running',
 	'LBL_ACTIVE' => 'Active',
 	'LBL_INACTIVE' => 'In Active',
+
+	//F-RevoCRM
+	'Frequency(H:M)' => 'Frequency (H:M)',
+	'Recommended frequency for Workflow is 15 mins' => 'Recommended frequency for Workflow is 15 mins',
+	'Recommended frequency for RecurringInvoice is 12 hours' => 'Recommended frequency for RecurringInvoice is 12 hours',
+	'Recommended frequency for SendReminder is 15 mins' => 'Recommended frequency for SendReminder is 15 mins',
+	'Recommended frequency for MailScanner is 15 mins' => 'Recommended frequency for MailScanner is 15 mins',
+	'Recommended frequency for ScheduleReports is 15 mins' => 'Recommended frequency for ScheduleReports is 15 mins',
 );

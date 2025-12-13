@@ -40,7 +40,7 @@
                                 <select class="rolesList form-control" name="rolesSelected[]" multiple style="min-width: 220px" data-placeholder="{vtranslate('LBL_CHOOSE_ROLES',$QUALIFIED_MODULE)}">
                                     <option value="all" selected>{vtranslate('LBL_ALL_ROLES',$QUALIFIED_MODULE)}</option>
                                     {foreach from=$ROLES_LIST item=ROLE}
-                                        <option value="{$ROLE->get('roleid')}">{$ROLE->get('rolename')}</option>
+                                        <option value="{$ROLE->get('roleid')}">{vtranslate($ROLE->get('rolename'),$QUALIFIED_MODULE)}</option>
                                     {/foreach}
                                 </select>
                             </div>

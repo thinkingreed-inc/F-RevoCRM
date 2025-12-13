@@ -52,7 +52,7 @@
                         {else if $OPENDOCUMENT_FILE_TYPE eq 'yes'}
                             <iframe id="viewer" src="libraries/jquery/Viewer.js/#../../../{$DOWNLOAD_URL}" width="100%" height="100%" allowfullscreen webkitallowfullscreen></iframe>
                         {else if $PDF_FILE_TYPE eq 'yes'}
-                            <iframe id='viewer' src="libraries/jquery/pdfjs/web/viewer.html?file={$SITE_URL|escape:'url'}/{$DOWNLOAD_URL|escape:'url'}" height="100%" width="100%"></iframe>
+                            <iframe id='viewer' src="libraries/jquery/pdfjs/web/viewer.html?file={$SITE_URL}/{$DOWNLOAD_URL|escape:'url'}" height="100%" width="100%"></iframe>
                         {else if $IMAGE_FILE_TYPE eq 'yes'}
                             <div style="overflow:auto;height:100%;width:100%;float:left;background-image: url({$DOWNLOAD_URL});background-color: #EEEEEE;background-position: center 25%;background-repeat: no-repeat;display: block; background-size: contain;"></div>
                         {else if $AUDIO_FILE_TYPE eq 'yes'}

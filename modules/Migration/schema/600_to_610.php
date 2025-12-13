@@ -15,25 +15,25 @@ include_once 'include/utils/utils.php';
 
 if(defined('VTIGER_UPGRADE')) {
         //Collating all module package updates here
-	updateVtlibModule('Import', 'packages/vtiger/mandatory/Import.zip', false);
-        updateVtlibModule('PBXManager', 'packages/vtiger/mandatory/PBXManager.zip', false);
-	updateVtlibModule('MailManager', 'packages/vtiger/mandatory/MailManager.zip', false);
-	updateVtlibModule('Mobile', 'packages/vtiger/mandatory/Mobile.zip', false);
-        updateVtlibModule('ModTracker', 'packages/vtiger/mandatory/ModTracker.zip', false);
-        updateVtlibModule('ServiceContracts', 'packages/vtiger/mandatory/ServiceContracts.zip', false);
-        updateVtlibModule('Services', 'packages/vtiger/mandatory/Services.zip', false);
-	updateVtlibModule('WSAPP', 'packages/vtiger/mandatory/WSAPP.zip', false);
-        // updateVtlibModule('Arabic_ar_ae', 'packages/vtiger/optional/Arabic_ar_ae.zip', false);
-        updateVtlibModule('Assets', 'packages/vtiger/optional/Assets.zip', false);
-        updateVtlibModule('EmailTemplates', 'packages/vtiger/optional/EmailTemplates.zip', false);
-        updateVtlibModule('Google', 'packages/vtiger/optional/Google.zip', false);
-        updateVtlibModule('ModComments', 'packages/vtiger/optional/ModComments.zip', false);
-        updateVtlibModule('Projects', 'packages/vtiger/optional/Projects.zip', false);
-	updateVtlibModule('RecycleBin', 'packages/vtiger/optional/RecycleBin.zip', false);
-	updateVtlibModule('SMSNotifier', "packages/vtiger/optional/SMSNotifier.zip", false);
+	updateVtlibModuleWithoutFiles('Import', 'packages/vtiger/mandatory/Import.zip', false);
+        updateVtlibModuleWithoutFiles('PBXManager', 'packages/vtiger/mandatory/PBXManager.zip', false);
+	updateVtlibModuleWithoutFiles('MailManager', 'packages/vtiger/mandatory/MailManager.zip', false);
+	updateVtlibModuleWithoutFiles('Mobile', 'packages/vtiger/mandatory/Mobile.zip', false);
+        updateVtlibModuleWithoutFiles('ModTracker', 'packages/vtiger/mandatory/ModTracker.zip', false);
+        updateVtlibModuleWithoutFiles('ServiceContracts', 'packages/vtiger/mandatory/ServiceContracts.zip', false);
+        updateVtlibModuleWithoutFiles('Services', 'packages/vtiger/mandatory/Services.zip', false);
+	updateVtlibModuleWithoutFiles('WSAPP', 'packages/vtiger/mandatory/WSAPP.zip', false);
+        // updateVtlibModuleWithoutFiles('Arabic_ar_ae', 'packages/vtiger/optional/Arabic_ar_ae.zip', false);
+        updateVtlibModuleWithoutFiles('Assets', 'packages/vtiger/optional/Assets.zip', false);
+        updateVtlibModuleWithoutFiles('EmailTemplates', 'packages/vtiger/optional/EmailTemplates.zip', false);
+        updateVtlibModuleWithoutFiles('Google', 'packages/vtiger/optional/Google.zip', false);
+        updateVtlibModuleWithoutFiles('ModComments', 'packages/vtiger/optional/ModComments.zip', false);
+        updateVtlibModuleWithoutFiles('Projects', 'packages/vtiger/optional/Projects.zip', false);
+	updateVtlibModuleWithoutFiles('RecycleBin', 'packages/vtiger/optional/RecycleBin.zip', false);
+	updateVtlibModuleWithoutFiles('SMSNotifier', "packages/vtiger/optional/SMSNotifier.zip", false);
         // updateVtlibModule("Sweden_sv_se","packages/vtiger/optional/Sweden_sv_se.zip");
-	updateVtlibModule("Webforms","packages/vtiger/optional/Webforms.zip", false);
-        installVtlibModule('ExtensionStore', 'packages/vtiger/marketplace/ExtensionStore.zip', false, false);
+	updateVtlibModuleWithoutFiles("Webforms","packages/vtiger/optional/Webforms.zip", false);
+        installVtlibModuleWithoutFiles('ExtensionStore', 'packages/vtiger/marketplace/ExtensionStore.zip', false, false);
 }
 if(defined('INSTALLATION_MODE')) {
 		// Set of task to be taken care while specifically in installation mode.
@@ -116,7 +116,7 @@ $unWanted=array(
  "modules/FieldFormulas/functional.js"
 );
 
-for($i=0;$i<=count($unWanted);$i++){
+for($i=0;$i<=php7_count($unWanted);$i++){
     if(file_exists($unWanted[$i])){
         unlink($unWanted[$i]);
     }
@@ -198,7 +198,7 @@ for($i=0; $i<$numOfRows; $i++) {
 
                                             $fieldName = $condition['fieldname'];
                                             $fieldNameContents = explode(' ', $fieldName);
-                                            if (count($fieldNameContents) > 1) {
+                                            if (php7_count($fieldNameContents) > 1) {
                                                     $fieldName = '('. $fieldName .')';
                                             }
 
@@ -208,7 +208,7 @@ for($i=0; $i<$numOfRows; $i++) {
                                             }
 
                                             $groupCondition = 'or';
-                                            if ($groupId === $previousConditionGroupId || count($conditions) === 1) {
+                                            if ($groupId === $previousConditionGroupId || php7_count($conditions) === 1) {
                                                     $groupCondition = 'and';
                                             }
 
@@ -293,7 +293,7 @@ for($i=0; $i<$numOfRows; $i++) {
 
                                             $fieldName = $condition['fieldname'];
                                             $fieldNameContents = explode(' ', $fieldName);
-                                            if (count($fieldNameContents) > 1) {
+                                            if (php7_count($fieldNameContents) > 1) {
                                                     $fieldName = '('. $fieldName .')';
                                             }
 
@@ -303,7 +303,7 @@ for($i=0; $i<$numOfRows; $i++) {
                                             }
 
                                             $groupCondition = 'or';
-                                            if ($groupId === $previousConditionGroupId || count($conditions) === 1) {
+                                            if ($groupId === $previousConditionGroupId || php7_count($conditions) === 1) {
                                                     $groupCondition = 'and';
                                             }
 
@@ -483,7 +483,7 @@ for($i=0; $i<$numOfRows; $i++) {
 
                                             $fieldName = $condition['fieldname'];
                                             $fieldNameContents = explode(' ', $fieldName);
-                                            if (count($fieldNameContents) > 1) {
+                                            if (php7_count($fieldNameContents) > 1) {
                                                     $fieldName = '('. $fieldName .')';
                                             }
 
@@ -493,7 +493,7 @@ for($i=0; $i<$numOfRows; $i++) {
                                             }
 
                                             $groupCondition = 'or';
-                                            if ($groupId === $previousConditionGroupId || count($conditions) === 1) {
+                                            if ($groupId === $previousConditionGroupId || php7_count($conditions) === 1) {
                                                     $groupCondition = 'and';
                                             }
 

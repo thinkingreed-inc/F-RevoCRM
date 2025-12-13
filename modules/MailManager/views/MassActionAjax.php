@@ -52,7 +52,7 @@ class MailManager_MassActionAjax_View extends Vtiger_MassActionAjax_View {
 			}
 
 			$emailFields = $accesibleEmailFields;
-			if (count($emailFields) > 0) {
+			if (php7_count($emailFields) > 0) {
 				$recordIds = $this->getRecordsListFromRequest($request);
 				global $current_user;
 				$baseTableId = $moduleModel->get('basetableid');
@@ -87,7 +87,7 @@ class MailManager_MassActionAjax_View extends Vtiger_MassActionAjax_View {
 					}
 				}
 			}
-			$totalRecordCount = $totalRecordCount + count($recordIds);
+			$totalRecordCount = $totalRecordCount + php7_count($recordIds);
 		}
 
 		$viewer = $this->getViewer($request);

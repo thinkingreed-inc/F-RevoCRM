@@ -21,7 +21,7 @@ $current_module_strings = return_module_language($current_language, 'Reports');
 global $list_max_entries_per_page;
 global $urlPrefix;
 
-$log = LoggerManager::getLogger('report_type');
+$log = Logger::getLogger('report_type');
 
 global $currentModule;
 global $image_path;

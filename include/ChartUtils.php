@@ -40,7 +40,7 @@ Class ChartUtils {
 
 		$alts = array();
 		$temp = array();
-		for ($i = 0; $i < count($xaxisData); $i++) {
+		for ($i = 0; $i < php7_count($xaxisData); $i++) {
 			$name = html_entity_decode($xaxisData[$i], ENT_QUOTES, $default_charset);
 			$pos = substr_count($name, " ");
 			$alts[] = $name;
@@ -49,9 +49,9 @@ Class ChartUtils {
 				$name = substr($name, 0, 44);
 			if ($pos >= 2) {
 				$val = explode(" ", $name);
-				$n = count($val) - 1;
+				$n = php7_count($val) - 1;
 				$x = "";
-				for ($j = 0; $j < count($val); $j++) {
+				for ($j = 0; $j < php7_count($val); $j++) {
 					if ($j != $n) {
 						$x .=" " . $val[$j];
 					} else {
@@ -97,7 +97,7 @@ Class ChartUtils {
 			$fill = & Image_Graph::factory('gradient', array(IMAGE_GRAPH_GRAD_HORIZONTAL_MIRRORED, $color, 'white'));
 		}
 
-		for ($i = 0; $i < count($yaxisData); $i++) {
+		for ($i = 0; $i < php7_count($yaxisData); $i++) {
 			$x = 1 + $i;
 			if ($yaxisData[$i] >= $max)
 				$max = $yaxisData[$i];
@@ -125,7 +125,7 @@ Class ChartUtils {
 
 		//You can change the width of the bars if you like
 		if (!empty($xaxisData))
-			$bplot->setBarWidth($barwidth / count($xaxisData), "%");
+			$bplot->setBarWidth($barwidth / php7_count($xaxisData), "%");
 		//$bplot->setPadding(array('top'=>10));
 		$bplot->setBackground(Image_Graph::factory('gradient', array(IMAGE_GRAPH_GRAD_HORIZONTAL, 'white', 'white')));
 		$xaxis = & $plotarea->getAxis(IMAGE_GRAPH_AXIS_X);
@@ -165,7 +165,7 @@ Class ChartUtils {
 		// The fix the tick marks
 		$xaxis->setDataPreprocessor($array_data);
 		$xaxis->forceMinimum(0.5);
-		$xaxis->forceMaximum(0.5 + count($yaxisData));
+		$xaxis->forceMaximum(0.5 + php7_count($yaxisData));
 		if ($charttype == 'vertical')
 			$xaxis->setFontAngle('vertical');
 		$xaxis->setLabelInterval(1);
@@ -226,7 +226,7 @@ Class ChartUtils {
 
 		$alts = array();
 		$temp = array();
-		for ($i = 0; $i < count($xaxisData); $i++) {
+		for ($i = 0; $i < php7_count($xaxisData); $i++) {
 			$name = html_entity_decode($xaxisData[$i], ENT_QUOTES, $default_charset);
 			$pos = substr_count($name, " ");
 			$alts[] = $name;
@@ -235,9 +235,9 @@ Class ChartUtils {
 				$name = substr($name, 0, 34);
 			if ($pos >= 2) {
 				$val = explode(" ", $name);
-				$n = count($val) - 1;
+				$n = php7_count($val) - 1;
 				$x = "";
-				for ($j = 0; $j < count($val); $j++) {
+				for ($j = 0; $j < php7_count($val); $j++) {
 					if ($j != $n) {
 						$x .=" " . $val[$j];
 					} else {
@@ -269,15 +269,15 @@ Class ChartUtils {
 		// To create unique lables we need to keep track of lable name and its count
 		$uniquex = array();
 		// Generate colours
-		$colors = color_generator(count($yaxisData), '#33DDFF', '#3322FF');
+		$colors = color_generator(php7_count($yaxisData), '#33DDFF', '#3322FF');
 		$dataset = & Image_Graph::factory('dataset');
 		$fills = & Image_Graph::factory('Image_Graph_Fill_Array');
 		$sum = 0;
 		$pcvalues = array();
-		for ($i = 0; $i < count($yaxisData); $i++) {
+		for ($i = 0; $i < php7_count($yaxisData); $i++) {
 			$sum += $yaxisData[$i];
 		}
-		for ($i = 0; $i < count($yaxisData); $i++) {
+		for ($i = 0; $i < php7_count($yaxisData); $i++) {
 			// To have unique names even in case of duplicates let us add the id
 			$datalabel = $xaxisData[$i];
 			$xaxisData_appearance = $uniquex[$xaxisData[$i]];
@@ -363,7 +363,7 @@ Class ChartUtils {
 			}
 		}
 
-		if(is_array($restrictedModules) && count($restrictedModules) > 0) {
+		if(is_array($restrictedModules) && php7_count($restrictedModules) > 0) {
 			$ChartDataArray['error'] = "<h4>".getTranslatedString('LBL_NO_ACCESS', 'Reports').' - '.implode(',', $restrictedModules)."</h4>";
 			return $ChartDataArray;
 		}
@@ -411,7 +411,7 @@ Class ChartUtils {
 						$groupByFields[] = "Null";
 				}
 				else if (in_array($fieldname, array_keys($referenceFields))) {
-					if (count($referenceFields[$fieldname]) > 1) {
+					if (php7_count($referenceFields[$fieldname]) > 1) {
 						$refenceModule = CustomReportUtils::getEntityTypeFromName($decodedGroupFieldValue, $referenceFields[$fieldname]);
 					}
 					else {
@@ -471,7 +471,7 @@ Class ChartUtils {
 				}
 			}
 		}
-		if(count($groupByFields) == 0) {
+		if(php7_count($groupByFields) == 0) {
 			$ChartDataArray['error'] = "<div class='componentName'>".getTranslatedString('LBL_NO_DATA', 'Reports')."</div";
 		}
 		$ChartDataArray['xaxisData'] = $groupByFields;

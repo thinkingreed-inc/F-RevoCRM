@@ -540,13 +540,13 @@ class Zend_Validate_Hostname extends Zend_Validate_Abstract
         $domainParts = explode('.', $value);
 
         // Prevent partitial IP V4 adresses (ending '.')
-        if ((count($domainParts) == 4) && preg_match('/^[0-9.a-e:.]*$/i', $value) &&
+        if ((php7_count($domainParts) == 4) && preg_match('/^[0-9.a-e:.]*$/i', $value) &&
             $this->_options['ip']->setTranslator($this->getTranslator())->isValid($value)) {
             $this->_error(self::INVALID_LOCAL_NAME);
         }
 
         // Check input against DNS hostname schema
-        if ((count($domainParts) > 1) && (strlen($value) >= 4) && (strlen($value) <= 254)) {
+        if ((php7_count($domainParts) > 1) && (strlen($value) >= 4) && (strlen($value) <= 254)) {
             $status = false;
 
             $origenc = iconv_get_encoding('internal_encoding');
@@ -635,7 +635,7 @@ class Zend_Validate_Hostname extends Zend_Validate_Abstract
                     }
 
                     // If one of the labels doesn't match, the hostname is invalid
-                    if ($check !== count($domainParts)) {
+                    if ($check !== php7_count($domainParts)) {
                         $this->_error(self::INVALID_HOSTNAME_SCHEMA);
                         $status = false;
                     }
@@ -716,7 +716,7 @@ class Zend_Validate_Hostname extends Zend_Validate_Abstract
             return false;
         }
 
-        $lengthd = count($decoded);
+        $lengthd = php7_count($decoded);
         $lengthe = strlen($encoded);
 
         // decoding

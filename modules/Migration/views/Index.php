@@ -112,7 +112,7 @@ class Migration_Index_View extends Vtiger_View_Controller {
 		}
 		$migrateVersions[] = $getLatestSourceVersion;
 
-		$patchCount  = count($migrateVersions);
+		$patchCount  = php7_count($migrateVersions);
 
 		define('VTIGER_UPGRADE', true);
 
@@ -136,6 +136,22 @@ class Migration_Index_View extends Vtiger_View_Controller {
 				echo "<table class='config-table'><tr><th><span><b><font color='red'> There is no Database Changes from ".$migrateVersions[$i]." ==> ".$migrateVersions[$i+1]."</font></b></span></th></tr></table>";
 			}
 		}
+
+		//During migration process we need to upgrade the package changes
+		if(defined('VTIGER_UPGRADE')) {
+		
+			echo "<table class='config-table'><tr><th><span><b><font color='red'> Upgrading Modules -- Starts. </font></b></span></th></tr></table>";
+			echo "<table class='config-table'>";
+	
+			//Update existing package modules
+			// Install_Utils_Model::installModules();
+
+			echo "<table class='config-table'><tr><th><span><b><font color='red'>Upgrading Modules -- Ends.</font></b></span></th></tr></table>";
+			
+		}
+
+		// F-RevoCRMマイグレーションシステムの実行
+		$this->executeFRMigrations();
 
 		//update vtiger version in db
 		$migrationModuleModel->updateVtigerVersion();
@@ -169,7 +185,7 @@ class Migration_Index_View extends Vtiger_View_Controller {
 
 	public static function insertSelectColumns($queryid, $columnname) {
 		if ($queryid != "") {
-			for ($i = 0; $i < count($columnname); $i++) {
+			for ($i = 0; $i < php7_count($columnname); $i++) {
 				$icolumnsql = "insert into vtiger_selectcolumn (QUERYID,COLUMNINDEX,COLUMNNAME) values (?,?,?)";
 				self::ExecuteQuery($icolumnsql, array($queryid, $i, $columnname[$i]));
 			}
@@ -218,7 +234,7 @@ class Migration_Index_View extends Vtiger_View_Controller {
 
 				$fieldName = $condition['fieldname'];
 				$fieldNameContents = explode(' ', $fieldName);
-				if (count($fieldNameContents) > 1) {
+				if (php7_count($fieldNameContents) > 1) {
 					$fieldName = '('. $fieldName .')';
 				}
 
@@ -228,7 +244,7 @@ class Migration_Index_View extends Vtiger_View_Controller {
 				}
 
 				$groupCondition = 'or';
-				if ($groupId === $previousConditionGroupId || count($conditions) === 1) {
+				if ($groupId === $previousConditionGroupId || php7_count($conditions) === 1) {
 					$groupCondition = 'and';
 				}
 
@@ -259,5 +275,130 @@ class Migration_Index_View extends Vtiger_View_Controller {
 			}
 		}
 		return $wfCondition;
+	}
+
+	/**
+	 * F-RevoCRMマイグレーションシステムを実行する
+	 * setup/migration/scripts/以下のマイグレーションファイルをすべて実行する
+	 */
+	protected function executeFRMigrations() {
+		// マイグレーションシステムのパスを設定
+		$migrationDir = 'setup/migration';
+		$scriptsDir = $migrationDir . '/scripts';
+		
+		// FRMigrationClassを読み込み
+		if (!file_exists($migrationDir . '/FRMigrationClass.php')) {
+			return; // マイグレーションシステムが存在しない場合は何もしない
+		}
+		
+		require_once $migrationDir . '/FRMigrationClass.php';
+		
+		// scriptsディレクトリが存在しない場合は何もしない
+		if (!is_dir($scriptsDir)) {
+			return;
+		}
+		
+		// マイグレーションファイルを取得
+		$files = scandir($scriptsDir);
+		$migrationFiles = array();
+		
+		foreach ($files as $file) {
+			// タイムスタンプパターンのマイグレーションファイルにマッチ
+			if (preg_match('/^\d{14}_.*\.php$/', $file)) {
+				$migrationFiles[] = $file;
+			}
+		}
+		
+		// 時系列順に実行するためファイルをソート
+		sort($migrationFiles);
+		
+		if (empty($migrationFiles)) {
+			return;
+		}
+		
+		// 既存の画面表示スタイルに合わせて表示
+		echo "<table class='config-table'><tr><th><span><b><font color='red'> F-RevoCRM Migration System -- Starts. </font></b></span></th></tr></table>";
+		echo "<table class='config-table'>";
+		
+		$successCount = 0;
+		$skipCount = 0;
+		$errorCount = 0;
+		
+		// 各マイグレーションファイルを実行
+		foreach ($migrationFiles as $file) {
+			$result = $this->executeSingleFRMigration($scriptsDir . '/' . $file);
+			if ($result === true) {
+				$successCount++;
+			} elseif ($result === false) {
+				$skipCount++;
+			} else {
+				// エラーが発生した場合は処理を停止
+				echo '<tr><td width="80%"><span><strong>F-RevoCRM マイグレーションエラー: ' . $file . ' でエラーが発生したため処理を停止します。</strong></span></td><td style="color:red"><strong>STOPPED</strong></td></tr>';
+				$errorCount++;
+				break; // ループを抜けて処理を停止
+			}
+		}
+		
+		echo "</table>";
+		echo "<table class='config-table'><tr><th><span><b><font color='red'> F-RevoCRM Migration System -- Ends. </font></b></span></th></tr></table>";
+		echo "<table class='config-table'><tr><td><span>実行済み: {$successCount}, スキップ: {$skipCount}, エラー: {$errorCount}, 合計: " . count($migrationFiles) . "</span></td></tr></table>";
+	}
+	
+	/**
+	 * 単一のF-RevoCRMマイグレーションファイルを実行する
+	 * 
+	 * @param string $migrationPath マイグレーションファイルの絶対パス
+	 * @return boolean|null true=実行成功, false=スキップ, null=エラー
+	 */
+	protected function executeSingleFRMigration($migrationPath) {
+		if (!file_exists($migrationPath)) {
+			echo '<tr><td width="80%"><span>Error: マイグレーションファイルが見つかりません: ' . basename($migrationPath) . '</span></td><td style="color:red">Failure</td></tr>';
+			return null;
+		}
+		
+		// マイグレーションファイルをinclude
+		require_once $migrationPath;
+		
+		// ファイル名からクラス名を抽出
+		$className = $this->extractClassNameFromFRMigrationFile($migrationPath);
+		
+		if (!$className || !class_exists($className)) {
+			echo '<tr><td width="80%"><span>Error: マイグレーションクラスが見つかりません: ' . basename($migrationPath) . '</span></td><td style="color:red">Failure</td></tr>';
+			return null;
+		}
+		
+		try {
+			$migration = new $className();
+
+			echo '<tr><td><span>';
+			$result = $migration->execute();
+			echo '</span></td></tr>';
+
+			if ($result === true) {
+				return true;
+			} elseif ($result === false) {
+				return false;
+			}
+		} catch (Exception $e) {
+			echo '<tr><td width="80%"><span>' . basename($migrationPath) . ' - エラー: ' . $e->getMessage() . '</span></td><td style="color:red">Failure</td></tr>';
+			return null;
+		}
+	}
+	
+	/**
+	 * F-RevoCRMマイグレーションファイルからクラス名を抽出する
+	 * 
+	 * @param string $filePath マイグレーションファイルのパス
+	 * @return string|null クラス名、見つからない場合はnull
+	 */
+	protected function extractClassNameFromFRMigrationFile($filePath) {
+		$content = file_get_contents($filePath);
+		
+		// クラス定義を検索（クラス名はMigrationで始まる）
+		if (preg_match('/class\s+(Migration[a-zA-Z0-9_]+)\s+extends\s+FRMigrationClass/', $content, $matches)) {
+			return $matches[1];
+		}
+		
+		return null;
 	}
 }

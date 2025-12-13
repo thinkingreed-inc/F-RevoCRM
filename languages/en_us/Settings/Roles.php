@@ -29,6 +29,7 @@ $languageStrings = array(
 	'LBL_ASSIGN_EXISTING_PRIVILEGES' => 'Assign priviliges from existing profiles',
 	'LBL_PRIVILEGES' => 'Privileges',
 	'LBL_DUPLICATES_EXIST' => 'Duplicate Role Exists',
+	'Organization' => 'Organization',
 	
 	//Assign Records to
 	'LBL_CAN_ASSIGN_RECORDS_TO' => 'Can Assign Records To',
@@ -39,6 +40,12 @@ $languageStrings = array(
     /*Vtiger7 String*/
     'LBL_EDIT_ROLE' => 'Edit Role',
 	'LBL_CREATE_ROLE' => 'Create Role',
+
+	'LBL_ORGANIZATION' => 'Organization',
+	'LBL_ADMIN' => 'Administrator',
+	'LBL_MANAGER' => 'Manager',
+	'LBL_GENERAL' => 'General',
+	'LBL_PART-TIME_JOB' => 'Part-Time Job',
 );
 
 $jsLanguageStrings = array(

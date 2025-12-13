@@ -59,14 +59,14 @@
                                                                     &nbsp;<span class="numberCircle hide">0</span>
                                                             </a>
                                                     </li>
-                                                    {if ($RELATED_LINK->getId() == {$smarty.request.relationId})}
+                                                    {if ($RELATED_LINK->getId() == {$REQ.relationId})}
                                                             {assign var=MORE_TAB_ACTIVE value='true'}
                                                     {/if}
                                             {/for}
                                             {if $MORE_TAB_ACTIVE neq 'true'}
                                                     {for $i = 0 to $COUNT-1}
                                                             {assign var=RELATED_LINK value=$RELATEDTABS[$i]}
-                                                            {if ($RELATED_LINK->getId() == {$smarty.request.relationId})}
+                                                            {if ($RELATED_LINK->getId() == {$REQ.relationId})}
                                                                     {assign var=RELATEDMODULENAME value=$RELATED_LINK->getRelatedModuleName()}
                                                                     {assign var=RELATEDFIELDNAME value=$RELATED_LINK->get('linkFieldName')}
                                                                     {assign var="DETAILVIEWRELATEDLINKLBL" value= vtranslate($RELATED_LINK->getLabel(),$RELATEDMODULENAME)}

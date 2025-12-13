@@ -71,7 +71,7 @@ class ProjectTask_MassActionAjax_View extends Project_MassActionAjax_View {
 			}
 		}
 
-		if (count($accesibleFields) > 0) {
+		if (php7_count($accesibleFields) > 0) {
 			$projectTaskIds = $this->getRecordsListFromRequest($request);
 			//get parent project records
 			$projectIds = $this->getProjectIds($projectTaskIds);
@@ -163,7 +163,7 @@ class ProjectTask_MassActionAjax_View extends Project_MassActionAjax_View {
 			}
 		}
 		$viewer = $this->getViewer($request);
-		$viewer->assign('RECORDS_COUNT', count($projectTaskIds));
+		$viewer->assign('RECORDS_COUNT', php7_count($projectTaskIds));
 		if ($recipientPrefModel && !empty($recipientPrefs)) {
 			$viewer->assign('RECIPIENT_PREF_ENABLED', true);
 		}

@@ -93,7 +93,7 @@ class Potentials extends CRMEntity {
 	var $LBL_POTENTIAL_MAPPING = 'LBL_OPPORTUNITY_MAPPING';
 	//var $groupTable = Array('vtiger_potentialgrouprelation','potentialid');
 	function __construct() {
-            $this->log = LoggerManager::getLogger('potential');
+            $this->log = Logger::getLogger('potential');
             $this->db = PearDatabase::getInstance();
             $this->column_fields = getColumnFields('Potentials');
         }   
@@ -645,7 +645,7 @@ class Potentials extends CRMEntity {
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule,$queryPlanner){
+	function generateReportsSecQuery($module,$secmodule,$queryPlanner, $reportid = false){
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency('vtiger_crmentityPotentials',array('vtiger_groupsPotentials','vtiger_usersPotentials','vtiger_lastModifiedByPotentials'));
 
@@ -655,7 +655,7 @@ class Potentials extends CRMEntity {
         $matrix->setDependency('vtiger_potential', array('vtiger_crmentityPotentials','vtiger_accountPotentials',
 											'vtiger_contactdetailsPotentials','vtiger_campaignPotentials','vtiger_potentialscf'));
 
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_potential","potentialid", $queryPlanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_potential","potentialid", $queryPlanner, $reportid);
 
 		if ($queryPlanner->requireTable("vtiger_crmentityPotentials",$matrix)){
 			$query .= " left join vtiger_crmentity as vtiger_crmentityPotentials on vtiger_crmentityPotentials.crmid=vtiger_potential.potentialid and vtiger_crmentityPotentials.deleted=0";

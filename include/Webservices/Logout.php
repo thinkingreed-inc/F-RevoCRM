@@ -8,7 +8,7 @@
  * All Rights Reserved.
  *************************************************************************************/
 
-function vtws_logout($sessionId,$user){
+function vtws_logout($sessionName,$user){
         global $adb;
         $sql = "select type from vtiger_ws_operation where name=?";
         $result = $adb->pquery($sql,array("logout"));
@@ -18,14 +18,13 @@ function vtws_logout($sessionId,$user){
             throw new WebServiceException(WebServiceErrorCode::$OPERATIONNOTSUPPORTED, "Permission to perform the operation is denied");
         }
 	$sessionManager = new SessionManager();
-	$sid = $sessionManager->startSession($sessionId);
+	$sid = $sessionManager->startSession($sessionName);
 	
-	if(!isset($sessionId) || !$sessionManager->isValid()){
+	if(!isset($sessionName) || !$sessionManager->isValid()){
 		return $sessionManager->getError();
 	}
 
 	$sessionManager->destroy();
-//	$sessionManager->setExpire(1);
 	return array("message"=>"successfull");
 
 }

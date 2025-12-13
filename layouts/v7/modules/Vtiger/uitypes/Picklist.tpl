@@ -12,9 +12,13 @@
 {assign var="SPECIAL_VALIDATOR" value=$FIELD_MODEL->getValidator()}
 {assign var=PICKLIST_VALUES value=$FIELD_INFO['editablepicklistvalues']}
 {assign var=PICKLIST_COLORS value=$FIELD_INFO['picklistColors']}
+{assign var=FIELD_VALUE value=$FIELD_MODEL->get('fieldvalue')}
+{if !empty(trim($FIELD_VALUE)) && !array_key_exists($FIELD_VALUE, $PICKLIST_VALUES)}
+	{append var="PICKLIST_VALUES" $FIELD_VALUE index=$FIELD_VALUE}
+{/if}
 <select data-fieldname="{$FIELD_MODEL->getFieldName()}" data-fieldtype="picklist" class="inputElement select2 {if $OCCUPY_COMPLETE_WIDTH} row {/if}" type="picklist" name="{$FIELD_MODEL->getFieldName()}" {if !empty($SPECIAL_VALIDATOR)}data-validator='{Zend_Json::encode($SPECIAL_VALIDATOR)}'{/if} data-selected-value='{$FIELD_MODEL->get('fieldvalue')}'
 	{if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if}
-	{if count($FIELD_INFO['validator'])}
+	{if php7_count($FIELD_INFO['validator'])}
 		data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
 	{/if}
 	>

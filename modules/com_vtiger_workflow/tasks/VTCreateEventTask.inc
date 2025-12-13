@@ -81,6 +81,9 @@ class VTCreateEventTask extends VTTask{
 					if($this->assigned_user_id == 'copyParentOwner'){ 
 						$userId = $entityData->get('assigned_user_id'); 
 					}
+					if($this->assigned_user_id == 'loginUser' && isset($_SESSION['authenticated_user_id']) && $_SESSION['authenticated_user_id'] > 0){ 
+						$userId = '19x'.$_SESSION['authenticated_user_id']; 
+					}
 				}
 			}
 		}
@@ -90,6 +93,11 @@ class VTCreateEventTask extends VTTask{
 		
 		$utils = new VTWorkflowUtils();
 		$adminUser = $utils->adminUser();
+		if($this->assigned_user_id == 'loginUser' && isset($_SESSION['authenticated_user_id']) && $_SESSION['authenticated_user_id'] > 0){ 
+			$u = new Users();
+			$u->retrieveCurrentUserInfoFromFile($_SESSION['authenticated_user_id']);
+			$adminUser = $u;
+		}
 		$entityCache = new VTEntityCache($adminUser);
 		
 		$id = $entityData->get('id');
@@ -256,7 +264,8 @@ class VTCreateEventTask extends VTTask{
 		}
 		preg_match('/\d\d\d\d-\d\d-\d\d/', $baseDate, $match);
 		$baseDate = strtotime($match[0]);
-		$date = strftime('%Y-%m-%d', $baseDate+$days*24*60*60*
+//		$date = strftime('%Y-%m-%d', $baseDate+$days*24*60*60*
+		$date = date('Y-m-d', $baseDate+$days*24*60*60*
 										 (strtolower($direction)=='before'?-1:1));
 		return $date;
 	}

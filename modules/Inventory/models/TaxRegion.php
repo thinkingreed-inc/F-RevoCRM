@@ -147,9 +147,9 @@ class Inventory_TaxRegion_Model extends Vtiger_Base_Model {
 					$recordRegions = $recordModel->getRegionTaxes();
 				}
 
-				for ($i=0; $i<count($recordRegions); $i++) {
+				for ($i=0; $i<php7_count($recordRegions); $i++) {
 					$regionsList = $recordRegions[$i]['list'];
-					if (count($regionsList) === 1) {
+					if (php7_count($regionsList) === 1) {
 						if (in_array($regionId, $regionsList)) {
 							unset($recordRegions[$i]);
 						}

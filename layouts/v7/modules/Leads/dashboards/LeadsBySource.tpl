@@ -52,7 +52,7 @@
                         <option value="{$CURRENT_USER_ID}">{vtranslate('LBL_MINE')}</option>
                         <option value="">{vtranslate('LBL_ALL', $MODULE_NAME)}</option>
                         {assign var=ALL_ACTIVEUSER_LIST value=$CURRENTUSER->getAccessibleUsers()}
-                        {if count($ALL_ACTIVEUSER_LIST) gt 1}
+                        {if php7_count($ALL_ACTIVEUSER_LIST) gt 1}
                             <optgroup label="{vtranslate('LBL_USERS')}">
                                 {foreach key=OWNER_ID item=OWNER_NAME from=$ALL_ACTIVEUSER_LIST}
                                     {if $OWNER_ID neq $CURRENT_USER_ID}

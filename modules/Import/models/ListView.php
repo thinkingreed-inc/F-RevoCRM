@@ -148,7 +148,7 @@ class Import_ListView_Model extends Vtiger_ListView_Model {
 	 * @param <Number> $viewId - Custom View Id
 	 * @return Vtiger_ListView_Model instance
 	 */
-	public static function getInstance($moduleName, $viewId='0') {
+	public static function getInstanceWith($moduleName, $viewId='0') {
 		$db = PearDatabase::getInstance();
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 

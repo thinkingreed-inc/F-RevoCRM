@@ -165,9 +165,6 @@ class Accounts_Module_Model extends Vtiger_Module_Model {
 			"SELECT distinct
 				vtiger_crmentity.crmid
 				, crmentity2.crmid AS parent_id
-				, vtiger_crmentity.smownerid
-				, vtiger_crmentity.setype
-				, vtiger_crmentity.description
 				, vtiger_activity.* 
 			FROM
 				vtiger_activity 
@@ -229,9 +226,6 @@ class Accounts_Module_Model extends Vtiger_Module_Model {
 			"SELECT distinct
 				vtiger_crmentity.crmid
 				, crmentity2.crmid AS parent_id
-				, vtiger_crmentity.smownerid
-				, vtiger_crmentity.setype
-				, vtiger_crmentity.description
 				, vtiger_activity.* 
 			FROM
 				vtiger_activity 
@@ -300,9 +294,6 @@ class Accounts_Module_Model extends Vtiger_Module_Model {
 				"SELECT distinct
 					vtiger_crmentity.crmid
 					, null AS parent_id
-					, vtiger_crmentity.smownerid
-					, vtiger_crmentity.setype
-					, vtiger_crmentity.description
 					, vtiger_activity.* 
 				FROM
 					vtiger_activity 
@@ -323,9 +314,6 @@ class Accounts_Module_Model extends Vtiger_Module_Model {
 				"SELECT distinct
 					vtiger_crmentity.crmid
 					, null AS parent_id
-					, vtiger_crmentity.smownerid
-					, vtiger_crmentity.setype
-					, vtiger_crmentity.description
 					, vtiger_activity.* 
 				FROM
 					vtiger_activity 

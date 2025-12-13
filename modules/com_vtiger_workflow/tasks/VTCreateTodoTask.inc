@@ -63,7 +63,8 @@ class VTCreateTodoTask extends VTTask{
 		}
 		preg_match('/\d\d\d\d-\d\d-\d\d/', $baseDate, $match);
 		$baseDate = strtotime($match[0]);
-		$date = strftime('%Y-%m-%d', $baseDate+$days*24*60*60*(strtolower($this->direction)=='before'?-1:1));
+//		$date = strftime('%Y-%m-%d', $baseDate+$days*24*60*60*(strtolower($this->direction)=='before'?-1:1));
+		$date = date('Y-m-d', $baseDate+$days*24*60*60*(strtolower($this->direction)=='before'?-1:1));
 		// Added to check if the user/group is active
 		if(!empty($this->assigned_user_id)) {
 			$userExists = $adb->pquery('SELECT 1 FROM vtiger_users WHERE id = ? AND status = ?', array($this->assigned_user_id, 'Active'));
@@ -79,6 +80,9 @@ class VTCreateTodoTask extends VTTask{
 				else{
 					if($this->assigned_user_id == 'copyParentOwner'){
 						$userId = $entityData->get('assigned_user_id');
+					}
+					if($this->assigned_user_id == 'loginUser' && isset($_SESSION['authenticated_user_id']) && $_SESSION['authenticated_user_id'] > 0){ 
+						$userId = '19x'.$_SESSION['authenticated_user_id']; 
 					}
 				}
 			}
@@ -118,6 +122,11 @@ class VTCreateTodoTask extends VTTask{
 		);
 		$parentModuleName = $entityData->getModuleName();
 		$adminUser = $this->getAdmin();
+		if($this->assigned_user_id == 'loginUser' && isset($_SESSION['authenticated_user_id']) && $_SESSION['authenticated_user_id'] > 0){ 
+			$u = new Users();
+			$u->retrieveCurrentUserInfoFromFile($_SESSION['authenticated_user_id']);
+			$adminUser = $u;
+		}
 		$id = $entityData->getId();
 		if($parentModuleName=='Contacts'){
 			$fields['contact_id'] = $id;

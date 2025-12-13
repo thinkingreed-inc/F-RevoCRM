@@ -39,45 +39,46 @@ class Vtiger_PackageUpdate extends Vtiger_PackageImport {
 			return false;
 		}
 
-		if($module != null && $overwrite) {
+		if($module != null) {
 			$unzip = new Vtiger_Unzip($zipfile, $overwrite);
 
-			// Unzip selectively
-			$unzip->unzipAllEx( ".",
-					Array(
-					'include' => Array('templates', "modules/$module", 'cron', 'languages', 'settings',
-						'settings/actions', 'settings/views', 'settings/models', 'settings/templates',
-						'settings/connectors','settings/libraries','images','layouts'),
-					// DEFAULT: excludes all not in include
-					),
-
-					Array(// Templates folder to be renamed while copying
-						'templates' => "layouts/vlayout/modules/$module",
-
-					// Cron folder
-						'cron' => "cron/modules/$module",
-
-						// Settings folder
-						'settings/actions' => "modules/Settings/$module/actions",
-						'settings/views' => "modules/Settings/$module/views",
-						'settings/models' => "modules/Settings/$module/models",
-						'settings/connectors' => "modules/Settings/$module/connectors",
-						'settings/libraries' => "modules/Settings/$module/libraries",
-						'settings/handlers' => "modules/Settings/$module/handlers",
-
-						// Settings templates folder
-						'settings/templates' => "layouts/vlayout/modules/Settings/$module",
-						'settings' => "modules/Settings",
-						//module images
-						'images' => "layouts/vlayout/skins/images/$module",
-						'layouts' => 'layouts'
-					)   
-			);
-
-			if($unzip->checkFileExistsInRootFolder("$module.png")) {
-				$unzip->unzip("$module.png", "layouts/vlayout/skins/images/$module.png");
+			if($overwrite) {
+				// Unzip selectively
+				$unzip->unzipAllEx( ".",
+						Array(
+						'include' => Array('templates', "modules/$module", 'cron', 'languages', 'settings',
+							'settings/actions', 'settings/views', 'settings/models', 'settings/templates',
+							'settings/connectors','settings/libraries','images','layouts'),
+						// DEFAULT: excludes all not in include
+						),
+	
+						Array(// Templates folder to be renamed while copying
+							'templates' => "layouts/vlayout/modules/$module",
+	
+						// Cron folder
+							'cron' => "cron/modules/$module",
+	
+							// Settings folder
+							'settings/actions' => "modules/Settings/$module/actions",
+							'settings/views' => "modules/Settings/$module/views",
+							'settings/models' => "modules/Settings/$module/models",
+							'settings/connectors' => "modules/Settings/$module/connectors",
+							'settings/libraries' => "modules/Settings/$module/libraries",
+							'settings/handlers' => "modules/Settings/$module/handlers",
+	
+							// Settings templates folder
+							'settings/templates' => "layouts/vlayout/modules/Settings/$module",
+							'settings' => "modules/Settings",
+							//module images
+							'images' => "layouts/vlayout/skins/images/$module",
+							'layouts' => 'layouts'
+						)   
+				);
+	
+				if($unzip->checkFileExistsInRootFolder("$module.png")) {
+					$unzip->unzip("$module.png", "layouts/vlayout/skins/images/$module.png");
+				}
 			}
-
 			// If data is not yet available
 			if(empty($this->_modulexml)) {
 				$this->__parseManifestFile($unzip);
@@ -196,7 +197,7 @@ class Vtiger_PackageUpdate extends Vtiger_PackageImport {
 				}
 			}
 			// Sort the migration details based on version
-			if(count($this->_migrations) > 1) {
+			if(php7_count($this->_migrations) > 1) {
 				uksort($this->_migrations, 'version_compare');
 			}
 		}

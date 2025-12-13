@@ -17,7 +17,9 @@ class Vtiger_Cache {
 	protected $connector;
 
 	private function __construct() {
-		$this->connector = Vtiger_Cache_Connector::getInstance();
+		$runtime_configs = Vtiger_Runtime_Configs::getInstance();
+		$connector_class = $runtime_configs->getConnector('cache', 'Vtiger_Cache_Connector');
+		$this->connector = $connector_class::getInstance();
 	}
 
 	public static function getInstance(){

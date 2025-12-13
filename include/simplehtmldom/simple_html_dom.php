@@ -155,7 +155,7 @@ class simple_html_dom_node
         $lead = str_repeat('    ', $deep);
 
         echo $lead.$this->tag;
-        if ($show_attr && count($this->attr)>0)
+        if ($show_attr && php7_count($this->attr)>0)
         {
             echo '(';
             foreach ($this->attr as $k=>$v)
@@ -179,7 +179,7 @@ class simple_html_dom_node
     {
 
         $string = $this->tag;
-        if (count($this->attr)>0)
+        if (php7_count($this->attr)>0)
         {
             $string .= '(';
             foreach ($this->attr as $k=>$v)
@@ -188,7 +188,7 @@ class simple_html_dom_node
             }
             $string .= ')';
         }
-        if (count($this->_)>0)
+        if (php7_count($this->_)>0)
         {
             $string .= ' $_ (';
             foreach ($this->_ as $k=>$v)
@@ -223,8 +223,8 @@ class simple_html_dom_node
             $string .= ' NULL ';
         }
 
-        $string .= " children: " . count($this->children);
-        $string .= " nodes: " . count($this->nodes);
+        $string .= " children: " . php7_count($this->children);
+        $string .= " nodes: " . php7_count($this->nodes);
         $string .= " tag_start: " . $this->tag_start;
         $string .= "\n";
 
@@ -275,7 +275,7 @@ class simple_html_dom_node
     // returns the first child of node
     function first_child()
     {
-        if (count($this->children)>0)
+        if (php7_count($this->children)>0)
         {
             return $this->children[0];
         }
@@ -285,7 +285,7 @@ class simple_html_dom_node
     // returns the last child of node
     function last_child()
     {
-        if (($count=count($this->children))>0)
+        if (($count=php7_count($this->children))>0)
         {
             return $this->children[$count-1];
         }
@@ -301,7 +301,7 @@ class simple_html_dom_node
         }
 
         $idx = 0;
-        $count = count($this->parent->children);
+        $count = php7_count($this->parent->children);
         while ($idx<$count && $this!==$this->parent->children[$idx])
         {
             ++$idx;
@@ -318,7 +318,7 @@ class simple_html_dom_node
     {
         if ($this->parent===null) return null;
         $idx = 0;
-        $count = count($this->parent->children);
+        $count = php7_count($this->parent->children);
         while ($idx<$count && $this!==$this->parent->children[$idx])
             ++$idx;
         if (--$idx<0) return null;
@@ -502,15 +502,15 @@ class simple_html_dom_node
     function find($selector, $idx=null, $lowercase=false)
     {
         $selectors = $this->parse_selector($selector);
-        if (($count=count($selectors))===0) return array();
+        if (($count=php7_count($selectors))===0) return array();
         $found_keys = array();
 
         // find each selector
         for ($c=0; $c<$count; ++$c)
         {
             // The change on the below line was documented on the sourceforge code tracker id 2788009
-            // used to be: if (($levle=count($selectors[0]))===0) return array();
-            if (($levle=count($selectors[$c]))===0) return array();
+            // used to be: if (($levle=php7_count($selectors[0]))===0) return array();
+            if (($levle=php7_count($selectors[$c]))===0) return array();
             if (!isset($this->_[HDOM_INFO_BEGIN])) return array();
 
             $head = array($this->_[HDOM_INFO_BEGIN]=>1);
@@ -544,7 +544,7 @@ class simple_html_dom_node
 
         // return nth-element or array
         if (is_null($idx)) return $found;
-        else if ($idx<0) $idx = count($found) + $idx;
+        else if ($idx<0) $idx = php7_count($found) + $idx;
         return (isset($found[$idx])) ? $found[$idx] : null;
     }
 
@@ -712,7 +712,7 @@ class simple_html_dom_node
                 $result = array();
             }
         }
-        if (count($result)>0)
+        if (php7_count($result)>0)
             $selectors[] = $result;
         return $selectors;
     }
@@ -1621,7 +1621,7 @@ class simple_html_dom
 
         for ($i=$count-1; $i>-1; --$i)
         {
-            $key = '___noise___'.sprintf('% 5d', count($this->noise)+1000);
+            $key = '___noise___'.sprintf('% 5d', php7_count($this->noise)+1000);
             if (is_object($debugObject)) { $debugObject->debugLog(2, 'key is: ' . $key); }
             $idx = ($remove_tag) ? 0 : 1;
             $this->noise[$key] = $matches[$i][$idx][0];

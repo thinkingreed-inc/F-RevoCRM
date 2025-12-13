@@ -119,7 +119,7 @@ class Inventory_ProductsPopup_View extends Vtiger_Popup_View {
 			}
 		}
 
-		$noOfEntries = count($this->listViewEntries);
+		$noOfEntries = php7_count($this->listViewEntries);
 
 		if(empty($sortOrder)) {
 			$sortOrder = "ASC";
@@ -133,7 +133,7 @@ class Inventory_ProductsPopup_View extends Vtiger_Popup_View {
 			$sortImage = "icon-chevron-up";
 			$faSortImage = "fa-sort-asc";
 		}
-		if(empty($searchParams)) {
+		if(empty($searchParams) || !is_array($searchParams)){
 			$searchParams = array();
 		}
 		//To make smarty to get the details easily accesible

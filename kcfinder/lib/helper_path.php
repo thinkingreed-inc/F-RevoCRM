@@ -58,7 +58,7 @@ class path {
                 return self::normalize(substr($scr_filename, 0, -strlen($uri)) . "/$url");
             }
 
-            $count = count(explode('/', $uri)) - 1;
+            $count = php7_count(explode('/', $uri)) - 1;
             for ($i = 0, $chdir = ""; $i < $count; $i++)
                 $chdir .= "../";
             $chdir = self::normalize($chdir);

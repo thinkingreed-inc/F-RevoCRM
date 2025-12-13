@@ -84,7 +84,7 @@ class Vtiger_EmailsRelatedModulePopup_View extends Vtiger_Popup_View {
 		foreach($emailFieldInstances as $fieldName => $fieldInstance) {
 			$emailFields[$fieldName] = $fieldName;
 		}
-		if(count($emailFields) > 0) {
+		if(php7_count($emailFields) > 0) {
 			$listViewModel->extendPopupFields($emailFields);
 		}
 		
@@ -112,9 +112,9 @@ class Vtiger_EmailsRelatedModulePopup_View extends Vtiger_Popup_View {
 		if(!$this->listViewEntries){
 			$this->listViewEntries = $listViewModel->getListViewEntries($pagingModel);
 		}
-		$noOfEntries = count($this->listViewEntries);
+		$noOfEntries = php7_count($this->listViewEntries);
                 
-                if(empty($searchParams)) {
+                if(empty($searchParams) || !is_array($searchParams)) {
                     $searchParams = array();
                 }
                //To make smarty to get the details easily accesible

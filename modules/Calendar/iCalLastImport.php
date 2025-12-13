@@ -36,7 +36,7 @@ class iCalLastImport {
 	function save() {
 		$adb = PearDatabase::getInstance();
 
-		if(count($this->fieldData) == 0) return;
+		if(php7_count($this->fieldData) == 0) return;
 		
 		if(!Vtiger_Utils::CheckTable($this->tableName)) {
 			Vtiger_Utils::CreateTable(
@@ -60,6 +60,7 @@ class iCalLastImport {
 			$result = $adb->pquery('UPDATE vtiger_crmentity SET deleted=1 WHERE crmid IN
 								(SELECT crmid FROM '.$this->tableName .' WHERE userid = ? AND entitytype = ?)',
 						array($userId, $moduleName));
+			CRMEntity::updateBasicInformation($moduleName);
 			return $adb->getAffectedRowCount($result);
 		}
 	}

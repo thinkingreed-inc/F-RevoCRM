@@ -23,7 +23,7 @@ class Inventory_TaxRecord_Model extends Vtiger_Base_Model {
 
 	public function getName() {
 		return $this->get('taxlabel');
-	}
+	}	
 
 	public function getTax() {
 		return $this->get('percentage');
@@ -195,6 +195,17 @@ class Inventory_TaxRecord_Model extends Vtiger_Base_Model {
 		$taxId = $this->getId();
 		$db->pquery('UPDATE '.$this->getTableNameFromType().' SET deleted=? WHERE taxid=?', array($this->get('deleted'), $taxId));
 		return $taxId;
+	}
+
+	public static function getSelectedDefaultTaxMode() {
+		$db = PearDatabase::getInstance();
+		
+		$result = $db->pquery('SELECT defaultvalue FROM vtiger_field WHERE fieldname = ? LIMIT 1', array('hdnTaxType'));
+		if ($db->num_rows($result)) {
+			return $db->query_result($result, 0, 'defaultvalue');
+		}
+
+		return false;
 	}
 
 	public static function getProductTaxes() {

@@ -17,11 +17,13 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 	const MANY_TO_ONE = 'N:1';
 	const MANY_TO_MANY = 'N:N';
 
+	public $relationtype = null;
+
 	/**
 	 * Function that returns all the fields for the module
 	 * @return <Array of Vtiger_Field_Model> - list of field models
 	 */
-	public function getFields() {
+	public function getFields($blockInstance = false) {
 		if(empty($this->fields)){
 			$fieldList = array();
 			$blocks = $this->getBlocks();
@@ -33,7 +35,7 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 				}
 				$blockId[] = $block->get('id');
 			}
-			if(count($blockId) > 0) {
+			if(php7_count($blockId) > 0) {
 				$fieldList = Settings_LayoutEditor_Field_Model::getInstanceFromBlockIdList($blockId,$moduleModel);
 			}
 			//To handle special case for invite users
@@ -90,8 +92,9 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 
 	public function getAddSupportedFieldTypes() {
 		return array(
+			//Skypeサービス終了のため、Skype項目を削除
 			'Text','Decimal','Integer','Percent','Currency','Date','Email','Phone','Picklist',
-			'URL','Checkbox','TextArea','MultiSelectCombo','Skype','Time','Reference'
+			'URL','Checkbox','TextArea','MultiSelectCombo','Time','Reference','Blank'
 		);
 	}
 
@@ -129,6 +132,9 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 				$details['isrelation'] = true;
 				$details['defaultDisabled'] = true;
 			}
+			if($fieldType == 'Blank'){
+				// empty field
+			}
 			$fieldTypesInfo[$fieldType] = $details;
 		}
 		$fieldTypesInfo['Relation']['relationModules'] = self::getEntityModulesList();
@@ -140,7 +146,7 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 		$db = PearDatabase::getInstance();
 
 		$label = $params['fieldLabel'] = trim($params['fieldLabel']);
-		if($this->checkFieldExists($label)){
+		if($params['fieldType'] !== 'Blank' && $this->checkFieldExists($label)){
 			throw new Exception(vtranslate('LBL_DUPLICATE_FIELD_EXISTS', 'Settings::LayoutEditor'), 513);
 		}
 		$supportedFieldTypes = $this->getAddSupportedFieldTypes();
@@ -148,6 +154,7 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 			throw new Exception(vtranslate('LBL_WRONG_FIELD_TYPE', 'Settings::LayoutEditor'), 513);
 		}
 
+		// getUniqueIDで取得すると、vtiger_field_seqがインクリメントされるので、ここで取得した値はfieldidとして使用する
 		$max_fieldid = $db->getUniqueID("vtiger_field");
 		$columnName = 'cf_'.$max_fieldid;
 		$custfld_fieldid = $max_fieldid;
@@ -173,7 +180,8 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 		$quickCreate = in_array($moduleName,  getInventoryModules()) ? 3 : $params['quickcreate'];
 
 		$fieldModel = new Settings_LayoutEditor_Field_Model();
-		$fieldModel->set('name', $columnName)
+		$fieldModel->set('addNewId', $custfld_fieldid)
+				   ->set('name', $columnName)
 				   ->set('table', $tableName)
 				   ->set('generatedtype',2)
 				   ->set('uitype', $uitype)
@@ -332,6 +340,11 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 							   $type = "INT(19)"; //adodb type
 							   $uichekdata='I~O';
 							   break;
+				Case 'Blank' :
+							   $uitype = 999;
+							   $type = "VARCHAR(0) default ''"; //adodb type
+							   $uichekdata='V~O';
+							   break;
 		}
 		return array(
 			'uitype' => $uitype,
@@ -396,9 +409,6 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 		}
 		// Usersの追加
 		$modulesList["Users"] = vtranslate("Users", "Users");	
-		//関連項目に、活動・カレンダーはあまり必要ではないため選択肢から除外する。
-		unset($modulesList['Events']);
-		unset($modulesList['Calendar']);
 		return $modulesList;
 	}
 
@@ -407,10 +417,6 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 	 * @return <Boolean> true/false
 	 */
 	public function isSortableAllowed() {
-		$moduleName = $this->getName();
-		if (in_array($moduleName, array('Calendar', 'Events'))) {
-			return false;
-		}
 		return true;
 	}
 
@@ -494,7 +500,7 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 		}
 
 		//Fields Info
-		if (count($fieldIdsList) < 4) {//Maximum 3 fields are allowed
+		if (php7_count($fieldIdsList) < 4) {//Maximum 3 fields are allowed
 			$query = 'UPDATE vtiger_field SET isunique = CASE WHEN fieldid IN ('.  generateQuestionMarks($fieldIdsList).') THEN 1 ELSE 0 END WHERE tabid=?';
 			$params = array_merge($fieldIdsList, array($tabId));
 			$db->pquery($query, $params);

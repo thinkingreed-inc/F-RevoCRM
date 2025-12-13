@@ -17,7 +17,7 @@
         <input type="hidden" id="mmCc" value='{implode(',', $MAIL->cc())}'>
         <input type="hidden" id="mmDate" value="{$MAIL->date()}">
         <input type="hidden" id="mmUserName" value="{$USERNAME}">
-        {assign var=ATTACHMENT_COUNT value=(count($ATTACHMENTS) - count($INLINE_ATT))}
+        {assign var=ATTACHMENT_COUNT value=(php7_count($ATTACHMENTS) - php7_count($INLINE_ATT))}
         <input type="hidden" id="mmAttchmentCount" value="{$ATTACHMENT_COUNT}">
         <div class="row" id="mailManagerActions">
         <div class="col-lg-12">
@@ -113,7 +113,7 @@
             <br><hr class="mmDetailHr"><br>
             <div class='col-lg-12 padding0px'>
                 <span><strong>{vtranslate('LBL_Attachments',$MODULE)}</strong></span>
-                <span>&nbsp;&nbsp;({count($ATTACHMENTS) - count($INLINE_ATT)}&nbsp;{vtranslate('LBL_FILES', $MODULE)})</span>
+                <span>&nbsp;&nbsp;({php7_count($ATTACHMENTS) - php7_count($INLINE_ATT)}&nbsp;{vtranslate('LBL_FILES', $MODULE)})</span>
                 <br><br>
                 {foreach item=ATTACHVALUE from=$ATTACHMENTS name="attach"}
                     {assign var=ATTACHNAME value=$ATTACHVALUE['filename']}

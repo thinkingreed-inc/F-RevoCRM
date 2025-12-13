@@ -8,7 +8,7 @@
  * All Rights Reserved.
  *************************************************************************************/
 
-class Invoice_DetailView_Model extends Inventory_DetailView_Model {
+class Invoice_DetailView_Model extends Vtiger_DetailView_Model {
 
 	public function getDetailViewLinks($linkParams) {
 		$currentUserModel = Users_Privileges_Model::getCurrentUserPrivilegesModel();

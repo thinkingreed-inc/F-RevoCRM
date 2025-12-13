@@ -29,7 +29,7 @@
                     <option value="{$CURRENTUSER->getId()}" >{vtranslate('LBL_MINE')}</option>
                     <option value="all">{vtranslate('LBL_ALL')}</option>
                     {assign var=ALL_ACTIVEUSER_LIST value=$CURRENTUSER->getAccessibleUsers()}
-                    {if count($ALL_ACTIVEUSER_LIST) gt 1}
+                    {if php7_count($ALL_ACTIVEUSER_LIST) gt 1}
                         <optgroup label="{vtranslate('LBL_USERS')}">
                             {foreach key=OWNER_ID item=OWNER_NAME from=$ALL_ACTIVEUSER_LIST}
                                 {if $OWNER_ID neq {$CURRENTUSER->getId()}}

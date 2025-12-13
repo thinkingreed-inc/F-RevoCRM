@@ -18,7 +18,7 @@ version_compare(PHP_VERSION, '5.5.0') <= 0 ? error_reporting(E_WARNING & ~E_NOTI
 //ini_set('display_errors','on'); version_compare(PHP_VERSION, '5.5.0') <= 0 ? error_reporting(E_WARNING & ~E_NOTICE & ~E_DEPRECATED) : error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);   // DEBUGGING
 //ini_set('display_errors','on'); error_reporting(E_ALL); // STRICT DEVELOPMENT
 
-ini_set('display_errors','on'); error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
+ini_set('display_errors','on'); error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT & ~E_USER_NOTICE & ~E_USER_DEPRECATED);
 
 include('vtigerversion.php');
 
@@ -120,9 +120,6 @@ $list_max_entries_per_page = '20';
 // history_max_viewed default value = 5
 $history_max_viewed = '5';
 
-// default_module default value = Home
-$default_module = 'Home';
-
 // default_action default value = index
 $default_action = 'index';
 
@@ -171,9 +168,6 @@ $php_max_execution_time = 0;
 // Set the default timezone as per your preference
 $default_timezone = 'Asia/Tokyo';
 
-// Set the maximum number of custom fields per module
-$custom_field_limit = 200;
-
 /** If timezone is configured, try to set it */
 if(isset($default_timezone) && function_exists('date_default_timezone_set')) {
 	@date_default_timezone_set($default_timezone);
@@ -187,6 +181,9 @@ $max_scheduled_workflows = 50;
 
 // メールの「クリック数」のカウント
 $email_tracking = 'Yes';
+
+//Maximum Listview Fields Selection Size
+$maxListFieldsSelectionSize = 15;
 
 include_once 'config.security.php';
 ?>

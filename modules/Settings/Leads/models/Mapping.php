@@ -179,7 +179,7 @@ class Settings_Leads_Mapping_Model extends Settings_Vtiger_Module_Model {
 		if ($createMappingsList) {
 			$insertQuery = 'INSERT INTO vtiger_convertleadmapping(leadfid, accountfid, contactfid, potentialfid) VALUES ';
 
-			$count = count($createMappingsList);
+			$count = php7_count($createMappingsList);
             $params = array();
 			for ($i=0; $i<$count; $i++) {
 				$mappingDetails = $createMappingsList[$i];

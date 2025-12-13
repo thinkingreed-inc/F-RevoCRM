@@ -893,7 +893,7 @@ class Zend_Gdata_YouTube_VideoEntry extends Zend_Gdata_YouTube_MediaEntry
 
             if (strlen(trim($positionString)) > 0) {
                 $positionArray = explode(' ', trim($positionString));
-                if (count($positionArray) == 2) {
+                if (php7_count($positionArray) == 2) {
                     $returnArray = array();
                     $returnArray['latitude'] = $positionArray[0];
                     $returnArray['longitude'] = $positionArray[1];

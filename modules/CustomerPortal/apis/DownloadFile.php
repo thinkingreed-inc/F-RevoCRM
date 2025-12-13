@@ -64,18 +64,21 @@ class CustomerPortal_DownloadFile extends CustomerPortal_API_Abstract {
 				$fileid = $adb->query_result($fileres, 0, 'attachmentsid');
 
 				$filepathQuery = 'SELECT path,name,storedname FROM vtiger_attachments WHERE attachmentsid = ?';
-				$fileres = $adb->pquery($filepathQuery, array($fileid));
-				$filepath = $adb->query_result($fileres, 0, 'path');
-				$filename = $adb->query_result($fileres, 0, 'name');
-				$storedname = $adb->query_result($fileres, 0, 'storedname');
-				$filename = decode_html($filename);
+                                $fileres = $adb->pquery($filepathQuery, array($fileid));
+                                $filepath = $adb->query_result($fileres, 0, 'path');
+                                if($adb->query_result($fileres, 0, 'storedname')) { 
+                                    $filename = $adb->query_result($fileres, 0, 'storedname');
+                                } else {
+                                    $filename = $adb->query_result($fileres, 0, 'name');
+                                }
+                                $realfilename = decode_html($adb->query_result($fileres, 0, 'name'));
 
-				$saved_filename = $fileid."_".$storedname;
-				$filenamewithpath = $filepath.$saved_filename;
-				$filesize = filesize($filenamewithpath);
-				$fileDetails = array();
-				$fileDetails['fileid'] = $fileid;
-				$fileDetails['filename'] = $filename;
+                                $saved_filename = $fileid."_".$filename;
+                                $filenamewithpath = $filepath.$saved_filename;
+                                $filesize = filesize($filenamewithpath);
+                                $fileDetails = array();
+                                $fileDetails['fileid'] = $fileid;
+                                $fileDetails['filename'] = $realfilename;
 				$fileDetails['filetype'] = $filetype;
 				$fileDetails['filesize'] = $filesize;
 				$fileDetails['filecontents'] = base64_encode(file_get_contents($filenamewithpath));
@@ -87,10 +90,14 @@ class CustomerPortal_DownloadFile extends CustomerPortal_API_Abstract {
 				//construct path for attachment and get file size and type details
 				$attachmentDetails = $rawAttachmentDetails[0];
 				$fileid = $attachmentDetails['attachmentsid'];
-				$filename = $attachmentDetails['name'];
-				$storedname = $attachmentDetails['storedname'];
+                                $filename = $attachmentDetails['storedname'];
+                                if(empty($filename)){
+                                    $filename = $attachmentDetails['name'];
+                                }
 				$filepath = $attachmentDetails['path'];
-				$saved_filename = $fileid."_".$storedname;
+                                $realfilename = decode_html($attachmentDetails['name']);
+                                
+				$saved_filename = $fileid."_".$filename;
 				$filenamewithpath = $filepath.$saved_filename;
 				$filesize = filesize($filenamewithpath);
 				$filetype = $attachmentDetails['type'];
@@ -98,7 +105,7 @@ class CustomerPortal_DownloadFile extends CustomerPortal_API_Abstract {
 				//Construct array with all attachment details
 				$fileDetails = array();
 				$fileDetails['fileid'] = $fileid;
-				$fileDetails['filename'] = $filename;
+				$fileDetails['filename'] = $realfilename;
 				$fileDetails['filetype'] = $filetype;
 				$fileDetails['filesize'] = $filesize;
 				$fileDetails['filecontents'] = base64_encode(file_get_contents($filenamewithpath));

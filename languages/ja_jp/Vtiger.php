@@ -44,7 +44,7 @@ $languageStrings = array(
 	'LBL_NOTIFICATION_CENTER' => '通知センター',
 	'LBL_NOTIFICATION' => '通知',
 	'LBL_STARRED_RECORD_TO' => '%s から %s',
-	'LBL_STARRED_RECORD_UPDATED' => '%s を %s に更新',
+	'LBL_STARRED_RECORD_UPDATED' => '%s が %s を更新',
 	'LBL_SETTINGS'=> '設定',
 	'LBL_ADD_COMMENT' => 'コメントを追加',
 	'LBL_EDIT_FIELDS' => '%s 項目の編集',
@@ -196,6 +196,8 @@ $languageStrings = array(
 	'LBL_NO_COMMENTS' => 'コメントはありません。',
 	'LBL_REPLIES' => '返信',
 	'LBL_REPLY_ALL' => '全員に返信',
+	'LBL_HIDDEN' => '非表示',
+	'LBL_DISPLAY' => '表示',
 
 	//Translation for all modules
 	'Dashboards' => 'ダッシュボード',
@@ -233,6 +235,8 @@ $languageStrings = array(
 	'Recycle Bin' => 'ごみ箱',
 	'Events' => '活動',
 	'Dailyreports' => '日報',
+	'Groups' => 'グループ',
+	'Webforms' => 'Webフォーム',
 
 	//Basic String Translation
 	'LBL_ADD_RECORD' => '追加',
@@ -369,10 +373,10 @@ $languageStrings = array(
 	'LBL_TO' => 'To',
 	'LBL_to' => 'to',
 	'LBL_ON' => 'on',
-	'LBL_OF' => 'of',//共有ルールで使われている
+	'LBL_OF' => '-',//共有ルールで使われている
 	'LBL_BY' => 'by',
 	'LBL_ADDED' => '追加',
-	'LBL_FOR' => 'for',
+	'LBL_FOR' => '-',
 	'LBL_CREATED' => '作成',
 	'LBL_DELETED' => '削除',
 	'LBL_RESTORED' => '復元',
@@ -431,6 +435,10 @@ $languageStrings = array(
 	'LBL_SHOW' => '表示',
 	'LBL_MY' => '自分の',
 	'LBL_SELECT_DATE_RANGE' => '日付の範囲',
+	'LBL_IFRAME_WIDGET' => 'iframeウィジェット',
+	'LBL_ADD_IFRAME_WIDGET' => 'iframeウィジェットの登録',
+	'LBL_IFRAME_NAME' => 'サイト名',
+	'LBL_INVALID_URL' => '無効なURL',
 
 	// Basic Strings- custom view
 	'LBL_VIEW_NAME' => 'リスト名',
@@ -535,7 +543,7 @@ $languageStrings = array(
 	'Leads by Industry' => 'リード ( 業界別 )',
 	'Tickets by Status' => 'Tickets by Status',
 	'Open Tickets' => '未解決のチケット',
-	'総額 ( ステージ別 )' => 'Total Amount by Sales stage',
+	'総額 ( ステージ別 )' => '総額 ( ステージ別 )',
 	'Key Metrics' => '主要な指標',
 	'Mini List' => 'ミニリスト',
 	'Tag Cloud' => 'タグクラウド',
@@ -835,11 +843,13 @@ $languageStrings = array(
 	'LBL_MERGING_CRITERIA_SELECTION' => 'マージ条件の選択',
 	'LBL_AVAILABLE_FIELDS' => '選択可能な項目',
 	'LBL_MERGE_RECORDS_DESCRIPTION' => 'プライマリ レコードはマージ後に保持されます。 値を保持するカラムを選択できます。										残りのレコードは削除されますが、関連情報はマージされます。',
+	
 	'LBL_MERGE_RECORDS_IN' => 'レコードのマージ',
 	'LBL_FIELDS' => '項目',
 	'LBL_RECORD' => 'レコード',
 	'LBL_NO_DUPLICATED_FOUND' => '重複が見つかりません',
 	'LBL_MERGE_SELECT' => 'マージ対象の選択',
+	'LBL_ALLOWED_TO_SELECT_MAX_OF_THREE_RECORDS' => '最大3つのレコードを選択できます',
 
 	//sbproducts translation
 	'LBL_BACK_TO_PRODUCTS' => '製品に戻る',
@@ -850,6 +860,7 @@ $languageStrings = array(
 	'Issued Date' => '発行日',
 	'Shipping & Handling Charges' => '送料と取扱手数料',
 	'Shipping & Handling Tax:' => '送料と取扱手数料の課税',
+	'Shipping & Handling' => '送料と取扱手数料',
 	'Discount'=>'割引額',
 	'Net Total' => '合計額',
 	'Product Code'=>'製品コード',
@@ -912,6 +923,7 @@ $languageStrings = array(
 	'LBL_SETUP_WEBFORMS' => 'Webフォームの設定',
 	'LBL_SPECIAL_OPTIONS' => '特別なオプション',
 	'LBL_PARENT_OWNER' => '親レコード担当者',
+	'LBL_LOGIN_USER' => 'ログインユーザー',
 	'LBL_PASSWORD_LINK_EXPIRED_OR_INVALID_PASSWORD' => 'パスワードリンクの有効期限が切れているか、無効なパスワードが入力されました',
 
 	// Recurring Invoice
@@ -975,15 +987,15 @@ $languageStrings = array(
 	'LBL_CLICK_HERE'=>'ここをクリック',
 
 	//Recipient preferences labels
-	'LBL_SELCT_EMAIL_RECIPIENTS' => 'Select Email Recipients',
-	'LBL_REMEMBER_MY_PREF' => 'Remember my preference',
-	'LBL_RECIPIENT_PREFS'=>'Recipient Preferences',
-	'LBL_EMAIL_RECIPIENT_PREFS'=>'Email Recipient Preferences',
-	'LBL_ERROR_SAVING_PREF' => 'Error in saving preferences. Please try later!',
-	'LBL_NO_PREF_GIVEN' => 'No preferences given!',
-	'LBL_PLEASE_ADD_EMAIL_FIELDS' => 'Please add email fields and try again',
-	'LBL_RECIPIENT_SAVE_MESSAGE'=>'Save successful.These preferences will be treated as recipient email addresses when you send email from this module.',
-	'LBL_PREF_RESET_MESSAGE' => 'Your recipient email preferences has been reset!',
+	'LBL_SELCT_EMAIL_RECIPIENTS' => 'メール受信者を選択',
+	'LBL_REMEMBER_MY_PREF' => '設定を記憶する',
+	'LBL_RECIPIENT_PREFS'=>'受信者設定',
+	'LBL_EMAIL_RECIPIENT_PREFS'=>'メール受信者設定',
+	'LBL_ERROR_SAVING_PREF' => '設定の保存中にエラーが発生しました。後でもう一度お試しください！',
+	'LBL_NO_PREF_GIVEN' => '設定が指定されていません！',
+	'LBL_PLEASE_ADD_EMAIL_FIELDS' => 'メール項目を追加して再試行してください',
+	'LBL_RECIPIENT_SAVE_MESSAGE'=>'保存に成功しました。これらの設定は、このモジュールからメールを送信する際の受信者メールアドレスとして扱われます。',
+	'LBL_PREF_RESET_MESSAGE' => '受信者メール設定がリセットされました！',
 
 	'LBL_COMPANY_DETAILS' => '会社情報',
 	'COMPANY_LOGO_HELP_TEXT' => '会社のロゴをアップロードしてください。<br>CRMに会社のロゴを表示する以外に,<br>
@@ -991,21 +1003,21 @@ $languageStrings = array(
 	'COMPANY_LOGO_HELP_TEXT_2' =>"後で会社の詳細を編集できます。 <br>
 									システム設定 > システム構成 > 会社情報",
 	'LBL_CHOOSE_PREFERENCES' => '環境を選択してください。',
-	'PREFERENCES_HELP_TEXT' => 'Base Currency - Choose your primary currency. If you use multiple<br> 
-								currencies, all the values are converted to base currency and stored,<br>
-								using the conversion rate configured in CRM.',
-	'PREFERENCES_HELP_TEXT_2' => 'Personal preferences can be configured by each user in your team.<br>
-									These include Timezone, Language, Date Format, Number Format.<br>
-									Number Format references are used for Currencies and other <br>
-									number fields in the CRM<br>
-									You can edit your preferences later from \'User Name > ユーザー情報 \'',
-	'LBL_CANNOT_BE_CHANGED_LATER' => '後から変更できません。',
-	'IMPORT_CONTACTS_GOOGLE_HELP_TEXT' => 'We can bring contacts from Google and <br> you can also enable bi-direction sync to keep our<br>
-									Vtiger contacts and Google contacts(in selected group) updated.<br>
-									Click the button to authorize and get Contacts from Google.',
-	'IMPORT_CONTACTS_CSV_HELP_TEXT' => 'You can import Contacts from CSV file.',
-	'IMPORT_CONTACTS_CSV_HELP_TEXT2' => 'To Import Opportunities, Leads, Tickets, please look for Actions > Import button on any of the
-										 list views.',
+	'PREFERENCES_HELP_TEXT' => '基本通貨 - 主な通貨を選択してください。複数の<br>
+								通貨を使用する場合、すべての値は基本通貨に変換され、<br>
+								CRMで設定された換算レートを使用して保存されます。',
+	'PREFERENCES_HELP_TEXT_2' => '個人設定はチーム内の各ユーザーが設定できます。<br>
+									これには、タイムゾーン、言語、日付形式、数値形式が含まれます。<br>
+									数値形式は、CRM内の通貨やその他の数値項目に使用されます。<br>
+									後で「ユーザー名 > ユーザー情報」から設定を編集できます。',
+	
+	'LBL_CANNOT_BE_CHANGED_LATER' => '後から変更することはできません。',
+	'IMPORT_CONTACTS_GOOGLE_HELP_TEXT' => 'Googleから顧客担当者を取り込むことができます。また、双方向同期を有効にして、<br>
+									Vtigerの顧客担当者とGoogleの顧客担当者（選択したグループ）を更新し続けることができます。<br>
+									ボタンをクリックして認証し、Googleから顧客担当者を取得してください。',
+	'IMPORT_CONTACTS_CSV_HELP_TEXT' => 'CSVファイルから顧客担当者をインポートできます。',
+	'IMPORT_CONTACTS_CSV_HELP_TEXT2' => '案件、リード、チケットをインポートするには、各リストビューの「操作 > インポート」ボタンを探してください。',
+	
 	'LBL_DOEST_FIRST_ROW_HEADER' => 'Does first row in your file contains column headers?',
 	'LBL_SELECT_CSV_FILE' => 'CSVファイルを選択してください',
 	'LBL_START_IMPORTING' => 'インポートを開始しました',
@@ -1115,6 +1127,7 @@ $languageStrings = array(
 	'LBL_NEXT' => '次へ',
 	'Workflows' => 'ワークフロー',
 	'Primary Twitter' => 'Twitterユーザー名',
+	'Record Id' => 'レコードID',
 
 	/* Vtiger7 Language Strings */
 	'LBL_CLICK_HERE_TO_SELECT_ALL_RECORDS'=>'このページのレコードを選択',
@@ -1143,6 +1156,7 @@ $languageStrings = array(
 	'LBL_SWITCH_TO_OLD'=>'過去のバージョンに戻す',
 	'LBL_SLA_INFORMATION' => 'SLA情報',
 	'LBL_CUSTOM_FIELD_LIMIT' => 'カスタムフィールドの登録数上限に達しています',
+	'LBL_RESET_COLUMN_WIDTHS' => "列幅をリセット",
 
 	//configure columns
 	'LBL_UPDATE_LIST' => 'リストの更新',
@@ -1318,6 +1332,7 @@ $languageStrings = array(
 	'LBL_EMAIL_DOMAIN_HELPTEXT'=>'メールドメイン項目は、メールから作成されたケースと顧客担当者を照合するために使用されます。 '
 	. '例えば、新しいサポートメールがjohn@company.comから送信された場合、[メールドメイン]項目にcompany.comが含まれる顧客企業にリンクされます。複数のドメインはカンマで区切る必要があります。',
 
+
 	'LBL_SHARED_LIST_NON_ADMIN_MESSAGE' => 'これは共有リストです。 CRM管理者に連絡して、すべてのリストの列を構成してください',
 	'LBL_SHARED_LIST_OWNER_MESSAGE' => 'これは共有リストです。このリストの列を変更するには、%sにお問い合わせください',
 
@@ -1413,7 +1428,7 @@ $languageStrings = array(
 	'Busy' => '取込中',
 	'LBL_BETA'=>'BETA',
 	'JS_SHARED_WITH'=>'共有',
-	 'LBL_REPLY_TO' =>'返信',
+	'LBL_REPLY_TO' =>'返信',
 	'LBL_MODULE_ASSIGNMENT_RULES' => '%s 割り当てルール',
 
 	'LBL_RECENT_UPDATES' => '更新履歴',
@@ -1494,7 +1509,7 @@ $languageStrings = array(
 	//ユーザー管理>プロファイル
 	'Import' => 'インポート',
 	'Export' => 'エクスポート',
-	'DuplicatesHandling' => '複製',
+	'DuplicatesHandling' => '重複の検出',
 	'Merge' => 'マージ',
 	'Print' => '印刷',
 	'UserId ' => 'ユーザーID',
@@ -1507,6 +1522,7 @@ $languageStrings = array(
 	//ユーザー管理>ログイン履歴
 	'Signed in' => 'ログイン',
 	'Signed off' => 'ログアウト',
+	'Signed in error' => 'ログインエラー',
 	//モジュール管理
 	'Existing Business' => '既存ビジネス',
 	'New Business' => '新規ビジネス',
@@ -1529,8 +1545,138 @@ $languageStrings = array(
 	'Sales Stage' => '販売段階',
 	'Amount' => '数',
 	'Templates' => 'テンプレート',
+	'Title' => '役職',
+	'Office Phone' => '勤務先電話番号',
+	'Website' => 'Webサイト',
+	'Company' => '会社名',
+	'File Name' => 'ファイル名',
+	'Download Type' => 'ダウンロード種別',
+	'Activity Type' => '活動タイプ',
+	'Start Date & Time' => '開始日',
+	'Part Number' => '型番',
+	'Commission Rate' => '手数料率 (%)',
+	'Qty In Stock' => '在庫数',
+	'Qty/Unit' => '数量/ユニット',
+	'Question' => '質問内容',
+	'Price Book Name' => '価格表名',
+	'Quote Stage' => '見積ステージ',
+	'Tracking Number' => 'トラッキング番号',
+	'Quote Name' => '見積名',
+	'Campaign Name' => 'キャンペーン名',
+	'Campaign Type' => 'キャンペーンタイプ',
+	'Campaign Status' => 'キャンペーンステータス',
+	'Expected Revenue' => '予測売上高',
+	'Related to' => '関連',
+	'Start Date' => '開始日',
+	'Due date' => '期限',
+	'Service Name' => 'サービス名',
+	'Usage Unit' => '使用する単位',
+	'No of Units' => 'ユニット数',
+	'Service Category' => '分類',
+	'Owner' => '担当',
+	'Project Task Name' => 'タスク名',
+	'Worked Hours' => '作業時間',
+	'End Date' => '終了日',
+	'Project Name' => 'プロジェクト名',
+	'Target End Date' => '目標の完了日',
+	'Actual End Date' => '完了日',
+	'Target Budget' => '目標予算',
+	'message' => 'メッセージ',
+	'Asset Name' => '資産・レンタル名称',
 	//請求
 	'Member Of' => '親企業',
+
+	'Parent Module' => '【親モジュール】',
+	'Child Module' => '【子モジュール】',
+	'LBL_EXPORT_TO_PDF' => 'PDFにエクスポート',
+    'LBL_SEND_MAIL_PDF' => 'PDFをメール送信',
+
+	// リスト名を入力
+	'LBL_ENTER_LISTNAME' => 'リスト名を入力',
+
+	// フィールド
+	'LBL_CREATOR' => '作成者',
+
+	// 役割
+	'LBL_ADMIN' => '管理者',
+	'LBL_MANAGER' => 'マネージャー',
+	'LBL_GENERAL' => '一般',
+	'LBL_PART-TIME_JOB' => 'パート・アルバイト',
+
+	// 販売管理の製品を保存毎に更新するワークフロー
+	'LBL_WORKFLOW_TO_UPDATE_SALES_MANAGEMENT' => '販売管理の製品を保存毎に更新するワークフロー',
+	'LBL_A_WORKFLOW_SENDS_EMAIL_TO_NOTIFICATION_PERSON_CHARGE_TURNED_ON'=>'担当者に通知がオンの場合，ユーザーにメールを送るワークフロー',
+	'LBL_A_WORKFLOW_SENDS_EMAIL_TO_PORTALUSER_IS_ON' => 'ポータルユーザーがオン場合，ユーザーにメールを送るワークフロー',
+	'LBL_WORKFLOW_CUSTOMER_CONTACT_IS_CREATED_OR_UPDATED' => '顧客担当者が作成・更新された際のワークフロー',
+	'LBL_WORKFLOW_FOR_ACTIVITIES_WHEN_NOTIFICATIONS_ARE_ON' => '通知がオンの際の活動のワークフロー',
+	'LBL_ACTIVITY_NOTIFICATION_EMAIL' => '活動のお知らせメール',
+	'LBL_ANNOUNCEMENT_OF_ACTIVITIES' => '活動のお知らせ:  \$subject',
+	'LBL_ACTIVITY_NOTIFICATION_FROM_F-RevoCRM' => '$(assigned_user_id : (Users) first_name) $(assigned_user_id : (Users) last_name) ,<br/>'
+						.'<b>F-RevoCRMから活動の通知です。</b><br/>'
+						.'件名       : $subject<br/>'
+						.'開始日時   : $date_start  $time_start ( $(general : (__VtigerMeta__) dbtimezone) ) <br/>'
+						.'終了日時   : $due_date  $time_end ( $(general : (__VtigerMeta__) dbtimezone) ) <br/>'
+						.'ステータス  : $eventstatus <br/>'
+						.'優先度     : $taskpriority <br/>'
+						.'関連       : $(parent_id : (Leads) lastname) $(parent_id : (Leads) firstname) $(parent_id : (Accounts) accountname) '
+												.'$(parent_id : (Potentials) potentialname) $(parent_id : (HelpDesk) ticket_title) <br/>'
+						.'顧客担当者  : $(contact_id : (Contacts) lastname) $(contact_id : (Contacts) firstname) <br/>'
+						.'場所       : $location <br/>'
+						.'詳細内容    : $description',
+	'LBL_TODO_WORKFLOW_WHEN_NOTIFICATIONS_ARE_ON' => '通知がオンの際のTODOのワークフロー',
+	'LBL_TODO_NOTIFICATION_EMAIL' => 'TODOのお知らせメール',
+	'LBL_TODO_NOTICE' => 'TODOのお知らせ :  \$subject',
+	'LBL_TODO_NOTIFICATION_FROM_F-REVOCRM' => '$(assigned_user_id : (Users) first_name) $(assigned_user_id : (Users) last_name) ,<br/>'
+						.'<b>F-RevoCRMからTODOの通知です。</b><br/>'
+						.'件名 : $subject<br/>'
+						.'開始日時   : $date_start  $time_start ( $(general : (__VtigerMeta__) dbtimezone) ) <br/>'
+						.'終了日時   : $due_date ( $(general : (__VtigerMeta__) dbtimezone) ) <br/>'
+						.'ステータス : $taskstatus <br/>'
+						.'優先度     : $taskpriority <br/>'
+						.'関連       : $(parent_id : (Leads) lastname) $(parent_id : (Leads) firstname) $(parent_id : (Accounts) accountname) '
+						.'$(parent_id : (Potentials) potentialname) $(parent_id : (HelpDesk) ticket_title) <br/>'
+						.'顧客担当者  : $(contact_id : (Contacts) lastname) $(contact_id : (Contacts) firstname) <br/>'
+						.'場所        : $location <br/>'
+						.'詳細        : $description',
+	'LBL_SYSTEM_ADMINISTRATOR' => 'システム管理者',
+	'LBL_USAGE_UNIT' => '使用単位',
+	'LBL_WORKFLOW_TO_UPDATE_FORECAST_AMOUNTS' => '予想金額を更新するワークフロー',
+	'LBL_UPDATE_ESTIMATED_AMOUNT' => '予想金額を更新',
+	'LBL_REPORTING_EMAILS_TO_CUSTOMER_REPRESENTATIVES' => '顧客担当者へのメールのレポート',
+	'LBL_MAIL_REPORT' => 'メールのレポート',
+	'LBL_REPORTING_EMAILS_TO_CLIENT_COMPANIES' => '顧客企業へのメールのレポート',
+	'LBL_LEAD_EMAIL_REPORTING' => '見込み客へのメールのレポート',
+	'LBL_REPORTING_EMAILS_TO_SUPPLIERS' => '発注先へのメールのレポート',
+	'LBL_A_WORKFLOW_TO_UPDATE_INVENTORY_PRODUCTS_ON_EVERY_SAVE' => '保存されるごとに在庫製品を更新するワークフロー',
+	'LBL_UPDATE_INVENTORY_PRODUCTS' => '在庫製品を更新する',
+	'LBL_TASK_SEND_EMAIL_WHEN_COMMENTED_FROM_PORTAL' => 'ポータルからコメントが追加されたときレコードの担当にメールを送るワークフロー',
+	'LBL_TASK_SEND_EMAIL_TO_A_CUSTOMER_REPRESENTATIVE_WHEN_A_COMMENT_IS_ADDED' => 'コメントが追加されたときポータルユーザーでない顧客担当者にメールを送るワークフロー',
+	'LBL_TASK_SEND_EMAIL_WHEN_COMMENTED' => 'コメントが追加されたときポータルユーザーである顧客担当者にメールを送るワークフロー',
+	'LBL_A_WORKFLOW_TO_SEND_AN_EMAIL_WHEN_A_COMMENT_IS_ADDED' => 'コメントが追加された際にメールを送るワークフロー',
+	'LBL_ELIGIBLE_FOR_REDUCED_TAX_RATE' => '軽減税率対象',
+	'LBL_TESTMAIL_SMTP_BODY' => 'さん <br><br><b> これは、設定したSMTPサーバーを介してメールが実際に送信され' .
+			'ているかどうかを確認するために送信されるテストメールです。 </b><br>削除していただいてかまいません。' .
+			'<br><br>よろしくお願いいたします。<br> F-RevoCRM <br><br>',
+	'LBL_DAILY_WEEKLY_REPORT' => '日報/週報',
+	'LBL_SUBMISSION_DATE' => '提出日',
+	'LBL_SUBMITTING' => '提出中',
+	'LBL_APPROVED' => '承認済',
+	'LBL_WHERE_TO_SUBMIT' => '提出先',
+	'LBL_CREATE_DATETIME' => '作成日時',
+	'LBL_UPDATE_DATETIME' => '更新日時',
+	'LBL_ITS_OVER' => '実行が完了しました。<br>',
+	'LBL_NOT_EXECUTED' => '実行しませんでした。<br>',
+	'LBL_EXPERIENCE_BOOK' => '見積書',
+	'LBL_REQUEST_FOR_ANNOTATION' => '注文請書',
+	'LBL_PURCHASE_ORDER' => '発注書',
+	'LBL_CONSUMPTION_TAX' => '消費税',
+	'LBL_TO_YOU' => '様へ',
+	'LBL_SIDEMENU_GOOGLE_DELETE' => 'サイドメニューからGoogle関連のメニューを削除',
+	'LBL_THANK_YOU_ALWAYS_USING_OUR_SERVICES.' => 'いつも弊社サービスをご利用いただきありがとうございます。',
+	'LBL_INVITATION_EMAIL_TO_OUR_CUSTOMER_PORTAL_BODY' => '本メールは、弊社カスタマーポータルへの招待メールとなります<br />'.
+			'カスタマーポータルでは、お問い合わせ管理や、過去のFAQと回答をご確認いただけます。<br />'.                        
+			'ポータルへのアクセスは本メールに記載のURL、ID、パスワードを使いログインしてください。</div>',
+	'LBL_CUSTOMER_PORTAL_LOGIN_INFORMATION' => '顧客ポータルのログイン情報のお知らせ',
 );
 
 $jsLanguageStrings = array(
@@ -1740,6 +1886,8 @@ $jsLanguageStrings = array(
 	'LBL_SIGN_IN_AS_USER'=>'別のユーザーとしてログインすると、現在のセッションが終了します。続行してもよろしいですか？',
 	'JS_REENTER_PASSWORDS' => 'パスワードを再入力してください',
 	'SINGLE_Vendors' => '発注先',
+	'JS_SELECT_AN_USER' => 'ユーザー選択',
+	'Status : All' => 'ステータス : 全て',
 
 	//Feedback on removing old version
 	'JS_PLEASE_GIVE_YOUR_FEEDBACK' => 'フィードバックを記入してください',
@@ -1792,6 +1940,7 @@ $jsLanguageStrings = array(
 	'JS_EXCEEDS_MAX_UPLOAD_SIZE' => 'アップロードサイズの最大を超えました',
 	'JS_FUTURE_EVENT_CANNOT_BE_HELD' => '未来の活動は完了にできません',
 	'LBL_WARNING' => '注意',
+	'LBL_REPLACE_BLANK_COLUMN' => '削除する項目と同じ場所に空白を追加します。',
 	'DELETE_USER_PERMANENT_WARNING' => 'ユーザーを完全に削除すると、コメントや履歴を含むすべてのレコードが新しいユーザーに変更されます。',
 	'JS_DECIMAL_SEPARATOR_AND_GROUPING_SEPARATOR_CANT_BE_SAME' => '小数点区切りとグループ区切りに同じものは選択できません。',
 	'JS_FUTURE_EVENT_CANNOT_BE_HELD' => '未来の活動は完了にできません',
@@ -2087,6 +2236,9 @@ $jsLanguageStrings = array(
 	'LBL_LIST_DELETE_CONFIRMATION' => '消去してもよろしいですか？',
 	'JS_WIDGET_RESIZING_WAIT_MSG' => 'ウィジェットのコンテンツは、サイズ変更後にロードされます。',
 	'JS_COPIED_SUCCESSFULLY' => 'コピーをしました',
+	'JS_ATLEAST_SELECT_ONE_FIELD' => '少なくとも1つの項目を選択してください',
+	'JS_RELATED_ACCOUNT_IS_NOT_AVAILABLE' => '関連する顧客企業のレコードが利用できません',
+	'JS_RELATED_CONTACT_IS_NOT_AVAILABLE' => '関連する顧客担当者のレコードが利用できません',
 	'JS_REPEAT_DATE_SHOULD_BE_GREATER_THAN_START_DATE' =>'繰り返しの日付は、開始日以降である必要があります。',
 
 	// F-RevoCRM 7
@@ -2124,4 +2276,16 @@ $jsLanguageStrings = array(
 	
 	//ユーザー管理>グループ作成
 	'JS_DUPLICATES_EXIST' => '既に存在しています',
+
+	// ダッシュボード
+	'Default' => 'デフォルト',
+
+	// モジュール名
+	'Accounts' => '顧客企業',
+	'Contacts' => '顧客担当者',
+	'Leads' => 'リード',
+
+	// アクション名
+	'JS_EDIT' => '編集',
+	'JS_DELETE' => '削除',
 );

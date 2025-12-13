@@ -36,8 +36,8 @@ class MailManager {
 			if(!empty($searchFieldList) && !empty($referenceModuleEmailFields)) {
 				$searchFieldListString = implode(',', $referenceModuleEmailFields);
 				$where = null;
-				for($i=0; $i<count($searchFieldList); $i++) {
-					if($i == count($searchFieldList) - 1) {
+				for($i=0; $i<php7_count($searchFieldList); $i++) {
+					if($i == php7_count($searchFieldList) - 1) {
 						$where .= sprintf($searchFieldList[$i]." like '%s'", $searchTerm);
 					} else {
 						$where .= sprintf($searchFieldList[$i]." like '%s' or ", $searchTerm);

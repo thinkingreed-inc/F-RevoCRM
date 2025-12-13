@@ -54,7 +54,7 @@
 										</span>
 										<span class="col-lg-7 moduleName {if !$MODULE_ACTIVE} dull {/if}"><h5 style="line-height: 0.5;">{$MODULE_LABEL}</h5></span>
 											{assign var=SETTINGS_LINKS value=$MODULE_MODEL->getSettingLinks()}
-											{if !in_array($MODULE_NAME, $RESTRICTED_MODULES_LIST) && (count($SETTINGS_LINKS) > 0)}
+											{if !in_array($MODULE_NAME, $RESTRICTED_MODULES_LIST) && (php7_count($SETTINGS_LINKS) > 0)}
 											<span class="col-lg-3 moduleblock">
 												<span class="btn-group pull-right actions {if !$MODULE_ACTIVE}hide{/if}">
 													<button class="btn btn-default btn-sm dropdown-toggle unpin hiden " data-toggle="dropdown">

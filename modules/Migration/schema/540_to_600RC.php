@@ -8,7 +8,6 @@
  * All Rights Reserved.
  *********************************************************************************/
 if (!defined('VTIGER_UPGRADE')) die('Invalid entry point');
-
 vimport('~~include/utils/utils.php');
 vimport('~~modules/com_vtiger_workflow/include.inc');
 vimport('~~modules/com_vtiger_workflow/tasks/VTEntityMethodTask.inc');
@@ -18,22 +17,22 @@ vimport('~~modules/Users/Users.php');
 
 if(defined('VTIGER_UPGRADE')) {
 	//Collating all module package updates here
-	updateVtlibModule('Import', 'packages/vtiger/mandatory/Import.zip', false);
-	updateVtlibModule('MailManager', 'packages/vtiger/mandatory/MailManager.zip', false);
-	updateVtlibModule('Mobile', 'packages/vtiger/mandatory/Mobile.zip', false);
-	updateVtlibModule('ModTracker', 'packages/vtiger/mandatory/ModTracker.zip', false);
-	updateVtlibModule('Services', "packages/vtiger/mandatory/Services.zip", false);
-	updateVtlibModule('ServiceContracts', "packages/vtiger/mandatory/ServiceContracts.zip", false);
-	updateVtlibModule('WSAPP', 'packages/vtiger/mandatory/WSAPP.zip', false);
-	updateVtlibModule('Assets', 'packages/vtiger/optional/Assets.zip', false);
-	updateVtlibModule('CustomerPortal', 'packages/vtiger/optional/CustomerPortal.zip', false);
-	updateVtlibModule('ModComments', "packages/vtiger/optional/ModComments.zip", false);
-	updateVtlibModule('Projects', "packages/vtiger/optional/Projects.zip", false);
-	updateVtlibModule('RecycleBin', 'packages/vtiger/optional/RecycleBin.zip', false);
-	updateVtlibModule('SMSNotifier', "packages/vtiger/optional/SMSNotifier.zip", false);
-	updateVtlibModule("Webforms","packages/vtiger/optional/Webforms.zip", false);
-	installVtlibModule('Google', 'packages/vtiger/optional/Google.zip', false, false);
-	installVtlibModule('EmailTemplates', 'packages/vtiger/optional/EmailTemplates.zip', false, false);
+	updateVtlibModuleWithoutFiles('Import', 'packages/vtiger/mandatory/Import.zip', false);
+	updateVtlibModuleWithoutFiles('MailManager', 'packages/vtiger/mandatory/MailManager.zip', false);
+	updateVtlibModuleWithoutFiles('Mobile', 'packages/vtiger/mandatory/Mobile.zip', false);
+	updateVtlibModuleWithoutFiles('ModTracker', 'packages/vtiger/mandatory/ModTracker.zip', false);
+	updateVtlibModuleWithoutFiles('Services', "packages/vtiger/mandatory/Services.zip", false);
+	updateVtlibModuleWithoutFiles('ServiceContracts', "packages/vtiger/mandatory/ServiceContracts.zip", false);
+	updateVtlibModuleWithoutFiles('WSAPP', 'packages/vtiger/mandatory/WSAPP.zip', false);
+	updateVtlibModuleWithoutFiles('Assets', 'packages/vtiger/optional/Assets.zip', false);
+	updateVtlibModuleWithoutFiles('CustomerPortal', 'packages/vtiger/optional/CustomerPortal.zip', false);
+	updateVtlibModuleWithoutFiles('ModComments', "packages/vtiger/optional/ModComments.zip", false);
+	updateVtlibModuleWithoutFiles('Projects', "packages/vtiger/optional/Projects.zip", false);
+	updateVtlibModuleWithoutFiles('RecycleBin', 'packages/vtiger/optional/RecycleBin.zip', false);
+	updateVtlibModuleWithoutFiles('SMSNotifier', "packages/vtiger/optional/SMSNotifier.zip", false);
+	updateVtlibModuleWithoutFiles("Webforms","packages/vtiger/optional/Webforms.zip", false);
+	installVtlibModuleWithoutFiles('Google', 'packages/vtiger/optional/Google.zip', false, false);
+	installVtlibModuleWithoutFiles('EmailTemplates', 'packages/vtiger/optional/EmailTemplates.zip', false, false);
 
 	// updated language packs.
 
@@ -136,14 +135,14 @@ $taskManager = new VTTaskManager($adb);
 
 $potentailsWorkFlow = $workflowManager->newWorkFlow("Potentials");
 $potentailsWorkFlow->test = '';
-$potentailsWorkFlow->description = "予想金額を更新するワークフロー";
+$potentailsWorkFlow->description = "LBL_WORKFLOW_TO_UPDATE_FORECAST_AMOUNTS";
 $potentailsWorkFlow->executionCondition = VTWorkflowManager::$ON_EVERY_SAVE;
 $potentailsWorkFlow->defaultworkflow = 1;
 $workflowManager->save($potentailsWorkFlow);
 
 $task = $taskManager->createTask('VTUpdateFieldsTask', $potentailsWorkFlow->id);
 $task->active = true;
-$task->summary = '予想金額を更新';
+$task->summary = 'LBL_UPDATE_ESTIMATED_AMOUNT';
 $task->field_value_mapping = '[{"fieldname":"forecast_amount","valuetype":"expression","value":"amount * probability / 100"}]';
 $taskManager->saveTask($task);
 
@@ -178,24 +177,24 @@ $reportmodules = Array(
 );
 
 $reports = Array(
-	Array('reportname' => '顧客担当者へのメールのレポート',
-		'reportfolder' => 'メールのレポート',
-		'description' => '顧客担当者へのメールのレポート',
+	Array('reportname' => 'LBL_REPORTING_EMAILS_TO_CUSTOMER_REPRESENTATIVES',
+		'reportfolder' => 'LBL_MAIL_REPORT',
+		'description' => 'LBL_REPORTING_EMAILS_TO_CUSTOMER_REPRESENTATIVES',
 		'reporttype' => 'tabular',
 		'sortid' => '', 'stdfilterid' => '', 'advfilterid' => '0'),
-	Array('reportname' => '顧客企業へのメールのレポート',
-		'reportfolder' => 'メールのレポート',
-		'description' => '顧客企業へのメールのレポート',
+	Array('reportname' => 'LBL_REPORTING_EMAILS_TO_CLIENT_COMPANIES',
+		'reportfolder' => 'LBL_MAIL_REPORT',
+		'description' => 'LBL_REPORTING_EMAILS_TO_CLIENT_COMPANIES',
 		'reporttype' => 'tabular',
 		'sortid' => '', 'stdfilterid' => '', 'advfilterid' => '0'),
-	Array('reportname' => '見込み客へのメールのレポート',
-		'reportfolder' => 'メールのレポート',
-		'description' => '見込み客へのメールのレポート',
+	Array('reportname' => 'LBL_LEAD_EMAIL_REPORTING',
+		'reportfolder' => 'LBL_MAIL_REPORT',
+		'description' => 'LBL_LEAD_EMAIL_REPORTING',
 		'reporttype' => 'tabular',
 		'sortid' => '', 'stdfilterid' => '', 'advfilterid' => '0'),
-	Array('reportname' => '発注先へのメールのレポート',
-		'reportfolder' => 'メールのレポート',
-		'description' => '発注先へのメールのレポート',
+	Array('reportname' => 'LBL_REPORTING_EMAILS_TO_SUPPLIERS',
+		'reportfolder' => 'LBL_MAIL_REPORT',
+		'description' => 'LBL_REPORTING_EMAILS_TO_SUPPLIERS',
 		'reporttype' => 'tabular',
 		'sortid' => '', 'stdfilterid' => '', 'advfilterid' => '0')
 );
@@ -312,7 +311,7 @@ $currency_decimals_field->setPicklistValues(array("1","2","3","4","5"));
 $inventoryModules = array('Invoice','SalesOrder','PurchaseOrder','Quotes');
 $actions = array('Import','Export');
 
-for($i = 0; $i < count($inventoryModules); $i++) {
+for($i = 0; $i < php7_count($inventoryModules); $i++) {
 	$moduleName = $inventoryModules[$i];
 	$moduleInstance = Vtiger_Module::getInstance($moduleName);
 
@@ -334,14 +333,14 @@ $itemFieldsLabel = array('Item Name','Quantity','List Price','Item Comment','Ite
 $itemFieldsTypeOfData = array('V~M','V~M','V~M','V~O','V~O','V~O','V~O','V~O','V~O');
 $itemFieldsDisplayType = array('10','7','19','19','7','7','83','83','83');
 
-for($i=0; $i<count($inventoryModules); $i++) {
+for($i=0; $i<php7_count($inventoryModules); $i++) {
 	$moduleName = $inventoryModules[$i];
 	$moduleInstance = Vtiger_Module::getInstance($moduleName);
 	$blockInstance = Vtiger_Block::getInstance('LBL_ITEM_DETAILS',$moduleInstance);
 
 	$relatedmodules = array('Products','Services');
 
-	for($j=0;$j<count($itemFieldsName);$j++) {
+	for($j=0;$j<php7_count($itemFieldsName);$j++) {
 		$field = new Vtiger_Field();
 
 		$field->name = $itemFieldsName[$j];
@@ -525,7 +524,7 @@ $taskManager = new VTTaskManager($adb);
 // Events workflow when Send Notification is checked
 $eventsWorkflow = $workflowManager->newWorkFlow("Events");
 $eventsWorkflow->test = '[{"fieldname":"sendnotification","operation":"is","value":"true:boolean"}]';
-$eventsWorkflow->description = "通知がオンの際の活動のワークフロー";
+$eventsWorkflow->description = "LBL_WORKFLOW_FOR_ACTIVITIES_WHEN_NOTIFICATIONS_ARE_ON";
 $eventsWorkflow->executionCondition = VTWorkflowManager::$ON_EVERY_SAVE;
 $eventsWorkflow->defaultworkflow = 1;
 $workflowManager->save($eventsWorkflow);
@@ -553,7 +552,7 @@ $taskManager->saveTask($task);
 // Calendar workflow when Send Notification is checked
 $calendarWorkflow = $workflowManager->newWorkFlow("Calendar");
 $calendarWorkflow->test = '[{"fieldname":"sendnotification","operation":"is","value":"true:boolean"}]';
-$calendarWorkflow->description = "通知がオンの際のTODOのワークフロー";
+$calendarWorkflow->description = "LBL_TODO_WORKFLOW_WHEN_NOTIFICATIONS_ARE_ON";
 $calendarWorkflow->executionCondition = VTWorkflowManager::$ON_EVERY_SAVE;
 $calendarWorkflow->defaultworkflow = 1;
 $workflowManager->save($calendarWorkflow);
@@ -1191,7 +1190,7 @@ $emm->addEntityMethod($moduleName,"UpdateInventory","include/InventoryHandler.ph
 
 $vtWorkFlow = new VTWorkflowManager($adb);
 $poWorkFlow = $vtWorkFlow->newWorkFlow($moduleName);
-$poWorkFlow->description = "保存されるごとに在庫製品を更新するワークフロー";
+$poWorkFlow->description = 'LBL_A_WORKFLOW_TO_UPDATE_INVENTORY_PRODUCTS_ON_EVERY_SAVE';
 $poWorkFlow->defaultworkflow = 1;
 $poWorkFlow->executionCondition = 3;
 $vtWorkFlow->save($poWorkFlow);
@@ -1199,7 +1198,7 @@ $vtWorkFlow->save($poWorkFlow);
 $tm = new VTTaskManager($adb);
 $task = $tm->createTask('VTEntityMethodTask', $poWorkFlow->id);
 $task->active = true;
-$task->summary = "在庫製品を更新する";
+$task->summary = 'LBL_UPDATE_INVENTORY_PRODUCTS';
 $task->methodName = "UpdateInventory";
 $tm->saveTask($task);
 
@@ -2003,12 +2002,13 @@ for ($i = 0; $i < $numOfRows; $i++) {
 
 				unset($newWorkflowModel->id);
 				$newWorkflowModel->test = Zend_Json::encode($newWorkflowConditions);
-				$newWorkflowModel->description = 'ポータルからコメントが追加されたときレコードの担当にメールを送るワークフロー';
+				$newWorkflowModel->description = 'LBL_TASK_SEND_EMAIL_WHEN_COMMENTED_FROM_PORTAL';
+
 				$wfs->save($newWorkflowModel);
 
 				$emailTask->id = '';
 				$emailTask->workflowId = $newWorkflowModel->id;
-				$emailTask->summary = 'ポータルからコメントが追加されたときレコードの担当にメールを送るワークフロー';
+				$emailTask->summary = 'LBL_TASK_SEND_EMAIL_WHEN_COMMENTED_FROM_PORTAL';
 				$emailTask->fromEmail = '$(contact_id : (Contacts) lastname) $(contact_id : (Contacts) firstname)&lt;$(contact_id : (Contacts) email)&gt;';
 				$emailTask->recepient = ',$(assigned_user_id : (Users) email1)';
 				$emailTask->subject = 'Respond to Ticket ID## $(general : (__VtigerMeta__) recordId) ## in Customer Portal - URGENT';
@@ -2057,12 +2057,12 @@ for ($i = 0; $i < $numOfRows; $i++) {
 
 				unset($newWorkflowModel->id);
 				$newWorkflowModel->test = Zend_Json::encode(array_merge($portalCondition, $newWorkflowConditions));
-				$newWorkflowModel->description = 'コメントが追加されたときポータルユーザーでない顧客担当者にメールを送るワークフロー';
+				$newWorkflowModel->description = 'LBL_TASK_SEND_EMAIL_TO_A_CUSTOMER_REPRESENTATIVE_WHEN_A_COMMENT_IS_ADDED';
 				$wfs->save($newWorkflowModel);
 
 				$emailTask->id = '';
 				$emailTask->workflowId = $newWorkflowModel->id;
-				$emailTask->summary = 'コメントが追加されたときポータルユーザーでない顧客担当者にメールを送るワークフロー';
+				$emailTask->summary = 'LBL_TASK_SEND_EMAIL_TO_A_CUSTOMER_REPRESENTATIVE_WHEN_A_COMMENT_IS_ADDED';
 				$emailTask->fromEmail = '$(general : (__VtigerMeta__) supportName)&lt;$(general : (__VtigerMeta__) supportEmailId)&gt;';
 				$emailTask->recepient = ',$(contact_id : (Contacts) email)';
 				$emailTask->subject = '$ticket_no [ Ticket Id : $(general : (__VtigerMeta__) recordId) ] $ticket_title';
@@ -2092,12 +2092,12 @@ for ($i = 0; $i < $numOfRows; $i++) {
 
 				unset($newWorkflowModel->id);
 				$newWorkflowModel->test = Zend_Json::encode(array_merge($portalCondition, $newWorkflowConditions));
-				$newWorkflowModel->description = 'コメントが追加されたときポータルユーザーである顧客担当者にメールを送るワークフロー';
+				$newWorkflowModel->description = 'LBL_TASK_SEND_EMAIL_WHEN_COMMENTED';
 				$wfs->save($newWorkflowModel);
 
 				$emailTask->id = '';
 				$emailTask->workflowId = $newWorkflowModel->id;
-				$emailTask->summary = 'コメントが追加されたときポータルユーザーである顧客担当者にメールを送るワークフロー';
+				$emailTask->summary = 'LBL_TASK_SEND_EMAIL_WHEN_COMMENTED';
 				$emailTask->content = 'Ticket No : $ticket_no<br>
 										Ticket Id : $(general : (__VtigerMeta__) recordId)<br>
 										Subject : $ticket_title<br><br>
@@ -2119,12 +2119,12 @@ for ($i = 0; $i < $numOfRows; $i++) {
 				);
 
 				$workflowModel->test = Zend_Json::encode($newConditions);
-				$workflowModel->description = 'コメントが追加された際にメールを送るワークフロー';
+				$workflowModel->description = 'LBL_A_WORKFLOW_TO_SEND_AN_EMAIL_WHEN_A_COMMENT_IS_ADDED';
 				$wfs->save($workflowModel);
 
 				$emailTask->id = '';
 				$emailTask->workflowId = $workflowModel->id;
-				$emailTask->summary = 'コメントが追加された際にメールを送るワークフロー';
+				$emailTask->summary = 'LBL_A_WORKFLOW_TO_SEND_AN_EMAIL_WHEN_A_COMMENT_IS_ADDED';
 				$emailTask->recepient = ',$(parent_id : (Accounts) email1),';
 				$emailTask->content = 'Ticket ID : $(general : (__VtigerMeta__) recordId)<br>Ticket Title : $ticket_title<br><br>
 								Dear $(parent_id : (Accounts) accountname),<br><br>

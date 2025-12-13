@@ -16,9 +16,14 @@
 	{assign var=PICKLIST_VALUES value=$FIELD_INFO['editablepicklistvalues']}
 	{assign var=PICKLIST_COLORS value=$FIELD_INFO['picklistColors']}
 	<input type="hidden" name="{$FIELD_MODEL->getFieldName()}" value=""  data-fieldtype="multipicklist"/>
-	<select id="{$MODULE}_{$smarty.request.view}_fieldName_{$FIELD_MODEL->getFieldName()}" multiple class="select2" name="{$FIELD_MODEL->getFieldName()}[]" data-fieldtype="multipicklist" style='width:210px;height:30px;' 
+	{foreach item=FIELD_VALUE from=$FIELD_VALUE_LIST}
+		{if !empty(trim($FIELD_VALUE)) && !array_key_exists($FIELD_VALUE, $PICKLIST_VALUES)}
+			{append var="PICKLIST_VALUES" $FIELD_VALUE index=$FIELD_VALUE}
+		{/if}
+	{/foreach}
+	<select id="{$MODULE}_{$REQ.view}_fieldName_{$FIELD_MODEL->getFieldName()}" multiple class="select2" name="{$FIELD_MODEL->getFieldName()}[]" data-fieldtype="multipicklist" style='width:210px;height:30px;' 
 			{if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if}
-			{if count($FIELD_INFO['validator'])} 
+			{if php7_count($FIELD_INFO['validator'])} 
 				data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
 			{/if}
 			>

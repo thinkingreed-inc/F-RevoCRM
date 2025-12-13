@@ -66,7 +66,7 @@ class Documents_FilePreview_View extends Vtiger_IndexAjax_View {
 		}
 		//support for plain/text document
 		$extn = 'txt';
-		if(count($parts) > 1){
+		if(php7_count($parts) > 1){
 			$extn = end($parts);
 		}
 		$viewer = $this->getViewer($request);

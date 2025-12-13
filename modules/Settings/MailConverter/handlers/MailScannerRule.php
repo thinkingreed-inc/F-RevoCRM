@@ -305,7 +305,7 @@ class Vtiger_MailScannerRule {
                     $input = str_replace("_", " ", $input);
             if (preg_match("/$searchfor/i", $input, $regmatches)) {
                 // Pick the last matching group
-                $matches = $regmatches[count($regmatches) - 1];
+                $matches = $regmatches[php7_count($regmatches) - 1];
                 $matchfound = true;
             }
             break;
@@ -316,7 +316,7 @@ class Vtiger_MailScannerRule {
             $searchfor = str_replace('/', '\/', $searchfor);
             if (preg_match("/$searchfor/i", $input, $regmatches)) {
                 // Pick the last matching group
-                $matches = $regmatches[count($regmatches) - 1];
+                $matches = $regmatches[php7_count($regmatches) - 1];
                 $matchfound = true;
             }
             break;

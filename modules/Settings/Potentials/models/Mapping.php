@@ -120,7 +120,7 @@ class Settings_Potentials_Mapping_Model extends Settings_Leads_Mapping_Model {
 		if ($createMappingsList) {
 			$insertQuery = 'INSERT INTO vtiger_convertpotentialmapping(potentialfid, projectfid) VALUES ';
 
-			$count = count($createMappingsList);
+			$count = php7_count($createMappingsList);
             $params = array();
 			for ($i=0; $i<$count; $i++) {
 				$mappingDetails = $createMappingsList[$i];
