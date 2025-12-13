@@ -89,9 +89,10 @@
 							<ul name="{if $IS_FIELDS_SORTABLE}sortable1{else}unSortable1{/if}" class="connectedSortable col-sm-6">
 								{foreach item=FIELD_MODEL from=$FIELDS_LIST name=fieldlist}
 									{assign var=FIELD_INFO value=$FIELD_MODEL->getFieldInfo()}
-                  <li>
+									{assign var=FIELD_UITYPE value=$FIELD_MODEL->get('uitype')}
+                  <li {if $FIELD_UITYPE == 19 || $FIELD_UITYPE == 20} class="wideField" {/if}>
                     <div class="row border1px">
-                      <div class="col-sm-4">
+                      <div class="col-sm-4 layoutEditFieldLabel">
                         <div class="opacity editFields marginLeftZero" data-block-id="{$BLOCK_ID}" data-field-id="{$FIELD_MODEL->get('id')}" 
                             data-sequence="{$FIELD_MODEL->get('sequence')}" data-field-name="{$FIELD_MODEL->get('name')}" 
                             >
@@ -247,10 +248,10 @@
                 {if $BLOCK_MODEL->isAddCustomFieldEnabled()}
                   <li class="row dummyRow">
                     <div class="row border1px" style="border: 1px dotted #DDDDDD;">
-                      <span class="dragUiText col-sm-8">
+                      <span class="dragUiText col-sm-7">
                         {vtranslate('LBL_ADD_NEW_FIELD_HERE',$QUALIFIED_MODULE)}
                       </span>
-                      <span class="col-sm-4" style="margin-top: 7%;margin-left: -15%;">
+                      <span class="col-sm-5" >
                         <button class="btn btn-default btn-sm addButton"><i class="fa fa-plus"></i>&nbsp;&nbsp;{vtranslate('LBL_ADD',$QUALIFIED_MODULE)}</button>
                       </span>
                     </div>

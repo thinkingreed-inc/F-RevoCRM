@@ -2306,6 +2306,15 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		return aDeferred.promise();
 	},
 	/**
+	 * 2列幅フィールドのラベル幅を1列幅フィールドのラベル幅に合わせる
+	 */
+	adjustFieldLabelWidth: function () {
+		var fieldwidth = jQuery('.layoutContent .blockFieldsList ul li:not(.wideField) div > div.layoutEditFieldLabel').width();
+		if (window.innerWidth > 768) {
+			jQuery('.layoutContent .blockFieldsList ul li.wideField div > div.layoutEditFieldLabel').width(fieldwidth);
+		}
+	},
+	/**
 	 * register events for layout editor
 	 */
 	registerEvents: function () {
@@ -2314,6 +2323,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		thisInstance.triggerFieldListTabClickEvent();
 		thisInstance.triggerRelatedModulesTabClickEvent();
 		thisInstance.triggerDuplicationTabClickEvent();
+		thisInstance.adjustFieldLabelWidth();
 
 		var selectedTab = jQuery('.selectedTab').val();
 		jQuery('#layoutEditorContainer').find('.contents').find('.'+selectedTab).trigger('click');
