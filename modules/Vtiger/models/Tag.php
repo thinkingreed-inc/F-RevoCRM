@@ -303,7 +303,7 @@ class Vtiger_Tag_Model extends Vtiger_Base_Model {
 	4.                　　　　　　　　　 -> 　　　　　       　　　 -> ownerが自身でない → TRUE
 	※ 再編集時にprivateからpublicへ変更する場合は, 運用負荷の観点からFALSEとせずにownerの判定(3)へ進める
 	*/
-	public static function checkTagExistence($TagValue){
+	public static function checkTagExistence($tagValue){
 		// tagデータをキャッシュに登録
 		$adb = PearDatabase::getInstance();
 		$DBTagsValue = Vtiger_Cache::get('DBTags', 'DBTagsValue');
@@ -321,8 +321,8 @@ class Vtiger_Tag_Model extends Vtiger_Base_Model {
 			Vtiger_Cache::set('DBTags', 'DBTagsValue', $DBTagsValue);
 		}
 
-		$tagName = $TagValue['tagName'];
-		$tagId = isset($TagValue['tagId']) ? $TagValue['tagId'] : '';
+		$tagName = $tagValue['tagName'];
+		$tagId = isset($tagValue['tagId']) ? $tagValue['tagId'] : '';
 		$previousVisibility = '';
 		$otherTagsWithSameName = array_filter($DBTagsValue, function($item) use ($tagName, $tagId, &$previousVisibility) {
 			if($tagId && $item['id'] == $tagId){
@@ -340,15 +340,15 @@ class Vtiger_Tag_Model extends Vtiger_Base_Model {
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$userId = $currentUser->getId();
 		for($i = 0; $i < count($otherTagsWithSameName); $i++){
-			$OtherTagValue = $otherTagsWithSameName[$i];
-			if($OtherTagValue['visibility'] == 'public'){ // 2
-				if($previousVisibility == 'private' && $TagValue['visibility'] == 'public'){ // 再編集時の例外判定
+			$otherTagValue = $otherTagsWithSameName[$i];
+			if($otherTagValue['visibility'] == 'public'){ // 2
+				if($previousVisibility == 'private' && $tagValue['visibility'] == 'public'){ // 再編集時の例外判定
 					continue;
 				}else{
 					return false;
 				}
 			}
-			if($OtherTagValue['owner'] == $userId){ // 3
+			if($otherTagValue['owner'] == $userId){ // 3
 				return false;
 			}
 		}
@@ -356,13 +356,13 @@ class Vtiger_Tag_Model extends Vtiger_Base_Model {
 	}
 
 	// タグが複数登録される場合に備え, キャッシュを更新する
-	public static function updateCachedDBTags($TagValue){
+	public static function updateCachedDBTags($tagValue){
 		$DBTagsValue = Vtiger_Cache::get('DBTags', 'DBTagsValue');
 		$DBTagsValue[] = array(
-			'id' => $TagValue['tagId'],
-			'tag' => $TagValue['tagName'],
-			'owner' => $TagValue['owner'],
-			'visibility' => $TagValue['visibility']
+			'id' => $tagValue['tagId'],
+			'tag' => $tagValue['tagName'],
+			'owner' => $tagValue['owner'],
+			'visibility' => $tagValue['visibility']
 		);
 		Vtiger_Cache::set('DBTags', 'DBTagsValue', $DBTagsValue);
 	}
