@@ -28,6 +28,13 @@
 					{/foreach}
 				</select>
 			</div>
+			<div class="col-sm-4" name="editReadonlyDisplayDiv">
+				<span class="pull-right">
+					<i class="fa fa-info-circle" title="{vtranslate('LBL_EDIT_READONLY_DISPLAY_DETAIL_VIEW', $QUALIFIED_MODULE)}"></i>&nbsp; {vtranslate('LBL_EDIT_READONLY_DISPLAY', $QUALIFIED_MODULE)}&nbsp;
+					<input style="opacity: 0;" type="checkbox" {if $SELECTED_MODULE_MODEL->isEditreadonlydisplay()} checked value='1' {else} value='0' {/if} class="cursorPointer bootstrap-switch" name="editReadonlyDisplay" 
+					data-on-text="Yes" data-off-text="No" data-on-color="primary"/>
+				</span>
+			</div>
 		</div>
 		<br>
 		<br>
