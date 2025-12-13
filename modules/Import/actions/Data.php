@@ -635,9 +635,29 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			} elseif ($fieldDataType == 'picklist' || $fieldName == 'salutationtype') {
 				$fieldValue = trim(strip_tags(decode_html($fieldValue)));
 				global $default_charset;
-				if (empty($fieldValue) && isset($defaultFieldValues[$fieldName])) {
-					$fieldData[$fieldName] = $fieldValue = $defaultFieldValues[$fieldName];
+
+				// Importで指定されたデフォルト値のみを取得（項目定義のデフォルト値は使用しない）
+				$importDefaultValues = array();
+				if (!empty($this->defaultValues)) {
+					$importDefaultValues = is_array($this->defaultValues) ? $this->defaultValues : Zend_Json::decode($this->defaultValues);
 				}
+
+				// 空の値の場合の処理
+				if (empty($fieldValue)) {
+					// Importで指定されたデフォルト値がある場合はそれを使用
+					if (isset($importDefaultValues[$fieldName]) && !empty($importDefaultValues[$fieldName])) {
+						$fieldValue = $importDefaultValues[$fieldName];
+					} else {
+						// 必須項目で空の場合はエラー
+						if ($fieldInstance->isMandatory()) {
+							return null;
+						}
+						// 必須でなければ空のまま
+						$fieldData[$fieldName] = '';
+						continue;
+					}
+				}
+
 				if (!isset($this->allPicklistValues[$fieldName])) {
 					$this->allPicklistValues[$fieldName] = $fieldInstance->getPicklistDetails();
 				}
@@ -661,7 +681,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 					$picklistDetails = array_combine($allPicklistValuesInLowerCase, $allPicklistValues);
 				}
 
-				if (!in_array($picklistValueInLowerCase, $allPicklistValuesInLowerCase) && !empty($picklistValueInLowerCase)) {
+				if (!in_array($picklistValueInLowerCase, $allPicklistValuesInLowerCase)) {
 					// 存在しないPicklist値の場合はエラーとしてインポート失敗にする
 					return null;
 				} else {
@@ -1116,8 +1136,10 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 
 						if (!in_array($fieldValueInLowerCase, $picklistValuesInLowerCase)
 								&& $fieldName !== 'visibility'
-								&& !($fieldName == 'activitytype' && $fieldValue == 'Task')) {
-							$fieldModel->setPicklistValues(array($fieldValue));
+								&& !($fieldName == 'activitytype' && $fieldValue == 'Task')
+								&& !empty($fieldValue)) {
+							// 存在しないPicklist値の場合はエラーとしてインポート失敗にする
+							return null;
 						}
 					}
 				}
