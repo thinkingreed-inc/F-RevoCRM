@@ -477,7 +477,7 @@ function vtws_getModuleHandlerFromId($id,$user){
 
 function vtws_CreateCompanyLogoFile($fieldname) {
 	global $root_directory;
-	$uploaddir = $root_directory ."/test/logo/";
+	$uploaddir = $root_directory ."/public/logo/";
 	$allowedFileTypes = array("jpeg", "png", "jpg", "pjpeg" ,"x-png");
 	$binFile = $_FILES[$fieldname]['name'];
 	$fileType = $_FILES[$fieldname]['type'];
@@ -1255,7 +1255,7 @@ function vtws_getConvertEntityFieldInfo($module, $fieldname) {
 
 function vtws_getCompanyEncodedImage($logoname) {
 	global $root_directory;
-	$image = "$root_directory/test/logo/$logoname";
+	$image = "$root_directory/public/logo/$logoname";
 	$image_data = file_get_contents($image);
 	$encoded_image = base64_encode($image_data);
 	return $encoded_image;

@@ -41,7 +41,7 @@
                 </li>
                 {foreach from=$DASHBOARD_TABS item=TAB_INFO}
                     <li class='dashBoardTab' data-tab-id='{$TAB_INFO.id}'>
-                        <a href='javascript:void(0);' class="dropdown-item">{$TAB_INFO.tabname}</a>
+                        <a href='javascript:void(0);' class="dropdown-item">{vtranslate($TAB_INFO.tabname,$MODULE)}</a>
                     </li>
                 {/foreach}
             </ul>
@@ -59,8 +59,8 @@
             {/if}    
         
         <div class="btn-group inline-save hide">
-            <button class="button btn-success btn-small save" name="save"><i class="fa fa-check"></i></button>
-            <button class="button btn-danger btn-small cancel" name="Cancel"><i class="fa fa-close"></i></button>
+            <button type="button" class="button btn-success btn-small save" name="save"><i class="fa fa-check"></i></button>
+            <button type="button" class="button btn-danger btn-small cancel" name="Cancel"><i class="fa fa-close"></i></button>
         </div>
     </div>
 {/strip}

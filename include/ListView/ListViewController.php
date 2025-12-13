@@ -438,7 +438,7 @@ class ListViewController {
 						$value = '--';
 					}
 				} elseif($field->getUIType() == 98) {
-					$value = '<a href="index.php?module=Roles&parent=Settings&view=Edit&record='.$value.'">'.textlength_check(getRoleName($value)).'</a>';
+					$value = '<a href="index.php?module=Roles&parent=Settings&view=Edit&record='.$value.'">'.textlength_check(vtranslate(getRoleName($value), 'Vtiger')).'</a>';
 				} elseif($fieldDataType == 'multipicklist') {
 					if ($value != '') {
 						$moduleName = getTabModuleName($field->getTabId());
@@ -497,8 +497,8 @@ class ListViewController {
 				} elseif ( in_array($uitype,array(7,9,90)) ) {
 					$value = "<span align='right'>".textlength_check($value)."</span>";
 				} elseif($field && $field->isNameField) {
-					$value = "<a href='?module=$field->moduleName&view=Detail&".
-								"record=$recordId' title='".vtranslate($field->moduleName, $field->moduleName)."'>$value</a>";
+					$value = "<a href='index.php?module=$field->moduleName&view=Detail&".
+								"record=$recordId' title='".vtranslate($field->moduleName, $field->moduleName).":". $value ."'>$value</a>";
 				} elseif($field->getUIType() == 61) {
 					$attachmentId = (int)$value;
 					$displayValue = '--';

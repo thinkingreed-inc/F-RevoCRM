@@ -1,0 +1,52 @@
+# Thinkingreedの社内管理用のGitHub Actions
+# 本コードは社内管理用のため、基本的にサポートの対象外となります。
+name: Check PR Workflow Changes
+
+on:
+  pull_request_target:
+    paths:
+      - '.github/workflows/**'
+
+permissions:
+  contents: read  # 最小限の読み取り権限のみ
+
+jobs:
+  check-workflow-changes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Fetch PR and base branch
+        run: |
+          git fetch origin ${{ github.event.pull_request.base.ref }}
+          git fetch origin pull/${{ github.event.pull_request.number }}/head:pr
+
+      - name: Check for changes in .github/workflows
+        id: check_changes
+        run: |
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }}...pr | grep '^.github/workflows/')
+          if [ -n "$CHANGED_FILES" ]; then
+            echo "changes_detected=true" >> $GITHUB_ENV
+            echo "changed_files<<EOF" >> $GITHUB_ENV
+            echo "$CHANGED_FILES" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+          else
+            echo "changes_detected=false" >> $GITHUB_ENV
+          fi
+
+      - name: Fail the job if changes are detected
+        if: env.changes_detected == 'true'
+        run: |
+          echo "❌ Detected changes in '.github/workflows' directory."
+          echo
+          echo "### Changed Files:"
+          echo
+          while IFS= read -r file; do
+            echo "- \`$file\`"
+          done <<< "${{ env.changed_files }}"
+          echo
+          echo "Failing the job intentionally due to workflow file changes."
+          exit 1

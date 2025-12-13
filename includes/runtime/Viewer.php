@@ -58,6 +58,11 @@ class Vtiger_Viewer extends Smarty {
 		$this->setTemplateDir(array($templatesDir));
 		$this->setCompileDir($compileDir);		
 
+		// Smartyプラグインとして関数を登録
+        $this->registerPlugin('modifier', 'vtemplate_path', 'vtemplate_path');
+        $this->registerPlugin('modifier', 'vresource_url', 'vresource_url');
+        
+
 		// FOR DEBUGGING: We need to have this only once.
 		static $debugViewerURI = false;
 		if (self::$debugViewer && $debugViewerURI === false) {

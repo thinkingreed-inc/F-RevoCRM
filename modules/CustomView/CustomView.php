@@ -114,11 +114,6 @@ class CustomView extends CRMEntity {
 				}
 			}
 
-			if ($viewid == '' || $viewid == 0 || $this->isPermittedCustomView($viewid, $now_action, $module) != 'yes') {
-				$query = "select cvid from vtiger_customview where viewname='All' and entitytype=? order by viewname";
-				$cvresult = $adb->pquery($query, array($module));
-				$viewid = $adb->query_result($cvresult, 0, 'cvid');
-			}
 		} else {
 			$viewname = vtlib_purify($_REQUEST['viewname']);
 			if (!is_numeric($viewname)) {
@@ -133,7 +128,13 @@ class CustomView extends CRMEntity {
 			if ($this->isPermittedCustomView($viewid, $now_action, $this->customviewmodule) != 'yes')
 				$viewid = 0;
 		}
-		
+
+		if ($viewid == '' || $viewid == 0 || $this->isPermittedCustomView($viewid, $now_action, $module) != 'yes') {
+			$query = "select cvid from vtiger_customview where viewname='All' and entitytype=? order by viewname";
+			$cvresult = $adb->pquery($query, array($module));
+			$viewid = $adb->query_result($cvresult, 0, 'cvid');
+		}
+
 		$_SESSION['lvs'][$module]["viewname"] = $viewid;
 		return $viewid;
 	}
@@ -1983,6 +1984,15 @@ class CustomView extends CRMEntity {
 		$permission = "yes";
 
 		if ($record_id != '') {
+			// 指定されているモジュールと対象のcvidが一致しない場合は権限無しとみなす
+			$result = $adb->pquery("SELECT * FROM vtiger_customview WHERE cvid=?", array($record_id));
+			if ($adb->num_rows($result) > 0) {
+				$entityType = $adb->query_result($result, 0, 'entitytype');
+				if(!empty($module) && $module != $entityType) {
+					return 'no';
+				}
+			}
+
 			$status_userid_info = $this->getStatusAndUserid($record_id);
 
 			if ($status_userid_info) {
@@ -1991,46 +2001,115 @@ class CustomView extends CRMEntity {
 
 				if ($status == CV_STATUS_DEFAULT) {
 					$log->debug("Entering when status=0");
-					if ($action == 'List' || $action == $module . "Ajax" || $action == 'index' || $action == 'Detail' || $action == 'ListAjax') {
+					if ($action == 'List' || $action == $module . "Ajax" || $action == 'index' || $action == 'Detail' || $action == 'Edit' || $action == 'ListAjax') {
 						$permission = "yes";
 					} else {
 						$permission = "no";
 					}
-				}
-				elseif ($is_admin) {
-					$permission = 'yes';
 				} elseif ($action != 'ChangeStatus') {
 					if ($userid == $current_user->id) {
 						$log->debug("Entering when $userid=$current_user->id");
 						$permission = "yes";
 					} elseif ($status == CV_STATUS_PUBLIC) {
 						$log->debug("Entering when status=3");
-						if ($action == 'List' || $action == $module . "Ajax" || $action == 'index' || $action == 'Detail' || $action == 'ListAjax') {
+						if ($action == 'List' || $action == $module . "Ajax" || $action == 'index' || $action == 'Detail' || $action == 'Edit' || $action == 'ListAjax') {
 							$permission = "yes";
 						} else {
 							$permission = "no";
 						}
 					}
-					elseif ($status == CV_STATUS_PRIVATE || $status == CV_STATUS_PENDING) {
-						$log->debug("Entering when status=1 or 2");
+					elseif ($status == CV_STATUS_PRIVATE) {
+						$log->debug("Entering when status=1");
+						if ($userid == $current_user->id) {
+							$permission = "yes";
+						}
+						$log->debug("Entering when status=1 & action = ListView or $module.Ajax or index");
+						if ($this->isPermittedSharedList($record_id))  {
+							$permission = "yes";
+						} else {
+							$sql = "select vtiger_users.id from vtiger_customview inner join vtiger_users where vtiger_customview.cvid = ? and vtiger_customview.userid in (select vtiger_user2role.userid from vtiger_user2role inner join vtiger_users on vtiger_users.id=vtiger_user2role.userid inner join vtiger_role on vtiger_role.roleid=vtiger_user2role.roleid where vtiger_role.parentrole like '%" . $current_user_parent_role_seq . "::%')";
+							$result = $adb->pquery($sql, array($record_id));
+							$temp_result = array();
+							while ($row = $adb->fetchByAssoc($result)) {
+								$temp_result[] = $row['id'];
+							}
+							$user_array = $temp_result;
+							if (sizeof($user_array) > 0) {
+								if (!in_array($current_user->id, $user_array)) {
+									$permission = "no";
+								} else {
+									$permission = "yes";
+								}
+							} else {
+								$permission = "no";
+							}
+						}
+					} elseif ($status == CV_STATUS_PENDING) {
+						$log->debug("Entering when status=2");
 						if ($userid == $current_user->id)
 							$permission = "yes";
 						else {
 							/* if($action == 'ListView' || $action == $module."Ajax" || $action == 'index')
 							  { */
 							$log->debug("Entering when status=1 or status=2 & action = ListView or $module.Ajax or index");
-							$sql = "select vtiger_users.id from vtiger_customview inner join vtiger_users where vtiger_customview.cvid = ? and vtiger_customview.userid in (select vtiger_user2role.userid from vtiger_user2role inner join vtiger_users on vtiger_users.id=vtiger_user2role.userid inner join vtiger_role on vtiger_role.roleid=vtiger_user2role.roleid where vtiger_role.parentrole like '%" . $current_user_parent_role_seq . "::%')";
-							$result = $adb->pquery($sql, array($record_id));
+
+							$sql = 'SELECT * FROM vtiger_customview WHERE vtiger_customview.cvid = ?';
+
+							$params = array($record_id);
+
+							if(!empty($module)) {
+								$sql .= ' AND entitytype=?';
+								$params[] = $module;
+							}
+
+							$userGroups = new GetUserGroups();
+							$userGroups->getAllUserGroups($current_user->id);
+							$groups = $userGroups->user_groups;
+							$userRole = fetchUserRole($current_user->id);
+							$parentRoles=getParentRole($userRole);
+							$parentRolelist= array();
+							foreach($parentRoles as $par_rol_id) {
+								array_push($parentRolelist, $par_rol_id);		
+							}
+							array_push($parentRolelist, $userRole);
+
+							$userPrivilegeModel = Users_Privileges_Model::getCurrentUserPrivilegesModel();
+							$userParentRoleSeq = $userPrivilegeModel->get('parent_role_seq');
+							$sql .= " AND ( vtiger_customview.userid = ? OR vtiger_customview.status = 0 OR vtiger_customview.status = 3
+											OR vtiger_customview.cvid IN (SELECT vtiger_cv2users.cvid FROM vtiger_cv2users WHERE vtiger_cv2users.userid=?)";
+							$params[] = $current_user->id;
+							$params[] = $current_user->id;
+
+							//下位の役割が作成した全てのリストをチェック
+							global $bewithconfig;
+							if($bewithconfig['show_subordinate_roles_list']) {
+								$sql .= "OR vtiger_customview.userid IN (SELECT vtiger_user2role.userid FROM vtiger_user2role
+											INNER JOIN vtiger_users ON vtiger_users.id = vtiger_user2role.userid
+											INNER JOIN vtiger_role ON vtiger_role.roleid = vtiger_user2role.roleid
+										WHERE vtiger_role.parentrole LIKE '".$userParentRoleSeq."::%') ";
+							}
+							if(!empty($groups)){
+								$sql .= "OR vtiger_customview.cvid IN (SELECT vtiger_cv2group.cvid FROM vtiger_cv2group WHERE vtiger_cv2group.groupid IN (".  generateQuestionMarks($groups)."))";
+								$params = array_merge($params,$groups);
+							}
+
+							$sql.= "OR vtiger_customview.cvid IN (SELECT vtiger_cv2role.cvid FROM vtiger_cv2role WHERE vtiger_cv2role.roleid =?)";
+							$params[] = $userRole;
+							if(!empty($parentRolelist)){
+								$sql.= "OR vtiger_customview.cvid IN (SELECT vtiger_cv2rs.cvid FROM vtiger_cv2rs WHERE vtiger_cv2rs.rsid IN (". generateQuestionMarks($parentRolelist) ."))";
+								$params = array_merge($params,$parentRolelist);
+							}
+
+							$sql.= ")";
+
+
+							$result = $adb->pquery($sql, $params);
 
 							while ($row = $adb->fetchByAssoc($result)) {
-								$temp_result[] = $row['id'];
+								$temp_result[] = $row['cvid'];
 							}
-							$user_array = $temp_result;
-							if (sizeof($user_array) > 0) {
-								if (!in_array($current_user->id, $user_array))
-									$permission = "no";
-								else
-									$permission = "yes";
+							if (sizeof($temp_result) > 0 && in_array($record_id, $temp_result)) {
+								$permission = "yes";
 							}
 							else
 								$permission = "no";
@@ -2081,6 +2160,50 @@ class CustomView extends CRMEntity {
 		return $status_details;
 	}
 
+	/**
+	 * This Function checks if the list is shared.
+	 * @return <Boolean> true or false
+	 */
+	function isPermittedSharedList($record_id) {
+		global $adb;
+		global $current_user;
+
+		$result = $adb->pquery('SELECT cvid FROM vtiger_cv2users WHERE cvid = ? AND userid = ?', array($record_id, $current_user->id));
+		if ($adb->num_rows($result)) {
+			return true;
+		}
+
+		$result = $adb->pquery('SELECT cvid FROM vtiger_cv2role WHERE cvid = ? AND roleid = ?', array($record_id, $current_user->roleid));
+		if ($adb->num_rows($result)) {
+			return true;
+		}
+
+		$userGroups = new GetUserGroups();
+		$userGroups->getAllUserGroups($current_user->id);
+		$groups = $userGroups->user_groups;
+		if (!empty($groups)) {
+			$result = $adb->pquery('SELECT cvid FROM vtiger_cv2group WHERE cvid = ? AND vtiger_cv2group.groupid IN ('.generateQuestionMarks($groups).')', array($record_id, $groups));
+			if ($adb->num_rows($result)) {
+				return true;
+			}
+		}
+		
+		$result = $adb->pquery('SELECT rsid FROM vtiger_cv2rs WHERE cvid = ?', array($record_id));
+		if ($adb->num_rows($result)) {
+			$rsid = $adb->query_result($result, 0, 'rsid');
+			$roleSubordinates = getRoleSubordinates($rsid);
+			$roleSubordinateList = array();
+			foreach($roleSubordinates as $par_rol_id) {
+				array_push($roleSubordinateList, $par_rol_id);		
+			}
+			array_push($roleSubordinateList, $rsid);
+			if (in_array($current_user->roleid, $roleSubordinateList)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 }
 
 ?>

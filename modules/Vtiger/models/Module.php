@@ -1233,7 +1233,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 		$sharingAccessModel = Settings_SharingAccess_Module_Model::getInstance($this->getName());
 		$params = array();
 		if(!empty($owner) && $currentUserModel->isAdminUser()) {//If admin user, then allow users data
-			$ownerSql =  ' smownerid = '. $owner;
+			$ownerSql =  'smownerid = '. $owner;
 			$params[] = $owner;
 		} else if(!empty($owner)){//If not admin user, then check sharing access for that module
 			if($sharingAccessModel->isPrivate()) {
@@ -1243,12 +1243,12 @@ class Vtiger_Module_Model extends Vtiger_Module {
 					$subordinateUsers[] = $id;
 				}
 				if(in_array($owner, $subordinateUsers)) {
-					$ownerSql = ' smownerid = '. $owner ;
+					$ownerSql = 'smownerid = '. $owner ;
 				} else {
-					$ownerSql = ' smownerid = '. $currentUserModel->getId();
+					$ownerSql = 'smownerid = '. $currentUserModel->getId();
 				}
 			} else {
-				$ownerSql = ' smownerid = '. $owner ;
+				$ownerSql = 'smownerid = '. $owner ;
 			}
 		} else {//If no owner filter, then check if the module access is Private
 			if($sharingAccessModel->isPrivate() && (!$currentUserModel->isAdminUser())) {
@@ -1259,9 +1259,9 @@ class Vtiger_Module_Model extends Vtiger_Module {
 				}
 				if($subordinateUsers) {
                     array_push($subordinateUsers, $currentUserModel->getId());
-					$ownerSql =  ' smownerid IN ('. implode(',' , $subordinateUsers) .')';
+					$ownerSql =  'smownerid IN ('. implode(',' , $subordinateUsers) .')';
 				} else {
-					$ownerSql =  ' smownerid = '.$currentUserModel->getId();
+					$ownerSql =  'smownerid = '.$currentUserModel->getId();
 				}
 			}
 		}
@@ -2051,7 +2051,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 
 		$moduleIcon = "<i class='vicon-$lowerModuleName' title='$title'></i>";
 		if ($this->source == 'custom') {
-			$moduleShortName = mb_substr(trim($title), 0, 2);
+			$moduleShortName = mb_substr(trim($title), 0, 1);
 			$moduleIcon = "<span class='custom-module' title='$title'>$moduleShortName</span>";
 		}
 

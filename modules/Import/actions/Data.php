@@ -138,17 +138,21 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		$lockInfo = Import_Lock_Action::isLockedForModule($this->module);
 		$importUserId = $this->user->id;
 		if (isset($lockInfo)) {
-			if ($lockInfo['userid'] != $importUserId) { //他ユーザーのキューがインポート中なのでインポートしない
+			// 他ユーザーがインポート対象のモジュールに対してインポートしている場合はインポートしない
+			if ($lockInfo['userid'] != $importUserId) {
 				Import_Utils_Helper::showImportLockedError($lockInfo);
 				return false;
 			}
+
+			// スケジュールインポートにより、同一ユーザーでも前回のインポートが完了していない場合もインポートしない
+			// ※処理済みのレコードが$pagingLimitの倍数でない場合を前回のインポートが完了していないとみなす
 			$configReader = new Import_Config_Model();
 			$pagingLimit = intval($configReader->get('importPagingLimit'));
 			$importTable = 'vtiger_import_'.$importUserId;
-			$finishedImportQuery = 'SELECT count(status) FROM '.$importTable.' WHERE status = 1 GROUP BY status';
-			$finishedImportResult = $adb->pquery($finishedImportQuery, array());
-			$finishedImportCount = $adb->query_result($finishedImportResult, 0, 'count(status)');
-			if($lockInfo['importid'] == $this->id && $finishedImportCount % $pagingLimit != 0 ) { //このキューはすでに実行されており,インポート中なのでインポートしない
+			$finishedImportQuery = 'SELECT count(*) AS imported FROM '.$importTable.' WHERE `status` != ?';
+			$finishedImportResult = $adb->pquery($finishedImportQuery, array(Import_Data_Action::$IMPORT_RECORD_NONE));
+			$finishedImportCount = $adb->query_result($finishedImportResult, 0, 'imported');
+			if($lockInfo['importid'] == $this->id && $finishedImportCount % $pagingLimit != 0 ) {
 				return false;
 			}
 		} else {

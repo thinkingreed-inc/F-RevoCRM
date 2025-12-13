@@ -226,10 +226,10 @@ function generateIcsAttachment($record, $inviteeid) {
     $assignedUserId = $record['user_id'];
     $userModel = Users_Record_Model::getInstanceById($assignedUserId, 'Users');
     $inviteeUserModel = Users_Record_Model::getInstanceById($inviteeid, 'Users');
-    $firstName = $userModel->entity->column_fields['first_name'];
-    $lastName = $userModel->entity->column_fields['last_name'];
-    $email = $userModel->entity->column_fields['email1'];
-    $time_zone = $inviteeUserModel->entity->column_fields['time_zone'];
+		$firstName = $userModel->getEntity()->column_fields['first_name'];
+    $lastName = $userModel->getEntity()->column_fields['last_name'];
+    $email = $userModel->getEntity()->column_fields['email1'];
+    $time_zone = $inviteeUserModel->getEntity()->column_fields['time_zone'];
 
 		// ユーザーのTIMEZONEを取る
 		$inviteeUser = CRMEntity::getInstance('Users');
@@ -237,7 +237,8 @@ function generateIcsAttachment($record, $inviteeid) {
 
 		$stDatetime = date_format(DateTimeField::convertToUserTimeZone($record['st_date_time'], $inviteeUser), "Y/m/d H:i:s");
 		$endDatetime = date_format(DateTimeField::convertToUserTimeZone($record['end_date_time'], $inviteeUser), "Y/m/d H:i:s");
-		$ics_filename = 'test/upload/'.$fileName.'_'.$inviteeid.'.ics';
+		$sanitizedFileName = preg_replace('/[\/\\\\]/', '_', $fileName);
+		$ics_filename = 'test/upload/'.$sanitizedFileName.'_'.$inviteeid.'.ics';
     $fp = fopen($ics_filename, "w");
 
 		// TZ OFFSETを設定
@@ -269,6 +270,55 @@ function generateIcsAttachment($record, $inviteeid) {
     fclose($fp);
     
     return $ics_filename;
+}
+
+/**
+ * 参加者情報を再度作成する
+ * @param $activityId
+ * @param $inviteeParentId
+ * @return void
+ */
+function reCreateInviteesRecord($activityId, $inviteeParentId, $isRestore = false)
+{
+	global $adb;
+	// 他に関連する活動レコードがあるか、ある場合は参加者（ユーザーのID）を取得する
+	$getInviteesQuery  = "SELECT smownerid 
+						  FROM vtiger_activity 
+						  WHERE deleted = 0 
+							AND invitee_parentid = ? AND activityid <> ?";
+	$getInviteesParams = [ $inviteeParentId, $activityId ];
+	
+	// 復元の場合は復元されるレコード自体も含める
+	if($isRestore) {
+		$getInviteesQuery  = "SELECT smownerid 
+							  FROM vtiger_activity 
+							  WHERE deleted = 0 AND invitee_parentid = ?";
+		$getInviteesParams = [ $inviteeParentId ];
+	}
+	
+	$inviteesResult    = $adb->pquery($getInviteesQuery, $getInviteesParams);
+	$inviteesCount     = $adb->num_rows($inviteesResult);
+	
+	if($inviteesCount > 0) {
+		// 既存の参加者情報を一度削除する
+		$inviteeQuery  = "DELETE FROM vtiger_invitees WHERE activityid = ?";
+		$inviteeParams = [ $inviteeParentId ]; 
+		$adb->pquery($inviteeQuery, $inviteeParams);
+		
+		// 参加者情報を再度作り直す
+		//（招待レコードで更新が発生した場合に参加者情報が完全に消えることがあるため）
+		$newInviteeQuery  = "INSERT INTO vtiger_invitees VALUES "
+							.implode(', ', array_fill(0, $inviteesCount, '(?,?,?)'));
+		$newInviteeParams = [];
+		
+		for($i=0; $i<$inviteesCount; $i++) {
+			$smownerId = $adb->query_result($inviteesResult, $i, 'smownerid');
+			$newParams = [ $inviteeParentId, $smownerId, 'sent' ];
+			$newInviteeParams = array_merge($newInviteeParams, $newParams); 
+		}
+		
+		$adb->pquery($newInviteeQuery, $newInviteeParams);
+	}
 }
 
 ?>
