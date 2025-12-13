@@ -7,6 +7,8 @@
  * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
  ********************************************************************************/
+	// Change working directory to parent directory for compatibility
+	chdir(dirname(__DIR__));
 
 	require_once("config.php");
     /**
