@@ -17,14 +17,20 @@ class Settings_LayoutEditor_Module_Action extends Settings_Vtiger_Index_Action {
     
     public function updateEditReadonlyDisplay(Vtiger_Request $request) {
         $response = new Vtiger_Response();
-        try{
+        try {
             $editReadonlyDisplay = $request->get('edit_readonly_display');
             $sourceModule = $request->get('sourceModule');
+
+            // モジュールの存在チェック
             $moduleModel = Vtiger_Module_Model::getInstance($sourceModule);
+            if (!$moduleModel) {
+                throw new Exception('Invalid module: ' . $sourceModule);
+            }
+
             $moduleModel->updateEditreadonlydisplay($editReadonlyDisplay);
-            $response->setResult(array('success'=>true));
-        }catch(Exception $e) {
-            $response->setError($e->getCode(),$e->getMessage());
+            $response->setResult(array('success' => true));
+        } catch (Exception $e) {
+            $response->setError($e->getCode(), $e->getMessage());
         }
         $response->emit();
     }

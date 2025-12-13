@@ -2169,6 +2169,12 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 			}
 
 			app.request.post({data: params}).then(function (error, data) {
+				if (error) {
+					app.helper.showErrorNotification({
+						message: app.vtranslate('JS_ERROR')
+					});
+					return;
+				}
 				if (data) {
 					app.helper.showSuccessNotification({
 						message: app.vtranslate('JS_STATUS_CHANGED_SUCCESSFULLY')
