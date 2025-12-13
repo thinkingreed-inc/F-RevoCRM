@@ -19,7 +19,7 @@ use Normalizer2 as n;
 class ToAscii {
 
     // Generic UTF-8 to ASCII transliteration
-    public function convertToAscii($s , $subst_chr = '?') {
+    public static function convertToAscii($s , $subst_chr = '?') {
         if (preg_match("/[\x80-\xFF]/", $s))
         {
             static $translitExtra = array();

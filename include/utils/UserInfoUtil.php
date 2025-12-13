@@ -131,7 +131,7 @@ function getDefaultSharingEditAction()
 	$permissionRow=$adb->fetch_array($result);
 	do
 	{
-		for($j=0;$j<count($permissionRow);$j++)
+		for($j=0;$j<php7_count($permissionRow);$j++)
 		{
 			$copy[$permissionRow[1]]=$permissionRow[2];
 		}
@@ -162,7 +162,7 @@ function getDefaultSharingAction()
 	$permissionRow=$adb->fetch_array($result);
 	do
 	{
-		for($j=0;$j<count($permissionRow);$j++)
+		for($j=0;$j<php7_count($permissionRow);$j++)
 		{
 			$copy[$permissionRow[1]]=$permissionRow[2];
 		}
@@ -259,6 +259,11 @@ function getRoleName($roleid)
  */
 function isPermitted($module,$actionname,$record_id='')
 {
+
+	if($module == 'Events'){
+		$module = 'Calendar';
+	}
+
 	global $log;
 	$log->debug("Entering isPermitted(".$module.",".$actionname.",".$record_id.") method ...");
 
@@ -418,6 +423,12 @@ function isPermitted($module,$actionname,$record_id='')
 				$log->debug("Exiting isPermitted method ...");
 				return $permission;
 			}
+			//共有されたカレンダーは編集可能にする。
+			if(isCalendarPermittedForInvitee($module, $record_id)){
+				$permission = "yes";
+				$log->debug("Exiting isPermitted method ...");
+				return $permission;
+			}
 			//Checking if the Record Owner is the Subordinate User
 			foreach($subordinate_roles_users as $roleid=>$userids)
 			{
@@ -446,6 +457,12 @@ function isPermitted($module,$actionname,$record_id='')
 			if(in_array($recOwnId,$current_user_groups))
 			{
 				$permission='yes';
+				$log->debug("Exiting isPermitted method ...");
+				return $permission;
+			}
+			//共有されたカレンダーは編集可能にする。
+			if(isCalendarPermittedForInvitee($module, $record_id)){
+				$permission = "yes";
 				$log->debug("Exiting isPermitted method ...");
 				return $permission;
 			}
@@ -541,7 +558,17 @@ function isPermitted($module,$actionname,$record_id='')
 			{
 				if($module == 'Calendar')
 				{
-					$permission='no';
+					$permission='yes';
+					if($module == 'Calendar') {
+						$activityType = vtws_getCalendarEntityType($record_id);
+						if($activityType == 'Events') {
+							$permission = isCalendarPermittedBySharing($record_id);
+						} else {
+							$permission = isToDoPermittedBySharing($record_id);
+						}
+					}
+					$log->debug("Exiting isPermitted method ...");
+					return $permission;
 				}
 				else
 				{
@@ -567,7 +594,11 @@ function isPermitted($module,$actionname,$record_id='')
 			$permission = "yes";
 		}
 	}else {
-		$permission = "no";
+		if($module === 'PDFTemplates' && $profileTabsPermission[$tabid] === 0) {
+			$permission = "yes";
+		}else {
+			$permission = "no";
+		}
 	}
 
 	$log->debug("Exiting isPermitted method ...");
@@ -1554,6 +1585,7 @@ function getCombinedUserActionPermissions($userId)
 		for($i=1;$i<$no_of_profiles;$i++)
 		{
 			$tempActionPerrArr=getProfileAllActionPermission($profArr[$i]);
+			$tempTabPerArr=getProfileTabsPermission($profArr[$i]);
 
 			foreach($actionPerrArr as $tabId=>$perArr)
 			{
@@ -1562,7 +1594,7 @@ function getCombinedUserActionPermissions($userId)
 					if($per == 1)
 					{
 						$now_permission = $tempActionPerrArr[$tabId][$actionid];
-						if($now_permission == 0 && $now_permission != "")
+						if($now_permission == 0 && $now_permission != "" && $tempTabPerArr[$tabId] == 0)
 						{
 							$actionPerrArr[$tabId][$actionid]=$now_permission;
 						}
@@ -1973,21 +2005,21 @@ function get_current_user_access_groups($module)
 	$sharing_write_group_list=getWriteSharingGroupsList($module);
 	$query ="select groupname,groupid from vtiger_groups";
 	$params = array();
-	if(count($current_user_group_list) > 0 && count($sharing_write_group_list) > 0)
+	if(php7_count($current_user_group_list) > 0 && php7_count($sharing_write_group_list) > 0)
 	{
 		$query .= " where (groupid in (". generateQuestionMarks($current_user_group_list) .") or groupid in (". generateQuestionMarks($sharing_write_group_list) ."))";
 		array_push($params, $current_user_group_list, $sharing_write_group_list);
 		$result = $adb->pquery($query, $params);
 		$noof_group_rows=$adb->num_rows($result);
 	}
-	elseif(count($current_user_group_list) > 0)
+	elseif(php7_count($current_user_group_list) > 0)
 	{
 		$query .= " where groupid in (". generateQuestionMarks($current_user_group_list) .")";
 		array_push($params, $current_user_group_list);
 		$result = $adb->pquery($query, $params);
 		$noof_group_rows=$adb->num_rows($result);
 	}
-	elseif(count($sharing_write_group_list) > 0)
+	elseif(php7_count($sharing_write_group_list) > 0)
 	{
 		$query .= " where groupid in (". generateQuestionMarks($sharing_write_group_list) .")";
 		array_push($params, $sharing_write_group_list);
@@ -2054,7 +2086,7 @@ function getFieldVisibilityPermission($fld_module, $userid, $fieldname, $accessm
 		//get tabid
 		$tabid = getTabid($fld_module);
 
-			if (count($profilelist) > 0) {
+			if (php7_count($profilelist) > 0) {
 			if($accessmode == 'readonly') {
 				$query="SELECT vtiger_profile2field.visible FROM vtiger_field INNER JOIN vtiger_profile2field ON vtiger_profile2field.fieldid=vtiger_field.fieldid INNER JOIN vtiger_def_org_field ON vtiger_def_org_field.fieldid=vtiger_field.fieldid WHERE vtiger_field.tabid=? AND vtiger_profile2field.visible=0 AND vtiger_def_org_field.visible=0  AND vtiger_profile2field.profileid in (". generateQuestionMarks($profilelist) .") AND vtiger_field.fieldname= ? and vtiger_field.presence in (0,2) GROUP BY vtiger_field.fieldid";
 				} else {
@@ -2261,6 +2293,34 @@ function isCalendarPermittedBySharing($recordId)
 	}
 
 	return $permission;
+}
+
+function isCalendarPermittedForInvitee($module, $recordId)
+{
+
+	$activityType = vtws_getCalendarEntityType($recordId);
+	$isPermission = false;	
+	if($module != 'Calendar' || $activityType != 'Events') {
+		return $isPermission;
+	}
+
+	global $adb, $current_user;
+	$query = "SELECT
+					a.activityid
+				FROM
+					vtiger_activity a
+				WHERE
+					a.deleted = 0
+					AND a.invitee_parentid = (SELECT a2.invitee_parentid FROM vtiger_activity a2 WHERE a2.activityid = ?)
+					AND a.smownerid = ?";
+
+	$result = $adb->pquery($query, array($recordId, $current_user->id));
+	
+	if($adb->num_rows($result) > 0) {
+		$isPermission = true;
+	}
+
+	return $isPermission;
 }
 
 function isToDoPermittedBySharing($recordId) {

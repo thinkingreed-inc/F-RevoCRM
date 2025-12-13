@@ -1,11 +1,14 @@
-# F-RevoCRM 7.3
+# F-RevoCRM 7.4.2
 
 F-RevoCRM は日本企業に合わせた形で開発された高機能なCRMです。
 あらゆる顧客接点を管理するために、キャンペーン・リード管理から顧客・商談管理、販売管理、サポート管理・プロジェクト管理まで幅広い機能を持ち合わせています。
 
-## 推奨環境の変更について
-2021年3月26日にアナウンス（ https://github.com/thinkingreed-inc/F-RevoCRM/commit/c33e4e55b7fc83462a60d83fb84215d07796758f ）していたとおり、2022年4月1日を持ちましてIE11環境を非推奨と致しました。  
-以降はGoogle Chromeの最新版、またはChromium Edgeの最新版をご利用ください。
+公式サイト
+https://f-revocrm.jp
+
+## F-RevoCRM 8.0.0で予定している修正について
+F-RevoCRM 8.0.0において、セキュリティ向上等の観点から、/public配下に静的リソースの移動が予定されています。
+既にmainにはこの修正が取り込まれていますが、開発中のため、通常使用される方はReleasesからリリース済のv7.4.2をご使用ください。
 
 ## ライセンス
 Vtiger Public License 1.2
@@ -13,10 +16,16 @@ Vtiger Public License 1.2
 ## サーバ推奨要件
 * 2コア以上、4GB以上のメモリ、40GB以上の空き容量（利用人数・用途によってスペックが大幅に変わる）
 * Apache 2.4以上
-* PHP 5.6 / 7.2以上（8.0以上は除く）
+* PHP 7.4～8.3
+  * php-gd
+  * php-mysqlnd
   * php-imap
-  * php-curl
+  * php-mbstring
   * php-xml
+  * php-bcmath
+  * php-opcache
+  * php-zip
+  * php-curl
   * memory_limit = 512M(min. 256MB)
   * max_execution_time = 0 (min. 60 seconds、0は無制限)
   * error_reporting (E_ERROR & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED)
@@ -26,6 +35,8 @@ Vtiger Public License 1.2
   * storage_engine = InnoDB
   * local_infile = ON (under [mysqld] section)
   * sql_mode = NO_ENGINE_SUBSTITUTION for MySQL 5.6+
+
+※PHPの下位バージョンでも概ね動作しますが、未検証のため推奨から除外しています。
 
 ## F-RevoCRMへのアクセスについて
 本アプリケーションはWebアプリケーションとなりますので、URLへ直接アクセスしてください。  
@@ -49,10 +60,11 @@ Vtiger Public License 1.2
 ## インストール方法（概要）
 以下、F-RevoCRMのインストール方法になります。
 
-* F-RevoCRM7.3のインストール方法はそのまま読み進めてください。
-* F-RevoCRM6.5からのバージョンアップはインストール方法の後に記載があります。
-* F-RevoCRM7.3のパッチ適用方法については各パッチ付属のREADMEを参照してください。
+* F-RevoCRM7.4のインストール方法はそのまま読み進めてください。
+* F-RevoCRM6.5からのバージョンアップはインストール方法の後に記載があります。（F-RevoCRM7.3からのバージョンアップはパッチ適用方法を参照してください。）
+* F-RevoCRM7.4のパッチ適用方法については各パッチ付属のREADMEを参照してください。
 * 本レポジトリをDockerで構築する場合は、[docker/README.md](./docker/README.md)を参照してください。
+* PDF出力にheadlesschromeを利用する場合は、[docker/headlesschrome/README.md](./docker/headlesschrome/README.md)を参照してください。
 
 ### configファイルを独自に設定する場合
 configファイルは`config.inc.php`として、インストール後に生成されます。  
@@ -106,12 +118,27 @@ max_execution_time = 60
 ```
 * 最低要件のため、利用用途等に合わせて数値を大きくしてください。
 
+***注意点3**
+
+「.htaccess」によるアクセス制限を実施しています。
+「.htacesss」が有効になるようにAllowOverride Allに設定してください。
+
+
 ### 2. F-RevoCRMのZIPファイルを解凍、設置
 
 ApacheのDocumentRoot以下に解凍したディレクトリ毎、あるいはファイルを置いて下さい。
 ここでは仮に/var/www/frevocrmに設置したものをとして進めます。
 
-### 3. 初期設定
+### 3. composer installの実行
+
+F-RevoCRMはPHPの各種ライブラリをcomposer経由でインストールする必要があります。
+
+```bash
+cd /var/www/html/frevocrm
+composer install
+```
+
+### 4. 初期設定
 
 3.で設置したF-RevoCRMのURLを開きます。
 * http://example.com/frevocrm
@@ -120,7 +147,7 @@ ApacheのDocumentRoot以下に解凍したディレクトリ毎、あるいは�
 
 
 ## バージョンアップ方法
-F-RevoCRM 6.5 を F-RevoCRM 7.3 にバージョンアップする手順になります。
+F-RevoCRM 6.5 を F-RevoCRM 7.4 にバージョンアップする手順になります。
 
 ### 前提条件
 * F-RevoCRM 6.5 であること（パッチバージョンは問わない）
@@ -136,7 +163,7 @@ F-RevoCRMのデータベース、ファイルを全てバックアップを取�
 # コマンド例
 mv frevocrm frevocrm.20201001
 ```
-2. F-RevoCRM 7.3 インストール直後のファイルをもともとのF-RevoCRMのディレクトリとしてコピーします。
+2. F-RevoCRM 7.4 インストール直後のファイルをもともとのF-RevoCRMのディレクトリとしてコピーします。
 ```
 # コマンド例
 cp -r frevocrm73 frevocrm
@@ -155,7 +182,7 @@ cp -r frevocrm.20201001/storage/* frevocrm/storage/
 ```
 
 ### 3. マイグレーションツールの実行
-タグとしてv7.3.xが追加されるまで、Migrationは実行されません。  
+タグとしてv7.4.xが追加されるまで、Migrationは実行されません。  
 最新のバージョンで実行したい場合は、`vtigerversion.php`のファイルを編集し、次のバージョンを指定してから以下のマイグレーション用のURLを実行してください。
 
 1. アクセスすると自動でマイグレーションが実行されます。
@@ -172,6 +199,15 @@ rm -r frevocrm.20170118
 
 ## 開発環境の構築
 Dockerで構築する為、[docker/README.md](./docker/README.md)を参照してください。  
+
+### 初期設定
+Gitコマンドを使い以下の設定を行ってください。  
+下記コマンドにより、不要な変更点が表示されなくなります。
+```
+git update-index --assume-unchanged parent_tabdata.php
+git update-index --assume-unchanged tabdata.php
+git update-index --assume-unchanged user_privileges/user_privileges_1.php
+```
 
 ### xdebug
 xdebug3がインストール済みです。

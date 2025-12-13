@@ -104,7 +104,7 @@ class Accounts extends CRMEntity {
 	);
         function __construct()
         {
-            $this->log =LoggerManager::getLogger('account');
+            $this->log =Logger::getLogger('account');
             $this->db = PearDatabase::getInstance();
             $this->column_fields = getColumnFields('Accounts');
         }
@@ -477,7 +477,7 @@ class Accounts extends CRMEntity {
 		$userNameSql = getSqlForNameInDisplayFormat(array('last_name' => 'vtiger_users.last_name', 'first_name'=>'vtiger_users.first_name',), 'Users');
 
 		$query = "SELECT DISTINCT(vtiger_activity.activityid), vtiger_activity.subject, vtiger_activity.status, vtiger_activity.eventstatus,
-				vtiger_activity.activitytype, vtiger_activity.date_start, vtiger_activity.due_date, vtiger_activity.time_start, vtiger_activity.time_end,
+				vtiger_activity.activitytype, vtiger_activity.date_start, vtiger_activity.due_date, vtiger_activity.time_start, vtiger_activity.time_end, vtiger_activity.visibility,
 				vtiger_crmentity.modifiedtime, vtiger_crmentity.createdtime, vtiger_crmentity.description,
 				case when (vtiger_users.user_name not like '') then $userNameSql else vtiger_groups.groupname end as user_name
 				FROM vtiger_activity
@@ -965,7 +965,7 @@ class Accounts extends CRMEntity {
 			$profileList = getCurrentUserProfileList();
 			$sql1 = "select vtiger_field.fieldid,fieldlabel from vtiger_field INNER JOIN vtiger_profile2field on vtiger_profile2field.fieldid=vtiger_field.fieldid inner join vtiger_def_org_field on vtiger_def_org_field.fieldid=vtiger_field.fieldid where vtiger_field.tabid=6 and vtiger_field.displaytype in (1,2,4) and vtiger_profile2field.visible=0 and vtiger_def_org_field.visible=0 and vtiger_field.presence in (0,2)";
 			$params1 = array();
-			if (count($profileList) > 0) {
+			if (php7_count($profileList) > 0) {
 				$sql1 .= " and vtiger_profile2field.profileid in (". generateQuestionMarks($profileList) .")  group by fieldid";
 			    array_push($params1,  $profileList);
 			}
@@ -1061,7 +1061,7 @@ class Accounts extends CRMEntity {
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule,$queryPlanner){
+	function generateReportsSecQuery($module,$secmodule,$queryPlanner, $reportid = false){
 
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency('vtiger_crmentityAccounts', array('vtiger_groupsAccounts', 'vtiger_usersAccounts', 'vtiger_lastModifiedByAccounts'));
@@ -1087,7 +1087,7 @@ class Accounts extends CRMEntity {
             $query = "";
         }
 
-		$query .= $this->getRelationQuery($module,$secmodule,"vtiger_account","accountid", $queryPlanner);
+		$query .= $this->getRelationQuery($module,$secmodule,"vtiger_account","accountid", $queryPlanner, $reportid);
 
         if($module == "Calendar"){
             $query .= " OR vtiger_account.accountid = vtiger_tmpcontactdetails.accountid " ;
@@ -1329,6 +1329,7 @@ class Accounts extends CRMEntity {
 			$pot_ids_list[] = $pot_id;
 			$sql = 'UPDATE vtiger_crmentity SET deleted = 1 WHERE crmid = ?';
 			$this->db->pquery($sql, array($pot_id));
+			CRMEntity::updateBasicInformation('Potentials', $pot_id);
 		}
 		//Backup deleted Account related Potentials.
 		$params = array($id, RB_RECORD_UPDATED, 'vtiger_crmentity', 'deleted', 'crmid', implode(",", $pot_ids_list));
@@ -1346,6 +1347,7 @@ class Accounts extends CRMEntity {
 			$quo_id = $this->db->query_result($quo_res,$k,"crmid");
 			$quo_ids_list[] = $quo_id;
 			$sql = 'UPDATE vtiger_crmentity SET deleted = 1 WHERE crmid = ?';
+			CRMEntity::updateBasicInformation('Quotes', $quo_id);
 			$this->db->pquery($sql, array($quo_id));
 		}
 		//Backup deleted Account related Quotes.

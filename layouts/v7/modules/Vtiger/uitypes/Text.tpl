@@ -18,7 +18,7 @@
 {if $FIELD_MODEL->get('uitype') eq '19' || $FIELD_MODEL->get('uitype') eq '20'}
     <textarea style="height:250px; max-width: initial; width:100%;" rows="3" id="{$MODULE}_editView_fieldName_{$FIELD_NAME}" class="inputElement textAreaElement col-lg-12 {if $FIELD_MODEL->isNameField()}nameField{/if}" name="{$FIELD_NAME}" {if $FIELD_NAME eq "notecontent"}id="{$FIELD_NAME}"{/if} {if !empty($SPECIAL_VALIDATOR)}data-validator='{Zend_Json::encode($SPECIAL_VALIDATOR)}'{/if}
         {if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if}
-        {if count($FIELD_INFO['validator'])}
+        {if php7_count($FIELD_INFO['validator'])}
             data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
         {/if}
         >
@@ -27,7 +27,7 @@
 {else}
     <textarea style="height:250px"rows="5" id="{$MODULE}_editView_fieldName_{$FIELD_NAME}" class="inputElement {if $FIELD_MODEL->isNameField()}nameField{/if}" name="{$FIELD_NAME}" {if !empty($SPECIAL_VALIDATOR)}data-validator='{Zend_Json::encode($SPECIAL_VALIDATOR)}'{/if}
         {if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if}
-        {if count($FIELD_INFO['validator'])}
+        {if php7_count($FIELD_INFO['validator'])}
             data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
         {/if}
         >

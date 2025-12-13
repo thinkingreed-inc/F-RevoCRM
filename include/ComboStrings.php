@@ -139,9 +139,9 @@ $combo_strings = Array(
                 , 'CRM Applications'=>'CRM Applications'
                 ),
 'manufacturer_dom' => Array(''=>''
-                , 'AltvetPet Inc.'=>'AltvetPet Inc.'
-                , 'LexPon Inc.'=>'LexPon Inc.'
-                , 'MetBeat Corp'=>'MetBeat Corp'
+                , 'examplecampany1'=>'examplecampany1'
+                , 'examplecampany2'=>'examplecampany2'
+                , 'examplecampany3'=>'examplecampany3'
                 ),
 'ticketcategories_dom' => Array('Big Problem'=>'Big Problem'
                                         ,'Small Problem'=>'Small Problem'

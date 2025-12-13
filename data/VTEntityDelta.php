@@ -10,8 +10,8 @@
 require_once 'include/events/VTEntityData.inc';
 
 class VTEntityDelta extends VTEventHandler {
-	private static $oldEntity;
-	private static $newEntity;
+	private static $oldEntity = array();
+	private static $newEntity = array();
 	private static $entityDelta;
 
 	function  __construct() {
@@ -33,6 +33,7 @@ class VTEntityDelta extends VTEventHandler {
 					$entityData->set('invoicestatus', getInvoiceStatus($recordId));
 				}
 				self::$oldEntity[$moduleName][$recordId] = $entityData;
+				self::$oldEntity[$moduleName][$recordId."_org"] = $entityData;
 			}
 		}
 
@@ -49,6 +50,9 @@ class VTEntityDelta extends VTEventHandler {
 			$entityData->set('comments', getTicketComments($recordId));
 		} elseif($moduleName == 'Invoice') {
 			$entityData->set('invoicestatus', getInvoiceStatus($recordId));
+		}
+		if(!array_key_exists($moduleName, self::$newEntity) && !isset(self::$newEntity[$moduleName][$recordId])) {
+			self::$newEntity[$moduleName][$recordId."_org"] = $entityData;
 		}
 		self::$newEntity[$moduleName][$recordId] = $entityData;
 	}
@@ -71,7 +75,7 @@ class VTEntityDelta extends VTEventHandler {
 				if(!empty($newData[$fieldName])) {
 					$isModified = true;
 				}
-			} elseif($oldData[$fieldName] != $newData[$fieldName]) {
+			} elseif(str_replace(array("\r\n","\r","\n"), "", $oldData[$fieldName]) != str_replace(array("\r\n","\r","\n"), "", $newData[$fieldName])) {
 				$isModified = true;
 			}
 			if($isModified) {
@@ -80,6 +84,10 @@ class VTEntityDelta extends VTEventHandler {
 			}
 		}
 		self::$entityDelta[$moduleName][$recordId] = $delta;
+
+		if($newEntity == self::$newEntity[$moduleName][$recordId."_org"]) {
+			self::$entityDelta[$moduleName][$recordId."_org"] = $delta;
+		}
 	}
 
 	function getEntityDelta($moduleName, $recordId, $forceFetch=false) {
@@ -88,6 +96,10 @@ class VTEntityDelta extends VTEventHandler {
 			$this->computeDelta($moduleName, $recordId);
 		}
 		return self::$entityDelta[$moduleName][$recordId];
+	}
+
+	function setEntityDelta($moduleName, $recordId, $entityDelta) {
+		return self::$entityDelta[$moduleName][$recordId] = $entityDelta;
 	}
 
 	function getOldValue($moduleName, $recordId, $fieldName) {
@@ -108,7 +120,17 @@ class VTEntityDelta extends VTEventHandler {
 		return self::$newEntity[$moduleName][$recordId];
 	}
 	
-	function hasChanged($moduleName, $recordId, $fieldName, $fieldValue = NULL) {
+	function setNewEntity($moduleName, $recordId, $newEntity) {
+		if(!array_key_exists($moduleName, self::$newEntity) && !array_key_exists($recordId, self::$newEntity[$moduleName])) {
+			self::$newEntity[$moduleName][$recordId."_org"] = $newEntity;
+		}
+		return self::$newEntity[$moduleName][$recordId] = $newEntity;
+	}
+
+	function hasChanged($moduleName, $recordId, $fieldName, $fieldValue = NULL, $isCheckOrg = false) {
+		if($isCheckOrg) {
+			$recordId = $recordId."_org";
+		}
 		if(empty(self::$oldEntity[$moduleName][$recordId])) {
 			return false;
 		}
@@ -116,12 +138,42 @@ class VTEntityDelta extends VTEventHandler {
 		if(is_array($fieldDelta)) {
 			$fieldDelta = array_map('decode_html', $fieldDelta);
 		}
-		$result = $fieldDelta['oldValue'] != $fieldDelta['currentValue'];
+				
+		$module = Vtiger_Module::getInstance($moduleName);
+        $fieldModel = Vtiger_Field_Model::getInstance($fieldName, $module);
+        if($fieldModel->getFieldDataType() == "multipicklist") {
+			$fieldDelta_oldValue = explode(' |##| ', $fieldDelta['oldValue']);
+			$fieldDelta_currentValue = explode(' |##| ', $fieldDelta['currentValue']);
+			$result = !empty(array_diff($fieldDelta_oldValue, $fieldDelta_currentValue)) || !empty(array_diff($fieldDelta_currentValue, $fieldDelta_oldValue));
+			if ($fieldValue !== NULL) { //$fieldValueは「～に変更された」条件のとき
+				$fieldValue = explode(' |##| ', $fieldValue);
+				$result = $result && (empty(array_diff($fieldValue, $fieldDelta_currentValue)) && empty(array_diff($fieldDelta_currentValue, $fieldValue)));
+			}
+		} else {
+			$result = str_replace(array("\r\n","\r","\n"), "", $fieldDelta['oldValue']) != str_replace(array("\r\n","\r","\n"), "", $fieldDelta['currentValue']);
+		}
 		if ($fieldValue !== NULL) {
 			$result = $result && ($fieldDelta['currentValue'] === $fieldValue);
 		}
 		return $result;
 	}
 
+	function hasChangedWithPostTranslatedWording($moduleName, $recordId, $fieldName, $fieldValue = NULL, $isCheckOrg = false){
+		if($isCheckOrg) {
+			$recordId = $recordId."_org";
+		}
+		if(empty(self::$oldEntity[$moduleName][$recordId])) {
+			return false;
+		}
+		$fieldDelta = self::$entityDelta[$moduleName][$recordId][$fieldName];
+		if(is_array($fieldDelta)) {
+			$fieldDelta = array_map('decode_html', $fieldDelta);
+		}
+		$result = str_replace(array("\r\n","\r","\n"), "", $fieldDelta['oldValue']) != str_replace(array("\r\n","\r","\n"), "", $fieldDelta['currentValue']);
+		if ($fieldValue !== NULL) {
+			$result = $result && (vtranslate($fieldDelta['currentValue'] , $moduleName) === $fieldValue);
+		}
+		return $result;
+	}
+
 }
-?>

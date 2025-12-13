@@ -16,14 +16,28 @@ class Settings_LoginHistory_ListView_Model extends Settings_Vtiger_ListView_Mode
     public function getBasicListQuery() {
         $db = PearDatabase::getInstance();
         $module = $this->getModule();
-		$userNameSql = getSqlForNameInDisplayFormat(array('last_name' => 'vtiger_users.last_name', 'first_name'=>'vtiger_users.first_name', ), 'Users');
-		
-		$query = "SELECT login_id, $userNameSql AS user_name, user_ip, logout_time, login_time, vtiger_loginhistory.status FROM $module->baseTable 
-				INNER JOIN vtiger_users ON vtiger_users.user_name = $module->baseTable.user_name";
-		
+
 		$search_key = $this->get('search_key');
 		$value = Vtiger_Functions::realEscapeString($this->get('search_value'));
 
+		if(empty($search_key)) {
+			$search_key = 'is_portal';
+			$value = 'false';
+		}
+
+		if($value === 'true') {
+			$value = '1';
+		}
+
+		if($search_key == 'is_portal' && $value == 'false') {
+			$userNameSql = getSqlForNameInDisplayFormat(array('last_name' => 'vtiger_users.last_name', 'first_name'=>'vtiger_users.first_name', ), 'Users');
+		} else {
+			$userNameSql = $module->baseTable.'.user_name';
+		}
+		
+		$query = "SELECT login_id, case when $userNameSql <> '' then $userNameSql else $module->baseTable.user_name end AS user_name, user_ip, login_time, logout_time, vtiger_loginhistory.status, is_portal, login_type FROM $module->baseTable 
+				LEFT JOIN vtiger_users ON vtiger_users.user_name = $module->baseTable.user_name";
+		
         $params = array();
 		if(!empty($search_key) && !empty($value)) {
 			$query .= " WHERE $module->baseTable.$search_key = ?";
@@ -45,11 +59,18 @@ class Settings_LoginHistory_ListView_Model extends Settings_Vtiger_ListView_Mode
 	public function getListViewCount() {
 		$db = PearDatabase::getInstance();
 
-		$module = $this->getModule();
-		$listQuery = "SELECT count(*) AS count FROM $module->baseTable INNER JOIN vtiger_users ON vtiger_users.user_name = $module->baseTable.user_name";
+		if(empty($search_key)) {
+			$search_key = 'is_portal';
+			$value = 'false';
+		}
 
-		$search_key = $this->get('search_key');
-		$value = $this->get('search_value');
+		if($value === 'true') {
+			$value = '1';
+		}
+
+		$module = $this->getModule();
+		$listQuery = "SELECT count(*) AS count FROM $module->baseTable LEFT JOIN vtiger_users ON vtiger_users.user_name = $module->baseTable.user_name";
+
 		$params = array();
 		if(!empty($search_key) && !empty($value)) {
 			$listQuery .= " WHERE $module->baseTable.$search_key = ?";

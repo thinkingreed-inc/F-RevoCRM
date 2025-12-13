@@ -14,10 +14,14 @@ class Settings_LoginHistory_List_View extends Settings_Vtiger_List_View {
 		$viewer = $this->getViewer($request);
 		$this->initializeUsersList($request);
 		$viewer->assign('SELECTED_USER',$request->get('user_name'));
+		$viewer->assign('IS_PORTAL',$request->get('search_value'));
 		parent::preProcess($request, false);
 	}
 
 	function process(Vtiger_Request $request) {
+		$viewer = $this->getViewer($request);
+		$viewer->assign('IS_PORTAL',$request->get('search_value'));
+
 		$this->initializeUsersList($request);
 		parent::process($request);
 	}

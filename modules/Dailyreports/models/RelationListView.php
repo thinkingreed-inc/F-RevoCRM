@@ -17,7 +17,7 @@ class Dailyreports_RelationListView_Model extends Vtiger_RelationListView_Model 
 		$summaryFieldsList = $relatedModuleModel->getSummaryViewFieldsList();
 
 		$headerFields = array();
-		if(count($summaryFieldsList) > 0) {
+		if(php7_count($summaryFieldsList) > 0) {
 			foreach($summaryFieldsList as $fieldName => $fieldModel) {
 				$headerFields[$fieldName] = $fieldModel;
 			}
@@ -36,9 +36,15 @@ class Dailyreports_RelationListView_Model extends Vtiger_RelationListView_Model 
 		$relationModule = $this->getRelationModel()->getRelationModuleModel();
 		$relationModuleName = $relationModule->get('name');
 		$relatedColumnFields = $relationModule->getConfigureRelatedListFields();
-		if(count($relatedColumnFields) <= 0){
+		if(php7_count($relatedColumnFields) <= 0){
 			$relatedColumnFields = $relationModule->getRelatedHistoryListFields();
 		}
+
+		if($relationModuleName == 'Calendar') {
+			//Adding visibility in the related list, showing records based on the visibility
+			$relatedColumnFields['visibility'] = 'visibility';
+		}
+
 		$query = $this->getRelationQuery();
 
 		if ($this->get('whereCondition') && is_array($this->get('whereCondition'))) {
@@ -101,6 +107,8 @@ class Dailyreports_RelationListView_Model extends Vtiger_RelationListView_Model 
 		$limitQuery = $query .' LIMIT '.$startIndex.','.$pageLimit;
 		$result = $db->pquery($limitQuery, array());
 		$relatedRecordList = array();
+		$currentUser = Users_Record_Model::getCurrentUserModel();
+		$groupsIds = Vtiger_Util_Helper::getGroupsIdsForUsers($currentUser->getId());
 		for($i=0; $i< $db->num_rows($result); $i++ ) {
 			$row = $db->fetch_row($result,$i);
 
@@ -110,14 +118,33 @@ class Dailyreports_RelationListView_Model extends Vtiger_RelationListView_Model 
                     $newRow[$relatedColumnFields[$col]] = $val;
                 }
             }
+
 			//To show the value of "Assigned to"
+			$ownerId = $row['smownerid'];
 			$newRow['assigned_user_id'] = $row['smownerid'];
+			if ($relationModuleName == 'Calendar') {
+				$visibleFields = array('activitytype', 'date_start', 'time_start', 'due_date', 'time_end', 'assigned_user_id', 'visibility', 'smownerid', 'parent_id');
+				$visibility = true;
+				if (in_array($ownerId, $groupsIds)) {
+					$visibility = false;
+				} else if ($ownerId == $currentUser->getId()) {
+					$visibility = false;
+				}
+				if (!$currentUser->isAdminUser() && $newRow['visibility'] == 'Private' && $ownerId && $visibility) {
+					foreach ($newRow as $data => $value) {
+						if (in_array($data, $visibleFields) != -1) {
+							unset($newRow[$data]);
+						}
+					}
+					$newRow['subject'] = vtranslate('Busy', 'Events') . '*';
+				}
+			}
 			$record = Vtiger_Record_Model::getCleanInstance($relationModule->get('name'));
             $record->setData($newRow)->setModuleFromInstance($relationModule);
 			$record->setId($row['crmid']);
 			if($relationModule->get('name') == 'Calendar'){
 				$activityid = $row['crmid'];
-				$activitytyperesult = $db->pquery("select activitytype from vtiger_activity left join vtiger_crmentity on vtiger_crmentity.crmid=vtiger_activity.activityid where deleted <> 1 and activityid=$activityid");
+				$activitytyperesult = $db->pquery("select activitytype from vtiger_activity left join vtiger_crmentity on vtiger_crmentity.crmid=vtiger_activity.activityid where vtiger_activity.deleted <> 1 and activityid=$activityid");
 				$activitytype = $db->query_result($activitytyperesult, 0, 'activitytype');
 				$record->set('CalendarModule', $activitytype == 'Task' ? 'Calendar' : 'Events');
 			}

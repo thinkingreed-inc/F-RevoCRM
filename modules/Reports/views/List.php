@@ -180,7 +180,7 @@ class Reports_List_View extends Vtiger_Index_View {
 		if(!$this->listViewEntries){
 			$this->listViewEntries = $listViewModel->getListViewEntries($pagingModel);
 		}
-		$noOfEntries = count($this->listViewEntries);
+		$noOfEntries = php7_count($this->listViewEntries);
 		$viewer->assign('PAGE_NUMBER',$pageNumber);
 		$viewer->assign('LISTVIEW_ENTRIES_COUNT',$noOfEntries);
 		$viewer->assign('LISTVIEW_HEADERS', $this->listViewHeaders);

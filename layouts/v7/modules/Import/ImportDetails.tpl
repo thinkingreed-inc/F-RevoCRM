@@ -32,7 +32,7 @@
 						{/foreach}
 					</table>
 				</div>
-				<input type="hidden" class="triggerEventName" value="{$smarty.request.triggerEventName}"/>
+				<input type="hidden" class="triggerEventName" value="{$REQ.triggerEventName}"/>
 			</div>
 		</div>
 	</div>

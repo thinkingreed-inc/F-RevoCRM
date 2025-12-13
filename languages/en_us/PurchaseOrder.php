@@ -30,6 +30,7 @@ $languageStrings = array(
 	'Sales Commission' => 'Sales Commission',
     'LBL_PAID' => 'Paid',
     'LBL_BALANCE' => 'Balance',
+	'Paid' => 'Paid',
 
 	//Added for existing Picklist Entries
 
@@ -49,8 +50,11 @@ $languageStrings = array(
 	'LBL_COMPANY_ADDRESS' => 'Company Address',
 	'LBL_ACCOUNT_ADDRESS' => 'Organization Address',
 	'LBL_VENDOR_ADDRESS' => 'Vendor Address',
-	'LBL_CONTACT_ADDRESS' => 'Contact Address'
+	'LBL_CONTACT_ADDRESS' => 'Contact Address',
 	
+	//F-RevoCRM
+	'Open Purchase Orders' => 'Open Purchase Orders',
+	'Received Purchase Orders' => 'Received Purchase Orders',
 );
 
 $jsLanguageStrings = array(

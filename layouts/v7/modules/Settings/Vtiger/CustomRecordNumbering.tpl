@@ -16,7 +16,7 @@
 						<button type="button" class="btn addButton btn-default" name="updateRecordWithSequenceNumber">{vtranslate('LBL_UPDATE_MISSING_RECORD_SEQUENCE', $QUALIFIED_MODULE)}</button>
 					</div>
 					<div>
-						<h4>{vtranslate('LBL_CUSTOMIZE_RECORD_NUMBERING', $QUALIFIED_MODULE)}</h4>
+						<h4>{vtranslate('LBL_RECORD_NUMBERING', $QUALIFIED_MODULE)}</h4>
 					</div>
 				</div>
 				<hr>

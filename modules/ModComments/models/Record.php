@@ -118,14 +118,14 @@ class ModComments_Record_Model extends Vtiger_Record_Model {
 			if (!empty($customer)) {
 				$recordModel = Vtiger_Record_Model::getInstanceById($customer);
 				$imageDetails = $recordModel->getImageDetails();
-				if(!empty($imageDetails)) {
+				if (!empty($imageDetails[0]['url'])) {
 					return $imageDetails[0]['url'];
 				} else
 					return vimage_path('CustomerPortal.png');
 			} else {
-				$imagePath = $commentor->getImageDetails();
-				if (!empty($imagePath[0]['name'])) {
-					return $imagePath[0]['url'];
+				$imageDetails = $commentor->getImageDetails();
+				if (!empty($imageDetails[0]['url'])) {
+					return $imageDetails[0]['url'];
 				}
 			}
 		} elseif ($isMailConverterType) {
@@ -141,10 +141,10 @@ class ModComments_Record_Model extends Vtiger_Record_Model {
 	 */
 	public static function getInstanceById($record, $module=null) {
 		$db = PearDatabase::getInstance();
-		$result = $db->pquery('SELECT vtiger_modcomments.*, vtiger_crmentity.smownerid,
+		$result = $db->pquery('SELECT vtiger_modcomments.*, vtiger_modcomments.smownerid,
 					vtiger_crmentity.createdtime, vtiger_crmentity.modifiedtime FROM vtiger_modcomments
 					INNER JOIN vtiger_crmentity ON vtiger_modcomments.modcommentsid = vtiger_crmentity.crmid
-					WHERE modcommentsid = ? AND deleted = 0', array($record));
+					WHERE modcommentsid = ? AND vtiger_modcomments.deleted = 0', array($record));
 		if($db->num_rows($result)) {
 			$row = $db->query_result_rowdata($result, $i);
 			$self = new self();
@@ -429,4 +429,41 @@ class ModComments_Record_Model extends Vtiger_Record_Model {
 		$htmlParser = new Vtiger_MailParser($this->getName());
 		return $htmlParser->parseHtml();
 	}
+
+	public function delete() {
+		global $adb;
+
+		$childComments = $this->getChildComments();
+
+		$attachmentRes = $adb->pquery("SELECT * FROM vtiger_attachments
+						INNER JOIN vtiger_seattachmentsrel ON vtiger_attachments.attachmentsid = vtiger_seattachmentsrel.attachmentsid
+						WHERE vtiger_seattachmentsrel.crmid = ?", array($this->getId()));
+		$numOfRows = $adb->num_rows($attachmentRes);
+		$attachmentsList = array();
+		if($numOfRows) {
+			for($i=0; $i<$numOfRows; $i++) {
+				$attachmentsList[$i]['fileid'] = $adb->query_result($attachmentRes, $i, 'attachmentsid');
+				$attachmentsList[$i]['attachment'] = decode_html($adb->query_result($attachmentRes, $i, 'name'));
+				$path = $adb->query_result($attachmentRes, $i, 'path');
+				$attachmentsList[$i]['path'] = $path;
+				$attachmentsList[$i]['size'] = filesize($path.$attachmentsList[$i]['fileid'].'_'.$attachmentsList[$i]['attachment']);
+				$attachmentsList[$i]['type'] = $adb->query_result($attachmentRes, $i, 'type');
+				$attachmentsList[$i]['cid'] = $adb->query_result($attachmentRes, $i, 'cid');
+				$storedname = $adb->query_result($attachmentRes, $i, 'storedname');
+
+				unlink($path.$attachmentsList[$i]['fileid'].'_'.$storedname);
+				$adb->pquery("DELETE FROM vtiger_attachments WHERE attachmentsid = ?", array($attachmentsList[$i]['fileid']));
+				$adb->pquery("DELETE FROM vtiger_seattachmentsrel WHERE attachmentsid = ?", array($attachmentsList[$i]['fileid']));
+				$adb->pquery("DELETE FROM vtiger_crmentity WHERE crmid = ?", array($attachmentsList[$i]['fileid']));
+			}
+		}
+		$adb->pquery("DELETE FROM vtiger_modcomments WHERE modcommentsid = ?", array($this->getId()));
+		$adb->pquery("DELETE FROM vtiger_crmentity WHERE crmid = ?", array($this->getId()));
+
+		// 子コメントを削除する。
+		foreach ($childComments as $key => $childComment) {
+			$childComment->delete();
+		}
+	}
+	
 }

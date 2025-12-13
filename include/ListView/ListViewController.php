@@ -69,7 +69,7 @@ class ListViewController {
 		$columnName = $field->getColumnName();
 		if($field->referenceFieldName) {
 			preg_match('/(\w+) ; \((\w+)\) (\w+)/', $field->referenceFieldName, $matches);
-			if (count($matches) != 0) {
+			if (php7_count($matches) != 0) {
 				list($full, $parentReferenceFieldName, $referenceModule, $referenceFieldName) = $matches;
 			}
 			$columnName = $parentReferenceFieldName.$referenceFieldName;
@@ -84,7 +84,7 @@ class ListViewController {
 		}
 
 		$idList = array_keys($idList);
-		if(count($idList) == 0) {
+		if(php7_count($idList) == 0) {
 			return;
 		}
 		if($parentReferenceFieldName) {
@@ -166,7 +166,7 @@ class ListViewController {
 
 				//if the assigned to is related to the reference field
 				preg_match('/(\w+) ; \((\w+)\) (\w+)/', $fieldName, $matches);
-				if(count($matches) > 0) {
+				if(php7_count($matches) > 0) {
 					list($full, $referenceParentField, $module, $fieldName) = $matches;
 					$columnName = strtolower($referenceParentField.$fieldName);
 				} else {
@@ -179,7 +179,7 @@ class ListViewController {
 						$idList[] = $id;
 					}
 				}
-				if(count($idList) > 0) {
+				if(php7_count($idList) > 0) {
 					if(!is_array($this->ownerNameList[$fieldName])) {
 						$this->ownerNameList[$fieldName] = getOwnerNameList($idList);
 					} else {
@@ -208,7 +208,7 @@ class ListViewController {
 		//performance optimization for uitype 61
 		$attachmentsCache = array();
 		$attachmentIds = array();
-		if(count($fileTypeFields)) {
+		if(php7_count($fileTypeFields)) {
 			foreach($fileTypeFields as $fileTypeField) {
 				for ($i = 0; $i < $rowCount; ++$i) {
 					$attachmentId = $db->query_result($result,$i,$fileTypeField);
@@ -216,7 +216,7 @@ class ListViewController {
 				}
 			}
 		}
-		if(count($attachmentIds)) {
+		if(php7_count($attachmentIds)) {
 			$getAttachmentsNamesSql = 'SELECT attachmentsid,name FROM vtiger_attachments WHERE attachmentsid IN (' . generateQuestionMarks($attachmentIds) . ')';
 			$attachmentNamesRes = $db->pquery($getAttachmentsNamesSql,$attachmentIds);
 			$attachmentNamesRowCount = $db->num_rows($attachmentNamesRes);
@@ -255,7 +255,7 @@ class ListViewController {
 				$fieldDataType = $field->getFieldDataType();
 				// for reference fields read the value differently
 				preg_match('/(\w+) ; \((\w+)\) (\w+)/', $fieldName, $matches);
-				if(count($matches) > 0) {
+				if(php7_count($matches) > 0) {
 					list($full, $referenceParentField, $module, $fieldName) = $matches;
 					$matches = null;
 					$rawValue = $this->db->query_result($result, $i, strtolower($referenceParentField.$fieldName));
@@ -438,7 +438,7 @@ class ListViewController {
 						$value = '--';
 					}
 				} elseif($field->getUIType() == 98) {
-					$value = '<a href="index.php?module=Roles&parent=Settings&view=Edit&record='.$value.'">'.textlength_check(getRoleName($value)).'</a>';
+					$value = '<a href="index.php?module=Roles&parent=Settings&view=Edit&record='.$value.'">'.textlength_check(vtranslate(getRoleName($value), 'Vtiger')).'</a>';
 				} elseif($fieldDataType == 'multipicklist') {
 					if ($value != '') {
 						$moduleName = getTabModuleName($field->getTabId());
@@ -461,7 +461,7 @@ class ListViewController {
 				} elseif($field->getFieldDataType() == 'reference') {
 					$referenceFieldInfoList = $this->queryGenerator->getReferenceFieldInfoList();
 					$moduleList = $referenceFieldInfoList[$fieldName];
-					if(count($moduleList) == 1) {
+					if(php7_count($moduleList) == 1) {
 						$parentModule = $moduleList[0];
 					} else {
 						$parentModule = $this->typeList[$value];
@@ -497,8 +497,8 @@ class ListViewController {
 				} elseif ( in_array($uitype,array(7,9,90)) ) {
 					$value = "<span align='right'>".textlength_check($value)."</span>";
 				} elseif($field && $field->isNameField) {
-					$value = "<a href='?module=$field->moduleName&view=Detail&".
-								"record=$recordId' title='".vtranslate($field->moduleName, $field->moduleName)."'>$value</a>";
+					$value = "<a href='index.php?module=$field->moduleName&view=Detail&".
+								"record=$recordId' title='".vtranslate($field->moduleName, $field->moduleName).":". $value ."'>$value</a>";
 				} elseif($field->getUIType() == 61) {
 					$attachmentId = (int)$value;
 					$displayValue = '--';

@@ -50,7 +50,7 @@ if($_REQUEST['step']!='undo'){
 	$ical_activities = $ical->iCalReader($binFile);
 
 	$count['Events'] = $count['Calendar'] = $skip_count['Events'] = $skip_count['Calendar'] = 0;
-	for($i=0;$i<count($ical_activities);$i++){
+	for($i=0;$i<php7_count($ical_activities);$i++){
 		if($ical_activities[$i]['TYPE'] == 'VEVENT'){
 			$activity = new iCalendar_event;
 			$module = 'Events';

@@ -15,6 +15,8 @@ class Vtiger_Language_Handler {
 
 	//Contains module language translations
 	protected static $languageContainer;
+	protected static $fileExists = array();
+	protected static $userLanguage;
 
 	/**
 	 * Functions that gets translated string
@@ -43,6 +45,7 @@ class Vtiger_Language_Handler {
 		if ($translatedString === null) {
 			$translatedString = $key;
 		}
+		$translatedString = Settings_LanguageConverter_Module_Model::convertTranslate($translatedString, $module);
 		return $translatedString;
 	}
 
@@ -61,6 +64,7 @@ class Vtiger_Language_Handler {
 			return null;
 		$moduleStrings = self::getModuleStringsFromFile($language, $module);
 		if (!empty($moduleStrings['languageStrings'][$key])) {
+			$moduleStrings['languageStrings'][$key] = Settings_LanguageConverter_Module_Model::convertTranslate($moduleStrings['languageStrings'][$key], $$module);
 			return $moduleStrings['languageStrings'][$key];
 		}
 		// Lookup for the translation in base module, in case of sub modules, before ending up with common strings
@@ -71,14 +75,16 @@ class Vtiger_Language_Handler {
 			}
 			$moduleStrings = self::getModuleStringsFromFile($language, $baseModule);
 			if (!empty($moduleStrings['languageStrings'][$key])) {
+				$moduleStrings['languageStrings'][$key] = Settings_LanguageConverter_Module_Model::convertTranslate($moduleStrings['languageStrings'][$key], $$module);
 				return $moduleStrings['languageStrings'][$key];
 			}
 		}
 
 		$commonStrings = self::getModuleStringsFromFile($language);
-		if (!empty($commonStrings['languageStrings'][$key]))
+		if (!empty($commonStrings['languageStrings'][$key])) {
+			$moduleStrings['languageStrings'][$key] = Settings_LanguageConverter_Module_Model::convertTranslate($moduleStrings['languageStrings'][$key], $$module);
 			return $commonStrings['languageStrings'][$key];
-
+		}
 		return null;
 	}
 
@@ -88,7 +94,7 @@ class Vtiger_Language_Handler {
 	 * @param <String> $module - module scope in which the translation need to be check
 	 * @return <String> - translated string
 	 */
-	public static function getJSTranslatedString($key, $module = '', $language = '') {
+	public static function getJSTranslatedString($language, $key, $module = '') {
 		if (empty($language)) {
 			$language = self::getLanguage();
 		}
@@ -127,11 +133,18 @@ class Vtiger_Language_Handler {
 	 */
 	public static function getModuleStringsFromFile($language, $module='Vtiger'){
 		$module = str_replace(':', '.', $module);
+		if (!empty(self::$languageContainer[$language][$module])) {
+		    return self::$languageContainer[$language][$module];
+		}
 		if(empty(self::$languageContainer[$language][$module])){
 			$qualifiedName = 'languages.'.$language.'.'.$module;
 			$file = Vtiger_Loader::resolveNameToPath($qualifiedName);
 			$languageStrings = $jsLanguageStrings = array();
-			if(file_exists($file)){
+			if (!self::$fileExists[$file]) {
+				self::$fileExists[$file] = file_exists($file) ? 'yes' : 'no';
+			}
+			if (self::$fileExists[$file] == 'yes') {
+				checkFileAccessForInclusion($file);
 				require $file;
 				foreach($languageStrings as $key => $value) {
 					$languageStrings[$key] = Settings_LanguageConverter_Module_Model::convertTranslate($value, $moudle, $language);
@@ -148,7 +161,11 @@ class Vtiger_Language_Handler {
         $file = Vtiger_Loader::resolveNameToPath($qualifiedCustomName);
 
         $languageStrings = $jsLanguageStrings = array();
-		if(file_exists($file)){
+		if (!self::$fileExists[$file]) {
+			self::$fileExists[$file] = file_exists($file) ? 'yes' : 'no';
+		}
+		if (self::$fileExists[$file] == 'yes') {            
+			checkFileAccessForInclusion($file);	
 			require $file;
 			foreach($languageStrings as $key => $value) {
 				$languageStrings[$key] = Settings_LanguageConverter_Module_Model::convertTranslate($value, $moudle, $language);
@@ -156,9 +173,9 @@ class Vtiger_Language_Handler {
 			foreach($jsLanguageStrings as $key => $value) {
 				$jsLanguageStrings[$key] = Settings_LanguageConverter_Module_Model::convertTranslate($value, $moudle, $language);
 			}
-            self::$languageContainer[$language][$module]['languageStrings'] = array_merge(self::$languageContainer[$language][$module]['languageStrings'],$languageStrings);
-            self::$languageContainer[$language][$module]['jsLanguageStrings'] = array_merge(self::$languageContainer[$language][$module]['jsLanguageStrings'],$jsLanguageStrings);
-        } 
+			self::$languageContainer[$language][$module]['languageStrings'] = array_merge(self::$languageContainer[$language][$module]['languageStrings'],$languageStrings);
+			self::$languageContainer[$language][$module]['jsLanguageStrings'] = array_merge(self::$languageContainer[$language][$module]['jsLanguageStrings'],$jsLanguageStrings);
+		} 
 		$return = array();
 		if(isset(self::$languageContainer[$language][$module])){
 			$return = self::$languageContainer[$language][$module];
@@ -171,12 +188,17 @@ class Vtiger_Language_Handler {
 	 * @return <String> -
 	 */
 	public static function getLanguage() {
+		if (self::$userLanguage) {
+			return self::$userLanguage;
+		}
 		$userModel = Users_Record_Model::getCurrentUserModel();
 		$language = '';
 		if (!empty($userModel) && $userModel->has('language')) {
 			$language = $userModel->get('language');
 		}
-		return empty($language) ? vglobal('default_language') : $language;
+		$userLang = empty($language) ? vglobal('default_language') : $language;
+		self::$userLanguage = $userLang;
+		return $userLang;
 	}
 
 	/**
@@ -260,7 +282,7 @@ class Vtiger_Language_Handler {
 
 function vtranslate($key, $moduleName = '') {
 	$unformattedArgs = func_get_args();
-	if(count($unformattedArgs) > 2){ 
+	if(php7_count($unformattedArgs) > 2){ 
 		// slice an array by taking first 2 values into another array.
 		$formattedArgs = array_slice($unformattedArgs,0,2);
 		// Make third value as empty
@@ -275,7 +297,7 @@ function vtranslate($key, $moduleName = '') {
 	}
 	$formattedString = call_user_func_array(array('Vtiger_Language_Handler', 'getTranslatedString'), $args);
 
-    if(count($unformattedArgs) > 2){
+    if(php7_count($unformattedArgs) > 2){
 		// Remove first three values from an array (key,modulename,languagecode)
 		array_shift($args); array_shift($args);array_shift($args);
 	} else {

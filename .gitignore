@@ -4,14 +4,16 @@
 .settings
 .setting
 .project
+.claude
 .idea/*
-logs/*
+logs/*.log
 cache/images/*
 !cache/images/.htaccess
 cache/import/*
 !cache/import/.htaccess
 cache/upload/*
 !cache/upload/.htaccess
+cache/*.zip
 storage/*
 !storage/.htaccess
 test/curumeru_csv/*
@@ -32,5 +34,6 @@ config.inc.php
 /*.xlsx
 .DS_Store
 .vscode
-docker-compose.override.yml
+compose.override.yaml
 .env
+/vendor

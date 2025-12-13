@@ -10,6 +10,8 @@
 
 vimport('~~modules/Settings/MailConverter/handlers/MailScannerAction.php');
 vimport('~~modules/Settings/MailConverter/handlers/MailScannerRule.php');
+require_once "include/events/SqlResultIterator.inc";
+
 
 class Settings_MailConverter_RuleRecord_Model extends Settings_Vtiger_Record_Model {
 
@@ -250,8 +252,27 @@ class Settings_MailConverter_RuleRecord_Model extends Settings_Vtiger_Record_Mod
 	public static function getDefaultActions() {
 		return array('CREATE_HelpDesk_FROM', 'UPDATE_HelpDesk_SUBJECT', 'LINK_Contacts_FROM', 'LINK_Contacts_TO', 'LINK_Leads_FROM', 'LINK_Leads_TO', 'LINK_Accounts_FROM', 'LINK_Accounts_TO');
 	}
+	public static function getCustomActions()
+    {
+        $db = PearDatabase::getInstance();
 
-	public function getAssignedTo($scannerId, $ruleId) {
+        $result = $db->pquery("SELECT module_name,method_name FROM vtiger_mailscanner_entitymethod WHERE 1=1", array());
+        $it = new SqlResultIterator($db, $result);
+        $methodNames = array();
+        foreach ($it as $row) {
+            unset($method_name);
+            $method_name = $row->method_name;
+            $module_name = $row->module_name;
+
+            $methodNames[] = $method_name . "_" . $module_name . "_" . "FROM";
+            $methodNames[] = $method_name . "_" . $module_name . "_" . "TO";
+            $methodNames[] = $method_name . "_" . $module_name . "_" . "SUBJECT";
+
+        }
+
+        return $methodNames;
+    }
+	public static function getAssignedTo($scannerId, $ruleId) {
 		$db = PearDatabase::getInstance();
 		$result = $db->pquery("SELECT assigned_to FROM vtiger_mailscanner_rules WHERE scannerid = ? AND ruleid = ?", array($scannerId, $ruleId));
 		$id = $db->query_result($result, 0, 'assigned_to');

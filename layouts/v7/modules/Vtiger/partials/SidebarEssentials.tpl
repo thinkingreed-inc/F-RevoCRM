@@ -22,13 +22,13 @@
             <div class="menu-scroller scrollContainer" style="position:relative; top:0; left:0;">
 				<div class="list-menu-content">
 						{assign var="CUSTOM_VIEW_NAMES" value=array()}
-                        {if $CUSTOM_VIEWS && count($CUSTOM_VIEWS) > 0}
+                        {if $CUSTOM_VIEWS && php7_count($CUSTOM_VIEWS) > 0}
                             {foreach key=GROUP_LABEL item=GROUP_CUSTOM_VIEWS from=$CUSTOM_VIEWS}
                             {if $GROUP_LABEL neq 'Mine' && $GROUP_LABEL neq 'Shared'}
                                 {continue}
                              {/if}
                             <div class="list-group" id="{if $GROUP_LABEL eq 'Mine'}myList{else}sharedList{/if}">   
-                                <h6 class="lists-header {if count($GROUP_CUSTOM_VIEWS) <=0} hide {/if}" >
+                                <h6 class="lists-header {if php7_count($GROUP_CUSTOM_VIEWS) <=0} hide {/if}" >
                                     {if $GROUP_LABEL eq 'Mine'}
                                         {vtranslate('LBL_MY_LIST',$MODULE)}
                                     {else}
@@ -69,10 +69,10 @@
                                         {/foreach}
                                     </ul>
 								<div class='clearfix'> 
-									{if $smarty.foreach.customView.iteration - 10 - $count} 
-										<a class="toggleFilterSize" data-more-text=" {$smarty.foreach.customView.iteration - 10 - $count} {vtranslate('LBL_MORE',Vtiger)|@strtolower}" data-less-text="Show less">
-											{if $smarty.foreach.customView.iteration gt 10} 
-												{$smarty.foreach.customView.iteration - 10 - $count} {vtranslate('LBL_MORE',Vtiger)|@strtolower} 
+									{if php7_count($GROUP_CUSTOM_VIEWS) gt 10} 
+										<a class="toggleFilterSize" data-more-text=" {php7_count($GROUP_CUSTOM_VIEWS) - 10 - $count} {vtranslate('LBL_MORE',Vtiger)|@strtolower}" data-less-text="{vtranslate('LBL_LESS',Vtiger)|@strtolower}">
+											{if php7_count($GROUP_CUSTOM_VIEWS) gt 10} 
+												{php7_count($GROUP_CUSTOM_VIEWS) - 10 - $count} {vtranslate('LBL_MORE',Vtiger)|@strtolower} 
 											{/if} 
 										</a>{/if} 
 									</div>
@@ -138,29 +138,30 @@
             <div class="menu-scroller scrollContainer" style="position:relative; top:0; left:0;">
                 <div class="list-menu-content">
                     <div id="listViewTagContainer" class="multiLevelTagList" 
-                    {if $ALL_CUSTOMVIEW_MODEL} data-view-id="{$ALL_CUSTOMVIEW_MODEL->getId()}" {/if}
-                    data-list-tag-count="{Vtiger_Tag_Model::NUM_OF_TAGS_LIST}">
+                        {if $ALL_CUSTOMVIEW_MODEL} data-view-id="{$ALL_CUSTOMVIEW_MODEL->getId()}" {/if}
+                        data-list-tag-count="{Vtiger_Tag_Model::NUM_OF_TAGS_LIST}">
                         {foreach item=TAG_MODEL from=$TAGS name=tagCounter}
                             {assign var=TAG_LABEL value=$TAG_MODEL->getName()}
                             {assign var=TAG_ID value=$TAG_MODEL->getId()}
+                            {assign var=TAG_OWNER value=$TAG_MODEL->get('owner')}
                             {if $smarty.foreach.tagCounter.iteration gt Vtiger_Tag_Model::NUM_OF_TAGS_LIST}
                                 {break}
                             {/if}
                             {include file="Tag.tpl"|vtemplate_path:$MODULE NO_DELETE=true ACTIVE= $CURRENT_TAG eq $TAG_ID}
                         {/foreach}
                         <div> 
-                            <a class="moreTags {if (count($TAGS) - Vtiger_Tag_Model::NUM_OF_TAGS_LIST) le 0} hide {/if}">
-                                <span class="moreTagCount">{count($TAGS) - Vtiger_Tag_Model::NUM_OF_TAGS_LIST}</span>
+                            <a class="moreTags {if (php7_count($TAGS) - Vtiger_Tag_Model::NUM_OF_TAGS_LIST) le 0} hide {/if}">
+                                <span class="moreTagCount">{php7_count($TAGS) - Vtiger_Tag_Model::NUM_OF_TAGS_LIST}</span>
                                 &nbsp;{vtranslate('LBL_MORE',$MODULE)|strtolower}
                             </a>
                             <div class="moreListTags hide">
-                        {foreach item=TAG_MODEL from=$TAGS name=tagCounter}
-                            {if $smarty.foreach.tagCounter.iteration le Vtiger_Tag_Model::NUM_OF_TAGS_LIST}
-                                {continue}
-                            {/if}
-                            {include file="Tag.tpl"|vtemplate_path:$MODULE NO_DELETE=true ACTIVE= $CURRENT_TAG eq $TAG_ID}
-                        {/foreach}
-                             </div>
+                                {foreach item=TAG_MODEL from=$TAGS name=tagCounter}
+                                    {if $smarty.foreach.tagCounter.iteration le Vtiger_Tag_Model::NUM_OF_TAGS_LIST}
+                                        {continue}
+                                    {/if}
+                                    {include file="Tag.tpl"|vtemplate_path:$MODULE NO_DELETE=true ACTIVE= $CURRENT_TAG eq $TAG_ID}
+                                {/foreach}
+                            </div>
                         </div>
                     </div>
                     {include file="AddTagUI.tpl"|vtemplate_path:$MODULE RECORD_NAME="" TAGS_LIST=array()}
@@ -183,6 +184,10 @@
                                         <input type="checkbox" name="visibility" value="{Vtiger_Tag_Model::PUBLIC_TYPE}" />
                                         &nbsp; {vtranslate('LBL_SHARE_TAG',$MODULE)}
                                     </label>
+                                    <div class="tag_owner_name">
+                                        <p>{vtranslate("LBL_CREATOR", $MODULE)}</p>
+                                        <p type="text" class="tagOwnerName" value="" style="width:100%" maxlength="25"></p>
+                                    </div>
                                 </div>
                             </div>
                         </div>

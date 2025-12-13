@@ -96,8 +96,8 @@ class Vtiger_MiniList_Model extends Vtiger_Widget_Model {
 	}
 
 	public function getHeaderCount() {
-		if($this->listviewHeaders) return count($this->listviewHeaders);
-		return count($this->getHeaders());
+		if($this->listviewHeaders) return php7_count($this->listviewHeaders);
+		return php7_count($this->getHeaders());
 	}
 
 	public function getRecordLimit() {

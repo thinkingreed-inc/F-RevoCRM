@@ -20,6 +20,7 @@
 			<div>{getDuplicatesPreventionMessage($MODULE, $DUPLICATE_RECORDS)}</div>
 		</div>
 	{/if}
+    {assign var=CHECK_CONTACTID value=$CHECK_CONTACTID}
     {foreach key=BLOCK_LABEL item=BLOCK_FIELDS from=$RECORD_STRUCTURE name=blockIterator}
         {if $BLOCK_LABEL eq 'LBL_ITEM_DETAILS'}{continue}{/if}
          {if $BLOCK_FIELDS|@count gt 0}
@@ -39,10 +40,10 @@
                                         &nbsp;{vtranslate('SINGLE_Accounts', $MODULE)}
                                     </label>
                                 </div>
-                                <div class="radio">
+                                <div class="radio{if $CHECK_CONTACTID eq false} hidden{/if}">
                                     <label> 
                                         {if $MODULE eq 'Quotes'}
-                                            <input type="radio" name="copyAddressFromRight" class="contactAddress" data-copy-address="billing" checked="checked">
+                                            <input type="radio" name="copyAddressFromRight" class="contactAddressWithoutLead" data-copy-address="billing" checked="checked">
                                             &nbsp;{vtranslate('Related To', $MODULE)}
                                         {else}
                                             <input type="radio" name="copyAddressFromRight" class="contactAddress" data-copy-address="billing" checked="checked">
@@ -73,10 +74,10 @@
                                         &nbsp;{vtranslate('SINGLE_Accounts', $MODULE)}
                                     </label>
                                 </div>
-                                <div class="radio">
+                                <div class="radio{if $CHECK_CONTACTID eq false} hidden{/if}">
                                     <label>
                                         {if $MODULE eq 'Quotes'}
-                                            <input type="radio" name="copyAddressFromLeft" class="contactAddress" data-copy-address="shipping" checked="checked">
+                                            <input type="radio" name="copyAddressFromLeft" class="contactAddressWithoutLead" data-copy-address="shipping" checked="checked">
                                             &nbsp;{vtranslate('Related To', $MODULE)}
                                         {else}
                                             <input type="radio" name="copyAddressFromLeft" class="contactAddress" data-copy-address="shipping" checked="checked">
@@ -104,7 +105,7 @@
                      {foreach key=FIELD_NAME item=FIELD_MODEL from=$BLOCK_FIELDS name=blockfields}
                          {assign var="isReferenceField" value=$FIELD_MODEL->getFieldDataType()}
                          {assign var="refrenceList" value=$FIELD_MODEL->getReferenceList()}
-                         {assign var="refrenceListCount" value=count($refrenceList)}
+                         {assign var="refrenceListCount" value=php7_count($refrenceList)}
                          {if $FIELD_MODEL->isEditable() eq true}
                              {if $FIELD_MODEL->get('uitype') eq "19"}
                                  {if $COUNTER eq '1'}
@@ -117,6 +118,10 @@
                                  {assign var=COUNTER value=1}
                              {else}
                                  {assign var=COUNTER value=$COUNTER+1}
+                             {/if}
+                             {if $FIELD_MODEL->get('uitype') eq "999"}
+                                <td class="blankField"></td><td class="blankField"></td>
+                                {continue}
                              {/if}
                              <td class="fieldLabel alignMiddle">
                              {if $FIELD_MODEL->isMandatory() eq true} <span class="redColor">*</span> {/if}

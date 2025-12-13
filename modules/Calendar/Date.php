@@ -41,7 +41,7 @@ class vt_DateTime
 	 */
         function __construct(&$timearr,$check)
         {
-            if (! isset( $timearr) || count($timearr) == 0 )
+            if (! isset( $timearr) || php7_count($timearr) == 0 )
             {
                     $this->setDateTime(null);
             }

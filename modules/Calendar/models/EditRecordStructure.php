@@ -66,8 +66,14 @@ class Calendar_EditRecordStructure_Model extends Vtiger_EditRecordStructure_Mode
 							}
 							if ($fieldValue == '') {
 								$defaultValue = $fieldModel->getDefaultFieldValue();
-								if ($defaultValue && !$recordId) {
-									$fieldValue = $defaultValue;
+								if ($defaultValue != "" && !$recordId) {
+									$defaultValue = $fieldModel->getDefaultFieldValue();
+									if($fieldModel->getFieldDataType() == "date" && $defaultValue == 'TODAY'){
+										$fieldValue = date('Y-m-d');
+									}
+									else{
+										$fieldValue = $defaultValue;
+									}
 								}
 							}
 							$fieldModel->set('fieldvalue', $fieldValue);

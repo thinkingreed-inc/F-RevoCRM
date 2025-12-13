@@ -12,7 +12,7 @@
 {strip}
 	<div class="col-lg-12 col-sm-12 content-area detailViewInfo extensionDetails extensionWidgetContainer" style='margin-top:0px;'>
 		{if !($ERROR)}
-			<input type="hidden" name="mode" value="{$smarty.request.mode}" />
+			<input type="hidden" name="mode" value="{$REQ.mode}" />
 			<input type="hidden" name="extensionId" value="{$EXTENSION_ID}" />
 			<input type="hidden" name="targetModule" value="{$EXTENSION_DETAIL->get('name')}" />
 			<input type="hidden" name="moduleAction" value="{$MODULE_ACTION}" />

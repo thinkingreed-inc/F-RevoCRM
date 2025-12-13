@@ -32,7 +32,7 @@
             <span title="{if $PIN_CLASS eq 'vicon-pin'}{vtranslate('LBL_PIN_CHART_TO_DASHBOARD',$MODULE)}{else}{vtranslate('LBL_UNPIN_CHART_FROM_DASHBOARD',$MODULE)}{/if}" 
                   class="pinToDashboard dropdown-toggle"  data-recordid="{$LISTVIEW_ENTRY->get('reportid')}" 
                   data-primemodule="{$LISTVIEW_ENTRY->get('primarymodule')}" data-toggle="dropdown"
-                  data-dashboard-tab-count='{count($DASHBOARD_TABS)}'>
+                  data-dashboard-tab-count='{php7_count($DASHBOARD_TABS)}'>
                 <i class="fa icon {$PIN_CLASS} action" style="font-size:13px;"></i>
             </span>
             <ul class="dropdown-menu dashBoardTabMenu">
@@ -41,7 +41,7 @@
                 </li>
                 {foreach from=$DASHBOARD_TABS item=TAB_INFO}
                     <li class='dashBoardTab' data-tab-id='{$TAB_INFO.id}'>
-                        <a href='javascript:void(0);' class="dropdown-item">{$TAB_INFO.tabname}</a>
+                        <a href='javascript:void(0);' class="dropdown-item">{vtranslate($TAB_INFO.tabname,$MODULE)}</a>
                     </li>
                 {/foreach}
             </ul>
@@ -59,8 +59,8 @@
             {/if}    
         
         <div class="btn-group inline-save hide">
-            <button class="button btn-success btn-small save" name="save"><i class="fa fa-check"></i></button>
-            <button class="button btn-danger btn-small cancel" name="Cancel"><i class="fa fa-close"></i></button>
+            <button type="button" class="button btn-success btn-small save" name="save"><i class="fa fa-check"></i></button>
+            <button type="button" class="button btn-danger btn-small cancel" name="Cancel"><i class="fa fa-close"></i></button>
         </div>
     </div>
 {/strip}

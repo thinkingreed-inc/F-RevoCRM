@@ -57,7 +57,7 @@ class RecycleBin_ListView_Model extends Vtiger_ListView_Model {
 			$searchParams = array();
 		}
 		$glue = "";
-		if(count($queryGenerator->getWhereFields()) > 0 && (count($searchParams)) > 0) {
+		if(php7_count($queryGenerator->getWhereFields()) > 0 && (php7_count($searchParams)) > 0) {
 			$glue = QueryGenerator::$AND;
 		}
 		$queryGenerator->parseAdvFilterList($searchParams, $glue);
@@ -81,7 +81,7 @@ class RecycleBin_ListView_Model extends Vtiger_ListView_Model {
 		}
 
 		$listQuery = $this->getQuery();
-		$listQuery = preg_replace("/vtiger_crmentity.deleted\s*=\s*0/i", 'vtiger_crmentity.deleted = 1', $listQuery);
+		$listQuery = preg_replace("/.deleted\s*=\s*0/i", '.deleted = 1', $listQuery);
 
 		$startIndex = $pagingModel->getStartIndex();
 		$pageLimit = $pagingModel->getPageLimit();
@@ -131,18 +131,18 @@ class RecycleBin_ListView_Model extends Vtiger_ListView_Model {
 		}
 
 		$glue = "";
-		if(count($queryGenerator->getWhereFields()) > 0 && (count($searchParams)) > 0) {
+		if(php7_count($queryGenerator->getWhereFields()) > 0 && (php7_count($searchParams)) > 0) {
 			$glue = QueryGenerator::$AND;
 		}
 		$queryGenerator->parseAdvFilterList($searchParams, $glue);
 
 		$listQuery = $queryGenerator->getQuery();
-		$listQuery = preg_replace("/vtiger_crmentity.deleted\s*=\s*0/i", 'vtiger_crmentity.deleted = 1', $listQuery);
+		$listQuery = preg_replace("/.deleted\s*=\s*0/i", '.deleted = 1', $listQuery);
 
 		$position = stripos($listQuery, ' from ');
 		if ($position) {
 			$split = preg_split('/ from /i', $listQuery);
-			$splitCount = count($split);
+			$splitCount = php7_count($split);
 			$listQuery = 'SELECT count(*) AS count ';
 			for ($i=1; $i<$splitCount; $i++) {
 				$listQuery = $listQuery. ' FROM ' .$split[$i];

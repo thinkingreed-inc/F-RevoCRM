@@ -22,9 +22,7 @@
 
 			$query ='SELECT smownerid,enddate,projecttaskstatus,projecttaskpriority
 					FROM vtiger_projecttask
-							INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid=vtiger_projecttask.projecttaskid
-								AND vtiger_crmentity.deleted=0
-							WHERE vtiger_projecttask.projectid = ? ';
+							WHERE vtiger_projecttask.projectid = ? AND vtiger_projecttask.deleted=0';
 
 			$result = $adb->pquery($query, array($this->getId()));
 

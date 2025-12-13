@@ -117,7 +117,7 @@
 
 			$completedEvents = array();
 			if($eventInfos) {
-				while(count($eventInfos) > count($completedEvents)) {
+				while(php7_count($eventInfos) > php7_count($completedEvents)) {
 					$handlerCounter = 0; // Tracks the number of handlers triggered for the current iteration.
 					foreach($eventInfos as $eventInfo){
 						$condition = new VTEventCondition($eventInfo['condition']);
@@ -148,7 +148,7 @@
 							$completedEvents[] = $eventInfo['handler_class'];
 						}
 					}
-					if($handlerCounter == 0 && count($eventInfos) > count($completedEvents)) {
+					if($handlerCounter == 0 && php7_count($eventInfos) > php7_count($completedEvents)) {
 						$uncompletedEvents = array();
 						foreach($eventInfos as $eventInfo){
 							if(!in_array($eventInfo['handler_class'], $completedEvents)) {

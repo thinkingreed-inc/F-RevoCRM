@@ -16,14 +16,30 @@
             <div class="row form-group">
                 <div class="col-sm-2 col-xs-2">{vtranslate('LBL_EVENT_NAME',$QUALIFIED_MODULE)}<span class="redColor">*</span></div>
                 <div class="col-sm-9 col-xs-9">
-                    <input data-rule-required="true" class="inputElement" name="eventName" type="text" value="{$TASK_OBJECT->eventName}" />
+                    <div class="col-sm-7 col-xs-7" style="padding-left: 0">
+                        <input data-rule-required="true" class="fields inputElement" type="text" name="eventName" value="{$TASK_OBJECT->eventName}" id="subject" spellcheck="true"/>
+					</div>
+					<div class="col-sm-5 col-xs-5">
+                        <select style="min-width: 250px" class="task-fields select2" data-placeholder={vtranslate('LBL_SELECT_OPTIONS',$QUALIFIED_MODULE)}>
+							<option></option>
+							{$ALL_FIELD_OPTIONS}
+						</select>
+					</div>
                     {$SHOWN_FIELDS_LIST['subject'] = 'subject'}
                 </div>
             </div>
             <div class="row form-group">
                 <div class="col-sm-2 col-xs-2">{vtranslate('LBL_DESCRIPTION',$QUALIFIED_MODULE)}</div>
                 <div class="col-sm-9 col-xs-9">
-                    <textarea class="inputElement" style="height: inherit;" name="description">{$TASK_OBJECT->description}</textarea>
+                    <div class="col-sm-7 col-xs-7" style="padding-left: 0">
+                        <textarea class="fields inputElement" style="height: inherit;" name="description" id="description">{$TASK_OBJECT->description}</textarea>
+					</div>
+					<div class="col-sm-5 col-xs-5">
+                        <select style="min-width: 250px" class="task-fields select2" data-placeholder={vtranslate('LBL_SELECT_OPTIONS',$QUALIFIED_MODULE)}>
+							<option></option>
+							{$ALL_FIELD_OPTIONS}
+						</select>
+					</div>
                     {$SHOWN_FIELDS_LIST['description'] = 'description'}
                 </div>
             </div>
@@ -65,6 +81,7 @@
                         {/foreach}
                         <optgroup label="{vtranslate('LBL_SPECIAL_OPTIONS')}">
                                 <option value="copyParentOwner" {if $TASK_OBJECT->assigned_user_id eq 'copyParentOwner'} selected="" {/if}>{vtranslate('LBL_PARENT_OWNER')}</option>
+                                <option value="loginUser" {if $TASK_OBJECT->assigned_user_id eq 'loginUser'} selected="" {/if}>{vtranslate('LBL_LOGIN_USER')}</option>
                         </optgroup>
                     </select>
                 </div>

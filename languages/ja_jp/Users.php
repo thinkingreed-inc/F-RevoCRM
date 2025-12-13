@@ -28,6 +28,7 @@ $languageStrings = array(
 	'User Name' => 'ユーザー名',
 	'Default Activity View' => 'カレンダーのデフォルト表示',
 	'Default Calendar View' => 'カレンダーのデフォルト表示',
+	'Shared Calendar Todo View' => '共有カレンダーのToDo表示',
 	'Default Lead View' => 'リードのデフォルト表示',
 	'Title' => '役職',
 	'Office Phone' => '会社電話番号',
@@ -207,6 +208,7 @@ $languageStrings = array(
 	'ForgotPassword' => 'パスワードをお忘れですか？',
 	'LBL_CONNECT_WITH_US' => 'F-RevoCRM Facebook',
 	'LBL_GET_MORE' => 'F-RevoCRMをもっと使い込む',
+	'LBL_SEND_PASSWORD' => 'パスワードをメールで送信します',
 
 	'LBL_TRANSFER_RECORDS_TO_USER' => 'レコードの担当を変更',
 	'LBL_USER_TO_BE_DELETED' => '削除されるユーザー',
@@ -235,6 +237,9 @@ $languageStrings = array(
 	'ListView' => 'リスト表示',
 	'MyCalendar' => '個人カレンダー',
 	'SharedCalendar' => '共有カレンダー',
+	'Hidden' => '非表示',
+	'Self Todo' => '自分のToDo',
+	'All Todo' => '全てのToDo',
 
 	'LBL_CHANGE_OWNER' => '担当の変更',
 	'LBL_TRANSFER_OWNERSHIP' => '所有者を変更',
@@ -244,6 +249,7 @@ $languageStrings = array(
 	'Account Owner' => 'アカウントの所有者',
 	'Starting Day of the week' => '一週間の初めの曜日',
 	'Day starts at' => '一日の開始時刻',
+	'Day ends at' => '一日の終了時刻',
 	'Default Event Status' => '既定の活動ステータス',
 	'Planned' => '計画済み',
 	'Held' => '完了',
@@ -252,6 +258,7 @@ $languageStrings = array(
 	'Meeting' => '会議',
 	'Mobile Call' => '携帯電話に架電',
 	'Default Activity Type' => '既定の活動タイプ',
+	'Calendar Shared Type' => 'カレンダーの共有タイプ',
 	'Default Record View' => '既定のレコードビュー',
 	'Left Panel Hide' => '左パネルを隠す',
 	'Row Height' => '行の高さ',
@@ -271,10 +278,81 @@ $languageStrings = array(
 	'LBL_TEMPLATES' => 'テンプレート',
 	'Default Landing Page' => '初期表示',
 	'CRM Phone Extension' => '内線番号',
+
+	'LBL_LOGIN' => 'ログイン',
+	'LBL_FORGET_PASSWORD' => 'パスワードを忘れた場合は',
+	'LBL_MAILADDRESS' => 'メールアドレス',
+	'LBL_SUBMIT' => '送信',
+	'LBL_F-Revo_Notice' => 'F-RevoCRMに関するお知らせ',
+	'LBL_ENTER_USERNAME_AND_PASSWORD' => 'ユーザー名とパスワードを入力してください',
+	'LBL_ENTER_USERNAME' => 'ユーザー名を入力してください。',
+	'LBL_ENTER_PASSWORD' => 'パスワードを入力してください。',
+	'LBL_ENTER_MAILADDRESS' => 'メールアドレスを入力してください。',
+	'LBL_ENTER_USERNAME_AND_MAILADDRESS' => 'ユーザー名とメールアドレスを入力してください',
+	'LBL_INVALID_MAILADDRESS' => '無効なメールアドレスです。',
+
+	'LBL_INVALID_USERNAME_OR_PASSWORD' => '無効なユーザー名またはパスワード',
+	'LBL_INVALID_USERNAME_OR_MAILADDRESS' => '無効なユーザー名またはE-mailアドレス',
+	'LBL_MAIL_SERVER_NOT_CONFIGURED' => 'メールサーバが設定されていません',
+	'LBL_AN_EMAIL_WAS_SENT_TO_THE_ADDRESS' => 'アドレスにメールを送信しました',
+    'LBL_ADD_PASSKEY' => 'パスキー認証を追加',
+    'LBL_ADD_TOTP' => 'タイムベース認証を追加',
+    'LBL_FAILED_TO_REGISTER_USER_AUTHENTICATION' => 'ユーザー認証情報の登録に失敗しました。',
+    'LBL_FAILED_TO_PASSKEY_VERIFYKEY' => 'パスキーの検証に失敗しました。もう一度お試しください。',
+    'LBL_USE_PASSKEY' => 'パスキーを使用する',
+    'LBL_MULTI_FACTOR_AUTH' => '多要素認証',
+    'LBL_USER_CREDENTIAL_TYPE' => 'ユーザー認証情報タイプ',
+    'LBL_USER_CREDENTIAL_DEVICE_NAME' => 'デバイス名',
+    'LBL_USER_CREDENTIAL_CREATE_AT' => '登録日時',
+    'LBL_USER_CREDENTIAL_DELETE_FAILED_NOT_FOUND' => 'ユーザー認証情報が見つかりません。',
+    'LBL_ADD_MULTI_FACTOR_AUTHENTICATION' => '多要素認証の追加',
+    'LBL_ADD_DEVICE_NAME' => '登録デバイス名を入力してください。',
+    'LBL_ERROR_ADD_USER_CREDENTIAL' => 'ユーザー認証情報の登録に失敗しました。',
+    'LBL_TOTP_CODE_INCORRECT' => 'ワンタイムパスワード認証に失敗しました。もう一度お試しください。',
+    'LBL_PASSKEY_CODE_INCORRECT' => 'パスキー認証に失敗しました。もう一度お試しください。',
+    'LBL_TOTP_CODE_SUBMIT' => 'ワンタイムパスワードを送信',
+	'LBL_BACK_TO_LOGIN' => 'ログイン画面に戻る',
+	'LBL_QR_CODE_READING_MESSAGE1' => 'QRコードをスマートフォンの',
+	'LBL_CREADENTIAL_APPLICATION' => '認証アプリ',
+	'LBL_QR_CODE_READING_MESSAGE2' => 'で読み取ってください。',
+	'LBL_TOTP_CODE_INPUT_MESSAGE' => '認証アプリで生成された6桁の数字を有効期限内に入力し、保存を押してください。',
+	'LBL_TOTP_SIX_CODE' => '6桁の数字',
+	'LBL_TOTP_CAMERA_OR_SECRET_INPUT_MESSAGE' => 'カメラで読み取るか、以下のコードを手動入力',
+	'LBL_SETUP_PARAMETER_MESSAGE_FORCE_MULTI_FACTOR_AUTH' => '多要素認証を強制するフラグです。
+強制しない場合もユーザーが多要素認証を設定している場合は、ログイン時に多要素認証が要求されます。
+true: 強制する
+false: 強制しない',
+	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_TIME' => '多要素認証でUSER_LOCK_COUNTの回数ログインに失敗した際、ユーザーのログインをロックする時間（分）です。
+設定は半角の正の整数値で行ってください。
+全角数値、数値として認識できない文字列、0以下の値を指定した場合などは、ログインロックは行われません。',
+	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_COUNT' => '多要素認証でログインに失敗した際、ユーザーのログインをロックするまでの回数です。
+設定した回数連続で多要素認証に失敗するとユーザーのログインにロックがかかり、USER_LOCK_TIMEで指定した時間が経過するまでログインできません。
+設定は半角の正の整数値で行ってください。
+全角数値、数値として認識できない文字列、0以下の値を指定した場合などは、ログインロックは行われません。',
+	'LBL_PASSKEY' => 'パスキー認証',
+	'LBL_TOTP' => 'タイムベース認証',
+	'LBL_PASSKEY_DESCRIPTION' => '生体認証やデバイス認証を使用した、最新のパスワードレス認証方式です。',
+	'LBL_TOTP_DESCRIPTION' => '認証アプリで生成される6桁の数字（ワンタイムパスワード）を使用する、標準的な認証方式です。',
+	'LBL_PASSKEY_DESCRIPTION1' => '指紋・顔認証・PINで簡単ログイン',
+	'LBL_PASSKEY_DESCRIPTION2' => 'Apple IDやGoogleアカウントにログインしている端末間で同期も可能',
+	'LBL_PASSKEY_DESCRIPTION3' => '複数のデバイスに登録可能',
+	'LBL_PASSKEY_WARNING1' => '*複数デバイスで利用するには、予めタイムベース認証の設定が必要です。',
+	'LBL_PASSKEY_WARNING2' => '*一部の古い端末やブラウザではご利用いただけない場合があります。',
+	'LBL_TOTP_DESCRIPTION1' => '30秒ごとに更新される6桁コード',
+	'LBL_TOTP_DESCRIPTION2' => 'Google Authenticator等のアプリを使用',
+	'LBL_TOTP_DESCRIPTION3' => '一つの認証アプリで全デバイス対応',
+	'LBL_TOTP_DESCRIPTION4' => '幅広いデバイスに対応',
+	'LBL_ADD_MULTI_FACTOR_AUTHENTICATION_FINISH' => '多要素認証の追加が完了しました',
+	'LBL_BACKTO_LOGIN_MESSAGE' => '以下のボタンを押してログインページへ戻ってください。',
+	'LBL_USER_LOCKED_ERROR_MESSAGE' => '多要素認証で定められた試行回数失敗したため、<br>現在ユーザーはロックされています。<br>
+時間をおいて再度試してみるか、管理者に連絡してください。',
+	'LBL_PASSKEY_AUTHENTICATION_MESSAGE' => '生体認証やデバイス認証を使用した、最新のパスワードレス認証方式です。',
+	'LBL_TOTP_AUTHENTICATION_MESSAGE' => '認証アプリで生成される6桁の数字（ワンタイムパスワード）を使用する、標準的な認証方式です。',
+	'passkey' => 'パスキー認証',
+	'totp' => 'タイムベース認証',
 );
 
 $jsLanguageStrings = array(
-
 	//Curency seperator validation messages
 	'JS_ENTER_OLD_PASSWORD'=>'古いパスワードを入力してください。',
 	'JS_ENTER_NEW_PASSWORD'=>'新しいパスワードを入力してください。',
@@ -287,4 +365,16 @@ $jsLanguageStrings = array(
 	'JS_ENTERED_CURRENT_USERNAME_MSG' => '古いユーザー名と同じです。新しいユーザー名を入力してください。',
 	'JS_NEW_ACCESS_KEY_REQUESTED' => '新しいアクセスキーは必須です',
 	'JS_CHANGE_ACCESS_KEY_CONFIRMATION' => '新しいアクセスキーをリクエストしました。古いアクセスキーを利用しているアプリケーションやすべての拡張機能の新しいアクセスキーに置き換える必要があります。続行しますか？',
+
+	'JS_ENTER_NEW_PASSWORD' => '新しいパスワードを入力してください。',
+	'JS_REENTER_PASSWORDS' => '新しいパスワードとパスワードの確認は同じ文字列を入力してください。',
+	'JS_PASSWORD_COMPLEXITY' => '複雑なパスワードを指定してください（アルファベット大文字・小文字、数字、記号を含む8文字以上）。',
+
+	'JS_WEBAUTHN_ERROR' => 'WebAuthn未対応ブラウザ、またはHTTPSでアクセスしてください',
+	'JS_CONFIRM_DELETE_CREDENTIAL' => 'ユーザー認証情報を削除しますか？',
+	'JS_USER_CREDENTIAL_DELETE_SUCCESS' => 'ユーザー認証情報を削除しました。',
+	'JS_USER_CREDENTIAL_DELETE_FAILED' => 'ユーザー認証情報の削除に失敗しました。',
+	'JS_ADD_MULTI_FACTOR_AUTHENTICATION_FINISH' => '多要素認証の追加が完了しました',
+	'JS_MULTI_FACTOR_AUTHENTICATION_USER_CHANCELED' => 'ユーザーによって多要素認証がキャンセルされました',
+	'JS_MULTI_FACTOR_AUTHENTICATION_CHANCELED' => '多要素認証がキャンセルされました',
 );

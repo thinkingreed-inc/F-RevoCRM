@@ -225,7 +225,7 @@ class ServiceContracts extends CRMEntity {
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule,$queryPlanner) {
+	function generateReportsSecQuery($module,$secmodule,$queryPlanner, $reportid = false) {
 
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency('vtiger_crmentityServiceContracts',array('vtiger_groupsServiceContracts','vtiger_usersServiceContracts'));
@@ -234,7 +234,7 @@ class ServiceContracts extends CRMEntity {
 		}
 		$matrix->setDependency('vtiger_servicecontracts',array('vtiger_servicecontractscf','vtiger_crmentityServiceContracts'));
 
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_servicecontracts","servicecontractsid", $queryPlanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_servicecontracts","servicecontractsid", $queryPlanner, $reportid);
 
 		if ($queryPlanner->requireTable("vtiger_crmentityServiceContracts",$matrix)){
 			$query .= " left join vtiger_crmentity as vtiger_crmentityServiceContracts on vtiger_crmentityServiceContracts.crmid = vtiger_servicecontracts.servicecontractsid  and vtiger_crmentityServiceContracts.deleted=0";
@@ -532,8 +532,11 @@ class ServiceContracts extends CRMEntity {
 		$totalUnits = decimalFormat($this->column_fields['total_units']);
 
 		$contractStatus = $this->column_fields['contract_status'];
+        
+        $checkServiceContractExistence = $this->db->pquery('SELECT if (EXISTS (select vsc.servicecontractsid from vtiger_servicecontracts  vsc WHERE vsc.servicecontractsid = ?), 1, 0) AS exist_sc', array($this->id));
+        $ServiceContractExistFlag = isset($checkServiceContractExistence->fields['exist_sc']) ? $checkServiceContractExistence->fields['exist_sc'] : "1";
 
-		// Update the End date if the status is Complete or if the Used Units reaches/exceeds Total Units
+        // Update the End date if the status is Complete or if the Used Units reaches/exceeds Total Units
 		// We need to do this first to make sure Actual duration is computed properly
 		if($contractStatus == 'Complete' || (!empty($usedUnits) && !empty($totalUnits) && $usedUnits >= $totalUnits)) {
 			if(empty($endDate)) {
@@ -542,7 +545,9 @@ class ServiceContracts extends CRMEntity {
 			}
 		} else {
 			$endDate = null;
-			$this->db->pquery('UPDATE vtiger_servicecontracts SET end_date=? WHERE servicecontractsid = ?', array(null, $this->id));
+			if ( $ServiceContractExistFlag !== "0") {
+				$this->db->pquery('UPDATE vtiger_servicecontracts SET end_date=? WHERE servicecontractsid = ?', array(null, $this->id));
+			}
 		}
 
 		// Calculate the Planned Duration based on Due date and Start date. (in days)
@@ -575,7 +580,9 @@ class ServiceContracts extends CRMEntity {
 		if(count($updateCols) > 0) {
 			$updateQuery = 'UPDATE vtiger_servicecontracts SET '. implode(",", $updateCols) .' WHERE servicecontractsid = ?';
 			array_push($updateParams, $this->id);
-			$this->db->pquery($updateQuery, $updateParams);
+			if ( $ServiceContractExistFlag !== "0") {
+				$this->db->pquery($updateQuery, $updateParams);
+			}
 		}
 	}
 

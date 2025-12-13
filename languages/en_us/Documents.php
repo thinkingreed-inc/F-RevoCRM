@@ -32,6 +32,7 @@ $languageStrings = array(
 	'Folder Name' => 'Folder Name',
 	'Document No' => 'Document No',
 	'Last Modified By' => 'Last Modified By',
+	'Download' => 'Download',
 
 	//Folder
 	'LBL_FOLDER_HAS_DOCUMENTS' => 'Please move documents from folder before deleting',

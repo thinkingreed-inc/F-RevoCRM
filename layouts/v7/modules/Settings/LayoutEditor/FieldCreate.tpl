@@ -54,7 +54,7 @@
 								{foreach item=FIELD_TYPE from=$ADD_SUPPORTED_FIELD_TYPES}
 									{if !$IS_FIELD_EDIT_MODE and $FIELD_TYPE eq 'Relation'} {continue}{/if}
 									<option value="{$FIELD_TYPE}" 
-											{if ($FIELD_MODEL->getFieldDataTypeLabel() eq $FIELD_TYPE)}selected='selected'{/if}
+											{if ($FIELD_MODEL->getFieldDataTypeLabel() eq $FIELD_TYPE|| $FIELD_MODEL->getFieldDataTypeLabel() eq 'Relation')}selected='selected'{/if}
 											{foreach key=TYPE_INFO item=TYPE_INFO_VALUE from=$FIELD_TYPE_INFO[$FIELD_TYPE]}
 												data-{$TYPE_INFO}="{$TYPE_INFO_VALUE}"
 											{/foreach}>
@@ -69,7 +69,7 @@
 							{vtranslate('LBL_LABEL_NAME', $QUALIFIED_MODULE)}
 							&nbsp;<span class="redColor">*</span>
 						</label>
-						<div class="controls col-sm-7">
+						<div class="controls col-sm-7 blankValueUi">
 							<input type="text" class='inputElement col-sm-9' maxlength="50" {if $IS_FIELD_EDIT_MODE}disabled="disabled"{/if} name="fieldLabel" value="{vtranslate($FIELD_MODEL->get('label'), $SELECTED_MODULE_NAME)}" data-rule-required='true' style='width: 75%' />
 						</div>
 					</div>
@@ -123,7 +123,9 @@
 							<div class="controls col-sm-7">
 								<select class="col-sm-6 relationModule" name="relationmodule[]" multiple data-rule-required='true'>
 									{foreach key=RELATION_MODULE_NAME item=TRANS_RELATION_MODULE_NAME from=$FIELD_TYPE_INFO['Relation']['relationModules']}
-										<option value="{$RELATION_MODULE_NAME}">{$TRANS_RELATION_MODULE_NAME}</option>
+										{if $RELATION_MODULE_NAME neq 'Calendar' && $RELATION_MODULE_NAME neq 'Events'} {* 関連項目にカレンダー・活動は不要 *}
+											<option value="{$RELATION_MODULE_NAME}">{$TRANS_RELATION_MODULE_NAME}</option>
+										{/if}
 									{/foreach}
 								</select>
 								<p class="related_field_caution">{vtranslate('Users', 'Vtiger')}{vtranslate('LBL_CANT_SELECT_THE_OTHER_MODULE_WITH_USERS_FOR_RELFIELD', 'Vtiger')}</p>

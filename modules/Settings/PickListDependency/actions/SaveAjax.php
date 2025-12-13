@@ -15,7 +15,7 @@ class Settings_PickListDependency_SaveAjax_Action extends Settings_Vtiger_Index_
         $sourceModule = $request->get('sourceModule');
         $sourceField = $request->get('sourceField');
         $targetField = $request->get('targetField');
-        $recordModel = Settings_PickListDependency_Record_Model::getInstance($sourceModule, $sourceField, $targetField);
+        $recordModel = Settings_PickListDependency_Record_Model::getInstanceWith($sourceModule, $sourceField, $targetField);
         
         $response = new Vtiger_Response();
         try{

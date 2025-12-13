@@ -268,7 +268,7 @@ class VtigerCRMObjectMeta extends EntityMeta {
 			}
 			return false;
 		}
-
+		return false;
 	}
 
 	function getUserAccessibleColumns(){
@@ -333,6 +333,13 @@ class VtigerCRMObjectMeta extends EntityMeta {
 			$this->retrieveMeta();
 		}
 		return parent::getOwnerFields();
+	}
+
+	function getBlankFields(){
+		if(!$this->meta){
+			$this->retrieveMeta();
+		}
+		return parent::getBlankFields();
 	}
 
 	function getEntityName(){
@@ -403,13 +410,13 @@ class VtigerCRMObjectMeta extends EntityMeta {
 		if($is_admin == true || $profileGlobalPermission[1] == 0 || $profileGlobalPermission[2] ==0){
 			$sql = "select vtiger_field.*, '0' as readonly from vtiger_field
 				left join vtiger_blocks on vtiger_blocks.blockid = vtiger_field.block
-				where vtiger_field.tabid =? and vtiger_field.block in (".generateQuestionMarks($block).") and vtiger_field.displaytype in (1,2,3,4,5,6)
+				where vtiger_field.tabid =? and vtiger_field.block in (".generateQuestionMarks($block).") and vtiger_field.displaytype in (1,2,3,4,5,6) 
 				order by vtiger_blocks.sequence, vtiger_field.sequence";
-			$params = array($tabid, $block);	
+			$params = array($tabid, $block); 
 		}else{
 			$profileList = getCurrentUserProfileList();
 
-			if (count($profileList) > 0) {
+			if (php7_count($profileList) > 0) {
 				$sql = "SELECT vtiger_field.*, vtiger_profile2field.readonly
 						FROM vtiger_field
 						INNER JOIN vtiger_profile2field
@@ -420,7 +427,7 @@ class VtigerCRMObjectMeta extends EntityMeta {
 						WHERE vtiger_field.tabid =? AND vtiger_profile2field.visible = 0 
 						AND vtiger_profile2field.profileid IN (". generateQuestionMarks($profileList) .")
 						AND vtiger_def_org_field.visible = 0 and vtiger_field.block in (".generateQuestionMarks($block).") and vtiger_field.displaytype in (1,2,3,4,5,6) and vtiger_field.presence in (0,2)
-						group by vtiger_field.columnname
+						group by vtiger_field.columnname 
 						ORDER BY vtiger_blocks.sequence, vtiger_field.sequence";
 				$params = array($tabid, $profileList, $block);
 			} else {
@@ -434,7 +441,7 @@ class VtigerCRMObjectMeta extends EntityMeta {
 						WHERE vtiger_field.tabid=? 
 						AND vtiger_profile2field.visible = 0 
 						AND vtiger_def_org_field.visible = 0 and vtiger_field.block in (".generateQuestionMarks($block).") and vtiger_field.displaytype in (1,2,3,4,5,6) and vtiger_field.presence in (0,2)
-						group by columnname
+						group by columnname 
 						ORDER BY vtiger_blocks.sequence, vtiger_field.sequence";
 				$params = array($tabid, $block);
 			}

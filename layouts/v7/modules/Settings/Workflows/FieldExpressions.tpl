@@ -30,6 +30,9 @@
                             <option></option>
                             {foreach from=$RECORD_STRUCTURE  item=FIELDS}
                                     {foreach from=$FIELDS item=MODULE_FIELD}    
+                                        {if $MODULE_FIELD->getFieldDataType() == 'blank'}
+                                            {continue}
+                                        {/if}
                                         <option value="{$MODULE_FIELD->get('workflow_columnname')}">{vtranslate($MODULE_FIELD->get('workflow_columnlabel'),$MODULE_MODEL->get('name'))}</option>
                                     {/foreach}
                             {/foreach}
@@ -41,6 +44,9 @@
                             <select class="useField" data-placeholder="{vtranslate('LBL_USE_FIELD',$QUALIFIED_MODULE)}" style="min-width: 160px;">
                                 <option></option>
                                     {foreach from=$MODULE_FIELDS item=MODULE_FIELD}
+                                        {if $MODULE_FIELD->getFieldDataType() == 'blank'}
+                                            {continue}
+                                        {/if}
                                         <option value="{$MODULE_FIELD->getName()}">{vtranslate($MODULE_FIELD->get('label'),$QUALIFIED_MODULE)}</option>
                                     {/foreach}
                             </select>
@@ -53,6 +59,10 @@
                             {foreach from=$FIELD_EXPRESSIONS key=FIELD_EXPRESSION_VALUE item=FIELD_EXPRESSIONS_KEY}
                                 <option value="{$FIELD_EXPRESSIONS_KEY}">{vtranslate($FIELD_EXPRESSION_VALUE,$QUALIFIED_MODULE)}</option>
                             {/foreach}
+                    </select>
+                </div>
+                <div class="col-sm-4 hide usePicklistContainer">
+                    <select id="usePicklist" class="usePicklist pull-right" data-placeholder="{vtranslate('LBL_USE_PICKLIST',$QUALIFIED_MODULE)}" style="min-width: 160px;" type="">
                     </select>
                 </div>
             </div><br>

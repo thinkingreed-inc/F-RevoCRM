@@ -38,11 +38,12 @@
         <input type="hidden" name="specificemails" value={ZEND_JSON::encode($REPORT_MODEL->get('specificemails'))}>
         <input type="hidden" name="schtypeid" value="{$REPORT_MODEL->get('schtypeid')}">
         <input type="hidden" name="fileformat" value="{$REPORT_MODEL->get('fileformat')}">
+        <input type="hidden" name="joinColumn" value={$REPORT_MODEL->getJoinColumn()}>
 
         <input type="hidden" class="step" value="2" />
         <div class="" style="border:1px solid #ccc;padding:4%;">
             <div class="form-group">
-                <label>{vtranslate('LBL_SELECT_COLUMNS',$MODULE)}({vtranslate('LBL_MAX',$MODULE)} 25)</label>
+                <label>{vtranslate('LBL_SELECT_COLUMNS',$MODULE)}({vtranslate('LBL_MAX',$MODULE)} 60)</label>
                 <select data-placeholder="{vtranslate('LBL_ADD_MORE_COLUMNS',$MODULE)}" id="reportsColumnsList" style="width :100%;" class="select2-container select2 col-lg-11 columns"  data-rule-required="true" multiple="">
                     {foreach key=PRIMARY_MODULE_NAME item=PRIMARY_MODULE from=$PRIMARY_MODULE_FIELDS}
                         {foreach key=BLOCK_LABEL item=BLOCK from=$PRIMARY_MODULE}
@@ -64,6 +65,32 @@
                     {/foreach}
                 </select>
             </div>
+            {if !empty($SECONDARY_MODULES)}
+            <div class="form-group">
+                <div class="row">
+                    {foreach $SECONDARY_MODULES as $SECONDARY_MODULE_NAME}
+                    <label class="col-lg-6">{vtranslate('LBL_RELATED_FIELD',$MODULE)} : {vtranslate($SECONDARY_MODULE_NAME, $SECONDARY_MODULE_NAME)}</label>
+                    {/foreach}
+                </div>
+                <div class="">
+                    {assign var=JOIN_COLUMN value=explode(",", $REPORT_MODEL->getJoinColumn())}
+                    {foreach $SECONDARY_MODULES as $SECONDARY_MODULE_NAME}
+                    <div class="col-lg-6">
+                        <select class="select2" name="joinfield_{$SECONDARY_MODULE_NAME}">
+                            <option value="">{vtranslate("LBL_AUTO_SELECT", $MODULE)}
+                            {assign var=RELATION_TABLES value=$REPORT_MODEL->getRelationTables($PRIMARY_MODULE_NAME, $SECONDARY_MODULE_NAME)}
+                            {foreach key=JOIN_KEY item=JOIN_VALUE from=$RELATION_TABLES}
+                            {assign var=KEY_VALUE value=explode("::", $JOIN_KEY)}
+                            {assign var=JOIN_KEYNAME value="`$KEY_VALUE[0]`::`$KEY_VALUE[1]`::`$KEY_VALUE[2]`"}
+                            {if $KEY_VALUE[2] eq "default"}{continue}{/if}
+                            <option value="{$JOIN_KEYNAME}" {foreach key=JOIN_COLUMN_KEY item=JOIN_COLUMN_VALUE from=$JOIN_COLUMN}{if $JOIN_KEYNAME eq $JOIN_COLUMN_VALUE}selected{/if}{/foreach}>{vtranslate($KEY_VALUE[3], $KEY_VALUE[1])}
+                            {/foreach}
+                        </select>
+                    </div>
+                    {/foreach}
+                </div>
+            </div>
+            {/if}
             <div class="form-group">
                 <div class="row">
                     <label class="col-lg-6">{vtranslate('LBL_GROUP_BY',$MODULE)}</label>
@@ -78,9 +105,9 @@
                         </div>
                     {/foreach}
                     {assign var=SELECTED_SORT_FEILDS_ARRAY value=$SELECTED_SORT_FIELDS}
-                    {assign var=SELECTED_SORT_FIELDS_COUNT value=count($SELECTED_SORT_FEILDS_ARRAY)}
+                    {assign var=SELECTED_SORT_FIELDS_COUNT value=php7_count($SELECTED_SORT_FEILDS_ARRAY)}
                     {while $SELECTED_SORT_FIELDS_COUNT lt 3 }
-                        <div class="row sortFieldRow" style="padding-bottom:10px;">
+                        <div class="row sortFieldRow" style="padding:10px;">
                             {include file='RelatedFields.tpl'|@vtemplate_path:$MODULE ROW_VAL=$ROW_VAL}
                             {assign var=ROW_VAL value=($ROW_VAL+1)}
                             {assign var=SELECTED_SORT_FIELDS_COUNT value=($SELECTED_SORT_FIELDS_COUNT+1)}

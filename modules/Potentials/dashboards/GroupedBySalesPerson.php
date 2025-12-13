@@ -27,7 +27,7 @@ class Potentials_GroupedBySalesPerson_Dashboard extends Vtiger_IndexAjax_View {
 		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
 		$data = $moduleModel->getPotentialsCountBySalesPerson();
         $listViewUrl = $moduleModel->getListViewUrlWithAllFilter();
-        for($i = 0;$i<count($data);$i++){
+        for($i = 0;$i<php7_count($data);$i++){
             $data[$i]["links"] = $listViewUrl.$this->getSearchParams($data[$i]["last_name"],$data[$i]["link"]).'&nolistcache=1';
         }
 

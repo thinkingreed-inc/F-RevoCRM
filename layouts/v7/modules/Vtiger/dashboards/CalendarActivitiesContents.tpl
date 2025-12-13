@@ -39,7 +39,7 @@
 	{foreachelse}
 		{if $PAGING->get('nextPageExists') neq 'true'}
 			<div class="noDataMsg">
-				{if $smarty.request.name eq 'OverdueActivities'}
+				{if $REQ.name eq 'OverdueActivities'}
 					{vtranslate('LBL_NO_OVERDUE_ACTIVITIES', $MODULE_NAME)}
 				{else}
 					{vtranslate('LBL_NO_SCHEDULED_ACTIVITIES', $MODULE_NAME)}

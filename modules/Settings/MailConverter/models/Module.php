@@ -89,7 +89,7 @@ class Settings_MailConverter_Module_Model extends Settings_Vtiger_Module_Model {
 		return false;
 	}
 
-	public function MailBoxExists() {
+	public static function MailBoxExists() {
 		$db = PearDatabase::getInstance();
 		$result = $db->pquery("SELECT COUNT(*) AS count FROM vtiger_mailscanner", array());
 		$response = $db->query_result($result, 0, 'count');
@@ -98,14 +98,14 @@ class Settings_MailConverter_Module_Model extends Settings_Vtiger_Module_Model {
 		return true;
 	}
 
-	public function getDefaultId() {
+	public static function getDefaultId() {
 		$db = PearDatabase::getInstance();
 		$result = $db->pquery("SELECT MIN(scannerid) AS id FROM vtiger_mailscanner", array());
 		$id = $db->query_result($result, 0, 'id');
 		return $id;
 	}
 
-	public function getMailboxes() {
+	public static function getMailboxes() {
 		$mailBox = array();
 		$db = PearDatabase::getInstance();
 		$result = $db->pquery("SELECT scannerid, scannername FROM vtiger_mailscanner", array());
@@ -117,7 +117,7 @@ class Settings_MailConverter_Module_Model extends Settings_Vtiger_Module_Model {
 		return $mailBox;
 	}
 
-	public function getScannedFolders($id) {
+	public static function getScannedFolders($id) {
 		$folders = array();
 		$db = PearDatabase::getInstance();
 		$result = $db->pquery("SELECT foldername FROM vtiger_mailscanner_folders WHERE scannerid=? AND enabled=1", array($id));
@@ -128,7 +128,7 @@ class Settings_MailConverter_Module_Model extends Settings_Vtiger_Module_Model {
 		return $folders;
 	}
 
-	public function getFolders($id) {
+	public static function getFolders($id) {
 		include_once 'modules/Settings/MailConverter/handlers/MailScannerInfo.php';
 		include_once 'modules/Settings/MailConverter/handlers/MailBox.php';
 		$scannerName = Settings_MailConverter_Module_Model::getScannerName($id);
@@ -156,14 +156,14 @@ class Settings_MailConverter_Module_Model extends Settings_Vtiger_Module_Model {
 		return false;
 	}
 
-	public function getScannerName($id) {
+	public static function getScannerName($id) {
 		$db = PearDatabase::getInstance();
 		$result = $db->pquery("SELECT scannername FROM vtiger_mailscanner WHERE scannerid=?", array($id));
 		$scannerName = $db->query_result($result, 0, 'scannername');
 		return $scannerName;
 	}
 
-	public function updateFolders($scannerId, $folders) {
+	public static function updateFolders($scannerId, $folders) {
 		include_once 'modules/Settings/MailConverter/handlers/MailScannerInfo.php';
 		$db = PearDatabase::getInstance();
 		$scannerName = Settings_MailConverter_Module_Model::getScannerName($scannerId);

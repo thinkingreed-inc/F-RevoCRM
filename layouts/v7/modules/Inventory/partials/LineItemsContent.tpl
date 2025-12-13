@@ -42,13 +42,14 @@
     {assign var="FINAL" value=$RELATED_PRODUCTS.1.final_details}
 
 		{assign var="usageunit" value="usageunit"|cat:$row_no}
+		{assign var="reducedtaxrate" value="reducedtaxrate"|cat:$row_no}
 
 	{assign var="productDeleted" value="productDeleted"|cat:$row_no}
 	{assign var="productId" value=$data[$hdnProductId]}
 	{assign var="listPriceValues" value=Products_Record_Model::getListPriceValues($productId)}
 	{if $MODULE eq 'PurchaseOrder'}
 		{assign var="listPriceValues" value=array()}
-		{assign var="purchaseCost" value="{if $data.$purchaseCost}{((float)$data.$purchaseCost) / ((float)$data.$qty * {$RECORD_CURRENCY_RATE})}{else}0{/if}"}
+		{assign var="purchaseCost" value="{if !empty($data.$purchaseCost) && !empty($data.$qty)}{((float)$data.$purchaseCost) / ((float)$data.$qty * {$RECORD_CURRENCY_RATE})}{else}0{/if}"}
 		{foreach item=currency_details from=$CURRENCIES}
 			{append var='listPriceValues' value=$currency_details.conversionrate * $purchaseCost index=$currency_details.currency_id}
 		{/foreach}
@@ -137,7 +138,7 @@
 			   {if $QUANTITY_EDITABLE eq false} disabled=disabled {/if} />
 
 		{if $PURCHASE_COST_EDITABLE eq false and $MODULE neq 'PurchaseOrder'}
-			<input id="{$purchaseCost}" type="hidden" value="{if ((float)$data.$purchaseCost)}{((float)$data.$purchaseCost) / ((float)$data.$qty)}{else}0{/if}" />
+			<input id="{$purchaseCost}" type="hidden" value="{if !empty($data.$purchaseCost) && !empty($data.$qty)}{((float)$data.$purchaseCost) / ((float)$data.$qty)}{else}0{/if}" />
             <span style="display:none" class="purchaseCost">0</span>
 			<input name="{$purchaseCost}" type="hidden" value="{if $data.$purchaseCost}{$data.$purchaseCost}{else}0{/if}" />
 		{/if}
@@ -146,12 +147,12 @@
 			<span class="margin pull-right" style="display:none">{if $data.$margin}{$data.$margin}{else}0{/if}</span>
 		{/if}
 		<br><br>
-		<span>{vtranslate('Usage Unit', "Products")}：</span>
+		<span>{vtranslate('Usage Unit', "Products")}:</span>
 		<input id="{$usageunit}" name="{$usageunit}" value="{if !empty($data.$usageunit)}{$data.$usageunit}{/if}" type="text" class="usageunit smallInputBox inputElement" readonly style="border:hidden"/>
 
 		{if $MODULE neq 'PurchaseOrder'}
 			<br>
-			<span class="stockAlert redColor {if $data.$qty <= $data.$qtyInStock}hide{/if}" >
+			<span class="stockAlert redColor {if $data.$qty <= $data.$qtyInStock|| $data.$qtyInStock === false}hide{/if}" >
 				{vtranslate('LBL_STOCK_NOT_ENOUGH',$MODULE)}
 				<br>
 				{vtranslate('LBL_MAX_QTY_SELECT',$MODULE)}&nbsp;<span class="maxQuantity">{$data.$qtyInStock}</span>
@@ -161,7 +162,7 @@
 
 	{if $PURCHASE_COST_EDITABLE}
 		<td>
-			<input id="{$purchaseCost}" type="hidden" value="{if $data.$purchaseCost}{((float)$data.$purchaseCost) / ((float)$data.$qty)}{else}0{/if}" />
+			<input id="{$purchaseCost}" type="hidden" value="{if !empty($data.$purchaseCost) && !empty($data.$qty)}{((float)$data.$purchaseCost) / ((float)$data.$qty)}{else}0{/if}" />
 			<input name="{$purchaseCost}" type="hidden" value="{if $data.$purchaseCost}{$data.$purchaseCost}{else}0{/if}" />
 			<span class="pull-right purchaseCost">{if $data.$purchaseCost}{$data.$purchaseCost}{else}0{/if}</span>
 		</td>
@@ -257,7 +258,7 @@
 					<p class="popover_title hide">
 						{vtranslate('LBL_SET_TAX_FOR',$MODULE)} : <span class="variable">{$data.$totalAfterDiscount}</span>
 					</p>
-					{if count($data.taxes) > 0}
+					{if php7_count($data.taxes) > 0}
 						<div class="individualTaxDiv">
 							<!-- we will form the table with all taxes -->
 							<table width="100%" border="0" cellpadding="5" cellspacing="0" class="table table-nobordered popupTable" id="tax_table{$row_no}">
@@ -303,5 +304,9 @@
 
 	<td>
 		<span id="netPrice{$row_no}" class="pull-right netPrice">{if $data.$netPrice}{$data.$netPrice}{else}0{/if}</span>
+			<br><br>
+		<label  style="font-weight:normal" for='{$reducedtaxrate}'><input type="checkbox" class="reducedtaxrate" id="{$reducedtaxrate}" name="{$reducedtaxrate}" value="{$data.$reducedtaxrate}" {if ($data.$reducedtaxrate)=='1'}checked{/if} style="border:hidden"/>
+			:
+		{vtranslate('Reduced TaxRate', "Products")}</label>
 	</td>
 {/strip}

@@ -224,6 +224,7 @@ $languageStrings = array(
 	'LBL_OUTGOING_SERVER_DESC' => '送信メールサーバーの詳細を設定します',
 	'LBL_DEFAULT' => 'デフォルトでは、送信サーバー用の SMTP アカウント設定は od1.vtiger.com メール サーバーに設定されています。 送信メールが宛先の ISP メール サーバーにスパム判定されないように、以下から一つを実施することをお勧めします。',
 	'LBL_OPTIONS1' => '自分のメール サーバーからメールを送信<br>- メール 送信者アドレスに入力したものと同じアカウント用のSMTP アカウントの詳細 (サーバー名、ユーザー名、パスワード) を入力します。',
+	
 	'LBL_OPTIONS2' => "ドメインの許可された送信者として mail.f-revocrm.jpサーバーを追加します。<br>
 	- F-RevoCRMサーバーを送信サーバーとして保持する場合は、ドメインの有効な送信者としてF-RevoCRMサーバーを含めるようにドメインのSPFレコードを設定することを推奨します。
 	  SPFレコードの設定に関する追加の指示を、support@thinkingreed.co.jp にメールしてください。",
@@ -260,10 +261,11 @@ $languageStrings = array(
 	//CustomRecordNumbering
 	'LBL_SUCCESSFULLY_UPDATED' => '更新しました。',
 	'LBL_CUSTOMIZE_RECORD_NUMBERING' => 'モジュール番号',
+	'LBL_RECORD_NUMBERING' => 'レコード番号',
 	'LBL_MODULE_ENTITY_NUMBER_CUSTOMIZATION' => 'モジュールエンティティ番号の設定',
 	'LBL_UPDATE_MISSING_RECORD_SEQUENCE' => '未割当のレコード番号の更新',
-	'LBL_USE_PREFIX' => '接頭子',
-	'LBL_PREFIX_IN_USE' => '接頭子は既に利用されています',
+	'LBL_USE_PREFIX' => '接頭辞',
+	'LBL_PREFIX_IN_USE' => '接頭辞は既に利用されています',
 	'LBL_START_SEQUENCE' => '開始番号',
 
 	//Company Details
@@ -317,6 +319,7 @@ $languageStrings = array(
 	'LBL_LOGIN_TIME' => 'ログイン時刻',
 	'LBL_LOGGED_OUT_TIME' => 'ログアウト時刻',
 	'LBL_STATUS' => 'ステータス',
+	'LBL_LOGIN_TYPE' => 'ログイン種類',
 
 	// Leads and Potentials Mapping 
 	'LBL_SAVED_SUCCESSFULLY' => '保存しました。',
@@ -390,11 +393,18 @@ $languageStrings = array(
 	'Owner' => 'ユーザー',
 	'MultiSelectCombo' => '選択肢（複数）',
 	'integer' => '整数',
+	'Blank'=>'空白',
 	'My Preferences' => 'ユーザー情報',
 	'Calendar Settings' => 'カレンダー設定',
 	'Workflow' => 'ワークフロー',
 	'LanguageConverter' => '文言変更',
 	'LBL_LANGUAGECONVERTER_DESCRIPTION' => '表示文言を変更します',
+	'LBL_JAPAN' => '日本',
+	
+	// Edit Charge
+	'Japan, Yen : ¥' => '日本、円 : ¥',
+    
+	'Parameters' => 'システム変数',
 );
 
 $jsLanguageStrings = array(
@@ -429,4 +439,9 @@ $jsLanguageStrings = array(
 	'JS_INVALID_URL' => '無効なURL',
 	'JS_LBL_TAX_REGION_EXIST' => '税地域の名前が既に存在しています',
 	'JS_LOGO_IMAGE_DIMENSIONS_WRONG' => 'ロゴ画像の寸法が許容寸法と一致しませんでした。画像のサイズを変更して、もう一度お試しください。',
+	'Fixed' => '固定(Fixed)',
+	'Variable' => '変動(Variable)',
+	'Simple' => '単純(Simple)',
+	'Compound' => '複合(Compound)',
+	'Deducted' => '差し引く(Deducted)',
 );

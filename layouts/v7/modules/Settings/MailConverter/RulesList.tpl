@@ -72,7 +72,7 @@
 			<div id="mailConverterBody" class="col-lg-12">
 				<br>
 				<div id="rulesList">
-					{if count($RULE_MODELS_LIST)}
+					{if php7_count($RULE_MODELS_LIST)}
 						{assign var=RULE_COUNT value=1}
 						{assign var=FIELDS value=$MODULE_MODEL->getSetupRuleFields()}
 						{foreach from=$RULE_MODELS_LIST item=RULE_MODEL}
