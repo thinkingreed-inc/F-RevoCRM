@@ -662,20 +662,8 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 				}
 
 				if (!in_array($picklistValueInLowerCase, $allPicklistValuesInLowerCase) && !empty($picklistValueInLowerCase)) {
-					if ($moduleName != 'Calendar') {
-						// Required to update runtime cache.
-						$wsFieldDetails = $fieldInstance->getPicklistDetails();
-
-						$moduleObject = Vtiger_Module::getInstance($moduleName);
-						$fieldObject = Vtiger_Field::getInstance($fieldName, $moduleObject);
-						$fieldObject->setPicklistValues(array($fieldValue));
-
-						// Update cache state with new value added.
-						$wsFieldDetails[] = array('label' => $fieldValue, 'value' => $fieldValue);
-						Vtiger_Cache::getInstance()->setPicklistDetails($moduleObject->getId(), $fieldName, $wsFieldDetails);
-
-						unset($this->allPicklistValues[$fieldName]);
-					}
+					// 存在しないPicklist値の場合はエラーとしてインポート失敗にする
+					return null;
 				} else {
 					$fieldData[$fieldName] = $picklistDetails[$picklistValueInLowerCase];
 				}
@@ -1060,7 +1048,9 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 							}
 						} else if (!in_array($fieldName, array('date_start', 'due_date'))) {
 							if ($fieldModel) {
-								$recordData[$fieldName] = $fieldModel->getDisplayValue($fieldValue);
+								if ($fieldDataType != 'picklist'){
+									$recordData[$fieldName] = $fieldModel->getDisplayValue($fieldValue);
+								}
 							}
 						}
 					}
