@@ -170,6 +170,8 @@ $languageStrings = array(
 	'LBL_PREFER_INTERNAL_RECORD' => 'Prefer internal record',
 	'LBL_PREFER_EXTERNAL_RECORD' => 'Prefer external record',
 	'LBL_SYNC_TOOLTIP_MESSAGE' => 'Prefer latest record - Most recently modified record data will be retained<br>Prefer internal record - Existing record will be retained as it is<br>Prefer external record - Data from the external application will be copied',
+	'LBL_EDIT_READONLY_DISPLAY' => 'Display read-only fields in edit view',
+	'LBL_EDIT_READONLY_DISPLAY_DETAIL_VIEW' => 'Show read-only fields in the edit view',
 );
 
 $jsLanguageStrings = array(
