@@ -730,9 +730,7 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 	  if(container.find('[name="record"]').val()===''){
 		this.registerDateStartChangeEvent(container);
 		this.registerTimeStartChangeEvent(container);
-			container.find('[name="time_end"]').on('focus', function () {
-				thisInstance.registerTimeEndChangeEvent(container);
-			});
+		this.registerTimeEndChangeEvent(container);
 		this.registerDateEndChangeEvent(container);
 		this.registerUserChangedDateTimeDetection(container);
 		this.registerActivityTypeChangeEvent(container);
