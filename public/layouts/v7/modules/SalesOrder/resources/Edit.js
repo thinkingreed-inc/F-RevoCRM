@@ -48,35 +48,17 @@ Inventory_Edit_Js("SalesOrder_Edit_Js",{},{
 		var thisInstance = this;
 		var form = this.getForm();
 		var enableRecurrenceField = form.find('[name="enable_recurring"]');
-		var fieldNamesForValidation = new Array('recurring_frequency','start_period','end_period','payment_duration','invoicestatus');
-        var selectors = new Array();
-        for(var index in fieldNamesForValidation) {
-            selectors.push('[name="'+fieldNamesForValidation[index]+'"]');
-        }
-        var selectorString = selectors.join(',');
-        var validationToggleFields = form.find(selectorString);
+		// Recurring Invoice Informationブロック内のフィールドを動的に取得（enable_recurring以外）
+		var recurringBlock = form.find('[data-block="Recurring Invoice Information"]');
+		var validationToggleFields = recurringBlock.find('input, select, textarea')
+			.filter('[name]')
+			.not('[name="enable_recurring"]');
 		enableRecurrenceField.on('change',function(e){
 			var element = jQuery(e.currentTarget);
-			var addValidation;
-			if(element.is(':checked')){
-				addValidation = true;
-			}else{
-				addValidation = false;
-			}
-			
-			//If validation need to be added for new elements,then we need to detach and attach validation
-			//to form
-			if(addValidation){
-				thisInstance.AddOrRemoveRequiredValidation(validationToggleFields, true);
-			}else{
-				thisInstance.AddOrRemoveRequiredValidation(validationToggleFields, false);
-			}
-		})
-		if(!enableRecurrenceField.is(":checked")){
-			thisInstance.AddOrRemoveRequiredValidation(validationToggleFields, false);
-		}else if(enableRecurrenceField.is(":checked")){
-			thisInstance.AddOrRemoveRequiredValidation(validationToggleFields, true);
-		}
+			var addValidation = element.is(':checked');
+			thisInstance.AddOrRemoveRequiredValidation(validationToggleFields, addValidation);
+		});
+		thisInstance.AddOrRemoveRequiredValidation(validationToggleFields, enableRecurrenceField.is(':checked'));
 	},
 	
 	AddOrRemoveRequiredValidation : function(dependentFieldsForValidation, addValidation) {
