@@ -35,7 +35,7 @@ class Settings_LoginHistory_ListView_Model extends Settings_Vtiger_ListView_Mode
 			$userNameSql = $module->baseTable.'.user_name';
 		}
 		
-		$query = "SELECT login_id, case when $userNameSql <> '' then $userNameSql else $module->baseTable.user_name end AS user_name, user_ip, login_time, logout_time, vtiger_loginhistory.status, is_portal FROM $module->baseTable 
+		$query = "SELECT login_id, case when $userNameSql <> '' then $userNameSql else $module->baseTable.user_name end AS user_name, user_ip, login_time, logout_time, vtiger_loginhistory.status, is_portal, login_type FROM $module->baseTable 
 				LEFT JOIN vtiger_users ON vtiger_users.user_name = $module->baseTable.user_name";
 		
         $params = array();

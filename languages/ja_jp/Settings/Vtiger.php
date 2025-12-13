@@ -319,6 +319,7 @@ $languageStrings = array(
 	'LBL_LOGIN_TIME' => 'ログイン時刻',
 	'LBL_LOGGED_OUT_TIME' => 'ログアウト時刻',
 	'LBL_STATUS' => 'ステータス',
+	'LBL_LOGIN_TYPE' => 'ログイン種類',
 
 	// Leads and Potentials Mapping 
 	'LBL_SAVED_SUCCESSFULLY' => '保存しました。',

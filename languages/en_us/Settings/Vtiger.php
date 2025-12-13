@@ -319,6 +319,7 @@ $languageStrings = array(
 	'LBL_LOGIN_TIME' => 'Sign-in Time',
 	'LBL_LOGGED_OUT_TIME' => 'Sign-out Time', 
 	'LBL_STATUS' => 'Status',
+	'LBL_LOGIN_TYPE' => 'Login Type',
     
     // Leads and Potentials Mapping 
     'LBL_SAVED_SUCCESSFULLY' => 'Saved Successfully',
