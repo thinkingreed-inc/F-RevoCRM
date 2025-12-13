@@ -40,7 +40,6 @@ class VtigerWebserviceObject{
 	private static $_fromNameCache = array();
 		
 	static function fromName($adb,$entityName){
-		
 		$rowData = false;
 		
 		// If the information not available in cache?
@@ -51,7 +50,6 @@ class VtigerWebserviceObject{
 			if ($cacheLength == 0) {
 				$result = $adb->pquery("select * from vtiger_ws_entity where name=?",array($entityName));
 			} else {
-				// Could repeat more number of times...so let us pull rest of details into cache.
 				$result = $adb->pquery("select * from vtiger_ws_entity", array());
 			}
 			
@@ -66,10 +64,8 @@ class VtigerWebserviceObject{
 		}
 		
 		$rowData = self::$_fromNameCache[$entityName];
-		
 		if($rowData) {
-			return new VtigerWebserviceObject($rowData['id'],$rowData['name'],
-						$rowData['handler_path'],$rowData['handler_class']);
+			return new VtigerWebserviceObject($rowData['id'],$rowData['name'],$rowData['handler_path'],$rowData['handler_class']);
 		}
 		throw new WebServiceException(WebServiceErrorCode::$ACCESSDENIED,"Permission to perform the operation is denied for name : $entityName");
 	}

@@ -17,9 +17,9 @@ $languageStrings = array(
 	'providertype' => 'Provider',
 	'SMSNotifier' => 'SMS Provider Configuration',
 	'username' => 'User Name',
-        'ClickATellNew' => 'Clickatell (Platform)',
-        'ClickATell' => 'Clickatell (Communicator/Central)',
-        'LBL_CLICKATELLNEW_CALLBACKURL_INFO' => "Please copy this URL to the 'Enable delivery notifications' field in your ClickATell SMS Integration Settings page",
+	'ClickATellNew' => 'Clickatell (Platform)',
+	'ClickATell' => 'Clickatell (Communicator/Central)',
+	'LBL_CLICKATELLNEW_CALLBACKURL_INFO' => "Please copy this URL to the 'Enable delivery notifications' field in your ClickATell SMS Integration Settings page",
 );
 
 $jsLanguageStrings = array(

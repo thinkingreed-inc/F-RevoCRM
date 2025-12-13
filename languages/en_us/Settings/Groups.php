@@ -17,6 +17,9 @@ $languageStrings = array(
 	'LBL_ROLEANDSUBORDINATE' => 'Role and Subordinates',
 	'RoleAndSubordinates' => 'Role and Subordinates',
 	'LBL_DUPLICATES_EXIST' => 'Group Name already Exists',
+	
+	//F-RevoCRM
+	'Name' => 'Group Name',
 );
 $jsLanguageStrings = array(
 	'JS_PLEASE_SELECT_ATLEAST_ONE_MEMBER_FOR_A_GROUP' => 'Please select atleast one member for a group',

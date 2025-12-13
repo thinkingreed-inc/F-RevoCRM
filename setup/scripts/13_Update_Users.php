@@ -45,9 +45,17 @@ global $current_user;
 $current_user = new Users();
 $current_user->id = 1;
 
+$lastName = vtranslate("LBL_SYSTEMADMINISTRATOR", "Install");
+
+$default_language = $_SESSION['config_file_info']['default_language'];
+if(empty($default_language))
+{
+    $default_language = 'ja_jp';
+}
 // システム管理者の設定変更
 $user = Users_Record_Model::getInstanceById(1, 'Users');
-$user->set('language', 'ja_jp');
+$user->set('last_name', $lastName);
+$user->set('language', $default_language);
 $user->set('dayoftheweek', 'Monday');
 $user->set('callduration', '30');
 $user->set('othereventduration', '30');

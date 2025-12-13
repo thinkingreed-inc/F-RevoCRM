@@ -158,7 +158,7 @@ class VTUpdateFieldsTask extends VTTask {
                     if (php7_count($matches1) == 0) {
                         preg_match('/\((\w+) : \((\w+)\) (\w+)/', $fieldValue, $matches1);
                     }
-					if(count($matches1) > 0){
+					if(php7_count($matches1) > 0){
 						$referenceField = $matches1[1];
 						$referencedModule = $matches1[2];
 						$referencedFieldName = $matches1[3];
@@ -378,7 +378,7 @@ class VTUpdateFieldsTask extends VTTask {
 								$webserviceObject = VtigerWebserviceObject::fromName($adb, 'Users');
 								$fieldValueInDB = vtws_getId($webserviceObject->getEntityId(), $fieldValueRaw);
 								$fieldValueInDBArray = vtws_getIdComponents($fieldValueInDB);
-								$fieldValueInDB = $fieldValueInDBArray[count($fieldValueInDBArray) - 1];
+								$fieldValueInDB = $fieldValueInDBArray[php7_count($fieldValueInDBArray) - 1];
 							}
 						}else {
 							$fieldValue = '';
@@ -399,13 +399,13 @@ class VTUpdateFieldsTask extends VTTask {
 
 					if (
 						$fieldValueType == 'fieldname'
-						&& (count($referenceList) > 0 || $rightOperandFieldType == "owner")
+						&& (php7_count($referenceList) > 0 || $rightOperandFieldType == "owner")
 						&& $fieldInstance->getFieldDataType() == 'reference'
 					) {
 						$_moduleFocus->column_fields[$fieldName] = $fieldValueRaw;
 					} else if (
 						$fieldValueType == 'expression'
-						&& (count($referenceList) > 0 || ($moduleFieldInstance && $moduleFieldInstance->getFieldDataType() == 'owner'))
+						&& (php7_count($referenceList) > 0 || ($moduleFieldInstance && $moduleFieldInstance->getFieldDataType() == 'owner'))
 						&& $fieldInstance->getFieldDataType() == 'reference'
 					) {
 						$_moduleFocus->column_fields[$fieldName] = $fieldValueRaw;

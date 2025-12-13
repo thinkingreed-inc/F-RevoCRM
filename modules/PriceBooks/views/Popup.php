@@ -37,7 +37,7 @@ class PriceBooks_Popup_View extends Vtiger_Popup_View {
 		}
 
 		if(empty($getUrl) && !empty($sourceField) && !$multiSelectMode) {
-			$getUrl = 'getProductListPriceURL';
+			$getUrl = 'getParentPopupContentsUrl';
 		}
 
 		if(empty($cvId)) {
@@ -100,7 +100,7 @@ class PriceBooks_Popup_View extends Vtiger_Popup_View {
 		}
 		
 		$noOfEntries = php7_count($this->listViewEntries);
-		if(empty($searchParams)) {
+		if(empty($searchParams) || !is_array($searchParams)){
 			$searchParams = array();
 		}
 	   //To make smarty to get the details easily accesible

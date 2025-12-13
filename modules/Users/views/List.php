@@ -98,7 +98,7 @@ class Users_List_View extends Settings_Vtiger_List_View {
 			$listViewModel->set('search_value', $searchValue);
 		}
 
-		if(empty($searchParams)) {
+		if(empty($searchParams) || !is_array($searchParams)) {
 			$searchParams = array();
 		}
 

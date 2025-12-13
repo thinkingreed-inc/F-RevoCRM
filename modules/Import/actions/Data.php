@@ -138,17 +138,21 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		$lockInfo = Import_Lock_Action::isLockedForModule($this->module);
 		$importUserId = $this->user->id;
 		if (isset($lockInfo)) {
-			if ($lockInfo['userid'] != $importUserId) { //他ユーザーのキューがインポート中なのでインポートしない
+			// 他ユーザーがインポート対象のモジュールに対してインポートしている場合はインポートしない
+			if ($lockInfo['userid'] != $importUserId) {
 				Import_Utils_Helper::showImportLockedError($lockInfo);
 				return false;
 			}
+
+			// スケジュールインポートにより、同一ユーザーでも前回のインポートが完了していない場合もインポートしない
+			// ※処理済みのレコードが$pagingLimitの倍数でない場合を前回のインポートが完了していないとみなす
 			$configReader = new Import_Config_Model();
 			$pagingLimit = intval($configReader->get('importPagingLimit'));
 			$importTable = 'vtiger_import_'.$importUserId;
-			$finishedImportQuery = 'SELECT count(status) FROM '.$importTable.' WHERE status = 1 GROUP BY status';
-			$finishedImportResult = $adb->pquery($finishedImportQuery, array());
-			$finishedImportCount = $adb->query_result($finishedImportResult, 0, 'count(status)');
-			if($lockInfo['importid'] == $this->id && $finishedImportCount % $pagingLimit != 0 ) { //このキューはすでに実行されており,インポート中なのでインポートしない
+			$finishedImportQuery = 'SELECT count(*) AS imported FROM '.$importTable.' WHERE `status` != ?';
+			$finishedImportResult = $adb->pquery($finishedImportQuery, array(Import_Data_Action::$IMPORT_RECORD_NONE));
+			$finishedImportCount = $adb->query_result($finishedImportResult, 0, 'imported');
+			if($lockInfo['importid'] == $this->id && $finishedImportCount % $pagingLimit != 0 ) {
 				return false;
 			}
 		} else {
@@ -257,6 +261,12 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			$fieldData = array();
 			foreach ($fieldMapping as $fieldName => $index) {
 				$fieldData[$fieldName] = trim($row[$fieldName]);
+				if($fieldData[$fieldName]==''){
+					$ColumnNamekey = $fieldColumnMapping[$fieldName];
+					if(!empty(trim($row[$ColumnNamekey]))){
+						$fieldData[$fieldName] = trim($row[$ColumnNamekey]);
+					}
+				}
 			}
 
 			$mergeType = $this->mergeType;
@@ -631,9 +641,29 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			} elseif ($fieldDataType == 'picklist' || $fieldName == 'salutationtype') {
 				$fieldValue = trim(strip_tags(decode_html($fieldValue)));
 				global $default_charset;
-				if (empty($fieldValue) && isset($defaultFieldValues[$fieldName])) {
-					$fieldData[$fieldName] = $fieldValue = $defaultFieldValues[$fieldName];
+
+				// Importで指定されたデフォルト値のみを取得（項目定義のデフォルト値は使用しない）
+				$importDefaultValues = array();
+				if (!empty($this->defaultValues)) {
+					$importDefaultValues = is_array($this->defaultValues) ? $this->defaultValues : Zend_Json::decode($this->defaultValues);
 				}
+
+				// 空の値の場合の処理
+				if (empty($fieldValue)) {
+					// Importで指定されたデフォルト値がある場合はそれを使用
+					if (isset($importDefaultValues[$fieldName]) && !empty($importDefaultValues[$fieldName])) {
+						$fieldValue = $importDefaultValues[$fieldName];
+					} else {
+						// 必須項目で空の場合はエラー
+						if ($fieldInstance->isMandatory()) {
+							return null;
+						}
+						// 必須でなければ空のまま
+						$fieldData[$fieldName] = '';
+						continue;
+					}
+				}
+
 				if (!isset($this->allPicklistValues[$fieldName])) {
 					$this->allPicklistValues[$fieldName] = $fieldInstance->getPicklistDetails();
 				}
@@ -657,21 +687,9 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 					$picklistDetails = array_combine($allPicklistValuesInLowerCase, $allPicklistValues);
 				}
 
-				if (!in_array($picklistValueInLowerCase, $allPicklistValuesInLowerCase) && !empty($picklistValueInLowerCase)) {
-					if ($moduleName != 'Calendar') {
-						// Required to update runtime cache.
-						$wsFieldDetails = $fieldInstance->getPicklistDetails();
-
-						$moduleObject = Vtiger_Module::getInstance($moduleName);
-						$fieldObject = Vtiger_Field::getInstance($fieldName, $moduleObject);
-						$fieldObject->setPicklistValues(array($fieldValue));
-
-						// Update cache state with new value added.
-						$wsFieldDetails[] = array('label' => $fieldValue, 'value' => $fieldValue);
-						Vtiger_Cache::getInstance()->setPicklistDetails($moduleObject->getId(), $fieldName, $wsFieldDetails);
-
-						unset($this->allPicklistValues[$fieldName]);
-					}
+				if (!in_array($picklistValueInLowerCase, $allPicklistValuesInLowerCase)) {
+					// 存在しないPicklist値の場合はエラーとしてインポート失敗にする
+					return null;
 				} else {
 					$fieldData[$fieldName] = $picklistDetails[$picklistValueInLowerCase];
 				}
@@ -1056,7 +1074,9 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 							}
 						} else if (!in_array($fieldName, array('date_start', 'due_date'))) {
 							if ($fieldModel) {
-								$recordData[$fieldName] = $fieldModel->getDisplayValue($fieldValue);
+								if ($fieldDataType != 'picklist'){
+									$recordData[$fieldName] = $fieldModel->getDisplayValue($fieldValue);
+								}
 							}
 						}
 					}
@@ -1122,8 +1142,10 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 
 						if (!in_array($fieldValueInLowerCase, $picklistValuesInLowerCase)
 								&& $fieldName !== 'visibility'
-								&& !($fieldName == 'activitytype' && $fieldValue == 'Task')) {
-							$fieldModel->setPicklistValues(array($fieldValue));
+								&& !($fieldName == 'activitytype' && $fieldValue == 'Task')
+								&& !empty($fieldValue)) {
+							// 存在しないPicklist値の場合はエラーとしてインポート失敗にする
+							return null;
 						}
 					}
 				}

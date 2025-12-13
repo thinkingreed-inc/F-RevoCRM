@@ -92,8 +92,9 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 
 	public function getAddSupportedFieldTypes() {
 		return array(
+			//Skypeサービス終了のため、Skype項目を削除
 			'Text','Decimal','Integer','Percent','Currency','Date','Email','Phone','Picklist',
-			'URL','Checkbox','TextArea','MultiSelectCombo','Skype','Time','Reference'
+			'URL','Checkbox','TextArea','MultiSelectCombo','Time','Reference','Blank'
 		);
 	}
 
@@ -131,6 +132,9 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 				$details['isrelation'] = true;
 				$details['defaultDisabled'] = true;
 			}
+			if($fieldType == 'Blank'){
+				// empty field
+			}
 			$fieldTypesInfo[$fieldType] = $details;
 		}
 		$fieldTypesInfo['Relation']['relationModules'] = self::getEntityModulesList();
@@ -142,7 +146,7 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 		$db = PearDatabase::getInstance();
 
 		$label = $params['fieldLabel'] = trim($params['fieldLabel']);
-		if($this->checkFieldExists($label)){
+		if($params['fieldType'] !== 'Blank' && $this->checkFieldExists($label)){
 			throw new Exception(vtranslate('LBL_DUPLICATE_FIELD_EXISTS', 'Settings::LayoutEditor'), 513);
 		}
 		$supportedFieldTypes = $this->getAddSupportedFieldTypes();
@@ -150,10 +154,8 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 			throw new Exception(vtranslate('LBL_WRONG_FIELD_TYPE', 'Settings::LayoutEditor'), 513);
 		}
 
-		$max_fieldid = $this->getSequenceNumber() + 1;
-		if(empty($max_fieldid)){
-			$max_fieldid = $db->getUniqueID("vtiger_field");
-		}
+		// getUniqueIDで取得すると、vtiger_field_seqがインクリメントされるので、ここで取得した値はfieldidとして使用する
+		$max_fieldid = $db->getUniqueID("vtiger_field");
 		$columnName = 'cf_'.$max_fieldid;
 		$custfld_fieldid = $max_fieldid;
 		$moduleName = $this->getName();
@@ -178,7 +180,8 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 		$quickCreate = in_array($moduleName,  getInventoryModules()) ? 3 : $params['quickcreate'];
 
 		$fieldModel = new Settings_LayoutEditor_Field_Model();
-		$fieldModel->set('name', $columnName)
+		$fieldModel->set('addNewId', $custfld_fieldid)
+				   ->set('name', $columnName)
 				   ->set('table', $tableName)
 				   ->set('generatedtype',2)
 				   ->set('uitype', $uitype)
@@ -237,21 +240,6 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 			}
 		}
 		return $fieldModel;
-	}
-
-	// getUniqueID()などは実行時にインクリメントされてしまう.
-	// columnName(cf_xxx)を決定するときなどのインクリメント不要時に使用する.
-	public function getSequenceNumber(){
-		if($this->hasSequenceNumberField()){
-			global $adb;
-			$query = 'SELECT id FROM vtiger_field_seq';
-			$result = $adb->pquery($query, array());
-			$rows = $adb->num_rows($result);
-			if($rows > 0){
-				return $adb->query_result($result, 0, 'id');
-			}
-		}
-		return null;
 	}
 
 	public function getTypeDetailsForAddField($fieldType,$params) {
@@ -352,6 +340,11 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 							   $type = "INT(19)"; //adodb type
 							   $uichekdata='I~O';
 							   break;
+				Case 'Blank' :
+							   $uitype = 999;
+							   $type = "VARCHAR(0) default ''"; //adodb type
+							   $uichekdata='V~O';
+							   break;
 		}
 		return array(
 			'uitype' => $uitype,
@@ -416,9 +409,6 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 		}
 		// Usersの追加
 		$modulesList["Users"] = vtranslate("Users", "Users");	
-		//関連項目に、活動・カレンダーはあまり必要ではないため選択肢から除外する。
-		unset($modulesList['Events']);
-		unset($modulesList['Calendar']);
 		return $modulesList;
 	}
 

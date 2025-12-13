@@ -608,7 +608,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 			$list_fields = $entityInstance->list_fields;
 			foreach ($list_fields as $key => $fieldInfo) {
 				foreach ($fieldInfo as $columnName) {
-					if(array_key_exists($key, $list_fields_name)){
+					if(array_key_exists($key, $list_fields_name) && $list_fields_name[$key] !== ""){
 						$relatedListFields[$columnName] = $list_fields_name[$key];
 					}
 				}
@@ -1096,9 +1096,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 		$query .= Users_Privileges_Model::getNonAdminAccessControlQuery('Calendar');
 
 		$query .= " WHERE vtiger_crmentity.deleted=0
-					AND (vtiger_activity.activitytype NOT IN ('Emails'))
-					AND (vtiger_activity.status is NULL OR vtiger_activity.status NOT IN ('Completed', 'Deferred', 'Cancelled'))
-					AND (vtiger_activity.eventstatus is NULL OR vtiger_activity.eventstatus NOT IN ('Held','Cancelled'))";
+					AND (vtiger_activity.activitytype NOT IN ('Emails'))";
 
 		if(!$currentUser->isAdminUser()) {
 			$moduleFocus = CRMEntity::getInstance('Calendar');
@@ -1124,7 +1122,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 			array_push($params, $user);
 		}
 
-		$query .= " ORDER BY date_start, time_start LIMIT ". $pagingModel->getStartIndex() .", ". ($pagingModel->getPageLimit()+1);
+		$query .= " ORDER BY date_start DESC, time_start DESC LIMIT ". $pagingModel->getStartIndex() .", ". ($pagingModel->getPageLimit()+1);
 
 
 		$result = $db->pquery($query, $params);
@@ -1235,7 +1233,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 		$sharingAccessModel = Settings_SharingAccess_Module_Model::getInstance($this->getName());
 		$params = array();
 		if(!empty($owner) && $currentUserModel->isAdminUser()) {//If admin user, then allow users data
-			$ownerSql =  ' smownerid = '. $owner;
+			$ownerSql =  'smownerid = '. $owner;
 			$params[] = $owner;
 		} else if(!empty($owner)){//If not admin user, then check sharing access for that module
 			if($sharingAccessModel->isPrivate()) {
@@ -1245,12 +1243,12 @@ class Vtiger_Module_Model extends Vtiger_Module {
 					$subordinateUsers[] = $id;
 				}
 				if(in_array($owner, $subordinateUsers)) {
-					$ownerSql = ' smownerid = '. $owner ;
+					$ownerSql = 'smownerid = '. $owner ;
 				} else {
-					$ownerSql = ' smownerid = '. $currentUserModel->getId();
+					$ownerSql = 'smownerid = '. $currentUserModel->getId();
 				}
 			} else {
-				$ownerSql = ' smownerid = '. $owner ;
+				$ownerSql = 'smownerid = '. $owner ;
 			}
 		} else {//If no owner filter, then check if the module access is Private
 			if($sharingAccessModel->isPrivate() && (!$currentUserModel->isAdminUser())) {
@@ -1261,9 +1259,9 @@ class Vtiger_Module_Model extends Vtiger_Module {
 				}
 				if($subordinateUsers) {
                     array_push($subordinateUsers, $currentUserModel->getId());
-					$ownerSql =  ' smownerid IN ('. implode(',' , $subordinateUsers) .')';
+					$ownerSql =  'smownerid IN ('. implode(',' , $subordinateUsers) .')';
 				} else {
-					$ownerSql =  ' smownerid = '.$currentUserModel->getId();
+					$ownerSql =  'smownerid = '.$currentUserModel->getId();
 				}
 			}
 		}
@@ -2053,7 +2051,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 
 		$moduleIcon = "<i class='vicon-$lowerModuleName' title='$title'></i>";
 		if ($this->source == 'custom') {
-			$moduleShortName = mb_substr(trim($title), 0, 2);
+			$moduleShortName = mb_substr(trim($title), 0, 1);
 			$moduleIcon = "<span class='custom-module' title='$title'>$moduleShortName</span>";
 		}
 

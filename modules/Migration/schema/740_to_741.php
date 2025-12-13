@@ -9,12 +9,22 @@
 *********************************************************************************/
 
 if (defined('VTIGER_UPGRADE')) {
-	global $current_user, $adb;
-	$db = PearDatabase::getInstance();
+    global $current_user, $adb;
+    $db = PearDatabase::getInstance();
+
+    // ドキュメントにてファイルのURLが途切れてしまい所望のページに遷移できないバグが発生していた
+    // filenameのデータ型をvarchar(200)からtextに変更する
+    $db->pquery("ALTER TABLE vtiger_notes MODIFY COLUMN filename TEXT", array());
 
     //ログイン履歴のテーブル変更
     include_once 'setup/scripts/76_Update_LoginHistory.php';
 
     //個人カレンダーの設定テーブル変更
     include_once 'setup/scripts/77_Update_CalendarUserActivityTypes.php';
+
+    // 'vtiger_activity' テーブルに 'smcreatorid' フィールドを追加
+    include_once 'setup/scripts/78_Add_smcreatorid.php';
+
+    //F-RevoCRM REST APIにて、足りていない引数を追加
+    include_once 'setup/scripts/78_Update_RESTAPI.php';
 }

@@ -21,7 +21,7 @@ class Documents_InRelation_View extends Vtiger_RelatedList_View {
 
 		$searchParams = $request->get('search_params');
 
-		if (empty($searchParams)) {
+		if(empty($searchParams) || !is_array($searchParams)){
 			$searchParams = array();
 		}
 

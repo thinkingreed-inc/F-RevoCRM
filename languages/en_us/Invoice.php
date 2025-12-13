@@ -46,6 +46,12 @@ $languageStrings = array(
 	'LBL_NOT_A_BUNDLE' => 'Not a Bundle',
 	'LBL_SUB_PRODUCTS'	=> 'Sub Products',
 	'LBL_ACTION'	=> 'Action',
+
+	//F-RevoCRM
+	'Open Invoices' => 'Open Invoices',
+	'Paid Invoices' => 'Paid Invoices',
+
+	'LBL_JAPAN' => 'Japan',
 );
 
 $jsLanguageStrings = array(

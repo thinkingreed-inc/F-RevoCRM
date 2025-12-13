@@ -31,7 +31,7 @@ class Install_Utils_Model {
 		'Product Image Directory' => './test/product/',
 		'User Image Directory' => './test/user/',
 		'Contact Image Directory' => './test/contact/',
-		'Logo Directory' => './test/logo/',
+		'Logo Directory' => './public/logo/',
 		'Logs Directory' => './logs/',
 	);
 
@@ -171,7 +171,7 @@ class Install_Utils_Model {
 			'db_password' => '',
 			'db_name'     => '',
 			'admin_name'  => 'admin',
-			'admin_lastname'=> 'システム管理者',
+			'admin_lastname'=> vtranslate('LBL_SYSTEM_ADMINISTRATOR','Install'),
 			'admin_password'=>'',
 			'admin_email' => '',
 		);

@@ -26,6 +26,7 @@ $languageStrings = array(
 	'LBL_SAVE_ORDER'=>'Save Order',
 	'LBL_ADD_NEW_DASHBOARD'=>'Add new dashboard',
 	'LBL_MAX_CHARACTERS_ALLOWED_DASHBOARD' => 'Maximum 30 characters are allowed for dashboard name.',
+	'顧客担当者 - Contacts Address' => 'Contacts - Contacts Address',
 );
 
 $jsLanguageStrings = array(

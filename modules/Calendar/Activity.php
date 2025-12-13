@@ -471,6 +471,19 @@ function insertIntoRecurringTable(& $recurObj)
 			return ;
 		}
 
+		// 初回$activityarrayが配列化されていないとin_arrayでExceptionが発生するので初期化する
+		if (empty($activityarray)) {
+			$activityarray = array();
+		}
+
+		if (empty($this->workflow_skip_field_array)){
+			$this->workflow_skip_field_array = array();
+		}
+
+		if (empty($activityarray[$this->workflow_task_id])) {
+			$activityarray[$this->workflow_task_id] = array();
+		}
+
 		// 編集の場合
 		if($this->mode == 'edit'){
 			// 参加者のActivityを更新または削除
@@ -553,6 +566,12 @@ function insertIntoRecurringTable(& $recurObj)
 			if(empty($inviteeid)) {
 				continue;
 			}
+
+			$result = $adb->pquery("SELECT 1 FROM vtiger_invitees WHERE activityid = ? AND inviteeid = ?", array($this->invitee_parentid, $inviteeid));
+			if($adb->num_rows($result) > 0) {
+				continue;
+			}
+
 			$query="INSERT INTO vtiger_invitees VALUES (?,?,?)";
 			$adb->pquery($query, array($this->invitee_parentid, $inviteeid, 'sent'));
 
@@ -621,6 +640,58 @@ function insertIntoRecurringTable(& $recurObj)
 		}
 	}
 }
+
+	function restore($module, $id) {
+		if($module === 'Calendar') {
+			$this->restoreCalenderEvent($module, $id);
+		}else {
+			parent::restore($module, $id);
+		}
+	}
+
+	public function restoreCalenderEvent($module, $id)
+	{
+		global $adb;
+		// 活動のparentidが共通のレコードでsmowneridが一致するものがある場合は復元しない
+		// 同じparent id で参加者が重複している招待レコードを探す
+		$getDuplicateQuery    = "SELECT va.activityid
+									FROM vtiger_activity AS va
+									JOIN vtiger_activity AS va2 
+									ON va2.activityid = ?
+									WHERE va.invitee_parentid = va2.invitee_parentid
+									AND va.smownerid = va2.smownerid
+									AND va.deleted = 0";
+									
+		$duplicateResult      = $adb->pquery($getDuplicateQuery, [ $id ]);
+		$duplicateResultCount = $adb->num_rows($duplicateResult);
+		
+		// 重複したレコードは復元しない
+		if($duplicateResultCount !== 0) {
+			throw new Exception(vtranslate('LBL_DUPULICATE_EVENT_EXISTS', $module));
+		}
+		
+		// レコードの復元処理
+		parent::restore($module, $id);
+		
+		// vtiger_invtiteeに再度入れる
+		$this->restoreInviteeInformation($id);
+	}
+
+	public function restoreInviteeInformation($id) 
+	{
+		global $adb;
+		// レコードのparentidとユーザーIDを取得する
+		$getRecordInfo       = "SELECT invitee_parentid
+								FROM vtiger_activity 
+								WHERE activityid = ?";
+		$recordInfoResult    = $adb->pquery($getRecordInfo, [ $id ]);
+				
+		if($adb->num_rows($recordInfoResult) > 0) {
+			// 参加者情報を復元
+			$inviteeParentId = $adb->query_result($recordInfoResult, 0, 'invitee_parentid');
+			reCreateInviteesRecord($id, $inviteeParentId, true);
+		}
+	}
 
 	/**
 	 *
@@ -1147,7 +1218,7 @@ function insertIntoRecurringTable(& $recurObj)
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule,$queryPlanner){
+	function generateReportsSecQuery($module,$secmodule,$queryPlanner, $reportid = false){
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency('vtiger_crmentityCalendar',array('vtiger_groupsCalendar','vtiger_usersCalendar','vtiger_lastModifiedByCalendar'));
 		$matrix->setDependency('vtiger_cntactivityrel',array('vtiger_contactdetailsCalendar'));
@@ -1164,7 +1235,7 @@ function insertIntoRecurringTable(& $recurObj)
 								'vtiger_seactivityrel','vtiger_activity_reminder','vtiger_recurringevents'));
 
 
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_activity","activityid", $queryPlanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_activity","activityid", $queryPlanner, $reportid);
 
 		if ($queryPlanner->requireTable("vtiger_crmentityCalendar",$matrix)){
 			$query .=" left join vtiger_crmentity as vtiger_crmentityCalendar on vtiger_crmentityCalendar.crmid=vtiger_activity.activityid and vtiger_crmentityCalendar.deleted=0";
@@ -1328,7 +1399,20 @@ function insertIntoRecurringTable(& $recurObj)
 		$query = "CREATE TEMPORARY TABLE IF NOT EXISTS $tableName(id INT(11) PRIMARY KEY, shared ".
 			"int(1) DEFAULT 0) IGNORE ".$query;
 		$db = PearDatabase::getInstance();
-		$db->pquery($query, array());
+		$result = $db->pquery($query, array());
+		if(is_object($result)) {
+			$query = "REPLACE INTO $tableName (id) SELECT userid as id FROM vtiger_sharedcalendar WHERE sharedid = ?";
+			$result = $db->pquery($query, array($user->id));
+
+			//For newly created users, entry will not be there in vtiger_sharedcalendar table
+			//so, consider the users whose having the calendarsharedtype is public
+			$query = "REPLACE INTO $tableName (id) SELECT id FROM vtiger_users WHERE calendarsharedtype = ?";
+			$result = $db->pquery($query, array('public'));
+
+			if(is_object($result)) {
+				return true;
+			}
+		}
 	}
 
 	protected function getListViewAccessibleUsers($sharedid) {
@@ -1452,18 +1536,29 @@ function insertIntoRecurringTable(& $recurObj)
 		foreach($accountids as $accountid) {
 				$accountRecordModel = Vtiger_Record_Model::getInstanceById($accountid);
 				$relatedContactsIdList = $this->getAccountsRelatedIdList($accountid, "Contacts");
+				$contactsLastActionDate = null;
 				if ($relatedContactsIdList) {
 					$contactsLastActionDate = $this->getLastActionDateFromList($relatedContactsIdList, "Contacts");
 				}
 				$relatedPotentialsIdList = $this->getAccountsRelatedIdList($accountid, "Potentials");
+				$potentialLastActionDate = null;
 				if ($relatedPotentialsIdList) {
 					$potentialLastActionDate = $this->getLastActionDateFromList($relatedPotentialsIdList, "Potentials");
 				}
-				if (strtotime($contactsLastActionDate) > strtotime($potentialLastActionDate)) {
+				
+				$parentLastActionDate = null;
+				if ($contactsLastActionDate && $potentialLastActionDate) {
+					if (strtotime($contactsLastActionDate) > strtotime($potentialLastActionDate)) {
+						$parentLastActionDate = $contactsLastActionDate;
+					} else {
+						$parentLastActionDate = $potentialLastActionDate;
+					}
+				} elseif ($contactsLastActionDate) {
 					$parentLastActionDate = $contactsLastActionDate;
-				} elseif (strtotime($potentialLastActionDate) >= strtotime($contactsLastActionDate)) {
-				$parentLastActionDate =  $potentialLastActionDate;
-				} 
+				} elseif ($potentialLastActionDate) {
+					$parentLastActionDate = $potentialLastActionDate;
+				}
+				
 				$accountLastActionDate = $this->getParentLastActionDate($accountid,"Accounts");
 				$accountRecordModel->set('mode', 'edit');
 				if (isset($parentLastActionDate) && isset($accountLastActionDate)) {
@@ -1493,10 +1588,18 @@ function insertIntoRecurringTable(& $recurObj)
 		}
 		$relatedActivityResult = $adb->pquery($getRelatedActivityQuery, array($parent_id));
 		$relatedActivityRows = $adb->num_rows($relatedActivityResult);
-		$relatedActivity = new DateTime($adb->query_result($relatedActivityResult, 0, "due_date"));
-		if ($relatedActivityRows) {
-			return $relatedActivity->format('Y-m-d');
+		if ($relatedActivityRows > 0) {
+			$dueDate = $adb->query_result($relatedActivityResult, 0, "due_date");
+			if ($dueDate) {
+				try {
+					$relatedActivity = new DateTime($dueDate);
+					return $relatedActivity->format('Y-m-d');
+				} catch (Exception $e) {
+					return null;
+				}
+			}
 		}
+		return null;
 	}
 
 	#顧客企業の関連ID(顧客担当者・案件)の配列を得る
@@ -1508,24 +1611,41 @@ function insertIntoRecurringTable(& $recurObj)
 		} elseif ($moduleName == "Potentials") {
 			$getRelatedQuery = "SELECT potentialid from vtiger_potential where related_to = ?";
 			$columnName = "potentialid";
+		} else {
+			return array();
 		}
 		$relatedResult = $adb->pquery($getRelatedQuery, array($accountid));
 		$relatedRows = $adb->num_rows($relatedResult);
+		$relatedIdList = array();
 		for ($i = 0; $i < $relatedRows; $i++) {
-			$relatedIdList[] = $adb->query_result($relatedResult, $i, $columnName);
+			$relatedId = $adb->query_result($relatedResult, $i, $columnName);
+			if ($relatedId) {
+				$relatedIdList[] = $relatedId;
+			}
 		}
 		return $relatedIdList;
 	}
 
 	#関連IDの配列から最終活動日を得る
 	public function getLastActionDateFromList($parentIdList, $moduleName) {
+		$parentLastActionDateList = array();
 		foreach ($parentIdList as $parentId) {
 			$parentLastActionDate = $this->getParentLastActionDate($parentId, $moduleName);
 			if ($parentLastActionDate) {
 				$parentLastActionDateList[$parentLastActionDate] = strtotime($parentLastActionDate);
 			}
 		}
-		$last_action_date   = array_keys($parentLastActionDateList, max($parentLastActionDateList));
+		if (empty($parentLastActionDateList)) {
+			return null;
+		}
+		$maxTimestamp = max($parentLastActionDateList);
+		if ($maxTimestamp === false) {
+			return null;
+		}
+		$last_action_date = array_keys($parentLastActionDateList, $maxTimestamp);
+		if (empty($last_action_date)) {
+			return null;
+		}
 		return $last_action_date[0];
 	}
 	

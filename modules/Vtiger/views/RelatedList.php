@@ -32,7 +32,7 @@ class Vtiger_RelatedList_View extends Vtiger_Index_View {
 		$moduleFields = $relatedModuleModel->getFields();
         $searchParams = $request->get('search_params');
         
-        if(empty($searchParams)) {
+        if(empty($searchParams) || !is_array($searchParams)) {
             $searchParams = array();
         }
         

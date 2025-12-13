@@ -8,6 +8,11 @@
  * All Rights Reserved.
  *************************************************************************************/
 
+use Webauthn\PublicKeyCredentialSource;
+use Webauthn\Denormalizer\WebauthnSerializerFactory;
+use Webauthn\AttestationStatement\AttestationStatementSupportManager;
+use Webauthn\AttestationStatement\NoneAttestationStatementSupport;
+
 class Users_Record_Model extends Vtiger_Record_Model {
 	
 	/**
@@ -781,6 +786,14 @@ class Users_Record_Model extends Vtiger_Record_Model {
 	public static function deleteUserPermanently($userId, $newOwnerId) {
 		$db = PearDatabase::getInstance();
 
+		$userRecord = Users_Record_Model::getInstanceById($userId, 'Users');
+        $credentials = $userRecord->getUserCredential();
+
+        foreach ($credentials as $credential) {
+            $credentialId = $credential['id'];
+            $userRecord->deleteMultiFactorAuthentication($credentialId);
+        }
+
 		$sql = "UPDATE vtiger_crmentity SET smcreatorid=?,smownerid=?,modifiedtime=? WHERE smcreatorid=? AND setype=?";
 		$db->pquery($sql, array($newOwnerId, $newOwnerId, date('Y-m-d H:i:s'), $userId,'ModComments'));
 
@@ -973,4 +986,277 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		return $userModuleModel->checkDuplicateUser($userName);
 	}
 
+	/**
+	 * Undocumented function
+	 *
+	 * @param int $userid
+	 * @return array
+	 */
+	public function getUserCredential() {
+		global $adb;
+		$userid = $this->getId();
+		$query = "SELECT * FROM `vtiger_user_credentials` WHERE `userid` = ?";
+		$result = $adb->pquery($query, array($userid));
+		$MultiFactorAuth = array();
+		if ($adb->num_rows($result) > 0) {
+			while($row = $adb->fetch_array($result))
+			{
+				$MultiFactorAuth[] = array(
+					"id" => $row['id'],
+					"userid" => $userid,
+					"type" => $row['type'],
+					"device_name" => $row['device_name'],
+					"totp_secret" => $row['totp_secret'],
+					"passkey_credential" => $row['passkey_credential'],
+					"created_at" => $row['created_at']
+				);
+			}
+		}
+		return $MultiFactorAuth;
+	}
+
+	public function getTotpSecret()
+	{
+		global $adb;
+		$userid = $this->getId();
+		$query = "SELECT `totp_secret` FROM `vtiger_user_credentials` WHERE `userid` = ? AND `type` = 'totp'";
+		$result = $adb->pquery($query, array($userid));
+		if ($adb->num_rows($result) > 0) {
+			$row = $adb->fetch_array($result);
+			return $row['totp_secret'];
+		}
+		return false;
+	}
+
+	// ユーザーのロック情報を取得するメソッド
+	public function getUserLock()
+	{
+		global $adb;
+		$userid = $this->getId();
+		$query = "SELECT `signature_count`,`lock_time` FROM `vtiger_user_lock` WHERE `userid` = ?";
+		$result = $adb->pquery($query, array($userid));
+		$userLockList = array();
+		if ($adb->num_rows($result) > 0) {
+			$row = $adb->fetch_array($result);
+			$userLockList = array(
+				'signature_count' => $row['signature_count'],
+				'lock_time' => $row['lock_time']
+			);
+		}
+		return $userLockList;
+	}
+
+	// 試行回数のカウントアップ
+	public function countUpSignatureCount()
+	{
+		global $adb;
+		$query = "INSERT INTO `vtiger_user_lock` (`userid`, `signature_count`, `lock_time`) VALUES (?, 1, NULL)
+			ON DUPLICATE KEY UPDATE `signature_count` = `signature_count` + 1, `lock_time` = NULL";
+		$params = array($this->getId());
+		$adb->pquery($query, $params);
+	}
+
+	public function setLockTime()
+	{
+		global $adb;
+		$userid = $this->getId();
+		$lockTime = date('Y-m-d H:i:s'); // 現在の日時を取得
+		$query = "UPDATE `vtiger_user_lock` SET `lock_time` = ? WHERE `userid` = ?";
+		$params = array($lockTime, $userid);
+		$adb->pquery($query, $params);
+	}
+
+	public function resetSignatureCount()
+	{
+		global $adb;
+		$query = "UPDATE `vtiger_user_lock` SET `signature_count` = 0 WHERE `userid` = ?";
+		$params = array($this->getId());
+		$adb->pquery($query, $params);
+	}
+
+	public function resetLockTime()
+	{
+		global $adb;
+		$query = "UPDATE `vtiger_user_lock` SET `lock_time` = NULL WHERE `userid` = ?";
+		$params = array($this->getId());
+		$adb->pquery($query, $params);
+	}
+
+	/**
+	 * 多要素認証の試行回数が制限を超えたかどうかを確認するメソッド
+	 *
+	 * @param string $type 認証タイプ（例: 'totp', 'passkey'）
+	 * @return boolean true: 制限を超えた、false: 制限内/ロックしない
+	 */
+	public function isLoginLockedByMFA()
+	{
+		global $adb;
+		$userid = $this->getId();
+		$query = "SELECT `signature_count` FROM `vtiger_user_lock` WHERE `userid` = ?";
+		$params = array($userid);
+		$result = $adb->pquery($query, $params);
+
+		$failureCount = Settings_Parameters_Record_Model::getParameterValue("USER_LOCK_COUNT");
+		if (!is_numeric($failureCount) || $failureCount <= 0) {
+			// 数値に変換できない文字だった場合はロックしない
+			return false;
+		}
+		// 数値に変換
+		$failureCount = (int)$failureCount;
+		$totalCount = 0;
+		while ($row = $adb->fetch_array($result)) {
+			$totalCount += $row['signature_count'];
+		}
+		if ($totalCount >= $failureCount) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * ユーザーのロック時間が経過しているかどうかを確認するメソッド
+	 * ロック時間が設定されていない場合は、ロックされていないとみなす
+	 *
+	 * @return boolean true: ロック時間が経過している、false: ロックされていない
+	 */
+	public function isLocked()
+	{
+		global $adb;
+		$userid = $this->getId();
+		$lock_time = Settings_Parameters_Record_Model::getParameterValue("USER_LOCK_TIME");
+		// 数値に変換できない文字だった場合はロック時間が設定されていないとみなす
+		if (!is_numeric($lock_time) || $lock_time <= 0) {
+			// ロック時間が設定されていない場合は、ロックされて
+			return false; // ロック時間が設定されていない場合は、ロックされていないとみなす
+		}
+		// 数値に変換
+		$lock_time = (int)$lock_time;
+		// テーブルのlock_timeと$lock_timeを比較して、現在の日時から$lock_time分経過しているかどうかを確認
+		$query = "SELECT `lock_time` FROM `vtiger_user_lock` WHERE `userid` = ? AND `lock_time` IS NOT NULL AND `lock_time` > (NOW() - INTERVAL $lock_time MINUTE)";
+
+		$params = array($userid);
+		$result = $adb->pquery($query, $params);
+
+		if ($adb->num_rows($result) > 0) {
+			return true;
+		}
+		return false;
+	}
+
+	// ユーザーをロックするメソッド
+	public function setUserLock()
+	{
+		global $adb;
+		$userid = $this->getId();
+		// lock_timeに現在の日時をDATETIME型で設定し、signature_countを0にリセット
+		// ただし、すでにロックされている場合は更新しない
+		if ($this->isLoginLockedByMFA()) {
+			return; // すでにロックされている場合は何もしない
+		}
+		// ユーザーがロックされていない場合は、ロック時間を現在の日時に設定し、signature_countを0にリセット
+		// ここでロック時間を設定し、signature_countをリセット
+		// これにより、ユーザーがロックされている場合は、次回のログイン時にロック時間が更新され、signature_countは0にリセットされます
+		$userid = $this->getId();
+		$lockTime = date('Y-m-d H:i:s'); // 現在の日時を取得
+		$query = "UPDATE `vtiger_user_lock` SET `lock_time` = ?, `signature_count` = 0 WHERE `userid` = ?";
+		$params = array($lockTime, $userid);
+		$adb->pquery($query, $params);
+	}
+
+	/**
+	 * 多要素の削除を行うメソッド
+	 * @param int $id
+	 */
+	public function deleteMultiFactorAuthentication($id) {
+		global $adb;
+		$sql = "DELETE FROM `vtiger_user_credentials` WHERE `id` = ?";
+		$params = array($id);
+		
+		$adb->pquery($sql, $params);
+	}
+	/**
+	 * Passkeyの登録を行うメソッド
+	 *
+	 * @param int $userid ユーザーID
+	 * @param string $device_name デバイス名
+	 * @param PublicKeyCredentialSource $publicKeyCredentialSource 登録するパブリックキー認証情報
+	 * @return bool 成功した場合はtrue、失敗した場合はfalse
+	 */
+	public function passkeyRegisterUserCredential($device_name, $publicKeyCredentialSource) {
+		global $adb;
+		$userid = $this->getId();
+		
+		// データベースに保存
+		$sql = "INSERT INTO `vtiger_user_credentials` (`userid`, `type`, `device_name`, `passkey_credential`)
+				VALUES (?, ?, ?, ?)";
+		$params = array(
+			$userid,
+			'passkey',
+			$device_name,
+			json_encode($publicKeyCredentialSource) // パブリックキー認証情報をJSON形式で保存
+		);
+
+		$adb->pquery($sql, $params);
+			
+	}
+
+	public function totpRegisterUserCredential($totp_secret, $device_name)
+	{
+		global $log, $adb;
+		$userid = $this->getId();
+		if (empty($totp_secret) || empty($device_name)) {
+			global $log;
+			$log->error("TOTP secret or device name is empty.");
+			return false;
+		}
+		// すでにTOTPが登録されているか確認
+		$existingCredentials = $this->getUserCredential();
+		if (!empty($existingCredentials)) {
+			foreach ($existingCredentials as $credential) {
+				if ($credential['type'] === 'totp') {
+					$log->error("TOTP already registered for user ID: $userid");
+					return false; // 既にTOTPが登録されている場合はエラー
+				}
+			}
+		}
+		$sql = "INSERT INTO `vtiger_user_credentials` (`userid`, `type`, `device_name`, `totp_secret`) VALUES (?, ?, ?, ?)";
+		$params = array(
+			$userid,
+			'totp',
+			$device_name,
+			$totp_secret 
+		);
+		$adb->pquery($sql, $params);
+	}
+
+	public function getPasskeyCredentialById() {
+		global $adb;
+		$userId = $this->getId();
+		$failureCount = Settings_Parameters_Record_Model::getParameterValue("USER_LOCK_COUNT");
+		// 数値に変換できない文字だった場合は5回をデフォルト値として使用
+		if (!is_numeric($failureCount) || $failureCount <= 0) {
+			$failureCount = null; // デフォルト値
+		}
+		// 数値に変換
+		$failureCount = (int)$failureCount;
+		$query = "SELECT `passkey_credential` FROM `vtiger_user_credentials` WHERE `userid` = ? AND `type` = 'passkey'";
+		$result = $adb->pquery($query, array($userId));
+		$passkeyList = array();
+		while ($row = $adb->fetch_array($result)) {
+			$passkeyList[] = $row['passkey_credential'];
+		}
+		return $passkeyList;
+	}
+
+	public function getSharedCalendarTodoView() {
+		global $adb;
+
+		$result = $adb->pquery('SELECT sharedcalendartodoview FROM vtiger_users WHERE id = ?', array($this->getId()));
+		$sharedcalendartodoview = $adb->query_result($result, 0, 'sharedcalendartodoview');
+		if(empty($sharedcalendartodoview)) {
+			$sharedcalendartodoview = 'Hidden';
+		}
+
+		return $sharedcalendartodoview;
+	}
 }
