@@ -261,6 +261,11 @@ class VtigerActorOperation extends WebserviceEntityOperation {
 			$fields = array();
 			$moduleFields = $this->meta->getModuleFields();
 			foreach ($moduleFields as $fieldName=>$webserviceField) {
+				
+				// 空白項目を除外する。
+				if ($webserviceField->getFieldDataType() === "blank") {
+					continue;
+				}
 				array_push($fields,$this->getDescribeFieldArray($webserviceField));
 			}
 			$label = ($app_strings[$this->meta->getObectIndexColumn()])? $app_strings[$this->meta->getObectIndexColumn()]:

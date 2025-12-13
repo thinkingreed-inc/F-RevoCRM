@@ -1180,7 +1180,7 @@ class Products extends CRMEntity {
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule,$queryPlanner) {
+	function generateReportsSecQuery($module,$secmodule,$queryPlanner, $reportid = false) {
 		global $current_user;
 		$matrix = $queryPlanner->newDependencyMatrix();
 
@@ -1191,7 +1191,7 @@ class Products extends CRMEntity {
 		}
 		$matrix->setDependency("vtiger_products",array("innerProduct","vtiger_crmentityProducts","vtiger_productcf","vtiger_vendorRelProducts"));
 
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_products","productid", $queryPlanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_products","productid", $queryPlanner, $reportid);
 		if ($queryPlanner->requireTable("innerProduct")){
 			$query .= " LEFT JOIN (
 					SELECT vtiger_products.productid,

@@ -183,7 +183,9 @@ class Calendar_ListView_Model extends Vtiger_ListView_Model {
 		$queryGenerator = $this->get('query_generator');
 		$listViewContoller = $this->get('listview_controller');
 		$listViewFields = array('visibility','assigned_user_id');
-		$queryGenerator->setFields(array_unique(array_merge($queryGenerator->getFields(), $listViewFields)));
+		
+		$querySetFields = $queryGenerator->getFields();
+		$queryGenerator->setFields(array_unique(array_merge($querySetFields, $listViewFields)));
 		
         $searchParams = $this->get('search_params');
         if(empty($searchParams)) {
@@ -204,6 +206,10 @@ class Calendar_ListView_Model extends Vtiger_ListView_Model {
 		}
         
         $orderBy = $this->getForSql('orderby');
+		if(is_countable($querySetFields) && !in_array($orderBy, $querySetFields, true)) {
+			$orderBy = '';
+		}
+		
 		$sortOrder = $this->getForSql('sortorder');
         if(empty($sortOrder)) {
             $sortOrder = 'DESC';
@@ -300,14 +306,10 @@ class Calendar_ListView_Model extends Vtiger_ListView_Model {
 				}
 				$record['subject'] = vtranslate('Busy','Events').'*';
 			}
-			if($record['activitytype'] == 'Task') {
-				unset($record['visibility']);
-				unset($rawData['visibility']);
-			}
-			
+
 			$record['id'] = $recordId;
             $listViewRecordModels[$recordId] = $moduleModel->getRecordFromArray($record, $rawData);
-            if(!$currentUser->isAdminUser() && $rawData['activitytype'] == 'Task' && isToDoPermittedBySharing($recordId) == 'no') {
+            if($rawData['activitytype'] == 'Task' && !$currentUser->isAdminUser() && $rawData['visibility'] == 'Private' && $ownerId && $visibility) {
 				$recordsToUnset[] = $recordId;
 			}
 		}

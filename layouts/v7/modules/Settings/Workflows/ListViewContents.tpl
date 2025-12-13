@@ -121,7 +121,7 @@
 												{elseif $LISTVIEW_HEADERNAME eq 'execution_condition'}
 													{$LISTVIEW_ENTRY->getDisplayValue('v7_execution_condition')}
 												{else}
-													{$LISTVIEW_ENTRY->getDisplayValue($LISTVIEW_HEADERNAME)}
+													{vtranslate($LISTVIEW_ENTRY->getDisplayValue($LISTVIEW_HEADERNAME), $QUALIFIED_MODULE)}
 												{/if}
 											</td>
 										{elseif $LISTVIEW_HEADERNAME eq 'module_name' && empty($SOURCE_MODULE)}

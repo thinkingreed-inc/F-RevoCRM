@@ -17,6 +17,7 @@ $languageStrings = array(
 	'LBL_RECORDS_LIST' => '活動一覧',
 	'LBL_EVENTS' => '活動',
 	'LBL_TODOS' => 'TODO',
+	'LBL_SHOW_TODOS' => 'TODOの表示',
 	'LBL_CALENDAR_SETTINGS' => 'カレンダー設定',
 	'LBL_CALENDAR_SHARING' => 'カレンダー共有',
 	'LBL_DEFAULT_EVENT_DURATION' => 'デフォルトの活動周期',
@@ -190,13 +191,14 @@ $languageStrings = array(
 	'Duration' => '期間',
 	'Duration Minutes' => '期間(分)',
 	'No Time' => '時間なし',
+	'LBL_DUPULICATE_EVENT_EXISTS'=> 'この活動は復元できません。活動の参加者が重複しています。',
 );
 
 $jsLanguageStrings = array(
 	'LBL_ADD_EVENT_TASK' => '活動/TODOの追加',
 	'JS_TASK_IS_SUCCESSFULLY_ADDED_TO_YOUR_CALENDAR' => 'TODOの登録が完了しました。',
-        'LBL_CANT_SELECT_CONTACT_FROM_LEADS' => '関連する顧客担当者が選択できませんでした。',
-        'JS_FUTURE_EVENT_CANNOT_BE_HELD' => '未来の予定のため完了にできません。',
+	'LBL_CANT_SELECT_CONTACT_FROM_LEADS' => '関連する顧客担当者が選択できませんでした。',
+	'JS_FUTURE_EVENT_CANNOT_BE_HELD' => '未来の予定のため完了にできません。',
 	
 	//Calendar view label translation
 	'LBL_MONTH' => '月',
@@ -273,4 +275,7 @@ $jsLanguageStrings = array(
     'JS_CHECK_START_AND_END_DATE'=>'終了日時は開始日時よりも同じかそれ以降でなければなりません。',
 	'JS_CHECK_START_AND_END_DATE_SHOULD_BE_GREATER'=> '終了日時は開始日時以降でなければなりません。',
 	'My Group'=> 'マイグループ',
+	'JS_MONTHTITLEFORMAT' => 'YYYY年MM月',
+	'JS_DAYTITLEFORMAT' => 'YYYY年MM月DD日',
+	'JS_WEEKTITLEFORMAT' => 'YYYY年MM月DD日',
 );

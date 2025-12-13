@@ -2051,7 +2051,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 
 		$moduleIcon = "<i class='vicon-$lowerModuleName' title='$title'></i>";
 		if ($this->source == 'custom') {
-			$moduleShortName = mb_substr(trim($title), 0, 2);
+			$moduleShortName = mb_substr(trim($title), 0, 1);
 			$moduleIcon = "<span class='custom-module' title='$title'>$moduleShortName</span>";
 		}
 

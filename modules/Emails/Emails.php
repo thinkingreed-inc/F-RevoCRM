@@ -584,7 +584,7 @@ class Emails extends CRMEntity {
 	* @param - $secmodule secondary module name
 	* returns the query string formed on fetching the related data for report for secondary module
 	*/
-	function generateReportsSecQuery($module, $secmodule, $queryPlanner){
+	function generateReportsSecQuery($module, $secmodule, $queryPlanner, $reportid = false){
 		$focus = CRMEntity::getInstance($module);
 		$matrix = $queryPlanner->newDependencyMatrix();
 
@@ -596,7 +596,7 @@ class Emails extends CRMEntity {
 
 		$matrix->setDependency("vtiger_activity",array("vtiger_crmentityEmails","vtiger_email_track"));
 
-		$query = $this->getRelationQuery($module, $secmodule, "vtiger_activity","activityid", $queryPlanner);
+		$query = $this->getRelationQuery($module, $secmodule, "vtiger_activity","activityid", $queryPlanner, $reportid);
 		if ($queryPlanner->requireTable("vtiger_crmentityEmails")){
 			$query .= " LEFT JOIN vtiger_crmentity AS vtiger_crmentityEmails ON vtiger_crmentityEmails.crmid=vtiger_activityEmails.activityid and vtiger_crmentityEmails.deleted = 0";
 		}
