@@ -1,5 +1,8 @@
 RewriteEngine On
 
+# Disable server signature in error pages (Apache version info leak prevention)
+ServerSignature Off
+
 # Block access to hidden files and directories (starting with .)
 # This prevents access to .git, .env, .htaccess, etc.
 <FilesMatch "^\.">

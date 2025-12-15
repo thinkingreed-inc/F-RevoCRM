@@ -1,6 +1,9 @@
 # Allow access to public directory
 allow from all
 
+# Disable server signature in error pages (Apache version info leak prevention)
+ServerSignature Off
+
 # Security Headers
 <IfModule mod_headers.c>
     Header always set X-Frame-Options "SAMEORIGIN"
