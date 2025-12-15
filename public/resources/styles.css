@@ -93,9 +93,11 @@ td.listViewEntryValue  .fieldValue .value {
 }
 /*
  * モーダルウインドウの背景を黒ベースに変更
+ * z-index: navbarが1095 !importantなので、backdropは1096 !importantで上に表示
  */
 .modal-backdrop {
   background-color: #555;
+  z-index: 1096 !important;
 }
 
 /*
