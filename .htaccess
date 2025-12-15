@@ -14,6 +14,24 @@ RedirectMatch 404 /\.git
     Require all denied
 </FilesMatch>
 
+# Security Headers
+<IfModule mod_headers.c>
+    # X-Frame-Options - クリックジャッキング防止
+    Header always set X-Frame-Options "SAMEORIGIN"
+
+    # Content Security Policy (CSP) - XSS攻撃やコードインジェクション攻撃を軽減
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'self'; form-action 'self'; base-uri 'self'"
+
+    # X-Content-Type-Options - MIMEタイプスニッフィング防止
+    Header always set X-Content-Type-Options "nosniff"
+
+    # X-XSS-Protection - ブラウザのXSSフィルター有効化
+    Header always set X-XSS-Protection "1; mode=block"
+
+    # Referrer-Policy - リファラー情報の制御
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
 # Force all requests to go to public directory (except public itself)
 RewriteCond %{REQUEST_URI} !public/
 RewriteRule ^(.*)$ public/$1 [L,QSA]
