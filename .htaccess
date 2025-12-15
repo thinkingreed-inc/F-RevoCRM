@@ -1,5 +1,19 @@
 RewriteEngine On
 
+# Block access to hidden files and directories (starting with .)
+# This prevents access to .git, .env, .htaccess, etc.
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# Block access to .git directory and its contents
+RedirectMatch 404 /\.git
+
+# Block access to other sensitive files
+<FilesMatch "(^\.env|\.sql|\.bak|\.log|\.ini|\.sh)$">
+    Require all denied
+</FilesMatch>
+
 # Force all requests to go to public directory (except public itself)
 RewriteCond %{REQUEST_URI} !public/
 RewriteRule ^(.*)$ public/$1 [L,QSA]

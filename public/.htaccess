@@ -1,1 +1,15 @@
+# Allow access to public directory
 allow from all
+
+# Block access to hidden files and directories (starting with .)
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# Block access to .git directory and its contents
+RedirectMatch 404 /\.git
+
+# Block access to sensitive files
+<FilesMatch "(^\.env|\.sql|\.bak|\.log|\.ini|\.sh)$">
+    Require all denied
+</FilesMatch>
