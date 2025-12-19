@@ -344,10 +344,10 @@ body > .mCSB_inside > .mCSB_container {
 /** App Nav Styles */
 .active-app-title {
   white-space: nowrap;
-  font-family: Oswald, "OpenSans-Semibold", "Helvetica Neue", Helvetica, sans-serif;
+  font-family: "OpenSans-Semibold", "Helvetica Neue", Helvetica, sans-serif;
 }
 .module-action-bar .module-title {
-  font-family: Oswald, "OpenSans-Semibold", "Helvetica Neue", Helvetica, sans-serif;
+  font-family: "OpenSans-Semibold", "Helvetica Neue", Helvetica, sans-serif;
   color: #596875;
   margin: 12px 0;
   white-space: nowrap;
@@ -5280,7 +5280,6 @@ TN-34230 .row .nav > li > a:hover {
 .layoutContent .editFields {
   min-height: 116px;
   height: auto;
-  border-right: 1px solid #DDDDDD;
 }
 .layoutContent .fieldLabelContainer {
   padding-top: 15px;

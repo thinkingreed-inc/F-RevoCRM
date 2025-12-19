@@ -1819,6 +1819,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 			thisInstance.showRelatedTabModulesList(relatedContainer);
 			var mode = jQuery(e.currentTarget).find('a').data('mode');
 			jQuery('.selectedMode').val(mode);
+			jQuery("div[name='editReadonlyDisplayDiv']").hide();
 		});
 	},
 	/**
@@ -2143,6 +2144,46 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		}
 	},
 
+	// 編集時に編集不可項目の表示ボタン
+	registerEventForEditReadonlyDisplay: function () {
+		jQuery("input[name='editReadonlyDisplay']").on('switchChange.bootstrapSwitch', function (e) {
+			var currentElement = jQuery(e.currentTarget);
+			if (currentElement.val() == 1) {
+				currentElement.attr('value', 0);
+			} else {
+				currentElement.attr('value', 1);
+			}
+
+			var moduleName = app.getModuleName();
+			if (moduleName != 'LayoutEditor') {
+				moduleName = 'LayoutEditor';
+			}
+
+			var params = {
+				module: moduleName,
+				parent: app.getParentModuleName(),
+				sourceModule: jQuery('#selectedModuleName').val(),
+				action: 'Module',
+				mode: 'updateEditReadonlyDisplay',
+				edit_readonly_display: currentElement.val()
+			}
+
+			app.request.post({data: params}).then(function (error, data) {
+				if (error) {
+					app.helper.showErrorNotification({
+						message: app.vtranslate('JS_ERROR')
+					});
+					return;
+				}
+				if (data) {
+					app.helper.showSuccessNotification({
+						message: app.vtranslate('JS_STATUS_CHANGED_SUCCESSFULLY')
+					});
+				}
+			});
+		});
+	},
+
 	fieldListTabClicked: false,
 	triggerFieldListTabClickEvent: function () {
 		var thisInstance = this;
@@ -2150,6 +2191,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		contents.find('.detailViewTab').click(function (e) {
 			var detailViewLayout = contents.find('#detailViewLayout');
 			thisInstance.showFieldsListUI(detailViewLayout, e).then(function (data) {
+				jQuery("div[name='editReadonlyDisplayDiv']").show();
 				if (!thisInstance.fieldListTabClicked) {
 					thisInstance.registerBlockEvents();
 					thisInstance.registerFieldEvents();
@@ -2162,6 +2204,10 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 					jQuery("input[name='collapseBlock']").bootstrapSwitch();
 					jQuery("input[name='collapseBlock']").bootstrapSwitch('handleWidth', '40px');
 					jQuery("input[name='collapseBlock']").bootstrapSwitch('labelWidth', '25px');
+					jQuery("input[name='editReadonlyDisplay']").bootstrapSwitch();
+					jQuery("input[name='editReadonlyDisplay']").bootstrapSwitch('handleWidth', '27px');
+					jQuery("input[name='editReadonlyDisplay']").bootstrapSwitch('labelWidth', '25px');
+					thisInstance.registerEventForEditReadonlyDisplay();
 					thisInstance.registerSwitchActionOnFieldProperties();
 					thisInstance.registerAddCustomField();
 					app.helper.showVerticalScroll(jQuery('.addFieldTypes'), {'setHeight': '350px'});
@@ -2202,6 +2248,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		var contents = jQuery('#layoutEditorContainer').find('.contents');
 
 		contents.find('.duplicationTab').click(function (e) {
+			jQuery("div[name='editReadonlyDisplayDiv']").hide();
 			var duplicationContainer = contents.find('#duplicationContainer');
 			thisInstance.showDuplicationHandlingUI(duplicationContainer, e).then(function (data) {
 				var form = jQuery('.duplicateHandlingForm');
@@ -2306,6 +2353,15 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		return aDeferred.promise();
 	},
 	/**
+	 * 2列幅フィールドのラベル幅を1列幅フィールドのラベル幅に合わせる
+	 */
+	adjustFieldLabelWidth: function () {
+		var fieldwidth = jQuery('.layoutContent .blockFieldsList ul li:not(.wideField) div > div.layoutEditFieldLabel').width();
+		if (window.innerWidth > 768) {
+			jQuery('.layoutContent .blockFieldsList ul li.wideField div > div.layoutEditFieldLabel').width(fieldwidth);
+		}
+	},
+	/**
 	 * register events for layout editor
 	 */
 	registerEvents: function () {
@@ -2314,6 +2370,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		thisInstance.triggerFieldListTabClickEvent();
 		thisInstance.triggerRelatedModulesTabClickEvent();
 		thisInstance.triggerDuplicationTabClickEvent();
+		thisInstance.adjustFieldLabelWidth();
 
 		var selectedTab = jQuery('.selectedTab').val();
 		jQuery('#layoutEditorContainer').find('.contents').find('.'+selectedTab).trigger('click');

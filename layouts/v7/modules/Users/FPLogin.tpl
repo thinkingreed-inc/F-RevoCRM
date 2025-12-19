@@ -15,7 +15,7 @@
 	Error, please retry setting the password!!
 {else}
 	<h4>Loading .... </h4>
-	<form class="form-horizontal" name="login" id="login" method="post" action="../../../index.php?module=Users&action=Login">
+	<form class="form-horizontal" name="login" id="login" method="post" action="index.php?module=Users&action=Login">
 		<input type=hidden name="username" value="{$USERNAME}" >
 		<input type=hidden name="password" value="{$PASSWORD}" >
 	</form>

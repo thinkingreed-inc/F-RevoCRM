@@ -8,6 +8,9 @@
  * All Rights Reserved.
  * ********************************************************************************** */
 
+// Change working directory to parent directory for compatibility
+chdir(dirname(__DIR__));
+
 require_once 'includes/main/WebUI.php';
 require_once 'include/utils/utils.php';
 require_once 'include/utils/VtlibUtils.php';

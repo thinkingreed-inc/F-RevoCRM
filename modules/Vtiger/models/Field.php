@@ -1691,4 +1691,16 @@ class Vtiger_Field_Model extends Vtiger_Field {
 		$this->fieldInfo['validator'] = $this->getValidator();
 		return $this->fieldInfo;
 	}
+
+	/**
+	 * 編集画面でreadonlyのフィールドか判定する
+	 * @return <Boolean> true/false
+	 */
+	public function isReadonlyEditView()
+	{
+		if (!$this->isEditable() && $this->isViewableInDetailView()) {
+			return true;
+		}
+		return false;
+	}
 }
