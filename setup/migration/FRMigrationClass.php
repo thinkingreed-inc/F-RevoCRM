@@ -1,11 +1,35 @@
 <?php
 /**
  * F-RevoCRM マイグレーション基底クラス
- * 
+ *
  * マイグレーションの実行状態は com_vtiger_migrations テーブルで管理
  */
 
+// データベース
 require_once 'include/database/PearDatabase.php';
+
+// vtlib関連（モジュール・フィールド操作に必須）
+include_once 'vtlib/Vtiger/Menu.php';
+include_once 'vtlib/Vtiger/Module.php';
+
+// ユーティリティ
+include_once 'modules/PickList/DependentPickListUtils.php';
+include_once 'modules/ModTracker/ModTracker.php';
+include_once 'include/utils/CommonUtils.php';
+
+// オートローダー・ランタイム
+include_once 'includes/Loader.php';
+include_once 'includes/runtime/BaseModel.php';
+include_once 'includes/runtime/Globals.php';
+include_once 'includes/runtime/LanguageHandler.php';
+
+// F-RevoCRMセットアップユーティリティ
+require_once 'setup/utils/FRFieldSetting.php';
+require_once 'setup/utils/FRFilterSetting.php';
+
+// モデル関連
+include_once 'modules/Vtiger/models/Module.php';
+include_once 'modules/Vtiger/models/Record.php';
 
 abstract class FRMigrationClass {
     
@@ -51,16 +75,33 @@ abstract class FRMigrationClass {
             
             // トランザクション開始
             $this->db->database->StartTrans();
-            
+
+            // 前のマイグレーションでキャッシュされたUsers_Record_Modelをクリア
+            if (class_exists('Users_Record_Model')) {
+                Users_Record_Model::$currentUserModels = array();
+            }
+
             // マイグレーション実行
             $this->process();
-            
+
+            // トランザクション内でエラーが発生していないかチェック
+            if (!$this->db->database->_transOK) {
+                throw new Exception(
+                    "マイグレーション処理中にSQLエラーが発生しました。\n" .
+                    "  ※エラー詳細はログファイル (logs/vtigercrm_YYYYMMDD.log) を確認してください。"
+                );
+            }
+
             // 実行済みとしてマーク
             $this->markAsExecuted();
-            
+
             // トランザクションコミット
-            $this->db->database->CompleteTrans();
-            
+            $commitResult = $this->db->database->CompleteTrans();
+
+            if (!$commitResult) {
+                throw new Exception("トランザクションのコミットに失敗しました。");
+            }
+
             echo "マイグレーション {$this->migrationName} が正常に実行されました。\n";
             return true;
             
