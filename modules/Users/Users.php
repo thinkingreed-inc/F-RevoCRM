@@ -1691,6 +1691,7 @@ class Users extends CRMEntity {
 	}
 
 	function createRecords($obj) {
+		global $log, $default_language;
 		$adb = PearDatabase::getInstance();
 		$moduleName = $obj->module;
 		$createdRecords = array();
@@ -1756,7 +1757,10 @@ class Users extends CRMEntity {
 						}
 					} else if($fieldName == 'roleid') {
 						foreach($allRoles as $role) {
-							if(strtolower($fieldValue) == strtolower($role->getName())) {
+							$roleLabelKey = $role->getName();
+							// 「役割」は翻訳後の値での比較、default_languageを見て比較する
+							$translatedRoleName = Vtiger_Language_Handler::getTranslatedString($roleLabelKey, 'Settings:Roles', $default_language);
+							if(strtolower($fieldValue) == strtolower($translatedRoleName)) {
 								$roleId = $role->getId();
 								break;
 							}
