@@ -26,11 +26,12 @@ class Import_HistoryView_Model extends Vtiger_Base_Model {
 			$noofrows = $db->num_rows($result);
 			for ($i = 0; $i < $noofrows; $i++) {
 				$importid = $db->query_result($result, $i, 'importid');
-				$status = self::getImportStatusCount($importid, $user);
+				$moduleName = getTabname($tabid);
+				$status = self::getImportStatusCount($importid, $user, $moduleName);
 				$username = self::getUsernameByImportid($importid);
 				$userid = $db->query_result($result, $i, 'userid');
 				$histories[] = array(
-					'module' => getTabname($tabid),
+					'module' => $moduleName,
 					'username' => $username,
 					'importid' => $importid,
 					'total'    => $status['TOTAL'],
@@ -50,11 +51,18 @@ class Import_HistoryView_Model extends Vtiger_Base_Model {
 		return null;
     }
 
-	private static function getImportStatusCount($importid,$user) {
+	private static function getImportStatusCount($importid,$user,$moduleName='') {
 		$db = PearDatabase::getInstance();
 		$tableName = Import_Utils_Helper::getDbTableName($user,$importid);
 
-		$query = 'SELECT status FROM '.$tableName;
+		// 価格表の場合、同一booknameの中で最小idのstatusを返す
+		if ($moduleName == 'PriceBooks') {
+			$query = 'SELECT main.bookname, main.status FROM '.$tableName.' AS main'
+				.' INNER JOIN (SELECT bookname, MIN(id) AS min_id FROM '.$tableName.' GROUP BY bookname) AS summary'
+				.' ON main.bookname = summary.bookname AND main.id = summary.min_id';
+		} else {
+			$query = 'SELECT status FROM '.$tableName;
+		}		
 		$result = $db->pquery($query, array());
 
 		$statusCount = array('TOTAL' => 0, 'IMPORTED' => 0, 'FAILED' => 0, 'PENDING' => 0, 'CREATED' => 0, 'SKIPPED' => 0, 'UPDATED' => 0, 'MERGED' => 0);
