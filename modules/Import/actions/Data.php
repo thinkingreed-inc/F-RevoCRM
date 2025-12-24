@@ -148,7 +148,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			// ※処理済みのレコードが$pagingLimitの倍数でない場合を前回のインポートが完了していないとみなす
 			$configReader = new Import_Config_Model();
 			$pagingLimit = intval($configReader->get('importPagingLimit'));
-			$importTable = 'vtiger_import_'.$importUserId;
+			$importTable = Import_Utils_Helper::getDbTableName($this->user);
 			$finishedImportQuery = 'SELECT count(*) AS imported FROM '.$importTable.' WHERE `status` != ?';
 			$finishedImportResult = $adb->pquery($finishedImportQuery, array(Import_Data_Action::$IMPORT_RECORD_NONE));
 			$finishedImportCount = $adb->query_result($finishedImportResult, 0, 'imported');
@@ -965,7 +965,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			$vtigerMailer->Send(true);
 
 			//未完了のインポートがない場合のみ終了する
-			$importTable = Import_Utils_Helper::getDbTableName($user);
+			$importTable = Import_Utils_Helper::getDbTableName($importDataController->user);			
 			$unfinishedImportQuery = 'SELECT count(status) FROM ' . $importTable . ' WHERE status = 0 GROUP BY status';
 			$unfinishedImportResult = $adb->pquery($unfinishedImportQuery, array());
 			$unfinishedImportCount = $adb->query_result($unfinishedImportResult, 0, 'count(status)');
