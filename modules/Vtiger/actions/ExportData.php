@@ -118,7 +118,7 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 				$presence = $fieldModel->get('presence');
 				if(in_array($presence, $accessiblePresenceValue) && $fieldModel->get('displaytype') != '6' && $fieldModel->get('uitype') != '999') {
 					$fieldDataType = $fieldModel->getFieldDataType();
-					if($fieldDataType == 'reference' && $fieldModel->get('uitype') != '52' && $format == 'ExportBoth'){
+					if($fieldDataType == 'reference' && $fieldModel->get('uitype') != '52' && $fieldModel->get('uitype') != '77' && $format == 'ExportBoth'){
 						$headers[] = vtranslate(html_entity_decode($fieldModel->get('label'), ENT_QUOTES), $this->moduleInstance->getName()).'('.vtranslate('LBL_LABEL', $this->moduleInstance->getName()).')';
 						$headers[] = vtranslate(html_entity_decode($fieldModel->get('label'), ENT_QUOTES), $this->moduleInstance->getName());
 					} else {
@@ -399,7 +399,7 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 				} else {
 					$newarr[$fieldName] = '';
 				}
-			} elseif($uitype == 52 || $type == 'owner') {
+			} elseif($uitype == 52 || $uitype == 77 || $type == 'owner') {
 				$newarr[$fieldName] = Vtiger_Util_Helper::getOwnerName($value);
 			}elseif($type == 'reference'){
 				$value = trim($value);
