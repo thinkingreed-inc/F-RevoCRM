@@ -571,67 +571,84 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 				$entityId = false;
 				$fieldDetails = false;
 				if (!empty($fieldValue)) {
-					if (strpos($fieldValue, '::::') > 0) {
-						$fieldValueDetails = explode('::::', $fieldValue);
-					} else if (strpos($fieldValue, ':::') > 0) {
-						$fieldValueDetails = explode(':::', $fieldValue);
-					} else {
-						$fieldValueDetails = $fieldValue;
-					}
-
-					foreach($fieldValueDetails as $fieldValueDetail){
-						if (strpos($fieldValueDetail, '====') > 0) {
-							$fieldDetail = explode('====', $fieldValueDetail);
-							$fieldDetails[$fieldDetail[0]] = decode_html(trim($fieldDetail[1]));
+					$referenceEntries = preg_split('/\s*,\s*/', trim($fieldValue));
+					$entityIds = array();
+					foreach ($referenceEntries as $referenceEntry) {
+						if ($referenceEntry === '') {
+							continue;
 						}
-					}
+						$entityId = false;
+						$fieldDetails = false;
+						if (strpos($referenceEntry, '::::') > 0) {
+							$fieldValueDetails = explode('::::', $referenceEntry);
+						} else if (strpos($referenceEntry, ':::') > 0) {
+							$fieldValueDetails = explode(':::', $referenceEntry);
+						} else {
+							$fieldValueDetails = $referenceEntry;
+						}
 
-					if (php7_count($fieldValueDetails) > 1) {
-						$referenceModuleName = trim($fieldValueDetails[0]);
-						$referenceValueList = $fieldDetails;
-						$entityId = getEntityIdByColumns($referenceModuleName, $referenceValueList, $cache);
-						// if (php7_count($fieldValueDetails) == 2) {
-						// 	$entityLabel = trim($fieldValueDetails[1]);
-						// 	if ($fieldValueDetails[0] == 'Users') {
-						// 		$query = "SELECT id  FROM vtiger_users WHERE trim(concat(last_name,' ',first_name)) = ? ;";
-						// 		$result = $adb->pquery($query, array($entityLabel));
-						// 		if ($adb->num_rows($result) > 0) {
-						// 			$entityId = $adb->query_result($result, 0, "id");
-						// 		} elseif ($adb->num_rows($result) == 0 && $fieldInstance->isMandatory()) {
-						// 			$entityId = $this->user->id;
-						// 		}
-						// 	} else {
-						// 		$entityId = getEntityId($referenceModuleName, decode_html($entityLabel));
-						// 	}
-						// } else {//multi reference field
-						// 	$entityIdsList = $this->getEntityIdsList($referenceModuleName, $fieldValueDetails);
-						// 	if ($entityIdsList) {
-						// 		$entityId = implode(', ', $entityIdsList);
-						// 	}
-						// }
+						foreach($fieldValueDetails as $fieldValueDetail){
+							if (strpos($fieldValueDetail, '====') > 0) {
+								$fieldDetail = explode('====', $fieldValueDetail);
+								$fieldDetails[$fieldDetail[0]] = decode_html(trim($fieldDetail[1]));
+							}
+						}
 
-					} else {
-						$referencedModules = $fieldInstance->getReferenceList();
-						$entityLabel = $fieldValue;
-						foreach ($referencedModules as $referenceModule) {
-							$referenceModuleName = $referenceModule;
-							if ($referenceModule == 'Users') {
-								$referenceEntityId = getUserId_Ol($entityLabel);
-								if (empty($referenceEntityId) ||
-										!Import_Utils_Helper::hasAssignPrivilege($moduleName, $referenceEntityId)) {
-									$referenceEntityId = $this->user->id;
+						if (php7_count($fieldValueDetails) > 1) {
+							$referenceModuleName = trim($fieldValueDetails[0]);
+							$referenceValueList = $fieldDetails;
+							$entityId = getEntityIdByColumns($referenceModuleName, $referenceValueList, $cache);
+							// if (php7_count($fieldValueDetails) == 2) {
+							// 	$entityLabel = trim($fieldValueDetails[1]);
+							// 	if ($fieldValueDetails[0] == 'Users') {
+							// 		$query = "SELECT id  FROM vtiger_users WHERE trim(concat(last_name,' ',first_name)) = ? ;";
+							// 		$result = $adb->pquery($query, array($entityLabel));
+							// 		if ($adb->num_rows($result) > 0) {
+							// 			$entityId = $adb->query_result($result, 0, "id");
+							// 		} elseif ($adb->num_rows($result) == 0 && $fieldInstance->isMandatory()) {
+							// 			$entityId = $this->user->id;
+							// 		}
+							// 	} else {
+							// 		$entityId = getEntityId($referenceModuleName, decode_html($entityLabel));
+							// 	}
+							// } else {//multi reference field
+							// 	$entityIdsList = $this->getEntityIdsList($referenceModuleName, $fieldValueDetails);
+							// 	if ($entityIdsList) {
+							// 		$entityId = implode(', ', $entityIdsList);
+							// 	}
+							// }
+
+						} else {
+							$referencedModules = $fieldInstance->getReferenceList();
+							$entityLabel = $referenceEntry;
+							foreach ($referencedModules as $referenceModule) {
+								$referenceModuleName = $referenceModule;
+								if ($referenceModule == 'Users') {
+									$referenceEntityId = getUserId_Ol($entityLabel);
+									if (empty($referenceEntityId) ||
+											!Import_Utils_Helper::hasAssignPrivilege($moduleName, $referenceEntityId)) {
+										$referenceEntityId = $this->user->id;
+									}
+								} elseif ($referenceModule == 'Currency') {
+									$referenceEntityId = getCurrencyId($entityLabel);
+								} else {
+									$referenceEntityId = getEntityId($referenceModule, decode_html($entityLabel));
 								}
-							} elseif ($referenceModule == 'Currency') {
-								$referenceEntityId = getCurrencyId($entityLabel);
-							} else {
-								$referenceEntityId = getEntityId($referenceModule, decode_html($entityLabel));
-							}
-							if ($referenceEntityId != 0) {
-								$entityId = $referenceEntityId;
-								break;
+								if ($referenceEntityId != 0) {
+									$entityId = $referenceEntityId;
+									break;
+								}
 							}
 						}
+						if (!empty($entityId)) {
+							$entityIds[] = $entityId;
+						}
 					}
+				
+					if ($entityIds) {
+						$entityId = implode(', ', $entityIds);
+					}
+					
 					// if ((empty($entityId) || $entityId == 0) && !empty($referenceModuleName)) {
 					// 	if (isPermitted($referenceModuleName, 'CreateView') == 'yes') {
 					// 		try {
