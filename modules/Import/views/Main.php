@@ -26,11 +26,16 @@ class Import_Main_View extends Vtiger_View_Controller{
 
 	public static function import($request, $user) {
 		$importController = new Import_Main_View($request, $user);
+		Import_Queue_Action::add($request, $user);
+		$importInfo = Import_Queue_Action::getUserCurrentImportInfo($importController->user);
+		$importId = $importInfo['id'];
 
 		$importController->saveMap();
 		$fileReadStatus = $importController->copyFromFileToDB();
 		if($fileReadStatus) {
-			$importController->queueDataImport();
+			$importController->updateQueueData($importId);
+		} else {
+			Import_Queue_Action::remove($importId);
 		}
 
 		$isImportScheduled = $importController->request->get('is_scheduled');
@@ -118,6 +123,7 @@ class Import_Main_View extends Vtiger_View_Controller{
 	public static function showResult($importInfo, $importStatusCount) {
 		$moduleName = $importInfo['module'];
 		$ownerId = $importInfo['user_id'];
+		$importid = $importInfo['id'];
 
 		$viewer = new Vtiger_Viewer();
 
@@ -130,6 +136,7 @@ class Import_Main_View extends Vtiger_View_Controller{
 		array_push($inventoryModules, 'Users');
 		$viewer->assign('INVENTORY_MODULES', $inventoryModules);
 		$viewer->assign('MERGE_ENABLED', $importInfo['merge_type']);
+		$viewer->assign('IMPORT_ID', $importid);
 
 		$viewer->view('ImportResult.tpl', 'Import');
 	}
@@ -215,6 +222,31 @@ class Import_Main_View extends Vtiger_View_Controller{
 			$this->request->set('paging_enabled', true);
 		}
 		Import_Queue_Action::add($this->request, $this->user);
+	}
+
+	public function updateQueueData($importId) {
+		$configReader = new Import_Config_Model();
+		$immediateImportRecordLimit = $configReader->get('immediateImportLimit');
+		$pagingLimit  = $configReader->get('importPagingLimit');
+
+                $cronTasks = Vtiger_Cron::listAllInstancesByModule('Import');
+                $importCronTask = $cronTasks[0];
+                if(!empty($importCronTask)){
+                    $cronStatus = $importCronTask->getStatus();
+                    $enableCron = false;
+                    if(empty($cronStatus)){
+                        $enableCron = true;
+                    }
+                    $this->request->set('enable_cron', $enableCron);
+                }
+		$numberOfRecordsToImport = $this->numberOfRecords;
+		if($numberOfRecordsToImport > $immediateImportRecordLimit) {
+			$this->request->set('is_scheduled', true);
+		}
+		if($numberOfRecordsToImport > $pagingLimit){
+			$this->request->set('paging_enabled', true);
+		}
+		Import_Queue_Action::updateQueueInfo($importId, $this->request);
 	}
 
 	public static function deleteMap($request) {

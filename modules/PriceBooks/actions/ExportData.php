@@ -13,32 +13,77 @@ class PriceBooks_ExportData_Action extends Vtiger_ExportData_Action {
 	 * this function takes in an array of values for an user and sanitizes it for export
 	 * @param array $arr - the array of values
 	 */
-	function sanitizeValues($arr) {
+	function sanitizeValues($arr, $format) {
+		$db = PearDatabase::getInstance();
 		$relatedto = $arr['relatedto'];
 		$listPrice = $arr['listprice'];
 
 		unset($arr['relatedto']);
 		unset($arr['listprice']);
 
-		$arr = parent::sanitizeValues($arr);
+		$arr = parent::sanitizeValues($arr, $format);
 		if ($relatedto) {
 			$relatedModule = getSalesEntityType($relatedto);
 			$result = getEntityName($relatedModule, $relatedto, false);
-			$relatedToValue = $relatedModule . '::::' . $result[$relatedto];
+			$displayValue = $result[$relatedto];
+			$query = "select entityidfield from vtiger_entityname where modulename = ?";
+			$result = $db->pquery($query, array($relatedModule));
+			$entityidfield = $db->query_result($result, 0, 'entityidfield');
+			
+			switch($format) {
+				case 'ExportImportableFormat'	:	if(!empty($relatedModule) && !empty($entityidfield)){
+														$arr['relatedto'] = $relatedModule."::::".$entityidfield."====".$relatedto;
+													}else{
+														$arr['relatedto'] = "";
+													}
+													break;
+
+				case 'ExportLabelOnly'	:	if(!empty($relatedModule) && !empty($displayValue)){
+												$arr['relatedto'] = $displayValue;
+											}else{
+												$arr['relatedto'] = "";
+											}
+											break;
+
+				case 'ExportBoth'	:	if(!empty($relatedModule) && !empty($displayValue) && !empty($entityidfield)){
+											$arr['relatedto'] =  $displayValue;
+											$arr['relatedto_import_format']  = $relatedModule."::::".$entityidfield."====".$relatedto;
+										}else{
+											$arr['relatedto'] = "";
+											$arr['relatedto_import_format'] = "";
+										}
+										break;
+				
+				default :	break;
+			}			
+		}else{
+			if($format == 'ExportBoth'){
+				$arr['relatedto'] = '';
+				$arr['relatedto_import_format'] = '';
+			}else{
+				$arr['relatedto'] = '';
+			}
 		}
-		$arr['relatedto'] = $relatedToValue;
 		$arr['listprice'] = $listPrice;
-		$relatedToValue = $relatedto = $listPrice = NULL;
+		$displayValue = $relatedto = $listPrice = NULL;
 		return $arr;
 	}
 
-	public function getHeaders() {
+	public function getHeaders($format=null) {
 		if (!$this->headers) {
-			$translatedHeaders = parent::getHeaders();
-			$fieldList = array('Related To', 'ListPrice');
-			foreach ($fieldList as $fieldName) {
-				$translatedHeaders[] = $fieldName;
+			$translatedHeaders = parent::getHeaders($format);
+			if($format == 'ExportBoth'){
+				$fieldList = array('Related To (Label)','Related To', 'ListPrice');
+				foreach ($fieldList as $fieldName) {
+					$translatedHeaders[] = $fieldName;
+				}
+			}else{
+				$fieldList = array('Related To', 'ListPrice');
+				foreach ($fieldList as $fieldName) {
+					$translatedHeaders[] = $fieldName;
+				}
 			}
+			
 			$this->headers = $translatedHeaders;
 		}
 		return $this->headers;

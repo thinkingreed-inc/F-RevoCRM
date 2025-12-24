@@ -60,7 +60,9 @@ class Import_List_View extends Vtiger_Popup_View{
 		$sortOrder = $request->get('sortorder');
 		$searchKey = $request->get('search_key');
 		$searchValue = $request->get('search_value');
-		$searchParams = $request->get('search_params');
+		$searchParams = $request->get('search_params');		
+		$importid = $request->get('importid');
+
 		if($sortOrder == "ASC"){
 			$nextSortOrder = "DESC";
 			$sortImage = "downArrowSmall.png";
@@ -97,7 +99,7 @@ class Import_List_View extends Vtiger_Popup_View{
 			$this->listViewHeaders = $listViewModel->getListViewHeaders();
 		}
 		if(!$this->listViewEntries){
-			$this->listViewEntries = $listViewModel->getListViewEntries($pagingModel);
+			$this->listViewEntries = $listViewModel->getListViewEntries($pagingModel,$importid);
 		}
 		$noOfEntries = count($this->listViewEntries);
 		$viewer->assign('MODULE', $moduleName);
@@ -125,7 +127,7 @@ class Import_List_View extends Vtiger_Popup_View{
 		$viewer = $this->getViewer($request);
 		$moduleName = $request->getModule();
 		$user = Users_Record_Model::getCurrentUserModel();
-		$importRecords= Import_Data_Action::getImportDetails($user, $request->get('for_module'));
+		$importRecords= Import_Data_Action::getImportDetails($user, $request->get('for_module'), $request->get('importid'));
 		$viewer->assign('IMPORT_RECORDS', $importRecords);
 		$viewer->assign('TYPE',$request->get('type'));
 		$viewer->assign('MODULE', $moduleName);

@@ -123,4 +123,21 @@ $languageStrings = array(
 	'LBL_UPLOAD_ICS'=>'Upload ICS File',
 	'LBL_IMPORT_FROM_ICS_FILE'=>'Import from ICS File',
 	'LBL_SELECT_ICS_FILE' => 'Select ICS File',
+
+	'LBL_IMPORT_HISTORY'      => 'Import History',
+	'LBL_EXPORT_HISTORY'      => 'Export',
+	'LBL_EXPORT_TO_CSV'       => 'Export to CSV',
+	'LBL_NO_HISTORY_FOUND'    => 'No import history found',
+	'LBL_IMPORT_START_TIME'   => 'Import Start Time',
+	'LBL_IMPORT_ID'=> 'importid',
+
+	'LBL_IMPORT_RECORD_NONE'    => 'Not processed',
+	'LBL_IMPORT_RECORD_CREATED' => 'Created',
+	'LBL_IMPORT_RECORD_SKIPPED' => 'Skipped',
+	'LBL_IMPORT_RECORD_UPDATED' => 'Overwritten',
+	'LBL_IMPORT_RECORD_MERGED'  => 'Merged',
+	'LBL_IMPORT_RECORD_FAILED'  => 'Failed',
+
+	'LBL_SETUP_PARAMETER_MESSAGE_IMPORT_MAX_HISTORY_COUNT' => 'The maximum number of import history records that can be retained per user and per module.',
+
 );
