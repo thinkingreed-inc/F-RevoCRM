@@ -898,7 +898,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 
 	public function getImportStatusCount() {
 		$adb = PearDatabase::getInstance();
-		$tableName = Import_Utils_Helper::getDbTableName($this->user);
+		$tableName = Import_Utils_Helper::getDbTableName($this->user, $this->id);
 
 		$focus = CRMEntity::getInstance($this->module);
 		if ($focus && method_exists($focus, 'getGroupQuery')) {
