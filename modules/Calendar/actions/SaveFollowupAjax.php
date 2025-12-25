@@ -28,6 +28,7 @@ class Calendar_SaveFollowupAjax_Action extends Calendar_SaveAjax_Action {
     function __construct() {
         $this->exposeMethod('createFollowupEvent');
         $this->exposeMethod('markAsHeldCompleted');
+        $this->exposeMethod('checkNotificationOthersEvents');
     }
     
     public function process(Vtiger_Request $request) {  
@@ -148,13 +149,13 @@ class Calendar_SaveFollowupAjax_Action extends Calendar_SaveAjax_Action {
 		$_REQUEST['time_start'] = $startDateTime->format('H:i');
 		$_REQUEST['due_date'] = $endDateTime->format('Y-m-d');
 		$_REQUEST['time_end'] = $endDateTime->format('H:i');
-		
+
 		$recurringInfo = $recordModel->getRecurrenceInformation();
 		$_REQUEST['recurringcheck'] = $recurringInfo['recurringcheck'];
 		$_REQUEST['repeat_frequency'] = $recurringInfo['repeat_frequency'];
 		$_REQUEST['recurringtype'] = $recurringInfo['eventrecurringtype'];
 		$_REQUEST['calendar_repeat_limit_date'] = $recurringInfo['recurringenddate'];
-		
+
 		if($recurringInfo['eventrecurringtype'] == 'Weekly') {
 			$_REQUEST['sun_flag'] = $recurringInfo['week0'];
 			$_REQUEST['mon_flag'] = $recurringInfo['week1'];
@@ -164,7 +165,7 @@ class Calendar_SaveFollowupAjax_Action extends Calendar_SaveAjax_Action {
 			$_REQUEST['fri_flag'] = $recurringInfo['week5'];
 			$_REQUEST['sat_flag'] = $recurringInfo['week6'];
 		}
-		
+
 		if($recurringInfo['eventrecurringtype'] == 'Monthly') {
 			if($recurringInfo['repeatMonth'] == 'date') {
 				$_REQUEST['repeatMonth'] = $recurringInfo['repeatMonth'];
@@ -174,5 +175,30 @@ class Calendar_SaveFollowupAjax_Action extends Calendar_SaveAjax_Action {
 				$_REQUEST['repeatMonth_day'] = $recurringInfo['repeatMonth_day'];
 			}
 		}
+	}
+
+	function checkNotificationOthersEvents(Vtiger_Request $request){
+		global $adb, $current_user;
+		$response = new Vtiger_Response();
+
+		// システム変数で確認ダイアログが無効の場合はスキップ
+		$showConfirmFlag = Settings_Parameters_Record_Model::getParameterValue('SHOW_SCHEDULE_CONFIRM_FLAG', 'false');
+		if ($showConfirmFlag !== 'true') {
+			$response->setResult(array("own" => TRUE));
+			$response->emit();
+			return;
+		}
+
+		$record = $request->get('record');
+		$query = "SELECT smownerid FROM vtiger_crmentity WHERE crmid = ?";
+		$result = $adb->pquery($query, array($record));
+		$smownerId = $adb->query_result($result, 0, "smownerid");
+
+		if($current_user->id != $smownerId){
+			$response->setResult(array("own" => FALSE));
+		} else {
+			$response->setResult(array("own" => TRUE));
+		}
+		$response->emit();
 	}
 }
