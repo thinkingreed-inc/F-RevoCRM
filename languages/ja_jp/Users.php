@@ -209,6 +209,7 @@ $languageStrings = array(
 	'LBL_CONNECT_WITH_US' => 'F-RevoCRM Facebook',
 	'LBL_GET_MORE' => 'F-RevoCRMをもっと使い込む',
 	'LBL_SEND_PASSWORD' => 'パスワードをメールで送信します',
+	'LBL_REMEMBER_MFA_METHOD' => '最後に認証した方法を記憶する',
 
 	'LBL_TRANSFER_RECORDS_TO_USER' => 'レコードの担当を変更',
 	'LBL_USER_TO_BE_DELETED' => '削除されるユーザー',
@@ -300,6 +301,7 @@ $languageStrings = array(
     'LBL_FAILED_TO_REGISTER_USER_AUTHENTICATION' => 'ユーザー認証情報の登録に失敗しました。',
     'LBL_FAILED_TO_PASSKEY_VERIFYKEY' => 'パスキーの検証に失敗しました。もう一度お試しください。',
     'LBL_USE_PASSKEY' => 'パスキーを使用する',
+	'LBL_CHOOSE_ANOTHER_MFA_METHOD' => '別の認証方法を選択する',
     'LBL_MULTI_FACTOR_AUTH' => '多要素認証',
     'LBL_USER_CREDENTIAL_TYPE' => 'ユーザー認証情報タイプ',
     'LBL_USER_CREDENTIAL_DEVICE_NAME' => 'デバイス名',

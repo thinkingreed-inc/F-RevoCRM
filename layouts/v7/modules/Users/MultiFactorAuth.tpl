@@ -14,6 +14,7 @@
 * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ************************************************************************************}
 <script type="text/javascript" src="{vresource_url('libraries/qrcodejs/qrcode.js')}"></script>
+<script type="text/javascript" src="{vresource_url('layouts/v7/resources/MultiFactorAuthentication.js')}"></script>
 <style>
     body {
         background: url(layouts/v7/resources/Images/login-background.jpg);
@@ -58,6 +59,47 @@
     .bar:after {
         right: 50%;
     }
+    .remember-mfa-wrapper {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start !important;
+    padding-left: 35px !important; 
+    margin-top: 12px;
+    margin-bottom: 25px;
+    gap: 12px;
+    box-sizing: border-box;
+    }
+    .remember-mfa-label {
+        font-size: 14px;
+        color: #333;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+    }
+    .remember-mfa-label input {
+        margin-right: 6px;
+    }
+    .mfa-reset-btn {
+        display: none;
+        background: none;
+        border: 0;
+        color: #337ab7;
+        cursor: pointer;
+        font-size: 14px;
+        text-decoration: underline;
+        padding: 0;
+    }
+    .mfa-reset-btn:hover,
+    .mfa-reset-btn:focus {
+        color: #23527c;
+        text-decoration: underline;
+        outline: none;
+    }
+    .multi-factor-area .login-button,
+    .multi-factor-area button[type="submit"] {
+        margin-bottom: 15px !important;
+    }
 </style>
 
 <span class="app-nav"></span>
@@ -70,12 +112,13 @@
                     <div class="failureMessage">{$ERROR}</div>
                 {/if}
 
-                <form id="passkeyForm" action="index.php" method="post">
-                    <div class="multi-factor-area auth-multi-factor-area">
+                <form id="passkeyForm" class="js-mfa-passkey" action="index.php" method="post"style="padding:10px;">
+                    <div class="multi-factor-area auth-multi-factor-area"style="background-color: rgb(231 231 231 / 29%);">
                         <input type="hidden" name="module" value="Users">
                         <input type="hidden" name="view" value="MultiFactorAuthLogin">
                         <input type="hidden" name="userid" value="{$USERID}">
                         <input type="hidden" name="type" value="passkey">
+                        <input type="hidden" name="remember_mfa" id="remember_mfa_passkey" value="0">
                         <input type="hidden" name="credential" id="credential">
                         <input type="hidden" name="challenge" id="challenge">
                         <h4><div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-key-round-icon lucide-key-round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg></div>{vtranslate('LBL_PASSKEY','Users')}</h4>
@@ -88,15 +131,15 @@
                         </button>
                     </div>
                 </form>
-
-                <hr>
                 
-                <form id="totpForm" action="index.php" method="post">
-                    <div class="multi-factor-area auth-multi-factor-area">
+                <form id="totpForm" class="js-mfa-totp" action="index.php" method="post" style="padding:10px;">
+
+                <div class="multi-factor-area auth-multi-factor-area" style="background-color: rgb(231 231 231 / 29%);">
                         <input type="hidden" name="module" value="Users">
                         <input type="hidden" name="view" value="MultiFactorAuthLogin">
                         <input type="hidden" name="userid" value="{$USERID}">
                         <input type="hidden" name="type" value="totp">
+                        <input type="hidden" name="remember_mfa" id="remember_mfa_totp" value="0">
                         <h4><div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock8-icon lucide-clock-8"><path d="M12 6v6l-4 2"/><circle cx="12" cy="12" r="10"/></svg></div>{vtranslate('LBL_TOTP','Users')}</h4>
                         <div class="multi-factor-warning-label">
                             <span>{vtranslate('LBL_TOTP_AUTHENTICATION_MESSAGE','Users')}</span>
@@ -112,6 +155,15 @@
                     </div>
                 </form>
             </div>
+            <div class="remember-mfa-wrapper" id="remember_mfa_wrapper" style="justify-content:flex-start;">
+                <label class="remember-mfa-label" id="remember_mfa_label">
+                    <input type="checkbox" id="remember_mfa_checkbox" value="1" style="font-weight:100;">
+                    {vtranslate('LBL_REMEMBER_MFA_METHOD', 'Users')}
+                </label>
+                <button type="button" id="reset_mfa_preference_btn" class="mfa-reset-btn" style="display:none;">
+                    {vtranslate('LBL_CHOOSE_ANOTHER_MFA_METHOD', 'Users')}
+                </button>
+            </div>
             <div class="multi-factor-login-footer">
                 <div class="row">
                     <center>
@@ -123,7 +175,9 @@
     </div>
 </div>
 <script type="text/javascript">
-window.onload = (event) => {
-    FR_MultiFactorAuthentication_Js.authenticationPasskeyEvent();
+window.onload = function() {
+    if (window.FR_MultiFactorAuthentication_Js && typeof window.FR_MultiFactorAuthentication_Js.authenticationPasskeyEvent === 'function') {
+        window.FR_MultiFactorAuthentication_Js.authenticationPasskeyEvent();
+    }
 };
 </script>
