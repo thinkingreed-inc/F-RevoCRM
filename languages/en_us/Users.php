@@ -185,6 +185,9 @@ $languageStrings = array(
 
 	'LBL_OLD_PASSWORD' => 'Old Password',
 	'LBL_CHANGE_PASSWORD' => 'Change Password',
+	'LBL_RESEND_PASSWORD_EMAIL' => 'Resend Password Email',
+	'LBL_PASSWORD_SETUP_MAIL_SENT' => 'Password setup email sent successfully',
+	'LBL_PASSWORD_SETUP_MAIL_FAILED' => 'Password setup email failed to send',
 	'LBL_NEW_PASSWORD' => 'New Password',
 	'LBL_CONFIRM_PASSWORD' => 'Confirm Password',
 	'LBL_CHANGE_ACCESS_KEY' => 'Change Access Key',
@@ -292,6 +295,7 @@ $languageStrings = array(
 	'LBL_INVALID_USERNAME_OR_PASSWORD' => 'Invalid username or password',
 	'LBL_INVALID_USERNAME_OR_MAILADDRESS' => 'Invalid username or email address',
 	'LBL_MAIL_SERVER_NOT_CONFIGURED' => 'Mail server is not configured',
+	'LBL_INITIAL_LOGIN_NOT_ALLOWED' => 'Initial login is not allowed. Please contact the administrator.',
 	'LBL_AN_EMAIL_WAS_SENT_TO_THE_ADDRESS' => 'An email was sent to the address',
 	'LBL_ADD_PASSKEY' => 'Add Passkey Authentication Setup',
 	'LBL_ADD_TOTP' => 'Add Time-based Authentication Setup',

@@ -1044,7 +1044,8 @@ jQuery.Class("Vtiger_Helper_Js",{
     },
 
     checkStrengthPassword: function (password) {
-        if(password.length < 8) {
+        //パスワードの強度をチェックする
+        if(password.length < 8 || password.length > 128) {
             return false;
         }
         if(!/[a-z]/.test(password)

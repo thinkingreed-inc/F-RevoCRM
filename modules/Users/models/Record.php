@@ -931,7 +931,21 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		}
 		return $response;
 	}
-
+	//パスワード変更強制メール再送メッセージ表示
+	public static function resendPasswordSetupMail($forUserId) {
+		$response = array('success' => false, 'message' => 'error');
+		try {
+			if (UserSendPasswordMailHandler::sendPasswordMail($forUserId)) {
+				$response['success'] = true;
+				$response['message'] = vtranslate('LBL_PASSWORD_SETUP_MAIL_SENT', 'Users');
+			} else {
+				$response['message'] = vtranslate('LBL_PASSWORD_SETUP_MAIL_FAILED', 'Users');
+			}
+		} catch (Exception $e) {
+			$response['message'] = vtranslate('LBL_PASSWORD_SETUP_MAIL_FAILED', 'Users');
+		}
+		return $response;
+	}
     /**
 	 * Function to change username only
 	 * @param <string> $newUsername
@@ -1258,5 +1272,14 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		}
 
 		return $sharedcalendartodoview;
+	}
+	//初回ログインフラグ
+	function isNeverLogged() {
+		$db = PearDatabase::getInstance();
+		$result = $db->pquery(
+			'SELECT has_initial_login FROM vtiger_users WHERE id = ?',
+			[$this->getId()]
+		);
+		return ((int)$db->query_result($result, 0, 'has_initial_login') === 0);
 	}
 }

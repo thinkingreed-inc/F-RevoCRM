@@ -41,13 +41,7 @@ if (isset($_REQUEST['username']) && isset($_REQUEST['emailId'])) {
 			)
 		);
 		$trackURL = Vtiger_ShortURL_Helper::generateURL($options);
-		$content = vtranslate('Dear CRM User,<br><br> 
-						You recently requested a password reset for your F-RevoCRM Open source Account.<br> 
-						To create a new password, click on the link <a target="_blank" href="%s">here</a>. 
-						<br><br> 
-						This request was made on %s and will expire in next 24 hours.<br><br> 
-						Regards,<br> 
-						F-RevoCRM Open source Support Team.<br>', 'Vtiger', $trackURL, date("Y-m-d H:i:s"));
+		$content = vtranslate('LBL_FORGOT_PASSWORD_SEND_MAIL_CONTEXT', 'Vtiger', $trackURL, date("Y-m-d H:i:s"));
 
 		$subject = vtranslate('Vtiger CRM: Password Reset', 'Vtiger');
 

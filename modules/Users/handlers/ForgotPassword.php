@@ -27,7 +27,7 @@ class Users_ForgotPassword_Handler {
 		$viewer->assign('USERNAME', $userName);
 		$changePasswordTrackUrl = $site_URL."/changePassword.php";
 
-		$expiryTime = (int)$request->get('time')+(24*60*60);
+		$expiryTime = (int)$request->get('time')+(10*60);
 		$currentTime = time();
 		if($expiryTime > $currentTime) {
 			$secretToken = uniqid();
@@ -50,9 +50,9 @@ class Users_ForgotPassword_Handler {
 		} else {
 			$viewer->assign('LINK_EXPIRED', true);
 		}
-
 		$viewer->assign('TRACKURL', $changePasswordTrackUrl);
 		$viewer->assign('MODULE',$moduleName);
+		$viewer->assign('LANGUAGE_STRINGS', Vtiger_Language_Handler::export('Users', 'jsLanguageStrings'));
 		$viewer->view('ForgotPassword.tpl',$moduleName);
 	}
 

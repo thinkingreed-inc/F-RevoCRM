@@ -122,6 +122,8 @@ class Users_Login_View extends Vtiger_View_Controller {
 				case 'fpError'		:	$message = vtranslate('LBL_INVALID_USERNAME_OR_MAILADDRESS');			break;
 				case 'statusError'	:	$message = vtranslate('LBL_MAIL_SERVER_NOT_CONFIGURED');	break;
 				case 'userLocked'	:	$message = vtranslate('LBL_USER_LOCKED_ERROR_MESSAGE', 'Users');	break;
+				//メールサーバー設定無し、パスワードで初回ログインを拒否
+				case 'initialLoginNotAllowed' : $message = vtranslate('LBL_INITIAL_LOGIN_NOT_ALLOWED', 'Users'); break;
 			}
 		} else if ($mailStatus) {
 			$message = vtranslate('LBL_AN_EMAIL_WAS_SENT_TO_THE_ADDRESS');

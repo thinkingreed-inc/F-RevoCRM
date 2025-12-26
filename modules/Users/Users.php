@@ -1101,7 +1101,10 @@ class Users extends CRMEntity {
 	 */
 	function save($module_name, $fileid='') {
 		global $log, $adb;
-
+		//パスワードがメール設定の場合、ランダムパスワードを生成
+		if (empty($this->id) && empty($this->column_fields['user_password']) && empty($this->column_fields['confirm_password'])) {
+			$this->generateRandomInitialPassword();
+		}
 		parent::save($module_name, $fileid);
 
 		// Added for Reminder Popup support
@@ -1129,7 +1132,14 @@ class Users extends CRMEntity {
 		Vtiger_AccessControl::clearUserPrivileges($this->id);
 	}
 
-
+	//ランダムパスワードを生成して設定する
+	function generateRandomInitialPassword()
+	{
+		$randomPassword = bin2hex(random_bytes(16));
+		$encrypted = $this->encrypt_password($randomPassword);
+		$this->column_fields['user_password'] = $encrypted;
+		$this->column_fields['confirm_password'] = $encrypted;
+	}
 	/**
 	 * gives the order in which the modules have to be displayed in the home page for the specified user id
 	 * @param $id -- user id:: Type integer

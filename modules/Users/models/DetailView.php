@@ -70,13 +70,16 @@ class Users_DetailView_Model extends Vtiger_DetailView_Model {
 												'linkicon' => ''
 											);
 			}
-
-			$detailViewActionLinks[] = array(
-										'linktype' => 'DETAILVIEW',
-										'linklabel' => 'LBL_CHANGE_PASSWORD',
-										'linkurl' => "javascript:Users_Detail_Js.triggerChangePassword('".$recordModel->getChangePwdUrl()."','Users')",
-										'linkicon' => ''
-									);
+			//ユーザー一覧パスワード変更表示制御
+			global $is_admin_password_editable;
+			if ($currentUserModel->get('id') === $recordId || ($currentUserModel->isAdminUser()&& $is_admin_password_editable)) {
+				$detailViewActionLinks[] = array(
+											'linktype' => 'DETAILVIEW',
+											'linklabel' => 'LBL_CHANGE_PASSWORD',
+											'linkurl' => "javascript:Users_Detail_Js.triggerChangePassword('".$recordModel->getChangePwdUrl()."','Users')",
+											'linkicon' => ''
+										);
+			}
 			$detailViewActionLinks[] = array(
 										'linktype'	=> 'DETAILVIEW',
 										'linklabel' => 'LBL_CHANGE_ACCESS_KEY',

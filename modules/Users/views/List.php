@@ -35,6 +35,7 @@ class Users_List_View extends Settings_Vtiger_List_View {
 	 * Function to initialize the required data in smarty to display the List View Contents
 	 */
 	public function initializeListViewContents(Vtiger_Request $request, Vtiger_Viewer $viewer) {
+		global $is_admin_password_editable;
 		$moduleName = $request->getModule();
 		$cvId = $request->get('viewname');
 		$pageNumber = $request->get('page');
@@ -146,6 +147,10 @@ class Users_List_View extends Settings_Vtiger_List_View {
 		$viewer->assign('LISTVIEW_ENTRIES_COUNT',$noOfEntries);
 		$viewer->assign('LISTVIEW_HEADERS', $this->listViewHeaders);
 		$viewer->assign('LISTVIEW_ENTRIES', $this->listViewEntries);
+		//パスワード非表示フラグ
+		$moduleModel = Users_Module_Model::getInstance('Users');
+		$hidePasswordFields = $moduleModel->hasMailServerConfigured();
+		$viewer->assign('HIDE_PASSWORD_FIELDS', $hidePasswordFields);
 
 		if (PerformancePrefs::getBoolean('LISTVIEW_COMPUTE_PAGE_COUNT', false)) {
 			if(!$this->listViewCount){
@@ -165,6 +170,8 @@ class Users_List_View extends Settings_Vtiger_List_View {
 		$viewer->assign('IS_MODULE_EDITABLE', $listViewModel->getModule()->isPermitted('EditView'));
 		$viewer->assign('IS_MODULE_DELETABLE', $listViewModel->getModule()->isPermitted('Delete'));
 		$viewer->assign('USER_MODEL', Users_Record_Model::getCurrentUserModel());
+		//パスワード編集権限
+		$viewer->assign('IS_ADMIN_PASSWORD_EDITABLE',$is_admin_password_editable);
 		$viewer->assign('SEARCH_VALUE', $searchValue);
 		$viewer->assign('SEARCH_DETAILS', $searchParams);
                 

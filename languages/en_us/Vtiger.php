@@ -1475,6 +1475,15 @@ $languageStrings = array(
 						※ This URL is valid for 24 hours.<br>
 						※ If you did not request a password reset, please do not click the link.',
 	'Vtiger CRM: Password Reset' => 'F-RevoCRM Password Reset URL Notification',
+	'LBL_FORGOT_PASSWORD_SEND_MAIL_CONTEXT' => 'This email is to inform you of the URL to reset your F-RevoCRM password.
+						<br><br><a target="_blank" href="%s">Click here</a><br><br>
+						* This URL will expire 10 minutes after %s.<br>
+						* If you did not request a password reset, please do not click this link.',
+	'LBL_Account_Created' => 'A user account has been created for F-RevoCRM.
+						<br><br>To set your login password, please <a target="_blank" href="%s">click here</a>.<br><br>
+						* This URL is valid for three days. Please set your password by %s.<br>
+						* If you did not request this account creation, please do not click this link.',
+	'F-RevoCRM: Account Created' =>'F-RevoCRM User Account Created',
 	'Today' => 'Today',
 	'This Week' => 'This Week',
 	'This Month' => 'This Month',
