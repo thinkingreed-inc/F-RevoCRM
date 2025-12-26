@@ -33,7 +33,7 @@ class Users_Login_Action extends Vtiger_Action_Controller {
                 header ('Location: index.php?module=Users&parent=Settings&view=Login&error=userLocked');
                 exit;
             }
-
+            //メールサーバー設定確認
             $moduleModel = Users_Module_Model::getInstance('Users');
             $hidePasswordFields = $moduleModel->hasMailServerConfigured();
 
