@@ -735,9 +735,9 @@ ul#productsImageContainer > li a{
 
 /* ラベル部分 */
 .layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel {
-  flex: 0 0 150px;
-  width: 150px;
-  max-width: 150px;
+  flex: 0 0 250px;
+  width: 250px;
+  max-width: 250px;
   display: flex;
   align-items: stretch;
   border-right: 1px solid #ddd;
@@ -746,7 +746,26 @@ ul#productsImageContainer > li a{
 .layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel .editFields {
   width: 100%;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  padding-top: 5px;
+}
+
+.layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel .editFields > .row {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+}
+
+.layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel .editFields > .row > .col-sm-1 {
+  flex: 0 0 auto;
+  width: auto;
+  padding: 13px 5px 0 10px;
+}
+
+.layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel .editFields > .row > .col-sm-9 {
+  flex: 1;
+  text-align: right;
+  padding-right: 10px;
 }
 
 /* プロパティ部分 */
@@ -759,15 +778,17 @@ ul#productsImageContainer > li a{
 .layoutContent .blockFieldsList ul li > div.row > div.fieldPropertyContainer > div.row {
   width: 100%;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  padding-top: 5px;
 }
 
 /* アクションボタン（編集・削除） */
 .layoutContent .blockFieldsList ul li .fieldPropertyContainer .actions {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 8px;
   padding: 5px;
+  align-self: flex-start;
 }
 
 .layoutContent .blockFieldsList ul li .fieldPropertyContainer .actions a {
@@ -798,9 +819,9 @@ ul#productsImageContainer > li a{
 
 /* ワイドフィールドの場合の調整 */
 .layoutContent .blockFieldsList ul li.wideField > div.row > div.layoutEditFieldLabel {
-  flex: 0 0 150px;
-  width: 150px;
-  max-width: 150px;
+  flex: 0 0 250px;
+  width: 250px;
+  max-width: 250px;
 }
 
 .layoutContent .blockFieldsList ul li.wideField > div.row > div.fieldPropertyContainer {
@@ -817,9 +838,9 @@ ul#productsImageContainer > li a{
   }
   .layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel,
   .layoutContent .blockFieldsList ul li.wideField > div.row > div.layoutEditFieldLabel {
-    flex: 0 0 130px;
-    width: 130px;
-    max-width: 130px;
+    flex: 0 0 200px;
+    width: 200px;
+    max-width: 200px;
   }
   .layoutContent .blockFieldsList ul li > div.row > div.fieldPropertyContainer,
   .layoutContent .blockFieldsList ul li.wideField > div.row > div.fieldPropertyContainer {
