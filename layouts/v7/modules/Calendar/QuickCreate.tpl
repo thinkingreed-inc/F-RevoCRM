@@ -131,17 +131,32 @@
 								</tr>
 								{if $MODULE == 'Events'}
 								<tr>
-									<td class="fieldLabel alignMiddle"><label class="muted">{vtranslate('LBL_INVITE_USERS', $MODULE)}</label></td>
+									<td class="fieldLabel alignMiddle" title="{$FIELD_MODEL->get('helpinfo')}">{if !empty($FIELD_MODEL->get('helpinfo'))}<i class="fa fa-question-circle icon"></i>{/if}<label class="muted">{vtranslate('LBL_INVITE_USERS', $MODULE)}</label></td>
 									<td class="fieldValue">
 										<select id="selectedUsers" class="select2 inputElement" multiple name="selectedusers[]">
-											{foreach key=USER_ID item=USER_NAME from=$ACCESSIBLE_USERS}
-												{* {if $USER_ID eq $CURRENT_USER->getId()}
-													{continue}
-												{/if} *}
-												<option value="{$USER_ID}" {if in_array($USER_ID,$INVITIES_SELECTED)}selected{/if}>
-													{$USER_NAME}
-												</option>
-											{/foreach}
+											{assign var="FIELD_MODEL" value=$RECORD_STRUCTURE['assigned_user_id']}
+											{assign var="FIELD_INFO" value=$FIELD_MODEL->getFieldInfo()}
+											{assign var=ALL_ACTIVEUSER_LIST value=$FIELD_INFO['picklistvalues'][vtranslate('LBL_USERS')]}
+											{assign var=ALL_ACTIVEGROUP_LIST value=$FIELD_INFO['picklistvalues'][vtranslate('LBL_GROUPS')]}
+											{assign var=ACCESSIBLE_USER_LIST value=$USER_MODEL->getAccessibleUsersForModule($MODULE)}
+											{assign var=ACCESSIBLE_GROUP_LIST value=$USER_MODEL->getAccessibleGroupForModule($MODULE)}
+											<optgroup label="{vtranslate('LBL_USERS')}">
+												{foreach key=OWNER_ID item=OWNER_NAME from=$ALL_ACTIVEUSER_LIST}
+														<option value="{$OWNER_ID}" {if in_array($OWNER_ID,$INVITIES_SELECTED)} selected {/if}
+															{if array_key_exists($OWNER_ID, $ACCESSIBLE_USER_LIST)} data-recordaccess=true {else} data-recordaccess=false {/if}
+															data-userId="{$CURRENT_USER_ID}">
+														{$OWNER_NAME}
+														</option>
+												{/foreach}
+											</optgroup>
+											<optgroup label="{vtranslate('LBL_GROUPS')}">
+												{foreach key=OWNER_ID item=OWNER_NAME from=$ALL_ACTIVEGROUP_LIST}
+													<option value="{$OWNER_ID}" {if in_array($OWNER_ID,$INVITIES_SELECTED)} selected {/if}
+														{if array_key_exists($OWNER_ID, $ACCESSIBLE_GROUP_LIST)} data-recordaccess=true {else} data-recordaccess=false {/if} >
+													{$OWNER_NAME}
+													</option>
+												{/foreach}
+											</optgroup>
 										</select>
 									</td>
 									<td></td><td></td>
