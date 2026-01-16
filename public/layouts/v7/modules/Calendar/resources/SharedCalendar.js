@@ -309,7 +309,7 @@ Calendar_Calendar_Js('Calendar_SharedCalendar_Js', {
 
 		return aDeferred.promise();
 	},
-	//
+	//ユーザーリスト連動制御フラグ
 	isRememberSelection: function () {
 		var useDisableFeedsCache = jQuery('#calendar_remember_feed_selection').val() == '1';
 		if (useDisableFeedsCache === true) {
@@ -318,12 +318,14 @@ Calendar_Calendar_Js('Calendar_SharedCalendar_Js', {
 		var groupId = jQuery('#calendar-groups').val();
 		return groupId === 'default';
 	},
+	//cacheから無効化されたフィードを取得
 	disableFeed: function (sourceKey) {
 		if (!this.isRememberSelection()) {
 			return;
 		}
 		this._super(sourceKey);
 	},
+	//cacheから有効化されたフィードを取得
 	enableFeed: function (sourceKey) {
 		if (!this.isRememberSelection()) {
 			return;
@@ -370,6 +372,7 @@ Calendar_Calendar_Js('Calendar_SharedCalendar_Js', {
 			var users = thisInstance.userList['users'];
 			var sharedInfo = thisInstance.userList['sharedinfo'] ? thisInstance.userList['sharedinfo'] : {};
 			var cashDisabledFeedsStorageKey = [];
+			// ユーザーリスト連動する場合、無効化されたフィードをキャッシュから取得
 			if (thisInstance.isRememberSelection()) {
 				cashDisabledFeedsStorageKey = thisInstance.getDisabledFeeds();
 			}
