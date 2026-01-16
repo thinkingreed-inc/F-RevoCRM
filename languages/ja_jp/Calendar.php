@@ -111,6 +111,9 @@ $languageStrings = array(
 	'LBL_TOTAL_EVENTS_SKIPPED' => 'No. of Events Skipped as they were missing one or more required field ',
 	'LBL_TOTAL_EVENTS_DUPLICATED' => 'No. of duplicate Events skipped',
 	'LBL_TOTAL_TASKS_DUPLICATED' => 'No. of duplicate Tasks skipped',
+	'LBL_SETUP_PARAMETER_MESSAGE_CALENDAR_REMEMBER_FEED_SELECTION' => '共有カレンダーにおけるユーザー一覧のチェック状態を制御するフラグです。
+true : 組織・役割切替時もチェック状態を記憶し、すべての表示に反映します。
+false : マイグループのみチェック状態を記憶し、他の組織・役割では常に全選択とします。',
 	
 	'ICAL_FORMAT' => 'iCalフォーマット',
 	'LBL_LAST_IMPORT_UNDONE'=>'インポートが完了していません。',
