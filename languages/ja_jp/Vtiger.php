@@ -663,6 +663,7 @@ $languageStrings = array(
 	'Shipping Po Box' => '私書箱(出荷先)',
 	'Country' => '国',
 	'Description' => '詳細内容',
+	'Common Memo' => '共有メモ',
 
 	'Created'=>'登録済み',
 	'Approved'=>'承認済み',
