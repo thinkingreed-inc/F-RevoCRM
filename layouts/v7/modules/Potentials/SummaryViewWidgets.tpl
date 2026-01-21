@@ -81,9 +81,14 @@
 
 	<div class="middle-block col-lg-4 col-md-4 col-sm-4">
 
-		{* Summary View Related Activities Widget*}
-		<div id="relatedActivities">
-			{$RELATED_ACTIVITIES}
+		{* Summary View Related Activities Widget (React WebComponent)*}
+		<div id="relatedActivities" class="summaryWidgetContainer">
+			<div class="widget_header clearfix">
+				<h4 class="display-inline-block pull-left">{vtranslate('LBL_ACTIVITIES', $MODULE_NAME)}</h4>
+			</div>
+			<div class="widget_contents">
+				<activity-list module="{$MODULE_NAME}" record-id="{$RECORD->getId()}" mode="all" limit="5"></activity-list>
+			</div>
 		</div>
 		{* Summary View Related Activities Widget Ends Here*}
 
