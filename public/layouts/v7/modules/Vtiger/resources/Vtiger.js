@@ -497,6 +497,96 @@ Vtiger.Class('Vtiger_Index_Js', {
 	},
 
 	/**
+	 * WebComponents版QuickCreateが有効なモジュールかどうかを判定
+	 * @param {string} moduleName モジュール名
+	 * @returns {boolean}
+	 */
+	isWebComponentsQuickCreateEnabled: function(moduleName) {
+		// ブラックリスト形式：除外リストに含まれていなければ有効
+		// 設定がない場合は空配列（すべて有効）
+		var excludedModules = window.webComponentsQuickCreateExcludedModules || [];
+		return excludedModules.indexOf(moduleName) === -1;
+	},
+
+	/**
+	 * WebComponents版QuickCreateを表示
+	 * @param {string} moduleName モジュール名
+	 * @param {object} params パラメータ
+	 */
+	showWebComponentsQuickCreate: function(moduleName, params) {
+		var thisInstance = this;
+
+		// コールバック関数の設定
+		var callbackFunction = params.callbackFunction || function(data, err) {
+			var parentModule = app.getModuleName();
+			var viewname = app.view();
+			if (((moduleName == parentModule) || (moduleName == 'Events' && parentModule == 'Calendar')) && (viewname == "List")) {
+				var listinstance = app.controller();
+				listinstance.loadListViewRecords();
+			}
+		};
+
+		// WebComponents用モーダルコンテナを作成（なければ）
+		var containerId = 'webcomponents-quickcreate-container';
+		var container = document.getElementById(containerId);
+		if (!container) {
+			container = document.createElement('div');
+			container.id = containerId;
+			document.body.appendChild(container);
+		}
+
+		// 既存のQuickCreate要素を削除
+		container.innerHTML = '';
+
+		// QuickCreate Web Componentを作成
+		// Calendar/Eventsは専用コンポーネントを使用
+		var isCalendarModule = (moduleName === 'Calendar' || moduleName === 'Events');
+		var quickCreate = document.createElement(isCalendarModule ? 'calendar-quick-create' : 'quick-create');
+		quickCreate.setAttribute('module', moduleName);
+		quickCreate.setAttribute('is-open', 'true');
+
+		// 編集モードの場合はrecord-idを設定
+		if (params.record) {
+			quickCreate.setAttribute('record-id', params.record);
+		}
+
+		// 初期データがあれば設定
+		if (params.data) {
+			quickCreate.setAttribute('initial-data', JSON.stringify(params.data));
+		}
+
+		// 編集モードかどうか
+		var isEditMode = !!params.record;
+
+		// イベントリスナーを設定
+		quickCreate.addEventListener('save', function(e) {
+			var result = e.detail;
+			// 既存のイベントをトリガー
+			app.event.trigger("post.QuickCreateForm.save", result, params.data || {});
+			// コールバック実行
+			callbackFunction(result, null);
+			// 成功通知（編集モードの場合は更新メッセージ）
+			app.helper.showSuccessNotification({
+				"message": app.vtranslate(isEditMode ? 'JS_RECORD_UPDATED' : 'JS_RECORD_CREATED')
+			}, {delay: 4000});
+		});
+
+		quickCreate.addEventListener('cancel', function() {
+			container.innerHTML = '';
+		});
+
+		quickCreate.addEventListener('go-to-full-form', function(e) {
+			var editUrl = e.detail.editUrl;
+			if (editUrl) {
+				window.location.href = editUrl;
+			}
+		});
+
+		container.appendChild(quickCreate);
+		app.helper.hideProgress();
+	},
+
+	/**
 	 * Function to register Quick Create Event
 	 * @returns {undefined}
 	 */
@@ -520,6 +610,26 @@ Vtiger.Class('Vtiger_Index_Js', {
 					}
 				};
 			}
+
+			// WebComponents版QuickCreateが有効な場合はそちらを使用
+			if (thisInstance.isWebComponentsQuickCreateEnabled(quickCreateModuleName)) {
+				// URLからrecordパラメータを抽出（編集モード対応）
+				if (quickCreateUrl && quickCreateUrl.indexOf('record=') !== -1) {
+					var urlParams = new URLSearchParams(quickCreateUrl.split('?')[1] || quickCreateUrl);
+					var recordId = urlParams.get('record');
+					var mode = urlParams.get('mode');
+					if (recordId) {
+						params.record = recordId;
+					}
+					if (mode) {
+						params.mode = mode;
+					}
+				}
+				app.helper.showProgress();
+				thisInstance.showWebComponentsQuickCreate(quickCreateModuleName, params);
+				return;
+			}
+
 			app.helper.showProgress();
 			thisInstance.getQuickCreateForm(quickCreateUrl,quickCreateModuleName,params).then(function(data){
 				app.helper.hideProgress();

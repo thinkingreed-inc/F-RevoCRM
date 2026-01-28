@@ -37,6 +37,11 @@ class Vtiger_Response {
 	static $EMIT_JSONP = 4;
 
 	/**
+	 * Emit pure JSON (without vtiger wrapper)
+	 */
+	const EMIT_PURE_JSON = 5;
+
+	/**
 	 * Error data.
 	 */
 	private $error = NULL;
@@ -193,6 +198,20 @@ class Vtiger_Response {
 			echo $this->emitJSONPFn . "(";
 			$this->emitJSON();
 			echo ")";
+		} else if ($this->emitType == self::EMIT_PURE_JSON) {
+			if (!$contentTypeSent) header('Content-type: application/json; charset=UTF-8');
+			$this->emitPureJSON();
+		}
+	}
+
+	/**
+	 * Emit pure JSON without wrapper
+	 */
+	protected function emitPureJSON() {
+		if ($this->error !== NULL) {
+			echo Zend_Json::encode(['error' => $this->error]);
+		} else {
+			echo Zend_Json::encode($this->result);
 		}
 	}
 

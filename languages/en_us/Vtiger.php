@@ -1679,6 +1679,42 @@ $languageStrings = array(
 			. 'In the customer portal, you can manage your inquiries and check past FAQs and answers.<br />'
 			. 'Please use the URL, ID, and password provided in this email to log in to the portal.',
 	'LBL_CUSTOMER_PORTAL_LOGIN_INFORMATION' => 'Customer Portal Login Information Notification',
+
+	// WebComponents QuickCreate i18n
+	'LBL_SAVING' => 'Saving...',
+	'LBL_UPDATING' => 'Updating...',
+	'LBL_UPDATE' => 'Update',
+	'LBL_FIELD_REQUIRED' => '%s is required',
+	'LBL_FIELD_MAX_LENGTH' => '%s must be %s characters or less',
+	'LBL_END_DATE_AFTER_START' => 'End date must be after start date',
+	'LBL_CREATED_SUCCESS' => '%s created successfully',
+	'LBL_UPDATED_SUCCESS' => '%s updated successfully',
+	'LBL_LOADING_FIELDS' => 'Loading field information...',
+	'LBL_NO_FIELDS_AVAILABLE' => 'No fields available',
+	'LBL_ALL_DAY' => 'All Day',
+	'LBL_SET_REMINDER' => 'Enable',
+	'LBL_SEND_NOTIFICATION' => 'Send Email Notification',
+	'LBL_START' => 'Start',
+	'LBL_DAYS' => 'day(s)',
+	'LBL_HOURS' => 'hour(s)',
+	'LBL_MINUTES_BEFORE' => 'minute(s) before',
+	'LBL_INVITEES' => 'Invitees',
+	'LBL_SELECT_INVITEES' => 'Select Invitees',
+	'LBL_INVITEES_SELECTED' => '%s selected',
+	'LBL_CLEAR_ALL' => 'Clear All',
+	'LBL_SEARCH_USERS_PLACEHOLDER' => 'Search users to add...',
+	'LBL_ALL_USERS_SELECTED' => 'All users are selected',
+	'LBL_NO_MATCHING_USERS' => 'No matching users',
+	'LBL_TASK' => 'Task',
+	'LBL_EVENT' => 'Event',
+	'LBL_INVITEE_BLOCK' => 'Invitee Information',
+	'LBL_ALARM_INFORMATION' => 'Alarm Information',
+
+	// WebComponents Placeholders
+	'LBL_PLACEHOLDER_ENTER' => 'Enter %s',
+	'LBL_PLACEHOLDER_SEARCH' => 'Search %s...',
+	'LBL_PLACEHOLDER_SEARCH_AND_ADD' => 'Search and add %s...',
+	'LBL_PLACEHOLDER_SEARCH_TITLE' => 'Search %s',
 );
 
 $jsLanguageStrings = array(
