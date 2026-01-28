@@ -56,8 +56,25 @@ function DialogContent({
   showCloseButton?: boolean
   closeButtonClassName?: string
 }) {
+  // Portal先のコンテナを作成し、web-components-wrapperクラスを付与
+  const [container, setContainer] = React.useState<HTMLElement | null>(null)
+
+  React.useEffect(() => {
+    // Portal用のコンテナを作成
+    const portalContainer = document.createElement("div")
+    portalContainer.className = "web-components-wrapper"
+    document.body.appendChild(portalContainer)
+    setContainer(portalContainer)
+
+    return () => {
+      document.body.removeChild(portalContainer)
+    }
+  }, [])
+
+  if (!container) return null
+
   return (
-    <DialogPortal data-slot="dialog-portal">
+    <DialogPortal data-slot="dialog-portal" container={container}>
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"

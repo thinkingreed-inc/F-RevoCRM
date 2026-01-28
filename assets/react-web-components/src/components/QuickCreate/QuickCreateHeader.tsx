@@ -64,7 +64,7 @@ export const QuickCreateHeader: React.FC<QuickCreateHeaderProps> = ({
   return (
     <div className="bg-[#596875] text-white px-4 py-1.5 rounded-t-lg">
       <DialogTitle asChild>
-        <h4 className="text-white text-base">{getTitleText()}</h4>
+        <h4 className="text-white text-lg">{getTitleText()}</h4>
       </DialogTitle>
     </div>
   );

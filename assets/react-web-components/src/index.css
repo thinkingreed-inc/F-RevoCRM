@@ -1,4 +1,6 @@
-@import "tailwindcss";
+/* Tailwind CSS v4 - preflightを除外して既存CRMへの干渉を防ぐ */
+@import "tailwindcss/theme.css";
+@import "tailwindcss/utilities.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -6,9 +8,23 @@
   /* Font family - 既存CRMに統一 */
   --font-family-sans: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Hiragino Kaku Gothic Pro", "Meiryo", "MS PGothic", "MS Gothic", sans-serif;
 
-  /* Font sizes */
-  --font-size-md: 0.75rem;
-  --font-size-md--line-height: 1rem;
+  /* Font sizes - F-RevoCRM環境（html font-size: 10px）ベースに合わせたpx固定 */
+  --text-xs: 10px;
+  --text-xs--line-height: 1.4;
+  --text-sm: 12px;
+  --text-sm--line-height: 1.333;
+  --text-base: 14px;
+  --text-base--line-height: 1.429;
+  --text-md: 12px;
+  --text-md--line-height: 1.333;
+  --text-lg: 18px;
+  --text-lg--line-height: 1.333;
+  --text-xl: 20px;
+  --text-xl--line-height: 1.4;
+  --text-2xl: 24px;
+  --text-2xl--line-height: 1.333;
+  --text-3xl: 30px;
+  --text-3xl--line-height: 1.2;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -117,14 +133,74 @@
 }
 
 @layer base {
-  * {
+  /* WebComponents wrapper内のみにpreflight相当のスタイルを適用 */
+  .web-components-wrapper *,
+  .web-components-wrapper *::before,
+  .web-components-wrapper *::after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground font-sans;
-  }
-  /* WebComponents wrapper内でフォントファミリーを適用 */
+
   .web-components-wrapper {
+    @apply bg-background text-foreground;
     font-family: var(--font-family-sans);
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    tab-size: 4;
+  }
+
+  /* ボタンのリセット */
+  .web-components-wrapper button {
+    font-family: inherit;
+    font-feature-settings: inherit;
+    font-variation-settings: inherit;
+    font-size: 100%;
+    font-weight: inherit;
+    line-height: inherit;
+    color: inherit;
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+    background-image: none;
+    cursor: pointer;
+  }
+
+  /* input/select/textareaのリセット */
+  .web-components-wrapper input,
+  .web-components-wrapper select,
+  .web-components-wrapper textarea {
+    font-family: inherit;
+    font-feature-settings: inherit;
+    font-variation-settings: inherit;
+    font-size: 100%;
+    font-weight: inherit;
+    line-height: inherit;
+    color: inherit;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* placeholderの色 */
+  .web-components-wrapper input::placeholder,
+  .web-components-wrapper textarea::placeholder {
+    opacity: 1;
+    color: color-mix(in oklab, currentColor 50%, transparent);
+  }
+
+  /* リストスタイルのリセット */
+  .web-components-wrapper ol,
+  .web-components-wrapper ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* テーブルのリセット */
+  .web-components-wrapper table {
+    text-indent: 0;
+    border-color: inherit;
+    border-collapse: collapse;
   }
 }
