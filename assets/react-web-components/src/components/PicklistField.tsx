@@ -237,9 +237,9 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
         }}
       >
         {filteredOptions.length > 0 ? (
-          <ul className="py-1">
+          <div className="py-1">
             {filteredOptions.map(option => (
-              <li
+              <div
                 key={option.value}
                 onClick={() => handleSelectOption(option)}
                 className={cn(
@@ -248,9 +248,9 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
                 )}
               >
                 {option.label}
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         ) : (
           <div className="px-3 py-1.5 text-md text-gray-500 text-center">
             該当する選択肢がありません

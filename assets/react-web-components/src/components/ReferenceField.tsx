@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Search, X, ChevronDown, Loader2 } from 'lucide-react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
+import { RecordSearchDrawer } from './RecordSearchDrawer';
 import { cn } from '../lib/utils';
 import { useOptionalTranslation } from '../hooks/useTranslation';
 
@@ -88,6 +89,9 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
 
   // ローディング状態
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // Drawer表示状態
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
 
   // モジュール選択ドロップダウン表示状態
   const [isModuleDropdownOpen, setIsModuleDropdownOpen] = useState<boolean>(false);
@@ -250,6 +254,15 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
   };
 
   /**
+   * Drawerでレコード選択
+   */
+  const handleDrawerSelect = (record: ReferenceRecord) => {
+    setDisplayLabel(record.label);
+    setSearchTerm('');
+    onChange(name, record.id, record);
+  };
+
+  /**
    * クリックアウトサイドでドロップダウンを閉じる
    */
   useEffect(() => {
@@ -324,9 +337,9 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
           target.scrollTop += e.deltaY * 0.3;
         }}
       >
-        <ul className="py-1">
+        <div className="py-1">
           {referenceModules.map(mod => (
-            <li
+            <div
               key={mod}
               onClick={() => handleModuleSelect(mod)}
               className={cn(
@@ -335,9 +348,9 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
               )}
             >
               {getModuleLabel(mod)}
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
     );
 
@@ -369,9 +382,9 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
             検索中...
           </div>
         ) : searchResults.length > 0 ? (
-          <ul className="py-1">
+          <div className="py-1">
             {searchResults.map((record) => (
-              <li
+              <div
                 key={record.id}
                 onClick={() => handleSelectRecord(record)}
                 className={cn(
@@ -380,9 +393,9 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
                 )}
               >
                 {record.label}
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         ) : (
           <div className="px-3 py-1.5 text-md text-gray-500 text-center">
             {searchTerm ? '該当するレコードがありません' : 'レコードがありません'}
@@ -499,12 +512,12 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
                 {renderSearchDropdown()}
               </div>
 
-              {/* 検索ボタン */}
+              {/* Drawer検索ボタン */}
               <Button
                 type="button"
                 variant="outline"
                 size="icon"
-                onClick={() => searchRecords(searchTerm)}
+                onClick={() => setIsDrawerOpen(true)}
                 disabled={disabled}
                 className="flex-shrink-0"
               >
@@ -512,6 +525,16 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
               </Button>
             </div>
           </div>
+
+          {/* フィールド条件検索Drawer */}
+          <RecordSearchDrawer
+            open={isDrawerOpen}
+            onOpenChange={setIsDrawerOpen}
+            moduleName={selectedModule}
+            title={t('LBL_PLACEHOLDER_SEARCH_TITLE', label)}
+            onSelect={handleDrawerSelect}
+            selectedId={value}
+          />
         </div>
 
         {/* 隠しフィールド（実際の値） */}
