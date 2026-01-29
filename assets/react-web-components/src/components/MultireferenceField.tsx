@@ -403,9 +403,9 @@ export const MultireferenceField: React.FC<MultireferenceFieldProps> = ({
           target.scrollTop += e.deltaY * 0.3;
         }}
       >
-        <ul className="py-1">
+        <div className="py-1">
           {referenceModules.map(mod => (
-            <li
+            <div
               key={mod}
               onClick={() => handleModuleSelect(mod)}
               className={cn(
@@ -414,9 +414,9 @@ export const MultireferenceField: React.FC<MultireferenceFieldProps> = ({
               )}
             >
               {getModuleLabel(mod)}
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
     );
 
@@ -448,17 +448,17 @@ export const MultireferenceField: React.FC<MultireferenceFieldProps> = ({
             検索中...
           </div>
         ) : searchResults.length > 0 ? (
-          <ul className="py-1">
+          <div className="py-1">
             {searchResults.map((record) => (
-              <li
+              <div
                 key={record.id}
                 onClick={() => handleSelectRecord(record)}
                 className="px-3 py-1.5 text-md cursor-pointer hover:bg-blue-50"
               >
                 {record.label}
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         ) : (
           <div className="px-3 py-1.5 text-md text-gray-500 text-center">
             {searchTerm ? '該当するレコードがありません' : 'レコードがありません'}
