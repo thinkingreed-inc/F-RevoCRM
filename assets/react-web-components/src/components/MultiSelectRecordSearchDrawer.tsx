@@ -121,10 +121,13 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
     page: 1,
     limit: pageSize,
     totalRecords: 0,
-    totalPages: 1,
+    totalPages: 0,  // 0 = 未取得
     hasNextPage: false,
     hasPrevPage: false
   });
+
+  // 総件数取得中フラグ
+  const [countLoading, setCountLoading] = useState<boolean>(false);
 
   // キーボードナビゲーション用
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
@@ -221,18 +224,19 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
       const recordList = result.records || [];
 
       setRecords(recordList);
-      setPagination({
+      setPagination(prev => ({
         page: result.page || 1,
         limit: result.limit || pageSize,
-        totalRecords: result.totalRecords || recordList.length,
-        totalPages: result.totalPages || 1,
+        // 総件数はgetPageCountで取得するまで保持（リセット済みなら0のまま）
+        totalRecords: prev.totalPages > 0 ? prev.totalRecords : 0,
+        totalPages: prev.totalPages > 0 ? prev.totalPages : 0,
         hasNextPage: result.hasNextPage || false,
         hasPrevPage: result.hasPrevPage || false
-      });
+      }));
     } catch (err) {
       console.error('Search failed:', err);
       setRecords([]);
-      setPagination(prev => ({ ...prev, totalRecords: 0, totalPages: 1 }));
+      setPagination(prev => ({ ...prev, totalRecords: 0, totalPages: 0 }));
     } finally {
       setRecordsLoading(false);
     }
@@ -256,6 +260,9 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
     const newConditions = { ...searchConditions, [fieldName]: value };
     setSearchConditions(newConditions);
 
+    // 検索条件変更時は総件数をリセット
+    setPagination(prev => ({ ...prev, totalPages: 0, totalRecords: 0 }));
+
     // デバウンスして検索（ページを1にリセット）
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -270,6 +277,8 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
    */
   const handleClearConditions = () => {
     setSearchConditions({});
+    // 検索条件クリア時も総件数をリセット
+    setPagination(prev => ({ ...prev, totalPages: 0, totalRecords: 0 }));
     searchRecords({}, 1);
   };
 
@@ -279,6 +288,53 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
   const handlePageChange = (newPage: number) => {
     searchRecords(searchConditions, newPage);
   };
+
+  /**
+   * 総件数を取得
+   */
+  const handleGetPageCount = useCallback(async () => {
+    if (!moduleName || countLoading) return;
+
+    setCountLoading(true);
+    try {
+      const params = new URLSearchParams({
+        module: moduleName,
+        api: 'SearchRecords',
+        mode: 'getPageCount',
+        limit: String(pageSize)
+      });
+
+      // フィールド条件がある場合
+      const nonEmptyConditions = Object.fromEntries(
+        Object.entries(searchConditions).filter(([_, v]) => v !== '')
+      );
+
+      if (Object.keys(nonEmptyConditions).length > 0) {
+        params.append('search_fields', JSON.stringify(nonEmptyConditions));
+      }
+
+      const response = await fetch(`?${params.toString()}`, {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      const data = await response.json();
+      const result = data.result || data;
+
+      setPagination(prev => ({
+        ...prev,
+        totalRecords: result.numberOfRecords || 0,
+        totalPages: result.page || 1
+      }));
+    } catch (err) {
+      console.error('Failed to get page count:', err);
+    } finally {
+      setCountLoading(false);
+    }
+  }, [moduleName, pageSize, searchConditions, countLoading]);
 
   /**
    * レコード選択トグル
@@ -401,7 +457,7 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
           value={value || '__empty__'}
           onValueChange={(v) => handleConditionChange(field.name, v === '__empty__' ? '' : v)}
         >
-          <SelectTrigger className="h-[27.5px] text-[12.375px]">
+          <SelectTrigger className="h-[27.5px] text-[12.375px] w-[140px]">
             <SelectValue placeholder="--" />
           </SelectTrigger>
           <SelectContent>
@@ -427,7 +483,7 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
           value={value || '__empty__'}
           onValueChange={(v) => handleConditionChange(field.name, v === '__empty__' ? '' : v)}
         >
-          <SelectTrigger className="h-[27.5px] text-[12.375px]">
+          <SelectTrigger className="h-[27.5px] text-[12.375px] w-[140px]">
             <SelectValue placeholder="--" />
           </SelectTrigger>
           <SelectContent>
@@ -449,7 +505,7 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
         value={value}
         onChange={(e) => handleConditionChange(field.name, e.target.value)}
         placeholder=""
-        className="h-[27.5px] text-[12.375px]"
+        className="h-[27.5px] text-[12.375px] w-[140px]"
       />
     );
   };
@@ -458,38 +514,70 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
    * ページネーションコントロール
    */
   const renderPagination = () => {
-    if (pagination.totalPages <= 1) return null;
+    // レコードがない場合は非表示
+    if (records.length === 0) return null;
+
+    const start = ((pagination.page - 1) * pagination.limit) + 1;
+    const end = start + records.length - 1;
+    const hasPagination = pagination.hasNextPage || pagination.hasPrevPage;
 
     return (
-      <div className="flex items-center justify-between px-4 py-2 border-t bg-gray-50">
+      <div className="flex items-center justify-between w-full">
         <div className="text-sm text-gray-600">
-          {pagination.totalRecords}件中 {((pagination.page - 1) * pagination.limit) + 1}-{Math.min(pagination.page * pagination.limit, pagination.totalRecords)}件
+          {pagination.totalPages > 0 ? (
+            // 総件数が取得済みの場合
+            <span>
+              {start} to {end} - {pagination.totalRecords}
+            </span>
+          ) : hasPagination ? (
+            // ページネーションあり・総件数未取得の場合
+            <span>
+              {start} to {end} -{' '}
+              <button
+                type="button"
+                onClick={handleGetPageCount}
+                disabled={recordsLoading || countLoading}
+                className="text-blue-600 hover:text-blue-800 hover:underline disabled:text-gray-400"
+              >
+                {countLoading ? '...' : '?'}
+              </button>
+            </span>
+          ) : (
+            // ページネーションなしの場合（全件表示）
+            <span>{records.length} 件</span>
+          )}
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(pagination.page - 1)}
-            disabled={!pagination.hasPrevPage || recordsLoading}
-            className="h-7 px-2 text-sm"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            前へ
-          </Button>
-          <span className="text-sm text-gray-600 min-w-[80px] text-center">
-            {pagination.page} / {pagination.totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(pagination.page + 1)}
-            disabled={!pagination.hasNextPage || recordsLoading}
-            className="h-7 px-2 text-sm"
-          >
-            次へ
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-        </div>
+        {hasPagination && (
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(pagination.page - 1)}
+              disabled={!pagination.hasPrevPage || recordsLoading}
+              className="h-11 px-5 text-sm border-[#eeeeee]"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              前へ
+            </Button>
+            <span className="text-sm text-gray-600 min-w-[80px] text-center">
+              {pagination.totalPages > 0 ? (
+                `${pagination.page} / ${pagination.totalPages}`
+              ) : (
+                `${pagination.page} ページ`
+              )}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(pagination.page + 1)}
+              disabled={!pagination.hasNextPage || recordsLoading}
+              className="h-11 px-5 text-sm border-[#eeeeee]"
+            >
+              次へ
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
       </div>
     );
   };
@@ -527,8 +615,9 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
                 <span className="ml-2 text-sm text-gray-500">読み込み中...</span>
               </div>
             ) : (
-              <div className="flex-1 overflow-auto border border-[#eeeeee] rounded-md relative" ref={tableRef}>
-                <Table className="text-[11.25px] leading-[17.5px]">
+              <div className="flex-1 relative">
+                <div className="absolute inset-0 overflow-auto border border-[#eeeeee] rounded-md" ref={tableRef}>
+                  <Table className="text-[11.25px] leading-[17.5px]">
                   <TableHeader>
                     {/* ヘッダー行（ラベル＋検索入力を1行に統合） */}
                     <TableRow>
@@ -613,13 +702,14 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
                     )}
                   </TableBody>
                 </Table>
+                </div>
 
-                {/* フローティング確定ボタン（1件以上選択時のみ表示） */}
+                {/* フローティング確定ボタン（1件以上選択時のみ表示） - テーブルエリア内に固定 */}
                 {selectedIds.size > 0 && (
-                  <div className="sticky bottom-4 px-4 pointer-events-none">
+                  <div className="absolute bottom-4 right-4 z-30">
                     <Button
                       onClick={handleConfirm}
-                      className="w-full py-2.5 h-auto text-base font-bold !bg-green-600 hover:!bg-green-700 !text-white shadow-lg pointer-events-auto border border-[oklch(0.922_0_0)]"
+                      className="px-12 py-5 h-auto text-base font-bold !bg-green-600 hover:!bg-green-700 !text-white shadow-lg border border-[oklch(0.922_0_0)] rounded-full"
                     >
                       選択を確定（{selectedIds.size}件）
                     </Button>
@@ -627,10 +717,12 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
                 )}
               </div>
             )}
-          </div>
 
-          {/* ページネーション */}
-          {renderPagination()}
+            {/* テーブル下の白背景エリア（ページネーション） */}
+            <div className="h-20 flex-shrink-0 flex items-center px-4 w-full">
+              {renderPagination()}
+            </div>
+          </div>
 
         </div>
       </DrawerContent>
