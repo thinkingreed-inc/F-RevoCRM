@@ -7,7 +7,6 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
-  DrawerFooter,
 } from './ui/drawer';
 import {
   Select,
@@ -321,13 +320,13 @@ export const RecordSearchDrawer: React.FC<RecordSearchDrawerProps> = ({
           value={value || '__empty__'}
           onValueChange={(v) => handleConditionChange(field.name, v === '__empty__' ? '' : v)}
         >
-          <SelectTrigger className="h-11 text-lg">
+          <SelectTrigger className="h-[27.5px] text-[12.375px]">
             <SelectValue placeholder="--" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="__empty__" className="text-lg py-3">--</SelectItem>
+            <SelectItem value="__empty__" className="text-sm py-1.5">--</SelectItem>
             {field.picklistValues.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value || `__val_${opt.label}`} className="text-lg py-3">
+              <SelectItem key={opt.value} value={opt.value || `__val_${opt.label}`} className="text-sm py-1.5">
                 {opt.label}
               </SelectItem>
             ))}
@@ -347,13 +346,13 @@ export const RecordSearchDrawer: React.FC<RecordSearchDrawerProps> = ({
           value={value || '__empty__'}
           onValueChange={(v) => handleConditionChange(field.name, v === '__empty__' ? '' : v)}
         >
-          <SelectTrigger className="h-11 text-lg">
+          <SelectTrigger className="h-[27.5px] text-[12.375px]">
             <SelectValue placeholder="--" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="__empty__" className="text-lg py-3">--</SelectItem>
+            <SelectItem value="__empty__" className="text-sm py-1.5">--</SelectItem>
             {allOptions.map((opt) => (
-              <SelectItem key={opt.value} value={String(opt.value)} className="text-lg py-3">
+              <SelectItem key={opt.value} value={String(opt.value)} className="text-sm py-1.5">
                 {opt.label}
               </SelectItem>
             ))}
@@ -369,7 +368,7 @@ export const RecordSearchDrawer: React.FC<RecordSearchDrawerProps> = ({
         value={value}
         onChange={(e) => handleConditionChange(field.name, e.target.value)}
         placeholder=""
-        className="h-11 text-lg"
+        className="h-[27.5px] text-[12.375px]"
       />
     );
   };
@@ -381,22 +380,22 @@ export const RecordSearchDrawer: React.FC<RecordSearchDrawerProps> = ({
     if (pagination.totalPages <= 1) return null;
 
     return (
-      <div className="flex items-center justify-between px-4 py-3 border-t bg-gray-50">
-        <div className="text-lg text-gray-600">
+      <div className="flex items-center justify-between px-4 py-2 border-t bg-gray-50">
+        <div className="text-sm text-gray-600">
           {pagination.totalRecords}件中 {((pagination.page - 1) * pagination.limit) + 1}-{Math.min(pagination.page * pagination.limit, pagination.totalRecords)}件
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={() => handlePageChange(pagination.page - 1)}
             disabled={!pagination.hasPrevPage || recordsLoading}
-            className="h-10 px-4 text-lg"
+            className="h-7 px-2 text-sm"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-4 h-4" />
             前へ
           </Button>
-          <span className="text-lg text-gray-600 min-w-[100px] text-center">
+          <span className="text-sm text-gray-600 min-w-[80px] text-center">
             {pagination.page} / {pagination.totalPages}
           </span>
           <Button
@@ -404,10 +403,10 @@ export const RecordSearchDrawer: React.FC<RecordSearchDrawerProps> = ({
             size="sm"
             onClick={() => handlePageChange(pagination.page + 1)}
             disabled={!pagination.hasNextPage || recordsLoading}
-            className="h-10 px-4 text-lg"
+            className="h-7 px-2 text-sm"
           >
             次へ
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
       </div>
@@ -426,53 +425,45 @@ export const RecordSearchDrawer: React.FC<RecordSearchDrawerProps> = ({
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="absolute top-2 right-4 p-2 rounded-md hover:bg-gray-100 transition-colors z-20"
+            className="absolute top-2 right-4 size-[44px] flex items-center justify-center rounded-md bg-white border-0 hover:bg-gray-100 transition-colors z-20"
             aria-label="閉じる"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X style={{ width: 20, height: 20 }} className="text-gray-500" />
           </button>
 
           <DrawerHeader className="pb-2">
-            <DrawerTitle className="text-xl">{title}</DrawerTitle>
+            <DrawerTitle className="text-[30px] font-medium leading-[33px]">{title}</DrawerTitle>
           </DrawerHeader>
 
           <div className="px-4 flex flex-col flex-1 overflow-hidden">
             {fieldsLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-                <span className="ml-2 text-lg text-gray-500">読み込み中...</span>
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                <span className="ml-2 text-sm text-gray-500">読み込み中...</span>
               </div>
             ) : (
-              <div className="flex-1 overflow-auto border rounded-md" ref={tableRef}>
-                <Table className="text-lg">
-                  <TableHeader className="sticky top-0 bg-white z-10">
-                    {/* フィールドラベル行 */}
-                    <TableRow className="bg-gray-50">
-                      <TableHead className="w-[100px] text-center py-3">
+              <div className="flex-1 overflow-auto border border-[#eeeeee] rounded-md" ref={tableRef}>
+                <Table className="text-[11.25px] leading-[17.5px]">
+                  <TableHeader>
+                    {/* ヘッダー行（ラベル＋検索入力を1行に統合） */}
+                    <TableRow>
+                      <TableHead className="w-[80px] h-[78px] text-center p-[6px] sticky top-0 bg-gray-50 z-10 align-middle border-[#eeeeee]">
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={handleClearConditions}
-                          className="h-10 text-lg px-4"
+                          className="h-[25px] text-[12.375px] px-[5px] border-[#eeeeee]"
                         >
-                          <X className="w-5 h-5 mr-1" />
+                          <X className="w-3.5 h-3.5 mr-1" />
                           クリア
                         </Button>
                       </TableHead>
                       {fields.map((field) => (
-                        <TableHead key={field.name} className="min-w-[160px] text-lg font-semibold py-3">
-                          {field.label}
-                        </TableHead>
-                      ))}
-                    </TableRow>
-                    {/* 検索入力行 */}
-                    <TableRow className="bg-gray-100">
-                      <TableHead className="py-2">
-                        <div className="text-lg text-gray-600 text-center font-normal">検索</div>
-                      </TableHead>
-                      {fields.map((field) => (
-                        <TableHead key={`search-${field.name}`} className="py-2 px-2">
-                          {renderFieldInput(field)}
+                        <TableHead key={field.name} className="min-w-[120px] h-[78px] p-[6px] sticky top-0 bg-gray-50 z-10 align-middle border-[#eeeeee]">
+                          <div className="flex flex-col gap-1 justify-center h-full">
+                            <div className="text-[12.375px] font-normal">{field.label}</div>
+                            {renderFieldInput(field)}
+                          </div>
                         </TableHead>
                       ))}
                     </TableRow>
@@ -480,10 +471,10 @@ export const RecordSearchDrawer: React.FC<RecordSearchDrawerProps> = ({
                   <TableBody>
                     {recordsLoading ? (
                       <TableRow>
-                        <TableCell colSpan={fields.length + 1} className="text-center py-8">
+                        <TableCell colSpan={fields.length + 1} className="text-center py-4">
                           <div className="flex items-center justify-center">
-                            <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-                            <span className="ml-2 text-lg text-gray-500">検索中...</span>
+                            <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                            <span className="ml-2 text-sm text-gray-500">検索中...</span>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -494,17 +485,17 @@ export const RecordSearchDrawer: React.FC<RecordSearchDrawerProps> = ({
                           data-index={index}
                           onClick={() => handleSelectRecord(record)}
                           className={cn(
-                            'cursor-pointer transition-colors h-14',
+                            'cursor-pointer transition-colors h-[35px]',
                             focusedIndex === index && 'bg-blue-100 ring-2 ring-blue-500 ring-inset',
                             focusedIndex !== index && selectedId === record.id && 'bg-blue-50',
                             focusedIndex !== index && selectedId !== record.id && 'hover:bg-gray-50'
                           )}
                         >
-                          <TableCell className="text-center text-lg py-4 text-gray-500">
+                          <TableCell className="text-center p-0 text-gray-500">
                             #{record.id}
                           </TableCell>
                           {fields.map((field) => (
-                            <TableCell key={`${record.id}-${field.name}`} className="py-4 text-lg">
+                            <TableCell key={`${record.id}-${field.name}`} className="p-0">
                               {record.fieldValues?.[field.name] || '-'}
                             </TableCell>
                           ))}
@@ -512,7 +503,7 @@ export const RecordSearchDrawer: React.FC<RecordSearchDrawerProps> = ({
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={fields.length + 1} className="text-center py-8 text-lg text-gray-500">
+                        <TableCell colSpan={fields.length + 1} className="text-center py-4 text-sm text-gray-500">
                           レコードがありません
                         </TableCell>
                       </TableRow>
@@ -526,15 +517,6 @@ export const RecordSearchDrawer: React.FC<RecordSearchDrawerProps> = ({
           {/* ページネーション */}
           {renderPagination()}
 
-          <DrawerFooter className="pt-2">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="w-full h-12 text-lg"
-            >
-              閉じる
-            </Button>
-          </DrawerFooter>
         </div>
       </DrawerContent>
     </Drawer>
