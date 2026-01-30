@@ -327,8 +327,10 @@ abstract class Vtiger_View_Controller extends Vtiger_Action_Controller {
 
 	function getViewer(Vtiger_Request $request) {
 		if(!$this->viewer) {
-			global $vtiger_current_version, $vtiger_display_version, $onlyV7Instance, $current_user, $maxListFieldsSelectionSize;
+			global $vtiger_current_version, $vtiger_display_version, $onlyV7Instance, $current_user, $maxListFieldsSelectionSize, $IS_PRODUCTION;
 			$viewer = new Vtiger_Viewer();
+
+			$viewer->assign('IS_PRODUCTION', $IS_PRODUCTION);
 
 			// Secure request access within template.
 			$viewer->assign('REQ', $request);
