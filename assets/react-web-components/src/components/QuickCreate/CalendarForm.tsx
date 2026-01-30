@@ -4,6 +4,7 @@ import { Calendar, CheckSquare, X } from 'lucide-react';
 import { FieldRenderer } from '../FieldRenderer';
 import { Input } from '../ui/input';
 import { Checkbox } from '../ui/checkbox';
+import { TimeComboBox } from '../ui/time-combobox';
 import { FieldInfo, FieldValue } from '../../types/field';
 import { cn } from '../../lib/utils';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -369,27 +370,16 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
             />
             {/* Time select (hidden when all-day) */}
             {!isAllDay && (
-              <select
+              <TimeComboBox
                 value={time}
-                onChange={(e) => {
-                  const newValue = combineDateTimeValue(date, e.target.value);
+                onChange={(newTime) => {
+                  const newValue = combineDateTimeValue(date, newTime);
                   onFieldChange(fieldName, newValue);
                 }}
                 disabled={isDisabled}
-                className={cn(
-                  'w-28 h-[30px] px-2 text-md border border-input rounded-sm shadow-xs transition-[color,box-shadow]',
-                  'focus:outline-none focus:ring-[3px] focus:ring-ring/50 focus:border-ring',
-                  'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
-                  error && 'border-red-500 bg-red-50'
-                )}
-              >
-                <option value="">--:--</option>
-                {timeOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+                error={!!error}
+                timeOptions={timeOptions}
+              />
             )}
           </div>
           {error && (
