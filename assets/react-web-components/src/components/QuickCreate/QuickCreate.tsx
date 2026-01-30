@@ -16,7 +16,6 @@ import { useCalendarFields } from './hooks/useCalendarFields';
 import { useRecordData } from './hooks/useRecordData';
 import { QuickCreateProps } from '../../types/quickcreate';
 import { FieldInfo, FieldValue } from '../../types/field';
-import { applyCustomValidations } from '../../utils/customValidation';
 import { cn } from '../../lib/utils';
 import { TranslationProvider } from '../../contexts/TranslationContext';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -557,13 +556,6 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
         }
       }
 
-      // Custom validation (default variant only)
-      if (!isCalendarVariant) {
-        const customError = applyCustomValidations(field, value, targetFormData);
-        if (customError) {
-          errors[field.name] = customError;
-        }
-      }
     });
 
     // Date range validation (calendar variant)
