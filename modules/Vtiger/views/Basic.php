@@ -95,9 +95,46 @@ abstract class Vtiger_Basic_View extends Vtiger_Footer_View {
 
 		$inventoryModules = getInventoryModules();
 		$viewer->assign('INVENTORY_MODULES',  $inventoryModules);
+
+		// WebComponents用アプリメニューデータの構築
+		$appMenusJson = $this->buildAppMenuData($menuGroupedByParent);
+		$viewer->assign('HEADER_MENU_APP_MENUS_JSON', $appMenusJson);
+
 		if($display) {
 			$this->preProcessDisplay($request);
 		}
+	}
+
+	/**
+	 * WebComponents AppMenu用のデータを構築
+	 */
+	protected function buildAppMenuData($menuGroupedByParent) {
+		$appList = Vtiger_MenuStructure_Model::getAppMenuList();
+		$appIcons = Vtiger_MenuStructure_Model::getAppIcons();
+
+		$appMenus = array();
+		foreach ($appList as $appName) {
+			if ($appName === 'ANALYTICS') continue;
+			if (!empty($menuGroupedByParent[$appName])) {
+				$modules = array();
+				foreach ($menuGroupedByParent[$appName] as $moduleName => $moduleModel) {
+					$modules[] = array(
+						'name' => $moduleName,
+						'label' => vtranslate($moduleModel->get('label'), $moduleName),
+						'url' => $moduleModel->getDefaultUrl() . '&app=' . $appName,
+						'icon' => $moduleModel->getModuleIcon()
+					);
+				}
+				$appMenus[] = array(
+					'name' => $appName,
+					'label' => vtranslate("LBL_$appName"),
+					'icon' => isset($appIcons[$appName]) ? $appIcons[$appName] : '',
+					'modules' => $modules
+				);
+			}
+		}
+
+		return Zend_Json::encode($appMenus);
 	}
 
 	/**

@@ -1,11 +1,12 @@
 /**
  * React WebComponents エントリーポイント
  *
- * QuickCreate機能をWebComponentとして登録
+ * QuickCreate機能とAppMenuをWebComponentとして登録
  * ※ CSSはShadow DOM内で読み込むため、ここではimportしない
  */
 import { createWebComponent } from "@/utils/createWebComponent";
 import { QuickCreate, CalendarQuickCreate } from "@/components/QuickCreate";
+import { AppMenu } from "@/components/AppMenu";
 
 // QuickCreate本体コンポーネントの登録
 // イベント: save, cancel, go-to-full-form, open-change (CustomEvent)
@@ -39,3 +40,9 @@ createWebComponent(
   ["module", "is-open", "initial-data", "record-id"],
   ["onSave", "onCancel", "onGoToFullForm", "onOpenChange"]
 );
+
+// AppMenu コンポーネントの登録（Headerのアプリメニュー部分）
+// app-menus属性: JSON形式のアプリメニューデータ
+// 使用例（HTML）:
+// <app-menu app-menus='[{"name":"MARKETING","label":"マーケティング","modules":[...]}]'></app-menu>
+createWebComponent(AppMenu, "app-menu", ["app-menus"]);
