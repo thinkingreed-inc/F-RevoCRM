@@ -598,26 +598,6 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 							$referenceModuleName = trim($fieldValueDetails[0]);
 							$referenceValueList = $fieldDetails;
 							$entityId = getEntityIdByColumns($referenceModuleName, $referenceValueList, $cache);
-							// if (php7_count($fieldValueDetails) == 2) {
-							// 	$entityLabel = trim($fieldValueDetails[1]);
-							// 	if ($fieldValueDetails[0] == 'Users') {
-							// 		$query = "SELECT id  FROM vtiger_users WHERE trim(concat(last_name,' ',first_name)) = ? ;";
-							// 		$result = $adb->pquery($query, array($entityLabel));
-							// 		if ($adb->num_rows($result) > 0) {
-							// 			$entityId = $adb->query_result($result, 0, "id");
-							// 		} elseif ($adb->num_rows($result) == 0 && $fieldInstance->isMandatory()) {
-							// 			$entityId = $this->user->id;
-							// 		}
-							// 	} else {
-							// 		$entityId = getEntityId($referenceModuleName, decode_html($entityLabel));
-							// 	}
-							// } else {//multi reference field
-							// 	$entityIdsList = $this->getEntityIdsList($referenceModuleName, $fieldValueDetails);
-							// 	if ($entityIdsList) {
-							// 		$entityId = implode(', ', $entityIdsList);
-							// 	}
-							// }
-
 						} else {
 							$referencedModules = $fieldInstance->getReferenceList();
 							$entityLabel = $referenceEntry;
@@ -648,19 +628,6 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 					if ($entityIds) {
 						$entityId = implode(', ', $entityIds);
 					}
-					
-					// if ((empty($entityId) || $entityId == 0) && !empty($referenceModuleName)) {
-					// 	if (isPermitted($referenceModuleName, 'CreateView') == 'yes') {
-					// 		try {
-					// 			$wsEntityIdInfo = $this->createEntityRecord($referenceModuleName, $entityLabel);
-					// 			$wsEntityId = $wsEntityIdInfo['id'];
-					// 			$entityIdComponents = vtws_getIdComponents($wsEntityId);
-					// 			$entityId = $entityIdComponents[1];
-					// 		} catch (Exception $e) {
-					// 			$entityId = false;
-					// 		}
-					// 	}
-					// }
 					$fieldData[$fieldName] = $entityId;
 				} else {
 					$referencedModules = $fieldInstance->getReferenceList();
