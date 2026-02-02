@@ -98,18 +98,20 @@ class Import_HistoryView_Model extends Vtiger_Base_Model {
 		$db = PearDatabase::getInstance();
 		$query = 'SELECT time_start FROM vtiger_import_queue WHERE importid = ?';
 		$result = $db->pquery($query, array($importid));
-		$startTime = $db->query_result($result, $i, 'time_start');
-
-		return $startTime;			
+		if ($db->num_rows($result) > 0) {
+			return $db->query_result($result, 0, 'time_start');
+		}
+		return null;
 	}
 	
 	private static function getUsernameByImportid($importid){
 		$db = PearDatabase::getInstance();
 		$result = $db->pquery('SELECT userid FROM vtiger_import_queue WHERE importid = ?', array($importid));
-		$userid = $db->query_result($result, $i, 'userid');
-		$username = getUserFullName($userid);
-
-		return $username;
+		if ($db->num_rows($result) > 0) {
+			$userid = $db->query_result($result, 0, 'userid');
+			return getUserFullName($userid);		
+		}
+		return null;
 	}
 
 }
