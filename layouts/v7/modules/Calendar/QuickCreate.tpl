@@ -146,7 +146,7 @@
 															{if array_key_exists($OWNER_ID, $ACCESSIBLE_USER_LIST)} data-recordaccess=true {else} data-recordaccess=false {/if}
 															data-userId="{$CURRENT_USER_ID}">
 														{$OWNER_NAME}
-														</option>
+													</option>
 												{/foreach}
 											</optgroup>
 											<optgroup label="{vtranslate('LBL_GROUPS')}">
@@ -174,7 +174,7 @@
 							{assign var=BUTTON_LABEL value={vtranslate('LBL_SAVE', $MODULE)}}
 						{/if}
 						{assign var="CALENDAR_MODULE_MODEL" value=$QUICK_CREATE_CONTENTS['Calendar']['moduleModel']}
-							{assign var="EDIT_VIEW_URL" value=$CALENDAR_MODULE_MODEL->getQuickCreateTaskRecordUrl()}
+						{assign var="EDIT_VIEW_URL" value=$CALENDAR_MODULE_MODEL->getQuickCreateTaskRecordUrl()}
 						{if $MODULE eq 'Events'}
 							{assign var="EDIT_VIEW_URL" value=$CALENDAR_MODULE_MODEL->getQuickCreateEventRecordUrl()}
 						{/if}
