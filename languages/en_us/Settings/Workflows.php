@@ -223,6 +223,15 @@ $languageStrings = array(
     'week days ago' => '%s week days ago',
     'more than week days ago' => 'more than %s week days ago',
     'less than week days ago' => 'less than %s week days ago',
+
+		// Curl Task
+    'VTCurlTask' => 'Curl Request',
+    'LBL_CURL_URL' => 'Request URL',
+    'LBL_CURL_METHOD' => 'HTTP Method',
+    'LBL_CURL_HEADERS' => 'Request Headers',
+    'LBL_CURL_BODY' => 'Request Body',
+    'LBL_CURL_TIMEOUT' => 'Timeout (seconds)',
+    'LBL_CURL_TIMEOUT_HELP' => 'Please specify between 1-60 seconds (Default: 30 seconds)',
 );
 
 $jsLanguageStrings = array(
@@ -238,9 +247,9 @@ $jsLanguageStrings = array(
     'VTCreateTodoTask' => 'Create Task',
     'VTCreateEventTask' => 'Create Event',
     'VTUpdateFieldsTask' => 'Update Fields',
-    'VTSMSTask' => 'SMS Task', 
+    'VTSMSTask' => 'SMS Task',
     'VTPushNotificationTask' => 'Mobile Push Notification',
     'VTCreateEntityTask' => 'Create Record',
-    'LBL_EXPRESSION_INVALID' => 'Expression Invalid'
+    'LBL_EXPRESSION_INVALID' => 'Expression Invalid',
 );
 
