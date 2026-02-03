@@ -131,7 +131,7 @@
 								</tr>
 								{if $MODULE == 'Events'}
 								<tr>
-									<td class="fieldLabel alignMiddle" title="{$FIELD_MODEL->get('helpinfo')}">{if !empty($FIELD_MODEL->get('helpinfo'))}<i class="fa fa-question-circle icon"></i>{/if}<label class="muted">{vtranslate('LBL_INVITE_USERS', $MODULE)}</label></td>
+									<td class="fieldLabel alignMiddle"><label class="muted">{vtranslate('LBL_INVITE_USERS', $MODULE)}</label></td>
 									<td class="fieldValue">
 										<select id="selectedUsers" class="select2 inputElement" multiple name="selectedusers[]">
 											{assign var="FIELD_MODEL" value=$RECORD_STRUCTURE['assigned_user_id']}
@@ -154,7 +154,7 @@
 													<option value="{$OWNER_ID}" {if in_array($OWNER_ID,$INVITIES_SELECTED)} selected {/if}
 														{if array_key_exists($OWNER_ID, $ACCESSIBLE_GROUP_LIST)} data-recordaccess=true {else} data-recordaccess=false {/if} >
 													{$OWNER_NAME}
-													</option>
+												</option>
 												{/foreach}
 											</optgroup>
 										</select>
@@ -174,7 +174,7 @@
 							{assign var=BUTTON_LABEL value={vtranslate('LBL_SAVE', $MODULE)}}
 						{/if}
 						{assign var="CALENDAR_MODULE_MODEL" value=$QUICK_CREATE_CONTENTS['Calendar']['moduleModel']}
-						{assign var="EDIT_VIEW_URL" value=$CALENDAR_MODULE_MODEL->getQuickCreateTaskRecordUrl()}
+							{assign var="EDIT_VIEW_URL" value=$CALENDAR_MODULE_MODEL->getQuickCreateTaskRecordUrl()}
 						{if $MODULE eq 'Events'}
 							{assign var="EDIT_VIEW_URL" value=$CALENDAR_MODULE_MODEL->getQuickCreateEventRecordUrl()}
 						{/if}
