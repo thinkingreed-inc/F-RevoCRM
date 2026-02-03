@@ -57,7 +57,7 @@ class Migration20260119191046_AddCommonMemoFieldToEvent extends FRMigrationClass
         $field->table       = 'vtiger_activity';
         $field->column      = 'common_memo';
         $field->columntype  = 'TEXT';
-        $field->uitype      = 21;
+        $field->uitype      = 19;
         $field->typeofdata  = 'V~O';
         $field->presence    = 2;
         $field->readonly    = 1;
