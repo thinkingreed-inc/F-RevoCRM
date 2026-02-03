@@ -112,8 +112,8 @@
                     <div class="failureMessage">{$ERROR}</div>
                 {/if}
 
-                <form id="passkeyForm" class="js-mfa-passkey" action="index.php" method="post"style="padding:10px;">
-                    <div class="multi-factor-area auth-multi-factor-area"style="background-color: rgb(231 231 231 / 29%);">
+                <form id="passkeyForm" class="js-mfa-passkey" action="index.php" method="post" style="padding:10px;">
+                    <div class="multi-factor-area auth-multi-factor-area" style="background-color: rgb(231 231 231 / 29%);">
                         <input type="hidden" name="module" value="Users">
                         <input type="hidden" name="view" value="MultiFactorAuthLogin">
                         <input type="hidden" name="userid" value="{$USERID}">
@@ -131,10 +131,8 @@
                         </button>
                     </div>
                 </form>
-                
                 <form id="totpForm" class="js-mfa-totp" action="index.php" method="post" style="padding:10px;">
-
-                <div class="multi-factor-area auth-multi-factor-area" style="background-color: rgb(231 231 231 / 29%);">
+                    <div class="multi-factor-area auth-multi-factor-area" style="background-color: rgb(231 231 231 / 29%);">
                         <input type="hidden" name="module" value="Users">
                         <input type="hidden" name="view" value="MultiFactorAuthLogin">
                         <input type="hidden" name="userid" value="{$USERID}">
@@ -155,7 +153,7 @@
                     </div>
                 </form>
             </div>
-            <div class="remember-mfa-wrapper" id="remember_mfa_wrapper" style="justify-content:flex-start;">
+            <div class="remember-mfa-wrapper" id="remember_mfa_wrapper">
                 <label class="remember-mfa-label" id="remember_mfa_label">
                     <input type="checkbox" id="remember_mfa_checkbox" value="1" style="font-weight:100;">
                     {vtranslate('LBL_REMEMBER_MFA_METHOD', 'Users')}

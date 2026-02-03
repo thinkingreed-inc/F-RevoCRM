@@ -57,6 +57,7 @@ window.FR_MultiFactorAuthentication_Js = {
      */
     setPreference: function (value) {
         const pref = this.normalizePreference(value);
+        const yearSeconds = 24 * 60 * 60 * 365;
         if (!pref?.method) return this.removePreference();
 
         const payload = JSON.stringify({
@@ -67,7 +68,7 @@ window.FR_MultiFactorAuthentication_Js = {
         try {
             localStorage.setItem(this.storageKey, payload);
         } catch {
-            document.cookie = `${this.cookieKey}=${encodeURIComponent(payload)}; path=/; max-age=${86400 * 365}`;
+            document.cookie = `${this.cookieKey}=${encodeURIComponent(payload)}; path=/; max-age=${yearSeconds}`;
         }
     },
 
@@ -229,7 +230,7 @@ window.FR_MultiFactorAuthentication_Js = {
                 $('input[name="challenge"]').val(challengeBytes);
 
                 if (!navigator.credentials?.create)
-                    return console.error('WEBAUTHN ERROR'), $btn.prop('disabled', false);
+                    return app.helper.showErrorNotification({ message: app.vtranslate('JS_WEBAUTHN_ERROR', 'Users') }), $btn.prop('disabled', false);
 
                 self.createCredentials(challengeBytes)
                     .then(cred => {
