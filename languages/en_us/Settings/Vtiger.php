@@ -403,6 +403,7 @@ $languageStrings = array(
 
 	// Edit Charge
 	'Japan, Yen : ¥' => 'Japan, Yen : ¥',
+	'Parameters' => 'System Variables',
 );
 
 $jsLanguageStrings = array(
