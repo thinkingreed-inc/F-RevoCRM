@@ -663,6 +663,7 @@ $languageStrings = array(
 	'Shipping Po Box' => 'Shipping PO Box',
 	'Country' => 'Country',
 	'Description' => 'Description',
+	'Common Memo' => 'Common Memo',
 
 	'Created'=>'Created',
 	'Approved'=>'Approved',
