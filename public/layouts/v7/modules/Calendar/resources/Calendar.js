@@ -1980,12 +1980,11 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		// 余白設定
 		var pad = 8;
 
-		// カレンダー外にはみ出しているか？
-		var overflowX = (pOffset.left < cLeft + pad) || (pOffset.left + pWidth > cRight - pad);
-		var overflowY = (pOffset.top  < cTop  + pad) || (pOffset.top  + pHeight > cBottom - pad);
+		//カレンダー幅を週7日で割った幅
+		var week = 7;
 
 		// 右にはみ出している場合、右側に表示する
-		if (pageX < clientWidth / 7) {
+		if (pageX < clientWidth / week) {
 			var newPos = {
 			top:  pos.top - pHeight + pos.height,   
 			left: pos.left + pos.width             
