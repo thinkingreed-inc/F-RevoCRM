@@ -1867,9 +1867,9 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
                 'animation' : true,
                 'title' : popOverTitle,
                 'trigger' : 'manual',
-                'template' : template,
-                'container' : self.lineItemsHolder
-                
+                'template' : template[0].outerHTML,
+                'container' : self.lineItemsHolder[0]
+
             });
             element.one('shown.bs.popover', function(e) {
 				callBackFunction(element, jQuery('.individualTaxForm'));
@@ -2060,9 +2060,9 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
                 'animation' : true,
                 'title' : popOverTitle,
                 'trigger' : 'manual',
-                'template' : template,
-                'container' : self.lineItemsHolder
-                
+                'template' : template[0].outerHTML,
+                'container' : self.lineItemsHolder[0]
+
             });
             element.one('shown.bs.popover', function(e) {
 				callBackFunction(element, jQuery('.discountForm'));
@@ -2087,12 +2087,12 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 			'animation' : true,
 			'title' : 'Discount',
 			'trigger' : 'manual',
-			'template' : popOverTemplate
-                
+			'template' : popOverTemplate[0].outerHTML
+
 		});
 		this.finalDiscountEle.on('shown.bs.popover', function(){
-			if(jQuery(this.finalDiscountEle).next('.popover').find('.popover-content').height() > 300) {
-				app.helper.showScroll(jQuery(this.finalDiscountEle).next('.popover').find('.popover-content'), {'height': '300px'});
+			if(jQuery(self.finalDiscountEle).next('.popover').find('.popover-content').height() > 300) {
+				app.helper.showScroll(jQuery(self.finalDiscountEle).next('.popover').find('.popover-content'), {'height': '300px'});
 			}
 			var finalDiscountUI = jQuery('#finalDiscountUI');
 			var finalDiscountPopOver = finalDiscountUI.closest('.popover');
@@ -2107,7 +2107,8 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
        this.finalDiscountEle.popover('show');
        var popOverId = this.finalDiscountEle.attr('aria-describedby');
        var popOverEle = jQuery('#'+popOverId);
-       
+       popOverEle.css('opacity', 0).css('z-index', '-1');
+
        //update local cache element
        this.finalDiscountUIEle = jQuery('#finalDiscountUI');
        
@@ -2164,8 +2165,8 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
                 'animation' : true,
                 'title' : chargesTrigger.text(),
                 'trigger' : 'manual',
-                'template' : popOverTemplate
-                
+                'template' : popOverTemplate[0].outerHTML
+
         });
 
 		chargesTrigger.on('shown.bs.popover', function(){
@@ -2186,6 +2187,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
         chargesTrigger.popover('show');
         var popOverId = chargesTrigger.attr('aria-describedby');
         var popOverEle = jQuery('#'+popOverId);
+        popOverEle.css('opacity', 0).css('z-index', '-1');
 
         chargesTrigger.on('click', function(e){
 			self.getForm().find('.popover.lineItemPopover').css('opacity', 0).css('z-index', '-1');
@@ -2228,8 +2230,8 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
                 'animation' : true,
                 'title' : finalTaxUI.find('.popover_title').val(),
                 'trigger' : 'manual',
-                'template' : popOverTemplate
-                
+                'template' : popOverTemplate[0].outerHTML
+
         });
 
 		finalTaxTriggerer.on('shown.bs.popover', function(){
@@ -2251,6 +2253,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
         finalTaxTriggerer.popover('show');
         var popOverId = finalTaxTriggerer.attr('aria-describedby');
         var popOverEle = jQuery('#'+popOverId);
+        popOverEle.css('opacity', 0).css('z-index', '-1');
 
         finalTaxTriggerer.on('click', function(e){
 			self.getForm().find('.popover.lineItemPopover').css('opacity', 0).css('z-index', '-1');
@@ -2291,8 +2294,8 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
                 'animation' : true,
                 'title' : 'Discount',
                 'trigger' : 'manual',
-                'template' : popOverTemplate
-                
+                'template' : popOverTemplate[0].outerHTML
+
         });
 
 		chargeTaxTriggerer.on('shown.bs.popover', function(){
@@ -2313,6 +2316,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
         chargeTaxTriggerer.popover('show');
         var popOverId = chargeTaxTriggerer.attr('aria-describedby');
         var popOverEle = jQuery('#'+popOverId);
+        popOverEle.css('opacity', 0).css('z-index', '-1');
 
         chargeTaxTriggerer.on('click', function(e){
 			self.getForm().find('.popover.lineItemPopover').css('opacity', 0).css('z-index', '-1');
@@ -2353,8 +2357,8 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
                 'animation' : true,
                 'title' : deductTaxesTriggerer.text(),
                 'trigger' : 'manual',
-                'template' : popOverTemplate
-                
+                'template' : popOverTemplate[0].outerHTML
+
         });
 
 		deductTaxesTriggerer.on('shown.bs.popover', function(){
@@ -2380,6 +2384,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
         deductTaxesTriggerer.popover('show');
         var popOverId = deductTaxesTriggerer.attr('aria-describedby');
         var popOverEle = jQuery('#'+popOverId);
+        popOverEle.css('opacity', 0).css('z-index', '-1');
 
         deductTaxesTriggerer.on('click', function(e){
 			self.getForm().find('.popover.lineItemPopover').css('opacity', 0).css('z-index', '-1');

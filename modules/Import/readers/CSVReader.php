@@ -24,10 +24,19 @@ class Import_CSVReader_Reader extends Import_FileReader_Reader {
 		return $combine; 
 	}
 
+	protected function cleanUpCsvValue(string $value, bool $isStripHtml = false): string
+    {
+        $value = preg_replace("/^\xEF\xBB\xBF/", "", $value);
+        $value = str_replace("\"", "", $value);
+        
+        return $isStripHtml ? trim(strip_tags(decode_html($value))) :  $value;
+    }
+
 	public function getFirstRowData($hasHeader=true) {
 		global $default_charset;
 
 		$fileHandler = $this->getFileHandler();
+		$fileEncoding = $this->request->get('file_encoding');
 
 		$headers = array();
 		$firstRowData = array();
@@ -36,11 +45,11 @@ class Import_CSVReader_Reader extends Import_FileReader_Reader {
 			if($currentRow == 0 || ($currentRow == 1 && $hasHeader)) {
 				if($hasHeader && $currentRow == 0) {
 					foreach($data as $key => $value) {
-						$headers[$key] = trim($this->convertCharacterEncoding(strip_tags(decode_html($value)), $this->request->get('file_encoding'), $default_charset));
+						$headers[$key] = $this->convertCharacterEncoding($this->cleanUpCsvValue($value, true), $fileEncoding, $default_charset);
 					}
 				} else {
 					foreach($data as $key => $value) {
-						$firstRowData[$key] = trim($this->convertCharacterEncoding(strip_tags(decode_html($value)), $this->request->get('file_encoding'), $default_charset));
+						$firstRowData[$key] = $this->convertCharacterEncoding($this->cleanUpCsvValue($value, true), $fileEncoding, $default_charset);
 					}
 					break;
 				}

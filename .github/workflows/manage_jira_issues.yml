@@ -26,8 +26,11 @@ jobs:
     - name: Manage Jira Issue
       if: success() # Check Secretsが成功した場合のみ実行
       run: |
+        # JQL: project = 'PROJECT' AND summary ~ "github#123 "
+        # 末尾スペースで github#123 と github#1234 を区別
+        # 注: /rest/api/3/search は廃止 → /rest/api/3/search/jql に移行
         ISSUE_KEY=$(curl --request GET \
-        --url "${{ secrets.JIRA_BASE_URL }}/rest/api/3/search?jql=project%20%3D%20'${{ secrets.JIRA_PROJECT }}'%20AND%20summary%20~%20%22%5C%22github%23${{ github.event.issue.number }}*%5C%22%22" \
+        --url "${{ secrets.JIRA_BASE_URL }}/rest/api/3/search/jql?jql=project%20%3D%20'${{ secrets.JIRA_PROJECT }}'%20AND%20summary%20~%20%22github%23${{ github.event.issue.number }}%20%22&fields=key" \
         --user "${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }}" \
         --header 'Accept: application/json' \
         --header 'Content-Type: application/json' \
