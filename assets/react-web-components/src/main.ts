@@ -1,10 +1,5 @@
-/**
- * React WebComponents エントリーポイント
- *
- * QuickCreate機能とAppMenuをWebComponentとして登録
- * ※ CSSはShadow DOM内で読み込むため、ここではimportしない
- */
 import { createWebComponent } from "@/utils/createWebComponent";
+import "./index.css";
 import { QuickCreate, CalendarQuickCreate } from "@/components/QuickCreate";
 import { AppMenu } from "@/components/AppMenu";
 
