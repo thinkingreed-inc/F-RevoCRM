@@ -374,7 +374,8 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 				$item['url']   = '';
 			} else {
 				$item['title'] = decode_html($record['subject']).' - ('.decode_html(vtranslate($record['eventstatus'],'Calendar')).')';
-				$item['url']   = sprintf('javascript:Calendar_Calendar_Js.editCalendarEvent(%s,%s)', $crmid, $recurringCheck);
+				//編集画面へ遷移するJavascriptを設定
+				$item['url']   = sprintf('javascript:Calendar_Calendar_Js.clickCalendarEvent(%s,%s)', $crmid, $recurringCheck);
 			}
 
 			$dateTimeFieldInstance = new DateTimeField($record['date_start'].' '.$record['time_start']);

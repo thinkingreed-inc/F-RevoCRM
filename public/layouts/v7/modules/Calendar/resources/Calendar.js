@@ -78,8 +78,15 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			$(".modelContainer #Calendar_editView_fieldName_time_end").parent().show();
 		}
 		jQuery("#alldayEvent").attr('data-validation-engine','change');
-	}
-
+	},
+	//編集画面表示端末判定用
+	clickCalendarEvent: function (eventId, isRecurring) {
+		var instance = Calendar_Calendar_Js.getInstance();
+		if (app.isMobile()){
+			return;
+		}
+		instance.editCalendarEvent(eventId, isRecurring);
+	},
 }, {
 	init: function () {
 		this.addComponents();
@@ -1760,6 +1767,16 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			quickCreateNode.data('url', quickCreateEditUrl);
 			quickCreateNode.trigger('click');
 			quickCreateNode.data('url', quickCreateUrl);
+
+			//スマートフォン対応：ポップオーバーを強制的に非表示にする
+			var forceRemovePopovers = function () {
+				var $els = $('.webui-popover');
+				if ($els.length) {
+					$els.hide();
+				}
+			};
+			setTimeout(forceRemovePopovers,  100);
+
 			$(".modal-body").css("max-height", '800px');
 
 			if (moduleName === 'Events') {
@@ -1785,6 +1802,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		this.showEditEventModal(eventId, isRecurring, isDuplicate);
 	},
 	registerPopoverEvent: function (event, element, calendarView) {
+		var self = this; 
 		var dateFormat = this.getUserPrefered('date_format');
 		dateFormat = dateFormat.toUpperCase();
 		var hourFormat = this.getUserPrefered('time_format');
@@ -1904,8 +1922,9 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			'content': generatePopoverContentHTML(event),
 			'trigger': 'hover',
 			'closeable': true,
-			'placement': 'auto',
+			'placement': 'left-top',
 			'animation': 'fade',
+			'arrow': false,
 			'delay': {
 				show: null,
 				hide: 300,
@@ -1916,7 +1935,77 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		}
 		if(app.getUserId() == event.userid || event.visibility != "Private"){
 			element.webuiPopover(params);
+			
+			element.on('shown.webui.popover', function() {
+			var $container = element.closest('.fc-view-container');
+			var $popover = $('.webui-popover.in').last();
+			self.adjustPopoverInsideSharedCalendar($popover, $container, element);
+			});
 		}
+	},
+	// 共有カレンダー内でポップオーバーが仕様調整
+	adjustPopoverInsideSharedCalendar: function ($popover, $container, $trigger) {
+		if (!$popover || !$popover.length) return;
+		if (!$container || !$container.length) return;
+		if (!$trigger || !$trigger.length) return;
+		// container ページ座標
+		var cRect = $container[0].getBoundingClientRect();
+		var cLeft = cRect.left + window.pageXOffset;
+		var cTop = cRect.top + window.pageYOffset;
+		var cRight = cLeft + cRect.width;
+		var cBottom = cTop + cRect.height;
+		// ポップオーバー カレンダー座標
+		var tOff = $trigger.offset();
+		if (!tOff) return;
+		var pos = {
+			top: tOff.top,
+			left: tOff.left,
+			width: $trigger[0].offsetWidth,
+			height: $trigger[0].offsetHeight
+		};
+		// container カレンダー座標（ポップオーバー方向判断用）
+		var cOff = $container.offset();
+		if (!cOff) return;
+
+		var pageX = (tOff.left - cOff.left) + ($container.scrollLeft() || 0);
+		var clientWidth = $container.innerWidth();
+
+		// popoverを基準にした座標
+		var pOffset = $popover.offset();
+		if (!pOffset) return;
+
+		var pWidth = $popover.outerWidth(true);
+		var pHeight = $popover.outerHeight(true);
+
+		// 余白設定
+		var pad = 8;
+
+		//カレンダー幅を週7日で割った幅
+		var week = 7;
+
+		// 右にはみ出している場合、右側に表示する
+		if (pageX < clientWidth / week) {
+			var newPos = {
+			top:  pos.top - pHeight + pos.height,   
+			left: pos.left + pos.width             
+			};
+			$popover.offset({ left: newPos.left, top: newPos.top });
+			// 再取得
+			pOffset = $popover.offset();
+		}
+		// 座標調整
+		var newLeft = pOffset.left;
+		var newTop = pOffset.top;
+		if (newLeft + pWidth > cRight - pad) newLeft = (cRight - pad) - pWidth;
+		if (newLeft < cLeft + pad) newLeft = cLeft + pad;
+
+		//top調整
+		newTop = pos.top;
+		if (newTop + pHeight > cBottom - pad) newTop = (cBottom - pad) - pHeight;
+		if (newTop < cTop + pad) newTop = cTop + pad;
+		
+		//ポップオーバー位置更新
+		$popover.offset({ left: newLeft, top: newTop });
 	},
 	performPreEventRenderActions: function (event, element) {
 		var calendarView = this.getCalendarViewContainer().fullCalendar('getView');
