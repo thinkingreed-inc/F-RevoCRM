@@ -77,17 +77,17 @@
 
             }
         </style>
-         {* ForgotPassword 画面で vtiger 共通 JavaScript（jQuery・コア処理）を読み込み、画面動作を初期化する *}
-        <script type="text/javascript">
-            var _META = { 'module': "Vtiger", view: "Index", 'parent': "Vtiger", 'notifier': "", 'app': "" };
-        </script>
-        <script src="{$SITE_URL}libraries/jquery/jquery.min.js"></script> 
-        {include file='JSResources.tpl'|@vtemplate_path}
-        <script src="{$SITE_URL}layouts/v7/resources/libraries.js"></script> 
-        <script src="{$SITE_URL}layouts/v7/resources/helper.js"></script> 
-        <script src="{$SITE_URL}layouts/v7/resources/vtiger.js"></script> 
-        <script src="{$SITE_URL}layouts/v7/resources/application.js"></script> 
-        {literal}
+    <script type="text/javascript">
+        var _META = { 'module': "Vtiger", view: "Index", 'parent': "Vtiger", 'notifier': "", 'app': "" };
+    </script>
+    <script src="{$SITE_URL}libraries/jquery/jquery.min.js"></script> 
+    {include file='JSResources.tpl'|@vtemplate_path}
+    <script src="{$SITE_URL}layouts/v7/resources/libraries.js"></script> 
+    <script src="{$SITE_URL}layouts/v7/resources/helper.js"></script> 
+    <script src="{$SITE_URL}layouts/v7/resources/vtiger.js"></script> 
+    <script src="{$SITE_URL}layouts/v7/resources/application.js"></script> 
+    
+    {literal}
         <script>
             function checkPassword() {
                 var password = document.getElementById('password').value;
@@ -113,43 +113,33 @@
                 <img  src="{$LOGOURL}" alt="{$TITLE}" style="height: auto;width: 12em;"><br><br><br>
             </div>
             <div style = "padding-left:50%;width:100%">
-                {if $LINK_EXPIRED neq 'true'}
-                    <div id="content">
-                        <span><h2 style = "font-size:16px">{vtranslate('LBL_CHANGE_PASSWORD',$MODULE)}</h2></span>
-                        <hr class="line">
-                        <div id="changePasswordBlock" align='left'>
-                            <form name="changePassword" id="changePassword" action="{$TRACKURL}" method="post" accept-charset="utf-8">
-                                <input type="hidden" name="username" value="{$USERNAME}">
-                                <input type="hidden" name="shorturl_id" value="{$SHORTURL_ID}">
-                                <input type="hidden" name="secret_hash" value="{$SECRET_HASH}">
-                                <table align='center'>
-                                    <tr>
-                                        <td style="text-align:right"><label class="control-label" for="password">{vtranslate('LBL_NEW_PASSWORD',$MODULE)}</label></td>
-                                        <td><input type="password" id="password" name="password"></td>
-                                    </tr>
-                                    <tr><td></td></tr>
-                                    <tr>
-                                        <td style="text-align:right"><label class="control-label" for="confirmPassword">{vtranslate('LBL_CONFIRM_PASSWORD',$MODULE)}</label></td>
-                                        <td><input type="password" id="confirmPassword" name="confirmPassword"></td>
-                                    </tr>
-                                    <tr><td></td></tr>
-                                    <tr>
-                                        <td></td>
-                                        <td style="text-align:right"><input type="submit" id="btn" value="{vtranslate('LBL_SAVE',$MODULE)}" onclick="return checkPassword();" /></td>
-                                    </tr>
-                                </table>
-                            </form>
-                        </div>
-                        <div id="footer">
-                            <p></p>
-                        </div>
-                        <div style="clear:both;"></div>
+                <div id="content">
+                    <span><h2 style = "font-size:16px">{vtranslate('LBL_CHANGE_PASSWORD',$MODULE)}</h2></span>
+                    <hr class="line">
+                    <div id="changePasswordBlock" align='left'>
+                        <form name="changePassword" method="post" action="index.php?module=Users&action=ForceChangePassword" accept-charset="utf-8">
+                            <table align='center'>
+                                <tr>
+                                    <td style="text-align:right"><label class="control-label" for="password">{vtranslate('LBL_NEW_PASSWORD',$MODULE)}</label></td>
+                                    <td><input type="password" id="password" name="password"></td>
+                                </tr>
+                                <tr><td></td></tr>
+                                <tr>
+                                    <td style="text-align:right"><label class="control-label" for="confirmPassword">{vtranslate('LBL_CONFIRM_PASSWORD',$MODULE)}</label></td>
+                                    <td><input type="password" id="confirmPassword" name="confirmPassword"></td>
+                                </tr>
+                                <tr><td></td></tr>
+                                <tr>
+                                    <td></td>
+                                    <td style="text-align:right"><input type="submit" id="btn" value="{vtranslate('LBL_SAVE',$MODULE)}" onclick="return checkPassword();" /></td>
+                                </tr>
+                            </table>
+                        </form>
                     </div>
-                {else}
-                    <div id="content">
-                        {vtranslate('LBL_PASSWORD_LINK_EXPIRED_OR_INVALID_PASSWORD', $MODULE)}
+                    <div id="footer">
+                        <p></p>
                     </div>
-                {/if}
+                <div style="clear:both;"></div>
             </div>
         </div>
     </div>

@@ -297,6 +297,24 @@ Settings_Vtiger_List_Js("Settings_Users_List_Js",{
 				return false;
 			}
 		});
+	},
+	resendPasswordMail: function (userId) {
+		app.helper.showProgress(app.vtranslate('JS_PLEASE_WAIT'));
+		var params = {
+			module: 'Users',
+			parent: 'Settings',
+			action: 'ResendPasswordMail',
+			userid: userId
+		};
+		app.request.post({data: params}).then(function (err, data) {
+			app.helper.hideProgress();
+			if (err) {
+				app.helper.showErrorNotification({ message: err.message });
+			} else {
+				var notificationType = data.success ? 'showSuccessNotification' : 'showErrorNotification';
+				app.helper[notificationType]({ message: app.vtranslate(data.message) });
+			}
+		});
 	}
 },{
 
@@ -437,7 +455,7 @@ Settings_Vtiger_List_Js("Settings_Users_List_Js",{
 					searchValue = searchValue.join(',');
 				}
 			}
-			//for Account owner field no value will be emtpty string so we are avoiding trimming
+			//for Account owner field no value will be emtpy string so we are avoiding trimming
 			if(fieldName != 'is_owner') {
 				searchValue = searchValue.trim();
 			}
@@ -505,6 +523,7 @@ Settings_Vtiger_List_Js("Settings_Users_List_Js",{
 		return listSearchParams;
 	},
 
+
 	registerEvents : function() {
 		this._super();
 		this.registerUserStatusToggleEvent();
@@ -514,5 +533,14 @@ Settings_Vtiger_List_Js("Settings_Users_List_Js",{
 		this.registerRemoveListViewSort();
 		this.registerDynamicDropdownPosition('table-actions', 'listview-table');
 		this.registerEditLink();
+
+		var container = this.getListViewContainer ? this.getListViewContainer() : jQuery('#listViewContent');
+		container.on('click', '.jsResendPwdMail', function(e) {
+			e.preventDefault();
+			var userId = jQuery(this).data('userid');
+			if (userId) {
+				Settings_Users_List_Js.resendPasswordMail(userId);
+			}
+		});
 	}
 });

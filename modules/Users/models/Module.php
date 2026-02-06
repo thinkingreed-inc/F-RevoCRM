@@ -430,4 +430,15 @@ class Users_Module_Model extends Vtiger_Module_Model {
 		}
 		return $importableFieldModels;
 	}
+	//初回ログインフラグ更新
+	public function updateHasInitialLogin($userId){
+		$db = PearDatabase::getInstance();
+		$db->pquery('UPDATE vtiger_users SET has_initial_login = 1 WHERE id = ?',[$userId]);
+	}
+	//メールサーバー設定確認
+	public function hasMailServerConfigured(){
+        $db = PearDatabase::getInstance();
+        $res = $db->pquery("SELECT 1 FROM vtiger_systems WHERE server IS NOT NULL AND TRIM(server) != '' LIMIT 1",[]);
+        return ($db->num_rows($res) > 0);
+    }
 }

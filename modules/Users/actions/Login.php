@@ -30,11 +30,25 @@ class Users_Login_Action extends Vtiger_Action_Controller {
             $currentUser = Users_Record_Model::getInstanceById($userid, 'Users');
 
             if ($currentUser->isLocked()) {
-                // ユーザーがロックされている場合はログインを拒否
                 header ('Location: index.php?module=Users&parent=Settings&view=Login&error=userLocked');
                 exit;
             }
+            //メールサーバー設定確認
+            $moduleModel = Users_Module_Model::getInstance('Users');
+            $hidePasswordFields = $moduleModel->hasMailServerConfigured();
 
+            if (Vtiger_Session::get('just_changed_password')) {
+                Vtiger_Session::set('just_changed_password', false);
+            } elseif ($currentUser->isNeverLogged()) {
+                if ($hidePasswordFields) {
+                   header('Location: index.php?module=Users&parent=Settings&view=Login&error=initialLoginNotAllowed');
+                   exit;
+                }
+                Vtiger_Session::set('force_change_password_userid', $userid);
+                Vtiger_Session::set('force_change_password_username', $username);
+                header('Location: index.php?module=Users&view=ForceChangePassword');
+                exit;
+            }
             session_regenerate_id(true);
             $userCredentialsData = $currentUser->getUserCredential();
 
@@ -73,7 +87,7 @@ class Users_Login_Action extends Vtiger_Action_Controller {
                 $moduleModel = Users_Module_Model::getInstance('Users');
                 $moduleModel->saveLoginHistory($user->column_fields['user_name']);
                 //End
-
+                $moduleModel->updateHasInitialLogin($userid);
                 header ('Location: index.php?module=Users&parent=Settings&view=SystemSetup');
             }
 			exit();

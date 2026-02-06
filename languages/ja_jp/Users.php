@@ -185,6 +185,9 @@ $languageStrings = array(
 
 	'LBL_OLD_PASSWORD' => '古いパスワード',
 	'LBL_CHANGE_PASSWORD' => 'パスワードの変更',
+	'LBL_RESEND_PASSWORD_EMAIL' => 'パスワード設定メールを再送信',
+	'LBL_PASSWORD_SETUP_MAIL_SENT' => 'パスワード設定メールを送信しました',
+	'LBL_PASSWORD_SETUP_MAIL_FAILED' => 'パスワード設定メールを送信に失敗しました',
 	'LBL_NEW_PASSWORD' => '新しいパスワード',
 	'LBL_CONFIRM_PASSWORD' => 'パスワードの確認',
 	'LBL_CHANGE_ACCESS_KEY' => 'アクセスキーの変更',
@@ -208,7 +211,8 @@ $languageStrings = array(
 	'ForgotPassword' => 'パスワードをお忘れですか？',
 	'LBL_CONNECT_WITH_US' => 'F-RevoCRM Facebook',
 	'LBL_GET_MORE' => 'F-RevoCRMをもっと使い込む',
-	'LBL_SEND_PASSWORD' => 'パスワードをメールで送信します',
+	// 'LBL_SEND_PASSWORD' => 'パスワードをメールで送信します',
+	'LBL_SEND_PASSWORD' => 'システム管理者に連絡してください',
 
 	'LBL_TRANSFER_RECORDS_TO_USER' => 'レコードの担当を変更',
 	'LBL_USER_TO_BE_DELETED' => '削除されるユーザー',
@@ -279,6 +283,7 @@ $languageStrings = array(
 	'Default Landing Page' => '初期表示',
 	'CRM Phone Extension' => '内線番号',
 
+	'LBL_SAVE' => '保存',
 	'LBL_LOGIN' => 'ログイン',
 	'LBL_FORGET_PASSWORD' => 'パスワードを忘れた場合は',
 	'LBL_MAILADDRESS' => 'メールアドレス',
@@ -294,6 +299,7 @@ $languageStrings = array(
 	'LBL_INVALID_USERNAME_OR_PASSWORD' => '無効なユーザー名またはパスワード',
 	'LBL_INVALID_USERNAME_OR_MAILADDRESS' => '無効なユーザー名またはE-mailアドレス',
 	'LBL_MAIL_SERVER_NOT_CONFIGURED' => 'メールサーバが設定されていません',
+	'LBL_INITIAL_LOGIN_NOT_ALLOWED' => '初回ログインは許可されていません。システム管理者に連絡してください。',
 	'LBL_AN_EMAIL_WAS_SENT_TO_THE_ADDRESS' => 'アドレスにメールを送信しました',
     'LBL_ADD_PASSKEY' => 'パスキー認証を追加',
     'LBL_ADD_TOTP' => 'タイムベース認証を追加',

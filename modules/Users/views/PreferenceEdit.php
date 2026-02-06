@@ -121,7 +121,11 @@ Class Users_PreferenceEdit_View extends Vtiger_Edit_View {
 				$fieldsInfo[$fieldName] = $fieldModel->getFieldInfo();
 			}
 			$viewer->assign('FIELDS_INFO', json_encode($fieldsInfo));
-                        
+			//パスワード非表示フラグ
+			$moduleModel = Users_Module_Model::getInstance('Users');
+			$hidePasswordFields = $moduleModel->hasMailServerConfigured();
+			$viewer->assign('HIDE_PASSWORD_FIELDS', $hidePasswordFields);
+
 			if($display) {
 				$this->preProcessDisplay($request);
 			}

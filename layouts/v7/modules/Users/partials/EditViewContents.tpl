@@ -26,6 +26,7 @@
                      <tr>
                      {assign var=COUNTER value=0}
                      {foreach key=FIELD_NAME item=FIELD_MODEL from=$BLOCK_FIELDS name=blockfields}
+                         {if $MODULE eq 'Users' && $HIDE_PASSWORD_FIELDS && in_array($FIELD_MODEL->getName(), ['user_password','confirm_password'])}{continue}{/if}
                          {assign var="isReferenceField" value=$FIELD_MODEL->getFieldDataType()}
                          {assign var="refrenceList" value=$FIELD_MODEL->getReferenceList()}
                          {assign var="refrenceListCount" value=php7_count($refrenceList)}

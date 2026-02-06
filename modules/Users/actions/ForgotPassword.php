@@ -31,6 +31,13 @@ class Users_ForgotPassword_Action {
 		$shortURLID = $request->get('shorturl_id');
 		$secretHash = $request->get('secret_hash');
 		$shortURLModel = Vtiger_ShortURL_Helper::getInstance($shortURLID);
+		//パスワード長チェック
+		if (mb_strlen($newPassword) > 128|| mb_strlen($confirmPassword) > 128) {
+			$viewer->assign('ERROR', true);
+			$viewer->assign('USERNAME', $userName);
+			$viewer->view('FPLogin.tpl', 'Users');
+			return;
+		}
 		$secretToken = $shortURLModel->handler_data['secret_token'];
 
 		$validateData = array('username'  => $userName,

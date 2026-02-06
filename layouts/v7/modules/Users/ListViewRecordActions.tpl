@@ -18,7 +18,11 @@
 					{if Users_Privileges_Model::isPermittedToChangeUsername($LISTVIEW_ENTRY->getId())}
 						<li><a onclick="Settings_Users_List_Js.triggerChangeUsername('{$LISTVIEW_ENTRY->getChangeUsernameUrl()}');">{vtranslate('LBL_CHANGE_USERNAME', $MODULE)}</a></li>
 					{/if}
-					<li><a onclick="Settings_Users_List_Js.triggerChangePassword('{$LISTVIEW_ENTRY->getChangePwdUrl()}');">{vtranslate('LBL_CHANGE_PASSWORD', $MODULE)}</a></li>
+					{if $USER_MODEL->isAdminUser() && ( $LISTVIEW_ENTRY->getId() eq $USER_MODEL->getId() || $IS_ADMIN_PASSWORD_EDITABLE )}
+					<li><a onclick="Settings_Users_List_Js.triggerChangePassword('{$LISTVIEW_ENTRY->getChangePwdUrl()}');">{vtranslate('LBL_CHANGE_PASSWORD', $MODULE)}</a></li>{/if}
+					{if $USER_MODEL->isAdminUser() && $LISTVIEW_ENTRY->isNeverLogged()&& $HIDE_PASSWORD_FIELDS}
+						<li><a href="javascript:void(0);" class="jsResendPwdMail" data-userid="{$LISTVIEW_ENTRY->getId()}">{vtranslate('LBL_RESEND_PASSWORD_EMAIL', $MODULE)}</a></li>
+					{/if}
 					{if $IS_MODULE_EDITABLE && $LISTVIEW_ENTRY->get('status') eq 'Active'}
 						<li><a href="{$LISTVIEW_ENTRY->getEditViewUrl()}&parentblock=LBL_USER_MANAGEMENT" name="editlink">{vtranslate('LBL_EDIT', $MODULE)}</a></li>
 					{/if}

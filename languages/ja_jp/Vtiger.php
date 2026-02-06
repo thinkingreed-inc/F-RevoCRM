@@ -1476,6 +1476,16 @@ $languageStrings = array(
 						※こちらのURLの有効期限は24時間です。<br>
 						※パスワード再発行の心当たりがない場合は絶対にクリックしないでください。',
 	'Vtiger CRM: Password Reset' => 'F-RevoCRMのパスワード再設定URLのお知らせ',
+	'LBL_FORGOT_PASSWORD_SEND_MAIL_CONTEXT' => 'F-RevoCRMのパスワードの再設定のURLをお知らせいたします。
+						<br><br><a target="_blank" href="%s">こちらをクリック</a><br><br>
+						※こちらのURLの有効期限は%s から10分後です。<br>
+						※パスワード再発行の心当たりがない場合は絶対にクリックしないでください。',
+
+	'LBL_Account_Created' => 'F-RevoCRMにユーザーアカウントが作成されました。
+						<br><br>ログイン用パスワードを設定するには、<a target="_blank" href="%s">こちらをクリック</a><br><br>
+						※こちらのURLの有効期限は三日間です。 %s までにパスワード設定してください。<br>
+						※パスワード再発行の心当たりがない場合は絶対にクリックしないでください。',
+	'F-RevoCRM: Account Created' => 'F-RevoCRMのユーザーアカウント作成のお知らせ',
 	'Today' => '今日',
 	'This Week' => '今週',
 	'This Month' => '今月',
