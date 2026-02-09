@@ -86,8 +86,29 @@ class Users_Detail_View extends Users_PreferenceDetail_View {
 
 	public function process(Vtiger_Request $request) {
 		$viewer = $this->getViewer($request);
+		$currentUserModel = Users_Record_Model::getCurrentUserModel();
+		$recordId = $request->get('record');
 
-		$viewer->assign('CURRENT_USER_MODEL', Users_Record_Model::getCurrentUserModel());
+		// ログインロック情報を取得（管理者のみ表示）
+		if ($currentUserModel->isAdminUser()) {
+			$recordModel = Users_Record_Model::getInstanceById($recordId, 'Users');
+			$lockInfo = $recordModel->getUserLock();
+
+			if ($lockInfo && isset($lockInfo['lock_time']) && $lockInfo['lock_time']) {
+				$lockTime = new DateTime($lockInfo['lock_time']);
+				$lockTimeConfig = Settings_Parameters_Record_Model::getParameterValue("USER_LOCK_TIME");
+				if (is_numeric($lockTimeConfig) && $lockTimeConfig > 0) {
+					$lockTime->modify("+{$lockTimeConfig} minutes");
+					$unlockTime = $lockTime->format('Y/m/d H:i:s');
+
+					$viewer->assign('IS_USER_LOCKED', true);
+					$viewer->assign('LOCK_UNTIL_TIME', $unlockTime);
+					$viewer->assign('LOCK_ATTEMPT_COUNT', $lockInfo['signature_count']);
+				}
+			}
+		}
+
+		$viewer->assign('CURRENT_USER_MODEL', $currentUserModel);
 		$viewer->view('UserViewHeader.tpl', $request->getModule());
 		parent::process($request);
 	}
