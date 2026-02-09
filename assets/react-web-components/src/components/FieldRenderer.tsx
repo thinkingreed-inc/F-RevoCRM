@@ -88,8 +88,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
   // ラベル部分と必須マークを分離して、ラベル終端を揃える
   const renderLabel = () => (
     <>
-      <label
-        htmlFor={`field_${field.name}`}
+      <span
         className={cn(
           'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
           disabled && 'text-gray-400'
@@ -97,7 +96,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       >
         {field.label}
         {field.mandatory && <span className="sr-only"> (必須)</span>}
-      </label>
+      </span>
       {/* 必須マーク：固定幅で位置を確保し、入力欄の開始位置を揃える */}
       <span className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0" aria-hidden="true">
         {field.mandatory ? '*' : ''}
