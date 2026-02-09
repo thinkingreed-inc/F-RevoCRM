@@ -374,6 +374,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 				$item['url']   = '';
 			} else {
 				$item['title'] = decode_html($record['subject']).' - ('.decode_html(vtranslate($record['eventstatus'],'Calendar')).')';
+				//編集画面へ遷移するJavascriptを設定
 				$item['url']   = sprintf('javascript:Calendar_Calendar_Js.editCalendarEventFromContent(%s,%s)', $crmid, $recurringCheck);
 			}
 

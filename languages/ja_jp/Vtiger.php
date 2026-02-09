@@ -125,6 +125,8 @@ $languageStrings = array(
 	'LBL_DISPLAY_NARROWTYPE' => '狭い',
 	'LBL_TAG_THIS_RECORD' => 'Tag this Record',
 	'LBL_SAME_TAG_EXISTS' => '同じタグが存在します。',
+	'SAVED_EXCLUDING_INVALID_TAG' => '無効なタグ名を除いてタグを登録しました<br>無効なタグ名:',
+	'INVALID_TAG_EXISTS' => '無効なタグ名が存在します<br>無効なタグ名:',
 	'LBL_MAKE_PUBLIC' => 'Make Public',
 	'LBL_PAGE' => 'ページ',
 	'LBL_LISTVIEW_PAGE_JUMP' => 'ページ移動',
@@ -661,6 +663,7 @@ $languageStrings = array(
 	'Shipping Po Box' => '私書箱(出荷先)',
 	'Country' => '国',
 	'Description' => '詳細内容',
+	'Common Memo' => '共有メモ',
 
 	'Created'=>'登録済み',
 	'Approved'=>'承認済み',

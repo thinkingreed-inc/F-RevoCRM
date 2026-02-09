@@ -21,6 +21,7 @@
 	{if php7_count($FIELD_INFO['validator'])}
 		data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
 	{/if}
+	{if $FIELD_MODEL->isReadonlyEditView() eq true} disabled style='background-color:#d3d3d3;opacity:0.8;'{/if}
 	>
 	{if $FIELD_MODEL->isEmptyPicklistOptionAllowed()}<option value="">{vtranslate('LBL_SELECT_OPTION','Vtiger')}</option>{/if}
 	{foreach item=PICKLIST_VALUE key=PICKLIST_NAME from=$PICKLIST_VALUES}

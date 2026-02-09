@@ -74,8 +74,8 @@ $languageStrings = array(
 	'Symbol Placement'  =>  '記号位置',
 	'Number Of Currency Decimals'  =>  '通貨の小数点桁数',
 	'Truncate Trailing Zeros'  =>   '末尾のゼロを切り捨て',
-	'Default Call Duration' => 'デフォルトの連絡の時間 ( 分 )',
-	'Other Event Duration' => '他の活動の時間 ( 分 )',
+	'Default Call Duration' => '既定の電話時間 ( 分 )',
+	'Other Event Duration' => '電話以外の活動時間 ( 分 )',
 	'Calendar Hour Format' => 'カレンダーの時間形式',
 	'Tag Cloud' => 'タグクラウド',
 
@@ -249,6 +249,7 @@ $languageStrings = array(
 	'Account Owner' => 'アカウントの所有者',
 	'Starting Day of the week' => '一週間の初めの曜日',
 	'Day starts at' => '一日の開始時刻',
+	'Day ends at' => '一日の終了時刻',
 	'Default Event Status' => '既定の活動ステータス',
 	'Planned' => '計画済み',
 	'Held' => '完了',
@@ -257,6 +258,7 @@ $languageStrings = array(
 	'Meeting' => '会議',
 	'Mobile Call' => '携帯電話に架電',
 	'Default Activity Type' => '既定の活動タイプ',
+	'Calendar Shared Type' => 'カレンダーの共有タイプ',
 	'Default Record View' => '既定のレコードビュー',
 	'Left Panel Hide' => '左パネルを隠す',
 	'Row Height' => '行の高さ',
@@ -320,11 +322,11 @@ $languageStrings = array(
 強制しない場合もユーザーが多要素認証を設定している場合は、ログイン時に多要素認証が要求されます。
 true: 強制する
 false: 強制しない',
-	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_TIME' => '多要素認証でUSER_LOCK_COUNTの回数ログインに失敗した際、ユーザーのログインをロックする時間（分）です。
+	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_TIME' => 'USER_LOCK_COUNTの回数ログインに失敗した際、ユーザーのログインをロックする時間（分）です。
 設定は半角の正の整数値で行ってください。
 全角数値、数値として認識できない文字列、0以下の値を指定した場合などは、ログインロックは行われません。',
-	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_COUNT' => '多要素認証でログインに失敗した際、ユーザーのログインをロックするまでの回数です。
-設定した回数連続で多要素認証に失敗するとユーザーのログインにロックがかかり、USER_LOCK_TIMEで指定した時間が経過するまでログインできません。
+	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_COUNT' => 'ログインに失敗した際、ユーザーのログインをロックするまでの回数です。
+設定した回数連続でログインに失敗するとユーザーのログインにロックがかかり、USER_LOCK_TIMEで指定した時間が経過するまでログインできません。
 設定は半角の正の整数値で行ってください。
 全角数値、数値として認識できない文字列、0以下の値を指定した場合などは、ログインロックは行われません。',
 	'LBL_PASSKEY' => 'パスキー認証',
@@ -347,7 +349,13 @@ false: 強制しない',
 	'LBL_PASSKEY_AUTHENTICATION_MESSAGE' => '生体認証やデバイス認証を使用した、最新のパスワードレス認証方式です。',
 	'LBL_TOTP_AUTHENTICATION_MESSAGE' => '認証アプリで生成される6桁の数字（ワンタイムパスワード）を使用する、標準的な認証方式です。',
 	'passkey' => 'パスキー認証',
-	'totp' => 'タイムベース認証',	
+	'totp' => 'タイムベース認証',
+	'LBL_LOGIN_LOCKED' => 'ログインロック中',
+	'LBL_LOCK_UNTIL' => 'ロック解除予定',
+	'LBL_UNLOCK_USER' => 'ロック解除',
+	'LBL_CONFIRM_UNLOCK_USER' => 'このユーザーのログインロックを解除しますか？',
+	'LBL_UNLOCK_SUCCESS' => 'ログインロックを解除しました',
+	'LBL_UNLOCK_FAILED' => 'ロック解除に失敗しました',
 );
 
 $jsLanguageStrings = array(
@@ -375,4 +383,7 @@ $jsLanguageStrings = array(
 	'JS_ADD_MULTI_FACTOR_AUTHENTICATION_FINISH' => '多要素認証の追加が完了しました',
 	'JS_MULTI_FACTOR_AUTHENTICATION_USER_CHANCELED' => 'ユーザーによって多要素認証がキャンセルされました',
 	'JS_MULTI_FACTOR_AUTHENTICATION_CHANCELED' => '多要素認証がキャンセルされました',
+
+	// Unlock user
+	'LBL_CONFIRM_UNLOCK_USER' => 'このユーザーのログインロックを解除しますか？',
 );

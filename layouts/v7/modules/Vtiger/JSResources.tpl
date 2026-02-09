@@ -69,13 +69,13 @@
 	<script type="text/javascript">
 		var _REQSTARTTIME = "{$smarty.server.REQUEST_TIME}";
 		{literal}jQuery(document).ready(function() { window._PAGEREADYAT = new Date(); });
-		jQuery(window).load(function() {
+		jQuery(window).on('load', function() {
 			window._PAGELOADAT = new Date();
 			window._PAGELOADREQSENT = false;
 			// Transmit the information to server about page render time now.
-			if (typeof _REQSTARTTIME != 'undefined') {
+			if (typeof _REQSTARTTIME != 'undefined' && typeof window._PAGEREADYAT !== 'undefined') {
 				// Work with time converting it to GMT (assuming _REQSTARTTIME set by server is also in GMT)
-				var _PAGEREADYTIME = _PAGEREADYAT.getTime() / 1000.0; // seconds
+				var _PAGEREADYTIME = window._PAGEREADYAT.getTime() / 1000.0; // seconds
 				var _PAGELOADTIME = _PAGELOADAT.getTime() / 1000.0;    // seconds
 				var data = { page_request: _REQSTARTTIME, page_ready: _PAGEREADYTIME, page_load: _PAGELOADTIME };
 				data['page_xfer'] = (_PAGELOADTIME - _REQSTARTTIME).toFixed(3);

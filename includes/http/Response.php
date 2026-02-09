@@ -55,10 +55,30 @@ class Vtiger_Response {
 	private $headers = array();
 
 	/**
+	 * Security headers to prevent common attacks
+	 */
+	private static $securityHeaders = array(
+		"Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'self'; form-action 'self'; base-uri 'self'",
+		"X-Content-Type-Options: nosniff",
+		"X-Frame-Options: SAMEORIGIN",
+		"X-XSS-Protection: 1; mode=block",
+		"Referrer-Policy: strict-origin-when-cross-origin"
+	);
+
+	/**
 	 * Set headers to send
 	 */
 	function setHeader($header) {
 		$this->headers[] = $header;
+	}
+
+	/**
+	 * Send security headers to prevent common attacks (XSS, clickjacking, etc.)
+	 */
+	protected function sendSecurityHeaders() {
+		foreach (self::$securityHeaders as $header) {
+			header($header);
+		}
 	}
 
 	/**
@@ -146,6 +166,8 @@ class Vtiger_Response {
 	 * Send response to client.
 	 */
 	function emit() {
+		// Send security headers first
+		$this->sendSecurityHeaders();
 
 		$contentTypeSent = false;
 		foreach ($this->headers as $header) {

@@ -20,9 +20,9 @@ $languageStrings = array(
 	'LBL_SHOW_TODOS' => 'TODOの表示',
 	'LBL_CALENDAR_SETTINGS' => 'カレンダー設定',
 	'LBL_CALENDAR_SHARING' => 'カレンダー共有',
-	'LBL_DEFAULT_EVENT_DURATION' => 'デフォルトの活動周期',
-	'LBL_CALL' => 'デフォルトの連絡の時間 ( 分 )',
-	'LBL_OTHER_EVENTS' => '他の活動の時間 ( 分 )',
+	'LBL_DEFAULT_EVENT_DURATION' => 'デフォルトの活動時間',
+	'LBL_CALL' => '電話時間',
+	'LBL_OTHER_EVENTS' => '電話以外の活動時間',
 	'LBL_MINUTES' => '分',
 	'LBL_SELECT_USERS' => 'ユーザーの選択',
 	'LBL_EVENT_OR_TASK' => '活動 / TODO',
@@ -111,6 +111,9 @@ $languageStrings = array(
 	'LBL_TOTAL_EVENTS_SKIPPED' => 'No. of Events Skipped as they were missing one or more required field ',
 	'LBL_TOTAL_EVENTS_DUPLICATED' => 'No. of duplicate Events skipped',
 	'LBL_TOTAL_TASKS_DUPLICATED' => 'No. of duplicate Tasks skipped',
+	'LBL_SETUP_PARAMETER_MESSAGE_CALENDAR_REMEMBER_FEED_SELECTION' => '共有カレンダーにおけるユーザー一覧のチェック状態を制御するフラグです。
+true : 組織・役割切替時もチェック状態を記憶し、すべての表示に反映します。
+false : マイグループのみチェック状態を記憶し、他の組織・役割では常に全選択とします。',
 	
 	'ICAL_FORMAT' => 'iCalフォーマット',
 	'LBL_LAST_IMPORT_UNDONE'=>'インポートが完了していません。',

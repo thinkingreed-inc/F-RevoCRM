@@ -61,22 +61,21 @@ class Users_MultiFactorAuthLogin_View extends Vtiger_View_Controller {
             $errorIncorrect = "LBL_PASSKEY_CODE_INCORRECT";
         }
 
-		$lockResult = $currentUser->isLoginLockedByMFA();
+		$lockResult = $currentUser->isLoginAttemptLocked();
         if ($loginResult !== false && !$lockResult) {
             // 試行回数のリセット
-            $currentUser->resetSignatureCount();
+            $currentUser->resetLoginAttempt();
             $currentUser->resetLockTime();
             // ログイン処理
             Users_MultiFactorAuthentication_Helper::LoginProcess($userid, $username, $type);
             exit;
         } else {
             // 試行回数のカウントアップ
-            $currentUser->countUpSignatureCount();
-			$lockResult = $currentUser->isLoginLockedByMFA();
+            $currentUser->countUpLoginAttempt();
+			$lockResult = $currentUser->isLoginAttemptLocked();
             // 試行回数の制限を超えた場合はエラー
             if ($lockResult) {
 				$currentUser->setLockTime();
-				$currentUser->resetSignatureCount();
                 header('Location:index.php?module=Users&view=Login&error=userLocked');
                 exit;
             }
