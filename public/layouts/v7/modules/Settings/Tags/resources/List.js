@@ -200,7 +200,6 @@ Settings_Vtiger_List_Js('Settings_Tags_List_Js',{
         app.event.on('post.listViewFilter.click', function(e){
             //clearing cached dom element. Since it will be replaced with ajax request
             self.editTagContainer = null;
-            self.registerEditTagSaveEvent();
         })
     }
 });
