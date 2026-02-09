@@ -27,11 +27,15 @@ require_once('modules/Settings/Parameters/models/Record.php');
 class Migration20251213164742_AddChangeScheduleConfirmFlagForParameter extends FRMigrationClass {
     
     /**
-     * マイグレーションを実行する
-     * ここにマイグレーション処理を記述してください
+     * 他人のスケジュールを変更するときにアラートを表示するかのフラグを追加する
      */
     public function process() {
-        $record = Settings_Parameters_Record_Model::getInstanceByKey("USER_LOCK_COUNT");
+        $existing = Settings_Parameters_Record_Model::getInstanceByKey("SHOW_SCHEDULE_CONFIRM_FLAG");
+        if ($existing->getId()) {
+            return;
+        }
+
+        $record = new Settings_Parameters_Record_Model();
         $record->set("key", "SHOW_SCHEDULE_CONFIRM_FLAG");
         $record->set("value", "false");
         $record->set("description", vtranslate('LBL_SETUP_PARAMETER_MESSAGE_SHOW_SCHEDULE_CONFIRM_FLAG', 'Vtiger'));
