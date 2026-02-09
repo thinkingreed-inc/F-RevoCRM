@@ -286,6 +286,10 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
           if (defaultValue !== undefined && defaultValue !== null && defaultValue !== '') {
             initial[field.name] = defaultValue;
           }
+          // 新規作成モードの場合、担当フィールドにログインユーザーをデフォルト設定
+          else if (!isEditMode && field.name === 'assigned_user_id') {
+            initial[field.name] = (window as any).current_user_id || '1';
+          }
         }
       });
 
