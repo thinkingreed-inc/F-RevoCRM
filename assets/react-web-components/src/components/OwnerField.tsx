@@ -331,58 +331,61 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
         {mandatory ? '*' : ''}
       </span>
 
-      {/* 検索入力 */}
-      <div className="relative flex-1 min-w-0" ref={inputContainerRef}>
-        <div className="relative flex items-center">
-          <Input
-            ref={inputRef}
-            id={`field_${name}`}
-            type="text"
-            value={displayLabel}
-            onChange={handleSearchChange}
-            onFocus={handleFocus}
-            disabled={disabled}
-            placeholder={t('LBL_PLACEHOLDER_SEARCH', label)}
-            autoComplete="off"
-            className={cn(
-              'pr-10',
-              error && 'border-red-500'
-            )}
-          />
+      {/* 入力エリア */}
+      <div className="flex-1 min-w-0">
+        {/* 検索入力 */}
+        <div className="relative" ref={inputContainerRef}>
+          <div className="relative flex items-center">
+            <Input
+              ref={inputRef}
+              id={`field_${name}`}
+              type="text"
+              value={displayLabel}
+              onChange={handleSearchChange}
+              onFocus={handleFocus}
+              disabled={disabled}
+              placeholder={t('LBL_PLACEHOLDER_SEARCH', label)}
+              autoComplete="off"
+              className={cn(
+                'pr-10',
+                error && 'border-red-500'
+              )}
+            />
 
-          {/* クリアボタン or ドロップダウンアイコン */}
-          <div className="absolute right-3 flex items-center">
-            {displayLabel ? (
-              <button
-                type="button"
-                onClick={handleClear}
-                disabled={disabled}
-                className="p-1 hover:bg-gray-100 rounded"
-              >
-                <X className="w-4 h-4 text-gray-400" />
-              </button>
-            ) : (
-              <ChevronDown className="w-4 h-4 text-gray-400" />
-            )}
+            {/* クリアボタン or ドロップダウンアイコン */}
+            <div className="absolute right-3 flex items-center">
+              {displayLabel ? (
+                <button
+                  type="button"
+                  onClick={handleClear}
+                  disabled={disabled}
+                  className="p-1 hover:bg-gray-100 rounded"
+                >
+                  <X className="w-4 h-4 text-gray-400" />
+                </button>
+              ) : (
+                <ChevronDown className="w-4 h-4 text-gray-400" />
+              )}
+            </div>
           </div>
+
+          {/* ドロップダウン（Portal経由でbody直下にレンダリング） */}
+          {renderDropdown()}
         </div>
 
-        {/* ドロップダウン（Portal経由でbody直下にレンダリング） */}
-        {renderDropdown()}
+        {/* 隠しフィールド */}
+        <input type="hidden" name={name} value={value || ''} />
+
+        {/* エラーメッセージ */}
+        {error && (
+          <div className="mt-1 text-sm text-red-600 flex items-center">
+            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            {error}
+          </div>
+        )}
       </div>
-
-      {/* 隠しフィールド */}
-      <input type="hidden" name={name} value={value || ''} />
-
-      {/* エラーメッセージ */}
-      {error && (
-        <div className="mt-1 text-sm text-red-600 flex items-center">
-          <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-          </svg>
-          {error}
-        </div>
-      )}
     </div>
   );
 };
