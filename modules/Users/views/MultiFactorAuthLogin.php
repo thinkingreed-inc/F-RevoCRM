@@ -76,7 +76,6 @@ class Users_MultiFactorAuthLogin_View extends Vtiger_View_Controller {
             // 試行回数の制限を超えた場合はエラー
             if ($lockResult) {
 				$currentUser->setLockTime();
-				$currentUser->resetLoginAttempt();
                 header('Location:index.php?module=Users&view=Login&error=userLocked');
                 exit;
             }
