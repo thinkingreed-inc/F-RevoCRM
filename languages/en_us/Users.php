@@ -344,10 +344,6 @@ If you specify a full-width number, a string that cannot be recognized as a numb
 	'LBL_USER_LOCKED_ERROR_MESSAGE' => 'The user is currently locked due to repeated multi-factor authentication failures.Please try again later or contact an administrator.',
 	'passkey' => 'Passkey Authentication',
 	'totp' => 'Time-based Authentication',
-	'LBL_LOGIN_LOCKED' => 'Login Locked',
-	'LBL_LOCK_UNTIL' => 'Unlock at',
-	'LBL_UNLOCK_USER' => 'Unlock',
-	'LBL_CONFIRM_UNLOCK_USER' => 'Do you want to unlock this user\'s login?',
 	'LBL_UNLOCK_SUCCESS' => 'Login lock has been removed',
 	'LBL_UNLOCK_FAILED' => 'Failed to unlock',
 
