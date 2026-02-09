@@ -4,7 +4,7 @@ import {
   DialogContent
 } from '../ui/dialog';
 import { Alert, AlertDescription } from '../ui/alert';
-import { Loader2, XCircle, CheckCircle } from 'lucide-react';
+import { Loader2, XCircle } from 'lucide-react';
 import { QuickCreateForm } from './QuickCreateForm';
 import { CalendarForm } from './CalendarForm';
 import { QuickCreateFooter } from './QuickCreateFooter';
@@ -739,18 +739,6 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
             </Alert>
           )}
 
-          {/* Success message - アクセシビリティ対応 */}
-          {successMessage && (
-            <Alert
-              className="mb-4 bg-green-50 border-green-200 text-green-800"
-              role="status"
-              aria-live="polite"
-              aria-atomic="true"
-            >
-              <CheckCircle className="h-4 w-4" aria-hidden="true" />
-              <AlertDescription>{successMessage}</AlertDescription>
-            </Alert>
-          )}
 
           {/* Loading - アクセシビリティ対応 */}
           {fieldsLoading ? (
