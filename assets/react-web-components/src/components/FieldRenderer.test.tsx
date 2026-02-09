@@ -22,7 +22,7 @@ describe('FieldRenderer', () => {
 
       render(<FieldRenderer field={field} value="" onChange={onChange} />);
 
-      expect(screen.getByLabelText('テスト文字列')).toBeInTheDocument();
+      expect(screen.getByText('テスト文字列')).toBeInTheDocument();
       expect(screen.getByPlaceholderText('テスト文字列を入力してください')).toBeInTheDocument();
     });
 
@@ -46,9 +46,10 @@ describe('FieldRenderer', () => {
       render(<FieldRenderer field={field} value="" onChange={onChange} />);
 
       const label = screen.getByText('Test Field');
-      const labelElement = label.closest('label');
+      // ラベルはspan要素として描画される
+      const labelElement = label.closest('span');
       expect(labelElement).toBeInTheDocument();
-      // 必須マークのspan（*）がラベルの兄弟要素として存在することを確認
+      // 必須マークのspan（*）が兄弟要素として存在することを確認
       const container = labelElement?.parentElement;
       expect(container?.textContent).toContain('*');
     });
@@ -111,82 +112,82 @@ describe('FieldRenderer', () => {
 
   describe('日付フィールド (UIType 5, 23)', () => {
     it('日付入力フィールドが正しく表示される (UIType 5)', () => {
-      const field = createField({ uitype: UI_TYPES.DATE, label: '日付' });
+      const field = createField({ uitype: UI_TYPES.DATE, label: '日付', name: 'test_date' });
       const onChange = vi.fn();
 
-      render(<FieldRenderer field={field} value="" onChange={onChange} />);
+      const { container } = render(<FieldRenderer field={field} value="" onChange={onChange} />);
 
-      const input = screen.getByLabelText('日付');
+      const input = container.querySelector('#field_test_date');
       expect(input).toHaveAttribute('type', 'date');
     });
 
     it('日付入力フィールドが正しく表示される (UIType 23)', () => {
-      const field = createField({ uitype: UI_TYPES.DATE_23, label: '完了予定日' });
+      const field = createField({ uitype: UI_TYPES.DATE_23, label: '完了予定日', name: 'due_date' });
       const onChange = vi.fn();
 
-      render(<FieldRenderer field={field} value="" onChange={onChange} />);
+      const { container } = render(<FieldRenderer field={field} value="" onChange={onChange} />);
 
-      const input = screen.getByLabelText('完了予定日');
+      const input = container.querySelector('#field_due_date');
       expect(input).toHaveAttribute('type', 'date');
     });
   });
 
   describe('日時フィールド (UIType 6)', () => {
     it('日時入力フィールドが正しく表示される', () => {
-      const field = createField({ uitype: UI_TYPES.DATETIME_CALENDAR, label: '日時' });
+      const field = createField({ uitype: UI_TYPES.DATETIME_CALENDAR, label: '日時', name: 'datetime_field' });
       const onChange = vi.fn();
 
-      render(<FieldRenderer field={field} value="" onChange={onChange} />);
+      const { container } = render(<FieldRenderer field={field} value="" onChange={onChange} />);
 
-      const input = screen.getByLabelText('日時');
+      const input = container.querySelector('#field_datetime_field');
       expect(input).toHaveAttribute('type', 'datetime-local');
     });
   });
 
   describe('時刻フィールド (UIType 14)', () => {
     it('時刻入力フィールドが正しく表示される', () => {
-      const field = createField({ uitype: UI_TYPES.TIME, label: '時刻' });
+      const field = createField({ uitype: UI_TYPES.TIME, label: '時刻', name: 'time_field' });
       const onChange = vi.fn();
 
-      render(<FieldRenderer field={field} value="" onChange={onChange} />);
+      const { container } = render(<FieldRenderer field={field} value="" onChange={onChange} />);
 
-      const input = screen.getByLabelText('時刻');
+      const input = container.querySelector('#field_time_field');
       expect(input).toHaveAttribute('type', 'time');
     });
   });
 
   describe('Emailフィールド (UIType 13)', () => {
     it('Email入力フィールドが正しく表示される', () => {
-      const field = createField({ uitype: UI_TYPES.EMAIL, label: 'Email' });
+      const field = createField({ uitype: UI_TYPES.EMAIL, label: 'Email', name: 'email_field' });
       const onChange = vi.fn();
 
-      render(<FieldRenderer field={field} value="" onChange={onChange} />);
+      const { container } = render(<FieldRenderer field={field} value="" onChange={onChange} />);
 
-      const input = screen.getByLabelText('Email');
+      const input = container.querySelector('#field_email_field');
       expect(input).toHaveAttribute('type', 'email');
     });
   });
 
   describe('電話番号フィールド (UIType 11)', () => {
     it('電話番号入力フィールドが正しく表示される', () => {
-      const field = createField({ uitype: UI_TYPES.PHONE, label: '電話' });
+      const field = createField({ uitype: UI_TYPES.PHONE, label: '電話', name: 'phone_field' });
       const onChange = vi.fn();
 
-      render(<FieldRenderer field={field} value="" onChange={onChange} />);
+      const { container } = render(<FieldRenderer field={field} value="" onChange={onChange} />);
 
-      const input = screen.getByLabelText('電話');
+      const input = container.querySelector('#field_phone_field');
       expect(input).toHaveAttribute('type', 'tel');
     });
   });
 
   describe('URLフィールド (UIType 17)', () => {
     it('URL入力フィールドが正しく表示される', () => {
-      const field = createField({ uitype: UI_TYPES.URL, label: 'ウェブサイト' });
+      const field = createField({ uitype: UI_TYPES.URL, label: 'ウェブサイト', name: 'website' });
       const onChange = vi.fn();
 
-      render(<FieldRenderer field={field} value="" onChange={onChange} />);
+      const { container } = render(<FieldRenderer field={field} value="" onChange={onChange} />);
 
-      const input = screen.getByLabelText('ウェブサイト');
+      const input = container.querySelector('#field_website');
       expect(input).toHaveAttribute('type', 'url');
     });
   });
@@ -215,12 +216,12 @@ describe('FieldRenderer', () => {
 
   describe('パスワードフィールド (UIType 99)', () => {
     it('パスワード入力フィールドが正しく表示される', () => {
-      const field = createField({ uitype: UI_TYPES.PASSWORD, label: 'パスワード' });
+      const field = createField({ uitype: UI_TYPES.PASSWORD, label: 'パスワード', name: 'password_field' });
       const onChange = vi.fn();
 
-      render(<FieldRenderer field={field} value="" onChange={onChange} />);
+      const { container } = render(<FieldRenderer field={field} value="" onChange={onChange} />);
 
-      const input = screen.getByLabelText('パスワード');
+      const input = container.querySelector('#field_password_field');
       expect(input).toHaveAttribute('type', 'password');
     });
   });

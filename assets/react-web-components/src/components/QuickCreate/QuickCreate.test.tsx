@@ -182,9 +182,10 @@ describe('QuickCreate', () => {
 
       // mandatory=trueのフィールドには*が付く（別のspan要素として）
       const accountLabel = screen.getByText('顧客企業名');
-      const labelElement = accountLabel.closest('label');
+      // ラベルはspan要素として描画される
+      const labelElement = accountLabel.closest('span');
       expect(labelElement).toBeInTheDocument();
-      // 必須マークのspan（*）がラベルの兄弟要素として存在することを確認
+      // 必須マークのspan（*）が兄弟要素として存在することを確認
       const container = labelElement?.parentElement;
       expect(container?.textContent).toContain('*');
     });
@@ -245,30 +246,8 @@ describe('QuickCreate', () => {
       });
     });
 
-    it('保存成功時に成功メッセージが表示される', async () => {
-      const user = userEvent.setup();
-
-      mockSave.mockResolvedValue({
-        success: true,
-        recordId: '123',
-        recordLabel: 'テスト企業',
-        module: 'Accounts',
-      });
-
-      render(<QuickCreate module="Accounts" isOpen={true} />);
-
-      // 必須フィールドに入力
-      const input = screen.getByPlaceholderText('顧客企業名を入力してください');
-      await user.type(input, 'テスト企業');
-
-      // 保存ボタンをクリック
-      const saveButton = screen.getByRole('button', { name: /保存/i });
-      await user.click(saveButton);
-
-      await waitFor(() => {
-        expect(screen.getByText(/顧客企業を作成しました/)).toBeInTheDocument();
-      });
-    });
+    // NOTE: 成功メッセージは仕様変更により削除されました（コミット d3177018a）
+    // そのため「保存成功時に成功メッセージが表示される」テストは削除
 
     it('保存中はボタンが無効化される', async () => {
       mockUseQuickCreateSave.mockReturnValue({

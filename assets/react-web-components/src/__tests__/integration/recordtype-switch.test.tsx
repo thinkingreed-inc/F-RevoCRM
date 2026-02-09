@@ -235,19 +235,21 @@ describe('RecordType 切り替え統合テスト', () => {
         </div>
       );
 
-      // 文字列フィールド（必須フィールドはsr-onlyで「(必須)」が追加されるため、exact: falseを使用）
-      expect(screen.getByLabelText('タイプAフィールド1', { exact: false })).toBeInTheDocument();
-      expect(screen.getByLabelText('タイプAフィールド1', { exact: false })).toHaveAttribute('type', 'text');
+      // 文字列フィールド
+      expect(screen.getByText('タイプAフィールド1')).toBeInTheDocument();
+      const textInput = container.querySelector('#field_field_a1');
+      expect(textInput).toHaveAttribute('type', 'text');
 
       // 数値フィールド
-      expect(screen.getByLabelText('タイプAフィールド2', { exact: false })).toBeInTheDocument();
-      expect(screen.getByLabelText('タイプAフィールド2', { exact: false })).toHaveAttribute('type', 'number');
+      expect(screen.getByText('タイプAフィールド2')).toBeInTheDocument();
+      const numberInput = container.querySelector('#field_field_a2');
+      expect(numberInput).toHaveAttribute('type', 'number');
     });
 
     it('タイプBフィールドが正しいUITypeでレンダリングされる', () => {
       const onChange = vi.fn();
 
-      render(
+      const { container } = render(
         <div>
           {typeBFields.map(field => (
             <FieldRenderer
@@ -260,8 +262,9 @@ describe('RecordType 切り替え統合テスト', () => {
         </div>
       );
 
-      // 日付フィールド（必須フィールドはsr-onlyで「(必須)」が追加されるため、exact: falseを使用）
-      expect(screen.getByLabelText('タイプBフィールド1', { exact: false })).toHaveAttribute('type', 'date');
+      // 日付フィールド
+      const dateInput = container.querySelector('#field_field_b1');
+      expect(dateInput).toHaveAttribute('type', 'date');
 
       // 真偽値フィールド（チェックボックス）
       expect(screen.getByRole('checkbox')).toBeInTheDocument();

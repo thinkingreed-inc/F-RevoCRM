@@ -61,9 +61,10 @@ describe('ReferenceField', () => {
       );
 
       const label = screen.getByText('取引先');
-      const labelElement = label.closest('label');
+      // ラベルはspan要素として描画される
+      const labelElement = label.closest('span');
       expect(labelElement).toBeInTheDocument();
-      // 必須マークのspan（*）がラベルの兄弟要素として存在することを確認
+      // 必須マークのspan（*）が兄弟要素として存在することを確認
       const container = labelElement?.parentElement;
       expect(container?.textContent).toContain('*');
     });

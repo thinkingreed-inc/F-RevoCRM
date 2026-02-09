@@ -131,28 +131,8 @@ describe('QuickCreate 保存フロー統合テスト', () => {
       });
     });
 
-    it('成功メッセージが表示される', async () => {
-      const user = userEvent.setup();
-
-      mockSave.mockResolvedValue({
-        success: true,
-        recordId: '456',
-        recordLabel: 'サンプル企業',
-        module: 'Accounts',
-      });
-
-      render(<QuickCreate module="Accounts" isOpen={true} />);
-
-      const nameInput = screen.getByPlaceholderText('顧客企業名を入力してください');
-      await user.type(nameInput, 'サンプル企業');
-
-      const saveButton = screen.getByRole('button', { name: /保存/i });
-      await user.click(saveButton);
-
-      await waitFor(() => {
-        expect(screen.getByText(/顧客企業を作成しました/)).toBeInTheDocument();
-      });
-    });
+    // NOTE: 成功メッセージは仕様変更により削除されました（コミット d3177018a）
+    // そのため「成功メッセージが表示される」テストは削除
   });
 
   describe('バリデーション', () => {

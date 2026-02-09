@@ -118,8 +118,7 @@ describe('GetFields API + FieldRenderer 統合テスト', () => {
 
       render(<FieldRenderer field={field} value="" onChange={onChange} />);
 
-      // 必須フィールドはsr-onlyで「(必須)」が追加されるため、exact: falseを使用
-      expect(screen.getByLabelText('顧客企業名', { exact: false })).toBeInTheDocument();
+      expect(screen.getByText('顧客企業名')).toBeInTheDocument();
       expect(screen.getByPlaceholderText('顧客企業名を入力してください')).toBeInTheDocument();
     });
 
@@ -128,9 +127,9 @@ describe('GetFields API + FieldRenderer 統合テスト', () => {
       const field = convertApiFieldToDefinition(apiField);
       const onChange = vi.fn();
 
-      render(<FieldRenderer field={field} value="" onChange={onChange} />);
+      const { container } = render(<FieldRenderer field={field} value="" onChange={onChange} />);
 
-      const input = screen.getByLabelText('電話番号');
+      const input = container.querySelector('#field_phone');
       expect(input).toHaveAttribute('type', 'tel');
     });
 
@@ -174,10 +173,10 @@ describe('GetFields API + FieldRenderer 統合テスト', () => {
       render(<FieldRenderer field={field} value="" onChange={onChange} />);
 
       const label = screen.getByText('顧客企業名');
-      // 必須マークは別の<span>要素として表示される
-      const labelElement = label.closest('label');
+      // ラベルはspan要素として描画される
+      const labelElement = label.closest('span');
       expect(labelElement).toBeInTheDocument();
-      // 必須マークのspan（*）がラベルの兄弟要素として存在することを確認
+      // 必須マークのspan（*）が兄弟要素として存在することを確認
       const container = labelElement?.parentElement;
       expect(container?.textContent).toContain('*');
     });
@@ -190,7 +189,8 @@ describe('GetFields API + FieldRenderer 統合テスト', () => {
       render(<FieldRenderer field={field} value="" onChange={onChange} />);
 
       const label = screen.getByText('電話番号');
-      const labelElement = label.closest('label');
+      // ラベルはspan要素として描画される
+      const labelElement = label.closest('span');
       // 必須マークのspanは空（*がない）
       const container = labelElement?.parentElement;
       const mandatorySpan = container?.querySelector('span.text-red-500');
@@ -232,13 +232,12 @@ describe('GetFields API + FieldRenderer 統合テスト', () => {
       const field = convertApiFieldToDefinition(apiField);
       const onChange = vi.fn();
 
-      render(<FieldRenderer field={field} value="" onChange={onChange} />);
+      const { container } = render(<FieldRenderer field={field} value="" onChange={onChange} />);
 
-      // 必須フィールドはsr-onlyで「(必須)」が追加されるため、exact: falseを使用
-      const input = screen.getByLabelText('顧客企業名', { exact: false });
+      const input = container.querySelector('#field_accountname');
 
       // fireEvent.changeを使用
-      fireEvent.change(input, { target: { value: 'テスト' } });
+      fireEvent.change(input!, { target: { value: 'テスト' } });
 
       expect(onChange).toHaveBeenCalled();
     });
@@ -253,10 +252,9 @@ describe('GetFields API + FieldRenderer 統合テスト', () => {
       const field = convertApiFieldToDefinition(apiField);
       const onChange = vi.fn();
 
-      render(<FieldRenderer field={field} value="test" onChange={onChange} />);
+      const { container } = render(<FieldRenderer field={field} value="test" onChange={onChange} />);
 
-      // 必須フィールドはsr-onlyで「(必須)」が追加されるため、exact: falseを使用
-      expect(screen.getByLabelText('顧客企業名', { exact: false })).toBeDisabled();
+      expect(container.querySelector('#field_accountname')).toBeDisabled();
     });
   });
 
