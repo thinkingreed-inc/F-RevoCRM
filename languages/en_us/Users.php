@@ -209,7 +209,6 @@ $languageStrings = array(
 	'LBL_CONNECT_WITH_US' => 'Connect with US',
 	'LBL_GET_MORE' => 'Get more out of Vtiger',
 	'LBL_SEND_PASSWORD' => 'Send password by email',
-
 	'LBL_TRANSFER_RECORDS_TO_USER' => 'Transfer records to user',
 	'LBL_USER_TO_BE_DELETED' => 'User to be Deleted',
 	'LBL_ALMOST_THERE'	=>	'Almost there!',
@@ -298,6 +297,7 @@ $languageStrings = array(
 	'LBL_FAILED_TO_REGISTER_USER_AUTHENTICATION' => 'Failed to register user authentication.',
 	'LBL_FAILED_TO_PASSKEY_VERIFYKEY' => 'Failed to verify passkey. Please try again.',
 	'LBL_USE_PASSKEY' => 'Use Passkey',
+	'LBL_CHOOSE_ANOTHER_MFA_METHOD' => 'Choose another authentication method',
 	'LBL_MULTI_FACTOR_AUTH' => 'Multi-Factor Authentication',
 	'LBL_USER_CREDENTIAL_TYPE' => 'User Credential Type',
 	'LBL_USER_CREDENTIAL_DEVICE_NAME' => 'Device Name',
