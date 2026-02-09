@@ -71,7 +71,15 @@ class Vtiger_Save_Action extends Vtiger_Action_Controller {
 			//Special handling for vtiger7.
 			$appName = $request->get('appName');
 			if(strlen($appName) > 0){
-				$loadUrl = $loadUrl.$appName;
+				// 許可されたアプリ名のみURLに追加（HTTPパラメタ汚染対策）
+				$allowedApps = Vtiger_MenuStructure_Model::getAppMenuList();
+				// appNameが "&app=XXX" 形式の場合、XXX部分を抽出して検証
+				if (preg_match('/^&app=([A-Z_]+)$/', $appName, $matches)) {
+					$appValue = $matches[1];
+					if (in_array($appValue, $allowedApps)) {
+						$loadUrl = $loadUrl . '&app=' . urlencode($appValue);
+					}
+				}
 			}
 			header("Location: $loadUrl");
 		} catch (DuplicateException $e) {

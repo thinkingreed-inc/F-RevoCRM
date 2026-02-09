@@ -88,6 +88,7 @@
 
 				<div id="forgotPasswordDiv" class="hide">
 					<form class="form-horizontal" action="forgotPassword.php" method="POST">
+						<input type="hidden" name="__vtrftk" value="{$CSRF_TOKEN}" />
 						<div class="group">
 							<input class="login-input" id="fusername" type="text" name="username" placeholder="{vtranslate('User Name','Users')}" >
 							<span class="bar"></span>

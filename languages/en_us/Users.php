@@ -292,6 +292,7 @@ $languageStrings = array(
 	'LBL_INVALID_USERNAME_OR_PASSWORD' => 'Invalid username or password',
 	'LBL_INVALID_USERNAME_OR_MAILADDRESS' => 'Invalid username or email address',
 	'LBL_MAIL_SERVER_NOT_CONFIGURED' => 'Mail server is not configured',
+	'LBL_CSRF_ERROR' => 'Invalid request. Please reload the page and try again.',
 	'LBL_AN_EMAIL_WAS_SENT_TO_THE_ADDRESS' => 'An email was sent to the address',
 	'LBL_ADD_PASSKEY' => 'Add Passkey Authentication Setup',
 	'LBL_ADD_TOTP' => 'Add Time-based Authentication Setup',

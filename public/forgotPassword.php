@@ -16,9 +16,16 @@ require_once 'include/utils/utils.php';
 require_once 'include/utils/VtlibUtils.php';
 require_once 'modules/Vtiger/helpers/ShortURL.php';
 require_once 'vtlib/Vtiger/Mailer.php';
+require_once 'libraries/csrf-magic/csrf-magic.php';
 
 global $adb;
 $adb = PearDatabase::getInstance();
+
+// CSRF検証
+if (!csrf_check(false)) {
+	header('Location: index.php?modules=Users&view=Login&error=csrfError');
+	exit;
+}
 
 if (isset($_REQUEST['username']) && isset($_REQUEST['emailId'])) {
 	$username = vtlib_purify($_REQUEST['username']);
@@ -33,6 +40,7 @@ if (isset($_REQUEST['username']) && isset($_REQUEST['emailId'])) {
 			'handler_path' => 'modules/Users/handlers/ForgotPassword.php',
 			'handler_class' => 'Users_ForgotPassword_Handler',
 			'handler_function' => 'changePassword',
+			'onetime' => 1,  // URLを1回限り有効にする（再利用防止）
 			'handler_data' => array(
 				'username' => $username,
 				'email' => $email,

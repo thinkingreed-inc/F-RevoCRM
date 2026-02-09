@@ -33,6 +33,10 @@ class Users_Login_View extends Vtiger_View_Controller {
 	}
 
 	function process (Vtiger_Request $request) {
+		// CSRFトークン生成（forgotPasswordフォーム用）
+		require_once 'libraries/csrf-magic/csrf-magic.php';
+		$csrfToken = csrf_get_tokens();
+
 		$finalJsonData = array();
 
 		try{
@@ -122,6 +126,7 @@ class Users_Login_View extends Vtiger_View_Controller {
 				case 'fpError'		:	$message = vtranslate('LBL_INVALID_USERNAME_OR_MAILADDRESS');			break;
 				case 'statusError'	:	$message = vtranslate('LBL_MAIL_SERVER_NOT_CONFIGURED');	break;
 				case 'userLocked'	:	$message = vtranslate('LBL_USER_LOCKED_ERROR_MESSAGE', 'Users');	break;
+				case 'csrfError'	:	$message = vtranslate('LBL_CSRF_ERROR', 'Users');	break;
 			}
 		} else if ($mailStatus) {
 			$message = vtranslate('LBL_AN_EMAIL_WAS_SENT_TO_THE_ADDRESS');
@@ -133,6 +138,7 @@ class Users_Login_View extends Vtiger_View_Controller {
 		$companyDetails = Vtiger_CompanyDetails_Model::getInstanceById();
 		$companyLogo = $companyDetails->getLogo();
 		$viewer->assign('COMPANY_LOGO',$companyLogo);
+		$viewer->assign('CSRF_TOKEN', $csrfToken);
 		$viewer->view('Login.tpl', 'Users');
 	}
 

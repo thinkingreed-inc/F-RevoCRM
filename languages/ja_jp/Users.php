@@ -294,6 +294,7 @@ $languageStrings = array(
 	'LBL_INVALID_USERNAME_OR_PASSWORD' => '無効なユーザー名またはパスワード',
 	'LBL_INVALID_USERNAME_OR_MAILADDRESS' => '無効なユーザー名またはE-mailアドレス',
 	'LBL_MAIL_SERVER_NOT_CONFIGURED' => 'メールサーバが設定されていません',
+	'LBL_CSRF_ERROR' => '不正なリクエストです。ページを再読み込みしてもう一度お試しください。',
 	'LBL_AN_EMAIL_WAS_SENT_TO_THE_ADDRESS' => 'アドレスにメールを送信しました',
     'LBL_ADD_PASSKEY' => 'パスキー認証を追加',
     'LBL_ADD_TOTP' => 'タイムベース認証を追加',
