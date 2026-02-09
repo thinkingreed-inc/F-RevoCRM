@@ -1361,7 +1361,7 @@ Vtiger.Class("Vtiger_List_Js", {
 					var params = listSearchParams[i];
 					var fieldName = params[0];  
 					var searchContributorElement = listViewPageDiv.find('.listSearchContributor[name="' + fieldName + '"]');
-			     	var	fieldType = searchContributorElement.data('field-type')
+			     	var	fieldType = searchContributorElement.data('field-type');
 					if (fieldType == 'date' || fieldType == 'datetime') {
 						params[2].split(',').forEach(function(param){
 							var value = (param || '').trim();
