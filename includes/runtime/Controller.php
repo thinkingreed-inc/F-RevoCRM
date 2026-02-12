@@ -146,6 +146,175 @@ abstract class Vtiger_Action_Controller extends Vtiger_Controller {
 }
 
 /**
+ * Abstract API Controller Class
+ * Base class for all API controllers that handles JSON responses
+ * Inherits from Vtiger_Controller to use existing Permission and LoginRequired functionality
+ */
+abstract class Vtiger_Api_Controller extends Vtiger_Controller {
+
+    function __construct() {
+        parent::__construct();
+    }
+
+    function getViewer(Vtiger_Request $request) {
+        // API doesn't need a viewer, return null
+        return null;
+    }
+
+    function validateRequest(Vtiger_Request $request) {
+        // Use the same validation as Action controllers
+        return $request->validateReadAccess();
+    }
+
+    function preProcess(Vtiger_Request $request) {
+        return true;
+    }
+
+    function postProcess(Vtiger_Request $request) {
+        return true;
+    }
+
+    /**
+     * This will return all the permission checks that should be done
+     * @param Vtiger_Request $request
+     * @return <Array>
+     */
+    function requiresPermission(Vtiger_Request $request) {
+        return array();
+    }
+
+    /**
+     * Check permissions for the API request
+     * @param Vtiger_Request $request
+     * @return bool
+     * @throws ApiForbiddenException
+     */
+    function checkPermission(Vtiger_Request $request) {
+        $permissions = $this->requiresPermission($request);
+        foreach ($permissions as $permission) {
+            if (array_key_exists('module_parameter', $permission)) {
+                if ($request->has($permission['module_parameter']) && !empty($request->get($permission['module_parameter']))) {
+                    $moduleParameter = $request->get($permission['module_parameter']);
+                } elseif ($request->has('record') && !empty($request->get('record'))) {
+                    $moduleParameter = getSalesEntityType($request->get('record'));
+                }
+            } else {
+                $moduleParameter = 'module';
+            }
+            if (array_key_exists('record_parameter', $permission)) {
+                $recordParameter = $request->get($permission['record_parameter']);
+            } else {
+                $recordParameter = '';
+            }
+            if (!Users_Privileges_Model::isPermitted($moduleParameter, $permission['action'], $recordParameter)) {
+                throw new ApiForbiddenException(vtranslate('LBL_PERMISSION_DENIED'));
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Wrapper process method that handles API exceptions and converts them to JSON responses
+     * @param Vtiger_Request $request
+     */
+    public function process(Vtiger_Request $request) {
+        try {
+            return $this->processApi($request);
+        } catch (ApiException $e) {
+            throw $e;
+        } catch (Exception $e) {
+            throw new ApiException($e->getMessage(), 500, 'InternalServerError');
+        }
+    }
+
+    /**
+     * Abstract method that API controllers must implement
+     * This replaces the original process method
+     * @param Vtiger_Request $request
+     */
+    abstract protected function processApi(Vtiger_Request $request);
+
+    /**
+     * Send JSON error response with appropriate HTTP status code
+     * @param string $message - Error message
+     * @param int $httpStatusCode - HTTP status code (default: 500)
+     */
+    protected function sendError($message, $httpStatusCode = 500) {
+        throw new ApiException($message, $httpStatusCode);
+    }
+
+    /**
+     * Send JSON success response with HTTP 200
+     * @param array $data - Data to be sent
+     */
+    protected function sendSuccess($data = array()) {
+        return $this->sendJsonResponse($data);
+    }
+
+    /**
+     * Send JSON response with appropriate HTTP status code
+     * @param array $data - Data to be sent as JSON
+     */
+    protected function sendJsonResponse($data = array()) {
+        $response = new Vtiger_Response();
+        $response->setEmitType(Vtiger_Response::EMIT_PURE_JSON);
+
+        if (!empty($data)) {
+            $response->setResult($data);
+        }
+
+        return $response;
+    }
+}
+
+/**
+ * API Exception Classes for proper HTTP status code handling
+ */
+class ApiException extends Exception {
+    protected $httpStatusCode;
+    protected $errorType;
+
+    public function __construct($message = "", $httpStatusCode = 500, $errorType = 'InternalServerError', $code = 0) {
+        parent::__construct($message, $code);
+        $this->httpStatusCode = $httpStatusCode;
+        $this->errorType = $errorType;
+    }
+
+    public function getHttpStatusCode() {
+        return $this->httpStatusCode;
+    }
+
+    public function getErrorType() {
+        return $this->errorType;
+    }
+}
+
+class ApiUnauthorizedException extends ApiException {
+    public function __construct($message = "Login required", $code = 0) {
+        parent::__construct($message, 401, 'LoginRequired', $code);
+    }
+}
+
+class ApiForbiddenException extends ApiException {
+    public function __construct($message = "Permission denied", $code = 0) {
+        parent::__construct($message, 403, 'PermissionDenied', $code);
+    }
+}
+
+class ApiNotFoundException extends ApiException {
+    public function __construct($message = "Not found", $code = 0) {
+        parent::__construct($message, 404, 'NotFound', $code);
+    }
+}
+
+class ApiBadRequestException extends ApiException {
+    public function __construct($message = "Bad request", $code = 0) {
+        parent::__construct($message, 400, 'BadRequest', $code);
+    }
+}
+
+/**
  * Abstract View Controller Class
  */
 abstract class Vtiger_View_Controller extends Vtiger_Action_Controller {
@@ -158,8 +327,10 @@ abstract class Vtiger_View_Controller extends Vtiger_Action_Controller {
 
 	function getViewer(Vtiger_Request $request) {
 		if(!$this->viewer) {
-			global $vtiger_current_version, $vtiger_display_version, $onlyV7Instance, $current_user, $maxListFieldsSelectionSize;
+			global $vtiger_current_version, $vtiger_display_version, $onlyV7Instance, $current_user, $maxListFieldsSelectionSize, $IS_PRODUCTION;
 			$viewer = new Vtiger_Viewer();
+
+			$viewer->assign('IS_PRODUCTION', $IS_PRODUCTION);
 
 			// Secure request access within template.
 			$viewer->assign('REQ', $request);

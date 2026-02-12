@@ -620,6 +620,120 @@ button#advanceIntiateSave + input {
   }
 }
 
+/* クイック作成ドロップダウン */
+.quickCreateDropdown {
+  width: 500px;
+  max-width: 90vw;
+}
+
+/* クイック作成 Gridレイアウト */
+#quickCreateModules .quickCreateModulesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 8px 0;
+}
+
+#quickCreateModules .quickCreateModulesGrid .quickCreateModuleItem {
+  min-width: 0;
+}
+
+#quickCreateModules .quickCreateModulesGrid .quickCreateModule,
+#quickCreateModules .quickCreateModulesGrid .quickCreateModuleSubmenu {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  text-decoration: none;
+  color: #333;
+  transition: background-color 0.15s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#quickCreateModules .quickCreateModulesGrid .quickCreateModule:hover,
+#quickCreateModules .quickCreateModulesGrid .quickCreateModuleSubmenu:hover {
+  background-color: #f5f5f5;
+  text-decoration: none;
+}
+
+/* アイコンコンテナ: 25px × 25px で統一、中央揃え */
+#quickCreateModules .quickCreateModulesGrid .quickCreateModule img,
+#quickCreateModules .quickCreateModulesGrid .quickCreateModuleSubmenu img {
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+#quickCreateModules .quickCreateModulesGrid .quickCreateModule .vicon,
+#quickCreateModules .quickCreateModulesGrid .quickCreateModuleSubmenu .vicon,
+#quickCreateModules .quickCreateModulesGrid .quickCreateModule .fa,
+#quickCreateModules .quickCreateModulesGrid .quickCreateModuleSubmenu .fa {
+  font-size: 18px;
+  width: 25px;
+  height: 25px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+#quickCreateModules .quickCreateModulesGrid .quick-create-module {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+}
+
+#quickCreateModules .quickCreateModulesGrid .quickcreateMoreDropdownAction {
+  margin-left: auto;
+}
+
+/* モバイル: 2列 + 全幅モーダル */
+@media (max-width: 767px) {
+  /* 開いている時だけモーダル表示 */
+  .dropdown.open > .quickCreateDropdown {
+    position: fixed !important;
+    top: 50px !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: calc(70vh - 50px) !important;
+    height: calc(70dvh - 50px) !important;
+    max-height: none !important;
+    margin: 0;
+    transform: none;
+    background-color: #fff;
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius: 0;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.175);
+    z-index: 1050;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .dropdown.open > .quickCreateDropdown > li.title,
+  .dropdown.open > .quickCreateDropdown > hr {
+    flex-shrink: 0;
+  }
+  .dropdown.open > .quickCreateDropdown > li#quickCreateModules {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+  }
+  #quickCreateModules .quickCreateModulesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 /* 概要画面の関連活動*/
 .activityEntries .relatedActivitiesLabel {
   color: #222;

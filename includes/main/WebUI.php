@@ -135,6 +135,7 @@ class Vtiger_WebUI extends Vtiger_EntryPoint {
 
 		$view = $request->get('view');
 		$action = $request->get('action');
+		$api = $request->get('api');
 		$response = false;
 
 		//Not able to open other pages when heavy duty view is open.
@@ -184,6 +185,9 @@ class Vtiger_WebUI extends Vtiger_EntryPoint {
 			if (!empty($action)) {
 				$componentType = 'Action';
 				$componentName = $action;
+			} elseif (!empty($api)) {
+				$componentType = 'Api';
+				$componentName = $api;
 			} else {
 				$componentType = 'View';
 				if(empty($view)) {
@@ -191,8 +195,21 @@ class Vtiger_WebUI extends Vtiger_EntryPoint {
 				}
 				$componentName = $view;
 			}
-			$handlerClass = Vtiger_Loader::getComponentClassName($componentType, $componentName, $qualifiedModuleName);
-			$handler = new $handlerClass();
+
+			try {
+				$handlerClass = Vtiger_Loader::getComponentClassName($componentType, $componentName, $qualifiedModuleName);
+				$handler = new $handlerClass();
+			} catch (Exception $e) {
+				// For API requests, return JSON error
+				if (!empty($api)) {
+					$response = new Vtiger_Response();
+					$response->setEmitType(Vtiger_Response::$EMIT_JSON);
+					$response->setError('API endpoint not found: ' . $componentName);
+					$response->emit();
+					return;
+				}
+				throw new AppException(vtranslate('LBL_HANDLER_NOT_FOUND'));
+			}
 
 			if ($handler) {
 				vglobal('currentModule', $module);

@@ -412,6 +412,15 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	}
 
 	/**
+	 * Function to get the maximum field length
+	 * @return <String> max length of the field
+	 */
+	public function getMaxFieldLength() {
+		list($type,$mandatory,$LE,$maxlength)= explode('~',$this->get('typeofdata'));
+		return $maxlength;
+	}
+
+	/**
 	 * Function to get the field type
 	 * @return <String> type of the field
 	 */
