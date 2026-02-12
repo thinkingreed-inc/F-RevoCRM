@@ -209,6 +209,7 @@ $languageStrings = array(
 	'LBL_CONNECT_WITH_US' => 'F-RevoCRM Facebook',
 	'LBL_GET_MORE' => 'F-RevoCRMをもっと使い込む',
 	'LBL_SEND_PASSWORD' => 'パスワードをメールで送信します',
+	'LBL_REMEMBER_MFA_METHOD' => '最後に認証した方法を記憶する',
 
 	'LBL_TRANSFER_RECORDS_TO_USER' => 'レコードの担当を変更',
 	'LBL_USER_TO_BE_DELETED' => '削除されるユーザー',
@@ -300,6 +301,7 @@ $languageStrings = array(
     'LBL_FAILED_TO_REGISTER_USER_AUTHENTICATION' => 'ユーザー認証情報の登録に失敗しました。',
     'LBL_FAILED_TO_PASSKEY_VERIFYKEY' => 'パスキーの検証に失敗しました。もう一度お試しください。',
     'LBL_USE_PASSKEY' => 'パスキーを使用する',
+	'LBL_CHOOSE_ANOTHER_MFA_METHOD' => '別の認証方法を選択する',
     'LBL_MULTI_FACTOR_AUTH' => '多要素認証',
     'LBL_USER_CREDENTIAL_TYPE' => 'ユーザー認証情報タイプ',
     'LBL_USER_CREDENTIAL_DEVICE_NAME' => 'デバイス名',
@@ -322,11 +324,11 @@ $languageStrings = array(
 強制しない場合もユーザーが多要素認証を設定している場合は、ログイン時に多要素認証が要求されます。
 true: 強制する
 false: 強制しない',
-	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_TIME' => '多要素認証でUSER_LOCK_COUNTの回数ログインに失敗した際、ユーザーのログインをロックする時間（分）です。
+	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_TIME' => 'USER_LOCK_COUNTの回数ログインに失敗した際、ユーザーのログインをロックする時間（分）です。
 設定は半角の正の整数値で行ってください。
 全角数値、数値として認識できない文字列、0以下の値を指定した場合などは、ログインロックは行われません。',
-	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_COUNT' => '多要素認証でログインに失敗した際、ユーザーのログインをロックするまでの回数です。
-設定した回数連続で多要素認証に失敗するとユーザーのログインにロックがかかり、USER_LOCK_TIMEで指定した時間が経過するまでログインできません。
+	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_COUNT' => 'ログインに失敗した際、ユーザーのログインをロックするまでの回数です。
+設定した回数連続でログインに失敗するとユーザーのログインにロックがかかり、USER_LOCK_TIMEで指定した時間が経過するまでログインできません。
 設定は半角の正の整数値で行ってください。
 全角数値、数値として認識できない文字列、0以下の値を指定した場合などは、ログインロックは行われません。',
 	'LBL_PASSKEY' => 'パスキー認証',
@@ -350,6 +352,12 @@ false: 強制しない',
 	'LBL_TOTP_AUTHENTICATION_MESSAGE' => '認証アプリで生成される6桁の数字（ワンタイムパスワード）を使用する、標準的な認証方式です。',
 	'passkey' => 'パスキー認証',
 	'totp' => 'タイムベース認証',
+	'LBL_LOGIN_LOCKED' => 'ログインロック中',
+	'LBL_LOCK_UNTIL' => 'ロック解除予定',
+	'LBL_UNLOCK_USER' => 'ロック解除',
+	'LBL_CONFIRM_UNLOCK_USER' => 'このユーザーのログインロックを解除しますか？',
+	'LBL_UNLOCK_SUCCESS' => 'ログインロックを解除しました',
+	'LBL_UNLOCK_FAILED' => 'ロック解除に失敗しました',
 );
 
 $jsLanguageStrings = array(
@@ -377,4 +385,7 @@ $jsLanguageStrings = array(
 	'JS_ADD_MULTI_FACTOR_AUTHENTICATION_FINISH' => '多要素認証の追加が完了しました',
 	'JS_MULTI_FACTOR_AUTHENTICATION_USER_CHANCELED' => 'ユーザーによって多要素認証がキャンセルされました',
 	'JS_MULTI_FACTOR_AUTHENTICATION_CHANCELED' => '多要素認証がキャンセルされました',
+
+	// Unlock user
+	'LBL_CONFIRM_UNLOCK_USER' => 'このユーザーのログインロックを解除しますか？',
 );

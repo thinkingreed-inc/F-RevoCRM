@@ -49,6 +49,13 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var instance = Calendar_Calendar_Js.getInstance();
 		instance.editCalendarEvent(eventId, isRecurring);
 	},
+	editCalendarEventFromContent: function (eventId, isRecurring) {
+		if (window.innerWidth >= 650) {
+			var instance = Calendar_Calendar_Js.getInstance();
+			instance.editCalendarEvent(eventId, isRecurring);
+			return;
+		}
+	},
 	copyCalendarEvent: function (eventId, isRecurring) {
 		var instance = Calendar_Calendar_Js.getInstance();
 		instance.copyCalendarEvent(eventId, isRecurring, true);
@@ -78,8 +85,15 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			$(".modelContainer #Calendar_editView_fieldName_time_end").parent().show();
 		}
 		jQuery("#alldayEvent").attr('data-validation-engine','change');
-	}
-
+	},
+	//編集画面表示端末判定用
+	clickCalendarEvent: function (eventId, isRecurring) {
+		var instance = Calendar_Calendar_Js.getInstance();
+		if (app.isMobile()){
+			return;
+		}
+		instance.editCalendarEvent(eventId, isRecurring);
+	},
 }, {
 	init: function () {
 		this.addComponents();
@@ -149,8 +163,10 @@ Vtiger.Class("Calendar_Calendar_Js", {
 	},
 	markAsHeld: function (recordId,sourceModule) {
 		var thisInstance = this;
-		app.helper.showConfirmationBox({
-			message: app.vtranslate('JS_CONFIRM_MARK_AS_HELD')
+		this.confirmEditOthersEvent(recordId).then(function () {
+			return app.helper.showConfirmationBox({
+				message: app.vtranslate('JS_CONFIRM_MARK_AS_HELD')
+			});
 		}).then(function () {
 			var requestParams = {
 				module: "Calendar",
@@ -174,6 +190,40 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				}
 			});
 		});
+	},
+	confirmEditOthersEvent: function(recordId) {
+		var aDeferred = jQuery.Deferred();
+
+		// モバイル（画面幅650px未満）の場合のみ確認ダイアログを表示
+		if (window.innerWidth >= 650) {
+			aDeferred.resolve(true);
+			return aDeferred.promise();
+		}
+
+		var requestParams = {
+			module: "Calendar",
+			action: "SaveFollowupAjax",
+			mode: "checkNotificationOthersEvents",
+			record: recordId,
+		};
+
+		app.request.post({'data': requestParams}).done(function (e,res) {
+			if (res && res['own'] === false) {
+				app.helper.showConfirmationBox({'message' : app.vtranslate('JS_EDIT_OTHERS_EVENT_CONFIRMATION')})
+					.done(function () {
+						aDeferred.resolve(true);
+					})
+					.fail(function () {
+						aDeferred.reject();
+					});
+			} else {
+				aDeferred.resolve(true);
+			}
+		}).fail(function () {
+			aDeferred.reject();
+		});
+
+		return aDeferred.promise();
 	},
 	registerCalendarSharingTypeChangeEvent: function (modalContainer) {
 		var selectedUsersContainer = app.helper.getSelect2FromSelect(
@@ -1564,19 +1614,27 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		};
 
 		if (event.recurringcheck) {
-			app.helper.showConfirmationForRepeatEvents().then(function (recurringData) {
-				jQuery.extend(postData, recurringData);
-				Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(overlapData, recurringData)
+			this.confirmEditOthersEvent(event.id).then(function () {
+				return app.helper.showConfirmationForRepeatEvents().then(function (recurringData) {
+					jQuery.extend(postData, recurringData);
+					Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(overlapData, recurringData)
+					.then(function () {
+						thisInstance._updateEventOnResize(postData, revertFunc);
+					}).fail(function () {
+						revertFunc();
+					});
+				});
+			}).fail(function () {
+				revertFunc();
+			});
+		} else {
+			this.confirmEditOthersEvent(event.id).then(function () {
+				return Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(overlapData)
 				.then(function () {
 					thisInstance._updateEventOnResize(postData, revertFunc);
 				}).fail(function () {
 					revertFunc();
 				});
-			});
-		} else {
-			Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(overlapData)
-			.then(function () {
-				thisInstance._updateEventOnResize(postData, revertFunc);
 			}).fail(function () {
 				revertFunc();
 			});
@@ -1674,38 +1732,42 @@ Vtiger.Class("Calendar_Calendar_Js", {
 	},
 	deleteCalendarEvent: function (eventId, sourceModule, isRecurring) {
 		var thisInstance = this;
-		if (isRecurring) {
-			app.helper.showConfirmationForRepeatEvents().then(function (postData) {
-				thisInstance._deleteCalendarEvent(eventId, sourceModule, postData);
-			});
-		} else {
-			app.helper.showConfirmationBox({
-				message: app.vtranslate('LBL_DELETE_CONFIRMATION')
-			}).then(function () {
-				thisInstance._deleteCalendarEvent(eventId, sourceModule);
-			});
-		}
+		this.confirmEditOthersEvent(eventId).then(function () {
+			if (isRecurring) {
+				app.helper.showConfirmationForRepeatEvents().then(function (postData) {
+					thisInstance._deleteCalendarEvent(eventId, sourceModule, postData);
+				});
+			} else {
+				app.helper.showConfirmationBox({
+					message: app.vtranslate('LBL_DELETE_CONFIRMATION')
+				}).then(function () {
+					thisInstance._deleteCalendarEvent(eventId, sourceModule);
+				});
+			}
+		}.bind(this));
 	},
 	updateEventOnCalendar: function (eventData) {
 		this.updateAllEventsOnCalendar();
 	},
 	_updateEvent: function (form, extraParams) {
 		var formData = jQuery(form).serializeFormData();
-		extraParams = extraParams || {};
-		jQuery.extend(formData, extraParams);
-		app.helper.showProgress();
-		app.request.post({data: formData}).then(function (err, data) {
-			app.helper.hideProgress();
-			if (!err) {
-				jQuery('.vt-notification').remove();
-				var message = typeof formData.record !== "" ? app.vtranslate('JS_EVENT_UPDATED') : app.vtranslate('JS_RECORD_CREATED');
-				app.helper.showSuccessNotification({"message": message});
-				app.event.trigger("post.QuickCreateForm.save", data, jQuery(form).serializeFormData());
-				app.helper.hideModal();
-			} else {
-				app.event.trigger('post.save.failed', err);
-				jQuery("button[name='saveButton']").removeAttr("disabled");
-			}
+		this.confirmEditOthersEvent(formData.record).then(function () {
+			extraParams = extraParams || {};
+			jQuery.extend(formData, extraParams);
+			app.helper.showProgress();
+			app.request.post({data: formData}).then(function (err, data) {
+				app.helper.hideProgress();
+				if (!err) {
+					jQuery('.vt-notification').remove();
+					var message = typeof formData.record !== "" ? app.vtranslate('JS_EVENT_UPDATED') : app.vtranslate('JS_RECORD_CREATED');
+					app.helper.showSuccessNotification({"message": message});
+					app.event.trigger("post.QuickCreateForm.save", data, jQuery(form).serializeFormData());
+					app.helper.hideModal();
+				} else {
+					app.event.trigger('post.save.failed', err);
+					jQuery("button[name='saveButton']").removeAttr("disabled");
+				}
+			});
 		});
 	},
 	validateAndUpdateEvent: function (modalContainer, isRecurring) {
@@ -1760,6 +1822,16 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			quickCreateNode.data('url', quickCreateEditUrl);
 			quickCreateNode.trigger('click');
 			quickCreateNode.data('url', quickCreateUrl);
+
+			//スマートフォン対応：ポップオーバーを強制的に非表示にする
+			var forceRemovePopovers = function () {
+				var $els = $('.webui-popover');
+				if ($els.length) {
+					$els.hide();
+				}
+			};
+			setTimeout(forceRemovePopovers,  100);
+
 			$(".modal-body").css("max-height", '800px');
 
 			if (moduleName === 'Events') {
@@ -1785,6 +1857,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		this.showEditEventModal(eventId, isRecurring, isDuplicate);
 	},
 	registerPopoverEvent: function (event, element, calendarView) {
+		var self = this; 
 		var dateFormat = this.getUserPrefered('date_format');
 		dateFormat = dateFormat.toUpperCase();
 		var hourFormat = this.getUserPrefered('time_format');
@@ -1854,46 +1927,91 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			popOverHTML += '</span>';
 
 			if (sourceModule === 'Calendar' || sourceModule == 'Events'||sourceModule =="ProjectTask") {
-				popOverHTML += '' +
+				if (window.innerWidth < 650) {
+					popOverHTML += '' +
 						'<span class="pull-right cursorPointer" ' +
 						'onClick="Calendar_Calendar_Js.deleteCalendarEvent(\'' + eventObj.id +
 						'\',\'' + sourceModule + '\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_DELETE') + '">' +
-						'&nbsp;<i class="fa fa-trash"></i>' +
+						'&nbsp;&nbsp;<i class="fa fa-trash fa-2x"></i>' +
 						'</span> &nbsp;&nbsp;';
 
-				if (sourceModule === 'Events') {
-					popOverHTML += '' +
-							'<span class="pull-right cursorPointer" ' +
-							'onClick="Calendar_Calendar_Js.editCalendarEvent(\'' + eventObj.id +
-							'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_EDIT') + '">' +
-							'&nbsp;<i class="fa fa-pencil"></i>&nbsp;' +
-							'</span>';
-							popOverHTML += '' +
-							'<span class="pull-right cursorPointer" ' +
-							'onClick="Calendar_Calendar_Js.copyCalendarEvent(\'' + eventObj.id +
-							'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_COPY') + '">' +
-							'&nbsp;<i class="fa fa-copy"></i>&nbsp;' +
-							'</span>';
-				} else if (sourceModule === 'Calendar') {
-					popOverHTML += '' +
-							'<span class="pull-right cursorPointer" ' +
-							'onClick="Calendar_Calendar_Js.editCalendarTask(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_EDIT') + '">' +
-							'&nbsp;<i class="fa fa-pencil"></i>&nbsp;' +
-							'</span>';
-				}
+					if (sourceModule === 'Events') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.editCalendarEvent(\'' + eventObj.id +
+								'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_EDIT') + '">' +
+								'&nbsp;&nbsp;<i class="fa fa-pencil fa-2x"></i>' +
+								'</span>';
+								popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.copyCalendarEvent(\'' + eventObj.id +
+								'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_COPY') + '">' +
+								'&nbsp;&nbsp;<i class="fa fa-copy fa-2x"></i>' +
+								'</span>';
+					} else if (sourceModule === 'Calendar') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.editCalendarTask(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_EDIT') + '">' +
+								'&nbsp;&nbsp;<i class="fa fa-pencil fa-2x"></i>' +
+								'</span>';
+					}
 
-				if (eventObj.status !== 'Held' && eventObj.status !== 'Completed') {
-					popOverHTML += '' +
-							'<span class="pull-right cursorPointer"' +
-							'onClick="Calendar_Calendar_Js.markAsHeld(\'' + eventObj.id + '\',\'' + sourceModule + '\');" title="' + app.vtranslate('JS_MARK_AS_HELD') + '">' +
-							'<i class="fa fa-check"></i>&nbsp;' +
-							'</span>';
-				} else if (eventObj.status === 'Held') {
+					if (eventObj.status !== 'Held' && eventObj.status !== 'Completed') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer"' +
+								'onClick="Calendar_Calendar_Js.markAsHeld(\'' + eventObj.id + '\',\'' + sourceModule + '\');" title="' + app.vtranslate('JS_MARK_AS_HELD') + '">' +
+								'<i class="fa fa-check fa-2x"></i>' +
+								'</span>';
+					} else if (eventObj.status === 'Held') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.holdFollowUp(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_CREATE_FOLLOW_UP') + '">' +
+								'<i class="fa fa-flag fa-2x"></i>' +
+								'</span>';
+					}
+				}
+				else{
 					popOverHTML += '' +
 							'<span class="pull-right cursorPointer" ' +
-							'onClick="Calendar_Calendar_Js.holdFollowUp(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_CREATE_FOLLOW_UP') + '">' +
-							'<i class="fa fa-flag"></i>&nbsp;' +
-							'</span>';
+							'onClick="Calendar_Calendar_Js.deleteCalendarEvent(\'' + eventObj.id +
+							'\',\'' + sourceModule + '\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_DELETE') + '">' +
+							'&nbsp;&nbsp;<i class="fa fa-trash"></i>' +
+							'</span> &nbsp;&nbsp;';
+
+					if (sourceModule === 'Events') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.editCalendarEvent(\'' + eventObj.id +
+								'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_EDIT') + '">' +
+								'&nbsp;&nbsp;<i class="fa fa-pencil"></i>' +
+								'</span>';
+								popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.copyCalendarEvent(\'' + eventObj.id +
+								'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_COPY') + '">' +
+								'&nbsp;&nbsp;<i class="fa fa-copy"></i>' +
+								'</span>';
+					} else if (sourceModule === 'Calendar') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.editCalendarTask(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_EDIT') + '">' +
+								'&nbsp;&nbsp;<i class="fa fa-pencil"></i>' +
+								'</span>';
+					}
+
+					if (eventObj.status !== 'Held' && eventObj.status !== 'Completed') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer"' +
+								'onClick="Calendar_Calendar_Js.markAsHeld(\'' + eventObj.id + '\',\'' + sourceModule + '\');" title="' + app.vtranslate('JS_MARK_AS_HELD') + '">' +
+								'<i class="fa fa-check"></i>' +
+								'</span>';
+					} else if (eventObj.status === 'Held') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.holdFollowUp(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_CREATE_FOLLOW_UP') + '">' +
+								'<i class="fa fa-flag"></i>' +
+								'</span>';
+					}
 				}
 			}
 			return popOverHTML;
@@ -1904,8 +2022,9 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			'content': generatePopoverContentHTML(event),
 			'trigger': 'hover',
 			'closeable': true,
-			'placement': 'auto',
+			'placement': 'left-top',
 			'animation': 'fade',
+			'arrow': false,
 			'delay': {
 				show: null,
 				hide: 300,
@@ -1916,7 +2035,77 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		}
 		if(app.getUserId() == event.userid || event.visibility != "Private"){
 			element.webuiPopover(params);
+			
+			element.on('shown.webui.popover', function() {
+			var $container = element.closest('.fc-view-container');
+			var $popover = $('.webui-popover.in').last();
+			self.adjustPopoverInsideSharedCalendar($popover, $container, element);
+			});
 		}
+	},
+	// 共有カレンダー内でポップオーバーが仕様調整
+	adjustPopoverInsideSharedCalendar: function ($popover, $container, $trigger) {
+		if (!$popover || !$popover.length) return;
+		if (!$container || !$container.length) return;
+		if (!$trigger || !$trigger.length) return;
+		// container ページ座標
+		var cRect = $container[0].getBoundingClientRect();
+		var cLeft = cRect.left + window.pageXOffset;
+		var cTop = cRect.top + window.pageYOffset;
+		var cRight = cLeft + cRect.width;
+		var cBottom = cTop + cRect.height;
+		// ポップオーバー カレンダー座標
+		var tOff = $trigger.offset();
+		if (!tOff) return;
+		var pos = {
+			top: tOff.top,
+			left: tOff.left,
+			width: $trigger[0].offsetWidth,
+			height: $trigger[0].offsetHeight
+		};
+		// container カレンダー座標（ポップオーバー方向判断用）
+		var cOff = $container.offset();
+		if (!cOff) return;
+
+		var pageX = (tOff.left - cOff.left) + ($container.scrollLeft() || 0);
+		var clientWidth = $container.innerWidth();
+
+		// popoverを基準にした座標
+		var pOffset = $popover.offset();
+		if (!pOffset) return;
+
+		var pWidth = $popover.outerWidth(true);
+		var pHeight = $popover.outerHeight(true);
+
+		// 余白設定
+		var pad = 8;
+
+		//カレンダー幅を週7日で割った幅
+		var week = 7;
+
+		// 右にはみ出している場合、右側に表示する
+		if (pageX < clientWidth / week) {
+			var newPos = {
+			top:  pos.top - pHeight + pos.height,   
+			left: pos.left + pos.width             
+			};
+			$popover.offset({ left: newPos.left, top: newPos.top });
+			// 再取得
+			pOffset = $popover.offset();
+		}
+		// 座標調整
+		var newLeft = pOffset.left;
+		var newTop = pOffset.top;
+		if (newLeft + pWidth > cRight - pad) newLeft = (cRight - pad) - pWidth;
+		if (newLeft < cLeft + pad) newLeft = cLeft + pad;
+
+		//top調整
+		newTop = pos.top;
+		if (newTop + pHeight > cBottom - pad) newTop = (cBottom - pad) - pHeight;
+		if (newTop < cTop + pad) newTop = cTop + pad;
+		
+		//ポップオーバー位置更新
+		$popover.offset({ left: newLeft, top: newTop });
 	},
 	performPreEventRenderActions: function (event, element) {
 		var calendarView = this.getCalendarViewContainer().fullCalendar('getView');
