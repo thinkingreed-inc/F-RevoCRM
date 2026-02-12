@@ -16,6 +16,7 @@
 <input type="hidden" id="date_format" value="{$CURRENT_USER->get('date_format')}" />
 <input type="hidden" id="hideCompletedEventTodo" value="{$CURRENT_USER->get('hidecompletedevents')}">
 <input type="hidden" id="show_allhours" value="{$CURRENT_USER->get('showallhours')}" />
+<input type="hidden" id="calendar_remember_feed_selection" value="{$CALENDAR_REMEMBER_FEED_SELECTION}" />
 <div id="sharedcalendar" class="calendarview col-lg-12">
 	{assign var=LEFTPANELHIDE value=$CURRENT_USER->get('leftpanelhide')}
 	<div class="essentials-toggle" title="{vtranslate('LBL_LEFT_PANEL_SHOW_HIDE', 'Vtiger')}">

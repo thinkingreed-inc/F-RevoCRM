@@ -663,6 +663,7 @@ $languageStrings = array(
 	'Shipping Po Box' => '私書箱(出荷先)',
 	'Country' => '国',
 	'Description' => '詳細内容',
+	'Common Memo' => '共有メモ',
 
 	'Created'=>'登録済み',
 	'Approved'=>'承認済み',
@@ -1679,6 +1680,7 @@ $languageStrings = array(
 			'カスタマーポータルでは、お問い合わせ管理や、過去のFAQと回答をご確認いただけます。<br />'.                        
 			'ポータルへのアクセスは本メールに記載のURL、ID、パスワードを使いログインしてください。</div>',
 	'LBL_CUSTOMER_PORTAL_LOGIN_INFORMATION' => '顧客ポータルのログイン情報のお知らせ',
+ 	'LBL_SETUP_PARAMETER_MESSAGE_SHOW_SCHEDULE_CONFIRM_FLAG' => '他人のカレンダーを変更する際の確認フラグです。true: 確認する、false: 確認しない',
 
 	// WebComponents QuickCreate 多言語対応
 	'LBL_SAVING' => '保存中...',
@@ -1746,6 +1748,7 @@ $jsLanguageStrings = array(
 	'INVALID_NUMBER_OF' => '無効な数字：',
 	'INVALID_NUMBER' => '無効な数字',
 	'JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE' => '削除しますか？',
+	'JS_EDIT_OTHERS_EVENT_CONFIRMATION' => '他ユーザーの活動を変更しますか？',
 
 	'OVERWRITE_EXISTING_MSG1' => '既存住所を選択した住所の詳細 ( ',
 	'OVERWRITE_EXISTING_MSG2' => ') で上書きしますか？',
