@@ -21,12 +21,18 @@ class Calendar_MassDelete_Action extends Vtiger_MassDelete_Action {
             $recordIds = $this->getRecordsListFromRequest($request);
         }
 		$cvId = $request->get('viewname');
+		$deletedRecords = array();
 		foreach($recordIds as $recordId) {
+			// 既に削除済みのレコードはスキップ
+			if(in_array($recordId, $deletedRecords)) {
+				continue;
+			}
 			if(Users_Privileges_Model::isPermitted($moduleName, 'Delete', $recordId)) {
 				$recordModel = Vtiger_Record_Model::getInstanceById($recordId, $moduleModel);
 				$parentRecurringId = $recordModel->getParentRecurringRecord();
 				$adb->pquery('DELETE FROM vtiger_activity_recurring_info WHERE activityid=? AND recurrenceid=?', array($parentRecurringId, $recordId));
-				$recordModel->delete();
+				$currentDeletedRecords = $recordModel->delete();
+				$deletedRecords = array_merge($deletedRecords, $currentDeletedRecords);
 				deleteRecordFromDetailViewNavigationRecords($recordId, $cvId, $moduleName);
 			}
 		}
