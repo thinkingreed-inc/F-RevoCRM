@@ -40,7 +40,7 @@
             {foreach item=LISTVIEW_ENTRY from=$LISTVIEW_ENTRIES name=listview}
                 {assign var="IS_EDITABLE" value=$LISTVIEW_ENTRY->get('systemtemplate')}
                 {assign var="TEMPLATE_PATH" value=$LISTVIEW_ENTRY->get('templatepath')}
-                {assign var="TEMPLATE_NAME" value=$LISTVIEW_ENTRY->get('templatename')}
+                {assign var="TEMPLATE_NAME" value=vtranslate($LISTVIEW_ENTRY->get('templatename'),$MODULE)}
                 {assign var="TEMPLATE_ID" value=$LISTVIEW_ENTRY->get('templateid')}
                  <li class="positionRel textCenter">
                     <div class="templateName" title="{$TEMPLATE_NAME}" style="position: relative;margin-bottom: 5px;overflow: hidden;"><p class="ellipsis">{$TEMPLATE_NAME}</p></div>

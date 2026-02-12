@@ -2051,7 +2051,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 
 		$moduleIcon = "<i class='vicon-$lowerModuleName' title='$title'></i>";
 		if ($this->source == 'custom') {
-			$moduleShortName = mb_substr(trim($title), 0, 2);
+			$moduleShortName = mb_substr(trim($title), 0, 1);
 			$moduleIcon = "<span class='custom-module' title='$title'>$moduleShortName</span>";
 		}
 
@@ -2066,5 +2066,21 @@ class Vtiger_Module_Model extends Vtiger_Module {
 	public static function getModuleIconPath($moduleName) {
 		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
 		return $moduleModel->getModuleIcon();
+	}
+
+	public function isEditReadonlyDisplay() {
+		return $this->editReadonlyDisplay;
+	}
+
+	public function updateEditreadonlydisplay($editReadonlyDisplay) {
+		global $adb;
+
+		if ($editReadonlyDisplay == 1) {
+			$editReadonlyDisplay = true;
+		} else {
+			$editReadonlyDisplay = false;
+		}
+
+		$adb->pquery("UPDATE vtiger_tab SET editreadonlydisplay = ? WHERE tabid = ?", array($editReadonlyDisplay, $this->getId()));
 	}
 }

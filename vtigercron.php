@@ -70,9 +70,11 @@ if(vtigercron_detect_run_in_cli() || (isset($_SESSION["authenticated_user_id"]) 
 				continue;
 			}
 
-			// Timeout could happen if intermediate cron-tasks fails
-			// and affect the next task. Which need to be handled in this cycle.				
-			if ($cronTask->hadTimedout()) {
+			// 実行中ステータスの場合はスキップする
+			if ($cronTask->isRunning() && !$cronTask->hadTimedout()) {
+				echo sprintf("[INFO] %s - cron task is already running\n", $cronTask->getName());
+				continue;
+			} else if($cronTask->hadTimedout()) {
 				echo sprintf("[INFO] %s - cron task had timedout as it is not completed last time it run- restarting\n", $cronTask->getName());	
 			}
 
@@ -88,9 +90,10 @@ if(vtigercron_detect_run_in_cli() || (isset($_SESSION["authenticated_user_id"]) 
 			echo "\n".sprintf('[CRON],"%s",%s,%s,"%s","%s",[ENDS]',$cronRunId,$site_URL,$cronTask->getName(),date('Y-m-d H:i:s',$cronTask->getLastStart()),date('Y-m-d H:i:s',$cronTask->getLastEnd()))."\n";
 
 		} catch (Exception $e) {
+			$cronTask->markFinished();
 			echo sprintf("[ERROR]: %s - cron task execution throwed exception.\n", $cronTask->getName());
-			echo $e->getMessage();
-			echo "\n";
+			echo $e->getMessage().PHP_EOL;
+			echo $e->getTraceAsString().PHP_EOL;
 		}		
 	}
 

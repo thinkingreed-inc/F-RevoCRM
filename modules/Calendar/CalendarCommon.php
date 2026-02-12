@@ -251,6 +251,7 @@ function generateIcsAttachment($record, $inviteeid) {
 		$userOffset = str_pad(str_replace("-" , "", $userOffset), 2, 0, STR_PAD_LEFT);
 
     // add timezone
+	fwrite($fp, "BEGIN:VCALENDAR\n");
     fwrite($fp, "BEGIN:VTIMEZONE\n");
     fwrite($fp, "TZID:".$time_zone."\n");
     fwrite($fp, "BEGIN:STANDARD\n");
@@ -260,7 +261,7 @@ function generateIcsAttachment($record, $inviteeid) {
     fwrite($fp, "END:STANDARD\n");
     fwrite($fp, "END:VTIMEZONE\n");
 
-    fwrite($fp, "BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\n");
+    fwrite($fp, "VERSION:2.0\nBEGIN:VEVENT\n");
     fwrite($fp, "ORGANIZER;CN=".$lastName." ".$firstName.":MAILTO:".$email."\n");
     fwrite($fp, "DTSTART;TZID=".$time_zone.":".date('Ymd\THis', strtotime($stDatetime))."\n");
     fwrite($fp, "DTEND;TZID=".$time_zone.":".date('Ymd\THis', strtotime($endDatetime))."\n");
@@ -270,6 +271,55 @@ function generateIcsAttachment($record, $inviteeid) {
     fclose($fp);
     
     return $ics_filename;
+}
+
+/**
+ * 参加者情報を再度作成する
+ * @param $activityId
+ * @param $inviteeParentId
+ * @return void
+ */
+function reCreateInviteesRecord($activityId, $inviteeParentId, $isRestore = false)
+{
+	global $adb;
+	// 他に関連する活動レコードがあるか、ある場合は参加者（ユーザーのID）を取得する
+	$getInviteesQuery  = "SELECT smownerid 
+						  FROM vtiger_activity 
+						  WHERE deleted = 0 
+							AND invitee_parentid = ? AND activityid <> ?";
+	$getInviteesParams = [ $inviteeParentId, $activityId ];
+	
+	// 復元の場合は復元されるレコード自体も含める
+	if($isRestore) {
+		$getInviteesQuery  = "SELECT smownerid 
+							  FROM vtiger_activity 
+							  WHERE deleted = 0 AND invitee_parentid = ?";
+		$getInviteesParams = [ $inviteeParentId ];
+	}
+	
+	$inviteesResult    = $adb->pquery($getInviteesQuery, $getInviteesParams);
+	$inviteesCount     = $adb->num_rows($inviteesResult);
+	
+	if($inviteesCount > 0) {
+		// 既存の参加者情報を一度削除する
+		$inviteeQuery  = "DELETE FROM vtiger_invitees WHERE activityid = ?";
+		$inviteeParams = [ $inviteeParentId ]; 
+		$adb->pquery($inviteeQuery, $inviteeParams);
+		
+		// 参加者情報を再度作り直す
+		//（招待レコードで更新が発生した場合に参加者情報が完全に消えることがあるため）
+		$newInviteeQuery  = "INSERT INTO vtiger_invitees VALUES "
+							.implode(', ', array_fill(0, $inviteesCount, '(?,?,?)'));
+		$newInviteeParams = [];
+		
+		for($i=0; $i<$inviteesCount; $i++) {
+			$smownerId = $adb->query_result($inviteesResult, $i, 'smownerid');
+			$newParams = [ $inviteeParentId, $smownerId, 'sent' ];
+			$newInviteeParams = array_merge($newInviteeParams, $newParams); 
+		}
+		
+		$adb->pquery($newInviteeQuery, $newInviteeParams);
+	}
 }
 
 ?>

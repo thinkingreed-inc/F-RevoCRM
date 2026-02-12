@@ -15,7 +15,7 @@ if (defined('VTIGER_UPGRADE')) {
     // 使用単位項目を追加
     $modulearray = array("Quotes","PurchaseOrder","SalesOrder","Invoice");
     $itemFieldsName = array('usageunit');
-    $itemFieldsLabel = array('使用単位');
+    $itemFieldsLabel = array('LBL_USAGE_UNIT');
     $itemFieldsTypeOfData = array('V~O~LE~200');
     $itemFieldsDisplayType = array('1');
     $itemFieldsColumnType = array('varchar(200)');

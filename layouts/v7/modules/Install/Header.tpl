@@ -57,5 +57,5 @@
 		<body style="font-size: 13px !important;" data-skinpath="{Vtiger_Theme::getBaseThemePath()}" data-language="{$LANGUAGE}" data-user-decimalseparator="{$CURRENT_USER_MODEL->get('currency_decimal_separator')}" data-user-dateformat="{$CURRENT_USER_MODEL->get('date_format')}"
 			data-user-groupingseparator="{$CURRENT_USER_MODEL->get('currency_grouping_separator')}" data-user-numberofdecimals="{$CURRENT_USER_MODEL->get('no_of_currency_decimals')}">
 			<div id="page">
-				<div id="pjaxContainer" class="hide noprint"></div>
+				<div id="pjaxContainer" class="hide noprint app-nav"></div>
 {/strip}

@@ -268,7 +268,7 @@ class VtigerCRMObjectMeta extends EntityMeta {
 			}
 			return false;
 		}
-
+		return false;
 	}
 
 	function getUserAccessibleColumns(){
@@ -333,6 +333,13 @@ class VtigerCRMObjectMeta extends EntityMeta {
 			$this->retrieveMeta();
 		}
 		return parent::getOwnerFields();
+	}
+
+	function getBlankFields(){
+		if(!$this->meta){
+			$this->retrieveMeta();
+		}
+		return parent::getBlankFields();
 	}
 
 	function getEntityName(){

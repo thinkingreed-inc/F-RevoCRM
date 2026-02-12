@@ -9844,7 +9844,7 @@ CREATE TABLE `vtiger_recurring_frequency` (
 
 LOCK TABLES `vtiger_recurring_frequency` WRITE;
 /*!40000 ALTER TABLE `vtiger_recurring_frequency` DISABLE KEYS */;
-INSERT INTO `vtiger_recurring_frequency` VALUES (2,'Daily',1,1,NULL),(3,'Weekly',2,1,NULL),(4,'Monthly',3,1,NULL),(5,'Quarterly',4,1,NULL),(6,'Yearly',5,1,NULL);
+INSERT INTO `vtiger_recurring_frequency` VALUES (2,'Daily',1,1,NULL),(3,'Weekly',2,1,NULL),(4,'Monthly',3,1,NULL),(5,'Quarterly',4,1,NULL),(6,'Half-Yearly',5,1,NULL),(7,'Yearly',6,1,NULL);
 /*!40000 ALTER TABLE `vtiger_recurring_frequency` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -9866,7 +9866,7 @@ CREATE TABLE `vtiger_recurring_frequency_seq` (
 
 LOCK TABLES `vtiger_recurring_frequency_seq` WRITE;
 /*!40000 ALTER TABLE `vtiger_recurring_frequency_seq` DISABLE KEYS */;
-INSERT INTO `vtiger_recurring_frequency_seq` VALUES (6);
+INSERT INTO `vtiger_recurring_frequency_seq` VALUES (7);
 /*!40000 ALTER TABLE `vtiger_recurring_frequency_seq` ENABLE KEYS */;
 UNLOCK TABLES;
 

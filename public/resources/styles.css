@@ -1,0 +1,1673 @@
+.clearfix {
+  clear: both;
+}
+
+body {
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Hiragino Kaku Gothic Pro", "Meiryo", "MS PGothic", "MS Gothic", sans-serif;
+  font-weight: 400;
+}
+
+/* 
+ *一覧画面の列幅可変機能追加に伴う修正
+ */
+table#listview-table {
+  border-spacing: 0;
+  border-collapse: separate;
+}
+table#listview-table tr, 
+tr.listViewContentHeader > th,
+tr.searchRow.listViewSearchContainer > th,
+tr.listViewContentHeader > th.table-bottom-border {
+  border-bottom: #ddd 1px solid;
+}
+tr.listViewEntries:first-child {
+  border-top: none !important;
+  border-bottom: none !important;
+}
+
+tr.listViewContentHeader > th.none-border-bottom {
+  border-bottom: none !important;
+}
+tr.listViewEntries:nth-of-type(1) > td.listViewRecordActions,
+tr.listViewEntries:nth-of-type(1) > td.listViewEntryValue {
+  border-top: 0px !important;
+}
+table#listview-table .emptyRecordsDiv > td {
+  border: none;
+}
+.dummy {
+  right: 0;
+  z-index: 1;
+  background: #fff;
+}
+tr.listViewEntries:nth-of-type(1) > td.dummy {
+  border-top: none;
+}
+td.listViewEntryValue  .fieldValue .value {
+  max-width: 98%;
+}
+
+@media (min-width: 0px) and (max-width: 830px) {
+  .listViewPageDiv #table-content.table-container {
+    scrollbar-width: none;
+  }
+
+  .quickCreateContent > table.table > tbody > tr > td.blankField,
+  .fieldBlockContainer>table.table:not(#lineItemResult)>tbody>tr>td.blankField,
+  .detailview-table>tbody>tr>td.blankField {
+    display: none;
+  }
+}
+
+/*
+ * 一覧の左側の列固定（IE11非対応）
+ */
+ @media (min-width: 991px) { 
+  .fix-title-column {
+    position: sticky;
+    z-index: 1;
+    left: 0;
+    background: rgb(251, 251, 251);
+    transform: scale(0.999);
+    background-clip: padding-box;
+  }
+  .fix-data-column {
+    position: sticky;
+    z-index: 1;
+    left: 0;
+    background: #fff;
+    background-clip: padding-box;
+  }
+  .listViewRecordActions.fix-data-column {
+    border-bottom: 0px !important;
+  }
+  .listViewEntryValue {
+    border-bottom: 0px !important;
+  }
+  .listViewEntries {
+    border-bottom: 1px solid #ddd;
+  }
+  .listViewEntries:last-child {
+    border-bottom: 0px;
+  }
+}
+/*
+ * モーダルウインドウの背景を黒ベースに変更
+ * z-index: navbarが1095 !importantなので、backdropは1096 !importantで上に表示
+ */
+.modal-backdrop {
+  background-color: #555;
+  z-index: 1096 !important;
+}
+
+/*
+ * カスタムモジュールのアイコン位置調整
+ */
+ .app-menu a .module-icon .custom-module {
+  position: relative;
+  width: 23px;
+  height: 20px;
+  padding: 8px 6px 0px 3px !important;
+}
+.app-menu a .module-icon .custom-module span {
+  position: absolute;
+  top:0px;
+  left: 3px;
+}
+.modules-menu .module-qtip .custom-module {
+  text-align: center;
+  padding: 3px 4px 3px 4px !important;
+}
+
+.related-tabs .tab-icon {
+  position: relative;
+}
+.related-tabs .tab-icon .custom-module {
+  position: relative;
+  top: 2px;
+}
+.row .nav > li.tab-item > a,
+.row .nav > li.tab-item > a:hover {
+  height: 40px;
+}
+#mailmanagerContainer {
+  padding-top: 10px;
+}
+.app-modules-dropdown-container-global.open {
+  background: #eee;
+}
+.app-modules-dropdown-container-global .dropdown-toggle {
+  cursor: pointer;
+  padding: 13px;
+}
+.app-modules-dropdown-container-global .custom-module {
+  background: #666;
+  color: #fff;
+}
+.fc-slats tr {
+  height: 35px;
+}
+
+/**
+ * PDF Templates
+ */
+ #SLAEditContainer .select2.inputElement.PDFTemplates,
+ #editTagContainer .select2.inputElement.PDFTemplates {
+   width: 90%;
+ }
+
+/*
+ * モバイル表示
+ */
+@media (max-width: 768px) { 
+  .settingsIcon {
+    display: none;
+  }
+  .calendarview {
+    padding-bottom: 25px;
+  }
+  div.CalendarViewPageDiv {
+    padding-top: 30px;
+  }
+  .main-container.main-container-Calendar{
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: column;
+  }
+  .main-container.main-container-Calendar 
+  .sidebar-essentials {
+    order: 0;
+  }  
+  .main-container.main-container-Calendar 
+  .listViewPageDiv {
+    order: 1;
+  }  
+  .main-container.main-container-Calendar 
+  .module-nav {
+    order: 2;
+  }  
+  .list-menu-content.calendar_view_events .mCustomScrollBox {
+    max-height: none!important;
+    overflow: scroll;
+    -webkit-overflow-scrolling: touch
+  }
+  .main-container .module-nav {
+    width: 100%;
+    z-index: 1100;
+    background-color: #2C3B49;
+    background: #2C3B49;
+  }
+  .module-nav div.modules-menu {
+    position: relative;
+    left: auto;
+  }
+  .module-nav div.mod-switcher-container {
+    width: 100%;
+  }
+  .modules-menu ul li {
+    display: inline-block;
+  }
+  .modules-menu ul li.module-qtip a > span {
+    display: none;
+  }
+  .listViewPageDiv.content-area.full-width, .CalendarViewPageDiv.content-area.full-width, .editViewPageDiv.content-area.full-width, .settingsPageDiv.content-area.full-width {
+    padding-left: 0!important;
+  }
+  .detailViewContainer {
+    padding-top: 60px;
+  }
+  .dashBoardContainer {
+    padding-top: 40px;
+  }
+  #mCSB_9_scrollbar_vertical {
+    display: none!important;
+  }
+  .mCustomScrollbar.mCS_no_scrollbar {
+    max-height: none!important;
+  }
+  .quickView.fa.fa-eye.icon,
+  .fa.fa-ellipsis-v.icon {
+    display: none;
+  }
+  .updates_timeline > li .update_time {
+  position: static !important;
+}
+}
+@media (max-width: 991px) { 
+  .main-container.calendarview{
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: column-reverse;
+  } 
+  .list-menu-content .activitytypes .activitytype-indicator {
+    padding: 14px 5%;
+    margin: 8px;
+    font-size: 80%;
+    min-height: 35px;
+    word-wrap: break-word;
+  }
+}
+div.summaryView span.value.textOverflowEllipsis img {
+  max-width: 100%;
+}
+div.detailview-content.container-fluid span.value img {
+  max-width: 100%;
+}
+
+/*
+ * プロフィールアイコン
+ */
+/* 管理メニューサムネイル */
+#imageContainer > img{
+  height: auto;
+}
+/* 右上個人ボックス */
+.profile-img-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.profile-img-container > img{
+  height: auto;
+}
+/* ユーザー情報詳細左上アイコン */
+#prefPageHeader .logo{
+  width: 75px;
+  height: 75px;
+  display: flex;
+  background-color: #f5f5f5;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+#prefPageHeader .logo > img{
+  height: auto;
+}
+/* アップロードサムネイル */
+[name="existingImages"] img{
+  height: auto;
+}
+/* コメント部分 */
+.commentDetails .recordImage.commentInfoHeader{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background: none repeat scroll 0 0 #ababab;
+}
+.commentDetails .recordImage.commentInfoHeader>img{
+  max-width: 100%;
+  height: auto;
+}
+
+
+/* フィールドラベル */
+.detailview-table .fieldLabel,
+.recordEditView .fieldLabel,
+.summaryView .fieldLabel{
+    text-align: right;
+}
+.detailview-table .fieldLabel .muted{
+    color: #222;
+    font-weight: bold;
+}
+.detailview-table .fieldLabel .muted,
+.recordEditView .fieldLabel .muted,
+.summaryView .fieldLabel .muted{
+    color: #222;
+    font-weight: bold;
+}
+
+@media all and (min-width: 0px) and (max-width: 830px) {
+  .detailview-table .fieldLabel,
+  .recordEditView .fieldLabel,
+  .summaryView .fieldLabel,
+  .detailViewInfo.userPreferences .table.detailview-table .fieldLabel{
+    text-align: left;
+  }
+}
+.settingsIndexPage .settingsSummary a {
+    margin-bottom: 10px;
+}
+.settingsIndexPage #settingsShortCutsContainer .well {
+  margin-left: 0px;
+  height: 100px;
+}
+.module-action-bar.coloredBorderTop {
+  width: calc(100% - 42px);
+  height: 90px;
+}
+.textOverflowTest{
+	width: 600px;
+}
+@media all and (min-width:992px) and (max-width: 1290px) {
+    .global-nav .app-list {
+        display: none;
+    }
+}
+.app-navigator-container {
+  width: 222px;
+}
+/*
+ * カスタム項目編集画面
+ */
+.related_field_caution{
+  margin-top: 10px;
+  float: left;
+}
+/* 詳細検索画面 */
+#advanceSearchButtonRow {
+  text-align: center;
+}
+button#advanceIntiateSave + input {
+  margin-left: 10px;
+}
+.timepicker-default{
+  border: 1px solid #ccc;
+}
+/* 概要画面の関連項目 */
+.summaryView .input-group.editElement {
+  min-width: auto;
+}
+.summaryView .input-group.editElement .referencefield-wrapper {
+  width: 100% ;
+}
+.summaryView .input-group.editElement .referencefield-wrapper .input-group {
+  min-width: auto;
+}
+.summaryView .input-group.editElement .referencefield-wrapper .input-group .inputElement {
+  width: 100% ;
+}
+
+/* 画面幅320pxのときのヘッダーの検索ボタン調整(全モジュール)*/
+@media (max-width: 320px) {
+  .navbar-toggle.border0.collapsed {
+    margin-right: 5px;
+  }
+}
+/* フォルダ名やリスト名のオーバーフローを省略 */
+#Documents_action_content .module-breadcrumb-List .current-filter-name ,
+#Documents_action_content .module-breadcrumb-Detail .current-filter-name a ,
+#Reports_action_content .current-filter-name {
+  max-width: 200px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+/* 画面幅が550px以下でレポートとドキュメントのヘッダーを調整 */
+@media (max-width: 550px) {
+  /* 追加ボタンのpaddingを削除し幅を減らす */
+  #Documents_action_content > .pull-right,
+  #Reports_action_content > .pull-right{
+    padding-right: 0px;
+    padding-left: 0px;
+  }
+  /* ドキュメント追加のボタンの右marginを調整 */
+  #Documents_listView_basicAction_Add {
+    margin-right: 10px;
+  }
+  /* ボタンの文字を省略 */
+  #Documents_listView_basicAction_Add > .btn-str,
+  #Reports_listView_basicAction_Add > .btn-str{
+    display: none;
+  }
+  /* レポート追加のドロップダウンメニューを右寄せ表示 */
+  .btn-group.open #addReportsDropdownMenu {
+    right: 0;
+    left: auto;
+  }
+}
+/* ドキュメント追加のドロップダウンメニューのスタイル */
+#addDocumentsDropdownMenu {
+  position: absolute;
+  border: 1px solid rgba(0,0,0,.2);
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
+}
+#addDocumentsDropdownMenu > li,
+#addDocumentsDropdownMenu > li > a {
+  color: #333;
+}
+
+@media (max-width: 991px) {
+  .main-container-Documents #sidebar-essentials.sidebar-essentials,
+  .main-container-Reports #sidebar-essentials.sidebar-essentials {
+    width: 100%;
+  }
+}
+/**
+ * ドキュメントアップロードモーダル
+ **/
+@media all and (min-width: 0px) and (max-width: 830px) {
+  .createDocumentContent > table.table > tbody > tr > td,
+  .createDocumentContent > table.table > tbody > tr > th,
+  .createDocumentContent > table.table > tfoot > tr > td,
+  .createDocumentContent > table.table > tfoot > tr > th,
+  .createDocumentContent > table.table > thead > tr > td,
+  .createDocumentContent > table.table > thead > tr > th,
+  .uploadview-content > .uploadcontrols > #upload > table.table > tbody > tr > td,
+  .uploadview-content > .uploadcontrols > #upload > table.table > tbody > tr > th,
+  .uploadview-content > .uploadcontrols > #upload > table.table > tfoot > tr > td,
+  .uploadview-content > .uploadcontrols > #upload > table.table > tfoot > tr > th,
+  .uploadview-content > .uploadcontrols > #upload > table.table > thead > tr > td,
+  .uploadview-content > .uploadcontrols > #upload > table.table > thead > tr > th {
+    display: block;
+    min-width: 100%!important;
+  }
+
+  .createDocumentContent > table.table td.fieldLabel > label,
+  .uploadview-content > .uploadcontrols > #upload > table.table td.fieldLabel > label {
+    float: left !important;
+  }
+   
+   
+  .createDocumentContent > table.table td.fieldValue .inputElement,
+  .uploadview-content > .uploadcontrols > #upload > table.table td.fieldValue .inputElement {
+    width: 100%;
+    float: none !important;
+  }
+}
+
+
+/**
+ * モジュールアイコンのPNGファイル指定時のスタイル調整
+ */
+/*上ドロップダウンメニュー*/
+.col-sm-5 .nav .app-modules-dropdown-container .dropdown-menu .module-icon{
+  width: 15px;
+  display: inline-block;
+  text-align: center;
+}
+.col-sm-5 .nav .app-modules-dropdown-container .dropdown-menu .module-icon img{
+  width: auto;
+  max-width: 15px;
+  height: auto;
+  max-height: 15px;
+  margin: 0 auto;
+}
+/*左メニュー*/
+/*関連メニュー*/
+/*システム設定　メニュー設定*/
+.collapse .nav .tab-item a .tab-icon img,
+.col-lg-2 .sortable .modules .menuEditorItem .IconSize img,
+.app-menu .container-fluid .app-list .dropdown .dropdown-menu .mCustomScrollBox .mCSB_container .module-icon img{
+  width: auto;
+  max-width: 23px;
+  height: auto;
+  max-height: 23px;
+  margin: 0 auto;
+}
+.dropdown-menu .mCustomScrollBox .mCSB_container .module-name{
+  position: relative;
+  top: 4px;
+}
+.hidden-xs .modules-menu .mCustomScrollBox .mCSB_container .module-qtip a img{
+  width: auto;
+  max-width: 20px;
+  height: auto;
+  max-height: 20px;
+  margin: 0 auto;
+}
+/*詳細*/
+.col-sm-6 .clearfix .recordImage .name img{
+  width: auto;
+  max-width: 80px;
+  height: auto;
+  max-height: 80px;
+  margin: 0 auto;
+}
+/*レコード画面アイコンの背景白色化と中央寄せ*/
+.detailview-header .col-sm-6 .clearfix .change_BG_white{
+  width: 80px;
+  height: 80px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+
+  background-color: white !important;
+}
+/* 製品の場合のみ画像を複数アップロードできる仕様
+ * object-fit:containはIE11で使えないのでbackground-size:containを使って中央寄せする
+*/
+.detailview-header .col-sm-6 .clearfix .change_BG_white .change_BG_center{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-position: center center;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+/*クイック作成*/
+.col-lg-12 .row .col-lg-4 .quickCreateModule img{
+  width: auto;
+  max-width: 20px;
+  height: auto;
+  max-height: 20px;
+  margin: 0 auto;
+}
+.col-lg-12 .row .col-lg-4 .quickCreateModule .quick-create-module{
+  position: relative;
+}
+
+/*システム設定　メニュー設定*/
+.col-lg-2 .sortable .modules .menuEditorItem .IconSize img{
+  width: 23px;
+  height: 23px;
+}
+
+/* システム設定画面 */
+@media (max-width: 991px) { 
+.settingsPageDiv .form-horizontal.recordEditView > .modal-overlay-footer {
+    border-left: 0px;
+  }
+}
+
+/* レポート：罫線 */
+#reportDetails table tr td.summaryHead {
+    border-bottom: 0;
+}
+
+/* 右上のメニューが表示されない場合、スマートフォンでヘッダーのスタイルが崩れる不具合修正 */
+@media (max-width: 768px) { 
+  .app-nav .module-action-bar .navbar-right{
+  float: right;
+  height: auto;
+  max-height: 42px;
+  }
+}
+
+/* スマホサイズレポート作成画面 */
+@media (max-width: 550px) {
+  .reportContents .recordEditView .row{
+    margin: 0;
+    padding: 0;
+  }
+}
+
+/* ユーザー一覧画面のユーザーアイコン */
+.userIconDiv{
+  float: left;
+  width: 30px;
+  padding: 0 26px 0 10px;
+}
+
+/* 関連モジュールのモーダル */
+.overlayDetail .modal-content {
+  width: 100%;
+}
+.overlayDetail .modal-content .overlayDetailHeader div > div.col-sm-6.col-lg-6.col-md-6{
+  width: 83.3%;
+}
+
+/* 概要・詳細画面 */
+@media (min-width: 992px) {
+  .detailViewContainer.viewContent > .content-area {
+      padding-left: 57px;
+  }
+}
+@media (max-width: 991px) {
+  .detailViewContainer.viewContent > .content-area {
+      padding-left: 15px;
+  }
+}
+@media (min-width: 769px) {
+  .detailview-header-block {
+  margin-top: 10px;
+  }
+}
+
+/* 概要画面の関連活動*/
+.activityEntries .relatedActivitiesLabel {
+  color: #222;
+  font-weight: bold;
+  padding-right: 25px;
+  padding-bottom: 10px;
+  text-align: right;
+  width: 90px;
+}
+.activityEntries .relatedActivitiesValue {
+  padding-bottom: 10px;
+  word-break: break-all;
+}
+.activityEntries .summaryViewEntries {
+  display: flex !important;
+  margin-bottom: 10px;
+}
+.activityEntries .summaryViewEntries > a:first-child{
+  font-size: 120%;
+  display: block;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 60vw;
+}
+
+/* 4カラムを維持する為の行を挿入 */
+.firstTr td{
+  padding: 0 !important;
+}
+
+/* 製品の商品一覧 */
+ul#productsImageContainer{
+  width: 100%;
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  list-style: none;
+  flex-wrap: wrap;
+}
+ul#productsImageContainer > li{
+  width: 180px;
+  height: 180px;
+  margin: 10px;
+  overflow: hidden;
+  border: solid 1px #ddd;
+}
+ul#productsImageContainer > li a{
+  cursor: pointer;
+  width: 180px;
+  height: 180px;
+  display: block;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+/* 項目設定画面のレイアウト */
+.layoutContent .blockFieldsList {
+  width: 100%;
+}
+
+.layoutContent .blockFieldsList ul.connectedSortable {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  list-style: none;
+}
+
+/* 通常フィールド（2列表示） */
+.layoutContent .blockFieldsList ul li {
+  width: 49%;
+  margin-bottom: 6px;
+  box-sizing: border-box;
+}
+
+/* ワイドフィールド（uitype=19 or 20、1列表示） */
+.layoutContent .blockFieldsList ul li.wideField {
+  width: 100%;
+}
+
+/* ダミー行（フィールド追加用） */
+.layoutContent .blockFieldsList ul li.dummyRow {
+  width: 49%;
+}
+
+/* ドラッグ中のプレースホルダー */
+.layoutContent .blockFieldsList ul li.ui-sortable-placeholder {
+  visibility: visible !important;
+  background: #f0f0f0;
+  border: 2px dashed #ccc;
+  height: auto;
+  min-height: 100px;
+}
+
+/* ドラッグ中の要素 */
+.layoutContent .blockFieldsList ul li.ui-sortable-helper {
+  opacity: 0.9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+}
+
+/* フィールド内の行レイアウト */
+.layoutContent .blockFieldsList ul li > div.row.border1px {
+  display: flex;
+  flex-wrap: nowrap;
+  min-height: 120px;
+  align-items: stretch;
+}
+
+/* ラベル部分 */
+.layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel {
+  flex: 0 0 250px;
+  width: 250px;
+  max-width: 250px;
+  display: flex;
+  align-items: stretch;
+  border-right: 1px solid #ddd;
+}
+
+.layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel .editFields {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  padding-top: 5px;
+}
+
+.layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel .editFields > .row {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+}
+
+.layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel .editFields > .row > .col-sm-1 {
+  flex: 0 0 auto;
+  width: auto;
+  padding: 13px 5px 0 10px;
+}
+
+.layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel .editFields > .row > .col-sm-9 {
+  flex: 1;
+  text-align: right;
+  padding-right: 10px;
+}
+
+/* プロパティ部分 */
+.layoutContent .blockFieldsList ul li > div.row > div.fieldPropertyContainer {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: stretch;
+}
+
+.layoutContent .blockFieldsList ul li > div.row > div.fieldPropertyContainer > div.row {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  padding-top: 5px;
+}
+
+/* アクションボタン（編集・削除） */
+.layoutContent .blockFieldsList ul li .fieldPropertyContainer .actions {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  padding: 5px;
+  align-self: flex-start;
+}
+
+.layoutContent .blockFieldsList ul li .fieldPropertyContainer .actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  color: #555;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.layoutContent .blockFieldsList ul li .fieldPropertyContainer .actions a:hover {
+  background-color: #e8e8e8;
+  border-color: #ccc;
+  color: #333;
+}
+
+.layoutContent .blockFieldsList ul li .fieldPropertyContainer .actions a.deleteCustomField:hover {
+  background-color: #fee;
+  border-color: #fcc;
+  color: #c00;
+}
+
+/* ワイドフィールドの場合の調整 */
+.layoutContent .blockFieldsList ul li.wideField > div.row > div.layoutEditFieldLabel {
+  flex: 0 0 250px;
+  width: 250px;
+  max-width: 250px;
+}
+
+.layoutContent .blockFieldsList ul li.wideField > div.row > div.fieldPropertyContainer {
+  flex: 1 1 auto;
+}
+
+/* 中サイズ画面 */
+@media (min-width: 769px) and (max-width: 1200px) {
+  .layoutContent .blockFieldsList ul li {
+    width: calc(50% - 6px);
+  }
+  .layoutContent .blockFieldsList ul li.wideField {
+    width: calc(100% - 6px);
+  }
+  .layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel,
+  .layoutContent .blockFieldsList ul li.wideField > div.row > div.layoutEditFieldLabel {
+    flex: 0 0 200px;
+    width: 200px;
+    max-width: 200px;
+  }
+  .layoutContent .blockFieldsList ul li > div.row > div.fieldPropertyContainer,
+  .layoutContent .blockFieldsList ul li.wideField > div.row > div.fieldPropertyContainer {
+    flex: 1 1 auto;
+  }
+}
+
+/* モバイル表示 */
+@media (max-width: 768px) {
+  .layoutContent .blockFieldsList ul {
+    margin-left: 5px;
+  }
+  .layoutContent .blockFieldsList ul li,
+  .layoutContent .blockFieldsList ul li.wideField,
+  .layoutContent .blockFieldsList ul li.dummyRow {
+    width: calc(100% - 10px);
+    float: none;
+  }
+  .layoutContent .blockFieldsList ul li > div.row.border1px {
+    flex-wrap: wrap;
+    position: relative;
+    min-height: auto;
+  }
+  .layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel,
+  .layoutContent .blockFieldsList ul li.wideField > div.row > div.layoutEditFieldLabel {
+    flex: 0 0 100%;
+    width: 100%;
+    max-width: 100%;
+    padding-bottom: 5px;
+    border-right: none;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 5px;
+  }
+  .layoutContent .blockFieldsList ul li > div.row > div.fieldPropertyContainer,
+  .layoutContent .blockFieldsList ul li.wideField > div.row > div.fieldPropertyContainer {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  .layoutContent .blockFieldsList ul li .fieldPropertyContainer .actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    flex-direction: row;
+  }
+}
+
+/* 項目設定画面の項目追加ボタン周り*/
+.layoutContent .blockFieldsList ul li.dummyRow  div > span.dragUiText.col-sm-7{
+  text-align: right;
+    padding: 0;
+    padding-right: 20px;
+    margin: auto;
+}
+.layoutContent .blockFieldsList ul li.dummyRow  div > span.col-sm-5{
+  text-align: left;
+    padding: 0;
+    margin: auto;
+}
+
+
+/* 日報の概要・更新履歴(1740pxは文字が重ならない限界値から決定) */
+@media (max-width: 1740px) { 
+  .summaryWidgetContainer #updates .updates_timeline > li .update_time {
+    position: static !important;
+  }
+}
+
+/* コメントと製品の画像プレビュー */
+.MultiFile-preview {
+  margin: 10px;
+}
+.MultiFile-list .MultiFile-remove {
+  margin: 10px;
+  color: #ff0000;
+  font-weight: 900;
+}
+
+/* ダッシュボードのミニリスト */
+@media (max-width: 991px) {
+  .row.minilist-container {
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: column;
+  }
+  .row.minilist-container > div {
+    width: 100% !important;
+  }
+}
+.row.minilist-container {
+  display: flex;
+  flex-wrap: nowrap;
+}
+.row.minilist-container > div {
+  padding-right: 15px; 
+  padding-left: 15px; 
+}
+
+.tag_owner_name p{
+  display: inline;
+}
+
+/* メール関連のCC、BCCの隙間を開ける */
+#ccLink{
+  margin-right: 5px;
+}
+
+/* 共有カレンダーのグループ選択の横にチェックボックスを追加する */
+.calendarGroupSelect {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.calendarTodoSelect {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  margin: 8px;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+/* レポートのヘッダーを固定する */
+#reportDetails.contents-bottomscroll {
+	max-height: 70vh;
+}
+#reportDetails table tr.blockHeader th{
+  position: sticky;
+  z-index: 1;
+  top: 0;
+
+  border-color: inherit;
+  background-color: inherit;
+  background-image: inherit;
+  background-repeat: inherit;
+}
+#reportDetails table tr.blockHeader th::before {
+  /* stickyにより枠線が消えてしまうため疑似要素に枠線を追加 */
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: -1px;
+  left: 0;
+  border-top: 2px solid white;
+}
+
+/* レコード編集画面のpadding-leftを可変ではなく固定にする */
+@media (min-width: 992px) {
+  .editViewPageDiv.viewContent > .content-area {
+    padding-left: 57px;
+  }
+}
+
+/* rc-handleと重ならないように調整 */
+.listview-table tr.listViewContentHeader .fa-remove{
+  position: relative;
+  right: 15px;
+  z-index: 1;
+} 
+
+/* カレンダーユーザーの選択リスト */
+div.main-container .sidebar-essentials {
+  overflow-x: hidden;
+  scrollbar-width: thin;
+}
+.activitytypes .activitytype-indicator .userName.textOverflowEllipsis {
+  vertical-align: middle;
+  max-width: 90px;
+}
+@media (min-width: 767px) and (max-width: 991px) {
+  .activitytypes .activitytype-indicator .userName.textOverflowEllipsis {
+    max-width: 600px;
+  } 
+}
+@media (min-width: 575px) and (max-width: 768px) {
+  .activitytypes .activitytype-indicator .userName.textOverflowEllipsis {
+    max-width: 400px;
+  }
+}
+@media (min-width: 401px) and (max-width: 576px) {
+  .activitytypes .activitytype-indicator .userName.textOverflowEllipsis {
+    max-width: 200px;
+  }
+}
+
+.calendarview div.sidebar-essentials {
+  overflow: hidden;
+}
+
+
+/* ログイン画面のスタイル */
+.login-button {
+  position: relative;
+  display: inline-block;
+  padding: 9px;
+  margin: .3em 0 1em 0;
+  width: 100%;
+  vertical-align: middle;
+  color: #fff;
+  font-size: 16px;
+  line-height: 20px;
+  -webkit-font-smoothing: antialiased;
+  text-align: center;
+  letter-spacing: 1px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.login-button:focus {
+  outline: 0;
+}
+
+.login-buttonBlue {
+  background-image: linear-gradient(to bottom, #35aa47 0px, #35aa47 100%)
+}
+
+.login-input {
+  font-size: 16px;
+  padding: 10px 10px 10px 0px;
+  -webkit-appearance: none;
+  display: block;
+  color: #636363;
+  width: 100%;
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid #757575;
+}
+.login-input:focus {
+  outline: none;
+}
+.login-label {
+  font-size: 16px;
+  font-weight: normal;
+  position: absolute;
+  pointer-events: none;
+  left: 0px;
+  top: 10px;
+  transition: all 0.2s ease;
+}
+.login-input:focus ~ label, input.used ~ label {
+  top: -20px;
+  transform: scale(.75);
+  left: -12px;
+  font-size: 18px;
+}
+input:focus ~ .bar:before, input:focus ~ .bar:after {
+  width: 50%;
+}
+
+.login-widgetHeight {
+  height: 410px;
+  margin-top: 20px !important;
+}
+
+.loginDiv {
+  max-width: 380px;
+  margin: 0 auto;
+  border-radius: 4px;
+  box-shadow: 0 0 10px gray;
+  background-color: #FFFFFF;
+}
+.marketingDiv {
+  color: #303030;
+}
+
+.separatorDiv {
+  background-color: #7C7C7C;
+  width: 2px;
+  height: 460px;
+  margin-left: 20px;
+}
+
+.user-logo {
+  height: 110px;
+  margin: 0 auto;
+  padding-top: 40px;
+  padding-bottom: 20px;
+}
+
+.blockLink {
+  border: 1px solid #303030;
+  padding: 3px 5px;
+}
+
+.group {
+  position: relative;
+  margin: 20px 20px 40px;
+}
+.failureMessage {
+  color: red;
+  display: block;
+  text-align: center;
+  padding: 0px 0px 10px;
+}
+
+.successMessage {
+  color: green;
+  display: block;
+  text-align: center;
+  padding: 0px 0px 10px;
+}
+
+.inActiveImgDiv {
+  padding: 5px;
+  text-align: center;
+  margin: 30px 0px;
+}
+
+.ripples {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+}
+
+.widgetHeight {
+  height: 410px;
+  margin-top: 20px !important;
+}
+
+.login-d-flex {
+  display: -ms-flexbox!important;
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}
+
+.login-d-flex-column {
+  .container {
+    display: flex;
+    flex-direction: column;
+}
+}
+
+.login-d-flex div {
+  display: -ms-flexbox!important;
+  display: flex !important;
+  align-items: center;
+}
+
+.login-d-flex-bottom div {
+  display: -ms-flexbox!important;
+  display: flex !important;
+  align-items: flex-end;
+  margin-top: auto;
+  margin-bottom: 20px;
+}
+
+.login-button span {
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 24px;
+}
+
+.login-justify-content-center {
+  -ms-flex-pack: center!important;
+  justify-content: center !important;
+}
+
+.login-justify-content-right {
+  -ms-flex-pack: right!important;
+  justify-content: right !important;
+}
+
+@keyframes ripples {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    width: 200%;
+    padding-bottom: 200%;
+    opacity: 0;
+  }
+}
+
+
+@media (min-width: 0px) and (max-width: 830px) {
+  .multi_factor_credentialList {
+    overflow-x: auto !important;
+    width: 100vw !important;
+    display: block !important;
+  }
+
+  .multi_factor_credentialList > table {
+    display: table !important;
+    table-layout: fixed !important;
+  width: 100% !important;
+  white-space: nowrap !important;
+  overflow-x: auto !important;
+  }
+  .multi_factor_credentialList > table tr,
+  .multi_factor_credentialList > table td,
+  .multi_factor_credentialList > table th {
+    white-space: nowrap !important;
+  }
+  .multi_factor_credentialList > table td,
+  .multi_factor_credentialList > table th {
+    display: table-cell !important;
+    width: 100% !important;
+  }
+}
+
+.add-totp-login-page {
+  width: 900px;
+  max-width:900px;
+  margin: 0 auto;	
+}
+
+.totp-modal {
+  width: 900px;
+  margin: 0 auto;	
+}
+
+.passkey-container {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: center;
+  padding: 20px;
+}
+
+.totp-container {
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+  justify-content: center;
+  padding: 20px;
+}
+
+.totp-left-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  white-space: nowrap;
+}
+
+.totp-right-content {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  align-items: center;
+  width: auto;
+  margin-left: 40px;
+}
+
+.totp-left-content > div {
+  display: flex;
+  width: 100%;
+  text-align: left;
+  flex-direction: column;
+  align-items: start;
+  margin: 15px 0;
+}
+
+.totp-left-content > div:first-child {
+  margin-top: 0;
+}
+
+.passkey-step-message {
+	margin-left: 10px;
+}
+
+.totp-left-content > div > div > span {
+  font-weight: bold;
+  color: #333;
+  margin-left: 10px;
+}
+
+.totp-left-content strong {
+  color: #0078A8;
+  font-weight: bold;
+}
+
+.passkey-flex-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: start;
+  gap: 5px;
+}
+
+.totp-flex-row {
+  display: flex;
+  flex-direction: row;
+  align-items: first baseline;
+  justify-content: center;
+  gap: 5px;
+}
+
+.passkey-form-group {
+  display: flex;
+  flex-direction: row;
+  margin-left: 35px;
+  margin-bottom: 15px;
+  justify-content: flex-start;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.totp-form-group {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  margin-left: 35px;
+  margin-top: 15px;
+}
+
+.totp-form-group > label, .passkey-form-group > label {
+  width: 50%;
+  text-align: left;
+  margin-right: 10px;
+}
+
+.totp-form-group > label::after, .passkey-form-group > label::after {
+  content: ":";
+  margin-left: 5px;
+}
+
+.circle_number {
+  width: 25px;
+  height: 25px;
+  line-height: 25px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+  display: inline-block;
+  background-color:  #0078A8;
+  border-radius: 50%;
+  text-align: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.qrcode-text-message {
+	margin: 20px 0 10px 0;
+	font-weight: bold;
+}
+
+.totp-secret-code {
+  display: flex;
+  width: 200px;
+  height: 32px;
+  margin: 10px 0;
+  padding: 0 10px;
+  font-size: 14px;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  background-color: #fff;
+  font-weight: bold;
+  align-items: center;
+  justify-content: center;
+}
+
+.multi-factor-login-footer {
+  padding: 15px;
+  background: #EFEFEF;
+}
+
+#totpAdd {
+	margin: 0 20px;
+}
+
+.multifactor-modal {
+  width: 800px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.multi-factor-flex-row {
+  display: flex;
+  flex-direction: row;
+  min-height: 400px; /* 必要に応じて調整 */
+  align-items: stretch;
+  justify-content: center;
+  gap: 32px;
+}
+
+.multi-factor-area {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  width: 40%;
+  border: #CCC solid 2px;
+  border-radius: 10px;
+  margin: 0 20px;
+  padding: 10px 25px;
+  font-size: 10pt;
+}
+
+.auth-multi-factor-area {
+	border: 0;
+	width: 100%;
+	margin: 0;
+}
+
+.multi-factor-area-full {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: #CCC solid 2px;
+  border-radius: 10px;
+  padding: 10px 25px;
+  font-size: 10pt;
+  gap: 5px;
+}
+
+.multi-factor-area-full svg {
+  flex-shrink: 0;
+}
+
+.multi-factor-area h4 {
+  display: flex;
+  flex-direction: row;
+  font-size: 18px;
+  font-weight: bold;
+  align-items: center;
+  gap: 5px;
+}
+
+.multi-factor-area h4 svg {
+  stroke: #35aa47;
+}
+
+.warning-label p {
+  color: #999;
+  margin: 0;
+}
+
+.multi-factor-area ul {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.multi-factor-area li {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin: 15px 0;
+  justify-content: flex-start;
+  gap: 5px;
+}
+
+.multi-factor-area li:first-child {
+  margin-top: 0;
+}
+
+.multi-factor-area li:last-child {
+  margin-bottom: 0;
+}
+
+.multi-factor-area svg {
+  flex-shrink: 0;
+}
+
+.multi-factor-area button {
+  margin-top: auto;
+  margin-bottom: 0;
+}
+
+.multi-factor-area > div {
+  margin: 10px 0;
+}
+
+.multi-factor-area > div.multi-factor-warning-label {
+  color: #999;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.multifactor-button-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.multi-factor-description {
+  color: #999;
+}
+
+.totp-form-group-mobile {
+  display: none;
+}
+
+.modal-footer .login-button {
+	width: auto;
+}
+
+.multi-factor-login-footer .login-button {
+	width: auto;
+}
+
+@media (min-width: 0px) and (max-width: 830px) {
+  .multifactor-modal {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .overlay-container-300 {
+    margin-left: 0 !important;
+  }
+
+  .multi-factor-flex-row {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .multi-factor-area {
+    width: 100%;
+  }
+
+  .totp-modal {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .totp-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .totp-form-group-mobile {
+    display: block;
+  }
+
+  .totp-right-content {
+    display: none;
+  }
+
+  .totp-left-content {
+      white-space: normal;
+      width: 100%;
+  }
+
+  .totp-form-group-mobile {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+        width: 100%;
+        margin: 10px 0 0;
+    }
+
+  .totp-secret-code {
+    margin: 10px 0 0;
+  }
+
+  .multifactor-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  .add-totp-login-page {
+    width: 100%;
+  }
+}
+
+
+.admonition {
+    display: flex; 
+    align-items: flex-start; 
+    padding: 12px 16px;
+    margin: 15px 0;
+    border-radius: 4px;
+    border-left: 4px solid;
+    background-color: #f8f9fa;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.admonition-icon {
+    flex-shrink: 0; 
+    width: 24px;
+    margin-right: 12px; 
+    font-size: 18px; 
+    line-height: 1.4; 
+}
+
+.admonition-content {
+    flex: 1; 
+}
+
+.admonition-title {
+    margin: 0 0 8px 0;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.admonition-content p:last-child {
+    margin-bottom: 0;
+}
+
+
+.admonition-warning {
+    border-left-color: #ff9800;
+    background-color: #fff3e0;
+}
+
+.admonition-warning .admonition-icon {
+    color: #f57c00;
+}
+
+.admonition-warning .admonition-title {
+    color: #e65100;
+}
+

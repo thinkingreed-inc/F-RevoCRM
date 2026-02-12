@@ -52,6 +52,7 @@ class Vtiger_ModuleBasic {
 	var $allowDuplicates = false;
 	var $isSyncable = 0;
 	var $syncActionForDuplicate = 1;
+	var $editReadonlyDisplay = false;
 
 
 	const EVENT_MODULE_ENABLED     = 'module.enabled';
@@ -95,6 +96,7 @@ class Vtiger_ModuleBasic {
 		if (isset($valuemap['issyncable'])) $this->isSyncable = $valuemap['issyncable'];
 		if (isset($valuemap['allowduplicates'])) $this->allowDuplicates = $valuemap['allowduplicates'];
 		if (isset($valuemap['sync_action_for_duplicates'])) $this->syncActionForDuplicate = $valuemap['sync_action_for_duplicates'];
+		$this->editReadonlyDisplay = $valuemap['editreadonlydisplay'];
 	}
 
 	/**

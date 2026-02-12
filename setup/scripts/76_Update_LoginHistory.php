@@ -19,4 +19,4 @@ global $adb, $log;
 
 $adb->query("ALTER TABLE vtiger_loginhistory ADD COLUMN `is_portal` tinyint(1) DEFAULT 0");
 
-echo "実行が完了しました。<br>";
+echo vtranslate('LBL_ITS_OVER');

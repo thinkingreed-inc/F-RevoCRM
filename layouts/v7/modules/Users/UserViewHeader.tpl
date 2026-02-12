@@ -14,7 +14,7 @@
     <div class="col-sm-12 col-xs-12">
         <div class="detailViewTitle" id="userPageHeader">
             <div class = "row">
-                <div class="col-md-5">
+                <div class="col-md-5" style="margin-top: 18px;">
                     <div class="col-md-5 recordImage" style="height: 50px;width: 50px;">
                         {assign var=NOIMAGE value=0}
                         {foreach key=ITER item=IMAGE_INFO from=$RECORD->getImageDetails()}
@@ -71,6 +71,21 @@
                 </div>
             </div>
         </div>
+        {if $IS_USER_LOCKED}
+            <div class="row" style="margin: 10px 0; border-radius: 5px; background-color: #e4d2d2;">
+                <div style="margin:10px; display: flex; justify: center; align-items: center;">
+                    <span class="label label-danger" style="font-size:14px;padding:5px 10px;">
+                        <i class="fa fa-lock"></i> {vtranslate('LBL_LOGIN_LOCKED', $MODULE)}
+                    </span>
+                    <span style="font-size:13px;margin-left:10px;color:#d9534f;">
+                        {vtranslate('LBL_LOCK_UNTIL', $MODULE)}: {$LOCK_UNTIL_TIME}
+                    </span>
+                    <button class="btn btn-warning btn-sm" id="unlockUserButton" data-record-id="{$RECORD->getId()}" style="margin-left:10px;">
+                        <i class="fa fa-unlock"></i> {vtranslate('LBL_UNLOCK_USER', $MODULE)}
+                    </button>
+                </div>
+            </div>
+        {/if}
         <hr/>
         <div class="detailview-content userPreferences container-fluid">
             {assign var="MODULE_NAME" value=$MODULE_MODEL->get('name')}

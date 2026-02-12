@@ -4,6 +4,7 @@
 .settings
 .setting
 .project
+.claude
 .idea/*
 logs/*.log
 cache/images/*
@@ -33,6 +34,6 @@ config.inc.php
 /*.xlsx
 .DS_Store
 .vscode
-docker-compose.override.yml
+compose.override.yaml
 .env
 /vendor

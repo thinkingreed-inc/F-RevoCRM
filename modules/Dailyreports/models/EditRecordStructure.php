@@ -38,7 +38,7 @@ class Dailyreports_EditRecordStructure_Model extends Vtiger_EditRecordStructure_
 							$fieldModel->set('fieldvalue', $recordModel->get($fieldName));
 						}else{
 							$defaultValue = $fieldModel->getDefaultFieldValue();
-							if(!empty($defaultValue) && !$recordId)
+							if($defaultValue != "" && !$recordId)
 								$fieldModel->set('fieldvalue', $defaultValue);
 							if($fieldName == "reports_to_id") {
 							    if( $current_user->reports_to_id > 0 ) {

@@ -203,7 +203,6 @@ class Vtiger_WebUI extends Vtiger_EntryPoint {
 				if ($handler->loginRequired()) {
 					$this->checkLogin ($request);
 				}
-
 				//TODO : Need to review the design as there can potential security threat
 //				$skipList = array('Users', 'Home', 'CustomView', 'Import', 'Export', 'Inventory', 'Vtiger', 'PriceBooks', 'Migration', 'Install');
 //
@@ -215,7 +214,6 @@ class Vtiger_WebUI extends Vtiger_EntryPoint {
 //				if(stripos($qualifiedModuleName, 'Settings') === 0 || ($module == 'Users')) {
 				$handler->checkPermission($request);
 //				}
-
 				$notPermittedModules = array('ModComments','Integration','DashBoard');
 
 				if(in_array($module, $notPermittedModules) && $view == 'List'){

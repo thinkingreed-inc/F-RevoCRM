@@ -17,11 +17,12 @@ $languageStrings = array(
 	'LBL_RECORDS_LIST' => '活動一覧',
 	'LBL_EVENTS' => '活動',
 	'LBL_TODOS' => 'TODO',
+	'LBL_SHOW_TODOS' => 'TODOの表示',
 	'LBL_CALENDAR_SETTINGS' => 'カレンダー設定',
 	'LBL_CALENDAR_SHARING' => 'カレンダー共有',
-	'LBL_DEFAULT_EVENT_DURATION' => 'デフォルトの活動周期',
-	'LBL_CALL' => 'デフォルトの連絡の時間 ( 分 )',
-	'LBL_OTHER_EVENTS' => '他の活動の時間 ( 分 )',
+	'LBL_DEFAULT_EVENT_DURATION' => 'デフォルトの活動時間',
+	'LBL_CALL' => '電話時間',
+	'LBL_OTHER_EVENTS' => '電話以外の活動時間',
 	'LBL_MINUTES' => '分',
 	'LBL_SELECT_USERS' => 'ユーザーの選択',
 	'LBL_EVENT_OR_TASK' => '活動 / TODO',
@@ -110,6 +111,9 @@ $languageStrings = array(
 	'LBL_TOTAL_EVENTS_SKIPPED' => 'No. of Events Skipped as they were missing one or more required field ',
 	'LBL_TOTAL_EVENTS_DUPLICATED' => 'No. of duplicate Events skipped',
 	'LBL_TOTAL_TASKS_DUPLICATED' => 'No. of duplicate Tasks skipped',
+	'LBL_SETUP_PARAMETER_MESSAGE_CALENDAR_REMEMBER_FEED_SELECTION' => '共有カレンダーにおけるユーザー一覧のチェック状態を制御するフラグです。
+true : 組織・役割切替時もチェック状態を記憶し、すべての表示に反映します。
+false : マイグループのみチェック状態を記憶し、他の組織・役割では常に全選択とします。',
 	
 	'ICAL_FORMAT' => 'iCalフォーマット',
 	'LBL_LAST_IMPORT_UNDONE'=>'インポートが完了していません。',
@@ -190,13 +194,14 @@ $languageStrings = array(
 	'Duration' => '期間',
 	'Duration Minutes' => '期間(分)',
 	'No Time' => '時間なし',
+	'LBL_DUPULICATE_EVENT_EXISTS'=> 'この活動は復元できません。活動の参加者が重複しています。',
 );
 
 $jsLanguageStrings = array(
 	'LBL_ADD_EVENT_TASK' => '活動/TODOの追加',
 	'JS_TASK_IS_SUCCESSFULLY_ADDED_TO_YOUR_CALENDAR' => 'TODOの登録が完了しました。',
-        'LBL_CANT_SELECT_CONTACT_FROM_LEADS' => '関連する顧客担当者が選択できませんでした。',
-        'JS_FUTURE_EVENT_CANNOT_BE_HELD' => '未来の予定のため完了にできません。',
+	'LBL_CANT_SELECT_CONTACT_FROM_LEADS' => '関連する顧客担当者が選択できませんでした。',
+	'JS_FUTURE_EVENT_CANNOT_BE_HELD' => '未来の予定のため完了にできません。',
 	
 	//Calendar view label translation
 	'LBL_MONTH' => '月',
@@ -273,4 +278,7 @@ $jsLanguageStrings = array(
     'JS_CHECK_START_AND_END_DATE'=>'終了日時は開始日時よりも同じかそれ以降でなければなりません。',
 	'JS_CHECK_START_AND_END_DATE_SHOULD_BE_GREATER'=> '終了日時は開始日時以降でなければなりません。',
 	'My Group'=> 'マイグループ',
+	'JS_MONTHTITLEFORMAT' => 'YYYY年MM月',
+	'JS_DAYTITLEFORMAT' => 'YYYY年MM月DD日',
+	'JS_WEEKTITLEFORMAT' => 'YYYY年MM月DD日',
 );
