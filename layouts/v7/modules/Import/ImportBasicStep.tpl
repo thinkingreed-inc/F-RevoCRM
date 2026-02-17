@@ -13,7 +13,7 @@
 	<div class='fc-overlay-modal modal-content'>
 		<div class="overlayHeader">
 			{assign var=TITLE value="{'LBL_IMPORT'|@vtranslate:$MODULE} {$FOR_MODULE|@vtranslate:$FOR_MODULE}"}
-			{include file="ModalHeader.tpl"|vtemplate_path:$MODULE TITLE=$TITLE}
+			{include file="ImportHeader.tpl"|vtemplate_path:$MODULE TITLE=$TITLE}
 		</div>
 		<div class="importview-content">
 			<form onsubmit="" action="index.php" enctype="multipart/form-data" method="POST" name="importBasic">
@@ -48,6 +48,8 @@
 				</div>
 			</form>
 		</div>
+		{include file='ImportHistory.tpl'|@vtemplate_path:'Import' HISTORIES=$HISTORIES CURRENT_USER_MODEL=$CURRENT_USER_MODEL}
+
 		<div class='modal-overlay-footer border1px clearfix'>
 			<div class="row clearfix">
 				<div class='textAlignCenter col-lg-12 col-md-12 col-sm-12 '>
@@ -62,6 +64,9 @@
 								<button class="btn btn-success btn-lg" id ="importStep2" onclick="Vtiger_Import_Js.importActionStep2();">{vtranslate('LBL_NEXT_BUTTON_LABEL', $MODULE)}</button>
 							{/if}
 							&nbsp;&nbsp;&nbsp;<a class='cancelLink' onclick="Vtiger_Import_Js.loadListRecords();" data-dismiss="modal" href="#">{vtranslate('LBL_CANCEL', $MODULE)}</a>
+						</div>
+						<div id="importHistoryButtonsDiv" class = "hide">
+							<button class="btn btn-default btn-lg" id="backToStep1" onclick="Vtiger_Import_Js.bactToStep1();">{vtranslate('LBL_BACK', $MODULE)}</button>
 						</div>
 						<div id="importStepTwoButtonsDiv" class = "hide">
 							<button class="btn btn-default btn-lg" id="backToStep1" onclick="Vtiger_Import_Js.bactToStep1();">{vtranslate('LBL_BACK', $MODULE)}</button>

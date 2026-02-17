@@ -103,6 +103,9 @@ class Vtiger_Import_View extends Vtiger_Index_View {
 	function importBasicStep(Vtiger_Request $request) {
 		$viewer = $this->getViewer($request);
 		$moduleName = $request->getModule();
+		$user = Users_Record_Model::getCurrentUserModel();
+		$tabid = getTabid($moduleName);
+		$histories =  Import_HistoryView_Model::getImportHistory($user, $tabid);
 
 		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
 		$moduleMeta = $moduleModel->getModuleMeta();
@@ -118,6 +121,8 @@ class Vtiger_Import_View extends Vtiger_Index_View {
 		$viewer->assign('SUPPORTED_FILE_ENCODING', Import_Utils_Helper::getSupportedFileEncoding());
 		$viewer->assign('SUPPORTED_DELIMITERS', Import_Utils_Helper::getSupportedDelimiters());
 		$viewer->assign('AUTO_MERGE_TYPES', Import_Utils_Helper::getAutoMergeTypes($moduleName));
+		$viewer->assign('HISTORIES', $histories);
+		$viewer->assign('CURRENT_USER_MODEL', $user);
 
 		//Duplicate records handling not supported for inventory moduels
 		$duplicateHandlingNotSupportedModules = $this->getUnsupportedDuplicateHandlingModules();

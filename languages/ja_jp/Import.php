@@ -123,4 +123,21 @@ $languageStrings = array(
 	'LBL_UPLOAD_ICS'=>'ICSファイルのアップロード',
 	'LBL_IMPORT_FROM_ICS_FILE'=>'ICSファイルからインポート',
 	'LBL_SELECT_ICS_FILE' => 'ICSファイルを選択',
+
+	'LBL_IMPORT_HISTORY'=> 'インポート履歴',
+	'LBL_EXPORT_HISTORY'=> 'エクスポート',
+	'LBL_EXPORT_TO_CSV'=> 'CSVにエクスポート',
+	'LBL_NO_HISTORY_FOUND'=> 'インポート履歴がありません',
+	'LBL_IMPORT_START_TIME'=> 'インポート開始時間',
+	'LBL_IMPORT_ID'=> 'importid',
+
+	'LBL_IMPORT_RECORD_NONE'=> '未処理',
+	'LBL_IMPORT_RECORD_CREATED'=> '新規作成',
+	'LBL_IMPORT_RECORD_SKIPPED'=> 'スキップ',
+	'LBL_IMPORT_RECORD_UPDATED'=> '上書き',
+	'LBL_IMPORT_RECORD_MERGED'=> 'マージ',
+	'LBL_IMPORT_RECORD_FAILED'=> '失敗',
+
+	'LBL_SETUP_PARAMETER_MESSAGE_IMPORT_MAX_HISTORY_COUNT' => 'ユーザーかつモジュール単位で保持できるインポート履歴の最大件数です。',
+
 );
