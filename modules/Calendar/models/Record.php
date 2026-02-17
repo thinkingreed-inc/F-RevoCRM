@@ -103,6 +103,38 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 		parent::save();
 	}
 	
+	// 振り返し予定の系列の予定を削除する際、担当者の繰り返し情報の削除後処理要否を判定する関数
+	protected function shouldCleanupRecurringInfo($parentActivityId) {
+		$adb = PearDatabase::getInstance();
+		if (empty($parentActivityId)) return false;
+		$sql = "SELECT COUNT(*) AS cnt
+				FROM vtiger_activity a
+				WHERE a.deleted = 0
+				AND a.invitee_parentid IN (
+					SELECT ri2.recurrenceid
+					FROM vtiger_activity_recurring_info ri2
+					WHERE ri2.activityid = (
+						SELECT ri1.activityid
+						FROM vtiger_activity_recurring_info ri1
+						WHERE ri1.recurrenceid = ?
+						LIMIT 1
+					)
+				)
+			";
+		$res = $adb->pquery($sql, array($parentActivityId));
+		$cnt = (int)$adb->query_result($res, 0, 'cnt');
+		return ($cnt == 0);
+	}
+	//振り返し予定もう存在しない場合、vtiger_activity_recurring_infoを削除する
+	protected function cleanupRecurringInfo($parentActivityId) {
+		$adb = PearDatabase::getInstance();
+		if (empty($parentActivityId)) return;
+
+		$adb->pquery(
+			"DELETE FROM vtiger_activity_recurring_info WHERE activityid = ?",
+			array($parentActivityId)
+		);
+	}
 	/**
 	 * Function to delete the current Record Model
 	 */
@@ -110,8 +142,10 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 		$adb = PearDatabase::getInstance();
 		$recurringEditMode = $this->get('recurringEditMode');
 		$deletedRecords = array();
+		$deleteScope = 'all';
 		if(!empty($recurringEditMode) && $recurringEditMode != 'current') {
-			$recurringRecordsList = $this->getRecurringRecordsList();
+			//担当者と参加者ID取得
+			$recurringRecordsList = $this->getDeleteRecurringList($deleteScope);
 			foreach($recurringRecordsList as $parent=>$childs) {
 				$parentRecurringId = $parent;
 				$childRecords = $childs;
@@ -122,21 +156,25 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 			}
 			foreach($childRecords as $record) {
 				$recordModel = $this->getInstanceById($record, $this->getModuleName());
-				$adb->pquery("DELETE FROM vtiger_activity_recurring_info WHERE activityid=? AND recurrenceid=?", array($parentRecurringId, $record));
-				$inviteeDeletedRecords = $recordModel->deleteInviteeRecord();
-				$deletedRecords = array_merge($deletedRecords, $inviteeDeletedRecords);
+				$recordModel->deleteInviteeRecord($childRecords);
 				$recordModel->getModule()->deleteRecord($recordModel);
 				$deletedRecords[] = $record;
 			}
 		} else {
 			if($recurringEditMode == 'current') {
 				$parentRecurringId = $this->getParentRecurringRecord();
-				$adb->pquery("DELETE FROM vtiger_activity_recurring_info WHERE activityid=? AND recurrenceid=?", array($parentRecurringId, $this->getId()));
 			}
 			$inviteeDeletedRecords = $this->deleteInviteeRecord();
 			$deletedRecords = array_merge($deletedRecords, $inviteeDeletedRecords);
 			$this->getModule()->deleteRecord($this);
 			$deletedRecords[] = $this->getId();
+		}
+		//担当者の繰り返し情報の削除後処理要否を判定し、必要な場合は削除する
+		if (!empty($parentRecurringId)) {
+			$cleanupFlag = $this->shouldCleanupRecurringInfo($parentRecurringId);
+			if ($cleanupFlag) {
+				$this->cleanupRecurringInfo($parentRecurringId);
+			}
 		}
 		return $deletedRecords;
 	}
@@ -213,7 +251,75 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 		$recurringRecordsList[$parentRecurringId] = $childRecords;
 		return $recurringRecordsList;
 	}
-	
+
+	//削除する予定の系列のレコードIDを取得する関数
+	public function getDeleteRecurringList($deleteScope) {
+		$adb = PearDatabase::getInstance();
+		$recurringRecordsList = array();
+		$recordId = $this->getId();
+
+		$res = $adb->pquery(
+			"SELECT smownerid FROM vtiger_crmentity WHERE crmid = ?",
+			array($recordId)
+		);
+		$ownerId = ($adb->num_rows($res) ? $adb->query_result($res, 0, 'smownerid') : null);
+		if (empty($ownerId)) return array();
+
+		// 1. invitee_parentid
+		$res = $adb->pquery(
+			"SELECT invitee_parentid FROM vtiger_activity WHERE activityid = ?",
+			array($recordId)
+		);
+		$inviteeParentId = $adb->query_result($res, 0, 'invitee_parentid');
+		if (empty($inviteeParentId)) return array();
+
+		// 2. 担当者 activityid
+		$res = $adb->pquery(
+			"SELECT activityid FROM vtiger_activity_recurring_info WHERE recurrenceid = ? LIMIT 1",
+			array($inviteeParentId)
+		);
+		$parentActivityId = $adb->query_result($res, 0, 'activityid');
+		if (empty($parentActivityId)) return array();
+
+		// 3. recurrenceids　担当者ID
+		$res = $adb->pquery(
+			"SELECT recurrenceid FROM vtiger_activity_recurring_info WHERE activityid = ?",
+			array($parentActivityId)
+		);
+
+		$recurrenceIds = array();
+		while ($row = $adb->fetch_array($res)) {
+			$recurrenceIds[] = $row['recurrenceid'];
+		}
+		if (empty($recurrenceIds)) return array();
+
+		// 4. active activities (ONLY SELF + ordered)
+		$placeholders = implode(',', array_fill(0, count($recurrenceIds), '?'));
+		 $sql = "SELECT a.activityid
+				FROM vtiger_activity a
+				INNER JOIN vtiger_crmentity c ON c.crmid = a.activityid
+				WHERE c.deleted = 0
+				AND a.invitee_parentid IN ($placeholders)";
+
+		$params = $recurrenceIds;
+
+		if ($deleteScope === 'self') {
+			$sql .= " AND c.smownerid = ?";
+			$params = array_merge($params, array($ownerId));   
+		}
+
+		$sql .= " ORDER BY a.date_start ASC, a.time_start ASC, a.activityid ASC";
+
+		$res = $adb->pquery($sql, $params);
+
+		$childRecords = array();
+		while ($row = $adb->fetch_array($res)) {
+			$childRecords[] = $row['activityid'];
+		}
+
+		$recurringRecordsList = array($parentActivityId => $childRecords);// 削除対象系列リストを返却（）
+		return $recurringRecordsList;
+	}
 	/**
 	 * Function to get recurring enabled for record
 	 */
@@ -225,34 +331,81 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 		return false;
 	}
 	
-	public function deleteInviteeRecord() {
-		global $adb;
-		$deletedRecords = array();
+	public function deleteInviteeRecord($excludeIds = array()) {
+		// 取得済みの共同参加者予定IDを使い一度だけクエリを発行して削除する
+		$recordIds = $this->getInviteeRecordById($this->getId());
+		if (empty($recordIds)) return;
 
-		$result = $adb->pquery("SELECT
-									a.activityid
-								FROM
-									vtiger_activity a
-									INNER JOIN vtiger_crmentity c ON c.crmid = a.activityid
-								WHERE
-									c.deleted = 0
-									AND a.invitee_parentid = (SELECT a2.invitee_parentid FROM vtiger_activity a2 WHERE a2.activityid = ?)
-		", array($this->getId()));
-
-		for($i=0; $i<$adb->num_rows($result); $i++) {
-			$activityid = $adb->query_result($result, $i, "activityid");
-
-			if($activityid == $this->getId()) {
+		foreach ($recordIds as $activityid) {
+			if ($activityid == $this->getId()) {
 				continue;
 			}
-
-			$recordModel = Vtiger_Record_Model::getInstanceById($activityid);
-
-			$adb->pquery("DELETE FROM vtiger_activity_recurring_info WHERE recurrenceid=?", array($recordModel->getId()));
-			$recordModel->getModule()->deleteRecord($recordModel);
-			$deletedRecords[] = $activityid;
+			if (!empty($excludeIds) && in_array($activityid, $excludeIds)) {
+				continue;
+			}
+			$recordModel = $this->getInstanceById($activityid, $this->getModuleName());
+			if ($recordModel) {
+				$recordModel->getModule()->deleteRecord($recordModel);
+			}
 		}
 		return $deletedRecords;
+	}
+	// 共有カレンダーの予定を削除する際、選択された一つの予定のみ削除するための関数
+	public function deleteOnlySelf($id) {
+		$adb = PearDatabase::getInstance();
+		$recurringEditMode = $this->get('recurringEditMode');
+		$deletedRecords = array();
+		$targetId = !empty($id) ? $id : $this->getId();
+		$targetModel = $this->getInstanceById($targetId, $this->getModuleName());
+		$deleteScope = 'self';
+		$recurringRecordsList = $targetModel->getDeleteRecurringList($deleteScope);
+		$parentRecurringId = null;
+		$childRecords = array();
+
+		//　非振り返り・（振り返りのうち、今回のみを選択した場合は、対象の予定のみ削除する）
+		if (empty($recurringEditMode) || $recurringEditMode == 'current') {
+			$recordModel = $this->getInstanceById($targetId, $this->getModuleName());
+			$recordModel->getModule()->deleteRecord($recordModel);
+			$deletedRecords[] = $targetId;
+			$parentRecurringId = $recordModel->getParentRecurringRecord();
+			if (!empty($parentRecurringId)) {
+				$cleanupFlag = $this->shouldCleanupRecurringInfo($parentRecurringId);
+				if ($cleanupFlag) {
+					$this->cleanupRecurringInfo($parentRecurringId);
+				}
+			}
+			return $deletedRecords;
+		}
+		//　振り返り予定
+		if (!empty($recurringRecordsList)) {
+				//担当者と参加者ID取得
+				foreach ($recurringRecordsList as $parent => $childs) {
+					$parentRecurringId = $parent;
+					$childRecords = $childs;
+					break;
+				}
+			}
+		//　以降の予定を削除する場合
+		if ($recurringEditMode == 'future') {
+			$parentKey = array_keys($childRecords, $targetId);// 対象IDの位置を検索
+			if (!empty($parentKey)) {
+				$childRecords = array_slice($childRecords, $parentKey[0]);// 対象日以降のみを削除対象に絞る
+			} else {
+				$childRecords = array();// 系列に対象IDが無い場合は削除しない
+			}
+		}
+		foreach ($childRecords as $rid) {
+			$rm = $this->getInstanceById($rid, $this->getModuleName());
+			$rm->getModule()->deleteRecord($rm);// 子レコードを削除
+			$deletedRecords[] = $rid;// 削除済みIDを記録
+		}
+		if (!empty($parentRecurringId)) {
+			$cleanupFlag = $this->shouldCleanupRecurringInfo($parentRecurringId);// 担当者の繰り返し情報の削除後処理要否を判定
+			if ($cleanupFlag) {
+				$this->cleanupRecurringInfo($parentRecurringId);
+			}
+		}
+		return $deletedRecords;// 削除したレコードID一覧を返却
 	}
 
 	// 共同参加者のカレンダーidを取得する関数
@@ -295,5 +448,29 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 		$html = html_entity_decode($this->get('description'), ENT_QUOTES, 'UTF-8');
 		$plainText = trim(strip_tags(preg_replace('/<(head|title|style|script)[^>]*>.*?<\/\\1>/si', '', $html)));
 		return nl2br($plainText);
+	}
+	/**
+	 * 共有カレンダー他人予定の削除権限の確認
+	 * 共有・非振り返り　削除不可
+	 * 共有・振り返り　削除可能
+	 */
+	public function isDeletePermittedForOthersEventByRecurring($isrecurring)
+	{
+		global $adb, $current_user;
+		$deletedCond = $isrecurring ? "" : "a.deleted = 0 AND ";
+
+		$query = "	SELECT 1
+					FROM vtiger_activity a
+					WHERE {$deletedCond}
+							a.invitee_parentid = (
+								SELECT a2.invitee_parentid
+								FROM vtiger_activity a2
+								WHERE a2.activityid = ?
+							)
+						AND a.smownerid = ?
+					LIMIT 1";
+
+		$result = $adb->pquery($query, array($this->getId(), $current_user->id));
+		return ($adb->num_rows($result) > 0);
 	}
 }

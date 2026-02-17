@@ -25,8 +25,17 @@ class Calendar_DeleteAjax_Action extends Vtiger_DeleteAjax_Action {
 	function checkPermission(Vtiger_Request $request) {
 		$sourceModule = $request->get('sourceModule');
 		$record = $request->get('record');
-		parent::checkPermission($request);
-		
+		//共有カレンダーの予定を削除する場合、共同参加者の予定も削除するため、元参加者ユーザーでも削除できるようにする
+        try {
+            parent::checkPermission($request);
+        } catch (AppException $e) {
+			$moduleName = $request->getModule();
+			$isrecurring= $request->get('recurringEditMode') != null;
+			$recordModel = Vtiger_Record_Model::getInstanceById($record, $moduleName);
+            if (!$recordModel->isDeletePermittedForOthersEventByRecurring($isrecurring)) {
+                throw $e;
+            }
+        }
 		if ($record) {
 			$activityModulesList = array('Calendar', 'Events','ProjectTask');
 			$recordEntityName = getSalesEntityType($record);
@@ -41,13 +50,18 @@ class Calendar_DeleteAjax_Action extends Vtiger_DeleteAjax_Action {
 	public function process(Vtiger_Request $request) {
 		$moduleName = $request->getModule();
 		$recordId = $request->get('record');
+		$deleteScope = $request->get('deleteScope'); 
 		$recurringEditMode = $request->get('recurringEditMode');
 		
 		$recordModel = Vtiger_Record_Model::getInstanceById($recordId, $moduleName);
 		$recordModel->set('recurringEditMode', $recurringEditMode);
 		if($request->get('calendarType') == 'SharedCalendar'){ // 共有カレンダーの場合, 共同参加者の予定もJavaScript側にて削除する
-			$deletedRecords = $recordModel->getInviteeRecordById($recordId);
-			$recordModel->delete();
+			if ($deleteScope === 'self') {
+				$deletedRecords = $recordModel->deleteOnlySelf($recordId);
+			}else{
+				$deletedRecords = $recordModel->getInviteeRecordById($recordId);
+				$recordModel->delete();
+			}
 		}else{
 			$deletedRecords = $recordModel->delete();
 		}
