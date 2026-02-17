@@ -32,7 +32,7 @@ class Calendar_DeleteAjax_Action extends Vtiger_DeleteAjax_Action {
 			$moduleName = $request->getModule();
 			$isrecurring= $request->get('recurringEditMode') != null;
 			$recordModel = Vtiger_Record_Model::getInstanceById($record, $moduleName);
-            if (!$recordModel->isDeletePermittedForOthersEventByRecurring($isrecurring)) {
+            if (!$recordModel->isPermittedForOthersEventByRecurring($isrecurring)) {
                 throw $e;
             }
         }

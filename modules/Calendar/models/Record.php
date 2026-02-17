@@ -450,11 +450,11 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 		return nl2br($plainText);
 	}
 	/**
-	 * 共有カレンダー他人予定の削除権限の確認
-	 * 共有・非振り返り　削除不可
-	 * 共有・振り返り　削除可能
+	 * 共有カレンダー他人予定の削除・編集権限の確認
+	 * 共有・非振り返り　削除・編集不可
+	 * 共有・振り返り　削除・編集可能
 	 */
-	public function isDeletePermittedForOthersEventByRecurring($isrecurring)
+	public function isPermittedForOthersEventByRecurring($isrecurring)
 	{
 		global $adb, $current_user;
 		$deletedCond = $isrecurring ? "" : "a.deleted = 0 AND ";
