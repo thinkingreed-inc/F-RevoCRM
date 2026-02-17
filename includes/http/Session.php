@@ -34,6 +34,22 @@ class Vtiger_Session {
 	 * Initialize session
 	 */
 	static function init($sessionid = false) {
+		global $IS_PRODUCTION;
+
+		// セッションCookieのセキュリティ属性を設定
+		// #4: Secure属性（本番環境のみHTTPS必須）
+		// #24: SameSite属性（CSRF保護）
+		// #26: HttpOnly属性（JavaScript からのアクセス禁止）
+		$cookieParams = [
+			'lifetime' => 0,
+			'path' => '/',
+			'domain' => '',
+			'secure' => ($IS_PRODUCTION === true),
+			'httponly' => true,
+			'samesite' => 'Lax'
+		];
+		session_set_cookie_params($cookieParams);
+
 		if(empty($sessionid)) {
 			HTTP_Session2::start(null, null);
 			$sessionid = HTTP_Session2::id();
