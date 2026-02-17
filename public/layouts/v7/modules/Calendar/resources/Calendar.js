@@ -1318,53 +1318,194 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var isAllowed = jQuery('#is_record_creation_allowed').val();
 		if (isAllowed) {
 			var thisInstance = this;
-			var quickCreateNode = jQuery('#quickCreateModules').find('[data-name="' + moduleName + '"]');
-			if (quickCreateNode.length <= 0) {
-				app.helper.showAlertNotification({
-					'message': app.vtranslate('JS_NO_CREATE_OR_NOT_QUICK_CREATE_ENABLED')
-				});
-			} else {
-				quickCreateNode.trigger('click');
-			}
 
-			app.event.one('post.QuickCreateForm.show', function (e, form) {
-				thisInstance.performingDayClickOperation = false;
-				var modalContainer = form.closest('.modal');
-				if (typeof startDateTime !== 'undefined' && startDateTime) {
-					thisInstance.setStartDateTime(modalContainer, startDateTime);
-				}
-				if (moduleName === 'Events') {
-					thisInstance.registerCreateEventModalEvents(form.closest('.modal'));
-				}
-			});
+			// WebComponents版CalendarQuickCreateを使用
+			thisInstance.performingDayClickOperation = false;
+			thisInstance.showWebComponentsCalendarQuickCreate(moduleName, startDateTime);
 		}
 	},
 	showCreateModalforDrag: function (moduleName, startDateTime, endDateTime) {
 		var isAllowed = jQuery('#is_record_creation_allowed').val();
 		if (isAllowed) {
 			var thisInstance = this;
-			var quickCreateNode = jQuery('#quickCreateModules').find('[data-name="' + moduleName + '"]');
-			if (quickCreateNode.length <= 0) {
-				app.helper.showAlertNotification({
-					'message': app.vtranslate('JS_NO_CREATE_OR_NOT_QUICK_CREATE_ENABLED')
-				});
-			} else {
-				quickCreateNode.trigger('click');
-			}
 
-			app.event.one('post.QuickCreateForm.show', function (e, form) {
-				thisInstance.performingDayClickOperation = false;
-				var modalContainer = form.closest('.modal');
-				if (typeof endDateTime !== 'undefined' && endDateTime) {
-					thisInstance.setStartDateTime(modalContainer, startDateTime);
-					thisInstance.setEndDateTime(modalContainer, endDateTime);
-				}
-				if (moduleName === 'Events') {
-					thisInstance.registerCreateEventModalEvents(form.closest('.modal'));
-				}
-			});
+			// WebComponents版CalendarQuickCreateを使用
+			thisInstance.performingDayClickOperation = false;
+			thisInstance.showWebComponentsCalendarQuickCreate(moduleName, startDateTime, endDateTime);
 		}
-	},	
+	},
+
+	/**
+	 * WebComponents版CalendarQuickCreateを表示
+	 * @param {string} moduleName - Calendar or Events
+	 * @param {moment} startDateTime - 開始日時（moment.js）
+	 * @param {moment} endDateTime - 終了日時（moment.js）
+	 */
+	showWebComponentsCalendarQuickCreate: function (moduleName, startDateTime, endDateTime) {
+		var thisInstance = this;
+
+		// WebComponents用モーダルコンテナを作成（なければ）
+		var containerId = 'webcomponents-calendar-quickcreate-container';
+		var container = document.getElementById(containerId);
+		if (!container) {
+			container = document.createElement('div');
+			container.id = containerId;
+			document.body.appendChild(container);
+		}
+
+		// 既存のQuickCreate要素を削除
+		container.innerHTML = '';
+
+		// CalendarQuickCreate Web Componentを作成
+		var quickCreate = document.createElement('calendar-quick-create');
+		quickCreate.setAttribute('module', moduleName);
+		quickCreate.setAttribute('is-open', 'true');
+
+		// 初期データを構築
+		var initialData = {};
+
+		// 終日エリアからのクリックかどうかを判定
+		// _ambigTime: FullCalendarの内部プロパティ。終日エリアをクリックした場合にtrueになる
+		var isAllDay = startDateTime && startDateTime._ambigTime === true;
+
+		// 開始日時の設定
+		if (startDateTime && typeof startDateTime.format === 'function') {
+			// moment.jsオブジェクトの場合
+			var dateStart = startDateTime.format('YYYY-MM-DD');
+			if (isAllDay) {
+				// 終日の場合は日付のみ（時刻なし）
+				initialData.date_start = dateStart;
+				initialData.is_allday = true;
+			} else {
+				var timeStart = startDateTime.format('HH:mm');
+				initialData.date_start = dateStart + 'T' + timeStart;
+			}
+		}
+
+		// 終了日時の設定
+		if (endDateTime && typeof endDateTime.format === 'function') {
+			var dueDate = endDateTime.format('YYYY-MM-DD');
+			if (isAllDay || endDateTime._ambigTime === true) {
+				// 終日の場合：ドラッグで複数日選択した場合、終了日は1日長くなるので調整
+				var adjustedEndDate = endDateTime.clone().subtract(1, 'days');
+				initialData.due_date = adjustedEndDate.format('YYYY-MM-DD');
+			} else {
+				var timeEnd = endDateTime.format('HH:mm');
+				initialData.due_date = dueDate + 'T' + timeEnd;
+			}
+		} else if (startDateTime && typeof startDateTime.format === 'function') {
+			if (isAllDay) {
+				// 終日の場合、終了日は開始日と同じ
+				initialData.due_date = startDateTime.format('YYYY-MM-DD');
+			} else {
+				// 終了日時が指定されていない場合、開始から1時間後をデフォルトとする
+				var endMoment = startDateTime.clone().add(1, 'hours');
+				var dueDate = endMoment.format('YYYY-MM-DD');
+				var timeEnd = endMoment.format('HH:mm');
+				initialData.due_date = dueDate + 'T' + timeEnd;
+			}
+		}
+
+		if (Object.keys(initialData).length > 0) {
+			quickCreate.setAttribute('initial-data', JSON.stringify(initialData));
+		}
+
+		// 保存成功時のコールバック
+		quickCreate.addEventListener('save', function (e) {
+			var detail = e.detail || {};
+			var calendarModule = moduleName === 'Calendar' ? 'Calendar' : 'Events';
+
+			// カレンダーを更新
+			thisInstance.updateCalendar(calendarModule, detail);
+
+			// イベント発火（他のコンポーネントとの連携用）
+			app.event.trigger('post.QuickCreateForm.save', detail, {
+				module: moduleName,
+				calendarModule: calendarModule
+			});
+		});
+
+		// キャンセル/閉じる時のコールバック
+		quickCreate.addEventListener('cancel', function () {
+			container.innerHTML = '';
+		});
+
+		// 完全フォームへ遷移時のコールバック
+		// 旧版Vtiger.js quickCreateGoToFullFormと同様にPOSTでフォーム送信
+		// これによりcontact_id等のデータが正しくEditViewに渡される
+		quickCreate.addEventListener('go-to-full-form', function (e) {
+			var editUrl = e.detail && e.detail.editUrl;
+			var formData = e.detail && e.detail.formData;
+			if (editUrl) {
+				// POSTでフォーム送信（旧版と同様の挙動）
+				var form = document.createElement('form');
+				form.method = 'POST';
+				form.action = editUrl;
+				form.style.display = 'none';
+
+				// CSRFトークンを追加（POSTリクエストに必須）
+				if (typeof csrfMagicName !== 'undefined' && typeof csrfMagicToken !== 'undefined') {
+					var csrfInput = document.createElement('input');
+					csrfInput.type = 'hidden';
+					csrfInput.name = csrfMagicName;
+					csrfInput.value = csrfMagicToken;
+					form.appendChild(csrfInput);
+				}
+
+				// formDataが存在する場合、hidden inputとして追加
+				if (formData && typeof formData === 'object') {
+					Object.keys(formData).forEach(function(key) {
+						var value = formData[key];
+						if (value === undefined || value === null || value === '') return;
+
+						var input = document.createElement('input');
+						input.type = 'hidden';
+
+						// contact_idの処理（旧版と同じ形式で送信）
+						if (key === 'contact_id') {
+							var strValue = String(value);
+							var ids = strValue.indexOf(';') !== -1 ? strValue.split(';') : [strValue];
+
+							if (ids.length > 1) {
+								// 複数コンタクトの場合はcontactidlistを使用
+								input.name = 'contactidlist';
+								input.value = ids.join(';');
+							} else {
+								// 単一コンタクトの場合はcontact_idを使用
+								input.name = 'contact_id';
+								input.value = ids[0];
+							}
+						} else if (Array.isArray(value)) {
+							// 複数選択肢の場合は |##| 区切りで渡す（旧版の仕様に準拠）
+							input.name = key;
+							input.value = value.join(' |##| ');
+						} else {
+							input.name = key;
+							input.value = String(value);
+						}
+
+						form.appendChild(input);
+					});
+				}
+
+				document.body.appendChild(form);
+				form.submit();
+			}
+		});
+
+		quickCreate.addEventListener('openchange', function (e) {
+			var isOpen = e.detail && e.detail.isOpen;
+			if (!isOpen) {
+				// 少し遅延させてからクリーンアップ
+				setTimeout(function () {
+					container.innerHTML = '';
+				}, 100);
+			}
+		});
+
+		container.appendChild(quickCreate);
+	},
+
 	_updateAllOnCalendar: function (calendarModule) {
 		var thisInstance = this;
 		this.getCalendarViewContainer().fullCalendar('addEventSource',
@@ -1820,7 +1961,49 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			var quickCreateEditUrl = quickCreateUrl + '&mode=edit&record=' + record;
 			if(isDuplicate == true) quickCreateEditUrl += "&isDuplicate=true";
 			quickCreateNode.data('url', quickCreateEditUrl);
-			quickCreateNode.trigger('click');
+
+			// fullCalendarからイベントデータを取得してトリガーに渡す
+			var triggerParams = {};
+
+			// 編集モード: record IDを設定（WebComponents版で使用）
+			triggerParams.record = record;
+
+			try {
+				var calendarContainer = thisInstance.getCalendarViewContainer();
+				if (calendarContainer && calendarContainer.length) {
+					var events = calendarContainer.fullCalendar('clientEvents', record);
+					if (events && events.length > 0) {
+						var eventObj = events[0];
+						// イベントデータをフォーム用に変換（旧版互換用）
+						// WebComponents版では record-id から GetRecord API でデータを取得するため、
+						// ここのデータは initialData として使われるが、recordData が優先される
+						// Note: eventObj.title は表示用（ステータス付き）のため使用しない
+						triggerParams.data = {
+							// subject は eventObj.title ではなく eventObj.subject を使用
+							// eventObj.subject が undefined の場合もあるため、その場合は空文字
+							subject: eventObj.subject || '',
+							date_start: eventObj.start ? eventObj.start.format('YYYY-MM-DD') : '',
+							time_start: eventObj.start ? eventObj.start.format('HH:mm:ss') : '',
+							due_date: eventObj.end ? eventObj.end.format('YYYY-MM-DD') : (eventObj.start ? eventObj.start.format('YYYY-MM-DD') : ''),
+							time_end: eventObj.end ? eventObj.end.format('HH:mm:ss') : (eventObj.start ? eventObj.start.format('HH:mm:ss') : ''),
+							activitytype: eventObj.activitytype,
+							eventstatus: eventObj.status,
+							taskstatus: eventObj.status,
+							assigned_user_id: eventObj.assigned_user_id,
+							visibility: eventObj.visibility,
+							allday: eventObj.allDay ? '1' : '0',
+							description: eventObj.description,
+							location: eventObj.location,
+							parent_id: eventObj.parent_id,
+							contact_id: eventObj.contact_id
+						};
+					}
+				}
+			} catch (e) {
+				console.warn('Could not get event data from fullCalendar:', e);
+			}
+
+			quickCreateNode.trigger('click', triggerParams);
 			quickCreateNode.data('url', quickCreateUrl);
 
 			//スマートフォン対応：ポップオーバーを強制的に非表示にする

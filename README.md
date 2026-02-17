@@ -26,6 +26,7 @@ Vtiger Public License 1.2
   * php-opcache
   * php-zip
   * php-curl
+  * composer
   * memory_limit = 512M(min. 256MB)
   * max_execution_time = 0 (min. 60 seconds、0は無制限)
   * error_reporting (E_ERROR & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED)
@@ -35,6 +36,7 @@ Vtiger Public License 1.2
   * storage_engine = InnoDB
   * local_infile = ON (under [mysqld] section)
   * sql_mode = NO_ENGINE_SUBSTITUTION for MySQL 5.6+
+* Node.js v22以上
 
 ※PHPの下位バージョンでも概ね動作しますが、未検証のため推奨から除外しています。
 
@@ -73,7 +75,7 @@ configファイルは`config.inc.php`として、インストール後に生成�
 ### 前提条件
 データベース名などを「frevocrm」としてインストールすることを前提に記載します。
 
-### 1. Apache, PHP, MySQLのインストール
+### 1. Apache, PHP, MySQL, Node.jsのインストール
 事前にそれぞれをインストールしておいてください。
 
 ***注意点1**
@@ -138,9 +140,19 @@ cd /var/www/html/frevocrm
 composer install
 ```
 
-### 4. 初期設定
+### 4. WebComponentsのビルド
 
-3.で設置したF-RevoCRMのURLを開きます。
+F-RevoCRMの一部機能はWebComponentsを使用しています。以下のコマンドでビルドしてください。
+
+```bash
+cd /var/www/html/frevocrm/assets/react-web-components
+npm install
+npm run build
+```
+
+### 5. 初期設定
+
+4.で設置したF-RevoCRMのURLを開きます。
 * http://example.com/frevocrm
 
 画面に従って初期設定を完了させてください。
@@ -197,6 +209,70 @@ cp -r frevocrm.20201001/storage/* frevocrm/storage/
 rm -r frevocrm.20170118
 ```
 
+## バージョンアップ方法（F-RevoCRM 7.4 → 8.0）
+F-RevoCRM 7.4 を F-RevoCRM 8.0 にバージョンアップする手順になります。
+
+### 前提条件
+* F-RevoCRM 7.4 であること（パッチバージョンは問わない）
+* ソースコードの修正やモジュールの追加がされていないこと
+* F-RevoCRM 7.4のインストール済み環境があること
+
+### 1. バックアップの取得
+F-RevoCRMのデータベース、ファイルを全てバックアップを取得します。
+
+### 2. プログラムファイルの置き換え
+1. F-RevoCRMのディレクトリ全体を別名に置き換えます。
+```
+# コマンド例
+mv frevocrm frevocrm.20250101
+```
+2. F-RevoCRM 8.0 インストール直後のファイルをもともとのF-RevoCRMのディレクトリとしてコピーします。
+```
+# コマンド例
+cp -r frevocrm80 frevocrm
+```
+3. F-RevoCRMの設定ファイル(config.*, *.properties, *tabdata.php)をコピーします。
+```
+# コマンド例
+cp frevocrm.20250101/config.* frevocrm/
+cp frevocrm.20250101/*.properties frevocrm/
+cp frevocrm.20250101/*tabdata.php frevocrm/
+```
+4. F-RevoCRMのドキュメントファイルをコピーします。
+```
+# コマンド例
+cp -r frevocrm.20250101/storage/* frevocrm/storage/
+```
+5. config.inc.phpに以下の設定を追記します。
+```php
+// 本番環境/開発環境の設定
+// 本番環境であれば true を指定してください。
+$IS_PRODUCTION = true;
+```
+
+### 3. WebComponentsのビルド
+```bash
+cd /var/www/frevocrm/assets/react-web-components
+npm install
+npm run build
+```
+
+### 4. マイグレーションツールの実行
+タグとしてv8.0.xが追加されるまで、Migrationは実行されません。
+最新のバージョンで実行したい場合は、`vtigerversion.php`のファイルを編集し、次のバージョンを指定してから以下のマイグレーション用のURLを実行してください。
+
+1. アクセスすると自動でマイグレーションが実行されます。
+ * http://example.com/frevocrm/index.php?module=Migration&view=Index&mode=step1
+
+2. 動作確認
+  F-RevoCRMのログインや業務に関わる動作を確認してください。
+
+3. 作業ディレクトリの削除
+```
+# コマンド例
+rm -r frevocrm.20250101
+```
+
 ## 開発環境の構築
 Dockerで構築する為、[docker/README.md](./docker/README.md)を参照してください。  
 
@@ -207,6 +283,28 @@ Gitコマンドを使い以下の設定を行ってください。
 git update-index --assume-unchanged parent_tabdata.php
 git update-index --assume-unchanged tabdata.php
 git update-index --assume-unchanged user_privileges/user_privileges_1.php
+```
+
+### WebComponents開発
+WebComponentsの開発を行う場合は、以下の手順で設定・起動してください。
+
+1. config.inc.php の `$IS_PRODUCTION` を `false` に設定します。
+```php
+$IS_PRODUCTION = false;
+```
+
+2. Viteの開発サーバーを起動します。
+```bash
+cd assets/react-web-components
+npm install
+npm run dev
+```
+
+開発サーバーが起動すると、WebComponentsの変更がホットリロードで反映されます。
+開発が完了したら、`$IS_PRODUCTION` を `true` に戻し、以下のコマンドでビルドしてください。
+
+```bash
+npm run build
 ```
 
 ### xdebug

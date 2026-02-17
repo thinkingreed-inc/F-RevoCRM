@@ -33,11 +33,22 @@ if (typeof (Vtiger_Import_Js) == 'undefined') {
             jQuery('#importStep2Conatiner').removeClass('show');
             jQuery('#importStep2Conatiner').addClass('hide');
 
+			jQuery('#showImportHistory').addClass('show');
+			jQuery('#navigation_links').removeClass('hide');
+			jQuery('#navigation_links').addClass('show');
+
+            jQuery('#importHistoryContainer').removeClass('show');
+			jQuery('#importHistoryContainer').addClass('hide')
+
             jQuery('#importStepOneButtonsDiv').removeClass('hide');
             jQuery('#importStepOneButtonsDiv').addClass('show');
 
             jQuery('#importStepTwoButtonsDiv').removeClass('show');
             jQuery('#importStepTwoButtonsDiv').addClass('hide');
+
+            jQuery('#importHistoryButtonsDiv').removeClass('show');
+			jQuery('#importHistoryButtonsDiv').addClass('hide');
+            Vtiger_Import_Js.restoreHeaderTitle()
 
             return false;
         },
@@ -45,6 +56,8 @@ if (typeof (Vtiger_Import_Js) == 'undefined') {
 			if(Vtiger_Import_Js.validateFilePath()){
 				jQuery('#uploadFileContainer').removeClass('show');
 				jQuery('#uploadFileContainer').addClass('hide');
+				jQuery('#showImportHistory').removeClass('show');
+				jQuery('#showImportHistory').addClass('hide');
 
 				jQuery('#step1').removeClass('active');
 				jQuery('#step2').addClass('active');
@@ -58,6 +71,42 @@ if (typeof (Vtiger_Import_Js) == 'undefined') {
 				jQuery('#importStepOneButtonsDiv').addClass('hide');
 			}
 			return false;
+        },
+        showImportHistoryContainer: function() {
+			jQuery('#navigation_links').removeClass('show');
+			jQuery('#navigation_links').addClass('hide');
+            jQuery('#uploadFileContainer').removeClass('show');
+			jQuery('#uploadFileContainer').addClass('hide');
+
+			jQuery('#importHistoryContainer').removeClass('hide');
+			jQuery('#importHistoryContainer').addClass('show');
+
+			jQuery('#step1').removeClass('active');
+            Vtiger_Import_Js.changeHeaderTitle();
+
+            jQuery('#showImportHistory').removeClass('show');
+			jQuery('#showImportHistory').addClass('hide');
+
+			jQuery('#importStepOneButtonsDiv').removeClass('show');
+			jQuery('#importStepOneButtonsDiv').addClass('hide');
+
+			jQuery('#importHistoryButtonsDiv').removeClass('hide');
+			jQuery('#importHistoryButtonsDiv').addClass('show');
+
+			return false;
+        },
+        changeHeaderTitle: function(){
+            var header = jQuery('.modal-header h4.pull-left');
+            header.data('header-title', header.html());
+            header.html(app.vtranslate('JS_IMPORT_HISTORY','Import'));
+        },
+        restoreHeaderTitle: function() {
+            var header = jQuery('.modal-header h4.pull-left');
+            var headerTitle = header.data('header-title'); 
+
+            if (headerTitle) {
+                header.html(headerTitle); 
+            }
         },
         uploadAndParse: function(auto_merge) {
             if (Vtiger_Import_Js.validateFilePath() && Vtiger_Import_Js.validateMergeCriteria(auto_merge)) {

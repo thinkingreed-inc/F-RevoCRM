@@ -38,6 +38,11 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-x
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Install Node.js
+COPY --from=node:20-slim /usr/local/bin/node /usr/local/bin/node
+COPY --from=node:20-slim /usr/local/lib/node_modules /usr/local/lib/node_modules
+RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm
+
 # Optional: Install Xdebug (uncomment for development)
 # RUN pecl install xdebug \
 #     && docker-php-ext-enable xdebug \

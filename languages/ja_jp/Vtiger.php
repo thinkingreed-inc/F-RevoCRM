@@ -566,6 +566,11 @@ $languageStrings = array(
 	'LBL_EXPORT_RECORD_CURRENCY'=>'レコードで指定された通貨',
 	'LBL_EXPORT_FORMAT' => 'エクスポート形式',
 	'LBL_EXPORT_DATA' => 'エクスポートデータ',
+	'LBL_RELATED_RECORDS_EXPORT_FORMAT' => '関連項目のエクスポート形式',
+	'LBL_IMPORTABLE_FORMAT' => 'インポート可能な形式',
+	'LBL_LABEL_ONLY' => 'ラベルのみ',
+	'LBL_LABEL' => 'ラベル',
+
 
 	'LBL_CUSTOMIZE' => 'カスタマイズ',
 	'LBL_ADD_MANAGE_MODULES' => 'モジュール',
@@ -1680,7 +1685,43 @@ $languageStrings = array(
 			'カスタマーポータルでは、お問い合わせ管理や、過去のFAQと回答をご確認いただけます。<br />'.                        
 			'ポータルへのアクセスは本メールに記載のURL、ID、パスワードを使いログインしてください。</div>',
 	'LBL_CUSTOMER_PORTAL_LOGIN_INFORMATION' => '顧客ポータルのログイン情報のお知らせ',
-	'LBL_SETUP_PARAMETER_MESSAGE_SHOW_SCHEDULE_CONFIRM_FLAG' => '他人のカレンダーを変更する際の確認フラグです。true: 確認する、false: 確認しない',
+ 	'LBL_SETUP_PARAMETER_MESSAGE_SHOW_SCHEDULE_CONFIRM_FLAG' => '他人のカレンダーを変更する際の確認フラグです。true: 確認する、false: 確認しない',
+
+	// WebComponents QuickCreate 多言語対応
+	'LBL_SAVING' => '保存中...',
+	'LBL_UPDATING' => '更新中...',
+	'LBL_UPDATE' => '更新',
+	'LBL_FIELD_REQUIRED' => '%sは必須です',
+	'LBL_FIELD_MAX_LENGTH' => '%sは%s文字以内で入力してください',
+	'LBL_END_DATE_AFTER_START' => '終了日時は開始日時より後に設定してください',
+	'LBL_CREATED_SUCCESS' => '%sを作成しました',
+	'LBL_UPDATED_SUCCESS' => '%sを更新しました',
+	'LBL_LOADING_FIELDS' => 'フィールド情報を読み込み中...',
+	'LBL_NO_FIELDS_AVAILABLE' => '表示できるフィールドがありません',
+	'LBL_ALL_DAY' => '終日',
+	'LBL_SET_REMINDER' => '設定する',
+	'LBL_SEND_NOTIFICATION' => '事前にメールを送信',
+	'LBL_START' => '開始',
+	'LBL_DAYS' => '日',
+	'LBL_HOURS' => '時間',
+	'LBL_MINUTES_BEFORE' => '分前に通知',
+	'LBL_INVITEES' => '招待者',
+	'LBL_SELECT_INVITEES' => '招待者を選択',
+	'LBL_INVITEES_SELECTED' => '%s名選択中',
+	'LBL_CLEAR_ALL' => 'すべてクリア',
+	'LBL_SEARCH_USERS_PLACEHOLDER' => 'ユーザーを検索して追加...',
+	'LBL_ALL_USERS_SELECTED' => 'すべてのユーザーが選択済みです',
+	'LBL_NO_MATCHING_USERS' => '該当するユーザーがいません',
+	'LBL_TASK' => 'ToDo',
+	'LBL_EVENT' => '活動',
+	'LBL_INVITEE_BLOCK' => '招待者情報',
+	'LBL_ALARM_INFORMATION' => 'アラーム情報',
+
+	// WebComponents Placeholders
+	'LBL_PLACEHOLDER_ENTER' => '%sを入力してください',
+	'LBL_PLACEHOLDER_SEARCH' => '%sを検索...',
+	'LBL_PLACEHOLDER_SEARCH_AND_ADD' => '%sを検索して追加...',
+	'LBL_PLACEHOLDER_SEARCH_TITLE' => '%sを検索',
 );
 
 $jsLanguageStrings = array(
@@ -1775,6 +1816,7 @@ $jsLanguageStrings = array(
 	'JS_PLEASE_ENTER_SOME_VALUE' => '検索する値をいくつか入力してください',
 	'JS_VCF_FILE_IMPORT_WARNING' => 'VCFファイルが選択されました。VCFファイルからインポートできるのは顧客担当者のみです。このファイルをインポートするには顧客担当者からインポートを開始してください。',
 	'JS_ICS_FILE_IMPORT_WARNING' => 'ICSファイルが選択されました。ICSファイルからインポートできるのはカレンダーのみです。このファイルをインポートするには、カレンダーモジュールからインポートを開始してください',
+	'JS_IMPORT_HISTORY'=> 'インポート 履歴',
 
 	//Select2 elements validation message
 	'JS_YOU_CAN_SELECT_ONLY'=> '選択可能：',

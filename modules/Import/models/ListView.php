@@ -36,7 +36,7 @@ class Import_ListView_Model extends Vtiger_ListView_Model {
 	 * @param Vtiger_Paging_Model $pagingModel
 	 * @return <Array> - Associative array of record id mapped to Vtiger_Record_Model instance.
 	 */
-	public function getListViewEntries($pagingModel) {
+	public function getListViewEntries($pagingModel,$importid = null) {
 		$db = PearDatabase::getInstance();
 
 		$moduleName = $this->getModule()->get('name');
@@ -79,7 +79,7 @@ class Import_ListView_Model extends Vtiger_ListView_Model {
 		$startIndex = $pagingModel->getStartIndex();
 		$pageLimit = $pagingModel->getPageLimit();
 
-		$importedRecordIds = $this->getLastImportedRecord();
+		$importedRecordIds = $this->getLastImportedRecord($importid);
 		$listViewRecordModels = array();
 		if(count($importedRecordIds) != 0) {
 			$moduleModel = $this->get('module');
@@ -88,7 +88,7 @@ class Import_ListView_Model extends Vtiger_ListView_Model {
 			if(!empty($orderBy) && $orderByFieldModel) {
 				$listQuery .= ' ORDER BY '.$queryGenerator->getOrderByColumn($orderBy).' '.$sortOrder;
 			} else if(empty($orderBy) && empty($sortOrder) && $moduleName != "Users"){
-				$listQuery .= ' ORDER BY vtiger_crmentity.modifiedtime DESC';
+				$listQuery .= ' ORDER BY vtiger_crmentity.crmid ASC';
 			}
 
 			$listQuery .= " LIMIT $startIndex, ".($pageLimit+1);
@@ -167,11 +167,11 @@ class Import_ListView_Model extends Vtiger_ListView_Model {
 		return $instance->set('module', $moduleModel)->set('query_generator', $queryGenerator)->set('listview_controller', $controller);
 	}
 
-	public function getLastImportedRecord() {
+	public function getLastImportedRecord($importid = null) {
 		$db = PearDatabase::getInstance();
 
 		$user = Users_Record_Model::getCurrentUserModel();
-		$userDBTableName = Import_Utils_Helper::getDbTableName($user);
+		$userDBTableName = Import_Utils_Helper::getDbTableName($user, $importid);
 
 		$result = $db->pquery('SELECT recordid FROM '.$userDBTableName.' WHERE status NOT IN (?,?) AND recordid IS NOT NULL',Array(Import_Data_Action::$IMPORT_RECORD_FAILED,  Import_Data_Action::$IMPORT_RECORD_SKIPPED));
 		$noOfRecords = $db->num_rows($result);

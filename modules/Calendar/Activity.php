@@ -1306,37 +1306,41 @@ function insertIntoRecurringTable(& $recurObj)
 		return $query;
 	}
 
+	/**
+	 * 非管理者ユーザーの権限に基づくアクセス制御SQLを生成する。
+	 * ※ vt_tmp系のCalendar共有判定は一時的に無効化中。今後、カレンダー設定の選択ユーザー表示仕様に合わせて見直す予定。
+	*/
 	public function getNonAdminAccessControlQuery($module, $user,$scope='') {
-		require('user_privileges/user_privileges_'.$user->id.'.php');
-		require('user_privileges/sharing_privileges_'.$user->id.'.php');
+		// require('user_privileges/user_privileges_'.$user->id.'.php');
+		// require('user_privileges/sharing_privileges_'.$user->id.'.php');
 		$query = ' ';
-		$tabId = getTabid($module);
-		if($is_admin==false && $profileGlobalPermission[1] == 1 && $profileGlobalPermission[2]
-				== 1) {
-			$sharedTabId = null;
+		// $tabId = getTabid($module);
+		// if($is_admin==false && $profileGlobalPermission[1] == 1 && $profileGlobalPermission[2]
+		// 		== 1) {
+		// 	$sharedTabId = null;
 
-			if($_REQUEST['module'] === "Accounts" && $_REQUEST['view'] === "Detail" && (empty($_REQUEST['mode']) || $_REQUEST['mode'] === "showDetailViewByMode" || $_REQUEST['mode'] === "getActivities")){
-				$crmtablename = 'tmp';
-				$activitytable = 'tmp';
-			}else{
-				$crmtablename = 'vtiger_crmentity';
-				$activitytable = 'vtiger_activity';
-			}
-			//For Events
-			$tableName = 'vt_tmp_u'.$user->id.'_t'.$tabId.'_events';
-			$this->setupTemporaryTableForEvents($tableName, $sharedTabId, $user,
-				$current_user_parent_role_seq, $current_user_groups);
-			$query = " LEFT JOIN $tableName $tableName$scope ON ($tableName$scope.id = ".
-				"$crmtablename$scope.smownerid AND $activitytable.activitytype NOT IN ('Emails', 'Task')) ";
+		// 	if($_REQUEST['module'] === "Accounts" && $_REQUEST['view'] === "Detail" && (empty($_REQUEST['mode']) || $_REQUEST['mode'] === "showDetailViewByMode" || $_REQUEST['mode'] === "getActivities")){
+		// 		$crmtablename = 'tmp';
+		// 		$activitytable = 'tmp';
+		// 	}else{
+		// 		$crmtablename = 'vtiger_crmentity';
+		// 		$activitytable = 'vtiger_activity';
+		// 	}
+		// 	//For Events
+		// 	$tableName = 'vt_tmp_u'.$user->id.'_t'.$tabId.'_events';
+		// 	$this->setupTemporaryTableForEvents($tableName, $sharedTabId, $user,
+		// 		$current_user_parent_role_seq, $current_user_groups);
+		// 	$query = " LEFT JOIN $tableName $tableName$scope ON ($tableName$scope.id = ".
+		// 		"$crmtablename$scope.smownerid AND $activitytable.activitytype NOT IN ('Emails', 'Task')) ";
 
-			//For Task
-			$task_tableName = 'vt_tmp_u'.$user->id.'_t'.$tabId.'_task';
-			$this->setupTemporaryTableForTask($task_tableName, $tabId, $user,
-				$current_user_parent_role_seq, $current_user_groups, $defaultOrgSharingPermission[$tabId]);
+		// 	//For Task
+		// 	$task_tableName = 'vt_tmp_u'.$user->id.'_t'.$tabId.'_task';
+		// 	$this->setupTemporaryTableForTask($task_tableName, $tabId, $user,
+		// 		$current_user_parent_role_seq, $current_user_groups, $defaultOrgSharingPermission[$tabId]);
 
-			$query .= " LEFT JOIN $task_tableName $task_tableName$scope ON ($task_tableName$scope.id = ".
-				"$crmtablename$scope.smownerid AND $activitytable.activitytype = 'Task') ";
-		}
+		// 	$query .= " LEFT JOIN $task_tableName $task_tableName$scope ON ($task_tableName$scope.id = ".
+		// 		"$crmtablename$scope.smownerid AND $activitytable.activitytype = 'Task') ";
+		// }
 		return $query;
 	}
 
@@ -1434,17 +1438,21 @@ function insertIntoRecurringTable(& $recurObj)
 		return $shared_ids;
 	}
 
+	/**
+	 * 非管理者ユーザーの権限に基づくアクセス制御SQLを生成する。
+	 * ※ vt_tmp系のCalendar共有判定は一時的に無効化中。今後、カレンダー設定の選択ユーザー表示仕様に合わせて見直す予定。
+	*/
 	public function buildWhereClauseConditionForCalendar($scope = '') {
-		$userModel = Users_Record_Model::getCurrentUserModel();
-		require('user_privileges/user_privileges_'.$userModel->id.'.php');
+		// $userModel = Users_Record_Model::getCurrentUserModel();
+		// require('user_privileges/user_privileges_'.$userModel->id.'.php');
 
 		$query = "";
-		if($profileGlobalPermission[1] == 1 && $profileGlobalPermission[2] == 1) {
-			$tabId = getTabid("Calendar");
-			$eventTempTable = 'vt_tmp_u'.$userModel->id.'_t'.$tabId.'_events'.$scope;
-			$taskTempTable = 'vt_tmp_u'.$userModel->id.'_t'.$tabId.'_task'.$scope;
-			$query = " ($eventTempTable.shared IS NOT NULL OR $taskTempTable.shared IS NOT NULL) ";
-		}
+		// if($profileGlobalPermission[1] == 1 && $profileGlobalPermission[2] == 1) {
+		// 	$tabId = getTabid("Calendar");
+		// 	$eventTempTable = 'vt_tmp_u'.$userModel->id.'_t'.$tabId.'_events'.$scope;
+		// 	$taskTempTable = 'vt_tmp_u'.$userModel->id.'_t'.$tabId.'_task'.$scope;
+		// 	$query = " ($eventTempTable.shared IS NOT NULL OR $taskTempTable.shared IS NOT NULL) ";
+		// }
 		return $query;
 	}
 

@@ -1332,6 +1332,9 @@ function createRecords($obj) {
 	if ($numberOfRecords <= 0) {
 		return;
 	}
+		
+	// 関連項目のキャッシュを作成
+	$cache = $obj->createCacheForReference($moduleFields);
 
 	$fieldMapping = $obj->fieldMapping;
 	$fieldColumnMapping = $moduleMeta->getFieldColumnMapping();
@@ -1376,7 +1379,7 @@ function createRecords($obj) {
 
 		if (!empty($lineItems)) {
 			if(method_exists($focus, 'importRecord')) {
-				$entityInfo = $focus->importRecord($obj, $fieldData, $lineItems);
+				$entityInfo = $focus->importRecord($obj, $fieldData, $lineItems, $cache);
 			}
 		}
 
@@ -1420,8 +1423,7 @@ function createRecords($obj) {
 	unset($result);
 	return true;
 }
-
-function isRecordExistInDB($fieldData, $moduleMeta, $user) {
+function isRecordExistInDB($fieldData, $moduleMeta, $user, $cache) {
 	global $adb, $log;
 	$moduleFields = $moduleMeta->getModuleFields();
 	$isRecordExist = false;
@@ -1439,16 +1441,22 @@ function isRecordExistInDB($fieldData, $moduleMeta, $user) {
 				} else {
 					$fieldValueDetails = $fieldValue;
 				}
+				foreach($fieldValueDetails as $fieldValueDetail){
+					if (strpos($fieldValueDetail, '====') > 0) {
+						$fieldDetail = explode('====', $fieldValueDetail);
+						$fieldDetails[$fieldDetail[0]] = $fieldDetail[1];
+					}
+				}
 				if (php7_count($fieldValueDetails) > 1) {
 					$referenceModuleName = trim($fieldValueDetails[0]);
-					$entityLabel = trim($fieldValueDetails[1]);
-					$entityId = getEntityId($referenceModuleName, decode_html($entityLabel));
+					$referenceValueList = $fieldDetails;
+					$entityId = getEntityIdByColumns($referenceModuleName, $referenceValueList, $cache);
 				} else {
 					$referencedModules = $fieldInstance->getReferenceList();
 					$entityLabel = $fieldValue;
 					foreach ($referencedModules as $referenceModule) {
 						$referenceModuleName = $referenceModule;
-						$referenceEntityId = getEntityId($referenceModule, $entityLabel);
+						$referenceEntityId = getEntityIdByColumns($referenceModule, $entityLabel,$cache);
 						if ($referenceEntityId != 0) {
 							$entityId = $referenceEntityId;
 							break;
@@ -1468,57 +1476,62 @@ function isRecordExistInDB($fieldData, $moduleMeta, $user) {
 	return $isRecordExist;
 }
 
-function importRecord($obj, $inventoryFieldData, $lineItemDetails) {
+function importRecord($obj, $inventoryFieldData, $lineItemDetails, $cache) {
 	global $adb, $log;
 	$moduleName = $obj->module;
 	$fieldMapping = $obj->fieldMapping;
 
-	$inventoryHandler = vtws_getModuleHandlerFromName($moduleName, $obj->user);
-	$inventoryMeta = $inventoryHandler->getMeta();
-	$moduleFields = $inventoryMeta->getModuleFields();
-	$isRecordExist = isRecordExistInDB($inventoryFieldData, $inventoryMeta, $obj->user);
-	$lineItemHandler = vtws_getModuleHandlerFromName('LineItem', $obj->user);
-	$lineItemMeta = $lineItemHandler->getMeta();
-
-	$lineItems = array();
-	foreach ($lineItemDetails as $index => $lineItemFieldData) {
-		$isLineItemExist = isRecordExistInDB($lineItemFieldData, $lineItemMeta, $obj->user);
-		if($isLineItemExist) {
-			$count = $index;
-			$lineItemData = array();
-			$lineItemFieldData = $obj->transformForImport($lineItemFieldData, $lineItemMeta);
-			foreach ($fieldMapping as $fieldName => $index) {
-				if($moduleFields[$fieldName]->getTableName() == 'vtiger_inventoryproductrel') {
-					$lineItemData[$fieldName] = $lineItemFieldData[$fieldName];
-					if($fieldName != 'productid')
-						$inventoryFieldData[$fieldName] = '';
+	try {
+		$inventoryHandler = vtws_getModuleHandlerFromName($moduleName, $obj->user);
+		$inventoryMeta = $inventoryHandler->getMeta();
+		$moduleFields = $inventoryMeta->getModuleFields();
+		$isRecordExist = isRecordExistInDB($inventoryFieldData, $inventoryMeta, $obj->user, $cache);
+		$lineItemHandler = vtws_getModuleHandlerFromName('LineItem', $obj->user);
+		$lineItemMeta = $lineItemHandler->getMeta();
+		
+		$lineItems = array();
+		foreach ($lineItemDetails as $index => $lineItemFieldData) {
+			$isLineItemExist = isRecordExistInDB($lineItemFieldData, $lineItemMeta, $obj->user, $cache);
+			if($isLineItemExist) {
+				$count = $index;
+				$lineItemData = array();
+				$lineItemFieldData = $obj->transformForImport($lineItemFieldData, $lineItemMeta, $cache);
+				foreach ($fieldMapping as $fieldName => $index) {
+					if($moduleFields[$fieldName]->getTableName() == 'vtiger_inventoryproductrel') {
+						$lineItemData[$fieldName] = $lineItemFieldData[$fieldName];
+						if($fieldName != 'productid')
+							$inventoryFieldData[$fieldName] = '';
+					}
 				}
+				array_push($lineItems,$lineItemData);
 			}
-			array_push($lineItems,$lineItemData);
 		}
-	}
-	if (empty ($lineItems)) {
-		return null;
-	} elseif ($isRecordExist == false) {
-		foreach ($lineItemDetails[$count] as $key => $value) {
-			$inventoryFieldData[$key] = $value;
+		if (empty ($lineItems)) {
+			return null;
+		} elseif ($isRecordExist == false) {
+			foreach ($lineItemDetails[$count] as $key => $value) {
+				$inventoryFieldData[$key] = $value;
+			}
 		}
+
+		$fieldData = $obj->transformForImport($inventoryFieldData, $inventoryMeta, $cache);
+		if(empty($fieldData) || empty($lineItemDetails)) {
+			return null;
+		}
+		if ($fieldData['currency_id'] == ' ') {
+			$fieldData['currency_id'] = '1';
+		}
+		$fieldData['LineItems'] = $lineItems;
+		
+		$webserviceObject = VtigerWebserviceObject::fromName($adb, $moduleName);
+		$inventoryOperation = new VtigerInventoryOperation($webserviceObject, $obj->user, $adb, $log);
+		
+		$entityInfo = $inventoryOperation->create($moduleName, $fieldData);
+		$entityInfo['status'] = $obj->getImportRecordStatus('created');
+	} catch (ImportException $e) {
+		$entityInfo['status'] = $obj->getImportRecordStatus('skipped');
 	}
 
-	$fieldData = $obj->transformForImport($inventoryFieldData, $inventoryMeta);
-	if(empty($fieldData) || empty($lineItemDetails)) {
-		return null;
-	}
-	if ($fieldData['currency_id'] == ' ') {
-		$fieldData['currency_id'] = '1';
-	}
-	$fieldData['LineItems'] = $lineItems;
-
-	$webserviceObject = VtigerWebserviceObject::fromName($adb, $moduleName);
-	$inventoryOperation = new VtigerInventoryOperation($webserviceObject, $obj->user, $adb, $log);
-
-	$entityInfo = $inventoryOperation->create($moduleName, $fieldData);
-	$entityInfo['status'] = $obj->getImportRecordStatus('created');
 	return $entityInfo;
 }
 

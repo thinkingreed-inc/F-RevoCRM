@@ -104,7 +104,66 @@
                                     {/foreach}
                                     </div>
                                 </li>
-
+                            {else if $RECENT_ACTIVITY->isDelete()}
+                                <li>
+                                    <time class="update_time cursorDefault">
+                                        <small title="{Vtiger_Util_Helper::formatDateTimeIntoDayString($RECENT_ACTIVITY->getActivityTime())}">
+                                            {Vtiger_Util_Helper::formatDateTimeIntoDayString($RECENT_ACTIVITY->getActivityTime())}
+                                        </small>
+                                    </time>
+                                    {assign var=USER_MODEL value=$RECENT_ACTIVITY->getModifiedBy()}
+                                    {assign var=IMAGE_DETAILS value=$USER_MODEL->getImageDetails()}
+                                    {if $IMAGE_DETAILS neq '' && $IMAGE_DETAILS[0] neq '' && $IMAGE_DETAILS[0].url eq ''}
+                                        <div class="update_icon bg-info">
+                                            <i class='update_image vicon-vtigeruser'></i>
+                                        </div>
+                                    {else}
+                                        {foreach item=IMAGE_INFO from=$IMAGE_DETAILS}
+                                            {if !empty($IMAGE_INFO.url)}
+                                                <div class="update_icon">
+                                                    <img class="update_image" src="{$IMAGE_INFO.url}" >
+                                                </div>
+                                            {/if}
+                                        {/foreach}
+                                    {/if}
+                                    <div class="update_info">
+                                        <div> 
+                                            <h5>
+                                                <span class="field-name">{$RECENT_ACTIVITY->getModifiedBy()->getDisplayName()} </span> {vtranslate('LBL_DELETE', $MODULE_NAME)}
+                                            </h5>
+                                        </div>
+                                    </div>
+                                </li>
+                            {else if $RECENT_ACTIVITY->isRestore()}
+                                <li>
+                                    <time class="update_time cursorDefault">
+                                        <small title="{Vtiger_Util_Helper::formatDateTimeIntoDayString($RECENT_ACTIVITY->getActivityTime())}">
+                                            {Vtiger_Util_Helper::formatDateTimeIntoDayString($RECENT_ACTIVITY->getActivityTime())}
+                                        </small>
+                                    </time>
+                                    {assign var=USER_MODEL value=$RECENT_ACTIVITY->getModifiedBy()}
+                                    {assign var=IMAGE_DETAILS value=$USER_MODEL->getImageDetails()}
+                                    {if $IMAGE_DETAILS neq '' && $IMAGE_DETAILS[0] neq '' && $IMAGE_DETAILS[0].url eq ''}
+                                        <div class="update_icon bg-info">
+                                            <i class='update_image vicon-vtigeruser'></i>
+                                        </div>
+                                    {else}
+                                        {foreach item=IMAGE_INFO from=$IMAGE_DETAILS}
+                                            {if !empty($IMAGE_INFO.url)}
+                                                <div class="update_icon">
+                                                    <img class="update_image" src="{$IMAGE_INFO.url}" >
+                                                </div>
+                                            {/if}
+                                        {/foreach}
+                                    {/if}
+                                    <div class="update_info">
+                                        <div> 
+                                            <h5>
+                                                <span class="field-name">{$RECENT_ACTIVITY->getModifiedBy()->getDisplayName()} </span> {vtranslate('LBL_RESTORED', $MODULE_NAME)}
+                                            </h5>
+                                        </div>
+                                    </div>
+                                </li>
                             {else if ($RECENT_ACTIVITY->isRelationLink() || $RECENT_ACTIVITY->isRelationUnLink())}
                                 {assign var=RELATED_MODULE value= $RELATION->getLinkedRecord()->getModuleName()}
                                 <li>

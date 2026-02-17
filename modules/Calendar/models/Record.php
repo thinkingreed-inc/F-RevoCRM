@@ -123,7 +123,8 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 			foreach($childRecords as $record) {
 				$recordModel = $this->getInstanceById($record, $this->getModuleName());
 				$adb->pquery("DELETE FROM vtiger_activity_recurring_info WHERE activityid=? AND recurrenceid=?", array($parentRecurringId, $record));
-				$recordModel->deleteInviteeRecord();
+				$inviteeDeletedRecords = $recordModel->deleteInviteeRecord();
+				$deletedRecords = array_merge($deletedRecords, $inviteeDeletedRecords);
 				$recordModel->getModule()->deleteRecord($recordModel);
 				$deletedRecords[] = $record;
 			}
@@ -132,7 +133,8 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 				$parentRecurringId = $this->getParentRecurringRecord();
 				$adb->pquery("DELETE FROM vtiger_activity_recurring_info WHERE activityid=? AND recurrenceid=?", array($parentRecurringId, $this->getId()));
 			}
-			$this->deleteInviteeRecord();
+			$inviteeDeletedRecords = $this->deleteInviteeRecord();
+			$deletedRecords = array_merge($deletedRecords, $inviteeDeletedRecords);
 			$this->getModule()->deleteRecord($this);
 			$deletedRecords[] = $this->getId();
 		}
@@ -225,6 +227,7 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 	
 	public function deleteInviteeRecord() {
 		global $adb;
+		$deletedRecords = array();
 
 		$result = $adb->pquery("SELECT
 									a.activityid
@@ -247,7 +250,9 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 
 			$adb->pquery("DELETE FROM vtiger_activity_recurring_info WHERE recurrenceid=?", array($recordModel->getId()));
 			$recordModel->getModule()->deleteRecord($recordModel);
+			$deletedRecords[] = $activityid;
 		}
+		return $deletedRecords;
 	}
 
 	// 共同参加者のカレンダーidを取得する関数
