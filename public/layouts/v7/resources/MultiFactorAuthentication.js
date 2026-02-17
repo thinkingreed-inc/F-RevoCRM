@@ -526,6 +526,10 @@ window.FR_MultiFactorAuthentication_Js = {
      */
     init: function () {
         this.cacheDom();
+        // MFA画面でない場合は処理をスキップ
+        if (!this.elements.passkeyForm && !this.elements.totpForm) {
+            return;
+        }
         this.bindEvents();
         this.handleInitialState();
     }
