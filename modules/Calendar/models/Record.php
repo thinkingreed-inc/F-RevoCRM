@@ -149,13 +149,15 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 		$recurringObject = $this->getRecurringObject();
 		if ($recurringObject) {
 			$recurringInfoDisplayData = $recurringObject->getDisplayRecurringInfo();
-			$recurringEndDate = $recurringObject->getRecurringEndDate(); 
+			$recurringInfoDisplayData['recurringcheck_raw'] = 'Yes';
+			$recurringEndDate = $recurringObject->getRecurringEndDate();
 		} else {
 			$recurringInfoDisplayData['recurringcheck'] = vtranslate('LBL_NO', $currentModule);
+			$recurringInfoDisplayData['recurringcheck_raw'] = 'No';
 			$recurringInfoDisplayData['repeat_str'] = '';
 		}
-		if(!empty($recurringEndDate)){ 
-			$recurringInfoDisplayData['recurringenddate'] = $recurringEndDate->get_formatted_date(); 
+		if(!empty($recurringEndDate)){
+			$recurringInfoDisplayData['recurringenddate'] = $recurringEndDate->get_formatted_date();
 		}
 
 		return $recurringInfoDisplayData;
