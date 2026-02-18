@@ -47,7 +47,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 	},
 	editCalendarEvent: function (eventId, isRecurring, isInvitee) {
 		var instance = Calendar_Calendar_Js.getInstance();
-		instance.editCalendarEvent(eventId, isRecurring, isInvitee);
+		instance.editCalendarEvent(eventId, isRecurring, false, isInvitee);
 	},
 	editCalendarEventFromContent: function (eventId, isRecurring) {
 		if (window.innerWidth >= 650) {
@@ -2249,7 +2249,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 					popOverHTML += '' +
 							'<span class="pull-right cursorPointer" ' +
 							'onClick="Calendar_Calendar_Js.deleteCalendarEvent(\'' + eventObj.id +
-							'\',\'' + sourceModule + '\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_DELETE') + '">' +
+							'\',\'' + sourceModule + '\',' + eventObj.recurringcheck+ ',' + isInvitee + ');" title="' + app.vtranslate('JS_DELETE') + '">' +
 							'&nbsp;&nbsp;<i class="fa fa-trash"></i>' +
 							'</span> &nbsp;&nbsp;';
 
@@ -2257,7 +2257,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 						popOverHTML += '' +
 								'<span class="pull-right cursorPointer" ' +
 								'onClick="Calendar_Calendar_Js.editCalendarEvent(\'' + eventObj.id +
-								'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_EDIT') + '">' +
+								'\',' + eventObj.recurringcheck + ', false,' + isInvitee + ');" title="' + app.vtranslate('JS_EDIT') + '">' +
 								'&nbsp;&nbsp;<i class="fa fa-pencil"></i>' +
 								'</span>';
 								popOverHTML += '' +
