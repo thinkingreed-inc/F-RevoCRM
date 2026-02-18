@@ -133,7 +133,11 @@ export function useQuickCreateFields(
         setFields(convertedFields);
 
         // 編集画面URLを構築
-        setEditViewUrl(`index.php?module=${module}&view=Edit`);
+        // Calendar/Events は module=Calendar で統一し、mode パラメータで切り替える
+        // （活動: mode=Events、TODO: mode=Calendar）
+        // mode パラメータは QuickCreate.tsx の handleGoToFullForm で追加される
+        const editModule = (module === 'Events' || module === 'Calendar') ? 'Calendar' : module;
+        setEditViewUrl(`index.php?module=${editModule}&view=Edit`);
 
         // 翻訳されたモジュール名を設定
         if (data.moduleLabel) {
