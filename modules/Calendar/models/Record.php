@@ -449,28 +449,4 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 		$plainText = trim(strip_tags(preg_replace('/<(head|title|style|script)[^>]*>.*?<\/\\1>/si', '', $html)));
 		return nl2br($plainText);
 	}
-	/**
-	 * 共有カレンダー他人予定の削除・編集権限の確認
-	 * 共有・非振り返り　削除・編集不可
-	 * 共有・振り返り　削除・編集可能
-	 */
-	public function isPermittedForOthersEventByRecurring($isrecurring)
-	{
-		global $adb, $current_user;
-		$deletedCond = $isrecurring ? "" : "a.deleted = 0 AND ";
-
-		$query = "	SELECT 1
-					FROM vtiger_activity a
-					WHERE {$deletedCond}
-							a.invitee_parentid = (
-								SELECT a2.invitee_parentid
-								FROM vtiger_activity a2
-								WHERE a2.activityid = ?
-							)
-						AND a.smownerid = ?
-					LIMIT 1";
-
-		$result = $adb->pquery($query, array($this->getId(), $current_user->id));
-		return ($adb->num_rows($result) > 0);
-	}
 }

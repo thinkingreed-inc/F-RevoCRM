@@ -25,17 +25,7 @@ class Calendar_DeleteAjax_Action extends Vtiger_DeleteAjax_Action {
 	function checkPermission(Vtiger_Request $request) {
 		$sourceModule = $request->get('sourceModule');
 		$record = $request->get('record');
-		//共有カレンダーの予定を削除する場合、共同参加者の予定も削除するため、元参加者ユーザーでも削除できるようにする
-        try {
-            parent::checkPermission($request);
-        } catch (AppException $e) {
-			$moduleName = $request->getModule();
-			$isrecurring= $request->get('recurringEditMode') != null;
-			$recordModel = Vtiger_Record_Model::getInstanceById($record, $moduleName);
-            if (!$recordModel->isPermittedForOthersEventByRecurring($isrecurring)) {
-                throw $e;
-            }
-        }
+		parent::checkPermission($request);
 		if ($record) {
 			$activityModulesList = array('Calendar', 'Events','ProjectTask');
 			$recordEntityName = getSalesEntityType($record);

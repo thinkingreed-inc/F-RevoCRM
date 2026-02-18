@@ -423,6 +423,12 @@ function isPermitted($module,$actionname,$record_id='')
 				$log->debug("Exiting isPermitted method ...");
 				return $permission;
 			}
+			//共有されたカレンダーは編集可能にする。
+			if(isCalendarPermittedForInvitee($module, $record_id)){
+				$permission = "yes";
+				$log->debug("Exiting isPermitted method ...");
+				return $permission;
+			}
 			//Checking if the Record Owner is the Subordinate User
 			foreach($subordinate_roles_users as $roleid=>$userids)
 			{
@@ -451,6 +457,12 @@ function isPermitted($module,$actionname,$record_id='')
 			if(in_array($recOwnId,$current_user_groups))
 			{
 				$permission='yes';
+				$log->debug("Exiting isPermitted method ...");
+				return $permission;
+			}
+			//共有されたカレンダーは編集可能にする。
+			if(isCalendarPermittedForInvitee($module, $record_id)){
+				$permission = "yes";
 				$log->debug("Exiting isPermitted method ...");
 				return $permission;
 			}
@@ -2291,6 +2303,38 @@ function isCalendarPermittedBySharing($recordId)
 	return $permission;
 }
 
+function isCalendarPermittedForInvitee($module, $recordId)
+{
+
+	$activityType = vtws_getCalendarEntityType($recordId);
+	$isPermission = false;	
+	if($module != 'Calendar' || $activityType != 'Events') {
+		return $isPermission;
+	}
+
+	global $adb, $current_user;
+	$res = $adb->pquery("SELECT (recurringtype IS NOT NULL AND recurringtype <> '') AS is_recurring
+							FROM vtiger_activity
+							WHERE activityid=?",[$recordId]
+						);
+
+	$isRecurring = ($res && $adb->num_rows($res) > 0) ? $adb->query_result($res, 0, 'is_recurring'): false;
+	$deletedCond = $isRecurring ? "" : "a.deleted = 0 AND ";
+	$query = "	SELECT 1
+					FROM vtiger_activity a
+					WHERE {$deletedCond}
+							a.invitee_parentid = (
+								SELECT a2.invitee_parentid
+								FROM vtiger_activity a2
+								WHERE a2.activityid = ?
+							)
+						AND a.smownerid = ?
+					LIMIT 1";
+
+	$result = $adb->pquery($query, array($recordId, $current_user->id));
+	$isPermission =$adb->num_rows($result) > 0;
+	return $isPermission;
+}
 
 function isToDoPermittedBySharing($recordId) {
 	global $current_user;
