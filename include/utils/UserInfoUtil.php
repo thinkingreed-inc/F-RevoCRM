@@ -2302,7 +2302,10 @@ function isCalendarPermittedBySharing($recordId)
 
 	return $permission;
 }
-
+/*  共有カレンダー他人予定の削除・編集権限の確認
+ *  共有・非繰り返し 削除・編集不可
+ *  共有・繰り返し   削除・編集可能
+ */
 function isCalendarPermittedForInvitee($module, $recordId)
 {
 
