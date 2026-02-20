@@ -116,3 +116,37 @@ export function calcRoundMinDate(date: Date, roundNum: number): Date {
 
   return newDate;
 }
+
+/**
+ * Calendar/Events用の日時フィールド変換
+ * datetime-local形式 (YYYY-MM-DDTHH:MM) を date + time に分割
+ *
+ * @example
+ * // date_start: "2024-01-15T10:00" → date_start: "2024-01-15", time_start: "10:00"
+ * // due_date: "2024-01-15T11:00" → due_date: "2024-01-15", time_end: "11:00"
+ */
+export function transformCalendarDateTime(data: Record<string, unknown>): Record<string, unknown> {
+  const transformed = { ...data };
+
+  // date_start → date_start + time_start
+  if (transformed.date_start && typeof transformed.date_start === 'string') {
+    const dateStartValue = transformed.date_start;
+    if (dateStartValue.includes('T')) {
+      const [datePart, timePart] = dateStartValue.split('T');
+      transformed.date_start = datePart;
+      transformed.time_start = timePart;
+    }
+  }
+
+  // due_date → due_date + time_end
+  if (transformed.due_date && typeof transformed.due_date === 'string') {
+    const dueDateValue = transformed.due_date;
+    if (dueDateValue.includes('T')) {
+      const [datePart, timePart] = dueDateValue.split('T');
+      transformed.due_date = datePart;
+      transformed.time_end = timePart;
+    }
+  }
+
+  return transformed;
+}

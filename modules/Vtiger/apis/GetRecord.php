@@ -77,6 +77,13 @@ class Vtiger_GetRecord_Api extends Vtiger_Api_Controller {
             $sensitiveFields = array('user_password', 'confirm_password', 'accesskey', 'crypt_type', 'user_hash');
             $data = array_diff_key($data, array_flip($sensitiveFields));
 
+            // Calendar/Events モジュールの場合、繰り返し活動情報を追加
+            if (($sourceModule === 'Calendar' || $sourceModule === 'Events') && method_exists($recordModel, 'getRecurrenceInformation')) {
+                $recurringInfo = $recordModel->getRecurrenceInformation();
+                // recurringcheck: 'Yes' or 'No'
+                $data['recurringcheck'] = isset($recurringInfo['recurringcheck']) ? $recurringInfo['recurringcheck'] : 'No';
+            }
+
             // HTMLをデコード
             $decodedData = array_map('decode_html', $data);
 

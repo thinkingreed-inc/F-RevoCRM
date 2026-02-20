@@ -558,11 +558,57 @@ Vtiger.Class('Vtiger_Index_Js', {
 		// 編集モードかどうか
 		var isEditMode = !!params.record;
 
+		// 保存前のコールバック（繰り返し活動の確認モーダル表示用）
+		// Calendar/Eventsモジュールで繰り返し活動を編集する場合に使用
+		if (isCalendarModule) {
+			quickCreate.addEventListener('before-save', function (e) {
+				var detail = e.detail || {};
+
+				// 繰り返し活動でない場合、または新規作成の場合はそのまま続行
+				if (!detail.isRecurring || !detail.isEditMode) {
+					return;
+				}
+
+				// 繰り返し活動の編集の場合、確認モーダルを表示
+				e.preventDefault();
+
+				// z-index問題対策: Bootstrap modalをWebComponents dialogの前面に表示するため、
+				// popupModalのz-indexを一時的に上げ、WebComponentsダイアログのポインターイベントを無効化
+				// Radix UIのダイアログはReactポータルでbody直下にレンダリングされるため、
+				// data-slot属性を持つ要素に直接pointer-events: noneを適用する
+				// ただし、popupModalとその内部は操作可能にする
+				var styleElement = document.createElement('style');
+				styleElement.id = 'webcomponents-modal-zindex-fix';
+				styleElement.textContent = '#popupModal, #popupModal * { z-index: 100010 !important; pointer-events: auto !important; } .modal-backdrop { z-index: 100009 !important; } [data-slot="dialog-overlay"], [data-slot="dialog-content"], .web-components-wrapper { pointer-events: none !important; } [data-slot="dialog-content"] * { pointer-events: none !important; }';
+				document.head.appendChild(styleElement);
+
+				app.helper.showConfirmationForRepeatEvents()
+					.then(function (postData) {
+						// z-index修正用のスタイルを削除
+						var styleEl = document.getElementById('webcomponents-modal-zindex-fix');
+						if (styleEl) styleEl.remove();
+						// recurringEditModeを渡して保存続行
+						// postData = { recurringEditMode: 'current' | 'future' | 'all' }
+						detail.continueSave(postData);
+					})
+					.fail(function () {
+						// z-index修正用のスタイルを削除
+						var styleEl = document.getElementById('webcomponents-modal-zindex-fix');
+						if (styleEl) styleEl.remove();
+					});
+			});
+		}
+
 		// イベントリスナーを設定
 		quickCreate.addEventListener('save', function(e) {
 			var result = e.detail;
-			// 既存のイベントをトリガー
-			app.event.trigger("post.QuickCreateForm.save", result, params.data || {});
+			// 既存のイベントをトリガー（旧版互換：moduleとcalendarModuleを含める）
+			var formData = Object.assign({}, params.data || {});
+			formData.module = moduleName;
+			if (isCalendarModule) {
+				formData.calendarModule = moduleName;
+			}
+			app.event.trigger("post.QuickCreateForm.save", result, formData);
 			// コールバック実行
 			callbackFunction(result, null);
 			// 成功通知（編集モードの場合は更新メッセージ）
