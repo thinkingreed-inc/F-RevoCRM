@@ -1398,8 +1398,8 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				// 終日の場合、終了日は開始日と同じ
 				initialData.due_date = startDateTime.format('YYYY-MM-DD');
 			} else {
-				// 終了日時が指定されていない場合、開始から1時間後をデフォルトとする
-				var endMoment = startDateTime.clone().add(1, 'hours');
+				// 終了日時が指定されていない場合、開始から30分後をデフォルトとする
+				var endMoment = startDateTime.clone().add(30, 'minutes');
 				var dueDate = endMoment.format('YYYY-MM-DD');
 				var timeEnd = endMoment.format('HH:mm');
 				initialData.due_date = dueDate + 'T' + timeEnd;
@@ -1409,6 +1409,46 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		if (Object.keys(initialData).length > 0) {
 			quickCreate.setAttribute('initial-data', JSON.stringify(initialData));
 		}
+
+		// 保存前のコールバック（繰り返し活動の確認モーダル表示用）
+		// before-saveイベントはcancelable: trueで発火されるため、
+		// preventDefault()で保存をキャンセルし、detail.continueSave()で再開できる
+		quickCreate.addEventListener('before-save', function (e) {
+			var detail = e.detail || {};
+
+			// 繰り返し活動でない場合、または新規作成の場合はそのまま続行
+			if (!detail.isRecurring || !detail.isEditMode) {
+				return;
+			}
+
+			// 繰り返し活動の編集の場合、確認モーダルを表示
+			e.preventDefault();
+
+			// z-index問題対策: Bootstrap modalをWebComponents dialogの前面に表示するため、
+			// popupModalのz-indexを一時的に上げ、WebComponentsダイアログのポインターイベントを無効化
+			// Radix UIのダイアログはReactポータルでbody直下にレンダリングされるため、
+			// data-slot属性を持つ要素に直接pointer-events: noneを適用する
+			// ただし、popupModalとその内部は操作可能にする
+			var styleElement = document.createElement('style');
+			styleElement.id = 'webcomponents-modal-zindex-fix';
+			styleElement.textContent = '#popupModal, #popupModal * { z-index: 100010 !important; pointer-events: auto !important; } .modal-backdrop { z-index: 100009 !important; } [data-slot="dialog-overlay"], [data-slot="dialog-content"], .web-components-wrapper { pointer-events: none !important; } [data-slot="dialog-content"] * { pointer-events: none !important; }';
+			document.head.appendChild(styleElement);
+
+			app.helper.showConfirmationForRepeatEvents()
+				.then(function (postData) {
+					// z-index修正用のスタイルを削除
+					var styleEl = document.getElementById('webcomponents-modal-zindex-fix');
+					if (styleEl) styleEl.remove();
+					// recurringEditModeを渡して保存続行
+					// postData = { recurringEditMode: 'current' | 'future' | 'all' }
+					detail.continueSave(postData);
+				})
+				.fail(function () {
+					// z-index修正用のスタイルを削除
+					var styleEl = document.getElementById('webcomponents-modal-zindex-fix');
+					if (styleEl) styleEl.remove();
+				});
+		});
 
 		// 保存成功時のコールバック
 		quickCreate.addEventListener('save', function (e) {

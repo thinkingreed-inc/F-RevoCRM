@@ -4,6 +4,7 @@ import {
   QuickCreateSaveResult,
   QuickCreateSaveResponse
 } from '../../../types/quickcreate';
+import { transformCalendarDateTime } from '../../../utils/datetime';
 
 /**
  * QuickCreate保存処理のHook
@@ -23,36 +24,6 @@ export function useQuickCreateSave(module: string): UseQuickCreateSaveResult {
       return { name: csrfName, value: csrfToken };
     }
     return null;
-  }, []);
-
-  /**
-   * Calendar/Events用の日時フィールド変換
-   * datetime-local形式 (YYYY-MM-DDTHH:MM) を date + time に分割
-   */
-  const transformCalendarDateTime = useCallback((data: Record<string, any>): Record<string, any> => {
-    const transformed = { ...data };
-
-    // date_start → date_start + time_start
-    if (transformed.date_start && typeof transformed.date_start === 'string') {
-      const dateStartValue = transformed.date_start;
-      if (dateStartValue.includes('T')) {
-        const [datePart, timePart] = dateStartValue.split('T');
-        transformed.date_start = datePart;
-        transformed.time_start = timePart;
-      }
-    }
-
-    // due_date → due_date + time_end
-    if (transformed.due_date && typeof transformed.due_date === 'string') {
-      const dueDateValue = transformed.due_date;
-      if (dueDateValue.includes('T')) {
-        const [datePart, timePart] = dueDateValue.split('T');
-        transformed.due_date = datePart;
-        transformed.time_end = timePart;
-      }
-    }
-
-    return transformed;
   }, []);
 
   /**
@@ -91,6 +62,13 @@ export function useQuickCreateSave(module: string): UseQuickCreateSaveResult {
       // VtigerのSaveAjaxはCalendarモジュール保存時にcalendarModuleパラメータを必要とする
       if (isCalendarModule) {
         bodyParams.append('calendarModule', module);
+
+        // 繰り返し活動編集モードのパラメータ追加
+        // recurringEditMode: 'current' | 'future' | 'all'
+        // 繰り返し活動を編集する際、どの範囲を更新するかを指定
+        if (processedData.recurringEditMode) {
+          bodyParams.append('recurringEditMode', String(processedData.recurringEditMode));
+        }
       }
 
       // フォームデータ追加（空値・false値は除外）
@@ -183,7 +161,7 @@ export function useQuickCreateSave(module: string): UseQuickCreateSaveResult {
     } finally {
       setIsSaving(false);
     }
-  }, [module, getCsrfToken, transformCalendarDateTime]);
+  }, [module, getCsrfToken]);
 
   /**
    * エラーをクリア

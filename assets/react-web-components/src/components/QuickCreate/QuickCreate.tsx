@@ -19,6 +19,7 @@ import { FieldInfo, FieldValue } from '../../types/field';
 import { cn } from '../../lib/utils';
 import { TranslationProvider } from '../../contexts/TranslationContext';
 import { useTranslation } from '../../hooks/useTranslation';
+import { transformCalendarDateTime } from '../../utils/datetime';
 
 /**
  * Activity type for Calendar variant
@@ -578,15 +579,13 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
   }, [isCalendarVariant, calendarCurrentFields, defaultFields, currentCalendarFormData, formData]);
 
   /**
-   * Handle save
+   * Internal save function that performs the actual save
+   * @param additionalParams Optional parameters to merge (e.g., recurringEditMode)
    */
-  const handleSave = useCallback(async () => {
-    if (!validateForm()) {
-      return;
-    }
-
+  const doSave = useCallback(async (additionalParams?: Record<string, any>) => {
     const saveFn = isCalendarVariant ? calendarSave : defaultSave;
-    const saveData = isCalendarVariant ? currentCalendarFormData : formData;
+    const baseData = isCalendarVariant ? currentCalendarFormData : formData;
+    const saveData = additionalParams ? { ...baseData, ...additionalParams } : baseData;
 
     const result = await saveFn(saveData);
 
@@ -608,9 +607,61 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
       }, 1500);
     }
   }, [
-    validateForm, isCalendarVariant, calendarSave, defaultSave,
+    isCalendarVariant, calendarSave, defaultSave,
     currentCalendarFormData, formData, isEditMode, moduleLabel, module,
-    onSave, handleOpenChange
+    onSave, handleOpenChange, t
+  ]);
+
+  /**
+   * Handle save with before-save event support
+   * Emits a cancelable 'before-save' custom event before saving.
+   * External code can call e.preventDefault() to cancel the save,
+   * then use e.detail.continueSave(params) to resume with additional parameters.
+   */
+  const handleSave = useCallback(async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    const saveData = isCalendarVariant ? currentCalendarFormData : formData;
+
+    // Determine if this is a recurring event (calendar variant edit mode only)
+    // recurringcheck is 'Yes' or 'No' from the API
+    const isRecurring = isCalendarVariant && isEditMode && recordData?.recurringcheck === 'Yes';
+
+    // Create before-save event
+    const beforeSaveEvent = new CustomEvent('before-save', {
+      bubbles: true,
+      cancelable: true,
+      composed: true, // Allow event to cross shadow DOM boundaries
+      detail: {
+        module: isCalendarVariant ? activeTab : module,
+        recordId: recordId,
+        formData: saveData,
+        isRecurring: isRecurring,
+        isEditMode: isEditMode,
+        continueSave: (additionalParams?: Record<string, any>) => doSave(additionalParams)
+      }
+    });
+
+    // Find the Web Component element (calendar-quick-create or quick-create)
+    // The event should be dispatched from the Web Component element so external
+    // event listeners can catch it
+    const webComponentElement = document.querySelector('calendar-quick-create[is-open="true"], quick-create[is-open="true"]');
+
+    if (webComponentElement) {
+      const shouldContinue = webComponentElement.dispatchEvent(beforeSaveEvent);
+      if (!shouldContinue) {
+        // Event was cancelled by preventDefault(), external code will call continueSave
+        return;
+      }
+    }
+
+    // Normal save (no preventDefault was called)
+    await doSave();
+  }, [
+    validateForm, isCalendarVariant, currentCalendarFormData, formData,
+    isEditMode, recordData, activeTab, module, recordId, doSave
   ]);
 
   /**
@@ -644,8 +695,14 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
 
     if (!editViewUrl) return;
 
+    // Calendar系モジュールの場合、datetime-local形式を date + time に分割
+    // Edit.phpはdate_start/time_start、due_date/time_endを別々のパラメータとして受け取るため
+    const processedFormData = isCalendarVariant
+      ? transformCalendarDateTime(targetFormData)
+      : targetFormData;
+
     if (onGoToFullForm) {
-      onGoToFullForm({ editUrl: editViewUrl, formData: targetFormData });
+      onGoToFullForm({ editUrl: editViewUrl, formData: processedFormData });
       return;
     }
 
@@ -657,7 +714,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
     form.style.display = 'none';
 
     // フォームデータをhidden inputとして追加
-    Object.entries(targetFormData).forEach(([key, value]) => {
+    Object.entries(processedFormData).forEach(([key, value]) => {
       if (value === undefined || value === null || value === '') return;
 
       const input = document.createElement('input');

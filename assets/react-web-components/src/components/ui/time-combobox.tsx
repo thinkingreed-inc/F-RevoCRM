@@ -71,6 +71,8 @@ export function TimeComboBox({
 
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  // Track if an option was just selected to skip blur normalization
+  const optionSelectedRef = useRef(false);
   const [dropdownPosition, setDropdownPosition] = useState<{
     top: number;
     left: number;
@@ -108,6 +110,13 @@ export function TimeComboBox({
     setTimeout(() => {
       setIsOpen(false);
 
+      // Skip normalization if an option was just selected
+      // (handleOptionClick already handled the value correctly)
+      if (optionSelectedRef.current) {
+        optionSelectedRef.current = false;
+        return;
+      }
+
       // Normalize the input value
       const normalized = normalizeTimeInput(inputValue);
       if (normalized) {
@@ -129,6 +138,8 @@ export function TimeComboBox({
 
   // Handle option click
   const handleOptionClick = useCallback((option: TimeOption) => {
+    // Mark that an option was selected to skip blur normalization
+    optionSelectedRef.current = true;
     setInputValue(option.value);
     setLastValidValue(option.value);
     onChange(option.value);
