@@ -2329,4 +2329,7 @@ $jsLanguageStrings = array(
 	// Actions
 	'JS_EDIT' => 'Edit',
 	'JS_DELETE' => 'Delete',
+
+	// Events
+	'LBL_INVITE_USERS' => 'Participants',
 );
