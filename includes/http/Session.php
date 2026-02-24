@@ -40,9 +40,10 @@ class Vtiger_Session {
 		// #4: Secure属性（本番環境のみHTTPS必須）
 		// #24: SameSite属性（CSRF保護）
 		// #26: HttpOnly属性（JavaScript からのアクセス禁止）
+		$cookiePath = ini_get('session.cookie_path') ?: '/';
 		$cookieParams = [
 			'lifetime' => 0,
-			'path' => '/',
+			'path' => $cookiePath,
 			'domain' => '',
 			'secure' => ($IS_PRODUCTION === true),
 			'httponly' => true,
