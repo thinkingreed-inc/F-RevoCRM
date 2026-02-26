@@ -2302,7 +2302,10 @@ function isCalendarPermittedBySharing($recordId)
 
 	return $permission;
 }
-
+/*  共有カレンダー他人予定の削除・編集権限の確認
+ *  共有・非繰り返し 削除・編集不可
+ *  共有・繰り返し   削除・編集可能
+ */
 function isCalendarPermittedForInvitee($module, $recordId)
 {
 
@@ -2313,21 +2316,26 @@ function isCalendarPermittedForInvitee($module, $recordId)
 	}
 
 	global $adb, $current_user;
-	$query = "SELECT
-					a.activityid
-				FROM
-					vtiger_activity a
-				WHERE
-					a.deleted = 0
-					AND a.invitee_parentid = (SELECT a2.invitee_parentid FROM vtiger_activity a2 WHERE a2.activityid = ?)
-					AND a.smownerid = ?";
+	$res = $adb->pquery("SELECT (recurringtype IS NOT NULL AND recurringtype <> '') AS is_recurring
+							FROM vtiger_activity
+							WHERE activityid=?",[$recordId]
+						);
+
+	$isRecurring = ($res && $adb->num_rows($res) > 0) ? $adb->query_result($res, 0, 'is_recurring'): false;
+	$deletedCond = $isRecurring ? "" : "a.deleted = 0 AND ";
+	$query = "	SELECT 1
+					FROM vtiger_activity a
+					WHERE {$deletedCond}
+							a.invitee_parentid = (
+								SELECT a2.invitee_parentid
+								FROM vtiger_activity a2
+								WHERE a2.activityid = ?
+							)
+						AND a.smownerid = ?
+					LIMIT 1";
 
 	$result = $adb->pquery($query, array($recordId, $current_user->id));
-	
-	if($adb->num_rows($result) > 0) {
-		$isPermission = true;
-	}
-
+	$isPermission =$adb->num_rows($result) > 0;
 	return $isPermission;
 }
 

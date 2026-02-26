@@ -304,6 +304,11 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 
 		$queryGenerator->setFields(array('subject', 'eventstatus', 'visibility','date_start','time_start','due_date','time_end','assigned_user_id','id','activitytype','recurringtype','parent_id','description', 'location', 'creator', 'modifiedby'));
 		$query = $queryGenerator->getQuery();
+		// SQLを切り替えるための追加条件（共有フラグ）
+		$extraColumn = "CASE WHEN EXISTS (SELECT 1 FROM vtiger_invitees inv
+		WHERE inv.activityid = vtiger_activity.invitee_parentid) 
+		THEN 1 ELSE 0 END AS isInvitee";
+		$query = preg_replace('/\ASELECT\s+/i', 'SELECT '.$extraColumn.', ', $query, 1);
 
 		$query.= " AND vtiger_activity.activitytype NOT IN ('Emails','Task') AND ";
 		$hideCompleted = $currentUser->get('hidecompletedevents');
@@ -352,6 +357,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			$item['activitytype'] = vtranslate($activitytype, 'Events');
 			$item['status'] = $status;
 			$recordBusy = true;
+			$isInvitee = ($record['isinvitee'] == 1) ? true : false;
 			if(in_array($ownerId, $groupsIds)) {
 				$recordBusy = false;
 			} else if($ownerId == $currentUser->getId()){
@@ -368,7 +374,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 				$recurringCheck = true;
 			}
 			$item['recurringcheck'] = $recurringCheck;
-
+			$item['isInvitee'] = $isInvitee;
 			if(!$currentUser->isAdminUser() && $visibility == 'Private' && $userid && $userid != $currentUser->getId() && $recordBusy) {
 				$item['title'] = decode_html($userName).' - '.decode_html(vtranslate('Busy','Events')).'*';
 				$item['url']   = '';

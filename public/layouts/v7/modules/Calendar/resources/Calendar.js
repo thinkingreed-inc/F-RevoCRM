@@ -41,13 +41,13 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var instance = Calendar_Calendar_Js.getInstance();
 		instance.showCalendarSettings();
 	},
-	deleteCalendarEvent: function (eventId, sourceModule, isRecurring) {
+	deleteCalendarEvent: function (eventId, sourceModule, isRecurring, isInvitee) {
 		var instance = Calendar_Calendar_Js.getInstance();
-		instance.deleteCalendarEvent(eventId, sourceModule, isRecurring);
+		instance.deleteCalendarEvent(eventId, sourceModule, isRecurring, isInvitee);
 	},
-	editCalendarEvent: function (eventId, isRecurring) {
+	editCalendarEvent: function (eventId, isRecurring, isInvitee) {
 		var instance = Calendar_Calendar_Js.getInstance();
-		instance.editCalendarEvent(eventId, isRecurring);
+		instance.editCalendarEvent(eventId, isRecurring, false, isInvitee);
 	},
 	editCalendarEventFromContent: function (eventId, isRecurring) {
 		if (window.innerWidth >= 650) {
@@ -1911,21 +1911,108 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			}
 		});
 	},
-	deleteCalendarEvent: function (eventId, sourceModule, isRecurring) {
+	/**
+	 * 削除範囲選択ポップアップを表示
+	 * 共有予定の場合、自分のみ削除か全員削除かを選択させる
+	 */
+	showDeleteScopeCheck: function () {
 		var thisInstance = this;
-		this.confirmEditOthersEvent(eventId).then(function () {
-			if (isRecurring) {
-				app.helper.showConfirmationForRepeatEvents().then(function (postData) {
+		var aDeferred = jQuery.Deferred();
+		var params = {
+			module: 'Calendar',
+			view: 'DeleteScopeCheck'
+		};
+		app.helper.showProgress();
+		app.request.get({ data: params }).then(function (e, data) {
+			app.helper.hideProgress();
+
+			var callback = function (modalContainer) {
+				// 「自分のみ削除」ボタン
+				modalContainer.on('click', '.deleteSelf', function () {
+					app.helper.hidePopup();
+					aDeferred.resolve({ deleteScope: 'self' });
+				});
+				// 「全員削除」ボタン
+				modalContainer.on('click', '.deleteAll', function () {
+					app.helper.hidePopup();
+					aDeferred.resolve({ deleteScope: 'all' });
+				});
+			};
+			app.helper.showPopup(data, { cb: callback });
+		});
+		return aDeferred.promise();
+	},
+	/**
+	 * 編集範囲選択ポップアップを表示
+	 * 共有予定の場合、自分のみ編集か全員編集かを選択させる
+	 */
+	showEditScopeCheck: function () {
+		var thisInstance = this;
+		var aDeferred = jQuery.Deferred();
+		var params = {
+			module: 'Calendar',
+			view: 'EditScopeCheck'
+		};
+		app.helper.showProgress();
+		app.request.get({ data: params }).then(function (e, data) {
+			app.helper.hideProgress();
+
+			var callback = function (modalContainer) {
+				// 「自分のみ編集」ボタン
+				modalContainer.on('click', '.editSelf', function () {
+					app.helper.hidePopup();
+					aDeferred.resolve({ editScope: 'self' });
+				});
+				// 「全員編集」ボタン
+				modalContainer.on('click', '.editAll', function () {
+					app.helper.hidePopup();
+					aDeferred.resolve({ editScope: 'all' });
+				});
+			};
+			app.helper.showPopup(data, { cb: callback });
+		});
+		return aDeferred.promise();
+	},
+	/**
+	 * カレンダーイベントを削除する
+	 * 繰り返し予定と共有予定の場合は確認ダイアログを表示
+	 */
+	deleteCalendarEvent: function (eventId, sourceModule, isRecurring, isInvitee) {
+		var thisInstance = this;
+		var events = thisInstance.getCalendarViewContainer().fullCalendar('clientEvents', eventId);
+		var event = (events && events.length) ? events[0] : null;
+		// 繰り返し予定の場合
+		if (isRecurring) {
+			app.helper.showConfirmationForRepeatEvents().then(function (postData) {
+				if (isInvitee) {
+					thisInstance.showDeleteScopeCheck().then(function (scopeData) {
+						var combinedData = jQuery.extend({}, postData, {
+							deleteScope: scopeData.deleteScope
+						});
+						thisInstance._deleteCalendarEvent(eventId, sourceModule, combinedData);
+					});
+				} else {
 					thisInstance._deleteCalendarEvent(eventId, sourceModule, postData);
+				}
+			});
+			return;
+		}
+		// 共有予定の場合（繰り返しなし）
+		if (isInvitee) {
+			thisInstance.showDeleteScopeCheck().then(function (scopeData) {
+				thisInstance._deleteCalendarEvent(eventId, sourceModule, {
+					deleteScope: scopeData.deleteScope
 				});
-			} else {
-				app.helper.showConfirmationBox({
-					message: app.vtranslate('LBL_DELETE_CONFIRMATION')
-				}).then(function () {
-					thisInstance._deleteCalendarEvent(eventId, sourceModule);
-				});
-			}
-		}.bind(this));
+			});
+			return;
+		}else {
+		// 通常の予定（繰り返しなし、共有なし）
+			app.helper.showConfirmationBox({
+				message: app.vtranslate('LBL_DELETE_CONFIRMATION')
+			}).then(function () {
+				thisInstance._deleteCalendarEvent(eventId, sourceModule);
+			});
+		}
 	},
 	updateEventOnCalendar: function (eventData) {
 		this.updateAllEventsOnCalendar();
@@ -1986,10 +2073,12 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		};
 		modalContainer.find('form').vtValidate(params);
 	},
-	registerEditEventModalEvents: function (modalContainer, isRecurring) {
+	registerEditEventModalEvents: function (modalContainer, isRecurring, isInvitee) {
+		// 共有予定かどうかの情報をモーダルに保存
+		modalContainer.data('isInvitee', isInvitee);
 		this.validateAndUpdateEvent(modalContainer, isRecurring);
 	},
-	showEditModal: function (moduleName, record, isRecurring, isDuplicate) {
+	showEditModal: function (moduleName, record, isRecurring, isDuplicate, isInvitee) {
 		var thisInstance = this;
 		var quickCreateNode = jQuery('#quickCreateModules').find('[data-name="' + moduleName + '"]');
 		if (quickCreateNode.length <= 0) {
@@ -2059,7 +2148,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 
 			if (moduleName === 'Events') {
 				app.event.one('post.QuickCreateForm.show', function (e, form) {
-					thisInstance.registerEditEventModalEvents(form.closest('.modal'), isRecurring);
+					thisInstance.registerEditEventModalEvents(form.closest('.modal'), isRecurring, isInvitee);
 				});
 			}
 		}
@@ -2070,17 +2159,18 @@ Vtiger.Class("Calendar_Calendar_Js", {
 	editCalendarTask: function (taskId) {
 		this.showEditTaskModal(taskId);
 	},
-	showEditEventModal: function (eventId, isRecurring, isDuplicate) {
-		this.showEditModal('Events', eventId, isRecurring, isDuplicate);
+	showEditEventModal: function (eventId, isRecurring, isDuplicate, isInvitee) {
+		this.showEditModal('Events', eventId, isRecurring, isDuplicate, isInvitee);
 	},
-	editCalendarEvent: function (eventId, isRecurring) {
-		this.showEditEventModal(eventId, isRecurring);
+	editCalendarEvent: function (eventId, isRecurring, isInvitee) {
+		this.showEditEventModal(eventId, isRecurring,isInvitee);
 	},
 	copyCalendarEvent: function (eventId, isRecurring, isDuplicate) {
 		this.showEditEventModal(eventId, isRecurring, isDuplicate);
 	},
 	registerPopoverEvent: function (event, element, calendarView) {
 		var self = this; 
+		var thisInstance = this;
 		var dateFormat = this.getUserPrefered('date_format');
 		dateFormat = dateFormat.toUpperCase();
 		var hourFormat = this.getUserPrefered('time_format');
@@ -2149,35 +2239,37 @@ Vtiger.Class("Calendar_Calendar_Js", {
 
 			popOverHTML += '</span>';
 
+			// 共有予定かどうかを判定
+			var isInvitee = eventObj.isInvitee === true;
 			if (sourceModule === 'Calendar' || sourceModule == 'Events'||sourceModule =="ProjectTask") {
 				if (window.innerWidth < 650) {
 					popOverHTML += '' +
 						'<span class="pull-right cursorPointer" ' +
 						'onClick="Calendar_Calendar_Js.deleteCalendarEvent(\'' + eventObj.id +
-						'\',\'' + sourceModule + '\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_DELETE') + '">' +
-						'&nbsp;&nbsp;<i class="fa fa-trash fa-2x"></i>' +
+						'\',\'' + sourceModule + '\',' + eventObj.recurringcheck + ',' + isInvitee + ');" title="' + app.vtranslate('JS_DELETE') + '">' +
+						'&nbsp;<i class="fa fa-trash"></i>' +
 						'</span> &nbsp;&nbsp;';
 
-					if (sourceModule === 'Events') {
-						popOverHTML += '' +
-								'<span class="pull-right cursorPointer" ' +
-								'onClick="Calendar_Calendar_Js.editCalendarEvent(\'' + eventObj.id +
-								'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_EDIT') + '">' +
-								'&nbsp;&nbsp;<i class="fa fa-pencil fa-2x"></i>' +
-								'</span>';
-								popOverHTML += '' +
-								'<span class="pull-right cursorPointer" ' +
-								'onClick="Calendar_Calendar_Js.copyCalendarEvent(\'' + eventObj.id +
-								'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_COPY') + '">' +
-								'&nbsp;&nbsp;<i class="fa fa-copy fa-2x"></i>' +
-								'</span>';
-					} else if (sourceModule === 'Calendar') {
-						popOverHTML += '' +
-								'<span class="pull-right cursorPointer" ' +
-								'onClick="Calendar_Calendar_Js.editCalendarTask(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_EDIT') + '">' +
-								'&nbsp;&nbsp;<i class="fa fa-pencil fa-2x"></i>' +
-								'</span>';
-					}
+				if (sourceModule === 'Events') {
+					popOverHTML += '' +
+							'<span class="pull-right cursorPointer" ' +
+							'onClick="Calendar_Calendar_Js.editCalendarEvent(\'' + eventObj.id +
+							'\',' + eventObj.recurringcheck + ',' + isInvitee + ');" title="' + app.vtranslate('JS_EDIT') + '">' +
+							'&nbsp;<i class="fa fa-pencil"></i>&nbsp;' +
+							'</span>';
+							popOverHTML += '' +
+							'<span class="pull-right cursorPointer" ' +
+							'onClick="Calendar_Calendar_Js.copyCalendarEvent(\'' + eventObj.id +
+							'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_COPY') + '">' +
+							'&nbsp;<i class="fa fa-copy"></i>&nbsp;' +
+							'</span>';
+				} else if (sourceModule === 'Calendar') {
+					popOverHTML += '' +
+							'<span class="pull-right cursorPointer" ' +
+							'onClick="Calendar_Calendar_Js.editCalendarTask(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_EDIT') + '">' +
+							'&nbsp;<i class="fa fa-pencil"></i>&nbsp;' +
+							'</span>';
+				}
 
 					if (eventObj.status !== 'Held' && eventObj.status !== 'Completed') {
 						popOverHTML += '' +
@@ -2197,7 +2289,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 					popOverHTML += '' +
 							'<span class="pull-right cursorPointer" ' +
 							'onClick="Calendar_Calendar_Js.deleteCalendarEvent(\'' + eventObj.id +
-							'\',\'' + sourceModule + '\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_DELETE') + '">' +
+							'\',\'' + sourceModule + '\',' + eventObj.recurringcheck+ ',' + isInvitee + ');" title="' + app.vtranslate('JS_DELETE') + '">' +
 							'&nbsp;&nbsp;<i class="fa fa-trash"></i>' +
 							'</span> &nbsp;&nbsp;';
 
@@ -2205,7 +2297,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 						popOverHTML += '' +
 								'<span class="pull-right cursorPointer" ' +
 								'onClick="Calendar_Calendar_Js.editCalendarEvent(\'' + eventObj.id +
-								'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_EDIT') + '">' +
+								'\',' + eventObj.recurringcheck + ', false,' + isInvitee + ');" title="' + app.vtranslate('JS_EDIT') + '">' +
 								'&nbsp;&nbsp;<i class="fa fa-pencil"></i>' +
 								'</span>';
 								popOverHTML += '' +
@@ -2807,16 +2899,19 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				this.renderVtAgendaEvents();
 			},
 			getAgendaActionsHTML: function (event) {
+				var thisInstance = this;
+				// 共有予定かどうかを判定
+				var isInvitee = event.isInvitee === true;
 				var actionsMarkup = '' +
 						'<div class="agenda-event-actions verticalAlignMiddle">' +
 						'<span class="pull-right cursorPointer" ' +
 						'onClick="Calendar_Calendar_Js.deleteCalendarEvent(\'' + event.id +
-						'\',\'Events\',' + event.recurringcheck + ');" title="' + app.vtranslate('JS_DELETE') + '">' +
+						'\',\'Events\',' + event.recurringcheck + ',' + isInvitee + ');" title="' + app.vtranslate('JS_DELETE') + '">' +
 						'&nbsp;&nbsp;<i class="fa fa-trash"></i>' +
 						'</span>' +
 						'<span class="pull-right cursorPointer" ' +
 						'onClick="Calendar_Calendar_Js.editCalendarEvent(\'' + event.id +
-						'\',' + event.recurringcheck + ');" title="' + app.vtranslate('JS_EDIT') + '">' +
+						'\',' + event.recurringcheck + ',' + isInvitee + ');" title="' + app.vtranslate('JS_EDIT') + '">' +
 						'&nbsp;&nbsp;<i class="fa fa-pencil"></i>' +
 						'</span>' + 
 						'<span class="pull-right cursorPointer" ' +
