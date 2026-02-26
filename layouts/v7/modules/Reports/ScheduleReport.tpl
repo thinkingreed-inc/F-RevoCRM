@@ -37,7 +37,7 @@
                 <div class='col-lg-3' style='position:relative;top:5px;'>{vtranslate('LBL_ON_THESE_DAYS', $MODULE)}</div>
                 <div class='col-lg-4'>
                     {assign var=dayOfWeek value=Zend_Json::decode($SCHEDULEDREPORTS->get('schdayoftheweek'))}
-                    <select style='width:280px;' multiple class='select2'  name='schdayoftheweek' data-rule-required="true" id='schdayoftheweek'>
+                    <select style='width:280px;' multiple class='select2'  name='schdayoftheweek[]' data-rule-required="true" id='schdayoftheweek'>
                         <option value="7" {if is_array($dayOfWeek) && in_array('7', $dayOfWeek)} selected {/if}>{vtranslate('LBL_DAY0', 'Calendar')}</option>
                         <option value="1" {if is_array($dayOfWeek) && in_array('1', $dayOfWeek)} selected {/if}>{vtranslate('LBL_DAY1', 'Calendar')}</option>
                         <option value="2" {if is_array($dayOfWeek) && in_array('2', $dayOfWeek)} selected {/if}>{vtranslate('LBL_DAY2', 'Calendar')}</option>
@@ -54,7 +54,7 @@
                 <div class='col-lg-3' style='position:relative;top:5px;'>{vtranslate('LBL_ON_THESE_DAYS', $MODULE)}</div>
                 <div class='col-lg-4'>
                     {assign var=dayOfMonth value=Zend_Json::decode($SCHEDULEDREPORTS->get('schdayofthemonth'))}
-                    <select style="width: 280px !important;" multiple class="select2 col-lg-6" data-rule-required="true"  name='schdayofthemonth' id='schdayofthemonth' >
+                    <select style="width: 280px !important;" multiple class="select2 col-lg-6" data-rule-required="true"  name='schdayofthemonth[]' id='schdayofthemonth' >
                         {section name=foo loop=31}
                             <option value={$smarty.section.foo.iteration} {if is_array($dayOfMonth) && in_array($smarty.section.foo.iteration, $dayOfMonth)}selected{/if}>{$smarty.section.foo.iteration}</option>
                         {/section}
@@ -86,7 +86,7 @@
                     <div>
                         <input type=hidden id=hiddenAnnualDates value='{$SCHEDULEDREPORTS->get('schannualdates')}' />
                         {assign var=ANNUAL_DATES value=Zend_Json::decode($SCHEDULEDREPORTS->get('schannualdates'))}
-                        <select multiple class="select2 inputElement col-lg-3" id='annualDates' name='schannualdates' data-rule-required="true"  data-date-format="{$CURRENT_USER->date_format}">
+                        <select multiple class="select2 inputElement col-lg-3" id='annualDates' name='schannualdates[]' data-rule-required="true"  data-date-format="{$CURRENT_USER->date_format}">
                             {foreach item=DATES from=$ANNUAL_DATES}
                                 <option value="{$DATES}" selected>{$DATES}</option>
                             {/foreach}
@@ -118,7 +118,7 @@
                     {assign var=ALL_ACTIVEUSER_LIST value=$CURRENT_USER->getAccessibleUsers()}
                     {assign var=ALL_ACTIVEGROUP_LIST value=$CURRENT_USER->getAccessibleGroups()}
                     {assign var=recipients value=Zend_Json::decode($SCHEDULEDREPORTS->get('recipients'))}
-                    <select multiple class="select2 col-lg-6" id='recipients' name='recipients' data-rule-required="true" style="width: 280px !important;">
+                    <select multiple class="select2 col-lg-6" id='recipients' name='recipients[]' data-rule-required="true" style="width: 280px !important;">
                         <optgroup label="{vtranslate('LBL_USERS')}">
                             {foreach key=USER_ID item=USER_NAME from=$ALL_ACTIVEUSER_LIST}
                                 {assign var=USERID value="USER::{$USER_ID}"}
@@ -145,8 +145,7 @@
                     {vtranslate('LBL_SPECIFIC_EMAIL_ADDRESS', $MODULE)}
                 </div>
                 <div class='col-lg-4'>
-                    {assign var=specificemailids value=Zend_Json::decode($SCHEDULEDREPORTS->get('specificemails'))}
-                    <input id="specificemails" style="width: 281px !important;" class="col-lg-6 inputElement" type="text" value="{$specificemailids}" name="specificemails" data-validation-engine="validate[funcCall[Vtiger_MultiEmails_Validator_Js.invokeValidation]]"></input>
+                    <input id="specificemails" style="width: 281px !important;" class="col-lg-6 inputElement" type="text" value="{$SCHEDULEDREPORTS->get('specificemails')}" name="specificemails" data-validation-engine="validate[funcCall[Vtiger_MultiEmails_Validator_Js.invokeValidation]]"></input>
                 </div>
             </div>
             {if $TYPE neq 'Chart'}

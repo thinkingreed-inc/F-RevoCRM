@@ -31,11 +31,11 @@
         <input type="hidden" name="enable_schedule" value="{$REPORT_MODEL->get('enable_schedule')}">
         <input type="hidden" name="schtime" value="{$REPORT_MODEL->get('schtime')}">
         <input type="hidden" name="schdate" value="{$REPORT_MODEL->get('schdate')}">
-        <input type="hidden" name="schdayoftheweek" value={ZEND_JSON::encode($REPORT_MODEL->get('schdayoftheweek'))}>
-        <input type="hidden" name="schdayofthemonth" value={ZEND_JSON::encode($REPORT_MODEL->get('schdayofthemonth'))}>
-        <input type="hidden" name="schannualdates" value={ZEND_JSON::encode($REPORT_MODEL->get('schannualdates'))}>
-        <input type="hidden" name="recipients" value={ZEND_JSON::encode($REPORT_MODEL->get('recipients'))}>
-        <input type="hidden" name="specificemails" value={ZEND_JSON::encode($REPORT_MODEL->get('specificemails'))}>
+        <input type="hidden" name="schdayoftheweek" value='{if is_array($REPORT_MODEL->get('schdayoftheweek'))}{ZEND_JSON::encode($REPORT_MODEL->get('schdayoftheweek'))}{else}{$REPORT_MODEL->get('schdayoftheweek')}{/if}'>
+        <input type="hidden" name="schdayofthemonth" value='{if is_array($REPORT_MODEL->get('schdayofthemonth'))}{ZEND_JSON::encode($REPORT_MODEL->get('schdayofthemonth'))}{else}{$REPORT_MODEL->get('schdayofthemonth')}{/if}'>
+        <input type="hidden" name="schannualdates" value='{if is_array($REPORT_MODEL->get('schannualdates'))}{ZEND_JSON::encode($REPORT_MODEL->get('schannualdates'))}{else}{$REPORT_MODEL->get('schannualdates')}{/if}'>
+        <input type="hidden" name="recipients" value='{if is_array($REPORT_MODEL->get('recipients'))}{ZEND_JSON::encode($REPORT_MODEL->get('recipients'))}{else}{$REPORT_MODEL->get('recipients')}{/if}'>
+        <input type="hidden" name="specificemails" value='{if is_array($REPORT_MODEL->get('specificemails'))}{ZEND_JSON::encode($REPORT_MODEL->get('specificemails'))}{else}{$REPORT_MODEL->get('specificemails')}{/if}'>
         <input type="hidden" name="schtypeid" value="{$REPORT_MODEL->get('schtypeid')}">
         <input type="hidden" name="fileformat" value="{$REPORT_MODEL->get('fileformat')}">
         <input type="hidden" name="joinColumn" value={$REPORT_MODEL->getJoinColumn()}>
