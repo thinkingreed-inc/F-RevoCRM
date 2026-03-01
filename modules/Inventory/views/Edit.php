@@ -170,6 +170,17 @@ Class Inventory_Edit_View extends Vtiger_Edit_View {
 		$viewer->assign('CURRENTDATE', date('Y-n-j'));
 		$viewer->assign('USER_MODEL', Users_Record_Model::getCurrentUserModel());
 
+		// 顧客企業が非表示項目である場合, コピーする住所の選択肢から削除する
+		$inventoryModules = array(
+			'Invoice' => 'LBL_INVOICE_INFORMATION',
+			'SalesOrder' => 'LBL_SO_INFORMATION',
+			// 'PurchaseOrder' => 'LBL_PO_INFORMATION', // POはテンプレート側で対応
+			'Quotes' => 'LBL_QUOTE_INFORMATION'
+		);
+		if ($inventoryModules[$moduleName] && $recordStructure[$inventoryModules[$moduleName]]) {
+			$viewer->assign('CHECK_ACCOUNTID', array_key_exists("account_id", $recordStructure[$inventoryModules[$moduleName]]));
+		}
+
 		$taxRegions = $recordModel->getRegionsList();
 		$defaultRegionInfo = $taxRegions[0];
 		unset($taxRegions[0]);
