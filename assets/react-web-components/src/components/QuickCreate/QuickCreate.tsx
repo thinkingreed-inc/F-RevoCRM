@@ -202,7 +202,10 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
     activeTab,
     initialData,
     recordId,
-    recordTypeFields
+    recordTypeFields,
+    activityType: (activeTab === 'Calendar' ? calendarFormData : eventsFormData)?.activitytype as string | undefined,
+    defaultCallDuration,
+    defaultOtherEventDuration
   });
 
   const {
