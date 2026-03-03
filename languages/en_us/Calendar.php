@@ -163,7 +163,21 @@ false : Persists checkbox states only for My Group. Other organization or role v
 	'LBL_ONLY_THIS_EVENT' => 'Only This Event',
 	'LBL_FUTURE_EVENTS' => 'Following Events',
 	'LBL_ALL_EVENTS' => 'All Events',
-	
+	'LBL_DELETE_SCOPE' => 'Select Deletion Scope',
+	'LBL_DELETE_SCOPE_MESSAGE' => 'Which events would you like to delete?',
+	'LBL_DELETE_SELECTED_PLAN_ONLY' => 'Delete Event from Selected Calendar Only',
+	'LBL_DELETE_ONLY_SELECTED_PLAN_INFO' => 'Delete the event only from the selected calendar.',
+	'LBL_DELETE_ALL_INVITEES' => 'Delete Event for All Invitees',
+	'LBL_DELETE_ALL_INVITEES_INFO' => 'Delete the event from the calendars of all invitees.',
+
+	//Edit Scope Selection
+	'LBL_EDIT_SCOPE' => 'Select Edit Scope',
+	'LBL_EDIT_SCOPE_MESSAGE' => 'Which events would you like to edit?',
+	'LBL_EDIT_SELECTED_PLAN_ONLY' => 'Edit Selected Event Only',
+	'LBL_EDIT_ONLY_SELECTED_PLAN_INFO' => 'Edit the event only on the selected calendar.',
+	'LBL_EDIT_ALL_INVITEES' => 'Edit Event for All Invitees',
+	'LBL_EDIT_ALL_INVITEES_INFO' => 'Edit the event on the calendars of all invitees.',
+
 	//Reminder Email
 	'LBL_REMINDER_NOTIFICATION' => 'This is a reminder notification for the Activity',
     'LBL_SELECT_EVENT_TYPE' => 'Activity Type',

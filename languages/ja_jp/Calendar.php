@@ -162,6 +162,21 @@ false : マイグループのみチェック状態を記憶し、他の組織・
 	'LBL_ONLY_THIS_EVENT' => 'この活動のみ',
 	'LBL_FUTURE_EVENTS' => '以降の活動を含む',
 	'LBL_ALL_EVENTS' => '全ての活動',
+	'LBL_DELETE_SCOPE' => '削除対象の選択',
+	'LBL_DELETE_SCOPE_MESSAGE' => 'どの予定を削除しますか？',
+	'LBL_DELETE_SELECTED_PLAN_ONLY' => '指定した予定のみ削除',
+	'LBL_DELETE_ONLY_SELECTED_PLAN_INFO' => 'カレンダー上の指定した予定のみを削除します。',
+	'LBL_DELETE_ALL_INVITEES' => '関係者全員の予定を削除',
+	'LBL_DELETE_ALL_INVITEES_INFO' => '参加者全員のカレンダーから予定を削除します。',
+
+	//編集範囲選択
+	'LBL_EDIT_SCOPE' => '編集対象の選択',
+	'LBL_EDIT_SCOPE_MESSAGE' => 'どの予定を編集しますか？',
+	'LBL_EDIT_SELECTED_PLAN_ONLY' => '指定した予定のみ編集',
+	'LBL_EDIT_ONLY_SELECTED_PLAN_INFO' => 'カレンダー上の指定した予定のみを編集します。',
+	'LBL_EDIT_ALL_INVITEES' => '関係者全員の予定を編集',
+	'LBL_EDIT_ALL_INVITEES_INFO' => '参加者全員のカレンダーの予定も同時に編集します。',
+
 	
 	//Reminder Email
 	'LBL_REMINDER_NOTIFICATION' => 'This is a reminder notification for the Activity',
