@@ -303,7 +303,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
           }
           // 新規作成モードの場合、担当フィールドにログインユーザーをデフォルト設定
           else if (!isEditMode && field.name === 'assigned_user_id') {
-            initial[field.name] = (window as any).current_user_id || '1';
+            initial[field.name] = (window as any)._USERMETA?.id || '1';
           }
         }
       });
@@ -381,7 +381,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
         return defaultValue;
       }
       if (field.name === 'assigned_user_id') {
-        return (window as any).current_user_id || '1';
+        return (window as any)._USERMETA?.id || '1';
       }
       if (field.mandatory && field.picklistValues && field.picklistValues.length > 0) {
         return field.picklistValues[0].value;
