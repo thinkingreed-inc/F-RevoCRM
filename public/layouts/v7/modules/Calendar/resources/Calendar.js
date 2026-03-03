@@ -1406,6 +1406,12 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			}
 		}
 
+		// デフォルト活動期間をユーザー設定から取得
+		var defaultCallDuration = document.getElementById('defaultCallDuration');
+		var defaultOtherEventDuration = document.getElementById('defaultOtherEventDuration');
+		initialData.defaultCallDuration = defaultCallDuration ? parseInt(defaultCallDuration.value, 10) || 5 : 5;
+		initialData.defaultOtherEventDuration = defaultOtherEventDuration ? parseInt(defaultOtherEventDuration.value, 10) || 5 : 5;
+
 		if (Object.keys(initialData).length > 0) {
 			quickCreate.setAttribute('initial-data', JSON.stringify(initialData));
 		}

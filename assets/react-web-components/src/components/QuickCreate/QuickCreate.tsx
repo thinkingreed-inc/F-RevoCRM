@@ -131,6 +131,17 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
   // Success message
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  // Duration settings from initialData (passed from Calendar.js)
+  const defaultCallDuration = useMemo(() => {
+    const val = initialData?.defaultCallDuration;
+    return typeof val === 'number' ? val : 5;
+  }, [initialData?.defaultCallDuration]);
+
+  const defaultOtherEventDuration = useMemo(() => {
+    const val = initialData?.defaultOtherEventDuration;
+    return typeof val === 'number' ? val : 5;
+  }, [initialData?.defaultOtherEventDuration]);
+
   // Initialization tracking
   const isInitializedRef = useRef(false);
   const prevIsOpenRef = useRef(false);
@@ -832,6 +843,8 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
                   ? (recordData.selectedusers as string[])
                   : undefined
               }
+              defaultCallDuration={defaultCallDuration}
+              defaultOtherEventDuration={defaultOtherEventDuration}
             />
           ) : (
             /* Default form */
