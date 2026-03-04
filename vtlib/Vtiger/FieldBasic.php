@@ -42,6 +42,8 @@ class Vtiger_FieldBasic {
 	var $block;
 	var $headerfield = 0;
 
+	var $addNewId = null; // Used to set the field id when creating a new field
+
 	/**
 	 * Constructor
 	 */
@@ -154,7 +156,11 @@ class Vtiger_FieldBasic {
 
 		$moduleInstance = $this->getModuleInstance();
 
-		$this->id = $this->__getUniqueId();
+		if (!empty($this->addNewId)) {
+			$this->id = $this->addNewId;
+		} else {
+			$this->id = $this->__getUniqueId();
+		}
 
 		if (!$this->sequence) {
 			$this->sequence = $this->__getNextSequence();
@@ -177,14 +183,14 @@ class Vtiger_FieldBasic {
 		if (!$this->columntype)
 			$this->columntype = 'VARCHAR(100)';
 
-        if (!$this->label)
+        if (!$this->label && !$this->uitype === 999)
             $this->label = $this->name;
 
 		if (!empty($this->columntype)) {
 			Vtiger_Utils::AddColumn($this->table, $this->column, $this->columntype);
 		}
 
-		if (!$this->label) {
+		if (!$this->label && !$this->uitype === 999) {
 			$this->label = $this->name;
 		}
 

@@ -4,6 +4,7 @@
 .settings
 .setting
 .project
+.claude
 .idea/*
 logs/*.log
 cache/images/*
@@ -33,6 +34,13 @@ config.inc.php
 /*.xlsx
 .DS_Store
 .vscode
-docker-compose.override.yml
+compose.override.yaml
 .env
 /vendor
+
+# for react-web-components
+/assets/react-web-components/node_modules
+/assets/react-web-components/.vite
+/public/resources/web-components/*
+!/public/resources/web-components/.gitkeep
+/assets/react-web-components/coverage/*

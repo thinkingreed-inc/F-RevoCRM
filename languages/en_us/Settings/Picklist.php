@@ -43,6 +43,10 @@ $languageStrings = array(
 	
 	//Translation for module
 	'Calendar' => 'Task',
+
+	//F-RevoCRM
+	'Events' => 'Events',
+	'Faq' => 'FAQ',
 );
 $jsLanguageStrings = array(
 	//PickList 

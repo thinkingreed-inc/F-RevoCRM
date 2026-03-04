@@ -9,13 +9,12 @@
  ************************************************************************************ */
 
 function vtws_create($elementType, $element, $user) {
+	global $adb, $app_strings, $log;
 
 	$types = vtws_listtypes(null, $user);
 	if (!in_array($elementType, $types['types'])) {
 		throw new WebServiceException(WebServiceErrorCode::$ACCESSDENIED, "Permission to perform the operation is denied");
 	}
-
-	global $log, $adb, $app_strings;
 
 	//setting $app_strings 
 	if(empty($app_strings)) { 
@@ -80,6 +79,17 @@ function vtws_create($elementType, $element, $user) {
 				}
 			}
 		}
+
+		
+		// 空白項目のfieldNameを取得
+		$blankFields = $meta->getBlankFields();
+
+		// fieldNameををキーにした配列に変換
+		$blankFieldsFlipped = array_flip($blankFields);
+
+		// 空白項目を除外する
+		$element = array_diff_key($element, $blankFieldsFlipped);
+
 		$entity = $handler->create($elementType, $element);
 		VTWS_PreserveGlobal::flush();
 		return $entity;

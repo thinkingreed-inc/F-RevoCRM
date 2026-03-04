@@ -270,7 +270,7 @@ class Vtiger_InventoryPDFController {
                         if(!empty($resultrow['vatid']))         $additionalCompanyInfo[]= "\n".getTranslatedString("VAT ID: ", $this->moduleName). $resultrow['vatid']; 
 
 			$modelColumnLeft = array(
-					'logo' => "test/logo/".$resultrow['logoname'],
+					'logo' => "public/logo/".$resultrow['logoname'],
 					'summary' => decode_html($resultrow['organizationname']),
 					'content' => decode_html($this->joinValues($addressValues, ''). $this->joinValues($additionalCompanyInfo, ' '))
 			);
@@ -779,6 +779,9 @@ class Vtiger_InventoryPDFController {
 		}
 		else if($name == 'discount_percent'){
 			$name = "discount_itempercent";
+		}
+		else if($name == 'purchasecost'){
+			$name = "purchase_cost";
 		}
 		return $name;
 	}

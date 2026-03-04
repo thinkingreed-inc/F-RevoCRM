@@ -85,6 +85,7 @@ class ReportRunQueryPlanner {
 	protected static $tempTableCounter = 0;
 	protected $registeredCleanup = false;
 	var $reportRun = false;
+	protected $reportJoinColumn = false;
 
 	function addTable($table) {
 		if (!empty($table))
@@ -277,6 +278,12 @@ class ReportRunQueryPlanner {
 		return $advfiltersql;
 	}
 
+	function setReportJoinColumn($reportJoinColumn) {
+		$this->reportJoinColumn = $reportJoinColumn;
+	}
+	function getReportJoinColumn() {
+		return $this->reportJoinColumn;
+	}
 }
 
 class ReportRun extends CRMEntity {
@@ -335,6 +342,7 @@ class ReportRun extends CRMEntity {
             $this->reportname = $oReport->reportname;
             $this->queryPlanner = new ReportRunQueryPlanner();
             $this->queryPlanner->reportRun = $this;
+			$this->queryPlanner->setReportJoinColumn($oReport->joinColumn);
         }
 	function ReportRun($reportid) {
             self::__construct($reportid);
@@ -444,6 +452,12 @@ class ReportRun extends CRMEntity {
 				$this->queryPlanner->addTable($targetTableName);
 			}
 		}
+
+		// cfテーブルを追加する
+		// [TODO] 関連の参照先として選択されていなければ不要
+		$focus = CRMEntity::getInstance($this->primarymodule);
+		$customFieldTable = $focus->customFieldTable;
+		$this->queryPlanner->addTable($customFieldTable[0]);
 
 		if ($outputformat == "HTML" || $outputformat == "PDF" || $outputformat == "PRINT") {
 			if($this->primarymodule == 'ModComments') {
@@ -2128,7 +2142,7 @@ class ReportRun extends CRMEntity {
 				// Case handling: Force table requirement ahead of time.
 				$this->queryPlanner->addTable('vtiger_crmentity' . $value);
 
-				$focQuery = $foc->generateReportsSecQuery($module, $value, $this->queryPlanner);
+				$focQuery = $foc->generateReportsSecQuery($module, $value, $this->queryPlanner, $this->reportid);
 				
 				if ($focQuery) {
 					if (php7_count($secondarymodule) > 1) {
@@ -4247,7 +4261,7 @@ class ReportRun extends CRMEntity {
 			$keyvalue = getTabModuleName($tabid) . "_" . $fieldlabel1;
 			$fieldvalues = Array();
 			if (php7_count($roleids) > 1) {
-				$mulsel = "select distinct $fieldname from vtiger_$fieldname inner join vtiger_role2picklist on vtiger_role2picklist.picklistvalueid = vtiger_$fieldname.picklist_valueid where roleid in (\"" . implode($roleids, "\",\"") . "\") and picklist_valueid in (select picklistid from vtiger_$fieldname)"; // order by sortid asc - not requried
+				$mulsel = "select distinct $fieldname from vtiger_$fieldname inner join vtiger_role2picklist on vtiger_role2picklist.picklistvalueid = vtiger_$fieldname.picklist_valueid where roleid in (\"" . implode("\",\"", $roleids) . "\") and picklist_valueid in (select picklistid from vtiger_$fieldname)"; // order by sortid asc - not requried
 			} else {
 				$mulsel = "select distinct $fieldname from vtiger_$fieldname inner join vtiger_role2picklist on vtiger_role2picklist.picklistvalueid = vtiger_$fieldname.picklist_valueid where roleid ='" . $roleid . "' and picklistid in (select picklist_valueid from vtiger_$fieldname)"; // order by sortid asc - not requried
 			}
@@ -4479,7 +4493,7 @@ class ReportRun extends CRMEntity {
 		}
 		//Reference Article:  http://phpexcel.codeplex.com/discussions/389578
 		ob_clean();
-		$workbookWriter = PHPExcel_IOFactory::createWriter($workbook, 'Excel5');
+		$workbookWriter = PHPExcel_IOFactory::createWriter($workbook, 'Excel2007');
 		$workbookWriter->save($fileName);
 	}
 

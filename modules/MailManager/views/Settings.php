@@ -64,7 +64,8 @@ class MailManager_Settings_View extends MailManager_MainUI_View {
 			} else if($connector->hasError()) {
                 $error = $connector->lastError();
 				$response->isJSON(true);
-				$response->setError(101, $error);
+				// DOM型XSS対策：エラーメッセージをHTMLエスケープ
+				$response->setError(101, htmlspecialchars($error, ENT_QUOTES, 'UTF-8'));
 			}
 		} else if ('remove' == $this->getOperationArg($request)) {
 

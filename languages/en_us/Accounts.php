@@ -54,6 +54,11 @@ $languageStrings = array(
 	'LBL_COPY_BILLING_ADDRESS' => 'Copy Billing Address',
 	'LBL_IMAGE_INFORMATION' => 'Profile Picture',
 	'Organization Image' => 'Organization Image',
+
+	//F-RevoCRM
+	'Prospect Accounts' => 'Prospect Accounts',
+	'New This Week' => 'New This Week',
+	'last_action_date' => 'Last Action Date',
 );
 
 $jsLanguageStrings = array(

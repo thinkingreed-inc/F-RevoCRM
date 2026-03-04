@@ -77,18 +77,28 @@ class Reports_ScheduleReports_Model extends Vtiger_Base_Model {
 			}
 			$schdate = Zend_Json::encode(array($dateDBFormat));
 		} else if ($scheduleid == self::$SCHEDULED_WEEKLY) {
-			$schdayoftheweek = Zend_Json::encode($this->get('schdayoftheweek'));
+			$schdayoftheweekValue = $this->get('schdayoftheweek');
+			// Fix: If already a JSON string, use it directly; otherwise encode
+			$schdayoftheweek = is_array($schdayoftheweekValue) ? Zend_Json::encode($schdayoftheweekValue) : $schdayoftheweekValue;
 			$this->set('schdayoftheweek', $schdayoftheweek);
 		} else if ($scheduleid == self::$SCHEDULED_MONTHLY_BY_DATE) {
-			$schdayofthemonth = Zend_Json::encode($this->get('schdayofthemonth'));
+			$schdayofthemonthValue = $this->get('schdayofthemonth');
+			// Fix: If already a JSON string, use it directly; otherwise encode
+			$schdayofthemonth = is_array($schdayofthemonthValue) ? Zend_Json::encode($schdayofthemonthValue) : $schdayofthemonthValue;
 			$this->set('schdayofthemonth', $schdayofthemonth);
 		} else if ($scheduleid == self::$SCHEDULED_ANNUALLY) {
-			$schannualdates = Zend_Json::encode($this->get('schannualdates'));
+			$schannualdatesValue = $this->get('schannualdates');
+			// Fix: If already a JSON string, use it directly; otherwise encode
+			$schannualdates = is_array($schannualdatesValue) ? Zend_Json::encode($schannualdatesValue) : $schannualdatesValue;
 			$this->set('schannualdates', $schannualdates);
 		}
 
-		$recipients = Zend_Json::encode($this->get('recipients'));
-		$specificemails = Zend_Json::encode($this->get('specificemails'));
+		$recipientsValue = $this->get('recipients');
+		// Fix: If already a JSON string, use it directly; otherwise encode
+		$recipients = is_array($recipientsValue) ? Zend_Json::encode($recipientsValue) : $recipientsValue;
+		$specificemailsValue = $this->get('specificemails');
+		// Fix: If already a JSON string, use it directly; otherwise encode
+		$specificemails = is_array($specificemailsValue) ? Zend_Json::encode($specificemailsValue) : $specificemailsValue;
 		$isReportScheduled = $this->get('isReportScheduled');
 		$fileFormat = $this->get('fileformat');
 
@@ -341,7 +351,7 @@ class Reports_ScheduleReports_Model extends Vtiger_Base_Model {
 		$site_URL = vglobal('site_URL');
 		$currentModule = vglobal('currentModule');
 		$companydetails = getCompanyDetails();
-		$logo = $site_URL.'/test/logo/'.$companydetails['logoname'];
+		$logo = $site_URL.'/logo/'.$companydetails['logoname'];
 
 		$body = '<table width="700" cellspacing="0" cellpadding="0" border="0" align="center" style="font-family: Arial,Helvetica,sans-serif; font-size: 12px; font-weight: normal; text-decoration: none; ">
 			<tr>

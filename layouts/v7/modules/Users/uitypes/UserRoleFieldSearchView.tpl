@@ -15,7 +15,7 @@
 	<input type="text" class="listSearchContributor inputElement select2_input_element"/>
 	<select class="select2 listSearchContributor" name="{$FIELD_MODEL->get('name')}" multiple data-fieldinfo='{$FIELD_INFO|escape}' style="display:none;">
 		{foreach item=ROLE_ID key=ROLE_NAME from=$ROLES}
-			<option value="{$ROLE_NAME}" {if in_array($ROLE_NAME,$SEARCH_VALUES) && ($ROLE_NAME neq "") } selected{/if}>{$ROLE_NAME}</option>
+			<option value="{$ROLE_NAME}" {if in_array($ROLE_NAME,$SEARCH_VALUES) && ($ROLE_NAME neq "") } selected{/if}>{vtranslate($ROLE_NAME)}</option>
 		{/foreach}
 	</select>
 </div>

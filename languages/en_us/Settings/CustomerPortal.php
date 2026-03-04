@@ -71,7 +71,9 @@ $languageStrings = array(
 	'LBL_VISIBILITY' => 'Visibility',
 	'LBL_RECORD_PERMISSIONS' => 'Record Permissions',
 	'LBL_CREATE_RECORD' => 'Create Record',
-	'LBL_EDIT_RECORD' => 'Edit Record'
+	'LBL_EDIT_RECORD' => 'Edit Record',
+	'Enable' => 'Enable',
+	'Mandatory Fields' => 'Mandatory Fields',
 );
 
 $jsLanguageStrings = array(
@@ -84,5 +86,7 @@ $jsLanguageStrings = array(
 	'JS_SHOW' => 'Visible',
 	'JS_HIDE' => 'Hidden',
 	'JS_NUMBERS' => 'Accepts only positive whole number with upto four digits.',
-	'JS_MANDATORY_FIELDS_MISSING' => 'Fields could not be saved.Please select all mandatory fields.'
+	'JS_MANDATORY_FIELDS_MISSING' => 'Fields could not be saved.Please select all mandatory fields.',
+	'Enable' => 'Enable',
+	'Mandatory Fields' => 'Mandatory Fields',
 );

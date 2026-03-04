@@ -55,6 +55,8 @@ $languageStrings = array(
 	'LBL_UPDATE_NOW' => '今すぐアップデート',
 	'LBL_IMPORT_NOW' => '今すぐインポート',
 	'LBL_DISCLAIMER_FOR_IMPORT_FROM_ZIP' => '<b>免責事項 - カスタムモジュールの導入にはリスクを伴います。</b><br>この機能は開発者向けです。サードパーティ製のファイルをインストールする際には、信頼できる発行元であることを確認してください。カスタムモジュールにはセキュリティ上の問題や、CRMの重要なファイルを上書きしてしまう危険性があります。F-RevoCRMではカスタムモジュールの品質について一切の保証はできかねます。',
+
+
 );
 $jsLanguageStrings = array(
 	'JS_ON' => 'on',

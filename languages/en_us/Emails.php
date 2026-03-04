@@ -30,6 +30,11 @@ $languageStrings = array(
 	'LBL_EMAILTEMPLATE_WARNING_CONTENT' => 'Please make sure that the template you selected has merge-tags relevant to the recipient record. 
 											If you are sending an email to Lead, but the merge-tags belong to Contact module (ex: $contacts-lastname$), 
 											then the values will not be merged.',
+	'Sales Enity Module' => 'Sales Entity',
+	'Activtiy Type' => 'Activity Type',
+	'Email Flag' => 'Email Flag',
+	'Attachment' => 'Attachment',
+	
 
 	//Button Names translation
 	'LBL_FORWARD' => 'Forward',
@@ -46,6 +51,8 @@ $languageStrings = array(
 	'LBL_EMAIL_INFORMATION' => 'Email Information',
 	'Draft' => 'Draft',
 	'Parent ID' => 'Parent Record',
+	'Access Count' => 'Access Count',
+	'Click Count' => 'Click Count'
 );
 
 $jsLanguageStrings = array(

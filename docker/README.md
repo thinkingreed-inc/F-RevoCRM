@@ -20,6 +20,14 @@ cd /var/www/html/
 composer install
 ```
 
+## WebComponentsのビルド
+```bash
+# Dockerコンテナ内で実行
+cd /var/www/html/assets/react-web-components
+npm install
+npm run build
+```
+
 ## F-RevoCRMのインストール
 1. ブラウザで `http://localhost` へアクセス
 1. 指示に従って必要情報を入力

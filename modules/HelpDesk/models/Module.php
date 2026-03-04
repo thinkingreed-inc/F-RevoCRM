@@ -74,7 +74,7 @@ class HelpDesk_Module_Model extends Vtiger_Module_Model {
 						LEFT JOIN vtiger_users ON vtiger_users.id=vtiger_crmentity.smownerid AND vtiger_users.status="Active"
 						LEFT JOIN vtiger_groups ON vtiger_groups.groupid=vtiger_crmentity.smownerid
 						'.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()).
-						' WHERE vtiger_troubletickets.status = ? AND vtiger_crmentity.deleted = 0 GROUP BY smownerid', $params);
+						' WHERE vtiger_troubletickets.status = ? AND vtiger_crmentity.deleted = 0 GROUP BY vtiger_troubletickets.smownerid', $params);
 		}
 		$data = array();
 		for($i=0; $i<$db->num_rows($result); $i++) {
@@ -95,12 +95,12 @@ class HelpDesk_Module_Model extends Vtiger_Module_Model {
 
 		$ownerSql = $this->getOwnerWhereConditionForDashBoards($owner);
 		if(!empty($ownerSql)) {
-			$ownerSql = ' AND '.$ownerSql;
+			$ownerSql = ' AND vtiger_troubletickets.'.$ownerSql;
 		}
 
 		$params = array();
 		if(!empty($dateFilter)) {
-			$dateFilterSql = ' AND createdtime BETWEEN ? AND ? ';
+			$dateFilterSql = ' AND vtiger_troubletickets.createdtime BETWEEN ? AND ? ';
 			//appended time frame and converted to db time zone in showwidget.php
 			$params[] = $dateFilter['start'];
 			$params[] = $dateFilter['end'];

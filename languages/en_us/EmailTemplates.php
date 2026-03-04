@@ -24,6 +24,17 @@ $languageStrings = array(
 	'LBL_NO_PERMISSIONS_TO_DELETE_SYSTEM_TEMPLATE' => 'No Permissions to delete System Template',
 	'LBL_RECORD_ID' => 'Record ID',
 	
+	'Current Date' => 'Current Date',
+	'Current Time' => 'Current Time',
+	'System Timezone' => 'System Timezone',
+	'User Timezone' => 'User Timezone',
+	'View in browser' => 'View in browser',
+	'CRM Detail View Url' => 'CRM Record URL',
+	'Portal Detail View Url' => 'Portal Record URL',
+	'Site Url' => 'F-RevoCRM Login URL',
+	'Portal Url' => 'Portal Login URL',
+
+	'Email Template - Properties of ' => 'Email Template - Properties of ',
 );
 
 $jsLanguageStrings = array(

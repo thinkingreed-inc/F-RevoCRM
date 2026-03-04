@@ -1061,7 +1061,7 @@ class Accounts extends CRMEntity {
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule,$queryPlanner){
+	function generateReportsSecQuery($module,$secmodule,$queryPlanner, $reportid = false){
 
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency('vtiger_crmentityAccounts', array('vtiger_groupsAccounts', 'vtiger_usersAccounts', 'vtiger_lastModifiedByAccounts'));
@@ -1087,7 +1087,7 @@ class Accounts extends CRMEntity {
             $query = "";
         }
 
-		$query .= $this->getRelationQuery($module,$secmodule,"vtiger_account","accountid", $queryPlanner);
+		$query .= $this->getRelationQuery($module,$secmodule,"vtiger_account","accountid", $queryPlanner, $reportid);
 
         if($module == "Calendar"){
             $query .= " OR vtiger_account.accountid = vtiger_tmpcontactdetails.accountid " ;

@@ -356,7 +356,7 @@ class ModCommentsCore extends CRMEntity {
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule,$queryPlanner){
+	function generateReportsSecQuery($module,$secmodule,$queryPlanner, $reportid = false){
 		$matrix = $queryPlanner->newDependencyMatrix();
 
 		$matrix->setDependency('vtiger_crmentityModComments',array('vtiger_groupsModComments','vtiger_usersModComments', 'vtiger_contactdetailsRelModComments', 'vtiger_modcommentsRelModComments'));
@@ -366,7 +366,7 @@ class ModCommentsCore extends CRMEntity {
 		}
 		$matrix->setDependency('vtiger_modcomments', array('vtiger_crmentityModComments'));
 
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_modcomments","modcommentsid", $queryPlanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_modcomments","modcommentsid", $queryPlanner, $reportid);
 
 		if ($queryPlanner->requireTable("vtiger_crmentityModComments",$matrix)){
 			$query .= " left join vtiger_crmentity as vtiger_crmentityModComments on vtiger_crmentityModComments.crmid=vtiger_modcomments.modcommentsid and vtiger_crmentityModComments.deleted=0";

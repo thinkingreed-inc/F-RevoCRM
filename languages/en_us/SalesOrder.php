@@ -45,11 +45,30 @@ $languageStrings = array(
 	'Sent'=>'Sent',
 	'Credit Invoice'=>'Credit Invoice',
 	'Paid'=>'Paid',
+	'Next Invoice Date' => 'Next Invoice Date',
 	
 	//Translation for product not found
 	'LBL_THIS' => 'This',
 	'LBL_IS_DELETED_FROM_THE_SYSTEM_PLEASE_REMOVE_OR_REPLACE_THIS_ITEM' => 'is deleted from the system.please remove or replace this item',
 	'LBL_THIS_LINE_ITEM_IS_DELETED_FROM_THE_SYSTEM_PLEASE_REMOVE_THIS_LINE_ITEM' => 'This line item is deleted from the system,please remove this line items',
+
+	//F-RevoCRM
+	'Pending Sales Orders' => 'Pending Sales Orders',
+	'Recurring Invoice Information' => 'Recurring Invoice Information',
+	'Net 01 day' => 'Net 01 day',
+	'Net 05 days' => 'Net 05 days',
+	'Net 07 days' => 'Net 07 days',
+	'Net 10 days' => 'Net 10 days',
+	'Net 15 days' => 'Net 15 days',
+	'Net 30 days' => 'Net 30 days',
+	'Net 45 days' => 'Net 45 days',
+	'Net 60 days' => 'Net 60 days',
+	'Daily' => 'Daily',
+	'Weekly' => 'Weekly',
+	'Monthly' => 'Monthly',
+	'Quarterly' => 'Quarterly',
+	'Yearly' => 'Yearly',
+	'Cancel' => 'Cancel',
 );
 
 $jsLanguageStrings = array(

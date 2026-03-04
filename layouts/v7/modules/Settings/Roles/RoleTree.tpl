@@ -14,12 +14,12 @@
             {if $REQ.type == 'Transfer'}
                 {assign var="SOURCE_ROLE_SUBPATTERN" value='::'|cat:$SOURCE_ROLE->getId()}
                 {if strpos($CHILD_ROLE->getParentRoleString(), $SOURCE_ROLE_SUBPATTERN) !== false}
-                    <a style="white-space: nowrap" data-url="{$CHILD_ROLE->getEditViewUrl()}" class="btn btn-default" disabled data-toggle="tooltip" data-placement="top" ><span class="muted">{$CHILD_ROLE->getName()}</span></a>
+                    <a style="white-space: nowrap" data-url="{$CHILD_ROLE->getEditViewUrl()}" class="btn btn-default" disabled data-toggle="tooltip" data-placement="top" ><span class="muted">{vtranslate($CHILD_ROLE->getName(),$QUALIFIED_MODULE)}</span></a>
                 {else}
-                    <a style="white-space: nowrap" href="" data-url="{$CHILD_ROLE->getEditViewUrl()}" class="btn btn-default roleEle" data-toggle="tooltip" data-placement="top" >{$CHILD_ROLE->getName()}</a>
+                    <a style="white-space: nowrap" href="" data-url="{$CHILD_ROLE->getEditViewUrl()}" class="btn btn-default roleEle" data-toggle="tooltip" data-placement="top" >{vtranslate($CHILD_ROLE->getName(),$QUALIFIED_MODULE)}</a>
                 {/if}
             {else}
-                <a style="white-space: nowrap" href="{$CHILD_ROLE->getEditViewUrl()}" data-url="{$CHILD_ROLE->getEditViewUrl()}" class="btn btn-default draggable droppable" data-toggle="tooltip" data-placement="top" data-animation="true" title="{vtranslate('LBL_CLICK_TO_EDIT_OR_DRAG_TO_MOVE',$QUALIFIED_MODULE)}">{$CHILD_ROLE->getName()}</a>
+                <a style="white-space: nowrap" href="{$CHILD_ROLE->getEditViewUrl()}" data-url="{$CHILD_ROLE->getEditViewUrl()}" class="btn btn-default draggable droppable" data-toggle="tooltip" data-placement="top" data-animation="true" title="{vtranslate('LBL_CLICK_TO_EDIT_OR_DRAG_TO_MOVE',$QUALIFIED_MODULE)}">{vtranslate($CHILD_ROLE->getName(),$QUALIFIED_MODULE)}</a>
             {/if}
             {if $REQ.view != 'Popup'}
                 <div class="toolbar">

@@ -37,7 +37,7 @@ if ($creatorfield === false) {
     $field->masseditable = 0;
     $field->quickcreate = 0;
     $field->summaryfield = 0;
-    $field->label= '作成者';
+    $field->label= 'LBL_CREATOR';
     $field->displaytype = 2;
     $blockInstance->addField($field);
 }

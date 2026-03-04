@@ -25,13 +25,11 @@ $body = <<<EOF
                                 <td colspan="6" style="
                         font-family: Helvetica,Verdana,sans-serif">
                                 <div style="margin-bottom:10px;color: rgb(34, 34, 34); font-family: arial, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);"><br />
-                                \$contact_name$ 様へ</div>
+                                \$contact_name$ {vtranslate('LBL_TO_YOU')}</div>
 
-                                <div style="margin-top:20px;margin-bottom:20px; color: rgb(34, 34, 34); font-family: arial, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);">いつも弊社サービスをご利用いただきありがとうございます。<br />
+                                <div style="margin-top:20px;margin-bottom:20px; color: rgb(34, 34, 34); font-family: arial, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);">{vtranslate('LBL_THANK_YOU_ALWAYS_USING_OUR_SERVICES')}<br />
                                 <br />
-                                本メールは、弊社カスタマーポータルへの招待メールとなります<br />
-                                カスタマーポータルでは、お問い合わせ管理や、過去のFAQと回答をご確認いただけます。<br />                        
-                                ポータルへのアクセスは本メールに記載のURL、ID、パスワードを使いログインしてください。</div>
+                                {vtranslate('LBL_INVITATION_EMAIL_TO_OUR_CUSTOMER_PORTAL_BODY')}<br />
                                 <div style="margin-top:10px;color: rgb(34, 34, 34); font-family: arial, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);">\$URL$ </div>
 
                                 <div style="margin-top:20px;color: rgb(34, 34, 34); font-family: arial, sans-serif; font-size: 14px; background-color: rgb(255, 255, 255);">Your Username: \$login_name$</div>
@@ -67,6 +65,6 @@ $body = <<<EOF
     </html>
 EOF;
 
-$params = array($body, '顧客ポータルのログイン情報のお知らせ');
+$params = array($body, 'LBL_CUSTOMER_PORTAL_LOGIN_INFORMATION');
 
 $adb->pquery($sql, $params);

@@ -45,4 +45,6 @@ $languageStrings = array(
 	'High' => 'High',
 	'Services' => 'Services',
 	'In Progress' => 'In Progress',
+
+	'Due date' => 'Due Date',
 );

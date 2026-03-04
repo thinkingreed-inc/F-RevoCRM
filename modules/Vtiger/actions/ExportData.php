@@ -31,6 +31,7 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 
 	private $moduleInstance;
 	private $focus;
+	private $exportBatchLimit = 10_000; // 1回のクエリで取得するデータ数上限
 
 	/**
 	 * Function exports the data based on the mode
@@ -44,9 +45,6 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 		$this->moduleFieldInstances = $this->moduleFieldInstances($moduleName);
 		$this->focus = CRMEntity::getInstance($moduleName);
 
-		$query = $this->getExportQuery($request);
-		$result = $db->pquery($query, array());
-
 		$redirectedModules = array('Users', 'Calendar');
 		if($request->getModule() != $moduleName && in_array($moduleName, $redirectedModules) && !$this->moduleCall){
 			$handlerClass = Vtiger_Loader::getComponentClassName('Action', 'ExportData', $moduleName);
@@ -54,40 +52,62 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 			$handler->ExportData($request);
 			return;
 		}
-		$translatedHeaders = $this->getHeaders();
-		$entries = array();
-		for ($j = 0; $j < $db->num_rows($result); $j++) {
-			$entries[] = $this->sanitizeValues($db->fetchByAssoc($result, $j));
-		}
 
-		//エクスポート時の選択肢項目の翻訳処理
-		for ($i = 0; $i < $j; $i++){
-			$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
-			$moduleFields = $moduleModel->getFields();
-			foreach ($entries[$i] as $columnName => $fieldValue) {
-				$fieldModel = $moduleFields[$columnName];
-				if(empty($fieldModel)){
-					foreach($moduleFields as $key => $fieldinfo){
-						if($fieldinfo->column == $columnName){
-							$fieldName = $fieldinfo->name;
-						}
-					}
-					$fieldModel = $moduleFields[$fieldName];
-				}
-
-				$fieldDataType = ($fieldModel) ? $fieldModel->getFieldDataType() : '';
-
-				if ($fieldDataType == 'picklist') {
-					$entries[$i][$columnName] = vtranslate($fieldValue,$moduleName);
-				}
+		$batchoffset = 0;
+		while(true){ // 取得するデータが無い場合に終了
+			$request->set('batchoffset', $batchoffset);
+			$query = $this->getExportQuery($request);
+			$format = $request->get('format');
+			$result = $db->pquery($query, array());
+			$entries = array();
+			for ($j = 0; $j < $db->num_rows($result); $j++) {
+				$entries[] = $this->sanitizeValues($db->fetchByAssoc($result, $j),$format);
+			}
+			if(empty($entries)){
+				break;
 			}
 
-		}
+			//エクスポート時の選択肢項目の翻訳処理及び空白項目の除外
+			for ($i = 0; $i < $j; $i++){
+				foreach ($entries[$i] as $columnName => $fieldValue) {
+					$fieldModel = $this->moduleFieldInstances[$columnName];
+					if(empty($fieldModel)){
+						foreach($this->moduleFieldInstances as $key => $fieldinfo){
+							if($fieldinfo->column == $columnName){
+								$fieldName = $fieldinfo->name;
+							}
+						}
+						$fieldModel = $this->moduleFieldInstances[$fieldName];
+					}
 
-		$this->output($request, $translatedHeaders, $entries);
+					$fieldDataType = ($fieldModel) ? $fieldModel->getFieldDataType() : '';
+
+					if ($fieldDataType == 'picklist') {
+						$entries[$i][$columnName] = vtranslate($fieldValue,$moduleName);
+					} else if ($fieldDataType == 'blank') {
+						unset($entries[$i][$columnName]);
+					}
+				}
+
+			}
+
+			if($batchoffset == 0){
+				$translatedHeaders = $this->getHeaders($format);
+				$this->output($request, $translatedHeaders, $entries);
+			}else{
+				$this->output($request, '', $entries);
+			}
+
+			//現在のページをエクスポートする場合はオフセットを使用していないため、ここで終了
+            if($request->getMode()== 'ExportCurrentPage'){
+                break;
+            }
+
+			$batchoffset = $batchoffset + $this->exportBatchLimit; // オフセットの更新
+		}
 	}
 
-	public function getHeaders() {
+	public function getHeaders($format=null) {
 		$headers = array();
 		//Query generator set this when generating the query
 		if(!empty($this->accessibleFields)) {
@@ -96,22 +116,26 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 				$fieldModel = $this->moduleFieldInstances[$fieldName];
 				// Check added as querygenerator is not checking this for admin users
 				$presence = $fieldModel->get('presence');
-				if(in_array($presence, $accessiblePresenceValue) && $fieldModel->get('displaytype') != '6') {
-					$headers[] = $fieldModel->get('label');
+				if(in_array($presence, $accessiblePresenceValue) && $fieldModel->get('displaytype') != '6' && $fieldModel->get('uitype') != '999') {
+					$fieldDataType = $fieldModel->getFieldDataType();
+					if($fieldDataType == 'reference' && $fieldModel->get('uitype') != '52' && $fieldModel->get('uitype') != '77' && $format == 'ExportBoth'){
+						$headers[] = vtranslate(html_entity_decode($fieldModel->get('label'), ENT_QUOTES), $this->moduleInstance->getName()).'('.vtranslate('LBL_LABEL', $this->moduleInstance->getName()).')';
+						$headers[] = vtranslate(html_entity_decode($fieldModel->get('label'), ENT_QUOTES), $this->moduleInstance->getName());
+					} else {
+						$headers[] = vtranslate(html_entity_decode($fieldModel->get('label'), ENT_QUOTES), $this->moduleInstance->getName());
+					}
 				}
 			}
 		} else {
 			foreach($this->moduleFieldInstances as $field) {
-				$headers[] = $field->get('label');
+				if($field->get('uitype') != '999'){
+					$headers[] = vtranslate(html_entity_decode($field->get('label'), ENT_QUOTES), $this->moduleInstance->getName());
+				}
 			}
 		}
 
-		$translatedHeaders = array();
-		foreach($headers as $header) {
-			$translatedHeaders[] = vtranslate(html_entity_decode($header, ENT_QUOTES), $this->moduleInstance->getName());
-		}
 
-		$translatedHeaders = array_map('decode_html', $translatedHeaders);
+		$translatedHeaders = array_map('decode_html', $headers);
 		return $translatedHeaders;
 	}
 
@@ -205,6 +229,10 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 			case 'ExportAllData'	:	if ($orderBy && $orderByFieldModel) {
 											$query .= ' ORDER BY '.$queryGenerator->getOrderByColumn($orderBy).' '.$sortOrder;
 										}
+										$batchOffset = $request->get('batchoffset');
+										if(isset($batchOffset)){
+											$query .= ' LIMIT '.$this->exportBatchLimit.' OFFSET '.$batchOffset;
+										}
 										break;
 
 			case 'ExportCurrentPage' :	$pagingModel = new Vtiger_Paging_Model();
@@ -239,6 +267,10 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 											if ($orderBy && $orderByFieldModel) {
 												$query .= ' ORDER BY '.$queryGenerator->getOrderByColumn($orderBy).' '.$sortOrder;
 											}
+											$batchOffset = $request->get('batchoffset');
+											if(isset($batchOffset)){
+												$query .= ' LIMIT '.$this->exportBatchLimit.' OFFSET '.$batchOffset;
+											}
 											break;
 
 
@@ -272,16 +304,18 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 		$fileName = str_replace(',', '_', $fileName);
 		$exportType = $this->getExportContentType($request);
 
-		header("Content-Disposition:attachment;filename=$fileName.csv");
-		header("Content-Type:$exportType;charset=UTF-8");
-		header("Expires: Mon, 31 Dec 2000 00:00:00 GMT" );
-		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT" );
-		header("Cache-Control: post-check=0, pre-check=0", false );
+		if(!empty($headers)){ // 最初のバッチ処理で実行
+			header("Content-Disposition:attachment;filename=$fileName.csv");
+			header("Content-Type:$exportType;charset=UTF-8");
+			header("Expires: Mon, 31 Dec 2000 00:00:00 GMT" );
+			header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT" );
+			header("Cache-Control: post-check=0, pre-check=0", false );
 
-		$header = implode("\",\"", $headers);
-		$header = "\"" .$header;
-		$header .= "\"\r\n";
-		echo chr(0xEF).chr(0xBB).chr(0xBF).$header;
+			$header = implode("\",\"", $headers);
+			$header = "\"" .$header;
+			$header .= "\"\r\n";
+			echo chr(0xEF).chr(0xBB).chr(0xBF).$header;
+		}
 
 		$cnt = 0;
 		foreach($entries as $row) {
@@ -311,7 +345,7 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 	 * this function takes in an array of values for an user and sanitizes it for export
 	 * @param array $arr - the array of values
 	 */
-	function sanitizeValues($arr){
+	function sanitizeValues($arr, $format){
 		$db = PearDatabase::getInstance();
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$roleid = $currentUser->get('roleid');
@@ -329,6 +363,7 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 			}
 		}
 		$moduleName = $this->moduleInstance->getName();
+		$newarr = array();
 		foreach($arr as $fieldName=>&$value){
 			if(isset($this->fieldArray[$fieldName])){
 				$fieldInfo = $this->fieldArray[$fieldName];
@@ -340,7 +375,7 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 			$beginsWithDoubleQuote = strpos($value, '"') === 0;
 			$endsWithDoubleQuote = substr($value,-1) === '"'?1:0;
 
-			$value = trim($value,"\"");
+			$newarr[$fieldName] = trim($value,"\"");
 			$uitype = $fieldInfo->get('uitype');
 			$fieldname = $fieldInfo->get('name');
 
@@ -350,8 +385,8 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 			$type = $this->fieldDataTypeCache[$fieldName];
 
 			//Restore double quote now.
-			if ($beginsWithDoubleQuote) $value = "\"{$value}";
-			if($endsWithDoubleQuote) $value = "{$value}\"";
+			if ($beginsWithDoubleQuote) $newarr[$fieldName] = "\"{$value}";
+			if($endsWithDoubleQuote) $newarr[$fieldName] = "{$value}\"";
 			if($fieldname != 'hdnTaxType' && ($uitype == 15 || $uitype == 16 || $uitype == 33)){
 				if(empty($this->picklistValues[$fieldname])){
 					$this->picklistValues[$fieldname] = $this->fieldArray[$fieldname]->getPicklistValues();
@@ -360,12 +395,12 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 				// or the picklist is multiselect type.
 				if($uitype == 33 || $uitype == 16 || array_key_exists($value,$this->picklistValues[$fieldname])){
 					// NOTE: multipicklist (uitype=33) values will be concatenated with |# delim
-					$value = trim($value);
+					$newarr[$fieldName] = trim($value);
 				} else {
-					$value = '';
+					$newarr[$fieldName] = '';
 				}
-			} elseif($uitype == 52 || $type == 'owner') {
-				$value = Vtiger_Util_Helper::getOwnerName($value);
+			} elseif($uitype == 52 || $uitype == 77 || $type == 'owner') {
+				$newarr[$fieldName] = Vtiger_Util_Helper::getOwnerName($value);
 			}elseif($type == 'reference'){
 				$value = trim($value);
 				if(!empty($value)) {
@@ -376,21 +411,53 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 							$displayValue = $v;
 						}
 					}
-					if(!empty($parent_module) && !empty($displayValue)){
-						$value = $parent_module."::::".$displayValue;
-					}else{
-						$value = "";
+
+					$query = "select entityidfield from vtiger_entityname where modulename = ?";
+					$result = $db->pquery($query, array($parent_module));
+					$entityidfield = $db->query_result($result, 0, 'entityidfield');
+
+					switch($format) {
+						case 'ExportImportableFormat'	:	if(!empty($parent_module) && !empty($entityidfield)){
+																$newarr[$fieldName] = $parent_module."::::".$entityidfield."====".$value;
+															}else{
+																$newarr[$fieldName] = "";
+															}
+															break;
+
+						case 'ExportLabelOnly'	:	if(!empty($parent_module) && !empty($displayValue)){
+														$newarr[$fieldName] = $displayValue;
+													}else{
+														$newarr[$fieldName] = "";
+													}
+													break;
+
+						case 'ExportBoth'	:	if(!empty($parent_module) && !empty($displayValue) && !empty($entityidfield)){
+													$newarr[$fieldName] =  $displayValue;
+													$newarr[$fieldName.'_import_format']  = $parent_module."::::".$entityidfield."====".$value;
+												}else{
+													$newarr[$fieldName] = "";
+													$newarr[$fieldName.'_import_format'] = "";
+												}
+												break;
+						
+						default :	break;
 					}
+					
 				} else {
-					$value = '';
+					if($format == 'ExportBoth'){
+						$newarr[$fieldName] = '';
+						$newarr[$fieldName.'_label'] = "";
+					}else{
+						$newarr[$fieldName] = '';
+					}
 				}
 			} elseif($uitype == 72 || $uitype == 71) {
-                $value = CurrencyField::convertToUserFormat($value, null, true, true);
+                $newarr[$fieldName] = CurrencyField::convertToUserFormat($value, null, true, true);
 			} elseif($uitype == 7 && $fieldInfo->get('typeofdata') == 'N~O' || $uitype == 9){
-				$value = decimalFormat($value);
+				$newarr[$fieldName] = decimalFormat($value);
 			} elseif($type == 'date') {
 				if ($value && $value != '0000-00-00') {
-					$value = DateTimeField::convertToUserFormat($value);
+					$newarr[$fieldName] = DateTimeField::convertToUserFormat($value);
 				}
 			} elseif($type == 'datetime') {
 				if ($moduleName == 'Calendar' && in_array($fieldName, array('date_start', 'due_date'))) {
@@ -398,19 +465,19 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 					if ($fieldName === 'due_date') {
 						$timeField = 'time_end';
 					}
-					$value = $value.' '.$arr[$timeField];
+					$newarr[$fieldName] = $value.' '.$arr[$timeField];
 				}
 				if (trim($value) && $value != '0000-00-00 00:00:00') {
-					$value = Vtiger_Datetime_UIType::getDisplayDateTimeValue($value);
+					$newarr[$fieldName] = Vtiger_Datetime_UIType::getDisplayDateTimeValue($value);
 				}
 			}
 			if($moduleName == 'Documents' && $fieldname == 'description'){
 				$value = strip_tags($value);
 				$value = str_replace('&nbsp;','',$value);
-				array_push($new_arr,$value);
+				$newarr[$fieldName] = $value;
 			}
 		}
-		return $arr;
+		return $newarr;
 	}
 
 	function getParentModuleName($value, $fieldName) {

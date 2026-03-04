@@ -560,7 +560,7 @@ class Campaigns extends CRMEntity {
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule,$queryPlanner){
+	function generateReportsSecQuery($module,$secmodule,$queryPlanner, $reportid = false){
 		$matrix = $queryPlanner->newDependencyMatrix();
         $matrix->setDependency('vtiger_crmentityCampaigns',array('vtiger_groupsCampaigns','vtiger_usersCampaignss','vtiger_lastModifiedByCampaigns','vtiger_campaignscf'));
         
@@ -570,7 +570,7 @@ class Campaigns extends CRMEntity {
 
         $matrix->setDependency('vtiger_campaign', array('vtiger_crmentityCampaigns','vtiger_productsCampaigns'));
 
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_campaign","campaignid", $queryPlanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_campaign","campaignid", $queryPlanner, $reportid);
 
 		if ($queryPlanner->requireTable("vtiger_crmentityCampaigns",$matrix)){
 			$query .=" left join vtiger_crmentity as vtiger_crmentityCampaigns on vtiger_crmentityCampaigns.crmid=vtiger_campaign.campaignid and vtiger_crmentityCampaigns.deleted=0";

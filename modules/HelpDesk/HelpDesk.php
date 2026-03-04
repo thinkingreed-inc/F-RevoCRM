@@ -590,7 +590,7 @@ case when (vtiger_users.user_name not like '') then $userNameSql else vtiger_gro
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule, $queryPlanner) {
+	function generateReportsSecQuery($module,$secmodule, $queryPlanner, $reportid = false) {
 		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency("vtiger_crmentityHelpDesk",array("vtiger_groupsHelpDesk","vtiger_usersHelpDesk","vtiger_lastModifiedByHelpDesk"));
 		$matrix->setDependency("vtiger_crmentityRelHelpDesk",array("vtiger_accountRelHelpDesk","vtiger_contactdetailsRelHelpDesk"));
@@ -602,7 +602,7 @@ case when (vtiger_users.user_name not like '') then $userNameSql else vtiger_gro
         $matrix->setDependency("vtiger_troubletickets",array("vtiger_crmentityHelpDesk","vtiger_ticketcf","vtiger_crmentityRelHelpDesk","vtiger_productsRel"));
 		
 		// TODO Support query planner
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_troubletickets","ticketid", $queryPlanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_troubletickets","ticketid", $queryPlanner, $reportid);
 
 		if ($queryPlanner->requireTable("vtiger_crmentityHelpDesk",$matrix)){
 		    $query .=" left join vtiger_crmentity as vtiger_crmentityHelpDesk on vtiger_crmentityHelpDesk.crmid=vtiger_troubletickets.ticketid and vtiger_crmentityHelpDesk.deleted=0";

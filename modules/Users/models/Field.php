@@ -223,4 +223,18 @@ class Users_Field_Model extends Vtiger_Field_Model {
 		}
 		return $pickListDetails;
 	}
+
+	function getValidator() {
+		$validator = array();
+		$fieldName = $this->getName();
+
+		switch($fieldName) {
+			case 'user_name' : $funcName = array('name' => 'illegal');
+							  array_push($validator, $funcName);
+							  break;
+			default : $validator = parent::getValidator();
+						break;
+		}
+		return $validator;
+	}
 }

@@ -39,9 +39,6 @@ $languageStrings = array(
 	'Tax Class'=>'税区分',
 	'Website'=>'Webサイト',
 	
-	//Services popup of pricebook
-	'LBL_ADD_TO_PRICEBOOKS' => '価格表に追加',
-
 	'Hours' => '時間',
 	'Days' => '日数',
 	'Incidents' => 'インシデント',

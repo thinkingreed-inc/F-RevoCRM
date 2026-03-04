@@ -23,5 +23,6 @@
 		</div>
 	</footer>
 </center>
+<div id="js_strings" class="hide noprint">{Zend_Json::encode($LANGUAGE_STRINGS)}</div>
 {include file='JSResources.tpl'|@vtemplate_path}
 </div>

@@ -106,10 +106,18 @@ class Vtiger_Request implements ArrayAccess {
 	}
 
 	/**
-	 * Get data map
+	 * Get data map (raw values without sanitization)
+	 * Use this only when you need the original unsanitized values
+	 */
+	function getAllRaw() {
+		return $this->valuemap;
+	}
+
+	/**
+	 * Get data map (sanitized for XSS protection)
 	 */
 	function getAll() {
-		return $this->valuemap;
+		return $this->getAllPurified();
 	}
 	
 	/**

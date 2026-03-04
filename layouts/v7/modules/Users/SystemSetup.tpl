@@ -266,7 +266,7 @@
 				<div class="row-fluid">
 					<div class="span6">
 						<div class="logo">
-							<img src="test/logo/frevocrm-logo.png" alt="Vtiger Logo"/>
+							<img src="logo/frevocrm-logo.png" alt="Vtiger Logo"/>
 						</div>
 					</div>
 					<div class="span6"></div>

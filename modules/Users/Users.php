@@ -727,8 +727,6 @@ class Users extends CRMEntity {
 				$this->insertIntoEntityTable($table_name, $module);
 			}
 		}
-		require_once('modules/Users/CreateUserPrivilegeFile.php');
-		createUserPrivilegesfile($this->id);
 		unset($_SESSION['next_reminder_interval']);
 		unset($_SESSION['next_reminder_time']);
 		if($insertion_mode != 'edit') {
@@ -1047,7 +1045,7 @@ class Users extends CRMEntity {
 		if($module == 'Users') {
 			$save_file = validateImageFile($file_details);
 		}
-		if ($save_file == 'false') {
+		if ($save_file === false) {
 			return;
 		}
 
@@ -1538,13 +1536,13 @@ class Users extends CRMEntity {
 
 		if ($file_size != 0 && in_array($file_type_val, $validFileFormats)) {
 			//Uploading the selected Image
-			move_uploaded_file($file['tmp_name'], 'test/logo/'.$logo_name);
+			move_uploaded_file($file['tmp_name'], 'public/logo/'.$logo_name);
 
 			//Updating Database
 			$sql = 'UPDATE vtiger_organizationdetails SET logoname = ? WHERE organization_id = ?';
 			$params = array(decode_html($logo_name), '1');
 			$adb->pquery($sql, $params);
-			copy('test/logo/'.$logo_name, 'test/logo/application.ico');
+			copy('public/logo/'.$logo_name, 'public/logo/application.ico');
 		}
 	}
 
@@ -1693,6 +1691,7 @@ class Users extends CRMEntity {
 	}
 
 	function createRecords($obj) {
+		global $log, $default_language;
 		$adb = PearDatabase::getInstance();
 		$moduleName = $obj->module;
 		$createdRecords = array();
@@ -1758,7 +1757,10 @@ class Users extends CRMEntity {
 						}
 					} else if($fieldName == 'roleid') {
 						foreach($allRoles as $role) {
-							if(strtolower($fieldValue) == strtolower($role->getName())) {
+							$roleLabelKey = $role->getName();
+							// 「役割」は翻訳後の値での比較、default_languageを見て比較する
+							$translatedRoleName = Vtiger_Language_Handler::getTranslatedString($roleLabelKey, 'Settings:Roles', $default_language);
+							if(strtolower($fieldValue) == strtolower($translatedRoleName)) {
 								$roleId = $role->getId();
 								break;
 							}

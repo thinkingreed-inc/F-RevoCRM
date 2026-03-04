@@ -26,6 +26,10 @@ class Documents_Module_Model extends Vtiger_Module_Model {
 		return false;
 	}
 	
+	public function isExcelEditAllowed() {
+		return false;
+	}
+	
 	/**
 	 * Function returns the url which gives Documents that have Internal file upload
 	 * @return string

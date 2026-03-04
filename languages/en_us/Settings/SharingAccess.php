@@ -27,7 +27,15 @@ $languageStrings = array(
 	'LBL_CUSTOM_ACCESS_MESG' => 'No Custom Access Rules defined',
 	'SINGLE_Groups' => 'Group',
 	'SINGLE_Roles' => 'Role',
+	'Roles' => 'Role',
 	'SINGLE_RoleAndSubordinates' => 'RoleAndSubordinate',
+	'RoleAndSubordinates' => 'RoleAndSubordinate',
+
+	// F-RevoCRM
+	'Public: Read Only' => 'Public: Read Only',
+	'Public: Read, Create/Edit' => 'Public: Read, Create/Edit',
+	'Public: Read, Create/Edit, Delete' => 'Public: Read, Create/Edit, Delete',
+	'Private' => 'Private',
 );
 
 $jsLanguageStrings = array(

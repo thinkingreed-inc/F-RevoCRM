@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 
 services:
   webdb:
@@ -13,8 +13,8 @@ services:
     command: >
       sh -c 'usermod -u `stat -c %u /html2pdf/` www-data
              groupmod -g `stat -c %u /html2pdf/` www-data
-             chown -R www-data.www-data /var/www/html
-             chown -R www-data.www-data /html2pdf
+             chown -R www-data:www-data /var/www/html
+             chown -R www-data:www-data /html2pdf
              exec /sbin/init'
 
     dns: 8.8.8.8

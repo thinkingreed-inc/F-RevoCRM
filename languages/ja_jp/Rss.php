@@ -10,6 +10,7 @@
 
 $languageStrings = Array(
     'Rss'=>'Rss',
+    'List' => 'リスト',
     'LBL_RSS_FEED_SOURCES' => 'RssフィードのURL',
     'LBL_ADD_FEED_SOURCE' => 'Rssフィードの追加',
     'LBL_FEEDS_LIST_FROM' => 'からのフィード一覧',

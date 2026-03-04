@@ -17,11 +17,11 @@ $languageStrings = array(
 
 	'ModuleFieldLabel' => 'ModuleFieldLabel Text',
 
-        'LBL_CUSTOM_INFORMATION' => 'コメント',
-        'LBL_COMMENTS' => 'コメント',
-        'LBL_COMMENT_INFORMATION'=>'コメント 一覧',
-        'LBL_AUTHOR'=>'作者',
-        'LBL_ADD_COMMENT'=>'コメント追加',//give the same value given to the above string 'Add Comment'
+	'LBL_CUSTOM_INFORMATION' => 'コメント',
+	'LBL_COMMENTS' => 'コメント',
+	'LBL_COMMENT_INFORMATION'=>'コメント 一覧',
+	'LBL_AUTHOR'=>'作者',
+	'LBL_ADD_COMMENT'=>'コメント追加',//give the same value given to the above string 'Add Comment'
 	'Add Comment'=>'コメント追加',
 
 	'LBL_DAYILYREPORTS_INFORMATION' => '基本情報',

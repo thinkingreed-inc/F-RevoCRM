@@ -12,6 +12,8 @@ $languageStrings = array(
 	'SINGLE_Faq' => 'FAQ',
 	'LBL_RECORDS_LIST' => 'FAQs List',
 	'LBL_ADD_RECORD' => 'Add FAQ',
+	// 'lead日' => 'リード日',
+	'user' => 'user',
 
 	//Blocks
 	'LBL_FAQ_INFORMATION' => 'FAQ Information',
@@ -31,4 +33,8 @@ $languageStrings = array(
 
 	//EditView
 	'LBL_SOLUTION' => 'Solution',
+
+	//F-RevoCRM
+	'Drafted FAQ' => 'Drafted FAQ',
+	'Published FAQ' => 'Published FAQ',
 );

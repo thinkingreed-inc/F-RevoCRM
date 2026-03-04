@@ -80,7 +80,7 @@ class Import_Utils_Helper {
 		return $fileReader;
 	}
 
-	public static function getDbTableName($user) {
+	public static function getDbTableName($user, $importId=null) {
 		$configReader = new Import_Config_Model();
 		$userImportTablePrefix = $configReader->get('userImportTablePrefix');
 
@@ -90,6 +90,13 @@ class Import_Utils_Helper {
 		} else {
 			$tableName .= $user->id;
 		}
+		if (empty($importId)) {
+			$importInfo = Import_Queue_Action::getUserCurrentImportInfo($user);
+			$importId = $importInfo['id'];
+		}
+		$tableName .= '_';
+		$tableName .= $importId;
+
 		return $tableName;
 	}
 
@@ -133,10 +140,10 @@ class Import_Utils_Helper {
 	}
 
 	public static function clearUserImportInfo($user) {
-		$adb = PearDatabase::getInstance();
-		$tableName = self::getDbTableName($user);
+		// $adb = PearDatabase::getInstance();
+		// $tableName = self::getDbTableName($user);
 
-		$adb->pquery('DROP TABLE IF EXISTS '.$tableName, array());
+		// $adb->pquery('DROP TABLE IF EXISTS '.$tableName, array());
 		Import_Lock_Action::unLock($user);
 		Import_Queue_Action::removeForUser($user);
 	}
@@ -255,4 +262,8 @@ class Import_Utils_Helper {
 		}
 		return $errorMessage;
 	}
+}
+
+class ImportException extends Exception
+{
 }

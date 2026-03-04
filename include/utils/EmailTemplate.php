@@ -173,7 +173,7 @@ class EmailTemplate {
 						}
 						$value = $row->get($fieldColumnMapping[$field]);
 						//Emails are wrapping with hyperlinks, so skipping email fields as well
-						if($fieldModel->isReferenceField() || $fieldModel->isOwnerField() || $fieldModel->get('uitype') == 13) {
+						if($fieldModel->isReferenceField() || $fieldModel->isOwnerField() || in_array($fieldModel->get('uitype'), [13, 117])) {
 							if ($referenceColumn == 'contactid' && $this->module == 'Events') {
 								/**Getting multi reference record's reference/owner/uitype = 13 values 
 								 * and storing it in a class variable, later we will glue them with comma(,)

@@ -65,7 +65,7 @@ class Settings_Leads_Module_Model extends Vtiger_Module_Model {
      * @return <array> Restricted ui types
      */
     public function getRestrictedUitypes() {
-        return array(4, 51, 52, 53, 57, 58, 70);
+        return array(4, 51, 52, 53, 57, 58, 70, 999);
     }
 
 	/**

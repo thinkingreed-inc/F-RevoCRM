@@ -148,7 +148,7 @@ class Vtiger_DetailView_Model extends Vtiger_Base_Model {
 				$templateId = $adb->query_result($result, $i, 'templateid');
 				$templateName = $adb->query_result($result, $i, 'templatename');
 				$detailViewLinks = array(
-					'linklabel' => vtranslate('LBL_EXPORT_TO_PDF', $moduleName).'('.htmlentities($templateName).')',
+					'linklabel' => vtranslate('LBL_EXPORT_TO_PDF', $moduleName).'('.vtranslate(htmlentities($templateName), $moduleName).')',
 					'linkurl' => $recordModel->getExportPDFUrl().'&template='.$templateId,
 					'linkicon' => ''
 				);

@@ -411,7 +411,7 @@ class Vendors extends CRMEntity {
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule, $queryPlanner) {
+	function generateReportsSecQuery($module,$secmodule, $queryPlanner, $reportid = false) {
 
 		$matrix = $queryPlanner->newDependencyMatrix();
 
@@ -420,7 +420,7 @@ class Vendors extends CRMEntity {
 			return '';
 		}
         $matrix->setDependency("vtiger_vendor",array("vtiger_crmentityVendors","vtiger_vendorcf","vtiger_email_trackVendors"));
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_vendor","vendorid", $queryPlanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_vendor","vendorid", $queryPlanner, $reportid);
 		// TODO Support query planner
 		if ($queryPlanner->requireTable("vtiger_crmentityVendors",$matrix)){
 		    $query .=" left join vtiger_crmentity as vtiger_crmentityVendors on vtiger_crmentityVendors.crmid=vtiger_vendor.vendorid and vtiger_crmentityVendors.deleted=0";

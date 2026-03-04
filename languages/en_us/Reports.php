@@ -21,6 +21,9 @@ $languageStrings = array(
 	'LBL_EDITING_REPORT' => 'Editing Report',
 	'LBL_REPORT_DETAILS' => 'Report Details',
 	'LBL_SELECT_COLUMNS' => 'Select Columns',
+	'List' => 'List',
+	'Edit' => 'Edit',
+	'ChartEdit' => 'Chart Edit',
 	'LBL_FILTERS' => 'Filters',
 	'LBL_FOLDERS' => 'Folders',
 	'LBL_ADD_NEW_FOLDER' => 'Add New Folder',
@@ -72,7 +75,6 @@ $languageStrings = array(
 	'LBL_MAX' => 'Max',
 	'LBL_NEXT' => 'Next',
 	'LBL_REPORTS' => 'Reports List',
-	'LBL_SELECT_RELATED_MODULES' => 'Select Related Modules',
 
 	//Step2 Strings
 	'LBL_GROUP_BY' => 'Group By',
@@ -226,8 +228,10 @@ $languageStrings = array(
 	'LBL_UNPIN_CHART_FROM_DASHBOARD' => 'Unpin chart from dashboard',
 	'LBL_REPORTS_DELETED_SUCCESSFULLY' => 'Reports Deleted Successfully',
 );
+
 $jsLanguageStrings = array(
 	'JS_DUPLICATE_RECORD' => 'Duplicate Report',
+	'JS_SAME_REPORT_NAME' => 'A report with the same name already exists.',
 	'JS_CALCULATION_LINE_ITEM_FIELDS_SELECTION_LIMITATION' => 'Limitation: Line Item fields(List Price, Discount & Quantity) can only be used when other calculation fields are not selected.',
 	'JS_NO_CHART_DATA_AVAILABLE' => 'Data not available, please check the selected fields',
     'JS_CHART_PINNED_TO_DASHBOARD' => 'Chart Pinned To DashBoard',

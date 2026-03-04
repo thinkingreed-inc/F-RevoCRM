@@ -9,14 +9,38 @@
  ************************************************************************************/
 
 $languageStrings = array(
-	'ModuleName' => 'Module Name',
-	'SINGLE_ModuleName' => 'Module Name',
-	'ModuleName ID' => 'Module Name ID',
+	'ModuleName' => 'Daily Report',
+	'Dailyreports' => 'Daily Report',
+	'SINGLE_Dailyreports' => 'Daily Report',
 
-	'LBL_CUSTOM_INFORMATION' => 'Custom Information',
 	'LBL_MODULEBLOCK_INFORMATION' => 'ModuleBlock Information',
 
 	'ModuleFieldLabel' => 'ModuleFieldLabel Text',
+
+	'LBL_CUSTOM_INFORMATION' => 'Comments',
+	'LBL_COMMENTS' => 'Comments',
+	'LBL_COMMENT_INFORMATION'=>'Comment List',
+	'LBL_AUTHOR'=>'Author',
+	'LBL_ADD_COMMENT'=>'Add Comment',//give the same value given to the above string 'Add Comment'
+	'Add Comment'=>'Add Comment',
+
+	'LBL_DAYILYREPORTS_INFORMATION' => 'Basic Information',
+	'DailyreportsName' => 'Subject',
+	'DailyreportsComment' => 'Comment',
+	'DailyreportsStatus' => 'Status',
+	'ReportsDate' => 'Submission Date',
+	'Send To User' => 'Recipient',
+	'LBL_CHANGE'=>'( Change )',
+	'Created Time' => 'Created Time',
+	'Modified Time' => 'Modified Time',
+	'Approval' => 'In Submission',
+	'Submit' => 'Approved',
+	'Assigned To' => 'Assigned To',
+	'reportsterm' => 'Daily/Weekly Report',
+	'Day' => 'Daily Report (Submission Date)',
+	'Week' => 'Weekly Report (Week Including Submission Date)',
+
+	'Dailyreports ID'=>'Daily Report ID',
 );
 
 ?>

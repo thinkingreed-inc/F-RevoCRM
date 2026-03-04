@@ -40,7 +40,7 @@ class Inventory_EditRecordStructure_Model extends Vtiger_EditRecordStructure_Mod
 								$fieldValue = $recordModel->getInventoryTermsAndConditions();
 							} else if($fieldValue == '') {
                                 $defaultValue = $fieldModel->getDefaultFieldValue();
-                                if(!empty($defaultValue) && !$recordId){
+                                if($defaultValue != "" && !$recordId){
 									if($fieldModel->getFieldDataType() == "date" && $defaultValue == 'TODAY'){
 										$fieldValue = date('Y-m-d');
 									}

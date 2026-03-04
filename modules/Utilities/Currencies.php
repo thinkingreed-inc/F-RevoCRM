@@ -9,7 +9,7 @@
  ************************************************************************************/
 
 $currencies = array(
-	'Albania, Leke' => array('ALL' ,'Lek'),
+	'Albania, Leke' => array('ALB' ,'Lek'),
 	'Argentina, Pesos' => array('ARS' ,'$'),
 	'Aruba, Guilders' => array('AWG' ,'ƒ'),
 	'Australia, Dollars' => array('AUD' ,'$'),

@@ -34,7 +34,7 @@
                         <span class="redColor">*</span>
                      </label>
                      <div class="col-sm-5 controls">
-                        <input class="form-control" id="name"  name="workflowname" value="{$WORKFLOW_MODEL_OBJ->workflowname}" data-rule-required="true">
+                        <input class="form-control" id="name"  name="workflowname" value="{vtranslate($WORKFLOW_MODEL_OBJ->workflowname, $QUALIFIED_MODULE)}" data-rule-required="true">
                      </div>
                   </div>
                   <div class="form-group">
@@ -42,7 +42,7 @@
                         {vtranslate('LBL_DESCRIPTION', $QUALIFIED_MODULE)}
                      </label>
                      <div class="col-sm-5 controls">
-                        <textarea class="form-control" name="summary" id="summary">{$WORKFLOW_MODEL->get('summary')}</textarea>
+                        <textarea class="form-control" name="summary" id="summary">{vtranslate($WORKFLOW_MODEL->get('summary'), $QUALIFIED_MODULE)}</textarea>
                      </div>
                   </div>
                   <div class="form-group">

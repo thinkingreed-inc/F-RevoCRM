@@ -27,14 +27,14 @@
 			</tr>
 			{foreach item=CHARGE_MODEL from=$CHARGE_MODELS_LIST}
 				<tr class="opacity" data-charge-id="{$CHARGE_MODEL->getId()}">
-					<td class="{$WIDTHTYPE}" style="border-right:none;border-left:none"><span class="chargeName" style="width:100px;">{$CHARGE_MODEL->getName()}</span></td>
+					<td class="{$WIDTHTYPE}" style="border-right:none;border-left:none"><span class="chargeName" style="width:100px;">{vtranslate($CHARGE_MODEL->getName(), $QUALIFIED_MODULE)}</span></td>
 					<td class="{$WIDTHTYPE}" style="border-right:none;border-left:none"><span class="chargeValue" style="width:105px;">{$CHARGE_MODEL->getDisplayValue()}</span></td>
 					<td class="{$WIDTHTYPE}" style="border-right:none;border-left:none"><span class="chargeIsTaxable">{if $CHARGE_MODEL->isTaxable()}{vtranslate('LBL_YES', $QUALIFIED_MODULE)}{else}{vtranslate('LBL_NO', $QUALIFIED_MODULE)}{/if}</span></td>
 					<td class="{$WIDTHTYPE}" style="border-right:none;border-left:none">
 						<span class="chargeTaxes" style="width:100px;">
 							{assign var=TAXES value=''}
 							{foreach item=TAX_MODEL from=$CHARGE_MODEL->getSelectedTaxes()}
-								{assign var=TAXES value="{$TAXES}, {$TAX_MODEL->getName()}"}
+								{assign var=TAXES value="{$TAXES}, {vtranslate($TAX_MODEL->getName(), $QUALIFIED_MODULE)}"}
 							{/foreach}
 							{trim($TAXES, ', ')}
 						</span>
@@ -64,7 +64,7 @@
 			</tr>
 			{foreach item=CHARGE_TAX_MODEL from=$CHARGE_TAXES}
 				<tr class="opacity" data-taxid="{$CHARGE_TAX_MODEL->get('taxid')}" data-taxtype="{$CHARGE_TAX_MODEL->getType()}">
-					<td class="{$WIDTHTYPE}" style="border-right:none;border-left:none"><span class="taxLabel" style="width:150px">{$CHARGE_TAX_MODEL->getName()}</span></td>
+					<td class="{$WIDTHTYPE}" style="border-right:none;border-left:none"><span class="taxLabel" style="width:150px">{vtranslate($CHARGE_TAX_MODEL->getName(), $QUALIFIED_MODULE)}</span></td>
 					<td class="{$WIDTHTYPE}" style="border-right:none;border-left:none"><span class="taxType">{vtranslate($CHARGE_TAX_MODEL->getTaxType())}</span></td>
 					<td class="{$WIDTHTYPE}" style="border-right:none;border-left:none"><span class="taxMethod">{vtranslate($CHARGE_TAX_MODEL->getTaxMethod())}</span></td>
 					<td class="{$WIDTHTYPE}" style="border-right:none;border-left:none"><span class="taxPercentage">{$CHARGE_TAX_MODEL->getTax()}%</span></td>

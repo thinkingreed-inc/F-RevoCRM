@@ -18,16 +18,11 @@
 					{if !$NAME_ATTR}
 						{assign var=NAME_ATTR value="fieldDefaultValue"}
 					{/if}
-					{if $DEFAULT_VALUE eq false && !$IS_SET}
-						{assign var=DEFAULT_VALUE value=$FIELD_MODEL->get('defaultvalue')}
-					{/if}
+					{assign var=DEFAULT_VALUE value=$FIELD_MODEL->get('defaultvalue')}
 
 					{if $FIELD_MODEL->getFieldDataType() eq "picklist"}
 						{if !is_array($PICKLIST_VALUES)}
 							{assign var=PICKLIST_VALUES value=$FIELD_INFO.picklistvalues}
-						{/if}
-						{if !$DEFAULT_VALUE}
-							{assign var=DEFAULT_VALUE value=$FIELD_MODEL->get('defaultvalue')}
 						{/if}
 						{assign var=DEFAULT_VALUE value={decode_html($DEFAULT_VALUE)}}
 						<select class="col-sm-9 select2" name="{$NAME_ATTR}">

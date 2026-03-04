@@ -26,7 +26,7 @@ $adb->query("update vtiger_inventorytaxinfo set deleted = 1");
 
 require_once('modules/Settings/Vtiger/models/TaxRecord.php');
 $record = new Inventory_TaxRecord_Model();
-$record->set('taxlabel', '消費税');
+$record->set('taxlabel', 'LBL_CONSUMPTION_TAX');
 $record->set('percentage', 10.000);
 $record->set('deleted', 0);
 $record->set('type', 'Fixed');
@@ -37,5 +37,5 @@ $record->save();
 // $adb->pquery("INSERT INTO vtiger_inventorytaxinfo(taxid, taxname, taxlabel, percentage, deleted, method, type, compoundon, regions)values(?, ?, ?, ?, ?, ?, ?, ?, ?)"
 //             ,array(4, 'tax4', '消費税', 10.000, 0, 'Simple', 'Fixed', '[]', '[]'));
 
-$adb->pquery("INSERT INTO vtiger_taxregions(regionid, name)values(?, ?)", array('1', '日本'));
+$adb->pquery("INSERT INTO vtiger_taxregions(regionid, name)values(?, ?)", array('1', 'LBL_JAPAN'));
 

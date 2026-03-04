@@ -83,7 +83,7 @@
                         <div class="controls col-lg-4 col-md-4 col-sm-4">
                             <select id="rolesList" class="select2 inputElement" name="rolesSelected"  data-placeholder="{vtranslate('LBL_CHOOSE_ROLES',$QUALIFIED_MODULE)}">
                                 {foreach from=$ROLES_LIST item=ROLE}
-                                    <option value="{$ROLE->get('roleid')}">{$ROLE->get('rolename')}</option>
+                                    <option value="{$ROLE->get('roleid')}">{vtranslate($ROLE->get('rolename'),$QUALIFIED_MODULE)}</option>
                                 {/foreach}
                             </select>	
                         </div>

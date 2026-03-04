@@ -53,6 +53,7 @@ class Calendar_ViewTypes_View extends Vtiger_IndexAjax_View {
 		$viewer->assign('CURRENTUSER_MODEL',$currentUser);
 		$viewer->assign('ALL_ROLES',$allRoles);
 		$viewer->assign('ALL_GROUPS',$allGroups);
+		$viewer->assign('SHARED_CALENDAR_TODO_VIEW', $currentUser->getSharedCalendarTodoView());
 		$viewer->view('CalendarSharedUsers.tpl', $moduleName);
 	}
 }

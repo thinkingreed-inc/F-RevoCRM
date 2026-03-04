@@ -16,6 +16,10 @@ require_once('modules/Settings/MenuEditor/models/Module.php');
 require_once('modules/Vtiger/models/MenuStructure.php');
 require_once('modules/Vtiger/models/Module.php');
 
+include_once('includes/runtime/LanguageHandler.php');
+include_once('includes/runtime/Globals.php');
+
+
 
 global $log;
 
@@ -72,10 +76,18 @@ $sql = "INSERT INTO vtiger_pdftemplates(foldername, module, templatename, subjec
 
 $foldername = '';
 $module = 'Quotes';
-$templatename = '見積書';
+$templatename = 'LBL_EXPERIENCE_BOOK';
 $subject = '';
 $description = '';
 $body = file_get_contents('layouts/v7/modules/PDFTemplates/templates/QuotesTemplate.tpl');
+$body = preg_replace_callback('/\{vtranslate\((.*?)\)\}/', function ($matches) {
+    // マッチした引数を分解
+    $args = explode(',', $matches[1]);
+    $label = trim($args[0], ' \'"');
+    $module = isset($args[1]) ? trim($args[1], ' \'"') : '';
+    // vtranslate関数を安全に実行
+    return vtranslate($label, $module);
+}, $body);
 $deleted = 0;
 $systemtemplate = 0;
 $templateid = $db->getUniqueID('vtiger_pdftemplates');
@@ -85,10 +97,18 @@ $db->pquery($sql, $params);
 
 $foldername = '';
 $module = 'Invoice';
-$templatename = '請求書';
+$templatename = 'RecurringInvoice';
 $subject = '';
 $description = '';
 $body = file_get_contents('layouts/v7/modules/PDFTemplates/templates/InvoiceTemplate.tpl');
+$body = preg_replace_callback('/\{vtranslate\((.*?)\)\}/', function ($matches) {
+    // マッチした引数を分解
+    $args = explode(',', $matches[1]);
+    $label = trim($args[0], ' \'"');
+    $module = isset($args[1]) ? trim($args[1], ' \'"') : '';
+    // vtranslate関数を安全に実行
+    return vtranslate($label, $module);
+}, $body);
 $deleted = 0;
 $systemtemplate = 0;
 $templateid = $db->getUniqueID('vtiger_pdftemplates');
@@ -98,10 +118,18 @@ $db->pquery($sql, $params);
 
 $foldername = '';
 $module = 'SalesOrder';
-$templatename = '注文請書';
+$templatename = 'LBL_REQUEST_FOR_ANNOTATION';
 $subject = '';
 $description = '';
 $body = file_get_contents('layouts/v7/modules/PDFTemplates/templates/SalesOrderTemplate.tpl');
+$body = preg_replace_callback('/\{vtranslate\((.*?)\)\}/', function ($matches) {
+    // マッチした引数を分解
+    $args = explode(',', $matches[1]);
+    $label = trim($args[0], ' \'"');
+    $module = isset($args[1]) ? trim($args[1], ' \'"') : '';
+    // vtranslate関数を安全に実行
+    return vtranslate($label, $module);
+}, $body);
 $deleted = 0;
 $systemtemplate = 0;
 $templateid = $db->getUniqueID('vtiger_pdftemplates');
@@ -111,10 +139,18 @@ $db->pquery($sql, $params);
 
 $foldername = '';
 $module = 'PurchaseOrder';
-$templatename = '発注書';
+$templatename = 'LBL_PURCHASE_ORDER';
 $subject = '';
 $description = '';
 $body = file_get_contents('layouts/v7/modules/PDFTemplates/templates/PurchaseOrderTemplate.tpl');
+$body = preg_replace_callback('/\{vtranslate\((.*?)\)\}/', function ($matches) {
+    // マッチした引数を分解
+    $args = explode(',', $matches[1]);
+    $label = trim($args[0], ' \'"');
+    $module = isset($args[1]) ? trim($args[1], ' \'"') : '';
+    // vtranslate関数を安全に実行
+    return vtranslate($label, $module);
+}, $body);
 $deleted = 0;
 $systemtemplate = 0;
 $templateid = $db->getUniqueID('vtiger_pdftemplates');
@@ -122,5 +158,5 @@ $templateid = $db->getUniqueID('vtiger_pdftemplates');
 $params = array($foldername, $module, $templatename, $subject, $description, $body, $deleted, $systemtemplate, $templatename);
 $db->pquery($sql, $params);
 
-echo "実行が完了しました。<br>";
+echo "LBL_ITS_OVER";
 $log->debug("[END] Add Comments function");

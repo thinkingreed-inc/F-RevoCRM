@@ -17,6 +17,9 @@ $languageStrings = array(
 	'providertype' => 'プロバイダ',
 	'SMSNotifier' => 'SMSプロバイダ設定',
 	'username' => 'ユーザー名',
+	'ClickATellNew' => 'ClickATell (プラットフォーム)',
+	'ClickATell' => 'ClickATell (コミュニケーター/中央)',
+	'LBL_CLICKATELLNEW_CALLBACKURL_INFO' => "このURLをClickATell SMS統合設定ページの「配信通知を有効にする」フィールドにコピーしてください",
 );
 
 $jsLanguageStrings = array(

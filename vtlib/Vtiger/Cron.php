@@ -253,8 +253,14 @@ class Vtiger_Cron {
 	 * Detect if the task was started by never finished.
 	 */
 	function hadTimedout() {
-		if($this->data['lastend'] === 0 && $this->data['laststart'] != 0)
-		return intval($this->data['lastend']);
+		$laststart = intval($this->data['laststart']);
+		$lastend = intval($this->data['lastend']);
+		$retryTimeout = intval($this->data['retry_timeout']);
+		$currentTime = time();
+		if($laststart > 0 && $lastend === 0 && $currentTime - $laststart > $retryTimeout) {
+			return true;
+		}
+		return false;
 	}
 
 	/**

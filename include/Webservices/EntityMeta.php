@@ -32,6 +32,7 @@ abstract class EntityMeta{
 	protected $referenceFieldDetails;
 	protected $emailFields;
 	protected $ownerFields;
+	protected $blankFields;
 	protected $moduleFields = null;
 	
 	protected function __construct($webserviceObject,$user)
@@ -117,7 +118,22 @@ abstract class EntityMeta{
 		}
 		return $this->ownerFields;
 	}
-	
+
+	public function getBlankFields()
+	{
+		if ($this->blankFields === null) {
+			$this->blankFields =  array();
+
+			$moduleFields = $this->getModuleFields();
+			foreach ($moduleFields as $fieldName => $webserviceField) {
+				if (strcasecmp($webserviceField->getFieldDataType(), 'blank') === 0) {
+					array_push($this->blankFields, $fieldName);
+				}
+			}
+		}
+		return $this->blankFields;
+	}
+
 	public function getObectIndexColumn(){
 		return $this->idColumn;
 	}

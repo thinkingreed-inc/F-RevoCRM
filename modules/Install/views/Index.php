@@ -48,7 +48,10 @@ class Install_Index_view extends Vtiger_View_Controller {
 			$_SESSION['config_file_info']['default_language'] = 'ja_jp';
 		}
 		vglobal('default_language', $_SESSION['config_file_info']['default_language']);
-
+		
+		$select2Locale = is_string($_SESSION['config_file_info']['default_language']) ? explode('_',$_SESSION['config_file_info']['default_language'])[0] : 'en';
+		$viewer->assign('SELECT2_LOCALE', $select2Locale);
+		
 		define('INSTALLATION_MODE', true);
 		define('INSTALLATION_MODE_DEBUG', $this->debug);
 		$viewer->view('InstallPreProcess.tpl', $moduleName);
@@ -73,6 +76,7 @@ class Install_Index_view extends Vtiger_View_Controller {
 		$viewer = $this->getViewer($request);
 		$moduleName = $request->getModule();
 		$viewer->assign('CURRENT_LANGUAGE', vglobal('default_language'));
+		$viewer->assign('LANGUAGE_STRINGS', $this->getJSLanguageStrings($request));
 		$viewer->assign('LANGUAGES', Install_Utils_model::getLanguageList());
 		$viewer->view('Step1.tpl', $moduleName);
 	}
@@ -80,6 +84,7 @@ class Install_Index_view extends Vtiger_View_Controller {
 	public function Step2(Vtiger_Request $request) {
 		$viewer = $this->getViewer($request);
 		$moduleName = $request->getModule();
+		$viewer->assign('LANGUAGE_STRINGS', $this->getJSLanguageStrings($request));
 		$viewer->view('Step2.tpl', $moduleName);
 	}
 
@@ -90,6 +95,7 @@ class Install_Index_view extends Vtiger_View_Controller {
 		$viewer->assign('PHP_INI_CURRENT_SETTINGS', Install_Utils_Model::getCurrentDirectiveValue());
 		$viewer->assign('PHP_INI_RECOMMENDED_SETTINGS', Install_Utils_Model::getRecommendedDirectives());
 		$viewer->assign('SYSTEM_PREINSTALL_PARAMS', Install_Utils_Model::getSystemPreInstallParameters());
+		$viewer->assign('LANGUAGE_STRINGS', $this->getJSLanguageStrings($request));
 		$viewer->view('Step3.tpl', $moduleName);
 	}
 
@@ -119,6 +125,7 @@ class Install_Index_view extends Vtiger_View_Controller {
 		$password_regex = $runtime_configs->getValidationRegex('password_regex');
 		$viewer->assign('PWD_REGEX', $password_regex);
 
+		$viewer->assign('LANGUAGE_STRINGS', $this->getJSLanguageStrings($request));
 		$viewer->view('Step4.tpl', $moduleName);
 	}
 
@@ -169,6 +176,7 @@ class Install_Index_view extends Vtiger_View_Controller {
 		$viewer->assign('DB_CONNECTION_INFO', $dbConnection);
 		$viewer->assign('INFORMATION', $requestData);
 		$viewer->assign('AUTH_KEY', $authKey);
+		$viewer->assign('LANGUAGE_STRINGS', $this->getJSLanguageStrings($request));
 		$viewer->view('Step5.tpl', $moduleName);
 	}
 
@@ -177,6 +185,7 @@ class Install_Index_view extends Vtiger_View_Controller {
 		$viewer = $this->getViewer($request);
 
 		$viewer->assign('AUTH_KEY', $_SESSION['config_file_info']['authentication_key']);
+		$viewer->assign('LANGUAGE_STRINGS', $this->getJSLanguageStrings($request));
 		$viewer->view('Step6.tpl', $moduleName);
 	}
 
@@ -224,6 +233,7 @@ class Install_Index_view extends Vtiger_View_Controller {
 			// Custom Setup
 			include_once('setup/Setup.php');
 
+			$viewer->assign('LANGUAGE_STRINGS', $this->getJSLanguageStrings($request));
 			$viewer->view('Step7.tpl', $moduleName);
 		}else{
 			$response = new Vtiger_Response();
@@ -278,14 +288,14 @@ class Install_Index_view extends Vtiger_View_Controller {
 		$params = array(
 			'publicid'=>'fc9989a76a69c08efe8def5f9146ba68',
 			'__vtrftk'=>'sid:c85da48991c82d74b3e4eb3f6aaa391ba6975846,1595809667',
-			'name'=>'FRインストール時のアンケート（v7以降）',
+			'name'=>'LBL_FR_INSTALLATION_SURVEY',
 			'VTIGER_RECAPTCHA_PUBLIC_KEY'=>'RECAPTCHA PUBLIC KEY FOR THIS DOMAIN',
 			'company'=>$_REQUEST['company'],
 			'lastname'=>$_REQUEST['lastname'],
 			'firstname'=>$_REQUEST['firstname'],
 			'phone'=>$_REQUEST['phone'],
 			'email'=>$_REQUEST['email'],
-			'description'=>"F-RevoCRMインストールアンケート\n".$description,
+			'description'=>'LBL_F-RevoCRM_INSTALL_ENQUETE',
 		);
 
 		$ch = curl_init("https://tr.thinkingreed.co.jp/crm/modules/Webforms/capture.php");

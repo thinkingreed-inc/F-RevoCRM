@@ -67,6 +67,22 @@ $languageStrings = array(
     
     //Potentials Custom Field Mapping
 	'LBL_CUSTOM_FIELD_MAPPING'=> 'Opportunity to Project mapping',
+	//F-RevoCRM
+	'Potentials Won' => 'Won Opportunities',
+	'last_action_date' => 'Last Action Date',
+	'Negotiation or Review' => 'Final Negotiation',
+
+	//Workflow Conditions
+	'Planning' => 'Planning',
+	'Completed' => 'Completed',
+	'Integrator' => 'Integrator',
+	'Analyst' => 'Analyst',
+	'Competitor' => 'Competitor',
+	'Customer' => 'Customer',
+	'Investor' => 'Investor',
+	'Press' => 'Publisher/Media',
+	'Prospect' => 'Prospect',
+	'Reseller' => 'Reseller',
 );
 
 $jsLanguageStrings = array(

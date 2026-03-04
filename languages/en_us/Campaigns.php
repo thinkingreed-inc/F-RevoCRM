@@ -64,6 +64,10 @@ $languageStrings = array(
 	'Contacted - Successful' => 'Contacted - Successful',
 	'Contacted - Unsuccessful' => 'Contacted - Unsuccessful',
 	'Contacted - Never Contact Again' => 'Contacted - Never Contact Again',
+	
+	//F-RevoCRM
+	'Completed'=>'Completed',
+	'Partners'=>'Partners',
 );
 
 $jsLanguageStrings = array(

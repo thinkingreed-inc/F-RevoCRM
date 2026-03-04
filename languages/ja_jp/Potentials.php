@@ -84,7 +84,6 @@ $languageStrings = array(
 	'Press' => '出版社・報道機関',
 	'Prospect' => '潜在顧客',
 	'Reseller' => '代理店',
-	
 );
 
 $jsLanguageStrings = array(

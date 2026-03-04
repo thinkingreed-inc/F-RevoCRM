@@ -100,6 +100,10 @@ $languageStrings = array(
 	'LBL_ADD_DOCUMENT'=>"Add Document",
 	'LBL_OPEN_TICKETS'=>"Open Tickets",
 	'LBL_CREATE_TICKET'=>"Create Ticket",
+
+	//F-RevoCRM
+	'High Prioriy Tickets' => 'High Priority Tickets',
+	'Open Ticket' => 'Open Ticket',
 );
 
 $jsLanguageStrings=array(

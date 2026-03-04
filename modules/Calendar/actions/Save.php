@@ -215,7 +215,6 @@ class Calendar_Save_Action extends Vtiger_Save_Action {
 		$activityType = $request->get('activitytype');
 		if(empty($activityType)) {
 			$recordModel->set('activitytype', 'Task');
-			$recordModel->set('visibility', 'Private');
 		}
 
 		//Due to dependencies on the older code

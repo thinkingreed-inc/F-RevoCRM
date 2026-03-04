@@ -312,7 +312,7 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 	 */
 	public function changeDateTime($datetime,$daysToAdd,$minutesToAdd,$secondsDelta=NULL){
 		$datetime = strtotime($datetime);
-		if(!$secondsDelta) {
+		if($secondsDelta == NULL) {
 			$secondsDelta = (60*$minutesToAdd)+(24*60*60*$daysToAdd);
 		}
 		$futureDate = $datetime+$secondsDelta;

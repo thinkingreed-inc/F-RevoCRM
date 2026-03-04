@@ -16,7 +16,7 @@ class Settings_Vtiger_CompanyDetails_Model extends Settings_Vtiger_Module_Model 
 	var $baseIndex = 'organization_id';
 	var $listFields = array('organizationname');
 	var $nameFields = array('organizationname');
-	var $logoPath = 'test/logo/';
+	var $logoPath = 'public/logo/';
 
 	var $fields = array(
 		'organizationname' => 'text',
@@ -91,7 +91,7 @@ class Settings_Vtiger_CompanyDetails_Model extends Settings_Vtiger_Module_Model 
 	 */
 	public function getLogoPath() {
 		$logoPath = $this->logoPath;
-		$handler = @opendir($logoPath);
+		$handler = @opendir('public/'.$logoPath);
 		$logoName = decode_html($this->get('logoname'));
 		if ($logoName && $handler) {
 			while ($file = readdir($handler)) {

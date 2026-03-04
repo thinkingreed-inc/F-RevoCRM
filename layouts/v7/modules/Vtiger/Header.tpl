@@ -59,11 +59,39 @@
             {/if}
             var _USERMETA;
             {if $CURRENT_USER_MODEL}
-               _USERMETA =  { 'id' : "{$CURRENT_USER_MODEL->get('id')}", 'menustatus' : "{$CURRENT_USER_MODEL->get('leftpanelhide')}", 
+               _USERMETA =  { 'id' : "{$CURRENT_USER_MODEL->get('id')}", 'menustatus' : "{$CURRENT_USER_MODEL->get('leftpanelhide')}",
                               'currency' : "{$USER_CURRENCY_SYMBOL}", 'currencySymbolPlacement' : "{$CURRENT_USER_MODEL->get('currency_symbol_placement')}",
                           'currencyGroupingPattern' : "{$CURRENT_USER_MODEL->get('currency_grouping_pattern')}", 'truncateTrailingZeros' : "{$CURRENT_USER_MODEL->get('truncate_trailing_zeros')}"};
             {/if}
+            {* WebComponents版QuickCreateを無効にするモジュールリスト（ブラックリスト形式） *}
+            {* 基本的にはWebComponents版を使用し、未対応モジュールのみ除外 *}
+            window.webComponentsQuickCreateExcludedModules = [
+                'Documents'  {* ファイルアップロード・外部リンク・ドラッグ&ドロップ等の特殊UIが必要 *}
+            ];
 		</script>
+        <script type="importmap">
+        {
+            "imports": {
+                "react": "https://esm.sh/react@18.2.0",
+                "react-dom": "https://esm.sh/react-dom@18.2.0"
+            }
+        }
+        </script>
+        {if $IS_PRODUCTION}
+            <link rel="stylesheet" href="./resources/web-components/style.css">
+            <script type="module" src="./resources/web-components/web-components.js"></script>
+        {else}
+            <link rel="stylesheet" href="http://localhost:5173/src/index.css">
+            <script type="module">
+                import RefreshRuntime from "http://localhost:5173/@react-refresh"
+                RefreshRuntime.injectIntoGlobalHook(window)
+                window.$RefreshReg$ = () => {}
+                window.$RefreshSig$ = () => (type) => type
+                window.__vite_plugin_react_preamble_installed__ = true
+            </script>
+            <script type="module" src="http://localhost:5173/@vite/client"></script>
+            <script type="module" src="http://localhost:5173/src/main.ts"></script>
+        {/if}
 	</head>
 	 {assign var=CURRENT_USER_MODEL value=Users_Record_Model::getCurrentUserModel()}
 	<body data-skinpath="{Vtiger_Theme::getBaseThemePath()}" data-language="{$LANGUAGE}" data-user-decimalseparator="{$CURRENT_USER_MODEL->get('currency_decimal_separator')}" data-user-dateformat="{$CURRENT_USER_MODEL->get('date_format')}"

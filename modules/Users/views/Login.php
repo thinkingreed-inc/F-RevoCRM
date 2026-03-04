@@ -33,17 +33,35 @@ class Users_Login_View extends Vtiger_View_Controller {
 	}
 
 	function process (Vtiger_Request $request) {
+		// CSRFトークン生成（forgotPasswordフォーム用）
+		require_once 'libraries/csrf-magic/csrf-magic.php';
+		$csrfToken = csrf_get_tokens();
+
 		$finalJsonData = array();
 
 		try{
 			$rssPath = "https://f-revocrm.jp/?feed=rss2";
-			$xml = new SimpleXMLElement($rssPath, LIBXML_NOCDATA, true);
-			$jsonData = json_decode(json_encode($xml));
-			$dataCount = php7_count($jsonData->channel->item);
-		}catch(Throwable $e){
-			$dataCount = 0;
-			global $log;
-			$log->error($e->getMessage());
+
+			$context = stream_context_create([
+					'http' => [
+							'timeout' => 3
+					]
+			]);
+			$data = file_get_contents($rssPath, false, $context);
+
+			if ($data === false) {
+					// エラー処理
+					$dataCount = 0;
+			} else {
+					$xml = new SimpleXMLElement($data);
+					$jsonData = json_decode(json_encode($xml));
+					$dataCount = php7_count($jsonData->channel->item);
+			}
+
+		}catch(Exception $e){
+				$dataCount = 0;
+				global $log;
+				$log->error($e->getMessage());
 		}
 
 		$oldTextLength = vglobal('listview_max_textlength');
@@ -104,12 +122,14 @@ class Users_Login_View extends Vtiger_View_Controller {
 		$message = '';
 		if ($error) {
 			switch ($error) {
-				case 'login'		:	$message = '無効なユーザー名またはパスワード';						break;
-				case 'fpError'		:	$message = '無効なユーザー名またはE-mailアドレス';			break;
-				case 'statusError'	:	$message = 'メールサーバが設定されていません';	break;
+				case 'login'		:	$message = vtranslate('LBL_INVALID_USERNAME_OR_PASSWORD');						break;
+				case 'fpError'		:	$message = vtranslate('LBL_INVALID_USERNAME_OR_MAILADDRESS');			break;
+				case 'statusError'	:	$message = vtranslate('LBL_MAIL_SERVER_NOT_CONFIGURED');	break;
+				case 'userLocked'	:	$message = vtranslate('LBL_USER_LOCKED_ERROR_MESSAGE', 'Users');	break;
+				case 'csrfError'	:	$message = vtranslate('LBL_CSRF_ERROR', 'Users');	break;
 			}
 		} else if ($mailStatus) {
-			$message = 'アドレスにメールを送信しました';
+			$message = vtranslate('LBL_AN_EMAIL_WAS_SENT_TO_THE_ADDRESS');
 		}
 
 		$viewer->assign('ERROR', $error);
@@ -118,6 +138,7 @@ class Users_Login_View extends Vtiger_View_Controller {
 		$companyDetails = Vtiger_CompanyDetails_Model::getInstanceById();
 		$companyLogo = $companyDetails->getLogo();
 		$viewer->assign('COMPANY_LOGO',$companyLogo);
+		$viewer->assign('CSRF_TOKEN', $csrfToken);
 		$viewer->view('Login.tpl', 'Users');
 	}
 

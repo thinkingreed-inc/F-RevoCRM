@@ -42,14 +42,14 @@
 			<table id="listview-table" class="table listview-table portal-table">
 				<thead>
 					<tr class="listViewContentHeader">
-						<th>
-				<div class="table-actions" style="margin-left:0px !important;">
-					<span class="input">
-						<input class="listViewEntriesMainCheckBox" type="checkbox">
-					</span>
-				</div>
+				<th class="table-bottom-border" nowrap="nowrap">
+					<div class="table-actions" style="margin-left:0px !important;">
+						<span class="input">
+							<input class="listViewEntriesMainCheckBox" type="checkbox">
+						</span>
+					</div>
 				</th>
-				<th>
+				<th class="table-bottom-border" nowrap="nowrap">
 					<a href="#" class="listViewContentHeaderValues" data-nextsortorderval="{if $COLUMN_NAME eq 'portalname'}{$NEXT_SORT_ORDER}{else}ASC{/if}" data-columnname="portalname">
 						{if $COLUMN_NAME eq 'portalname'}
 							<i class="fa fa-sort {$FASORT_IMAGE}"></i>
@@ -62,7 +62,7 @@
 						<a href="#" class="removeSorting"><i class="fa fa-remove"></i></a>
 						{/if}
 				</th>
-				<th>
+				<th class="table-bottom-border" nowrap="nowrap">
 					<a href="#" class="listViewContentHeaderValues"
 					   data-nextsortorderval="{if $COLUMN_NAME eq 'portalurl'}{$NEXT_SORT_ORDER}{else}ASC{/if}" data-columnname="portalurl">
 						{if $COLUMN_NAME eq 'portalurl'}
@@ -76,7 +76,7 @@
 						<a href="#" class="removeSorting"><i class="fa fa-remove"></i></a>
 						{/if}
 				</th>
-				<th>
+				<th class="table-bottom-border" nowrap="nowrap">
 					<a href="#" class="listViewContentHeaderValues"
 					   data-nextsortorderval="{if $COLUMN_NAME eq 'createdtime'}{$NEXT_SORT_ORDER}{else}ASC{/if}" data-columnname="createdtime">
 						{if $COLUMN_NAME eq 'createdtime'}

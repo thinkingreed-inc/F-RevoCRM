@@ -33,7 +33,7 @@
                                             {foreach from=$ALL_GROUP_MEMBERS item=MEMBER}
                                                 <option value="{$MEMBER->getId()}"
                                                 {if $RULE_MODEL_EXISTS} {if $RULE_MODEL->getSourceMember()->getId() == $MEMBER->getId()}selected{/if}{/if}>
-                                                {$MEMBER->getName()}
+                                                {vtranslate($MEMBER->getName(), $QUALIFIED_MODULE)}
                                             </option>
                                         {/foreach}
                                     </optgroup>
@@ -50,7 +50,7 @@
                                         {foreach from=$ALL_GROUP_MEMBERS item=MEMBER}
                                             <option value="{$MEMBER->getId()}"
                                             {if $RULE_MODEL_EXISTS}{if $RULE_MODEL->getTargetMember()->getId() == $MEMBER->getId()}selected{/if}{/if}>
-                                            {$MEMBER->getName()}
+                                            {{vtranslate($MEMBER->getName(), $QUALIFIED_MODULE)}}
                                         </option>
                                     {/foreach}
                                 </optgroup>

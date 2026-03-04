@@ -25,6 +25,7 @@ $languageStrings = array(
 	'LBL_ITEMS_TO_DELETE' => '削除する選択肢',
 	'LBL_REPLACE_IT_WITH' => '置換先',
 	'LBL_ASSIGN_TO_ROLE' => '役割に割り当て',
+	'LBL_ASSIGN_TO_ROLE_INFO' => '役割に選択肢を割り当てます',
 	'LBL_ALL_ROLES' => 'すべての役割',
 	'LBL_CHOOSE_ROLES' => '役割の選択',
 	'LBL_ALL_VALUES' => 'すべての選択肢',
@@ -46,8 +47,6 @@ $languageStrings = array(
 	//F-RevoCRM
 	'Events' => '活動',
 	'Faq' => 'FAQ',
-	'LBL_ASSIGN_TO_ROLE_INFO' => '役割に選択肢を割り当てます',
-
 );
 $jsLanguageStrings = array(
 	//PickList 

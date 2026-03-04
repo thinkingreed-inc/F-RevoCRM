@@ -423,6 +423,12 @@ function isPermitted($module,$actionname,$record_id='')
 				$log->debug("Exiting isPermitted method ...");
 				return $permission;
 			}
+			//共有されたカレンダーは編集可能にする。
+			if(isCalendarPermittedForInvitee($module, $record_id)){
+				$permission = "yes";
+				$log->debug("Exiting isPermitted method ...");
+				return $permission;
+			}
 			//Checking if the Record Owner is the Subordinate User
 			foreach($subordinate_roles_users as $roleid=>$userids)
 			{
@@ -451,6 +457,12 @@ function isPermitted($module,$actionname,$record_id='')
 			if(in_array($recOwnId,$current_user_groups))
 			{
 				$permission='yes';
+				$log->debug("Exiting isPermitted method ...");
+				return $permission;
+			}
+			//共有されたカレンダーは編集可能にする。
+			if(isCalendarPermittedForInvitee($module, $record_id)){
+				$permission = "yes";
 				$log->debug("Exiting isPermitted method ...");
 				return $permission;
 			}
@@ -1568,6 +1580,8 @@ function getCombinedUserActionPermissions($userId)
 	$actionPerrArr=Array();
 
 	$actionPerrArr=getProfileAllActionPermission($profArr[0]);
+	$tabPerArr = getProfileTabsPermission($profArr[0]);
+
 	if($no_of_profiles != 1)
 	{
 		for($i=1;$i<$no_of_profiles;$i++)
@@ -1579,7 +1593,13 @@ function getCombinedUserActionPermissions($userId)
 			{
 				foreach($perArr as $actionid=>$per)
 				{
-					if($per == 1)
+					//元のモジュール権限が無効の場合、アクション権限も無効にする
+					if($tabPerArr[$tabId] != 0)
+					{
+						$actionPerrArr[$tabId][$actionid]=$tabPerArr[$tabId];
+					}
+					//複数プロファイルの場合、有効のアクション権限を優先する
+					if($actionPerrArr[$tabId][$actionid] == 1)
 					{
 						$now_permission = $tempActionPerrArr[$tabId][$actionid];
 						if($now_permission == 0 && $now_permission != "" && $tempTabPerArr[$tabId] == 0)
@@ -2281,6 +2301,34 @@ function isCalendarPermittedBySharing($recordId)
 	}
 
 	return $permission;
+}
+
+function isCalendarPermittedForInvitee($module, $recordId)
+{
+
+	$activityType = vtws_getCalendarEntityType($recordId);
+	$isPermission = false;	
+	if($module != 'Calendar' || $activityType != 'Events') {
+		return $isPermission;
+	}
+
+	global $adb, $current_user;
+	$query = "SELECT
+					a.activityid
+				FROM
+					vtiger_activity a
+				WHERE
+					a.deleted = 0
+					AND a.invitee_parentid = (SELECT a2.invitee_parentid FROM vtiger_activity a2 WHERE a2.activityid = ?)
+					AND a.smownerid = ?";
+
+	$result = $adb->pquery($query, array($recordId, $current_user->id));
+	
+	if($adb->num_rows($result) > 0) {
+		$isPermission = true;
+	}
+
+	return $isPermission;
 }
 
 function isToDoPermittedBySharing($recordId) {

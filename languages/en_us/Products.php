@@ -50,6 +50,7 @@ $languageStrings = array(
 	'Unit Price'=>'Unit Price',
 	'Commission Rate'=>'Commission Rate',
 	'Qty/Unit'=>'Qty/Unit',
+	'Reduced TaxRate' => 'Reduced Tax Rate',
 	
 	//Added for existing picklist entries
 

@@ -31,13 +31,14 @@
         <input type="hidden" name="enable_schedule" value="{$REPORT_MODEL->get('enable_schedule')}">
         <input type="hidden" name="schtime" value="{$REPORT_MODEL->get('schtime')}">
         <input type="hidden" name="schdate" value="{$REPORT_MODEL->get('schdate')}">
-        <input type="hidden" name="schdayoftheweek" value={ZEND_JSON::encode($REPORT_MODEL->get('schdayoftheweek'))}>
-        <input type="hidden" name="schdayofthemonth" value={ZEND_JSON::encode($REPORT_MODEL->get('schdayofthemonth'))}>
-        <input type="hidden" name="schannualdates" value={ZEND_JSON::encode($REPORT_MODEL->get('schannualdates'))}>
-        <input type="hidden" name="recipients" value={ZEND_JSON::encode($REPORT_MODEL->get('recipients'))}>
-        <input type="hidden" name="specificemails" value={ZEND_JSON::encode($REPORT_MODEL->get('specificemails'))}>
+        <input type="hidden" name="schdayoftheweek" value='{if is_array($REPORT_MODEL->get('schdayoftheweek'))}{ZEND_JSON::encode($REPORT_MODEL->get('schdayoftheweek'))}{else}{$REPORT_MODEL->get('schdayoftheweek')}{/if}'>
+        <input type="hidden" name="schdayofthemonth" value='{if is_array($REPORT_MODEL->get('schdayofthemonth'))}{ZEND_JSON::encode($REPORT_MODEL->get('schdayofthemonth'))}{else}{$REPORT_MODEL->get('schdayofthemonth')}{/if}'>
+        <input type="hidden" name="schannualdates" value='{if is_array($REPORT_MODEL->get('schannualdates'))}{ZEND_JSON::encode($REPORT_MODEL->get('schannualdates'))}{else}{$REPORT_MODEL->get('schannualdates')}{/if}'>
+        <input type="hidden" name="recipients" value='{if is_array($REPORT_MODEL->get('recipients'))}{ZEND_JSON::encode($REPORT_MODEL->get('recipients'))}{else}{$REPORT_MODEL->get('recipients')}{/if}'>
+        <input type="hidden" name="specificemails" value='{if is_array($REPORT_MODEL->get('specificemails'))}{ZEND_JSON::encode($REPORT_MODEL->get('specificemails'))}{else}{$REPORT_MODEL->get('specificemails')}{/if}'>
         <input type="hidden" name="schtypeid" value="{$REPORT_MODEL->get('schtypeid')}">
         <input type="hidden" name="fileformat" value="{$REPORT_MODEL->get('fileformat')}">
+        <input type="hidden" name="joinColumn" value={$REPORT_MODEL->getJoinColumn()}>
 
         <input type="hidden" class="step" value="2" />
         <div class="" style="border:1px solid #ccc;padding:4%;">
@@ -64,6 +65,32 @@
                     {/foreach}
                 </select>
             </div>
+            {if !empty($SECONDARY_MODULES)}
+            <div class="form-group">
+                <div class="row">
+                    {foreach $SECONDARY_MODULES as $SECONDARY_MODULE_NAME}
+                    <label class="col-lg-6">{vtranslate('LBL_RELATED_FIELD',$MODULE)} : {vtranslate($SECONDARY_MODULE_NAME, $SECONDARY_MODULE_NAME)}</label>
+                    {/foreach}
+                </div>
+                <div class="">
+                    {assign var=JOIN_COLUMN value=explode(",", $REPORT_MODEL->getJoinColumn())}
+                    {foreach $SECONDARY_MODULES as $SECONDARY_MODULE_NAME}
+                    <div class="col-lg-6">
+                        <select class="select2" name="joinfield_{$SECONDARY_MODULE_NAME}">
+                            <option value="">{vtranslate("LBL_AUTO_SELECT", $MODULE)}
+                            {assign var=RELATION_TABLES value=$REPORT_MODEL->getRelationTables($PRIMARY_MODULE_NAME, $SECONDARY_MODULE_NAME)}
+                            {foreach key=JOIN_KEY item=JOIN_VALUE from=$RELATION_TABLES}
+                            {assign var=KEY_VALUE value=explode("::", $JOIN_KEY)}
+                            {assign var=JOIN_KEYNAME value="`$KEY_VALUE[0]`::`$KEY_VALUE[1]`::`$KEY_VALUE[2]`"}
+                            {if $KEY_VALUE[2] eq "default"}{continue}{/if}
+                            <option value="{$JOIN_KEYNAME}" {foreach key=JOIN_COLUMN_KEY item=JOIN_COLUMN_VALUE from=$JOIN_COLUMN}{if $JOIN_KEYNAME eq $JOIN_COLUMN_VALUE}selected{/if}{/foreach}>{vtranslate($KEY_VALUE[3], $KEY_VALUE[1])}
+                            {/foreach}
+                        </select>
+                    </div>
+                    {/foreach}
+                </div>
+            </div>
+            {/if}
             <div class="form-group">
                 <div class="row">
                     <label class="col-lg-6">{vtranslate('LBL_GROUP_BY',$MODULE)}</label>

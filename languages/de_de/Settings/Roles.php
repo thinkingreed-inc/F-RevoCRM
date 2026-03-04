@@ -33,5 +33,4 @@ $languageStrings = array(
   'LBL_USERS_WITH_SAME_OR_LOWER_LEVEL' => 'Benutzer, die Gleiche Rolle oder Untergeordnete Rolle',
   'LBL_EDIT_ROLE' => 'Edit Rolle',
   'LBL_CREATE_ROLE' => 'Erstellen Rolle',
-
 );

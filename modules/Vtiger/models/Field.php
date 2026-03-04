@@ -105,6 +105,7 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	const UITYPE_USER_STATUS = 115;
 	const UITYPE_USER_END_HOUR = 116;
 	const UITYPE_USER_IS_ADMIN = 156;
+	const UITYPE_BLANK = 999;
 	
 	
 	/**
@@ -247,6 +248,8 @@ class Vtiger_Field_Model extends Vtiger_Field {
 				$fieldDataType = 'salutation';
 			} else if($uiType == self::UITYPE_SALUTATION_OR_FIRSTNAME && stripos($this->getName(), 'roundrobin_userid') !== false) {
                 $fieldDataType = 'multiowner';
+			} else if($uiType == self::UITYPE_BLANK){
+				$fieldDataType = 'blank';
 			} else {
 				$webserviceField = $this->getWebserviceFieldObject();
 				$fieldDataType = $webserviceField->getFieldDataType();
@@ -409,6 +412,15 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	}
 
 	/**
+	 * Function to get the maximum field length
+	 * @return <String> max length of the field
+	 */
+	public function getMaxFieldLength() {
+		list($type,$mandatory,$LE,$maxlength)= explode('~',$this->get('typeofdata'));
+		return $maxlength;
+	}
+
+	/**
 	 * Function to get the field type
 	 * @return <String> type of the field
 	 */
@@ -457,6 +469,11 @@ class Vtiger_Field_Model extends Vtiger_Field {
 			return false;
 		}
 		if($this->getDisplayType() == self::DISPLAYTYPE_STARRED && $this->getName() =='tags') {
+			return false;
+		}
+
+		if($this->getFieldDataType() == 'blank'){
+			// 空白項目の場合、フィルターに表示しない
 			return false;
 		}
 
@@ -523,7 +540,8 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	        self::UITYPE_LINEITEMS_CURRENCY_AMOUNT, 
 	        self::UITYPE_ATTACHMENT, 
 	        self::UITYPE_DOWNLOAD_TYPE,
-	        self::UITYPE_FILENAME
+	        self::UITYPE_FILENAME,
+			self::UITYPE_BLANK
 	    );
 
         // リッチテキストは概要・詳細画面での編集不可
@@ -1681,5 +1699,17 @@ class Vtiger_Field_Model extends Vtiger_Field {
 
 		$this->fieldInfo['validator'] = $this->getValidator();
 		return $this->fieldInfo;
+	}
+
+	/**
+	 * 編集画面でreadonlyのフィールドか判定する
+	 * @return <Boolean> true/false
+	 */
+	public function isReadonlyEditView()
+	{
+		if (!$this->isEditable() && $this->isViewableInDetailView()) {
+			return true;
+		}
+		return false;
 	}
 }

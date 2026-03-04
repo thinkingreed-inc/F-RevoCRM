@@ -556,9 +556,8 @@ class VTJsonCondition {
 				if(empty($fieldValue) || empty($value)) {
 					return false;
 				}
-				$currentDate = date('Y-m-d');
-				$futureDate = date('Y-m-d', strtotime('+'.$value.' days'));
-				if($currentDate <= $fieldValue && $fieldValue <= $futureDate) {
+				$futureDate = date('Y-m-d', strtotime('-'.$value.' days'));
+				if($fieldValue <= $futureDate) {
 					return true;
 				}
 				return false;

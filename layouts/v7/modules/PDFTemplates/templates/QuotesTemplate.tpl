@@ -10,7 +10,7 @@
 <table border="0" cellpadding="0" cellspacing="0" style="width:100%;">
 	<tbody>
 		<tr>
-			<td style="text-align: center;"><strong style="font-size: 20px; text-align: center;">御見積書</strong></td>
+			<td style="text-align: center;"><strong style="font-size: 20px; text-align: center;">{vtranslate('LBL_QUOTATION', 'PDFTemplates')}</strong></td>
 		</tr>
 		<tr>
 			<td style="text-align: right;"><span style="text-align: right;">$custom-currentdate$&nbsp;</span>$quotes-quote_no$</td>
@@ -22,28 +22,27 @@
 <table border="0" cellpadding="0" cellspacing="0" style="width:100%;">
 	<tbody>
 		<tr>
-			<td style="width: 350px;">$quotes-accountid:accountname$ 御中<br />
+			<td style="width: 350px;">$quotes-accountid:accountname$ {vtranslate('LBL_FOR_THE_ATTENTION_OF', 'PDFTemplates')}<br />
 			<br />
-			<span style="font-size:9px;">下記の通り御見積り申し上げます。<br />
-			何卒ご用命賜りますようお願い申し上げます。</span><br />
+			<span style="font-size:9px;">{vtranslate('LBL_PLEASEFINDOURQUOTATIONBELOW', 'PDFTemplates')}</span><br />
 			<br />
 			&nbsp;
 			<table border="0" cellpadding="0" cellspacing="0" style="width:250px;">
 				<tbody>
 					<tr>
-						<td><span style="font-size:11px;">御見積金額</span></td>
+						<td><span style="font-size:11px;">{vtranslate('LBL_YOUR_QUOTATION_AMOUNT', 'PDFTemplates')}</span></td>
 						<td><span style="font-size:11px;">:</span></td>
 						<td style="text-align: right;"><span style="font-size:11px;">$quotes-pre_tax_total$</span></td>
 						<td><span style="font-size:11px;">-</span></td>
 					</tr>
 					<tr>
-						<td><span style="font-size:11px;">消費税</span></td>
+						<td><span style="font-size:11px;">{vtranslate('LBL_TAX', 'PDFTemplates')}</span></td>
 						<td><span style="font-size:11px;">:</span></td>
 						<td style="text-align: right;"><span style="font-size:11px;">$quotes-tax_totalamount$</span></td>
 						<td><span style="font-size:11px;">-</span></td>
 					</tr>
 					<tr>
-						<td><span style="font-size:11px;">合計金額</span></td>
+						<td><span style="font-size:11px;">{vtranslate('LBL_TOTAL_AMOUNT', 'PDFTemplates')}</span></td>
 						<td><span style="font-size:11px;">:</span></td>
 						<td style="text-align: right;"><span style="font-size:11px;"><strong>$quotes-total$</strong></span></td>
 						<td><span style="font-size:11px;">-</span></td>
@@ -76,10 +75,10 @@
 <table align="left" border="1" cellpadding="0" cellspacing="0" style="width:100%;">
 	<tbody>
 		<tr>
-			<td style="background-color: rgb(238, 238, 238); width: 60%;"><span style="font-size: 10px;">項目</span></td>
-			<td style="background-color: rgb(238, 238, 238); width: 10%;"><span style="font-size: 10px;">数量</span></td>
-			<td style="background-color: rgb(238, 238, 238); width: 15%;"><span style="font-size: 10px;">単価</span></td>
-			<td style="background-color: rgb(238, 238, 238); width: 15%;"><span style="font-size: 10px;">ご提供金額</span></td>
+			<td style="background-color: rgb(238, 238, 238); width: 60%;"><span style="font-size: 10px;">{vtranslate('LBL_ITEM', 'PDFTemplates')}</span></td>
+			<td style="background-color: rgb(238, 238, 238); width: 10%;"><span style="font-size: 10px;">{vtranslate('LBL_QUANTITY', 'PDFTemplates')}</span></td>
+			<td style="background-color: rgb(238, 238, 238); width: 15%;"><span style="font-size: 10px;">{vtranslate('LBL_UNIT_PRICE', 'PDFTemplates')}</span></td>
+			<td style="background-color: rgb(238, 238, 238); width: 15%;"><span style="font-size: 10px;">{vtranslate('LBL_OFFER_PRICE', 'PDFTemplates')}</span></td>
 		</tr>
 		<tr>
 			<td colspan="4"><span style="font-size: 10px;">$loop-products$</span></td>
@@ -95,19 +94,19 @@
 			<td colspan="4"><span style="font-size: 10px;">$loop-products$</span></td>
 		</tr>
 		<tr>
-			<td colspan="3" style="text-align: right;"><span style="font-size:10px;">貴社特別値引き</span></td>
+			<td colspan="3" style="text-align: right;"><span style="font-size:10px;">{vtranslate("LBL_DISCOUNT","PDFTemplates")}</span></td>
 			<td style="text-align: right;"><span style="color:#FF0000;"><span style="font-size:10px;">$quotes-discount_amount$</span></span></td>
 		</tr>
 		<tr>
-			<td colspan="3" style="text-align: right;"><span style="font-size: 9px;">小計</span></td>
+			<td colspan="3" style="text-align: right;"><span style="font-size: 9px;">{vtranslate("LBL_SUB_TOTAL","PDFTemplates")}</span></td>
 			<td style="text-align: right;"><span style="font-size: 9px;">$quotes-pre_tax_total$</span></td>
 		</tr>
 		<tr>
-			<td colspan="3" style="text-align: right;"><span style="font-size: 9px;">消費税</span></td>
+			<td colspan="3" style="text-align: right;"><span style="font-size: 9px;">{vtranslate("LBL_TAX","PDFTemplates")}</span></td>
 			<td style="text-align: right;"><span style="font-size: 9px;">$quotes-tax_totalamount$</span></td>
 		</tr>
 		<tr>
-			<td colspan="3" rowspan="1" style="text-align: right;"><span style="font-size: 10px;">合計</span></td>
+			<td colspan="3" rowspan="1" style="text-align: right;"><span style="font-size: 10px;">{vtranslate("LBL_GRAND_TOTAL","PDFTemplates")}</span></td>
 			<td style="text-align: right;"><span style="font-size:11px;">$quotes-total$</span></td>
 		</tr>
 	</tbody>
@@ -118,7 +117,7 @@
 <table border="0" cellpadding="0" cellspacing="0" style="width: 100%;">
 	<tbody>
 		<tr>
-			<td><span style="font-size: 11px;">備考</span></td>
+			<td><span style="font-size: 11px;">{vtranslate("LBL_REMARKS","PDFTemplates")}</span></td>
 		</tr>
 	</tbody>
 </table>

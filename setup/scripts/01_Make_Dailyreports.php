@@ -54,7 +54,7 @@ $field->typeofdata = 'V~M';
 $field->masseditable = 1;
 $field->quickcreate = 1;
 $field->summaryfield = 1;
-$field->label = '件名';
+$field->label = 'LBL_SUBJECT';
 $blockInstance->addField($field);
 
 /*
@@ -74,7 +74,7 @@ $field->typeofdata = 'V~M';
 $field->masseditable = 1;
 $field->quickcreate = 1;
 $field->summaryfield = 1;
-$field->label = '日報/週報';
+$field->label = 'LBL_DAILY_WEEKLY_REPORT';
 $field->defaultvalue = 'Day';
 $array = array("Day","Week");
 $field->setPicklistValues( $array );
@@ -91,7 +91,7 @@ $field->typeofdata = 'D~M';
 $field->masseditable = 1;
 $field->quickcreate = 1;
 $field->summaryfield = 1;
-$field->label = '提出日';
+$field->label = 'LBL_SUBMISSION_DATE';
 $blockInstance->addField($field);
 
 // ステータス
@@ -105,9 +105,9 @@ $field->typeofdata = 'V~M';
 $field->masseditable = 1;
 $field->quickcreate = 1;
 $field->summaryfield = 1;
-$field->label = 'ステータス';
-$field->defaultvalue = '提出中';
-$array = array("提出中","承認済");
+$field->label = 'LBL_STATUS';
+$field->defaultvalue = '';
+$array = array("LBL_SUBMITTING","LBL_APPROVED");
 $field->setPicklistValues( $array );
 $blockInstance->addField($field);
 
@@ -122,7 +122,7 @@ $field->typeofdata = 'V~M';
 $field->masseditable = 1;
 $field->quickcreate = 1;
 $field->summaryfield = 1;
-$field->label = '提出先';
+$field->label = 'LBL_WHERE_TO_SUBMIT';
 $blockInstance->addField($field);
 $field->setRelatedModules(Array('Users'));
 
@@ -137,7 +137,7 @@ $field->typeofdata = 'V~M';
 $field->masseditable = 0;
 $field->quickcreate = 0;
 $field->summaryfield = 1;
-$field->label = '担当';
+$field->label = 'Assigned To';
 $blockInstance->addField($field);
 $field->setRelatedModules(Array('Users'));
 
@@ -152,7 +152,7 @@ $field->typeofdata = 'V~O';
 $field->masseditable = 1;
 $field->quickcreate = 1;
 $field->summaryfield = 1;
-$field->label = 'コメント';
+$field->label = 'LBL_COMMENT';
 $blockInstance->addField($field);
 
 // 作成日時
@@ -166,7 +166,7 @@ $field->displaytype= 2;
 $field->masseditable = 0;
 $field->quickcreate = 0;
 $field->summaryfield = 0;
-$field->label= '作成日時';
+$field->label= 'LBL_CREATE_DATETIME';
 $blockInstance->addField($field);
 
 // 更新日時
@@ -181,7 +181,7 @@ $field->masseditable = 0;
 $field->quickcreate = 0;
 $field->summaryfield = 0;
 $field->displaytype= 2;
-$field->label= '更新日時';
+$field->label= 'LBL_UPDATE_DATETIME';
 $blockInstance->addField($field);
 
 $field = new Vtiger_Field();
@@ -256,5 +256,5 @@ for( $i=0; $i<php7_count($modules); $i++) {
     echo "comment widget for module $modulename has been created";
 }
 
-echo "実行が完了しました。<br>";
+echo vtranslate("LBL_ITS_OVER");
 $log->debug("[END] Add Comments function");

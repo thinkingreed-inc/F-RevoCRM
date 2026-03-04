@@ -17,6 +17,7 @@ class Events_SaveAjax_Action extends Events_Save_Action {
 
 			vglobal('VTIGER_TIMESTAMP_NO_CHANGE_MODE', $request->get('_timeStampNoChangeMode', false));
 			$recordModel = $this->saveRecord($request);
+			$this->deleteDuplicateInviteeEvent($recordModel);
 			vglobal('VTIGER_TIMESTAMP_NO_CHANGE_MODE', false);
 
 			$fieldModelList = $recordModel->getModule()->getFields();
@@ -201,8 +202,6 @@ class Events_SaveAjax_Action extends Events_Save_Action {
 		$visibility = $request->get('visibility');
 		if (empty($activityType)) {
 			$recordModel->set('activitytype', 'Task');
-			$visibility = 'Private';
-			$recordModel->set('visibility', $visibility);
 		}
 
 		if (empty($visibility)) {

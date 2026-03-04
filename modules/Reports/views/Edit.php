@@ -151,8 +151,13 @@ Class Reports_Edit_View extends Vtiger_Edit_View {
 		$data = $request->getAll();
 		foreach ($data as $name => $value) {
 			if($name == 'schdayoftheweek' || $name == 'schdayofthemonth' || $name == 'schannualdates' || $name == 'recipients') {
-				if(is_string($value)) {	// need to save these as json data
-					$value = array($value);
+				if(is_string($value)) {	// need to decode JSON data
+					$decoded = Zend_Json::decode($value);
+					if(is_array($decoded)) {
+						$value = $decoded;
+					} else {
+						$value = array($value);
+					}
 				}
 			}
 			$reportModel->set($name, $value);
@@ -239,15 +244,26 @@ Class Reports_Edit_View extends Vtiger_Edit_View {
 			$viewer->assign('SELECTED_ADVANCED_FILTER_FIELDS', $reportModel->transformToNewAdvancedFilter());
 		}
 		$data = $request->getAll();
+		$joinColumn = array();
 		foreach ($data as $name => $value) {
 			if($name == 'schdayoftheweek' || $name == 'schdayofthemonth' || $name == 'schannualdates' || $name == 'recipients' || $name == 'members') {
-				$value = Zend_Json::decode($value);
-				if(!is_array($value)) {	// need to save these as json data
-					$value = array($value);
+				// Only decode if value is a JSON string, not an array
+				if(is_string($value)) {
+					$decoded = Zend_Json::decode($value);
+					if(is_array($decoded)) {
+						$value = $decoded;
+					} else {
+						$value = array($value);
+					}
 				}
+				// If already an array, use as is
+			}
+			if(strpos($name, "joinfield_") !== false) {
+				$joinColumn[] = $value;
 			}
 			$reportModel->set($name, $value);
 		}
+		$reportModel->set("joinColumn", implode(",", $joinColumn));
 		$primaryModule = $request->get('primary_module');
 		$secondaryModules = $request->get('secondary_modules');
 		$reportModel->setPrimaryModule($primaryModule);

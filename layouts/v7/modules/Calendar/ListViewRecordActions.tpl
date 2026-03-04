@@ -53,8 +53,8 @@
 		</span>
 
 		<div class="btn-group inline-save hide">
-			<button class="button btn-success btn-small save" name="save"><i class="fa fa-check"></i></button>
-			<button class="button btn-danger btn-small cancel" name="Cancel"><i class="fa fa-close"></i></button>
+			<button type="button" class="button btn-success btn-small save" name="save"><i class="fa fa-check"></i></button>
+			<button type="button" class="button btn-danger btn-small cancel" name="Cancel"><i class="fa fa-close"></i></button>
 		</div>
 	</div>
 {/strip}

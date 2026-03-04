@@ -32,32 +32,32 @@
 					<table class="config-table input-table">
 						<tbody>
 							<tr>
-								<td><strong>会社名</strong></td>
+								<td><strong>{vtranslate('LBL_COMPANY', 'Install')}</strong></td>
 								<td><input type="text" name="company"></td>
 							</tr>
 							<tr>
-								<td><strong>氏名 <span class="no">*</span></strong></td>
-								<td><input type="text" name="lastname" class="short" style="width:103px" placeholder="姓">
-								<input type="text" name="firstname" class="short" style="width:103px" placeholder="名"></td>
+								<td><strong>{vtranslate('LBL_NAME', 'Install')} <span class="no">*</span></strong></td>
+								<td><input type="text" name="lastname" class="short" style="width:103px" placeholder="{vtranslate('LBL_LAST_NAME', 'Install')}">
+								<input type="text" name="firstname" class="short" style="width:103px" placeholder="{vtranslate('LBL_FIRST_NAME', 'Install')}"></td>
 							</tr>
 							<tr>
-								<td><strong>電話番号</strong></td>
+								<td><strong>{vtranslate('LBL_PHONE', 'Install')}</strong></td>
 								<td><input type="text" name="phone"></td>
 							</tr>
 							<tr>
-								<td><strong>メールアドレス <span class="no">*</span></strong></td>
+								<td><strong>{vtranslate('LBL_EMAIL_ADDRESS', 'Install')} <span class="no">*</span></strong></td>
 								<td><input type="text" name="email"></td>
 							</tr>
 							<tr>
-								<td><strong>用途 <span class="no">*</span></strong></td>
+								<td><strong>{vtranslate('LBL_PURPOSE', 'Install')} <span class="no">*</span></strong></td>
 								<td>
-									<label><input name="reg_survey[]" type="checkbox" value="CRM導入が決まっていて、ニーズを満たす製品を探している" > CRM導入が決まっていて、ニーズを満たす製品を探している</label><br>
-									<label><input name="reg_survey[]" type="checkbox" value="CRM導入を検討しているため、各社製品を調査している" > CRM導入を検討しているため、各社製品を調査している</label><br>
-									<label><input name="reg_survey[]" type="checkbox" value="オープンソースを活用してなるべく安くCRMを導入したい" > オープンソースを活用してなるべく安くCRMを導入したい</label><br>
-									<label><input name="reg_survey[]" type="checkbox" value="ソリューションとして自社で商品化したい" > ソリューションとして自社で商品化したい</label><br>
-									<label><input name="reg_survey[]" type="checkbox" value="お客様にF-RevoCRMを提案したい" > お客様にF-RevoCRMを提案したい</label><br>
-									<label><input name="reg_survey[]" type="checkbox" value="F-RevoCRMの技術に興味がある" > F-RevoCRMの技術に興味がある</label><br>
-									<label><input name="reg_survey[]" type="checkbox" value="無料相談会があれば参加してみたい " > 無料相談会があれば参加してみたい</label>
+									<label><input name="reg_survey[]" type="checkbox" value="{vtranslate('LBL_PURPOSE_CHECKBOX_1', 'Install')}">{vtranslate('LBL_PURPOSE_CHECKBOX_1', 'Install')}</label><br>
+									<label><input name="reg_survey[]" type="checkbox" value="{vtranslate('LBL_PURPOSE_CHECKBOX_2', 'Install')}">{vtranslate('LBL_PURPOSE_CHECKBOX_2', 'Install')}</label><br>
+									<label><input name="reg_survey[]" type="checkbox" value="{vtranslate('LBL_PURPOSE_CHECKBOX_3', 'Install')}">{vtranslate('LBL_PURPOSE_CHECKBOX_3', 'Install')}</label><br>
+									<label><input name="reg_survey[]" type="checkbox" value="{vtranslate('LBL_PURPOSE_CHECKBOX_4', 'Install')}">{vtranslate('LBL_PURPOSE_CHECKBOX_4', 'Install')}</label><br>
+									<label><input name="reg_survey[]" type="checkbox" value="{vtranslate('LBL_PURPOSE_CHECKBOX_5', 'Install')}">{vtranslate('LBL_PURPOSE_CHECKBOX_5', 'Install')}</label><br>
+									<label><input name="reg_survey[]" type="checkbox" value="{vtranslate('LBL_PURPOSE_CHECKBOX_6', 'Install')}">{vtranslate('LBL_PURPOSE_CHECKBOX_6', 'Install')}</label><br>
+									<label><input name="reg_survey[]" type="checkbox" value="{vtranslate('LBL_PURPOSE_CHECKBOX_7', 'Install')}">{vtranslate('LBL_PURPOSE_CHECKBOX_7', 'Install')}</label>
 								</td>
 							</tr>
 						</tbody>
@@ -67,13 +67,7 @@
 			<div class="row offset2">
 				<div class="col-sm-2"></div>
 				<div class="col-sm-8">
-					ご入力いただいた個人情報はF-RevoCRMの開発、運営会社であるシンキングリード株式会社（以下、当社）によって<a href='https://f-revocrm.jp/privacy/' target='_blank'>プライバシーポリシー</a>を遵守し適切に管理されます。<br>
-					入力されたメールアドレスは以下の目的及び用途のために利用、管理し、この版にを超える取り扱いは致しません。<br>
-					<ul>
-						<li>当社の製品およびサービスに関する情報提供やアンケート調査</li>
-						<li>当社に関連するセミナーのご案内</li>
-					</ul><br>
-					上記に問題ない場合は次へボタンでお進みください。
+					{vtranslate('LBL_PRIVACY_POLICY', 'Install')}
 				</div>
 			</div>
 			<div class="row offset2">

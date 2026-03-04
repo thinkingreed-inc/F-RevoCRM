@@ -21,7 +21,7 @@ class Settings_CustomerPortal_EditAjax_View extends Settings_Vtiger_IndexAjax_Vi
 			$allFields = $moduleModel->getFields();
 			$fieldModels = array();
 			foreach ($allFields as $key => $value) {
-				if (isFieldActive($sourceModule, $value->name) && $value->isViewableInDetailView()) {
+				if (isFieldActive($sourceModule, $value->name) && $value->isViewableInDetailView() && $value->getFieldDataType() !== 'blank') {
 					$fieldModels[$key]['fieldname'] = $value->name;
 					$fieldModels[$key]['iseditable'] = Settings_CustomerPortal_Module_Model::isFieldCustomerPortalEditable($value->isEditable(), $value, $sourceModule);
 					$fieldModels[$key]['fieldlabel'] = vtranslate($value->label, $sourceModule);

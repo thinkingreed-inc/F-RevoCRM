@@ -38,7 +38,14 @@ $languageStrings = array(
 	'Usage Unit'=>'Usage Unit',
 	'Tax Class'=>'Tax Class',
 	'Website'=>'Website',
-	
-	//Services popup of pricebook
-	'LBL_ADD_TO_PRICEBOOKS' => 'Add to PriceBooks',
+
+	'Hours' => 'Hours',
+	'Days' => 'Days',
+	'Incidents' => 'Incidents',
+
+	'Support' => 'Support',
+	'Installation' => 'Setup/Installation',
+	'Migration' => 'Relocation',
+	'Customization' => 'Customization/Special Order',
+	'Training' => 'Training',
 );

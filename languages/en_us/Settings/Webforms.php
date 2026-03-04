@@ -49,6 +49,9 @@ $languageStrings = array(
 	'LBL_FILE_FIELD_INFO' => 'For each file uploaded from web form, a new Document is created with the attached file. Document is also linked to this newly created %s.',
 	'LBL_NO_FILE_FIELD' => 'No file fields added.',
 	'LBL_COPY_TO_CLIPBOARD' => 'Copy to clipboard',
+	
+	//F-RevoCRM
+	'Webform Name' => 'Webform Name',
 );
 $jsLanguageStrings = array(
 	'JS_WEBFORM_DELETED_SUCCESSFULLY' => 'Webform deleted successfully',

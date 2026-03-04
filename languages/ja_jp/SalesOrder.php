@@ -66,6 +66,7 @@ $languageStrings = array(
 	'Daily' => '毎日',
     'Weekly' => '毎週',
     'Monthly' => '毎月',
+	'Half-Yearly' => '半期',
     'Quarterly' => '四半期毎',
 	'Yearly' => '毎年',
 	'Cancel' => 'キャンセル',

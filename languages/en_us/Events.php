@@ -100,4 +100,16 @@ $languageStrings = array(
 	'INVITATION'=>' Invitation ',
 	'Busy' => 'Busy',
 
+	//F-RevoCRM
+	'Start Date & Time,End Date' => 'Start Date & Time, End Date',
+	'Time Start' => 'Start Time',
+	'End Time' => 'End Time',
+	'Duration' => 'Duration',
+	'Duration Minutes' => 'Duration (Minutes)',
+	'No Time' => 'No Time',
+
+	'OVERLAPPING_EXISTS' => 'Activities with overlapping periods are registered',
+	'OVERLAPPING_CONFIRME_MSG' => 'Do you want to save this activity?',
+	'OVERLAPPING_EVENTS' => 'Overlapping activities (up to %s shown)',
+	'OVERLAPPING_EVENT_USERS' => 'Assignees and participants of overlapping activities',
 );

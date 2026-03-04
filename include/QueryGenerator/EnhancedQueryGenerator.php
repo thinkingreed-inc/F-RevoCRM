@@ -269,12 +269,7 @@ class EnhancedQueryGenerator extends QueryGenerator {
 					$sql = $this->getSQLColumn($timeField);
 				} else if ($field == 'taskstatus' || $field == 'eventstatus') {
 					//In calendar list view, Status value = Planned is not displaying
-					$sql = "CASE WHEN (vtiger_activity.status not like '') THEN vtiger_activity.status ELSE vtiger_activity.eventstatus END AS ";
-					if ($field == 'taskstatus') {
-						$sql .= "status";
-					} else {
-						$sql .= $field;
-					}
+					$sql = "CASE WHEN (vtiger_activity.status not like '') THEN vtiger_activity.status ELSE vtiger_activity.eventstatus END AS status";
 				}
 				$columns[] = $sql;
 			}

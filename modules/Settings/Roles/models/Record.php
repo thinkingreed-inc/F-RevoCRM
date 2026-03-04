@@ -83,7 +83,7 @@ class Settings_Roles_Record_Model extends Settings_Vtiger_Record_Model {
 			$parentRoleString = $this->getParentRoleString();
 			$currentRoleDepth = $this->getDepth();
 
-			$sql = 'SELECT * FROM vtiger_role WHERE parentrole LIKE ? AND depth = ?';
+			$sql = 'SELECT * FROM vtiger_role WHERE parentrole LIKE ? AND depth = ? ORDER BY rolename';
 			$params = array($parentRoleString.'::%', $currentRoleDepth+1);
 			$result = $db->pquery($sql, $params);
 			$noOfRoles = $db->num_rows($result);

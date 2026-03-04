@@ -30,9 +30,9 @@ if ($count > 0) {
   if ($adb->num_rows($syncTypeCheckresult) == 0) {
     $adb->pquery("INSERT INTO vtiger_ws_operation_parameters (operationid, name, type, sequence) VALUES (?, 'syncType', 'string', ?)", array($operationId, ($count + 1)));
   }
-  echo "実行が完了しました。<br>".PHP_EOL;  
+  echo vtranslate("LBL_ITS_OVER").PHP_EOL;  
 } else {
-  echo "実行しませんでした。<br>".PHP_EOL;  
+  echo vtranslate("LBL_NOT_EXECUTED").PHP_EOL;  
 }
 
 
@@ -50,7 +50,7 @@ if ($count > 0) {
   if ($adb->num_rows($checkSyncTyperesult) == 0) {
     $adb->pquery("INSERT INTO vtiger_ws_operation_parameters (operationid, name, type, sequence) VALUES (?, 'element', 'encoded', ?)", array($operationId, ($count + 1)));
   }
-  echo "実行が完了しました。<br>".PHP_EOL;  
+  echo vtranslate("LBL_ITS_OVER").PHP_EOL;  
 } else {
-  echo "実行しませんでした。<br>".PHP_EOL;  
+  echo vtranslate("LBL_NOT_EXECUTED").PHP_EOL;  
 }

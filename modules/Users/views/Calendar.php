@@ -36,6 +36,10 @@ class Users_Calendar_View extends Vtiger_Detail_View {
 	 * @return <String>
 	 */
 	public function preProcessTplName(Vtiger_Request $request) {
+		// 編集画面ではヘッダーを表示しない
+		if ($request->getMode() === 'Edit') {
+        	return 'CalendarEditViewPreProcess.tpl';
+    	}
 		return 'CalendarDetailViewPreProcess.tpl';
 	}
 
@@ -171,12 +175,12 @@ class Users_Calendar_View extends Vtiger_Detail_View {
 		$recordId = $request->get('record');
 		$currentUserModel = Users_Record_Model::getCurrentUserModel();
 		$module = $request->getModule();
-		$detailViewModel = Vtiger_DetailView_Model::getInstance('Users', $currentUserModel->id);
+		$detailViewModel = Vtiger_DetailView_Model::getInstance('Users', $recordId);
 		$userRecordStructure = Vtiger_RecordStructure_Model::getInstanceFromRecordModel($detailViewModel->getRecord(), Vtiger_RecordStructure_Model::RECORD_STRUCTURE_MODE_EDIT);
 		$recordStructure = $userRecordStructure->getStructure();
-//		$allUsers = Users_Record_Model::getAll(true);
-		$sharedUsers = Calendar_Module_Model::getCaledarSharedUsers($currentUserModel->id);
-		$sharedType = Calendar_Module_Model::getSharedType($currentUserModel->id);
+		$allUsers = Users_Record_Model::getAll(true);
+		$sharedUsers = Calendar_Module_Model::getCaledarSharedUsers($recordId);
+		$sharedType = Calendar_Module_Model::getSharedType($recordId);
 		$dayStartPicklistValues = Users_Record_Model::getDayStartsPicklistValues($recordStructure);
         $hourFormatFeildModel = $recordStructure['LBL_CALENDAR_SETTINGS']['hour_format'];
 		$calendarSettings['LBL_CALENDAR_SETTINGS'] = $recordStructure['LBL_CALENDAR_SETTINGS'];
@@ -188,7 +192,7 @@ class Users_Calendar_View extends Vtiger_Detail_View {
 		$viewer->assign('BLOCK_LIST',$blocksList);
 		$viewer->assign('SHAREDUSERS', $sharedUsers);
 		$viewer->assign("DAY_STARTS", Zend_Json::encode($dayStartPicklistValues));
-//		$viewer->assign('ALL_USERS',$allUsers);
+		$viewer->assign('ALL_USERS',$allUsers);
 		$viewer->assign('RECORD_STRUCTURE',$calendarSettings);
 		$viewer->assign('MODULE',$module);
 		$viewer->assign('MODULE_NAME',$module);

@@ -268,13 +268,26 @@ class RecycleBin_Module_Model extends Vtiger_Module_Model {
 		 *  we have to delete emails if email is related to any $recordIds and same email is 
 		 *  not related to another record
 		 */
-		$query = "DELETE vtiger_crmentity.* FROM vtiger_crmentity INNER JOIN "
-				. "(SELECT vtiger_crmentity.crmid AS actid,vtiger_seactivityrel.crmid AS relid "
-				. "FROM vtiger_crmentity INNER JOIN vtiger_seactivityrel ON "
-				. "vtiger_seactivityrel.activityid=vtiger_crmentity.crmid "
-				. "GROUP BY vtiger_seactivityrel.activityid HAVING count(vtiger_seactivityrel.activityid) = 1)"
-				. " AS relationdata ON relationdata.actid=vtiger_crmentity.crmid "
-				. "WHERE relationdata.relid IN (" . generateQuestionMarks($recordIds) . ")";
+		$query = "DELETE 
+					  vtiger_crmentity, 
+					  vtiger_activity, 
+					  vtiger_emaildetails 
+				  FROM vtiger_crmentity 
+					  LEFT JOIN vtiger_activity
+						  ON vtiger_activity.activityid = vtiger_crmentity.crmid
+					  LEFT JOIN vtiger_emaildetails
+						  ON vtiger_emaildetails.emailid = vtiger_crmentity.crmid
+					  INNER JOIN (SELECT 
+									vtiger_crmentity.crmid AS actid,
+									vtiger_seactivityrel.crmid AS relid 
+								  FROM vtiger_crmentity 
+									  INNER JOIN vtiger_seactivityrel 
+										  ON vtiger_seactivityrel.activityid = vtiger_crmentity.crmid 
+								  GROUP BY vtiger_seactivityrel.activityid 
+								  HAVING count(vtiger_seactivityrel.activityid) = 1) AS relationdata 
+						  ON relationdata.actid = vtiger_crmentity.crmid 
+				  WHERE setype = 'Emails' 
+				  AND relationdata.relid IN (" . generateQuestionMarks($recordIds) . ")";
 
 		$db->pquery($query, array($recordIds));
 	}
