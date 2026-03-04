@@ -687,14 +687,16 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
     let targetFormData: Record<string, unknown> = {};
 
     if (isCalendarVariant) {
-      if (isEditMode && recordId) {
-        editViewUrl = `index.php?module=${activeTab}&view=Edit&record=${recordId}`;
-      } else if (calendarEditViewUrl) {
+      if (calendarEditViewUrl) {
         editViewUrl = calendarEditViewUrl;
         // Calendar/Events Edit.phpではmodeパラメータでEvents関数を呼び出すため追加
         // これによりcontactidlistが正しく処理される
         if (activeTab === 'Events') {
           editViewUrl += '&mode=Events';
+        }
+        // 既存レコード編集時はrecordパラメータを追加
+        if (isEditMode && recordId) {
+          editViewUrl += `&record=${recordId}`;
         }
       }
       // currentCalendarFormDataはuseCallbackの依存関係で正しく追跡されないため、
