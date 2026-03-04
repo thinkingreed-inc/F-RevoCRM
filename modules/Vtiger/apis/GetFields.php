@@ -255,6 +255,10 @@ class Vtiger_GetFields_Api extends Vtiger_Api_Controller {
 
             // デフォルト値の取得
             $defaultValue = $fieldModel->get('defaultvalue');
+            // defaultvalueが空の場合、fieldvalue（RecordStructureModelで設定された値）をfallbackとして使用
+            if (empty($defaultValue)) {
+                $defaultValue = $fieldModel->get('fieldvalue');
+            }
             if ($defaultValue !== null && $defaultValue !== '') {
                 $fieldInfo['defaultValue'] = $defaultValue;
             }
