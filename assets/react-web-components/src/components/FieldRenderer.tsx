@@ -486,21 +486,24 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
           </div>
         );
 
-      // 敬称 - PicklistFieldを使用（ピックリストと同様の挙動）
+      // 敬称/名前 (uitype 55) - テキスト入力として扱う
+      // 注: uitype 55はsalutationtypeとfirstnameの両方に使用されるが、
+      // salutationtypeはdisplaytype=3のためクイック作成には表示されない
+      // firstnameは名前入力フィールドなのでテキスト入力が適切
       case UI_TYPES.SALUTATION:
         return (
-          <PicklistField
-            name={field.name}
-            label={field.label}
-            value={String(value ?? '')}
-            onChange={onChange}
-            options={picklistOptions}
-            mandatory={field.mandatory}
-            disabled={disabled || field.readonly}
-            error={error}
-            className={className}
-            noBlank={false}
-          />
+          <div className={cn('flex items-start gap-2', className)}>
+            {renderLabel()}
+            <div className="flex-1 min-w-0">
+              <Input
+                {...inputProps}
+                type="text"
+                onChange={handleInputChange}
+                maxLength={field.maxlength}
+              />
+              {renderError()}
+            </div>
+          </div>
         );
 
       // パスワード - Input type="password"
