@@ -622,9 +622,40 @@ Vtiger.Class('Vtiger_Index_Js', {
 		});
 
 		quickCreate.addEventListener('go-to-full-form', function(e) {
-			var editUrl = e.detail.editUrl;
+			var editUrl = e.detail && e.detail.editUrl;
+			var formData = e.detail && e.detail.formData;
 			if (editUrl) {
-				window.location.href = editUrl;
+				// POSTでフォーム送信（formDataを引き継ぐ）
+				var form = document.createElement('form');
+				form.method = 'POST';
+				form.action = editUrl;
+				form.style.display = 'none';
+
+				// CSRFトークンを追加（POSTリクエストに必須）
+				if (typeof csrfMagicName !== 'undefined' && typeof csrfMagicToken !== 'undefined') {
+					var csrfInput = document.createElement('input');
+					csrfInput.type = 'hidden';
+					csrfInput.name = csrfMagicName;
+					csrfInput.value = csrfMagicToken;
+					form.appendChild(csrfInput);
+				}
+
+				// formDataが存在する場合、hidden inputとして追加
+				if (formData && typeof formData === 'object') {
+					Object.keys(formData).forEach(function(key) {
+						var value = formData[key];
+						if (value !== undefined && value !== null && value !== '') {
+							var input = document.createElement('input');
+							input.type = 'hidden';
+							input.name = key;
+							input.value = Array.isArray(value) ? value.join(' |##| ') : String(value);
+							form.appendChild(input);
+						}
+					});
+				}
+
+				document.body.appendChild(form);
+				form.submit();
 			}
 		});
 

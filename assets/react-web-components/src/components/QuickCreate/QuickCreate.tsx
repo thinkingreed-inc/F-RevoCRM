@@ -131,6 +131,17 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
   // Success message
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  // Duration settings from initialData (passed from Calendar.js)
+  const defaultCallDuration = useMemo(() => {
+    const val = initialData?.defaultCallDuration;
+    return typeof val === 'number' ? val : 5;
+  }, [initialData?.defaultCallDuration]);
+
+  const defaultOtherEventDuration = useMemo(() => {
+    const val = initialData?.defaultOtherEventDuration;
+    return typeof val === 'number' ? val : 5;
+  }, [initialData?.defaultOtherEventDuration]);
+
   // Initialization tracking
   const isInitializedRef = useRef(false);
   const prevIsOpenRef = useRef(false);
@@ -191,7 +202,10 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
     activeTab,
     initialData,
     recordId,
-    recordTypeFields
+    recordTypeFields,
+    activityType: (activeTab === 'Calendar' ? calendarFormData : eventsFormData)?.activitytype as string | undefined,
+    defaultCallDuration,
+    defaultOtherEventDuration
   });
 
   const {
@@ -289,7 +303,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
           }
           // 新規作成モードの場合、担当フィールドにログインユーザーをデフォルト設定
           else if (!isEditMode && field.name === 'assigned_user_id') {
-            initial[field.name] = (window as any).current_user_id || '1';
+            initial[field.name] = (window as any)._USERMETA?.id || '1';
           }
         }
       });
@@ -367,7 +381,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
         return defaultValue;
       }
       if (field.name === 'assigned_user_id') {
-        return (window as any).current_user_id || '1';
+        return (window as any)._USERMETA?.id || '1';
       }
       if (field.mandatory && field.picklistValues && field.picklistValues.length > 0) {
         return field.picklistValues[0].value;
@@ -673,14 +687,16 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
     let targetFormData: Record<string, unknown> = {};
 
     if (isCalendarVariant) {
-      if (isEditMode && recordId) {
-        editViewUrl = `index.php?module=${activeTab}&view=Edit&record=${recordId}`;
-      } else if (calendarEditViewUrl) {
+      if (calendarEditViewUrl) {
         editViewUrl = calendarEditViewUrl;
         // Calendar/Events Edit.phpではmodeパラメータでEvents関数を呼び出すため追加
         // これによりcontactidlistが正しく処理される
         if (activeTab === 'Events') {
           editViewUrl += '&mode=Events';
+        }
+        // 既存レコード編集時はrecordパラメータを追加
+        if (isEditMode && recordId) {
+          editViewUrl += `&record=${recordId}`;
         }
       }
       // currentCalendarFormDataはuseCallbackの依存関係で正しく追跡されないため、
@@ -832,6 +848,8 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
                   ? (recordData.selectedusers as string[])
                   : undefined
               }
+              defaultCallDuration={defaultCallDuration}
+              defaultOtherEventDuration={defaultOtherEventDuration}
             />
           ) : (
             /* Default form */

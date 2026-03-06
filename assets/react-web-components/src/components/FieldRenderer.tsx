@@ -7,6 +7,7 @@ import { ReferenceField } from './ReferenceField';
 import { MultireferenceField } from './MultireferenceField';
 import { OwnerField } from './OwnerField';
 import { PicklistField } from './PicklistField';
+import { MultiPicklistField } from './MultiPicklistField';
 import { cn } from '../lib/utils';
 import { useOptionalTranslation } from '../hooks/useTranslation';
 
@@ -401,43 +402,20 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
           />
         );
 
-      // マルチピックリスト - 複数選択select
+      // マルチピックリスト - MultiPicklistField
       case UI_TYPES.MULTIPICKLIST:
-        // valueは ' |##| ' 区切りの文字列か配列
-        const multiValue = typeof value === 'string' ? value.split(' |##| ').filter(Boolean) : (Array.isArray(value) ? value : []);
         return (
-          <div className={cn('flex items-start gap-2', className)}>
-            {renderLabel()}
-            <div className="flex-1 min-w-0">
-              <select
-                id={`field_${field.name}`}
-                name={field.name}
-                value={multiValue}
-                onChange={(e) => {
-                  const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-                  onChange(field.name, selectedOptions.join(' |##| '));
-                }}
-                disabled={disabled || field.readonly}
-                multiple
-                className={cn(
-                  'w-full px-3 py-2 border rounded-md shadow-sm transition-colors min-h-20',
-                  'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-                  'disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed',
-                  error ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
-                )}
-              >
-                {picklistOptions?.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <div className="text-xs text-gray-500">
-                Ctrlキーを押しながらクリックして複数選択
-              </div>
-              {renderError()}
-            </div>
-          </div>
+          <MultiPicklistField
+            name={field.name}
+            label={field.label}
+            value={String(value ?? '')}
+            onChange={onChange}
+            options={picklistOptions}
+            mandatory={field.mandatory}
+            disabled={disabled || field.readonly}
+            error={error}
+            className={className}
+          />
         );
       
       // 通貨 - Input type="number" with currency formatting
@@ -486,21 +464,24 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
           </div>
         );
 
-      // 敬称 - PicklistFieldを使用（ピックリストと同様の挙動）
+      // 敬称/名前 (uitype 55) - テキスト入力として扱う
+      // 注: uitype 55はsalutationtypeとfirstnameの両方に使用されるが、
+      // salutationtypeはdisplaytype=3のためクイック作成には表示されない
+      // firstnameは名前入力フィールドなのでテキスト入力が適切
       case UI_TYPES.SALUTATION:
         return (
-          <PicklistField
-            name={field.name}
-            label={field.label}
-            value={String(value ?? '')}
-            onChange={onChange}
-            options={picklistOptions}
-            mandatory={field.mandatory}
-            disabled={disabled || field.readonly}
-            error={error}
-            className={className}
-            noBlank={false}
-          />
+          <div className={cn('flex items-start gap-2', className)}>
+            {renderLabel()}
+            <div className="flex-1 min-w-0">
+              <Input
+                {...inputProps}
+                type="text"
+                onChange={handleInputChange}
+                maxLength={field.maxlength}
+              />
+              {renderError()}
+            </div>
+          </div>
         );
 
       // パスワード - Input type="password"

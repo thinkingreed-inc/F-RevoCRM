@@ -226,8 +226,8 @@ class Vtiger_SearchRecords_Api extends Vtiger_Api_Controller {
                 continue;
             }
 
-            // ラベル取得
-            $label = $this->getRecordLabel($recordId);
+            // ラベル取得（モジュールに応じた方法で）
+            $label = $this->getRecordLabelByModule($recordId, $moduleName);
 
             $record = array(
                 'id' => $recordId,
@@ -404,7 +404,8 @@ class Vtiger_SearchRecords_Api extends Vtiger_Api_Controller {
     }
 
     /**
-     * 最近のレコードを取得（vtiger_crmentity.labelを使用）
+     * 最近のレコードを取得（EnhancedQueryGenerator使用）
+     * 編集画面のPopupと同じ仕組みを使用し、Usersなど特殊モジュールにも対応
      * @param string $moduleName
      * @param int $limit
      * @param array $displayFields
@@ -415,41 +416,55 @@ class Vtiger_SearchRecords_Api extends Vtiger_Api_Controller {
         global $adb;
 
         $records = array();
+        $hasNextPage = false;
+
+        // ListView_Modelを使用してクエリを生成（モジュール固有の処理を適用）
+        $listViewModel = Vtiger_ListView_Model::getInstanceForPopup($moduleName);
+
+        // クエリ取得
+        $query = $listViewModel->getQuery();
 
         // limit+1件取得して次ページ有無を判定
-        $query = "SELECT crmid, label
-                  FROM vtiger_crmentity
-                  WHERE setype = ? AND deleted = 0 AND label != ''
-                  ORDER BY modifiedtime DESC
-                  LIMIT ?, ?";
+        $query .= " LIMIT " . (int)$offset . ", " . (int)($limit + 1);
 
-        $result = $adb->pquery($query, array($moduleName, $offset, $limit + 1));
+        $result = $adb->pquery($query, array());
 
-        $hasNextPage = false;
+        // モジュールのIDフィールド名を取得
+        $focus = CRMEntity::getInstance($moduleName);
+        $idColumn = $focus->table_index ?? 'crmid';
+
         $count = 0;
         while ($row = $adb->fetch_array($result)) {
             $count++;
-            // limit+1件目は次ページ判定用なのでスキップ
+            // limit+1件目は次ページ判定用
             if ($count > $limit) {
                 $hasNextPage = true;
                 break;
             }
 
+            $recordId = $row['crmid'] ?? $row[$idColumn] ?? $row['id'] ?? null;
+            if (!$recordId) continue;
+
             // 権限チェック
-            if (Users_Privileges_Model::isPermitted($moduleName, 'DetailView', $row['crmid'])) {
-                $record = array(
-                    'id' => $row['crmid'],
-                    'label' => decode_html($row['label']),
-                    'module' => $moduleName
-                );
-
-                // フィールド値を追加
-                if (!empty($displayFields)) {
-                    $record['fieldValues'] = $this->getRecordFieldValues($row['crmid'], $moduleName, $displayFields);
-                }
-
-                $records[] = $record;
+            if (!Users_Privileges_Model::isPermitted($moduleName, 'DetailView', $recordId)) {
+                continue;
             }
+
+            // ラベル取得
+            $label = $this->getRecordLabelByModule($recordId, $moduleName);
+
+            $record = array(
+                'id' => $recordId,
+                'label' => $label,
+                'module' => $moduleName
+            );
+
+            // フィールド値を追加
+            if (!empty($displayFields)) {
+                $record['fieldValues'] = $this->getRecordFieldValues($recordId, $moduleName, $displayFields);
+            }
+
+            $records[] = $record;
         }
 
         return array(
@@ -459,7 +474,34 @@ class Vtiger_SearchRecords_Api extends Vtiger_Api_Controller {
     }
 
     /**
+     * モジュールに応じたレコードラベルを取得
+     * Usersモジュールなど vtiger_crmentity に登録されないモジュールにも対応
+     * @param int $recordId
+     * @param string $moduleName
+     * @return string
+     */
+    private function getRecordLabelByModule($recordId, $moduleName) {
+        global $adb;
+
+        // Usersモジュールの場合は vtiger_users から取得
+        if ($moduleName === 'Users') {
+            $result = $adb->pquery(
+                "SELECT CONCAT(COALESCE(first_name, ''), ' ', last_name) as label FROM vtiger_users WHERE id = ?",
+                array($recordId)
+            );
+            if ($adb->num_rows($result) > 0) {
+                return trim(decode_html($adb->query_result($result, 0, 'label')));
+            }
+            return '';
+        }
+
+        // 通常モジュールは vtiger_crmentity から取得
+        return $this->getRecordLabel($recordId);
+    }
+
+    /**
      * 総件数とページ数を返す（getPageCountモード用）
+     * EnhancedQueryGeneratorを使用し、モジュール固有の処理を適用
      */
     private function getPageCountResponse(Vtiger_Request $request, $moduleName) {
         global $adb;
@@ -484,10 +526,9 @@ class Vtiger_SearchRecords_Api extends Vtiger_Api_Controller {
             // フィールド条件検索の件数
             $totalRecords = $this->getSearchByFieldsCount($moduleName, $searchFields);
         } else {
-            // 全件数
-            $query = "SELECT COUNT(*) as cnt FROM vtiger_crmentity WHERE setype = ? AND deleted = 0 AND label != ''";
-            $result = $adb->pquery($query, array($moduleName));
-            $totalRecords = (int)$adb->query_result($result, 0, 'cnt');
+            // ListView_Modelを使用して件数取得（モジュール固有の処理を適用）
+            $listViewModel = Vtiger_ListView_Model::getInstanceForPopup($moduleName);
+            $totalRecords = $listViewModel->getListViewCount();
         }
 
         $totalPages = ceil($totalRecords / $limit);
