@@ -77,6 +77,11 @@ var vtUtils = {
 						 var element = jQuery(e.currentTarget);
 						 var instance = element.data('select2');
 						 instance.dropdown.css('z-index',1000002);
+					 }).on("select2-selecting", function(e) {
+						 var currentVal = jQuery(this).val() || [];
+						 if (Array.isArray(currentVal) && currentVal.indexOf(e.val) >= 0) {
+							 e.preventDefault();
+						 }
 					 });
         //validator should not validate select2 text inputs
         selectElement.select2("container").find('input.select2-input').addClass('ignore-validation');
