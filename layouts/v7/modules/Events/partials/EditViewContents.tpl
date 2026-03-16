@@ -30,6 +30,14 @@
 							{/foreach}
 						</select>
 					</td>
+					<td>
+					<td class="fieldLabel alignMiddle">{vtranslate('LBL_SEND_MAIL', $MODULE)}</td>
+					<td class="fieldValue">
+						{if isset($SEND_MAIL_FIELD)}
+							{assign var="FIELD_MODEL" value=$SEND_MAIL_FIELD}
+							{include file=vtemplate_path($FIELD_MODEL->getUITypeModel()->getTemplateName(),$MODULE)}
+						{/if}
+					</td>
 					<td></td><td></td>
 				</tr>
 			</table>

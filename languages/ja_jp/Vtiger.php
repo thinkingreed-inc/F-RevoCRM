@@ -669,6 +669,7 @@ $languageStrings = array(
 	'Country' => '国',
 	'Description' => '詳細内容',
 	'Common Memo' => '共有メモ',
+	'LBL_SEND_MAIL' => 'メール送信する',
 
 	'Created'=>'登録済み',
 	'Approved'=>'承認済み',

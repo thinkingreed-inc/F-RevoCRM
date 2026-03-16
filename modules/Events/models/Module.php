@@ -28,9 +28,10 @@ class Events_Module_Model extends Calendar_Module_Model {
 	public function saveRecord(Vtiger_Record_Model $recordModel) {
         $recordModel = parent::saveRecord($recordModel);
         
-        //code added to send mail to the vtiger_invitees
+        //活動保存後に参加者(担当者抜き)がいるかつメール送信フラグがONの場合、参加者にメール送信する
         $selectUsers = $recordModel->get('selectedusers');
-        if(!empty($selectUsers))
+		$send_mail = $recordModel->get('send_mail');
+        if(!empty($selectUsers) && $send_mail == '1')
         {
             $invities = implode(';',$selectUsers);
             $mail_contents = $recordModel->getInviteUserMailData();

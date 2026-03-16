@@ -104,6 +104,15 @@ class Calendar_QuickCreateAjax_View extends Vtiger_QuickCreateAjax_View {
 			$viewer->assign('ACCESSIBLE_USERS', $accessibleUsers);
 			$viewer->assign('INVITIES_SELECTED', $recordModel->getInvities());
 			$viewer->assign('INVITEES_DETAILS', $recordModel->getInviteesDetails());
+			$sendMailField = Vtiger_Field_Model::getInstance('send_mail', $moduleModel);
+			if ($sendMailField) {
+				$sendMailValue = '0';
+				if ($mode === 'edit' && !empty($recordId)) {
+					$sendMailValue = $recordModel->get('send_mail');
+				}
+				$sendMailField->set('fieldvalue', $sendMailValue);
+				$viewer->assign('SEND_MAIL_FIELD', $sendMailField);
+			}
 		}
 
 		$viewer->assign('CURRENTDATE', date('Y-n-j'));
