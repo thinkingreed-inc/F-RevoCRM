@@ -31,7 +31,7 @@
 					</div>
 					<div class="col-md-6">
 						{assign var=RECORD_COUNT value=$LISTVIEW_ENTRIES_COUNT}
-						{* {include file="Pagination.tpl"|vtemplate_path:$MODULE SHOWPAGEJUMP=true} *}
+						{include file="Pagination.tpl"|vtemplate_path:$MODULE SHOWPAGEJUMP=true}
 					</div>
 				</div>
 			{/if}
@@ -48,13 +48,14 @@
 											{vtranslate('LBL_ACTIONS', $QUALIFIED_MODULE)}
 										</th>
 									{else if $MODULE neq 'Currency'}
-										{if $SHOW_LISTVIEW_CHECKBOX eq true}
+										{* {if $SHOW_LISTVIEW_CHECKBOX eq true} *}
 											<th>
-												<span class="input">
+												{* <span class="input">
 													<input class="listViewEntriesMainCheckBox" type="checkbox">
-												</span>
+												</span> *}
+											{* 画面の配列の関係上ここにブロックは必要 *}
 											</th>
-										{/if}
+										{* {/if} *}
 									{/if}
 									{if $MODULE eq 'Tags' or $MODULE eq 'CronTasks' or $LISTVIEW_ACTIONS_ENABLED eq true}
 										<th>
@@ -73,14 +74,14 @@
 								{foreach item=LISTVIEW_ENTRY from=$LISTVIEW_ENTRIES}
 									<tr class="listViewEntries" data-id="{$LISTVIEW_ENTRY->getId()}"
 										{if method_exists($LISTVIEW_ENTRY,'getDetailViewUrl')}data-recordurl="{$LISTVIEW_ENTRY->getDetailViewUrl()}"{/if}
-										{if method_exists($LISTVIEW_ENTRY,'getRowInfo')}data-info="{Vtiger_Util_Helper::toSafeHTML(ZEND_JSON::Encode($LISTVIEW_ENTRY->getRowInfo()))}"{/if}>
-										<td width="10%">
-											{include file="ListViewRecordActions.tpl"|vtemplate_path:$QUALIFIED_MODULE}
-										</td>
+										{if method_exists($LISTVIEW_ENTRY,'getRowInfo')}data-info="{Vtiger_Util_Helper::toSafeHTML(ZEND_JSON::Encode($LISTVIEW_ENTRY->getRowInfo()))}"{/if} onclick="event.stopPropagation(); openParameterEdit({$LISTVIEW_ENTRY->getId()});">
+											<td width="10%">
+												{include file="ListViewRecordActions.tpl"|vtemplate_path:$QUALIFIED_MODULE }
+											</td>
 										{foreach item=LISTVIEW_HEADER from=$LISTVIEW_HEADERS}
 											{assign var=LISTVIEW_HEADERNAME value=$LISTVIEW_HEADER->get('name')}
 											{assign var=LAST_COLUMN value=$LISTVIEW_HEADER@last}
-											<td class="listViewEntryValue textOverflowEllipsis {$WIDTHTYPE}" width="{$WIDTH}%" nowrap>
+											<td class="listViewEntryValue textOverflowEllipsis {$WIDTHTYPE}" width="{$WIDTH}%" nowrap onclick="event.stopPropagation(); openParameterEdit({$LISTVIEW_ENTRY->getId()});">
 												{$LISTVIEW_ENTRY->getDisplayValue($LISTVIEW_HEADERNAME)}
 												{if $LAST_COLUMN && $LISTVIEW_ENTRY->getRecordLinks()}
 													</td>
@@ -107,4 +108,39 @@
 			</div>
 		</div>
 	</div>
+
+	{* ParameterEdit WebComponent *}
+	<parameter-edit id="parameterEditComponent" is-open="false"></parameter-edit>
+
+	<script>
+	{literal}
+	function openParameterEdit(recordId) {
+		var pe = document.getElementById('parameterEditComponent');
+		if (pe) {
+			pe.setAttribute('record-id', recordId);
+			pe.setAttribute('is-open', 'true');
+		}
+	}
+
+	document.addEventListener('DOMContentLoaded', function() {
+		var pe = document.getElementById('parameterEditComponent');
+		if (pe) {
+			// 保存成功時: ページをリロード
+			pe.addEventListener('save', function(e) {
+				location.reload();
+			});
+			// キャンセル・閉じる時: is-openをfalseに
+			pe.addEventListener('cancel', function() {
+				pe.setAttribute('is-open', 'false');
+			});
+			pe.addEventListener('open-change', function(e) {
+				// e.detail が false または { isOpen: false } の両方に対応
+				if (e.detail === false || (e.detail && typeof e.detail === 'object' && e.detail.isOpen === false)) {
+					pe.setAttribute('is-open', 'false');
+				}
+			});
+		}
+	});
+	{/literal}
+	</script>
 {/strip}

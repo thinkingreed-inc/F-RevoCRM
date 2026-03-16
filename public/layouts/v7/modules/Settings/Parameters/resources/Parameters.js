@@ -26,10 +26,16 @@ Vtiger.Class('Settings_Parameters_Js', {
 	 * This function used to trigger Edit Currency
 	 */
 	triggerEdit : function(event, id) {
-		event.stopPropagation();
-		var instance = Settings_Parameters_Js.currentInstance;
-        instance.showEditView(id);
-	},
+	if (event) {
+			if (event.preventDefault) event.preventDefault();
+			if (event.stopPropagation) event.stopPropagation();
+			if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+		}
+		if (typeof openParameterEdit === 'function') {
+			openParameterEdit(id);
+		}
+		return false;
+	}	,
 	
 	/**
 	 * This function used to trigger Delete Currency
@@ -66,46 +72,8 @@ Vtiger.Class('Settings_Parameters_Js', {
 	init : function() {
 		Settings_Parameters_Js.currentInstance = this;
 	},
+
 	
-	/*
-	 * function to show editView for Add/Edit Currency
-	 * @params: id - currencyId
-	 */
-	showEditView : function(id) {
-      
-		var thisInstance = this;
-		var aDeferred = jQuery.Deferred();
-		var params = {};
-		params['module'] = app.getModuleName();
-		params['parent'] = app.getParentModuleName();
-		params['view'] = 'EditAjax';
-		params['record'] = id;
-		app.request.post({ "data": params }).then(
-			function (err, data) {
-				if (err === null) {
-					app.helper.showModal(data);
-					var form = jQuery('#editCurrency');
-					var record = form.find('[name="record"]').val();
-
-					form.submit(function (e) {
-						e.preventDefault();
-					});
-
-					var params = {
-						submitHandler: function (form) {
-							var form = jQuery(form);
-							thisInstance.saveParameter(form);
-						}
-					};
-
-					form.vtValidate(params);
-				} else {
-					aDeferred.reject(err);
-				}
-			}
-		);
-		return aDeferred.promise();
-	},
 
 	/**
 	 * This function will save the currency details
@@ -193,8 +161,16 @@ Vtiger.Class('Settings_Parameters_Js', {
 		})  
 	},
 		
-    registerEvents : function() {
-        this.registerRowClick();
-    }
+	registerEvents : function() {
+		this.registerRowClick();
+	},
+
+	// WebComponent起動用 showEditView を独立して追加
+	showEditView : function(id) {
+		if (typeof window.openParameterEdit === 'function') {
+			window.openParameterEdit(id);
+		}
+		return false;
+	}
 	
 });

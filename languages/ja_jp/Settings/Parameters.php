@@ -15,6 +15,20 @@ $languageStrings = array(
 	'LBL_EDIT_MODULE' => 'システム変数の編集',
 	'LBL_ADD_NEW_MODULE' => 'システム変数の追加',
 	'LBL_DUPLICATE_KEY' => '既に存在するキーと重複しています。異なるキーを指定してください。',
+	'LBL_EDIT_DESCRIPTION' => '変数の値を編集します。キーと型は変更できません。',
+	'LBL_SECRET' => 'シークレット',
+	'LBL_SECRET_HELP' => '値を隠した場合、値の上書きのみ可能になります',
+	'LBL_TYPE_BOOLEAN' => '真偽値',
+	'LBL_TYPE_STRING' => '文字列',
+	'LBL_TYPE_INTEGER' => '整数',
+	'LBL_CANCEL' => 'キャンセル',
+	'LBL_SAVE' => '保存',
+	'LBL_SAVING' => '保存中...',
+	'LBL_INTEGER_ERROR' => '整数を入力してください',
+	'LBL_SECRET_ON' => '値を隠す',
+	'LBL_SECRET_OFF' => '値を表示する',
+	'LBL_TRUE' => 'true',
+	'LBL_FALSE' => 'false'
 );
 
 $jsLanguageStrings = array(

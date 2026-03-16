@@ -3,6 +3,7 @@ import "./index.css";
 import { QuickCreate, CalendarQuickCreate } from "@/components/QuickCreate";
 import { AppMenu } from "@/components/AppMenu";
 import { ActivityList } from "@/components/ActivityList";
+import { ParameterEdit } from "@/components/ParameterEdit/ParameterEdit";
 
 // QuickCreate本体コンポーネントの登録
 // イベント: save, cancel, go-to-full-form, open-change (CustomEvent)
@@ -54,3 +55,13 @@ createWebComponent(ActivityList, "activity-list", [
   "limit",
   "refresh-key",
 ]);
+
+// ParameterEdit コンポーネントの登録（システム変数編集ダイアログ）
+// record-id: 編集対象のレコードID
+// is-open: ダイアログの開閉状態
+createWebComponent(
+  ParameterEdit,
+  "parameter-edit",
+  ["record-id", "is-open"],
+  ["onSave", "onCancel", "onOpenChange"],
+);
