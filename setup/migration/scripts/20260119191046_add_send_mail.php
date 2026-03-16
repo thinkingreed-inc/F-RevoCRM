@@ -23,7 +23,6 @@ include_once('includes/Loader.php');
 include_once('includes/runtime/LanguageHandler.php');
 include_once('includes/runtime/Globals.php');
 require_once dirname(__FILE__) . '/../FRMigrationClass.php';
-require_once dirname(__FILE__) . '/../FRMigrationClass.php';
 
 class Migration20260119191046_AddSendMail extends FRMigrationClass {
     
@@ -53,7 +52,7 @@ class Migration20260119191046_AddSendMail extends FRMigrationClass {
          **************************************************************/
         $field = new Vtiger_Field();
         $field->name        = 'send_mail';
-        $field->label       = 'Send Mail';
+        $field->label       = 'LBL_SEND_MAIL';
         $field->table       = 'vtiger_activity';
         $field->column      = 'send_mail';
         $field->columntype  = 'VARCHAR(3)';

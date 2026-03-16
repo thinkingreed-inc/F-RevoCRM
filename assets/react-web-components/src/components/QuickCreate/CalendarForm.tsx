@@ -856,6 +856,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
             <div className="md:col-span-2">
               <div className="flex items-start gap-2">
                 <label
+                  htmlFor="send_mail"
                   className={cn(
                     'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
                     isDisabled && 'text-gray-400'
