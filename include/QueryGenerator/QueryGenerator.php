@@ -388,11 +388,6 @@ class QueryGenerator {
 		//TODO optimization to eliminate one more lookup of name, incase the field refers to only
 		//one module or is of type owner.
 		$column = $field->getColumnName();
-		// Calendar の date_start は一覧表示上も実質的に date_start + time_start の開始日時として扱われるため、
-		// DT 条件での比較時にも date_start 単体ではなく日時として比較できるようにする
-		if ($this->meta->getEntityName() == 'Calendar' && $name === 'date_start') {
-			return "TIMESTAMP({$field->getTableName()}.{$column}, {$field->getTableName()}.time_start)";
-		}
 		return $field->getTableName().'.'.$column;
 	}
 
