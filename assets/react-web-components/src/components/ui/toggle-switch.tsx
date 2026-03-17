@@ -22,7 +22,7 @@ export const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
   className = "",
 }) => {
   return (
-    <div className={cn(`${CONTROL_HEIGHT_CLASS} ${CONTROL_HEIGHT_CLASS}`, className)}>
+    <div className={cn(`${CONTROL_HEIGHT_CLASS} ${CONTROL_HEIGHT_CLASS}`, className, 'gap-3')}>
       <Switch
         checked={value}
         onCheckedChange={onChange}

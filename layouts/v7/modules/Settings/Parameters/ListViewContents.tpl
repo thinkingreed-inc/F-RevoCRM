@@ -49,13 +49,9 @@
 										</th>
 									{else if $MODULE neq 'Currency'}
 										{* {if $SHOW_LISTVIEW_CHECKBOX eq true} *}
-											<th>
-												{* <span class="input">
-													<input class="listViewEntriesMainCheckBox" type="checkbox">
-												</span> *}
+										<th class="fix-data-column" style="width:60px !important; min-width:60px !important; max-width:60px !important;">
 											{* 画面の配列の関係上ここにブロックは必要 *}
-											</th>
-										{* {/if} *}
+										</th>
 									{/if}
 									{if $MODULE eq 'Tags' or $MODULE eq 'CronTasks' or $LISTVIEW_ACTIONS_ENABLED eq true}
 										<th>
@@ -63,10 +59,14 @@
 										</th>
 									{/if}
 									{foreach item=LISTVIEW_HEADER from=$LISTVIEW_HEADERS}
-										<th nowrap>
-											<a {if !($LISTVIEW_HEADER->has('sort'))} class="listViewHeaderValues cursorPointer" data-nextsortorderval="{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')}{$NEXT_SORT_ORDER}{else}ASC{/if}" data-columnname="{$LISTVIEW_HEADER->get('name')}" {/if}>{vtranslate($LISTVIEW_HEADER->get('label'), $QUALIFIED_MODULE)}
-												&nbsp;{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')}<img class="{$SORT_IMAGE} icon-white">{/if}</a>&nbsp;
-										</th>
+										{if $LISTVIEW_HEADER->get('name') neq 'id'}
+											<th nowrap>
+												<a {if !($LISTVIEW_HEADER->has('sort'))} class="listViewHeaderValues cursorPointer" data-nextsortorderval="{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')}{$NEXT_SORT_ORDER}{else}ASC{/if}" data-columnname="{$LISTVIEW_HEADER->get('name')}" {/if}>
+													{vtranslate($LISTVIEW_HEADER->get('label'), $QUALIFIED_MODULE)}
+													&nbsp;{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')}<img class="{$SORT_IMAGE} icon-white">{/if}
+												</a>&nbsp;
+											</th>
+										{/if}
 									{/foreach}
 								</tr>
 							</thead>
@@ -75,18 +75,16 @@
 									<tr class="listViewEntries" data-id="{$LISTVIEW_ENTRY->getId()}"
 										{if method_exists($LISTVIEW_ENTRY,'getDetailViewUrl')}data-recordurl="{$LISTVIEW_ENTRY->getDetailViewUrl()}"{/if}
 										{if method_exists($LISTVIEW_ENTRY,'getRowInfo')}data-info="{Vtiger_Util_Helper::toSafeHTML(ZEND_JSON::Encode($LISTVIEW_ENTRY->getRowInfo()))}"{/if} onclick="event.stopPropagation(); openParameterEdit({$LISTVIEW_ENTRY->getId()});">
-											<td width="10%">
+											<td class="fix-data-column" style="width:60px !important; min-width:60px !important; max-width:60px !important;">
 												{include file="ListViewRecordActions.tpl"|vtemplate_path:$QUALIFIED_MODULE }
 											</td>
 										{foreach item=LISTVIEW_HEADER from=$LISTVIEW_HEADERS}
 											{assign var=LISTVIEW_HEADERNAME value=$LISTVIEW_HEADER->get('name')}
-											{assign var=LAST_COLUMN value=$LISTVIEW_HEADER@last}
-											<td class="listViewEntryValue textOverflowEllipsis {$WIDTHTYPE}" width="{$WIDTH}%" nowrap onclick="event.stopPropagation(); openParameterEdit({$LISTVIEW_ENTRY->getId()});">
-												{$LISTVIEW_ENTRY->getDisplayValue($LISTVIEW_HEADERNAME)}
-												{if $LAST_COLUMN && $LISTVIEW_ENTRY->getRecordLinks()}
-													</td>
-												{/if}
-											</td>
+											{if $LISTVIEW_HEADERNAME neq 'id'}
+												<td class="listViewEntryValue textOverflowEllipsis {$WIDTHTYPE}" width="{$WIDTH}%" nowrap onclick="event.stopPropagation(); openParameterEdit({$LISTVIEW_ENTRY->getId()});">
+													{$LISTVIEW_ENTRY->getDisplayValue($LISTVIEW_HEADERNAME)}
+												</td>
+											{/if}
 										{/foreach}
 									</tr>
 								{/foreach}
