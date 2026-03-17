@@ -388,6 +388,11 @@ class QueryGenerator {
 		//TODO optimization to eliminate one more lookup of name, incase the field refers to only
 		//one module or is of type owner.
 		$column = $field->getColumnName();
+		// Calendar の date_start は一覧表示上も実質的に date_start + time_start の開始日時として扱われるため、
+		// DT 条件での比較時にも date_start 単体ではなく日時として比較できるようにする
+		if ($this->meta->getEntityName() == 'Calendar' && $name === 'date_start') {
+			return "TIMESTAMP({$field->getTableName()}.{$column}, {$field->getTableName()}.time_start)";
+		}
 		return $field->getTableName().'.'.$column;
 	}
 
@@ -997,14 +1002,21 @@ class QueryGenerator {
 								$valueArray[1] = $dateObject->getDBInsertDateTimeValue();
 							}
 					}else{
+						// Calendar の date_start は DB 上は date 項目だが、Custom View では開始日時（DT）として扱われる。
+						// そのため、この場合は比較値を date に丸めず、時刻を保持したまま比較する。
+						$isCalendarDateStartDateTime =
+						$this->meta->getEntityName() == 'Calendar' && 
+						$field->getFieldName() == 'date_start';
 						$valueArray[0] = getValidDBInsertDateTimeValue($valueArray[0]);
 						$dateTimeStart = explode(' ',$valueArray[0]);
-						if($dateTimeStart[1] == '00:00:00' && $operator != 'between' && $field->getFieldDataType()=='date') {
+						// 通常の date 項目は時刻部分を落として日付として比較するが、
+						// Calendar の date_start は開始日時比較のため時刻を保持する。
+						if(!$isCalendarDateStartDateTime && $dateTimeStart[1] == '00:00:00' && $operator != 'between' && $field->getFieldDataType()=='date') {
 							$valueArray[0] = $dateTimeStart[0];
 						}
 						$valueArray[1] = getValidDBInsertDateTimeValue($valueArray[1]);
 						$dateTimeEnd = explode(' ', $valueArray[1]);
-						if(($dateTimeEnd[1] == '00:00:00' || $dateTimeEnd[1] == '23:59:59') && $field->getFieldDataType()=='date' ) {
+						if(!$isCalendarDateStartDateTime &&($dateTimeEnd[1] == '00:00:00' || $dateTimeEnd[1] == '23:59:59') && $field->getFieldDataType()=='date') {
 							$valueArray[1] = $dateTimeEnd[0];
 						}
 					}
