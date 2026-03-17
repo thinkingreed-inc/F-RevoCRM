@@ -111,11 +111,14 @@ export const ParameterEditForm: React.FC<ParameterEditFormProps> = ({
 	};
 
 	return (
-		<div className="space-y-4 p-2">
+		<div className="flex-1 overflow-auto px-8 py-4">
 			{/* キー（読み取り専用） */}
-			<div className="flex h-10 px-4 py-2 font-bold">
+		<div className="px-4">
+			<h4 className="fieldBlockHeader font-bold leading-[1.1] mt-0 mb-2 pb-1 border-b border-gray-300">
 				{record.key}
-			</div>
+			</h4>
+		</div>
+
 
 			{/* 値 */}
 			<div className={ROW_CLASS}>

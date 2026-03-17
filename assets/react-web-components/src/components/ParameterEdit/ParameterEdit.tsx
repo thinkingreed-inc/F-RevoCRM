@@ -181,7 +181,7 @@ const ParameterEditInner: React.FC<ParameterEditProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="px-5 pb-4">
+        <div className="px-8 py-4">
           {/* ローディング */}
           {loading && (
             <div className="flex items-center justify-center py-8">
