@@ -215,11 +215,12 @@ const ParameterEditInner: React.FC<ParameterEditProps> = ({
 
         <DialogFooter className="border-t px-5 py-3">
           <div className="flex flex-row justify-center gap-4 w-full">
-            <Button
-              onClick={handleSave}
-              disabled={loading || saving || !data}
-              className="bg-[#00A63E] text-white hover:bg-[#009136]"
-            >
+              <Button
+                type="button"
+                onClick={handleSave}
+                disabled={loading || saving || !data}
+                className="px-6 py-1.5 h-auto text-md font-bold !bg-green-600 hover:!bg-green-700 !text-white"
+              >
               {saving ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin text-white" />
@@ -234,8 +235,8 @@ const ParameterEditInner: React.FC<ParameterEditProps> = ({
               variant="link"
               onClick={handleClose}
               disabled={saving}
-              className="px-2.5 py-1.5 h-auto text-md !text-red-600 hover:!text-red-800 no-underline hover:no-underline bg-transparent hover:bg-transparent border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-              >
+              className="px-2.5 py-1.5 h-auto text-md !text-red-600 hover:!text-red-800 hover:no-underline"
+            >
               {t('LBL_CANCEL')}
             </Button>
           </div>
