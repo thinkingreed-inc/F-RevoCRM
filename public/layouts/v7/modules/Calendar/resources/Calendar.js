@@ -1741,6 +1741,9 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		Friday: 5,
 		Saturday: 6
 	},
+	// 重複チェック時に、終了日時が null の場合に補完するデフォルト時間（単位: 時間）
+	// サーバ側 DragDropAjax.php の `$endSecondsDelta = $secondsDelta + 7200`（2時間=7200秒）と揃えること
+	overlapEndDefaultDurationHours: 2,
 	refreshFeed: function (feedCheckbox) {
 		var thisInstance = this;
 		if (feedCheckbox.is(':checked')) {
@@ -1789,7 +1792,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 	getOverlapEndDateTime: function (event) {
 		var overlapEnd = event.end ? moment(event.end) : null;
 		if (!overlapEnd && !event.allDay && event.start) {
-			overlapEnd = moment(event.start).add(2, 'hours');
+			overlapEnd = moment(event.start).add(this.overlapEndDefaultDurationHours, 'hours');
 		}
 		return overlapEnd;
 	},
