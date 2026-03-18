@@ -81,6 +81,7 @@ class Vtiger_Mailer extends PHPMailer {
 	 * @access private
 	 */
 	function reinitialize() {
+		$this->smtpClose();
 		$this->ClearAllRecipients();
 		$this->ClearReplyTos();
 		$this->ClearCustomHeaders();
@@ -241,11 +242,10 @@ class Vtiger_Mailer extends PHPMailer {
 		global $adb;
 		if(!Vtiger_Utils::CheckTable('vtiger_mailer_queue')) return;
 
-		$mailer = new self();
 		$queue = $adb->pquery('SELECT * FROM vtiger_mailer_queue', array());
 		if($adb->num_rows($queue)) {
 			for($index = 0; $index < $adb->num_rows($queue); ++$index) {
-				$mailer->reinitialize();
+				$mailer = new self();
 
 				$queue_record = $adb->fetch_array($queue, $index);
 				$queueid = $queue_record['id'];
