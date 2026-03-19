@@ -94,8 +94,11 @@ class PickListHandler extends VTEventHandler {
 		}
 		
 		//update Workflows values
-		$query= 'SELECT workflow_id,test FROM com_vtiger_workflows where module_name=? AND test != "" AND test IS NOT NULL AND test !="null" AND test LIKE ?';
-		$result = $db->pquery($query, array($moduleName,"%$oldValue%"));
+		// json_encodeはデフォルトで非ASCII文字をUnicodeエスケープするため、エスケープ版でも検索する
+		$escapedOldValue = trim(json_encode($oldValue), '"');
+		$escapedLikeOld = str_replace('\\', '\\\\', $escapedOldValue);
+		$query= 'SELECT workflow_id,test FROM com_vtiger_workflows where module_name=? AND test != "" AND test IS NOT NULL AND test !="null" AND (test LIKE ? OR test LIKE ?)';
+		$result = $db->pquery($query, array($moduleName, "%$oldValue%", "%$escapedLikeOld%"));
 		$num_rows = $db->num_rows($result);
 		for($i = 0;$i < $num_rows; $i++) {
 			$row = $db->query_result_rowdata($result, $i);
@@ -122,8 +125,8 @@ class PickListHandler extends VTEventHandler {
 		}
 		
 		//update workflow task
-		$query = 'SELECT task,task_id,workflow_id FROM com_vtiger_workflowtasks where task LIKE ?';
-		$result = $db->pquery($query, array("%$oldValue%"));
+		$query = 'SELECT task,task_id,workflow_id FROM com_vtiger_workflowtasks where (task LIKE ? OR task LIKE ?)';
+		$result = $db->pquery($query, array("%$oldValue%", "%$escapedLikeOld%"));
 		$num_rows = $db->num_rows($result);
 		
 		for ($i = 0; $i < $num_rows; $i++) {
@@ -245,8 +248,10 @@ class PickListHandler extends VTEventHandler {
 		
 		foreach ($valueToDelete as $value) {
 			//update Workflows values
-			$query = 'SELECT workflow_id,test FROM com_vtiger_workflows where module_name=? AND test != "" AND test IS NOT NULL AND test !="null" AND test LIKE ?';
-			$result = $db->pquery($query, array($moduleName,"%$value%"));
+			$escapedValue = trim(json_encode($value), '"');
+			$escapedLikeValue = str_replace('\\', '\\\\', $escapedValue);
+			$query = 'SELECT workflow_id,test FROM com_vtiger_workflows where module_name=? AND test != "" AND test IS NOT NULL AND test !="null" AND (test LIKE ? OR test LIKE ?)';
+			$result = $db->pquery($query, array($moduleName, "%$value%", "%$escapedLikeValue%"));
 			$num_rows = $db->num_rows($result);
 			for ($i = 0; $i < $num_rows; $i++) {
 				$row = $db->query_result_rowdata($result, $i);
@@ -278,8 +283,10 @@ class PickListHandler extends VTEventHandler {
 		
 		foreach ($valueToDelete as $value) {
 			//update workflow task
-			$query = 'SELECT task,task_id,workflow_id FROM com_vtiger_workflowtasks where task LIKE ?';
-			$result = $db->pquery($query, array("%$value%"));
+			$escapedValueForTask = trim(json_encode($value), '"');
+			$escapedLikeValueForTask = str_replace('\\', '\\\\', $escapedValueForTask);
+			$query = 'SELECT task,task_id,workflow_id FROM com_vtiger_workflowtasks where (task LIKE ? OR task LIKE ?)';
+			$result = $db->pquery($query, array("%$value%", "%$escapedLikeValueForTask%"));
 			$num_rows = $db->num_rows($result);
 
 			for ($i = 0; $i < $num_rows; $i++) {
