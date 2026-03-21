@@ -27,9 +27,25 @@ class Events_Module_Model extends Calendar_Module_Model {
 	 */
 	public function saveRecord(Vtiger_Record_Model $recordModel) {
         $recordModel = parent::saveRecord($recordModel);
-        
+
         //code added to send mail to the vtiger_invitees
         $selectUsers = $recordModel->get('selectedusers');
+		if(empty($selectUsers)){
+			$selectUsers = array();
+		}
+
+		// 担当にも招待・更新メールが送信されるようにする
+		require_once 'include/utils/GetGroupUsers.php';
+		$assigneduserId = $recordModel->get('assigned_user_id');
+		$userGroups = new GetGroupUsers();
+		$userGroups->getAllUsersInGroup($assigneduserId);
+		if(!empty($userGroups->group_users)){ // 担当がグループである場合
+			$assigneduserId = $userGroups->group_users;
+		}else{
+			$assigneduserId = array($assigneduserId);
+		}
+		$selectUsers = array_unique(array_merge($selectUsers, $assigneduserId));
+		
         if(!empty($selectUsers))
         {
             $invities = implode(';',$selectUsers);
