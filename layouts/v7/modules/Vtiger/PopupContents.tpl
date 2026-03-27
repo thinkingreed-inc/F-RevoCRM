@@ -98,7 +98,7 @@
                     {if isset($RECORD_DATA[$LISTVIEW_HEADERNAME])}
                         {assign var=RECORD_DATA_LISTVIEW_HEADERNAME value=$RECORD_DATA[$LISTVIEW_HEADERNAME]}
                     {/if}
-                    <td class="listViewEntryValue value textOverflowEllipsis {$WIDTHTYPE}" title="{$RECORD_DATA_LISTVIEW_HEADERNAME}">
+                    <td class="listViewEntryValue value textOverflowEllipsis {$WIDTHTYPE}" title="{$RECORD_DATA_LISTVIEW_HEADERNAME|decode_html|strip_tags|escape:'html'}">
                         {if $LISTVIEW_HEADER->isNameField() eq true or $LISTVIEW_HEADER->get('uitype') eq '4'}
                             <a>{$LISTVIEW_ENTRY->get($LISTVIEW_HEADERNAME)}</a>
                         {else if $LISTVIEW_HEADER->get('uitype') eq '72'}
@@ -118,6 +118,8 @@
                             {foreach item=MULTI_PICKLIST_VALUE key=MULTI_PICKLIST_INDEX from=$MULTI_RAW_PICKLIST_VALUES}
                                 <span {if !empty($LISTVIEW_ENTRY_VALUE)} class="picklist-color picklist-{$LISTVIEW_HEADER->getId()}-{Vtiger_Util_Helper::convertSpaceToHyphen(trim($MULTI_PICKLIST_VALUE))}" {/if}> {trim($MULTI_PICKLIST_VALUES[$MULTI_PICKLIST_INDEX])} </span>
                             {/foreach}
+                        {else if $LISTVIEW_HEADER->getFieldDataType() eq 'text'}
+                            {$LISTVIEW_ENTRY_VALUE|decode_html|strip_tags}
                         {else}
                             {vtranslate($LISTVIEW_ENTRY->get($LISTVIEW_HEADERNAME), $MODULE)}
                         {/if}

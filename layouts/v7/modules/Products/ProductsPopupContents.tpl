@@ -80,7 +80,7 @@
                                 {assign var="ROW_NUMBER" value={$smarty.foreach.listViewEntry.index}}
                                 {assign var=LISTVIEW_HEADERNAME value=$LISTVIEW_HEADER->get('name')}
                                 {assign var=LISTVIEW_ENTRY_VALUE value=$LISTVIEW_ENTRY->get($LISTVIEW_HEADERNAME)}
-                                <td class="listViewEntryValue textOverflowEllipsis" title="{$RECORD_DATA[$LISTVIEW_HEADERNAME]|strip_tags}">
+                                <td class="listViewEntryValue textOverflowEllipsis" title="{$RECORD_DATA[$LISTVIEW_HEADERNAME]|decode_html|strip_tags|escape:'html'}">
                                     {if $LISTVIEW_HEADER->isNameField() eq true or $LISTVIEW_HEADER->get('uitype') eq '4'}
                                         <a>{$LISTVIEW_ENTRY->get($LISTVIEW_HEADERNAME)}</a>
                                     {else if $LISTVIEW_HEADER->get('uitype') eq '72'}
@@ -107,6 +107,8 @@
                                             {assign var="QTY_ELEMENT_NAME" value="quantity"|cat:{$COL_NUMBER}|cat:{$ROW_NUMBER}}
                                             <input type="text" value="{if $EDITED_VALUE}{$EDITED_VALUE}{else}{$ENTRY_VALUE}{/if}" data-rule-positiveExcludingZero=true data-rule-positive=true name="{$QTY_ELEMENT_NAME}" class="form-control quantityTextBox" />
                                         </div>
+                                    {else if $LISTVIEW_HEADER->getFieldDataType() eq 'text'}
+                                        {$LISTVIEW_ENTRY->get($LISTVIEW_HEADERNAME)|decode_html|strip_tags}
                                     {else}
                                         {$LISTVIEW_ENTRY->get($LISTVIEW_HEADERNAME)}
                                     {/if}
