@@ -29,7 +29,6 @@ class Migration20260327101100_UpdateFieldTablename extends FRMigrationClass {
             $modules[] = $row;
         }
 
-        $executedTables = array();
         $totalUpdated = 0;
 
         foreach ($modules as $moduleInfo) {
@@ -41,10 +40,8 @@ class Migration20260327101100_UpdateFieldTablename extends FRMigrationClass {
             $baseTable = $entity->table_name;
             if (empty($baseTable)) continue;
 
-            // 同じbaseTableを共有するモジュールはフィールドも共有しているためスキップ
-            if (in_array($baseTable, $executedTables)) continue;
-
             // vtiger_crmentityからbaseTableへtablenameを付け替える
+            // baseTableを共有するモジュール（Calendar/Events/Emails等）でもtabidが異なるため個別に更新が必要
             $updateResult = $db->pquery(
                 'UPDATE vtiger_field SET tablename = ? WHERE tabid = ? AND tablename = ?',
                 array($baseTable, $tabid, 'vtiger_crmentity')
@@ -57,7 +54,6 @@ class Migration20260327101100_UpdateFieldTablename extends FRMigrationClass {
             $this->log("モジュール: $moduleName (tabid=$tabid), テーブル: $baseTable, 更新件数: $affectedRows");
 
             $totalUpdated += $affectedRows;
-            $executedTables[] = $baseTable;
         }
 
         $this->log("合計 $totalUpdated 件の vtiger_field レコードを更新しました");
