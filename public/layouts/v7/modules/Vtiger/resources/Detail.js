@@ -1359,7 +1359,7 @@ Vtiger.Class("Vtiger_Detail_Js",{
 							} else if(fieldBasicData.data('type') == 'multipicklist' && app.getModuleName() != 'Users') {
 								var picklistHtml = '';
 								var rawPicklistValues = postSaveRecordDetails[fieldName].value;
-								rawPicklistValues = rawPicklistValues.split('|##|');
+								rawPicklistValues = rawPicklistValues ? rawPicklistValues.split('|##|') : [];
 								var picklistValues = postSaveRecordDetails[fieldName].display_value;
 									picklistValues = picklistValues.split(',');
 								for(var i=0; i< rawPicklistValues.length; i++) {
