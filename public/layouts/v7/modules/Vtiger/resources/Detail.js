@@ -1506,7 +1506,6 @@ Vtiger.Class("Vtiger_Detail_Js",{
 			var fieldBasicData = editElement.find('.fieldBasicData');
 			var inputElement = editElement.find('.inputElement');
 			inputElement.attr('data-value', fieldBasicData.attr('data-value'));
-			inputElement.data('value', fieldBasicData.data('value'));
 			var fieldType = fieldBasicData.data('type');
 			var dataValue = inputElement.attr('data-value');
 			if (fieldType === 'multipicklist') {
