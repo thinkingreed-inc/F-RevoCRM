@@ -1506,7 +1506,13 @@ Vtiger.Class("Vtiger_Detail_Js",{
 			var inputElement = editElement.find('.inputElement');
 			inputElement.attr('data-value', fieldBasicData.attr('data-value'));
 			inputElement.data('value', fieldBasicData.data('value'));
-			inputElement.val(inputElement.attr('data-value'));
+			var fieldType = fieldBasicData.data('type');
+			var dataValue = inputElement.attr('data-value');
+			if (fieldType === 'multipicklist') {
+				inputElement.val(dataValue ? dataValue.split(' |##| ') : []);
+			} else {
+				inputElement.val(dataValue);
+			}
 			detailViewValue.css('display', 'inline-block');
 			editElement.addClass('hide');
 			editElement.find('.inputElement').trigger('Vtiger.Validation.Hide.Messsage')
