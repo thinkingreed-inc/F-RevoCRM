@@ -1397,6 +1397,7 @@ Vtiger.Class("Vtiger_Detail_Js",{
 							}
 							fieldBasicData.data('displayvalue',postSaveRecordDetails[fieldName].display_value);
 							fieldBasicData.data('value',postSaveRecordDetails[fieldName].value);
+							fieldBasicData.attr('data-value',postSaveRecordDetails[fieldName].value);
 							jQuery(currentTdElement).find('.input-group-addon').removeClass("disabled");
 
 							detailViewValue.css('display', 'inline-block');
