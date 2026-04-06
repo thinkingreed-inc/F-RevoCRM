@@ -188,7 +188,7 @@
 												{if $RELATED_RECORD->get('visibility') == vtranslate('Private', $MODULE ) && $OWNER_ID != $CURRENT_USER_ID && !$CURRENT_USER_MODEL->isAdminUser()}
 													{else}
 														{if $HEADER_FIELD->getFieldDataType() eq 'text'}
-															{$RELATED_RECORD->getDisplayValue($RELATED_HEADERNAME)|decode_html|strip_tags}
+															{$RELATED_RECORD->getDisplayValue($RELATED_HEADERNAME)|decode_html|strip_tags|escape:'html'}
 														{else}
 															{$RELATED_RECORD->getDisplayValue($RELATED_HEADERNAME)}
 															{* Documents list view special actions "view file" and "download file" *}

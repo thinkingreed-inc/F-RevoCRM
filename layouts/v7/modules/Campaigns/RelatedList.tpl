@@ -188,7 +188,7 @@
 											{else if $HEADER_FIELD->getFieldDataType() eq 'picklist'}
 												<span {if !empty($RELATED_LIST_VALUE)} class="picklist-color picklist-{$HEADER_FIELD->getId()}-{Vtiger_Util_Helper::convertSpaceToHyphen($RELATED_LIST_VALUE)}" {/if}> {$RELATED_RECORD->getDisplayValue($RELATED_HEADERNAME)} </span>
 											{else if $HEADER_FIELD->getFieldDataType() eq 'text'}
-												{$RELATED_RECORD->getDisplayValue($RELATED_HEADERNAME)|decode_html|strip_tags}
+												{$RELATED_RECORD->getDisplayValue($RELATED_HEADERNAME)|decode_html|strip_tags|escape:'html'}
 											{else}
 												{$RELATED_RECORD->getDisplayValue($RELATED_HEADERNAME)}
 											{/if}

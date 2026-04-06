@@ -218,7 +218,7 @@
 										{else if $LISTVIEW_HEADER->getFieldDataType() eq 'reference'}
 											{$LISTVIEW_ENTRY->getTitle($LISTVIEW_HEADER)}
 										{else if $LISTVIEW_HEADER->getFieldDataType() eq 'text'}
-											{$LISTVIEW_ENTRY_VALUE|decode_html|strip_tags}
+											{$LISTVIEW_ENTRY_VALUE|decode_html|strip_tags|escape:'html'}
 										{else if $LISTVIEW_HEADER->get('uitype') eq '360'}
 										{else}
 											{vtranslate($LISTVIEW_ENTRY_VALUE, $MODULE)}

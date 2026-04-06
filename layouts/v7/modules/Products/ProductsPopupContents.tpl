@@ -108,7 +108,7 @@
                                             <input type="text" value="{if $EDITED_VALUE}{$EDITED_VALUE}{else}{$ENTRY_VALUE}{/if}" data-rule-positiveExcludingZero=true data-rule-positive=true name="{$QTY_ELEMENT_NAME}" class="form-control quantityTextBox" />
                                         </div>
                                     {else if $LISTVIEW_HEADER->getFieldDataType() eq 'text'}
-                                        {$LISTVIEW_ENTRY->get($LISTVIEW_HEADERNAME)|decode_html|strip_tags}
+                                        {$LISTVIEW_ENTRY->get($LISTVIEW_HEADERNAME)|decode_html|strip_tags|escape:'html'}
                                     {else}
                                         {$LISTVIEW_ENTRY->get($LISTVIEW_HEADERNAME)}
                                     {/if}

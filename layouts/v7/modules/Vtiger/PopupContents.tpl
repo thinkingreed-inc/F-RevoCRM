@@ -119,7 +119,7 @@
                                 <span {if !empty($LISTVIEW_ENTRY_VALUE)} class="picklist-color picklist-{$LISTVIEW_HEADER->getId()}-{Vtiger_Util_Helper::convertSpaceToHyphen(trim($MULTI_PICKLIST_VALUE))}" {/if}> {trim($MULTI_PICKLIST_VALUES[$MULTI_PICKLIST_INDEX])} </span>
                             {/foreach}
                         {else if $LISTVIEW_HEADER->getFieldDataType() eq 'text'}
-                            {$LISTVIEW_ENTRY_VALUE|decode_html|strip_tags}
+                            {$LISTVIEW_ENTRY_VALUE|decode_html|strip_tags|escape:'html'}
                         {else}
                             {vtranslate($LISTVIEW_ENTRY->get($LISTVIEW_HEADERNAME), $MODULE)}
                         {/if}

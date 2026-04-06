@@ -98,7 +98,7 @@
 											{/if}
 											{CurrencyField::appendCurrencySymbol($CURRENCY_VALUE, $CURRENCY_SYMBOL)}
 										{else if $HEADER_FIELD->getFieldDataType() eq 'text'}
-											{$RELATED_RECORD->getDisplayValue($RELATED_HEADERNAME)|decode_html|strip_tags}
+											{$RELATED_RECORD->getDisplayValue($RELATED_HEADERNAME)|decode_html|strip_tags|escape:'html'}
 										{else}
 											{$RELATED_RECORD->getDisplayValue($RELATED_HEADERNAME)}
 										{/if}

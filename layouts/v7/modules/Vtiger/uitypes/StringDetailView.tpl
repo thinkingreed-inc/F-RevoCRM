@@ -43,7 +43,7 @@
 	{decode_html($FIELD_MODEL->getDisplayValue($FIELD_MODEL->get('fieldvalue'), $RECORD->getId(), $RECORD))}
 {else}
     {if $FIELD_MODEL->getFieldDataType() eq 'text'}
-        {$FIELD_MODEL->getDisplayValue($FIELD_MODEL->get('fieldvalue'), $RECORD->getId(), $RECORD, true)}
+        {$FIELD_MODEL->getUITypeModel()->getDisplayValue($FIELD_MODEL->get('fieldvalue'), $RECORD->getId(), $RECORD, true)}
     {else}
         {$FIELD_MODEL->getDisplayValue($FIELD_MODEL->get('fieldvalue'), $RECORD->getId(), $RECORD)}
     {/if}
