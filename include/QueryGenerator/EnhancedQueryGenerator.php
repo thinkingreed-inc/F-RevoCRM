@@ -908,13 +908,7 @@ class EnhancedQueryGenerator extends QueryGenerator {
 			$valueArray = array($value);
 		}
 
-		$userIds = array();
-		foreach ($valueArray as $userName) {
-			if (empty($userName)) {
-				continue;
-			}
-			$userIds = array_merge($userIds, Users_Module_Model::getIdsByUserName($userName));
-		}
+		$userIds = Users_Module_Model::getIdsByUserNames($valueArray);
 
 		// IDが見つかった場合はIDで返す。見つからなければ元の値をそのまま返す
 		if (count($userIds) > 0) {
