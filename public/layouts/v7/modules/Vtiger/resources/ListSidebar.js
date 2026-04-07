@@ -239,11 +239,25 @@ Vtiger.Class('Vtiger_ListSidebar_Js',{},{
                 return;
             }
             var element = jQuery(e.currentTarget);
+            var isAlreadyActive = element.hasClass('active');
+            
             var tagId = element.data('id');
             var viewId = container.data('viewId');
             
             self.unMarkAllFilters();
             self.unMarkAllTags();
+            
+            if (isAlreadyActive) {
+                var params = {
+                    'tag' : '',
+                    'tag_params' : '',
+                    'search_params' : '',
+                    'page' : ''
+                };
+                self.loadListView(viewId, params);
+                return;
+            }
+
             element.addClass('active');
             element.find('i.activeToggleIcon').removeClass('fa-circle').addClass('fa-circle-o');
             var listSearchParams = new Array();
