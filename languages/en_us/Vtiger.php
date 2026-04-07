@@ -1518,10 +1518,15 @@ $languageStrings = array(
 	'UserId ' => 'User ID',
 	'ConvertLead' => 'Convert Lead',
 	// Profile Details
+	'Administrator' => 'Administrator',
+	'Sales Profile' => 'Sales Profile',
+	'Support Profile' => 'Support Profile',
+	'Guest Profile' => 'Guest Profile',
 	'Admin Profile' => 'Admin Profile',
 	'Profile Related to Sales' => 'Sales Profile',
 	'Profile Related to Support' => 'Support Profile',
 	'Guest Profile for Test Users' => 'Guest Profile for Test Users',
+	'管理者' => 'Administrator',
 	// User Management > Login History
 	'Signed in' => 'Signed In',
 	'Signed off' => 'Signed Off',
