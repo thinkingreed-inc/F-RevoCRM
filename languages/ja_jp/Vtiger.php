@@ -340,7 +340,7 @@ $languageStrings = array(
 	'LBL_DIRECT_AMOUNT_DISCOUNT' => '金額指定割引',
 	'LBL_FINAL_DISCOUNT_AMOUNT' => '総割引額',
 	'LBL_MORE_CURRENCIES' => '他の通貨',
-	'LBL_SET_TAX_FOR' => '課税対象：',
+	'LBL_SET_TAX_FOR' => '課税対象',
 	'LBL_GROUP_TAX' => 'グループ課税',
 	'LBL_BILLING_ADDRESS_FROM' => '次から請求先住所からコピーする：',
 	'LBL_SHIPPING_ADDRESS_FROM' => '次から発送先住所からコピーする：',
@@ -1722,6 +1722,7 @@ $languageStrings = array(
 	'LBL_PLACEHOLDER_SEARCH' => '%sを検索...',
 	'LBL_PLACEHOLDER_SEARCH_AND_ADD' => '%sを検索して追加...',
 	'LBL_PLACEHOLDER_SEARCH_TITLE' => '%sを検索',
+	'JS_NO_TAXES_EXISTS' => '税金はありません',
 );
 
 $jsLanguageStrings = array(
