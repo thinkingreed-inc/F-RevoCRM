@@ -279,6 +279,10 @@
 								{/foreach}
 							</table>
 						</div>
+					{else}
+						<div class="textAlignCenter">
+							{vtranslate('JS_NO_TAXES_EXISTS',$MODULE)}
+						</div>
 					{/if}
 				</div>
 			</span>
