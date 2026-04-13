@@ -11,7 +11,7 @@
   `targetmodule` varchar(50) NOT NULL,
   `description` varchar(250) DEFAULT NULL,
   `ownerid` int(19) NOT NULL,
-  `returnurl` varchar(250) DEFAULT NULL,
+  `returnurl` text DEFAULT NULL,
   `captcha` int(1) NOT NULL DEFAULT '0',
   `roundrobin` int(1) NOT NULL DEFAULT '0',
   `roundrobin_userid` varchar(256)DEFAULT NULL,
