@@ -17,13 +17,6 @@ class Migration20260413102051_UpgradePhpmailer7x extends FRMigrationClass {
 
     private static $composerPaths = ['/usr/local/bin/composer', '/usr/bin/composer'];
 
-    private $oldFiles = [
-        'modules/Emails/class.phpmailer.php',
-        'modules/Emails/class.smtp.php',
-        'cron/class.phpmailer.php',
-        'cron/class.smtp.php',
-    ];
-
     /**
      * ソースファイル書き換え定義
      * 'autoload'  : 旧requireを置換する autoload文（nullの場合は削除のみ）
@@ -52,8 +45,6 @@ class Migration20260413102051_UpgradePhpmailer7x extends FRMigrationClass {
         ],
     ];
 
-    private $backupDir = null;
-
     public function process() {
         $rootDir = realpath(dirname(__FILE__) . '/../../../') . '/';
 
@@ -63,9 +54,6 @@ class Migration20260413102051_UpgradePhpmailer7x extends FRMigrationClass {
 
         // フェーズ2: ソースファイル書き換え
         $this->updateSourceFiles($rootDir);
-
-        // フェーズ3: 旧ファイル退避・削除
-        $this->backupAndRemoveOldFiles($rootDir);
 
         $this->log("PHPMailer 7.x アップグレード完了");
     }
@@ -133,15 +121,19 @@ class Migration20260413102051_UpgradePhpmailer7x extends FRMigrationClass {
 
             $original = $content;
 
-            // 旧require/include行を削除または置換（1行目をautoloadに、残りを削除）
-            $content = preg_replace(
-                '/^(require_once|require|include_once)\s*[\(]?\s*["\'].*class\.(smtp|phpmailer)\.php["\'][\)]?\s*;\s*\n/m',
-                $patch['autoload'] ? $patch['autoload'] . "\n" : '',
-                $content, 1
-            );
-            $content = preg_replace(
-                '/^(require_once|require|include_once)\s*[\(]?\s*["\'].*class\.(smtp|phpmailer)\.php["\'][\)]?\s*;\s*\n/m',
-                '', $content
+            // 旧require/include行をコメントアウトし、autoloadを追加
+            $replaced = false;
+            $content = preg_replace_callback(
+                '/^((require_once|require|include_once)\s*[\(]?\s*["\'].*class\.(smtp|phpmailer)\.php["\'][\)]?\s*;)\s*\n/m',
+                function ($match) use ($patch, &$replaced) {
+                    $commented = '// ' . $match[1] . "\n";
+                    if (!$replaced && $patch['autoload']) {
+                        $replaced = true;
+                        return $patch['autoload'] . "\n" . $commented;
+                    }
+                    return $commented;
+                },
+                $content
             );
 
             // use文の挿入
@@ -156,32 +148,6 @@ class Migration20260413102051_UpgradePhpmailer7x extends FRMigrationClass {
                 file_put_contents($file, $content);
                 $this->log("更新: {$relPath}");
             }
-        }
-    }
-
-    private function backupAndRemoveOldFiles($rootDir) {
-        $existing = array_filter($this->oldFiles, function ($f) use ($rootDir) {
-            return file_exists($rootDir . $f);
-        });
-
-        if (empty($existing)) {
-            $this->log("旧ファイル: 全て削除済み");
-            return;
-        }
-
-        $this->backupDir = $rootDir . 'migration_backup_' . date('YmdHis');
-        @mkdir($this->backupDir, 0755, true);
-
-        foreach ($existing as $rel) {
-            $destDir = $this->backupDir . '/' . dirname($rel);
-            if (!is_dir($destDir)) @mkdir($destDir, 0755, true);
-            copy($rootDir . $rel, $destDir . '/' . basename($rel));
-        }
-        $this->log("バックアップ: " . count($existing) . " ファイル -> {$this->backupDir}");
-
-        foreach ($existing as $rel) {
-            unlink($rootDir . $rel);
-            $this->log("削除: {$rel}");
         }
     }
 
