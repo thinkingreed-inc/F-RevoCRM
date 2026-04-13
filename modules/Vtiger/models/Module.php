@@ -162,6 +162,12 @@ class Vtiger_Module_Model extends Vtiger_Module {
 				 */
 				$value = is_string($fieldValue) ? decode_html($fieldValue) : $fieldValue;
 				$focus->column_fields[$fieldName] = $value;
+
+				$fieldModel = $this->getField($fieldName);
+				if ($fieldModel && in_array($fieldModel->getFieldDataType(), array('currency', 'double', 'integer'))) {
+					$value = str_replace(',', '', (string)$value);
+					$recordModel->set($fieldName, $value);
+				}
 			}
 		}
 		$focus->mode = $recordModel->get('mode');
