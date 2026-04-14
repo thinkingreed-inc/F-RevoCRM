@@ -73,11 +73,51 @@ export function TimeComboBox({
   const dropdownRef = useRef<HTMLDivElement>(null);
   // Track if an option was just selected to skip blur normalization
   const optionSelectedRef = useRef(false);
+  // Track touch start position for swipe scrolling
+  const touchStartYRef = useRef<number | null>(null);
   const [dropdownPosition, setDropdownPosition] = useState<{
     top: number;
     left: number;
     width: number;
   } | null>(null);
+
+  // Touch event listeners for mobile scrolling (must use passive: false to allow preventDefault)
+  useEffect(() => {
+    const dropdown = dropdownRef.current;
+    if (!dropdown || !isOpen) return;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartYRef.current = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (touchStartYRef.current === null) return;
+
+      const touchCurrentY = e.touches[0].clientY;
+      const deltaY = touchStartYRef.current - touchCurrentY;
+
+      dropdown.scrollTop += deltaY;
+      touchStartYRef.current = touchCurrentY;
+
+      // Prevent page scroll while scrolling dropdown
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    const handleTouchEnd = () => {
+      touchStartYRef.current = null;
+    };
+
+    dropdown.addEventListener('touchstart', handleTouchStart, { passive: true });
+    dropdown.addEventListener('touchmove', handleTouchMove, { passive: false });
+    dropdown.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    return () => {
+      dropdown.removeEventListener('touchstart', handleTouchStart);
+      dropdown.removeEventListener('touchmove', handleTouchMove);
+      dropdown.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isOpen]);
 
   // Update inputValue when value prop changes
   useEffect(() => {
@@ -254,7 +294,7 @@ export function TimeComboBox({
       {isOpen && !disabled && dropdownPosition && createPortal(
         <div
           ref={dropdownRef}
-          className="fixed z-[100003] bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-auto pointer-events-auto"
+          className="fixed z-[100003] bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-auto pointer-events-auto select-none"
           style={{
             top: dropdownPosition.top,
             left: dropdownPosition.left,

@@ -29,10 +29,11 @@ createWebComponent(
 // module="Calendar" または module="Events" で自動的にカレンダーモードになります
 // variant="calendar" で明示的にカレンダーモードを指定することも可能
 // record-id: 編集モード時のレコードID
+// is-duplicate: 複製モード時にtrue（recordIdが存在しても新規作成として扱う）
 createWebComponent(
   CalendarQuickCreate,
   "calendar-quick-create",
-  ["module", "is-open", "initial-data", "record-id"],
+  ["module", "is-open", "initial-data", "record-id", "is-duplicate"],
   ["onSave", "onCancel", "onGoToFullForm", "onOpenChange"]
 );
 

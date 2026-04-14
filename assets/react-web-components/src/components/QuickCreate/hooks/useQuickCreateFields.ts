@@ -69,7 +69,9 @@ export function useQuickCreateFields(
       isRecordTypeField: recordTypeFieldNames.includes(apiField.name),
       // multireference型フィールドの識別情報
       datatype: apiField.datatype,
-      isMultiple: apiField.isMultiple
+      isMultiple: apiField.isMultiple,
+      // ProductTax (UIType 83) の税クラス詳細
+      taxClassDetails: apiField.taxClassDetails
     };
   }, []);
 

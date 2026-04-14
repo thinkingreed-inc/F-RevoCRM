@@ -52,6 +52,12 @@ export interface UseCalendarFieldsParams {
   recordId?: string;
   /** RecordType fields for filtering (optional) */
   recordTypeFields?: Record<string, string>;
+  /** Activity type for Events (Call/Meeting) - determines time interval */
+  activityType?: string;
+  /** Default duration for Call activities (minutes) */
+  defaultCallDuration?: number;
+  /** Default duration for other events (minutes) */
+  defaultOtherEventDuration?: number;
 }
 
 /**
@@ -135,7 +141,14 @@ export interface UseCalendarFieldsResult {
 export function useCalendarFields(
   params: UseCalendarFieldsParams
 ): UseCalendarFieldsResult {
-  const { activeTab, recordId, recordTypeFields } = params;
+  const {
+    activeTab,
+    recordId,
+    recordTypeFields,
+    activityType,
+    defaultCallDuration = 5,
+    defaultOtherEventDuration = 5
+  } = params;
 
   // Fetch both Calendar and Events fields with RecordType filtering
   const {
@@ -186,31 +199,44 @@ export function useCalendarFields(
   }, [eventsFields]);
 
   /**
-   * Generate time options in 10-minute intervals (00:00 - 23:50)
+   * Generate time options based on activity type duration
+   * - Call activities: use defaultCallDuration interval
+   * - Other activities (Meeting, etc.): use defaultOtherEventDuration interval
+   * - Calendar (ToDo): use defaultOtherEventDuration interval
    */
   const timeOptions = useMemo((): TimeOption[] => {
+    // Determine interval based on activity type
+    let interval: number;
+    if (activeTab === 'Events' && activityType === 'Call') {
+      interval = defaultCallDuration;
+    } else {
+      interval = defaultOtherEventDuration;
+    }
+
+    // Ensure valid interval (minimum 1 minute, maximum 60 minutes)
+    interval = Math.max(1, Math.min(60, interval));
+
     const options: TimeOption[] = [];
     for (let h = 0; h < 24; h++) {
-      for (let m = 0; m < 60; m += 10) {
+      for (let m = 0; m < 60; m += interval) {
         const hh = h.toString().padStart(2, '0');
         const mm = m.toString().padStart(2, '0');
         options.push({ value: `${hh}:${mm}`, label: `${hh}:${mm}` });
       }
     }
     return options;
-  }, []);
+  }, [activeTab, activityType, defaultCallDuration, defaultOtherEventDuration]);
 
   /**
    * Parse datetime-local value (YYYY-MM-DDTHH:MM) into date and time components
-   * Rounds time to nearest 10-minute interval (5+ rounds up) for best approximation
+   * Returns the time as-is without rounding to any interval
    *
    * @param value - Datetime-local value
    * @returns Parsed date and time components
    *
    * @example
-   * parseDateTimeValue('2026-01-15T14:14') // => { date: '2026-01-15', time: '14:10' } (rounded down)
-   * parseDateTimeValue('2026-01-15T14:15') // => { date: '2026-01-15', time: '14:20' } (rounded up)
-   * parseDateTimeValue('2026-01-15T14:20') // => { date: '2026-01-15', time: '14:20' } (exact match)
+   * parseDateTimeValue('2026-01-15T14:23') // => { date: '2026-01-15', time: '14:23' }
+   * parseDateTimeValue('2026-01-15T09:05') // => { date: '2026-01-15', time: '09:05' }
    */
   const parseDateTimeValue = useCallback(
     (value: string | undefined): DateTimeComponents => {
@@ -221,26 +247,7 @@ export function useCalendarFields(
       // Expected format: YYYY-MM-DDTHH:MM
       if (value.includes('T')) {
         const [datePart, timePart] = value.split('T');
-
-        // Round time to nearest 10-minute interval (5+ rounds up)
-        let roundedTime = timePart || '';
-        if (roundedTime) {
-          const [hh, mm] = roundedTime.split(':');
-          let hours = parseInt(hh, 10);
-          const minutes = parseInt(mm, 10);
-          // Round to nearest 10 minutes (14 -> 10, 15 -> 20, 25 -> 30)
-          const roundedMinutes = Math.round(minutes / 10) * 10;
-
-          // Handle overflow when rounding 55-59 minutes to 60
-          if (roundedMinutes === 60) {
-            hours = (hours + 1) % 24;
-            roundedTime = `${hours.toString().padStart(2, '0')}:00`;
-          } else {
-            roundedTime = `${hours.toString().padStart(2, '0')}:${roundedMinutes.toString().padStart(2, '0')}`;
-          }
-        }
-
-        return { date: datePart, time: roundedTime };
+        return { date: datePart, time: timePart || '' };
       }
 
       // If no 'T' separator, treat as date only

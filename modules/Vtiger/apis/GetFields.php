@@ -255,6 +255,10 @@ class Vtiger_GetFields_Api extends Vtiger_Api_Controller {
 
             // デフォルト値の取得
             $defaultValue = $fieldModel->get('defaultvalue');
+            // defaultvalueが空の場合、fieldvalue（RecordStructureModelで設定された値）をfallbackとして使用
+            if (empty($defaultValue)) {
+                $defaultValue = $fieldModel->get('fieldvalue');
+            }
             if ($defaultValue !== null && $defaultValue !== '') {
                 $fieldInfo['defaultValue'] = $defaultValue;
             }
@@ -330,6 +334,14 @@ class Vtiger_GetFields_Api extends Vtiger_Api_Controller {
                 $fieldInfo['isCurrency'] = true;
             }
 
+            // ProductTaxフィールドの場合（UIType 83）
+            if ($uitype === '83') {
+                $taxClassDetails = $this->getTaxClassDetailsForField($moduleName, $fieldName);
+                if (!empty($taxClassDetails)) {
+                    $fieldInfo['taxClassDetails'] = $taxClassDetails;
+                }
+            }
+
             // QuickCreate情報
             $fieldInfo['quickcreate'] = $fieldModel->isQuickCreateEnabled();
             $fieldInfo['quickcreatesequence'] = $fieldModel->get('quickcreatesequence');
@@ -367,6 +379,51 @@ class Vtiger_GetFields_Api extends Vtiger_Api_Controller {
         } catch (Exception $e) {
             error_log("CustomValidation retrieval error for field $fieldId: " . $e->getMessage());
             return array();
+        }
+    }
+
+    /**
+     * ProductTaxフィールド用の税クラス詳細情報を取得
+     * @param string $moduleName モジュール名
+     * @param string $fieldName フィールド名（taxclass）
+     * @return array|null 税クラス詳細情報（最初の税情報を返す）
+     */
+    private function getTaxClassDetailsForField($moduleName, $fieldName) {
+        try {
+            // Products/Services モジュールの場合のみ処理
+            if (!in_array($moduleName, array('Products', 'Services'))) {
+                return null;
+            }
+
+            // 空のレコードモデルを取得
+            $recordModel = Vtiger_Record_Model::getCleanInstance($moduleName);
+
+            // getTaxClassDetailsメソッドが存在するか確認
+            if (!method_exists($recordModel, 'getTaxClassDetails')) {
+                return null;
+            }
+
+            // 税クラス詳細を取得
+            $allTaxDetails = $recordModel->getTaxClassDetails();
+
+            // 最初の税情報を返す（通常は消費税 = tax1）
+            if (!empty($allTaxDetails) && is_array($allTaxDetails)) {
+                $firstTax = reset($allTaxDetails);
+                if ($firstTax && isset($firstTax['taxname'])) {
+                    return array(
+                        'taxname' => $firstTax['taxname'],
+                        'taxlabel' => isset($firstTax['taxlabel']) ? vtranslate($firstTax['taxlabel'], $moduleName) . '(%)' : $firstTax['taxname'] . '(%)',
+                        'percentage' => isset($firstTax['percentage']) ? $firstTax['percentage'] : '10.000',
+                        'check_name' => isset($firstTax['check_name']) ? $firstTax['check_name'] : $firstTax['taxname'] . '_check',
+                        'check_value' => isset($firstTax['check_value']) ? (string)$firstTax['check_value'] : '0'
+                    );
+                }
+            }
+
+            return null;
+        } catch (Exception $e) {
+            error_log("TaxClassDetails retrieval error for field $fieldName: " . $e->getMessage());
+            return null;
         }
     }
 

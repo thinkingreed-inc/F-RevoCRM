@@ -17,6 +17,15 @@ Vtiger.Class("Vtiger_Tag_Js",{},{
     editTagContainerCached : false,
     
     init : function() {
+        // Bootstrap 3.4.1のサニタイズ機能のwhitelistにbutton, center, form, input, labelを追加
+        // タグ編集ポップオーバーの保存・キャンセルボタン等が削除されないようにする
+        if (jQuery.fn.popover.Constructor.DEFAULTS && jQuery.fn.popover.Constructor.DEFAULTS.whiteList) {
+            jQuery.fn.popover.Constructor.DEFAULTS.whiteList.button = ['type', 'class', 'style'];
+            jQuery.fn.popover.Constructor.DEFAULTS.whiteList.center = [];
+            jQuery.fn.popover.Constructor.DEFAULTS.whiteList.form = ['onsubmit', 'class'];
+            jQuery.fn.popover.Constructor.DEFAULTS.whiteList.input = ['type', 'name', 'value', 'class', 'style', 'maxlength'];
+            jQuery.fn.popover.Constructor.DEFAULTS.whiteList.label = ['class', 'for'];
+        }
         this.editTagContainerCached = jQuery('.editTagContainer');
     },
     

@@ -336,7 +336,6 @@ div.detailview-content.container-fluid span.value img {
 }
 .module-action-bar.coloredBorderTop {
   width: calc(100% - 42px);
-  height: 90px;
 }
 .textOverflowTest{
 	width: 600px;
@@ -693,8 +692,15 @@ button#advanceIntiateSave + input {
 
 /* モバイル: 2列 + 全幅モーダル */
 @media (max-width: 767px) {
-  /* 開いている時だけモーダル表示 */
+  /* クイック作成メニューが開いている時、カレンダーのアクションバー関連要素を非表示にする（iPhoneでのz-index問題対策） */
+  /* iOSでは.app-nav内の要素がタッチイベントを横取りするため、.app-nav全体を非表示にする */
+  body:has(.dropdown.open > .quickCreateDropdown) .app-nav,
+  body:has(.dropdown.open > .quickCreateDropdown) .app-indicator-icon-container {
+    visibility: hidden;
+  }
+  /* 開いている時だけモーダル表示（visibility: visible !importantでドロップダウン自体は常に表示） */
   .dropdown.open > .quickCreateDropdown {
+    visibility: visible !important;
     position: fixed !important;
     top: 50px !important;
     left: 0 !important;
@@ -1783,5 +1789,25 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
 
 .admonition-warning .admonition-title {
     color: #e65100;
+}
+
+/* CustomView: モバイル表示でのリスト共有ユーザー選択UIの修正 */
+@media (max-width: 767px) {
+  /* select2コンテナの幅を100%に拡張 */
+  #filterContainer #s2id_memberList,
+  #filterContainer #memberList + .select2-container {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* select2ドロップダウンの幅もモバイルで適切に表示されるように */
+  .select2-drop {
+    min-width: 200px;
+  }
+
+  /* 共有ユーザー選択欄がフッターに隠れないようにスクロールコンテナに下部パディングを追加 */
+  #filterContainer .customview-content .mCSB_container {
+    padding-bottom: 70px;
+  }
 }
 

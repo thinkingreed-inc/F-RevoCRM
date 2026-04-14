@@ -76,6 +76,11 @@ const DEFAULT_TRANSLATIONS: TranslationData = {
   LBL_PLACEHOLDER_SEARCH: '%sを検索...',
   LBL_PLACEHOLDER_SEARCH_AND_ADD: '%sを検索して追加...',
   LBL_PLACEHOLDER_SEARCH_TITLE: '%sを検索',
+  LBL_PLACEHOLDER_SELECT: '%sを選択してください',
+
+  // オプション関連
+  LBL_NO_OPTIONS_AVAILABLE: '該当する選択肢がありません',
+  LBL_ALL_OPTIONS_SELECTED: 'すべて選択済みです',
 };
 
 interface TranslationContextValue {

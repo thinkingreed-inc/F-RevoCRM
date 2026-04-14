@@ -110,6 +110,86 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
   // デバウンス用のタイマー
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // タッチスワイプ用のref
+  const touchStartYRef = useRef<number | null>(null);
+  const moduleTouchStartYRef = useRef<number | null>(null);
+
+  // Touch event listeners for search dropdown (must use passive: false to allow preventDefault)
+  useEffect(() => {
+    const dropdown = dropdownRef.current;
+    if (!dropdown || !isOpen || !dropdownPosition) return;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartYRef.current = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (touchStartYRef.current === null) return;
+
+      const touchCurrentY = e.touches[0].clientY;
+      const deltaY = touchStartYRef.current - touchCurrentY;
+
+      dropdown.scrollTop += deltaY;
+      touchStartYRef.current = touchCurrentY;
+
+      // Prevent page scroll while scrolling dropdown
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    const handleTouchEnd = () => {
+      touchStartYRef.current = null;
+    };
+
+    dropdown.addEventListener('touchstart', handleTouchStart, { passive: true });
+    dropdown.addEventListener('touchmove', handleTouchMove, { passive: false });
+    dropdown.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    return () => {
+      dropdown.removeEventListener('touchstart', handleTouchStart);
+      dropdown.removeEventListener('touchmove', handleTouchMove);
+      dropdown.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isOpen, dropdownPosition]);
+
+  // Touch event listeners for module dropdown (must use passive: false to allow preventDefault)
+  useEffect(() => {
+    const dropdown = moduleDropdownRef.current;
+    if (!dropdown || !isModuleDropdownOpen || !moduleDropdownPosition) return;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      moduleTouchStartYRef.current = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (moduleTouchStartYRef.current === null) return;
+
+      const touchCurrentY = e.touches[0].clientY;
+      const deltaY = moduleTouchStartYRef.current - touchCurrentY;
+
+      dropdown.scrollTop += deltaY;
+      moduleTouchStartYRef.current = touchCurrentY;
+
+      // Prevent page scroll while scrolling dropdown
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    const handleTouchEnd = () => {
+      moduleTouchStartYRef.current = null;
+    };
+
+    dropdown.addEventListener('touchstart', handleTouchStart, { passive: true });
+    dropdown.addEventListener('touchmove', handleTouchMove, { passive: false });
+    dropdown.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    return () => {
+      dropdown.removeEventListener('touchstart', handleTouchStart);
+      dropdown.removeEventListener('touchmove', handleTouchMove);
+      dropdown.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isModuleDropdownOpen, moduleDropdownPosition]);
+
   /**
    * レコード検索
    */

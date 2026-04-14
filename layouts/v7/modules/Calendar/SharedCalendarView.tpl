@@ -16,6 +16,8 @@
 <input type="hidden" id="date_format" value="{$CURRENT_USER->get('date_format')}" />
 <input type="hidden" id="hideCompletedEventTodo" value="{$CURRENT_USER->get('hidecompletedevents')}">
 <input type="hidden" id="show_allhours" value="{$CURRENT_USER->get('showallhours')}" />
+<input type="hidden" id="defaultCallDuration" value="{$CURRENT_USER->get('callduration')}" />
+<input type="hidden" id="defaultOtherEventDuration" value="{$CURRENT_USER->get('othereventduration')}" />
 <input type="hidden" id="calendar_remember_feed_selection" value="{$CALENDAR_REMEMBER_FEED_SELECTION}" />
 <div id="sharedcalendar" class="calendarview col-lg-12">
 	{assign var=LEFTPANELHIDE value=$CURRENT_USER->get('leftpanelhide')}

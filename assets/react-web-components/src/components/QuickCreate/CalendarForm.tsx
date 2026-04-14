@@ -8,6 +8,7 @@ import { TimeComboBox } from '../ui/time-combobox';
 import { FieldInfo, FieldValue } from '../../types/field';
 import { cn } from '../../lib/utils';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useCalendarDateTimeSync } from './hooks/useCalendarDateTimeSync';
 
 /**
  * Activity type: Calendar (ToDo) or Events
@@ -68,6 +69,10 @@ export interface CalendarFormProps {
   initialSelectedInvitees?: string[];
   /** Callback when RecordType field changes */
   onRecordTypeChange?: (fieldName: string, value: string) => void;
+  /** Default duration for Call activities (minutes) */
+  defaultCallDuration?: number;
+  /** Default duration for other events (minutes) */
+  defaultOtherEventDuration?: number;
 }
 
 /**
@@ -118,6 +123,8 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
   combineReminderValue,
   initialSelectedInvitees,
   onRecordTypeChange,
+  defaultCallDuration = 5,
+  defaultOtherEventDuration = 5,
 }) => {
   const { t } = useTranslation();
 
@@ -129,13 +136,74 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
   const inviteeInputContainerRef = useRef<HTMLDivElement>(null);
   const [inviteeDropdownPosition, setInviteeDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const initialInviteesLoadedRef = useRef<boolean>(false);
+  // Track touch start position for swipe scrolling
+  const inviteeTouchStartYRef = useRef<number | null>(null);
 
   const isDisabled = isSaving || !!successMessage;
+
+  // Touch event listeners for mobile scrolling (must use passive: false to allow preventDefault)
+  useEffect(() => {
+    const dropdown = inviteeDropdownRef.current;
+    if (!dropdown || !isInviteeDropdownOpen) return;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      inviteeTouchStartYRef.current = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (inviteeTouchStartYRef.current === null) return;
+
+      const touchCurrentY = e.touches[0].clientY;
+      const deltaY = inviteeTouchStartYRef.current - touchCurrentY;
+
+      dropdown.scrollTop += deltaY;
+      inviteeTouchStartYRef.current = touchCurrentY;
+
+      // Prevent page scroll while scrolling dropdown
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    const handleTouchEnd = () => {
+      inviteeTouchStartYRef.current = null;
+    };
+
+    dropdown.addEventListener('touchstart', handleTouchStart, { passive: true });
+    dropdown.addEventListener('touchmove', handleTouchMove, { passive: false });
+    dropdown.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    return () => {
+      dropdown.removeEventListener('touchstart', handleTouchStart);
+      dropdown.removeEventListener('touchmove', handleTouchMove);
+      dropdown.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isInviteeDropdownOpen]);
 
   /**
    * All-day checkbox state
    */
   const isAllDay = formData['is_allday'] === true || formData['is_allday'] === '1' || formData['is_allday'] === 'true';
+
+  /**
+   * DateTime sync hook - synchronizes end datetime when start datetime changes
+   */
+  const {
+    handleDateStartChange,
+    handleTimeStartChange,
+    handleDueDateChange,
+    handleTimeEndChange,
+    handleDateTimeFieldFocus,
+  } = useCalendarDateTimeSync({
+    formData,
+    onFieldChange,
+    defaultCallDuration,
+    defaultOtherEventDuration,
+    activeTab,
+    isEditMode,
+    isAllDay,
+    parseDateTimeValue,
+    combineDateTimeValue,
+  });
 
   /**
    * Reminder state
@@ -363,8 +431,13 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
               value={date}
               onChange={(e) => {
                 const newValue = combineDateTimeValue(e.target.value, isAllDay ? '' : time);
-                onFieldChange(fieldName, newValue);
+                if (fieldName === 'date_start') {
+                  handleDateStartChange(newValue);
+                } else {
+                  handleDueDateChange(newValue);
+                }
               }}
+              onFocus={handleDateTimeFieldFocus}
               disabled={isDisabled}
               className={cn(isAllDay ? 'w-full' : 'flex-1', error && 'border-red-500')}
             />
@@ -373,8 +446,11 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
               <TimeComboBox
                 value={time}
                 onChange={(newTime) => {
-                  const newValue = combineDateTimeValue(date, newTime);
-                  onFieldChange(fieldName, newValue);
+                  if (fieldName === 'date_start') {
+                    handleTimeStartChange(newTime, date);
+                  } else {
+                    handleTimeEndChange(newTime, date);
+                  }
                 }}
                 disabled={isDisabled}
                 error={!!error}
@@ -745,7 +821,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                 {isInviteeDropdownOpen && !isDisabled && inviteeDropdownPosition && createPortal(
                   <div
                     ref={inviteeDropdownRef}
-                    className="fixed z-[100003] bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-auto pointer-events-auto"
+                    className="fixed z-[100003] bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-auto pointer-events-auto select-none"
                     style={{
                       top: inviteeDropdownPosition.top,
                       left: inviteeDropdownPosition.left,

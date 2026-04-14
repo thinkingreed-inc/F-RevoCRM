@@ -226,6 +226,93 @@ describe('FieldRenderer', () => {
     });
   });
 
+  describe('製品税フィールド (UIType 83)', () => {
+    it('チェックボックスと税ラベルが表示される', () => {
+      const field = createField({
+        uitype: UI_TYPES.PRODUCT_TAX,
+        label: '税',
+        name: 'tax1',
+        taxClassDetails: {
+          taxname: 'tax1',
+          taxlabel: '消費税(%)',
+          percentage: '10.000',
+          check_name: 'check_tax1',
+          check_value: '0'
+        }
+      });
+      const onChange = vi.fn();
+
+      render(<FieldRenderer field={field} value="" onChange={onChange} />);
+
+      expect(screen.getByRole('checkbox')).toBeInTheDocument();
+      expect(screen.getByText('消費税(%)')).toBeInTheDocument();
+    });
+
+    it('値がある場合はチェックボックスがチェック状態になる', () => {
+      const field = createField({
+        uitype: UI_TYPES.PRODUCT_TAX,
+        label: '税',
+        name: 'tax1',
+        taxClassDetails: {
+          taxname: 'tax1',
+          taxlabel: '消費税(%)',
+          percentage: '10.000',
+          check_name: 'check_tax1',
+          check_value: '1'
+        }
+      });
+      const onChange = vi.fn();
+
+      render(<FieldRenderer field={field} value="10.000" onChange={onChange} />);
+
+      const checkbox = screen.getByRole('checkbox');
+      expect(checkbox).toBeChecked();
+
+      // 入力フィールドが表示される（小数点3桁でフォーマット）
+      const input = screen.getByDisplayValue('10.000');
+      expect(input).toBeInTheDocument();
+    });
+
+    it('チェックONでデフォルト税率が設定される', () => {
+      const field = createField({
+        uitype: UI_TYPES.PRODUCT_TAX,
+        label: '税',
+        name: 'tax1',
+        taxClassDetails: {
+          taxname: 'tax1',
+          taxlabel: '消費税(%)',
+          percentage: '10.000',
+          check_name: 'check_tax1',
+          check_value: '0'
+        }
+      });
+      const onChange = vi.fn();
+
+      render(<FieldRenderer field={field} value="" onChange={onChange} />);
+
+      const checkbox = screen.getByRole('checkbox');
+      fireEvent.click(checkbox);
+
+      expect(onChange).toHaveBeenCalledWith('tax1', '10.000');
+    });
+
+    it('taxClassDetailsがない場合デフォルト値で動作する', () => {
+      const field = createField({
+        uitype: UI_TYPES.PRODUCT_TAX,
+        label: '税',
+        name: 'tax1'
+      });
+      const onChange = vi.fn();
+
+      render(<FieldRenderer field={field} value="" onChange={onChange} />);
+
+      // チェックボックスとラベルが表示される（デフォルト値使用: field.label + '(%)'）
+      expect(screen.getByRole('checkbox')).toBeInTheDocument();
+      // FieldRendererのラベル部分にデフォルトのtaxlabel（税(%)）が表示される
+      expect(screen.getByText('税(%)')).toBeInTheDocument();
+    });
+  });
+
   describe('ピックリストフィールド (UIType 15, 16)', () => {
     it('ピックリストが正しく表示される', () => {
       const field = createField({
@@ -293,6 +380,7 @@ describe('FieldRenderer', () => {
       expect(isUITypeSupported(UI_TYPES.DATE)).toBe(true);
       expect(isUITypeSupported(UI_TYPES.PICKLIST)).toBe(true);
       expect(isUITypeSupported(UI_TYPES.REFERENCE)).toBe(true);
+      expect(isUITypeSupported(UI_TYPES.PRODUCT_TAX)).toBe(true);
     });
 
     it('サポートされていないUITypeはfalseを返す', () => {

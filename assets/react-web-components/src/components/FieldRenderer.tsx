@@ -7,6 +7,8 @@ import { ReferenceField } from './ReferenceField';
 import { MultireferenceField } from './MultireferenceField';
 import { OwnerField } from './OwnerField';
 import { PicklistField } from './PicklistField';
+import { MultiPicklistField } from './MultiPicklistField';
+import { ProductTaxField } from './ProductTaxField';
 import { cn } from '../lib/utils';
 import { useOptionalTranslation } from '../hooks/useTranslation';
 
@@ -401,43 +403,20 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
           />
         );
 
-      // マルチピックリスト - 複数選択select
+      // マルチピックリスト - MultiPicklistField
       case UI_TYPES.MULTIPICKLIST:
-        // valueは ' |##| ' 区切りの文字列か配列
-        const multiValue = typeof value === 'string' ? value.split(' |##| ').filter(Boolean) : (Array.isArray(value) ? value : []);
         return (
-          <div className={cn('flex items-start gap-2', className)}>
-            {renderLabel()}
-            <div className="flex-1 min-w-0">
-              <select
-                id={`field_${field.name}`}
-                name={field.name}
-                value={multiValue}
-                onChange={(e) => {
-                  const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-                  onChange(field.name, selectedOptions.join(' |##| '));
-                }}
-                disabled={disabled || field.readonly}
-                multiple
-                className={cn(
-                  'w-full px-3 py-2 border rounded-md shadow-sm transition-colors min-h-20',
-                  'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-                  'disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed',
-                  error ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
-                )}
-              >
-                {picklistOptions?.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <div className="text-xs text-gray-500">
-                Ctrlキーを押しながらクリックして複数選択
-              </div>
-              {renderError()}
-            </div>
-          </div>
+          <MultiPicklistField
+            name={field.name}
+            label={field.label}
+            value={String(value ?? '')}
+            onChange={onChange}
+            options={picklistOptions}
+            mandatory={field.mandatory}
+            disabled={disabled || field.readonly}
+            error={error}
+            className={className}
+          />
         );
       
       // 通貨 - Input type="number" with currency formatting
@@ -486,21 +465,24 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
           </div>
         );
 
-      // 敬称 - PicklistFieldを使用（ピックリストと同様の挙動）
+      // 敬称/名前 (uitype 55) - テキスト入力として扱う
+      // 注: uitype 55はsalutationtypeとfirstnameの両方に使用されるが、
+      // salutationtypeはdisplaytype=3のためクイック作成には表示されない
+      // firstnameは名前入力フィールドなのでテキスト入力が適切
       case UI_TYPES.SALUTATION:
         return (
-          <PicklistField
-            name={field.name}
-            label={field.label}
-            value={String(value ?? '')}
-            onChange={onChange}
-            options={picklistOptions}
-            mandatory={field.mandatory}
-            disabled={disabled || field.readonly}
-            error={error}
-            className={className}
-            noBlank={false}
-          />
+          <div className={cn('flex items-start gap-2', className)}>
+            {renderLabel()}
+            <div className="flex-1 min-w-0">
+              <Input
+                {...inputProps}
+                type="text"
+                onChange={handleInputChange}
+                maxLength={field.maxlength}
+              />
+              {renderError()}
+            </div>
+          </div>
         );
 
       // パスワード - Input type="password"
@@ -515,6 +497,52 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
                 onChange={handleInputChange}
                 placeholder="••••••••"
                 autoComplete="new-password"
+              />
+              {renderError()}
+            </div>
+          </div>
+        );
+
+      // 製品税 - ProductTaxField（チェックボックス + 税率入力）
+      // 旧版と同じく、ラベル部分にtaxLabelを表示（例: 消費税(%)）
+      case UI_TYPES.PRODUCT_TAX:
+        // taxClassDetailsがない場合はデフォルト値を使用
+        const taxDetails = field.taxClassDetails || {
+          taxname: field.name,
+          taxlabel: field.label + '(%)',
+          percentage: '10.000',
+          check_name: `check_${field.name}`,
+          check_value: '0'
+        };
+        // ProductTaxField用のカスタムラベル（taxlabelを使用）
+        const renderTaxLabel = () => (
+          <>
+            <span
+              className={cn(
+                'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
+                (disabled || field.readonly) && 'text-gray-400'
+              )}
+            >
+              {taxDetails.taxlabel}
+              {field.mandatory && <span className="sr-only"> (必須)</span>}
+            </span>
+            <span className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0" aria-hidden="true">
+              {field.mandatory ? '*' : ''}
+            </span>
+          </>
+        );
+        return (
+          <div className={cn('flex items-start gap-2', className)}>
+            {renderTaxLabel()}
+            <div className="flex-1 min-w-0 h-[30px] flex items-center">
+              <ProductTaxField
+                name={taxDetails.taxname}
+                label={taxDetails.taxlabel}
+                defaultTaxRate={taxDetails.percentage}
+                value={String(value ?? '')}
+                onChange={onChange}
+                disabled={disabled || field.readonly}
+                error={error}
               />
               {renderError()}
             </div>
@@ -647,6 +675,8 @@ export const isUITypeSupported = (uitype: string): boolean => {
     UI_TYPES.OWNER,
     // パスワード
     UI_TYPES.PASSWORD,
+    // 特殊
+    UI_TYPES.PRODUCT_TAX,
     // 参照系
     UI_TYPES.REFERENCE,
     UI_TYPES.REFERENCE_ACCOUNT,
@@ -707,6 +737,8 @@ export const getSupportedUITypes = (): string[] => {
     UI_TYPES.OWNER,
     // パスワード
     UI_TYPES.PASSWORD,
+    // 特殊
+    UI_TYPES.PRODUCT_TAX,
     // 参照系
     UI_TYPES.REFERENCE,
     UI_TYPES.REFERENCE_ACCOUNT,

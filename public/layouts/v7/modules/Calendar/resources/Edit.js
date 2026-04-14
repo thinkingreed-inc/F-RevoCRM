@@ -146,7 +146,7 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 	},
 	
 	/**
-     * Function to Validate and Save Event 
+     * Function to Validate and Save Event
      * @returns {undefined}
      */
     registerValidation : function () {
@@ -159,7 +159,7 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 					return false;
 				}
 				window.onbeforeunload = null;
-				
+
 				var formData = jQuery(form).serializeFormData();
 				Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(formData)
 				.then(function () {
@@ -167,7 +167,15 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 					form.submit();
 				});
 				return false;
-            }
+            },
+			// エラーラベルをDOMに挿入しない（tooltipのみ使用）
+			// validation.jsのerrorPlacementでqTip表示後、ここでラベル削除
+			showErrors: function(errorMap, errorList) {
+				// デフォルトのエラー表示処理を実行（qTipのtooltip表示含む）
+				this.defaultShowErrors();
+				// エラーラベルを削除（tooltipは残る）
+				editViewForm.find('label.error').remove();
+			}
 		};
         this.formValidatorInstance = editViewForm.vtValidate(params);
     },

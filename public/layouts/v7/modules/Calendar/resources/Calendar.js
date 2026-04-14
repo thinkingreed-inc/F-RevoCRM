@@ -225,6 +225,83 @@ Vtiger.Class("Calendar_Calendar_Js", {
 
 		return aDeferred.promise();
 	},
+	registerWebComponentsBeforeSaveEvent: function() {
+		var thisInstance = this;
+
+		// 重複登録防止: 既に登録済みの場合はスキップ
+		if (this._webComponentsBeforeSaveRegistered) {
+			return;
+		}
+		this._webComponentsBeforeSaveRegistered = true;
+
+		document.addEventListener('before-save', function(e) {
+			// calendar-quick-create からのイベントのみ処理
+			if (!e.target.matches('calendar-quick-create')) {
+				return;
+			}
+
+			// 既に別のリスナーがpreventDefault()を呼んでいる場合はスキップ
+			// （繰り返し活動の確認モーダルが処理中の場合など）
+			if (e.defaultPrevented) {
+				return;
+			}
+
+			var detail = e.detail;
+
+			// 編集モードでない場合はスキップ（新規作成は確認不要）
+			if (!detail.isEditMode || !detail.recordId) {
+				return;
+			}
+
+			// 保存をキャンセルして確認処理を挟む
+			e.preventDefault();
+
+			// z-index問題対策: bootbox確認ダイアログをWebComponents dialogの前面に表示するため、
+			// bootboxのz-indexを一時的に上げ、WebComponentsダイアログのポインターイベントを無効化
+			var styleElement = document.createElement('style');
+			styleElement.id = 'webcomponents-modal-zindex-fix-others';
+			styleElement.textContent = '.bootbox, .bootbox * { z-index: 100010 !important; pointer-events: auto !important; } .bootbox + .modal-backdrop, .modal-backdrop.in { z-index: 100009 !important; } [data-slot="dialog-overlay"], [data-slot="dialog-content"], .web-components-wrapper { pointer-events: none !important; } [data-slot="dialog-content"] * { pointer-events: none !important; }';
+			document.head.appendChild(styleElement);
+
+			// フォーカスループ対策: Radix UIのFocusScopeとBootstrapモーダルのフォーカス管理が競合するため、
+			// bootbox表示中はRadix UIのフォーカストラップを一時的に無効化
+			var dialogContent = document.querySelector('[data-slot="dialog-content"]');
+			var originalTabIndex = null;
+			var originalInert = null;
+			if (dialogContent) {
+				originalTabIndex = dialogContent.getAttribute('tabindex');
+				originalInert = dialogContent.hasAttribute('inert');
+				dialogContent.setAttribute('inert', '');
+				dialogContent.removeAttribute('tabindex');
+			}
+
+			// クリーンアップ関数
+			var cleanup = function() {
+				// z-index修正用のスタイルを削除
+				var styleEl = document.getElementById('webcomponents-modal-zindex-fix-others');
+				if (styleEl) styleEl.remove();
+				// フォーカストラップを復元
+				if (dialogContent) {
+					dialogContent.removeAttribute('inert');
+					if (originalTabIndex !== null) {
+						dialogContent.setAttribute('tabindex', originalTabIndex);
+					}
+				}
+			};
+
+			// 既存の confirmEditOthersEvent を使用（jQuery Deferred）
+			thisInstance.confirmEditOthersEvent(detail.recordId)
+				.done(function() {
+					cleanup();
+					// 確認OK → 保存を続行（引数なし）
+					detail.continueSave();
+				})
+				.fail(function() {
+					cleanup();
+					// キャンセルまたはエラー → 何もしない（モーダルは開いたまま）
+				});
+		});
+	},
 	registerCalendarSharingTypeChangeEvent: function (modalContainer) {
 		var selectedUsersContainer = app.helper.getSelect2FromSelect(
 				jQuery('#selectedUsers', modalContainer)
@@ -1406,6 +1483,12 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			}
 		}
 
+		// デフォルト活動期間をユーザー設定から取得
+		var defaultCallDuration = document.getElementById('defaultCallDuration');
+		var defaultOtherEventDuration = document.getElementById('defaultOtherEventDuration');
+		initialData.defaultCallDuration = defaultCallDuration ? parseInt(defaultCallDuration.value, 10) || 5 : 5;
+		initialData.defaultOtherEventDuration = defaultOtherEventDuration ? parseInt(defaultOtherEventDuration.value, 10) || 5 : 5;
+
 		if (Object.keys(initialData).length > 0) {
 			quickCreate.setAttribute('initial-data', JSON.stringify(initialData));
 		}
@@ -2007,6 +2090,11 @@ Vtiger.Class("Calendar_Calendar_Js", {
 
 			// 編集モード: record IDを設定（WebComponents版で使用）
 			triggerParams.record = record;
+
+			// 複製モードフラグを設定（WebComponents版で使用）
+			if (isDuplicate === true) {
+				triggerParams.isDuplicate = true;
+			}
 
 			try {
 				var calendarContainer = thisInstance.getCalendarViewContainer();
@@ -2963,5 +3051,6 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		this.registerWidgetPostLoadEvent();
 		this.initializeWidgets();
 		this.registerPostQuickCreateSaveEvent();
+		this.registerWebComponentsBeforeSaveEvent();
 	}
 });

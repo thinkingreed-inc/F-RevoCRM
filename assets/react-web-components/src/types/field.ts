@@ -72,6 +72,24 @@ export interface FieldInfo {
   datatype?: string;
   /** カスタムバリデーション設定 */
   customValidations?: CustomValidation[];
+  /** 税情報（UIType 83: ProductTax用） */
+  taxClassDetails?: TaxClassDetails;
+}
+
+/**
+ * 税クラス詳細情報（ProductTaxフィールド用）
+ */
+export interface TaxClassDetails {
+  /** 税名（例: tax1, tax2） */
+  taxname: string;
+  /** 税ラベル（例: 消費税(%)） */
+  taxlabel: string;
+  /** デフォルト税率（例: 10.000） */
+  percentage: string;
+  /** チェックボックス名（例: check_tax1） */
+  check_name: string;
+  /** チェック値（1 or 0） */
+  check_value: string;
 }
 
 /**
@@ -221,6 +239,10 @@ export const UI_TYPES = {
   TEXTAREA_20: '20',
   /** テキスト106 */
   STRING_106: '106',
+
+  // 特殊UIType
+  /** 製品税（チェックボックス + 税率入力） */
+  PRODUCT_TAX: '83',
 } as const;
 
 /**

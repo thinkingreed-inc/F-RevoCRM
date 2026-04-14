@@ -14,14 +14,14 @@ interface PicklistOption {
 }
 
 /**
- * PicklistFieldのProps
+ * MultiPicklistFieldのProps
  */
-export interface PicklistFieldProps {
+export interface MultiPicklistFieldProps {
   /** フィールド名 */
   name: string;
   /** ラベル */
   label: string;
-  /** 現在の値 */
+  /** 現在の値（' |##| ' 区切りの文字列） */
   value?: string;
   /** 値変更時のコールバック */
   onChange: (name: string, value: string) => void;
@@ -35,19 +35,13 @@ export interface PicklistFieldProps {
   error?: string;
   /** カスタムクラス */
   className?: string;
-  /** 空白選択を許可しない（UIType 16） */
-  noBlank?: boolean;
-  /** RecordTypeフィールドかどうか */
-  isRecordTypeField?: boolean;
-  /** RecordType変更時のコールバック */
-  onRecordTypeChange?: (fieldName: string, value: string) => void;
 }
 
 /**
- * PicklistField - ピックリストフィールド（UIType 15/16）用コンポーネント
- * 検索可能なドロップダウン
+ * MultiPicklistField - 複数選択ピックリストフィールド（UIType 33）用コンポーネント
+ * ドロップダウンから選択し、タグ形式で表示
  */
-export const PicklistField: React.FC<PicklistFieldProps> = ({
+export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
   name,
   label,
   value,
@@ -56,19 +50,18 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
   mandatory = false,
   disabled = false,
   error,
-  className,
-  noBlank = false,
-  isRecordTypeField = false,
-  onRecordTypeChange
+  className
 }) => {
-  // 翻訳フック（TranslationProvider外でも安全に使用可能）
   const { t } = useOptionalTranslation();
+
+  // 選択済みの値（配列）
+  const selectedValues = useMemo(() => {
+    if (!value) return [];
+    return value.split(' |##| ').filter(Boolean);
+  }, [value]);
 
   // 検索キーワード
   const [searchTerm, setSearchTerm] = useState<string>('');
-
-  // 表示用のラベル
-  const [displayLabel, setDisplayLabel] = useState<string>('');
 
   // ドロップダウン表示状態
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -123,71 +116,54 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
   }, [isOpen, dropdownPosition]);
 
   /**
-   * 検索でフィルタリングされたオプション
+   * 検索でフィルタリングされたオプション（選択済みを除外）
    */
   const filteredOptions = useMemo(() => {
-    if (!searchTerm) return options;
-    const lowerSearch = searchTerm.toLowerCase();
-    return options.filter(opt =>
-      opt.label.toLowerCase().includes(lowerSearch) ||
-      opt.value.toLowerCase().includes(lowerSearch)
-    );
-  }, [options, searchTerm]);
+    // 選択済みの項目を除外
+    let filtered = options.filter(opt => !selectedValues.includes(opt.value));
+
+    // 検索キーワードでさらにフィルタリング
+    if (searchTerm) {
+      const lowerSearch = searchTerm.toLowerCase();
+      filtered = filtered.filter(opt =>
+        opt.label.toLowerCase().includes(lowerSearch) ||
+        opt.value.toLowerCase().includes(lowerSearch)
+      );
+    }
+    return filtered;
+  }, [options, searchTerm, selectedValues]);
 
   /**
-   * 現在の値から表示ラベルを設定
+   * 選択済みの値からラベルを取得
    */
-  useEffect(() => {
-    if (value) {
-      const selected = options.find(opt => opt.value === value);
-      if (selected) {
-        setDisplayLabel(selected.label);
-      }
-    } else {
-      setDisplayLabel('');
-    }
-  }, [value, options]);
+  const getLabel = (val: string): string => {
+    const option = options.find(opt => opt.value === val);
+    return option ? option.label : val;
+  };
 
   /**
    * 検索入力変更
    */
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setSearchTerm(newValue);
-    setDisplayLabel(newValue);
-
-    // 既存の選択をクリア
-    if (value) {
-      onChange(name, '');
-    }
-
-    // ドロップダウンを開く
+    setSearchTerm(e.target.value);
     setIsOpen(true);
   };
 
   /**
-   * オプション選択
+   * オプション選択（ドロップダウンからは追加のみ、削除はタグの×ボタンで行う）
    */
-  const handleSelectOption = (option: PicklistOption) => {
-    setDisplayLabel(option.label);
-    setSearchTerm('');
-    setIsOpen(false);
-    onChange(name, option.value);
-
-    // RecordTypeフィールドの場合、追加で親コンポーネントに通知
-    if (isRecordTypeField && onRecordTypeChange) {
-      onRecordTypeChange(name, option.value);
-    }
+  const handleSelectOption = (optionValue: string) => {
+    // 選択追加
+    const newValues = [...selectedValues, optionValue];
+    onChange(name, newValues.join(' |##| '));
   };
 
   /**
-   * 選択をクリア
+   * タグ削除
    */
-  const handleClear = () => {
-    setDisplayLabel('');
-    setSearchTerm('');
-    onChange(name, '');
-    inputRef.current?.focus();
+  const handleRemoveTag = (optionValue: string) => {
+    const newValues = selectedValues.filter(v => v !== optionValue);
+    onChange(name, newValues.join(' |##| '));
   };
 
   /**
@@ -223,17 +199,13 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
 
       if (!isInsideDropdown && !isInsideInput) {
         setIsOpen(false);
-        // 選択されていない場合は入力をクリア
-        if (!value && displayLabel) {
-          setDisplayLabel('');
-          setSearchTerm('');
-        }
+        setSearchTerm('');
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [value, displayLabel]);
+  }, []);
 
   /**
    * スクロール・リサイズ時にドロップダウンの位置を更新
@@ -254,9 +226,6 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
     };
   }, [isOpen, updateDropdownPosition]);
 
-  // クリアボタンを表示するかどうか（noBlankの場合は表示しない）
-  const showClearButton = displayLabel && !noBlank && !mandatory;
-
   // ドロップダウンのレンダリング（Portal使用）
   const renderDropdown = () => {
     if (!isOpen || disabled || !dropdownPosition) return null;
@@ -272,7 +241,6 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
         }}
         onWheel={(e) => {
           e.stopPropagation();
-          // Radix UIのDialogがbodyのスクロールをブロックするため、手動でスクロール
           const target = e.currentTarget;
           target.scrollTop += e.deltaY * 0.3;
         }}
@@ -282,11 +250,8 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
             {filteredOptions.map(option => (
               <div
                 key={option.value}
-                onClick={() => handleSelectOption(option)}
-                className={cn(
-                  'px-3 py-1.5 text-md cursor-pointer hover:bg-blue-50',
-                  value === option.value && 'bg-blue-100'
-                )}
+                onClick={() => handleSelectOption(option.value)}
+                className="px-3 py-1.5 text-md cursor-pointer hover:bg-blue-50"
               >
                 {option.label}
               </div>
@@ -294,7 +259,7 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
           </div>
         ) : (
           <div className="px-3 py-1.5 text-md text-gray-500 text-center">
-            該当する選択肢がありません
+            {selectedValues.length > 0 ? t('LBL_ALL_OPTIONS_SELECTED') : t('LBL_NO_OPTIONS_AVAILABLE')}
           </div>
         )}
       </div>
@@ -305,7 +270,7 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
 
   return (
     <div className={cn('flex items-start gap-2', className)}>
-      {/* ラベル（旧版スタイル：右寄せ） */}
+      {/* ラベル */}
       <span
         className={cn(
           'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
@@ -315,7 +280,7 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
         {label}
         {mandatory && <span className="sr-only"> (必須)</span>}
       </span>
-      {/* 必須マーク：固定幅で位置を確保し、入力欄の開始位置を揃える */}
+      {/* 必須マーク */}
       <span className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0" aria-hidden="true">
         {mandatory ? '*' : ''}
       </span>
@@ -324,44 +289,56 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
       <div className="flex-1 min-w-0">
         {/* 検索入力 */}
         <div className="relative" ref={inputContainerRef}>
-        <div className="relative flex items-center">
-          <Input
-            ref={inputRef}
-            id={`field_${name}`}
-            type="text"
-            value={displayLabel}
-            onChange={handleSearchChange}
-            onFocus={handleFocus}
-            disabled={disabled}
-            placeholder={t('LBL_PLACEHOLDER_SEARCH', label)}
-            autoComplete="off"
-            className={cn(
-              'pr-10',
-              error && 'border-red-500',
-              isRecordTypeField && 'border-blue-300 bg-blue-50/30'
-            )}
-          />
+          <div className="relative flex items-center">
+            <Input
+              ref={inputRef}
+              id={`field_${name}`}
+              type="text"
+              value={searchTerm}
+              onChange={handleSearchChange}
+              onFocus={handleFocus}
+              disabled={disabled}
+              placeholder={t('LBL_PLACEHOLDER_SELECT', label)}
+              autoComplete="off"
+              className={cn(
+                'pr-10',
+                error && 'border-red-500'
+              )}
+            />
 
-          {/* クリアボタン or ドロップダウンアイコン */}
-          <div className="absolute right-3 flex items-center">
-            {showClearButton ? (
-              <button
-                type="button"
-                onClick={handleClear}
-                disabled={disabled}
-                className="p-1 hover:bg-gray-100 rounded"
-              >
-                <X className="w-4 h-4 text-gray-400" />
-              </button>
-            ) : (
+            {/* ドロップダウンアイコン */}
+            <div className="absolute right-3 flex items-center pointer-events-none">
               <ChevronDown className="w-4 h-4 text-gray-400" />
-            )}
+            </div>
           </div>
+
+          {/* ドロップダウン */}
+          {renderDropdown()}
         </div>
 
-        {/* ドロップダウン（Portal経由でbody直下にレンダリング） */}
-        {renderDropdown()}
-        </div>
+        {/* 選択済みタグ表示 */}
+        {selectedValues.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {selectedValues.map((val) => (
+              <div
+                key={val}
+                className="relative inline-flex items-center bg-blue-100 text-blue-800 rounded-md text-md"
+              >
+                <span className="pl-3 pr-6 py-1.5">{getLabel(val)}</span>
+                {!disabled && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveTag(val)}
+                    className="absolute right-0 top-0 bottom-0 w-6 flex items-center justify-center hover:bg-blue-200 rounded-r-md transition-colors cursor-pointer"
+                    aria-label={`${getLabel(val)}を削除`}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* 隠しフィールド */}
         <input type="hidden" name={name} value={value || ''} />
@@ -380,4 +357,4 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
   );
 };
 
-export default PicklistField;
+export default MultiPicklistField;

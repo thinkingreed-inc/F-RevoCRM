@@ -5,11 +5,43 @@ import {
   QuickCreateSaveResponse
 } from '../../../types/quickcreate';
 import { transformCalendarDateTime } from '../../../utils/datetime';
+import { FieldInfo } from '../../../types/field';
 
 /**
  * QuickCreate保存処理のHook
  */
-export function useQuickCreateSave(module: string): UseQuickCreateSaveResult {
+/**
+ * ProductTaxフィールドのチェックボックス値を追加
+ * 税率フィールドに値がある場合、対応するチェックボックスフィールドをonにする
+ * @param formData フォームデータ
+ * @param fields フィールド定義
+ * @returns 変換後のフォームデータ
+ */
+function transformProductTaxData(
+  formData: Record<string, any>,
+  fields: FieldInfo[]
+): Record<string, any> {
+  const result = { ...formData };
+
+  // UIType 83 のフィールドを探す
+  fields.forEach(field => {
+    if (field.uitype === '83' && field.taxClassDetails) {
+      // formDataには taxname (例: tax4) がキーとして入っている
+      const taxname = field.taxClassDetails.taxname;
+      const taxValue = formData[taxname];
+      const checkName = field.taxClassDetails.check_name;
+
+      // 税率フィールドに値がある場合、チェックボックスをonにする
+      if (taxValue !== undefined && taxValue !== null && taxValue !== '') {
+        result[checkName] = 'on';
+      }
+    }
+  });
+
+  return result;
+}
+
+export function useQuickCreateSave(module: string, fields?: FieldInfo[]): UseQuickCreateSaveResult {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -54,9 +86,14 @@ export function useQuickCreateSave(module: string): UseQuickCreateSaveResult {
 
       // Calendar/Events用の日時フィールド変換
       const isCalendarModule = module === 'Calendar' || module === 'Events';
-      const processedData = isCalendarModule
+      let processedData = isCalendarModule
         ? transformCalendarDateTime(formData)
         : formData;
+
+      // ProductTaxフィールドのチェックボックス値を追加
+      if (fields && fields.length > 0) {
+        processedData = transformProductTaxData(processedData, fields);
+      }
 
       // Calendar/Events用のcalendarModuleパラメータ追加
       // VtigerのSaveAjaxはCalendarモジュール保存時にcalendarModuleパラメータを必要とする
@@ -161,7 +198,7 @@ export function useQuickCreateSave(module: string): UseQuickCreateSaveResult {
     } finally {
       setIsSaving(false);
     }
-  }, [module, getCsrfToken]);
+  }, [module, fields, getCsrfToken]);
 
   /**
    * エラーをクリア

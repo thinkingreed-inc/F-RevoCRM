@@ -2281,8 +2281,8 @@ function isCalendarPermittedBySharing($recordId)
 	global $adb, $current_user;
 	$permission = 'no';
 	$query = "SELECT vtiger_sharedcalendar.sharedid, vtiger_users.calendarsharedtype FROM vtiger_sharedcalendar RIGHT JOIN vtiger_users ON vtiger_sharedcalendar.userid=vtiger_users.id and status='Active'
-				WHERE vtiger_users.id IN(SELECT smownerid FROM vtiger_activity INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid=vtiger_activity.activityid
-								WHERE activityid=? AND visibility='Public' AND smownerid !=0)";
+				WHERE vtiger_users.id IN(SELECT vtiger_activity.smownerid FROM vtiger_activity INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid=vtiger_activity.activityid
+								WHERE activityid=? AND visibility='Public' AND vtiger_activity.smownerid !=0)";
 	$result=$adb->pquery($query, array($recordId));
 
 	for($i=0; $i< $adb->num_rows($result); $i++ ) {

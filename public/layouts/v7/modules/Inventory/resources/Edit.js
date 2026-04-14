@@ -191,6 +191,12 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
     
     init : function() {
        this._super();
+       // Bootstrap 3.4.1のサニタイズ機能のwhitelistにbuttonとcenterを追加
+       // ポップオーバーの「保存」「キャンセル」ボタンが削除されないようにする
+       if (jQuery.fn.popover.Constructor.DEFAULTS && jQuery.fn.popover.Constructor.DEFAULTS.whiteList) {
+           jQuery.fn.popover.Constructor.DEFAULTS.whiteList.button = ['type', 'class'];
+           jQuery.fn.popover.Constructor.DEFAULTS.whiteList.center = [];
+       }
        this.initializeVariables();
     },
     

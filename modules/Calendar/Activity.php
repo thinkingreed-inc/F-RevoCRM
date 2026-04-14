@@ -1355,7 +1355,7 @@ function insertIntoRecurringTable(& $recurObj)
 	 */
 	public function getReportsNonAdminAccessControlQuery($tableName, $tabId, $user, $parent_roles,$groups){
 		$sharedUsers = $this->getListViewAccessibleUsers($user->id);
-		$this->setupTemporaryTable($tableName, $tabId, $user, $parent_roles,$groups);
+		$this->setupTemporaryTableForEvents($tableName, $tabId, $user, $parent_roles,$groups);
 		$query = "SELECT id FROM $tableName WHERE $tableName.shared=0 AND $tableName.id IN ($sharedUsers)";
 		return $query;
 	}

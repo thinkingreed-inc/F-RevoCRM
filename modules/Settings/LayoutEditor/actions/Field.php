@@ -183,7 +183,8 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
         $sourceModule = $fieldInstance->get('block')->module->name;
         $fieldLabel = $fieldInstance->get('label');
         if($fieldInstance->uitype == 16 || $fieldInstance->uitype == 33){
-            $pickListValues = Settings_Picklist_Field_Model::getEditablePicklistValues ($fieldInstance->name);
+            $picklistFieldModel = new Settings_Picklist_Field_Model();
+            $pickListValues = $picklistFieldModel->getEditablePicklistValues($fieldInstance->name);
             $fieldLabel = array_merge(array($fieldLabel),$pickListValues);
         }
         $fieldInstance->delete();
