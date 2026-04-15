@@ -120,8 +120,6 @@ class SalesOrder extends CRMEntity {
 	{
 		require_once 'include/utils/InventoryLineItemPreventDuplicateRecord.php';
 		global $log,$adb;
-		// 入力でMET値引率(計算用)が変更されたか
-		$isChangeDiscountRate = Inventory_Module_Model::is_change_discountrate($this, $_REQUEST);
 		$log->debug("module name is " . $module_name);
 
 		//Event triggering code
@@ -137,7 +135,7 @@ class SalesOrder extends CRMEntity {
 			$em->triggerEvent("vtiger.entity.beforesave.modifiable", $entityData);
 			$em->triggerEvent("vtiger.entity.beforesave", $entityData);
 			$em->triggerEvent("vtiger.entity.beforesave.final", $entityData);
-        }
+		}
 		//Event triggering code ends
 
 		// 明細アイテムが重複登録されないように制御する
@@ -152,31 +150,12 @@ class SalesOrder extends CRMEntity {
 		if(!self::isBulkSaveMode()) {
 			InventoryLineItemPreventDuplicateRecord::endPreventDuplicate($entityData->getId());
 		}
-		
+
 		if($em && !self::isBulkSaveMode()) {
 			//Event triggering code
 			$em->triggerEvent("vtiger.entity.aftersave", $entityData);
-			//Event triggering code ends
-		}
-
-		// MET値引率が変更されたかをチェック
-		if ( $isChangeDiscountRate === false ) {
-			$isChangeDiscountRate = Inventory_Module_Model::is_change_discountrate($this, $_REQUEST);
-		}
-
-		$crmid = $entityData->getId();
-
-		// 製品情報取得
-		$recordModel = Inventory_Record_Model::getInstanceById($crmid);
-
-		// MET値引率が変更された場合、MET値引率を品目明細の値引率に反映
-		if($isChangeDiscountRate){
-			$discountrate = $recordModel->get('discountrate');
-			Inventory_Module_Model::update_discount_percent($crmid, $discountrate);
-		}
-		Inventory_Module_Model::update_calculate($crmid);
-		if($em && !self::isBulkSaveMode()) {
 			$em->triggerEvent("vtiger.entity.aftersave.final", $entityData);
+			//Event triggering code ends
 		}
 	}
 	

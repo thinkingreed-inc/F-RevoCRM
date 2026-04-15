@@ -118,10 +118,6 @@ class Quotes extends CRMEntity {
 	{
 		require_once 'include/utils/InventoryLineItemPreventDuplicateRecord.php';
 		global $log,$adb;
-
-		// 入力でMET値引率(計算用)が変更されたか
-		$isChangeDiscountRate = Inventory_Module_Model::is_change_discountrate($this, $_REQUEST);
-
 		$log->debug("module name is " . $module_name);
 
 		//Event triggering code
@@ -137,137 +133,15 @@ class Quotes extends CRMEntity {
 			$em->triggerEvent("vtiger.entity.beforesave.modifiable", $entityData);
 			$em->triggerEvent("vtiger.entity.beforesave", $entityData);
 			$em->triggerEvent("vtiger.entity.beforesave.final", $entityData);
-        }
+		}
 		//Event triggering code ends
-		
+
 		// 明細アイテムが重複登録されないように制御する
 		// BULK_SAVE_MODE（API経由）の場合はVtigerInventoryOperation側でロック管理するためスキップ
 		if(!self::isBulkSaveMode()) {
 			InventoryLineItemPreventDuplicateRecord::startPreventDuplicate($entityData->getId());
 		}
 
-		// 見積ステージが「作成中」、「営業登録済」の場合、過給機スペック差異、図番差異をチェックする
-		if (in_array($entityData->get('quotestage'), ['作成中', '営業登録済'])) {
-			$requestSerial = $entityData->get('request_serial');
-			// 過給機スペック差異チェック
-			if (Quotes_Module_Model::checkSpecMissmatchByRequestSerial($requestSerial)) {
-				$entityData->set('reqest_quote', 1);
-				
-				$descriptionInformation = $entityData->get('description_information');
-				if (!preg_match('/スペック相違/', $descriptionInformation)) {
-					$descriptionInformation = trim($descriptionInformation . "\nスペック相違");
-				} 
-				$entityData->set('description_information', $descriptionInformation);
-			}
-
-            // 製品明細から図番差異チェックが必要か判定
-            $row_no = 1;
-            $is_check_productcode_silencer = 0;
-            $is_check_productcode_uzu_chamber = 0;
-            $is_check_productcode_labyrinth_packing = 0;
-            while (array_key_exists('partsNo'.$row_no, $_REQUEST) === true) {
-                $partsNo = $_REQUEST['partsNo'.$row_no];
-                // P/N 50:サイレンサー
-                if ($partsNo == '50') {
-                    $is_check_productcode_silencer = 1;
-                }
-                // P/N 48:うず室
-                if ($partsNo == '48') {
-                    $is_check_productcode_uzu_chamber = 1;
-                }
-                // P/N 325:ラビリンスパッキン
-                if ($partsNo == '325') {
-                    $is_check_productcode_labyrinth_packing = 1;
-                }
-                $row_no++;
-            }
-
-			// 図番差異チェック
-			if (Quotes_Module_Model::checkDrawingMismatchByRequestSerial($requestSerial, $is_check_productcode_silencer, $is_check_productcode_uzu_chamber, $is_check_productcode_labyrinth_packing)) {
-				$entityData->set('reqest_quote', 1);
-				
-				$descriptionInformation = $entityData->get('description_information');
-				if(!preg_match('/リスト図有/', $descriptionInformation)){
-					$descriptionInformation = trim($descriptionInformation . "\nリスト図有");
-				}
-				$entityData->set('description_information', $descriptionInformation);
-			}
-		}
-
-
-		// 見積依頼理由セット
-		// 在庫不足チェック
-		$isOutOfStock = Quotes_Module_Model::isOutOfStock($entityData);
-        if (in_array($entityData->get('quotestage'), ['作成中', '営業登録済'])) {
-			//---------------------------------------------
-			// 見積ステージが「作成中」、「営業登録済」の場合
-			//---------------------------------------------
-			// リスト図有りチェック
-			$isListDrawing = Quotes_Module_Model::isListDrawing($entityData);
-			// スペック相違チェック
-			$isSpecMismatch = Quotes_Module_Model::isSpecMismatch($entityData);
-
-			// 見積依頼理由セット
-			$reqestQuoteStatus = '';
-			if ($isOutOfStock == true && $isSpecMismatch == false && $isListDrawing == false) {
-				$reqestQuoteStatus = '在庫不足';
-			} elseif ($isOutOfStock == false && $isSpecMismatch == true && $isListDrawing == false) {
-				$reqestQuoteStatus = 'スペック相違';
-			} elseif ($isOutOfStock == false && $isSpecMismatch == false && $isListDrawing == true) {
-				$reqestQuoteStatus = 'リスト図有';
-			} elseif ($isOutOfStock == true && $isSpecMismatch == true && $isListDrawing == false) {
-				$reqestQuoteStatus = '在庫不足、スペック相違';
-			} elseif ($isOutOfStock == true && $isSpecMismatch == false && $isListDrawing == true) {
-				$reqestQuoteStatus = '在庫不足、リスト図有';
-			} elseif ($isOutOfStock == true && $isSpecMismatch == true && $isListDrawing == true) {
-				$reqestQuoteStatus = '在庫不足、スペック相違、リスト図有';
-			} elseif ($isOutOfStock == false && $isSpecMismatch == true && $isListDrawing == true) {
-				$reqestQuoteStatus = 'スペック相違、リスト図有';
-			}
-		} else {
-			//---------------------------------------------
-			// 見積ステージが「作成中」、「営業登録済」以外の場合
-			//---------------------------------------------
-			// 現在の見積依頼理由取得
-			$now_reqest_quote_status = $entityData->get('reqest_quote_status');
-
-			// 見積依頼理由セット
-			$reqestQuoteStatus = '';
-			if ($now_reqest_quote_status == 'スペック相違' || $now_reqest_quote_status == '在庫不足、スペック相違') {
-				if ($isOutOfStock == true){
-					$reqestQuoteStatus = '在庫不足、スペック相違';
-				} else {
-					$reqestQuoteStatus = 'スペック相違';
-				}
-			} elseif ($now_reqest_quote_status == 'リスト図有' || $now_reqest_quote_status == '在庫不足、リスト図有') {
-				if ($isOutOfStock == true){
-					$reqestQuoteStatus = '在庫不足、リスト図有';
-				} else {
-					$reqestQuoteStatus = 'リスト図有';
-				}
-			} elseif ($now_reqest_quote_status == 'スペック相違、リスト図有' || $now_reqest_quote_status == '在庫不足、スペック相違、リスト図有') {
-				if ($isOutOfStock == true){
-					$reqestQuoteStatus = '在庫不足、スペック相違、リスト図有';
-				} else {
-					$reqestQuoteStatus = 'スペック相違、リスト図有';
-				}
-			} else {
-				if ($isOutOfStock == true){
-					$reqestQuoteStatus = '在庫不足';
-				} else {
-					$reqestQuoteStatus = '';
-				}
-			}
-		}
-		$entityData->set('reqest_quote_status', $reqestQuoteStatus);
-
-		// 大物有チェック
-		$hasBigParts = Quotes_Module_Model::hasBigPartsProducts($_REQUEST, $entityData) ? '1' : '0';
-		$entityData->set('isbigparts', $hasBigParts);
-
-		// OHキットチェック
-		$hasOHKit = Quotes_Module_Model::hasOHKitProducts($_REQUEST, $entityData) ? '1' : '0';
-		$entityData->set('isohkit', $hasOHKit);
 		//GS Save entity being called with the modulename as parameter
 		$this->saveentity($module_name, $fileid);
 
@@ -275,38 +149,12 @@ class Quotes extends CRMEntity {
 		if(!self::isBulkSaveMode()) {
 			InventoryLineItemPreventDuplicateRecord::endPreventDuplicate($entityData->getId());
 		}
-		
+
 		if($em && !self::isBulkSaveMode()) {
 			//Event triggering code
 			$em->triggerEvent("vtiger.entity.aftersave", $entityData);
-			//Event triggering code ends
-		}
-
-		// save後（ワークフローでdiscountrate更新後）、MET値引率が変更されたかをチェック
-		if ( $isChangeDiscountRate === false ) {
-			$isChangeDiscountRate = Inventory_Module_Model::is_change_discountrate($this, $_REQUEST);
-		}
-
-		// 見積最長納期（日）更新
-		// 見積情報 取得
-		$quote_id = $entityData->getId();
-
-		// 製品情報取得
-		$recordModel = Inventory_Record_Model::getInstanceById($quote_id);
-		$products = $recordModel->getProducts();
-
-		// 【過給機】すべてのシリアルNo更新
-		$quotestdelivery = Quotes_Module_Model::get_max_quotestdelivery($products);
-		Quotes_Module_Model::update_quotestdelivery($quote_id, $quotestdelivery);
-
-		// MET値引率が変更された場合、MET値引率を品目明細の値引率に反映
-		if($isChangeDiscountRate){
-			$discountrate = $recordModel->get('discountrate');
-			Inventory_Module_Model::update_discount_percent($quote_id, $discountrate);
-		}
-		Inventory_Module_Model::update_calculate($quote_id);
-		if($em && !self::isBulkSaveMode()) {
 			$em->triggerEvent("vtiger.entity.aftersave.final", $entityData);
+			//Event triggering code ends
 		}
 	}
 

@@ -83,8 +83,6 @@ class VtigerInventoryOperation extends VtigerModuleOperation {
 
 			$components = vtws_getIdComponents($element['id']);
 			$crmid = $components[1];
-			$recordModel = Inventory_Record_Model::getInstanceById($crmid);
-			$discountrate_before = $recordModel->get('discountrate');
 			// 明細アイテムの重複登録防止ロック開始（save + setLineItems全体をカバー）
 			InventoryLineItemPreventDuplicateRecord::startPreventDuplicate($crmid);
 
@@ -126,26 +124,6 @@ class VtigerInventoryOperation extends VtigerModuleOperation {
 				vglobal('updateInventoryProductRel_update_product_array',$original_update_product_array);
 				vglobal('updateInventoryProductRel_deduct_stock', $currentValue);
 
-				// 見積の更新APIで見積最長納期（日）の自動設定
-				if($currentModule == "Quotes"){
-					// 製品情報取得
-					$recordModel = Inventory_Record_Model::getInstanceById($crmid);
-					$products = $recordModel->getProducts();
-
-					// 【過給機】すべてのシリアルNo更新
-					$quotestdelivery = Quotes_Module_Model::get_max_quotestdelivery($products);
-					Quotes_Module_Model::update_quotestdelivery($crmid, $quotestdelivery);
-				}
-				// 製品情報取得
-				$recordModel = Inventory_Record_Model::getInstanceById($crmid);
-				// MET値引率が変更された場合、MET値引率を品目明細の値引率に反映
-				$discountrate = $recordModel->get('discountrate');
-				if ( $discountrate != $discountrate_before ) {
-					Inventory_Module_Model::update_discount_percent($crmid, $discountrate);
-				}
-				// 合計金額の再計算
-				Inventory_Module_Model::update_calculate($crmid);
-				// 変更履歴残す
 				$eventManager->triggerEvent("vtiger.entity.aftersave.final", $entityData);
 			} finally {
 				// BULK_SAVE_MODEを復元（例外時も確実に復元）
