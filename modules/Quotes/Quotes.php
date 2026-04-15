@@ -113,53 +113,6 @@ class Quotes extends CRMEntity {
             self::__construct();
 	}
 
-
-	function save($module_name, $fileid = '')
-	{
-		require_once 'include/utils/InventoryLineItemPreventDuplicateRecord.php';
-		global $log,$adb;
-		$log->debug("module name is " . $module_name);
-
-		//Event triggering code
-		require_once("include/events/include.inc");
-
-		//In Bulk mode stop triggering events
-		$entityData = VTEntityData::fromCRMEntity($this);
-		if(!self::isBulkSaveMode()) {
-			$em = new VTEventsManager($adb);
-			// Initialize Event trigger cache
-			$em->initTriggerCache();
-
-			$em->triggerEvent("vtiger.entity.beforesave.modifiable", $entityData);
-			$em->triggerEvent("vtiger.entity.beforesave", $entityData);
-			$em->triggerEvent("vtiger.entity.beforesave.final", $entityData);
-		}
-		//Event triggering code ends
-
-		// 明細アイテムが重複登録されないように制御する
-		// BULK_SAVE_MODE（API経由）の場合はVtigerInventoryOperation側でロック管理するためスキップ
-		if(!self::isBulkSaveMode()) {
-			InventoryLineItemPreventDuplicateRecord::startPreventDuplicate($entityData->getId());
-		}
-
-		try {
-			//GS Save entity being called with the modulename as parameter
-			$this->saveentity($module_name, $fileid);
-
-			if($em && !self::isBulkSaveMode()) {
-				//Event triggering code
-				$em->triggerEvent("vtiger.entity.aftersave", $entityData);
-				$em->triggerEvent("vtiger.entity.aftersave.final", $entityData);
-				//Event triggering code ends
-			}
-		} finally {
-			// 明細アイテムの重複登録制御を終了（例外時も確実に解除）
-			if(!self::isBulkSaveMode()) {
-				InventoryLineItemPreventDuplicateRecord::endPreventDuplicate($entityData->getId());
-			}
-		}
-	}
-
 	function save_module()
 	{
 		global $adb;
