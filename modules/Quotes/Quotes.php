@@ -142,19 +142,21 @@ class Quotes extends CRMEntity {
 			InventoryLineItemPreventDuplicateRecord::startPreventDuplicate($entityData->getId());
 		}
 
-		//GS Save entity being called with the modulename as parameter
-		$this->saveentity($module_name, $fileid);
+		try {
+			//GS Save entity being called with the modulename as parameter
+			$this->saveentity($module_name, $fileid);
 
-		// 明細アイテムの重複登録制御を終了
-		if(!self::isBulkSaveMode()) {
-			InventoryLineItemPreventDuplicateRecord::endPreventDuplicate($entityData->getId());
-		}
-
-		if($em && !self::isBulkSaveMode()) {
-			//Event triggering code
-			$em->triggerEvent("vtiger.entity.aftersave", $entityData);
-			$em->triggerEvent("vtiger.entity.aftersave.final", $entityData);
-			//Event triggering code ends
+			if($em && !self::isBulkSaveMode()) {
+				//Event triggering code
+				$em->triggerEvent("vtiger.entity.aftersave", $entityData);
+				$em->triggerEvent("vtiger.entity.aftersave.final", $entityData);
+				//Event triggering code ends
+			}
+		} finally {
+			// 明細アイテムの重複登録制御を終了（例外時も確実に解除）
+			if(!self::isBulkSaveMode()) {
+				InventoryLineItemPreventDuplicateRecord::endPreventDuplicate($entityData->getId());
+			}
 		}
 	}
 

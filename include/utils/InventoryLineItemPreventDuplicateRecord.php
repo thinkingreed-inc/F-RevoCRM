@@ -25,19 +25,15 @@ class InventoryLineItemPreventDuplicateRecord
                   WHERE parent_id = ?';
         $result = $db->pquery($query, [$parentRecordId]);
         
-        while ($row = $db->fetchByAssoc($result)) {
-            if ($row['count'] >= 1) {
-                return true;
-            }
-        }
-        return false;
+        $row = $db->fetchByAssoc($result);
+        return $row && $row['count'] >= 1;
     }
     
     /**
      * 更新中のInventoryレコードの情報を追加する
-     * 
+     *
      * @param int $parentRecordId The ID of the parent record.
-     * @return void
+     * @return bool True if lock acquired, False otherwise.
      */
     protected static function addExecutingRecord($parentRecordId)
     {
@@ -48,7 +44,6 @@ class InventoryLineItemPreventDuplicateRecord
         $result = $db->pquery($query, [$parentRecordId, $currentTime]);
         // INSERT IGNOREで重複時は挿入されない → affected_rows=0 → 他プロセスが先にロック取得済み
         if ($db->getAffectedRowCount($result) === 0) {
-            error_log("[LOCK_DEBUG] addExecutingRecord($parentRecordId): INSERT IGNORE affected 0 rows - another process holds the lock");
             return false;
         }
         return true;
@@ -73,15 +68,15 @@ class InventoryLineItemPreventDuplicateRecord
      * 
      * @return void
      */
-    protected static function removeExpiredExcutingRecord() 
+    protected static function removeExpiredExecutingRecord() 
     {
         $db = PearDatabase::getInstance();
         $expiredTime = date(
             'Y-m-d H:i:s', 
             strtotime('-'.self::EXPIRED_SECONDS.' seconds')
         );
-        $query = 'DELETE FROM vtiger_execute_lineitem 
-                  WHERE  executed_at <= ?';
+        $query = 'DELETE FROM vtiger_execute_lineitem
+                  WHERE executed_at <= ?';
         $db->pquery($query, [$expiredTime]);
     }
     
@@ -91,7 +86,7 @@ class InventoryLineItemPreventDuplicateRecord
      * @param int $parentRecordId The ID of the parent record.
      * @return bool True if timeout reached, False otherwise.
      */
-    protected static function periodicExcutingCheck($parentRecordId) 
+    protected static function periodicExecutingCheck($parentRecordId) 
     {
         $elapsedTime = 0;
         while ($elapsedTime < self::EXPIRED_SECONDS) {
@@ -113,34 +108,23 @@ class InventoryLineItemPreventDuplicateRecord
     public static function startPreventDuplicate($parentRecordId)
     {
         if(empty($parentRecordId)) {
-            error_log("[LOCK_DEBUG] startPreventDuplicate: parentRecordId is empty, skipping");
             return;
         }
 
-        try {
-            error_log("[LOCK_DEBUG] startPreventDuplicate($parentRecordId): checking...");
-            self::removeExpiredExcutingRecord();
-            if(self::periodicExcutingCheck($parentRecordId)) {
-                if(!self::addExecutingRecord($parentRecordId)) {
-                    // INSERT IGNOREで失敗 = 他プロセスが先にロック取得 → 再度待機
-                    error_log("[LOCK_DEBUG] startPreventDuplicate($parentRecordId): lost race, waiting again...");
-                    if(self::periodicExcutingCheck($parentRecordId)) {
-                        self::addExecutingRecord($parentRecordId);
-                        error_log("[LOCK_DEBUG] startPreventDuplicate($parentRecordId): lock acquired (retry)");
-                    } else {
-                        throw new Exception('明細レコードの重複登録を防止するための待機時間が超過しました。');
+        self::removeExpiredExecutingRecord();
+        if(self::periodicExecutingCheck($parentRecordId)) {
+            if(!self::addExecutingRecord($parentRecordId)) {
+                // INSERT IGNOREで失敗 = 他プロセスが先にロック取得 → 再度待機
+                if(self::periodicExecutingCheck($parentRecordId)) {
+                    if(!self::addExecutingRecord($parentRecordId)) {
+                        throw new Exception('明細レコードの重複登録を防止するための待機時間が超過しました。しばらく経ってから再度お試しください。');
                     }
                 } else {
-                    error_log("[LOCK_DEBUG] startPreventDuplicate($parentRecordId): lock acquired");
+                    throw new Exception('明細レコードの重複登録を防止するための待機時間が超過しました。しばらく経ってから再度お試しください。');
                 }
-            }else {
-                throw new Exception(
-                    '明細レコードの重複登録を防止するための待機時間が超過しました。
-                    しばらく経ってから再度お試しください。'
-                );
             }
-        } catch (Exception $e) {
-            throw new Exception($e->getMessage());
+        } else {
+            throw new Exception('明細レコードの重複登録を防止するための待機時間が超過しました。しばらく経ってから再度お試しください。');
         }
     }
     
@@ -152,8 +136,7 @@ class InventoryLineItemPreventDuplicateRecord
      */
     public static function endPreventDuplicate($parentRecordId)
     {
-        error_log("[LOCK_DEBUG] endPreventDuplicate($parentRecordId): releasing lock");
         self::removeExecutingRecord($parentRecordId);
-        self::removeExpiredExcutingRecord();
+        self::removeExpiredExecutingRecord();
     }
 }
