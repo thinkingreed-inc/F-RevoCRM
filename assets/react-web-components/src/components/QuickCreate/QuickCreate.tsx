@@ -472,9 +472,9 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
   /**
    * Handle modal open/close
    */
-  const handleOpenChange = useCallback((open: boolean) => {
-    // 閉じようとしていて、未保存の変更がある場合は確認
-    if (!open && !checkUnsavedChanges()) {
+  const handleOpenChange = useCallback((open: boolean, bypassConfirm = false) => {
+    // 閉じようとしていて、未保存の変更がある場合は確認（バイパス指定がある場合はスキップ）
+    if (!open && !bypassConfirm && !checkUnsavedChanges()) {
       return;
     }
 
@@ -657,7 +657,8 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
       }
 
       successTimeoutRef.current = setTimeout(() => {
-        handleOpenChange(false);
+        // 保存成功後の自動クローズ時は確認ダイアログをバイパスする
+        handleOpenChange(false, true);
       }, 1500);
     }
   }, [
@@ -680,7 +681,8 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
     // 編集モードかつ変更がない場合は、APIを叩かずにそのまま閉じるか何もしない
     if (isEditMode && !isDirty) {
       console.log('No changes detected, skipping save.');
-      handleOpenChange(false);
+      // 変更がないことがわかっているので確認ダイアログをバイパスして閉じる
+      handleOpenChange(false, true);
       return;
     }
 
