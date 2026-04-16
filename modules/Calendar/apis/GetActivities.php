@@ -126,11 +126,17 @@ class Calendar_GetActivities_Api extends Vtiger_Api_Controller {
             $pagingModel->set('page', $page);
             $pagingModel->set('limit', $limit);
 
-            // Get activities using the existing getCalendarActivities method
-            // Pass 'all' to retrieve all activities for the parent record regardless of assigned user
-            // Note: Some module implementations (like Accounts_Module_Model) have a bug where
-            // user ID filtering doesn't work correctly in UNION queries
-            $activities = $parentModuleModel->getCalendarActivities($mode, $pagingModel, 'all', $parentId);
+            // Get activities
+            if ($parentModule === 'Dailyreports') {
+                // 日報は担当者・期間・日付で活動を検索する特殊処理
+                $user = $parentRecordModel->get('assigned_user_id');
+                $reportsterm = $parentRecordModel->get('reportsterm');
+                $reportsdate = $parentRecordModel->get('ReportsDate');
+                $activities = $parentModuleModel->getCalendarActivitiesHistory($mode, $pagingModel, $user, $reportsterm, $reportsdate);
+            } else {
+                // Pass 'all' to retrieve all activities for the parent record regardless of assigned user
+                $activities = $parentModuleModel->getCalendarActivities($mode, $pagingModel, 'all', $parentId);
+            }
 
             // Format activities for API response
             $formattedActivities = array();

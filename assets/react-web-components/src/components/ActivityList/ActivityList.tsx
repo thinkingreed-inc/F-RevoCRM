@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { Loader2, RefreshCw, AlertCircle, CalendarX } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ActivityListProps } from '@/types/activity';
@@ -6,9 +6,23 @@ import { useActivities } from './hooks/useActivities';
 import { useActivityStatusUpdate } from './hooks/useActivityStatusUpdate';
 import { ActivityListItem } from './ActivityListItem';
 import { Button } from '../ui/button';
+import { TranslationProvider, useOptionalTranslationContext } from '../../contexts/TranslationContext';
 
 /**
- * ActivityList - Display a list of activities for a record
+ * ActivityList - TranslationProviderでラップしたエクスポート用コンポーネント
+ *
+ * TranslationProviderはCalendarモジュール + Vtiger共通翻訳を取得する。
+ */
+export const ActivityList: React.FC<ActivityListProps> = (props) => {
+  return (
+    <TranslationProvider module="Calendar">
+      <ActivityListInner {...props} />
+    </TranslationProvider>
+  );
+};
+
+/**
+ * ActivityListInner - 実際のActivityList実装
  *
  * Features:
  * - Fetches activities from GetActivities API
@@ -20,12 +34,15 @@ import { Button } from '../ui/button';
  * @example
  * <ActivityList module="Accounts" recordId="123" mode="all" limit={10} />
  */
-export const ActivityList: React.FC<ActivityListProps> = ({
+const ActivityListInner: React.FC<ActivityListProps> = ({
   module,
   recordId,
   mode = 'all',
-  limit = 5
+  limit = 5,
+  refreshKey
 }) => {
+  const { t } = useOptionalTranslationContext();
+
   const {
     activities,
     loading,
@@ -37,6 +54,15 @@ export const ActivityList: React.FC<ActivityListProps> = ({
   } = useActivities(module, recordId, mode, limit);
 
   const { updateStatus } = useActivityStatusUpdate();
+
+  // refreshKeyが変わったらデータを再取得
+  const prevRefreshKey = useRef(refreshKey);
+  useEffect(() => {
+    if (prevRefreshKey.current !== refreshKey && refreshKey !== undefined) {
+      refresh();
+    }
+    prevRefreshKey.current = refreshKey;
+  }, [refreshKey, refresh]);
 
   /**
    * ステータス変更ハンドラー
@@ -84,7 +110,7 @@ export const ActivityList: React.FC<ActivityListProps> = ({
             className="flex-shrink-0"
           >
             <RefreshCw className="h-4 w-4 mr-1" aria-hidden="true" />
-            再試行
+            {t('LBL_RETRY')}
           </Button>
         </div>
       </div>
@@ -98,9 +124,7 @@ export const ActivityList: React.FC<ActivityListProps> = ({
         <div className="flex flex-col items-center justify-center text-center">
           <CalendarX className="h-12 w-12 text-gray-400 mb-3" aria-hidden="true" />
           <p className="text-md text-gray-600">
-            {mode === 'upcoming' && '今後の予定はありません'}
-            {mode === 'overdue' && '期限切れの予定はありません'}
-            {mode === 'all' && '関連する活動はありません'}
+            {t('LBL_NO_PENDING_ACTIVITIES')}
           </p>
         </div>
       </div>
@@ -134,10 +158,10 @@ export const ActivityList: React.FC<ActivityListProps> = ({
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
-                読み込み中...
+                {t('LBL_LOADING')}
               </>
             ) : (
-              'LBL_SHOW_MORE'
+              t('LBL_SHOW_MORE')
             )}
           </Button>
         </div>

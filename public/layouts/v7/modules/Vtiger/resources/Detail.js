@@ -94,16 +94,24 @@ Vtiger.Class("Vtiger_Detail_Js",{
 
 		app.request.post({data: params}).then(function(err, data) {
 			if(data) {
-				params = {
-					'record'	: jQuery('#recordId').val(),
-					'view'		: 'Detail',
-					'module'	: app.getModuleName(),
-					'mode'		: 'getActivities'
-				};
-				app.request.get({data: params}).then(function(err, result) {
-					jQuery('#relatedActivities').html(result);
-					Vtiger_Detail_Js.getInstance().registerEventForActivityWidget();
-				});
+				var activityListEl = document.querySelector('#relatedActivities activity-list');
+				if (activityListEl) {
+					// React WebComponentのリフレッシュ
+					var currentKey = parseInt(activityListEl.getAttribute('refresh-key') || '0', 10);
+					activityListEl.setAttribute('refresh-key', String(currentKey + 1));
+				} else {
+					// 従来のテンプレートのリロード
+					params = {
+						'record'	: jQuery('#recordId').val(),
+						'view'		: 'Detail',
+						'module'	: app.getModuleName(),
+						'mode'		: 'getActivities'
+					};
+					app.request.get({data: params}).then(function(err, result) {
+						jQuery('#relatedActivities').html(result);
+						Vtiger_Detail_Js.getInstance().registerEventForActivityWidget();
+					});
+				}
 			}
 		});
 	},
@@ -1713,20 +1721,28 @@ Vtiger.Class("Vtiger_Detail_Js",{
 			});
 
 			app.event.on('post.QuickCreateForm.save',function(event,data){
-				var params = {};
-				params['record'] = recordId;
-				params['view'] = 'Detail';
-				params['module'] = module;
-				params['mode'] = 'getActivities';
+				var activityListEl = document.querySelector('#relatedActivities activity-list');
+				if (activityListEl) {
+					// React WebComponentのリフレッシュ
+					var currentKey = parseInt(activityListEl.getAttribute('refresh-key') || '0', 10);
+					activityListEl.setAttribute('refresh-key', String(currentKey + 1));
+				} else {
+					// 従来のテンプレートのリロード
+					var params = {};
+					params['record'] = recordId;
+					params['view'] = 'Detail';
+					params['module'] = module;
+					params['mode'] = 'getActivities';
 
-				app.request.post({"data":params}).then(
-					function(err,data) {
-						var activitiesWidget = jQuery('#relatedActivities');
-						activitiesWidget.html(data);
-						vtUtils.applyFieldElementsView(activitiesWidget);
-						thisInstance.registerEventForActivityWidget();
-					}
-				);
+					app.request.post({"data":params}).then(
+						function(err,data) {
+							var activitiesWidget = jQuery('#relatedActivities');
+							activitiesWidget.html(data);
+							vtUtils.applyFieldElementsView(activitiesWidget);
+							thisInstance.registerEventForActivityWidget();
+						}
+					);
+				}
 			});
 
 			var QuickCreateParams = {};

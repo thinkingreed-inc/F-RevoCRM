@@ -82,4 +82,6 @@ export interface ActivityListProps {
   mode?: 'upcoming' | 'overdue' | 'all';
   /** 1ページあたりの表示件数 */
   limit?: number;
+  /** リフレッシュ用キー（値が変わるとデータを再取得） */
+  refreshKey?: string | number;
 }
