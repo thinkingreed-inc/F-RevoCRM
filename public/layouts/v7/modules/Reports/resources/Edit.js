@@ -136,6 +136,7 @@ Vtiger_Edit_Js("Reports_Edit_Js",{
 		container.remove();
 		this.initiateStep(prevStep);
 		this.currentInstance.getContainer().removeClass('hide').css('display','block');
+		this.currentInstance.getContainer().find('input[type="submit"], button[type="submit"]').prop('disabled', false);
 	},
 
 	/*
