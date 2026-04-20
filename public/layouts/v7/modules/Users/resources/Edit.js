@@ -94,21 +94,13 @@ Vtiger_Edit_Js("Users_Edit_Js",{},{
 	},
 	
 	/**
-	 * Function load the ckeditor for signature field in edit view of my preference page.
+	 * Function load the RichTextEditor for signature field in edit view of my preference page.
 	 */
 	registerSignatureEvent: function(){
 		var templateContentElement = jQuery("#Users_editView_fieldName_signature");
 		if(templateContentElement.length > 0) {
-			var ckEditorInstance = new Vtiger_CkEditor_Js();
-			//Customized toolbar configuration for ckeditor  
-			//to support basic operations
-			var customConfig = {
-				toolbar: [
-					{ name: 'basicstyles', groups: [ 'basicstyles', 'cleanup','align','list', 'indent','colors' ,'links'], items: [ 'Bold', 'Italic', 'Underline', '-','TextColor', 'BGColor' ,'-','JustifyLeft', 'JustifyCenter', 'JustifyRight', '-', 'NumberedList', 'BulletedList','-', 'Link', 'Unlink','Image','-','RemoveFormat'] },
-					{ name: 'styles', items: ['Font', 'FontSize' ] },
-                    {name: 'document', items:['Source']}
-				]};
-			ckEditorInstance.loadCkEditor(templateContentElement,customConfig);
+			var richTextEditorInstance = new Vtiger_RichTextEditor_Js();
+			richTextEditorInstance.loadRichTextEditor(templateContentElement);
 		}
 	},
 	

@@ -16,14 +16,16 @@ class ModComments_Save_Action extends Vtiger_Save_Action {
 		$currentUserModel = Users_Record_Model::getCurrentUserModel();
 		$request->set('assigned_user_id', $currentUserModel->getId());
 		$request->set('userid', $currentUserModel->getId());
-		
+
 		$recordModel = $this->saveRecord($request);
 		$responseFieldsToSent = array('reasontoedit','commentcontent');
 		$fieldModelList = $recordModel->getModule()->getFields();
 		foreach ($responseFieldsToSent as $fieldName) {
             $fieldModel = $fieldModelList[$fieldName];
             $fieldValue = $recordModel->get($fieldName);
-			$result[$fieldName] = $fieldModel->getDisplayValue(Vtiger_Util_Helper::toSafeHTML($fieldValue));
+			// toSafeHTML(htmlentities)は使わず、vtlib_purify済みのHTMLをそのまま返す
+			// SaveAjax.phpと同じ方針: バックエンドのHTMLPurifierサニタイズを信頼する
+			$result[$fieldName] = $fieldModel->getDisplayValue($fieldValue);
 		}
 
 		$result['success'] = true;
@@ -35,7 +37,7 @@ class ModComments_Save_Action extends Vtiger_Save_Action {
 		$response->setResult($result);
 		$response->emit();
 	}
-	
+
 	/**
 	 * Function to save record
 	 * @param <Vtiger_Request> $request - values of the record
@@ -56,19 +58,22 @@ class ModComments_Save_Action extends Vtiger_Save_Action {
 		}
 		return $recordModel;
 	}
-	
+
 	/**
 	 * Function to get the record model based on the request parameters
 	 * @param Vtiger_Request $request
 	 * @return Vtiger_Record_Model or Module specific Record Model instance
 	 */
 	protected function getRecordModelFromRequest(Vtiger_Request $request) {
+		// 旧実装では getRaw() でcommentcontent/reasontoeditを取得し生HTMLをDBに保存していたが、
+		// これはXSS脆弱性（ストレージ起因）を内包していた。
+		// 現在は親クラスに委譲することで以下の多重防御が適用される:
+		//   1. $request->get() 内の vtlib_purify() （1回目）
+		//   2. RICH_TEXT_FIELDS ループ内の vtlib_purify(decode_html()) （2回目）
+		// HTMLPurifier は冪等性を持つため2重適用によるコンテンツ破壊は発生しない。
+		// decode_html() も HTMLPurifier 出力済みHTMLには実質無効。意図的な defense-in-depth 設計。
 		$recordModel = parent::getRecordModelFromRequest($request);
-		
-		$recordModel->set('commentcontent', $request->getRaw('commentcontent'));
-		$recordModel->set('reasontoedit', $request->getRaw('reasontoedit'));
-
 		return $recordModel;
 	}
-	
+
 }

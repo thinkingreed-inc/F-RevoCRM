@@ -13,7 +13,10 @@ Vtiger_Edit_Js("Documents_Edit_Js", {
 
 	INTERNAL_FILE_LOCATION_TYPE : 'I',
 	EXTERNAL_FILE_LOCATION_TYPE : 'E',
-    
+
+	quickCreatePreSave : function(form) {
+	},
+
 	getMaxiumFileUploadingSize : function(container) {
 		//TODO : get it from the server
 		return container.find('.maxUploadSize').data('value');
@@ -51,7 +54,7 @@ Vtiger_Edit_Js("Documents_Edit_Js", {
                     var fileLocationTypeElement = container.find('select[name="filelocationtype"]');
             var fileNameElement = container.find('[name="filename"]');
             jQuery(fileNameElement).removeClass('input-error').trigger('Vtiger.Validation.Hide.Messsage');
-            var dragDropElement = fileNameElement.closest('table').find('#dragandrophandler');
+            var dragDropElement = container.find('#dragandrophandler');
             var replaceElement = fileNameElement;
 			if(thisInstance.isFileLocationInternalType(fileLocationTypeElement)) {
 				var newFileNameElement = jQuery(
@@ -85,14 +88,15 @@ Vtiger_Edit_Js("Documents_Edit_Js", {
             
 			replaceElement.replaceWith(newFileNameElement);
             
-			var fileNameElementTd = newFileNameElement.closest('td');
+			var fileNameElementContainer = newFileNameElement.closest('.createDocumentValue, td');
+            var labelContainer = fileNameElementContainer.prev('.createDocumentLabel, td.fieldLabel');
             if(thisInstance.isFileLocationExternalType(fileLocationTypeElement)){
-                fileNameElementTd.prev('td.fieldLabel').empty().append('<label class="">'+app.vtranslate('JS_EXTERNAL_FILE_URL')+'&nbsp;'+'<span class="redColor">*</span></label>');
+                labelContainer.empty().append('<label class="">'+app.vtranslate('JS_EXTERNAL_FILE_URL')+'&nbsp;'+'<span class="redColor">*</span></label>');
             } else {
-                fileNameElementTd.prev('td.fieldLabel').empty().append('<label class="">'+app.vtranslate('JS_FILE_NAME')+'&nbsp;</label>');
+                labelContainer.empty().append('<label class="">'+app.vtranslate('JS_FILE_NAME')+'&nbsp;</label>');
             }
-            
-			var uploadFileDetails = fileNameElementTd.find('.uploadedFileDetails');
+
+			var uploadFileDetails = fileNameElementContainer.find('.uploadedFileDetails');
 			if(thisInstance.isFileLocationExternalType(fileLocationTypeElement)) {
 				uploadFileDetails.addClass('hide').removeClass('show');
 			}else{
@@ -136,28 +140,20 @@ Vtiger_Edit_Js("Documents_Edit_Js", {
 		});
 	},
 	/**
-	 * Function to register event for ckeditor for description field
+	 * Function to register event for RichTextEditor for description field
 	 */
-	registerEventForCkEditor : function(container){
+	registerEventForRichTextEditor : function(container){
 		var form = this.getForm();
         if(typeof container != 'undefined'){
             form = container;
         }
 		var noteContentElement = form.find('[name="notecontent"]');
 		if(noteContentElement.length > 0){
-			noteContentElement.removeAttr('data-validation-engine').addClass('ckEditorSource');
-			var ckEditorInstance = new Vtiger_CkEditor_Js();
-			ckEditorInstance.loadCkEditor(noteContentElement);
+			noteContentElement.removeAttr('data-validation-engine');
+			var richTextEditorInstance = new Vtiger_RichTextEditor_Js();
+			richTextEditorInstance.loadRichTextEditor(noteContentElement);
 		}
 	},
-    
-    quickCreatePreSave : function(form) {
-        var textAreaElement = form.find('textarea[name="notecontent"]');
-        if(textAreaElement.length){
-            var notecontent = CKEDITOR.instances.Documents_editView_fieldName_notecontent.getData();
-            textAreaElement.val(notecontent);
-        }
-    },
     
     /**
      * Function to save the quickcreate module
@@ -252,9 +248,10 @@ Vtiger_Edit_Js("Documents_Edit_Js", {
 				newFileNameElement.attr(attributeObject.name, value);
 			}
             externalDocContentsElement.find('.fileUploadContainer').replaceWith(newFileNameElement);
-			var fileNameElementTd = newFileNameElement.closest('td');
-            fileNameElementTd.prev('td.fieldLabel').empty().append('<label class="muted pull-right"><span class="redColor">*</span>'+app.vtranslate('JS_EXTERNAL_FILE_URL')+'</label>');
-			var uploadFileDetails = fileNameElementTd.find('.uploadedFileDetails');
+			var fileNameElementContainer = newFileNameElement.closest('.createDocumentValue, td');
+            var labelContainer = fileNameElementContainer.prev('.createDocumentLabel, td.fieldLabel');
+            labelContainer.empty().append('<label class="muted pull-right"><span class="redColor">*</span>'+app.vtranslate('JS_EXTERNAL_FILE_URL')+'</label>');
+			var uploadFileDetails = fileNameElementContainer.find('.uploadedFileDetails');
 				uploadFileDetails.addClass('hide').removeClass('show');
 
             var webDocContentsElement = container.find('#WQuickCreateContent');
@@ -350,7 +347,7 @@ Vtiger_Edit_Js("Documents_Edit_Js", {
         this._super(container);
         this.registerFileLocationTypeChangeEvent(container);
             this.registerFileElementChangeEvent(container);
-            this.registerEventForCkEditor(container);
+            this.registerEventForRichTextEditor(container);
             this.documentsQuickCreateConfig(container);
             this.handleDragDropEvents(container);
             this.registerCustomValidationForFileElement(container);

@@ -339,13 +339,11 @@ class Vtiger_ComposeEmail_View extends Vtiger_Footer_View {
 		$moduleName = $request->getModule();
 
 		$jsFileNames = array(
-			"libraries.jquery.ckeditor.ckeditor",
-			"libraries.jquery.ckeditor.adapters.jquery",
 			'modules.Vtiger.resources.validator.BaseValidator',
 			'modules.Vtiger.resources.validator.FieldValidator',
 			"modules.Emails.resources.MassEdit",
 			"modules.Emails.resources.EmailPreview",
-			"modules.Vtiger.resources.CkEditor",
+			"modules.Vtiger.resources.RichTextEditor",
 			'modules.Vtiger.resources.Popup',
 			'libraries.jquery.jquery_windowmsg',
 			'libraries.jquery.multiplefileupload.jquery_MultiFile'

@@ -1,0 +1,528 @@
+/*
+ * Tiptap Rich Text Editor styles
+ * Bootstrap/FRのグローバルCSSの干渉を打ち消すため、
+ * 高い詳細度でスタイルを指定する
+ */
+
+/* ===== Toolbar ===== */
+.tiptap-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: wrap;
+  padding: 4px;
+  border: 1px solid var(--border, #e2e2e2);
+  border-bottom: none;
+  border-radius: calc(var(--radius) - 4px) calc(var(--radius) - 4px) 0 0;
+  background: #ffffff;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* ===== Toolbar buttons - Bootstrapの上書きを全て打ち消す ===== */
+.tiptap-toolbar button.tiptap-btn {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: calc(var(--radius) - 4px);
+  border: 1px solid transparent;
+  cursor: pointer;
+  color: var(--foreground, #333);
+  background: transparent;
+  box-sizing: border-box;
+  line-height: 1;
+  font-size: 12px;
+  vertical-align: middle;
+  min-width: 26px;
+  min-height: 26px;
+  transition: background-color 0.15s;
+}
+
+.tiptap-toolbar button.tiptap-btn:hover {
+  background-color: var(--muted, #f5f5f5);
+}
+
+.tiptap-toolbar button.tiptap-btn.active {
+  background-color: var(--muted, #f0f0f0);
+  border-color: var(--border, #e2e2e2);
+}
+
+.tiptap-toolbar button.tiptap-btn:focus {
+  outline: none;
+}
+
+/* ===== Block type selector ===== */
+.tiptap-toolbar button.tiptap-block-select {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border, #e2e2e2);
+  cursor: pointer;
+  color: var(--foreground, #333);
+  background: transparent;
+  box-sizing: border-box;
+  font-size: 12px;
+  line-height: 1;
+  min-width: 90px;
+  min-height: 26px;
+  transition: background-color 0.15s;
+}
+
+.tiptap-toolbar button.tiptap-block-select:hover {
+  background-color: var(--muted, #f5f5f5);
+}
+
+.tiptap-toolbar button.tiptap-block-select:focus {
+  outline: none;
+}
+
+/* ===== Color picker trigger ===== */
+.tiptap-toolbar button.tiptap-color-btn {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  color: var(--foreground, #333);
+  background: transparent;
+  box-sizing: border-box;
+  line-height: 1;
+  font-size: 12px;
+  min-width: 26px;
+  min-height: 26px;
+  transition: background-color 0.15s;
+}
+
+.tiptap-toolbar button.tiptap-color-btn:hover {
+  background-color: var(--muted, #f5f5f5);
+}
+
+.tiptap-toolbar button.tiptap-color-btn:focus {
+  outline: none;
+}
+
+/* ===== Toolbar separator ===== */
+.tiptap-separator {
+  width: 1px;
+  height: 16px;
+  background-color: var(--border, #e2e2e2);
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
+/* ===== Color palette ===== */
+.tiptap-color-grid {
+  display: grid;
+  gap: 3px;
+  padding: 4px;
+}
+
+.tiptap-color-grid button.tiptap-color-swatch {
+  all: unset;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: 1px solid var(--border, #e2e2e2);
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: transform 0.1s;
+}
+
+.tiptap-color-grid button.tiptap-color-swatch:hover {
+  transform: scale(1.15);
+}
+
+.tiptap-color-grid button.tiptap-color-swatch.active {
+  border: 2px solid var(--ring, #666);
+  box-shadow: 0 0 0 1px var(--ring, #666);
+}
+
+.tiptap-color-clear {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border, #e2e2e2);
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--foreground, #333);
+  background: transparent;
+  box-sizing: border-box;
+  margin-top: 4px;
+  transition: background-color 0.15s;
+}
+
+.tiptap-color-clear:hover {
+  background-color: var(--muted, #f5f5f5);
+}
+
+/* ===== Editor content area ===== */
+.tiptap-editor-content {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.tiptap-editor-content .ProseMirror {
+  min-height: 100px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding: 8px;
+  border: 1px solid var(--border, #e2e2e2);
+  border-radius: 0 0 calc(var(--radius) - 4px) calc(var(--radius) - 4px);
+  background: var(--background, #fff);
+  color: var(--foreground, #333);
+  font-size: 14px;
+  line-height: 1.6;
+  outline: none;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.tiptap-editor-content .ProseMirror:focus {
+  border-color: var(--ring, #999);
+  box-shadow: 0 0 0 1px var(--ring, #999);
+}
+
+.tiptap-editor-content .ProseMirror h1 {
+  font-size: 2em;
+  font-weight: bold;
+  margin: 0.67em 0;
+}
+
+.tiptap-editor-content .ProseMirror h2 {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 0.83em 0;
+}
+
+.tiptap-editor-content .ProseMirror h3 {
+  font-size: 1.17em;
+  font-weight: bold;
+  margin: 1em 0;
+}
+
+.tiptap-editor-content .ProseMirror p {
+  margin: 0.5em 0;
+}
+
+/* ===== Lists ===== */
+.tiptap-editor-content .ProseMirror ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+
+.tiptap-editor-content .ProseMirror ol {
+  list-style-type: decimal;
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+
+.tiptap-editor-content .ProseMirror ul ul {
+  list-style-type: circle;
+}
+
+.tiptap-editor-content .ProseMirror ul ul ul {
+  list-style-type: square;
+}
+
+.tiptap-editor-content .ProseMirror li {
+  margin: 0.2em 0;
+}
+
+.tiptap-editor-content .ProseMirror li p {
+  margin: 0;
+}
+
+/* ===== Blockquote ===== */
+.tiptap-editor-content .ProseMirror blockquote {
+  border-left: 3px solid var(--border, #e2e2e2);
+  padding-left: 1em;
+  margin: 0.5em 0;
+  color: var(--muted-foreground, #666);
+  font-size: inherit;
+  font-weight: normal;
+}
+
+.tiptap-editor-content .ProseMirror blockquote p {
+  font-size: inherit;
+  margin: 0.3em 0;
+}
+
+/* ===== Table (エディター固有のスタイル) ===== */
+/* web-components-wrapper の border-width:0 リセットを打ち消すため詳細度を上げる */
+.tiptap-editor-content .ProseMirror table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.5em 0;
+  overflow: hidden;
+}
+
+.tiptap-editor-content .ProseMirror table th,
+.tiptap-editor-content .ProseMirror table td {
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: #e2e2e2 !important;
+  padding: 6px 10px;
+  min-width: 60px;
+  position: relative;
+  font-size: inherit;
+  vertical-align: top;
+}
+
+.tiptap-editor-content .ProseMirror table th {
+  font-weight: 600;
+  text-align: left;
+}
+
+.tiptap-editor-content .ProseMirror table td p,
+.tiptap-editor-content .ProseMirror table th p {
+  margin: 0;
+}
+
+/* 選択されたセルのハイライト */
+.tiptap-editor-content .ProseMirror .selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(37, 99, 235, 0.1);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ===== Resizable Image ===== */
+.tiptap-resizable-image-wrapper {
+  display: inline-block;
+  line-height: 0;
+}
+
+.tiptap-resizable-image {
+  display: inline-block;
+  position: relative;
+  max-width: 100%;
+  line-height: 0;
+}
+
+.tiptap-resizable-image img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  vertical-align: bottom;
+}
+
+.tiptap-resizable-image.selected img {
+  outline: 2px solid var(--ring, #999);
+  outline-offset: 2px;
+}
+
+.tiptap-resizable-image.resizing {
+  user-select: none;
+}
+
+/* リサイズハンドル（右下） */
+.tiptap-resize-handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: var(--ring, #999);
+  border: 2px solid var(--background, #fff);
+  border-radius: 2px;
+  z-index: 10;
+}
+
+.tiptap-resize-handle-br {
+  bottom: 4px;
+  right: -4px;
+  cursor: nwse-resize;
+}
+
+.tiptap-editor-content .ProseMirror span[data-color] {
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+/* ===== QuickCreate内エディタ: 高さ固定 ===== */
+/* React QuickCreate (.quickcreate-form) と Smarty Documents QuickCreate (.createDocumentContent) で個別に定義 */
+.quickcreate-form .tiptap-editor-content .ProseMirror,
+.createDocumentContent .tiptap-editor-content .ProseMirror {
+  min-height: 120px;
+  max-height: 120px;
+}
+
+/* ===== Source editor (HTML編集モード) ===== */
+.tiptap-source-wrap {
+  border: 1px solid var(--border, #e2e2e2);
+  border-radius: 0 0 6px 6px;
+  background: var(--background, #fff);
+  overflow: hidden;
+}
+
+.tiptap-source-wrap textarea.tiptap-source-editor {
+  all: unset;
+  display: block;
+  width: 100%;
+  min-height: 200px;
+  padding: 8px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--foreground, #333);
+  background: var(--background, #fff);
+  box-sizing: border-box;
+  resize: vertical;
+  white-space: pre-wrap;
+  word-break: break-all;
+  tab-size: 2;
+}
+
+.tiptap-source-wrap textarea.tiptap-source-editor:focus {
+  outline: none;
+  border-color: var(--ring, #999);
+}
+
+/* ===== Disabled toolbar buttons in source mode ===== */
+.tiptap-toolbar button.tiptap-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ===== Table Bubble Menu (フローティングツールバー) ===== */
+.tiptap-table-bubble {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px;
+  background: var(--background, #fff);
+  border: 1px solid var(--border, #e2e2e2);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  white-space: nowrap;
+}
+
+.tiptap-table-bubble button.tiptap-bubble-btn {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  color: var(--foreground, #333);
+  background: transparent;
+  box-sizing: border-box;
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background-color 0.15s;
+}
+
+.tiptap-table-bubble button.tiptap-bubble-btn:hover {
+  background-color: var(--muted, #f5f5f5);
+}
+
+.tiptap-table-bubble button.tiptap-bubble-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+
+.tiptap-table-bubble button.tiptap-bubble-btn-danger {
+  color: #dc2626;
+}
+
+.tiptap-table-bubble button.tiptap-bubble-btn-danger:hover {
+  background-color: #fef2f2;
+}
+
+.tiptap-bubble-sep {
+  width: 1px;
+  height: 16px;
+  background-color: var(--border, #e2e2e2);
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
+/* ===== Cell color popup (BubbleMenu内、ポータル不使用) ===== */
+.tiptap-cell-color-popup {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 4px;
+  padding: 8px;
+  background: var(--background, #fff);
+  border: 1px solid var(--border, #e2e2e2);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  white-space: nowrap;
+}
+
+/* ===== Color indicator bar under icon ===== */
+.tiptap-color-indicator {
+  position: absolute;
+  bottom: -1px;
+  left: 1px;
+  right: 1px;
+  height: 3px;
+  border-radius: 1px;
+}
+
+/* ===== Mobile toolbar: 横スクロール ===== */
+.tiptap-toolbar--mobile {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  background: #ffffff;
+}
+
+.tiptap-toolbar--mobile::-webkit-scrollbar {
+  display: none;
+}
+
+/* ===== Mobile toolbar: スクロール誘導グラデーション ===== */
+.tiptap-toolbar-fade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.tiptap-toolbar-fade--left {
+  left: 0;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.08) 40%, transparent);
+  border-radius: calc(var(--radius) - 4px) 0 0 0;
+}
+
+.tiptap-toolbar-fade--right {
+  right: 0;
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.08) 40%, transparent);
+  border-radius: 0 calc(var(--radius) - 4px) 0 0;
+}
+
+/* ===== Source mode removed-tag warning ===== */
+.tiptap-source-removed-warning {
+  margin-top: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: #92400e;
+  background-color: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 4px;
+}

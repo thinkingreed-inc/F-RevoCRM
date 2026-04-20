@@ -8,26 +8,26 @@
  *************************************************************************************/
 
 Vtiger_Edit_Js("EmailTemplates_Edit_Js",{},{
-	
+
 	/**
-	 * Function to register event for ckeditor for description field
+	 * Function to register event for RichTextEditor for description field
 	 */
-	registerEventForCkEditor : function(){
+	registerEventForRichTextEditor : function(){
 		var templateContentElement = jQuery("#templatecontent");
 		if(templateContentElement.length > 0) {
 			if(jQuery('#EditView').find('.isSystemTemplate').val() == 1) {
-				templateContentElement.removeAttr('data-validation-engine').addClass('ckEditorSource');
+				templateContentElement.removeAttr('data-validation-engine');
 			}
             var customConfig = {
                 "height":"600px"
             }
-			var ckEditorInstance = new Vtiger_CkEditor_Js();
-			ckEditorInstance.loadCkEditor(templateContentElement,customConfig);
+			var richTextEditorInstance = new Vtiger_RichTextEditor_Js();
+			richTextEditorInstance.loadRichTextEditor(templateContentElement,customConfig);
 		}
         this.registerFillTemplateContentEvent();
-		
+
 	},
-	
+
 	/**
 	 * Function which will register module change event
 	 */
@@ -39,7 +39,7 @@ Vtiger_Edit_Js("EmailTemplates_Edit_Js",{},{
 			thisInstance.loadFields();
 		});
 	},
-	
+
 	/**
 	 * Function to load condition list for the selected field
 	 * @params : fieldSelect - select element which will represents field list
@@ -66,38 +66,41 @@ Vtiger_Edit_Js("EmailTemplates_Edit_Js",{},{
 				}
 			}
 		}
-		
+
 		if(options == '')
 			options = '<option value="">NONE</option>';
-		
+
 		fieldSelectElement.empty().html(options);
         fieldSelectElement.select2("destroy");
         fieldSelectElement.select2();
-        
+
 		return fieldSelectElement;
-		
+
 	},
-	
+
 	registerFillTemplateContentEvent : function() {
 		var thisInstance = this;
-		 CKEDITOR.instances.templatecontent.on('blur', function(){
-			 jQuery('#templateFields,#generalFields').off('change');
-			 jQuery('#templateFields,#generalFields').on('change',function(e){
-				var mergeTag = jQuery(e.currentTarget).val();
-				var textarea = CKEDITOR.instances.templatecontent;
-				textarea.insertHtml(mergeTag);
-			 });
-		 });
-		 jQuery('.recordEditView').on('blur','#EmailTemplates_editView_fieldName_subject',function(){
-			 jQuery('#templateFields,#generalFields').off('change');
-			 jQuery('#templateFields,#generalFields').on('change',function(e){
+		var templateContentElement = jQuery("#templatecontent");
+		// マージタグ挿入: エディタにフォーカスがある場合はエディタに挿入
+		jQuery('#templateFields,#generalFields').on('change', function(e) {
+			var mergeTag = jQuery(e.currentTarget).val();
+			var rteElement = templateContentElement.data('richTextEditor');
+			if (rteElement) {
+				var currentVal = rteElement.getAttribute('value') || '';
+				rteElement.setAttribute('value', currentVal + mergeTag);
+				templateContentElement.val(currentVal + mergeTag);
+			}
+		});
+		jQuery('.recordEditView').on('blur','#EmailTemplates_editView_fieldName_subject',function(){
+			jQuery('#templateFields,#generalFields').off('change');
+			jQuery('#templateFields,#generalFields').on('change',function(e){
 				var mergeTag = jQuery(e.currentTarget).val();
 				thisInstance.insertValueAtCursorPosition();
 				jQuery('#EmailTemplates_editView_fieldName_subject').insertAtCaret(mergeTag);
 			});
 		});
 	},
-    
+
 	insertValueAtCursorPosition: function() {
 		$.fn.extend({
 			insertAtCaret: function(myValue) {
@@ -107,7 +110,7 @@ Vtiger_Edit_Js("EmailTemplates_Edit_Js",{},{
                 } else {
 					obj = this;
                 }
-                
+
                 // $.browser got deprecated from jQuery 1.9
                 // Inorder to know browsername, we are depending on useragent
                 var browserInfo  = navigator.userAgent.toLowerCase();
@@ -132,9 +135,9 @@ Vtiger_Edit_Js("EmailTemplates_Edit_Js",{},{
 			}
 		});
 	},
-	
-	
-	
+
+
+
 	registerPageLeaveEvents : function() {
             app.helper.registerLeavePageWithoutSubmit(this.getForm());
 	},
@@ -142,7 +145,7 @@ Vtiger_Edit_Js("EmailTemplates_Edit_Js",{},{
 	 * Registered the events for this page
 	 */
 	registerEvents : function() {
-		this.registerEventForCkEditor();
+		this.registerEventForRichTextEditor();
 		this.registerChangeEventForModule();
 		//To load default selected module fields in edit view
 		this.loadFields();

@@ -10,7 +10,7 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
 }, {
     workFlowsContainer: false,
     advanceFilterInstance: false,
-    ckEditorInstance: false,
+    richTextEditorInstance: false,
     fieldValueMap: false,
     workFlowsActionContainer : false,
    
@@ -649,7 +649,10 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
       var textAreaElement = jQuery('#content');
       //To keep the plain text value to the textarea which need to be
       //sent to server
-      textAreaElement.val(CKEDITOR.instances['content'].getData());
+      var rteElement = textAreaElement.data('richTextEditor');
+      if (rteElement) {
+         textAreaElement.val(rteElement.getAttribute('value') || '');
+      }
    },
    /**
     * Function to check if the field selected is empty field
@@ -776,13 +779,13 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
    },
    
    /**
-    * Function to get ckEditorInstance
+    * Function to get richTextEditorInstance
     */
-   getckEditorInstance: function () {
-      if (this.ckEditorInstance == false) {
-         this.ckEditorInstance = new Vtiger_CkEditor_Js();
+   getRichTextEditorInstance: function () {
+      if (this.richTextEditorInstance == false) {
+         this.richTextEditorInstance = new Vtiger_RichTextEditor_Js();
       }
-      return this.ckEditorInstance;
+      return this.richTextEditorInstance;
    },
    registerTaskStatusChangeEvent: function () {
       var container = this.getActionContainer();
@@ -848,11 +851,14 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
    },
    registerFillMailContentEvent: function () {
       jQuery('#task-fieldnames,#task_timefields,#task-templates,#task-emailtemplates').change(function (e) {
-         var textarea = CKEDITOR.instances.content;
+         var contentTextarea = jQuery('textarea[name="content"]');
+         var rteElement = contentTextarea.data('richTextEditor');
          var value = jQuery(e.currentTarget).val();
-         if (textarea != undefined) {
-            textarea.insertHtml(value);
-         } else if (jQuery('textarea[name="content"]')) {
+         if (rteElement) {
+            var currentVal = rteElement.getAttribute('value') || '';
+            rteElement.setAttribute('value', currentVal + value);
+            contentTextarea.val(currentVal + value);
+         } else if (contentTextarea.length) {
             var textArea = jQuery('textarea[name="content"]');
             textArea.insertAtCaret(value);
          }
@@ -860,8 +866,8 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
    },
    registerVTEmailTaskEvents: function () {
       var textAreaElement = jQuery('#content');
-      var ckEditorInstance = this.getckEditorInstance();
-      ckEditorInstance.loadCkEditor(textAreaElement);
+      var richTextEditorInstance = this.getRichTextEditorInstance();
+      richTextEditorInstance.loadRichTextEditor(textAreaElement);
       this.registerFillMailContentEvent();
       this.registerTooltipEventForSignatureField();
       this.registerFillTaskFromEmailFieldEvent();

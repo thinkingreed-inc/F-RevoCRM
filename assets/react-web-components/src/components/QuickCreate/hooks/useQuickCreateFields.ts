@@ -71,7 +71,9 @@ export function useQuickCreateFields(
       datatype: apiField.datatype,
       isMultiple: apiField.isMultiple,
       // ProductTax (UIType 83) の税クラス詳細
-      taxClassDetails: apiField.taxClassDetails
+      taxClassDetails: apiField.taxClassDetails,
+      // リッチテキストエディタ（Tiptap）対象フィールドかどうか
+      isRichTextEditor: apiField.isRichTextEditor
     };
   }, []);
 

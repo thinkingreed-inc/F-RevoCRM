@@ -7665,6 +7665,10 @@ body .fc {
     display: block;
     min-width: 100%!important;
   }
+  .fieldBlockContainer > table.table:not(#lineItemResult) {
+    width: 100% !important;
+    table-layout: fixed;
+  }
   table.summary-table > thead > tr > th,
   .quickCreateContent > table.table > thead > tr > th,
   .fieldBlockContainer > table.table:not(#lineItemResult) > thead > tr > th,

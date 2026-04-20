@@ -382,11 +382,6 @@ Vtiger.Class('Documents_Index_Js', {
 
 	_createDocument : function(form) {
 		var self = this;
-		var noteContentElement = form.find('#Documents_editView_fieldName_notecontent_popup');
-		if(noteContentElement.length) {
-			var noteContent = CKEDITOR.instances.Documents_editView_fieldName_notecontent_popup.getData()
-			noteContentElement.val(noteContent);
-		}
 		var formData = form.serialize();
 		app.helper.showProgress();
 		app.request.post({'data':formData}).then(function(e,res) {
@@ -422,14 +417,14 @@ Vtiger.Class('Documents_Index_Js', {
 	},
 
 	applyEditor : function(element) {
-		var cke = new Vtiger_CkEditor_Js();
-		cke.loadCkEditor(element, {'height' : 200});
+		var rte = new Vtiger_RichTextEditor_Js();
+		rte.loadRichTextEditor(element, {'height' : 200});
 	},
 
 	registerCreateDocumentModalEvents : function(container) {
 		container.find('form').vtValidate();
 		if(container.find('input[name="type"]').val() === 'W') {
-			//change id of text area to workaround multiple instances of ckeditor on same element
+			//change id of text area to workaround multiple instances of RichTextEditor on same element
 			this.applyEditor(
 				container.find('#Documents_editView_fieldName_notecontent')
 				.attr('id','Documents_editView_fieldName_notecontent_popup')

@@ -65,7 +65,9 @@ class CustomerPortal_AddComment extends CustomerPortal_SaveRecord {
 			$customerId = vtws_getWebserviceEntityId('Contacts', $this->getActiveCustomer()->id);
 			$element['customer'] = $customerId;
 			$element['from_portal'] = true;
-			$element['commentcontent'] = nl2br($element['commentcontent']);
+			$rawContent = nl2br($element['commentcontent']);
+			$purifiedContent = vtlib_purify(decode_html($rawContent));
+			$element['commentcontent'] = purifyHtmlEventAttributes($purifiedContent, true);
 			//comment_added_from_portal added to check workflow condition "is added from portal" for comments.
 			//Cannot use from_portal as Mailroom also sets to TRUE.
 			$element['comment_added_from_portal'] = true;

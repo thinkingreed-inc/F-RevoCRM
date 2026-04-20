@@ -824,3 +824,8 @@ body{
     height: 1px;
 }
 
+/* reasontoedit（コメント編集理由）表示の改行保持 */
+[name="editReason"] {
+    white-space: pre-wrap;
+}
+

@@ -286,7 +286,9 @@ class MailManager_Relation_View extends MailManager_Abstract_View {
 									break;
 
 				case 'ModComments': $recordModel->set('assigned_user_id', $currentUserModel->getId());
-									$recordModel->set('commentcontent', $request->getRaw('commentcontent'));
+									$rawContent = $request->getRaw('commentcontent');
+									$purifiedContent = vtlib_purify(decode_html($rawContent));
+									$recordModel->set('commentcontent', purifyHtmlEventAttributes($purifiedContent, true));
 									$recordModel->set('userid', $currentUserModel->getId());
 									$recordModel->set('creator', $currentUserModel->getId());
 									$recordModel->set('related_to', $parent);

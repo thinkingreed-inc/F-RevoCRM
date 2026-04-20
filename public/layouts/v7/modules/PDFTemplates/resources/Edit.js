@@ -8,15 +8,15 @@
  *************************************************************************************/
 
 Vtiger_Edit_Js("PDFTemplates_Edit_Js",{},{
-	
+
 	/**
-	 * Function to register event for ckeditor for description field
+	 * Function to register event for RichTextEditor for description field
 	 */
-	registerEventForCkEditor : function(){
+	registerEventForRichTextEditor : function(){
 		var templateContentElement = jQuery("#templatecontent");
 		if(templateContentElement.length > 0) {
 			if(jQuery('#EditView').find('.isSystemTemplate').val() == 1) {
-				templateContentElement.removeAttr('data-validation-engine').addClass('ckEditorSource');
+				templateContentElement.removeAttr('data-validation-engine');
 			}
 			if ($("[name='is_headlesschrome']").val() == "true") {
 				var customConfig = {
@@ -28,24 +28,26 @@ Vtiger_Edit_Js("PDFTemplates_Edit_Js",{},{
 					"height": "600px"
 				}
 			}
-			var ckEditorInstance = new Vtiger_CkEditor_Js();
-			ckEditorInstance.loadCkEditor(templateContentElement,customConfig);
+			var richTextEditorInstance = new Vtiger_RichTextEditor_Js();
+			richTextEditorInstance.loadRichTextEditor(templateContentElement,customConfig);
 			if ($("[name='is_headlesschrome']").val() == "true") {
-				var editor = CKEDITOR.instances.templatecontent;
-				var edata = editor.getData();
-				if (!edata) {
-					var replaced_text = edata + "<style type='text/css'><!-- @font-face { font-family: 'sans'; src: local('Noto Sans CJK JP');font-family: 'serif'; src: local('Noto Serif CJK JP');}html,body {font-family: sans;} --></style></html>";
-					editor.setData(replaced_text);
-				} else if (edata.indexOf("html,body {font-family: sans;}") == -1) {
-					var replaced_text = edata.replace('</html>', "<style type='text/css'><!-- @font-face { font-family: 'sans'; src: local('Noto Sans CJK JP');font-family: 'serif'; src: local('Noto Serif CJK JP');}html,body {font-family: sans;} --></style></html>");
-					editor.setData(replaced_text);
+				var rteElement = templateContentElement.data('richTextEditor');
+				if (rteElement) {
+					var edata = rteElement.getAttribute('value') || '';
+					if (!edata) {
+						var replaced_text = edata + "<style type='text/css'><!-- @font-face { font-family: 'sans'; src: local('Noto Sans CJK JP');font-family: 'serif'; src: local('Noto Serif CJK JP');}html,body {font-family: sans;} --></style></html>";
+						rteElement.setAttribute('value', replaced_text);
+					} else if (edata.indexOf("html,body {font-family: sans;}") == -1) {
+						var replaced_text = edata.replace('</html>', "<style type='text/css'><!-- @font-face { font-family: 'sans'; src: local('Noto Sans CJK JP');font-family: 'serif'; src: local('Noto Serif CJK JP');}html,body {font-family: sans;} --></style></html>");
+						rteElement.setAttribute('value', replaced_text);
+					}
 				}
 			}
 		}
         this.registerFillTemplateContentEvent();
-		
+
 	},
-	
+
 	/**
 	 * Function which will register module change event
 	 */
@@ -57,7 +59,7 @@ Vtiger_Edit_Js("PDFTemplates_Edit_Js",{},{
 			thisInstance.loadFields();
 		});
 	},
-	
+
 	/**
 	 * Function to load condition list for the selected field
 	 * @params : fieldSelect - select element which will represents field list
@@ -84,38 +86,41 @@ Vtiger_Edit_Js("PDFTemplates_Edit_Js",{},{
 				}
 			}
 		}
-		
+
 		if(options == '')
 			options = '<option value="">NONE</option>';
-		
+
 		fieldSelectElement.empty().html(options);
         fieldSelectElement.select2("destroy");
         fieldSelectElement.select2();
-        
+
 		return fieldSelectElement;
-		
+
 	},
-	
+
 	registerFillTemplateContentEvent : function() {
 		var thisInstance = this;
-		 CKEDITOR.instances.templatecontent.on('blur', function(){
-			 jQuery('#templateFields,#generalFields,#customFunctions').off('change');
-			 jQuery('#templateFields,#generalFields,#customFunctions').on('change',function(e){
-				var mergeTag = jQuery(e.currentTarget).val();
-				var textarea = CKEDITOR.instances.templatecontent;
-				textarea.insertHtml(mergeTag);
-			 });
-		 });
-		 jQuery('.recordEditView').on('blur','#PDFTemplates_editView_fieldName_subject,#PDFTemplates_editView_fieldName_pdffilename',function(){
-			 jQuery('#templateFields,#generalFields,#customFunctions').off('change');
-			 jQuery('#templateFields,#generalFields,#customFunctions').on('change',function(e){
+		var templateContentElement = jQuery("#templatecontent");
+		// マージタグ挿入: エディタにフォーカスがある場合はエディタに挿入
+		jQuery('#templateFields,#generalFields,#customFunctions').on('change', function(e) {
+			var mergeTag = jQuery(e.currentTarget).val();
+			var rteElement = templateContentElement.data('richTextEditor');
+			if (rteElement) {
+				var currentVal = rteElement.getAttribute('value') || '';
+				rteElement.setAttribute('value', currentVal + mergeTag);
+				templateContentElement.val(currentVal + mergeTag);
+			}
+		});
+		jQuery('.recordEditView').on('blur','#PDFTemplates_editView_fieldName_subject,#PDFTemplates_editView_fieldName_pdffilename',function(){
+			jQuery('#templateFields,#generalFields,#customFunctions').off('change');
+			jQuery('#templateFields,#generalFields,#customFunctions').on('change',function(e){
 				var mergeTag = jQuery(e.currentTarget).val();
 				thisInstance.insertValueAtCursorPosition();
 				jQuery('#PDFTemplates_editView_fieldName_subject,#PDFTemplates_editView_fieldName_pdffilename').insertAtCaret(mergeTag);
 			});
 		});
 	},
-    
+
 	insertValueAtCursorPosition: function() {
 		$.fn.extend({
 			insertAtCaret: function(myValue) {
@@ -125,7 +130,7 @@ Vtiger_Edit_Js("PDFTemplates_Edit_Js",{},{
                 } else {
 					obj = this;
                 }
-                
+
                 // $.browser got deprecated from jQuery 1.9
                 // Inorder to know browsername, we are depending on useragent
                 var browserInfo  = navigator.userAgent.toLowerCase();
@@ -150,9 +155,9 @@ Vtiger_Edit_Js("PDFTemplates_Edit_Js",{},{
 			}
 		});
 	},
-	
-	
-	
+
+
+
 	registerPageLeaveEvents : function() {
             app.helper.registerLeavePageWithoutSubmit(this.getForm());
 	},
@@ -160,7 +165,7 @@ Vtiger_Edit_Js("PDFTemplates_Edit_Js",{},{
 	 * Registered the events for this page
 	 */
 	registerEvents : function() {
-		this.registerEventForCkEditor();
+		this.registerEventForRichTextEditor();
 		this.registerChangeEventForModule();
 		//To load default selected module fields in edit view
 		this.loadFields();

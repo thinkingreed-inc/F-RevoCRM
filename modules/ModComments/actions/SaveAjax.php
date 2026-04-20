@@ -73,8 +73,7 @@ class ModComments_SaveAjax_Action extends Vtiger_SaveAjax_Action {
 	 */
 	public function getRecordModelFromRequest(Vtiger_Request $request) {
 		$recordModel = parent::getRecordModelFromRequest($request);
-		
-		$recordModel->set('commentcontent', $request->getRaw('commentcontent'));
+
         $recordModel->set('is_private', $request->get('is_private'));
 
 		return $recordModel;

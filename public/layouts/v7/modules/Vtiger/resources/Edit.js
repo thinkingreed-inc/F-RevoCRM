@@ -130,11 +130,11 @@ Vtiger_Index_Js("Vtiger_Edit_Js",{
 		return aDeferred.promise();
 	},
 	
-	addFieldCkEditor : function ( element ) {
+	addFieldRichTextEditor : function ( element ) {
 		if(element.length > 0){
-			element.removeAttr('data-validation-engine').addClass('ckEditorSource');
-			var ckEditorInstance = new Vtiger_CkEditor_Js();
-			ckEditorInstance.loadCkEditor(element);
+			element.removeAttr('data-validation-engine');
+			var richTextEditorInstance = new Vtiger_RichTextEditor_Js();
+			richTextEditorInstance.loadRichTextEditor(element);
 		}
 	},
 	

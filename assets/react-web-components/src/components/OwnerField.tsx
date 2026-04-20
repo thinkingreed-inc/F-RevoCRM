@@ -363,23 +363,25 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
   };
 
   return (
-    <div className={cn('flex items-start gap-2', className)}>
+    <div className={cn('flex flex-col md:flex-row items-start gap-1 md:gap-2', className)}>
       {/* ラベル（旧版スタイル：右寄せ） */}
-      <span
-        className={cn(
-          'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
-          disabled && 'text-gray-400'
-        )}
-      >
-        {label}
-      </span>
-      {/* 必須マーク：固定幅で位置を確保し、入力欄の開始位置を揃える */}
-      <span className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0" aria-hidden="true">
-        {mandatory ? '*' : ''}
-      </span>
+      <div className="flex items-start md:contents">
+        <span
+          className={cn(
+            'text-md text-gray-700 text-left md:w-[110px] md:text-right md:flex-shrink-0 leading-[30px]',
+            disabled && 'text-gray-400'
+          )}
+        >
+          {label}
+        </span>
+        {/* 必須マーク：固定幅で位置を確保し、入力欄の開始位置を揃える */}
+        <span className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0" aria-hidden="true">
+          {mandatory ? '*' : ''}
+        </span>
+      </div>
 
       {/* 入力エリア */}
-      <div className="flex-1 min-w-0">
+      <div className="w-full md:flex-1 md:min-w-0">
         {/* 検索入力 */}
         <div className="relative" ref={inputContainerRef}>
           <div className="relative flex items-center">

@@ -508,7 +508,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
       </div>
 
       {/* 特殊フィールドセクション（タイトル・日時） */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 pr-8 pb-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 md:pr-8 pb-2">
         {/* Subject field - 左側列 */}
         {subject && (
           <div>
@@ -520,6 +520,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
               disabled={isDisabled}
               error={validationErrors[subject.name]}
               formData={formData}
+              isQuickCreate={true}
             />
           </div>
         )}
@@ -570,7 +571,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
               <h4 className="fieldBlockHeader font-bold leading-[1.1] mt-0 mb-2 pb-1 border-b border-gray-300">
                 {blockName}
               </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 pr-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 md:pr-8">
                 {blockFields.map(field => (
                   <div
                     key={field.name}
@@ -588,6 +589,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                       disabled={isDisabled}
                       error={validationErrors[field.name]}
                       formData={formData}
+                      isQuickCreate={true}
                     />
                   </div>
                 ))}
@@ -687,7 +689,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
             <h4 className="fieldBlockHeader font-bold leading-[1.1] mt-0 mb-2 pb-1 border-b border-gray-300">
               {reminderTime.block || t('LBL_ALARM_INFORMATION')}
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 pr-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 md:pr-8">
               <div className="md:col-span-2">
                 <div className="flex items-start gap-2">
                   <label
@@ -781,7 +783,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
           <h4 className="fieldBlockHeader font-bold leading-[1.1] mt-0 mb-2 pb-1 border-b border-gray-300">
             {t('LBL_INVITEE_BLOCK')}
           </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 pr-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 md:pr-8">
             <div className="md:col-span-2">
               <div className="flex items-start gap-2">
                 <label

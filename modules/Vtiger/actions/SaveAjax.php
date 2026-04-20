@@ -106,14 +106,13 @@ class Vtiger_SaveAjax_Action extends Vtiger_Save_Action {
 				if ($fieldDataType == 'time' && $fieldValue !== null) {
 					$fieldValue = Vtiger_Time_UIType::getTimeValueWithSeconds($fieldValue);
 				}
-                $fieldValue = $this->purifyCkeditorField($fieldName, $fieldValue);
+                $fieldValue = $this->purifyRichTextField($fieldName, $fieldValue);
 				if ($fieldValue !== null) {
 					if (!is_array($fieldValue)) {
 						$fieldValue = trim($fieldValue);
 					}
 					$recordModel->set($fieldName, $fieldValue);
 				}
-				$recordModel->set($fieldName, $fieldValue);
 				if($fieldName === 'contact_id' && isRecordExists($fieldValue)) {
 					$contactRecord = Vtiger_Record_Model::getInstanceById($fieldValue, 'Contacts');
 					$recordModel->set("relatedContact",$contactRecord);
@@ -139,7 +138,7 @@ class Vtiger_SaveAjax_Action extends Vtiger_Save_Action {
 				if ($fieldDataType == 'time' && $fieldValue !== null) {
 					$fieldValue = Vtiger_Time_UIType::getTimeValueWithSeconds($fieldValue);
 				}
-                $fieldValue = $this->purifyCkeditorField($fieldName, $fieldValue);
+                $fieldValue = $this->purifyRichTextField($fieldName, $fieldValue);
 				if ($fieldValue !== null) {
 					if (!is_array($fieldValue)) {
 						$fieldValue = trim($fieldValue);
@@ -152,12 +151,12 @@ class Vtiger_SaveAjax_Action extends Vtiger_Save_Action {
 		return $recordModel;
 	}
     
-    public function purifyCkeditorField($fieldName, $fieldValue) {
-        $ckeditorFields = array('commentcontent', 'notecontent', 'signature');
-        if((in_array($fieldName, $ckeditorFields)) && $fieldValue !== null){
+    public function purifyRichTextField($fieldName, $fieldValue) {
+        $richTextFields = static::$RICH_TEXT_FIELDS;
+        if((in_array($fieldName, $richTextFields)) && $fieldValue !== null){
             $purifiedContent = vtlib_purify(decode_html($fieldValue));
             // Purify malicious html event attributes
-            $fieldValue = purifyHtmlEventAttributes(decode_html($purifiedContent),true);
+            $fieldValue = purifyHtmlEventAttributes($purifiedContent,true);
         }
         return $fieldValue;
     }

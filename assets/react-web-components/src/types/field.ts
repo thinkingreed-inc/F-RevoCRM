@@ -74,6 +74,8 @@ export interface FieldInfo {
   customValidations?: CustomValidation[];
   /** 税情報（UIType 83: ProductTax用） */
   taxClassDetails?: TaxClassDetails;
+  /** リッチテキストエディタ（Tiptap）対象フィールドかどうか */
+  isRichTextEditor?: boolean;
 }
 
 /**
@@ -144,6 +146,8 @@ export interface FieldRendererProps {
   onRecordTypeChange?: (fieldName: string, value: string) => void;
   /** フォームデータ全体（参照フィールドの表示値取得に使用） */
   formData?: Record<string, FieldValue>;
+  /** QuickCreate内での描画かどうか（Tiptapの動作制御に使用） */
+  isQuickCreate?: boolean;
 }
 
 /**

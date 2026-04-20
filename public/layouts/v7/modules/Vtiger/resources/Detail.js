@@ -305,14 +305,15 @@ Vtiger.Class("Vtiger_Detail_Js",{
 							return false;
 						}
 
-						// ckEditorの値をセット
-						var ckeditor_columns = ['description', 'solution'];
-						ckeditor_columns.forEach(function (ckeditor_column) {
-							// 対象モジュールがHelpDesk && 対象カラムが存在する && 対象カラムのCKEDITORが存在する
-							if ($(form.module).val() === 'HelpDesk' && $(form).find('textarea[name="'+ckeditor_column+'"]') && CKEDITOR.instances[$(form.module).val()+'_editView_fieldName_'+ckeditor_column]) {
-								// CKEDITORの値をtextareaにセット
-								var ckeditorText = CKEDITOR.instances[$(form.module).val()+'_editView_fieldName_'+ckeditor_column].getData();
-								$(form).find('textarea[name="'+ckeditor_column+'"]').val(ckeditorText);
+						// リッチテキストエディタの値をセット
+						var richTextColumns = ['description', 'solution'];
+						richTextColumns.forEach(function (richTextColumn) {
+							var textarea = $(form).find('textarea[name="'+richTextColumn+'"]');
+							if ($(form.module).val() === 'HelpDesk' && textarea.length) {
+								var rteElement = textarea.data('richTextEditor');
+								if (rteElement) {
+									textarea.val(rteElement.getAttribute('value') || '');
+								}
 							}
 						});
 
@@ -2884,8 +2885,8 @@ Vtiger.Class("Vtiger_Detail_Js",{
 						var commentInfoContent = commentInfoBlock.find('.commentInfoContent');
 						var commentEditStatus = commentInfoBlock.find('[name="editStatus"]');
 						var commentReason = commentInfoBlock.find('[name="editReason"]');
-						commentInfoContent.html(data.commentcontent.replace(/\r?\n/g, '<br>'));
-						commentReason.html(data.reasontoedit);
+						commentInfoContent.html(DOMPurify.sanitize(data.commentcontent ? data.commentcontent.replace(/\r?\n/g, '<br>') : ''));
+						commentReason.text(data.reasontoedit);
 						modifiedTime.text(data.modifiedtime);
 						modifiedTime.attr('title',data.modifiedtimetitle)
 						if(commentEditStatus.hasClass('hide')){

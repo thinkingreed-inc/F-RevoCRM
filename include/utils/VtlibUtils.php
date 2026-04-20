@@ -650,6 +650,56 @@ function vtlib_isDirWriteable($dirpath) {
 	return false;
 }
 
+/**
+ * HTMLPurifier URI フィルター: data: URI を image/* のみに限定する
+ *
+ * 【背景】HTMLPurifier の URIScheme/data.php は jpeg/gif/png のみ許可しているため
+ * data:text/html 等は既にスキームバリデーション層で拒否される。
+ * 本フィルターはその前段での defense-in-depth として機能する。
+ *
+ * 【登録方法】$config->getDefinition('URI', true)->addFilter() で登録すること。
+ * addFilter() は $this->filters[] への即時追加であり、
+ * その後の new HTMLPurifier($config) 内で呼ばれる doSetup() は filters 配列を
+ * 上書きせず追記するため、フィルターは正しく機能する。
+ * new HTMLPurifier($config) より前に呼び出すこと（config が Frozen になる前）。
+ */
+class HTMLPurifier_URIFilter_DataImageOnly extends HTMLPurifier_URIFilter {
+    public $name = 'DataImageOnly';
+    public function prepare($config) { return true; }
+    public function filter(&$uri, $config, $context) {
+        if ($uri->scheme === 'data') {
+            // data:image/* のみ通過、data:text/html 等を拒否
+            // $uri->path の形式: "image/png;base64,..." または "image/jpeg;base64,..."
+            // base64エンコードの有無を問わず image/ プレフィックスで通過させ、
+            // コンテンツ検証は下位のスキームバリデーション（doValidate()）に委ねる
+            return strncmp($uri->path, 'image/', 6) === 0;
+        }
+        return true;
+    }
+}
+
+/**
+ * HTMLPurifier AttrDef: span.class をマーカー機能の許可クラスのみに制限する
+ *
+ * フロントエンドの extensions/marker.ts の MARKER_CLASS_COLORS と同期すること。
+ * フロント側でクラスを追加した場合はこのリストも合わせて更新すること。
+ */
+class HTMLPurifier_AttrDef_SpanMarkerClass extends HTMLPurifier_AttrDef {
+    private static $ALLOWED = [
+        'marker',
+        'marker-yellow',
+        'marker-green',
+        'marker-pink',
+        'marker-blue',
+    ];
+
+    public function validate($string, $config, $context) {
+        $parts = preg_split('/\s+/', trim($string), -1, PREG_SPLIT_NO_EMPTY);
+        $allowed = array_filter($parts, fn($p) => in_array($p, self::$ALLOWED, true));
+        return empty($allowed) ? false : implode(' ', $allowed);
+    }
+}
+
 /** HTML Purifier global instance */
 $__htmlpurifier_instance = false;
 /**
@@ -693,15 +743,55 @@ function vtlib_purify($input, $ignore = false) {
                 'ftp' => true,
                 'nntp' => true,
                 'news' => true,
-                'data' => true
+                'data' => true,  // HTMLPurifier_URIFilter_DataImageOnly で image/* のみに制限（defense-in-depth）
             );
 
             $config = HTMLPurifier_Config::createDefault();
             $config->set('Core.Encoding', $use_charset);
-            $config->set('Cache.SerializerPath', "$use_root_directory/test/vtlib");
+            $config->set('Cache.SerializerPath', "$use_root_directory/test/templates_c/v7");
+            // CSS.AllowTricky: display/visibility/overflow/opacity を許可する
+            // ※ position/z-index は CSS.Trusted でのみ有効なプロパティのため、この設定では通過しない
+            // ※ display:none 等によるコンテンツ隠蔽リスクは存在するが、JS実行を伴わないため低深刻度
+            // ※ display を ForbiddenProperties で全面禁止すると、正当な display:block 等も除去されるため見送り
             $config->set('CSS.AllowTricky', true);
+            // CSS.Proprietary: -webkit-/-moz-/-ms- 等のベンダープレフィックスCSS を許可する
+            // HTMLとして保存されたリッチテキストに含まれる正当なスタイルを保持するために必要。
+            // ベンダープレフィックスCSSはJS実行能力を持たないため、XSSリスクは生じない。
+            $config->set('CSS.Proprietary', true);
             $config->set('URI.AllowedSchemes', $allowedSchemes);
             $config->set('Attr.EnableID', true);
+
+            $def = $config->getHTMLDefinition(true);
+            if ($def) {
+                $def->addAttribute('span', 'data-color', 'Text');
+
+                // Tiptap拡張が出力するHTML要素・属性をHTMLPurifierに許可
+                // anchor拡張: <a id="..." name="...">
+                // NMTOKENS型: 英字・数字・ハイフン・アンダースコア等に制限し、
+                // 任意文字列を受け付けるCDATAよりも安全。
+                // 日本語等を含む名前はID属性側（Attr.EnableID）で対応。
+                $def->addAttribute('a', 'name', 'NMTOKENS');
+                // dir-attribute拡張: dir属性（ltr/rtl）
+                $def->addAttribute('p', 'dir', 'Enum#ltr,rtl');
+                $def->addAttribute('div', 'dir', 'Enum#ltr,rtl');
+                // big/small拡張
+                $def->addElement('big', 'Inline', 'Inline', 'Common');
+                $def->addElement('small', 'Inline', 'Inline', 'Common');
+                // address拡張
+                $def->addElement('address', 'Block', 'Inline', 'Common');
+                // kbd拡張
+                $def->addElement('kbd', 'Inline', 'Inline', 'Common');
+                // marker拡張: <span class="marker ...">
+                // 任意文字列（CDATA）ではなくホワイトリストクラスのみ許可
+                $def->addAttribute('span', 'class', new HTMLPurifier_AttrDef_SpanMarkerClass());
+            }
+
+            // data: URI を image/* のみに制限する defense-in-depth フィルターを登録
+            // ※ new HTMLPurifier($config) より前に呼ぶこと（この後に config が Frozen になる）
+            // ※ この行より後で $config->set() を呼んではならない
+            //   （getDefinition で autoFinalize() が呼ばれるため set が無効になる）
+            $uriDef = $config->getDefinition('URI', true);
+            $uriDef->addFilter(new HTMLPurifier_URIFilter_DataImageOnly(), $config);
 
             $__htmlpurifier_instance = new HTMLPurifier($config);
         }
@@ -714,6 +804,8 @@ function vtlib_purify($input, $ignore = false) {
                 }
             } else { // Simple type
                 $value = $__htmlpurifier_instance->purify($input);
+                // HTMLPurifier処理後の追加防御として purifyHtmlEventAttributes() を再呼び出し
+                // （Save.php側でも外側で再呼び出しされているが、これは意図的な多重防御設計）
                 $value = purifyHtmlEventAttributes($value, true);
             }
         }
@@ -788,8 +880,16 @@ $htmlEventAttributes = "onerror|onblur|onchange|oncontextmenu|onfocus|oninput|on
 
 //function to remove script tag and its contents
 function purifyScript($value){
-    $scriptRegex = '/(&.*?lt;|<)script[\w\W]*?(>|&.*?gt;)[\w\W]*?(&.*?lt;|<)\/script(>|&.*?gt;|\s)/i';
-    $value = preg_replace($scriptRegex,'',$value);
+    // HTMLPurifier通過後にscriptタグが残っている時点で異常事態のため、
+    // scriptタグペア（開始〜終了タグ）を削除する（防御の深層化）。
+    // エンティティ形式・リテラル形式の両方に対応。
+    // 属性内の > 文字（例: data-val="a>b"）を誤って開始タグ終端と判断しないよう
+    // クォート文字列を考慮した属性マッチングを使用。
+    // lazy マッチ（*?）により複数の script ブロックを個別に除去。
+    // 注意: 閉じタグのない単独の script タグは削除しない。
+    //        HTMLPurifier 通過後に <script> が残ることは通常ありえないため安全。
+    $scriptRegex = '/(&.*?lt;|<)script\b(?:[^>\'"]|\'[^\']*\'|"[^"]*")*(?:>|&.*?gt;)[\w\W]*?(&.*?lt;|<)\/script\s*(?:>|&.*?gt;)/i';
+    $value = preg_replace($scriptRegex, '', $value);
     return $value;
 }
 
@@ -819,7 +919,12 @@ function purifyJavascriptAlert($value){
                 * so skipping the validation and reseting the value - TODO
                 */
                if (preg_last_error() == PREG_BACKTRACK_LIMIT_ERROR) {
-                   $value = $originalValue;
+                   // fail-closed: 正規表現が失敗した場合、対象タグを安全な形に置換する
+                   // （元入力をそのまま返すfail-openはXSSリスクがあるため）
+                   $value = preg_replace('/(&.*?lt;|<)'.$tag.'[^>]*?(>|&.*?gt;)/i', "<$tag>", $value);
+                   if ($value === null) {
+                       $value = $originalValue;
+                   }
                    return $value;
                }
             }        

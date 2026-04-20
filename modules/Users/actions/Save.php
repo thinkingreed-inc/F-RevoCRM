@@ -79,7 +79,7 @@ class Users_Save_Action extends Vtiger_Save_Action {
             if($fieldName == 'signature' && $fieldValue !== null){
                 $purifiedContent = vtlib_purify(decode_html($fieldValue));
                 // Purify malicious html event attributes
-                $fieldValue = purifyHtmlEventAttributes(decode_html($purifiedContent),true);
+                $fieldValue = purifyHtmlEventAttributes($purifiedContent,true);
 			}
 			if($fieldValue !== null) {
 				if(!is_array($fieldValue)) {

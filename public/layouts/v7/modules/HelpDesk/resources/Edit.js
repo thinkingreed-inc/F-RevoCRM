@@ -10,18 +10,18 @@
 Vtiger_Edit_Js("HelpDesk_Edit_Js", {} ,{
 
 	/**
-	 * Function to register event for ckeditor for description field
+	 * Function to register event for RichTextEditor for description field
 	 */
-	registerEventForCkEditor : function(){
+	registerEventForRichTextEditor : function(){
 		var form = this.getForm();
-        var ckContentElement = form.find('[name="description"]');
-        this.addFieldCkEditor(ckContentElement);
-		ckContentElement = form.find('[name="solution"]');
-        this.addFieldCkEditor(ckContentElement);
+        var rteContentElement = form.find('[name="description"]');
+        this.addFieldRichTextEditor(rteContentElement);
+		rteContentElement = form.find('[name="solution"]');
+        this.addFieldRichTextEditor(rteContentElement);
 	},
 
 	registerEvents : function() {
-        this.registerEventForCkEditor();
+        this.registerEventForRichTextEditor();
         this._super();
 	}
 });

@@ -42,7 +42,12 @@ class ModComments_MassSaveAjax_Action extends Vtiger_Mass_Action {
 		foreach($recordIds as $recordId) {
 			$recordModel = Vtiger_Record_Model::getCleanInstance($moduleName);
 			$recordModel->set('mode', '');
-			$recordModel->set('commentcontent', $request->getRaw('commentcontent'));
+			$rawContent = $request->getRaw('commentcontent');
+			$purifiedContent = vtlib_purify(decode_html($rawContent));
+			// vtlib_purify()内でもpurifyHtmlEventAttributes()が実行済みだが、
+			// Save.phpパイプラインとの一貫性のための多重防御として再呼び出し
+			$fieldValue = purifyHtmlEventAttributes($purifiedContent, true);
+			$recordModel->set('commentcontent', $fieldValue);
 			$recordModel->set('related_to', $recordId);
 			$recordModel->set('assigned_user_id', $currentUserModel->getId());
 			$recordModel->set('userid', $currentUserModel->getId());

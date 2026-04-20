@@ -65,14 +65,14 @@ export const QuickCreateForm: React.FC<QuickCreateFormProps> = ({
               {blockName}
             </h4>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 pr-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 md:pr-8">
             {blockFields.map(field => (
               <div
                 key={field.name}
                 className={cn(
                   'quickcreate-field',
-                  // TextAreaは2カラム幅
-                  (field.uitype === '19' || field.uitype === '21') && 'md:col-span-2'
+                  // TextArea・リッチテキストエディタは2カラム幅
+                  (field.uitype === '19' || field.uitype === '20' || field.uitype === '21') && 'md:col-span-2'
                 )}
               >
                 <FieldRenderer
@@ -84,6 +84,7 @@ export const QuickCreateForm: React.FC<QuickCreateFormProps> = ({
                   error={errors[field.name]}
                   className="w-full"
                   formData={formData}
+                  isQuickCreate={true}
                 />
               </div>
             ))}

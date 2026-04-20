@@ -10,6 +10,34 @@
 
 class Vtiger_Save_Action extends Vtiger_Action_Controller {
 
+	/**
+	 * リッチテキストエディタフィールド名一覧（XSSサニタイズ対象）。
+	 *
+	 * 【重要】このリストと isRichTextEditor() は目的が異なる。
+	 *   - $RICH_TEXT_FIELDS  : 保存時に vtlib_purify() でサニタイズするフィールド一覧
+	 *                          （HTMLが保存されるフィールド = セキュリティ要件）
+	 *   - isRichTextEditor() : EditView/DetailView で Tiptap エディタを描画するか否か
+	 *                          （UI 要件）
+	 *
+	 * このため、commentcontent のように：
+	 *   「HTMLとして保存される（$RICH_TEXT_FIELDS に含まれる）が、
+	 *    専用ウィジェット経由で入力されるため EditView では Tiptap 表示不要（isRichTextEditor=false）」
+	 * という組み合わせは設計上正しい。
+	 *
+	 * 新しいリッチテキストフィールドを追加する際の手順:
+	 *   1. このリストにフィールド名を追加（保存時サニタイズの有効化）
+	 *   2. EditView で Tiptap を使う場合のみ、対応モジュールの Field.php で
+	 *      isRichTextEditor()=true を返すよう実装する
+	 *
+	 * 子クラスから static::$RICH_TEXT_FIELDS で参照可能。
+	 * 子クラスでオーバーライドする場合は、親クラスのフィールドを引き継ぐため
+	 * array_merge(parent::$RICH_TEXT_FIELDS, ['新フィールド名']) を使用すること。
+	 */
+	protected static $RICH_TEXT_FIELDS = array(
+		'commentcontent', 'notecontent', 'description', 'solution',
+		'question', 'faq_answer', 'signature'
+	);
+
 	public function requiresPermission(\Vtiger_Request $request) {
 		$permissions = parent::requiresPermission($request);
 		$moduleParameter = $request->get('source_module');
@@ -168,11 +196,12 @@ class Vtiger_Save_Action extends Vtiger_Action_Controller {
 			if($fieldDataType == 'time' && $fieldValue !== null){
 				$fieldValue = Vtiger_Time_UIType::getTimeValueWithSeconds($fieldValue);
 			}
-            $ckeditorFields = array('commentcontent', 'notecontent');
-            if((in_array($fieldName, $ckeditorFields)) && $fieldValue !== null){
+            $richTextFields = static::$RICH_TEXT_FIELDS;
+            if((in_array($fieldName, $richTextFields)) && $fieldValue !== null){
                 $purifiedContent = vtlib_purify(decode_html($fieldValue));
-                // Purify malicious html event attributes
-                $fieldValue = purifyHtmlEventAttributes(decode_html($purifiedContent),true);
+                // vtlib_purify()内でもpurifyHtmlEventAttributes()が実行済みだが、
+                // バイパスリスクへの多重防御（defense-in-depth）として再実行する
+                $fieldValue = purifyHtmlEventAttributes($purifiedContent,true);
 			}
 			if($fieldValue !== null) {
 				if(!is_array($fieldValue) && $fieldDataType != 'currency') {

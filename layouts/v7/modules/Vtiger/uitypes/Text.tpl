@@ -16,15 +16,32 @@
   {assign var="FIELD_NAME" value=$FIELD_MODEL->getFieldName()}
 {/if}
 {if $FIELD_MODEL->get('uitype') eq '19' || $FIELD_MODEL->get('uitype') eq '20'}
-    <textarea style="height:250px; max-width: initial; width:100%;{if $FIELD_MODEL->isReadonlyEditView() eq true}background-color:#d3d3d3;opacity:0.8;{/if}" rows="3" id="{$MODULE}_editView_fieldName_{$FIELD_NAME}" class="inputElement textAreaElement col-lg-12 {if $FIELD_MODEL->isNameField()}nameField{/if}" name="{$FIELD_NAME}" {if $FIELD_NAME eq "notecontent"}id="{$FIELD_NAME}"{/if} {if !empty($SPECIAL_VALIDATOR)}data-validator='{Zend_Json::encode($SPECIAL_VALIDATOR)}'{/if}
-        {if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if}
-        {if php7_count($FIELD_INFO['validator'])}
-            data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
-        {/if}
-        {if $FIELD_MODEL->isReadonlyEditView() eq true} disabled {/if}
-        >
-    {purifyHtmlEventAttributes($FIELD_MODEL->get('fieldvalue'),true)|regex_replace:"/(?!\w)\&nbsp;(?=\w)/":" "}
-    </textarea>
+    {if $FIELD_MODEL->isRichTextEditor()}
+        {* リッチテキストエディタ: hidden textareaで値を保持し、Web Componentで編集 *}
+        {assign var="FIELD_VALUE" value=purifyHtmlEventAttributes($FIELD_MODEL->get('fieldvalue'),true)|regex_replace:"/(?!\w)\&nbsp;(?=\w)/":" "}
+        <textarea style="display:none" id="{$MODULE}_editView_fieldName_{$FIELD_NAME}" class="inputElement textAreaElement" name="{$FIELD_NAME}"
+            {if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if}
+            {if php7_count($FIELD_INFO['validator'])}
+                data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
+            {/if}
+            >{$FIELD_VALUE}</textarea>
+        <rich-text-editor 
+            value="{$FIELD_VALUE|escape:'html'}"
+            name="{$FIELD_NAME}"
+            data-target="{$MODULE}_editView_fieldName_{$FIELD_NAME}"
+            {if $FIELD_MODEL->isReadonlyEditView() eq true} style="pointer-events:none;opacity:0.8;" {/if}
+        ></rich-text-editor>
+    {else}
+        <textarea style="height:250px; max-width: initial; width:100%;{if $FIELD_MODEL->isReadonlyEditView() eq true}background-color:#d3d3d3;opacity:0.8;{/if}" rows="3" id="{$MODULE}_editView_fieldName_{$FIELD_NAME}" class="inputElement textAreaElement col-lg-12 {if $FIELD_MODEL->isNameField()}nameField{/if}" name="{$FIELD_NAME}" {if $FIELD_NAME eq "notecontent"}id="{$FIELD_NAME}"{/if} {if !empty($SPECIAL_VALIDATOR)}data-validator='{Zend_Json::encode($SPECIAL_VALIDATOR)}'{/if}
+            {if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if}
+            {if php7_count($FIELD_INFO['validator'])}
+                data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
+            {/if}
+            {if $FIELD_MODEL->isReadonlyEditView() eq true} disabled {/if}
+            >
+        {purifyHtmlEventAttributes($FIELD_MODEL->get('fieldvalue'),true)|regex_replace:"/(?!\w)\&nbsp;(?=\w)/":" "}
+        </textarea>
+    {/if}
 {else}
     <textarea style="height:250px{if $FIELD_MODEL->isReadonlyEditView() eq true}background-color:#d3d3d3;opacity:0.8;{/if}"rows="5" id="{$MODULE}_editView_fieldName_{$FIELD_NAME}" class="inputElement {if $FIELD_MODEL->isNameField()}nameField{/if}" name="{$FIELD_NAME}" {if !empty($SPECIAL_VALIDATOR)}data-validator='{Zend_Json::encode($SPECIAL_VALIDATOR)}'{/if}
         {if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if}

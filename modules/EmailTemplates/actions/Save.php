@@ -42,18 +42,15 @@ class EmailTemplates_Save_Action extends Vtiger_Save_Action {
 		$recordModel->set('systemtemplate', $request->get('systemtemplate'));
 		$content = $request->getRaw('templatecontent');
 		$processedContent = Emails_Mailer_Model::getProcessedContent($content); // To remove script tags
+		$processedContent = vtlib_purify($processedContent); // XSS対策: HTMLPurifierによる追加サニタイズ
 		$recordModel->set('body', $processedContent);
 
 		$recordId = $recordModel->save();
 		$recordModel->updateImageName($recordId);
-		if ($request->get('returnmodule') && $request->get('returnview')){
-			$loadUrl = 'index.php?'.$request->getReturnURL();
+		if ($request->get('returnmodule') && $request->get('returnview')) {
+			$loadUrl = 'index.php?' . $request->getReturnURL();
 		} else {
-			if ($request->get('returnmodule') && $request->get('returnview')) {
-				$loadUrl = 'index.php?' . $request->getReturnURL();
-			} else {
-				$loadUrl = $recordModel->getDetailViewUrl();
-			}
+			$loadUrl = $recordModel->getDetailViewUrl();
 		}
 		header("Location: $loadUrl");
 	}

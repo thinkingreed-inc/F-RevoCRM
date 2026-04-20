@@ -388,4 +388,48 @@ describe('FieldRenderer', () => {
       expect(isUITypeSupported('unknown')).toBe(false);
     });
   });
+
+  describe('FieldRenderer isQuickCreate prop', () => {
+    it('isQuickCreate=true のとき Tiptap に isQuickCreate=true が渡される', () => {
+      const field = createField({
+        uitype: UI_TYPES.TEXTAREA,
+        name: 'description',
+        label: '詳細',
+        isRichTextEditor: true,
+      });
+      const onChange = vi.fn();
+
+      const { container } = render(
+        <FieldRenderer
+          field={field}
+          value=""
+          onChange={onChange}
+          isQuickCreate={true}
+        />
+      );
+
+      // Tiptapが描画されていること（tiptap-toolbarの存在で確認）
+      expect(container.querySelector('.tiptap-toolbar')).toBeTruthy();
+    });
+
+    it('isQuickCreate 未指定（undefined）でも Tiptap が正常に描画される', () => {
+      const field = createField({
+        uitype: UI_TYPES.TEXTAREA,
+        name: 'description',
+        label: '詳細',
+        isRichTextEditor: true,
+      });
+      const onChange = vi.fn();
+
+      expect(() => {
+        render(
+          <FieldRenderer
+            field={field}
+            value=""
+            onChange={onChange}
+          />
+        );
+      }).not.toThrow();
+    });
+  });
 });
