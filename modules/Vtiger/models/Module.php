@@ -165,6 +165,8 @@ class Vtiger_Module_Model extends Vtiger_Module {
 
 				$fieldModel = $this->getField($fieldName);
 				if ($fieldModel && in_array($fieldModel->getFieldDataType(), array('currency', 'double', 'integer'))) {
+					// インライン編集後のAjaxレスポンスでは、このrecordModelの値が返却される。
+					// ブラウザでの描写用にこのrecordModelの値が返されるが、カンマが含まれると数値として認識されないため、カンマを削除してレスポンスする。保存に関してはUItyepeの変換処理でカンマを削除しているため、描写用の値のみカンマを削除する。
 					$value = str_replace(',', '', (string)$value);
 					$recordModel->set($fieldName, $value);
 				}
