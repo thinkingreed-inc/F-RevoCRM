@@ -209,6 +209,16 @@ Class Calendar_Edit_View extends Vtiger_Edit_View {
 		} else {
 			$viewer->assign('INVITIES_SELECTED', $recordModel->getInvities());
 		}
+		if ($request->has('send_mail')) {
+			$sendMailValue = ($request->get('send_mail') == '1') ? '1' : '0';
+		} else {
+			$sendMailValue = ($recordModel->get('send_mail') == '1') ? '1' : '0';
+		}
+		$sendMailField = Vtiger_Field_Model::getInstance('send_mail', $moduleModel);
+		if ($sendMailField) {
+			$sendMailField->set('fieldvalue', $sendMailValue);
+			$viewer->assign('SEND_MAIL_FIELD', $sendMailField);
+		}
 		$viewer->assign('CURRENT_USER', $currentUser);
 
 		// added to set the return values

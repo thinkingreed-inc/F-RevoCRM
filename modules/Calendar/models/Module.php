@@ -1132,25 +1132,31 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 			if(is_array($fieldValue)){
 				$focus->column_fields[$fieldName] = $fieldValue;
 			}else if($fieldValue !== null) {
-				/*
-				 * for ajax edit, in Vtiger_SaveAjax_Action we are setting relatedContact to 
-				 * the record model which is an object
-				 * Note : decode_html expects only strings
-				 */
 				$value = is_string($fieldValue) ? decode_html($fieldValue) : $fieldValue;
 				$focus->column_fields[$fieldName] = $value;
 			}
 		}
 		$focus->mode = $recordModel->get('mode');
 		$focus->id = $recordModel->getId();
-
 		$focus->is_allday = $recordModel->get('is_allday');
 		$focus->is_not_invitees_update = $recordModel->get('is_not_invitees_update');
 		$focus->invitee_parentid = $recordModel->get('invitee_parentid');
 		$focus->invitee_array = $recordModel->get('invitee_array');
 
 		$focus->save($moduleName);
+		//活動保存後に参加者(担当者抜き)がいるかつメール送信フラグがONの場合、参加者にメール送信する
+		$selectUsers = $recordModel->get('selectedusers');
+		$send_mail = $recordModel->get('send_mail');
+		$sendMailValue = $recordModel->get('send_mail');
+		if ($sendMailValue !== null && method_exists($recordModel, 'syncRecurringSendMail')) {
+			$recordModel->syncRecurringSendMail($sendMailValue);
+		}
+		if (!empty($selectUsers) && $send_mail == '1') {
+			$invities = implode(';', $selectUsers);
+			$mail_contents = $recordModel->getInviteUserMailData();
+			$activityMode = ($recordModel->getModuleName() == 'Calendar') ? 'Task' : 'Events';
+			sendInvitation($invities, $activityMode, $recordModel, $mail_contents);
+		}
 		return $recordModel->setId($focus->id);
 	}
-
 }

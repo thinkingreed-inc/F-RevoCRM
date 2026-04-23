@@ -664,6 +664,7 @@ $languageStrings = array(
 	'Country' => 'Country',
 	'Description' => 'Description',
 	'Common Memo' => 'Common Memo',
+	'LBL_SEND_MAIL' => 'Send Mail',
 
 	'Created'=>'Created',
 	'Approved'=>'Approved',

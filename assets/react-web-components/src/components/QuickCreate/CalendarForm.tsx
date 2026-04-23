@@ -892,6 +892,29 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                 </div>
               </div>
             </div>
+            {/* メール送信チェックボックス*/}
+            <div className="md:col-span-2">
+              <div className="flex items-start gap-2">
+                <label
+                  htmlFor="send_mail"
+                  className={cn(
+                    'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
+                    isDisabled && 'text-gray-400'
+                  )}
+                >
+                  {t('LBL_SEND_MAIL')}
+                </label>
+                <span className="w-3 leading-[30px] flex-shrink-0" aria-hidden="true" />
+                <div className="flex-1 min-w-0 flex items-center h-[30px]">
+                  <Checkbox
+                    id="send_mail"
+                    checked={formData.send_mail === '1'}
+                    onCheckedChange={(checked) => onFieldChange('send_mail', checked ? '1' : '0')}
+                    disabled={isDisabled}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

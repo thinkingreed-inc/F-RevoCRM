@@ -12,5 +12,13 @@
  * Events Edit View Record Structure Model
  */
 class Events_EditRecordStructure_Model extends Calendar_EditRecordStructure_Model {
+    public function getStructure() {
+        
+        $values = parent::getStructure();
+        if (isset($values['LBL_EVENT_INFORMATION']['send_mail'])) {
+            unset($values['LBL_EVENT_INFORMATION']['send_mail']);
+        }
 
+        return $values;
+    }
 }
