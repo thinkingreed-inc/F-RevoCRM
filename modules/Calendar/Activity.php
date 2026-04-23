@@ -563,6 +563,17 @@ function insertIntoRecurringTable(& $recurObj)
 		// 新規作成の場合
 		foreach($invitees_array as $inviteeid)
 		{
+			// 参加者が存在しない場合は、処理を行わない。
+			$assignedId = ($_REQUEST['assigned_user_id'] ?? $this->column_fields['assigned_user_id']);
+			$inviteeIds = array_values(array_unique(array_filter((array)$invitees_array, function($v){
+				return $v !== null && $v !== '';
+			})));
+			if (count($inviteeIds) === 0 || (count($inviteeIds) === 1 && $inviteeIds[0] === $assignedId)) {
+				continue; 
+			}
+			if (!in_array($assignedId, $inviteeIds, true)) {
+				$inviteeIds[] = $assignedId;
+			}
 			if(empty($inviteeid)) {
 				continue;
 			}
