@@ -36,6 +36,14 @@ class Settings_Parameters_Record_Model extends Settings_Vtiger_Record_Model {
         return $this->get('description');
     }
 
+    public function getType() {
+        return $this->get('type') ?: 'string';
+    }
+
+    public function getSecret() {
+        return (int)$this->get('secret');
+    }
+
     public function getName() {
         return $this->get('key');
     }
@@ -87,6 +95,8 @@ class Settings_Parameters_Record_Model extends Settings_Vtiger_Record_Model {
                                     `id`,
                                     `key`,
                                     `value`,
+                                    `type`,
+                                    `secret`,
                                     `description`
                                 FROM
                                     vtiger_parameters
@@ -100,6 +110,8 @@ class Settings_Parameters_Record_Model extends Settings_Vtiger_Record_Model {
             $record->set("id", $adb->query_result($result, 0, "id"));
             $record->set("key", $adb->query_result($result, 0, "key"));
             $record->set("value" ,$adb->query_result($result, 0, "value"));
+            $record->set("type", $adb->query_result($result, 0, "type"));
+            $record->set("secret", $adb->query_result($result, 0, "secret"));
             $record->set("description", $adb->query_result($result, 0, "description"));
             $record->id = $record->get("id");
         }
@@ -119,6 +131,8 @@ class Settings_Parameters_Record_Model extends Settings_Vtiger_Record_Model {
                                     `id`,
                                     `key`,
                                     `value`,
+                                    `type`,
+                                    `secret`,
                                     `description`
                                 FROM
                                     vtiger_parameters
@@ -130,6 +144,8 @@ class Settings_Parameters_Record_Model extends Settings_Vtiger_Record_Model {
             $record->set("id", $adb->query_result($result, 0, "id"));
             $record->set("key", $adb->query_result($result, 0, "key"));
             $record->set("value" ,$adb->query_result($result, 0, "value"));
+            $record->set("type", $adb->query_result($result, 0, "type"));
+            $record->set("secret", $adb->query_result($result, 0, "secret"));
             $record->set("description", $adb->query_result($result, 0, "description"));
             $record->id = $record->get("id");
         }
@@ -148,8 +164,8 @@ class Settings_Parameters_Record_Model extends Settings_Vtiger_Record_Model {
             if(!$this->exsitsKey()) {
                 throw new Exception(vtranslate("LBL_DUPLICATE_KEY", 'Settings::Parameters'));
             }
-            $adb->pquery("INSERT INTO vtiger_parameters(`key`, `value`, `description`) values(?, ?, ?)"
-                , array($this->get('key'), $this->get('value'), $this->get('description')));
+            $adb->pquery("INSERT INTO vtiger_parameters(`key`, `value`, `type`, `secret`, `description`) values(?, ?, ?, ?, ?)"
+                , array($this->get('key'), $this->get('value'), $this->getType(), $this->getSecret(), $this->get('description')));
 
             $id = $adb->pquery("SELECT `id` FROM vtiger_parameters WHERE `key` = ?", array($this->get('key')));
             $this->set('id', $adb->query_result($id, 0, "id"));
@@ -157,8 +173,8 @@ class Settings_Parameters_Record_Model extends Settings_Vtiger_Record_Model {
             if(!$this->canUpdate()) {
                 throw new Exception(vtranslate("LBL_DUPLICATE_KEY", 'Settings::Parameters'));
             }
-            $adb->pquery("UPDATE vtiger_parameters SET `key` = ?, `value` = ?, `description` = ? WHERE id = ?"
-                , array($this->get('key'), $this->get('value'), $this->get('description'), $this->id));
+            $adb->pquery("UPDATE vtiger_parameters SET `key` = ?, `value` = ?, `type` = ?, `secret` = ?, `description` = ? WHERE id = ?"
+                , array($this->get('key'), $this->get('value'), $this->getType(), $this->getSecret(), $this->get('description'), $this->id));
         }
         return $this->getId();
     }
@@ -193,7 +209,7 @@ class Settings_Parameters_Record_Model extends Settings_Vtiger_Record_Model {
      * Function to get Edit view url 
      */
     public function getEditViewUrl() {
-        return 'module=Parameters&parent=Settings&view=EditAjax&record='.$this->getId();
+          return "javascript:openParameterEdit('".$this->getId()."')";
     }
 
     public function getRecordLinks() {
@@ -204,13 +220,7 @@ class Settings_Parameters_Record_Model extends Settings_Vtiger_Record_Model {
         );
         $editLinkInstance = Vtiger_Link_Model::getInstanceFromValues($editLink);
         
-        $deleteLink = array(
-            'linkurl' => "javascript:Settings_Parameters_Js.triggerDelete(event,'".$this->getId()."')",
-            'linklabel' => 'LBL_DELETE',
-            'linkicon' => 'icon-trash'
-        );
-        $deleteLinkInstance = Vtiger_Link_Model::getInstanceFromValues($deleteLink);
-        return array($editLinkInstance,$deleteLinkInstance);
+      return array($editLinkInstance);
     }
 
     /**

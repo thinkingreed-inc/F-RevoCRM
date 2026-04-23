@@ -2,6 +2,7 @@ import { createWebComponent } from "@/utils/createWebComponent";
 import "./index.css";
 import { QuickCreate, CalendarQuickCreate } from "@/components/QuickCreate";
 import { AppMenu } from "@/components/AppMenu";
+import { ParameterEdit } from "@/components/ParameterEdit/ParameterEdit";
 
 // QuickCreate本体コンポーネントの登録
 // イベント: save, cancel, go-to-full-form, open-change (CustomEvent)
@@ -42,3 +43,13 @@ createWebComponent(
 // 使用例（HTML）:
 // <app-menu app-menus='[{"name":"MARKETING","label":"マーケティング","modules":[...]}]'></app-menu>
 createWebComponent(AppMenu, "app-menu", ["app-menus"]);
+
+// ParameterEdit コンポーネントの登録（システム変数編集ダイアログ）
+// record-id: 編集対象のレコードID
+// is-open: ダイアログの開閉状態
+createWebComponent(
+  ParameterEdit,
+  "parameter-edit",
+  ["record-id", "is-open"],
+  ["onSave", "onCancel", "onOpenChange"]
+);

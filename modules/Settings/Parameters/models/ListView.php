@@ -13,7 +13,8 @@ class Settings_Parameters_ListView_Model extends Settings_Vtiger_ListView_Model 
 									`id`,
 									`key`,
 									`value`,
-									`description`
+									`description`,
+									`secret`
 								FROM
 									vtiger_parameters
 								ORDER BY
@@ -23,9 +24,14 @@ class Settings_Parameters_ListView_Model extends Settings_Vtiger_ListView_Model 
 		$listViewRecordModels = array();
 		for($i=0; $i<$adb->num_rows($result); $i++) {
 			$record = new Settings_Parameters_Record_Model();
+			$record->set("secret", $adb->query_result($result, $i, "secret"));
 			$record->set("id", $adb->query_result($result, $i, "id"));
 			$record->set("key", $adb->query_result($result, $i, "key"));
-			$record->set("value" ,$adb->query_result($result, $i, "value"));
+			if ((string)$record->get("secret") === "1") {
+				$record->set("value", "*******");
+			} else {
+				$record->set("value", $adb->query_result($result, $i, "value"));
+			}
 			$record->set("description" ,$adb->query_result($result, $i, "description"));
 			$record->id = $record->get("id");
 			$listViewRecordModels[$record->getId()] = $record;
