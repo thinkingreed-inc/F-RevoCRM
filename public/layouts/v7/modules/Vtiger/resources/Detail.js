@@ -2796,7 +2796,11 @@ Vtiger.Class("Vtiger_Detail_Js",{
 			app.helper.showProgress();
 			var currentPage = jQuery("#updatesCurrentPage").val();
 			var recordId = jQuery("#recordId").val();
-			var nextPage = parseInt(currentPage) + 1;
+			if (parseInt(currentPage) === 1) {
+				var nextPage = 5; // 初回は20件表示されている。また、limit=5のため、4ページ分表示済み。
+			} else {
+				var nextPage = parseInt(currentPage) + 1;
+			}
 			var url = "index.php?module=" + app.getModuleName() + "&view=Detail&record=" + recordId + "&mode=showRecentActivities&page=" 
 					  + nextPage + "&limit=5&tab_label=LBL_UPDATES";
 			var postParams  = app.convertUrlToDataParams(url);
