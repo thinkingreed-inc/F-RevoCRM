@@ -1526,7 +1526,6 @@ $languageStrings = array(
 	'Profile Related to Sales' => 'Sales Profile',
 	'Profile Related to Support' => 'Support Profile',
 	'Guest Profile for Test Users' => 'Guest Profile for Test Users',
-	'管理者' => 'Administrator',
 	// User Management > Login History
 	'Signed in' => 'Signed In',
 	'Signed off' => 'Signed Off',
