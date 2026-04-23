@@ -459,12 +459,8 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
    */
   const checkUnsavedChanges = useCallback((): boolean => {
     if (isDirty && !successMessage) {
-      const message = t('JS_CHANGES_WILL_BE_LOST');
-      return window.confirm(
-        message !== 'JS_CHANGES_WILL_BE_LOST' 
-          ? message 
-          : '変更内容が保存されません。よろしいですか？'
-      );
+
+      return window.confirm(t('JS_CHANGES_WILL_BE_LOST'));
     }
     return true;
   }, [isDirty, successMessage, t]);
