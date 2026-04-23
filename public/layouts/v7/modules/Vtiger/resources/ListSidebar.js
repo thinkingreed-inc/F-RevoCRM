@@ -152,7 +152,7 @@ Vtiger.Class('Vtiger_ListSidebar_Js',{},{
     
     unMarkAllTags : function() {
         var container = jQuery('#listViewTagContainer');
-        container.find('.tag').removeClass('active').find('i.activeToggleIcon').removeClass('fa-circle-o').addClass('fa-circle');
+        container.find('.tag').removeClass('active').find('i.activeToggleIcon').removeClass('fa-circle').addClass('fa-circle-o');
     },
     
     registerPopOverContent: function () {
@@ -259,7 +259,7 @@ Vtiger.Class('Vtiger_ListSidebar_Js',{},{
             }
 
             element.addClass('active');
-            element.find('i.activeToggleIcon').removeClass('fa-circle').addClass('fa-circle-o');
+            element.find('i.activeToggleIcon').removeClass('fa-circle-o').addClass('fa-circle');
             var listSearchParams = new Array();
             listSearchParams[0] = new Array();
             var tagSearchParams = new Array();

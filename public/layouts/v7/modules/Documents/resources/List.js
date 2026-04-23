@@ -130,7 +130,7 @@ Vtiger_List_Js("Documents_List_Js", {
     
     unMarkAllTags : function() {
         var container = jQuery('#listViewTagContainer');
-        container.find('.tag').removeClass('active').find('i.activeToggleIcon').removeClass('fa-circle-o').addClass('fa-circle');
+        container.find('.tag').removeClass('active').find('i.activeToggleIcon').removeClass('fa-circle').addClass('fa-circle-o');
     },
     
     unMarkAllFolders : function() {
