@@ -309,6 +309,15 @@ class Vtiger_List_View extends Vtiger_Index_View {
 			$tagParams = array();
 		}
 
+		if (empty($tagParams) && !empty($tag)) {
+			$tagIds = explode(',', $tag);
+			$tagParams = array(
+				array(
+					array('tags', 'e', $tagIds)
+				)
+			);
+		}
+
 		$searchAndTagParams = array_merge($searchParams, $tagParams);
 
 		$transformedSearchParams = $this->transferListSearchParamsToFilterCondition($searchAndTagParams, $listViewModel->getModule());
@@ -490,11 +499,21 @@ class Vtiger_List_View extends Vtiger_Index_View {
 		$searchKey = $request->get('search_key');
 		$searchValue = $request->get('search_value');
 		$tagParams = $request->get('tag_params');
+		$tag = $request->get('tag');
 
 		$listViewModel = Vtiger_ListView_Model::getInstance($moduleName, $cvId);
 
 		if(empty($tagParams)){
 			$tagParams = array();
+		}
+
+		if (empty($tagParams) && !empty($tag)) {
+			$tagIds = explode(',', $tag);
+			$tagParams = array(
+				array(
+					array('tags', 'e', $tagIds)
+				)
+			);
 		}
 
 		$searchParams = $request->get('search_params');
