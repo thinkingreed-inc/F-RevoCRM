@@ -135,6 +135,9 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Initialization tracking
+  // 詳細入力への遷移時などに、一時的に離脱警告をスキップするためのフラグ
+
+  const skipUnloadCheckRef = useRef(false);
   const isInitializedRef = useRef(false);
   const prevIsOpenRef = useRef(false);
   const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -244,6 +247,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
     if (prevIsOpenRef.current && !isOpen) {
       isInitializedRef.current = false;
       setIsDirty(false);
+      skipUnloadCheckRef.current = false;
       if (successTimeoutRef.current) {
         clearTimeout(successTimeoutRef.current);
         successTimeoutRef.current = null;
@@ -258,7 +262,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
    */
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isOpen && isDirty && !successMessage) {
+      if (!skipUnloadCheckRef.current && isOpen && isDirty && !successMessage) {
         e.preventDefault();
         // Chrome等、現代のブラウザではカスタムメッセージは表示されず
         // ブラウザ標準の「変更が保存されない可能性があります」という文言が表示されます。
@@ -458,6 +462,10 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
    * @returns 続行してよい場合(変更なし、またはユーザーが承諾)はtrue
    */
   const checkUnsavedChanges = useCallback((): boolean => {
+    if (skipUnloadCheckRef.current) {
+      return true;
+    }
+
     if (isDirty && !successMessage) {
 
       return window.confirm(t('JS_CHANGES_WILL_BE_LOST'));
@@ -753,6 +761,9 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
     }
 
     if (!editViewUrl) return;
+
+    // 詳細入力への遷移は、入力中のデータを引き継ぐ意図的な遷移のため警告をスキップ
+    skipUnloadCheckRef.current = true;
 
     // Calendar系モジュールの場合、datetime-local形式を date + time に分割
     // Edit.phpはdate_start/time_start、due_date/time_endを別々のパラメータとして受け取るため
