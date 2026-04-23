@@ -148,6 +148,7 @@ $languageStrings = array(
 	'Modified Time' => 'Modified Time',
 	'Description' => 'Description',
 	'Assigned To'=>'Assigned To',
+	'smcreatorid' => 'Created By',
 
 	//Loading Labels
 	'LBL_LOADING' => 'Loading',
