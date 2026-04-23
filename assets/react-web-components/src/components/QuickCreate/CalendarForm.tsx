@@ -135,6 +135,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
   const inviteeDropdownRef = useRef<HTMLDivElement>(null);
   const inviteeInputContainerRef = useRef<HTMLDivElement>(null);
   const [inviteeDropdownPosition, setInviteeDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [inviteeHighlightedIndex, setInviteeHighlightedIndex] = useState<number>(0);
   const initialInviteesLoadedRef = useRef<boolean>(false);
   // Track touch start position for swipe scrolling
   const inviteeTouchStartYRef = useRef<number | null>(null);
@@ -222,6 +223,11 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
       user.name.toLowerCase().includes(lowerSearch)
     );
   }, [availableUsers, inviteeSearchTerm]);
+
+  // Reset highlighted index when search term changes
+  useEffect(() => {
+    setInviteeHighlightedIndex(0);
+  }, [inviteeSearchTerm]);
 
   /**
    * Update invitee dropdown position
@@ -383,6 +389,40 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
     setInviteeSearchTerm('');
     setIsInviteeDropdownOpen(false);
   }, [selectedInvitees]);
+
+  /**
+   * Handle invitee search keyboard navigation
+   */
+  const handleInviteeKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    const candidates = filteredUsers.filter(user => !selectedInvitees.includes(user.id));
+    if (!isInviteeDropdownOpen || candidates.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setInviteeHighlightedIndex(prev =>
+          prev < candidates.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setInviteeHighlightedIndex(prev =>
+          prev > 0 ? prev - 1 : candidates.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (inviteeHighlightedIndex >= 0 && inviteeHighlightedIndex < candidates.length) {
+          handleAddInvitee(candidates[inviteeHighlightedIndex].id);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setIsInviteeDropdownOpen(false);
+        setInviteeHighlightedIndex(0);
+        break;
+    }
+  }, [isInviteeDropdownOpen, filteredUsers, selectedInvitees, inviteeHighlightedIndex, handleAddInvitee]);
 
   /**
    * Handle invitee remove
@@ -807,6 +847,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                     updateInviteeDropdownPosition();
                     setIsInviteeDropdownOpen(true);
                   }}
+                  onKeyDown={handleInviteeKeyDown}
                   placeholder={t('LBL_SEARCH_USERS_PLACEHOLDER')}
                   disabled={isDisabled}
                   className={cn(
@@ -837,11 +878,14 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                       <div className="py-1">
                         {filteredUsers
                           .filter(user => !selectedInvitees.includes(user.id))
-                          .map(user => (
+                          .map((user, index) => (
                             <div
                               key={user.id}
                               onClick={() => handleAddInvitee(user.id)}
-                              className="px-3 py-1.5 text-md cursor-pointer hover:bg-blue-50"
+                              className={cn(
+                                'px-3 py-1.5 text-md cursor-pointer',
+                                index === inviteeHighlightedIndex ? 'bg-blue-100' : 'hover:bg-blue-50'
+                              )}
                             >
                               {user.name}
                             </div>
