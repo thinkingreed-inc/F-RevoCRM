@@ -1741,6 +1741,9 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		Friday: 5,
 		Saturday: 6
 	},
+	// 重複チェック時に、終了日時が null の場合に補完するデフォルト時間（単位: 時間）
+	// サーバ側 DragDropAjax.php の `$endSecondsDelta = $secondsDelta + 7200`（2時間=7200秒）と揃えること
+	overlapEndDefaultDurationHours: 2,
 	refreshFeed: function (feedCheckbox) {
 		var thisInstance = this;
 		if (feedCheckbox.is(':checked')) {
@@ -1785,6 +1788,14 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			}
 		});
 	},
+	//重複チェックのあるイベントをドラッグしたとき、終了日時がnullの場合は開始日時から2時間後を終了日時として扱う
+	getOverlapEndDateTime: function (event) {
+		var overlapEnd = event.end ? moment(event.end) : null;
+		if (!overlapEnd && !event.allDay && event.start) {
+			overlapEnd = moment(event.start).add(this.overlapEndDefaultDurationHours, 'hours');
+		}
+		return overlapEnd;
+	},
 	updateEventOnResize: function (event, delta, revertFunc, jsEvent, ui, view) {
 		var thisInstance = this;
 		if (event.module !== 'Calendar' && event.module !== 'Events') {
@@ -1811,13 +1822,14 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			'allday': event.allDay,
 		};
 
+		var overlapEnd = this.getOverlapEndDateTime(event);
 		var overlapData = {
 			module: 'Events',
 			record: event.id,
 			date_start: event.start.format(dateFormat),
 			time_start: event.start.format(timeFormat),
-			due_date: event.end ? event.end.format(dateFormat) : null,
-			time_end: event.end ? event.end.format(timeFormat) : null,
+			due_date: overlapEnd ? overlapEnd.format(dateFormat) : null,
+			time_end: overlapEnd ? overlapEnd.format(timeFormat) : null,
 			is_allday: event.allDay
 		};
 		
@@ -1867,13 +1879,14 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			'allday': event.allDay,
 		};
 		
+		var overlapEnd = this.getOverlapEndDateTime(event);
 		var overlapData = {
 			module: 'Events',
 			record: event.id,
 			date_start: event.start.format(dateFormat),
 			time_start: event.start.format(timeFormat),
-			due_date: event.end ? event.end.format(dateFormat) : null,
-			time_end: event.end ? event.end.format(timeFormat) : null,
+			due_date: overlapEnd ? overlapEnd.format(dateFormat) : null,
+			time_end: overlapEnd ? overlapEnd.format(timeFormat) : null,
 			is_allday: event.allDay
 		};
 
