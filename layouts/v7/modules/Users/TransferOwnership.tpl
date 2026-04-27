@@ -21,7 +21,7 @@
             <div name='massEditContent'>
                 <div class="modal-body">
                     <div class="alert alert-info">
-                        {vtranslate('LBL_TRANSFER_OWNERSHIP_DESC', $MODULE, $ACTIVE_ADMIN_NAME, vtranslate('Account Owner', $MODULE))}
+                        {vtranslate('LBL_TRANSFER_OWNERSHIP_DESC', $MODULE, $ACTIVE_ADMIN_NAME)}
                     </div>
                     <div class="form-group">
                        <label class="control-label fieldLabel col-sm-5">{vtranslate('LBL_TRANSFER_OWNERSHIP_TO_USER', $MODULE)}</label>
