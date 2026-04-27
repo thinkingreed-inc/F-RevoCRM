@@ -454,6 +454,14 @@ class Vtiger_List_View extends Vtiger_Index_View {
 				}
 			}
 		}
+
+		if (!$viewer->get_template_vars('CURRENT_CV_MODEL')) {
+			$allFilterModel = CustomView_Record_Model::getAllFilterByModule($moduleName);
+			if ($allFilterModel) {
+				$viewer->assign('CURRENT_CV_MODEL', $allFilterModel);
+				$viewer->assign('VIEWID', $allFilterModel->getId());
+			}
+		}
 	}
 
 	/**
