@@ -2464,6 +2464,9 @@ Vtiger.Class("Calendar_Calendar_Js", {
 	},
 	getCalendarConfigs: function () {
 		var thisInstance = this;
+		if (jQuery('#calendarDraggingStyle').length === 0) {
+			jQuery('<style id="calendarDraggingStyle">body.calendar-dragging .webui-popover { display: none !important; }</style>').appendTo('head');
+		}
 		var userDefaultActivityView = thisInstance.getDefaultCalendarView();
 		var userDefaultTimeFormat = thisInstance.getDefaultCalendarTimeFormat();
                 
@@ -2671,6 +2674,14 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			},
 			eventDrop: function (event, delta, revertFunc, jsEvent, ui, view) {
 				thisInstance.updateEventOnDrop(event, delta, revertFunc, jsEvent, ui, view);
+			},
+			eventDragStart: function (event, jsEvent, ui, view) {
+				jQuery('body').addClass('calendar-dragging');
+				jQuery('.webui-popover').hide();
+			},
+			eventDragStop: function (event, jsEvent, ui, view) {
+				jQuery('body').removeClass('calendar-dragging');
+				jQuery('.webui-popover').hide();
 			},
 			select: function (startDate, endDate, jsEvent, view){
 				thisInstance.performDayDragAction(startDate, endDate, jsEvent, view);
