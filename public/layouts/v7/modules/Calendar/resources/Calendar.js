@@ -2123,6 +2123,10 @@ Vtiger.Class("Calendar_Calendar_Js", {
 						// WebComponents版では record-id から GetRecord API でデータを取得するため、
 						// ここのデータは initialData として使われるが、recordData が優先される
 						// Note: eventObj.title は表示用（ステータス付き）のため使用しない
+						// 複製モードでも時刻選択肢をユーザーのカレンダー設定（活動時間）刻みにするため、
+						// 新規作成パスと同じく defaultCallDuration / defaultOtherEventDuration を渡す
+						var defaultCallDurationEl = document.getElementById('defaultCallDuration');
+						var defaultOtherEventDurationEl = document.getElementById('defaultOtherEventDuration');
 						triggerParams.data = {
 							// subject は eventObj.title ではなく eventObj.subject を使用
 							// eventObj.subject が undefined の場合もあるため、その場合は空文字
@@ -2140,7 +2144,9 @@ Vtiger.Class("Calendar_Calendar_Js", {
 							description: eventObj.description,
 							location: eventObj.location,
 							parent_id: eventObj.parent_id,
-							contact_id: eventObj.contact_id
+							contact_id: eventObj.contact_id,
+							defaultCallDuration: defaultCallDurationEl ? parseInt(defaultCallDurationEl.value, 10) || 5 : 5,
+							defaultOtherEventDuration: defaultOtherEventDurationEl ? parseInt(defaultOtherEventDurationEl.value, 10) || 5 : 5
 						};
 					}
 				}
