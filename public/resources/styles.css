@@ -169,23 +169,6 @@ td.listViewEntryValue  .fieldValue .value {
   div.CalendarViewPageDiv {
     padding-top: 30px;
   }
-  .main-container.main-container-Calendar{
-    display: flex;
-    flex-wrap: nowrap;
-    flex-direction: column;
-  }
-  .main-container.main-container-Calendar 
-  .sidebar-essentials {
-    order: 0;
-  }  
-  .main-container.main-container-Calendar 
-  .listViewPageDiv {
-    order: 1;
-  }  
-  .main-container.main-container-Calendar 
-  .module-nav {
-    order: 2;
-  }  
   .list-menu-content.calendar_view_events .mCustomScrollBox {
     max-height: none!important;
     overflow: scroll;
@@ -233,12 +216,43 @@ td.listViewEntryValue  .fieldValue .value {
   position: static !important;
 }
 }
-@media (max-width: 991px) { 
+@media (max-width: 991px) {
   .main-container.calendarview{
     display: flex;
     flex-wrap: nowrap;
     flex-direction: column-reverse;
-  } 
+  }
+  .main-container.main-container-Calendar {
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: column;
+  }
+  .main-container.main-container-Calendar .sidebar-essentials {
+    order: 0;
+  }
+  .main-container.main-container-Calendar .listViewPageDiv {
+    order: 1;
+  }
+  .main-container.main-container-Calendar .module-nav {
+    order: 2;
+    width: 100%;
+    z-index: 1100;
+    background-color: #2C3B49;
+    background: #2C3B49;
+  }
+  .main-container.main-container-Calendar .module-nav div.modules-menu {
+    position: relative;
+    left: auto;
+  }
+  .main-container.main-container-Calendar .module-nav div.mod-switcher-container {
+    width: 100%;
+  }
+  .main-container.main-container-Calendar .modules-menu ul li {
+    display: inline-block;
+  }
+  .main-container.main-container-Calendar .modules-menu ul li.module-qtip a > span {
+    display: none;
+  }
   .list-menu-content .activitytypes .activitytype-indicator {
     padding: 14px 5%;
     margin: 8px;
