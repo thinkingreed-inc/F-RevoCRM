@@ -425,13 +425,16 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
         );
         break;
       case 'Enter':
+        // IME(日本語入力)確定のEnterは招待者選択しない
+        if (e.nativeEvent.isComposing) break;
         e.preventDefault();
         if (inviteeHighlightedIndex >= 0 && inviteeHighlightedIndex < inviteeCandidates.length) {
           handleAddInvitee(inviteeCandidates[inviteeHighlightedIndex].id);
         }
         break;
       case 'Escape':
-        e.preventDefault();
+        // ドロップダウンを閉じるのみ。Dialog自体への伝播は QuickCreate の
+        // onEscapeKeyDown が data-rwc-dropdown 要素の存在で判定して抑止する
         setIsInviteeDropdownOpen(false);
         setInviteeHighlightedIndex(0);
         break;
@@ -862,6 +865,11 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                     setIsInviteeDropdownOpen(true);
                   }}
                   onKeyDown={handleInviteeKeyDown}
+                  onBlur={() => {
+                    // Tab離脱等の blur でドロップダウンを閉じる
+                    // 候補クリック時の選択処理を妨げないよう150ms遅延
+                    setTimeout(() => setIsInviteeDropdownOpen(false), 150);
+                  }}
                   placeholder={t('LBL_SEARCH_USERS_PLACEHOLDER')}
                   disabled={isDisabled}
                   className={cn(
@@ -876,6 +884,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                 {isInviteeDropdownOpen && !isDisabled && inviteeDropdownPosition && createPortal(
                   <div
                     ref={inviteeDropdownRef}
+                    data-rwc-dropdown="invitee"
                     className="fixed z-[100003] bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-auto pointer-events-auto select-none"
                     style={{
                       top: inviteeDropdownPosition.top,

@@ -107,6 +107,12 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const [moduleDropdownPosition, setModuleDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null);
 
+  // キーボード操作用ハイライトindex (検索結果ドロップダウン)
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(0);
+
+  // キーボード操作用ハイライトindex (モジュール選択ドロップダウン)
+  const [moduleHighlightedIndex, setModuleHighlightedIndex] = useState<number>(0);
+
   // デバウンス用のタイマー
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -264,6 +270,19 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
     };
   }, []);
 
+  // 検索語変更時 + searchResults更新時にハイライトを先頭にリセット
+  useEffect(() => {
+    setHighlightedIndex(0);
+  }, [searchTerm, searchResults]);
+
+  // モジュール選択ドロップダウンopen時に現在の選択モジュールにハイライト
+  useEffect(() => {
+    if (isModuleDropdownOpen) {
+      const currentIndex = referenceModules.findIndex(m => m === selectedModule);
+      setModuleHighlightedIndex(currentIndex >= 0 ? currentIndex : 0);
+    }
+  }, [isModuleDropdownOpen, referenceModules, selectedModule]);
+
   /**
    * レコード選択
    */
@@ -284,6 +303,42 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
     setSearchResults([]);
     inputRef.current?.focus();
   };
+
+  /**
+   * キーボード操作 (検索結果ドロップダウン用 ↑↓ Enter Esc)
+   */
+  const handleSearchKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isOpen || isLoading || searchResults.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setHighlightedIndex(prev =>
+          prev < searchResults.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setHighlightedIndex(prev =>
+          prev > 0 ? prev - 1 : searchResults.length - 1
+        );
+        break;
+      case 'Enter':
+        // IME(日本語入力)確定のEnterはレコード選択しない
+        if (e.nativeEvent.isComposing) break;
+        e.preventDefault();
+        if (highlightedIndex >= 0 && highlightedIndex < searchResults.length) {
+          handleSelectRecord(searchResults[highlightedIndex]);
+        }
+        break;
+      case 'Escape':
+        // ドロップダウンを閉じるのみ。Dialog自体への伝播は QuickCreate の
+        // onEscapeKeyDown が data-rwc-dropdown 要素の存在で判定して抑止する
+        setIsOpen(false);
+        setHighlightedIndex(0);
+        break;
+    }
+  }, [isOpen, isLoading, searchResults, highlightedIndex]);
 
   /**
    * 参照モジュール選択
@@ -404,6 +459,7 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
     const dropdown = (
       <div
         ref={moduleDropdownRef}
+        data-rwc-dropdown="reference-module"
         className="fixed z-[100003] bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto pointer-events-auto"
         style={{
           top: moduleDropdownPosition.top,
@@ -418,13 +474,17 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
         }}
       >
         <div className="py-1">
-          {referenceModules.map(mod => (
+          {referenceModules.map((mod, index) => (
             <div
               key={mod}
               onClick={() => handleModuleSelect(mod)}
               className={cn(
-                'px-3 py-1.5 text-md cursor-pointer hover:bg-blue-50',
-                selectedModule === mod && 'bg-blue-100'
+                'px-3 py-1.5 text-md cursor-pointer',
+                index === moduleHighlightedIndex
+                  ? 'bg-blue-100'
+                  : selectedModule === mod
+                    ? 'bg-blue-100'
+                    : 'hover:bg-blue-50'
               )}
             >
               {getModuleLabel(mod)}
@@ -444,6 +504,7 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
     const dropdown = (
       <div
         ref={dropdownRef}
+        data-rwc-dropdown="reference-search"
         className="fixed z-[100003] bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto pointer-events-auto"
         style={{
           top: dropdownPosition.top,
@@ -463,13 +524,17 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
           </div>
         ) : searchResults.length > 0 ? (
           <div className="py-1">
-            {searchResults.map((record) => (
+            {searchResults.map((record, index) => (
               <div
                 key={record.id}
                 onClick={() => handleSelectRecord(record)}
                 className={cn(
-                  'px-3 py-1.5 text-md cursor-pointer hover:bg-blue-50',
-                  value === record.id && 'bg-blue-100'
+                  'px-3 py-1.5 text-md cursor-pointer',
+                  index === highlightedIndex
+                    ? 'bg-blue-100'
+                    : value === record.id
+                      ? 'bg-blue-100'
+                      : 'hover:bg-blue-50'
                 )}
               >
                 {record.label}
@@ -523,13 +588,50 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
                       }
                     }}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        if (!disabled) {
+                      if (disabled) return;
+                      // ドロップダウン閉時: Enter/Space で開く
+                      if (!isModuleDropdownOpen) {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
                           updateModuleDropdownPosition();
-                          setIsModuleDropdownOpen(!isModuleDropdownOpen);
+                          setIsModuleDropdownOpen(true);
                         }
+                        return;
                       }
+                      // ドロップダウン開時: ↑↓Enter Esc
+                      switch (e.key) {
+                        case 'ArrowDown':
+                          e.preventDefault();
+                          setModuleHighlightedIndex(prev =>
+                            prev < referenceModules.length - 1 ? prev + 1 : 0
+                          );
+                          break;
+                        case 'ArrowUp':
+                          e.preventDefault();
+                          setModuleHighlightedIndex(prev =>
+                            prev > 0 ? prev - 1 : referenceModules.length - 1
+                          );
+                          break;
+                        case 'Enter':
+                        case ' ':
+                          // IME(日本語入力)確定のEnterはモジュール選択しない
+                          if (e.nativeEvent.isComposing) break;
+                          e.preventDefault();
+                          if (moduleHighlightedIndex >= 0 && moduleHighlightedIndex < referenceModules.length) {
+                            handleModuleSelect(referenceModules[moduleHighlightedIndex]);
+                          }
+                          break;
+                        case 'Escape':
+                          // ドロップダウンを閉じるのみ。Dialog自体への伝播は QuickCreate の
+                          // onEscapeKeyDown が data-rwc-dropdown 要素の存在で判定して抑止する
+                          setIsModuleDropdownOpen(false);
+                          break;
+                      }
+                    }}
+                    onBlur={() => {
+                      // Tab離脱等の blur でモジュール選択ドロップダウンを閉じる
+                      // 候補クリック時の選択処理を妨げないよう150ms遅延
+                      setTimeout(() => setIsModuleDropdownOpen(false), 150);
                     }}
                     onChange={() => {}} // 値は選択肢からのみ変更可能
                     autoComplete="off"
@@ -559,6 +661,12 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
                     value={displayLabel}
                     onChange={handleSearchChange}
                     onFocus={handleFocus}
+                    onKeyDown={handleSearchKeyDown}
+                    onBlur={() => {
+                      // Tab離脱等の blur でドロップダウンを閉じる
+                      // 候補クリック時の選択処理を妨げないよう150ms遅延
+                      setTimeout(() => setIsOpen(false), 150);
+                    }}
                     disabled={disabled}
                     placeholder={t('LBL_PLACEHOLDER_SEARCH', label)}
                     autoComplete="off"

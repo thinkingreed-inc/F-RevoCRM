@@ -81,6 +81,9 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
   // ドロップダウンの位置
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null);
 
+  // キーボード操作用ハイライトindex
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(0);
+
   // タッチスワイプ用のref
   const touchStartYRef = useRef<number | null>(null);
 
@@ -134,6 +137,13 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
     );
   }, [options, searchTerm]);
 
+  // 検索語変更時はハイライトを先頭にリセット
+  // (単一選択のため、選択時にドロップダウンが閉じる→次回open時は再度0開始
+  //  となるので候補数変動時のクランプuseEffectは不要)
+  useEffect(() => {
+    setHighlightedIndex(0);
+  }, [searchTerm]);
+
   /**
    * 現在の値から表示ラベルを設定
    */
@@ -179,6 +189,42 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
       onRecordTypeChange(name, option.value);
     }
   };
+
+  /**
+   * キーボード操作 (↑↓ Enter Esc)
+   */
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isOpen || filteredOptions.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setHighlightedIndex(prev =>
+          prev < filteredOptions.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setHighlightedIndex(prev =>
+          prev > 0 ? prev - 1 : filteredOptions.length - 1
+        );
+        break;
+      case 'Enter':
+        // IME(日本語入力)確定のEnterはオプション選択しない
+        if (e.nativeEvent.isComposing) break;
+        e.preventDefault();
+        if (highlightedIndex >= 0 && highlightedIndex < filteredOptions.length) {
+          handleSelectOption(filteredOptions[highlightedIndex]);
+        }
+        break;
+      case 'Escape':
+        // ドロップダウンを閉じるのみ。Dialog自体への伝播は QuickCreate の
+        // onEscapeKeyDown が data-rwc-dropdown 要素の存在で判定して抑止する
+        setIsOpen(false);
+        setHighlightedIndex(0);
+        break;
+    }
+  }, [isOpen, filteredOptions, highlightedIndex]);
 
   /**
    * 選択をクリア
@@ -264,6 +310,7 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
     const dropdown = (
       <div
         ref={dropdownRef}
+        data-rwc-dropdown="picklist"
         className="fixed z-[100003] bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto pointer-events-auto"
         style={{
           top: dropdownPosition.top,
@@ -279,13 +326,17 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
       >
         {filteredOptions.length > 0 ? (
           <div className="py-1">
-            {filteredOptions.map(option => (
+            {filteredOptions.map((option, index) => (
               <div
                 key={option.value}
                 onClick={() => handleSelectOption(option)}
                 className={cn(
-                  'px-3 py-1.5 text-md cursor-pointer hover:bg-blue-50',
-                  value === option.value && 'bg-blue-100'
+                  'px-3 py-1.5 text-md cursor-pointer',
+                  index === highlightedIndex
+                    ? 'bg-blue-100'
+                    : value === option.value
+                      ? 'bg-blue-100'
+                      : 'hover:bg-blue-50'
                 )}
               >
                 {option.label}
@@ -332,6 +383,12 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
             value={displayLabel}
             onChange={handleSearchChange}
             onFocus={handleFocus}
+            onKeyDown={handleKeyDown}
+            onBlur={() => {
+              // Tab離脱等の blur でドロップダウンを閉じる
+              // 候補クリック時の選択処理を妨げないよう150ms遅延
+              setTimeout(() => setIsOpen(false), 150);
+            }}
             disabled={disabled}
             placeholder={t('LBL_PLACEHOLDER_SEARCH', label)}
             autoComplete="off"
