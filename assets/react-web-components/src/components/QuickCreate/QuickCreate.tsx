@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   Dialog,
-  DialogContent
+  DialogContent,
+  DialogDescription
 } from '../ui/dialog';
 import { Alert, AlertDescription } from '../ui/alert';
 import { Loader2, XCircle } from 'lucide-react';
@@ -15,12 +16,13 @@ import { usePicklistDependency } from './hooks/usePicklistDependency';
 import { useCalendarFields } from './hooks/useCalendarFields';
 import { useRecordData } from './hooks/useRecordData';
 import { QuickCreateProps } from '../../types/quickcreate';
-import { FieldInfo, FieldValue } from '../../types/field';
+import { FieldInfo, FieldValue, UI_TYPES } from '../../types/field';
 import { cn } from '../../lib/utils';
 import { TranslationProvider } from '../../contexts/TranslationContext';
 import { useTranslation } from '../../hooks/useTranslation';
 import { transformCalendarDateTime } from '../../utils/datetime';
 import { validateFieldByUIType } from '../../utils/validation';
+import { syncJoditEditorFormData } from '../../utils/joditEditor';
 
 /**
  * Activity type for Calendar variant
@@ -415,10 +417,43 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
       if (field.name === 'assigned_user_id') {
         return (window as any)._USERMETA?.id || '1';
       }
-      if (field.mandatory && field.picklistValues && field.picklistValues.length > 0) {
+      // 必須のpicklistフィールドは先頭の選択肢をデフォルト値として設定
+      // ただし、multipicklistは複数選択のため、ユーザーに選択させる（自動選択しない）
+      if (field.mandatory && field.picklistValues && field.picklistValues.length > 0 && field.uitype !== UI_TYPES.MULTIPICKLIST) {
         return field.picklistValues[0].value;
       }
       return undefined;
+    };
+
+    // Helper function to generate default datetime values
+    // Uses defaultOtherEventDuration for end time calculation
+    const getDefaultDateTimeValues = () => {
+      // ローカルタイムゾーン基準でYYYY-MM-DDを生成
+      // toISOString()はUTC日付を返すため、JST 0:00-8:59帯で前日日付になる不具合を回避
+      const formatLocalDate = (d: Date): string => {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+
+      const now = new Date();
+      const dateStr = formatLocalDate(now);
+      const hours = now.getHours().toString().padStart(2, '0');
+      // Round minutes to 5-minute intervals
+      const minutes = Math.floor(now.getMinutes() / 5) * 5;
+      const timeStr = `${hours}:${minutes.toString().padStart(2, '0')}`;
+      const startDateTime = `${dateStr}T${timeStr}`;
+
+      // End time = start time + defaultOtherEventDuration minutes
+      const endDate = new Date(now.getTime() + defaultOtherEventDuration * 60 * 1000);
+      const endDateStr = formatLocalDate(endDate);
+      const endHours = endDate.getHours().toString().padStart(2, '0');
+      const endMinutes = Math.floor(endDate.getMinutes() / 5) * 5;
+      const endTimeStr = `${endHours}:${endMinutes.toString().padStart(2, '0')}`;
+      const endDateTime = `${endDateStr}T${endTimeStr}`;
+
+      return { startDateTime, endDateTime };
     };
 
     if (calendarFields.length > 0) {
@@ -431,6 +466,21 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
           }
         }
       });
+      // Set default datetime if not provided (for new mode)
+      // Check for empty, whitespace-only, or missing values
+      const isDateStartEmpty = !calInitial.date_start || (typeof calInitial.date_start === 'string' && calInitial.date_start.trim() === '');
+      const isDueDateEmpty = !calInitial.due_date || (typeof calInitial.due_date === 'string' && calInitial.due_date.trim() === '');
+      if (isDateStartEmpty || isDueDateEmpty) {
+        const { startDateTime, endDateTime } = getDefaultDateTimeValues();
+        if (isDateStartEmpty) {
+          calInitial.date_start = startDateTime;
+        }
+        if (isDueDateEmpty) {
+          // ToDoの完了日（due_date）は日付のみ（編集画面と同じ仕様）
+          // endDateTimeから日付部分のみを抽出
+          calInitial.due_date = endDateTime.split('T')[0];
+        }
+      }
       setCalendarFormData(calInitial);
     }
 
@@ -444,6 +494,19 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
           }
         }
       });
+      // Set default datetime if not provided (for new mode)
+      // Check for empty, whitespace-only, or missing values
+      const isEvtDateStartEmpty = !evtInitial.date_start || (typeof evtInitial.date_start === 'string' && evtInitial.date_start.trim() === '');
+      const isEvtDueDateEmpty = !evtInitial.due_date || (typeof evtInitial.due_date === 'string' && evtInitial.due_date.trim() === '');
+      if (isEvtDateStartEmpty || isEvtDueDateEmpty) {
+        const { startDateTime, endDateTime } = getDefaultDateTimeValues();
+        if (isEvtDateStartEmpty) {
+          evtInitial.date_start = startDateTime;
+        }
+        if (isEvtDueDateEmpty) {
+          evtInitial.due_date = endDateTime;
+        }
+      }
       setEventsFormData(evtInitial);
     }
 
@@ -467,7 +530,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
       clearSaveError();
       isInitializedRef.current = true;
     }
-  }, [isCalendarVariant, isEditMode, isOpen, calendarFields, eventsFields, initialData, clearSaveError]);
+  }, [isCalendarVariant, isEditMode, isDuplicateMode, isOpen, calendarFields, eventsFields, initialData, defaultOtherEventDuration, clearSaveError]);
 
   // ========================================
   // Handlers
@@ -585,14 +648,31 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
   const validateForm = useCallback((): boolean => {
     const errors: Record<string, string> = {};
     const targetFields = isCalendarVariant ? calendarCurrentFields : defaultFields;
-    const targetFormData = isCalendarVariant ? currentCalendarFormData : formData;
+    const targetFormData = syncJoditEditorFormData(
+      isCalendarVariant ? activeTab : module,
+      isCalendarVariant ? currentCalendarFormData : formData,
+      targetFields
+    );
 
     targetFields.forEach(field => {
       const value = targetFormData[field.name];
 
       // Required check
       if (field.mandatory) {
-        const isEmpty = value === undefined || value === null || value === '' || value === false;
+        // Check for empty values including whitespace-only strings
+        let isEmpty = value === undefined || value === null || value === '' || value === false ||
+          (typeof value === 'string' && value.trim() === '');
+
+        // Additional check for datetime fields (uitype 6, 23): ensure date part is present
+        // datetime-local format is "YYYY-MM-DDTHH:MM", date part must be valid
+        if (!isEmpty && typeof value === 'string' && (field.uitype === '6' || field.uitype === '23')) {
+          const datePart = value.split('T')[0];
+          // Date part must be in YYYY-MM-DD format and be a valid date
+          if (!datePart || !/^\d{4}-\d{2}-\d{2}$/.test(datePart) || isNaN(Date.parse(datePart))) {
+            isEmpty = true;
+          }
+        }
+
         if (isEmpty) {
           errors[field.name] = t('LBL_FIELD_REQUIRED', field.label);
           return;
@@ -628,7 +708,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
-  }, [isCalendarVariant, calendarCurrentFields, defaultFields, currentCalendarFormData, formData, t]);
+  }, [isCalendarVariant, activeTab, module, calendarCurrentFields, defaultFields, currentCalendarFormData, formData, t]);
 
   /**
    * Internal save function that performs the actual save
@@ -751,6 +831,12 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
 
     // Calendar系モジュールの場合、datetime-local形式を date + time に分割
     // Edit.phpはdate_start/time_start、due_date/time_endを別々のパラメータとして受け取るため
+    targetFormData = syncJoditEditorFormData(
+      isCalendarVariant ? activeTab : module,
+      targetFormData,
+      isCalendarVariant ? calendarCurrentFields : defaultFields
+    );
+
     let processedFormData = isCalendarVariant
       ? transformCalendarDateTime(targetFormData)
       : { ...targetFormData };
@@ -823,7 +909,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
   }, [
     isCalendarVariant, isEditMode, recordId, activeTab,
     calendarEditViewUrl, calendarFormData, eventsFormData,
-    defaultEditViewUrl, formData, onGoToFullForm, defaultFields
+    defaultEditViewUrl, formData, onGoToFullForm, defaultFields, calendarCurrentFields, module
   ]);
 
   // ========================================
@@ -839,6 +925,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
           'sm:max-w-[900px]'
         )}
         closeButtonClassName="absolute top-2 right-3 !text-white hover:!text-gray-200 transition-opacity"
+        portalClassName="quickcreate-dialog-portal"
         onEscapeKeyDown={(e) => {
           // 子要素のドロップダウン(招待者・Picklist 等)が開いている時はDialog自体を閉じない。
           // Field 側で Esc を受け取りドロップダウンのみ閉じるため、Radix Dialog の
@@ -848,6 +935,10 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
           }
         }}
       >
+        <DialogDescription className="sr-only">
+          {moduleLabel || module}
+        </DialogDescription>
+
         {/* Header - 両バリアントで統一コンポーネントを使用 */}
         <QuickCreateHeader
           moduleLabel={moduleLabel || module}
@@ -897,6 +988,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
               successMessage={successMessage}
               validationErrors={validationErrors}
               isEditMode={isEditMode}
+              isDuplicateMode={isDuplicateMode}
               availableUsers={availableUsers}
               timeOptions={timeOptions}
               parseDateTimeValue={parseDateTimeValue}
@@ -904,7 +996,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
               parseReminderValue={parseReminderValue}
               combineReminderValue={combineReminderValue}
               initialSelectedInvitees={
-                isEditMode && recordData?.selectedusers
+                (isEditMode || isDuplicateMode) && recordData?.selectedusers
                   ? (recordData.selectedusers as string[])
                   : undefined
               }

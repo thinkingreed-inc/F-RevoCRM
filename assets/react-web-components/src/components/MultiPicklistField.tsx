@@ -35,6 +35,8 @@ export interface MultiPicklistFieldProps {
   error?: string;
   /** カスタムクラス */
   className?: string;
+  /** ラベルのカスタムクラス名（縦並び時の左寄せなどに使用） */
+  labelClassName?: string;
 }
 
 /**
@@ -50,7 +52,8 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
   mandatory = false,
   disabled = false,
   error,
-  className
+  className,
+  labelClassName
 }) => {
   const { t } = useOptionalTranslation();
 
@@ -326,20 +329,37 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
 
   return (
     <div className={cn('flex items-start gap-2', className)}>
-      {/* ラベル */}
-      <span
-        className={cn(
-          'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
-          disabled && 'text-gray-400'
-        )}
-      >
-        {label}
-        {mandatory && <span className="sr-only"> (必須)</span>}
-      </span>
-      {/* 必須マーク */}
-      <span className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0" aria-hidden="true">
-        {mandatory ? '*' : ''}
-      </span>
+      {labelClassName ? (
+        <div className="flex items-baseline md:contents">
+          <span
+            className={cn(
+              'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
+              disabled && 'text-gray-400',
+              labelClassName
+            )}
+          >
+            {label}
+            {mandatory && <span className="text-red-500" aria-hidden="true">*</span>}
+            {mandatory && <span className="sr-only"> (必須)</span>}
+          </span>
+          <span className="w-3 flex-shrink-0 hidden md:block" aria-hidden="true" />
+        </div>
+      ) : (
+        <>
+          <span
+            className={cn(
+              'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
+              disabled && 'text-gray-400'
+            )}
+          >
+            {label}
+            {mandatory && <span className="sr-only"> (必須)</span>}
+          </span>
+          <span className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0" aria-hidden="true">
+            {mandatory ? '*' : ''}
+          </span>
+        </>
+      )}
 
       {/* 入力エリア */}
       <div className="flex-1 min-w-0">

@@ -1324,6 +1324,12 @@ Vtiger.Class("Calendar_Calendar_Js", {
 					return false;
 				}
 
+				// Jodit全instancesの同期（serializeFormData前に必須、Task G syncAllInstances共通経路注入）
+				// serializeFormData の後に同期しても textarea が古い値のまま formData 化されてしまうため、
+				// 必ず serializeFormData() の前に syncAllInstances を呼び出す。
+				if (typeof Vtiger_Jodit_Js !== 'undefined' && Vtiger_Jodit_Js.syncAllInstances) {
+					Vtiger_Jodit_Js.syncAllInstances();
+				}
 				var formData = jQuery(form).serializeFormData();
 				jQuery("button[name='saveButton']").attr("disabled", "disabled");
 				var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
@@ -1679,9 +1685,14 @@ Vtiger.Class("Calendar_Calendar_Js", {
 
 	},
 	showCreateTaskModal: function () {
-		this.showCreateModal('Calendar');
+		// ボタンから開いた場合は現在日時をデフォルト設定
+		this.showCreateModal('Calendar', moment());
 	},
 	showCreateEventModal: function (startDateTime) {
+		// ボタンから開いた場合（startDateTimeが未指定）は現在日時をデフォルト設定
+		if (!startDateTime) {
+			startDateTime = moment();
+		}
 		this.showCreateModal('Events', startDateTime);
 	},
 	showCreateTaskModalforDrag: function () {
@@ -2043,10 +2054,16 @@ Vtiger.Class("Calendar_Calendar_Js", {
 					return false;
 				}
 				
+				// Jodit全instancesの同期（serializeFormData前に必須、Task G syncAllInstances共通経路注入）
+				// serializeFormData の後に同期しても textarea が古い値のまま formData 化されてしまうため、
+				// 必ず serializeFormData() の前に syncAllInstances を呼び出す。
+				if (typeof Vtiger_Jodit_Js !== 'undefined' && Vtiger_Jodit_Js.syncAllInstances) {
+					Vtiger_Jodit_Js.syncAllInstances();
+				}
 				var overlapData = jQuery(form).serializeFormData();
 				var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
 				app.event.trigger(e);
-				
+
 				if (e.isDefaultPrevented()) {
 					return false;
 				}

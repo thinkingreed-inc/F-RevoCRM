@@ -545,7 +545,7 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	    );
 
         // リッチテキストは概要・詳細画面での編集不可
-        if ($this->isCkeditor() === true) {
+        if ($this->isJoditEditor() === true) {
             return false;
         }
 
@@ -555,7 +555,7 @@ class Vtiger_Field_Model extends Vtiger_Field {
 		return true;
 	}
 	
-	public function isCkEditor() {
+	public function isJoditEditor() {
 		return false;
 	}
 

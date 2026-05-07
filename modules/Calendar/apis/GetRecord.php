@@ -105,6 +105,11 @@ class Calendar_GetRecord_Api extends Vtiger_GetRecord_Api {
             $sensitiveFields = array('user_password', 'confirm_password', 'accesskey', 'crypt_type', 'user_hash');
             $data = array_diff_key($data, array_flip($sensitiveFields));
 
+            // alldayフィールドを追加（DBには存在するがフィールド定義に未登録のため手動で追加）
+            if (method_exists($recordModel, 'isAllDay')) {
+                $data['allday'] = $recordModel->isAllDay() ? '1' : '0';
+            }
+
             // Calendar/Events モジュールの場合、繰り返し活動情報を追加
             if (($sourceModule === 'Calendar' || $sourceModule === 'Events') && method_exists($recordModel, 'getRecurrenceInformation')) {
                 $recurringInfo = $recordModel->getRecurrenceInformation();

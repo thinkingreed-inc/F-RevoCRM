@@ -65,6 +65,8 @@ export function useQuickCreateFields(
       referenceModuleLabels: apiField.referenceModuleLabels,
       // CustomValidation情報を引き継ぐ
       customValidations: apiField.customValidations,
+      // Jodit相当のHTMLリッチテキストフィールドかどうか
+      isJoditEditor: apiField.isJoditEditor,
       // RecordTypeフィールドかどうか
       isRecordTypeField: recordTypeFieldNames.includes(apiField.name),
       // multireference型フィールドの識別情報

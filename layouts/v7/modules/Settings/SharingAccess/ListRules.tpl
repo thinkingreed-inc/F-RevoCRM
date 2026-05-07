@@ -46,10 +46,10 @@
                                             {$smarty.foreach.customRuleIterator.index + 1}
                                         </td>
                                         <td>
-                                            <a href="{$RULE_MODEL->getSourceDetailViewUrl()}">{vtranslate('SINGLE_'|cat:$RULE_MODEL->getSourceMemberName(), $QUALIFIED_MODULE)}::{$RULE_MODEL->getSourceMember()->getName()}</a>
+                                            <a href="{$RULE_MODEL->getSourceDetailViewUrl()}">{vtranslate('SINGLE_'|cat:$RULE_MODEL->getSourceMemberName(), $QUALIFIED_MODULE)}::{vtranslate($RULE_MODEL->getSourceMember()->getName(), 'Settings:Roles')}</a>
                                         </td>
                                         <td>
-                                            <a href="{$RULE_MODEL->getTargetDetailViewUrl()}">{vtranslate('SINGLE_'|cat:$RULE_MODEL->getTargetMemberName(), $QUALIFIED_MODULE)}::{$RULE_MODEL->getTargetMember()->getName()}</a>
+                                            <a href="{$RULE_MODEL->getTargetDetailViewUrl()}">{vtranslate('SINGLE_'|cat:$RULE_MODEL->getTargetMemberName(), $QUALIFIED_MODULE)}::{vtranslate($RULE_MODEL->getTargetMember()->getName(), 'Settings:Roles')}</a>
                                         </td>
                                         <td>
                                             {if $RULE_MODEL->isReadOnly()}

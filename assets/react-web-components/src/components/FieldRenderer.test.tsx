@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FieldRenderer, isUITypeSupported } from './FieldRenderer';
@@ -386,6 +386,126 @@ describe('FieldRenderer', () => {
     it('サポートされていないUITypeはfalseを返す', () => {
       expect(isUITypeSupported('999')).toBe(false);
       expect(isUITypeSupported('unknown')).toBe(false);
+    });
+  });
+
+  describe('labelClassNameによるレイアウト制御', () => {
+    it('labelClassNameが指定された場合、ラベルスパンに適用される', () => {
+      const field = createField({ uitype: UI_TYPES.TEXTAREA, label: '説明' });
+      const onChange = vi.fn();
+
+      render(
+        <FieldRenderer
+          field={field}
+          value=""
+          onChange={onChange}
+          labelClassName="w-full text-left"
+        />
+      );
+
+      const labelSpan = screen.getByText('説明').closest('span');
+      expect(labelSpan).toHaveClass('text-left');
+    });
+
+    it('labelClassNameが指定された場合、ラベルと必須マークがwrapperで囲まれる', () => {
+      const field = createField({ uitype: UI_TYPES.TEXTAREA, label: '説明', mandatory: true });
+      const onChange = vi.fn();
+
+      render(
+        <FieldRenderer
+          field={field}
+          value=""
+          onChange={onChange}
+          labelClassName="w-full text-left"
+        />
+      );
+
+      // 必須マークがラベル span の内側に配置される
+      const markSpan = screen.getByText('*');
+      const wrapper = markSpan.parentElement;
+      expect(wrapper?.tagName).toBe('SPAN');
+      // 必須マークは非表示にならず visible のまま
+      expect(markSpan).not.toHaveClass('hidden');
+      expect(markSpan).toHaveClass('text-red-500');
+    });
+
+    it('labelClassNameが指定されない場合、必須マーク独立スパンは fragment 直下に置かれる', () => {
+      const field = createField({ uitype: UI_TYPES.TEXTAREA, label: '説明', mandatory: true });
+      const onChange = vi.fn();
+
+      render(
+        <FieldRenderer
+          field={field}
+          value=""
+          onChange={onChange}
+        />
+      );
+
+      const markSpan = screen.getByText('*');
+      expect(markSpan).not.toHaveClass('hidden');
+      expect(markSpan).toHaveClass('w-3');
+    });
+  });
+
+  describe('JoditEditorTextarea', () => {
+    // モックセットアップのヘルパー
+    function setupJoditEditorMock() {
+      const mockWysiwyg = document.createElement('div');
+      mockWysiwyg.className = 'jodit-wysiwyg';
+      const mockContainer = document.createElement('div');
+      mockContainer.appendChild(mockWysiwyg);
+
+      const mockWrapper = {
+        jodit: {
+          container: mockContainer,
+          events: { on: vi.fn(), off: vi.fn() },
+        },
+        destroy: vi.fn(),
+        getData: vi.fn().mockReturnValue(''),
+        setData: vi.fn(),
+      };
+
+      const MockJoditEditor = vi.fn().mockImplementation(() => ({
+        loadJoditEditor: vi.fn(),
+      }));
+      MockJoditEditor.getInstance = vi.fn().mockReturnValue(mockWrapper);
+      MockJoditEditor.syncAllInstances = vi.fn();
+
+      (window as any).Vtiger_Jodit_Js = MockJoditEditor;
+      (window as any).jQuery = vi.fn().mockReturnValue({
+        removeAttr: vi.fn().mockReturnThis(),
+        addClass: vi.fn().mockReturnThis(),
+        val: vi.fn().mockReturnValue(''),
+      });
+
+      return { mockWysiwyg, mockWrapper };
+    }
+
+    afterEach(() => {
+      delete (window as any).Vtiger_Jodit_Js;
+      delete (window as any).jQuery;
+    });
+
+    it('PC（768px以上）では .jodit-wysiwyg へ max-height と overflow-y がインラインスタイルで設定される', () => {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+      const { mockWysiwyg } = setupJoditEditorMock();
+
+      const field = createField({ uitype: '19' as any, isJoditEditor: true, label: '本文' });
+      render(<FieldRenderer field={field} value="" onChange={vi.fn()} />);
+
+      expect(mockWysiwyg.style.maxHeight).toBe('200px');
+      expect(mockWysiwyg.style.overflowY).toBe('auto');
+    });
+
+    it('モバイル（768px未満）では .jodit-wysiwyg にインラインスタイルが設定されない', () => {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 767 });
+      const { mockWysiwyg } = setupJoditEditorMock();
+
+      const field = createField({ uitype: '19' as any, isJoditEditor: true, label: '本文' });
+      render(<FieldRenderer field={field} value="" onChange={vi.fn()} />);
+
+      expect(mockWysiwyg.style.maxHeight).toBe('');
+      expect(mockWysiwyg.style.overflowY).toBe('');
     });
   });
 });

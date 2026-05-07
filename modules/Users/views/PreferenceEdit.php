@@ -167,7 +167,7 @@ Class Users_PreferenceEdit_View extends Vtiger_Edit_View {
 		$jsFileNames = array(
 			"modules.Users.resources.Edit",
 			'modules.'.$moduleName.'.resources.PreferenceEdit',
-			"modules.Vtiger.resources.CkEditor",
+			"modules.Vtiger.resources.JoditEditor",
 			'modules.Settings.Vtiger.resources.Index',
 			"~layouts/v7/lib/jquery/Lightweight-jQuery-In-page-Filtering-Plugin-instaFilta/instafilta.min.js"
 		);
