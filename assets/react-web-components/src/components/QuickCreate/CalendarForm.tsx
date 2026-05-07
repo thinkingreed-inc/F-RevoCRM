@@ -224,10 +224,27 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
     );
   }, [availableUsers, inviteeSearchTerm]);
 
-  // Reset highlighted index when search term changes
+  /**
+   * Visible candidates (filtered & not already selected)
+   */
+  const inviteeCandidates = useMemo(
+    () => filteredUsers.filter(user => !selectedInvitees.includes(user.id)),
+    [filteredUsers, selectedInvitees]
+  );
+
+  // 検索語変更時はハイライトを先頭にリセット
   useEffect(() => {
     setInviteeHighlightedIndex(0);
   }, [inviteeSearchTerm]);
+
+  // 候補数変動時のハイライト位置維持＋範囲外クランプ
+  // 選択した位置に新しい次候補が入るので、index維持で連続選択が自然になる
+  useEffect(() => {
+    setInviteeHighlightedIndex(prev => {
+      if (inviteeCandidates.length === 0) return 0;
+      return Math.min(prev, inviteeCandidates.length - 1);
+    });
+  }, [inviteeCandidates.length]);
 
   /**
    * Update invitee dropdown position
@@ -381,39 +398,36 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
 
   /**
    * Handle invitee add
+   * 連続選択UX: ドロップダウンは閉じない・検索語もクリアしない
+   * 選択された位置に次候補がスライドインするため、ハイライトindexは維持される
    */
   const handleAddInvitee = useCallback((userId: string) => {
-    if (!selectedInvitees.includes(userId)) {
-      setSelectedInvitees(prev => [...prev, userId]);
-    }
-    setInviteeSearchTerm('');
-    setIsInviteeDropdownOpen(false);
-  }, [selectedInvitees]);
+    setSelectedInvitees(prev => prev.includes(userId) ? prev : [...prev, userId]);
+  }, []);
 
   /**
    * Handle invitee search keyboard navigation
    */
   const handleInviteeKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    const candidates = filteredUsers.filter(user => !selectedInvitees.includes(user.id));
-    if (!isInviteeDropdownOpen || candidates.length === 0) return;
+    if (!isInviteeDropdownOpen || inviteeCandidates.length === 0) return;
 
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
         setInviteeHighlightedIndex(prev =>
-          prev < candidates.length - 1 ? prev + 1 : 0
+          prev < inviteeCandidates.length - 1 ? prev + 1 : 0
         );
         break;
       case 'ArrowUp':
         e.preventDefault();
         setInviteeHighlightedIndex(prev =>
-          prev > 0 ? prev - 1 : candidates.length - 1
+          prev > 0 ? prev - 1 : inviteeCandidates.length - 1
         );
         break;
       case 'Enter':
         e.preventDefault();
-        if (inviteeHighlightedIndex >= 0 && inviteeHighlightedIndex < candidates.length) {
-          handleAddInvitee(candidates[inviteeHighlightedIndex].id);
+        if (inviteeHighlightedIndex >= 0 && inviteeHighlightedIndex < inviteeCandidates.length) {
+          handleAddInvitee(inviteeCandidates[inviteeHighlightedIndex].id);
         }
         break;
       case 'Escape':
@@ -422,7 +436,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
         setInviteeHighlightedIndex(0);
         break;
     }
-  }, [isInviteeDropdownOpen, filteredUsers, selectedInvitees, inviteeHighlightedIndex, handleAddInvitee]);
+  }, [isInviteeDropdownOpen, inviteeCandidates, inviteeHighlightedIndex, handleAddInvitee]);
 
   /**
    * Handle invitee remove
@@ -876,21 +890,19 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                   >
                     {filteredUsers.length > 0 ? (
                       <div className="py-1">
-                        {filteredUsers
-                          .filter(user => !selectedInvitees.includes(user.id))
-                          .map((user, index) => (
-                            <div
-                              key={user.id}
-                              onClick={() => handleAddInvitee(user.id)}
-                              className={cn(
-                                'px-3 py-1.5 text-md cursor-pointer',
-                                index === inviteeHighlightedIndex ? 'bg-blue-100' : 'hover:bg-blue-50'
-                              )}
-                            >
-                              {user.name}
-                            </div>
-                          ))}
-                        {filteredUsers.filter(user => !selectedInvitees.includes(user.id)).length === 0 && (
+                        {inviteeCandidates.map((user, index) => (
+                          <div
+                            key={user.id}
+                            onClick={() => handleAddInvitee(user.id)}
+                            className={cn(
+                              'px-3 py-1.5 text-md cursor-pointer',
+                              index === inviteeHighlightedIndex ? 'bg-blue-100' : 'hover:bg-blue-50'
+                            )}
+                          >
+                            {user.name}
+                          </div>
+                        ))}
+                        {inviteeCandidates.length === 0 && (
                           <div className="px-3 py-1.5 text-md text-gray-500 text-center">
                             {t('LBL_ALL_USERS_SELECTED')}
                           </div>
