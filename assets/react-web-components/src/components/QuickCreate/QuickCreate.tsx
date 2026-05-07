@@ -926,6 +926,14 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
         )}
         closeButtonClassName="absolute top-2 right-3 !text-white hover:!text-gray-200 transition-opacity"
         portalClassName="quickcreate-dialog-portal"
+        onEscapeKeyDown={(e) => {
+          // 子要素のドロップダウン(招待者・Picklist 等)が開いている時はDialog自体を閉じない。
+          // Field 側で Esc を受け取りドロップダウンのみ閉じるため、Radix Dialog の
+          // 既定の閉じる挙動を抑制する必要がある。
+          if (document.querySelector('[data-rwc-dropdown]')) {
+            e.preventDefault();
+          }
+        }}
       >
         <DialogDescription className="sr-only">
           {moduleLabel || module}
