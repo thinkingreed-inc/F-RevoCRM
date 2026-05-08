@@ -123,6 +123,9 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
   // Form data（FieldValue型を使用）
   const [formData, setFormData] = useState<Record<string, FieldValue>>({});
 
+  // Track unsaved changes
+  const [isDirty, setIsDirty] = useState(false);
+
   // RecordType state（RecordTypeフィールドの選択値を管理）
   const [recordTypeFields, setRecordTypeFields] = useState<Record<string, string>>({});
 
@@ -151,6 +154,9 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
   }, [initialData?.defaultOtherEventDuration]);
 
   // Initialization tracking
+  // 詳細入力への遷移時などに、一時的に離脱警告をスキップするためのフラグ
+
+  const skipUnloadCheckRef = useRef(false);
   const isInitializedRef = useRef(false);
   const prevIsOpenRef = useRef(false);
   const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -264,6 +270,8 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
   useEffect(() => {
     if (prevIsOpenRef.current && !isOpen) {
       isInitializedRef.current = false;
+      setIsDirty(false);
+      skipUnloadCheckRef.current = false;
       if (successTimeoutRef.current) {
         clearTimeout(successTimeoutRef.current);
         successTimeoutRef.current = null;
@@ -271,6 +279,26 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
     }
     prevIsOpenRef.current = isOpen;
   }, [isOpen]);
+
+  /**
+   * Handle browser navigation (back button, refresh, close tab)
+   * when there are unsaved changes.
+   */
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!skipUnloadCheckRef.current && isOpen && isDirty && !successMessage) {
+        e.preventDefault();
+        // Chrome等、現代のブラウザではカスタムメッセージは表示されず
+        // ブラウザ標準の「変更が保存されない可能性があります」という文言が表示されます。
+        e.returnValue = ''; 
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isOpen, isDirty, successMessage]);
 
   /**
    * Cleanup on unmount
@@ -327,6 +355,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
       });
 
       setFormData(initial);
+      setIsDirty(false);
       setValidationErrors({});
       setSuccessMessage(null);
       clearSaveError();
@@ -526,6 +555,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
       }
 
       setValidationErrors({});
+      setIsDirty(false);
       setSuccessMessage(null);
       clearSaveError();
       isInitializedRef.current = true;
@@ -537,9 +567,30 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
   // ========================================
 
   /**
+   * 未保存の変更があるか確認し、あれば確認ダイアログを表示する
+   * @returns 続行してよい場合(変更なし、またはユーザーが承諾)はtrue
+   */
+  const checkUnsavedChanges = useCallback((): boolean => {
+    if (skipUnloadCheckRef.current) {
+      return true;
+    }
+
+    if (isDirty && !successMessage) {
+
+      return window.confirm(t('JS_CHANGES_WILL_BE_LOST'));
+    }
+    return true;
+  }, [isDirty, successMessage, t]);
+
+  /**
    * Handle modal open/close
    */
-  const handleOpenChange = useCallback((open: boolean) => {
+  const handleOpenChange = useCallback((open: boolean, bypassConfirm = false) => {
+    // 閉じようとしていて、未保存の変更がある場合は確認（バイパス指定がある場合はスキップ）
+    if (!open && !bypassConfirm && !checkUnsavedChanges()) {
+      return;
+    }
+
     if (externalIsOpen === undefined) {
       setInternalIsOpen(open);
     }
@@ -554,7 +605,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
     if (!open) {
       onCancel?.();
     }
-  }, [externalIsOpen, isCalendarVariant, onOpenChange, onCancel]);
+  }, [externalIsOpen, isCalendarVariant, onOpenChange, onCancel, isDirty, successMessage, t]);
 
   /**
    * Handle RecordType field change
@@ -573,11 +624,13 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
       [fieldName]: value
     }));
 
+    setIsDirty(true);
+
     // バリデーションエラーをクリア
     setValidationErrors({});
     setSuccessMessage(null);
     clearSaveError();
-  }, [clearSaveError]);
+  }, [clearSaveError, setIsDirty]);
 
   /**
    * Handle field change (default variant)
@@ -599,6 +652,8 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
       return updated;
     });
 
+    setIsDirty(true);
+
     if (validationErrors[fieldName]) {
       setValidationErrors(prev => {
         const next = { ...prev };
@@ -609,7 +664,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
 
     setSuccessMessage(null);
     clearSaveError();
-  }, [hasDependency, getFieldsToClear, validationErrors, clearSaveError]);
+  }, [hasDependency, getFieldsToClear, validationErrors, clearSaveError, setIsDirty]);
 
   /**
    * Handle field change (calendar variant)
@@ -620,6 +675,8 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
       [fieldName]: value
     }));
 
+    setIsDirty(true);
+
     if (validationErrors[fieldName]) {
       setValidationErrors(prev => {
         const next = { ...prev };
@@ -630,7 +687,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
 
     setSuccessMessage(null);
     clearSaveError();
-  }, [setCurrentCalendarFormData, validationErrors, clearSaveError]);
+  }, [setCurrentCalendarFormData, validationErrors, clearSaveError, setIsDirty]);
 
   /**
    * Handle tab change (calendar variant)
@@ -727,6 +784,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
       setSuccessMessage(
         baseMessage + (result.recordLabel ? ` - ${result.recordLabel}` : '')
       );
+      setIsDirty(false); // Clear dirty flag on success
 
       onSave?.(result);
 
@@ -735,7 +793,8 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
       }
 
       successTimeoutRef.current = setTimeout(() => {
-        handleOpenChange(false);
+        // 保存成功後の自動クローズ時は確認ダイアログをバイパスする
+        handleOpenChange(false, true);
       }, 1500);
     }
   }, [
@@ -752,6 +811,14 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
    */
   const handleSave = useCallback(async () => {
     if (!validateForm()) {
+      return;
+    }
+
+    // 編集モードかつ変更がない場合は、APIを叩かずにそのまま閉じるか何もしない
+    if (isEditMode && !isDirty) {
+      console.log('No changes detected, skipping save.');
+      // 変更がないことがわかっているので確認ダイアログをバイパスして閉じる
+      handleOpenChange(false, true);
       return;
     }
 
@@ -828,6 +895,9 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
     }
 
     if (!editViewUrl) return;
+
+    // 詳細入力への遷移は、入力中のデータを引き継ぐ意図的な遷移のため警告をスキップ
+    skipUnloadCheckRef.current = true;
 
     // Calendar系モジュールの場合、datetime-local形式を date + time に分割
     // Edit.phpはdate_start/time_start、due_date/time_endを別々のパラメータとして受け取るため

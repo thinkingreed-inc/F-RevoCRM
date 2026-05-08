@@ -44,6 +44,7 @@ const DEFAULT_TRANSLATIONS: TranslationData = {
   LBL_FIELD_REQUIRED: '%sは必須です',
   LBL_FIELD_MAX_LENGTH: '%sは%s文字以内で入力してください',
   LBL_END_DATE_AFTER_START: '終了日時は開始日時より後に設定してください',
+  JS_CHANGES_WILL_BE_LOST: '変更が失われます。続行してもよろしいですか？',
 
   // 成功メッセージ
   LBL_CREATED_SUCCESS: '%sを作成しました',
