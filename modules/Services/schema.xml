@@ -16,7 +16,7 @@
   `expiry_date` date default NULL,
   `discontinued` int(1) NOT NULL default '0',
   `service_usageunit` varchar(200) default NULL,
-  `website` varchar(100) default NULL,
+  `website` text default NULL,
   `taxclass` varchar(200) default NULL,
   `currency_id` int(19) NOT NULL default '1',
   `commissionrate` decimal(7,3) default NULL,
