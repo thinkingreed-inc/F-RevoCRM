@@ -500,7 +500,6 @@
 			<default value="0" />
 		</field>
 		<field name="imagename" type="C" size="150" />
-		<field name="reference" type="C" size="3" />
 		<field name="notify_owner" type="C" size="3">
 			<default value="0"/>
 		</field>
