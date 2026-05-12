@@ -223,6 +223,15 @@ $languageStrings = array(
 	'week days ago' => '営業日前',
 	'more than week days ago' => '営業日以上前',
 	'less than week days ago' => '営業日未満前',
+
+	// Curl Task
+	'VTCurlTask' => 'Curlリクエスト',
+	'LBL_CURL_URL' => 'リクエストURL',
+	'LBL_CURL_METHOD' => 'HTTPメソッド',
+	'LBL_CURL_HEADERS' => 'リクエストヘッダー',
+	'LBL_CURL_BODY' => 'リクエストボディ',
+	'LBL_CURL_TIMEOUT' => 'タイムアウト（秒）',
+	'LBL_CURL_TIMEOUT_HELP' => '1〜60秒の範囲で指定してください（デフォルト: 30秒）',
 );
 
 $jsLanguageStrings = array(
@@ -238,9 +247,9 @@ $jsLanguageStrings = array(
     'VTCreateTodoTask' => 'TODOの作成',
     'VTCreateEventTask' => '活動の作成',
     'VTUpdateFieldsTask' => '項目の値の更新',
-    'VTSMSTask' => 'SMS送信', 
+    'VTSMSTask' => 'SMS送信',
     'VTPushNotificationTask' => 'モバイルプッシュ通知',
     'VTCreateEntityTask' => 'レコードの作成',
-    'LBL_EXPRESSION_INVALID' => '表現式が間違っています'
+    'LBL_EXPRESSION_INVALID' => '表現式が間違っています',
 );
 
