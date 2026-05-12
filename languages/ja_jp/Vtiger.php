@@ -1523,6 +1523,10 @@ $languageStrings = array(
 	'UserId ' => 'ユーザーID',
 	'ConvertLead' => 'リード変換',
 	//プロファイル詳細内容
+	'Administrator' => '管理者',
+	'Sales Profile' => 'セールス',
+	'Support Profile' => 'サポート',
+	'Guest Profile' => 'ゲスト',
 	'Admin Profile' => '管理者のプロファイル',
 	'Profile Related to Sales' => 'セールスに関するプロファイル',
 	'Profile Related to Support' => 'サポートに関するプロファイル',
