@@ -1402,6 +1402,7 @@ Vtiger.Class("Vtiger_Detail_Js",{
 							}
 							fieldBasicData.data('displayvalue',postSaveRecordDetails[fieldName].display_value);
 							fieldBasicData.data('value',postSaveRecordDetails[fieldName].value);
+							fieldBasicData.attr('data-value',postSaveRecordDetails[fieldName].value);
 							jQuery(currentTdElement).find('.input-group-addon').removeClass("disabled");
 
 							detailViewValue.css('display', 'inline-block');
@@ -1510,8 +1511,13 @@ Vtiger.Class("Vtiger_Detail_Js",{
 			var fieldBasicData = editElement.find('.fieldBasicData');
 			var inputElement = editElement.find('.inputElement');
 			inputElement.attr('data-value', fieldBasicData.attr('data-value'));
-			inputElement.data('value', fieldBasicData.data('value'));
-			inputElement.val(inputElement.attr('data-value'));
+			var fieldType = fieldBasicData.data('type');
+			var dataValue = inputElement.attr('data-value');
+			if (fieldType === 'multipicklist') {
+				inputElement.val(dataValue ? dataValue.split(' |##| ') : []);
+			} else {
+				inputElement.val(dataValue);
+			}
 			detailViewValue.css('display', 'inline-block');
 			editElement.addClass('hide');
 			editElement.find('.inputElement').trigger('Vtiger.Validation.Hide.Messsage')
