@@ -83,7 +83,7 @@
 	}
 	
 	class SqlResultIteratorRow{
-		private $data;
+		public $data;
 
 		function __construct($data){
 			$this->data = $data;
