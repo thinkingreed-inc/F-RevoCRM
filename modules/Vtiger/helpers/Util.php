@@ -97,7 +97,7 @@ class Vtiger_Util_Helper {
 	 * @return <String>
 	 */
 	public static function pluralize($count, $text) {
-		return $count ." ". (($count == 1) ? vtranslate("$text") : vtranslate("${text}S"));
+		return $count ." ". (($count == 1) ? vtranslate("$text") : vtranslate("{$text}S"));
 	}
 
 	/**

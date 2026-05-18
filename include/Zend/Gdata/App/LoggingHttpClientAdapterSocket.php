@@ -102,7 +102,7 @@ class Zend_Gdata_App_LoggingHttpClientAdapterSocket extends Zend_Http_Client_Ada
     public function read()
     {
         $response = parent::read();
-        $this->log("${response}\n\n");
+        $this->log("{$response}\n\n");
         return $response;
     }
 
