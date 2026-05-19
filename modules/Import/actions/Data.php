@@ -148,7 +148,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			// ※処理済みのレコードが$pagingLimitの倍数でない場合を前回のインポートが完了していないとみなす
 			$configReader = new Import_Config_Model();
 			$pagingLimit = intval($configReader->get('importPagingLimit'));
-			$importTable = Import_Utils_Helper::getDbTableName($this->user);
+			$importTable = Import_Utils_Helper::getDbTableName($this->user, $this->id);
 			$finishedImportQuery = 'SELECT count(*) AS imported FROM '.$importTable.' WHERE `status` != ?';
 			$finishedImportResult = $adb->pquery($finishedImportQuery, array(Import_Data_Action::$IMPORT_RECORD_NONE));
 			$finishedImportCount = $adb->query_result($finishedImportResult, 0, 'imported');
@@ -179,7 +179,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			$entityIdComponents = vtws_getIdComponents($entityInfo['id']);
 			$recordId = $entityIdComponents[1];
 		}
-		$adb->pquery('UPDATE '.Import_Utils_Helper::getDbTableName($this->user).' SET status=?, recordid=? WHERE id=?', array($entityInfo['status'], $recordId, $entryId));
+		$adb->pquery('UPDATE '.Import_Utils_Helper::getDbTableName($this->user, $this->id).' SET status=?, recordid=? WHERE id=?', array($entityInfo['status'], $recordId, $entryId));
 	}
 
 	public function createRecords() {
@@ -209,7 +209,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 
 		$createdRecords = array();
 		$entityData = array();
-		$tableName = Import_Utils_Helper::getDbTableName($this->user);
+		$tableName = Import_Utils_Helper::getDbTableName($this->user, $this->id);
         $params = array();
 		$sql = 'SELECT * FROM '.$tableName.' WHERE status = ?';
         array_push($params, Import_Data_Action::$IMPORT_RECORD_NONE);
@@ -963,7 +963,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			$vtigerMailer->Send(true);
 
 			//未完了のインポートがない場合のみ終了する
-			$importTable = Import_Utils_Helper::getDbTableName($importDataController->user);			
+			$importTable = Import_Utils_Helper::getDbTableName($importDataController->user, $importDataController->id);
 			$unfinishedImportQuery = 'SELECT count(status) FROM ' . $importTable . ' WHERE status = 0 GROUP BY status';
 			$unfinishedImportResult = $adb->pquery($unfinishedImportQuery, array());
 			$unfinishedImportCount = $adb->query_result($unfinishedImportResult, 0, 'count(status)');
@@ -975,7 +975,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 
 	public function getNumberOfRecordsToImport($user){
 		$db = PearDatabase::getInstance();
-		$table = Import_Utils_Helper::getDbTableName($user);
+		$table = Import_Utils_Helper::getDbTableName($user, $this->id);
 		$query = "SELECT count(*) AS count FROM $table WHERE status = ?";
 		$result = $db->pquery($query,array(Import_Data_Action::$IMPORT_RECORD_NONE));
 		$rows = $db->num_rows($result);
@@ -1283,7 +1283,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		$adb = PearDatabase::getInstance();
 
 		$params = array();
-		$tableName = Import_Utils_Helper::getDbTableName($this->user);
+		$tableName = Import_Utils_Helper::getDbTableName($this->user, $this->id);
 		$sql = 'SELECT * FROM ' . $tableName . ' WHERE status = ?';
 		array_push($params, Import_Data_Action::$IMPORT_RECORD_NONE);
 		$result = $adb->pquery($sql, $params);
