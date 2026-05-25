@@ -52,6 +52,15 @@ var Settings_Picklist_Js = {
 				jQuery('#modulePickListValuesContainer').html(data);
 				vtUtils.showSelect2ElementView(jQuery('#rolesList'));
 				Settings_Picklist_Js.registerItemActions();
+				
+				//「モジュール名：Dailyreports（日報）」と「フィールドID：834（日報/週報）」で判定する
+				var selectedModule = jQuery('#pickListModules').val();
+				var selectedFieldId = jQuery('#modulePickList').val();
+
+				if (selectedModule === 'Dailyreports' && selectedFieldId === '834') {
+					jQuery('#addItem').hide();
+					jQuery('.renameItem, .deleteItem').hide();
+				}
 				app.helper.hideProgress();
 			})
 		})
