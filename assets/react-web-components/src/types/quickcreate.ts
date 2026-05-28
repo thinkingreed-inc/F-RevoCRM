@@ -234,6 +234,8 @@ export interface QuickCreateFieldData {
   referenceModuleLabels?: Record<string, string>;
   quickcreate: boolean;
   quickcreatesequence: number | null;
+  /** Jodit相当のHTMLリッチテキストフィールドかどうか */
+  isJoditEditor?: boolean;
   /** カスタムバリデーション設定 */
   customValidations?: Array<{
     name: string;

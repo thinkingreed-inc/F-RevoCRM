@@ -135,7 +135,7 @@ class Vtiger_Dashboard_View extends Vtiger_Index_View {
 			'~/layouts/'.Vtiger_Viewer::getDefaultLayoutName().'/modules/Reports/resources/Detail.js',
 			'~/layouts/'.Vtiger_Viewer::getDefaultLayoutName().'/modules/Reports/resources/ChartDetail.js',
 			"modules.Emails.resources.MassEdit",
-			"modules.Vtiger.resources.CkEditor",
+			"modules.Vtiger.resources.JoditEditor",
 			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/bootstrap-daterangepicker/moment.js",
 			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/bootstrap-daterangepicker/daterangepicker.js",
 		);

@@ -133,9 +133,9 @@
 										{if $IS_AJAX_ENABLED && $FIELD_MODEL->isEditable() eq 'true' && $FIELD_MODEL->isAjaxEditable() eq 'true'}
 											<span class="hide edit pull-left">
 												{if $fieldDataType eq 'multipicklist'}
-													<input type="hidden" class="fieldBasicData" data-name='{$FIELD_MODEL->get('name')}[]' data-type="{$fieldDataType}" data-displayvalue='{$FIELD_DISPLAY_VALUE}' data-value="{$FIELD_VALUE}" />
+													<input type="hidden" class="fieldBasicData" data-name="{Vtiger_Util_Helper::toSafeHTML($FIELD_MODEL->get('name'))}[]" data-type="{Vtiger_Util_Helper::toSafeHTML($fieldDataType)}" data-displayvalue="{Vtiger_Util_Helper::toSafeHTML($FIELD_DISPLAY_VALUE)}" data-value="{Vtiger_Util_Helper::toSafeHTML($FIELD_VALUE)}" />
 												{else}
-													<input type="hidden" class="fieldBasicData" data-name='{$FIELD_MODEL->get('name')}' data-type="{$fieldDataType}" data-displayvalue='{$FIELD_DISPLAY_VALUE}' data-value="{$FIELD_VALUE}" />
+													<input type="hidden" class="fieldBasicData" data-name="{Vtiger_Util_Helper::toSafeHTML($FIELD_MODEL->get('name'))}" data-type="{Vtiger_Util_Helper::toSafeHTML($fieldDataType)}" data-displayvalue="{Vtiger_Util_Helper::toSafeHTML($FIELD_DISPLAY_VALUE)}" data-value="{Vtiger_Util_Helper::toSafeHTML($FIELD_VALUE)}" />
 												{/if}
 											</span>
 											{* {if $FIELD_MODEL->get('uitype') neq '999'} *}

@@ -6,6 +6,7 @@ import {
 } from '../../../types/quickcreate';
 import { transformCalendarDateTime } from '../../../utils/datetime';
 import { FieldInfo } from '../../../types/field';
+import { syncJoditEditorFormData } from '../../../utils/joditEditor';
 
 /**
  * QuickCreate保存処理のHook
@@ -86,9 +87,16 @@ export function useQuickCreateSave(module: string, fields?: FieldInfo[]): UseQui
 
       // Calendar/Events用の日時フィールド変換
       const isCalendarModule = module === 'Calendar' || module === 'Events';
-      let processedData = isCalendarModule
-        ? transformCalendarDateTime(formData)
-        : formData;
+      let processedData = syncJoditEditorFormData(module, formData, fields || []);
+      processedData = isCalendarModule
+        ? transformCalendarDateTime(processedData)
+        : processedData;
+
+      // ToDoの場合（module === 'Calendar'）、time_end は不要
+      // ToDoの完了日（due_date）は日付のみで、時刻は使用しない（編集画面と同じ仕様）
+      if (module === 'Calendar') {
+        delete processedData.time_end;
+      }
 
       // ProductTaxフィールドのチェックボックス値を追加
       if (fields && fields.length > 0) {

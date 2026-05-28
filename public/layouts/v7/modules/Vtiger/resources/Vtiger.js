@@ -727,6 +727,8 @@ Vtiger.Class('Vtiger_Index_Js', {
 				return;
 			}
 
+			jQuery('#webcomponents-quickcreate-container').empty();
+			jQuery('body > .quickcreate-dialog-portal').remove();
 			app.helper.showProgress();
 			thisInstance.getQuickCreateForm(quickCreateUrl,quickCreateModuleName,params).then(function(data){
 				app.helper.hideProgress();
@@ -756,6 +758,9 @@ Vtiger.Class('Vtiger_Index_Js', {
 					var moduleInstance = Calendar_Edit_Js.getInstanceByModuleName(moduleName);
 				}else{
 					var moduleInstance = Vtiger_Edit_Js.getInstanceByModuleName(moduleName);
+				}
+				if (typeof(moduleInstance.registerEventForJoditEditor) === 'function') {
+					moduleInstance.registerEventForJoditEditor(form);
 				}
 				if(typeof(moduleInstance.quickCreateSave) === 'function'){
 					targetInstance = moduleInstance;
@@ -829,6 +834,10 @@ Vtiger.Class('Vtiger_Index_Js', {
 	quickCreateSave : function(form,invokeParams){
 		var params = {
 			submitHandler: function(form) {
+				// Jodit全instancesの同期（submit前必須、Task G syncAllInstances共通経路注入）
+				if (typeof Vtiger_Jodit_Js !== 'undefined' && Vtiger_Jodit_Js.syncAllInstances) {
+					Vtiger_Jodit_Js.syncAllInstances();
+				}
 				// to Prevent submit if already submitted
 				jQuery("button[name='saveButton']").attr("disabled","disabled");
 				if(this.numberOfInvalids() > 0) {

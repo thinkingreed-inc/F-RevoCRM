@@ -94,21 +94,30 @@ Vtiger_Edit_Js("Users_Edit_Js",{},{
 	},
 	
 	/**
-	 * Function load the ckeditor for signature field in edit view of my preference page.
+	 * Function load the Jodit editor for signature field in edit view of my preference page.
 	 */
 	registerSignatureEvent: function(){
 		var templateContentElement = jQuery("#Users_editView_fieldName_signature");
 		if(templateContentElement.length > 0) {
-			var ckEditorInstance = new Vtiger_CkEditor_Js();
-			//Customized toolbar configuration for ckeditor  
-			//to support basic operations
+			var joditInstance = new Vtiger_Jodit_Js();
+			// ユーザー署名欄用ツールバー（JoditEditorのデフォルトを上書き）
+			// 非表示にしているボタンはコメントアウトで残しています。
+			// 再追加する場合は対象行のコメントを解除してください。
+			// buttonsMD/SM/XS は指定しない（配列安全マージ処理が自動適用する）
 			var customConfig = {
-				toolbar: [
-					{ name: 'basicstyles', groups: [ 'basicstyles', 'cleanup','align','list', 'indent','colors' ,'links'], items: [ 'Bold', 'Italic', 'Underline', '-','TextColor', 'BGColor' ,'-','JustifyLeft', 'JustifyCenter', 'JustifyRight', '-', 'NumberedList', 'BulletedList','-', 'Link', 'Unlink','Image','-','RemoveFormat'] },
-					{ name: 'styles', items: ['Font', 'FontSize' ] },
-                    {name: 'document', items:['Source']}
+				buttons: [
+					'bold', 'italic', 'underline', '|',
+					'brush', '|',
+					'fontsize', '|',
+					'ul', 'ol', '|',
+					'image', '|',
+					'source'
+					// ,'font'      // フォントファミリー（旧CKEditor4から移行時に非表示とした）
+					// ,'link'      // リンク挿入（旧CKEditor4から移行時に非表示とした）
+					// ,'eraser'    // 書式クリア（旧CKEditor4から移行時に非表示とした）
+					// ,'align'     // テキスト配置（旧CKEditor4から移行時に非表示とした）
 				]};
-			ckEditorInstance.loadCkEditor(templateContentElement,customConfig);
+			joditInstance.loadJoditEditor(templateContentElement,customConfig);
 		}
 	},
 	

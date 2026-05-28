@@ -10,20 +10,19 @@
 Vtiger_Edit_Js("HelpDesk_Edit_Js", {} ,{
 
 	/**
-	 * Function to register event for ckeditor for description field
+	 * Function to register Jodit editor for description field
 	 */
-	registerEventForCkEditor : function(){
-		var form = this.getForm();
-        var ckContentElement = form.find('[name="description"]');
-        this.addFieldCkEditor(ckContentElement);
-		ckContentElement = form.find('[name="solution"]');
-        this.addFieldCkEditor(ckContentElement);
+	registerEventForJoditEditor : function(form){
+		form = form || this.getForm();
+        var joditContentElement = form.find('[name="description"]');
+        this.addFieldJoditEditor(joditContentElement);
+		joditContentElement = form.find('[name="solution"]');
+        this.addFieldJoditEditor(joditContentElement);
 	},
 
 	registerEvents : function() {
-        this.registerEventForCkEditor();
+        this.registerEventForJoditEditor();
         this._super();
 	}
 });
-
 
