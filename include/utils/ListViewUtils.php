@@ -675,23 +675,39 @@ function getEntityIdByColumns($module, $referenceValueList, $cache) {
 	}
 
     $matchedIds = [];
-    foreach ($cache[$module] as $recordModel) {
-        $filterCache = array_intersect_key($recordModel, $referenceValueList);
-		ksort($referenceValueList);
-		ksort($filterCache);
-        if ($filterCache === $referenceValueList) {
-            $cacheValues = array_values($recordModel);
-			$matchedIds[] = $cacheValues[0];
+    if (is_array($referenceValueList)) {
+        foreach ($cache[$module] as $recordModel) {
+            $filterCache = array_intersect_key($recordModel, $referenceValueList);
+            ksort($referenceValueList);
+            ksort($filterCache);
+            if ($filterCache === $referenceValueList) {
+                $cacheValues = array_values($recordModel);
+                $matchedIds[] = $cacheValues[0];
+            }
         }
+    } else {
+        $entityNameInfo = getEntityFieldNames($module);
+        $fieldNames = $entityNameInfo['fieldname'];
+        if (!is_array($fieldNames)) {
+            $fieldNames = array($fieldNames);
+        }
+        foreach ($cache[$module] as $recordModel) {
+            foreach ($fieldNames as $fieldName) {
+                if ((trim($recordModel[$fieldName] ?? '') === trim($referenceValueList))) {
+                    $cacheValues = array_values($recordModel);
+                    $matchedIds[] = $cacheValues[0];
+                    break;
+                }
+            }
+        	}
     }
 
 	if (count($matchedIds) !== 1) {
-		throw new ImportException("No reference exists");
-    }
+	        throw new ImportException("No reference exists");
+	}
 
-    return $matchedIds[0];
-}
-
+	return $matchedIds[0];
+	}
 function decode_emptyspace_html($str){
 	$str = str_replace("&nbsp;", "*#chr*#",$str); // (*#chr*#) used as jargan to replace it back with &nbsp;
 	$str = str_replace("\xc2", "*#chr*#",$str); // Ã (for special chrtr)
