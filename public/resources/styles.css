@@ -1088,6 +1088,15 @@ ul#productsImageContainer > li a{
   align-items: center;
 }
 
+.calendarGroupSelect #calendarview-feeds-all {
+  flex-shrink: 0;
+}
+
+.calendarGroupSelect .select2-container {
+  min-width: 0;
+  flex: 1 1 0;
+}
+
 .calendarTodoSelect {
   display: flex;
   flex-wrap: nowrap;
