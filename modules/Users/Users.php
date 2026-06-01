@@ -1758,9 +1758,11 @@ class Users extends CRMEntity {
 					} else if($fieldName == 'roleid') {
 						foreach($allRoles as $role) {
 							$roleLabelKey = $role->getName();
-							// 「役割」は翻訳後の値での比較、default_languageを見て比較する
-							$translatedRoleName = Vtiger_Language_Handler::getTranslatedString($roleLabelKey, 'Settings:Roles', $default_language);
-							if(strtolower($fieldValue) == strtolower($translatedRoleName)) {
+							// 「役割」は翻訳後の値での比較。現在の言語、またはデフォルト言語のいずれかに一致すればOKとする。
+							$translatedRoleNameCurrent = vtranslate($roleLabelKey, 'Settings:Roles');
+							$translatedRoleNameDefault = Vtiger_Language_Handler::getTranslatedString($roleLabelKey, 'Settings:Roles', $default_language);
+							if(strtolower($fieldValue) == strtolower($translatedRoleNameCurrent) || 
+							   strtolower($fieldValue) == strtolower($translatedRoleNameDefault)) {
 								$roleId = $role->getId();
 								break;
 							}
