@@ -1378,14 +1378,24 @@ function createRecords($obj) {
 		}
 
 		if (!empty($lineItems)) {
-			if(method_exists($focus, 'importRecord')) {
+			$queryGenerator = new QueryGenerator($moduleName, $obj->user);
+			$queryGenerator->setFields(array('id'));
+			$queryGenerator->addCondition('subject', $row['subject'], 'e');
+			$checkQuery = $queryGenerator->getQuery();
+			$checkResult = $adb->pquery($checkQuery, array());
+
+			if ($adb->num_rows($checkResult) > 0) {
+				$entityInfo = array('status' => $obj->getImportRecordStatus('skipped'));
+			}
+
+			if(empty($entityInfo) && method_exists($focus, 'importRecord')) {
 				$entityInfo = $focus->importRecord($obj, $fieldData, $lineItems, $cache);
 			}
 		}
 
 		if($entityInfo == null) {
 			$entityInfo = array('id' => null, 'status' => $obj->getImportRecordStatus('failed'));
-		} else {
+		} else if ($entityInfo['status'] != $obj->getImportRecordStatus('skipped')) {
 			$entityIdComponents = vtws_getIdComponents($entityInfo['id']);
 			$createdRecords[] = $entityIdComponents[1];
 		}
@@ -1439,15 +1449,16 @@ function isRecordExistInDB($fieldData, $moduleMeta, $user, $cache) {
 				} else if (strpos($fieldValue, ':::') > 0) {
 					$fieldValueDetails = explode(':::', $fieldValue);
 				} else {
-					$fieldValueDetails = $fieldValue;
+					$fieldValueDetails = array($fieldValue);
 				}
+				$fieldDetails = array();
 				foreach($fieldValueDetails as $fieldValueDetail){
 					if (strpos($fieldValueDetail, '====') > 0) {
 						$fieldDetail = explode('====', $fieldValueDetail);
 						$fieldDetails[$fieldDetail[0]] = $fieldDetail[1];
 					}
 				}
-				if (php7_count($fieldValueDetails) > 1) {
+				if (php7_count($fieldValueDetails) > 1 && !empty($fieldDetails)) {
 					$referenceModuleName = trim($fieldValueDetails[0]);
 					$referenceValueList = $fieldDetails;
 					$entityId = getEntityIdByColumns($referenceModuleName, $referenceValueList, $cache);
@@ -1456,10 +1467,14 @@ function isRecordExistInDB($fieldData, $moduleMeta, $user, $cache) {
 					$entityLabel = $fieldValue;
 					foreach ($referencedModules as $referenceModule) {
 						$referenceModuleName = $referenceModule;
-						$referenceEntityId = getEntityIdByColumns($referenceModule, $entityLabel,$cache);
-						if ($referenceEntityId != 0) {
-							$entityId = $referenceEntityId;
-							break;
+						try {
+							$referenceEntityId = getEntityIdByColumns($referenceModule, $entityLabel,$cache);
+							if ($referenceEntityId != 0) {
+								$entityId = $referenceEntityId;
+								break;
+							}
+						} catch (ImportException $e) {
+							continue;
 						}
 					}
 				}
@@ -1659,6 +1674,9 @@ function getInventoryImportableMandatoryFeilds($module) {
 	$mandatoryFields = array();
 	foreach($moduleFields as $fieldName => $fieldInstance) {
 		if($fieldInstance->isMandatory() && $fieldInstance->getFieldDataType() != 'owner' && $moduleMeta->isEditableField($fieldInstance)) {
+			if ($module == 'SalesOrder' && $fieldName == 'invoicestatus') {
+				continue;
+			}
 			$mandatoryFields[$fieldName] = vtranslate($fieldInstance->getFieldLabelKey(), $module);
 		}
 	}
