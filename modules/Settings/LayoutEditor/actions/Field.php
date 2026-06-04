@@ -112,13 +112,15 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
         
         if(isset($fieldDefaultValue) && $fieldDefaultValue !== null) {
             $fieldDataType = $fieldInstance->getFieldDataType();
+            $rawDefaultValue = $request->get('fieldDefaultValue');
             if($fieldDataType == 'multipicklist'){
-                $defaultValue = decode_html(implode(' |##| ', $request->get('fieldDefaultValue')));
+                $defaultValue = decode_html(is_array($rawDefaultValue) ? implode(' |##| ', $rawDefaultValue) : (string)$rawDefaultValue);
             }else{
-                $defaultValue = decode_html($request->get('fieldDefaultValue'));
+                $defaultValue = decode_html($rawDefaultValue);
             }
             $fieldInstance->set('defaultvalue', $defaultValue);
         }
+
 		$response = new Vtiger_Response();
         try{
             $fieldInstance->save();
