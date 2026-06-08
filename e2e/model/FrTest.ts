@@ -35,7 +35,9 @@ export class FrTest extends FrBaseModule {
       }
 
       const normalValue = (await getFieldValue(fieldObj, hash)) || "";
-      await fillField(page, fieldObj, normalValue);
+      // fillFieldはmaxlength切り詰め等を適用した「実際に入力した値」を返す。
+      // 検証には生成値ではなくこの実値を使うことで、DB切り詰めによる不一致を防ぐ。
+      const effectiveValue = (await fillField(page, fieldObj, normalValue)) || normalValue;
 
       // 入力した値のうち、詳細画面で検証可能なものだけ保持しておく
       switch (fieldObj.type.name) {
@@ -58,7 +60,7 @@ export class FrTest extends FrBaseModule {
           valuesArray.push(parseInt(normalValue, 10).toLocaleString());
           break;
         default:
-          valuesArray.push(normalValue);
+          valuesArray.push(effectiveValue);
           break;
       }
     }

@@ -38,6 +38,7 @@ const dontTestFieldsFromModule = {
   ],
   ServiceContracts: ["used_units"], // 理由：なぜか数値が合わない（Workflow？）
   PriceBooks: ["currency_id"], // 理由：表示されない
+  HelpDesk: ["cf_868"], // 理由：この環境固有のvarchar(10)カスタム項目。入力欄にmaxlengthが無く、生成値がDBで切り詰められて検証値と不一致になる
 };
 
 const isRichTextFields = {
@@ -171,29 +172,26 @@ export const fillField = async (
   ) {
     /**********************************************************************************************
      * リッチテキスト項目への値登録
+     * エディタはJodit(contenteditableなdiv)。旧CKEditor(iframe)は廃止済み。
+     * 値の実体は隠しtextareaに同期される。同じ項目セル内のJoditエディタ
+     * (.jodit-wysiwyg)を特定して入力する。
      **********************************************************************************************/
-    await page
-      .locator(
-        `iframe[title="Rich Text Editor\\, ${fieldObj.moduleName}_editView_fieldName_${fieldObj.name}"]`
-      )
-      .contentFrame()
-      .locator("html")
-      .click();
-    await page
-      .locator(
-        `iframe[title="Rich Text Editor\\, ${fieldObj.moduleName}_editView_fieldName_${fieldObj.name}"]`
-      )
-      .contentFrame()
-      .locator("body")
-      .fill(`${value}`);
+    const richCell = page
+      .locator(`#${fieldObj.moduleName}_editView_fieldName_${fieldObj.name}`)
+      .locator('xpath=ancestor::*[contains(@class,"fieldValue")][1]');
+    const editor = richCell.locator(".jodit-wysiwyg").first();
+    await editor.click();
+    await editor.fill(`${value}`);
+    // Joditから隠しtextareaへ値を同期させる
+    await editor.blur();
   } else if (fieldObj.type.name === "text") {
     /**********************************************************************************************
      * テキスト項目への値登録
      **********************************************************************************************/
-    await page.fill(
-      `${parentElementSelector} textarea[name="${fieldObj.name}"]`,
-      `${value}`
-    );
+    const selector = `${parentElementSelector} textarea[name="${fieldObj.name}"]`;
+    const effective = await truncateToMaxlength(page, selector, value);
+    await page.fill(selector, effective);
+    return effective;
   } else if (fieldObj.type.name === "reference") {
     /**********************************************************************************************
      * 関連項目への値登録
@@ -298,9 +296,29 @@ export const fillField = async (
     /**********************************************************************************************
      * それ以外すべての項目への値登録
      **********************************************************************************************/
-    await page.fill(
-      `${parentElementSelector} input[name="${fieldObj.name}"]`,
-      `${value}`
-    );
+    const selector = `${parentElementSelector} input[name="${fieldObj.name}"]`;
+    const effective = await truncateToMaxlength(page, selector, value);
+    await page.fill(selector, effective);
+    return effective;
   }
+};
+
+/**
+ * 入力欄のmaxlength属性に合わせて値を切り詰める。
+ * Playwrightのfillはmaxlengthを無視して値を設定するため、明示的に切り詰めて
+ * 保存時のDB切り詰めによる「入力値と保存値の不一致」を防ぐ。
+ */
+const truncateToMaxlength = async (
+  page: Page,
+  selector: string,
+  value: string
+): Promise<string> => {
+  const maxlength = await page.getAttribute(selector, "maxlength").catch(() => null);
+  if (maxlength) {
+    const max = parseInt(maxlength, 10);
+    if (!Number.isNaN(max) && max > 0) {
+      return value.slice(0, max);
+    }
+  }
+  return value;
 };
