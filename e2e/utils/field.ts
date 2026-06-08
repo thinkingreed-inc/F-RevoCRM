@@ -202,6 +202,16 @@ export const fillField = async (
      * ごとに構造が異なり不安定でハングしやすいため。参照先には事前にレコードが
      * 存在している必要がある(なければ呼び出し側でシードする)。
      **********************************************************************************************/
+    // 既に値が入っている関連項目(編集時など)は再選択しない。
+    // 選択モーダルの操作は不安定で、不要に開くと後続操作を妨げるため。
+    const displayInput = page.locator(`#${fieldObj.name}_display`);
+    if (
+      (await displayInput.count()) > 0 &&
+      ((await displayInput.inputValue()) || "").trim() !== ""
+    ) {
+      return;
+    }
+
     const selectButton = page.locator(
       `#${fieldObj.moduleName}_editView_fieldName_${fieldObj.name}_select`
     );
