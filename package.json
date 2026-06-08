@@ -1,0 +1,27 @@
+{
+  "name": "F-RevoCRM",
+  "version": "7.4.0",
+  "description": "F-RevoCRM は日本企業に合わせた形で開発された高機能なCRMです。 あらゆる顧客接点を管理するために、キャンペーン・リード管理から顧客・商談管理、販売管理、サポート管理・プロジェクト管理まで幅広い機能を持ち合わせています。",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test:e2e": "dotenv -e .env -- playwright test",
+    "test:e2e:ui": "dotenv -e .env -- playwright test --ui"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.46.0",
+    "@types/md5": "^2.3.5",
+    "@types/node": "^22.2.0",
+    "dotenv-cli": "^7.4.2"
+  },
+  "dependencies": {
+    "@types/axios": "^0.9.36",
+    "axios": "^1.7.7",
+    "date-fns": "^4.0.0-beta.1",
+    "md5": "^2.3.0"
+  }
+}
