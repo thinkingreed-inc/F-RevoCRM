@@ -2,6 +2,7 @@ import {
   frgetDescribe,
   frgetListTypes,
   frgetOneRecord,
+  frRetrieve,
   login,
 } from "./fetcher";
 import type { FRDescribeType } from "./types/frBase";
@@ -109,5 +110,18 @@ export class FrBaseModule {
     }
     // 1件のみ返却する
     return response[0];
+  }
+
+  /**
+   * record ID(数値)を指定して、このモジュールのレコードの実保存値を取得する。
+   * Webservice IDは describe の idPrefix を用いて `<idPrefix>x<recordId>` を組み立てる。
+   */
+  async retrieveRecord(recordId: string): Promise<Record<string, string> | false> {
+    const moduleInfo = await this.getDescribe();
+    if (!moduleInfo) {
+      return false;
+    }
+    const id = `${moduleInfo.idPrefix}x${recordId}`;
+    return frRetrieve(this.sessionName, id);
   }
 }

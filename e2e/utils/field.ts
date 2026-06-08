@@ -38,7 +38,6 @@ const dontTestFieldsFromModule = {
   ],
   ServiceContracts: ["used_units"], // 理由：なぜか数値が合わない（Workflow？）
   PriceBooks: ["currency_id"], // 理由：表示されない
-  HelpDesk: ["cf_868"], // 理由：この環境固有のvarchar(10)カスタム項目。入力欄にmaxlengthが無く、生成値がDBで切り詰められて検証値と不一致になる
 };
 
 const isRichTextFields = {
@@ -188,80 +187,32 @@ export const fillField = async (
     /**********************************************************************************************
      * テキスト項目への値登録
      **********************************************************************************************/
-    const selector = `${parentElementSelector} textarea[name="${fieldObj.name}"]`;
-    const effective = await truncateToMaxlength(page, selector, value);
-    await page.fill(selector, effective);
-    return effective;
+    await page.fill(
+      `${parentElementSelector} textarea[name="${fieldObj.name}"]`,
+      `${value}`
+    );
   } else if (fieldObj.type.name === "reference") {
     /**********************************************************************************************
      * 関連項目への値登録
+     * 既存レコードを選択する方式に統一する。新規作成モーダルは参照先モジュール
+     * ごとに構造が異なり不安定でハングしやすいため。参照先には事前にレコードが
+     * 存在している必要がある(なければ呼び出し側でシードする)。
      **********************************************************************************************/
-    const createButton = await page.locator(
-      `#${fieldObj.moduleName}_editView_fieldName_${fieldObj.name}_create`
-    );
-
-    // クリエイトボタンがない場合は、モーダルウインドウから選択する
-    if (await createButton.isHidden()) {
-      await page
-        .locator(
-          `#${fieldObj.moduleName}_editView_fieldName_${fieldObj.name}_select`
-        )
-        .click();
-      await page.waitForLoadState("networkidle");
-      await page.waitForLoadState("domcontentloaded");
-
-      // .modal-body の .listview-table の .listViewEntriesの1つ目をクリック
-      await page
-        .locator(".modal-body .listview-table .listViewEntries")
-        .first()
-        .click();
-    } else {
-      await page
-        .locator(
-          `#${fieldObj.moduleName}_editView_fieldName_${fieldObj.name}_create`
-        )
-        .click();
-      await page.waitForLoadState("networkidle");
-      await page.waitForLoadState("domcontentloaded");
-      // 値を登録する
-      const relatedModule = await FrBaseModule.init(
-        (fieldObj.type.refersTo && fieldObj.type.refersTo[0]) || ""
-      );
-      if (!relatedModule) {
-        return false;
-      }
-      const relatedDescribe = await relatedModule.getDescribe();
-      if (!relatedDescribe) {
-        return false;
-      }
-      const hash = generateRandomString(8);
-      const relatedFields = relatedDescribe.fields;
-      const fieldsWithModuleName: FRDescribeFieldsTypeWithModuleName[] =
-        relatedFields
-          .map((info) => {
-            return {
-              moduleName:
-                (fieldObj.type.refersTo && fieldObj.type.refersTo[0]) || "",
-              ...info,
-            };
-          })
-          .filter((info) => {
-            return info.mandatory === true;
-          });
-      for (const [_key, fieldObj] of Object.entries(fieldsWithModuleName)) {
-        if (dontTestFieldsName(fieldObj)) {
-          continue;
-        }
-
-        const normalValue = (await getFieldValue(fieldObj, hash)) || "";
-        await fillField(page, fieldObj, normalValue, ".modal-content");
-      }
-      await page.waitForTimeout(1000);
-
-      await page.locator('button[name="saveButton"]').click();
-    }
+    await page
+      .locator(
+        `#${fieldObj.moduleName}_editView_fieldName_${fieldObj.name}_select`
+      )
+      .click();
     await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState("domcontentloaded");
+
+    // 参照先モジュールの一覧モーダルから先頭レコードを選択する
+    await page
+      .locator(".modal-body .listview-table .listViewEntries")
+      .first()
+      .click();
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(500);
   } else if (fieldObj.type.name === "date") {
     /**********************************************************************************************
      * 日付項目への値登録
@@ -288,37 +239,20 @@ export const fillField = async (
   } else if (fieldObj.type.name === "boolean") {
     /**********************************************************************************************
      * チェックボックス項目への値登録
+     * 生のcheckboxはカスタムUIで隠されていることがあり、可視待ちでタイムアウト
+     * するため force で確実にチェックする。
      **********************************************************************************************/
     await page.check(
-      `${parentElementSelector} input[type="checkbox"][name="${fieldObj.name}"]`
+      `${parentElementSelector} input[type="checkbox"][name="${fieldObj.name}"]`,
+      { force: true }
     );
   } else {
     /**********************************************************************************************
      * それ以外すべての項目への値登録
      **********************************************************************************************/
-    const selector = `${parentElementSelector} input[name="${fieldObj.name}"]`;
-    const effective = await truncateToMaxlength(page, selector, value);
-    await page.fill(selector, effective);
-    return effective;
+    await page.fill(
+      `${parentElementSelector} input[name="${fieldObj.name}"]`,
+      `${value}`
+    );
   }
-};
-
-/**
- * 入力欄のmaxlength属性に合わせて値を切り詰める。
- * Playwrightのfillはmaxlengthを無視して値を設定するため、明示的に切り詰めて
- * 保存時のDB切り詰めによる「入力値と保存値の不一致」を防ぐ。
- */
-const truncateToMaxlength = async (
-  page: Page,
-  selector: string,
-  value: string
-): Promise<string> => {
-  const maxlength = await page.getAttribute(selector, "maxlength").catch(() => null);
-  if (maxlength) {
-    const max = parseInt(maxlength, 10);
-    if (!Number.isNaN(max) && max > 0) {
-      return value.slice(0, max);
-    }
-  }
-  return value;
 };

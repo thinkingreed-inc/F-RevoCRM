@@ -101,3 +101,18 @@ export const frgetOneRecord = async (sessionName: string, moduleName: string) =>
   }
   return response.data.result;
 };
+
+/**
+ * Webservice IDを指定してレコードの実保存値を取得する。
+ * id は `<idPrefix>x<recordId>` 形式。
+ */
+export const frRetrieve = async (sessionName: string, id: string) => {
+  const response = await client.get<FRResponse<Record<string, string>>>(
+    `?operation=retrieve&id=${id}&sessionName=${sessionName}`
+  );
+
+  if (response.data.success === false) {
+    return false;
+  }
+  return response.data.result;
+};
