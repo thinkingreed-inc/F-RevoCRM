@@ -74,6 +74,15 @@ export const dontTestFieldsName = (
     return true;
   }
 
+  /************************
+   * 任意の関連項目(reference)
+   * 関連レコードの作成/選択モーダルは不安定でハングしやすく、
+   * 任意項目は保存に不要なためテストしない。必須の関連項目のみ入力する。
+   ************************/
+  if (field.type.name === "reference" && field.mandatory !== true) {
+    return true;
+  }
+
   // 以下の項目タイプはテストしない
   const dontTestFieldTypes = [
     "multipicklist",
