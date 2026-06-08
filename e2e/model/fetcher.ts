@@ -103,6 +103,42 @@ export const frgetOneRecord = async (sessionName: string, moduleName: string) =>
 };
 
 /**
+ * モジュールのレコード件数を取得する
+ */
+export const frCount = async (sessionName: string, moduleName: string) => {
+  const response = await client.get<FRResponse<{ count: string }[]>>(
+    `?operation=query&query=${encodeURIComponent(
+      `SELECT count(*) FROM ${moduleName};`
+    )}&sessionName=${sessionName}`
+  );
+  if (response.data.success === false) {
+    return 0;
+  }
+  return parseInt(response.data.result?.[0]?.count || "0", 10);
+};
+
+/**
+ * レコードをAPIで作成する。elementは項目名→値のマップ。
+ */
+export const frCreate = async (
+  sessionName: string,
+  moduleName: string,
+  element: Record<string, string>
+) => {
+  const formData = new FormData();
+  formData.append("operation", "create");
+  formData.append("sessionName", sessionName);
+  formData.append("elementType", moduleName);
+  formData.append("element", JSON.stringify(element));
+
+  const response = await client.post<FRResponse<{ id: string }>>("", formData);
+  if (response.data.success === false) {
+    return false;
+  }
+  return response.data.result;
+};
+
+/**
  * Webservice IDを指定してレコードの実保存値を取得する。
  * id は `<idPrefix>x<recordId>` 形式。
  */

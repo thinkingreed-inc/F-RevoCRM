@@ -164,6 +164,10 @@ export const fillField = async (
   parentElement?: string
 ) => {
   const parentElementSelector = parentElement ? `${parentElement} ` : "";
+  // 編集フォーム上の当該項目の一意ID。
+  // name属性だけだと一覧検索フィルタ等の同名inputと衝突(strict mode違反)する
+  // ことがあるため、編集フィールドはこのIDでスコープする。
+  const editId = `#${fieldObj.moduleName}_editView_fieldName_${fieldObj.name}`;
 
   if (
     isRichTextFields[fieldObj.moduleName] &&
@@ -218,7 +222,7 @@ export const fillField = async (
      * 日付項目への値登録
      **********************************************************************************************/
     const dateInput = page.locator(
-      `${parentElementSelector} input[name="${fieldObj.name}"]`
+      parentElement ? `${parentElementSelector} input[name="${fieldObj.name}"]` : editId
     );
     await dateInput.fill(`${value}`);
     // datepickerのポップアップを閉じる。
@@ -239,13 +243,21 @@ export const fillField = async (
   } else if (fieldObj.type.name === "boolean") {
     /**********************************************************************************************
      * チェックボックス項目への値登録
-     * 生のcheckboxはカスタムUIで隠されていることがあり、可視待ちでタイムアウト
-     * するため force で確実にチェックする。
+     * 生のcheckboxはカスタムのトグルUIで隠されており、クリックでは状態が変わらない
+     * ことがある。送信される値はinput自体のchecked状態なので、JSで直接ONにして
+     * changeイベントを発火させる。
      **********************************************************************************************/
-    await page.check(
-      `${parentElementSelector} input[type="checkbox"][name="${fieldObj.name}"]`,
-      { force: true }
-    );
+    await page
+      .locator(`${editId}[type="checkbox"], ${editId}`)
+      .first()
+      .evaluate((el) => {
+        const cb = el as HTMLInputElement;
+        if (!cb.checked) {
+          cb.checked = true;
+          cb.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      })
+      .catch(() => {});
   } else {
     /**********************************************************************************************
      * それ以外すべての項目への値登録
