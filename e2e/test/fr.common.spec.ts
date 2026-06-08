@@ -9,23 +9,34 @@ const moduleMap: Record<string, typeof FrTest> = {
   Potentials: FrTest,
   Leads: FrTest,
   Products: FrTest,
-  Assets:FrTest,
-  Campaigns:FrTest,
-  Dailyreports:FrTest,
-  Faq:FrTest,
-  HelpDesk:FrTest,
-  Invoice:FrTest,
-  PriceBooks:FrTest,
-  Project:FrTest,
-  ProjectMilestone:FrTest,
-  ProjectTask:FrTest,
-  PurchaseOrder:FrTest,
-  Quotes:FrTest,
-  SalesOrder:FrTest,
-  ServiceContracts:FrTest,
-  Services:FrTest,
-  Vendors:FrTest,
+  Assets: FrTest,
+  Campaigns: FrTest,
+  Dailyreports: FrTest,
+  Faq: FrTest,
+  HelpDesk: FrTest,
+  PriceBooks: FrTest,
+  Project: FrTest,
+  ProjectMilestone: FrTest,
+  ProjectTask: FrTest,
+  ServiceContracts: FrTest,
+  Services: FrTest,
+  Vendors: FrTest,
 };
+
+/**
+ * インベントリ系モジュール(Invoice/Quotes/SalesOrder/PurchaseOrder)は
+ * 共通CRUDの対象外としている。
+ *
+ * 理由: 保存に必須の明細(productid)を登録するには商品検索オートコンプリートが
+ * 必要だが、この環境では機能しない。
+ *  - 連番検索(searchRecordsOnSequenceNumber)はSELECTにsetypeが無く
+ *    isPermittedが常にfalseになり0件を返す(F-RevoCRM本体側の不具合)。
+ *  - 名称検索(getSearchResult)もこの環境では0件。
+ * 明細フィールドを直接JSで設定する方法も、F-RevoCRMの明細JSモデルに登録
+ * されず合計が0のまま保存ボタンが無効化されるため不可。
+ * 商品検索が機能する環境であれば、明細登録処理を追加して対象に戻せる。
+ */
+
 
 test.beforeAll(async () => {});
 

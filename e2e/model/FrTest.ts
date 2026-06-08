@@ -31,12 +31,44 @@ export class FrTest extends FrBaseModule {
       if (dontTestFieldsName(fieldObj)) {
         continue;
       }
+      if (await this.isNonEditableControl(page, fieldObj)) {
+        continue;
+      }
       const normalValue = (await getFieldValue(fieldObj, hash)) || "";
       await fillField(page, fieldObj, normalValue);
       filled.push(fieldObj);
     }
 
     return filled;
+  }
+
+  /**
+   * 編集できる入力UIを持たない項目かどうか。
+   * describe上はeditableでも、フォームでは type="hidden" や readonly のinputしか
+   * 持たない計算/換算用の項目(conversion_rate, balance, 各種合計等)が存在するため、
+   * それらをスキップする。
+   * (関連項目は hidden + 専用UI のため対象外。チェックボックスは type="checkbox"
+   *  かつreadonlyでないため、この判定には掛からない)
+   */
+  private async isNonEditableControl(
+    page: Page,
+    fieldObj: FRDescribeFieldsTypeWithModuleName
+  ): Promise<boolean> {
+    if (fieldObj.type.name === "reference") {
+      // 関連項目は hidden値 + 専用UI(_select/_display)で扱うため対象外
+      return false;
+    }
+    const name = fieldObj.name;
+    // 編集可能なコントロール: 非hidden/非readonlyのinput、非readonlyのtextarea
+    // (display:noneのJodit用textareaも含む)、select。
+    const editable = await page
+      .locator(
+        `input[name="${name}"]:not([type="hidden"]):not([readonly]), ` +
+          `textarea[name="${name}"]:not([readonly]), ` +
+          `select[name="${name}"]`
+      )
+      .count();
+    return editable === 0;
   }
 
   /**
@@ -52,7 +84,10 @@ export class FrTest extends FrBaseModule {
     hash: string,
     filledFields: FRDescribeFieldsTypeWithModuleName[]
   ) {
-    await page.click("text=保存");
+    // メインの保存ボタン(EditView.tplの btn-success saveButton)。
+    // インベントリ系は割引ポップアップ等にも "保存" があり text=保存 では
+    // 複数マッチするため、クラスで一意に指定する。
+    await page.locator("button.saveButton").first().click();
     // 保存に成功すると record=付きの詳細画面へ遷移する。
     // networkidle直後にURLを読むとリダイレクト完了前で誤判定する(レース)ため、
     // 遷移そのものを明示的に待つ。失敗時はタイムアウトし、extractRecordIdFromUrl
@@ -110,7 +145,7 @@ export class FrTest extends FrBaseModule {
     switch (field.type.name) {
       case "picklist": {
         const option = field.type.picklistValues?.find(
-          (v) => v.value === rawValue
+          (v) => String(v.value) === rawValue
         );
         return option?.label ?? rawValue;
       }

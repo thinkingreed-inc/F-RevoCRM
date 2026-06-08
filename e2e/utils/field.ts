@@ -202,11 +202,15 @@ export const fillField = async (
      * ごとに構造が異なり不安定でハングしやすいため。参照先には事前にレコードが
      * 存在している必要がある(なければ呼び出し側でシードする)。
      **********************************************************************************************/
-    await page
-      .locator(
-        `#${fieldObj.moduleName}_editView_fieldName_${fieldObj.name}_select`
-      )
-      .click();
+    const selectButton = page.locator(
+      `#${fieldObj.moduleName}_editView_fieldName_${fieldObj.name}_select`
+    );
+    // 選択ボタンが無い関連項目(インベントリ明細のproductid等)は標準UIで扱えない
+    // ため、ここでは何もしない(明細はモジュール側の専用処理で登録する)。
+    if ((await selectButton.count()) === 0) {
+      return;
+    }
+    await selectButton.click();
     await page.waitForLoadState("networkidle");
     await page.waitForLoadState("domcontentloaded");
 
@@ -238,7 +242,8 @@ export const fillField = async (
      **********************************************************************************************/
     await page.selectOption(
       `${parentElementSelector} select[name=${fieldObj.name}]`,
-      value
+      // picklistのvalueが数値の場合があるため文字列化する
+      String(value)
     );
   } else if (fieldObj.type.name === "boolean") {
     /**********************************************************************************************
