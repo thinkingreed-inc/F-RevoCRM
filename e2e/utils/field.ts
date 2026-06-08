@@ -212,15 +212,21 @@ export const fillField = async (
     }
     await selectButton.click();
     await page.waitForLoadState("networkidle");
-    await page.waitForLoadState("domcontentloaded");
 
-    // 参照先モジュールの一覧モーダルから先頭レコードを選択する
-    await page
+    // 参照先モジュールの一覧モーダルから先頭レコードを選択する。
+    // モーダルの描画完了前にクリックすると選択が成立せずモーダルが開いたまま
+    // 残り後続操作(保存ボタン)を覆うため、エントリの表示を待ってからクリックし、
+    // モーダルが閉じる(選択完了)のを待つ。
+    const entry = page
       .locator(".modal-body .listview-table .listViewEntries")
-      .first()
-      .click();
-    await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(500);
+      .first();
+    await entry.waitFor({ state: "visible", timeout: 15000 });
+    await entry.click();
+    await page
+      .locator("#popupModal")
+      .waitFor({ state: "hidden", timeout: 10000 })
+      .catch(() => {});
+    await page.waitForTimeout(300);
   } else if (fieldObj.type.name === "date") {
     /**********************************************************************************************
      * 日付項目への値登録

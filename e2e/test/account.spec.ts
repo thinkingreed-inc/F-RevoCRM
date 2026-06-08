@@ -45,7 +45,7 @@ test.describe("顧客企業モジュールのテスト", () => {
     }
 
     // 保存ボタンをクリック
-    await page.click("text=保存");
+    await page.locator("button.saveButton").first().click();
     await page.waitForLoadState("networkidle");
 
     // リストへ遷移
@@ -64,7 +64,13 @@ test.describe("顧客企業モジュールのテスト", () => {
     await page.goto(
       url("index.php?module=Accounts&view=List&viewname=4&app=MARKETING")
     );
-    await page.getByText("テスト企業").first().click();
+    // パンくず/最近見たレコードにも "テスト企業" が出るため、一覧の行(.listViewEntries)
+    // にスコープしてレコードリンクをクリックする。
+    await page
+      .locator(".listViewEntries")
+      .getByText("テスト企業")
+      .first()
+      .click();
     // index.php?module=Accounts&view=Detail&record=8&app=MARKETING に遷移するのを待つ
     await page.waitForURL(/record=\d+&app=MARKETING$/);
 
@@ -97,7 +103,7 @@ test.describe("顧客企業モジュールのテスト", () => {
     }
 
     // 保存ボタンをクリック
-    await page.click("text=保存");
+    await page.locator("button.saveButton").first().click();
     await page.waitForLoadState("networkidle");
 
     // リストへ遷移
