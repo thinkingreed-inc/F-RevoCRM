@@ -71,8 +71,9 @@ test.describe("顧客企業モジュールのテスト", () => {
       .getByText("テスト企業")
       .first()
       .click();
-    // index.php?module=Accounts&view=Detail&record=8&app=MARKETING に遷移するのを待つ
-    await page.waitForURL(/record=\d+&app=MARKETING$/);
+    // 詳細画面(record=付き)へ遷移するのを待つ。
+    // URLのパラメータ順序は環境により変わるため末尾固定にはしない。
+    await page.waitForURL(/[?&]view=Detail&record=\d+/);
 
     // Ajax関係の通信を適切にHandlingできなかったため、1秒間待つ処理をいれるが基本的にはアンチパターン
     await page.waitForTimeout(1000);
