@@ -134,7 +134,10 @@ export const getFieldValue = async (
       return `${hash || "example"}@example.com`;
     case "integer":
     case "currency":
-      return base62ToInt(hash || "1").toString();
+      // base62ToIntは最大約21億(10桁)になり、数値項目のバリデーション
+      // (桁数/最大値)で保存が弾かれるモジュールがあるため、
+      // 1〜99999(最大5桁)に収める。
+      return ((Math.abs(base62ToInt(hash || "1")) % 99999) + 1).toString();
     case "double":
       return (Math.floor(Math.random() * 100) + 1).toString();
     case "date":
@@ -269,12 +272,11 @@ export const fillField = async (
       `${parentElementSelector} input[name="${fieldObj.name}"]`,
       `${value}`
     );
-    await page.waitForTimeout(500);
-    if (!(await page.locator(`.modal-header`).first().isHidden())) {
-      await page.locator(`.modal-header`).first().click();
-    } else {
-      await page.locator(`.fieldBlockHeader`).first().click();
-    }
+    // datepickerのポップアップを閉じる。
+    // 以前は .fieldBlockHeader をクリックして閉じていたが、これは項目
+    // ブロックの開閉トグルを誘発し、複数日付を持つモジュール(Products等)で
+    // 保存ボタンが無効化される不具合があった。Escapeで安全に閉じる。
+    await page.keyboard.press("Escape");
   } else if (fieldObj.type.name === "picklist") {
     /**********************************************************************************************
      * 選択肢項目への値登録

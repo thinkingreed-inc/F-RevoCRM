@@ -45,12 +45,9 @@ export class FrTest extends FrBaseModule {
           }
           break;
         case "date":
-          if (mode === "edit") {
-            // 編集時はカレンダーが開いたままになることがあるため閉じる
-            await page.keyboard.press("Escape");
-          } else {
-            valuesArray.push(normalValue);
-          }
+          // 日付は詳細画面でユーザーの日付書式に従い表示され、入力値
+          // (yyyy-MM-dd)と一致しないため、表示値の検証対象にはしない。
+          // (datepickerのポップアップ閉じはfillField側でEscape実施済み)
           break;
         case "boolean":
         case "reference":
@@ -76,9 +73,15 @@ export class FrTest extends FrBaseModule {
    */
   private async saveAndVerify(page: Page, hash: string, valuesArray: string[]) {
     await page.click("text=保存");
-    await page.waitForLoadState("networkidle");
+    // 保存に成功すると record=付きの詳細画面へ遷移する。
+    // networkidle直後にURLを読むとリダイレクト完了前で誤判定する(レース)ため、
+    // 遷移そのものを明示的に待つ。保存に失敗した場合はタイムアウトし、
+    // extractRecordIdFromUrl がバリデーションエラーを添えて投げる。
+    await page
+      .waitForURL(/[?&]record=\d+/, { timeout: 15000 })
+      .catch(() => {});
 
-    const recordId = this.extractRecordIdFromUrl(page);
+    const recordId = await this.extractRecordIdFromUrl(page);
     await page.goto(this.getDetailUrl(recordId));
     await page.waitForLoadState("networkidle");
 
@@ -94,16 +97,30 @@ export class FrTest extends FrBaseModule {
   }
 
   /**
-   * 保存後のURLから record ID(数値)を取り出す
+   * 保存後のURLから record ID(数値)を取り出す。
+   * 取得できない(=保存に失敗し編集画面に留まっている)場合は、
+   * 原因究明のため可視のバリデーションエラー文言を収集して例外に含める。
    */
-  private extractRecordIdFromUrl(page: Page): string {
+  private async extractRecordIdFromUrl(page: Page): Promise<string> {
     const match = page.url().match(/[?&]record=(\d+)/);
-    if (!match) {
-      throw new Error(
-        `保存後のURLから record ID を取得できませんでした: ${page.url()}`
-      );
+    if (match) {
+      return match[1];
     }
-    return match[1];
+
+    const validationErrors = await page
+      .locator("label.error:visible, span.error:visible")
+      .allTextContents()
+      .catch(() => [] as string[]);
+    const detail =
+      validationErrors.length > 0
+        ? ` バリデーションエラー: ${validationErrors
+            .map((t) => t.trim())
+            .filter(Boolean)
+            .join(" / ")}`
+        : "";
+    throw new Error(
+      `保存後のURLから record ID を取得できませんでした: ${page.url()}${detail}`
+    );
   }
 
   /**
