@@ -268,15 +268,17 @@ export const fillField = async (
     /**********************************************************************************************
      * 日付項目への値登録
      **********************************************************************************************/
-    await page.fill(
-      `${parentElementSelector} input[name="${fieldObj.name}"]`,
-      `${value}`
+    const dateInput = page.locator(
+      `${parentElementSelector} input[name="${fieldObj.name}"]`
     );
+    await dateInput.fill(`${value}`);
     // datepickerのポップアップを閉じる。
-    // 以前は .fieldBlockHeader をクリックして閉じていたが、これは項目
-    // ブロックの開閉トグルを誘発し、複数日付を持つモジュール(Products等)で
-    // 保存ボタンが無効化される不具合があった。Escapeで安全に閉じる。
-    await page.keyboard.press("Escape");
+    // - .fieldBlockHeader クリックは項目ブロックの開閉トグルを誘発し、複数
+    //   日付モジュール(Products等)で保存ボタンが無効化される。
+    // - Escapeはbootstrap-datepickerで入力値を取り消し、必須日付モジュール
+    //   (Potentials等)で保存できなくなる。
+    // blur()なら入力値を確定したままポップアップを閉じられる。
+    await dateInput.blur();
   } else if (fieldObj.type.name === "picklist") {
     /**********************************************************************************************
      * 選択肢項目への値登録

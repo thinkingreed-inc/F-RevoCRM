@@ -82,7 +82,18 @@ export class FrTest extends FrBaseModule {
       .catch(() => {});
 
     const recordId = await this.extractRecordIdFromUrl(page);
-    await page.goto(this.getDetailUrl(recordId));
+    // 保存リダイレクトが進行中だと明示gotoが net::ERR_ABORTED で中断される
+    // ことがあるため、進行中の遷移を落ち着かせてからリトライ付きで遷移する。
+    await page.waitForLoadState("domcontentloaded").catch(() => {});
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await page.goto(this.getDetailUrl(recordId));
+        break;
+      } catch (e) {
+        if (attempt === 2) throw e;
+        await page.waitForTimeout(500);
+      }
+    }
     await page.waitForLoadState("networkidle");
 
     // hash(=必ずいずれかの文字列項目に含まれる)が表示されていること
