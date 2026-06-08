@@ -5,6 +5,7 @@ import {
   login,
 } from "./fetcher";
 import type { FRDescribeType } from "./types/frBase";
+import { BASE_URL } from "../utils/util";
 
 export class FrBaseModule {
   moduleName: string;
@@ -15,7 +16,7 @@ export class FrBaseModule {
     singular: string;
   }[];
   private moduleInfo: FRDescribeType;
-  baseUrl: string = "http://localhost/";
+  baseUrl: string = BASE_URL;
 
   constructor(moduleName: string, sessionName: string) {
     this.moduleName = moduleName;

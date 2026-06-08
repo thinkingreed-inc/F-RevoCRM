@@ -30,6 +30,7 @@ const dontTestFields = [
 ];
 
 const dontTestFieldsFromModule = {
+  Accounts: ["account_id"], // 理由：親アカウントへの自己参照。クイック作成ダイアログが表示されテストが停止してしまう
   Contacts: ["account_id"], // 理由：ダイアログが表示されるためテストが停止してしまう
   Invoice: [
     "contact_id", // 理由：ダイアログが表示されるためテストが停止してしまう

@@ -1,6 +1,24 @@
 import { Page } from "@playwright/test";
 
 /**
+ * E2Eテスト対象のベースURL。
+ * 環境差異(サブディレクトリ配信など)を吸収するため env で上書き可能。
+ * 末尾スラッシュを必ず1つ付与して正規化する。
+ * 例: http://localhost/FR_Remicck_PR/
+ */
+export const BASE_URL = (
+  process.env.E2E_BASE_URL || "http://localhost/FR_Remicck_PR/"
+).replace(/\/?$/, "/");
+
+/**
+ * 認証状態の保存先。
+ * テストファイル(*.setup.ts / *.spec.ts)同士の相互importはPlaywrightで禁止されているため、
+ * 共有する定数は非テストモジュールであるこのファイルに置く。
+ */
+export const authFile = "e2e/.auth/user.json";
+export const sessionNameFile = "e2e/.auth/sessionName.txt";
+
+/**
  * 指定したms秒待機する
  */
 export async function waitSeconds(page: Page, ms: number) {
@@ -11,7 +29,7 @@ export async function waitSeconds(page: Page, ms: number) {
  * url生成
  */
 export function url(path: string) {
-  return `http://localhost/${path}`;
+  return `${BASE_URL}${path.replace(/^\//, "")}`;
 }
 
 /**

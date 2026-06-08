@@ -1,9 +1,8 @@
 import { test, expect } from "@playwright/test";
-import { describe } from "node:test";
 import { generateRandomString, url } from "../utils/util";
 import { sidebarTest } from "../utils/test";
 
-describe("顧客企業モジュールのテスト", () => {
+test.describe("顧客企業モジュールのテスト", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(
       url("index.php?module=Accounts&view=List&viewname=4&app=MARKETING")

@@ -1,13 +1,11 @@
 import { test as setup } from '@playwright/test';
 import { login } from './model/fetcher';
+import { BASE_URL, authFile, sessionNameFile } from './utils/util';
 import { writeFileSync } from 'fs';
-
-const authFile = 'e2e/.auth/user.json';
-export const sessionNameFile = 'e2e/.auth/sessionName.txt';
 
 setup('authenticate', async ({ page }) => {
   // Perform authentication steps. Replace these actions with your own.
-  await page.goto('http://localhost/');
+  await page.goto(BASE_URL);
   // await page.getByRole('button', { name: 'Login with SimpleSAMLPHP' }).click();
   // await page.waitForLoadState('networkidle');
 
@@ -15,7 +13,7 @@ setup('authenticate', async ({ page }) => {
   await page.fill('id=password', process.env.E2E_USER_PASSWORD || 'Admin1234/');
   await page.getByRole('button', { name: 'ログイン' }).click();
 
-  await page.waitForURL('http://localhost/index.php');
+  await page.waitForURL(`${BASE_URL}index.php**`);
 
   await page.context().storageState({ path: authFile });
 

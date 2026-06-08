@@ -1,8 +1,9 @@
 import axios from "axios";
 import { FRDescribeFieldsType, FRDescribeType, FRResponse, FRRetrieveItems } from "./types/frBase";
 import md5 from "md5";
+import { BASE_URL } from "../utils/util";
 
-export const baseUrl = "http://localhost/webservice.php";
+export const baseUrl = `${BASE_URL}webservice.php`;
 
 export const client = axios.create({
   baseURL: baseUrl, // ここでベースURLを設定します

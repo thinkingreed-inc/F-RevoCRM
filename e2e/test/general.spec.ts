@@ -1,9 +1,8 @@
 import { test, expect } from '@playwright/test';
-import { describe } from 'node:test';
 import { url, waitSeconds } from '../utils/util';
 import { sidebarTest } from '../utils/test';
 
-describe('基本機能のテスト', () => {
+test.describe('基本機能のテスト', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(url('index.php'));
     await page.waitForLoadState('networkidle');
