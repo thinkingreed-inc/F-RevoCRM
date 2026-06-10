@@ -22,7 +22,9 @@ $sql="SELECT vtiger_salesorder.salesorderid, recurring_frequency, start_period, 
 		 payment_duration, invoice_status FROM vtiger_salesorder
 		 INNER JOIN vtiger_crmentity ON vtiger_salesorder.salesorderid = vtiger_crmentity.crmid AND vtiger_crmentity.deleted = 0
 		 INNER JOIN vtiger_invoice_recurring_info ON vtiger_salesorder.salesorderid = vtiger_invoice_recurring_info.salesorderid
-		 WHERE DATE_FORMAT(start_period,'%Y-%m-%d') <= ? AND DATE_FORMAT(end_period,'%Y-%m-%d') >= ?";
+		 WHERE DATE_FORMAT(start_period,'%Y-%m-%d') <= ?
+			AND (end_period IS NULL OR end_period = '0000-00-00'
+				OR DATE_FORMAT(end_period,'%Y-%m-%d') >= ?)";
 $result = $adb->pquery($sql, array($currentDate, $currentDate));
 $no_of_salesorder = $adb->num_rows($result);
 
@@ -37,7 +39,7 @@ for($i=0; $i<$no_of_salesorder;$i++) {
 		$recurring_date = $start_period;
 	}
 
-	$endDateStrTime = strtotime($end_period);
+	$endDateStrTime = (!empty($end_period) && $end_period !== '0000-00-00') ? strtotime($end_period) : PHP_INT_MAX;
 	$recurringDateStrTime = strtotime($recurring_date);
 
 	if($recurringDateStrTime < $currentDateStrTime) {
