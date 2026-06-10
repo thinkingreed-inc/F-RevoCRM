@@ -2240,7 +2240,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			}
 
 			if(eventObj.description && eventObj.description != '') {
-				popOverHTML += eventObj.description;
+				popOverHTML += '<div class="calendar-popover-description">' + eventObj.description + '</div>';
 			}
 
 			if(event.creator && event.creator != '' || event.modifiedby && event.modifiedby != '') {
