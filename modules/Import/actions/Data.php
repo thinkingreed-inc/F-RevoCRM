@@ -822,7 +822,8 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		if ($fieldData != null && $checkMandatoryFieldValues) {
 			foreach ($moduleFields as $fieldName => $fieldInstance) {
 				if($moduleName == "Calendar" && in_array($fieldName, $skippedCalendarFields)) continue;
-				if ((($fieldData[$fieldName] == '') || ($fieldData[$fieldName] == null)) && $fieldInstance->isMandatory()) {
+				if ((($fieldData[$fieldName] == '') || ($fieldData[$fieldName] == null))
+					&& $fieldInstance->isMandatory() && $fieldInstance->getPresence() != 1) { 
 					if($moduleName == "Calendar" && $fieldData["activitytype"] != "Task" && $fieldName == "eventstatus" && !empty($fieldData["taskstatus"])){
 						$fieldData["eventstatus"] == $fieldData["taskstatus"];
 					}else if($moduleName == "Calendar" && $fieldData["activitytype"] == "Task" && $fieldName == "taskstatus" && !empty($fieldData["eventstatus"])){
