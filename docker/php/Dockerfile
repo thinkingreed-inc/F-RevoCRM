@@ -1,4 +1,4 @@
-FROM php:8.3-apache-bookworm
+FROM php:8.5-apache-bookworm
 RUN usermod -u 1000 www-data
 RUN groupmod -g 1000 www-data
 
@@ -22,18 +22,20 @@ RUN apt-get update && apt-get install -y \
 
 # Configure and install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-xpm \
-    && docker-php-ext-configure imap --with-kerberos --with-imap-ssl \
     && docker-php-ext-install -j$(nproc) \
         bcmath \
         gd \
         exif \
         gettext \
-        imap \
         mbstring \
         mysqli \
         pdo \
         pdo_mysql \
         zip
+
+# Install IMAP extension via PECL (removed from bundled extensions in PHP 8.5)
+RUN pecl install imap \
+    && docker-php-ext-enable imap
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -59,5 +61,6 @@ ENV COMPOSER_ALLOW_SUPERUSER=1 \
 # Set working directory
 WORKDIR /var/www/html
 
-# Enable Apache modules
-RUN a2enmod rewrite
+# Enable Apache modules and allow .htaccess
+RUN a2enmod rewrite \
+    && sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
