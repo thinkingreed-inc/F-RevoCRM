@@ -14,7 +14,7 @@
 			<form class="form-horizontal recordEditView" name="upload" method="post" action="index.php">
 				{include file="ModalHeader.tpl"|vtemplate_path:$MODULE TITLE=$HEADER_TITLE}
 				<div class="modal-body">
-					<div class="uploadview-content container-fluid">
+					<div class="uploadview-content container-fluid" style="overflow-x:hidden;">
 						<div class="uploadcontrols row">
 							<div id="upload" data-filelocationtype="I">
 								{if !empty($PICKIST_DEPENDENCY_DATASOURCE)}
@@ -54,90 +54,71 @@
 									<div class="fileDetails"></div>
 								</div>
 
-								<table class="massEditTable table no-border">
+								<table class="massEditTable table no-border" style="width:100%;">
 									<tr>
 										{assign var="FIELD_MODEL" value=$FIELD_MODELS['notes_title']}
-										<td class="fieldLabel col-lg-2">
-											<label class="muted pull-right">
+										<td class="fieldValue col-lg-12" colspan="4">
+											<label class="muted fieldLabel" style="display:block;text-align:left;">
 												{vtranslate($FIELD_MODEL->get('label'), $MODULE)}&nbsp;
 												{if $FIELD_MODEL->isMandatory() eq true}
 													<span class="redColor">*</span>
 												{/if}
 											</label>
-										</td>
-										<td class="fieldValue col-lg-4" colspan="3">
 											{include file=vtemplate_path($FIELD_MODEL->getUITypeModel()->getTemplateName(),$MODULE)}
 										</td>
 									</tr>
 									<tr>
 										{assign var="FIELD_MODEL" value=$FIELD_MODELS['assigned_user_id']}
-										<td class="fieldLabel col-lg-2">
-											<label class="muted pull-right">
+										<td class="fieldValue col-lg-12" colspan="4">
+											<label class="muted fieldLabel" style="display:block;text-align:left;">
 												{vtranslate($FIELD_MODEL->get('label'), $MODULE)}&nbsp;
 												{if $FIELD_MODEL->isMandatory() eq true}
 													<span class="redColor">*</span>
 												{/if}
 											</label>
-										</td>
-										<td class="fieldValue col-lg-4">
 											{include file=vtemplate_path($FIELD_MODEL->getUITypeModel()->getTemplateName(),$MODULE)}
 										</td>
-
-										{assign var="FIELD_MODEL" value=$FIELD_MODELS['folderid']}
-										{if $FIELD_MODELS['folderid']}
-											<td class="fieldLabel col-lg-2">
-												<label class="muted pull-right">
-													{vtranslate($FIELD_MODEL->get('label'), $MODULE)}&nbsp;
-													{if $FIELD_MODEL->isMandatory() eq true}
-														<span class="redColor">*</span>
-													{/if}
-												</label>
-											</td>
-											<td class="fieldValue col-lg-4">
-												{include file=vtemplate_path($FIELD_MODEL->getUITypeModel()->getTemplateName(),$MODULE)}
-											</td>
-										{/if}
 									</tr>
+									{if $FIELD_MODELS['folderid']}
+									<tr>
+										{assign var="FIELD_MODEL" value=$FIELD_MODELS['folderid']}
+										<td class="fieldValue col-lg-12" colspan="4">
+											<label class="muted fieldLabel" style="display:block;text-align:left;">
+												{vtranslate($FIELD_MODEL->get('label'), $MODULE)}&nbsp;
+												{if $FIELD_MODEL->isMandatory() eq true}
+													<span class="redColor">*</span>
+												{/if}
+											</label>
+											{include file=vtemplate_path($FIELD_MODEL->getUITypeModel()->getTemplateName(),$MODULE)}
+										</td>
+									</tr>
+									{/if}
+									{if $FIELD_MODELS['notecontent']}
 									<tr>
 										{assign var="FIELD_MODEL" value=$FIELD_MODELS['notecontent']}
-										{if $FIELD_MODELS['notecontent']}
-											<td class="fieldLabel col-lg-2" colspan="1">
-												<label class="muted pull-right">
-													{vtranslate($FIELD_MODEL->get('label'), $MODULE)}&nbsp;
-													{if $FIELD_MODEL->isMandatory() eq true}
-														<span class="redColor">*</span>
-													{/if}
-												</label>
-											</td>
-											<td class="fieldValue col-lg-4" colspan="3">
-												{include file=vtemplate_path($FIELD_MODEL->getUITypeModel()->getTemplateName(),$MODULE)}
-											</td>
-										{/if}
+										<td class="fieldValue col-lg-12" colspan="4">
+											<label class="muted fieldLabel" style="display:block;text-align:left;">
+												{vtranslate($FIELD_MODEL->get('label'), $MODULE)}&nbsp;
+												{if $FIELD_MODEL->isMandatory() eq true}
+													<span class="redColor">*</span>
+												{/if}
+											</label>
+											{include file=vtemplate_path($FIELD_MODEL->getUITypeModel()->getTemplateName(),$MODULE)}
+										</td>
 									</tr>
-									<tr>
-										{assign var=HARDCODED_FIELDS value=','|explode:"filename,assigned_user_id,folderid,notecontent,notes_title"}
-										{assign var=COUNTER value=0}
-										{foreach key=FIELD_NAME item=FIELD_MODEL from=$FIELD_MODELS} 
-											{foreach key=STRUCTURE_NAME item=STRUCTURE_MODEL from=$RECORD_STRUCTURE}
-												{if $FIELD_NAME eq $STRUCTURE_NAME}
-													{if !in_array($FIELD_NAME,$HARDCODED_FIELDS) && $FIELD_MODEL->isQuickCreateEnabled()}
-														{assign var="isReferenceField" value=$FIELD_MODEL->getFieldDataType()}
-														{assign var="referenceList" value=$FIELD_MODEL->getReferenceList()}
-														{assign var="referenceListCount" value=php7_count($referenceList)}
-														{if $FIELD_MODEL->get('uitype') eq "19"}
-															{if $COUNTER eq '1'}
-																<td></td><td></td></tr><tr>
-																{assign var=COUNTER value=0}
-															{/if}
-														{/if}
-														{if $COUNTER eq 2}
-														</tr><tr>
-															{assign var=COUNTER value=1}
-														{else}
-															{assign var=COUNTER value=$COUNTER+1}
-														{/if}
-														<td class='fieldLabel col-lg-2'>
-															{if $isReferenceField neq "reference"}<label class="muted pull-right">{/if}
+									{/if}
+									{assign var=HARDCODED_FIELDS value=','|explode:"filename,assigned_user_id,folderid,notecontent,notes_title"}
+									{foreach key=FIELD_NAME item=FIELD_MODEL from=$FIELD_MODELS}
+										{foreach key=STRUCTURE_NAME item=STRUCTURE_MODEL from=$RECORD_STRUCTURE}
+											{if $FIELD_NAME eq $STRUCTURE_NAME}
+												{if !in_array($FIELD_NAME,$HARDCODED_FIELDS) && $FIELD_MODEL->isQuickCreateEnabled()}
+													{if $FIELD_MODEL->get('uitype') eq "999"}{continue}{/if}
+													{assign var="isReferenceField" value=$FIELD_MODEL->getFieldDataType()}
+													{assign var="referenceList" value=$FIELD_MODEL->getReferenceList()}
+													{assign var="referenceListCount" value=php7_count($referenceList)}
+													<tr>
+														<td class="fieldValue col-lg-12" colspan="4">
+															{if $FIELD_MODEL->get('uitype') neq '83'}
 																{if $isReferenceField eq "reference"}
 																	{if $referenceListCount > 1}
 																		{assign var="DISPLAYID" value=$FIELD_MODEL->get('fieldvalue')}
@@ -145,43 +126,29 @@
 																		{if !empty($REFERENCED_MODULE_STRUCT)}
 																			{assign var="REFERENCED_MODULE_NAME" value=$REFERENCED_MODULE_STRUCT->get('name')}
 																		{/if}
-																		<span class="pull-right">
-																			<select style="width:150px;" class="select2 referenceModulesList {if $FIELD_MODEL->isMandatory() eq true}reference-mandatory{/if}">
-																				{foreach key=index item=value from=$referenceList}
-																					<option value="{$value}" {if $value eq $REFERENCED_MODULE_NAME} selected {/if} >{vtranslate($value, $value)}</option>
-																				{/foreach}
-																			</select>
-																		</span>
+																		<select style="width:150px;" class="select2 referenceModulesList {if $FIELD_MODEL->isMandatory() eq true}reference-mandatory{/if}">
+																			{foreach key=index item=value from=$referenceList}
+																				<option value="{$value}" {if $value eq $REFERENCED_MODULE_NAME} selected {/if} >{vtranslate($value, $value)}</option>
+																			{/foreach}
+																		</select>
 																	{else}
-																		<label class="muted pull-right">{vtranslate($FIELD_MODEL->get('label'), $MODULE)}&nbsp;{if $FIELD_MODEL->isMandatory() eq true} <span class="redColor">*</span> {/if}</label>
-																	{/if}
-																{else if $FIELD_MODEL->get('uitype') eq '83'}
-																	{include file=vtemplate_path($FIELD_MODEL->getUITypeModel()->getTemplateName(),$MODULE) COUNTER=$COUNTER MODULE=$MODULE}
-																	{if $TAXCLASS_DETAILS}
-																		{assign 'taxCount' php7_count($TAXCLASS_DETAILS)%2}
-																		{if $taxCount eq 0}
-																			{if $COUNTER eq 2}
-																				{assign var=COUNTER value=1}
-																			{else}
-																				{assign var=COUNTER value=2}
-																			{/if}
-																		{/if}
+																		<label class="muted fieldLabel" style="display:block;text-align:left;">{vtranslate($FIELD_MODEL->get('label'), $MODULE)}&nbsp;{if $FIELD_MODEL->isMandatory() eq true} <span class="redColor">*</span> {/if}</label>
 																	{/if}
 																{else}
-																	{vtranslate($FIELD_MODEL->get('label'), $MODULE)}&nbsp;{if $FIELD_MODEL->isMandatory() eq true} <span class="redColor">*</span> {/if}
+																	<label class="muted fieldLabel" style="display:block;text-align:left;">{vtranslate($FIELD_MODEL->get('label'), $MODULE)}&nbsp;{if $FIELD_MODEL->isMandatory() eq true} <span class="redColor">*</span> {/if}</label>
 																{/if}
-																{if $isReferenceField neq "reference"}</label>{/if}
-														</td>
-														{if $FIELD_MODEL->get('uitype') neq '83'}
-															<td class="fieldValue col-lg-4" {if $FIELD_MODEL->get('uitype') eq '19'} colspan="3" {assign var=COUNTER value=$COUNTER+1} {/if}>
+															{/if}
+															{if $FIELD_MODEL->get('uitype') neq '83'}
 																{include file=vtemplate_path($FIELD_MODEL->getUITypeModel()->getTemplateName(),$MODULE)}
-															</td>
-														{/if}
-													{/if}
+															{else}
+																{include file=vtemplate_path($FIELD_MODEL->getUITypeModel()->getTemplateName(),$MODULE) MODULE=$MODULE}
+															{/if}
+														</td>
+													</tr>
 												{/if}
-											{{/foreach}}
+											{/if}
 										{/foreach}
-									</tr>
+									{/foreach}
 								</table>
 							</div>
 						</div>

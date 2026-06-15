@@ -148,7 +148,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			// ※処理済みのレコードが$pagingLimitの倍数でない場合を前回のインポートが完了していないとみなす
 			$configReader = new Import_Config_Model();
 			$pagingLimit = intval($configReader->get('importPagingLimit'));
-			$importTable = Import_Utils_Helper::getDbTableName($this->user);
+			$importTable = Import_Utils_Helper::getDbTableName($this->user, $this->id);
 			$finishedImportQuery = 'SELECT count(*) AS imported FROM '.$importTable.' WHERE `status` != ?';
 			$finishedImportResult = $adb->pquery($finishedImportQuery, array(Import_Data_Action::$IMPORT_RECORD_NONE));
 			$finishedImportCount = $adb->query_result($finishedImportResult, 0, 'imported');
@@ -179,7 +179,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			$entityIdComponents = vtws_getIdComponents($entityInfo['id']);
 			$recordId = $entityIdComponents[1];
 		}
-		$adb->pquery('UPDATE '.Import_Utils_Helper::getDbTableName($this->user).' SET status=?, recordid=? WHERE id=?', array($entityInfo['status'], $recordId, $entryId));
+		$adb->pquery('UPDATE '.Import_Utils_Helper::getDbTableName($this->user, $this->id).' SET status=?, recordid=? WHERE id=?', array($entityInfo['status'], $recordId, $entryId));
 	}
 
 	public function createRecords() {
@@ -209,7 +209,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 
 		$createdRecords = array();
 		$entityData = array();
-		$tableName = Import_Utils_Helper::getDbTableName($this->user);
+		$tableName = Import_Utils_Helper::getDbTableName($this->user, $this->id);
         $params = array();
 		$sql = 'SELECT * FROM '.$tableName.' WHERE status = ?';
         array_push($params, Import_Data_Action::$IMPORT_RECORD_NONE);
@@ -618,11 +618,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 								} elseif ($referenceModule == 'Currency') {
 									$referenceEntityId = getCurrencyId($entityLabel);
 								} else {
-									try {
-										$referenceEntityId = getEntityId($referenceModule, decode_html($entityLabel));
-									} catch (ImportException $e) {
-										$referenceEntityId = 0;
-									}
+									$referenceEntityId = getEntityId($referenceModule, decode_html($entityLabel));
 								}
 								if ($referenceEntityId != 0) {
 									$entityId = $referenceEntityId;
@@ -668,14 +664,9 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 					if (isset($importDefaultValues[$fieldName]) && !empty($importDefaultValues[$fieldName])) {
 						$fieldValue = $importDefaultValues[$fieldName];
 					} else {
-						$skippedInventoryFields = array(
-							'SalesOrder' => array('invoicestatus')
-						);
 						// 必須項目で空の場合はエラー
 						if ($fieldInstance->isMandatory()) {
-							if (!(isset($skippedInventoryFields[$moduleName]) && in_array($fieldName, $skippedInventoryFields[$moduleName]))) {
-								return null;
-							}
+							return null;
 						}
 						// 必須でなければ空のまま
 						$fieldData[$fieldName] = '';
@@ -697,13 +688,6 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 				foreach($allPicklistDetails as $picklistDetails){
 					if($fieldValue == $picklistDetails['label']){
 						$fieldValue = $picklistDetails['value'];
-						break;
-					}
-					// 翻訳後の値とも比較する（hdnTaxTypeなど の特殊なフィールド用）
-					$translatedValue = vtranslate($picklistDetails['value'], $moduleName);
-					if (trim($fieldValue) === trim($translatedValue)) {
-						$fieldValue = $picklistDetails['value'];
-						break;
 					}
 				}
 
@@ -834,15 +818,12 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		}
 
 		$skippedCalendarFields = array('contact_id', 'duration_hours', 'duration_minutes', 'recurringtype', 'reminder_time', 'smcreatorid');
-		$skippedInventoryFields = array(
-			'SalesOrder' => array('invoicestatus')
-		);
 
 		if ($fieldData != null && $checkMandatoryFieldValues) {
 			foreach ($moduleFields as $fieldName => $fieldInstance) {
 				if($moduleName == "Calendar" && in_array($fieldName, $skippedCalendarFields)) continue;
-				if(isset($skippedInventoryFields[$moduleName]) && in_array($fieldName, $skippedInventoryFields[$moduleName])) continue;
-				if ((($fieldData[$fieldName] == '') || ($fieldData[$fieldName] == null)) && $fieldInstance->isMandatory()) {
+				if ((($fieldData[$fieldName] == '') || ($fieldData[$fieldName] == null))
+					&& $fieldInstance->isMandatory() && $fieldInstance->getPresence() != 1) { 
 					if($moduleName == "Calendar" && $fieldData["activitytype"] != "Task" && $fieldName == "eventstatus" && !empty($fieldData["taskstatus"])){
 						$fieldData["eventstatus"] == $fieldData["taskstatus"];
 					}else if($moduleName == "Calendar" && $fieldData["activitytype"] == "Task" && $fieldName == "taskstatus" && !empty($fieldData["eventstatus"])){
@@ -983,7 +964,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			$vtigerMailer->Send(true);
 
 			//未完了のインポートがない場合のみ終了する
-			$importTable = Import_Utils_Helper::getDbTableName($importDataController->user);			
+			$importTable = Import_Utils_Helper::getDbTableName($importDataController->user, $importDataController->id);
 			$unfinishedImportQuery = 'SELECT count(status) FROM ' . $importTable . ' WHERE status = 0 GROUP BY status';
 			$unfinishedImportResult = $adb->pquery($unfinishedImportQuery, array());
 			$unfinishedImportCount = $adb->query_result($unfinishedImportResult, 0, 'count(status)');
@@ -995,7 +976,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 
 	public function getNumberOfRecordsToImport($user){
 		$db = PearDatabase::getInstance();
-		$table = Import_Utils_Helper::getDbTableName($user);
+		$table = Import_Utils_Helper::getDbTableName($user, $this->id);
 		$query = "SELECT count(*) AS count FROM $table WHERE status = ?";
 		$result = $db->pquery($query,array(Import_Data_Action::$IMPORT_RECORD_NONE));
 		$rows = $db->num_rows($result);
@@ -1303,7 +1284,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		$adb = PearDatabase::getInstance();
 
 		$params = array();
-		$tableName = Import_Utils_Helper::getDbTableName($this->user);
+		$tableName = Import_Utils_Helper::getDbTableName($this->user, $this->id);
 		$sql = 'SELECT * FROM ' . $tableName . ' WHERE status = ?';
 		array_push($params, Import_Data_Action::$IMPORT_RECORD_NONE);
 		$result = $adb->pquery($sql, $params);
@@ -1314,25 +1295,13 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 
 		//関連項目が入っている項目を取得
 		$referenceColumns = array();
-		$allModuleFields = array($moduleFields);
-		$inventoryModules = array('Quotes', 'SalesOrder', 'PurchaseOrder', 'Invoice');
-		if (in_array($this->module, $inventoryModules)) {
-			$lineItemHandler = vtws_getModuleHandlerFromName('LineItem', $this->user);
-			$lineItemMeta = $lineItemHandler->getMeta();
-			$allModuleFields[] = $lineItemMeta->getModuleFields();
-		}
-
-		foreach ($allModuleFields as $mFields) {
-			foreach($mFields as $fieldname => $moduleField){
-				if($moduleField != null){
-					$fieldDataType = $moduleField->getFieldDataType();
-					if ($fieldDataType == 'reference'){
-						if (!in_array($fieldname, $referenceColumns)) {
-							array_push($referenceColumns, $fieldname);
-						}
-					}
-				}			
-			}
+		foreach($moduleFields as $fieldname => $moduleField){
+			if($moduleField != null){
+				$fieldDataType = $moduleField->getFieldDataType();
+				if ($fieldDataType == 'reference'){
+					array_push($referenceColumns, $fieldname);
+				}
+			}			
 		}
 
 		// 価格表の時はrelatedtoを追加
@@ -1357,40 +1326,17 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 					} else if (strpos($referencevalue, ':::') > 0) {
 						$fieldValueDetails = explode(':::', $referencevalue);
 					} else {
-						$fieldValueDetails = array($referencevalue);
+						$fieldValueDetails = $referencevalue;
 					}
 
 					foreach($fieldValueDetails as $fieldValueDetail){
 						if (strpos($fieldValueDetail, '====') > 0) {
 							$fieldDetail = explode('====', $fieldValueDetail);
-							if (!isset($columnsForCache[$fieldValueDetails[0]])){
+							if ((!$columnsForCache[$fieldValueDetails[0]])){
 								$columnsForCache[$fieldValueDetails[0]] = array();
 							}
 							if (!in_array($fieldDetail[0],$columnsForCache[$fieldValueDetails[0]])){
 								array_push($columnsForCache[$fieldValueDetails[0]],$fieldDetail[0]);
-							}
-						} else if (php7_count($fieldValueDetails) == 1) {
-							$fieldInstance = null;
-							foreach ($allModuleFields as $mFields) {
-								if (isset($mFields[$referenceColumn])) {
-									$fieldInstance = $mFields[$referenceColumn];
-									break;
-								}
-							}
-							if ($fieldInstance) {
-								$referencedModules = $fieldInstance->getReferenceList();
-								foreach ($referencedModules as $refModule) {
-									$entityNameInfo = getEntityFieldNames($refModule);
-									if (!$entityNameInfo) continue;
-									$fieldNames = $entityNameInfo['fieldname'];
-									if (!is_array($fieldNames)) $fieldNames = array($fieldNames);
-									if (!isset($columnsForCache[$refModule])) $columnsForCache[$refModule] = array();
-									foreach ($fieldNames as $fn) {
-										if (!in_array($fn, $columnsForCache[$refModule])) {
-											array_push($columnsForCache[$refModule], $fn);
-										}
-									}
-								}
 							}
 						}
 					}
@@ -1403,7 +1349,6 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		foreach($columnsForCache as $module => $columns){
 			$query = "select fieldname,tablename,entityidfield from vtiger_entityname where modulename = ?";
 			$result = $adb->pquery($query, array($module));
-			if (!$result || $adb->num_rows($result) == 0) continue;
 			$tablename = $adb->query_result($result, 0, 'tablename');
 			$entityidfield = $adb->query_result($result, 0, 'entityidfield');
 
@@ -1411,18 +1356,20 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			$result = $adb->pquery($sql,array());
 
 			$noOfRows = $adb->num_rows($result);
+			$recordModels = [];
+			$recordModel = [];
 			for ($i = 0; $i < $noOfRows; ++$i) {	
-				$row = $adb->query_result_rowdata($result, $i);
+				$row = $adb->query_result_rowdata($result, $i,);
 				$recordId = $row[$entityidfield];
-				$recordModel = array();
 				$recordModel[$entityidfield] = $recordId;
 				foreach($columns as $column){
 					if(isset($row[$column])){
 						$recordModel[$column] = $row[$column];
 					}
 				}
-				$cache[$module][] = $recordModel;
+				$recordModels[] = $recordModel;
 			}
+			$cache[$module] = $recordModels; 
 		}
 
 		return $cache;

@@ -144,7 +144,7 @@
 								{assign var=TRANS_GROUP_LABEL value={vtranslate($TRANS_GROUP_LABEL)}}
 								<optgroup label="{$TRANS_GROUP_LABEL}">
 									{foreach from=$ALL_GROUP_MEMBERS item=MEMBER}
-										<option value="{$MEMBER->getId()}" data-member-type="{$GROUP_LABEL}" {if isset($SELECTED_MEMBERS_GROUP[$GROUP_LABEL][$MEMBER->getId()])}selected="true"{/if}>{$MEMBER->getName()}</option>
+										<option value="{$MEMBER->getId()}" data-member-type="{$GROUP_LABEL}" {if isset($SELECTED_MEMBERS_GROUP[$GROUP_LABEL][$MEMBER->getId()])}selected="true"{/if}>{vtranslate($MEMBER->getName(), 'Settings:Roles')}</option>
 									{/foreach}
 								</optgroup>
 							{/foreach}

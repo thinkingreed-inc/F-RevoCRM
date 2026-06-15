@@ -204,3 +204,10 @@
     border-collapse: collapse;
   }
 }
+
+/* iOS Safariのみ: ブラウザ下部ナビゲーションバーとの重なり修正 */
+@supports (-webkit-touch-callout: none) {
+  [data-slot="dialog-content"] {
+    max-height: 90svh !important;
+  }
+}

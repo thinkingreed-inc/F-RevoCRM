@@ -8,12 +8,15 @@
  ************************************************************************************/
 
 Vtiger_List_Js("Documents_List_Js", {
-    
+
     massMove : function(url) {
-        var self = new Documents_List_Js();
+        // チェックボックスのクリックハンドラは app.controller() が返すインスタンスの
+        // tracker に紐付いている。new で別インスタンスを作ると別 tracker を参照することになり、
+        // 「未選択」誤判定の原因になるため、必ず app.controller() を使う。
+        var self = app.controller();
         self.massMove(url);
     }
-    
+
 }, {
     
     registerSearchEvent : function(container) {
@@ -68,7 +71,20 @@ Vtiger_List_Js("Documents_List_Js", {
                         });
                     }
                     app.helper.hideModal();
-                    self.loadListViewRecords();
+                    // 移動済みドキュメントが選択トラッカーに残ったままだと、
+                    // 次回の選択時に併せて再送信されてしまうため、ここでクリアする。
+                    // tracker は app.controller() 側に紐付いているのでそちらを使う。
+                    var listInstance = app.controller();
+                    if (listInstance && typeof listInstance.clearList === 'function') {
+                        listInstance.clearList();
+                    }
+                    jQuery('.listViewEntriesMainCheckBox').prop('checked', false);
+                    jQuery('.listViewEntriesCheckBox').prop('checked', false);
+                    if (listInstance && typeof listInstance.loadListViewRecords === 'function') {
+                        listInstance.loadListViewRecords();
+                    } else {
+                        self.loadListViewRecords();
+                    }
                 });
             } else {
                 app.helper.showAlertNotification({
@@ -86,7 +102,10 @@ Vtiger_List_Js("Documents_List_Js", {
     
     massMove : function(url) {
         var self = this;
-        var listInstance = Vtiger_List_Js.getInstance();
+        // Vtiger_List_Js.getInstance() は app.controller() と別のシングルトンを返してしまう。
+        // ユーザーのチェック操作は app.controller() の tracker に反映されるため、
+        // 検証もこちらの tracker で行う必要がある。
+        var listInstance = app.controller();
 		var validationResult = listInstance.checkListRecordSelected();
 		if(!validationResult){
 			var selectedIds = listInstance.readSelectedIds(true);
@@ -194,7 +213,11 @@ Vtiger_List_Js("Documents_List_Js", {
     registerFiltersClickEvent : function() {
         var self = this;
         var filters = jQuery('#module-filters');
-        filters.on('click', '.listViewFilter', function() {
+        // mousedown を使い、サイドバーの click ハンドラ（loadFilter → getDefaultParams で
+        // .documentFolder.active を参照）より前にフォルダの active を解除する。
+        // そうしないと「すべて」クリック直後の getDefaultParams が前回の folder_value を拾い、
+        // 「すべて」リストなのに前のフォルダで絞り込まれてしまう。
+        filters.on('mousedown', '.listViewFilter', function() {
             self.unMarkAllFolders();
         });
     },

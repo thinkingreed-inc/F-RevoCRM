@@ -112,7 +112,7 @@ class Documents_QuickCreateAjax_View extends Vtiger_IndexAjax_View {
 		$moduleName = $request->getModule();
 		$jsFileNames = array(
 			"modules.$moduleName.resources.Edit",
-			"modules.Vtiger.resources.CkEditor"
+			"modules.Vtiger.resources.JoditEditor"
 		);
 
 		$jsScriptInstances = $this->checkAndConvertJsScripts($jsFileNames);

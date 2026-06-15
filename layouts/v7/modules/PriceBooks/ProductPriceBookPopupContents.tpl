@@ -81,7 +81,7 @@
                         {/if}
 
                         {foreach item=LISTVIEW_ENTRY from=$LISTVIEW_ENTRIES name=popupListView}
-                            {assign var="RECORD_DATA" value="{$LISTVIEW_ENTRY->getRawData()}"}
+                            {assign var="RECORD_DATA" value=$LISTVIEW_ENTRY->getRawData()}
                             <tr class="listViewEntries" data-id="{$LISTVIEW_ENTRY->getId()}" data-name='{$LISTVIEW_ENTRY->getName()}' data-currency='{$LISTVIEW_ENTRY->get('currency_id')}'
                                 {if $GETURL neq '' } data-url='{$LISTVIEW_ENTRY->$GETURL()}' {/if} id="{$MODULE}_popUpListView_row_{$smarty.foreach.popupListView.index+1}">
                                 <td class="{$WIDTHTYPE}">

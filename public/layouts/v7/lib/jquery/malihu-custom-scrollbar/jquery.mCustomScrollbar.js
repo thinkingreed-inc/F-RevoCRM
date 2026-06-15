@@ -2167,3 +2167,17 @@ and dependencies (minified).
 	});
 
 }))}(window,document));
+
+/* passive event listener fix: touchmove の cancelable=false 警告を解消する
+ * このパッチを削除・上書きすると警告が再発するため注意。
+ * concat.min.js を再ビルドする場合は同様のパッチを末尾に追記すること。 */
+(function($) {
+    if ($.event && $.event.special) {
+        $.event.special.touchmove = {
+            setup: function(data, ns, eventHandle) {
+                this.addEventListener('touchmove', eventHandle, { passive: false });
+                return true;
+            }
+        };
+    }
+}(jQuery));

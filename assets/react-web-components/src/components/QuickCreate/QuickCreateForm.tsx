@@ -21,8 +21,6 @@ export const QuickCreateForm: React.FC<QuickCreateFormProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  // _moduleは将来的にモジュール固有の処理で使用予定
-  void _module;
   /**
    * フィールドをブロック別にグループ化
    */
@@ -82,8 +80,10 @@ export const QuickCreateForm: React.FC<QuickCreateFormProps> = ({
                   onRecordTypeChange={onRecordTypeChange}
                   disabled={disabled || isSaving}
                   error={errors[field.name]}
-                  className="w-full"
+                  className="w-full flex-col items-stretch md:flex-row md:items-start"
+                  labelClassName="w-full text-left leading-normal md:w-[110px] md:text-right md:leading-[30px]"
                   formData={formData}
+                  module={_module}
                 />
               </div>
             ))}

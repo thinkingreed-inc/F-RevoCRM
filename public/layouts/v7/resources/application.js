@@ -556,7 +556,7 @@ jQuery(function () {
 		var value = this.valueOf();
 		return value.charAt(0).toUpperCase()+value.slice(1).toLowerCase()
 	}
-	/* To push focus on CKEditor Popup when shown with Bootstrap modal */
+	/* To push focus on Jodit Popup when shown with Bootstrap modal */
 	/* ref https://stackoverflow.com/a/23667151 */
 	jQuery.fn.modal.Constructor.prototype.enforceFocus = function() {
 		modal_this = this

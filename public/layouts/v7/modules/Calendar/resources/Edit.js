@@ -153,6 +153,10 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
         var editViewForm = this.getForm();
 		var params = {
 			submitHandler : function(form) {
+				// Jodit全instancesの同期（submit前必須、Task G syncAllInstances共通経路注入）
+				if (typeof Vtiger_Jodit_Js !== 'undefined' && Vtiger_Jodit_Js.syncAllInstances) {
+					Vtiger_Jodit_Js.syncAllInstances();
+				}
 				var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
 				app.event.trigger(e);
 				if(e.isDefaultPrevented()) {
@@ -188,6 +192,10 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 	quickCreateSave : function(form,invokeParams){
 		var params = {
 			submitHandler: function(form) {
+				// Jodit全instancesの同期（submit前必須、Task G syncAllInstances共通経路注入）
+				if (typeof Vtiger_Jodit_Js !== 'undefined' && Vtiger_Jodit_Js.syncAllInstances) {
+					Vtiger_Jodit_Js.syncAllInstances();
+				}
 				if(this.numberOfInvalids() > 0) {
 					return false;
 				}

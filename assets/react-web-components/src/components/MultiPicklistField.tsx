@@ -35,6 +35,8 @@ export interface MultiPicklistFieldProps {
   error?: string;
   /** カスタムクラス */
   className?: string;
+  /** ラベルのカスタムクラス名（縦並び時の左寄せなどに使用） */
+  labelClassName?: string;
 }
 
 /**
@@ -50,7 +52,8 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
   mandatory = false,
   disabled = false,
   error,
-  className
+  className,
+  labelClassName
 }) => {
   const { t } = useOptionalTranslation();
 
@@ -73,6 +76,9 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
 
   // ドロップダウンの位置
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null);
+
+  // キーボードハイライトindex
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(0);
 
   // タッチスワイプ用のref
   const touchStartYRef = useRef<number | null>(null);
@@ -133,6 +139,19 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
     return filtered;
   }, [options, searchTerm, selectedValues]);
 
+  // 検索語変更時はハイライトをリセット
+  useEffect(() => {
+    setHighlightedIndex(0);
+  }, [searchTerm]);
+
+  // 候補数変動時のクランプ（連続選択UX: 選択した位置に次候補がスライドインするためindex維持＋範囲外クランプ）
+  useEffect(() => {
+    setHighlightedIndex(prev => {
+      if (filteredOptions.length === 0) return 0;
+      return Math.min(prev, filteredOptions.length - 1);
+    });
+  }, [filteredOptions.length]);
+
   /**
    * 選択済みの値からラベルを取得
    */
@@ -165,6 +184,42 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
     const newValues = selectedValues.filter(v => v !== optionValue);
     onChange(name, newValues.join(' |##| '));
   };
+
+  /**
+   * キーボード操作（↑↓循環・Enter選択・Esc閉）
+   */
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isOpen || filteredOptions.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setHighlightedIndex(prev =>
+          prev < filteredOptions.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setHighlightedIndex(prev =>
+          prev > 0 ? prev - 1 : filteredOptions.length - 1
+        );
+        break;
+      case 'Enter':
+        // IME(日本語入力)確定のEnterはオプション選択しない
+        if (e.nativeEvent.isComposing) break;
+        e.preventDefault();
+        if (highlightedIndex >= 0 && highlightedIndex < filteredOptions.length) {
+          handleSelectOption(filteredOptions[highlightedIndex].value);
+        }
+        break;
+      case 'Escape':
+        // ドロップダウンを閉じるのみ。Dialog自体への伝播は QuickCreate の
+        // onEscapeKeyDown が data-rwc-dropdown 要素の存在で判定して抑止する
+        setIsOpen(false);
+        setHighlightedIndex(0);
+        break;
+    }
+  }, [isOpen, filteredOptions, highlightedIndex]);
 
   /**
    * ドロップダウンの位置を計算
@@ -233,6 +288,7 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
     const dropdown = (
       <div
         ref={dropdownRef}
+        data-rwc-dropdown="multipicklist"
         className="fixed z-[100003] bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto pointer-events-auto"
         style={{
           top: dropdownPosition.top,
@@ -247,11 +303,14 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
       >
         {filteredOptions.length > 0 ? (
           <div className="py-1">
-            {filteredOptions.map(option => (
+            {filteredOptions.map((option, index) => (
               <div
                 key={option.value}
                 onClick={() => handleSelectOption(option.value)}
-                className="px-3 py-1.5 text-md cursor-pointer hover:bg-blue-50"
+                className={cn(
+                  'px-3 py-1.5 text-md cursor-pointer',
+                  index === highlightedIndex ? 'bg-blue-100' : 'hover:bg-blue-50'
+                )}
               >
                 {option.label}
               </div>
@@ -270,20 +329,37 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
 
   return (
     <div className={cn('flex items-start gap-2', className)}>
-      {/* ラベル */}
-      <span
-        className={cn(
-          'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
-          disabled && 'text-gray-400'
-        )}
-      >
-        {label}
-        {mandatory && <span className="sr-only"> (必須)</span>}
-      </span>
-      {/* 必須マーク */}
-      <span className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0" aria-hidden="true">
-        {mandatory ? '*' : ''}
-      </span>
+      {labelClassName ? (
+        <div className="flex items-baseline md:contents">
+          <span
+            className={cn(
+              'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
+              disabled && 'text-gray-400',
+              labelClassName
+            )}
+          >
+            {label}
+            {mandatory && <span className="text-red-500" aria-hidden="true">*</span>}
+            {mandatory && <span className="sr-only"> (必須)</span>}
+          </span>
+          <span className="w-3 flex-shrink-0 hidden md:block" aria-hidden="true" />
+        </div>
+      ) : (
+        <>
+          <span
+            className={cn(
+              'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
+              disabled && 'text-gray-400'
+            )}
+          >
+            {label}
+            {mandatory && <span className="sr-only"> (必須)</span>}
+          </span>
+          <span className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0" aria-hidden="true">
+            {mandatory ? '*' : ''}
+          </span>
+        </>
+      )}
 
       {/* 入力エリア */}
       <div className="flex-1 min-w-0">
@@ -297,6 +373,12 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
               value={searchTerm}
               onChange={handleSearchChange}
               onFocus={handleFocus}
+              onKeyDown={handleKeyDown}
+              onBlur={() => {
+                // Tab離脱等の blur でドロップダウンを閉じる
+                // 候補クリック時の選択処理を妨げないよう150ms遅延
+                setTimeout(() => setIsOpen(false), 150);
+              }}
               disabled={disabled}
               placeholder={t('LBL_PLACEHOLDER_SELECT', label)}
               autoComplete="off"

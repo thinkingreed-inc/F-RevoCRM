@@ -130,11 +130,11 @@ Vtiger_Index_Js("Vtiger_Edit_Js",{
 		return aDeferred.promise();
 	},
 	
-	addFieldCkEditor : function ( element ) {
+	addFieldJoditEditor : function ( element ) {
 		if(element.length > 0){
-			element.removeAttr('data-validation-engine').addClass('ckEditorSource');
-			var ckEditorInstance = new Vtiger_CkEditor_Js();
-			ckEditorInstance.loadCkEditor(element);
+			element.removeAttr('data-validation-engine').addClass('joditEditorSource');
+			var joditInstance = new Vtiger_Jodit_Js();
+			joditInstance.loadJoditEditor(element);
 		}
 	},
 	
@@ -146,6 +146,10 @@ Vtiger_Index_Js("Vtiger_Edit_Js",{
         var editViewForm = this.getForm();
         this.formValidatorInstance = editViewForm.vtValidate({
             submitHandler : function() {
+                // Jodit全instancesの同期（submit前必須、Task G syncAllInstances共通経路注入）
+                if (typeof Vtiger_Jodit_Js !== 'undefined' && Vtiger_Jodit_Js.syncAllInstances) {
+                    Vtiger_Jodit_Js.syncAllInstances();
+                }
                 var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
                 app.event.trigger(e);
                 if(e.isDefaultPrevented()) {

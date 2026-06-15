@@ -127,6 +127,7 @@ window.FR_MultiFactorAuthentication_Js = {
     /**
      * ログイン結果に応じて MFA の初期表示を制御する。
      * 失敗時は保持中の設定の確認有無により画面切替、成功時は preference を適用する。
+     * Passkey が既定として確定済みの場合は WebAuthn ポップアップを自動起動する。
      */
     handleInitialState: function () {
         const failed = this.detectLoginFailure();
@@ -144,6 +145,10 @@ window.FR_MultiFactorAuthentication_Js = {
         }
 
         this.applyPreferredMfa();
+
+        if (pref?.method === 'passkey' && pref.confirmed === true) {
+            this.maybeAutoTriggerPasskey();
+        }
     },
 
      /**
@@ -368,62 +373,91 @@ window.FR_MultiFactorAuthentication_Js = {
 	},
 
     /**
-     * Passkey（WebAuthn）でログインする処理。
+     * Passkey（WebAuthn）でログインする処理本体。
      * challenge 取得 → WebAuthn get() 実行 → サーバ送信 → ログイン確定 の流れを処理する。
+     * ボタンクリックと自動起動の両方から呼ばれる共通関数。
+     */
+    runPasskeyAuthentication: function (triggerButton) {
+        var self = this;
+        var $btn = triggerButton ? $(triggerButton) : null;
+        $btn && $btn.prop('disabled', true);
+
+        $.ajax({
+            url: 'index.php',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                module: 'Users',
+                action: 'ChallengePasskeyAjax'
+            },
+            success: function (response) {
+                if (!response.success) {
+                    $btn && $btn.prop('disabled', false);
+                    return;
+                }
+
+                var challengeBytes = self.base64ToUint8Array(response.result);
+                $('input[name="challenge"]').val(challengeBytes);
+
+                if (!navigator.credentials || !navigator.credentials.get) {
+                    app.helper.showErrorNotification({ 'message': app.vtranslate('JS_WEBAUTHN_ERROR') });
+                    $btn && $btn.prop('disabled', false);
+                    return;
+                }
+
+                try {
+                    navigator.credentials.get({
+                        publicKey: {
+                            challenge: challengeBytes,
+                            allowCredentials: response.allowCredentials,
+                            userVerification: 'required'
+                        }
+                    }).then(function (credential) {
+                        $('input[name="credential"]').val(JSON.stringify(credential));
+                        $('#passkeyForm').submit();
+                    }).catch(function (error) {
+                        if (error.name === 'NotAllowedError') {
+                            app.helper.showErrorNotification({ 'message': app.vtranslate('JS_MULTI_FACTOR_AUTHENTICATION_USER_CHANCELED') });
+                        } else if (error.name === 'AbortError') {
+                            app.helper.showErrorNotification({ 'message': app.vtranslate('JS_MULTI_FACTOR_AUTHENTICATION_CHANCELED') });
+                        } else {
+                            app.helper.showErrorNotification({ 'message': app.vtranslate('JS_WEBAUTHN_ERROR') });
+                        }
+                        $btn && $btn.prop('disabled', false);
+                    });
+                } catch (error) {
+                    app.helper.showErrorNotification({ 'message': app.vtranslate('JS_WEBAUTHN_ERROR') });
+                    $btn && $btn.prop('disabled', false);
+                }
+            },
+            error: function () {
+                $btn && $btn.prop('disabled', false);
+            }
+        });
+    },
+
+    /**
+     * Passkey ログインボタンのクリックイベントを登録する。
+     * 実際の認証処理は runPasskeyAuthentication() に委譲する。
      */
     authenticationPasskeyEvent: function() {
         var self = this;
-        $(document).on("click", "#passkeyLoginBtn", function(e){
-            var $this = $(this);
-            $this.prop('disabled', true);
-            $.ajax({
-                url: 'index.php',
-                type: 'POST',
-                dataType: 'json',
-                data: {
-                    module: 'Users',
-                    action: 'ChallengePasskeyAjax',
-                },
-                success: function(response) {
-                    if (response.success) {
-                        var challenge = response.result;
-                        var challengeBytes = self.base64ToUint8Array(challenge);
-                        $('input[name="challenge"]').val(challengeBytes);
-
-                        if (!navigator.credentials || !navigator.credentials.create) {
-                            app.helper.showErrorNotification({'message': app.vtranslate('JS_WEBAUTHN_ERROR')});
-                            $(this).prop('disabled', false);
-                            return;
-                        }
-                        try {
-                            navigator.credentials.get({
-                                publicKey: {
-                                    challenge: challengeBytes,
-                                    allowCredentials: response.allowCredentials,
-                                    userVerification: 'required'
-                                }
-                            }).then(function(credential) {
-                                var credentialData = JSON.stringify(credential);
-                                $('input[name="credential"]').val(credentialData);
-                                $('#passkeyForm').submit();
-                            }).catch(function(error) {
-                                if (error.name === 'NotAllowedError') {
-                                    app.helper.showErrorNotification({'message': app.vtranslate('JS_MULTI_FACTOR_AUTHENTICATION_USER_CHANCELED')});
-                                } else if (error.name === 'AbortError') {
-                                    app.helper.showErrorNotification({'message': app.vtranslate('JS_MULTI_FACTOR_AUTHENTICATION_CHANCELED')});
-                                } else {
-                                    app.helper.showErrorNotification({'message': app.vtranslate('JS_WEBAUTHN_ERROR')});
-                                }
-                                
-                            });
-                        } catch (error) {
-                            app.helper.showErrorNotification({'message': app.vtranslate('JS_WEBAUTHN_ERROR')});
-                        }
-                    }
-                    $this.prop('disabled', false);
-                }
-            });
+        $(document).on("click", "#passkeyLoginBtn", function () {
+            self.runPasskeyAuthentication(this);
         });
+    },
+
+    /**
+     * Passkey が既定として確定している場合に WebAuthn ポップアップを自動起動する。
+     * 画面表示あたり 1 回のみ起動し、キャンセル/失敗時は手動ボタンでの再試行を要求する。
+     */
+    maybeAutoTriggerPasskey: function () {
+        if (this.autoTriggered) return;
+        if (!this.elements.passkeyForm) return;
+
+        this.autoTriggered = true;
+        var btn = document.getElementById('passkeyLoginBtn');
+        this.runPasskeyAuthentication(btn);
     },
     
     /**
@@ -525,6 +559,9 @@ window.FR_MultiFactorAuthentication_Js = {
      * 3. ログイン失敗判定 → 表示切替処理実行
      */
     init: function () {
+        if (this.initialized) return;
+        this.initialized = true;
+        this.autoTriggered = false;
         this.cacheDom();
         // MFA画面でない場合は処理をスキップ
         if (!this.elements.passkeyForm && !this.elements.totpForm) {
