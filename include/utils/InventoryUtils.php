@@ -1439,15 +1439,16 @@ function isRecordExistInDB($fieldData, $moduleMeta, $user, $cache) {
 				} else if (strpos($fieldValue, ':::') > 0) {
 					$fieldValueDetails = explode(':::', $fieldValue);
 				} else {
-					$fieldValueDetails = $fieldValue;
+					$fieldValueDetails = array($fieldValue);
 				}
+				$fieldDetails = array();
 				foreach($fieldValueDetails as $fieldValueDetail){
 					if (strpos($fieldValueDetail, '====') > 0) {
 						$fieldDetail = explode('====', $fieldValueDetail);
 						$fieldDetails[$fieldDetail[0]] = $fieldDetail[1];
 					}
 				}
-				if (php7_count($fieldValueDetails) > 1) {
+				if (php7_count($fieldValueDetails) > 1 && !empty($fieldDetails)) {
 					$referenceModuleName = trim($fieldValueDetails[0]);
 					$referenceValueList = $fieldDetails;
 					$entityId = getEntityIdByColumns($referenceModuleName, $referenceValueList, $cache);
@@ -1456,10 +1457,14 @@ function isRecordExistInDB($fieldData, $moduleMeta, $user, $cache) {
 					$entityLabel = $fieldValue;
 					foreach ($referencedModules as $referenceModule) {
 						$referenceModuleName = $referenceModule;
-						$referenceEntityId = getEntityIdByColumns($referenceModule, $entityLabel,$cache);
-						if ($referenceEntityId != 0) {
-							$entityId = $referenceEntityId;
-							break;
+						try {
+							$referenceEntityId = getEntityIdByColumns($referenceModule, $entityLabel,$cache);
+							if ($referenceEntityId != 0) {
+								$entityId = $referenceEntityId;
+								break;
+							}
+						} catch (ImportException $e) {
+							continue;
 						}
 					}
 				}
@@ -1659,6 +1664,9 @@ function getInventoryImportableMandatoryFeilds($module) {
 	$mandatoryFields = array();
 	foreach($moduleFields as $fieldName => $fieldInstance) {
 		if($fieldInstance->isMandatory() && $fieldInstance->getFieldDataType() != 'owner' && $moduleMeta->isEditableField($fieldInstance)) {
+			if ($module == 'SalesOrder' && $fieldName == 'invoicestatus') {
+				continue;
+			}
 			$mandatoryFields[$fieldName] = vtranslate($fieldInstance->getFieldLabelKey(), $module);
 		}
 	}
