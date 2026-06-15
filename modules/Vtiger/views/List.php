@@ -440,7 +440,8 @@ class Vtiger_List_View extends Vtiger_Index_View {
 	}
 
 	protected function assignCustomViews(Vtiger_Request $request, Vtiger_Viewer $viewer) {
-		$allCustomViews = CustomView_Record_Model::getAllByGroup($request->getModule());
+		$moduleName = $request->getModule();
+		$allCustomViews = CustomView_Record_Model::getAllByGroup($moduleName);
 		if (!empty($allCustomViews)) {
 			$viewer->assign('CUSTOM_VIEWS', $allCustomViews);
 			$currentCVSelectedFields = array();
