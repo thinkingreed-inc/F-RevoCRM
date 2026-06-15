@@ -405,7 +405,13 @@ class Vtiger_Functions {
 				$columns  = explode(',', $metainfo['fieldname']);
 
 				// NOTE: Ignore field-permission check for non-admin (to compute record label).
-				$sql = self::buildEntityLabelQuery($table, $idcolumn, $columns, $columnTableMap, php7_count($ids));
+				try {
+					$sql = self::buildEntityLabelQuery($table, $idcolumn, $columns, $columnTableMap, php7_count($ids));
+				} catch (InvalidArgumentException $e) {
+					// Corrupted entity metadata: fail safe with no labels rather
+					// than risk building an unsafe query.
+					return $entityDisplay;
+				}
 
 				$result = $adb->pquery($sql, $ids);
 
@@ -441,6 +447,13 @@ class Vtiger_Functions {
 	 * @return string SQL with '?' placeholders
 	 */
 	static function buildEntityLabelQuery($baseTable, $idColumn, $columns, $columnTableMap, $idCount) {
+		// Table/column names are SQL identifiers and cannot be bound as
+		// prepared-statement parameters, so each one is whitelist-validated and
+		// backtick-quoted (see quoteSqlIdentifier). Only the ids are passed as
+		// '?' parameters by the caller.
+		$quotedBaseTable = self::quoteSqlIdentifier($baseTable);
+		$quotedIdColumn  = self::quoteSqlIdentifier($idColumn);
+
 		$selectParts = array();
 		$joinTables = array();
 		foreach ($columns as $column) {
@@ -448,20 +461,43 @@ class Vtiger_Functions {
 			if ($columnTable !== $baseTable) {
 				$joinTables[$columnTable] = true;
 			}
-			$selectParts[] = sprintf('%s.%s AS %s', $columnTable, $column, $column);
+			$quotedColumn = self::quoteSqlIdentifier($column);
+			$selectParts[] = self::quoteSqlIdentifier($columnTable) . '.' . $quotedColumn . ' AS ' . $quotedColumn;
 		}
-		$selectParts[] = sprintf('%s.%s AS id', $baseTable, $idColumn);
+		$selectParts[] = $quotedBaseTable . '.' . $quotedIdColumn . ' AS `id`';
 
-		$fromClause = $baseTable;
+		$fromClause = $quotedBaseTable;
 		foreach (array_keys($joinTables) as $joinTable) {
-			$fromClause .= sprintf(' LEFT JOIN %s ON %s.%s = %s.%s',
-				$joinTable, $joinTable, $idColumn, $baseTable, $idColumn);
+			$quotedJoinTable = self::quoteSqlIdentifier($joinTable);
+			$fromClause .= ' LEFT JOIN ' . $quotedJoinTable
+				. ' ON ' . $quotedJoinTable . '.' . $quotedIdColumn
+				. ' = ' . $quotedBaseTable . '.' . $quotedIdColumn;
 		}
 
 		$placeholders = implode(',', array_fill(0, max(1, (int) $idCount), '?'));
 
-		return sprintf('SELECT %s FROM %s WHERE %s.%s IN (%s)',
-			implode(', ', $selectParts), $fromClause, $baseTable, $idColumn, $placeholders);
+		return 'SELECT ' . implode(', ', $selectParts)
+			. ' FROM ' . $fromClause
+			. ' WHERE ' . $quotedBaseTable . '.' . $quotedIdColumn . ' IN (' . $placeholders . ')';
+	}
+
+	/**
+	 * Validate and backtick-quote a SQL identifier (table or column name).
+	 *
+	 * Identifiers cannot be bound as prepared-statement parameters, so the only
+	 * safe handling is to whitelist-validate them. vtiger table/column names are
+	 * always [A-Za-z0-9_]; anything else means corrupted metadata or an
+	 * injection attempt and is rejected.
+	 *
+	 * @param string $identifier
+	 * @return string backtick-quoted identifier
+	 * @throws InvalidArgumentException when the identifier is not a safe name
+	 */
+	protected static function quoteSqlIdentifier($identifier) {
+		if (!is_string($identifier) || !preg_match('/^[A-Za-z0-9_]+$/', $identifier)) {
+			throw new InvalidArgumentException('Unsafe SQL identifier: ' . var_export($identifier, true));
+		}
+		return '`' . $identifier . '`';
 	}
 
 	protected static $groupIdNameCache = array();
