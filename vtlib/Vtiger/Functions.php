@@ -380,12 +380,24 @@ class Vtiger_Functions {
 
 			if ($ids) {
 
+				// Maps each label column to its table so columns that live in the
+				// custom-field table are joined in, rather than assumed to be in
+				// the base table (#1574). Left empty for the pseudo-modules below,
+				// whose label lives in a single hard-coded table.
+				$columnTableMap = array();
+
 				if ($module == 'Groups') {
 					$metainfo = array('tablename' => 'vtiger_groups','entityidfield' => 'groupid','fieldname' => 'groupname');
 				} else if ($module == 'DocumentFolders') {
 					$metainfo = array('tablename' => 'vtiger_attachmentsfolder','entityidfield' => 'folderid','fieldname' => 'foldername');
 				} else {
 					$metainfo = self::getEntityModuleInfo($module);
+					$fieldInfos = self::getModuleFieldInfos($module);
+					if (is_array($fieldInfos)) {
+						foreach ($fieldInfos as $fieldInfo) {
+							$columnTableMap[$fieldInfo['columnname']] = $fieldInfo['tablename'];
+						}
+					}
 				}
 
 				$table = $metainfo['tablename'];
@@ -393,11 +405,7 @@ class Vtiger_Functions {
 				$columns  = explode(',', $metainfo['fieldname']);
 
 				// NOTE: Ignore field-permission check for non-admin (to compute record label).
-				$columnString = php7_count($columns) < 2? $columns[0] :
-					sprintf("concat(%s)", implode(",' ',", $columns));
-
-				$sql = sprintf('SELECT '. implode(',',$columns).', %s AS id FROM %s WHERE %s IN (%s)',
-						 $idcolumn, $table, $idcolumn, generateQuestionMarks($ids));
+				$sql = self::buildEntityLabelQuery($table, $idcolumn, $columns, $columnTableMap, php7_count($ids));
 
 				$result = $adb->pquery($sql, $ids);
 
@@ -414,6 +422,46 @@ class Vtiger_Functions {
 
 			return $entityDisplay;
 		}
+	}
+
+	/**
+	 * Build the SQL used to fetch a module's entity-label columns.
+	 *
+	 * Label columns (vtiger_entityname.fieldname) may span the base table and
+	 * the custom-field table. For every column whose table differs from the
+	 * base table we LEFT JOIN that table on the shared entity id column - the
+	 * base table and its "cf" table both use the basetableid column as primary
+	 * key (see Vtiger_ModuleBasic::initTables), so the id column name matches.
+	 *
+	 * @param string $baseTable      base table (vtiger_entityname.tablename)
+	 * @param string $idColumn       entity id column (vtiger_entityname.entityidfield)
+	 * @param array  $columns        ordered label column names
+	 * @param array  $columnTableMap columnname => tablename (from vtiger_field)
+	 * @param int    $idCount        number of ids, for the IN() placeholders
+	 * @return string SQL with '?' placeholders
+	 */
+	static function buildEntityLabelQuery($baseTable, $idColumn, $columns, $columnTableMap, $idCount) {
+		$selectParts = array();
+		$joinTables = array();
+		foreach ($columns as $column) {
+			$columnTable = isset($columnTableMap[$column]) ? $columnTableMap[$column] : $baseTable;
+			if ($columnTable !== $baseTable) {
+				$joinTables[$columnTable] = true;
+			}
+			$selectParts[] = sprintf('%s.%s AS %s', $columnTable, $column, $column);
+		}
+		$selectParts[] = sprintf('%s.%s AS id', $baseTable, $idColumn);
+
+		$fromClause = $baseTable;
+		foreach (array_keys($joinTables) as $joinTable) {
+			$fromClause .= sprintf(' LEFT JOIN %s ON %s.%s = %s.%s',
+				$joinTable, $joinTable, $idColumn, $baseTable, $idColumn);
+		}
+
+		$placeholders = implode(',', array_fill(0, max(1, (int) $idCount), '?'));
+
+		return sprintf('SELECT %s FROM %s WHERE %s.%s IN (%s)',
+			implode(', ', $selectParts), $fromClause, $baseTable, $idColumn, $placeholders);
 	}
 
 	protected static $groupIdNameCache = array();
