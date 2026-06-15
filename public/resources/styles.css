@@ -1088,6 +1088,15 @@ ul#productsImageContainer > li a{
   align-items: center;
 }
 
+.calendarGroupSelect #calendarview-feeds-all {
+  flex-shrink: 0;
+}
+
+.calendarGroupSelect .select2-container {
+  min-width: 0;
+  flex: 1 1 0;
+}
+
 .calendarTodoSelect {
   display: flex;
   flex-wrap: nowrap;
@@ -1828,5 +1837,17 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
 /* #1479 4Kモニターでトグルスイッチを表示した際のUI崩れを修正 */
 .bootstrap-switch .bootstrap-switch-container {
     white-space: nowrap;
+}
+
+/* カレンダーのポップオーバーが長い説明文で画面外にはみ出し、
+   スクロール領域の変動によるレイアウトシフト（がたつき）を防止する。
+   説明文のみスクロール可能にし、完了・編集等のアイコンは常に表示する。
+   モバイル表示では二重スクロール回避のため制限を適用しない */
+@media (min-width: 769px) {
+    .webui-popover .calendar-popover-description {
+        max-height: 200px;
+        overflow-y: auto;
+        margin-bottom: 4px;
+    }
 }
 

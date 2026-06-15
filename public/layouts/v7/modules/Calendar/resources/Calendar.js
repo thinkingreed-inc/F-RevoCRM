@@ -1236,15 +1236,25 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			app.request.post({data: dataParams}).then(function (e, data) {
 				if (!e) {
 					widgetBody.html(data);
-                                        let fullCalendarViewHeight = $('.fc-view-container').height();
-                                        widgetBody.css('max-height', (fullCalendarViewHeight - 20) + 'px');
-					app.helper.showVerticalScroll(
-							widgetBody,
-							{
-								'autoHideScrollbar': true,
-								'scrollbarPosition': 'outside'
-							}
-					);
+					var feedsContainer = widgetBody.find('#calendarview-feeds');
+					if (feedsContainer.length) {
+						var adjustFeedsHeight = function() {
+							var sidebar = feedsContainer.closest('.sidebar-essentials');
+							if (!sidebar.length) sidebar = feedsContainer.closest('.sidebar-menu');
+							var sidebarHeight = sidebar.length ? sidebar.height() : jQuery(window).height();
+							var sidebarTop = sidebar.length ? sidebar.offset().top : 0;
+							var feedsTop = feedsContainer.offset().top;
+							var offsetInSidebar = feedsTop - sidebarTop;
+							var availableHeight = sidebarHeight - offsetInSidebar - 5;
+							if (availableHeight < 100) availableHeight = 100;
+							feedsContainer.css({
+								'max-height': availableHeight + 'px',
+								'overflow-y': 'auto'
+							});
+						};
+						adjustFeedsHeight();
+						jQuery(window).off('resize.calendarFeeds').on('resize.calendarFeeds', adjustFeedsHeight);
+					}
 //thisInstance.registerCollapseEvents(widget);
 //thisInstance.restoreWidgetState(widget);
 					app.event.trigger(Calendar_Calendar_Js.feedsWidgetPostLoadEvent, widget);
@@ -2240,7 +2250,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			}
 
 			if(eventObj.description && eventObj.description != '') {
-				popOverHTML += eventObj.description;
+				popOverHTML += '<div class="calendar-popover-description">' + eventObj.description + '</div>';
 			}
 
 			if(event.creator && event.creator != '' || event.modifiedby && event.modifiedby != '') {
