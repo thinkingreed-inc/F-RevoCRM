@@ -234,11 +234,23 @@ class Vtiger_Functions {
 		$info = self::getEntityModuleInfo($mixed);
 		if ($info) {
 			$data['tablename'] = $info['tablename'];
-			$fieldnames = $info['fieldname'];
-			if (strpos(',', $fieldnames) !== false) {
-				$fieldnames = sprintf("concat(%s)", implode(",' ',", explode(',', $fieldnames)));
+
+			// vtiger_entityname.fieldname holds FIELD names, whose DB column can
+			// differ from the field name (e.g. Documents' 'notes_title' field maps
+			// to column 'title'). Resolve each to its column; unknown tokens are
+			// kept as-is (already a column name / pseudo-module).
+			$fieldInfos = self::getModuleFieldInfos($mixed);
+			$columns = array();
+			foreach (explode(',', $info['fieldname']) as $labelField) {
+				$columns[] = (is_array($fieldInfos) && isset($fieldInfos[$labelField]))
+					? $fieldInfos[$labelField]['columnname'] : $labelField;
 			}
-			$data['fieldname'] = $fieldnames;
+
+			// NOTE: previously this used strpos(',', $fieldnames) with the
+			// arguments reversed, so the concat() was never built.
+			$data['fieldname'] = (php7_count($columns) > 1)
+				? sprintf("concat(%s)", implode(",' ',", $columns))
+				: $columns[0];
 		}
 		return $data;
 	}
