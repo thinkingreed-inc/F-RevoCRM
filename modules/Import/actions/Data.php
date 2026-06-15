@@ -433,10 +433,6 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 				$recordId = $entityIdComponents[1];
 				if (!empty($recordId)) {
 					$entityfields = getEntityFieldNames($this->module);
-					switch ($this->module) {
-						case 'HelpDesk'	: $entityfields['fieldname'] = array('ticket_title');	break;
-						case 'Documents': $entityfields['fieldname'] = array('notes_title');	break;
-					}
 					$label = '';
 					if (is_array($entityfields['fieldname'])) {
 						foreach ($entityfields['fieldname'] as $field) {
@@ -869,10 +865,6 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		$entityIdComponents = vtws_getIdComponents($entityIdInfo['id']);
 		$recordId = $entityIdComponents[1];
 		$entityfields = getEntityFieldNames($moduleName);
-		switch ($moduleName) {
-			case 'HelpDesk'	: $entityfields['fieldname'] = array('ticket_title');	break;
-			case 'Documents': $entityfields['fieldname'] = array('notes_title');	break;
-		}
 		$label = '';
 		if (is_array($entityfields['fieldname'])) {
 			foreach ($entityfields['fieldname'] as $field) {

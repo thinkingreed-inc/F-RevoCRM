@@ -61,14 +61,6 @@ class CustomerPortal_DescribeModule extends CustomerPortal_API_Abstract {
 				$describeInfo['fields'] = $fieldList;
 			}
 
-			//Describe giving wrong labelfields for HelpDesk and Documents.
-			if ($module == 'Documents') {
-				$describeInfo['labelFields'] = 'notes_title';
-			}
-			if ($module == 'HelpDesk') {
-				$describeInfo['labelFields'] = 'ticket_title';
-			}
-
 			$describeInfo['label'] = decode_html(vtranslate($describeInfo['label'], $module));
 			$response->addToResult('describe', $describeInfo);
 		}

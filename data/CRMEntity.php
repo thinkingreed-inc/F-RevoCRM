@@ -290,13 +290,7 @@ class CRMEntity {
 
 		$entityFields = Vtiger_Functions::getEntityModuleInfo($module);
         $entityFieldNames  = explode(',', $entityFields['fieldname']);
-        switch ($module) {
-            case 'HelpDesk': $entityFieldNames = array('ticket_title');
-                break;
-            case 'Documents': $entityFieldNames = array('notes_title');
-                break;
-		}
-		
+
 		$record_label = '';
 		foreach($entityFieldNames as $entityFieldName) {
 			$record_label .= $this->column_fields[$entityFieldName]." ";
