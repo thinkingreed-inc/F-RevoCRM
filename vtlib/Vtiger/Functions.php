@@ -385,6 +385,9 @@ class Vtiger_Functions {
 				// the base table (#1574). Left empty for the pseudo-modules below,
 				// whose label lives in a single hard-coded table.
 				$columnTableMap = array();
+				// Field metadata keyed by fieldname (from vtiger_field), used to
+				// resolve label fields to their real column/table below.
+				$fieldInfoByFieldname = array();
 
 				if ($module == 'Groups') {
 					$metainfo = array('tablename' => 'vtiger_groups','entityidfield' => 'groupid','fieldname' => 'groupname');
@@ -394,15 +397,30 @@ class Vtiger_Functions {
 					$metainfo = self::getEntityModuleInfo($module);
 					$fieldInfos = self::getModuleFieldInfos($module);
 					if (is_array($fieldInfos)) {
-						foreach ($fieldInfos as $fieldInfo) {
-							$columnTableMap[$fieldInfo['columnname']] = $fieldInfo['tablename'];
-						}
+						// getModuleFieldInfos() is already keyed by fieldname.
+						$fieldInfoByFieldname = $fieldInfos;
 					}
 				}
 
 				$table = $metainfo['tablename'];
 				$idcolumn = $metainfo['entityidfield'];
-				$columns  = explode(',', $metainfo['fieldname']);
+
+				// vtiger_entityname.fieldname stores FIELD names, whose DB column
+				// (and table) can differ from the field name - e.g. Documents'
+				// 'notes_title' field maps to column 'title' in vtiger_notes.
+				// Resolve each label field to its real column + table; fall back to
+				// treating the token as a base-table column (pseudo-modules, or when
+				// the field is unknown / the value is already a column name).
+				$columns = array();
+				foreach (explode(',', $metainfo['fieldname']) as $labelField) {
+					if (isset($fieldInfoByFieldname[$labelField])) {
+						$column = $fieldInfoByFieldname[$labelField]['columnname'];
+						$columnTableMap[$column] = $fieldInfoByFieldname[$labelField]['tablename'];
+						$columns[] = $column;
+					} else {
+						$columns[] = $labelField;
+					}
+				}
 
 				// NOTE: Ignore field-permission check for non-admin (to compute record label).
 				try {
