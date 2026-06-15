@@ -1036,21 +1036,30 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 				if (dateField.length > 0) {
 					vtUtils.registerEventForDateFields(dateField);
 					var datedefaultvaluebox = document.getElementsByClassName("inputElement dateField form-control")[0];
-					if(datedefaultvaluebox.value == 'TODAY'){
+					if(datedefaultvaluebox.value == 'TODAY' || datedefaultvaluebox.value == ''){
 						datedefaultvaluebox.classList.add('ignore-validation');
 						datedefaultvaluebox.classList.remove('input-error');
+						if (typeof vtUtils.hideValidationMessage != 'undefined') {
+							vtUtils.hideValidationMessage(jQuery(datedefaultvaluebox));
+						}
 					}
 					else{
 						datedefaultvaluebox.classList.remove('ignore-validation');
 					}
-					dateField.on("change",function (e) {
-						if(datedefaultvaluebox.value == 'TODAY'){
+					dateField.on("keyup change",function (e) {
+						if(datedefaultvaluebox.value == 'TODAY' || datedefaultvaluebox.value == ''){
 							datedefaultvaluebox.classList.add('ignore-validation');
 							datedefaultvaluebox.classList.remove('input-error');
+							if (typeof vtUtils.hideValidationMessage != 'undefined') {
+								vtUtils.hideValidationMessage(jQuery(datedefaultvaluebox));
+							}
 						}
 						else{
 							datedefaultvaluebox.classList.remove('ignore-validation');
 							datedefaultvaluebox.classList.remove('input-error');
+							if (typeof vtUtils.hideValidationMessage != 'undefined') {
+								vtUtils.hideValidationMessage(jQuery(datedefaultvaluebox));
+							}
 						}
 					});	
 				}

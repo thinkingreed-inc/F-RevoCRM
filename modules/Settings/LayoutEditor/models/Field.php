@@ -220,6 +220,9 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 	 * @return boolean
 	 */
 	public function isDefaultValueOptionDisabled() {
+		if ($this->getName() == 'closingdate' && $this->block->module->name == 'Potentials') {
+			return false;
+		}
 		if($this->isUneditableFields()){
 			return true;
 		}
