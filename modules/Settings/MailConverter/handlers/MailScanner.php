@@ -187,8 +187,26 @@ class Vtiger_MailScanner {
 	 */
 	function isMessageScanned($mailrecord, $lookAtFolder) {
 		global $adb;
+		$scannerid = $this->_scannerinfo->scannerid;
+
+		// 新フォーマット(Message-ID|udate)で検索
 		$messages = $adb->pquery("SELECT 1 FROM vtiger_mailscanner_ids WHERE scannerid=? AND messageid=?",
-			Array($this->_scannerinfo->scannerid, $mailrecord->_uniqueid));
+			Array($scannerid, $mailrecord->_uniqueid));
+
+		if(!$adb->num_rows($messages)) {
+			// マイグレーション済みの旧レコード(Message-ID|0)を検索
+			$sentinelId = $mailrecord->_messageid . '|0';
+			if(!empty($mailrecord->_messageid)) {
+				$sentinelMessages = $adb->pquery("SELECT 1 FROM vtiger_mailscanner_ids WHERE scannerid=? AND messageid=?",
+					Array($scannerid, $sentinelId));
+				if($adb->num_rows($sentinelMessages)) {
+					// sentinel を正しい値に書き換え（次回以降は新フォーマットで一致する）
+					$adb->pquery("UPDATE vtiger_mailscanner_ids SET messageid=? WHERE scannerid=? AND messageid=?",
+						Array($mailrecord->_uniqueid, $scannerid, $sentinelId));
+					return true;
+				}
+			}
+		}
 
 		$folderRescan = $this->_scannerinfo->needRescan($lookAtFolder);
 		$isScanned = false;
@@ -201,7 +219,7 @@ class Vtiger_MailScanner {
 
 			if($folderRescan && empty($relatedCRMId)) {
 				$adb->pquery("DELETE FROM vtiger_mailscanner_ids WHERE scannerid=? AND messageid=?",
-					Array($this->_scannerinfo->scannerid, $mailrecord->_uniqueid));
+					Array($scannerid, $mailrecord->_uniqueid));
 				$isScanned = false;
 			}
 		}
