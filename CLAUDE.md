@@ -49,6 +49,10 @@ F-RevoCRM は vtiger ベースの PHP 製 CRM。`modules/` 配下に機能モジ
 - **JSON は必ず型付けする**: レスポンス／データには `src/types` に型定義を置き、`any` を避ける。
 - コミット前に **`npm run lint` / `npm run format`** を通す。
 
+### マイグレーション（DB 変更）
+
+- DB のスキーマ・データ変更は手動 SQL でなく `setup/migration/` のコマンドで行う。詳細は `setup/migration/README.md`。
+
 ## Do / Don't
 
 ### Do
