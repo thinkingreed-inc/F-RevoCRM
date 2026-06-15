@@ -325,12 +325,14 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 		$userIds = array_merge(array($eventUserId), $this->getGroupsIdsForUsers($eventUserId));
 		
 		$query.= " AND vtiger_crmentity.smownerid IN (".  generateQuestionMarks($userIds).")";
+		$query = preg_replace('/vtiger_activity.activityid/', 'vtiger_activity.invitee_parentid, vtiger_activity.activityid', $query, 1);
 		
 		$params = array($dbEndDate, $dbStartDate, $userIds);
 		$queryResult = $db->pquery($query, $params);
 
 		$creatorfield = Vtiger_Field_Model::getInstance('creator', $moduleModel);
 
+		$dedupResult = array();
 		while($record = $db->fetchByAssoc($queryResult)){
 			if(!array_key_exists($record['smownerid'], $this->cacheUser)) {
 				$this->cacheUser[$record['smownerid']] = Vtiger_functions::getUserRecordLabel($record['smownerid']);
@@ -454,6 +456,19 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 				$item['description'] = $record['description'].$inviteeMessage;
 			}
 
+			$invitee_parentid = $record['invitee_parentid'];
+			if (empty($invitee_parentid)) {
+				$invitee_parentid = $record['activityid'];
+			}
+			if (isset($dedupResult[$invitee_parentid])) {
+				if ($ownerId == $eventUserId) {
+					$dedupResult[$invitee_parentid] = $item;
+				}
+			} else {
+				$dedupResult[$invitee_parentid] = $item;
+			}
+		}
+		foreach ($dedupResult as $item) {
 			$result[] = $item;
 		}
 	}
