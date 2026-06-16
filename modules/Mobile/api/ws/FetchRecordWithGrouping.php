@@ -42,10 +42,6 @@ class Mobile_WS_FetchRecordWithGrouping extends Mobile_WS_FetchRecord {
 	protected function cachedEntityFieldnames($module) {
 		$describeInfo = $this->cachedDescribeInfo();
 		$labelFields = $describeInfo['labelFields'];
-		switch($module) {
-			case 'HelpDesk': $labelFields = 'ticket_title'; break;
-			case 'Documents': $labelFields = 'notes_title'; break;
-		}
 		return explode(',', $labelFields);
 	}
 	
