@@ -161,6 +161,17 @@ class Documents extends CRMEntity {
 		$this->column_fields['filesize'] = $filesize;
 		$this->column_fields['filetype'] = $filetype;
 		$this->column_fields['filedownloadcount'] = $filedownloadcount;
+
+		// ファイル内テキスト抽出（全文検索用）
+		if ($filelocationtype == 'I') {
+			try {
+				require_once 'modules/Documents/utils/TextExtractor.php';
+				Documents_TextExtractor::indexRecord($this->id);
+			} catch (Exception $e) {
+				// 抽出失敗はログに記録するがエラーにはしない
+				$log->error("TextExtractor failed for record {$this->id}: " . $e->getMessage());
+			}
+		}
 	}
 
 

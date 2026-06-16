@@ -1,14 +1,6 @@
 <?php
-/*+**********************************************************************************
- * The contents of this file are subject to the vtiger CRM Public License Version 1.1
- * ("License"); You may not use this file except in compliance with the License
- * The Original Code is:  vtiger CRM Open Source
- * The Initial Developer of the Original Code is vtiger.
- * Portions created by vtiger are Copyright (C) vtiger.
- * All Rights Reserved.
- ************************************************************************************/
 
-class Documents_List_View extends Vtiger_Index_View {
+class Documents_ListRedesign_View extends Vtiger_Index_View {
 
 	public function requiresPermission(Vtiger_Request $request) {
 		$permissions = parent::requiresPermission($request);
@@ -51,10 +43,7 @@ class Documents_List_View extends Vtiger_Index_View {
 	}
 
 	public function getHeaderScripts(Vtiger_Request $request) {
-		return parent::getHeaderScripts($request);
-	}
-
-	public function validateRequest(Vtiger_Request $request) {
-		return true;
+		$headerScripts = parent::getHeaderScripts($request);
+		return $headerScripts;
 	}
 }

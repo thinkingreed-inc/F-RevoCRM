@@ -35,11 +35,6 @@ class Documents_ListView_Model extends Vtiger_ListView_Model {
                     'label' => 'LBL_EXTERNAL_DOCUMENT_TYPE',
                     'url' => 'index.php?module=Documents&view=EditAjax&type=E'
                 ),
-                array(
-                    'type' => 'W',
-                    'label' => 'LBL_WEBDOCUMENT_TYPE',
-                    'url' => 'index.php?module=Documents&view=EditAjax&type=W'
-                )
             );
 			$basicLinks = array(
 					array(

@@ -43,8 +43,8 @@ $languageStrings = array(
 	'LBL_EMAIL_FILE_AS_ATTACHMENT' => 'メールに添付',
 
 	//EditView
-	'LBL_INTERNAL' => '内部',
-	'LBL_EXTERNAL' => '外部',
+	'LBL_INTERNAL' => 'ファイル',
+	'LBL_EXTERNAL' => 'URL',
 	'LBL_MAX_UPLOAD_SIZE' => '最大アップロードサイズ',
 
 	//ListView Actions
@@ -67,8 +67,8 @@ $languageStrings = array(
     'LBL_PREVIEW_NOT_AVAILABLE' => 'プレビューを利用できません。',
     'LBL_VIEW_FILE' => 'ファイルを表示',
     'LBL_PREVIEW_NOT_AVAILABLE' => 'プレビューを利用できません。',
-    'LBL_INTERNAL_DOCUMENT_TYPE' =>'内部ドキュメント',
-    'LBL_EXTERNAL_DOCUMENT_TYPE' =>'外部URL',
+    'LBL_INTERNAL_DOCUMENT_TYPE' =>'ファイル',
+    'LBL_EXTERNAL_DOCUMENT_TYPE' =>'URL',
     'LBL_WEBDOCUMENT_TYPE' =>'Webドキュメント',
     'LBL_DRAG_&_DROP_FILE_HERE' => 'ファイルをここにドラッグ＆ドロップしてください。',
     'LBL_WEB' => 'Web',
@@ -96,6 +96,8 @@ $languageStrings = array(
     'LBL_CREATE_NEW' => '%sを登録',
 	'LBL_SELECT_A_FOLDER_TO_MOVE' => 'フォルダに移動するドキュメントを選択',
 	'LBL_SEARCH_FOR_FOLDER' => 'フォルダから検索',
+	'LBL_FOLDER_NAME_REQUIRED' => 'フォルダ名は必須です',
+	'LBL_FOLDER_HAS_SUBFOLDERS' => 'サブフォルダが存在するため削除できません',
 );
 
 $jsLanguageStrings = array(

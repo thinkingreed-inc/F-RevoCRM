@@ -148,12 +148,6 @@ class Documents_Module_Model extends Vtiger_Module_Model {
 					'linkurl' => 'javascript:Vtiger_Header_Js.getQuickCreateFormForModule("index.php?module=Documents&view=EditAjax&type=E")',
 					'linkicon' => ''
 				);
-                $basicListViewLinks[] = array(
-					'linktype' => 'LISTVIEW',
-					'linklabel' => 'LBL_WEBDOCUMENT_TYPE',
-					'linkurl' => 'javascript:Vtiger_Header_Js.getQuickCreateFormForModule("index.php?module=Documents&view=EditAjax&type=W")',
-					'linkicon' => ''
-				);
             }
            
 		}
