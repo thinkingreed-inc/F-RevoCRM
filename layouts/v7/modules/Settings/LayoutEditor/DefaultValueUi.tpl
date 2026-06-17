@@ -51,13 +51,26 @@
 							</span>
 						</div>
 					{elseif $FIELD_MODEL->getFieldDataType() eq "date"}
-						<div class="input-group date">
-							{assign var=FIELD_NAME value=$FIELD_MODEL->get('name')}
-							<input type="text" class="inputElement dateField" name="{$NAME_ATTR}" data-toregister="date" data-date-format="{$USER_MODEL->get('date_format')}" 
-								value="{$FIELD_MODEL->getEditViewDisplayValue($DEFAULT_VALUE)}" style='width: 75%'/>
-							<span class="input-group-addon">
-								<i class="fa fa-calendar"></i>
-							</span>
+						<div class="dateDefaultValue">
+							<div class="row" style="margin-bottom: 5px;">
+								<div class="col-sm-12">
+									<label class="radio-inline">
+										<input type="radio" class="dateDefaultValueType" name="dateDefaultValueType_{$FIELD_MODEL->get('id')}" value="fixed" {if $DEFAULT_VALUE neq 'TODAY'}checked{/if}> {vtranslate('LBL_FIXED_DATE', $QUALIFIED_MODULE)}
+									</label>
+									<label class="radio-inline">
+										<input type="radio" class="dateDefaultValueType" name="dateDefaultValueType_{$FIELD_MODEL->get('id')}" value="today" {if $DEFAULT_VALUE eq 'TODAY'}checked{/if}> {vtranslate('LBL_TODAY', $QUALIFIED_MODULE)}
+									</label>
+								</div>
+							</div>
+							<div class="input-group date {if $DEFAULT_VALUE eq 'TODAY'}hide{/if}">
+								{assign var=FIELD_NAME value=$FIELD_MODEL->get('name')}
+								<input type="text" class="inputElement dateField" {if $DEFAULT_VALUE neq 'TODAY'}name="{$NAME_ATTR}"{/if} data-toregister="date" data-date-format="{$USER_MODEL->get('date_format')}" 
+									value="{if $DEFAULT_VALUE eq 'TODAY'}{else}{$FIELD_MODEL->getEditViewDisplayValue($DEFAULT_VALUE)}{/if}" style='width: 75%' {if $DEFAULT_VALUE eq 'TODAY'}disabled{/if}/>
+								<span class="input-group-addon">
+									<i class="fa fa-calendar"></i>
+								</span>
+							</div>
+							<input type="text" class="inputElement todayValue {if $DEFAULT_VALUE neq 'TODAY'}hide{/if}" {if $DEFAULT_VALUE eq 'TODAY'}name="{$NAME_ATTR}"{/if} value="TODAY" readonly style='width: 75%' {if $DEFAULT_VALUE neq 'TODAY'}disabled{/if}/>
 						</div>
 					{elseif $FIELD_MODEL->getFieldDataType() eq "percentage"}
 						<div class="input-group" style='width: 75%'>
