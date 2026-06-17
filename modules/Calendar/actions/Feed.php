@@ -302,7 +302,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			$queryGenerator = new QueryGenerator($moduleModel->get('name'), $currentUser);
 		// }
 
-		$queryGenerator->setFields(array('subject', 'eventstatus', 'visibility','date_start','time_start','due_date','time_end','assigned_user_id','id','activitytype','recurringtype','parent_id','description', 'location', 'creator', 'modifiedby'));
+		$queryGenerator->setFields(array('subject', 'eventstatus', 'visibility','date_start','time_start','due_date','time_end','assigned_user_id','id','activitytype','recurringtype','parent_id','description', 'location', 'creator', 'modifiedby', 'common_memo'));
 		$query = $queryGenerator->getQuery();
 
 		$query.= " AND vtiger_activity.activitytype NOT IN ('Emails','Task') AND ";
@@ -435,6 +435,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			}
 			$item['location'] = $record['location'];
 			$item['description'] = $record['description'];
+			$item['common_memo'] = $record['common_memo'];
 
 			$inviteeDetails = $this->getInviteeNames($record['activityid']);
 			$group = Settings_Groups_Record_Model::getInstance($ownerId);
@@ -479,7 +480,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 		$userAndGroupIds = array_merge(array($userid),$this->getGroupsIdsForUsers($userid));
 		$queryGenerator = new QueryGenerator($moduleModel->get('name'), $user);
 
-		$queryGenerator->setFields(array('activityid','subject', 'taskstatus','activitytype', 'date_start','time_start','due_date','time_end','id', 'assigned_user_id','parent_id','description','visibility','taskpriority'));
+		$queryGenerator->setFields(array('activityid','subject', 'taskstatus','activitytype', 'date_start','time_start','due_date','time_end','id', 'assigned_user_id','parent_id','description','visibility','taskpriority', 'common_memo'));
 		$query = $queryGenerator->getQuery();
 
 		$currentUser = Users_Record_Model::getCurrentUserModel();
@@ -575,6 +576,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 
 			$ownerId = $record['smownerid'];
 			$item['assigned_user_id'] = $this->cacheUser[$record['smownerid']];
+			$item['common_memo'] = $record['common_memo'];
 
 			$inviteeDetails = $this->getInviteeNames($record['activityid']);
 			$group = Settings_Groups_Record_Model::getInstance($ownerId);

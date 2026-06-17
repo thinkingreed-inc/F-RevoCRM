@@ -281,4 +281,6 @@ $jsLanguageStrings = array(
 	'JS_MONTHTITLEFORMAT' => 'YYYY年MM月',
 	'JS_DAYTITLEFORMAT' => 'YYYY年MM月DD日',
 	'JS_WEEKTITLEFORMAT' => 'YYYY年MM月DD日',
+	'LBL_DESCRIPTION' => '詳細内容',
+	'Common Memo' => '共有メモ',
 );
