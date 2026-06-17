@@ -251,11 +251,12 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 		$seriesRecordIds = array_values(array_unique(array_filter($seriesRecordIds)));
 		// 各レコードIDを、その日の親予定IDに正規化する
 		$parentIds = array();
-		foreach ($seriesRecordIds as $seriesRecordId) {
-			$result = $adb->pquery("SELECT activityid, invitee_parentid FROM vtiger_activity WHERE activityid = ?", array($seriesRecordId));
-			if ($adb->num_rows($result) > 0) {
-				$activityId = $adb->query_result($result, 0, 'activityid');
-				$inviteeParentId = $adb->query_result($result, 0, 'invitee_parentid');
+		if (!empty($seriesRecordIds)) {
+			$result = $adb->pquery("SELECT activityid, invitee_parentid FROM vtiger_activity WHERE activityid IN (".generateQuestionMarks($seriesRecordIds).")", $seriesRecordIds);
+			$numRows = $adb->num_rows($result);
+			for ($i = 0; $i < $numRows; $i++) {
+				$activityId = $adb->query_result($result, $i, 'activityid');
+				$inviteeParentId = $adb->query_result($result, $i, 'invitee_parentid');
 				$parentIds[] = !empty($inviteeParentId) ? $inviteeParentId : $activityId;
 			}
 		}

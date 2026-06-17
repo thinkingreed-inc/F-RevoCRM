@@ -1146,12 +1146,11 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 		$focus->save($moduleName);
 		//活動保存後に参加者(担当者抜き)がいるかつメール送信フラグがONの場合、参加者にメール送信する
 		$selectUsers = $recordModel->get('selectedusers');
-		$send_mail = $recordModel->get('send_mail');
 		$sendMailValue = $recordModel->get('send_mail');
 		if ($sendMailValue !== null && method_exists($recordModel, 'syncRecurringSendMail')) {
 			$recordModel->syncRecurringSendMail($sendMailValue);
 		}
-		if (!empty($selectUsers) && $send_mail == '1') {
+		if (!empty($selectUsers) && $sendMailValue == '1') {
 			$invities = implode(';', $selectUsers);
 			$mail_contents = $recordModel->getInviteUserMailData();
 			$activityMode = ($recordModel->getModuleName() == 'Calendar') ? 'Task' : 'Events';
