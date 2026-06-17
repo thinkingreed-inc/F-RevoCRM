@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { FileIcon, getFileCategory } from "./FileIcon";
+import { useOptionalTranslation } from "../../hooks/useTranslation";
 
 interface FilePreviewRendererProps {
   filetype: string | null;
@@ -39,22 +40,25 @@ function isPreviewable(ext: string, category: string, filelocationtype: string, 
 }
 
 /** 拡大ボタン（iframeの上に重ねられないため、プレビューの外に配置） */
-const ExpandButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
-  <button
-    onClick={onClick}
-    title="拡大表示"
-    style={{
-      padding: "4px 10px", border: "1px solid #E2E8F0", borderRadius: 4,
-      backgroundColor: "#fff", cursor: "pointer",
-      display: "inline-flex", alignItems: "center", gap: 4,
-      fontSize: 12, color: "#4A5568", lineHeight: 1,
-    }}
-    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#EDF2F7"; }}
-    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#fff"; }}
-  >
-    &#x26F6; 拡大表示
-  </button>
-);
+const ExpandButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
+  const { t } = useOptionalTranslation();
+  return (
+    <button
+      onClick={onClick}
+      title={t('LBL_EXPAND')}
+      style={{
+        padding: "4px 10px", border: "1px solid #E2E8F0", borderRadius: 4,
+        backgroundColor: "#fff", cursor: "pointer",
+        display: "inline-flex", alignItems: "center", gap: 4,
+        fontSize: 12, color: "#4A5568", lineHeight: 1,
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#EDF2F7"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#fff"; }}
+    >
+      {"\u26F6"} {t('LBL_EXPAND')}
+    </button>
+  );
+};
 
 /** 全画面プレビューモーダル */
 const FullscreenModal: React.FC<{
@@ -63,6 +67,7 @@ const FullscreenModal: React.FC<{
   title: string;
   children: React.ReactNode;
 }> = ({ isOpen, onClose, title, children }) => {
+  const { t } = useOptionalTranslation();
   useEffect(() => {
     if (!isOpen) return;
     const handleKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -112,7 +117,7 @@ const FullscreenModal: React.FC<{
             onMouseEnter={(e) => { e.currentTarget.style.background = "#EDF2F7"; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = "#fff"; }}
           >
-            × 閉じる
+            × {t('LBL_CLOSE')}
           </button>
         </div>
         {/* コンテンツ */}
@@ -126,6 +131,7 @@ const FullscreenModal: React.FC<{
 
 /** DOCX プレビュー（サーバー側HTML変換） */
 const DocxPreview: React.FC<{ recordId: string; maxHeight: number | string }> = ({ recordId, maxHeight }) => {
+  const { t } = useOptionalTranslation();
   const [html, setHtml] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -138,8 +144,8 @@ const DocxPreview: React.FC<{ recordId: string; maxHeight: number | string }> = 
       .finally(() => setLoading(false));
   }, [recordId]);
 
-  if (loading) return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 40, color: "#A0AEC0" }}>読み込み中...</div>;
-  if (!html) return <div style={{ padding: 40, textAlign: "center", color: "#A0AEC0" }}>プレビューを表示できません</div>;
+  if (loading) return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 40, color: "#A0AEC0" }}>{t('LBL_LOADING')}</div>;
+  if (!html) return <div style={{ padding: 40, textAlign: "center", color: "#A0AEC0" }}>{t('LBL_PREVIEW_LOAD_FAILED')}</div>;
 
   const styles = `<style>
     .docx-preview table { border-collapse: collapse; width: 100%; margin: 8px 0; }
@@ -170,6 +176,7 @@ const PreviewContent: React.FC<{
   textContent: string | null;
   textLoading: boolean;
 }> = ({ ext, category, filetype, filelocationtype, filename, downloadUrl, title, maxHeight, isTextFile, textContent, textLoading }) => {
+  const { t } = useOptionalTranslation();
 
   if (filelocationtype !== "I" || !downloadUrl) {
     return (
@@ -249,7 +256,7 @@ const PreviewContent: React.FC<{
   // テキスト系
   if (isTextFile) {
     if (textLoading) {
-      return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 40, color: "#A0AEC0" }}>読み込み中...</div>;
+      return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 40, color: "#A0AEC0" }}>{t('LBL_LOADING')}</div>;
     }
     if (textContent !== null) {
       return (
@@ -266,7 +273,7 @@ const PreviewContent: React.FC<{
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, padding: 40 }}>
       <FileIcon filetype={filetype} filelocationtype={filelocationtype} filename={filename} size="lg" />
-      <span style={{ fontSize: 12, color: "#A0AEC0" }}>プレビュー非対応のファイル形式です</span>
+      <span style={{ fontSize: 12, color: "#A0AEC0" }}>{t('LBL_PREVIEW_NOT_SUPPORTED')}</span>
     </div>
   );
 };
@@ -282,6 +289,7 @@ export const FilePreviewRenderer: React.FC<FilePreviewRendererProps> = ({
   expandOnMount = false,
   onExpandClose,
 }) => {
+  const { t } = useOptionalTranslation();
   const [textContent, setTextContent] = useState<string | null>(null);
   const [textLoading, setTextLoading] = useState(false);
   const [expanded, setExpanded] = useState(expandOnMount);
@@ -296,7 +304,7 @@ export const FilePreviewRenderer: React.FC<FilePreviewRendererProps> = ({
     setTextLoading(true);
     fetch(downloadUrl)
       .then((res) => { if (!res.ok) throw new Error("fetch failed"); return res.text(); })
-      .then((text) => { setTextContent(text.length > 10000 ? text.substring(0, 10000) + "\n...(省略)" : text); })
+      .then((text) => { setTextContent(text.length > 10000 ? text.substring(0, 10000) + "\n" + t('LBL_TEXT_TRUNCATED') : text); })
       .catch(() => setTextContent(null))
       .finally(() => setTextLoading(false));
   }, [downloadUrl, filelocationtype, isTextFile]);

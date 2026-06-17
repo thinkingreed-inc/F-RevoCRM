@@ -12,6 +12,8 @@ import { useDocumentDetail } from "./hooks/useDocumentDetail";
 import { useFolderTree } from "./hooks/useFolderTree";
 import { useViewMode } from "./hooks/useViewMode";
 import { useFileUpload } from "./hooks/useFileUpload";
+import { TranslationProvider } from "../../contexts/TranslationContext";
+import { useOptionalTranslation } from "../../hooks/useTranslation";
 
 interface DocumentsPageProps {
   folderId?: number;
@@ -45,10 +47,17 @@ function useIsMobile(breakpoint = 768) {
   return isMobile;
 }
 
-export const DocumentsPage: React.FC<DocumentsPageProps> = ({
+export const DocumentsPage: React.FC<DocumentsPageProps> = (props) => (
+  <TranslationProvider module="Documents">
+    <DocumentsPageInner {...props} />
+  </TranslationProvider>
+);
+
+const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
   folderId: initialFolderId,
   initialViewMode,
 }) => {
+  const { t } = useOptionalTranslation();
   const { viewMode, setViewMode } = useViewMode(initialViewMode);
   const isMobile = useIsMobile();
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -60,6 +69,12 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
   const [searchInput, setSearchInput] = useState("");
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // 電帳法フィルター
+  const [complianceFilter, setComplianceFilter] = useState(false);
+  const [complianceCategoryFilter, setComplianceCategoryFilter] = useState("");
+  const [complianceStatusFilter, setComplianceStatusFilter] = useState("");
+  const [unrealatedFilter, setUnrelatedFilter] = useState("");
+
   const { folders, totalCount, starredCount, reload: reloadFolders } = useFolderTree();
 
   const { records, total, isLoading, reload: reloadList } = useDocumentsList({
@@ -69,6 +84,10 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
     sort,
     page,
     pageLimit: 20,
+    complianceFilter,
+    documentCategory: complianceCategoryFilter,
+    complianceStatus: complianceStatusFilter,
+    hasRelatedRecord: unrealatedFilter,
   });
 
   // 検索入力のdebounce
@@ -199,16 +218,16 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
       });
       const result = await response.json();
       if (result.error) {
-        alert(result.error.message || "フォルダの保存に失敗しました");
+        alert(result.error.message || t('LBL_FOLDER_SAVE_FAILED'));
         return;
       }
       setFolderDialogOpen(false);
       reloadFolders();
       reloadList();
     } catch {
-      alert("フォルダの保存に失敗しました");
+      alert(t('LBL_FOLDER_SAVE_FAILED'));
     }
-  }, [reloadFolders, reloadList]);
+  }, [reloadFolders, reloadList, t]);
 
   const handleFolderDelete = useCallback(async (folderId: number) => {
     const csrf = getCsrfToken();
@@ -228,7 +247,7 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
       });
       const result = await response.json();
       if (result.error) {
-        alert(result.error.message || "フォルダの削除に失敗しました");
+        alert(result.error.message || t('LBL_FOLDER_DELETE_FAILED'));
         return;
       }
       setFolderDialogOpen(false);
@@ -238,9 +257,9 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
       reloadFolders();
       reloadList();
     } catch {
-      alert("フォルダの削除に失敗しました");
+      alert(t('LBL_FOLDER_DELETE_FAILED'));
     }
-  }, [selectedFolderId, reloadFolders, reloadList]);
+  }, [selectedFolderId, reloadFolders, reloadList, t]);
 
   // パンくずリスト
   const selectedFolder = folders.find((f) => f.id === selectedFolderId);
@@ -255,6 +274,12 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
     return path;
   };
   const breadcrumb = getBreadcrumb();
+
+  const viewModeTitles: Record<string, string> = {
+    list: t('LBL_VIEW_LIST'),
+    grid: t('LBL_VIEW_GRID'),
+    preview: t('LBL_VIEW_PREVIEW'),
+  };
 
   return (
     <div
@@ -286,7 +311,7 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
               onClick={() => { handleFolderSelect("all"); handleFilterTypeChange("all"); }}
               style={{ cursor: "pointer", color: "#4299E1" }}
             >
-              ドキュメント
+              {t('LBL_DOCUMENTS')}
             </span>
             {breadcrumb.map((item) => (
               <React.Fragment key={item.id}>
@@ -299,7 +324,7 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
                 </span>
               </React.Fragment>
             ))}
-            {filterType === "starred" && <><span style={{ color: "#CBD5E0" }}>&gt;</span><span style={{ fontWeight: 600 }}>スター付き</span></>}
+            {filterType === "starred" && <><span style={{ color: "#CBD5E0" }}>&gt;</span><span style={{ fontWeight: 600 }}>{t('LBL_STARRED')}</span></>}
           </div>
         )}
 
@@ -316,7 +341,7 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
                 setPage(1);
               }
             }}
-            placeholder="ドキュメントを検索..."
+            placeholder={t('LBL_SEARCH_DOCUMENTS')}
             style={{
               width: "100%",
               padding: "5px 30px 5px 28px",
@@ -348,6 +373,63 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
           )}
         </div>
 
+        {/* 電帳法フィルター（PCのみ） */}
+        {!isMobile && (
+          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 12, color: "#718096", cursor: "pointer", whiteSpace: "nowrap" }}>
+              <input
+                type="checkbox"
+                checked={complianceFilter}
+                onChange={(e) => {
+                  setComplianceFilter(e.target.checked);
+                  if (!e.target.checked) {
+                    setComplianceCategoryFilter("");
+                    setComplianceStatusFilter("");
+                    setUnrelatedFilter("");
+                  }
+                  setPage(1);
+                }}
+              />
+              {t('LBL_COMPLIANCE_FILTER_LABEL')}
+            </label>
+            {complianceFilter && (
+              <>
+                <select
+                  value={complianceCategoryFilter}
+                  onChange={(e) => { setComplianceCategoryFilter(e.target.value); setPage(1); }}
+                  style={{ padding: "3px 4px", border: "1px solid #E2E8F0", borderRadius: 3, fontSize: 11, color: "#4A5568" }}
+                >
+                  <option value="">{t('LBL_ALL_CATEGORIES')}</option>
+                  <option value="invoice">{t('LBL_CATEGORY_INVOICE')}</option>
+                  <option value="receipt">{t('LBL_CATEGORY_RECEIPT')}</option>
+                  <option value="contract">{t('LBL_CATEGORY_CONTRACT')}</option>
+                  <option value="estimate">{t('LBL_CATEGORY_ESTIMATE')}</option>
+                  <option value="order">{t('LBL_CATEGORY_ORDER')}</option>
+                  <option value="delivery">{t('LBL_CATEGORY_DELIVERY')}</option>
+                  <option value="other">{t('LBL_CATEGORY_OTHER')}</option>
+                </select>
+                <select
+                  value={complianceStatusFilter}
+                  onChange={(e) => { setComplianceStatusFilter(e.target.value); setPage(1); }}
+                  style={{ padding: "3px 4px", border: "1px solid #E2E8F0", borderRadius: 3, fontSize: 11, color: "#4A5568" }}
+                >
+                  <option value="">{t('LBL_ALL_STATUSES')}</option>
+                  <option value="compliant">{t('LBL_STATUS_COMPLIANT')}</option>
+                  <option value="non_compliant">{t('LBL_STATUS_NON_COMPLIANT')}</option>
+                </select>
+                <select
+                  value={unrealatedFilter}
+                  onChange={(e) => { setUnrelatedFilter(e.target.value); setPage(1); }}
+                  style={{ padding: "3px 4px", border: "1px solid #E2E8F0", borderRadius: 3, fontSize: 11, color: "#4A5568" }}
+                >
+                  <option value="">{t('LBL_ALL_RECORDS')}</option>
+                  <option value="false">{t('LBL_UNRELATED_ONLY')}</option>
+                </select>
+              </>
+            )}
+          </div>
+        )}
+
         {/* 表示モード切替（スマホでは非表示） */}
         {!isMobile && (
           <div style={{ display: "flex", gap: 2, border: "1px solid #E2E8F0", borderRadius: 4, overflow: "hidden" }}>
@@ -364,7 +446,7 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
                   fontSize: 14,
                   lineHeight: 1,
                 }}
-                title={mode === "list" ? "リスト表示" : mode === "grid" ? "グリッド表示" : "プレビュー表示"}
+                title={viewModeTitles[mode]}
               >
                 {VIEW_MODE_ICONS[mode]}
               </button>
@@ -391,7 +473,7 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
             flexShrink: 0,
           }}
         >
-          {isMobile ? "+" : "+ ドキュメントの追加"}
+          {isMobile ? "+" : t('LBL_ADD_DOCUMENT')}
         </button>
       </div>
 
@@ -481,7 +563,7 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
             records={records}
             total={total}
             isLoading={isLoading}
-            folderName={selectedFolder?.name || "すべてのドキュメント"}
+            folderName={selectedFolder?.name || t('LBL_ALL_DOCUMENTS')}
             folders={folders}
             selectedFolderId={selectedFolderId}
             onFolderClick={handleFolderSelect}
@@ -500,7 +582,7 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
             alignItems: "center", justifyContent: "center", zIndex: 20, pointerEvents: "none",
           }}>
             <div style={{ fontSize: 16, color: "#3182CE", fontWeight: 600 }}>
-              ファイルをここにドロップしてアップロード
+              {t('LBL_DROP_FILES_HERE')}
             </div>
           </div>
         )}
@@ -511,7 +593,7 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
             backgroundColor: "#EBF8FF", borderTop: "1px solid #BEE3F8", zIndex: 21,
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
-              <span>アップロード中... {progress}%</span>
+              <span>{t('LBL_UPLOADING_PROGRESS', progress)}</span>
               <div style={{ flex: 1, height: 4, backgroundColor: "#BEE3F8", borderRadius: 2 }}>
                 <div style={{ width: `${progress}%`, height: "100%", backgroundColor: "#3182CE", borderRadius: 2, transition: "width 0.2s" }} />
               </div>
@@ -573,7 +655,7 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
             reloadList();
             reloadFolders();
           } catch {
-            alert("削除に失敗しました");
+            alert(t('LBL_DELETE_FAILED'));
           }
         }}
       />

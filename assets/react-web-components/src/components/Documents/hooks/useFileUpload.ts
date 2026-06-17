@@ -38,7 +38,7 @@ export function useFileUpload(onComplete?: () => void): UseFileUploadResult {
       const fileArray = Array.from(files);
       if (fileArray.length === 0) return;
       if (fileArray.length > 10) {
-        setError("一度にアップロードできるファイルは最大10件です");
+        setError("LBL_MAX_UPLOAD_FILES");
         return;
       }
 

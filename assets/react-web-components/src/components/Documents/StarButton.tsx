@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from "react";
+import { useOptionalTranslation } from "../../hooks/useTranslation";
 
 interface StarButtonProps {
   recordId: number;
@@ -20,6 +21,7 @@ export const StarButton: React.FC<StarButtonProps> = ({
   starred: initialStarred,
   onChange,
 }) => {
+  const { t } = useOptionalTranslation();
   const [starred, setStarred] = useState(initialStarred);
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -83,8 +85,8 @@ export const StarButton: React.FC<StarButtonProps> = ({
         transition: "color 0.15s",
         lineHeight: 1,
       }}
-      title={starred ? "お気に入りを解除" : "お気に入りに追加"}
-      aria-label={starred ? "お気に入りを解除" : "お気に入りに追加"}
+      title={starred ? t('LBL_STAR_REMOVE') : t('LBL_STAR_ADD')}
+      aria-label={starred ? t('LBL_STAR_REMOVE') : t('LBL_STAR_ADD')}
     >
       {starred ? "★" : "☆"}
     </button>

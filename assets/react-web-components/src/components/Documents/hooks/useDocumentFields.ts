@@ -6,10 +6,13 @@ export interface DocFieldInfo {
   uitype: string;
   mandatory: boolean;
   editable: boolean;
+  displaytype: string;
   defaultvalue: string;
   type: string;
   picklistValues?: Array<{ label: string; value: string }>;
-  block?: string;
+  referenceModules?: string[];
+  referenceModuleLabels?: Record<string, string>;
+  blockLabel: string;
 }
 
 interface UseDocumentFieldsResult {
@@ -18,7 +21,7 @@ interface UseDocumentFieldsResult {
   error: string | null;
 }
 
-export function useDocumentFields(recordId?: number | null): UseDocumentFieldsResult {
+export function useDocumentFields(recordId?: number | null, includeReadonly?: boolean): UseDocumentFieldsResult {
   const [fields, setFields] = useState<DocFieldInfo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +33,7 @@ export function useDocumentFields(recordId?: number | null): UseDocumentFieldsRe
       const params = new URLSearchParams({
         module: "Documents",
         api: "GetFields",
-        view: "quickcreate",
+        view: "edit",
       });
       if (recordId) {
         params.append("record", String(recordId));
@@ -46,22 +49,28 @@ export function useDocumentFields(recordId?: number | null): UseDocumentFieldsRe
 
       if (data.fields && Array.isArray(data.fields)) {
         const converted: DocFieldInfo[] = data.fields
-          .filter((f: any) => f.editable && f.displaytype !== "2")
+          .filter((f: any) => {
+            if (!includeReadonly && String(f.displaytype) === "2") return false;
+            return true;
+          })
           .map((f: any) => ({
             name: f.name,
             label: f.label,
             uitype: String(f.uitype),
             mandatory: !!f.mandatory,
             editable: !!f.editable,
-            defaultvalue: f.default || "",
-            type: f.type?.name || "string",
-            picklistValues: f.type?.picklistValues
-              ? Object.entries(f.type.picklistValues).map(([value, label]) => ({
-                  value,
-                  label: String(label),
+            displaytype: String(f.displaytype || "1"),
+            defaultvalue: f.defaultValue || "",
+            type: f.type || "string",
+            picklistValues: Array.isArray(f.picklistValues)
+              ? f.picklistValues.map((pv: any) => ({
+                  value: pv.value,
+                  label: pv.label,
                 }))
               : undefined,
-            block: f.blockLabel || "",
+            referenceModules: Array.isArray(f.referenceModules) ? f.referenceModules : undefined,
+            referenceModuleLabels: f.referenceModuleLabels || undefined,
+            blockLabel: f.block || "",
           }));
         setFields(converted);
       }
@@ -70,7 +79,7 @@ export function useDocumentFields(recordId?: number | null): UseDocumentFieldsRe
     } finally {
       setIsLoading(false);
     }
-  }, [recordId]);
+  }, [recordId, includeReadonly]);
 
   useEffect(() => {
     fetchFields();

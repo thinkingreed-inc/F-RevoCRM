@@ -1,5 +1,6 @@
 import React from "react";
-import type { DocumentRecord, SortConfig, Folder } from "./types/documents";
+import { useOptionalTranslation } from "../../hooks/useTranslation";
+import type { DocumentRecord, SortConfig, Folder, ComplianceStatus } from "./types/documents";
 import { FileIcon } from "./FileIcon";
 import { StarButton } from "./StarButton";
 
@@ -33,6 +34,16 @@ function formatDate(dateStr: string): string {
 function truncate(str: string | null, len: number): string {
   if (!str) return "";
   return str.length > len ? str.substring(0, len) + "..." : str;
+}
+
+function complianceStatusIcon(status: ComplianceStatus | null | undefined, labels: Record<string, string>, notes?: string | null): React.ReactNode {
+  if (!status) return null;
+  if (status === "compliant") return <span title={labels.compliant} style={{ color: "#38A169", fontSize: 14 }}>●</span>;
+  if (status === "non_compliant") {
+    const tooltip = notes ? `${labels.non_compliant}: ${notes}` : labels.non_compliant;
+    return <span title={tooltip} style={{ color: "#E53E3E", fontSize: 14 }}>●</span>;
+  }
+  return null;
 }
 
 const SortableHeader: React.FC<{
@@ -88,7 +99,22 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
   onRecordClick,
   onFolderClick,
 }) => {
+  const { t } = useOptionalTranslation();
   const totalPages = Math.ceil(total / pageLimit);
+
+  const documentCategoryLabels: Record<string, string> = {
+    invoice: t('LBL_CATEGORY_INVOICE'),
+    receipt: t('LBL_CATEGORY_RECEIPT'),
+    contract: t('LBL_CATEGORY_CONTRACT'),
+    estimate: t('LBL_CATEGORY_ESTIMATE'),
+    order: t('LBL_CATEGORY_ORDER'),
+    delivery: t('LBL_CATEGORY_DELIVERY'),
+    other: t('LBL_CATEGORY_OTHER'),
+  };
+  const complianceStatusLabels: Record<string, string> = {
+    compliant: t('LBL_STATUS_COMPLIANT'),
+    non_compliant: t('LBL_STATUS_NON_COMPLIANT'),
+  };
 
   // サブフォルダを取得（選択中のフォルダの直下のみ）
   const subFolders =
@@ -136,7 +162,7 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
                   <span style={{ fontSize: 16, color: "#718096", lineHeight: 1 }}>←</span>
                   <div>
                     <div style={{ fontWeight: 500, fontSize: 13, color: "#4A5568" }}>
-                      {parentTarget === "all" ? "すべてのドキュメント" : folders.find((f) => f.id === parentTarget)?.name || ""}
+                      {parentTarget === "all" ? t('LBL_ALL_DOCUMENTS') : folders.find((f) => f.id === parentTarget)?.name || ""}
                     </div>
                   </div>
                 </div>
@@ -159,7 +185,7 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
                   <div style={{ fontWeight: 500, fontSize: 13, color: "#2D3748", marginBottom: 2 }}>
                     {folder.name}
                   </div>
-                  <div style={{ fontSize: 11, color: "#A0AEC0" }}>{folder.count} 件</div>
+                  <div style={{ fontSize: 11, color: "#A0AEC0" }}>{t('LBL_FOLDER_COUNT', folder.count)}</div>
                 </div>
               ))}
             </div>
@@ -180,29 +206,35 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
               </th>
               <th style={{ width: 32, padding: "8px 2px", borderBottom: "2px solid #E2E8F0" }} />
               <th style={{ width: 40, padding: "8px 2px", borderBottom: "2px solid #E2E8F0" }} />
-              <SortableHeader label="タイトル" field="title" sort={sort} onSort={onSortChange} />
-              <SortableHeader label="ファイル種別" field="filetype" sort={sort} onSort={onSortChange} style={{ width: 100 }} />
-              <SortableHeader label="フォルダ" field="foldername" sort={sort} onSort={onSortChange} style={{ width: 120 }} />
-              <SortableHeader label="担当" field="assigned_user_id" sort={sort} onSort={onSortChange} style={{ width: 100 }} />
-              <SortableHeader label="更新日時" field="modifiedtime" sort={sort} onSort={onSortChange} style={{ width: 100 }} />
-              <SortableHeader label="サイズ" field="filesize" sort={sort} onSort={onSortChange} style={{ width: 80 }} />
+              <SortableHeader label={t('Title')} field="title" sort={sort} onSort={onSortChange} />
+              <SortableHeader label={t('File Type')} field="filetype" sort={sort} onSort={onSortChange} style={{ width: 100 }} />
+              <SortableHeader label={t('Folder Name')} field="foldername" sort={sort} onSort={onSortChange} style={{ width: 120 }} />
+              <SortableHeader label={t('Assigned To')} field="assigned_user_id" sort={sort} onSort={onSortChange} style={{ width: 100 }} />
+              <SortableHeader label={t('Modified Time')} field="modifiedtime" sort={sort} onSort={onSortChange} style={{ width: 100 }} />
+              <SortableHeader label={t('File Size')} field="filesize" sort={sort} onSort={onSortChange} style={{ width: 80 }} />
+              <th style={{ width: 40, padding: "8px 4px", textAlign: "center", fontSize: 12, fontWeight: 600, color: "#4A5568", borderBottom: "2px solid #E2E8F0" }}>
+                {t('LBL_COLUMN_COMPLIANCE')}
+              </th>
+              <th style={{ width: 70, padding: "8px 6px", textAlign: "left", fontSize: 12, fontWeight: 600, color: "#4A5568", borderBottom: "2px solid #E2E8F0" }}>
+                {t('LBL_COLUMN_CATEGORY')}
+              </th>
               <th style={{ padding: "8px 6px", textAlign: "left", fontSize: 12, fontWeight: 600, color: "#4A5568", borderBottom: "2px solid #E2E8F0" }}>
-                メモ
+                {t('Note')}
               </th>
             </tr>
           </thead>
           <tbody>
             {isLoading && records.length === 0 && (
               <tr>
-                <td colSpan={10} style={{ padding: 40, textAlign: "center", color: "#A0AEC0" }}>
-                  読み込み中...
+                <td colSpan={12} style={{ padding: 40, textAlign: "center", color: "#A0AEC0" }}>
+                  {t('LBL_LOADING')}
                 </td>
               </tr>
             )}
             {!isLoading && records.length === 0 && (
               <tr>
-                <td colSpan={10} style={{ padding: 40, textAlign: "center", color: "#A0AEC0" }}>
-                  ドキュメントがありません
+                <td colSpan={12} style={{ padding: 40, textAlign: "center", color: "#A0AEC0" }}>
+                  {t('LBL_NO_DOCUMENTS')}
                 </td>
               </tr>
             )}
@@ -245,6 +277,12 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
                 </td>
                 <td style={{ padding: "6px 6px", color: "#718096" }} onClick={() => onRecordClick(rec)}>
                   {formatFileSize(rec.filesize)}
+                </td>
+                <td style={{ padding: "6px 4px", textAlign: "center" }} onClick={() => onRecordClick(rec)}>
+                  {complianceStatusIcon(rec.compliance?.compliance_status, complianceStatusLabels, rec.compliance?.compliance_notes)}
+                </td>
+                <td style={{ padding: "6px 6px", color: "#718096", fontSize: 12 }} onClick={() => onRecordClick(rec)}>
+                  {rec.compliance ? (documentCategoryLabels[rec.compliance.document_category] || "") : ""}
                 </td>
                 <td style={{ padding: "6px 6px", color: "#A0AEC0", fontSize: 12 }} onClick={() => onRecordClick(rec)}>
                   {truncate(rec.notecontent, 30)}

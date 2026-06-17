@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import type { Folder } from "./types/documents";
+import { useOptionalTranslation } from "../../hooks/useTranslation";
 
 interface FolderDialogProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
   onDelete,
   onClose,
 }) => {
+  const { t } = useOptionalTranslation();
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const [parentId, setParentId] = useState(parentFolderId);
@@ -45,7 +47,7 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
   const handleSave = useCallback(() => {
     const trimmedName = name.trim();
     if (!trimmedName) {
-      setError("フォルダ名を入力してください");
+      setError(t('LBL_FOLDER_NAME_REQUIRED'));
       return;
     }
     onSave({
@@ -99,7 +101,7 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         <h3 style={{ margin: "0 0 16px", fontSize: 16, fontWeight: 600, color: "#2D3748" }}>
-          {mode === "create" ? "フォルダの追加" : "フォルダの編集"}
+          {mode === "create" ? t('LBL_ADD_FOLDER_TITLE') : t('LBL_EDIT_FOLDER_TITLE')}
         </h3>
 
         {error && (
@@ -110,7 +112,7 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
 
         <div style={{ marginBottom: 12 }}>
           <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: "#4A5568", marginBottom: 4 }}>
-            フォルダ名 <span style={{ color: "#E53E3E" }}>*</span>
+            {t('LBL_FOLDER_NAME_LABEL')} <span style={{ color: "#E53E3E" }}>*</span>
           </label>
           <input
             type="text"
@@ -132,7 +134,7 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
 
         <div style={{ marginBottom: 12 }}>
           <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: "#4A5568", marginBottom: 4 }}>
-            説明
+            {t('LBL_FOLDER_DESCRIPTION_LABEL')}
           </label>
           <textarea
             value={desc}
@@ -153,7 +155,7 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
 
         <div style={{ marginBottom: 20 }}>
           <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: "#4A5568", marginBottom: 4 }}>
-            親フォルダ
+            {t('LBL_PARENT_FOLDER')}
           </label>
           <select
             value={parentId}
@@ -168,7 +170,7 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
               boxSizing: "border-box",
             }}
           >
-            <option value={0}>（ルート）</option>
+            <option value={0}>{t('LBL_ROOT_FOLDER')}</option>
             {parentOptions.map((f) => (
               <option key={f.id} value={f.id}>
                 {f.name}
@@ -182,7 +184,7 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
             {mode === "edit" && folder && folder.name !== "Default" && onDelete && (
               <button
                 onClick={() => {
-                  if (window.confirm(`フォルダ「${folder.name}」を削除しますか？`)) {
+                  if (window.confirm(t('LBL_CONFIRM_DELETE_FOLDER', folder.name))) {
                     onDelete(folder.id);
                   }
                 }}
@@ -196,7 +198,7 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
                   cursor: "pointer",
                 }}
               >
-                削除
+                {t('LBL_DELETE')}
               </button>
             )}
           </div>
@@ -213,7 +215,7 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
                 cursor: "pointer",
               }}
             >
-              キャンセル
+              {t('LBL_CANCEL')}
             </button>
             <button
               onClick={handleSave}
@@ -227,7 +229,7 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
                 cursor: "pointer",
               }}
             >
-              {mode === "create" ? "追加" : "保存"}
+              {mode === "create" ? t('LBL_ADD') : t('LBL_SAVE')}
             </button>
           </div>
         </div>

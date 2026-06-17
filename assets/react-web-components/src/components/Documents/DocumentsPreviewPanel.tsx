@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import type { DocumentDetail } from "./types/documents";
 import { FilePreviewRenderer } from "./FilePreviewRenderer";
+import { useOptionalTranslation } from "../../hooks/useTranslation";
 
 interface DocumentsPreviewPanelProps {
   document: DocumentDetail | null;
@@ -16,10 +17,10 @@ function formatFileSize(bytes: number): string {
   return (bytes / (1024 * 1024)).toFixed(1) + " MB";
 }
 
-function getLocationLabel(type: string): string {
+function getLocationLabel(t: (key: string) => string, type: string): string {
   switch (type) {
-    case "I": return "内部";
-    case "E": return "外部";
+    case "I": return t('LBL_LOCATION_INTERNAL');
+    case "E": return t('LBL_LOCATION_EXTERNAL');
     case "W": return "Web";
     default: return type;
   }
@@ -48,13 +49,14 @@ export const DocumentsPreviewPanel: React.FC<DocumentsPreviewPanelProps> = ({
   onEdit,
   onBack,
 }) => {
+  const { t } = useOptionalTranslation();
   const isMobile = useIsMobile();
   const [showMobilePreview, setShowMobilePreview] = useState(false);
 
   if (isLoading) {
     return (
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "#A0AEC0" }}>
-        読み込み中...
+        {t('LBL_LOADING')}
       </div>
     );
   }
@@ -62,8 +64,8 @@ export const DocumentsPreviewPanel: React.FC<DocumentsPreviewPanelProps> = ({
   if (!doc) {
     return (
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "#A0AEC0", flexDirection: "column", gap: 8, padding: 40 }}>
-        <div style={{ fontSize: 14 }}>ドキュメントを選択してください</div>
-        <div style={{ fontSize: 12 }}>左のリストからドキュメントをクリックするとプレビューが表示されます</div>
+        <div style={{ fontSize: 14 }}>{t('LBL_SELECT_DOCUMENT')}</div>
+        <div style={{ fontSize: 12 }}>{t('LBL_SELECT_DOCUMENT_HELP')}</div>
       </div>
     );
   }
@@ -88,7 +90,7 @@ export const DocumentsPreviewPanel: React.FC<DocumentsPreviewPanelProps> = ({
               onClick={onBack}
               style={{ padding: "4px 10px", border: "1px solid #E2E8F0", borderRadius: 4, fontSize: 12, color: "#4A5568", backgroundColor: "#fff", cursor: "pointer" }}
             >
-              ← 一覧
+              {t('LBL_BACK_TO_LIST')}
             </button>
           )}
           <div style={{ fontSize: 12, color: "#A0AEC0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{folderPathStr}</div>
@@ -98,14 +100,14 @@ export const DocumentsPreviewPanel: React.FC<DocumentsPreviewPanelProps> = ({
             onClick={() => onEdit?.(doc)}
             style={{ padding: "4px 12px", border: "1px solid #E2E8F0", borderRadius: 4, fontSize: 12, color: "#4A5568", backgroundColor: "#fff", cursor: "pointer" }}
           >
-            編集
+            {t('LBL_EDIT')}
           </button>
           {doc.filelocationtype === "I" && doc.download_url && (
             <a
               href={doc.download_url}
               style={{ padding: "4px 12px", border: "none", borderRadius: 4, fontSize: 12, color: "#fff", textDecoration: "none", backgroundColor: "#38A169" }}
             >
-              ダウンロード
+              {t('Download')}
             </a>
           )}
         </div>
@@ -139,7 +141,7 @@ export const DocumentsPreviewPanel: React.FC<DocumentsPreviewPanelProps> = ({
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
               }}
             >
-              &#x26F6; プレビュー
+              {"\u26F6 " + t('LBL_PREVIEW')}
             </button>
           ) : null
         ) : (
@@ -171,21 +173,21 @@ export const DocumentsPreviewPanel: React.FC<DocumentsPreviewPanelProps> = ({
         <div style={{ fontSize: 12, color: "#A0AEC0", marginBottom: 12 }}>{doc.filename}</div>
 
         <div style={{ borderTop: "1px solid #EDF2F7", paddingTop: 12 }}>
-          <InfoRow label="ファイル種別" value={doc.filetype || "—"} />
-          <InfoRow label="フォルダ" value={folderPathStr} />
-          <InfoRow label="担当" value={doc.assigned_user_name} />
-          <InfoRow label="更新日時" value={doc.modifiedtime} />
-          <InfoRow label="サイズ" value={formatFileSize(doc.filesize)} />
-          <InfoRow label="ダウンロード種別" value={getLocationLabel(doc.filelocationtype)} />
+          <InfoRow label={t('File Type')} value={doc.filetype || "—"} />
+          <InfoRow label={t('Folder Name')} value={folderPathStr} />
+          <InfoRow label={t('Assigned To')} value={doc.assigned_user_name} />
+          <InfoRow label={t('Modified Time')} value={doc.modifiedtime} />
+          <InfoRow label={t('File Size')} value={formatFileSize(doc.filesize)} />
+          <InfoRow label={t('Download Type')} value={getLocationLabel(t, doc.filelocationtype)} />
           {doc.filedownloadcount > 0 && (
-            <InfoRow label="DL回数" value={`${doc.filedownloadcount}回`} />
+            <InfoRow label={t('Download Count')} value={t('LBL_DOWNLOAD_COUNT_SUFFIX', doc.filedownloadcount)} />
           )}
         </div>
 
         {/* メモ */}
         {doc.notecontent && (
           <div style={{ marginTop: 12, borderTop: "1px solid #EDF2F7", paddingTop: 12 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: "#718096", marginBottom: 6 }}>メモ</div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "#718096", marginBottom: 6 }}>{t('Note')}</div>
             <div style={{ fontSize: 13, color: "#4A5568", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
               {doc.notecontent}
             </div>
@@ -195,7 +197,7 @@ export const DocumentsPreviewPanel: React.FC<DocumentsPreviewPanelProps> = ({
         {/* 関連レコード */}
         {doc.related_records && doc.related_records.length > 0 && (
           <div style={{ marginTop: 12, borderTop: "1px solid #EDF2F7", paddingTop: 12 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: "#718096", marginBottom: 6 }}>関連レコード</div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "#718096", marginBottom: 6 }}>{t('LBL_RELATED_RECORDS')}</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {doc.related_records.map((rel) => (
                 <a

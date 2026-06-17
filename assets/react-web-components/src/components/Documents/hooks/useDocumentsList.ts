@@ -12,6 +12,11 @@ interface UseDocumentsListParams {
   sort?: SortConfig;
   page?: number;
   pageLimit?: number;
+  // 電帳法フィルター
+  complianceFilter?: boolean;
+  documentCategory?: string;
+  complianceStatus?: string;
+  hasRelatedRecord?: string;
 }
 
 interface UseDocumentsListResult {
@@ -81,6 +86,19 @@ export function useDocumentsList(
       if (params.pageLimit) {
         bodyParams.append("pageLimit", String(params.pageLimit));
       }
+      // 電帳法フィルター
+      if (params.complianceFilter) {
+        bodyParams.append("compliance_filter", "1");
+      }
+      if (params.documentCategory) {
+        bodyParams.append("document_category", params.documentCategory);
+      }
+      if (params.complianceStatus) {
+        bodyParams.append("compliance_status", params.complianceStatus);
+      }
+      if (params.hasRelatedRecord !== undefined && params.hasRelatedRecord !== "") {
+        bodyParams.append("has_related_record", params.hasRelatedRecord);
+      }
       const response = await fetch("index.php", {
         method: "POST",
         credentials: "same-origin",
@@ -115,6 +133,10 @@ export function useDocumentsList(
     params.sort?.order,
     params.page,
     params.pageLimit,
+    params.complianceFilter,
+    params.documentCategory,
+    params.complianceStatus,
+    params.hasRelatedRecord,
   ]);
 
   useEffect(() => {

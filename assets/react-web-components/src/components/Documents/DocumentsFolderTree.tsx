@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from "react";
+import { useOptionalTranslation } from "../../hooks/useTranslation";
 import type { Folder, FilterType } from "./types/documents";
 
 interface DocumentsFolderTreeProps {
@@ -50,6 +51,7 @@ const ContextMenu: React.FC<{
   onDelete: () => void;
   onClose: () => void;
 }> = ({ state, onAddSubfolder, onEdit, onDelete, onClose }) => {
+  const { t } = useOptionalTranslation();
   const isDefault = state.folder.name === "Default";
   const menuItemStyle: React.CSSProperties = {
     padding: "6px 16px",
@@ -81,7 +83,7 @@ const ContextMenu: React.FC<{
           onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#EDF2F7")}
           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
         >
-          サブフォルダを追加
+          {t('LBL_ADD_SUBFOLDER')}
         </div>
         {!isDefault && (
           <div
@@ -90,7 +92,7 @@ const ContextMenu: React.FC<{
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#EDF2F7")}
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
           >
-            フォルダを編集
+            {t('LBL_EDIT_FOLDER')}
           </div>
         )}
         {!isDefault && (
@@ -100,7 +102,7 @@ const ContextMenu: React.FC<{
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#FFF5F5")}
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
           >
-            フォルダを削除
+            {t('LBL_DELETE_FOLDER')}
           </div>
         )}
       </div>
@@ -197,6 +199,7 @@ export const DocumentsFolderTree: React.FC<DocumentsFolderTreeProps> = ({
   onFolderEdit,
   onFolderDelete,
 }) => {
+  const { t } = useOptionalTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const tree = useMemo(() => buildTree(folders), [folders]);
@@ -256,14 +259,14 @@ export const DocumentsFolderTree: React.FC<DocumentsFolderTreeProps> = ({
         }}
       >
         <span style={{ fontWeight: 700, fontSize: 14, color: "#2D3748" }}>
-          フォルダ
+          {t('LBL_FOLDERS_SECTION')}
         </span>
         <button
           onClick={() => {
             const parentId = typeof selectedFolderId === "number" ? selectedFolderId : 0;
             onFolderCreate(parentId);
           }}
-          title="フォルダの追加"
+          title={t('LBL_ADD_FOLDER_TITLE')}
           style={{
             width: 24,
             height: 24,
@@ -289,7 +292,7 @@ export const DocumentsFolderTree: React.FC<DocumentsFolderTreeProps> = ({
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="フォルダから検索..."
+          placeholder={t('LBL_SEARCH_FOLDERS')}
           style={{
             width: "100%",
             padding: "5px 8px",
@@ -307,20 +310,20 @@ export const DocumentsFolderTree: React.FC<DocumentsFolderTreeProps> = ({
         {/* 標準フォルダ */}
         <div style={{ marginBottom: 8 }}>
           <div style={{ padding: "4px 8px", fontSize: 11, color: "#A0AEC0", fontWeight: 600, textTransform: "uppercase" }}>
-            標準フォルダ
+            {t('LBL_STANDARD_FOLDERS')}
           </div>
           <div
             onClick={() => { onFolderSelect("all"); onFilterTypeChange("all"); }}
             style={smartFolderStyle(filterType === "all" && selectedFolderId === "all")}
           >
-            <span style={{ flex: 1 }}>すべてのドキュメント</span>
+            <span style={{ flex: 1 }}>{t('LBL_ALL_DOCUMENTS')}</span>
             <span style={{ fontSize: 11, color: "#A0AEC0" }}>{totalCount}</span>
           </div>
           <div
             onClick={() => { onFolderSelect("all"); onFilterTypeChange("starred"); }}
             style={smartFolderStyle(filterType === "starred")}
           >
-            <span style={{ flex: 1 }}>スター付き</span>
+            <span style={{ flex: 1 }}>{t('LBL_STARRED')}</span>
             <span style={{ fontSize: 11, color: "#A0AEC0" }}>{starredCount}</span>
           </div>
         </div>
@@ -328,7 +331,7 @@ export const DocumentsFolderTree: React.FC<DocumentsFolderTreeProps> = ({
         {/* ユーザーフォルダ */}
         <div>
           <div style={{ padding: "4px 8px", fontSize: 11, color: "#A0AEC0", fontWeight: 600, textTransform: "uppercase" }}>
-            フォルダ
+            {t('LBL_FOLDERS_SECTION')}
           </div>
           {filteredTree.map((node) => (
             <FolderItem
@@ -356,7 +359,7 @@ export const DocumentsFolderTree: React.FC<DocumentsFolderTreeProps> = ({
             closeContextMenu();
           }}
           onDelete={() => {
-            if (window.confirm(`フォルダ「${contextMenu.folder.name}」を削除しますか？`)) {
+            if (window.confirm(t('LBL_CONFIRM_DELETE_FOLDER', contextMenu.folder.name))) {
               onFolderDelete(contextMenu.folder.id);
             }
             closeContextMenu();

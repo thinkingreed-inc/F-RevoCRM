@@ -9,6 +9,12 @@ class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 	}
 
 	protected function processApi(Vtiger_Request $request) {
+		$mode = $request->get('mode');
+		if ($mode === 'columns') {
+			$result = $this->getAvailableColumns($request);
+			return $this->sendSuccess($result);
+		}
+
 		$result = $this->getDocumentsList($request);
 		return $this->sendSuccess($result);
 	}
@@ -32,6 +38,14 @@ class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 		$filterType = $request->get('filter_type'); // 'starred', 'recent'
 		$parentModule = $request->get('parent_module');
 		$parentId = $request->get('parent_id');
+
+		// 電帳法フィルターパラメータ
+		$complianceFilter = $request->get('compliance_filter');
+		$documentCategory = $request->get('document_category');
+		$preservationType = $request->get('preservation_type');
+		$complianceStatus = $request->get('compliance_status');
+		$hasRelatedRecord = $request->get('has_related_record');
+		$inputDeadlineStatus = $request->get('input_deadline_status');
 
 		// ソートカラムのホワイトリスト
 		$allowedSortColumns = array(
@@ -92,6 +106,36 @@ class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 			$params[] = $keyword;
 		}
 
+		// 電帳法フィルター
+		if ($complianceFilter) {
+			$where .= " AND vtiger_notes.document_category IS NOT NULL";
+		}
+		if (!empty($documentCategory)) {
+			$where .= " AND vtiger_notes.document_category = ?";
+			$params[] = $documentCategory;
+		}
+		if (!empty($preservationType)) {
+			$where .= " AND vtiger_notes.preservation_type = ?";
+			$params[] = $preservationType;
+		}
+		if (!empty($complianceStatus)) {
+			$where .= " AND vtiger_notes.compliance_status = ?";
+			$params[] = $complianceStatus;
+		}
+		if (!empty($inputDeadlineStatus)) {
+			$where .= " AND vtiger_notes.input_deadline_status = ?";
+			$params[] = $inputDeadlineStatus;
+		}
+		// 未関連のみ（電帳法対象かつ取引レコードに関連付けなし）
+		if ($hasRelatedRecord === 'false' || $hasRelatedRecord === '0') {
+			$where .= " AND vtiger_notes.document_category IS NOT NULL
+				AND NOT EXISTS (
+					SELECT 1 FROM vtiger_senotesrel snr
+					INNER JOIN vtiger_crmentity ce ON ce.crmid = snr.crmid AND ce.deleted = 0
+					WHERE snr.notesid = vtiger_notes.notesid
+				)";
+		}
+
 		// 権限チェック（非管理者の場合）
 		$currentUserModel = Users_Record_Model::getCurrentUserModel();
 		if (!$currentUserModel->isAdminUser()) {
@@ -118,11 +162,30 @@ class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 		}
 		$total = (int) $db->query_result($countResult, 0, 'total');
 
+		// カスタムフィールド定義を取得
+		$customFieldDefs = array();
+		$moduleModel = Vtiger_Module_Model::getInstance('Documents');
+		$allFields = $moduleModel->getFields();
+		foreach ($allFields as $fieldName => $fieldModel) {
+			if ($fieldModel->isCustomField() && $fieldModel->get('table') === 'vtiger_notes') {
+				$customFieldDefs[$fieldName] = $fieldModel->get('column');
+			}
+		}
+
+		// カスタムフィールドのSELECT句を動的に構築
+		$customFieldSelect = '';
+		foreach ($customFieldDefs as $fieldName => $columnName) {
+			$customFieldSelect .= ", vtiger_notes." . $columnName;
+		}
+
 		// データ取得
 		$selectQuery = "SELECT vtiger_notes.notesid, vtiger_notes.title, vtiger_notes.filename,
 				vtiger_notes.filetype, vtiger_notes.filesize, vtiger_notes.filelocationtype,
 				vtiger_notes.folderid, vtiger_notes.filedownloadcount, vtiger_notes.filestatus,
 				vtiger_notes.fileversion, vtiger_notes.notecontent, vtiger_notes.note_no,
+				vtiger_notes.document_category, vtiger_notes.preservation_type,
+				vtiger_notes.compliance_status, vtiger_notes.compliance_notes,
+				vtiger_notes.input_deadline, vtiger_notes.input_deadline_status,
 				vtiger_crmentity.smownerid, vtiger_crmentity.modifiedtime, vtiger_crmentity.createdtime,
 				vtiger_crmentity.modifiedby,
 				vtiger_attachmentsfolder.foldername,
@@ -131,6 +194,7 @@ class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 					ELSE vtiger_groups.groupname
 				END AS assigned_user_name,
 				CASE WHEN vtiger_crmentity_user_field.starred = '1' THEN 1 ELSE 0 END AS starred
+				$customFieldSelect
 			" . $baseQuery . $where;
 
 		$selectQuery .= " ORDER BY $sortColumn $sortOrder";
@@ -156,6 +220,25 @@ class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 				}
 			}
 
+			// 電帳法データ
+			$complianceData = null;
+			if (!empty($row['document_category'])) {
+				$complianceData = array(
+					'document_category' => $row['document_category'],
+					'preservation_type' => $row['preservation_type'],
+					'compliance_status' => $row['compliance_status'],
+					'compliance_notes' => $row['compliance_notes'],
+					'input_deadline' => $row['input_deadline'],
+					'input_deadline_status' => $row['input_deadline_status'],
+				);
+			}
+
+			// 動的フィールド値を取得
+			$dynamicFields = array();
+			foreach ($customFieldDefs as $fieldName => $columnName) {
+				$dynamicFields[$fieldName] = isset($row[$columnName]) ? $row[$columnName] : null;
+			}
+
 			$records[] = array(
 				'id' => $recordId,
 				'title' => decode_html($row['title']),
@@ -176,6 +259,8 @@ class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 				'notecontent' => decode_html($row['notecontent']),
 				'note_no' => $row['note_no'],
 				'download_url' => $downloadUrl,
+				'compliance' => $complianceData,
+				'dynamic_fields' => $dynamicFields,
 			);
 		}
 
@@ -184,6 +269,35 @@ class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 			'total' => $total,
 			'page' => $page,
 			'pageLimit' => $pageLimit,
+		);
+	}
+
+	/**
+	 * 利用可能なカラム一覧を返す（リスト表示のカラム設定用）
+	 */
+	private function getAvailableColumns(Vtiger_Request $request) {
+		$moduleModel = Vtiger_Module_Model::getInstance('Documents');
+		$allFields = $moduleModel->getFields();
+		$columns = array();
+
+		foreach ($allFields as $fieldName => $fieldModel) {
+			if (!$fieldModel->isViewable()) {
+				continue;
+			}
+			$columns[] = array(
+				'name' => $fieldName,
+				'label' => vtranslate($fieldModel->get('label'), 'Documents'),
+				'field_type' => $fieldModel->getFieldDataType(),
+				'uitype' => $fieldModel->get('uitype'),
+				'table' => $fieldModel->get('table'),
+				'column' => $fieldModel->get('column'),
+				'is_custom' => $fieldModel->isCustomField(),
+				'is_mandatory' => $fieldModel->isMandatory(),
+			);
+		}
+
+		return array(
+			'columns' => $columns,
 		);
 	}
 

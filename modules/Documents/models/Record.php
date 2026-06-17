@@ -132,5 +132,67 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 		}
 		return $value;
 	}
-    
+
+	/**
+	 * 電帳法対象ドキュメントかどうかを判定する
+	 *
+	 * @return bool
+	 */
+	function isComplianceTarget() {
+		$db = PearDatabase::getInstance();
+		$result = $db->pquery(
+			"SELECT document_category FROM vtiger_notes WHERE notesid = ?",
+			array($this->getId())
+		);
+		if ($result === false || $db->num_rows($result) === 0) {
+			return false;
+		}
+		$category = $db->query_result($result, 0, 'document_category');
+		return !empty($category);
+	}
+
+	/**
+	 * 電帳法対象ドキュメントの物理削除をブロックする
+	 * ゴミ箱からの完全削除時に呼ばれる
+	 *
+	 * @return bool 物理削除可能な場合true
+	 */
+	function isDeletable() {
+		// 電帳法対象ドキュメントは物理削除禁止
+		if ($this->isComplianceTarget()) {
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * 削除時に監査ログを記録する
+	 */
+	function logDeletion() {
+		if (!$this->isComplianceTarget()) {
+			return;
+		}
+		require_once 'modules/Documents/utils/AuditLogger.php';
+		$db = PearDatabase::getInstance();
+		$result = $db->pquery(
+			"SELECT * FROM vtiger_notes WHERE notesid = ?",
+			array($this->getId())
+		);
+		$recordData = array();
+		if ($result !== false && $db->num_rows($result) > 0) {
+			$recordData = $db->query_result_rowdata($result, 0);
+		}
+		Documents_AuditLogger::logDelete($this->getId(), $recordData);
+	}
+
+	/**
+	 * ハッシュ検証を実行する
+	 *
+	 * @return array ['valid' => bool, 'stored_hash' => string|null, 'current_hash' => string|null, 'message' => string]
+	 */
+	function verifyFileHash() {
+		require_once 'modules/Documents/utils/FileHasher.php';
+		return Documents_FileHasher::verifyHash($this->getId());
+	}
+
 }

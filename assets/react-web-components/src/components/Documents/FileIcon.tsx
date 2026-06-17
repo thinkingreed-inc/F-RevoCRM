@@ -1,5 +1,6 @@
 import React from "react";
 import type { FileCategory } from "./types/documents";
+import { useOptionalTranslation } from "../../hooks/useTranslation";
 
 const FILE_CATEGORY_CONFIG: Record<
   FileCategory,
@@ -80,6 +81,7 @@ export const FileIcon: React.FC<FileIconProps> = ({
   filename,
   size = "md",
 }) => {
+  const { t } = useOptionalTranslation();
   let category = getFileCategory(filetype, filelocationtype);
   // filetypeがnullでfilename があれば拡張子から推定
   if (category === "other" && filename) {
@@ -105,7 +107,7 @@ export const FileIcon: React.FC<FileIconProps> = ({
         flexShrink: 0,
         border: `1px solid ${config.color}20`,
       }}
-      aria-label={config.label || "ファイル"}
+      aria-label={config.label || t('LBL_FILE_ICON_LABEL')}
     >
       {config.label}
     </div>

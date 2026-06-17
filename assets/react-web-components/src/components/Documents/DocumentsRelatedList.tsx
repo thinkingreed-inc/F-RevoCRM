@@ -7,6 +7,8 @@ import { DocumentCreateEditModal } from "./DocumentCreateEditModal";
 import { useDocumentDetail } from "./hooks/useDocumentDetail";
 import { useFolderTree } from "./hooks/useFolderTree";
 import { useFileUpload } from "./hooks/useFileUpload";
+import { TranslationProvider } from "../../contexts/TranslationContext";
+import { useOptionalTranslation } from "../../hooks/useTranslation";
 
 interface DocumentsRelatedListProps {
   parentModule: string;
@@ -129,10 +131,17 @@ const SortableHeader: React.FC<{
   );
 };
 
-export const DocumentsRelatedList: React.FC<DocumentsRelatedListProps> = ({
+export const DocumentsRelatedList: React.FC<DocumentsRelatedListProps> = (props) => (
+  <TranslationProvider module="Documents">
+    <DocumentsRelatedListInner {...props} />
+  </TranslationProvider>
+);
+
+const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
   parentModule,
   parentId,
 }) => {
+  const { t } = useOptionalTranslation();
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<SortConfig>({ field: "modifiedtime", order: "DESC" });
   const [searchInput, setSearchInput] = useState("");
@@ -223,9 +232,9 @@ export const DocumentsRelatedList: React.FC<DocumentsRelatedListProps> = ({
       setDetailModalRecordId(null);
       reload();
     } catch {
-      alert("削除に失敗しました");
+      alert(t('LBL_DELETE_FAILED'));
     }
-  }, [reload]);
+  }, [reload, t]);
 
   return (
     <div
@@ -250,7 +259,7 @@ export const DocumentsRelatedList: React.FC<DocumentsRelatedListProps> = ({
                 setPage(1);
               }
             }}
-            placeholder="ドキュメントを検索..."
+            placeholder={t('LBL_SEARCH_DOCUMENTS')}
             style={{
               width: "100%",
               padding: "5px 28px 5px 28px",
@@ -286,7 +295,7 @@ export const DocumentsRelatedList: React.FC<DocumentsRelatedListProps> = ({
 
         {/* 件数表示 */}
         <span style={{ fontSize: 12, color: "#718096", whiteSpace: "nowrap" }}>
-          {total > 0 ? `${(page - 1) * pageLimit + 1} - ${Math.min(page * pageLimit, total)} / ${total}件` : "0件"}
+          {total > 0 ? t('LBL_PAGINATION_INFO', (page - 1) * pageLimit + 1, Math.min(page * pageLimit, total), total) : t('LBL_PAGINATION_ZERO')}
         </span>
 
         {/* ページネーション */}
@@ -323,7 +332,7 @@ export const DocumentsRelatedList: React.FC<DocumentsRelatedListProps> = ({
             whiteSpace: "nowrap",
           }}
         >
-          + ドキュメントの追加
+          {t('LBL_ADD_DOCUMENT')}
         </button>
       </div>
 
@@ -334,25 +343,25 @@ export const DocumentsRelatedList: React.FC<DocumentsRelatedListProps> = ({
             <tr>
               <th style={{ width: 32, padding: "8px 2px", borderBottom: "2px solid #E2E8F0" }} />
               <th style={{ width: 40, padding: "8px 2px", borderBottom: "2px solid #E2E8F0" }} />
-              <SortableHeader label="タイトル" field="title" sort={sort} onSort={handleSortChange} />
-              <SortableHeader label="フォルダ" field="foldername" sort={sort} onSort={handleSortChange} style={{ width: 120 }} />
-              <SortableHeader label="担当" field="assigned_user_id" sort={sort} onSort={handleSortChange} style={{ width: 100 }} />
-              <SortableHeader label="更新日時" field="modifiedtime" sort={sort} onSort={handleSortChange} style={{ width: 110 }} />
-              <SortableHeader label="サイズ" field="filesize" sort={sort} onSort={handleSortChange} style={{ width: 80 }} />
+              <SortableHeader label={t('Title')} field="title" sort={sort} onSort={handleSortChange} />
+              <SortableHeader label={t('Folder Name')} field="foldername" sort={sort} onSort={handleSortChange} style={{ width: 120 }} />
+              <SortableHeader label={t('Assigned To')} field="assigned_user_id" sort={sort} onSort={handleSortChange} style={{ width: 100 }} />
+              <SortableHeader label={t('Modified Time')} field="modifiedtime" sort={sort} onSort={handleSortChange} style={{ width: 110 }} />
+              <SortableHeader label={t('File Size')} field="filesize" sort={sort} onSort={handleSortChange} style={{ width: 80 }} />
               <th style={{ width: 80, padding: "8px 6px", textAlign: "center", fontSize: 12, fontWeight: 600, color: "#4A5568", borderBottom: "2px solid #E2E8F0" }}>
-                操作
+                {t('LBL_COLUMN_ACTIONS')}
               </th>
             </tr>
           </thead>
           <tbody>
             {isLoading && records.length === 0 && (
-              <tr><td colSpan={8} style={{ padding: 32, textAlign: "center", color: "#A0AEC0" }}>読み込み中...</td></tr>
+              <tr><td colSpan={8} style={{ padding: 32, textAlign: "center", color: "#A0AEC0" }}>{t('LBL_LOADING')}</td></tr>
             )}
             {!isLoading && records.length === 0 && (
               <tr>
                 <td colSpan={8} style={{ padding: 40, textAlign: "center", color: "#A0AEC0" }}>
-                  <div style={{ marginBottom: 8 }}>ドキュメントがありません</div>
-                  <div style={{ fontSize: 12 }}>ファイルをドラッグ＆ドロップするか、「+ ドキュメントの追加」から追加できます</div>
+                  <div style={{ marginBottom: 8 }}>{t('LBL_NO_DOCUMENTS')}</div>
+                  <div style={{ fontSize: 12 }}>{t('LBL_DROP_HELP_TEXT')}</div>
                 </td>
               </tr>
             )}
@@ -385,7 +394,7 @@ export const DocumentsRelatedList: React.FC<DocumentsRelatedListProps> = ({
                       <a
                         href={rec.download_url}
                         onClick={(e) => e.stopPropagation()}
-                        title="ダウンロード"
+                        title={t('Download')}
                         style={{ color: "#718096", fontSize: 14, textDecoration: "none" }}
                       >
                         ⬇
@@ -407,7 +416,7 @@ export const DocumentsRelatedList: React.FC<DocumentsRelatedListProps> = ({
           alignItems: "center", justifyContent: "center", zIndex: 20, pointerEvents: "none",
         }}>
           <div style={{ fontSize: 14, color: "#3182CE", fontWeight: 600 }}>
-            ファイルをここにドロップしてアップロード
+            {t('LBL_DROP_FILES_HERE')}
           </div>
         </div>
       )}
@@ -416,7 +425,7 @@ export const DocumentsRelatedList: React.FC<DocumentsRelatedListProps> = ({
       {isUploading && (
         <div style={{ padding: "8px 12px", backgroundColor: "#EBF8FF", borderTop: "1px solid #BEE3F8" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
-            <span>アップロード中... {progress}%</span>
+            <span>{t('LBL_UPLOADING_PROGRESS', progress)}</span>
             <div style={{ flex: 1, height: 4, backgroundColor: "#BEE3F8", borderRadius: 2 }}>
               <div style={{ width: `${progress}%`, height: "100%", backgroundColor: "#3182CE", borderRadius: 2, transition: "width 0.2s" }} />
             </div>

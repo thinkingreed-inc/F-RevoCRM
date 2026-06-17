@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef } from "react";
 import { useFileUpload } from "./hooks/useFileUpload";
+import { useOptionalTranslation } from "../../hooks/useTranslation";
 
 interface DocumentsUploadZoneProps {
   folderId: number;
@@ -10,6 +11,7 @@ export const DocumentsUploadZone: React.FC<DocumentsUploadZoneProps> = ({
   folderId,
   onUploadComplete,
 }) => {
+  const { t } = useOptionalTranslation();
   const [isDragging, setIsDragging] = useState(false);
   const { isUploading, progress, error, upload } = useFileUpload(onUploadComplete);
   const dragCountRef = useRef(0);
@@ -75,7 +77,7 @@ export const DocumentsUploadZone: React.FC<DocumentsUploadZoneProps> = ({
           }}
         >
           <div style={{ fontSize: 14, color: "#3182CE", fontWeight: 500 }}>
-            ファイルをここにドロップしてアップロード
+            {t('LBL_DROP_FILES_HERE')}
           </div>
         </div>
       )}
@@ -95,7 +97,7 @@ export const DocumentsUploadZone: React.FC<DocumentsUploadZoneProps> = ({
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
-            <span>アップロード中... {progress}%</span>
+            <span>{t('LBL_UPLOADING_PROGRESS', progress)}</span>
             <div style={{ flex: 1, height: 4, backgroundColor: "#BEE3F8", borderRadius: 2 }}>
               <div
                 style={{

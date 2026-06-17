@@ -1,4 +1,5 @@
 import React from "react";
+import { useOptionalTranslation } from "../../hooks/useTranslation";
 import type { DocumentRecord, Folder } from "./types/documents";
 import { FileIcon } from "./FileIcon";
 import { StarButton } from "./StarButton";
@@ -48,6 +49,7 @@ export const DocumentsGridView: React.FC<DocumentsGridViewProps> = ({
   onRecordClick,
   onFolderClick,
 }) => {
+  const { t } = useOptionalTranslation();
   const totalPages = Math.ceil(total / pageLimit);
 
   // サブフォルダを取得（選択中のフォルダの直下のみ）
@@ -84,9 +86,9 @@ export const DocumentsGridView: React.FC<DocumentsGridViewProps> = ({
         }}
       >
         {subFolders.length > 0 && (
-          <span>サブフォルダ {subFolders.length}</span>
+          <span>{t('LBL_SUBFOLDERS', subFolders.length)}</span>
         )}
-        <span>ファイル {total}</span>
+        <span>{t('LBL_FILES_COUNT', total)}</span>
         <span style={{ marginLeft: "auto" }}>
           {(page - 1) * pageLimit + 1} - {Math.min(page * pageLimit, total)} / {total}
         </span>
@@ -133,7 +135,7 @@ export const DocumentsGridView: React.FC<DocumentsGridViewProps> = ({
                   <span style={{ fontSize: 18, color: "#718096", lineHeight: 1 }}>←</span>
                   <div>
                     <div style={{ fontWeight: 500, fontSize: 13, color: "#4A5568" }}>
-                      {parentTarget === "all" ? "すべてのドキュメント" : folders.find((f) => f.id === parentTarget)?.name || ""}
+                      {parentTarget === "all" ? t('LBL_ALL_DOCUMENTS') : folders.find((f) => f.id === parentTarget)?.name || ""}
                     </div>
                   </div>
                 </div>
@@ -156,7 +158,7 @@ export const DocumentsGridView: React.FC<DocumentsGridViewProps> = ({
                   <div style={{ fontWeight: 500, fontSize: 13, color: "#2D3748", marginBottom: 4 }}>
                     {folder.name}
                   </div>
-                  <div style={{ fontSize: 12, color: "#A0AEC0" }}>{folder.count} 件</div>
+                  <div style={{ fontSize: 12, color: "#A0AEC0" }}>{t('LBL_FOLDER_COUNT', folder.count)}</div>
                 </div>
               ))}
             </div>
@@ -165,9 +167,9 @@ export const DocumentsGridView: React.FC<DocumentsGridViewProps> = ({
 
         {/* ドキュメントカード */}
         {isLoading && records.length === 0 ? (
-          <div style={{ padding: 40, textAlign: "center", color: "#A0AEC0" }}>読み込み中...</div>
+          <div style={{ padding: 40, textAlign: "center", color: "#A0AEC0" }}>{t('LBL_LOADING')}</div>
         ) : records.length === 0 ? (
-          <div style={{ padding: 40, textAlign: "center", color: "#A0AEC0" }}>ドキュメントがありません</div>
+          <div style={{ padding: 40, textAlign: "center", color: "#A0AEC0" }}>{t('LBL_NO_DOCUMENTS')}</div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
             {records.map((rec) => (

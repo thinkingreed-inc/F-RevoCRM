@@ -4,6 +4,7 @@ import { FileIcon } from "./FileIcon";
 import { StarButton } from "./StarButton";
 import { DocumentsPreviewPanel } from "./DocumentsPreviewPanel";
 import { useDocumentDetail } from "./hooks/useDocumentDetail";
+import { useOptionalTranslation } from "../../hooks/useTranslation";
 
 interface DocumentsPreviewViewProps {
   records: DocumentRecord[];
@@ -43,6 +44,7 @@ export const DocumentsPreviewView: React.FC<DocumentsPreviewViewProps> = ({
   onFolderClick,
   onEdit,
 }) => {
+  const { t } = useOptionalTranslation();
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const { document: selectedDoc, isLoading: detailLoading } = useDocumentDetail(selectedId);
 
@@ -109,7 +111,7 @@ export const DocumentsPreviewView: React.FC<DocumentsPreviewViewProps> = ({
                   >
                     <span style={{ fontSize: 14, color: "#718096", lineHeight: 1 }}>←</span>
                     <span style={{ fontSize: 12, fontWeight: 500, color: "#4A5568" }}>
-                      {parentTarget === "all" ? "すべてのドキュメント" : folders.find((f) => f.id === parentTarget)?.name || ""}
+                      {parentTarget === "all" ? t('LBL_ALL_DOCUMENTS') : folders.find((f) => f.id === parentTarget)?.name || ""}
                     </span>
                   </div>
                 )}
@@ -143,11 +145,11 @@ export const DocumentsPreviewView: React.FC<DocumentsPreviewViewProps> = ({
 
           {isLoading && records.length === 0 ? (
             <div style={{ padding: 30, textAlign: "center", color: "#A0AEC0", fontSize: 13 }}>
-              読み込み中...
+              {t('LBL_LOADING')}
             </div>
           ) : records.length === 0 ? (
             <div style={{ padding: 30, textAlign: "center", color: "#A0AEC0", fontSize: 13 }}>
-              ドキュメントがありません
+              {t('LBL_NO_DOCUMENTS')}
             </div>
           ) : (
             records.map((rec) => {
