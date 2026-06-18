@@ -44,3 +44,12 @@ compose.override.yaml
 /public/resources/web-components/*
 !/public/resources/web-components/.gitkeep
 /assets/react-web-components/coverage/*
+
+# Claude Code / superpowers が生成するドキュメント（コミットしない）
+/docs/superpowers/
+
+# playwright (E2E) 成果物（コミットしない）
+playwright-report/
+test-results/
+/assets/react-web-components/playwright-report
+/assets/react-web-components/test-results
