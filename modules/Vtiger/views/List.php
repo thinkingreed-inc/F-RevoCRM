@@ -139,9 +139,8 @@ class Vtiger_List_View extends Vtiger_Index_View {
 			"modules.$moduleName.resources.ListSidebar",
 			'modules.CustomView.resources.CustomView',
 			"modules.$moduleName.resources.CustomView",
-			"libraries.jquery.ckeditor.ckeditor",
-			"libraries.jquery.ckeditor.adapters.jquery",
-			"modules.Vtiger.resources.CkEditor",
+			"libraries.jodit.jodit.fat.min",
+			"modules.Vtiger.resources.JoditEditor",
 			//for vtiger7 
 			"modules.Vtiger.resources.MergeRecords",
 			"~layouts/v7/lib/jquery/Lightweight-jQuery-In-page-Filtering-Plugin-instaFilta/instafilta.min.js",
@@ -440,7 +439,8 @@ class Vtiger_List_View extends Vtiger_Index_View {
 	}
 
 	protected function assignCustomViews(Vtiger_Request $request, Vtiger_Viewer $viewer) {
-		$allCustomViews = CustomView_Record_Model::getAllByGroup($request->getModule());
+		$moduleName = $request->getModule();
+		$allCustomViews = CustomView_Record_Model::getAllByGroup($moduleName);
 		if (!empty($allCustomViews)) {
 			$viewer->assign('CUSTOM_VIEWS', $allCustomViews);
 			$currentCVSelectedFields = array();
@@ -452,6 +452,14 @@ class Vtiger_List_View extends Vtiger_Index_View {
 						break;
 					}
 				}
+			}
+		}
+
+		if (!$viewer->get_template_vars('CURRENT_CV_MODEL')) {
+			$allFilterModel = CustomView_Record_Model::getAllFilterByModule($moduleName);
+			if ($allFilterModel) {
+				$viewer->assign('CURRENT_CV_MODEL', $allFilterModel);
+				$viewer->assign('VIEWID', $allFilterModel->getId());
 			}
 		}
 	}

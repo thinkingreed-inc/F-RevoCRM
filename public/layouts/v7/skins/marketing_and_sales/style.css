@@ -53,6 +53,7 @@ html {
   padding: 0;
   overflow-y: auto;
   min-height: 100%;
+  scroll-padding-bottom: 60px;
 }
 body {
   margin: 0;

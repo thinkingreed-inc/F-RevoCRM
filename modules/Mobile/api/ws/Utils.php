@@ -87,10 +87,6 @@ class Mobile_WS_Utils {
 		if($result && $adb->num_rows($result)) {
 			$fieldnames = explode(',', $adb->query_result($result, 0, 'fieldname'));
 		}
-		switch($module) {
-			case 'HelpDesk': $fieldnames = self::array_replace('title', 'ticket_title', $fieldnames); break;
-			case 'Document': $fieldnames = self::array_replace('title', 'notes_title', $fieldnames); break;
-		}
 		return $fieldnames;
 	}
 	

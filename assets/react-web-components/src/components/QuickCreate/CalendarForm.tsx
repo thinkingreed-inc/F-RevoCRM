@@ -53,6 +53,8 @@ export interface CalendarFormProps {
   validationErrors: Record<string, string>;
   /** Whether in edit mode */
   isEditMode?: boolean;
+  /** Whether in duplicate mode */
+  isDuplicateMode?: boolean;
   /** Available users for invitee selection (Events only) */
   availableUsers: UserInfo[];
   /** Time options (10-minute intervals) */
@@ -115,6 +117,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
   successMessage,
   validationErrors,
   isEditMode = false,
+  isDuplicateMode = false,
   availableUsers,
   timeOptions,
   parseDateTimeValue,
@@ -135,6 +138,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
   const inviteeDropdownRef = useRef<HTMLDivElement>(null);
   const inviteeInputContainerRef = useRef<HTMLDivElement>(null);
   const [inviteeDropdownPosition, setInviteeDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [inviteeHighlightedIndex, setInviteeHighlightedIndex] = useState<number>(0);
   const initialInviteesLoadedRef = useRef<boolean>(false);
   // Track touch start position for swipe scrolling
   const inviteeTouchStartYRef = useRef<number | null>(null);
@@ -224,6 +228,28 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
   }, [availableUsers, inviteeSearchTerm]);
 
   /**
+   * Visible candidates (filtered & not already selected)
+   */
+  const inviteeCandidates = useMemo(
+    () => filteredUsers.filter(user => !selectedInvitees.includes(user.id)),
+    [filteredUsers, selectedInvitees]
+  );
+
+  // 検索語変更時はハイライトを先頭にリセット
+  useEffect(() => {
+    setInviteeHighlightedIndex(0);
+  }, [inviteeSearchTerm]);
+
+  // 候補数変動時のハイライト位置維持＋範囲外クランプ
+  // 選択した位置に新しい次候補が入るので、index維持で連続選択が自然になる
+  useEffect(() => {
+    setInviteeHighlightedIndex(prev => {
+      if (inviteeCandidates.length === 0) return 0;
+      return Math.min(prev, inviteeCandidates.length - 1);
+    });
+  }, [inviteeCandidates.length]);
+
+  /**
    * Update invitee dropdown position
    */
   const updateInviteeDropdownPosition = useCallback(() => {
@@ -287,16 +313,16 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
 
   /**
    * Reset invitee state when tab changes (only for new mode)
-   * In edit mode, preserve the selected invitees
+   * In edit mode or duplicate mode, preserve the selected invitees
    */
   useEffect(() => {
-    if (!isEditMode) {
+    if (!isEditMode && !isDuplicateMode) {
       setSelectedInvitees([]);
       setInviteeSearchTerm('');
       setIsInviteeDropdownOpen(false);
       initialInviteesLoadedRef.current = false;
     }
-  }, [activeTab, isEditMode]);
+  }, [activeTab, isEditMode, isDuplicateMode]);
 
   /**
    * Update formData with selected invitees
@@ -375,14 +401,48 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
 
   /**
    * Handle invitee add
+   * 連続選択UX: ドロップダウンは閉じない・検索語もクリアしない
+   * 選択された位置に次候補がスライドインするため、ハイライトindexは維持される
    */
   const handleAddInvitee = useCallback((userId: string) => {
-    if (!selectedInvitees.includes(userId)) {
-      setSelectedInvitees(prev => [...prev, userId]);
+    setSelectedInvitees(prev => prev.includes(userId) ? prev : [...prev, userId]);
+  }, []);
+
+  /**
+   * Handle invitee search keyboard navigation
+   */
+  const handleInviteeKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isInviteeDropdownOpen || inviteeCandidates.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setInviteeHighlightedIndex(prev =>
+          prev < inviteeCandidates.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setInviteeHighlightedIndex(prev =>
+          prev > 0 ? prev - 1 : inviteeCandidates.length - 1
+        );
+        break;
+      case 'Enter':
+        // IME(日本語入力)確定のEnterは招待者選択しない
+        if (e.nativeEvent.isComposing) break;
+        e.preventDefault();
+        if (inviteeHighlightedIndex >= 0 && inviteeHighlightedIndex < inviteeCandidates.length) {
+          handleAddInvitee(inviteeCandidates[inviteeHighlightedIndex].id);
+        }
+        break;
+      case 'Escape':
+        // ドロップダウンを閉じるのみ。Dialog自体への伝播は QuickCreate の
+        // onEscapeKeyDown が data-rwc-dropdown 要素の存在で判定して抑止する
+        setIsInviteeDropdownOpen(false);
+        setInviteeHighlightedIndex(0);
+        break;
     }
-    setInviteeSearchTerm('');
-    setIsInviteeDropdownOpen(false);
-  }, [selectedInvitees]);
+  }, [isInviteeDropdownOpen, inviteeCandidates, inviteeHighlightedIndex, handleAddInvitee]);
 
   /**
    * Handle invitee remove
@@ -407,6 +467,11 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
     const { date, time } = parseDateTimeValue(currentValue);
     const error = validationErrors[fieldName];
 
+    // ToDoの完了日（due_date）は日付のみ入力（編集画面と同じ仕様）
+    // Events/ToDoの開始日時、Eventsの終了日時は日付+時刻入力
+    const isDateOnly = activeTab === 'Calendar' && fieldName === 'due_date';
+    const shouldShowTime = !isAllDay && !isDateOnly;
+
     return (
       <div className="flex items-start gap-2">
         {/* ラベル - FieldRendererと同じスタイル */}
@@ -430,7 +495,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
               type="date"
               value={date}
               onChange={(e) => {
-                const newValue = combineDateTimeValue(e.target.value, isAllDay ? '' : time);
+                const newValue = combineDateTimeValue(e.target.value, shouldShowTime ? time : '');
                 if (fieldName === 'date_start') {
                   handleDateStartChange(newValue);
                 } else {
@@ -439,10 +504,10 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
               }}
               onFocus={handleDateTimeFieldFocus}
               disabled={isDisabled}
-              className={cn(isAllDay ? 'w-full' : 'flex-1', error && 'border-red-500')}
+              className={cn(!shouldShowTime ? 'w-full' : 'flex-1', error && 'border-red-500')}
             />
-            {/* Time select (hidden when all-day) */}
-            {!isAllDay && (
+            {/* Time select (hidden when all-day or date-only field like ToDo's due_date) */}
+            {shouldShowTime && (
               <TimeComboBox
                 value={time}
                 onChange={(newTime) => {
@@ -520,6 +585,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
               disabled={isDisabled}
               error={validationErrors[subject.name]}
               formData={formData}
+              module={activeTab}
             />
           </div>
         )}
@@ -587,7 +653,10 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                       onRecordTypeChange={onRecordTypeChange}
                       disabled={isDisabled}
                       error={validationErrors[field.name]}
+                      className="w-full flex-col items-stretch md:flex-row md:items-start"
+                      labelClassName="w-full text-left leading-normal md:w-[110px] md:text-right md:leading-[30px]"
                       formData={formData}
+                      module={activeTab}
                     />
                   </div>
                 ))}
@@ -807,6 +876,12 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                     updateInviteeDropdownPosition();
                     setIsInviteeDropdownOpen(true);
                   }}
+                  onKeyDown={handleInviteeKeyDown}
+                  onBlur={() => {
+                    // Tab離脱等の blur でドロップダウンを閉じる
+                    // 候補クリック時の選択処理を妨げないよう150ms遅延
+                    setTimeout(() => setIsInviteeDropdownOpen(false), 150);
+                  }}
                   placeholder={t('LBL_SEARCH_USERS_PLACEHOLDER')}
                   disabled={isDisabled}
                   className={cn(
@@ -821,6 +896,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                 {isInviteeDropdownOpen && !isDisabled && inviteeDropdownPosition && createPortal(
                   <div
                     ref={inviteeDropdownRef}
+                    data-rwc-dropdown="invitee"
                     className="fixed z-[100003] bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-auto pointer-events-auto select-none"
                     style={{
                       top: inviteeDropdownPosition.top,
@@ -835,18 +911,19 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                   >
                     {filteredUsers.length > 0 ? (
                       <div className="py-1">
-                        {filteredUsers
-                          .filter(user => !selectedInvitees.includes(user.id))
-                          .map(user => (
-                            <div
-                              key={user.id}
-                              onClick={() => handleAddInvitee(user.id)}
-                              className="px-3 py-1.5 text-md cursor-pointer hover:bg-blue-50"
-                            >
-                              {user.name}
-                            </div>
-                          ))}
-                        {filteredUsers.filter(user => !selectedInvitees.includes(user.id)).length === 0 && (
+                        {inviteeCandidates.map((user, index) => (
+                          <div
+                            key={user.id}
+                            onClick={() => handleAddInvitee(user.id)}
+                            className={cn(
+                              'px-3 py-1.5 text-md cursor-pointer',
+                              index === inviteeHighlightedIndex ? 'bg-blue-100' : 'hover:bg-blue-50'
+                            )}
+                          >
+                            {user.name}
+                          </div>
+                        ))}
+                        {inviteeCandidates.length === 0 && (
                           <div className="px-3 py-1.5 text-md text-gray-500 text-center">
                             {t('LBL_ALL_USERS_SELECTED')}
                           </div>

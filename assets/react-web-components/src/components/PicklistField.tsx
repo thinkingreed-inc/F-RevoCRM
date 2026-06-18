@@ -35,6 +35,8 @@ export interface PicklistFieldProps {
   error?: string;
   /** カスタムクラス */
   className?: string;
+  /** ラベルのカスタムクラス名（縦並び時の左寄せなどに使用） */
+  labelClassName?: string;
   /** 空白選択を許可しない（UIType 16） */
   noBlank?: boolean;
   /** RecordTypeフィールドかどうか */
@@ -57,6 +59,7 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
   disabled = false,
   error,
   className,
+  labelClassName,
   noBlank = false,
   isRecordTypeField = false,
   onRecordTypeChange
@@ -80,6 +83,9 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
 
   // ドロップダウンの位置
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null);
+
+  // キーボード操作用ハイライトindex
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(0);
 
   // タッチスワイプ用のref
   const touchStartYRef = useRef<number | null>(null);
@@ -134,6 +140,13 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
     );
   }, [options, searchTerm]);
 
+  // 検索語変更時はハイライトを先頭にリセット
+  // (単一選択のため、選択時にドロップダウンが閉じる→次回open時は再度0開始
+  //  となるので候補数変動時のクランプuseEffectは不要)
+  useEffect(() => {
+    setHighlightedIndex(0);
+  }, [searchTerm]);
+
   /**
    * 現在の値から表示ラベルを設定
    */
@@ -179,6 +192,42 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
       onRecordTypeChange(name, option.value);
     }
   };
+
+  /**
+   * キーボード操作 (↑↓ Enter Esc)
+   */
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isOpen || filteredOptions.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setHighlightedIndex(prev =>
+          prev < filteredOptions.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setHighlightedIndex(prev =>
+          prev > 0 ? prev - 1 : filteredOptions.length - 1
+        );
+        break;
+      case 'Enter':
+        // IME(日本語入力)確定のEnterはオプション選択しない
+        if (e.nativeEvent.isComposing) break;
+        e.preventDefault();
+        if (highlightedIndex >= 0 && highlightedIndex < filteredOptions.length) {
+          handleSelectOption(filteredOptions[highlightedIndex]);
+        }
+        break;
+      case 'Escape':
+        // ドロップダウンを閉じるのみ。Dialog自体への伝播は QuickCreate の
+        // onEscapeKeyDown が data-rwc-dropdown 要素の存在で判定して抑止する
+        setIsOpen(false);
+        setHighlightedIndex(0);
+        break;
+    }
+  }, [isOpen, filteredOptions, highlightedIndex]);
 
   /**
    * 選択をクリア
@@ -264,6 +313,7 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
     const dropdown = (
       <div
         ref={dropdownRef}
+        data-rwc-dropdown="picklist"
         className="fixed z-[100003] bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto pointer-events-auto"
         style={{
           top: dropdownPosition.top,
@@ -279,13 +329,17 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
       >
         {filteredOptions.length > 0 ? (
           <div className="py-1">
-            {filteredOptions.map(option => (
+            {filteredOptions.map((option, index) => (
               <div
                 key={option.value}
                 onClick={() => handleSelectOption(option)}
                 className={cn(
-                  'px-3 py-1.5 text-md cursor-pointer hover:bg-blue-50',
-                  value === option.value && 'bg-blue-100'
+                  'px-3 py-1.5 text-md cursor-pointer',
+                  index === highlightedIndex
+                    ? 'bg-blue-100'
+                    : value === option.value
+                      ? 'bg-blue-100'
+                      : 'hover:bg-blue-50'
                 )}
               >
                 {option.label}
@@ -305,20 +359,37 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
 
   return (
     <div className={cn('flex items-start gap-2', className)}>
-      {/* ラベル（旧版スタイル：右寄せ） */}
-      <span
-        className={cn(
-          'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
-          disabled && 'text-gray-400'
-        )}
-      >
-        {label}
-        {mandatory && <span className="sr-only"> (必須)</span>}
-      </span>
-      {/* 必須マーク：固定幅で位置を確保し、入力欄の開始位置を揃える */}
-      <span className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0" aria-hidden="true">
-        {mandatory ? '*' : ''}
-      </span>
+      {labelClassName ? (
+        <div className="flex items-baseline md:contents">
+          <span
+            className={cn(
+              'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
+              disabled && 'text-gray-400',
+              labelClassName
+            )}
+          >
+            {label}
+            {mandatory && <span className="text-red-500" aria-hidden="true">*</span>}
+            {mandatory && <span className="sr-only"> (必須)</span>}
+          </span>
+          <span className="w-3 flex-shrink-0 hidden md:block" aria-hidden="true" />
+        </div>
+      ) : (
+        <>
+          <span
+            className={cn(
+              'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
+              disabled && 'text-gray-400'
+            )}
+          >
+            {label}
+            {mandatory && <span className="sr-only"> (必須)</span>}
+          </span>
+          <span className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0" aria-hidden="true">
+            {mandatory ? '*' : ''}
+          </span>
+        </>
+      )}
 
       {/* 入力エリア */}
       <div className="flex-1 min-w-0">
@@ -332,6 +403,12 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
             value={displayLabel}
             onChange={handleSearchChange}
             onFocus={handleFocus}
+            onKeyDown={handleKeyDown}
+            onBlur={() => {
+              // Tab離脱等の blur でドロップダウンを閉じる
+              // 候補クリック時の選択処理を妨げないよう150ms遅延
+              setTimeout(() => setIsOpen(false), 150);
+            }}
             disabled={disabled}
             placeholder={t('LBL_PLACEHOLDER_SEARCH', label)}
             autoComplete="off"

@@ -1,5 +1,62 @@
 # 更新履歴
 
+# F-RevoCRM8.0.2
+## アップグレード方法
+ - ファイル、DBのバックアップを確実に取得してください
+ - 差分ファイルを上書き更新してください
+ - `composer install` を実行してください
+ - WebComponentsをビルドしてください
+   ```bash
+   cd assets/react-web-components
+   npm install
+   npm run build
+   ```
+ - 以下のURLにアクセスし、マイグレーションを実施してください。
+`https://example.com/frevocrm/index.php?module=Migration&view=Index&mode=step1`
+※ドメインやディレクトリはお使いのF-RevoCRMに合わせてください。
+
+## What's Changed
+* #1059で修正された内容が巻き戻ってしまっていたため、再修正 by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1605
+* 空で入ってきたときにimplodeでエラーがでていたのを修正 by @KashiwakuraKazuki in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1589
+* #1614 同一ユーザーのインポートで古いキューを実行してしまう問題を修正 by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1643
+* #1637 マイグレーション時にロゴファイルをpublic/logo/配下へ移動 by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1642
+
+**Full Changelog**: https://github.com/thinkingreed-inc/F-RevoCRM/compare/v8.0.1...v8.0.2
+
+# F-RevoCRM8.0.1
+## アップグレード方法
+ - ファイル、DBのバックアップを確実に取得してください
+ - 差分ファイルを上書き更新してください
+ - `composer install` を実行してください
+ - WebComponentsをビルドしてください
+   ```bash
+   cd assets/react-web-components
+   npm install
+   npm run build
+   ```
+ - 以下のURLにアクセスし、マイグレーションを実施してください。
+`https://example.com/frevocrm/index.php?module=Migration&view=Index&mode=step1`
+※ドメインやディレクトリはお使いのF-RevoCRMに合わせてください。
+
+
+## What's Changed
+* クイック作成における担当項目が英語表示の際に選択肢が表示されない不具合の修正 by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1494
+* fix: #1479 4KディスプレイでトグルスイッチがUI崩れを起こす対応 by @KokiAdachi0213 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1499
+* pdfjsのバージョンアップ対応 by @KashiwakuraKazuki in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1539
+* Req/1503 CKEditorを使わず、JoditEditorを使ったリッチテキストエディターの実装 by @KokiAdachi0213 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1590
+* fix: #1582 ReleaseからDLした際にtabdata.php/parent_tabdata.phpが無くインストールエラーに… by @Remicck in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1587
+* Feat/1585 passkey auto popup by @Remicck in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1586
+* v8.0.0時に混入した複数のバグの修正 by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1598
+* fix/1568 iOS SafariでQuickCreateモーダルのフッターがブラウザ下部バーに被る問題を修正 by @KokiAdachi0213 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1593
+* カレンダーにおいて活動の複製時、開始・終了時刻の選択肢がカレンダー設定の内容に応じた選択肢となっていない問題の修正 by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1599
+* Fix/1563カレンダー招待者検索でキーボード選択できない問題の修正 by @kkouta in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1583
+* カレンダー一覧画面のモバイル表示を調整 by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1601
+
+## New Contributors
+* @KokiAdachi0213 made their first contribution in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1499
+
+**Full Changelog**: https://github.com/thinkingreed-inc/F-RevoCRM/compare/v8.0.0...v8.0.1
+
 # F-RevoCRM8.0.0
 ## アップグレード方法
  - ファイル、DBのバックアップを確実に取得してください

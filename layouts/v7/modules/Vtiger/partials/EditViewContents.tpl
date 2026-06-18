@@ -34,7 +34,7 @@
 								{assign var="refrenceList" value=$FIELD_MODEL->getReferenceList()}
 								{assign var="refrenceListCount" value=php7_count($refrenceList)}
 								{if $FIELD_MODEL->isEditable() eq true || $FIELD_MODEL->isReadonlyEditView() eq true}
-									{if $FIELD_MODEL->get('uitype') eq "19" || ($FIELD_MODEL->isCkEditor())}
+									{if $FIELD_MODEL->get('uitype') eq "19" || ($FIELD_MODEL->isJoditEditor())}
 										{if $COUNTER eq '1'}
 											<td></td><td></td></tr><tr>
 											{assign var=COUNTER value=0}
@@ -100,7 +100,7 @@
 										&nbsp;{if $FIELD_MODEL->isMandatory() eq true} <span class="redColor">*</span> {/if}
 									</td>
 									{if $FIELD_MODEL->get('uitype') neq '83'}
-										<td {if in_array($FIELD_MODEL->get('uitype'),array('19','69')) || $FIELD_NAME eq 'description' || ($FIELD_MODEL->isCkEditor()) || (($FIELD_NAME eq 'recurringtype' or $FIELD_NAME eq 'reminder_time')  && in_array({$MODULE},array('Events','Calendar')))} class="fieldValue fieldValueWidth80"  colspan="3" {assign var=COUNTER value=$COUNTER+1} {elseif $FIELD_MODEL->get('uitype') eq '56'} class="fieldValue checkBoxType" {elseif $isReferenceField eq 'reference' or $isReferenceField eq 'multireference' } class="fieldValue p-t-8" {else}class="fieldValue" {/if}>
+										<td {if in_array($FIELD_MODEL->get('uitype'),array('19','69')) || $FIELD_NAME eq 'description' || ($FIELD_MODEL->isJoditEditor()) || (($FIELD_NAME eq 'recurringtype' or $FIELD_NAME eq 'reminder_time')  && in_array({$MODULE},array('Events','Calendar')))} class="fieldValue fieldValueWidth80"  colspan="3" {assign var=COUNTER value=$COUNTER+1} {elseif $FIELD_MODEL->get('uitype') eq '56'} class="fieldValue checkBoxType" {elseif $isReferenceField eq 'reference' or $isReferenceField eq 'multireference' } class="fieldValue p-t-8" {else}class="fieldValue" {/if}>
 											{include file=vtemplate_path($FIELD_MODEL->getUITypeModel()->getTemplateName(),$MODULE)}
 										</td>
 									{/if}

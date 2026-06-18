@@ -24,7 +24,7 @@ class Faq_Field_Model extends Vtiger_Field_Model {
 		return parent::getDisplayValue($value, $record, $recordInstance);
 	}
 
-	public function isCkEditor() {
+	public function isJoditEditor() {
 		if($this->getName() == 'question' || $this->getName() == 'faq_answer') {
 			return true;
 		}

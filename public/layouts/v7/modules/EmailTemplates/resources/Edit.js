@@ -10,22 +10,20 @@
 Vtiger_Edit_Js("EmailTemplates_Edit_Js",{},{
 	
 	/**
-	 * Function to register event for ckeditor for description field
+	 * Function to register Jodit editor for description field
 	 */
-	registerEventForCkEditor : function(){
+	registerEventForJoditEditor : function(form){
 		var templateContentElement = jQuery("#templatecontent");
 		if(templateContentElement.length > 0) {
 			if(jQuery('#EditView').find('.isSystemTemplate').val() == 1) {
-				templateContentElement.removeAttr('data-validation-engine').addClass('ckEditorSource');
+				templateContentElement.removeAttr('data-validation-engine').addClass('joditEditorSource');
 			}
-            var customConfig = {
-                "height":"600px"
-            }
-			var ckEditorInstance = new Vtiger_CkEditor_Js();
-			ckEditorInstance.loadCkEditor(templateContentElement,customConfig);
+            var customConfig = {}
+			var joditInstance = new Vtiger_Jodit_Js();
+			joditInstance.loadJoditEditor(templateContentElement,customConfig);
 		}
         this.registerFillTemplateContentEvent();
-		
+
 	},
 	
 	/**
@@ -80,14 +78,19 @@ Vtiger_Edit_Js("EmailTemplates_Edit_Js",{},{
 	
 	registerFillTemplateContentEvent : function() {
 		var thisInstance = this;
-		 CKEDITOR.instances.templatecontent.on('blur', function(){
-			 jQuery('#templateFields,#generalFields').off('change');
-			 jQuery('#templateFields,#generalFields').on('change',function(e){
-				var mergeTag = jQuery(e.currentTarget).val();
-				var textarea = CKEDITOR.instances.templatecontent;
-				textarea.insertHtml(mergeTag);
+		 var editor = Vtiger_Jodit_Js.getInstance('templatecontent');
+		 if (editor) {
+			 editor.on('blur', function(){
+				 jQuery('#templateFields,#generalFields').off('change');
+				 jQuery('#templateFields,#generalFields').on('change',function(e){
+					var mergeTag = jQuery(e.currentTarget).val();
+					var textarea = Vtiger_Jodit_Js.getInstance('templatecontent');
+					if (textarea) {
+						textarea.insertHtml(mergeTag);
+					}
+				 });
 			 });
-		 });
+		 }
 		 jQuery('.recordEditView').on('blur','#EmailTemplates_editView_fieldName_subject',function(){
 			 jQuery('#templateFields,#generalFields').off('change');
 			 jQuery('#templateFields,#generalFields').on('change',function(e){
@@ -142,7 +145,7 @@ Vtiger_Edit_Js("EmailTemplates_Edit_Js",{},{
 	 * Registered the events for this page
 	 */
 	registerEvents : function() {
-		this.registerEventForCkEditor();
+		this.registerEventForJoditEditor();
 		this.registerChangeEventForModule();
 		//To load default selected module fields in edit view
 		this.loadFields();

@@ -13,7 +13,7 @@ jQuery.Class("Emails_MassEdit_Js",{},{
 		this.preloadData = new Array();
 	}, 
 
-	ckEditorInstance : false,
+	joditInstance : false,
 	massEmailForm : false,
 	saved : "SAVED",
 	sent : "SENT",
@@ -40,13 +40,13 @@ jQuery.Class("Emails_MassEdit_Js",{},{
 	},
 
 	/**
-	 * Function to get ckEditorInstance
+	 * Function to get joditInstance
 	 */
-	getckEditorInstance : function(){
-		if(this.ckEditorInstance == false){
-			this.ckEditorInstance = new Vtiger_CkEditor_Js();
+	getJoditInstance : function(){
+		if(this.joditInstance == false){
+			this.joditInstance = new Vtiger_Jodit_Js();
 		}
-		return this.ckEditorInstance;
+		return this.joditInstance;
 	},
 
 	/**
@@ -180,8 +180,9 @@ jQuery.Class("Emails_MassEdit_Js",{},{
 					form = jQuery(form);
 					app.helper.hideModal();
 					app.helper.showProgress();
-					if (CKEDITOR.instances['description']) {
-						form.find('#description').val(CKEDITOR.instances['description'].getData());
+					var descriptionEditor = Vtiger_Jodit_Js.getInstance('description');
+					if (descriptionEditor) {
+						form.find('#description').val(descriptionEditor.getData());
 					}
 
 					var data = new FormData(form[0]);
@@ -521,9 +522,9 @@ jQuery.Class("Emails_MassEdit_Js",{},{
 		}
 	},
 
-	loadCkEditor : function(textAreaElement){
-		var ckEditorInstance = this.getckEditorInstance();
-		ckEditorInstance.loadCkEditor(textAreaElement);
+	loadJoditEditor : function(textAreaElement){
+		var joditInstance = this.getJoditInstance();
+		joditInstance.loadJoditEditor(textAreaElement);
 	},
 
 	setAttachmentsFileSizeByElement : function(element){
@@ -850,9 +851,9 @@ jQuery.Class("Emails_MassEdit_Js",{},{
 			this.registerBrowseCrmEvent();
 			this.calculateUploadFileSize();
 			this.registerSaveDraftOrSendEmailEvent();
-			var isCkeditorApplied = jQuery('#description').data('isCkeditorApplied');
-			if(isCkeditorApplied != true && jQuery('#description').length > 0){
-				this.loadCkEditor(jQuery('#description').data('isCkeditorApplied',true));
+			var isJoditEditorApplied = jQuery('#description').data('isJoditEditorApplied');
+			if(isJoditEditorApplied != true && jQuery('#description').length > 0){
+				this.loadJoditEditor(jQuery('#description').data('isJoditEditorApplied',true));
 			}
 			this.registerSelectEmailTemplateEvent();
 			this.registerEventsForToField();
@@ -886,11 +887,11 @@ jQuery.Class("Emails_MassEdit_Js",{},{
 				var responseData = JSON.parse(data);
 				jQuery('.popupModal').modal('hide');
 
-				var ckEditorInstance = thisInstance.getckEditorInstance();
+				var joditInstance = thisInstance.getJoditInstance();
 
 				for(var id in responseData){
 					var data = responseData[id];
-					ckEditorInstance.loadContentsInCkeditor(data['info']);
+					joditInstance.loadContentsInJoditEditor(data['info']);
 					//fill subject
 					jQuery('#subject').val(data['name']);
 					var selectedTemplateBody = responseData[id].info;

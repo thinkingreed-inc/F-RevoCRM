@@ -1991,6 +1991,8 @@ class CustomView extends CRMEntity {
 				if(!empty($module) && $module != $entityType) {
 					return 'no';
 				}
+			} else {
+				return 'no';
 			}
 
 			$status_userid_info = $this->getStatusAndUserid($record_id);

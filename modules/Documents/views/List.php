@@ -96,12 +96,8 @@ class Documents_List_View extends Vtiger_List_View {
 		if(empty($listHeaders)) {
 			$listHeaders = $orderParams['list_headers'];
 		}
-		global $log;
-		$log->fatal(var_export($_REQUEST,true));
 		if(empty($orderBy) && empty($searchValue) && empty($pageNumber)) {
 			$orderParams = Vtiger_ListView_Model::getSortParamsSession($listViewSessionKey);
-			$log->fatal(var_export($orderParams,true));
-			$log->fatal($listViewSessionKey);
 			if($orderParams) {
 				$pageNumber = $orderParams['page'];
 				$orderBy = $orderParams['orderby'];

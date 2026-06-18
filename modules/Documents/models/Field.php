@@ -45,7 +45,7 @@ class Documents_Field_Model extends Vtiger_Field_Model {
         return false;
     }
 
-    public function isCkEditor() {
+    public function isJoditEditor() {
         if($this->getName() == 'notecontent') {
             return true;
         }
