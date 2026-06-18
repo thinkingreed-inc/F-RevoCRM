@@ -238,6 +238,12 @@ class Calendar_GetActivities_Api extends Vtiger_Api_Controller {
                 $activityData['location'] = decode_html($location);
             }
 
+            // Add common memo if available
+            $commonMemo = $activityModel->get('common_memo');
+            if (!empty($commonMemo)) {
+                $activityData['commonMemo'] = decode_html($commonMemo);
+            }
+
             return $activityData;
 
         } catch (Exception $e) {

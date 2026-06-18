@@ -42,6 +42,8 @@ export interface Activity {
   };
   /** 説明（オプショナル） */
   description?: string;
+  /** 共有メモ（オプショナル） */
+  commonMemo?: string;
   /** 詳細表示URL */
   detailViewUrl: string;
   /** ステータスフィールド名（taskstatus または eventstatus） */

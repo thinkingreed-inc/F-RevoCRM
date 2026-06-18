@@ -102,9 +102,13 @@ export function useActivities(
         throw new Error('アクティビティの取得に失敗しました');
       }
 
-      // アクティビティ一覧を更新
+      // アクティビティ一覧を更新（追加時はIDで重複を除去）
       if (append) {
-        setActivities(prev => [...prev, ...data.activities]);
+        setActivities(prev => {
+          const existingIds = new Set(prev.map(a => a.id));
+          const newItems = data.activities.filter(a => !existingIds.has(a.id));
+          return [...prev, ...newItems];
+        });
       } else {
         setActivities(data.activities);
       }

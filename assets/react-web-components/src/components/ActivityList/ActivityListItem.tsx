@@ -1,5 +1,5 @@
-import React from 'react';
-import { Calendar, CheckSquare, Phone, User, Clock } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Calendar, CheckSquare, Phone, User } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { ActivityStatusEditor } from './ActivityStatusEditor';
 import { cn } from '@/lib/utils';
@@ -53,7 +53,7 @@ const getIconColor = (activityType: string): string => {
 const getStatusVariant = (status: string): 'default' | 'success' | 'warning' | 'destructive' | 'secondary' => {
   const lowerStatus = status.toLowerCase();
 
-  if (lowerStatus.includes('completed') || lowerStatus.includes('完了')) {
+  if (lowerStatus.includes('completed') || lowerStatus.includes('held') || lowerStatus.includes('完了')) {
     return 'success';
   }
   if (lowerStatus.includes('progress') || lowerStatus.includes('進行中')) {
@@ -70,58 +70,78 @@ const getStatusVariant = (status: string): 'default' | 'success' | 'warning' | '
 };
 
 /**
- * Format date and time for display
+ * Format date for display (YYYY/MM/DD HH:MM)
  */
 const formatDateTime = (dateStr: string, timeStr: string): string => {
   if (!dateStr) return '';
 
   try {
-    // Parse date (YYYY-MM-DD)
-    const date = new Date(dateStr);
+    const [year, month, day] = dateStr.split('-');
+    const datePart = `${year}/${month}/${day}`;
 
-    // Format date in user-friendly format (e.g., "2024年1月15日")
-    const dateFormatted = new Intl.DateTimeFormat('ja-JP', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    }).format(date);
-
-    // If time is available, add it
     if (timeStr) {
-      // timeStr format: HH:MM:SS
       const timeParts = timeStr.split(':');
       if (timeParts.length >= 2) {
-        const hours = timeParts[0];
-        const minutes = timeParts[1];
-        return `${dateFormatted} ${hours}:${minutes}`;
+        return `${datePart} ${timeParts[0]}:${timeParts[1]}`;
       }
     }
 
-    return dateFormatted;
-  } catch (error) {
-    console.error('Error formatting date:', error);
+    return datePart;
+  } catch {
     return dateStr;
   }
 };
 
+/** テキストが省略表示すべき長さかを判定する高さの閾値(px) */
+const COLLAPSE_HEIGHT = 60;
+
 /**
- * ActivityListItem - Display a single activity item in table-style layout
- *
- * Features:
- * - Table-style layout with activity info organized in columns
- * - Activity type icon with color coding
- * - Subject as clickable link to detail view
- * - Start date/time formatted in user-friendly format
- * - Assigned user name
- * - Status badge with edit icon (when canEdit is true)
- * - Collapsible description section
- * - Hover effect for better UX
- *
- * @example
- * <ActivityListItem
- *   activity={activity}
- *   onStatusChange={(id, status) => console.log('Status changed', id, status)}
- * />
+ * 長文を開閉できるテキストブロック
+ */
+const CollapsibleText: React.FC<{ text: string; label?: string }> = ({ text, label }) => {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [needsCollapse, setNeedsCollapse] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      setNeedsCollapse(contentRef.current.scrollHeight > COLLAPSE_HEIGHT);
+    }
+  }, [text]);
+
+  return (
+    <div>
+      {label && (
+        <span className="text-gray-400 text-xs font-medium">{label}</span>
+      )}
+      <div
+        ref={contentRef}
+        className={cn(
+          'whitespace-pre-wrap text-gray-600 text-md',
+          !expanded && needsCollapse && 'line-clamp-2'
+        )}
+      >
+        {text}
+      </div>
+      {needsCollapse && (
+        <button
+          type="button"
+          className="text-blue-500 hover:text-blue-700 text-xs mt-0.5 cursor-pointer"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setExpanded(prev => !prev);
+          }}
+        >
+          {expanded ? '閉じる' : 'もっと見る'}
+        </button>
+      )}
+    </div>
+  );
+};
+
+/**
+ * ActivityListItem - カード型の活動表示
  */
 export const ActivityListItem: React.FC<ActivityListItemProps> = ({
   activity,
@@ -132,10 +152,10 @@ export const ActivityListItem: React.FC<ActivityListItemProps> = ({
   const statusVariant = getStatusVariant(activity.status);
   const formattedDateTime = formatDateTime(activity.dateStart, activity.timeStart);
   const hasDescription = activity.description && activity.description.trim().length > 0;
+  const hasCommonMemo = activity.commonMemo && activity.commonMemo.trim().length > 0;
+  const hasDetails = hasDescription || hasCommonMemo;
+  const statusLabel = activity.statusOptions?.find(opt => opt.value === activity.status)?.label || activity.status;
 
-  /**
-   * ステータス部分のクリックイベントが親リンクに伝播しないようにする
-   */
   const handleStatusAreaClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -144,89 +164,72 @@ export const ActivityListItem: React.FC<ActivityListItemProps> = ({
   return (
     <div
       className={cn(
-        'rounded-lg border border-gray-200',
-        'hover:bg-gray-50 hover:border-gray-300 transition-colors',
+        'rounded-lg border border-gray-200 bg-white',
+        'hover:border-gray-300 transition-colors',
       )}
     >
-      {/* Table-style layout for main activity info - 全体がクリッカブル */}
       <a
         href={activity.detailViewUrl}
-        className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-3 items-center p-3 text-md font-medium no-underline"
+        className="block p-3 no-underline"
       >
-        {/* Column 1: Activity type icon */}
-        <div className={cn('flex-shrink-0', iconColor)} title={activity.activityType}>
-          <Icon className="h-5 w-5" aria-hidden="true" />
-        </div>
-
-        {/* Column 2: Subject */}
-        <div className="min-w-0">
-          <span
-            className={cn(
-              'text-gray-900',
-              'hover:text-blue-600 hover:underline',
-              'line-clamp-2'
-            )}
-            title={activity.subject}
-          >
-            {activity.subject}
-          </span>
-        </div>
-
-        {/* Column 3: Start date/time */}
-        <div className="flex-shrink-0 min-w-[120px]">
+        {/* Row 1: アイコン + 日付 + ステータス */}
+        <div className="flex items-center gap-2 mb-1.5">
+          <div className={cn('flex-shrink-0', iconColor)} title={activity.activityType}>
+            <Icon className="h-4 w-4" aria-hidden="true" />
+          </div>
           {formattedDateTime && (
-            <div className="flex items-center gap-1 text-md text-gray-600">
-              <Clock className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
-              <time
-                dateTime={`${activity.dateStart}T${activity.timeStart}`}
-                className="truncate"
-              >
-                {formattedDateTime}
-              </time>
-            </div>
+            <time
+              dateTime={`${activity.dateStart}T${activity.timeStart}`}
+              className="text-md text-gray-500"
+            >
+              {formattedDateTime}
+            </time>
           )}
+          {/* ステータス - 右寄せ */}
+          <div className="ml-auto flex-shrink-0" onClick={handleStatusAreaClick}>
+            {activity.canEdit && activity.statusOptions && activity.statusOptions.length > 0 ? (
+              <ActivityStatusEditor
+                value={activity.status}
+                fieldName={activity.statusField || 'status'}
+                options={activity.statusOptions}
+                canEdit={activity.canEdit}
+                onSave={async (newValue) => {
+                  if (onStatusChange) {
+                    await onStatusChange(activity.id, newValue);
+                  }
+                }}
+              />
+            ) : (
+              <Badge variant={statusVariant}>{statusLabel}</Badge>
+            )}
+          </div>
         </div>
 
-        {/* Column 4: Assigned user */}
-        <div className="flex-shrink-0 min-w-[100px]">
-          {activity.assignedTo && (
-            <div className="flex items-center gap-1 text-md text-gray-600">
-              <User className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
-              <span className="truncate" title={activity.assignedTo.name}>
-                {activity.assignedTo.name}
-              </span>
-            </div>
-          )}
+        {/* Row 2: 件名 */}
+        <div className="font-bold text-gray-900 text-md truncate mb-1" title={activity.subject}>
+          {activity.subject}
         </div>
 
-        {/* Column 5: Status with inline editor - クリックイベントを止める */}
-        <div className="flex-shrink-0" onClick={handleStatusAreaClick}>
-          {activity.canEdit && activity.statusOptions && activity.statusOptions.length > 0 ? (
-            <ActivityStatusEditor
-              value={activity.status}
-              fieldName={activity.statusField || 'status'}
-              options={activity.statusOptions}
-              canEdit={activity.canEdit}
-              onSave={async (newValue) => {
-                if (onStatusChange) {
-                  await onStatusChange(activity.id, newValue);
-                }
-              }}
-            />
-          ) : (
-            <Badge variant={statusVariant}>
-              {activity.status}
-            </Badge>
-          )}
-        </div>
+        {/* Row 3: 詳細（説明・共有メモ） */}
+        {hasDetails && (
+          <div className="space-y-1 mb-1" onClick={(e) => e.stopPropagation()}>
+            {hasDescription && (
+              <CollapsibleText text={activity.description!} />
+            )}
+            {hasCommonMemo && (
+              <CollapsibleText text={activity.commonMemo!} label="共有メモ" />
+            )}
+          </div>
+        )}
+
+        {/* Row 4: 担当者 */}
+        {activity.assignedTo && (
+          <div className="flex items-center gap-1 text-xs text-gray-400">
+            <User className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
+            <span>{activity.assignedTo.name}</span>
+          </div>
+        )}
       </a>
-
-      {/* Collapsible description section */}
-      {hasDescription && (
-        <div className="border-t border-gray-200 p-4 text-md text-gray-700 whitespace-pre-wrap">
-          {activity.description}
-        </div>
-      )}
     </div>
   );
 };

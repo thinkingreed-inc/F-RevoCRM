@@ -28,7 +28,7 @@ export interface ActivityStatusEditorProps {
 const getStatusVariant = (status: string): 'default' | 'success' | 'warning' | 'destructive' | 'secondary' => {
   const lowerStatus = status.toLowerCase();
 
-  if (lowerStatus.includes('completed') || lowerStatus.includes('完了')) {
+  if (lowerStatus.includes('completed') || lowerStatus.includes('held') || lowerStatus.includes('完了')) {
     return 'success';
   }
   if (lowerStatus.includes('progress') || lowerStatus.includes('進行中')) {

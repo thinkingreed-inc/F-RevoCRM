@@ -134,7 +134,7 @@ const ActivityListInner: React.FC<ActivityListProps> = ({
   return (
     <div className="w-full space-y-2">
       {/* アクティビティリスト */}
-      <div className="space-y-1" role="list" aria-label="活動一覧">
+      <div className="space-y-2" role="list" aria-label="活動一覧">
         {activities.map((activity) => (
           <div key={activity.id} role="listitem">
             <ActivityListItem
