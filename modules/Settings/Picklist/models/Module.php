@@ -17,9 +17,17 @@ class Settings_Picklist_Module_Model extends Vtiger_Module_Model {
 	public function getFieldsByType($type) {
 		$presence = array('0','2');
 
+		$excludedFields = array(
+			'Dailyreports' => array('reportsterm'),
+		);
+		$moduleName = $this->getName();
+
 		$fieldModels = parent::getFieldsByType($type);
 		$fields = array();
 		foreach($fieldModels as $fieldName=>$fieldModel) {
+			if (isset($excludedFields[$moduleName]) && in_array($fieldName, $excludedFields[$moduleName])) {
+				continue;
+			}
 			if(($fieldModel->get('displaytype') != '1' && $fieldName != 'salutationtype') || !in_array($fieldModel->get('presence'),$presence)) {
 				continue;
 			}
