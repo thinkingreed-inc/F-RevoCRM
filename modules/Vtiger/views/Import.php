@@ -36,7 +36,8 @@ class Vtiger_Import_View extends Vtiger_Index_View {
 	function process(Vtiger_Request $request) {
 		global $VTIGER_BULK_SAVE_MODE;
 		$previousBulkSaveMode = $VTIGER_BULK_SAVE_MODE;
-		$VTIGER_BULK_SAVE_MODE = true;
+		// バルクセーブではイベントがスキップされ不具合が発生するため、デフォルトでfalseにする
+		$VTIGER_BULK_SAVE_MODE = false;
 
 		$mode = $request->getMode();
 		if(!empty($mode)) {
@@ -260,7 +261,8 @@ class Vtiger_Import_View extends Vtiger_Index_View {
 			exit;
 		}
 		$previousBulkSaveMode = $VTIGER_BULK_SAVE_MODE;
-		$VTIGER_BULK_SAVE_MODE = true;
+		// バルクセーブではイベントがスキップされ不具合が発生するため、デフォルトでfalseにする
+		$VTIGER_BULK_SAVE_MODE = false;
 		$query = "SELECT recordid FROM $dbTableName WHERE status = ? AND recordid IS NOT NULL";
 		//For inventory modules
 		$inventoryModules = getInventoryModules();

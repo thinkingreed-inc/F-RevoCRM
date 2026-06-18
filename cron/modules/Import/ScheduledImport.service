@@ -10,7 +10,8 @@
 
 
 $previousBulkSaveMode = $VTIGER_BULK_SAVE_MODE;
-$VTIGER_BULK_SAVE_MODE = true;
+// バルクセーブではイベントがスキップされ不具合が発生するため、デフォルトでfalseにする
+$VTIGER_BULK_SAVE_MODE = false;
 
 require_once  'includes/Loader.php';
 require_once 'includes/runtime/Controller.php';
