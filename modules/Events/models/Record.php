@@ -19,9 +19,10 @@ class Events_Record_Model extends Calendar_Record_Model {
 	 * Function to get the Edit View url for the record
 	 * @return <String> - Record Edit View Url
 	 */
+    //一覧表示から活動編集を行った際に、詳細画面に戻ってこれるようにrefererを追加
 	public function getEditViewUrl() {
 		$module = $this->getModule();
-		return 'index.php?module=Calendar&view='.$module->getEditViewName().'&record='.$this->getId();
+		return 'index.php?module=Calendar&view='.$module->getEditViewName().'&referer=Detail&record='.$this->getId();
 	}
 
 	/**
