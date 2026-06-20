@@ -302,8 +302,9 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 							   break;
 			   Case 'URL' :
 							   $uitype = 17;
-							   $type = "VARCHAR(255) default '' "; //adodb type
+							   $type = "TEXT"; //adodb type
 							   $uichekdata='V~O';
+							   $fieldInstance->maximumlength = 0;
 							   break;
 			   Case 'Checkbox' :
 							   $uitype = 56;

@@ -11,7 +11,7 @@
   `targetenddate` date default NULL,
   `actualenddate` date default NULL,
   `targetbudget` varchar(255) default NULL,
-  `projecturl` varchar(255) default NULL,
+  `projecturl` text default NULL,
   `projectstatus` varchar(100) default NULL,
   `projectpriority` varchar(100) default NULL,
   `projecttype` varchar(100) default NULL,
