@@ -3785,7 +3785,7 @@ class ReportRun extends CRMEntity {
 							if ($fieldName == 'ACTION' || $fieldName == vtranslate('LBL_ACTION', $this->primarymodule) || $fieldName == vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL_ACTION', $this->primarymodule) || $fieldName == vtranslate('LBL ACTION', $this->primarymodule) || $fieldName == vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL ACTION', $this->primarymodule)) {
 								continue;
 							}
-							if (($fieldName == $firstField || strstr($fieldName, $firstField)) && ($firstValue == $fieldValue || $firstValue == " ")) {
+							if (!empty($firstField) && ($fieldName == $firstField || strpos($fieldName, $firstField) === 0) && ($firstValue == $fieldValue || $firstValue == " ")) {
 								if ($firstValue == ' ' || $fieldValue == '-') {
 									$valtemplate .= "<td style='border-bottom: 0;'>" . $fieldValue . "</td>";
 									$firstIsHead = 1;
@@ -3797,7 +3797,7 @@ class ReportRun extends CRMEntity {
 								if ($fieldValue != ' ') {
 									$firstValue = $fieldValue;
 								}
-							} else if (($fieldName == $secondField || strstr($fieldName, $secondField)) && ($secondValue == $fieldValue || $secondValue == " ")) {
+							} else if (!empty($secondField) && ($fieldName == $secondField || strpos($fieldName, $secondField) === 0) && ($secondValue == $fieldValue || $secondValue == " ")) {
 								if ($secondValue == ' ' || $secondValue == '-' || $firstIsHead == 1) {
 									$valtemplate .= "<td style='border-bottom: 0;'>" . $fieldValue . "</td>";
 									$secondIsHead = 1;
@@ -3809,7 +3809,7 @@ class ReportRun extends CRMEntity {
 								if ($fieldValue != ' ') {
 									$secondValue = $fieldValue;
 								}
-							} else if (($fieldName == $thirdField || strstr($fieldName, $thirdField)) && ($thirdValue == $fieldValue || $thirdValue == " ")) {
+							} else if (!empty($thirdField) && ($fieldName == $thirdField || strpos($fieldName, $thirdField) === 0) && ($thirdValue == $fieldValue || $thirdValue == " ")) {
 								if ($thirdValue == ' ' || $thirdValue == '-' || $secondIsHead == 1) {
 									$valtemplate .= "<td style='border-bottom: 0;'>" . $fieldValue . "</td>";
 								} else if($thirdValue == '') {
@@ -3822,13 +3822,13 @@ class ReportRun extends CRMEntity {
 								}
 							} else {
 								$valtemplate .= "<td style='border-bottom: 0;'>" . $fieldValue . "</td>";
-								if ($fieldName == $firstField || strstr($fieldName, $firstField)) {
+								if (!empty($firstField) && ($fieldName == $firstField || strpos($fieldName, $firstField) === 0)) {
 									$firstIsHead = 1;
 									$firstValue = $fieldValue;
-								} else if ($fieldName == $secondField || strstr($fieldName, $secondField)) {
+								} else if (!empty($secondField) && ($fieldName == $secondField || strpos($fieldName, $secondField) === 0)) {
 									$secondIsHead = 1;
 									$secondValue = $fieldValue;
-								} else if ($fieldName == $thirdField || strstr($fieldName, $thirdField)) {
+								} else if (!empty($thirdField) && ($fieldName == $thirdField || strpos($fieldName, $thirdField) === 0)) {
 									$thirdValue = $fieldValue;
 								}
 							}
