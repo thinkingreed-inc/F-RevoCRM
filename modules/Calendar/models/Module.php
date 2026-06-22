@@ -1150,6 +1150,36 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 		if ($sendMailValue !== null && method_exists($recordModel, 'syncRecurringSendMail')) {
 			$recordModel->syncRecurringSendMail($sendMailValue);
 		}
+		if ($sendMailValue == '1') {
+			if(empty($selectUsers)){
+				$selectUsers = array();
+			}
+
+			// 担当にも招待・更新メールが送信されるようにする
+			require_once 'include/utils/GetGroupUsers.php';
+			$assigneduserId = $recordModel->get('assigned_user_id');
+			$userGroups = new GetGroupUsers();
+			$userGroups->getAllUsersInGroup($assigneduserId);
+			if(!empty($userGroups->group_users)){ // 担当がグループである場合
+				$assigneduserId = $userGroups->group_users;
+			}else{
+				$assigneduserId = array($assigneduserId);
+			}
+			$selectUsers = array_unique(array_merge($selectUsers, $assigneduserId));
+
+			// 参加者にグループが設定されている場合も展開する
+			$expandedUsers = array();
+			foreach ($selectUsers as $id) {
+				$userGroups = new GetGroupUsers();
+				$userGroups->getAllUsersInGroup($id);
+				if (!empty($userGroups->group_users)) {
+					$expandedUsers = array_merge($expandedUsers, $userGroups->group_users);
+				} else {
+					$expandedUsers[] = $id;
+				}
+			}
+			$selectUsers = array_values(array_unique($expandedUsers));
+		}
 		if (!empty($selectUsers) && $sendMailValue == '1') {
 			$invities = implode(';', $selectUsers);
 			$mail_contents = $recordModel->getInviteUserMailData();
