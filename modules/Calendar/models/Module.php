@@ -1150,7 +1150,8 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 		if ($sendMailValue !== null && method_exists($recordModel, 'syncRecurringSendMail')) {
 			$recordModel->syncRecurringSendMail($sendMailValue);
 		}
-		if ($sendMailValue == '1') {
+		// 招待メールはEvents(活動)のみ送信
+		if ($sendMailValue == '1' && method_exists($recordModel, 'getInviteUserMailData')) {
 			if(empty($selectUsers)){
 				$selectUsers = array();
 			}
@@ -1180,7 +1181,7 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 			}
 			$selectUsers = array_values(array_unique($expandedUsers));
 		}
-		if (!empty($selectUsers) && $sendMailValue == '1') {
+		if (!empty($selectUsers) && $sendMailValue == '1' && method_exists($recordModel, 'getInviteUserMailData')) {
 			$invities = implode(';', $selectUsers);
 			$mail_contents = $recordModel->getInviteUserMailData();
 			$activityMode = ($recordModel->getModuleName() == 'Calendar') ? 'Task' : 'Events';
