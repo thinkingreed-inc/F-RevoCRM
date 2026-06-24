@@ -1136,6 +1136,7 @@ $languageStrings = array(
 	'LBL_CLICK_HERE_TO_SELECT_ALL_RECORDS'=>'Select all records in this page',
 	'LBL_CLICK_HERE_TO_MANAGE_LIST_COLUMNS'=>'Click here to manage List columns',
 	'LBL_SHOW_MORE' =>'Show more',
+	'LBL_RETRY' => 'Retry',
 	'LBL_DISPLAYING_RESULTS' => 'Displaying Results',
 	'LBL_ADD_STAR' => 'Add Star',
 	'LBL_REMOVE_STAR' => 'Remove Star',
