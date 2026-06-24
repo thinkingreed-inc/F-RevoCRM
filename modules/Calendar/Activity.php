@@ -1514,7 +1514,7 @@ function insertIntoRecurringTable(& $recurObj)
 			if ($accountid > 0) {
 				$accountids[] = $accountid;
 			}
-			$recordContactModel->getEntity()->saveentity($module, $contactid);
+			$recordContactModel->getEntity()->saveentity("Contacts", $contactid);
 		}
 
 		$parent_id = $this->column_fields["parent_id"];
@@ -1525,7 +1525,7 @@ function insertIntoRecurringTable(& $recurObj)
 				$recordParentModel->set('id', $parent_id);
 				$recordParentModel->set('mode', 'edit');
 				$recordParentModel->set('last_action_date', $this->getParentLastActionDate($parent_id, $moduleName));
-				$recordParentModel->getEntity()->saveentity($module, $parent_id);
+				$recordParentModel->getEntity()->saveentity($moduleName, $parent_id);
 			} elseif ($moduleName == "Potentials") {
 				$recordParentModel->set('id', $parent_id);
 				$recordParentModel->set('mode', 'edit');
@@ -1534,7 +1534,7 @@ function insertIntoRecurringTable(& $recurObj)
 				if($accountid > 0) {
 					$accountids[] = $accountid;
 				}
-				$recordParentModel->getEntity()->saveentity($module, $parent_id);
+				$recordParentModel->getEntity()->saveentity($moduleName, $parent_id);
 			} elseif ($moduleName == "Accounts") {
 				$accountids[] = $parent_id;
 			}
@@ -1582,7 +1582,7 @@ function insertIntoRecurringTable(& $recurObj)
 				} else {
 					$accountRecordModel->set('last_action_date', null);
 				}
-				$accountRecordModel->getEntity()->saveentity($module, $accountRecordModel->getId());
+				$accountRecordModel->getEntity()->saveentity("Accounts", $accountRecordModel->getId());
 		}
 	}
 
