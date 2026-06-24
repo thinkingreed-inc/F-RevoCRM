@@ -63,6 +63,7 @@ class Migration20260528000000_FixFkConstraintsForMysql84 extends FRMigrationClas
         );
 
         try {
+            $this->replaceWebformsFieldFkWithTrigger($db, $dbName, $summary);
             $this->checkAndFixDefaultValues($db, $dbName, $summary);
             $this->checkAndFixUniqueConstraints($db, $dbName, $summary);
             $this->checkAndFixDataTypeMismatch($db, $dbName, $summary);
@@ -78,6 +79,57 @@ class Migration20260528000000_FixFkConstraintsForMysql84 extends FRMigrationClas
 
         if ($summary['errors'] > 0) {
             throw new Exception("一部の修正に失敗しました（{$summary['errors']}件エラー）");
+        }
+    }
+
+    /**
+     * fk_3_vtiger_webforms_field をTRIGGERに置き換える
+     * vtiger_webforms_field.fieldname → vtiger_field.fieldname のFK制約は
+     * 参照先カラム(fieldname)がユニークでないため、MySQL 8.4で不正となる。
+     * dump_firstinstall.sql では既にTRIGGERに置き換え済みだが、
+     * 旧バージョンからのアップデート環境にはFK制約が残っているため、
+     * マイグレーションで明示的に置き換える。
+     */
+    private function replaceWebformsFieldFkWithTrigger($db, $dbName, &$summary) {
+        $this->log("[前処理] fk_3_vtiger_webforms_field のTRIGGER置き換えを確認中...");
+
+        // FK制約が存在するか確認
+        $query = "
+            SELECT CONSTRAINT_NAME AS con_name
+            FROM information_schema.TABLE_CONSTRAINTS
+            WHERE CONSTRAINT_SCHEMA = ?
+              AND TABLE_NAME = 'vtiger_webforms_field'
+              AND CONSTRAINT_NAME = 'fk_3_vtiger_webforms_field'
+              AND CONSTRAINT_TYPE = 'FOREIGN KEY'
+        ";
+        $result = $db->pquery($query, array($dbName));
+        $count = $db->num_rows($result);
+
+        if ($count === 0) {
+            $this->log("  - fk_3_vtiger_webforms_field は存在しません。スキップします。");
+            return;
+        }
+
+        try {
+            // FK制約を削除
+            $db->pquery("ALTER TABLE `vtiger_webforms_field` DROP FOREIGN KEY `fk_3_vtiger_webforms_field`", array());
+            $this->log("  - fk_3_vtiger_webforms_field を削除しました。");
+
+            // TRIGGERを作成（既存なら置き換え）
+            $db->pquery("DROP TRIGGER IF EXISTS `tr_vtiger_field_delete_webforms_field`", array());
+            $db->pquery("
+                CREATE TRIGGER `tr_vtiger_field_delete_webforms_field` AFTER DELETE ON `vtiger_field`
+                FOR EACH ROW
+                BEGIN
+                  DELETE FROM `vtiger_webforms_field` WHERE `fieldname` = OLD.`fieldname`;
+                END
+            ", array());
+            $this->log("  - tr_vtiger_field_delete_webforms_field TRIGGERを作成しました。");
+
+            $summary['fixed']++;
+        } catch (Exception $e) {
+            $this->log("  - fk_3_vtiger_webforms_field の置き換えに失敗: " . $e->getMessage());
+            $summary['errors']++;
         }
     }
 
@@ -376,7 +428,8 @@ class Migration20260528000000_FixFkConstraintsForMysql84 extends FRMigrationClas
                     LEFT JOIN `{$refTable}` p ON c.`{$columnName}` = p.`{$refColumn}`
                     WHERE p.`{$refColumn}` IS NULL
                       AND c.`{$columnName}` IS NOT NULL
-                      AND c.`{$columnName}` != 0
+                      AND c.`{$columnName}` != '0'
+                      AND c.`{$columnName}` != ''
                 ";
                 $checkResult = $db->pquery($checkSql, array());
                 $orphanCount = (int) $db->query_result($checkResult, 0, 'cnt');
