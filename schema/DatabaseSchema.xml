@@ -356,7 +356,6 @@
 		<field name="accountid" type="I" size="19">
 			<key />
 			<notnull />
-			<default value="0" />
 		</field>
 		<field name="account_no" type="C" size="100">
 			<notnull />
@@ -410,7 +409,6 @@
 	<table name="vtiger_accountbillads">
 		<field name="accountaddressid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="bill_city" type="C" size="30" />
 		<field name="bill_code" type="C" size="30" />
@@ -432,7 +430,6 @@
 	<table name="vtiger_accountshipads">
 		<field name="accountaddressid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="ship_city" type="C" size="30" />
 		<field name="ship_code" type="C" size="30" />
@@ -454,7 +451,6 @@
 	<table name="vtiger_accountscf">
 		<field name="accountid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 
 		<opt platform="mysql">Engine=InnoDB</opt>
@@ -470,7 +466,6 @@
 	<table name="vtiger_contactdetails">
 		<field name="contactid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="contact_no" type="C" size="100">
 			<notnull />
@@ -521,7 +516,6 @@
 	<table name="vtiger_contactsubdetails">
 		<field name="contactsubscriptionid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="homephone" type="C" size="50" />
 		<field name="otherphone" type="C" size="50" />
@@ -549,7 +543,6 @@
 	<table name="vtiger_contactaddress">
 		<field name="contactaddressid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="mailingcity" type="C" size="40" />
 		<field name="mailingstreet" type="C" size="250" />
@@ -577,7 +570,6 @@
 	<table name="vtiger_contactscf">
 		<field name="contactid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 
 		<opt platform="mysql">Engine=InnoDB</opt>
@@ -699,7 +691,6 @@
 	<table name="vtiger_leadsubdetails">
 		<field name="leadsubscriptionid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="website" type="C" size="255" />
 		<field name="callornot" type="I" size="1">
@@ -725,7 +716,6 @@
 	<table name="vtiger_leadaddress">
 		<field name="leadaddressid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="city" type="C" size="30" />
 		<field name="code" type="C" size="30" />
@@ -753,7 +743,6 @@
 	<table name="vtiger_leadscf">
 		<field name="leadid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 
 		<opt platform="mysql">Engine=InnoDB</opt>
@@ -769,7 +758,6 @@
 	<table name="vtiger_notes">
 		<field name="notesid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="note_no" type="C" size="100">
 			<notnull />
@@ -825,7 +813,6 @@
 	<table name="vtiger_potential">
 		<field name="potentialid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="potential_no" type="C" size="100">
 			<notnull />
@@ -921,7 +908,6 @@
 	<table name="vtiger_potentialscf">
 		<field name="potentialid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 
 		<opt platform="mysql">Engine=InnoDB</opt>
@@ -937,7 +923,6 @@
 	<table name="vtiger_activity">
 		<field name="activityid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="subject" type="C" size="100">
 			<notnull />
@@ -1033,11 +1018,9 @@
 	<table name="vtiger_seattachmentsrel">
 		<field name="crmid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="attachmentsid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 
 		<index name="seattachmentsrel_attachmentsid_idx">
@@ -1078,7 +1061,6 @@
 		<field name="vendorid" type="I" size="19">
 			<key />
 			<notnull />
-			<default value="0" />
 		</field>
 		<field name="vendor_no" type="C" size="100">
 			<notnull />
@@ -1409,7 +1391,6 @@
 	<table name="vtiger_campaignscf">
 		<field name="campaignid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 
 		<opt platform="mysql">Engine=InnoDB</opt>
@@ -1425,12 +1406,10 @@
 	<table name="vtiger_campaigncontrel">
 		<field name="campaignid" type="I" size="19">
 			<key />
-			<default value="0"/>
 		</field>
 		<field name="contactid" type="I" size="19">
 			<key />
 			<notnull />
-			<default value="0"/>
 		</field>
 		<field name="campaignrelstatusid" type="I" size="19">
 			<key />
@@ -1455,12 +1434,10 @@
 	<table name="vtiger_campaignleadrel">
 		<field name="campaignid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="leadid" type="I" size="19">
 			<key />
 			<notnull />
-			<default value="0" />
 		</field>
 		<field name="campaignrelstatusid" type="I" size="19">
 			<key />
@@ -1485,11 +1462,9 @@
 		<field name="contactid" type="I" size="19">
 			<key />
 			<notnull />
-			<default value="0" />
 		</field>
 		<field name="potentialid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 
 		<index name="contpotentialrel_potentialid_idx">
@@ -1513,11 +1488,9 @@
 		<field name="contactid" type="I" size="19">
 			<key />
 			<notnull />
-			<default value="0" />
 		</field>
 		<field name="activityid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 
 		<index name="cntactivityrel_contactid_idx">
@@ -1609,11 +1582,9 @@
 	<table name="vtiger_salesmanactivityrel">
 		<field name="smid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="activityid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 
 		<index name="salesmanactivityrel_activityid_idx">
@@ -1636,11 +1607,9 @@
 	<table name="vtiger_vendorcontactrel">
 		<field name="vendorid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="contactid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 
 		<index name="vendorcontactrel_vendorid_idx">
@@ -1663,11 +1632,9 @@
 	<table name="vtiger_salesmanticketrel">
 		<field name="smid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="id" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 
 		<index name="salesmanticketrel_smid_idx">
@@ -1715,11 +1682,9 @@
 	<table name="vtiger_seproductsrel">
 		<field name="crmid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="productid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="setype" type="C" size="30">
 			<notnull />
@@ -1748,11 +1713,9 @@
 	<table name="vtiger_seticketsrel">
 		<field name="crmid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="ticketid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 
 		<index name="seticketsrel_crmid_idx">
@@ -1987,11 +1950,9 @@
 	<table name="vtiger_senotesrel">
 		<field name="crmid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="notesid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 
 		<index name="senotesrel_notesid_idx">
@@ -2014,7 +1975,6 @@
 	<table name="vtiger_ticketcf">
 		<field name="ticketid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="from_portal" type="C" size="3" />
 
@@ -2031,7 +1991,6 @@
 	<table name="vtiger_productcf">
 		<field name="productid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 
 		<opt platform="mysql">Engine=InnoDB</opt>
@@ -2501,8 +2460,7 @@
 
 	<table name="vtiger_faqcf"> 
 		<field name="faqid" type="I" size="19"> 
-			<key /> 
-			<default value="0" /> 
+			<key />  
 		</field> 
 
 		<opt platform="mysql">Engine=InnoDB</opt> 
@@ -2913,7 +2871,6 @@
 	<table name="vtiger_sobillads">
 		<field name="sobilladdressid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="bill_city" type="C" size="30" />
 		<field name="bill_code" type="C" size="30" />
@@ -2935,7 +2892,6 @@
 	<table name="vtiger_soshipads">
 		<field name="soshipaddressid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="ship_city" type="C" size="30" />
 		<field name="ship_code" type="C" size="30" />
@@ -2957,7 +2913,6 @@
 	<table name="vtiger_salesordercf">
 		<field name="salesorderid" type="I" size="19">
 			<key />
-			<default value="0"/>
 		</field>
 
 		<opt platform="mysql">Engine=InnoDB</opt>
@@ -2992,11 +2947,9 @@
 	<table name="vtiger_activityproductrel">
 		<field name="activityid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="productid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 
 		<index name="activityproductrel_activityid_idx">
@@ -3064,7 +3017,6 @@
 	<table name="vtiger_vendorcf">
 		<field name="vendorid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 
 		<opt platform="mysql">Engine=InnoDB</opt>
@@ -3081,7 +3033,6 @@
 		<field name="pricebookid" type="I" size="19">
 			<key />
 			<notnull />
-			<default value="0" />
 		</field>
 		<field name="pricebook_no" type="C" size="100">
 			<notnull />
@@ -3107,7 +3058,6 @@
 	<table name="vtiger_pricebookcf">
 		<field name="pricebookid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 
 		<opt platform="mysql">Engine=InnoDB</opt>
@@ -3239,7 +3189,6 @@
 	<table name="vtiger_quotesbillads">
 		<field name="quotebilladdressid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="bill_city" type="C" size="30" />
 		<field name="bill_code" type="C" size="30" />
@@ -3261,7 +3210,6 @@
 	<table name="vtiger_quotesshipads">
 		<field name="quoteshipaddressid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="ship_city" type="C" size="30" />
 		<field name="ship_code" type="C" size="30" />
@@ -3283,7 +3231,6 @@
 	<table name="vtiger_quotescf">
 		<field name="quoteid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 
 		<opt platform="mysql">Engine=InnoDB</opt>
@@ -3361,7 +3308,6 @@
 	<table name="vtiger_pobillads">
 		<field name="pobilladdressid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="bill_city" type="C" size="30" />
 		<field name="bill_code" type="C" size="30" />
@@ -3383,7 +3329,6 @@
 	<table name="vtiger_poshipads">
 		<field name="poshipaddressid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="ship_city" type="C" size="30" />
 		<field name="ship_code" type="C" size="30" />
@@ -3405,7 +3350,6 @@
 	<table name="vtiger_purchaseordercf">
 		<field name="purchaseorderid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 
 		<opt platform="mysql">Engine=InnoDB</opt>
@@ -3423,7 +3367,6 @@
 		<field name="invoiceid" type="I" size="19">
 			<key />
 			<notnull />
-			<default value="0" />
 		</field>
 		<field name="subject" type="C" size="100" />
 		<field name="salesorderid" type="I" size="19">
@@ -3479,7 +3422,6 @@
 	<table name="vtiger_invoicebillads">
 		<field name="invoicebilladdressid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="bill_city" type="C" size="30" />
 		<field name="bill_code" type="C" size="30" />
@@ -3501,7 +3443,6 @@
 	<table name="vtiger_invoiceshipads">
 		<field name="invoiceshipaddressid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="ship_city" type="C" size="30" />
 		<field name="ship_code" type="C" size="30" />
@@ -3523,7 +3464,6 @@
 	<table name="vtiger_invoicecf">
 		<field name="invoiceid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 
 		<opt platform="mysql">Engine=InnoDB</opt>
@@ -3831,7 +3771,6 @@
 		</field>
 		<field name="queryid" type="I" size="19">
 			<notnull />
-			<default value="0" />
 		</field>
 		<field name="state" type="C" size="50">
 			<default value="SAVED" />
@@ -5500,11 +5439,9 @@
 	<table name="vtiger_salesmanattachmentsrel">
 		<field name="smid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="attachmentsid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 
 		<index name="salesmanattachmentsrel_smid_idx">
@@ -5526,7 +5463,6 @@
 	<table name="vtiger_entityname">
 		<field name="tabid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="modulename" type="C" size="50">
 			<notnull />
@@ -5739,7 +5675,6 @@
 	<table name="vtiger_homerss">
 		<field name="stuffid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="url" type="C" size="100" />
 		<field name="maxentries" type="I" size="19" >
@@ -5761,7 +5696,6 @@
 	<table name="vtiger_homedashbd">
 		<field name="stuffid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="dashbdname" type="C" size="100" />
 		<field name="dashbdtype" type="C" size="100" />
@@ -5781,7 +5715,6 @@
 	<table name="vtiger_homedefault">
 		<field name="stuffid" type="I" size="19">
 			<key />
-			<default value="0" />
 		</field>
 		<field name="hometype" type="C" size="30">
 			<notnull />
