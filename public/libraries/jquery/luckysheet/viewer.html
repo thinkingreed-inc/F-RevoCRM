@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Excel Preview</title>
+<link rel="stylesheet" href="css/pluginsCss.css">
+<link rel="stylesheet" href="css/plugins.css">
+<link rel="stylesheet" href="css/luckysheet.css">
+<link rel="stylesheet" href="css/iconfont.css">
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
+  #loading { display: flex; align-items: center; justify-content: center; height: 100%; color: #A0AEC0; font-family: sans-serif; font-size: 14px; }
+  #error { display: none; padding: 40px; text-align: center; color: #E53E3E; font-family: sans-serif; }
+  /* 読み取り専用: 数式バー・入力を無効化 */
+  #luckysheet-wa-editor, #luckysheet-input-box, .luckysheet-wa-calculate { display: none !important; }
+  #luckysheet-cell-main .luckysheet-cell-input { pointer-events: none !important; }
+  /* 右クリックメニューを非表示 */
+  .luckysheet-cols-menu, .luckysheet-rightclick-menu { display: none !important; }
+</style>
+</head>
+<body>
+<div id="loading">読み込み中...</div>
+<div id="error"></div>
+<div id="luckysheet" style="margin: 0; padding: 0; position: absolute; width: 100%; height: 100%; left: 0; top: 0;"></div>
+
+<script src="js/plugin.js"></script>
+<script src="js/luckysheet.umd.js"></script>
+<script src="js/luckyexcel.umd.js"></script>
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var fileUrl = params.get('file');
+  if (!fileUrl) {
+    showError('ファイルURLが指定されていません');
+    return;
+  }
+
+  // XHRでファイルを取得（fetchだとArrayBufferの扱いが異なるため）
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', fileUrl, true);
+  xhr.responseType = 'arraybuffer';
+  xhr.onload = function() {
+    if (xhr.status !== 200) {
+      showError('ファイルの取得に失敗しました');
+      return;
+    }
+    try {
+      LuckyExcel.transformExcelToLucky(xhr.response, function(exportJson) {
+        if (!exportJson || !exportJson.sheets || exportJson.sheets.length === 0) {
+          showError('Excelデータの解析に失敗しました');
+          return;
+        }
+        document.getElementById('loading').style.display = 'none';
+        // 全シートを読み取り専用に設定
+        exportJson.sheets.forEach(function(sheet) {
+          if (!sheet.config) sheet.config = {};
+          sheet.config.authority = {
+            sheet: 1, // シート全体を保護
+            hintText: '',
+            selectLockedCells: 1,
+            selectunLockedCells: 1,
+            formatCells: 0, formatColumns: 0, formatRows: 0,
+            insertColumns: 0, insertRows: 0, insertHyperlinks: 0,
+            deleteColumns: 0, deleteRows: 0,
+            sort: 0, filter: 0, usePivotTablereports: 0,
+            editObjects: 0, editScenarios: 0
+          };
+        });
+        luckysheet.create({
+          container: 'luckysheet',
+          data: exportJson.sheets,
+          title: '',
+          allowUpdate: false,
+          allowEdit: false,
+          allowCopy: false,
+          showtoolbar: false,
+          showinfobar: false,
+          showsheetbar: true,
+          showstatisticBar: false,
+          showFormulaBar: false,
+          enableAddRow: false,
+          enableAddBackTop: false,
+          userInfo: false,
+          showRowBar: false,
+          showColumnBar: false,
+          sheetRightClickConfig: { delete: false, copy: false, rename: false, hide: false, move: false },
+          cellRightClickConfig: { copy: false, paste: false, insertRow: false, insertColumn: false, deleteRow: false, deleteColumn: false, deleteCell: false, hideRow: false, hideColumn: false, clear: false, matrix: false, sort: false, filter: false, chart: false, image: false, link: false, data: false }
+        });
+      });
+    } catch(e) {
+      showError('Excelの解析中にエラーが発生しました: ' + e.message);
+    }
+  };
+  xhr.onerror = function() {
+    showError('ファイルの取得に失敗しました');
+  };
+  xhr.send();
+
+  function showError(msg) {
+    document.getElementById('loading').style.display = 'none';
+    var el = document.getElementById('error');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+})();
+</script>
+</body>
+</html>

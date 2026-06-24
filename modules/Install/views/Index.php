@@ -46,6 +46,7 @@ class Install_Index_view extends Vtiger_View_Controller {
 	public function preProcess(Vtiger_Request $request, $display = true) {
 		$this->applyInstallFriendlyEnv();
 		$this->ensureRequiredFiles();
+		version_compare(PHP_VERSION, '5.5.0') <= 0 ? error_reporting(E_WARNING & ~E_NOTICE & ~E_DEPRECATED & E_ERROR) : error_reporting(E_WARNING & ~E_NOTICE & ~E_DEPRECATED  & E_ERROR & ~E_STRICT); // PRODUCTION
 
 		date_default_timezone_set('Asia/Tokyo'); // to overcome the pre configuration settings
 

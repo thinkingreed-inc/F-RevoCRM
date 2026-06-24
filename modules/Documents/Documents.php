@@ -148,6 +148,17 @@ class Documents extends CRMEntity {
 		}
 		$query = "UPDATE vtiger_notes SET filename = ? ,filesize = ?, filetype = ? , filelocationtype = ? , filedownloadcount = ? WHERE notesid = ?";
 		$re=$adb->pquery($query,array(decode_html($filename),$filesize,$filetype,$filelocationtype,$filedownloadcount,$this->id));
+
+		// 新規作成時にfileversionが未設定なら「1」をセット
+		if ($insertion_mode != 'edit') {
+			$verResult = $adb->pquery("SELECT fileversion FROM vtiger_notes WHERE notesid = ?", array($this->id));
+			$currentVersion = ($verResult !== false && $adb->num_rows($verResult) > 0)
+				? $adb->query_result($verResult, 0, 'fileversion') : '';
+			if (empty($currentVersion)) {
+				$adb->pquery("UPDATE vtiger_notes SET fileversion = '1' WHERE notesid = ?", array($this->id));
+			}
+		}
+
 		//Inserting into attachments table
 		if($filelocationtype == 'I') {
 			$this->insertIntoAttachment($this->id,'Documents');
@@ -161,6 +172,102 @@ class Documents extends CRMEntity {
 		$this->column_fields['filesize'] = $filesize;
 		$this->column_fields['filetype'] = $filetype;
 		$this->column_fields['filedownloadcount'] = $filedownloadcount;
+
+		// ファイル内テキスト抽出（全文検索用）
+		if ($filelocationtype == 'I') {
+			try {
+				require_once 'modules/Documents/utils/TextExtractor.php';
+				Documents_TextExtractor::indexRecord($this->id);
+			} catch (Exception $e) {
+				// 抽出失敗はログに記録するがエラーにはしない
+				$log->error("TextExtractor failed for record {$this->id}: " . $e->getMessage());
+			}
+		}
+
+		// 電帳法対応: ファイルハッシュ計算・監査ログ記録
+		if ($filelocationtype == 'I') {
+			try {
+				require_once 'modules/Documents/utils/FileHasher.php';
+				require_once 'modules/Documents/utils/AuditLogger.php';
+
+				$oldHash = null;
+				if ($insertion_mode == 'edit') {
+					// 既存ハッシュを取得（ファイル差替え検知用）
+					$hashResult = $adb->pquery("SELECT file_hash FROM vtiger_notes WHERE notesid = ?", array($this->id));
+					if ($hashResult !== false && $adb->num_rows($hashResult) > 0) {
+						$oldHash = $adb->query_result($hashResult, 0, 'file_hash');
+					}
+				}
+
+				// ハッシュ計算・保存
+				$newHash = Documents_FileHasher::computeAndSave($this->id);
+
+				// 監査ログ
+				if ($insertion_mode != 'edit') {
+					// 新規作成
+					Documents_AuditLogger::logCreate($this->id, array(
+						'title' => $this->column_fields['notes_title'],
+						'filename' => $filename,
+					), $newHash);
+				} elseif ($newHash !== false && $oldHash !== $newHash) {
+					// ファイル差替え
+					Documents_AuditLogger::logFileReplace($this->id, $oldHash, $newHash);
+				}
+
+				// ファイルバージョン記録
+				if ($newHash !== false) {
+					$this->recordFileVersion($this->id, $newHash, $filesize, $insertion_mode);
+				}
+			} catch (Exception $e) {
+				$log->error("Compliance processing failed for record {$this->id}: " . $e->getMessage());
+			}
+		}
+	}
+
+	/**
+	 * ファイルバージョンを記録する
+	 */
+	private function recordFileVersion($notesId, $fileHash, $fileSize, $insertionMode) {
+		global $adb;
+		$currentUser = Users_Record_Model::getCurrentUserModel();
+		$userId = $currentUser ? $currentUser->getId() : 0;
+
+		// 現行バージョンフラグをリセット
+		$adb->pquery("UPDATE vtiger_notes_file_versions SET is_current = 0 WHERE notesid = ?", array($notesId));
+
+		// 次のバージョン番号を取得
+		$versionResult = $adb->pquery(
+			"SELECT COALESCE(MAX(version_number), 0) + 1 AS next_version FROM vtiger_notes_file_versions WHERE notesid = ?",
+			array($notesId)
+		);
+		$nextVersion = ($versionResult !== false && $adb->num_rows($versionResult) > 0)
+			? (int) $adb->query_result($versionResult, 0, 'next_version')
+			: 1;
+
+		// attachmentsid取得
+		$attachResult = $adb->pquery(
+			"SELECT attachmentsid FROM vtiger_seattachmentsrel WHERE crmid = ?",
+			array($notesId)
+		);
+		$attachmentsId = 0;
+		if ($attachResult !== false && $adb->num_rows($attachResult) > 0) {
+			$attachmentsId = (int) $adb->query_result($attachResult, 0, 'attachmentsid');
+		}
+
+		$changeReason = ($insertionMode != 'edit') ? '初回登録' : 'ファイル差替え';
+
+		$adb->pquery(
+			"INSERT INTO vtiger_notes_file_versions
+				(notesid, version_number, attachmentsid, file_hash, file_size, change_reason, created_by, is_current)
+			VALUES (?, ?, ?, ?, ?, ?, ?, 1)",
+			array($notesId, $nextVersion, $attachmentsId, $fileHash, (int) $fileSize, $changeReason, $userId)
+		);
+
+		// vtiger_notes.fileversion を現在のバージョン番号で自動更新
+		$adb->pquery(
+			"UPDATE vtiger_notes SET fileversion = ? WHERE notesid = ?",
+			array((string) $nextVersion, $notesId)
+		);
 	}
 
 
