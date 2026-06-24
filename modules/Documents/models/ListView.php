@@ -218,7 +218,7 @@ class Documents_ListView_Model extends Vtiger_ListView_Model {
 			$listQuery .= ' ORDER BY '.$queryGenerator->getOrderByColumn($orderBy).' '.$sortOrder;
 		} else if(empty($orderBy) && empty($sortOrder)){
 			//List view will be displayed on recently created/modified records
-			$listQuery .= ' ORDER BY vtiger_crmentity.modifiedtime DESC';
+			$listQuery .= ' ORDER BY vtiger_notes.modifiedtime DESC';
 		}
 
 		$viewid = ListViewSession::getCurrentView($moduleName);

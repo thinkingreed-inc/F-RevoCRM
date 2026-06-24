@@ -30,7 +30,7 @@ include('vtigerversion.php');
 // memory limit default value = 64M
 ini_set('memory_limit','512M');
 
-// show or hide calendar, world clock, calculator, chat and CKEditor 
+// show or hide calendar, world clock, calculator, chat and Jodit editor
 // Do NOT remove the quotes if you set these to false! 
 $CALENDAR_DISPLAY = 'true';
 $USE_RTE = 'true';

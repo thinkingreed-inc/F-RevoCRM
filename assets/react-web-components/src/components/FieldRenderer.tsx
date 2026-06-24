@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { FieldRendererProps, UI_TYPES, FieldValue, HTMLInputValue } from '../types/field';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
@@ -9,8 +9,16 @@ import { OwnerField } from './OwnerField';
 import { PicklistField } from './PicklistField';
 import { MultiPicklistField } from './MultiPicklistField';
 import { ProductTaxField } from './ProductTaxField';
+import { CurrencyListField } from './CurrencyListField';
 import { cn } from '../lib/utils';
 import { useOptionalTranslation } from '../hooks/useTranslation';
+
+declare global {
+  interface Window {
+    jQuery?: any;
+    Vtiger_Jodit_Js?: any;
+  }
+}
 
 /**
  * FieldValueをHTMLInput要素に渡せる型に変換
@@ -20,6 +28,117 @@ const toInputValue = (value: FieldValue): HTMLInputValue => {
   if (typeof value === 'boolean') return value ? '1' : '';
   if (Array.isArray(value)) return value;
   return value;
+};
+
+const QUICKCREATE_EDITOR_MAX_HEIGHT = '200px';
+
+type JoditEditorTextareaProps = {
+  id: string;
+  name: string;
+  value: string;
+  disabled?: boolean;
+  className?: string;
+  rows?: number;
+  onChange: (name: string, value: string) => void;
+};
+
+const JoditEditorTextarea: React.FC<JoditEditorTextareaProps> = ({
+  id,
+  name,
+  value,
+  disabled = false,
+  className,
+  rows = 3,
+  onChange
+}) => {
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const wrapperRef = useRef<any>(null);
+  const onChangeRef = useRef(onChange);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    const jQuery = window.jQuery;
+    const JoditEditor = window.Vtiger_Jodit_Js;
+
+    if (!textarea || !jQuery || !JoditEditor) {
+      return;
+    }
+
+    const element = jQuery(textarea);
+    element.removeAttr('data-validation-engine').addClass('joditEditorSource');
+
+    const joditInstance = new JoditEditor();
+    joditInstance.loadJoditEditor(element);
+
+    const wrapper = JoditEditor.getInstance(id);
+    wrapperRef.current = wrapper;
+
+    const container = wrapper?.jodit?.container as HTMLElement | undefined;
+    if (container && window.innerWidth >= 768) {
+      const wysiwyg = container.querySelector<HTMLElement>('.jodit-wysiwyg');
+      if (wysiwyg) {
+        wysiwyg.style.maxHeight = QUICKCREATE_EDITOR_MAX_HEIGHT;
+        wysiwyg.style.overflowY = 'auto';
+      }
+    }
+
+    const emitChange = () => {
+      const currentWrapper = wrapperRef.current;
+      const nextValue = currentWrapper && typeof currentWrapper.getData === 'function'
+        ? currentWrapper.getData()
+        : String(element.val() || '');
+      onChangeRef.current(name, nextValue);
+    };
+
+    if (wrapper?.jodit?.events) {
+      wrapper.jodit.events.on('change', emitChange);
+      wrapper.jodit.events.on('blur', emitChange);
+    }
+
+    return () => {
+      if (wrapper?.jodit?.events) {
+        wrapper.jodit.events.off('change', emitChange);
+        wrapper.jodit.events.off('blur', emitChange);
+      }
+      if (wrapper && typeof wrapper.destroy === 'function') {
+        wrapper.destroy();
+      }
+      wrapperRef.current = null;
+    };
+  }, [id, name]);
+
+  useEffect(() => {
+    const nextValue = value || '';
+    const wrapper = wrapperRef.current;
+
+    if (wrapper && typeof wrapper.getData === 'function' && typeof wrapper.setData === 'function') {
+      if (wrapper.getData() !== nextValue) {
+        wrapper.setData(nextValue);
+      }
+      return;
+    }
+
+    if (textareaRef.current && textareaRef.current.value !== nextValue) {
+      textareaRef.current.value = nextValue;
+    }
+  }, [value]);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      id={id}
+      name={name}
+      rows={rows}
+      defaultValue={value}
+      disabled={disabled}
+      className={className}
+      style={{ height: '250px', maxWidth: 'initial', width: '100%' }}
+    />
+  );
 };
 
 /**
@@ -33,8 +152,10 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
   disabled = false,
   error,
   className,
+  labelClassName,
   onRecordTypeChange,
-  formData
+  formData,
+  module
 }) => {
   // 翻訳フック（TranslationProvider外でも安全に使用可能）
   const { t } = useOptionalTranslation();
@@ -85,26 +206,50 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
 
   // エラーメッセージのID（アクセシビリティ用）
   const errorId = error ? `error_${field.name}` : undefined;
+  const joditEditorId = `${module || 'QuickCreate'}_quickCreate_fieldName_${field.name}`;
 
-  // ラベル要素の共通レンダリング（横並びレイアウト用・旧版スタイル：ラベル右寄せ）
-  // ラベル部分と必須マークを分離して、ラベル終端を揃える
-  const renderLabel = () => (
-    <>
-      <span
-        className={cn(
-          'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
-          disabled && 'text-gray-400'
-        )}
-      >
-        {field.label}
-        {field.mandatory && <span className="sr-only"> (必須)</span>}
-      </span>
-      {/* 必須マーク：固定幅で位置を確保し、入力欄の開始位置を揃える */}
-      <span className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0" aria-hidden="true">
-        {field.mandatory ? '*' : ''}
-      </span>
-    </>
-  );
+  const renderLabel = () => {
+    if (labelClassName) {
+      // モバイル縦並び時：* をラベルテキスト直後にインライン配置
+      // md:contents でデスクトップ時は div が消え、子要素が親 flex に直接参加する
+      return (
+        <div className="flex items-baseline md:contents">
+          <span
+            className={cn(
+              'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
+              disabled && 'text-gray-400',
+              labelClassName
+            )}
+          >
+            {field.label}
+            {field.mandatory && <span className="text-red-500" aria-hidden="true">*</span>}
+            {field.mandatory && <span className="sr-only"> (必須)</span>}
+          </span>
+          {/* デスクトップ時に入力開始位置を揃えるスペーサー（モバイルは非表示） */}
+          <span className="w-3 flex-shrink-0 hidden md:block" aria-hidden="true" />
+        </div>
+      );
+    }
+    return (
+      <>
+        <span
+          className={cn(
+            'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
+            disabled && 'text-gray-400'
+          )}
+        >
+          {field.label}
+          {field.mandatory && <span className="sr-only"> (必須)</span>}
+        </span>
+        <span
+          className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0"
+          aria-hidden="true"
+        >
+          {field.mandatory ? '*' : ''}
+        </span>
+      </>
+    );
+  };
 
   // エラーメッセージの共通レンダリング（アクセシビリティ対応）
   const renderError = () => error && (
@@ -198,12 +343,28 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
           <div className={cn('flex items-start gap-2', className)}>
             {renderLabel()}
             <div className="flex-1 min-w-0">
-              <Textarea
-                {...inputProps}
-                onChange={handleInputChange}
-                rows={uitype === UI_TYPES.TEXTAREA_LONG ? 6 : 3}
-                className={cn(inputProps.className, 'pt-[7px]')}
-              />
+              {field.isJoditEditor ? (
+                <JoditEditorTextarea
+                  id={joditEditorId}
+                  name={field.name}
+                  value={String(value ?? '')}
+                  disabled={disabled || field.readonly}
+                  onChange={onChange}
+                  rows={uitype === UI_TYPES.TEXTAREA_LONG ? 6 : 3}
+                  className={cn(
+                    'inputElement textAreaElement col-lg-12',
+                    inputProps.className,
+                    error && 'border-red-500'
+                  )}
+                />
+              ) : (
+                <Textarea
+                  {...inputProps}
+                  onChange={handleInputChange}
+                  rows={uitype === UI_TYPES.TEXTAREA_LONG ? 6 : 3}
+                  className={cn(inputProps.className, 'pt-[7px]')}
+                />
+              )}
               {renderError()}
             </div>
           </div>
@@ -379,6 +540,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
             disabled={disabled || field.readonly}
             error={error}
             className={className}
+            labelClassName={labelClassName}
             fieldinfo={field.fieldinfo}
           />
         );
@@ -397,6 +559,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
             disabled={disabled || field.readonly}
             error={error}
             className={className}
+            labelClassName={labelClassName}
             noBlank={uitype === UI_TYPES.PICKLIST_NO_BLANK}
             isRecordTypeField={field.isRecordTypeField}
             onRecordTypeChange={onRecordTypeChange}
@@ -416,6 +579,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
             disabled={disabled || field.readonly}
             error={error}
             className={className}
+            labelClassName={labelClassName}
           />
         );
       
@@ -549,6 +713,24 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
           </div>
         );
 
+      // 通貨リスト - CurrencyListField（UIType 117）
+      case UI_TYPES.CURRENCY_LIST:
+        // fieldinfo.currencyListから通貨リストを取得
+        const currencyList = (field.fieldinfo?.currencyList as Record<string, string>) || {};
+        return (
+          <CurrencyListField
+            name={field.name}
+            label={field.label}
+            value={String(value ?? '')}
+            onChange={onChange}
+            currencyList={currencyList}
+            mandatory={field.mandatory}
+            disabled={disabled || field.readonly}
+            error={error}
+            className={className}
+          />
+        );
+
       // 参照フィールド - ReferenceField
       // UIType 10, 51, 52, 57, 58, 59, 66, 73, 75, 76, 77, 78, 80, 81, 101
       case UI_TYPES.REFERENCE:
@@ -677,6 +859,7 @@ export const isUITypeSupported = (uitype: string): boolean => {
     UI_TYPES.PASSWORD,
     // 特殊
     UI_TYPES.PRODUCT_TAX,
+    UI_TYPES.CURRENCY_LIST,
     // 参照系
     UI_TYPES.REFERENCE,
     UI_TYPES.REFERENCE_ACCOUNT,
@@ -739,6 +922,7 @@ export const getSupportedUITypes = (): string[] => {
     UI_TYPES.PASSWORD,
     // 特殊
     UI_TYPES.PRODUCT_TAX,
+    UI_TYPES.CURRENCY_LIST,
     // 参照系
     UI_TYPES.REFERENCE,
     UI_TYPES.REFERENCE_ACCOUNT,

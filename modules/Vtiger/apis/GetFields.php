@@ -268,6 +268,9 @@ class Vtiger_GetFields_Api extends Vtiger_Api_Controller {
             if (!empty($fieldInfoDetails)) {
                 $fieldInfo['fieldinfo'] = $fieldInfoDetails;
             }
+            if (method_exists($fieldModel, 'isJoditEditor') && $fieldModel->isJoditEditor()) {
+                $fieldInfo['isJoditEditor'] = true;
+            }
 
             // ピックリスト値（該当するUITypeの場合）
             if (in_array($uitype, array('15', '16', '33'))) {

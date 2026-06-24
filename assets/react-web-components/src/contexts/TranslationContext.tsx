@@ -70,6 +70,7 @@ const DEFAULT_TRANSLATIONS: TranslationData = {
   LBL_SEARCH_USERS_PLACEHOLDER: 'ユーザーを検索して追加...',
   LBL_ALL_USERS_SELECTED: 'すべてのユーザーが選択済みです',
   LBL_NO_MATCHING_USERS: '該当するユーザーがいません',
+  LBL_NO_MATCHING_CURRENCY: '該当する通貨がありません',
 
   // プレースホルダー
   LBL_PLACEHOLDER_ENTER: '%sを入力してください',

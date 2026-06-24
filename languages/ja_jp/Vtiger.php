@@ -1712,6 +1712,7 @@ $languageStrings = array(
 	'LBL_SEARCH_USERS_PLACEHOLDER' => 'ユーザーを検索して追加...',
 	'LBL_ALL_USERS_SELECTED' => 'すべてのユーザーが選択済みです',
 	'LBL_NO_MATCHING_USERS' => '該当するユーザーがいません',
+	'LBL_NO_MATCHING_CURRENCY' => '該当する通貨がありません',
 	'LBL_TASK' => 'ToDo',
 	'LBL_EVENT' => '活動',
 	'LBL_INVITEE_BLOCK' => '招待者情報',
@@ -1722,6 +1723,7 @@ $languageStrings = array(
 	'LBL_PLACEHOLDER_SEARCH' => '%sを検索...',
 	'LBL_PLACEHOLDER_SEARCH_AND_ADD' => '%sを検索して追加...',
 	'LBL_PLACEHOLDER_SEARCH_TITLE' => '%sを検索',
+	'LBL_PLACEHOLDER_SELECT' => '%sを選択してください',
 );
 
 $jsLanguageStrings = array(

@@ -10,7 +10,7 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
 }, {
     workFlowsContainer: false,
     advanceFilterInstance: false,
-    ckEditorInstance: false,
+    joditInstance: false,
     fieldValueMap: false,
     workFlowsActionContainer : false,
    
@@ -100,6 +100,10 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
         var form = jQuery('#workflow_edit');
         var params = {
             submitHandler: function(form) {
+                // Jodit全instancesの同期（submit前必須、Task G syncAllInstances共通経路注入）
+                if (typeof Vtiger_Jodit_Js !== 'undefined' && Vtiger_Jodit_Js.syncAllInstances) {
+                    Vtiger_Jodit_Js.syncAllInstances();
+                }
                 if(jQuery('[name="workflow_trigger"]').val() == '6' && jQuery('#schtypeid').val() == '3') {
                     if(jQuery('#schdayofweek').val().length <= 0) {
                         app.helper.showErrorNotification({'message':'Please Select atleast one value'});
@@ -489,6 +493,10 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
       var form = jQuery('#saveTask');
       var params = {
             submitHandler: function(form) {
+                // Jodit全instancesの同期（submit前必須、Task G syncAllInstances共通経路注入）
+                if (typeof Vtiger_Jodit_Js !== 'undefined' && Vtiger_Jodit_Js.syncAllInstances) {
+                    Vtiger_Jodit_Js.syncAllInstances();
+                }
                 var form = jQuery(form);
                 // to Prevent submit if already submitted
                 jQuery("button[name='saveButton']", form).attr("disabled","disabled");
@@ -649,7 +657,10 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
       var textAreaElement = jQuery('#content');
       //To keep the plain text value to the textarea which need to be
       //sent to server
-      textAreaElement.val(CKEDITOR.instances['content'].getData());
+      var editor = Vtiger_Jodit_Js.getInstance('content');
+      if (editor) {
+         textAreaElement.val(editor.getData());
+      }
    },
    /**
     * Function to check if the field selected is empty field
@@ -776,13 +787,13 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
    },
    
    /**
-    * Function to get ckEditorInstance
+    * Function to get joditInstance
     */
-   getckEditorInstance: function () {
-      if (this.ckEditorInstance == false) {
-         this.ckEditorInstance = new Vtiger_CkEditor_Js();
+   getJoditInstance: function () {
+      if (this.joditInstance == false) {
+         this.joditInstance = new Vtiger_Jodit_Js();
       }
-      return this.ckEditorInstance;
+      return this.joditInstance;
    },
    registerTaskStatusChangeEvent: function () {
       var container = this.getActionContainer();
@@ -848,7 +859,7 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
    },
    registerFillMailContentEvent: function () {
       jQuery('#task-fieldnames,#task_timefields,#task-templates,#task-emailtemplates').change(function (e) {
-         var textarea = CKEDITOR.instances.content;
+         var textarea = Vtiger_Jodit_Js.getInstance('content');
          var value = jQuery(e.currentTarget).val();
          if (textarea != undefined) {
             textarea.insertHtml(value);
@@ -860,8 +871,8 @@ Settings_Vtiger_Edit_Js("Settings_Workflows_Edit_Js", {
    },
    registerVTEmailTaskEvents: function () {
       var textAreaElement = jQuery('#content');
-      var ckEditorInstance = this.getckEditorInstance();
-      ckEditorInstance.loadCkEditor(textAreaElement);
+      var joditInstance = this.getJoditInstance();
+      joditInstance.loadJoditEditor(textAreaElement);
       this.registerFillMailContentEvent();
       this.registerTooltipEventForSignatureField();
       this.registerFillTaskFromEmailFieldEvent();

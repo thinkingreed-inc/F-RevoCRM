@@ -349,20 +349,26 @@ Vtiger.Class('Documents_Index_Js', {
 		app.request.get({'url':url}).then(function(e,resp) {
 			app.helper.hideProgress();
 			if(!e) {
-				app.helper.showModal(resp, {
+				var modalContainer = app.helper.showModal(resp, {
 					'cb' : function(modalContainer) {
 						self.registerUploadDocumentEvents(modalContainer);
-						self.applyScrollToModal(modalContainer);
 						self.registerQuickCreateEvents(modalContainer);
 					}
 				});
+				self.applyScrollToModal(modalContainer);
 			}
 		});
 	},
 
 	applyScrollToModal : function(modalContainer) {
-		app.helper.showVerticalScroll(modalContainer.find('.modal-body').css('max-height', '415px'), 
-		{'autoHideScrollbar': true});
+		var options = {
+			scrollInertia: 200,
+			autoHideScrollbar: true
+		};
+		if (jQuery(window).width() < 768) {
+			options.setHeight = jQuery(window).height() - 135;
+		}
+		app.helper.showVerticalScroll(modalContainer.find('.modal-body'), options);
 	},
 
 	uploadTo : function(service,parentId,relatedModule) {
@@ -384,8 +390,10 @@ Vtiger.Class('Documents_Index_Js', {
 		var self = this;
 		var noteContentElement = form.find('#Documents_editView_fieldName_notecontent_popup');
 		if(noteContentElement.length) {
-			var noteContent = CKEDITOR.instances.Documents_editView_fieldName_notecontent_popup.getData()
-			noteContentElement.val(noteContent);
+			var editor = Vtiger_Jodit_Js.getInstance('Documents_editView_fieldName_notecontent_popup');
+			if (editor) {
+				noteContentElement.val(editor.getData());
+			}
 		}
 		var formData = form.serialize();
 		app.helper.showProgress();
@@ -422,14 +430,14 @@ Vtiger.Class('Documents_Index_Js', {
 	},
 
 	applyEditor : function(element) {
-		var cke = new Vtiger_CkEditor_Js();
-		cke.loadCkEditor(element, {'height' : 200});
+		var cke = new Vtiger_Jodit_Js();
+		cke.loadJoditEditor(element);
 	},
 
 	registerCreateDocumentModalEvents : function(container) {
 		container.find('form').vtValidate();
 		if(container.find('input[name="type"]').val() === 'W') {
-			//change id of text area to workaround multiple instances of ckeditor on same element
+			//change id of text area to workaround multiple instances of jodit editor on same element
 			this.applyEditor(
 				container.find('#Documents_editView_fieldName_notecontent')
 				.attr('id','Documents_editView_fieldName_notecontent_popup')

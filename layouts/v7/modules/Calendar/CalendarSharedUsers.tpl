@@ -46,7 +46,7 @@
 {assign var=CURRENT_USER_ID value= $CURRENTUSER_MODEL->getId()}
 <input type="hidden" id="sharedUsersInfo" value= {Zend_Json::encode($SHAREDUSERS_INFO)} />
 <div class="sidebar-widget-contents" name='calendarViewTypes'>
-	<div id="calendarview-feeds">
+	<div id="calendarview-feeds" style="overflow-y: auto;">
 		<ul class="list-group feedslist">
 			<li class="activitytype-indicator calendar-feed-indicator mine" style="background-color: {$SHAREDUSERS_INFO[$CURRENT_USER_ID]['color']};">
 				<span>

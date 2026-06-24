@@ -140,4 +140,12 @@ $languageStrings = array(
 
 	'LBL_SETUP_PARAMETER_MESSAGE_IMPORT_MAX_HISTORY_COUNT' => 'ユーザーかつモジュール単位で保持できるインポート履歴の最大件数です。',
 
+	// インポート時に一部の自動処理が動かない旨の注意書き
+	'LBL_IMPORT_AUTO_PROCESS_NOTICE_TITLE' => '【ご注意】インポートでは一部の自動処理が実行されません',
+	'LBL_IMPORT_AUTO_PROCESS_NOTICE_BODY' => 'CSVなどのファイルからまとめて登録（インポート）する場合、レコードを1件ずつ画面から登録・編集したときに自動で動く処理の一部が実行されません。具体的には、次のような処理は動きません。',
+	'LBL_IMPORT_AUTO_PROCESS_NOTICE_WORKFLOW' => 'レコードの登録・更新をきっかけに自動実行される処理（ワークフロー）',
+	'LBL_IMPORT_AUTO_PROCESS_NOTICE_WORKFLOW_EXAMPLES' => '例：自動メールの送信／項目の自動入力・自動更新／関連レコードの自動作成／タスクの自動生成 など',
+	'LBL_IMPORT_AUTO_PROCESS_NOTICE_INTERNAL' => '保存時に裏側で自動的に行われる連携・反映処理',
+	'LBL_IMPORT_AUTO_PROCESS_NOTICE_WORKAROUND' => 'これらの処理が必要な場合は、インポート後に対象レコードを開いて保存し直すか、画面から手動で登録してください。',
+
 );

@@ -1236,15 +1236,25 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			app.request.post({data: dataParams}).then(function (e, data) {
 				if (!e) {
 					widgetBody.html(data);
-                                        let fullCalendarViewHeight = $('.fc-view-container').height();
-                                        widgetBody.css('max-height', (fullCalendarViewHeight - 20) + 'px');
-					app.helper.showVerticalScroll(
-							widgetBody,
-							{
-								'autoHideScrollbar': true,
-								'scrollbarPosition': 'outside'
-							}
-					);
+					var feedsContainer = widgetBody.find('#calendarview-feeds');
+					if (feedsContainer.length) {
+						var adjustFeedsHeight = function() {
+							var sidebar = feedsContainer.closest('.sidebar-essentials');
+							if (!sidebar.length) sidebar = feedsContainer.closest('.sidebar-menu');
+							var sidebarHeight = sidebar.length ? sidebar.height() : jQuery(window).height();
+							var sidebarTop = sidebar.length ? sidebar.offset().top : 0;
+							var feedsTop = feedsContainer.offset().top;
+							var offsetInSidebar = feedsTop - sidebarTop;
+							var availableHeight = sidebarHeight - offsetInSidebar - 5;
+							if (availableHeight < 100) availableHeight = 100;
+							feedsContainer.css({
+								'max-height': availableHeight + 'px',
+								'overflow-y': 'auto'
+							});
+						};
+						adjustFeedsHeight();
+						jQuery(window).off('resize.calendarFeeds').on('resize.calendarFeeds', adjustFeedsHeight);
+					}
 //thisInstance.registerCollapseEvents(widget);
 //thisInstance.restoreWidgetState(widget);
 					app.event.trigger(Calendar_Calendar_Js.feedsWidgetPostLoadEvent, widget);
@@ -1324,6 +1334,12 @@ Vtiger.Class("Calendar_Calendar_Js", {
 					return false;
 				}
 
+				// Jodit全instancesの同期（serializeFormData前に必須、Task G syncAllInstances共通経路注入）
+				// serializeFormData の後に同期しても textarea が古い値のまま formData 化されてしまうため、
+				// 必ず serializeFormData() の前に syncAllInstances を呼び出す。
+				if (typeof Vtiger_Jodit_Js !== 'undefined' && Vtiger_Jodit_Js.syncAllInstances) {
+					Vtiger_Jodit_Js.syncAllInstances();
+				}
 				var formData = jQuery(form).serializeFormData();
 				jQuery("button[name='saveButton']").attr("disabled", "disabled");
 				var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
@@ -1679,9 +1695,14 @@ Vtiger.Class("Calendar_Calendar_Js", {
 
 	},
 	showCreateTaskModal: function () {
-		this.showCreateModal('Calendar');
+		// ボタンから開いた場合は現在日時をデフォルト設定
+		this.showCreateModal('Calendar', moment());
 	},
 	showCreateEventModal: function (startDateTime) {
+		// ボタンから開いた場合（startDateTimeが未指定）は現在日時をデフォルト設定
+		if (!startDateTime) {
+			startDateTime = moment();
+		}
 		this.showCreateModal('Events', startDateTime);
 	},
 	showCreateTaskModalforDrag: function () {
@@ -2043,10 +2064,16 @@ Vtiger.Class("Calendar_Calendar_Js", {
 					return false;
 				}
 				
+				// Jodit全instancesの同期（serializeFormData前に必須、Task G syncAllInstances共通経路注入）
+				// serializeFormData の後に同期しても textarea が古い値のまま formData 化されてしまうため、
+				// 必ず serializeFormData() の前に syncAllInstances を呼び出す。
+				if (typeof Vtiger_Jodit_Js !== 'undefined' && Vtiger_Jodit_Js.syncAllInstances) {
+					Vtiger_Jodit_Js.syncAllInstances();
+				}
 				var overlapData = jQuery(form).serializeFormData();
 				var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
 				app.event.trigger(e);
-				
+
 				if (e.isDefaultPrevented()) {
 					return false;
 				}
@@ -2106,6 +2133,10 @@ Vtiger.Class("Calendar_Calendar_Js", {
 						// WebComponents版では record-id から GetRecord API でデータを取得するため、
 						// ここのデータは initialData として使われるが、recordData が優先される
 						// Note: eventObj.title は表示用（ステータス付き）のため使用しない
+						// 複製モードでも時刻選択肢をユーザーのカレンダー設定（活動時間）刻みにするため、
+						// 新規作成パスと同じく defaultCallDuration / defaultOtherEventDuration を渡す
+						var defaultCallDurationEl = document.getElementById('defaultCallDuration');
+						var defaultOtherEventDurationEl = document.getElementById('defaultOtherEventDuration');
 						triggerParams.data = {
 							// subject は eventObj.title ではなく eventObj.subject を使用
 							// eventObj.subject が undefined の場合もあるため、その場合は空文字
@@ -2123,7 +2154,9 @@ Vtiger.Class("Calendar_Calendar_Js", {
 							description: eventObj.description,
 							location: eventObj.location,
 							parent_id: eventObj.parent_id,
-							contact_id: eventObj.contact_id
+							contact_id: eventObj.contact_id,
+							defaultCallDuration: defaultCallDurationEl ? parseInt(defaultCallDurationEl.value, 10) || 5 : 5,
+							defaultOtherEventDuration: defaultOtherEventDurationEl ? parseInt(defaultOtherEventDurationEl.value, 10) || 5 : 5
 						};
 					}
 				}
@@ -2217,7 +2250,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			}
 
 			if(eventObj.description && eventObj.description != '') {
-				popOverHTML += eventObj.description;
+				popOverHTML += '<div class="calendar-popover-description">' + eventObj.description + '</div>';
 			}
 
 			if(event.creator && event.creator != '' || event.modifiedby && event.modifiedby != '') {
@@ -2243,7 +2276,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 						'<span class="pull-right cursorPointer" ' +
 						'onClick="Calendar_Calendar_Js.deleteCalendarEvent(\'' + eventObj.id +
 						'\',\'' + sourceModule + '\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_DELETE') + '">' +
-						'&nbsp;&nbsp;<i class="fa fa-trash fa-2x"></i>' +
+						'&nbsp;<i class="fa fa-trash fa-2x"></i>' +
 						'</span> &nbsp;&nbsp;';
 
 					if (sourceModule === 'Events') {
@@ -2251,19 +2284,19 @@ Vtiger.Class("Calendar_Calendar_Js", {
 								'<span class="pull-right cursorPointer" ' +
 								'onClick="Calendar_Calendar_Js.editCalendarEvent(\'' + eventObj.id +
 								'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_EDIT') + '">' +
-								'&nbsp;&nbsp;<i class="fa fa-pencil fa-2x"></i>' +
+								'&nbsp;<i class="fa fa-pencil fa-2x"></i>&nbsp;' +
 								'</span>';
 								popOverHTML += '' +
 								'<span class="pull-right cursorPointer" ' +
 								'onClick="Calendar_Calendar_Js.copyCalendarEvent(\'' + eventObj.id +
 								'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_COPY') + '">' +
-								'&nbsp;&nbsp;<i class="fa fa-copy fa-2x"></i>' +
+								'&nbsp;<i class="fa fa-copy fa-2x"></i>&nbsp;' +
 								'</span>';
 					} else if (sourceModule === 'Calendar') {
 						popOverHTML += '' +
 								'<span class="pull-right cursorPointer" ' +
 								'onClick="Calendar_Calendar_Js.editCalendarTask(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_EDIT') + '">' +
-								'&nbsp;&nbsp;<i class="fa fa-pencil fa-2x"></i>' +
+								'&nbsp;<i class="fa fa-pencil fa-2x"></i>&nbsp;' +
 								'</span>';
 					}
 
@@ -2271,13 +2304,13 @@ Vtiger.Class("Calendar_Calendar_Js", {
 						popOverHTML += '' +
 								'<span class="pull-right cursorPointer"' +
 								'onClick="Calendar_Calendar_Js.markAsHeld(\'' + eventObj.id + '\',\'' + sourceModule + '\');" title="' + app.vtranslate('JS_MARK_AS_HELD') + '">' +
-								'<i class="fa fa-check fa-2x"></i>' +
+								'<i class="fa fa-check fa-2x"></i>&nbsp;' +
 								'</span>';
 					} else if (eventObj.status === 'Held') {
 						popOverHTML += '' +
 								'<span class="pull-right cursorPointer" ' +
 								'onClick="Calendar_Calendar_Js.holdFollowUp(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_CREATE_FOLLOW_UP') + '">' +
-								'<i class="fa fa-flag fa-2x"></i>' +
+								'<i class="fa fa-flag fa-2x"></i>&nbsp;' +
 								'</span>';
 					}
 				}
@@ -2286,7 +2319,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 							'<span class="pull-right cursorPointer" ' +
 							'onClick="Calendar_Calendar_Js.deleteCalendarEvent(\'' + eventObj.id +
 							'\',\'' + sourceModule + '\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_DELETE') + '">' +
-							'&nbsp;&nbsp;<i class="fa fa-trash"></i>' +
+							'&nbsp;<i class="fa fa-trash"></i>' +
 							'</span> &nbsp;&nbsp;';
 
 					if (sourceModule === 'Events') {
@@ -2294,19 +2327,19 @@ Vtiger.Class("Calendar_Calendar_Js", {
 								'<span class="pull-right cursorPointer" ' +
 								'onClick="Calendar_Calendar_Js.editCalendarEvent(\'' + eventObj.id +
 								'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_EDIT') + '">' +
-								'&nbsp;&nbsp;<i class="fa fa-pencil"></i>' +
+								'&nbsp;<i class="fa fa-pencil"></i>&nbsp;' +
 								'</span>';
 								popOverHTML += '' +
 								'<span class="pull-right cursorPointer" ' +
 								'onClick="Calendar_Calendar_Js.copyCalendarEvent(\'' + eventObj.id +
 								'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_COPY') + '">' +
-								'&nbsp;&nbsp;<i class="fa fa-copy"></i>' +
+								'&nbsp;<i class="fa fa-copy"></i>&nbsp;' +
 								'</span>';
 					} else if (sourceModule === 'Calendar') {
 						popOverHTML += '' +
 								'<span class="pull-right cursorPointer" ' +
 								'onClick="Calendar_Calendar_Js.editCalendarTask(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_EDIT') + '">' +
-								'&nbsp;&nbsp;<i class="fa fa-pencil"></i>' +
+								'&nbsp;<i class="fa fa-pencil"></i>&nbsp;' +
 								'</span>';
 					}
 
@@ -2314,13 +2347,13 @@ Vtiger.Class("Calendar_Calendar_Js", {
 						popOverHTML += '' +
 								'<span class="pull-right cursorPointer"' +
 								'onClick="Calendar_Calendar_Js.markAsHeld(\'' + eventObj.id + '\',\'' + sourceModule + '\');" title="' + app.vtranslate('JS_MARK_AS_HELD') + '">' +
-								'<i class="fa fa-check"></i>' +
+								'<i class="fa fa-check"></i>&nbsp;' +
 								'</span>';
 					} else if (eventObj.status === 'Held') {
 						popOverHTML += '' +
 								'<span class="pull-right cursorPointer" ' +
 								'onClick="Calendar_Calendar_Js.holdFollowUp(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_CREATE_FOLLOW_UP') + '">' +
-								'<i class="fa fa-flag"></i>' +
+								'<i class="fa fa-flag"></i>&nbsp;' +
 								'</span>';
 					}
 				}

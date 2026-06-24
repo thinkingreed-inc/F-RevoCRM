@@ -10,36 +10,54 @@
 Vtiger_Edit_Js("PDFTemplates_Edit_Js",{},{
 	
 	/**
-	 * Function to register event for ckeditor for description field
+	 * Function to register Jodit editor for description field
 	 */
-	registerEventForCkEditor : function(){
+	registerEventForJoditEditor : function(){
 		var templateContentElement = jQuery("#templatecontent");
 		if(templateContentElement.length > 0) {
 			if(jQuery('#EditView').find('.isSystemTemplate').val() == 1) {
-				templateContentElement.removeAttr('data-validation-engine').addClass('ckEditorSource');
+				templateContentElement.removeAttr('data-validation-engine').addClass('joditEditorSource');
 			}
 			if ($("[name='is_headlesschrome']").val() == "true") {
 				var customConfig = {
-					"height": "600px",
 					"font_names": "明朝体/serif;ゴシック体/sans;",
 				}
 			} else {
-				var customConfig = {
-					"height": "600px"
-				}
+				var customConfig = {}
 			}
-			var ckEditorInstance = new Vtiger_CkEditor_Js();
-			ckEditorInstance.loadCkEditor(templateContentElement,customConfig);
+			var joditInstance = new Vtiger_Jodit_Js();
+			joditInstance.loadJoditEditor(templateContentElement,customConfig);
 			if ($("[name='is_headlesschrome']").val() == "true") {
-				var editor = CKEDITOR.instances.templatecontent;
-				var edata = editor.getData();
-				if (!edata) {
-					var replaced_text = edata + "<style type='text/css'><!-- @font-face { font-family: 'sans'; src: local('Noto Sans CJK JP');font-family: 'serif'; src: local('Noto Serif CJK JP');}html,body {font-family: sans;} --></style></html>";
-					editor.setData(replaced_text);
-				} else if (edata.indexOf("html,body {font-family: sans;}") == -1) {
-					var replaced_text = edata.replace('</html>', "<style type='text/css'><!-- @font-face { font-family: 'sans'; src: local('Noto Sans CJK JP');font-family: 'serif'; src: local('Noto Serif CJK JP');}html,body {font-family: sans;} --></style></html>");
-					editor.setData(replaced_text);
-				}
+				// Jodit はインスタンス生成後にエディタDOMが非同期で準備されるため、
+				// getInstance() で取得できるまでリトライしつつ注入する
+				var tryInject = function(retryCount) {
+					var editor = Vtiger_Jodit_Js.getInstance('templatecontent');
+					if (!editor) {
+						if (retryCount < 50) {
+							setTimeout(function() { tryInject(retryCount + 1); }, 50);
+						}
+						return;
+					}
+					var INJECT_MARKER = 'jodit-injected-font';
+					var edata = editor.getData();
+					// 二重注入防止: マーカーID付き<style>が既に存在する場合はスキップ
+					if (edata && (edata.indexOf('id="' + INJECT_MARKER + '"') !== -1 || edata.indexOf("id='" + INJECT_MARKER + "'") !== -1)) {
+						return;
+					}
+					var injected_style = '<style id="' + INJECT_MARKER + '" type="text/css"><!-- @font-face { font-family: \'sans\'; src: local(\'Noto Sans CJK JP\'); } @font-face { font-family: \'serif\'; src: local(\'Noto Serif CJK JP\'); } html,body {font-family: sans;} --></style>';
+					if (!edata) {
+						editor.setData('<!DOCTYPE html><html><head>' + injected_style + '</head><body></body></html>');
+					} else if (edata.indexOf("html,body {font-family: sans;}") === -1) {
+						if (edata.indexOf('</head>') !== -1) {
+							editor.setData(edata.replace('</head>', injected_style + '</head>'));
+						} else if (edata.indexOf('</html>') !== -1) {
+							editor.setData(edata.replace('</html>', injected_style + '</html>'));
+						} else {
+							editor.setData(edata + injected_style);
+						}
+					}
+				};
+				tryInject(0);
 			}
 		}
         this.registerFillTemplateContentEvent();
@@ -98,14 +116,19 @@ Vtiger_Edit_Js("PDFTemplates_Edit_Js",{},{
 	
 	registerFillTemplateContentEvent : function() {
 		var thisInstance = this;
-		 CKEDITOR.instances.templatecontent.on('blur', function(){
-			 jQuery('#templateFields,#generalFields,#customFunctions').off('change');
-			 jQuery('#templateFields,#generalFields,#customFunctions').on('change',function(e){
-				var mergeTag = jQuery(e.currentTarget).val();
-				var textarea = CKEDITOR.instances.templatecontent;
-				textarea.insertHtml(mergeTag);
+		 var editor = Vtiger_Jodit_Js.getInstance('templatecontent');
+		 if (editor) {
+			 editor.on('blur', function(){
+				 jQuery('#templateFields,#generalFields,#customFunctions').off('change');
+				 jQuery('#templateFields,#generalFields,#customFunctions').on('change',function(e){
+					var mergeTag = jQuery(e.currentTarget).val();
+					var textarea = Vtiger_Jodit_Js.getInstance('templatecontent');
+					if (textarea) {
+						textarea.insertHtml(mergeTag);
+					}
+				 });
 			 });
-		 });
+		 }
 		 jQuery('.recordEditView').on('blur','#PDFTemplates_editView_fieldName_subject,#PDFTemplates_editView_fieldName_pdffilename',function(){
 			 jQuery('#templateFields,#generalFields,#customFunctions').off('change');
 			 jQuery('#templateFields,#generalFields,#customFunctions').on('change',function(e){
@@ -160,7 +183,7 @@ Vtiger_Edit_Js("PDFTemplates_Edit_Js",{},{
 	 * Registered the events for this page
 	 */
 	registerEvents : function() {
-		this.registerEventForCkEditor();
+		this.registerEventForJoditEditor();
 		this.registerChangeEventForModule();
 		//To load default selected module fields in edit view
 		this.loadFields();

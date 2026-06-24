@@ -3,6 +3,7 @@
  *
  * F-RevoCRMの翻訳データを取得する。
  * Vtiger標準のモジュール中心設計に準拠。
+ * Vtiger_JS翻訳も含めてマージする。
  *
  * Usage:
  *   ?module=Potentials&api=GetTranslations
@@ -152,11 +153,18 @@ export function mergeTranslations(
     Object.assign(merged, translations.translations.Vtiger);
   }
 
+  // Vtiger_JS (JS翻訳) を適用
+  // JS_INVALID_URL などのバリデーションメッセージはここに含まれる
+  if (translations.translations.Vtiger_JS) {
+    Object.assign(merged, translations.translations.Vtiger_JS);
+  }
+
   // 他のモジュールを上書き適用
   for (const [moduleName, moduleTranslations] of Object.entries(
     translations.translations
   )) {
-    if (moduleName !== 'Vtiger' && !moduleName.endsWith('_JS')) {
+    if (moduleName !== 'Vtiger' && moduleName !== 'Vtiger_JS') {
+      // モジュール固有のJS翻訳も適用
       Object.assign(merged, moduleTranslations);
     }
   }

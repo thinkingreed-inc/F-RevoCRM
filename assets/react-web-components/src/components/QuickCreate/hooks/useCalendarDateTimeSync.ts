@@ -136,12 +136,17 @@ export function useCalendarDateTimeSync({
 
     const newEndDate = formatDate(endDateTime);
     const newEndTime = formatTime(endDateTime);
-    const newDueDate = combineDateTimeValue(newEndDate, newEndTime);
+
+    // ToDoの完了日（due_date）は日付のみ（編集画面と同じ仕様）
+    // Calendarタブ（ToDo）の場合は時刻を含めない
+    const newDueDate = activeTab === 'Calendar'
+      ? newEndDate
+      : combineDateTimeValue(newEndDate, newEndTime);
 
     isUpdatingRef.current = true;
     onFieldChange('due_date', newDueDate);
     isUpdatingRef.current = false;
-  }, [isAllDay, parseToDate, getEffectiveDuration, formatDate, formatTime, combineDateTimeValue, onFieldChange]);
+  }, [isAllDay, parseToDate, getEffectiveDuration, formatDate, formatTime, combineDateTimeValue, onFieldChange, activeTab]);
 
   /**
    * Handle date_start change

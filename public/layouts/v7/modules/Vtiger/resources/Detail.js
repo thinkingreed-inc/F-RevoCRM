@@ -299,20 +299,25 @@ Vtiger.Class("Vtiger_Detail_Js",{
 				jQuery('#EditView').vtValidate({
 					submitHandler : function(form){
 						window.onbeforeunload = null;
+						// Jodit全instancesの同期（submit前必須、Task G syncAllInstances共通経路注入）
+						if (typeof Vtiger_Jodit_Js !== 'undefined' && Vtiger_Jodit_Js.syncAllInstances) {
+							Vtiger_Jodit_Js.syncAllInstances();
+						}
 						var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
 						app.event.trigger(e);
 						if(e.isDefaultPrevented()) {
 							return false;
 						}
 
-						// ckEditorの値をセット
-						var ckeditor_columns = ['description', 'solution'];
-						ckeditor_columns.forEach(function (ckeditor_column) {
-							// 対象モジュールがHelpDesk && 対象カラムが存在する && 対象カラムのCKEDITORが存在する
-							if ($(form.module).val() === 'HelpDesk' && $(form).find('textarea[name="'+ckeditor_column+'"]') && CKEDITOR.instances[$(form.module).val()+'_editView_fieldName_'+ckeditor_column]) {
-								// CKEDITORの値をtextareaにセット
-								var ckeditorText = CKEDITOR.instances[$(form.module).val()+'_editView_fieldName_'+ckeditor_column].getData();
-								$(form).find('textarea[name="'+ckeditor_column+'"]').val(ckeditorText);
+						// Joditエディタの値をtextareaにセット
+						var jodit_columns = ['description', 'solution'];
+						jodit_columns.forEach(function (jodit_column) {
+							// 対象モジュールがHelpDesk && 対象カラムが存在する && 対象カラムのエディタインスタンスが存在する
+							var editorId = $(form.module).val()+'_editView_fieldName_'+jodit_column;
+							var editor = Vtiger_Jodit_Js.getInstance(editorId);
+							if ($(form.module).val() === 'HelpDesk' && $(form).find('textarea[name="'+jodit_column+'"]') && editor) {
+								// エディタの値をtextareaにセット
+								$(form).find('textarea[name="'+jodit_column+'"]').val(editor.getData());
 							}
 						});
 

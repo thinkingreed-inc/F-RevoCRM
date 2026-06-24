@@ -53,6 +53,7 @@ html {
   padding: 0;
   overflow-y: auto;
   min-height: 100%;
+  scroll-padding-bottom: 60px;
 }
 body {
   margin: 0;
@@ -6666,8 +6667,9 @@ li.select2-search-choice div {
 #quickCreateModules .quickcreateMoreDropdown {
   left: 85%;
   top: 0px;
-  min-width: 170px;
+  min-width: 230px;
   padding: 4%;
+  white-space: nowrap;
 }
 #quickCreateModules .quickcreateMoreDropdown li {
   padding: 1%;
@@ -6771,8 +6773,9 @@ li.select2-search-choice div {
 #quickCreateModules .quickcreateMoreDropdown {
   left: 85%;
   top: 0px;
-  min-width: 170px;
+  min-width: 230px;
   padding: 4%;
+  white-space: nowrap;
 }
 #quickCreateModules .quickcreateMoreDropdown li {
   padding: 1%;
@@ -7164,6 +7167,23 @@ input:focus:-ms-input-placeholder {
   border-bottom: 6px solid #ffffff;
   border-left: 6px solid transparent;
   content: '';
+}
+.global-actions .quickcreateMoreDropdown:before,
+.global-actions .quickcreateMoreDropdown:after {
+  display: none;
+}
+@media (max-width: 767px) {
+  .navbar-inverse .navbar-nav .open .quickcreateMoreDropdown > li > a {
+    color: #333;
+  }
+  .global-actions .dropdown.open > .quickCreateDropdown,
+  .global-actions .quickcreateMoreDropdown {
+    box-shadow: none;
+  }
+  #quickCreateModules .quickcreateMoreDropdown {
+    min-width: 0;
+    white-space: normal;
+  }
 }
 #sharedcalendar .fc-event-container .vicon-meeting,
 #mycalendar .fc-event-container .vicon-meeting {

@@ -34,6 +34,8 @@ export interface OwnerFieldProps {
   error?: string;
   /** カスタムクラス */
   className?: string;
+  /** ラベルのカスタムクラス名（縦並び時の左寄せなどに使用） */
+  labelClassName?: string;
   /** フィールド情報（picklistvaluesを含む） */
   fieldinfo?: Record<string, unknown>;
 }
@@ -51,6 +53,7 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
   disabled = false,
   error,
   className,
+  labelClassName,
   fieldinfo
 }) => {
   // 翻訳フック（TranslationProvider外でも安全に使用可能）
@@ -72,6 +75,9 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
 
   // ドロップダウンの位置
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null);
+
+  // キーボード操作用ハイライトindex (filteredOptions全体のグローバルindex)
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(0);
 
   // タッチスワイプ用のref
   const touchStartYRef = useRef<number | null>(null);
@@ -114,8 +120,14 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
     };
   }, [isOpen, dropdownPosition]);
 
+  // 翻訳済みのラベルをキーとして使用（APIは翻訳済み文字列をキーとして返す）
+  const userLabel = t('LBL_USERS', 'ユーザー');
+  const groupLabel = t('LBL_GROUPS', 'グループ');
+
   /**
    * picklistvaluesからユーザーとグループのオプションを抽出
+   * picklistvaluesのキーは、APIから翻訳済みラベルとして返される
+   * t()で翻訳したラベルをキーとして使用することで、どの言語でも対応可能
    */
   const allOptions = useMemo(() => {
     const options: OwnerOption[] = [];
@@ -123,17 +135,17 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
     if (fieldinfo?.picklistvalues) {
       const picklistValues = fieldinfo.picklistvalues as Record<string, Record<string, string>>;
 
-      // ユーザーを取得
-      if (picklistValues['ユーザー'] && typeof picklistValues['ユーザー'] === 'object') {
-        const userObj = picklistValues['ユーザー'] as { [id: string]: string };
+      // ユーザーを取得（t('LBL_USERS')の翻訳結果をキーとして使用）
+      if (picklistValues[userLabel] && typeof picklistValues[userLabel] === 'object') {
+        const userObj = picklistValues[userLabel] as { [id: string]: string };
         Object.entries(userObj).forEach(([id, name]) => {
           options.push({ id, name, type: 'user' });
         });
       }
 
-      // グループを取得
-      if (picklistValues['グループ'] && typeof picklistValues['グループ'] === 'object') {
-        const groupObj = picklistValues['グループ'];
+      // グループを取得（t('LBL_GROUPS')の翻訳結果をキーとして使用）
+      if (picklistValues[groupLabel] && typeof picklistValues[groupLabel] === 'object') {
+        const groupObj = picklistValues[groupLabel];
         if (!Array.isArray(groupObj)) {
           Object.entries(groupObj).forEach(([id, name]) => {
             options.push({ id, name: name as string, type: 'group' });
@@ -143,7 +155,7 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
     }
 
     return options;
-  }, [fieldinfo]);
+  }, [fieldinfo, userLabel, groupLabel]);
 
   /**
    * 検索でフィルタリングされたオプション
@@ -165,6 +177,11 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
       filteredGroups: filteredOptions.filter(opt => opt.type === 'group')
     };
   }, [filteredOptions]);
+
+  // 検索語変更時はハイライトを先頭にリセット
+  useEffect(() => {
+    setHighlightedIndex(0);
+  }, [searchTerm]);
 
   /**
    * 現在の値から表示ラベルを設定
@@ -206,6 +223,43 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
     setIsOpen(false);
     onChange(name, option.id);
   };
+
+  /**
+   * キーボード操作 (↑↓ Enter Esc)
+   * filteredOptions のグローバルindexで管理 (User/Groupセクション統合)
+   */
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isOpen || filteredOptions.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setHighlightedIndex(prev =>
+          prev < filteredOptions.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setHighlightedIndex(prev =>
+          prev > 0 ? prev - 1 : filteredOptions.length - 1
+        );
+        break;
+      case 'Enter':
+        // IME(日本語入力)確定のEnterはオプション選択しない
+        if (e.nativeEvent.isComposing) break;
+        e.preventDefault();
+        if (highlightedIndex >= 0 && highlightedIndex < filteredOptions.length) {
+          handleSelectOption(filteredOptions[highlightedIndex]);
+        }
+        break;
+      case 'Escape':
+        // ドロップダウンを閉じるのみ。Dialog自体への伝播は QuickCreate の
+        // onEscapeKeyDown が data-rwc-dropdown 要素の存在で判定して抑止する
+        setIsOpen(false);
+        setHighlightedIndex(0);
+        break;
+    }
+  }, [isOpen, filteredOptions, highlightedIndex]);
 
   /**
    * 選択をクリア
@@ -288,6 +342,7 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
     const dropdown = (
       <div
         ref={dropdownRef}
+        data-rwc-dropdown="owner"
         className="fixed z-[100003] bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto pointer-events-auto"
         style={{
           top: dropdownPosition.top,
@@ -307,20 +362,27 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
             {filteredUsers.length > 0 && (
               <>
                 <div className="px-3 py-1 text-xs font-semibold text-gray-500 bg-gray-50">
-                  ユーザー
+                  {userLabel}
                 </div>
-                {filteredUsers.map(user => (
-                  <div
-                    key={`user_${user.id}`}
-                    onClick={() => handleSelectOption(user)}
-                    className={cn(
-                      'px-3 py-1.5 text-md cursor-pointer hover:bg-blue-50',
-                      value === user.id && 'bg-blue-100'
-                    )}
-                  >
-                    {user.name}
-                  </div>
-                ))}
+                {filteredUsers.map((user, i) => {
+                  const globalIndex = i;
+                  return (
+                    <div
+                      key={`user_${user.id}`}
+                      onClick={() => handleSelectOption(user)}
+                      className={cn(
+                        'px-3 py-1.5 text-md cursor-pointer',
+                        globalIndex === highlightedIndex
+                          ? 'bg-blue-100'
+                          : value === user.id
+                            ? 'bg-blue-100'
+                            : 'hover:bg-blue-50'
+                      )}
+                    >
+                      {user.name}
+                    </div>
+                  );
+                })}
               </>
             )}
 
@@ -328,26 +390,33 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
             {filteredGroups.length > 0 && (
               <>
                 <div className="px-3 py-1 text-xs font-semibold text-gray-500 bg-gray-50">
-                  グループ
+                  {groupLabel}
                 </div>
-                {filteredGroups.map(group => (
-                  <div
-                    key={`group_${group.id}`}
-                    onClick={() => handleSelectOption(group)}
-                    className={cn(
-                      'px-3 py-1.5 text-md cursor-pointer hover:bg-blue-50',
-                      value === group.id && 'bg-blue-100'
-                    )}
-                  >
-                    {group.name}
-                  </div>
-                ))}
+                {filteredGroups.map((group, i) => {
+                  const globalIndex = filteredUsers.length + i;
+                  return (
+                    <div
+                      key={`group_${group.id}`}
+                      onClick={() => handleSelectOption(group)}
+                      className={cn(
+                        'px-3 py-1.5 text-md cursor-pointer',
+                        globalIndex === highlightedIndex
+                          ? 'bg-blue-100'
+                          : value === group.id
+                            ? 'bg-blue-100'
+                            : 'hover:bg-blue-50'
+                      )}
+                    >
+                      {group.name}
+                    </div>
+                  );
+                })}
               </>
             )}
           </div>
         ) : (
           <div className="px-3 py-1.5 text-md text-gray-500 text-center">
-            該当する担当者がいません
+            {t('LBL_NO_MATCHING_OWNER', '該当する担当者がいません')}
           </div>
         )}
       </div>
@@ -358,19 +427,37 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
 
   return (
     <div className={cn('flex items-start gap-2', className)}>
-      {/* ラベル（旧版スタイル：右寄せ） */}
-      <span
-        className={cn(
-          'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
-          disabled && 'text-gray-400'
-        )}
-      >
-        {label}
-      </span>
-      {/* 必須マーク：固定幅で位置を確保し、入力欄の開始位置を揃える */}
-      <span className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0" aria-hidden="true">
-        {mandatory ? '*' : ''}
-      </span>
+      {labelClassName ? (
+        <div className="flex items-baseline md:contents">
+          <span
+            className={cn(
+              'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
+              disabled && 'text-gray-400',
+              labelClassName
+            )}
+          >
+            {label}
+            {mandatory && <span className="text-red-500" aria-hidden="true">*</span>}
+            {mandatory && <span className="sr-only"> (必須)</span>}
+          </span>
+          <span className="w-3 flex-shrink-0 hidden md:block" aria-hidden="true" />
+        </div>
+      ) : (
+        <>
+          <span
+            className={cn(
+              'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
+              disabled && 'text-gray-400'
+            )}
+          >
+            {label}
+            {mandatory && <span className="sr-only"> (必須)</span>}
+          </span>
+          <span className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0" aria-hidden="true">
+            {mandatory ? '*' : ''}
+          </span>
+        </>
+      )}
 
       {/* 入力エリア */}
       <div className="flex-1 min-w-0">
@@ -384,6 +471,12 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
               value={displayLabel}
               onChange={handleSearchChange}
               onFocus={handleFocus}
+              onKeyDown={handleKeyDown}
+              onBlur={() => {
+                // Tab離脱等の blur でドロップダウンを閉じる
+                // 候補クリック時の選択処理を妨げないよう150ms遅延
+                setTimeout(() => setIsOpen(false), 150);
+              }}
               disabled={disabled}
               placeholder={t('LBL_PLACEHOLDER_SEARCH', label)}
               autoComplete="off"
