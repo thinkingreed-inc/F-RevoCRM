@@ -1519,6 +1519,10 @@ $languageStrings = array(
 	'UserId ' => 'User ID',
 	'ConvertLead' => 'Convert Lead',
 	// Profile Details
+	'Administrator' => 'Administrator',
+	'Sales Profile' => 'Sales Profile',
+	'Support Profile' => 'Support Profile',
+	'Guest Profile' => 'Guest Profile',
 	'Admin Profile' => 'Admin Profile',
 	'Profile Related to Sales' => 'Sales Profile',
 	'Profile Related to Support' => 'Support Profile',
