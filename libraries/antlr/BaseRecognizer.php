@@ -834,7 +834,7 @@ abstract class BaseRecognizer{
 
 	public function getToken($name){
 		if(preg_match("/\d+/", $name)){
-			return (integer)$name;
+			return (int)$name;
 		}else{
 			return $this->$name;
 		}

@@ -38,8 +38,8 @@ class Install_Index_view extends Vtiger_View_Controller {
 
 	protected function applyInstallFriendlyEnv() {
 		// config.inc.php - will not be ready to control this yet.
-		version_compare(PHP_VERSION, '5.5.0') <= 0 ? error_reporting(E_ERROR & ~E_NOTICE & ~E_DEPRECATED) : error_reporting(E_ERROR & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
-		version_compare(PHP_VERSION, '7.0.0') >= 0 ? error_reporting(E_WARNING & ~E_NOTICE) : error_reporting(E_WARNING & ~E_NOTICE & ~E_DEPRECATED  & E_ERROR & ~E_STRICT);
+		$_e_strict = (PHP_VERSION_ID < 80400) ? E_STRICT : 0;
+		error_reporting(E_WARNING & ~E_NOTICE & ~E_DEPRECATED & ~$_e_strict);
 		set_time_limit(0); // override limits on execution time to allow install to finish
 	}
 

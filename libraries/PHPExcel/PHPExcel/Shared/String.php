@@ -403,7 +403,7 @@ class PHPExcel_Shared_String
 	 * @return boolean
 	 */
 	public static function IsUTF8($value = '') {
-		return utf8_encode(utf8_decode($value)) === $value;
+		return mb_convert_encoding(mb_convert_encoding($value, 'ISO-8859-1', 'UTF-8'), 'UTF-8', 'ISO-8859-1') === $value;
 	}
 
 	/**

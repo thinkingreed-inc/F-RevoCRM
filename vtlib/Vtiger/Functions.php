@@ -1007,7 +1007,7 @@ class Vtiger_Functions {
 
 	static function generateRandomPassword() {
 		$salt = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-		srand((double) microtime() * 1000000);
+		srand((float) microtime() * 1000000);
 		$i = 0;
 		while ($i <= 15) {
 			$num = rand() % 62;
