@@ -22,7 +22,7 @@
 							<div class="col-lg-12 col-md-12 col-lg-pull-0">
 								{assign var=SINGLE_MODULE_NAME value='SINGLE_'|cat:$MODULE}
 								{if $RECORD_ID neq ''}
-									<h4 class="editHeader" title="{vtranslate('LBL_EDITING', $MODULE)} {vtranslate($SINGLE_MODULE_NAME, $MODULE)} {$RECORD->getName()}">{vtranslate('LBL_EDITING', $MODULE)} {vtranslate($SINGLE_MODULE_NAME, $MODULE)} - {$RECORD->getName()}</h4>
+									<h4 class="editHeader" title="{vtranslate('LBL_EDITING', $MODULE)} {vtranslate($SINGLE_MODULE_NAME, $MODULE)} {vtranslate($RECORD->getName(), $MODULE)}">{vtranslate('LBL_EDITING', $MODULE)} {vtranslate($SINGLE_MODULE_NAME, $MODULE)} - {vtranslate($RECORD->getName(), $MODULE)}</h4>
 								{else}
 									<h4 class="editHeader" >{vtranslate('LBL_CREATING_NEW', $MODULE)} {vtranslate($SINGLE_MODULE_NAME, $MODULE)}</h4>
 								{/if}
