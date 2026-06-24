@@ -197,9 +197,11 @@ Class Calendar_Edit_View extends Vtiger_Edit_View {
 		}
 		$picklistDependencyDatasource = Vtiger_DependencyPicklist::getPicklistDependencyDatasource($moduleName);
 		$accessibleUsers = $currentUser->getAccessibleUsers();
+		$accessibleGroups = $currentUser->getAccessibleGroups();
 
 		$viewer->assign('PICKIST_DEPENDENCY_DATASOURCE',Vtiger_Functions::jsonEncode($picklistDependencyDatasource));
 		$viewer->assign('ACCESSIBLE_USERS', $accessibleUsers);
+		$viewer->assign('ACCESSIBLE_GROUPS', $accessibleGroups);
 		if($request->get('selectedusers')) {
 			$invetees = $request->get('selectedusers');
 			if(!is_array($invetees)) {

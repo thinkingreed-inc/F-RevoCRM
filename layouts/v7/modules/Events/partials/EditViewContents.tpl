@@ -28,6 +28,11 @@
 									{$USER_NAME}
 								</option>
 							{/foreach}
+							{foreach key=GROUP_ID item=GROUP_NAME from=$ACCESSIBLE_GROUPS}
+								<option value="{$GROUP_ID}" {if in_array($GROUP_ID,$INVITIES_SELECTED)}selected{/if}>
+									{$GROUP_NAME}
+								</option>
+							{/foreach}
 						</select>
 					</td>
 					<td class="fieldLabel alignMiddle">{vtranslate('LBL_SEND_MAIL', $MODULE)}</td>
