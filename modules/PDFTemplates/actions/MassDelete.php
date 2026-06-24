@@ -39,20 +39,27 @@ class PDFTemplates_MassDelete_Action extends Vtiger_Mass_Action {
 		$selectedIds = $request->get('selected_ids');
 		$excludedIds = $request->get('excluded_ids');
 
+		// $systemTemplate は「選択レコードにシステムテンプレートが含まれていた」フラグ。
+		// PHP 8 では未定義変数の参照が Warning（display_errors=on で JSON レスポンスを破壊）になるため
+		// 必ず先に初期化する。
+		$systemTemplate = false;
+
 		if($selectedIds == 'all' && empty($excludedIds)){
 			$recordModel->deleteAllRecords();
 		}else{
-			$recordIds = $this->getRecordsListFromRequest($request, $recordModel);
-			foreach($recordIds as $recordId) {
-				$recordModel = PDFTemplates_Record_Model::getInstanceById($recordId);
-				if($recordModel->isSystemTemplate()) {
-                    $systemTemplate = true;
-                } else {
-                    $recordModel->delete();
-                }
+			$recordIds = $this->getRecordsListFromRequest($request);
+			if (is_array($recordIds)) {
+				foreach($recordIds as $recordId) {
+					$recordModel = PDFTemplates_Record_Model::getInstanceById($recordId);
+					if($recordModel->isSystemTemplate()) {
+						$systemTemplate = true;
+					} else {
+						$recordModel->delete();
+					}
+				}
 			}
 		}
-		
+
 		$response = new Vtiger_Response();
 		if($systemTemplate) {
 			 $response->setError('502', vtranslate('LBL_NO_PERMISSIONS_TO_DELETE_SYSTEM_TEMPLATE', $moduleName));
@@ -61,20 +68,32 @@ class PDFTemplates_MassDelete_Action extends Vtiger_Mass_Action {
 		}
 		$response->emit();
 	}
-	
-	public function getRecordsListFromRequest(Vtiger_Request $request, $recordModel) {
+
+	/**
+	 * 親 Vtiger_Mass_Action::getRecordsListFromRequest と同シグネチャでオーバーライドする。
+	 *
+	 * PHP 8 では子クラスのメソッドシグネチャを親と非互換に変更すると Fatal Error になる。
+	 * 以前は第2引数 $recordModel を受け取っていたが、PHP 8 で互換性違反となり MassDelete
+	 * アクションのロード自体が失敗し、ボタン押下時に何も削除されない不具合となっていた。
+	 * 必要な ModuleModel はメソッド内で再構築する。
+	 *
+	 * @param Vtiger_Request $request
+	 * @return array|null
+	 */
+	protected function getRecordsListFromRequest(Vtiger_Request $request) {
 		$selectedIds = $request->get('selected_ids');
 		$excludedIds = $request->get('excluded_ids');
-		
+
 		if(!empty($selectedIds) && $selectedIds != 'all') {
-			if(!empty($selectedIds) && php7_count($selectedIds) > 0) {
+			if(php7_count($selectedIds) > 0) {
 				return $selectedIds;
 			}
 		}
 		if(!empty($excludedIds)){
-			$moduleModel = $recordModel->getModule();
-			$recordIds  = $moduleModel->getRecordIds($excludedIds);
+			$moduleModel = Vtiger_Module_Model::getInstance('PDFTemplates');
+			$recordIds = $moduleModel->getRecordIds($excludedIds);
 			return $recordIds;
 		}
+		return null;
 	}
 }
