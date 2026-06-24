@@ -140,4 +140,12 @@ $languageStrings = array(
 
 	'LBL_SETUP_PARAMETER_MESSAGE_IMPORT_MAX_HISTORY_COUNT' => 'The maximum number of import history records that can be retained per user and per module.',
 
+	// Notice that some automatic processing does not run during import
+	'LBL_IMPORT_AUTO_PROCESS_NOTICE_TITLE' => 'Note: Some automatic processing does not run during import',
+	'LBL_IMPORT_AUTO_PROCESS_NOTICE_BODY' => 'When you register records in bulk from a file such as CSV (import), some of the processing that normally runs automatically when you create or edit records one at a time on screen will not run. Specifically, the following will not run:',
+	'LBL_IMPORT_AUTO_PROCESS_NOTICE_WORKFLOW' => 'Processing that runs automatically when records are created or updated (Workflows)',
+	'LBL_IMPORT_AUTO_PROCESS_NOTICE_WORKFLOW_EXAMPLES' => 'e.g., sending automated emails / auto-filling and auto-updating fields / automatically creating related records / automatically generating tasks, etc.',
+	'LBL_IMPORT_AUTO_PROCESS_NOTICE_INTERNAL' => 'Linking and updating processing that runs automatically behind the scenes when records are saved',
+	'LBL_IMPORT_AUTO_PROCESS_NOTICE_WORKAROUND' => 'If you need these to run, after importing please open the target records and save them again, or register them manually on screen.',
+
 );
