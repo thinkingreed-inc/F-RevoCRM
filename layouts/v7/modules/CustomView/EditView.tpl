@@ -113,7 +113,7 @@
 									{/foreach}
 								</select>
 								<input type="hidden" name="columnslist" value='{Vtiger_Functions::jsonEncode($SELECTED_FIELDS)}' />
-								<input type="hidden" name="orderby" value='{Vtiger_Functions::jsonEncode($SELECTED_FIELDS)}' />
+								<input type="hidden" name="orderby" id="saved_orderby" value='{$CUSTOMVIEW_MODEL->get("orderby")}' />
 								<input id="mandatoryFieldsList" type="hidden" value='{Vtiger_Util_Helper::toSafeHTML(ZEND_JSON::encode($MANDATORY_FIELDS))}' />
 							</div>
 							<div class="col-lg-2 col-md-2 col-sm-2"></div>
@@ -125,13 +125,29 @@
 							</div>
 						</div>
 						<div class="form-group clearfix">
-							<div class="col-sm-2 col-xs-2">
-								<label>
+							<div class="col-sm-2 col-xs-12">
+								<label style="margin-top: 5px;">
 										{vtranslate('LBL_DEFAULT_SORT',$MODULE)} 
 								</label>
 							</div>
-							<div class=" row col-sm-5 col-xs-5">
-								<select id='orderby' class="select2-container select2">
+							<div class="col-sm-4 col-xs-7">
+								<select id='orderby' name='orderby' class="select2 form-control">
+									<option value="">{vtranslate('LBL_NONE',$MODULE)}</option>
+									{foreach key=BLOCK_LABEL item=BLOCK_FIELDS from=$RECORD_STRUCTURE}
+										<optgroup label='{vtranslate($BLOCK_LABEL, $SOURCE_MODULE)}'>
+											{foreach key=FIELD_NAME item=FIELD_MODEL from=$BLOCK_FIELDS}
+												<option value="{$FIELD_MODEL->get('name')}" {if $CUSTOMVIEW_MODEL->get('orderby') eq $FIELD_MODEL->get('name')}selected{/if}>
+													{Vtiger_Util_Helper::toSafeHTML(vtranslate($FIELD_MODEL->get('label'), $SOURCE_MODULE))}
+												</option>
+											{/foreach}
+										</optgroup>
+									{/foreach}
+								</select>
+							</div>
+							<div class="col-sm-3 col-xs-5">
+								<select id='sortorder' name='sortorder' class="select2 form-control">
+									<option value="ASC" {if $CUSTOMVIEW_MODEL->get('sortorder') neq 'DESC'}selected{/if}>{vtranslate('LBL_ASCENDING', $MODULE)}</option>
+									<option value="DESC" {if $CUSTOMVIEW_MODEL->get('sortorder') eq 'DESC'}selected{/if}>{vtranslate('LBL_DESCENDING', $MODULE)}</option>
 								</select>
 							</div>
 						</div>

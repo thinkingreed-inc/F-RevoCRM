@@ -224,6 +224,26 @@ jQuery.Class("Vtiger_CustomView_Js",{
 		});
 	},
 
+	registerOrderbyChangeEvent : function() {
+		var form = jQuery('#CustomView');
+		var orderBySelect = form.find('#orderby');
+		var sortOrderSelect = form.find('#sortorder');
+		// The container is the parent div of the sortorder select
+		var sortOrderContainer = sortOrderSelect.closest('div.col-sm-3, div.col-xs-4');
+
+		if(orderBySelect.length > 0) {
+			orderBySelect.on('change', function() {
+				if(jQuery(this).val() == '') {
+					sortOrderContainer.hide();
+				} else {
+					sortOrderContainer.show();
+				}
+			});
+			// Trigger on load to set initial state
+			orderBySelect.trigger('change');
+		}
+	},
+
 	/**
 	 * Function which will register the select2 elements for columns selection
 	 */
@@ -239,7 +259,7 @@ jQuery.Class("Vtiger_CustomView_Js",{
 		this.makeColumnListSortable();
 		this.registerToogleShareList();
 		this.registerOnlyAllUsersInSharedList();
-		this.addColumnsOrderbyList();
+		this.registerOrderbyChangeEvent();
 		var customViewForm = jQuery('#CustomView');
 
 		if(customViewForm.length > 0) {
@@ -271,7 +291,6 @@ jQuery.Class("Vtiger_CustomView_Js",{
 					}
 					var selectValues = JSON.stringify(selectedValues);
 					jQuery('input[name="columnslist"]', self.getContainer()).val(selectValues);
-					jQuery('input[name="orderby"]').val(jQuery('#orderby').val());
 					var allUsersStatusEle = jQuery('#allUsersStatusValue');
 					if(self.isAllUsersSelected() && (jQuery('[data-toogle-members]').is(":checked"))){
 						allUsersStatusEle.val(allUsersStatusEle.data('public'));
@@ -350,38 +369,4 @@ jQuery.Class("Vtiger_CustomView_Js",{
 		});
 	},
 
-	addElementsforOrderbyList :function(){
-		selectElement = this.getColumnSelectElement();
-		selectedOptions = selectElement.select2('data');
-		
-		for (var i= 0;i<selectedOptions.length;i++){
-			selectedOptionid = selectedOptions[i].id.split(':');
-			const newOption = document.createElement("option");
-			newOption.value = selectedOptionid[1];
-			newOption.textContent = selectedOptions[i].text;
-			jQuery("#orderby").append(newOption);
-		}
-	},
-
-	addColumnsOrderbyList :function(){
-		selectfield = document.getElementById('s2id_viewColumnsSelect');
-		this.addElementsforOrderbyList();
-
-		var observer = new MutationObserver(function(){
-			customview = new Vtiger_CustomView_Js();
-			var parent = document.getElementById("orderby");
-			
-			while(parent.lastChild){
-				parent.removeChild(parent.lastChild);
-			}
-			customview.addElementsforOrderbyList();
-		});
-		const config = { 
-			attributes: false, 
-			childList: true, 
-			characterData: false,
-			subtree:true
-		};
-		observer.observe(selectfield, config);
-	}
 });
