@@ -39,6 +39,16 @@
                             {/if}
                         {/foreach}
                     </td>
+                    <td class="fieldLabel {$WIDTHTYPE}">
+                        <span class="muted">{vtranslate('LBL_SEND_MAIL', $MODULE_NAME)}</span>
+                    </td>
+                    <td class="fieldValue {$WIDTHTYPE}">
+                        {if isset($RECORD) && $RECORD && $RECORD->get('send_mail') eq '1'}
+                            {vtranslate('LBL_YES', $MODULE_NAME)}
+                        {else}
+                            {vtranslate('LBL_NO', $MODULE_NAME)}
+                        {/if}
+                    </td>
                 </tr>
             </tbody>
         </table>
