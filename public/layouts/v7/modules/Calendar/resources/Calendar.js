@@ -2257,6 +2257,10 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				popOverHTML += '<div class="calendar-popover-common-memo">' + app.vtranslate('Common Memo') + ': ' + eventObj.common_memo + '</div>';
 			}
 
+			if(eventObj.invitees && eventObj.invitees != '') {
+				popOverHTML += '<div class="calendar-popover-invitees">' + eventObj.invitees_field_label + ': ' + eventObj.invitees + '</div>';
+			}
+
 			if(event.creator && event.creator != '' || event.modifiedby && event.modifiedby != '') {
 				popOverHTML += '<div class="calendar-space">';
 

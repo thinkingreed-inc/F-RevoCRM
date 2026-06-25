@@ -447,12 +447,10 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 				if(count($inviteeDetails) == 1 && array_key_exists($currentUser->getId(), $inviteeDetails)) {
 					$inviteeMessage = '';
 				} else {
-					$inviteeMessage = '<br>'.vtranslate('LBL_INVITE_USERS', 'Events').'<br>'.implode(', ', $inviteeDetails).'';
+					$inviteeMessage = implode(', ', $inviteeDetails);
 				}
-				if(!empty($record['description']) && !empty($inviteeMessage)) {
-					$inviteeMessage ='<br>'.$inviteeMessage;
-				}
-				$item['description'] = $record['description'].$inviteeMessage;
+				$item['invitees_field_label'] = vtranslate('LBL_INVITE_USERS', 'Events');
+				$item['invitees'] = $inviteeMessage;
 			}
 
 			$result[] = $item;
@@ -588,12 +586,10 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 				if(count($inviteeDetails) == 1 && array_key_exists($currentUser->getId(), $inviteeDetails)) {
 					$inviteeMessage = '';
 				} else {
-					$inviteeMessage = '<br>'.vtranslate('LBL_INVITE_USERS', 'Events').'<br>'.implode(', ', $inviteeDetails).'';
+					$inviteeMessage = implode(', ', $inviteeDetails);
 				}
-				if(!empty($record['description']) && !empty($inviteeMessage)) {
-					$inviteeMessage ='<br>'.$inviteeMessage;
-				}
-				$item['description'] = $record['description'].$inviteeMessage;
+				$item['invitees_field_label'] = vtranslate('LBL_INVITE_USERS', 'Events');
+				$item['invitees'] = $inviteeMessage;
 			}
 
 			$result[] = $item;
