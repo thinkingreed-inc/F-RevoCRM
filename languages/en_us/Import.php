@@ -146,6 +146,8 @@ $languageStrings = array(
 	'LBL_IMPORT_AUTO_PROCESS_NOTICE_WORKFLOW' => 'Processing that runs automatically when records are created or updated (Workflows)',
 	'LBL_IMPORT_AUTO_PROCESS_NOTICE_WORKFLOW_EXAMPLES' => 'e.g., sending automated emails / auto-filling and auto-updating fields / automatically creating related records / automatically generating tasks, etc.',
 	'LBL_IMPORT_AUTO_PROCESS_NOTICE_INTERNAL' => 'Linking and updating processing that runs automatically behind the scenes when records are saved',
+	'LBL_IMPORT_AUTO_PROCESS_NOTICE_DUPLICATE' => 'Duplicate checking based on field settings (the module\'s "Do not allow duplicates" setting)',
+	'LBL_IMPORT_AUTO_PROCESS_NOTICE_DUPLICATE_NOTE' => 'During import, this field-based duplicate control does not run. Instead, the "Handling of duplicate records (Ignore / Overwrite / Merge)" you specify in the import wizard takes precedence.',
 	'LBL_IMPORT_AUTO_PROCESS_NOTICE_WORKAROUND' => 'If you need these to run, after importing please open the target records and save them again, or register them manually on screen.',
 
 );
