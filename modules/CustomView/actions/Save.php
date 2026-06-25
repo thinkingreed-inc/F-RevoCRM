@@ -29,7 +29,7 @@ class CustomView_Save_Action extends Vtiger_Action_Controller {
              * we should clear this from session in order to apply view
              */
             $listViewSessionKey = $sourceModuleName.'_'.$cvId;
-            Vtiger_ListView_Model::deleteParamsSession($listViewSessionKey,'list_headers');
+            Vtiger_ListView_Model::deleteParamsSession($listViewSessionKey, array('list_headers', 'orderby', 'sortorder'));
 			$response->setResult(array('id'=>$cvId, 'listviewurl'=>$moduleModel->getListViewUrl().'&viewname='.$cvId));
 		} else {
 			$response->setError(vtranslate('LBL_CUSTOM_VIEW_NAME_DUPLICATES_EXIST', $moduleName));
@@ -59,7 +59,8 @@ class CustomView_Save_Action extends Vtiger_Action_Controller {
 					'setdefault' => $request->get('setdefault'),
 					'setmetrics' => $request->get('setmetrics'),
 					'status' => $request->get('status'),
-					'orderby' => $request->get('orderby')
+					'orderby' => $request->get('orderby'),
+					'sortorder' => $request->get('sortorder')
 		);
 		$selectedColumnsList = $request->get('columnslist');
 		if(!empty($selectedColumnsList)) {

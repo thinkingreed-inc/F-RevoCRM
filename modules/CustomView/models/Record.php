@@ -273,6 +273,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 		$setMetrics = $this->get('setmetrics');
 		$status = $this->get('status');
 		$orderby = $this->get('orderby');
+		$sortorder = $this->get('sortorder');
 
 		if($status == self::CV_STATUS_PENDING) {
 			if($currentUserModel->isAdminUser()) {
@@ -284,14 +285,14 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 			$cvId = $db->getUniqueID("vtiger_customview");
 			$this->set('cvid', $cvId);
 
-			$sql = 'INSERT INTO vtiger_customview(cvid, viewname, setdefault, setmetrics, entitytype, status, userid, orderby) VALUES (?,?,?,?,?,?,?,?)';
-			$params = array($cvId, $viewName, $setDefault, $setMetrics, $moduleName, $status, $currentUserModel->getId(),$orderby);
+			$sql = 'INSERT INTO vtiger_customview(cvid, viewname, setdefault, setmetrics, entitytype, status, userid, orderby, sortorder) VALUES (?,?,?,?,?,?,?,?,?)';
+			$params = array($cvId, $viewName, $setDefault, $setMetrics, $moduleName, $status, $currentUserModel->getId(), $orderby, $sortorder);
 			$db->pquery($sql, $params);
 
 		} else {
 
-			$sql = 'UPDATE vtiger_customview SET viewname=?, setdefault=?, setmetrics=?, status=? WHERE cvid=?';
-			$params = array($viewName, $setDefault, $setMetrics, $status, $cvId);
+			$sql = 'UPDATE vtiger_customview SET viewname=?, setdefault=?, setmetrics=?, status=?, orderby=?, sortorder=? WHERE cvid=?';
+			$params = array($viewName, $setDefault, $setMetrics, $status, $orderby, $sortorder, $cvId);
 			$db->pquery($sql, $params);
 
 			if(!$partial) {
