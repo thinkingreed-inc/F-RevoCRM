@@ -1132,25 +1132,61 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 			if(is_array($fieldValue)){
 				$focus->column_fields[$fieldName] = $fieldValue;
 			}else if($fieldValue !== null) {
-				/*
-				 * for ajax edit, in Vtiger_SaveAjax_Action we are setting relatedContact to 
-				 * the record model which is an object
-				 * Note : decode_html expects only strings
-				 */
 				$value = is_string($fieldValue) ? decode_html($fieldValue) : $fieldValue;
 				$focus->column_fields[$fieldName] = $value;
 			}
 		}
 		$focus->mode = $recordModel->get('mode');
 		$focus->id = $recordModel->getId();
-
 		$focus->is_allday = $recordModel->get('is_allday');
 		$focus->is_not_invitees_update = $recordModel->get('is_not_invitees_update');
 		$focus->invitee_parentid = $recordModel->get('invitee_parentid');
 		$focus->invitee_array = $recordModel->get('invitee_array');
 
 		$focus->save($moduleName);
+		//活動保存後に参加者(担当者抜き)がいるかつメール送信フラグがONの場合、参加者にメール送信する
+		$selectUsers = $recordModel->get('selectedusers');
+		$sendMailValue = $recordModel->get('send_mail');
+		if ($sendMailValue !== null && method_exists($recordModel, 'syncRecurringSendMail')) {
+			$recordModel->syncRecurringSendMail($sendMailValue);
+		}
+		// 招待メールはEvents(活動)のみ送信
+		if ($sendMailValue == '1' && method_exists($recordModel, 'getInviteUserMailData')) {
+			if(empty($selectUsers)){
+				$selectUsers = array();
+			}
+
+			// 担当にも招待・更新メールが送信されるようにする
+			require_once 'include/utils/GetGroupUsers.php';
+			$assigneduserId = $recordModel->get('assigned_user_id');
+			$userGroups = new GetGroupUsers();
+			$userGroups->getAllUsersInGroup($assigneduserId);
+			if(!empty($userGroups->group_users)){ // 担当がグループである場合
+				$assigneduserId = $userGroups->group_users;
+			}else{
+				$assigneduserId = array($assigneduserId);
+			}
+			$selectUsers = array_unique(array_merge($selectUsers, $assigneduserId));
+
+			// 参加者にグループが設定されている場合も展開する
+			$expandedUsers = array();
+			foreach ($selectUsers as $id) {
+				$userGroups = new GetGroupUsers();
+				$userGroups->getAllUsersInGroup($id);
+				if (!empty($userGroups->group_users)) {
+					$expandedUsers = array_merge($expandedUsers, $userGroups->group_users);
+				} else {
+					$expandedUsers[] = $id;
+				}
+			}
+			$selectUsers = array_values(array_unique($expandedUsers));
+		}
+		if (!empty($selectUsers) && $sendMailValue == '1' && method_exists($recordModel, 'getInviteUserMailData')) {
+			$invities = implode(';', $selectUsers);
+			$mail_contents = $recordModel->getInviteUserMailData();
+			$activityMode = ($recordModel->getModuleName() == 'Calendar') ? 'Task' : 'Events';
+			sendInvitation($invities, $activityMode, $recordModel, $mail_contents);
+		}
 		return $recordModel->setId($focus->id);
 	}
-
 }

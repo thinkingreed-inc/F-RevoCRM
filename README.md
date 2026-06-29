@@ -45,6 +45,23 @@ Vtiger Public License 1.2
 <a href="https://example.com/{CRM_DIR}/index.php" rel="noreferrer">F-RevoCRM</a>​​​​​​
 ```
 
+## ヘルスチェック (HealthCheck)
+サーバー監視用に、Web・DB（MySQL）の疎通を確認できるエンドポイントを用意しています。  
+ロードバランサ（ALB/ELB 等）や外形監視からの定期的な死活監視に利用できます。認証は不要です。
+
+* エンドポイント: `https://example.com/{CRM_DIR}/healthcheck.php`
+* メソッド: 任意（GET でよい）
+* チェック内容:
+  * `web` … リクエストに PHP が応答できること
+  * `db` … MySQL へ接続し `SELECT 1` が成功すること
+
+### 返却条件
+* **正常（全チェック成功）**: HTTP `200` / `{"status":"ok","checks":{"web":"ok","db":"ok"}}`
+* **異常（いずれか失敗）**: HTTP `503` / `{"status":"error","checks":{"web":"ok","db":"error"}}`
+
+監視ツール側では基本的に **HTTPステータスコード（200=正常 / 503=異常）** で判定してください（ALB/ELB はボディを参照しません）。  
+レスポンスはホスト名・バージョン・エラー詳細を含まない最小構成です。
+
 ## PCの推奨環境
 * Windows 11 Google Chrome最新 / Microsoft Edge(Chronium)最新
 * 最低1366×768以上の解像度、推奨1920×1080以上

@@ -185,9 +185,8 @@ export function useCalendarFields(
       const picklistValues = assignedUserField.fieldinfo
         .picklistvalues as Record<string, Record<string, string> | undefined>;
 
-      // Get users from the "Users" or "ユーザー" group (supports both English and Japanese)
-      // Groups are excluded from invitees
-      const userGroup = picklistValues['Users'] || picklistValues['ユーザー'];
+      // Get users and groups (invitees can be both; supports English and Japanese)
+      const userGroup = Object.assign({}, picklistValues['Users'] || picklistValues['ユーザー'], picklistValues['Groups'] || picklistValues['グループ']);
       if (userGroup && typeof userGroup === 'object') {
         Object.entries(userGroup).forEach(([id, name]) => {
           users.push({ id, name });

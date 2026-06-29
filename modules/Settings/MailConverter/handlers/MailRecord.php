@@ -41,8 +41,10 @@ class Vtiger_MailRecord {
 	var $_htmlmessage = false;
 	// ATTACHMENTS list of the email
 	var $_attachments = false;
-	// UNIQUEID associated with the email
+	// UNIQUEID associated with the email (Message-ID|udate format)
 	var $_uniqueid = false;
+	// Raw Message-ID header value
+	var $_messageid = false;
 
 	// Flag to avoid re-parsing the email body.
 	var $_bodyparsed = false;
@@ -217,7 +219,8 @@ class Vtiger_MailRecord {
 
 		$mailheader = imap_headerinfo($imap, $messageid);
 
-		$this->_uniqueid = $mailheader->message_id;
+		$this->_messageid = $mailheader->message_id;
+		$this->_uniqueid = $mailheader->message_id . '|' . $mailheader->udate;
 
 		$this->_from = $this->__getEmailIdList($mailheader->from);
                 $this->_fromname = self::__mime_decode($mailheader->from[0]->personal);

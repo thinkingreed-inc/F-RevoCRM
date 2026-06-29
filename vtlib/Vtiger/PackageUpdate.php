@@ -107,7 +107,7 @@ class Vtiger_PackageUpdate extends Vtiger_PackageImport {
 
 			$buildModuleArray = array();
 			$installSequenceArray = array();
-			$moduleBundle = (boolean)$this->_modulexml->modulebundle;
+			$moduleBundle = (bool)$this->_modulexml->modulebundle;
 			if($moduleBundle == true) {
 				$moduleList = (Array)$this->_modulexml->modulelist;
 				foreach($moduleList as $moduleInfos) {

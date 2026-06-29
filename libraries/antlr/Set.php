@@ -1,6 +1,8 @@
 <?php
 	//Todo: find a decent set implementation for php
 	class Set{
+		public $store;
+
 		public function __construct($arr){
 			$this->store = array();
 			foreach($arr as $el){
