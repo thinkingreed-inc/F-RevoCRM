@@ -115,9 +115,11 @@ const FolderItem: React.FC<{
   depth: number;
   selectedId: number | "all";
   onSelect: (id: number) => void;
+  onEdit: (folder: FolderNode) => void;
   onContextMenu: (e: React.MouseEvent, node: FolderNode) => void;
-}> = ({ node, depth, selectedId, onSelect, onContextMenu }) => {
+}> = ({ node, depth, selectedId, onSelect, onEdit, onContextMenu }) => {
   const [expanded, setExpanded] = useState(true);
+  const [hovered, setHovered] = useState(false);
   const hasChildren = node.children.length > 0;
   const isSelected = selectedId === node.id;
 
@@ -129,6 +131,8 @@ const FolderItem: React.FC<{
           e.preventDefault();
           onContextMenu(e, node);
         }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
         style={{
           display: "flex",
           alignItems: "center",
@@ -137,7 +141,7 @@ const FolderItem: React.FC<{
           paddingLeft: 8 + depth * 16,
           cursor: "pointer",
           borderRadius: 4,
-          backgroundColor: isSelected ? "#EBF8FF" : "transparent",
+          backgroundColor: isSelected ? "#EBF8FF" : hovered ? "#F7FAFC" : "transparent",
           color: isSelected ? "#2B6CB0" : "#4A5568",
           fontSize: 13,
           fontWeight: isSelected ? 600 : 400,
@@ -165,6 +169,20 @@ const FolderItem: React.FC<{
         <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {node.name}
         </span>
+        {(hovered || isSelected) && (
+          <span
+            onClick={(e) => { e.stopPropagation(); onEdit(node); }}
+            title="編集"
+            style={{
+              fontSize: 11, color: "#A0AEC0", cursor: "pointer", flexShrink: 0,
+              padding: "0 3px", borderRadius: 3, lineHeight: 1,
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#4A5568")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "#A0AEC0")}
+          >
+            ⚙
+          </span>
+        )}
         {node.count > 0 && (
           <span style={{ fontSize: 11, color: "#A0AEC0", flexShrink: 0 }}>
             {node.count}
@@ -180,6 +198,7 @@ const FolderItem: React.FC<{
             depth={depth + 1}
             selectedId={selectedId}
             onSelect={onSelect}
+            onEdit={onEdit}
             onContextMenu={onContextMenu}
           />
         ))}
@@ -340,6 +359,7 @@ export const DocumentsFolderTree: React.FC<DocumentsFolderTreeProps> = ({
               depth={0}
               selectedId={selectedFolderId}
               onSelect={(id) => { onFolderSelect(id); onFilterTypeChange("all"); }}
+              onEdit={(folder) => onFolderEdit(folder)}
               onContextMenu={handleContextMenu}
             />
           ))}

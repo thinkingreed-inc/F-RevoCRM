@@ -130,6 +130,23 @@ export interface Folder {
   parent_id: number;
   sequence: number;
   count: number;
+  can_edit?: boolean;
+}
+
+/** フォルダ権限エントリ */
+export interface FolderPermission {
+  permission_id?: number;
+  permission_type: "view" | "edit";
+  target_type: "everyone" | "user" | "role" | "group";
+  target_id: string | number | null;
+  target_name?: string | null;
+}
+
+/** 権限付与先候補 */
+export interface PermissionTargets {
+  users: Array<{ id: number; name: string }>;
+  roles: Array<{ id: string; name: string }>;
+  groups: Array<{ id: number; name: string }>;
 }
 
 /** フォルダツリーAPIレスポンス */

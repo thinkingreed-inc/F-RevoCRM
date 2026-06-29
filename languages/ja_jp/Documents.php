@@ -334,6 +334,20 @@ $languageStrings = array(
 	'LBL_LOCATION_FILE' => 'ファイル',
 	'LBL_LOCATION_URL' => 'URL',
 	'LBL_VERSION_AUTO' => 'バージョンはファイル更新時に自動採番されます',
+
+	// フォルダ権限
+	'LBL_FOLDER_PERMISSIONS' => '権限設定',
+	'LBL_PERMISSION_VIEW' => '参照権限',
+	'LBL_PERMISSION_EDIT' => '編集権限',
+	'LBL_TARGET_EVERYONE' => '全員',
+	'LBL_TARGET_USER' => 'ユーザー',
+	'LBL_TARGET_ROLE' => '役割',
+	'LBL_TARGET_GROUP' => 'グループ',
+	'LBL_ADD_PERMISSION' => '権限を追加',
+	'LBL_REMOVE_PERMISSION' => '削除',
+	'LBL_PERMISSIONS_SAVED' => '権限を保存しました',
+	'LBL_PERMISSIONS_SAVE_FAILED' => '権限の保存に失敗しました',
+	'LBL_SELECT_TARGET' => '対象を選択',
 );
 
 $jsLanguageStrings = array(
