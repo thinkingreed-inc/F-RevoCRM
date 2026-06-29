@@ -92,6 +92,9 @@ class Vtiger_WebUI extends Vtiger_EntryPoint {
 	}
 
 	function process (Vtiger_Request $request) {
+		// Override Apache CSP header with environment-aware CSP
+		header(Vtiger_Response::buildCSPHeader());
+
 		Vtiger_Session::init();
 		
 		// Better place this here as session get initiated
