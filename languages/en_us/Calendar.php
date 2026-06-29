@@ -282,4 +282,6 @@ $jsLanguageStrings = array(
 	'JS_MONTHTITLEFORMAT' => 'YYYY-MM',
 	'JS_DAYTITLEFORMAT' => 'YYYY-MM-DD',
 	'JS_WEEKTITLEFORMAT' => 'YYYY-MM-DD',
+	'LBL_DESCRIPTION' => 'Description',
+	'Common Memo' => 'Common Memo',
 );

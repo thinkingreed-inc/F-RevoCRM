@@ -2250,7 +2250,15 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			}
 
 			if(eventObj.description && eventObj.description != '') {
-				popOverHTML += '<div class="calendar-popover-description">' + eventObj.description + '</div>';
+				popOverHTML += '<div class="calendar-popover-description">' + app.vtranslate('LBL_DESCRIPTION') + ': ' + eventObj.description + '</div>';
+			}
+
+			if(eventObj.common_memo && eventObj.common_memo != '') {
+				popOverHTML += '<div class="calendar-popover-common-memo">' + app.vtranslate('Common Memo') + ': ' + eventObj.common_memo + '</div>';
+			}
+
+			if(eventObj.invitees && eventObj.invitees != '') {
+				popOverHTML += '<div class="calendar-popover-invitees">' + eventObj.invitees_field_label + ': ' + eventObj.invitees + '</div>';
 			}
 
 			if(event.creator && event.creator != '' || event.modifiedby && event.modifiedby != '') {
