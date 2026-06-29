@@ -25,6 +25,9 @@ class Users_ExportData_Action extends Vtiger_ExportData_Action {
 									'title'			=> 'Title',
 									'last_name'		=> 'Last Name',
 									'first_name'	=> 'First Name',
+									'roleid'		=> 'Role',
+									'user_password'	=> 'Password',
+									'confirm_password'	=> 'Confirm Password',
 									'email1'		=> 'Email',
 									'email2'		=> 'Other Email',
 									'secondaryemail'=> 'Secondary Email',
@@ -58,7 +61,18 @@ class Users_ExportData_Action extends Vtiger_ExportData_Action {
 
 			$entries = array();
 			for ($i=0; $i<$db->num_rows($result); $i++) {
-				$entries[] = $db->fetchByAssoc($result, $i);
+				$raw_row = $db->fetchByAssoc($result, $i);
+				$row = array();
+				foreach (array_keys($this->exportableFields) as $fieldName) {
+					if ($fieldName == 'user_password' || $fieldName == 'confirm_password') {
+						$row[$fieldName] = 'password';
+					} else if ($fieldName == 'roleid') {
+						$row[$fieldName] = Vtiger_Language_Handler::getTranslatedString(getRoleName($raw_row['roleid']), 'Settings:Roles');
+					} else {
+						$row[$fieldName] = $raw_row[$fieldName];
+					}
+				}
+				$entries[] = $row;
 			}
 
 			return $this->output($request, $translatedHeaders, $entries);
