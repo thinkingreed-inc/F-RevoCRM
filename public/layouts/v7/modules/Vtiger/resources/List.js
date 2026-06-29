@@ -1462,16 +1462,6 @@ Vtiger.Class("Vtiger_List_Js", {
             var element = jQuery(e.currentTarget);
             var fieldName = element.attr('name');
             var searchValue = element.val();
-			if(element.hasClass('select2')){
-				var currentElementContainer = element.closest('.select2_search_div').find('div.listSearchContributor').find('ul');
-				var desireHeight = 150;
-				if(currentElementContainer.height() > desireHeight){
-					currentElementContainer.css({'cssText':'height:'+desireHeight+'px !important;'+'padding:0'});
-				}else if(currentElementContainer.find('.mCSB_container').height() < desireHeight){
-					currentElementContainer.removeAttr('style');
-				}
-				currentElementContainer.mCustomScrollbar("update");
-			}
 			
             if(e.keyCode == 13 && thisInstance.prevSearchValues[fieldName] !== searchValue && !element.hasClass('select2')){
                 e.preventDefault();
@@ -1488,10 +1478,6 @@ Vtiger.Class("Vtiger_List_Js", {
                 }, 10);
             }
         };
-		listViewPageDiv.find('.searchRow div.listSearchContributor.select2').each(function(i,elem){
-           var currentSearchInput = jQuery(elem);
-			app.helper.showVerticalScroll(currentSearchInput.find('ul'),{'height': 150});
-        });
         listViewPageDiv.on('keyup','.listSearchContributor', listSearchContributorChangeHandler);
         listViewPageDiv.on('change','select', listSearchContributorChangeHandler);
         listViewPageDiv.on('datepicker-change', '.dateField', function(e){
@@ -2862,19 +2848,20 @@ Vtiger.Class("Vtiger_List_Js", {
 		});
 	},
 	getListViewContentHeight: function () {
-		var windowHeight = jQuery(window).height();
-		//list height should be 76% of window height
-		var listViewContentHeight = windowHeight * 0.76103500761035;
 		var listViewTable = jQuery('#listview-table');
 		if (listViewTable.length) {
-			if (!listViewTable.find('tr.emptyRecordsDiv').length) {
-				var listTableHeight = jQuery('#listview-table').height();
-				if (listTableHeight < listViewContentHeight) {
-					listViewContentHeight = listTableHeight + 3;
-				}
-			}
+			var theadHeight = listViewTable.find('thead').outerHeight() || 80;
+			var firstRow = listViewTable.find('tr.listViewEntries').first();
+			var rowHeight = firstRow.length ? firstRow.outerHeight() : 40;
+			// 担当フィールドの選択欄)ぶんの余白を常に確保
+			var choicesEl = listViewTable.find('tr.searchRow .select2_search_div .select2-choices');
+			var choicesMaxHeight = 116;
+			var choicesCurrentHeight = choicesEl.length ? (choicesEl.outerHeight() || 0) : 0;
+			theadHeight += Math.max(0, choicesMaxHeight - choicesCurrentHeight);
+			return (theadHeight + rowHeight * 20 + 3) + 'px';
 		}
-		return listViewContentHeight + 'px';
+		var windowHeight = jQuery(window).height();
+		return (windowHeight * 0.76103500761035) + 'px';
 	},
 	getListViewContentWidth: function () {
 		return '100%';
