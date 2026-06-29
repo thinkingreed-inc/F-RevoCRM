@@ -3754,9 +3754,11 @@ class ReportRun extends CRMEntity {
 				}
 
 				$groupslist = $this->getGroupingList($this->reportid);
+				$groupByModules = array();
 				foreach ($groupslist as $reportFieldName => $reportFieldValue) {
 					$nameParts = explode(":", $reportFieldName);
 					list($groupFieldModuleName, $groupFieldName) = split("_", $nameParts[2], 2);
+					$groupByModules[] = $groupFieldModuleName;
 					if(in_array($groupFieldName, $includedUnderbarLabels)){
 						$groupByFieldNames[] = vtranslate($groupFieldName, $groupFieldModuleName);
 					} else {
@@ -3766,13 +3768,19 @@ class ReportRun extends CRMEntity {
 				if (php7_count($groupByFieldNames) > 0) {
 					if (php7_count($groupByFieldNames) == 1) {
 						$firstField = $groupByFieldNames[0];
+						$fullFirstField = vtranslate($groupByModules[0], $groupByModules[0]) . " " . $firstField;
 					} else if (php7_count($groupByFieldNames) == 2) {
 						$firstField = $groupByFieldNames[0];
+						$fullFirstField = vtranslate($groupByModules[0], $groupByModules[0]) . " " . $firstField;
 						$secondField = $groupByFieldNames[1];
+						$fullSecondField = vtranslate($groupByModules[1], $groupByModules[1]) . " " . $secondField;
 					} else if (php7_count($groupByFieldNames) == 3) {
 						$firstField = $groupByFieldNames[0];
+						$fullFirstField = vtranslate($groupByModules[0], $groupByModules[0]) . " " . $firstField;
 						$secondField = $groupByFieldNames[1];
+						$fullSecondField = vtranslate($groupByModules[1], $groupByModules[1]) . " " . $secondField;
 						$thirdField = $groupByFieldNames[2];
+						$fullThirdField = vtranslate($groupByModules[2], $groupByModules[2]) . " " . $thirdField;
 					}
 					$firstValue = ' ';
 					$secondValue = ' ';
@@ -3785,7 +3793,7 @@ class ReportRun extends CRMEntity {
 							if ($fieldName == 'ACTION' || $fieldName == vtranslate('LBL_ACTION', $this->primarymodule) || $fieldName == vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL_ACTION', $this->primarymodule) || $fieldName == vtranslate('LBL ACTION', $this->primarymodule) || $fieldName == vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL ACTION', $this->primarymodule)) {
 								continue;
 							}
-							if (!empty($firstField) && ($fieldName == $firstField || strpos($fieldName, $firstField) === 0) && ($firstValue == $fieldValue || $firstValue == " ")) {
+							if (!empty($firstField) && ($fieldName == $firstField || $fieldName == $fullFirstField) && ($firstValue == $fieldValue || $firstValue == " ")) {
 								if ($firstValue == ' ' || $fieldValue == '-') {
 									$valtemplate .= "<td style='border-bottom: 0;'>" . $fieldValue . "</td>";
 									$firstIsHead = 1;
@@ -3797,7 +3805,7 @@ class ReportRun extends CRMEntity {
 								if ($fieldValue != ' ') {
 									$firstValue = $fieldValue;
 								}
-							} else if (!empty($secondField) && ($fieldName == $secondField || strpos($fieldName, $secondField) === 0) && ($secondValue == $fieldValue || $secondValue == " ")) {
+							} else if (!empty($secondField) && ($fieldName == $secondField || $fieldName == $fullSecondField) && ($secondValue == $fieldValue || $secondValue == " ")) {
 								if ($secondValue == ' ' || $secondValue == '-' || $firstIsHead == 1) {
 									$valtemplate .= "<td style='border-bottom: 0;'>" . $fieldValue . "</td>";
 									$secondIsHead = 1;
@@ -3809,7 +3817,7 @@ class ReportRun extends CRMEntity {
 								if ($fieldValue != ' ') {
 									$secondValue = $fieldValue;
 								}
-							} else if (!empty($thirdField) && ($fieldName == $thirdField || strpos($fieldName, $thirdField) === 0) && ($thirdValue == $fieldValue || $thirdValue == " ")) {
+							} else if (!empty($thirdField) && ($fieldName == $thirdField || $fieldName == $fullThirdField) && ($thirdValue == $fieldValue || $thirdValue == " ")) {
 								if ($thirdValue == ' ' || $thirdValue == '-' || $secondIsHead == 1) {
 									$valtemplate .= "<td style='border-bottom: 0;'>" . $fieldValue . "</td>";
 								} else if($thirdValue == '') {
@@ -3822,13 +3830,13 @@ class ReportRun extends CRMEntity {
 								}
 							} else {
 								$valtemplate .= "<td style='border-bottom: 0;'>" . $fieldValue . "</td>";
-								if (!empty($firstField) && ($fieldName == $firstField || strpos($fieldName, $firstField) === 0)) {
+								if (!empty($firstField) && ($fieldName == $firstField || $fieldName == $fullFirstField)) {
 									$firstIsHead = 1;
 									$firstValue = $fieldValue;
-								} else if (!empty($secondField) && ($fieldName == $secondField || strpos($fieldName, $secondField) === 0)) {
+								} else if (!empty($secondField) && ($fieldName == $secondField || $fieldName == $fullSecondField)) {
 									$secondIsHead = 1;
 									$secondValue = $fieldValue;
-								} else if (!empty($thirdField) && ($fieldName == $thirdField || strpos($fieldName, $thirdField) === 0)) {
+								} else if (!empty($thirdField) && ($fieldName == $thirdField || $fieldName == $fullThirdField)) {
 									$thirdValue = $fieldValue;
 								}
 							}
