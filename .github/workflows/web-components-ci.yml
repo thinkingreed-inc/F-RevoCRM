@@ -26,8 +26,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
         with:
-          # push 時に整形コミットを push できるよう、detached HEAD ではなくブランチを取得
-          ref: ${{ github.head_ref || github.ref_name }}
+          # push 時のみブランチを明示取得(整形コミットの push 用)。
+          # pull_request では空にして既定のマージ ref を使う
+          # (cross-fork PR で base リポジトリに head ブランチが無く checkout 失敗するのを回避)
+          ref: ${{ github.event_name == 'push' && github.ref_name || '' }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
