@@ -1,0 +1,67 @@
+# assets/react-web-components (React + TypeScript + Vite) の lint / format / test を
+# 自動実行する CI。web-components 配下の変更時のみ動作する。
+# push 時は prettier 自動整形の結果をコミットして push し、フォーマット崩れを溜めない。
+name: web-components CI
+
+on:
+  pull_request:
+    paths:
+      - 'assets/react-web-components/**'
+      - '.github/workflows/web-components-ci.yml'
+  push:
+    paths:
+      - 'assets/react-web-components/**'
+      - '.github/workflows/web-components-ci.yml'
+
+permissions:
+  contents: write # push 時に整形コミットを積むため
+
+jobs:
+  lint-format-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: assets/react-web-components
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          # push 時に整形コミットを push できるよう、detached HEAD ではなくブランチを取得
+          ref: ${{ github.head_ref || github.ref_name }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24 # 推奨 Node.js (最新 LTS)
+          cache: npm
+          cache-dependency-path: assets/react-web-components/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # pull_request: フォーマット崩れを検知するのみ（fork PR は書き込み権限が無いため）
+      - name: Format check
+        if: github.event_name == 'pull_request'
+        run: npm run format:check
+
+      # push: prettier --write の結果に差分があれば整形コミットを積んで push する。
+      # GITHUB_TOKEN 由来の push は新たな workflow を再トリガーしないためループしない。
+      - name: Format and commit
+        if: github.event_name == 'push'
+        run: |
+          npx prettier --write "src/**/*.{ts,tsx,js,jsx,json,css,scss,md}"
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "整形差分なし。"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "[整形] prettier による自動整形 (CI)"
+          git push
+
+      - name: Test
+        run: npm run test
