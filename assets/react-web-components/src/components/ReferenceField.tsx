@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import { Search, X, ChevronDown, Loader2 } from 'lucide-react';
-import { Input } from './ui/input';
-import { Button } from './ui/button';
-import { RecordSearchDrawer } from './RecordSearchDrawer';
-import { cn } from '../lib/utils';
-import { useOptionalTranslation } from '../hooks/useTranslation';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
+import { Search, X, ChevronDown, Loader2 } from "lucide-react";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { RecordSearchDrawer } from "./RecordSearchDrawer";
+import { cn } from "../lib/utils";
+import { useOptionalTranslation } from "../hooks/useTranslation";
 
 /**
  * 参照レコードの型
@@ -59,7 +59,7 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
   mandatory = false,
   disabled = false,
   error,
-  className
+  className,
 }) => {
   // 翻訳フック（TranslationProvider外でも安全に使用可能）
   const { t } = useOptionalTranslation();
@@ -72,14 +72,14 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
   };
   // 現在選択中のモジュール（複数参照の場合）
   const [selectedModule, setSelectedModule] = useState<string>(
-    referenceModules.length > 0 ? referenceModules[0] : ''
+    referenceModules.length > 0 ? referenceModules[0] : "",
   );
 
   // 検索キーワード
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   // 表示用のラベル
-  const [displayLabel, setDisplayLabel] = useState<string>(displayValue || '');
+  const [displayLabel, setDisplayLabel] = useState<string>(displayValue || "");
 
   // 検索結果
   const [searchResults, setSearchResults] = useState<ReferenceRecord[]>([]);
@@ -94,7 +94,8 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
 
   // モジュール選択ドロップダウン表示状態
-  const [isModuleDropdownOpen, setIsModuleDropdownOpen] = useState<boolean>(false);
+  const [isModuleDropdownOpen, setIsModuleDropdownOpen] =
+    useState<boolean>(false);
 
   // 検索入力へのref
   const inputRef = useRef<HTMLInputElement>(null);
@@ -104,14 +105,23 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
   const moduleInputContainerRef = useRef<HTMLDivElement>(null);
 
   // ドロップダウンの位置
-  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null);
-  const [moduleDropdownPosition, setModuleDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [dropdownPosition, setDropdownPosition] = useState<{
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
+  const [moduleDropdownPosition, setModuleDropdownPosition] = useState<{
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
 
   // キーボード操作用ハイライトindex (検索結果ドロップダウン)
   const [highlightedIndex, setHighlightedIndex] = useState<number>(0);
 
   // キーボード操作用ハイライトindex (モジュール選択ドロップダウン)
-  const [moduleHighlightedIndex, setModuleHighlightedIndex] = useState<number>(0);
+  const [moduleHighlightedIndex, setModuleHighlightedIndex] =
+    useState<number>(0);
 
   // デバウンス用のタイマー
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -147,14 +157,16 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
       touchStartYRef.current = null;
     };
 
-    dropdown.addEventListener('touchstart', handleTouchStart, { passive: true });
-    dropdown.addEventListener('touchmove', handleTouchMove, { passive: false });
-    dropdown.addEventListener('touchend', handleTouchEnd, { passive: true });
+    dropdown.addEventListener("touchstart", handleTouchStart, {
+      passive: true,
+    });
+    dropdown.addEventListener("touchmove", handleTouchMove, { passive: false });
+    dropdown.addEventListener("touchend", handleTouchEnd, { passive: true });
 
     return () => {
-      dropdown.removeEventListener('touchstart', handleTouchStart);
-      dropdown.removeEventListener('touchmove', handleTouchMove);
-      dropdown.removeEventListener('touchend', handleTouchEnd);
+      dropdown.removeEventListener("touchstart", handleTouchStart);
+      dropdown.removeEventListener("touchmove", handleTouchMove);
+      dropdown.removeEventListener("touchend", handleTouchEnd);
     };
   }, [isOpen, dropdownPosition]);
 
@@ -185,56 +197,61 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
       moduleTouchStartYRef.current = null;
     };
 
-    dropdown.addEventListener('touchstart', handleTouchStart, { passive: true });
-    dropdown.addEventListener('touchmove', handleTouchMove, { passive: false });
-    dropdown.addEventListener('touchend', handleTouchEnd, { passive: true });
+    dropdown.addEventListener("touchstart", handleTouchStart, {
+      passive: true,
+    });
+    dropdown.addEventListener("touchmove", handleTouchMove, { passive: false });
+    dropdown.addEventListener("touchend", handleTouchEnd, { passive: true });
 
     return () => {
-      dropdown.removeEventListener('touchstart', handleTouchStart);
-      dropdown.removeEventListener('touchmove', handleTouchMove);
-      dropdown.removeEventListener('touchend', handleTouchEnd);
+      dropdown.removeEventListener("touchstart", handleTouchStart);
+      dropdown.removeEventListener("touchmove", handleTouchMove);
+      dropdown.removeEventListener("touchend", handleTouchEnd);
     };
   }, [isModuleDropdownOpen, moduleDropdownPosition]);
 
   /**
    * レコード検索
    */
-  const searchRecords = useCallback(async (searchValue: string) => {
-    if (!selectedModule) return;
+  const searchRecords = useCallback(
+    async (searchValue: string) => {
+      if (!selectedModule) return;
 
-    setIsLoading(true);
-    try {
-      const params = new URLSearchParams({
-        module: selectedModule,
-        api: 'SearchRecords',
-        search: searchValue,
-        limit: '20'
-      });
+      setIsLoading(true);
+      try {
+        const params = new URLSearchParams({
+          module: selectedModule,
+          api: "SearchRecords",
+          search: searchValue,
+          limit: "20",
+        });
 
-      const response = await fetch(`?${params.toString()}`, {
-        method: 'GET',
-        credentials: 'same-origin',
-        headers: {
-          'Accept': 'application/json'
+        const response = await fetch(`?${params.toString()}`, {
+          method: "GET",
+          credentials: "same-origin",
+          headers: {
+            Accept: "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
         }
-      });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+
+        // APIレスポンス構造: { success: true, result: { records: [...] } } または直接 { records: [...] }
+        const records = data.result?.records || data.records || [];
+        setSearchResults(records);
+      } catch (err) {
+        console.error("Reference search error:", err);
+        setSearchResults([]);
+      } finally {
+        setIsLoading(false);
       }
-
-      const data = await response.json();
-
-      // APIレスポンス構造: { success: true, result: { records: [...] } } または直接 { records: [...] }
-      const records = data.result?.records || data.records || [];
-      setSearchResults(records);
-    } catch (err) {
-      console.error('Reference search error:', err);
-      setSearchResults([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [selectedModule]);
+    },
+    [selectedModule],
+  );
 
   /**
    * 検索キーワード変更時（デバウンス付き）
@@ -246,7 +263,7 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
 
     // 既存の選択をクリア
     if (value) {
-      onChange(name, '');
+      onChange(name, "");
     }
 
     // デバウンス
@@ -278,7 +295,9 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
   // モジュール選択ドロップダウンopen時に現在の選択モジュールにハイライト
   useEffect(() => {
     if (isModuleDropdownOpen) {
-      const currentIndex = referenceModules.findIndex(m => m === selectedModule);
+      const currentIndex = referenceModules.findIndex(
+        (m) => m === selectedModule,
+      );
       setModuleHighlightedIndex(currentIndex >= 0 ? currentIndex : 0);
     }
   }, [isModuleDropdownOpen, referenceModules, selectedModule]);
@@ -288,7 +307,7 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
    */
   const handleSelectRecord = (record: ReferenceRecord) => {
     setDisplayLabel(record.label);
-    setSearchTerm('');
+    setSearchTerm("");
     setIsOpen(false);
     onChange(name, record.id, record);
   };
@@ -297,9 +316,9 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
    * 選択をクリア
    */
   const handleClear = () => {
-    setDisplayLabel('');
-    setSearchTerm('');
-    onChange(name, '');
+    setDisplayLabel("");
+    setSearchTerm("");
+    onChange(name, "");
     setSearchResults([]);
     inputRef.current?.focus();
   };
@@ -307,38 +326,44 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
   /**
    * キーボード操作 (検索結果ドロップダウン用 ↑↓ Enter Esc)
    */
-  const handleSearchKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!isOpen || isLoading || searchResults.length === 0) return;
+  const handleSearchKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (!isOpen || isLoading || searchResults.length === 0) return;
 
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setHighlightedIndex(prev =>
-          prev < searchResults.length - 1 ? prev + 1 : 0
-        );
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setHighlightedIndex(prev =>
-          prev > 0 ? prev - 1 : searchResults.length - 1
-        );
-        break;
-      case 'Enter':
-        // IME(日本語入力)確定のEnterはレコード選択しない
-        if (e.nativeEvent.isComposing) break;
-        e.preventDefault();
-        if (highlightedIndex >= 0 && highlightedIndex < searchResults.length) {
-          handleSelectRecord(searchResults[highlightedIndex]);
-        }
-        break;
-      case 'Escape':
-        // ドロップダウンを閉じるのみ。Dialog自体への伝播は QuickCreate の
-        // onEscapeKeyDown が data-rwc-dropdown 要素の存在で判定して抑止する
-        setIsOpen(false);
-        setHighlightedIndex(0);
-        break;
-    }
-  }, [isOpen, isLoading, searchResults, highlightedIndex]);
+      switch (e.key) {
+        case "ArrowDown":
+          e.preventDefault();
+          setHighlightedIndex((prev) =>
+            prev < searchResults.length - 1 ? prev + 1 : 0,
+          );
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          setHighlightedIndex((prev) =>
+            prev > 0 ? prev - 1 : searchResults.length - 1,
+          );
+          break;
+        case "Enter":
+          // IME(日本語入力)確定のEnterはレコード選択しない
+          if (e.nativeEvent.isComposing) break;
+          e.preventDefault();
+          if (
+            highlightedIndex >= 0 &&
+            highlightedIndex < searchResults.length
+          ) {
+            handleSelectRecord(searchResults[highlightedIndex]);
+          }
+          break;
+        case "Escape":
+          // ドロップダウンを閉じるのみ。Dialog自体への伝播は QuickCreate の
+          // onEscapeKeyDown が data-rwc-dropdown 要素の存在で判定して抑止する
+          setIsOpen(false);
+          setHighlightedIndex(0);
+          break;
+      }
+    },
+    [isOpen, isLoading, searchResults, highlightedIndex],
+  );
 
   /**
    * 参照モジュール選択
@@ -358,7 +383,7 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
       setDropdownPosition({
         top: rect.bottom + window.scrollY,
         left: rect.left + window.scrollX,
-        width: rect.width
+        width: rect.width,
       });
     }
   }, []);
@@ -372,7 +397,7 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
       setModuleDropdownPosition({
         top: rect.bottom + window.scrollY,
         left: rect.left + window.scrollX,
-        width: rect.width
+        width: rect.width,
       });
     }
   }, []);
@@ -384,7 +409,7 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
     updateDropdownPosition();
     setIsOpen(true);
     if (searchResults.length === 0 && !searchTerm) {
-      searchRecords('');
+      searchRecords("");
     }
   };
 
@@ -393,7 +418,7 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
    */
   const handleDrawerSelect = (record: ReferenceRecord) => {
     setDisplayLabel(record.label);
-    setSearchTerm('');
+    setSearchTerm("");
     onChange(name, record.id, record);
   };
 
@@ -412,15 +437,17 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
       }
 
       // モジュール選択ドロップダウン
-      const isInsideModuleDropdown = moduleDropdownRef.current?.contains(target);
-      const isInsideModuleInput = moduleInputContainerRef.current?.contains(target);
+      const isInsideModuleDropdown =
+        moduleDropdownRef.current?.contains(target);
+      const isInsideModuleInput =
+        moduleInputContainerRef.current?.contains(target);
       if (!isInsideModuleDropdown && !isInsideModuleInput) {
         setIsModuleDropdownOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   /**
@@ -434,14 +461,19 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
       if (isModuleDropdownOpen) updateModuleDropdownPosition();
     };
 
-    window.addEventListener('scroll', handleScrollOrResize, true);
-    window.addEventListener('resize', handleScrollOrResize);
+    window.addEventListener("scroll", handleScrollOrResize, true);
+    window.addEventListener("resize", handleScrollOrResize);
 
     return () => {
-      window.removeEventListener('scroll', handleScrollOrResize, true);
-      window.removeEventListener('resize', handleScrollOrResize);
+      window.removeEventListener("scroll", handleScrollOrResize, true);
+      window.removeEventListener("resize", handleScrollOrResize);
     };
-  }, [isOpen, isModuleDropdownOpen, updateDropdownPosition, updateModuleDropdownPosition]);
+  }, [
+    isOpen,
+    isModuleDropdownOpen,
+    updateDropdownPosition,
+    updateModuleDropdownPosition,
+  ]);
 
   /**
    * 初期表示ラベルの設定
@@ -454,7 +486,8 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
 
   // モジュール選択ドロップダウンのレンダリング（Portal使用）
   const renderModuleDropdown = () => {
-    if (!isModuleDropdownOpen || disabled || !moduleDropdownPosition) return null;
+    if (!isModuleDropdownOpen || disabled || !moduleDropdownPosition)
+      return null;
 
     const dropdown = (
       <div
@@ -464,7 +497,7 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
         style={{
           top: moduleDropdownPosition.top,
           left: moduleDropdownPosition.left,
-          width: moduleDropdownPosition.width
+          width: moduleDropdownPosition.width,
         }}
         onWheel={(e) => {
           e.stopPropagation();
@@ -479,12 +512,12 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
               key={mod}
               onClick={() => handleModuleSelect(mod)}
               className={cn(
-                'px-3 py-1.5 text-md cursor-pointer',
+                "px-3 py-1.5 text-md cursor-pointer",
                 index === moduleHighlightedIndex
-                  ? 'bg-blue-100'
+                  ? "bg-blue-100"
                   : selectedModule === mod
-                    ? 'bg-blue-100'
-                    : 'hover:bg-blue-50'
+                    ? "bg-blue-100"
+                    : "hover:bg-blue-50",
               )}
             >
               {getModuleLabel(mod)}
@@ -509,7 +542,7 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
         style={{
           top: dropdownPosition.top,
           left: dropdownPosition.left,
-          width: dropdownPosition.width
+          width: dropdownPosition.width,
         }}
         onWheel={(e) => {
           e.stopPropagation();
@@ -529,12 +562,12 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
                 key={record.id}
                 onClick={() => handleSelectRecord(record)}
                 className={cn(
-                  'px-3 py-1.5 text-md cursor-pointer',
+                  "px-3 py-1.5 text-md cursor-pointer",
                   index === highlightedIndex
-                    ? 'bg-blue-100'
+                    ? "bg-blue-100"
                     : value === record.id
-                      ? 'bg-blue-100'
-                      : 'hover:bg-blue-50'
+                      ? "bg-blue-100"
+                      : "hover:bg-blue-50",
                 )}
               >
                 {record.label}
@@ -543,7 +576,9 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
           </div>
         ) : (
           <div className="px-3 py-1.5 text-md text-gray-500 text-center">
-            {searchTerm ? '該当するレコードがありません' : 'レコードがありません'}
+            {searchTerm
+              ? "該当するレコードがありません"
+              : "レコードがありません"}
           </div>
         )}
       </div>
@@ -553,19 +588,22 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
   };
 
   return (
-    <div className={cn('flex items-start gap-2', className)}>
+    <div className={cn("flex items-start gap-2", className)}>
       {/* ラベル（旧版スタイル：右寄せ） */}
       <span
         className={cn(
-          'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
-          disabled && 'text-gray-400'
+          "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+          disabled && "text-gray-400",
         )}
       >
         {label}
       </span>
       {/* 必須マーク：固定幅で位置を確保し、入力欄の開始位置を揃える */}
-      <span className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0" aria-hidden="true">
-        {mandatory ? '*' : ''}
+      <span
+        className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0"
+        aria-hidden="true"
+      >
+        {mandatory ? "*" : ""}
       </span>
 
       {/* 入力エリア */}
@@ -575,7 +613,10 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             {/* 複数参照モジュールの場合のモジュール選択（モバイル縦並び、PC横並び） */}
             {referenceModules.length > 1 && (
-              <div className="relative flex-shrink-0 w-full sm:w-auto" ref={moduleInputContainerRef}>
+              <div
+                className="relative flex-shrink-0 w-full sm:w-auto"
+                ref={moduleInputContainerRef}
+              >
                 <div className="relative flex items-center">
                   <Input
                     type="text"
@@ -591,7 +632,7 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
                       if (disabled) return;
                       // ドロップダウン閉時: Enter/Space で開く
                       if (!isModuleDropdownOpen) {
-                        if (e.key === 'Enter' || e.key === ' ') {
+                        if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
                           updateModuleDropdownPosition();
                           setIsModuleDropdownOpen(true);
@@ -600,28 +641,33 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
                       }
                       // ドロップダウン開時: ↑↓Enter Esc
                       switch (e.key) {
-                        case 'ArrowDown':
+                        case "ArrowDown":
                           e.preventDefault();
-                          setModuleHighlightedIndex(prev =>
-                            prev < referenceModules.length - 1 ? prev + 1 : 0
+                          setModuleHighlightedIndex((prev) =>
+                            prev < referenceModules.length - 1 ? prev + 1 : 0,
                           );
                           break;
-                        case 'ArrowUp':
+                        case "ArrowUp":
                           e.preventDefault();
-                          setModuleHighlightedIndex(prev =>
-                            prev > 0 ? prev - 1 : referenceModules.length - 1
+                          setModuleHighlightedIndex((prev) =>
+                            prev > 0 ? prev - 1 : referenceModules.length - 1,
                           );
                           break;
-                        case 'Enter':
-                        case ' ':
+                        case "Enter":
+                        case " ":
                           // IME(日本語入力)確定のEnterはモジュール選択しない
                           if (e.nativeEvent.isComposing) break;
                           e.preventDefault();
-                          if (moduleHighlightedIndex >= 0 && moduleHighlightedIndex < referenceModules.length) {
-                            handleModuleSelect(referenceModules[moduleHighlightedIndex]);
+                          if (
+                            moduleHighlightedIndex >= 0 &&
+                            moduleHighlightedIndex < referenceModules.length
+                          ) {
+                            handleModuleSelect(
+                              referenceModules[moduleHighlightedIndex],
+                            );
                           }
                           break;
-                        case 'Escape':
+                        case "Escape":
                           // ドロップダウンを閉じるのみ。Dialog自体への伝播は QuickCreate の
                           // onEscapeKeyDown が data-rwc-dropdown 要素の存在で判定して抑止する
                           setIsModuleDropdownOpen(false);
@@ -636,8 +682,8 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
                     onChange={() => {}} // 値は選択肢からのみ変更可能
                     autoComplete="off"
                     className={cn(
-                      'w-full sm:w-[90px] sm:max-w-[90px] pr-8 cursor-pointer caret-transparent',
-                      disabled && 'cursor-not-allowed'
+                      "w-full sm:w-[90px] sm:max-w-[90px] pr-8 cursor-pointer caret-transparent",
+                      disabled && "cursor-not-allowed",
                     )}
                   />
                   <div className="absolute right-3 flex items-center pointer-events-none">
@@ -668,12 +714,9 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
                       setTimeout(() => setIsOpen(false), 150);
                     }}
                     disabled={disabled}
-                    placeholder={t('LBL_PLACEHOLDER_SEARCH', label)}
+                    placeholder={t("LBL_PLACEHOLDER_SEARCH", label)}
                     autoComplete="off"
-                    className={cn(
-                      'pr-10',
-                      error && 'border-red-500'
-                    )}
+                    className={cn("pr-10", error && "border-red-500")}
                   />
 
                   {/* クリアボタン or ローディング */}
@@ -718,20 +761,28 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
             open={isDrawerOpen}
             onOpenChange={setIsDrawerOpen}
             moduleName={selectedModule}
-            title={t('LBL_PLACEHOLDER_SEARCH_TITLE', label)}
+            title={t("LBL_PLACEHOLDER_SEARCH_TITLE", label)}
             onSelect={handleDrawerSelect}
             selectedId={value}
           />
         </div>
 
         {/* 隠しフィールド（実際の値） */}
-        <input type="hidden" name={name} value={value || ''} />
+        <input type="hidden" name={name} value={value || ""} />
 
         {/* エラーメッセージ */}
         {error && (
           <div className="mt-1 text-sm text-red-600 flex items-center">
-            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            <svg
+              className="w-4 h-4 mr-1"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
             </svg>
             {error}
           </div>

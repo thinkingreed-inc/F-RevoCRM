@@ -1,8 +1,8 @@
-import React from 'react';
-import { Button } from '../ui/button';
-import { Loader2 } from 'lucide-react';
-import { QuickCreateFooterProps } from '../../types/quickcreate';
-import { useTranslation } from '../../hooks/useTranslation';
+import React from "react";
+import { Button } from "../ui/button";
+import { Loader2 } from "lucide-react";
+import { QuickCreateFooterProps } from "../../types/quickcreate";
+import { useTranslation } from "../../hooks/useTranslation";
 
 /**
  * QuickCreateFooter - QuickCreateモーダルのフッターボタン
@@ -13,7 +13,7 @@ export const QuickCreateFooter: React.FC<QuickCreateFooterProps> = ({
   onCancel,
   onGoToFullForm,
   isSaving = false,
-  saveDisabled = false
+  saveDisabled = false,
 }) => {
   const { t } = useTranslation();
 
@@ -30,7 +30,7 @@ export const QuickCreateFooter: React.FC<QuickCreateFooterProps> = ({
         disabled={isSaving}
         className="px-6 py-1.5 h-auto text-md font-bold bg-white hover:bg-gray-100 border-gray-300"
       >
-        {t('LBL_GO_TO_FULL_FORM')}
+        {t("LBL_GO_TO_FULL_FORM")}
       </Button>
 
       {/* 保存ボタン - F-RevoCRM本体の btn-success スタイル */}
@@ -43,10 +43,10 @@ export const QuickCreateFooter: React.FC<QuickCreateFooterProps> = ({
         {isSaving ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            {t('LBL_SAVING')}
+            {t("LBL_SAVING")}
           </>
         ) : (
-          t('LBL_SAVE')
+          t("LBL_SAVE")
         )}
       </Button>
 
@@ -58,7 +58,7 @@ export const QuickCreateFooter: React.FC<QuickCreateFooterProps> = ({
         disabled={isSaving}
         className="px-2.5 py-1.5 h-auto text-md !text-red-600 hover:!text-red-800 hover:no-underline"
       >
-        {t('LBL_CANCEL')}
+        {t("LBL_CANCEL")}
       </Button>
     </div>
   );

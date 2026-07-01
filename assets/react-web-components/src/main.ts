@@ -22,7 +22,7 @@ createWebComponent(
   QuickCreate,
   "quick-create",
   ["module", "is-open", "initial-data", "variant", "record-id"],
-  ["onSave", "onCancel", "onGoToFullForm", "onOpenChange"]
+  ["onSave", "onCancel", "onGoToFullForm", "onOpenChange"],
 );
 
 // Calendar/Events用QuickCreateコンポーネントの登録
@@ -35,7 +35,7 @@ createWebComponent(
   CalendarQuickCreate,
   "calendar-quick-create",
   ["module", "is-open", "initial-data", "record-id", "is-duplicate"],
-  ["onSave", "onCancel", "onGoToFullForm", "onOpenChange"]
+  ["onSave", "onCancel", "onGoToFullForm", "onOpenChange"],
 );
 
 // AppMenu コンポーネントの登録（Headerのアプリメニュー部分）
@@ -47,4 +47,10 @@ createWebComponent(AppMenu, "app-menu", ["app-menus"]);
 // ActivityList コンポーネントの登録
 // 親レコードに関連する活動一覧を表示
 // mode: "upcoming" (今後), "overdue" (期限切れ), "all" (すべて)
-createWebComponent(ActivityList, "activity-list", ["module", "record-id", "mode", "limit", "refresh-key"]);
+createWebComponent(ActivityList, "activity-list", [
+  "module",
+  "record-id",
+  "mode",
+  "limit",
+  "refresh-key",
+]);

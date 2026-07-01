@@ -1,17 +1,22 @@
-import React, { useEffect, useRef } from 'react';
-import { FieldRendererProps, UI_TYPES, FieldValue, HTMLInputValue } from '../types/field';
-import { Input } from './ui/input';
-import { Textarea } from './ui/textarea';
-import { CheckboxSwitch } from './ui/checkbox-switch';
-import { ReferenceField } from './ReferenceField';
-import { MultireferenceField } from './MultireferenceField';
-import { OwnerField } from './OwnerField';
-import { PicklistField } from './PicklistField';
-import { MultiPicklistField } from './MultiPicklistField';
-import { ProductTaxField } from './ProductTaxField';
-import { CurrencyListField } from './CurrencyListField';
-import { cn } from '../lib/utils';
-import { useOptionalTranslation } from '../hooks/useTranslation';
+import React, { useEffect, useRef } from "react";
+import {
+  FieldRendererProps,
+  UI_TYPES,
+  FieldValue,
+  HTMLInputValue,
+} from "../types/field";
+import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
+import { CheckboxSwitch } from "./ui/checkbox-switch";
+import { ReferenceField } from "./ReferenceField";
+import { MultireferenceField } from "./MultireferenceField";
+import { OwnerField } from "./OwnerField";
+import { PicklistField } from "./PicklistField";
+import { MultiPicklistField } from "./MultiPicklistField";
+import { ProductTaxField } from "./ProductTaxField";
+import { CurrencyListField } from "./CurrencyListField";
+import { cn } from "../lib/utils";
+import { useOptionalTranslation } from "../hooks/useTranslation";
 
 declare global {
   interface Window {
@@ -24,13 +29,13 @@ declare global {
  * FieldValueをHTMLInput要素に渡せる型に変換
  */
 const toInputValue = (value: FieldValue): HTMLInputValue => {
-  if (value === null || value === undefined) return '';
-  if (typeof value === 'boolean') return value ? '1' : '';
+  if (value === null || value === undefined) return "";
+  if (typeof value === "boolean") return value ? "1" : "";
   if (Array.isArray(value)) return value;
   return value;
 };
 
-const QUICKCREATE_EDITOR_MAX_HEIGHT = '200px';
+const QUICKCREATE_EDITOR_MAX_HEIGHT = "200px";
 
 type JoditEditorTextareaProps = {
   id: string;
@@ -49,7 +54,7 @@ const JoditEditorTextarea: React.FC<JoditEditorTextareaProps> = ({
   disabled = false,
   className,
   rows = 3,
-  onChange
+  onChange,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const wrapperRef = useRef<any>(null);
@@ -69,7 +74,7 @@ const JoditEditorTextarea: React.FC<JoditEditorTextareaProps> = ({
     }
 
     const element = jQuery(textarea);
-    element.removeAttr('data-validation-engine').addClass('joditEditorSource');
+    element.removeAttr("data-validation-engine").addClass("joditEditorSource");
 
     const joditInstance = new JoditEditor();
     joditInstance.loadJoditEditor(element);
@@ -79,32 +84,33 @@ const JoditEditorTextarea: React.FC<JoditEditorTextareaProps> = ({
 
     const container = wrapper?.jodit?.container as HTMLElement | undefined;
     if (container && window.innerWidth >= 768) {
-      const wysiwyg = container.querySelector<HTMLElement>('.jodit-wysiwyg');
+      const wysiwyg = container.querySelector<HTMLElement>(".jodit-wysiwyg");
       if (wysiwyg) {
         wysiwyg.style.maxHeight = QUICKCREATE_EDITOR_MAX_HEIGHT;
-        wysiwyg.style.overflowY = 'auto';
+        wysiwyg.style.overflowY = "auto";
       }
     }
 
     const emitChange = () => {
       const currentWrapper = wrapperRef.current;
-      const nextValue = currentWrapper && typeof currentWrapper.getData === 'function'
-        ? currentWrapper.getData()
-        : String(element.val() || '');
+      const nextValue =
+        currentWrapper && typeof currentWrapper.getData === "function"
+          ? currentWrapper.getData()
+          : String(element.val() || "");
       onChangeRef.current(name, nextValue);
     };
 
     if (wrapper?.jodit?.events) {
-      wrapper.jodit.events.on('change', emitChange);
-      wrapper.jodit.events.on('blur', emitChange);
+      wrapper.jodit.events.on("change", emitChange);
+      wrapper.jodit.events.on("blur", emitChange);
     }
 
     return () => {
       if (wrapper?.jodit?.events) {
-        wrapper.jodit.events.off('change', emitChange);
-        wrapper.jodit.events.off('blur', emitChange);
+        wrapper.jodit.events.off("change", emitChange);
+        wrapper.jodit.events.off("blur", emitChange);
       }
-      if (wrapper && typeof wrapper.destroy === 'function') {
+      if (wrapper && typeof wrapper.destroy === "function") {
         wrapper.destroy();
       }
       wrapperRef.current = null;
@@ -112,10 +118,14 @@ const JoditEditorTextarea: React.FC<JoditEditorTextareaProps> = ({
   }, [id, name]);
 
   useEffect(() => {
-    const nextValue = value || '';
+    const nextValue = value || "";
     const wrapper = wrapperRef.current;
 
-    if (wrapper && typeof wrapper.getData === 'function' && typeof wrapper.setData === 'function') {
+    if (
+      wrapper &&
+      typeof wrapper.getData === "function" &&
+      typeof wrapper.setData === "function"
+    ) {
       if (wrapper.getData() !== nextValue) {
         wrapper.setData(nextValue);
       }
@@ -136,7 +146,7 @@ const JoditEditorTextarea: React.FC<JoditEditorTextareaProps> = ({
       defaultValue={value}
       disabled={disabled}
       className={className}
-      style={{ height: '250px', maxWidth: 'initial', width: '100%' }}
+      style={{ height: "250px", maxWidth: "initial", width: "100%" }}
     />
   );
 };
@@ -155,7 +165,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
   labelClassName,
   onRecordTypeChange,
   formData,
-  module
+  module,
 }) => {
   // 翻訳フック（TranslationProvider外でも安全に使用可能）
   const { t } = useOptionalTranslation();
@@ -178,7 +188,9 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
   }
 
   // 共通のイベントハンドラー
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     onChange(field.name, e.target.value);
   };
 
@@ -190,7 +202,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
     if (val) {
       // datetime-local: 2025-12-18T15:30:00 → 2025-12-18T15:30
       // time: 15:30:00 → 15:30
-      const parts = val.split(':');
+      const parts = val.split(":");
       if (parts.length === 3) {
         val = `${parts[0]}:${parts[1]}`;
       }
@@ -199,14 +211,14 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
   };
 
   // ピックリスト用のオプション変換
-  const picklistOptions = field.picklistValues?.map(option => ({
+  const picklistOptions = field.picklistValues?.map((option) => ({
     value: option.value,
-    label: option.label
+    label: option.label,
   }));
 
   // エラーメッセージのID（アクセシビリティ用）
   const errorId = error ? `error_${field.name}` : undefined;
-  const joditEditorId = `${module || 'QuickCreate'}_quickCreate_fieldName_${field.name}`;
+  const joditEditorId = `${module || "QuickCreate"}_quickCreate_fieldName_${field.name}`;
 
   const renderLabel = () => {
     if (labelClassName) {
@@ -216,17 +228,24 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
         <div className="flex items-baseline md:contents">
           <span
             className={cn(
-              'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
-              disabled && 'text-gray-400',
-              labelClassName
+              "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+              disabled && "text-gray-400",
+              labelClassName,
             )}
           >
             {field.label}
-            {field.mandatory && <span className="text-red-500" aria-hidden="true">*</span>}
+            {field.mandatory && (
+              <span className="text-red-500" aria-hidden="true">
+                *
+              </span>
+            )}
             {field.mandatory && <span className="sr-only"> (必須)</span>}
           </span>
           {/* デスクトップ時に入力開始位置を揃えるスペーサー（モバイルは非表示） */}
-          <span className="w-3 flex-shrink-0 hidden md:block" aria-hidden="true" />
+          <span
+            className="w-3 flex-shrink-0 hidden md:block"
+            aria-hidden="true"
+          />
         </div>
       );
     }
@@ -234,8 +253,8 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       <>
         <span
           className={cn(
-            'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
-            disabled && 'text-gray-400'
+            "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+            disabled && "text-gray-400",
           )}
         >
           {field.label}
@@ -245,26 +264,36 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
           className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0"
           aria-hidden="true"
         >
-          {field.mandatory ? '*' : ''}
+          {field.mandatory ? "*" : ""}
         </span>
       </>
     );
   };
 
   // エラーメッセージの共通レンダリング（アクセシビリティ対応）
-  const renderError = () => error && (
-    <div
-      id={errorId}
-      role="alert"
-      aria-live="polite"
-      className="mt-1 text-sm text-red-600 flex items-center"
-    >
-      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-      </svg>
-      {error}
-    </div>
-  );
+  const renderError = () =>
+    error && (
+      <div
+        id={errorId}
+        role="alert"
+        aria-live="polite"
+        className="mt-1 text-sm text-red-600 flex items-center"
+      >
+        <svg
+          className="w-4 h-4 mr-1"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+          aria-hidden="true"
+        >
+          <path
+            fillRule="evenodd"
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+            clipRule="evenodd"
+          />
+        </svg>
+        {error}
+      </div>
+    );
 
   /**
    * UITypeに応じたコンポーネントを選択
@@ -273,28 +302,33 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
     const inputProps = {
       id: `field_${field.name}`,
       name: field.name,
-      value: toInputValue(value) || '',
+      value: toInputValue(value) || "",
       disabled: disabled || field.readonly,
-      className: cn('w-full', error && 'border-red-500'),
-      placeholder: field.readonly ? '' : t('LBL_PLACEHOLDER_ENTER', field.label),
-      'aria-describedby': errorId,
-      'aria-invalid': !!error,
-      'aria-required': field.mandatory
+      className: cn("w-full", error && "border-red-500"),
+      placeholder: field.readonly
+        ? ""
+        : t("LBL_PLACEHOLDER_ENTER", field.label),
+      "aria-describedby": errorId,
+      "aria-invalid": !!error,
+      "aria-required": field.mandatory,
     };
 
     // multireference判定（参照フィールドより先に判定）
     // datatype が 'multireference' または isMultiple が true の場合、MultireferenceFieldを使用
-    if (field.datatype === 'multireference' || field.isMultiple) {
+    if (field.datatype === "multireference" || field.isMultiple) {
       // Get display values for multireference field (e.g., contact_id_display)
       const multirefDisplayValue = formData?.[`${field.name}_display`];
       // Convert display value to array format expected by MultireferenceField
-      let multirefDisplayValues: Array<{ id: string; label: string }> | undefined;
+      let multirefDisplayValues:
+        Array<{ id: string; label: string }> | undefined;
       if (multirefDisplayValue && value) {
-        const ids = String(value).split(';').filter(id => id.trim());
-        const labels = String(multirefDisplayValue).split(';');
+        const ids = String(value)
+          .split(";")
+          .filter((id) => id.trim());
+        const labels = String(multirefDisplayValue).split(";");
         multirefDisplayValues = ids.map((id, index) => ({
           id: id.trim(),
-          label: labels[index]?.trim() || `ID: ${id.trim()}`
+          label: labels[index]?.trim() || `ID: ${id.trim()}`,
         }));
       }
       return (
@@ -303,7 +337,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
           label={field.label}
           referenceModules={field.referenceModules || []}
           referenceModuleLabels={field.referenceModuleLabels}
-          value={String(value ?? '')}
+          value={String(value ?? "")}
           displayValues={multirefDisplayValues}
           onChange={onChange}
           mandatory={field.mandatory}
@@ -320,7 +354,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       case UI_TYPES.STRING_LONG:
       case UI_TYPES.STRING_106:
         return (
-          <div className={cn('flex items-start gap-2', className)}>
+          <div className={cn("flex items-start gap-2", className)}>
             {renderLabel()}
             <div className="flex-1 min-w-0">
               <Input
@@ -340,21 +374,21 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       case UI_TYPES.TEXTAREA_LONG:
       case UI_TYPES.TEXTAREA_20:
         return (
-          <div className={cn('flex items-start gap-2', className)}>
+          <div className={cn("flex items-start gap-2", className)}>
             {renderLabel()}
             <div className="flex-1 min-w-0">
               {field.isJoditEditor ? (
                 <JoditEditorTextarea
                   id={joditEditorId}
                   name={field.name}
-                  value={String(value ?? '')}
+                  value={String(value ?? "")}
                   disabled={disabled || field.readonly}
                   onChange={onChange}
                   rows={uitype === UI_TYPES.TEXTAREA_LONG ? 6 : 3}
                   className={cn(
-                    'inputElement textAreaElement col-lg-12',
+                    "inputElement textAreaElement col-lg-12",
                     inputProps.className,
-                    error && 'border-red-500'
+                    error && "border-red-500",
                   )}
                 />
               ) : (
@@ -362,18 +396,18 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
                   {...inputProps}
                   onChange={handleInputChange}
                   rows={uitype === UI_TYPES.TEXTAREA_LONG ? 6 : 3}
-                  className={cn(inputProps.className, 'pt-[7px]')}
+                  className={cn(inputProps.className, "pt-[7px]")}
                 />
               )}
               {renderError()}
             </div>
           </div>
         );
-      
+
       // 数値系 - Input type="number"
       case UI_TYPES.NUMBER:
         return (
-          <div className={cn('flex items-start gap-2', className)}>
+          <div className={cn("flex items-start gap-2", className)}>
             {renderLabel()}
             <div className="flex-1 min-w-0">
               <Input
@@ -390,7 +424,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       // 小数 - Input type="number" with decimal
       case UI_TYPES.DECIMAL:
         return (
-          <div className={cn('flex items-start gap-2', className)}>
+          <div className={cn("flex items-start gap-2", className)}>
             {renderLabel()}
             <div className="flex-1 min-w-0">
               <Input
@@ -403,13 +437,14 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
             </div>
           </div>
         );
-      
+
       // 真偽値系 - CheckboxSwitch
       case UI_TYPES.BOOLEAN:
         // CheckboxSwitchは"1"/"0"文字列を期待する
-        const boolValue = value === true || value === '1' || value === 1 ? '1' : '0';
+        const boolValue =
+          value === true || value === "1" || value === 1 ? "1" : "0";
         return (
-          <div className={cn('flex items-start gap-2', className)}>
+          <div className={cn("flex items-start gap-2", className)}>
             {renderLabel()}
             <div className="flex-1 min-w-0 h-[30px] flex items-center">
               <CheckboxSwitch
@@ -423,11 +458,11 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
             </div>
           </div>
         );
-      
+
       // Email - Input type="email"
       case UI_TYPES.EMAIL:
         return (
-          <div className={cn('flex items-start gap-2', className)}>
+          <div className={cn("flex items-start gap-2", className)}>
             {renderLabel()}
             <div className="flex-1 min-w-0">
               <Input
@@ -440,11 +475,11 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
             </div>
           </div>
         );
-      
+
       // 電話番号 - Input type="tel"
       case UI_TYPES.PHONE:
         return (
-          <div className={cn('flex items-start gap-2', className)}>
+          <div className={cn("flex items-start gap-2", className)}>
             {renderLabel()}
             <div className="flex-1 min-w-0">
               <Input
@@ -457,11 +492,11 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
             </div>
           </div>
         );
-      
+
       // URL - Input type="url"
       case UI_TYPES.URL:
         return (
-          <div className={cn('flex items-start gap-2', className)}>
+          <div className={cn("flex items-start gap-2", className)}>
             {renderLabel()}
             <div className="flex-1 min-w-0">
               <Input
@@ -479,14 +514,10 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       case UI_TYPES.DATE:
       case UI_TYPES.DATE_23:
         return (
-          <div className={cn('flex items-start gap-2', className)}>
+          <div className={cn("flex items-start gap-2", className)}>
             {renderLabel()}
             <div className="flex-1 min-w-0">
-              <Input
-                {...inputProps}
-                type="date"
-                onChange={handleInputChange}
-              />
+              <Input {...inputProps} type="date" onChange={handleInputChange} />
               {renderError()}
             </div>
           </div>
@@ -496,7 +527,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       // step="60" で分単位選択（秒非表示）、handleDateTimeChangeで秒を除去
       case UI_TYPES.DATETIME_CALENDAR:
         return (
-          <div className={cn('flex items-start gap-2', className)}>
+          <div className={cn("flex items-start gap-2", className)}>
             {renderLabel()}
             <div className="flex-1 min-w-0">
               <Input
@@ -514,7 +545,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       // step="60" で分単位選択（秒非表示）、handleDateTimeChangeで秒を除去
       case UI_TYPES.TIME:
         return (
-          <div className={cn('flex items-start gap-2', className)}>
+          <div className={cn("flex items-start gap-2", className)}>
             {renderLabel()}
             <div className="flex-1 min-w-0">
               <Input
@@ -527,14 +558,14 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
             </div>
           </div>
         );
-      
+
       // 担当者 - OwnerField
       case UI_TYPES.OWNER:
         return (
           <OwnerField
             name={field.name}
             label={field.label}
-            value={String(value ?? '')}
+            value={String(value ?? "")}
             onChange={onChange}
             mandatory={field.mandatory}
             disabled={disabled || field.readonly}
@@ -552,7 +583,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
           <PicklistField
             name={field.name}
             label={field.label}
-            value={String(value ?? '')}
+            value={String(value ?? "")}
             onChange={onChange}
             options={picklistOptions}
             mandatory={field.mandatory}
@@ -572,7 +603,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
           <MultiPicklistField
             name={field.name}
             label={field.label}
-            value={String(value ?? '')}
+            value={String(value ?? "")}
             onChange={onChange}
             options={picklistOptions}
             mandatory={field.mandatory}
@@ -582,21 +613,23 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
             labelClassName={labelClassName}
           />
         );
-      
+
       // 通貨 - Input type="number" with currency formatting
       case UI_TYPES.CURRENCY:
         return (
-          <div className={cn('flex items-start gap-2', className)}>
+          <div className={cn("flex items-start gap-2", className)}>
             {renderLabel()}
             <div className="flex-1 min-w-0">
               <div className="relative">
-                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">¥</span>
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                  ¥
+                </span>
                 <Input
                   {...inputProps}
                   type="number"
                   step="0.01"
                   onChange={handleInputChange}
-                  className={cn(inputProps.className, 'pl-8')}
+                  className={cn(inputProps.className, "pl-8")}
                   placeholder="0.00"
                 />
               </div>
@@ -608,7 +641,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       // パーセンテージ - Input type="number" with % suffix
       case UI_TYPES.PERCENTAGE:
         return (
-          <div className={cn('flex items-start gap-2', className)}>
+          <div className={cn("flex items-start gap-2", className)}>
             {renderLabel()}
             <div className="flex-1 min-w-0">
               <div className="relative">
@@ -619,10 +652,12 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
                   min="0"
                   max="100"
                   onChange={handleInputChange}
-                  className={cn(inputProps.className, 'pr-8')}
+                  className={cn(inputProps.className, "pr-8")}
                   placeholder="0"
                 />
-                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">%</span>
+                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                  %
+                </span>
               </div>
               {renderError()}
             </div>
@@ -635,7 +670,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       // firstnameは名前入力フィールドなのでテキスト入力が適切
       case UI_TYPES.SALUTATION:
         return (
-          <div className={cn('flex items-start gap-2', className)}>
+          <div className={cn("flex items-start gap-2", className)}>
             {renderLabel()}
             <div className="flex-1 min-w-0">
               <Input
@@ -652,7 +687,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       // パスワード - Input type="password"
       case UI_TYPES.PASSWORD:
         return (
-          <div className={cn('flex items-start gap-2', className)}>
+          <div className={cn("flex items-start gap-2", className)}>
             {renderLabel()}
             <div className="flex-1 min-w-0">
               <Input
@@ -673,37 +708,40 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
         // taxClassDetailsがない場合はデフォルト値を使用
         const taxDetails = field.taxClassDetails || {
           taxname: field.name,
-          taxlabel: field.label + '(%)',
-          percentage: '10.000',
+          taxlabel: field.label + "(%)",
+          percentage: "10.000",
           check_name: `check_${field.name}`,
-          check_value: '0'
+          check_value: "0",
         };
         // ProductTaxField用のカスタムラベル（taxlabelを使用）
         const renderTaxLabel = () => (
           <>
             <span
               className={cn(
-                'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
-                (disabled || field.readonly) && 'text-gray-400'
+                "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+                (disabled || field.readonly) && "text-gray-400",
               )}
             >
               {taxDetails.taxlabel}
               {field.mandatory && <span className="sr-only"> (必須)</span>}
             </span>
-            <span className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0" aria-hidden="true">
-              {field.mandatory ? '*' : ''}
+            <span
+              className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0"
+              aria-hidden="true"
+            >
+              {field.mandatory ? "*" : ""}
             </span>
           </>
         );
         return (
-          <div className={cn('flex items-start gap-2', className)}>
+          <div className={cn("flex items-start gap-2", className)}>
             {renderTaxLabel()}
             <div className="flex-1 min-w-0 h-[30px] flex items-center">
               <ProductTaxField
                 name={taxDetails.taxname}
                 label={taxDetails.taxlabel}
                 defaultTaxRate={taxDetails.percentage}
-                value={String(value ?? '')}
+                value={String(value ?? "")}
                 onChange={onChange}
                 disabled={disabled || field.readonly}
                 error={error}
@@ -716,12 +754,13 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       // 通貨リスト - CurrencyListField（UIType 117）
       case UI_TYPES.CURRENCY_LIST:
         // fieldinfo.currencyListから通貨リストを取得
-        const currencyList = (field.fieldinfo?.currencyList as Record<string, string>) || {};
+        const currencyList =
+          (field.fieldinfo?.currencyList as Record<string, string>) || {};
         return (
           <CurrencyListField
             name={field.name}
             label={field.label}
-            value={String(value ?? '')}
+            value={String(value ?? "")}
             onChange={onChange}
             currencyList={currencyList}
             mandatory={field.mandatory}
@@ -756,8 +795,10 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
             label={field.label}
             referenceModules={field.referenceModules || []}
             referenceModuleLabels={field.referenceModuleLabels}
-            value={String(value ?? '')}
-            displayValue={referenceDisplayValue ? String(referenceDisplayValue) : undefined}
+            value={String(value ?? "")}
+            displayValue={
+              referenceDisplayValue ? String(referenceDisplayValue) : undefined
+            }
             onChange={onChange}
             mandatory={field.mandatory}
             disabled={disabled || field.readonly}
@@ -769,14 +810,10 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       // 未対応のUIType - 文字列入力として扱う
       default:
         return (
-          <div className={cn('flex items-start gap-2', className)}>
+          <div className={cn("flex items-start gap-2", className)}>
             {renderLabel()}
             <div className="flex-1 min-w-0">
-              <Input
-                {...inputProps}
-                type="text"
-                onChange={handleInputChange}
-              />
+              <Input {...inputProps} type="text" onChange={handleInputChange} />
               {renderError()}
             </div>
           </div>
@@ -803,17 +840,17 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
 
   try {
     return (
-      <div className="field-renderer">
-        {renderFieldByUIType(field.uitype)}
-      </div>
+      <div className="field-renderer">{renderFieldByUIType(field.uitype)}</div>
     );
   } catch (error) {
-    console.error('FieldRenderer エラー:', error, { field });
+    console.error("FieldRenderer エラー:", error, { field });
     return (
       <div className="text-red-600 p-2 border border-red-300 rounded">
         エラー: フィールドの表示に失敗しました
         <br />
-        <small>フィールド: {field.name} (UIType: {field.uitype})</small>
+        <small>
+          フィールド: {field.name} (UIType: {field.uitype})
+        </small>
       </div>
     );
   }

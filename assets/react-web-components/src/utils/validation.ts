@@ -5,7 +5,7 @@
  * 参照: public/layouts/v7/modules/Vtiger/resources/validation.js
  */
 
-import { FieldInfo, UI_TYPES } from '../types/field';
+import { FieldInfo, UI_TYPES } from "../types/field";
 
 /**
  * バリデーション結果
@@ -36,7 +36,7 @@ export function validateUrl(value: string): ValidationResult {
   if (!result) {
     return {
       valid: false,
-      message: 'JS_INVALID_URL' // 翻訳キー
+      message: "JS_INVALID_URL", // 翻訳キー
     };
   }
 
@@ -57,13 +57,14 @@ export function validateEmail(value: string): ValidationResult {
 
   const trimmedValue = value.trim();
   // 従来と同じ正規表現パターン（旧版と完全一致させるため冗長なエスケープも保持）
-  // eslint-disable-next-line no-useless-escape
-  const emailFilter = /^[_/a-zA-Z0-9*]+([!"#$%&'()*+,./:;<=>?\^_`'{|}~-]?[a-zA-Z0-9/_/-])*@[a-zA-Z0-9]+([\_\.]?[a-zA-Z0-9\-]+)*\.([\-\_]?[a-zA-Z0-9])+(\.?[a-zA-Z0-9]+)?$/;
+  // prettier が代入を改行分割するため、行末 disable でregex行を直接対象にする
+  const emailFilter =
+    /^[_/a-zA-Z0-9*]+([!"#$%&'()*+,./:;<=>?\^_`'{|}~-]?[a-zA-Z0-9/_/-])*@[a-zA-Z0-9]+([\_\.]?[a-zA-Z0-9\-]+)*\.([\-\_]?[a-zA-Z0-9])+(\.?[a-zA-Z0-9]+)?$/; // eslint-disable-line no-useless-escape
 
   if (!emailFilter.test(trimmedValue)) {
     return {
       valid: false,
-      message: 'JS_PLEASE_ENTER_VALID_EMAIL_ADDRESS'
+      message: "JS_PLEASE_ENTER_VALID_EMAIL_ADDRESS",
     };
   }
 
@@ -92,7 +93,7 @@ export function validateInteger(value: string): ValidationResult {
     if (!trimmedValue.match(decimalIntegerRegex)) {
       return {
         valid: false,
-        message: 'JS_PLEASE_ENTER_INTEGER_VALUE'
+        message: "JS_PLEASE_ENTER_INTEGER_VALUE",
       };
     }
   }
@@ -111,33 +112,36 @@ export function validateInteger(value: string): ValidationResult {
  */
 export function validateDouble(
   value: string,
-  groupSeparator: string = ',',
-  decimalSeparator: string = '.'
+  groupSeparator: string = ",",
+  decimalSeparator: string = ".",
 ): ValidationResult {
   if (!value || !value.trim()) {
     return { valid: true };
   }
 
-  let strippedValue = value.replace(decimalSeparator, '');
+  let strippedValue = value.replace(decimalSeparator, "");
 
   // スペースが区切り文字の場合、スペースを除去
   const spacePattern = /\s/;
-  if (spacePattern.test(decimalSeparator) || spacePattern.test(groupSeparator)) {
-    strippedValue = strippedValue.replace(/ /g, '');
+  if (
+    spacePattern.test(decimalSeparator) ||
+    spacePattern.test(groupSeparator)
+  ) {
+    strippedValue = strippedValue.replace(/ /g, "");
   }
 
   // 桁区切り文字を除去（特殊文字エスケープ）
   let escapedGroupSeparator = groupSeparator;
-  if (groupSeparator === '$') {
-    escapedGroupSeparator = '\\$';
+  if (groupSeparator === "$") {
+    escapedGroupSeparator = "\\$";
   }
-  const regex = new RegExp(escapedGroupSeparator, 'g');
-  strippedValue = strippedValue.replace(regex, '');
+  const regex = new RegExp(escapedGroupSeparator, "g");
+  strippedValue = strippedValue.replace(regex, "");
 
   if (isNaN(Number(strippedValue))) {
     return {
       valid: false,
-      message: 'JS_PLEASE_ENTER_VALID_VALUE'
+      message: "JS_PLEASE_ENTER_VALID_VALUE",
     };
   }
 
@@ -162,7 +166,7 @@ export function validatePositive(value: string): ValidationResult {
   if (isNaN(numValue) || numValue < 0 || value.match(negativeRegex)) {
     return {
       valid: false,
-      message: 'JS_ACCEPT_POSITIVE_NUMBER'
+      message: "JS_ACCEPT_POSITIVE_NUMBER",
     };
   }
 
@@ -179,22 +183,22 @@ export function validatePositive(value: string): ValidationResult {
  */
 export function validatePercentage(
   value: string,
-  decimalSeparator: string = '.'
+  decimalSeparator: string = ".",
 ): ValidationResult {
   if (!value || !value.trim()) {
     return { valid: true };
   }
 
-  let strippedValue = value.replace(decimalSeparator, '');
+  let strippedValue = value.replace(decimalSeparator, "");
   const spacePattern = /\s/;
   if (spacePattern.test(decimalSeparator)) {
-    strippedValue = strippedValue.replace(/ /g, '');
+    strippedValue = strippedValue.replace(/ /g, "");
   }
 
   if (isNaN(Number(strippedValue))) {
     return {
       valid: false,
-      message: 'JS_PLEASE_ENTER_VALID_VALUE'
+      message: "JS_PLEASE_ENTER_VALID_VALUE",
     };
   }
 
@@ -212,10 +216,15 @@ export function validatePercentage(
 export function validateFieldByUIType(
   field: FieldInfo,
   value: unknown,
-  t: (key: string, ...args: (string | number)[]) => string
+  t: (key: string, ...args: (string | number)[]) => string,
 ): string | null {
   // 値が空の場合はUITypeバリデーションをスキップ（必須チェックは別途行う）
-  if (value === undefined || value === null || value === '' || value === false) {
+  if (
+    value === undefined ||
+    value === null ||
+    value === "" ||
+    value === false
+  ) {
     return null;
   }
 
@@ -278,7 +287,7 @@ export function validateFieldByUIType(
 export function validateFormFields(
   fields: FieldInfo[],
   formData: Record<string, unknown>,
-  t: (key: string, ...args: (string | number)[]) => string
+  t: (key: string, ...args: (string | number)[]) => string,
 ): Record<string, string> {
   const errors: Record<string, string> = {};
 

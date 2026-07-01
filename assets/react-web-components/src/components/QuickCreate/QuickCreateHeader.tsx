@@ -1,6 +1,6 @@
-import React from 'react';
-import { DialogTitle } from '../ui/dialog';
-import { useTranslation } from '../../hooks/useTranslation';
+import React from "react";
+import { DialogTitle } from "../ui/dialog";
+import { useTranslation } from "../../hooks/useTranslation";
 
 /**
  * QuickCreateHeader のプロパティ
@@ -9,11 +9,11 @@ export interface QuickCreateHeaderProps {
   /** モジュールの表示名 */
   moduleLabel: string;
   /** スタイルバリアント */
-  variant?: 'default' | 'calendar';
+  variant?: "default" | "calendar";
   /** 編集モードかどうか */
   isEditMode?: boolean;
   /** カレンダーバリアント用の現在のタブ */
-  activeTab?: 'Calendar' | 'Events';
+  activeTab?: "Calendar" | "Events";
 }
 
 /**
@@ -43,21 +43,22 @@ export interface QuickCreateHeaderProps {
  */
 export const QuickCreateHeader: React.FC<QuickCreateHeaderProps> = ({
   moduleLabel,
-  variant = 'default',
+  variant = "default",
   isEditMode = false,
-  activeTab = 'Calendar',
+  activeTab = "Calendar",
 }) => {
   const { t } = useTranslation();
 
   // タイトルテキストを生成
   // 既存のF-RevoCRMに合わせて: クイック作成 ToDo / クイック作成 活動
   const getTitleText = (): string => {
-    if (variant === 'calendar') {
-      const tabLabel = activeTab === 'Calendar' ? t('LBL_TASK') : t('LBL_EVENT');
-      const modeLabel = isEditMode ? t('LBL_EDIT') : t('LBL_QUICK_CREATE');
+    if (variant === "calendar") {
+      const tabLabel =
+        activeTab === "Calendar" ? t("LBL_TASK") : t("LBL_EVENT");
+      const modeLabel = isEditMode ? t("LBL_EDIT") : t("LBL_QUICK_CREATE");
       return `${modeLabel} ${tabLabel}`;
     }
-    return `${t('LBL_QUICK_CREATE')} ${moduleLabel}`;
+    return `${t("LBL_QUICK_CREATE")} ${moduleLabel}`;
   };
 
   // 両バリアントで統一されたヘッダースタイル

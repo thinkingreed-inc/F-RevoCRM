@@ -1,12 +1,15 @@
-import React, { useCallback, useEffect, useRef } from 'react';
-import { Loader2, RefreshCw, AlertCircle, CalendarX } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { ActivityListProps } from '@/types/activity';
-import { useActivities } from './hooks/useActivities';
-import { useActivityStatusUpdate } from './hooks/useActivityStatusUpdate';
-import { ActivityListItem } from './ActivityListItem';
-import { Button } from '../ui/button';
-import { TranslationProvider, useOptionalTranslationContext } from '../../contexts/TranslationContext';
+import React, { useCallback, useEffect, useRef } from "react";
+import { Loader2, RefreshCw, AlertCircle, CalendarX } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ActivityListProps } from "@/types/activity";
+import { useActivities } from "./hooks/useActivities";
+import { useActivityStatusUpdate } from "./hooks/useActivityStatusUpdate";
+import { ActivityListItem } from "./ActivityListItem";
+import { Button } from "../ui/button";
+import {
+  TranslationProvider,
+  useOptionalTranslationContext,
+} from "../../contexts/TranslationContext";
 
 /**
  * ActivityList - TranslationProviderでラップしたエクスポート用コンポーネント
@@ -37,9 +40,9 @@ export const ActivityList: React.FC<ActivityListProps> = (props) => {
 const ActivityListInner: React.FC<ActivityListProps> = ({
   module,
   recordId,
-  mode = 'all',
+  mode = "all",
   limit = 5,
-  refreshKey
+  refreshKey,
 }) => {
   const { t } = useOptionalTranslationContext();
 
@@ -50,7 +53,7 @@ const ActivityListInner: React.FC<ActivityListProps> = ({
     error,
     hasMore,
     loadMore,
-    refresh
+    refresh,
   } = useActivities(module, recordId, mode, limit);
 
   const { updateStatus } = useActivityStatusUpdate();
@@ -68,22 +71,30 @@ const ActivityListInner: React.FC<ActivityListProps> = ({
    * ステータス変更ハンドラー
    * 更新後にリストをリフレッシュして最新状態を取得
    */
-  const handleStatusChange = useCallback(async (activityId: string, newStatus: string): Promise<void> => {
-    // 対象のアクティビティを見つける
-    const activity = activities.find(a => a.id === activityId);
-    if (!activity) {
-      throw new Error('アクティビティが見つかりません');
-    }
+  const handleStatusChange = useCallback(
+    async (activityId: string, newStatus: string): Promise<void> => {
+      // 対象のアクティビティを見つける
+      const activity = activities.find((a) => a.id === activityId);
+      if (!activity) {
+        throw new Error("アクティビティが見つかりません");
+      }
 
-    // ステータスフィールド名を取得
-    const fieldName = activity.statusField || 'eventstatus';
+      // ステータスフィールド名を取得
+      const fieldName = activity.statusField || "eventstatus";
 
-    // APIで更新（activityTypeを渡してcalendarModuleを決定）
-    await updateStatus(activityId, fieldName, newStatus, activity.activityType);
+      // APIで更新（activityTypeを渡してcalendarModuleを決定）
+      await updateStatus(
+        activityId,
+        fieldName,
+        newStatus,
+        activity.activityType,
+      );
 
-    // リストをリフレッシュして最新のデータを取得
-    await refresh();
-  }, [activities, updateStatus, refresh]);
+      // リストをリフレッシュして最新のデータを取得
+      await refresh();
+    },
+    [activities, updateStatus, refresh],
+  );
 
   // 初回ローディング表示
   if (initialLoading) {
@@ -99,7 +110,10 @@ const ActivityListInner: React.FC<ActivityListProps> = ({
     return (
       <div className="w-full p-4 rounded-lg border border-red-200 bg-red-50">
         <div className="flex items-center gap-3">
-          <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" aria-hidden="true" />
+          <AlertCircle
+            className="h-5 w-5 text-red-500 flex-shrink-0"
+            aria-hidden="true"
+          />
           <div className="flex-1 min-w-0">
             <p className="text-sm text-red-800">{error}</p>
           </div>
@@ -110,7 +124,7 @@ const ActivityListInner: React.FC<ActivityListProps> = ({
             className="flex-shrink-0"
           >
             <RefreshCw className="h-4 w-4 mr-1" aria-hidden="true" />
-            {t('LBL_RETRY')}
+            {t("LBL_RETRY")}
           </Button>
         </div>
       </div>
@@ -122,9 +136,12 @@ const ActivityListInner: React.FC<ActivityListProps> = ({
     return (
       <div className="w-full p-8 rounded-lg border border-gray-200 bg-gray-50">
         <div className="flex flex-col items-center justify-center text-center">
-          <CalendarX className="h-12 w-12 text-gray-400 mb-3" aria-hidden="true" />
+          <CalendarX
+            className="h-12 w-12 text-gray-400 mb-3"
+            aria-hidden="true"
+          />
           <p className="text-md text-gray-600">
-            {t('LBL_NO_PENDING_ACTIVITIES')}
+            {t("LBL_NO_PENDING_ACTIVITIES")}
           </p>
         </div>
       </div>
@@ -157,11 +174,14 @@ const ActivityListInner: React.FC<ActivityListProps> = ({
           >
             {loading ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
-                {t('LBL_LOADING')}
+                <Loader2
+                  className="h-4 w-4 mr-2 animate-spin"
+                  aria-hidden="true"
+                />
+                {t("LBL_LOADING")}
               </>
             ) : (
-              t('LBL_SHOW_MORE')
+              t("LBL_SHOW_MORE")
             )}
           </Button>
         </div>
@@ -180,8 +200,8 @@ const ActivityListSkeleton: React.FC<{ count?: number }> = ({ count = 3 }) => {
         <div
           key={index}
           className={cn(
-            'flex items-start gap-3 p-3 rounded-lg border border-gray-200',
-            'animate-pulse'
+            "flex items-start gap-3 p-3 rounded-lg border border-gray-200",
+            "animate-pulse",
           )}
         >
           {/* Icon skeleton */}
