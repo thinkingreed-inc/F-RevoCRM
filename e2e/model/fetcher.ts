@@ -68,18 +68,6 @@ export const login = async (username: string, accessKey: string) => {
   return response.data.result;
 };
 
-export const frgetListTypes = async (sessionName: string) => {
-  const response = await client.get<
-    FRResponse<any>
-  >(`?operation=listtypes&fieldTypeList=&sessionName=${sessionName}`);
-
-  if (response.data.success === false) {
-    return false;
-  }
-  return response.data.result;
-};
-
-
 export const frgetDescribe = async (sessionName: string, moduleName: string) => {
   const response = await client.get<
     FRResponse<FRDescribeType>

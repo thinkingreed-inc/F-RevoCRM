@@ -1,6 +1,5 @@
 import {
   frgetDescribe,
-  frgetListTypes,
   frgetOneRecord,
   frRetrieve,
   login,
@@ -11,11 +10,6 @@ import { BASE_URL } from "../utils/util";
 export class FrBaseModule {
   moduleName: string;
   private sessionName: string;
-  private listTypes: {
-    isEntity: boolean;
-    label: string;
-    singular: string;
-  }[];
   private moduleInfo: FRDescribeType;
   baseUrl: string = BASE_URL;
 
@@ -62,26 +56,6 @@ export class FrBaseModule {
   /**********************************
    * API
    *********************************/
-
-  /**
-   * Module一覧を取得する
-   */
-  async fetchAllListTypes() {
-    if (this.listTypes?.[this.moduleName]) {
-      return this.listTypes;
-    }
-
-    const response = await frgetListTypes(this.sessionName);
-    if (!response) {
-      return false;
-    }
-
-    Object.keys(this.listTypes).forEach((key) => {
-      this.listTypes[key] = this.listTypes[key];
-    });
-
-    return this.listTypes;
-  }
 
   /**
    * モジュール詳細を取得する

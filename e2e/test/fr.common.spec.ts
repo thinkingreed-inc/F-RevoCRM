@@ -38,8 +38,6 @@ const moduleMap: Record<string, typeof FrTest> = {
  */
 
 
-test.beforeAll(async () => {});
-
 for (const module of Object.keys(moduleMap)) {
   test.describe.serial(`モジュール: ${module}`, async () => {
     let testModuleModel: FrTest | null;
