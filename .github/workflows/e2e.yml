@@ -1,0 +1,41 @@
+name: E2E (Playwright)
+
+# PR 時と手動実行で、compose 上に F-RevoCRM を立てて E2E を回す。
+# DB は「完了済みインストール dump」を自動投入し、migration でスキーマを最新化してからテストする。
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# 同一 PR で新しい push があったら古い実行はキャンセルする
+concurrency:
+  group: e2e-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run E2E (compose + dump + migration + Playwright)
+        run: ./e2e/ci/run-e2e.sh
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Dump container logs on failure
+        if: ${{ failure() }}
+        run: docker compose -f compose.yaml -f compose.ci.yaml logs --no-color --tail=200

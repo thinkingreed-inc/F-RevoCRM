@@ -1,0 +1,18 @@
+# CI 専用の compose override。
+#
+# 役割: DB コンテナ起動時に「完了済みインストール状態」の dump を自動投入する。
+#   MySQL 公式イメージは /docker-entrypoint-initdb.d/*.sql を
+#   「データディレクトリが空の初回起動時のみ」自動実行する。
+#   CI は毎回まっさらなボリュームなので確実に投入される。
+#
+# 使い方:
+#   docker compose -f compose.yaml -f compose.ci.yaml up -d
+#
+# 注意(ローカルで使う場合):
+#   既存の db-store ボリュームが残っていると初回 init が走らず dump は投入されない。
+#   まっさらにするには先に `docker compose down -v` すること。
+#   普段の開発(実 DB に直アクセス)は素の compose.yaml を使い、この override は付けない。
+services:
+  db:
+    volumes:
+      - ./e2e/fixtures/e2e_dump.sql:/docker-entrypoint-initdb.d/e2e_dump.sql:ro
