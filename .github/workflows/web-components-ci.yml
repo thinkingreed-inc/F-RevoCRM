@@ -34,7 +34,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: 24 # 推奨 Node.js (最新 LTS)
+          node-version: 22 # 推奨 Node.js (LTS)
           cache: npm
           cache-dependency-path: assets/react-web-components/package-lock.json
 

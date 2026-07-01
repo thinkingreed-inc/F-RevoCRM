@@ -32,7 +32,7 @@ Vtiger Public License 1.2
   * storage_engine = InnoDB
   * local_infile = ON (under [mysqld] section)
   * sql_mode = NO_ENGINE_SUBSTITUTION
-* Node.js v24以上
+* Node.js v22以上
 
 ※PHPの下位バージョンでも概ね動作しますが、未検証のため推奨から除外しています。
 
