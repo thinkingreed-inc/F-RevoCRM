@@ -6,8 +6,8 @@
     "test": "test"
   },
   "scripts": {
-    "test:e2e": "dotenv -e .env -- playwright test",
-    "test:e2e:ui": "dotenv -e .env -- playwright test --ui"
+    "test:e2e": "dotenv -e ../.env -- playwright test",
+    "test:e2e:ui": "dotenv -e ../.env -- playwright test --ui"
   },
   "keywords": [],
   "author": "",

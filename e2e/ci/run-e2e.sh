@@ -132,12 +132,17 @@ for i in $(seq 1 60); do
 done
 
 echo "==> Playwright 実行"
-npm install --no-audit --no-fund
-# ubuntu-latest は Chromium の必要ライブラリを概ね同梱しており、ブラウザバイナリは
-# actions/cache 済みのため --with-deps(apt) は付けない(毎回の apt を省略)。
-npx playwright install chromium
-E2E_BASE_URL="$BASE_URL" \
-E2E_USER_NAME="$E2E_USER_NAME" \
-E2E_USER_PASSWORD="$E2E_USER_PASSWORD" \
-E2E_USER_ACCESSKEY="$E2E_USER_ACCESSKEY" \
-  npx playwright test
+# Playwright 一式(package.json / playwright.config.ts)は e2e/ 配下にあるためそこで実行する。
+# サブシェルで囲い、親の cwd はリポジトリルートのまま保つ(EXIT トラップの config 復元がルート基準のため)。
+(
+  cd e2e
+  npm install --no-audit --no-fund
+  # ubuntu-latest は Chromium の必要ライブラリを概ね同梱しており、ブラウザバイナリは
+  # actions/cache 済みのため --with-deps(apt) は付けない(毎回の apt を省略)。
+  npx playwright install chromium
+  E2E_BASE_URL="$BASE_URL" \
+  E2E_USER_NAME="$E2E_USER_NAME" \
+  E2E_USER_PASSWORD="$E2E_USER_PASSWORD" \
+  E2E_USER_ACCESSKEY="$E2E_USER_ACCESSKEY" \
+    npx playwright test
+)

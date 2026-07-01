@@ -15,8 +15,8 @@ export const BASE_URL = (
  * テストファイル(*.setup.ts / *.spec.ts)同士の相互importはPlaywrightで禁止されているため、
  * 共有する定数は非テストモジュールであるこのファイルに置く。
  */
-export const authFile = "e2e/.auth/user.json";
-export const sessionNameFile = "e2e/.auth/sessionName.txt";
+export const authFile = ".auth/user.json";
+export const sessionNameFile = ".auth/sessionName.txt";
 
 /**
  * 指定したms秒待機する
