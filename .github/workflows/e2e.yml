@@ -68,6 +68,31 @@ jobs:
       - name: Run E2E (compose + dump + migration + Playwright)
         run: ./e2e/ci/run-e2e.sh
 
+      - name: E2E 結果をジョブサマリに出力
+        if: ${{ !cancelled() }}
+        run: |
+          if [ -f playwright-results.json ]; then
+            node -e '
+              const r = require("./playwright-results.json");
+              const s = r.stats || {};
+              const pass = s.expected ?? 0, fail = s.unexpected ?? 0;
+              const flaky = s.flaky ?? 0, skip = s.skipped ?? 0;
+              const sec = Math.round((s.duration || 0) / 1000);
+              const icon = fail > 0 ? "❌" : "✅";
+              const md = [
+                `## ${icon} E2E (Playwright)`,
+                "",
+                "| ✅ passed | ❌ failed | ⚠️ flaky | ⏭️ skipped | ⏱️ duration |",
+                "|---:|---:|---:|---:|---:|",
+                `| ${pass} | ${fail} | ${flaky} | ${skip} | ${sec}s |`,
+                "",
+              ].join("\n");
+              require("fs").appendFileSync(process.env.GITHUB_STEP_SUMMARY, md + "\n");
+            '
+          else
+            echo "⚠️ playwright-results.json が見つかりませんでした（テスト実行前に失敗した可能性）" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4

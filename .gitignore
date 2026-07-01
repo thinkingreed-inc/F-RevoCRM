@@ -52,6 +52,7 @@ compose.override.yaml
 /node_modules
 /test-results/
 /playwright-report/
+/playwright-results.json
 /playwright/.cache/
 /e2e/.auth/*
 !/e2e/.auth/.gitkeep
