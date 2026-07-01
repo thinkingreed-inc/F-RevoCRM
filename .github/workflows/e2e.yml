@@ -7,7 +7,6 @@ on:
     branches: [main]
   workflow_dispatch:
   # 【検証用・PR 前に削除する】feature/e2e への push で CI を試走させるための一時トリガ。
-  # workflow_dispatch はデフォルトブランチにワークフローが無いと起動できないため。
   push:
     branches: [feature/e2e]
 
@@ -20,6 +19,11 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      # compose build を buildx bake に委譲し、compose.cache.yaml の gha キャッシュを効かせる
+      COMPOSE_BAKE: "true"
+      # CI 用 override (dump 自動投入 + gha ビルドキャッシュ)
+      COMPOSE_EXTRA: "-f compose.cache.yaml"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,6 +32,38 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+
+      # Docker イメージ層のキャッシュ (php イメージの apt/pecl ビルドが重いため)
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # PHP 依存 (vendor/) をキャッシュ。composer.lock が変わらなければ composer install は即完了
+      - name: Cache composer vendor
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: vendor-${{ hashFiles('composer.lock') }}
+
+      # web-components の node_modules をキャッシュ
+      - name: Cache web-components node_modules
+        uses: actions/cache@v4
+        with:
+          path: assets/react-web-components/node_modules
+          key: wc-node-${{ hashFiles('assets/react-web-components/package-lock.json') }}
+
+      # ルート (Playwright) の node_modules をキャッシュ
+      - name: Cache root node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: root-node-${{ hashFiles('package-lock.json') }}
+
+      # Playwright のブラウザバイナリをキャッシュ
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ hashFiles('package-lock.json') }}
 
       - name: Run E2E (compose + dump + migration + Playwright)
         run: ./e2e/ci/run-e2e.sh
@@ -42,4 +78,4 @@ jobs:
 
       - name: Dump container logs on failure
         if: ${{ failure() }}
-        run: docker compose -f compose.yaml -f compose.ci.yaml logs --no-color --tail=200
+        run: docker compose -f compose.yaml -f compose.ci.yaml -f compose.cache.yaml logs --no-color --tail=200
