@@ -34,8 +34,11 @@ export default defineConfig({
     rollupOptions: {
       output: {
         assetFileNames: (assetInfo) => {
-          if (assetInfo.name === 'style.css') return 'style.css';
-          return assetInfo.name || 'asset';
+          // Vite 8 (Rollup 4) では assetInfo.name(単数) が廃止され names(配列) になった
+          const name = assetInfo.names?.[0] ?? assetInfo.name;
+          // CSS は cssCodeSplit:false により単一。読み込み側(Header.tpl)が参照する style.css に固定
+          if (name && name.endsWith('.css')) return 'style.css';
+          return name || 'asset';
         },
         // 単一ファイルにバンドル
         inlineDynamicImports: true,

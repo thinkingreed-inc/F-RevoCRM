@@ -465,9 +465,11 @@ describe('FieldRenderer', () => {
         setData: vi.fn(),
       };
 
-      const MockJoditEditor = vi.fn().mockImplementation(() => ({
-        loadJoditEditor: vi.fn(),
-      }));
+      // Vitest 4 では `new mock()` が実装を constructor として呼ぶため、
+      // アロー関数だと "is not a constructor" になる。通常関数で構築可能にする。
+      const MockJoditEditor = vi.fn().mockImplementation(function () {
+        return { loadJoditEditor: vi.fn() };
+      });
       MockJoditEditor.getInstance = vi.fn().mockReturnValue(mockWrapper);
       MockJoditEditor.syncAllInstances = vi.fn();
 
