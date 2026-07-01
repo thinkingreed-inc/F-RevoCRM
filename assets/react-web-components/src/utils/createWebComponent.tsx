@@ -77,7 +77,6 @@ export function createWebComponent(
      */
     private createEventCallbacks(): WebComponentProps {
       const callbacks: WebComponentProps = {};
-      const element = this;
 
       eventCallbacks.forEach(callbackName => {
         // onSave -> save, onGoToFullForm -> go-to-full-form
@@ -95,7 +94,7 @@ export function createWebComponent(
             bubbles: true,
             composed: true
           });
-          element.dispatchEvent(event);
+          this.dispatchEvent(event);
         };
       });
 

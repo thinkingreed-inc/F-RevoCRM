@@ -56,7 +56,8 @@ export function validateEmail(value: string): ValidationResult {
   }
 
   const trimmedValue = value.trim();
-  // 従来と同じ正規表現パターン
+  // 従来と同じ正規表現パターン（旧版と完全一致させるため冗長なエスケープも保持）
+  // eslint-disable-next-line no-useless-escape
   const emailFilter = /^[_/a-zA-Z0-9*]+([!"#$%&'()*+,./:;<=>?\^_`'{|}~-]?[a-zA-Z0-9/_/-])*@[a-zA-Z0-9]+([\_\.]?[a-zA-Z0-9\-]+)*\.([\-\_]?[a-zA-Z0-9])+(\.?[a-zA-Z0-9]+)?$/;
 
   if (!emailFilter.test(trimmedValue)) {
