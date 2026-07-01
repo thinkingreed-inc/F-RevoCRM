@@ -669,6 +669,7 @@ $languageStrings = array(
 	'Country' => '国',
 	'Description' => '詳細内容',
 	'Common Memo' => '共有メモ',
+	'LBL_SEND_MAIL' => 'メール送信する',
 
 	'Created'=>'登録済み',
 	'Approved'=>'承認済み',
@@ -1141,6 +1142,7 @@ $languageStrings = array(
 	'LBL_CLICK_HERE_TO_SELECT_ALL_RECORDS'=>'このページのレコードを選択',
 	'LBL_CLICK_HERE_TO_MANAGE_LIST_COLUMNS'=>'リストの列を選択するには、ここをクリックしてください。',
 	'LBL_SHOW_MORE' =>'さらに表示',
+	'LBL_RETRY' => '再試行',
 	'LBL_DISPLAYING_RESULTS' => '結果の表示',
 	'LBL_ADD_STAR' => 'スターを付ける',
 	'LBL_REMOVE_STAR' => 'スターを外す',

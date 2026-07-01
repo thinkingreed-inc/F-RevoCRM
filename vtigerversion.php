@@ -9,9 +9,9 @@
  ************************************************************************************/
 
 
-$patch_version = '20260508'; // -ve timestamp before release, +ve timestamp after release.
+$patch_version = '20260609'; // -ve timestamp before release, +ve timestamp after release.
 $modified_database = '';
-$vtiger_current_version = '8.0.1';
+$vtiger_current_version = '8.0.2';
 $_SESSION['vtiger_version'] = $vtiger_current_version;
 
 ?>

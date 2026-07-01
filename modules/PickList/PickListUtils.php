@@ -139,7 +139,7 @@ function getAllPickListValues($fieldName,$lang = Array() ){
  * @param object $adb - the peardatabase object
  * @return array $pick - the editable picklist values
  */
-function getEditablePicklistValues($fieldName, $lang= array(), $adb){
+function getEditablePicklistValues($fieldName, $lang, $adb){
 	$values = array();
 	$fieldName = $adb->sql_escape_string($fieldName);
 	$sql="select $fieldName from vtiger_$fieldName where presence=1 and $fieldName <> '--None--'";
@@ -165,7 +165,7 @@ function getEditablePicklistValues($fieldName, $lang= array(), $adb){
  * @param object $adb - the peardatabase object
  * @return array $pick - the no-editable picklist values
  */
-function getNonEditablePicklistValues($fieldName, $lang=array(), $adb){
+function getNonEditablePicklistValues($fieldName, $lang, $adb){
 	$values = array();
 	$fieldName = $adb->sql_escape_string($fieldName);
 	$sql = "select $fieldName from vtiger_$fieldName where presence=0";

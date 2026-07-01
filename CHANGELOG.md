@@ -1,6 +1,29 @@
 # 更新履歴
 
-# F-RevoCRM8.0.0
+# F-RevoCRM8.0.2
+## アップグレード方法
+ - ファイル、DBのバックアップを確実に取得してください
+ - 差分ファイルを上書き更新してください
+ - `composer install` を実行してください
+ - WebComponentsをビルドしてください
+   ```bash
+   cd assets/react-web-components
+   npm install
+   npm run build
+   ```
+ - 以下のURLにアクセスし、マイグレーションを実施してください。
+`https://example.com/frevocrm/index.php?module=Migration&view=Index&mode=step1`
+※ドメインやディレクトリはお使いのF-RevoCRMに合わせてください。
+
+## What's Changed
+* #1059で修正された内容が巻き戻ってしまっていたため、再修正 by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1605
+* 空で入ってきたときにimplodeでエラーがでていたのを修正 by @KashiwakuraKazuki in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1589
+* #1614 同一ユーザーのインポートで古いキューを実行してしまう問題を修正 by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1643
+* #1637 マイグレーション時にロゴファイルをpublic/logo/配下へ移動 by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1642
+
+**Full Changelog**: https://github.com/thinkingreed-inc/F-RevoCRM/compare/v8.0.1...v8.0.2
+
+# F-RevoCRM8.0.1
 ## アップグレード方法
  - ファイル、DBのバックアップを確実に取得してください
  - 差分ファイルを上書き更新してください

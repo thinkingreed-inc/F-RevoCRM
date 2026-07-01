@@ -290,13 +290,7 @@ class CRMEntity {
 
 		$entityFields = Vtiger_Functions::getEntityModuleInfo($module);
         $entityFieldNames  = explode(',', $entityFields['fieldname']);
-        switch ($module) {
-            case 'HelpDesk': $entityFieldNames = array('ticket_title');
-                break;
-            case 'Documents': $entityFieldNames = array('notes_title');
-                break;
-		}
-		
+
 		$record_label = '';
 		foreach($entityFieldNames as $entityFieldName) {
 			$record_label .= $this->column_fields[$entityFieldName]." ";
@@ -993,12 +987,26 @@ class CRMEntity {
 					// added to compute label needed in event handlers
 					$entityFields = Vtiger_Functions::getEntityModuleInfo($module);
 					if(!empty($entityFields['fieldname'])) {
-						$entityFieldNames  = explode(',', $entityFields['fieldname']);
-						if(php7_count($entityFieldNames) > 1) {
-							 $this->column_fields['label'] = $resultrow[$entityFields['tablename'].$entityFieldNames[0]].' '.$resultrow[$entityFields['tablename'].$entityFieldNames[1]];
-						} else {
-							$this->column_fields['label'] = $resultrow[$entityFields['tablename'].$entityFieldNames[0]];
+						// Values live in $resultrow under the same alias used when
+						// building the query (createColumnAliasForField =
+						// strtolower(tablename.fieldname)). Resolve each entity field
+						// to its fieldinfo so the alias matches even when the column
+						// or table differs from the field name; concatenate all
+						// fields (not just the first two).
+						$fieldInfoByName = array();
+						foreach ($cachedModuleFields as $fieldinfo) {
+							$fieldInfoByName[$fieldinfo['fieldname']] = $fieldinfo;
 						}
+						$labelValues = array();
+						foreach (explode(',', $entityFields['fieldname']) as $entityFieldName) {
+							$fieldkey = isset($fieldInfoByName[$entityFieldName])
+								? $this->createColumnAliasForField($fieldInfoByName[$entityFieldName])
+								: strtolower($entityFields['tablename'].$entityFieldName);
+							if (isset($resultrow[$fieldkey]) && $resultrow[$fieldkey] !== '') {
+								$labelValues[] = $resultrow[$fieldkey];
+							}
+						}
+						$this->column_fields['label'] = implode(' ', $labelValues);
 					}
 				}
 				foreach ($cachedModuleFields as $fieldinfo) {
@@ -3424,10 +3432,12 @@ class TrackableObject implements ArrayAccess, IteratorAggregate {
 		$this->storage = $value;
 	}
 
+	#[\ReturnTypeWillChange]
 	function offsetExists($key) {
 		return isset($this->storage[$key]) || array_key_exists($key, $this->storage);
 	}
 
+	#[\ReturnTypeWillChange]
 	function offsetSet($key, $value) {
 		if($this->tracking && $this->trackingEnabled) {
 			$olderValue = $this->offsetGet($key);
@@ -3441,14 +3451,17 @@ class TrackableObject implements ArrayAccess, IteratorAggregate {
 		$this->storage[$key] = $value;
 	}
 
+	#[\ReturnTypeWillChange]
 	public function offsetUnset($key) {
 		unset($this->storage[$key]);
 	}
 
+	#[\ReturnTypeWillChange]
 	public function offsetGet($key) {
 		return isset($this->storage[$key]) || array_key_exists($key, $this->storage) ? $this->storage[$key] : null;
 	}
 
+	#[\ReturnTypeWillChange]
 	public function getIterator() {
 		$iterator = new ArrayObject($this->storage);
 		return $iterator->getIterator();

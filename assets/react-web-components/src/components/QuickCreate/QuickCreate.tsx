@@ -23,6 +23,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { transformCalendarDateTime } from '../../utils/datetime';
 import { validateFieldByUIType } from '../../utils/validation';
 import { syncJoditEditorFormData } from '../../utils/joditEditor';
+import { isFutureEventHeldInvalid } from './utils/calendarValidation';
 
 /**
  * Activity type for Calendar variant
@@ -703,6 +704,10 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
         if (new Date(dateStart) > new Date(dueDate)) {
           errors['due_date'] = t('LBL_END_DATE_AFTER_START');
         }
+      }
+      // 未来日付の活動はステータス「完了」(Held) で登録不可
+      if (isFutureEventHeldInvalid(currentCalendarFormData['eventstatus'], dateStart)) {
+        errors['eventstatus'] = t('JS_FUTURE_EVENT_CANNOT_BE_HELD');
       }
     }
 

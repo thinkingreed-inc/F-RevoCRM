@@ -69,17 +69,9 @@
                 'Documents'  {* ファイルアップロード・外部リンク・ドラッグ&ドロップ等の特殊UIが必要 *}
             ];
 		</script>
-        <script type="importmap">
-        {
-            "imports": {
-                "react": "https://esm.sh/react@18.2.0",
-                "react-dom": "https://esm.sh/react-dom@18.2.0"
-            }
-        }
-        </script>
         {if $IS_PRODUCTION}
-            <link rel="stylesheet" href="./resources/web-components/style.css">
-            <script type="module" src="./resources/web-components/web-components.js"></script>
+            <link rel="stylesheet" href="{vresource_url('resources/web-components/style.css')}">
+            <script type="module" src="{vresource_url('resources/web-components/web-components.js')}"></script>
         {else}
             <link rel="stylesheet" href="http://localhost:5173/src/index.css">
             <script type="module">

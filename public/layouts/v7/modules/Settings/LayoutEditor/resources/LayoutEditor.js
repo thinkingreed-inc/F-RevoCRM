@@ -1034,23 +1034,45 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 				//Handled date field UI
 				var dateField = defaultValueUiContainer.find('.dateField')
 				if (dateField.length > 0) {
-					vtUtils.registerEventForDateFields(dateField);
-					var datedefaultvaluebox = document.getElementsByClassName("inputElement dateField form-control")[0];
-					if(datedefaultvaluebox.value == 'TODAY'){
-						datedefaultvaluebox.classList.add('ignore-validation');
-						datedefaultvaluebox.classList.remove('input-error');
-					}
-					else{
-						datedefaultvaluebox.classList.remove('ignore-validation');
-					}
-					dateField.on("change",function (e) {
-						if(datedefaultvaluebox.value == 'TODAY'){
-							datedefaultvaluebox.classList.add('ignore-validation');
-							datedefaultvaluebox.classList.remove('input-error');
+					var isToday = (data.value == 'TODAY');
+					if (defaultValueUiContainer.find('.dateDefaultValueType').length <= 0) {
+						var todayLabel = app.vtranslate('JS_TODAY');
+						var fixedDateLabel = app.vtranslate('JS_FIXED_DATE');
+						var radioHtml = 
+							'<div class="dateDefaultValue">' +
+								'<div class="row" style="margin-bottom: 5px;">' +
+									'<div class="col-sm-12">' +
+										'<label class="radio-inline">' +
+											'<input type="radio" class="dateDefaultValueType" name="dateDefaultValueType" value="fixed" ' + (!isToday ? 'checked' : '') + '> ' + fixedDateLabel +
+										'</label>' +
+										'<label class="radio-inline">' +
+											'<input type="radio" class="dateDefaultValueType" name="dateDefaultValueType" value="today" ' + (isToday ? 'checked' : '') + '> ' + todayLabel +
+										'</label>' +
+									'</div>' +
+								'</div>' +
+							'</div>';
+						var radioElement = jQuery(radioHtml);
+						var dateInputGroup = defaultValueUiContainer.find('.input-group.date');
+						dateInputGroup.before(radioElement);
+						radioElement.append(dateInputGroup);
+						var todayInputHtml = '<input type="text" class="inputElement todayValue ' + (!isToday ? 'hide' : '') + '" value="TODAY" readonly style="width: 75%" ' + (!isToday ? 'disabled' : '') + ' />';
+						dateInputGroup.after(todayInputHtml);
+
+						if (isToday) {
+							dateInputGroup.addClass('hide');
+							dateField.attr('disabled', 'disabled').removeAttr('name');
+							var todayField = defaultValueUiContainer.find('.todayValue');
+							todayField.attr('name', nameAttr);
 						}
-						else{
-							datedefaultvaluebox.classList.remove('ignore-validation');
-							datedefaultvaluebox.classList.remove('input-error');
+					}
+
+					vtUtils.registerEventForDateFields(dateField);
+					dateField.on("keyup change",function (e) {
+						var datedefaultvaluebox = e.currentTarget;
+						datedefaultvaluebox.classList.remove('ignore-validation');
+						datedefaultvaluebox.classList.remove('input-error');
+						if (typeof vtUtils.hideValidationMessage != 'undefined') {
+							vtUtils.hideValidationMessage(jQuery(datedefaultvaluebox));
 						}
 					});	
 				}
@@ -1806,6 +1828,31 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		})
 
 	},
+
+	registerDateDefaultValueEvents: function() {
+		jQuery(document).on('change', '.dateDefaultValueType', function (e) {
+			var currentTarget = jQuery(e.currentTarget);
+			var container = currentTarget.closest('.dateDefaultValue');
+			var dateFieldGroup = container.find('.input-group.date');
+			var dateField = dateFieldGroup.find('.dateField');
+			var todayField = container.find('.todayValue');
+			var nameAttr = dateField.attr('name') || todayField.attr('name');
+
+			if (currentTarget.val() == 'today') {
+				dateFieldGroup.addClass('hide');
+				dateField.attr('disabled', 'disabled').removeAttr('name');
+				todayField.removeClass('hide').removeAttr('disabled').attr('name', nameAttr);
+			} else {
+				dateFieldGroup.removeClass('hide');
+				dateField.removeAttr('disabled').attr('name', nameAttr);
+				if (dateField.val() == 'TODAY') {
+					dateField.val('');
+				}
+				todayField.addClass('hide').attr('disabled', 'disabled').removeAttr('name');
+			}
+		});
+	},
+
 	/**
 	 * Function to register the click event for related modules list tab
 	 */
@@ -2371,6 +2418,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		thisInstance.triggerRelatedModulesTabClickEvent();
 		thisInstance.triggerDuplicationTabClickEvent();
 		thisInstance.adjustFieldLabelWidth();
+		thisInstance.registerDateDefaultValueEvents();
 
 		var selectedTab = jQuery('.selectedTab').val();
 		jQuery('#layoutEditorContainer').find('.contents').find('.'+selectedTab).trigger('click');

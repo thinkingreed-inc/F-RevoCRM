@@ -160,7 +160,7 @@ jQuery.Class("Vtiger_Jodit_Js", {
         var joditLang = userLang ? userLang.split('_')[0] : 'ja';
         var joditConfig = {
             language: joditLang,
-            enter: 'p',
+            enter: 'br', // 旧CKEditorと同じ挙動（Enterキーで<br>挿入）。<p>のmarginによる余白発生を防止 #1662
             minHeight: false, // Joditデフォルト(200)を無効化。高さはapplyHeight()でworkplaceに直接設定
             maxHeight: false, // JoditのmaxHeight自動算出を無効化。高さはapplyHeight()でworkplaceに直接設定
             statusbar: true,
