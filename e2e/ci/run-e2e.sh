@@ -82,6 +82,12 @@ sed -e "s#_DBC_SERVER_#db#g" \
     -e "s#_USER_SUPPORT_EMAIL_#support@example.com#g" \
     config.template.php > config.inc.php
 
+echo "==> アプリが書き込むディレクトリの権限調整"
+# checkout の所有者(ランナー uid) とコンテナの www-data(uid 1000) が異なると、
+# Apache が Smarty のコンパイル先 (test/templates_c) や cache/ に書けず Fatal になる。
+# 使い捨て環境なので該当ディレクトリを 0777 にして回避する。
+$COMPOSE exec -T php bash -lc 'mkdir -p test/templates_c test/vtlib cache/images cache/import storage logs user_privileges && chmod -R 0777 test cache storage logs user_privileges'
+
 echo "==> composer install"
 # マウントした repo は uid 1000 所有・exec は root のため git が dubious ownership を出す
 $COMPOSE exec -T php git config --global --add safe.directory /var/www/html
