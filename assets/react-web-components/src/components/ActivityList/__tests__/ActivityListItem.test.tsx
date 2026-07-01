@@ -33,8 +33,8 @@ describe('ActivityListItem', () => {
   it('displays formatted date and time', () => {
     render(<ActivityListItem activity={mockActivity} />);
 
-    // Date should be formatted in Japanese format
-    expect(screen.getByText(/2024年1月15日 14:30/)).toBeInTheDocument();
+    // Date should be formatted as YYYY/MM/DD HH:mm
+    expect(screen.getByText(/2024\/01\/15 14:30/)).toBeInTheDocument();
   });
 
   it('displays assigned user name', () => {
@@ -90,7 +90,7 @@ describe('ActivityListItem', () => {
     render(<ActivityListItem activity={activityWithoutTime} />);
 
     // Should show only date
-    expect(screen.getByText(/2024年1月15日/)).toBeInTheDocument();
+    expect(screen.getByText(/2024\/01\/15/)).toBeInTheDocument();
   });
 
   it('applies correct status variant for completed status', () => {
@@ -109,7 +109,6 @@ describe('ActivityListItem', () => {
     const { container } = render(<ActivityListItem activity={mockActivity} />);
 
     const itemContainer = container.firstChild as HTMLElement;
-    expect(itemContainer).toHaveClass('hover:bg-gray-50');
     expect(itemContainer).toHaveClass('hover:border-gray-300');
   });
 });

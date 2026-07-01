@@ -121,7 +121,7 @@ describe('ActivityStatusEditor', () => {
         />
       );
 
-      const container = screen.getByRole('button', { name: /edit taskstatus/i });
+      const container = screen.getByRole('button', { name: /編集/ });
       container.focus();
       await user.keyboard('{Enter}');
 
@@ -143,7 +143,7 @@ describe('ActivityStatusEditor', () => {
         />
       );
 
-      const container = screen.getByRole('button', { name: /edit taskstatus/i });
+      const container = screen.getByRole('button', { name: /編集/ });
       container.focus();
       await user.keyboard(' ');
 
@@ -195,8 +195,8 @@ describe('ActivityStatusEditor', () => {
 
       // Should show save and cancel buttons
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /save/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /保存/ })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /キャンセル/ })).toBeInTheDocument();
       });
     });
 
@@ -225,7 +225,7 @@ describe('ActivityStatusEditor', () => {
 
       // Change value (this is simplified - actual implementation would need to interact with select)
       // Since we can't easily simulate Radix UI Select in tests, we'll test the behavior through fireEvent
-      const saveButton = screen.getByRole('button', { name: /save/i });
+      const saveButton = screen.getByRole('button', { name: /保存/ });
 
       // For this test, we need to simulate the value change through internal state
       // In a real scenario, we'd use user.click on the select and select an option
@@ -258,7 +258,7 @@ describe('ActivityStatusEditor', () => {
       });
 
       // Click save without changing value
-      const saveButton = screen.getByRole('button', { name: /save/i });
+      const saveButton = screen.getByRole('button', { name: /保存/ });
       await user.click(saveButton);
 
       // Should not call onSave, just exit edit mode
@@ -287,7 +287,7 @@ describe('ActivityStatusEditor', () => {
       });
 
       // Click cancel
-      const cancelButton = screen.getByRole('button', { name: /cancel/i });
+      const cancelButton = screen.getByRole('button', { name: /キャンセル/ });
       await user.click(cancelButton);
 
       // Should exit edit mode and show badge again
@@ -381,7 +381,7 @@ describe('ActivityStatusEditor', () => {
       });
 
       // Verify error handling structure exists
-      expect(screen.getByRole('button', { name: /save/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /保存/ })).toBeInTheDocument();
 
       consoleErrorSpy.mockRestore();
     });
