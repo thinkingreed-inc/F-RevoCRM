@@ -13,7 +13,8 @@
     "coverage": "vitest run --coverage",
     "lint": "eslint . --report-unused-disable-directives",
     "lint:fix": "eslint . --fix",
-    "format": "npm run lint:fix && prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
+    "format:write": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
+    "format": "npm run lint:fix && npm run format:write",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\""
   },
   "dependencies": {

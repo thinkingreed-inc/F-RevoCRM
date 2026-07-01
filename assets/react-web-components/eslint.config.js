@@ -72,13 +72,12 @@ export default [
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },
-  // テスト・設定ファイル: Vitest のグローバルを許可
+  // テストファイル: Vitest のグローバルを許可
   {
     files: [
       '**/*.test.{ts,tsx}',
       '**/__tests__/**/*.{ts,tsx}',
       'src/setupTests.ts',
-      '*.config.{ts,js}',
     ],
     languageOptions: {
       globals: {
@@ -93,6 +92,15 @@ export default [
         beforeEach: 'readonly',
         afterAll: 'readonly',
         afterEach: 'readonly',
+      },
+    },
+  },
+  // 設定ファイル: node グローバルのみ（Vitest グローバルは付与しない）
+  {
+    files: ['*.config.{ts,js}', 'eslint.config.js'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
       },
     },
   },

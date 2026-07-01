@@ -44,6 +44,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # Test は整形コミットの push より前に実行する。
+      # (テスト失敗時に整形コミットが push されて赤いコミットが残るのを防ぐ)
+      - name: Test
+        run: npm run test
+
       # pull_request: フォーマット崩れを検知するのみ（fork PR は書き込み権限が無いため）
       - name: Format check
         if: github.event_name == 'pull_request'
@@ -54,7 +59,7 @@ jobs:
       - name: Format and commit
         if: github.event_name == 'push'
         run: |
-          npx prettier --write "src/**/*.{ts,tsx,js,jsx,json,css,scss,md}"
+          npm run format:write
           if [ -z "$(git status --porcelain)" ]; then
             echo "整形差分なし。"
             exit 0
@@ -63,7 +68,6 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git commit -m "[整形] prettier による自動整形 (CI)"
+          # 並行更新による non-fast-forward を避けるため push 前に最新へ rebase
+          git pull --rebase origin "$GITHUB_REF_NAME"
           git push
-
-      - name: Test
-        run: npm run test
