@@ -13,6 +13,10 @@
 #   まっさらにするには先に `docker compose down -v` すること。
 #   普段の開発(実 DB に直アクセス)は素の compose.yaml を使い、この override は付けない。
 services:
+  php:
+    # PHP_IMAGE が指定されていれば GHCR のプリビルドイメージを使う(ビルド回避)。
+    # 未指定ならローカルビルドし frevocrm-php:ci としてタグ付けする。
+    image: ${PHP_IMAGE:-frevocrm-php:ci}
   db:
     volumes:
       - ./e2e/fixtures/e2e_dump.sql:/docker-entrypoint-initdb.d/e2e_dump.sql:ro

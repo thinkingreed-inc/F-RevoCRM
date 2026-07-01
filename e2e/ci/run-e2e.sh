@@ -49,8 +49,24 @@ restore_config() {
 }
 trap restore_config EXIT
 
+# Docker イメージ: GHCR にプリビルド(docker/php/Dockerfile の内容ハッシュtag)があれば
+# pull してビルドを丸ごと省略。無ければ従来どおりローカルビルドにフォールバックする。
+BUILD_FLAG="--build"
+if [ -n "${GITHUB_REPOSITORY_OWNER:-}" ]; then
+  OWNER="$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
+  IMG_TAG="$(git hash-object docker/php/Dockerfile | cut -c1-12)"
+  CAND="ghcr.io/${OWNER}/frevocrm-php:${IMG_TAG}"
+  if docker pull "$CAND" >/dev/null 2>&1; then
+    export PHP_IMAGE="$CAND"
+    BUILD_FLAG=""
+    echo "==> プリビルドイメージを使用: ${CAND} (docker build を省略)"
+  else
+    echo "==> プリビルド無し (${CAND}) → ローカルビルドにフォールバック"
+  fi
+fi
+
 echo "==> コンテナ起動 (dump は db の初回 init で自動投入)"
-$COMPOSE up -d --build
+$COMPOSE up -d ${BUILD_FLAG}
 
 echo "==> DB の dump 投入待ち"
 for i in $(seq 1 90); do
@@ -117,7 +133,9 @@ done
 
 echo "==> Playwright 実行"
 npm install --no-audit --no-fund
-npx playwright install --with-deps chromium
+# ubuntu-latest は Chromium の必要ライブラリを概ね同梱しており、ブラウザバイナリは
+# actions/cache 済みのため --with-deps(apt) は付けない(毎回の apt を省略)。
+npx playwright install chromium
 E2E_BASE_URL="$BASE_URL" \
 E2E_USER_NAME="$E2E_USER_NAME" \
 E2E_USER_PASSWORD="$E2E_USER_PASSWORD" \
