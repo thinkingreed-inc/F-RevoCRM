@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+  # 【検証用・PR 前に削除する】feature/e2e への push で CI を試走させるための一時トリガ。
+  # workflow_dispatch はデフォルトブランチにワークフローが無いと起動できないため。
+  push:
+    branches: [feature/e2e]
 
 # 同一 PR で新しい push があったら古い実行はキャンセルする
 concurrency:
