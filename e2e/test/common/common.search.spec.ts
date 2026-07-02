@@ -1,40 +1,39 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../../fixtures/isolated";
 import {
   gotoList,
-  firstRow,
-  firstRowName,
   listRows,
   listSearch,
   clearListSearch,
+  createAccount,
+  deleteViaDetail,
 } from "../../utils/listview";
+import { generateRandomString } from "../../utils/util";
 
 /**
  * 共通機能: 一覧からの検索(列検索) — 機能一覧 2-4
  *
- * 一覧のヘッダ直下の検索行(tr.searchRow)に、表示列ごとの検索入力
- * (input.listSearchContributor[name=<field>])がある。値を入れて
- * [data-trigger="listSearch"] を押すと AJAX で絞り込みが行われる。
+ * ヘッダ直下の検索行(input.listSearchContributor[name=<field>])に値を入れ、
+ * Enter(または検索ボタン)で AJAX 絞り込みが行われる。
  *
- * 実データに依存しないよう、先頭行の名前を読み取り、その名前で
- * accountname 列を検索して、結果に当該レコードが残ることを検証する。
+ * 並行実行(DB 共有)でも安定するよう、一意名の専用レコードを作り、その名前で
+ * accountname 列を検索して該当レコードだけに絞り込めることを検証する。
  */
 test.describe("共通: 一覧の列検索", () => {
   test("名前列で検索すると該当レコードに絞り込まれる", async ({ page }) => {
+    const name = `E2Esearch${generateRandomString(8)}`;
+    const recordId = await createAccount(page, name);
+
     await gotoList(page, "Accounts");
-
-    // 検索対象として先頭行の顧客企業名を採取
-    const name = await firstRowName(page);
-    expect(name.length).toBeGreaterThan(0);
-
-    // 名前列で検索(AJAX)。行の再描画を待つ。
     await listSearch(page, "accountname", name);
 
-    // 該当名の行が表示され、絞り込めている
-    await expect(firstRow(page).locator(`text=${name}`).first()).toBeVisible();
-    const count = await listRows(page).count();
-    expect(count).toBeGreaterThan(0);
+    // 一意名なので、該当行が表示され、結果は 1 件に絞り込まれる
+    await expect(
+      listRows(page).filter({ hasText: name }).first()
+    ).toBeVisible();
+    await expect(listRows(page)).toHaveCount(1);
 
-    // 後始末: 検索条件をクリア(ログインセッションに残るため)
+    // 後始末: 検索条件をクリア(セッションに残るため)し、レコードを削除
     await clearListSearch(page);
+    await deleteViaDetail(page, "Accounts", recordId);
   });
 });

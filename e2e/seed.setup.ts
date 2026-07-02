@@ -1,5 +1,6 @@
 import { test as setup } from "@playwright/test";
-import { login, frgetDescribe, frCount, frCreate } from "./model/fetcher";
+import { frgetDescribe, frCount, frCreate } from "./model/fetcher";
+import { getStoredSessionName, getStoredUserId } from "./model/session";
 import { getFieldValue } from "./utils/field";
 import { generateRandomString } from "./utils/util";
 
@@ -18,15 +19,9 @@ const REFERENCEABLE_MODULES = [
 ];
 
 setup("seed referenceable records", async () => {
-  const response = await login(
-    process.env.E2E_USER_NAME || "",
-    process.env.E2E_USER_ACCESSKEY || ""
-  );
-  if (!response) {
-    throw new Error("API login failed (seed)");
-  }
-  const sessionName = response.sessionName;
-  const ownerWsId = response.userId;
+  // auth.setup が先に取得済みの sessionName / userId を使い回す(再 login しない)。
+  const sessionName = getStoredSessionName();
+  const ownerWsId = getStoredUserId();
 
   for (const moduleName of REFERENCEABLE_MODULES) {
     const count = await frCount(sessionName, moduleName);

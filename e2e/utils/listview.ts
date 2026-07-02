@@ -115,3 +115,47 @@ export async function gotoDetail(
   );
   await page.waitForLoadState("networkidle");
 }
+
+/**
+ * 使い捨ての顧客企業を作成し record ID を返す。
+ * 並行実行では DB が共有されるため、状態を伴うテストは「先頭の任意レコード」に
+ * 依存せず、自分専用のレコードを作って操作・後始末するのが安全。
+ */
+export async function createAccount(
+  page: Page,
+  name: string
+): Promise<string> {
+  await page.goto(url("index.php?module=Accounts&view=Edit&app=MARKETING"));
+  await page.waitForLoadState("domcontentloaded");
+  await page.fill('input[name="accountname"]', name);
+  await page.locator("button.saveButton").first().click();
+  await page.waitForURL(/[?&]record=\d+/, { timeout: 15000 });
+  const id = page.url().match(/record=(\d+)/)?.[1];
+  if (!id) {
+    throw new Error(`顧客企業の作成に失敗しました: ${name}`);
+  }
+  return id;
+}
+
+/**
+ * 詳細画面の「その他」→「削除」でレコードを削除する(後始末用)。
+ * 確認ダイアログの Yes まで押す。失敗しても後始末なので握りつぶす。
+ */
+export async function deleteViaDetail(
+  page: Page,
+  moduleName: string,
+  recordId: string
+): Promise<void> {
+  try {
+    await gotoDetail(page, moduleName, recordId);
+    await page.click("text=その他");
+    await page.click("text=削除");
+    await page
+      .locator('.modal-content >> text=Yes, .confirm-box-ok')
+      .first()
+      .click({ timeout: 6000 });
+    await page.waitForLoadState("networkidle");
+  } catch {
+    /* 後始末のため失敗は無視 */
+  }
+}

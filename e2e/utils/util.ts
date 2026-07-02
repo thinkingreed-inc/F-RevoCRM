@@ -17,6 +17,7 @@ export const BASE_URL = (
  */
 export const authFile = ".auth/user.json";
 export const sessionNameFile = ".auth/sessionName.txt";
+export const userIdName = ".auth/userId.txt";
 
 /**
  * 指定したms秒待機する

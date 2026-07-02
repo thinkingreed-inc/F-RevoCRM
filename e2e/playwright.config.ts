@@ -45,7 +45,15 @@ export default defineConfig({
 
   /* Configure projects for major browsers */
   projects: [
-    { name: 'setup', testMatch: /.*\.setup\.ts/ },
+    // 起点: ブラウザ認証 + API セッション(sessionName/userId)を「一度だけ」取得。
+    { name: 'setup', testMatch: /auth\.setup\.ts/ },
+    // シード: setup 完了後に実行し、保存済みセッションを使い回す(再 login しない)。
+    // これにより getchallenge の競合が起きず、workers=1 に頼らなくてよい。
+    {
+      name: 'seed',
+      testMatch: /seed\.setup\.ts/,
+      dependencies: ['setup'],
+    },
     {
       name: 'chrome',
       use: {
@@ -56,7 +64,7 @@ export default defineConfig({
         },
         storageState: '.auth/user.json',
       },
-      dependencies: ['setup'],
+      dependencies: ['setup', 'seed'],
     },
   
     // {

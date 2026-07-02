@@ -1,13 +1,16 @@
 import { test as setup } from '@playwright/test';
-import { login } from './model/fetcher';
-import { BASE_URL, authFile, sessionNameFile } from './utils/util';
-import { writeFileSync } from 'fs';
+import { acquireApiSession } from './model/session';
+import { BASE_URL, authFile } from './utils/util';
 
-setup('authenticate', async ({ page }) => {
+/**
+ * 依存関係の起点。ここで「一度だけ」ブラウザ認証(storageState)と
+ * Webservice API セッション取得を行う。以降の seed / 各 spec は保存済みの
+ * sessionName / userId を使い回すため、getchallenge の競合が起きない。
+ */
+setup('authenticate & acquire api session', async ({ page }) => {
   // Perform authentication steps. Replace these actions with your own.
   await page.goto(BASE_URL);
   // await page.getByRole('button', { name: 'Login with SimpleSAMLPHP' }).click();
-  // await page.waitForLoadState('networkidle');
 
   await page.fill('id=username', process.env.E2E_USER_NAME || 'admin');
   await page.fill('id=password', process.env.E2E_USER_PASSWORD || 'Admin1234/');
@@ -17,11 +20,6 @@ setup('authenticate', async ({ page }) => {
 
   await page.context().storageState({ path: authFile });
 
-  const response = await login(process.env.E2E_USER_NAME || '', process.env.E2E_USER_ACCESSKEY || '');
-  if (!response) {
-    throw new Error("Login failed");
-  }
-  const sessionName = response.sessionName;
-  // sessionNameをファイルに保存する
-  writeFileSync(sessionNameFile, sessionName);
+  // API セッションはここで一度だけ取得して sessionName / userId を保存する。
+  await acquireApiSession();
 });
