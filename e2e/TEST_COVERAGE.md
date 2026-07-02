@@ -191,10 +191,10 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 | 機能一覧 No. | 機能 | 到達 URL（実機確認済） | 状態 |
 |---|---|---|---|
-| 61-1 | スケジューラー | `module=CronTasks&parent=Settings&view=List` | ❌ |
-| 63-x | メールコンバーター | `module=MailConverter&parent=Settings&view=List` | ❌ |
-| 67-1 | 送信メールサーバー | `module=Vtiger&parent=Settings&view=OutgoingServerDetail` | ❌ |
-| 78-1 | SMS 通知 | `module=SMSNotifier&parent=Settings&view=List`（画面名「SMS通知」。設定トップのメニュー直下には無いが画面は存在） | ❌ |
+| 61-1 | スケジューラー | `module=CronTasks&parent=Settings&view=List` | ✅ `admin.E-02.CronTasks.spec.ts`（スモーク） |
+| 63-x | メールコンバーター | `module=MailConverter&parent=Settings&view=List` | ✅ `admin.E-04.MailConverter.spec.ts`（スモーク） |
+| 67-1 | 送信メールサーバー | `module=Vtiger&parent=Settings&view=OutgoingServerDetail` | ✅ `admin.F-04.OutgoingServer.spec.ts`（スモーク） |
+| 78-1 | SMS 通知 | `module=SMSNotifier&parent=Settings&view=List` | ✅ `admin.F-08.SMSNotifier.spec.ts`（スモーク） |
 | 36 | メールテンプレート | `module=EmailTemplates&view=List&app=TOOLS`（画面名「メールテンプレート」。ヘッダーメニュー = TOOLS アプリの通常モジュール。実機確認済） | ❌ |
 | 37 | PDF テンプレート | `module=PDFTemplates&view=List&app=TOOLS`（画面名「PDFテンプレート」。**モジュール名は `PDFTemplates`**。ヘッダーメニューから遷移。実機確認済） | ❌ |
 | 50-4 | 重複検出の設定 | LayoutEditor 内（独立画面なし。`module=DuplicateCheck` は実体なしのフォールバック） | ❌ |
@@ -258,26 +258,29 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 ### P3: モジュール固有フロー
 
-- [ ] リード昇格 ConvertLead（No.16-2）
+- [x] 更新履歴（No.8-1） → `test/common/common.history.spec.ts`
+- [ ] リード昇格 ConvertLead（No.16-2）※調査済・未完。昇格画面は開き Accounts/Contacts トグルは ON だが、`保存`クリックでレコードが作成されず home へ戻る。convert の実行アクション(専用ボタン/React)を要特定
 - [ ] 案件 → プロジェクト変換 ConvertPotential（No.19-2）
 - [ ] チケット → FAQ 変換（No.29-2）
 - [ ] メール送信起動 / SMS / 地図表示（主要モジュール）
 - [ ] 活動・ToDo の CRUD、iCal、カンバン、カレンダー各表示（No.14-1, 39, 40）
-- [ ] 関連一覧の表示・「追加」からの登録（No.7-1）／更新履歴（No.8-1）／コメント（No.9-1）
+- [ ] 関連一覧の表示・「追加」からの登録（No.7-1）※関連タブの AJAX ロードが不安定（要安定化）／コメント（No.9-1）※投稿ボタンのセレクタが不明瞭
 
 ### P4: 管理設定の空白・skip 解消
 
 - [ ] skip 中の spec を有効化: C-04 共有ルール / D-06 入力制限 / F-05 構成エディタ / H-01 税の管理（在庫フォーム汚染の後始末込み）
 - [ ] skip 中（実装確認から）: D-09 レコードタイプ / D-10 申請フィールド / D-11 承認フロー
-- [ ] 新規 spec: E-02 スケジューラー / メールコンバーター / F-04 送信メールサーバー / SMS 通知 / メール・PDF テンプレート
+- [x] 新規 spec: E-02 スケジューラー / E-04 メールコンバーター / F-04 送信メールサーバー / F-08 SMS通知（各スモーク） → `test/admin/`
+- [ ] 新規 spec（残）: メール・PDF テンプレート
 - [ ] E-01 Webフォーム「編集」テストの有効化
 
 ### P5: 認証・その他
 
-- [ ] ログイン失敗系（誤パスワード）／パスワード再発行フロー（No.1-1, 1-2）
+- [x] ログイン失敗系（誤パスワード）（No.1-1） → `test/common/common.login.spec.ts`
+- [ ] パスワード再発行フロー（No.1-2）
 - [ ] MFA 有効化ログインフロー（No.1-1）
 - [ ] ダッシュボード追加・ウィジェット追加/削除（No.13-1）
-- [ ] グローバル検索
+- [ ] グローバル検索 ※調査中。検索入力がトップバーのトグル配下にあり、直接のセレクタ未特定（アイコン押下で展開が必要と推定）
 - [ ] Documents モジュールの扱いをトリアージ（テスト対象にするか）
 
 ---
