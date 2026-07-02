@@ -60,3 +60,31 @@ export async function openMassMore(page: Page): Promise<void> {
     .first()
     .click();
 }
+
+/** 先頭行の record ID(数値)を取得する。 */
+export async function firstRecordId(page: Page): Promise<string> {
+  const href = await firstRow(page)
+    .locator('a[href*="view=Detail"]')
+    .first()
+    .getAttribute("href");
+  const id = href?.match(/record=(\d+)/)?.[1];
+  if (!id) {
+    throw new Error(`先頭行から record ID を取得できませんでした: ${href}`);
+  }
+  return id;
+}
+
+/** 指定モジュール・レコードの詳細画面へ遷移する。 */
+export async function gotoDetail(
+  page: Page,
+  moduleName: string,
+  recordId: string,
+  app = "MARKETING"
+): Promise<void> {
+  await page.goto(
+    url(
+      `index.php?module=${moduleName}&view=Detail&record=${recordId}&app=${app}`
+    )
+  );
+  await page.waitForLoadState("networkidle");
+}
