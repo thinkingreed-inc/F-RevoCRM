@@ -242,10 +242,12 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - [x] フォロー（一覧☆ / 詳細 starToggle）ON/OFF（No.3-1） → `test/common/common.follow.spec.ts`
 - [x] タグ 追加 / ×削除（詳細画面）（No.4-1） → `test/common/common.tag.spec.ts`
 - [x] 一括削除（一覧チェック → ゴミ箱）と ゴミ箱での復元・完全削除（No.12-3, 35-1） → `test/common/common.recyclebin.spec.ts`
-- [ ] クイック作成（＋ボタン）・クイック編集（鉛筆）・一覧ダブルクリック編集（No.12-2）※未着手
+- [x] クイック作成（＋ボタン）（No.12-2） → `test/common/common.quickcreate.spec.ts`（React WebコンポーネントのFC作成ダイアログ）
+- [x] クイック編集（鉛筆・インライン）（No.12-2） → `test/common/common.quickedit.spec.ts`（概要の1項目編集）
 - [x] CSV エクスポート（No.10-1） → `test/common/common.export.spec.ts`
-- [ ] CSV インポート（追加・上書き・マージ）（No.11-1）※未着手
-- [ ] タグの一括付与（一覧）/ タグの変更 / フォロー絞り込み（残タスク。詳細追加+削除は実装済）
+- [ ] 一覧ダブルクリック編集（No.12-2）※調査済・未採用。行 dblclick でインライン編集は動くが、同時にクイックプレビューが開き後続操作を阻害しハングするため安定化が必要（`.listViewEntries` dblclick → `input[name=...]` → `.inline-save .save`）
+- [ ] CSV インポート（No.11-1）※調査済・未完。`view=Import` は3ステップ（アップロード#importStep2 → 重複処理#uploadAndParse → マッピング#importButton）。ステップ遷移は追えたが、最小CSV(accountname)でレコード作成まで到達できておらずマッピング/実行の詰めが必要
+- [ ] タグの一括付与（一覧）/ タグの変更 / フォロー絞り込み（残タスク。詳細のタグ追加+削除は実装済）
 
 ### P2: 在庫系モジュールと連携機能
 
