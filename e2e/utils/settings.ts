@@ -1,5 +1,5 @@
-import { expect, Page } from "@playwright/test";
-import { url } from "./util";
+import { expect, Page, Browser, BrowserContext, Locator } from "@playwright/test";
+import { url, BASE_URL } from "./util";
 
 /**
  * 管理画面(Settings)系テストの共通ヘルパ。
@@ -45,4 +45,61 @@ export async function gotoSettings(
       await page.waitForTimeout(500);
     }
   }
+}
+
+/**
+ * 確認ダイアログ(app.helper.showConfirmationBox)の「はい」を押す。
+ * ボタンは .confirm-box-ok(既定ラベル Yes)。
+ */
+export async function confirmYes(page: Page): Promise<void> {
+  // ネイティブ dialog を使う画面では確認ボックスが出ないため、出ない場合は素通りする
+  await page
+    .locator(".confirm-box-ok")
+    .first()
+    .click({ timeout: 6000 })
+    .catch(() => {});
+}
+
+/**
+ * 別ユーザーのログインを、共有 storageState を汚さない独立 context で検証する。
+ * 呼び出し側は finally で context.close() すること。
+ */
+export async function loginInIsolatedContext(
+  browser: Browser,
+  username: string,
+  password: string
+): Promise<{ context: BrowserContext; page: Page }> {
+  // Cookie を明示的に空にして確実にログアウト状態の context を作る
+  // (プロジェクト既定の storageState を引き継がないようにする)
+  const context = await browser.newContext({
+    storageState: { cookies: [], origins: [] },
+  });
+  const page = await context.newPage();
+  await page.goto(BASE_URL);
+  await page.fill("id=username", username);
+  await page.fill("id=password", password);
+  await page.getByRole("button", { name: "ログイン" }).click();
+  await page.waitForLoadState("domcontentloaded").catch(() => {});
+  return { context, page };
+}
+
+/**
+ * 保存ボタンを押し、AJAX 保存(画面遷移しないことがある)の完了を待つ。
+ * 遷移せずに裏で保存する画面では、押した直後に別画面へ遷移すると保存 POST が
+ * 中断されるため、POST 応答と networkidle を待ってから次に進む。
+ */
+export async function saveAndSettle(
+  page: Page,
+  button: Locator,
+  opts: { force?: boolean } = {}
+): Promise<void> {
+  await Promise.all([
+    page
+      .waitForResponse((r) => r.request().method() === "POST", {
+        timeout: 15000,
+      })
+      .catch(() => {}),
+    button.click({ force: opts.force ?? false }),
+  ]);
+  await page.waitForLoadState("networkidle").catch(() => {});
 }

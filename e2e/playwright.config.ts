@@ -12,9 +12,6 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: '.',
-  /* 取り込み前の staging 置き場。移植が済んだファイルから随時 e2e/test/ 配下へ移し、
-     空になったらこの除外ごと削除する。移植前の壊れた import で全体実行を落とさないため。 */
-  testIgnore: '**/temp/**',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
