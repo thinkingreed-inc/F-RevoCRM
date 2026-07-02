@@ -1,21 +1,16 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { X, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Input } from './ui/input';
-import { Button } from './ui/button';
-import { Checkbox } from './ui/checkbox';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from './ui/drawer';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { X, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { Checkbox } from "./ui/checkbox";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "./ui/drawer";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from './ui/select';
+} from "./ui/select";
 import {
   Table,
   TableBody,
@@ -23,8 +18,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from './ui/table';
-import { cn } from '../lib/utils';
+} from "./ui/table";
+import { cn } from "../lib/utils";
 
 /**
  * 検索可能フィールドの型
@@ -90,21 +85,25 @@ export interface MultiSelectRecordSearchDrawerProps {
  * - ページネーション対応
  * - キーボードナビゲーション対応（矢印キー、Space選択）
  */
-export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDrawerProps> = ({
+export const MultiSelectRecordSearchDrawer: React.FC<
+  MultiSelectRecordSearchDrawerProps
+> = ({
   open,
   onOpenChange,
   moduleName,
   title,
   onSelect,
   selectedRecords = [],
-  pageSize = 20
+  pageSize = 20,
 }) => {
   // フィールド情報
   const [fields, setFields] = useState<SearchableField[]>([]);
   const [fieldsLoading, setFieldsLoading] = useState<boolean>(false);
 
   // 検索条件（フィールド名 -> 値）
-  const [searchConditions, setSearchConditions] = useState<Record<string, string>>({});
+  const [searchConditions, setSearchConditions] = useState<
+    Record<string, string>
+  >({});
 
   // 検索結果
   const [records, setRecords] = useState<SearchRecord[]>([]);
@@ -114,16 +113,18 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // 現在のページで選択中のレコード（完全なレコード情報を保持）
-  const [localSelectedRecords, setLocalSelectedRecords] = useState<SearchRecord[]>([]);
+  const [localSelectedRecords, setLocalSelectedRecords] = useState<
+    SearchRecord[]
+  >([]);
 
   // ページネーション
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,
     limit: pageSize,
     totalRecords: 0,
-    totalPages: 0,  // 0 = 未取得
+    totalPages: 0, // 0 = 未取得
     hasNextPage: false,
-    hasPrevPage: false
+    hasPrevPage: false,
   });
 
   // 総件数取得中フラグ
@@ -141,7 +142,7 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
    */
   useEffect(() => {
     if (open) {
-      const ids = new Set(selectedRecords.map(r => r.id));
+      const ids = new Set(selectedRecords.map((r) => r.id));
       setSelectedIds(ids);
       setLocalSelectedRecords([...selectedRecords]);
     }
@@ -157,15 +158,15 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
     try {
       const params = new URLSearchParams({
         module: moduleName,
-        api: 'SearchRecords',
-        include_fields: '1',
-        limit: '0'
+        api: "SearchRecords",
+        include_fields: "1",
+        limit: "0",
       });
 
       const response = await fetch(`?${params.toString()}`, {
-        method: 'GET',
-        credentials: 'same-origin',
-        headers: { 'Accept': 'application/json' }
+        method: "GET",
+        credentials: "same-origin",
+        headers: { Accept: "application/json" },
       });
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -173,12 +174,16 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
       const data = await response.json();
       const fieldList = data.result?.fields || data.fields || [];
       // 検索に適したフィールドのみ（最初の6件）
-      const searchableFields = fieldList.filter((f: SearchableField) =>
-        ['string', 'text', 'email', 'phone', 'picklist', 'owner'].includes(f.type)
-      ).slice(0, 6);
+      const searchableFields = fieldList
+        .filter((f: SearchableField) =>
+          ["string", "text", "email", "phone", "picklist", "owner"].includes(
+            f.type,
+          ),
+        )
+        .slice(0, 6);
       setFields(searchableFields);
     } catch (err) {
-      console.error('Failed to fetch fields:', err);
+      console.error("Failed to fetch fields:", err);
       setFields([]);
     } finally {
       setFieldsLoading(false);
@@ -188,59 +193,62 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
   /**
    * レコード検索
    */
-  const searchRecords = useCallback(async (conditions: Record<string, string>, page: number = 1) => {
-    if (!moduleName) return;
+  const searchRecords = useCallback(
+    async (conditions: Record<string, string>, page: number = 1) => {
+      if (!moduleName) return;
 
-    setRecordsLoading(true);
-    setFocusedIndex(-1);
-    try {
-      const params = new URLSearchParams({
-        module: moduleName,
-        api: 'SearchRecords',
-        include_fields: '1',
-        limit: String(pageSize),
-        page: String(page)
-      });
+      setRecordsLoading(true);
+      setFocusedIndex(-1);
+      try {
+        const params = new URLSearchParams({
+          module: moduleName,
+          api: "SearchRecords",
+          include_fields: "1",
+          limit: String(pageSize),
+          page: String(page),
+        });
 
-      // フィールド条件がある場合
-      const nonEmptyConditions = Object.fromEntries(
-        Object.entries(conditions).filter(([_, v]) => v !== '')
-      );
+        // フィールド条件がある場合
+        const nonEmptyConditions = Object.fromEntries(
+          Object.entries(conditions).filter(([_, v]) => v !== ""),
+        );
 
-      if (Object.keys(nonEmptyConditions).length > 0) {
-        params.append('search_fields', JSON.stringify(nonEmptyConditions));
+        if (Object.keys(nonEmptyConditions).length > 0) {
+          params.append("search_fields", JSON.stringify(nonEmptyConditions));
+        }
+
+        const response = await fetch(`?${params.toString()}`, {
+          method: "GET",
+          credentials: "same-origin",
+          headers: { Accept: "application/json" },
+        });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const data = await response.json();
+        const result = data.result || data;
+        const recordList = result.records || [];
+
+        setRecords(recordList);
+        setPagination((prev) => ({
+          page: result.page || 1,
+          limit: result.limit || pageSize,
+          // 総件数はgetPageCountで取得するまで保持（リセット済みなら0のまま）
+          totalRecords: prev.totalPages > 0 ? prev.totalRecords : 0,
+          totalPages: prev.totalPages > 0 ? prev.totalPages : 0,
+          hasNextPage: result.hasNextPage || false,
+          hasPrevPage: result.hasPrevPage || false,
+        }));
+      } catch (err) {
+        console.error("Search failed:", err);
+        setRecords([]);
+        setPagination((prev) => ({ ...prev, totalRecords: 0, totalPages: 0 }));
+      } finally {
+        setRecordsLoading(false);
       }
-
-      const response = await fetch(`?${params.toString()}`, {
-        method: 'GET',
-        credentials: 'same-origin',
-        headers: { 'Accept': 'application/json' }
-      });
-
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-      const data = await response.json();
-      const result = data.result || data;
-      const recordList = result.records || [];
-
-      setRecords(recordList);
-      setPagination(prev => ({
-        page: result.page || 1,
-        limit: result.limit || pageSize,
-        // 総件数はgetPageCountで取得するまで保持（リセット済みなら0のまま）
-        totalRecords: prev.totalPages > 0 ? prev.totalRecords : 0,
-        totalPages: prev.totalPages > 0 ? prev.totalPages : 0,
-        hasNextPage: result.hasNextPage || false,
-        hasPrevPage: result.hasPrevPage || false
-      }));
-    } catch (err) {
-      console.error('Search failed:', err);
-      setRecords([]);
-      setPagination(prev => ({ ...prev, totalRecords: 0, totalPages: 0 }));
-    } finally {
-      setRecordsLoading(false);
-    }
-  }, [moduleName, pageSize]);
+    },
+    [moduleName, pageSize],
+  );
 
   /**
    * Drawer表示時にフィールド情報と初期レコードを取得
@@ -261,7 +269,7 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
     setSearchConditions(newConditions);
 
     // 検索条件変更時は総件数をリセット
-    setPagination(prev => ({ ...prev, totalPages: 0, totalRecords: 0 }));
+    setPagination((prev) => ({ ...prev, totalPages: 0, totalRecords: 0 }));
 
     // デバウンスして検索（ページを1にリセット）
     if (debounceRef.current) {
@@ -278,7 +286,7 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
   const handleClearConditions = () => {
     setSearchConditions({});
     // 検索条件クリア時も総件数をリセット
-    setPagination(prev => ({ ...prev, totalPages: 0, totalRecords: 0 }));
+    setPagination((prev) => ({ ...prev, totalPages: 0, totalRecords: 0 }));
     searchRecords({}, 1);
   };
 
@@ -299,24 +307,24 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
     try {
       const params = new URLSearchParams({
         module: moduleName,
-        api: 'SearchRecords',
-        mode: 'getPageCount',
-        limit: String(pageSize)
+        api: "SearchRecords",
+        mode: "getPageCount",
+        limit: String(pageSize),
       });
 
       // フィールド条件がある場合
       const nonEmptyConditions = Object.fromEntries(
-        Object.entries(searchConditions).filter(([_, v]) => v !== '')
+        Object.entries(searchConditions).filter(([_, v]) => v !== ""),
       );
 
       if (Object.keys(nonEmptyConditions).length > 0) {
-        params.append('search_fields', JSON.stringify(nonEmptyConditions));
+        params.append("search_fields", JSON.stringify(nonEmptyConditions));
       }
 
       const response = await fetch(`?${params.toString()}`, {
-        method: 'GET',
-        credentials: 'same-origin',
-        headers: { 'Accept': 'application/json' }
+        method: "GET",
+        credentials: "same-origin",
+        headers: { Accept: "application/json" },
       });
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -324,13 +332,13 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
       const data = await response.json();
       const result = data.result || data;
 
-      setPagination(prev => ({
+      setPagination((prev) => ({
         ...prev,
         totalRecords: result.numberOfRecords || 0,
-        totalPages: result.page || 1
+        totalPages: result.page || 1,
       }));
     } catch (err) {
-      console.error('Failed to get page count:', err);
+      console.error("Failed to get page count:", err);
     } finally {
       setCountLoading(false);
     }
@@ -346,7 +354,7 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
     if (newIds.has(record.id)) {
       // 選択解除
       newIds.delete(record.id);
-      newRecords = newRecords.filter(r => r.id !== record.id);
+      newRecords = newRecords.filter((r) => r.id !== record.id);
     } else {
       // 選択追加
       newIds.add(record.id);
@@ -361,21 +369,21 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
    * 全選択/全解除
    */
   const handleToggleAll = () => {
-    const currentPageIds = new Set(records.map(r => r.id));
-    const allSelected = records.every(r => selectedIds.has(r.id));
+    const currentPageIds = new Set(records.map((r) => r.id));
+    const allSelected = records.every((r) => selectedIds.has(r.id));
 
     const newIds = new Set(selectedIds);
     let newRecords = [...localSelectedRecords];
 
     if (allSelected) {
       // 現在のページを全解除
-      records.forEach(r => {
+      records.forEach((r) => {
         newIds.delete(r.id);
       });
-      newRecords = newRecords.filter(r => !currentPageIds.has(r.id));
+      newRecords = newRecords.filter((r) => !currentPageIds.has(r.id));
     } else {
       // 現在のページを全選択
-      records.forEach(r => {
+      records.forEach((r) => {
         if (!newIds.has(r.id)) {
           newIds.add(r.id);
           newRecords.push(r);
@@ -405,41 +413,46 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
   /**
    * キーボードナビゲーション
    */
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (records.length === 0) return;
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (records.length === 0) return;
 
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setFocusedIndex(prev => Math.min(prev + 1, records.length - 1));
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setFocusedIndex(prev => Math.max(prev - 1, 0));
-        break;
-      case ' ':
-        e.preventDefault();
-        if (focusedIndex >= 0 && focusedIndex < records.length) {
-          handleToggleRecord(records[focusedIndex]);
-        }
-        break;
-      case 'Enter':
-        e.preventDefault();
-        handleConfirm();
-        break;
-      case 'Escape':
-        e.preventDefault();
-        handleCancel();
-        break;
-    }
-  }, [records, focusedIndex]);
+      switch (e.key) {
+        case "ArrowDown":
+          e.preventDefault();
+          setFocusedIndex((prev) => Math.min(prev + 1, records.length - 1));
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          setFocusedIndex((prev) => Math.max(prev - 1, 0));
+          break;
+        case " ":
+          e.preventDefault();
+          if (focusedIndex >= 0 && focusedIndex < records.length) {
+            handleToggleRecord(records[focusedIndex]);
+          }
+          break;
+        case "Enter":
+          e.preventDefault();
+          handleConfirm();
+          break;
+        case "Escape":
+          e.preventDefault();
+          handleCancel();
+          break;
+      }
+    },
+    [records, focusedIndex],
+  );
 
   // フォーカス行をスクロールに追従
   useEffect(() => {
     if (focusedIndex >= 0 && tableRef.current) {
-      const row = tableRef.current.querySelector(`[data-index="${focusedIndex}"]`);
+      const row = tableRef.current.querySelector(
+        `[data-index="${focusedIndex}"]`,
+      );
       if (row) {
-        row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        row.scrollIntoView({ block: "nearest", behavior: "smooth" });
       }
     }
   }, [focusedIndex]);
@@ -448,22 +461,30 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
    * フィールドタイプに応じた入力コンポーネントをレンダリング
    */
   const renderFieldInput = (field: SearchableField) => {
-    const value = searchConditions[field.name] || '';
+    const value = searchConditions[field.name] || "";
 
     // ピックリスト
-    if (field.type === 'picklist' && field.picklistValues) {
+    if (field.type === "picklist" && field.picklistValues) {
       return (
         <Select
-          value={value || '__empty__'}
-          onValueChange={(v) => handleConditionChange(field.name, v === '__empty__' ? '' : v)}
+          value={value || "__empty__"}
+          onValueChange={(v) =>
+            handleConditionChange(field.name, v === "__empty__" ? "" : v)
+          }
         >
           <SelectTrigger className="h-[27.5px] text-[12.375px] w-[140px]">
             <SelectValue placeholder="--" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="__empty__" className="text-sm py-1.5">--</SelectItem>
+            <SelectItem value="__empty__" className="text-sm py-1.5">
+              --
+            </SelectItem>
             {field.picklistValues.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value || `__val_${opt.label}`} className="text-sm py-1.5">
+              <SelectItem
+                key={opt.value}
+                value={opt.value || `__val_${opt.label}`}
+                className="text-sm py-1.5"
+              >
                 {opt.label}
               </SelectItem>
             ))}
@@ -473,23 +494,31 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
     }
 
     // 担当者
-    if (field.type === 'owner' && field.ownerOptions) {
+    if (field.type === "owner" && field.ownerOptions) {
       const allOptions = [
-        ...field.ownerOptions.users.map(u => ({ ...u, group: 'ユーザー' })),
-        ...field.ownerOptions.groups.map(g => ({ ...g, group: 'グループ' }))
+        ...field.ownerOptions.users.map((u) => ({ ...u, group: "ユーザー" })),
+        ...field.ownerOptions.groups.map((g) => ({ ...g, group: "グループ" })),
       ];
       return (
         <Select
-          value={value || '__empty__'}
-          onValueChange={(v) => handleConditionChange(field.name, v === '__empty__' ? '' : v)}
+          value={value || "__empty__"}
+          onValueChange={(v) =>
+            handleConditionChange(field.name, v === "__empty__" ? "" : v)
+          }
         >
           <SelectTrigger className="h-[27.5px] text-[12.375px] w-[140px]">
             <SelectValue placeholder="--" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="__empty__" className="text-sm py-1.5">--</SelectItem>
+            <SelectItem value="__empty__" className="text-sm py-1.5">
+              --
+            </SelectItem>
             {allOptions.map((opt) => (
-              <SelectItem key={opt.value} value={String(opt.value)} className="text-sm py-1.5">
+              <SelectItem
+                key={opt.value}
+                value={String(opt.value)}
+                className="text-sm py-1.5"
+              >
                 {opt.label}
               </SelectItem>
             ))}
@@ -517,7 +546,7 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
     // レコードがない場合は非表示
     if (records.length === 0) return null;
 
-    const start = ((pagination.page - 1) * pagination.limit) + 1;
+    const start = (pagination.page - 1) * pagination.limit + 1;
     const end = start + records.length - 1;
     const hasPagination = pagination.hasNextPage || pagination.hasPrevPage;
 
@@ -532,14 +561,14 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
           ) : hasPagination ? (
             // ページネーションあり・総件数未取得の場合
             <span>
-              {start} to {end} -{' '}
+              {start} to {end} -{" "}
               <button
                 type="button"
                 onClick={handleGetPageCount}
                 disabled={recordsLoading || countLoading}
                 className="text-blue-600 hover:text-blue-800 hover:underline disabled:text-gray-400"
               >
-                {countLoading ? '...' : '?'}
+                {countLoading ? "..." : "?"}
               </button>
             </span>
           ) : (
@@ -560,11 +589,9 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
               前へ
             </Button>
             <span className="text-sm text-gray-600 min-w-[80px] text-center">
-              {pagination.totalPages > 0 ? (
-                `${pagination.page} / ${pagination.totalPages}`
-              ) : (
-                `${pagination.page} ページ`
-              )}
+              {pagination.totalPages > 0
+                ? `${pagination.page} / ${pagination.totalPages}`
+                : `${pagination.page} ページ`}
             </span>
             <Button
               variant="outline"
@@ -583,8 +610,10 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
   };
 
   // 現在のページで全選択状態かチェック
-  const isAllSelected = records.length > 0 && records.every(r => selectedIds.has(r.id));
-  const isSomeSelected = records.some(r => selectedIds.has(r.id)) && !isAllSelected;
+  const isAllSelected =
+    records.length > 0 && records.every((r) => selectedIds.has(r.id));
+  const isSomeSelected =
+    records.some((r) => selectedIds.has(r.id)) && !isAllSelected;
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -605,103 +634,139 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
           </button>
 
           <DrawerHeader className="pb-2">
-            <DrawerTitle className="text-[30px] font-medium leading-[33px]">{title}</DrawerTitle>
+            <DrawerTitle className="text-[30px] font-medium leading-[33px]">
+              {title}
+            </DrawerTitle>
           </DrawerHeader>
 
           <div className="px-4 flex flex-col flex-1 overflow-hidden">
             {fieldsLoading ? (
               <div className="flex items-center justify-center py-4">
                 <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
-                <span className="ml-2 text-sm text-gray-500">読み込み中...</span>
+                <span className="ml-2 text-sm text-gray-500">
+                  読み込み中...
+                </span>
               </div>
             ) : (
               <div className="flex-1 relative">
-                <div className="absolute inset-0 overflow-auto border border-[#eeeeee] rounded-md" ref={tableRef}>
+                <div
+                  className="absolute inset-0 overflow-auto border border-[#eeeeee] rounded-md"
+                  ref={tableRef}
+                >
                   <Table className="text-[11.25px] leading-[17.5px]">
-                  <TableHeader>
-                    {/* ヘッダー行（ラベル＋検索入力を1行に統合） */}
-                    <TableRow>
-                      <TableHead className="w-[40px] h-[78px] p-[6px] sticky top-0 bg-gray-50 z-10 align-middle border-[#eeeeee]">
-                        <Checkbox
-                          checked={isAllSelected ? true : isSomeSelected ? 'indeterminate' : false}
-                          onCheckedChange={handleToggleAll}
-                          aria-label="全選択/全解除"
-                        />
-                      </TableHead>
-                      <TableHead className="w-[80px] h-[78px] text-center p-[6px] sticky top-0 bg-gray-50 z-10 align-middle border-[#eeeeee]">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={handleClearConditions}
-                          className="h-[25px] text-[12.375px] px-[5px] border-[#eeeeee]"
-                        >
-                          <X className="w-3.5 h-3.5 mr-1" />
-                          クリア
-                        </Button>
-                      </TableHead>
-                      {fields.map((field) => (
-                        <TableHead key={field.name} className="min-w-[120px] h-[78px] p-[6px] sticky top-0 bg-gray-50 z-10 align-middle border-[#eeeeee]">
-                          <div className="flex flex-col gap-1 justify-center h-full">
-                            <div className="text-[12.375px] font-normal">{field.label}</div>
-                            {renderFieldInput(field)}
-                          </div>
+                    <TableHeader>
+                      {/* ヘッダー行（ラベル＋検索入力を1行に統合） */}
+                      <TableRow>
+                        <TableHead className="w-[40px] h-[78px] p-[6px] sticky top-0 bg-gray-50 z-10 align-middle border-[#eeeeee]">
+                          <Checkbox
+                            checked={
+                              isAllSelected
+                                ? true
+                                : isSomeSelected
+                                  ? "indeterminate"
+                                  : false
+                            }
+                            onCheckedChange={handleToggleAll}
+                            aria-label="全選択/全解除"
+                          />
                         </TableHead>
-                      ))}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {recordsLoading ? (
-                      <TableRow>
-                        <TableCell colSpan={fields.length + 2} className="text-center py-4">
-                          <div className="flex items-center justify-center">
-                            <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
-                            <span className="ml-2 text-sm text-gray-500">検索中...</span>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ) : records.length > 0 ? (
-                      records.map((record, index) => {
-                        const isSelected = selectedIds.has(record.id);
-                        return (
-                          <TableRow
-                            key={record.id}
-                            data-index={index}
-                            onClick={() => handleToggleRecord(record)}
-                            className={cn(
-                              'cursor-pointer transition-colors h-[35px]',
-                              focusedIndex === index && 'bg-blue-100 ring-2 ring-blue-500 ring-inset',
-                              focusedIndex !== index && isSelected && 'bg-blue-50',
-                              focusedIndex !== index && !isSelected && 'hover:bg-gray-50'
-                            )}
+                        <TableHead className="w-[80px] h-[78px] text-center p-[6px] sticky top-0 bg-gray-50 z-10 align-middle border-[#eeeeee]">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={handleClearConditions}
+                            className="h-[25px] text-[12.375px] px-[5px] border-[#eeeeee]"
                           >
-                            <TableCell className="p-0 pl-[6px]">
-                              <Checkbox
-                                checked={isSelected}
-                                onCheckedChange={() => handleToggleRecord(record)}
-                                onClick={(e) => e.stopPropagation()}
-                                aria-label={isSelected ? '選択解除' : '選択'}
-                              />
-                            </TableCell>
-                            <TableCell className="text-center p-0 text-gray-500">
-                              #{record.id}
-                            </TableCell>
-                            {fields.map((field) => (
-                              <TableCell key={`${record.id}-${field.name}`} className="p-0">
-                                {record.fieldValues?.[field.name] || '-'}
-                              </TableCell>
-                            ))}
-                          </TableRow>
-                        );
-                      })
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={fields.length + 2} className="text-center py-4 text-sm text-gray-500">
-                          レコードがありません
-                        </TableCell>
+                            <X className="w-3.5 h-3.5 mr-1" />
+                            クリア
+                          </Button>
+                        </TableHead>
+                        {fields.map((field) => (
+                          <TableHead
+                            key={field.name}
+                            className="min-w-[120px] h-[78px] p-[6px] sticky top-0 bg-gray-50 z-10 align-middle border-[#eeeeee]"
+                          >
+                            <div className="flex flex-col gap-1 justify-center h-full">
+                              <div className="text-[12.375px] font-normal">
+                                {field.label}
+                              </div>
+                              {renderFieldInput(field)}
+                            </div>
+                          </TableHead>
+                        ))}
                       </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {recordsLoading ? (
+                        <TableRow>
+                          <TableCell
+                            colSpan={fields.length + 2}
+                            className="text-center py-4"
+                          >
+                            <div className="flex items-center justify-center">
+                              <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                              <span className="ml-2 text-sm text-gray-500">
+                                検索中...
+                              </span>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ) : records.length > 0 ? (
+                        records.map((record, index) => {
+                          const isSelected = selectedIds.has(record.id);
+                          return (
+                            <TableRow
+                              key={record.id}
+                              data-index={index}
+                              onClick={() => handleToggleRecord(record)}
+                              className={cn(
+                                "cursor-pointer transition-colors h-[35px]",
+                                focusedIndex === index &&
+                                  "bg-blue-100 ring-2 ring-blue-500 ring-inset",
+                                focusedIndex !== index &&
+                                  isSelected &&
+                                  "bg-blue-50",
+                                focusedIndex !== index &&
+                                  !isSelected &&
+                                  "hover:bg-gray-50",
+                              )}
+                            >
+                              <TableCell className="p-0 pl-[6px]">
+                                <Checkbox
+                                  checked={isSelected}
+                                  onCheckedChange={() =>
+                                    handleToggleRecord(record)
+                                  }
+                                  onClick={(e) => e.stopPropagation()}
+                                  aria-label={isSelected ? "選択解除" : "選択"}
+                                />
+                              </TableCell>
+                              <TableCell className="text-center p-0 text-gray-500">
+                                #{record.id}
+                              </TableCell>
+                              {fields.map((field) => (
+                                <TableCell
+                                  key={`${record.id}-${field.name}`}
+                                  className="p-0"
+                                >
+                                  {record.fieldValues?.[field.name] || "-"}
+                                </TableCell>
+                              ))}
+                            </TableRow>
+                          );
+                        })
+                      ) : (
+                        <TableRow>
+                          <TableCell
+                            colSpan={fields.length + 2}
+                            className="text-center py-4 text-sm text-gray-500"
+                          >
+                            レコードがありません
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
                 </div>
 
                 {/* フローティング確定ボタン（1件以上選択時のみ表示） - テーブルエリア内に固定 */}
@@ -723,7 +788,6 @@ export const MultiSelectRecordSearchDrawer: React.FC<MultiSelectRecordSearchDraw
               {renderPagination()}
             </div>
           </div>
-
         </div>
       </DrawerContent>
     </Drawer>

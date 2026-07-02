@@ -1,11 +1,11 @@
-import { useMemo, useCallback } from 'react';
-import { FieldInfo } from '../../../types/field';
-import { useQuickCreateFields } from './useQuickCreateFields';
+import { useMemo, useCallback } from "react";
+import { FieldInfo } from "../../../types/field";
+import { useQuickCreateFields } from "./useQuickCreateFields";
 
 /**
  * Activity type: Calendar (ToDo) or Events
  */
-type ActivityType = 'Calendar' | 'Events';
+type ActivityType = "Calendar" | "Events";
 
 /**
  * User information for invitee selection
@@ -99,11 +99,15 @@ export interface UseCalendarFieldsResult {
   /** Parse reminder value (minutes) into days/hours/minutes */
   parseReminderValue: (value: any) => ReminderComponents;
   /** Combine days/hours/minutes into total minutes */
-  combineReminderValue: (days: number, hours: number, minutes: number) => number;
+  combineReminderValue: (
+    days: number,
+    hours: number,
+    minutes: number,
+  ) => number;
   /** Transform initial data for edit mode */
   transformInitialDataForEdit: (
     data: Record<string, any>,
-    targetTab: ActivityType
+    targetTab: ActivityType,
   ) => Record<string, any>;
 }
 
@@ -139,7 +143,7 @@ export interface UseCalendarFieldsResult {
  * ```
  */
 export function useCalendarFields(
-  params: UseCalendarFieldsParams
+  params: UseCalendarFieldsParams,
 ): UseCalendarFieldsResult {
   const {
     activeTab,
@@ -147,7 +151,7 @@ export function useCalendarFields(
     recordTypeFields,
     activityType,
     defaultCallDuration = 5,
-    defaultOtherEventDuration = 5
+    defaultOtherEventDuration = 5,
   } = params;
 
   // Fetch both Calendar and Events fields with RecordType filtering
@@ -155,19 +159,21 @@ export function useCalendarFields(
     fields: calendarFields,
     loading: calendarLoading,
     error: calendarError,
-    editViewUrl: calendarEditUrl
-  } = useQuickCreateFields('Calendar', recordTypeFields);
+    editViewUrl: calendarEditUrl,
+  } = useQuickCreateFields("Calendar", recordTypeFields);
 
   const {
     fields: eventsFields,
     loading: eventsLoading,
     error: eventsError,
-    editViewUrl: eventsEditUrl
-  } = useQuickCreateFields('Events', recordTypeFields);
+    editViewUrl: eventsEditUrl,
+  } = useQuickCreateFields("Events", recordTypeFields);
 
   // Current tab's fields and edit URL
-  const currentFields = activeTab === 'Calendar' ? calendarFields : eventsFields;
-  const editViewUrl = activeTab === 'Calendar' ? calendarEditUrl : eventsEditUrl;
+  const currentFields =
+    activeTab === "Calendar" ? calendarFields : eventsFields;
+  const editViewUrl =
+    activeTab === "Calendar" ? calendarEditUrl : eventsEditUrl;
 
   // Overall loading and error states
   const loading = calendarLoading || eventsLoading;
@@ -179,15 +185,21 @@ export function useCalendarFields(
    */
   const availableUsers = useMemo((): UserInfo[] => {
     const users: UserInfo[] = [];
-    const assignedUserField = eventsFields.find(f => f.name === 'assigned_user_id');
+    const assignedUserField = eventsFields.find(
+      (f) => f.name === "assigned_user_id",
+    );
 
     if (assignedUserField?.fieldinfo?.picklistvalues) {
       const picklistValues = assignedUserField.fieldinfo
         .picklistvalues as Record<string, Record<string, string> | undefined>;
 
       // Get users and groups (invitees can be both; supports English and Japanese)
-      const userGroup = Object.assign({}, picklistValues['Users'] || picklistValues['ユーザー'], picklistValues['Groups'] || picklistValues['グループ']);
-      if (userGroup && typeof userGroup === 'object') {
+      const userGroup = Object.assign(
+        {},
+        picklistValues["Users"] || picklistValues["ユーザー"],
+        picklistValues["Groups"] || picklistValues["グループ"],
+      );
+      if (userGroup && typeof userGroup === "object") {
         Object.entries(userGroup).forEach(([id, name]) => {
           users.push({ id, name });
         });
@@ -206,7 +218,7 @@ export function useCalendarFields(
   const timeOptions = useMemo((): TimeOption[] => {
     // Determine interval based on activity type
     let interval: number;
-    if (activeTab === 'Events' && activityType === 'Call') {
+    if (activeTab === "Events" && activityType === "Call") {
       interval = defaultCallDuration;
     } else {
       interval = defaultOtherEventDuration;
@@ -218,8 +230,8 @@ export function useCalendarFields(
     const options: TimeOption[] = [];
     for (let h = 0; h < 24; h++) {
       for (let m = 0; m < 60; m += interval) {
-        const hh = h.toString().padStart(2, '0');
-        const mm = m.toString().padStart(2, '0');
+        const hh = h.toString().padStart(2, "0");
+        const mm = m.toString().padStart(2, "0");
         options.push({ value: `${hh}:${mm}`, label: `${hh}:${mm}` });
       }
     }
@@ -240,19 +252,19 @@ export function useCalendarFields(
   const parseDateTimeValue = useCallback(
     (value: string | undefined): DateTimeComponents => {
       if (!value) {
-        return { date: '', time: '' };
+        return { date: "", time: "" };
       }
 
       // Expected format: YYYY-MM-DDTHH:MM
-      if (value.includes('T')) {
-        const [datePart, timePart] = value.split('T');
-        return { date: datePart, time: timePart || '' };
+      if (value.includes("T")) {
+        const [datePart, timePart] = value.split("T");
+        return { date: datePart, time: timePart || "" };
       }
 
       // If no 'T' separator, treat as date only
-      return { date: value, time: '' };
+      return { date: value, time: "" };
     },
-    []
+    [],
   );
 
   /**
@@ -265,11 +277,14 @@ export function useCalendarFields(
    * @example
    * combineDateTimeValue('2026-01-15', '14:30') // => '2026-01-15T14:30'
    */
-  const combineDateTimeValue = useCallback((date: string, time: string): string => {
-    if (!date) return '';
-    if (!time) return date;
-    return `${date}T${time}`;
-  }, []);
+  const combineDateTimeValue = useCallback(
+    (date: string, time: string): string => {
+      if (!date) return "";
+      if (!time) return date;
+      return `${date}T${time}`;
+    },
+    [],
+  );
 
   /**
    * Parse reminder value (total minutes) into days, hours, and minutes components
@@ -281,7 +296,7 @@ export function useCalendarFields(
    * parseReminderValue(1455) // => { days: 1, hours: 0, minutes: 15 }
    */
   const parseReminderValue = useCallback((value: any): ReminderComponents => {
-    if (!value || value === '' || value === 0 || value === '0') {
+    if (!value || value === "" || value === 0 || value === "0") {
       return { days: 0, hours: 0, minutes: 0 };
     }
 
@@ -308,7 +323,7 @@ export function useCalendarFields(
     (days: number, hours: number, minutes: number): number => {
       return days * 24 * 60 + hours * 60 + minutes;
     },
-    []
+    [],
   );
 
   /**
@@ -328,25 +343,28 @@ export function useCalendarFields(
    * // => { date_start: '2026-01-15T14:30', is_allday: true, ... }
    */
   const transformInitialDataForEdit = useCallback(
-    (data: Record<string, any>, _targetTab: ActivityType): Record<string, any> => {
+    (
+      data: Record<string, any>,
+      _targetTab: ActivityType,
+    ): Record<string, any> => {
       const transformed: Record<string, any> = { ...data };
 
       // Convert date_start + time_start to datetime-local format
-      if (data.date_start && !data.date_start.includes('T')) {
+      if (data.date_start && !data.date_start.includes("T")) {
         const date = data.date_start;
-        const time = data.time_start || '00:00';
+        const time = data.time_start || "00:00";
         transformed.date_start = `${date}T${time.substring(0, 5)}`;
       }
 
       // Convert due_date + time_end to datetime-local format
-      if (data.due_date && !data.due_date.includes('T')) {
+      if (data.due_date && !data.due_date.includes("T")) {
         const date = data.due_date;
-        const time = data.time_end || '00:00';
+        const time = data.time_end || "00:00";
         transformed.due_date = `${date}T${time.substring(0, 5)}`;
       }
 
       // Convert allday flag (1, '1', or is_allday) to boolean is_allday
-      if (data.allday === '1' || data.allday === 1 || data.is_allday) {
+      if (data.allday === "1" || data.allday === 1 || data.is_allday) {
         transformed.is_allday = true;
       }
 
@@ -357,7 +375,7 @@ export function useCalendarFields(
 
       return transformed;
     },
-    [recordId]
+    [recordId],
   );
 
   return {
@@ -379,7 +397,7 @@ export function useCalendarFields(
     combineDateTimeValue,
     parseReminderValue,
     combineReminderValue,
-    transformInitialDataForEdit
+    transformInitialDataForEdit,
   };
 }
 

@@ -1,9 +1,15 @@
-import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import { Input } from './ui/input';
-import { X, ChevronDown } from 'lucide-react';
-import { cn } from '../lib/utils';
-import { useOptionalTranslation } from '../hooks/useTranslation';
+import React, {
+  useState,
+  useMemo,
+  useRef,
+  useEffect,
+  useCallback,
+} from "react";
+import { createPortal } from "react-dom";
+import { Input } from "./ui/input";
+import { X, ChevronDown } from "lucide-react";
+import { cn } from "../lib/utils";
+import { useOptionalTranslation } from "../hooks/useTranslation";
 
 /**
  * ピックリストオプションの型
@@ -53,18 +59,18 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
   disabled = false,
   error,
   className,
-  labelClassName
+  labelClassName,
 }) => {
   const { t } = useOptionalTranslation();
 
   // 選択済みの値（配列）
   const selectedValues = useMemo(() => {
     if (!value) return [];
-    return value.split(' |##| ').filter(Boolean);
+    return value.split(" |##| ").filter(Boolean);
   }, [value]);
 
   // 検索キーワード
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   // ドロップダウン表示状態
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -75,7 +81,11 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
   const inputContainerRef = useRef<HTMLDivElement>(null);
 
   // ドロップダウンの位置
-  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [dropdownPosition, setDropdownPosition] = useState<{
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
 
   // キーボードハイライトindex
   const [highlightedIndex, setHighlightedIndex] = useState<number>(0);
@@ -110,14 +120,16 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
       touchStartYRef.current = null;
     };
 
-    dropdown.addEventListener('touchstart', handleTouchStart, { passive: true });
-    dropdown.addEventListener('touchmove', handleTouchMove, { passive: false });
-    dropdown.addEventListener('touchend', handleTouchEnd, { passive: true });
+    dropdown.addEventListener("touchstart", handleTouchStart, {
+      passive: true,
+    });
+    dropdown.addEventListener("touchmove", handleTouchMove, { passive: false });
+    dropdown.addEventListener("touchend", handleTouchEnd, { passive: true });
 
     return () => {
-      dropdown.removeEventListener('touchstart', handleTouchStart);
-      dropdown.removeEventListener('touchmove', handleTouchMove);
-      dropdown.removeEventListener('touchend', handleTouchEnd);
+      dropdown.removeEventListener("touchstart", handleTouchStart);
+      dropdown.removeEventListener("touchmove", handleTouchMove);
+      dropdown.removeEventListener("touchend", handleTouchEnd);
     };
   }, [isOpen, dropdownPosition]);
 
@@ -126,14 +138,15 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
    */
   const filteredOptions = useMemo(() => {
     // 選択済みの項目を除外
-    let filtered = options.filter(opt => !selectedValues.includes(opt.value));
+    let filtered = options.filter((opt) => !selectedValues.includes(opt.value));
 
     // 検索キーワードでさらにフィルタリング
     if (searchTerm) {
       const lowerSearch = searchTerm.toLowerCase();
-      filtered = filtered.filter(opt =>
-        opt.label.toLowerCase().includes(lowerSearch) ||
-        opt.value.toLowerCase().includes(lowerSearch)
+      filtered = filtered.filter(
+        (opt) =>
+          opt.label.toLowerCase().includes(lowerSearch) ||
+          opt.value.toLowerCase().includes(lowerSearch),
       );
     }
     return filtered;
@@ -146,7 +159,7 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
 
   // 候補数変動時のクランプ（連続選択UX: 選択した位置に次候補がスライドインするためindex維持＋範囲外クランプ）
   useEffect(() => {
-    setHighlightedIndex(prev => {
+    setHighlightedIndex((prev) => {
       if (filteredOptions.length === 0) return 0;
       return Math.min(prev, filteredOptions.length - 1);
     });
@@ -156,7 +169,7 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
    * 選択済みの値からラベルを取得
    */
   const getLabel = (val: string): string => {
-    const option = options.find(opt => opt.value === val);
+    const option = options.find((opt) => opt.value === val);
     return option ? option.label : val;
   };
 
@@ -174,52 +187,58 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
   const handleSelectOption = (optionValue: string) => {
     // 選択追加
     const newValues = [...selectedValues, optionValue];
-    onChange(name, newValues.join(' |##| '));
+    onChange(name, newValues.join(" |##| "));
   };
 
   /**
    * タグ削除
    */
   const handleRemoveTag = (optionValue: string) => {
-    const newValues = selectedValues.filter(v => v !== optionValue);
-    onChange(name, newValues.join(' |##| '));
+    const newValues = selectedValues.filter((v) => v !== optionValue);
+    onChange(name, newValues.join(" |##| "));
   };
 
   /**
    * キーボード操作（↑↓循環・Enter選択・Esc閉）
    */
-  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!isOpen || filteredOptions.length === 0) return;
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (!isOpen || filteredOptions.length === 0) return;
 
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setHighlightedIndex(prev =>
-          prev < filteredOptions.length - 1 ? prev + 1 : 0
-        );
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setHighlightedIndex(prev =>
-          prev > 0 ? prev - 1 : filteredOptions.length - 1
-        );
-        break;
-      case 'Enter':
-        // IME(日本語入力)確定のEnterはオプション選択しない
-        if (e.nativeEvent.isComposing) break;
-        e.preventDefault();
-        if (highlightedIndex >= 0 && highlightedIndex < filteredOptions.length) {
-          handleSelectOption(filteredOptions[highlightedIndex].value);
-        }
-        break;
-      case 'Escape':
-        // ドロップダウンを閉じるのみ。Dialog自体への伝播は QuickCreate の
-        // onEscapeKeyDown が data-rwc-dropdown 要素の存在で判定して抑止する
-        setIsOpen(false);
-        setHighlightedIndex(0);
-        break;
-    }
-  }, [isOpen, filteredOptions, highlightedIndex]);
+      switch (e.key) {
+        case "ArrowDown":
+          e.preventDefault();
+          setHighlightedIndex((prev) =>
+            prev < filteredOptions.length - 1 ? prev + 1 : 0,
+          );
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          setHighlightedIndex((prev) =>
+            prev > 0 ? prev - 1 : filteredOptions.length - 1,
+          );
+          break;
+        case "Enter":
+          // IME(日本語入力)確定のEnterはオプション選択しない
+          if (e.nativeEvent.isComposing) break;
+          e.preventDefault();
+          if (
+            highlightedIndex >= 0 &&
+            highlightedIndex < filteredOptions.length
+          ) {
+            handleSelectOption(filteredOptions[highlightedIndex].value);
+          }
+          break;
+        case "Escape":
+          // ドロップダウンを閉じるのみ。Dialog自体への伝播は QuickCreate の
+          // onEscapeKeyDown が data-rwc-dropdown 要素の存在で判定して抑止する
+          setIsOpen(false);
+          setHighlightedIndex(0);
+          break;
+      }
+    },
+    [isOpen, filteredOptions, highlightedIndex],
+  );
 
   /**
    * ドロップダウンの位置を計算
@@ -230,7 +249,7 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
       setDropdownPosition({
         top: rect.bottom + window.scrollY,
         left: rect.left + window.scrollX,
-        width: rect.width
+        width: rect.width,
       });
     }
   }, []);
@@ -254,12 +273,12 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
 
       if (!isInsideDropdown && !isInsideInput) {
         setIsOpen(false);
-        setSearchTerm('');
+        setSearchTerm("");
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   /**
@@ -272,12 +291,12 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
       updateDropdownPosition();
     };
 
-    window.addEventListener('scroll', handleScrollOrResize, true);
-    window.addEventListener('resize', handleScrollOrResize);
+    window.addEventListener("scroll", handleScrollOrResize, true);
+    window.addEventListener("resize", handleScrollOrResize);
 
     return () => {
-      window.removeEventListener('scroll', handleScrollOrResize, true);
-      window.removeEventListener('resize', handleScrollOrResize);
+      window.removeEventListener("scroll", handleScrollOrResize, true);
+      window.removeEventListener("resize", handleScrollOrResize);
     };
   }, [isOpen, updateDropdownPosition]);
 
@@ -293,7 +312,7 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
         style={{
           top: dropdownPosition.top,
           left: dropdownPosition.left,
-          width: dropdownPosition.width
+          width: dropdownPosition.width,
         }}
         onWheel={(e) => {
           e.stopPropagation();
@@ -308,8 +327,10 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
                 key={option.value}
                 onClick={() => handleSelectOption(option.value)}
                 className={cn(
-                  'px-3 py-1.5 text-md cursor-pointer',
-                  index === highlightedIndex ? 'bg-blue-100' : 'hover:bg-blue-50'
+                  "px-3 py-1.5 text-md cursor-pointer",
+                  index === highlightedIndex
+                    ? "bg-blue-100"
+                    : "hover:bg-blue-50",
                 )}
               >
                 {option.label}
@@ -318,7 +339,9 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
           </div>
         ) : (
           <div className="px-3 py-1.5 text-md text-gray-500 text-center">
-            {selectedValues.length > 0 ? t('LBL_ALL_OPTIONS_SELECTED') : t('LBL_NO_OPTIONS_AVAILABLE')}
+            {selectedValues.length > 0
+              ? t("LBL_ALL_OPTIONS_SELECTED")
+              : t("LBL_NO_OPTIONS_AVAILABLE")}
           </div>
         )}
       </div>
@@ -328,35 +351,45 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
   };
 
   return (
-    <div className={cn('flex items-start gap-2', className)}>
+    <div className={cn("flex items-start gap-2", className)}>
       {labelClassName ? (
         <div className="flex items-baseline md:contents">
           <span
             className={cn(
-              'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
-              disabled && 'text-gray-400',
-              labelClassName
+              "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+              disabled && "text-gray-400",
+              labelClassName,
             )}
           >
             {label}
-            {mandatory && <span className="text-red-500" aria-hidden="true">*</span>}
+            {mandatory && (
+              <span className="text-red-500" aria-hidden="true">
+                *
+              </span>
+            )}
             {mandatory && <span className="sr-only"> (必須)</span>}
           </span>
-          <span className="w-3 flex-shrink-0 hidden md:block" aria-hidden="true" />
+          <span
+            className="w-3 flex-shrink-0 hidden md:block"
+            aria-hidden="true"
+          />
         </div>
       ) : (
         <>
           <span
             className={cn(
-              'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
-              disabled && 'text-gray-400'
+              "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+              disabled && "text-gray-400",
             )}
           >
             {label}
             {mandatory && <span className="sr-only"> (必須)</span>}
           </span>
-          <span className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0" aria-hidden="true">
-            {mandatory ? '*' : ''}
+          <span
+            className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0"
+            aria-hidden="true"
+          >
+            {mandatory ? "*" : ""}
           </span>
         </>
       )}
@@ -380,12 +413,9 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
                 setTimeout(() => setIsOpen(false), 150);
               }}
               disabled={disabled}
-              placeholder={t('LBL_PLACEHOLDER_SELECT', label)}
+              placeholder={t("LBL_PLACEHOLDER_SELECT", label)}
               autoComplete="off"
-              className={cn(
-                'pr-10',
-                error && 'border-red-500'
-              )}
+              className={cn("pr-10", error && "border-red-500")}
             />
 
             {/* ドロップダウンアイコン */}
@@ -423,13 +453,21 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
         )}
 
         {/* 隠しフィールド */}
-        <input type="hidden" name={name} value={value || ''} />
+        <input type="hidden" name={name} value={value || ""} />
 
         {/* エラーメッセージ */}
         {error && (
           <div className="mt-1 text-sm text-red-600 flex items-center">
-            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            <svg
+              className="w-4 h-4 mr-1"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
             </svg>
             {error}
           </div>

@@ -22,12 +22,12 @@ interface ActivityListItemProps {
 interface Activity {
   id: string;
   subject: string;
-  activityType: 'Task' | 'Meeting' | 'Call' | string;
+  activityType: "Task" | "Meeting" | "Call" | string;
   status: string;
-  dateStart: string;      // YYYY-MM-DD
-  timeStart: string;      // HH:MM:SS
-  dueDate: string;        // YYYY-MM-DD
-  timeEnd: string;        // HH:MM:SS
+  dateStart: string; // YYYY-MM-DD
+  timeStart: string; // HH:MM:SS
+  dueDate: string; // YYYY-MM-DD
+  timeEnd: string; // HH:MM:SS
   assignedTo: {
     id: string;
     name: string;
@@ -40,25 +40,25 @@ interface Activity {
 #### Usage
 
 ```tsx
-import { ActivityListItem } from '@/components/ActivityList';
+import { ActivityListItem } from "@/components/ActivityList";
 
 const activity = {
-  id: '123',
-  subject: 'Meeting with client',
-  activityType: 'Meeting',
-  status: 'Planned',
-  dateStart: '2024-01-15',
-  timeStart: '14:30:00',
-  dueDate: '2024-01-15',
-  timeEnd: '15:30:00',
+  id: "123",
+  subject: "Meeting with client",
+  activityType: "Meeting",
+  status: "Planned",
+  dateStart: "2024-01-15",
+  timeStart: "14:30:00",
+  dueDate: "2024-01-15",
+  timeEnd: "15:30:00",
   assignedTo: {
-    id: '1',
-    name: 'John Doe'
+    id: "1",
+    name: "John Doe",
   },
-  detailViewUrl: '?module=Calendar&view=Detail&record=123'
+  detailViewUrl: "?module=Calendar&view=Detail&record=123",
 };
 
-<ActivityListItem activity={activity} />
+<ActivityListItem activity={activity} />;
 ```
 
 #### Features

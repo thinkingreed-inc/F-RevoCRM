@@ -1,4 +1,4 @@
-import { FieldInfo } from '../types/field';
+import { FieldInfo } from "../types/field";
 
 /**
  * QuickCreate上のJoditインスタンスからデータを収集してformDataに反映する。
@@ -12,34 +12,37 @@ import { FieldInfo } from '../types/field';
 export function syncJoditEditorFormData(
   module: string,
   formData: Record<string, unknown>,
-  fields: FieldInfo[]
+  fields: FieldInfo[],
 ): Record<string, unknown> {
   const JoditEditor = (window as any).Vtiger_Jodit_Js;
   if (!JoditEditor || fields.length === 0) {
     return formData;
   }
 
-  if (typeof JoditEditor.syncAllInstances === 'function') {
+  if (typeof JoditEditor.syncAllInstances === "function") {
     JoditEditor.syncAllInstances();
   }
 
   const result = { ...formData };
-  fields.forEach(field => {
+  fields.forEach((field) => {
     if (!field.isJoditEditor) {
       return;
     }
 
-    const editorId = `${module || 'QuickCreate'}_quickCreate_fieldName_${field.name}`;
-    const wrapper = typeof JoditEditor.getInstance === 'function'
-      ? JoditEditor.getInstance(editorId)
-      : null;
+    const editorId = `${module || "QuickCreate"}_quickCreate_fieldName_${field.name}`;
+    const wrapper =
+      typeof JoditEditor.getInstance === "function"
+        ? JoditEditor.getInstance(editorId)
+        : null;
 
-    if (wrapper && typeof wrapper.getData === 'function') {
+    if (wrapper && typeof wrapper.getData === "function") {
       result[field.name] = wrapper.getData();
       return;
     }
 
-    const textarea = document.getElementById(editorId) as HTMLTextAreaElement | null;
+    const textarea = document.getElementById(
+      editorId,
+    ) as HTMLTextAreaElement | null;
     if (textarea) {
       result[field.name] = textarea.value;
     }
