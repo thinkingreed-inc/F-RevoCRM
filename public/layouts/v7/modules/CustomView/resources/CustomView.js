@@ -224,6 +224,26 @@ jQuery.Class("Vtiger_CustomView_Js",{
 		});
 	},
 
+	registerOrderbyChangeEvent : function() {
+		var form = jQuery('#CustomView');
+		var orderBySelect = form.find('#orderby');
+		var sortOrderSelect = form.find('#sortorder');
+		// The container is the parent div of the sortorder select
+		var sortOrderContainer = sortOrderSelect.closest('div.col-sm-3, div.col-xs-4');
+
+		if(orderBySelect.length > 0) {
+			orderBySelect.on('change', function() {
+				if(jQuery(this).val() == '') {
+					sortOrderContainer.hide();
+				} else {
+					sortOrderContainer.show();
+				}
+			});
+			// Trigger on load to set initial state
+			orderBySelect.trigger('change');
+		}
+	},
+
 	/**
 	 * Function which will register the select2 elements for columns selection
 	 */
@@ -239,6 +259,7 @@ jQuery.Class("Vtiger_CustomView_Js",{
 		this.makeColumnListSortable();
 		this.registerToogleShareList();
 		this.registerOnlyAllUsersInSharedList();
+		this.registerOrderbyChangeEvent();
 		var customViewForm = jQuery('#CustomView');
 
 		if(customViewForm.length > 0) {
@@ -247,7 +268,7 @@ jQuery.Class("Vtiger_CustomView_Js",{
 					var form = jQuery(form); 
 						  var selectElement = form.find('#viewColumnsSelect'); 
 						  var mandatoryFieldsList = JSON.parse(jQuery('#mandatoryFieldsList').val()); 
-						  var selectedOptions = selectElement.val(); 
+						  var selectedOptions = selectElement.val();
 						  var mandatoryFieldsMissing = true; 
 						  for(var i=0; i<selectedOptions.length; i++) { 
 						if(jQuery.inArray(selectedOptions[i], mandatoryFieldsList) >= 0) { 
@@ -346,5 +367,6 @@ jQuery.Class("Vtiger_CustomView_Js",{
 				target.trigger('post.ToggleDefault.saved',data);
 			})
 		});
-	}
+	},
+
 });
