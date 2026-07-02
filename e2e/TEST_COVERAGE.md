@@ -5,7 +5,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 - 対象コード時点: `feature/e2e` ブランチ（2026-07-02 現在）
 - 機能一覧の No. は社内の「機能一覧」（1-1〜78-1）に対応。コードから追加で発見した機能は §6 に別掲。
-- 調査方法: 既存 `e2e/test/` の読み取り＋ `modules/` のコード調査（業務モジュール / 管理設定 / 横断機能の 3 系統を並行調査）に加え、`http://localhost/FR_Remicck/` に admin でログインして**実画面で裏取り**（設定メニュー・各画面の到達性・詳細画面の固有アクション）。
+- 調査方法: 既存 `e2e/test/` の読み取り＋ `modules/` のコード調査（業務モジュール / 管理設定 / 横断機能の 3 系統を並行調査）に加え、テスト環境（`E2E_BASE_URL`）に admin でログインして**実画面で裏取り**（設定メニュー・各画面の到達性・詳細画面の固有アクション）。
 - **実機検証の前提**: ローカル DB はデータが少なく、レコードが存在するのは `Accounts / Products / Services / Project / Vendors`（＝ `seed.setup.ts` の対象）のみ。そのため詳細画面の固有アクションを実データで確認できたのは Accounts・Vendors 等に限られ、他モジュールは**コード確認済（実データ未検証）**扱い。
 
 ## 凡例
@@ -238,12 +238,14 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 ### P1: 影響が大きく、汎用ドライバで横展開しやすい共通機能
 
-- [ ] 一覧の列検索（絞り込み → 件数検証）を汎用化して主要モジュールに適用（No.2-4）
-- [ ] フォロー（一覧☆ / 詳細）付与・解除・絞り込み（No.3-1）
-- [ ] タグ 追加 / 変更 / ×削除 / 一括付与（No.4-1）
-- [ ] 一括削除（一覧チェック → ゴミ箱）と ゴミ箱での復元・完全削除（No.12-3, 35-1）
-- [ ] クイック作成（＋ボタン）・クイック編集（鉛筆）・一覧ダブルクリック編集（No.12-2）
-- [ ] CSV エクスポート / インポート（追加・上書き・マージ）（No.10-1, 11-1）
+- [x] 一覧の列検索（絞り込み → 該当レコード検証）（No.2-4） → `test/common/common.search.spec.ts`
+- [x] フォロー（一覧☆ / 詳細 starToggle）ON/OFF（No.3-1） → `test/common/common.follow.spec.ts`
+- [x] タグ 追加 / ×削除（詳細画面）（No.4-1） → `test/common/common.tag.spec.ts`
+- [x] 一括削除（一覧チェック → ゴミ箱）と ゴミ箱での復元・完全削除（No.12-3, 35-1） → `test/common/common.recyclebin.spec.ts`
+- [ ] クイック作成（＋ボタン）・クイック編集（鉛筆）・一覧ダブルクリック編集（No.12-2）※未着手
+- [x] CSV エクスポート（No.10-1） → `test/common/common.export.spec.ts`
+- [ ] CSV インポート（追加・上書き・マージ）（No.11-1）※未着手
+- [ ] タグの一括付与（一覧）/ タグの変更 / フォロー絞り込み（残タスク。詳細追加+削除は実装済）
 
 ### P2: 在庫系モジュールと連携機能
 
@@ -286,7 +288,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - 認証・シード: `e2e/auth.setup.ts` / `e2e/seed.setup.ts`（参照される側モジュールを事前シード）
 - 管理設定 URL 規約: `index.php?module={Sub}&parent=Settings&view={View}`（Vtiger 系設定は `module=Vtiger&parent=Settings&view={View}`）
 
-### 実機検証ログ（2026-07-02, `http://localhost/FR_Remicck/`, admin）
+### 実機検証ログ（2026-07-02, テスト環境 `E2E_BASE_URL`, admin）
 
 - 設定トップメニュー項目 34 件を抽出し C〜I マッピングと突合 → 一致。
 - 到達性を実機確認: スケジューラー(CronTasks) / メールコンバーター(MailConverter) / 送信メールサーバー(OutgoingServerDetail) / SMS通知(SMSNotifier:List) はいずれも実画面が開く。
