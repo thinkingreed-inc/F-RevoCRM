@@ -303,7 +303,9 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 		// }
 
 		$queryGenerator->setFields(array('subject', 'eventstatus', 'visibility','date_start','time_start','due_date','time_end','assigned_user_id','id','activitytype','recurringtype','parent_id','description', 'location', 'creator', 'modifiedby'));
-		$query = $queryGenerator->getQuery();
+		$query = "SELECT vtiger_activity.invitee_parentid, " . $queryGenerator->getSelectClauseColumnSQL();
+		$query .= $queryGenerator->getFromClause();
+		$query .= $queryGenerator->getWhereClause();
 
 		$query.= " AND vtiger_activity.activitytype NOT IN ('Emails','Task') AND ";
 		$hideCompleted = $currentUser->get('hidecompletedevents');
@@ -325,7 +327,6 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 		$userIds = array_merge(array($eventUserId), $this->getGroupsIdsForUsers($eventUserId));
 		
 		$query.= " AND vtiger_crmentity.smownerid IN (".  generateQuestionMarks($userIds).")";
-		$query = preg_replace('/vtiger_activity.activityid/', 'vtiger_activity.invitee_parentid, vtiger_activity.activityid', $query, 1);
 		
 		$params = array($dbEndDate, $dbStartDate, $userIds);
 		$queryResult = $db->pquery($query, $params);
