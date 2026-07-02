@@ -1,5 +1,12 @@
 import { test, expect } from "@playwright/test";
-import { gotoList, firstRow, firstRowName, listRows } from "../../utils/listview";
+import {
+  gotoList,
+  firstRow,
+  firstRowName,
+  listRows,
+  listSearch,
+  clearListSearch,
+} from "../../utils/listview";
 
 /**
  * 共通機能: 一覧からの検索(列検索) — 機能一覧 2-4
@@ -19,27 +26,15 @@ test.describe("共通: 一覧の列検索", () => {
     const name = await firstRowName(page);
     expect(name.length).toBeGreaterThan(0);
 
-    const searchInput = page.locator(
-      'input.listSearchContributor[name="accountname"]'
-    );
-    await expect(searchInput).toBeVisible();
-    await searchInput.fill(name);
+    // 名前列で検索(AJAX)。行の再描画を待つ。
+    await listSearch(page, "accountname", name);
 
-    // 検索実行(AJAX)。行の再描画を待つ。
-    await page.locator('[data-trigger="listSearch"]').first().click();
-    await page.waitForLoadState("networkidle");
-
-    // 該当名の行が表示され、全行がその名前を含む(=絞り込めている)
+    // 該当名の行が表示され、絞り込めている
     await expect(firstRow(page).locator(`text=${name}`).first()).toBeVisible();
     const count = await listRows(page).count();
     expect(count).toBeGreaterThan(0);
 
     // 後始末: 検索条件をクリア(ログインセッションに残るため)
-    await page
-      .locator('[data-trigger="clearListSearch"]')
-      .first()
-      .click()
-      .catch(() => {});
-    await page.waitForLoadState("networkidle").catch(() => {});
+    await clearListSearch(page);
   });
 });

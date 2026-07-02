@@ -61,6 +61,33 @@ export async function openMassMore(page: Page): Promise<void> {
     .click();
 }
 
+/**
+ * 一覧の列検索を実行する。検索実行ボタンは「検索条件が既にある」と hide に
+ * なる(ListViewContents.tpl)ため、入力欄で Enter を押して確実に発火させる。
+ */
+export async function listSearch(
+  page: Page,
+  field: string,
+  value: string
+): Promise<void> {
+  const input = page.locator(
+    `input.listSearchContributor[name="${field}"]`
+  );
+  await input.fill(value);
+  await input.press("Enter");
+  await page.waitForLoadState("networkidle");
+}
+
+/** 一覧の検索条件をクリアする(セッションに残るため後始末に使う)。 */
+export async function clearListSearch(page: Page): Promise<void> {
+  await page
+    .locator('[data-trigger="clearListSearch"]')
+    .first()
+    .click()
+    .catch(() => {});
+  await page.waitForLoadState("networkidle").catch(() => {});
+}
+
 /** 先頭行の record ID(数値)を取得する。 */
 export async function firstRecordId(page: Page): Promise<string> {
   const href = await firstRow(page)
