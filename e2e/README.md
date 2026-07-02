@@ -32,7 +32,7 @@ cp .env.example .env
 
 | 変数 | 説明 |
 |---|---|
-| `E2E_BASE_URL` | テスト対象のベース URL（末尾スラッシュ付き）。例: `http://localhost/FR_Remicck/` |
+| `E2E_BASE_URL` | テスト対象のベース URL（末尾スラッシュ付き）。例: `http://localhost/crm/` |
 | `E2E_USER_NAME` | ログインユーザー名（既定 `admin`） |
 | `E2E_USER_PASSWORD` | ログインパスワード |
 | `E2E_USER_ACCESSKEY` | Webservice API 用アクセスキー（下記参照） |

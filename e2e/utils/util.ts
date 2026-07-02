@@ -4,10 +4,10 @@ import { Page } from "@playwright/test";
  * E2Eテスト対象のベースURL。
  * 環境差異(サブディレクトリ配信など)を吸収するため env で上書き可能。
  * 末尾スラッシュを必ず1つ付与して正規化する。
- * 例: http://localhost/FR_Remicck_PR/
+ * 例: http://localhost/crm/
  */
 export const BASE_URL = (
-  process.env.E2E_BASE_URL || "http://localhost/FR_Remicck_PR/"
+  process.env.E2E_BASE_URL || "http://localhost/crm/"
 ).replace(/\/?$/, "/");
 
 /**
