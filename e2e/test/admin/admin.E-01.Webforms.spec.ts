@@ -71,31 +71,74 @@ test.describe.serial("管理: Webフォーム (Webforms)", () => {
     await expect(row(page, name)).toBeVisible();
   });
 
+  // 遅い CI(docker)向けの生成的な待ち時間。
+  // 編集画面はフルページ遷移のうえ Edit.js の初期化(select2 / sortable /
+  // applyFieldElementsView 等)が重く、遅い環境ではフォーム描画に時間がかかる。
+  const EDIT_TIMEOUT = 30000;
+
+  /**
+   * 対象行の編集アイコンから編集画面(フルページ遷移)を開き、
+   * 「正しいレコードの編集画面」がフォーム初期化まで含めて開き切るのを待つ。
+   *
+   * 失敗の主因は「pencil クリック→フルページ遷移」の遷移完了を待たずに
+   * フィールドを触りに行っていた点。遷移完了と #EditView フォームの
+   * 出現、さらに readonly の name フィールドに対象 Webフォーム名が
+   * 入っていること(=想定どおりのレコードが読み込まれたこと)を待つ。
+   */
+  const openEditView = async (page: Page) => {
+    const pencil = row(page, name).first().locator("i.fa.fa-pencil");
+    await expect(pencil).toBeVisible({ timeout: EDIT_TIMEOUT });
+
+    // pencil クリックはフルページ遷移を起こすため、遷移完了を待ってから
+    // フォームを触る(遷移途中の旧一覧/空ページを掴まないようにする)。
+    await Promise.all([
+      page.waitForURL(/[?&]view=Edit(&|$)/, { timeout: EDIT_TIMEOUT }),
+      pencil.click(),
+    ]);
+    await page
+      .waitForLoadState("networkidle", { timeout: EDIT_TIMEOUT })
+      .catch(() => {});
+
+    // 安定したフォームコンテナ(#EditView)と、readonly の name フィールドに
+    // 対象 Webフォーム名が入っていることを待つ。これで「正しいレコードの
+    // 編集画面がフィールド描画まで含めて開き切った」ことを確認する。
+    const editForm = page.locator("form#EditView");
+    await expect(editForm).toBeVisible({ timeout: EDIT_TIMEOUT });
+    await expect(editForm.locator('input[name="name"]')).toHaveValue(name, {
+      timeout: EDIT_TIMEOUT,
+    });
+  };
+
   test("Webフォームの編集", async ({ page }) => {
     await gotoSettings(page, listParams);
 
     // 対象行の編集アイコン(fa-pencil / title=編集)から編集画面へ
-    const target = row(page, name).first();
-    await target.locator('i.fa.fa-pencil').click();
+    await openEditView(page);
 
-    // 名前は readonly のため説明(description)を書き換える
-    const description = page.locator('textarea[name="description"]');
-    await expect(description).toBeVisible();
+    // 名前(name)は編集画面では readonly のため、説明(description=uitype19)を
+    // 書き換えて更新を検証する。description は編集画面で常に textarea として
+    // 描画される(EditRecordStructure_Model / Block_Model で確認済み)。
+    const description = page
+      .locator("form#EditView")
+      .locator('textarea[name="description"]');
+    await expect(description).toBeVisible({ timeout: EDIT_TIMEOUT });
     await description.fill(editedDesc);
+    // fill 後に値が反映されていることを確認してから保存する
+    await expect(description).toHaveValue(editedDesc, { timeout: EDIT_TIMEOUT });
 
     await saveAndSettle(page, page.locator("button.saveButton"));
 
     // 再度編集画面を開き、説明が更新されていることを検証する。
     // (一覧に説明列は無いため、詳細=編集画面で確認する)
     await gotoSettings(page, listParams);
-    await row(page, name).first().locator('i.fa.fa-pencil').click();
-    await expect(page.locator('textarea[name="description"]')).toHaveValue(
-      editedDesc
-    );
+    await openEditView(page);
+    await expect(
+      page.locator("form#EditView").locator('textarea[name="description"]')
+    ).toHaveValue(editedDesc, { timeout: EDIT_TIMEOUT });
 
     // 一覧に対象の Webフォームが依然として存在すること
     await gotoSettings(page, listParams);
-    await expect(row(page, name)).toBeVisible();
+    await expect(row(page, name)).toBeVisible({ timeout: EDIT_TIMEOUT });
   });
 
   test("Webフォームの削除", async ({ page }) => {

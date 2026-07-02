@@ -56,14 +56,45 @@ test.describe.serial("管理: プロファイル (Profiles)", () => {
   test("プロファイルの編集", async ({ page }) => {
     await gotoSettings(page, params);
     const target = row(page, nameAdd);
+    // ドロップダウンを開いてから編集リンクへ遷移する。
+    // 編集リンクはフルページ遷移(a[href])なので、遷移完了(=編集フォームの
+    // profilename が表示)を待ってから入力する。遅い CI では
+    // ドロップダウン表示→クリックが競合しやすいため明示的に待つ。
     await target.locator("span.dropdown-toggle").click();
-    await target.locator('a[title="編集"]').click();
+    const editLink = target.locator('a[title="編集"]');
+    await expect(editLink).toBeVisible();
+    await editLink.click();
 
-    await page.locator('input[name="profilename"]').fill(nameEdit);
-    await saveAndSettle(page, page.locator("button.saveButton"));
+    const nameInput = page.locator('input[name="profilename"]');
+    await expect(nameInput).toBeVisible();
+    await expect(nameInput).toHaveValue(nameAdd);
+    await nameInput.fill(nameEdit);
 
+    // Profiles の保存は AJAX。保存ボタン押下後に
+    //   1) EditAjax(mode=checkDuplicate) の POST
+    //   2) 実際の action=Save の POST
+    // が直列で走り、成功後に window.history.back() で一覧へ戻る。
+    // saveAndSettle は「最初の POST」で解決するため、遅い CI では
+    // checkDuplicate 完了時点で先に進んでしまい、直後の gotoSettings で
+    // 本命の Save POST が中断され保存がコミットされない。
+    // ここでは body に action=Save を含む POST の応答(2xx/3xx)を明示的に
+    // 待ってから次へ進む。
+    const saveResponse = page.waitForResponse(
+      (r) => {
+        if (r.request().method() !== "POST") return false;
+        const body = r.request().postData() ?? "";
+        return /(^|&)action=Save(&|$)/.test(body) && r.status() < 400;
+      },
+      { timeout: 30000 }
+    );
+    await page.locator("button.saveButton").click();
+    await saveResponse;
+    // Save 後の history.back() による一覧再描画も落ち着かせる。
+    await page.waitForLoadState("networkidle").catch(() => {});
+
+    // 一覧を再取得し、遅い反映に備えて寛容なタイムアウトでリネーム後の行を待つ。
     await gotoSettings(page, params);
-    await expect(row(page, nameEdit)).toBeVisible();
+    await expect(row(page, nameEdit)).toBeVisible({ timeout: 30000 });
     await expect(row(page, nameAdd)).toHaveCount(0);
   });
 
