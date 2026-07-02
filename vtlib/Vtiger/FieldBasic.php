@@ -183,8 +183,18 @@ class Vtiger_FieldBasic {
 		if (!$this->columntype)
 			$this->columntype = 'VARCHAR(100)';
 
-        if (!$this->label && !$this->uitype === 999)
-            $this->label = $this->name;
+		if ((int) $this->generatedtype === 2 && in_array((int) $this->uitype, array(10, 15, 16, 33))) {
+			$dupResult = $adb->pquery(
+				'SELECT 1 FROM vtiger_field WHERE columnname = ? LIMIT 1',
+				array($this->column)
+			);
+			if ($adb->num_rows($dupResult) > 0) {
+				throw new Exception("columnname '{$this->column}' already exists");
+			}
+		}
+
+		if (!$this->label && !$this->uitype === 999)
+			$this->label = $this->name;
 
 		if (!empty($this->columntype)) {
 			Vtiger_Utils::AddColumn($this->table, $this->column, $this->columntype);
