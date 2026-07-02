@@ -74,6 +74,11 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ hashFiles('e2e/package-lock.json') }}
 
+      # 失敗時スクショの日本語が豆腐(□)になるのを防ぐ。Playwright の Chromium は
+      # runner 直で動くため、runner 側に CJK フォントを入れておく。
+      - name: Install Japanese fonts (スクショ豆腐対策)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+
       - name: Run E2E (compose + dump + migration + Playwright)
         run: ./e2e/ci/run-e2e.sh
 
