@@ -183,13 +183,28 @@ class Vtiger_FieldBasic {
 		if (!$this->columntype)
 			$this->columntype = 'VARCHAR(100)';
 
-		if ((int) $this->generatedtype === 2 && in_array((int) $this->uitype, array(10, 15, 16, 33))) {
-			$dupResult = $adb->pquery(
-				'SELECT 1 FROM vtiger_field WHERE columnname = ? LIMIT 1',
-				array($this->column)
-			);
-			if ($adb->num_rows($dupResult) > 0) {
-				throw new Exception("columnname '{$this->column}' already exists");
+		$dupSameModule = $adb->num_rows($adb->pquery(
+			'SELECT 1 FROM vtiger_field WHERE fieldname = ? AND tabid = ? LIMIT 1',
+			array($this->name, $this->getModuleId())
+		)) > 0;
+
+		if ($dupSameModule) {
+			$message = "同モジュール内にAPI参照名 {$this->name} が使われている為、項目の追加に失敗しました";
+			self::log("[ERROR] $message");
+			throw new Exception($message);
+		}
+
+		$isPicklist = in_array((int) $this->uitype, array(15, 16, 33));
+		if ($isPicklist) {
+			$dupCrossModule = $adb->num_rows($adb->pquery(
+				'SELECT 1 FROM vtiger_field WHERE fieldname = ? LIMIT 1',
+				array($this->name)
+			)) > 0;
+
+			if ($dupCrossModule) {
+				$message = "別モジュールの選択肢項目にAPI参照名 {$this->name} が使われている為、項目の追加に失敗しました";
+				self::log("[ERROR] $message");
+				throw new Exception($message);
 			}
 		}
 
