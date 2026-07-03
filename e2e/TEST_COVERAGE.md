@@ -246,7 +246,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - [x] クイック編集（鉛筆・インライン）（No.12-2） → `test/common/common.quickedit.spec.ts`（概要の1項目編集）
 - [x] CSV エクスポート（No.10-1） → `test/common/common.export.spec.ts`
 - [ ] 一覧ダブルクリック編集（No.12-2）※調査済・未採用。行 dblclick でインライン編集は動くが、同時にクイックプレビューが開き後続操作を阻害しハングするため安定化が必要（`.listViewEntries` dblclick → `input[name=...]` → `.inline-save .save`）
-- [x] CSV インポート（No.11-1） → `test/common/common.import.spec.ts`（Accounts。最小CSV `fixtures/import_accounts.csv`）。**要点**: ヘッダは自動マップされないため 3ステップ目で先頭列を `accountname` に明示マッピングが必要。※重複時スキップ/上書き/マージの検証は、Accounts に重複検出項目の設定が要るため未対応（別タスク）。他モジュール展開も未
+- [x] CSV インポート（No.11-1） → `test/common/common.import.spec.ts`（Accounts、パターン別5種: 複数行/ヘッダなし/重複スキップ/上書き/マージ）。ウィザードは `utils/import.ts` で driver 化。**知見**: ヘッダは自動マップされず列順に明示割当が必要／重複突合は既定 `accountname`／スキップは未更新・上書き/マージは更新（本ビルドでは CSV に列自体が無い項目の空白化は起きず保持）。※他モジュール展開は未
 - [ ] タグの一括付与（一覧）/ タグの変更 / フォロー絞り込み（残タスク。詳細のタグ追加+削除は実装済）
 
 ### P2: 在庫系モジュールと連携機能
