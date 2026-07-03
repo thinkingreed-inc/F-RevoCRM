@@ -87,8 +87,8 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 | No. | モジュール | CRUD | 固有機能（実装） | 固有機能テスト | タスク |
 |---|---|---|---|---|---|
-| 18 | 顧客企業 Accounts | ✅ | 組織階層, SMSを送る, 予定/TODOの登録, 担当の変更, 複製（**実機の詳細で確認済**）, メール, 地図(Google) | ❌ | 組織階層表示、メール送信起動、地図表示 |
-| 17 | 顧客担当者 Contacts | ✅ | メール, 活動, ToDo, SMS, 地図, vCard インポート | ❌ | vCard インポート、メール送信起動 |
+| 18 | 顧客企業 Accounts | ✅ | 組織階層, SMSを送る, 予定/TODOの登録, 担当の変更, 複製, メール, 地図(Google) | 🟡 メール/組織階層/SMS の起動を検証 → `module/account.spec.ts` | 地図表示、予定/TODO起動 |
+| 17 | 顧客担当者 Contacts | ✅ | メール, 活動, ToDo, SMS, 地図, vCard インポート | 🟡 メール/SMS の起動を検証 → `module/contacts.spec.ts` | vCard インポート、地図 |
 | 16 | リード Leads | ✅ | **昇格 `ConvertLead`**, メール, 活動, ToDo, SMS, 地図 | ❌ | 昇格（顧客企業/担当者/案件へ）フローの検証 |
 | 19 | 案件 Potentials | ✅ | 見積/請求/受注作成, **プロジェクト変換 `ConvertPotential`**, 活動, ToDo | ❌ | 案件→見積/請求/受注 生成、プロジェクト作成 |
 | 20 | 製品 Products | ✅ | 見積/請求/発注/受注作成, 在庫管理, 自動計算, SubProducts | ❌ | 在庫・自動計算、各ドキュメント生成 |
@@ -263,10 +263,10 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 ### P3: モジュール固有フロー
 
 - [x] 更新履歴（No.8-1） → `test/common/common.history.spec.ts`
-- [ ] リード昇格 ConvertLead（No.16-2）※調査済・未完。昇格画面は開き Accounts/Contacts トグルは ON だが、`保存`クリックでレコードが作成されず home へ戻る。convert の実行アクション(専用ボタン/React)を要特定
 - [ ] 案件 → プロジェクト変換 ConvertPotential（No.19-2）
 - [ ] チケット → FAQ 変換（No.29-2）
-- [ ] メール送信起動 / SMS / 地図表示（主要モジュール）
+- [x] メール送信起動 / SMS 起動（Accounts=`module/account.spec.ts`, Contacts=`module/contacts.spec.ts`。組織階層も Accounts で検証）※他モジュール・地図表示は残
+- [ ] リード昇格 ConvertLead（No.16-2）※再挑戦も未成立。`#convertLeadForm` の submit(`button[type=submit]`)を押すと home へ遷移し `SaveConvertLead` POST が飛ばずレコード未作成。JS 側の submit ハンドラ/必須マッピングの調査が必要
 - [ ] 活動・ToDo の CRUD、iCal、カンバン、カレンダー各表示（No.14-1, 39, 40）
 - [x] 関連一覧の表示（No.7-1） → `test/common/common.relatedlist.spec.ts`（顧客担当者タブを開いて関連一覧表示を確認。「追加」からの登録までは未）
 - [x] コメント投稿（No.9-1） → `test/common/common.comment.spec.ts`
