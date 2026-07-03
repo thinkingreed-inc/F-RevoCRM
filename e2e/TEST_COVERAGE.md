@@ -46,7 +46,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - ❌ **在庫系 4 モジュール** — CRUD も固有機能（PDF・相互生成）も未（§2 の P2）。
 - 🟡 **管理設定** — 未テスト画面 4 種はスモーク追加済み。skip 中（C-04/D-06/F-05/H-01 等）の有効化が残る（§4）。
 - 🟡 **認証系** — ログイン失敗は実装済。パスワード再発行・MFA は未（§5）。
-- ⚠️ **積み残しの finicky 項目**: 一覧ダブルクリック編集（プレビュー重なり）・リード昇格（保存が home 遷移）・グローバル検索（トグル配下）・パスワード再発行（トグル発火せず）。各行に調査結果を注記。
+- ⚠️ **積み残しの finicky 項目**: 一覧ダブルクリック編集（プレビュー重なり）・リード昇格（保存が home 遷移）・パスワード再発行（トグル発火せず）。各行に調査結果を注記。
 
 ---
 
@@ -77,7 +77,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 | 13-1 | ダッシュボード / ウィジェット | `modules/Home/views/DashBoard.php` | 🟡 | 表示確認のみ(`general`)。ダッシュボード追加・ウィジェット追加/削除は未 |
 | 14-1 | カレンダー（月/週/日/概要） | `modules/Calendar/views/Calendar.php` | ❌ | 各表示モード切替、イベント作成・編集 |
 | 35-1 | ゴミ箱（復元 / 完全削除） | `modules/RecycleBin/` | ✅ | `common/common.recyclebin.spec.ts`（削除→復元→完全削除） |
-| — | グローバル検索 | `modules/Vtiger/apis/SearchRecords.php` | ❌ | 調査中。検索入力がトップバーのトグル配下でセレクタ未特定 |
+| — | グローバル検索 | `modules/Vtiger/apis/SearchRecords.php` | ✅ | `common/common.globalsearch.spec.ts`（ヘッダー検索→統合検索結果にヒット） |
 
 ---
 
@@ -199,8 +199,8 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 | 63-x | メールコンバーター | `module=MailConverter&parent=Settings&view=List` | ✅ `admin.E-04.MailConverter.spec.ts`（スモーク） |
 | 67-1 | 送信メールサーバー | `module=Vtiger&parent=Settings&view=OutgoingServerDetail` | ✅ `admin.F-04.OutgoingServer.spec.ts`（スモーク） |
 | 78-1 | SMS 通知 | `module=SMSNotifier&parent=Settings&view=List` | ✅ `admin.F-08.SMSNotifier.spec.ts`（スモーク） |
-| 36 | メールテンプレート | `module=EmailTemplates&view=List&app=TOOLS`（画面名「メールテンプレート」。ヘッダーメニュー = TOOLS アプリの通常モジュール。実機確認済） | ❌ |
-| 37 | PDF テンプレート | `module=PDFTemplates&view=List&app=TOOLS`（画面名「PDFテンプレート」。**モジュール名は `PDFTemplates`**。ヘッダーメニューから遷移。実機確認済） | ❌ |
+| 36 | メールテンプレート | `module=EmailTemplates&view=List&app=TOOLS` | ✅ `test/module/templates.spec.ts`（スモーク） |
+| 37 | PDF テンプレート | `module=PDFTemplates&view=List&app=TOOLS`（モジュール名は `PDFTemplates`） | ✅ `test/module/templates.spec.ts`（スモーク） |
 | 50-4 | 重複検出の設定 | LayoutEditor 内（独立画面なし。`module=DuplicateCheck` は実体なしのフォールバック） | ❌ |
 | 50-3 | 関連表示の設定 | LayoutEditor 内 | ❌ |
 
@@ -285,7 +285,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - [ ] パスワード再発行フロー（No.1-2）※調査済・未完。`a.forgotPasswordLink` クリックで再発行フォーム(`#emailId`+送信)が出る想定だが、テスト実行時にトグルが発火せず未成立
 - [ ] MFA 有効化ログインフロー（No.1-1）
 - [ ] ダッシュボード追加・ウィジェット追加/削除（No.13-1）
-- [ ] グローバル検索 ※調査中。検索入力がトップバーのトグル配下にあり、直接のセレクタ未特定（アイコン押下で展開が必要と推定）
+- [x] グローバル検索 → `test/common/common.globalsearch.spec.ts`（ヘッダー検索アイコン→キーワード→統合検索結果）
 - [ ] Documents モジュールの扱いをトリアージ（テスト対象にするか）
 
 ---
