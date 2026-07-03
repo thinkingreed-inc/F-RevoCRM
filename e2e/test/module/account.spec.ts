@@ -1,5 +1,5 @@
-import { test, expect } from "@playwright/test";
-import { url } from "../utils/util";
+import { test, expect } from "../../fixtures/isolated";
+import { url } from "../../utils/util";
 
 test.describe("顧客企業モジュールのテスト", () => {
   test.beforeEach(async ({ page }) => {
