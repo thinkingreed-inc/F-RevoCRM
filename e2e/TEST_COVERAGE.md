@@ -97,9 +97,9 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 | 25 | 請求 Invoice | ❌ | **PDF**, メール, 発注作成, 繰り返し請求, 明細 | ❌ | 同上 |
 | 26 | 受注 SalesOrder | ❌ | **PDF**, メール, 請求生成, 発注生成, 繰り返し請求, 明細 | ❌ | 同上 |
 | 27 | 発注 PurchaseOrder | ❌ | **PDF**, メール, 明細 | ❌ | 同上 |
-| 28 | 発注先 Vendors | ✅ | メールを送る, 作成 発注, 複製（**実機の詳細で確認済**） | ❌ | 発注作成起動 |
+| 28 | 発注先 Vendors | ✅ | メールを送る, 作成 発注, 複製 | 🟡 メール起動を検証 → `module/vendors.spec.ts` | 発注作成起動 |
 | 24 | 価格表 PriceBooks | ✅ | 価格更新 `ListPriceUpdate` | ❌ | 製品価格の上書き設定 |
-| 29 | チケット HelpDesk | ✅ | メール, **FAQ 変換**, 契約の自動計算 | ❌ | FAQ 変換フロー |
+| 29 | チケット HelpDesk | ✅ | メール, **FAQ 変換**, 契約の自動計算 | 🟡 メール起動を検証 → `module/helpdesk.spec.ts` | FAQ 変換フロー |
 | 30 | FAQ Faq | ✅ | リッチテキスト | ❌ | リッチテキスト入力 |
 | 31 | 契約 ServiceContracts | ✅ | 使用済み単位/進捗/期間の自動計算 | ❌ | チケット連動の自動計算 |
 | 15 | キャンペーン Campaigns | ✅ | リード/顧客担当者 一括関連付け, メール配信 | ❌ | 一括関連付け、メール配信 |
@@ -265,7 +265,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - [x] 更新履歴（No.8-1） → `test/common/common.history.spec.ts`
 - [ ] 案件 → プロジェクト変換 ConvertPotential（No.19-2）
 - [ ] チケット → FAQ 変換（No.29-2）
-- [x] メール送信起動 / SMS 起動（Accounts=`module/account.spec.ts`, Contacts=`module/contacts.spec.ts`。組織階層も Accounts で検証）※他モジュール・地図表示は残
+- [x] メール送信起動 / SMS 起動（Accounts/Contacts/Vendors/HelpDesk の各 `module/*.spec.ts`。Accounts は組織階層/SMS も）※地図表示・その他モジュールは残
 - [ ] リード昇格 ConvertLead（No.16-2）※再挑戦も未成立。`#convertLeadForm` の submit(`button[type=submit]`)を押すと home へ遷移し `SaveConvertLead` POST が飛ばずレコード未作成。JS 側の submit ハンドラ/必須マッピングの調査が必要
 - [x] 活動/ToDo の作成・編集（No.39/40） → `test/module/calendar.spec.ts`（UI削除はカレンダー上の別フロー・iCal・カンバン・カレンダー表示は残）
 - [x] 関連一覧の表示（No.7-1） → `test/common/common.relatedlist.spec.ts`（顧客担当者タブを開いて関連一覧表示を確認。「追加」からの登録までは未）
