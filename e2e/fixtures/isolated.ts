@@ -1,6 +1,5 @@
 import { test as base, expect } from "@playwright/test";
 import { BASE_URL } from "../utils/util";
-import * as fs from "fs";
 import * as path from "path";
 
 /**
@@ -21,13 +20,12 @@ export const test = base.extend<{}, { workerStorageState: string }>({
 
   workerStorageState: [
     async ({ browser }, use, workerInfo) => {
+      // ワーカーごとに毎回ログインし直す。
+      // 保存ファイルを再利用すると、実行をまたいでサーバ側セッションが失効した
+      // 際に古い Cookie でログイン画面へ飛ばされるため、常に取得し直す。
       const fileName = path.resolve(
         `.auth/worker-${workerInfo.workerIndex}.json`
       );
-      if (fs.existsSync(fileName)) {
-        await use(fileName);
-        return;
-      }
 
       const page = await browser.newPage({ storageState: undefined });
       await page.goto(BASE_URL);
