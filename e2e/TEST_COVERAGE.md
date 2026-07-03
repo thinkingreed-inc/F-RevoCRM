@@ -108,7 +108,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 | 33 | タスク ProjectTask | ✅ | （固有機能なし） | — | — |
 | 34 | マイルストーン ProjectMilestone | ✅ | （Project 内ウィジェット経由） | ❌ | — |
 | — | 資産 Assets | ✅ | ❓ 固有機能不明 | ❓ | 固有機能の有無を確認 |
-| 39/40 | 活動 / ToDo（Calendar） | ❌ | iCal インポート/エクスポート, 繰り返し, 重複検出, 共有カレンダー, カンバン(ToDo) | ❌ | 活動・ToDo の CRUD、iCal、カンバン |
+| 39/40 | 活動 / ToDo（Calendar） | 🟡 新規作成 → `module/calendar.spec.ts` | iCal インポート/エクスポート, 繰り返し, 重複検出, 共有カレンダー, カンバン(ToDo) | ❌ | 編集/削除、iCal、カンバン、カレンダー表示 |
 
 > **注**: 上表「CRUD ✅」は `fr.common.spec.ts` の対象を指す。Calendar（活動/ToDo）は共通 CRUD の対象外で、専用画面のため個別対応が必要。
 > **固有機能の検証状況**: Accounts・Vendors はローカルにレコードがあり詳細の固有アクションを**実機確認済**。それ以外（Contacts / Leads / Potentials / HelpDesk / Quotes / Invoice / Assets / Documents 等）はローカル DB に 0 件のため実データで詳細を開けず、**コード確認のみ**（agent 調査＋`modules/<M>/views|actions` の実装で裏取り）。テスト作成時は事前シードが前提。
@@ -267,7 +267,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - [ ] チケット → FAQ 変換（No.29-2）
 - [x] メール送信起動 / SMS 起動（Accounts=`module/account.spec.ts`, Contacts=`module/contacts.spec.ts`。組織階層も Accounts で検証）※他モジュール・地図表示は残
 - [ ] リード昇格 ConvertLead（No.16-2）※再挑戦も未成立。`#convertLeadForm` の submit(`button[type=submit]`)を押すと home へ遷移し `SaveConvertLead` POST が飛ばずレコード未作成。JS 側の submit ハンドラ/必須マッピングの調査が必要
-- [ ] 活動・ToDo の CRUD、iCal、カンバン、カレンダー各表示（No.14-1, 39, 40）
+- [x] 活動/ToDo の新規作成（No.39/40） → `test/module/calendar.spec.ts`（編集/削除・iCal・カンバン・カレンダー表示は残）
 - [x] 関連一覧の表示（No.7-1） → `test/common/common.relatedlist.spec.ts`（顧客担当者タブを開いて関連一覧表示を確認。「追加」からの登録までは未）
 - [x] コメント投稿（No.9-1） → `test/common/common.comment.spec.ts`
 

@@ -1,21 +1,8 @@
 import { test, expect } from "../../fixtures/isolated";
 import { runAccountsImport } from "../../utils/import";
 import { generateRandomString } from "../../utils/util";
-import { login, frQuery, frDelete } from "../../model/fetcher";
-
-/**
- * 検証・後始末用に「その場で」API セッションを取得する。
- * 保存済み sessionName は実行/並行ワーカーの状況で失効していることがあるため、
- * 使う直前に取り直すのが確実。
- */
-async function apiSession(): Promise<string> {
-  const res = await login(
-    process.env.E2E_USER_NAME || "",
-    process.env.E2E_USER_ACCESSKEY || ""
-  );
-  if (!res) throw new Error("API login failed (import verify)");
-  return res.sessionName;
-}
+import { apiSession } from "../../utils/api";
+import { frQuery, frDelete } from "../../model/fetcher";
 
 /**
  * 共通機能: CSV インポート(顧客企業・パターン別) — 機能一覧 11-1
