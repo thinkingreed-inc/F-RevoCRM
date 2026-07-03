@@ -77,6 +77,19 @@ test.describe("顧客企業の固有アクション", () => {
       .click();
     await expect(visibleModal(page, "SMSを送る")).toBeVisible();
 
+    // 予定の登録(活動) / TODOの登録 → カレンダーの編集画面へ遷移
+    for (const action of ["LBL_ADD_EVENT", "LBL_ADD_TASK"]) {
+      await gotoDetail(page, "Accounts", recordId);
+      await page
+        .locator(".detailViewButtoncontainer button.dropdown-toggle")
+        .first()
+        .click();
+      await page
+        .locator(`#Accounts_detailView_moreAction_${action} a`)
+        .click();
+      await page.waitForURL(/[?&]module=Calendar&view=/, { timeout: 15000 });
+    }
+
     await deleteViaDetail(page, "Accounts", recordId);
   });
 });

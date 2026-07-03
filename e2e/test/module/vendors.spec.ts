@@ -27,6 +27,22 @@ test.describe("発注先の固有アクション", () => {
       page.locator(".modal-content:visible").filter({ hasText: "メールの作成" }).first()
     ).toBeVisible();
 
+    // 発注の作成(「その他」メニュー → 発注の編集画面へ遷移)
+    await gotoDetail(page, "Vendors", recordId);
+    await page
+      .locator(".detailViewButtoncontainer button.dropdown-toggle")
+      .first()
+      .click();
+    await page
+      .locator(
+        '.detailViewButtoncontainer .dropdown-menu a[href*="module=PurchaseOrder"][href*="view=Edit"]'
+      )
+      .first()
+      .click();
+    await page.waitForURL(/[?&]module=PurchaseOrder&view=Edit/, {
+      timeout: 15000,
+    });
+
     await deleteViaDetail(page, "Vendors", recordId);
   });
 });

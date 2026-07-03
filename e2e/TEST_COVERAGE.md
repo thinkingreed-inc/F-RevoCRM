@@ -22,12 +22,12 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 ## 1. 現状サマリ
 
-現在の spec ファイルは 51 本。テストは目的別に 4 ディレクトリへ整理。
+現在の spec ファイルは 59 本。テストは目的別に 4 ディレクトリへ整理。
 
 | ディレクトリ | 内容 | 状態 |
 |---|---|---|
 | `test/common/`（12 本） | 全モジュール横断の共通機能（検索/フォロー/タグ/エクスポート/インポート/一括削除+ゴミ箱/クイック作成/クイック編集/更新履歴/コメント/関連一覧/ログイン失敗） | ✅ 実行中 |
-| `test/module/`（1 本） | モジュール固有機能（`account.spec.ts` = 顧客企業リストの表示/カスタマイズ） | 🟡 Accounts のみ |
+| `test/module/`（8 本） | モジュール固有機能（Accounts 一覧表示/カスタマイズ + 各モジュールの詳細固有アクション: Accounts/Contacts/Leads/Potentials/Vendors/HelpDesk のメール・SMS・変換・作成起動、Calendar 作成編集、メール/PDFテンプレート一覧） | 🟡 主要モジュールの起動確認 |
 | `test/admin/*.spec.ts`（36 本） | システム管理画面の C〜I グループ + スモーク（E-02/E-04/F-04/F-08） | ✅/⏭️ 混在 |
 | `test/fr.common.spec.ts` | **17 モジュールの新規作成 / 編集 / 削除**（`FrTest` 汎用ドライバ） | ✅ |
 | `test/general.spec.ts` | トップ（ダッシュボード）要素、サイドバー開閉 | 🟡 表示確認のみ |
@@ -42,11 +42,11 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 ### 進捗と残り
 
 - ✅ **横断共通機能はひと通り実装**（§2 参照）: 一覧検索 / フォロー / タグ追加削除 / エクスポート / インポート(パターン別) / 一括削除+ゴミ箱 / クイック作成 / クイック編集 / 更新履歴 / コメント / 関連一覧表示 / ログイン失敗。
-- ❌ **モジュール固有機能はほぼ未テスト** — メール送信 / SMS / 地図 / リード昇格 / 見積・請求・受注・発注の相互生成 / PDF エクスポート / 繰り返し請求 / FAQ 変換 / 組織階層 / iCal / vCard など（§3）。
+- 🟡 **モジュール固有機能は主要な「起動/遷移」を検証** — メール送信 / SMS / 組織階層 / 予定・ToDo登録 / **リード昇格（起動+保存）** / 案件のプロジェクト変換 / 見積・受注・発注の作成画面遷移 / チケット→FAQ変換 を Accounts/Contacts/Leads/Potentials/Vendors/HelpDesk で検証（§3）。**保存まで**の相互生成 / PDF エクスポート / 繰り返し請求 / 地図 / iCal は未（§3）。
 - ❌ **在庫系 4 モジュール** — CRUD も固有機能（PDF・相互生成）も未（§2 の P2）。
 - 🟡 **管理設定** — 未テスト画面 4 種はスモーク追加済み。skip 中（C-04/D-06/F-05/H-01 等）の有効化が残る（§4）。
 - 🟡 **認証系** — ログイン失敗は実装済。パスワード再発行・MFA は未（§5）。
-- ⚠️ **積み残しの finicky 項目**: 一覧ダブルクリック編集（プレビュー重なり）・リード昇格（保存が home 遷移）・パスワード再発行（トグル発火せず）。各行に調査結果を注記。
+- ⚠️ **積み残しの finicky 項目**: 一覧ダブルクリック編集（プレビュー重なり）・パスワード再発行（トグル発火せず）。各行に調査結果を注記。（リード昇格の保存は原因特定し解消済 → §3 / P3）
 
 ---
 
@@ -87,19 +87,19 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 | No. | モジュール | CRUD | 固有機能（実装） | 固有機能テスト | タスク |
 |---|---|---|---|---|---|
-| 18 | 顧客企業 Accounts | ✅ | 組織階層, SMSを送る, 予定/TODOの登録, 担当の変更, 複製, メール, 地図(Google) | 🟡 メール/組織階層/SMS の起動を検証 → `module/account.spec.ts` | 地図表示、予定/TODO起動 |
-| 17 | 顧客担当者 Contacts | ✅ | メール, 活動, ToDo, SMS, 地図, vCard インポート | 🟡 メール/SMS の起動を検証 → `module/contacts.spec.ts` | vCard インポート、地図 |
-| 16 | リード Leads | ✅ | **昇格 `ConvertLead`**, メール, 活動, ToDo, SMS, 地図 | ❌ | 昇格（顧客企業/担当者/案件へ）フローの検証 |
-| 19 | 案件 Potentials | ✅ | 見積/請求/受注作成, **プロジェクト変換 `ConvertPotential`**, 活動, ToDo | ❌ | 案件→見積/請求/受注 生成、プロジェクト作成 |
+| 18 | 顧客企業 Accounts | ✅ | 組織階層, SMSを送る, 予定/TODOの登録, 担当の変更, 複製, メール, 地図(Google) | 🟡 メール/組織階層/SMS/予定・TODO登録 の起動を検証 → `module/account.spec.ts` | 地図表示、担当変更/複製 |
+| 17 | 顧客担当者 Contacts | ✅ | メール, 活動, ToDo, SMS, 地図, vCard インポート | 🟡 メール/SMS の起動を検証 → `module/contacts.spec.ts` | 地図（vCard インポートは本ビルドに機能なし） |
+| 16 | リード Leads | ✅ | **昇格 `ConvertLead`**, メール, 活動, ToDo, SMS, 地図 | ✅ メール/SMS/予定・TODO 起動 + **昇格の保存(顧客企業作成)** を検証 → `module/leads.spec.ts` | 地図、昇格時の案件(Potentials)同時作成 |
+| 19 | 案件 Potentials | ✅ | 見積/請求/受注作成, **プロジェクト変換 `ConvertPotential`**, 活動, ToDo | 🟡 メール/プロジェクト変換モーダル/見積・受注 作成画面遷移 の起動を検証 → `module/potentials.spec.ts` | 見積/請求/受注 **生成の保存**、活動/ToDo |
 | 20 | 製品 Products | ✅ | 見積/請求/発注/受注作成, 在庫管理, 自動計算, SubProducts | ❌ | 在庫・自動計算、各ドキュメント生成 |
 | 21 | サービス Services | ✅ | 見積/請求/発注/受注作成 | ❌ | 各ドキュメント生成 |
 | 23 | 見積 Quotes | ❌ | **PDF**, メール, 請求生成, 受注生成, 発注生成, 明細 | ❌ | ⚠️ 明細登録が要商品検索。CRUD 復活と生成/PDF |
 | 25 | 請求 Invoice | ❌ | **PDF**, メール, 発注作成, 繰り返し請求, 明細 | ❌ | 同上 |
 | 26 | 受注 SalesOrder | ❌ | **PDF**, メール, 請求生成, 発注生成, 繰り返し請求, 明細 | ❌ | 同上 |
 | 27 | 発注 PurchaseOrder | ❌ | **PDF**, メール, 明細 | ❌ | 同上 |
-| 28 | 発注先 Vendors | ✅ | メールを送る, 作成 発注, 複製 | 🟡 メール起動を検証 → `module/vendors.spec.ts` | 発注作成起動 |
+| 28 | 発注先 Vendors | ✅ | メールを送る, 作成 発注, 複製 | 🟡 メール/発注作成画面遷移 の起動を検証 → `module/vendors.spec.ts` | 複製 |
 | 24 | 価格表 PriceBooks | ✅ | 価格更新 `ListPriceUpdate` | ❌ | 製品価格の上書き設定 |
-| 29 | チケット HelpDesk | ✅ | メール, **FAQ 変換**, 契約の自動計算 | 🟡 メール起動を検証 → `module/helpdesk.spec.ts` | FAQ 変換フロー |
+| 29 | チケット HelpDesk | ✅ | メール, **FAQ 変換**, 契約の自動計算 | 🟡 メール/FAQ変換(FAQ編集画面への遷移) の起動を検証 → `module/helpdesk.spec.ts` | 契約の自動計算、解決策ありチケットの即時FAQ生成 |
 | 30 | FAQ Faq | ✅ | リッチテキスト | ❌ | リッチテキスト入力 |
 | 31 | 契約 ServiceContracts | ✅ | 使用済み単位/進捗/期間の自動計算 | ❌ | チケット連動の自動計算 |
 | 15 | キャンペーン Campaigns | ✅ | リード/顧客担当者 一括関連付け, メール配信 | ❌ | 一括関連付け、メール配信 |
@@ -263,10 +263,10 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 ### P3: モジュール固有フロー
 
 - [x] 更新履歴（No.8-1） → `test/common/common.history.spec.ts`
-- [ ] 案件 → プロジェクト変換 ConvertPotential（No.19-2）
-- [ ] チケット → FAQ 変換（No.29-2）
-- [x] メール送信起動 / SMS 起動（Accounts/Contacts/Vendors/HelpDesk の各 `module/*.spec.ts`。Accounts は組織階層/SMS も）※地図表示・その他モジュールは残
-- [ ] リード昇格 ConvertLead（No.16-2）※再挑戦も未成立。`#convertLeadForm` の submit(`button[type=submit]`)を押すと home へ遷移し `SaveConvertLead` POST が飛ばずレコード未作成。JS 側の submit ハンドラ/必須マッピングの調査が必要
+- [x] 案件 → プロジェクト変換 ConvertPotential（No.19-2）→ `module/potentials.spec.ts`（変換モーダル「案件のコンバート」の起動を検証。生成の保存までは未）
+- [x] チケット → FAQ 変換（No.29-2）→ `module/helpdesk.spec.ts`（解決策が空のチケットで FAQ 編集画面への遷移=変換フロー起動を検証。解決策ありの即時FAQ生成は未）
+- [x] メール送信起動 / SMS 起動（Accounts/Contacts/Leads/Vendors/HelpDesk/Potentials の各 `module/*.spec.ts`。Accounts は組織階層/SMS/予定・TODO、Leads は SMS/予定・TODO も）※地図表示は残
+- [x] リード昇格 ConvertLead（No.16-2）→ `module/leads.spec.ts`（**起動**＋**保存**まで検証。昇格で顧客企業が作成され詳細へ遷移、作成された顧客企業/顧客担当者は後始末で削除）。**根本原因（過去の未成立）**: リードに company が無いと Accounts 作成チェックがオンにならず、`vtValidate` が必須項目（会社名など）未入力で native submit を止めていた／`submitHandler` バインド前にクリックし `modules` 空で `SaveConvertLead` に届いていた。対策: company+lastname を持つ fresh リードを用意し、`#convertLeadForm` 描画（=submit 登録完了）を待ってから保存する。**注意**: 昇格済みリードは `isLeadConverted()` で昇格ボタンが消えるため、毎回使い捨てリードを作る
 - [x] 活動/ToDo の作成・編集（No.39/40） → `test/module/calendar.spec.ts`（UI削除はカレンダー上の別フロー・iCal・カンバン・カレンダー表示は残）
 - [x] 関連一覧の表示（No.7-1） → `test/common/common.relatedlist.spec.ts`（顧客担当者タブを開いて関連一覧表示を確認。「追加」からの登録までは未）
 - [x] コメント投稿（No.9-1） → `test/common/common.comment.spec.ts`
@@ -293,6 +293,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 ## 付録: 参考情報
 
 - 共通 CRUD ドライバ: `e2e/model/FrTest.ts`（`fillAllFields` → `saveAndVerify`。API describe を使い項目型ごとに値生成・検証）
+- 固有アクション用レコード用意: `e2e/utils/record.ts`（`createRecordViaApi` / `deleteRecordViaApi`。詳細画面の固有アクション検証向けに、必須項目だけ埋めた対象レコードを Webservice API で用意・後始末。必須の関連項目は seed 済み被参照モジュールの既存レコードを充当）
 - 管理設定ヘルパ: `e2e/utils/settings.ts`（`gotoSettings` / `saveAndSettle`）
 - API クライアント: `e2e/model/fetcher.ts`（Webservice API。シード・件数取得・レコード取得に使用）
 - 認証・シード: `e2e/auth.setup.ts` / `e2e/seed.setup.ts`（参照される側モジュールを事前シード）
