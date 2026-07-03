@@ -3,7 +3,7 @@
 F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在し / どこまでテストできているか / これから何を書くべきか** を一覧化したドキュメント。
 新しいテストを追加したら、このファイルの該当行のステータスと「タスク」を更新すること。
 
-- 対象コード時点: `feature/e2e` ブランチ（2026-07-02 現在）
+- 対象コード時点: `feature/e2e-共通機能追加` ブランチ（2026-07-03 現在）
 - 機能一覧の No. は社内の「機能一覧」（1-1〜78-1）に対応。コードから追加で発見した機能は §6 に別掲。
 - 調査方法: 既存 `e2e/test/` の読み取り＋ `modules/` のコード調査（業務モジュール / 管理設定 / 横断機能の 3 系統を並行調査）に加え、テスト環境（`E2E_BASE_URL`）に admin でログインして**実画面で裏取り**（設定メニュー・各画面の到達性・詳細画面の固有アクション）。
 - **実機検証の前提**: ローカル DB はデータが少なく、レコードが存在するのは `Accounts / Products / Services / Project / Vendors`（＝ `seed.setup.ts` の対象）のみ。そのため詳細画面の固有アクションを実データで確認できたのは Accounts・Vendors 等に限られ、他モジュールは**コード確認済（実データ未検証）**扱い。
@@ -22,27 +22,31 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 ## 1. 現状サマリ
 
-現在の spec ファイルは 35 本。カバレッジは大きく 4 系統。
+現在の spec ファイルは 51 本。テストは目的別に 4 ディレクトリへ整理。
 
-| 系統 | ファイル | 内容 | 状態 |
-|---|---|---|---|
-| 基本画面 | `test/general.spec.ts` | トップ（ダッシュボード）要素、サイドバー開閉 | 🟡 表示確認のみ |
-| モジュール個別 | `test/account.spec.ts` | 顧客企業リストの表示要素・カスタマイズメニュー | 🟡 Accounts のみ |
-| 共通 CRUD | `test/fr.common.spec.ts` | **17 モジュールの新規作成 / 編集 / 削除**（`FrTest` 汎用ドライバ） | ✅ |
-| 管理設定 | `test/admin/*.spec.ts`（32 本） | システム管理画面の C〜I グループ | ✅/⏭️ 混在 |
+| ディレクトリ | 内容 | 状態 |
+|---|---|---|
+| `test/common/`（12 本） | 全モジュール横断の共通機能（検索/フォロー/タグ/エクスポート/インポート/一括削除+ゴミ箱/クイック作成/クイック編集/更新履歴/コメント/関連一覧/ログイン失敗） | ✅ 実行中 |
+| `test/module/`（1 本） | モジュール固有機能（`account.spec.ts` = 顧客企業リストの表示/カスタマイズ） | 🟡 Accounts のみ |
+| `test/admin/*.spec.ts`（36 本） | システム管理画面の C〜I グループ + スモーク（E-02/E-04/F-04/F-08） | ✅/⏭️ 混在 |
+| `test/fr.common.spec.ts` | **17 モジュールの新規作成 / 編集 / 削除**（`FrTest` 汎用ドライバ） | ✅ |
+| `test/general.spec.ts` | トップ（ダッシュボード）要素、サイドバー開閉 | 🟡 表示確認のみ |
+
+> 並行実行対応: `test/common/` `test/module/` はワーカー単位で個別ログインする `fixtures/isolated.ts` を使用し、各テストが専用レコードを作成→操作→削除する。API セッション取得は `auth.setup` で一度だけ行い使い回す（`--workers=1` 不要）。
 
 **共通 CRUD の対象モジュール（17）**: Accounts, Contacts, Potentials, Leads, Products, Assets, Campaigns, Dailyreports, Faq, HelpDesk, PriceBooks, Project, ProjectMilestone, ProjectTask, ServiceContracts, Services, Vendors。
 
 **共通 CRUD の対象外**: 在庫（Inventory）系 **Invoice / Quotes / SalesOrder / PurchaseOrder**。
 理由（`fr.common.spec.ts` の注記）: 明細（productid）の登録に商品検索オートコンプリートが必要だが、本環境では連番検索・名称検索とも 0 件を返し、明細を JS 直挿ししても合計が 0 のまま保存ボタンが無効化されるため。→ 商品検索が機能する環境が用意できれば対象に戻せる。
 
-### 大きな空白（優先的に埋めたい領域）
+### 進捗と残り
 
-1. **横断的な共通機能がほぼ未テスト** — 一覧検索 / リスト（CustomView）/ フォロー / タグ / インポート / エクスポート / 一括削除 / インライン編集 / クイック作成 / 関連一覧 / 更新履歴 / コメント / 複製 / PDF。CRUD の「登録・変更・削除」以外の共通機能はほぼ ❌。
-2. **モジュール固有機能が全モジュールで未テスト** — メール送信 / SMS / 地図 / リード昇格 / 見積・請求・受注・発注の相互生成 / PDF エクスポート / 繰り返し請求 / FAQ 変換 / 組織階層 / iCal / vCard など。
-3. **在庫系 4 モジュール** — CRUD も固有機能（PDF・相互生成）も ❌。
-4. **管理設定に一部空白** — 送信メールサーバー / スケジューラー / メールコンバーター / SMS 通知 の専用 spec が無い。
-5. **認証系** — ログイン成功のみ（`auth.setup.ts`）。パスワード再発行・MFA・失敗系は ❌。
+- ✅ **横断共通機能はひと通り実装**（§2 参照）: 一覧検索 / フォロー / タグ追加削除 / エクスポート / インポート(パターン別) / 一括削除+ゴミ箱 / クイック作成 / クイック編集 / 更新履歴 / コメント / 関連一覧表示 / ログイン失敗。
+- ❌ **モジュール固有機能はほぼ未テスト** — メール送信 / SMS / 地図 / リード昇格 / 見積・請求・受注・発注の相互生成 / PDF エクスポート / 繰り返し請求 / FAQ 変換 / 組織階層 / iCal / vCard など（§3）。
+- ❌ **在庫系 4 モジュール** — CRUD も固有機能（PDF・相互生成）も未（§2 の P2）。
+- 🟡 **管理設定** — 未テスト画面 4 種はスモーク追加済み。skip 中（C-04/D-06/F-05/H-01 等）の有効化が残る（§4）。
+- 🟡 **認証系** — ログイン失敗は実装済。パスワード再発行・MFA は未（§5）。
+- ⚠️ **積み残しの finicky 項目**: 一覧ダブルクリック編集（プレビュー重なり）・リード昇格（保存が home 遷移）・グローバル検索（トグル配下）・パスワード再発行（トグル発火せず）。各行に調査結果を注記。
 
 ---
 
@@ -50,30 +54,30 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 一覧・詳細・登録の共通挙動。実装は `modules/Vtiger/` と `layouts/v7/modules/Vtiger/`。
 
-| No. | 機能 | 実装（代表） | 状態 | タスク |
+| No. | 機能 | 実装（代表） | 状態 | spec / タスク |
 |---|---|---|---|---|
-| 2-1 | 一覧表示 | `modules/Vtiger/views/List.php` | 🟡 | Accounts のみ表示確認。汎用の一覧表示検証（列・件数・並び）を追加 |
-| 2-4 | 一覧からの検索（列検索） | `ListViewContents.tpl` / `List.js` | ❌ | 列フィルタで絞り込み → 結果件数を検証 |
+| 2-1 | 一覧表示 | `modules/Vtiger/views/List.php` | 🟡 | Accounts のみ表示確認(`module/account`)。汎用の一覧表示検証は未 |
+| 2-4 | 一覧からの検索（列検索） | `ListViewContents.tpl` / `List.js` | ✅ | `common/common.search.spec.ts` |
 | 2-2 | リスト機能（個人 / 共有 CustomView） | `modules/CustomView/` | ❌ | リスト作成・複製・共有・切替のテスト |
-| 3-1 | フォロー（☆ / Watching） | 一覧 `LBL_ADD_STAR` / 詳細 `#starToggle` | ❌ | 一覧・詳細でのフォロー付与/解除、フォロー絞り込み |
-| 4-1 | タグ 付与 / 変更 / 削除 | `DetailViewTagList.tpl` / `Tag.js` | ❌ | 詳細でのタグ追加・編集・×削除、一覧一括付与 |
+| 3-1 | フォロー（☆ / Watching） | 一覧 `a.markStar` / 詳細 `#starToggle` | ✅ | `common/common.follow.spec.ts`（一覧・詳細トグル。絞り込みは未） |
+| 4-1 | タグ 付与 / 変更 / 削除 | `DetailViewTagList.tpl` / `Tag.js` | 🟡 | `common/common.tag.spec.ts`（詳細の追加+×削除。変更・一覧一括は未） |
 | 5-1 | PDF エクスポート | `modules/Vtiger/actions/ExportPDF.php` | ❌ | 在庫系詳細の「その他」→ PDF 出力（要 PDF テンプレート） |
 | 6-1/6-2 | 概要 / 詳細画面 | `modules/Vtiger/views/Detail.php` | 🟡 | CRUD 後に詳細表示は検証済。概要画面の主要項目表示は未 |
-| 7-1 | 関連一覧 | `.relatedListPanel` / RelatedList | ❌ | 関連一覧の表示・「追加」からの関連レコード作成 |
-| 8-1 | 更新履歴（ModTracker） | `modules/ModTracker/` | ❌ | 編集後に履歴が増えることを検証 |
-| 9-1 | コメント（ModComments） | `modules/ModComments/` | ❌ | コメント投稿 → 表示を検証（有効モジュールのみ） |
-| 10-1 | CSV エクスポート | `modules/Vtiger/actions/ExportData.php` | ❌ | 一覧「その他」→ エクスポート、選択レコードのみ出力 |
-| 11-1 | CSV インポート | `modules/Import/` | ❌ | 追加 / 更新（スキップ・上書き・マージ）、マッピング保存の各フロー |
+| 7-1 | 関連一覧 | `li.tab-item[data-module]` / RelatedList | 🟡 | `common/common.relatedlist.spec.ts`（表示確認。「追加」からの登録は未） |
+| 8-1 | 更新履歴（ModTracker） | `modules/ModTracker/` | ✅ | `common/common.history.spec.ts` |
+| 9-1 | コメント（ModComments） | `modules/ModComments/` | ✅ | `common/common.comment.spec.ts` |
+| 10-1 | CSV エクスポート | `modules/Vtiger/actions/ExportData.php` | ✅ | `common/common.export.spec.ts` |
+| 11-1 | CSV インポート | `modules/Import/` | ✅ | `common/common.import.spec.ts`（複数行/ヘッダなし/スキップ/上書き/マージ。マッピング保存・他モジュールは未） |
 | 12-1 | 一覧から登録（EditView） | `modules/Vtiger/views/Edit.php` | ✅ | 17 モジュールで実施済（`FrTest`） |
-| 12-2 | クイック作成（＋ボタン） | `views/QuickCreateAjax.php` | ❌ | ＋ボタン・関連＋ボタンからの登録 |
+| 12-2 | クイック作成（＋ボタン） | `views/QuickCreateAjax.php`（React WC） | ✅ | `common/common.quickcreate.spec.ts` |
 | 12-2 | 編集（編集画面） | 同上 | ✅ | 17 モジュールで実施済 |
-| 12-2 | クイック編集（鉛筆） | インライン edit | ❌ | 1 項目インライン編集 |
-| 12-2 | 一覧からの更新（ダブルクリック） | `List.js` inline edit | ❌ | 一覧ダブルクリック編集 |
-| 12-3 | 削除 / 一括削除 | 詳細「その他」/ 一覧ゴミ箱 | 🟡 | 単体削除は ✅。一覧一括削除（最大 500）は ❌ |
-| 13-1 | ダッシュボード / ウィジェット | `modules/Home/views/DashBoard.php` | 🟡 | 表示確認のみ。ダッシュボード追加・ウィジェット追加/削除は ❌ |
+| 12-2 | クイック編集（鉛筆） | インライン edit | ✅ | `common/common.quickedit.spec.ts`（概要の1項目編集） |
+| 12-2 | 一覧からの更新（ダブルクリック） | `List.js` inline edit | ❌ | 調査済・未採用（dblclick でクイックプレビューが重なりハング。要安定化） |
+| 12-3 | 削除 / 一括削除 | 詳細「その他」/ 一覧ゴミ箱 | ✅ | 単体は `FrTest`、一括削除は `common/common.recyclebin.spec.ts` |
+| 13-1 | ダッシュボード / ウィジェット | `modules/Home/views/DashBoard.php` | 🟡 | 表示確認のみ(`general`)。ダッシュボード追加・ウィジェット追加/削除は未 |
 | 14-1 | カレンダー（月/週/日/概要） | `modules/Calendar/views/Calendar.php` | ❌ | 各表示モード切替、イベント作成・編集 |
-| 35-1 | ゴミ箱（復元 / 完全削除） | `modules/RecycleBin/` | ❌ | 削除 → 復元、完全削除の検証 |
-| — | グローバル検索 | `modules/Vtiger/apis/SearchRecords.php` | ❌ | トップバー検索 → 結果表示 |
+| 35-1 | ゴミ箱（復元 / 完全削除） | `modules/RecycleBin/` | ✅ | `common/common.recyclebin.spec.ts`（削除→復元→完全削除） |
+| — | グローバル検索 | `modules/Vtiger/apis/SearchRecords.php` | ❌ | 調査中。検索入力がトップバーのトグル配下でセレクタ未特定 |
 
 ---
 
@@ -208,10 +212,10 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 | No. | 機能 | 実装 | 状態 | タスク |
 |---|---|---|---|---|
-| 1-1 | ログイン認証（パスワード） | `modules/Users/views/Login.php` | 🟡 | `auth.setup.ts` で成功のみ。**失敗系（誤パスワード）** が ❌ |
+| 1-1 | ログイン認証（パスワード） | `modules/Users/views/Login.php` | ✅ | 成功=`auth.setup.ts`、**失敗系（誤パスワード）**=`common/common.login.spec.ts` |
 | 1-1 | 多要素認証 MFA | `modules/Users/views/MultiFactorAuthLogin.php`（実装あり） | ❌ | MFA 有効化 → ログインフロー |
 | 1-1 | SAML 認証 | mainline に未統合（`option-saml` ブランチのみ） | ❓ | 現行コードでは対象外 |
-| 1-2 | パスワード再発行 | ログイン画面のリンク（`Login.tpl`。実機でリンク存在を確認）+ `ChangePassword.php` | ❌ | ログイン画面からの再発行、個人設定からの変更 |
+| 1-2 | パスワード再発行 | ログイン画面のリンク（`Login.tpl`。実機でリンク存在を確認）+ `ChangePassword.php` | ❌ | 調査済・未完。`a.forgotPasswordLink` クリックで `#emailId`+送信フォームが出る想定だが、テスト実行時にトグルが発火せず未成立 |
 | 1-3 | ログイン画面の広告（RSS） | `modules/Rss` | ❌ | GitHub 版のみ。表示有無の確認 |
 
 ---
@@ -278,7 +282,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 ### P5: 認証・その他
 
 - [x] ログイン失敗系（誤パスワード）（No.1-1） → `test/common/common.login.spec.ts`
-- [ ] パスワード再発行フロー（No.1-2）
+- [ ] パスワード再発行フロー（No.1-2）※調査済・未完。`a.forgotPasswordLink` クリックで再発行フォーム(`#emailId`+送信)が出る想定だが、テスト実行時にトグルが発火せず未成立
 - [ ] MFA 有効化ログインフロー（No.1-1）
 - [ ] ダッシュボード追加・ウィジェット追加/削除（No.13-1）
 - [ ] グローバル検索 ※調査中。検索入力がトップバーのトグル配下にあり、直接のセレクタ未特定（アイコン押下で展開が必要と推定）
