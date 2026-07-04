@@ -34,7 +34,7 @@ test.describe.serial("管理: ユーザー (Users)", () => {
     await page.locator('input[name="email1"]').fill(`${userName}@example.com`);
     await page.locator('input[name="user_password"]').fill(password1);
     await page.locator('input[name="confirm_password"]').fill(password1);
-    await page.locator("button.saveButton").click();
+    await saveAndSettle(page, page.locator("button.saveButton"));
 
     await gotoSettings(page, listParams);
     await expect(row(page)).toBeVisible();
@@ -47,7 +47,7 @@ test.describe.serial("管理: ユーザー (Users)", () => {
     const lastName = page.locator('input[name="last_name"]');
     await expect(lastName).toBeVisible();
     await lastName.fill(`Edited${token}`);
-    await page.locator("button.saveButton").click();
+    await saveAndSettle(page, page.locator("button.saveButton"));
 
     // 編集画面を開き直し、反映を確認
     await gotoSettings(page, { ...listParams, view: "Edit", record: userId });
