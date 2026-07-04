@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.4.10, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.43, for Linux (x86_64)
 --
--- Host: localhost    Database: frevocrm
+-- Host: localhost    Database: fr_remicck
 -- ------------------------------------------------------
--- Server version	8.4.10
+-- Server version	8.0.43
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -72,13 +72,13 @@ DROP TABLE IF EXISTS `com_vtiger_workflow_tasktypes`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `com_vtiger_workflow_tasktypes` (
   `id` int NOT NULL,
-  `tasktypename` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `classname` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `classpath` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `templatepath` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `modules` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `sourcemodule` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL
+  `tasktypename` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `label` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `classname` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `classpath` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `templatepath` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `modules` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `sourcemodule` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -123,21 +123,21 @@ DROP TABLE IF EXISTS `com_vtiger_workflows`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `com_vtiger_workflows` (
   `workflow_id` int NOT NULL AUTO_INCREMENT,
-  `module_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `summary` varchar(400) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `test` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `module_name` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `summary` varchar(400) COLLATE utf8mb4_general_ci NOT NULL,
+  `test` text COLLATE utf8mb4_general_ci NOT NULL,
   `execution_condition` int NOT NULL,
   `defaultworkflow` int DEFAULT NULL,
-  `type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `type` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `filtersavedinnew` int DEFAULT NULL,
   `schtypeid` int DEFAULT NULL,
-  `schdayofmonth` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `schdayofweek` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `schannualdates` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `schtime` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `schdayofmonth` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `schdayofweek` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `schannualdates` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `schtime` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `nexttrigger_time` datetime DEFAULT NULL,
   `status` tinyint(1) DEFAULT '1',
-  `workflowname` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `workflowname` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`workflow_id`),
   UNIQUE KEY `com_vtiger_workflows_idx` (`workflow_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -184,10 +184,10 @@ DROP TABLE IF EXISTS `com_vtiger_workflowtask_queue`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `com_vtiger_workflowtask_queue` (
   `task_id` int DEFAULT NULL,
-  `entity_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `entity_id` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `do_after` int DEFAULT NULL,
-  `relatedinfo` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `task_contents` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
+  `relatedinfo` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `task_contents` text COLLATE utf8mb4_general_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -210,8 +210,8 @@ DROP TABLE IF EXISTS `com_vtiger_workflowtasks`;
 CREATE TABLE `com_vtiger_workflowtasks` (
   `task_id` int NOT NULL AUTO_INCREMENT,
   `workflow_id` int DEFAULT NULL,
-  `summary` varchar(400) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `task` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `summary` varchar(400) COLLATE utf8mb4_general_ci NOT NULL,
+  `task` text COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`task_id`),
   UNIQUE KEY `com_vtiger_workflowtasks_idx` (`task_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -236,10 +236,10 @@ DROP TABLE IF EXISTS `com_vtiger_workflowtasks_entitymethod`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `com_vtiger_workflowtasks_entitymethod` (
   `workflowtasks_entitymethod_id` int NOT NULL,
-  `module_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `method_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `function_path` varchar(400) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `function_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `module_name` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `method_name` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `function_path` varchar(400) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `function_name` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`workflowtasks_entitymethod_id`),
   UNIQUE KEY `com_vtiger_workflowtasks_entitymethod_idx` (`workflowtasks_entitymethod_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -308,9 +308,9 @@ DROP TABLE IF EXISTS `com_vtiger_workflowtemplates`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `com_vtiger_workflowtemplates` (
   `template_id` int NOT NULL AUTO_INCREMENT,
-  `module_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `title` varchar(400) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `template` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `module_name` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `title` varchar(400) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `template` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`template_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -333,38 +333,38 @@ DROP TABLE IF EXISTS `vtiger_account`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_account` (
   `accountid` int NOT NULL,
-  `account_no` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `accountname` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `account_no` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `accountname` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
   `parentid` int DEFAULT '0',
-  `account_type` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `industry` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `account_type` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `industry` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `annualrevenue` decimal(25,8) DEFAULT NULL,
-  `rating` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ownership` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `siccode` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `tickersymbol` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `phone` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `otherphone` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `email1` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `email2` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `website` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `fax` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `rating` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ownership` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `siccode` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tickersymbol` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `phone` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `otherphone` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email1` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email2` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `website` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `fax` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `employees` int DEFAULT '0',
-  `emailoptout` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '0',
-  `notify_owner` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '0',
-  `isconvertedfromlead` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '0',
-  `tags` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `emailoptout` varchar(3) COLLATE utf8mb4_general_ci DEFAULT '0',
+  `notify_owner` varchar(3) COLLATE utf8mb4_general_ci DEFAULT '0',
+  `isconvertedfromlead` varchar(3) COLLATE utf8mb4_general_ci DEFAULT '0',
+  `tags` varchar(1) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smcreatorid` int DEFAULT NULL,
   `smownerid` int DEFAULT NULL,
   `modifiedby` int DEFAULT NULL,
-  `description` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `description` longtext COLLATE utf8mb4_general_ci,
   `createdtime` datetime DEFAULT NULL,
   `modifiedtime` datetime DEFAULT NULL,
   `viewedtime` datetime DEFAULT NULL,
   `deleted` int DEFAULT NULL,
-  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `label` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smgroupid` int DEFAULT NULL,
-  `source` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `source` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `last_action_date` date DEFAULT NULL,
   PRIMARY KEY (`accountid`),
   KEY `account_account_type_idx` (`account_type`),
@@ -382,7 +382,6 @@ CREATE TABLE `vtiger_account` (
 
 LOCK TABLES `vtiger_account` WRITE;
 /*!40000 ALTER TABLE `vtiger_account` DISABLE KEYS */;
-INSERT INTO `vtiger_account` VALUES (26,'ACC1','[E2E-PAGE] 0001',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,0,'[E2E-PAGE] 0001',0,'CRM',NULL),(27,'ACC2','[E2E-PAGE] 0002',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,0,'[E2E-PAGE] 0002',0,'CRM',NULL),(28,'ACC3','[E2E-PAGE] 0003',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,0,'[E2E-PAGE] 0003',0,'CRM',NULL),(29,'ACC4','[E2E-PAGE] 0004',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,0,'[E2E-PAGE] 0004',0,'CRM',NULL),(30,'ACC5','[E2E-PAGE] 0005',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,0,'[E2E-PAGE] 0005',0,'CRM',NULL),(31,'ACC6','[E2E-PAGE] 0006',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,0,'[E2E-PAGE] 0006',0,'CRM',NULL),(32,'ACC7','[E2E-PAGE] 0007',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,0,'[E2E-PAGE] 0007',0,'CRM',NULL),(33,'ACC8','[E2E-PAGE] 0008',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,0,'[E2E-PAGE] 0008',0,'CRM',NULL),(34,'ACC9','[E2E-PAGE] 0009',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,0,'[E2E-PAGE] 0009',0,'CRM',NULL),(35,'ACC10','[E2E-PAGE] 0010',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,0,'[E2E-PAGE] 0010',0,'CRM',NULL),(36,'ACC11','[E2E-PAGE] 0011',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,0,'[E2E-PAGE] 0011',0,'CRM',NULL),(37,'ACC12','[E2E-PAGE] 0012',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,0,'[E2E-PAGE] 0012',0,'CRM',NULL),(38,'ACC13','[E2E-PAGE] 0013',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,0,'[E2E-PAGE] 0013',0,'CRM',NULL),(39,'ACC14','[E2E-PAGE] 0014',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,0,'[E2E-PAGE] 0014',0,'CRM',NULL),(40,'ACC15','[E2E-PAGE] 0015',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,0,'[E2E-PAGE] 0015',0,'CRM',NULL),(41,'ACC16','[E2E-PAGE] 0016',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,0,'[E2E-PAGE] 0016',0,'CRM',NULL),(42,'ACC17','[E2E-PAGE] 0017',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,0,'[E2E-PAGE] 0017',0,'CRM',NULL),(43,'ACC18','[E2E-PAGE] 0018',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,0,'[E2E-PAGE] 0018',0,'CRM',NULL),(44,'ACC19','[E2E-PAGE] 0019',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,0,'[E2E-PAGE] 0019',0,'CRM',NULL),(45,'ACC20','[E2E-PAGE] 0020',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,0,'[E2E-PAGE] 0020',0,'CRM',NULL),(46,'ACC21','[E2E-PAGE] 0021',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,0,'[E2E-PAGE] 0021',0,'CRM',NULL),(47,'ACC22','[E2E-PAGE] 0022',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,0,'[E2E-PAGE] 0022',0,'CRM',NULL),(48,'ACC23','[E2E-PAGE] 0023',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,0,'[E2E-PAGE] 0023',0,'CRM',NULL),(49,'ACC24','[E2E-PAGE] 0024',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,0,'[E2E-PAGE] 0024',0,'CRM',NULL),(50,'ACC25','[E2E-PAGE] 0025',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,0,'[E2E-PAGE] 0025',0,'CRM',NULL),(51,'ACC26','[E2E-PAGE] 0026',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,0,'[E2E-PAGE] 0026',0,'CRM',NULL),(52,'ACC27','[E2E-PAGE] 0027',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,0,'[E2E-PAGE] 0027',0,'CRM',NULL),(53,'ACC28','[E2E-PAGE] 0028',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,0,'[E2E-PAGE] 0028',0,'CRM',NULL),(54,'ACC29','[E2E-PAGE] 0029',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,0,'[E2E-PAGE] 0029',0,'CRM',NULL),(55,'ACC30','[E2E-PAGE] 0030',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,0,'[E2E-PAGE] 0030',0,'CRM',NULL),(56,'ACC31','[E2E-PAGE] 0031',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,0,'[E2E-PAGE] 0031',0,'CRM',NULL),(57,'ACC32','[E2E-PAGE] 0032',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,0,'[E2E-PAGE] 0032',0,'CRM',NULL),(58,'ACC33','[E2E-PAGE] 0033',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,0,'[E2E-PAGE] 0033',0,'CRM',NULL),(59,'ACC34','[E2E-PAGE] 0034',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,0,'[E2E-PAGE] 0034',0,'CRM',NULL),(60,'ACC35','[E2E-PAGE] 0035',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,0,'[E2E-PAGE] 0035',0,'CRM',NULL),(61,'ACC36','[E2E-PAGE] 0036',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,0,'[E2E-PAGE] 0036',0,'CRM',NULL),(62,'ACC37','[E2E-PAGE] 0037',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,0,'[E2E-PAGE] 0037',0,'CRM',NULL),(63,'ACC38','[E2E-PAGE] 0038',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,0,'[E2E-PAGE] 0038',0,'CRM',NULL),(64,'ACC39','[E2E-PAGE] 0039',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,0,'[E2E-PAGE] 0039',0,'CRM',NULL),(65,'ACC40','[E2E-PAGE] 0040',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,0,'[E2E-PAGE] 0040',0,'CRM',NULL),(66,'ACC41','[E2E-PAGE] 0041',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,0,'[E2E-PAGE] 0041',0,'CRM',NULL),(67,'ACC42','[E2E-PAGE] 0042',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,0,'[E2E-PAGE] 0042',0,'CRM',NULL),(68,'ACC43','[E2E-PAGE] 0043',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,0,'[E2E-PAGE] 0043',0,'CRM',NULL),(69,'ACC44','[E2E-PAGE] 0044',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,0,'[E2E-PAGE] 0044',0,'CRM',NULL),(70,'ACC45','[E2E-PAGE] 0045',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,0,'[E2E-PAGE] 0045',0,'CRM',NULL),(71,'ACC46','[E2E-PAGE] 0046',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,0,'[E2E-PAGE] 0046',0,'CRM',NULL),(72,'ACC47','[E2E-PAGE] 0047',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,0,'[E2E-PAGE] 0047',0,'CRM',NULL),(73,'ACC48','[E2E-PAGE] 0048',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,0,'[E2E-PAGE] 0048',0,'CRM',NULL),(74,'ACC49','[E2E-PAGE] 0049',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,0,'[E2E-PAGE] 0049',0,'CRM',NULL),(75,'ACC50','[E2E-PAGE] 0050',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,0,'[E2E-PAGE] 0050',0,'CRM',NULL),(76,'ACC51','[E2E-PAGE] 0051',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:18','2026-07-05 01:06:18',NULL,0,'[E2E-PAGE] 0051',0,'CRM',NULL),(77,'ACC52','[E2E-PAGE] 0052',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:18','2026-07-05 01:06:18',NULL,0,'[E2E-PAGE] 0052',0,'CRM',NULL),(78,'ACC53','[E2E-PAGE] 0053',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:18','2026-07-05 01:06:18',NULL,0,'[E2E-PAGE] 0053',0,'CRM',NULL),(79,'ACC54','[E2E-PAGE] 0054',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:18','2026-07-05 01:06:18',NULL,0,'[E2E-PAGE] 0054',0,'CRM',NULL),(80,'ACC55','[E2E-PAGE] 0055',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:18','2026-07-05 01:06:18',NULL,0,'[E2E-PAGE] 0055',0,'CRM',NULL),(81,'ACC56','[E2E-PAGE] 0056',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:18','2026-07-05 01:06:18',NULL,0,'[E2E-PAGE] 0056',0,'CRM',NULL),(82,'ACC57','[E2E-PAGE] 0057',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:18','2026-07-05 01:06:18',NULL,0,'[E2E-PAGE] 0057',0,'CRM',NULL),(83,'ACC58','[E2E-PAGE] 0058',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:18','2026-07-05 01:06:18',NULL,0,'[E2E-PAGE] 0058',0,'CRM',NULL),(84,'ACC59','[E2E-PAGE] 0059',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,0,'[E2E-PAGE] 0059',0,'CRM',NULL),(85,'ACC60','[E2E-PAGE] 0060',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,0,'[E2E-PAGE] 0060',0,'CRM',NULL),(86,'ACC61','[E2E-PAGE] 0061',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,0,'[E2E-PAGE] 0061',0,'CRM',NULL),(87,'ACC62','[E2E-PAGE] 0062',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,0,'[E2E-PAGE] 0062',0,'CRM',NULL),(88,'ACC63','[E2E-PAGE] 0063',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,0,'[E2E-PAGE] 0063',0,'CRM',NULL),(89,'ACC64','[E2E-PAGE] 0064',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,0,'[E2E-PAGE] 0064',0,'CRM',NULL),(90,'ACC65','[E2E-PAGE] 0065',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,0,'[E2E-PAGE] 0065',0,'CRM',NULL),(91,'ACC66','[E2E-PAGE] 0066',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,0,'[E2E-PAGE] 0066',0,'CRM',NULL),(92,'ACC67','[E2E-PAGE] 0067',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,0,'[E2E-PAGE] 0067',0,'CRM',NULL),(93,'ACC68','[E2E-PAGE] 0068',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,0,'[E2E-PAGE] 0068',0,'CRM',NULL),(94,'ACC69','[E2E-PAGE] 0069',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,0,'[E2E-PAGE] 0069',0,'CRM',NULL),(95,'ACC70','[E2E-PAGE] 0070',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,0,'[E2E-PAGE] 0070',0,'CRM',NULL),(96,'ACC71','[E2E-PAGE] 0071',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,0,'[E2E-PAGE] 0071',0,'CRM',NULL),(97,'ACC72','[E2E-PAGE] 0072',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,0,'[E2E-PAGE] 0072',0,'CRM',NULL),(98,'ACC73','[E2E-PAGE] 0073',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,0,'[E2E-PAGE] 0073',0,'CRM',NULL),(99,'ACC74','[E2E-PAGE] 0074',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,0,'[E2E-PAGE] 0074',0,'CRM',NULL),(100,'ACC75','[E2E-PAGE] 0075',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,0,'[E2E-PAGE] 0075',0,'CRM',NULL),(101,'ACC76','[E2E-PAGE] 0076',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,0,'[E2E-PAGE] 0076',0,'CRM',NULL),(102,'ACC77','[E2E-PAGE] 0077',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,0,'[E2E-PAGE] 0077',0,'CRM',NULL),(103,'ACC78','[E2E-PAGE] 0078',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,0,'[E2E-PAGE] 0078',0,'CRM',NULL),(104,'ACC79','[E2E-PAGE] 0079',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,0,'[E2E-PAGE] 0079',0,'CRM',NULL),(105,'ACC80','[E2E-PAGE] 0080',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,0,'[E2E-PAGE] 0080',0,'CRM',NULL),(106,'ACC81','[E2E-PAGE] 0081',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,0,'[E2E-PAGE] 0081',0,'CRM',NULL),(107,'ACC82','[E2E-PAGE] 0082',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,0,'[E2E-PAGE] 0082',0,'CRM',NULL),(108,'ACC83','[E2E-PAGE] 0083',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,0,'[E2E-PAGE] 0083',0,'CRM',NULL),(109,'ACC84','[E2E-PAGE] 0084',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,0,'[E2E-PAGE] 0084',0,'CRM',NULL),(110,'ACC85','[E2E-PAGE] 0085',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,0,'[E2E-PAGE] 0085',0,'CRM',NULL),(111,'ACC86','[E2E-PAGE] 0086',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,0,'[E2E-PAGE] 0086',0,'CRM',NULL),(112,'ACC87','[E2E-PAGE] 0087',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,0,'[E2E-PAGE] 0087',0,'CRM',NULL),(113,'ACC88','[E2E-PAGE] 0088',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,0,'[E2E-PAGE] 0088',0,'CRM',NULL),(114,'ACC89','[E2E-PAGE] 0089',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,0,'[E2E-PAGE] 0089',0,'CRM',NULL),(115,'ACC90','[E2E-PAGE] 0090',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,0,'[E2E-PAGE] 0090',0,'CRM',NULL),(116,'ACC91','[E2E-PAGE] 0091',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,0,'[E2E-PAGE] 0091',0,'CRM',NULL),(117,'ACC92','[E2E-PAGE] 0092',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,0,'[E2E-PAGE] 0092',0,'CRM',NULL),(118,'ACC93','[E2E-PAGE] 0093',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,0,'[E2E-PAGE] 0093',0,'CRM',NULL),(119,'ACC94','[E2E-PAGE] 0094',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,0,'[E2E-PAGE] 0094',0,'CRM',NULL),(120,'ACC95','[E2E-PAGE] 0095',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,0,'[E2E-PAGE] 0095',0,'CRM',NULL),(121,'ACC96','[E2E-PAGE] 0096',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,0,'[E2E-PAGE] 0096',0,'CRM',NULL),(122,'ACC97','[E2E-PAGE] 0097',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,0,'[E2E-PAGE] 0097',0,'CRM',NULL),(123,'ACC98','[E2E-PAGE] 0098',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,0,'[E2E-PAGE] 0098',0,'CRM',NULL),(124,'ACC99','[E2E-PAGE] 0099',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,0,'[E2E-PAGE] 0099',0,'CRM',NULL),(125,'ACC100','[E2E-PAGE] 0100',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,0,'[E2E-PAGE] 0100',0,'CRM',NULL),(126,'ACC101','[E2E-PAGE] 0101',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,0,'[E2E-PAGE] 0101',0,'CRM',NULL),(127,'ACC102','[E2E-PAGE] 0102',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,0,'[E2E-PAGE] 0102',0,'CRM',NULL),(128,'ACC103','[E2E-PAGE] 0103',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,0,'[E2E-PAGE] 0103',0,'CRM',NULL),(129,'ACC104','[E2E-PAGE] 0104',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,0,'[E2E-PAGE] 0104',0,'CRM',NULL),(130,'ACC105','[E2E-PAGE] 0105',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,0,'[E2E-PAGE] 0105',0,'CRM',NULL),(131,'ACC106','[E2E-PAGE] 0106',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,0,'[E2E-PAGE] 0106',0,'CRM',NULL),(132,'ACC107','[E2E-PAGE] 0107',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,0,'[E2E-PAGE] 0107',0,'CRM',NULL),(133,'ACC108','[E2E-PAGE] 0108',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,0,'[E2E-PAGE] 0108',0,'CRM',NULL),(134,'ACC109','[E2E-PAGE] 0109',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,0,'[E2E-PAGE] 0109',0,'CRM',NULL),(135,'ACC110','[E2E-PAGE] 0110',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,0,'[E2E-PAGE] 0110',0,'CRM',NULL),(136,'ACC111','[E2E-PAGE] 0111',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,0,'[E2E-PAGE] 0111',0,'CRM',NULL),(137,'ACC112','[E2E-PAGE] 0112',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,0,'[E2E-PAGE] 0112',0,'CRM',NULL),(138,'ACC113','[E2E-PAGE] 0113',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,0,'[E2E-PAGE] 0113',0,'CRM',NULL),(139,'ACC114','[E2E-PAGE] 0114',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,0,'[E2E-PAGE] 0114',0,'CRM',NULL),(140,'ACC115','[E2E-PAGE] 0115',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,0,'[E2E-PAGE] 0115',0,'CRM',NULL),(141,'ACC116','[E2E-PAGE] 0116',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,0,'[E2E-PAGE] 0116',0,'CRM',NULL),(142,'ACC117','[E2E-PAGE] 0117',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,0,'[E2E-PAGE] 0117',0,'CRM',NULL),(143,'ACC118','[E2E-PAGE] 0118',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,0,'[E2E-PAGE] 0118',0,'CRM',NULL),(144,'ACC119','[E2E-PAGE] 0119',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,0,'[E2E-PAGE] 0119',0,'CRM',NULL),(145,'ACC120','[E2E-PAGE] 0120',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,0,'[E2E-PAGE] 0120',0,'CRM',NULL),(146,'ACC121','[E2E-PAGE] 0121',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,0,'[E2E-PAGE] 0121',0,'CRM',NULL),(147,'ACC122','[E2E-PAGE] 0122',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,0,'[E2E-PAGE] 0122',0,'CRM',NULL),(148,'ACC123','[E2E-PAGE] 0123',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,0,'[E2E-PAGE] 0123',0,'CRM',NULL),(149,'ACC124','[E2E-PAGE] 0124',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,0,'[E2E-PAGE] 0124',0,'CRM',NULL),(150,'ACC125','[E2E-PAGE] 0125',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,0,'[E2E-PAGE] 0125',0,'CRM',NULL),(151,'ACC126','[E2E-PAGE] 0126',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,0,'[E2E-PAGE] 0126',0,'CRM',NULL),(152,'ACC127','[E2E-PAGE] 0127',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,0,'[E2E-PAGE] 0127',0,'CRM',NULL),(153,'ACC128','[E2E-PAGE] 0128',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,0,'[E2E-PAGE] 0128',0,'CRM',NULL),(154,'ACC129','[E2E-PAGE] 0129',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,0,'[E2E-PAGE] 0129',0,'CRM',NULL),(155,'ACC130','[E2E-PAGE] 0130',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,0,'[E2E-PAGE] 0130',0,'CRM',NULL),(156,'ACC131','[E2E-PAGE] 0131',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,0,'[E2E-PAGE] 0131',0,'CRM',NULL),(157,'ACC132','[E2E-PAGE] 0132',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,0,'[E2E-PAGE] 0132',0,'CRM',NULL),(158,'ACC133','[E2E-PAGE] 0133',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,0,'[E2E-PAGE] 0133',0,'CRM',NULL),(159,'ACC134','[E2E-PAGE] 0134',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,0,'[E2E-PAGE] 0134',0,'CRM',NULL),(160,'ACC135','[E2E-PAGE] 0135',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,0,'[E2E-PAGE] 0135',0,'CRM',NULL),(161,'ACC136','[E2E-PAGE] 0136',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,0,'[E2E-PAGE] 0136',0,'CRM',NULL),(162,'ACC137','[E2E-PAGE] 0137',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,0,'[E2E-PAGE] 0137',0,'CRM',NULL),(163,'ACC138','[E2E-PAGE] 0138',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,0,'[E2E-PAGE] 0138',0,'CRM',NULL),(164,'ACC139','[E2E-PAGE] 0139',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,0,'[E2E-PAGE] 0139',0,'CRM',NULL),(165,'ACC140','[E2E-PAGE] 0140',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,0,'[E2E-PAGE] 0140',0,'CRM',NULL),(166,'ACC141','[E2E-PAGE] 0141',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,0,'[E2E-PAGE] 0141',0,'CRM',NULL),(167,'ACC142','[E2E-PAGE] 0142',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,0,'[E2E-PAGE] 0142',0,'CRM',NULL),(168,'ACC143','[E2E-PAGE] 0143',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,0,'[E2E-PAGE] 0143',0,'CRM',NULL),(169,'ACC144','[E2E-PAGE] 0144',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,0,'[E2E-PAGE] 0144',0,'CRM',NULL),(170,'ACC145','[E2E-PAGE] 0145',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,0,'[E2E-PAGE] 0145',0,'CRM',NULL),(171,'ACC146','[E2E-PAGE] 0146',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,0,'[E2E-PAGE] 0146',0,'CRM',NULL),(172,'ACC147','[E2E-PAGE] 0147',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,0,'[E2E-PAGE] 0147',0,'CRM',NULL),(173,'ACC148','[E2E-PAGE] 0148',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,0,'[E2E-PAGE] 0148',0,'CRM',NULL),(174,'ACC149','[E2E-PAGE] 0149',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,0,'[E2E-PAGE] 0149',0,'CRM',NULL),(175,'ACC150','[E2E-PAGE] 0150',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,0,'[E2E-PAGE] 0150',0,'CRM',NULL),(176,'ACC151','[E2E-PAGE] 0151',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,0,'[E2E-PAGE] 0151',0,'CRM',NULL),(177,'ACC152','[E2E-PAGE] 0152',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,0,'[E2E-PAGE] 0152',0,'CRM',NULL),(178,'ACC153','[E2E-PAGE] 0153',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,0,'[E2E-PAGE] 0153',0,'CRM',NULL),(179,'ACC154','[E2E-PAGE] 0154',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,0,'[E2E-PAGE] 0154',0,'CRM',NULL),(180,'ACC155','[E2E-PAGE] 0155',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,0,'[E2E-PAGE] 0155',0,'CRM',NULL),(181,'ACC156','[E2E-PAGE] 0156',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,0,'[E2E-PAGE] 0156',0,'CRM',NULL),(182,'ACC157','[E2E-PAGE] 0157',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,0,'[E2E-PAGE] 0157',0,'CRM',NULL),(183,'ACC158','[E2E-PAGE] 0158',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,0,'[E2E-PAGE] 0158',0,'CRM',NULL),(184,'ACC159','[E2E-PAGE] 0159',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,0,'[E2E-PAGE] 0159',0,'CRM',NULL),(185,'ACC160','[E2E-PAGE] 0160',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,0,'[E2E-PAGE] 0160',0,'CRM',NULL),(186,'ACC161','[E2E-PAGE] 0161',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,0,'[E2E-PAGE] 0161',0,'CRM',NULL),(187,'ACC162','[E2E-PAGE] 0162',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,0,'[E2E-PAGE] 0162',0,'CRM',NULL),(188,'ACC163','[E2E-PAGE] 0163',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,0,'[E2E-PAGE] 0163',0,'CRM',NULL),(189,'ACC164','[E2E-PAGE] 0164',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,0,'[E2E-PAGE] 0164',0,'CRM',NULL),(190,'ACC165','[E2E-PAGE] 0165',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,0,'[E2E-PAGE] 0165',0,'CRM',NULL),(191,'ACC166','[E2E-PAGE] 0166',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,0,'[E2E-PAGE] 0166',0,'CRM',NULL),(192,'ACC167','[E2E-PAGE] 0167',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,0,'[E2E-PAGE] 0167',0,'CRM',NULL),(193,'ACC168','[E2E-PAGE] 0168',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,0,'[E2E-PAGE] 0168',0,'CRM',NULL),(194,'ACC169','[E2E-PAGE] 0169',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,0,'[E2E-PAGE] 0169',0,'CRM',NULL),(195,'ACC170','[E2E-PAGE] 0170',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,0,'[E2E-PAGE] 0170',0,'CRM',NULL),(196,'ACC171','[E2E-PAGE] 0171',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,0,'[E2E-PAGE] 0171',0,'CRM',NULL),(197,'ACC172','[E2E-PAGE] 0172',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,0,'[E2E-PAGE] 0172',0,'CRM',NULL),(198,'ACC173','[E2E-PAGE] 0173',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,0,'[E2E-PAGE] 0173',0,'CRM',NULL),(199,'ACC174','[E2E-PAGE] 0174',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,0,'[E2E-PAGE] 0174',0,'CRM',NULL),(200,'ACC175','[E2E-PAGE] 0175',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,0,'[E2E-PAGE] 0175',0,'CRM',NULL),(201,'ACC176','[E2E-PAGE] 0176',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,0,'[E2E-PAGE] 0176',0,'CRM',NULL),(202,'ACC177','[E2E-PAGE] 0177',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,0,'[E2E-PAGE] 0177',0,'CRM',NULL),(203,'ACC178','[E2E-PAGE] 0178',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,0,'[E2E-PAGE] 0178',0,'CRM',NULL),(204,'ACC179','[E2E-PAGE] 0179',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,0,'[E2E-PAGE] 0179',0,'CRM',NULL),(205,'ACC180','[E2E-PAGE] 0180',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,0,'[E2E-PAGE] 0180',0,'CRM',NULL),(206,'ACC181','[E2E-PAGE] 0181',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,0,'[E2E-PAGE] 0181',0,'CRM',NULL),(207,'ACC182','[E2E-PAGE] 0182',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,0,'[E2E-PAGE] 0182',0,'CRM',NULL),(208,'ACC183','[E2E-PAGE] 0183',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,0,'[E2E-PAGE] 0183',0,'CRM',NULL),(209,'ACC184','[E2E-PAGE] 0184',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,0,'[E2E-PAGE] 0184',0,'CRM',NULL),(210,'ACC185','[E2E-PAGE] 0185',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,0,'[E2E-PAGE] 0185',0,'CRM',NULL),(211,'ACC186','[E2E-PAGE] 0186',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,0,'[E2E-PAGE] 0186',0,'CRM',NULL),(212,'ACC187','[E2E-PAGE] 0187',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,0,'[E2E-PAGE] 0187',0,'CRM',NULL),(213,'ACC188','[E2E-PAGE] 0188',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,0,'[E2E-PAGE] 0188',0,'CRM',NULL),(214,'ACC189','[E2E-PAGE] 0189',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,0,'[E2E-PAGE] 0189',0,'CRM',NULL),(215,'ACC190','[E2E-PAGE] 0190',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,0,'[E2E-PAGE] 0190',0,'CRM',NULL),(216,'ACC191','[E2E-PAGE] 0191',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,0,'[E2E-PAGE] 0191',0,'CRM',NULL),(217,'ACC192','[E2E-PAGE] 0192',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,0,'[E2E-PAGE] 0192',0,'CRM',NULL),(218,'ACC193','[E2E-PAGE] 0193',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,0,'[E2E-PAGE] 0193',0,'CRM',NULL),(219,'ACC194','[E2E-PAGE] 0194',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,0,'[E2E-PAGE] 0194',0,'CRM',NULL),(220,'ACC195','[E2E-PAGE] 0195',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,0,'[E2E-PAGE] 0195',0,'CRM',NULL),(221,'ACC196','[E2E-PAGE] 0196',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,0,'[E2E-PAGE] 0196',0,'CRM',NULL),(222,'ACC197','[E2E-PAGE] 0197',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,0,'[E2E-PAGE] 0197',0,'CRM',NULL),(223,'ACC198','[E2E-PAGE] 0198',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,0,'[E2E-PAGE] 0198',0,'CRM',NULL),(224,'ACC199','[E2E-PAGE] 0199',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,0,'[E2E-PAGE] 0199',0,'CRM',NULL),(225,'ACC200','[E2E-PAGE] 0200',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,0,'[E2E-PAGE] 0200',0,'CRM',NULL),(226,'ACC201','[E2E-PAGE] 0201',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,0,'[E2E-PAGE] 0201',0,'CRM',NULL),(227,'ACC202','[E2E-PAGE] 0202',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,0,'[E2E-PAGE] 0202',0,'CRM',NULL),(228,'ACC203','[E2E-PAGE] 0203',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,0,'[E2E-PAGE] 0203',0,'CRM',NULL),(229,'ACC204','[E2E-PAGE] 0204',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,0,'[E2E-PAGE] 0204',0,'CRM',NULL),(230,'ACC205','[E2E-PAGE] 0205',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,0,'[E2E-PAGE] 0205',0,'CRM',NULL),(231,'ACC206','[E2E-PAGE] 0206',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,0,'[E2E-PAGE] 0206',0,'CRM',NULL),(232,'ACC207','[E2E-PAGE] 0207',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,0,'[E2E-PAGE] 0207',0,'CRM',NULL),(233,'ACC208','[E2E-PAGE] 0208',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,0,'[E2E-PAGE] 0208',0,'CRM',NULL),(234,'ACC209','[E2E-PAGE] 0209',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,0,'[E2E-PAGE] 0209',0,'CRM',NULL),(235,'ACC210','[E2E-PAGE] 0210',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,0,'[E2E-PAGE] 0210',0,'CRM',NULL),(236,'ACC211','[E2E-PAGE] 0211',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,0,'[E2E-PAGE] 0211',0,'CRM',NULL),(237,'ACC212','[E2E-PAGE] 0212',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,0,'[E2E-PAGE] 0212',0,'CRM',NULL),(238,'ACC213','[E2E-PAGE] 0213',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,0,'[E2E-PAGE] 0213',0,'CRM',NULL),(239,'ACC214','[E2E-PAGE] 0214',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,0,'[E2E-PAGE] 0214',0,'CRM',NULL),(240,'ACC215','[E2E-PAGE] 0215',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,0,'[E2E-PAGE] 0215',0,'CRM',NULL),(241,'ACC216','[E2E-PAGE] 0216',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,0,'[E2E-PAGE] 0216',0,'CRM',NULL),(242,'ACC217','[E2E-PAGE] 0217',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,0,'[E2E-PAGE] 0217',0,'CRM',NULL),(243,'ACC218','[E2E-PAGE] 0218',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,0,'[E2E-PAGE] 0218',0,'CRM',NULL),(244,'ACC219','[E2E-PAGE] 0219',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,0,'[E2E-PAGE] 0219',0,'CRM',NULL),(245,'ACC220','[E2E-PAGE] 0220',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,0,'[E2E-PAGE] 0220',0,'CRM',NULL),(246,'ACC221','[E2E-PAGE] 0221',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,0,'[E2E-PAGE] 0221',0,'CRM',NULL),(247,'ACC222','[E2E-PAGE] 0222',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,0,'[E2E-PAGE] 0222',0,'CRM',NULL),(248,'ACC223','[E2E-PAGE] 0223',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,0,'[E2E-PAGE] 0223',0,'CRM',NULL),(249,'ACC224','[E2E-PAGE] 0224',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,0,'[E2E-PAGE] 0224',0,'CRM',NULL),(250,'ACC225','[E2E-PAGE] 0225',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,0,'[E2E-PAGE] 0225',0,'CRM',NULL),(251,'ACC226','[E2E-PAGE] 0226',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,0,'[E2E-PAGE] 0226',0,'CRM',NULL),(252,'ACC227','[E2E-PAGE] 0227',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,0,'[E2E-PAGE] 0227',0,'CRM',NULL),(253,'ACC228','[E2E-PAGE] 0228',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,0,'[E2E-PAGE] 0228',0,'CRM',NULL),(254,'ACC229','[E2E-PAGE] 0229',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,0,'[E2E-PAGE] 0229',0,'CRM',NULL),(255,'ACC230','[E2E-PAGE] 0230',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,0,'[E2E-PAGE] 0230',0,'CRM',NULL),(256,'ACC231','[E2E-PAGE] 0231',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,0,'[E2E-PAGE] 0231',0,'CRM',NULL),(257,'ACC232','[E2E-PAGE] 0232',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,0,'[E2E-PAGE] 0232',0,'CRM',NULL),(258,'ACC233','[E2E-PAGE] 0233',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,0,'[E2E-PAGE] 0233',0,'CRM',NULL),(259,'ACC234','[E2E-PAGE] 0234',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,0,'[E2E-PAGE] 0234',0,'CRM',NULL),(260,'ACC235','[E2E-PAGE] 0235',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,0,'[E2E-PAGE] 0235',0,'CRM',NULL),(261,'ACC236','[E2E-PAGE] 0236',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,0,'[E2E-PAGE] 0236',0,'CRM',NULL),(262,'ACC237','[E2E-PAGE] 0237',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,0,'[E2E-PAGE] 0237',0,'CRM',NULL),(263,'ACC238','[E2E-PAGE] 0238',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,0,'[E2E-PAGE] 0238',0,'CRM',NULL),(264,'ACC239','[E2E-PAGE] 0239',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,0,'[E2E-PAGE] 0239',0,'CRM',NULL),(265,'ACC240','[E2E-PAGE] 0240',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,0,'[E2E-PAGE] 0240',0,'CRM',NULL),(266,'ACC241','[E2E-PAGE] 0241',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,0,'[E2E-PAGE] 0241',0,'CRM',NULL),(267,'ACC242','[E2E-PAGE] 0242',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,0,'[E2E-PAGE] 0242',0,'CRM',NULL),(268,'ACC243','[E2E-PAGE] 0243',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,0,'[E2E-PAGE] 0243',0,'CRM',NULL),(269,'ACC244','[E2E-PAGE] 0244',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,0,'[E2E-PAGE] 0244',0,'CRM',NULL),(270,'ACC245','[E2E-PAGE] 0245',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,0,'[E2E-PAGE] 0245',0,'CRM',NULL),(271,'ACC246','[E2E-PAGE] 0246',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,0,'[E2E-PAGE] 0246',0,'CRM',NULL),(272,'ACC247','[E2E-PAGE] 0247',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,0,'[E2E-PAGE] 0247',0,'CRM',NULL),(273,'ACC248','[E2E-PAGE] 0248',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,0,'[E2E-PAGE] 0248',0,'CRM',NULL),(274,'ACC249','[E2E-PAGE] 0249',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,0,'[E2E-PAGE] 0249',0,'CRM',NULL),(275,'ACC250','[E2E-PAGE] 0250',0,NULL,NULL,0.00000000,NULL,'','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,0,'[E2E-PAGE] 0250',0,'CRM',NULL),(276,'ACC251','[E2E-SRCH] ZZUNIQAcctFindme 0001',0,NULL,'Banking',0.00000000,'Active','','','','','','','','https://zzuniqacctfindme.example.com','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,0,'[E2E-SRCH] ZZUNIQAcctFindme 0001',0,'CRM',NULL),(277,'ACC252','[E2E-SRCH] Banking 0002',0,NULL,'Banking',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,0,'[E2E-SRCH] Banking 0002',0,'CRM',NULL),(278,'ACC253','[E2E-SRCH] Banking 0003',0,NULL,'Banking',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,0,'[E2E-SRCH] Banking 0003',0,'CRM',NULL),(279,'ACC254','[E2E-SRCH] Banking 0004',0,NULL,'Banking',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,0,'[E2E-SRCH] Banking 0004',0,'CRM',NULL),(280,'ACC255','[E2E-SRCH] Banking 0005',0,NULL,'Banking',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,0,'[E2E-SRCH] Banking 0005',0,'CRM',NULL),(281,'ACC256','[E2E-SRCH] Banking 0006',0,NULL,'Banking',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,0,'[E2E-SRCH] Banking 0006',0,'CRM',NULL),(282,'ACC257','[E2E-SRCH] Banking 0007',0,NULL,'Banking',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,0,'[E2E-SRCH] Banking 0007',0,'CRM',NULL),(283,'ACC258','[E2E-SRCH] Banking 0008',0,NULL,'Banking',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,0,'[E2E-SRCH] Banking 0008',0,'CRM',NULL),(284,'ACC259','[E2E-SRCH] Banking 0009',0,NULL,'Banking',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,0,'[E2E-SRCH] Banking 0009',0,'CRM',NULL),(285,'ACC260','[E2E-SRCH] Banking 0010',0,NULL,'Banking',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,0,'[E2E-SRCH] Banking 0010',0,'CRM',NULL),(286,'ACC261','[E2E-SRCH] Chemicals 0011',0,NULL,'Chemicals',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,0,'[E2E-SRCH] Chemicals 0011',0,'CRM',NULL),(287,'ACC262','[E2E-SRCH] Chemicals 0012',0,NULL,'Chemicals',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,0,'[E2E-SRCH] Chemicals 0012',0,'CRM',NULL),(288,'ACC263','[E2E-SRCH] Chemicals 0013',0,NULL,'Chemicals',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,0,'[E2E-SRCH] Chemicals 0013',0,'CRM',NULL),(289,'ACC264','[E2E-SRCH] Chemicals 0014',0,NULL,'Chemicals',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,0,'[E2E-SRCH] Chemicals 0014',0,'CRM',NULL),(290,'ACC265','[E2E-SRCH] Chemicals 0015',0,NULL,'Chemicals',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,0,'[E2E-SRCH] Chemicals 0015',0,'CRM',NULL),(291,'ACC266','[E2E-SRCH] Chemicals 0016',0,NULL,'Chemicals',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,0,'[E2E-SRCH] Chemicals 0016',0,'CRM',NULL),(292,'ACC267','[E2E-SRCH] Chemicals 0017',0,NULL,'Chemicals',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,0,'[E2E-SRCH] Chemicals 0017',0,'CRM',NULL),(293,'ACC268','[E2E-SRCH] Chemicals 0018',0,NULL,'Chemicals',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,0,'[E2E-SRCH] Chemicals 0018',0,'CRM',NULL),(294,'ACC269','[E2E-SRCH] Chemicals 0019',0,NULL,'Chemicals',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,0,'[E2E-SRCH] Chemicals 0019',0,'CRM',NULL),(295,'ACC270','[E2E-SRCH] Chemicals 0020',0,NULL,'Chemicals',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,0,'[E2E-SRCH] Chemicals 0020',0,'CRM',NULL),(296,'ACC271','[E2E-SRCH] Construction 0021',0,NULL,'Construction',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,0,'[E2E-SRCH] Construction 0021',0,'CRM',NULL),(297,'ACC272','[E2E-SRCH] Construction 0022',0,NULL,'Construction',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,0,'[E2E-SRCH] Construction 0022',0,'CRM',NULL),(298,'ACC273','[E2E-SRCH] Construction 0023',0,NULL,'Construction',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,0,'[E2E-SRCH] Construction 0023',0,'CRM',NULL),(299,'ACC274','[E2E-SRCH] Construction 0024',0,NULL,'Construction',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,0,'[E2E-SRCH] Construction 0024',0,'CRM',NULL),(300,'ACC275','[E2E-SRCH] Construction 0025',0,NULL,'Construction',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,0,'[E2E-SRCH] Construction 0025',0,'CRM',NULL),(301,'ACC276','[E2E-SRCH] Construction 0026',0,NULL,'Construction',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,0,'[E2E-SRCH] Construction 0026',0,'CRM',NULL),(302,'ACC277','[E2E-SRCH] Construction 0027',0,NULL,'Construction',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,0,'[E2E-SRCH] Construction 0027',0,'CRM',NULL),(303,'ACC278','[E2E-SRCH] Construction 0028',0,NULL,'Construction',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,0,'[E2E-SRCH] Construction 0028',0,'CRM',NULL),(304,'ACC279','[E2E-SRCH] Construction 0029',0,NULL,'Construction',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,0,'[E2E-SRCH] Construction 0029',0,'CRM',NULL),(305,'ACC280','[E2E-SRCH] Construction 0030',0,NULL,'Construction',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,0,'[E2E-SRCH] Construction 0030',0,'CRM',NULL),(306,'ACC281','[E2E-SRCH] Consulting 0031',0,NULL,'Consulting',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,0,'[E2E-SRCH] Consulting 0031',0,'CRM',NULL),(307,'ACC282','[E2E-SRCH] Consulting 0032',0,NULL,'Consulting',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,0,'[E2E-SRCH] Consulting 0032',0,'CRM',NULL),(308,'ACC283','[E2E-SRCH] Consulting 0033',0,NULL,'Consulting',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,0,'[E2E-SRCH] Consulting 0033',0,'CRM',NULL),(309,'ACC284','[E2E-SRCH] Consulting 0034',0,NULL,'Consulting',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,0,'[E2E-SRCH] Consulting 0034',0,'CRM',NULL),(310,'ACC285','[E2E-SRCH] Consulting 0035',0,NULL,'Consulting',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,0,'[E2E-SRCH] Consulting 0035',0,'CRM',NULL),(311,'ACC286','[E2E-SRCH] Consulting 0036',0,NULL,'Consulting',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,0,'[E2E-SRCH] Consulting 0036',0,'CRM',NULL),(312,'ACC287','[E2E-SRCH] Consulting 0037',0,NULL,'Consulting',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,0,'[E2E-SRCH] Consulting 0037',0,'CRM',NULL),(313,'ACC288','[E2E-SRCH] Consulting 0038',0,NULL,'Consulting',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,0,'[E2E-SRCH] Consulting 0038',0,'CRM',NULL),(314,'ACC289','[E2E-SRCH] Consulting 0039',0,NULL,'Consulting',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,0,'[E2E-SRCH] Consulting 0039',0,'CRM',NULL),(315,'ACC290','[E2E-SRCH] Consulting 0040',0,NULL,'Consulting',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,0,'[E2E-SRCH] Consulting 0040',0,'CRM',NULL),(316,'ACC291','[E2E-SRCH] Education 0041',0,NULL,'Education',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,0,'[E2E-SRCH] Education 0041',0,'CRM',NULL),(317,'ACC292','[E2E-SRCH] Education 0042',0,NULL,'Education',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,0,'[E2E-SRCH] Education 0042',0,'CRM',NULL),(318,'ACC293','[E2E-SRCH] Education 0043',0,NULL,'Education',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,0,'[E2E-SRCH] Education 0043',0,'CRM',NULL),(319,'ACC294','[E2E-SRCH] Education 0044',0,NULL,'Education',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,0,'[E2E-SRCH] Education 0044',0,'CRM',NULL),(320,'ACC295','[E2E-SRCH] Education 0045',0,NULL,'Education',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,0,'[E2E-SRCH] Education 0045',0,'CRM',NULL),(321,'ACC296','[E2E-SRCH] Education 0046',0,NULL,'Education',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,0,'[E2E-SRCH] Education 0046',0,'CRM',NULL),(322,'ACC297','[E2E-SRCH] Education 0047',0,NULL,'Education',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,0,'[E2E-SRCH] Education 0047',0,'CRM',NULL),(323,'ACC298','[E2E-SRCH] Education 0048',0,NULL,'Education',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,0,'[E2E-SRCH] Education 0048',0,'CRM',NULL),(324,'ACC299','[E2E-SRCH] Education 0049',0,NULL,'Education',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,0,'[E2E-SRCH] Education 0049',0,'CRM',NULL),(325,'ACC300','[E2E-SRCH] Education 0050',0,NULL,'Education',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,0,'[E2E-SRCH] Education 0050',0,'CRM',NULL),(326,'ACC301','[E2E-SRCH] Energy 0051',0,NULL,'Energy',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:31','2026-07-05 01:06:31',NULL,0,'[E2E-SRCH] Energy 0051',0,'CRM',NULL),(327,'ACC302','[E2E-SRCH] Energy 0052',0,NULL,'Energy',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:31','2026-07-05 01:06:31',NULL,0,'[E2E-SRCH] Energy 0052',0,'CRM',NULL),(328,'ACC303','[E2E-SRCH] Energy 0053',0,NULL,'Energy',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:31','2026-07-05 01:06:31',NULL,0,'[E2E-SRCH] Energy 0053',0,'CRM',NULL),(329,'ACC304','[E2E-SRCH] Energy 0054',0,NULL,'Energy',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:31','2026-07-05 01:06:31',NULL,0,'[E2E-SRCH] Energy 0054',0,'CRM',NULL),(330,'ACC305','[E2E-SRCH] Energy 0055',0,NULL,'Energy',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:31','2026-07-05 01:06:31',NULL,0,'[E2E-SRCH] Energy 0055',0,'CRM',NULL),(331,'ACC306','[E2E-SRCH] Energy 0056',0,NULL,'Energy',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:31','2026-07-05 01:06:31',NULL,0,'[E2E-SRCH] Energy 0056',0,'CRM',NULL),(332,'ACC307','[E2E-SRCH] Energy 0057',0,NULL,'Energy',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:31','2026-07-05 01:06:31',NULL,0,'[E2E-SRCH] Energy 0057',0,'CRM',NULL),(333,'ACC308','[E2E-SRCH] Energy 0058',0,NULL,'Energy',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:31','2026-07-05 01:06:31',NULL,0,'[E2E-SRCH] Energy 0058',0,'CRM',NULL),(334,'ACC309','[E2E-SRCH] Energy 0059',0,NULL,'Energy',0.00000000,'Active','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:31','2026-07-05 01:06:31',NULL,0,'[E2E-SRCH] Energy 0059',0,'CRM',NULL),(335,'ACC310','[E2E-SRCH] Energy 0060',0,NULL,'Energy',0.00000000,'Acquired','','','','','','','','','',0,'0','0','0','',1,1,1,'','2026-07-05 01:06:31','2026-07-05 01:06:31',NULL,0,'[E2E-SRCH] Energy 0060',0,'CRM',NULL);
 /*!40000 ALTER TABLE `vtiger_account` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -395,12 +394,12 @@ DROP TABLE IF EXISTS `vtiger_accountbillads`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_accountbillads` (
   `accountaddressid` int NOT NULL,
-  `bill_city` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bill_code` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bill_country` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bill_state` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bill_street` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `bill_pobox` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_city` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_code` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_country` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_state` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_street` text COLLATE utf8mb4_general_ci,
+  `bill_pobox` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`accountaddressid`),
   CONSTRAINT `fk_1_vtiger_accountbillads` FOREIGN KEY (`accountaddressid`) REFERENCES `vtiger_account` (`accountid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -412,7 +411,6 @@ CREATE TABLE `vtiger_accountbillads` (
 
 LOCK TABLES `vtiger_accountbillads` WRITE;
 /*!40000 ALTER TABLE `vtiger_accountbillads` DISABLE KEYS */;
-INSERT INTO `vtiger_accountbillads` VALUES (26,'','',NULL,'','',NULL),(27,'','',NULL,'','',NULL),(28,'','',NULL,'','',NULL),(29,'','',NULL,'','',NULL),(30,'','',NULL,'','',NULL),(31,'','',NULL,'','',NULL),(32,'','',NULL,'','',NULL),(33,'','',NULL,'','',NULL),(34,'','',NULL,'','',NULL),(35,'','',NULL,'','',NULL),(36,'','',NULL,'','',NULL),(37,'','',NULL,'','',NULL),(38,'','',NULL,'','',NULL),(39,'','',NULL,'','',NULL),(40,'','',NULL,'','',NULL),(41,'','',NULL,'','',NULL),(42,'','',NULL,'','',NULL),(43,'','',NULL,'','',NULL),(44,'','',NULL,'','',NULL),(45,'','',NULL,'','',NULL),(46,'','',NULL,'','',NULL),(47,'','',NULL,'','',NULL),(48,'','',NULL,'','',NULL),(49,'','',NULL,'','',NULL),(50,'','',NULL,'','',NULL),(51,'','',NULL,'','',NULL),(52,'','',NULL,'','',NULL),(53,'','',NULL,'','',NULL),(54,'','',NULL,'','',NULL),(55,'','',NULL,'','',NULL),(56,'','',NULL,'','',NULL),(57,'','',NULL,'','',NULL),(58,'','',NULL,'','',NULL),(59,'','',NULL,'','',NULL),(60,'','',NULL,'','',NULL),(61,'','',NULL,'','',NULL),(62,'','',NULL,'','',NULL),(63,'','',NULL,'','',NULL),(64,'','',NULL,'','',NULL),(65,'','',NULL,'','',NULL),(66,'','',NULL,'','',NULL),(67,'','',NULL,'','',NULL),(68,'','',NULL,'','',NULL),(69,'','',NULL,'','',NULL),(70,'','',NULL,'','',NULL),(71,'','',NULL,'','',NULL),(72,'','',NULL,'','',NULL),(73,'','',NULL,'','',NULL),(74,'','',NULL,'','',NULL),(75,'','',NULL,'','',NULL),(76,'','',NULL,'','',NULL),(77,'','',NULL,'','',NULL),(78,'','',NULL,'','',NULL),(79,'','',NULL,'','',NULL),(80,'','',NULL,'','',NULL),(81,'','',NULL,'','',NULL),(82,'','',NULL,'','',NULL),(83,'','',NULL,'','',NULL),(84,'','',NULL,'','',NULL),(85,'','',NULL,'','',NULL),(86,'','',NULL,'','',NULL),(87,'','',NULL,'','',NULL),(88,'','',NULL,'','',NULL),(89,'','',NULL,'','',NULL),(90,'','',NULL,'','',NULL),(91,'','',NULL,'','',NULL),(92,'','',NULL,'','',NULL),(93,'','',NULL,'','',NULL),(94,'','',NULL,'','',NULL),(95,'','',NULL,'','',NULL),(96,'','',NULL,'','',NULL),(97,'','',NULL,'','',NULL),(98,'','',NULL,'','',NULL),(99,'','',NULL,'','',NULL),(100,'','',NULL,'','',NULL),(101,'','',NULL,'','',NULL),(102,'','',NULL,'','',NULL),(103,'','',NULL,'','',NULL),(104,'','',NULL,'','',NULL),(105,'','',NULL,'','',NULL),(106,'','',NULL,'','',NULL),(107,'','',NULL,'','',NULL),(108,'','',NULL,'','',NULL),(109,'','',NULL,'','',NULL),(110,'','',NULL,'','',NULL),(111,'','',NULL,'','',NULL),(112,'','',NULL,'','',NULL),(113,'','',NULL,'','',NULL),(114,'','',NULL,'','',NULL),(115,'','',NULL,'','',NULL),(116,'','',NULL,'','',NULL),(117,'','',NULL,'','',NULL),(118,'','',NULL,'','',NULL),(119,'','',NULL,'','',NULL),(120,'','',NULL,'','',NULL),(121,'','',NULL,'','',NULL),(122,'','',NULL,'','',NULL),(123,'','',NULL,'','',NULL),(124,'','',NULL,'','',NULL),(125,'','',NULL,'','',NULL),(126,'','',NULL,'','',NULL),(127,'','',NULL,'','',NULL),(128,'','',NULL,'','',NULL),(129,'','',NULL,'','',NULL),(130,'','',NULL,'','',NULL),(131,'','',NULL,'','',NULL),(132,'','',NULL,'','',NULL),(133,'','',NULL,'','',NULL),(134,'','',NULL,'','',NULL),(135,'','',NULL,'','',NULL),(136,'','',NULL,'','',NULL),(137,'','',NULL,'','',NULL),(138,'','',NULL,'','',NULL),(139,'','',NULL,'','',NULL),(140,'','',NULL,'','',NULL),(141,'','',NULL,'','',NULL),(142,'','',NULL,'','',NULL),(143,'','',NULL,'','',NULL),(144,'','',NULL,'','',NULL),(145,'','',NULL,'','',NULL),(146,'','',NULL,'','',NULL),(147,'','',NULL,'','',NULL),(148,'','',NULL,'','',NULL),(149,'','',NULL,'','',NULL),(150,'','',NULL,'','',NULL),(151,'','',NULL,'','',NULL),(152,'','',NULL,'','',NULL),(153,'','',NULL,'','',NULL),(154,'','',NULL,'','',NULL),(155,'','',NULL,'','',NULL),(156,'','',NULL,'','',NULL),(157,'','',NULL,'','',NULL),(158,'','',NULL,'','',NULL),(159,'','',NULL,'','',NULL),(160,'','',NULL,'','',NULL),(161,'','',NULL,'','',NULL),(162,'','',NULL,'','',NULL),(163,'','',NULL,'','',NULL),(164,'','',NULL,'','',NULL),(165,'','',NULL,'','',NULL),(166,'','',NULL,'','',NULL),(167,'','',NULL,'','',NULL),(168,'','',NULL,'','',NULL),(169,'','',NULL,'','',NULL),(170,'','',NULL,'','',NULL),(171,'','',NULL,'','',NULL),(172,'','',NULL,'','',NULL),(173,'','',NULL,'','',NULL),(174,'','',NULL,'','',NULL),(175,'','',NULL,'','',NULL),(176,'','',NULL,'','',NULL),(177,'','',NULL,'','',NULL),(178,'','',NULL,'','',NULL),(179,'','',NULL,'','',NULL),(180,'','',NULL,'','',NULL),(181,'','',NULL,'','',NULL),(182,'','',NULL,'','',NULL),(183,'','',NULL,'','',NULL),(184,'','',NULL,'','',NULL),(185,'','',NULL,'','',NULL),(186,'','',NULL,'','',NULL),(187,'','',NULL,'','',NULL),(188,'','',NULL,'','',NULL),(189,'','',NULL,'','',NULL),(190,'','',NULL,'','',NULL),(191,'','',NULL,'','',NULL),(192,'','',NULL,'','',NULL),(193,'','',NULL,'','',NULL),(194,'','',NULL,'','',NULL),(195,'','',NULL,'','',NULL),(196,'','',NULL,'','',NULL),(197,'','',NULL,'','',NULL),(198,'','',NULL,'','',NULL),(199,'','',NULL,'','',NULL),(200,'','',NULL,'','',NULL),(201,'','',NULL,'','',NULL),(202,'','',NULL,'','',NULL),(203,'','',NULL,'','',NULL),(204,'','',NULL,'','',NULL),(205,'','',NULL,'','',NULL),(206,'','',NULL,'','',NULL),(207,'','',NULL,'','',NULL),(208,'','',NULL,'','',NULL),(209,'','',NULL,'','',NULL),(210,'','',NULL,'','',NULL),(211,'','',NULL,'','',NULL),(212,'','',NULL,'','',NULL),(213,'','',NULL,'','',NULL),(214,'','',NULL,'','',NULL),(215,'','',NULL,'','',NULL),(216,'','',NULL,'','',NULL),(217,'','',NULL,'','',NULL),(218,'','',NULL,'','',NULL),(219,'','',NULL,'','',NULL),(220,'','',NULL,'','',NULL),(221,'','',NULL,'','',NULL),(222,'','',NULL,'','',NULL),(223,'','',NULL,'','',NULL),(224,'','',NULL,'','',NULL),(225,'','',NULL,'','',NULL),(226,'','',NULL,'','',NULL),(227,'','',NULL,'','',NULL),(228,'','',NULL,'','',NULL),(229,'','',NULL,'','',NULL),(230,'','',NULL,'','',NULL),(231,'','',NULL,'','',NULL),(232,'','',NULL,'','',NULL),(233,'','',NULL,'','',NULL),(234,'','',NULL,'','',NULL),(235,'','',NULL,'','',NULL),(236,'','',NULL,'','',NULL),(237,'','',NULL,'','',NULL),(238,'','',NULL,'','',NULL),(239,'','',NULL,'','',NULL),(240,'','',NULL,'','',NULL),(241,'','',NULL,'','',NULL),(242,'','',NULL,'','',NULL),(243,'','',NULL,'','',NULL),(244,'','',NULL,'','',NULL),(245,'','',NULL,'','',NULL),(246,'','',NULL,'','',NULL),(247,'','',NULL,'','',NULL),(248,'','',NULL,'','',NULL),(249,'','',NULL,'','',NULL),(250,'','',NULL,'','',NULL),(251,'','',NULL,'','',NULL),(252,'','',NULL,'','',NULL),(253,'','',NULL,'','',NULL),(254,'','',NULL,'','',NULL),(255,'','',NULL,'','',NULL),(256,'','',NULL,'','',NULL),(257,'','',NULL,'','',NULL),(258,'','',NULL,'','',NULL),(259,'','',NULL,'','',NULL),(260,'','',NULL,'','',NULL),(261,'','',NULL,'','',NULL),(262,'','',NULL,'','',NULL),(263,'','',NULL,'','',NULL),(264,'','',NULL,'','',NULL),(265,'','',NULL,'','',NULL),(266,'','',NULL,'','',NULL),(267,'','',NULL,'','',NULL),(268,'','',NULL,'','',NULL),(269,'','',NULL,'','',NULL),(270,'','',NULL,'','',NULL),(271,'','',NULL,'','',NULL),(272,'','',NULL,'','',NULL),(273,'','',NULL,'','',NULL),(274,'','',NULL,'','',NULL),(275,'','',NULL,'','',NULL),(276,'','',NULL,'','',NULL),(277,'','',NULL,'','',NULL),(278,'','',NULL,'','',NULL),(279,'','',NULL,'','',NULL),(280,'','',NULL,'','',NULL),(281,'','',NULL,'','',NULL),(282,'','',NULL,'','',NULL),(283,'','',NULL,'','',NULL),(284,'','',NULL,'','',NULL),(285,'','',NULL,'','',NULL),(286,'','',NULL,'','',NULL),(287,'','',NULL,'','',NULL),(288,'','',NULL,'','',NULL),(289,'','',NULL,'','',NULL),(290,'','',NULL,'','',NULL),(291,'','',NULL,'','',NULL),(292,'','',NULL,'','',NULL),(293,'','',NULL,'','',NULL),(294,'','',NULL,'','',NULL),(295,'','',NULL,'','',NULL),(296,'','',NULL,'','',NULL),(297,'','',NULL,'','',NULL),(298,'','',NULL,'','',NULL),(299,'','',NULL,'','',NULL),(300,'','',NULL,'','',NULL),(301,'','',NULL,'','',NULL),(302,'','',NULL,'','',NULL),(303,'','',NULL,'','',NULL),(304,'','',NULL,'','',NULL),(305,'','',NULL,'','',NULL),(306,'','',NULL,'','',NULL),(307,'','',NULL,'','',NULL),(308,'','',NULL,'','',NULL),(309,'','',NULL,'','',NULL),(310,'','',NULL,'','',NULL),(311,'','',NULL,'','',NULL),(312,'','',NULL,'','',NULL),(313,'','',NULL,'','',NULL),(314,'','',NULL,'','',NULL),(315,'','',NULL,'','',NULL),(316,'','',NULL,'','',NULL),(317,'','',NULL,'','',NULL),(318,'','',NULL,'','',NULL),(319,'','',NULL,'','',NULL),(320,'','',NULL,'','',NULL),(321,'','',NULL,'','',NULL),(322,'','',NULL,'','',NULL),(323,'','',NULL,'','',NULL),(324,'','',NULL,'','',NULL),(325,'','',NULL,'','',NULL),(326,'','',NULL,'','',NULL),(327,'','',NULL,'','',NULL),(328,'','',NULL,'','',NULL),(329,'','',NULL,'','',NULL),(330,'','',NULL,'','',NULL),(331,'','',NULL,'','',NULL),(332,'','',NULL,'','',NULL),(333,'','',NULL,'','',NULL),(334,'','',NULL,'','',NULL),(335,'','',NULL,'','',NULL);
 /*!40000 ALTER TABLE `vtiger_accountbillads` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -425,7 +423,7 @@ DROP TABLE IF EXISTS `vtiger_accountrating`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_accountrating` (
   `accountratingid` int NOT NULL AUTO_INCREMENT,
-  `rating` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `rating` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`accountratingid`),
@@ -462,7 +460,6 @@ CREATE TABLE `vtiger_accountscf` (
 
 LOCK TABLES `vtiger_accountscf` WRITE;
 /*!40000 ALTER TABLE `vtiger_accountscf` DISABLE KEYS */;
-INSERT INTO `vtiger_accountscf` VALUES (26),(27),(28),(29),(30),(31),(32),(33),(34),(35),(36),(37),(38),(39),(40),(41),(42),(43),(44),(45),(46),(47),(48),(49),(50),(51),(52),(53),(54),(55),(56),(57),(58),(59),(60),(61),(62),(63),(64),(65),(66),(67),(68),(69),(70),(71),(72),(73),(74),(75),(76),(77),(78),(79),(80),(81),(82),(83),(84),(85),(86),(87),(88),(89),(90),(91),(92),(93),(94),(95),(96),(97),(98),(99),(100),(101),(102),(103),(104),(105),(106),(107),(108),(109),(110),(111),(112),(113),(114),(115),(116),(117),(118),(119),(120),(121),(122),(123),(124),(125),(126),(127),(128),(129),(130),(131),(132),(133),(134),(135),(136),(137),(138),(139),(140),(141),(142),(143),(144),(145),(146),(147),(148),(149),(150),(151),(152),(153),(154),(155),(156),(157),(158),(159),(160),(161),(162),(163),(164),(165),(166),(167),(168),(169),(170),(171),(172),(173),(174),(175),(176),(177),(178),(179),(180),(181),(182),(183),(184),(185),(186),(187),(188),(189),(190),(191),(192),(193),(194),(195),(196),(197),(198),(199),(200),(201),(202),(203),(204),(205),(206),(207),(208),(209),(210),(211),(212),(213),(214),(215),(216),(217),(218),(219),(220),(221),(222),(223),(224),(225),(226),(227),(228),(229),(230),(231),(232),(233),(234),(235),(236),(237),(238),(239),(240),(241),(242),(243),(244),(245),(246),(247),(248),(249),(250),(251),(252),(253),(254),(255),(256),(257),(258),(259),(260),(261),(262),(263),(264),(265),(266),(267),(268),(269),(270),(271),(272),(273),(274),(275),(276),(277),(278),(279),(280),(281),(282),(283),(284),(285),(286),(287),(288),(289),(290),(291),(292),(293),(294),(295),(296),(297),(298),(299),(300),(301),(302),(303),(304),(305),(306),(307),(308),(309),(310),(311),(312),(313),(314),(315),(316),(317),(318),(319),(320),(321),(322),(323),(324),(325),(326),(327),(328),(329),(330),(331),(332),(333),(334),(335);
 /*!40000 ALTER TABLE `vtiger_accountscf` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -475,12 +472,12 @@ DROP TABLE IF EXISTS `vtiger_accountshipads`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_accountshipads` (
   `accountaddressid` int NOT NULL,
-  `ship_city` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ship_code` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ship_country` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ship_state` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ship_pobox` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ship_street` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `ship_city` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_code` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_country` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_state` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_pobox` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_street` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`accountaddressid`),
   CONSTRAINT `fk_1_vtiger_accountshipads` FOREIGN KEY (`accountaddressid`) REFERENCES `vtiger_account` (`accountid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -492,7 +489,6 @@ CREATE TABLE `vtiger_accountshipads` (
 
 LOCK TABLES `vtiger_accountshipads` WRITE;
 /*!40000 ALTER TABLE `vtiger_accountshipads` DISABLE KEYS */;
-INSERT INTO `vtiger_accountshipads` VALUES (26,'','',NULL,'',NULL,''),(27,'','',NULL,'',NULL,''),(28,'','',NULL,'',NULL,''),(29,'','',NULL,'',NULL,''),(30,'','',NULL,'',NULL,''),(31,'','',NULL,'',NULL,''),(32,'','',NULL,'',NULL,''),(33,'','',NULL,'',NULL,''),(34,'','',NULL,'',NULL,''),(35,'','',NULL,'',NULL,''),(36,'','',NULL,'',NULL,''),(37,'','',NULL,'',NULL,''),(38,'','',NULL,'',NULL,''),(39,'','',NULL,'',NULL,''),(40,'','',NULL,'',NULL,''),(41,'','',NULL,'',NULL,''),(42,'','',NULL,'',NULL,''),(43,'','',NULL,'',NULL,''),(44,'','',NULL,'',NULL,''),(45,'','',NULL,'',NULL,''),(46,'','',NULL,'',NULL,''),(47,'','',NULL,'',NULL,''),(48,'','',NULL,'',NULL,''),(49,'','',NULL,'',NULL,''),(50,'','',NULL,'',NULL,''),(51,'','',NULL,'',NULL,''),(52,'','',NULL,'',NULL,''),(53,'','',NULL,'',NULL,''),(54,'','',NULL,'',NULL,''),(55,'','',NULL,'',NULL,''),(56,'','',NULL,'',NULL,''),(57,'','',NULL,'',NULL,''),(58,'','',NULL,'',NULL,''),(59,'','',NULL,'',NULL,''),(60,'','',NULL,'',NULL,''),(61,'','',NULL,'',NULL,''),(62,'','',NULL,'',NULL,''),(63,'','',NULL,'',NULL,''),(64,'','',NULL,'',NULL,''),(65,'','',NULL,'',NULL,''),(66,'','',NULL,'',NULL,''),(67,'','',NULL,'',NULL,''),(68,'','',NULL,'',NULL,''),(69,'','',NULL,'',NULL,''),(70,'','',NULL,'',NULL,''),(71,'','',NULL,'',NULL,''),(72,'','',NULL,'',NULL,''),(73,'','',NULL,'',NULL,''),(74,'','',NULL,'',NULL,''),(75,'','',NULL,'',NULL,''),(76,'','',NULL,'',NULL,''),(77,'','',NULL,'',NULL,''),(78,'','',NULL,'',NULL,''),(79,'','',NULL,'',NULL,''),(80,'','',NULL,'',NULL,''),(81,'','',NULL,'',NULL,''),(82,'','',NULL,'',NULL,''),(83,'','',NULL,'',NULL,''),(84,'','',NULL,'',NULL,''),(85,'','',NULL,'',NULL,''),(86,'','',NULL,'',NULL,''),(87,'','',NULL,'',NULL,''),(88,'','',NULL,'',NULL,''),(89,'','',NULL,'',NULL,''),(90,'','',NULL,'',NULL,''),(91,'','',NULL,'',NULL,''),(92,'','',NULL,'',NULL,''),(93,'','',NULL,'',NULL,''),(94,'','',NULL,'',NULL,''),(95,'','',NULL,'',NULL,''),(96,'','',NULL,'',NULL,''),(97,'','',NULL,'',NULL,''),(98,'','',NULL,'',NULL,''),(99,'','',NULL,'',NULL,''),(100,'','',NULL,'',NULL,''),(101,'','',NULL,'',NULL,''),(102,'','',NULL,'',NULL,''),(103,'','',NULL,'',NULL,''),(104,'','',NULL,'',NULL,''),(105,'','',NULL,'',NULL,''),(106,'','',NULL,'',NULL,''),(107,'','',NULL,'',NULL,''),(108,'','',NULL,'',NULL,''),(109,'','',NULL,'',NULL,''),(110,'','',NULL,'',NULL,''),(111,'','',NULL,'',NULL,''),(112,'','',NULL,'',NULL,''),(113,'','',NULL,'',NULL,''),(114,'','',NULL,'',NULL,''),(115,'','',NULL,'',NULL,''),(116,'','',NULL,'',NULL,''),(117,'','',NULL,'',NULL,''),(118,'','',NULL,'',NULL,''),(119,'','',NULL,'',NULL,''),(120,'','',NULL,'',NULL,''),(121,'','',NULL,'',NULL,''),(122,'','',NULL,'',NULL,''),(123,'','',NULL,'',NULL,''),(124,'','',NULL,'',NULL,''),(125,'','',NULL,'',NULL,''),(126,'','',NULL,'',NULL,''),(127,'','',NULL,'',NULL,''),(128,'','',NULL,'',NULL,''),(129,'','',NULL,'',NULL,''),(130,'','',NULL,'',NULL,''),(131,'','',NULL,'',NULL,''),(132,'','',NULL,'',NULL,''),(133,'','',NULL,'',NULL,''),(134,'','',NULL,'',NULL,''),(135,'','',NULL,'',NULL,''),(136,'','',NULL,'',NULL,''),(137,'','',NULL,'',NULL,''),(138,'','',NULL,'',NULL,''),(139,'','',NULL,'',NULL,''),(140,'','',NULL,'',NULL,''),(141,'','',NULL,'',NULL,''),(142,'','',NULL,'',NULL,''),(143,'','',NULL,'',NULL,''),(144,'','',NULL,'',NULL,''),(145,'','',NULL,'',NULL,''),(146,'','',NULL,'',NULL,''),(147,'','',NULL,'',NULL,''),(148,'','',NULL,'',NULL,''),(149,'','',NULL,'',NULL,''),(150,'','',NULL,'',NULL,''),(151,'','',NULL,'',NULL,''),(152,'','',NULL,'',NULL,''),(153,'','',NULL,'',NULL,''),(154,'','',NULL,'',NULL,''),(155,'','',NULL,'',NULL,''),(156,'','',NULL,'',NULL,''),(157,'','',NULL,'',NULL,''),(158,'','',NULL,'',NULL,''),(159,'','',NULL,'',NULL,''),(160,'','',NULL,'',NULL,''),(161,'','',NULL,'',NULL,''),(162,'','',NULL,'',NULL,''),(163,'','',NULL,'',NULL,''),(164,'','',NULL,'',NULL,''),(165,'','',NULL,'',NULL,''),(166,'','',NULL,'',NULL,''),(167,'','',NULL,'',NULL,''),(168,'','',NULL,'',NULL,''),(169,'','',NULL,'',NULL,''),(170,'','',NULL,'',NULL,''),(171,'','',NULL,'',NULL,''),(172,'','',NULL,'',NULL,''),(173,'','',NULL,'',NULL,''),(174,'','',NULL,'',NULL,''),(175,'','',NULL,'',NULL,''),(176,'','',NULL,'',NULL,''),(177,'','',NULL,'',NULL,''),(178,'','',NULL,'',NULL,''),(179,'','',NULL,'',NULL,''),(180,'','',NULL,'',NULL,''),(181,'','',NULL,'',NULL,''),(182,'','',NULL,'',NULL,''),(183,'','',NULL,'',NULL,''),(184,'','',NULL,'',NULL,''),(185,'','',NULL,'',NULL,''),(186,'','',NULL,'',NULL,''),(187,'','',NULL,'',NULL,''),(188,'','',NULL,'',NULL,''),(189,'','',NULL,'',NULL,''),(190,'','',NULL,'',NULL,''),(191,'','',NULL,'',NULL,''),(192,'','',NULL,'',NULL,''),(193,'','',NULL,'',NULL,''),(194,'','',NULL,'',NULL,''),(195,'','',NULL,'',NULL,''),(196,'','',NULL,'',NULL,''),(197,'','',NULL,'',NULL,''),(198,'','',NULL,'',NULL,''),(199,'','',NULL,'',NULL,''),(200,'','',NULL,'',NULL,''),(201,'','',NULL,'',NULL,''),(202,'','',NULL,'',NULL,''),(203,'','',NULL,'',NULL,''),(204,'','',NULL,'',NULL,''),(205,'','',NULL,'',NULL,''),(206,'','',NULL,'',NULL,''),(207,'','',NULL,'',NULL,''),(208,'','',NULL,'',NULL,''),(209,'','',NULL,'',NULL,''),(210,'','',NULL,'',NULL,''),(211,'','',NULL,'',NULL,''),(212,'','',NULL,'',NULL,''),(213,'','',NULL,'',NULL,''),(214,'','',NULL,'',NULL,''),(215,'','',NULL,'',NULL,''),(216,'','',NULL,'',NULL,''),(217,'','',NULL,'',NULL,''),(218,'','',NULL,'',NULL,''),(219,'','',NULL,'',NULL,''),(220,'','',NULL,'',NULL,''),(221,'','',NULL,'',NULL,''),(222,'','',NULL,'',NULL,''),(223,'','',NULL,'',NULL,''),(224,'','',NULL,'',NULL,''),(225,'','',NULL,'',NULL,''),(226,'','',NULL,'',NULL,''),(227,'','',NULL,'',NULL,''),(228,'','',NULL,'',NULL,''),(229,'','',NULL,'',NULL,''),(230,'','',NULL,'',NULL,''),(231,'','',NULL,'',NULL,''),(232,'','',NULL,'',NULL,''),(233,'','',NULL,'',NULL,''),(234,'','',NULL,'',NULL,''),(235,'','',NULL,'',NULL,''),(236,'','',NULL,'',NULL,''),(237,'','',NULL,'',NULL,''),(238,'','',NULL,'',NULL,''),(239,'','',NULL,'',NULL,''),(240,'','',NULL,'',NULL,''),(241,'','',NULL,'',NULL,''),(242,'','',NULL,'',NULL,''),(243,'','',NULL,'',NULL,''),(244,'','',NULL,'',NULL,''),(245,'','',NULL,'',NULL,''),(246,'','',NULL,'',NULL,''),(247,'','',NULL,'',NULL,''),(248,'','',NULL,'',NULL,''),(249,'','',NULL,'',NULL,''),(250,'','',NULL,'',NULL,''),(251,'','',NULL,'',NULL,''),(252,'','',NULL,'',NULL,''),(253,'','',NULL,'',NULL,''),(254,'','',NULL,'',NULL,''),(255,'','',NULL,'',NULL,''),(256,'','',NULL,'',NULL,''),(257,'','',NULL,'',NULL,''),(258,'','',NULL,'',NULL,''),(259,'','',NULL,'',NULL,''),(260,'','',NULL,'',NULL,''),(261,'','',NULL,'',NULL,''),(262,'','',NULL,'',NULL,''),(263,'','',NULL,'',NULL,''),(264,'','',NULL,'',NULL,''),(265,'','',NULL,'',NULL,''),(266,'','',NULL,'',NULL,''),(267,'','',NULL,'',NULL,''),(268,'','',NULL,'',NULL,''),(269,'','',NULL,'',NULL,''),(270,'','',NULL,'',NULL,''),(271,'','',NULL,'',NULL,''),(272,'','',NULL,'',NULL,''),(273,'','',NULL,'',NULL,''),(274,'','',NULL,'',NULL,''),(275,'','',NULL,'',NULL,''),(276,'','',NULL,'',NULL,''),(277,'','',NULL,'',NULL,''),(278,'','',NULL,'',NULL,''),(279,'','',NULL,'',NULL,''),(280,'','',NULL,'',NULL,''),(281,'','',NULL,'',NULL,''),(282,'','',NULL,'',NULL,''),(283,'','',NULL,'',NULL,''),(284,'','',NULL,'',NULL,''),(285,'','',NULL,'',NULL,''),(286,'','',NULL,'',NULL,''),(287,'','',NULL,'',NULL,''),(288,'','',NULL,'',NULL,''),(289,'','',NULL,'',NULL,''),(290,'','',NULL,'',NULL,''),(291,'','',NULL,'',NULL,''),(292,'','',NULL,'',NULL,''),(293,'','',NULL,'',NULL,''),(294,'','',NULL,'',NULL,''),(295,'','',NULL,'',NULL,''),(296,'','',NULL,'',NULL,''),(297,'','',NULL,'',NULL,''),(298,'','',NULL,'',NULL,''),(299,'','',NULL,'',NULL,''),(300,'','',NULL,'',NULL,''),(301,'','',NULL,'',NULL,''),(302,'','',NULL,'',NULL,''),(303,'','',NULL,'',NULL,''),(304,'','',NULL,'',NULL,''),(305,'','',NULL,'',NULL,''),(306,'','',NULL,'',NULL,''),(307,'','',NULL,'',NULL,''),(308,'','',NULL,'',NULL,''),(309,'','',NULL,'',NULL,''),(310,'','',NULL,'',NULL,''),(311,'','',NULL,'',NULL,''),(312,'','',NULL,'',NULL,''),(313,'','',NULL,'',NULL,''),(314,'','',NULL,'',NULL,''),(315,'','',NULL,'',NULL,''),(316,'','',NULL,'',NULL,''),(317,'','',NULL,'',NULL,''),(318,'','',NULL,'',NULL,''),(319,'','',NULL,'',NULL,''),(320,'','',NULL,'',NULL,''),(321,'','',NULL,'',NULL,''),(322,'','',NULL,'',NULL,''),(323,'','',NULL,'',NULL,''),(324,'','',NULL,'',NULL,''),(325,'','',NULL,'',NULL,''),(326,'','',NULL,'',NULL,''),(327,'','',NULL,'',NULL,''),(328,'','',NULL,'',NULL,''),(329,'','',NULL,'',NULL,''),(330,'','',NULL,'',NULL,''),(331,'','',NULL,'',NULL,''),(332,'','',NULL,'',NULL,''),(333,'','',NULL,'',NULL,''),(334,'','',NULL,'',NULL,''),(335,'','',NULL,'',NULL,'');
 /*!40000 ALTER TABLE `vtiger_accountshipads` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -505,11 +501,11 @@ DROP TABLE IF EXISTS `vtiger_accounttype`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_accounttype` (
   `accounttypeid` int NOT NULL AUTO_INCREMENT,
-  `accounttype` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `accounttype` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`accounttypeid`),
   UNIQUE KEY `accounttype_accounttype_idx` (`accounttype`)
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -556,7 +552,7 @@ DROP TABLE IF EXISTS `vtiger_actionmapping`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_actionmapping` (
   `actionid` int NOT NULL,
-  `actionname` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `actionname` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `securitycheck` int DEFAULT NULL,
   PRIMARY KEY (`actionid`,`actionname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -581,39 +577,39 @@ DROP TABLE IF EXISTS `vtiger_activity`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_activity` (
   `activityid` int NOT NULL,
-  `subject` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `semodule` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `activitytype` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `subject` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `semodule` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `activitytype` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `date_start` date NOT NULL,
   `due_date` date DEFAULT NULL,
-  `time_start` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `time_end` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `sendnotification` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
-  `duration_hours` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `duration_minutes` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `status` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `eventstatus` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `priority` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `location` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `notime` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
-  `visibility` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'all',
-  `recurringtype` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `tags` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `time_start` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `time_end` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `sendnotification` varchar(3) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+  `duration_hours` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `duration_minutes` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `status` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `eventstatus` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `priority` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `location` varchar(150) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `notime` varchar(3) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+  `visibility` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'all',
+  `recurringtype` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tags` varchar(1) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `allday` tinyint(1) DEFAULT '0',
   `invitee_parentid` int DEFAULT '0',
   `smcreatorid` int DEFAULT NULL,
   `smownerid` int DEFAULT NULL,
   `modifiedby` int DEFAULT NULL,
-  `description` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `description` longtext COLLATE utf8mb4_general_ci,
   `createdtime` datetime DEFAULT NULL,
   `modifiedtime` datetime DEFAULT NULL,
   `viewedtime` datetime DEFAULT NULL,
   `deleted` int DEFAULT NULL,
-  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `label` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smgroupid` int DEFAULT NULL,
-  `source` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `common_memo` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `send_mail` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `source` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `common_memo` text COLLATE utf8mb4_general_ci,
+  `send_mail` varchar(3) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`activityid`),
   KEY `activity_activityid_subject_idx` (`activityid`,`subject`),
   KEY `activity_activitytype_date_start_idx` (`activitytype`,`date_start`),
@@ -695,10 +691,10 @@ DROP TABLE IF EXISTS `vtiger_activity_reminder_popup`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_activity_reminder_popup` (
   `reminderid` int NOT NULL AUTO_INCREMENT,
-  `semodule` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `semodule` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
   `recordid` int NOT NULL,
   `date_start` date NOT NULL,
-  `time_start` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `time_start` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
   `status` int NOT NULL,
   PRIMARY KEY (`reminderid`),
   KEY `reminder_popup` (`status`,`date_start`,`time_start`)
@@ -723,7 +719,7 @@ DROP TABLE IF EXISTS `vtiger_activity_view`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_activity_view` (
   `activity_viewid` int NOT NULL AUTO_INCREMENT,
-  `activity_view` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `activity_view` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`activity_viewid`)
@@ -820,11 +816,11 @@ DROP TABLE IF EXISTS `vtiger_activitytype`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_activitytype` (
   `activitytypeid` int NOT NULL AUTO_INCREMENT,
-  `activitytype` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `activitytype` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`activitytypeid`),
   UNIQUE KEY `activitytype_activitytype_idx` (`activitytype`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -871,8 +867,8 @@ DROP TABLE IF EXISTS `vtiger_announcement`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_announcement` (
   `creatorid` int NOT NULL,
-  `announcement` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `announcement` text COLLATE utf8mb4_general_ci,
+  `title` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `time` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`creatorid`),
   KEY `announcement_creatorid_idx` (`creatorid`)
@@ -897,7 +893,7 @@ DROP TABLE IF EXISTS `vtiger_app2tab`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_app2tab` (
   `tabid` int DEFAULT NULL,
-  `appname` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `appname` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `sequence` int DEFAULT NULL,
   `visible` int DEFAULT '1',
   KEY `vtiger_app2tab_fk_tab` (`tabid`),
@@ -1051,11 +1047,11 @@ DROP TABLE IF EXISTS `vtiger_asterisk`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_asterisk` (
-  `server` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `port` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `username` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `password` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `version` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL
+  `server` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `port` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `username` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `password` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `version` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -1077,8 +1073,8 @@ DROP TABLE IF EXISTS `vtiger_asteriskextensions`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_asteriskextensions` (
   `userid` int DEFAULT NULL,
-  `asterisk_extension` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `use_asterisk` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL
+  `asterisk_extension` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `use_asterisk` varchar(3) COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -1088,7 +1084,7 @@ CREATE TABLE `vtiger_asteriskextensions` (
 
 LOCK TABLES `vtiger_asteriskextensions` WRITE;
 /*!40000 ALTER TABLE `vtiger_asteriskextensions` DISABLE KEYS */;
-INSERT INTO `vtiger_asteriskextensions` VALUES (1,NULL,NULL),(5,NULL,NULL),(6,NULL,NULL),(7,NULL,NULL),(8,NULL,NULL),(9,NULL,NULL);
+INSERT INTO `vtiger_asteriskextensions` VALUES (1,NULL,NULL);
 /*!40000 ALTER TABLE `vtiger_asteriskextensions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1100,13 +1096,13 @@ DROP TABLE IF EXISTS `vtiger_asteriskincomingcalls`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_asteriskincomingcalls` (
-  `from_number` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `from_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `to_number` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `callertype` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `from_number` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `from_name` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `to_number` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `callertype` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `flag` int DEFAULT NULL,
   `timer` int DEFAULT NULL,
-  `refuid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL
+  `refuid` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -1127,14 +1123,14 @@ DROP TABLE IF EXISTS `vtiger_asteriskincomingevents`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_asteriskincomingevents` (
-  `uid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `channel` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `uid` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `channel` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `from_number` bigint DEFAULT NULL,
-  `from_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `from_name` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `to_number` bigint DEFAULT NULL,
-  `callertype` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `callertype` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `timer` int DEFAULT NULL,
-  `flag` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `flag` varchar(3) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `pbxrecordid` int DEFAULT NULL,
   `relcrmid` int DEFAULT NULL,
   PRIMARY KEY (`uid`)
@@ -1159,12 +1155,12 @@ DROP TABLE IF EXISTS `vtiger_attachments`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_attachments` (
   `attachmentsid` int NOT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `path` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `storedname` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `subject` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `description` text COLLATE utf8mb4_general_ci,
+  `type` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `path` text COLLATE utf8mb4_general_ci,
+  `storedname` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `subject` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`attachmentsid`),
   KEY `attachments_attachmentsid_idx` (`attachmentsid`),
   CONSTRAINT `fk_1_vtiger_attachments` FOREIGN KEY (`attachmentsid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
@@ -1189,8 +1185,8 @@ DROP TABLE IF EXISTS `vtiger_attachmentsfolder`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_attachmentsfolder` (
   `folderid` int NOT NULL AUTO_INCREMENT,
-  `foldername` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `description` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `foldername` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
+  `description` varchar(250) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `createdby` int NOT NULL,
   `sequence` int DEFAULT NULL,
   PRIMARY KEY (`folderid`)
@@ -1239,9 +1235,9 @@ DROP TABLE IF EXISTS `vtiger_audit_trial`;
 CREATE TABLE `vtiger_audit_trial` (
   `auditid` int NOT NULL,
   `userid` int DEFAULT NULL,
-  `module` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `action` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `recordid` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `module` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `action` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `recordid` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `actiondate` datetime DEFAULT NULL,
   PRIMARY KEY (`auditid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1266,7 +1262,7 @@ DROP TABLE IF EXISTS `vtiger_blocks`;
 CREATE TABLE `vtiger_blocks` (
   `blockid` int NOT NULL,
   `tabid` int NOT NULL,
-  `blocklabel` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `blocklabel` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
   `sequence` int DEFAULT NULL,
   `show_title` int DEFAULT NULL,
   `visible` int NOT NULL DEFAULT '0',
@@ -1322,11 +1318,11 @@ DROP TABLE IF EXISTS `vtiger_calendar_default_activitytypes`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_calendar_default_activitytypes` (
   `id` int NOT NULL,
-  `module` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `fieldname` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `defaultcolor` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `module` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `fieldname` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `defaultcolor` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `isdefault` int DEFAULT '1',
-  `conditions` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+  `conditions` varchar(255) COLLATE utf8mb4_general_ci DEFAULT '',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -1374,7 +1370,7 @@ CREATE TABLE `vtiger_calendar_user_activitytypes` (
   `id` int NOT NULL,
   `defaultid` int DEFAULT NULL,
   `userid` int DEFAULT NULL,
-  `color` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `visible` int DEFAULT '1',
   `is_own` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`)
@@ -1387,7 +1383,7 @@ CREATE TABLE `vtiger_calendar_user_activitytypes` (
 
 LOCK TABLES `vtiger_calendar_user_activitytypes` WRITE;
 /*!40000 ALTER TABLE `vtiger_calendar_user_activitytypes` DISABLE KEYS */;
-INSERT INTO `vtiger_calendar_user_activitytypes` VALUES (1,1,1,'#17309A',1,1),(2,2,1,'#3A87AD',1,1),(3,3,1,'#AA6705',1,1),(4,4,1,'#953B39',1,1),(5,5,1,'#545252',1,1),(6,6,1,'#87865D',1,1),(7,7,1,'#C71585',1,1),(8,8,1,'#006400',1,1),(9,1,5,'#17309A',1,1),(10,2,5,'#3A87AD',1,1),(11,3,5,'#AA6705',1,1),(12,4,5,'#953B39',1,1),(13,5,5,'#545252',1,1),(14,6,5,'#87865D',1,1),(15,7,5,'#C71585',1,1),(16,8,5,'#006400',1,1),(17,1,6,'#17309A',1,1),(18,2,6,'#3A87AD',1,1),(19,3,6,'#AA6705',1,1),(20,4,6,'#953B39',1,1),(21,5,6,'#545252',1,1),(22,6,6,'#87865D',1,1),(23,7,6,'#C71585',1,1),(24,8,6,'#006400',1,1),(25,1,7,'#17309A',1,1),(26,2,7,'#3A87AD',1,1),(27,3,7,'#AA6705',1,1),(28,4,7,'#953B39',1,1),(29,5,7,'#545252',1,1),(30,6,7,'#87865D',1,1),(31,7,7,'#C71585',1,1),(32,8,7,'#006400',1,1),(33,1,8,'#17309A',1,1),(34,2,8,'#3A87AD',1,1),(35,3,8,'#AA6705',1,1),(36,4,8,'#953B39',1,1),(37,5,8,'#545252',1,1),(38,6,8,'#87865D',1,1),(39,7,8,'#C71585',1,1),(40,8,8,'#006400',1,1),(41,1,9,'#17309A',1,1),(42,2,9,'#3A87AD',1,1),(43,3,9,'#AA6705',1,1),(44,4,9,'#953B39',1,1),(45,5,9,'#545252',1,1),(46,6,9,'#87865D',1,1),(47,7,9,'#C71585',1,1),(48,8,9,'#006400',1,1);
+INSERT INTO `vtiger_calendar_user_activitytypes` VALUES (1,1,1,'#17309A',1,1),(2,2,1,'#3A87AD',1,1),(3,3,1,'#AA6705',1,1),(4,4,1,'#953B39',1,1),(5,5,1,'#545252',1,1),(6,6,1,'#87865D',1,1),(7,7,1,'#C71585',1,1),(8,8,1,'#006400',1,1);
 /*!40000 ALTER TABLE `vtiger_calendar_user_activitytypes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1409,7 +1405,7 @@ CREATE TABLE `vtiger_calendar_user_activitytypes_seq` (
 
 LOCK TABLES `vtiger_calendar_user_activitytypes_seq` WRITE;
 /*!40000 ALTER TABLE `vtiger_calendar_user_activitytypes_seq` DISABLE KEYS */;
-INSERT INTO `vtiger_calendar_user_activitytypes_seq` VALUES (48);
+INSERT INTO `vtiger_calendar_user_activitytypes_seq` VALUES (8);
 /*!40000 ALTER TABLE `vtiger_calendar_user_activitytypes_seq` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1517,18 +1513,18 @@ DROP TABLE IF EXISTS `vtiger_campaign`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_campaign` (
-  `campaign_no` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `campaignname` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `campaigntype` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `campaignstatus` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `campaign_no` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `campaignname` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `campaigntype` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `campaignstatus` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `expectedrevenue` decimal(25,8) DEFAULT NULL,
   `budgetcost` decimal(25,8) DEFAULT NULL,
   `actualcost` decimal(25,8) DEFAULT NULL,
-  `expectedresponse` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `expectedresponse` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `numsent` decimal(11,0) DEFAULT NULL,
   `product_id` int DEFAULT NULL,
-  `sponsor` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `targetaudience` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `sponsor` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `targetaudience` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `targetsize` int DEFAULT NULL,
   `expectedresponsecount` int DEFAULT NULL,
   `expectedsalescount` int DEFAULT NULL,
@@ -1538,18 +1534,18 @@ CREATE TABLE `vtiger_campaign` (
   `actualroi` decimal(25,8) DEFAULT NULL,
   `campaignid` int NOT NULL,
   `closingdate` date DEFAULT NULL,
-  `tags` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tags` varchar(1) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smcreatorid` int DEFAULT NULL,
   `smownerid` int DEFAULT NULL,
   `modifiedby` int DEFAULT NULL,
-  `description` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `description` longtext COLLATE utf8mb4_general_ci,
   `createdtime` datetime DEFAULT NULL,
   `modifiedtime` datetime DEFAULT NULL,
   `viewedtime` datetime DEFAULT NULL,
   `deleted` int DEFAULT NULL,
-  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `label` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smgroupid` int DEFAULT NULL,
-  `source` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `source` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`campaignid`),
   KEY `campaign_campaignstatus_idx` (`campaignstatus`),
   KEY `campaign_campaignname_idx` (`campaignname`),
@@ -1654,10 +1650,10 @@ DROP TABLE IF EXISTS `vtiger_campaignrelstatus`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_campaignrelstatus` (
   `campaignrelstatusid` int DEFAULT NULL,
-  `campaignrelstatus` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `campaignrelstatus` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `sortorderid` int DEFAULT NULL,
   `presence` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -1725,11 +1721,11 @@ DROP TABLE IF EXISTS `vtiger_campaignstatus`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_campaignstatus` (
   `campaignstatusid` int NOT NULL AUTO_INCREMENT,
-  `campaignstatus` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `campaignstatus` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`campaignstatusid`),
   KEY `campaignstatus_campaignstatus_idx` (`campaignstatus`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1776,11 +1772,11 @@ DROP TABLE IF EXISTS `vtiger_campaigntype`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_campaigntype` (
   `campaigntypeid` int NOT NULL AUTO_INCREMENT,
-  `campaigntype` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `campaigntype` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`campaigntypeid`),
   UNIQUE KEY `campaigntype_campaigntype_idx` (`campaigntype`)
 ) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1827,11 +1823,11 @@ DROP TABLE IF EXISTS `vtiger_carrier`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_carrier` (
   `carrierid` int NOT NULL AUTO_INCREMENT,
-  `carrier` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `carrier` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`carrierid`),
   UNIQUE KEY `carrier_carrier_idx` (`carrier`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1904,18 +1900,18 @@ DROP TABLE IF EXISTS `vtiger_contactaddress`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_contactaddress` (
   `contactaddressid` int NOT NULL,
-  `mailingcity` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `mailingstreet` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `mailingcountry` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `othercountry` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `mailingstate` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `mailingpobox` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `othercity` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `otherstate` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `mailingzip` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `otherzip` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `otherstreet` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `otherpobox` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `mailingcity` varchar(40) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `mailingstreet` text COLLATE utf8mb4_general_ci,
+  `mailingcountry` varchar(40) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `othercountry` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `mailingstate` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `mailingpobox` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `othercity` varchar(40) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `otherstate` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `mailingzip` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `otherzip` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `otherstreet` text COLLATE utf8mb4_general_ci,
+  `otherpobox` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`contactaddressid`),
   CONSTRAINT `fk_1_vtiger_contactaddress` FOREIGN KEY (`contactaddressid`) REFERENCES `vtiger_contactdetails` (`contactid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1939,41 +1935,41 @@ DROP TABLE IF EXISTS `vtiger_contactdetails`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_contactdetails` (
   `contactid` int NOT NULL,
-  `contact_no` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `contact_no` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
   `accountid` int DEFAULT NULL,
-  `salutation` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `firstname` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `lastname` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `email` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `phone` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `mobile` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `title` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `department` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `fax` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `reportsto` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `training` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `usertype` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `contacttype` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `otheremail` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `secondaryemail` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `donotcall` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `emailoptout` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '0',
-  `imagename` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `reference` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `notify_owner` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '0',
-  `isconvertedfromlead` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '0',
-  `tags` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `salutation` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `firstname` varchar(40) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `lastname` varchar(80) COLLATE utf8mb4_general_ci NOT NULL,
+  `email` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `phone` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `mobile` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `title` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `department` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `fax` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `reportsto` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `training` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `usertype` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `contacttype` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `otheremail` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `secondaryemail` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `donotcall` varchar(3) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `emailoptout` varchar(3) COLLATE utf8mb4_general_ci DEFAULT '0',
+  `imagename` varchar(150) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `reference` varchar(3) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `notify_owner` varchar(3) COLLATE utf8mb4_general_ci DEFAULT '0',
+  `isconvertedfromlead` varchar(3) COLLATE utf8mb4_general_ci DEFAULT '0',
+  `tags` varchar(1) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smcreatorid` int DEFAULT NULL,
   `smownerid` int DEFAULT NULL,
   `modifiedby` int DEFAULT NULL,
-  `description` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `description` longtext COLLATE utf8mb4_general_ci,
   `createdtime` datetime DEFAULT NULL,
   `modifiedtime` datetime DEFAULT NULL,
   `viewedtime` datetime DEFAULT NULL,
   `deleted` int DEFAULT NULL,
-  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `label` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smgroupid` int DEFAULT NULL,
-  `source` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `source` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `last_action_date` date DEFAULT NULL,
   PRIMARY KEY (`contactid`),
   KEY `contactdetails_accountid_idx` (`accountid`),
@@ -2026,14 +2022,14 @@ DROP TABLE IF EXISTS `vtiger_contactsubdetails`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_contactsubdetails` (
   `contactsubscriptionid` int NOT NULL,
-  `homephone` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `otherphone` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `assistant` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `assistantphone` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `homephone` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `otherphone` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `assistant` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `assistantphone` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `birthday` date DEFAULT NULL,
   `laststayintouchrequest` int DEFAULT '0',
   `laststayintouchsavedate` int DEFAULT '0',
-  `leadsource` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `leadsource` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`contactsubscriptionid`),
   CONSTRAINT `fk_1_vtiger_contactsubdetails` FOREIGN KEY (`contactsubscriptionid`) REFERENCES `vtiger_contactdetails` (`contactid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2290,18 +2286,18 @@ CREATE TABLE `vtiger_crmentity` (
   `smcreatorid` int NOT NULL DEFAULT '0',
   `smownerid` int NOT NULL DEFAULT '0',
   `modifiedby` int NOT NULL DEFAULT '0',
-  `setype` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `description` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `setype` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `description` longtext COLLATE utf8mb4_general_ci,
   `createdtime` datetime NOT NULL,
   `modifiedtime` datetime NOT NULL,
   `viewedtime` datetime DEFAULT NULL,
-  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `status` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `version` int NOT NULL DEFAULT '0',
   `presence` int DEFAULT '1',
   `deleted` int NOT NULL DEFAULT '0',
   `smgroupid` int DEFAULT NULL,
-  `source` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `source` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `label` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`crmid`),
   KEY `crmentity_smcreatorid_idx` (`smcreatorid`),
   KEY `crmentity_modifiedby_idx` (`modifiedby`),
@@ -2317,7 +2313,6 @@ CREATE TABLE `vtiger_crmentity` (
 
 LOCK TABLES `vtiger_crmentity` WRITE;
 /*!40000 ALTER TABLE `vtiger_crmentity` DISABLE KEYS */;
-INSERT INTO `vtiger_crmentity` VALUES (2,1,5,1,'Leads','','2026-07-05 01:06:11','2026-07-05 01:06:11',NULL,NULL,0,1,0,0,'CRM','DIR'),(3,1,5,1,'Leads','','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,NULL,0,1,0,0,'CRM','DIR'),(4,1,5,1,'Leads','','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,NULL,0,1,0,0,'CRM','DIR'),(5,1,5,1,'Leads','','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,NULL,0,1,0,0,'CRM','DIR'),(6,1,6,1,'Leads','','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,NULL,0,1,0,0,'CRM','MGRA'),(7,1,6,1,'Leads','','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,NULL,0,1,0,0,'CRM','MGRA'),(8,1,6,1,'Leads','','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,NULL,0,1,0,0,'CRM','MGRA'),(9,1,6,1,'Leads','','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,NULL,0,1,0,0,'CRM','MGRA'),(10,1,7,1,'Leads','','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,NULL,0,1,0,0,'CRM','REPA'),(11,1,7,1,'Leads','','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,NULL,0,1,0,0,'CRM','REPA'),(12,1,7,1,'Leads','','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,NULL,0,1,0,0,'CRM','REPA'),(13,1,7,1,'Leads','','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,NULL,0,1,0,0,'CRM','REPA'),(14,1,8,1,'Leads','','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,NULL,0,1,0,0,'CRM','MGRB'),(15,1,8,1,'Leads','','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,NULL,0,1,0,0,'CRM','MGRB'),(16,1,8,1,'Leads','','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,NULL,0,1,0,0,'CRM','MGRB'),(17,1,8,1,'Leads','','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,NULL,0,1,0,0,'CRM','MGRB'),(18,1,9,1,'Leads','','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,NULL,0,1,0,0,'CRM','REPB'),(19,1,9,1,'Leads','','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,NULL,0,1,0,0,'CRM','REPB'),(20,1,9,1,'Leads','','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,NULL,0,1,0,0,'CRM','REPB'),(21,1,9,1,'Leads','','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,NULL,0,1,0,0,'CRM','REPB'),(22,1,10,1,'Leads','','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,NULL,0,1,0,0,'CRM','GRP'),(23,1,10,1,'Leads','','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,NULL,0,1,0,0,'CRM','GRP'),(24,1,10,1,'Leads','','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,NULL,0,1,0,0,'CRM','GRP'),(25,1,10,1,'Leads','','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,NULL,0,1,0,0,'CRM','GRP'),(26,1,1,1,'Accounts','','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0001'),(27,1,1,1,'Accounts','','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0002'),(28,1,1,1,'Accounts','','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0003'),(29,1,1,1,'Accounts','','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0004'),(30,1,1,1,'Accounts','','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0005'),(31,1,1,1,'Accounts','','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0006'),(32,1,1,1,'Accounts','','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0007'),(33,1,1,1,'Accounts','','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0008'),(34,1,1,1,'Accounts','','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0009'),(35,1,1,1,'Accounts','','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0010'),(36,1,1,1,'Accounts','','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0011'),(37,1,1,1,'Accounts','','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0012'),(38,1,1,1,'Accounts','','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0013'),(39,1,1,1,'Accounts','','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0014'),(40,1,1,1,'Accounts','','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0015'),(41,1,1,1,'Accounts','','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0016'),(42,1,1,1,'Accounts','','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0017'),(43,1,1,1,'Accounts','','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0018'),(44,1,1,1,'Accounts','','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0019'),(45,1,1,1,'Accounts','','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0020'),(46,1,1,1,'Accounts','','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0021'),(47,1,1,1,'Accounts','','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0022'),(48,1,1,1,'Accounts','','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0023'),(49,1,1,1,'Accounts','','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0024'),(50,1,1,1,'Accounts','','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0025'),(51,1,1,1,'Accounts','','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0026'),(52,1,1,1,'Accounts','','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0027'),(53,1,1,1,'Accounts','','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0028'),(54,1,1,1,'Accounts','','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0029'),(55,1,1,1,'Accounts','','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0030'),(56,1,1,1,'Accounts','','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0031'),(57,1,1,1,'Accounts','','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0032'),(58,1,1,1,'Accounts','','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0033'),(59,1,1,1,'Accounts','','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0034'),(60,1,1,1,'Accounts','','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0035'),(61,1,1,1,'Accounts','','2026-07-05 01:06:14','2026-07-05 01:06:14',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0036'),(62,1,1,1,'Accounts','','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0037'),(63,1,1,1,'Accounts','','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0038'),(64,1,1,1,'Accounts','','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0039'),(65,1,1,1,'Accounts','','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0040'),(66,1,1,1,'Accounts','','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0041'),(67,1,1,1,'Accounts','','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0042'),(68,1,1,1,'Accounts','','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0043'),(69,1,1,1,'Accounts','','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0044'),(70,1,1,1,'Accounts','','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0045'),(71,1,1,1,'Accounts','','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0046'),(72,1,1,1,'Accounts','','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0047'),(73,1,1,1,'Accounts','','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0048'),(74,1,1,1,'Accounts','','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0049'),(75,1,1,1,'Accounts','','2026-07-05 01:06:15','2026-07-05 01:06:15',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0050'),(76,1,1,1,'Accounts','','2026-07-05 01:06:18','2026-07-05 01:06:18',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0051'),(77,1,1,1,'Accounts','','2026-07-05 01:06:18','2026-07-05 01:06:18',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0052'),(78,1,1,1,'Accounts','','2026-07-05 01:06:18','2026-07-05 01:06:18',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0053'),(79,1,1,1,'Accounts','','2026-07-05 01:06:18','2026-07-05 01:06:18',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0054'),(80,1,1,1,'Accounts','','2026-07-05 01:06:18','2026-07-05 01:06:18',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0055'),(81,1,1,1,'Accounts','','2026-07-05 01:06:18','2026-07-05 01:06:18',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0056'),(82,1,1,1,'Accounts','','2026-07-05 01:06:18','2026-07-05 01:06:18',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0057'),(83,1,1,1,'Accounts','','2026-07-05 01:06:18','2026-07-05 01:06:18',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0058'),(84,1,1,1,'Accounts','','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0059'),(85,1,1,1,'Accounts','','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0060'),(86,1,1,1,'Accounts','','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0061'),(87,1,1,1,'Accounts','','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0062'),(88,1,1,1,'Accounts','','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0063'),(89,1,1,1,'Accounts','','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0064'),(90,1,1,1,'Accounts','','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0065'),(91,1,1,1,'Accounts','','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0066'),(92,1,1,1,'Accounts','','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0067'),(93,1,1,1,'Accounts','','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0068'),(94,1,1,1,'Accounts','','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0069'),(95,1,1,1,'Accounts','','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0070'),(96,1,1,1,'Accounts','','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0071'),(97,1,1,1,'Accounts','','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0072'),(98,1,1,1,'Accounts','','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0073'),(99,1,1,1,'Accounts','','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0074'),(100,1,1,1,'Accounts','','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0075'),(101,1,1,1,'Accounts','','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0076'),(102,1,1,1,'Accounts','','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0077'),(103,1,1,1,'Accounts','','2026-07-05 01:06:19','2026-07-05 01:06:19',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0078'),(104,1,1,1,'Accounts','','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0079'),(105,1,1,1,'Accounts','','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0080'),(106,1,1,1,'Accounts','','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0081'),(107,1,1,1,'Accounts','','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0082'),(108,1,1,1,'Accounts','','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0083'),(109,1,1,1,'Accounts','','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0084'),(110,1,1,1,'Accounts','','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0085'),(111,1,1,1,'Accounts','','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0086'),(112,1,1,1,'Accounts','','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0087'),(113,1,1,1,'Accounts','','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0088'),(114,1,1,1,'Accounts','','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0089'),(115,1,1,1,'Accounts','','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0090'),(116,1,1,1,'Accounts','','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0091'),(117,1,1,1,'Accounts','','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0092'),(118,1,1,1,'Accounts','','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0093'),(119,1,1,1,'Accounts','','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0094'),(120,1,1,1,'Accounts','','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0095'),(121,1,1,1,'Accounts','','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0096'),(122,1,1,1,'Accounts','','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0097'),(123,1,1,1,'Accounts','','2026-07-05 01:06:20','2026-07-05 01:06:20',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0098'),(124,1,1,1,'Accounts','','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0099'),(125,1,1,1,'Accounts','','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0100'),(126,1,1,1,'Accounts','','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0101'),(127,1,1,1,'Accounts','','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0102'),(128,1,1,1,'Accounts','','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0103'),(129,1,1,1,'Accounts','','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0104'),(130,1,1,1,'Accounts','','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0105'),(131,1,1,1,'Accounts','','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0106'),(132,1,1,1,'Accounts','','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0107'),(133,1,1,1,'Accounts','','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0108'),(134,1,1,1,'Accounts','','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0109'),(135,1,1,1,'Accounts','','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0110'),(136,1,1,1,'Accounts','','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0111'),(137,1,1,1,'Accounts','','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0112'),(138,1,1,1,'Accounts','','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0113'),(139,1,1,1,'Accounts','','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0114'),(140,1,1,1,'Accounts','','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0115'),(141,1,1,1,'Accounts','','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0116'),(142,1,1,1,'Accounts','','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0117'),(143,1,1,1,'Accounts','','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0118'),(144,1,1,1,'Accounts','','2026-07-05 01:06:21','2026-07-05 01:06:21',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0119'),(145,1,1,1,'Accounts','','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0120'),(146,1,1,1,'Accounts','','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0121'),(147,1,1,1,'Accounts','','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0122'),(148,1,1,1,'Accounts','','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0123'),(149,1,1,1,'Accounts','','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0124'),(150,1,1,1,'Accounts','','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0125'),(151,1,1,1,'Accounts','','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0126'),(152,1,1,1,'Accounts','','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0127'),(153,1,1,1,'Accounts','','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0128'),(154,1,1,1,'Accounts','','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0129'),(155,1,1,1,'Accounts','','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0130'),(156,1,1,1,'Accounts','','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0131'),(157,1,1,1,'Accounts','','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0132'),(158,1,1,1,'Accounts','','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0133'),(159,1,1,1,'Accounts','','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0134'),(160,1,1,1,'Accounts','','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0135'),(161,1,1,1,'Accounts','','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0136'),(162,1,1,1,'Accounts','','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0137'),(163,1,1,1,'Accounts','','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0138'),(164,1,1,1,'Accounts','','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0139'),(165,1,1,1,'Accounts','','2026-07-05 01:06:22','2026-07-05 01:06:22',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0140'),(166,1,1,1,'Accounts','','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0141'),(167,1,1,1,'Accounts','','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0142'),(168,1,1,1,'Accounts','','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0143'),(169,1,1,1,'Accounts','','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0144'),(170,1,1,1,'Accounts','','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0145'),(171,1,1,1,'Accounts','','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0146'),(172,1,1,1,'Accounts','','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0147'),(173,1,1,1,'Accounts','','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0148'),(174,1,1,1,'Accounts','','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0149'),(175,1,1,1,'Accounts','','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0150'),(176,1,1,1,'Accounts','','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0151'),(177,1,1,1,'Accounts','','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0152'),(178,1,1,1,'Accounts','','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0153'),(179,1,1,1,'Accounts','','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0154'),(180,1,1,1,'Accounts','','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0155'),(181,1,1,1,'Accounts','','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0156'),(182,1,1,1,'Accounts','','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0157'),(183,1,1,1,'Accounts','','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0158'),(184,1,1,1,'Accounts','','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0159'),(185,1,1,1,'Accounts','','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0160'),(186,1,1,1,'Accounts','','2026-07-05 01:06:23','2026-07-05 01:06:23',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0161'),(187,1,1,1,'Accounts','','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0162'),(188,1,1,1,'Accounts','','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0163'),(189,1,1,1,'Accounts','','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0164'),(190,1,1,1,'Accounts','','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0165'),(191,1,1,1,'Accounts','','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0166'),(192,1,1,1,'Accounts','','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0167'),(193,1,1,1,'Accounts','','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0168'),(194,1,1,1,'Accounts','','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0169'),(195,1,1,1,'Accounts','','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0170'),(196,1,1,1,'Accounts','','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0171'),(197,1,1,1,'Accounts','','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0172'),(198,1,1,1,'Accounts','','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0173'),(199,1,1,1,'Accounts','','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0174'),(200,1,1,1,'Accounts','','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0175'),(201,1,1,1,'Accounts','','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0176'),(202,1,1,1,'Accounts','','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0177'),(203,1,1,1,'Accounts','','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0178'),(204,1,1,1,'Accounts','','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0179'),(205,1,1,1,'Accounts','','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0180'),(206,1,1,1,'Accounts','','2026-07-05 01:06:24','2026-07-05 01:06:24',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0181'),(207,1,1,1,'Accounts','','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0182'),(208,1,1,1,'Accounts','','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0183'),(209,1,1,1,'Accounts','','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0184'),(210,1,1,1,'Accounts','','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0185'),(211,1,1,1,'Accounts','','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0186'),(212,1,1,1,'Accounts','','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0187'),(213,1,1,1,'Accounts','','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0188'),(214,1,1,1,'Accounts','','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0189'),(215,1,1,1,'Accounts','','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0190'),(216,1,1,1,'Accounts','','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0191'),(217,1,1,1,'Accounts','','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0192'),(218,1,1,1,'Accounts','','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0193'),(219,1,1,1,'Accounts','','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0194'),(220,1,1,1,'Accounts','','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0195'),(221,1,1,1,'Accounts','','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0196'),(222,1,1,1,'Accounts','','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0197'),(223,1,1,1,'Accounts','','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0198'),(224,1,1,1,'Accounts','','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0199'),(225,1,1,1,'Accounts','','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0200'),(226,1,1,1,'Accounts','','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0201'),(227,1,1,1,'Accounts','','2026-07-05 01:06:25','2026-07-05 01:06:25',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0202'),(228,1,1,1,'Accounts','','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0203'),(229,1,1,1,'Accounts','','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0204'),(230,1,1,1,'Accounts','','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0205'),(231,1,1,1,'Accounts','','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0206'),(232,1,1,1,'Accounts','','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0207'),(233,1,1,1,'Accounts','','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0208'),(234,1,1,1,'Accounts','','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0209'),(235,1,1,1,'Accounts','','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0210'),(236,1,1,1,'Accounts','','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0211'),(237,1,1,1,'Accounts','','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0212'),(238,1,1,1,'Accounts','','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0213'),(239,1,1,1,'Accounts','','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0214'),(240,1,1,1,'Accounts','','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0215'),(241,1,1,1,'Accounts','','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0216'),(242,1,1,1,'Accounts','','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0217'),(243,1,1,1,'Accounts','','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0218'),(244,1,1,1,'Accounts','','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0219'),(245,1,1,1,'Accounts','','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0220'),(246,1,1,1,'Accounts','','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0221'),(247,1,1,1,'Accounts','','2026-07-05 01:06:26','2026-07-05 01:06:26',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0222'),(248,1,1,1,'Accounts','','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0223'),(249,1,1,1,'Accounts','','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0224'),(250,1,1,1,'Accounts','','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0225'),(251,1,1,1,'Accounts','','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0226'),(252,1,1,1,'Accounts','','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0227'),(253,1,1,1,'Accounts','','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0228'),(254,1,1,1,'Accounts','','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0229'),(255,1,1,1,'Accounts','','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0230'),(256,1,1,1,'Accounts','','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0231'),(257,1,1,1,'Accounts','','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0232'),(258,1,1,1,'Accounts','','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0233'),(259,1,1,1,'Accounts','','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0234'),(260,1,1,1,'Accounts','','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0235'),(261,1,1,1,'Accounts','','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0236'),(262,1,1,1,'Accounts','','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0237'),(263,1,1,1,'Accounts','','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0238'),(264,1,1,1,'Accounts','','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0239'),(265,1,1,1,'Accounts','','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0240'),(266,1,1,1,'Accounts','','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0241'),(267,1,1,1,'Accounts','','2026-07-05 01:06:27','2026-07-05 01:06:27',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0242'),(268,1,1,1,'Accounts','','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0243'),(269,1,1,1,'Accounts','','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0244'),(270,1,1,1,'Accounts','','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0245'),(271,1,1,1,'Accounts','','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0246'),(272,1,1,1,'Accounts','','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0247'),(273,1,1,1,'Accounts','','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0248'),(274,1,1,1,'Accounts','','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0249'),(275,1,1,1,'Accounts','','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,NULL,0,1,0,0,'CRM','[E2E-PAGE] 0250'),(276,1,1,1,'Accounts','','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] ZZUNIQAcctFindme 0001'),(277,1,1,1,'Accounts','','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Banking 0002'),(278,1,1,1,'Accounts','','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Banking 0003'),(279,1,1,1,'Accounts','','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Banking 0004'),(280,1,1,1,'Accounts','','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Banking 0005'),(281,1,1,1,'Accounts','','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Banking 0006'),(282,1,1,1,'Accounts','','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Banking 0007'),(283,1,1,1,'Accounts','','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Banking 0008'),(284,1,1,1,'Accounts','','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Banking 0009'),(285,1,1,1,'Accounts','','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Banking 0010'),(286,1,1,1,'Accounts','','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Chemicals 0011'),(287,1,1,1,'Accounts','','2026-07-05 01:06:28','2026-07-05 01:06:28',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Chemicals 0012'),(288,1,1,1,'Accounts','','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Chemicals 0013'),(289,1,1,1,'Accounts','','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Chemicals 0014'),(290,1,1,1,'Accounts','','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Chemicals 0015'),(291,1,1,1,'Accounts','','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Chemicals 0016'),(292,1,1,1,'Accounts','','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Chemicals 0017'),(293,1,1,1,'Accounts','','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Chemicals 0018'),(294,1,1,1,'Accounts','','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Chemicals 0019'),(295,1,1,1,'Accounts','','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Chemicals 0020'),(296,1,1,1,'Accounts','','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Construction 0021'),(297,1,1,1,'Accounts','','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Construction 0022'),(298,1,1,1,'Accounts','','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Construction 0023'),(299,1,1,1,'Accounts','','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Construction 0024'),(300,1,1,1,'Accounts','','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Construction 0025'),(301,1,1,1,'Accounts','','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Construction 0026'),(302,1,1,1,'Accounts','','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Construction 0027'),(303,1,1,1,'Accounts','','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Construction 0028'),(304,1,1,1,'Accounts','','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Construction 0029'),(305,1,1,1,'Accounts','','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Construction 0030'),(306,1,1,1,'Accounts','','2026-07-05 01:06:29','2026-07-05 01:06:29',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Consulting 0031'),(307,1,1,1,'Accounts','','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Consulting 0032'),(308,1,1,1,'Accounts','','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Consulting 0033'),(309,1,1,1,'Accounts','','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Consulting 0034'),(310,1,1,1,'Accounts','','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Consulting 0035'),(311,1,1,1,'Accounts','','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Consulting 0036'),(312,1,1,1,'Accounts','','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Consulting 0037'),(313,1,1,1,'Accounts','','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Consulting 0038'),(314,1,1,1,'Accounts','','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Consulting 0039'),(315,1,1,1,'Accounts','','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Consulting 0040'),(316,1,1,1,'Accounts','','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Education 0041'),(317,1,1,1,'Accounts','','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Education 0042'),(318,1,1,1,'Accounts','','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Education 0043'),(319,1,1,1,'Accounts','','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Education 0044'),(320,1,1,1,'Accounts','','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Education 0045'),(321,1,1,1,'Accounts','','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Education 0046'),(322,1,1,1,'Accounts','','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Education 0047'),(323,1,1,1,'Accounts','','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Education 0048'),(324,1,1,1,'Accounts','','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Education 0049'),(325,1,1,1,'Accounts','','2026-07-05 01:06:30','2026-07-05 01:06:30',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Education 0050'),(326,1,1,1,'Accounts','','2026-07-05 01:06:31','2026-07-05 01:06:31',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Energy 0051'),(327,1,1,1,'Accounts','','2026-07-05 01:06:31','2026-07-05 01:06:31',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Energy 0052'),(328,1,1,1,'Accounts','','2026-07-05 01:06:31','2026-07-05 01:06:31',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Energy 0053'),(329,1,1,1,'Accounts','','2026-07-05 01:06:31','2026-07-05 01:06:31',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Energy 0054'),(330,1,1,1,'Accounts','','2026-07-05 01:06:31','2026-07-05 01:06:31',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Energy 0055'),(331,1,1,1,'Accounts','','2026-07-05 01:06:31','2026-07-05 01:06:31',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Energy 0056'),(332,1,1,1,'Accounts','','2026-07-05 01:06:31','2026-07-05 01:06:31',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Energy 0057'),(333,1,1,1,'Accounts','','2026-07-05 01:06:31','2026-07-05 01:06:31',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Energy 0058'),(334,1,1,1,'Accounts','','2026-07-05 01:06:31','2026-07-05 01:06:31',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Energy 0059'),(335,1,1,1,'Accounts','','2026-07-05 01:06:31','2026-07-05 01:06:31',NULL,NULL,0,1,0,0,'CRM','[E2E-SRCH] Energy 0060');
 /*!40000 ALTER TABLE `vtiger_crmentity` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2339,7 +2334,7 @@ CREATE TABLE `vtiger_crmentity_seq` (
 
 LOCK TABLES `vtiger_crmentity_seq` WRITE;
 /*!40000 ALTER TABLE `vtiger_crmentity_seq` DISABLE KEYS */;
-INSERT INTO `vtiger_crmentity_seq` VALUES (335);
+INSERT INTO `vtiger_crmentity_seq` VALUES (1);
 /*!40000 ALTER TABLE `vtiger_crmentity_seq` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2365,7 +2360,6 @@ CREATE TABLE `vtiger_crmentity_user_field` (
 
 LOCK TABLES `vtiger_crmentity_user_field` WRITE;
 /*!40000 ALTER TABLE `vtiger_crmentity_user_field` DISABLE KEYS */;
-INSERT INTO `vtiger_crmentity_user_field` VALUES (2,1,'0'),(3,1,'0'),(4,1,'0'),(5,1,'0'),(6,1,'0'),(7,1,'0'),(8,1,'0'),(9,1,'0'),(10,1,'0'),(11,1,'0'),(12,1,'0'),(13,1,'0'),(14,1,'0'),(15,1,'0'),(16,1,'0'),(17,1,'0'),(18,1,'0'),(19,1,'0'),(20,1,'0'),(21,1,'0'),(22,1,'0'),(23,1,'0'),(24,1,'0'),(25,1,'0'),(26,1,'0'),(27,1,'0'),(28,1,'0'),(29,1,'0'),(30,1,'0'),(31,1,'0'),(32,1,'0'),(33,1,'0'),(34,1,'0'),(35,1,'0'),(36,1,'0'),(37,1,'0'),(38,1,'0'),(39,1,'0'),(40,1,'0'),(41,1,'0'),(42,1,'0'),(43,1,'0'),(44,1,'0'),(45,1,'0'),(46,1,'0'),(47,1,'0'),(48,1,'0'),(49,1,'0'),(50,1,'0'),(51,1,'0'),(52,1,'0'),(53,1,'0'),(54,1,'0'),(55,1,'0'),(56,1,'0'),(57,1,'0'),(58,1,'0'),(59,1,'0'),(60,1,'0'),(61,1,'0'),(62,1,'0'),(63,1,'0'),(64,1,'0'),(65,1,'0'),(66,1,'0'),(67,1,'0'),(68,1,'0'),(69,1,'0'),(70,1,'0'),(71,1,'0'),(72,1,'0'),(73,1,'0'),(74,1,'0'),(75,1,'0'),(76,1,'0'),(77,1,'0'),(78,1,'0'),(79,1,'0'),(80,1,'0'),(81,1,'0'),(82,1,'0'),(83,1,'0'),(84,1,'0'),(85,1,'0'),(86,1,'0'),(87,1,'0'),(88,1,'0'),(89,1,'0'),(90,1,'0'),(91,1,'0'),(92,1,'0'),(93,1,'0'),(94,1,'0'),(95,1,'0'),(96,1,'0'),(97,1,'0'),(98,1,'0'),(99,1,'0'),(100,1,'0'),(101,1,'0'),(102,1,'0'),(103,1,'0'),(104,1,'0'),(105,1,'0'),(106,1,'0'),(107,1,'0'),(108,1,'0'),(109,1,'0'),(110,1,'0'),(111,1,'0'),(112,1,'0'),(113,1,'0'),(114,1,'0'),(115,1,'0'),(116,1,'0'),(117,1,'0'),(118,1,'0'),(119,1,'0'),(120,1,'0'),(121,1,'0'),(122,1,'0'),(123,1,'0'),(124,1,'0'),(125,1,'0'),(126,1,'0'),(127,1,'0'),(128,1,'0'),(129,1,'0'),(130,1,'0'),(131,1,'0'),(132,1,'0'),(133,1,'0'),(134,1,'0'),(135,1,'0'),(136,1,'0'),(137,1,'0'),(138,1,'0'),(139,1,'0'),(140,1,'0'),(141,1,'0'),(142,1,'0'),(143,1,'0'),(144,1,'0'),(145,1,'0'),(146,1,'0'),(147,1,'0'),(148,1,'0'),(149,1,'0'),(150,1,'0'),(151,1,'0'),(152,1,'0'),(153,1,'0'),(154,1,'0'),(155,1,'0'),(156,1,'0'),(157,1,'0'),(158,1,'0'),(159,1,'0'),(160,1,'0'),(161,1,'0'),(162,1,'0'),(163,1,'0'),(164,1,'0'),(165,1,'0'),(166,1,'0'),(167,1,'0'),(168,1,'0'),(169,1,'0'),(170,1,'0'),(171,1,'0'),(172,1,'0'),(173,1,'0'),(174,1,'0'),(175,1,'0'),(176,1,'0'),(177,1,'0'),(178,1,'0'),(179,1,'0'),(180,1,'0'),(181,1,'0'),(182,1,'0'),(183,1,'0'),(184,1,'0'),(185,1,'0'),(186,1,'0'),(187,1,'0'),(188,1,'0'),(189,1,'0'),(190,1,'0'),(191,1,'0'),(192,1,'0'),(193,1,'0'),(194,1,'0'),(195,1,'0'),(196,1,'0'),(197,1,'0'),(198,1,'0'),(199,1,'0'),(200,1,'0'),(201,1,'0'),(202,1,'0'),(203,1,'0'),(204,1,'0'),(205,1,'0'),(206,1,'0'),(207,1,'0'),(208,1,'0'),(209,1,'0'),(210,1,'0'),(211,1,'0'),(212,1,'0'),(213,1,'0'),(214,1,'0'),(215,1,'0'),(216,1,'0'),(217,1,'0'),(218,1,'0'),(219,1,'0'),(220,1,'0'),(221,1,'0'),(222,1,'0'),(223,1,'0'),(224,1,'0'),(225,1,'0'),(226,1,'0'),(227,1,'0'),(228,1,'0'),(229,1,'0'),(230,1,'0'),(231,1,'0'),(232,1,'0'),(233,1,'0'),(234,1,'0'),(235,1,'0'),(236,1,'0'),(237,1,'0'),(238,1,'0'),(239,1,'0'),(240,1,'0'),(241,1,'0'),(242,1,'0'),(243,1,'0'),(244,1,'0'),(245,1,'0'),(246,1,'0'),(247,1,'0'),(248,1,'0'),(249,1,'0'),(250,1,'0'),(251,1,'0'),(252,1,'0'),(253,1,'0'),(254,1,'0'),(255,1,'0'),(256,1,'0'),(257,1,'0'),(258,1,'0'),(259,1,'0'),(260,1,'0'),(261,1,'0'),(262,1,'0'),(263,1,'0'),(264,1,'0'),(265,1,'0'),(266,1,'0'),(267,1,'0'),(268,1,'0'),(269,1,'0'),(270,1,'0'),(271,1,'0'),(272,1,'0'),(273,1,'0'),(274,1,'0'),(275,1,'0'),(276,1,'0'),(277,1,'0'),(278,1,'0'),(279,1,'0'),(280,1,'0'),(281,1,'0'),(282,1,'0'),(283,1,'0'),(284,1,'0'),(285,1,'0'),(286,1,'0'),(287,1,'0'),(288,1,'0'),(289,1,'0'),(290,1,'0'),(291,1,'0'),(292,1,'0'),(293,1,'0'),(294,1,'0'),(295,1,'0'),(296,1,'0'),(297,1,'0'),(298,1,'0'),(299,1,'0'),(300,1,'0'),(301,1,'0'),(302,1,'0'),(303,1,'0'),(304,1,'0'),(305,1,'0'),(306,1,'0'),(307,1,'0'),(308,1,'0'),(309,1,'0'),(310,1,'0'),(311,1,'0'),(312,1,'0'),(313,1,'0'),(314,1,'0'),(315,1,'0'),(316,1,'0'),(317,1,'0'),(318,1,'0'),(319,1,'0'),(320,1,'0'),(321,1,'0'),(322,1,'0'),(323,1,'0'),(324,1,'0'),(325,1,'0'),(326,1,'0'),(327,1,'0'),(328,1,'0'),(329,1,'0'),(330,1,'0'),(331,1,'0'),(332,1,'0'),(333,1,'0'),(334,1,'0'),(335,1,'0');
 /*!40000 ALTER TABLE `vtiger_crmentity_user_field` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2378,9 +2372,9 @@ DROP TABLE IF EXISTS `vtiger_crmentityrel`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_crmentityrel` (
   `crmid` int NOT NULL,
-  `module` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `module` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
   `relcrmid` int NOT NULL,
-  `relmodule` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `relmodule` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
   KEY `crmid_idx` (`crmid`),
   KEY `relcrmid_idx` (`relcrmid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2462,9 +2456,9 @@ DROP TABLE IF EXISTS `vtiger_currencies`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_currencies` (
   `currencyid` int NOT NULL AUTO_INCREMENT,
-  `currency_name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `currency_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `currency_symbol` varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `currency_name` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `currency_code` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `currency_symbol` varchar(11) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`currencyid`)
 ) ENGINE=InnoDB AUTO_INCREMENT=139 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -2510,7 +2504,7 @@ DROP TABLE IF EXISTS `vtiger_currency`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_currency` (
   `currencyid` int NOT NULL AUTO_INCREMENT,
-  `currency` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `currency` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`currencyid`),
@@ -2536,7 +2530,7 @@ DROP TABLE IF EXISTS `vtiger_currency_decimal_separator`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_currency_decimal_separator` (
   `currency_decimal_separatorid` int NOT NULL AUTO_INCREMENT,
-  `currency_decimal_separator` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `currency_decimal_separator` varchar(2) COLLATE utf8mb4_general_ci NOT NULL,
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`currency_decimal_separatorid`)
@@ -2584,7 +2578,7 @@ DROP TABLE IF EXISTS `vtiger_currency_grouping_pattern`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_currency_grouping_pattern` (
   `currency_grouping_patternid` int NOT NULL AUTO_INCREMENT,
-  `currency_grouping_pattern` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `currency_grouping_pattern` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`currency_grouping_patternid`)
@@ -2632,7 +2626,7 @@ DROP TABLE IF EXISTS `vtiger_currency_grouping_separator`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_currency_grouping_separator` (
   `currency_grouping_separatorid` int NOT NULL AUTO_INCREMENT,
-  `currency_grouping_separator` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `currency_grouping_separator` varchar(2) COLLATE utf8mb4_general_ci NOT NULL,
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`currency_grouping_separatorid`)
@@ -2680,12 +2674,12 @@ DROP TABLE IF EXISTS `vtiger_currency_info`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_currency_info` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `currency_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `currency_code` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `currency_symbol` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `currency_name` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `currency_code` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `currency_symbol` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `conversion_rate` decimal(12,5) DEFAULT NULL,
-  `currency_status` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `defaultid` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+  `currency_status` varchar(25) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `defaultid` varchar(10) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
   `deleted` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2732,7 +2726,7 @@ DROP TABLE IF EXISTS `vtiger_currency_symbol_placement`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_currency_symbol_placement` (
   `currency_symbol_placementid` int NOT NULL AUTO_INCREMENT,
-  `currency_symbol_placement` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `currency_symbol_placement` varchar(30) COLLATE utf8mb4_general_ci NOT NULL,
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`currency_symbol_placementid`)
@@ -2780,9 +2774,9 @@ DROP TABLE IF EXISTS `vtiger_customaction`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_customaction` (
   `cvid` int NOT NULL,
-  `subject` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `module` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `subject` varchar(250) COLLATE utf8mb4_general_ci NOT NULL,
+  `module` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `content` text COLLATE utf8mb4_general_ci,
   KEY `customaction_cvid_idx` (`cvid`),
   CONSTRAINT `fk_1_vtiger_customaction` FOREIGN KEY (`cvid`) REFERENCES `vtiger_customview` (`cvid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2806,7 +2800,7 @@ DROP TABLE IF EXISTS `vtiger_customerdetails`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_customerdetails` (
   `customerid` int NOT NULL,
-  `portal` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `portal` varchar(3) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `support_start_date` date DEFAULT NULL,
   `support_end_date` date DEFAULT NULL,
   PRIMARY KEY (`customerid`),
@@ -2857,7 +2851,7 @@ DROP TABLE IF EXISTS `vtiger_customerportal_prefs`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_customerportal_prefs` (
   `tabid` int NOT NULL,
-  `prefkey` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `prefkey` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
   `prefvalue` int DEFAULT NULL,
   PRIMARY KEY (`tabid`,`prefkey`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2882,7 +2876,7 @@ DROP TABLE IF EXISTS `vtiger_customerportal_relatedmoduleinfo`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_customerportal_relatedmoduleinfo` (
   `tabid` int NOT NULL,
-  `relatedmodules` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `relatedmodules` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`tabid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -2906,13 +2900,13 @@ DROP TABLE IF EXISTS `vtiger_customerportal_settings`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_customerportal_settings` (
   `id` int DEFAULT NULL,
-  `url` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `url` varchar(250) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `default_assignee` int DEFAULT NULL,
   `support_notification` int DEFAULT NULL,
-  `announcement` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `shortcuts` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `widgets` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `charts` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
+  `announcement` text COLLATE utf8mb4_general_ci,
+  `shortcuts` text COLLATE utf8mb4_general_ci,
+  `widgets` text COLLATE utf8mb4_general_ci,
+  `charts` text COLLATE utf8mb4_general_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -2962,10 +2956,10 @@ DROP TABLE IF EXISTS `vtiger_customview`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_customview` (
   `cvid` int NOT NULL,
-  `viewname` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `viewname` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
   `setdefault` int DEFAULT '0',
   `setmetrics` int DEFAULT '0',
-  `entitytype` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `entitytype` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `status` int DEFAULT '1',
   `userid` int DEFAULT '1',
   PRIMARY KEY (`cvid`),
@@ -3068,11 +3062,11 @@ DROP TABLE IF EXISTS `vtiger_cvadvfilter`;
 CREATE TABLE `vtiger_cvadvfilter` (
   `cvid` int NOT NULL,
   `columnindex` int NOT NULL,
-  `columnname` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
-  `comparator` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `value` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `columnname` varchar(250) COLLATE utf8mb4_general_ci DEFAULT '',
+  `comparator` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `value` varchar(512) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `groupid` int DEFAULT '1',
-  `column_condition` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'and',
+  `column_condition` varchar(255) COLLATE utf8mb4_general_ci DEFAULT 'and',
   PRIMARY KEY (`cvid`,`columnindex`),
   KEY `cvadvfilter_cvid_idx` (`cvid`),
   CONSTRAINT `fk_1_vtiger_cvadvfilter` FOREIGN KEY (`cvid`) REFERENCES `vtiger_customview` (`cvid`) ON DELETE CASCADE
@@ -3099,8 +3093,8 @@ DROP TABLE IF EXISTS `vtiger_cvadvfilter_grouping`;
 CREATE TABLE `vtiger_cvadvfilter_grouping` (
   `groupid` int NOT NULL,
   `cvid` int NOT NULL,
-  `group_condition` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `condition_expression` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `group_condition` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `condition_expression` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`groupid`,`cvid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -3125,7 +3119,7 @@ DROP TABLE IF EXISTS `vtiger_cvcolumnlist`;
 CREATE TABLE `vtiger_cvcolumnlist` (
   `cvid` int NOT NULL,
   `columnindex` int NOT NULL,
-  `columnname` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+  `columnname` varchar(250) COLLATE utf8mb4_general_ci DEFAULT '',
   PRIMARY KEY (`cvid`,`columnindex`),
   KEY `cvcolumnlist_columnindex_idx` (`columnindex`),
   KEY `cvcolumnlist_cvid_idx` (`cvid`),
@@ -3152,8 +3146,8 @@ DROP TABLE IF EXISTS `vtiger_cvstdfilter`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_cvstdfilter` (
   `cvid` int NOT NULL,
-  `columnname` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
-  `stdfilter` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+  `columnname` varchar(250) COLLATE utf8mb4_general_ci DEFAULT '',
+  `stdfilter` varchar(250) COLLATE utf8mb4_general_ci DEFAULT '',
   `startdate` date DEFAULT NULL,
   `enddate` date DEFAULT NULL,
   KEY `cvstdfilter_cvid_idx` (`cvid`),
@@ -3296,17 +3290,17 @@ DROP TABLE IF EXISTS `vtiger_dashboard_tabs`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_dashboard_tabs` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `tabname` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tabname` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `isdefault` int DEFAULT '0',
   `sequence` int DEFAULT '2',
-  `appname` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `modulename` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `appname` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `modulename` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `userid` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `tabname` (`tabname`,`userid`),
   KEY `vtiger_dashboard_tabs_ibfk_1` (`userid`),
   CONSTRAINT `vtiger_dashboard_tabs_ibfk_1` FOREIGN KEY (`userid`) REFERENCES `vtiger_users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3315,7 +3309,7 @@ CREATE TABLE `vtiger_dashboard_tabs` (
 
 LOCK TABLES `vtiger_dashboard_tabs` WRITE;
 /*!40000 ALTER TABLE `vtiger_dashboard_tabs` DISABLE KEYS */;
-INSERT INTO `vtiger_dashboard_tabs` VALUES (1,'Default',0,2,NULL,NULL,1),(2,'My Dashboard',1,1,'','',1),(4,'My Dashboard',1,1,'','',5),(5,'My Dashboard',1,1,'','',6),(6,'My Dashboard',1,1,'','',7),(7,'My Dashboard',1,1,'','',8),(8,'My Dashboard',1,1,'','',9);
+INSERT INTO `vtiger_dashboard_tabs` VALUES (1,'Default',0,2,NULL,NULL,1),(2,'My Dashboard',1,1,'','',1);
 /*!40000 ALTER TABLE `vtiger_dashboard_tabs` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -3357,7 +3351,7 @@ DROP TABLE IF EXISTS `vtiger_datashare_grp2role`;
 CREATE TABLE `vtiger_datashare_grp2role` (
   `shareid` int NOT NULL,
   `share_groupid` int DEFAULT NULL,
-  `to_roleid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `to_roleid` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `permission` int DEFAULT NULL,
   PRIMARY KEY (`shareid`),
   KEY `idx_datashare_grp2role_share_groupid` (`share_groupid`),
@@ -3385,7 +3379,7 @@ DROP TABLE IF EXISTS `vtiger_datashare_grp2rs`;
 CREATE TABLE `vtiger_datashare_grp2rs` (
   `shareid` int NOT NULL,
   `share_groupid` int DEFAULT NULL,
-  `to_roleandsubid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `to_roleandsubid` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `permission` int DEFAULT NULL,
   PRIMARY KEY (`shareid`),
   KEY `datashare_grp2rs_share_groupid_idx` (`share_groupid`),
@@ -3413,7 +3407,7 @@ DROP TABLE IF EXISTS `vtiger_datashare_module_rel`;
 CREATE TABLE `vtiger_datashare_module_rel` (
   `shareid` int NOT NULL,
   `tabid` int NOT NULL,
-  `relationtype` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `relationtype` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`shareid`),
   KEY `idx_datashare_module_rel_tabid` (`tabid`),
   CONSTRAINT `fk_1_vtiger_datashare_module_rel` FOREIGN KEY (`tabid`) REFERENCES `vtiger_tab` (`tabid`) ON DELETE CASCADE
@@ -3513,7 +3507,7 @@ DROP TABLE IF EXISTS `vtiger_datashare_role2group`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_datashare_role2group` (
   `shareid` int NOT NULL,
-  `share_roleid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `share_roleid` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `to_groupid` int DEFAULT NULL,
   `permission` int DEFAULT NULL,
   PRIMARY KEY (`shareid`),
@@ -3541,8 +3535,8 @@ DROP TABLE IF EXISTS `vtiger_datashare_role2role`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_datashare_role2role` (
   `shareid` int NOT NULL,
-  `share_roleid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `to_roleid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `share_roleid` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `to_roleid` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `permission` int DEFAULT NULL,
   PRIMARY KEY (`shareid`),
   KEY `datashare_role2role_share_roleid_idx` (`share_roleid`),
@@ -3569,8 +3563,8 @@ DROP TABLE IF EXISTS `vtiger_datashare_role2rs`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_datashare_role2rs` (
   `shareid` int NOT NULL,
-  `share_roleid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `to_roleandsubid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `share_roleid` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `to_roleandsubid` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `permission` int DEFAULT NULL,
   PRIMARY KEY (`shareid`),
   KEY `datashare_role2s_share_roleid_idx` (`share_roleid`),
@@ -3597,7 +3591,7 @@ DROP TABLE IF EXISTS `vtiger_datashare_rs2grp`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_datashare_rs2grp` (
   `shareid` int NOT NULL,
-  `share_roleandsubid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `share_roleandsubid` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `to_groupid` int DEFAULT NULL,
   `permission` int DEFAULT NULL,
   PRIMARY KEY (`shareid`),
@@ -3625,8 +3619,8 @@ DROP TABLE IF EXISTS `vtiger_datashare_rs2role`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_datashare_rs2role` (
   `shareid` int NOT NULL,
-  `share_roleandsubid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `to_roleid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `share_roleandsubid` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `to_roleid` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `permission` int DEFAULT NULL,
   PRIMARY KEY (`shareid`),
   KEY `datashare_rs2role_share_roleandsubid_idx` (`share_roleandsubid`),
@@ -3653,8 +3647,8 @@ DROP TABLE IF EXISTS `vtiger_datashare_rs2rs`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_datashare_rs2rs` (
   `shareid` int NOT NULL,
-  `share_roleandsubid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `to_roleandsubid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `share_roleandsubid` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `to_roleandsubid` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `permission` int DEFAULT NULL,
   PRIMARY KEY (`shareid`),
   KEY `datashare_rs2rs_share_roleandsubid_idx` (`share_roleandsubid`),
@@ -3681,7 +3675,7 @@ DROP TABLE IF EXISTS `vtiger_date_format`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_date_format` (
   `date_formatid` int NOT NULL AUTO_INCREMENT,
-  `date_format` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `date_format` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`date_formatid`)
@@ -3821,7 +3815,7 @@ CREATE TABLE `vtiger_def_org_share` (
 
 LOCK TABLES `vtiger_def_org_share` WRITE;
 /*!40000 ALTER TABLE `vtiger_def_org_share` DISABLE KEYS */;
-INSERT INTO `vtiger_def_org_share` VALUES (1,2,2,0),(2,4,2,0),(3,6,2,0),(4,7,3,0),(5,9,3,1),(6,13,2,0),(7,16,3,2),(8,20,2,0),(9,21,2,0),(10,22,2,0),(11,23,2,0),(12,26,2,0),(13,8,2,0),(14,14,2,0),(15,34,2,0),(16,35,2,0),(17,37,2,0),(18,39,2,0),(19,40,2,0),(20,41,2,0),(21,42,2,0),(22,43,2,0),(23,18,2,0),(24,10,2,0),(25,48,2,0),(26,49,2,0);
+INSERT INTO `vtiger_def_org_share` VALUES (1,2,2,0),(2,4,2,0),(3,6,2,0),(4,7,2,0),(5,9,3,1),(6,13,2,0),(7,16,3,2),(8,20,2,0),(9,21,2,0),(10,22,2,0),(11,23,2,0),(12,26,2,0),(13,8,2,0),(14,14,2,0),(15,34,2,0),(16,35,2,0),(17,37,2,0),(18,39,2,0),(19,40,2,0),(20,41,2,0),(21,42,2,0),(22,43,2,0),(23,18,2,0),(24,10,2,0),(25,48,2,0),(26,49,2,0);
 /*!40000 ALTER TABLE `vtiger_def_org_share` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -4001,8 +3995,8 @@ DROP TABLE IF EXISTS `vtiger_defaultcv`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_defaultcv` (
   `tabid` int NOT NULL,
-  `defaultviewname` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `query` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `defaultviewname` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `query` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`tabid`),
   CONSTRAINT `fk_1_vtiger_defaultcv` FOREIGN KEY (`tabid`) REFERENCES `vtiger_tab` (`tabid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -4125,10 +4119,10 @@ DROP TABLE IF EXISTS `vtiger_duration_minutes`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_duration_minutes` (
   `minutesid` int NOT NULL AUTO_INCREMENT,
-  `duration_minutes` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `duration_minutes` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`minutesid`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -4174,7 +4168,7 @@ DROP TABLE IF EXISTS `vtiger_durationhrs`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_durationhrs` (
   `hrsid` int NOT NULL AUTO_INCREMENT,
-  `hrs` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `hrs` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`hrsid`)
@@ -4199,7 +4193,7 @@ DROP TABLE IF EXISTS `vtiger_durationmins`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_durationmins` (
   `minsid` int NOT NULL AUTO_INCREMENT,
-  `mins` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `mins` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`minsid`)
@@ -4273,13 +4267,13 @@ DROP TABLE IF EXISTS `vtiger_emaildetails`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_emaildetails` (
   `emailid` int NOT NULL,
-  `from_email` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `to_email` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `cc_email` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `bcc_email` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `assigned_user_email` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `idlists` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `email_flag` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `from_email` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `to_email` text COLLATE utf8mb4_general_ci NOT NULL,
+  `cc_email` text COLLATE utf8mb4_general_ci NOT NULL,
+  `bcc_email` text COLLATE utf8mb4_general_ci NOT NULL,
+  `assigned_user_email` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `idlists` text COLLATE utf8mb4_general_ci NOT NULL,
+  `email_flag` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`emailid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -4327,8 +4321,8 @@ DROP TABLE IF EXISTS `vtiger_emailslookup`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_emailslookup` (
   `crmid` int DEFAULT NULL,
-  `setype` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `value` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `setype` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `value` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `fieldid` int DEFAULT NULL,
   UNIQUE KEY `emailslookup_crmid_setype_fieldname_uk` (`crmid`,`setype`,`fieldid`),
   KEY `emailslookup_fieldid_setype_idx` (`fieldid`,`setype`),
@@ -4353,16 +4347,16 @@ DROP TABLE IF EXISTS `vtiger_emailtemplates`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_emailtemplates` (
-  `foldername` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `templatename` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `templatepath` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `subject` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `body` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `foldername` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `templatename` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `templatepath` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `subject` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `description` text COLLATE utf8mb4_general_ci,
+  `body` text COLLATE utf8mb4_general_ci,
   `deleted` int NOT NULL DEFAULT '0',
   `templateid` int NOT NULL AUTO_INCREMENT,
   `systemtemplate` int NOT NULL DEFAULT '0',
-  `module` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `module` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`templateid`),
   KEY `emailtemplates_foldernamd_templatename_subject_idx` (`foldername`,`templatename`,`subject`)
 ) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -4409,11 +4403,11 @@ DROP TABLE IF EXISTS `vtiger_entityname`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_entityname` (
   `tabid` int NOT NULL,
-  `modulename` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `tablename` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `fieldname` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `entityidfield` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `entityidcolumn` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `modulename` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tablename` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `fieldname` varchar(150) COLLATE utf8mb4_general_ci NOT NULL,
+  `entityidfield` varchar(150) COLLATE utf8mb4_general_ci NOT NULL,
+  `entityidcolumn` varchar(150) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`tabid`),
   KEY `entityname_tabid_idx` (`tabid`),
   CONSTRAINT `fk_1_vtiger_entityname` FOREIGN KEY (`tabid`) REFERENCES `vtiger_tab` (`tabid`) ON DELETE CASCADE
@@ -4439,8 +4433,8 @@ DROP TABLE IF EXISTS `vtiger_eventhandler_module`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_eventhandler_module` (
   `eventhandler_module_id` int NOT NULL AUTO_INCREMENT,
-  `module_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `handler_class` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `module_name` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `handler_class` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`eventhandler_module_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -4486,12 +4480,12 @@ DROP TABLE IF EXISTS `vtiger_eventhandlers`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_eventhandlers` (
   `eventhandler_id` int NOT NULL AUTO_INCREMENT,
-  `event_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `handler_path` varchar(400) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `handler_class` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `cond` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `event_name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `handler_path` varchar(400) COLLATE utf8mb4_general_ci NOT NULL,
+  `handler_class` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `cond` text COLLATE utf8mb4_general_ci NOT NULL,
   `is_active` int NOT NULL,
-  `dependent_on` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '[]',
+  `dependent_on` varchar(255) COLLATE utf8mb4_general_ci DEFAULT '[]',
   PRIMARY KEY (`eventhandler_id`,`event_name`,`handler_class`),
   UNIQUE KEY `eventhandler_idx` (`eventhandler_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -4538,11 +4532,11 @@ DROP TABLE IF EXISTS `vtiger_eventstatus`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_eventstatus` (
   `eventstatusid` int NOT NULL AUTO_INCREMENT,
-  `eventstatus` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `eventstatus` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`eventstatusid`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -4588,11 +4582,11 @@ DROP TABLE IF EXISTS `vtiger_expectedresponse`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_expectedresponse` (
   `expectedresponseid` int NOT NULL AUTO_INCREMENT,
-  `expectedresponse` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `expectedresponse` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`expectedresponseid`),
   UNIQUE KEY `CampaignExpRes_UK01` (`expectedresponse`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -4639,24 +4633,24 @@ DROP TABLE IF EXISTS `vtiger_faq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_faq` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `faq_no` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `product_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `question` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `answer` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `category` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `status` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `tags` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `faq_no` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `product_id` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `question` longtext COLLATE utf8mb4_general_ci,
+  `answer` longtext COLLATE utf8mb4_general_ci,
+  `category` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
+  `status` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
+  `tags` varchar(1) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smcreatorid` int DEFAULT NULL,
   `smownerid` int DEFAULT NULL,
   `modifiedby` int DEFAULT NULL,
-  `description` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `description` longtext COLLATE utf8mb4_general_ci,
   `createdtime` datetime DEFAULT NULL,
   `modifiedtime` datetime DEFAULT NULL,
   `viewedtime` datetime DEFAULT NULL,
   `deleted` int DEFAULT NULL,
-  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `label` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smgroupid` int DEFAULT NULL,
-  `source` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `source` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `faq_id_idx` (`id`),
   KEY `idx_info` (`deleted`,`modifiedtime`),
@@ -4684,11 +4678,11 @@ DROP TABLE IF EXISTS `vtiger_faqcategories`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_faqcategories` (
   `faqcategories_id` int NOT NULL AUTO_INCREMENT,
-  `faqcategories` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `faqcategories` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`faqcategories_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -4758,7 +4752,7 @@ DROP TABLE IF EXISTS `vtiger_faqcomments`;
 CREATE TABLE `vtiger_faqcomments` (
   `commentid` int NOT NULL AUTO_INCREMENT,
   `faqid` int DEFAULT NULL,
-  `comments` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `comments` text COLLATE utf8mb4_general_ci,
   `createdtime` datetime NOT NULL,
   PRIMARY KEY (`commentid`),
   KEY `faqcomments_faqid_idx` (`faqid`),
@@ -4784,11 +4778,11 @@ DROP TABLE IF EXISTS `vtiger_faqstatus`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_faqstatus` (
   `faqstatus_id` int NOT NULL AUTO_INCREMENT,
-  `faqstatus` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `faqstatus` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`faqstatus_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -4834,7 +4828,7 @@ DROP TABLE IF EXISTS `vtiger_feedback`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_feedback` (
   `userid` int DEFAULT NULL,
-  `dontshow` varchar(19) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'false'
+  `dontshow` varchar(19) COLLATE utf8mb4_general_ci DEFAULT 'false'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -4857,25 +4851,25 @@ DROP TABLE IF EXISTS `vtiger_field`;
 CREATE TABLE `vtiger_field` (
   `tabid` int NOT NULL,
   `fieldid` int NOT NULL AUTO_INCREMENT,
-  `columnname` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `tablename` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `columnname` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tablename` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `generatedtype` int NOT NULL DEFAULT '0',
-  `uitype` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `fieldname` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `fieldlabel` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `uitype` varchar(30) COLLATE utf8mb4_general_ci NOT NULL,
+  `fieldname` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `fieldlabel` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `readonly` int NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
-  `defaultvalue` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `defaultvalue` text COLLATE utf8mb4_general_ci,
   `maximumlength` int DEFAULT NULL,
   `sequence` int DEFAULT NULL,
   `block` int DEFAULT NULL,
   `displaytype` int DEFAULT NULL,
-  `typeofdata` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `typeofdata` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `quickcreate` int NOT NULL DEFAULT '1',
   `quickcreatesequence` int DEFAULT NULL,
-  `info_type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `info_type` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `masseditable` int NOT NULL DEFAULT '1',
-  `helpinfo` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `helpinfo` text COLLATE utf8mb4_general_ci,
   `summaryfield` int NOT NULL DEFAULT '0',
   `headerfield` int DEFAULT '0',
   `isunique` tinyint(1) DEFAULT '0',
@@ -4929,9 +4923,9 @@ DROP TABLE IF EXISTS `vtiger_fieldmodulerel`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_fieldmodulerel` (
   `fieldid` int NOT NULL,
-  `module` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `relmodule` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `status` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `module` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `relmodule` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `status` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `sequence` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -4958,7 +4952,7 @@ CREATE TABLE `vtiger_freetagged_objects` (
   `tagger_id` int NOT NULL DEFAULT '0',
   `object_id` int NOT NULL DEFAULT '0',
   `tagged_on` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `module` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `module` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`tag_id`,`tagger_id`,`object_id`),
   KEY `freetagged_objects_tag_id_tagger_id_object_id_idx` (`tag_id`,`tagger_id`,`object_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -4982,9 +4976,9 @@ DROP TABLE IF EXISTS `vtiger_freetags`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_freetags` (
   `id` int NOT NULL,
-  `tag` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `raw_tag` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `visibility` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'PRIVATE',
+  `tag` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `raw_tag` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `visibility` varchar(100) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'PRIVATE',
   `owner` int NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -5030,11 +5024,11 @@ DROP TABLE IF EXISTS `vtiger_glacct`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_glacct` (
   `glacctid` int NOT NULL AUTO_INCREMENT,
-  `glacct` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `glacct` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`glacctid`),
   UNIQUE KEY `glacct_glacct_idx` (`glacct`)
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -5127,10 +5121,10 @@ DROP TABLE IF EXISTS `vtiger_google_sync_fieldmapping`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_google_sync_fieldmapping` (
-  `vtiger_field` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `google_field` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `google_field_type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `google_custom_label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `vtiger_field` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `google_field` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `google_field_type` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `google_custom_label` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `user` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -5153,9 +5147,9 @@ DROP TABLE IF EXISTS `vtiger_google_sync_settings`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_google_sync_settings` (
   `user` int DEFAULT NULL,
-  `module` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `clientgroup` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `direction` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `module` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `clientgroup` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `direction` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `enabled` tinyint DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -5202,7 +5196,7 @@ DROP TABLE IF EXISTS `vtiger_group2role`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_group2role` (
   `groupid` int NOT NULL,
-  `roleid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `roleid` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`groupid`,`roleid`),
   KEY `fk_2_vtiger_group2role` (`roleid`),
   CONSTRAINT `fk_2_vtiger_group2role` FOREIGN KEY (`roleid`) REFERENCES `vtiger_role` (`roleid`) ON DELETE CASCADE
@@ -5228,7 +5222,7 @@ DROP TABLE IF EXISTS `vtiger_group2rs`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_group2rs` (
   `groupid` int NOT NULL,
-  `roleandsubid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `roleandsubid` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`groupid`,`roleandsubid`),
   KEY `fk_2_vtiger_group2rs` (`roleandsubid`),
   CONSTRAINT `fk_2_vtiger_group2rs` FOREIGN KEY (`roleandsubid`) REFERENCES `vtiger_role` (`roleid`) ON DELETE CASCADE
@@ -5254,8 +5248,8 @@ DROP TABLE IF EXISTS `vtiger_groups`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_groups` (
   `groupid` int NOT NULL,
-  `groupname` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `groupname` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `description` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`groupid`),
   UNIQUE KEY `groups_groupname_idx` (`groupname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -5267,7 +5261,6 @@ CREATE TABLE `vtiger_groups` (
 
 LOCK TABLES `vtiger_groups` WRITE;
 /*!40000 ALTER TABLE `vtiger_groups` DISABLE KEYS */;
-INSERT INTO `vtiger_groups` VALUES (10,'E2Eクロスグループ','E2E: クロスブランチ共有検証用グループ');
 /*!40000 ALTER TABLE `vtiger_groups` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -5303,8 +5296,8 @@ DROP TABLE IF EXISTS `vtiger_homedashbd`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_homedashbd` (
   `stuffid` int NOT NULL,
-  `dashbdname` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `dashbdtype` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `dashbdname` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `dashbdtype` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`stuffid`),
   KEY `stuff_stuffid_idx` (`stuffid`),
   CONSTRAINT `fk_1_vtiger_homedashbd` FOREIGN KEY (`stuffid`) REFERENCES `vtiger_homestuff` (`stuffid`) ON DELETE CASCADE
@@ -5329,9 +5322,9 @@ DROP TABLE IF EXISTS `vtiger_homedefault`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_homedefault` (
   `stuffid` int NOT NULL,
-  `hometype` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `hometype` varchar(30) COLLATE utf8mb4_general_ci NOT NULL,
   `maxentries` int DEFAULT NULL,
-  `setype` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `setype` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`stuffid`),
   KEY `stuff_stuffid_idx` (`stuffid`),
   CONSTRAINT `fk_1_vtiger_homedefault` FOREIGN KEY (`stuffid`) REFERENCES `vtiger_homestuff` (`stuffid`) ON DELETE CASCADE
@@ -5344,7 +5337,7 @@ CREATE TABLE `vtiger_homedefault` (
 
 LOCK TABLES `vtiger_homedefault` WRITE;
 /*!40000 ALTER TABLE `vtiger_homedefault` DISABLE KEYS */;
-INSERT INTO `vtiger_homedefault` VALUES (1,'ALVT',5,'Accounts'),(2,'HDB',5,'Dashboard'),(3,'PLVT',5,'Potentials'),(4,'QLTQ',5,'Quotes'),(5,'CVLVT',5,'NULL'),(6,'HLT',5,'HelpDesk'),(7,'UA',5,'Calendar'),(8,'GRT',5,'NULL'),(9,'OLTSO',5,'SalesOrder'),(10,'ILTI',5,'Invoice'),(11,'MNL',5,'Leads'),(12,'OLTPO',5,'PurchaseOrder'),(13,'PA',5,'Calendar'),(14,'LTFAQ',5,'Faq'),(16,'ALVT',5,'Accounts'),(17,'HDB',5,'Dashboard'),(18,'PLVT',5,'Potentials'),(19,'QLTQ',5,'Quotes'),(20,'CVLVT',5,'NULL'),(21,'HLT',5,'HelpDesk'),(22,'UA',5,'Calendar'),(23,'GRT',5,'NULL'),(24,'OLTSO',5,'SalesOrder'),(25,'ILTI',5,'Invoice'),(26,'MNL',5,'Leads'),(27,'OLTPO',5,'PurchaseOrder'),(28,'PA',5,'Calendar'),(29,'LTFAQ',5,'Faq'),(31,'ALVT',5,'Accounts'),(32,'HDB',5,'Dashboard'),(33,'PLVT',5,'Potentials'),(34,'QLTQ',5,'Quotes'),(35,'CVLVT',5,'NULL'),(36,'HLT',5,'HelpDesk'),(37,'UA',5,'Calendar'),(38,'GRT',5,'NULL'),(39,'OLTSO',5,'SalesOrder'),(40,'ILTI',5,'Invoice'),(41,'MNL',5,'Leads'),(42,'OLTPO',5,'PurchaseOrder'),(43,'PA',5,'Calendar'),(44,'LTFAQ',5,'Faq'),(46,'ALVT',5,'Accounts'),(47,'HDB',5,'Dashboard'),(48,'PLVT',5,'Potentials'),(49,'QLTQ',5,'Quotes'),(50,'CVLVT',5,'NULL'),(51,'HLT',5,'HelpDesk'),(52,'UA',5,'Calendar'),(53,'GRT',5,'NULL'),(54,'OLTSO',5,'SalesOrder'),(55,'ILTI',5,'Invoice'),(56,'MNL',5,'Leads'),(57,'OLTPO',5,'PurchaseOrder'),(58,'PA',5,'Calendar'),(59,'LTFAQ',5,'Faq'),(61,'ALVT',5,'Accounts'),(62,'HDB',5,'Dashboard'),(63,'PLVT',5,'Potentials'),(64,'QLTQ',5,'Quotes'),(65,'CVLVT',5,'NULL'),(66,'HLT',5,'HelpDesk'),(67,'UA',5,'Calendar'),(68,'GRT',5,'NULL'),(69,'OLTSO',5,'SalesOrder'),(70,'ILTI',5,'Invoice'),(71,'MNL',5,'Leads'),(72,'OLTPO',5,'PurchaseOrder'),(73,'PA',5,'Calendar'),(74,'LTFAQ',5,'Faq'),(76,'ALVT',5,'Accounts'),(77,'HDB',5,'Dashboard'),(78,'PLVT',5,'Potentials'),(79,'QLTQ',5,'Quotes'),(80,'CVLVT',5,'NULL'),(81,'HLT',5,'HelpDesk'),(82,'UA',5,'Calendar'),(83,'GRT',5,'NULL'),(84,'OLTSO',5,'SalesOrder'),(85,'ILTI',5,'Invoice'),(86,'MNL',5,'Leads'),(87,'OLTPO',5,'PurchaseOrder'),(88,'PA',5,'Calendar'),(89,'LTFAQ',5,'Faq');
+INSERT INTO `vtiger_homedefault` VALUES (1,'ALVT',5,'Accounts'),(2,'HDB',5,'Dashboard'),(3,'PLVT',5,'Potentials'),(4,'QLTQ',5,'Quotes'),(5,'CVLVT',5,'NULL'),(6,'HLT',5,'HelpDesk'),(7,'UA',5,'Calendar'),(8,'GRT',5,'NULL'),(9,'OLTSO',5,'SalesOrder'),(10,'ILTI',5,'Invoice'),(11,'MNL',5,'Leads'),(12,'OLTPO',5,'PurchaseOrder'),(13,'PA',5,'Calendar'),(14,'LTFAQ',5,'Faq');
 /*!40000 ALTER TABLE `vtiger_homedefault` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -5357,10 +5350,10 @@ DROP TABLE IF EXISTS `vtiger_homemodule`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_homemodule` (
   `stuffid` int NOT NULL,
-  `modulename` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `modulename` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `maxentries` int NOT NULL,
   `customviewid` int NOT NULL,
-  `setype` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `setype` varchar(30) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`stuffid`),
   KEY `stuff_stuffid_idx` (`stuffid`),
   CONSTRAINT `fk_1_vtiger_homemodule` FOREIGN KEY (`stuffid`) REFERENCES `vtiger_homestuff` (`stuffid`) ON DELETE CASCADE
@@ -5385,7 +5378,7 @@ DROP TABLE IF EXISTS `vtiger_homemoduleflds`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_homemoduleflds` (
   `stuffid` int DEFAULT NULL,
-  `fieldname` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `fieldname` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   KEY `stuff_stuffid_idx` (`stuffid`),
   CONSTRAINT `fk_1_vtiger_homemoduleflds` FOREIGN KEY (`stuffid`) REFERENCES `vtiger_homemodule` (`stuffid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -5410,7 +5403,7 @@ DROP TABLE IF EXISTS `vtiger_homereportchart`;
 CREATE TABLE `vtiger_homereportchart` (
   `stuffid` int NOT NULL,
   `reportid` int DEFAULT NULL,
-  `reportcharttype` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `reportcharttype` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`stuffid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -5433,7 +5426,7 @@ DROP TABLE IF EXISTS `vtiger_homerss`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_homerss` (
   `stuffid` int NOT NULL,
-  `url` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `url` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `maxentries` int NOT NULL,
   PRIMARY KEY (`stuffid`),
   KEY `stuff_stuffid_idx` (`stuffid`),
@@ -5460,10 +5453,10 @@ DROP TABLE IF EXISTS `vtiger_homestuff`;
 CREATE TABLE `vtiger_homestuff` (
   `stuffid` int NOT NULL DEFAULT '0',
   `stuffsequence` int NOT NULL DEFAULT '0',
-  `stufftype` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `stufftype` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `userid` int NOT NULL,
   `visible` int NOT NULL DEFAULT '0',
-  `stufftitle` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `stufftitle` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`stuffid`),
   KEY `stuff_stuffid_idx` (`stuffid`),
   KEY `fk_1_vtiger_homestuff` (`userid`),
@@ -5477,7 +5470,7 @@ CREATE TABLE `vtiger_homestuff` (
 
 LOCK TABLES `vtiger_homestuff` WRITE;
 /*!40000 ALTER TABLE `vtiger_homestuff` DISABLE KEYS */;
-INSERT INTO `vtiger_homestuff` VALUES (1,1,'Default',1,1,'Top Accounts'),(2,2,'Default',1,1,'Home Page Dashboard'),(3,3,'Default',1,1,'Top Potentials'),(4,4,'Default',1,1,'Top Quotes'),(5,5,'Default',1,1,'Key Metrics'),(6,6,'Default',1,1,'Top Trouble Tickets'),(7,7,'Default',1,1,'Upcoming Activities'),(8,8,'Default',1,1,'My Group Allocation'),(9,9,'Default',1,1,'Top Sales Orders'),(10,10,'Default',1,1,'Top Invoices'),(11,11,'Default',1,1,'My New Leads'),(12,12,'Default',1,1,'Top Purchase Orders'),(13,13,'Default',1,1,'Pending Activities'),(14,14,'Default',1,1,'My Recent FAQs'),(15,15,'Tag Cloud',1,0,'Tag Cloud'),(16,1,'Default',5,1,'Top Accounts'),(17,2,'Default',5,1,'Home Page Dashboard'),(18,3,'Default',5,0,'Top Potentials'),(19,4,'Default',5,1,'Top Quotes'),(20,5,'Default',5,0,'Key Metrics'),(21,6,'Default',5,1,'Top Trouble Tickets'),(22,7,'Default',5,0,'Upcoming Activities'),(23,8,'Default',5,1,'My Group Allocation'),(24,9,'Default',5,1,'Top Sales Orders'),(25,10,'Default',5,1,'Top Invoices'),(26,11,'Default',5,1,'My New Leads'),(27,12,'Default',5,1,'Top Purchase Orders'),(28,13,'Default',5,1,'Pending Activities'),(29,14,'Default',5,1,'My Recent FAQs'),(30,15,'Tag Cloud',5,0,'Tag Cloud'),(31,1,'Default',6,1,'Top Accounts'),(32,2,'Default',6,1,'Home Page Dashboard'),(33,3,'Default',6,0,'Top Potentials'),(34,4,'Default',6,1,'Top Quotes'),(35,5,'Default',6,0,'Key Metrics'),(36,6,'Default',6,1,'Top Trouble Tickets'),(37,7,'Default',6,0,'Upcoming Activities'),(38,8,'Default',6,1,'My Group Allocation'),(39,9,'Default',6,1,'Top Sales Orders'),(40,10,'Default',6,1,'Top Invoices'),(41,11,'Default',6,1,'My New Leads'),(42,12,'Default',6,1,'Top Purchase Orders'),(43,13,'Default',6,1,'Pending Activities'),(44,14,'Default',6,1,'My Recent FAQs'),(45,15,'Tag Cloud',6,0,'Tag Cloud'),(46,1,'Default',7,1,'Top Accounts'),(47,2,'Default',7,1,'Home Page Dashboard'),(48,3,'Default',7,0,'Top Potentials'),(49,4,'Default',7,1,'Top Quotes'),(50,5,'Default',7,0,'Key Metrics'),(51,6,'Default',7,1,'Top Trouble Tickets'),(52,7,'Default',7,0,'Upcoming Activities'),(53,8,'Default',7,1,'My Group Allocation'),(54,9,'Default',7,1,'Top Sales Orders'),(55,10,'Default',7,1,'Top Invoices'),(56,11,'Default',7,1,'My New Leads'),(57,12,'Default',7,1,'Top Purchase Orders'),(58,13,'Default',7,1,'Pending Activities'),(59,14,'Default',7,1,'My Recent FAQs'),(60,15,'Tag Cloud',7,0,'Tag Cloud'),(61,1,'Default',8,1,'Top Accounts'),(62,2,'Default',8,1,'Home Page Dashboard'),(63,3,'Default',8,0,'Top Potentials'),(64,4,'Default',8,1,'Top Quotes'),(65,5,'Default',8,0,'Key Metrics'),(66,6,'Default',8,1,'Top Trouble Tickets'),(67,7,'Default',8,0,'Upcoming Activities'),(68,8,'Default',8,1,'My Group Allocation'),(69,9,'Default',8,1,'Top Sales Orders'),(70,10,'Default',8,1,'Top Invoices'),(71,11,'Default',8,1,'My New Leads'),(72,12,'Default',8,1,'Top Purchase Orders'),(73,13,'Default',8,1,'Pending Activities'),(74,14,'Default',8,1,'My Recent FAQs'),(75,15,'Tag Cloud',8,0,'Tag Cloud'),(76,1,'Default',9,1,'Top Accounts'),(77,2,'Default',9,1,'Home Page Dashboard'),(78,3,'Default',9,0,'Top Potentials'),(79,4,'Default',9,1,'Top Quotes'),(80,5,'Default',9,0,'Key Metrics'),(81,6,'Default',9,1,'Top Trouble Tickets'),(82,7,'Default',9,0,'Upcoming Activities'),(83,8,'Default',9,1,'My Group Allocation'),(84,9,'Default',9,1,'Top Sales Orders'),(85,10,'Default',9,1,'Top Invoices'),(86,11,'Default',9,1,'My New Leads'),(87,12,'Default',9,1,'Top Purchase Orders'),(88,13,'Default',9,1,'Pending Activities'),(89,14,'Default',9,1,'My Recent FAQs'),(90,15,'Tag Cloud',9,0,'Tag Cloud');
+INSERT INTO `vtiger_homestuff` VALUES (1,1,'Default',1,1,'Top Accounts'),(2,2,'Default',1,1,'Home Page Dashboard'),(3,3,'Default',1,1,'Top Potentials'),(4,4,'Default',1,1,'Top Quotes'),(5,5,'Default',1,1,'Key Metrics'),(6,6,'Default',1,1,'Top Trouble Tickets'),(7,7,'Default',1,1,'Upcoming Activities'),(8,8,'Default',1,1,'My Group Allocation'),(9,9,'Default',1,1,'Top Sales Orders'),(10,10,'Default',1,1,'Top Invoices'),(11,11,'Default',1,1,'My New Leads'),(12,12,'Default',1,1,'Top Purchase Orders'),(13,13,'Default',1,1,'Pending Activities'),(14,14,'Default',1,1,'My Recent FAQs'),(15,15,'Tag Cloud',1,0,'Tag Cloud');
 /*!40000 ALTER TABLE `vtiger_homestuff` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -5499,7 +5492,7 @@ CREATE TABLE `vtiger_homestuff_seq` (
 
 LOCK TABLES `vtiger_homestuff_seq` WRITE;
 /*!40000 ALTER TABLE `vtiger_homestuff_seq` DISABLE KEYS */;
-INSERT INTO `vtiger_homestuff_seq` VALUES (90);
+INSERT INTO `vtiger_homestuff_seq` VALUES (15);
 /*!40000 ALTER TABLE `vtiger_homestuff_seq` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -5586,15 +5579,15 @@ DROP TABLE IF EXISTS `vtiger_import_maps`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_import_maps` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `module` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `name` varchar(36) COLLATE utf8mb4_general_ci NOT NULL,
+  `module` varchar(36) COLLATE utf8mb4_general_ci NOT NULL,
   `content` longblob,
   `has_header` int NOT NULL DEFAULT '1',
   `deleted` int NOT NULL DEFAULT '0',
   `date_entered` timestamp NOT NULL,
   `date_modified` datetime DEFAULT NULL,
-  `assigned_user_id` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `is_published` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'no',
+  `assigned_user_id` varchar(36) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `is_published` varchar(3) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'no',
   PRIMARY KEY (`id`),
   KEY `import_maps_assigned_user_id_module_name_deleted_idx` (`assigned_user_id`,`module`,`name`,`deleted`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -5651,11 +5644,11 @@ DROP TABLE IF EXISTS `vtiger_industry`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_industry` (
   `industryid` int NOT NULL AUTO_INCREMENT,
-  `industry` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `industry` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`industryid`),
   UNIQUE KEY `industry_industry_idx` (`industry`)
 ) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -5702,8 +5695,8 @@ DROP TABLE IF EXISTS `vtiger_inventory_tandc`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_inventory_tandc` (
   `id` int NOT NULL,
-  `type` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `tandc` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `type` varchar(30) COLLATE utf8mb4_general_ci NOT NULL,
+  `tandc` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -5749,13 +5742,13 @@ DROP TABLE IF EXISTS `vtiger_inventorycharges`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_inventorycharges` (
   `chargeid` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `format` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `type` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `format` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `type` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `value` decimal(12,5) DEFAULT NULL,
-  `regions` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `regions` text COLLATE utf8mb4_general_ci,
   `istaxable` int NOT NULL DEFAULT '1',
-  `taxes` varchar(1024) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `taxes` varchar(1024) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `deleted` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`chargeid`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -5780,7 +5773,7 @@ DROP TABLE IF EXISTS `vtiger_inventorychargesrel`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_inventorychargesrel` (
   `recordid` int NOT NULL,
-  `charges` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `charges` text COLLATE utf8mb4_general_ci,
   KEY `record_idx` (`recordid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -5803,11 +5796,11 @@ DROP TABLE IF EXISTS `vtiger_inventorynotification`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_inventorynotification` (
   `notificationid` int NOT NULL AUTO_INCREMENT,
-  `notificationname` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `notificationsubject` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `notificationbody` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `label` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `status` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `notificationname` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `notificationsubject` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `notificationbody` text COLLATE utf8mb4_general_ci,
+  `label` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `status` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`notificationid`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -5859,17 +5852,17 @@ CREATE TABLE `vtiger_inventoryproductrel` (
   `listprice` decimal(27,8) DEFAULT NULL,
   `discount_percent` decimal(7,3) DEFAULT NULL,
   `discount_amount` decimal(27,8) DEFAULT NULL,
-  `comment` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `comment` text COLLATE utf8mb4_general_ci,
+  `description` text COLLATE utf8mb4_general_ci,
   `incrementondel` int NOT NULL DEFAULT '0',
   `lineitem_id` int NOT NULL AUTO_INCREMENT,
   `tax1` decimal(7,3) DEFAULT NULL,
   `tax2` decimal(7,3) DEFAULT NULL,
   `tax3` decimal(7,3) DEFAULT NULL,
-  `image` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `image` varchar(2) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `purchase_cost` decimal(27,8) DEFAULT NULL,
   `margin` decimal(27,8) DEFAULT NULL,
-  `usageunit` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `usageunit` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `reducedtaxrate` int DEFAULT NULL,
   `tax4` decimal(7,3) DEFAULT NULL,
   PRIMARY KEY (`lineitem_id`),
@@ -5969,14 +5962,14 @@ DROP TABLE IF EXISTS `vtiger_inventorytaxinfo`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_inventorytaxinfo` (
   `taxid` int NOT NULL,
-  `taxname` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `taxlabel` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `taxname` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `taxlabel` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `percentage` decimal(7,3) DEFAULT NULL,
   `deleted` int DEFAULT NULL,
-  `method` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `type` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `compoundon` varchar(400) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `regions` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `method` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `type` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `compoundon` varchar(400) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `regions` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`taxid`),
   KEY `inventorytaxinfo_taxname_idx` (`taxname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -6024,7 +6017,7 @@ DROP TABLE IF EXISTS `vtiger_invitees`;
 CREATE TABLE `vtiger_invitees` (
   `activityid` int NOT NULL,
   `inviteeid` int NOT NULL,
-  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `status` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`activityid`,`inviteeid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -6047,51 +6040,51 @@ DROP TABLE IF EXISTS `vtiger_invoice`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_invoice` (
   `invoiceid` int NOT NULL,
-  `subject` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `subject` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `salesorderid` int DEFAULT NULL,
-  `customerno` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `customerno` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `contactid` int DEFAULT NULL,
-  `notes` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `notes` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `invoicedate` date DEFAULT NULL,
   `duedate` date DEFAULT NULL,
-  `invoiceterms` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `invoiceterms` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `type` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `adjustment` decimal(25,8) DEFAULT NULL,
   `salescommission` decimal(25,3) DEFAULT NULL,
   `exciseduty` decimal(25,3) DEFAULT NULL,
   `subtotal` decimal(25,8) DEFAULT NULL,
   `total` decimal(25,8) DEFAULT NULL,
-  `taxtype` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `taxtype` varchar(25) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `discount_percent` decimal(25,3) DEFAULT NULL,
   `discount_amount` decimal(25,8) DEFAULT NULL,
   `s_h_amount` decimal(25,8) DEFAULT NULL,
-  `shipping` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `shipping` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `accountid` int DEFAULT NULL,
-  `terms_conditions` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `purchaseorder` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `invoicestatus` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `invoice_no` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `terms_conditions` text COLLATE utf8mb4_general_ci,
+  `purchaseorder` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `invoicestatus` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `invoice_no` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `currency_id` int NOT NULL DEFAULT '1',
   `conversion_rate` decimal(10,3) NOT NULL DEFAULT '1.000',
-  `compound_taxes_info` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `compound_taxes_info` text COLLATE utf8mb4_general_ci,
   `pre_tax_total` decimal(25,8) DEFAULT NULL,
   `received` decimal(25,8) DEFAULT NULL,
   `balance` decimal(25,8) DEFAULT NULL,
   `s_h_percent` decimal(25,8) DEFAULT NULL,
-  `potential_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `tags` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `potential_id` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tags` varchar(1) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `region_id` int DEFAULT NULL,
   `smcreatorid` int DEFAULT NULL,
   `smownerid` int DEFAULT NULL,
   `modifiedby` int DEFAULT NULL,
-  `description` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `description` longtext COLLATE utf8mb4_general_ci,
   `createdtime` datetime DEFAULT NULL,
   `modifiedtime` datetime DEFAULT NULL,
   `viewedtime` datetime DEFAULT NULL,
   `deleted` int DEFAULT NULL,
-  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `label` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smgroupid` int DEFAULT NULL,
-  `source` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `source` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`invoiceid`),
   KEY `invoice_purchaseorderid_idx` (`invoiceid`),
   KEY `fk_2_vtiger_invoice` (`salesorderid`),
@@ -6122,12 +6115,12 @@ DROP TABLE IF EXISTS `vtiger_invoice_recurring_info`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_invoice_recurring_info` (
   `salesorderid` int NOT NULL,
-  `recurring_frequency` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `recurring_frequency` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `start_period` date DEFAULT NULL,
   `end_period` date DEFAULT NULL,
   `last_recurring_date` date DEFAULT NULL,
-  `payment_duration` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `invoice_status` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `payment_duration` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `invoice_status` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`salesorderid`),
   CONSTRAINT `fk_salesorderid_vtiger_invoice_recurring_info` FOREIGN KEY (`salesorderid`) REFERENCES `vtiger_salesorder` (`salesorderid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -6151,12 +6144,12 @@ DROP TABLE IF EXISTS `vtiger_invoicebillads`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_invoicebillads` (
   `invoicebilladdressid` int NOT NULL,
-  `bill_city` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bill_code` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bill_country` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bill_state` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bill_street` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `bill_pobox` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_city` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_code` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_country` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_state` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_street` text COLLATE utf8mb4_general_ci,
+  `bill_pobox` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`invoicebilladdressid`),
   CONSTRAINT `fk_1_vtiger_invoicebillads` FOREIGN KEY (`invoicebilladdressid`) REFERENCES `vtiger_invoice` (`invoiceid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -6203,12 +6196,12 @@ DROP TABLE IF EXISTS `vtiger_invoiceshipads`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_invoiceshipads` (
   `invoiceshipaddressid` int NOT NULL,
-  `ship_city` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ship_code` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ship_country` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ship_state` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ship_street` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `ship_pobox` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_city` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_code` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_country` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_state` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_street` text COLLATE utf8mb4_general_ci,
+  `ship_pobox` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`invoiceshipaddressid`),
   CONSTRAINT `fk_1_vtiger_invoiceshipads` FOREIGN KEY (`invoiceshipaddressid`) REFERENCES `vtiger_invoice` (`invoiceid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -6232,11 +6225,11 @@ DROP TABLE IF EXISTS `vtiger_invoicestatus`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_invoicestatus` (
   `invoicestatusid` int NOT NULL AUTO_INCREMENT,
-  `invoicestatus` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `invoicestatus` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`invoicestatusid`),
   UNIQUE KEY `invoicestatus_invoiestatus_idx` (`invoicestatus`)
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -6284,9 +6277,9 @@ DROP TABLE IF EXISTS `vtiger_invoicestatushistory`;
 CREATE TABLE `vtiger_invoicestatushistory` (
   `historyid` int NOT NULL AUTO_INCREMENT,
   `invoiceid` int NOT NULL,
-  `accountname` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `accountname` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `total` decimal(10,0) DEFAULT NULL,
-  `invoicestatus` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `invoicestatus` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `lastmodified` datetime DEFAULT NULL,
   PRIMARY KEY (`historyid`),
   KEY `invoicestatushistory_invoiceid_idx` (`invoiceid`),
@@ -6312,9 +6305,9 @@ DROP TABLE IF EXISTS `vtiger_language`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_language` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `prefix` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `label` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `name` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `prefix` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `label` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `lastupdated` datetime DEFAULT NULL,
   `sequence` int DEFAULT NULL,
   `isdefault` int DEFAULT NULL,
@@ -6391,7 +6384,7 @@ DROP TABLE IF EXISTS `vtiger_lead_view`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_lead_view` (
   `lead_viewid` int NOT NULL AUTO_INCREMENT,
-  `lead_view` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `lead_view` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`lead_viewid`)
@@ -6439,16 +6432,16 @@ DROP TABLE IF EXISTS `vtiger_leadaddress`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_leadaddress` (
   `leadaddressid` int NOT NULL,
-  `city` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `code` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `state` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `pobox` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `country` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `phone` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `mobile` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `fax` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `lane` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `leadaddresstype` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'Billing',
+  `city` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `code` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `state` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `pobox` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `country` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `phone` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `mobile` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `fax` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `lane` text COLLATE utf8mb4_general_ci,
+  `leadaddresstype` varchar(30) COLLATE utf8mb4_general_ci DEFAULT 'Billing',
   PRIMARY KEY (`leadaddressid`),
   CONSTRAINT `fk_1_vtiger_leadaddress` FOREIGN KEY (`leadaddressid`) REFERENCES `vtiger_leaddetails` (`leadid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -6460,7 +6453,6 @@ CREATE TABLE `vtiger_leadaddress` (
 
 LOCK TABLES `vtiger_leadaddress` WRITE;
 /*!40000 ALTER TABLE `vtiger_leadaddress` DISABLE KEYS */;
-INSERT INTO `vtiger_leadaddress` VALUES (2,'','','',NULL,NULL,'','','','','Billing'),(3,'','','',NULL,NULL,'','','','','Billing'),(4,'','','',NULL,NULL,'','','','','Billing'),(5,'','','',NULL,NULL,'','','','','Billing'),(6,'','','',NULL,NULL,'','','','','Billing'),(7,'','','',NULL,NULL,'','','','','Billing'),(8,'','','',NULL,NULL,'','','','','Billing'),(9,'','','',NULL,NULL,'','','','','Billing'),(10,'','','',NULL,NULL,'','','','','Billing'),(11,'','','',NULL,NULL,'','','','','Billing'),(12,'','','',NULL,NULL,'','','','','Billing'),(13,'','','',NULL,NULL,'','','','','Billing'),(14,'','','',NULL,NULL,'','','','','Billing'),(15,'','','',NULL,NULL,'','','','','Billing'),(16,'','','',NULL,NULL,'','','','','Billing'),(17,'','','',NULL,NULL,'','','','','Billing'),(18,'','','',NULL,NULL,'','','','','Billing'),(19,'','','',NULL,NULL,'','','','','Billing'),(20,'','','',NULL,NULL,'','','','','Billing'),(21,'','','',NULL,NULL,'','','','','Billing'),(22,'','','',NULL,NULL,'','','','','Billing'),(23,'','','',NULL,NULL,'','','','','Billing'),(24,'','','',NULL,NULL,'','','','','Billing'),(25,'','','',NULL,NULL,'','','','','Billing');
 /*!40000 ALTER TABLE `vtiger_leadaddress` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -6473,52 +6465,52 @@ DROP TABLE IF EXISTS `vtiger_leaddetails`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_leaddetails` (
   `leadid` int NOT NULL,
-  `lead_no` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `email` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `interest` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `firstname` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `salutation` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `lastname` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `company` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `lead_no` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `email` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `interest` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `firstname` varchar(40) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `salutation` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `lastname` varchar(80) COLLATE utf8mb4_general_ci NOT NULL,
+  `company` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
   `annualrevenue` decimal(25,8) DEFAULT NULL,
-  `industry` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `campaign` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `rating` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `leadstatus` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `leadsource` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `industry` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `campaign` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `rating` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `leadstatus` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `leadsource` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `converted` int DEFAULT '0',
-  `designation` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'SalesMan',
-  `licencekeystatus` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `space` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `comments` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `priority` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `demorequest` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `partnercontact` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `productversion` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `product` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `designation` varchar(50) COLLATE utf8mb4_general_ci DEFAULT 'SalesMan',
+  `licencekeystatus` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `space` varchar(250) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `comments` text COLLATE utf8mb4_general_ci,
+  `priority` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `demorequest` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `partnercontact` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `productversion` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `product` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `maildate` date DEFAULT NULL,
   `nextstepdate` date DEFAULT NULL,
-  `fundingsituation` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `purpose` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `evaluationstatus` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `fundingsituation` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `purpose` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `evaluationstatus` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `transferdate` date DEFAULT NULL,
-  `revenuetype` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `revenuetype` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `noofemployees` int DEFAULT NULL,
-  `secondaryemail` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `secondaryemail` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `assignleadchk` int DEFAULT '0',
-  `emailoptout` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `tags` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `emailoptout` varchar(3) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tags` varchar(1) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smcreatorid` int DEFAULT NULL,
   `smownerid` int DEFAULT NULL,
   `modifiedby` int DEFAULT NULL,
-  `description` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `description` longtext COLLATE utf8mb4_general_ci,
   `createdtime` datetime DEFAULT NULL,
   `modifiedtime` datetime DEFAULT NULL,
   `viewedtime` datetime DEFAULT NULL,
   `deleted` int DEFAULT NULL,
-  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `label` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smgroupid` int DEFAULT NULL,
-  `source` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `source` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `last_action_date` date DEFAULT NULL,
   PRIMARY KEY (`leadid`),
   KEY `leaddetails_converted_leadstatus_idx` (`converted`,`leadstatus`),
@@ -6536,7 +6528,6 @@ CREATE TABLE `vtiger_leaddetails` (
 
 LOCK TABLES `vtiger_leaddetails` WRITE;
 /*!40000 ALTER TABLE `vtiger_leaddetails` DISABLE KEYS */;
-INSERT INTO `vtiger_leaddetails` VALUES (2,'LEA1','',NULL,'',NULL,'DIR','[E2E-PERM] DIR 0001',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,5,1,'','2026-07-05 01:06:11','2026-07-05 01:06:11',NULL,0,'DIR',0,'CRM',NULL),(3,'LEA2','',NULL,'',NULL,'DIR','[E2E-PERM] DIR 0002',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,5,1,'','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,0,'DIR',0,'CRM',NULL),(4,'LEA3','',NULL,'',NULL,'DIR','[E2E-PERM] DIR 0003',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,5,1,'','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,0,'DIR',0,'CRM',NULL),(5,'LEA4','',NULL,'',NULL,'DIR','[E2E-PERM] DIR 0004',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,5,1,'','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,0,'DIR',0,'CRM',NULL),(6,'LEA5','',NULL,'',NULL,'MGRA','[E2E-PERM] MGRA 0001',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,6,1,'','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,0,'MGRA',0,'CRM',NULL),(7,'LEA6','',NULL,'',NULL,'MGRA','[E2E-PERM] MGRA 0002',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,6,1,'','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,0,'MGRA',0,'CRM',NULL),(8,'LEA7','',NULL,'',NULL,'MGRA','[E2E-PERM] MGRA 0003',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,6,1,'','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,0,'MGRA',0,'CRM',NULL),(9,'LEA8','',NULL,'',NULL,'MGRA','[E2E-PERM] MGRA 0004',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,6,1,'','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,0,'MGRA',0,'CRM',NULL),(10,'LEA9','',NULL,'',NULL,'REPA','[E2E-PERM] REPA 0001',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,7,1,'','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,0,'REPA',0,'CRM',NULL),(11,'LEA10','',NULL,'',NULL,'REPA','[E2E-PERM] REPA 0002',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,7,1,'','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,0,'REPA',0,'CRM',NULL),(12,'LEA11','',NULL,'',NULL,'REPA','[E2E-PERM] REPA 0003',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,7,1,'','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,0,'REPA',0,'CRM',NULL),(13,'LEA12','',NULL,'',NULL,'REPA','[E2E-PERM] REPA 0004',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,7,1,'','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,0,'REPA',0,'CRM',NULL),(14,'LEA13','',NULL,'',NULL,'MGRB','[E2E-PERM] MGRB 0001',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,8,1,'','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,0,'MGRB',0,'CRM',NULL),(15,'LEA14','',NULL,'',NULL,'MGRB','[E2E-PERM] MGRB 0002',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,8,1,'','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,0,'MGRB',0,'CRM',NULL),(16,'LEA15','',NULL,'',NULL,'MGRB','[E2E-PERM] MGRB 0003',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,8,1,'','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,0,'MGRB',0,'CRM',NULL),(17,'LEA16','',NULL,'',NULL,'MGRB','[E2E-PERM] MGRB 0004',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,8,1,'','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,0,'MGRB',0,'CRM',NULL),(18,'LEA17','',NULL,'',NULL,'REPB','[E2E-PERM] REPB 0001',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,9,1,'','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,0,'REPB',0,'CRM',NULL),(19,'LEA18','',NULL,'',NULL,'REPB','[E2E-PERM] REPB 0002',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,9,1,'','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,0,'REPB',0,'CRM',NULL),(20,'LEA19','',NULL,'',NULL,'REPB','[E2E-PERM] REPB 0003',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,9,1,'','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,0,'REPB',0,'CRM',NULL),(21,'LEA20','',NULL,'',NULL,'REPB','[E2E-PERM] REPB 0004',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,9,1,'','2026-07-05 01:06:12','2026-07-05 01:06:12',NULL,0,'REPB',0,'CRM',NULL),(22,'LEA21','',NULL,'',NULL,'GRP','[E2E-GRP] GRP 0001',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,10,1,'','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,0,'GRP',0,'CRM',NULL),(23,'LEA22','',NULL,'',NULL,'GRP','[E2E-GRP] GRP 0002',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,10,1,'','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,0,'GRP',0,'CRM',NULL),(24,'LEA23','',NULL,'',NULL,'GRP','[E2E-GRP] GRP 0003',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,10,1,'','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,0,'GRP',0,'CRM',NULL),(25,'LEA24','',NULL,'',NULL,'GRP','[E2E-GRP] GRP 0004',0.00000000,NULL,NULL,NULL,NULL,NULL,0,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'',0,'0','',1,10,1,'','2026-07-05 01:06:13','2026-07-05 01:06:13',NULL,0,'GRP',0,'CRM',NULL);
 /*!40000 ALTER TABLE `vtiger_leaddetails` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -6560,7 +6551,6 @@ CREATE TABLE `vtiger_leadscf` (
 
 LOCK TABLES `vtiger_leadscf` WRITE;
 /*!40000 ALTER TABLE `vtiger_leadscf` DISABLE KEYS */;
-INSERT INTO `vtiger_leadscf` VALUES (2),(3),(4),(5),(6),(7),(8),(9),(10),(11),(12),(13),(14),(15),(16),(17),(18),(19),(20),(21),(22),(23),(24),(25);
 /*!40000 ALTER TABLE `vtiger_leadscf` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -6573,11 +6563,11 @@ DROP TABLE IF EXISTS `vtiger_leadsource`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_leadsource` (
   `leadsourceid` int NOT NULL AUTO_INCREMENT,
-  `leadsource` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `leadsource` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`leadsourceid`)
 ) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -6623,7 +6613,7 @@ DROP TABLE IF EXISTS `vtiger_leadstage`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_leadstage` (
   `leadstageid` int NOT NULL AUTO_INCREMENT,
-  `stage` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `stage` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`leadstageid`),
@@ -6649,11 +6639,11 @@ DROP TABLE IF EXISTS `vtiger_leadstatus`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_leadstatus` (
   `leadstatusid` int NOT NULL AUTO_INCREMENT,
-  `leadstatus` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `leadstatus` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`leadstatusid`)
 ) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -6699,7 +6689,7 @@ DROP TABLE IF EXISTS `vtiger_leadsubdetails`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_leadsubdetails` (
   `leadsubscriptionid` int NOT NULL,
-  `website` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `website` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `callornot` int DEFAULT '0',
   `readornot` int DEFAULT '0',
   `empct` int DEFAULT '0',
@@ -6714,7 +6704,6 @@ CREATE TABLE `vtiger_leadsubdetails` (
 
 LOCK TABLES `vtiger_leadsubdetails` WRITE;
 /*!40000 ALTER TABLE `vtiger_leadsubdetails` DISABLE KEYS */;
-INSERT INTO `vtiger_leadsubdetails` VALUES (2,'',0,0,0),(3,'',0,0,0),(4,'',0,0,0),(5,'',0,0,0),(6,'',0,0,0),(7,'',0,0,0),(8,'',0,0,0),(9,'',0,0,0),(10,'',0,0,0),(11,'',0,0,0),(12,'',0,0,0),(13,'',0,0,0),(14,'',0,0,0),(15,'',0,0,0),(16,'',0,0,0),(17,'',0,0,0),(18,'',0,0,0),(19,'',0,0,0),(20,'',0,0,0),(21,'',0,0,0),(22,'',0,0,0),(23,'',0,0,0),(24,'',0,0,0),(25,'',0,0,0);
 /*!40000 ALTER TABLE `vtiger_leadsubdetails` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -6728,14 +6717,14 @@ DROP TABLE IF EXISTS `vtiger_links`;
 CREATE TABLE `vtiger_links` (
   `linkid` int NOT NULL,
   `tabid` int DEFAULT NULL,
-  `linktype` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `linklabel` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `linkurl` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `linkicon` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `linktype` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `linklabel` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `linkurl` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `linkicon` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `sequence` int DEFAULT NULL,
-  `handler_path` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `handler_class` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `handler` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `handler_path` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `handler_class` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `handler` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `parent_link` int DEFAULT NULL,
   PRIMARY KEY (`linkid`),
   KEY `link_tabidtype_idx` (`tabid`,`linktype`)
@@ -6783,13 +6772,13 @@ DROP TABLE IF EXISTS `vtiger_loginhistory`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_loginhistory` (
   `login_id` int NOT NULL AUTO_INCREMENT,
-  `user_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `user_ip` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `user_name` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `user_ip` varchar(25) COLLATE utf8mb4_general_ci NOT NULL,
   `logout_time` timestamp NULL DEFAULT NULL,
   `login_time` datetime DEFAULT NULL,
-  `status` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `status` varchar(25) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `is_portal` tinyint(1) DEFAULT '0',
-  `login_type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `login_type` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`login_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -6814,21 +6803,21 @@ DROP TABLE IF EXISTS `vtiger_mail_accounts`;
 CREATE TABLE `vtiger_mail_accounts` (
   `account_id` int NOT NULL,
   `user_id` int NOT NULL,
-  `display_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `mail_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `account_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `mail_protocol` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `mail_username` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `mail_password` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `mail_servername` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `display_name` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `mail_id` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `account_name` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `mail_protocol` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `mail_username` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `mail_password` text COLLATE utf8mb4_general_ci,
+  `mail_servername` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `box_refresh` int DEFAULT NULL,
   `mails_per_page` int DEFAULT NULL,
-  `ssltype` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `sslmeth` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ssltype` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `sslmeth` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `int_mailer` int DEFAULT '0',
-  `status` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `status` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `set_default` int DEFAULT NULL,
-  `sent_folder` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `sent_folder` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`account_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -7022,19 +7011,19 @@ DROP TABLE IF EXISTS `vtiger_mailscanner`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_mailscanner` (
   `scannerid` int NOT NULL AUTO_INCREMENT,
-  `scannername` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `server` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `protocol` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `username` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ssltype` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `sslmethod` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `connecturl` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `searchfor` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `markas` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `scannername` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `server` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `protocol` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `username` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `password` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ssltype` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `sslmethod` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `connecturl` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `searchfor` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `markas` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `isvalid` int DEFAULT NULL,
-  `scanfrom` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'ALL',
-  `time_zone` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `scanfrom` varchar(10) COLLATE utf8mb4_general_ci DEFAULT 'ALL',
+  `time_zone` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`scannerid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -7058,9 +7047,9 @@ DROP TABLE IF EXISTS `vtiger_mailscanner_actions`;
 CREATE TABLE `vtiger_mailscanner_actions` (
   `actionid` int NOT NULL AUTO_INCREMENT,
   `scannerid` int DEFAULT NULL,
-  `actiontype` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `module` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `lookup` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `actiontype` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `module` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `lookup` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `sequence` int DEFAULT NULL,
   PRIMARY KEY (`actionid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -7085,8 +7074,8 @@ DROP TABLE IF EXISTS `vtiger_mailscanner_folders`;
 CREATE TABLE `vtiger_mailscanner_folders` (
   `folderid` int NOT NULL AUTO_INCREMENT,
   `scannerid` int DEFAULT NULL,
-  `foldername` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `lastscan` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `foldername` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `lastscan` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `rescan` int DEFAULT NULL,
   `enabled` int DEFAULT NULL,
   PRIMARY KEY (`folderid`),
@@ -7112,9 +7101,9 @@ DROP TABLE IF EXISTS `vtiger_mailscanner_ids`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_mailscanner_ids` (
   `scannerid` int DEFAULT NULL,
-  `messageid` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `messageid` varchar(512) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `crmid` int DEFAULT NULL,
-  `refids` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `refids` text COLLATE utf8mb4_general_ci,
   KEY `scanner_message_ids_idx` (`scannerid`,`messageid`),
   KEY `messageids_crmid_idx` (`crmid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -7161,17 +7150,17 @@ DROP TABLE IF EXISTS `vtiger_mailscanner_rules`;
 CREATE TABLE `vtiger_mailscanner_rules` (
   `ruleid` int NOT NULL AUTO_INCREMENT,
   `scannerid` int DEFAULT NULL,
-  `fromaddress` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `toaddress` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `subjectop` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `subject` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bodyop` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `body` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `matchusing` varchar(5) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `fromaddress` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `toaddress` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `subjectop` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `subject` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bodyop` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `body` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `matchusing` varchar(5) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `sequence` int DEFAULT NULL,
   `assigned_to` int DEFAULT NULL,
-  `cc` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bcc` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `cc` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bcc` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`ruleid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -7194,11 +7183,11 @@ DROP TABLE IF EXISTS `vtiger_manufacturer`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_manufacturer` (
   `manufacturerid` int NOT NULL AUTO_INCREMENT,
-  `manufacturer` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `manufacturer` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`manufacturerid`),
   UNIQUE KEY `manufacturer_manufacturer_idx` (`manufacturer`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -7346,11 +7335,11 @@ DROP TABLE IF EXISTS `vtiger_modentity_num`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_modentity_num` (
   `num_id` int NOT NULL,
-  `semodule` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `prefix` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `start_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `cur_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `active` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `semodule` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `prefix` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `start_id` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `cur_id` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `active` varchar(2) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`num_id`),
   UNIQUE KEY `num_idx` (`num_id`),
   KEY `semodule_active_idx` (`semodule`,`active`)
@@ -7363,7 +7352,7 @@ CREATE TABLE `vtiger_modentity_num` (
 
 LOCK TABLES `vtiger_modentity_num` WRITE;
 /*!40000 ALTER TABLE `vtiger_modentity_num` DISABLE KEYS */;
-INSERT INTO `vtiger_modentity_num` VALUES (1,'Leads','LEA','1','25','1'),(2,'Accounts','ACC','1','311','1'),(3,'Campaigns','CAM','1','1','1'),(4,'Contacts','CON','1','1','1'),(5,'Potentials','POT','1','1','1'),(6,'HelpDesk','TT','1','1','1'),(7,'Quotes','QUO','1','1','1'),(8,'SalesOrder','SO','1','1','1'),(9,'PurchaseOrder','PO','1','1','1'),(10,'Invoice','INV','1','1','1'),(11,'Products','PRO','1','1','1'),(12,'Vendors','VEN','1','1','1'),(13,'PriceBooks','PB','1','1','1'),(14,'Faq','FAQ','1','1','1'),(15,'Documents','DOC','1','1','1'),(16,'ServiceContracts','SERCON','1','1','1'),(17,'Services','SER','1','1','1'),(18,'ProjectMilestone','PM','1','1','1'),(19,'ProjectTask','PT','1','1','1'),(20,'Project','PROJ','1','1','1'),(21,'Assets','ASSET','1','1','1');
+INSERT INTO `vtiger_modentity_num` VALUES (1,'Leads','LEA','1','1','1'),(2,'Accounts','ACC','1','1','1'),(3,'Campaigns','CAM','1','1','1'),(4,'Contacts','CON','1','1','1'),(5,'Potentials','POT','1','1','1'),(6,'HelpDesk','TT','1','1','1'),(7,'Quotes','QUO','1','1','1'),(8,'SalesOrder','SO','1','1','1'),(9,'PurchaseOrder','PO','1','1','1'),(10,'Invoice','INV','1','1','1'),(11,'Products','PRO','1','1','1'),(12,'Vendors','VEN','1','1','1'),(13,'PriceBooks','PB','1','1','1'),(14,'Faq','FAQ','1','1','1'),(15,'Documents','DOC','1','1','1'),(16,'ServiceContracts','SERCON','1','1','1'),(17,'Services','SER','1','1','1'),(18,'ProjectMilestone','PM','1','1','1'),(19,'ProjectTask','PT','1','1','1'),(20,'Project','PROJ','1','1','1'),(21,'Assets','ASSET','1','1','1');
 /*!40000 ALTER TABLE `vtiger_modentity_num` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -7415,30 +7404,7 @@ CREATE TABLE `vtiger_modtracker_basic` (
 
 LOCK TABLES `vtiger_modtracker_basic` WRITE;
 /*!40000 ALTER TABLE `vtiger_modtracker_basic` DISABLE KEYS */;
-INSERT INTO `vtiger_modtracker_basic` VALUES (1,2,'Leads',NULL,'2026-07-05 01:06:11',2),(2,3,'Leads',NULL,'2026-07-05 01:06:12',2),(3,4,'Leads',NULL,'2026-07-05 01:06:12',2),(4,5,'Leads',NULL,'2026-07-05 01:06:12',2),(5,6,'Leads',NULL,'2026-07-05 01:06:12',2),(6,7,'Leads',NULL,'2026-07-05 01:06:12',2),(7,8,'Leads',NULL,'2026-07-05 01:06:12',2),(8,9,'Leads',NULL,'2026-07-05 01:06:12',2),(9,10,'Leads',NULL,'2026-07-05 01:06:12',2),(10,11,'Leads',NULL,'2026-07-05 01:06:12',2),(11,12,'Leads',NULL,'2026-07-05 01:06:12',2),(12,13,'Leads',NULL,'2026-07-05 01:06:12',2),(13,14,'Leads',NULL,'2026-07-05 01:06:12',2),(14,15,'Leads',NULL,'2026-07-05 01:06:12',2),(15,16,'Leads',NULL,'2026-07-05 01:06:12',2),(16,17,'Leads',NULL,'2026-07-05 01:06:12',2),(17,18,'Leads',NULL,'2026-07-05 01:06:12',2),(18,19,'Leads',NULL,'2026-07-05 01:06:12',2),(19,20,'Leads',NULL,'2026-07-05 01:06:12',2),(20,21,'Leads',NULL,'2026-07-05 01:06:12',2),(21,22,'Leads',NULL,'2026-07-05 01:06:13',2),(22,23,'Leads',NULL,'2026-07-05 01:06:13',2),(23,24,'Leads',NULL,'2026-07-05 01:06:13',2),(24,25,'Leads',NULL,'2026-07-05 01:06:13',2),(25,26,'Accounts',NULL,'2026-07-05 01:06:13',2),(26,27,'Accounts',NULL,'2026-07-05 01:06:13',2),(27,28,'Accounts',NULL,'2026-07-05 01:06:13',2),(28,29,'Accounts',NULL,'2026-07-05 01:06:13',2),(29,30,'Accounts',NULL,'2026-07-05 01:06:13',2),(30,31,'Accounts',NULL,'2026-07-05 01:06:13',2),(31,32,'Accounts',NULL,'2026-07-05 01:06:13',2),(32,33,'Accounts',NULL,'2026-07-05 01:06:13',2),(33,34,'Accounts',NULL,'2026-07-05 01:06:13',2),(34,35,'Accounts',NULL,'2026-07-05 01:06:13',2),(35,36,'Accounts',NULL,'2026-07-05 01:06:13',2),(36,37,'Accounts',NULL,'2026-07-05 01:06:13',2),(37,38,'Accounts',NULL,'2026-07-05 01:06:13',2),(38,39,'Accounts',NULL,'2026-07-05 01:06:13',2),(39,40,'Accounts',NULL,'2026-07-05 01:06:13',2),(40,41,'Accounts',NULL,'2026-07-05 01:06:14',2),(41,42,'Accounts',NULL,'2026-07-05 01:06:14',2),(42,43,'Accounts',NULL,'2026-07-05 01:06:14',2),(43,44,'Accounts',NULL,'2026-07-05 01:06:14',2),(44,45,'Accounts',NULL,'2026-07-05 01:06:14',2),(45,46,'Accounts',NULL,'2026-07-05 01:06:14',2),(46,47,'Accounts',NULL,'2026-07-05 01:06:14',2),(47,48,'Accounts',NULL,'2026-07-05 01:06:14',2),(48,49,'Accounts',NULL,'2026-07-05 01:06:14',2),(49,50,'Accounts',NULL,'2026-07-05 01:06:14',2),(50,51,'Accounts',NULL,'2026-07-05 01:06:14',2),(51,52,'Accounts',NULL,'2026-07-05 01:06:14',2),(52,53,'Accounts',NULL,'2026-07-05 01:06:14',2),(53,54,'Accounts',NULL,'2026-07-05 01:06:14',2),(54,55,'Accounts',NULL,'2026-07-05 01:06:14',2),(55,56,'Accounts',NULL,'2026-07-05 01:06:14',2),(56,57,'Accounts',NULL,'2026-07-05 01:06:14',2),(57,58,'Accounts',NULL,'2026-07-05 01:06:14',2),(58,59,'Accounts',NULL,'2026-07-05 01:06:14',2),(59,60,'Accounts',NULL,'2026-07-05 01:06:14',2),(60,61,'Accounts',NULL,'2026-07-05 01:06:14',2),(61,62,'Accounts',NULL,'2026-07-05 01:06:15',2),(62,63,'Accounts',NULL,'2026-07-05 01:06:15',2),(63,64,'Accounts',NULL,'2026-07-05 01:06:15',2),(64,65,'Accounts',NULL,'2026-07-05 01:06:15',2),(65,66,'Accounts',NULL,'2026-07-05 01:06:15',2),(66,67,'Accounts',NULL,'2026-07-05 01:06:15',2),(67,68,'Accounts',NULL,'2026-07-05 01:06:15',2),(68,69,'Accounts',NULL,'2026-07-05 01:06:15',2),(69,70,'Accounts',NULL,'2026-07-05 01:06:15',2),(70,71,'Accounts',NULL,'2026-07-05 01:06:15',2),(71,72,'Accounts',NULL,'2026-07-05 01:06:15',2),(72,73,'Accounts',NULL,'2026-07-05 01:06:15',2),(73,74,'Accounts',NULL,'2026-07-05 01:06:15',2),(74,75,'Accounts',NULL,'2026-07-05 01:06:15',2),(75,76,'Accounts',NULL,'2026-07-05 01:06:18',2),(76,77,'Accounts',NULL,'2026-07-05 01:06:18',2),(77,78,'Accounts',NULL,'2026-07-05 01:06:18',2),(78,79,'Accounts',NULL,'2026-07-05 01:06:18',2),(79,80,'Accounts',NULL,'2026-07-05 01:06:18',2),(80,81,'Accounts',NULL,'2026-07-05 01:06:18',2),(81,82,'Accounts',NULL,'2026-07-05 01:06:18',2),(82,83,'Accounts',NULL,'2026-07-05 01:06:18',2),(83,84,'Accounts',NULL,'2026-07-05 01:06:19',2),(84,85,'Accounts',NULL,'2026-07-05 01:06:19',2),(85,86,'Accounts',NULL,'2026-07-05 01:06:19',2),(86,87,'Accounts',NULL,'2026-07-05 01:06:19',2),(87,88,'Accounts',NULL,'2026-07-05 01:06:19',2),(88,89,'Accounts',NULL,'2026-07-05 01:06:19',2),(89,90,'Accounts',NULL,'2026-07-05 01:06:19',2),(90,91,'Accounts',NULL,'2026-07-05 01:06:19',2),(91,92,'Accounts',NULL,'2026-07-05 01:06:19',2),(92,93,'Accounts',NULL,'2026-07-05 01:06:19',2),(93,94,'Accounts',NULL,'2026-07-05 01:06:19',2),(94,95,'Accounts',NULL,'2026-07-05 01:06:19',2),(95,96,'Accounts',NULL,'2026-07-05 01:06:19',2),(96,97,'Accounts',NULL,'2026-07-05 01:06:19',2),(97,98,'Accounts',NULL,'2026-07-05 01:06:19',2),(98,99,'Accounts',NULL,'2026-07-05 01:06:19',2),(99,100,'Accounts',NULL,'2026-07-05 01:06:19',2),(100,101,'Accounts',NULL,'2026-07-05 01:06:19',2),(101,102,'Accounts',NULL,'2026-07-05 01:06:19',2),(102,103,'Accounts',NULL,'2026-07-05 01:06:19',2),(103,104,'Accounts',NULL,'2026-07-05 01:06:20',2),(104,105,'Accounts',NULL,'2026-07-05 01:06:20',2),(105,106,'Accounts',NULL,'2026-07-05 01:06:20',2),(106,107,'Accounts',NULL,'2026-07-05 01:06:20',2),(107,108,'Accounts',NULL,'2026-07-05 01:06:20',2),(108,109,'Accounts',NULL,'2026-07-05 01:06:20',2),(109,110,'Accounts',NULL,'2026-07-05 01:06:20',2),(110,111,'Accounts',NULL,'2026-07-05 01:06:20',2),(111,112,'Accounts',NULL,'2026-07-05 01:06:20',2),(112,113,'Accounts',NULL,'2026-07-05 01:06:20',2),(113,114,'Accounts',NULL,'2026-07-05 01:06:20',2),(114,115,'Accounts',NULL,'2026-07-05 01:06:20',2),(115,116,'Accounts',NULL,'2026-07-05 01:06:20',2),(116,117,'Accounts',NULL,'2026-07-05 01:06:20',2),(117,118,'Accounts',NULL,'2026-07-05 01:06:20',2),(118,119,'Accounts',NULL,'2026-07-05 01:06:20',2),(119,120,'Accounts',NULL,'2026-07-05 01:06:20',2),(120,121,'Accounts',NULL,'2026-07-05 01:06:20',2),(121,122,'Accounts',NULL,'2026-07-05 01:06:20',2),(122,123,'Accounts',NULL,'2026-07-05 01:06:20',2),(123,124,'Accounts',NULL,'2026-07-05 01:06:21',2),(124,125,'Accounts',NULL,'2026-07-05 01:06:21',2),(125,126,'Accounts',NULL,'2026-07-05 01:06:21',2),(126,127,'Accounts',NULL,'2026-07-05 01:06:21',2),(127,128,'Accounts',NULL,'2026-07-05 01:06:21',2),(128,129,'Accounts',NULL,'2026-07-05 01:06:21',2),(129,130,'Accounts',NULL,'2026-07-05 01:06:21',2),(130,131,'Accounts',NULL,'2026-07-05 01:06:21',2),(131,132,'Accounts',NULL,'2026-07-05 01:06:21',2),(132,133,'Accounts',NULL,'2026-07-05 01:06:21',2),(133,134,'Accounts',NULL,'2026-07-05 01:06:21',2),(134,135,'Accounts',NULL,'2026-07-05 01:06:21',2),(135,136,'Accounts',NULL,'2026-07-05 01:06:21',2),(136,137,'Accounts',NULL,'2026-07-05 01:06:21',2),(137,138,'Accounts',NULL,'2026-07-05 01:06:21',2),(138,139,'Accounts',NULL,'2026-07-05 01:06:21',2),(139,140,'Accounts',NULL,'2026-07-05 01:06:21',2),(140,141,'Accounts',NULL,'2026-07-05 01:06:21',2),(141,142,'Accounts',NULL,'2026-07-05 01:06:21',2),(142,143,'Accounts',NULL,'2026-07-05 01:06:21',2),(143,144,'Accounts',NULL,'2026-07-05 01:06:21',2),(144,145,'Accounts',NULL,'2026-07-05 01:06:22',2),(145,146,'Accounts',NULL,'2026-07-05 01:06:22',2),(146,147,'Accounts',NULL,'2026-07-05 01:06:22',2),(147,148,'Accounts',NULL,'2026-07-05 01:06:22',2),(148,149,'Accounts',NULL,'2026-07-05 01:06:22',2),(149,150,'Accounts',NULL,'2026-07-05 01:06:22',2),(150,151,'Accounts',NULL,'2026-07-05 01:06:22',2),(151,152,'Accounts',NULL,'2026-07-05 01:06:22',2),(152,153,'Accounts',NULL,'2026-07-05 01:06:22',2),(153,154,'Accounts',NULL,'2026-07-05 01:06:22',2),(154,155,'Accounts',NULL,'2026-07-05 01:06:22',2),(155,156,'Accounts',NULL,'2026-07-05 01:06:22',2),(156,157,'Accounts',NULL,'2026-07-05 01:06:22',2),(157,158,'Accounts',NULL,'2026-07-05 01:06:22',2),(158,159,'Accounts',NULL,'2026-07-05 01:06:22',2),(159,160,'Accounts',NULL,'2026-07-05 01:06:22',2),(160,161,'Accounts',NULL,'2026-07-05 01:06:22',2),(161,162,'Accounts',NULL,'2026-07-05 01:06:22',2),(162,163,'Accounts',NULL,'2026-07-05 01:06:22',2),(163,164,'Accounts',NULL,'2026-07-05 01:06:22',2),(164,165,'Accounts',NULL,'2026-07-05 01:06:22',2),(165,166,'Accounts',NULL,'2026-07-05 01:06:23',2),(166,167,'Accounts',NULL,'2026-07-05 01:06:23',2),(167,168,'Accounts',NULL,'2026-07-05 01:06:23',2),(168,169,'Accounts',NULL,'2026-07-05 01:06:23',2),(169,170,'Accounts',NULL,'2026-07-05 01:06:23',2),(170,171,'Accounts',NULL,'2026-07-05 01:06:23',2),(171,172,'Accounts',NULL,'2026-07-05 01:06:23',2),(172,173,'Accounts',NULL,'2026-07-05 01:06:23',2),(173,174,'Accounts',NULL,'2026-07-05 01:06:23',2),(174,175,'Accounts',NULL,'2026-07-05 01:06:23',2),(175,176,'Accounts',NULL,'2026-07-05 01:06:23',2),(176,177,'Accounts',NULL,'2026-07-05 01:06:23',2),(177,178,'Accounts',NULL,'2026-07-05 01:06:23',2),(178,179,'Accounts',NULL,'2026-07-05 01:06:23',2),(179,180,'Accounts',NULL,'2026-07-05 01:06:23',2),(180,181,'Accounts',NULL,'2026-07-05 01:06:23',2),(181,182,'Accounts',NULL,'2026-07-05 01:06:23',2),(182,183,'Accounts',NULL,'2026-07-05 01:06:23',2),(183,184,'Accounts',NULL,'2026-07-05 01:06:23',2),(184,185,'Accounts',NULL,'2026-07-05 01:06:23',2),(185,186,'Accounts',NULL,'2026-07-05 01:06:23',2),(186,187,'Accounts',NULL,'2026-07-05 01:06:24',2),(187,188,'Accounts',NULL,'2026-07-05 01:06:24',2),(188,189,'Accounts',NULL,'2026-07-05 01:06:24',2),(189,190,'Accounts',NULL,'2026-07-05 01:06:24',2),(190,191,'Accounts',NULL,'2026-07-05 01:06:24',2),(191,192,'Accounts',NULL,'2026-07-05 01:06:24',2),(192,193,'Accounts',NULL,'2026-07-05 01:06:24',2),(193,194,'Accounts',NULL,'2026-07-05 01:06:24',2),(194,195,'Accounts',NULL,'2026-07-05 01:06:24',2),(195,196,'Accounts',NULL,'2026-07-05 01:06:24',2),(196,197,'Accounts',NULL,'2026-07-05 01:06:24',2),(197,198,'Accounts',NULL,'2026-07-05 01:06:24',2),(198,199,'Accounts',NULL,'2026-07-05 01:06:24',2),(199,200,'Accounts',NULL,'2026-07-05 01:06:24',2),(200,201,'Accounts',NULL,'2026-07-05 01:06:24',2),(201,202,'Accounts',NULL,'2026-07-05 01:06:24',2),(202,203,'Accounts',NULL,'2026-07-05 01:06:24',2),(203,204,'Accounts',NULL,'2026-07-05 01:06:24',2),(204,205,'Accounts',NULL,'2026-07-05 01:06:24',2),(205,206,'Accounts',NULL,'2026-07-05 01:06:24',2),(206,207,'Accounts',NULL,'2026-07-05 01:06:25',2),(207,208,'Accounts',NULL,'2026-07-05 01:06:25',2),(208,209,'Accounts',NULL,'2026-07-05 01:06:25',2),(209,210,'Accounts',NULL,'2026-07-05 01:06:25',2),(210,211,'Accounts',NULL,'2026-07-05 01:06:25',2),(211,212,'Accounts',NULL,'2026-07-05 01:06:25',2),(212,213,'Accounts',NULL,'2026-07-05 01:06:25',2),(213,214,'Accounts',NULL,'2026-07-05 01:06:25',2),(214,215,'Accounts',NULL,'2026-07-05 01:06:25',2),(215,216,'Accounts',NULL,'2026-07-05 01:06:25',2),(216,217,'Accounts',NULL,'2026-07-05 01:06:25',2),(217,218,'Accounts',NULL,'2026-07-05 01:06:25',2),(218,219,'Accounts',NULL,'2026-07-05 01:06:25',2),(219,220,'Accounts',NULL,'2026-07-05 01:06:25',2),(220,221,'Accounts',NULL,'2026-07-05 01:06:25',2),(221,222,'Accounts',NULL,'2026-07-05 01:06:25',2),(222,223,'Accounts',NULL,'2026-07-05 01:06:25',2),(223,224,'Accounts',NULL,'2026-07-05 01:06:25',2),(224,225,'Accounts',NULL,'2026-07-05 01:06:25',2),(225,226,'Accounts',NULL,'2026-07-05 01:06:25',2),(226,227,'Accounts',NULL,'2026-07-05 01:06:25',2),(227,228,'Accounts',NULL,'2026-07-05 01:06:26',2),(228,229,'Accounts',NULL,'2026-07-05 01:06:26',2),(229,230,'Accounts',NULL,'2026-07-05 01:06:26',2),(230,231,'Accounts',NULL,'2026-07-05 01:06:26',2),(231,232,'Accounts',NULL,'2026-07-05 01:06:26',2),(232,233,'Accounts',NULL,'2026-07-05 01:06:26',2),(233,234,'Accounts',NULL,'2026-07-05 01:06:26',2),(234,235,'Accounts',NULL,'2026-07-05 01:06:26',2),(235,236,'Accounts',NULL,'2026-07-05 01:06:26',2),(236,237,'Accounts',NULL,'2026-07-05 01:06:26',2),(237,238,'Accounts',NULL,'2026-07-05 01:06:26',2),(238,239,'Accounts',NULL,'2026-07-05 01:06:26',2),(239,240,'Accounts',NULL,'2026-07-05 01:06:26',2),(240,241,'Accounts',NULL,'2026-07-05 01:06:26',2),(241,242,'Accounts',NULL,'2026-07-05 01:06:26',2),(242,243,'Accounts',NULL,'2026-07-05 01:06:26',2),(243,244,'Accounts',NULL,'2026-07-05 01:06:26',2),(244,245,'Accounts',NULL,'2026-07-05 01:06:26',2),(245,246,'Accounts',NULL,'2026-07-05 01:06:26',2),(246,247,'Accounts',NULL,'2026-07-05 01:06:26',2),(247,248,'Accounts',NULL,'2026-07-05 01:06:27',2),(248,249,'Accounts',NULL,'2026-07-05 01:06:27',2),(249,250,'Accounts',NULL,'2026-07-05 01:06:27',2),(250,251,'Accounts',NULL,'2026-07-05 01:06:27',2),(251,252,'Accounts',NULL,'2026-07-05 01:06:27',2),(252,253,'Accounts',NULL,'2026-07-05 01:06:27',2),(253,254,'Accounts',NULL,'2026-07-05 01:06:27',2),(254,255,'Accounts',NULL,'2026-07-05 01:06:27',2),(255,256,'Accounts',NULL,'2026-07-05 01:06:27',2),(256,257,'Accounts',NULL,'2026-07-05 01:06:27',2),(257,258,'Accounts',NULL,'2026-07-05 01:06:27',2),(258,259,'Accounts',NULL,'2026-07-05 01:06:27',2),(259,260,'Accounts',NULL,'2026-07-05 01:06:27',2),(260,261,'Accounts',NULL,'2026-07-05 01:06:27',2),(261,262,'Accounts',NULL,'2026-07-05 01:06:27',2),(262,263,'Accounts',NULL,'2026-07-05 01:06:27',2),(263,264,'Accounts',NULL,'2026-07-05 01:06:27',2),(264,265,'Accounts',NULL,'2026-07-05 01:06:27',2),(265,266,'Accounts',NULL,'2026-07-05 01:06:27',2),(266,267,'Accounts',NULL,'2026-07-05 01:06:27',2),(267,268,'Accounts',NULL,'2026-07-05 01:06:28',2),(268,269,'Accounts',NULL,'2026-07-05 01:06:28',2),(269,270,'Accounts',NULL,'2026-07-05 01:06:28',2),(270,271,'Accounts',NULL,'2026-07-05 01:06:28',2),(271,272,'Accounts',NULL,'2026-07-05 01:06:28',2),(272,273,'Accounts',NULL,'2026-07-05 01:06:28',2),(273,274,'Accounts',NULL,'2026-07-05 01:06:28',2),(274,275,'Accounts',NULL,'2026-07-05 01:06:28',2),(275,276,'Accounts',NULL,'2026-07-05 01:06:28',2),(276,277,'Accounts',NULL,'2026-07-05 01:06:28',2),(277,278,'Accounts',NULL,'2026-07-05 01:06:28',2),(278,279,'Accounts',NULL,'2026-07-05 01:06:28',2),(279,280,'Accounts',NULL,'2026-07-05 01:06:28',2),(280,281,'Accounts',NULL,'2026-07-05 01:06:28',2),(281,282,'Accounts',NULL,'2026-07-05 01:06:28',2),(282,283,'Accounts',NULL,'2026-07-05 01:06:28',2),(283,284,'Accounts',NULL,'2026-07-05 01:06:28',2),(284,285,'Accounts',NULL,'2026-07-05 01:06:28',2),(285,286,'Accounts',NULL,'2026-07-05 01:06:28',2),(286,287,'Accounts',NULL,'2026-07-05 01:06:28',2),(287,288,'Accounts',NULL,'2026-07-05 01:06:29',2),(288,289,'Accounts',NULL,'2026-07-05 01:06:29',2),(289,290,'Accounts',NULL,'2026-07-05 01:06:29',2),(290,291,'Accounts',NULL,'2026-07-05 01:06:29',2),(291,292,'Accounts',NULL,'2026-07-05 01:06:29',2),(292,293,'Accounts',NULL,'2026-07-05 01:06:29',2),(293,294,'Accounts',NULL,'2026-07-05 01:06:29',2),(294,295,'Accounts',NULL,'2026-07-05 01:06:29',2),(295,296,'Accounts',NULL,'2026-07-05 01:06:29',2),(296,297,'Accounts',NULL,'2026-07-05 01:06:29',2),(297,298,'Accounts',NULL,'2026-07-05 01:06:29',2),(298,299,'Accounts',NULL,'2026-07-05 01:06:29',2),(299,300,'Accounts',NULL,'2026-07-05 01:06:29',2),(300,301,'Accounts',NULL,'2026-07-05 01:06:29',2),(301,302,'Accounts',NULL,'2026-07-05 01:06:29',2),(302,303,'Accounts',NULL,'2026-07-05 01:06:29',2),(303,304,'Accounts',NULL,'2026-07-05 01:06:29',2),(304,305,'Accounts',NULL,'2026-07-05 01:06:29',2),(305,306,'Accounts',NULL,'2026-07-05 01:06:29',2),(306,307,'Accounts',NULL,'2026-07-05 01:06:30',2),(307,308,'Accounts',NULL,'2026-07-05 01:06:30',2),(308,309,'Accounts',NULL,'2026-07-05 01:06:30',2),(309,310,'Accounts',NULL,'2026-07-05 01:06:30',2),(310,311,'Accounts',NULL,'2026-07-05 01:06:30',2),(311,312,'Accounts',NULL,'2026-07-05 01:06:30',2),(312,313,'Accounts',NULL,'2026-07-05 01:06:30',2),(313,314,'Accounts',NULL,'2026-07-05 01:06:30',2),(314,315,'Accounts',NULL,'2026-07-05 01:06:30',2),(315,316,'Accounts',NULL,'2026-07-05 01:06:30',2),(316,317,'Accounts',NULL,'2026-07-05 01:06:30',2),(317,318,'Accounts',NULL,'2026-07-05 01:06:30',2),(318,319,'Accounts',NULL,'2026-07-05 01:06:30',2),(319,320,'Accounts',NULL,'2026-07-05 01:06:30',2),(320,321,'Accounts',NULL,'2026-07-05 01:06:30',2),(321,322,'Accounts',NULL,'2026-07-05 01:06:30',2),(322,323,'Accounts',NULL,'2026-07-05 01:06:30',2),(323,324,'Accounts',NULL,'2026-07-05 01:06:30',2),(324,325,'Accounts',NULL,'2026-07-05 01:06:30',2),(325,326,'Accounts',NULL,'2026-07-05 01:06:31',2),(326,327,'Accounts',NULL,'2026-07-05 01:06:31',2),(327,328,'Accounts',NULL,'2026-07-05 01:06:31',2),(328,329,'Accounts',NULL,'2026-07-05 01:06:31',2),(329,330,'Accounts',NULL,'2026-07-05 01:06:31',2),(330,331,'Accounts',NULL,'2026-07-05 01:06:31',2),(331,332,'Accounts',NULL,'2026-07-05 01:06:31',2),(332,333,'Accounts',NULL,'2026-07-05 01:06:31',2),(333,334,'Accounts',NULL,'2026-07-05 01:06:31',2),(334,335,'Accounts',NULL,'2026-07-05 01:06:31',2);
 /*!40000 ALTER TABLE `vtiger_modtracker_basic` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `vtiger_modtracker_basic_seq`
---
-
-DROP TABLE IF EXISTS `vtiger_modtracker_basic_seq`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `vtiger_modtracker_basic_seq` (
-  `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `vtiger_modtracker_basic_seq`
---
-
-LOCK TABLES `vtiger_modtracker_basic_seq` WRITE;
-/*!40000 ALTER TABLE `vtiger_modtracker_basic_seq` DISABLE KEYS */;
-INSERT INTO `vtiger_modtracker_basic_seq` VALUES (334);
-/*!40000 ALTER TABLE `vtiger_modtracker_basic_seq` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -7463,7 +7429,6 @@ CREATE TABLE `vtiger_modtracker_detail` (
 
 LOCK TABLES `vtiger_modtracker_detail` WRITE;
 /*!40000 ALTER TABLE `vtiger_modtracker_detail` DISABLE KEYS */;
-INSERT INTO `vtiger_modtracker_detail` VALUES (1,'label',NULL,'DIR'),(1,'lead_no',NULL,'LEA1'),(1,'lastname',NULL,'DIR'),(1,'company',NULL,'[E2E-PERM] DIR 0001'),(1,'annualrevenue',NULL,'0.00000000'),(1,'assigned_user_id',NULL,'5'),(1,'createdtime',NULL,'2026-07-05 01:06:11'),(1,'modifiedby',NULL,'1'),(1,'source',NULL,'CRM'),(1,'record_id',NULL,'2'),(1,'record_module',NULL,'Leads'),(2,'label',NULL,'DIR'),(2,'lead_no',NULL,'LEA2'),(2,'lastname',NULL,'DIR'),(2,'company',NULL,'[E2E-PERM] DIR 0002'),(2,'annualrevenue',NULL,'0.00000000'),(2,'assigned_user_id',NULL,'5'),(2,'createdtime',NULL,'2026-07-05 01:06:12'),(2,'modifiedby',NULL,'1'),(2,'source',NULL,'CRM'),(2,'record_id',NULL,'3'),(2,'record_module',NULL,'Leads'),(3,'label',NULL,'DIR'),(3,'lead_no',NULL,'LEA3'),(3,'lastname',NULL,'DIR'),(3,'company',NULL,'[E2E-PERM] DIR 0003'),(3,'annualrevenue',NULL,'0.00000000'),(3,'assigned_user_id',NULL,'5'),(3,'createdtime',NULL,'2026-07-05 01:06:12'),(3,'modifiedby',NULL,'1'),(3,'source',NULL,'CRM'),(3,'record_id',NULL,'4'),(3,'record_module',NULL,'Leads'),(4,'label',NULL,'DIR'),(4,'lead_no',NULL,'LEA4'),(4,'lastname',NULL,'DIR'),(4,'company',NULL,'[E2E-PERM] DIR 0004'),(4,'annualrevenue',NULL,'0.00000000'),(4,'assigned_user_id',NULL,'5'),(4,'createdtime',NULL,'2026-07-05 01:06:12'),(4,'modifiedby',NULL,'1'),(4,'source',NULL,'CRM'),(4,'record_id',NULL,'5'),(4,'record_module',NULL,'Leads'),(5,'label',NULL,'MGRA'),(5,'lead_no',NULL,'LEA5'),(5,'lastname',NULL,'MGRA'),(5,'company',NULL,'[E2E-PERM] MGRA 0001'),(5,'annualrevenue',NULL,'0.00000000'),(5,'assigned_user_id',NULL,'6'),(5,'createdtime',NULL,'2026-07-05 01:06:12'),(5,'modifiedby',NULL,'1'),(5,'source',NULL,'CRM'),(5,'record_id',NULL,'6'),(5,'record_module',NULL,'Leads'),(6,'label',NULL,'MGRA'),(6,'lead_no',NULL,'LEA6'),(6,'lastname',NULL,'MGRA'),(6,'company',NULL,'[E2E-PERM] MGRA 0002'),(6,'annualrevenue',NULL,'0.00000000'),(6,'assigned_user_id',NULL,'6'),(6,'createdtime',NULL,'2026-07-05 01:06:12'),(6,'modifiedby',NULL,'1'),(6,'source',NULL,'CRM'),(6,'record_id',NULL,'7'),(6,'record_module',NULL,'Leads'),(7,'label',NULL,'MGRA'),(7,'lead_no',NULL,'LEA7'),(7,'lastname',NULL,'MGRA'),(7,'company',NULL,'[E2E-PERM] MGRA 0003'),(7,'annualrevenue',NULL,'0.00000000'),(7,'assigned_user_id',NULL,'6'),(7,'createdtime',NULL,'2026-07-05 01:06:12'),(7,'modifiedby',NULL,'1'),(7,'source',NULL,'CRM'),(7,'record_id',NULL,'8'),(7,'record_module',NULL,'Leads'),(8,'label',NULL,'MGRA'),(8,'lead_no',NULL,'LEA8'),(8,'lastname',NULL,'MGRA'),(8,'company',NULL,'[E2E-PERM] MGRA 0004'),(8,'annualrevenue',NULL,'0.00000000'),(8,'assigned_user_id',NULL,'6'),(8,'createdtime',NULL,'2026-07-05 01:06:12'),(8,'modifiedby',NULL,'1'),(8,'source',NULL,'CRM'),(8,'record_id',NULL,'9'),(8,'record_module',NULL,'Leads'),(9,'label',NULL,'REPA'),(9,'lead_no',NULL,'LEA9'),(9,'lastname',NULL,'REPA'),(9,'company',NULL,'[E2E-PERM] REPA 0001'),(9,'annualrevenue',NULL,'0.00000000'),(9,'assigned_user_id',NULL,'7'),(9,'createdtime',NULL,'2026-07-05 01:06:12'),(9,'modifiedby',NULL,'1'),(9,'source',NULL,'CRM'),(9,'record_id',NULL,'10'),(9,'record_module',NULL,'Leads'),(10,'label',NULL,'REPA'),(10,'lead_no',NULL,'LEA10'),(10,'lastname',NULL,'REPA'),(10,'company',NULL,'[E2E-PERM] REPA 0002'),(10,'annualrevenue',NULL,'0.00000000'),(10,'assigned_user_id',NULL,'7'),(10,'createdtime',NULL,'2026-07-05 01:06:12'),(10,'modifiedby',NULL,'1'),(10,'source',NULL,'CRM'),(10,'record_id',NULL,'11'),(10,'record_module',NULL,'Leads'),(11,'label',NULL,'REPA'),(11,'lead_no',NULL,'LEA11'),(11,'lastname',NULL,'REPA'),(11,'company',NULL,'[E2E-PERM] REPA 0003'),(11,'annualrevenue',NULL,'0.00000000'),(11,'assigned_user_id',NULL,'7'),(11,'createdtime',NULL,'2026-07-05 01:06:12'),(11,'modifiedby',NULL,'1'),(11,'source',NULL,'CRM'),(11,'record_id',NULL,'12'),(11,'record_module',NULL,'Leads'),(12,'label',NULL,'REPA'),(12,'lead_no',NULL,'LEA12'),(12,'lastname',NULL,'REPA'),(12,'company',NULL,'[E2E-PERM] REPA 0004'),(12,'annualrevenue',NULL,'0.00000000'),(12,'assigned_user_id',NULL,'7'),(12,'createdtime',NULL,'2026-07-05 01:06:12'),(12,'modifiedby',NULL,'1'),(12,'source',NULL,'CRM'),(12,'record_id',NULL,'13'),(12,'record_module',NULL,'Leads'),(13,'label',NULL,'MGRB'),(13,'lead_no',NULL,'LEA13'),(13,'lastname',NULL,'MGRB'),(13,'company',NULL,'[E2E-PERM] MGRB 0001'),(13,'annualrevenue',NULL,'0.00000000'),(13,'assigned_user_id',NULL,'8'),(13,'createdtime',NULL,'2026-07-05 01:06:12'),(13,'modifiedby',NULL,'1'),(13,'source',NULL,'CRM'),(13,'record_id',NULL,'14'),(13,'record_module',NULL,'Leads'),(14,'label',NULL,'MGRB'),(14,'lead_no',NULL,'LEA14'),(14,'lastname',NULL,'MGRB'),(14,'company',NULL,'[E2E-PERM] MGRB 0002'),(14,'annualrevenue',NULL,'0.00000000'),(14,'assigned_user_id',NULL,'8'),(14,'createdtime',NULL,'2026-07-05 01:06:12'),(14,'modifiedby',NULL,'1'),(14,'source',NULL,'CRM'),(14,'record_id',NULL,'15'),(14,'record_module',NULL,'Leads'),(15,'label',NULL,'MGRB'),(15,'lead_no',NULL,'LEA15'),(15,'lastname',NULL,'MGRB'),(15,'company',NULL,'[E2E-PERM] MGRB 0003'),(15,'annualrevenue',NULL,'0.00000000'),(15,'assigned_user_id',NULL,'8'),(15,'createdtime',NULL,'2026-07-05 01:06:12'),(15,'modifiedby',NULL,'1'),(15,'source',NULL,'CRM'),(15,'record_id',NULL,'16'),(15,'record_module',NULL,'Leads'),(16,'label',NULL,'MGRB'),(16,'lead_no',NULL,'LEA16'),(16,'lastname',NULL,'MGRB'),(16,'company',NULL,'[E2E-PERM] MGRB 0004'),(16,'annualrevenue',NULL,'0.00000000'),(16,'assigned_user_id',NULL,'8'),(16,'createdtime',NULL,'2026-07-05 01:06:12'),(16,'modifiedby',NULL,'1'),(16,'source',NULL,'CRM'),(16,'record_id',NULL,'17'),(16,'record_module',NULL,'Leads'),(17,'label',NULL,'REPB'),(17,'lead_no',NULL,'LEA17'),(17,'lastname',NULL,'REPB'),(17,'company',NULL,'[E2E-PERM] REPB 0001'),(17,'annualrevenue',NULL,'0.00000000'),(17,'assigned_user_id',NULL,'9'),(17,'createdtime',NULL,'2026-07-05 01:06:12'),(17,'modifiedby',NULL,'1'),(17,'source',NULL,'CRM'),(17,'record_id',NULL,'18'),(17,'record_module',NULL,'Leads'),(18,'label',NULL,'REPB'),(18,'lead_no',NULL,'LEA18'),(18,'lastname',NULL,'REPB'),(18,'company',NULL,'[E2E-PERM] REPB 0002'),(18,'annualrevenue',NULL,'0.00000000'),(18,'assigned_user_id',NULL,'9'),(18,'createdtime',NULL,'2026-07-05 01:06:12'),(18,'modifiedby',NULL,'1'),(18,'source',NULL,'CRM'),(18,'record_id',NULL,'19'),(18,'record_module',NULL,'Leads'),(19,'label',NULL,'REPB'),(19,'lead_no',NULL,'LEA19'),(19,'lastname',NULL,'REPB'),(19,'company',NULL,'[E2E-PERM] REPB 0003'),(19,'annualrevenue',NULL,'0.00000000'),(19,'assigned_user_id',NULL,'9'),(19,'createdtime',NULL,'2026-07-05 01:06:12'),(19,'modifiedby',NULL,'1'),(19,'source',NULL,'CRM'),(19,'record_id',NULL,'20'),(19,'record_module',NULL,'Leads'),(20,'label',NULL,'REPB'),(20,'lead_no',NULL,'LEA20'),(20,'lastname',NULL,'REPB'),(20,'company',NULL,'[E2E-PERM] REPB 0004'),(20,'annualrevenue',NULL,'0.00000000'),(20,'assigned_user_id',NULL,'9'),(20,'createdtime',NULL,'2026-07-05 01:06:12'),(20,'modifiedby',NULL,'1'),(20,'source',NULL,'CRM'),(20,'record_id',NULL,'21'),(20,'record_module',NULL,'Leads'),(21,'label',NULL,'GRP'),(21,'lead_no',NULL,'LEA21'),(21,'lastname',NULL,'GRP'),(21,'company',NULL,'[E2E-GRP] GRP 0001'),(21,'annualrevenue',NULL,'0.00000000'),(21,'assigned_user_id',NULL,'10'),(21,'createdtime',NULL,'2026-07-05 01:06:13'),(21,'modifiedby',NULL,'1'),(21,'source',NULL,'CRM'),(21,'record_id',NULL,'22'),(21,'record_module',NULL,'Leads'),(22,'label',NULL,'GRP'),(22,'lead_no',NULL,'LEA22'),(22,'lastname',NULL,'GRP'),(22,'company',NULL,'[E2E-GRP] GRP 0002'),(22,'annualrevenue',NULL,'0.00000000'),(22,'assigned_user_id',NULL,'10'),(22,'createdtime',NULL,'2026-07-05 01:06:13'),(22,'modifiedby',NULL,'1'),(22,'source',NULL,'CRM'),(22,'record_id',NULL,'23'),(22,'record_module',NULL,'Leads'),(23,'label',NULL,'GRP'),(23,'lead_no',NULL,'LEA23'),(23,'lastname',NULL,'GRP'),(23,'company',NULL,'[E2E-GRP] GRP 0003'),(23,'annualrevenue',NULL,'0.00000000'),(23,'assigned_user_id',NULL,'10'),(23,'createdtime',NULL,'2026-07-05 01:06:13'),(23,'modifiedby',NULL,'1'),(23,'source',NULL,'CRM'),(23,'record_id',NULL,'24'),(23,'record_module',NULL,'Leads'),(24,'label',NULL,'GRP'),(24,'lead_no',NULL,'LEA24'),(24,'lastname',NULL,'GRP'),(24,'company',NULL,'[E2E-GRP] GRP 0004'),(24,'annualrevenue',NULL,'0.00000000'),(24,'assigned_user_id',NULL,'10'),(24,'createdtime',NULL,'2026-07-05 01:06:13'),(24,'modifiedby',NULL,'1'),(24,'source',NULL,'CRM'),(24,'record_id',NULL,'25'),(24,'record_module',NULL,'Leads'),(25,'label',NULL,'[E2E-PAGE] 0001'),(25,'accountname',NULL,'[E2E-PAGE] 0001'),(25,'account_no',NULL,'ACC1'),(25,'annual_revenue',NULL,'0.00000000'),(25,'assigned_user_id',NULL,'1'),(25,'createdtime',NULL,'2026-07-05 01:06:13'),(25,'modifiedby',NULL,'1'),(25,'source',NULL,'CRM'),(25,'record_id',NULL,'26'),(25,'record_module',NULL,'Accounts'),(26,'label',NULL,'[E2E-PAGE] 0002'),(26,'accountname',NULL,'[E2E-PAGE] 0002'),(26,'account_no',NULL,'ACC2'),(26,'annual_revenue',NULL,'0.00000000'),(26,'assigned_user_id',NULL,'1'),(26,'createdtime',NULL,'2026-07-05 01:06:13'),(26,'modifiedby',NULL,'1'),(26,'source',NULL,'CRM'),(26,'record_id',NULL,'27'),(26,'record_module',NULL,'Accounts'),(27,'label',NULL,'[E2E-PAGE] 0003'),(27,'accountname',NULL,'[E2E-PAGE] 0003'),(27,'account_no',NULL,'ACC3'),(27,'annual_revenue',NULL,'0.00000000'),(27,'assigned_user_id',NULL,'1'),(27,'createdtime',NULL,'2026-07-05 01:06:13'),(27,'modifiedby',NULL,'1'),(27,'source',NULL,'CRM'),(27,'record_id',NULL,'28'),(27,'record_module',NULL,'Accounts'),(28,'label',NULL,'[E2E-PAGE] 0004'),(28,'accountname',NULL,'[E2E-PAGE] 0004'),(28,'account_no',NULL,'ACC4'),(28,'annual_revenue',NULL,'0.00000000'),(28,'assigned_user_id',NULL,'1'),(28,'createdtime',NULL,'2026-07-05 01:06:13'),(28,'modifiedby',NULL,'1'),(28,'source',NULL,'CRM'),(28,'record_id',NULL,'29'),(28,'record_module',NULL,'Accounts'),(29,'label',NULL,'[E2E-PAGE] 0005'),(29,'accountname',NULL,'[E2E-PAGE] 0005'),(29,'account_no',NULL,'ACC5'),(29,'annual_revenue',NULL,'0.00000000'),(29,'assigned_user_id',NULL,'1'),(29,'createdtime',NULL,'2026-07-05 01:06:13'),(29,'modifiedby',NULL,'1'),(29,'source',NULL,'CRM'),(29,'record_id',NULL,'30'),(29,'record_module',NULL,'Accounts'),(30,'label',NULL,'[E2E-PAGE] 0006'),(30,'accountname',NULL,'[E2E-PAGE] 0006'),(30,'account_no',NULL,'ACC6'),(30,'annual_revenue',NULL,'0.00000000'),(30,'assigned_user_id',NULL,'1'),(30,'createdtime',NULL,'2026-07-05 01:06:13'),(30,'modifiedby',NULL,'1'),(30,'source',NULL,'CRM'),(30,'record_id',NULL,'31'),(30,'record_module',NULL,'Accounts'),(31,'label',NULL,'[E2E-PAGE] 0007'),(31,'accountname',NULL,'[E2E-PAGE] 0007'),(31,'account_no',NULL,'ACC7'),(31,'annual_revenue',NULL,'0.00000000'),(31,'assigned_user_id',NULL,'1'),(31,'createdtime',NULL,'2026-07-05 01:06:13'),(31,'modifiedby',NULL,'1'),(31,'source',NULL,'CRM'),(31,'record_id',NULL,'32'),(31,'record_module',NULL,'Accounts'),(32,'label',NULL,'[E2E-PAGE] 0008'),(32,'accountname',NULL,'[E2E-PAGE] 0008'),(32,'account_no',NULL,'ACC8'),(32,'annual_revenue',NULL,'0.00000000'),(32,'assigned_user_id',NULL,'1'),(32,'createdtime',NULL,'2026-07-05 01:06:13'),(32,'modifiedby',NULL,'1'),(32,'source',NULL,'CRM'),(32,'record_id',NULL,'33'),(32,'record_module',NULL,'Accounts'),(33,'label',NULL,'[E2E-PAGE] 0009'),(33,'accountname',NULL,'[E2E-PAGE] 0009'),(33,'account_no',NULL,'ACC9'),(33,'annual_revenue',NULL,'0.00000000'),(33,'assigned_user_id',NULL,'1'),(33,'createdtime',NULL,'2026-07-05 01:06:13'),(33,'modifiedby',NULL,'1'),(33,'source',NULL,'CRM'),(33,'record_id',NULL,'34'),(33,'record_module',NULL,'Accounts'),(34,'label',NULL,'[E2E-PAGE] 0010'),(34,'accountname',NULL,'[E2E-PAGE] 0010'),(34,'account_no',NULL,'ACC10'),(34,'annual_revenue',NULL,'0.00000000'),(34,'assigned_user_id',NULL,'1'),(34,'createdtime',NULL,'2026-07-05 01:06:13'),(34,'modifiedby',NULL,'1'),(34,'source',NULL,'CRM'),(34,'record_id',NULL,'35'),(34,'record_module',NULL,'Accounts'),(35,'label',NULL,'[E2E-PAGE] 0011'),(35,'accountname',NULL,'[E2E-PAGE] 0011'),(35,'account_no',NULL,'ACC11'),(35,'annual_revenue',NULL,'0.00000000'),(35,'assigned_user_id',NULL,'1'),(35,'createdtime',NULL,'2026-07-05 01:06:13'),(35,'modifiedby',NULL,'1'),(35,'source',NULL,'CRM'),(35,'record_id',NULL,'36'),(35,'record_module',NULL,'Accounts'),(36,'label',NULL,'[E2E-PAGE] 0012'),(36,'accountname',NULL,'[E2E-PAGE] 0012'),(36,'account_no',NULL,'ACC12'),(36,'annual_revenue',NULL,'0.00000000'),(36,'assigned_user_id',NULL,'1'),(36,'createdtime',NULL,'2026-07-05 01:06:13'),(36,'modifiedby',NULL,'1'),(36,'source',NULL,'CRM'),(36,'record_id',NULL,'37'),(36,'record_module',NULL,'Accounts'),(37,'label',NULL,'[E2E-PAGE] 0013'),(37,'accountname',NULL,'[E2E-PAGE] 0013'),(37,'account_no',NULL,'ACC13'),(37,'annual_revenue',NULL,'0.00000000'),(37,'assigned_user_id',NULL,'1'),(37,'createdtime',NULL,'2026-07-05 01:06:13'),(37,'modifiedby',NULL,'1'),(37,'source',NULL,'CRM'),(37,'record_id',NULL,'38'),(37,'record_module',NULL,'Accounts'),(38,'label',NULL,'[E2E-PAGE] 0014'),(38,'accountname',NULL,'[E2E-PAGE] 0014'),(38,'account_no',NULL,'ACC14'),(38,'annual_revenue',NULL,'0.00000000'),(38,'assigned_user_id',NULL,'1'),(38,'createdtime',NULL,'2026-07-05 01:06:13'),(38,'modifiedby',NULL,'1'),(38,'source',NULL,'CRM'),(38,'record_id',NULL,'39'),(38,'record_module',NULL,'Accounts'),(39,'label',NULL,'[E2E-PAGE] 0015'),(39,'accountname',NULL,'[E2E-PAGE] 0015'),(39,'account_no',NULL,'ACC15'),(39,'annual_revenue',NULL,'0.00000000'),(39,'assigned_user_id',NULL,'1'),(39,'createdtime',NULL,'2026-07-05 01:06:13'),(39,'modifiedby',NULL,'1'),(39,'source',NULL,'CRM'),(39,'record_id',NULL,'40'),(39,'record_module',NULL,'Accounts'),(40,'label',NULL,'[E2E-PAGE] 0016'),(40,'accountname',NULL,'[E2E-PAGE] 0016'),(40,'account_no',NULL,'ACC16'),(40,'annual_revenue',NULL,'0.00000000'),(40,'assigned_user_id',NULL,'1'),(40,'createdtime',NULL,'2026-07-05 01:06:14'),(40,'modifiedby',NULL,'1'),(40,'source',NULL,'CRM'),(40,'record_id',NULL,'41'),(40,'record_module',NULL,'Accounts'),(41,'label',NULL,'[E2E-PAGE] 0017'),(41,'accountname',NULL,'[E2E-PAGE] 0017'),(41,'account_no',NULL,'ACC17'),(41,'annual_revenue',NULL,'0.00000000'),(41,'assigned_user_id',NULL,'1'),(41,'createdtime',NULL,'2026-07-05 01:06:14'),(41,'modifiedby',NULL,'1'),(41,'source',NULL,'CRM'),(41,'record_id',NULL,'42'),(41,'record_module',NULL,'Accounts'),(42,'label',NULL,'[E2E-PAGE] 0018'),(42,'accountname',NULL,'[E2E-PAGE] 0018'),(42,'account_no',NULL,'ACC18'),(42,'annual_revenue',NULL,'0.00000000'),(42,'assigned_user_id',NULL,'1'),(42,'createdtime',NULL,'2026-07-05 01:06:14'),(42,'modifiedby',NULL,'1'),(42,'source',NULL,'CRM'),(42,'record_id',NULL,'43'),(42,'record_module',NULL,'Accounts'),(43,'label',NULL,'[E2E-PAGE] 0019'),(43,'accountname',NULL,'[E2E-PAGE] 0019'),(43,'account_no',NULL,'ACC19'),(43,'annual_revenue',NULL,'0.00000000'),(43,'assigned_user_id',NULL,'1'),(43,'createdtime',NULL,'2026-07-05 01:06:14'),(43,'modifiedby',NULL,'1'),(43,'source',NULL,'CRM'),(43,'record_id',NULL,'44'),(43,'record_module',NULL,'Accounts'),(44,'label',NULL,'[E2E-PAGE] 0020'),(44,'accountname',NULL,'[E2E-PAGE] 0020'),(44,'account_no',NULL,'ACC20'),(44,'annual_revenue',NULL,'0.00000000'),(44,'assigned_user_id',NULL,'1'),(44,'createdtime',NULL,'2026-07-05 01:06:14'),(44,'modifiedby',NULL,'1'),(44,'source',NULL,'CRM'),(44,'record_id',NULL,'45'),(44,'record_module',NULL,'Accounts'),(45,'label',NULL,'[E2E-PAGE] 0021'),(45,'accountname',NULL,'[E2E-PAGE] 0021'),(45,'account_no',NULL,'ACC21'),(45,'annual_revenue',NULL,'0.00000000'),(45,'assigned_user_id',NULL,'1'),(45,'createdtime',NULL,'2026-07-05 01:06:14'),(45,'modifiedby',NULL,'1'),(45,'source',NULL,'CRM'),(45,'record_id',NULL,'46'),(45,'record_module',NULL,'Accounts'),(46,'label',NULL,'[E2E-PAGE] 0022'),(46,'accountname',NULL,'[E2E-PAGE] 0022'),(46,'account_no',NULL,'ACC22'),(46,'annual_revenue',NULL,'0.00000000'),(46,'assigned_user_id',NULL,'1'),(46,'createdtime',NULL,'2026-07-05 01:06:14'),(46,'modifiedby',NULL,'1'),(46,'source',NULL,'CRM'),(46,'record_id',NULL,'47'),(46,'record_module',NULL,'Accounts'),(47,'label',NULL,'[E2E-PAGE] 0023'),(47,'accountname',NULL,'[E2E-PAGE] 0023'),(47,'account_no',NULL,'ACC23'),(47,'annual_revenue',NULL,'0.00000000'),(47,'assigned_user_id',NULL,'1'),(47,'createdtime',NULL,'2026-07-05 01:06:14'),(47,'modifiedby',NULL,'1'),(47,'source',NULL,'CRM'),(47,'record_id',NULL,'48'),(47,'record_module',NULL,'Accounts'),(48,'label',NULL,'[E2E-PAGE] 0024'),(48,'accountname',NULL,'[E2E-PAGE] 0024'),(48,'account_no',NULL,'ACC24'),(48,'annual_revenue',NULL,'0.00000000'),(48,'assigned_user_id',NULL,'1'),(48,'createdtime',NULL,'2026-07-05 01:06:14'),(48,'modifiedby',NULL,'1'),(48,'source',NULL,'CRM'),(48,'record_id',NULL,'49'),(48,'record_module',NULL,'Accounts'),(49,'label',NULL,'[E2E-PAGE] 0025'),(49,'accountname',NULL,'[E2E-PAGE] 0025'),(49,'account_no',NULL,'ACC25'),(49,'annual_revenue',NULL,'0.00000000'),(49,'assigned_user_id',NULL,'1'),(49,'createdtime',NULL,'2026-07-05 01:06:14'),(49,'modifiedby',NULL,'1'),(49,'source',NULL,'CRM'),(49,'record_id',NULL,'50'),(49,'record_module',NULL,'Accounts'),(50,'label',NULL,'[E2E-PAGE] 0026'),(50,'accountname',NULL,'[E2E-PAGE] 0026'),(50,'account_no',NULL,'ACC26'),(50,'annual_revenue',NULL,'0.00000000'),(50,'assigned_user_id',NULL,'1'),(50,'createdtime',NULL,'2026-07-05 01:06:14'),(50,'modifiedby',NULL,'1'),(50,'source',NULL,'CRM'),(50,'record_id',NULL,'51'),(50,'record_module',NULL,'Accounts'),(51,'label',NULL,'[E2E-PAGE] 0027'),(51,'accountname',NULL,'[E2E-PAGE] 0027'),(51,'account_no',NULL,'ACC27'),(51,'annual_revenue',NULL,'0.00000000'),(51,'assigned_user_id',NULL,'1'),(51,'createdtime',NULL,'2026-07-05 01:06:14'),(51,'modifiedby',NULL,'1'),(51,'source',NULL,'CRM'),(51,'record_id',NULL,'52'),(51,'record_module',NULL,'Accounts'),(52,'label',NULL,'[E2E-PAGE] 0028'),(52,'accountname',NULL,'[E2E-PAGE] 0028'),(52,'account_no',NULL,'ACC28'),(52,'annual_revenue',NULL,'0.00000000'),(52,'assigned_user_id',NULL,'1'),(52,'createdtime',NULL,'2026-07-05 01:06:14'),(52,'modifiedby',NULL,'1'),(52,'source',NULL,'CRM'),(52,'record_id',NULL,'53'),(52,'record_module',NULL,'Accounts'),(53,'label',NULL,'[E2E-PAGE] 0029'),(53,'accountname',NULL,'[E2E-PAGE] 0029'),(53,'account_no',NULL,'ACC29'),(53,'annual_revenue',NULL,'0.00000000'),(53,'assigned_user_id',NULL,'1'),(53,'createdtime',NULL,'2026-07-05 01:06:14'),(53,'modifiedby',NULL,'1'),(53,'source',NULL,'CRM'),(53,'record_id',NULL,'54'),(53,'record_module',NULL,'Accounts'),(54,'label',NULL,'[E2E-PAGE] 0030'),(54,'accountname',NULL,'[E2E-PAGE] 0030'),(54,'account_no',NULL,'ACC30'),(54,'annual_revenue',NULL,'0.00000000'),(54,'assigned_user_id',NULL,'1'),(54,'createdtime',NULL,'2026-07-05 01:06:14'),(54,'modifiedby',NULL,'1'),(54,'source',NULL,'CRM'),(54,'record_id',NULL,'55'),(54,'record_module',NULL,'Accounts'),(55,'label',NULL,'[E2E-PAGE] 0031'),(55,'accountname',NULL,'[E2E-PAGE] 0031'),(55,'account_no',NULL,'ACC31'),(55,'annual_revenue',NULL,'0.00000000'),(55,'assigned_user_id',NULL,'1'),(55,'createdtime',NULL,'2026-07-05 01:06:14'),(55,'modifiedby',NULL,'1'),(55,'source',NULL,'CRM'),(55,'record_id',NULL,'56'),(55,'record_module',NULL,'Accounts'),(56,'label',NULL,'[E2E-PAGE] 0032'),(56,'accountname',NULL,'[E2E-PAGE] 0032'),(56,'account_no',NULL,'ACC32'),(56,'annual_revenue',NULL,'0.00000000'),(56,'assigned_user_id',NULL,'1'),(56,'createdtime',NULL,'2026-07-05 01:06:14'),(56,'modifiedby',NULL,'1'),(56,'source',NULL,'CRM'),(56,'record_id',NULL,'57'),(56,'record_module',NULL,'Accounts'),(57,'label',NULL,'[E2E-PAGE] 0033'),(57,'accountname',NULL,'[E2E-PAGE] 0033'),(57,'account_no',NULL,'ACC33'),(57,'annual_revenue',NULL,'0.00000000'),(57,'assigned_user_id',NULL,'1'),(57,'createdtime',NULL,'2026-07-05 01:06:14'),(57,'modifiedby',NULL,'1'),(57,'source',NULL,'CRM'),(57,'record_id',NULL,'58'),(57,'record_module',NULL,'Accounts'),(58,'label',NULL,'[E2E-PAGE] 0034'),(58,'accountname',NULL,'[E2E-PAGE] 0034'),(58,'account_no',NULL,'ACC34'),(58,'annual_revenue',NULL,'0.00000000'),(58,'assigned_user_id',NULL,'1'),(58,'createdtime',NULL,'2026-07-05 01:06:14'),(58,'modifiedby',NULL,'1'),(58,'source',NULL,'CRM'),(58,'record_id',NULL,'59'),(58,'record_module',NULL,'Accounts'),(59,'label',NULL,'[E2E-PAGE] 0035'),(59,'accountname',NULL,'[E2E-PAGE] 0035'),(59,'account_no',NULL,'ACC35'),(59,'annual_revenue',NULL,'0.00000000'),(59,'assigned_user_id',NULL,'1'),(59,'createdtime',NULL,'2026-07-05 01:06:14'),(59,'modifiedby',NULL,'1'),(59,'source',NULL,'CRM'),(59,'record_id',NULL,'60'),(59,'record_module',NULL,'Accounts'),(60,'label',NULL,'[E2E-PAGE] 0036'),(60,'accountname',NULL,'[E2E-PAGE] 0036'),(60,'account_no',NULL,'ACC36'),(60,'annual_revenue',NULL,'0.00000000'),(60,'assigned_user_id',NULL,'1'),(60,'createdtime',NULL,'2026-07-05 01:06:14'),(60,'modifiedby',NULL,'1'),(60,'source',NULL,'CRM'),(60,'record_id',NULL,'61'),(60,'record_module',NULL,'Accounts'),(61,'label',NULL,'[E2E-PAGE] 0037'),(61,'accountname',NULL,'[E2E-PAGE] 0037'),(61,'account_no',NULL,'ACC37'),(61,'annual_revenue',NULL,'0.00000000'),(61,'assigned_user_id',NULL,'1'),(61,'createdtime',NULL,'2026-07-05 01:06:15'),(61,'modifiedby',NULL,'1'),(61,'source',NULL,'CRM'),(61,'record_id',NULL,'62'),(61,'record_module',NULL,'Accounts'),(62,'label',NULL,'[E2E-PAGE] 0038'),(62,'accountname',NULL,'[E2E-PAGE] 0038'),(62,'account_no',NULL,'ACC38'),(62,'annual_revenue',NULL,'0.00000000'),(62,'assigned_user_id',NULL,'1'),(62,'createdtime',NULL,'2026-07-05 01:06:15'),(62,'modifiedby',NULL,'1'),(62,'source',NULL,'CRM'),(62,'record_id',NULL,'63'),(62,'record_module',NULL,'Accounts'),(63,'label',NULL,'[E2E-PAGE] 0039'),(63,'accountname',NULL,'[E2E-PAGE] 0039'),(63,'account_no',NULL,'ACC39'),(63,'annual_revenue',NULL,'0.00000000'),(63,'assigned_user_id',NULL,'1'),(63,'createdtime',NULL,'2026-07-05 01:06:15'),(63,'modifiedby',NULL,'1'),(63,'source',NULL,'CRM'),(63,'record_id',NULL,'64'),(63,'record_module',NULL,'Accounts'),(64,'label',NULL,'[E2E-PAGE] 0040'),(64,'accountname',NULL,'[E2E-PAGE] 0040'),(64,'account_no',NULL,'ACC40'),(64,'annual_revenue',NULL,'0.00000000'),(64,'assigned_user_id',NULL,'1'),(64,'createdtime',NULL,'2026-07-05 01:06:15'),(64,'modifiedby',NULL,'1'),(64,'source',NULL,'CRM'),(64,'record_id',NULL,'65'),(64,'record_module',NULL,'Accounts'),(65,'label',NULL,'[E2E-PAGE] 0041'),(65,'accountname',NULL,'[E2E-PAGE] 0041'),(65,'account_no',NULL,'ACC41'),(65,'annual_revenue',NULL,'0.00000000'),(65,'assigned_user_id',NULL,'1'),(65,'createdtime',NULL,'2026-07-05 01:06:15'),(65,'modifiedby',NULL,'1'),(65,'source',NULL,'CRM'),(65,'record_id',NULL,'66'),(65,'record_module',NULL,'Accounts'),(66,'label',NULL,'[E2E-PAGE] 0042'),(66,'accountname',NULL,'[E2E-PAGE] 0042'),(66,'account_no',NULL,'ACC42'),(66,'annual_revenue',NULL,'0.00000000'),(66,'assigned_user_id',NULL,'1'),(66,'createdtime',NULL,'2026-07-05 01:06:15'),(66,'modifiedby',NULL,'1'),(66,'source',NULL,'CRM'),(66,'record_id',NULL,'67'),(66,'record_module',NULL,'Accounts'),(67,'label',NULL,'[E2E-PAGE] 0043'),(67,'accountname',NULL,'[E2E-PAGE] 0043'),(67,'account_no',NULL,'ACC43'),(67,'annual_revenue',NULL,'0.00000000'),(67,'assigned_user_id',NULL,'1'),(67,'createdtime',NULL,'2026-07-05 01:06:15'),(67,'modifiedby',NULL,'1'),(67,'source',NULL,'CRM'),(67,'record_id',NULL,'68'),(67,'record_module',NULL,'Accounts'),(68,'label',NULL,'[E2E-PAGE] 0044'),(68,'accountname',NULL,'[E2E-PAGE] 0044'),(68,'account_no',NULL,'ACC44'),(68,'annual_revenue',NULL,'0.00000000'),(68,'assigned_user_id',NULL,'1'),(68,'createdtime',NULL,'2026-07-05 01:06:15'),(68,'modifiedby',NULL,'1'),(68,'source',NULL,'CRM'),(68,'record_id',NULL,'69'),(68,'record_module',NULL,'Accounts'),(69,'label',NULL,'[E2E-PAGE] 0045'),(69,'accountname',NULL,'[E2E-PAGE] 0045'),(69,'account_no',NULL,'ACC45'),(69,'annual_revenue',NULL,'0.00000000'),(69,'assigned_user_id',NULL,'1'),(69,'createdtime',NULL,'2026-07-05 01:06:15'),(69,'modifiedby',NULL,'1'),(69,'source',NULL,'CRM'),(69,'record_id',NULL,'70'),(69,'record_module',NULL,'Accounts'),(70,'label',NULL,'[E2E-PAGE] 0046'),(70,'accountname',NULL,'[E2E-PAGE] 0046'),(70,'account_no',NULL,'ACC46'),(70,'annual_revenue',NULL,'0.00000000'),(70,'assigned_user_id',NULL,'1'),(70,'createdtime',NULL,'2026-07-05 01:06:15'),(70,'modifiedby',NULL,'1'),(70,'source',NULL,'CRM'),(70,'record_id',NULL,'71'),(70,'record_module',NULL,'Accounts'),(71,'label',NULL,'[E2E-PAGE] 0047'),(71,'accountname',NULL,'[E2E-PAGE] 0047'),(71,'account_no',NULL,'ACC47'),(71,'annual_revenue',NULL,'0.00000000'),(71,'assigned_user_id',NULL,'1'),(71,'createdtime',NULL,'2026-07-05 01:06:15'),(71,'modifiedby',NULL,'1'),(71,'source',NULL,'CRM'),(71,'record_id',NULL,'72'),(71,'record_module',NULL,'Accounts'),(72,'label',NULL,'[E2E-PAGE] 0048'),(72,'accountname',NULL,'[E2E-PAGE] 0048'),(72,'account_no',NULL,'ACC48'),(72,'annual_revenue',NULL,'0.00000000'),(72,'assigned_user_id',NULL,'1'),(72,'createdtime',NULL,'2026-07-05 01:06:15'),(72,'modifiedby',NULL,'1'),(72,'source',NULL,'CRM'),(72,'record_id',NULL,'73'),(72,'record_module',NULL,'Accounts'),(73,'label',NULL,'[E2E-PAGE] 0049'),(73,'accountname',NULL,'[E2E-PAGE] 0049'),(73,'account_no',NULL,'ACC49'),(73,'annual_revenue',NULL,'0.00000000'),(73,'assigned_user_id',NULL,'1'),(73,'createdtime',NULL,'2026-07-05 01:06:15'),(73,'modifiedby',NULL,'1'),(73,'source',NULL,'CRM'),(73,'record_id',NULL,'74'),(73,'record_module',NULL,'Accounts'),(74,'label',NULL,'[E2E-PAGE] 0050'),(74,'accountname',NULL,'[E2E-PAGE] 0050'),(74,'account_no',NULL,'ACC50'),(74,'annual_revenue',NULL,'0.00000000'),(74,'assigned_user_id',NULL,'1'),(74,'createdtime',NULL,'2026-07-05 01:06:15'),(74,'modifiedby',NULL,'1'),(74,'source',NULL,'CRM'),(74,'record_id',NULL,'75'),(74,'record_module',NULL,'Accounts'),(75,'label',NULL,'[E2E-PAGE] 0051'),(75,'accountname',NULL,'[E2E-PAGE] 0051'),(75,'account_no',NULL,'ACC51'),(75,'annual_revenue',NULL,'0.00000000'),(75,'assigned_user_id',NULL,'1'),(75,'createdtime',NULL,'2026-07-05 01:06:18'),(75,'modifiedby',NULL,'1'),(75,'source',NULL,'CRM'),(75,'record_id',NULL,'76'),(75,'record_module',NULL,'Accounts'),(76,'label',NULL,'[E2E-PAGE] 0052'),(76,'accountname',NULL,'[E2E-PAGE] 0052'),(76,'account_no',NULL,'ACC52'),(76,'annual_revenue',NULL,'0.00000000'),(76,'assigned_user_id',NULL,'1'),(76,'createdtime',NULL,'2026-07-05 01:06:18'),(76,'modifiedby',NULL,'1'),(76,'source',NULL,'CRM'),(76,'record_id',NULL,'77'),(76,'record_module',NULL,'Accounts'),(77,'label',NULL,'[E2E-PAGE] 0053'),(77,'accountname',NULL,'[E2E-PAGE] 0053'),(77,'account_no',NULL,'ACC53'),(77,'annual_revenue',NULL,'0.00000000'),(77,'assigned_user_id',NULL,'1'),(77,'createdtime',NULL,'2026-07-05 01:06:18'),(77,'modifiedby',NULL,'1'),(77,'source',NULL,'CRM'),(77,'record_id',NULL,'78'),(77,'record_module',NULL,'Accounts'),(78,'label',NULL,'[E2E-PAGE] 0054'),(78,'accountname',NULL,'[E2E-PAGE] 0054'),(78,'account_no',NULL,'ACC54'),(78,'annual_revenue',NULL,'0.00000000'),(78,'assigned_user_id',NULL,'1'),(78,'createdtime',NULL,'2026-07-05 01:06:18'),(78,'modifiedby',NULL,'1'),(78,'source',NULL,'CRM'),(78,'record_id',NULL,'79'),(78,'record_module',NULL,'Accounts'),(79,'label',NULL,'[E2E-PAGE] 0055'),(79,'accountname',NULL,'[E2E-PAGE] 0055'),(79,'account_no',NULL,'ACC55'),(79,'annual_revenue',NULL,'0.00000000'),(79,'assigned_user_id',NULL,'1'),(79,'createdtime',NULL,'2026-07-05 01:06:18'),(79,'modifiedby',NULL,'1'),(79,'source',NULL,'CRM'),(79,'record_id',NULL,'80'),(79,'record_module',NULL,'Accounts'),(80,'label',NULL,'[E2E-PAGE] 0056'),(80,'accountname',NULL,'[E2E-PAGE] 0056'),(80,'account_no',NULL,'ACC56'),(80,'annual_revenue',NULL,'0.00000000'),(80,'assigned_user_id',NULL,'1'),(80,'createdtime',NULL,'2026-07-05 01:06:18'),(80,'modifiedby',NULL,'1'),(80,'source',NULL,'CRM'),(80,'record_id',NULL,'81'),(80,'record_module',NULL,'Accounts'),(81,'label',NULL,'[E2E-PAGE] 0057'),(81,'accountname',NULL,'[E2E-PAGE] 0057'),(81,'account_no',NULL,'ACC57'),(81,'annual_revenue',NULL,'0.00000000'),(81,'assigned_user_id',NULL,'1'),(81,'createdtime',NULL,'2026-07-05 01:06:18'),(81,'modifiedby',NULL,'1'),(81,'source',NULL,'CRM'),(81,'record_id',NULL,'82'),(81,'record_module',NULL,'Accounts'),(82,'label',NULL,'[E2E-PAGE] 0058'),(82,'accountname',NULL,'[E2E-PAGE] 0058'),(82,'account_no',NULL,'ACC58'),(82,'annual_revenue',NULL,'0.00000000'),(82,'assigned_user_id',NULL,'1'),(82,'createdtime',NULL,'2026-07-05 01:06:18'),(82,'modifiedby',NULL,'1'),(82,'source',NULL,'CRM'),(82,'record_id',NULL,'83'),(82,'record_module',NULL,'Accounts'),(83,'label',NULL,'[E2E-PAGE] 0059'),(83,'accountname',NULL,'[E2E-PAGE] 0059'),(83,'account_no',NULL,'ACC59'),(83,'annual_revenue',NULL,'0.00000000'),(83,'assigned_user_id',NULL,'1'),(83,'createdtime',NULL,'2026-07-05 01:06:19'),(83,'modifiedby',NULL,'1'),(83,'source',NULL,'CRM'),(83,'record_id',NULL,'84'),(83,'record_module',NULL,'Accounts'),(84,'label',NULL,'[E2E-PAGE] 0060'),(84,'accountname',NULL,'[E2E-PAGE] 0060'),(84,'account_no',NULL,'ACC60'),(84,'annual_revenue',NULL,'0.00000000'),(84,'assigned_user_id',NULL,'1'),(84,'createdtime',NULL,'2026-07-05 01:06:19'),(84,'modifiedby',NULL,'1'),(84,'source',NULL,'CRM'),(84,'record_id',NULL,'85'),(84,'record_module',NULL,'Accounts'),(85,'label',NULL,'[E2E-PAGE] 0061'),(85,'accountname',NULL,'[E2E-PAGE] 0061'),(85,'account_no',NULL,'ACC61'),(85,'annual_revenue',NULL,'0.00000000'),(85,'assigned_user_id',NULL,'1'),(85,'createdtime',NULL,'2026-07-05 01:06:19'),(85,'modifiedby',NULL,'1'),(85,'source',NULL,'CRM'),(85,'record_id',NULL,'86'),(85,'record_module',NULL,'Accounts'),(86,'label',NULL,'[E2E-PAGE] 0062'),(86,'accountname',NULL,'[E2E-PAGE] 0062'),(86,'account_no',NULL,'ACC62'),(86,'annual_revenue',NULL,'0.00000000'),(86,'assigned_user_id',NULL,'1'),(86,'createdtime',NULL,'2026-07-05 01:06:19'),(86,'modifiedby',NULL,'1'),(86,'source',NULL,'CRM'),(86,'record_id',NULL,'87'),(86,'record_module',NULL,'Accounts'),(87,'label',NULL,'[E2E-PAGE] 0063'),(87,'accountname',NULL,'[E2E-PAGE] 0063'),(87,'account_no',NULL,'ACC63'),(87,'annual_revenue',NULL,'0.00000000'),(87,'assigned_user_id',NULL,'1'),(87,'createdtime',NULL,'2026-07-05 01:06:19'),(87,'modifiedby',NULL,'1'),(87,'source',NULL,'CRM'),(87,'record_id',NULL,'88'),(87,'record_module',NULL,'Accounts'),(88,'label',NULL,'[E2E-PAGE] 0064'),(88,'accountname',NULL,'[E2E-PAGE] 0064'),(88,'account_no',NULL,'ACC64'),(88,'annual_revenue',NULL,'0.00000000'),(88,'assigned_user_id',NULL,'1'),(88,'createdtime',NULL,'2026-07-05 01:06:19'),(88,'modifiedby',NULL,'1'),(88,'source',NULL,'CRM'),(88,'record_id',NULL,'89'),(88,'record_module',NULL,'Accounts'),(89,'label',NULL,'[E2E-PAGE] 0065'),(89,'accountname',NULL,'[E2E-PAGE] 0065'),(89,'account_no',NULL,'ACC65'),(89,'annual_revenue',NULL,'0.00000000'),(89,'assigned_user_id',NULL,'1'),(89,'createdtime',NULL,'2026-07-05 01:06:19'),(89,'modifiedby',NULL,'1'),(89,'source',NULL,'CRM'),(89,'record_id',NULL,'90'),(89,'record_module',NULL,'Accounts'),(90,'label',NULL,'[E2E-PAGE] 0066'),(90,'accountname',NULL,'[E2E-PAGE] 0066'),(90,'account_no',NULL,'ACC66'),(90,'annual_revenue',NULL,'0.00000000'),(90,'assigned_user_id',NULL,'1'),(90,'createdtime',NULL,'2026-07-05 01:06:19'),(90,'modifiedby',NULL,'1'),(90,'source',NULL,'CRM'),(90,'record_id',NULL,'91'),(90,'record_module',NULL,'Accounts'),(91,'label',NULL,'[E2E-PAGE] 0067'),(91,'accountname',NULL,'[E2E-PAGE] 0067'),(91,'account_no',NULL,'ACC67'),(91,'annual_revenue',NULL,'0.00000000'),(91,'assigned_user_id',NULL,'1'),(91,'createdtime',NULL,'2026-07-05 01:06:19'),(91,'modifiedby',NULL,'1'),(91,'source',NULL,'CRM'),(91,'record_id',NULL,'92'),(91,'record_module',NULL,'Accounts'),(92,'label',NULL,'[E2E-PAGE] 0068'),(92,'accountname',NULL,'[E2E-PAGE] 0068'),(92,'account_no',NULL,'ACC68'),(92,'annual_revenue',NULL,'0.00000000'),(92,'assigned_user_id',NULL,'1'),(92,'createdtime',NULL,'2026-07-05 01:06:19'),(92,'modifiedby',NULL,'1'),(92,'source',NULL,'CRM'),(92,'record_id',NULL,'93'),(92,'record_module',NULL,'Accounts'),(93,'label',NULL,'[E2E-PAGE] 0069'),(93,'accountname',NULL,'[E2E-PAGE] 0069'),(93,'account_no',NULL,'ACC69'),(93,'annual_revenue',NULL,'0.00000000'),(93,'assigned_user_id',NULL,'1'),(93,'createdtime',NULL,'2026-07-05 01:06:19'),(93,'modifiedby',NULL,'1'),(93,'source',NULL,'CRM'),(93,'record_id',NULL,'94'),(93,'record_module',NULL,'Accounts'),(94,'label',NULL,'[E2E-PAGE] 0070'),(94,'accountname',NULL,'[E2E-PAGE] 0070'),(94,'account_no',NULL,'ACC70'),(94,'annual_revenue',NULL,'0.00000000'),(94,'assigned_user_id',NULL,'1'),(94,'createdtime',NULL,'2026-07-05 01:06:19'),(94,'modifiedby',NULL,'1'),(94,'source',NULL,'CRM'),(94,'record_id',NULL,'95'),(94,'record_module',NULL,'Accounts'),(95,'label',NULL,'[E2E-PAGE] 0071'),(95,'accountname',NULL,'[E2E-PAGE] 0071'),(95,'account_no',NULL,'ACC71'),(95,'annual_revenue',NULL,'0.00000000'),(95,'assigned_user_id',NULL,'1'),(95,'createdtime',NULL,'2026-07-05 01:06:19'),(95,'modifiedby',NULL,'1'),(95,'source',NULL,'CRM'),(95,'record_id',NULL,'96'),(95,'record_module',NULL,'Accounts'),(96,'label',NULL,'[E2E-PAGE] 0072'),(96,'accountname',NULL,'[E2E-PAGE] 0072'),(96,'account_no',NULL,'ACC72'),(96,'annual_revenue',NULL,'0.00000000'),(96,'assigned_user_id',NULL,'1'),(96,'createdtime',NULL,'2026-07-05 01:06:19'),(96,'modifiedby',NULL,'1'),(96,'source',NULL,'CRM'),(96,'record_id',NULL,'97'),(96,'record_module',NULL,'Accounts'),(97,'label',NULL,'[E2E-PAGE] 0073'),(97,'accountname',NULL,'[E2E-PAGE] 0073'),(97,'account_no',NULL,'ACC73'),(97,'annual_revenue',NULL,'0.00000000'),(97,'assigned_user_id',NULL,'1'),(97,'createdtime',NULL,'2026-07-05 01:06:19'),(97,'modifiedby',NULL,'1'),(97,'source',NULL,'CRM'),(97,'record_id',NULL,'98'),(97,'record_module',NULL,'Accounts'),(98,'label',NULL,'[E2E-PAGE] 0074'),(98,'accountname',NULL,'[E2E-PAGE] 0074'),(98,'account_no',NULL,'ACC74'),(98,'annual_revenue',NULL,'0.00000000'),(98,'assigned_user_id',NULL,'1'),(98,'createdtime',NULL,'2026-07-05 01:06:19'),(98,'modifiedby',NULL,'1'),(98,'source',NULL,'CRM'),(98,'record_id',NULL,'99'),(98,'record_module',NULL,'Accounts'),(99,'label',NULL,'[E2E-PAGE] 0075'),(99,'accountname',NULL,'[E2E-PAGE] 0075'),(99,'account_no',NULL,'ACC75'),(99,'annual_revenue',NULL,'0.00000000'),(99,'assigned_user_id',NULL,'1'),(99,'createdtime',NULL,'2026-07-05 01:06:19'),(99,'modifiedby',NULL,'1'),(99,'source',NULL,'CRM'),(99,'record_id',NULL,'100'),(99,'record_module',NULL,'Accounts'),(100,'label',NULL,'[E2E-PAGE] 0076'),(100,'accountname',NULL,'[E2E-PAGE] 0076'),(100,'account_no',NULL,'ACC76'),(100,'annual_revenue',NULL,'0.00000000'),(100,'assigned_user_id',NULL,'1'),(100,'createdtime',NULL,'2026-07-05 01:06:19'),(100,'modifiedby',NULL,'1'),(100,'source',NULL,'CRM'),(100,'record_id',NULL,'101'),(100,'record_module',NULL,'Accounts'),(101,'label',NULL,'[E2E-PAGE] 0077'),(101,'accountname',NULL,'[E2E-PAGE] 0077'),(101,'account_no',NULL,'ACC77'),(101,'annual_revenue',NULL,'0.00000000'),(101,'assigned_user_id',NULL,'1'),(101,'createdtime',NULL,'2026-07-05 01:06:19'),(101,'modifiedby',NULL,'1'),(101,'source',NULL,'CRM'),(101,'record_id',NULL,'102'),(101,'record_module',NULL,'Accounts'),(102,'label',NULL,'[E2E-PAGE] 0078'),(102,'accountname',NULL,'[E2E-PAGE] 0078'),(102,'account_no',NULL,'ACC78'),(102,'annual_revenue',NULL,'0.00000000'),(102,'assigned_user_id',NULL,'1'),(102,'createdtime',NULL,'2026-07-05 01:06:19'),(102,'modifiedby',NULL,'1'),(102,'source',NULL,'CRM'),(102,'record_id',NULL,'103'),(102,'record_module',NULL,'Accounts'),(103,'label',NULL,'[E2E-PAGE] 0079'),(103,'accountname',NULL,'[E2E-PAGE] 0079'),(103,'account_no',NULL,'ACC79'),(103,'annual_revenue',NULL,'0.00000000'),(103,'assigned_user_id',NULL,'1'),(103,'createdtime',NULL,'2026-07-05 01:06:20'),(103,'modifiedby',NULL,'1'),(103,'source',NULL,'CRM'),(103,'record_id',NULL,'104'),(103,'record_module',NULL,'Accounts'),(104,'label',NULL,'[E2E-PAGE] 0080'),(104,'accountname',NULL,'[E2E-PAGE] 0080'),(104,'account_no',NULL,'ACC80'),(104,'annual_revenue',NULL,'0.00000000'),(104,'assigned_user_id',NULL,'1'),(104,'createdtime',NULL,'2026-07-05 01:06:20'),(104,'modifiedby',NULL,'1'),(104,'source',NULL,'CRM'),(104,'record_id',NULL,'105'),(104,'record_module',NULL,'Accounts'),(105,'label',NULL,'[E2E-PAGE] 0081'),(105,'accountname',NULL,'[E2E-PAGE] 0081'),(105,'account_no',NULL,'ACC81'),(105,'annual_revenue',NULL,'0.00000000'),(105,'assigned_user_id',NULL,'1'),(105,'createdtime',NULL,'2026-07-05 01:06:20'),(105,'modifiedby',NULL,'1'),(105,'source',NULL,'CRM'),(105,'record_id',NULL,'106'),(105,'record_module',NULL,'Accounts'),(106,'label',NULL,'[E2E-PAGE] 0082'),(106,'accountname',NULL,'[E2E-PAGE] 0082'),(106,'account_no',NULL,'ACC82'),(106,'annual_revenue',NULL,'0.00000000'),(106,'assigned_user_id',NULL,'1'),(106,'createdtime',NULL,'2026-07-05 01:06:20'),(106,'modifiedby',NULL,'1'),(106,'source',NULL,'CRM'),(106,'record_id',NULL,'107'),(106,'record_module',NULL,'Accounts'),(107,'label',NULL,'[E2E-PAGE] 0083'),(107,'accountname',NULL,'[E2E-PAGE] 0083'),(107,'account_no',NULL,'ACC83'),(107,'annual_revenue',NULL,'0.00000000'),(107,'assigned_user_id',NULL,'1'),(107,'createdtime',NULL,'2026-07-05 01:06:20'),(107,'modifiedby',NULL,'1'),(107,'source',NULL,'CRM'),(107,'record_id',NULL,'108'),(107,'record_module',NULL,'Accounts'),(108,'label',NULL,'[E2E-PAGE] 0084'),(108,'accountname',NULL,'[E2E-PAGE] 0084'),(108,'account_no',NULL,'ACC84'),(108,'annual_revenue',NULL,'0.00000000'),(108,'assigned_user_id',NULL,'1'),(108,'createdtime',NULL,'2026-07-05 01:06:20'),(108,'modifiedby',NULL,'1'),(108,'source',NULL,'CRM'),(108,'record_id',NULL,'109'),(108,'record_module',NULL,'Accounts'),(109,'label',NULL,'[E2E-PAGE] 0085'),(109,'accountname',NULL,'[E2E-PAGE] 0085'),(109,'account_no',NULL,'ACC85'),(109,'annual_revenue',NULL,'0.00000000'),(109,'assigned_user_id',NULL,'1'),(109,'createdtime',NULL,'2026-07-05 01:06:20'),(109,'modifiedby',NULL,'1'),(109,'source',NULL,'CRM'),(109,'record_id',NULL,'110'),(109,'record_module',NULL,'Accounts'),(110,'label',NULL,'[E2E-PAGE] 0086'),(110,'accountname',NULL,'[E2E-PAGE] 0086'),(110,'account_no',NULL,'ACC86'),(110,'annual_revenue',NULL,'0.00000000'),(110,'assigned_user_id',NULL,'1'),(110,'createdtime',NULL,'2026-07-05 01:06:20'),(110,'modifiedby',NULL,'1'),(110,'source',NULL,'CRM'),(110,'record_id',NULL,'111'),(110,'record_module',NULL,'Accounts'),(111,'label',NULL,'[E2E-PAGE] 0087'),(111,'accountname',NULL,'[E2E-PAGE] 0087'),(111,'account_no',NULL,'ACC87'),(111,'annual_revenue',NULL,'0.00000000'),(111,'assigned_user_id',NULL,'1'),(111,'createdtime',NULL,'2026-07-05 01:06:20'),(111,'modifiedby',NULL,'1'),(111,'source',NULL,'CRM'),(111,'record_id',NULL,'112'),(111,'record_module',NULL,'Accounts'),(112,'label',NULL,'[E2E-PAGE] 0088'),(112,'accountname',NULL,'[E2E-PAGE] 0088'),(112,'account_no',NULL,'ACC88'),(112,'annual_revenue',NULL,'0.00000000'),(112,'assigned_user_id',NULL,'1'),(112,'createdtime',NULL,'2026-07-05 01:06:20'),(112,'modifiedby',NULL,'1'),(112,'source',NULL,'CRM'),(112,'record_id',NULL,'113'),(112,'record_module',NULL,'Accounts'),(113,'label',NULL,'[E2E-PAGE] 0089'),(113,'accountname',NULL,'[E2E-PAGE] 0089'),(113,'account_no',NULL,'ACC89'),(113,'annual_revenue',NULL,'0.00000000'),(113,'assigned_user_id',NULL,'1'),(113,'createdtime',NULL,'2026-07-05 01:06:20'),(113,'modifiedby',NULL,'1'),(113,'source',NULL,'CRM'),(113,'record_id',NULL,'114'),(113,'record_module',NULL,'Accounts'),(114,'label',NULL,'[E2E-PAGE] 0090'),(114,'accountname',NULL,'[E2E-PAGE] 0090'),(114,'account_no',NULL,'ACC90'),(114,'annual_revenue',NULL,'0.00000000'),(114,'assigned_user_id',NULL,'1'),(114,'createdtime',NULL,'2026-07-05 01:06:20'),(114,'modifiedby',NULL,'1'),(114,'source',NULL,'CRM'),(114,'record_id',NULL,'115'),(114,'record_module',NULL,'Accounts'),(115,'label',NULL,'[E2E-PAGE] 0091'),(115,'accountname',NULL,'[E2E-PAGE] 0091'),(115,'account_no',NULL,'ACC91'),(115,'annual_revenue',NULL,'0.00000000'),(115,'assigned_user_id',NULL,'1'),(115,'createdtime',NULL,'2026-07-05 01:06:20'),(115,'modifiedby',NULL,'1'),(115,'source',NULL,'CRM'),(115,'record_id',NULL,'116'),(115,'record_module',NULL,'Accounts'),(116,'label',NULL,'[E2E-PAGE] 0092'),(116,'accountname',NULL,'[E2E-PAGE] 0092'),(116,'account_no',NULL,'ACC92'),(116,'annual_revenue',NULL,'0.00000000'),(116,'assigned_user_id',NULL,'1'),(116,'createdtime',NULL,'2026-07-05 01:06:20'),(116,'modifiedby',NULL,'1'),(116,'source',NULL,'CRM'),(116,'record_id',NULL,'117'),(116,'record_module',NULL,'Accounts'),(117,'label',NULL,'[E2E-PAGE] 0093'),(117,'accountname',NULL,'[E2E-PAGE] 0093'),(117,'account_no',NULL,'ACC93'),(117,'annual_revenue',NULL,'0.00000000'),(117,'assigned_user_id',NULL,'1'),(117,'createdtime',NULL,'2026-07-05 01:06:20'),(117,'modifiedby',NULL,'1'),(117,'source',NULL,'CRM'),(117,'record_id',NULL,'118'),(117,'record_module',NULL,'Accounts'),(118,'label',NULL,'[E2E-PAGE] 0094'),(118,'accountname',NULL,'[E2E-PAGE] 0094'),(118,'account_no',NULL,'ACC94'),(118,'annual_revenue',NULL,'0.00000000'),(118,'assigned_user_id',NULL,'1'),(118,'createdtime',NULL,'2026-07-05 01:06:20'),(118,'modifiedby',NULL,'1'),(118,'source',NULL,'CRM'),(118,'record_id',NULL,'119'),(118,'record_module',NULL,'Accounts'),(119,'label',NULL,'[E2E-PAGE] 0095'),(119,'accountname',NULL,'[E2E-PAGE] 0095'),(119,'account_no',NULL,'ACC95'),(119,'annual_revenue',NULL,'0.00000000'),(119,'assigned_user_id',NULL,'1'),(119,'createdtime',NULL,'2026-07-05 01:06:20'),(119,'modifiedby',NULL,'1'),(119,'source',NULL,'CRM'),(119,'record_id',NULL,'120'),(119,'record_module',NULL,'Accounts'),(120,'label',NULL,'[E2E-PAGE] 0096'),(120,'accountname',NULL,'[E2E-PAGE] 0096'),(120,'account_no',NULL,'ACC96'),(120,'annual_revenue',NULL,'0.00000000'),(120,'assigned_user_id',NULL,'1'),(120,'createdtime',NULL,'2026-07-05 01:06:20'),(120,'modifiedby',NULL,'1'),(120,'source',NULL,'CRM'),(120,'record_id',NULL,'121'),(120,'record_module',NULL,'Accounts'),(121,'label',NULL,'[E2E-PAGE] 0097'),(121,'accountname',NULL,'[E2E-PAGE] 0097'),(121,'account_no',NULL,'ACC97'),(121,'annual_revenue',NULL,'0.00000000'),(121,'assigned_user_id',NULL,'1'),(121,'createdtime',NULL,'2026-07-05 01:06:20'),(121,'modifiedby',NULL,'1'),(121,'source',NULL,'CRM'),(121,'record_id',NULL,'122'),(121,'record_module',NULL,'Accounts'),(122,'label',NULL,'[E2E-PAGE] 0098'),(122,'accountname',NULL,'[E2E-PAGE] 0098'),(122,'account_no',NULL,'ACC98'),(122,'annual_revenue',NULL,'0.00000000'),(122,'assigned_user_id',NULL,'1'),(122,'createdtime',NULL,'2026-07-05 01:06:20'),(122,'modifiedby',NULL,'1'),(122,'source',NULL,'CRM'),(122,'record_id',NULL,'123'),(122,'record_module',NULL,'Accounts'),(123,'label',NULL,'[E2E-PAGE] 0099'),(123,'accountname',NULL,'[E2E-PAGE] 0099'),(123,'account_no',NULL,'ACC99'),(123,'annual_revenue',NULL,'0.00000000'),(123,'assigned_user_id',NULL,'1'),(123,'createdtime',NULL,'2026-07-05 01:06:21'),(123,'modifiedby',NULL,'1'),(123,'source',NULL,'CRM'),(123,'record_id',NULL,'124'),(123,'record_module',NULL,'Accounts'),(124,'label',NULL,'[E2E-PAGE] 0100'),(124,'accountname',NULL,'[E2E-PAGE] 0100'),(124,'account_no',NULL,'ACC100'),(124,'annual_revenue',NULL,'0.00000000'),(124,'assigned_user_id',NULL,'1'),(124,'createdtime',NULL,'2026-07-05 01:06:21'),(124,'modifiedby',NULL,'1'),(124,'source',NULL,'CRM'),(124,'record_id',NULL,'125'),(124,'record_module',NULL,'Accounts'),(125,'label',NULL,'[E2E-PAGE] 0101'),(125,'accountname',NULL,'[E2E-PAGE] 0101'),(125,'account_no',NULL,'ACC101'),(125,'annual_revenue',NULL,'0.00000000'),(125,'assigned_user_id',NULL,'1'),(125,'createdtime',NULL,'2026-07-05 01:06:21'),(125,'modifiedby',NULL,'1'),(125,'source',NULL,'CRM'),(125,'record_id',NULL,'126'),(125,'record_module',NULL,'Accounts'),(126,'label',NULL,'[E2E-PAGE] 0102'),(126,'accountname',NULL,'[E2E-PAGE] 0102'),(126,'account_no',NULL,'ACC102'),(126,'annual_revenue',NULL,'0.00000000'),(126,'assigned_user_id',NULL,'1'),(126,'createdtime',NULL,'2026-07-05 01:06:21'),(126,'modifiedby',NULL,'1'),(126,'source',NULL,'CRM'),(126,'record_id',NULL,'127'),(126,'record_module',NULL,'Accounts'),(127,'label',NULL,'[E2E-PAGE] 0103'),(127,'accountname',NULL,'[E2E-PAGE] 0103'),(127,'account_no',NULL,'ACC103'),(127,'annual_revenue',NULL,'0.00000000'),(127,'assigned_user_id',NULL,'1'),(127,'createdtime',NULL,'2026-07-05 01:06:21'),(127,'modifiedby',NULL,'1'),(127,'source',NULL,'CRM'),(127,'record_id',NULL,'128'),(127,'record_module',NULL,'Accounts'),(128,'label',NULL,'[E2E-PAGE] 0104'),(128,'accountname',NULL,'[E2E-PAGE] 0104'),(128,'account_no',NULL,'ACC104'),(128,'annual_revenue',NULL,'0.00000000'),(128,'assigned_user_id',NULL,'1'),(128,'createdtime',NULL,'2026-07-05 01:06:21'),(128,'modifiedby',NULL,'1'),(128,'source',NULL,'CRM'),(128,'record_id',NULL,'129'),(128,'record_module',NULL,'Accounts'),(129,'label',NULL,'[E2E-PAGE] 0105'),(129,'accountname',NULL,'[E2E-PAGE] 0105'),(129,'account_no',NULL,'ACC105'),(129,'annual_revenue',NULL,'0.00000000'),(129,'assigned_user_id',NULL,'1'),(129,'createdtime',NULL,'2026-07-05 01:06:21'),(129,'modifiedby',NULL,'1'),(129,'source',NULL,'CRM'),(129,'record_id',NULL,'130'),(129,'record_module',NULL,'Accounts'),(130,'label',NULL,'[E2E-PAGE] 0106'),(130,'accountname',NULL,'[E2E-PAGE] 0106'),(130,'account_no',NULL,'ACC106'),(130,'annual_revenue',NULL,'0.00000000'),(130,'assigned_user_id',NULL,'1'),(130,'createdtime',NULL,'2026-07-05 01:06:21'),(130,'modifiedby',NULL,'1'),(130,'source',NULL,'CRM'),(130,'record_id',NULL,'131'),(130,'record_module',NULL,'Accounts'),(131,'label',NULL,'[E2E-PAGE] 0107'),(131,'accountname',NULL,'[E2E-PAGE] 0107'),(131,'account_no',NULL,'ACC107'),(131,'annual_revenue',NULL,'0.00000000'),(131,'assigned_user_id',NULL,'1'),(131,'createdtime',NULL,'2026-07-05 01:06:21'),(131,'modifiedby',NULL,'1'),(131,'source',NULL,'CRM'),(131,'record_id',NULL,'132'),(131,'record_module',NULL,'Accounts'),(132,'label',NULL,'[E2E-PAGE] 0108'),(132,'accountname',NULL,'[E2E-PAGE] 0108'),(132,'account_no',NULL,'ACC108'),(132,'annual_revenue',NULL,'0.00000000'),(132,'assigned_user_id',NULL,'1'),(132,'createdtime',NULL,'2026-07-05 01:06:21'),(132,'modifiedby',NULL,'1'),(132,'source',NULL,'CRM'),(132,'record_id',NULL,'133'),(132,'record_module',NULL,'Accounts'),(133,'label',NULL,'[E2E-PAGE] 0109'),(133,'accountname',NULL,'[E2E-PAGE] 0109'),(133,'account_no',NULL,'ACC109'),(133,'annual_revenue',NULL,'0.00000000'),(133,'assigned_user_id',NULL,'1'),(133,'createdtime',NULL,'2026-07-05 01:06:21'),(133,'modifiedby',NULL,'1'),(133,'source',NULL,'CRM'),(133,'record_id',NULL,'134'),(133,'record_module',NULL,'Accounts'),(134,'label',NULL,'[E2E-PAGE] 0110'),(134,'accountname',NULL,'[E2E-PAGE] 0110'),(134,'account_no',NULL,'ACC110'),(134,'annual_revenue',NULL,'0.00000000'),(134,'assigned_user_id',NULL,'1'),(134,'createdtime',NULL,'2026-07-05 01:06:21'),(134,'modifiedby',NULL,'1'),(134,'source',NULL,'CRM'),(134,'record_id',NULL,'135'),(134,'record_module',NULL,'Accounts'),(135,'label',NULL,'[E2E-PAGE] 0111'),(135,'accountname',NULL,'[E2E-PAGE] 0111'),(135,'account_no',NULL,'ACC111'),(135,'annual_revenue',NULL,'0.00000000'),(135,'assigned_user_id',NULL,'1'),(135,'createdtime',NULL,'2026-07-05 01:06:21'),(135,'modifiedby',NULL,'1'),(135,'source',NULL,'CRM'),(135,'record_id',NULL,'136'),(135,'record_module',NULL,'Accounts'),(136,'label',NULL,'[E2E-PAGE] 0112'),(136,'accountname',NULL,'[E2E-PAGE] 0112'),(136,'account_no',NULL,'ACC112'),(136,'annual_revenue',NULL,'0.00000000'),(136,'assigned_user_id',NULL,'1'),(136,'createdtime',NULL,'2026-07-05 01:06:21'),(136,'modifiedby',NULL,'1'),(136,'source',NULL,'CRM'),(136,'record_id',NULL,'137'),(136,'record_module',NULL,'Accounts'),(137,'label',NULL,'[E2E-PAGE] 0113'),(137,'accountname',NULL,'[E2E-PAGE] 0113'),(137,'account_no',NULL,'ACC113'),(137,'annual_revenue',NULL,'0.00000000'),(137,'assigned_user_id',NULL,'1'),(137,'createdtime',NULL,'2026-07-05 01:06:21'),(137,'modifiedby',NULL,'1'),(137,'source',NULL,'CRM'),(137,'record_id',NULL,'138'),(137,'record_module',NULL,'Accounts'),(138,'label',NULL,'[E2E-PAGE] 0114'),(138,'accountname',NULL,'[E2E-PAGE] 0114'),(138,'account_no',NULL,'ACC114'),(138,'annual_revenue',NULL,'0.00000000'),(138,'assigned_user_id',NULL,'1'),(138,'createdtime',NULL,'2026-07-05 01:06:21'),(138,'modifiedby',NULL,'1'),(138,'source',NULL,'CRM'),(138,'record_id',NULL,'139'),(138,'record_module',NULL,'Accounts'),(139,'label',NULL,'[E2E-PAGE] 0115'),(139,'accountname',NULL,'[E2E-PAGE] 0115'),(139,'account_no',NULL,'ACC115'),(139,'annual_revenue',NULL,'0.00000000'),(139,'assigned_user_id',NULL,'1'),(139,'createdtime',NULL,'2026-07-05 01:06:21'),(139,'modifiedby',NULL,'1'),(139,'source',NULL,'CRM'),(139,'record_id',NULL,'140'),(139,'record_module',NULL,'Accounts'),(140,'label',NULL,'[E2E-PAGE] 0116'),(140,'accountname',NULL,'[E2E-PAGE] 0116'),(140,'account_no',NULL,'ACC116'),(140,'annual_revenue',NULL,'0.00000000'),(140,'assigned_user_id',NULL,'1'),(140,'createdtime',NULL,'2026-07-05 01:06:21'),(140,'modifiedby',NULL,'1'),(140,'source',NULL,'CRM'),(140,'record_id',NULL,'141'),(140,'record_module',NULL,'Accounts'),(141,'label',NULL,'[E2E-PAGE] 0117'),(141,'accountname',NULL,'[E2E-PAGE] 0117'),(141,'account_no',NULL,'ACC117'),(141,'annual_revenue',NULL,'0.00000000'),(141,'assigned_user_id',NULL,'1'),(141,'createdtime',NULL,'2026-07-05 01:06:21'),(141,'modifiedby',NULL,'1'),(141,'source',NULL,'CRM'),(141,'record_id',NULL,'142'),(141,'record_module',NULL,'Accounts'),(142,'label',NULL,'[E2E-PAGE] 0118'),(142,'accountname',NULL,'[E2E-PAGE] 0118'),(142,'account_no',NULL,'ACC118'),(142,'annual_revenue',NULL,'0.00000000'),(142,'assigned_user_id',NULL,'1'),(142,'createdtime',NULL,'2026-07-05 01:06:21'),(142,'modifiedby',NULL,'1'),(142,'source',NULL,'CRM'),(142,'record_id',NULL,'143'),(142,'record_module',NULL,'Accounts'),(143,'label',NULL,'[E2E-PAGE] 0119'),(143,'accountname',NULL,'[E2E-PAGE] 0119'),(143,'account_no',NULL,'ACC119'),(143,'annual_revenue',NULL,'0.00000000'),(143,'assigned_user_id',NULL,'1'),(143,'createdtime',NULL,'2026-07-05 01:06:21'),(143,'modifiedby',NULL,'1'),(143,'source',NULL,'CRM'),(143,'record_id',NULL,'144'),(143,'record_module',NULL,'Accounts'),(144,'label',NULL,'[E2E-PAGE] 0120'),(144,'accountname',NULL,'[E2E-PAGE] 0120'),(144,'account_no',NULL,'ACC120'),(144,'annual_revenue',NULL,'0.00000000'),(144,'assigned_user_id',NULL,'1'),(144,'createdtime',NULL,'2026-07-05 01:06:22'),(144,'modifiedby',NULL,'1'),(144,'source',NULL,'CRM'),(144,'record_id',NULL,'145'),(144,'record_module',NULL,'Accounts'),(145,'label',NULL,'[E2E-PAGE] 0121'),(145,'accountname',NULL,'[E2E-PAGE] 0121'),(145,'account_no',NULL,'ACC121'),(145,'annual_revenue',NULL,'0.00000000'),(145,'assigned_user_id',NULL,'1'),(145,'createdtime',NULL,'2026-07-05 01:06:22'),(145,'modifiedby',NULL,'1'),(145,'source',NULL,'CRM'),(145,'record_id',NULL,'146'),(145,'record_module',NULL,'Accounts'),(146,'label',NULL,'[E2E-PAGE] 0122'),(146,'accountname',NULL,'[E2E-PAGE] 0122'),(146,'account_no',NULL,'ACC122'),(146,'annual_revenue',NULL,'0.00000000'),(146,'assigned_user_id',NULL,'1'),(146,'createdtime',NULL,'2026-07-05 01:06:22'),(146,'modifiedby',NULL,'1'),(146,'source',NULL,'CRM'),(146,'record_id',NULL,'147'),(146,'record_module',NULL,'Accounts'),(147,'label',NULL,'[E2E-PAGE] 0123'),(147,'accountname',NULL,'[E2E-PAGE] 0123'),(147,'account_no',NULL,'ACC123'),(147,'annual_revenue',NULL,'0.00000000'),(147,'assigned_user_id',NULL,'1'),(147,'createdtime',NULL,'2026-07-05 01:06:22'),(147,'modifiedby',NULL,'1'),(147,'source',NULL,'CRM'),(147,'record_id',NULL,'148'),(147,'record_module',NULL,'Accounts'),(148,'label',NULL,'[E2E-PAGE] 0124'),(148,'accountname',NULL,'[E2E-PAGE] 0124'),(148,'account_no',NULL,'ACC124'),(148,'annual_revenue',NULL,'0.00000000'),(148,'assigned_user_id',NULL,'1'),(148,'createdtime',NULL,'2026-07-05 01:06:22'),(148,'modifiedby',NULL,'1'),(148,'source',NULL,'CRM'),(148,'record_id',NULL,'149'),(148,'record_module',NULL,'Accounts'),(149,'label',NULL,'[E2E-PAGE] 0125'),(149,'accountname',NULL,'[E2E-PAGE] 0125'),(149,'account_no',NULL,'ACC125'),(149,'annual_revenue',NULL,'0.00000000'),(149,'assigned_user_id',NULL,'1'),(149,'createdtime',NULL,'2026-07-05 01:06:22'),(149,'modifiedby',NULL,'1'),(149,'source',NULL,'CRM'),(149,'record_id',NULL,'150'),(149,'record_module',NULL,'Accounts'),(150,'label',NULL,'[E2E-PAGE] 0126'),(150,'accountname',NULL,'[E2E-PAGE] 0126'),(150,'account_no',NULL,'ACC126'),(150,'annual_revenue',NULL,'0.00000000'),(150,'assigned_user_id',NULL,'1'),(150,'createdtime',NULL,'2026-07-05 01:06:22'),(150,'modifiedby',NULL,'1'),(150,'source',NULL,'CRM'),(150,'record_id',NULL,'151'),(150,'record_module',NULL,'Accounts'),(151,'label',NULL,'[E2E-PAGE] 0127'),(151,'accountname',NULL,'[E2E-PAGE] 0127'),(151,'account_no',NULL,'ACC127'),(151,'annual_revenue',NULL,'0.00000000'),(151,'assigned_user_id',NULL,'1'),(151,'createdtime',NULL,'2026-07-05 01:06:22'),(151,'modifiedby',NULL,'1'),(151,'source',NULL,'CRM'),(151,'record_id',NULL,'152'),(151,'record_module',NULL,'Accounts'),(152,'label',NULL,'[E2E-PAGE] 0128'),(152,'accountname',NULL,'[E2E-PAGE] 0128'),(152,'account_no',NULL,'ACC128'),(152,'annual_revenue',NULL,'0.00000000'),(152,'assigned_user_id',NULL,'1'),(152,'createdtime',NULL,'2026-07-05 01:06:22'),(152,'modifiedby',NULL,'1'),(152,'source',NULL,'CRM'),(152,'record_id',NULL,'153'),(152,'record_module',NULL,'Accounts'),(153,'label',NULL,'[E2E-PAGE] 0129'),(153,'accountname',NULL,'[E2E-PAGE] 0129'),(153,'account_no',NULL,'ACC129'),(153,'annual_revenue',NULL,'0.00000000'),(153,'assigned_user_id',NULL,'1'),(153,'createdtime',NULL,'2026-07-05 01:06:22'),(153,'modifiedby',NULL,'1'),(153,'source',NULL,'CRM'),(153,'record_id',NULL,'154'),(153,'record_module',NULL,'Accounts'),(154,'label',NULL,'[E2E-PAGE] 0130'),(154,'accountname',NULL,'[E2E-PAGE] 0130'),(154,'account_no',NULL,'ACC130'),(154,'annual_revenue',NULL,'0.00000000'),(154,'assigned_user_id',NULL,'1'),(154,'createdtime',NULL,'2026-07-05 01:06:22'),(154,'modifiedby',NULL,'1'),(154,'source',NULL,'CRM'),(154,'record_id',NULL,'155'),(154,'record_module',NULL,'Accounts'),(155,'label',NULL,'[E2E-PAGE] 0131'),(155,'accountname',NULL,'[E2E-PAGE] 0131'),(155,'account_no',NULL,'ACC131'),(155,'annual_revenue',NULL,'0.00000000'),(155,'assigned_user_id',NULL,'1'),(155,'createdtime',NULL,'2026-07-05 01:06:22'),(155,'modifiedby',NULL,'1'),(155,'source',NULL,'CRM'),(155,'record_id',NULL,'156'),(155,'record_module',NULL,'Accounts'),(156,'label',NULL,'[E2E-PAGE] 0132'),(156,'accountname',NULL,'[E2E-PAGE] 0132'),(156,'account_no',NULL,'ACC132'),(156,'annual_revenue',NULL,'0.00000000'),(156,'assigned_user_id',NULL,'1'),(156,'createdtime',NULL,'2026-07-05 01:06:22'),(156,'modifiedby',NULL,'1'),(156,'source',NULL,'CRM'),(156,'record_id',NULL,'157'),(156,'record_module',NULL,'Accounts'),(157,'label',NULL,'[E2E-PAGE] 0133'),(157,'accountname',NULL,'[E2E-PAGE] 0133'),(157,'account_no',NULL,'ACC133'),(157,'annual_revenue',NULL,'0.00000000'),(157,'assigned_user_id',NULL,'1'),(157,'createdtime',NULL,'2026-07-05 01:06:22'),(157,'modifiedby',NULL,'1'),(157,'source',NULL,'CRM'),(157,'record_id',NULL,'158'),(157,'record_module',NULL,'Accounts'),(158,'label',NULL,'[E2E-PAGE] 0134'),(158,'accountname',NULL,'[E2E-PAGE] 0134'),(158,'account_no',NULL,'ACC134'),(158,'annual_revenue',NULL,'0.00000000'),(158,'assigned_user_id',NULL,'1'),(158,'createdtime',NULL,'2026-07-05 01:06:22'),(158,'modifiedby',NULL,'1'),(158,'source',NULL,'CRM'),(158,'record_id',NULL,'159'),(158,'record_module',NULL,'Accounts'),(159,'label',NULL,'[E2E-PAGE] 0135'),(159,'accountname',NULL,'[E2E-PAGE] 0135'),(159,'account_no',NULL,'ACC135'),(159,'annual_revenue',NULL,'0.00000000'),(159,'assigned_user_id',NULL,'1'),(159,'createdtime',NULL,'2026-07-05 01:06:22'),(159,'modifiedby',NULL,'1'),(159,'source',NULL,'CRM'),(159,'record_id',NULL,'160'),(159,'record_module',NULL,'Accounts'),(160,'label',NULL,'[E2E-PAGE] 0136'),(160,'accountname',NULL,'[E2E-PAGE] 0136'),(160,'account_no',NULL,'ACC136'),(160,'annual_revenue',NULL,'0.00000000'),(160,'assigned_user_id',NULL,'1'),(160,'createdtime',NULL,'2026-07-05 01:06:22'),(160,'modifiedby',NULL,'1'),(160,'source',NULL,'CRM'),(160,'record_id',NULL,'161'),(160,'record_module',NULL,'Accounts'),(161,'label',NULL,'[E2E-PAGE] 0137'),(161,'accountname',NULL,'[E2E-PAGE] 0137'),(161,'account_no',NULL,'ACC137'),(161,'annual_revenue',NULL,'0.00000000'),(161,'assigned_user_id',NULL,'1'),(161,'createdtime',NULL,'2026-07-05 01:06:22'),(161,'modifiedby',NULL,'1'),(161,'source',NULL,'CRM'),(161,'record_id',NULL,'162'),(161,'record_module',NULL,'Accounts'),(162,'label',NULL,'[E2E-PAGE] 0138'),(162,'accountname',NULL,'[E2E-PAGE] 0138'),(162,'account_no',NULL,'ACC138'),(162,'annual_revenue',NULL,'0.00000000'),(162,'assigned_user_id',NULL,'1'),(162,'createdtime',NULL,'2026-07-05 01:06:22'),(162,'modifiedby',NULL,'1'),(162,'source',NULL,'CRM'),(162,'record_id',NULL,'163'),(162,'record_module',NULL,'Accounts'),(163,'label',NULL,'[E2E-PAGE] 0139'),(163,'accountname',NULL,'[E2E-PAGE] 0139'),(163,'account_no',NULL,'ACC139'),(163,'annual_revenue',NULL,'0.00000000'),(163,'assigned_user_id',NULL,'1'),(163,'createdtime',NULL,'2026-07-05 01:06:22'),(163,'modifiedby',NULL,'1'),(163,'source',NULL,'CRM'),(163,'record_id',NULL,'164'),(163,'record_module',NULL,'Accounts'),(164,'label',NULL,'[E2E-PAGE] 0140'),(164,'accountname',NULL,'[E2E-PAGE] 0140'),(164,'account_no',NULL,'ACC140'),(164,'annual_revenue',NULL,'0.00000000'),(164,'assigned_user_id',NULL,'1'),(164,'createdtime',NULL,'2026-07-05 01:06:22'),(164,'modifiedby',NULL,'1'),(164,'source',NULL,'CRM'),(164,'record_id',NULL,'165'),(164,'record_module',NULL,'Accounts'),(165,'label',NULL,'[E2E-PAGE] 0141'),(165,'accountname',NULL,'[E2E-PAGE] 0141'),(165,'account_no',NULL,'ACC141'),(165,'annual_revenue',NULL,'0.00000000'),(165,'assigned_user_id',NULL,'1'),(165,'createdtime',NULL,'2026-07-05 01:06:23'),(165,'modifiedby',NULL,'1'),(165,'source',NULL,'CRM'),(165,'record_id',NULL,'166'),(165,'record_module',NULL,'Accounts'),(166,'label',NULL,'[E2E-PAGE] 0142'),(166,'accountname',NULL,'[E2E-PAGE] 0142'),(166,'account_no',NULL,'ACC142'),(166,'annual_revenue',NULL,'0.00000000'),(166,'assigned_user_id',NULL,'1'),(166,'createdtime',NULL,'2026-07-05 01:06:23'),(166,'modifiedby',NULL,'1'),(166,'source',NULL,'CRM'),(166,'record_id',NULL,'167'),(166,'record_module',NULL,'Accounts'),(167,'label',NULL,'[E2E-PAGE] 0143'),(167,'accountname',NULL,'[E2E-PAGE] 0143'),(167,'account_no',NULL,'ACC143'),(167,'annual_revenue',NULL,'0.00000000'),(167,'assigned_user_id',NULL,'1'),(167,'createdtime',NULL,'2026-07-05 01:06:23'),(167,'modifiedby',NULL,'1'),(167,'source',NULL,'CRM'),(167,'record_id',NULL,'168'),(167,'record_module',NULL,'Accounts'),(168,'label',NULL,'[E2E-PAGE] 0144'),(168,'accountname',NULL,'[E2E-PAGE] 0144'),(168,'account_no',NULL,'ACC144'),(168,'annual_revenue',NULL,'0.00000000'),(168,'assigned_user_id',NULL,'1'),(168,'createdtime',NULL,'2026-07-05 01:06:23'),(168,'modifiedby',NULL,'1'),(168,'source',NULL,'CRM'),(168,'record_id',NULL,'169'),(168,'record_module',NULL,'Accounts'),(169,'label',NULL,'[E2E-PAGE] 0145'),(169,'accountname',NULL,'[E2E-PAGE] 0145'),(169,'account_no',NULL,'ACC145'),(169,'annual_revenue',NULL,'0.00000000'),(169,'assigned_user_id',NULL,'1'),(169,'createdtime',NULL,'2026-07-05 01:06:23'),(169,'modifiedby',NULL,'1'),(169,'source',NULL,'CRM'),(169,'record_id',NULL,'170'),(169,'record_module',NULL,'Accounts'),(170,'label',NULL,'[E2E-PAGE] 0146'),(170,'accountname',NULL,'[E2E-PAGE] 0146'),(170,'account_no',NULL,'ACC146'),(170,'annual_revenue',NULL,'0.00000000'),(170,'assigned_user_id',NULL,'1'),(170,'createdtime',NULL,'2026-07-05 01:06:23'),(170,'modifiedby',NULL,'1'),(170,'source',NULL,'CRM'),(170,'record_id',NULL,'171'),(170,'record_module',NULL,'Accounts'),(171,'label',NULL,'[E2E-PAGE] 0147'),(171,'accountname',NULL,'[E2E-PAGE] 0147'),(171,'account_no',NULL,'ACC147'),(171,'annual_revenue',NULL,'0.00000000'),(171,'assigned_user_id',NULL,'1'),(171,'createdtime',NULL,'2026-07-05 01:06:23'),(171,'modifiedby',NULL,'1'),(171,'source',NULL,'CRM'),(171,'record_id',NULL,'172'),(171,'record_module',NULL,'Accounts'),(172,'label',NULL,'[E2E-PAGE] 0148'),(172,'accountname',NULL,'[E2E-PAGE] 0148'),(172,'account_no',NULL,'ACC148'),(172,'annual_revenue',NULL,'0.00000000'),(172,'assigned_user_id',NULL,'1'),(172,'createdtime',NULL,'2026-07-05 01:06:23'),(172,'modifiedby',NULL,'1'),(172,'source',NULL,'CRM'),(172,'record_id',NULL,'173'),(172,'record_module',NULL,'Accounts'),(173,'label',NULL,'[E2E-PAGE] 0149'),(173,'accountname',NULL,'[E2E-PAGE] 0149'),(173,'account_no',NULL,'ACC149'),(173,'annual_revenue',NULL,'0.00000000'),(173,'assigned_user_id',NULL,'1'),(173,'createdtime',NULL,'2026-07-05 01:06:23'),(173,'modifiedby',NULL,'1'),(173,'source',NULL,'CRM'),(173,'record_id',NULL,'174'),(173,'record_module',NULL,'Accounts'),(174,'label',NULL,'[E2E-PAGE] 0150'),(174,'accountname',NULL,'[E2E-PAGE] 0150'),(174,'account_no',NULL,'ACC150'),(174,'annual_revenue',NULL,'0.00000000'),(174,'assigned_user_id',NULL,'1'),(174,'createdtime',NULL,'2026-07-05 01:06:23'),(174,'modifiedby',NULL,'1'),(174,'source',NULL,'CRM'),(174,'record_id',NULL,'175'),(174,'record_module',NULL,'Accounts'),(175,'label',NULL,'[E2E-PAGE] 0151'),(175,'accountname',NULL,'[E2E-PAGE] 0151'),(175,'account_no',NULL,'ACC151'),(175,'annual_revenue',NULL,'0.00000000'),(175,'assigned_user_id',NULL,'1'),(175,'createdtime',NULL,'2026-07-05 01:06:23'),(175,'modifiedby',NULL,'1'),(175,'source',NULL,'CRM'),(175,'record_id',NULL,'176'),(175,'record_module',NULL,'Accounts'),(176,'label',NULL,'[E2E-PAGE] 0152'),(176,'accountname',NULL,'[E2E-PAGE] 0152'),(176,'account_no',NULL,'ACC152'),(176,'annual_revenue',NULL,'0.00000000'),(176,'assigned_user_id',NULL,'1'),(176,'createdtime',NULL,'2026-07-05 01:06:23'),(176,'modifiedby',NULL,'1'),(176,'source',NULL,'CRM'),(176,'record_id',NULL,'177'),(176,'record_module',NULL,'Accounts'),(177,'label',NULL,'[E2E-PAGE] 0153'),(177,'accountname',NULL,'[E2E-PAGE] 0153'),(177,'account_no',NULL,'ACC153'),(177,'annual_revenue',NULL,'0.00000000'),(177,'assigned_user_id',NULL,'1'),(177,'createdtime',NULL,'2026-07-05 01:06:23'),(177,'modifiedby',NULL,'1'),(177,'source',NULL,'CRM'),(177,'record_id',NULL,'178'),(177,'record_module',NULL,'Accounts'),(178,'label',NULL,'[E2E-PAGE] 0154'),(178,'accountname',NULL,'[E2E-PAGE] 0154'),(178,'account_no',NULL,'ACC154'),(178,'annual_revenue',NULL,'0.00000000'),(178,'assigned_user_id',NULL,'1'),(178,'createdtime',NULL,'2026-07-05 01:06:23'),(178,'modifiedby',NULL,'1'),(178,'source',NULL,'CRM'),(178,'record_id',NULL,'179'),(178,'record_module',NULL,'Accounts'),(179,'label',NULL,'[E2E-PAGE] 0155'),(179,'accountname',NULL,'[E2E-PAGE] 0155'),(179,'account_no',NULL,'ACC155'),(179,'annual_revenue',NULL,'0.00000000'),(179,'assigned_user_id',NULL,'1'),(179,'createdtime',NULL,'2026-07-05 01:06:23'),(179,'modifiedby',NULL,'1'),(179,'source',NULL,'CRM'),(179,'record_id',NULL,'180'),(179,'record_module',NULL,'Accounts'),(180,'label',NULL,'[E2E-PAGE] 0156'),(180,'accountname',NULL,'[E2E-PAGE] 0156'),(180,'account_no',NULL,'ACC156'),(180,'annual_revenue',NULL,'0.00000000'),(180,'assigned_user_id',NULL,'1'),(180,'createdtime',NULL,'2026-07-05 01:06:23'),(180,'modifiedby',NULL,'1'),(180,'source',NULL,'CRM'),(180,'record_id',NULL,'181'),(180,'record_module',NULL,'Accounts'),(181,'label',NULL,'[E2E-PAGE] 0157'),(181,'accountname',NULL,'[E2E-PAGE] 0157'),(181,'account_no',NULL,'ACC157'),(181,'annual_revenue',NULL,'0.00000000'),(181,'assigned_user_id',NULL,'1'),(181,'createdtime',NULL,'2026-07-05 01:06:23'),(181,'modifiedby',NULL,'1'),(181,'source',NULL,'CRM'),(181,'record_id',NULL,'182'),(181,'record_module',NULL,'Accounts'),(182,'label',NULL,'[E2E-PAGE] 0158'),(182,'accountname',NULL,'[E2E-PAGE] 0158'),(182,'account_no',NULL,'ACC158'),(182,'annual_revenue',NULL,'0.00000000'),(182,'assigned_user_id',NULL,'1'),(182,'createdtime',NULL,'2026-07-05 01:06:23'),(182,'modifiedby',NULL,'1'),(182,'source',NULL,'CRM'),(182,'record_id',NULL,'183'),(182,'record_module',NULL,'Accounts'),(183,'label',NULL,'[E2E-PAGE] 0159'),(183,'accountname',NULL,'[E2E-PAGE] 0159'),(183,'account_no',NULL,'ACC159'),(183,'annual_revenue',NULL,'0.00000000'),(183,'assigned_user_id',NULL,'1'),(183,'createdtime',NULL,'2026-07-05 01:06:23'),(183,'modifiedby',NULL,'1'),(183,'source',NULL,'CRM'),(183,'record_id',NULL,'184'),(183,'record_module',NULL,'Accounts'),(184,'label',NULL,'[E2E-PAGE] 0160'),(184,'accountname',NULL,'[E2E-PAGE] 0160'),(184,'account_no',NULL,'ACC160'),(184,'annual_revenue',NULL,'0.00000000'),(184,'assigned_user_id',NULL,'1'),(184,'createdtime',NULL,'2026-07-05 01:06:23'),(184,'modifiedby',NULL,'1'),(184,'source',NULL,'CRM'),(184,'record_id',NULL,'185'),(184,'record_module',NULL,'Accounts'),(185,'label',NULL,'[E2E-PAGE] 0161'),(185,'accountname',NULL,'[E2E-PAGE] 0161'),(185,'account_no',NULL,'ACC161'),(185,'annual_revenue',NULL,'0.00000000'),(185,'assigned_user_id',NULL,'1'),(185,'createdtime',NULL,'2026-07-05 01:06:23'),(185,'modifiedby',NULL,'1'),(185,'source',NULL,'CRM'),(185,'record_id',NULL,'186'),(185,'record_module',NULL,'Accounts'),(186,'label',NULL,'[E2E-PAGE] 0162'),(186,'accountname',NULL,'[E2E-PAGE] 0162'),(186,'account_no',NULL,'ACC162'),(186,'annual_revenue',NULL,'0.00000000'),(186,'assigned_user_id',NULL,'1'),(186,'createdtime',NULL,'2026-07-05 01:06:24'),(186,'modifiedby',NULL,'1'),(186,'source',NULL,'CRM'),(186,'record_id',NULL,'187'),(186,'record_module',NULL,'Accounts'),(187,'label',NULL,'[E2E-PAGE] 0163'),(187,'accountname',NULL,'[E2E-PAGE] 0163'),(187,'account_no',NULL,'ACC163'),(187,'annual_revenue',NULL,'0.00000000'),(187,'assigned_user_id',NULL,'1'),(187,'createdtime',NULL,'2026-07-05 01:06:24'),(187,'modifiedby',NULL,'1'),(187,'source',NULL,'CRM'),(187,'record_id',NULL,'188'),(187,'record_module',NULL,'Accounts'),(188,'label',NULL,'[E2E-PAGE] 0164'),(188,'accountname',NULL,'[E2E-PAGE] 0164'),(188,'account_no',NULL,'ACC164'),(188,'annual_revenue',NULL,'0.00000000'),(188,'assigned_user_id',NULL,'1'),(188,'createdtime',NULL,'2026-07-05 01:06:24'),(188,'modifiedby',NULL,'1'),(188,'source',NULL,'CRM'),(188,'record_id',NULL,'189'),(188,'record_module',NULL,'Accounts'),(189,'label',NULL,'[E2E-PAGE] 0165'),(189,'accountname',NULL,'[E2E-PAGE] 0165'),(189,'account_no',NULL,'ACC165'),(189,'annual_revenue',NULL,'0.00000000'),(189,'assigned_user_id',NULL,'1'),(189,'createdtime',NULL,'2026-07-05 01:06:24'),(189,'modifiedby',NULL,'1'),(189,'source',NULL,'CRM'),(189,'record_id',NULL,'190'),(189,'record_module',NULL,'Accounts'),(190,'label',NULL,'[E2E-PAGE] 0166'),(190,'accountname',NULL,'[E2E-PAGE] 0166'),(190,'account_no',NULL,'ACC166'),(190,'annual_revenue',NULL,'0.00000000'),(190,'assigned_user_id',NULL,'1'),(190,'createdtime',NULL,'2026-07-05 01:06:24'),(190,'modifiedby',NULL,'1'),(190,'source',NULL,'CRM'),(190,'record_id',NULL,'191'),(190,'record_module',NULL,'Accounts'),(191,'label',NULL,'[E2E-PAGE] 0167'),(191,'accountname',NULL,'[E2E-PAGE] 0167'),(191,'account_no',NULL,'ACC167'),(191,'annual_revenue',NULL,'0.00000000'),(191,'assigned_user_id',NULL,'1'),(191,'createdtime',NULL,'2026-07-05 01:06:24'),(191,'modifiedby',NULL,'1'),(191,'source',NULL,'CRM'),(191,'record_id',NULL,'192'),(191,'record_module',NULL,'Accounts'),(192,'label',NULL,'[E2E-PAGE] 0168'),(192,'accountname',NULL,'[E2E-PAGE] 0168'),(192,'account_no',NULL,'ACC168'),(192,'annual_revenue',NULL,'0.00000000'),(192,'assigned_user_id',NULL,'1'),(192,'createdtime',NULL,'2026-07-05 01:06:24'),(192,'modifiedby',NULL,'1'),(192,'source',NULL,'CRM'),(192,'record_id',NULL,'193'),(192,'record_module',NULL,'Accounts'),(193,'label',NULL,'[E2E-PAGE] 0169'),(193,'accountname',NULL,'[E2E-PAGE] 0169'),(193,'account_no',NULL,'ACC169'),(193,'annual_revenue',NULL,'0.00000000'),(193,'assigned_user_id',NULL,'1'),(193,'createdtime',NULL,'2026-07-05 01:06:24'),(193,'modifiedby',NULL,'1'),(193,'source',NULL,'CRM'),(193,'record_id',NULL,'194'),(193,'record_module',NULL,'Accounts'),(194,'label',NULL,'[E2E-PAGE] 0170'),(194,'accountname',NULL,'[E2E-PAGE] 0170'),(194,'account_no',NULL,'ACC170'),(194,'annual_revenue',NULL,'0.00000000'),(194,'assigned_user_id',NULL,'1'),(194,'createdtime',NULL,'2026-07-05 01:06:24'),(194,'modifiedby',NULL,'1'),(194,'source',NULL,'CRM'),(194,'record_id',NULL,'195'),(194,'record_module',NULL,'Accounts'),(195,'label',NULL,'[E2E-PAGE] 0171'),(195,'accountname',NULL,'[E2E-PAGE] 0171'),(195,'account_no',NULL,'ACC171'),(195,'annual_revenue',NULL,'0.00000000'),(195,'assigned_user_id',NULL,'1'),(195,'createdtime',NULL,'2026-07-05 01:06:24'),(195,'modifiedby',NULL,'1'),(195,'source',NULL,'CRM'),(195,'record_id',NULL,'196'),(195,'record_module',NULL,'Accounts'),(196,'label',NULL,'[E2E-PAGE] 0172'),(196,'accountname',NULL,'[E2E-PAGE] 0172'),(196,'account_no',NULL,'ACC172'),(196,'annual_revenue',NULL,'0.00000000'),(196,'assigned_user_id',NULL,'1'),(196,'createdtime',NULL,'2026-07-05 01:06:24'),(196,'modifiedby',NULL,'1'),(196,'source',NULL,'CRM'),(196,'record_id',NULL,'197'),(196,'record_module',NULL,'Accounts'),(197,'label',NULL,'[E2E-PAGE] 0173'),(197,'accountname',NULL,'[E2E-PAGE] 0173'),(197,'account_no',NULL,'ACC173'),(197,'annual_revenue',NULL,'0.00000000'),(197,'assigned_user_id',NULL,'1'),(197,'createdtime',NULL,'2026-07-05 01:06:24'),(197,'modifiedby',NULL,'1'),(197,'source',NULL,'CRM'),(197,'record_id',NULL,'198'),(197,'record_module',NULL,'Accounts'),(198,'label',NULL,'[E2E-PAGE] 0174'),(198,'accountname',NULL,'[E2E-PAGE] 0174'),(198,'account_no',NULL,'ACC174'),(198,'annual_revenue',NULL,'0.00000000'),(198,'assigned_user_id',NULL,'1'),(198,'createdtime',NULL,'2026-07-05 01:06:24'),(198,'modifiedby',NULL,'1'),(198,'source',NULL,'CRM'),(198,'record_id',NULL,'199'),(198,'record_module',NULL,'Accounts'),(199,'label',NULL,'[E2E-PAGE] 0175'),(199,'accountname',NULL,'[E2E-PAGE] 0175'),(199,'account_no',NULL,'ACC175'),(199,'annual_revenue',NULL,'0.00000000'),(199,'assigned_user_id',NULL,'1'),(199,'createdtime',NULL,'2026-07-05 01:06:24'),(199,'modifiedby',NULL,'1'),(199,'source',NULL,'CRM'),(199,'record_id',NULL,'200'),(199,'record_module',NULL,'Accounts'),(200,'label',NULL,'[E2E-PAGE] 0176'),(200,'accountname',NULL,'[E2E-PAGE] 0176'),(200,'account_no',NULL,'ACC176'),(200,'annual_revenue',NULL,'0.00000000'),(200,'assigned_user_id',NULL,'1'),(200,'createdtime',NULL,'2026-07-05 01:06:24'),(200,'modifiedby',NULL,'1'),(200,'source',NULL,'CRM'),(200,'record_id',NULL,'201'),(200,'record_module',NULL,'Accounts'),(201,'label',NULL,'[E2E-PAGE] 0177'),(201,'accountname',NULL,'[E2E-PAGE] 0177'),(201,'account_no',NULL,'ACC177'),(201,'annual_revenue',NULL,'0.00000000'),(201,'assigned_user_id',NULL,'1'),(201,'createdtime',NULL,'2026-07-05 01:06:24'),(201,'modifiedby',NULL,'1'),(201,'source',NULL,'CRM'),(201,'record_id',NULL,'202'),(201,'record_module',NULL,'Accounts'),(202,'label',NULL,'[E2E-PAGE] 0178'),(202,'accountname',NULL,'[E2E-PAGE] 0178'),(202,'account_no',NULL,'ACC178'),(202,'annual_revenue',NULL,'0.00000000'),(202,'assigned_user_id',NULL,'1'),(202,'createdtime',NULL,'2026-07-05 01:06:24'),(202,'modifiedby',NULL,'1'),(202,'source',NULL,'CRM'),(202,'record_id',NULL,'203'),(202,'record_module',NULL,'Accounts'),(203,'label',NULL,'[E2E-PAGE] 0179'),(203,'accountname',NULL,'[E2E-PAGE] 0179'),(203,'account_no',NULL,'ACC179'),(203,'annual_revenue',NULL,'0.00000000'),(203,'assigned_user_id',NULL,'1'),(203,'createdtime',NULL,'2026-07-05 01:06:24'),(203,'modifiedby',NULL,'1'),(203,'source',NULL,'CRM'),(203,'record_id',NULL,'204'),(203,'record_module',NULL,'Accounts'),(204,'label',NULL,'[E2E-PAGE] 0180'),(204,'accountname',NULL,'[E2E-PAGE] 0180'),(204,'account_no',NULL,'ACC180'),(204,'annual_revenue',NULL,'0.00000000'),(204,'assigned_user_id',NULL,'1'),(204,'createdtime',NULL,'2026-07-05 01:06:24'),(204,'modifiedby',NULL,'1'),(204,'source',NULL,'CRM'),(204,'record_id',NULL,'205'),(204,'record_module',NULL,'Accounts'),(205,'label',NULL,'[E2E-PAGE] 0181'),(205,'accountname',NULL,'[E2E-PAGE] 0181'),(205,'account_no',NULL,'ACC181'),(205,'annual_revenue',NULL,'0.00000000'),(205,'assigned_user_id',NULL,'1'),(205,'createdtime',NULL,'2026-07-05 01:06:24'),(205,'modifiedby',NULL,'1'),(205,'source',NULL,'CRM'),(205,'record_id',NULL,'206'),(205,'record_module',NULL,'Accounts'),(206,'label',NULL,'[E2E-PAGE] 0182'),(206,'accountname',NULL,'[E2E-PAGE] 0182'),(206,'account_no',NULL,'ACC182'),(206,'annual_revenue',NULL,'0.00000000'),(206,'assigned_user_id',NULL,'1'),(206,'createdtime',NULL,'2026-07-05 01:06:25'),(206,'modifiedby',NULL,'1'),(206,'source',NULL,'CRM'),(206,'record_id',NULL,'207'),(206,'record_module',NULL,'Accounts'),(207,'label',NULL,'[E2E-PAGE] 0183'),(207,'accountname',NULL,'[E2E-PAGE] 0183'),(207,'account_no',NULL,'ACC183'),(207,'annual_revenue',NULL,'0.00000000'),(207,'assigned_user_id',NULL,'1'),(207,'createdtime',NULL,'2026-07-05 01:06:25'),(207,'modifiedby',NULL,'1'),(207,'source',NULL,'CRM'),(207,'record_id',NULL,'208'),(207,'record_module',NULL,'Accounts'),(208,'label',NULL,'[E2E-PAGE] 0184'),(208,'accountname',NULL,'[E2E-PAGE] 0184'),(208,'account_no',NULL,'ACC184'),(208,'annual_revenue',NULL,'0.00000000'),(208,'assigned_user_id',NULL,'1'),(208,'createdtime',NULL,'2026-07-05 01:06:25'),(208,'modifiedby',NULL,'1'),(208,'source',NULL,'CRM'),(208,'record_id',NULL,'209'),(208,'record_module',NULL,'Accounts'),(209,'label',NULL,'[E2E-PAGE] 0185'),(209,'accountname',NULL,'[E2E-PAGE] 0185'),(209,'account_no',NULL,'ACC185'),(209,'annual_revenue',NULL,'0.00000000'),(209,'assigned_user_id',NULL,'1'),(209,'createdtime',NULL,'2026-07-05 01:06:25'),(209,'modifiedby',NULL,'1'),(209,'source',NULL,'CRM'),(209,'record_id',NULL,'210'),(209,'record_module',NULL,'Accounts'),(210,'label',NULL,'[E2E-PAGE] 0186'),(210,'accountname',NULL,'[E2E-PAGE] 0186'),(210,'account_no',NULL,'ACC186'),(210,'annual_revenue',NULL,'0.00000000'),(210,'assigned_user_id',NULL,'1'),(210,'createdtime',NULL,'2026-07-05 01:06:25'),(210,'modifiedby',NULL,'1'),(210,'source',NULL,'CRM'),(210,'record_id',NULL,'211'),(210,'record_module',NULL,'Accounts'),(211,'label',NULL,'[E2E-PAGE] 0187'),(211,'accountname',NULL,'[E2E-PAGE] 0187'),(211,'account_no',NULL,'ACC187'),(211,'annual_revenue',NULL,'0.00000000'),(211,'assigned_user_id',NULL,'1'),(211,'createdtime',NULL,'2026-07-05 01:06:25'),(211,'modifiedby',NULL,'1'),(211,'source',NULL,'CRM'),(211,'record_id',NULL,'212'),(211,'record_module',NULL,'Accounts'),(212,'label',NULL,'[E2E-PAGE] 0188'),(212,'accountname',NULL,'[E2E-PAGE] 0188'),(212,'account_no',NULL,'ACC188'),(212,'annual_revenue',NULL,'0.00000000'),(212,'assigned_user_id',NULL,'1'),(212,'createdtime',NULL,'2026-07-05 01:06:25'),(212,'modifiedby',NULL,'1'),(212,'source',NULL,'CRM'),(212,'record_id',NULL,'213'),(212,'record_module',NULL,'Accounts'),(213,'label',NULL,'[E2E-PAGE] 0189'),(213,'accountname',NULL,'[E2E-PAGE] 0189'),(213,'account_no',NULL,'ACC189'),(213,'annual_revenue',NULL,'0.00000000'),(213,'assigned_user_id',NULL,'1'),(213,'createdtime',NULL,'2026-07-05 01:06:25'),(213,'modifiedby',NULL,'1'),(213,'source',NULL,'CRM'),(213,'record_id',NULL,'214'),(213,'record_module',NULL,'Accounts'),(214,'label',NULL,'[E2E-PAGE] 0190'),(214,'accountname',NULL,'[E2E-PAGE] 0190'),(214,'account_no',NULL,'ACC190'),(214,'annual_revenue',NULL,'0.00000000'),(214,'assigned_user_id',NULL,'1'),(214,'createdtime',NULL,'2026-07-05 01:06:25'),(214,'modifiedby',NULL,'1'),(214,'source',NULL,'CRM'),(214,'record_id',NULL,'215'),(214,'record_module',NULL,'Accounts'),(215,'label',NULL,'[E2E-PAGE] 0191'),(215,'accountname',NULL,'[E2E-PAGE] 0191'),(215,'account_no',NULL,'ACC191'),(215,'annual_revenue',NULL,'0.00000000'),(215,'assigned_user_id',NULL,'1'),(215,'createdtime',NULL,'2026-07-05 01:06:25'),(215,'modifiedby',NULL,'1'),(215,'source',NULL,'CRM'),(215,'record_id',NULL,'216'),(215,'record_module',NULL,'Accounts'),(216,'label',NULL,'[E2E-PAGE] 0192'),(216,'accountname',NULL,'[E2E-PAGE] 0192'),(216,'account_no',NULL,'ACC192'),(216,'annual_revenue',NULL,'0.00000000'),(216,'assigned_user_id',NULL,'1'),(216,'createdtime',NULL,'2026-07-05 01:06:25'),(216,'modifiedby',NULL,'1'),(216,'source',NULL,'CRM'),(216,'record_id',NULL,'217'),(216,'record_module',NULL,'Accounts'),(217,'label',NULL,'[E2E-PAGE] 0193'),(217,'accountname',NULL,'[E2E-PAGE] 0193'),(217,'account_no',NULL,'ACC193'),(217,'annual_revenue',NULL,'0.00000000'),(217,'assigned_user_id',NULL,'1'),(217,'createdtime',NULL,'2026-07-05 01:06:25'),(217,'modifiedby',NULL,'1'),(217,'source',NULL,'CRM'),(217,'record_id',NULL,'218'),(217,'record_module',NULL,'Accounts'),(218,'label',NULL,'[E2E-PAGE] 0194'),(218,'accountname',NULL,'[E2E-PAGE] 0194'),(218,'account_no',NULL,'ACC194'),(218,'annual_revenue',NULL,'0.00000000'),(218,'assigned_user_id',NULL,'1'),(218,'createdtime',NULL,'2026-07-05 01:06:25'),(218,'modifiedby',NULL,'1'),(218,'source',NULL,'CRM'),(218,'record_id',NULL,'219'),(218,'record_module',NULL,'Accounts'),(219,'label',NULL,'[E2E-PAGE] 0195'),(219,'accountname',NULL,'[E2E-PAGE] 0195'),(219,'account_no',NULL,'ACC195'),(219,'annual_revenue',NULL,'0.00000000'),(219,'assigned_user_id',NULL,'1'),(219,'createdtime',NULL,'2026-07-05 01:06:25'),(219,'modifiedby',NULL,'1'),(219,'source',NULL,'CRM'),(219,'record_id',NULL,'220'),(219,'record_module',NULL,'Accounts'),(220,'label',NULL,'[E2E-PAGE] 0196'),(220,'accountname',NULL,'[E2E-PAGE] 0196'),(220,'account_no',NULL,'ACC196'),(220,'annual_revenue',NULL,'0.00000000'),(220,'assigned_user_id',NULL,'1'),(220,'createdtime',NULL,'2026-07-05 01:06:25'),(220,'modifiedby',NULL,'1'),(220,'source',NULL,'CRM'),(220,'record_id',NULL,'221'),(220,'record_module',NULL,'Accounts'),(221,'label',NULL,'[E2E-PAGE] 0197'),(221,'accountname',NULL,'[E2E-PAGE] 0197'),(221,'account_no',NULL,'ACC197'),(221,'annual_revenue',NULL,'0.00000000'),(221,'assigned_user_id',NULL,'1'),(221,'createdtime',NULL,'2026-07-05 01:06:25'),(221,'modifiedby',NULL,'1'),(221,'source',NULL,'CRM'),(221,'record_id',NULL,'222'),(221,'record_module',NULL,'Accounts'),(222,'label',NULL,'[E2E-PAGE] 0198'),(222,'accountname',NULL,'[E2E-PAGE] 0198'),(222,'account_no',NULL,'ACC198'),(222,'annual_revenue',NULL,'0.00000000'),(222,'assigned_user_id',NULL,'1'),(222,'createdtime',NULL,'2026-07-05 01:06:25'),(222,'modifiedby',NULL,'1'),(222,'source',NULL,'CRM'),(222,'record_id',NULL,'223'),(222,'record_module',NULL,'Accounts'),(223,'label',NULL,'[E2E-PAGE] 0199'),(223,'accountname',NULL,'[E2E-PAGE] 0199'),(223,'account_no',NULL,'ACC199'),(223,'annual_revenue',NULL,'0.00000000'),(223,'assigned_user_id',NULL,'1'),(223,'createdtime',NULL,'2026-07-05 01:06:25'),(223,'modifiedby',NULL,'1'),(223,'source',NULL,'CRM'),(223,'record_id',NULL,'224'),(223,'record_module',NULL,'Accounts'),(224,'label',NULL,'[E2E-PAGE] 0200'),(224,'accountname',NULL,'[E2E-PAGE] 0200'),(224,'account_no',NULL,'ACC200'),(224,'annual_revenue',NULL,'0.00000000'),(224,'assigned_user_id',NULL,'1'),(224,'createdtime',NULL,'2026-07-05 01:06:25'),(224,'modifiedby',NULL,'1'),(224,'source',NULL,'CRM'),(224,'record_id',NULL,'225'),(224,'record_module',NULL,'Accounts'),(225,'label',NULL,'[E2E-PAGE] 0201'),(225,'accountname',NULL,'[E2E-PAGE] 0201'),(225,'account_no',NULL,'ACC201'),(225,'annual_revenue',NULL,'0.00000000'),(225,'assigned_user_id',NULL,'1'),(225,'createdtime',NULL,'2026-07-05 01:06:25'),(225,'modifiedby',NULL,'1'),(225,'source',NULL,'CRM'),(225,'record_id',NULL,'226'),(225,'record_module',NULL,'Accounts'),(226,'label',NULL,'[E2E-PAGE] 0202'),(226,'accountname',NULL,'[E2E-PAGE] 0202'),(226,'account_no',NULL,'ACC202'),(226,'annual_revenue',NULL,'0.00000000'),(226,'assigned_user_id',NULL,'1'),(226,'createdtime',NULL,'2026-07-05 01:06:25'),(226,'modifiedby',NULL,'1'),(226,'source',NULL,'CRM'),(226,'record_id',NULL,'227'),(226,'record_module',NULL,'Accounts'),(227,'label',NULL,'[E2E-PAGE] 0203'),(227,'accountname',NULL,'[E2E-PAGE] 0203'),(227,'account_no',NULL,'ACC203'),(227,'annual_revenue',NULL,'0.00000000'),(227,'assigned_user_id',NULL,'1'),(227,'createdtime',NULL,'2026-07-05 01:06:26'),(227,'modifiedby',NULL,'1'),(227,'source',NULL,'CRM'),(227,'record_id',NULL,'228'),(227,'record_module',NULL,'Accounts'),(228,'label',NULL,'[E2E-PAGE] 0204'),(228,'accountname',NULL,'[E2E-PAGE] 0204'),(228,'account_no',NULL,'ACC204'),(228,'annual_revenue',NULL,'0.00000000'),(228,'assigned_user_id',NULL,'1'),(228,'createdtime',NULL,'2026-07-05 01:06:26'),(228,'modifiedby',NULL,'1'),(228,'source',NULL,'CRM'),(228,'record_id',NULL,'229'),(228,'record_module',NULL,'Accounts'),(229,'label',NULL,'[E2E-PAGE] 0205'),(229,'accountname',NULL,'[E2E-PAGE] 0205'),(229,'account_no',NULL,'ACC205'),(229,'annual_revenue',NULL,'0.00000000'),(229,'assigned_user_id',NULL,'1'),(229,'createdtime',NULL,'2026-07-05 01:06:26'),(229,'modifiedby',NULL,'1'),(229,'source',NULL,'CRM'),(229,'record_id',NULL,'230'),(229,'record_module',NULL,'Accounts'),(230,'label',NULL,'[E2E-PAGE] 0206'),(230,'accountname',NULL,'[E2E-PAGE] 0206'),(230,'account_no',NULL,'ACC206'),(230,'annual_revenue',NULL,'0.00000000'),(230,'assigned_user_id',NULL,'1'),(230,'createdtime',NULL,'2026-07-05 01:06:26'),(230,'modifiedby',NULL,'1'),(230,'source',NULL,'CRM'),(230,'record_id',NULL,'231'),(230,'record_module',NULL,'Accounts'),(231,'label',NULL,'[E2E-PAGE] 0207'),(231,'accountname',NULL,'[E2E-PAGE] 0207'),(231,'account_no',NULL,'ACC207'),(231,'annual_revenue',NULL,'0.00000000'),(231,'assigned_user_id',NULL,'1'),(231,'createdtime',NULL,'2026-07-05 01:06:26'),(231,'modifiedby',NULL,'1'),(231,'source',NULL,'CRM'),(231,'record_id',NULL,'232'),(231,'record_module',NULL,'Accounts'),(232,'label',NULL,'[E2E-PAGE] 0208'),(232,'accountname',NULL,'[E2E-PAGE] 0208'),(232,'account_no',NULL,'ACC208'),(232,'annual_revenue',NULL,'0.00000000'),(232,'assigned_user_id',NULL,'1'),(232,'createdtime',NULL,'2026-07-05 01:06:26'),(232,'modifiedby',NULL,'1'),(232,'source',NULL,'CRM'),(232,'record_id',NULL,'233'),(232,'record_module',NULL,'Accounts'),(233,'label',NULL,'[E2E-PAGE] 0209'),(233,'accountname',NULL,'[E2E-PAGE] 0209'),(233,'account_no',NULL,'ACC209'),(233,'annual_revenue',NULL,'0.00000000'),(233,'assigned_user_id',NULL,'1'),(233,'createdtime',NULL,'2026-07-05 01:06:26'),(233,'modifiedby',NULL,'1'),(233,'source',NULL,'CRM'),(233,'record_id',NULL,'234'),(233,'record_module',NULL,'Accounts'),(234,'label',NULL,'[E2E-PAGE] 0210'),(234,'accountname',NULL,'[E2E-PAGE] 0210'),(234,'account_no',NULL,'ACC210'),(234,'annual_revenue',NULL,'0.00000000'),(234,'assigned_user_id',NULL,'1'),(234,'createdtime',NULL,'2026-07-05 01:06:26'),(234,'modifiedby',NULL,'1'),(234,'source',NULL,'CRM'),(234,'record_id',NULL,'235'),(234,'record_module',NULL,'Accounts'),(235,'label',NULL,'[E2E-PAGE] 0211'),(235,'accountname',NULL,'[E2E-PAGE] 0211'),(235,'account_no',NULL,'ACC211'),(235,'annual_revenue',NULL,'0.00000000'),(235,'assigned_user_id',NULL,'1'),(235,'createdtime',NULL,'2026-07-05 01:06:26'),(235,'modifiedby',NULL,'1'),(235,'source',NULL,'CRM'),(235,'record_id',NULL,'236'),(235,'record_module',NULL,'Accounts'),(236,'label',NULL,'[E2E-PAGE] 0212'),(236,'accountname',NULL,'[E2E-PAGE] 0212'),(236,'account_no',NULL,'ACC212'),(236,'annual_revenue',NULL,'0.00000000'),(236,'assigned_user_id',NULL,'1'),(236,'createdtime',NULL,'2026-07-05 01:06:26'),(236,'modifiedby',NULL,'1'),(236,'source',NULL,'CRM'),(236,'record_id',NULL,'237'),(236,'record_module',NULL,'Accounts'),(237,'label',NULL,'[E2E-PAGE] 0213'),(237,'accountname',NULL,'[E2E-PAGE] 0213'),(237,'account_no',NULL,'ACC213'),(237,'annual_revenue',NULL,'0.00000000'),(237,'assigned_user_id',NULL,'1'),(237,'createdtime',NULL,'2026-07-05 01:06:26'),(237,'modifiedby',NULL,'1'),(237,'source',NULL,'CRM'),(237,'record_id',NULL,'238'),(237,'record_module',NULL,'Accounts'),(238,'label',NULL,'[E2E-PAGE] 0214'),(238,'accountname',NULL,'[E2E-PAGE] 0214'),(238,'account_no',NULL,'ACC214'),(238,'annual_revenue',NULL,'0.00000000'),(238,'assigned_user_id',NULL,'1'),(238,'createdtime',NULL,'2026-07-05 01:06:26'),(238,'modifiedby',NULL,'1'),(238,'source',NULL,'CRM'),(238,'record_id',NULL,'239'),(238,'record_module',NULL,'Accounts'),(239,'label',NULL,'[E2E-PAGE] 0215'),(239,'accountname',NULL,'[E2E-PAGE] 0215'),(239,'account_no',NULL,'ACC215'),(239,'annual_revenue',NULL,'0.00000000'),(239,'assigned_user_id',NULL,'1'),(239,'createdtime',NULL,'2026-07-05 01:06:26'),(239,'modifiedby',NULL,'1'),(239,'source',NULL,'CRM'),(239,'record_id',NULL,'240'),(239,'record_module',NULL,'Accounts'),(240,'label',NULL,'[E2E-PAGE] 0216'),(240,'accountname',NULL,'[E2E-PAGE] 0216'),(240,'account_no',NULL,'ACC216'),(240,'annual_revenue',NULL,'0.00000000'),(240,'assigned_user_id',NULL,'1'),(240,'createdtime',NULL,'2026-07-05 01:06:26'),(240,'modifiedby',NULL,'1'),(240,'source',NULL,'CRM'),(240,'record_id',NULL,'241'),(240,'record_module',NULL,'Accounts'),(241,'label',NULL,'[E2E-PAGE] 0217'),(241,'accountname',NULL,'[E2E-PAGE] 0217'),(241,'account_no',NULL,'ACC217'),(241,'annual_revenue',NULL,'0.00000000'),(241,'assigned_user_id',NULL,'1'),(241,'createdtime',NULL,'2026-07-05 01:06:26'),(241,'modifiedby',NULL,'1'),(241,'source',NULL,'CRM'),(241,'record_id',NULL,'242'),(241,'record_module',NULL,'Accounts'),(242,'label',NULL,'[E2E-PAGE] 0218'),(242,'accountname',NULL,'[E2E-PAGE] 0218'),(242,'account_no',NULL,'ACC218'),(242,'annual_revenue',NULL,'0.00000000'),(242,'assigned_user_id',NULL,'1'),(242,'createdtime',NULL,'2026-07-05 01:06:26'),(242,'modifiedby',NULL,'1'),(242,'source',NULL,'CRM'),(242,'record_id',NULL,'243'),(242,'record_module',NULL,'Accounts'),(243,'label',NULL,'[E2E-PAGE] 0219'),(243,'accountname',NULL,'[E2E-PAGE] 0219'),(243,'account_no',NULL,'ACC219'),(243,'annual_revenue',NULL,'0.00000000'),(243,'assigned_user_id',NULL,'1'),(243,'createdtime',NULL,'2026-07-05 01:06:26'),(243,'modifiedby',NULL,'1'),(243,'source',NULL,'CRM'),(243,'record_id',NULL,'244'),(243,'record_module',NULL,'Accounts'),(244,'label',NULL,'[E2E-PAGE] 0220'),(244,'accountname',NULL,'[E2E-PAGE] 0220'),(244,'account_no',NULL,'ACC220'),(244,'annual_revenue',NULL,'0.00000000'),(244,'assigned_user_id',NULL,'1'),(244,'createdtime',NULL,'2026-07-05 01:06:26'),(244,'modifiedby',NULL,'1'),(244,'source',NULL,'CRM'),(244,'record_id',NULL,'245'),(244,'record_module',NULL,'Accounts'),(245,'label',NULL,'[E2E-PAGE] 0221'),(245,'accountname',NULL,'[E2E-PAGE] 0221'),(245,'account_no',NULL,'ACC221'),(245,'annual_revenue',NULL,'0.00000000'),(245,'assigned_user_id',NULL,'1'),(245,'createdtime',NULL,'2026-07-05 01:06:26'),(245,'modifiedby',NULL,'1'),(245,'source',NULL,'CRM'),(245,'record_id',NULL,'246'),(245,'record_module',NULL,'Accounts'),(246,'label',NULL,'[E2E-PAGE] 0222'),(246,'accountname',NULL,'[E2E-PAGE] 0222'),(246,'account_no',NULL,'ACC222'),(246,'annual_revenue',NULL,'0.00000000'),(246,'assigned_user_id',NULL,'1'),(246,'createdtime',NULL,'2026-07-05 01:06:26'),(246,'modifiedby',NULL,'1'),(246,'source',NULL,'CRM'),(246,'record_id',NULL,'247'),(246,'record_module',NULL,'Accounts'),(247,'label',NULL,'[E2E-PAGE] 0223'),(247,'accountname',NULL,'[E2E-PAGE] 0223'),(247,'account_no',NULL,'ACC223'),(247,'annual_revenue',NULL,'0.00000000'),(247,'assigned_user_id',NULL,'1'),(247,'createdtime',NULL,'2026-07-05 01:06:27'),(247,'modifiedby',NULL,'1'),(247,'source',NULL,'CRM'),(247,'record_id',NULL,'248'),(247,'record_module',NULL,'Accounts'),(248,'label',NULL,'[E2E-PAGE] 0224'),(248,'accountname',NULL,'[E2E-PAGE] 0224'),(248,'account_no',NULL,'ACC224'),(248,'annual_revenue',NULL,'0.00000000'),(248,'assigned_user_id',NULL,'1'),(248,'createdtime',NULL,'2026-07-05 01:06:27'),(248,'modifiedby',NULL,'1'),(248,'source',NULL,'CRM'),(248,'record_id',NULL,'249'),(248,'record_module',NULL,'Accounts'),(249,'label',NULL,'[E2E-PAGE] 0225'),(249,'accountname',NULL,'[E2E-PAGE] 0225'),(249,'account_no',NULL,'ACC225'),(249,'annual_revenue',NULL,'0.00000000'),(249,'assigned_user_id',NULL,'1'),(249,'createdtime',NULL,'2026-07-05 01:06:27'),(249,'modifiedby',NULL,'1'),(249,'source',NULL,'CRM'),(249,'record_id',NULL,'250'),(249,'record_module',NULL,'Accounts'),(250,'label',NULL,'[E2E-PAGE] 0226'),(250,'accountname',NULL,'[E2E-PAGE] 0226'),(250,'account_no',NULL,'ACC226'),(250,'annual_revenue',NULL,'0.00000000'),(250,'assigned_user_id',NULL,'1'),(250,'createdtime',NULL,'2026-07-05 01:06:27'),(250,'modifiedby',NULL,'1'),(250,'source',NULL,'CRM'),(250,'record_id',NULL,'251'),(250,'record_module',NULL,'Accounts'),(251,'label',NULL,'[E2E-PAGE] 0227'),(251,'accountname',NULL,'[E2E-PAGE] 0227'),(251,'account_no',NULL,'ACC227'),(251,'annual_revenue',NULL,'0.00000000'),(251,'assigned_user_id',NULL,'1'),(251,'createdtime',NULL,'2026-07-05 01:06:27'),(251,'modifiedby',NULL,'1'),(251,'source',NULL,'CRM'),(251,'record_id',NULL,'252'),(251,'record_module',NULL,'Accounts'),(252,'label',NULL,'[E2E-PAGE] 0228'),(252,'accountname',NULL,'[E2E-PAGE] 0228'),(252,'account_no',NULL,'ACC228'),(252,'annual_revenue',NULL,'0.00000000'),(252,'assigned_user_id',NULL,'1'),(252,'createdtime',NULL,'2026-07-05 01:06:27'),(252,'modifiedby',NULL,'1'),(252,'source',NULL,'CRM'),(252,'record_id',NULL,'253'),(252,'record_module',NULL,'Accounts'),(253,'label',NULL,'[E2E-PAGE] 0229'),(253,'accountname',NULL,'[E2E-PAGE] 0229'),(253,'account_no',NULL,'ACC229'),(253,'annual_revenue',NULL,'0.00000000'),(253,'assigned_user_id',NULL,'1'),(253,'createdtime',NULL,'2026-07-05 01:06:27'),(253,'modifiedby',NULL,'1'),(253,'source',NULL,'CRM'),(253,'record_id',NULL,'254'),(253,'record_module',NULL,'Accounts'),(254,'label',NULL,'[E2E-PAGE] 0230'),(254,'accountname',NULL,'[E2E-PAGE] 0230'),(254,'account_no',NULL,'ACC230'),(254,'annual_revenue',NULL,'0.00000000'),(254,'assigned_user_id',NULL,'1'),(254,'createdtime',NULL,'2026-07-05 01:06:27'),(254,'modifiedby',NULL,'1'),(254,'source',NULL,'CRM'),(254,'record_id',NULL,'255'),(254,'record_module',NULL,'Accounts'),(255,'label',NULL,'[E2E-PAGE] 0231'),(255,'accountname',NULL,'[E2E-PAGE] 0231'),(255,'account_no',NULL,'ACC231'),(255,'annual_revenue',NULL,'0.00000000'),(255,'assigned_user_id',NULL,'1'),(255,'createdtime',NULL,'2026-07-05 01:06:27'),(255,'modifiedby',NULL,'1'),(255,'source',NULL,'CRM'),(255,'record_id',NULL,'256'),(255,'record_module',NULL,'Accounts'),(256,'label',NULL,'[E2E-PAGE] 0232'),(256,'accountname',NULL,'[E2E-PAGE] 0232'),(256,'account_no',NULL,'ACC232'),(256,'annual_revenue',NULL,'0.00000000'),(256,'assigned_user_id',NULL,'1'),(256,'createdtime',NULL,'2026-07-05 01:06:27'),(256,'modifiedby',NULL,'1'),(256,'source',NULL,'CRM'),(256,'record_id',NULL,'257'),(256,'record_module',NULL,'Accounts'),(257,'label',NULL,'[E2E-PAGE] 0233'),(257,'accountname',NULL,'[E2E-PAGE] 0233'),(257,'account_no',NULL,'ACC233'),(257,'annual_revenue',NULL,'0.00000000'),(257,'assigned_user_id',NULL,'1'),(257,'createdtime',NULL,'2026-07-05 01:06:27'),(257,'modifiedby',NULL,'1'),(257,'source',NULL,'CRM'),(257,'record_id',NULL,'258'),(257,'record_module',NULL,'Accounts'),(258,'label',NULL,'[E2E-PAGE] 0234'),(258,'accountname',NULL,'[E2E-PAGE] 0234'),(258,'account_no',NULL,'ACC234'),(258,'annual_revenue',NULL,'0.00000000'),(258,'assigned_user_id',NULL,'1'),(258,'createdtime',NULL,'2026-07-05 01:06:27'),(258,'modifiedby',NULL,'1'),(258,'source',NULL,'CRM'),(258,'record_id',NULL,'259'),(258,'record_module',NULL,'Accounts'),(259,'label',NULL,'[E2E-PAGE] 0235'),(259,'accountname',NULL,'[E2E-PAGE] 0235'),(259,'account_no',NULL,'ACC235'),(259,'annual_revenue',NULL,'0.00000000'),(259,'assigned_user_id',NULL,'1'),(259,'createdtime',NULL,'2026-07-05 01:06:27'),(259,'modifiedby',NULL,'1'),(259,'source',NULL,'CRM'),(259,'record_id',NULL,'260'),(259,'record_module',NULL,'Accounts'),(260,'label',NULL,'[E2E-PAGE] 0236'),(260,'accountname',NULL,'[E2E-PAGE] 0236'),(260,'account_no',NULL,'ACC236'),(260,'annual_revenue',NULL,'0.00000000'),(260,'assigned_user_id',NULL,'1'),(260,'createdtime',NULL,'2026-07-05 01:06:27'),(260,'modifiedby',NULL,'1'),(260,'source',NULL,'CRM'),(260,'record_id',NULL,'261'),(260,'record_module',NULL,'Accounts'),(261,'label',NULL,'[E2E-PAGE] 0237'),(261,'accountname',NULL,'[E2E-PAGE] 0237'),(261,'account_no',NULL,'ACC237'),(261,'annual_revenue',NULL,'0.00000000'),(261,'assigned_user_id',NULL,'1'),(261,'createdtime',NULL,'2026-07-05 01:06:27'),(261,'modifiedby',NULL,'1'),(261,'source',NULL,'CRM'),(261,'record_id',NULL,'262'),(261,'record_module',NULL,'Accounts'),(262,'label',NULL,'[E2E-PAGE] 0238'),(262,'accountname',NULL,'[E2E-PAGE] 0238'),(262,'account_no',NULL,'ACC238'),(262,'annual_revenue',NULL,'0.00000000'),(262,'assigned_user_id',NULL,'1'),(262,'createdtime',NULL,'2026-07-05 01:06:27'),(262,'modifiedby',NULL,'1'),(262,'source',NULL,'CRM'),(262,'record_id',NULL,'263'),(262,'record_module',NULL,'Accounts'),(263,'label',NULL,'[E2E-PAGE] 0239'),(263,'accountname',NULL,'[E2E-PAGE] 0239'),(263,'account_no',NULL,'ACC239'),(263,'annual_revenue',NULL,'0.00000000'),(263,'assigned_user_id',NULL,'1'),(263,'createdtime',NULL,'2026-07-05 01:06:27'),(263,'modifiedby',NULL,'1'),(263,'source',NULL,'CRM'),(263,'record_id',NULL,'264'),(263,'record_module',NULL,'Accounts'),(264,'label',NULL,'[E2E-PAGE] 0240'),(264,'accountname',NULL,'[E2E-PAGE] 0240'),(264,'account_no',NULL,'ACC240'),(264,'annual_revenue',NULL,'0.00000000'),(264,'assigned_user_id',NULL,'1'),(264,'createdtime',NULL,'2026-07-05 01:06:27'),(264,'modifiedby',NULL,'1'),(264,'source',NULL,'CRM'),(264,'record_id',NULL,'265'),(264,'record_module',NULL,'Accounts'),(265,'label',NULL,'[E2E-PAGE] 0241'),(265,'accountname',NULL,'[E2E-PAGE] 0241'),(265,'account_no',NULL,'ACC241'),(265,'annual_revenue',NULL,'0.00000000'),(265,'assigned_user_id',NULL,'1'),(265,'createdtime',NULL,'2026-07-05 01:06:27'),(265,'modifiedby',NULL,'1'),(265,'source',NULL,'CRM'),(265,'record_id',NULL,'266'),(265,'record_module',NULL,'Accounts'),(266,'label',NULL,'[E2E-PAGE] 0242'),(266,'accountname',NULL,'[E2E-PAGE] 0242'),(266,'account_no',NULL,'ACC242'),(266,'annual_revenue',NULL,'0.00000000'),(266,'assigned_user_id',NULL,'1'),(266,'createdtime',NULL,'2026-07-05 01:06:27'),(266,'modifiedby',NULL,'1'),(266,'source',NULL,'CRM'),(266,'record_id',NULL,'267'),(266,'record_module',NULL,'Accounts'),(267,'label',NULL,'[E2E-PAGE] 0243'),(267,'accountname',NULL,'[E2E-PAGE] 0243'),(267,'account_no',NULL,'ACC243'),(267,'annual_revenue',NULL,'0.00000000'),(267,'assigned_user_id',NULL,'1'),(267,'createdtime',NULL,'2026-07-05 01:06:28'),(267,'modifiedby',NULL,'1'),(267,'source',NULL,'CRM'),(267,'record_id',NULL,'268'),(267,'record_module',NULL,'Accounts'),(268,'label',NULL,'[E2E-PAGE] 0244'),(268,'accountname',NULL,'[E2E-PAGE] 0244'),(268,'account_no',NULL,'ACC244'),(268,'annual_revenue',NULL,'0.00000000'),(268,'assigned_user_id',NULL,'1'),(268,'createdtime',NULL,'2026-07-05 01:06:28'),(268,'modifiedby',NULL,'1'),(268,'source',NULL,'CRM'),(268,'record_id',NULL,'269'),(268,'record_module',NULL,'Accounts'),(269,'label',NULL,'[E2E-PAGE] 0245'),(269,'accountname',NULL,'[E2E-PAGE] 0245'),(269,'account_no',NULL,'ACC245'),(269,'annual_revenue',NULL,'0.00000000'),(269,'assigned_user_id',NULL,'1'),(269,'createdtime',NULL,'2026-07-05 01:06:28'),(269,'modifiedby',NULL,'1'),(269,'source',NULL,'CRM'),(269,'record_id',NULL,'270'),(269,'record_module',NULL,'Accounts'),(270,'label',NULL,'[E2E-PAGE] 0246'),(270,'accountname',NULL,'[E2E-PAGE] 0246'),(270,'account_no',NULL,'ACC246'),(270,'annual_revenue',NULL,'0.00000000'),(270,'assigned_user_id',NULL,'1'),(270,'createdtime',NULL,'2026-07-05 01:06:28'),(270,'modifiedby',NULL,'1'),(270,'source',NULL,'CRM'),(270,'record_id',NULL,'271'),(270,'record_module',NULL,'Accounts'),(271,'label',NULL,'[E2E-PAGE] 0247'),(271,'accountname',NULL,'[E2E-PAGE] 0247'),(271,'account_no',NULL,'ACC247'),(271,'annual_revenue',NULL,'0.00000000'),(271,'assigned_user_id',NULL,'1'),(271,'createdtime',NULL,'2026-07-05 01:06:28'),(271,'modifiedby',NULL,'1'),(271,'source',NULL,'CRM'),(271,'record_id',NULL,'272'),(271,'record_module',NULL,'Accounts'),(272,'label',NULL,'[E2E-PAGE] 0248'),(272,'accountname',NULL,'[E2E-PAGE] 0248'),(272,'account_no',NULL,'ACC248'),(272,'annual_revenue',NULL,'0.00000000'),(272,'assigned_user_id',NULL,'1'),(272,'createdtime',NULL,'2026-07-05 01:06:28'),(272,'modifiedby',NULL,'1'),(272,'source',NULL,'CRM'),(272,'record_id',NULL,'273'),(272,'record_module',NULL,'Accounts'),(273,'label',NULL,'[E2E-PAGE] 0249'),(273,'accountname',NULL,'[E2E-PAGE] 0249'),(273,'account_no',NULL,'ACC249'),(273,'annual_revenue',NULL,'0.00000000'),(273,'assigned_user_id',NULL,'1'),(273,'createdtime',NULL,'2026-07-05 01:06:28'),(273,'modifiedby',NULL,'1'),(273,'source',NULL,'CRM'),(273,'record_id',NULL,'274'),(273,'record_module',NULL,'Accounts'),(274,'label',NULL,'[E2E-PAGE] 0250'),(274,'accountname',NULL,'[E2E-PAGE] 0250'),(274,'account_no',NULL,'ACC250'),(274,'annual_revenue',NULL,'0.00000000'),(274,'assigned_user_id',NULL,'1'),(274,'createdtime',NULL,'2026-07-05 01:06:28'),(274,'modifiedby',NULL,'1'),(274,'source',NULL,'CRM'),(274,'record_id',NULL,'275'),(274,'record_module',NULL,'Accounts'),(275,'label',NULL,'[E2E-SRCH] ZZUNIQAcctFindme 0001'),(275,'accountname',NULL,'[E2E-SRCH] ZZUNIQAcctFindme 0001'),(275,'account_no',NULL,'ACC251'),(275,'website',NULL,'https://zzuniqacctfindme.example.com'),(275,'rating',NULL,'Active'),(275,'industry',NULL,'Banking'),(275,'annual_revenue',NULL,'0.00000000'),(275,'assigned_user_id',NULL,'1'),(275,'createdtime',NULL,'2026-07-05 01:06:28'),(275,'modifiedby',NULL,'1'),(275,'source',NULL,'CRM'),(275,'record_id',NULL,'276'),(275,'record_module',NULL,'Accounts'),(276,'label',NULL,'[E2E-SRCH] Banking 0002'),(276,'accountname',NULL,'[E2E-SRCH] Banking 0002'),(276,'account_no',NULL,'ACC252'),(276,'rating',NULL,'Acquired'),(276,'industry',NULL,'Banking'),(276,'annual_revenue',NULL,'0.00000000'),(276,'assigned_user_id',NULL,'1'),(276,'createdtime',NULL,'2026-07-05 01:06:28'),(276,'modifiedby',NULL,'1'),(276,'source',NULL,'CRM'),(276,'record_id',NULL,'277'),(276,'record_module',NULL,'Accounts'),(277,'label',NULL,'[E2E-SRCH] Banking 0003'),(277,'accountname',NULL,'[E2E-SRCH] Banking 0003'),(277,'account_no',NULL,'ACC253'),(277,'rating',NULL,'Active'),(277,'industry',NULL,'Banking'),(277,'annual_revenue',NULL,'0.00000000'),(277,'assigned_user_id',NULL,'1'),(277,'createdtime',NULL,'2026-07-05 01:06:28'),(277,'modifiedby',NULL,'1'),(277,'source',NULL,'CRM'),(277,'record_id',NULL,'278'),(277,'record_module',NULL,'Accounts'),(278,'label',NULL,'[E2E-SRCH] Banking 0004'),(278,'accountname',NULL,'[E2E-SRCH] Banking 0004'),(278,'account_no',NULL,'ACC254'),(278,'rating',NULL,'Acquired'),(278,'industry',NULL,'Banking'),(278,'annual_revenue',NULL,'0.00000000'),(278,'assigned_user_id',NULL,'1'),(278,'createdtime',NULL,'2026-07-05 01:06:28'),(278,'modifiedby',NULL,'1'),(278,'source',NULL,'CRM'),(278,'record_id',NULL,'279'),(278,'record_module',NULL,'Accounts'),(279,'label',NULL,'[E2E-SRCH] Banking 0005'),(279,'accountname',NULL,'[E2E-SRCH] Banking 0005'),(279,'account_no',NULL,'ACC255'),(279,'rating',NULL,'Active'),(279,'industry',NULL,'Banking'),(279,'annual_revenue',NULL,'0.00000000'),(279,'assigned_user_id',NULL,'1'),(279,'createdtime',NULL,'2026-07-05 01:06:28'),(279,'modifiedby',NULL,'1'),(279,'source',NULL,'CRM'),(279,'record_id',NULL,'280'),(279,'record_module',NULL,'Accounts'),(280,'label',NULL,'[E2E-SRCH] Banking 0006'),(280,'accountname',NULL,'[E2E-SRCH] Banking 0006'),(280,'account_no',NULL,'ACC256'),(280,'rating',NULL,'Acquired'),(280,'industry',NULL,'Banking'),(280,'annual_revenue',NULL,'0.00000000'),(280,'assigned_user_id',NULL,'1'),(280,'createdtime',NULL,'2026-07-05 01:06:28'),(280,'modifiedby',NULL,'1'),(280,'source',NULL,'CRM'),(280,'record_id',NULL,'281'),(280,'record_module',NULL,'Accounts'),(281,'label',NULL,'[E2E-SRCH] Banking 0007'),(281,'accountname',NULL,'[E2E-SRCH] Banking 0007'),(281,'account_no',NULL,'ACC257'),(281,'rating',NULL,'Active'),(281,'industry',NULL,'Banking'),(281,'annual_revenue',NULL,'0.00000000'),(281,'assigned_user_id',NULL,'1'),(281,'createdtime',NULL,'2026-07-05 01:06:28'),(281,'modifiedby',NULL,'1'),(281,'source',NULL,'CRM'),(281,'record_id',NULL,'282'),(281,'record_module',NULL,'Accounts'),(282,'label',NULL,'[E2E-SRCH] Banking 0008'),(282,'accountname',NULL,'[E2E-SRCH] Banking 0008'),(282,'account_no',NULL,'ACC258'),(282,'rating',NULL,'Acquired'),(282,'industry',NULL,'Banking'),(282,'annual_revenue',NULL,'0.00000000'),(282,'assigned_user_id',NULL,'1'),(282,'createdtime',NULL,'2026-07-05 01:06:28'),(282,'modifiedby',NULL,'1'),(282,'source',NULL,'CRM'),(282,'record_id',NULL,'283'),(282,'record_module',NULL,'Accounts'),(283,'label',NULL,'[E2E-SRCH] Banking 0009'),(283,'accountname',NULL,'[E2E-SRCH] Banking 0009'),(283,'account_no',NULL,'ACC259'),(283,'rating',NULL,'Active'),(283,'industry',NULL,'Banking'),(283,'annual_revenue',NULL,'0.00000000'),(283,'assigned_user_id',NULL,'1'),(283,'createdtime',NULL,'2026-07-05 01:06:28'),(283,'modifiedby',NULL,'1'),(283,'source',NULL,'CRM'),(283,'record_id',NULL,'284'),(283,'record_module',NULL,'Accounts'),(284,'label',NULL,'[E2E-SRCH] Banking 0010'),(284,'accountname',NULL,'[E2E-SRCH] Banking 0010'),(284,'account_no',NULL,'ACC260'),(284,'rating',NULL,'Acquired'),(284,'industry',NULL,'Banking'),(284,'annual_revenue',NULL,'0.00000000'),(284,'assigned_user_id',NULL,'1'),(284,'createdtime',NULL,'2026-07-05 01:06:28'),(284,'modifiedby',NULL,'1'),(284,'source',NULL,'CRM'),(284,'record_id',NULL,'285'),(284,'record_module',NULL,'Accounts'),(285,'label',NULL,'[E2E-SRCH] Chemicals 0011'),(285,'accountname',NULL,'[E2E-SRCH] Chemicals 0011'),(285,'account_no',NULL,'ACC261'),(285,'rating',NULL,'Active'),(285,'industry',NULL,'Chemicals'),(285,'annual_revenue',NULL,'0.00000000'),(285,'assigned_user_id',NULL,'1'),(285,'createdtime',NULL,'2026-07-05 01:06:28'),(285,'modifiedby',NULL,'1'),(285,'source',NULL,'CRM'),(285,'record_id',NULL,'286'),(285,'record_module',NULL,'Accounts'),(286,'label',NULL,'[E2E-SRCH] Chemicals 0012'),(286,'accountname',NULL,'[E2E-SRCH] Chemicals 0012'),(286,'account_no',NULL,'ACC262'),(286,'rating',NULL,'Acquired'),(286,'industry',NULL,'Chemicals'),(286,'annual_revenue',NULL,'0.00000000'),(286,'assigned_user_id',NULL,'1'),(286,'createdtime',NULL,'2026-07-05 01:06:28'),(286,'modifiedby',NULL,'1'),(286,'source',NULL,'CRM'),(286,'record_id',NULL,'287'),(286,'record_module',NULL,'Accounts'),(287,'label',NULL,'[E2E-SRCH] Chemicals 0013'),(287,'accountname',NULL,'[E2E-SRCH] Chemicals 0013'),(287,'account_no',NULL,'ACC263'),(287,'rating',NULL,'Active'),(287,'industry',NULL,'Chemicals'),(287,'annual_revenue',NULL,'0.00000000'),(287,'assigned_user_id',NULL,'1'),(287,'createdtime',NULL,'2026-07-05 01:06:29'),(287,'modifiedby',NULL,'1'),(287,'source',NULL,'CRM'),(287,'record_id',NULL,'288'),(287,'record_module',NULL,'Accounts'),(288,'label',NULL,'[E2E-SRCH] Chemicals 0014'),(288,'accountname',NULL,'[E2E-SRCH] Chemicals 0014'),(288,'account_no',NULL,'ACC264'),(288,'rating',NULL,'Acquired'),(288,'industry',NULL,'Chemicals'),(288,'annual_revenue',NULL,'0.00000000'),(288,'assigned_user_id',NULL,'1'),(288,'createdtime',NULL,'2026-07-05 01:06:29'),(288,'modifiedby',NULL,'1'),(288,'source',NULL,'CRM'),(288,'record_id',NULL,'289'),(288,'record_module',NULL,'Accounts'),(289,'label',NULL,'[E2E-SRCH] Chemicals 0015'),(289,'accountname',NULL,'[E2E-SRCH] Chemicals 0015'),(289,'account_no',NULL,'ACC265'),(289,'rating',NULL,'Active'),(289,'industry',NULL,'Chemicals'),(289,'annual_revenue',NULL,'0.00000000'),(289,'assigned_user_id',NULL,'1'),(289,'createdtime',NULL,'2026-07-05 01:06:29'),(289,'modifiedby',NULL,'1'),(289,'source',NULL,'CRM'),(289,'record_id',NULL,'290'),(289,'record_module',NULL,'Accounts'),(290,'label',NULL,'[E2E-SRCH] Chemicals 0016'),(290,'accountname',NULL,'[E2E-SRCH] Chemicals 0016'),(290,'account_no',NULL,'ACC266'),(290,'rating',NULL,'Acquired'),(290,'industry',NULL,'Chemicals'),(290,'annual_revenue',NULL,'0.00000000'),(290,'assigned_user_id',NULL,'1'),(290,'createdtime',NULL,'2026-07-05 01:06:29'),(290,'modifiedby',NULL,'1'),(290,'source',NULL,'CRM'),(290,'record_id',NULL,'291'),(290,'record_module',NULL,'Accounts'),(291,'label',NULL,'[E2E-SRCH] Chemicals 0017'),(291,'accountname',NULL,'[E2E-SRCH] Chemicals 0017'),(291,'account_no',NULL,'ACC267'),(291,'rating',NULL,'Active'),(291,'industry',NULL,'Chemicals'),(291,'annual_revenue',NULL,'0.00000000'),(291,'assigned_user_id',NULL,'1'),(291,'createdtime',NULL,'2026-07-05 01:06:29'),(291,'modifiedby',NULL,'1'),(291,'source',NULL,'CRM'),(291,'record_id',NULL,'292'),(291,'record_module',NULL,'Accounts'),(292,'label',NULL,'[E2E-SRCH] Chemicals 0018'),(292,'accountname',NULL,'[E2E-SRCH] Chemicals 0018'),(292,'account_no',NULL,'ACC268'),(292,'rating',NULL,'Acquired'),(292,'industry',NULL,'Chemicals'),(292,'annual_revenue',NULL,'0.00000000'),(292,'assigned_user_id',NULL,'1'),(292,'createdtime',NULL,'2026-07-05 01:06:29'),(292,'modifiedby',NULL,'1'),(292,'source',NULL,'CRM'),(292,'record_id',NULL,'293'),(292,'record_module',NULL,'Accounts'),(293,'label',NULL,'[E2E-SRCH] Chemicals 0019'),(293,'accountname',NULL,'[E2E-SRCH] Chemicals 0019'),(293,'account_no',NULL,'ACC269'),(293,'rating',NULL,'Active'),(293,'industry',NULL,'Chemicals'),(293,'annual_revenue',NULL,'0.00000000'),(293,'assigned_user_id',NULL,'1'),(293,'createdtime',NULL,'2026-07-05 01:06:29'),(293,'modifiedby',NULL,'1'),(293,'source',NULL,'CRM'),(293,'record_id',NULL,'294'),(293,'record_module',NULL,'Accounts'),(294,'label',NULL,'[E2E-SRCH] Chemicals 0020'),(294,'accountname',NULL,'[E2E-SRCH] Chemicals 0020'),(294,'account_no',NULL,'ACC270'),(294,'rating',NULL,'Acquired'),(294,'industry',NULL,'Chemicals'),(294,'annual_revenue',NULL,'0.00000000'),(294,'assigned_user_id',NULL,'1'),(294,'createdtime',NULL,'2026-07-05 01:06:29'),(294,'modifiedby',NULL,'1'),(294,'source',NULL,'CRM'),(294,'record_id',NULL,'295'),(294,'record_module',NULL,'Accounts'),(295,'label',NULL,'[E2E-SRCH] Construction 0021'),(295,'accountname',NULL,'[E2E-SRCH] Construction 0021'),(295,'account_no',NULL,'ACC271'),(295,'rating',NULL,'Active'),(295,'industry',NULL,'Construction'),(295,'annual_revenue',NULL,'0.00000000'),(295,'assigned_user_id',NULL,'1'),(295,'createdtime',NULL,'2026-07-05 01:06:29'),(295,'modifiedby',NULL,'1'),(295,'source',NULL,'CRM'),(295,'record_id',NULL,'296'),(295,'record_module',NULL,'Accounts'),(296,'label',NULL,'[E2E-SRCH] Construction 0022'),(296,'accountname',NULL,'[E2E-SRCH] Construction 0022'),(296,'account_no',NULL,'ACC272'),(296,'rating',NULL,'Acquired'),(296,'industry',NULL,'Construction'),(296,'annual_revenue',NULL,'0.00000000'),(296,'assigned_user_id',NULL,'1'),(296,'createdtime',NULL,'2026-07-05 01:06:29'),(296,'modifiedby',NULL,'1'),(296,'source',NULL,'CRM'),(296,'record_id',NULL,'297'),(296,'record_module',NULL,'Accounts'),(297,'label',NULL,'[E2E-SRCH] Construction 0023'),(297,'accountname',NULL,'[E2E-SRCH] Construction 0023'),(297,'account_no',NULL,'ACC273'),(297,'rating',NULL,'Active'),(297,'industry',NULL,'Construction'),(297,'annual_revenue',NULL,'0.00000000'),(297,'assigned_user_id',NULL,'1'),(297,'createdtime',NULL,'2026-07-05 01:06:29'),(297,'modifiedby',NULL,'1'),(297,'source',NULL,'CRM'),(297,'record_id',NULL,'298'),(297,'record_module',NULL,'Accounts'),(298,'label',NULL,'[E2E-SRCH] Construction 0024'),(298,'accountname',NULL,'[E2E-SRCH] Construction 0024'),(298,'account_no',NULL,'ACC274'),(298,'rating',NULL,'Acquired'),(298,'industry',NULL,'Construction'),(298,'annual_revenue',NULL,'0.00000000'),(298,'assigned_user_id',NULL,'1'),(298,'createdtime',NULL,'2026-07-05 01:06:29'),(298,'modifiedby',NULL,'1'),(298,'source',NULL,'CRM'),(298,'record_id',NULL,'299'),(298,'record_module',NULL,'Accounts'),(299,'label',NULL,'[E2E-SRCH] Construction 0025'),(299,'accountname',NULL,'[E2E-SRCH] Construction 0025'),(299,'account_no',NULL,'ACC275'),(299,'rating',NULL,'Active'),(299,'industry',NULL,'Construction'),(299,'annual_revenue',NULL,'0.00000000'),(299,'assigned_user_id',NULL,'1'),(299,'createdtime',NULL,'2026-07-05 01:06:29'),(299,'modifiedby',NULL,'1'),(299,'source',NULL,'CRM'),(299,'record_id',NULL,'300'),(299,'record_module',NULL,'Accounts'),(300,'label',NULL,'[E2E-SRCH] Construction 0026'),(300,'accountname',NULL,'[E2E-SRCH] Construction 0026'),(300,'account_no',NULL,'ACC276'),(300,'rating',NULL,'Acquired'),(300,'industry',NULL,'Construction'),(300,'annual_revenue',NULL,'0.00000000'),(300,'assigned_user_id',NULL,'1'),(300,'createdtime',NULL,'2026-07-05 01:06:29'),(300,'modifiedby',NULL,'1'),(300,'source',NULL,'CRM'),(300,'record_id',NULL,'301'),(300,'record_module',NULL,'Accounts'),(301,'label',NULL,'[E2E-SRCH] Construction 0027'),(301,'accountname',NULL,'[E2E-SRCH] Construction 0027'),(301,'account_no',NULL,'ACC277'),(301,'rating',NULL,'Active'),(301,'industry',NULL,'Construction'),(301,'annual_revenue',NULL,'0.00000000'),(301,'assigned_user_id',NULL,'1'),(301,'createdtime',NULL,'2026-07-05 01:06:29'),(301,'modifiedby',NULL,'1'),(301,'source',NULL,'CRM'),(301,'record_id',NULL,'302'),(301,'record_module',NULL,'Accounts'),(302,'label',NULL,'[E2E-SRCH] Construction 0028'),(302,'accountname',NULL,'[E2E-SRCH] Construction 0028'),(302,'account_no',NULL,'ACC278'),(302,'rating',NULL,'Acquired'),(302,'industry',NULL,'Construction'),(302,'annual_revenue',NULL,'0.00000000'),(302,'assigned_user_id',NULL,'1'),(302,'createdtime',NULL,'2026-07-05 01:06:29'),(302,'modifiedby',NULL,'1'),(302,'source',NULL,'CRM'),(302,'record_id',NULL,'303'),(302,'record_module',NULL,'Accounts'),(303,'label',NULL,'[E2E-SRCH] Construction 0029'),(303,'accountname',NULL,'[E2E-SRCH] Construction 0029'),(303,'account_no',NULL,'ACC279'),(303,'rating',NULL,'Active'),(303,'industry',NULL,'Construction'),(303,'annual_revenue',NULL,'0.00000000'),(303,'assigned_user_id',NULL,'1'),(303,'createdtime',NULL,'2026-07-05 01:06:29'),(303,'modifiedby',NULL,'1'),(303,'source',NULL,'CRM'),(303,'record_id',NULL,'304'),(303,'record_module',NULL,'Accounts'),(304,'label',NULL,'[E2E-SRCH] Construction 0030'),(304,'accountname',NULL,'[E2E-SRCH] Construction 0030'),(304,'account_no',NULL,'ACC280'),(304,'rating',NULL,'Acquired'),(304,'industry',NULL,'Construction'),(304,'annual_revenue',NULL,'0.00000000'),(304,'assigned_user_id',NULL,'1'),(304,'createdtime',NULL,'2026-07-05 01:06:29'),(304,'modifiedby',NULL,'1'),(304,'source',NULL,'CRM'),(304,'record_id',NULL,'305'),(304,'record_module',NULL,'Accounts'),(305,'label',NULL,'[E2E-SRCH] Consulting 0031'),(305,'accountname',NULL,'[E2E-SRCH] Consulting 0031'),(305,'account_no',NULL,'ACC281'),(305,'rating',NULL,'Active'),(305,'industry',NULL,'Consulting'),(305,'annual_revenue',NULL,'0.00000000'),(305,'assigned_user_id',NULL,'1'),(305,'createdtime',NULL,'2026-07-05 01:06:29'),(305,'modifiedby',NULL,'1'),(305,'source',NULL,'CRM'),(305,'record_id',NULL,'306'),(305,'record_module',NULL,'Accounts'),(306,'label',NULL,'[E2E-SRCH] Consulting 0032'),(306,'accountname',NULL,'[E2E-SRCH] Consulting 0032'),(306,'account_no',NULL,'ACC282'),(306,'rating',NULL,'Acquired'),(306,'industry',NULL,'Consulting'),(306,'annual_revenue',NULL,'0.00000000'),(306,'assigned_user_id',NULL,'1'),(306,'createdtime',NULL,'2026-07-05 01:06:30'),(306,'modifiedby',NULL,'1'),(306,'source',NULL,'CRM'),(306,'record_id',NULL,'307'),(306,'record_module',NULL,'Accounts'),(307,'label',NULL,'[E2E-SRCH] Consulting 0033'),(307,'accountname',NULL,'[E2E-SRCH] Consulting 0033'),(307,'account_no',NULL,'ACC283'),(307,'rating',NULL,'Active'),(307,'industry',NULL,'Consulting'),(307,'annual_revenue',NULL,'0.00000000'),(307,'assigned_user_id',NULL,'1'),(307,'createdtime',NULL,'2026-07-05 01:06:30'),(307,'modifiedby',NULL,'1'),(307,'source',NULL,'CRM'),(307,'record_id',NULL,'308'),(307,'record_module',NULL,'Accounts'),(308,'label',NULL,'[E2E-SRCH] Consulting 0034'),(308,'accountname',NULL,'[E2E-SRCH] Consulting 0034'),(308,'account_no',NULL,'ACC284'),(308,'rating',NULL,'Acquired'),(308,'industry',NULL,'Consulting'),(308,'annual_revenue',NULL,'0.00000000'),(308,'assigned_user_id',NULL,'1'),(308,'createdtime',NULL,'2026-07-05 01:06:30'),(308,'modifiedby',NULL,'1'),(308,'source',NULL,'CRM'),(308,'record_id',NULL,'309'),(308,'record_module',NULL,'Accounts'),(309,'label',NULL,'[E2E-SRCH] Consulting 0035'),(309,'accountname',NULL,'[E2E-SRCH] Consulting 0035'),(309,'account_no',NULL,'ACC285'),(309,'rating',NULL,'Active'),(309,'industry',NULL,'Consulting'),(309,'annual_revenue',NULL,'0.00000000'),(309,'assigned_user_id',NULL,'1'),(309,'createdtime',NULL,'2026-07-05 01:06:30'),(309,'modifiedby',NULL,'1'),(309,'source',NULL,'CRM'),(309,'record_id',NULL,'310'),(309,'record_module',NULL,'Accounts'),(310,'label',NULL,'[E2E-SRCH] Consulting 0036'),(310,'accountname',NULL,'[E2E-SRCH] Consulting 0036'),(310,'account_no',NULL,'ACC286'),(310,'rating',NULL,'Acquired'),(310,'industry',NULL,'Consulting'),(310,'annual_revenue',NULL,'0.00000000'),(310,'assigned_user_id',NULL,'1'),(310,'createdtime',NULL,'2026-07-05 01:06:30'),(310,'modifiedby',NULL,'1'),(310,'source',NULL,'CRM'),(310,'record_id',NULL,'311'),(310,'record_module',NULL,'Accounts'),(311,'label',NULL,'[E2E-SRCH] Consulting 0037'),(311,'accountname',NULL,'[E2E-SRCH] Consulting 0037'),(311,'account_no',NULL,'ACC287'),(311,'rating',NULL,'Active'),(311,'industry',NULL,'Consulting'),(311,'annual_revenue',NULL,'0.00000000'),(311,'assigned_user_id',NULL,'1'),(311,'createdtime',NULL,'2026-07-05 01:06:30'),(311,'modifiedby',NULL,'1'),(311,'source',NULL,'CRM'),(311,'record_id',NULL,'312'),(311,'record_module',NULL,'Accounts'),(312,'label',NULL,'[E2E-SRCH] Consulting 0038'),(312,'accountname',NULL,'[E2E-SRCH] Consulting 0038'),(312,'account_no',NULL,'ACC288'),(312,'rating',NULL,'Acquired'),(312,'industry',NULL,'Consulting'),(312,'annual_revenue',NULL,'0.00000000'),(312,'assigned_user_id',NULL,'1'),(312,'createdtime',NULL,'2026-07-05 01:06:30'),(312,'modifiedby',NULL,'1'),(312,'source',NULL,'CRM'),(312,'record_id',NULL,'313'),(312,'record_module',NULL,'Accounts'),(313,'label',NULL,'[E2E-SRCH] Consulting 0039'),(313,'accountname',NULL,'[E2E-SRCH] Consulting 0039'),(313,'account_no',NULL,'ACC289'),(313,'rating',NULL,'Active'),(313,'industry',NULL,'Consulting'),(313,'annual_revenue',NULL,'0.00000000'),(313,'assigned_user_id',NULL,'1'),(313,'createdtime',NULL,'2026-07-05 01:06:30'),(313,'modifiedby',NULL,'1'),(313,'source',NULL,'CRM'),(313,'record_id',NULL,'314'),(313,'record_module',NULL,'Accounts'),(314,'label',NULL,'[E2E-SRCH] Consulting 0040'),(314,'accountname',NULL,'[E2E-SRCH] Consulting 0040'),(314,'account_no',NULL,'ACC290'),(314,'rating',NULL,'Acquired'),(314,'industry',NULL,'Consulting'),(314,'annual_revenue',NULL,'0.00000000'),(314,'assigned_user_id',NULL,'1'),(314,'createdtime',NULL,'2026-07-05 01:06:30'),(314,'modifiedby',NULL,'1'),(314,'source',NULL,'CRM'),(314,'record_id',NULL,'315'),(314,'record_module',NULL,'Accounts'),(315,'label',NULL,'[E2E-SRCH] Education 0041'),(315,'accountname',NULL,'[E2E-SRCH] Education 0041'),(315,'account_no',NULL,'ACC291'),(315,'rating',NULL,'Active'),(315,'industry',NULL,'Education'),(315,'annual_revenue',NULL,'0.00000000'),(315,'assigned_user_id',NULL,'1'),(315,'createdtime',NULL,'2026-07-05 01:06:30'),(315,'modifiedby',NULL,'1'),(315,'source',NULL,'CRM'),(315,'record_id',NULL,'316'),(315,'record_module',NULL,'Accounts'),(316,'label',NULL,'[E2E-SRCH] Education 0042'),(316,'accountname',NULL,'[E2E-SRCH] Education 0042'),(316,'account_no',NULL,'ACC292'),(316,'rating',NULL,'Acquired'),(316,'industry',NULL,'Education'),(316,'annual_revenue',NULL,'0.00000000'),(316,'assigned_user_id',NULL,'1'),(316,'createdtime',NULL,'2026-07-05 01:06:30'),(316,'modifiedby',NULL,'1'),(316,'source',NULL,'CRM'),(316,'record_id',NULL,'317'),(316,'record_module',NULL,'Accounts'),(317,'label',NULL,'[E2E-SRCH] Education 0043'),(317,'accountname',NULL,'[E2E-SRCH] Education 0043'),(317,'account_no',NULL,'ACC293'),(317,'rating',NULL,'Active'),(317,'industry',NULL,'Education'),(317,'annual_revenue',NULL,'0.00000000'),(317,'assigned_user_id',NULL,'1'),(317,'createdtime',NULL,'2026-07-05 01:06:30'),(317,'modifiedby',NULL,'1'),(317,'source',NULL,'CRM'),(317,'record_id',NULL,'318'),(317,'record_module',NULL,'Accounts'),(318,'label',NULL,'[E2E-SRCH] Education 0044'),(318,'accountname',NULL,'[E2E-SRCH] Education 0044'),(318,'account_no',NULL,'ACC294'),(318,'rating',NULL,'Acquired'),(318,'industry',NULL,'Education'),(318,'annual_revenue',NULL,'0.00000000'),(318,'assigned_user_id',NULL,'1'),(318,'createdtime',NULL,'2026-07-05 01:06:30'),(318,'modifiedby',NULL,'1'),(318,'source',NULL,'CRM'),(318,'record_id',NULL,'319'),(318,'record_module',NULL,'Accounts'),(319,'label',NULL,'[E2E-SRCH] Education 0045'),(319,'accountname',NULL,'[E2E-SRCH] Education 0045'),(319,'account_no',NULL,'ACC295'),(319,'rating',NULL,'Active'),(319,'industry',NULL,'Education'),(319,'annual_revenue',NULL,'0.00000000'),(319,'assigned_user_id',NULL,'1'),(319,'createdtime',NULL,'2026-07-05 01:06:30'),(319,'modifiedby',NULL,'1'),(319,'source',NULL,'CRM'),(319,'record_id',NULL,'320'),(319,'record_module',NULL,'Accounts'),(320,'label',NULL,'[E2E-SRCH] Education 0046'),(320,'accountname',NULL,'[E2E-SRCH] Education 0046'),(320,'account_no',NULL,'ACC296'),(320,'rating',NULL,'Acquired'),(320,'industry',NULL,'Education'),(320,'annual_revenue',NULL,'0.00000000'),(320,'assigned_user_id',NULL,'1'),(320,'createdtime',NULL,'2026-07-05 01:06:30'),(320,'modifiedby',NULL,'1'),(320,'source',NULL,'CRM'),(320,'record_id',NULL,'321'),(320,'record_module',NULL,'Accounts'),(321,'label',NULL,'[E2E-SRCH] Education 0047'),(321,'accountname',NULL,'[E2E-SRCH] Education 0047'),(321,'account_no',NULL,'ACC297'),(321,'rating',NULL,'Active'),(321,'industry',NULL,'Education'),(321,'annual_revenue',NULL,'0.00000000'),(321,'assigned_user_id',NULL,'1'),(321,'createdtime',NULL,'2026-07-05 01:06:30'),(321,'modifiedby',NULL,'1'),(321,'source',NULL,'CRM'),(321,'record_id',NULL,'322'),(321,'record_module',NULL,'Accounts'),(322,'label',NULL,'[E2E-SRCH] Education 0048'),(322,'accountname',NULL,'[E2E-SRCH] Education 0048'),(322,'account_no',NULL,'ACC298'),(322,'rating',NULL,'Acquired'),(322,'industry',NULL,'Education'),(322,'annual_revenue',NULL,'0.00000000'),(322,'assigned_user_id',NULL,'1'),(322,'createdtime',NULL,'2026-07-05 01:06:30'),(322,'modifiedby',NULL,'1'),(322,'source',NULL,'CRM'),(322,'record_id',NULL,'323'),(322,'record_module',NULL,'Accounts'),(323,'label',NULL,'[E2E-SRCH] Education 0049'),(323,'accountname',NULL,'[E2E-SRCH] Education 0049'),(323,'account_no',NULL,'ACC299'),(323,'rating',NULL,'Active'),(323,'industry',NULL,'Education'),(323,'annual_revenue',NULL,'0.00000000'),(323,'assigned_user_id',NULL,'1'),(323,'createdtime',NULL,'2026-07-05 01:06:30'),(323,'modifiedby',NULL,'1'),(323,'source',NULL,'CRM'),(323,'record_id',NULL,'324'),(323,'record_module',NULL,'Accounts'),(324,'label',NULL,'[E2E-SRCH] Education 0050'),(324,'accountname',NULL,'[E2E-SRCH] Education 0050'),(324,'account_no',NULL,'ACC300'),(324,'rating',NULL,'Acquired'),(324,'industry',NULL,'Education'),(324,'annual_revenue',NULL,'0.00000000'),(324,'assigned_user_id',NULL,'1'),(324,'createdtime',NULL,'2026-07-05 01:06:30'),(324,'modifiedby',NULL,'1'),(324,'source',NULL,'CRM'),(324,'record_id',NULL,'325'),(324,'record_module',NULL,'Accounts'),(325,'label',NULL,'[E2E-SRCH] Energy 0051'),(325,'accountname',NULL,'[E2E-SRCH] Energy 0051'),(325,'account_no',NULL,'ACC301'),(325,'rating',NULL,'Active'),(325,'industry',NULL,'Energy'),(325,'annual_revenue',NULL,'0.00000000'),(325,'assigned_user_id',NULL,'1'),(325,'createdtime',NULL,'2026-07-05 01:06:31'),(325,'modifiedby',NULL,'1'),(325,'source',NULL,'CRM'),(325,'record_id',NULL,'326'),(325,'record_module',NULL,'Accounts'),(326,'label',NULL,'[E2E-SRCH] Energy 0052'),(326,'accountname',NULL,'[E2E-SRCH] Energy 0052'),(326,'account_no',NULL,'ACC302'),(326,'rating',NULL,'Acquired'),(326,'industry',NULL,'Energy'),(326,'annual_revenue',NULL,'0.00000000'),(326,'assigned_user_id',NULL,'1'),(326,'createdtime',NULL,'2026-07-05 01:06:31'),(326,'modifiedby',NULL,'1'),(326,'source',NULL,'CRM'),(326,'record_id',NULL,'327'),(326,'record_module',NULL,'Accounts'),(327,'label',NULL,'[E2E-SRCH] Energy 0053'),(327,'accountname',NULL,'[E2E-SRCH] Energy 0053'),(327,'account_no',NULL,'ACC303'),(327,'rating',NULL,'Active'),(327,'industry',NULL,'Energy'),(327,'annual_revenue',NULL,'0.00000000'),(327,'assigned_user_id',NULL,'1'),(327,'createdtime',NULL,'2026-07-05 01:06:31'),(327,'modifiedby',NULL,'1'),(327,'source',NULL,'CRM'),(327,'record_id',NULL,'328'),(327,'record_module',NULL,'Accounts'),(328,'label',NULL,'[E2E-SRCH] Energy 0054'),(328,'accountname',NULL,'[E2E-SRCH] Energy 0054'),(328,'account_no',NULL,'ACC304'),(328,'rating',NULL,'Acquired'),(328,'industry',NULL,'Energy'),(328,'annual_revenue',NULL,'0.00000000'),(328,'assigned_user_id',NULL,'1'),(328,'createdtime',NULL,'2026-07-05 01:06:31'),(328,'modifiedby',NULL,'1'),(328,'source',NULL,'CRM'),(328,'record_id',NULL,'329'),(328,'record_module',NULL,'Accounts'),(329,'label',NULL,'[E2E-SRCH] Energy 0055'),(329,'accountname',NULL,'[E2E-SRCH] Energy 0055'),(329,'account_no',NULL,'ACC305'),(329,'rating',NULL,'Active'),(329,'industry',NULL,'Energy'),(329,'annual_revenue',NULL,'0.00000000'),(329,'assigned_user_id',NULL,'1'),(329,'createdtime',NULL,'2026-07-05 01:06:31'),(329,'modifiedby',NULL,'1'),(329,'source',NULL,'CRM'),(329,'record_id',NULL,'330'),(329,'record_module',NULL,'Accounts'),(330,'label',NULL,'[E2E-SRCH] Energy 0056'),(330,'accountname',NULL,'[E2E-SRCH] Energy 0056'),(330,'account_no',NULL,'ACC306'),(330,'rating',NULL,'Acquired'),(330,'industry',NULL,'Energy'),(330,'annual_revenue',NULL,'0.00000000'),(330,'assigned_user_id',NULL,'1'),(330,'createdtime',NULL,'2026-07-05 01:06:31'),(330,'modifiedby',NULL,'1'),(330,'source',NULL,'CRM'),(330,'record_id',NULL,'331'),(330,'record_module',NULL,'Accounts'),(331,'label',NULL,'[E2E-SRCH] Energy 0057'),(331,'accountname',NULL,'[E2E-SRCH] Energy 0057'),(331,'account_no',NULL,'ACC307'),(331,'rating',NULL,'Active'),(331,'industry',NULL,'Energy'),(331,'annual_revenue',NULL,'0.00000000'),(331,'assigned_user_id',NULL,'1'),(331,'createdtime',NULL,'2026-07-05 01:06:31'),(331,'modifiedby',NULL,'1'),(331,'source',NULL,'CRM'),(331,'record_id',NULL,'332'),(331,'record_module',NULL,'Accounts'),(332,'label',NULL,'[E2E-SRCH] Energy 0058'),(332,'accountname',NULL,'[E2E-SRCH] Energy 0058'),(332,'account_no',NULL,'ACC308'),(332,'rating',NULL,'Acquired'),(332,'industry',NULL,'Energy'),(332,'annual_revenue',NULL,'0.00000000'),(332,'assigned_user_id',NULL,'1'),(332,'createdtime',NULL,'2026-07-05 01:06:31'),(332,'modifiedby',NULL,'1'),(332,'source',NULL,'CRM'),(332,'record_id',NULL,'333'),(332,'record_module',NULL,'Accounts'),(333,'label',NULL,'[E2E-SRCH] Energy 0059'),(333,'accountname',NULL,'[E2E-SRCH] Energy 0059'),(333,'account_no',NULL,'ACC309'),(333,'rating',NULL,'Active'),(333,'industry',NULL,'Energy'),(333,'annual_revenue',NULL,'0.00000000'),(333,'assigned_user_id',NULL,'1'),(333,'createdtime',NULL,'2026-07-05 01:06:31'),(333,'modifiedby',NULL,'1'),(333,'source',NULL,'CRM'),(333,'record_id',NULL,'334'),(333,'record_module',NULL,'Accounts'),(334,'label',NULL,'[E2E-SRCH] Energy 0060'),(334,'accountname',NULL,'[E2E-SRCH] Energy 0060'),(334,'account_no',NULL,'ACC310'),(334,'rating',NULL,'Acquired'),(334,'industry',NULL,'Energy'),(334,'annual_revenue',NULL,'0.00000000'),(334,'assigned_user_id',NULL,'1'),(334,'createdtime',NULL,'2026-07-05 01:06:31'),(334,'modifiedby',NULL,'1'),(334,'source',NULL,'CRM'),(334,'record_id',NULL,'335'),(334,'record_module',NULL,'Accounts');
 /*!40000 ALTER TABLE `vtiger_modtracker_detail` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -7528,12 +7493,12 @@ CREATE TABLE `vtiger_module_dashboard_widgets` (
   `linkid` int DEFAULT NULL,
   `userid` int DEFAULT NULL,
   `filterid` int DEFAULT NULL,
-  `title` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `data` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `position` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `title` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `data` text COLLATE utf8mb4_general_ci,
+  `position` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `reportid` int DEFAULT NULL,
   `dashboardtabid` int DEFAULT NULL,
-  `size` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `size` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `dashboardtabid` (`dashboardtabid`),
   CONSTRAINT `vtiger_module_dashboard_widgets_ibfk_1` FOREIGN KEY (`dashboardtabid`) REFERENCES `vtiger_dashboard_tabs` (`id`) ON DELETE CASCADE
@@ -7607,7 +7572,7 @@ DROP TABLE IF EXISTS `vtiger_notebook_contents`;
 CREATE TABLE `vtiger_notebook_contents` (
   `userid` int NOT NULL,
   `notebookid` int NOT NULL,
-  `contents` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
+  `contents` text COLLATE utf8mb4_general_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -7629,29 +7594,29 @@ DROP TABLE IF EXISTS `vtiger_notes`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_notes` (
   `notesid` int NOT NULL,
-  `note_no` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `title` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `filename` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `notecontent` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `note_no` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `title` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `filename` text COLLATE utf8mb4_general_ci,
+  `notecontent` text COLLATE utf8mb4_general_ci,
   `folderid` int NOT NULL DEFAULT '1',
-  `filetype` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `filelocationtype` varchar(5) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `filetype` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `filelocationtype` varchar(5) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `filedownloadcount` int DEFAULT NULL,
   `filestatus` int DEFAULT NULL,
   `filesize` int NOT NULL DEFAULT '0',
-  `fileversion` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `tags` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `fileversion` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tags` varchar(1) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smcreatorid` int DEFAULT NULL,
   `smownerid` int DEFAULT NULL,
   `modifiedby` int DEFAULT NULL,
-  `description` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `description` longtext COLLATE utf8mb4_general_ci,
   `createdtime` datetime DEFAULT NULL,
   `modifiedtime` datetime DEFAULT NULL,
   `viewedtime` datetime DEFAULT NULL,
   `deleted` int DEFAULT NULL,
-  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `label` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smgroupid` int DEFAULT NULL,
-  `source` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `source` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`notesid`),
   KEY `notes_title_idx` (`title`),
   KEY `notes_notesid_idx` (`notesid`),
@@ -7703,12 +7668,12 @@ DROP TABLE IF EXISTS `vtiger_notificationscheduler`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_notificationscheduler` (
   `schedulednotificationid` int NOT NULL AUTO_INCREMENT,
-  `schedulednotificationname` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `schedulednotificationname` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `active` int DEFAULT NULL,
-  `notificationsubject` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `notificationbody` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `label` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `type` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `notificationsubject` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `notificationbody` text COLLATE utf8mb4_general_ci,
+  `label` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `type` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`schedulednotificationid`),
   UNIQUE KEY `notificationscheduler_schedulednotificationname_idx` (`schedulednotificationname`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -7755,11 +7720,11 @@ DROP TABLE IF EXISTS `vtiger_opportunity_type`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_opportunity_type` (
   `opptypeid` int NOT NULL AUTO_INCREMENT,
-  `opportunity_type` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `opportunity_type` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`opptypeid`),
   UNIQUE KEY `opportunity_type_opportunity_type_idx` (`opportunity_type`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -7806,7 +7771,7 @@ DROP TABLE IF EXISTS `vtiger_opportunitystage`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_opportunitystage` (
   `potstageid` int NOT NULL AUTO_INCREMENT,
-  `stage` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `stage` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   `probability` decimal(3,2) DEFAULT '0.00',
@@ -7859,7 +7824,7 @@ DROP TABLE IF EXISTS `vtiger_org_share_action_mapping`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_org_share_action_mapping` (
   `share_action_id` int NOT NULL,
-  `share_action_name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `share_action_name` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`share_action_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -7883,18 +7848,18 @@ DROP TABLE IF EXISTS `vtiger_organizationdetails`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_organizationdetails` (
   `organization_id` int NOT NULL,
-  `organizationname` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `address` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `city` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `state` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `country` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `code` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `phone` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `fax` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `website` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `logoname` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `logo` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `vatid` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `organizationname` varchar(60) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `address` varchar(150) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `city` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `state` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `country` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `code` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `phone` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `fax` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `website` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `logoname` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `logo` text COLLATE utf8mb4_general_ci,
+  `vatid` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`organization_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -8015,7 +7980,7 @@ DROP TABLE IF EXISTS `vtiger_parenttab`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_parenttab` (
   `parenttabid` int NOT NULL,
-  `parenttab_label` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `parenttab_label` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
   `sequence` int NOT NULL,
   `visible` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`parenttabid`),
@@ -8070,10 +8035,10 @@ DROP TABLE IF EXISTS `vtiger_payment_duration`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_payment_duration` (
   `payment_duration_id` int DEFAULT NULL,
-  `payment_duration` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `payment_duration` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `sortorderid` int DEFAULT NULL,
   `presence` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -8195,7 +8160,7 @@ DROP TABLE IF EXISTS `vtiger_picklist`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_picklist` (
   `picklistid` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `name` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`picklistid`),
   UNIQUE KEY `picklist_name_idx` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=52 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -8221,11 +8186,11 @@ DROP TABLE IF EXISTS `vtiger_picklist_dependency`;
 CREATE TABLE `vtiger_picklist_dependency` (
   `id` int NOT NULL,
   `tabid` int NOT NULL,
-  `sourcefield` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `targetfield` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `sourcevalue` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `targetvalues` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `criteria` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `sourcefield` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `targetfield` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `sourcevalue` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `targetvalues` text COLLATE utf8mb4_general_ci,
+  `criteria` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -8316,12 +8281,12 @@ DROP TABLE IF EXISTS `vtiger_pobillads`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_pobillads` (
   `pobilladdressid` int NOT NULL,
-  `bill_city` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bill_code` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bill_country` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bill_state` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bill_street` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `bill_pobox` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_city` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_code` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_country` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_state` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_street` text COLLATE utf8mb4_general_ci,
+  `bill_pobox` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`pobilladdressid`),
   CONSTRAINT `fk_1_vtiger_pobillads` FOREIGN KEY (`pobilladdressid`) REFERENCES `vtiger_purchaseorder` (`purchaseorderid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -8345,8 +8310,8 @@ DROP TABLE IF EXISTS `vtiger_portal`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_portal` (
   `portalid` int NOT NULL,
-  `portalname` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `portalurl` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `portalname` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
+  `portalurl` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `sequence` int NOT NULL,
   `setdefault` int NOT NULL DEFAULT '0',
   `createdtime` datetime DEFAULT NULL,
@@ -8373,10 +8338,10 @@ DROP TABLE IF EXISTS `vtiger_portalinfo`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_portalinfo` (
   `id` int NOT NULL,
-  `user_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `user_password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `type` varchar(5) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `cryptmode` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `user_name` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `user_password` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `type` varchar(5) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `cryptmode` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `last_login_time` datetime DEFAULT NULL,
   `login_time` datetime DEFAULT NULL,
   `logout_time` datetime DEFAULT NULL,
@@ -8404,12 +8369,12 @@ DROP TABLE IF EXISTS `vtiger_poshipads`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_poshipads` (
   `poshipaddressid` int NOT NULL,
-  `ship_city` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ship_code` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ship_country` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ship_state` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ship_street` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `ship_pobox` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_city` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_code` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_country` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_state` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_street` text COLLATE utf8mb4_general_ci,
+  `ship_pobox` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`poshipaddressid`),
   CONSTRAINT `fk_1_vtiger_poshipads` FOREIGN KEY (`poshipaddressid`) REFERENCES `vtiger_purchaseorder` (`purchaseorderid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -8433,11 +8398,11 @@ DROP TABLE IF EXISTS `vtiger_postatus`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_postatus` (
   `postatusid` int NOT NULL AUTO_INCREMENT,
-  `postatus` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `postatus` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`postatusid`),
   UNIQUE KEY `postatus_postatus_idx` (`postatus`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -8485,9 +8450,9 @@ DROP TABLE IF EXISTS `vtiger_postatushistory`;
 CREATE TABLE `vtiger_postatushistory` (
   `historyid` int NOT NULL AUTO_INCREMENT,
   `purchaseorderid` int NOT NULL,
-  `vendorname` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `vendorname` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `total` decimal(10,0) DEFAULT NULL,
-  `postatus` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `postatus` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `lastmodified` datetime DEFAULT NULL,
   PRIMARY KEY (`historyid`),
   KEY `postatushistory_purchaseorderid_idx` (`purchaseorderid`),
@@ -8513,35 +8478,35 @@ DROP TABLE IF EXISTS `vtiger_potential`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_potential` (
   `potentialid` int NOT NULL,
-  `potential_no` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `potential_no` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
   `related_to` int DEFAULT NULL,
-  `potentialname` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `potentialname` varchar(120) COLLATE utf8mb4_general_ci NOT NULL,
   `amount` decimal(25,8) DEFAULT NULL,
-  `currency` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `currency` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `closingdate` date DEFAULT NULL,
-  `typeofrevenue` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `nextstep` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `typeofrevenue` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nextstep` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `private` int DEFAULT '0',
   `probability` decimal(7,3) DEFAULT '0.000',
   `campaignid` int DEFAULT NULL,
-  `sales_stage` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `potentialtype` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `leadsource` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `sales_stage` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `potentialtype` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `leadsource` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `productid` int DEFAULT NULL,
-  `productversion` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `quotationref` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `partnercontact` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `remarks` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `productversion` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `quotationref` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `partnercontact` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `remarks` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `runtimefee` int DEFAULT '0',
   `followupdate` date DEFAULT NULL,
-  `evaluationstatus` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `evaluationstatus` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `description` text COLLATE utf8mb4_general_ci,
   `forecastcategory` int DEFAULT '0',
   `outcomeanalysis` int DEFAULT '0',
   `forecast_amount` decimal(25,8) DEFAULT NULL,
-  `isconvertedfromlead` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '0',
+  `isconvertedfromlead` varchar(3) COLLATE utf8mb4_general_ci DEFAULT '0',
   `contact_id` int DEFAULT NULL,
-  `tags` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tags` varchar(1) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `converted` int NOT NULL DEFAULT '0',
   `smcreatorid` int DEFAULT NULL,
   `smownerid` int DEFAULT NULL,
@@ -8550,9 +8515,9 @@ CREATE TABLE `vtiger_potential` (
   `modifiedtime` datetime DEFAULT NULL,
   `viewedtime` datetime DEFAULT NULL,
   `deleted` int DEFAULT NULL,
-  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `label` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smgroupid` int DEFAULT NULL,
-  `source` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `source` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `last_action_date` date DEFAULT NULL,
   PRIMARY KEY (`potentialid`),
   KEY `potential_relatedto_idx` (`related_to`),
@@ -8609,7 +8574,7 @@ CREATE TABLE `vtiger_potstagehistory` (
   `historyid` int NOT NULL AUTO_INCREMENT,
   `potentialid` int NOT NULL,
   `amount` decimal(10,0) DEFAULT NULL,
-  `stage` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `stage` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `probability` decimal(7,3) DEFAULT NULL,
   `expectedrevenue` decimal(10,0) DEFAULT NULL,
   `closedate` date DEFAULT NULL,
@@ -8638,22 +8603,22 @@ DROP TABLE IF EXISTS `vtiger_pricebook`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_pricebook` (
   `pricebookid` int NOT NULL,
-  `pricebook_no` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `bookname` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `pricebook_no` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `bookname` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `active` int DEFAULT NULL,
   `currency_id` int NOT NULL DEFAULT '1',
-  `tags` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tags` varchar(1) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smcreatorid` int DEFAULT NULL,
   `smownerid` int DEFAULT NULL,
   `modifiedby` int DEFAULT NULL,
-  `description` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `description` longtext COLLATE utf8mb4_general_ci,
   `createdtime` datetime DEFAULT NULL,
   `modifiedtime` datetime DEFAULT NULL,
   `viewedtime` datetime DEFAULT NULL,
   `deleted` int DEFAULT NULL,
-  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `label` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smgroupid` int DEFAULT NULL,
-  `source` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `source` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`pricebookid`),
   KEY `idx_info` (`deleted`,`modifiedtime`),
   KEY `idx_label` (`deleted`,`label`),
@@ -8731,7 +8696,7 @@ DROP TABLE IF EXISTS `vtiger_priority`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_priority` (
   `priorityid` int NOT NULL AUTO_INCREMENT,
-  `priority` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `priority` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`priorityid`),
@@ -8757,11 +8722,11 @@ DROP TABLE IF EXISTS `vtiger_productcategory`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_productcategory` (
   `productcategoryid` int NOT NULL AUTO_INCREMENT,
-  `productcategory` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `productcategory` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`productcategoryid`),
   UNIQUE KEY `productcategory_productcategory_idx` (`productcategory`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -8855,11 +8820,11 @@ DROP TABLE IF EXISTS `vtiger_products`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_products` (
   `productid` int NOT NULL,
-  `product_no` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `productname` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `productcode` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `productcategory` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `manufacturer` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `product_no` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `productname` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `productcode` varchar(40) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `productcategory` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `manufacturer` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `qty_per_unit` decimal(11,2) DEFAULT '0.00',
   `unit_price` decimal(25,8) DEFAULT NULL,
   `weight` decimal(11,3) DEFAULT NULL,
@@ -8870,37 +8835,37 @@ CREATE TABLE `vtiger_products` (
   `expiry_date` date DEFAULT NULL,
   `cost_factor` int DEFAULT NULL,
   `commissionrate` decimal(7,3) DEFAULT NULL,
-  `commissionmethod` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `commissionmethod` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `discontinued` int NOT NULL DEFAULT '0',
-  `usageunit` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `usageunit` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `reorderlevel` int DEFAULT NULL,
-  `website` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `taxclass` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `mfr_part_no` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `vendor_part_no` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `serialno` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `website` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `taxclass` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `mfr_part_no` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `vendor_part_no` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `serialno` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `qtyinstock` decimal(25,3) DEFAULT NULL,
-  `productsheet` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `productsheet` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `qtyindemand` int DEFAULT NULL,
-  `glacct` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `glacct` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `vendor_id` int DEFAULT NULL,
-  `imagename` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `imagename` text COLLATE utf8mb4_general_ci,
   `currency_id` int NOT NULL DEFAULT '1',
   `is_subproducts_viewable` int DEFAULT '1',
   `purchase_cost` decimal(27,8) DEFAULT NULL,
-  `tags` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tags` varchar(1) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `reducedtaxrate` int DEFAULT NULL,
   `smcreatorid` int DEFAULT NULL,
   `smownerid` int DEFAULT NULL,
   `modifiedby` int DEFAULT NULL,
-  `description` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `description` longtext COLLATE utf8mb4_general_ci,
   `createdtime` datetime DEFAULT NULL,
   `modifiedtime` datetime DEFAULT NULL,
   `viewedtime` datetime DEFAULT NULL,
   `deleted` int DEFAULT NULL,
-  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `label` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smgroupid` int DEFAULT NULL,
-  `source` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `source` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`productid`),
   KEY `idx_info` (`deleted`,`modifiedtime`),
   KEY `idx_label` (`deleted`,`label`),
@@ -8929,7 +8894,7 @@ CREATE TABLE `vtiger_producttaxrel` (
   `productid` int NOT NULL,
   `taxid` int NOT NULL,
   `taxpercentage` decimal(7,3) DEFAULT NULL,
-  `regions` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `regions` text COLLATE utf8mb4_general_ci,
   KEY `producttaxrel_productid_idx` (`productid`),
   KEY `producttaxrel_taxid_idx` (`taxid`),
   CONSTRAINT `fk_crmid_vtiger_producttaxrel` FOREIGN KEY (`productid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
@@ -8954,8 +8919,8 @@ DROP TABLE IF EXISTS `vtiger_profile`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_profile` (
   `profileid` int NOT NULL AUTO_INCREMENT,
-  `profilename` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `profilename` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `description` text COLLATE utf8mb4_general_ci,
   `directly_related_to_role` int DEFAULT '0',
   PRIMARY KEY (`profileid`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -9830,47 +9795,47 @@ DROP TABLE IF EXISTS `vtiger_purchaseorder`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_purchaseorder` (
   `purchaseorderid` int NOT NULL,
-  `subject` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `subject` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `quoteid` int DEFAULT NULL,
   `vendorid` int DEFAULT NULL,
-  `requisition_no` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `purchaseorder_no` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `tracking_no` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `requisition_no` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `purchaseorder_no` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tracking_no` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `contactid` int DEFAULT NULL,
   `duedate` date DEFAULT NULL,
-  `carrier` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `carrier` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `type` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `adjustment` decimal(25,8) DEFAULT NULL,
   `salescommission` decimal(25,3) DEFAULT NULL,
   `exciseduty` decimal(25,3) DEFAULT NULL,
   `total` decimal(25,8) DEFAULT NULL,
   `subtotal` decimal(25,8) DEFAULT NULL,
-  `taxtype` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `taxtype` varchar(25) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `discount_percent` decimal(25,3) DEFAULT NULL,
   `discount_amount` decimal(25,8) DEFAULT NULL,
   `s_h_amount` decimal(25,8) DEFAULT NULL,
-  `terms_conditions` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `postatus` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `terms_conditions` text COLLATE utf8mb4_general_ci,
+  `postatus` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `currency_id` int NOT NULL DEFAULT '1',
   `conversion_rate` decimal(10,3) NOT NULL DEFAULT '1.000',
-  `compound_taxes_info` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `compound_taxes_info` text COLLATE utf8mb4_general_ci,
   `pre_tax_total` decimal(25,8) DEFAULT NULL,
   `paid` decimal(25,8) DEFAULT NULL,
   `balance` decimal(25,8) DEFAULT NULL,
   `s_h_percent` int DEFAULT NULL,
-  `tags` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tags` varchar(1) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `region_id` int DEFAULT NULL,
   `smcreatorid` int DEFAULT NULL,
   `smownerid` int DEFAULT NULL,
   `modifiedby` int DEFAULT NULL,
-  `description` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `description` longtext COLLATE utf8mb4_general_ci,
   `createdtime` datetime DEFAULT NULL,
   `modifiedtime` datetime DEFAULT NULL,
   `viewedtime` datetime DEFAULT NULL,
   `deleted` int DEFAULT NULL,
-  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `label` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smgroupid` int DEFAULT NULL,
-  `source` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `source` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`purchaseorderid`),
   KEY `purchaseorder_vendorid_idx` (`vendorid`),
   KEY `purchaseorder_quoteid_idx` (`quoteid`),
@@ -9924,43 +9889,43 @@ DROP TABLE IF EXISTS `vtiger_quotes`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_quotes` (
   `quoteid` int NOT NULL,
-  `subject` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `subject` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `potentialid` int DEFAULT NULL,
-  `quotestage` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `quotestage` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `validtill` date DEFAULT NULL,
   `contactid` int DEFAULT NULL,
-  `quote_no` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `quote_no` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `subtotal` decimal(25,8) DEFAULT NULL,
-  `carrier` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `shipping` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `carrier` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `shipping` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `inventorymanager` int DEFAULT NULL,
-  `type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `type` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `adjustment` decimal(25,8) DEFAULT NULL,
   `total` decimal(25,8) DEFAULT NULL,
-  `taxtype` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `taxtype` varchar(25) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `discount_percent` decimal(25,3) DEFAULT NULL,
   `discount_amount` decimal(25,8) DEFAULT NULL,
   `s_h_amount` decimal(25,8) DEFAULT NULL,
   `accountid` int DEFAULT NULL,
-  `terms_conditions` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `terms_conditions` text COLLATE utf8mb4_general_ci,
   `currency_id` int NOT NULL DEFAULT '1',
   `conversion_rate` decimal(10,3) NOT NULL DEFAULT '1.000',
-  `compound_taxes_info` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `compound_taxes_info` text COLLATE utf8mb4_general_ci,
   `pre_tax_total` decimal(25,8) DEFAULT NULL,
   `s_h_percent` int DEFAULT NULL,
-  `tags` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tags` varchar(1) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `region_id` int DEFAULT NULL,
   `smcreatorid` int DEFAULT NULL,
   `smownerid` int DEFAULT NULL,
   `modifiedby` int DEFAULT NULL,
-  `description` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `description` longtext COLLATE utf8mb4_general_ci,
   `createdtime` datetime DEFAULT NULL,
   `modifiedtime` datetime DEFAULT NULL,
   `viewedtime` datetime DEFAULT NULL,
   `deleted` int DEFAULT NULL,
-  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `label` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smgroupid` int DEFAULT NULL,
-  `source` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `source` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`quoteid`),
   KEY `quote_quotestage_idx` (`quotestage`),
   KEY `quotes_potentialid_idx` (`potentialid`),
@@ -9991,12 +9956,12 @@ DROP TABLE IF EXISTS `vtiger_quotesbillads`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_quotesbillads` (
   `quotebilladdressid` int NOT NULL,
-  `bill_city` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bill_code` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bill_country` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bill_state` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bill_street` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `bill_pobox` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_city` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_code` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_country` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_state` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_street` text COLLATE utf8mb4_general_ci,
+  `bill_pobox` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`quotebilladdressid`),
   CONSTRAINT `fk_1_vtiger_quotesbillads` FOREIGN KEY (`quotebilladdressid`) REFERENCES `vtiger_quotes` (`quoteid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -10043,12 +10008,12 @@ DROP TABLE IF EXISTS `vtiger_quotesshipads`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_quotesshipads` (
   `quoteshipaddressid` int NOT NULL,
-  `ship_city` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ship_code` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ship_country` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ship_state` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ship_street` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `ship_pobox` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_city` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_code` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_country` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_state` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_street` text COLLATE utf8mb4_general_ci,
+  `ship_pobox` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`quoteshipaddressid`),
   CONSTRAINT `fk_1_vtiger_quotesshipads` FOREIGN KEY (`quoteshipaddressid`) REFERENCES `vtiger_quotes` (`quoteid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -10072,11 +10037,11 @@ DROP TABLE IF EXISTS `vtiger_quotestage`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_quotestage` (
   `quotestageid` int NOT NULL AUTO_INCREMENT,
-  `quotestage` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `quotestage` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`quotestageid`),
   UNIQUE KEY `quotestage_quotestage_idx` (`quotestage`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -10124,9 +10089,9 @@ DROP TABLE IF EXISTS `vtiger_quotestagehistory`;
 CREATE TABLE `vtiger_quotestagehistory` (
   `historyid` int NOT NULL AUTO_INCREMENT,
   `quoteid` int NOT NULL,
-  `accountname` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `accountname` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `total` decimal(10,0) DEFAULT NULL,
-  `quotestage` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `quotestage` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `lastmodified` datetime DEFAULT NULL,
   PRIMARY KEY (`historyid`),
   KEY `quotestagehistory_quoteid_idx` (`quoteid`),
@@ -10152,11 +10117,11 @@ DROP TABLE IF EXISTS `vtiger_rating`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_rating` (
   `rating_id` int NOT NULL AUTO_INCREMENT,
-  `rating` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `rating` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`rating_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -10202,10 +10167,10 @@ DROP TABLE IF EXISTS `vtiger_recurring_frequency`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_recurring_frequency` (
   `recurring_frequency_id` int DEFAULT NULL,
-  `recurring_frequency` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `recurring_frequency` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `sortorderid` int DEFAULT NULL,
   `presence` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -10252,9 +10217,9 @@ CREATE TABLE `vtiger_recurringevents` (
   `recurringid` int NOT NULL AUTO_INCREMENT,
   `activityid` int NOT NULL,
   `recurringdate` date DEFAULT NULL,
-  `recurringtype` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `recurringtype` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `recurringfreq` int DEFAULT NULL,
-  `recurringinfo` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `recurringinfo` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `recurringenddate` date DEFAULT NULL,
   PRIMARY KEY (`recurringid`),
   KEY `fk_1_vtiger_recurringevents` (`activityid`),
@@ -10280,10 +10245,10 @@ DROP TABLE IF EXISTS `vtiger_recurringtype`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_recurringtype` (
   `recurringeventid` int NOT NULL AUTO_INCREMENT,
-  `recurringtype` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `recurringtype` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`recurringeventid`),
   UNIQUE KEY `recurringtype_status_idx` (`recurringtype`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -10332,14 +10297,14 @@ CREATE TABLE `vtiger_relatedlists` (
   `relation_id` int NOT NULL,
   `tabid` int DEFAULT NULL,
   `related_tabid` int DEFAULT NULL,
-  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `name` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `sequence` int DEFAULT NULL,
-  `label` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `label` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `presence` int NOT NULL DEFAULT '0',
-  `actions` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `actions` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `relationfieldid` int DEFAULT NULL,
-  `source` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `relationtype` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `source` varchar(25) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `relationtype` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`relation_id`),
   KEY `relatedlists_relation_id_idx` (`relation_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -10364,11 +10329,11 @@ DROP TABLE IF EXISTS `vtiger_relatedlists_rb`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_relatedlists_rb` (
   `entityid` int DEFAULT NULL,
-  `action` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `rel_table` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `rel_column` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ref_column` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `related_crm_ids` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
+  `action` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `rel_table` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `rel_column` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ref_column` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `related_crm_ids` text COLLATE utf8mb4_general_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -10413,11 +10378,11 @@ DROP TABLE IF EXISTS `vtiger_relcriteria`;
 CREATE TABLE `vtiger_relcriteria` (
   `queryid` int NOT NULL,
   `columnindex` int NOT NULL,
-  `columnname` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
-  `comparator` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `value` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `columnname` varchar(250) COLLATE utf8mb4_general_ci DEFAULT '',
+  `comparator` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `value` varchar(512) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `groupid` int DEFAULT '1',
-  `column_condition` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'and',
+  `column_condition` varchar(256) COLLATE utf8mb4_general_ci DEFAULT 'and',
   PRIMARY KEY (`queryid`,`columnindex`),
   KEY `relcriteria_queryid_idx` (`queryid`),
   CONSTRAINT `fk_1_vtiger_relcriteria` FOREIGN KEY (`queryid`) REFERENCES `vtiger_selectquery` (`queryid`) ON DELETE CASCADE
@@ -10444,8 +10409,8 @@ DROP TABLE IF EXISTS `vtiger_relcriteria_grouping`;
 CREATE TABLE `vtiger_relcriteria_grouping` (
   `groupid` int NOT NULL,
   `queryid` int NOT NULL,
-  `group_condition` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `condition_expression` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `group_condition` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `condition_expression` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`groupid`,`queryid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -10469,7 +10434,7 @@ DROP TABLE IF EXISTS `vtiger_reminder_interval`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_reminder_interval` (
   `reminder_intervalid` int NOT NULL AUTO_INCREMENT,
-  `reminder_interval` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `reminder_interval` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `sortorderid` int NOT NULL,
   `presence` int NOT NULL,
   PRIMARY KEY (`reminder_intervalid`)
@@ -10518,15 +10483,15 @@ DROP TABLE IF EXISTS `vtiger_report`;
 CREATE TABLE `vtiger_report` (
   `reportid` int NOT NULL,
   `folderid` int NOT NULL,
-  `reportname` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
-  `description` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
-  `reporttype` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+  `reportname` varchar(100) COLLATE utf8mb4_general_ci DEFAULT '',
+  `description` varchar(250) COLLATE utf8mb4_general_ci DEFAULT '',
+  `reporttype` varchar(50) COLLATE utf8mb4_general_ci DEFAULT '',
   `queryid` int NOT NULL,
-  `state` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'SAVED',
+  `state` varchar(50) COLLATE utf8mb4_general_ci DEFAULT 'SAVED',
   `customizable` int DEFAULT '1',
   `category` int DEFAULT '1',
   `owner` int DEFAULT '1',
-  `sharingtype` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'Private',
+  `sharingtype` varchar(200) COLLATE utf8mb4_general_ci DEFAULT 'Private',
   PRIMARY KEY (`reportid`),
   KEY `report_queryid_idx` (`queryid`),
   KEY `report_folderid_idx` (`folderid`),
@@ -10605,8 +10570,8 @@ DROP TABLE IF EXISTS `vtiger_reportdatefilter`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_reportdatefilter` (
   `datefilterid` int NOT NULL,
-  `datecolumnname` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
-  `datefilter` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+  `datecolumnname` varchar(250) COLLATE utf8mb4_general_ci DEFAULT '',
+  `datefilter` varchar(250) COLLATE utf8mb4_general_ci DEFAULT '',
   `startdate` date DEFAULT NULL,
   `enddate` date DEFAULT NULL,
   PRIMARY KEY (`datefilterid`),
@@ -10634,7 +10599,7 @@ DROP TABLE IF EXISTS `vtiger_reportfilters`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_reportfilters` (
   `filterid` int NOT NULL,
-  `name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL
+  `name` varchar(200) COLLATE utf8mb4_general_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -10657,9 +10622,9 @@ DROP TABLE IF EXISTS `vtiger_reportfolder`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_reportfolder` (
   `folderid` int NOT NULL AUTO_INCREMENT,
-  `foldername` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `description` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
-  `state` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'SAVED',
+  `foldername` varchar(100) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `description` varchar(250) COLLATE utf8mb4_general_ci DEFAULT '',
+  `state` varchar(50) COLLATE utf8mb4_general_ci DEFAULT 'SAVED',
   PRIMARY KEY (`folderid`)
 ) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -10684,8 +10649,8 @@ DROP TABLE IF EXISTS `vtiger_reportgroupbycolumn`;
 CREATE TABLE `vtiger_reportgroupbycolumn` (
   `reportid` int DEFAULT NULL,
   `sortid` int DEFAULT NULL,
-  `sortcolname` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `dategroupbycriteria` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `sortcolname` varchar(250) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `dategroupbycriteria` varchar(250) COLLATE utf8mb4_general_ci DEFAULT NULL,
   KEY `fk_1_vtiger_reportgroupbycolumn` (`reportid`),
   CONSTRAINT `fk_1_vtiger_reportgroupbycolumn` FOREIGN KEY (`reportid`) REFERENCES `vtiger_report` (`reportid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -10709,9 +10674,9 @@ DROP TABLE IF EXISTS `vtiger_reportmodules`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_reportmodules` (
   `reportmodulesid` int NOT NULL,
-  `primarymodule` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `secondarymodules` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
-  `join_column` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `primarymodule` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `secondarymodules` varchar(250) COLLATE utf8mb4_general_ci DEFAULT '',
+  `join_column` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`reportmodulesid`),
   CONSTRAINT `fk_1_vtiger_reportmodules` FOREIGN KEY (`reportmodulesid`) REFERENCES `vtiger_report` (`reportid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -10737,7 +10702,7 @@ DROP TABLE IF EXISTS `vtiger_reportsharing`;
 CREATE TABLE `vtiger_reportsharing` (
   `reportid` int NOT NULL,
   `shareid` int NOT NULL,
-  `setype` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL
+  `setype` varchar(200) COLLATE utf8mb4_general_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -10760,8 +10725,8 @@ DROP TABLE IF EXISTS `vtiger_reportsortcol`;
 CREATE TABLE `vtiger_reportsortcol` (
   `sortcolid` int NOT NULL,
   `reportid` int NOT NULL,
-  `columnname` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
-  `sortorder` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'Asc',
+  `columnname` varchar(250) COLLATE utf8mb4_general_ci DEFAULT '',
+  `sortorder` varchar(250) COLLATE utf8mb4_general_ci DEFAULT 'Asc',
   PRIMARY KEY (`sortcolid`,`reportid`),
   KEY `fk_1_vtiger_reportsortcol` (`reportid`),
   CONSTRAINT `fk_1_vtiger_reportsortcol` FOREIGN KEY (`reportid`) REFERENCES `vtiger_report` (`reportid`) ON DELETE CASCADE
@@ -10838,7 +10803,7 @@ DROP TABLE IF EXISTS `vtiger_reportsummary`;
 CREATE TABLE `vtiger_reportsummary` (
   `reportsummaryid` int NOT NULL,
   `summarytype` int NOT NULL,
-  `columnname` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `columnname` varchar(250) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`reportsummaryid`,`summarytype`,`columnname`),
   KEY `reportsummary_reportsummaryid_idx` (`reportsummaryid`),
   CONSTRAINT `fk_1_vtiger_reportsummary` FOREIGN KEY (`reportsummaryid`) REFERENCES `vtiger_report` (`reportid`) ON DELETE CASCADE
@@ -10863,7 +10828,7 @@ DROP TABLE IF EXISTS `vtiger_reporttype`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_reporttype` (
   `reportid` int NOT NULL,
-  `data` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `data` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`reportid`),
   CONSTRAINT `fk_1_vtiger_reporttype` FOREIGN KEY (`reportid`) REFERENCES `vtiger_report` (`reportid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -10886,9 +10851,9 @@ DROP TABLE IF EXISTS `vtiger_role`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_role` (
-  `roleid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `rolename` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `parentrole` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `roleid` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `rolename` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `parentrole` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `depth` int DEFAULT NULL,
   `allowassignedrecordsto` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`roleid`)
@@ -10901,7 +10866,7 @@ CREATE TABLE `vtiger_role` (
 
 LOCK TABLES `vtiger_role` WRITE;
 /*!40000 ALTER TABLE `vtiger_role` DISABLE KEYS */;
-INSERT INTO `vtiger_role` VALUES ('H1','Organization','H1',0,1),('H10','E2E営業2課員','H1::H2::H6::H9::H10',4,2),('H2','LBL_ADMIN','H1::H2',1,1),('H3','LBL_MANAGER','H1::H2::H3',2,1),('H4','LBL_GENERAL','H1::H2::H3::H4',3,1),('H5','LBL_PART-TIME_JOB','H1::H2::H3::H4::H5',4,1),('H6','E2E営業部長','H1::H2::H6',2,2),('H7','E2E営業1課長','H1::H2::H6::H7',3,2),('H8','E2E営業1課員','H1::H2::H6::H7::H8',4,2),('H9','E2E営業2課長','H1::H2::H6::H9',3,2);
+INSERT INTO `vtiger_role` VALUES ('H1','Organization','H1',0,1),('H2','LBL_ADMIN','H1::H2',1,1),('H3','LBL_MANAGER','H1::H2::H3',2,1),('H4','LBL_GENERAL','H1::H2::H3::H4',3,1),('H5','LBL_PART-TIME_JOB','H1::H2::H3::H4::H5',4,1);
 /*!40000 ALTER TABLE `vtiger_role` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -10913,7 +10878,7 @@ DROP TABLE IF EXISTS `vtiger_role2picklist`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_role2picklist` (
-  `roleid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `roleid` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `picklistvalueid` int NOT NULL,
   `picklistid` int NOT NULL,
   `sortid` int DEFAULT NULL,
@@ -10931,7 +10896,7 @@ CREATE TABLE `vtiger_role2picklist` (
 
 LOCK TABLES `vtiger_role2picklist` WRITE;
 /*!40000 ALTER TABLE `vtiger_role2picklist` DISABLE KEYS */;
-INSERT INTO `vtiger_role2picklist` VALUES ('H1',1,1,0),('H1',2,1,1),('H1',3,1,2),('H1',4,1,3),('H1',5,1,4),('H1',6,1,5),('H1',7,1,6),('H1',8,1,7),('H1',9,1,8),('H1',10,1,9),('H1',11,1,10),('H1',12,2,0),('H1',13,2,1),('H1',14,3,0),('H1',15,3,1),('H1',16,3,2),('H1',17,3,3),('H1',18,3,4),('H1',19,3,5),('H1',20,4,0),('H1',21,4,1),('H1',22,4,2),('H1',23,4,3),('H1',24,4,4),('H1',25,4,5),('H1',26,4,6),('H1',27,4,7),('H1',28,4,8),('H1',29,4,9),('H1',30,4,10),('H1',31,4,11),('H1',32,4,12),('H1',33,5,0),('H1',34,5,1),('H1',35,5,2),('H1',36,5,3),('H1',37,5,4),('H1',38,6,0),('H1',39,6,1),('H1',40,6,2),('H1',41,7,0),('H1',42,7,1),('H1',43,7,2),('H1',44,7,3),('H1',45,7,4),('H1',46,8,0),('H1',47,9,0),('H1',48,9,1),('H1',49,9,2),('H1',50,9,3),('H1',51,10,0),('H1',52,10,1),('H1',53,10,2),('H1',54,10,3),('H1',55,10,4),('H1',56,10,5),('H1',57,10,6),('H1',58,10,7),('H1',59,10,8),('H1',60,11,0),('H1',61,11,1),('H1',62,11,2),('H1',63,11,3),('H1',64,11,4),('H1',65,11,5),('H1',66,11,6),('H1',67,11,7),('H1',68,11,8),('H1',69,11,9),('H1',70,11,10),('H1',71,11,11),('H1',72,11,12),('H1',73,11,13),('H1',74,11,14),('H1',75,11,15),('H1',76,11,16),('H1',77,11,17),('H1',78,11,18),('H1',79,11,19),('H1',80,11,20),('H1',81,11,21),('H1',82,11,22),('H1',83,11,23),('H1',84,11,24),('H1',85,11,25),('H1',86,11,26),('H1',87,11,27),('H1',88,11,28),('H1',89,11,29),('H1',90,11,30),('H1',91,11,31),('H1',92,12,0),('H1',93,12,1),('H1',94,12,2),('H1',95,12,3),('H1',96,12,4),('H1',97,12,5),('H1',98,13,0),('H1',99,13,1),('H1',100,13,2),('H1',101,13,3),('H1',102,13,4),('H1',103,13,5),('H1',104,13,6),('H1',105,13,7),('H1',106,13,8),('H1',107,13,9),('H1',108,13,10),('H1',109,13,11),('H1',110,13,12),('H1',111,14,0),('H1',112,14,1),('H1',113,14,2),('H1',114,14,3),('H1',115,14,4),('H1',116,14,5),('H1',117,14,6),('H1',118,14,7),('H1',119,14,8),('H1',120,14,9),('H1',121,14,10),('H1',122,14,11),('H1',123,15,0),('H1',124,15,1),('H1',125,15,2),('H1',126,15,3),('H1',127,16,0),('H1',128,16,1),('H1',129,16,2),('H1',130,17,0),('H1',131,17,1),('H1',132,17,2),('H1',133,17,3),('H1',134,17,4),('H1',135,18,0),('H1',136,18,1),('H1',137,18,2),('H1',138,18,3),('H1',139,19,0),('H1',140,19,1),('H1',141,19,2),('H1',142,19,3),('H1',143,19,4),('H1',144,20,0),('H1',145,20,1),('H1',146,20,2),('H1',147,20,3),('H1',148,20,4),('H1',149,20,5),('H1',150,21,0),('H1',151,21,1),('H1',152,21,2),('H1',153,21,3),('H1',154,21,4),('H1',155,21,5),('H1',156,21,6),('H1',157,21,7),('H1',158,21,8),('H1',159,21,9),('H1',160,22,0),('H1',161,22,1),('H1',162,22,2),('H1',163,22,3),('H1',164,22,4),('H1',165,22,5),('H1',166,23,0),('H1',167,23,1),('H1',168,23,2),('H1',169,23,3),('H1',170,24,0),('H1',171,24,1),('H1',172,24,2),('H1',173,25,0),('H1',174,25,1),('H1',175,25,2),('H1',176,25,3),('H1',177,25,4),('H1',178,25,5),('H1',179,26,0),('H1',180,26,1),('H1',181,26,2),('H1',182,27,0),('H1',183,27,1),('H1',184,27,2),('H1',185,27,3),('H1',186,28,0),('H1',187,28,1),('H1',188,28,2),('H1',189,28,3),('H1',190,29,0),('H1',191,29,1),('H1',192,29,2),('H1',193,29,3),('H1',194,30,0),('H1',195,30,1),('H1',196,30,2),('H1',197,30,3),('H1',198,30,4),('H1',199,30,5),('H1',200,30,6),('H1',201,30,7),('H1',202,30,8),('H1',203,30,9),('H1',204,30,10),('H1',205,30,11),('H1',206,30,12),('H1',207,30,13),('H1',208,30,14),('H1',209,30,15),('H1',210,31,1),('H1',211,31,2),('H1',212,31,3),('H1',213,31,4),('H1',214,32,1),('H1',215,32,2),('H1',216,32,3),('H1',217,32,4),('H1',218,32,5),('H1',219,32,6),('H1',220,33,1),('H1',221,33,2),('H1',222,33,3),('H1',223,34,1),('H1',224,34,2),('H1',225,34,3),('H1',226,35,1),('H1',227,35,2),('H1',228,35,3),('H1',229,36,1),('H1',230,36,2),('H1',231,36,3),('H1',232,36,4),('H1',233,36,5),('H1',234,36,6),('H1',235,37,1),('H1',236,37,2),('H1',237,37,3),('H1',238,37,4),('H1',239,38,1),('H1',240,38,2),('H1',241,38,3),('H1',242,38,4),('H1',243,39,1),('H1',244,39,2),('H1',245,39,3),('H1',246,39,4),('H1',247,40,1),('H1',248,40,2),('H1',249,40,3),('H1',250,40,4),('H1',251,40,5),('H1',252,40,6),('H1',253,40,7),('H1',254,40,8),('H1',255,40,9),('H1',256,40,10),('H1',257,40,11),('H1',258,41,1),('H1',259,41,2),('H1',260,41,3),('H1',261,41,4),('H1',262,41,5),('H1',263,41,6),('H1',264,41,7),('H1',265,41,8),('H1',266,41,9),('H1',267,42,1),('H1',268,42,2),('H1',269,42,3),('H1',270,42,4),('H1',271,43,1),('H1',272,43,2),('H1',273,43,3),('H1',274,43,4),('H1',275,44,1),('H1',276,44,2),('H1',277,44,3),('H1',278,44,4),('H1',279,44,5),('H1',280,44,6),('H1',281,44,7),('H1',282,44,8),('H1',283,44,9),('H1',284,44,10),('H1',285,44,11),('H1',286,45,1),('H1',287,45,2),('H1',288,12,1),('H1',289,46,1),('H1',290,46,2),('H1',291,46,3),('H1',292,46,4),('H1',293,46,5),('H1',294,46,6),('H1',295,2,1),('H1',296,47,1),('H1',297,47,2),('H1',298,47,3),('H1',299,48,1),('H1',300,48,2),('H1',303,49,1),('H1',304,49,2),('H1',305,50,1),('H1',306,50,2),('H1',307,51,1),('H1',308,51,2),('H10',1,1,0),('H10',2,1,1),('H10',3,1,2),('H10',4,1,3),('H10',5,1,4),('H10',6,1,5),('H10',7,1,6),('H10',8,1,7),('H10',9,1,8),('H10',10,1,9),('H10',11,1,10),('H10',12,2,0),('H10',13,2,1),('H10',14,3,0),('H10',15,3,1),('H10',16,3,2),('H10',17,3,3),('H10',18,3,4),('H10',19,3,5),('H10',20,4,0),('H10',21,4,1),('H10',22,4,2),('H10',23,4,3),('H10',24,4,4),('H10',25,4,5),('H10',26,4,6),('H10',27,4,7),('H10',28,4,8),('H10',29,4,9),('H10',30,4,10),('H10',31,4,11),('H10',32,4,12),('H10',33,5,0),('H10',34,5,1),('H10',35,5,2),('H10',36,5,3),('H10',37,5,4),('H10',38,6,0),('H10',39,6,1),('H10',40,6,2),('H10',41,7,0),('H10',42,7,1),('H10',43,7,2),('H10',44,7,3),('H10',45,7,4),('H10',46,8,0),('H10',47,9,0),('H10',48,9,1),('H10',49,9,2),('H10',50,9,3),('H10',51,10,0),('H10',52,10,1),('H10',53,10,2),('H10',54,10,3),('H10',55,10,4),('H10',56,10,5),('H10',57,10,6),('H10',58,10,7),('H10',59,10,8),('H10',60,11,0),('H10',61,11,1),('H10',62,11,2),('H10',63,11,3),('H10',64,11,4),('H10',65,11,5),('H10',66,11,6),('H10',67,11,7),('H10',68,11,8),('H10',69,11,9),('H10',70,11,10),('H10',71,11,11),('H10',72,11,12),('H10',73,11,13),('H10',74,11,14),('H10',75,11,15),('H10',76,11,16),('H10',77,11,17),('H10',78,11,18),('H10',79,11,19),('H10',80,11,20),('H10',81,11,21),('H10',82,11,22),('H10',83,11,23),('H10',84,11,24),('H10',85,11,25),('H10',86,11,26),('H10',87,11,27),('H10',88,11,28),('H10',89,11,29),('H10',90,11,30),('H10',91,11,31),('H10',92,12,0),('H10',93,12,1),('H10',94,12,2),('H10',95,12,3),('H10',96,12,4),('H10',97,12,5),('H10',98,13,0),('H10',99,13,1),('H10',100,13,2),('H10',101,13,3),('H10',102,13,4),('H10',103,13,5),('H10',104,13,6),('H10',105,13,7),('H10',106,13,8),('H10',107,13,9),('H10',108,13,10),('H10',109,13,11),('H10',110,13,12),('H10',111,14,0),('H10',112,14,1),('H10',113,14,2),('H10',114,14,3),('H10',115,14,4),('H10',116,14,5),('H10',117,14,6),('H10',118,14,7),('H10',119,14,8),('H10',120,14,9),('H10',121,14,10),('H10',122,14,11),('H10',123,15,0),('H10',124,15,1),('H10',125,15,2),('H10',126,15,3),('H10',127,16,0),('H10',128,16,1),('H10',129,16,2),('H10',130,17,0),('H10',131,17,1),('H10',132,17,2),('H10',133,17,3),('H10',134,17,4),('H10',135,18,0),('H10',136,18,1),('H10',137,18,2),('H10',138,18,3),('H10',139,19,0),('H10',140,19,1),('H10',141,19,2),('H10',142,19,3),('H10',143,19,4),('H10',144,20,0),('H10',145,20,1),('H10',146,20,2),('H10',147,20,3),('H10',148,20,4),('H10',149,20,5),('H10',150,21,0),('H10',151,21,1),('H10',152,21,2),('H10',153,21,3),('H10',154,21,4),('H10',155,21,5),('H10',156,21,6),('H10',157,21,7),('H10',158,21,8),('H10',159,21,9),('H10',160,22,0),('H10',161,22,1),('H10',162,22,2),('H10',163,22,3),('H10',164,22,4),('H10',165,22,5),('H10',166,23,0),('H10',167,23,1),('H10',168,23,2),('H10',169,23,3),('H10',170,24,0),('H10',171,24,1),('H10',172,24,2),('H10',173,25,0),('H10',174,25,1),('H10',175,25,2),('H10',176,25,3),('H10',177,25,4),('H10',178,25,5),('H10',179,26,0),('H10',180,26,1),('H10',181,26,2),('H10',182,27,0),('H10',183,27,1),('H10',184,27,2),('H10',185,27,3),('H10',186,28,0),('H10',187,28,1),('H10',188,28,2),('H10',189,28,3),('H10',190,29,0),('H10',191,29,1),('H10',192,29,2),('H10',193,29,3),('H10',194,30,0),('H10',195,30,1),('H10',196,30,2),('H10',197,30,3),('H10',198,30,4),('H10',199,30,5),('H10',200,30,6),('H10',201,30,7),('H10',202,30,8),('H10',203,30,9),('H10',204,30,10),('H10',205,30,11),('H10',206,30,12),('H10',207,30,13),('H10',208,30,14),('H10',209,30,15),('H10',210,31,1),('H10',211,31,2),('H10',212,31,3),('H10',213,31,4),('H10',214,32,1),('H10',215,32,2),('H10',216,32,3),('H10',217,32,4),('H10',218,32,5),('H10',219,32,6),('H10',220,33,1),('H10',221,33,2),('H10',222,33,3),('H10',223,34,1),('H10',224,34,2),('H10',225,34,3),('H10',226,35,1),('H10',227,35,2),('H10',228,35,3),('H10',229,36,1),('H10',230,36,2),('H10',231,36,3),('H10',232,36,4),('H10',233,36,5),('H10',234,36,6),('H10',235,37,1),('H10',236,37,2),('H10',237,37,3),('H10',238,37,4),('H10',239,38,1),('H10',240,38,2),('H10',241,38,3),('H10',242,38,4),('H10',243,39,1),('H10',244,39,2),('H10',245,39,3),('H10',246,39,4),('H10',247,40,1),('H10',248,40,2),('H10',249,40,3),('H10',250,40,4),('H10',251,40,5),('H10',252,40,6),('H10',253,40,7),('H10',254,40,8),('H10',255,40,9),('H10',256,40,10),('H10',257,40,11),('H10',258,41,1),('H10',259,41,2),('H10',260,41,3),('H10',261,41,4),('H10',262,41,5),('H10',263,41,6),('H10',264,41,7),('H10',265,41,8),('H10',266,41,9),('H10',267,42,1),('H10',268,42,2),('H10',269,42,3),('H10',270,42,4),('H10',271,43,1),('H10',272,43,2),('H10',273,43,3),('H10',274,43,4),('H10',275,44,1),('H10',276,44,2),('H10',277,44,3),('H10',278,44,4),('H10',279,44,5),('H10',280,44,6),('H10',281,44,7),('H10',282,44,8),('H10',283,44,9),('H10',284,44,10),('H10',285,44,11),('H10',286,45,1),('H10',287,45,2),('H10',288,12,1),('H10',289,46,1),('H10',290,46,2),('H10',291,46,3),('H10',292,46,4),('H10',293,46,5),('H10',294,46,6),('H10',295,2,1),('H10',296,47,1),('H10',297,47,2),('H10',298,47,3),('H10',299,48,1),('H10',300,48,2),('H10',303,49,1),('H10',304,49,2),('H10',305,50,1),('H10',306,50,2),('H10',307,51,1),('H10',308,51,2),('H2',1,1,0),('H2',2,1,1),('H2',3,1,2),('H2',4,1,3),('H2',5,1,4),('H2',6,1,5),('H2',7,1,6),('H2',8,1,7),('H2',9,1,8),('H2',10,1,9),('H2',11,1,10),('H2',12,2,0),('H2',13,2,1),('H2',14,3,0),('H2',15,3,1),('H2',16,3,2),('H2',17,3,3),('H2',18,3,4),('H2',19,3,5),('H2',20,4,0),('H2',21,4,1),('H2',22,4,2),('H2',23,4,3),('H2',24,4,4),('H2',25,4,5),('H2',26,4,6),('H2',27,4,7),('H2',28,4,8),('H2',29,4,9),('H2',30,4,10),('H2',31,4,11),('H2',32,4,12),('H2',33,5,0),('H2',34,5,1),('H2',35,5,2),('H2',36,5,3),('H2',37,5,4),('H2',38,6,0),('H2',39,6,1),('H2',40,6,2),('H2',41,7,0),('H2',42,7,1),('H2',43,7,2),('H2',44,7,3),('H2',45,7,4),('H2',46,8,0),('H2',47,9,0),('H2',48,9,1),('H2',49,9,2),('H2',50,9,3),('H2',51,10,0),('H2',52,10,1),('H2',53,10,2),('H2',54,10,3),('H2',55,10,4),('H2',56,10,5),('H2',57,10,6),('H2',58,10,7),('H2',59,10,8),('H2',60,11,0),('H2',61,11,1),('H2',62,11,2),('H2',63,11,3),('H2',64,11,4),('H2',65,11,5),('H2',66,11,6),('H2',67,11,7),('H2',68,11,8),('H2',69,11,9),('H2',70,11,10),('H2',71,11,11),('H2',72,11,12),('H2',73,11,13),('H2',74,11,14),('H2',75,11,15),('H2',76,11,16),('H2',77,11,17),('H2',78,11,18),('H2',79,11,19),('H2',80,11,20),('H2',81,11,21),('H2',82,11,22),('H2',83,11,23),('H2',84,11,24),('H2',85,11,25),('H2',86,11,26),('H2',87,11,27),('H2',88,11,28),('H2',89,11,29),('H2',90,11,30),('H2',91,11,31),('H2',92,12,0),('H2',93,12,1),('H2',94,12,2),('H2',95,12,3),('H2',96,12,4),('H2',97,12,5),('H2',98,13,0),('H2',99,13,1),('H2',100,13,2),('H2',101,13,3),('H2',102,13,4),('H2',103,13,5),('H2',104,13,6),('H2',105,13,7),('H2',106,13,8),('H2',107,13,9),('H2',108,13,10),('H2',109,13,11),('H2',110,13,12),('H2',111,14,0),('H2',112,14,1),('H2',113,14,2),('H2',114,14,3),('H2',115,14,4),('H2',116,14,5),('H2',117,14,6),('H2',118,14,7),('H2',119,14,8),('H2',120,14,9),('H2',121,14,10),('H2',122,14,11),('H2',123,15,0),('H2',124,15,1),('H2',125,15,2),('H2',126,15,3),('H2',127,16,0),('H2',128,16,1),('H2',129,16,2),('H2',130,17,0),('H2',131,17,1),('H2',132,17,2),('H2',133,17,3),('H2',134,17,4),('H2',135,18,0),('H2',136,18,1),('H2',137,18,2),('H2',138,18,3),('H2',139,19,0),('H2',140,19,1),('H2',141,19,2),('H2',142,19,3),('H2',143,19,4),('H2',144,20,0),('H2',145,20,1),('H2',146,20,2),('H2',147,20,3),('H2',148,20,4),('H2',149,20,5),('H2',150,21,0),('H2',151,21,1),('H2',152,21,2),('H2',153,21,3),('H2',154,21,4),('H2',155,21,5),('H2',156,21,6),('H2',157,21,7),('H2',158,21,8),('H2',159,21,9),('H2',160,22,0),('H2',161,22,1),('H2',162,22,2),('H2',163,22,3),('H2',164,22,4),('H2',165,22,5),('H2',166,23,0),('H2',167,23,1),('H2',168,23,2),('H2',169,23,3),('H2',170,24,0),('H2',171,24,1),('H2',172,24,2),('H2',173,25,0),('H2',174,25,1),('H2',175,25,2),('H2',176,25,3),('H2',177,25,4),('H2',178,25,5),('H2',179,26,0),('H2',180,26,1),('H2',181,26,2),('H2',182,27,0),('H2',183,27,1),('H2',184,27,2),('H2',185,27,3),('H2',186,28,0),('H2',187,28,1),('H2',188,28,2),('H2',189,28,3),('H2',190,29,0),('H2',191,29,1),('H2',192,29,2),('H2',193,29,3),('H2',194,30,0),('H2',195,30,1),('H2',196,30,2),('H2',197,30,3),('H2',198,30,4),('H2',199,30,5),('H2',200,30,6),('H2',201,30,7),('H2',202,30,8),('H2',203,30,9),('H2',204,30,10),('H2',205,30,11),('H2',206,30,12),('H2',207,30,13),('H2',208,30,14),('H2',209,30,15),('H2',210,31,1),('H2',211,31,2),('H2',212,31,3),('H2',213,31,4),('H2',214,32,1),('H2',215,32,2),('H2',216,32,3),('H2',217,32,4),('H2',218,32,5),('H2',219,32,6),('H2',220,33,1),('H2',221,33,2),('H2',222,33,3),('H2',223,34,1),('H2',224,34,2),('H2',225,34,3),('H2',226,35,1),('H2',227,35,2),('H2',228,35,3),('H2',229,36,1),('H2',230,36,2),('H2',231,36,3),('H2',232,36,4),('H2',233,36,5),('H2',234,36,6),('H2',235,37,1),('H2',236,37,2),('H2',237,37,3),('H2',238,37,4),('H2',239,38,1),('H2',240,38,2),('H2',241,38,3),('H2',242,38,4),('H2',243,39,1),('H2',244,39,2),('H2',245,39,3),('H2',246,39,4),('H2',247,40,1),('H2',248,40,2),('H2',249,40,3),('H2',250,40,4),('H2',251,40,5),('H2',252,40,6),('H2',253,40,7),('H2',254,40,8),('H2',255,40,9),('H2',256,40,10),('H2',257,40,11),('H2',258,41,1),('H2',259,41,2),('H2',260,41,3),('H2',261,41,4),('H2',262,41,5),('H2',263,41,6),('H2',264,41,7),('H2',265,41,8),('H2',266,41,9),('H2',267,42,1),('H2',268,42,2),('H2',269,42,3),('H2',270,42,4),('H2',271,43,1),('H2',272,43,2),('H2',273,43,3),('H2',274,43,4),('H2',275,44,1),('H2',276,44,2),('H2',277,44,3),('H2',278,44,4),('H2',279,44,5),('H2',280,44,6),('H2',281,44,7),('H2',282,44,8),('H2',283,44,9),('H2',284,44,10),('H2',285,44,11),('H2',286,45,1),('H2',287,45,2),('H2',288,12,1),('H2',289,46,1),('H2',290,46,2),('H2',291,46,3),('H2',292,46,4),('H2',293,46,5),('H2',294,46,6),('H2',295,2,1),('H2',296,47,1),('H2',297,47,2),('H2',298,47,3),('H2',299,48,1),('H2',300,48,2),('H2',303,49,1),('H2',304,49,2),('H2',305,50,1),('H2',306,50,2),('H2',307,51,1),('H2',308,51,2),('H3',1,1,0),('H3',2,1,1),('H3',3,1,2),('H3',4,1,3),('H3',5,1,4),('H3',6,1,5),('H3',7,1,6),('H3',8,1,7),('H3',9,1,8),('H3',10,1,9),('H3',11,1,10),('H3',12,2,0),('H3',13,2,1),('H3',14,3,0),('H3',15,3,1),('H3',16,3,2),('H3',17,3,3),('H3',18,3,4),('H3',19,3,5),('H3',20,4,0),('H3',21,4,1),('H3',22,4,2),('H3',23,4,3),('H3',24,4,4),('H3',25,4,5),('H3',26,4,6),('H3',27,4,7),('H3',28,4,8),('H3',29,4,9),('H3',30,4,10),('H3',31,4,11),('H3',32,4,12),('H3',33,5,0),('H3',34,5,1),('H3',35,5,2),('H3',36,5,3),('H3',37,5,4),('H3',38,6,0),('H3',39,6,1),('H3',40,6,2),('H3',41,7,0),('H3',42,7,1),('H3',43,7,2),('H3',44,7,3),('H3',45,7,4),('H3',46,8,0),('H3',47,9,0),('H3',48,9,1),('H3',49,9,2),('H3',50,9,3),('H3',51,10,0),('H3',52,10,1),('H3',53,10,2),('H3',54,10,3),('H3',55,10,4),('H3',56,10,5),('H3',57,10,6),('H3',58,10,7),('H3',59,10,8),('H3',60,11,0),('H3',61,11,1),('H3',62,11,2),('H3',63,11,3),('H3',64,11,4),('H3',65,11,5),('H3',66,11,6),('H3',67,11,7),('H3',68,11,8),('H3',69,11,9),('H3',70,11,10),('H3',71,11,11),('H3',72,11,12),('H3',73,11,13),('H3',74,11,14),('H3',75,11,15),('H3',76,11,16),('H3',77,11,17),('H3',78,11,18),('H3',79,11,19),('H3',80,11,20),('H3',81,11,21),('H3',82,11,22),('H3',83,11,23),('H3',84,11,24),('H3',85,11,25),('H3',86,11,26),('H3',87,11,27),('H3',88,11,28),('H3',89,11,29),('H3',90,11,30),('H3',91,11,31),('H3',92,12,0),('H3',93,12,1),('H3',94,12,2),('H3',95,12,3),('H3',96,12,4),('H3',97,12,5),('H3',98,13,0),('H3',99,13,1),('H3',100,13,2),('H3',101,13,3),('H3',102,13,4),('H3',103,13,5),('H3',104,13,6),('H3',105,13,7),('H3',106,13,8),('H3',107,13,9),('H3',108,13,10),('H3',109,13,11),('H3',110,13,12),('H3',111,14,0),('H3',112,14,1),('H3',113,14,2),('H3',114,14,3),('H3',115,14,4),('H3',116,14,5),('H3',117,14,6),('H3',118,14,7),('H3',119,14,8),('H3',120,14,9),('H3',121,14,10),('H3',122,14,11),('H3',123,15,0),('H3',124,15,1),('H3',125,15,2),('H3',126,15,3),('H3',127,16,0),('H3',128,16,1),('H3',129,16,2),('H3',130,17,0),('H3',131,17,1),('H3',132,17,2),('H3',133,17,3),('H3',134,17,4),('H3',135,18,0),('H3',136,18,1),('H3',137,18,2),('H3',138,18,3),('H3',139,19,0),('H3',140,19,1),('H3',141,19,2),('H3',142,19,3),('H3',143,19,4),('H3',144,20,0),('H3',145,20,1),('H3',146,20,2),('H3',147,20,3),('H3',148,20,4),('H3',149,20,5),('H3',150,21,0),('H3',151,21,1),('H3',152,21,2),('H3',153,21,3),('H3',154,21,4),('H3',155,21,5),('H3',156,21,6),('H3',157,21,7),('H3',158,21,8),('H3',159,21,9),('H3',160,22,0),('H3',161,22,1),('H3',162,22,2),('H3',163,22,3),('H3',164,22,4),('H3',165,22,5),('H3',166,23,0),('H3',167,23,1),('H3',168,23,2),('H3',169,23,3),('H3',170,24,0),('H3',171,24,1),('H3',172,24,2),('H3',173,25,0),('H3',174,25,1),('H3',175,25,2),('H3',176,25,3),('H3',177,25,4),('H3',178,25,5),('H3',179,26,0),('H3',180,26,1),('H3',181,26,2),('H3',182,27,0),('H3',183,27,1),('H3',184,27,2),('H3',185,27,3),('H3',186,28,0),('H3',187,28,1),('H3',188,28,2),('H3',189,28,3),('H3',190,29,0),('H3',191,29,1),('H3',192,29,2),('H3',193,29,3),('H3',194,30,0),('H3',195,30,1),('H3',196,30,2),('H3',197,30,3),('H3',198,30,4),('H3',199,30,5),('H3',200,30,6),('H3',201,30,7),('H3',202,30,8),('H3',203,30,9),('H3',204,30,10),('H3',205,30,11),('H3',206,30,12),('H3',207,30,13),('H3',208,30,14),('H3',209,30,15),('H3',210,31,1),('H3',211,31,2),('H3',212,31,3),('H3',213,31,4),('H3',214,32,1),('H3',215,32,2),('H3',216,32,3),('H3',217,32,4),('H3',218,32,5),('H3',219,32,6),('H3',220,33,1),('H3',221,33,2),('H3',222,33,3),('H3',223,34,1),('H3',224,34,2),('H3',225,34,3),('H3',226,35,1),('H3',227,35,2),('H3',228,35,3),('H3',229,36,1),('H3',230,36,2),('H3',231,36,3),('H3',232,36,4),('H3',233,36,5),('H3',234,36,6),('H3',235,37,1),('H3',236,37,2),('H3',237,37,3),('H3',238,37,4),('H3',239,38,1),('H3',240,38,2),('H3',241,38,3),('H3',242,38,4),('H3',243,39,1),('H3',244,39,2),('H3',245,39,3),('H3',246,39,4),('H3',247,40,1),('H3',248,40,2),('H3',249,40,3),('H3',250,40,4),('H3',251,40,5),('H3',252,40,6),('H3',253,40,7),('H3',254,40,8),('H3',255,40,9),('H3',256,40,10),('H3',257,40,11),('H3',258,41,1),('H3',259,41,2),('H3',260,41,3),('H3',261,41,4),('H3',262,41,5),('H3',263,41,6),('H3',264,41,7),('H3',265,41,8),('H3',266,41,9),('H3',267,42,1),('H3',268,42,2),('H3',269,42,3),('H3',270,42,4),('H3',271,43,1),('H3',272,43,2),('H3',273,43,3),('H3',274,43,4),('H3',275,44,1),('H3',276,44,2),('H3',277,44,3),('H3',278,44,4),('H3',279,44,5),('H3',280,44,6),('H3',281,44,7),('H3',282,44,8),('H3',283,44,9),('H3',284,44,10),('H3',285,44,11),('H3',286,45,1),('H3',287,45,2),('H3',288,12,1),('H3',289,46,1),('H3',290,46,2),('H3',291,46,3),('H3',292,46,4),('H3',293,46,5),('H3',294,46,6),('H3',295,2,1),('H3',296,47,1),('H3',297,47,2),('H3',298,47,3),('H3',299,48,1),('H3',300,48,2),('H3',303,49,1),('H3',304,49,2),('H3',305,50,1),('H3',306,50,2),('H3',307,51,1),('H3',308,51,2),('H4',1,1,0),('H4',2,1,1),('H4',3,1,2),('H4',4,1,3),('H4',5,1,4),('H4',6,1,5),('H4',7,1,6),('H4',8,1,7),('H4',9,1,8),('H4',10,1,9),('H4',11,1,10),('H4',12,2,0),('H4',13,2,1),('H4',14,3,0),('H4',15,3,1),('H4',16,3,2),('H4',17,3,3),('H4',18,3,4),('H4',19,3,5),('H4',20,4,0),('H4',21,4,1),('H4',22,4,2),('H4',23,4,3),('H4',24,4,4),('H4',25,4,5),('H4',26,4,6),('H4',27,4,7),('H4',28,4,8),('H4',29,4,9),('H4',30,4,10),('H4',31,4,11),('H4',32,4,12),('H4',33,5,0),('H4',34,5,1),('H4',35,5,2),('H4',36,5,3),('H4',37,5,4),('H4',38,6,0),('H4',39,6,1),('H4',40,6,2),('H4',41,7,0),('H4',42,7,1),('H4',43,7,2),('H4',44,7,3),('H4',45,7,4),('H4',46,8,0),('H4',47,9,0),('H4',48,9,1),('H4',49,9,2),('H4',50,9,3),('H4',51,10,0),('H4',52,10,1),('H4',53,10,2),('H4',54,10,3),('H4',55,10,4),('H4',56,10,5),('H4',57,10,6),('H4',58,10,7),('H4',59,10,8),('H4',60,11,0),('H4',61,11,1),('H4',62,11,2),('H4',63,11,3),('H4',64,11,4),('H4',65,11,5),('H4',66,11,6),('H4',67,11,7),('H4',68,11,8),('H4',69,11,9),('H4',70,11,10),('H4',71,11,11),('H4',72,11,12),('H4',73,11,13),('H4',74,11,14),('H4',75,11,15),('H4',76,11,16),('H4',77,11,17),('H4',78,11,18),('H4',79,11,19),('H4',80,11,20),('H4',81,11,21),('H4',82,11,22),('H4',83,11,23),('H4',84,11,24),('H4',85,11,25),('H4',86,11,26),('H4',87,11,27),('H4',88,11,28),('H4',89,11,29),('H4',90,11,30),('H4',91,11,31),('H4',92,12,0),('H4',93,12,1),('H4',94,12,2),('H4',95,12,3),('H4',96,12,4),('H4',97,12,5),('H4',98,13,0),('H4',99,13,1),('H4',100,13,2),('H4',101,13,3),('H4',102,13,4),('H4',103,13,5),('H4',104,13,6),('H4',105,13,7),('H4',106,13,8),('H4',107,13,9),('H4',108,13,10),('H4',109,13,11),('H4',110,13,12),('H4',111,14,0),('H4',112,14,1),('H4',113,14,2),('H4',114,14,3),('H4',115,14,4),('H4',116,14,5),('H4',117,14,6),('H4',118,14,7),('H4',119,14,8),('H4',120,14,9),('H4',121,14,10),('H4',122,14,11),('H4',123,15,0),('H4',124,15,1),('H4',125,15,2),('H4',126,15,3),('H4',127,16,0),('H4',128,16,1),('H4',129,16,2),('H4',130,17,0),('H4',131,17,1),('H4',132,17,2),('H4',133,17,3),('H4',134,17,4),('H4',135,18,0),('H4',136,18,1),('H4',137,18,2),('H4',138,18,3),('H4',139,19,0),('H4',140,19,1),('H4',141,19,2),('H4',142,19,3),('H4',143,19,4),('H4',144,20,0),('H4',145,20,1),('H4',146,20,2),('H4',147,20,3),('H4',148,20,4),('H4',149,20,5),('H4',150,21,0),('H4',151,21,1),('H4',152,21,2),('H4',153,21,3),('H4',154,21,4),('H4',155,21,5),('H4',156,21,6),('H4',157,21,7),('H4',158,21,8),('H4',159,21,9),('H4',160,22,0),('H4',161,22,1),('H4',162,22,2),('H4',163,22,3),('H4',164,22,4),('H4',165,22,5),('H4',166,23,0),('H4',167,23,1),('H4',168,23,2),('H4',169,23,3),('H4',170,24,0),('H4',171,24,1),('H4',172,24,2),('H4',173,25,0),('H4',174,25,1),('H4',175,25,2),('H4',176,25,3),('H4',177,25,4),('H4',178,25,5),('H4',179,26,0),('H4',180,26,1),('H4',181,26,2),('H4',182,27,0),('H4',183,27,1),('H4',184,27,2),('H4',185,27,3),('H4',186,28,0),('H4',187,28,1),('H4',188,28,2),('H4',189,28,3),('H4',190,29,0),('H4',191,29,1),('H4',192,29,2),('H4',193,29,3),('H4',194,30,0),('H4',195,30,1),('H4',196,30,2),('H4',197,30,3),('H4',198,30,4),('H4',199,30,5),('H4',200,30,6),('H4',201,30,7),('H4',202,30,8),('H4',203,30,9),('H4',204,30,10),('H4',205,30,11),('H4',206,30,12),('H4',207,30,13),('H4',208,30,14),('H4',209,30,15),('H4',210,31,1),('H4',211,31,2),('H4',212,31,3),('H4',213,31,4),('H4',214,32,1),('H4',215,32,2),('H4',216,32,3),('H4',217,32,4),('H4',218,32,5),('H4',219,32,6),('H4',220,33,1),('H4',221,33,2),('H4',222,33,3),('H4',223,34,1),('H4',224,34,2),('H4',225,34,3),('H4',226,35,1),('H4',227,35,2),('H4',228,35,3),('H4',229,36,1),('H4',230,36,2),('H4',231,36,3),('H4',232,36,4),('H4',233,36,5),('H4',234,36,6),('H4',235,37,1),('H4',236,37,2),('H4',237,37,3),('H4',238,37,4),('H4',239,38,1),('H4',240,38,2),('H4',241,38,3),('H4',242,38,4),('H4',243,39,1),('H4',244,39,2),('H4',245,39,3),('H4',246,39,4),('H4',247,40,1),('H4',248,40,2),('H4',249,40,3),('H4',250,40,4),('H4',251,40,5),('H4',252,40,6),('H4',253,40,7),('H4',254,40,8),('H4',255,40,9),('H4',256,40,10),('H4',257,40,11),('H4',258,41,1),('H4',259,41,2),('H4',260,41,3),('H4',261,41,4),('H4',262,41,5),('H4',263,41,6),('H4',264,41,7),('H4',265,41,8),('H4',266,41,9),('H4',267,42,1),('H4',268,42,2),('H4',269,42,3),('H4',270,42,4),('H4',271,43,1),('H4',272,43,2),('H4',273,43,3),('H4',274,43,4),('H4',275,44,1),('H4',276,44,2),('H4',277,44,3),('H4',278,44,4),('H4',279,44,5),('H4',280,44,6),('H4',281,44,7),('H4',282,44,8),('H4',283,44,9),('H4',284,44,10),('H4',285,44,11),('H4',286,45,1),('H4',287,45,2),('H4',288,12,1),('H4',289,46,1),('H4',290,46,2),('H4',291,46,3),('H4',292,46,4),('H4',293,46,5),('H4',294,46,6),('H4',295,2,1),('H4',296,47,1),('H4',297,47,2),('H4',298,47,3),('H4',299,48,1),('H4',300,48,2),('H4',303,49,1),('H4',304,49,2),('H4',305,50,1),('H4',306,50,2),('H4',307,51,1),('H4',308,51,2),('H5',1,1,0),('H5',2,1,1),('H5',3,1,2),('H5',4,1,3),('H5',5,1,4),('H5',6,1,5),('H5',7,1,6),('H5',8,1,7),('H5',9,1,8),('H5',10,1,9),('H5',11,1,10),('H5',12,2,0),('H5',13,2,1),('H5',14,3,0),('H5',15,3,1),('H5',16,3,2),('H5',17,3,3),('H5',18,3,4),('H5',19,3,5),('H5',20,4,0),('H5',21,4,1),('H5',22,4,2),('H5',23,4,3),('H5',24,4,4),('H5',25,4,5),('H5',26,4,6),('H5',27,4,7),('H5',28,4,8),('H5',29,4,9),('H5',30,4,10),('H5',31,4,11),('H5',32,4,12),('H5',33,5,0),('H5',34,5,1),('H5',35,5,2),('H5',36,5,3),('H5',37,5,4),('H5',38,6,0),('H5',39,6,1),('H5',40,6,2),('H5',41,7,0),('H5',42,7,1),('H5',43,7,2),('H5',44,7,3),('H5',45,7,4),('H5',46,8,0),('H5',47,9,0),('H5',48,9,1),('H5',49,9,2),('H5',50,9,3),('H5',51,10,0),('H5',52,10,1),('H5',53,10,2),('H5',54,10,3),('H5',55,10,4),('H5',56,10,5),('H5',57,10,6),('H5',58,10,7),('H5',59,10,8),('H5',60,11,0),('H5',61,11,1),('H5',62,11,2),('H5',63,11,3),('H5',64,11,4),('H5',65,11,5),('H5',66,11,6),('H5',67,11,7),('H5',68,11,8),('H5',69,11,9),('H5',70,11,10),('H5',71,11,11),('H5',72,11,12),('H5',73,11,13),('H5',74,11,14),('H5',75,11,15),('H5',76,11,16),('H5',77,11,17),('H5',78,11,18),('H5',79,11,19),('H5',80,11,20),('H5',81,11,21),('H5',82,11,22),('H5',83,11,23),('H5',84,11,24),('H5',85,11,25),('H5',86,11,26),('H5',87,11,27),('H5',88,11,28),('H5',89,11,29),('H5',90,11,30),('H5',91,11,31),('H5',92,12,0),('H5',93,12,1),('H5',94,12,2),('H5',95,12,3),('H5',96,12,4),('H5',97,12,5),('H5',98,13,0),('H5',99,13,1),('H5',100,13,2),('H5',101,13,3),('H5',102,13,4),('H5',103,13,5),('H5',104,13,6),('H5',105,13,7),('H5',106,13,8),('H5',107,13,9),('H5',108,13,10),('H5',109,13,11),('H5',110,13,12),('H5',111,14,0),('H5',112,14,1),('H5',113,14,2),('H5',114,14,3),('H5',115,14,4),('H5',116,14,5),('H5',117,14,6),('H5',118,14,7),('H5',119,14,8),('H5',120,14,9),('H5',121,14,10),('H5',122,14,11),('H5',123,15,0),('H5',124,15,1),('H5',125,15,2),('H5',126,15,3),('H5',127,16,0),('H5',128,16,1),('H5',129,16,2),('H5',130,17,0),('H5',131,17,1),('H5',132,17,2),('H5',133,17,3),('H5',134,17,4),('H5',135,18,0),('H5',136,18,1),('H5',137,18,2),('H5',138,18,3),('H5',139,19,0),('H5',140,19,1),('H5',141,19,2),('H5',142,19,3),('H5',143,19,4),('H5',144,20,0),('H5',145,20,1),('H5',146,20,2),('H5',147,20,3),('H5',148,20,4),('H5',149,20,5),('H5',150,21,0),('H5',151,21,1),('H5',152,21,2),('H5',153,21,3),('H5',154,21,4),('H5',155,21,5),('H5',156,21,6),('H5',157,21,7),('H5',158,21,8),('H5',159,21,9),('H5',160,22,0),('H5',161,22,1),('H5',162,22,2),('H5',163,22,3),('H5',164,22,4),('H5',165,22,5),('H5',166,23,0),('H5',167,23,1),('H5',168,23,2),('H5',169,23,3),('H5',170,24,0),('H5',171,24,1),('H5',172,24,2),('H5',173,25,0),('H5',174,25,1),('H5',175,25,2),('H5',176,25,3),('H5',177,25,4),('H5',178,25,5),('H5',179,26,0),('H5',180,26,1),('H5',181,26,2),('H5',182,27,0),('H5',183,27,1),('H5',184,27,2),('H5',185,27,3),('H5',186,28,0),('H5',187,28,1),('H5',188,28,2),('H5',189,28,3),('H5',190,29,0),('H5',191,29,1),('H5',192,29,2),('H5',193,29,3),('H5',194,30,0),('H5',195,30,1),('H5',196,30,2),('H5',197,30,3),('H5',198,30,4),('H5',199,30,5),('H5',200,30,6),('H5',201,30,7),('H5',202,30,8),('H5',203,30,9),('H5',204,30,10),('H5',205,30,11),('H5',206,30,12),('H5',207,30,13),('H5',208,30,14),('H5',209,30,15),('H5',210,31,1),('H5',211,31,2),('H5',212,31,3),('H5',213,31,4),('H5',214,32,1),('H5',215,32,2),('H5',216,32,3),('H5',217,32,4),('H5',218,32,5),('H5',219,32,6),('H5',220,33,1),('H5',221,33,2),('H5',222,33,3),('H5',223,34,1),('H5',224,34,2),('H5',225,34,3),('H5',226,35,1),('H5',227,35,2),('H5',228,35,3),('H5',229,36,1),('H5',230,36,2),('H5',231,36,3),('H5',232,36,4),('H5',233,36,5),('H5',234,36,6),('H5',235,37,1),('H5',236,37,2),('H5',237,37,3),('H5',238,37,4),('H5',239,38,1),('H5',240,38,2),('H5',241,38,3),('H5',242,38,4),('H5',243,39,1),('H5',244,39,2),('H5',245,39,3),('H5',246,39,4),('H5',247,40,1),('H5',248,40,2),('H5',249,40,3),('H5',250,40,4),('H5',251,40,5),('H5',252,40,6),('H5',253,40,7),('H5',254,40,8),('H5',255,40,9),('H5',256,40,10),('H5',257,40,11),('H5',258,41,1),('H5',259,41,2),('H5',260,41,3),('H5',261,41,4),('H5',262,41,5),('H5',263,41,6),('H5',264,41,7),('H5',265,41,8),('H5',266,41,9),('H5',267,42,1),('H5',268,42,2),('H5',269,42,3),('H5',270,42,4),('H5',271,43,1),('H5',272,43,2),('H5',273,43,3),('H5',274,43,4),('H5',275,44,1),('H5',276,44,2),('H5',277,44,3),('H5',278,44,4),('H5',279,44,5),('H5',280,44,6),('H5',281,44,7),('H5',282,44,8),('H5',283,44,9),('H5',284,44,10),('H5',285,44,11),('H5',286,45,1),('H5',287,45,2),('H5',288,12,1),('H5',289,46,1),('H5',290,46,2),('H5',291,46,3),('H5',292,46,4),('H5',293,46,5),('H5',294,46,6),('H5',295,2,1),('H5',296,47,1),('H5',297,47,2),('H5',298,47,3),('H5',299,48,1),('H5',300,48,2),('H5',303,49,1),('H5',304,49,2),('H5',305,50,1),('H5',306,50,2),('H5',307,51,1),('H5',308,51,2),('H6',1,1,0),('H6',2,1,1),('H6',3,1,2),('H6',4,1,3),('H6',5,1,4),('H6',6,1,5),('H6',7,1,6),('H6',8,1,7),('H6',9,1,8),('H6',10,1,9),('H6',11,1,10),('H6',12,2,0),('H6',13,2,1),('H6',14,3,0),('H6',15,3,1),('H6',16,3,2),('H6',17,3,3),('H6',18,3,4),('H6',19,3,5),('H6',20,4,0),('H6',21,4,1),('H6',22,4,2),('H6',23,4,3),('H6',24,4,4),('H6',25,4,5),('H6',26,4,6),('H6',27,4,7),('H6',28,4,8),('H6',29,4,9),('H6',30,4,10),('H6',31,4,11),('H6',32,4,12),('H6',33,5,0),('H6',34,5,1),('H6',35,5,2),('H6',36,5,3),('H6',37,5,4),('H6',38,6,0),('H6',39,6,1),('H6',40,6,2),('H6',41,7,0),('H6',42,7,1),('H6',43,7,2),('H6',44,7,3),('H6',45,7,4),('H6',46,8,0),('H6',47,9,0),('H6',48,9,1),('H6',49,9,2),('H6',50,9,3),('H6',51,10,0),('H6',52,10,1),('H6',53,10,2),('H6',54,10,3),('H6',55,10,4),('H6',56,10,5),('H6',57,10,6),('H6',58,10,7),('H6',59,10,8),('H6',60,11,0),('H6',61,11,1),('H6',62,11,2),('H6',63,11,3),('H6',64,11,4),('H6',65,11,5),('H6',66,11,6),('H6',67,11,7),('H6',68,11,8),('H6',69,11,9),('H6',70,11,10),('H6',71,11,11),('H6',72,11,12),('H6',73,11,13),('H6',74,11,14),('H6',75,11,15),('H6',76,11,16),('H6',77,11,17),('H6',78,11,18),('H6',79,11,19),('H6',80,11,20),('H6',81,11,21),('H6',82,11,22),('H6',83,11,23),('H6',84,11,24),('H6',85,11,25),('H6',86,11,26),('H6',87,11,27),('H6',88,11,28),('H6',89,11,29),('H6',90,11,30),('H6',91,11,31),('H6',92,12,0),('H6',93,12,1),('H6',94,12,2),('H6',95,12,3),('H6',96,12,4),('H6',97,12,5),('H6',98,13,0),('H6',99,13,1),('H6',100,13,2),('H6',101,13,3),('H6',102,13,4),('H6',103,13,5),('H6',104,13,6),('H6',105,13,7),('H6',106,13,8),('H6',107,13,9),('H6',108,13,10),('H6',109,13,11),('H6',110,13,12),('H6',111,14,0),('H6',112,14,1),('H6',113,14,2),('H6',114,14,3),('H6',115,14,4),('H6',116,14,5),('H6',117,14,6),('H6',118,14,7),('H6',119,14,8),('H6',120,14,9),('H6',121,14,10),('H6',122,14,11),('H6',123,15,0),('H6',124,15,1),('H6',125,15,2),('H6',126,15,3),('H6',127,16,0),('H6',128,16,1),('H6',129,16,2),('H6',130,17,0),('H6',131,17,1),('H6',132,17,2),('H6',133,17,3),('H6',134,17,4),('H6',135,18,0),('H6',136,18,1),('H6',137,18,2),('H6',138,18,3),('H6',139,19,0),('H6',140,19,1),('H6',141,19,2),('H6',142,19,3),('H6',143,19,4),('H6',144,20,0),('H6',145,20,1),('H6',146,20,2),('H6',147,20,3),('H6',148,20,4),('H6',149,20,5),('H6',150,21,0),('H6',151,21,1),('H6',152,21,2),('H6',153,21,3),('H6',154,21,4),('H6',155,21,5),('H6',156,21,6),('H6',157,21,7),('H6',158,21,8),('H6',159,21,9),('H6',160,22,0),('H6',161,22,1),('H6',162,22,2),('H6',163,22,3),('H6',164,22,4),('H6',165,22,5),('H6',166,23,0),('H6',167,23,1),('H6',168,23,2),('H6',169,23,3),('H6',170,24,0),('H6',171,24,1),('H6',172,24,2),('H6',173,25,0),('H6',174,25,1),('H6',175,25,2),('H6',176,25,3),('H6',177,25,4),('H6',178,25,5),('H6',179,26,0),('H6',180,26,1),('H6',181,26,2),('H6',182,27,0),('H6',183,27,1),('H6',184,27,2),('H6',185,27,3),('H6',186,28,0),('H6',187,28,1),('H6',188,28,2),('H6',189,28,3),('H6',190,29,0),('H6',191,29,1),('H6',192,29,2),('H6',193,29,3),('H6',194,30,0),('H6',195,30,1),('H6',196,30,2),('H6',197,30,3),('H6',198,30,4),('H6',199,30,5),('H6',200,30,6),('H6',201,30,7),('H6',202,30,8),('H6',203,30,9),('H6',204,30,10),('H6',205,30,11),('H6',206,30,12),('H6',207,30,13),('H6',208,30,14),('H6',209,30,15),('H6',210,31,1),('H6',211,31,2),('H6',212,31,3),('H6',213,31,4),('H6',214,32,1),('H6',215,32,2),('H6',216,32,3),('H6',217,32,4),('H6',218,32,5),('H6',219,32,6),('H6',220,33,1),('H6',221,33,2),('H6',222,33,3),('H6',223,34,1),('H6',224,34,2),('H6',225,34,3),('H6',226,35,1),('H6',227,35,2),('H6',228,35,3),('H6',229,36,1),('H6',230,36,2),('H6',231,36,3),('H6',232,36,4),('H6',233,36,5),('H6',234,36,6),('H6',235,37,1),('H6',236,37,2),('H6',237,37,3),('H6',238,37,4),('H6',239,38,1),('H6',240,38,2),('H6',241,38,3),('H6',242,38,4),('H6',243,39,1),('H6',244,39,2),('H6',245,39,3),('H6',246,39,4),('H6',247,40,1),('H6',248,40,2),('H6',249,40,3),('H6',250,40,4),('H6',251,40,5),('H6',252,40,6),('H6',253,40,7),('H6',254,40,8),('H6',255,40,9),('H6',256,40,10),('H6',257,40,11),('H6',258,41,1),('H6',259,41,2),('H6',260,41,3),('H6',261,41,4),('H6',262,41,5),('H6',263,41,6),('H6',264,41,7),('H6',265,41,8),('H6',266,41,9),('H6',267,42,1),('H6',268,42,2),('H6',269,42,3),('H6',270,42,4),('H6',271,43,1),('H6',272,43,2),('H6',273,43,3),('H6',274,43,4),('H6',275,44,1),('H6',276,44,2),('H6',277,44,3),('H6',278,44,4),('H6',279,44,5),('H6',280,44,6),('H6',281,44,7),('H6',282,44,8),('H6',283,44,9),('H6',284,44,10),('H6',285,44,11),('H6',286,45,1),('H6',287,45,2),('H6',288,12,1),('H6',289,46,1),('H6',290,46,2),('H6',291,46,3),('H6',292,46,4),('H6',293,46,5),('H6',294,46,6),('H6',295,2,1),('H6',296,47,1),('H6',297,47,2),('H6',298,47,3),('H6',299,48,1),('H6',300,48,2),('H6',303,49,1),('H6',304,49,2),('H6',305,50,1),('H6',306,50,2),('H6',307,51,1),('H6',308,51,2),('H7',1,1,0),('H7',2,1,1),('H7',3,1,2),('H7',4,1,3),('H7',5,1,4),('H7',6,1,5),('H7',7,1,6),('H7',8,1,7),('H7',9,1,8),('H7',10,1,9),('H7',11,1,10),('H7',12,2,0),('H7',13,2,1),('H7',14,3,0),('H7',15,3,1),('H7',16,3,2),('H7',17,3,3),('H7',18,3,4),('H7',19,3,5),('H7',20,4,0),('H7',21,4,1),('H7',22,4,2),('H7',23,4,3),('H7',24,4,4),('H7',25,4,5),('H7',26,4,6),('H7',27,4,7),('H7',28,4,8),('H7',29,4,9),('H7',30,4,10),('H7',31,4,11),('H7',32,4,12),('H7',33,5,0),('H7',34,5,1),('H7',35,5,2),('H7',36,5,3),('H7',37,5,4),('H7',38,6,0),('H7',39,6,1),('H7',40,6,2),('H7',41,7,0),('H7',42,7,1),('H7',43,7,2),('H7',44,7,3),('H7',45,7,4),('H7',46,8,0),('H7',47,9,0),('H7',48,9,1),('H7',49,9,2),('H7',50,9,3),('H7',51,10,0),('H7',52,10,1),('H7',53,10,2),('H7',54,10,3),('H7',55,10,4),('H7',56,10,5),('H7',57,10,6),('H7',58,10,7),('H7',59,10,8),('H7',60,11,0),('H7',61,11,1),('H7',62,11,2),('H7',63,11,3),('H7',64,11,4),('H7',65,11,5),('H7',66,11,6),('H7',67,11,7),('H7',68,11,8),('H7',69,11,9),('H7',70,11,10),('H7',71,11,11),('H7',72,11,12),('H7',73,11,13),('H7',74,11,14),('H7',75,11,15),('H7',76,11,16),('H7',77,11,17),('H7',78,11,18),('H7',79,11,19),('H7',80,11,20),('H7',81,11,21),('H7',82,11,22),('H7',83,11,23),('H7',84,11,24),('H7',85,11,25),('H7',86,11,26),('H7',87,11,27),('H7',88,11,28),('H7',89,11,29),('H7',90,11,30),('H7',91,11,31),('H7',92,12,0),('H7',93,12,1),('H7',94,12,2),('H7',95,12,3),('H7',96,12,4),('H7',97,12,5),('H7',98,13,0),('H7',99,13,1),('H7',100,13,2),('H7',101,13,3),('H7',102,13,4),('H7',103,13,5),('H7',104,13,6),('H7',105,13,7),('H7',106,13,8),('H7',107,13,9),('H7',108,13,10),('H7',109,13,11),('H7',110,13,12),('H7',111,14,0),('H7',112,14,1),('H7',113,14,2),('H7',114,14,3),('H7',115,14,4),('H7',116,14,5),('H7',117,14,6),('H7',118,14,7),('H7',119,14,8),('H7',120,14,9),('H7',121,14,10),('H7',122,14,11),('H7',123,15,0),('H7',124,15,1),('H7',125,15,2),('H7',126,15,3),('H7',127,16,0),('H7',128,16,1),('H7',129,16,2),('H7',130,17,0),('H7',131,17,1),('H7',132,17,2),('H7',133,17,3),('H7',134,17,4),('H7',135,18,0),('H7',136,18,1),('H7',137,18,2),('H7',138,18,3),('H7',139,19,0),('H7',140,19,1),('H7',141,19,2),('H7',142,19,3),('H7',143,19,4),('H7',144,20,0),('H7',145,20,1),('H7',146,20,2),('H7',147,20,3),('H7',148,20,4),('H7',149,20,5),('H7',150,21,0),('H7',151,21,1),('H7',152,21,2),('H7',153,21,3),('H7',154,21,4),('H7',155,21,5),('H7',156,21,6),('H7',157,21,7),('H7',158,21,8),('H7',159,21,9),('H7',160,22,0),('H7',161,22,1),('H7',162,22,2),('H7',163,22,3),('H7',164,22,4),('H7',165,22,5),('H7',166,23,0),('H7',167,23,1),('H7',168,23,2),('H7',169,23,3),('H7',170,24,0),('H7',171,24,1),('H7',172,24,2),('H7',173,25,0),('H7',174,25,1),('H7',175,25,2),('H7',176,25,3),('H7',177,25,4),('H7',178,25,5),('H7',179,26,0),('H7',180,26,1),('H7',181,26,2),('H7',182,27,0),('H7',183,27,1),('H7',184,27,2),('H7',185,27,3),('H7',186,28,0),('H7',187,28,1),('H7',188,28,2),('H7',189,28,3),('H7',190,29,0),('H7',191,29,1),('H7',192,29,2),('H7',193,29,3),('H7',194,30,0),('H7',195,30,1),('H7',196,30,2),('H7',197,30,3),('H7',198,30,4),('H7',199,30,5),('H7',200,30,6),('H7',201,30,7),('H7',202,30,8),('H7',203,30,9),('H7',204,30,10),('H7',205,30,11),('H7',206,30,12),('H7',207,30,13),('H7',208,30,14),('H7',209,30,15),('H7',210,31,1),('H7',211,31,2),('H7',212,31,3),('H7',213,31,4),('H7',214,32,1),('H7',215,32,2),('H7',216,32,3),('H7',217,32,4),('H7',218,32,5),('H7',219,32,6),('H7',220,33,1),('H7',221,33,2),('H7',222,33,3),('H7',223,34,1),('H7',224,34,2),('H7',225,34,3),('H7',226,35,1),('H7',227,35,2),('H7',228,35,3),('H7',229,36,1),('H7',230,36,2),('H7',231,36,3),('H7',232,36,4),('H7',233,36,5),('H7',234,36,6),('H7',235,37,1),('H7',236,37,2),('H7',237,37,3),('H7',238,37,4),('H7',239,38,1),('H7',240,38,2),('H7',241,38,3),('H7',242,38,4),('H7',243,39,1),('H7',244,39,2),('H7',245,39,3),('H7',246,39,4),('H7',247,40,1),('H7',248,40,2),('H7',249,40,3),('H7',250,40,4),('H7',251,40,5),('H7',252,40,6),('H7',253,40,7),('H7',254,40,8),('H7',255,40,9),('H7',256,40,10),('H7',257,40,11),('H7',258,41,1),('H7',259,41,2),('H7',260,41,3),('H7',261,41,4),('H7',262,41,5),('H7',263,41,6),('H7',264,41,7),('H7',265,41,8),('H7',266,41,9),('H7',267,42,1),('H7',268,42,2),('H7',269,42,3),('H7',270,42,4),('H7',271,43,1),('H7',272,43,2),('H7',273,43,3),('H7',274,43,4),('H7',275,44,1),('H7',276,44,2),('H7',277,44,3),('H7',278,44,4),('H7',279,44,5),('H7',280,44,6),('H7',281,44,7),('H7',282,44,8),('H7',283,44,9),('H7',284,44,10),('H7',285,44,11),('H7',286,45,1),('H7',287,45,2),('H7',288,12,1),('H7',289,46,1),('H7',290,46,2),('H7',291,46,3),('H7',292,46,4),('H7',293,46,5),('H7',294,46,6),('H7',295,2,1),('H7',296,47,1),('H7',297,47,2),('H7',298,47,3),('H7',299,48,1),('H7',300,48,2),('H7',303,49,1),('H7',304,49,2),('H7',305,50,1),('H7',306,50,2),('H7',307,51,1),('H7',308,51,2),('H8',1,1,0),('H8',2,1,1),('H8',3,1,2),('H8',4,1,3),('H8',5,1,4),('H8',6,1,5),('H8',7,1,6),('H8',8,1,7),('H8',9,1,8),('H8',10,1,9),('H8',11,1,10),('H8',12,2,0),('H8',13,2,1),('H8',14,3,0),('H8',15,3,1),('H8',16,3,2),('H8',17,3,3),('H8',18,3,4),('H8',19,3,5),('H8',20,4,0),('H8',21,4,1),('H8',22,4,2),('H8',23,4,3),('H8',24,4,4),('H8',25,4,5),('H8',26,4,6),('H8',27,4,7),('H8',28,4,8),('H8',29,4,9),('H8',30,4,10),('H8',31,4,11),('H8',32,4,12),('H8',33,5,0),('H8',34,5,1),('H8',35,5,2),('H8',36,5,3),('H8',37,5,4),('H8',38,6,0),('H8',39,6,1),('H8',40,6,2),('H8',41,7,0),('H8',42,7,1),('H8',43,7,2),('H8',44,7,3),('H8',45,7,4),('H8',46,8,0),('H8',47,9,0),('H8',48,9,1),('H8',49,9,2),('H8',50,9,3),('H8',51,10,0),('H8',52,10,1),('H8',53,10,2),('H8',54,10,3),('H8',55,10,4),('H8',56,10,5),('H8',57,10,6),('H8',58,10,7),('H8',59,10,8),('H8',60,11,0),('H8',61,11,1),('H8',62,11,2),('H8',63,11,3),('H8',64,11,4),('H8',65,11,5),('H8',66,11,6),('H8',67,11,7),('H8',68,11,8),('H8',69,11,9),('H8',70,11,10),('H8',71,11,11),('H8',72,11,12),('H8',73,11,13),('H8',74,11,14),('H8',75,11,15),('H8',76,11,16),('H8',77,11,17),('H8',78,11,18),('H8',79,11,19),('H8',80,11,20),('H8',81,11,21),('H8',82,11,22),('H8',83,11,23),('H8',84,11,24),('H8',85,11,25),('H8',86,11,26),('H8',87,11,27),('H8',88,11,28),('H8',89,11,29),('H8',90,11,30),('H8',91,11,31),('H8',92,12,0),('H8',93,12,1),('H8',94,12,2),('H8',95,12,3),('H8',96,12,4),('H8',97,12,5),('H8',98,13,0),('H8',99,13,1),('H8',100,13,2),('H8',101,13,3),('H8',102,13,4),('H8',103,13,5),('H8',104,13,6),('H8',105,13,7),('H8',106,13,8),('H8',107,13,9),('H8',108,13,10),('H8',109,13,11),('H8',110,13,12),('H8',111,14,0),('H8',112,14,1),('H8',113,14,2),('H8',114,14,3),('H8',115,14,4),('H8',116,14,5),('H8',117,14,6),('H8',118,14,7),('H8',119,14,8),('H8',120,14,9),('H8',121,14,10),('H8',122,14,11),('H8',123,15,0),('H8',124,15,1),('H8',125,15,2),('H8',126,15,3),('H8',127,16,0),('H8',128,16,1),('H8',129,16,2),('H8',130,17,0),('H8',131,17,1),('H8',132,17,2),('H8',133,17,3),('H8',134,17,4),('H8',135,18,0),('H8',136,18,1),('H8',137,18,2),('H8',138,18,3),('H8',139,19,0),('H8',140,19,1),('H8',141,19,2),('H8',142,19,3),('H8',143,19,4),('H8',144,20,0),('H8',145,20,1),('H8',146,20,2),('H8',147,20,3),('H8',148,20,4),('H8',149,20,5),('H8',150,21,0),('H8',151,21,1),('H8',152,21,2),('H8',153,21,3),('H8',154,21,4),('H8',155,21,5),('H8',156,21,6),('H8',157,21,7),('H8',158,21,8),('H8',159,21,9),('H8',160,22,0),('H8',161,22,1),('H8',162,22,2),('H8',163,22,3),('H8',164,22,4),('H8',165,22,5),('H8',166,23,0),('H8',167,23,1),('H8',168,23,2),('H8',169,23,3),('H8',170,24,0),('H8',171,24,1),('H8',172,24,2),('H8',173,25,0),('H8',174,25,1),('H8',175,25,2),('H8',176,25,3),('H8',177,25,4),('H8',178,25,5),('H8',179,26,0),('H8',180,26,1),('H8',181,26,2),('H8',182,27,0),('H8',183,27,1),('H8',184,27,2),('H8',185,27,3),('H8',186,28,0),('H8',187,28,1),('H8',188,28,2),('H8',189,28,3),('H8',190,29,0),('H8',191,29,1),('H8',192,29,2),('H8',193,29,3),('H8',194,30,0),('H8',195,30,1),('H8',196,30,2),('H8',197,30,3),('H8',198,30,4),('H8',199,30,5),('H8',200,30,6),('H8',201,30,7),('H8',202,30,8),('H8',203,30,9),('H8',204,30,10),('H8',205,30,11),('H8',206,30,12),('H8',207,30,13),('H8',208,30,14),('H8',209,30,15),('H8',210,31,1),('H8',211,31,2),('H8',212,31,3),('H8',213,31,4),('H8',214,32,1),('H8',215,32,2),('H8',216,32,3),('H8',217,32,4),('H8',218,32,5),('H8',219,32,6),('H8',220,33,1),('H8',221,33,2),('H8',222,33,3),('H8',223,34,1),('H8',224,34,2),('H8',225,34,3),('H8',226,35,1),('H8',227,35,2),('H8',228,35,3),('H8',229,36,1),('H8',230,36,2),('H8',231,36,3),('H8',232,36,4),('H8',233,36,5),('H8',234,36,6),('H8',235,37,1),('H8',236,37,2),('H8',237,37,3),('H8',238,37,4),('H8',239,38,1),('H8',240,38,2),('H8',241,38,3),('H8',242,38,4),('H8',243,39,1),('H8',244,39,2),('H8',245,39,3),('H8',246,39,4),('H8',247,40,1),('H8',248,40,2),('H8',249,40,3),('H8',250,40,4),('H8',251,40,5),('H8',252,40,6),('H8',253,40,7),('H8',254,40,8),('H8',255,40,9),('H8',256,40,10),('H8',257,40,11),('H8',258,41,1),('H8',259,41,2),('H8',260,41,3),('H8',261,41,4),('H8',262,41,5),('H8',263,41,6),('H8',264,41,7),('H8',265,41,8),('H8',266,41,9),('H8',267,42,1),('H8',268,42,2),('H8',269,42,3),('H8',270,42,4),('H8',271,43,1),('H8',272,43,2),('H8',273,43,3),('H8',274,43,4),('H8',275,44,1),('H8',276,44,2),('H8',277,44,3),('H8',278,44,4),('H8',279,44,5),('H8',280,44,6),('H8',281,44,7),('H8',282,44,8),('H8',283,44,9),('H8',284,44,10),('H8',285,44,11),('H8',286,45,1),('H8',287,45,2),('H8',288,12,1),('H8',289,46,1),('H8',290,46,2),('H8',291,46,3),('H8',292,46,4),('H8',293,46,5),('H8',294,46,6),('H8',295,2,1),('H8',296,47,1),('H8',297,47,2),('H8',298,47,3),('H8',299,48,1),('H8',300,48,2),('H8',303,49,1),('H8',304,49,2),('H8',305,50,1),('H8',306,50,2),('H8',307,51,1),('H8',308,51,2),('H9',1,1,0),('H9',2,1,1),('H9',3,1,2),('H9',4,1,3),('H9',5,1,4),('H9',6,1,5),('H9',7,1,6),('H9',8,1,7),('H9',9,1,8),('H9',10,1,9),('H9',11,1,10),('H9',12,2,0),('H9',13,2,1),('H9',14,3,0),('H9',15,3,1),('H9',16,3,2),('H9',17,3,3),('H9',18,3,4),('H9',19,3,5),('H9',20,4,0),('H9',21,4,1),('H9',22,4,2),('H9',23,4,3),('H9',24,4,4),('H9',25,4,5),('H9',26,4,6),('H9',27,4,7),('H9',28,4,8),('H9',29,4,9),('H9',30,4,10),('H9',31,4,11),('H9',32,4,12),('H9',33,5,0),('H9',34,5,1),('H9',35,5,2),('H9',36,5,3),('H9',37,5,4),('H9',38,6,0),('H9',39,6,1),('H9',40,6,2),('H9',41,7,0),('H9',42,7,1),('H9',43,7,2),('H9',44,7,3),('H9',45,7,4),('H9',46,8,0),('H9',47,9,0),('H9',48,9,1),('H9',49,9,2),('H9',50,9,3),('H9',51,10,0),('H9',52,10,1),('H9',53,10,2),('H9',54,10,3),('H9',55,10,4),('H9',56,10,5),('H9',57,10,6),('H9',58,10,7),('H9',59,10,8),('H9',60,11,0),('H9',61,11,1),('H9',62,11,2),('H9',63,11,3),('H9',64,11,4),('H9',65,11,5),('H9',66,11,6),('H9',67,11,7),('H9',68,11,8),('H9',69,11,9),('H9',70,11,10),('H9',71,11,11),('H9',72,11,12),('H9',73,11,13),('H9',74,11,14),('H9',75,11,15),('H9',76,11,16),('H9',77,11,17),('H9',78,11,18),('H9',79,11,19),('H9',80,11,20),('H9',81,11,21),('H9',82,11,22),('H9',83,11,23),('H9',84,11,24),('H9',85,11,25),('H9',86,11,26),('H9',87,11,27),('H9',88,11,28),('H9',89,11,29),('H9',90,11,30),('H9',91,11,31),('H9',92,12,0),('H9',93,12,1),('H9',94,12,2),('H9',95,12,3),('H9',96,12,4),('H9',97,12,5),('H9',98,13,0),('H9',99,13,1),('H9',100,13,2),('H9',101,13,3),('H9',102,13,4),('H9',103,13,5),('H9',104,13,6),('H9',105,13,7),('H9',106,13,8),('H9',107,13,9),('H9',108,13,10),('H9',109,13,11),('H9',110,13,12),('H9',111,14,0),('H9',112,14,1),('H9',113,14,2),('H9',114,14,3),('H9',115,14,4),('H9',116,14,5),('H9',117,14,6),('H9',118,14,7),('H9',119,14,8),('H9',120,14,9),('H9',121,14,10),('H9',122,14,11),('H9',123,15,0),('H9',124,15,1),('H9',125,15,2),('H9',126,15,3),('H9',127,16,0),('H9',128,16,1),('H9',129,16,2),('H9',130,17,0),('H9',131,17,1),('H9',132,17,2),('H9',133,17,3),('H9',134,17,4),('H9',135,18,0),('H9',136,18,1),('H9',137,18,2),('H9',138,18,3),('H9',139,19,0),('H9',140,19,1),('H9',141,19,2),('H9',142,19,3),('H9',143,19,4),('H9',144,20,0),('H9',145,20,1),('H9',146,20,2),('H9',147,20,3),('H9',148,20,4),('H9',149,20,5),('H9',150,21,0),('H9',151,21,1),('H9',152,21,2),('H9',153,21,3),('H9',154,21,4),('H9',155,21,5),('H9',156,21,6),('H9',157,21,7),('H9',158,21,8),('H9',159,21,9),('H9',160,22,0),('H9',161,22,1),('H9',162,22,2),('H9',163,22,3),('H9',164,22,4),('H9',165,22,5),('H9',166,23,0),('H9',167,23,1),('H9',168,23,2),('H9',169,23,3),('H9',170,24,0),('H9',171,24,1),('H9',172,24,2),('H9',173,25,0),('H9',174,25,1),('H9',175,25,2),('H9',176,25,3),('H9',177,25,4),('H9',178,25,5),('H9',179,26,0),('H9',180,26,1),('H9',181,26,2),('H9',182,27,0),('H9',183,27,1),('H9',184,27,2),('H9',185,27,3),('H9',186,28,0),('H9',187,28,1),('H9',188,28,2),('H9',189,28,3),('H9',190,29,0),('H9',191,29,1),('H9',192,29,2),('H9',193,29,3),('H9',194,30,0),('H9',195,30,1),('H9',196,30,2),('H9',197,30,3),('H9',198,30,4),('H9',199,30,5),('H9',200,30,6),('H9',201,30,7),('H9',202,30,8),('H9',203,30,9),('H9',204,30,10),('H9',205,30,11),('H9',206,30,12),('H9',207,30,13),('H9',208,30,14),('H9',209,30,15),('H9',210,31,1),('H9',211,31,2),('H9',212,31,3),('H9',213,31,4),('H9',214,32,1),('H9',215,32,2),('H9',216,32,3),('H9',217,32,4),('H9',218,32,5),('H9',219,32,6),('H9',220,33,1),('H9',221,33,2),('H9',222,33,3),('H9',223,34,1),('H9',224,34,2),('H9',225,34,3),('H9',226,35,1),('H9',227,35,2),('H9',228,35,3),('H9',229,36,1),('H9',230,36,2),('H9',231,36,3),('H9',232,36,4),('H9',233,36,5),('H9',234,36,6),('H9',235,37,1),('H9',236,37,2),('H9',237,37,3),('H9',238,37,4),('H9',239,38,1),('H9',240,38,2),('H9',241,38,3),('H9',242,38,4),('H9',243,39,1),('H9',244,39,2),('H9',245,39,3),('H9',246,39,4),('H9',247,40,1),('H9',248,40,2),('H9',249,40,3),('H9',250,40,4),('H9',251,40,5),('H9',252,40,6),('H9',253,40,7),('H9',254,40,8),('H9',255,40,9),('H9',256,40,10),('H9',257,40,11),('H9',258,41,1),('H9',259,41,2),('H9',260,41,3),('H9',261,41,4),('H9',262,41,5),('H9',263,41,6),('H9',264,41,7),('H9',265,41,8),('H9',266,41,9),('H9',267,42,1),('H9',268,42,2),('H9',269,42,3),('H9',270,42,4),('H9',271,43,1),('H9',272,43,2),('H9',273,43,3),('H9',274,43,4),('H9',275,44,1),('H9',276,44,2),('H9',277,44,3),('H9',278,44,4),('H9',279,44,5),('H9',280,44,6),('H9',281,44,7),('H9',282,44,8),('H9',283,44,9),('H9',284,44,10),('H9',285,44,11),('H9',286,45,1),('H9',287,45,2),('H9',288,12,1),('H9',289,46,1),('H9',290,46,2),('H9',291,46,3),('H9',292,46,4),('H9',293,46,5),('H9',294,46,6),('H9',295,2,1),('H9',296,47,1),('H9',297,47,2),('H9',298,47,3),('H9',299,48,1),('H9',300,48,2),('H9',303,49,1),('H9',304,49,2),('H9',305,50,1),('H9',306,50,2),('H9',307,51,1),('H9',308,51,2);
+INSERT INTO `vtiger_role2picklist` VALUES ('H1',1,1,0),('H1',2,1,1),('H1',3,1,2),('H1',4,1,3),('H1',5,1,4),('H1',6,1,5),('H1',7,1,6),('H1',8,1,7),('H1',9,1,8),('H1',10,1,9),('H1',11,1,10),('H1',12,2,0),('H1',13,2,1),('H1',14,3,0),('H1',15,3,1),('H1',16,3,2),('H1',17,3,3),('H1',18,3,4),('H1',19,3,5),('H1',20,4,0),('H1',21,4,1),('H1',22,4,2),('H1',23,4,3),('H1',24,4,4),('H1',25,4,5),('H1',26,4,6),('H1',27,4,7),('H1',28,4,8),('H1',29,4,9),('H1',30,4,10),('H1',31,4,11),('H1',32,4,12),('H1',33,5,0),('H1',34,5,1),('H1',35,5,2),('H1',36,5,3),('H1',37,5,4),('H1',38,6,0),('H1',39,6,1),('H1',40,6,2),('H1',41,7,0),('H1',42,7,1),('H1',43,7,2),('H1',44,7,3),('H1',45,7,4),('H1',46,8,0),('H1',47,9,0),('H1',48,9,1),('H1',49,9,2),('H1',50,9,3),('H1',51,10,0),('H1',52,10,1),('H1',53,10,2),('H1',54,10,3),('H1',55,10,4),('H1',56,10,5),('H1',57,10,6),('H1',58,10,7),('H1',59,10,8),('H1',60,11,0),('H1',61,11,1),('H1',62,11,2),('H1',63,11,3),('H1',64,11,4),('H1',65,11,5),('H1',66,11,6),('H1',67,11,7),('H1',68,11,8),('H1',69,11,9),('H1',70,11,10),('H1',71,11,11),('H1',72,11,12),('H1',73,11,13),('H1',74,11,14),('H1',75,11,15),('H1',76,11,16),('H1',77,11,17),('H1',78,11,18),('H1',79,11,19),('H1',80,11,20),('H1',81,11,21),('H1',82,11,22),('H1',83,11,23),('H1',84,11,24),('H1',85,11,25),('H1',86,11,26),('H1',87,11,27),('H1',88,11,28),('H1',89,11,29),('H1',90,11,30),('H1',91,11,31),('H1',92,12,0),('H1',93,12,1),('H1',94,12,2),('H1',95,12,3),('H1',96,12,4),('H1',97,12,5),('H1',98,13,0),('H1',99,13,1),('H1',100,13,2),('H1',101,13,3),('H1',102,13,4),('H1',103,13,5),('H1',104,13,6),('H1',105,13,7),('H1',106,13,8),('H1',107,13,9),('H1',108,13,10),('H1',109,13,11),('H1',110,13,12),('H1',111,14,0),('H1',112,14,1),('H1',113,14,2),('H1',114,14,3),('H1',115,14,4),('H1',116,14,5),('H1',117,14,6),('H1',118,14,7),('H1',119,14,8),('H1',120,14,9),('H1',121,14,10),('H1',122,14,11),('H1',123,15,0),('H1',124,15,1),('H1',125,15,2),('H1',126,15,3),('H1',127,16,0),('H1',128,16,1),('H1',129,16,2),('H1',130,17,0),('H1',131,17,1),('H1',132,17,2),('H1',133,17,3),('H1',134,17,4),('H1',135,18,0),('H1',136,18,1),('H1',137,18,2),('H1',138,18,3),('H1',139,19,0),('H1',140,19,1),('H1',141,19,2),('H1',142,19,3),('H1',143,19,4),('H1',144,20,0),('H1',145,20,1),('H1',146,20,2),('H1',147,20,3),('H1',148,20,4),('H1',149,20,5),('H1',150,21,0),('H1',151,21,1),('H1',152,21,2),('H1',153,21,3),('H1',154,21,4),('H1',155,21,5),('H1',156,21,6),('H1',157,21,7),('H1',158,21,8),('H1',159,21,9),('H1',160,22,0),('H1',161,22,1),('H1',162,22,2),('H1',163,22,3),('H1',164,22,4),('H1',165,22,5),('H1',166,23,0),('H1',167,23,1),('H1',168,23,2),('H1',169,23,3),('H1',170,24,0),('H1',171,24,1),('H1',172,24,2),('H1',173,25,0),('H1',174,25,1),('H1',175,25,2),('H1',176,25,3),('H1',177,25,4),('H1',178,25,5),('H1',179,26,0),('H1',180,26,1),('H1',181,26,2),('H1',182,27,0),('H1',183,27,1),('H1',184,27,2),('H1',185,27,3),('H1',186,28,0),('H1',187,28,1),('H1',188,28,2),('H1',189,28,3),('H1',190,29,0),('H1',191,29,1),('H1',192,29,2),('H1',193,29,3),('H1',194,30,0),('H1',195,30,1),('H1',196,30,2),('H1',197,30,3),('H1',198,30,4),('H1',199,30,5),('H1',200,30,6),('H1',201,30,7),('H1',202,30,8),('H1',203,30,9),('H1',204,30,10),('H1',205,30,11),('H1',206,30,12),('H1',207,30,13),('H1',208,30,14),('H1',209,30,15),('H1',210,31,1),('H1',211,31,2),('H1',212,31,3),('H1',213,31,4),('H1',214,32,1),('H1',215,32,2),('H1',216,32,3),('H1',217,32,4),('H1',218,32,5),('H1',219,32,6),('H1',220,33,1),('H1',221,33,2),('H1',222,33,3),('H1',223,34,1),('H1',224,34,2),('H1',225,34,3),('H1',226,35,1),('H1',227,35,2),('H1',228,35,3),('H1',229,36,1),('H1',230,36,2),('H1',231,36,3),('H1',232,36,4),('H1',233,36,5),('H1',234,36,6),('H1',235,37,1),('H1',236,37,2),('H1',237,37,3),('H1',238,37,4),('H1',239,38,1),('H1',240,38,2),('H1',241,38,3),('H1',242,38,4),('H1',243,39,1),('H1',244,39,2),('H1',245,39,3),('H1',246,39,4),('H1',247,40,1),('H1',248,40,2),('H1',249,40,3),('H1',250,40,4),('H1',251,40,5),('H1',252,40,6),('H1',253,40,7),('H1',254,40,8),('H1',255,40,9),('H1',256,40,10),('H1',257,40,11),('H1',258,41,1),('H1',259,41,2),('H1',260,41,3),('H1',261,41,4),('H1',262,41,5),('H1',263,41,6),('H1',264,41,7),('H1',265,41,8),('H1',266,41,9),('H1',267,42,1),('H1',268,42,2),('H1',269,42,3),('H1',270,42,4),('H1',271,43,1),('H1',272,43,2),('H1',273,43,3),('H1',274,43,4),('H1',275,44,1),('H1',276,44,2),('H1',277,44,3),('H1',278,44,4),('H1',279,44,5),('H1',280,44,6),('H1',281,44,7),('H1',282,44,8),('H1',283,44,9),('H1',284,44,10),('H1',285,44,11),('H1',286,45,1),('H1',287,45,2),('H1',288,12,1),('H1',289,46,1),('H1',290,46,2),('H1',291,46,3),('H1',292,46,4),('H1',293,46,5),('H1',294,46,6),('H1',295,2,1),('H1',296,47,1),('H1',297,47,2),('H1',298,47,3),('H1',299,48,1),('H1',300,48,2),('H1',303,49,1),('H1',304,49,2),('H1',305,50,1),('H1',306,50,2),('H1',307,51,1),('H1',308,51,2),('H2',1,1,0),('H2',2,1,1),('H2',3,1,2),('H2',4,1,3),('H2',5,1,4),('H2',6,1,5),('H2',7,1,6),('H2',8,1,7),('H2',9,1,8),('H2',10,1,9),('H2',11,1,10),('H2',12,2,0),('H2',13,2,1),('H2',14,3,0),('H2',15,3,1),('H2',16,3,2),('H2',17,3,3),('H2',18,3,4),('H2',19,3,5),('H2',20,4,0),('H2',21,4,1),('H2',22,4,2),('H2',23,4,3),('H2',24,4,4),('H2',25,4,5),('H2',26,4,6),('H2',27,4,7),('H2',28,4,8),('H2',29,4,9),('H2',30,4,10),('H2',31,4,11),('H2',32,4,12),('H2',33,5,0),('H2',34,5,1),('H2',35,5,2),('H2',36,5,3),('H2',37,5,4),('H2',38,6,0),('H2',39,6,1),('H2',40,6,2),('H2',41,7,0),('H2',42,7,1),('H2',43,7,2),('H2',44,7,3),('H2',45,7,4),('H2',46,8,0),('H2',47,9,0),('H2',48,9,1),('H2',49,9,2),('H2',50,9,3),('H2',51,10,0),('H2',52,10,1),('H2',53,10,2),('H2',54,10,3),('H2',55,10,4),('H2',56,10,5),('H2',57,10,6),('H2',58,10,7),('H2',59,10,8),('H2',60,11,0),('H2',61,11,1),('H2',62,11,2),('H2',63,11,3),('H2',64,11,4),('H2',65,11,5),('H2',66,11,6),('H2',67,11,7),('H2',68,11,8),('H2',69,11,9),('H2',70,11,10),('H2',71,11,11),('H2',72,11,12),('H2',73,11,13),('H2',74,11,14),('H2',75,11,15),('H2',76,11,16),('H2',77,11,17),('H2',78,11,18),('H2',79,11,19),('H2',80,11,20),('H2',81,11,21),('H2',82,11,22),('H2',83,11,23),('H2',84,11,24),('H2',85,11,25),('H2',86,11,26),('H2',87,11,27),('H2',88,11,28),('H2',89,11,29),('H2',90,11,30),('H2',91,11,31),('H2',92,12,0),('H2',93,12,1),('H2',94,12,2),('H2',95,12,3),('H2',96,12,4),('H2',97,12,5),('H2',98,13,0),('H2',99,13,1),('H2',100,13,2),('H2',101,13,3),('H2',102,13,4),('H2',103,13,5),('H2',104,13,6),('H2',105,13,7),('H2',106,13,8),('H2',107,13,9),('H2',108,13,10),('H2',109,13,11),('H2',110,13,12),('H2',111,14,0),('H2',112,14,1),('H2',113,14,2),('H2',114,14,3),('H2',115,14,4),('H2',116,14,5),('H2',117,14,6),('H2',118,14,7),('H2',119,14,8),('H2',120,14,9),('H2',121,14,10),('H2',122,14,11),('H2',123,15,0),('H2',124,15,1),('H2',125,15,2),('H2',126,15,3),('H2',127,16,0),('H2',128,16,1),('H2',129,16,2),('H2',130,17,0),('H2',131,17,1),('H2',132,17,2),('H2',133,17,3),('H2',134,17,4),('H2',135,18,0),('H2',136,18,1),('H2',137,18,2),('H2',138,18,3),('H2',139,19,0),('H2',140,19,1),('H2',141,19,2),('H2',142,19,3),('H2',143,19,4),('H2',144,20,0),('H2',145,20,1),('H2',146,20,2),('H2',147,20,3),('H2',148,20,4),('H2',149,20,5),('H2',150,21,0),('H2',151,21,1),('H2',152,21,2),('H2',153,21,3),('H2',154,21,4),('H2',155,21,5),('H2',156,21,6),('H2',157,21,7),('H2',158,21,8),('H2',159,21,9),('H2',160,22,0),('H2',161,22,1),('H2',162,22,2),('H2',163,22,3),('H2',164,22,4),('H2',165,22,5),('H2',166,23,0),('H2',167,23,1),('H2',168,23,2),('H2',169,23,3),('H2',170,24,0),('H2',171,24,1),('H2',172,24,2),('H2',173,25,0),('H2',174,25,1),('H2',175,25,2),('H2',176,25,3),('H2',177,25,4),('H2',178,25,5),('H2',179,26,0),('H2',180,26,1),('H2',181,26,2),('H2',182,27,0),('H2',183,27,1),('H2',184,27,2),('H2',185,27,3),('H2',186,28,0),('H2',187,28,1),('H2',188,28,2),('H2',189,28,3),('H2',190,29,0),('H2',191,29,1),('H2',192,29,2),('H2',193,29,3),('H2',194,30,0),('H2',195,30,1),('H2',196,30,2),('H2',197,30,3),('H2',198,30,4),('H2',199,30,5),('H2',200,30,6),('H2',201,30,7),('H2',202,30,8),('H2',203,30,9),('H2',204,30,10),('H2',205,30,11),('H2',206,30,12),('H2',207,30,13),('H2',208,30,14),('H2',209,30,15),('H2',210,31,1),('H2',211,31,2),('H2',212,31,3),('H2',213,31,4),('H2',214,32,1),('H2',215,32,2),('H2',216,32,3),('H2',217,32,4),('H2',218,32,5),('H2',219,32,6),('H2',220,33,1),('H2',221,33,2),('H2',222,33,3),('H2',223,34,1),('H2',224,34,2),('H2',225,34,3),('H2',226,35,1),('H2',227,35,2),('H2',228,35,3),('H2',229,36,1),('H2',230,36,2),('H2',231,36,3),('H2',232,36,4),('H2',233,36,5),('H2',234,36,6),('H2',235,37,1),('H2',236,37,2),('H2',237,37,3),('H2',238,37,4),('H2',239,38,1),('H2',240,38,2),('H2',241,38,3),('H2',242,38,4),('H2',243,39,1),('H2',244,39,2),('H2',245,39,3),('H2',246,39,4),('H2',247,40,1),('H2',248,40,2),('H2',249,40,3),('H2',250,40,4),('H2',251,40,5),('H2',252,40,6),('H2',253,40,7),('H2',254,40,8),('H2',255,40,9),('H2',256,40,10),('H2',257,40,11),('H2',258,41,1),('H2',259,41,2),('H2',260,41,3),('H2',261,41,4),('H2',262,41,5),('H2',263,41,6),('H2',264,41,7),('H2',265,41,8),('H2',266,41,9),('H2',267,42,1),('H2',268,42,2),('H2',269,42,3),('H2',270,42,4),('H2',271,43,1),('H2',272,43,2),('H2',273,43,3),('H2',274,43,4),('H2',275,44,1),('H2',276,44,2),('H2',277,44,3),('H2',278,44,4),('H2',279,44,5),('H2',280,44,6),('H2',281,44,7),('H2',282,44,8),('H2',283,44,9),('H2',284,44,10),('H2',285,44,11),('H2',286,45,1),('H2',287,45,2),('H2',288,12,1),('H2',289,46,1),('H2',290,46,2),('H2',291,46,3),('H2',292,46,4),('H2',293,46,5),('H2',294,46,6),('H2',295,2,1),('H2',296,47,1),('H2',297,47,2),('H2',298,47,3),('H2',299,48,1),('H2',300,48,2),('H2',303,49,1),('H2',304,49,2),('H2',305,50,1),('H2',306,50,2),('H2',307,51,1),('H2',308,51,2),('H3',1,1,0),('H3',2,1,1),('H3',3,1,2),('H3',4,1,3),('H3',5,1,4),('H3',6,1,5),('H3',7,1,6),('H3',8,1,7),('H3',9,1,8),('H3',10,1,9),('H3',11,1,10),('H3',12,2,0),('H3',13,2,1),('H3',14,3,0),('H3',15,3,1),('H3',16,3,2),('H3',17,3,3),('H3',18,3,4),('H3',19,3,5),('H3',20,4,0),('H3',21,4,1),('H3',22,4,2),('H3',23,4,3),('H3',24,4,4),('H3',25,4,5),('H3',26,4,6),('H3',27,4,7),('H3',28,4,8),('H3',29,4,9),('H3',30,4,10),('H3',31,4,11),('H3',32,4,12),('H3',33,5,0),('H3',34,5,1),('H3',35,5,2),('H3',36,5,3),('H3',37,5,4),('H3',38,6,0),('H3',39,6,1),('H3',40,6,2),('H3',41,7,0),('H3',42,7,1),('H3',43,7,2),('H3',44,7,3),('H3',45,7,4),('H3',46,8,0),('H3',47,9,0),('H3',48,9,1),('H3',49,9,2),('H3',50,9,3),('H3',51,10,0),('H3',52,10,1),('H3',53,10,2),('H3',54,10,3),('H3',55,10,4),('H3',56,10,5),('H3',57,10,6),('H3',58,10,7),('H3',59,10,8),('H3',60,11,0),('H3',61,11,1),('H3',62,11,2),('H3',63,11,3),('H3',64,11,4),('H3',65,11,5),('H3',66,11,6),('H3',67,11,7),('H3',68,11,8),('H3',69,11,9),('H3',70,11,10),('H3',71,11,11),('H3',72,11,12),('H3',73,11,13),('H3',74,11,14),('H3',75,11,15),('H3',76,11,16),('H3',77,11,17),('H3',78,11,18),('H3',79,11,19),('H3',80,11,20),('H3',81,11,21),('H3',82,11,22),('H3',83,11,23),('H3',84,11,24),('H3',85,11,25),('H3',86,11,26),('H3',87,11,27),('H3',88,11,28),('H3',89,11,29),('H3',90,11,30),('H3',91,11,31),('H3',92,12,0),('H3',93,12,1),('H3',94,12,2),('H3',95,12,3),('H3',96,12,4),('H3',97,12,5),('H3',98,13,0),('H3',99,13,1),('H3',100,13,2),('H3',101,13,3),('H3',102,13,4),('H3',103,13,5),('H3',104,13,6),('H3',105,13,7),('H3',106,13,8),('H3',107,13,9),('H3',108,13,10),('H3',109,13,11),('H3',110,13,12),('H3',111,14,0),('H3',112,14,1),('H3',113,14,2),('H3',114,14,3),('H3',115,14,4),('H3',116,14,5),('H3',117,14,6),('H3',118,14,7),('H3',119,14,8),('H3',120,14,9),('H3',121,14,10),('H3',122,14,11),('H3',123,15,0),('H3',124,15,1),('H3',125,15,2),('H3',126,15,3),('H3',127,16,0),('H3',128,16,1),('H3',129,16,2),('H3',130,17,0),('H3',131,17,1),('H3',132,17,2),('H3',133,17,3),('H3',134,17,4),('H3',135,18,0),('H3',136,18,1),('H3',137,18,2),('H3',138,18,3),('H3',139,19,0),('H3',140,19,1),('H3',141,19,2),('H3',142,19,3),('H3',143,19,4),('H3',144,20,0),('H3',145,20,1),('H3',146,20,2),('H3',147,20,3),('H3',148,20,4),('H3',149,20,5),('H3',150,21,0),('H3',151,21,1),('H3',152,21,2),('H3',153,21,3),('H3',154,21,4),('H3',155,21,5),('H3',156,21,6),('H3',157,21,7),('H3',158,21,8),('H3',159,21,9),('H3',160,22,0),('H3',161,22,1),('H3',162,22,2),('H3',163,22,3),('H3',164,22,4),('H3',165,22,5),('H3',166,23,0),('H3',167,23,1),('H3',168,23,2),('H3',169,23,3),('H3',170,24,0),('H3',171,24,1),('H3',172,24,2),('H3',173,25,0),('H3',174,25,1),('H3',175,25,2),('H3',176,25,3),('H3',177,25,4),('H3',178,25,5),('H3',179,26,0),('H3',180,26,1),('H3',181,26,2),('H3',182,27,0),('H3',183,27,1),('H3',184,27,2),('H3',185,27,3),('H3',186,28,0),('H3',187,28,1),('H3',188,28,2),('H3',189,28,3),('H3',190,29,0),('H3',191,29,1),('H3',192,29,2),('H3',193,29,3),('H3',194,30,0),('H3',195,30,1),('H3',196,30,2),('H3',197,30,3),('H3',198,30,4),('H3',199,30,5),('H3',200,30,6),('H3',201,30,7),('H3',202,30,8),('H3',203,30,9),('H3',204,30,10),('H3',205,30,11),('H3',206,30,12),('H3',207,30,13),('H3',208,30,14),('H3',209,30,15),('H3',210,31,1),('H3',211,31,2),('H3',212,31,3),('H3',213,31,4),('H3',214,32,1),('H3',215,32,2),('H3',216,32,3),('H3',217,32,4),('H3',218,32,5),('H3',219,32,6),('H3',220,33,1),('H3',221,33,2),('H3',222,33,3),('H3',223,34,1),('H3',224,34,2),('H3',225,34,3),('H3',226,35,1),('H3',227,35,2),('H3',228,35,3),('H3',229,36,1),('H3',230,36,2),('H3',231,36,3),('H3',232,36,4),('H3',233,36,5),('H3',234,36,6),('H3',235,37,1),('H3',236,37,2),('H3',237,37,3),('H3',238,37,4),('H3',239,38,1),('H3',240,38,2),('H3',241,38,3),('H3',242,38,4),('H3',243,39,1),('H3',244,39,2),('H3',245,39,3),('H3',246,39,4),('H3',247,40,1),('H3',248,40,2),('H3',249,40,3),('H3',250,40,4),('H3',251,40,5),('H3',252,40,6),('H3',253,40,7),('H3',254,40,8),('H3',255,40,9),('H3',256,40,10),('H3',257,40,11),('H3',258,41,1),('H3',259,41,2),('H3',260,41,3),('H3',261,41,4),('H3',262,41,5),('H3',263,41,6),('H3',264,41,7),('H3',265,41,8),('H3',266,41,9),('H3',267,42,1),('H3',268,42,2),('H3',269,42,3),('H3',270,42,4),('H3',271,43,1),('H3',272,43,2),('H3',273,43,3),('H3',274,43,4),('H3',275,44,1),('H3',276,44,2),('H3',277,44,3),('H3',278,44,4),('H3',279,44,5),('H3',280,44,6),('H3',281,44,7),('H3',282,44,8),('H3',283,44,9),('H3',284,44,10),('H3',285,44,11),('H3',286,45,1),('H3',287,45,2),('H3',288,12,1),('H3',289,46,1),('H3',290,46,2),('H3',291,46,3),('H3',292,46,4),('H3',293,46,5),('H3',294,46,6),('H3',295,2,1),('H3',296,47,1),('H3',297,47,2),('H3',298,47,3),('H3',299,48,1),('H3',300,48,2),('H3',303,49,1),('H3',304,49,2),('H3',305,50,1),('H3',306,50,2),('H3',307,51,1),('H3',308,51,2),('H4',1,1,0),('H4',2,1,1),('H4',3,1,2),('H4',4,1,3),('H4',5,1,4),('H4',6,1,5),('H4',7,1,6),('H4',8,1,7),('H4',9,1,8),('H4',10,1,9),('H4',11,1,10),('H4',12,2,0),('H4',13,2,1),('H4',14,3,0),('H4',15,3,1),('H4',16,3,2),('H4',17,3,3),('H4',18,3,4),('H4',19,3,5),('H4',20,4,0),('H4',21,4,1),('H4',22,4,2),('H4',23,4,3),('H4',24,4,4),('H4',25,4,5),('H4',26,4,6),('H4',27,4,7),('H4',28,4,8),('H4',29,4,9),('H4',30,4,10),('H4',31,4,11),('H4',32,4,12),('H4',33,5,0),('H4',34,5,1),('H4',35,5,2),('H4',36,5,3),('H4',37,5,4),('H4',38,6,0),('H4',39,6,1),('H4',40,6,2),('H4',41,7,0),('H4',42,7,1),('H4',43,7,2),('H4',44,7,3),('H4',45,7,4),('H4',46,8,0),('H4',47,9,0),('H4',48,9,1),('H4',49,9,2),('H4',50,9,3),('H4',51,10,0),('H4',52,10,1),('H4',53,10,2),('H4',54,10,3),('H4',55,10,4),('H4',56,10,5),('H4',57,10,6),('H4',58,10,7),('H4',59,10,8),('H4',60,11,0),('H4',61,11,1),('H4',62,11,2),('H4',63,11,3),('H4',64,11,4),('H4',65,11,5),('H4',66,11,6),('H4',67,11,7),('H4',68,11,8),('H4',69,11,9),('H4',70,11,10),('H4',71,11,11),('H4',72,11,12),('H4',73,11,13),('H4',74,11,14),('H4',75,11,15),('H4',76,11,16),('H4',77,11,17),('H4',78,11,18),('H4',79,11,19),('H4',80,11,20),('H4',81,11,21),('H4',82,11,22),('H4',83,11,23),('H4',84,11,24),('H4',85,11,25),('H4',86,11,26),('H4',87,11,27),('H4',88,11,28),('H4',89,11,29),('H4',90,11,30),('H4',91,11,31),('H4',92,12,0),('H4',93,12,1),('H4',94,12,2),('H4',95,12,3),('H4',96,12,4),('H4',97,12,5),('H4',98,13,0),('H4',99,13,1),('H4',100,13,2),('H4',101,13,3),('H4',102,13,4),('H4',103,13,5),('H4',104,13,6),('H4',105,13,7),('H4',106,13,8),('H4',107,13,9),('H4',108,13,10),('H4',109,13,11),('H4',110,13,12),('H4',111,14,0),('H4',112,14,1),('H4',113,14,2),('H4',114,14,3),('H4',115,14,4),('H4',116,14,5),('H4',117,14,6),('H4',118,14,7),('H4',119,14,8),('H4',120,14,9),('H4',121,14,10),('H4',122,14,11),('H4',123,15,0),('H4',124,15,1),('H4',125,15,2),('H4',126,15,3),('H4',127,16,0),('H4',128,16,1),('H4',129,16,2),('H4',130,17,0),('H4',131,17,1),('H4',132,17,2),('H4',133,17,3),('H4',134,17,4),('H4',135,18,0),('H4',136,18,1),('H4',137,18,2),('H4',138,18,3),('H4',139,19,0),('H4',140,19,1),('H4',141,19,2),('H4',142,19,3),('H4',143,19,4),('H4',144,20,0),('H4',145,20,1),('H4',146,20,2),('H4',147,20,3),('H4',148,20,4),('H4',149,20,5),('H4',150,21,0),('H4',151,21,1),('H4',152,21,2),('H4',153,21,3),('H4',154,21,4),('H4',155,21,5),('H4',156,21,6),('H4',157,21,7),('H4',158,21,8),('H4',159,21,9),('H4',160,22,0),('H4',161,22,1),('H4',162,22,2),('H4',163,22,3),('H4',164,22,4),('H4',165,22,5),('H4',166,23,0),('H4',167,23,1),('H4',168,23,2),('H4',169,23,3),('H4',170,24,0),('H4',171,24,1),('H4',172,24,2),('H4',173,25,0),('H4',174,25,1),('H4',175,25,2),('H4',176,25,3),('H4',177,25,4),('H4',178,25,5),('H4',179,26,0),('H4',180,26,1),('H4',181,26,2),('H4',182,27,0),('H4',183,27,1),('H4',184,27,2),('H4',185,27,3),('H4',186,28,0),('H4',187,28,1),('H4',188,28,2),('H4',189,28,3),('H4',190,29,0),('H4',191,29,1),('H4',192,29,2),('H4',193,29,3),('H4',194,30,0),('H4',195,30,1),('H4',196,30,2),('H4',197,30,3),('H4',198,30,4),('H4',199,30,5),('H4',200,30,6),('H4',201,30,7),('H4',202,30,8),('H4',203,30,9),('H4',204,30,10),('H4',205,30,11),('H4',206,30,12),('H4',207,30,13),('H4',208,30,14),('H4',209,30,15),('H4',210,31,1),('H4',211,31,2),('H4',212,31,3),('H4',213,31,4),('H4',214,32,1),('H4',215,32,2),('H4',216,32,3),('H4',217,32,4),('H4',218,32,5),('H4',219,32,6),('H4',220,33,1),('H4',221,33,2),('H4',222,33,3),('H4',223,34,1),('H4',224,34,2),('H4',225,34,3),('H4',226,35,1),('H4',227,35,2),('H4',228,35,3),('H4',229,36,1),('H4',230,36,2),('H4',231,36,3),('H4',232,36,4),('H4',233,36,5),('H4',234,36,6),('H4',235,37,1),('H4',236,37,2),('H4',237,37,3),('H4',238,37,4),('H4',239,38,1),('H4',240,38,2),('H4',241,38,3),('H4',242,38,4),('H4',243,39,1),('H4',244,39,2),('H4',245,39,3),('H4',246,39,4),('H4',247,40,1),('H4',248,40,2),('H4',249,40,3),('H4',250,40,4),('H4',251,40,5),('H4',252,40,6),('H4',253,40,7),('H4',254,40,8),('H4',255,40,9),('H4',256,40,10),('H4',257,40,11),('H4',258,41,1),('H4',259,41,2),('H4',260,41,3),('H4',261,41,4),('H4',262,41,5),('H4',263,41,6),('H4',264,41,7),('H4',265,41,8),('H4',266,41,9),('H4',267,42,1),('H4',268,42,2),('H4',269,42,3),('H4',270,42,4),('H4',271,43,1),('H4',272,43,2),('H4',273,43,3),('H4',274,43,4),('H4',275,44,1),('H4',276,44,2),('H4',277,44,3),('H4',278,44,4),('H4',279,44,5),('H4',280,44,6),('H4',281,44,7),('H4',282,44,8),('H4',283,44,9),('H4',284,44,10),('H4',285,44,11),('H4',286,45,1),('H4',287,45,2),('H4',288,12,1),('H4',289,46,1),('H4',290,46,2),('H4',291,46,3),('H4',292,46,4),('H4',293,46,5),('H4',294,46,6),('H4',295,2,1),('H4',296,47,1),('H4',297,47,2),('H4',298,47,3),('H4',299,48,1),('H4',300,48,2),('H4',303,49,1),('H4',304,49,2),('H4',305,50,1),('H4',306,50,2),('H4',307,51,1),('H4',308,51,2),('H5',1,1,0),('H5',2,1,1),('H5',3,1,2),('H5',4,1,3),('H5',5,1,4),('H5',6,1,5),('H5',7,1,6),('H5',8,1,7),('H5',9,1,8),('H5',10,1,9),('H5',11,1,10),('H5',12,2,0),('H5',13,2,1),('H5',14,3,0),('H5',15,3,1),('H5',16,3,2),('H5',17,3,3),('H5',18,3,4),('H5',19,3,5),('H5',20,4,0),('H5',21,4,1),('H5',22,4,2),('H5',23,4,3),('H5',24,4,4),('H5',25,4,5),('H5',26,4,6),('H5',27,4,7),('H5',28,4,8),('H5',29,4,9),('H5',30,4,10),('H5',31,4,11),('H5',32,4,12),('H5',33,5,0),('H5',34,5,1),('H5',35,5,2),('H5',36,5,3),('H5',37,5,4),('H5',38,6,0),('H5',39,6,1),('H5',40,6,2),('H5',41,7,0),('H5',42,7,1),('H5',43,7,2),('H5',44,7,3),('H5',45,7,4),('H5',46,8,0),('H5',47,9,0),('H5',48,9,1),('H5',49,9,2),('H5',50,9,3),('H5',51,10,0),('H5',52,10,1),('H5',53,10,2),('H5',54,10,3),('H5',55,10,4),('H5',56,10,5),('H5',57,10,6),('H5',58,10,7),('H5',59,10,8),('H5',60,11,0),('H5',61,11,1),('H5',62,11,2),('H5',63,11,3),('H5',64,11,4),('H5',65,11,5),('H5',66,11,6),('H5',67,11,7),('H5',68,11,8),('H5',69,11,9),('H5',70,11,10),('H5',71,11,11),('H5',72,11,12),('H5',73,11,13),('H5',74,11,14),('H5',75,11,15),('H5',76,11,16),('H5',77,11,17),('H5',78,11,18),('H5',79,11,19),('H5',80,11,20),('H5',81,11,21),('H5',82,11,22),('H5',83,11,23),('H5',84,11,24),('H5',85,11,25),('H5',86,11,26),('H5',87,11,27),('H5',88,11,28),('H5',89,11,29),('H5',90,11,30),('H5',91,11,31),('H5',92,12,0),('H5',93,12,1),('H5',94,12,2),('H5',95,12,3),('H5',96,12,4),('H5',97,12,5),('H5',98,13,0),('H5',99,13,1),('H5',100,13,2),('H5',101,13,3),('H5',102,13,4),('H5',103,13,5),('H5',104,13,6),('H5',105,13,7),('H5',106,13,8),('H5',107,13,9),('H5',108,13,10),('H5',109,13,11),('H5',110,13,12),('H5',111,14,0),('H5',112,14,1),('H5',113,14,2),('H5',114,14,3),('H5',115,14,4),('H5',116,14,5),('H5',117,14,6),('H5',118,14,7),('H5',119,14,8),('H5',120,14,9),('H5',121,14,10),('H5',122,14,11),('H5',123,15,0),('H5',124,15,1),('H5',125,15,2),('H5',126,15,3),('H5',127,16,0),('H5',128,16,1),('H5',129,16,2),('H5',130,17,0),('H5',131,17,1),('H5',132,17,2),('H5',133,17,3),('H5',134,17,4),('H5',135,18,0),('H5',136,18,1),('H5',137,18,2),('H5',138,18,3),('H5',139,19,0),('H5',140,19,1),('H5',141,19,2),('H5',142,19,3),('H5',143,19,4),('H5',144,20,0),('H5',145,20,1),('H5',146,20,2),('H5',147,20,3),('H5',148,20,4),('H5',149,20,5),('H5',150,21,0),('H5',151,21,1),('H5',152,21,2),('H5',153,21,3),('H5',154,21,4),('H5',155,21,5),('H5',156,21,6),('H5',157,21,7),('H5',158,21,8),('H5',159,21,9),('H5',160,22,0),('H5',161,22,1),('H5',162,22,2),('H5',163,22,3),('H5',164,22,4),('H5',165,22,5),('H5',166,23,0),('H5',167,23,1),('H5',168,23,2),('H5',169,23,3),('H5',170,24,0),('H5',171,24,1),('H5',172,24,2),('H5',173,25,0),('H5',174,25,1),('H5',175,25,2),('H5',176,25,3),('H5',177,25,4),('H5',178,25,5),('H5',179,26,0),('H5',180,26,1),('H5',181,26,2),('H5',182,27,0),('H5',183,27,1),('H5',184,27,2),('H5',185,27,3),('H5',186,28,0),('H5',187,28,1),('H5',188,28,2),('H5',189,28,3),('H5',190,29,0),('H5',191,29,1),('H5',192,29,2),('H5',193,29,3),('H5',194,30,0),('H5',195,30,1),('H5',196,30,2),('H5',197,30,3),('H5',198,30,4),('H5',199,30,5),('H5',200,30,6),('H5',201,30,7),('H5',202,30,8),('H5',203,30,9),('H5',204,30,10),('H5',205,30,11),('H5',206,30,12),('H5',207,30,13),('H5',208,30,14),('H5',209,30,15),('H5',210,31,1),('H5',211,31,2),('H5',212,31,3),('H5',213,31,4),('H5',214,32,1),('H5',215,32,2),('H5',216,32,3),('H5',217,32,4),('H5',218,32,5),('H5',219,32,6),('H5',220,33,1),('H5',221,33,2),('H5',222,33,3),('H5',223,34,1),('H5',224,34,2),('H5',225,34,3),('H5',226,35,1),('H5',227,35,2),('H5',228,35,3),('H5',229,36,1),('H5',230,36,2),('H5',231,36,3),('H5',232,36,4),('H5',233,36,5),('H5',234,36,6),('H5',235,37,1),('H5',236,37,2),('H5',237,37,3),('H5',238,37,4),('H5',239,38,1),('H5',240,38,2),('H5',241,38,3),('H5',242,38,4),('H5',243,39,1),('H5',244,39,2),('H5',245,39,3),('H5',246,39,4),('H5',247,40,1),('H5',248,40,2),('H5',249,40,3),('H5',250,40,4),('H5',251,40,5),('H5',252,40,6),('H5',253,40,7),('H5',254,40,8),('H5',255,40,9),('H5',256,40,10),('H5',257,40,11),('H5',258,41,1),('H5',259,41,2),('H5',260,41,3),('H5',261,41,4),('H5',262,41,5),('H5',263,41,6),('H5',264,41,7),('H5',265,41,8),('H5',266,41,9),('H5',267,42,1),('H5',268,42,2),('H5',269,42,3),('H5',270,42,4),('H5',271,43,1),('H5',272,43,2),('H5',273,43,3),('H5',274,43,4),('H5',275,44,1),('H5',276,44,2),('H5',277,44,3),('H5',278,44,4),('H5',279,44,5),('H5',280,44,6),('H5',281,44,7),('H5',282,44,8),('H5',283,44,9),('H5',284,44,10),('H5',285,44,11),('H5',286,45,1),('H5',287,45,2),('H5',288,12,1),('H5',289,46,1),('H5',290,46,2),('H5',291,46,3),('H5',292,46,4),('H5',293,46,5),('H5',294,46,6),('H5',295,2,1),('H5',296,47,1),('H5',297,47,2),('H5',298,47,3),('H5',299,48,1),('H5',300,48,2),('H5',303,49,1),('H5',304,49,2),('H5',305,50,1),('H5',306,50,2),('H5',307,51,1),('H5',308,51,2);
 /*!40000 ALTER TABLE `vtiger_role2picklist` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -10943,7 +10908,7 @@ DROP TABLE IF EXISTS `vtiger_role2profile`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_role2profile` (
-  `roleid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `roleid` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `profileid` int NOT NULL,
   PRIMARY KEY (`roleid`,`profileid`),
   KEY `role2profile_roleid_profileid_idx` (`roleid`,`profileid`)
@@ -10956,7 +10921,7 @@ CREATE TABLE `vtiger_role2profile` (
 
 LOCK TABLES `vtiger_role2profile` WRITE;
 /*!40000 ALTER TABLE `vtiger_role2profile` DISABLE KEYS */;
-INSERT INTO `vtiger_role2profile` VALUES ('H10',2),('H2',1),('H3',2),('H4',2),('H5',2),('H6',2),('H7',2),('H8',2),('H9',2);
+INSERT INTO `vtiger_role2profile` VALUES ('H2',1),('H3',2),('H4',2),('H5',2);
 /*!40000 ALTER TABLE `vtiger_role2profile` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -10978,7 +10943,7 @@ CREATE TABLE `vtiger_role_seq` (
 
 LOCK TABLES `vtiger_role_seq` WRITE;
 /*!40000 ALTER TABLE `vtiger_role_seq` DISABLE KEYS */;
-INSERT INTO `vtiger_role_seq` VALUES (10);
+INSERT INTO `vtiger_role_seq` VALUES (5);
 /*!40000 ALTER TABLE `vtiger_role_seq` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -11064,8 +11029,8 @@ DROP TABLE IF EXISTS `vtiger_rss`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_rss` (
   `rssid` int NOT NULL,
-  `rssurl` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `rsstitle` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `rssurl` varchar(200) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `rsstitle` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `rsstype` int DEFAULT '0',
   `starred` int DEFAULT '0',
   PRIMARY KEY (`rssid`)
@@ -11090,11 +11055,11 @@ DROP TABLE IF EXISTS `vtiger_sales_stage`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_sales_stage` (
   `sales_stage_id` int NOT NULL AUTO_INCREMENT,
-  `sales_stage` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `sales_stage` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`sales_stage_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -11218,50 +11183,50 @@ DROP TABLE IF EXISTS `vtiger_salesorder`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_salesorder` (
   `salesorderid` int NOT NULL,
-  `subject` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `subject` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `potentialid` int DEFAULT NULL,
-  `customerno` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `salesorder_no` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `customerno` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `salesorder_no` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `quoteid` int DEFAULT NULL,
-  `vendorterms` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `vendorterms` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `contactid` int DEFAULT NULL,
   `vendorid` int DEFAULT NULL,
   `duedate` date DEFAULT NULL,
-  `carrier` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `pending` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `carrier` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `pending` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `type` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `adjustment` decimal(25,8) DEFAULT NULL,
   `salescommission` decimal(25,3) DEFAULT NULL,
   `exciseduty` decimal(25,3) DEFAULT NULL,
   `total` decimal(25,8) DEFAULT NULL,
   `subtotal` decimal(25,8) DEFAULT NULL,
-  `taxtype` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `taxtype` varchar(25) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `discount_percent` decimal(25,3) DEFAULT NULL,
   `discount_amount` decimal(25,8) DEFAULT NULL,
   `s_h_amount` decimal(25,8) DEFAULT NULL,
   `accountid` int DEFAULT NULL,
-  `terms_conditions` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `purchaseorder` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `sostatus` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `terms_conditions` text COLLATE utf8mb4_general_ci,
+  `purchaseorder` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `sostatus` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `currency_id` int NOT NULL DEFAULT '1',
   `conversion_rate` decimal(10,3) NOT NULL DEFAULT '1.000',
   `enable_recurring` int DEFAULT '0',
-  `compound_taxes_info` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `compound_taxes_info` text COLLATE utf8mb4_general_ci,
   `pre_tax_total` decimal(25,8) DEFAULT NULL,
   `s_h_percent` int DEFAULT NULL,
-  `tags` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tags` varchar(1) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `region_id` int DEFAULT NULL,
   `smcreatorid` int DEFAULT NULL,
   `smownerid` int DEFAULT NULL,
   `modifiedby` int DEFAULT NULL,
-  `description` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `description` longtext COLLATE utf8mb4_general_ci,
   `createdtime` datetime DEFAULT NULL,
   `modifiedtime` datetime DEFAULT NULL,
   `viewedtime` datetime DEFAULT NULL,
   `deleted` int DEFAULT NULL,
-  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `label` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smgroupid` int DEFAULT NULL,
-  `source` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `source` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`salesorderid`),
   KEY `salesorder_vendorid_idx` (`vendorid`),
   KEY `salesorder_contactid_idx` (`contactid`),
@@ -11314,11 +11279,11 @@ DROP TABLE IF EXISTS `vtiger_salutationtype`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_salutationtype` (
   `salutationid` int NOT NULL AUTO_INCREMENT,
-  `salutationtype` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `salutationtype` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`salutationid`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -11364,9 +11329,9 @@ DROP TABLE IF EXISTS `vtiger_scheduled_reports`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_scheduled_reports` (
   `reportid` int NOT NULL,
-  `recipients` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `schedule` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `format` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `recipients` text COLLATE utf8mb4_general_ci,
+  `schedule` text COLLATE utf8mb4_general_ci,
+  `format` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `next_trigger_time` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`reportid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -11497,7 +11462,7 @@ DROP TABLE IF EXISTS `vtiger_selectcolumn`;
 CREATE TABLE `vtiger_selectcolumn` (
   `queryid` int NOT NULL,
   `columnindex` int NOT NULL DEFAULT '0',
-  `columnname` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+  `columnname` varchar(250) COLLATE utf8mb4_general_ci DEFAULT '',
   PRIMARY KEY (`queryid`,`columnindex`),
   KEY `selectcolumn_queryid_idx` (`queryid`),
   CONSTRAINT `fk_1_vtiger_selectcolumn` FOREIGN KEY (`queryid`) REFERENCES `vtiger_selectquery` (`queryid`) ON DELETE CASCADE
@@ -11599,7 +11564,7 @@ DROP TABLE IF EXISTS `vtiger_seproductsrel`;
 CREATE TABLE `vtiger_seproductsrel` (
   `crmid` int NOT NULL,
   `productid` int NOT NULL,
-  `setype` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `setype` varchar(30) COLLATE utf8mb4_general_ci NOT NULL,
   `quantity` int DEFAULT '1',
   PRIMARY KEY (`crmid`,`productid`),
   KEY `seproductsrel_productid_idx` (`productid`),
@@ -11906,7 +11871,7 @@ DROP TABLE IF EXISTS `vtiger_settings_blocks`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_settings_blocks` (
   `blockid` int NOT NULL,
-  `label` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `label` varchar(250) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `sequence` int DEFAULT NULL,
   PRIMARY KEY (`blockid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -11954,10 +11919,10 @@ DROP TABLE IF EXISTS `vtiger_settings_field`;
 CREATE TABLE `vtiger_settings_field` (
   `fieldid` int NOT NULL,
   `blockid` int DEFAULT NULL,
-  `name` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `iconpath` varchar(300) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `linkto` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `name` varchar(250) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `iconpath` varchar(300) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `description` text COLLATE utf8mb4_general_ci,
+  `linkto` text COLLATE utf8mb4_general_ci,
   `sequence` int DEFAULT NULL,
   `active` int DEFAULT '0',
   `pinned` int DEFAULT '0',
@@ -12081,7 +12046,7 @@ DROP TABLE IF EXISTS `vtiger_shareduserinfo`;
 CREATE TABLE `vtiger_shareduserinfo` (
   `userid` int NOT NULL DEFAULT '0',
   `shareduserid` int NOT NULL DEFAULT '0',
-  `color` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `visible` int DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -12104,14 +12069,14 @@ DROP TABLE IF EXISTS `vtiger_shippingtaxinfo`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_shippingtaxinfo` (
   `taxid` int NOT NULL,
-  `taxname` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `taxlabel` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `taxname` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `taxlabel` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `percentage` decimal(7,3) DEFAULT NULL,
   `deleted` int DEFAULT NULL,
-  `method` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `type` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `compoundon` varchar(400) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `regions` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `method` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `type` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `compoundon` varchar(400) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `regions` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`taxid`),
   KEY `shippingtaxinfo_taxname_idx` (`taxname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -12290,8 +12255,8 @@ DROP TABLE IF EXISTS `vtiger_soapservice`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_soapservice` (
   `id` int DEFAULT NULL,
-  `type` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `sessionid` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL
+  `type` varchar(25) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `sessionid` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -12313,12 +12278,12 @@ DROP TABLE IF EXISTS `vtiger_sobillads`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_sobillads` (
   `sobilladdressid` int NOT NULL,
-  `bill_city` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bill_code` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bill_country` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bill_state` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bill_street` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `bill_pobox` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_city` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_code` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_country` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_state` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_street` text COLLATE utf8mb4_general_ci,
+  `bill_pobox` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`sobilladdressid`),
   CONSTRAINT `fk_1_vtiger_sobillads` FOREIGN KEY (`sobilladdressid`) REFERENCES `vtiger_salesorder` (`salesorderid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -12342,12 +12307,12 @@ DROP TABLE IF EXISTS `vtiger_soshipads`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_soshipads` (
   `soshipaddressid` int NOT NULL,
-  `ship_city` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ship_code` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ship_country` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ship_state` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ship_street` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `ship_pobox` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_city` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_code` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_country` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_state` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ship_street` text COLLATE utf8mb4_general_ci,
+  `ship_pobox` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`soshipaddressid`),
   CONSTRAINT `fk_1_vtiger_soshipads` FOREIGN KEY (`soshipaddressid`) REFERENCES `vtiger_salesorder` (`salesorderid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -12371,11 +12336,11 @@ DROP TABLE IF EXISTS `vtiger_sostatus`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_sostatus` (
   `sostatusid` int NOT NULL AUTO_INCREMENT,
-  `sostatus` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `sostatus` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`sostatusid`),
   UNIQUE KEY `sostatus_sostatus_idx` (`sostatus`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -12423,9 +12388,9 @@ DROP TABLE IF EXISTS `vtiger_sostatushistory`;
 CREATE TABLE `vtiger_sostatushistory` (
   `historyid` int NOT NULL AUTO_INCREMENT,
   `salesorderid` int NOT NULL,
-  `accountname` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `accountname` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `total` decimal(10,0) DEFAULT NULL,
-  `sostatus` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `sostatus` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `lastmodified` datetime DEFAULT NULL,
   PRIMARY KEY (`historyid`),
   KEY `sostatushistory_salesorderid_idx` (`salesorderid`),
@@ -12451,8 +12416,8 @@ DROP TABLE IF EXISTS `vtiger_sqltimelog`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_sqltimelog` (
   `id` int DEFAULT NULL,
-  `type` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `data` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `type` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `data` text COLLATE utf8mb4_general_ci,
   `started` decimal(20,6) DEFAULT NULL,
   `ended` decimal(20,6) DEFAULT NULL,
   `loggedon` datetime DEFAULT NULL
@@ -12525,7 +12490,7 @@ DROP TABLE IF EXISTS `vtiger_status`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_status` (
   `statusid` int NOT NULL AUTO_INCREMENT,
-  `status` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `status` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`statusid`)
@@ -12573,14 +12538,14 @@ DROP TABLE IF EXISTS `vtiger_systems`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_systems` (
   `id` int NOT NULL,
-  `server` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `server` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `server_port` int DEFAULT NULL,
-  `server_username` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `server_password` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `server_type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `smtp_auth` varchar(5) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `server_path` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `from_email_field` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `server_username` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `server_password` text COLLATE utf8mb4_general_ci,
+  `server_type` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `smtp_auth` varchar(5) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `server_path` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `from_email_field` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -12603,19 +12568,19 @@ DROP TABLE IF EXISTS `vtiger_tab`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_tab` (
   `tabid` int NOT NULL DEFAULT '0',
-  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `tabsequence` int DEFAULT NULL,
-  `tablabel` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tablabel` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `modifiedby` int DEFAULT NULL,
   `modifiedtime` int DEFAULT NULL,
   `customized` int DEFAULT NULL,
   `ownedby` int DEFAULT NULL,
   `isentitytype` int NOT NULL DEFAULT '1',
   `trial` int NOT NULL DEFAULT '0',
-  `version` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `parent` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `source` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'custom',
+  `version` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `parent` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `source` varchar(255) COLLATE utf8mb4_general_ci DEFAULT 'custom',
   `issyncable` tinyint(1) DEFAULT '0',
   `allowduplicates` tinyint(1) DEFAULT '1',
   `sync_action_for_duplicates` int DEFAULT '1',
@@ -12646,8 +12611,8 @@ DROP TABLE IF EXISTS `vtiger_tab_info`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_tab_info` (
   `tabid` int DEFAULT NULL,
-  `prefname` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `prefvalue` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `prefname` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `prefvalue` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
   KEY `fk_1_vtiger_tab_info` (`tabid`),
   CONSTRAINT `fk_1_vtiger_tab_info` FOREIGN KEY (`tabid`) REFERENCES `vtiger_tab` (`tabid`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -12672,11 +12637,11 @@ DROP TABLE IF EXISTS `vtiger_taskpriority`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_taskpriority` (
   `taskpriorityid` int NOT NULL AUTO_INCREMENT,
-  `taskpriority` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `taskpriority` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`taskpriorityid`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -12722,11 +12687,11 @@ DROP TABLE IF EXISTS `vtiger_taskstatus`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_taskstatus` (
   `taskstatusid` int NOT NULL AUTO_INCREMENT,
-  `taskstatus` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `taskstatus` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`taskstatusid`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -12772,7 +12737,7 @@ DROP TABLE IF EXISTS `vtiger_taxclass`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_taxclass` (
   `taxclassid` int NOT NULL AUTO_INCREMENT,
-  `taxclass` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `taxclass` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`taxclassid`),
@@ -12821,7 +12786,7 @@ DROP TABLE IF EXISTS `vtiger_taxregions`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_taxregions` (
   `regionid` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`regionid`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -12845,11 +12810,11 @@ DROP TABLE IF EXISTS `vtiger_ticketcategories`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ticketcategories` (
   `ticketcategories_id` int NOT NULL AUTO_INCREMENT,
-  `ticketcategories` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ticketcategories` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `presence` int NOT NULL DEFAULT '0',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`ticketcategories_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -12895,7 +12860,7 @@ DROP TABLE IF EXISTS `vtiger_ticketcf`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ticketcf` (
   `ticketid` int NOT NULL,
-  `from_portal` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `from_portal` varchar(3) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`ticketid`),
   CONSTRAINT `fk_1_vtiger_ticketcf` FOREIGN KEY (`ticketid`) REFERENCES `vtiger_troubletickets` (`ticketid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -12920,9 +12885,9 @@ DROP TABLE IF EXISTS `vtiger_ticketcomments`;
 CREATE TABLE `vtiger_ticketcomments` (
   `commentid` int NOT NULL AUTO_INCREMENT,
   `ticketid` int DEFAULT NULL,
-  `comments` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `comments` text COLLATE utf8mb4_general_ci,
   `ownerid` int NOT NULL DEFAULT '0',
-  `ownertype` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ownertype` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `createdtime` datetime NOT NULL,
   PRIMARY KEY (`commentid`),
   KEY `ticketcomments_ticketid_idx` (`ticketid`),
@@ -12948,11 +12913,11 @@ DROP TABLE IF EXISTS `vtiger_ticketpriorities`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ticketpriorities` (
   `ticketpriorities_id` int NOT NULL AUTO_INCREMENT,
-  `ticketpriorities` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ticketpriorities` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `presence` int NOT NULL DEFAULT '0',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`ticketpriorities_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -12998,11 +12963,11 @@ DROP TABLE IF EXISTS `vtiger_ticketseverities`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ticketseverities` (
   `ticketseverities_id` int NOT NULL AUTO_INCREMENT,
-  `ticketseverities` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ticketseverities` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `presence` int NOT NULL DEFAULT '0',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`ticketseverities_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -13048,11 +13013,11 @@ DROP TABLE IF EXISTS `vtiger_ticketstatus`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ticketstatus` (
   `ticketstatus_id` int NOT NULL AUTO_INCREMENT,
-  `ticketstatus` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ticketstatus` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `presence` int NOT NULL DEFAULT '0',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`ticketstatus_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -13098,7 +13063,7 @@ DROP TABLE IF EXISTS `vtiger_time_zone`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_time_zone` (
   `time_zoneid` int NOT NULL AUTO_INCREMENT,
-  `time_zone` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `time_zone` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`time_zoneid`)
@@ -13358,10 +13323,10 @@ DROP TABLE IF EXISTS `vtiger_tracker`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_tracker` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `user_id` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `module_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `item_id` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `item_summary` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `user_id` varchar(36) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `module_name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `item_id` varchar(36) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `item_summary` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -13434,33 +13399,33 @@ DROP TABLE IF EXISTS `vtiger_troubletickets`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_troubletickets` (
   `ticketid` int NOT NULL,
-  `ticket_no` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `groupname` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `parent_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `product_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `priority` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `severity` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `status` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `category` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `solution` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `update_log` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `ticket_no` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `groupname` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `parent_id` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `product_id` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `priority` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `severity` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `status` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `category` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `title` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `solution` longtext COLLATE utf8mb4_general_ci,
+  `update_log` text COLLATE utf8mb4_general_ci,
   `version_id` int DEFAULT NULL,
   `hours` decimal(25,8) DEFAULT NULL,
   `days` decimal(25,8) DEFAULT NULL,
   `contact_id` int DEFAULT NULL,
-  `tags` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tags` varchar(1) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smcreatorid` int DEFAULT NULL,
   `smownerid` int DEFAULT NULL,
   `modifiedby` int DEFAULT NULL,
-  `description` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `description` longtext COLLATE utf8mb4_general_ci,
   `createdtime` datetime DEFAULT NULL,
   `modifiedtime` datetime DEFAULT NULL,
   `viewedtime` datetime DEFAULT NULL,
   `deleted` int DEFAULT NULL,
-  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `label` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smgroupid` int DEFAULT NULL,
-  `source` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `source` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`ticketid`),
   KEY `troubletickets_ticketid_idx` (`ticketid`),
   KEY `troubletickets_status_idx` (`status`),
@@ -13491,11 +13456,11 @@ DROP TABLE IF EXISTS `vtiger_usageunit`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_usageunit` (
   `usageunitid` int NOT NULL AUTO_INCREMENT,
-  `usageunit` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `usageunit` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT NULL,
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`usageunitid`),
   UNIQUE KEY `usageunit_usageunit_idx` (`usageunit`)
 ) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -13567,7 +13532,7 @@ DROP TABLE IF EXISTS `vtiger_user2role`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_user2role` (
   `userid` int NOT NULL,
-  `roleid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `roleid` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`userid`),
   KEY `user2role_roleid_idx` (`roleid`),
   CONSTRAINT `fk_2_vtiger_user2role` FOREIGN KEY (`userid`) REFERENCES `vtiger_users` (`id`) ON DELETE CASCADE
@@ -13580,7 +13545,7 @@ CREATE TABLE `vtiger_user2role` (
 
 LOCK TABLES `vtiger_user2role` WRITE;
 /*!40000 ALTER TABLE `vtiger_user2role` DISABLE KEYS */;
-INSERT INTO `vtiger_user2role` VALUES (9,'H10'),(1,'H2'),(5,'H6'),(6,'H7'),(7,'H8'),(8,'H9');
+INSERT INTO `vtiger_user2role` VALUES (1,'H2');
 /*!40000 ALTER TABLE `vtiger_user2role` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -13671,83 +13636,83 @@ DROP TABLE IF EXISTS `vtiger_users`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_users` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `user_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `user_password` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `cal_color` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '#E6FAD8',
-  `first_name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `last_name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `reports_to_id` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `is_admin` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '0',
+  `user_name` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `user_password` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `cal_color` varchar(25) COLLATE utf8mb4_general_ci DEFAULT '#E6FAD8',
+  `first_name` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `last_name` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `reports_to_id` varchar(36) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `is_admin` varchar(3) COLLATE utf8mb4_general_ci DEFAULT '0',
   `currency_id` int NOT NULL DEFAULT '1',
-  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `description` text COLLATE utf8mb4_general_ci,
   `date_entered` timestamp NOT NULL,
   `date_modified` datetime DEFAULT NULL,
-  `modified_user_id` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `title` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `department` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `phone_home` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `phone_mobile` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `phone_work` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `phone_other` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `phone_fax` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `email1` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `email2` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `secondaryemail` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `status` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `signature` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `address_street` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `address_city` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `address_state` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `address_country` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `address_postalcode` varchar(9) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `user_preferences` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `tz` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `holidays` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `namedays` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `workdays` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `modified_user_id` varchar(36) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `title` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `department` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `phone_home` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `phone_mobile` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `phone_work` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `phone_other` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `phone_fax` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email1` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email2` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `secondaryemail` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `status` varchar(25) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `signature` text COLLATE utf8mb4_general_ci,
+  `address_street` text COLLATE utf8mb4_general_ci,
+  `address_city` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `address_state` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `address_country` varchar(25) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `address_postalcode` varchar(9) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `user_preferences` text COLLATE utf8mb4_general_ci,
+  `tz` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `holidays` varchar(60) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `namedays` varchar(60) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `workdays` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `weekstart` int DEFAULT NULL,
-  `date_format` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `hour_format` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'am/pm',
-  `start_hour` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '10:00',
-  `end_hour` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '23:00',
-  `is_owner` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '0',
-  `activity_view` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'Today',
-  `lead_view` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'Today',
-  `imagename` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `date_format` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `hour_format` varchar(30) COLLATE utf8mb4_general_ci DEFAULT 'am/pm',
+  `start_hour` varchar(30) COLLATE utf8mb4_general_ci DEFAULT '10:00',
+  `end_hour` varchar(30) COLLATE utf8mb4_general_ci DEFAULT '23:00',
+  `is_owner` varchar(100) COLLATE utf8mb4_general_ci DEFAULT '0',
+  `activity_view` varchar(200) COLLATE utf8mb4_general_ci DEFAULT 'Today',
+  `lead_view` varchar(200) COLLATE utf8mb4_general_ci DEFAULT 'Today',
+  `imagename` varchar(250) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `deleted` int NOT NULL DEFAULT '0',
-  `confirm_password` varchar(300) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `internal_mailer` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '1',
-  `reminder_interval` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `reminder_next_time` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `crypt_type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'MD5',
-  `accesskey` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `theme` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `language` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `time_zone` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `currency_grouping_pattern` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `currency_decimal_separator` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `currency_grouping_separator` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `currency_symbol_placement` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `userlabel` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `no_of_currency_decimals` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `truncate_trailing_zeros` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `dayoftheweek` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `callduration` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `othereventduration` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `calendarsharedtype` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `default_record_view` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `leftpanelhide` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `rowheight` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `defaulteventstatus` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `defaultactivitytype` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `confirm_password` varchar(300) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `internal_mailer` varchar(3) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '1',
+  `reminder_interval` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `reminder_next_time` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `crypt_type` varchar(20) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'MD5',
+  `accesskey` varchar(36) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `theme` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `language` varchar(36) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `time_zone` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `currency_grouping_pattern` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `currency_decimal_separator` varchar(2) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `currency_grouping_separator` varchar(2) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `currency_symbol_placement` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `userlabel` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `no_of_currency_decimals` varchar(2) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `truncate_trailing_zeros` varchar(3) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `dayoftheweek` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `callduration` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `othereventduration` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `calendarsharedtype` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `default_record_view` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `leftpanelhide` varchar(3) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `rowheight` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `defaulteventstatus` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `defaultactivitytype` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `hidecompletedevents` int DEFAULT NULL,
-  `defaultcalendarview` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `defaultlandingpage` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `sharedcalendartodoview` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `defaultcalendarview` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `defaultlandingpage` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `sharedcalendartodoview` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `user_user_name_idx` (`user_name`),
   KEY `user_user_password_idx` (`user_password`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13756,7 +13721,7 @@ CREATE TABLE `vtiger_users` (
 
 LOCK TABLES `vtiger_users` WRITE;
 /*!40000 ALTER TABLE `vtiger_users` DISABLE KEYS */;
-INSERT INTO `vtiger_users` VALUES (1,'admin','$2y$10$FrHfeDFVU4x0oBHhxJ3WQOdgNYbpVBZAaFcdKPkK0UcAiYKlGsRde','#E6FAD8','','システム管理者','','on',1,'','0000-00-00 00:00:00',NULL,NULL,'','','','','','','','admin@example.com','','','Active','','','','','','',NULL,NULL,NULL,NULL,NULL,NULL,'yyyy-mm-dd','24','00:00','23:00','1','This Week','Today','',0,'$2y$10$odQjUAFPIEGomVC/SnCvGOd4uR3cWqemTHjix5RTpcysyj/BqueWW','1','1 Minute',NULL,'PHASH','PqllmJsVZ0Kv5ICx','alphagrey','ja_jp','Asia/Tokyo','123,456,789','.',',','$1.0','システム管理者','','','Monday','30','30','public','Summary','','','','',0,'','',''),(5,'e2e_director','$2y$12$PvotVKj/CazEe.Tx11t69.4jjIdRTYmQ4.9mhL8AkolGmq6FL4RMG','#E6FAD8','E2E','部長','','off',1,'','0000-00-00 00:00:00',NULL,NULL,'','','','','','','','e2e_director@example.com','','','Active','','','','','','',NULL,NULL,NULL,NULL,NULL,NULL,'yyyy-mm-dd','24','09:00','18:00','','Today','','',0,'$2y$12$X/HCw3ZoPiXC5c/9zmwdA.pxHuCpn1wmi8olf7rJBFWEvGZGlOLWa','0','None',NULL,'PHASH','1hSEtp8CD8YiSJlK','softed','ja_jp','Asia/Tokyo','','.',',','','部長 E2E','','0','Monday','30','30','public','Summary','0','','','',0,'','',''),(6,'e2e_mgr_a','$2y$12$jerbH9VP0u11gzrK49e85.pwnaN.fM75l211R2PdnY3aTZEXDOJNi','#E6FAD8','E2E','1課長','','off',1,'','0000-00-00 00:00:00',NULL,NULL,'','','','','','','','e2e_mgr_a@example.com','','','Active','','','','','','',NULL,NULL,NULL,NULL,NULL,NULL,'yyyy-mm-dd','24','09:00','18:00','','Today','','',0,'$2y$12$6Rk5YWyLhjWTqJyUcOayrem1TNYQ8lbf.b9vhBfeTed/7Iz2pKh.S','0','None',NULL,'PHASH','f8tndjLMY4r43kQ','softed','ja_jp','Asia/Tokyo','','.',',','','1課長 E2E','','0','Monday','30','30','public','Summary','0','','','',0,'','',''),(7,'e2e_rep_a','$2y$12$uF3lzhadeWKWxYBJChOOweWgTsSnIJV.couRROCmmZ2CZQJgErN.O','#E6FAD8','E2E','1課員','','off',1,'','0000-00-00 00:00:00',NULL,NULL,'','','','','','','','e2e_rep_a@example.com','','','Active','','','','','','',NULL,NULL,NULL,NULL,NULL,NULL,'yyyy-mm-dd','24','09:00','18:00','','Today','','',0,'$2y$12$ogvVFNuRGc5v5y9NsfGOBOUL9lBh6JH8bZ59r4SPGh2iXIqCK8Ve2','0','None',NULL,'PHASH','rFs3t5EcWTDakq3','softed','ja_jp','Asia/Tokyo','','.',',','','1課員 E2E','','0','Monday','30','30','public','Summary','0','','','',0,'','',''),(8,'e2e_mgr_b','$2y$12$iD/MZ6d2AVTintJBPUg7CulBvyb.v2JDc0Yx6BQjpA60whlMPl3mW','#E6FAD8','E2E','2課長','','off',1,'','0000-00-00 00:00:00',NULL,NULL,'','','','','','','','e2e_mgr_b@example.com','','','Active','','','','','','',NULL,NULL,NULL,NULL,NULL,NULL,'yyyy-mm-dd','24','09:00','18:00','','Today','','',0,'$2y$12$20vCr6o3fOcA.UQq87tYX.qe5wpcdqtVHV6iKEIGHh01H6kmUjOxm','0','None',NULL,'PHASH','URuluJUVCYfqN1Nx','softed','ja_jp','Asia/Tokyo','','.',',','','2課長 E2E','','0','Monday','30','30','public','Summary','0','','','',0,'','',''),(9,'e2e_rep_b','$2y$12$yJUwMi1XBSBn.GFUi4tMneUJDqRT6k4LRVIfV6R7KtT6bmDPGg9zy','#E6FAD8','E2E','2課員','','off',1,'','0000-00-00 00:00:00',NULL,NULL,'','','','','','','','e2e_rep_b@example.com','','','Active','','','','','','',NULL,NULL,NULL,NULL,NULL,NULL,'yyyy-mm-dd','24','09:00','18:00','','Today','','',0,'$2y$12$eySPO7GShNX8.tX1J3lqGe2.ArC3HBf3e3txFUP3DjkgBq4WM5Ddy','0','None',NULL,'PHASH','U6v9g5V2YPvoveq','softed','ja_jp','Asia/Tokyo','','.',',','','2課員 E2E','','0','Monday','30','30','public','Summary','0','','','',0,'','','');
+INSERT INTO `vtiger_users` VALUES (1,'admin','$2y$10$FrHfeDFVU4x0oBHhxJ3WQOdgNYbpVBZAaFcdKPkK0UcAiYKlGsRde','#E6FAD8','','システム管理者','','on',1,'','0000-00-00 00:00:00',NULL,NULL,'','','','','','','','admin@example.com','','','Active','','','','','','',NULL,NULL,NULL,NULL,NULL,NULL,'yyyy-mm-dd','24','00:00','23:00','1','This Week','Today','',0,'$2y$10$odQjUAFPIEGomVC/SnCvGOd4uR3cWqemTHjix5RTpcysyj/BqueWW','1','1 Minute',NULL,'PHASH','PqllmJsVZ0Kv5ICx','alphagrey','ja_jp','Asia/Tokyo','123,456,789','.',',','$1.0','システム管理者','','','Monday','30','30','public','Summary','','','','',0,'','','');
 /*!40000 ALTER TABLE `vtiger_users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -13783,7 +13748,7 @@ CREATE TABLE `vtiger_users2group` (
 
 LOCK TABLES `vtiger_users2group` WRITE;
 /*!40000 ALTER TABLE `vtiger_users2group` DISABLE KEYS */;
-INSERT INTO `vtiger_users2group` VALUES (3,1),(10,7),(10,9);
+INSERT INTO `vtiger_users2group` VALUES (3,1);
 /*!40000 ALTER TABLE `vtiger_users2group` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -13796,9 +13761,9 @@ DROP TABLE IF EXISTS `vtiger_users_last_import`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_users_last_import` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `assigned_user_id` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bean_type` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bean_id` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `assigned_user_id` varchar(36) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bean_type` varchar(36) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bean_id` varchar(36) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `deleted` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `idx_user_id` (`assigned_user_id`)
@@ -13832,7 +13797,7 @@ CREATE TABLE `vtiger_users_seq` (
 
 LOCK TABLES `vtiger_users_seq` WRITE;
 /*!40000 ALTER TABLE `vtiger_users_seq` DISABLE KEYS */;
-INSERT INTO `vtiger_users_seq` VALUES (10);
+INSERT INTO `vtiger_users_seq` VALUES (4);
 /*!40000 ALTER TABLE `vtiger_users_seq` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -13845,21 +13810,21 @@ DROP TABLE IF EXISTS `vtiger_vendor`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_vendor` (
   `vendorid` int NOT NULL,
-  `vendor_no` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `vendorname` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `phone` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `email` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `website` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `glacct` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `category` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `street` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `city` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `state` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `pobox` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `postalcode` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `country` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `tags` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `vendor_no` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `vendorname` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `phone` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `website` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `glacct` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `category` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `street` text COLLATE utf8mb4_general_ci,
+  `city` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `state` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `pobox` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `postalcode` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `country` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `description` text COLLATE utf8mb4_general_ci,
+  `tags` varchar(1) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smcreatorid` int DEFAULT NULL,
   `smownerid` int DEFAULT NULL,
   `modifiedby` int DEFAULT NULL,
@@ -13867,9 +13832,9 @@ CREATE TABLE `vtiger_vendor` (
   `modifiedtime` datetime DEFAULT NULL,
   `viewedtime` datetime DEFAULT NULL,
   `deleted` int DEFAULT NULL,
-  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `label` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smgroupid` int DEFAULT NULL,
-  `source` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `source` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`vendorid`),
   KEY `idx_info` (`deleted`,`modifiedtime`),
   KEY `idx_label` (`deleted`,`label`),
@@ -13945,8 +13910,8 @@ DROP TABLE IF EXISTS `vtiger_version`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_version` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `old_version` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `current_version` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `old_version` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `current_version` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -13992,10 +13957,10 @@ DROP TABLE IF EXISTS `vtiger_visibility`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_visibility` (
   `visibilityid` int NOT NULL AUTO_INCREMENT,
-  `visibility` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `visibility` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
-  `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`visibilityid`),
   UNIQUE KEY `visibility_visibility_idx` (`visibility`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -14106,14 +14071,14 @@ DROP TABLE IF EXISTS `vtiger_wordtemplates`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_wordtemplates` (
   `templateid` int NOT NULL,
-  `filename` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `module` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `filename` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `module` varchar(30) COLLATE utf8mb4_general_ci NOT NULL,
   `date_entered` timestamp NOT NULL,
-  `parent_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `parent_type` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `data` longblob NOT NULL,
-  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `filesize` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `filetype` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `description` text COLLATE utf8mb4_general_ci,
+  `filesize` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `filetype` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
   `deleted` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`templateid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -14137,9 +14102,9 @@ DROP TABLE IF EXISTS `vtiger_ws_entity`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ws_entity` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `handler_path` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `handler_class` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `handler_path` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `handler_class` varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
   `ismodule` int NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -14164,9 +14129,9 @@ DROP TABLE IF EXISTS `vtiger_ws_entity_fieldtype`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ws_entity_fieldtype` (
   `fieldtypeid` int NOT NULL AUTO_INCREMENT,
-  `table_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `field_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `fieldtype` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `table_name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `field_name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `fieldtype` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`fieldtypeid`),
   UNIQUE KEY `vtiger_idx_1_tablename_fieldname` (`table_name`,`field_name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -14213,9 +14178,9 @@ DROP TABLE IF EXISTS `vtiger_ws_entity_name`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ws_entity_name` (
   `entity_id` int NOT NULL,
-  `name_fields` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `index_field` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `table_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `name_fields` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `index_field` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `table_name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`entity_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -14239,7 +14204,7 @@ DROP TABLE IF EXISTS `vtiger_ws_entity_referencetype`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ws_entity_referencetype` (
   `fieldtypeid` int NOT NULL,
-  `type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `type` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`fieldtypeid`,`type`),
   CONSTRAINT `vtiger_fk_1_actors_referencetype` FOREIGN KEY (`fieldtypeid`) REFERENCES `vtiger_ws_entity_fieldtype` (`fieldtypeid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -14286,7 +14251,7 @@ DROP TABLE IF EXISTS `vtiger_ws_entity_tables`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ws_entity_tables` (
   `webservice_entity_id` int NOT NULL,
-  `table_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `table_name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`webservice_entity_id`,`table_name`),
   CONSTRAINT `fk_1_vtiger_ws_actor_tables` FOREIGN KEY (`webservice_entity_id`) REFERENCES `vtiger_ws_entity` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -14310,9 +14275,9 @@ DROP TABLE IF EXISTS `vtiger_ws_fieldinfo`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ws_fieldinfo` (
-  `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `property_name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `property_value` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `id` varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
+  `property_name` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `property_value` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -14336,8 +14301,8 @@ DROP TABLE IF EXISTS `vtiger_ws_fieldtype`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ws_fieldtype` (
   `fieldtypeid` int NOT NULL AUTO_INCREMENT,
-  `uitype` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `fieldtype` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `uitype` varchar(30) COLLATE utf8mb4_general_ci NOT NULL,
+  `fieldtype` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`fieldtypeid`),
   UNIQUE KEY `uitype_idx` (`uitype`)
 ) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -14362,10 +14327,10 @@ DROP TABLE IF EXISTS `vtiger_ws_operation`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ws_operation` (
   `operationid` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `handler_path` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `handler_method` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `type` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `name` varchar(128) COLLATE utf8mb4_general_ci NOT NULL,
+  `handler_path` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `handler_method` varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
+  `type` varchar(8) COLLATE utf8mb4_general_ci NOT NULL,
   `prelogin` int NOT NULL,
   PRIMARY KEY (`operationid`)
 ) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -14390,8 +14355,8 @@ DROP TABLE IF EXISTS `vtiger_ws_operation_parameters`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ws_operation_parameters` (
   `operationid` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `type` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `name` varchar(128) COLLATE utf8mb4_general_ci NOT NULL,
+  `type` varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
   `sequence` int NOT NULL,
   PRIMARY KEY (`operationid`,`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -14438,7 +14403,7 @@ DROP TABLE IF EXISTS `vtiger_ws_referencetype`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ws_referencetype` (
   `fieldtypeid` int NOT NULL,
-  `type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `type` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`fieldtypeid`,`type`),
   CONSTRAINT `fk_1_vtiger_referencetype` FOREIGN KEY (`fieldtypeid`) REFERENCES `vtiger_ws_fieldtype` (`fieldtypeid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -14463,7 +14428,7 @@ DROP TABLE IF EXISTS `vtiger_ws_userauthtoken`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ws_userauthtoken` (
   `userid` int NOT NULL,
-  `token` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `token` varchar(36) COLLATE utf8mb4_general_ci NOT NULL,
   `expiretime` int NOT NULL,
   PRIMARY KEY (`userid`,`expiretime`),
   UNIQUE KEY `userid_idx` (`userid`)
@@ -14680,4 +14645,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed
+-- Dump completed on 2026-07-01 17:02:52

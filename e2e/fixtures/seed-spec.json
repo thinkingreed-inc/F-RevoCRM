@@ -1,0 +1,73 @@
+{
+  "_comment": "E2E 拡充ベースラインの単一の真実 (Single Source of Truth)。setup/scripts/seed_e2e_data.php が投入時に読み、e2e/fixtures/seedSpec.ts が期待値の検証に読む。数値/名前を変える時はここだけ直し、build-e2e-dump.sh で dump を再生成すること。",
+
+  "password": "Test1234/",
+
+  "roles": [
+    { "key": "DIR",  "name": "E2E営業部長",   "parent": "H2" },
+    { "key": "MGRA", "name": "E2E営業1課長", "parent": "DIR" },
+    { "key": "REPA", "name": "E2E営業1課員", "parent": "MGRA" },
+    { "key": "MGRB", "name": "E2E営業2課長", "parent": "DIR" },
+    { "key": "REPB", "name": "E2E営業2課員", "parent": "MGRB" }
+  ],
+
+  "users": [
+    { "userName": "e2e_director", "lastName": "部長",       "roleKey": "DIR",  "ownerCode": "DIR"  },
+    { "userName": "e2e_mgr_a",    "lastName": "1課長",      "roleKey": "MGRA", "ownerCode": "MGRA" },
+    { "userName": "e2e_rep_a",    "lastName": "1課員",      "roleKey": "REPA", "ownerCode": "REPA" },
+    { "userName": "e2e_mgr_b",    "lastName": "2課長",      "roleKey": "MGRB", "ownerCode": "MGRB" },
+    { "userName": "e2e_rep_b",    "lastName": "2課員",      "roleKey": "REPB", "ownerCode": "REPB" }
+  ],
+
+  "group": {
+    "name": "E2Eクロスグループ",
+    "memberUserNames": ["e2e_rep_a", "e2e_rep_b"]
+  },
+
+  "privateModules": ["Leads"],
+
+  "leadPerm": {
+    "module": "Leads",
+    "prefix": "[E2E-PERM]",
+    "perOwner": 4,
+    "ownerCodes": ["DIR", "MGRA", "REPA", "MGRB", "REPB"],
+    "expectedVisible": {
+      "admin": 20,
+      "e2e_director": 20,
+      "e2e_mgr_a": 8,
+      "e2e_rep_a": 4,
+      "e2e_mgr_b": 8,
+      "e2e_rep_b": 4
+    }
+  },
+
+  "leadGroup": {
+    "module": "Leads",
+    "prefix": "[E2E-GRP]",
+    "count": 4,
+    "expectedVisible": {
+      "admin": 4,
+      "e2e_director": 0,
+      "e2e_mgr_a": 0,
+      "e2e_rep_a": 4,
+      "e2e_mgr_b": 0,
+      "e2e_rep_b": 4
+    }
+  },
+
+  "accountPaging": {
+    "module": "Accounts",
+    "prefix": "[E2E-PAGE]",
+    "count": 250,
+    "pageSize": 20
+  },
+
+  "accountSearch": {
+    "module": "Accounts",
+    "prefix": "[E2E-SRCH]",
+    "industries": ["Banking", "Chemicals", "Construction", "Consulting", "Education", "Energy"],
+    "perIndustry": 10,
+    "ratings": ["Active", "Acquired"],
+    "globalToken": "ZZUNIQAcctFindme"
+  }
+}
