@@ -22,11 +22,11 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 ## 1. 現状サマリ
 
-現在の spec ファイルは 59 本。テストは目的別に 4 ディレクトリへ整理。
+現在の spec ファイルは 64 本。テストは目的別に 4 ディレクトリへ整理。
 
 | ディレクトリ | 内容 | 状態 |
 |---|---|---|
-| `test/common/`（12 本） | 全モジュール横断の共通機能（検索/フォロー/タグ/エクスポート/インポート/一括削除+ゴミ箱/クイック作成/クイック編集/更新履歴/コメント/関連一覧/ログイン失敗） | ✅ 実行中 |
+| `test/common/`（17 本） | 全モジュール横断の共通機能（検索/フォロー/タグ+一括タグ/エクスポート/インポート/一括削除+ゴミ箱/クイック作成/クイック編集/更新履歴/コメント/関連一覧+関連追加/リスト(CustomView)/概要詳細タブ/カレンダー表示/ログイン失敗） | ✅ 実行中 |
 | `test/module/`（8 本） | モジュール固有機能（Accounts 一覧表示/カスタマイズ + 各モジュールの詳細固有アクション: Accounts/Contacts/Leads/Potentials/Vendors/HelpDesk のメール・SMS・変換・作成起動、Calendar 作成編集、メール/PDFテンプレート一覧） | 🟡 主要モジュールの起動確認 |
 | `test/admin/*.spec.ts`（36 本） | システム管理画面の C〜I グループ + スモーク（E-02/E-04/F-04/F-08） | ✅/⏭️ 混在 |
 | `test/fr.common.spec.ts` | **17 モジュールの新規作成 / 編集 / 削除**（`FrTest` 汎用ドライバ） | ✅ |
@@ -47,6 +47,12 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - 🟡 **管理設定** — 未テスト画面 4 種はスモーク追加済み。skip 中（C-04/D-06/F-05/H-01 等）の有効化が残る（§4）。
 - 🟡 **認証系** — ログイン失敗は実装済。パスワード再発行・MFA は未（§5）。
 - ⚠️ **積み残しの finicky 項目**: 一覧ダブルクリック編集（プレビュー重なり）・パスワード再発行（トグル発火せず）。各行に調査結果を注記。（リード昇格の保存は原因特定し解消済 → §3 / P3）
+- 🔴 **【重要・カバレッジが弱い領域】閲覧制限・権限周りはほぼ未検証**。現状は全テストを **admin（全権限）** 単一ユーザーで実行しており、以下がまったく担保できていない:
+  - プロファイル／役割による**モジュール・アクションの可視/不可視**（作成・編集・削除・エクスポート等の権限）
+  - **共有ルール（組織/役割/グループ）** によるレコードの可視範囲（自分/部下/全体）
+  - **項目レベルアクセス**（項目の表示・編集可否）
+  - 一般ユーザー視点での一覧/詳細/関連の**見え方の差**（admin では常に全件見えるため差分が出ない）
+  → 対策方針: 権限の異なる**専用テストユーザー**を用意し、admin と非管理ユーザーで同一操作の可否・可視範囲を突き合わせる E2E を新設する（別ユーザー context は `utils/settings.ts` の `loginInIsolatedContext` を利用可能）。§4 C グループ（共有ルール C-04 は現状 skip）と連動。
 
 ---
 
@@ -58,7 +64,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 |---|---|---|---|---|
 | 2-1 | 一覧表示 | `modules/Vtiger/views/List.php` | 🟡 | Accounts のみ表示確認(`module/account`)。汎用の一覧表示検証は未 |
 | 2-4 | 一覧からの検索（列検索） | `ListViewContents.tpl` / `List.js` | ✅ | `common/common.search.spec.ts` |
-| 2-2 | リスト機能（個人 / 共有 CustomView） | `modules/CustomView/` | 🟡 | `common/common.customview.spec.ts`（個人リストの作成→サイドバー反映→削除）。複製・共有・切替は未 |
+| 2-2 | リスト機能（個人 / 共有 CustomView） | `modules/CustomView/` | 🟡 | `common/common.customview.spec.ts`（個人リストの 作成 / 切替 / 複製 / 削除）。ロールへの共有設定は未 |
 | 3-1 | フォロー（☆ / Watching） | 一覧 `a.markStar` / 詳細 `#starToggle` | ✅ | `common/common.follow.spec.ts`（一覧・詳細トグル。絞り込みは未） |
 | 4-1 | タグ 付与 / 変更 / 削除 | `DetailViewTagList.tpl` / `Tag.js` | 🟡 | `common/common.tag.spec.ts`（詳細の追加+×削除）+ `common/common.masstag.spec.ts`（一覧選択→一括付与）。タグ変更・フォロー絞り込みは未 |
 | 5-1 | PDF エクスポート | `modules/Vtiger/actions/ExportPDF.php` | ❌ | 在庫系詳細の「その他」→ PDF 出力（要 PDF テンプレート・在庫レコード。P2） |
@@ -252,11 +258,11 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - [ ] 一覧ダブルクリック編集（No.12-2）※調査済・未採用。行 dblclick でインライン編集は動くが、同時にクイックプレビューが開き後続操作を阻害しハングするため安定化が必要（`.listViewEntries` dblclick → `input[name=...]` → `.inline-save .save`）
 - [x] CSV インポート（No.11-1） → `test/common/common.import.spec.ts`（Accounts、パターン別5種: 複数行/ヘッダなし/重複スキップ/上書き/マージ）。ウィザードは `utils/import.ts` で driver 化。**知見**: ヘッダは自動マップされず列順に明示割当が必要／重複突合は既定 `accountname`／スキップは未更新・上書き/マージは更新（本ビルドでは CSV に列自体が無い項目の空白化は起きず保持）。※他モジュール展開は未
 - [x] タグの一括付与（一覧）（No.4-1）→ `test/common/common.masstag.spec.ts`（一覧で選択→一括「タグの追加」で新規タグ作成・付与、詳細で確認）
-- [x] リスト機能 CustomView（個人リスト 作成→削除）（No.2-2）→ `test/common/common.customview.spec.ts`。**知見**: 作成モーダルの保存は AJAX ハンドラ登録後にクリックしないとネイティブ GET になり保存されない（`#createFilter` クリック後に待機を入れる）。削除は行アクションのポップオーバー(`.js-popover-container`→`.popover li.deleteFilter`)。複製・共有・切替は未
+- [x] リスト機能 CustomView（個人リスト 作成 / 切替 / 複製 / 削除）（No.2-2）→ `test/common/common.customview.spec.ts`。**知見**: 作成/複製モーダルの保存は AJAX ハンドラ登録後にクリックしないとネイティブ GET になり保存されない（クリック前に待機を入れる）。切替は `#module-filters a.filterName`(すべて#4 含む)、複製は行アクションポップオーバー `li.duplicateFilter`(元名がプリセット)、削除は `li.deleteFilter`。ロールへの共有設定は未
 - [x] 概要/詳細タブ（No.6-1/6-2）→ `test/common/common.summary.spec.ts`（概要タブ主要項目、詳細タブ全項目）
 - [x] 関連一覧からの追加（No.7-1）→ `test/common/common.relatedadd.spec.ts`（「追加」ボタン=React ダイアログで関連レコード作成）
 - [x] カレンダー表示モード切替（No.14-1）→ `test/common/common.calendarview.spec.ts`（月/週/日/概要 の fc ボタン）
-- [ ] タグの変更 / フォロー絞り込み（残タスク。詳細のタグ追加+削除・一覧一括付与は実装済）
+- [ ] タグの変更 / フォロー絞り込み（保留。詳細のタグ追加+削除・一覧一括付与は実装済）※タグ変更は Settings/Tags 上に明確な rename UI が見当たらず、フォロー絞り込みは「フォロー中のみ表示」の絞り込み UI が本ビルドに見当たらないため、UI 特定後に着手
 - [ ] ダッシュボード追加・ウィジェット追加/削除（No.13-1）※ウィジェット追加後の DOM が React 混在で不定・管理者ダッシュボードを汚すため保留
 - [ ] 閲覧制限（プロファイル/共有ルール/項目レベルアクセス）の E2E 化 ※このカバレッジ表に横断項目として不足。別ユーザーでの可視範囲検証を含め後続で整理・追加する
 
