@@ -28,7 +28,9 @@ export const test = base.extend<{}, { workerStorageState: string }>({
       );
 
       const page = await browser.newPage({ storageState: undefined });
-      await page.goto(BASE_URL);
+      // ログイン画面は外部 CDN 画像を参照するため 'load' 待ちだとオフライン環境で
+      // タイムアウトする。DOM 構築完了で十分(フォームはサーバ描画済み)。
+      await page.goto(BASE_URL, { waitUntil: "domcontentloaded" });
       await page.fill("id=username", process.env.E2E_USER_NAME || "admin");
       await page.fill(
         "id=password",
