@@ -22,11 +22,11 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 ## 1. 現状サマリ
 
-現在の spec ファイルは 64 本。テストは目的別に 4 ディレクトリへ整理。
+現在の spec ファイルは 67 本。テストは目的別に 4 ディレクトリへ整理。
 
 | ディレクトリ | 内容 | 状態 |
 |---|---|---|
-| `test/common/`（17 本） | 全モジュール横断の共通機能（検索/フォロー/タグ+一括タグ/エクスポート/インポート/一括削除+ゴミ箱/クイック作成/クイック編集/更新履歴/コメント/関連一覧+関連追加/リスト(CustomView)/概要詳細タブ/カレンダー表示/ログイン失敗） | ✅ 実行中 |
+| `test/common/`（20 本） | 全モジュール横断の共通機能（検索/フォロー/タグ+一括タグ/エクスポート/インポート/一括削除+ゴミ箱/クイック作成/クイック編集/一括編集/更新履歴/コメント+一括コメント/関連一覧+関連追加/リスト(CustomView)/概要詳細タブ/クイックプレビュー/カレンダー表示/ログイン失敗） | ✅ 実行中 |
 | `test/module/`（8 本） | モジュール固有機能（Accounts 一覧表示/カスタマイズ + 各モジュールの詳細固有アクション: Accounts/Contacts/Leads/Potentials/Vendors/HelpDesk のメール・SMS・変換・作成起動、Calendar 作成編集、メール/PDFテンプレート一覧） | 🟡 主要モジュールの起動確認 |
 | `test/admin/*.spec.ts`（36 本） | システム管理画面の C〜I グループ + スモーク（E-02/E-04/F-04/F-08） | ✅/⏭️ 混在 |
 | `test/fr.common.spec.ts` | **17 モジュールの新規作成 / 編集 / 削除**（`FrTest` 汎用ドライバ） | ✅ |
@@ -71,13 +71,15 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 | 6-1/6-2 | 概要 / 詳細画面 | `modules/Vtiger/views/Detail.php` | ✅ | `common/common.summary.spec.ts`（概要タブで主要項目、詳細タブへ切替で全項目表示） |
 | 7-1 | 関連一覧 | `li.tab-item[data-module]` / RelatedList | ✅ | `common/common.relatedlist.spec.ts`（表示）+ `common/common.relatedadd.spec.ts`（「追加」から関連レコード作成） |
 | 8-1 | 更新履歴（ModTracker） | `modules/ModTracker/` | ✅ | `common/common.history.spec.ts` |
-| 9-1 | コメント（ModComments） | `modules/ModComments/` | ✅ | `common/common.comment.spec.ts` |
+| 9-1 | コメント（ModComments） | `modules/ModComments/` | ✅ | `common/common.comment.spec.ts`（詳細投稿）+ `common/common.masscomment.spec.ts`（一覧選択→一括コメント） |
 | 10-1 | CSV エクスポート | `modules/Vtiger/actions/ExportData.php` | ✅ | `common/common.export.spec.ts` |
 | 11-1 | CSV インポート | `modules/Import/` | ✅ | `common/common.import.spec.ts`（複数行/ヘッダなし/スキップ/上書き/マージ。マッピング保存・他モジュールは未） |
 | 12-1 | 一覧から登録（EditView） | `modules/Vtiger/views/Edit.php` | ✅ | 17 モジュールで実施済（`FrTest`） |
 | 12-2 | クイック作成（＋ボタン） | `views/QuickCreateAjax.php`（React WC） | ✅ | `common/common.quickcreate.spec.ts` |
 | 12-2 | 編集（編集画面） | 同上 | ✅ | 17 モジュールで実施済 |
 | 12-2 | クイック編集（鉛筆） | インライン edit | ✅ | `common/common.quickedit.spec.ts`（概要の1項目編集） |
+| 12-2 | 一括編集（Mass Edit） | `ListViewActions.tpl` LBL_EDIT / MassEdit | ✅ | `common/common.massedit.spec.ts`（一覧選択→項目を編集対象に含め値設定→保存を詳細で確認） |
+| 6-3 | クイックプレビュー | 一覧行 `a.quickView` / `.quickPreview` | ✅ | `common/common.quickpreview.spec.ts`（目アイコンで主要項目のプレビュー表示） |
 | 12-2 | 一覧からの更新（ダブルクリック） | `List.js` inline edit | ❌ | 調査済・未採用（dblclick でクイックプレビューが重なりハング。要安定化） |
 | 12-3 | 削除 / 一括削除 | 詳細「その他」/ 一覧ゴミ箱 | ✅ | 単体は `FrTest`、一括削除は `common/common.recyclebin.spec.ts` |
 | 13-1 | ダッシュボード / ウィジェット | `modules/Home/views/DashBoard.php` | 🟡 | 表示確認のみ(`general`)。ダッシュボード追加・ウィジェット追加/削除は未 |
@@ -262,6 +264,10 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - [x] 概要/詳細タブ（No.6-1/6-2）→ `test/common/common.summary.spec.ts`（概要タブ主要項目、詳細タブ全項目）
 - [x] 関連一覧からの追加（No.7-1）→ `test/common/common.relatedadd.spec.ts`（「追加」ボタン=React ダイアログで関連レコード作成）
 - [x] カレンダー表示モード切替（No.14-1）→ `test/common/common.calendarview.spec.ts`（月/週/日/概要 の fc ボタン）
+- [x] 一括編集（No.12-2）→ `test/common/common.massedit.spec.ts`（項目を `#include_in_mass_edit_<field>` で編集対象に含め値設定→保存）
+- [x] 一括コメント（No.9-1）→ `test/common/common.masscomment.spec.ts`
+- [x] クイックプレビュー → `test/common/common.quickpreview.spec.ts`。**知見**: プレビューは地図等の外部リソースを読み、オフラインでは当該ページが `networkidle` に到達しない。後始末は先に別画面へ遷移してから行う（プレビューを開いたまま networkidle 待ちするとハングする）
+- [ ] 一括所有者変更（Mass Transfer Ownership）※別ユーザーが必要なため、権限・閲覧制限の作業とまとめて実施
 - [ ] タグの変更 / フォロー絞り込み（保留。詳細のタグ追加+削除・一覧一括付与は実装済）※タグ変更は Settings/Tags 上に明確な rename UI が見当たらず、フォロー絞り込みは「フォロー中のみ表示」の絞り込み UI が本ビルドに見当たらないため、UI 特定後に着手
 - [ ] ダッシュボード追加・ウィジェット追加/削除（No.13-1）※ウィジェット追加後の DOM が React 混在で不定・管理者ダッシュボードを汚すため保留
 - [ ] 閲覧制限（プロファイル/共有ルール/項目レベルアクセス）の E2E 化 ※このカバレッジ表に横断項目として不足。別ユーザーでの可視範囲検証を含め後続で整理・追加する
