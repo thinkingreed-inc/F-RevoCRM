@@ -58,12 +58,12 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 |---|---|---|---|---|
 | 2-1 | 一覧表示 | `modules/Vtiger/views/List.php` | 🟡 | Accounts のみ表示確認(`module/account`)。汎用の一覧表示検証は未 |
 | 2-4 | 一覧からの検索（列検索） | `ListViewContents.tpl` / `List.js` | ✅ | `common/common.search.spec.ts` |
-| 2-2 | リスト機能（個人 / 共有 CustomView） | `modules/CustomView/` | ❌ | リスト作成・複製・共有・切替のテスト |
+| 2-2 | リスト機能（個人 / 共有 CustomView） | `modules/CustomView/` | 🟡 | `common/common.customview.spec.ts`（個人リストの作成→サイドバー反映→削除）。複製・共有・切替は未 |
 | 3-1 | フォロー（☆ / Watching） | 一覧 `a.markStar` / 詳細 `#starToggle` | ✅ | `common/common.follow.spec.ts`（一覧・詳細トグル。絞り込みは未） |
-| 4-1 | タグ 付与 / 変更 / 削除 | `DetailViewTagList.tpl` / `Tag.js` | 🟡 | `common/common.tag.spec.ts`（詳細の追加+×削除。変更・一覧一括は未） |
-| 5-1 | PDF エクスポート | `modules/Vtiger/actions/ExportPDF.php` | ❌ | 在庫系詳細の「その他」→ PDF 出力（要 PDF テンプレート） |
-| 6-1/6-2 | 概要 / 詳細画面 | `modules/Vtiger/views/Detail.php` | 🟡 | CRUD 後に詳細表示は検証済。概要画面の主要項目表示は未 |
-| 7-1 | 関連一覧 | `li.tab-item[data-module]` / RelatedList | 🟡 | `common/common.relatedlist.spec.ts`（表示確認。「追加」からの登録は未） |
+| 4-1 | タグ 付与 / 変更 / 削除 | `DetailViewTagList.tpl` / `Tag.js` | 🟡 | `common/common.tag.spec.ts`（詳細の追加+×削除）+ `common/common.masstag.spec.ts`（一覧選択→一括付与）。タグ変更・フォロー絞り込みは未 |
+| 5-1 | PDF エクスポート | `modules/Vtiger/actions/ExportPDF.php` | ❌ | 在庫系詳細の「その他」→ PDF 出力（要 PDF テンプレート・在庫レコード。P2） |
+| 6-1/6-2 | 概要 / 詳細画面 | `modules/Vtiger/views/Detail.php` | ✅ | `common/common.summary.spec.ts`（概要タブで主要項目、詳細タブへ切替で全項目表示） |
+| 7-1 | 関連一覧 | `li.tab-item[data-module]` / RelatedList | ✅ | `common/common.relatedlist.spec.ts`（表示）+ `common/common.relatedadd.spec.ts`（「追加」から関連レコード作成） |
 | 8-1 | 更新履歴（ModTracker） | `modules/ModTracker/` | ✅ | `common/common.history.spec.ts` |
 | 9-1 | コメント（ModComments） | `modules/ModComments/` | ✅ | `common/common.comment.spec.ts` |
 | 10-1 | CSV エクスポート | `modules/Vtiger/actions/ExportData.php` | ✅ | `common/common.export.spec.ts` |
@@ -75,7 +75,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 | 12-2 | 一覧からの更新（ダブルクリック） | `List.js` inline edit | ❌ | 調査済・未採用（dblclick でクイックプレビューが重なりハング。要安定化） |
 | 12-3 | 削除 / 一括削除 | 詳細「その他」/ 一覧ゴミ箱 | ✅ | 単体は `FrTest`、一括削除は `common/common.recyclebin.spec.ts` |
 | 13-1 | ダッシュボード / ウィジェット | `modules/Home/views/DashBoard.php` | 🟡 | 表示確認のみ(`general`)。ダッシュボード追加・ウィジェット追加/削除は未 |
-| 14-1 | カレンダー（月/週/日/概要） | `modules/Calendar/views/Calendar.php` | ❌ | 各表示モード切替、イベント作成・編集 |
+| 14-1 | カレンダー（月/週/日/概要） | `modules/Calendar/views/Calendar.php` | 🟡 | `common/common.calendarview.spec.ts`（月/週/日/概要 の表示モード切替）+ イベント作成/編集は `module/calendar.spec.ts`。iCal・カンバンは未 |
 | 35-1 | ゴミ箱（復元 / 完全削除） | `modules/RecycleBin/` | ✅ | `common/common.recyclebin.spec.ts`（削除→復元→完全削除） |
 | — | グローバル検索 | `modules/Vtiger/apis/SearchRecords.php` | ✅ | `common/common.globalsearch.spec.ts`（ヘッダー検索→統合検索結果にヒット） |
 
@@ -251,7 +251,14 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - [x] CSV エクスポート（No.10-1） → `test/common/common.export.spec.ts`
 - [ ] 一覧ダブルクリック編集（No.12-2）※調査済・未採用。行 dblclick でインライン編集は動くが、同時にクイックプレビューが開き後続操作を阻害しハングするため安定化が必要（`.listViewEntries` dblclick → `input[name=...]` → `.inline-save .save`）
 - [x] CSV インポート（No.11-1） → `test/common/common.import.spec.ts`（Accounts、パターン別5種: 複数行/ヘッダなし/重複スキップ/上書き/マージ）。ウィザードは `utils/import.ts` で driver 化。**知見**: ヘッダは自動マップされず列順に明示割当が必要／重複突合は既定 `accountname`／スキップは未更新・上書き/マージは更新（本ビルドでは CSV に列自体が無い項目の空白化は起きず保持）。※他モジュール展開は未
-- [ ] タグの一括付与（一覧）/ タグの変更 / フォロー絞り込み（残タスク。詳細のタグ追加+削除は実装済）
+- [x] タグの一括付与（一覧）（No.4-1）→ `test/common/common.masstag.spec.ts`（一覧で選択→一括「タグの追加」で新規タグ作成・付与、詳細で確認）
+- [x] リスト機能 CustomView（個人リスト 作成→削除）（No.2-2）→ `test/common/common.customview.spec.ts`。**知見**: 作成モーダルの保存は AJAX ハンドラ登録後にクリックしないとネイティブ GET になり保存されない（`#createFilter` クリック後に待機を入れる）。削除は行アクションのポップオーバー(`.js-popover-container`→`.popover li.deleteFilter`)。複製・共有・切替は未
+- [x] 概要/詳細タブ（No.6-1/6-2）→ `test/common/common.summary.spec.ts`（概要タブ主要項目、詳細タブ全項目）
+- [x] 関連一覧からの追加（No.7-1）→ `test/common/common.relatedadd.spec.ts`（「追加」ボタン=React ダイアログで関連レコード作成）
+- [x] カレンダー表示モード切替（No.14-1）→ `test/common/common.calendarview.spec.ts`（月/週/日/概要 の fc ボタン）
+- [ ] タグの変更 / フォロー絞り込み（残タスク。詳細のタグ追加+削除・一覧一括付与は実装済）
+- [ ] ダッシュボード追加・ウィジェット追加/削除（No.13-1）※ウィジェット追加後の DOM が React 混在で不定・管理者ダッシュボードを汚すため保留
+- [ ] 閲覧制限（プロファイル/共有ルール/項目レベルアクセス）の E2E 化 ※このカバレッジ表に横断項目として不足。別ユーザーでの可視範囲検証を含め後続で整理・追加する
 
 ### P2: 在庫系モジュールと連携機能
 
