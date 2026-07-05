@@ -342,4 +342,119 @@ if (countAccountsByNamePrefix($sr['prefix']) >= $srTotal) {
     }
 }
 
+// ============================================================================
+// 9. アクション権限ペルソナ(プロファイル/役割による 非表示/閲覧のみ/削除不可)
+//    Sales Profile(id=2) を複製し、対象モジュールの権限だけ書き換えた制限プロファイルを
+//    専用ロール+ユーザーに割り当てる。可視範囲(sharing)と切り離す為 Public 共有の
+//    Accounts を対象にする(誰でも全レコードを閲覧でき、差はアクション権限のみに出る)。
+// ============================================================================
+function findProfileIdByName($name) {
+    global $adb;
+    $r = $adb->pquery('SELECT profileid FROM vtiger_profile WHERE profilename = ?', array($name));
+    return ($adb->num_rows($r) > 0) ? (int) $adb->query_result($r, 0, 'profileid') : null;
+}
+
+/**
+ * Sales Profile(=$base) を全権限テーブルごと複製し新 profileid を返す。存在すれば流用。
+ * (全モジュール分を手組みせず、複製後に対象モジュールの行だけ書き換える)
+ */
+function cloneProfile($name, $base) {
+    global $adb;
+    $existing = findProfileIdByName($name);
+    if ($existing) { return $existing; }
+    $pid = $adb->getUniqueID('vtiger_profile');
+    $adb->pquery('INSERT INTO vtiger_profile(profileid, profilename, description) VALUES (?,?,?)',
+        array($pid, $name, 'E2E: アクション権限検証用(Sales Profile 複製)'));
+    $adb->pquery('INSERT INTO vtiger_profile2tab(profileid,tabid,permissions) SELECT ?,tabid,permissions FROM vtiger_profile2tab WHERE profileid=?', array($pid, $base));
+    $adb->pquery('INSERT INTO vtiger_profile2standardpermissions(profileid,tabid,operation,permissions) SELECT ?,tabid,operation,permissions FROM vtiger_profile2standardpermissions WHERE profileid=?', array($pid, $base));
+    $adb->pquery('INSERT INTO vtiger_profile2field(profileid,tabid,fieldid,visible,readonly) SELECT ?,tabid,fieldid,visible,readonly FROM vtiger_profile2field WHERE profileid=?', array($pid, $base));
+    $adb->pquery('INSERT INTO vtiger_profile2utility(profileid,tabid,activityid,permission) SELECT ?,tabid,activityid,permission FROM vtiger_profile2utility WHERE profileid=?', array($pid, $base));
+    $adb->pquery('INSERT INTO vtiger_profile2globalpermissions(profileid,globalactionid,globalactionpermission) SELECT ?,globalactionid,globalactionpermission FROM vtiger_profile2globalpermissions WHERE profileid=?', array($pid, $base));
+    return $pid;
+}
+
+/** E2E テストユーザーを作成し crmid を返す(section 2 と同じ設定)。 */
+function createE2EUser($userName, $lastName, $roleId) {
+    global $spec;
+    $u = new Users_Record_Model();
+    $u->setModule('Users');
+    $u->set('user_name', $userName);
+    $u->set('user_password', $spec['password']);
+    $u->set('confirm_password', $spec['password']);
+    $u->set('first_name', 'E2E');
+    $u->set('last_name', $lastName);
+    $u->set('email1', $userName . '@example.com');
+    $u->set('roleid', $roleId);
+    $u->set('is_admin', 'off');
+    $u->set('status', 'Active');
+    $u->set('user_type', 'EndUser');
+    $u->set('currency_id', 1);
+    $u->set('date_format', 'yyyy-mm-dd');
+    $u->set('hour_format', '24');
+    $u->set('start_hour', '09:00');
+    $u->set('end_hour', '18:00');
+    $u->set('activity_view', 'Today');
+    $u->set('reminder_interval', 'None');
+    $u->set('time_zone', 'Asia/Tokyo');
+    $u->set('language', 'ja_jp');
+    $u->set('mode', '');
+    $u->save();
+    $uid = (int) $u->getId();
+    if (!$uid) { $uid = findUserIdByName($userName); }
+    if ($uid) { updateUser2RoleMapping($roleId, $uid); }
+    return $uid;
+}
+
+out('--- アクション権限ペルソナ ---');
+$ap = $spec['actionPerm'];
+$rt = $adb->pquery('SELECT tabid FROM vtiger_tab WHERE name = ?', array($ap['module']));
+$apTabid = (int) $adb->query_result($rt, 0, 'tabid');
+$BASE_PROFILE = 2; // Sales Profile を複製元にする
+
+foreach ($ap['personas'] as $persona) {
+    if (findUserIdByName($persona['userName'])) {
+        out("既存ペルソナ流用: {$persona['userName']} (skip)");
+        continue;
+    }
+    // 1) プロファイル複製 + 制限適用
+    $pid = cloneProfile($persona['profileName'], $BASE_PROFILE);
+    switch ($persona['restriction']) {
+        case 'module_hidden':
+            // モジュール非表示 + 標準アクション全拒否
+            $adb->pquery('UPDATE vtiger_profile2tab SET permissions=1 WHERE profileid=? AND tabid=?', array($pid, $apTabid));
+            $adb->pquery('UPDATE vtiger_profile2standardpermissions SET permissions=1 WHERE profileid=? AND tabid=?', array($pid, $apTabid));
+            break;
+        case 'read_only':
+            // 閲覧のみ: Save(0)/EditView(1)/Delete(2)/CreateView(7) を拒否、index(3)/DetailView(4) は許可
+            $adb->pquery('UPDATE vtiger_profile2standardpermissions SET permissions=1 WHERE profileid=? AND tabid=? AND operation IN (0,1,2,7)', array($pid, $apTabid));
+            break;
+        case 'no_delete':
+            // 削除(2)のみ拒否
+            $adb->pquery('UPDATE vtiger_profile2standardpermissions SET permissions=1 WHERE profileid=? AND tabid=? AND operation=2', array($pid, $apTabid));
+            break;
+        default:
+            fwrite(STDERR, "!! 未知の restriction: {$persona['restriction']}\n");
+            exit(1);
+    }
+    // 2) 制限プロファイルを紐付けたロール(H2 配下)を作成
+    $roleId = findRoleIdByName($persona['roleName']);
+    if (!$roleId) {
+        $parent = Settings_Roles_Record_Model::getInstanceById('H2');
+        $child = new Settings_Roles_Record_Model();
+        $child->set('rolename', $persona['roleName']);
+        $child->set('allowassignedrecordsto', 2);
+        $child->set('profileIds', array($pid));
+        $parent->addChildRole($child);
+        $roleId = $child->getId();
+        if (!$roleId) { $roleId = findRoleIdByName($persona['roleName']); }
+    }
+    // 3) ユーザー作成
+    $uid = createE2EUser($persona['userName'], $persona['roleName'], $roleId);
+    if (!$uid) {
+        fwrite(STDERR, "!! ペルソナ作成失敗: {$persona['userName']}\n");
+        exit(1);
+    }
+    out("作成: {$persona['userName']} profile={$pid}({$persona['restriction']}) role={$roleId} user={$uid}");
+}
+
 out('=== 完了。setup/scripts/RecreateUserFiles.php を実行してキャッシュを再生成すること ===');

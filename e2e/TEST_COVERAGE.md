@@ -26,7 +26,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 | ディレクトリ | 内容 | 状態 |
 |---|---|---|
-| `test/common/`（23 本） | 全モジュール横断の共通機能（検索/フォロー/タグ+一括タグ/エクスポート/インポート/一括削除+ゴミ箱/クイック作成/クイック編集/一括編集/更新履歴/コメント+一括コメント/関連一覧+関連追加/リスト(CustomView)/概要詳細タブ/クイックプレビュー/カレンダー表示/ログイン失敗/**権限・可視範囲**/**ページング・列ソート**/**検索・絞り込み**） | ✅ 実行中 |
+| `test/common/`（24 本） | 全モジュール横断の共通機能（検索/フォロー/タグ+一括タグ/エクスポート/インポート/一括削除+ゴミ箱/クイック作成/クイック編集/一括編集/更新履歴/コメント+一括コメント/関連一覧+関連追加/リスト(CustomView)/概要詳細タブ/クイックプレビュー/カレンダー表示/ログイン失敗/**権限・可視範囲**/**アクション権限**/**ページング・列ソート**/**検索・絞り込み**） | ✅ 実行中 |
 | `test/module/`（8 本） | モジュール固有機能（Accounts 一覧表示/カスタマイズ + 各モジュールの詳細固有アクション: Accounts/Contacts/Leads/Potentials/Vendors/HelpDesk のメール・SMS・変換・作成起動、Calendar 作成編集、メール/PDFテンプレート一覧） | 🟡 主要モジュールの起動確認 |
 | `test/admin/*.spec.ts`（36 本） | システム管理画面の C〜I グループ + スモーク（E-02/E-04/F-04/F-08） | ✅/⏭️ 混在 |
 | `test/fr.common.spec.ts` | **17 モジュールの新規作成 / 編集 / 削除**（`FrTest` 汎用ドライバ） | ✅ |
@@ -54,10 +54,13 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
   - ✅ **共有ルール（組織 Private / 役割階層 / グループ）** によるレコードの可視範囲（自分/部下/全体）
     → `test/common/common.permission.spec.ts`（Leads を Private 化し、部長=全部下 / 課長=自課 / 課員=自分 /
     グループ=メンバーのみ を件数で検証。期待値は `seedSpec.ts` が唯一の出所）
-  - ❌ プロファイル／役割による**モジュール・アクションの可視/不可視**（作成・編集・削除・エクスポート権限）は未
-  - ❌ **項目レベルアクセス**（項目の表示・編集可否）は未
-  → 残作業: 上記データ基盤の上に、非管理ユーザーでのアクション可否・項目可視差・一括所有者変更を追加。
-  §4 C グループ（共有ルール C-04 は現状 skip）と連動。
+  - ✅ プロファイル／役割による**モジュール・アクションの可視/不可視**（表示・作成・編集・削除）
+    → `test/common/common.permission-action.spec.ts`（Sales Profile を複製し Accounts の権限だけ書換えた
+    3 ペルソナ: 非表示=権限拒否画面 / 閲覧のみ=追加・編集・削除ボタン無 / 削除不可=削除だけ無。
+    制限された操作の UI 要素はサーバ側で DOM から除外されるため `toHaveCount(0)` で判定。dump ビルド時に
+    `isPermitted` で期待可否を一致確認済み）
+  - ❌ **項目レベルアクセス**（項目の表示・編集可否）は未（同じプロファイル複製方式で拡張可能。データ基盤あり）
+  → 残作業: 項目レベル権限、エクスポート/インポート権限、一括所有者変更。§4 C グループ（共有ルール C-04 は現状 skip）と連動。
 
 ---
 
@@ -277,6 +280,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - [x] 一覧ソート（列ヘッダ `a.listViewContentHeaderValues[data-columnname]`）→ `test/common/common.paging.spec.ts`。**知見**: 保留原因だった「クリック後 `networkidle` に到達せずハング」は、`waitForLoadState` を使わず**先頭行テキストが期待値になるまでポーリング待ち**（`expect(firstRow).toContainText(...)`）することで回避。列検索で絞り込んでいてもヘッダはソート可能（`SEARCH_MODE_RESULTS` にはならない）。ゼロ埋め連番の `[E2E-PAGE]` 島で昇順/降順を決定論的に検証
 - [x] **一覧ページング（ページ送り / 末尾ページ / 境界ボタン）** → `test/common/common.paging.spec.ts`。`[E2E-PAGE]` 250 件を絞り込み、20 件/ページ・`#NextPageButton`/`#PreviousPageButton` の活性・末尾端数を検証。**知見**: PageJump ドロップダウン(`#pageToJumpSubmit`)は `#PageJumpDropDown li` の `stopImmediatePropagation` で発火しにくいため、末尾へは Next 連打で到達させる方が安定
 - [x] **権限 / 可視範囲（誰のデータが見えるか）** → `test/common/common.permission.spec.ts`。拡充ベースラインのロール階層 + グループ + Private 化 Leads を使い、`loginInIsolatedContext` で各ユーザーの可視件数を検証（§1 の🟡参照）。期待値は `fixtures/seedSpec.ts`
+- [x] **アクション権限（プロファイル/役割: 非表示 / 閲覧のみ / 削除不可）** → `test/common/common.permission-action.spec.ts`。Sales Profile を複製し Accounts の権限だけ書換えた 3 ペルソナで、権限拒否画面・追加/編集/削除ボタンの有無を検証。**知見**: 制限操作の UI 要素はサーバ側で DOM から除外されるので `toHaveCount(0)`。権限拒否は HTTP 200 + `span.genHeaderSmall`/`img[src*="denied.gif"]` で判定
 - [x] **検索/絞り込み（既知件数）** → `test/common/common.filter.spec.ts`。`[E2E-SRCH]` 島（industry 別 + 一意トークン）で、列検索の既知件数・一意トークン単一ヒット・グローバル検索ヒットを検証
 - [ ] 一括所有者変更（Mass Transfer Ownership）※拡充ベースラインで別ユーザーが用意できたので着手可能。権限・閲覧制限の作業とまとめて実施
 - [ ] CustomView の**絞り込み条件**ビルダ（industry=Banking 等）と**ロール共有**※データ島（`[E2E-SRCH]` の industry 分布）は用意済み。条件ビルダ UI の自動化が未

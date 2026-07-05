@@ -58,6 +58,24 @@ export interface SeedSpec {
     ratings: string[];
     globalToken: string;
   };
+  actionPerm: {
+    module: string;
+    personas: ActionPersona[];
+  };
+}
+
+/** プロファイル(役割)によるアクション権限ペルソナ。 */
+export interface ActionPersona {
+  userName: string;
+  roleName: string;
+  profileName: string;
+  restriction: "module_hidden" | "read_only" | "no_delete";
+  expect: {
+    moduleVisible: boolean;
+    canCreate: boolean;
+    canEdit: boolean;
+    canDelete: boolean;
+  };
 }
 
 const specPath = path.resolve(__dirname, "seed-spec.json");

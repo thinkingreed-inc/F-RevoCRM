@@ -69,5 +69,33 @@
     "perIndustry": 10,
     "ratings": ["Active", "Acquired"],
     "globalToken": "ZZUNIQAcctFindme"
+  },
+
+  "actionPerm": {
+    "_comment": "プロファイル(役割)による アクション権限 の検証用。Sales Profile(id=2) を複製し対象モジュールの権限だけ書き換えた制限プロファイルを、専用ロール+ユーザーに割り当てる。可視範囲(sharing)と切り離す為 module は Public 共有の Accounts を使う。",
+    "module": "Accounts",
+    "personas": [
+      {
+        "userName": "e2e_p_hidden",
+        "roleName": "E2E権限_非表示",
+        "profileName": "E2E_権限_Accounts非表示",
+        "restriction": "module_hidden",
+        "expect": { "moduleVisible": false, "canCreate": false, "canEdit": false, "canDelete": false }
+      },
+      {
+        "userName": "e2e_p_readonly",
+        "roleName": "E2E権限_閲覧のみ",
+        "profileName": "E2E_権限_Accounts閲覧のみ",
+        "restriction": "read_only",
+        "expect": { "moduleVisible": true, "canCreate": false, "canEdit": false, "canDelete": false }
+      },
+      {
+        "userName": "e2e_p_nodelete",
+        "roleName": "E2E権限_削除不可",
+        "profileName": "E2E_権限_Accounts削除不可",
+        "restriction": "no_delete",
+        "expect": { "moduleVisible": true, "canCreate": true, "canEdit": true, "canDelete": false }
+      }
+    ]
   }
 }

@@ -143,6 +143,7 @@ data island** として投入します。テスト側は型付きの `e2e/fixtur
 | ユーザー/ロール | H2 管理者配下に E2E 営業ツリー（部長 ▸ 1課長/2課長 ▸ 1課員/2課員）+ 各ロール 1 ユーザー（固定パス `Test1234/`）+ 平社員2名のグループ | 権限/可視範囲 |
 | `[E2E-PERM]` Leads | Leads を org 共有 **Private** 化し、各ロールユーザー所有で 4 件ずつ | ロール階層による可視範囲 |
 | `[E2E-GRP]` Leads | グループ所有で 4 件 | グループ共有の可視範囲 |
+| 権限ペルソナ | Sales Profile を複製し Accounts の権限だけ書換えた制限プロファイル+専用ロール+ユーザー 3 種（`e2e_p_hidden`=非表示 / `e2e_p_readonly`=閲覧のみ / `e2e_p_nodelete`=削除不可、固定パス `Test1234/`） | プロファイル/役割による アクション権限（作成/編集/削除/表示の可否） |
 | `[E2E-PAGE]` Accounts | ゼロ埋め連番 250 件（admin 所有） | ページング / 列ソート |
 | `[E2E-SRCH]` Accounts | industry 6 種 × 10 件 + 一意トークン 1 件 | 検索 / 絞り込み |
 
@@ -156,5 +157,6 @@ data island** として投入します。テスト側は型付きの `e2e/fixtur
 - 期待可視数は `seedSpec.ts`（= `seed-spec.json`）を唯一の出所にする。dump ビルド時に
   アプリの共有エンジンで一致確認済み。
 
-実証スペック: `test/common/common.permission.spec.ts`（可視範囲）/ `common.paging.spec.ts`
-（ページング・ソート）/ `common.filter.spec.ts`（検索・絞り込み）。
+実証スペック: `test/common/common.permission.spec.ts`（可視範囲）/ `common.permission-action.spec.ts`
+（アクション権限: 非表示/閲覧のみ/削除不可）/ `common.paging.spec.ts`（ページング・ソート）/
+`common.filter.spec.ts`（検索・絞り込み）。
