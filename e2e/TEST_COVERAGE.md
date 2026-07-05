@@ -22,11 +22,11 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 ## 1. 現状サマリ
 
-現在の spec ファイルは 67 本。テストは目的別に 4 ディレクトリへ整理。
+現在の spec ファイルは 71 本。テストは目的別に 4 ディレクトリへ整理。
 
 | ディレクトリ | 内容 | 状態 |
 |---|---|---|
-| `test/common/`（24 本） | 全モジュール横断の共通機能（検索/フォロー/タグ+一括タグ/エクスポート/インポート/一括削除+ゴミ箱/クイック作成/クイック編集/一括編集/更新履歴/コメント+一括コメント/関連一覧+関連追加/リスト(CustomView)/概要詳細タブ/クイックプレビュー/カレンダー表示/ログイン失敗/**権限・可視範囲**/**アクション権限**/**ページング・列ソート**/**検索・絞り込み**） | ✅ 実行中 |
+| `test/common/`（25 本） | 全モジュール横断の共通機能（検索/フォロー/タグ+一括タグ/エクスポート/インポート/一括削除+ゴミ箱/クイック作成/クイック編集/一括編集/更新履歴/コメント+一括コメント/関連一覧+関連追加/リスト(CustomView)/概要詳細タブ/クイックプレビュー/カレンダー表示/ログイン失敗/**権限・可視範囲**/**アクション権限**/**ページング・列ソート**/**検索・絞り込み**） | ✅ 実行中 |
 | `test/module/`（8 本） | モジュール固有機能（Accounts 一覧表示/カスタマイズ + 各モジュールの詳細固有アクション: Accounts/Contacts/Leads/Potentials/Vendors/HelpDesk のメール・SMS・変換・作成起動、Calendar 作成編集、メール/PDFテンプレート一覧） | 🟡 主要モジュールの起動確認 |
 | `test/admin/*.spec.ts`（36 本） | システム管理画面の C〜I グループ + スモーク（E-02/E-04/F-04/F-08） | ✅/⏭️ 混在 |
 | `test/fr.common.spec.ts` | **17 モジュールの新規作成 / 編集 / 削除**（`FrTest` 汎用ドライバ） | ✅ |
@@ -275,7 +275,6 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - [x] 一括編集（No.12-2）→ `test/common/common.massedit.spec.ts`（項目を `#include_in_mass_edit_<field>` で編集対象に含め値設定→保存）
 - [x] 一括コメント（No.9-1）→ `test/common/common.masscomment.spec.ts`
 - [x] クイックプレビュー → `test/common/common.quickpreview.spec.ts`。**知見**: プレビューは地図等の外部リソースを読み、オフラインでは当該ページが `networkidle` に到達しない。後始末は先に別画面へ遷移してから行う（プレビューを開いたまま networkidle 待ちするとハングする）
-- [ ] 一括所有者変更（Mass Transfer Ownership）※別ユーザーが必要なため、権限・閲覧制限の作業とまとめて実施
 - [ ] タグで絞り込み（サイドバー「タグ」欄）※調査済・保留。サイドバーの `#module-filters span.tag` はタグの割当状況/キャッシュに依存して表示が不定（作成直後のタグが出ないことがある）。安定条件の特定が必要
 - [x] 一覧ソート（列ヘッダ `a.listViewContentHeaderValues[data-columnname]`）→ `test/common/common.paging.spec.ts`。**知見**: 保留原因だった「クリック後 `networkidle` に到達せずハング」は、`waitForLoadState` を使わず**先頭行テキストが期待値になるまでポーリング待ち**（`expect(firstRow).toContainText(...)`）することで回避。列検索で絞り込んでいてもヘッダはソート可能（`SEARCH_MODE_RESULTS` にはならない）。ゼロ埋め連番の `[E2E-PAGE]` 島で昇順/降順を決定論的に検証
 - [x] **一覧ページング（ページ送り / 末尾ページ / 境界ボタン）** → `test/common/common.paging.spec.ts`。`[E2E-PAGE]` 250 件を絞り込み、20 件/ページ・`#NextPageButton`/`#PreviousPageButton` の活性・末尾端数を検証。**知見**: PageJump ドロップダウン(`#pageToJumpSubmit`)は `#PageJumpDropDown li` の `stopImmediatePropagation` で発火しにくいため、末尾へは Next 連打で到達させる方が安定
@@ -286,7 +285,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - [ ] CustomView の**絞り込み条件**ビルダ（industry=Banking 等）と**ロール共有**※データ島（`[E2E-SRCH]` の industry 分布）は用意済み。条件ビルダ UI の自動化が未
 - [ ] タグの変更 / フォロー絞り込み（保留。詳細のタグ追加+削除・一覧一括付与は実装済）※タグ変更は Settings/Tags 上に明確な rename UI が見当たらず、フォロー絞り込みは「フォロー中のみ表示」の絞り込み UI が本ビルドに見当たらないため、UI 特定後に着手
 - [ ] ダッシュボード追加・ウィジェット追加/削除（No.13-1）※ウィジェット追加後の DOM が React 混在で不定・管理者ダッシュボードを汚すため保留
-- [ ] 閲覧制限（プロファイル/共有ルール/項目レベルアクセス）の E2E 化 ※このカバレッジ表に横断項目として不足。別ユーザーでの可視範囲検証を含め後続で整理・追加する
+- [x] 閲覧制限の E2E 化（可視範囲＝組織/役割/グループ共有 + アクション権限＝プロファイル/役割）→ `common.permission.spec.ts` / `common.permission-action.spec.ts`。残るは**項目レベルアクセス**（項目の表示・編集可否）で、同じプロファイル複製方式で拡張可能（データ基盤あり）
 
 ### P2: 在庫系モジュールと連携機能
 
