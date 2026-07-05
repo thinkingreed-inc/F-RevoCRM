@@ -1,4 +1,5 @@
-import { test, expect, type Page, type Locator } from "@playwright/test";
+import { test, expect } from "../../fixtures/isolated";
+import type { Page, Locator } from "@playwright/test";
 import { generateRandomString } from "../../utils/util";
 import { gotoSettings, saveAndSettle } from "../../utils/settings";
 

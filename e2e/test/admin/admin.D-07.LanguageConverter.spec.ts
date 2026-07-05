@@ -1,4 +1,5 @@
-import { test, expect, type Page, type Locator } from "@playwright/test";
+import { test, expect } from "../../fixtures/isolated";
+import type { Page, Locator } from "@playwright/test";
 import { generateRandomString } from "../../utils/util";
 import { gotoSettings, saveAndSettle, confirmYes } from "../../utils/settings";
 
@@ -122,9 +123,11 @@ test.describe.serial("管理: 文言変更 (LanguageConverter)", () => {
     await confirmYes(page);
     await page.waitForLoadState("networkidle").catch(() => {});
 
-    // リロードして対象行が消えていること(原状復帰の確認)。
-    // ルールが消えれば変換も効かなくなるため、afterEdit の行が無いことで確認できる。
-    await gotoSettings(page, params);
-    await expect(rowByAfter(page, afterEdit)).toHaveCount(0);
+    // AJAX 削除は networkidle が早く解決して反映前に確認してしまうことがあるため、
+    // 一覧を開き直して行が消えるまでリトライする(反映ラグに強い確認)。
+    await expect(async () => {
+      await gotoSettings(page, params);
+      await expect(rowByAfter(page, afterEdit)).toHaveCount(0, { timeout: 3000 });
+    }).toPass({ timeout: 30000 });
   });
 });

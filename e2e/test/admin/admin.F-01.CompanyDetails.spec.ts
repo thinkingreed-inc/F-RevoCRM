@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../../fixtures/isolated";
 import { generateRandomString } from "../../utils/util";
 import { gotoSettings } from "../../utils/settings";
 
