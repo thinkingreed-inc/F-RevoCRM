@@ -82,6 +82,19 @@ export interface SeedSpec {
     expectedSharedCount: number;
     expectedNotSharedCount: number;
   };
+  exportImportPerm: {
+    module: string;
+    userName: string;
+    roleName: string;
+    profileName: string;
+    negativeUserName: string;
+  };
+  tagFilter: {
+    module: string;
+    tagName: string;
+    taggedNamePrefix: string;
+    taggedCount: number;
+  };
 }
 
 /** プロファイル(役割)によるアクション権限ペルソナ。 */

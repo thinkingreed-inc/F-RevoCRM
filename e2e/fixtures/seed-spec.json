@@ -121,5 +121,22 @@
     "notSharedOwnerCodes": ["MGRB", "REPA"],
     "expectedSharedCount": 4,
     "expectedNotSharedCount": 0
+  },
+
+  "exportImportPerm": {
+    "_comment": "エクスポート/インポート権限。Sales Profile(id2)は既定で Export/Import 拒否のため、複製プロファイルで Accounts の profile2utility Export(activityid 6)/Import(5) を許可(permission=0)したペルソナを用意し、既定拒否の Sales ユーザー(e2e_director)と対比する。",
+    "module": "Accounts",
+    "userName": "e2e_p_export",
+    "roleName": "E2E権限_出力可",
+    "profileName": "E2E_権限_Accounts出力可",
+    "negativeUserName": "e2e_director"
+  },
+
+  "tagFilter": {
+    "_comment": "サイドバーのタグ絞り込み。テスト時にタグを作ると反映が不定なので、タグ(vtiger_freetags)と付与(vtiger_freetagged_objects)を dump に焼き込んで安定化する。[E2E-PAGE] の先頭 taggedCount 件に付与。",
+    "module": "Accounts",
+    "tagName": "E2Eタグ絞込",
+    "taggedNamePrefix": "[E2E-PAGE]",
+    "taggedCount": 7
   }
 }

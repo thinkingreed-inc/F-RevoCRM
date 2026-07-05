@@ -22,11 +22,11 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 ## 1. 現状サマリ
 
-現在の spec ファイルは 73 本。テストは目的別に 4 ディレクトリへ整理。
+現在の spec ファイルは 77 本。テストは目的別に 4 ディレクトリへ整理。
 
 | ディレクトリ | 内容 | 状態 |
 |---|---|---|
-| `test/common/`（27 本） | 全モジュール横断の共通機能（検索/フォロー/タグ+一括タグ/エクスポート/インポート/一括削除+ゴミ箱/クイック作成/クイック編集/一括編集/更新履歴/コメント+一括コメント/関連一覧+関連追加/リスト(CustomView)/概要詳細タブ/クイックプレビュー/カレンダー表示/ログイン失敗/**権限・可視範囲**/**アクション権限**/**項目権限**/**共有ルール**/**ページング・列ソート**/**検索・絞り込み**） | ✅ 実行中 |
+| `test/common/`（31 本） | 全モジュール横断の共通機能（検索/フォロー/タグ+一括タグ/エクスポート/インポート/一括削除+ゴミ箱/クイック作成/クイック編集/一括編集/更新履歴/コメント+一括コメント/関連一覧+関連追加/リスト(CustomView)/概要詳細タブ/クイックプレビュー/カレンダー表示/ログイン失敗/**権限・可視範囲**/**アクション権限**/**項目権限**/**出力権限**/**共有ルール**/**所有者変更**/**タグ絞り込み**/**CustomView条件**/**ページング・列ソート**/**検索・絞り込み**） | ✅ 実行中 |
 | `test/module/`（8 本） | モジュール固有機能（Accounts 一覧表示/カスタマイズ + 各モジュールの詳細固有アクション: Accounts/Contacts/Leads/Potentials/Vendors/HelpDesk のメール・SMS・変換・作成起動、Calendar 作成編集、メール/PDFテンプレート一覧） | 🟡 主要モジュールの起動確認 |
 | `test/admin/*.spec.ts`（36 本） | システム管理画面の C〜I グループ + スモーク（E-02/E-04/F-04/F-08） | ✅/⏭️ 混在 |
 | `test/fr.common.spec.ts` | **17 モジュールの新規作成 / 編集 / 削除**（`FrTest` 汎用ドライバ） | ✅ |
@@ -67,7 +67,13 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
     → `test/common/common.sharing-rule.spec.ts`（何も所有しない観測者ロールへ `Leads: MGRA ロール → 観測者
     read-only` を共有。観測者は MGRA 所有の 4 件だけ見え、MGRB/配下 REPA は見えない=ルールは共有元ロール限定。
     既存の階層テストの件数は不変）
-  → 残作業: エクスポート/インポート権限、一括所有者変更、C-04 SharingAccess（設定画面 UI）の skip 解消。
+  - ✅ **エクスポート/インポート権限（profile2utility）** → `test/common/common.permission-export.spec.ts`
+    （Export 許可ペルソナ=リンク有/Import 画面可、既定拒否の Sales ユーザー=リンク無/Import 権限拒否）
+  - ✅ **所有者変更（Transfer Ownership）** → `test/common/common.masstransfer.spec.ts`
+    （詳細から別ユーザーへ所有者変更し、担当が変わることを確認）
+  - ✅ **組織共有の設定画面（C-04）** → `test/admin/admin.C-04.SharingAccess.spec.ts`（読み取りで Leads=非公開 /
+    Accounts=公開 を確認。保存の全体再計算レースを避け skip 解消）
+  → 権限まわりは概ね網羅。残りは項目単位の write 権限差分など細部のみ。
 
 ---
 
@@ -149,7 +155,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 | C-01 | ユーザー Users | `admin.C-01.user` | ✅ |
 | C-02 | 役割 Roles | `admin.C-02.Roles` | ✅ |
 | C-03 | プロファイル Profiles | `admin.C-03.Profiles` | ✅ |
-| C-04 | 共有ルール SharingAccess | `admin.C-04.SharingAccess` | ⏭️ **skip** → 有効化タスク |
+| C-04 | 共有ルール SharingAccess | `admin.C-04.SharingAccess` | ✅ 読み取りで組織共有(Leads=非公開/Accounts=公開)を確認(保存は全体再計算レースの為避ける) |
 | C-05 | グループ Groups | `admin.C-05.Groups` | ✅ |
 | C-06 | ログイン履歴 LoginHistory | `admin.C-06.LoginHistory` | ✅ |
 
@@ -282,7 +288,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - [x] 一括編集（No.12-2）→ `test/common/common.massedit.spec.ts`（項目を `#include_in_mass_edit_<field>` で編集対象に含め値設定→保存）
 - [x] 一括コメント（No.9-1）→ `test/common/common.masscomment.spec.ts`
 - [x] クイックプレビュー → `test/common/common.quickpreview.spec.ts`。**知見**: プレビューは地図等の外部リソースを読み、オフラインでは当該ページが `networkidle` に到達しない。後始末は先に別画面へ遷移してから行う（プレビューを開いたまま networkidle 待ちするとハングする）
-- [ ] タグで絞り込み（サイドバー「タグ」欄）※調査済・保留。サイドバーの `#module-filters span.tag` はタグの割当状況/キャッシュに依存して表示が不定（作成直後のタグが出ないことがある）。安定条件の特定が必要
+- [x] タグで絞り込み（サイドバー「タグ」欄）→ `test/common/common.tagfilter.spec.ts`。**知見**: 保留原因だった「作成直後のタグが出ない」は、タグ(`vtiger_freetags`)と付与(`vtiger_freetagged_objects`)を dump に焼き込んで安定化。`#listViewTagContainer span.tag` をクリックで `[E2E-PAGE]` の付与 7 件に絞り込める
 - [x] 一覧ソート（列ヘッダ `a.listViewContentHeaderValues[data-columnname]`）→ `test/common/common.paging.spec.ts`。**知見**: 保留原因だった「クリック後 `networkidle` に到達せずハング」は、`waitForLoadState` を使わず**先頭行テキストが期待値になるまでポーリング待ち**（`expect(firstRow).toContainText(...)`）することで回避。列検索で絞り込んでいてもヘッダはソート可能（`SEARCH_MODE_RESULTS` にはならない）。ゼロ埋め連番の `[E2E-PAGE]` 島で昇順/降順を決定論的に検証
 - [x] **一覧ページング（ページ送り / 末尾ページ / 境界ボタン）** → `test/common/common.paging.spec.ts`。`[E2E-PAGE]` 250 件を絞り込み、20 件/ページ・`#NextPageButton`/`#PreviousPageButton` の活性・末尾端数を検証。**知見**: PageJump ドロップダウン(`#pageToJumpSubmit`)は `#PageJumpDropDown li` の `stopImmediatePropagation` で発火しにくいため、末尾へは Next 連打で到達させる方が安定
 - [x] **権限 / 可視範囲（誰のデータが見えるか）** → `test/common/common.permission.spec.ts`。拡充ベースラインのロール階層 + グループ + Private 化 Leads を使い、`loginInIsolatedContext` で各ユーザーの可視件数を検証（§1 の🟡参照）。期待値は `fixtures/seedSpec.ts`
@@ -290,8 +296,9 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - [x] **項目レベル権限（この項目だけ 見えない/編集できない）** → `test/common/common.permission-field.spec.ts`。複製プロファイルで `profile2field.visible=1`(非表示)/`readonly=1`(編集不可)。**知見**: 本ビルドでは readonly 項目は編集画面に **input が出ない**(disabled ではない)ので「詳細で見える(`#Mod_detailView_fieldValue_<f>`)が編集画面に無い」で編集不可を判定。hidden は詳細でも無し
 - [x] **カスタム共有ルール（datashare ROLE→ROLE）** → `test/common/common.sharing-rule.spec.ts`。`Settings_SharingAccess_Rule_Model` で `Leads: MGRA ロール→観測者ロール read-only` を作成。観測者は共有元ロール所有の 4 件だけ見え、他ロール/配下ロールは 0 件。**知見**: メンバー id は `Roles:H7`(単一コロン)、`save()` が `recalculateSharingRules()` で sharing_privileges を再生成
 - [x] **検索/絞り込み（既知件数）** → `test/common/common.filter.spec.ts`。`[E2E-SRCH]` 島（industry 別 + 一意トークン）で、列検索の既知件数・一意トークン単一ヒット・グローバル検索ヒットを検証
-- [ ] 一括所有者変更（Mass Transfer Ownership）※拡充ベースラインで別ユーザーが用意できたので着手可能。権限・閲覧制限の作業とまとめて実施
-- [ ] CustomView の**絞り込み条件**ビルダ（industry=Banking 等）と**ロール共有**※データ島（`[E2E-SRCH]` の industry 分布）は用意済み。条件ビルダ UI の自動化が未
+- [x] 所有者変更（Transfer Ownership）→ `test/common/common.masstransfer.spec.ts`。**知見**: 一覧の検索→選択は並列負荷で不安定な為、作成した record id で詳細画面から直接「担当の変更」→ `#Accounts_detailView_moreAction_LBL_TRANSFER_OWNERSHIP` → モーダル `#transferOwnerId`/`#related_modules`(必須)。担当の反映は詳細タブの `#Accounts_detailView_fieldValue_assigned_user_id` で確認
+- [x] CustomView の**絞り込み条件**ビルダ → `test/common/common.customview-condition.spec.ts`。**知見**: 実行行は「条件を追加」で `.conditionList` に生成（初期 `.conditionRow` は隠しテンプレート）。項目/演算子 select は select2 で隠れる為 `value` 直接設定+`change` 発火。テキスト項目 accountname の contains 条件で決定論的に 10 件検証（picklist は値 UI が select2 化し不安定）。**ロール共有**の CustomView は未
+- [x] エクスポート/インポート権限 → `test/common/common.permission-export.spec.ts`（§1 権限節参照）
 - [ ] タグの変更 / フォロー絞り込み（保留。詳細のタグ追加+削除・一覧一括付与は実装済）※タグ変更は Settings/Tags 上に明確な rename UI が見当たらず、フォロー絞り込みは「フォロー中のみ表示」の絞り込み UI が本ビルドに見当たらないため、UI 特定後に着手
 - [ ] ダッシュボード追加・ウィジェット追加/削除（No.13-1）※ウィジェット追加後の DOM が React 混在で不定・管理者ダッシュボードを汚すため保留
 - [x] 閲覧制限の E2E 化（可視範囲＝組織/役割/グループ共有 + カスタム共有ルール + アクション権限 + 項目レベル権限）→ `common.permission.spec.ts` / `common.sharing-rule.spec.ts` / `common.permission-action.spec.ts` / `common.permission-field.spec.ts`。残りはエクスポート/インポート権限・一括所有者変更・設定画面 C-04 SharingAccess の skip 解消
@@ -316,7 +323,8 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 ### P4: 管理設定の空白・skip 解消
 
-- [ ] skip 中の spec を有効化: C-04 共有ルール / D-06 入力制限 / F-05 構成エディタ / H-01 税の管理（在庫フォーム汚染の後始末込み）
+- [x] C-04 共有ルール（SharingAccess）の skip 解消 → 読み取り検証で有効化（`admin.C-04.SharingAccess`）
+- [ ] skip 中の残り spec を有効化: D-06 入力制限 / F-05 構成エディタ / H-01 税の管理（在庫フォーム汚染の後始末込み）
 - [ ] skip 中（実装確認から）: D-09 レコードタイプ / D-10 申請フィールド / D-11 承認フロー
 - [x] 新規 spec: E-02 スケジューラー / E-04 メールコンバーター / F-04 送信メールサーバー / F-08 SMS通知（各スモーク） → `test/admin/`
 - [ ] 新規 spec（残）: メール・PDF テンプレート
@@ -325,8 +333,8 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 ### P5: 認証・その他
 
 - [x] ログイン失敗系（誤パスワード）（No.1-1） → `test/common/common.login.spec.ts`
-- [ ] パスワード再発行フロー（No.1-2）※調査済・未完。`a.forgotPasswordLink` クリックで再発行フォーム(`#emailId`+送信)が出る想定だが、テスト実行時にトグルが発火せず未成立
-- [ ] MFA 有効化ログインフロー（No.1-1）
+- [ ] パスワード再発行フロー（No.1-2）※🚧 **環境ブロック**。`forgotPassword.php` は再発行リンクを**メール送信**するフローで、SMTP 無しのオフライン環境では UI トグルまでしか検証できずリセット完了(受信リンク)まで到達不可。UI トグル部分のみ将来検討
+- [ ] MFA 有効化ログインフロー（No.1-1）※🚧 **環境ブロック**。TOTP(時刻ベースコード)入力が必須で、シード済み `totp_secret` からテスト内で OTP を算出しない限り UI から駆動不可。対象外（必要なら seed した秘密鍵から OTP 生成して挑戦）
 - [ ] ダッシュボード追加・ウィジェット追加/削除（No.13-1）
 - [x] グローバル検索 → `test/common/common.globalsearch.spec.ts`（ヘッダー検索アイコン→キーワード→統合検索結果）
 - [ ] Documents モジュールの扱いをトリアージ（テスト対象にするか）

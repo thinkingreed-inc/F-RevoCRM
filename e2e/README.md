@@ -145,7 +145,9 @@ data island** として投入します。テスト側は型付きの `e2e/fixtur
 | `[E2E-GRP]` Leads | グループ所有で 4 件 | グループ共有の可視範囲 |
 | 権限ペルソナ(アクション) | Sales Profile を複製し Accounts の権限だけ書換えた制限プロファイル+専用ロール+ユーザー 3 種（`e2e_p_hidden`=非表示 / `e2e_p_readonly`=閲覧のみ / `e2e_p_nodelete`=削除不可、固定パス `Test1234/`） | プロファイル/役割による アクション権限（作成/編集/削除/表示の可否） |
 | 権限ペルソナ(項目) | 複製プロファイルで Accounts の項目だけ制限したユーザー `e2e_p_field`（`phone`=非表示 / `website`=編集不可） | 項目レベル権限（この項目だけ 見えない/編集できない） |
+| 権限ペルソナ(出力) | Accounts の Export/Import を許可した `e2e_p_export`（既定拒否の Sales ユーザーと対比） | エクスポート/インポート権限 |
 | 共有ルール+観測者 | 何も所有しない `e2e_observer` + カスタム共有ルール `Leads: 1課長(MGRA)ロール → 観測者ロール read-only`（`vtiger_datashare_role2role`） | カスタム共有ルール（datashare）による可視範囲 |
+| タグ絞り込み島 | タグ `E2Eタグ絞込`（`vtiger_freetags`）を `[E2E-PAGE]` の先頭 7 件に付与 | サイドバーのタグ絞り込み |
 | `[E2E-PAGE]` Accounts | ゼロ埋め連番 250 件（admin 所有） | ページング / 列ソート |
 | `[E2E-SRCH]` Accounts | industry 6 種 × 10 件 + 一意トークン 1 件 | 検索 / 絞り込み |
 
@@ -160,6 +162,8 @@ data island** として投入します。テスト側は型付きの `e2e/fixtur
   アプリの共有エンジンで一致確認済み。
 
 実証スペック: `test/common/common.permission.spec.ts`（可視範囲）/ `common.permission-action.spec.ts`
-（アクション権限: 非表示/閲覧のみ/削除不可）/ `common.permission-field.spec.ts`（項目レベル権限）/
-`common.sharing-rule.spec.ts`（カスタム共有ルール）/ `common.paging.spec.ts`（ページング・ソート）/
-`common.filter.spec.ts`（検索・絞り込み）。
+（アクション権限）/ `common.permission-field.spec.ts`（項目レベル権限）/ `common.permission-export.spec.ts`
+（エクスポート/インポート権限）/ `common.sharing-rule.spec.ts`（カスタム共有ルール）/
+`common.masstransfer.spec.ts`（所有者変更）/ `common.tagfilter.spec.ts`（タグ絞り込み）/
+`common.customview-condition.spec.ts`（CustomView 絞り込み条件）/ `common.paging.spec.ts`（ページング・ソート）/
+`common.filter.spec.ts`（検索・絞り込み）。組織共有の状態は設定画面でも `test/admin/admin.C-04.SharingAccess.spec.ts` が確認。

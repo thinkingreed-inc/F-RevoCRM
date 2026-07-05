@@ -546,4 +546,59 @@ if ($adb->num_rows($existsRule) > 0) {
     out("作成: 共有ルール {$srule['module']} {$srule['sourceRoleName']}({$sourceRoleId})→観測者({$observerRoleId}) read-only");
 }
 
+// ============================================================================
+// 12. エクスポート/インポート権限ペルソナ(profile2utility)
+//     Sales Profile を複製し Accounts の Export(activityid 6)/Import(5) を拒否する。
+// ============================================================================
+out('--- エクスポート/インポート権限ペルソナ ---');
+$eip = $spec['exportImportPerm'];
+$eipTab = (int) $adb->query_result(
+    $adb->pquery('SELECT tabid FROM vtiger_tab WHERE name=?', array($eip['module'])), 0, 'tabid');
+if (findUserIdByName($eip['userName'])) {
+    out("既存ペルソナ流用: {$eip['userName']} (skip)");
+} else {
+    $pid = cloneProfile($eip['profileName'], 2);
+    // Sales Profile は既定で Export/Import 拒否。このペルソナは許可(permission=0)にする。
+    $adb->pquery('UPDATE vtiger_profile2utility SET permission=0 WHERE profileid=? AND tabid=? AND activityid IN (5,6)', array($pid, $eipTab));
+    $roleId = findRoleIdByName($eip['roleName']);
+    if (!$roleId) {
+        $parent = Settings_Roles_Record_Model::getInstanceById('H2');
+        $child = new Settings_Roles_Record_Model();
+        $child->set('rolename', $eip['roleName']);
+        $child->set('allowassignedrecordsto', 2);
+        $child->set('profileIds', array($pid));
+        $parent->addChildRole($child);
+        $roleId = $child->getId();
+        if (!$roleId) { $roleId = findRoleIdByName($eip['roleName']); }
+    }
+    $uid = createE2EUser($eip['userName'], $eip['roleName'], $roleId);
+    out("作成: {$eip['userName']} profile={$pid}(export/import 許可) role={$roleId} user={$uid}");
+}
+
+// ============================================================================
+// 13. タグ絞り込み島(vtiger_freetags + vtiger_freetagged_objects)
+//     テスト時にタグを作ると反映が不定なので、タグと付与を dump に焼き込んで安定化する。
+// ============================================================================
+out('--- タグ絞り込み島 ---');
+$tf = $spec['tagFilter'];
+$tagExists = $adb->pquery('SELECT id FROM vtiger_freetags WHERE tag=?', array($tf['tagName']));
+if ($adb->num_rows($tagExists) > 0) {
+    out("既存タグ流用: {$tf['tagName']} (skip)");
+} else {
+    $tagId = $adb->getUniqueID('vtiger_freetags');
+    $adb->pquery('INSERT INTO vtiger_freetags(id, tag, raw_tag, visibility, owner) VALUES (?,?,?,?,?)',
+        array($tagId, $tf['tagName'], $tf['tagName'], 'Public', 1));
+    // [E2E-PAGE] の先頭 taggedCount 件(名前昇順=連番順)に付与
+    $rs = $adb->pquery(
+        'SELECT a.accountid FROM vtiger_account a JOIN vtiger_crmentity e ON e.crmid=a.accountid WHERE e.deleted=0 AND a.accountname LIKE ? ORDER BY a.accountname ASC LIMIT ?',
+        array($tf['taggedNamePrefix'] . '%', $tf['taggedCount']));
+    $n = $adb->num_rows($rs);
+    for ($i = 0; $i < $n; $i++) {
+        $crmid = (int) $adb->query_result($rs, $i, 'accountid');
+        $adb->pquery('INSERT INTO vtiger_freetagged_objects(tag_id, tagger_id, object_id, tagged_on, module) VALUES (?,?,?,NOW(),?)',
+            array($tagId, 1, $crmid, $tf['module']));
+    }
+    out("作成: タグ {$tf['tagName']} = {$tagId} を {$n} 件に付与");
+}
+
 out('=== 完了。setup/scripts/RecreateUserFiles.php を実行してキャッシュを再生成すること ===');
