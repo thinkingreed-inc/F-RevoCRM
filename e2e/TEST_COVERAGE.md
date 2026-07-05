@@ -22,11 +22,11 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 ## 1. 現状サマリ
 
-現在の spec ファイルは 71 本。テストは目的別に 4 ディレクトリへ整理。
+現在の spec ファイルは 73 本。テストは目的別に 4 ディレクトリへ整理。
 
 | ディレクトリ | 内容 | 状態 |
 |---|---|---|
-| `test/common/`（25 本） | 全モジュール横断の共通機能（検索/フォロー/タグ+一括タグ/エクスポート/インポート/一括削除+ゴミ箱/クイック作成/クイック編集/一括編集/更新履歴/コメント+一括コメント/関連一覧+関連追加/リスト(CustomView)/概要詳細タブ/クイックプレビュー/カレンダー表示/ログイン失敗/**権限・可視範囲**/**アクション権限**/**ページング・列ソート**/**検索・絞り込み**） | ✅ 実行中 |
+| `test/common/`（27 本） | 全モジュール横断の共通機能（検索/フォロー/タグ+一括タグ/エクスポート/インポート/一括削除+ゴミ箱/クイック作成/クイック編集/一括編集/更新履歴/コメント+一括コメント/関連一覧+関連追加/リスト(CustomView)/概要詳細タブ/クイックプレビュー/カレンダー表示/ログイン失敗/**権限・可視範囲**/**アクション権限**/**項目権限**/**共有ルール**/**ページング・列ソート**/**検索・絞り込み**） | ✅ 実行中 |
 | `test/module/`（8 本） | モジュール固有機能（Accounts 一覧表示/カスタマイズ + 各モジュールの詳細固有アクション: Accounts/Contacts/Leads/Potentials/Vendors/HelpDesk のメール・SMS・変換・作成起動、Calendar 作成編集、メール/PDFテンプレート一覧） | 🟡 主要モジュールの起動確認 |
 | `test/admin/*.spec.ts`（36 本） | システム管理画面の C〜I グループ + スモーク（E-02/E-04/F-04/F-08） | ✅/⏭️ 混在 |
 | `test/fr.common.spec.ts` | **17 モジュールの新規作成 / 編集 / 削除**（`FrTest` 汎用ドライバ） | ✅ |
@@ -59,8 +59,15 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
     3 ペルソナ: 非表示=権限拒否画面 / 閲覧のみ=追加・編集・削除ボタン無 / 削除不可=削除だけ無。
     制限された操作の UI 要素はサーバ側で DOM から除外されるため `toHaveCount(0)` で判定。dump ビルド時に
     `isPermitted` で期待可否を一致確認済み）
-  - ❌ **項目レベルアクセス**（項目の表示・編集可否）は未（同じプロファイル複製方式で拡張可能。データ基盤あり）
-  → 残作業: 項目レベル権限、エクスポート/インポート権限、一括所有者変更。§4 C グループ（共有ルール C-04 は現状 skip）と連動。
+  - ✅ **項目レベルアクセス**（この項目だけ 見えない/編集できない）
+    → `test/common/common.permission-field.spec.ts`（複製プロファイルで `phone`=非表示 /
+    `website`=編集不可。詳細で見える/編集画面に出る の 3 状態を切り分け: 通常=両方○ / readonly=詳細のみ○ /
+    hidden=両方✗。`profile2field.visible=1`→非表示・`readonly=1`→編集不可）
+  - ✅ **カスタム共有ルール（datashare ROLE→ROLE）**
+    → `test/common/common.sharing-rule.spec.ts`（何も所有しない観測者ロールへ `Leads: MGRA ロール → 観測者
+    read-only` を共有。観測者は MGRA 所有の 4 件だけ見え、MGRB/配下 REPA は見えない=ルールは共有元ロール限定。
+    既存の階層テストの件数は不変）
+  → 残作業: エクスポート/インポート権限、一括所有者変更、C-04 SharingAccess（設定画面 UI）の skip 解消。
 
 ---
 
@@ -280,12 +287,14 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - [x] **一覧ページング（ページ送り / 末尾ページ / 境界ボタン）** → `test/common/common.paging.spec.ts`。`[E2E-PAGE]` 250 件を絞り込み、20 件/ページ・`#NextPageButton`/`#PreviousPageButton` の活性・末尾端数を検証。**知見**: PageJump ドロップダウン(`#pageToJumpSubmit`)は `#PageJumpDropDown li` の `stopImmediatePropagation` で発火しにくいため、末尾へは Next 連打で到達させる方が安定
 - [x] **権限 / 可視範囲（誰のデータが見えるか）** → `test/common/common.permission.spec.ts`。拡充ベースラインのロール階層 + グループ + Private 化 Leads を使い、`loginInIsolatedContext` で各ユーザーの可視件数を検証（§1 の🟡参照）。期待値は `fixtures/seedSpec.ts`
 - [x] **アクション権限（プロファイル/役割: 非表示 / 閲覧のみ / 削除不可）** → `test/common/common.permission-action.spec.ts`。Sales Profile を複製し Accounts の権限だけ書換えた 3 ペルソナで、権限拒否画面・追加/編集/削除ボタンの有無を検証。**知見**: 制限操作の UI 要素はサーバ側で DOM から除外されるので `toHaveCount(0)`。権限拒否は HTTP 200 + `span.genHeaderSmall`/`img[src*="denied.gif"]` で判定
+- [x] **項目レベル権限（この項目だけ 見えない/編集できない）** → `test/common/common.permission-field.spec.ts`。複製プロファイルで `profile2field.visible=1`(非表示)/`readonly=1`(編集不可)。**知見**: 本ビルドでは readonly 項目は編集画面に **input が出ない**(disabled ではない)ので「詳細で見える(`#Mod_detailView_fieldValue_<f>`)が編集画面に無い」で編集不可を判定。hidden は詳細でも無し
+- [x] **カスタム共有ルール（datashare ROLE→ROLE）** → `test/common/common.sharing-rule.spec.ts`。`Settings_SharingAccess_Rule_Model` で `Leads: MGRA ロール→観測者ロール read-only` を作成。観測者は共有元ロール所有の 4 件だけ見え、他ロール/配下ロールは 0 件。**知見**: メンバー id は `Roles:H7`(単一コロン)、`save()` が `recalculateSharingRules()` で sharing_privileges を再生成
 - [x] **検索/絞り込み（既知件数）** → `test/common/common.filter.spec.ts`。`[E2E-SRCH]` 島（industry 別 + 一意トークン）で、列検索の既知件数・一意トークン単一ヒット・グローバル検索ヒットを検証
 - [ ] 一括所有者変更（Mass Transfer Ownership）※拡充ベースラインで別ユーザーが用意できたので着手可能。権限・閲覧制限の作業とまとめて実施
 - [ ] CustomView の**絞り込み条件**ビルダ（industry=Banking 等）と**ロール共有**※データ島（`[E2E-SRCH]` の industry 分布）は用意済み。条件ビルダ UI の自動化が未
 - [ ] タグの変更 / フォロー絞り込み（保留。詳細のタグ追加+削除・一覧一括付与は実装済）※タグ変更は Settings/Tags 上に明確な rename UI が見当たらず、フォロー絞り込みは「フォロー中のみ表示」の絞り込み UI が本ビルドに見当たらないため、UI 特定後に着手
 - [ ] ダッシュボード追加・ウィジェット追加/削除（No.13-1）※ウィジェット追加後の DOM が React 混在で不定・管理者ダッシュボードを汚すため保留
-- [x] 閲覧制限の E2E 化（可視範囲＝組織/役割/グループ共有 + アクション権限＝プロファイル/役割）→ `common.permission.spec.ts` / `common.permission-action.spec.ts`。残るは**項目レベルアクセス**（項目の表示・編集可否）で、同じプロファイル複製方式で拡張可能（データ基盤あり）
+- [x] 閲覧制限の E2E 化（可視範囲＝組織/役割/グループ共有 + カスタム共有ルール + アクション権限 + 項目レベル権限）→ `common.permission.spec.ts` / `common.sharing-rule.spec.ts` / `common.permission-action.spec.ts` / `common.permission-field.spec.ts`。残りはエクスポート/インポート権限・一括所有者変更・設定画面 C-04 SharingAccess の skip 解消
 
 ### P2: 在庫系モジュールと連携機能
 

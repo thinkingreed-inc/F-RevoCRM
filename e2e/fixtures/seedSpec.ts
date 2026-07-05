@@ -62,6 +62,26 @@ export interface SeedSpec {
     module: string;
     personas: ActionPersona[];
   };
+  fieldPerm: {
+    module: string;
+    userName: string;
+    roleName: string;
+    profileName: string;
+    hiddenField: string;
+    readonlyField: string;
+    normalField: string;
+  };
+  sharingRule: {
+    module: string;
+    observerUserName: string;
+    observerRoleName: string;
+    sourceRoleName: string;
+    leadPrefix: string;
+    sharedOwnerCode: string;
+    notSharedOwnerCodes: string[];
+    expectedSharedCount: number;
+    expectedNotSharedCount: number;
+  };
 }
 
 /** プロファイル(役割)によるアクション権限ペルソナ。 */

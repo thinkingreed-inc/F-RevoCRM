@@ -457,4 +457,93 @@ foreach ($ap['personas'] as $persona) {
     out("作成: {$persona['userName']} profile={$pid}({$persona['restriction']}) role={$roleId} user={$uid}");
 }
 
+// ============================================================================
+// 10. 項目レベル権限ペルソナ(この項目だけ 非表示 / 編集不可)
+//     Sales Profile を複製し Accounts の特定項目だけ profile2field で制限する
+//     (モジュール/アクションは通常のまま)。visible=1 で非表示、readonly=1 で編集不可。
+// ============================================================================
+function fieldIdOf($tabid, $name) {
+    global $adb;
+    $r = $adb->pquery('SELECT fieldid FROM vtiger_field WHERE tabid=? AND fieldname=?', array($tabid, $name));
+    return ($adb->num_rows($r) > 0) ? (int) $adb->query_result($r, 0, 'fieldid') : null;
+}
+
+out('--- 項目レベル権限ペルソナ ---');
+$fp = $spec['fieldPerm'];
+$fpTab = (int) $adb->query_result(
+    $adb->pquery('SELECT tabid FROM vtiger_tab WHERE name=?', array($fp['module'])), 0, 'tabid');
+if (findUserIdByName($fp['userName'])) {
+    out("既存ペルソナ流用: {$fp['userName']} (skip)");
+} else {
+    $pid = cloneProfile($fp['profileName'], 2);
+    $hid = fieldIdOf($fpTab, $fp['hiddenField']);
+    $rid = fieldIdOf($fpTab, $fp['readonlyField']);
+    // 非表示: visible=1 / 編集不可: visible=0(表示可) かつ readonly=1
+    $adb->pquery('UPDATE vtiger_profile2field SET visible=1 WHERE profileid=? AND fieldid=?', array($pid, $hid));
+    $adb->pquery('UPDATE vtiger_profile2field SET visible=0, readonly=1 WHERE profileid=? AND fieldid=?', array($pid, $rid));
+    $roleId = findRoleIdByName($fp['roleName']);
+    if (!$roleId) {
+        $parent = Settings_Roles_Record_Model::getInstanceById('H2');
+        $child = new Settings_Roles_Record_Model();
+        $child->set('rolename', $fp['roleName']);
+        $child->set('allowassignedrecordsto', 2);
+        $child->set('profileIds', array($pid));
+        $parent->addChildRole($child);
+        $roleId = $child->getId();
+        if (!$roleId) { $roleId = findRoleIdByName($fp['roleName']); }
+    }
+    $uid = createE2EUser($fp['userName'], $fp['roleName'], $roleId);
+    out("作成: {$fp['userName']} profile={$pid}(hide {$fp['hiddenField']} / readonly {$fp['readonlyField']}) role={$roleId} user={$uid}");
+}
+
+// ============================================================================
+// 11. カスタム共有ルール(ROLE→ROLE datashare)+ 観測者ユーザー
+//     何も所有しない観測者ロールに、Leads の『1課長(MGRA)ロール所有』を read-only 共有する。
+//     階層では見えないレコードが共有ルールで見えるようになることを検証する
+//     (source=共有元ロール, target=受け手ロール。既存の階層テストの件数は変えない)。
+// ============================================================================
+require_once 'modules/Settings/SharingAccess/models/Rule.php';
+require_once 'modules/Settings/SharingAccess/models/RuleMember.php';
+require_once 'modules/Settings/SharingAccess/models/Module.php';
+
+out('--- 共有ルール(観測者) ---');
+$srule = $spec['sharingRule'];
+$observerRoleId = findRoleIdByName($srule['observerRoleName']);
+if (!$observerRoleId) {
+    $parent = Settings_Roles_Record_Model::getInstanceById('H2');
+    $child = new Settings_Roles_Record_Model();
+    $child->set('rolename', $srule['observerRoleName']);
+    $child->set('allowassignedrecordsto', 2);
+    $child->set('profileIds', array(2)); // 通常 Sales Profile(Leads 閲覧可)
+    $parent->addChildRole($child);
+    $observerRoleId = $child->getId();
+    if (!$observerRoleId) { $observerRoleId = findRoleIdByName($srule['observerRoleName']); }
+}
+if (!findUserIdByName($srule['observerUserName'])) {
+    $ouid = createE2EUser($srule['observerUserName'], $srule['observerRoleName'], $observerRoleId);
+    out("作成: 観測者 {$srule['observerUserName']} role={$observerRoleId} user={$ouid}");
+} else {
+    out("既存: 観測者 {$srule['observerUserName']} (skip)");
+}
+
+$sourceRoleId = findRoleIdByName($srule['sourceRoleName']);
+$leadsTab = (int) $adb->query_result(
+    $adb->pquery('SELECT tabid FROM vtiger_tab WHERE name=?', array($srule['module'])), 0, 'tabid');
+$existsRule = $adb->pquery(
+    'SELECT r.shareid FROM vtiger_datashare_role2role r JOIN vtiger_datashare_module_rel m ON m.shareid=r.shareid WHERE m.tabid=? AND r.share_roleid=? AND r.to_roleid=?',
+    array($leadsTab, $sourceRoleId, $observerRoleId));
+if ($adb->num_rows($existsRule) > 0) {
+    out("既存: 共有ルール {$srule['sourceRoleName']}→観測者 (skip)");
+} else {
+    $rule = new Settings_SharingAccess_Rule_Model();
+    $rule->setModule($srule['module']);
+    $rule->set('source_id', Settings_SharingAccess_RuleMember_Model::getQualifiedId(
+        Settings_SharingAccess_RuleMember_Model::RULE_MEMBER_TYPE_ROLES, $sourceRoleId));
+    $rule->set('target_id', Settings_SharingAccess_RuleMember_Model::getQualifiedId(
+        Settings_SharingAccess_RuleMember_Model::RULE_MEMBER_TYPE_ROLES, $observerRoleId));
+    $rule->set('permission', Settings_SharingAccess_Rule_Model::READ_ONLY_PERMISSION);
+    $rule->save(); // 両テーブル書込 + recalculateSharingRules(共有キャッシュ再生成)
+    out("作成: 共有ルール {$srule['module']} {$srule['sourceRoleName']}({$sourceRoleId})→観測者({$observerRoleId}) read-only");
+}
+
 out('=== 完了。setup/scripts/RecreateUserFiles.php を実行してキャッシュを再生成すること ===');

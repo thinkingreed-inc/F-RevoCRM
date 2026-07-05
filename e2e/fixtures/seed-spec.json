@@ -97,5 +97,29 @@
         "expect": { "moduleVisible": true, "canCreate": true, "canEdit": true, "canDelete": false }
       }
     ]
+  },
+
+  "fieldPerm": {
+    "_comment": "項目レベル権限。Sales Profile 複製プロファイルで Accounts の特定項目だけ制限(モジュール/アクションは通常)。この項目だけ見えない/編集できない を検証する。",
+    "module": "Accounts",
+    "userName": "e2e_p_field",
+    "roleName": "E2E権限_項目制限",
+    "profileName": "E2E_権限_Accounts項目制限",
+    "hiddenField": "phone",
+    "readonlyField": "website",
+    "normalField": "accountname"
+  },
+
+  "sharingRule": {
+    "_comment": "カスタム共有ルール(vtiger_datashare_role2role)。何も所有しない観測者ロールに、Leads の『1課長(MGRA)ロール所有レコード』を read-only 共有する。階層では見えないものがルールで見えるようになることを検証(既存の階層テストの件数は変えない)。",
+    "module": "Leads",
+    "observerUserName": "e2e_observer",
+    "observerRoleName": "E2E共有_観測者",
+    "sourceRoleName": "E2E営業1課長",
+    "leadPrefix": "[E2E-PERM]",
+    "sharedOwnerCode": "MGRA",
+    "notSharedOwnerCodes": ["MGRB", "REPA"],
+    "expectedSharedCount": 4,
+    "expectedNotSharedCount": 0
   }
 }
