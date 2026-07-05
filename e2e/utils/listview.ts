@@ -78,6 +78,25 @@ export async function listSearch(
   await page.waitForLoadState("networkidle");
 }
 
+/**
+ * 列検索して結果件数が期待値になることを確認する（高負荷での反映ラグに強い）。
+ *
+ * `listSearch` は networkidle 待ちだが、最大並列/外部リソース待ちの環境では検索の
+ * 反映がずれて件数 assert がレースすることがある。検索→件数確認を toPass でリトライし、
+ * 期待件数に収束するまで再検索する。件数系の島テスト（権限/検索/共有ルール/タグ）で使う。
+ */
+export async function expectSearchCount(
+  page: Page,
+  field: string,
+  value: string,
+  count: number
+): Promise<void> {
+  await expect(async () => {
+    await listSearch(page, field, value);
+    await expect(listRows(page)).toHaveCount(count, { timeout: 3000 });
+  }).toPass({ timeout: 25000 });
+}
+
 /** 一覧の検索条件をクリアする(セッションに残るため後始末に使う)。 */
 export async function clearListSearch(page: Page): Promise<void> {
   await page

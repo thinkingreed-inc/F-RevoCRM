@@ -1,9 +1,8 @@
-import { test, expect } from "@playwright/test";
+import { test } from "@playwright/test";
 import { loginInIsolatedContext } from "../../utils/settings";
 import {
   gotoList,
-  listRows,
-  listSearch,
+  expectSearchCount,
   clearListSearch,
 } from "../../utils/listview";
 import { seedSpec, passwordFor } from "../../fixtures/seedSpec";
@@ -41,15 +40,23 @@ test.describe("共通: カスタム共有ルール (datashare ROLE→ROLE)", () 
     try {
       // 共有される MGRA 所有 → 見える
       await gotoList(page, sr.module);
-      await listSearch(page, "company", `${sr.leadPrefix} ${sr.sharedOwnerCode}`);
-      await expect(listRows(page)).toHaveCount(sr.expectedSharedCount);
+      await expectSearchCount(
+        page,
+        "company",
+        `${sr.leadPrefix} ${sr.sharedOwnerCode}`,
+        sr.expectedSharedCount
+      );
       await clearListSearch(page);
 
       // 共有されない他ロール/配下ロール所有 → 見えない
       for (const code of sr.notSharedOwnerCodes) {
         await gotoList(page, sr.module);
-        await listSearch(page, "company", `${sr.leadPrefix} ${code}`);
-        await expect(listRows(page)).toHaveCount(sr.expectedNotSharedCount);
+        await expectSearchCount(
+          page,
+          "company",
+          `${sr.leadPrefix} ${code}`,
+          sr.expectedNotSharedCount
+        );
         await clearListSearch(page);
       }
     } finally {

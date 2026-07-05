@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { loginInIsolatedContext } from "../../utils/settings";
-import { gotoList, listRows, listSearch, clearListSearch } from "../../utils/listview";
+import { gotoList, expectSearchCount, clearListSearch } from "../../utils/listview";
 import { seedSpec, passwordFor } from "../../fixtures/seedSpec";
 
 /**
@@ -36,14 +36,22 @@ test.describe("共通: 権限/可視範囲 (Private + ロール階層/グルー�
       try {
         // [E2E-PERM]: ロール階層による可視範囲
         await gotoList(page, "Leads");
-        await listSearch(page, "company", perm.prefix);
-        await expect(listRows(page)).toHaveCount(perm.expectedVisible[userName]);
+        await expectSearchCount(
+          page,
+          "company",
+          perm.prefix,
+          perm.expectedVisible[userName]
+        );
         await clearListSearch(page);
 
         // [E2E-GRP]: グループ所有レコードの可視範囲(メンバーのみ)
         await gotoList(page, "Leads");
-        await listSearch(page, "company", grp.prefix);
-        await expect(listRows(page)).toHaveCount(grp.expectedVisible[userName]);
+        await expectSearchCount(
+          page,
+          "company",
+          grp.prefix,
+          grp.expectedVisible[userName]
+        );
       } finally {
         await context.close();
       }

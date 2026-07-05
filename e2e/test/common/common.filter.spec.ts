@@ -1,5 +1,10 @@
 import { test, expect } from "../../fixtures/isolated";
-import { gotoList, listRows, listSearch, clearListSearch } from "../../utils/listview";
+import {
+  gotoList,
+  listRows,
+  expectSearchCount,
+  clearListSearch,
+} from "../../utils/listview";
 import { url } from "../../utils/util";
 import { seedSpec } from "../../fixtures/seedSpec";
 
@@ -23,15 +28,18 @@ test.describe("共通: 検索/絞り込み(既知件数)", () => {
     page,
   }) => {
     await gotoList(page, "Accounts");
-    await listSearch(page, "accountname", `${sr.prefix} ${cleanIndustry}`);
-    await expect(listRows(page)).toHaveCount(sr.perIndustry);
+    await expectSearchCount(
+      page,
+      "accountname",
+      `${sr.prefix} ${cleanIndustry}`,
+      sr.perIndustry
+    );
     await clearListSearch(page);
   });
 
   test("列検索: 一意トークンで単一ヒット", async ({ page }) => {
     await gotoList(page, "Accounts");
-    await listSearch(page, "accountname", sr.globalToken);
-    await expect(listRows(page)).toHaveCount(1);
+    await expectSearchCount(page, "accountname", sr.globalToken, 1);
     await expect(
       listRows(page).filter({ hasText: sr.globalToken }).first()
     ).toBeVisible();
