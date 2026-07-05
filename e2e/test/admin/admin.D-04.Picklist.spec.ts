@@ -44,9 +44,11 @@ test.describe.serial("管理: 選択肢エディタ (Picklist)", () => {
 
     await modal(page).locator('button.btn-success[name="saveButton"]').click();
 
-    // 一覧に追加した値が現れること
-    await gotoSettings(page, listParams);
-    await expect(row(page, value)).toBeVisible();
+    // 一覧に追加した値が現れること(AJAX保存の反映ラグに強くするため開き直してリトライ)
+    await expect(async () => {
+      await gotoSettings(page, listParams);
+      await expect(row(page, value)).toBeVisible({ timeout: 3000 });
+    }).toPass({ timeout: 25000 });
   });
 
   test("選択肢の編集", async ({ page }) => {
@@ -59,10 +61,12 @@ test.describe.serial("管理: 選択肢エディタ (Picklist)", () => {
     await modal(page).locator('input[name="renamedValue"]').fill(editedValue);
     await modal(page).locator('button.btn-success[name="saveButton"]').click();
 
-    // 新しい値が現れ、元の値は消えていること
-    await gotoSettings(page, listParams);
-    await expect(row(page, editedValue)).toBeVisible();
-    await expect(row(page, value)).toHaveCount(0);
+    // 新しい値が現れ、元の値は消えていること(反映ラグに強く)
+    await expect(async () => {
+      await gotoSettings(page, listParams);
+      await expect(row(page, editedValue)).toBeVisible({ timeout: 3000 });
+      await expect(row(page, value)).toHaveCount(0, { timeout: 3000 });
+    }).toPass({ timeout: 25000 });
   });
 
   test("選択肢の削除", async ({ page }) => {
@@ -75,8 +79,10 @@ test.describe.serial("管理: 選択肢エディタ (Picklist)", () => {
     // 削除確認モーダルの削除ボタン
     await modal(page).locator('button.btn-danger[name="saveButton"]').click();
 
-    // 一覧から削除した値が消えていること
-    await gotoSettings(page, listParams);
-    await expect(row(page, editedValue)).toHaveCount(0);
+    // 一覧から削除した値が消えていること(反映ラグに強く)
+    await expect(async () => {
+      await gotoSettings(page, listParams);
+      await expect(row(page, editedValue)).toHaveCount(0, { timeout: 3000 });
+    }).toPass({ timeout: 25000 });
   });
 });
