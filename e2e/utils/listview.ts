@@ -9,14 +9,28 @@ import { url } from "./util";
  * ListViewRecordActions.tpl と実画面 DOM から確定したものを使う。
  */
 
-/** モジュールの一覧画面へ遷移する(既定アプリは MARKETING)。 */
+/**
+ * モジュール一覧の「すべて(All)」CustomView の cvid。
+ *
+ * 並列実行では全ワーカーが同一 admin でログインするため、CustomView 作成系テスト
+ * (common.customview* が新規フィルタ CV を作り view=List&viewname=NN へ遷移)が
+ * admin の「現在のリスト」をフィルタ付き CV に切り替えると、viewname 無指定の一覧が
+ * そのフィルタ CV を表示し、島テストの列検索が 0 件になる(workers を上げると多発)。
+ * 一覧を All に固定してこの汚染を防ぐ。値は拡充ベースライン dump の All CV(cvid)。
+ */
+const MODULE_ALL_VIEW: Record<string, string> = { Accounts: "4" };
+
+/** モジュールの一覧画面へ遷移する(既定アプリは MARKETING)。既知モジュールは All CV に固定。 */
 export async function gotoList(
   page: Page,
   moduleName: string,
-  app = "MARKETING"
+  app = "MARKETING",
+  viewname?: string
 ): Promise<void> {
+  const cv = viewname ?? MODULE_ALL_VIEW[moduleName];
+  const vn = cv ? `&viewname=${cv}` : "";
   await page.goto(
-    url(`index.php?module=${moduleName}&view=List&app=${app}`)
+    url(`index.php?module=${moduleName}&view=List&app=${app}${vn}`)
   );
   await page.waitForLoadState("networkidle");
 }
