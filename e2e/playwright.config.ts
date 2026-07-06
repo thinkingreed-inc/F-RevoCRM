@@ -18,8 +18,12 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* CI の並列度。per-worker セッション分離(fixtures/isolated.ts)により並列実行が安全に
+   * なったため 1→2 に引き上げ、テスト実行時間を短縮する。
+   * ※ workers=4 まで上げると common.filter の「列検索: 一意トークンで単一ヒット」が
+   *   検索反映レースで恒常的に落ちる(retries でも回復しない)。列検索系の並列耐性を
+   *   固めるまでは 2 が安全上限(2 は実測でフレークなし)。 */
+  workers: process.env.CI ? 2 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   // CI では GitHub 注釈(失敗をrun/PRにインライン表示) + HTMLレポート(artifact) +
   // JSON(ジョブサマリ生成用) を出す。ローカルは従来どおり HTML のみ。
