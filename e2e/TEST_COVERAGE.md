@@ -3,7 +3,7 @@
 F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在し / どこまでテストできているか / これから何を書くべきか** を一覧化したドキュメント。
 新しいテストを追加したら、このファイルの該当行のステータスと「タスク」を更新すること。
 
-- 対象コード時点: `feature/e2e-共通機能追加` ブランチ（2026-07-03 現在）
+- 対象コード時点: `feature/e2e-共通機能追加` ブランチ（2026-07-06 現在）
 - 機能一覧の No. は社内の「機能一覧」（1-1〜78-1）に対応。コードから追加で発見した機能は §6 に別掲。
 - 調査方法: 既存 `e2e/test/` の読み取り＋ `modules/` のコード調査（業務モジュール / 管理設定 / 横断機能の 3 系統を並行調査）に加え、テスト環境（`E2E_BASE_URL`）に admin でログインして**実画面で裏取り**（設定メニュー・各画面の到達性・詳細画面の固有アクション）。
 - **実機検証の前提**: ローカル DB はデータが少なく、レコードが存在するのは `Accounts / Products / Services / Project / Vendors`（＝ `seed.setup.ts` の対象）のみ。そのため詳細画面の固有アクションを実データで確認できたのは Accounts・Vendors 等に限られ、他モジュールは**コード確認済（実データ未検証）**扱い。
@@ -32,18 +32,20 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 | `test/fr.common.spec.ts` | **17 モジュールの新規作成 / 編集 / 削除**（`FrTest` 汎用ドライバ） | ✅ |
 | `test/general.spec.ts` | トップ（ダッシュボード）要素、サイドバー開閉 | 🟡 表示確認のみ |
 
-> 並行実行対応: `test/common/` `test/module/` はワーカー単位で個別ログインする `fixtures/isolated.ts` を使用し、各テストが専用レコードを作成→操作→削除する。API セッション取得は `auth.setup` で一度だけ行い使い回す（`--workers=1` 不要）。
+> 並行実行対応: `test/common/` `test/module/` はワーカー単位で個別ログインする `fixtures/isolated.ts` を使用し、各テストが専用レコードを作成→操作→削除する。API セッション取得は `auth.setup` で一度だけ行い使い回す。
+> **CI 並列度は `workers=4`**（`playwright.config.ts`, `retries=2`）。高並列で顕在化する「待ち条件の脆さ」は条件ベース待ちへ順次根治済み（列検索の All CV 固定 / 保存前のモーダル閉じ保証 / 条件追加ボタンの再試行 / サイドバー CV の「もっと」展開 / 条件値の確定待ち）。CI 実行時間は約 14.8 分（workers=1）→ **6.8 分**（workers=4）。残る `networkidle` 依存は新たな flaky が出たら都度 条件ベース待ちへ置換していく方針。
 
 **共通 CRUD の対象モジュール（17）**: Accounts, Contacts, Potentials, Leads, Products, Assets, Campaigns, Dailyreports, Faq, HelpDesk, PriceBooks, Project, ProjectMilestone, ProjectTask, ServiceContracts, Services, Vendors。
 
-**共通 CRUD の対象外**: 在庫（Inventory）系 **Invoice / Quotes / SalesOrder / PurchaseOrder**。
-理由（`fr.common.spec.ts` の注記）: 明細（productid）の登録に商品検索オートコンプリートが必要だが、本環境では連番検索・名称検索とも 0 件を返し、明細を JS 直挿ししても合計が 0 のまま保存ボタンが無効化されるため。→ 商品検索が機能する環境が用意できれば対象に戻せる。
+**共通 CRUD（`fr.common` / `FrTest`）の対象外**: 在庫（Inventory）系 **Invoice / Quotes / SalesOrder / PurchaseOrder**。
+理由: 明細（productid）を含む作成/編集は汎用ドライバでは表現できないため。→ 明細専用ドライバ `utils/lineitem.ts` を用意し、**CRUD + 割引/税/合計の監査**を `test/module/inventory.spec.ts` で検証済み（§3 / P2）。
+※ かつて「商品検索オートコンプリートが 0 件で明細を作れない」ためブロックされていたが、真因は本体バグ（`getSearchResult` の `label` 曖昧 / 連番検索の `setype` 欠落）。E2E は**商品ポップアップ(箱アイコン)ダイアログ**で迂回し、有効・価格付き商品を dump に焼き込むことで成立させた（バグ自体は未修正・別PR。§7 P2 の注記参照）。
 
 ### 進捗と残り
 
 - ✅ **横断共通機能はひと通り実装**（§2 参照）: 一覧検索 / フォロー / タグ追加削除 / エクスポート / インポート(パターン別) / 一括削除+ゴミ箱 / クイック作成 / クイック編集 / 更新履歴 / コメント / 関連一覧表示 / ログイン失敗。
 - 🟡 **モジュール固有機能は主要な「起動/遷移」を検証** — メール送信 / SMS / 組織階層 / 予定・ToDo登録 / **リード昇格（起動+保存）** / 案件のプロジェクト変換 / 見積・受注・発注の作成画面遷移 / チケット→FAQ変換 を Accounts/Contacts/Leads/Potentials/Vendors/HelpDesk で検証（§3）。**保存まで**の相互生成 / PDF エクスポート / 繰り返し請求 / 地図 / iCal は未（§3）。
-- ❌ **在庫系 4 モジュール** — CRUD も固有機能（PDF・相互生成）も未（§2 の P2）。
+- ✅ **在庫系 4 モジュール** — CRUD + **割引/税/合計/調整の監査**を実装（`module/inventory.spec.ts`、明細ドライバ `utils/lineitem.ts`）。相互生成 / PDF / 繰返請求は次段（§3 / P2）。
 - 🟡 **管理設定** — 未テスト画面 4 種はスモーク追加済み。skip 中（C-04/D-06/F-05/H-01 等）の有効化が残る（§4）。
 - 🟡 **認証系** — ログイン失敗は実装済。パスワード再発行・MFA は未（§5）。
 - ⚠️ **積み残しの finicky 項目**: 一覧ダブルクリック編集（プレビュー重なり）・パスワード再発行（トグル発火せず）。各行に調査結果を注記。（リード昇格の保存は原因特定し解消済 → §3 / P3）
@@ -122,10 +124,10 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 | 19 | 案件 Potentials | ✅ | 見積/請求/受注作成, **プロジェクト変換 `ConvertPotential`**, 活動, ToDo | 🟡 メール/プロジェクト変換モーダル/見積・受注 作成画面遷移 の起動を検証 → `module/potentials.spec.ts` | 見積/請求/受注 **生成の保存**、活動/ToDo |
 | 20 | 製品 Products | ✅ | 見積/請求/発注/受注作成, 在庫管理, 自動計算, SubProducts | ❌ | 在庫・自動計算、各ドキュメント生成 |
 | 21 | サービス Services | ✅ | 見積/請求/発注/受注作成 | ❌ | 各ドキュメント生成 |
-| 23 | 見積 Quotes | ❌ | **PDF**, メール, 請求生成, 受注生成, 発注生成, 明細 | ❌ | ⚠️ 明細登録が要商品検索。CRUD 復活と生成/PDF |
-| 25 | 請求 Invoice | ❌ | **PDF**, メール, 発注作成, 繰り返し請求, 明細 | ❌ | 同上 |
-| 26 | 受注 SalesOrder | ❌ | **PDF**, メール, 請求生成, 発注生成, 繰り返し請求, 明細 | ❌ | 同上 |
-| 27 | 発注 PurchaseOrder | ❌ | **PDF**, メール, 明細 | ❌ | 同上 |
+| 23 | 見積 Quotes | ✅ | **PDF**, メール, 請求生成, 受注生成, 発注生成, 明細 | 🟡 CRUD+明細(割引/税/合計)監査 → `module/inventory.spec.ts` | 生成/PDF |
+| 25 | 請求 Invoice | ✅ | **PDF**, メール, 発注作成, 繰り返し請求, 明細 | 🟡 同上(received/balance 含む) | 生成/PDF/繰返請求 |
+| 26 | 受注 SalesOrder | ✅ | **PDF**, メール, 請求生成, 発注生成, 繰り返し請求, 明細 | 🟡 同上 | 生成/PDF/繰返請求 |
+| 27 | 発注 PurchaseOrder | ✅ | **PDF**, メール, 明細 | 🟡 同上(定価=仕入原価は明示設定) | 生成/PDF |
 | 28 | 発注先 Vendors | ✅ | メールを送る, 作成 発注, 複製 | 🟡 メール/発注作成画面遷移 の起動を検証 → `module/vendors.spec.ts` | 複製 |
 | 24 | 価格表 PriceBooks | ✅ | 価格更新 `ListPriceUpdate` | ❌ | 製品価格の上書き設定 |
 | 29 | チケット HelpDesk | ✅ | メール, **FAQ 変換**, 契約の自動計算 | 🟡 メール/FAQ変換(FAQ編集画面への遷移) の起動を検証 → `module/helpdesk.spec.ts` | 契約の自動計算、解決策ありチケットの即時FAQ生成 |
