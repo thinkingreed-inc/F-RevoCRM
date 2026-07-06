@@ -216,6 +216,69 @@ export async function fillProductLine(
 }
 
 /**
+ * 明細行に商品/サービスを **品目名インライン検索(オートコンプリート)** で設定する。
+ *
+ * 品目名入力(#productName{N}.autoComplete)に検索キーを打ち、jQuery UI の候補から選ぶ。
+ * 行の検索モジュール(Products/Services)はその行の `.lineItemPopup[data-module-name]` で決まる
+ * (事前描画の #row1 と #addProduct 行は Products、#addService 行は Services)。
+ * ※ 本経路は #1704(getSearchResult の label 曖昧)修正後に動作する。
+ */
+export async function fillLineByAutocomplete(
+  page: Page,
+  opts: { searchKey: string; qty?: number; listPrice?: number; rowNo: number }
+): Promise<void> {
+  const rowNo = opts.rowNo;
+  const nameInput = page.locator(`#productName${rowNo}`);
+  await nameInput.click();
+  await nameInput.pressSequentially(opts.searchKey, { delay: 60 });
+
+  // jQuery UI 候補から 検索キーを含む項目を選ぶ(「該当なし」項目は type='no results' で選択不可)。
+  await page
+    .locator("ul.ui-autocomplete:visible li.ui-menu-item", {
+      hasText: opts.searchKey,
+    })
+    .first()
+    .click();
+
+  await expect(page.locator(`#hdnProductId${rowNo}`)).toHaveValue(/\d+/, {
+    timeout: 15000,
+  });
+  if (opts.listPrice != null) {
+    const lp = page.locator(`#listPrice${rowNo}`);
+    await lp.fill(String(opts.listPrice));
+    await lp.blur();
+  }
+  await expect(page.locator(`#listPrice${rowNo}`)).toHaveValue(/[1-9]/, {
+    timeout: 15000,
+  });
+  if (opts.qty != null) {
+    await setQty(page, rowNo, opts.qty);
+  }
+  await expect(page.locator("#grandTotal")).toHaveText(/[1-9]/, {
+    timeout: 10000,
+  });
+}
+
+/**
+ * 「製品を追加」/「サービスを追加」で明細行を1本増やし、新しい行番号を返す。
+ * 追加行は data-row-num を持つので、末尾行の値を新行番号として返す。
+ */
+export async function addLineRow(
+  page: Page,
+  module: "Products" | "Services"
+): Promise<number> {
+  const rows = page.locator("#lineItemTab tr.lineItemRow");
+  const before = await rows.count();
+  await page.locator(module === "Services" ? "#addService" : "#addProduct").click();
+  await expect(rows).toHaveCount(before + 1, { timeout: 10000 });
+  const num = await rows.last().getAttribute("data-row-num");
+  if (!num) {
+    throw new Error("追加した明細行の行番号を取得できませんでした");
+  }
+  return parseInt(num, 10);
+}
+
+/**
  * 行割引を設定する(Bootstrap popover 経由)。
  * type: 'percentage' は % 値、'amount' は金額。
  */

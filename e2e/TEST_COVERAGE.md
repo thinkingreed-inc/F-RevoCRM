@@ -22,12 +22,12 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 ## 1. 現状サマリ
 
-現在の spec ファイルは 78 本。テストは目的別に 4 ディレクトリへ整理。
+現在の spec ファイルは 79 本。テストは目的別に 4 ディレクトリへ整理。
 
 | ディレクトリ | 内容 | 状態 |
 |---|---|---|
 | `test/common/`（31 本） | 全モジュール横断の共通機能（検索/フォロー/タグ+一括タグ/エクスポート/インポート/一括削除+ゴミ箱/クイック作成/クイック編集/一括編集/更新履歴/コメント+一括コメント/関連一覧+関連追加/リスト(CustomView)/概要詳細タブ/クイックプレビュー/カレンダー表示/ログイン失敗/**権限・可視範囲**/**アクション権限**/**項目権限**/**出力権限**/**共有ルール**/**所有者変更**/**タグ絞り込み**/**CustomView条件**/**ページング・列ソート**/**検索・絞り込み**） | ✅ 実行中 |
-| `test/module/`（9 本） | モジュール固有機能（Accounts 一覧表示/カスタマイズ + 各モジュールの詳細固有アクション: Accounts/Contacts/Leads/Potentials/Vendors/HelpDesk のメール・SMS・変換・作成起動、Calendar 作成編集、メール/PDFテンプレート一覧、**在庫系 Invoice/Quotes/SalesOrder/PurchaseOrder の CRUD + 割引/税/合計の監査**） | 🟡→✅ 起動確認 + 在庫は監査済 |
+| `test/module/`（10 本） | モジュール固有機能（Accounts 一覧表示/カスタマイズ + 各モジュールの詳細固有アクション: Accounts/Contacts/Leads/Potentials/Vendors/HelpDesk のメール・SMS・変換・作成起動、Calendar 作成編集、メール/PDFテンプレート一覧、**在庫系 Invoice/Quotes/SalesOrder/PurchaseOrder の CRUD + 割引/税/合計の監査**(ダイアログ経路=`inventory.spec.ts` / インライン検索+製品・サービス追加=`inventory.lineitem.spec.ts`)） | 🟡→✅ 起動確認 + 在庫は監査済 |
 | `test/admin/*.spec.ts`（36 本） | システム管理画面の C〜I グループ + スモーク（E-02/E-04/F-04/F-08） | ✅/⏭️ 混在 |
 | `test/fr.common.spec.ts` | **17 モジュールの新規作成 / 編集 / 削除**（`FrTest` 汎用ドライバ） | ✅ |
 | `test/general.spec.ts` | トップ（ダッシュボード）要素、サイドバー開閉 | 🟡 表示確認のみ |
@@ -39,7 +39,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 **共通 CRUD（`fr.common` / `FrTest`）の対象外**: 在庫（Inventory）系 **Invoice / Quotes / SalesOrder / PurchaseOrder**。
 理由: 明細（productid）を含む作成/編集は汎用ドライバでは表現できないため。→ 明細専用ドライバ `utils/lineitem.ts` を用意し、**CRUD + 割引/税/合計の監査**を `test/module/inventory.spec.ts` で検証済み（§3 / P2）。
-※ かつて「商品検索オートコンプリートが 0 件で明細を作れない」ためブロックされていたが、真因は本体バグ（`getSearchResult` の `label` 曖昧 / 連番検索の `setype` 欠落）。E2E は**商品ポップアップ(箱アイコン)ダイアログ**で迂回し、有効・価格付き商品を dump に焼き込むことで成立させた（バグ自体は未修正・別PR。§7 P2 の注記参照）。
+※ かつて「商品検索オートコンプリートが 0 件で明細を作れない」ためブロックされていたが、真因は本体バグ（`getSearchResult` の `label` 曖昧）。**この不具合は main #1704 で修正済み（マージ済）** のため、現在は **品目名インライン検索** でも明細を登録できる。E2E は両経路を検証:（a）**商品ポップアップ(箱アイコン)ダイアログ** → `module/inventory.spec.ts`、（b）**インライン検索 + 製品追加/サービス追加** → `module/inventory.lineitem.spec.ts`。いずれも 有効・価格付き商品を dump に焼き込むこと（`seed-spec.inventory`）が前提。
 
 ### 進捗と残り
 
@@ -307,22 +307,23 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 ### P2: 在庫系モジュールと連携機能
 
-- [x] 在庫系 CRUD + **割引/税/合計/調整の監査** → `test/module/inventory.spec.ts`（Invoice/Quotes/SalesOrder/PurchaseOrder の4モジュール）。明細ドライバは `utils/lineitem.ts`。**知見/重要**:
-  - オートコンプリート(品目名)は**本体バグで使えない**ため、明細の**商品ポップアップ(箱アイコン)ダイアログ**で商品を選ぶ。ダイアログは `Vtiger_ListView_Model::getInstanceForPopup()`(ListView検索・列修飾あり)で動作する。
+- [x] 在庫系 CRUD + **割引/税/合計/調整の監査**(ダイアログ経路) → `test/module/inventory.spec.ts`（Invoice/Quotes/SalesOrder/PurchaseOrder の4モジュール）。明細ドライバは `utils/lineitem.ts`。**知見/重要**:
+  - 明細の商品選択は**商品ポップアップ(箱アイコン)ダイアログ**でも可能(`Vtiger_ListView_Model::getInstanceForPopup()`、ListView検索・列修飾あり)。
   - dump に 有効(`discontinued=1`)・単価付き の商品/サービス `[E2E-INV]` を焼き込む(`seed-spec.inventory` / `seed_e2e_data.php`)。API最小シードは `discontinued=0` になり検索に出ないため。
   - 監査: `qty×定価` の小計、行割引(%)の割引額/割引後合計、グループ税額と `総計 = 税抜合計 + 税額`(税ゼロでも成立)、数量変更での再計算。定価は決定論のため明示設定(PO は選択時に定価=仕入原価0のため必須)。
   - ヘッダ必須: 参照(account_id/vendor_id)は選択時と同じ hidden+display 直接設定、必須ピックリスト(quotestage/sostatus/invoicestatus/postatus)は最初の実値を設定。
-- [ ] 見積 → 請求 / 受注 / 発注 の相互生成（No.23-2 等）※DetailViewの生成リンク(quote_id/salesorder_id/invoice_id を Edit へ)経由。オートコンプリート不要で実装可能。次段。
+- [x] 明細の**インライン検索(品目名オートコンプリート) + 製品追加/サービス追加** → `test/module/inventory.lineitem.spec.ts`(Invoice で代表検証、明細UIは4モジュール共通)。①`#addProduct` ②`#addService` ③製品のインライン検索 ④サービスのインライン検索 を検証。**#1704 修正後に動作**(下記)。行の検索モジュールは行の `.lineItemPopup[data-module-name]` で決まる(addService 行は Services 検索)。
+- [ ] 見積 → 請求 / 受注 / 発注 の相互生成（No.23-2 等）※DetailViewの生成リンク(quote_id/salesorder_id/invoice_id を Edit へ)経由。次段。
 - [ ] PDF エクスポート（在庫系詳細）（No.5-1）※`vtiger_pdftemplates` に各モジュールのテンプレートが必要(base install に同梱あり)。次段。
 - [ ] 繰り返し請求（受注・請求）
 
-> **⚠️ 監査で発見した本体バグ(未修正・別対応)**: 在庫明細の**商品検索オートコンプリートが全滅**。
-> ① 名称検索 `Products_Record_Model::getSearchResult()`(`modules/Products/models/Record.php:453-459`)は
-> SELECT の `label` が `vtiger_crmentity`/`vtiger_products` の**両方に存在し曖昧**(ERROR 1052)→ `pquery` が
-> 握り潰し 0件(`vtiger_crmentity.label` に修飾すれば1件返る)。Services も同経路。
-> ② 連番検索 `searchRecordsOnSequenceNumber()`(`modules/Products/models/Module.php:163-172`)は SELECT に
-> `setype` を含めず `isPermitted($row['setype'],…)` を呼ぶ+列非修飾で常に0件。
-> E2E はダイアログ経路で迂回しているが、UI のオートコンプリートは実利用でも効かない。要 core 修正(別PR)。
+> **監査で発見 → main #1704 で修正済み(マージ済)**: 在庫明細の名称検索
+> `Products_Record_Model::getSearchResult()`(`modules/Products/models/Record.php`)は SELECT の `label` を
+> 無修飾参照しており、`vtiger_products`/`vtiger_service` にも同名カラムがある環境で **`label` 曖昧(ERROR 1052)**
+> → `pquery` が握り潰し常に 0件で、品目名インライン検索が全滅していた。#1704 で `vtiger_products.label` /
+> `vtiger_service.label` に明示修飾して解消。E2E はマージ後にインライン検索経路(`inventory.lineitem.spec.ts`)を追加。
+> ※ 連番検索 `searchRecordsOnSequenceNumber()`(`modules/Products/models/Module.php`)の `setype` 未SELECT は
+> 別の未修正バグ(連番=商品番号での明細検索は依然0件)。E2E は名称検索/ダイアログで成立するため非ブロッカー。
 
 ### P3: モジュール固有フロー
 

@@ -27,20 +27,16 @@ const moduleMap: Record<string, typeof FrTest> = {
  * インベントリ系モジュール(Invoice/Quotes/SalesOrder/PurchaseOrder)は
  * この汎用CRUDドライバ(FrTest)の対象外としている。
  *
- * 理由: 保存に必須の明細(productid)を登録するには商品検索オートコンプリートが
- * 必要で、明細を含む作成/編集は汎用ドライバでは表現できない。
+ * 理由: 明細(productid)を含む作成/編集は汎用ドライバでは表現できない。
  * → 明細を扱う専用ドライバ(utils/lineitem.ts)を用意し、CRUD と 割引/税/合計の監査を
- *    test/module/inventory.spec.ts で検証している。
+ *    test/module/inventory.spec.ts(商品ポップアップ経路) /
+ *    test/module/inventory.lineitem.spec.ts(インライン検索 + 製品追加/サービス追加) で検証している。
+ * いずれも 有効(discontinued=1)・価格付き の [E2E-INV] 商品/サービスを dump に焼き込むこと
+ * (seed-spec.inventory)が前提(API最小シードは discontinued=0 で検索に出ない)。
  *
- * かつて「商品検索が0件で明細登録できない」ためブロックされていたが、真因は
- * 名称検索 Products_Record_Model::getSearchResult() が discontinued=1(有効)を要求する
- * のに、API最小シードの商品が discontinued=0 だったこと。拡充ベースライン dump に
- * 有効・価格付きの [E2E-INV] 商品/サービス を焼き込む(seed-spec.inventory)ことで解消した。
- *
- * 別件(未修正・報告のみ): 連番検索 searchRecordsOnSequenceNumber
- * (modules/Products/models/Module.php)は SELECT に setype を含めず
- * isPermitted($row['setype'],…) を呼ぶため常に0件を返す本体バグがある。名称検索で
- * 明細を引けるため E2E のブロッカーではないが、連番(商品番号)での明細検索は効かない。
+ * 補足: 品目名インライン検索は以前 getSearchResult の label 曖昧(ERROR 1052)で全滅していたが
+ * main #1704 で修正済み。連番検索 searchRecordsOnSequenceNumber は setype 未SELECT の別バグが
+ * 未修正だが、名称検索/ダイアログで明細を引けるため E2E のブロッカーではない。
  */
 
 
