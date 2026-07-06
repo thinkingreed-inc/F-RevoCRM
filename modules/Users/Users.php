@@ -738,8 +738,10 @@ class Users extends CRMEntity {
 
 	function createAccessKey() {
 		global $adb;
+		$accessKey = vtws_generateRandomAccessKey(16);
 		$updateQuery = "update vtiger_users set accesskey=? where id=?";
-		$adb->pquery($updateQuery,array(vtws_generateRandomAccessKey(16),$this->id));
+		$adb->pquery($updateQuery,array($accessKey,$this->id));
+		return $accessKey;
 	}
 
 	/** Function to insert values in the specifed table for the specified module

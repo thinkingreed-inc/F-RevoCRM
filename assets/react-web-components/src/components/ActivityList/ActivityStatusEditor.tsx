@@ -1,10 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Pencil, Check, X, Loader2 } from 'lucide-react';
-import { Badge } from '../ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Button } from '../ui/button';
-import { StatusOption } from '@/types/activity';
-import { cn } from '@/lib/utils';
+import React, { useState, useEffect, useRef } from "react";
+import { Pencil, Check, X, Loader2 } from "lucide-react";
+import { Badge } from "../ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { Button } from "../ui/button";
+import { StatusOption } from "@/types/activity";
+import { cn } from "@/lib/utils";
 
 /**
  * Props for ActivityStatusEditor component
@@ -25,23 +31,29 @@ export interface ActivityStatusEditorProps {
 /**
  * Get badge variant based on status
  */
-const getStatusVariant = (status: string): 'default' | 'success' | 'warning' | 'destructive' | 'secondary' => {
+const getStatusVariant = (
+  status: string,
+): "default" | "success" | "warning" | "destructive" | "secondary" => {
   const lowerStatus = status.toLowerCase();
 
-  if (lowerStatus.includes('completed') || lowerStatus.includes('held') || lowerStatus.includes('完了')) {
-    return 'success';
+  if (
+    lowerStatus.includes("completed") ||
+    lowerStatus.includes("held") ||
+    lowerStatus.includes("完了")
+  ) {
+    return "success";
   }
-  if (lowerStatus.includes('progress') || lowerStatus.includes('進行中')) {
-    return 'warning';
+  if (lowerStatus.includes("progress") || lowerStatus.includes("進行中")) {
+    return "warning";
   }
-  if (lowerStatus.includes('cancel') || lowerStatus.includes('キャンセル')) {
-    return 'destructive';
+  if (lowerStatus.includes("cancel") || lowerStatus.includes("キャンセル")) {
+    return "destructive";
   }
-  if (lowerStatus.includes('planned') || lowerStatus.includes('計画')) {
-    return 'secondary';
+  if (lowerStatus.includes("planned") || lowerStatus.includes("計画")) {
+    return "secondary";
   }
 
-  return 'default';
+  return "default";
 };
 
 /**
@@ -76,7 +88,7 @@ export const ActivityStatusEditor: React.FC<ActivityStatusEditorProps> = ({
   fieldName,
   options,
   canEdit,
-  onSave
+  onSave,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -91,17 +103,17 @@ export const ActivityStatusEditor: React.FC<ActivityStatusEditorProps> = ({
   // Handle Escape key to cancel editing
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isEditing) {
+      if (event.key === "Escape" && isEditing) {
         handleCancel();
       }
     };
 
     if (isEditing) {
-      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener("keydown", handleKeyDown);
     }
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isEditing]);
 
@@ -120,7 +132,7 @@ export const ActivityStatusEditor: React.FC<ActivityStatusEditorProps> = ({
       await onSave(selectedValue);
       setIsEditing(false);
     } catch (error) {
-      console.error('Failed to update status:', error);
+      console.error("Failed to update status:", error);
       // Reset to original value on error
       setSelectedValue(value);
     } finally {
@@ -153,7 +165,8 @@ export const ActivityStatusEditor: React.FC<ActivityStatusEditorProps> = ({
   };
 
   // Get current status label
-  const currentLabel = options.find(opt => opt.value === value)?.label || value;
+  const currentLabel =
+    options.find((opt) => opt.value === value)?.label || value;
   const statusVariant = getStatusVariant(value);
 
   // Display mode - Badge自体がクリック可能、hover時に編集アイコン表示
@@ -162,19 +175,19 @@ export const ActivityStatusEditor: React.FC<ActivityStatusEditorProps> = ({
       <Badge
         variant={statusVariant}
         className={cn(
-          'px-4 text-md',
+          "px-4 text-md",
           canEdit && [
-            'cursor-pointer',
-            'hover:ring-2 hover:ring-offset-1 hover:ring-blue-400',
-            'transition-all'
-          ]
+            "cursor-pointer",
+            "hover:ring-2 hover:ring-offset-1 hover:ring-blue-400",
+            "transition-all",
+          ],
         )}
         onClick={handleEditClick}
-        role={canEdit ? 'button' : undefined}
+        role={canEdit ? "button" : undefined}
         aria-label={canEdit ? `${currentLabel} - クリックして編集` : undefined}
         tabIndex={canEdit ? 0 : undefined}
         onKeyDown={(e) => {
-          if (canEdit && (e.key === 'Enter' || e.key === ' ')) {
+          if (canEdit && (e.key === "Enter" || e.key === " ")) {
             e.preventDefault();
             handleEditClick();
           }
@@ -182,10 +195,7 @@ export const ActivityStatusEditor: React.FC<ActivityStatusEditorProps> = ({
       >
         {currentLabel}
         {canEdit && (
-          <Pencil
-            className="h-3 w-3 ml-1 opacity-50"
-            aria-hidden="true"
-          />
+          <Pencil className="h-3 w-3 ml-1 opacity-50" aria-hidden="true" />
         )}
       </Badge>
     );
@@ -193,10 +203,7 @@ export const ActivityStatusEditor: React.FC<ActivityStatusEditorProps> = ({
 
   // Edit mode - Badgeの場所がSelectに置き換わる
   return (
-    <div
-      ref={editorRef}
-      className="inline-flex items-center gap-1"
-    >
+    <div ref={editorRef} className="inline-flex items-center gap-1">
       <Select
         value={selectedValue}
         onValueChange={handleValueChange}
@@ -210,10 +217,7 @@ export const ActivityStatusEditor: React.FC<ActivityStatusEditorProps> = ({
         </SelectTrigger>
         <SelectContent>
           {options.map((option) => (
-            <SelectItem
-              key={option.value}
-              value={option.value}
-            >
+            <SelectItem key={option.value} value={option.value}>
               {option.label}
             </SelectItem>
           ))}

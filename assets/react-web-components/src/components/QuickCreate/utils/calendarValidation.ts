@@ -6,7 +6,7 @@
  */
 function parseDateStartLocal(dateStart: string): Date {
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateStart)) {
-    const [y, m, d] = dateStart.split('-').map(Number);
+    const [y, m, d] = dateStart.split("-").map(Number);
     return new Date(y, m - 1, d);
   }
   return new Date(dateStart);
@@ -19,10 +19,10 @@ function parseDateStartLocal(dateStart: string): Date {
 export function isFutureEventHeldInvalid(
   eventstatus: unknown,
   dateStart: unknown,
-  now: Date = new Date()
+  now: Date = new Date(),
 ): boolean {
-  if (eventstatus !== 'Held') return false;
-  if (typeof dateStart !== 'string' || !dateStart) return false;
+  if (eventstatus !== "Held") return false;
+  if (typeof dateStart !== "string" || !dateStart) return false;
   const start = parseDateStartLocal(dateStart);
   if (isNaN(start.getTime())) return false;
   return start.getTime() > now.getTime();

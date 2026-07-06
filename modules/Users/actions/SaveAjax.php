@@ -271,16 +271,16 @@ class Users_SaveAjax_Action extends Vtiger_SaveAjax_Action {
 			$oldAccessKey = $recordModel->get('accesskey');
 
 			$entity = $recordModel->getEntity();
-			$entity->createAccessKey();
+			// createAccessKey() で生成した新しいアクセスキーをそのまま受け取る。
+			// 直後に再生成する user_privileges ファイルから読み戻すと、同一リクエスト内では
+			// opcache が書き換え前のバイトコードを返し、古い値のまま比較され誤って失敗判定になる。
+			$newAccessKey = $entity->createAccessKey();
 
 			require_once('modules/Users/CreateUserPrivilegeFile.php');
 			createUserPrivilegesfile($recordId);
 			Vtiger_AccessControl::clearUserPrivileges($recordId);
 
-			$recordModel = Users_Record_Model::getInstanceFromPreferenceFile($recordId);
-			$newAccessKey = $recordModel->get('accesskey');
-
-			if ($newAccessKey != $oldAccessKey) {
+			if ($newAccessKey && $newAccessKey != $oldAccessKey) {
 				$response->setResult(array('success' => true, 'message' => vtranslate('LBL_ACCESS_KEY_UPDATED_SUCCESSFULLY', $moduleName), 'accessKey' => $newAccessKey));
 			} else {
 				$response->setError(vtranslate('LBL_FAILED_TO_UPDATE_ACCESS_KEY', $moduleName));

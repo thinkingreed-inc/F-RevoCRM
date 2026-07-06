@@ -450,12 +450,12 @@ class Products_Record_Model extends Vtiger_Record_Model {
 		if($module !== false) {
 			$query .= ' AND setype = ?';
 			if($module == 'Products'){
-				$query = 'SELECT label, crmid, setype, createdtime FROM vtiger_crmentity INNER JOIN vtiger_products ON 
-							vtiger_products.productid = vtiger_crmentity.crmid WHERE label LIKE ? AND vtiger_crmentity.deleted = 0 
+				$query = 'SELECT vtiger_products.label, vtiger_crmentity.crmid, vtiger_crmentity.setype, vtiger_crmentity.createdtime FROM vtiger_crmentity INNER JOIN vtiger_products ON
+							vtiger_products.productid = vtiger_crmentity.crmid WHERE vtiger_products.label LIKE ? AND vtiger_crmentity.deleted = 0
 							AND vtiger_products.discontinued = 1 AND setype = ?';
 			}else if($module == 'Services'){
-				$query = 'SELECT label, crmid, setype, createdtime FROM vtiger_crmentity INNER JOIN vtiger_service ON 
-							vtiger_service.serviceid = vtiger_crmentity.crmid WHERE label LIKE ? AND vtiger_crmentity.deleted = 0 
+				$query = 'SELECT vtiger_service.label, vtiger_crmentity.crmid, vtiger_crmentity.setype, vtiger_crmentity.createdtime FROM vtiger_crmentity INNER JOIN vtiger_service ON
+							vtiger_service.serviceid = vtiger_crmentity.crmid WHERE vtiger_service.label LIKE ? AND vtiger_crmentity.deleted = 0
 							AND vtiger_service.discontinued = 1 AND setype = ?';
 			}
 			$params[] = $module;

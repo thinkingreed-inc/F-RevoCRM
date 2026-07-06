@@ -22,7 +22,7 @@ export interface Activity {
   /** 件名 */
   subject: string;
   /** アクティビティタイプ（Task, Meeting, Call など） */
-  activityType: 'Task' | 'Meeting' | 'Call' | string;
+  activityType: "Task" | "Meeting" | "Call" | string;
   /** ステータス */
   status: string;
   /** 開始日（YYYY-MM-DD形式） */
@@ -81,7 +81,7 @@ export interface ActivityListProps {
   /** レコードID */
   recordId: string;
   /** 表示モード（upcoming: 今後の予定, overdue: 期限切れ, all: すべて） */
-  mode?: 'upcoming' | 'overdue' | 'all';
+  mode?: "upcoming" | "overdue" | "all";
   /** 1ページあたりの表示件数 */
   limit?: number;
   /** リフレッシュ用キー（値が変わるとデータを再取得） */

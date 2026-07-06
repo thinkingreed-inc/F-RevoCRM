@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Calendar, CheckSquare, Phone, User } from 'lucide-react';
-import { Badge } from '../ui/badge';
-import { ActivityStatusEditor } from './ActivityStatusEditor';
-import { cn } from '@/lib/utils';
-import { Activity } from '@/types/activity';
+import React, { useState, useRef, useEffect } from "react";
+import { Calendar, CheckSquare, Phone, User } from "lucide-react";
+import { Badge } from "../ui/badge";
+import { ActivityStatusEditor } from "./ActivityStatusEditor";
+import { cn } from "@/lib/utils";
+import { Activity } from "@/types/activity";
 
 /**
  * Props for ActivityListItem component
@@ -20,11 +20,11 @@ export interface ActivityListItemProps {
  */
 const getActivityIcon = (activityType: string) => {
   switch (activityType) {
-    case 'Meeting':
+    case "Meeting":
       return Calendar;
-    case 'Task':
+    case "Task":
       return CheckSquare;
-    case 'Call':
+    case "Call":
       return Phone;
     default:
       return Calendar;
@@ -36,51 +36,57 @@ const getActivityIcon = (activityType: string) => {
  */
 const getIconColor = (activityType: string): string => {
   switch (activityType) {
-    case 'Meeting':
-      return 'text-blue-600';
-    case 'Task':
-      return 'text-green-600';
-    case 'Call':
-      return 'text-purple-600';
+    case "Meeting":
+      return "text-blue-600";
+    case "Task":
+      return "text-green-600";
+    case "Call":
+      return "text-purple-600";
     default:
-      return 'text-gray-600';
+      return "text-gray-600";
   }
 };
 
 /**
  * Get badge variant based on status
  */
-const getStatusVariant = (status: string): 'default' | 'success' | 'warning' | 'destructive' | 'secondary' => {
+const getStatusVariant = (
+  status: string,
+): "default" | "success" | "warning" | "destructive" | "secondary" => {
   const lowerStatus = status.toLowerCase();
 
-  if (lowerStatus.includes('completed') || lowerStatus.includes('held') || lowerStatus.includes('完了')) {
-    return 'success';
+  if (
+    lowerStatus.includes("completed") ||
+    lowerStatus.includes("held") ||
+    lowerStatus.includes("完了")
+  ) {
+    return "success";
   }
-  if (lowerStatus.includes('progress') || lowerStatus.includes('進行中')) {
-    return 'warning';
+  if (lowerStatus.includes("progress") || lowerStatus.includes("進行中")) {
+    return "warning";
   }
-  if (lowerStatus.includes('cancel') || lowerStatus.includes('キャンセル')) {
-    return 'destructive';
+  if (lowerStatus.includes("cancel") || lowerStatus.includes("キャンセル")) {
+    return "destructive";
   }
-  if (lowerStatus.includes('planned') || lowerStatus.includes('計画')) {
-    return 'secondary';
+  if (lowerStatus.includes("planned") || lowerStatus.includes("計画")) {
+    return "secondary";
   }
 
-  return 'default';
+  return "default";
 };
 
 /**
  * Format date for display (YYYY/MM/DD HH:MM)
  */
 const formatDateTime = (dateStr: string, timeStr: string): string => {
-  if (!dateStr) return '';
+  if (!dateStr) return "";
 
   try {
-    const [year, month, day] = dateStr.split('-');
+    const [year, month, day] = dateStr.split("-");
     const datePart = `${year}/${month}/${day}`;
 
     if (timeStr) {
-      const timeParts = timeStr.split(':');
+      const timeParts = timeStr.split(":");
       if (timeParts.length >= 2) {
         return `${datePart} ${timeParts[0]}:${timeParts[1]}`;
       }
@@ -98,7 +104,10 @@ const COLLAPSE_HEIGHT = 60;
 /**
  * 長文を開閉できるテキストブロック
  */
-const CollapsibleText: React.FC<{ text: string; label?: string }> = ({ text, label }) => {
+const CollapsibleText: React.FC<{ text: string; label?: string }> = ({
+  text,
+  label,
+}) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const [needsCollapse, setNeedsCollapse] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -117,8 +126,8 @@ const CollapsibleText: React.FC<{ text: string; label?: string }> = ({ text, lab
       <div
         ref={contentRef}
         className={cn(
-          'whitespace-pre-wrap text-gray-600 text-md',
-          !expanded && needsCollapse && 'line-clamp-2'
+          "whitespace-pre-wrap text-gray-600 text-md",
+          !expanded && needsCollapse && "line-clamp-2",
         )}
       >
         {text}
@@ -130,10 +139,10 @@ const CollapsibleText: React.FC<{ text: string; label?: string }> = ({ text, lab
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            setExpanded(prev => !prev);
+            setExpanded((prev) => !prev);
           }}
         >
-          {expanded ? '閉じる' : 'もっと見る'}
+          {expanded ? "閉じる" : "もっと見る"}
         </button>
       )}
     </div>
@@ -145,16 +154,23 @@ const CollapsibleText: React.FC<{ text: string; label?: string }> = ({ text, lab
  */
 export const ActivityListItem: React.FC<ActivityListItemProps> = ({
   activity,
-  onStatusChange
+  onStatusChange,
 }) => {
   const Icon = getActivityIcon(activity.activityType);
   const iconColor = getIconColor(activity.activityType);
   const statusVariant = getStatusVariant(activity.status);
-  const formattedDateTime = formatDateTime(activity.dateStart, activity.timeStart);
-  const hasDescription = activity.description && activity.description.trim().length > 0;
-  const hasCommonMemo = activity.commonMemo && activity.commonMemo.trim().length > 0;
+  const formattedDateTime = formatDateTime(
+    activity.dateStart,
+    activity.timeStart,
+  );
+  const hasDescription =
+    activity.description && activity.description.trim().length > 0;
+  const hasCommonMemo =
+    activity.commonMemo && activity.commonMemo.trim().length > 0;
   const hasDetails = hasDescription || hasCommonMemo;
-  const statusLabel = activity.statusOptions?.find(opt => opt.value === activity.status)?.label || activity.status;
+  const statusLabel =
+    activity.statusOptions?.find((opt) => opt.value === activity.status)
+      ?.label || activity.status;
 
   const handleStatusAreaClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -164,17 +180,17 @@ export const ActivityListItem: React.FC<ActivityListItemProps> = ({
   return (
     <div
       className={cn(
-        'rounded-lg border border-gray-200 bg-white',
-        'hover:border-gray-300 transition-colors',
+        "rounded-lg border border-gray-200 bg-white",
+        "hover:border-gray-300 transition-colors",
       )}
     >
-      <a
-        href={activity.detailViewUrl}
-        className="block p-3 no-underline"
-      >
+      <a href={activity.detailViewUrl} className="block p-3 no-underline">
         {/* Row 1: アイコン + 日付 + ステータス */}
         <div className="flex items-center gap-2 mb-1.5">
-          <div className={cn('flex-shrink-0', iconColor)} title={activity.activityType}>
+          <div
+            className={cn("flex-shrink-0", iconColor)}
+            title={activity.activityType}
+          >
             <Icon className="h-4 w-4" aria-hidden="true" />
           </div>
           {formattedDateTime && (
@@ -186,11 +202,16 @@ export const ActivityListItem: React.FC<ActivityListItemProps> = ({
             </time>
           )}
           {/* ステータス - 右寄せ */}
-          <div className="ml-auto flex-shrink-0" onClick={handleStatusAreaClick}>
-            {activity.canEdit && activity.statusOptions && activity.statusOptions.length > 0 ? (
+          <div
+            className="ml-auto flex-shrink-0"
+            onClick={handleStatusAreaClick}
+          >
+            {activity.canEdit &&
+            activity.statusOptions &&
+            activity.statusOptions.length > 0 ? (
               <ActivityStatusEditor
                 value={activity.status}
-                fieldName={activity.statusField || 'status'}
+                fieldName={activity.statusField || "status"}
                 options={activity.statusOptions}
                 canEdit={activity.canEdit}
                 onSave={async (newValue) => {
@@ -206,16 +227,17 @@ export const ActivityListItem: React.FC<ActivityListItemProps> = ({
         </div>
 
         {/* Row 2: 件名 */}
-        <div className="font-bold text-gray-900 text-md truncate mb-1" title={activity.subject}>
+        <div
+          className="font-bold text-gray-900 text-md truncate mb-1"
+          title={activity.subject}
+        >
           {activity.subject}
         </div>
 
         {/* Row 3: 詳細（説明・共有メモ） */}
         {hasDetails && (
           <div className="space-y-1 mb-1" onClick={(e) => e.stopPropagation()}>
-            {hasDescription && (
-              <CollapsibleText text={activity.description!} />
-            )}
+            {hasDescription && <CollapsibleText text={activity.description!} />}
             {hasCommonMemo && (
               <CollapsibleText text={activity.commonMemo!} label="共有メモ" />
             )}
