@@ -601,4 +601,63 @@ if ($adb->num_rows($tagExists) > 0) {
     out("作成: タグ {$tf['tagName']} = {$tagId} を {$n} 件に付与");
 }
 
+// ============================================================================
+// 14. 在庫明細用の 有効・価格付き Products / Services
+//     在庫系(Invoice/Quotes/SalesOrder/PurchaseOrder)の明細を UI から登録するには
+//     商品検索オートコンプリートが必要。名称検索 Products_Record_Model::getSearchResult() は
+//     WHERE ... AND discontinued=1(=有効)を要求するため、API最小シード(discontinued=0)では
+//     0件になり明細登録できない。ここで 有効(discontinued=1)・単価付き の商品/サービスを投入し、
+//     在庫系 CRUD と 割引/税/合計の監査 E2E を成立させる。単価は seed-spec.inventory の既知値。
+// ============================================================================
+function findProductIdByName($name) {
+    global $adb;
+    $r = $adb->pquery(
+        'SELECT p.productid FROM vtiger_products p JOIN vtiger_crmentity e ON e.crmid=p.productid WHERE e.deleted=0 AND p.productname=?',
+        array($name)
+    );
+    return ($adb->num_rows($r) > 0) ? (int) $adb->query_result($r, 0, 'productid') : null;
+}
+
+function findServiceIdByName($name) {
+    global $adb;
+    $r = $adb->pquery(
+        'SELECT s.serviceid FROM vtiger_service s JOIN vtiger_crmentity e ON e.crmid=s.serviceid WHERE e.deleted=0 AND s.servicename=?',
+        array($name)
+    );
+    return ($adb->num_rows($r) > 0) ? (int) $adb->query_result($r, 0, 'serviceid') : null;
+}
+
+out('--- 在庫明細用 Products/Services ---');
+if (!empty($spec['inventory'])) {
+    $inv = $spec['inventory'];
+    foreach ($inv['products'] as $p) {
+        if (findProductIdByName($p['name'])) {
+            out("既存Product流用: {$p['name']} (skip)");
+            continue;
+        }
+        $id = createRecord('Products', array(
+            'productname'      => $p['name'],
+            'unit_price'       => $p['unitPrice'],
+            'discontinued'     => 1, // 有効(名称検索に必須)
+            'assigned_user_id' => 1,
+        ));
+        out("作成: Product {$p['name']} = {$id} (単価 {$p['unitPrice']})");
+    }
+    foreach ($inv['services'] as $s) {
+        if (findServiceIdByName($s['name'])) {
+            out("既存Service流用: {$s['name']} (skip)");
+            continue;
+        }
+        $id = createRecord('Services', array(
+            'servicename'      => $s['name'],
+            'unit_price'       => $s['unitPrice'],
+            'discontinued'     => 1, // 有効(名称検索に必須)
+            'assigned_user_id' => 1,
+        ));
+        out("作成: Service {$s['name']} = {$id} (単価 {$s['unitPrice']})");
+    }
+} else {
+    out('inventory セクション無し (skip)');
+}
+
 out('=== 完了。setup/scripts/RecreateUserFiles.php を実行してキャッシュを再生成すること ===');

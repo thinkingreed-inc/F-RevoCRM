@@ -25,16 +25,22 @@ const moduleMap: Record<string, typeof FrTest> = {
 
 /**
  * インベントリ系モジュール(Invoice/Quotes/SalesOrder/PurchaseOrder)は
- * 共通CRUDの対象外としている。
+ * この汎用CRUDドライバ(FrTest)の対象外としている。
  *
  * 理由: 保存に必須の明細(productid)を登録するには商品検索オートコンプリートが
- * 必要だが、この環境では機能しない。
- *  - 連番検索(searchRecordsOnSequenceNumber)はSELECTにsetypeが無く
- *    isPermittedが常にfalseになり0件を返す(F-RevoCRM本体側の不具合)。
- *  - 名称検索(getSearchResult)もこの環境では0件。
- * 明細フィールドを直接JSで設定する方法も、F-RevoCRMの明細JSモデルに登録
- * されず合計が0のまま保存ボタンが無効化されるため不可。
- * 商品検索が機能する環境であれば、明細登録処理を追加して対象に戻せる。
+ * 必要で、明細を含む作成/編集は汎用ドライバでは表現できない。
+ * → 明細を扱う専用ドライバ(utils/lineitem.ts)を用意し、CRUD と 割引/税/合計の監査を
+ *    test/module/inventory.spec.ts で検証している。
+ *
+ * かつて「商品検索が0件で明細登録できない」ためブロックされていたが、真因は
+ * 名称検索 Products_Record_Model::getSearchResult() が discontinued=1(有効)を要求する
+ * のに、API最小シードの商品が discontinued=0 だったこと。拡充ベースライン dump に
+ * 有効・価格付きの [E2E-INV] 商品/サービス を焼き込む(seed-spec.inventory)ことで解消した。
+ *
+ * 別件(未修正・報告のみ): 連番検索 searchRecordsOnSequenceNumber
+ * (modules/Products/models/Module.php)は SELECT に setype を含めず
+ * isPermitted($row['setype'],…) を呼ぶため常に0件を返す本体バグがある。名称検索で
+ * 明細を引けるため E2E のブロッカーではないが、連番(商品番号)での明細検索は効かない。
  */
 
 

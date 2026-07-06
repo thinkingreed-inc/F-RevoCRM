@@ -95,6 +95,24 @@ export interface SeedSpec {
     taggedNamePrefix: string;
     taggedCount: number;
   };
+  inventory: InventorySpec;
+}
+
+/** 在庫系明細用の有効・価格付き商品/サービス(単価は合計/割引/税の検算に使う)。 */
+export interface InventoryItem {
+  /** 一覧・保存に使う正式名(例: "[E2E-INV] 商品A")。 */
+  name: string;
+  /** オートコンプリートに入力する一意な検索キー(例: "商品A")。 */
+  searchKey: string;
+  /** 明細の listprice 初期値になる単価(既知値)。 */
+  unitPrice: number;
+}
+
+export interface InventorySpec {
+  /** 検索時に投げるモジュール(BasicAjax の module パラメータ。任意の在庫モジュールで可)。 */
+  searchModule: string;
+  products: InventoryItem[];
+  services: InventoryItem[];
 }
 
 /** プロファイル(役割)によるアクション権限ペルソナ。 */

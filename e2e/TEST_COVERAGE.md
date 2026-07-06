@@ -22,12 +22,12 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 ## 1. 現状サマリ
 
-現在の spec ファイルは 77 本。テストは目的別に 4 ディレクトリへ整理。
+現在の spec ファイルは 78 本。テストは目的別に 4 ディレクトリへ整理。
 
 | ディレクトリ | 内容 | 状態 |
 |---|---|---|
 | `test/common/`（31 本） | 全モジュール横断の共通機能（検索/フォロー/タグ+一括タグ/エクスポート/インポート/一括削除+ゴミ箱/クイック作成/クイック編集/一括編集/更新履歴/コメント+一括コメント/関連一覧+関連追加/リスト(CustomView)/概要詳細タブ/クイックプレビュー/カレンダー表示/ログイン失敗/**権限・可視範囲**/**アクション権限**/**項目権限**/**出力権限**/**共有ルール**/**所有者変更**/**タグ絞り込み**/**CustomView条件**/**ページング・列ソート**/**検索・絞り込み**） | ✅ 実行中 |
-| `test/module/`（8 本） | モジュール固有機能（Accounts 一覧表示/カスタマイズ + 各モジュールの詳細固有アクション: Accounts/Contacts/Leads/Potentials/Vendors/HelpDesk のメール・SMS・変換・作成起動、Calendar 作成編集、メール/PDFテンプレート一覧） | 🟡 主要モジュールの起動確認 |
+| `test/module/`（9 本） | モジュール固有機能（Accounts 一覧表示/カスタマイズ + 各モジュールの詳細固有アクション: Accounts/Contacts/Leads/Potentials/Vendors/HelpDesk のメール・SMS・変換・作成起動、Calendar 作成編集、メール/PDFテンプレート一覧、**在庫系 Invoice/Quotes/SalesOrder/PurchaseOrder の CRUD + 割引/税/合計の監査**） | 🟡→✅ 起動確認 + 在庫は監査済 |
 | `test/admin/*.spec.ts`（36 本） | システム管理画面の C〜I グループ + スモーク（E-02/E-04/F-04/F-08） | ✅/⏭️ 混在 |
 | `test/fr.common.spec.ts` | **17 モジュールの新規作成 / 編集 / 削除**（`FrTest` 汎用ドライバ） | ✅ |
 | `test/general.spec.ts` | トップ（ダッシュボード）要素、サイドバー開閉 | 🟡 表示確認のみ |
@@ -305,10 +305,22 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 ### P2: 在庫系モジュールと連携機能
 
-- [ ] 商品検索が機能する環境（またはモック）を用意し、在庫系 CRUD を `fr.common` に復帰（Invoice/Quotes/SalesOrder/PurchaseOrder）
-- [ ] 見積 → 請求 / 受注 / 発注 の相互生成（No.23-2 等）
-- [ ] PDF エクスポート（在庫系詳細）（No.5-1）
+- [x] 在庫系 CRUD + **割引/税/合計/調整の監査** → `test/module/inventory.spec.ts`（Invoice/Quotes/SalesOrder/PurchaseOrder の4モジュール）。明細ドライバは `utils/lineitem.ts`。**知見/重要**:
+  - オートコンプリート(品目名)は**本体バグで使えない**ため、明細の**商品ポップアップ(箱アイコン)ダイアログ**で商品を選ぶ。ダイアログは `Vtiger_ListView_Model::getInstanceForPopup()`(ListView検索・列修飾あり)で動作する。
+  - dump に 有効(`discontinued=1`)・単価付き の商品/サービス `[E2E-INV]` を焼き込む(`seed-spec.inventory` / `seed_e2e_data.php`)。API最小シードは `discontinued=0` になり検索に出ないため。
+  - 監査: `qty×定価` の小計、行割引(%)の割引額/割引後合計、グループ税額と `総計 = 税抜合計 + 税額`(税ゼロでも成立)、数量変更での再計算。定価は決定論のため明示設定(PO は選択時に定価=仕入原価0のため必須)。
+  - ヘッダ必須: 参照(account_id/vendor_id)は選択時と同じ hidden+display 直接設定、必須ピックリスト(quotestage/sostatus/invoicestatus/postatus)は最初の実値を設定。
+- [ ] 見積 → 請求 / 受注 / 発注 の相互生成（No.23-2 等）※DetailViewの生成リンク(quote_id/salesorder_id/invoice_id を Edit へ)経由。オートコンプリート不要で実装可能。次段。
+- [ ] PDF エクスポート（在庫系詳細）（No.5-1）※`vtiger_pdftemplates` に各モジュールのテンプレートが必要(base install に同梱あり)。次段。
 - [ ] 繰り返し請求（受注・請求）
+
+> **⚠️ 監査で発見した本体バグ(未修正・別対応)**: 在庫明細の**商品検索オートコンプリートが全滅**。
+> ① 名称検索 `Products_Record_Model::getSearchResult()`(`modules/Products/models/Record.php:453-459`)は
+> SELECT の `label` が `vtiger_crmentity`/`vtiger_products` の**両方に存在し曖昧**(ERROR 1052)→ `pquery` が
+> 握り潰し 0件(`vtiger_crmentity.label` に修飾すれば1件返る)。Services も同経路。
+> ② 連番検索 `searchRecordsOnSequenceNumber()`(`modules/Products/models/Module.php:163-172`)は SELECT に
+> `setype` を含めず `isPermitted($row['setype'],…)` を呼ぶ+列非修飾で常に0件。
+> E2E はダイアログ経路で迂回しているが、UI のオートコンプリートは実利用でも効かない。要 core 修正(別PR)。
 
 ### P3: モジュール固有フロー
 

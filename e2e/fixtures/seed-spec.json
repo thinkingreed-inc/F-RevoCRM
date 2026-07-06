@@ -138,5 +138,17 @@
     "tagName": "E2Eタグ絞込",
     "taggedNamePrefix": "[E2E-PAGE]",
     "taggedCount": 7
+  },
+
+  "inventory": {
+    "_comment": "在庫系(Invoice/Quotes/SalesOrder/PurchaseOrder)の明細登録を成立させるための 有効・価格付き 商品/サービス。名称検索 Products_Record_Model::getSearchResult() は discontinued=1(有効)を要求するため、必ず discontinued=1 で投入する(API最小シードは discontinued=0 になり検索0件=CRUDブロックの実因)。unitPrice は合計/割引/税の検算に使う既知値。検索キーは name の一意な部分文字列(商品A/商品B/サービスA)。",
+    "searchModule": "Invoice",
+    "products": [
+      { "name": "[E2E-INV] 商品A", "searchKey": "商品A", "unitPrice": 1000 },
+      { "name": "[E2E-INV] 商品B", "searchKey": "商品B", "unitPrice": 2500 }
+    ],
+    "services": [
+      { "name": "[E2E-INV] サービスA", "searchKey": "サービスA", "unitPrice": 5000 }
+    ]
   }
 }
