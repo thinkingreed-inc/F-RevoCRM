@@ -38,7 +38,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 **共通 CRUD の対象モジュール（17）**: Accounts, Contacts, Potentials, Leads, Products, Assets, Campaigns, Dailyreports, Faq, HelpDesk, PriceBooks, Project, ProjectMilestone, ProjectTask, ServiceContracts, Services, Vendors。
 
 **共通 CRUD（`fr.common` / `FrTest`）の対象外**: 在庫（Inventory）系 **Invoice / Quotes / SalesOrder / PurchaseOrder**。
-理由: 明細（productid）を含む作成/編集は汎用ドライバでは表現できないため。→ 明細専用ドライバ `utils/lineitem.ts` を用意し、**CRUD + 割引/税/合計の監査**を `test/module/inventory.spec.ts` で検証済み（§3 / P2）。
+理由: 明細（productid）を含む作成/編集は汎用ドライバでは表現できないため。→ 明細専用ドライバ `utils/lineitem.ts` を用意し、**CRUD + 割引/税/合計の監査**を `test/module/inventory.spec.ts`（ダイアログ経路）/ `test/module/inventory.lineitem.spec.ts`（インライン検索 + 製品追加/サービス追加）で検証済み（§3 / P2）。
 ※ かつて「商品検索オートコンプリートが 0 件で明細を作れない」ためブロックされていたが、真因は本体バグ（`getSearchResult` の `label` 曖昧）。**この不具合は main #1704 で修正済み（マージ済）** のため、現在は **品目名インライン検索** でも明細を登録できる。E2E は両経路を検証:（a）**商品ポップアップ(箱アイコン)ダイアログ** → `module/inventory.spec.ts`、（b）**インライン検索 + 製品追加/サービス追加** → `module/inventory.lineitem.spec.ts`。いずれも 有効・価格付き商品を dump に焼き込むこと（`seed-spec.inventory`）が前提。
 
 ### 進捗と残り
@@ -283,7 +283,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - [ ] 一覧ダブルクリック編集（No.12-2）※調査済・未採用。行 dblclick でインライン編集は動くが、同時にクイックプレビューが開き後続操作を阻害しハングするため安定化が必要（`.listViewEntries` dblclick → `input[name=...]` → `.inline-save .save`）
 - [x] CSV インポート（No.11-1） → `test/common/common.import.spec.ts`（Accounts、パターン別5種: 複数行/ヘッダなし/重複スキップ/上書き/マージ）。ウィザードは `utils/import.ts` で driver 化。**知見**: ヘッダは自動マップされず列順に明示割当が必要／重複突合は既定 `accountname`／スキップは未更新・上書き/マージは更新（本ビルドでは CSV に列自体が無い項目の空白化は起きず保持）。※他モジュール展開は未
 - [x] タグの一括付与（一覧）（No.4-1）→ `test/common/common.masstag.spec.ts`（一覧で選択→一括「タグの追加」で新規タグ作成・付与、詳細で確認）
-- [x] リスト機能 CustomView（個人リスト 作成 / 切替 / 複製 / 削除）（No.2-2）→ `test/common/common.customview.spec.ts`。**知見**: 作成/複製モーダルの保存は AJAX ハンドラ登録後にクリックしないとネイティブ GET になり保存されない（クリック前に待機を入れる）。切替は `#module-filters a.filterName`(すべて#4 含む)、複製は行アクションポップオーバー `li.duplicateFilter`(元名がプリセット)、削除は `li.deleteFilter`。ロールへの共有設定は未
+- [x] リスト機能 CustomView（個人リスト 作成 / 切替 / 複製 / 削除）（No.2-2）→ `test/common/common.customview.spec.ts`。**知見**: 作成/複製モーダルの保存は AJAX ハンドラ登録後にクリックしないとネイティブ GET になり保存されない（クリック前に待機を入れる）。切替は `#module-filters a.filterName`(すべて#4 含む)、複製は行アクションポップオーバー `li.duplicateFilter`(元名がプリセット)、削除は `li.deleteFilter`。**高並列知見(workers=4対応)**: サイドバーは CV を先頭10件しか表示せず11件目以降は `filterHidden hide`(「もっと」`a.toggleFilterSize` の裏)。並列で他テストの CV が増えると作成直後の CV が隠れて可視待ちがタイムアウトするため、行を探す前にトグルを展開する(`revealHiddenFilters`)。ロールへの共有設定は未
 - [x] 概要/詳細タブ（No.6-1/6-2）→ `test/common/common.summary.spec.ts`（概要タブ主要項目、詳細タブ全項目）
 - [x] 関連一覧からの追加（No.7-1）→ `test/common/common.relatedadd.spec.ts`（「追加」ボタン=React ダイアログで関連レコード作成）
 - [x] カレンダー表示モード切替（No.14-1）→ `test/common/common.calendarview.spec.ts`（月/週/日/概要 の fc ボタン）
@@ -299,7 +299,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - [x] **カスタム共有ルール（datashare ROLE→ROLE）** → `test/common/common.sharing-rule.spec.ts`。`Settings_SharingAccess_Rule_Model` で `Leads: MGRA ロール→観測者ロール read-only` を作成。観測者は共有元ロール所有の 4 件だけ見え、他ロール/配下ロールは 0 件。**知見**: メンバー id は `Roles:H7`(単一コロン)、`save()` が `recalculateSharingRules()` で sharing_privileges を再生成
 - [x] **検索/絞り込み（既知件数）** → `test/common/common.filter.spec.ts`。`[E2E-SRCH]` 島（industry 別 + 一意トークン）で、列検索の既知件数・一意トークン単一ヒット・グローバル検索ヒットを検証
 - [x] 所有者変更（Transfer Ownership）→ `test/common/common.masstransfer.spec.ts`。**知見**: 一覧の検索→選択は並列負荷で不安定な為、作成した record id で詳細画面から直接「担当の変更」→ `#Accounts_detailView_moreAction_LBL_TRANSFER_OWNERSHIP` → モーダル `#transferOwnerId`/`#related_modules`(必須)。担当の反映は詳細タブの `#Accounts_detailView_fieldValue_assigned_user_id` で確認
-- [x] CustomView の**絞り込み条件**ビルダ → `test/common/common.customview-condition.spec.ts`。**知見**: 実行行は「条件を追加」で `.conditionList` に生成（初期 `.conditionRow` は隠しテンプレート）。項目/演算子 select は select2 で隠れる為 `value` 直接設定+`change` 発火。テキスト項目 accountname の contains 条件で決定論的に 10 件検証（picklist は値 UI が select2 化し不安定）。**ロール共有**の CustomView は未
+- [x] CustomView の**絞り込み条件**ビルダ → `test/common/common.customview-condition.spec.ts`。**知見**: 実行行は「条件を追加」で `.conditionList` に生成（初期 `.conditionRow` は隠しテンプレート）。項目/演算子 select は select2 で隠れる為 `value` 直接設定+`change` 発火。テキスト項目 accountname の contains 条件で決定論的に 10 件検証（picklist は値 UI が select2 化し不安定）。**高並列知見(workers=4対応)**: 「条件を追加」ボタンのハンドラは AJAX で非同期登録されるため、行が出るまでクリック再試行(二重生成ガード)。また columnname 変更で値UIが再生成され、固定待ちだと入力値が流されて消える(→空条件で0件)ため、値が確定するまで(`toHaveValue`)検証つきで再試行する。**ロール共有**の CustomView は未
 - [x] エクスポート/インポート権限 → `test/common/common.permission-export.spec.ts`（§1 権限節参照）
 - [ ] タグの変更 / フォロー絞り込み（保留。詳細のタグ追加+削除・一覧一括付与は実装済）※タグ変更は Settings/Tags 上に明確な rename UI が見当たらず、フォロー絞り込みは「フォロー中のみ表示」の絞り込み UI が本ビルドに見当たらないため、UI 特定後に着手
 - [ ] ダッシュボード追加・ウィジェット追加/削除（No.13-1）※ウィジェット追加後の DOM が React 混在で不定・管理者ダッシュボードを汚すため保留
