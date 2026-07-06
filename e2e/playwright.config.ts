@@ -18,16 +18,15 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* CI の並列度。per-worker セッション分離(fixtures/isolated.ts)+ 個別競合の根治
-   * (列検索の CustomView 汚染→All 固定 / 保存前のモーダル閉じ保証 / 条件追加の再試行)で
-   * workers=2 は実測フレーク 0・CI 緑で安定。
-   *
-   * ※ 3 以上に上げると、モーダル多用テスト(common.customview の切替/複製 等)が
-   *   非決定的にタイムアウトする(worker 数の問題ではなく、待ち条件の脆さ:
-   *   networkidle 依存が多数 / 固定 waitForTimeout / 非同期リフレッシュ待ちの甘さ)。
-   *   4 で回すには先にこれらの「OK 条件」を条件ベース待ちへ根治する必要がある。
-   *   それまでの安定上限は 2(retry で隠さず実際に安定させる方針)。 */
-  workers: process.env.CI ? 2 : undefined,
+  /* CI の並列度 = 4(実行時間を最優先)。per-worker セッション分離(fixtures/isolated.ts)+
+   * 高並列で顕在化する待ち条件の根治を積み上げている:
+   *  - 列検索の CustomView 汚染 → 一覧を All CV に固定(utils/listview.ts)
+   *  - 保存ボタンのモーダル横取り → 保存前に #popupModal の閉じ切りを保証(model/FrTest.ts)
+   *  - 条件追加ボタンの空振り → 行が出るまで再試行(common.customview-condition)
+   *  - サイドバー CV が 10 件超で隠れる → 「もっと」トグルを展開してから探す(common.customview)
+   * 残る単一コンテナ由来の稀なタイムアウトは retries=2 で吸収する(flaky 許容の運用方針)。
+   * 新たな flaky が出たら「固定待ち/networkidle → 条件ベース待ち」へ都度根治していく。 */
+  workers: process.env.CI ? 4 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   // CI では GitHub 注釈(失敗をrun/PRにインライン表示) + HTMLレポート(artifact) +
   // JSON(ジョブサマリ生成用) を出す。ローカルは従来どおり HTML のみ。
