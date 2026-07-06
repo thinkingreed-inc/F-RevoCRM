@@ -42,14 +42,22 @@ test.describe("共通: CustomView の絞り込み条件", () => {
     await modal.locator('input[name="viewname"]').fill(viewName);
 
     // 「条件を追加」で AND 条件の実行行を 1 本出す(初期の .conditionRow は隠しテンプレート)。
-    await page
-      .locator(".allConditionContainer .addCondition button")
-      .first()
-      .click();
-    const row = page
-      .locator(".allConditionContainer .conditionList .conditionRow")
-      .first();
-    await expect(row).toBeVisible({ timeout: 10000 });
+    // 保存ボタン同様、追加ハンドラはモーダルの AJAX 読込後に非同期登録される。高並列で
+    // 登録が遅れるとクリックが空振りし行が出ない(retries でしか回復しない)ため、行が
+    // 現れるまでクリックを再試行する。既に 1 行あれば再クリックせず二重生成を防ぐ。
+    const rows = page.locator(
+      ".allConditionContainer .conditionList .conditionRow"
+    );
+    await expect(async () => {
+      if ((await rows.count()) === 0) {
+        await page
+          .locator(".allConditionContainer .addCondition button")
+          .first()
+          .click();
+      }
+      await expect(rows.first()).toBeVisible({ timeout: 2000 });
+    }).toPass({ timeout: 20000 });
+    const row = rows.first();
 
     // 条件行(AND): accountname / contains(c) / "[E2E-SRCH] Chemicals"
     // 項目・演算子の select は select2 で隠されるため、value を直接設定し change を発火して
@@ -61,13 +69,18 @@ test.describe("共通: CustomView の絞り込み条件", () => {
         sel.dispatchEvent(new Event("change", { bubbles: true }));
       }, value);
     };
-    await setSelect("columnname", ACCOUNTNAME_COL);
-    await page.waitForTimeout(800); // 演算子・値 UI の再描画待ち
-    await setSelect("comparator", "c"); // contains
-    await page.waitForTimeout(500);
+    // columnname 変更で値 UI が非同期に作り直されるため、固定待ちだと高並列で
+    // 値の入力が再描画に流されて消える(→ 空条件で 0 件になる)。値が確定するまで
+    // 「項目→値UI待ち→演算子→値入力→値の確定確認」を検証つきで再試行する。
+    const wanted = `${sr.prefix} ${industry}`;
     const valueInput = row.locator(".fieldUiHolder input.inputElement").first();
-    await expect(valueInput).toBeVisible({ timeout: 10000 });
-    await valueInput.fill(`${sr.prefix} ${industry}`);
+    await expect(async () => {
+      await setSelect("columnname", ACCOUNTNAME_COL);
+      await expect(valueInput).toBeVisible({ timeout: 3000 });
+      await setSelect("comparator", "c"); // contains
+      await valueInput.fill(wanted);
+      await expect(valueInput).toHaveValue(wanted, { timeout: 2000 });
+    }).toPass({ timeout: 20000 });
 
     // 保存 AJAX ハンドラ登録待ち → 保存 → 絞り込み済みリストへ遷移
     await page.waitForTimeout(2500);
@@ -77,7 +90,7 @@ test.describe("共通: CustomView の絞り込み条件", () => {
     ]);
     await page.waitForLoadState("networkidle").catch(() => {});
 
-    // 条件どおり industry 1 種ぶん = 10 件
-    await expect(listRows(page)).toHaveCount(sr.perIndustry);
+    // 条件どおり industry 1 種ぶん = 10 件(保存後の一覧反映ラグを許容)
+    await expect(listRows(page)).toHaveCount(sr.perIndustry, { timeout: 10000 });
   });
 });

@@ -34,6 +34,29 @@ function itemsBy(page: Page, name: string): Locator {
     .filter({ hasText: name });
 }
 
+/**
+ * サイドバーの隠れフィルタを展開する。
+ *
+ * SidebarEssentials.tpl は CustomView を先頭 10 件しか表示せず、11 件目以降は
+ * `filterHidden hide`(「もっと」トグルの裏)になる。並列実行で他テストの CV が同時に
+ * 増えると、作成直後の CV が 10 件を超えて隠れ、可視待ちがタイムアウトする。
+ * `a.toggleFilterSize` を押して隠れ項目を可視化してから探す(隠れ項目があるグループのみ)。
+ */
+async function revealHiddenFilters(page: Page): Promise<void> {
+  await page
+    .evaluate(() => {
+      document
+        .querySelectorAll("#module-filters a.toggleFilterSize")
+        .forEach((t) => {
+          const grp = t.closest(".list-group");
+          if (grp && grp.querySelector("li.filterHidden.hide")) {
+            (t as HTMLElement).click();
+          }
+        });
+    })
+    .catch(() => {});
+}
+
 /** 開いている作成/複製モーダルに名前を入れて保存する(AJAX 確定まで待つ)。 */
 async function saveModalAs(
   page: Page,
@@ -61,6 +84,7 @@ async function expectInSidebar(
   await expect(async () => {
     await gotoList(page, "Accounts");
     if (present) {
+      await revealHiddenFilters(page); // 10 件超で隠れる CV を展開してから可視確認
       await expect(itemsBy(page, name).first()).toBeVisible({ timeout: 3000 });
     } else {
       await expect(itemsBy(page, name)).toHaveCount(0, { timeout: 3000 });
@@ -82,6 +106,7 @@ async function createFilter(page: Page, name: string): Promise<void> {
 
 /** 行アクションのポップオーバーから、指定リストを削除する。 */
 async function deleteFilter(page: Page, name: string): Promise<void> {
+  await revealHiddenFilters(page); // 10 件超で隠れる場合があるので展開してから
   const item = itemsBy(page, name).first();
   await item.hover();
   await item.locator("span.js-popover-container").first().click();
@@ -124,7 +149,8 @@ test.describe("共通: リスト(CustomView)", () => {
     await page.waitForLoadState("networkidle");
     await expect(page.locator(".current-filter-name")).toContainText("すべて");
 
-    // 作成したリストへ戻す
+    // 作成したリストへ戻す(10 件超で隠れる場合があるので展開してから)
+    await revealHiddenFilters(page);
     await itemsBy(page, name).first().locator("a.filterName").click();
     await page.waitForLoadState("networkidle");
     await expect(page.locator(".current-filter-name")).toContainText(name);
@@ -140,6 +166,7 @@ test.describe("共通: リスト(CustomView)", () => {
     await createFilter(page, src);
 
     // 行アクション「複製」→ 元名がプリセットされた作成モーダルが開く
+    await revealHiddenFilters(page); // 10 件超で隠れる場合があるので展開してから
     const item = itemsBy(page, src).first();
     await item.hover();
     await item.locator("span.js-popover-container").first().click();
