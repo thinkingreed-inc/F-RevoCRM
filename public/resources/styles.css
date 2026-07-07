@@ -257,6 +257,15 @@ td.listViewEntryValue  .fieldValue .value {
   .main-container > .settingsPageDiv {
     padding-top: 45px;
   }
+  .main-container-MailManager .listViewPageDiv {
+    padding-left: 0 !important;
+  }
+  .main-container-MailManager .mmDescription {
+    width: auto !important;
+    height: auto !important;
+    margin-left: 15px !important;
+    margin-right: 15px !important;
+  }
   .main-container.main-container-Calendar .module-nav div.modules-menu {
     position: relative;
     left: auto;
