@@ -156,10 +156,15 @@ td.listViewEntryValue  .fieldValue .value {
    width: 90%;
  }
 
+.importview-content,
+.customview-content {
+  max-height: calc(100vh - 210px) !important;
+}
+
 /*
  * モバイル表示
  */
-@media (max-width: 768px) { 
+@media (max-width: 768px) {
   .settingsIcon {
     display: none;
   }
@@ -176,7 +181,7 @@ td.listViewEntryValue  .fieldValue .value {
   }
   .main-container .module-nav {
     width: 100%;
-    z-index: 1100;
+    z-index: 1050;
     background-color: #2C3B49;
     background: #2C3B49;
   }
@@ -236,9 +241,21 @@ td.listViewEntryValue  .fieldValue .value {
   .main-container.main-container-Calendar .module-nav {
     order: 2;
     width: 100%;
-    z-index: 1100;
+    z-index: 1050;
     background-color: #2C3B49;
     background: #2C3B49;
+  }
+  body.modal-open .main-container .module-nav,
+  body.modal-open .main-container.main-container-Calendar .module-nav {
+    z-index: 0;
+  }
+  .importview-content,
+  .customview-content {
+    max-height: calc(100vh - 210px) !important;
+    padding-bottom: 60px;
+  }
+  .main-container > .settingsPageDiv {
+    padding-top: 45px;
   }
   .main-container.main-container-Calendar .module-nav div.modules-menu {
     position: relative;
