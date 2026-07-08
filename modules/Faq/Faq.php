@@ -90,6 +90,8 @@ class Faq extends CRMEntity {
             self::__construct();
 	}
 
+	function save_module($module) {}
+
 	/*
 	 * Function to get the primary query part of a report
 	 * @param - $module Primary module name
