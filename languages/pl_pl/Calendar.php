@@ -167,7 +167,7 @@ $languageStrings = array(
   'LBL_OCTOBER' => 'Październik',
   'LBL_NOVEMBER' => 'Listopad',
   'LBL_DECEMBER' => 'Grudzień',
-	'LBL_CLICK_HERE_TO_VIEW' => 'Kliknij tutaj, aby wyświetlić',
+	'LBL_CLICK_HERE_TO_VIEW' => 'Kliknij tutaj, aby wyświetlić wpis',
 
 	'LBL_TOTAL_EVENTS_DUPLICATED' => 'Ilość duplikatów Wydarzenia pomijane',
 	'LBL_TOTAL_TASKS_DUPLICATED' => 'Ilość Duplikaty pomijane',

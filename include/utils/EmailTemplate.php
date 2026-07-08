@@ -282,7 +282,7 @@ s								 */
 						$needle = '$' . strtolower($this->module) . "-$column$";
 						$replaceValue = $values[array_search($column, $fieldColumnMapping)];
 						if($this->removeTags){
-							$encodedValue = json_encode($replaceValue);
+							$encodedValue = json_encode($replaceValue, JSON_UNESCAPED_UNICODE);
 							$replaceValue = substr($encodedValue, 1, -1);
 						}
 
@@ -304,10 +304,10 @@ s								 */
 							$replacer = $values[array_search($column, $fieldColumnMapping)];
 						}
 						if($this->removeTags){
-							$encodedValue = json_encode($replacer);
+							$encodedValue = json_encode($replacer, JSON_UNESCAPED_UNICODE);
 							$replacer = substr($encodedValue, 1, -1);
 						}
-						
+
 						$this->processedDescription = str_replace($needle, $replacer, $this->processedDescription);
 					}
 					if (!$params['owner'])
