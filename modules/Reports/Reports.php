@@ -224,7 +224,7 @@ class Reports extends CRMEntity{
 		global $adb, $current_user, $old_related_modules;
 
 		$restricted_modules = array('Events','Webmails');
-		$restricted_blocks = array('LBL_COMMENTS','LBL_COMMENT_INFORMATION');
+		$restricted_blocks = array('LBL_COMMENTS');
 
 		$this->module_id = array();
 		$this->module_list = array();
