@@ -29,7 +29,7 @@ class Faq extends CRMEntity {
 	var $table_index= 'id';
 	//fix for Custom Field for FAQ 
 	var $tab_name = Array('vtiger_crmentity','vtiger_faq','vtiger_faqcf');
-	var $tab_name_index = Array('vtiger_crmentity'=>'crmid','vtiger_faq'=>'id','vtiger_faqcomments'=>'faqid','vtiger_faqcf'=>'faqid');
+	var $tab_name_index = Array('vtiger_crmentity'=>'crmid','vtiger_faq'=>'id','vtiger_faqcf'=>'faqid');
     var $customFieldTable = Array('vtiger_faqcf', 'faqid');
 
 	var $entity_table = "vtiger_crmentity";
@@ -90,40 +90,6 @@ class Faq extends CRMEntity {
             self::__construct();
 	}
 
-	function save_module($module)
-	{
-		//Inserting into Faq comment table
-		$this->insertIntoFAQCommentTable('vtiger_faqcomments', $module);
-
-	}
-
-
-	/** Function to insert values in vtiger_faqcomments table for the specified module,
-  	  * @param $table_name -- table name:: Type varchar
-  	  * @param $module -- module:: Type varchar
- 	 */
-	function insertIntoFAQCommentTable($table_name, $module)
-	{
-		global $log;
-		$log->info("in insertIntoFAQCommentTable  ".$table_name."    module is  ".$module);
-        	global $adb;
-
-        	$current_time = $adb->formatDate(date('Y-m-d H:i:s'), true);
-
-		if($this->column_fields['comments'] != '')
-			$comment = $this->column_fields['comments'];
-		else
-			$comment = $_REQUEST['comments'];
-
-		if($comment != '')
-		{
-			$params = array('', $this->id, from_html($comment), $current_time);
-			$sql = "insert into vtiger_faqcomments values(?, ?, ?, ?)";
-			$adb->pquery($sql, $params);
-		}
-	}
-
-
 	/*
 	 * Function to get the primary query part of a report
 	 * @param - $module Primary module name
@@ -156,10 +122,6 @@ class Faq extends CRMEntity {
 			"Documents" => array("vtiger_senotesrel"=>array("crmid","notesid"),"vtiger_faq"=>"id"),
 		);
 		return $rel_tables[$secmodule];
-	}
-
-	function clearSingletonSaveFields() {
-		$this->column_fields['comments'] = '';
 	}
 
 }

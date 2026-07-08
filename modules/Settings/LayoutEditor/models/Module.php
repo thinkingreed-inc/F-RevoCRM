@@ -444,7 +444,6 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 	public function isFieldsSortableAllowed($blockName) {
 		$moduleName = $this->getName();
 		$blocksEliminatedArray = array('HelpDesk' => array('LBL_TICKET_RESOLUTION', 'LBL_COMMENTS'),
-										'Faq' => array('LBL_COMMENT_INFORMATION'),
 										'Calendar' => array('LBL_TASK_INFORMATION', 'LBL_DESCRIPTION_INFORMATION'),
 										'Invoice' => array('LBL_ITEM_DETAILS'),
 										'Quotes' => array('LBL_ITEM_DETAILS'),
