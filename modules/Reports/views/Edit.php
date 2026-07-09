@@ -92,7 +92,8 @@ Class Reports_Edit_View extends Vtiger_Edit_View {
 		if (!empty($record)) {
 			$viewer->assign('MODE', 'edit');
 		} else {
-			$firstModuleName = reset($modulesList);
+			reset($modulesList);
+			$firstModuleName = key($modulesList);
 			if($firstModuleName)
 				$reportModel->setPrimaryModule($firstModuleName);
 			$viewer->assign('MODE', '');
