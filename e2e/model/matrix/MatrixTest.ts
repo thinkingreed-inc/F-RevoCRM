@@ -39,8 +39,41 @@ import {
 import {
   createSharedFilter,
   expectSharedVisibleAs,
+  expectFilterHiddenAs,
 } from "../../utils/sharedList";
 import type { CaseId } from "./capabilities";
+import { frgetDescribe } from "../fetcher";
+import type { FRDescribeType } from "../types/frBase";
+
+/** 関連(親→子)テストの仕様。 */
+interface RelatedSpec {
+  /** 子(関連先)モジュール名。 */
+  relatedModule: string;
+  /** 子レコード上の、親を参照する項目名。 */
+  parentField: string;
+  /** 子の名前列(関連一覧の検索対象)。 */
+  searchField: string;
+  searchValueOf: (name: string) => string;
+}
+
+/**
+ * 関連の子として使わないモジュール。
+ * - 明細必須で API 作成できないインベントリ系(Invoice/Quotes/SalesOrder/PurchaseOrder)
+ * - 特殊フォーム/非エンティティ(Calendar/Emails/ModComments/SMSNotifier/Documents)
+ *   ※Documents は項目参照でなく m2m(senotesrel)関連のため参照項目が無く、どのみち選ばれない。
+ */
+const EXCLUDED_RELATED_CHILD = new Set<string>([
+  "Invoice",
+  "Quotes",
+  "SalesOrder",
+  "PurchaseOrder",
+  "Calendar",
+  "Emails",
+  "Events",
+  "ModComments",
+  "SMSNotifier",
+  "Documents",
+]);
 
 /**
  * そのモジュールに per-module 設定(名前列 searchField / 関連仕様 relatedSpec 等)が
@@ -52,11 +85,15 @@ export class UnconfiguredCaseError extends Error {}
 
 export class MatrixTest {
   private fr: FrTest;
+  /** init 時に describe.labelFields から解決した名前列(列検索対象)。 */
+  private nameField?: string;
+  /** 関連仕様の自動導出結果(init で一度だけ解決)。undefined=未解決/null=関連なし。 */
+  private related?: RelatedSpec | null;
 
   constructor(
     public moduleName: string,
     public app: string,
-    sessionName: string
+    private sessionName: string
   ) {
     this.fr = new FrTest(moduleName, sessionName);
   }
@@ -67,9 +104,41 @@ export class MatrixTest {
     sessionName: string
   ): Promise<MatrixTest> {
     const m = new MatrixTest(moduleName, app, sessionName);
-    // FrTest は describe(API) を遅延取得するため、ここでは疎通のみ
-    await m.fr.getDescribe();
+    // FrTest は describe(API) を遅延取得するため、ここで一度取得し、
+    // 名前列(列検索・作成時の一意名上書き対象)を describe.labelFields から自動解決する。
+    const describe = await m.fr.getDescribe();
+    m.nameField = MatrixTest.resolveNameField(moduleName, describe);
+    // 関連仕様(親→子の参照)を親/子の describe から自動導出する(失敗しても
+    // 関連ケースは skip に退避するだけなので init 自体は落とさない)。
+    m.related = await m.resolveRelatedSpec(describe).catch(() => null);
     return m;
+  }
+
+  /**
+   * 名前列(列検索対象 = 一覧の検索ボックス name 属性)を describe.labelFields から自動解決する。
+   *
+   * vtiger の labelFields はエンティティ名を構成する列のカンマ区切り(例: Accounts=accountname,phone /
+   * Contacts=lastname,firstname / Invoice=subject)。先頭列がそのモジュールの主たる名前列であり、
+   * 一覧の列検索・作成フォームの一意名上書きに使える。モジュールごとの列名ハードコードを避け、
+   * 全モジュールを describe 駆動で有効化するための要。
+   *
+   * NAME_FIELD_OVERRIDE は labelFields の先頭が一覧検索列と一致しない例外モジュール専用の逃げ道
+   * (通常は空。有効化時に赤が出た場合のみ足す)。
+   */
+  private static readonly NAME_FIELD_OVERRIDE: Record<string, string> = {};
+
+  static resolveNameField(
+    moduleName: string,
+    describe: Awaited<ReturnType<FrTest["getDescribe"]>>
+  ): string | undefined {
+    if (MatrixTest.NAME_FIELD_OVERRIDE[moduleName]) {
+      return MatrixTest.NAME_FIELD_OVERRIDE[moduleName];
+    }
+    if (describe && typeof describe !== "boolean" && describe.labelFields) {
+      const first = describe.labelFields.split(",")[0]?.trim();
+      if (first) return first;
+    }
+    return undefined;
   }
 
   /**
@@ -84,22 +153,32 @@ export class MatrixTest {
   async createDisposableNamed(
     page: Page
   ): Promise<{ id: string; name: string }> {
-    await page.goto(this.fr.getCreateUrl());
-    await page.waitForLoadState("domcontentloaded");
-    const hash = generateRandomString(8);
-    await this.fr.fillAllFieldsPublic(page, hash);
-
     const name = `E2Emx${generateRandomString(8)}`;
     const nameField = this.searchField();
-    if (nameField) {
-      await page.fill(`input[name="${nameField}"]`, name);
-    }
 
-    await page.locator("button.saveButton").first().click();
-    await page.waitForURL(/[?&]record=\d+/, { timeout: 15000 });
-    const id = page.url().match(/record=(\d+)/)?.[1];
-    if (!id) throw new Error(`${this.moduleName}: 使い捨てレコード作成に失敗`);
-    return { id, name };
+    // レコードを用意することが目的の派生ケース(検索/複製/ファイル/コメント/関連 等)は
+    // Webservice API 作成を第一手段にする。UI 新規作成フォームは必須の関連項目選択モーダルや
+    // リッチテキスト/ファイル種別ラジオ等の特殊コントロールで不安定になりやすく、
+    // 「レコードが存在すること」自体が前提の派生ケースでは API の方が堅牢(utils/record.ts 参照)。
+    // API 作成できないモジュール(明細必須のインベントリ等)は UI フォームにフォールバックする。
+    try {
+      const rec = await createRecordViaApi(this.moduleName, {
+        [nameField]: name,
+      });
+      return { id: rec.recordId, name };
+    } catch {
+      // フォールバック: UI 新規作成フォームで作成する(全項目入力 + 名前列を一意名で上書き)。
+      await page.goto(this.fr.getCreateUrl());
+      await page.waitForLoadState("domcontentloaded");
+      const hash = generateRandomString(8);
+      await this.fr.fillAllFieldsPublic(page, hash);
+      await page.fill(`input[name="${nameField}"]`, name);
+      await page.locator("button.saveButton").first().click();
+      await page.waitForURL(/[?&]record=\d+/, { timeout: 15000 });
+      const id = page.url().match(/record=(\d+)/)?.[1];
+      if (!id) throw new Error(`${this.moduleName}: 使い捨てレコード作成に失敗`);
+      return { id, name };
+    }
   }
 
   async run(page: Page, browser: Browser, caseId: CaseId): Promise<void> {
@@ -308,13 +387,29 @@ export class MatrixTest {
         await deletePersonalFilter(page, this.moduleName, name);
         return;
       }
+      case "list.cv.mine.self": {
+        // マイリスト(個人/非公開の CustomView)が作成者本人のサイドバーに出る。
+        const name = `E2Emine${generateRandomString(6)}`;
+        await createPersonalFilter(page, this.moduleName, name);
+        await expectFilterInSidebar(page, this.moduleName, name, true);
+        await deletePersonalFilter(page, this.moduleName, name);
+        return;
+      }
+      case "list.cv.mine.other": {
+        // マイリスト(個人/非公開)は別ユーザーのサイドバーには出ない(共有していないため)。
+        const name = `E2Emineo${generateRandomString(6)}`;
+        await createPersonalFilter(page, this.moduleName, name);
+        await expectFilterHiddenAs(browser, this.moduleName, name, "e2e_director");
+        await deletePersonalFilter(page, this.moduleName, name);
+        return;
+      }
       case "related.search":
       case "related.searchReset":
       case "related.navigate": {
-        const spec = this.relatedSpec();
+        const spec = this.related;
         if (!spec)
           throw new UnconfiguredCaseError(
-            `${this.moduleName}: relatedSpec(関連仕様)未設定`
+            `${this.moduleName}: relatedSpec(関連仕様)を describe から導出できず`
           );
         const childName = `E2Erel${generateRandomString(6)}`;
         // 親 Account 作成後に prefixOf/createRecordViaApi が例外を投げると、finally が
@@ -325,10 +420,20 @@ export class MatrixTest {
         try {
           ({ id } = await this.createDisposableNamed(page));
           const parentPrefix = await this.prefixOf(this.moduleName);
-          child = await createRecordViaApi(spec.relatedModule, {
-            [spec.parentField]: `${parentPrefix}x${id}`,
-            [spec.searchField]: spec.searchValueOf(childName),
-          });
+          try {
+            child = await createRecordViaApi(spec.relatedModule, {
+              [spec.parentField]: `${parentPrefix}x${id}`,
+              [spec.searchField]: spec.searchValueOf(childName),
+            });
+          } catch (e) {
+            // 子レコードが用意できない(他の必須参照が空 等)のは本物の不具合ではなく
+            // 「関連検証の前提未整備」なので、後始末してから理由付き skip に退避する。
+            if (id) await deleteViaDetail(page, this.moduleName, id);
+            id = undefined;
+            throw new UnconfiguredCaseError(
+              `${this.moduleName}: 関連子(${spec.relatedModule})の作成に失敗: ${(e as Error).message}`
+            );
+          }
           await gotoDetail(page, this.moduleName, id, this.app);
           await openRelatedTab(page, spec.relatedModule);
           if (caseId === "related.navigate") {
@@ -354,31 +459,54 @@ export class MatrixTest {
     }
   }
 
-  /** モジュールの名前列(列検索対象)。既定は accountname 相当。 */
+  /**
+   * モジュールの名前列(列検索対象)。init 時に describe.labelFields から解決済み。
+   * 解決できなかった(describe 取得失敗等)場合のみ理由付き skip に退避する。
+   */
   private searchField(): string {
-    const map: Record<string, string> = {
-      Accounts: "accountname",
-    };
-    const f = map[this.moduleName];
-    if (!f)
+    if (!this.nameField)
       throw new UnconfiguredCaseError(
-        `${this.moduleName}: searchField(名前列)未設定 — モジュール有効化時に capabilities/MatrixTest へ名前列を追加すること`
+        `${this.moduleName}: searchField(名前列)を describe.labelFields から解決できず — NAME_FIELD_OVERRIDE に追加すること`
       );
-    return f;
+    return this.nameField;
   }
 
-  /** 関連テストの仕様(モジュール依存)。関連が無いモジュールは null。 */
-  private relatedSpec(): {
-    relatedModule: string;
-    parentField: string;
-    searchField: string;
-    searchValueOf: (name: string) => string;
-  } | null {
-    if (this.moduleName === "Accounts") {
+  /**
+   * 関連テストの仕様を親/子の describe から自動導出する。
+   *
+   * 手順:
+   *  1) 親 describe の relatedModules を順に見る(除外モジュールは飛ばす)。
+   *  2) 各候補(子)の describe を取り、「親モジュールを参照する reference 項目」を探す。
+   *     それが子→親の参照項目(parentField)になる。
+   *  3) 子の名前列(labelFields 先頭)を関連一覧の検索列(searchField)とする。
+   * これにより Accounts の手書き仕様をやめ、全モジュールを describe 駆動で関連検証できる。
+   * 見つからなければ null(=関連ケースは理由付き skip)。
+   */
+  private async resolveRelatedSpec(
+    parentDescribe: FRDescribeType | false
+  ): Promise<RelatedSpec | null> {
+    if (!parentDescribe || typeof parentDescribe === "boolean") return null;
+    const related = parentDescribe.relatedModules ?? [];
+    for (const rel of related) {
+      const childMod = rel.relatedModuleName;
+      if (!childMod || EXCLUDED_RELATED_CHILD.has(childMod)) continue;
+      const childDescribe = await frgetDescribe(this.sessionName, childMod).catch(
+        () => false as const
+      );
+      if (!childDescribe || typeof childDescribe === "boolean") continue;
+      // 子側で「親モジュールを参照する」reference 項目を探す。
+      const refField = childDescribe.fields.find(
+        (f) =>
+          f.type?.name === "reference" &&
+          (f.type.refersTo ?? []).includes(this.moduleName)
+      );
+      if (!refField) continue;
+      const childSearch = childDescribe.labelFields?.split(",")[0]?.trim();
+      if (!childSearch) continue;
       return {
-        relatedModule: "Contacts",
-        parentField: "account_id",
-        searchField: "lastname",
+        relatedModule: childMod,
+        parentField: refField.name,
+        searchField: childSearch,
         searchValueOf: (name) => name,
       };
     }

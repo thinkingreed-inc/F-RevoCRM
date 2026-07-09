@@ -47,6 +47,33 @@ export async function createSharedFilter(
   await saveModalAs(page, modal, name);
 }
 
+/**
+ * 別ユーザーでログインし、指定名のリストが「表示されない」ことを確認する。
+ * マイリスト(個人/非公開の CustomView)は作成者本人にしか見えず、別ユーザーには
+ * 出ないことの検証に使う(共有リストの expectSharedVisibleAs の否定版)。
+ */
+export async function expectFilterHiddenAs(
+  browser: Browser,
+  module: string,
+  name: string,
+  username: string
+): Promise<void> {
+  const { context, page } = await loginInIsolatedContext(
+    browser,
+    username,
+    passwordFor(username)
+  );
+  try {
+    await gotoList(page, module);
+    await revealHiddenFilters(page);
+    // 非公開リストは別ユーザーのサイドバーに現れない。念のため「もっと」展開後も
+    // 0 件であることを確認する。
+    await expect(itemsBy(page, name)).toHaveCount(0, { timeout: 15000 });
+  } finally {
+    await context.close();
+  }
+}
+
 /** 別ユーザーでログインし、共有リストに name が出ることを確認する。 */
 export async function expectSharedVisibleAs(
   browser: Browser,

@@ -24,10 +24,31 @@ import { gotoDetail } from "./listview";
  */
 
 async function openDocumentsTab(page: Page): Promise<void> {
-  const tab = page.locator('li.tab-item[data-module="Documents"]').first();
-  await expect(tab).toBeVisible();
-  await tab.locator("a").first().click();
-  await expect(tab).toHaveClass(/active/, { timeout: 15000 });
+  // 関連タブが多いモジュール(Services 等)では「ドキュメント」タブが直接の
+  // li.tab-item ではなく「もっと ▼」(li.related-tab-more-element)配下の
+  // li.more-tab に押し出される。まず直接タブを探し、無ければ「もっと」を開いて
+  // more-tab を辿る(ModuleRelatedTabs.tpl のオーバーフロー構造に対応)。
+  const directTab = page
+    .locator('li.tab-item[data-module="Documents"]')
+    .first();
+  if (await directTab.isVisible().catch(() => false)) {
+    await directTab.locator("a").first().click();
+  } else {
+    const more = page
+      .locator("li.related-tab-more-element .dropdown-toggle")
+      .first();
+    await expect(more).toBeVisible({ timeout: 15000 });
+    await more.click();
+    await page
+      .locator('li.more-tab[data-module="Documents"] a')
+      .first()
+      .click();
+  }
+  // タブ切替後、関連コンテンツ(ドキュメント関連リスト)の読み込み完了を待つ。
+  await page.waitForLoadState("networkidle");
+  await expect(
+    page.locator('li[data-module="Documents"].active').first()
+  ).toBeVisible({ timeout: 15000 });
 }
 
 /**

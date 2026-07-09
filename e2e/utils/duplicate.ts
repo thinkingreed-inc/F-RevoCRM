@@ -47,7 +47,11 @@ export async function duplicateViaDetail(
   //   `.nameField` の先頭を上書きする。Contacts / Leads のような複合名(姓/名で
   //   `.nameField` が 2 つ以上ある)モジュールへ流用する際は、先頭だけでは片方の
   //   サブ項目しか変わらず重複防止を外せない場合があるため、ここを見直すこと。
-  const nameInput = page.locator("input.nameField").first();
+  // 名前列は string(input.nameField)だけでなく Faq.question のような
+  // text(textarea.nameField)もあるため両方を対象にする。
+  const nameInput = page
+    .locator("input.nameField, textarea.nameField")
+    .first();
   const original = await nameInput.inputValue();
   await nameInput.fill(`${original}_${generateRandomString(4)}`);
 

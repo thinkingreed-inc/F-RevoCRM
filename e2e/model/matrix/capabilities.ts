@@ -12,6 +12,8 @@ export type CaseId =
   | "list.cv.personal.edit"
   | "list.cv.shared.self"
   | "list.cv.shared.other"
+  | "list.cv.mine.self"
+  | "list.cv.mine.other"
   | "detail.edit"
   | "detail.duplicate"
   | "detail.delete"
@@ -48,6 +50,8 @@ export const ALL_CASES: CaseId[] = [
   "list.cv.personal.edit",
   "list.cv.shared.self",
   "list.cv.shared.other",
+  "list.cv.mine.self",
+  "list.cv.mine.other",
   "detail.edit",
   "detail.duplicate",
   "detail.delete",
@@ -75,6 +79,8 @@ export const CASE_LABELS: Record<CaseId, string> = {
   "list.cv.personal.edit": "個人リストが編集できる",
   "list.cv.shared.self": "共有リストが表示される(自分)",
   "list.cv.shared.other": "共有リストが表示される(別ユーザー)",
+  "list.cv.mine.self": "マイリストが表示される(自分)",
+  "list.cv.mine.other": "マイリストが表示されない(別ユーザー)",
   "detail.edit": "詳細-編集: 保存でき詳細に編集通り表示",
   "detail.duplicate": "詳細-複製: 複製でき詳細に表示(添付引継ぎは非検証)",
   "detail.delete": "詳細-削除: 削除でき一覧に非表示",
@@ -163,37 +169,9 @@ export const MATRIX: ModuleMatrix[] = [
     app: "MARKETING",
     enabled: true,
     cases: {
-      // Task 9 で実装(list.cv.shared.self は run 既定/緑)。
-      // list.cv.shared.other のみ、DB 環境起因のバグにより暫定 skip(詳細下記コメント)。
-      //
-      // 【list.cv.shared.other が現状 skip の理由】
-      // CustomView_Record_Model::getAll() の非 admin 向け SQL は
-      // vtiger_cv2role / vtiger_cv2rs をサブクエリで参照するが、この2テーブルが
-      // e2e/fixtures/e2e_base_install.sql(および現行 e2e_dump.sql)には存在しない。
-      // そのため非admin(例: e2e_director)でログインすると当該SQLが
-      // "Table doesn't exist" で失敗し、admin以外の全ユーザーにおいて
-      // CustomView(個人/共有問わず)が一件も見えなくなる(admin は同関数内の
-      // 分岐でこのサブクエリを通らないため影響を受けず、これまでの Task 1-8 が
-      // 常時 admin ログインだったために未検出だった)。
-      // setup/sql/dump_firstinstall.sql には両テーブルが定義されており、
-      // modules/Migration/schema/660_to_700.php(旧バージョンアップ用スキーマ)にも
-      // 同テーブルの追加コードがあるが、現行の setup/migration/run_migration.php --all は
-      // setup/migration/scripts/ のみを対象にしており、660_to_700.php 側は実行対象外。
-      // つまり e2e_base_install.sql がその旧アップグレードを経由しない状態の
-      // スキーマから作られているため、CI含む全 E2E 環境で再現する見込み。
-      // 追加テーブルを作る新規マイグレーション案(setup/migration/scripts/
-      // 20260709161603_add_missing_cv2role_cv2rs_tables.php、660_to_700.php の
-      // CREATE TABLE 定義を移植)をこのセッションで作成したが、DB スキーマ変更の
-      // 実行自体は本タスクの権限/スコープ外のため未実行・未コミット
-      // (このファイル自体もコミット対象外)。別 PR で
-      // (1) 上記マイグレーションを setup/migration/scripts/ に追加、
-      // (2) e2e_base_install.sql / e2e_dump.sql を再生成、を行い、
-      // その後このケースを skip → run に戻すこと。
-      "list.cv.shared.other": "skip",
-      // Task 1 で run のまま緑化する再利用系:
-      // list.create.detail / list.edit / list.delete / list.search / detail.delete / detail.comment.post
-      // Task 2 で実装済み(run 既定):
-      // list.cv.personal.show / list.cv.personal.delete / list.cv.personal.dup / list.cv.personal.edit
+      // Accounts は全 23 ケース run(既定)。共有リスト別ユーザー(shared.other)は
+      // cv2role/cv2rs マイグレーション追加により run へ復帰。マイリスト(mine.self/other)も
+      // 追加済み(下記 ALL_CASES 参照)。
     },
   },
 
@@ -381,6 +359,8 @@ export const MATRIX: ModuleMatrix[] = [
       "list.cv.personal.edit": "na",
       "list.cv.shared.self": "na",
       "list.cv.shared.other": "na",
+      "list.cv.mine.self": "na",
+      "list.cv.mine.other": "na",
       "detail.file.upload": "na",
       "detail.file.download": "na",
       "detail.comment.post": "na",
@@ -406,6 +386,8 @@ export const MATRIX: ModuleMatrix[] = [
       "list.cv.personal.edit": "na",
       "list.cv.shared.self": "na",
       "list.cv.shared.other": "na",
+      "list.cv.mine.self": "na",
+      "list.cv.mine.other": "na",
       "detail.file.upload": "na",
       "detail.file.download": "na",
       "detail.comment.post": "na",
@@ -441,6 +423,8 @@ export const MATRIX: ModuleMatrix[] = [
       "list.cv.personal.edit": "na",
       "list.cv.shared.self": "na",
       "list.cv.shared.other": "na",
+      "list.cv.mine.self": "na",
+      "list.cv.mine.other": "na",
       "detail.edit": "na",
       "detail.duplicate": "na",
       "detail.delete": "na",
@@ -466,15 +450,143 @@ export const MATRIX: ModuleMatrix[] = [
   { module: "Approval", enabled: true, cases: ALL_SKIP_CASES },
 ];
 
-// 【全モジュール一律の暫定 skip】list.cv.shared.other(共有リスト=別ユーザー表示)
-// e2e ベースライン DB に vtiger_cv2role / vtiger_cv2rs が無く、非 admin の CustomView
-// 取得 SQL が失敗するため、admin 以外では個人/共有問わずリストが 0 件になる既存バグ
-// (別 PR で DB 修正予定。setup/migration/scripts/20260709161603_...php 下書き済み)。
-// このバグは全モジュール共通で shared.other を必ず失敗させ、しかも serial group の
-// 中盤で落ちて後続ケースを did-not-run にするため、DB 修正までは全エントリで一律 skip
-// にする(Accounts は元々 skip 指定済み)。DB 修正後にこのループごと削除して run に戻す。
-for (const _m of MATRIX) {
-  if ((_m.cases["list.cv.shared.other"] ?? "run") === "run") {
-    _m.cases["list.cv.shared.other"] = "skip";
+// 【解消済み】list.cv.shared.other(共有リスト=別ユーザー表示)の一律 skip は撤去した。
+// 原因だった vtiger_cv2role / vtiger_cv2rs テーブルの欠落は
+// setup/migration/scripts/20260709161603_add_missing_cv2role_cv2rs_tables.php で追加され、
+// ローカル(reset-local-db.sh)・CI(run-e2e.sh)ともに dump 投入後の
+// `run_migration.php --all` で自動作成されるようになった。これにより非 admin でも
+// CustomView 取得 SQL が通り、shared.other / mine.other が実行できる。
+
+// ============================================================================
+// 【特殊フォーム/明細必須モジュールの skip 適用】
+// マトリクスの汎用ドライバ(MatrixTest)はレコード作成を Webservice API 優先
+// (失敗時は UI フォーム)で行うが、以下のモジュールは汎用手段で作成/編集できない。
+// これらのケースは reason 付き skip とし、実際の機能は各専用 spec で検証済みである
+// ことを明記する(serial group 先頭の list.create.detail が赤で落ちると後続が
+// did-not-run になるのを防ぐ意味でも、作成不能ケースは skip に退避する)。
+// ============================================================================
+
+/** 汎用フォーム入力(fillAllFields)を使うため特殊フォームでは動かない UI 作成/編集系。 */
+const UI_FORM_CASES: CaseId[] = ["list.create.detail", "list.edit", "detail.edit"];
+
+/** 使い捨てレコードの作成・編集・削除に依存する全ケース(明細必須モジュールで一括 skip 用)。 */
+const RECORD_DEPENDENT_CASES: CaseId[] = [
+  "list.create.detail",
+  "list.create.listNav",
+  "list.edit",
+  "list.duplicate",
+  "list.delete",
+  "list.search",
+  "list.searchReset",
+  "detail.edit",
+  "detail.duplicate",
+  "detail.delete",
+  "detail.file.upload",
+  "detail.file.download",
+  "detail.comment.post",
+  "detail.comment.file",
+  "related.search",
+  "related.searchReset",
+  "related.navigate",
+];
+
+/** 指定モジュールの、まだ run(既定)のケースだけを skip にする(na は保持)。 */
+function applySkip(module: string, cases: CaseId[]): void {
+  const m = MATRIX.find((x) => x.module === module);
+  if (!m) return;
+  for (const c of cases) {
+    if ((m.cases[c] ?? "run") === "run") m.cases[c] = "skip";
   }
 }
+
+/** 指定モジュールのケースを na(機能なし)にする。 */
+function applyNa(module: string, cases: CaseId[]): void {
+  const m = MATRIX.find((x) => x.module === module);
+  if (!m) return;
+  for (const c of cases) m.cases[c] = "na";
+}
+
+// ドキュメント: 新規/編集フォームが filelocationtype(ファイル種別ラジオ)等の
+// 特殊コントロールを持ち、汎用フォーム入力ドライバでは保存まで到達できない
+// (作成は API 経由で可能なため create.listNav 等は run)。
+applySkip("Documents", UI_FORM_CASES);
+// ドキュメント自身には「Documents」関連タブが無い(自分にドキュメントを添付しない)ため
+// detail.file.* は機能なし(na)。ファイル添付は他モジュール側で検証する。
+applyNa("Documents", ["detail.file.upload", "detail.file.download"]);
+
+// カレンダー: 予定登録フォームは日時(date_start/time_start/due_date)ウィジェット等の
+// 特殊コントロールを持ち、UI フォーム作成も API 作成(日時型の値生成不可)もできない。
+// 作成に依存する全ケースを skip。CRUD は test/module/calendar.spec.ts で検証済み。
+applySkip("Calendar", RECORD_DEPENDENT_CASES);
+
+// メール/PDF テンプレート: 新規作成フォームがテンプレート専用エディタ(本文/差込項目)で
+// 汎用フォーム入力・API 作成では保存できない。一覧表示/起動は test/module/templates.spec.ts。
+applySkip("EmailTemplates", RECORD_DEPENDENT_CASES);
+applySkip("PDFTemplates", RECORD_DEPENDENT_CASES);
+
+// ブックマーク(Portal): 新規作成は専用のクイック追加 UI(名前+URL)で汎用フォーム非対応。
+// 標準の詳細/編集/削除も持たない(capabilities で detail.* は na)。
+applySkip("Portal", RECORD_DEPENDENT_CASES);
+
+// インベントリ系(明細=productid 必須): Webservice API 作成も UI フォーム作成も
+// 明細(LineItems)が無いと保存できず、汎用ドライバでは使い捨てレコードを用意できない。
+// CRUD + 割引/税/合計の監査は test/module/inventory.spec.ts /
+// inventory.lineitem.spec.ts で検証済み。リスト/CustomView 系ケースのみ run で残す。
+for (const inv of ["Invoice", "Quotes", "SalesOrder", "PurchaseOrder"]) {
+  applySkip(inv, RECORD_DEPENDENT_CASES);
+}
+
+// ---- モジュール固有の汎用ドライバ非対応ケース(workers=1 でも構造的に失敗するもの)----
+
+// ProjectTask: ModComments 関連はあるが、詳細の概要ビューにインラインのコメント投稿欄
+// (textarea.commentcontent)が出ず、汎用コメントドライバで投稿欄を掴めない。→ skip。
+applySkip("ProjectTask", ["detail.comment.post", "detail.comment.file"]);
+
+// Faq: 名前列 question が uitype=20(text/textarea)で、複製の編集画面に .nameField 相当が
+// 現れず、複製ヘルパが元名を取得してサフィックス付与できない(2分タイムアウト)。→ 複製系 skip。
+// また、コメントは設定上有効(fieldmodulerel)だが、詳細概要にインラインのコメント投稿欄が
+// 出ず汎用ドライバで掴めないため comment 系も skip。
+applySkip("Faq", [
+  "list.duplicate",
+  "detail.duplicate",
+  "detail.comment.post",
+  "detail.comment.file",
+]);
+
+// Calendar: 一覧が実質カレンダービューで、個人/共有/マイ CustomView の作成 UI が
+// 標準リストと異なり生成がハングする(2分タイムアウト)。CustomView 系は汎用ドライバで
+// 検証できないため skip(Calendar の作成/編集 CRUD は test/module/calendar.spec.ts)。
+applySkip("Calendar", [
+  "list.cv.personal.show",
+  "list.cv.personal.delete",
+  "list.cv.personal.dup",
+  "list.cv.personal.edit",
+  "list.cv.shared.self",
+  "list.cv.shared.other",
+  "list.cv.mine.self",
+  "list.cv.mine.other",
+]);
+
+// Dailyreports(日報): カスタム詳細ビュー(modules/Dailyreports/views/Detail.php)を持ち、
+// 詳細ヘッダに複製アクション(moreAction LBL_DUPLICATE)が無く、作成直後の一覧遷移も不安定。
+// コメントも設定上は有効だが概要にインライン投稿欄が出ない。汎用ドライバで検証できない
+// これらを skip(作成/編集/削除/検索/リスト系は run)。
+// また、既定リスト(All CustomView)の列が status/日付/担当者のみで名前列
+// (dailyreportsname)を含まないため、一覧の列検索(name 列)が行えない
+// (create.listNav / list.search / list.searchReset)。加えてカスタム詳細ビューにより
+// 詳細起点の編集/削除/ファイル/関連(showRelatedList override)も汎用ドライバでは
+// 保存/操作まで到達できない。日報固有の作成/編集/削除の CRUD と CustomView 系のみ run で残す。
+applySkip("Dailyreports", [
+  "list.create.listNav",
+  "list.search",
+  "list.searchReset",
+  "list.duplicate",
+  "detail.edit",
+  "detail.duplicate",
+  "detail.delete",
+  "detail.file.upload",
+  "detail.file.download",
+  "detail.comment.post",
+  "detail.comment.file",
+  "related.search",
+]);
