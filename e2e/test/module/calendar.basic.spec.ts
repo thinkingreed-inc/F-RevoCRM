@@ -3,10 +3,12 @@ import { generateRandomString } from "../../utils/util";
 import {
   createCalendarEvent,
   editCalendarEvent,
-  findEventBySubject,
   retrieveEvent,
   expectEventOnCalendar,
   deleteCalendarEvent,
+  duplicateEventViaDetail,
+  deleteEventViaDetail,
+  expectEventDeleted,
 } from "../../utils/calendar";
 
 /**
@@ -143,6 +145,51 @@ test.describe.serial("カレンダー基本パターン(単一ユーザー)", ()
       });
       const stored = await retrieveEvent(wsId);
       expect(stored.visibility).toBe("Public");
+    } finally {
+      if (wsId) await deleteCalendarEvent(wsId);
+    }
+  });
+
+  test("1.7 予定を複製(件名変更)でき、複製がカレンダーに表示される", async ({
+    page,
+  }) => {
+    test.setTimeout(90000);
+    const subject = `E2Ecal${generateRandomString(6)}`;
+    const dupSubject = `${subject}_dup`;
+    let wsId = "";
+    let dupWsId = "";
+    try {
+      const rec = await createCalendarEvent(page, {
+        subject,
+        date: today(),
+        timeStart: "10:00",
+      });
+      wsId = rec.wsId;
+      const dup = await duplicateEventViaDetail(page, rec.recordId, dupSubject);
+      dupWsId = dup.wsId;
+      const stored = await retrieveEvent(dupWsId);
+      expect(stored.subject).toBe(dupSubject);
+      await expectEventOnCalendar(page, dupSubject);
+    } finally {
+      if (dupWsId) await deleteCalendarEvent(dupWsId);
+      if (wsId) await deleteCalendarEvent(wsId);
+    }
+  });
+
+  test("1.9 予定を削除でき、カレンダーに表示されなくなる", async ({ page }) => {
+    test.setTimeout(90000);
+    const subject = `E2Ecal${generateRandomString(6)}`;
+    let wsId = "";
+    try {
+      const rec = await createCalendarEvent(page, {
+        subject,
+        date: today(),
+        timeStart: "10:00",
+      });
+      wsId = rec.wsId;
+      await deleteEventViaDetail(page, rec.recordId);
+      await expectEventDeleted(subject);
+      wsId = ""; // 削除済み
     } finally {
       if (wsId) await deleteCalendarEvent(wsId);
     }

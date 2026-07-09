@@ -142,3 +142,75 @@ export async function deleteCalendarEvent(wsId: string): Promise<void> {
   const sn = await apiSession();
   await frDelete(sn, wsId).catch(() => {});
 }
+
+/**
+ * 詳細画面から予定を複製する。複製フォームで件名を新件名に変更して保存し、
+ * 新レコード(recordId/wsId)を返す。保存後はカレンダービューへ遷移するため
+ * 新レコードは新件名で API 検索して特定する。
+ */
+export async function duplicateEventViaDetail(
+  page: Page,
+  recordId: string,
+  newSubject: string
+): Promise<CreatedCalendarEvent> {
+  await page.goto(
+    url(`index.php?module=Calendar&view=Detail&record=${recordId}&app=SALES`)
+  );
+  await page.waitForLoadState("networkidle");
+  await page
+    .locator(".detailViewButtoncontainer button.dropdown-toggle")
+    .first()
+    .click();
+  await page
+    .locator("#Calendar_detailView_moreAction_LBL_DUPLICATE a")
+    .click();
+  await page.waitForURL(/view=Edit/, { timeout: 15000 });
+  await page.waitForLoadState("domcontentloaded");
+  // 件名を新件名に上書き(元と同一だと重複防止で弾かれ得るため)
+  await page.fill("#Calendar_editView_fieldName_subject", newSubject);
+  await page.locator("button.saveButton").first().click();
+  await page.waitForLoadState("networkidle");
+  return findEventBySubject(newSubject);
+}
+
+/** 詳細画面の「その他 → 削除」で予定を削除する。 */
+export async function deleteEventViaDetail(
+  page: Page,
+  recordId: string
+): Promise<void> {
+  await page.goto(
+    url(`index.php?module=Calendar&view=Detail&record=${recordId}&app=SALES`)
+  );
+  await page.waitForLoadState("networkidle");
+  await page.click("text=その他");
+  // moreAction ドロップダウン内の削除リンク(ラベルは 活動/TODO で異なるため text で拾う)
+  await page
+    .locator(".detailViewButtoncontainer")
+    .getByText("削除", { exact: false })
+    .first()
+    .click();
+  // 確認ボックス「削除しますか？」の可視 Yes ボタンをクリックする。
+  const yes = page
+    .getByRole("button", { name: "Yes", exact: true })
+    .and(page.locator(":visible"));
+  await yes.first().click({ timeout: 8000 });
+  // 削除(AJAX/遷移)完了を待つ。カレンダービューへ遷移することが多い。
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(1500);
+}
+
+/** 指定件名の予定が存在しない(削除済み)ことを API で確認する(削除の非同期を数回リトライ)。 */
+export async function expectEventDeleted(subject: string): Promise<void> {
+  const sn = await apiSession();
+  let count = 1;
+  for (let i = 0; i < 5; i++) {
+    const rows = await frQuery(
+      sn,
+      `SELECT id FROM Calendar WHERE subject='${subject}';`
+    );
+    count = rows.length;
+    if (count === 0) return;
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+  expect(count).toBe(0);
+}
