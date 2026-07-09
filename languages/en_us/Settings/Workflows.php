@@ -245,6 +245,7 @@ $languageStrings = array(
     'LBL_CURL_JSON_INVALID' => 'Invalid JSON',
     'LBL_CURL_CANCEL' => 'Cancel',
     'LBL_CURL_TEST_SEND_NOTE' => 'On test send, field values such as $fieldname are sent as-is without substitution. Actual values are embedded when the workflow runs.',
+    'LBL_CURL_ADAPTIVE_CARD_DESIGNER' => 'Edit in Adaptive Card Designer',
     'Curl Request' => 'Curl Request',
 );
 

@@ -16,7 +16,12 @@ import {
   TestSendResult,
 } from "./TestSendPanel";
 import { FieldOption } from "./types";
-import { CurlLabels, mergeLabels, presetLabel } from "./labels";
+import {
+  ADAPTIVE_CARD_DESIGNER_URL,
+  CurlLabels,
+  mergeLabels,
+  presetLabel,
+} from "./labels";
 
 interface Props {
   url?: string;
@@ -141,15 +146,25 @@ export function CurlTaskForm(props: Props) {
       <input type="hidden" name="headers" value={headers} readOnly />
       <input type="hidden" name="body" value={body} readOnly />
 
-      <PresetSelector
-        hasExistingContent={hasExistingContent}
-        onApply={applyPresetResult}
-        labelFor={(k) => presetLabel(labels, k)}
-        presetLabel={labels.preset + ":"}
-        confirmMessage={labels.presetOverwriteConfirm}
-        okLabel={labels.ok}
-        cancelLabel={labels.cancel}
-      />
+      <div className="space-y-1.5">
+        <PresetSelector
+          hasExistingContent={hasExistingContent}
+          onApply={applyPresetResult}
+          labelFor={(k) => presetLabel(labels, k)}
+          presetLabel={labels.preset + ":"}
+          confirmMessage={labels.presetOverwriteConfirm}
+          okLabel={labels.ok}
+          cancelLabel={labels.cancel}
+        />
+        <a
+          href={ADAPTIVE_CARD_DESIGNER_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block text-xs text-blue-600 underline hover:text-blue-800"
+        >
+          {labels.adaptiveCardDesigner} ↗
+        </a>
+      </div>
 
       {/* URL */}
       <div className="space-y-1.5">

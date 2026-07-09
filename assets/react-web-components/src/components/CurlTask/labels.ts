@@ -26,7 +26,11 @@ export interface CurlLabels {
   jsonInvalid: string;
   ok: string;
   cancel: string;
+  adaptiveCardDesigner: string;
 }
+
+/** Teams向け Adaptive Card を編集・プレビューできる公式デザイナー */
+export const ADAPTIVE_CARD_DESIGNER_URL = "https://adaptivecards.io/designer/";
 
 export const DEFAULT_CURL_LABELS: CurlLabels = {
   url: "リクエストURL",
@@ -50,6 +54,7 @@ export const DEFAULT_CURL_LABELS: CurlLabels = {
   jsonInvalid: "不正なJSON",
   ok: "OK",
   cancel: "キャンセル",
+  adaptiveCardDesigner: "Adaptive Card デザイナーで編集",
 };
 
 /**

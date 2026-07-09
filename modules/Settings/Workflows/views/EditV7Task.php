@@ -234,6 +234,7 @@ class Settings_Workflows_EditV7Task_View extends Settings_Vtiger_Index_View {
 			'jsonValid' => 'LBL_CURL_JSON_VALID',
 			'jsonInvalid' => 'LBL_CURL_JSON_INVALID',
 			'cancel' => 'LBL_CURL_CANCEL',
+			'adaptiveCardDesigner' => 'LBL_CURL_ADAPTIVE_CARD_DESIGNER',
 		);
 		$curlLabels = array();
 		foreach ($curlLabelKeys as $prop => $langKey) {

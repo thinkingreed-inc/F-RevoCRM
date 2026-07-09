@@ -3,14 +3,36 @@ import { CurlPreset, CurlPresetKey } from "./types";
 // プリセットは特定フィールド($subject等)を決め打ちしない。
 // 該当フィールドが無いモジュールでは $var がそのまま送られてしまうため。
 // 動的な値は「フィールド挿入」で対象モジュールの実項目を入れてもらう。
+//
+// Teamsは Power Automate / Workflows の Webhook(「Post card in a chat or channel」)向けに
+// Adaptive Card を message/attachments で包んだ形式にする。
+// ※ レガシーの Incoming Webhook(Office365コネクタ/MessageCard)はMicrosoftが廃止進行中。
+// ※ $schema はテンプレート変数($xxx)と衝突するため意図的に含めない。
 const teamsBody = JSON.stringify(
   {
-    "@type": "MessageCard",
-    "@context": "https://schema.org/extensions",
-    summary: "F-RevoCRM 通知",
-    themeColor: "0078D4",
-    title: "F-RevoCRM 通知",
-    text: "メッセージ本文",
+    type: "message",
+    attachments: [
+      {
+        contentType: "application/vnd.microsoft.card.adaptive",
+        content: {
+          type: "AdaptiveCard",
+          version: "1.4",
+          body: [
+            {
+              type: "TextBlock",
+              size: "Medium",
+              weight: "Bolder",
+              text: "F-RevoCRM 通知",
+            },
+            {
+              type: "TextBlock",
+              text: "メッセージ本文",
+              wrap: true,
+            },
+          ],
+        },
+      },
+    ],
   },
   null,
   2,
