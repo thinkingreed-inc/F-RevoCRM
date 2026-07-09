@@ -19,6 +19,13 @@ import {
   downloadDocumentFromRecord,
 } from "../../utils/documentsFile";
 import {
+  openRelatedTab,
+  relatedSearch,
+  relatedSearchReset,
+  navigateToRelatedDetail,
+} from "../../utils/related";
+import { createRecordViaApi, deleteRecordViaApi } from "../../utils/record";
+import {
   createPersonalFilter,
   deletePersonalFilter,
   duplicatePersonalFilter,
@@ -271,6 +278,39 @@ export class MatrixTest {
         await deletePersonalFilter(page, this.moduleName, renamed);
         return;
       }
+      case "related.search":
+      case "related.searchReset":
+      case "related.navigate": {
+        const spec = this.relatedSpec();
+        if (!spec) throw new Error(`${this.moduleName}: 関連仕様未定義`);
+        const { id } = await this.createDisposableNamed(page);
+        const childName = `E2Erel${generateRandomString(6)}`;
+        const parentPrefix = await this.prefixOf(this.moduleName);
+        const child = await createRecordViaApi(spec.relatedModule, {
+          [spec.parentField]: `${parentPrefix}x${id}`,
+          [spec.searchField]: spec.searchValueOf(childName),
+        });
+        try {
+          await gotoDetail(page, this.moduleName, id, this.app);
+          await openRelatedTab(page, spec.relatedModule);
+          if (caseId === "related.navigate") {
+            const toId = await navigateToRelatedDetail(page);
+            expect(toId).toBe(child.recordId);
+          } else if (caseId === "related.search") {
+            await relatedSearch(page, spec.searchField, childName);
+            await expect(
+              page.locator(".relatedContents").getByText(childName).first()
+            ).toBeVisible();
+          } else {
+            await relatedSearch(page, spec.searchField, childName);
+            await relatedSearchReset(page);
+          }
+        } finally {
+          await deleteRecordViaApi(child.session, child.wsId);
+          await deleteViaDetail(page, this.moduleName, id);
+        }
+        return;
+      }
       default:
         throw new Error(`未実装ケース: ${caseId}`);
     }
@@ -282,5 +322,41 @@ export class MatrixTest {
       Accounts: "accountname",
     };
     return map[this.moduleName] ?? "";
+  }
+
+  /** 関連テストの仕様(モジュール依存)。関連が無いモジュールは null。 */
+  private relatedSpec(): {
+    relatedModule: string;
+    parentField: string;
+    searchField: string;
+    searchValueOf: (name: string) => string;
+  } | null {
+    if (this.moduleName === "Accounts") {
+      return {
+        relatedModule: "Contacts",
+        parentField: "account_id",
+        searchField: "lastname",
+        searchValueOf: (name) => name,
+      };
+    }
+    return null;
+  }
+
+  /**
+   * 指定モジュールの Webservice ID プレフィックス(describe の idPrefix)を返す。
+   * このタスクでは `this.fr` は `this.moduleName`(呼び出し元と同一)の describe を
+   * 保持しているため、数値プレフィックスをハードコードせず describe 経由で取得する。
+   */
+  private async prefixOf(moduleName: string): Promise<string> {
+    if (moduleName !== this.moduleName) {
+      throw new Error(
+        `prefixOf: 未対応モジュール(this.fr は ${this.moduleName} の describe のみ保持): ${moduleName}`
+      );
+    }
+    const describe = await this.fr.getDescribe();
+    if (!describe) {
+      throw new Error(`describe 取得に失敗しました: ${moduleName}`);
+    }
+    return describe.idPrefix;
   }
 }

@@ -111,9 +111,6 @@ export const MATRIX: ModuleMatrix[] = [
       // Task 2 以降で run へ切替(それまでは未実装 skip)
       "list.cv.shared.self": "skip",
       "list.cv.shared.other": "skip",
-      "related.search": "skip",
-      "related.searchReset": "skip",
-      "related.navigate": "skip",
       // Task 1 で run のまま緑化する再利用系:
       // list.create.detail / list.edit / list.delete / list.search / detail.delete / detail.comment.post
       // Task 2 で実装済み(run 既定):
