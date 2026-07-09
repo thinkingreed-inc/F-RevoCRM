@@ -111,7 +111,6 @@ export const MATRIX: ModuleMatrix[] = [
       // Task 2 以降で run へ切替(それまでは未実装 skip)
       "list.cv.shared.self": "skip",
       "list.cv.shared.other": "skip",
-      "detail.edit": "skip",
       "detail.file.upload": "skip",
       "detail.file.download": "skip",
       "detail.comment.file": "skip",

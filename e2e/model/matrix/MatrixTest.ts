@@ -141,6 +141,28 @@ export class MatrixTest {
         await deleteViaDetail(page, this.moduleName, id);
         return;
       }
+      case "detail.edit": {
+        const { id } = await this.createDisposableNamed(page);
+        await gotoDetail(page, this.moduleName, id, this.app);
+        // 詳細ヘッダの編集ボタン(basicAction LBL_EDIT)
+        await page
+          .locator(`#${this.moduleName}_detailView_basicAction_LBL_EDIT`)
+          .click();
+        await page.waitForURL(/view=Edit/, { timeout: 15000 });
+        const hash = generateRandomString(8);
+        await this.fr.fillAllFieldsPublic(page, hash);
+        await page.locator("button.saveButton").first().click();
+        // 保存前(Edit画面)のURLにも record=\d+ が既に含まれるため、単に
+        // record=\d+ だけを待つと遷移完了前の古いURLで誤解決する
+        // (utils/duplicate.ts と同じレース対策)。view=Detail を必須にする。
+        await page.waitForURL(/[?&]view=Detail[^]*?record=\d+/, {
+          timeout: 15000,
+        });
+        await gotoDetail(page, this.moduleName, id, this.app);
+        await expect(page.locator(`text=${hash}`).first()).toBeVisible();
+        await deleteViaDetail(page, this.moduleName, id);
+        return;
+      }
       case "detail.duplicate": {
         const { id, name } = await this.createDisposableNamed(page);
         const dupId = await duplicateViaDetail(
