@@ -76,7 +76,7 @@
     
 </div>
 
-<div class="middle-block col-lg-7">
+<div class="middle-block col-lg-7 col-md-7 col-sm-7">
     
     {include file=vtemplate_path('RelatedActivitiesWidget.tpl','Vtiger')}
 
