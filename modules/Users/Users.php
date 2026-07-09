@@ -738,8 +738,10 @@ class Users extends CRMEntity {
 
 	function createAccessKey() {
 		global $adb;
+		$accessKey = vtws_generateRandomAccessKey(16);
 		$updateQuery = "update vtiger_users set accesskey=? where id=?";
-		$adb->pquery($updateQuery,array(vtws_generateRandomAccessKey(16),$this->id));
+		$adb->pquery($updateQuery,array($accessKey,$this->id));
+		return $accessKey;
 	}
 
 	/** Function to insert values in the specifed table for the specified module
@@ -1691,6 +1693,7 @@ class Users extends CRMEntity {
 	}
 
 	function createRecords($obj) {
+		global $log, $default_language;
 		$adb = PearDatabase::getInstance();
 		$moduleName = $obj->module;
 		$createdRecords = array();
@@ -1756,7 +1759,10 @@ class Users extends CRMEntity {
 						}
 					} else if($fieldName == 'roleid') {
 						foreach($allRoles as $role) {
-							if(strtolower($fieldValue) == strtolower($role->getName())) {
+							$roleLabelKey = $role->getName();
+							// 「役割」は翻訳後の値での比較、default_languageを見て比較する
+							$translatedRoleName = Vtiger_Language_Handler::getTranslatedString($roleLabelKey, 'Settings:Roles', $default_language);
+							if(strtolower($fieldValue) == strtolower($translatedRoleName)) {
 								$roleId = $role->getId();
 								break;
 							}

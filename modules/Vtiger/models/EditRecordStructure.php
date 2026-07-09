@@ -32,7 +32,7 @@ class Vtiger_EditRecordStructure_Model extends Vtiger_RecordStructure_Model {
 			if (!empty ($fieldModelList)) {
 				$values[$blockLabel] = array();
 				foreach($fieldModelList as $fieldName=>$fieldModel) {
-					if($fieldModel->isEditable()) {
+					if($fieldModel->isEditable() || ($moduleModel->isEditReadonlyDisplay() && $fieldModel->isReadonlyEditView())) {
 						if($recordModel->get($fieldName) != '') {
 							$fieldModel->set('fieldvalue', $recordModel->get($fieldName));
 						}else{

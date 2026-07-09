@@ -14,7 +14,7 @@
     <script type="text/javascript" src="{vresource_url('layouts/v7/lib/jquery/select2/select2.min.js')}"></script>
     <script type="text/javascript" src="{vresource_url('layouts/v7/lib/jquery/select2/select2_locale_'|cat:$SELECT2_LOCALE|cat:'.js')}"></script>
     <script type="text/javascript" src="{vresource_url('layouts/v7/lib/jquery/jquery.class.min.js')}"></script>
-    <script type="text/javascript" src="{vresource_url('layouts/v7/lib/jquery/jquery-ui-1.12.0.custom/jquery-ui.js')}"></script>
+    <script type="text/javascript" src="{vresource_url('layouts/v7/lib/jquery/jquery-ui-1.13.2.custom/jquery-ui.js')}"></script>
     <script type="text/javascript" src="{vresource_url('layouts/v7/lib/todc/js/popper.min.js')}"></script>
     <script type="text/javascript" src="{vresource_url('layouts/v7/lib/todc/js/bootstrap.min.js')}"></script>
     <script type="text/javascript" src="{vresource_url('libraries/jquery/jstorage.min.js')}"></script>
@@ -36,8 +36,8 @@
     <script type="text/javascript" src="{vresource_url('layouts/v7/lib/jquery/daterangepicker/moment.min.js')}"></script>
     <script type="text/javascript" src="{vresource_url('layouts/v7/lib/jquery/daterangepicker/jquery.daterangepicker.js')}"></script>
     <script type="text/javascript" src="{vresource_url('layouts/v7/lib/jquery/jquery.timeago.js')}"></script>
-    <script type="text/javascript" src="{vresource_url('libraries/jquery/ckeditor/ckeditor.js')}"></script>
-    <script type="text/javascript" src="{vresource_url('libraries/jquery/ckeditor/adapters/jquery.js')}"></script>
+    <link rel="stylesheet" type="text/css" href="{vresource_url('libraries/jodit/jodit.fat.min.css')}">
+    <script type="text/javascript" src="{vresource_url('libraries/jodit/jodit.fat.min.js')}"></script>
 	<script type='text/javascript' src="{vresource_url('layouts/v7/lib/anchorme_js/anchorme.min.js')}"></script>
     <script type="text/javascript" src="{vresource_url('layouts/v7/modules/Vtiger/resources/Class.js')}"></script>
     <script type='text/javascript' src="{vresource_url('layouts/v7/resources/helper.js')}"></script>
@@ -53,7 +53,7 @@
     <script type="text/javascript" src="{vresource_url('layouts/v7/modules/Emails/resources/EmailPreview.js')}"></script>
     <script type="text/javascript" src="{vresource_url('layouts/v7/modules/Vtiger/resources/Base.js')}"></script>
     <script type="text/javascript" src="{vresource_url('layouts/v7/modules/Google/resources/Settings.js')}"></script>
-    <script type="text/javascript" src="{vresource_url('layouts/v7/modules/Vtiger/resources/CkEditor.js')}"></script>
+    <script type="text/javascript" src="{vresource_url('layouts/v7/modules/Vtiger/resources/JoditEditor.js')}"></script>
     <script type="text/javascript" src="{vresource_url('layouts/v7/modules/Documents/resources/Documents.js')}"></script>
     <script type="text/javascript" src="{vresource_url('libraries/DOMPurify/dist/purify.min.js')}"></script>
    
@@ -69,13 +69,13 @@
 	<script type="text/javascript">
 		var _REQSTARTTIME = "{$smarty.server.REQUEST_TIME}";
 		{literal}jQuery(document).ready(function() { window._PAGEREADYAT = new Date(); });
-		jQuery(window).load(function() {
+		jQuery(window).on('load', function() {
 			window._PAGELOADAT = new Date();
 			window._PAGELOADREQSENT = false;
 			// Transmit the information to server about page render time now.
-			if (typeof _REQSTARTTIME != 'undefined') {
+			if (typeof _REQSTARTTIME != 'undefined' && typeof window._PAGEREADYAT !== 'undefined') {
 				// Work with time converting it to GMT (assuming _REQSTARTTIME set by server is also in GMT)
-				var _PAGEREADYTIME = _PAGEREADYAT.getTime() / 1000.0; // seconds
+				var _PAGEREADYTIME = window._PAGEREADYAT.getTime() / 1000.0; // seconds
 				var _PAGELOADTIME = _PAGELOADAT.getTime() / 1000.0;    // seconds
 				var data = { page_request: _REQSTARTTIME, page_ready: _PAGEREADYTIME, page_load: _PAGELOADTIME };
 				data['page_xfer'] = (_PAGELOADTIME - _REQSTARTTIME).toFixed(3);

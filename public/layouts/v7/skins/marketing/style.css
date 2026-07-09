@@ -53,6 +53,7 @@ html {
   padding: 0;
   overflow-y: auto;
   min-height: 100%;
+  scroll-padding-bottom: 60px;
 }
 body {
   margin: 0;
@@ -367,10 +368,10 @@ body > .mCSB_inside > .mCSB_container {
 /** App Nav Styles */
 .active-app-title {
   white-space: nowrap;
-  font-family: Oswald, "OpenSans-Semibold", "Helvetica Neue", Helvetica, sans-serif;
+  font-family: "OpenSans-Semibold", "Helvetica Neue", Helvetica, sans-serif;
 }
 .module-action-bar .module-title {
-  font-family: Oswald, "OpenSans-Semibold", "Helvetica Neue", Helvetica, sans-serif;
+  font-family: "OpenSans-Semibold", "Helvetica Neue", Helvetica, sans-serif;
   color: #596875;
   margin: 12px 0;
   white-space: nowrap;
@@ -3094,6 +3095,7 @@ input[type="text"]:read-only:not(.blankField) {
   left: 19%;
 }
 .updates_timeline > li {
+  padding-bottom: 10px;
   position: static;
   top: 0;
   display: block;
@@ -5326,7 +5328,7 @@ TN-34230 .row .nav > li > a:hover {
   margin-top: 1%;
 }
 .layoutContent .blockFieldsList ul li {
-  width: 44%;
+  width: 45%;
   margin-left: 4%;
 }
 .layoutContent .blockFieldsList {
@@ -5336,7 +5338,6 @@ TN-34230 .row .nav > li > a:hover {
 .layoutContent .editFields {
   min-height: 116px;
   height: auto;
-  border-right: 1px solid #DDDDDD;
 }
 .layoutContent .fieldLabelContainer {
   padding-top: 15px;
@@ -6729,8 +6730,9 @@ li.select2-search-choice div {
 #quickCreateModules .quickcreateMoreDropdown {
   left: 85%;
   top: 0px;
-  min-width: 170px;
+  min-width: 230px;
   padding: 4%;
+  white-space: nowrap;
 }
 #quickCreateModules .quickcreateMoreDropdown li {
   padding: 1%;
@@ -6834,8 +6836,9 @@ li.select2-search-choice div {
 #quickCreateModules .quickcreateMoreDropdown {
   left: 85%;
   top: 0px;
-  min-width: 170px;
+  min-width: 230px;
   padding: 4%;
+  white-space: nowrap;
 }
 #quickCreateModules .quickcreateMoreDropdown li {
   padding: 1%;
@@ -7227,6 +7230,23 @@ input:focus:-ms-input-placeholder {
   border-bottom: 6px solid #ffffff;
   border-left: 6px solid transparent;
   content: '';
+}
+.global-actions .quickcreateMoreDropdown:before,
+.global-actions .quickcreateMoreDropdown:after {
+  display: none;
+}
+@media (max-width: 767px) {
+  .navbar-inverse .navbar-nav .open .quickcreateMoreDropdown > li > a {
+    color: #333;
+  }
+  .global-actions .dropdown.open > .quickCreateDropdown,
+  .global-actions .quickcreateMoreDropdown {
+    box-shadow: none;
+  }
+  #quickCreateModules .quickcreateMoreDropdown {
+    min-width: 0;
+    white-space: normal;
+  }
 }
 #sharedcalendar .fc-event-container .vicon-meeting,
 #mycalendar .fc-event-container .vicon-meeting {

@@ -30,6 +30,8 @@ $languageStrings = array(
     'LBL_KEY_FIELD_VIEW' => '主要項目に表示',
 	'LBL_MASS_EDIT' => '一括編集',
 	'LBL_DEFAULT_VALUE' => 'デフォルト値',
+	'LBL_FIXED_DATE' => '固定日付',
+	'LBL_TODAY' => '本日 (TODAY)',
 	'LBL_SELECT_FIELD_TYPE' => '項目タイプの選択',
 	'LBL_LABEL_NAME' => 'ラベル名',
 	'LBL_LENGTH' => '長さ',
@@ -170,6 +172,8 @@ $languageStrings = array(
 	'LBL_PREFER_INTERNAL_RECORD' => 'F-RevoCRMのレコードを優先',
 	'LBL_PREFER_EXTERNAL_RECORD' => '外部アプリケーションのレコードを優先',
 	'LBL_SYNC_TOOLTIP_MESSAGE' => '最新のレコードを優先 - 最近変更されたレコードが保持されます<br>F-RevoCRMのレコードを優先 - 既存のレコードがそのまま保持されます<br>外部アプリケーションのレコードを優先 - 外部アプリケーションからのデータがコピーされます',
+	'LBL_EDIT_READONLY_DISPLAY' => '編集画面に読み取り専用項目の表示',
+	'LBL_EDIT_READONLY_DISPLAY_DETAIL_VIEW' => '編集画面において、読み取り専用項目を表示します',
 );
 
 $jsLanguageStrings = array(
@@ -177,6 +181,8 @@ $jsLanguageStrings = array(
 	'JS_BLOCK_VISIBILITY_HIDE' => 'ブロック非表示の有効',
 	'JS_CUSTOM_BLOCK_ADDED' => '新しいブロックの追加',
 	'JS_BLOCK_SEQUENCE_UPDATED' => 'ブロック順序を更新しました',
+	'JS_FIXED_DATE' => '固定日付',
+	'JS_TODAY' => '本日 (TODAY)',
 	'JS_SELECTED_FIELDS_REACTIVATED' => '選択した項目を再有効化しました',
 	'JS_FIELD_DETAILS_SAVED' => '項目を保存しました',
 	'JS_CUSTOM_BLOCK_DELETED' => 'ブロックを削除しました',

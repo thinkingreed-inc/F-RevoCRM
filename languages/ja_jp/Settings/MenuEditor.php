@@ -9,6 +9,7 @@
  *************************************************************************************/
 
 $languageStrings = array(
+    'MenuEditor'=>'メニュー設定',
     'LBL_SELECT_MARKETING_MODULES' => 'マーケティングに表示するモジュールを選択してください',
     'LBL_SELECT_SALES_MODULES' => '営業に表示するモジュールを選択してください',
     'LBL_SELECT_INVENTORY_MODULES' => '販売管理に表示するモジュールを選択してください',

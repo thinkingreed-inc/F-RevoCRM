@@ -1337,6 +1337,10 @@ Vtiger_List_Js("MailManager_List_Js", {}, {
 		var container = this.getContainer();
 		var params = {
 			submitHandler: function(form) {
+				// Jodit全instancesの同期（submit前必須、Task G syncAllInstances共通経路注入）
+				if (typeof Vtiger_Jodit_Js !== 'undefined' && Vtiger_Jodit_Js.syncAllInstances) {
+					Vtiger_Jodit_Js.syncAllInstances();
+				}
 				// to Prevent submit if already submitted
 				jQuery("button[name='saveButton']").attr("disabled","disabled");
 				if(this.numberOfInvalids() > 0) {

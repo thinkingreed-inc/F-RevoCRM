@@ -27,15 +27,25 @@ class Install_Index_view extends Vtiger_View_Controller {
 		$this->exposeMethod('Step7');
 	}
 
+	// Release tarball does not ship tabdata.php / parent_tabdata.php; git clone does. Create empties so writable checks and later includes succeed.
+	protected function ensureRequiredFiles() {
+		foreach (array('tabdata.php', 'parent_tabdata.php') as $file) {
+			if (!file_exists($file)) {
+				@touch($file);
+			}
+		}
+	}
+
 	protected function applyInstallFriendlyEnv() {
 		// config.inc.php - will not be ready to control this yet.
-		version_compare(PHP_VERSION, '5.5.0') <= 0 ? error_reporting(E_ERROR & ~E_NOTICE & ~E_DEPRECATED) : error_reporting(E_ERROR & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
-		version_compare(PHP_VERSION, '7.0.0') >= 0 ? error_reporting(E_WARNING & ~E_NOTICE) : error_reporting(E_WARNING & ~E_NOTICE & ~E_DEPRECATED  & E_ERROR & ~E_STRICT);
+		$_e_strict = (PHP_VERSION_ID < 80400) ? E_STRICT : 0;
+		error_reporting(E_WARNING & ~E_NOTICE & ~E_DEPRECATED & ~$_e_strict);
 		set_time_limit(0); // override limits on execution time to allow install to finish
 	}
 
 	public function preProcess(Vtiger_Request $request, $display = true) {
 		$this->applyInstallFriendlyEnv();
+		$this->ensureRequiredFiles();
 
 		date_default_timezone_set('Asia/Tokyo'); // to overcome the pre configuration settings
 

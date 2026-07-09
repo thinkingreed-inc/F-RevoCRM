@@ -23,7 +23,7 @@ class HelpDesk_Field_Model extends Vtiger_Field_Model {
 		}
 		return parent::getDisplayValue($value, $record, $recordInstance);
 	}
-	public function isCkEditor() {
+	public function isJoditEditor() {
 		if($this->getName() == 'description' || $this->getName() == 'solution') {
 			return true;
 		}

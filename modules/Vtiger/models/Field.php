@@ -412,6 +412,15 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	}
 
 	/**
+	 * Function to get the maximum field length
+	 * @return <String> max length of the field
+	 */
+	public function getMaxFieldLength() {
+		list($type,$mandatory,$LE,$maxlength)= explode('~',$this->get('typeofdata'));
+		return $maxlength;
+	}
+
+	/**
 	 * Function to get the field type
 	 * @return <String> type of the field
 	 */
@@ -536,7 +545,7 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	    );
 
         // リッチテキストは概要・詳細画面での編集不可
-        if ($this->isCkeditor() === true) {
+        if ($this->isJoditEditor() === true) {
             return false;
         }
 
@@ -546,7 +555,7 @@ class Vtiger_Field_Model extends Vtiger_Field {
 		return true;
 	}
 	
-	public function isCkEditor() {
+	public function isJoditEditor() {
 		return false;
 	}
 
@@ -1690,5 +1699,17 @@ class Vtiger_Field_Model extends Vtiger_Field {
 
 		$this->fieldInfo['validator'] = $this->getValidator();
 		return $this->fieldInfo;
+	}
+
+	/**
+	 * 編集画面でreadonlyのフィールドか判定する
+	 * @return <Boolean> true/false
+	 */
+	public function isReadonlyEditView()
+	{
+		if (!$this->isEditable() && $this->isViewableInDetailView()) {
+			return true;
+		}
+		return false;
 	}
 }

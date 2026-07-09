@@ -12,7 +12,7 @@
 {strip}
 	<div class="col-sm-12 col-xs-12 module-action-bar coloredBorderTop">
 		<div class="module-action-content clearfix">
-			<div class="col-lg-7 col-md-7">
+			<div class="col-lg-7 col-md-7 textOverflowTest">
 				{if $USER_MODEL->isAdminUser()}
 					<a title="{vtranslate('Home', $MODULE)}" href='index.php?module=Vtiger&parent=Settings&view=Index'>
 						<h4 class="module-title pull-left text-uppercase">{vtranslate('LBL_HOME', $MODULE)} </h4>

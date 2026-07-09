@@ -22,7 +22,7 @@
         <link type='text/css' rel='stylesheet' href='{vresource_url('layouts/v7/lib/jquery/select2/select2.css')}'>
         <link type='text/css' rel='stylesheet' href='{vresource_url('layouts/v7/lib/select2-bootstrap/select2-bootstrap.css')}'>
         <link type='text/css' rel='stylesheet' href='{vresource_url('libraries/bootstrap/js/eternicode-bootstrap-datepicker/css/datepicker3.css')}'>
-        <link type='text/css' rel='stylesheet' href='{vresource_url('layouts/v7/lib/jquery/jquery-ui-1.12.0.custom/jquery-ui.css')}'>
+        <link type='text/css' rel='stylesheet' href='{vresource_url('layouts/v7/lib/jquery/jquery-ui-1.13.2.custom/jquery-ui.css')}'>
         <link type='text/css' rel='stylesheet' href='{vresource_url('layouts/v7/lib/vt-icons/style.css')}'>
         <link type='text/css' rel='stylesheet' href='{vresource_url('layouts/v7/lib/animate/animate.min.css')}'>
         <link type='text/css' rel='stylesheet' href='{vresource_url('layouts/v7/lib/jquery/malihu-custom-scrollbar/jquery.mCustomScrollbar.css')}'>
@@ -59,11 +59,31 @@
             {/if}
             var _USERMETA;
             {if $CURRENT_USER_MODEL}
-               _USERMETA =  { 'id' : "{$CURRENT_USER_MODEL->get('id')}", 'menustatus' : "{$CURRENT_USER_MODEL->get('leftpanelhide')}", 
+               _USERMETA =  { 'id' : "{$CURRENT_USER_MODEL->get('id')}", 'menustatus' : "{$CURRENT_USER_MODEL->get('leftpanelhide')}",
                               'currency' : "{$USER_CURRENCY_SYMBOL}", 'currencySymbolPlacement' : "{$CURRENT_USER_MODEL->get('currency_symbol_placement')}",
                           'currencyGroupingPattern' : "{$CURRENT_USER_MODEL->get('currency_grouping_pattern')}", 'truncateTrailingZeros' : "{$CURRENT_USER_MODEL->get('truncate_trailing_zeros')}"};
             {/if}
+            {* WebComponents版QuickCreateを無効にするモジュールリスト（ブラックリスト形式） *}
+            {* 基本的にはWebComponents版を使用し、未対応モジュールのみ除外 *}
+            window.webComponentsQuickCreateExcludedModules = [
+                'Documents'  {* ファイルアップロード・外部リンク・ドラッグ&ドロップ等の特殊UIが必要 *}
+            ];
 		</script>
+        {if $IS_PRODUCTION}
+            <link rel="stylesheet" href="{vresource_url('resources/web-components/style.css')}">
+            <script type="module" src="{vresource_url('resources/web-components/web-components.js')}"></script>
+        {else}
+            <link rel="stylesheet" href="http://localhost:5173/src/index.css">
+            <script type="module">
+                import RefreshRuntime from "http://localhost:5173/@react-refresh"
+                RefreshRuntime.injectIntoGlobalHook(window)
+                window.$RefreshReg$ = () => {}
+                window.$RefreshSig$ = () => (type) => type
+                window.__vite_plugin_react_preamble_installed__ = true
+            </script>
+            <script type="module" src="http://localhost:5173/@vite/client"></script>
+            <script type="module" src="http://localhost:5173/src/main.ts"></script>
+        {/if}
 	</head>
 	 {assign var=CURRENT_USER_MODEL value=Users_Record_Model::getCurrentUserModel()}
 	<body data-skinpath="{Vtiger_Theme::getBaseThemePath()}" data-language="{$LANGUAGE}" data-user-decimalseparator="{$CURRENT_USER_MODEL->get('currency_decimal_separator')}" data-user-dateformat="{$CURRENT_USER_MODEL->get('date_format')}"

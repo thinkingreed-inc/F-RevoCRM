@@ -48,46 +48,40 @@ Inventory_Edit_Js("SalesOrder_Edit_Js",{},{
 		var thisInstance = this;
 		var form = this.getForm();
 		var enableRecurrenceField = form.find('[name="enable_recurring"]');
-		var fieldNamesForValidation = new Array('recurring_frequency','start_period','end_period','payment_duration','invoicestatus');
-        var selectors = new Array();
-        for(var index in fieldNamesForValidation) {
-            selectors.push('[name="'+fieldNamesForValidation[index]+'"]');
-        }
-        var selectorString = selectors.join(',');
-        var validationToggleFields = form.find(selectorString);
+		var recurringBlock = form.find('[data-block="Recurring Invoice Information"]');
+		var validationToggleFields = recurringBlock.find('input, select, textarea')
+			.filter('[name]')
+			.not('[name="enable_recurring"]');
+
+		var requiredOnEnableFields = ['recurring_frequency','start_period','payment_duration','invoicestatus'];
+		validationToggleFields.each(function() {
+			var el = jQuery(this);
+			var name = el.attr('name');
+			var isRequired = el.attr('data-rule-required') === 'true'
+				|| requiredOnEnableFields.indexOf(name) !== -1;
+			el.data('original-required', isRequired);
+		});
+
 		enableRecurrenceField.on('change',function(e){
 			var element = jQuery(e.currentTarget);
-			var addValidation;
-			if(element.is(':checked')){
-				addValidation = true;
-			}else{
-				addValidation = false;
-			}
-			
-			//If validation need to be added for new elements,then we need to detach and attach validation
-			//to form
-			if(addValidation){
-				thisInstance.AddOrRemoveRequiredValidation(validationToggleFields, true);
-			}else{
-				thisInstance.AddOrRemoveRequiredValidation(validationToggleFields, false);
-			}
-		})
-		if(!enableRecurrenceField.is(":checked")){
-			thisInstance.AddOrRemoveRequiredValidation(validationToggleFields, false);
-		}else if(enableRecurrenceField.is(":checked")){
-			thisInstance.AddOrRemoveRequiredValidation(validationToggleFields, true);
-		}
+			var addValidation = element.is(':checked');
+			thisInstance.AddOrRemoveRequiredValidation(validationToggleFields, addValidation);
+		});
+		thisInstance.AddOrRemoveRequiredValidation(validationToggleFields, enableRecurrenceField.is(':checked'));
 	},
-	
+
 	AddOrRemoveRequiredValidation : function(dependentFieldsForValidation, addValidation) {
 		jQuery(dependentFieldsForValidation).each(function(key,value){
 			var relatedField = jQuery(value);
+			var isOriginallyRequired = relatedField.data('original-required') === true;
 			if(addValidation) {
-				relatedField.removeClass('ignore-validation').data('rule-required', true);
 				if(relatedField.is("select")) {
 					relatedField.attr('disabled',false);
 				}else {
 					relatedField.removeAttr('disabled');
+				}
+				if(isOriginallyRequired) {
+					relatedField.removeClass('ignore-validation').data('rule-required', true);
 				}
 			} else if(!addValidation) {
 				relatedField.addClass('ignore-validation').removeAttr('data-rule-required');

@@ -494,6 +494,187 @@ Vtiger.Class('Vtiger_Index_Js', {
 			e.stopImmediatePropagation();
 			jQuery(e.currentTarget).closest('.dropdown').toggleClass('open');
 		});
+
+		// メニュー内をクリックしてもメニューが閉じないようにする（モジュール項目は除く）
+		jQuery(".quickCreateDropdown").on("click", function(e) {
+			// モジュール項目（.quickCreateModule）以外のクリックは伝播を止める
+			if (!jQuery(e.target).closest('.quickCreateModule').length) {
+				e.stopPropagation();
+			}
+		});
+	},
+
+	/**
+	 * WebComponents版QuickCreateが有効なモジュールかどうかを判定
+	 * @param {string} moduleName モジュール名
+	 * @returns {boolean}
+	 */
+	isWebComponentsQuickCreateEnabled: function(moduleName) {
+		// ブラックリスト形式：除外リストに含まれていなければ有効
+		// 設定がない場合は空配列（すべて有効）
+		var excludedModules = window.webComponentsQuickCreateExcludedModules || [];
+		return excludedModules.indexOf(moduleName) === -1;
+	},
+
+	/**
+	 * WebComponents版QuickCreateを表示
+	 * @param {string} moduleName モジュール名
+	 * @param {object} params パラメータ
+	 */
+	showWebComponentsQuickCreate: function(moduleName, params) {
+		var thisInstance = this;
+
+		// コールバック関数の設定
+		var callbackFunction = params.callbackFunction || function(data, err) {
+			var parentModule = app.getModuleName();
+			var viewname = app.view();
+			if (((moduleName == parentModule) || (moduleName == 'Events' && parentModule == 'Calendar')) && (viewname == "List")) {
+				var listinstance = app.controller();
+				listinstance.loadListViewRecords();
+			}
+		};
+
+		// WebComponents用モーダルコンテナを作成（なければ）
+		var containerId = 'webcomponents-quickcreate-container';
+		var container = document.getElementById(containerId);
+		if (!container) {
+			container = document.createElement('div');
+			container.id = containerId;
+			document.body.appendChild(container);
+		}
+
+		// 既存のQuickCreate要素を削除
+		container.innerHTML = '';
+
+		// QuickCreate Web Componentを作成
+		// Calendar/Eventsは専用コンポーネントを使用
+		var isCalendarModule = (moduleName === 'Calendar' || moduleName === 'Events');
+		var quickCreate = document.createElement(isCalendarModule ? 'calendar-quick-create' : 'quick-create');
+		quickCreate.setAttribute('module', moduleName);
+		quickCreate.setAttribute('is-open', 'true');
+
+		// 編集モードの場合はrecord-idを設定
+		if (params.record) {
+			quickCreate.setAttribute('record-id', params.record);
+		}
+
+		// 複製モードの場合はis-duplicateを設定
+		// 複製モードではrecordIdでデータを取得するが、保存時は新規作成として扱う
+		if (params.isDuplicate) {
+			quickCreate.setAttribute('is-duplicate', 'true');
+		}
+
+		// 初期データがあれば設定
+		if (params.data) {
+			quickCreate.setAttribute('initial-data', JSON.stringify(params.data));
+		}
+
+		// 編集モードかどうか（複製モードは編集モードではない）
+		var isEditMode = !!params.record && !params.isDuplicate;
+
+		// 保存前のコールバック（繰り返し活動の確認モーダル表示用）
+		// Calendar/Eventsモジュールで繰り返し活動を編集する場合に使用
+		if (isCalendarModule) {
+			quickCreate.addEventListener('before-save', function (e) {
+				var detail = e.detail || {};
+
+				// 繰り返し活動でない場合、または新規作成の場合はそのまま続行
+				if (!detail.isRecurring || !detail.isEditMode) {
+					return;
+				}
+
+				// 繰り返し活動の編集の場合、確認モーダルを表示
+				e.preventDefault();
+
+				// z-index問題対策: Bootstrap modalをWebComponents dialogの前面に表示するため、
+				// popupModalのz-indexを一時的に上げ、WebComponentsダイアログのポインターイベントを無効化
+				// Radix UIのダイアログはReactポータルでbody直下にレンダリングされるため、
+				// data-slot属性を持つ要素に直接pointer-events: noneを適用する
+				// ただし、popupModalとその内部は操作可能にする
+				var styleElement = document.createElement('style');
+				styleElement.id = 'webcomponents-modal-zindex-fix';
+				styleElement.textContent = '#popupModal, #popupModal * { z-index: 100010 !important; pointer-events: auto !important; } .modal-backdrop { z-index: 100009 !important; } [data-slot="dialog-overlay"], [data-slot="dialog-content"], .web-components-wrapper { pointer-events: none !important; } [data-slot="dialog-content"] * { pointer-events: none !important; }';
+				document.head.appendChild(styleElement);
+
+				app.helper.showConfirmationForRepeatEvents()
+					.then(function (postData) {
+						// z-index修正用のスタイルを削除
+						var styleEl = document.getElementById('webcomponents-modal-zindex-fix');
+						if (styleEl) styleEl.remove();
+						// recurringEditModeを渡して保存続行
+						// postData = { recurringEditMode: 'current' | 'future' | 'all' }
+						detail.continueSave(postData);
+					})
+					.fail(function () {
+						// z-index修正用のスタイルを削除
+						var styleEl = document.getElementById('webcomponents-modal-zindex-fix');
+						if (styleEl) styleEl.remove();
+					});
+			});
+		}
+
+		// イベントリスナーを設定
+		quickCreate.addEventListener('save', function(e) {
+			var result = e.detail;
+			// 既存のイベントをトリガー（旧版互換：moduleとcalendarModuleを含める）
+			var formData = Object.assign({}, params.data || {});
+			formData.module = moduleName;
+			if (isCalendarModule) {
+				formData.calendarModule = moduleName;
+			}
+			app.event.trigger("post.QuickCreateForm.save", result, formData);
+			// コールバック実行
+			callbackFunction(result, null);
+			// 成功通知（編集モードの場合は更新メッセージ）
+			app.helper.showSuccessNotification({
+				"message": app.vtranslate(isEditMode ? 'JS_RECORD_UPDATED' : 'JS_RECORD_CREATED')
+			}, {delay: 4000});
+		});
+
+		quickCreate.addEventListener('cancel', function() {
+			container.innerHTML = '';
+		});
+
+		quickCreate.addEventListener('go-to-full-form', function(e) {
+			var editUrl = e.detail && e.detail.editUrl;
+			var formData = e.detail && e.detail.formData;
+			if (editUrl) {
+				// POSTでフォーム送信（formDataを引き継ぐ）
+				var form = document.createElement('form');
+				form.method = 'POST';
+				form.action = editUrl;
+				form.style.display = 'none';
+
+				// CSRFトークンを追加（POSTリクエストに必須）
+				if (typeof csrfMagicName !== 'undefined' && typeof csrfMagicToken !== 'undefined') {
+					var csrfInput = document.createElement('input');
+					csrfInput.type = 'hidden';
+					csrfInput.name = csrfMagicName;
+					csrfInput.value = csrfMagicToken;
+					form.appendChild(csrfInput);
+				}
+
+				// formDataが存在する場合、hidden inputとして追加
+				if (formData && typeof formData === 'object') {
+					Object.keys(formData).forEach(function(key) {
+						var value = formData[key];
+						if (value !== undefined && value !== null && value !== '') {
+							var input = document.createElement('input');
+							input.type = 'hidden';
+							input.name = key;
+							input.value = Array.isArray(value) ? value.join(' |##| ') : String(value);
+							form.appendChild(input);
+						}
+					});
+				}
+
+				document.body.appendChild(form);
+				form.submit();
+			}
+		});
+
+		container.appendChild(quickCreate);
+		app.helper.hideProgress();
 	},
 
 	/**
@@ -520,6 +701,34 @@ Vtiger.Class('Vtiger_Index_Js', {
 					}
 				};
 			}
+
+			// WebComponents版QuickCreateが有効な場合はそちらを使用
+			if (thisInstance.isWebComponentsQuickCreateEnabled(quickCreateModuleName)) {
+				// URLからrecord, isDuplicateパラメータを抽出（編集・複製モード対応）
+				// ただし、paramsに既に設定されている値を優先
+				if (quickCreateUrl && quickCreateUrl.indexOf('record=') !== -1) {
+					var urlParams = new URLSearchParams(quickCreateUrl.split('?')[1] || quickCreateUrl);
+					var recordId = urlParams.get('record');
+					var mode = urlParams.get('mode');
+					var isDuplicateFromUrl = urlParams.get('isDuplicate');
+					if (recordId && !params.record) {
+						params.record = recordId;
+					}
+					if (mode && !params.mode) {
+						params.mode = mode;
+					}
+					// 複製モードフラグを設定（paramsに既に設定されている場合は優先）
+					if (isDuplicateFromUrl === 'true' && !params.isDuplicate) {
+						params.isDuplicate = true;
+					}
+				}
+				app.helper.showProgress();
+				thisInstance.showWebComponentsQuickCreate(quickCreateModuleName, params);
+				return;
+			}
+
+			jQuery('#webcomponents-quickcreate-container').empty();
+			jQuery('body > .quickcreate-dialog-portal').remove();
 			app.helper.showProgress();
 			thisInstance.getQuickCreateForm(quickCreateUrl,quickCreateModuleName,params).then(function(data){
 				app.helper.hideProgress();
@@ -549,6 +758,9 @@ Vtiger.Class('Vtiger_Index_Js', {
 					var moduleInstance = Calendar_Edit_Js.getInstanceByModuleName(moduleName);
 				}else{
 					var moduleInstance = Vtiger_Edit_Js.getInstanceByModuleName(moduleName);
+				}
+				if (typeof(moduleInstance.registerEventForJoditEditor) === 'function') {
+					moduleInstance.registerEventForJoditEditor(form);
 				}
 				if(typeof(moduleInstance.quickCreateSave) === 'function'){
 					targetInstance = moduleInstance;
@@ -622,6 +834,10 @@ Vtiger.Class('Vtiger_Index_Js', {
 	quickCreateSave : function(form,invokeParams){
 		var params = {
 			submitHandler: function(form) {
+				// Jodit全instancesの同期（submit前必須、Task G syncAllInstances共通経路注入）
+				if (typeof Vtiger_Jodit_Js !== 'undefined' && Vtiger_Jodit_Js.syncAllInstances) {
+					Vtiger_Jodit_Js.syncAllInstances();
+				}
 				// to Prevent submit if already submitted
 				jQuery("button[name='saveButton']").attr("disabled","disabled");
 				if(this.numberOfInvalids() > 0) {

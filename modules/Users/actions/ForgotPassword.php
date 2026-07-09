@@ -40,14 +40,19 @@ class Users_ForgotPassword_Action {
 
 		$valid = $shortURLModel->compareEquals($validateData);
 		if($valid) {
+			// トークンを即座に削除（再利用防止）
+			$shortURLModel->delete();
 			$userId = getUserId_Ol($userName);
 			$user = Users::getActiveAdminUser();
 			$wsUserId = vtws_getWebserviceEntityId('Users', $userId);
 			vtws_changePassword($wsUserId, '', $newPassword, $confirmPassword, $user);
 		} else {
 			$viewer->assign('ERROR', true);
+			// 無効なトークンの場合も削除を試みる（存在する場合）
+			if($shortURLModel->id) {
+				$shortURLModel->delete();
+			}
 		}
-		$shortURLModel->delete();
 		$viewer->assign('USERNAME', $userName);
 		$viewer->assign('PASSWORD', $newPassword);
 		$viewer->view('FPLogin.tpl', 'Users');

@@ -603,7 +603,7 @@ function getRelatedTableHeaderNavigation($navigation_array, $url_qry, $module, $
 	$output .= "<span name='listViewCountContainerName' class='small' style='white-space: nowrap;'>";
 	$computeCount = $_REQUEST['withCount'];
 	if (PerformancePrefs::getBoolean('LISTVIEW_COMPUTE_PAGE_COUNT', false) === true
-			|| ((boolean) $computeCount) == true) {
+			|| ((bool) $computeCount) == true) {
 		$output .= $app_strings['LBL_LIST_OF'] . ' ' . $navigation_array['verylast'];
 	} else {
 		$output .= "<img src='" . vtiger_imageurl('windowRefresh.gif', $theme) . "' alt='" . $app_strings['LBL_HOME_COUNT'] . "'
@@ -652,6 +652,9 @@ function getEntityId($module, $entityName) {
 		$sql = "select $entityidfield from $tablename INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = $tablename.$entityidfield " .
 				" WHERE vtiger_crmentity.deleted = 0 and $fieldsname=?";
 		$result = $adb->pquery($sql, array($entityName));
+		if ($adb->num_rows($result) == 0) {
+			throw new ImportException("No reference exists");
+		}
 		if ($adb->num_rows($result) > 0) {
 			$entityId = $adb->query_result($result, 0, $entityidfield);
 		}
@@ -662,9 +665,53 @@ function getEntityId($module, $entityName) {
 		return 0;
 }
 
+// カラム名から関連項目を取得
+function getEntityIdByColumns($module, $referenceValueList, $cache) {
+	global $log, $adb;
+	$log->info("in getEntityIdByColumns " . $referenceValueList);
+
+	if (empty($cache[$module])||empty($referenceValueList)){
+		throw new ImportException("No reference exists");
+	}
+
+    $matchedIds = [];
+    if (is_array($referenceValueList)) {
+        foreach ($cache[$module] as $recordModel) {
+            $filterCache = array_intersect_key($recordModel, $referenceValueList);
+            ksort($referenceValueList);
+            ksort($filterCache);
+            if ($filterCache === $referenceValueList) {
+                $cacheValues = array_values($recordModel);
+                $matchedIds[] = $cacheValues[0];
+            }
+        }
+    } else {
+        $entityNameInfo = getEntityFieldNames($module);
+        $fieldNames = $entityNameInfo['fieldname'];
+        if (!is_array($fieldNames)) {
+            $fieldNames = array($fieldNames);
+        }
+        foreach ($cache[$module] as $recordModel) {
+            foreach ($fieldNames as $fieldName) {
+                if ((trim($recordModel[$fieldName] ?? '') === trim($referenceValueList))) {
+                    $cacheValues = array_values($recordModel);
+                    $matchedIds[] = $cacheValues[0];
+                    break;
+                }
+            }
+        	}
+    }
+
+	if (count($matchedIds) !== 1) {
+	    throw new ImportException("No reference exists");
+	}
+
+	return $matchedIds[0];
+}
+
 function decode_emptyspace_html($str){
 	$str = str_replace("&nbsp;", "*#chr*#",$str); // (*#chr*#) used as jargan to replace it back with &nbsp;
-	$str = str_replace("\xc2", "*#chr*#",$str); // Ã (for special chrtr)
+	$str = str_replace("\xc2\xa0", "*#chr*#",$str); // Ã (for special chrtr)
 	$str = decode_html($str);
 	return str_replace("*#chr*#", "&nbsp;", $str);
 	

@@ -234,11 +234,23 @@ class Vtiger_Functions {
 		$info = self::getEntityModuleInfo($mixed);
 		if ($info) {
 			$data['tablename'] = $info['tablename'];
-			$fieldnames = $info['fieldname'];
-			if (strpos(',', $fieldnames) !== false) {
-				$fieldnames = sprintf("concat(%s)", implode(",' ',", explode(',', $fieldnames)));
+
+			// vtiger_entityname.fieldname holds FIELD names, whose DB column can
+			// differ from the field name (e.g. Documents' 'notes_title' field maps
+			// to column 'title'). Resolve each to its column; unknown tokens are
+			// kept as-is (already a column name / pseudo-module).
+			$fieldInfos = self::getModuleFieldInfos($mixed);
+			$columns = array();
+			foreach (explode(',', $info['fieldname']) as $labelField) {
+				$columns[] = (is_array($fieldInfos) && isset($fieldInfos[$labelField]))
+					? $fieldInfos[$labelField]['columnname'] : $labelField;
 			}
-			$data['fieldname'] = $fieldnames;
+
+			// NOTE: previously this used strpos(',', $fieldnames) with the
+			// arguments reversed, so the concat() was never built.
+			$data['fieldname'] = (php7_count($columns) > 1)
+				? sprintf("concat(%s)", implode(",' ',", $columns))
+				: $columns[0];
 		}
 		return $data;
 	}
@@ -380,24 +392,56 @@ class Vtiger_Functions {
 
 			if ($ids) {
 
+				// Maps each label column to its table so columns that live in the
+				// custom-field table are joined in, rather than assumed to be in
+				// the base table (#1574). Left empty for the pseudo-modules below,
+				// whose label lives in a single hard-coded table.
+				$columnTableMap = array();
+				// Field metadata keyed by fieldname (from vtiger_field), used to
+				// resolve label fields to their real column/table below.
+				$fieldInfoByFieldname = array();
+
 				if ($module == 'Groups') {
 					$metainfo = array('tablename' => 'vtiger_groups','entityidfield' => 'groupid','fieldname' => 'groupname');
 				} else if ($module == 'DocumentFolders') {
 					$metainfo = array('tablename' => 'vtiger_attachmentsfolder','entityidfield' => 'folderid','fieldname' => 'foldername');
 				} else {
 					$metainfo = self::getEntityModuleInfo($module);
+					$fieldInfos = self::getModuleFieldInfos($module);
+					if (is_array($fieldInfos)) {
+						// getModuleFieldInfos() is already keyed by fieldname.
+						$fieldInfoByFieldname = $fieldInfos;
+					}
 				}
 
 				$table = $metainfo['tablename'];
 				$idcolumn = $metainfo['entityidfield'];
-				$columns  = explode(',', $metainfo['fieldname']);
+
+				// vtiger_entityname.fieldname stores FIELD names, whose DB column
+				// (and table) can differ from the field name - e.g. Documents'
+				// 'notes_title' field maps to column 'title' in vtiger_notes.
+				// Resolve each label field to its real column + table; fall back to
+				// treating the token as a base-table column (pseudo-modules, or when
+				// the field is unknown / the value is already a column name).
+				$columns = array();
+				foreach (explode(',', $metainfo['fieldname']) as $labelField) {
+					if (isset($fieldInfoByFieldname[$labelField])) {
+						$column = $fieldInfoByFieldname[$labelField]['columnname'];
+						$columnTableMap[$column] = $fieldInfoByFieldname[$labelField]['tablename'];
+						$columns[] = $column;
+					} else {
+						$columns[] = $labelField;
+					}
+				}
 
 				// NOTE: Ignore field-permission check for non-admin (to compute record label).
-				$columnString = php7_count($columns) < 2? $columns[0] :
-					sprintf("concat(%s)", implode(",' ',", $columns));
-
-				$sql = sprintf('SELECT '. implode(',',$columns).', %s AS id FROM %s WHERE %s IN (%s)',
-						 $idcolumn, $table, $idcolumn, generateQuestionMarks($ids));
+				try {
+					$sql = self::buildEntityLabelQuery($table, $idcolumn, $columns, $columnTableMap, php7_count($ids));
+				} catch (InvalidArgumentException $e) {
+					// Corrupted entity metadata: fail safe with no labels rather
+					// than risk building an unsafe query.
+					return $entityDisplay;
+				}
 
 				$result = $adb->pquery($sql, $ids);
 
@@ -414,6 +458,76 @@ class Vtiger_Functions {
 
 			return $entityDisplay;
 		}
+	}
+
+	/**
+	 * Build the SQL used to fetch a module's entity-label columns.
+	 *
+	 * Label columns (vtiger_entityname.fieldname) may span the base table and
+	 * the custom-field table. For every column whose table differs from the
+	 * base table we LEFT JOIN that table on the shared entity id column - the
+	 * base table and its "cf" table both use the basetableid column as primary
+	 * key (see Vtiger_ModuleBasic::initTables), so the id column name matches.
+	 *
+	 * @param string $baseTable      base table (vtiger_entityname.tablename)
+	 * @param string $idColumn       entity id column (vtiger_entityname.entityidfield)
+	 * @param array  $columns        ordered label column names
+	 * @param array  $columnTableMap columnname => tablename (from vtiger_field)
+	 * @param int    $idCount        number of ids, for the IN() placeholders
+	 * @return string SQL with '?' placeholders
+	 */
+	static function buildEntityLabelQuery($baseTable, $idColumn, $columns, $columnTableMap, $idCount) {
+		// Table/column names are SQL identifiers and cannot be bound as
+		// prepared-statement parameters, so each one is whitelist-validated and
+		// backtick-quoted (see quoteSqlIdentifier). Only the ids are passed as
+		// '?' parameters by the caller.
+		$quotedBaseTable = self::quoteSqlIdentifier($baseTable);
+		$quotedIdColumn  = self::quoteSqlIdentifier($idColumn);
+
+		$selectParts = array();
+		$joinTables = array();
+		foreach ($columns as $column) {
+			$columnTable = isset($columnTableMap[$column]) ? $columnTableMap[$column] : $baseTable;
+			if ($columnTable !== $baseTable) {
+				$joinTables[$columnTable] = true;
+			}
+			$quotedColumn = self::quoteSqlIdentifier($column);
+			$selectParts[] = self::quoteSqlIdentifier($columnTable) . '.' . $quotedColumn . ' AS ' . $quotedColumn;
+		}
+		$selectParts[] = $quotedBaseTable . '.' . $quotedIdColumn . ' AS `id`';
+
+		$fromClause = $quotedBaseTable;
+		foreach (array_keys($joinTables) as $joinTable) {
+			$quotedJoinTable = self::quoteSqlIdentifier($joinTable);
+			$fromClause .= ' LEFT JOIN ' . $quotedJoinTable
+				. ' ON ' . $quotedJoinTable . '.' . $quotedIdColumn
+				. ' = ' . $quotedBaseTable . '.' . $quotedIdColumn;
+		}
+
+		$placeholders = implode(',', array_fill(0, max(1, (int) $idCount), '?'));
+
+		return 'SELECT ' . implode(', ', $selectParts)
+			. ' FROM ' . $fromClause
+			. ' WHERE ' . $quotedBaseTable . '.' . $quotedIdColumn . ' IN (' . $placeholders . ')';
+	}
+
+	/**
+	 * Validate and backtick-quote a SQL identifier (table or column name).
+	 *
+	 * Identifiers cannot be bound as prepared-statement parameters, so the only
+	 * safe handling is to whitelist-validate them. vtiger table/column names are
+	 * always [A-Za-z0-9_]; anything else means corrupted metadata or an
+	 * injection attempt and is rejected.
+	 *
+	 * @param string $identifier
+	 * @return string backtick-quoted identifier
+	 * @throws InvalidArgumentException when the identifier is not a safe name
+	 */
+	protected static function quoteSqlIdentifier($identifier) {
+		if (!is_string($identifier) || !preg_match('/^[A-Za-z0-9_]+$/', $identifier)) {
+			throw new InvalidArgumentException('Unsafe SQL identifier: ' . var_export($identifier, true));
+		}
+		return '`' . $identifier . '`';
 	}
 
 	protected static $groupIdNameCache = array();
@@ -893,7 +1007,7 @@ class Vtiger_Functions {
 
 	static function generateRandomPassword() {
 		$salt = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-		srand((double) microtime() * 1000000);
+		srand((float) microtime() * 1000000);
 		$i = 0;
 		while ($i <= 15) {
 			$num = rand() % 62;

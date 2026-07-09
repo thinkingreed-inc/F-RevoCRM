@@ -87,9 +87,9 @@ Vtiger_Edit_Js("Documents_Edit_Js", {
             
 			var fileNameElementTd = newFileNameElement.closest('td');
             if(thisInstance.isFileLocationExternalType(fileLocationTypeElement)){
-                fileNameElementTd.prev('td.fieldLabel').empty().append('<label class="">'+app.vtranslate('JS_EXTERNAL_FILE_URL')+'&nbsp;'+'<span class="redColor">*</span></label>');
+                fileNameElementTd.find('label.fieldLabel').html(app.vtranslate('JS_EXTERNAL_FILE_URL')+'&nbsp;<span class="redColor">*</span>');
             } else {
-                fileNameElementTd.prev('td.fieldLabel').empty().append('<label class="">'+app.vtranslate('JS_FILE_NAME')+'&nbsp;</label>');
+                fileNameElementTd.find('label.fieldLabel').html(app.vtranslate('JS_FILE_NAME')+'&nbsp;');
             }
             
 			var uploadFileDetails = fileNameElementTd.find('.uploadedFileDetails');
@@ -136,26 +136,32 @@ Vtiger_Edit_Js("Documents_Edit_Js", {
 		});
 	},
 	/**
-	 * Function to register event for ckeditor for description field
+	 * Function to register Jodit editor for description field
 	 */
-	registerEventForCkEditor : function(container){
+	registerEventForJoditEditor : function(container){
 		var form = this.getForm();
         if(typeof container != 'undefined'){
             form = container;
         }
 		var noteContentElement = form.find('[name="notecontent"]');
 		if(noteContentElement.length > 0){
-			noteContentElement.removeAttr('data-validation-engine').addClass('ckEditorSource');
-			var ckEditorInstance = new Vtiger_CkEditor_Js();
-			ckEditorInstance.loadCkEditor(noteContentElement);
+			noteContentElement.removeAttr('data-validation-engine').addClass('joditEditorSource');
+			var joditInstance = new Vtiger_Jodit_Js();
+			joditInstance.loadJoditEditor(noteContentElement);
 		}
 	},
     
     quickCreatePreSave : function(form) {
+        // Jodit全instancesの同期（submit前必須、Task G syncAllInstances共通経路注入）
+        if (typeof Vtiger_Jodit_Js !== 'undefined' && Vtiger_Jodit_Js.syncAllInstances) {
+            Vtiger_Jodit_Js.syncAllInstances();
+        }
         var textAreaElement = form.find('textarea[name="notecontent"]');
         if(textAreaElement.length){
-            var notecontent = CKEDITOR.instances.Documents_editView_fieldName_notecontent.getData();
-            textAreaElement.val(notecontent);
+            var editor = Vtiger_Jodit_Js.getInstance('Documents_editView_fieldName_notecontent');
+            if (editor) {
+                textAreaElement.val(editor.getData());
+            }
         }
     },
     
@@ -198,6 +204,10 @@ Vtiger_Edit_Js("Documents_Edit_Js", {
                 
                 if(this.numberOfInvalids() > 0) {
                     return false;
+                }
+                // Jodit全instancesの同期（submit前必須、Task G syncAllInstances共通経路注入）
+                if (typeof Vtiger_Jodit_Js !== 'undefined' && Vtiger_Jodit_Js.syncAllInstances) {
+                    Vtiger_Jodit_Js.syncAllInstances();
                 }
                 var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
                 app.event.trigger(e);
@@ -253,7 +263,7 @@ Vtiger_Edit_Js("Documents_Edit_Js", {
 			}
             externalDocContentsElement.find('.fileUploadContainer').replaceWith(newFileNameElement);
 			var fileNameElementTd = newFileNameElement.closest('td');
-            fileNameElementTd.prev('td.fieldLabel').empty().append('<label class="muted pull-right"><span class="redColor">*</span>'+app.vtranslate('JS_EXTERNAL_FILE_URL')+'</label>');
+            fileNameElementTd.find('label.fieldLabel').html('<span class="redColor">*</span>'+app.vtranslate('JS_EXTERNAL_FILE_URL'));
 			var uploadFileDetails = fileNameElementTd.find('.uploadedFileDetails');
 				uploadFileDetails.addClass('hide').removeClass('show');
 
@@ -350,11 +360,10 @@ Vtiger_Edit_Js("Documents_Edit_Js", {
         this._super(container);
         this.registerFileLocationTypeChangeEvent(container);
             this.registerFileElementChangeEvent(container);
-            this.registerEventForCkEditor(container);
+            this.registerEventForJoditEditor(container);
             this.documentsQuickCreateConfig(container);
             this.handleDragDropEvents(container);
             this.registerCustomValidationForFileElement(container);
     },
 });
-
 

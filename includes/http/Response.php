@@ -37,6 +37,11 @@ class Vtiger_Response {
 	static $EMIT_JSONP = 4;
 
 	/**
+	 * Emit pure JSON (without vtiger wrapper)
+	 */
+	const EMIT_PURE_JSON = 5;
+
+	/**
 	 * Error data.
 	 */
 	private $error = NULL;
@@ -55,10 +60,64 @@ class Vtiger_Response {
 	private $headers = array();
 
 	/**
+	 * Security headers to prevent common attacks
+	 */
+	private static $securityHeaders = array(
+		"X-Content-Type-Options: nosniff",
+		"X-Frame-Options: SAMEORIGIN",
+		"X-XSS-Protection: 1; mode=block",
+		"Referrer-Policy: strict-origin-when-cross-origin"
+	);
+
+	/**
 	 * Set headers to send
 	 */
 	function setHeader($header) {
 		$this->headers[] = $header;
+	}
+
+	/**
+	 * Build Content-Security-Policy header based on environment
+	 */
+	public static function buildCSPHeader() {
+		global $csp_allowed_domains;
+
+		$directives = array(
+			'script-src'  => "'self' 'unsafe-inline' 'unsafe-eval'",
+			'style-src'   => "'self' 'unsafe-inline'",
+			'img-src'     => "'self' data: blob:",
+			'font-src'    => "'self'",
+			'connect-src' => "'self'",
+			'frame-src'   => "'self'",
+		);
+
+		if (!empty($csp_allowed_domains) && is_array($csp_allowed_domains)) {
+			foreach ($directives as $directive => $value) {
+				if (!empty($csp_allowed_domains[$directive])) {
+					$directives[$directive] .= ' ' . implode(' ', $csp_allowed_domains[$directive]);
+				}
+			}
+		}
+
+		$parts = array("default-src 'self'");
+		foreach ($directives as $directive => $value) {
+			$parts[] = "{$directive} {$value}";
+		}
+		$parts[] = "frame-ancestors 'self'";
+		$parts[] = "form-action 'self'";
+		$parts[] = "base-uri 'self'";
+
+		return "Content-Security-Policy: " . implode('; ', $parts);
+	}
+
+	/**
+	 * Send security headers to prevent common attacks (XSS, clickjacking, etc.)
+	 */
+	protected function sendSecurityHeaders() {
+		header(self::buildCSPHeader());
+		foreach (self::$securityHeaders as $header) {
+			header($header);
+		}
 	}
 
 	/**
@@ -146,6 +205,8 @@ class Vtiger_Response {
 	 * Send response to client.
 	 */
 	function emit() {
+		// Send security headers first
+		$this->sendSecurityHeaders();
 
 		$contentTypeSent = false;
 		foreach ($this->headers as $header) {
@@ -171,6 +232,20 @@ class Vtiger_Response {
 			echo $this->emitJSONPFn . "(";
 			$this->emitJSON();
 			echo ")";
+		} else if ($this->emitType == self::EMIT_PURE_JSON) {
+			if (!$contentTypeSent) header('Content-type: application/json; charset=UTF-8');
+			$this->emitPureJSON();
+		}
+	}
+
+	/**
+	 * Emit pure JSON without wrapper
+	 */
+	protected function emitPureJSON() {
+		if ($this->error !== NULL) {
+			echo Zend_Json::encode(['error' => $this->error]);
+		} else {
+			echo Zend_Json::encode($this->result);
 		}
 	}
 

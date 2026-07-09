@@ -30,6 +30,8 @@ $languageStrings = array(
     'LBL_KEY_FIELD_VIEW' => 'Key Field View',
 	'LBL_MASS_EDIT' => 'Mass Edit',
 	'LBL_DEFAULT_VALUE' => 'Default Value',
+	'LBL_FIXED_DATE' => 'Fixed Date',
+	'LBL_TODAY' => 'Today (TODAY)',
 	'LBL_SELECT_FIELD_TYPE' => 'Select Field Type',
 	'LBL_LABEL_NAME' => 'Label Name',
 	'LBL_LENGTH' => 'Length',
@@ -170,6 +172,8 @@ $languageStrings = array(
 	'LBL_PREFER_INTERNAL_RECORD' => 'Prefer internal record',
 	'LBL_PREFER_EXTERNAL_RECORD' => 'Prefer external record',
 	'LBL_SYNC_TOOLTIP_MESSAGE' => 'Prefer latest record - Most recently modified record data will be retained<br>Prefer internal record - Existing record will be retained as it is<br>Prefer external record - Data from the external application will be copied',
+	'LBL_EDIT_READONLY_DISPLAY' => 'Display read-only fields in edit view',
+	'LBL_EDIT_READONLY_DISPLAY_DETAIL_VIEW' => 'Show read-only fields in the edit view',
 );
 
 $jsLanguageStrings = array(
@@ -177,6 +181,8 @@ $jsLanguageStrings = array(
 	'JS_BLOCK_VISIBILITY_HIDE' => 'Block hide enabled',
 	'JS_CUSTOM_BLOCK_ADDED' => 'New Custom Block added',
 	'JS_BLOCK_SEQUENCE_UPDATED' => 'Blocks Sequence Updated',
+	'JS_FIXED_DATE' => 'Fixed Date',
+	'JS_TODAY' => 'Today (TODAY)',
 	'JS_SELECTED_FIELDS_REACTIVATED' => 'Selected Fields Reactivated',
 	'JS_FIELD_DETAILS_SAVED' => 'Field Details Saved',
 	'JS_CUSTOM_BLOCK_DELETED' => 'Custom Block Deleted',

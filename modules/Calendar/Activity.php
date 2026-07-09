@@ -152,7 +152,14 @@ class Activity extends CRMEntity {
 				$this->invitee_array[] = $smownerid;
 			}
 			if(!in_array($request_assigned_user_id, $this->invitee_array)){
-				$this->invitee_array[] = $request_assigned_user_id;
+				require_once 'include/utils/GetGroupUsers.php';
+				$userGroups = new GetGroupUsers();
+				$userGroups->getAllUsersInGroup($request_assigned_user_id);
+				if(!empty($userGroups->group_users)){ // 担当がグループである場合
+					$this->invitee_array = array_unique(array_merge($this->invitee_array, $userGroups->group_users));
+				}else{
+					$this->invitee_array[] = $request_assigned_user_id;
+				}
 			}
 		} else if(empty($this->invitee_array) && php7_count($_REQUEST['selectedusers']) > 0){// 概要欄や関連からの遷移の場合
 			$this->invitee_array = $_REQUEST['selectedusers'];
@@ -162,7 +169,14 @@ class Activity extends CRMEntity {
 				$this->invitee_array[] = $smownerid;
 			}
 			if(!in_array($request_assigned_user_id, $this->invitee_array)){
-				$this->invitee_array[] = $request_assigned_user_id;
+				require_once 'include/utils/GetGroupUsers.php';
+				$userGroups = new GetGroupUsers();
+				$userGroups->getAllUsersInGroup($request_assigned_user_id);
+				if(!empty($userGroups->group_users)){ // 担当がグループである場合
+					$this->invitee_array = array_unique(array_merge($this->invitee_array, $userGroups->group_users));
+				}else{
+					$this->invitee_array[] = $request_assigned_user_id;
+				}
 			}
 		} else {// リクエストに入っていない場合はDBから取得を試みる
 			$this->loadInvitees();
@@ -566,6 +580,12 @@ function insertIntoRecurringTable(& $recurObj)
 			if(empty($inviteeid)) {
 				continue;
 			}
+
+			$result = $adb->pquery("SELECT 1 FROM vtiger_invitees WHERE activityid = ? AND inviteeid = ?", array($this->invitee_parentid, $inviteeid));
+			if($adb->num_rows($result) > 0) {
+				continue;
+			}
+
 			$query="INSERT INTO vtiger_invitees VALUES (?,?,?)";
 			$adb->pquery($query, array($this->invitee_parentid, $inviteeid, 'sent'));
 
@@ -1300,37 +1320,41 @@ function insertIntoRecurringTable(& $recurObj)
 		return $query;
 	}
 
+	/**
+	 * 非管理者ユーザーの権限に基づくアクセス制御SQLを生成する。
+	 * ※ vt_tmp系のCalendar共有判定は一時的に無効化中。今後、カレンダー設定の選択ユーザー表示仕様に合わせて見直す予定。
+	*/
 	public function getNonAdminAccessControlQuery($module, $user,$scope='') {
-		require('user_privileges/user_privileges_'.$user->id.'.php');
-		require('user_privileges/sharing_privileges_'.$user->id.'.php');
+		// require('user_privileges/user_privileges_'.$user->id.'.php');
+		// require('user_privileges/sharing_privileges_'.$user->id.'.php');
 		$query = ' ';
-		$tabId = getTabid($module);
-		if($is_admin==false && $profileGlobalPermission[1] == 1 && $profileGlobalPermission[2]
-				== 1) {
-			$sharedTabId = null;
+		// $tabId = getTabid($module);
+		// if($is_admin==false && $profileGlobalPermission[1] == 1 && $profileGlobalPermission[2]
+		// 		== 1) {
+		// 	$sharedTabId = null;
 
-			if($_REQUEST['module'] === "Accounts" && $_REQUEST['view'] === "Detail" && (empty($_REQUEST['mode']) || $_REQUEST['mode'] === "showDetailViewByMode" || $_REQUEST['mode'] === "getActivities")){
-				$crmtablename = 'tmp';
-				$activitytable = 'tmp';
-			}else{
-				$crmtablename = 'vtiger_crmentity';
-				$activitytable = 'vtiger_activity';
-			}
-			//For Events
-			$tableName = 'vt_tmp_u'.$user->id.'_t'.$tabId.'_events';
-			$this->setupTemporaryTableForEvents($tableName, $sharedTabId, $user,
-				$current_user_parent_role_seq, $current_user_groups);
-			$query = " LEFT JOIN $tableName $tableName$scope ON ($tableName$scope.id = ".
-				"$crmtablename$scope.smownerid AND $activitytable.activitytype NOT IN ('Emails', 'Task')) ";
+		// 	if($_REQUEST['module'] === "Accounts" && $_REQUEST['view'] === "Detail" && (empty($_REQUEST['mode']) || $_REQUEST['mode'] === "showDetailViewByMode" || $_REQUEST['mode'] === "getActivities")){
+		// 		$crmtablename = 'tmp';
+		// 		$activitytable = 'tmp';
+		// 	}else{
+		// 		$crmtablename = 'vtiger_crmentity';
+		// 		$activitytable = 'vtiger_activity';
+		// 	}
+		// 	//For Events
+		// 	$tableName = 'vt_tmp_u'.$user->id.'_t'.$tabId.'_events';
+		// 	$this->setupTemporaryTableForEvents($tableName, $sharedTabId, $user,
+		// 		$current_user_parent_role_seq, $current_user_groups);
+		// 	$query = " LEFT JOIN $tableName $tableName$scope ON ($tableName$scope.id = ".
+		// 		"$crmtablename$scope.smownerid AND $activitytable.activitytype NOT IN ('Emails', 'Task')) ";
 
-			//For Task
-			$task_tableName = 'vt_tmp_u'.$user->id.'_t'.$tabId.'_task';
-			$this->setupTemporaryTableForTask($task_tableName, $tabId, $user,
-				$current_user_parent_role_seq, $current_user_groups, $defaultOrgSharingPermission[$tabId]);
+		// 	//For Task
+		// 	$task_tableName = 'vt_tmp_u'.$user->id.'_t'.$tabId.'_task';
+		// 	$this->setupTemporaryTableForTask($task_tableName, $tabId, $user,
+		// 		$current_user_parent_role_seq, $current_user_groups, $defaultOrgSharingPermission[$tabId]);
 
-			$query .= " LEFT JOIN $task_tableName $task_tableName$scope ON ($task_tableName$scope.id = ".
-				"$crmtablename$scope.smownerid AND $activitytable.activitytype = 'Task') ";
-		}
+		// 	$query .= " LEFT JOIN $task_tableName $task_tableName$scope ON ($task_tableName$scope.id = ".
+		// 		"$crmtablename$scope.smownerid AND $activitytable.activitytype = 'Task') ";
+		// }
 		return $query;
 	}
 
@@ -1345,7 +1369,7 @@ function insertIntoRecurringTable(& $recurObj)
 	 */
 	public function getReportsNonAdminAccessControlQuery($tableName, $tabId, $user, $parent_roles,$groups){
 		$sharedUsers = $this->getListViewAccessibleUsers($user->id);
-		$this->setupTemporaryTable($tableName, $tabId, $user, $parent_roles,$groups);
+		$this->setupTemporaryTableForEvents($tableName, $tabId, $user, $parent_roles,$groups);
 		$query = "SELECT id FROM $tableName WHERE $tableName.shared=0 AND $tableName.id IN ($sharedUsers)";
 		return $query;
 	}
@@ -1428,17 +1452,21 @@ function insertIntoRecurringTable(& $recurObj)
 		return $shared_ids;
 	}
 
+	/**
+	 * 非管理者ユーザーの権限に基づくアクセス制御SQLを生成する。
+	 * ※ vt_tmp系のCalendar共有判定は一時的に無効化中。今後、カレンダー設定の選択ユーザー表示仕様に合わせて見直す予定。
+	*/
 	public function buildWhereClauseConditionForCalendar($scope = '') {
-		$userModel = Users_Record_Model::getCurrentUserModel();
-		require('user_privileges/user_privileges_'.$userModel->id.'.php');
+		// $userModel = Users_Record_Model::getCurrentUserModel();
+		// require('user_privileges/user_privileges_'.$userModel->id.'.php');
 
 		$query = "";
-		if($profileGlobalPermission[1] == 1 && $profileGlobalPermission[2] == 1) {
-			$tabId = getTabid("Calendar");
-			$eventTempTable = 'vt_tmp_u'.$userModel->id.'_t'.$tabId.'_events'.$scope;
-			$taskTempTable = 'vt_tmp_u'.$userModel->id.'_t'.$tabId.'_task'.$scope;
-			$query = " ($eventTempTable.shared IS NOT NULL OR $taskTempTable.shared IS NOT NULL) ";
-		}
+		// if($profileGlobalPermission[1] == 1 && $profileGlobalPermission[2] == 1) {
+		// 	$tabId = getTabid("Calendar");
+		// 	$eventTempTable = 'vt_tmp_u'.$userModel->id.'_t'.$tabId.'_events'.$scope;
+		// 	$taskTempTable = 'vt_tmp_u'.$userModel->id.'_t'.$tabId.'_task'.$scope;
+		// 	$query = " ($eventTempTable.shared IS NOT NULL OR $taskTempTable.shared IS NOT NULL) ";
+		// }
 		return $query;
 	}
 
@@ -1530,18 +1558,29 @@ function insertIntoRecurringTable(& $recurObj)
 		foreach($accountids as $accountid) {
 				$accountRecordModel = Vtiger_Record_Model::getInstanceById($accountid);
 				$relatedContactsIdList = $this->getAccountsRelatedIdList($accountid, "Contacts");
+				$contactsLastActionDate = null;
 				if ($relatedContactsIdList) {
 					$contactsLastActionDate = $this->getLastActionDateFromList($relatedContactsIdList, "Contacts");
 				}
 				$relatedPotentialsIdList = $this->getAccountsRelatedIdList($accountid, "Potentials");
+				$potentialLastActionDate = null;
 				if ($relatedPotentialsIdList) {
 					$potentialLastActionDate = $this->getLastActionDateFromList($relatedPotentialsIdList, "Potentials");
 				}
-				if (strtotime($contactsLastActionDate) > strtotime($potentialLastActionDate)) {
+				
+				$parentLastActionDate = null;
+				if ($contactsLastActionDate && $potentialLastActionDate) {
+					if (strtotime($contactsLastActionDate) > strtotime($potentialLastActionDate)) {
+						$parentLastActionDate = $contactsLastActionDate;
+					} else {
+						$parentLastActionDate = $potentialLastActionDate;
+					}
+				} elseif ($contactsLastActionDate) {
 					$parentLastActionDate = $contactsLastActionDate;
-				} elseif (strtotime($potentialLastActionDate) >= strtotime($contactsLastActionDate)) {
-				$parentLastActionDate =  $potentialLastActionDate;
-				} 
+				} elseif ($potentialLastActionDate) {
+					$parentLastActionDate = $potentialLastActionDate;
+				}
+				
 				$accountLastActionDate = $this->getParentLastActionDate($accountid,"Accounts");
 				$accountRecordModel->set('mode', 'edit');
 				if (isset($parentLastActionDate) && isset($accountLastActionDate)) {
@@ -1571,10 +1610,18 @@ function insertIntoRecurringTable(& $recurObj)
 		}
 		$relatedActivityResult = $adb->pquery($getRelatedActivityQuery, array($parent_id));
 		$relatedActivityRows = $adb->num_rows($relatedActivityResult);
-		$relatedActivity = new DateTime($adb->query_result($relatedActivityResult, 0, "due_date"));
-		if ($relatedActivityRows) {
-			return $relatedActivity->format('Y-m-d');
+		if ($relatedActivityRows > 0) {
+			$dueDate = $adb->query_result($relatedActivityResult, 0, "due_date");
+			if ($dueDate) {
+				try {
+					$relatedActivity = new DateTime($dueDate);
+					return $relatedActivity->format('Y-m-d');
+				} catch (Exception $e) {
+					return null;
+				}
+			}
 		}
+		return null;
 	}
 
 	#顧客企業の関連ID(顧客担当者・案件)の配列を得る
@@ -1586,24 +1633,41 @@ function insertIntoRecurringTable(& $recurObj)
 		} elseif ($moduleName == "Potentials") {
 			$getRelatedQuery = "SELECT potentialid from vtiger_potential where related_to = ?";
 			$columnName = "potentialid";
+		} else {
+			return array();
 		}
 		$relatedResult = $adb->pquery($getRelatedQuery, array($accountid));
 		$relatedRows = $adb->num_rows($relatedResult);
+		$relatedIdList = array();
 		for ($i = 0; $i < $relatedRows; $i++) {
-			$relatedIdList[] = $adb->query_result($relatedResult, $i, $columnName);
+			$relatedId = $adb->query_result($relatedResult, $i, $columnName);
+			if ($relatedId) {
+				$relatedIdList[] = $relatedId;
+			}
 		}
 		return $relatedIdList;
 	}
 
 	#関連IDの配列から最終活動日を得る
 	public function getLastActionDateFromList($parentIdList, $moduleName) {
+		$parentLastActionDateList = array();
 		foreach ($parentIdList as $parentId) {
 			$parentLastActionDate = $this->getParentLastActionDate($parentId, $moduleName);
 			if ($parentLastActionDate) {
 				$parentLastActionDateList[$parentLastActionDate] = strtotime($parentLastActionDate);
 			}
 		}
-		$last_action_date   = array_keys($parentLastActionDateList, max($parentLastActionDateList));
+		if (empty($parentLastActionDateList)) {
+			return null;
+		}
+		$maxTimestamp = max($parentLastActionDateList);
+		if ($maxTimestamp === false) {
+			return null;
+		}
+		$last_action_date = array_keys($parentLastActionDateList, $maxTimestamp);
+		if (empty($last_action_date)) {
+			return null;
+		}
 		return $last_action_date[0];
 	}
 	

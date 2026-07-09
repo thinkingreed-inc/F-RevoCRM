@@ -220,7 +220,8 @@ class CRMEntity {
 		// temporary file will be deleted at the end of request
                 $log->debug("Upload status of file => $upload_status");
 		if ($save_file == true && $upload_status == true) {
-			if($attachmentType != 'Image' && $this->mode == 'edit') {
+			// Emailsモジュールでは複数の添付ファイルを付けることが可能なので、明示的削除したもの以外は消さない
+			if($attachmentType != 'Image' && $this->mode == 'edit' && $module !== 'Emails') {
 				//Only one Attachment per entity delete previous attachments
 				$res = $adb->pquery('SELECT vtiger_seattachmentsrel.attachmentsid FROM vtiger_seattachmentsrel 
 									INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_seattachmentsrel.attachmentsid AND vtiger_crmentity.setype = ? 
@@ -289,13 +290,7 @@ class CRMEntity {
 
 		$entityFields = Vtiger_Functions::getEntityModuleInfo($module);
         $entityFieldNames  = explode(',', $entityFields['fieldname']);
-        switch ($module) {
-            case 'HelpDesk': $entityFieldNames = array('ticket_title');
-                break;
-            case 'Documents': $entityFieldNames = array('notes_title');
-                break;
-		}
-		
+
 		$record_label = '';
 		foreach($entityFieldNames as $entityFieldName) {
 			$record_label .= $this->column_fields[$entityFieldName]." ";
@@ -776,68 +771,49 @@ class CRMEntity {
         $db = PearDatabase::getInstance();
         $currentUser = Users_Record_Model::getCurrentUserModel();
 
-        $tagName = $this->column_fields['tags'];
+        $implodeTagName = $this->column_fields['tags'];
         $visibility = 'public'; //インポートしたタグはpublicで固定
 		$userId = $currentUser->getId();
 		$now = date("Y-m-d H:i:s");
 
 		//tagNameにカンマと' |##| 'が両方に含まれることは想定していない
-		$explodedValue = array();
-		if($tagName && strpos($tagName, ' |##| ') !== false){
-			$explodedValue = explode(' |##| ', $tagName);
-		}elseif($tagName && strpos($tagName, ',') !== false){
-			$explodedValue = explode(',', $tagName);
-		}elseif($tagName){
-			$explodedValue[0] = $tagName;
+		$explodetagName = array();
+		if($implodeTagName && strpos($implodeTagName, ' |##| ') !== false){
+			$explodetagName = explode(' |##| ', $implodeTagName);
+		}elseif($implodeTagName && strpos($implodeTagName, ',') !== false){
+			$explodetagName = explode(',', $implodeTagName);
+		}elseif($implodeTagName){
+			$explodetagName[0] = $implodeTagName;
 		}
 
-		foreach ($explodedValue as $value) {
-			$id = $db->getUniqueId('vtiger_freetags');
-			$TagNotExist = true;
-			$tagName = $value;
-
-			//タグデータをcacheに登録
-			$checkcache = Vtiger_Cache::get('DBTags', $tagName);
-			if(!$checkcache){
-				$result = $db->pquery("SELECT id,tag,visibility,owner FROM vtiger_freetags;", array());
-				$rows = $db->num_rows($result);
-				for ($i = 0; $i < $rows; $i++) {
-					$DBtagName = $db->query_result($result, $i, 'tag');
-					$Tagvalue[0] = $db->query_result($result, $i, 'visibility');
-					$Tagvalue[1] = $db->query_result($result, $i, 'owner');
-					$Tagvalue[2] = $db->query_result($result, $i, 'id');
-					Vtiger_Cache::set('DBTags',$DBtagName,$Tagvalue);
-				}
-				$Tagvalue = [];
-			}
-
-			/*タグの新規作成の必要確認
-			1. vtiger_freetagsに同名のタグがない → 作成
-			2. vtiger_freetagsに同名のタグがある → publicである  → 作成しない
-			3. 　　　　　　　　　                → privateである → ownerが自身 → 作成しない
-			4. 　　　　　　　　　                  　　　        → ownerが自身でない → 作成
-			*/
-			$Tagvalue = Vtiger_Cache::get('DBTags',$tagName);
-			if(!$Tagvalue){ // 1
-				$TagNotExist = true;
-			}else{
-				if($Tagvalue[0] == "public"){ // 2
-					$TagNotExist = false;
-					$id = $Tagvalue[2];
-				}else if($Tagvalue[0] == "private"){
-					if($Tagvalue[1] == $userId){ // 3
-						$TagNotExist = false;
-						$id = $Tagvalue[2];
-					}else{ // 4
-						$TagNotExist = true;
+		foreach($explodetagName as $tagName){
+			if(Vtiger_Tag_Model::checkTagExistence(array('tagName' => $tagName))){ // 新規作成
+				$id = $db->getUniqueId('vtiger_freetags');
+				$db->pquery("INSERT INTO vtiger_freetags values(?,?,?,?,?)", array($id, $tagName, $tagName, $visibility, $userId));	
+				$db->pquery("INSERT INTO vtiger_freetagged_objects values(?,?,?,?,?)", array($id, $userId, $this->id, $now, $module));
+				Vtiger_Tag_Model::updateCachedDBTags(array('tagId' => $id, 'tagName' => $tagName, 'visibility' => $visibility, 'owner' => $userId));
+			}else{ // 同名タグに紐づける. 作成者が自分のタグを優先する.
+				$otherTagsWithSameName = Vtiger_Tag_Model::getInstanceByName($tagName, $userId);
+				if($otherTagsWithSameName !== false){
+					$id = $otherTagsWithSameName->getId();
+					$db->pquery("INSERT INTO vtiger_freetagged_objects values(?,?,?,?,?)", array($id, $userId, $this->id, $now, $module));
+				}else{
+					$DBTagsValue = Vtiger_Cache::get('DBTags', 'DBTagsValue'); // Vtiger_Tag_Model::checkTagExistence()にてキャッシュが用意される
+					$otherTagsWithSameName = array_filter($DBTagsValue, function($item) use ($tagName, $userId) {
+						if($item['tag'] == $tagName && $item['owner'] == $userId){
+							return true;
+						}elseif($item['tag'] == $tagName && $item['visibility'] == 'public'){
+							return true;
+						}
+						return false;
+					});
+					$otherTagsWithSameName = array_values($otherTagsWithSameName);
+					if(!empty($otherTagsWithSameName)){
+						$id = $otherTagsWithSameName[0]['id'];
+						$db->pquery("INSERT INTO vtiger_freetagged_objects values(?,?,?,?,?)", array($id, $userId, $this->id, $now, $module));
 					}
 				}
 			}
-
-			if($TagNotExist){
-				$db->pquery("INSERT INTO vtiger_freetags values(?,?,?,?,?)", array($id, $tagName, $tagName, $visibility, $userId));	
-			}
-			$db->pquery("INSERT INTO vtiger_freetagged_objects values(?,?,?,?,?)", array($id, $userId, $this->id, $now, $module));
 		}
     }
 
@@ -1011,12 +987,26 @@ class CRMEntity {
 					// added to compute label needed in event handlers
 					$entityFields = Vtiger_Functions::getEntityModuleInfo($module);
 					if(!empty($entityFields['fieldname'])) {
-						$entityFieldNames  = explode(',', $entityFields['fieldname']);
-						if(php7_count($entityFieldNames) > 1) {
-							 $this->column_fields['label'] = $resultrow[$entityFields['tablename'].$entityFieldNames[0]].' '.$resultrow[$entityFields['tablename'].$entityFieldNames[1]];
-						} else {
-							$this->column_fields['label'] = $resultrow[$entityFields['tablename'].$entityFieldNames[0]];
+						// Values live in $resultrow under the same alias used when
+						// building the query (createColumnAliasForField =
+						// strtolower(tablename.fieldname)). Resolve each entity field
+						// to its fieldinfo so the alias matches even when the column
+						// or table differs from the field name; concatenate all
+						// fields (not just the first two).
+						$fieldInfoByName = array();
+						foreach ($cachedModuleFields as $fieldinfo) {
+							$fieldInfoByName[$fieldinfo['fieldname']] = $fieldinfo;
 						}
+						$labelValues = array();
+						foreach (explode(',', $entityFields['fieldname']) as $entityFieldName) {
+							$fieldkey = isset($fieldInfoByName[$entityFieldName])
+								? $this->createColumnAliasForField($fieldInfoByName[$entityFieldName])
+								: strtolower($entityFields['tablename'].$entityFieldName);
+							if (isset($resultrow[$fieldkey]) && $resultrow[$fieldkey] !== '') {
+								$labelValues[] = $resultrow[$fieldkey];
+							}
+						}
+						$this->column_fields['label'] = implode(' ', $labelValues);
 					}
 				}
 				foreach ($cachedModuleFields as $fieldinfo) {
@@ -3442,10 +3432,12 @@ class TrackableObject implements ArrayAccess, IteratorAggregate {
 		$this->storage = $value;
 	}
 
+	#[\ReturnTypeWillChange]
 	function offsetExists($key) {
 		return isset($this->storage[$key]) || array_key_exists($key, $this->storage);
 	}
 
+	#[\ReturnTypeWillChange]
 	function offsetSet($key, $value) {
 		if($this->tracking && $this->trackingEnabled) {
 			$olderValue = $this->offsetGet($key);
@@ -3459,14 +3451,17 @@ class TrackableObject implements ArrayAccess, IteratorAggregate {
 		$this->storage[$key] = $value;
 	}
 
+	#[\ReturnTypeWillChange]
 	public function offsetUnset($key) {
 		unset($this->storage[$key]);
 	}
 
+	#[\ReturnTypeWillChange]
 	public function offsetGet($key) {
 		return isset($this->storage[$key]) || array_key_exists($key, $this->storage) ? $this->storage[$key] : null;
 	}
 
+	#[\ReturnTypeWillChange]
 	public function getIterator() {
 		$iterator = new ArrayObject($this->storage);
 		return $iterator->getIterator();

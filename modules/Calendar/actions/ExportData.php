@@ -199,9 +199,9 @@ class Calendar_ExportData_Action extends Vtiger_ExportData_Action {
 		return $moduleFields;
 	}
 
-	public function sanitizeValues($arr) {
+	public function sanitizeValues($arr, $format=null) {
 		$activityId = $arr['activityid'];
-		$sanitizeValues = parent::sanitizeValues($arr);
+		$sanitizeValues = parent::sanitizeValues($arr,$format);
 
 		$startDateParts = explode(' ', $sanitizeValues['date_start']);
 		$dueDateParts = explode(' ', $sanitizeValues['due_date']);
@@ -217,18 +217,43 @@ class Calendar_ExportData_Action extends Vtiger_ExportData_Action {
 		$recordModel = Vtiger_Record_Model::getInstanceById($activityId, $moduleModel);
 		$db = PearDatabase::getInstance();
 
-		$query = 'SELECT label FROM vtiger_crmentity
+		$query = 'SELECT crmid, label FROM vtiger_crmentity
 					INNER JOIN vtiger_cntactivityrel ON vtiger_cntactivityrel.contactid = vtiger_crmentity.crmid
 					WHERE vtiger_cntactivityrel.activityid = ?';
 		$result = $db->pquery($query, array($activityId));
 		$numOfRows = $db->num_rows($result);
 
 		$relatedContacts = array();
-		while ($rowData = $db->fetch_row($result)) {
-			$relatedContacts[] = 'Contacts::::'.decode_html(Vtiger_Util_Helper::toSafeHTML($rowData['label']));
-		}
-		$contactInfo = implode(', ', $relatedContacts);
-		$sanitizeValues['contact_id'] = $contactInfo;
+		$importableRelatedContacts = array();
+
+		switch($format) {
+			case 'ExportImportableFormat'	:	while ($rowData = $db->fetch_row($result)) {
+													$relatedContacts[] = 'Contacts::::contactid===='.decode_html(Vtiger_Util_Helper::toSafeHTML($rowData['crmid']));
+												}
+												$contactInfo = implode(', ', $relatedContacts);
+												$sanitizeValues['contact_id'] = $contactInfo;
+												break;
+
+			case 'ExportLabelOnly'	:	while ($rowData = $db->fetch_row($result)) {
+											$relatedContacts[] = decode_html(Vtiger_Util_Helper::toSafeHTML($rowData['label']));
+										}
+										$contactInfo = implode(', ', $relatedContacts);
+										$sanitizeValues['contact_id'] = $contactInfo;
+										break;
+
+			case 'ExportBoth'	:	while ($rowData = $db->fetch_row($result)) {
+										$relatedContacts[] = decode_html(Vtiger_Util_Helper::toSafeHTML($rowData['label']));
+										$importableRelatedContacts[] = 'Contacts::::contactid===='.decode_html(Vtiger_Util_Helper::toSafeHTML($rowData['crmid']));
+									}
+									$contactInfo = implode(', ', $relatedContacts);
+									$sanitizeValues['contact_id'] = $contactInfo;
+									$importableContactInfo = implode(', ', $importableRelatedContacts);
+									$sanitizeValues['contact_id_importable_format'] = $importableContactInfo;
+									break;
+			
+			default :	break;
+		}		
+
 
 		if ($recordModel->getType() == 'Events') {
 			$sanitizeValues['status'] = $sanitizeValues['eventstatus'];
@@ -237,12 +262,17 @@ class Calendar_ExportData_Action extends Vtiger_ExportData_Action {
 		return $sanitizeValues;
 	}
 
-	public function getHeaders() {
-		$translatedHeaders = array_unique(parent::getHeaders());
+	public function getHeaders($format=null) {
+		$translatedHeaders = array_unique(parent::getHeaders($format));
 		$moduleModel = Vtiger_Module_Model::getInstance('Calendar');
 
 		$fieldModel = $moduleModel->getField('contact_id');
-		$translatedHeaders[] = vtranslate(html_entity_decode($fieldModel->get('label'), ENT_QUOTES), 'Calendar');
+		if($format == 'ExportBoth'){
+			$translatedHeaders[] = vtranslate(html_entity_decode($fieldModel->get('label'), ENT_QUOTES), 'Calendar').'('.vtranslate('LBL_LABEL', 'Calendar').')';
+			$translatedHeaders[] = vtranslate(html_entity_decode($fieldModel->get('label'), ENT_QUOTES), 'Calendar');
+		} else {
+			$translatedHeaders[] = vtranslate(html_entity_decode($fieldModel->get('label'), ENT_QUOTES), 'Calendar');
+		}
 
 		return $translatedHeaders;
 	}

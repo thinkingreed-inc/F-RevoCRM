@@ -111,15 +111,29 @@ class Vtiger_TagCloud_Action extends Vtiger_Mass_Action {
 		}
 
 		$result = array();
+		$invalidTagName = array();
 		foreach($newTags as $tagName) {
 			if(empty($tagName)) continue;
+			if(!Vtiger_Tag_Model::checkTagExistence(array('tagName' => $tagName))) {
+				$invalidTagName[] = $tagName;
+				continue;
+			}
 			$tagModel = new Vtiger_Tag_Model();
 			$tagModel->set('tag', $tagName)->setType($newTagType);
 			$tagId = $tagModel->create();
 			array_push($existingTags, $tagId);
+			Vtiger_Tag_Model::updateCachedDBTags(array('tagId' => $tagId, 'tagName' => $tagName, 'visibility' => $newTagType, 'owner' => $userId));
 			$result['new'][$tagId] = array('name'=> decode_html($tagName), 'type' => $newTagType);
 		}
 		$existingTags = array_unique($existingTags);
+
+		if(!empty($invalidTagName)){
+			if(count($invalidTagName) != count($newTags)){ // 一部のタグ名が無効
+				$result['saveMessage'] = vtranslate('SAVED_EXCLUDING_INVALID_TAG', $module) . ' ' . implode(',', $invalidTagName);
+			}else{ // 全てのタグ名が無効
+				$result['saveMessage'] = vtranslate('INVALID_TAG_EXISTS', $module) . ' ' . implode(',', $invalidTagName);
+			}
+		}
 
 		foreach($recordIds as $recordId) {
 			if(!empty($recordId)){
@@ -152,8 +166,7 @@ class Vtiger_TagCloud_Action extends Vtiger_Mass_Action {
 		$response = new Vtiger_Response();
 		try{
 			$tagModel = Vtiger_Tag_Model::getInstanceById($tagId);
-			$otherTagModelWithSameName = Vtiger_Tag_Model::getInstanceByName($tagName, $currentUser->getId(), $tagId);
-			if($otherTagModelWithSameName !== false) {
+			if(!Vtiger_Tag_Model::checkTagExistence(array('tagId' => $tagId, 'tagName' => $tagName, 'visibility' => $visibility))) {
 				throw new Exception(vtranslate('LBL_SAME_TAG_EXISTS', $module, $tagName));
 			}
 			if($tagModel->getType() == Vtiger_Tag_Model::PUBLIC_TYPE && $visibility == Vtiger_Tag_Model::PRIVATE_TYPE) {

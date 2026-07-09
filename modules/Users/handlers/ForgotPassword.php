@@ -25,7 +25,7 @@ class Users_ForgotPassword_Handler {
 		$viewer->assign('TITLE', $logoTitle);
 		$viewer->assign('COMPANYNAME', $companyName);
 		$viewer->assign('USERNAME', $userName);
-		$changePasswordTrackUrl = $site_URL."/modules/Users/actions/ForgotPassword.php";
+		$changePasswordTrackUrl = $site_URL."/changePassword.php";
 
 		$expiryTime = (int)$request->get('time')+(24*60*60);
 		$currentTime = time();

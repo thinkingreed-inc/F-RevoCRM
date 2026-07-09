@@ -81,6 +81,7 @@ class Vtiger_Mailer extends PHPMailer {
 	 * @access private
 	 */
 	function reinitialize() {
+		$this->smtpClose();
 		$this->ClearAllRecipients();
 		$this->ClearReplyTos();
 		$this->ClearCustomHeaders();
@@ -241,18 +242,17 @@ class Vtiger_Mailer extends PHPMailer {
 		global $adb;
 		if(!Vtiger_Utils::CheckTable('vtiger_mailer_queue')) return;
 
-		$mailer = new self();
 		$queue = $adb->pquery('SELECT * FROM vtiger_mailer_queue', array());
 		if($adb->num_rows($queue)) {
 			for($index = 0; $index < $adb->num_rows($queue); ++$index) {
-				$mailer->reinitialize();
+				$mailer = new self();
 
 				$queue_record = $adb->fetch_array($queue, $index);
 				$queueid = $queue_record['id'];
 				$relcrmid= $queue_record['relcrmid'];
 
-				$mailer->From = $queue_record['fromemail'];
-				$mailer->From = $queue_record['fromname'];
+				$mailer->From = decode_html($queue_record['fromemail']);
+				$mailer->FromName = $queue_record['fromname'];
 				$mailer->Subject=$queue_record['subject'];
 				$mailer->Body = decode_emptyspace_html($queue_record['body']);
 				$mailer->Mailer=$queue_record['mailer'];
@@ -261,10 +261,11 @@ class Vtiger_Mailer extends PHPMailer {
 				$emails = $adb->pquery('SELECT * FROM vtiger_mailer_queueinfo WHERE id=?', Array($queueid));
 				for($eidx = 0; $eidx < $adb->num_rows($emails); ++$eidx) {
 					$email_record = $adb->fetch_array($emails, $eidx);
-					if($email_record['type'] == 'TO')     $mailer->AddAddress($email_record['email'], $email_record['name']);
-					else if($email_record['type'] == 'CC')$mailer->AddCC($email_record['email'], $email_record['name']);
-					else if($email_record['type'] == 'BCC')$mailer->AddBCC($email_record['email'], $email_record['name']);
-					else if($email_record['type'] == 'RPLYTO')$mailer->AddReplyTo($email_record['email'], $email_record['name']);
+					$decoded_email = decode_html($email_record['email']);
+					if($email_record['type'] == 'TO')     $mailer->AddAddress($decoded_email, $email_record['name']);
+					else if($email_record['type'] == 'CC')$mailer->AddCC($decoded_email, $email_record['name']);
+					else if($email_record['type'] == 'BCC')$mailer->AddBCC($decoded_email, $email_record['name']);
+					else if($email_record['type'] == 'RPLYTO')$mailer->AddReplyTo($decoded_email, $email_record['name']);
 				}
 
 				$attachments = $adb->pquery('SELECT * FROM vtiger_mailer_queueattachments WHERE id=?', Array($queueid));

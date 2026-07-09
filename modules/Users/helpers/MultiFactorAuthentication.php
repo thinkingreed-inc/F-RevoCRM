@@ -333,7 +333,8 @@ class Users_MultiFactorAuthentication_Helper {
         }
     }
 
-    public static function LoginProcess($userid, $username){
+    // $type: totp or passkey
+    public static function LoginProcess($userid, $username, $type){
         unset($_SESSION['force_2fa_registration']);
         unset($_SESSION['registration_userid']);
 
@@ -357,8 +358,9 @@ class Users_MultiFactorAuthentication_Helper {
         // End
 
         //Track the login History
+        $loginType = $type == 'totp' ? 'mfa_totp' : 'mfa_passkey';
         $moduleModel = Users_Module_Model::getInstance('Users');
-        $moduleModel->saveLoginHistory($username);
+        $moduleModel->saveLoginHistory($username, false, $loginType);
         //End
                     
         header ('Location: index.php?module=Users&parent=Settings&view=SystemSetup');

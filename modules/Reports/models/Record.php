@@ -544,6 +544,14 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 
 		$sortFields = $this->get('sortFields');
 
+		// Fix: If sortFields is a JSON string, decode it to array
+		if (is_string($sortFields) && !empty($sortFields)) {
+			$decoded = json_decode($sortFields, true);
+			if (is_array($decoded)) {
+				$sortFields = $decoded;
+			}
+		}
+
 		if(!empty($sortFields)){
 			$i = 0;
 			foreach($sortFields as $fieldInfo) {
@@ -568,6 +576,15 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 		$db = PearDatabase::getInstance();
 
 		$calculationFields = $this->get('calculationFields');
+
+		// Fix: If calculationFields is a JSON string, decode it to array
+		if (is_string($calculationFields) && !empty($calculationFields)) {
+			$decoded = json_decode($calculationFields, true);
+			if (is_array($decoded)) {
+				$calculationFields = $decoded;
+			}
+		}
+
 		for ($i=0; $i<php7_count($calculationFields); $i++) {
 			$db->pquery('INSERT INTO vtiger_reportsummary (reportsummaryid, summarytype, columnname) VALUES (?,?,?)',
 					array($this->getId(), $i, $calculationFields[$i]));
@@ -642,6 +659,14 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 		$db = PearDatabase::getInstance();
 
 		$selectedFields = $this->get('selectedFields');
+
+		// Fix: If selectedFields is a JSON string, decode it to array
+		if (is_string($selectedFields) && !empty($selectedFields)) {
+			$decoded = json_decode($selectedFields, true);
+			if (is_array($decoded)) {
+				$selectedFields = $decoded;
+			}
+		}
 
 		if(!empty($selectedFields)){
 		   for($i=0 ;$i<php7_count($selectedFields);$i++) {

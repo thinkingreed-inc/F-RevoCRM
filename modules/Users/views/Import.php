@@ -15,11 +15,10 @@ class Users_Import_View extends Vtiger_Import_View {
     function checkPermission(Vtiger_Request $request) {
         parent::checkPermission($request);
 
-        if($request->getMode() == 'import') {
-            $currentUserModel = Users_Record_Model::getCurrentUserModel();
-            if(!$currentUserModel->isAdminUser()) {
-                throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
-            }
+        // Usersモジュールのインポートは全モードで管理者のみ許可
+        $currentUserModel = Users_Record_Model::getCurrentUserModel();
+        if(!$currentUserModel->isAdminUser()) {
+            throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
         }
         return true;
 	}

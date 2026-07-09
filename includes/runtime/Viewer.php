@@ -75,6 +75,47 @@ class Vtiger_Viewer extends Smarty {
 			
 			$this->log("URI: $debugViewerURI, TYPE: " . $_SERVER['REQUEST_METHOD']);
 		}
+
+		$inSettings = isset($_REQUEST["parent"]) && $_REQUEST["parent"] == "Settings";
+
+		$classes = array('Vtiger_MenuStructure_Model', 'Users_Privileges_Model', 
+			'Settings_MenuEditor_Module_Model', 'Vtiger_Util_Helper', 
+			'ZEND_JSON', 'Zend_Json', 'Zend_JSON', 'ZEND_json',
+			'Vtiger_Theme', 'Users_Record_Model', 'Vtiger_Module_Model', 'Vtiger_Field_Model', 'Vtiger_Record_Model',
+			'Settings_Picklist_Module_Model', 'CustomView_Record_Model', 'Vtiger_Extension_View',
+			'Vtiger_Tag_Model', 'Settings_Vtiger_Module_Model', 'PBXManager_Server_Model',
+			'Vtiger_Functions', 'Users', 'CurrencyField', 'Reports_Field_Model', 
+			'DateTimeField', 'Calendar_Time_UIType', 'Calendar_Field_Model',
+			'Vtiger_Date_UIType', 'Vtiger_Time_UIType', 'Vtiger_RelationListView_Model',
+			'Inventory_TaxRegion_Model', 'EmailTemplates_Module_Model', 'Project_Record_Model', 'Settings_SMSNotifier_ProviderField_Model',);
+
+		if ($inSettings) {
+			$classes = array_merge($classes, array(
+				'Settings_Vtiger_MenuItem_Model', 'Settings_Webforms_Record_Model',
+				'Settings_Vtiger_CompanyDetails_Model', 'Inventory_Charges_Model', 'Settings_PBXManager_Module_Model',
+				'PBXManager_PBXManager_Connector', 'Settings_Webforms_Record_Model', 'Google_Config_Connector', 'Settings_LayoutEditor_Module_Model',
+			));
+		}
+
+		foreach ($classes as $clazz) {
+			if (class_exists($clazz)) {
+				$this->registerClass($clazz, $clazz);
+			}
+		}
+
+		$modifiers = array('vtranslate', 'vtlib_isModuleActive', 'vimage_path', 
+			'strstr', 'stripos', 'strpos', 'date',
+			'html_entity_decode', 'decode_html', 'vtlib_purify', 'php7_count', 'getUserFullName', 'array_flip', 'explode', 'trim', 'array_push', 'array_merge',
+			'array_map', 'array_key_exists', 'get_class', 'vtlib_array', 'getDuplicatesPreventionMessage', 'htmlentities', 'purifyHtmlEventAttributes',
+			'getCurrencySymbolandCRate', 'getProductBaseCurrency', 'mb_substr', 'isPermitted', 'getOwnerName', 'getEntityName', 'function_exists', 'php7_trim', 'php7_htmlentities',
+			'strtolower', 'strtoupper', 'str_replace', 'urlencode', 'getTranslatedCurrencyString', 'getTranslatedString', 'is_object', 'is_numeric','preg_match',
+			'php7_sizeof', 'method_exists','implode','mt_rand','substr','in_array','array_keys', 'json_decode', 'getCurrencyDecimalPlaces', 'number_format', 'isRecordExists', 'vtws_getOwnerType', 'ucwords', 'array_reverse', 'end', 'textlength_check', 'is_null', 'getTabid', 'array_slice', 'mb_strlen', 'strtotime', 'sizeof', 'vJsTranslate');
+		
+		foreach ($modifiers as $modifier) {
+			if (function_exists($modifier)) {
+				$this->registerPlugin(\Smarty::PLUGIN_MODIFIER, $modifier, $modifier);
+			}
+		}
 	}
 
 	// Backward compatible to SmartyBC
@@ -115,7 +156,7 @@ class Vtiger_Viewer extends Smarty {
 	 * @return <String> - Module specific template path if exists, otherwise default template path for the given template name
 	 */
 	public function getTemplatePath($templateName, $moduleName='') {
-		$moduleName = str_replace(':', '/', $moduleName);
+		$moduleName = isset($moduleName) ? str_replace(':', '/', $moduleName) : '';
 		$completeFilePath = $this->getTemplateDir(0). DIRECTORY_SEPARATOR . "modules/$moduleName/$templateName";
 		if(!empty($moduleName) && file_exists($completeFilePath)) {
 			return "modules/$moduleName/$templateName";

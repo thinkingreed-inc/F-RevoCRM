@@ -9,7 +9,7 @@
   *
  ********************************************************************************/
 -->*}
-<div id="addEventRepeatUI" data-recurring-enabled="{if $RECURRING_INFORMATION['recurringcheck'] eq 'Yes'}true{else}false{/if}">
+<div id="addEventRepeatUI" data-recurring-enabled="{if $RECURRING_INFORMATION['recurringcheck_raw'] eq 'Yes'}true{else}false{/if}">
 	<div><span>{$RECURRING_INFORMATION['recurringcheck']}</span></div>
 	{if $RECURRING_INFORMATION['recurringcheck'] eq 'Yes'}
 	<div>

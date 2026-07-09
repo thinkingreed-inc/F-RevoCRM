@@ -1010,9 +1010,17 @@ var app = {
 	},
 
 	setRTEValues: function(kv) {
+		// Vtiger_Jodit_Js 未ロード画面（RTEを使わないレイアウト）から呼ばれても
+		// ReferenceError を出さないようガード。未定義時は何もしない。
+		if (typeof Vtiger_Jodit_Js === 'undefined') {
+			return;
+		}
 		for (var k in kv) {
-			var rte = CKEDITOR.instances[k];
-			if (rte) rte.setData(kv[k]);
+			var rte = Vtiger_Jodit_Js.getInstance(k);
+			if (rte) {
+				rte.setData(kv[k]);
+			}
+			// QuickCreate等でRTE未起動時は undefined 戻りのためスキップ（安全処理）
 		}
 	},
 

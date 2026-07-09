@@ -123,7 +123,8 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 			foreach($childRecords as $record) {
 				$recordModel = $this->getInstanceById($record, $this->getModuleName());
 				$adb->pquery("DELETE FROM vtiger_activity_recurring_info WHERE activityid=? AND recurrenceid=?", array($parentRecurringId, $record));
-				$recordModel->deleteInviteeRecord();
+				$inviteeDeletedRecords = $recordModel->deleteInviteeRecord();
+				$deletedRecords = array_merge($deletedRecords, $inviteeDeletedRecords);
 				$recordModel->getModule()->deleteRecord($recordModel);
 				$deletedRecords[] = $record;
 			}
@@ -132,7 +133,8 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 				$parentRecurringId = $this->getParentRecurringRecord();
 				$adb->pquery("DELETE FROM vtiger_activity_recurring_info WHERE activityid=? AND recurrenceid=?", array($parentRecurringId, $this->getId()));
 			}
-			$this->deleteInviteeRecord();
+			$inviteeDeletedRecords = $this->deleteInviteeRecord();
+			$deletedRecords = array_merge($deletedRecords, $inviteeDeletedRecords);
 			$this->getModule()->deleteRecord($this);
 			$deletedRecords[] = $this->getId();
 		}
@@ -147,13 +149,15 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 		$recurringObject = $this->getRecurringObject();
 		if ($recurringObject) {
 			$recurringInfoDisplayData = $recurringObject->getDisplayRecurringInfo();
-			$recurringEndDate = $recurringObject->getRecurringEndDate(); 
+			$recurringInfoDisplayData['recurringcheck_raw'] = 'Yes';
+			$recurringEndDate = $recurringObject->getRecurringEndDate();
 		} else {
 			$recurringInfoDisplayData['recurringcheck'] = vtranslate('LBL_NO', $currentModule);
+			$recurringInfoDisplayData['recurringcheck_raw'] = 'No';
 			$recurringInfoDisplayData['repeat_str'] = '';
 		}
-		if(!empty($recurringEndDate)){ 
-			$recurringInfoDisplayData['recurringenddate'] = $recurringEndDate->get_formatted_date(); 
+		if(!empty($recurringEndDate)){
+			$recurringInfoDisplayData['recurringenddate'] = $recurringEndDate->get_formatted_date();
 		}
 
 		return $recurringInfoDisplayData;
@@ -211,7 +215,58 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 		$recurringRecordsList[$parentRecurringId] = $childRecords;
 		return $recurringRecordsList;
 	}
-	
+	/**
+	 * 繰り返し予定の send_mail を系列全体に同期する
+	 */
+	public function syncRecurringSendMail($sendMailValue) {
+		global $adb;
+		$recordId = $this->getId();
+		if (empty($recordId)) {
+			return;
+		}
+		// 現在レコードを、その日の親予定IDに正規化する
+		$currentResult = $adb->pquery("SELECT activityid, invitee_parentid FROM vtiger_activity WHERE activityid = ?", array($recordId));
+		if ($adb->num_rows($currentResult) <= 0) {
+			return;
+		}
+		$currentActivityId = $adb->query_result($currentResult, 0, 'activityid');
+		$currentInviteeParentId = $adb->query_result($currentResult, 0, 'invitee_parentid');
+		$currentParentId = !empty($currentInviteeParentId) ? $currentInviteeParentId : $currentActivityId;
+		// 繰り返し系列の全レコードIDを取得
+		$recurringRecordsList = $this->getRecurringRecordsList();
+		$seriesRecordIds = array();
+		if (!empty($recurringRecordsList) && is_array($recurringRecordsList)) {
+			foreach ($recurringRecordsList as $parent => $childs) {
+				$seriesRecordIds[] = $parent;
+				if (!empty($childs) && is_array($childs)) {
+					foreach ($childs as $childId) {
+						$seriesRecordIds[] = $childId;
+					}
+				}
+			}
+		}
+		if (empty($seriesRecordIds)) {
+			$seriesRecordIds[] = $currentParentId;
+		}
+		$seriesRecordIds = array_values(array_unique(array_filter($seriesRecordIds)));
+		// 各レコードIDを、その日の親予定IDに正規化する
+		$parentIds = array();
+		if (!empty($seriesRecordIds)) {
+			$result = $adb->pquery("SELECT activityid, invitee_parentid FROM vtiger_activity WHERE activityid IN (".generateQuestionMarks($seriesRecordIds).")", $seriesRecordIds);
+			$numRows = $adb->num_rows($result);
+			for ($i = 0; $i < $numRows; $i++) {
+				$activityId = $adb->query_result($result, $i, 'activityid');
+				$inviteeParentId = $adb->query_result($result, $i, 'invitee_parentid');
+				$parentIds[] = !empty($inviteeParentId) ? $inviteeParentId : $activityId;
+			}
+		}
+		$parentIds[] = $currentParentId;
+		$parentIds = array_values(array_unique(array_filter($parentIds)));
+		// 各日の親予定と、その親に紐づく現存子予定をまとめて更新する
+		foreach ($parentIds as $parentId) {
+			$adb->pquery("UPDATE vtiger_activity SET send_mail = ? WHERE deleted = 0 AND (activityid = ? OR invitee_parentid = ?)", array($sendMailValue, $parentId, $parentId));
+		}
+	}
 	/**
 	 * Function to get recurring enabled for record
 	 */
@@ -225,6 +280,7 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 	
 	public function deleteInviteeRecord() {
 		global $adb;
+		$deletedRecords = array();
 
 		$result = $adb->pquery("SELECT
 									a.activityid
@@ -247,7 +303,9 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 
 			$adb->pquery("DELETE FROM vtiger_activity_recurring_info WHERE recurrenceid=?", array($recordModel->getId()));
 			$recordModel->getModule()->deleteRecord($recordModel);
+			$deletedRecords[] = $activityid;
 		}
+		return $deletedRecords;
 	}
 
 	// 共同参加者のカレンダーidを取得する関数

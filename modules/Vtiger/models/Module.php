@@ -162,6 +162,14 @@ class Vtiger_Module_Model extends Vtiger_Module {
 				 */
 				$value = is_string($fieldValue) ? decode_html($fieldValue) : $fieldValue;
 				$focus->column_fields[$fieldName] = $value;
+
+				$fieldModel = $this->getField($fieldName);
+				if ($fieldModel && in_array($fieldModel->getFieldDataType(), array('currency', 'double', 'integer'))) {
+					// インライン編集後のAjaxレスポンスでは、このrecordModelの値が返却される。
+					// ブラウザでの描写用にこのrecordModelの値が返されるが、カンマが含まれると数値として認識されないため、カンマを削除してレスポンスする。保存に関してはUItyepeの変換処理でカンマを削除しているため、描写用の値のみカンマを削除する。
+					$value = str_replace(',', '', (string)$value);
+					$recordModel->set($fieldName, $value);
+				}
 			}
 		}
 		$focus->mode = $recordModel->get('mode');
@@ -538,12 +546,6 @@ class Vtiger_Module_Model extends Vtiger_Module {
 				}
 			}
 
-			//added to handle entity names for these two modules
-			//@Note: need to move these to database
-			switch($moduleName) {
-				case 'HelpDesk': $this->nameFields = array('ticket_title'); $fieldNames = 'ticket_title'; break;
-				case 'Documents': $this->nameFields = array('notes_title'); $fieldNames = 'notes_title';  break;
-			}
 			$entiyObj = new stdClass();
 			$entiyObj->basetable = $adb->query_result($result, 0, 'tablename');
 			$entiyObj->basetableid =  $adb->query_result($result, 0, 'entityidfield');
@@ -819,12 +821,6 @@ class Vtiger_Module_Model extends Vtiger_Module {
 
 				$fieldNames = $db->query_result($result, $index, 'fieldname');
 				$modulename = $db->query_result($result, $index, 'modulename');
-				//added to handle entity names for these two modules
-				//@Note: need to move these to database
-				switch($modulename) {
-					case 'HelpDesk': $fieldNames = 'ticket_title'; break;
-					case 'Documents': $fieldNames = 'notes_title';  break;
-				}
 				$entiyObj = new stdClass();
 				$entiyObj->basetable = $db->query_result($result, $index, 'tablename');
 				$entiyObj->basetableid =  $db->query_result($result, $index, 'entityidfield');
@@ -2066,5 +2062,21 @@ class Vtiger_Module_Model extends Vtiger_Module {
 	public static function getModuleIconPath($moduleName) {
 		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
 		return $moduleModel->getModuleIcon();
+	}
+
+	public function isEditReadonlyDisplay() {
+		return $this->editReadonlyDisplay;
+	}
+
+	public function updateEditreadonlydisplay($editReadonlyDisplay) {
+		global $adb;
+
+		if ($editReadonlyDisplay == 1) {
+			$editReadonlyDisplay = true;
+		} else {
+			$editReadonlyDisplay = false;
+		}
+
+		$adb->pquery("UPDATE vtiger_tab SET editreadonlydisplay = ? WHERE tabid = ?", array($editReadonlyDisplay, $this->getId()));
 	}
 }

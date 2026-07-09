@@ -112,13 +112,15 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
         
         if(isset($fieldDefaultValue) && $fieldDefaultValue !== null) {
             $fieldDataType = $fieldInstance->getFieldDataType();
+            $rawDefaultValue = $request->get('fieldDefaultValue');
             if($fieldDataType == 'multipicklist'){
-                $defaultValue = decode_html(implode(' |##| ', $request->get('fieldDefaultValue')));
+                $defaultValue = decode_html(is_array($rawDefaultValue) ? implode(' |##| ', $rawDefaultValue) : (string)$rawDefaultValue);
             }else{
-                $defaultValue = decode_html($request->get('fieldDefaultValue'));
+                $defaultValue = decode_html($rawDefaultValue);
             }
             $fieldInstance->set('defaultvalue', $defaultValue);
         }
+
 		$response = new Vtiger_Response();
         try{
             $fieldInstance->save();
@@ -183,7 +185,8 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
         $sourceModule = $fieldInstance->get('block')->module->name;
         $fieldLabel = $fieldInstance->get('label');
         if($fieldInstance->uitype == 16 || $fieldInstance->uitype == 33){
-            $pickListValues = Settings_Picklist_Field_Model::getEditablePicklistValues ($fieldInstance->name);
+            $picklistFieldModel = new Settings_Picklist_Field_Model();
+            $pickListValues = $picklistFieldModel->getEditablePicklistValues($fieldInstance->name);
             $fieldLabel = array_merge(array($fieldLabel),$pickListValues);
         }
         $fieldInstance->delete();

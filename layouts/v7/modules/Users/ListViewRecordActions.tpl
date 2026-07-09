@@ -23,7 +23,7 @@
 						<li><a href="{$LISTVIEW_ENTRY->getEditViewUrl()}&parentblock=LBL_USER_MANAGEMENT" name="editlink">{vtranslate('LBL_EDIT', $MODULE)}</a></li>
 					{/if}
 				{/if}
-				{if $IS_MODULE_DELETABLE && $LISTVIEW_ENTRY->getId() != $USER_MODEL->getId()}
+				{if $IS_MODULE_DELETABLE && $LISTVIEW_ENTRY->getId() != $USER_MODEL->getId()&& $LISTVIEW_ENTRY->getId() != 1}
 					{if $LISTVIEW_ENTRY->get('status') eq 'Active'}
 						<li>
 							<a onclick='Settings_Users_List_Js.triggerDeleteUser("{$LISTVIEW_ENTRY->getDeleteUrl()}")'>{vtranslate("LBL_REMOVE_USER",$MODULE)}</a>

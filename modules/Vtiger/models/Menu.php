@@ -61,6 +61,9 @@ class Vtiger_Menu_Model extends Vtiger_Module_Model {
 
 		foreach ($allModules as $module) {
 			if (($userPrivModel->isAdminUser() || $userPrivModel->hasGlobalReadPermission() || $userPrivModel->hasModulePermission($module->getId())) && !in_array($module->getName(), $restrictedModulesList) && $module->get('parent') != '') {
+				if(!$module->isPermitted('CreateView') && $module->isPermitted('EditView')) {
+					continue;
+				}
 				$menuModels[$module->getName()] = $module;
 			}
 		}

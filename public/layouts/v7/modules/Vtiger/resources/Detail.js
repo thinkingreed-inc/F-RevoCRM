@@ -94,16 +94,24 @@ Vtiger.Class("Vtiger_Detail_Js",{
 
 		app.request.post({data: params}).then(function(err, data) {
 			if(data) {
-				params = {
-					'record'	: jQuery('#recordId').val(),
-					'view'		: 'Detail',
-					'module'	: app.getModuleName(),
-					'mode'		: 'getActivities'
-				};
-				app.request.get({data: params}).then(function(err, result) {
-					jQuery('#relatedActivities').html(result);
-					Vtiger_Detail_Js.getInstance().registerEventForActivityWidget();
-				});
+				var activityListEl = document.querySelector('#relatedActivities activity-list');
+				if (activityListEl) {
+					// React WebComponentのリフレッシュ
+					var currentKey = parseInt(activityListEl.getAttribute('refresh-key') || '0', 10);
+					activityListEl.setAttribute('refresh-key', String(currentKey + 1));
+				} else {
+					// 従来のテンプレートのリロード
+					params = {
+						'record'	: jQuery('#recordId').val(),
+						'view'		: 'Detail',
+						'module'	: app.getModuleName(),
+						'mode'		: 'getActivities'
+					};
+					app.request.get({data: params}).then(function(err, result) {
+						jQuery('#relatedActivities').html(result);
+						Vtiger_Detail_Js.getInstance().registerEventForActivityWidget();
+					});
+				}
 			}
 		});
 	},
@@ -299,20 +307,25 @@ Vtiger.Class("Vtiger_Detail_Js",{
 				jQuery('#EditView').vtValidate({
 					submitHandler : function(form){
 						window.onbeforeunload = null;
+						// Jodit全instancesの同期（submit前必須、Task G syncAllInstances共通経路注入）
+						if (typeof Vtiger_Jodit_Js !== 'undefined' && Vtiger_Jodit_Js.syncAllInstances) {
+							Vtiger_Jodit_Js.syncAllInstances();
+						}
 						var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
 						app.event.trigger(e);
 						if(e.isDefaultPrevented()) {
 							return false;
 						}
 
-						// ckEditorの値をセット
-						var ckeditor_columns = ['description', 'solution'];
-						ckeditor_columns.forEach(function (ckeditor_column) {
-							// 対象モジュールがHelpDesk && 対象カラムが存在する && 対象カラムのCKEDITORが存在する
-							if ($(form.module).val() === 'HelpDesk' && $(form).find('textarea[name="'+ckeditor_column+'"]') && CKEDITOR.instances[$(form.module).val()+'_editView_fieldName_'+ckeditor_column]) {
-								// CKEDITORの値をtextareaにセット
-								var ckeditorText = CKEDITOR.instances[$(form.module).val()+'_editView_fieldName_'+ckeditor_column].getData();
-								$(form).find('textarea[name="'+ckeditor_column+'"]').val(ckeditorText);
+						// Joditエディタの値をtextareaにセット
+						var jodit_columns = ['description', 'solution'];
+						jodit_columns.forEach(function (jodit_column) {
+							// 対象モジュールがHelpDesk && 対象カラムが存在する && 対象カラムのエディタインスタンスが存在する
+							var editorId = $(form.module).val()+'_editView_fieldName_'+jodit_column;
+							var editor = Vtiger_Jodit_Js.getInstance(editorId);
+							if ($(form.module).val() === 'HelpDesk' && $(form).find('textarea[name="'+jodit_column+'"]') && editor) {
+								// エディタの値をtextareaにセット
+								$(form).find('textarea[name="'+jodit_column+'"]').val(editor.getData());
 							}
 						});
 
@@ -1359,7 +1372,7 @@ Vtiger.Class("Vtiger_Detail_Js",{
 							} else if(fieldBasicData.data('type') == 'multipicklist' && app.getModuleName() != 'Users') {
 								var picklistHtml = '';
 								var rawPicklistValues = postSaveRecordDetails[fieldName].value;
-								rawPicklistValues = rawPicklistValues.split('|##|');
+								rawPicklistValues = rawPicklistValues ? rawPicklistValues.split('|##|') : [];
 								var picklistValues = postSaveRecordDetails[fieldName].display_value;
 									picklistValues = picklistValues.split(',');
 								for(var i=0; i< rawPicklistValues.length; i++) {
@@ -1713,20 +1726,28 @@ Vtiger.Class("Vtiger_Detail_Js",{
 			});
 
 			app.event.on('post.QuickCreateForm.save',function(event,data){
-				var params = {};
-				params['record'] = recordId;
-				params['view'] = 'Detail';
-				params['module'] = module;
-				params['mode'] = 'getActivities';
+				var activityListEl = document.querySelector('#relatedActivities activity-list');
+				if (activityListEl) {
+					// React WebComponentのリフレッシュ
+					var currentKey = parseInt(activityListEl.getAttribute('refresh-key') || '0', 10);
+					activityListEl.setAttribute('refresh-key', String(currentKey + 1));
+				} else {
+					// 従来のテンプレートのリロード
+					var params = {};
+					params['record'] = recordId;
+					params['view'] = 'Detail';
+					params['module'] = module;
+					params['mode'] = 'getActivities';
 
-				app.request.post({"data":params}).then(
-					function(err,data) {
-						var activitiesWidget = jQuery('#relatedActivities');
-						activitiesWidget.html(data);
-						vtUtils.applyFieldElementsView(activitiesWidget);
-						thisInstance.registerEventForActivityWidget();
-					}
-				);
+					app.request.post({"data":params}).then(
+						function(err,data) {
+							var activitiesWidget = jQuery('#relatedActivities');
+							activitiesWidget.html(data);
+							vtUtils.applyFieldElementsView(activitiesWidget);
+							thisInstance.registerEventForActivityWidget();
+						}
+					);
+				}
 			});
 
 			var QuickCreateParams = {};

@@ -68,14 +68,14 @@ class Users_Field_Model extends Vtiger_Field_Model {
 		}
 
 		// リッチテキストは概要・詳細画面での編集不可
-		if ($this->isCkeditor() === true) {
+		if ($this->isJoditEditor() === true) {
 			return false;
 		}
 
 		return true;
 	}
 
-	public function isCkEditor() {
+	public function isJoditEditor() {
 		if($this->getName() == 'signature') {
 			return true;
 		}
@@ -222,5 +222,19 @@ class Users_Field_Model extends Vtiger_Field_Model {
 			$pickListDetails[] = array('label' => $transValue, 'value' => $value);
 		}
 		return $pickListDetails;
+	}
+
+	function getValidator() {
+		$validator = array();
+		$fieldName = $this->getName();
+
+		switch($fieldName) {
+			case 'user_name' : $funcName = array('name' => 'illegal');
+							  array_push($validator, $funcName);
+							  break;
+			default : $validator = parent::getValidator();
+						break;
+		}
+		return $validator;
 	}
 }

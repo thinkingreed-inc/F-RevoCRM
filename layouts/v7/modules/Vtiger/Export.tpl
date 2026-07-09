@@ -35,7 +35,7 @@
 				{include file="ModalHeader.tpl"|vtemplate_path:$MODULE TITLE=$TITLE}
 			</div>
 
-			<div class="modal-body" style="margin-bottom:250px">
+			<div class="modal-body" style="margin-bottom:20px">
 				<div class="datacontent row">
 					<div class="col-lg-3"></div>
 					<div class="col-lg-6">
@@ -97,6 +97,35 @@
 					<div class="col-lg-3"></div>
 				</div>
 			</div>
+
+			<div class="modal-body" style="margin-bottom:250px">
+				<div class="datacontent row">
+					<div class="col-lg-3"></div>
+					<div class="col-lg-6">
+						<div class="well exportContents">
+							<br><div><b>{vtranslate('LBL_RELATED_RECORDS_EXPORT_FORMAT',$MODULE)}</b></div><br>
+							<div style="margin-left: 50px;">
+								<div>
+									<input type="radio" name="format" value="ExportLabelOnly" id="format1"  checked="checked" style="margin:2px 0 -4px" />
+									<label style="font-weight:normal" for="format1">&nbsp;&nbsp;{vtranslate('LBL_LABEL_ONLY',$MODULE)}</label>
+								</div>
+								<br>
+								<div>
+									<input type="radio" name="format" value="ExportImportableFormat" id="format2" style="margin:2px 0 -4px" />
+									<label style="font-weight:normal" for="format2">&nbsp;&nbsp;{vtranslate('LBL_IMPORTABLE_FORMAT',$MODULE)}</label>
+								</div>
+								<br>
+								<div>
+									<input type="radio" name="format" value="ExportBoth" id="format3" style="margin:2px 0 -4px" />
+									<label style="font-weight:normal" for="format3">&nbsp;&nbsp;{vtranslate('LBL_BOTH',$MODULE)}</label>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+
 			<div class="modal-overlay-footer clearfix">
 				<div class="row clearfix">
 					<div class=" textAlignCenter col-lg-12 col-md-12 col-sm-12 ">

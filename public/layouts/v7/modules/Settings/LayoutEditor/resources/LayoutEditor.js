@@ -1034,23 +1034,45 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 				//Handled date field UI
 				var dateField = defaultValueUiContainer.find('.dateField')
 				if (dateField.length > 0) {
-					vtUtils.registerEventForDateFields(dateField);
-					var datedefaultvaluebox = document.getElementsByClassName("inputElement dateField form-control")[0];
-					if(datedefaultvaluebox.value == 'TODAY'){
-						datedefaultvaluebox.classList.add('ignore-validation');
-						datedefaultvaluebox.classList.remove('input-error');
-					}
-					else{
-						datedefaultvaluebox.classList.remove('ignore-validation');
-					}
-					dateField.on("change",function (e) {
-						if(datedefaultvaluebox.value == 'TODAY'){
-							datedefaultvaluebox.classList.add('ignore-validation');
-							datedefaultvaluebox.classList.remove('input-error');
+					var isToday = (data.value == 'TODAY');
+					if (defaultValueUiContainer.find('.dateDefaultValueType').length <= 0) {
+						var todayLabel = app.vtranslate('JS_TODAY');
+						var fixedDateLabel = app.vtranslate('JS_FIXED_DATE');
+						var radioHtml = 
+							'<div class="dateDefaultValue">' +
+								'<div class="row" style="margin-bottom: 5px;">' +
+									'<div class="col-sm-12">' +
+										'<label class="radio-inline">' +
+											'<input type="radio" class="dateDefaultValueType" name="dateDefaultValueType" value="fixed" ' + (!isToday ? 'checked' : '') + '> ' + fixedDateLabel +
+										'</label>' +
+										'<label class="radio-inline">' +
+											'<input type="radio" class="dateDefaultValueType" name="dateDefaultValueType" value="today" ' + (isToday ? 'checked' : '') + '> ' + todayLabel +
+										'</label>' +
+									'</div>' +
+								'</div>' +
+							'</div>';
+						var radioElement = jQuery(radioHtml);
+						var dateInputGroup = defaultValueUiContainer.find('.input-group.date');
+						dateInputGroup.before(radioElement);
+						radioElement.append(dateInputGroup);
+						var todayInputHtml = '<input type="text" class="inputElement todayValue ' + (!isToday ? 'hide' : '') + '" value="TODAY" readonly style="width: 75%" ' + (!isToday ? 'disabled' : '') + ' />';
+						dateInputGroup.after(todayInputHtml);
+
+						if (isToday) {
+							dateInputGroup.addClass('hide');
+							dateField.attr('disabled', 'disabled').removeAttr('name');
+							var todayField = defaultValueUiContainer.find('.todayValue');
+							todayField.attr('name', nameAttr);
 						}
-						else{
-							datedefaultvaluebox.classList.remove('ignore-validation');
-							datedefaultvaluebox.classList.remove('input-error');
+					}
+
+					vtUtils.registerEventForDateFields(dateField);
+					dateField.on("keyup change",function (e) {
+						var datedefaultvaluebox = e.currentTarget;
+						datedefaultvaluebox.classList.remove('ignore-validation');
+						datedefaultvaluebox.classList.remove('input-error');
+						if (typeof vtUtils.hideValidationMessage != 'undefined') {
+							vtUtils.hideValidationMessage(jQuery(datedefaultvaluebox));
 						}
 					});	
 				}
@@ -1806,6 +1828,31 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		})
 
 	},
+
+	registerDateDefaultValueEvents: function() {
+		jQuery(document).on('change', '.dateDefaultValueType', function (e) {
+			var currentTarget = jQuery(e.currentTarget);
+			var container = currentTarget.closest('.dateDefaultValue');
+			var dateFieldGroup = container.find('.input-group.date');
+			var dateField = dateFieldGroup.find('.dateField');
+			var todayField = container.find('.todayValue');
+			var nameAttr = dateField.attr('name') || todayField.attr('name');
+
+			if (currentTarget.val() == 'today') {
+				dateFieldGroup.addClass('hide');
+				dateField.attr('disabled', 'disabled').removeAttr('name');
+				todayField.removeClass('hide').removeAttr('disabled').attr('name', nameAttr);
+			} else {
+				dateFieldGroup.removeClass('hide');
+				dateField.removeAttr('disabled').attr('name', nameAttr);
+				if (dateField.val() == 'TODAY') {
+					dateField.val('');
+				}
+				todayField.addClass('hide').attr('disabled', 'disabled').removeAttr('name');
+			}
+		});
+	},
+
 	/**
 	 * Function to register the click event for related modules list tab
 	 */
@@ -1819,6 +1866,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 			thisInstance.showRelatedTabModulesList(relatedContainer);
 			var mode = jQuery(e.currentTarget).find('a').data('mode');
 			jQuery('.selectedMode').val(mode);
+			jQuery("div[name='editReadonlyDisplayDiv']").hide();
 		});
 	},
 	/**
@@ -2143,6 +2191,46 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		}
 	},
 
+	// 編集時に編集不可項目の表示ボタン
+	registerEventForEditReadonlyDisplay: function () {
+		jQuery("input[name='editReadonlyDisplay']").on('switchChange.bootstrapSwitch', function (e) {
+			var currentElement = jQuery(e.currentTarget);
+			if (currentElement.val() == 1) {
+				currentElement.attr('value', 0);
+			} else {
+				currentElement.attr('value', 1);
+			}
+
+			var moduleName = app.getModuleName();
+			if (moduleName != 'LayoutEditor') {
+				moduleName = 'LayoutEditor';
+			}
+
+			var params = {
+				module: moduleName,
+				parent: app.getParentModuleName(),
+				sourceModule: jQuery('#selectedModuleName').val(),
+				action: 'Module',
+				mode: 'updateEditReadonlyDisplay',
+				edit_readonly_display: currentElement.val()
+			}
+
+			app.request.post({data: params}).then(function (error, data) {
+				if (error) {
+					app.helper.showErrorNotification({
+						message: app.vtranslate('JS_ERROR')
+					});
+					return;
+				}
+				if (data) {
+					app.helper.showSuccessNotification({
+						message: app.vtranslate('JS_STATUS_CHANGED_SUCCESSFULLY')
+					});
+				}
+			});
+		});
+	},
+
 	fieldListTabClicked: false,
 	triggerFieldListTabClickEvent: function () {
 		var thisInstance = this;
@@ -2150,6 +2238,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		contents.find('.detailViewTab').click(function (e) {
 			var detailViewLayout = contents.find('#detailViewLayout');
 			thisInstance.showFieldsListUI(detailViewLayout, e).then(function (data) {
+				jQuery("div[name='editReadonlyDisplayDiv']").show();
 				if (!thisInstance.fieldListTabClicked) {
 					thisInstance.registerBlockEvents();
 					thisInstance.registerFieldEvents();
@@ -2162,6 +2251,10 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 					jQuery("input[name='collapseBlock']").bootstrapSwitch();
 					jQuery("input[name='collapseBlock']").bootstrapSwitch('handleWidth', '40px');
 					jQuery("input[name='collapseBlock']").bootstrapSwitch('labelWidth', '25px');
+					jQuery("input[name='editReadonlyDisplay']").bootstrapSwitch();
+					jQuery("input[name='editReadonlyDisplay']").bootstrapSwitch('handleWidth', '27px');
+					jQuery("input[name='editReadonlyDisplay']").bootstrapSwitch('labelWidth', '25px');
+					thisInstance.registerEventForEditReadonlyDisplay();
 					thisInstance.registerSwitchActionOnFieldProperties();
 					thisInstance.registerAddCustomField();
 					app.helper.showVerticalScroll(jQuery('.addFieldTypes'), {'setHeight': '350px'});
@@ -2202,6 +2295,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		var contents = jQuery('#layoutEditorContainer').find('.contents');
 
 		contents.find('.duplicationTab').click(function (e) {
+			jQuery("div[name='editReadonlyDisplayDiv']").hide();
 			var duplicationContainer = contents.find('#duplicationContainer');
 			thisInstance.showDuplicationHandlingUI(duplicationContainer, e).then(function (data) {
 				var form = jQuery('.duplicateHandlingForm');
@@ -2306,6 +2400,15 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		return aDeferred.promise();
 	},
 	/**
+	 * 2列幅フィールドのラベル幅を1列幅フィールドのラベル幅に合わせる
+	 */
+	adjustFieldLabelWidth: function () {
+		var fieldwidth = jQuery('.layoutContent .blockFieldsList ul li:not(.wideField) div > div.layoutEditFieldLabel').width();
+		if (window.innerWidth > 768) {
+			jQuery('.layoutContent .blockFieldsList ul li.wideField div > div.layoutEditFieldLabel').width(fieldwidth);
+		}
+	},
+	/**
 	 * register events for layout editor
 	 */
 	registerEvents: function () {
@@ -2314,6 +2417,8 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		thisInstance.triggerFieldListTabClickEvent();
 		thisInstance.triggerRelatedModulesTabClickEvent();
 		thisInstance.triggerDuplicationTabClickEvent();
+		thisInstance.adjustFieldLabelWidth();
+		thisInstance.registerDateDefaultValueEvents();
 
 		var selectedTab = jQuery('.selectedTab').val();
 		jQuery('#layoutEditorContainer').find('.contents').find('.'+selectedTab).trigger('click');

@@ -49,6 +49,13 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var instance = Calendar_Calendar_Js.getInstance();
 		instance.editCalendarEvent(eventId, isRecurring);
 	},
+	editCalendarEventFromContent: function (eventId, isRecurring) {
+		if (window.innerWidth >= 650) {
+			var instance = Calendar_Calendar_Js.getInstance();
+			instance.editCalendarEvent(eventId, isRecurring);
+			return;
+		}
+	},
 	copyCalendarEvent: function (eventId, isRecurring) {
 		var instance = Calendar_Calendar_Js.getInstance();
 		instance.copyCalendarEvent(eventId, isRecurring, true);
@@ -78,8 +85,15 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			$(".modelContainer #Calendar_editView_fieldName_time_end").parent().show();
 		}
 		jQuery("#alldayEvent").attr('data-validation-engine','change');
-	}
-
+	},
+	//編集画面表示端末判定用
+	clickCalendarEvent: function (eventId, isRecurring) {
+		var instance = Calendar_Calendar_Js.getInstance();
+		if (app.isMobile()){
+			return;
+		}
+		instance.editCalendarEvent(eventId, isRecurring);
+	},
 }, {
 	init: function () {
 		this.addComponents();
@@ -149,8 +163,10 @@ Vtiger.Class("Calendar_Calendar_Js", {
 	},
 	markAsHeld: function (recordId,sourceModule) {
 		var thisInstance = this;
-		app.helper.showConfirmationBox({
-			message: app.vtranslate('JS_CONFIRM_MARK_AS_HELD')
+		this.confirmEditOthersEvent(recordId).then(function () {
+			return app.helper.showConfirmationBox({
+				message: app.vtranslate('JS_CONFIRM_MARK_AS_HELD')
+			});
 		}).then(function () {
 			var requestParams = {
 				module: "Calendar",
@@ -173,6 +189,117 @@ Vtiger.Class("Calendar_Calendar_Js", {
 					});
 				}
 			});
+		});
+	},
+	confirmEditOthersEvent: function(recordId) {
+		var aDeferred = jQuery.Deferred();
+
+		// モバイル（画面幅650px未満）の場合のみ確認ダイアログを表示
+		if (window.innerWidth >= 650) {
+			aDeferred.resolve(true);
+			return aDeferred.promise();
+		}
+
+		var requestParams = {
+			module: "Calendar",
+			action: "SaveFollowupAjax",
+			mode: "checkNotificationOthersEvents",
+			record: recordId,
+		};
+
+		app.request.post({'data': requestParams}).done(function (e,res) {
+			if (res && res['own'] === false) {
+				app.helper.showConfirmationBox({'message' : app.vtranslate('JS_EDIT_OTHERS_EVENT_CONFIRMATION')})
+					.done(function () {
+						aDeferred.resolve(true);
+					})
+					.fail(function () {
+						aDeferred.reject();
+					});
+			} else {
+				aDeferred.resolve(true);
+			}
+		}).fail(function () {
+			aDeferred.reject();
+		});
+
+		return aDeferred.promise();
+	},
+	registerWebComponentsBeforeSaveEvent: function() {
+		var thisInstance = this;
+
+		// 重複登録防止: 既に登録済みの場合はスキップ
+		if (this._webComponentsBeforeSaveRegistered) {
+			return;
+		}
+		this._webComponentsBeforeSaveRegistered = true;
+
+		document.addEventListener('before-save', function(e) {
+			// calendar-quick-create からのイベントのみ処理
+			if (!e.target.matches('calendar-quick-create')) {
+				return;
+			}
+
+			// 既に別のリスナーがpreventDefault()を呼んでいる場合はスキップ
+			// （繰り返し活動の確認モーダルが処理中の場合など）
+			if (e.defaultPrevented) {
+				return;
+			}
+
+			var detail = e.detail;
+
+			// 編集モードでない場合はスキップ（新規作成は確認不要）
+			if (!detail.isEditMode || !detail.recordId) {
+				return;
+			}
+
+			// 保存をキャンセルして確認処理を挟む
+			e.preventDefault();
+
+			// z-index問題対策: bootbox確認ダイアログをWebComponents dialogの前面に表示するため、
+			// bootboxのz-indexを一時的に上げ、WebComponentsダイアログのポインターイベントを無効化
+			var styleElement = document.createElement('style');
+			styleElement.id = 'webcomponents-modal-zindex-fix-others';
+			styleElement.textContent = '.bootbox, .bootbox * { z-index: 100010 !important; pointer-events: auto !important; } .bootbox + .modal-backdrop, .modal-backdrop.in { z-index: 100009 !important; } [data-slot="dialog-overlay"], [data-slot="dialog-content"], .web-components-wrapper { pointer-events: none !important; } [data-slot="dialog-content"] * { pointer-events: none !important; }';
+			document.head.appendChild(styleElement);
+
+			// フォーカスループ対策: Radix UIのFocusScopeとBootstrapモーダルのフォーカス管理が競合するため、
+			// bootbox表示中はRadix UIのフォーカストラップを一時的に無効化
+			var dialogContent = document.querySelector('[data-slot="dialog-content"]');
+			var originalTabIndex = null;
+			var originalInert = null;
+			if (dialogContent) {
+				originalTabIndex = dialogContent.getAttribute('tabindex');
+				originalInert = dialogContent.hasAttribute('inert');
+				dialogContent.setAttribute('inert', '');
+				dialogContent.removeAttribute('tabindex');
+			}
+
+			// クリーンアップ関数
+			var cleanup = function() {
+				// z-index修正用のスタイルを削除
+				var styleEl = document.getElementById('webcomponents-modal-zindex-fix-others');
+				if (styleEl) styleEl.remove();
+				// フォーカストラップを復元
+				if (dialogContent) {
+					dialogContent.removeAttribute('inert');
+					if (originalTabIndex !== null) {
+						dialogContent.setAttribute('tabindex', originalTabIndex);
+					}
+				}
+			};
+
+			// 既存の confirmEditOthersEvent を使用（jQuery Deferred）
+			thisInstance.confirmEditOthersEvent(detail.recordId)
+				.done(function() {
+					cleanup();
+					// 確認OK → 保存を続行（引数なし）
+					detail.continueSave();
+				})
+				.fail(function() {
+					cleanup();
+					// キャンセルまたはエラー → 何もしない（モーダルは開いたまま）
+				});
 		});
 	},
 	registerCalendarSharingTypeChangeEvent: function (modalContainer) {
@@ -1109,15 +1236,25 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			app.request.post({data: dataParams}).then(function (e, data) {
 				if (!e) {
 					widgetBody.html(data);
-                                        let fullCalendarViewHeight = $('.fc-view-container').height();
-                                        widgetBody.css('max-height', (fullCalendarViewHeight - 20) + 'px');
-					app.helper.showVerticalScroll(
-							widgetBody,
-							{
-								'autoHideScrollbar': true,
-								'scrollbarPosition': 'outside'
-							}
-					);
+					var feedsContainer = widgetBody.find('#calendarview-feeds');
+					if (feedsContainer.length) {
+						var adjustFeedsHeight = function() {
+							var sidebar = feedsContainer.closest('.sidebar-essentials');
+							if (!sidebar.length) sidebar = feedsContainer.closest('.sidebar-menu');
+							var sidebarHeight = sidebar.length ? sidebar.height() : jQuery(window).height();
+							var sidebarTop = sidebar.length ? sidebar.offset().top : 0;
+							var feedsTop = feedsContainer.offset().top;
+							var offsetInSidebar = feedsTop - sidebarTop;
+							var availableHeight = sidebarHeight - offsetInSidebar - 5;
+							if (availableHeight < 100) availableHeight = 100;
+							feedsContainer.css({
+								'max-height': availableHeight + 'px',
+								'overflow-y': 'auto'
+							});
+						};
+						adjustFeedsHeight();
+						jQuery(window).off('resize.calendarFeeds').on('resize.calendarFeeds', adjustFeedsHeight);
+					}
 //thisInstance.registerCollapseEvents(widget);
 //thisInstance.restoreWidgetState(widget);
 					app.event.trigger(Calendar_Calendar_Js.feedsWidgetPostLoadEvent, widget);
@@ -1197,6 +1334,12 @@ Vtiger.Class("Calendar_Calendar_Js", {
 					return false;
 				}
 
+				// Jodit全instancesの同期（serializeFormData前に必須、Task G syncAllInstances共通経路注入）
+				// serializeFormData の後に同期しても textarea が古い値のまま formData 化されてしまうため、
+				// 必ず serializeFormData() の前に syncAllInstances を呼び出す。
+				if (typeof Vtiger_Jodit_Js !== 'undefined' && Vtiger_Jodit_Js.syncAllInstances) {
+					Vtiger_Jodit_Js.syncAllInstances();
+				}
 				var formData = jQuery(form).serializeFormData();
 				jQuery("button[name='saveButton']").attr("disabled", "disabled");
 				var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
@@ -1268,53 +1411,240 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var isAllowed = jQuery('#is_record_creation_allowed').val();
 		if (isAllowed) {
 			var thisInstance = this;
-			var quickCreateNode = jQuery('#quickCreateModules').find('[data-name="' + moduleName + '"]');
-			if (quickCreateNode.length <= 0) {
-				app.helper.showAlertNotification({
-					'message': app.vtranslate('JS_NO_CREATE_OR_NOT_QUICK_CREATE_ENABLED')
-				});
-			} else {
-				quickCreateNode.trigger('click');
-			}
 
-			app.event.one('post.QuickCreateForm.show', function (e, form) {
-				thisInstance.performingDayClickOperation = false;
-				var modalContainer = form.closest('.modal');
-				if (typeof startDateTime !== 'undefined' && startDateTime) {
-					thisInstance.setStartDateTime(modalContainer, startDateTime);
-				}
-				if (moduleName === 'Events') {
-					thisInstance.registerCreateEventModalEvents(form.closest('.modal'));
-				}
-			});
+			// WebComponents版CalendarQuickCreateを使用
+			thisInstance.performingDayClickOperation = false;
+			thisInstance.showWebComponentsCalendarQuickCreate(moduleName, startDateTime);
 		}
 	},
 	showCreateModalforDrag: function (moduleName, startDateTime, endDateTime) {
 		var isAllowed = jQuery('#is_record_creation_allowed').val();
 		if (isAllowed) {
 			var thisInstance = this;
-			var quickCreateNode = jQuery('#quickCreateModules').find('[data-name="' + moduleName + '"]');
-			if (quickCreateNode.length <= 0) {
-				app.helper.showAlertNotification({
-					'message': app.vtranslate('JS_NO_CREATE_OR_NOT_QUICK_CREATE_ENABLED')
-				});
+
+			// WebComponents版CalendarQuickCreateを使用
+			thisInstance.performingDayClickOperation = false;
+			thisInstance.showWebComponentsCalendarQuickCreate(moduleName, startDateTime, endDateTime);
+		}
+	},
+
+	/**
+	 * WebComponents版CalendarQuickCreateを表示
+	 * @param {string} moduleName - Calendar or Events
+	 * @param {moment} startDateTime - 開始日時（moment.js）
+	 * @param {moment} endDateTime - 終了日時（moment.js）
+	 */
+	showWebComponentsCalendarQuickCreate: function (moduleName, startDateTime, endDateTime) {
+		var thisInstance = this;
+
+		// WebComponents用モーダルコンテナを作成（なければ）
+		var containerId = 'webcomponents-calendar-quickcreate-container';
+		var container = document.getElementById(containerId);
+		if (!container) {
+			container = document.createElement('div');
+			container.id = containerId;
+			document.body.appendChild(container);
+		}
+
+		// 既存のQuickCreate要素を削除
+		container.innerHTML = '';
+
+		// CalendarQuickCreate Web Componentを作成
+		var quickCreate = document.createElement('calendar-quick-create');
+		quickCreate.setAttribute('module', moduleName);
+		quickCreate.setAttribute('is-open', 'true');
+
+		// 初期データを構築
+		var initialData = {};
+
+		// 終日エリアからのクリックかどうかを判定
+		// _ambigTime: FullCalendarの内部プロパティ。終日エリアをクリックした場合にtrueになる
+		var isAllDay = startDateTime && startDateTime._ambigTime === true;
+
+		// 開始日時の設定
+		if (startDateTime && typeof startDateTime.format === 'function') {
+			// moment.jsオブジェクトの場合
+			var dateStart = startDateTime.format('YYYY-MM-DD');
+			if (isAllDay) {
+				// 終日の場合は日付のみ（時刻なし）
+				initialData.date_start = dateStart;
+				initialData.is_allday = true;
 			} else {
-				quickCreateNode.trigger('click');
+				var timeStart = startDateTime.format('HH:mm');
+				initialData.date_start = dateStart + 'T' + timeStart;
+			}
+		}
+
+		// 終了日時の設定
+		if (endDateTime && typeof endDateTime.format === 'function') {
+			var dueDate = endDateTime.format('YYYY-MM-DD');
+			if (isAllDay || endDateTime._ambigTime === true) {
+				// 終日の場合：ドラッグで複数日選択した場合、終了日は1日長くなるので調整
+				var adjustedEndDate = endDateTime.clone().subtract(1, 'days');
+				initialData.due_date = adjustedEndDate.format('YYYY-MM-DD');
+			} else {
+				var timeEnd = endDateTime.format('HH:mm');
+				initialData.due_date = dueDate + 'T' + timeEnd;
+			}
+		} else if (startDateTime && typeof startDateTime.format === 'function') {
+			if (isAllDay) {
+				// 終日の場合、終了日は開始日と同じ
+				initialData.due_date = startDateTime.format('YYYY-MM-DD');
+			} else {
+				// 終了日時が指定されていない場合、開始から30分後をデフォルトとする
+				var endMoment = startDateTime.clone().add(30, 'minutes');
+				var dueDate = endMoment.format('YYYY-MM-DD');
+				var timeEnd = endMoment.format('HH:mm');
+				initialData.due_date = dueDate + 'T' + timeEnd;
+			}
+		}
+
+		// デフォルト活動期間をユーザー設定から取得
+		var defaultCallDuration = document.getElementById('defaultCallDuration');
+		var defaultOtherEventDuration = document.getElementById('defaultOtherEventDuration');
+		initialData.defaultCallDuration = defaultCallDuration ? parseInt(defaultCallDuration.value, 10) || 5 : 5;
+		initialData.defaultOtherEventDuration = defaultOtherEventDuration ? parseInt(defaultOtherEventDuration.value, 10) || 5 : 5;
+
+		if (Object.keys(initialData).length > 0) {
+			quickCreate.setAttribute('initial-data', JSON.stringify(initialData));
+		}
+
+		// 保存前のコールバック（繰り返し活動の確認モーダル表示用）
+		// before-saveイベントはcancelable: trueで発火されるため、
+		// preventDefault()で保存をキャンセルし、detail.continueSave()で再開できる
+		quickCreate.addEventListener('before-save', function (e) {
+			var detail = e.detail || {};
+
+			// 繰り返し活動でない場合、または新規作成の場合はそのまま続行
+			if (!detail.isRecurring || !detail.isEditMode) {
+				return;
 			}
 
-			app.event.one('post.QuickCreateForm.show', function (e, form) {
-				thisInstance.performingDayClickOperation = false;
-				var modalContainer = form.closest('.modal');
-				if (typeof endDateTime !== 'undefined' && endDateTime) {
-					thisInstance.setStartDateTime(modalContainer, startDateTime);
-					thisInstance.setEndDateTime(modalContainer, endDateTime);
-				}
-				if (moduleName === 'Events') {
-					thisInstance.registerCreateEventModalEvents(form.closest('.modal'));
-				}
+			// 繰り返し活動の編集の場合、確認モーダルを表示
+			e.preventDefault();
+
+			// z-index問題対策: Bootstrap modalをWebComponents dialogの前面に表示するため、
+			// popupModalのz-indexを一時的に上げ、WebComponentsダイアログのポインターイベントを無効化
+			// Radix UIのダイアログはReactポータルでbody直下にレンダリングされるため、
+			// data-slot属性を持つ要素に直接pointer-events: noneを適用する
+			// ただし、popupModalとその内部は操作可能にする
+			var styleElement = document.createElement('style');
+			styleElement.id = 'webcomponents-modal-zindex-fix';
+			styleElement.textContent = '#popupModal, #popupModal * { z-index: 100010 !important; pointer-events: auto !important; } .modal-backdrop { z-index: 100009 !important; } [data-slot="dialog-overlay"], [data-slot="dialog-content"], .web-components-wrapper { pointer-events: none !important; } [data-slot="dialog-content"] * { pointer-events: none !important; }';
+			document.head.appendChild(styleElement);
+
+			app.helper.showConfirmationForRepeatEvents()
+				.then(function (postData) {
+					// z-index修正用のスタイルを削除
+					var styleEl = document.getElementById('webcomponents-modal-zindex-fix');
+					if (styleEl) styleEl.remove();
+					// recurringEditModeを渡して保存続行
+					// postData = { recurringEditMode: 'current' | 'future' | 'all' }
+					detail.continueSave(postData);
+				})
+				.fail(function () {
+					// z-index修正用のスタイルを削除
+					var styleEl = document.getElementById('webcomponents-modal-zindex-fix');
+					if (styleEl) styleEl.remove();
+				});
+		});
+
+		// 保存成功時のコールバック
+		quickCreate.addEventListener('save', function (e) {
+			var detail = e.detail || {};
+			var calendarModule = moduleName === 'Calendar' ? 'Calendar' : 'Events';
+
+			// カレンダーを更新
+			thisInstance.updateCalendar(calendarModule, detail);
+
+			// イベント発火（他のコンポーネントとの連携用）
+			app.event.trigger('post.QuickCreateForm.save', detail, {
+				module: moduleName,
+				calendarModule: calendarModule
 			});
-		}
-	},	
+		});
+
+		// キャンセル/閉じる時のコールバック
+		quickCreate.addEventListener('cancel', function () {
+			container.innerHTML = '';
+		});
+
+		// 完全フォームへ遷移時のコールバック
+		// 旧版Vtiger.js quickCreateGoToFullFormと同様にPOSTでフォーム送信
+		// これによりcontact_id等のデータが正しくEditViewに渡される
+		quickCreate.addEventListener('go-to-full-form', function (e) {
+			var editUrl = e.detail && e.detail.editUrl;
+			var formData = e.detail && e.detail.formData;
+			if (editUrl) {
+				// POSTでフォーム送信（旧版と同様の挙動）
+				var form = document.createElement('form');
+				form.method = 'POST';
+				form.action = editUrl;
+				form.style.display = 'none';
+
+				// CSRFトークンを追加（POSTリクエストに必須）
+				if (typeof csrfMagicName !== 'undefined' && typeof csrfMagicToken !== 'undefined') {
+					var csrfInput = document.createElement('input');
+					csrfInput.type = 'hidden';
+					csrfInput.name = csrfMagicName;
+					csrfInput.value = csrfMagicToken;
+					form.appendChild(csrfInput);
+				}
+
+				// formDataが存在する場合、hidden inputとして追加
+				if (formData && typeof formData === 'object') {
+					Object.keys(formData).forEach(function(key) {
+						var value = formData[key];
+						if (value === undefined || value === null || value === '') return;
+
+						var input = document.createElement('input');
+						input.type = 'hidden';
+
+						// contact_idの処理（旧版と同じ形式で送信）
+						if (key === 'contact_id') {
+							var strValue = String(value);
+							var ids = strValue.indexOf(';') !== -1 ? strValue.split(';') : [strValue];
+
+							if (ids.length > 1) {
+								// 複数コンタクトの場合はcontactidlistを使用
+								input.name = 'contactidlist';
+								input.value = ids.join(';');
+							} else {
+								// 単一コンタクトの場合はcontact_idを使用
+								input.name = 'contact_id';
+								input.value = ids[0];
+							}
+						} else if (Array.isArray(value)) {
+							// 複数選択肢の場合は |##| 区切りで渡す（旧版の仕様に準拠）
+							input.name = key;
+							input.value = value.join(' |##| ');
+						} else {
+							input.name = key;
+							input.value = String(value);
+						}
+
+						form.appendChild(input);
+					});
+				}
+
+				document.body.appendChild(form);
+				form.submit();
+			}
+		});
+
+		quickCreate.addEventListener('openchange', function (e) {
+			var isOpen = e.detail && e.detail.isOpen;
+			if (!isOpen) {
+				// 少し遅延させてからクリーンアップ
+				setTimeout(function () {
+					container.innerHTML = '';
+				}, 100);
+			}
+		});
+
+		container.appendChild(quickCreate);
+	},
+
 	_updateAllOnCalendar: function (calendarModule) {
 		var thisInstance = this;
 		this.getCalendarViewContainer().fullCalendar('addEventSource',
@@ -1365,9 +1695,14 @@ Vtiger.Class("Calendar_Calendar_Js", {
 
 	},
 	showCreateTaskModal: function () {
-		this.showCreateModal('Calendar');
+		// ボタンから開いた場合は現在日時をデフォルト設定
+		this.showCreateModal('Calendar', moment());
 	},
 	showCreateEventModal: function (startDateTime) {
+		// ボタンから開いた場合（startDateTimeが未指定）は現在日時をデフォルト設定
+		if (!startDateTime) {
+			startDateTime = moment();
+		}
 		this.showCreateModal('Events', startDateTime);
 	},
 	showCreateTaskModalforDrag: function () {
@@ -1564,19 +1899,27 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		};
 
 		if (event.recurringcheck) {
-			app.helper.showConfirmationForRepeatEvents().then(function (recurringData) {
-				jQuery.extend(postData, recurringData);
-				Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(overlapData, recurringData)
+			this.confirmEditOthersEvent(event.id).then(function () {
+				return app.helper.showConfirmationForRepeatEvents().then(function (recurringData) {
+					jQuery.extend(postData, recurringData);
+					Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(overlapData, recurringData)
+					.then(function () {
+						thisInstance._updateEventOnResize(postData, revertFunc);
+					}).fail(function () {
+						revertFunc();
+					});
+				});
+			}).fail(function () {
+				revertFunc();
+			});
+		} else {
+			this.confirmEditOthersEvent(event.id).then(function () {
+				return Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(overlapData)
 				.then(function () {
 					thisInstance._updateEventOnResize(postData, revertFunc);
 				}).fail(function () {
 					revertFunc();
 				});
-			});
-		} else {
-			Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(overlapData)
-			.then(function () {
-				thisInstance._updateEventOnResize(postData, revertFunc);
 			}).fail(function () {
 				revertFunc();
 			});
@@ -1674,38 +2017,42 @@ Vtiger.Class("Calendar_Calendar_Js", {
 	},
 	deleteCalendarEvent: function (eventId, sourceModule, isRecurring) {
 		var thisInstance = this;
-		if (isRecurring) {
-			app.helper.showConfirmationForRepeatEvents().then(function (postData) {
-				thisInstance._deleteCalendarEvent(eventId, sourceModule, postData);
-			});
-		} else {
-			app.helper.showConfirmationBox({
-				message: app.vtranslate('LBL_DELETE_CONFIRMATION')
-			}).then(function () {
-				thisInstance._deleteCalendarEvent(eventId, sourceModule);
-			});
-		}
+		this.confirmEditOthersEvent(eventId).then(function () {
+			if (isRecurring) {
+				app.helper.showConfirmationForRepeatEvents().then(function (postData) {
+					thisInstance._deleteCalendarEvent(eventId, sourceModule, postData);
+				});
+			} else {
+				app.helper.showConfirmationBox({
+					message: app.vtranslate('LBL_DELETE_CONFIRMATION')
+				}).then(function () {
+					thisInstance._deleteCalendarEvent(eventId, sourceModule);
+				});
+			}
+		}.bind(this));
 	},
 	updateEventOnCalendar: function (eventData) {
 		this.updateAllEventsOnCalendar();
 	},
 	_updateEvent: function (form, extraParams) {
 		var formData = jQuery(form).serializeFormData();
-		extraParams = extraParams || {};
-		jQuery.extend(formData, extraParams);
-		app.helper.showProgress();
-		app.request.post({data: formData}).then(function (err, data) {
-			app.helper.hideProgress();
-			if (!err) {
-				jQuery('.vt-notification').remove();
-				var message = typeof formData.record !== "" ? app.vtranslate('JS_EVENT_UPDATED') : app.vtranslate('JS_RECORD_CREATED');
-				app.helper.showSuccessNotification({"message": message});
-				app.event.trigger("post.QuickCreateForm.save", data, jQuery(form).serializeFormData());
-				app.helper.hideModal();
-			} else {
-				app.event.trigger('post.save.failed', err);
-				jQuery("button[name='saveButton']").removeAttr("disabled");
-			}
+		this.confirmEditOthersEvent(formData.record).then(function () {
+			extraParams = extraParams || {};
+			jQuery.extend(formData, extraParams);
+			app.helper.showProgress();
+			app.request.post({data: formData}).then(function (err, data) {
+				app.helper.hideProgress();
+				if (!err) {
+					jQuery('.vt-notification').remove();
+					var message = typeof formData.record !== "" ? app.vtranslate('JS_EVENT_UPDATED') : app.vtranslate('JS_RECORD_CREATED');
+					app.helper.showSuccessNotification({"message": message});
+					app.event.trigger("post.QuickCreateForm.save", data, jQuery(form).serializeFormData());
+					app.helper.hideModal();
+				} else {
+					app.event.trigger('post.save.failed', err);
+					jQuery("button[name='saveButton']").removeAttr("disabled");
+				}
+			});
 		});
 	},
 	validateAndUpdateEvent: function (modalContainer, isRecurring) {
@@ -1717,10 +2064,16 @@ Vtiger.Class("Calendar_Calendar_Js", {
 					return false;
 				}
 				
+				// Jodit全instancesの同期（serializeFormData前に必須、Task G syncAllInstances共通経路注入）
+				// serializeFormData の後に同期しても textarea が古い値のまま formData 化されてしまうため、
+				// 必ず serializeFormData() の前に syncAllInstances を呼び出す。
+				if (typeof Vtiger_Jodit_Js !== 'undefined' && Vtiger_Jodit_Js.syncAllInstances) {
+					Vtiger_Jodit_Js.syncAllInstances();
+				}
 				var overlapData = jQuery(form).serializeFormData();
 				var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
 				app.event.trigger(e);
-				
+
 				if (e.isDefaultPrevented()) {
 					return false;
 				}
@@ -1758,8 +2111,71 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			var quickCreateEditUrl = quickCreateUrl + '&mode=edit&record=' + record;
 			if(isDuplicate == true) quickCreateEditUrl += "&isDuplicate=true";
 			quickCreateNode.data('url', quickCreateEditUrl);
-			quickCreateNode.trigger('click');
+
+			// fullCalendarからイベントデータを取得してトリガーに渡す
+			var triggerParams = {};
+
+			// 編集モード: record IDを設定（WebComponents版で使用）
+			triggerParams.record = record;
+
+			// 複製モードフラグを設定（WebComponents版で使用）
+			if (isDuplicate === true) {
+				triggerParams.isDuplicate = true;
+			}
+
+			try {
+				var calendarContainer = thisInstance.getCalendarViewContainer();
+				if (calendarContainer && calendarContainer.length) {
+					var events = calendarContainer.fullCalendar('clientEvents', record);
+					if (events && events.length > 0) {
+						var eventObj = events[0];
+						// イベントデータをフォーム用に変換（旧版互換用）
+						// WebComponents版では record-id から GetRecord API でデータを取得するため、
+						// ここのデータは initialData として使われるが、recordData が優先される
+						// Note: eventObj.title は表示用（ステータス付き）のため使用しない
+						// 複製モードでも時刻選択肢をユーザーのカレンダー設定（活動時間）刻みにするため、
+						// 新規作成パスと同じく defaultCallDuration / defaultOtherEventDuration を渡す
+						var defaultCallDurationEl = document.getElementById('defaultCallDuration');
+						var defaultOtherEventDurationEl = document.getElementById('defaultOtherEventDuration');
+						triggerParams.data = {
+							// subject は eventObj.title ではなく eventObj.subject を使用
+							// eventObj.subject が undefined の場合もあるため、その場合は空文字
+							subject: eventObj.subject || '',
+							date_start: eventObj.start ? eventObj.start.format('YYYY-MM-DD') : '',
+							time_start: eventObj.start ? eventObj.start.format('HH:mm:ss') : '',
+							due_date: eventObj.end ? eventObj.end.format('YYYY-MM-DD') : (eventObj.start ? eventObj.start.format('YYYY-MM-DD') : ''),
+							time_end: eventObj.end ? eventObj.end.format('HH:mm:ss') : (eventObj.start ? eventObj.start.format('HH:mm:ss') : ''),
+							activitytype: eventObj.activitytype,
+							eventstatus: eventObj.status,
+							taskstatus: eventObj.status,
+							assigned_user_id: eventObj.assigned_user_id,
+							visibility: eventObj.visibility,
+							allday: eventObj.allDay ? '1' : '0',
+							description: eventObj.description,
+							location: eventObj.location,
+							parent_id: eventObj.parent_id,
+							contact_id: eventObj.contact_id,
+							defaultCallDuration: defaultCallDurationEl ? parseInt(defaultCallDurationEl.value, 10) || 5 : 5,
+							defaultOtherEventDuration: defaultOtherEventDurationEl ? parseInt(defaultOtherEventDurationEl.value, 10) || 5 : 5
+						};
+					}
+				}
+			} catch (e) {
+				console.warn('Could not get event data from fullCalendar:', e);
+			}
+
+			quickCreateNode.trigger('click', triggerParams);
 			quickCreateNode.data('url', quickCreateUrl);
+
+			//スマートフォン対応：ポップオーバーを強制的に非表示にする
+			var forceRemovePopovers = function () {
+				var $els = $('.webui-popover');
+				if ($els.length) {
+					$els.hide();
+				}
+			};
+			setTimeout(forceRemovePopovers,  100);
+
 			$(".modal-body").css("max-height", '800px');
 
 			if (moduleName === 'Events') {
@@ -1785,6 +2201,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		this.showEditEventModal(eventId, isRecurring, isDuplicate);
 	},
 	registerPopoverEvent: function (event, element, calendarView) {
+		var self = this; 
 		var dateFormat = this.getUserPrefered('date_format');
 		dateFormat = dateFormat.toUpperCase();
 		var hourFormat = this.getUserPrefered('time_format');
@@ -1833,7 +2250,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			}
 
 			if(eventObj.description && eventObj.description != '') {
-				popOverHTML += eventObj.description;
+				popOverHTML += '<div class="calendar-popover-description">' + eventObj.description + '</div>';
 			}
 
 			if(event.creator && event.creator != '' || event.modifiedby && event.modifiedby != '') {
@@ -1854,46 +2271,91 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			popOverHTML += '</span>';
 
 			if (sourceModule === 'Calendar' || sourceModule == 'Events'||sourceModule =="ProjectTask") {
-				popOverHTML += '' +
+				if (window.innerWidth < 650) {
+					popOverHTML += '' +
 						'<span class="pull-right cursorPointer" ' +
 						'onClick="Calendar_Calendar_Js.deleteCalendarEvent(\'' + eventObj.id +
 						'\',\'' + sourceModule + '\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_DELETE') + '">' +
-						'&nbsp;<i class="fa fa-trash"></i>' +
+						'&nbsp;<i class="fa fa-trash fa-2x"></i>' +
 						'</span> &nbsp;&nbsp;';
 
-				if (sourceModule === 'Events') {
-					popOverHTML += '' +
-							'<span class="pull-right cursorPointer" ' +
-							'onClick="Calendar_Calendar_Js.editCalendarEvent(\'' + eventObj.id +
-							'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_EDIT') + '">' +
-							'&nbsp;<i class="fa fa-pencil"></i>&nbsp;' +
-							'</span>';
-							popOverHTML += '' +
-							'<span class="pull-right cursorPointer" ' +
-							'onClick="Calendar_Calendar_Js.copyCalendarEvent(\'' + eventObj.id +
-							'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_COPY') + '">' +
-							'&nbsp;<i class="fa fa-copy"></i>&nbsp;' +
-							'</span>';
-				} else if (sourceModule === 'Calendar') {
-					popOverHTML += '' +
-							'<span class="pull-right cursorPointer" ' +
-							'onClick="Calendar_Calendar_Js.editCalendarTask(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_EDIT') + '">' +
-							'&nbsp;<i class="fa fa-pencil"></i>&nbsp;' +
-							'</span>';
-				}
+					if (sourceModule === 'Events') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.editCalendarEvent(\'' + eventObj.id +
+								'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_EDIT') + '">' +
+								'&nbsp;<i class="fa fa-pencil fa-2x"></i>&nbsp;' +
+								'</span>';
+								popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.copyCalendarEvent(\'' + eventObj.id +
+								'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_COPY') + '">' +
+								'&nbsp;<i class="fa fa-copy fa-2x"></i>&nbsp;' +
+								'</span>';
+					} else if (sourceModule === 'Calendar') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.editCalendarTask(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_EDIT') + '">' +
+								'&nbsp;<i class="fa fa-pencil fa-2x"></i>&nbsp;' +
+								'</span>';
+					}
 
-				if (eventObj.status !== 'Held' && eventObj.status !== 'Completed') {
-					popOverHTML += '' +
-							'<span class="pull-right cursorPointer"' +
-							'onClick="Calendar_Calendar_Js.markAsHeld(\'' + eventObj.id + '\',\'' + sourceModule + '\');" title="' + app.vtranslate('JS_MARK_AS_HELD') + '">' +
-							'<i class="fa fa-check"></i>&nbsp;' +
-							'</span>';
-				} else if (eventObj.status === 'Held') {
+					if (eventObj.status !== 'Held' && eventObj.status !== 'Completed') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer"' +
+								'onClick="Calendar_Calendar_Js.markAsHeld(\'' + eventObj.id + '\',\'' + sourceModule + '\');" title="' + app.vtranslate('JS_MARK_AS_HELD') + '">' +
+								'<i class="fa fa-check fa-2x"></i>&nbsp;' +
+								'</span>';
+					} else if (eventObj.status === 'Held') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.holdFollowUp(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_CREATE_FOLLOW_UP') + '">' +
+								'<i class="fa fa-flag fa-2x"></i>&nbsp;' +
+								'</span>';
+					}
+				}
+				else{
 					popOverHTML += '' +
 							'<span class="pull-right cursorPointer" ' +
-							'onClick="Calendar_Calendar_Js.holdFollowUp(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_CREATE_FOLLOW_UP') + '">' +
-							'<i class="fa fa-flag"></i>&nbsp;' +
-							'</span>';
+							'onClick="Calendar_Calendar_Js.deleteCalendarEvent(\'' + eventObj.id +
+							'\',\'' + sourceModule + '\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_DELETE') + '">' +
+							'&nbsp;<i class="fa fa-trash"></i>' +
+							'</span> &nbsp;&nbsp;';
+
+					if (sourceModule === 'Events') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.editCalendarEvent(\'' + eventObj.id +
+								'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_EDIT') + '">' +
+								'&nbsp;<i class="fa fa-pencil"></i>&nbsp;' +
+								'</span>';
+								popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.copyCalendarEvent(\'' + eventObj.id +
+								'\',' + eventObj.recurringcheck + ');" title="' + app.vtranslate('JS_COPY') + '">' +
+								'&nbsp;<i class="fa fa-copy"></i>&nbsp;' +
+								'</span>';
+					} else if (sourceModule === 'Calendar') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.editCalendarTask(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_EDIT') + '">' +
+								'&nbsp;<i class="fa fa-pencil"></i>&nbsp;' +
+								'</span>';
+					}
+
+					if (eventObj.status !== 'Held' && eventObj.status !== 'Completed') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer"' +
+								'onClick="Calendar_Calendar_Js.markAsHeld(\'' + eventObj.id + '\',\'' + sourceModule + '\');" title="' + app.vtranslate('JS_MARK_AS_HELD') + '">' +
+								'<i class="fa fa-check"></i>&nbsp;' +
+								'</span>';
+					} else if (eventObj.status === 'Held') {
+						popOverHTML += '' +
+								'<span class="pull-right cursorPointer" ' +
+								'onClick="Calendar_Calendar_Js.holdFollowUp(\'' + eventObj.id + '\');" title="' + app.vtranslate('JS_CREATE_FOLLOW_UP') + '">' +
+								'<i class="fa fa-flag"></i>&nbsp;' +
+								'</span>';
+					}
 				}
 			}
 			return popOverHTML;
@@ -1904,8 +2366,9 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			'content': generatePopoverContentHTML(event),
 			'trigger': 'hover',
 			'closeable': true,
-			'placement': 'auto',
+			'placement': 'left-top',
 			'animation': 'fade',
+			'arrow': false,
 			'delay': {
 				show: null,
 				hide: 300,
@@ -1916,7 +2379,77 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		}
 		if(app.getUserId() == event.userid || event.visibility != "Private"){
 			element.webuiPopover(params);
+			
+			element.on('shown.webui.popover', function() {
+			var $container = element.closest('.fc-view-container');
+			var $popover = $('.webui-popover.in').last();
+			self.adjustPopoverInsideSharedCalendar($popover, $container, element);
+			});
 		}
+	},
+	// 共有カレンダー内でポップオーバーが仕様調整
+	adjustPopoverInsideSharedCalendar: function ($popover, $container, $trigger) {
+		if (!$popover || !$popover.length) return;
+		if (!$container || !$container.length) return;
+		if (!$trigger || !$trigger.length) return;
+		// container ページ座標
+		var cRect = $container[0].getBoundingClientRect();
+		var cLeft = cRect.left + window.pageXOffset;
+		var cTop = cRect.top + window.pageYOffset;
+		var cRight = cLeft + cRect.width;
+		var cBottom = cTop + cRect.height;
+		// ポップオーバー カレンダー座標
+		var tOff = $trigger.offset();
+		if (!tOff) return;
+		var pos = {
+			top: tOff.top,
+			left: tOff.left,
+			width: $trigger[0].offsetWidth,
+			height: $trigger[0].offsetHeight
+		};
+		// container カレンダー座標（ポップオーバー方向判断用）
+		var cOff = $container.offset();
+		if (!cOff) return;
+
+		var pageX = (tOff.left - cOff.left) + ($container.scrollLeft() || 0);
+		var clientWidth = $container.innerWidth();
+
+		// popoverを基準にした座標
+		var pOffset = $popover.offset();
+		if (!pOffset) return;
+
+		var pWidth = $popover.outerWidth(true);
+		var pHeight = $popover.outerHeight(true);
+
+		// 余白設定
+		var pad = 8;
+
+		//カレンダー幅を週7日で割った幅
+		var week = 7;
+
+		// 右にはみ出している場合、右側に表示する
+		if (pageX < clientWidth / week) {
+			var newPos = {
+			top:  pos.top - pHeight + pos.height,   
+			left: pos.left + pos.width             
+			};
+			$popover.offset({ left: newPos.left, top: newPos.top });
+			// 再取得
+			pOffset = $popover.offset();
+		}
+		// 座標調整
+		var newLeft = pOffset.left;
+		var newTop = pOffset.top;
+		if (newLeft + pWidth > cRight - pad) newLeft = (cRight - pad) - pWidth;
+		if (newLeft < cLeft + pad) newLeft = cLeft + pad;
+
+		//top調整
+		newTop = pos.top;
+		if (newTop + pHeight > cBottom - pad) newTop = (cBottom - pad) - pHeight;
+		if (newTop < cTop + pad) newTop = cTop + pad;
+		
+		//ポップオーバー位置更新
+		$popover.offset({ left: newLeft, top: newTop });
 	},
 	performPreEventRenderActions: function (event, element) {
 		var calendarView = this.getCalendarViewContainer().fullCalendar('getView');
@@ -2104,7 +2637,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			editable: true,
 			eventLimit: false,
 			defaultDate:defaultDate,
-			defaultView:defaultView,
+			defaultView: ($(window).width() > 1020 ? userDefaultActivityView : 'agendaDay'),
 			slotLabelFormat: userDefaultTimeFormat,
 			timeFormat: userDefaultTimeFormat,
 			defaultDate: defaultDate,
@@ -2551,5 +3084,6 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		this.registerWidgetPostLoadEvent();
 		this.initializeWidgets();
 		this.registerPostQuickCreateSaveEvent();
+		this.registerWebComponentsBeforeSaveEvent();
 	}
 });

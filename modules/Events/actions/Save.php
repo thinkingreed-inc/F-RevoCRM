@@ -204,6 +204,13 @@ class Events_Save_Action extends Calendar_Save_Action {
 		if($request->has('selectedusers')) {
 			$recordModel->set('selectedusers', $request->get('selectedusers'));
 		}
+		if($request->has('send_mail')) {
+			if($request->get('send_mail')=='on'  || $request->get('send_mail') == '1') {
+				$recordModel->set('send_mail', '1');
+			} else {
+				$recordModel->set('send_mail', '0');
+			}
+		}
 		return $recordModel;
 	}
 	

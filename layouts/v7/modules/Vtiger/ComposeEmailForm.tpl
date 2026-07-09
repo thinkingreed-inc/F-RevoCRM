@@ -52,7 +52,7 @@
                                 <input id="emailField" style="width:100%" name="toEmail" type="text" class="autoComplete sourceField select2" data-rule-required="true" data-rule-multiEmails="true" value="{$TO_EMAILS}" placeholder="{vtranslate('LBL_TYPE_AND_SEARCH',$MODULE)}">
                             </div>
                             <div class="col-lg-4 input-group">
-                                <select style="width: 140px;" class="select2 emailModulesList pull-right" multiple>
+                                <select style="width: 140px;" class="select2 emailModulesList pull-right">
                                     {foreach item=MODULE_NAME from=$RELATED_MODULES}
                                         <option value="{$MODULE_NAME}" {if $MODULE_NAME eq $FIELD_MODULE} selected {/if}>{vtranslate($MODULE_NAME,$MODULE_NAME)}</option>
 							 {/foreach}

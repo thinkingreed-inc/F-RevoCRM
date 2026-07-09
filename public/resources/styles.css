@@ -93,9 +93,11 @@ td.listViewEntryValue  .fieldValue .value {
 }
 /*
  * モーダルウインドウの背景を黒ベースに変更
+ * z-index: navbarが1095 !importantなので、backdropは1096 !importantで上に表示
  */
 .modal-backdrop {
   background-color: #555;
+  z-index: 1096 !important;
 }
 
 /*
@@ -154,10 +156,15 @@ td.listViewEntryValue  .fieldValue .value {
    width: 90%;
  }
 
+.importview-content,
+.customview-content {
+  max-height: calc(100vh - 210px) !important;
+}
+
 /*
  * モバイル表示
  */
-@media (max-width: 768px) { 
+@media (max-width: 768px) {
   .settingsIcon {
     display: none;
   }
@@ -174,7 +181,7 @@ td.listViewEntryValue  .fieldValue .value {
   }
   .main-container .module-nav {
     width: 100%;
-    z-index: 1100;
+    z-index: 1050;
     background-color: #2C3B49;
     background: #2C3B49;
   }
@@ -214,12 +221,64 @@ td.listViewEntryValue  .fieldValue .value {
   position: static !important;
 }
 }
-@media (max-width: 991px) { 
+@media (max-width: 991px) {
   .main-container.calendarview{
     display: flex;
     flex-wrap: nowrap;
     flex-direction: column-reverse;
-  } 
+  }
+  .main-container.main-container-Calendar {
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: column;
+  }
+  .main-container.main-container-Calendar .sidebar-essentials {
+    order: 0;
+  }
+  .main-container.main-container-Calendar .listViewPageDiv {
+    order: 1;
+  }
+  .main-container.main-container-Calendar .module-nav {
+    order: 2;
+    width: 100%;
+    z-index: 1050;
+    background-color: #2C3B49;
+    background: #2C3B49;
+  }
+  body.modal-open .main-container .module-nav,
+  body.modal-open .main-container.main-container-Calendar .module-nav {
+    z-index: 0;
+  }
+  .importview-content,
+  .customview-content {
+    max-height: calc(100vh - 210px) !important;
+    padding-bottom: 60px;
+  }
+  .main-container > .settingsPageDiv {
+    padding-top: 45px;
+  }
+  .main-container-MailManager .listViewPageDiv {
+    padding-left: 0 !important;
+  }
+  .main-container-MailManager .mmDescription {
+    width: auto !important;
+    height: auto !important;
+    margin-left: 15px !important;
+    margin-right: 15px !important;
+  }
+  .main-container.main-container-Calendar .module-nav div.modules-menu {
+    position: relative;
+    left: auto;
+  }
+  .main-container.main-container-Calendar .module-nav div.mod-switcher-container {
+    width: 100%;
+  }
+  .main-container.main-container-Calendar .modules-menu ul li {
+    display: inline-block;
+  }
+  .main-container.main-container-Calendar .modules-menu ul li.module-qtip a > span {
+    display: none;
+  }
   .list-menu-content .activitytypes .activitytype-indicator {
     padding: 14px 5%;
     margin: 8px;
@@ -317,6 +376,9 @@ div.detailview-content.container-fluid span.value img {
 }
 .module-action-bar.coloredBorderTop {
   width: calc(100% - 42px);
+}
+.textOverflowTest{
+	width: 600px;
 }
 @media all and (min-width:992px) and (max-width: 1290px) {
     .global-nav .app-list {
@@ -597,6 +659,127 @@ button#advanceIntiateSave + input {
   }
 }
 
+/* クイック作成ドロップダウン */
+.quickCreateDropdown {
+  width: 500px;
+  max-width: 90vw;
+}
+
+/* クイック作成 Gridレイアウト */
+#quickCreateModules .quickCreateModulesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 8px 0;
+}
+
+#quickCreateModules .quickCreateModulesGrid .quickCreateModuleItem {
+  min-width: 0;
+}
+
+#quickCreateModules .quickCreateModulesGrid .quickCreateModule,
+#quickCreateModules .quickCreateModulesGrid .quickCreateModuleSubmenu {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  text-decoration: none;
+  color: #333;
+  transition: background-color 0.15s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#quickCreateModules .quickCreateModulesGrid .quickCreateModule:hover,
+#quickCreateModules .quickCreateModulesGrid .quickCreateModuleSubmenu:hover {
+  background-color: #f5f5f5;
+  text-decoration: none;
+}
+
+/* アイコンコンテナ: 25px × 25px で統一、中央揃え */
+#quickCreateModules .quickCreateModulesGrid .quickCreateModule img,
+#quickCreateModules .quickCreateModulesGrid .quickCreateModuleSubmenu img {
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+#quickCreateModules .quickCreateModulesGrid .quickCreateModule .vicon,
+#quickCreateModules .quickCreateModulesGrid .quickCreateModuleSubmenu .vicon,
+#quickCreateModules .quickCreateModulesGrid .quickCreateModule .fa,
+#quickCreateModules .quickCreateModulesGrid .quickCreateModuleSubmenu .fa {
+  font-size: 18px;
+  width: 25px;
+  height: 25px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+#quickCreateModules .quickCreateModulesGrid .quick-create-module {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+}
+
+#quickCreateModules .quickCreateModulesGrid .quickcreateMoreDropdownAction {
+  margin-left: auto;
+}
+
+/* モバイル: 2列 + 全幅モーダル */
+@media (max-width: 767px) {
+  /* クイック作成メニューが開いている時、カレンダーのアクションバー関連要素を非表示にする（iPhoneでのz-index問題対策） */
+  /* iOSでは.app-nav内の要素がタッチイベントを横取りするため、.app-nav全体を非表示にする */
+  body:has(.dropdown.open > .quickCreateDropdown) .app-nav,
+  body:has(.dropdown.open > .quickCreateDropdown) .app-indicator-icon-container {
+    visibility: hidden;
+  }
+  /* 開いている時だけモーダル表示（visibility: visible !importantでドロップダウン自体は常に表示） */
+  .dropdown.open > .quickCreateDropdown {
+    visibility: visible !important;
+    position: fixed !important;
+    top: 50px !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: calc(70vh - 50px) !important;
+    height: calc(70dvh - 50px) !important;
+    max-height: none !important;
+    margin: 0;
+    transform: none;
+    background-color: #fff;
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius: 0;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.175);
+    z-index: 1050;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .dropdown.open > .quickCreateDropdown > li.title,
+  .dropdown.open > .quickCreateDropdown > hr {
+    flex-shrink: 0;
+  }
+  .dropdown.open > .quickCreateDropdown > li#quickCreateModules {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+  }
+  #quickCreateModules .quickCreateModulesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 /* 概要画面の関連活動*/
 .activityEntries .relatedActivitiesLabel {
   color: #222;
@@ -654,6 +837,230 @@ ul#productsImageContainer > li a{
   background-position: center center;
 }
 
+/* 項目設定画面のレイアウト */
+.layoutContent .blockFieldsList {
+  width: 100%;
+}
+
+.layoutContent .blockFieldsList ul.connectedSortable {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  list-style: none;
+}
+
+/* 通常フィールド（2列表示） */
+.layoutContent .blockFieldsList ul li {
+  width: 49%;
+  margin-bottom: 6px;
+  box-sizing: border-box;
+}
+
+/* ワイドフィールド（uitype=19 or 20、1列表示） */
+.layoutContent .blockFieldsList ul li.wideField {
+  width: 100%;
+}
+
+/* ダミー行（フィールド追加用） */
+.layoutContent .blockFieldsList ul li.dummyRow {
+  width: 49%;
+}
+
+/* ドラッグ中のプレースホルダー */
+.layoutContent .blockFieldsList ul li.ui-sortable-placeholder {
+  visibility: visible !important;
+  background: #f0f0f0;
+  border: 2px dashed #ccc;
+  height: auto;
+  min-height: 100px;
+}
+
+/* ドラッグ中の要素 */
+.layoutContent .blockFieldsList ul li.ui-sortable-helper {
+  opacity: 0.9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+}
+
+/* フィールド内の行レイアウト */
+.layoutContent .blockFieldsList ul li > div.row.border1px {
+  display: flex;
+  flex-wrap: nowrap;
+  min-height: 120px;
+  align-items: stretch;
+}
+
+/* ラベル部分 */
+.layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel {
+  flex: 0 0 250px;
+  width: 250px;
+  max-width: 250px;
+  display: flex;
+  align-items: stretch;
+  border-right: 1px solid #ddd;
+}
+
+.layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel .editFields {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  padding-top: 5px;
+}
+
+.layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel .editFields > .row {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+}
+
+.layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel .editFields > .row > .col-sm-1 {
+  flex: 0 0 auto;
+  width: auto;
+  padding: 13px 5px 0 10px;
+}
+
+.layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel .editFields > .row > .col-sm-9 {
+  flex: 1;
+  text-align: right;
+  padding-right: 10px;
+}
+
+/* プロパティ部分 */
+.layoutContent .blockFieldsList ul li > div.row > div.fieldPropertyContainer {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: stretch;
+}
+
+.layoutContent .blockFieldsList ul li > div.row > div.fieldPropertyContainer > div.row {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  padding-top: 5px;
+}
+
+/* アクションボタン（編集・削除） */
+.layoutContent .blockFieldsList ul li .fieldPropertyContainer .actions {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  padding: 5px;
+  align-self: flex-start;
+}
+
+.layoutContent .blockFieldsList ul li .fieldPropertyContainer .actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  color: #555;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.layoutContent .blockFieldsList ul li .fieldPropertyContainer .actions a:hover {
+  background-color: #e8e8e8;
+  border-color: #ccc;
+  color: #333;
+}
+
+.layoutContent .blockFieldsList ul li .fieldPropertyContainer .actions a.deleteCustomField:hover {
+  background-color: #fee;
+  border-color: #fcc;
+  color: #c00;
+}
+
+/* ワイドフィールドの場合の調整 */
+.layoutContent .blockFieldsList ul li.wideField > div.row > div.layoutEditFieldLabel {
+  flex: 0 0 250px;
+  width: 250px;
+  max-width: 250px;
+}
+
+.layoutContent .blockFieldsList ul li.wideField > div.row > div.fieldPropertyContainer {
+  flex: 1 1 auto;
+}
+
+/* 中サイズ画面 */
+@media (min-width: 769px) and (max-width: 1200px) {
+  .layoutContent .blockFieldsList ul li {
+    width: calc(50% - 6px);
+  }
+  .layoutContent .blockFieldsList ul li.wideField {
+    width: calc(100% - 6px);
+  }
+  .layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel,
+  .layoutContent .blockFieldsList ul li.wideField > div.row > div.layoutEditFieldLabel {
+    flex: 0 0 200px;
+    width: 200px;
+    max-width: 200px;
+  }
+  .layoutContent .blockFieldsList ul li > div.row > div.fieldPropertyContainer,
+  .layoutContent .blockFieldsList ul li.wideField > div.row > div.fieldPropertyContainer {
+    flex: 1 1 auto;
+  }
+}
+
+/* モバイル表示 */
+@media (max-width: 768px) {
+  .layoutContent .blockFieldsList ul {
+    margin-left: 5px;
+  }
+  .layoutContent .blockFieldsList ul li,
+  .layoutContent .blockFieldsList ul li.wideField,
+  .layoutContent .blockFieldsList ul li.dummyRow {
+    width: calc(100% - 10px);
+    float: none;
+  }
+  .layoutContent .blockFieldsList ul li > div.row.border1px {
+    flex-wrap: wrap;
+    position: relative;
+    min-height: auto;
+  }
+  .layoutContent .blockFieldsList ul li > div.row > div.layoutEditFieldLabel,
+  .layoutContent .blockFieldsList ul li.wideField > div.row > div.layoutEditFieldLabel {
+    flex: 0 0 100%;
+    width: 100%;
+    max-width: 100%;
+    padding-bottom: 5px;
+    border-right: none;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 5px;
+  }
+  .layoutContent .blockFieldsList ul li > div.row > div.fieldPropertyContainer,
+  .layoutContent .blockFieldsList ul li.wideField > div.row > div.fieldPropertyContainer {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  .layoutContent .blockFieldsList ul li .fieldPropertyContainer .actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    flex-direction: row;
+  }
+}
+
+/* 項目設定画面の項目追加ボタン周り*/
+.layoutContent .blockFieldsList ul li.dummyRow  div > span.dragUiText.col-sm-7{
+  text-align: right;
+    padding: 0;
+    padding-right: 20px;
+    margin: auto;
+}
+.layoutContent .blockFieldsList ul li.dummyRow  div > span.col-sm-5{
+  text-align: left;
+    padding: 0;
+    margin: auto;
+}
+
+
 /* 日報の概要・更新履歴(1740pxは文字が重ならない限界値から決定) */
 @media (max-width: 1740px) { 
   .summaryWidgetContainer #updates .updates_timeline > li .update_time {
@@ -707,6 +1114,15 @@ ul#productsImageContainer > li a{
   align-items: center;
 }
 
+.calendarGroupSelect #calendarview-feeds-all {
+  flex-shrink: 0;
+}
+
+.calendarGroupSelect .select2-container {
+  min-width: 0;
+  flex: 1 1 0;
+}
+
 .calendarTodoSelect {
   display: flex;
   flex-wrap: nowrap;
@@ -714,6 +1130,31 @@ ul#productsImageContainer > li a{
   margin: 8px;
   justify-content: space-between;
   font-size: 12px;
+}
+
+/* レポートのヘッダーを固定する */
+#reportDetails.contents-bottomscroll {
+	max-height: 70vh;
+}
+#reportDetails table tr.blockHeader th{
+  position: sticky;
+  z-index: 1;
+  top: 0;
+
+  border-color: inherit;
+  background-color: inherit;
+  background-image: inherit;
+  background-repeat: inherit;
+}
+#reportDetails table tr.blockHeader th::before {
+  /* stickyにより枠線が消えてしまうため疑似要素に枠線を追加 */
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: -1px;
+  left: 0;
+  border-top: 2px solid white;
 }
 
 /* レコード編集画面のpadding-leftを可変ではなく固定にする */
@@ -1397,5 +1838,42 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
 
 .admonition-warning .admonition-title {
     color: #e65100;
+}
+
+/* CustomView: モバイル表示でのリスト共有ユーザー選択UIの修正 */
+@media (max-width: 767px) {
+  /* select2コンテナの幅を100%に拡張 */
+  #filterContainer #s2id_memberList,
+  #filterContainer #memberList + .select2-container {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* select2ドロップダウンの幅もモバイルで適切に表示されるように */
+  .select2-drop {
+    min-width: 200px;
+  }
+
+  /* 共有ユーザー選択欄がフッターに隠れないようにスクロールコンテナに下部パディングを追加 */
+  #filterContainer .customview-content .mCSB_container {
+    padding-bottom: 70px;
+  }
+}
+
+/* #1479 4Kモニターでトグルスイッチを表示した際のUI崩れを修正 */
+.bootstrap-switch .bootstrap-switch-container {
+    white-space: nowrap;
+}
+
+/* カレンダーのポップオーバーが長い説明文で画面外にはみ出し、
+   スクロール領域の変動によるレイアウトシフト（がたつき）を防止する。
+   説明文のみスクロール可能にし、完了・編集等のアイコンは常に表示する。
+   モバイル表示では二重スクロール回避のため制限を適用しない */
+@media (min-width: 769px) {
+    .webui-popover .calendar-popover-description {
+        max-height: 200px;
+        overflow-y: auto;
+        margin-bottom: 4px;
+    }
 }
 

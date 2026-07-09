@@ -146,20 +146,24 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 	},
 	
 	/**
-     * Function to Validate and Save Event 
+     * Function to Validate and Save Event
      * @returns {undefined}
      */
     registerValidation : function () {
         var editViewForm = this.getForm();
 		var params = {
 			submitHandler : function(form) {
+				// Jodit全instancesの同期（submit前必須、Task G syncAllInstances共通経路注入）
+				if (typeof Vtiger_Jodit_Js !== 'undefined' && Vtiger_Jodit_Js.syncAllInstances) {
+					Vtiger_Jodit_Js.syncAllInstances();
+				}
 				var e = jQuery.Event(Vtiger_Edit_Js.recordPresaveEvent);
 				app.event.trigger(e);
 				if(e.isDefaultPrevented()) {
 					return false;
 				}
 				window.onbeforeunload = null;
-				
+
 				var formData = jQuery(form).serializeFormData();
 				Calendar_Edit_Js.showOverlapEventConfirmationBeforeSave(formData)
 				.then(function () {
@@ -167,7 +171,15 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 					form.submit();
 				});
 				return false;
-            }
+            },
+			// エラーラベルをDOMに挿入しない（tooltipのみ使用）
+			// validation.jsのerrorPlacementでqTip表示後、ここでラベル削除
+			showErrors: function(errorMap, errorList) {
+				// デフォルトのエラー表示処理を実行（qTipのtooltip表示含む）
+				this.defaultShowErrors();
+				// エラーラベルを削除（tooltipは残る）
+				editViewForm.find('label.error').remove();
+			}
 		};
         this.formValidatorInstance = editViewForm.vtValidate(params);
     },
@@ -180,6 +192,10 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 	quickCreateSave : function(form,invokeParams){
 		var params = {
 			submitHandler: function(form) {
+				// Jodit全instancesの同期（submit前必須、Task G syncAllInstances共通経路注入）
+				if (typeof Vtiger_Jodit_Js !== 'undefined' && Vtiger_Jodit_Js.syncAllInstances) {
+					Vtiger_Jodit_Js.syncAllInstances();
+				}
 				if(this.numberOfInvalids() > 0) {
 					return false;
 				}
@@ -408,8 +424,10 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 			}else {
 				contactListInput.val(relatedContactElement.val().split(',').join(';'));
 			}
-		}
+			// Eventsの場合のみcontact_idのname属性を削除（複数連絡先はcontactidlistで送信するため）
 			form.find('[name="contact_id"]').attr('name','');
+		}
+		// TODOの場合はcontact_idをそのまま送信する
 	},
 
 	registerRecurringEditOptions : function(e,form,InitialFormData) {
@@ -730,9 +748,7 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 	  if(container.find('[name="record"]').val()===''){
 		this.registerDateStartChangeEvent(container);
 		this.registerTimeStartChangeEvent(container);
-			container.find('[name="time_end"]').on('focus', function () {
-				thisInstance.registerTimeEndChangeEvent(container);
-			});
+		this.registerTimeEndChangeEvent(container);
 		this.registerDateEndChangeEvent(container);
 		this.registerUserChangedDateTimeDetection(container);
 		this.registerActivityTypeChangeEvent(container);

@@ -3347,6 +3347,7 @@ strong, b, th{
 }
 
 .updates_timeline > li {
+    padding-bottom: 10px;
     position: static;
     top: 0;
     display: block;
@@ -5911,7 +5912,6 @@ hr{
 .layoutContent .editFields{
     min-height:116px;
     height: auto; 
-    border-right: 1px solid @lightColorBorder;
 }
 
 .layoutContent .fieldLabelContainer{
@@ -7477,8 +7477,9 @@ li.select2-search-choice div{
 #quickCreateModules .quickcreateMoreDropdown {
     left: 85%;
     top: 0px;
-    min-width: 170px;
+    min-width: 230px;
     padding: 4%;
+    white-space: nowrap;
 }
 
 #quickCreateModules .quickcreateMoreDropdown li{
@@ -7595,8 +7596,9 @@ li.select2-search-choice div{
 #quickCreateModules .quickcreateMoreDropdown {
     left: 85%;
     top: 0px;
-    min-width: 170px;
+    min-width: 230px;
     padding: 4%;
+    white-space: nowrap;
 }
 
 #quickCreateModules .quickcreateMoreDropdown li{
@@ -8014,6 +8016,23 @@ input:focus:-ms-input-placeholder { color:transparent; } /* IE 10+ */
   border-bottom: 6px solid #ffffff;
   border-left: 6px solid transparent;
   content: '';
+}
+.global-actions .quickcreateMoreDropdown:before,
+.global-actions .quickcreateMoreDropdown:after {
+  display: none;
+}
+@media (max-width: 767px) {
+  .navbar-inverse .navbar-nav .open .quickcreateMoreDropdown > li > a {
+    color: #333;
+  }
+  .global-actions .dropdown.open > .quickCreateDropdown,
+  .global-actions .quickcreateMoreDropdown {
+    box-shadow: none;
+  }
+  #quickCreateModules .quickcreateMoreDropdown {
+    min-width: 0;
+    white-space: normal;
+  }
 }
 
 #sharedcalendar .fc-event-container .vicon-meeting,

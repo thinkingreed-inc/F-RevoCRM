@@ -16,7 +16,7 @@
 						<div class="row">
 							<div class="col-sm-3 col-xs-3">{vtranslate('LBL_FROM', $QUALIFIED_MODULE)}</div>
 							<div class="col-sm-9 col-xs-9">
-								<input name="fromEmail" class=" fields inputElement" type="text" value="{$TASK_OBJECT->fromEmail}" />
+								<input name="fromEmail" class=" fields inputElement" type="text" value="{$TASK_OBJECT->fromEmail|escape:'htmlall'}" />
 							</div>
 						</div>
 					</div>
@@ -33,7 +33,7 @@
 						<div class="row">
 							<div class="col-sm-3 col-xs-3">{vtranslate('Reply To',$QUALIFIED_MODULE)}</div>
 							<div class="col-sm-9 col-xs-9">
-								<input name="replyTo" class="fields inputElement" type="text" value="{$TASK_OBJECT->replyTo}"/>
+								<input name="replyTo" class="fields inputElement" type="text" value="{$TASK_OBJECT->replyTo|escape:'htmlall'}"/>
 							</div>
 						</div>
 					</div>
@@ -49,7 +49,7 @@
 						<div class="row">
 							<span class="col-sm-3 col-xs-3">{vtranslate('LBL_TO',$QUALIFIED_MODULE)}<span class="redColor">*</span></span>
 							<div class="col-sm-9 col-xs-9">
-								<input data-rule-required="true" name="recepient" class="fields inputElement" type="text" value="{$TASK_OBJECT->recepient}" />
+								<input data-rule-required="true" name="recepient" class="fields inputElement" type="text" value="{$TASK_OBJECT->recepient|escape:'htmlall'}" />
 							</div>
 						</div>
 					</div>
@@ -65,7 +65,7 @@
 						<div class="row">
 							<div class="col-sm-3 col-xs-3">{vtranslate('LBL_CC',$QUALIFIED_MODULE)}</div>
 							<div class="col-sm-9 col-xs-9">
-								<input class="fields inputElement" type="text" name="emailcc" value="{$TASK_OBJECT->emailcc}" />
+								<input class="fields inputElement" type="text" name="emailcc" value="{$TASK_OBJECT->emailcc|escape:'htmlall'}" />
 							</div>
 						</div>
 					</div>
@@ -81,7 +81,7 @@
 						<div class="row">
 							<div class="col-sm-3 col-xs-3">{vtranslate('LBL_BCC',$QUALIFIED_MODULE)}</div>
 							<div class="col-sm-9 col-xs-9">
-								<input class="fields inputElement" type="text" name="emailbcc" value="{$TASK_OBJECT->emailbcc}" />
+								<input class="fields inputElement" type="text" name="emailbcc" value="{$TASK_OBJECT->emailbcc|escape:'htmlall'}" />
 							</div>
 						</div>
 					</div>
@@ -108,7 +108,7 @@
 						<div class="row">
 							<div class="col-sm-3 col-xs-3">{vtranslate('LBL_SUBJECT',$QUALIFIED_MODULE)}<span class="redColor">*</span></div>
 							<div class="col-sm-9 col-xs-9">
-								<input data-rule-required="true" name="subject" class="fields inputElement" type="text" name="subject" value="{$TASK_OBJECT->subject}" id="subject" spellcheck="true"/>
+								<input data-rule-required="true" name="subject" class="fields inputElement" type="text" name="subject" value="{$TASK_OBJECT->subject|escape:'htmlall'}" id="subject" spellcheck="true"/>
 							</div>
 						</div>
 					</div>

@@ -111,6 +111,10 @@ $languageStrings = array(
 	'LBL_TOTAL_EVENTS_SKIPPED' => 'No. of Events Skipped as they were missing one or more required field ',
 	'LBL_TOTAL_EVENTS_DUPLICATED' => 'No. of duplicate Events skipped',
 	'LBL_TOTAL_TASKS_DUPLICATED' => 'No. of duplicate Tasks skipped',
+	'LBL_SETUP_PARAMETER_MESSAGE_CALENDAR_REMEMBER_FEED_SELECTION' =>'Controls the persistence of user selection checkbox states in the Shared Calendar.
+true  : Persists and restores checkbox states across all organization and role views.
+false : Persists checkbox states only for My Group. Other organization or role views always display all users as selected.',
+
 	
 	'ICAL_FORMAT' => 'iCal Format',
 	'LBL_LAST_IMPORT_UNDONE'=>'Your Last Import Was Undone',

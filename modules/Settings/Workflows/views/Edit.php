@@ -186,8 +186,8 @@ class Settings_Workflows_Edit_View extends Settings_Vtiger_Index_View {
 			"modules.Settings.$moduleName.resources.Edit2",
 			"modules.Settings.$moduleName.resources.Edit3",
 			"modules.Settings.$moduleName.resources.AdvanceFilter",
-			'~libraries/jquery/ckeditor/ckeditor.js',
-			"modules.Vtiger.resources.CkEditor",
+			'~libraries/jodit/jodit.fat.min.js',
+			"modules.Vtiger.resources.JoditEditor",
             '~/libraries/jquery/bootstrapswitch/js/bootstrap-switch.min.js',
 			'~libraries/jquery/jquery.datepick.package-4.1.0/jquery.datepick.js',
 		);

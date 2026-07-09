@@ -235,7 +235,7 @@ class RecycleBin_List_View extends Vtiger_Index_View {
 			'modules.CustomView.resources.CustomView',
 			"modules.$moduleName.resources.CustomView",
 			"modules.Emails.resources.MassEdit",
-			"modules.Vtiger.resources.CkEditor",
+			"modules.Vtiger.resources.JoditEditor",
 			"modules.Vtiger.resources.ListSidebar",
 			"~layouts/v7/lib/jquery/sadropdown.js",
 			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/jquery/floatThead/jquery.floatThead.js",

@@ -28,9 +28,9 @@ class Products_ExportData_Action extends Vtiger_ExportData_Action {
 		return $this->allRegions;
 	}
 
-	public function getHeaders() {
+	public function getHeaders($format=null) {
 		if (!$this->headers) {
-			$translatedHeaders = parent::getHeaders();
+			$translatedHeaders = parent::getHeaders($format);
 			$taxModels = $this->getAllTaxes();
 			foreach ($taxModels as $taxId => $taxModel) {
 				$taxName = $taxModel->getName();
@@ -56,11 +56,11 @@ class Products_ExportData_Action extends Vtiger_ExportData_Action {
 		return $this->headers;
 	}
 
-	public function sanitizeValues($arr) {
+	public function sanitizeValues($arr, $format) {
 		$recordId = $arr['crmid'];
-		$arr = parent::sanitizeValues($arr);
+		$arr = parent::sanitizeValues($arr, $format);
 
-		$headers = $this->getHeaders();
+		$headers = $this->getHeaders($format);
 		$taxModels = $this->getAllTaxes();
 		$taxValues = array();
 

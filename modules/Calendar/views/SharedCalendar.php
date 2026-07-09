@@ -13,9 +13,13 @@ class Calendar_SharedCalendar_View extends Calendar_Calendar_View {
 	public function process(Vtiger_Request $request) {
 		$viewer = $this->getViewer($request);
 		$currentUserModel = Users_Record_Model::getCurrentUserModel();
-		
+		// 共有カレンダー：組織/役割切替時に連動制御フラグを取得
+		$value = Settings_Parameters_Record_Model::getParameterValue('CALENDAR_REMEMBER_FEED_SELECTION', 'false');
+		$flag = (strtolower(trim($value)) === 'true' || $value === '1') ? 1 : 0;
 		$viewer->assign('CURRENT_USER', $currentUserModel);
 		$viewer->assign('IS_CREATE_PERMITTED', isPermitted('Calendar', 'CreateView'));
+		// 共有カレンダー：組織/役割切替時に「無効化したフィード(disablefeeds)」の記憶を反映するかどうか
+		$viewer->assign('CALENDAR_REMEMBER_FEED_SELECTION', $flag);
 		$viewer->view('SharedCalendarView.tpl', $request->getModule());
 	}
 	

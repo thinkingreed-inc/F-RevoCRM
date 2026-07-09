@@ -37,7 +37,7 @@ class PriceBooks_Popup_View extends Vtiger_Popup_View {
 		}
 
 		if(empty($getUrl) && !empty($sourceField) && !$multiSelectMode) {
-			$getUrl = 'getProductListPriceURL';
+			$getUrl = 'getParentPopupContentsUrl';
 		}
 
 		if(empty($cvId)) {

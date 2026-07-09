@@ -309,6 +309,29 @@ Calendar_Calendar_Js('Calendar_SharedCalendar_Js', {
 
 		return aDeferred.promise();
 	},
+	//ユーザーリスト連動制御フラグ
+	isRememberSelection: function () {
+		var useDisableFeedsCache = jQuery('#calendar_remember_feed_selection').val() == '1';
+		if (useDisableFeedsCache === true) {
+			return true;
+		}
+		var groupId = jQuery('#calendar-groups').val();
+		return groupId === 'default';
+	},
+	//cacheから無効化されたフィードを取得
+	disableFeed: function (sourceKey) {
+		if (!this.isRememberSelection()) {
+			return;
+		}
+		this._super(sourceKey);
+	},
+	//cacheから有効化されたフィードを取得
+	enableFeed: function (sourceKey) {
+		if (!this.isRememberSelection()) {
+			return;
+		}
+		this._super(sourceKey);
+	},
 
 	/* change user list event */
 	changeUserList : function(callback) {
@@ -348,8 +371,11 @@ Calendar_Calendar_Js('Calendar_SharedCalendar_Js', {
 
 			var users = thisInstance.userList['users'];
 			var sharedInfo = thisInstance.userList['sharedinfo'] ? thisInstance.userList['sharedinfo'] : {};
-			var cashDisabledFeedsStorageKey = thisInstance.getDisabledFeeds();
-
+			var cashDisabledFeedsStorageKey = [];
+			// ユーザーリスト連動する場合、無効化されたフィードをキャッシュから取得
+			if (thisInstance.isRememberSelection()) {
+				cashDisabledFeedsStorageKey = thisInstance.getDisabledFeeds();
+			}
 			Object.keys(users).forEach(function (id) {
 				var user = app.getDecodedValue(users[id]);
 				if(id == myId) {

@@ -1,0 +1,1241 @@
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
+import { Dialog, DialogContent, DialogDescription } from "../ui/dialog";
+import { Alert, AlertDescription } from "../ui/alert";
+import { Loader2, XCircle } from "lucide-react";
+import { QuickCreateForm } from "./QuickCreateForm";
+import { CalendarForm } from "./CalendarForm";
+import { QuickCreateFooter } from "./QuickCreateFooter";
+import { QuickCreateHeader } from "./QuickCreateHeader";
+import { useQuickCreateFields } from "./hooks/useQuickCreateFields";
+import { useQuickCreateSave } from "./hooks/useQuickCreateSave";
+import { usePicklistDependency } from "./hooks/usePicklistDependency";
+import { useCalendarFields } from "./hooks/useCalendarFields";
+import { useRecordData } from "./hooks/useRecordData";
+import { QuickCreateProps } from "../../types/quickcreate";
+import { FieldInfo, FieldValue, UI_TYPES } from "../../types/field";
+import { cn } from "../../lib/utils";
+import { TranslationProvider } from "../../contexts/TranslationContext";
+import { useTranslation } from "../../hooks/useTranslation";
+import { transformCalendarDateTime } from "../../utils/datetime";
+import { validateFieldByUIType } from "../../utils/validation";
+import { syncJoditEditorFormData } from "../../utils/joditEditor";
+import { isFutureEventHeldInvalid } from "./utils/calendarValidation";
+
+/**
+ * Activity type for Calendar variant
+ */
+type ActivityType = "Calendar" | "Events";
+
+/**
+ * Extended QuickCreate props with variant support
+ */
+export interface ExtendedQuickCreateProps extends QuickCreateProps {
+  /** Style variant: 'default' for general modules, 'calendar' for Calendar/Events */
+  variant?: "default" | "calendar";
+  /** Record ID for edit mode */
+  recordId?: string;
+  /** Duplicate mode flag (when true, treat as new record even with recordId) */
+  isDuplicate?: boolean;
+}
+
+/**
+ * QuickCreate - Unified quick create modal component
+ *
+ * Supports:
+ * - General modules (default variant)
+ * - Calendar/Events modules (calendar variant with tabs, datetime inputs, etc.)
+ * - Edit mode (with recordId)
+ *
+ * @example
+ * // General module
+ * <QuickCreate
+ *   module="Accounts"
+ *   isOpen={isOpen}
+ *   onSave={handleSave}
+ * />
+ *
+ * @example
+ * // Calendar/Events module
+ * <QuickCreate
+ *   module="Events"
+ *   variant="calendar"
+ *   isOpen={isOpen}
+ *   onSave={handleSave}
+ * />
+ *
+ * @example
+ * // Edit mode
+ * <QuickCreate
+ *   module="Events"
+ *   variant="calendar"
+ *   recordId="12345"
+ *   initialData={recordData}
+ *   isOpen={isOpen}
+ *   onSave={handleSave}
+ * />
+ */
+/**
+ * QuickCreate - TranslationProviderでラップしたエクスポート用コンポーネント
+ *
+ * TranslationProviderは指定されたmodule + Vtiger共通翻訳を取得する。
+ * これにより、ユーザーがアクセス権限を持つモジュールの翻訳APIを呼び出す。
+ */
+export const QuickCreate: React.FC<ExtendedQuickCreateProps> = (props) => {
+  return (
+    <TranslationProvider module={props.module}>
+      <QuickCreateInner {...props} />
+    </TranslationProvider>
+  );
+};
+
+/**
+ * QuickCreateInner - 実際のQuickCreate実装
+ */
+const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
+  module,
+  variant: explicitVariant,
+  isOpen: externalIsOpen,
+  initialData = {},
+  recordId,
+  isDuplicate = false,
+  onSave,
+  onCancel,
+  onGoToFullForm,
+  onOpenChange,
+}) => {
+  const { t } = useTranslation();
+
+  // Determine variant based on module if not explicitly set
+  const isCalendarModule = module === "Calendar" || module === "Events";
+  const variant =
+    explicitVariant ?? (isCalendarModule ? "calendar" : "default");
+  const isCalendarVariant = variant === "calendar";
+  // 複製モード時はrecordIdが存在しても編集モードではなく新規作成として扱う
+  const isDuplicateMode = isDuplicate === true;
+  const isEditMode = !!recordId && !isDuplicateMode;
+
+  // Modal state
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+
+  // Form data（FieldValue型を使用）
+  const [formData, setFormData] = useState<Record<string, FieldValue>>({});
+
+  // RecordType state（RecordTypeフィールドの選択値を管理）
+  const [recordTypeFields, setRecordTypeFields] = useState<
+    Record<string, string>
+  >({});
+
+  // Calendar-specific state
+  const [activeTab, setActiveTab] = useState<ActivityType>(
+    module === "Calendar" ? "Calendar" : "Events",
+  );
+  const [calendarFormData, setCalendarFormData] = useState<
+    Record<string, FieldValue>
+  >({});
+  const [eventsFormData, setEventsFormData] = useState<
+    Record<string, FieldValue>
+  >({});
+
+  // Validation errors
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
+
+  // Success message
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Duration settings from initialData (passed from Calendar.js)
+  const defaultCallDuration = useMemo(() => {
+    const val = initialData?.defaultCallDuration;
+    return typeof val === "number" ? val : 5;
+  }, [initialData?.defaultCallDuration]);
+
+  const defaultOtherEventDuration = useMemo(() => {
+    const val = initialData?.defaultOtherEventDuration;
+    return typeof val === "number" ? val : 5;
+  }, [initialData?.defaultOtherEventDuration]);
+
+  // Initialization tracking
+  const isInitializedRef = useRef(false);
+  const prevIsOpenRef = useRef(false);
+  const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ========================================
+  // Hooks for record data (edit mode and duplicate mode)
+  // 編集モードと複製モードの両方でrecordDataを取得する
+  // 複製モードではデータのコピー元として使用
+  // ========================================
+  const {
+    data: recordData,
+    loading: recordDataLoading,
+    error: recordDataError,
+  } = useRecordData({
+    module: isCalendarVariant
+      ? module === "Calendar"
+        ? "Calendar"
+        : "Events"
+      : module,
+    recordId: recordId,
+    skip: (!isEditMode && !isDuplicateMode) || !isOpen,
+  });
+
+  // ========================================
+  // Hooks for default variant
+  // ========================================
+  const {
+    fields: defaultFields,
+    loading: defaultFieldsLoading,
+    error: defaultFieldsError,
+    editViewUrl: defaultEditViewUrl,
+    moduleLabel: defaultModuleLabel,
+    picklistDependency,
+  } = useQuickCreateFields(isCalendarVariant ? "" : module, recordTypeFields);
+
+  const {
+    save: defaultSave,
+    isSaving: defaultIsSaving,
+    error: defaultSaveError,
+    clearError: clearDefaultSaveError,
+  } = useQuickCreateSave(isCalendarVariant ? "" : module, defaultFields);
+
+  const { getFilteredFields, getFieldsToClear, hasDependency } =
+    usePicklistDependency(picklistDependency);
+
+  // ========================================
+  // Hooks for calendar variant
+  // ========================================
+  const {
+    calendarFields,
+    eventsFields,
+    currentFields: calendarCurrentFields,
+    loading: calendarFieldsLoading,
+    error: calendarFieldsError,
+    editViewUrl: calendarEditViewUrl,
+    availableUsers,
+    timeOptions,
+    parseDateTimeValue,
+    combineDateTimeValue,
+    parseReminderValue,
+    combineReminderValue,
+    transformInitialDataForEdit,
+  } = useCalendarFields({
+    activeTab,
+    initialData,
+    recordId,
+    recordTypeFields,
+    activityType: (activeTab === "Calendar" ? calendarFormData : eventsFormData)
+      ?.activitytype as string | undefined,
+    defaultCallDuration,
+    defaultOtherEventDuration,
+  });
+
+  const {
+    save: calendarSave,
+    isSaving: calendarIsSaving,
+    error: calendarSaveError,
+    clearError: clearCalendarSaveError,
+  } = useQuickCreateSave(isCalendarVariant ? activeTab : "");
+
+  // ========================================
+  // Computed values based on variant
+  // ========================================
+  const fields = isCalendarVariant ? calendarCurrentFields : defaultFields;
+  // Include recordDataLoading in overall loading state for edit mode and duplicate mode
+  const fieldsLoading =
+    (isCalendarVariant ? calendarFieldsLoading : defaultFieldsLoading) ||
+    ((isEditMode || isDuplicateMode) && recordDataLoading);
+  const fieldsError = isCalendarVariant
+    ? calendarFieldsError
+    : defaultFieldsError || recordDataError;
+  const moduleLabel = isCalendarVariant
+    ? activeTab === "Calendar"
+      ? t("LBL_TASK")
+      : t("LBL_EVENT")
+    : defaultModuleLabel;
+  const isSaving = isCalendarVariant ? calendarIsSaving : defaultIsSaving;
+  const saveError = isCalendarVariant ? calendarSaveError : defaultSaveError;
+  const clearSaveError = isCalendarVariant
+    ? clearCalendarSaveError
+    : clearDefaultSaveError;
+
+  // Current form data for calendar variant
+  const currentCalendarFormData =
+    activeTab === "Calendar" ? calendarFormData : eventsFormData;
+  const setCurrentCalendarFormData =
+    activeTab === "Calendar" ? setCalendarFormData : setEventsFormData;
+
+  /**
+   * Apply picklist dependency filtering (default variant only)
+   */
+  const filteredFields = useMemo(() => {
+    if (isCalendarVariant || !hasDependency) {
+      return fields;
+    }
+    return getFilteredFields(fields, formData);
+  }, [isCalendarVariant, fields, formData, hasDependency, getFilteredFields]);
+
+  // ========================================
+  // Effects
+  // ========================================
+
+  /**
+   * Reset initialization when modal closes
+   */
+  useEffect(() => {
+    if (prevIsOpenRef.current && !isOpen) {
+      isInitializedRef.current = false;
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current);
+        successTimeoutRef.current = null;
+      }
+    }
+    prevIsOpenRef.current = isOpen;
+  }, [isOpen]);
+
+  /**
+   * Cleanup on unmount
+   */
+  useEffect(() => {
+    return () => {
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  /**
+   * Initialize form data (default variant)
+   */
+  useEffect(() => {
+    // For edit mode, wait for recordData to be loaded
+    if (
+      !isCalendarVariant &&
+      isOpen &&
+      defaultFields.length > 0 &&
+      !isInitializedRef.current
+    ) {
+      // For edit mode or duplicate mode, wait for recordData (skip if still loading)
+      if ((isEditMode || isDuplicateMode) && recordDataLoading) {
+        return;
+      }
+
+      // Merge initialData and recordData
+      // 編集モードと複製モードの両方でrecordDataを使用する
+      // 複製モードではデータのコピー元として使用
+      const initial: Record<string, any> = {
+        ...initialData,
+        ...((isEditMode || isDuplicateMode) && recordData ? recordData : {}),
+      };
+
+      // Add record parameter for edit mode only (NOT for duplicate mode)
+      // 複製モードではrecordパラメータを追加しない（新規作成として保存するため）
+      if (isEditMode && recordId) {
+        initial.record = recordId;
+      }
+
+      // 複製モードの場合、recordパラメータを明示的に除外
+      if (isDuplicateMode && initial.record) {
+        delete initial.record;
+      }
+
+      defaultFields.forEach((field) => {
+        if (!(field.name in initial)) {
+          const defaultValue = field.fieldinfo?.defaultvalue;
+          if (
+            defaultValue !== undefined &&
+            defaultValue !== null &&
+            defaultValue !== ""
+          ) {
+            initial[field.name] = defaultValue;
+          }
+          // 新規作成モードの場合、担当フィールドにログインユーザーをデフォルト設定
+          else if (!isEditMode && field.name === "assigned_user_id") {
+            initial[field.name] = (window as any)._USERMETA?.id || "1";
+          }
+        }
+      });
+
+      setFormData(initial);
+      setValidationErrors({});
+      setSuccessMessage(null);
+      clearSaveError();
+      isInitializedRef.current = true;
+    }
+  }, [
+    isCalendarVariant,
+    isOpen,
+    defaultFields,
+    initialData,
+    isEditMode,
+    isDuplicateMode,
+    recordId,
+    recordData,
+    recordDataLoading,
+    clearSaveError,
+  ]);
+
+  /**
+   * Initialize form data (calendar variant - edit mode or duplicate mode)
+   * Uses recordData from useRecordData hook (fetched via GetRecord API)
+   * 複製モードでも編集モードと同様にrecordDataを使用してデータをコピーする
+   */
+  useEffect(() => {
+    // 編集モードまたは複製モードで実行（複製モードでもrecordDataからデータをコピーする）
+    if (
+      !isCalendarVariant ||
+      !isOpen ||
+      (!isEditMode && !isDuplicateMode) ||
+      isInitializedRef.current
+    ) {
+      return;
+    }
+
+    // Wait for recordData to be loaded
+    if (recordDataLoading) {
+      return;
+    }
+
+    // If we have a recordId, we MUST wait for recordData from API
+    // Do NOT fall back to initialData when recordId exists but recordData is null
+    // (this can happen during the async fetch)
+    if (recordId && !recordData) {
+      return;
+    }
+
+    // Use recordData from API if available, fall back to initialData only when no recordId
+    const dataSource = recordData || initialData;
+    if (!dataSource || Object.keys(dataSource).length === 0) {
+      return;
+    }
+
+    // transformInitialDataForEdit already handles datetime conversion
+    // but recordData from useRecordData is already transformed, so we need to handle both cases
+    let transformedData;
+    if (recordData) {
+      // recordData is already transformed
+      // 編集モードの場合のみrecordパラメータを追加、複製モードでは追加しない
+      if (isDuplicateMode) {
+        // 複製モード: recordパラメータを除外して新規作成として保存
+        const { record, ...dataWithoutRecord } = recordData;
+        transformedData = dataWithoutRecord;
+      } else {
+        // 編集モード: recordパラメータを追加
+        transformedData = { ...recordData, record: recordId };
+      }
+    } else {
+      transformedData = transformInitialDataForEdit(initialData, activeTab);
+    }
+
+    // Determine tab based on activitytype
+    const activityType = dataSource.activitytype;
+    const isTask = activityType === "Task";
+    const targetTab: ActivityType = isTask ? "Calendar" : "Events";
+
+    if (activeTab !== targetTab) {
+      setActiveTab(targetTab);
+    }
+
+    if (targetTab === "Calendar") {
+      setCalendarFormData(transformedData);
+    } else {
+      setEventsFormData(transformedData);
+    }
+
+    isInitializedRef.current = true;
+  }, [
+    isCalendarVariant,
+    isOpen,
+    isEditMode,
+    isDuplicateMode,
+    initialData,
+    recordData,
+    recordDataLoading,
+    recordId,
+    activeTab,
+    transformInitialDataForEdit,
+  ]);
+
+  /**
+   * Initialize form data (calendar variant - new mode)
+   * 複製モードでは編集/複製モードの初期化処理を使用するため、ここではスキップ
+   */
+  useEffect(() => {
+    // 複製モードは編集/複製モードの初期化処理で処理されるためスキップ
+    if (
+      !isCalendarVariant ||
+      isEditMode ||
+      isDuplicateMode ||
+      !isOpen ||
+      isInitializedRef.current
+    ) {
+      return;
+    }
+
+    const getFieldInitialValue = (field: FieldInfo): any => {
+      const defaultValue = field.fieldinfo?.defaultvalue;
+      if (
+        defaultValue !== undefined &&
+        defaultValue !== null &&
+        defaultValue !== "" &&
+        defaultValue !== false
+      ) {
+        return defaultValue;
+      }
+      if (field.name === "assigned_user_id") {
+        return (window as any)._USERMETA?.id || "1";
+      }
+      // 必須のpicklistフィールドは先頭の選択肢をデフォルト値として設定
+      // ただし、multipicklistは複数選択のため、ユーザーに選択させる（自動選択しない）
+      if (
+        field.mandatory &&
+        field.picklistValues &&
+        field.picklistValues.length > 0 &&
+        field.uitype !== UI_TYPES.MULTIPICKLIST
+      ) {
+        return field.picklistValues[0].value;
+      }
+      return undefined;
+    };
+
+    // Helper function to generate default datetime values
+    // Uses defaultOtherEventDuration for end time calculation
+    const getDefaultDateTimeValues = () => {
+      // ローカルタイムゾーン基準でYYYY-MM-DDを生成
+      // toISOString()はUTC日付を返すため、JST 0:00-8:59帯で前日日付になる不具合を回避
+      const formatLocalDate = (d: Date): string => {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      };
+
+      const now = new Date();
+      const dateStr = formatLocalDate(now);
+      const hours = now.getHours().toString().padStart(2, "0");
+      // Round minutes to 5-minute intervals
+      const minutes = Math.floor(now.getMinutes() / 5) * 5;
+      const timeStr = `${hours}:${minutes.toString().padStart(2, "0")}`;
+      const startDateTime = `${dateStr}T${timeStr}`;
+
+      // End time = start time + defaultOtherEventDuration minutes
+      const endDate = new Date(
+        now.getTime() + defaultOtherEventDuration * 60 * 1000,
+      );
+      const endDateStr = formatLocalDate(endDate);
+      const endHours = endDate.getHours().toString().padStart(2, "0");
+      const endMinutes = Math.floor(endDate.getMinutes() / 5) * 5;
+      const endTimeStr = `${endHours}:${endMinutes.toString().padStart(2, "0")}`;
+      const endDateTime = `${endDateStr}T${endTimeStr}`;
+
+      return { startDateTime, endDateTime };
+    };
+
+    if (calendarFields.length > 0) {
+      const calInitial: Record<string, any> = { ...initialData };
+      calendarFields.forEach((field) => {
+        if (!(field.name in calInitial)) {
+          const initialValue = getFieldInitialValue(field);
+          if (initialValue !== undefined) {
+            calInitial[field.name] = initialValue;
+          }
+        }
+      });
+      // Set default datetime if not provided (for new mode)
+      // Check for empty, whitespace-only, or missing values
+      const isDateStartEmpty =
+        !calInitial.date_start ||
+        (typeof calInitial.date_start === "string" &&
+          calInitial.date_start.trim() === "");
+      const isDueDateEmpty =
+        !calInitial.due_date ||
+        (typeof calInitial.due_date === "string" &&
+          calInitial.due_date.trim() === "");
+      if (isDateStartEmpty || isDueDateEmpty) {
+        const { startDateTime, endDateTime } = getDefaultDateTimeValues();
+        if (isDateStartEmpty) {
+          calInitial.date_start = startDateTime;
+        }
+        if (isDueDateEmpty) {
+          // ToDoの完了日（due_date）は日付のみ（編集画面と同じ仕様）
+          // endDateTimeから日付部分のみを抽出
+          calInitial.due_date = endDateTime.split("T")[0];
+        }
+      }
+      setCalendarFormData(calInitial);
+    }
+
+    if (eventsFields.length > 0) {
+      const evtInitial: Record<string, any> = { ...initialData };
+      eventsFields.forEach((field) => {
+        if (!(field.name in evtInitial)) {
+          const initialValue = getFieldInitialValue(field);
+          if (initialValue !== undefined) {
+            evtInitial[field.name] = initialValue;
+          }
+        }
+      });
+      // Set default datetime if not provided (for new mode)
+      // Check for empty, whitespace-only, or missing values
+      const isEvtDateStartEmpty =
+        !evtInitial.date_start ||
+        (typeof evtInitial.date_start === "string" &&
+          evtInitial.date_start.trim() === "");
+      const isEvtDueDateEmpty =
+        !evtInitial.due_date ||
+        (typeof evtInitial.due_date === "string" &&
+          evtInitial.due_date.trim() === "");
+      if (isEvtDateStartEmpty || isEvtDueDateEmpty) {
+        const { startDateTime, endDateTime } = getDefaultDateTimeValues();
+        if (isEvtDateStartEmpty) {
+          evtInitial.date_start = startDateTime;
+        }
+        if (isEvtDueDateEmpty) {
+          evtInitial.due_date = endDateTime;
+        }
+      }
+      setEventsFormData(evtInitial);
+    }
+
+    if (calendarFields.length > 0 && eventsFields.length > 0) {
+      // Set initial RecordType from activitytype value (uses same logic as getFieldInitialValue)
+      // This ensures RecordType filtering is applied on initial load
+      const activityTypeField = eventsFields.find(
+        (f) => f.name === "activitytype",
+      );
+      if (activityTypeField) {
+        // Use getFieldInitialValue logic to get the actual initial value
+        const initialActivityType = getFieldInitialValue(activityTypeField);
+        if (initialActivityType && typeof initialActivityType === "string") {
+          setRecordTypeFields((prev) => ({
+            ...prev,
+            activitytype: initialActivityType,
+          }));
+        }
+      }
+
+      setValidationErrors({});
+      setSuccessMessage(null);
+      clearSaveError();
+      isInitializedRef.current = true;
+    }
+  }, [
+    isCalendarVariant,
+    isEditMode,
+    isDuplicateMode,
+    isOpen,
+    calendarFields,
+    eventsFields,
+    initialData,
+    defaultOtherEventDuration,
+    clearSaveError,
+  ]);
+
+  // ========================================
+  // Handlers
+  // ========================================
+
+  /**
+   * Handle modal open/close
+   */
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (externalIsOpen === undefined) {
+        setInternalIsOpen(open);
+      }
+
+      if (isCalendarVariant) {
+        // WebComponent compatibility: emit { isOpen: boolean }
+        onOpenChange?.({ isOpen: open } as any);
+      } else {
+        onOpenChange?.(open);
+      }
+
+      if (!open) {
+        onCancel?.();
+      }
+    },
+    [externalIsOpen, isCalendarVariant, onOpenChange, onCancel],
+  );
+
+  /**
+   * Handle RecordType field change
+   * RecordTypeフィールドの値が変更された時、フィールド一覧を再取得する
+   */
+  const handleRecordTypeChange = useCallback(
+    (fieldName: string, value: string) => {
+      // RecordType選択値を更新（これによりuseQuickCreateFieldsが再取得を行う）
+      setRecordTypeFields((prev) => ({
+        ...prev,
+        [fieldName]: value,
+      }));
+
+      // フォームデータも更新
+      setFormData((prev) => ({
+        ...prev,
+        [fieldName]: value,
+      }));
+
+      // バリデーションエラーをクリア
+      setValidationErrors({});
+      setSuccessMessage(null);
+      clearSaveError();
+    },
+    [clearSaveError],
+  );
+
+  /**
+   * Handle field change (default variant)
+   */
+  const handleDefaultFieldChange = useCallback(
+    (fieldName: string, value: any) => {
+      setFormData((prev) => {
+        const updated = {
+          ...prev,
+          [fieldName]: value,
+        };
+
+        if (hasDependency) {
+          const fieldsToClear = getFieldsToClear(fieldName, value, prev);
+          for (const targetField of fieldsToClear) {
+            updated[targetField] = "";
+          }
+        }
+
+        return updated;
+      });
+
+      if (validationErrors[fieldName]) {
+        setValidationErrors((prev) => {
+          const next = { ...prev };
+          delete next[fieldName];
+          return next;
+        });
+      }
+
+      setSuccessMessage(null);
+      clearSaveError();
+    },
+    [hasDependency, getFieldsToClear, validationErrors, clearSaveError],
+  );
+
+  /**
+   * Handle field change (calendar variant)
+   */
+  const handleCalendarFieldChange = useCallback(
+    (fieldName: string, value: any) => {
+      setCurrentCalendarFormData((prev) => ({
+        ...prev,
+        [fieldName]: value,
+      }));
+
+      if (validationErrors[fieldName]) {
+        setValidationErrors((prev) => {
+          const next = { ...prev };
+          delete next[fieldName];
+          return next;
+        });
+      }
+
+      setSuccessMessage(null);
+      clearSaveError();
+    },
+    [setCurrentCalendarFormData, validationErrors, clearSaveError],
+  );
+
+  /**
+   * Handle tab change (calendar variant)
+   */
+  const handleTabChange = useCallback(
+    (tab: ActivityType) => {
+      setActiveTab(tab);
+      setValidationErrors({});
+      setSuccessMessage(null);
+      clearSaveError();
+    },
+    [clearSaveError],
+  );
+
+  /**
+   * Validate form
+   */
+  const validateForm = useCallback((): boolean => {
+    const errors: Record<string, string> = {};
+    const targetFields = isCalendarVariant
+      ? calendarCurrentFields
+      : defaultFields;
+    const targetFormData = syncJoditEditorFormData(
+      isCalendarVariant ? activeTab : module,
+      isCalendarVariant ? currentCalendarFormData : formData,
+      targetFields,
+    );
+
+    targetFields.forEach((field) => {
+      const value = targetFormData[field.name];
+
+      // Required check
+      if (field.mandatory) {
+        // Check for empty values including whitespace-only strings
+        let isEmpty =
+          value === undefined ||
+          value === null ||
+          value === "" ||
+          value === false ||
+          (typeof value === "string" && value.trim() === "");
+
+        // Additional check for datetime fields (uitype 6, 23): ensure date part is present
+        // datetime-local format is "YYYY-MM-DDTHH:MM", date part must be valid
+        if (
+          !isEmpty &&
+          typeof value === "string" &&
+          (field.uitype === "6" || field.uitype === "23")
+        ) {
+          const datePart = value.split("T")[0];
+          // Date part must be in YYYY-MM-DD format and be a valid date
+          if (
+            !datePart ||
+            !/^\d{4}-\d{2}-\d{2}$/.test(datePart) ||
+            isNaN(Date.parse(datePart))
+          ) {
+            isEmpty = true;
+          }
+        }
+
+        if (isEmpty) {
+          errors[field.name] = t("LBL_FIELD_REQUIRED", field.label);
+          return;
+        }
+      }
+
+      // Max length check
+      if (field.maxlength) {
+        if (typeof value === "string" && value.length > field.maxlength) {
+          errors[field.name] = t(
+            "LBL_FIELD_MAX_LENGTH",
+            field.label,
+            field.maxlength,
+          );
+          return;
+        }
+      }
+
+      // UIType-based validation (URL, Email, Integer, Double, etc.)
+      const uitypeError = validateFieldByUIType(field, value, t);
+      if (uitypeError) {
+        errors[field.name] = uitypeError;
+        return;
+      }
+    });
+
+    // Date range validation (calendar variant)
+    if (isCalendarVariant) {
+      const dateStart = currentCalendarFormData["date_start"];
+      const dueDate = currentCalendarFormData["due_date"];
+      if (
+        typeof dateStart === "string" &&
+        typeof dueDate === "string" &&
+        dateStart &&
+        dueDate
+      ) {
+        if (new Date(dateStart) > new Date(dueDate)) {
+          errors["due_date"] = t("LBL_END_DATE_AFTER_START");
+        }
+      }
+      // 未来日付の活動はステータス「完了」(Held) で登録不可
+      if (
+        isFutureEventHeldInvalid(
+          currentCalendarFormData["eventstatus"],
+          dateStart,
+        )
+      ) {
+        errors["eventstatus"] = t("JS_FUTURE_EVENT_CANNOT_BE_HELD");
+      }
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  }, [
+    isCalendarVariant,
+    activeTab,
+    module,
+    calendarCurrentFields,
+    defaultFields,
+    currentCalendarFormData,
+    formData,
+    t,
+  ]);
+
+  /**
+   * Internal save function that performs the actual save
+   * @param additionalParams Optional parameters to merge (e.g., recurringEditMode)
+   */
+  const doSave = useCallback(
+    async (additionalParams?: Record<string, any>) => {
+      const saveFn = isCalendarVariant ? calendarSave : defaultSave;
+      const baseData = isCalendarVariant ? currentCalendarFormData : formData;
+      const saveData = additionalParams
+        ? { ...baseData, ...additionalParams }
+        : baseData;
+
+      const result = await saveFn(saveData);
+
+      if (result.success) {
+        const messageKey = isEditMode
+          ? "LBL_UPDATED_SUCCESS"
+          : "LBL_CREATED_SUCCESS";
+        const baseMessage = t(messageKey, moduleLabel || module);
+        setSuccessMessage(
+          baseMessage + (result.recordLabel ? ` - ${result.recordLabel}` : ""),
+        );
+
+        onSave?.(result);
+
+        if (successTimeoutRef.current) {
+          clearTimeout(successTimeoutRef.current);
+        }
+
+        successTimeoutRef.current = setTimeout(() => {
+          handleOpenChange(false);
+        }, 1500);
+      }
+    },
+    [
+      isCalendarVariant,
+      calendarSave,
+      defaultSave,
+      currentCalendarFormData,
+      formData,
+      isEditMode,
+      moduleLabel,
+      module,
+      onSave,
+      handleOpenChange,
+      t,
+    ],
+  );
+
+  /**
+   * Handle save with before-save event support
+   * Emits a cancelable 'before-save' custom event before saving.
+   * External code can call e.preventDefault() to cancel the save,
+   * then use e.detail.continueSave(params) to resume with additional parameters.
+   */
+  const handleSave = useCallback(async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    const saveData = isCalendarVariant ? currentCalendarFormData : formData;
+
+    // Determine if this is a recurring event (calendar variant edit mode only)
+    // recurringcheck is 'Yes' or 'No' from the API
+    const isRecurring =
+      isCalendarVariant && isEditMode && recordData?.recurringcheck === "Yes";
+
+    // Create before-save event
+    const beforeSaveEvent = new CustomEvent("before-save", {
+      bubbles: true,
+      cancelable: true,
+      composed: true, // Allow event to cross shadow DOM boundaries
+      detail: {
+        module: isCalendarVariant ? activeTab : module,
+        recordId: recordId,
+        formData: saveData,
+        isRecurring: isRecurring,
+        isEditMode: isEditMode,
+        continueSave: (additionalParams?: Record<string, any>) =>
+          doSave(additionalParams),
+      },
+    });
+
+    // Find the Web Component element (calendar-quick-create or quick-create)
+    // The event should be dispatched from the Web Component element so external
+    // event listeners can catch it
+    const webComponentElement = document.querySelector(
+      'calendar-quick-create[is-open="true"], quick-create[is-open="true"]',
+    );
+
+    if (webComponentElement) {
+      const shouldContinue = webComponentElement.dispatchEvent(beforeSaveEvent);
+      if (!shouldContinue) {
+        // Event was cancelled by preventDefault(), external code will call continueSave
+        return;
+      }
+    }
+
+    // Normal save (no preventDefault was called)
+    await doSave();
+  }, [
+    validateForm,
+    isCalendarVariant,
+    currentCalendarFormData,
+    formData,
+    isEditMode,
+    recordData,
+    activeTab,
+    module,
+    recordId,
+    doSave,
+  ]);
+
+  /**
+   * Handle go to full form
+   * 旧版Vtiger.js quickCreateGoToFullFormと同様にPOSTでフォーム送信する
+   */
+  const handleGoToFullForm = useCallback(() => {
+    let editViewUrl: string | null = null;
+    let targetFormData: Record<string, unknown> = {};
+
+    if (isCalendarVariant) {
+      if (calendarEditViewUrl) {
+        editViewUrl = calendarEditViewUrl;
+        // Calendar/Events Edit.phpではmodeパラメータでEvents関数を呼び出すため追加
+        // これによりcontactidlistが正しく処理される
+        if (activeTab === "Events") {
+          editViewUrl += "&mode=Events";
+        }
+        // 既存レコード編集時はrecordパラメータを追加
+        if (isEditMode && recordId) {
+          editViewUrl += `&record=${recordId}`;
+        }
+      }
+      // currentCalendarFormDataはuseCallbackの依存関係で正しく追跡されないため、
+      // activeTabに基づいて直接状態を参照する
+      targetFormData =
+        activeTab === "Calendar" ? calendarFormData : eventsFormData;
+    } else {
+      if (defaultEditViewUrl) {
+        editViewUrl = defaultEditViewUrl;
+      }
+      targetFormData = formData;
+    }
+
+    if (!editViewUrl) return;
+
+    // Calendar系モジュールの場合、datetime-local形式を date + time に分割
+    // Edit.phpはdate_start/time_start、due_date/time_endを別々のパラメータとして受け取るため
+    targetFormData = syncJoditEditorFormData(
+      isCalendarVariant ? activeTab : module,
+      targetFormData,
+      isCalendarVariant ? calendarCurrentFields : defaultFields,
+    );
+
+    let processedFormData = isCalendarVariant
+      ? transformCalendarDateTime(targetFormData)
+      : { ...targetFormData };
+
+    // ProductTaxフィールド（UIType 83）のチェックボックスを追加
+    // 税率フィールドに値がある場合、対応するチェックボックスフィールドをonにする
+    // Edit.phpはtax1_check等のパラメータを見てチェック状態を判定する
+    if (!isCalendarVariant && defaultFields.length > 0) {
+      defaultFields.forEach((field) => {
+        if (field.uitype === "83" && field.taxClassDetails) {
+          const taxValue = processedFormData[field.taxClassDetails.taxname];
+          if (taxValue !== undefined && taxValue !== null && taxValue !== "") {
+            processedFormData[field.taxClassDetails.check_name] = "on";
+          }
+        }
+      });
+    }
+
+    if (onGoToFullForm) {
+      onGoToFullForm({ editUrl: editViewUrl, formData: processedFormData });
+      return;
+    }
+
+    // 旧版Vtiger.js quickCreateGoToFullFormと同様にPOSTでフォーム送信
+    // これによりcontactidlist等のデータが正しくEditViewに渡される
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = editViewUrl;
+    form.style.display = "none";
+
+    // フォームデータをhidden inputとして追加
+    Object.entries(processedFormData).forEach(([key, value]) => {
+      if (value === undefined || value === null || value === "") return;
+
+      const input = document.createElement("input");
+      input.type = "hidden";
+
+      // contact_idの処理（旧版と同じ形式で送信）
+      // - 単一値の場合: contact_id=54 として送信（Edit.php 76-83行目で処理）
+      // - 複数値の場合: contactidlist=54;53 として送信（Edit.php 183-189行目で処理）
+      // MultireferenceFieldは "54;53" のような文字列形式で値を返すため、
+      // 配列形式と文字列形式の両方を処理する
+      if (key === "contact_id") {
+        const strValue = String(value);
+        const ids = strValue.includes(";") ? strValue.split(";") : [strValue];
+
+        if (ids.length > 1) {
+          // 複数コンタクトの場合はcontactidlistを使用
+          input.name = "contactidlist";
+          input.value = ids.join(";");
+        } else {
+          // 単一コンタクトの場合はcontact_idを使用
+          input.name = "contact_id";
+          input.value = ids[0];
+        }
+      } else if (Array.isArray(value)) {
+        // 複数選択肢の場合は |##| 区切りで渡す（旧版の仕様に準拠）
+        input.name = key;
+        input.value = value.join(" |##| ");
+      } else {
+        input.name = key;
+        input.value = String(value);
+      }
+
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+  }, [
+    isCalendarVariant,
+    isEditMode,
+    recordId,
+    activeTab,
+    calendarEditViewUrl,
+    calendarFormData,
+    eventsFormData,
+    defaultEditViewUrl,
+    formData,
+    onGoToFullForm,
+    defaultFields,
+    calendarCurrentFields,
+    module,
+  ]);
+
+  // ========================================
+  // Render
+  // ========================================
+  const errorMessage = fieldsError || saveError;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent
+        className={cn(
+          "max-h-[90vh] overflow-hidden flex flex-col p-0",
+          "sm:max-w-[900px]",
+        )}
+        closeButtonClassName="absolute top-2 right-3 !text-white hover:!text-gray-200 transition-opacity"
+        portalClassName="quickcreate-dialog-portal"
+        onEscapeKeyDown={(e) => {
+          // 子要素のドロップダウン(招待者・Picklist 等)が開いている時はDialog自体を閉じない。
+          // Field 側で Esc を受け取りドロップダウンのみ閉じるため、Radix Dialog の
+          // 既定の閉じる挙動を抑制する必要がある。
+          if (document.querySelector("[data-rwc-dropdown]")) {
+            e.preventDefault();
+          }
+        }}
+      >
+        <DialogDescription className="sr-only">
+          {moduleLabel || module}
+        </DialogDescription>
+
+        {/* Header - 両バリアントで統一コンポーネントを使用 */}
+        <QuickCreateHeader
+          moduleLabel={moduleLabel || module}
+          variant={variant}
+          isEditMode={isEditMode}
+          activeTab={activeTab}
+        />
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto px-8 py-4">
+          {/* Error message - アクセシビリティ対応 */}
+          {errorMessage && (
+            <Alert
+              variant="destructive"
+              className="mb-4"
+              role="alert"
+              aria-live="assertive"
+              aria-atomic="true"
+            >
+              <XCircle className="h-4 w-4" aria-hidden="true" />
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Loading - アクセシビリティ対応 */}
+          {fieldsLoading ? (
+            <div
+              className="flex items-center justify-center py-12"
+              role="status"
+              aria-live="polite"
+              aria-busy="true"
+            >
+              <Loader2
+                className="h-8 w-8 animate-spin text-gray-400"
+                aria-hidden="true"
+              />
+              <span className="ml-2 text-gray-500">
+                {t("LBL_LOADING_FIELDS")}
+              </span>
+            </div>
+          ) : isCalendarVariant ? (
+            /* Calendar form */
+            <CalendarForm
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+              formData={currentCalendarFormData}
+              onFieldChange={handleCalendarFieldChange}
+              onRecordTypeChange={handleRecordTypeChange}
+              currentFields={calendarCurrentFields}
+              isSaving={isSaving}
+              successMessage={successMessage}
+              validationErrors={validationErrors}
+              isEditMode={isEditMode}
+              isDuplicateMode={isDuplicateMode}
+              availableUsers={availableUsers}
+              timeOptions={timeOptions}
+              parseDateTimeValue={parseDateTimeValue}
+              combineDateTimeValue={combineDateTimeValue}
+              parseReminderValue={parseReminderValue}
+              combineReminderValue={combineReminderValue}
+              initialSelectedInvitees={
+                (isEditMode || isDuplicateMode) && recordData?.selectedusers
+                  ? (recordData.selectedusers as string[])
+                  : undefined
+              }
+              defaultCallDuration={defaultCallDuration}
+              defaultOtherEventDuration={defaultOtherEventDuration}
+            />
+          ) : (
+            /* Default form */
+            <QuickCreateForm
+              module={module}
+              fields={filteredFields}
+              formData={formData}
+              onFieldChange={handleDefaultFieldChange}
+              onRecordTypeChange={handleRecordTypeChange}
+              isSaving={isSaving}
+              disabled={!!successMessage}
+              errors={validationErrors}
+            />
+          )}
+        </div>
+
+        {/* Footer */}
+        {!fieldsLoading && (
+          <QuickCreateFooter
+            module={module}
+            onSave={handleSave}
+            onCancel={() => handleOpenChange(false)}
+            onGoToFullForm={handleGoToFullForm}
+            isSaving={isSaving}
+            saveDisabled={!!successMessage || fields.length === 0}
+            isEditMode={isEditMode}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default QuickCreate;
