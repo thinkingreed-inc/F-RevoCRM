@@ -55,7 +55,12 @@ export function JsonTemplateEditor({
   return (
     <div className="space-y-1">
       <div className="flex items-center gap-2">
-        <Button type="button" size="sm" variant="outline" onClick={handleFormat}>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={handleFormat}
+        >
           {formatLabel}
         </Button>
         <FieldInserter

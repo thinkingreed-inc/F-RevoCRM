@@ -41,10 +41,7 @@ describe("CurlTaskForm", () => {
 
   it("parses fieldsJson passed as string", () => {
     const { container } = render(
-      <CurlTaskForm
-        body=""
-        fieldsJson='[{"name":"subject","label":"件名"}]'
-      />,
+      <CurlTaskForm body="" fieldsJson='[{"name":"subject","label":"件名"}]' />,
     );
     // フィールド挿入ボタンが有効（fields>0）であること
     const buttons = Array.from(container.querySelectorAll("button")).filter(
