@@ -6,6 +6,7 @@ import {
   gotoDetail,
   listSearch,
   listRows,
+  clearListSearch,
   deleteViaDetail,
 } from "../../utils/listview";
 import { postComment } from "../../utils/comment";
@@ -78,6 +79,9 @@ export class MatrixTest {
         // 作成レコードの一意トークンで検索し、1 行に絞れることを確認する
         await listSearch(page, this.searchField(), name);
         await expect(listRows(page)).toHaveCount(1);
+        // 列検索はセッションに残り、後続の gotoList を 0 件化して兄弟テストを
+        // 誤失敗させるため、後始末の前に必ずクリアする。
+        await clearListSearch(page);
         await deleteViaDetail(page, this.moduleName, id);
         return;
       }
