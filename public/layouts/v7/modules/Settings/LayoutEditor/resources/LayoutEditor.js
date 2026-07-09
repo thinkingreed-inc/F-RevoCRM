@@ -1077,7 +1077,21 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 					});	
 				}
 
-				defaultValueUiContainer.find('[data-rule-required]').removeAttr('data-rule-required');
+				// mandatory項目でも項目設定のデフォルト値入力は必須にしない。
+				// removeAttrだけではjQuery内部dataキャッシュに残ってvalidatorがrequired=trueを返すため、
+				// data-rule-required属性・data-fieldinfo(mandatory)・関連dataキャッシュを合わせて削除する。
+				defaultValueUiContainer.find('[data-rule-required]')
+					.removeAttr('data-rule-required')
+					.removeData('ruleRequired')
+					.removeData('rule-required');
+				defaultValueUiContainer.find('[data-fieldinfo]').each(function () {
+					var el = jQuery(this);
+					var info = el.data('fieldinfo');
+					if (info && info.mandatory) {
+						info.mandatory = false;
+						el.attr('data-fieldinfo', JSON.stringify(info)).data('fieldinfo', info);
+					}
+				});
 				if (defaultValueUi.is('select')) {
 					//generating random id since validation engine needs it 
 					defaultValueUi.attr('id', Math.floor((Math.random() * 10)+1));
