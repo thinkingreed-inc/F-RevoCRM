@@ -68,6 +68,25 @@ function toLabels(
   }
 }
 
+/** app.request 等が返す様々な形のエラーを、人が読める文字列にする */
+function stringifyError(err: unknown): string {
+  if (err == null) return "不明なエラー";
+  if (typeof err === "string") return err;
+  if (typeof err === "object") {
+    const o = err as Record<string, unknown>;
+    if (typeof o.responseText === "string" && o.responseText) {
+      return o.responseText;
+    }
+    if (typeof o.message === "string" && o.message) return o.message;
+    try {
+      return JSON.stringify(err);
+    } catch {
+      return String(err);
+    }
+  }
+  return String(err);
+}
+
 /** 本番の保存はapp.request経由。テスト送信はTestCurlAjaxアクションを叩く */
 function defaultSendTest(
   recordId: string | undefined,
@@ -97,10 +116,17 @@ function defaultSendTest(
             sourceModule: sourceModule || "",
           },
         })
-        .then((err: unknown, data: TestSendResult) => {
-          if (err) resolve({ success: false, error: String(err) });
-          else resolve(data);
-        });
+        .then(
+          (err: unknown, data: TestSendResult) => {
+            if (err) resolve({ success: false, error: stringifyError(err) });
+            else if (data == null)
+              resolve({ success: false, error: "サーバから応答がありません" });
+            else resolve(data);
+          },
+          // Deferredがrejectされた場合(通信失敗・非JSON応答など)
+          (rejectErr: unknown) =>
+            resolve({ success: false, error: stringifyError(rejectErr) }),
+        );
     });
   };
 }

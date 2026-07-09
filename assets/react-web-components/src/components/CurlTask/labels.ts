@@ -29,8 +29,9 @@ export interface CurlLabels {
   adaptiveCardDesigner: string;
 }
 
-/** Teams向け Adaptive Card を編集・プレビューできる公式デザイナー */
-export const ADAPTIVE_CARD_DESIGNER_URL = "https://adaptivecards.io/designer/";
+/** Teams向け Adaptive Card を編集・プレビューできる公式デザイナー(Teamsホスト設定付き) */
+export const ADAPTIVE_CARD_DESIGNER_URL =
+  "https://adaptivecards.microsoft.com/designer";
 
 export const DEFAULT_CURL_LABELS: CurlLabels = {
   url: "リクエストURL",
