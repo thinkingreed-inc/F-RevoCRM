@@ -24,7 +24,11 @@ import {
   relatedSearchReset,
   navigateToRelatedDetail,
 } from "../../utils/related";
-import { createRecordViaApi, deleteRecordViaApi } from "../../utils/record";
+import {
+  createRecordViaApi,
+  deleteRecordViaApi,
+  type CreatedRecord,
+} from "../../utils/record";
 import {
   createPersonalFilter,
   deletePersonalFilter,
@@ -283,14 +287,19 @@ export class MatrixTest {
       case "related.navigate": {
         const spec = this.relatedSpec();
         if (!spec) throw new Error(`${this.moduleName}: 関連仕様未定義`);
-        const { id } = await this.createDisposableNamed(page);
         const childName = `E2Erel${generateRandomString(6)}`;
-        const parentPrefix = await this.prefixOf(this.moduleName);
-        const child = await createRecordViaApi(spec.relatedModule, {
-          [spec.parentField]: `${parentPrefix}x${id}`,
-          [spec.searchField]: spec.searchValueOf(childName),
-        });
+        // 親 Account 作成後に prefixOf/createRecordViaApi が例外を投げると、finally が
+        // 親作成前だと後始末に到達せず親レコードが取り残される。作成を try 内に入れ、
+        // finally では「作成済みのものだけ」ガード付きで後始末する。
+        let id: string | undefined;
+        let child: CreatedRecord | undefined;
         try {
+          ({ id } = await this.createDisposableNamed(page));
+          const parentPrefix = await this.prefixOf(this.moduleName);
+          child = await createRecordViaApi(spec.relatedModule, {
+            [spec.parentField]: `${parentPrefix}x${id}`,
+            [spec.searchField]: spec.searchValueOf(childName),
+          });
           await gotoDetail(page, this.moduleName, id, this.app);
           await openRelatedTab(page, spec.relatedModule);
           if (caseId === "related.navigate") {
@@ -306,8 +315,8 @@ export class MatrixTest {
             await relatedSearchReset(page);
           }
         } finally {
-          await deleteRecordViaApi(child.session, child.wsId);
-          await deleteViaDetail(page, this.moduleName, id);
+          if (child) await deleteRecordViaApi(child.session, child.wsId);
+          if (id) await deleteViaDetail(page, this.moduleName, id);
         }
         return;
       }
