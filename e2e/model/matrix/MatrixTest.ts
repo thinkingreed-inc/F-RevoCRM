@@ -12,7 +12,7 @@ import {
   expectSearchCleared,
   deleteViaDetail,
 } from "../../utils/listview";
-import { postComment } from "../../utils/comment";
+import { postComment, postCommentWithFile } from "../../utils/comment";
 import { duplicateViaDetail } from "../../utils/duplicate";
 import {
   uploadDocumentToRecord,
@@ -227,6 +227,17 @@ export class MatrixTest {
         const { id } = await this.createDisposableNamed(page);
         await gotoDetail(page, this.moduleName, id, this.app);
         await postComment(page, `E2Ecmt_${generateRandomString(6)}`);
+        await deleteViaDetail(page, this.moduleName, id);
+        return;
+      }
+      case "detail.comment.file": {
+        const { id } = await this.createDisposableNamed(page);
+        await gotoDetail(page, this.moduleName, id, this.app);
+        await postCommentWithFile(
+          page,
+          `E2Ecmtf_${generateRandomString(6)}`,
+          path.resolve("fixtures/upload/sample.txt")
+        );
         await deleteViaDetail(page, this.moduleName, id);
         return;
       }
