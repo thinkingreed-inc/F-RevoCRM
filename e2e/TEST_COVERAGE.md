@@ -30,6 +30,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 | `test/module/`（10 本） | モジュール固有機能（Accounts 一覧表示/カスタマイズ + 各モジュールの詳細固有アクション: Accounts/Contacts/Leads/Potentials/Vendors/HelpDesk のメール・SMS・変換・作成起動、Calendar 作成編集、メール/PDFテンプレート一覧、**在庫系 Invoice/Quotes/SalesOrder/PurchaseOrder の CRUD + 割引/税/合計の監査**(ダイアログ経路=`inventory.spec.ts` / インライン検索+製品・サービス追加=`inventory.lineitem.spec.ts`)） | 🟡→✅ 起動確認 + 在庫は監査済 |
 | `test/admin/*.spec.ts`（36 本） | システム管理画面の C〜I グループ + スモーク（E-02/E-04/F-04/F-08） | ✅/⏭️ 混在 |
 | `test/fr.common.spec.ts` | **17 モジュールの新規作成 / 編集 / 削除**（`FrTest` 汎用ドライバ） | ✅ |
+| `test/matrix/`（マトリクスドライバ, 3 本） | モジュール×機能セル(23 ケース: 再利用系/個人リスト×4/複製×2/詳細編集/ファイル×2/コメント添付/関連×3/共有リスト×2)を `capabilities.ts` の `ModuleMatrix`(`enabled`/`cases`)で判定し `matrix.spec.ts` が生成実行する能力表ドライバ。**Accounts のみ `enabled: true` で全 24 行グリーン**(`list.cv.shared.other` は下記理由で skip)。他 28 モジュール列は `enabled: false` の足場(describe skip・非実行)で、展開ゲート([capabilities.ts](model/matrix/capabilities.ts))を module ごとに `true` へ切り替えて段階有効化する運用 | ✅(Accounts) / 足場(他 28 モジュール) |
 | `test/general.spec.ts` | トップ（ダッシュボード）要素、サイドバー開閉 | 🟡 表示確認のみ |
 
 > 並行実行対応: `test/common/` `test/module/` はワーカー単位で個別ログインする `fixtures/isolated.ts` を使用し、各テストが専用レコードを作成→操作→削除する。API セッション取得は `auth.setup` で一度だけ行い使い回す。
@@ -76,6 +77,29 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
   - ✅ **組織共有の設定画面（C-04）** → `test/admin/admin.C-04.SharingAccess.spec.ts`（読み取りで Leads=非公開 /
     Accounts=公開 を確認。保存の全体再計算レースを避け skip 解消）
   → 権限まわりは概ね網羅。残りは項目単位の write 権限差分など細部のみ。
+- ✅ **モジュール横断の能力表マトリクス（`test/matrix/`）を新設**。共通機能 23 ケース
+  （一覧再利用系 / 個人リスト×4 / 複製×2 / 詳細編集 / ファイル×2 / コメント添付 / 関連×3 /
+  共有リスト×2）を `capabilities.ts` の `ModuleMatrix`(`module`/`app`/`enabled`/`cases`) で
+  宣言し `test/matrix/matrix.spec.ts` が生成実行する。**Accounts は `enabled: true` で
+  全 24 行グリーン**（後述 1 件のみ理由付き skip）。他 28 モジュール列（顧客担当者/案件/
+  リード/製品/サービス/ドキュメント/プロジェクト/タスク/マイルストーン/資産/契約/発注先/
+  価格表/発注/受注/請求/見積/キャンペーン/日報/カレンダー/チケット/FAQ/メール・PDFテンプレ
+  ート/SMS通知/ブックマーク(Portal) + 新規モジュール(実体なしのダミー列)/申請(Approval,
+  実機で未実装確認済))は `enabled: false` の**足場**として追加済み（describe ごと skip・
+  非実行）。元スプレッドシートのセル単位 na/skip はまだ転記していない（`enabled: false` の
+  間は実行に影響しないため）。モジュールを有効化する際は、都度スプレッドシートを転記し
+  実画面で検証してから `enabled: true` に切り替える運用（`capabilities.ts` 冒頭コメント参照）。
+  - ⚠️ **既知の不具合（別 PR で対応）**: `list.cv.shared.other`（共有 CustomView が別ユーザーから
+    見えることの確認）が Accounts で暫定 skip。原因は `CustomView_Record_Model::getAll()` の
+    非 admin 向け SQL が参照する `vtiger_cv2role`/`vtiger_cv2rs` が e2e ベースライン
+    （`e2e_base_install.sql`/`e2e_dump.sql`）に存在しないこと。非 admin ログイン時に
+    当該 SQL が失敗し、個人/共有問わず CustomView が一件も見えなくなる（admin はこの
+    サブクエリを通らないため無症状）。テーブル追加の migration 案
+    （`setup/migration/scripts/20260709161603_add_missing_cv2role_cv2rs_tables.php`、
+    `modules/Migration/schema/660_to_700.php` の CREATE TABLE を移植）を作成したが、
+    DB スキーマ変更の実行・コミットは本タスクの範囲外のため**未実行・未コミット**。
+    別 PR で (1) migration を `setup/migration/scripts/` に追加、
+    (2) `e2e_base_install.sql`/`e2e_dump.sql` を再生成、その後このケースを run へ戻すこと。
 
 ---
 
@@ -87,14 +111,16 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 |---|---|---|---|---|
 | 2-1 | 一覧表示 | `modules/Vtiger/views/List.php` | 🟡 | Accounts のみ表示確認(`module/account`)。汎用の一覧表示検証は未 |
 | 2-4 | 一覧からの検索（列検索） | `ListViewContents.tpl` / `List.js` | ✅ | `common/common.search.spec.ts` |
-| 2-2 | リスト機能（個人 / 共有 CustomView） | `modules/CustomView/` | 🟡 | `common/common.customview.spec.ts`（個人リストの 作成 / 切替 / 複製 / 削除）。ロールへの共有設定は未 |
+| 2-2 | リスト機能（個人 / 共有 CustomView） | `modules/CustomView/` | 🟡 | `common/common.customview.spec.ts`（個人リストの 作成 / 切替 / 複製 / 削除）。共有リストは `test/matrix/matrix.spec.ts`(Accounts) で **自分＝表示確認済**。**別ユーザーからの表示のみ**、`vtiger_cv2role`/`vtiger_cv2rs` が e2e ベースラインに欠落しているため暫定 skip（詳細後述・別 PR でベースライン修正後に run へ戻す） |
 | 3-1 | フォロー（☆ / Watching） | 一覧 `a.markStar` / 詳細 `#starToggle` | ✅ | `common/common.follow.spec.ts`（一覧・詳細トグル。絞り込みは未） |
 | 4-1 | タグ 付与 / 変更 / 削除 | `DetailViewTagList.tpl` / `Tag.js` | 🟡 | `common/common.tag.spec.ts`（詳細の追加+×削除）+ `common/common.masstag.spec.ts`（一覧選択→一括付与）。タグ変更・フォロー絞り込みは未 |
 | 5-1 | PDF エクスポート | `modules/Vtiger/actions/ExportPDF.php` | ❌ | 在庫系詳細の「その他」→ PDF 出力（要 PDF テンプレート・在庫レコード。P2） |
 | 6-1/6-2 | 概要 / 詳細画面 | `modules/Vtiger/views/Detail.php` | ✅ | `common/common.summary.spec.ts`（概要タブで主要項目、詳細タブへ切替で全項目表示） |
-| 7-1 | 関連一覧 | `li.tab-item[data-module]` / RelatedList | ✅ | `common/common.relatedlist.spec.ts`（表示）+ `common/common.relatedadd.spec.ts`（「追加」から関連レコード作成） |
+| 7-1 | 関連一覧 | `li.tab-item[data-module]` / RelatedList | ✅ | `common/common.relatedlist.spec.ts`（表示）+ `common/common.relatedadd.spec.ts`（「追加」から関連レコード作成）+ `test/matrix/matrix.spec.ts`(Accounts→Contacts)で **関連タブの検索/検索リセット/関連レコード詳細への遷移** を追加検証 |
 | 8-1 | 更新履歴（ModTracker） | `modules/ModTracker/` | ✅ | `common/common.history.spec.ts` |
-| 9-1 | コメント（ModComments） | `modules/ModComments/` | ✅ | `common/common.comment.spec.ts`（詳細投稿）+ `common/common.masscomment.spec.ts`（一覧選択→一括コメント） |
+| 9-1 | コメント（ModComments） | `modules/ModComments/` | ✅ | `common/common.comment.spec.ts`（詳細投稿）+ `common/common.masscomment.spec.ts`（一覧選択→一括コメント）+ `test/matrix/matrix.spec.ts`(Accounts) で **コメントへのファイル添付** を追加検証 |
+| — | レコード複製（一覧・詳細） | 詳細「その他」→ LBL_DUPLICATE / `utils/duplicate.ts` | ✅(Accounts) | `test/matrix/matrix.spec.ts`（一覧経由の複製→一覧に2件表示、詳細経由の複製→複製先詳細に元内容を反映。**添付ファイルの引き継ぎは非検証**）。他モジュールは `capabilities.ts` の展開ゲートで段階有効化 |
+| — | ファイル（アップロード / ダウンロード, Documents 経由） | `utils/documentsFile.ts` | ✅(Accounts) | `test/matrix/matrix.spec.ts`（詳細からファイルをアップロードして表示確認、アップロード済ファイルをダウンロードして非空を確認）。他モジュールは展開ゲートで段階有効化 |
 | 10-1 | CSV エクスポート | `modules/Vtiger/actions/ExportData.php` | ✅ | `common/common.export.spec.ts` |
 | 11-1 | CSV インポート | `modules/Import/` | ✅ | `common/common.import.spec.ts`（複数行/ヘッダなし/スキップ/上書き/マージ。マッピング保存・他モジュールは未） |
 | 12-1 | 一覧から登録（EditView） | `modules/Vtiger/views/Edit.php` | ✅ | 17 モジュールで実施済（`FrTest`） |
@@ -304,6 +330,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - [ ] タグの変更 / フォロー絞り込み（保留。詳細のタグ追加+削除・一覧一括付与は実装済）※タグ変更は Settings/Tags 上に明確な rename UI が見当たらず、フォロー絞り込みは「フォロー中のみ表示」の絞り込み UI が本ビルドに見当たらないため、UI 特定後に着手
 - [ ] ダッシュボード追加・ウィジェット追加/削除（No.13-1）※ウィジェット追加後の DOM が React 混在で不定・管理者ダッシュボードを汚すため保留
 - [x] 閲覧制限の E2E 化（可視範囲＝組織/役割/グループ共有 + カスタム共有ルール + アクション権限 + 項目レベル権限）→ `common.permission.spec.ts` / `common.sharing-rule.spec.ts` / `common.permission-action.spec.ts` / `common.permission-field.spec.ts`。残りはエクスポート/インポート権限・一括所有者変更・設定画面 C-04 SharingAccess の skip 解消
+- [x] モジュール×機能セルの**能力表マトリクス**（複製×2 / ファイル×2 / コメント添付 / 関連×3 / 共有リスト×2 / 個人リスト×4 / 一覧再利用系 / 詳細編集）→ `test/matrix/matrix.spec.ts`（`model/matrix/capabilities.ts` / `model/matrix/MatrixTest.ts`）。Accounts は 24 行中 23 run(green) + `list.cv.shared.other` 1 件 skip（理由は §1 参照）。他 28 モジュールは `enabled: false` の足場のみ→ モジュールごとに §1 の手順で段階有効化
 
 ### P2: 在庫系モジュールと連携機能
 
