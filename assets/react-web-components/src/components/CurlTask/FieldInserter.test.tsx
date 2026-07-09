@@ -12,13 +12,17 @@ describe("FieldInserter", () => {
         onInsert={onInsert}
       />,
     );
-    await userEvent.click(screen.getByRole("button", { name: /フィールド挿入/ }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /フィールド挿入/ }),
+    );
     await userEvent.click(await screen.findByText("件名"));
     expect(onInsert).toHaveBeenCalledWith("$subject");
   });
 
   it("is disabled when there are no fields", () => {
     render(<FieldInserter fields={[]} onInsert={() => {}} />);
-    expect(screen.getByRole("button", { name: /フィールド挿入/ })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: /フィールド挿入/ }),
+    ).toBeDisabled();
   });
 });

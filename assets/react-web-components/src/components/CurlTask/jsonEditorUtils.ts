@@ -1,7 +1,10 @@
 export function formatJson(text: string) {
   if (text.trim() === "") return { ok: true as const, text: "" };
   try {
-    return { ok: true as const, text: JSON.stringify(JSON.parse(text), null, 2) };
+    return {
+      ok: true as const,
+      text: JSON.stringify(JSON.parse(text), null, 2),
+    };
   } catch (e) {
     return { ok: false as const, error: (e as Error).message };
   }

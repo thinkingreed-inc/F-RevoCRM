@@ -42,6 +42,8 @@ describe("TestSendPanel", () => {
     await userEvent.click(
       screen.getByRole("button", { name: /テスト送信|test/i }),
     );
-    expect(await screen.findByText(/Invalid or unsafe URL/)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/Invalid or unsafe URL/),
+    ).toBeInTheDocument();
   });
 });
