@@ -54,7 +54,7 @@ export async function revealHiddenFilters(page: Page): Promise<void> {
 }
 
 /** 開いている作成/複製/編集モーダルに名前を入れて保存する(AJAX 確定まで待つ)。 */
-async function saveModalAs(
+export async function saveModalAs(
   page: Page,
   modal: Locator,
   name: string

@@ -2,7 +2,7 @@ import { expect, type Browser, type Page } from "@playwright/test";
 import { gotoList } from "./listview";
 import { loginInIsolatedContext } from "./settings";
 import { passwordFor } from "../fixtures/seedSpec";
-import { revealHiddenFilters, itemsBy } from "./customview";
+import { revealHiddenFilters, itemsBy, saveModalAs } from "./customview";
 
 /**
  * 共有リスト(CustomView の全員公開)操作の共通ヘルパ。
@@ -38,17 +38,13 @@ export async function createSharedFilter(
   await page.locator("#createFilter").click();
   const modal = page.locator(".modal-content:visible").first();
   await expect(modal).toBeVisible({ timeout: 15000 });
-  await modal.locator('input[name="viewname"]').fill(name);
   // 「このリストを共有する」を ON にしてメンバー選択を有効化し、全ユーザーを選ぶ。
+  // (saveModalAs が viewname 入力→保存を担うので、共有トグルは保存前に済ませておく)
   await modal.locator('input[data-toogle-members="true"]').check();
   await modal.locator("#memberList").selectOption("All::Users");
-  // AJAX 保存ハンドラの登録待ち(customview.ts の知見と同じ: 登録前クリックはネイティブ GET になる)
-  await page.waitForTimeout(2500);
-  await Promise.all([
-    page.waitForURL(/view=List&viewname=\d+/, { timeout: 20000 }).catch(() => {}),
-    modal.locator("button.saveButton").first().click(),
-  ]);
-  await page.waitForLoadState("networkidle").catch(() => {});
+  // viewname 入力 + AJAX 保存ハンドラ登録待ち + 保存確定待ちは customview.ts と共通化する
+  // (作成/複製/編集モーダルと同じ AJAX タイミング知見を一箇所に集約し drift を防ぐ)
+  await saveModalAs(page, modal, name);
 }
 
 /** 別ユーザーでログインし、共有リストに name が出ることを確認する。 */
