@@ -9,7 +9,8 @@ import {
   TestSendResult,
 } from "./TestSendPanel";
 import { insertAtCursor } from "./jsonEditorUtils";
-import { CurlPresetKey, FieldOption } from "./types";
+import { FieldOption } from "./types";
+import { CurlLabels, mergeLabels, presetLabel } from "./labels";
 
 interface Props {
   url?: string;
@@ -18,17 +19,12 @@ interface Props {
   body?: string | object;
   timeout?: string;
   fieldsJson?: FieldOption[] | string;
+  labelsJson?: Partial<CurlLabels> | string;
   recordId?: string;
   sourceModule?: string;
 }
 
 const HTTP_METHODS = ["GET", "POST", "PUT", "DELETE", "PATCH"];
-
-const PRESET_LABELS: Record<CurlPresetKey, string> = {
-  teams: "Teams",
-  slack: "Slack",
-  generic: "汎用",
-};
 
 /** createWebComponentが属性値をJSON.parseするため、objectで来た場合は文字列へ戻す */
 function toText(v: string | object | undefined): string {
@@ -45,6 +41,19 @@ function toFields(v: FieldOption[] | string | undefined): FieldOption[] {
     return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
+  }
+}
+
+function toLabels(
+  v: Partial<CurlLabels> | string | undefined,
+): Partial<CurlLabels> | undefined {
+  if (!v) return undefined;
+  if (typeof v !== "string") return v;
+  try {
+    const parsed = JSON.parse(v);
+    return typeof parsed === "object" && parsed !== null ? parsed : undefined;
+  } catch {
+    return undefined;
   }
 }
 
@@ -93,6 +102,10 @@ export function CurlTaskForm(props: Props) {
   const [timeout, setTimeoutValue] = useState(props.timeout || "30");
 
   const fields = useMemo(() => toFields(props.fieldsJson), [props.fieldsJson]);
+  const labels = useMemo(
+    () => mergeLabels(toLabels(props.labelsJson)),
+    [props.labelsJson],
+  );
   const hasExistingContent = body.trim() !== "" || headers.trim() !== "";
 
   const applyPresetResult = (r: {
@@ -130,13 +143,18 @@ export function CurlTaskForm(props: Props) {
       <PresetSelector
         hasExistingContent={hasExistingContent}
         onApply={applyPresetResult}
-        labelFor={(k) => PRESET_LABELS[k]}
+        labelFor={(k) => presetLabel(labels, k)}
+        presetLabel={labels.preset + ":"}
+        confirmMessage={labels.presetOverwriteConfirm}
+        okLabel={labels.ok}
+        cancelLabel={labels.cancel}
       />
 
       {/* URL */}
       <div className="space-y-1">
         <label className="text-sm font-medium">
-          URL<span className="text-red-600">*</span>
+          {labels.url}
+          <span className="text-red-600">*</span>
         </label>
         <div className="flex items-center gap-2">
           <input
@@ -145,13 +163,17 @@ export function CurlTaskForm(props: Props) {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
           />
-          <FieldInserter fields={fields} onInsert={insertIntoUrl} />
+          <FieldInserter
+            fields={fields}
+            onInsert={insertIntoUrl}
+            placeholder={labels.insertField}
+          />
         </div>
       </div>
 
       {/* Method */}
       <div className="space-y-1">
-        <label className="text-sm font-medium">Method</label>
+        <label className="text-sm font-medium">{labels.method}</label>
         <select
           name="method"
           className={cn(inputCls, "max-w-[200px]")}
@@ -168,30 +190,36 @@ export function CurlTaskForm(props: Props) {
 
       {/* Headers */}
       <div className="space-y-1">
-        <label className="text-sm font-medium">Headers</label>
+        <label className="text-sm font-medium">{labels.headers}</label>
         <JsonTemplateEditor
           value={headers}
           onChange={setHeaders}
           fields={fields}
           rows={4}
+          formatLabel={labels.format}
+          insertLabel={labels.insertField}
         />
       </div>
 
       {/* Body */}
       <div className="space-y-1">
-        <label className="text-sm font-medium">Body (JSON)</label>
+        <label className="text-sm font-medium">{labels.body}</label>
         <JsonTemplateEditor
           value={body}
           onChange={setBody}
           fields={fields}
           rows={10}
           validate
+          formatLabel={labels.format}
+          insertLabel={labels.insertField}
+          validLabel={labels.jsonValid}
+          invalidLabel={labels.jsonInvalid}
         />
       </div>
 
       {/* Timeout */}
       <div className="space-y-1">
-        <label className="text-sm font-medium">Timeout (秒)</label>
+        <label className="text-sm font-medium">{labels.timeout}</label>
         <input
           name="timeout"
           type="number"
@@ -201,9 +229,15 @@ export function CurlTaskForm(props: Props) {
           value={timeout}
           onChange={(e) => setTimeoutValue(e.target.value)}
         />
+        <p className="text-xs text-muted-foreground">{labels.timeoutHelp}</p>
       </div>
 
-      <TestSendPanel getPayload={getPayload} sendTest={sendTest} />
+      <TestSendPanel
+        getPayload={getPayload}
+        sendTest={sendTest}
+        buttonLabel={labels.testSend}
+        sendingLabel={labels.testSending}
+      />
     </div>
   );
 }

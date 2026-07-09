@@ -20,12 +20,14 @@ interface Props {
   getPayload: () => TestSendPayload;
   sendTest: (p: TestSendPayload) => Promise<TestSendResult>;
   buttonLabel?: string;
+  sendingLabel?: string;
 }
 
 export function TestSendPanel({
   getPayload,
   sendTest,
   buttonLabel = "テスト送信",
+  sendingLabel = "送信中...",
 }: Props) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<TestSendResult | null>(null);
@@ -52,7 +54,7 @@ export function TestSendPanel({
         onClick={handleClick}
         disabled={loading}
       >
-        {loading ? "送信中..." : buttonLabel}
+        {loading ? sendingLabel : buttonLabel}
       </Button>
       {result && (
         <div className="rounded-md border p-2 text-sm">

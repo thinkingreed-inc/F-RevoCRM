@@ -13,6 +13,8 @@ interface Props {
   validate?: boolean;
   formatLabel?: string;
   insertLabel?: string;
+  validLabel?: string;
+  invalidLabel?: string;
 }
 
 export function JsonTemplateEditor({
@@ -23,6 +25,8 @@ export function JsonTemplateEditor({
   validate,
   formatLabel = "整形",
   insertLabel,
+  validLabel = "JSON OK",
+  invalidLabel = "不正なJSON",
 }: Props) {
   const ref = useRef<HTMLTextAreaElement>(null);
   const [formatError, setFormatError] = useState<string | null>(null);
@@ -70,7 +74,7 @@ export function JsonTemplateEditor({
               status.valid ? "text-green-600" : "text-red-600",
             )}
           >
-            {status.valid ? "JSON OK" : "不正なJSON"}
+            {status.valid ? validLabel : invalidLabel}
           </span>
         )}
       </div>

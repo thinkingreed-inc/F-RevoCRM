@@ -241,6 +241,9 @@ $languageStrings = array(
     'LBL_CURL_INSERT_FIELD' => 'Insert Field',
     'LBL_CURL_TEST_SEND' => 'Test Send',
     'LBL_CURL_TEST_SENDING' => 'Sending...',
+    'LBL_CURL_JSON_VALID' => 'JSON OK',
+    'LBL_CURL_JSON_INVALID' => 'Invalid JSON',
+    'LBL_CURL_CANCEL' => 'Cancel',
 );
 
 $jsLanguageStrings = array(

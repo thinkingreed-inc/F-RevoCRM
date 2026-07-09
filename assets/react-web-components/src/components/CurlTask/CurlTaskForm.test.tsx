@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { CurlTaskForm } from "./CurlTaskForm";
 
 describe("CurlTaskForm", () => {
@@ -37,6 +37,22 @@ describe("CurlTaskForm", () => {
       '[name="body"]',
     ) as HTMLInputElement;
     expect(JSON.parse(bodyInput.value)).toEqual({ a: 1 });
+  });
+
+  it("renders labels from labelsJson (i18n)", () => {
+    render(
+      <CurlTaskForm
+        body=""
+        fieldsJson={[]}
+        labelsJson='{"url":"Request URL","testSend":"Test Send","format":"Format"}'
+      />,
+    );
+    expect(screen.getByText("Request URL")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Test Send/ }),
+    ).toBeInTheDocument();
+    // 未指定キーは日本語デフォルトにフォールバック
+    expect(screen.getByText("HTTPメソッド")).toBeInTheDocument();
   });
 
   it("parses fieldsJson passed as string", () => {

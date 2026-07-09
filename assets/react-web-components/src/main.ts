@@ -66,6 +66,7 @@ createWebComponent(CurlTaskForm, "vt-curl-task", [
   "body",
   "timeout",
   "fields-json",
+  "labels-json",
   "record-id",
   "source-module",
 ]);

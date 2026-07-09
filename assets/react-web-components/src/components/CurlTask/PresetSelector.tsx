@@ -9,6 +9,8 @@ interface Props {
   labelFor?: (key: CurlPresetKey) => string;
   presetLabel?: string;
   confirmMessage?: string;
+  okLabel?: string;
+  cancelLabel?: string;
 }
 
 export function PresetSelector({
@@ -17,6 +19,8 @@ export function PresetSelector({
   labelFor,
   presetLabel = "プリセット:",
   confirmMessage = "既存の内容を上書きします。よろしいですか？",
+  okLabel = "OK",
+  cancelLabel = "キャンセル",
 }: Props) {
   const [pending, setPending] = useState<CurlPresetKey | null>(null);
 
@@ -49,7 +53,7 @@ export function PresetSelector({
         <div role="dialog" className="flex items-center gap-2 text-sm">
           <span>{confirmMessage}</span>
           <Button type="button" size="sm" onClick={confirm}>
-            OK
+            {okLabel}
           </Button>
           <Button
             type="button"
@@ -57,7 +61,7 @@ export function PresetSelector({
             variant="outline"
             onClick={() => setPending(null)}
           >
-            キャンセル
+            {cancelLabel}
           </Button>
         </div>
       )}

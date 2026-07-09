@@ -213,6 +213,33 @@ class Settings_Workflows_EditV7Task_View extends Settings_Vtiger_Index_View {
 		}
 		$viewer->assign('CURL_FIELDS_JSON', Zend_Json::encode($curlFields));
 
+		// VTCurlTask(vt-curl-task)のラベル: 翻訳済み文字列をlabels-json属性で渡す
+		$curlLabelKeys = array(
+			'url' => 'LBL_CURL_URL',
+			'method' => 'LBL_CURL_METHOD',
+			'headers' => 'LBL_CURL_HEADERS',
+			'body' => 'LBL_CURL_BODY',
+			'timeout' => 'LBL_CURL_TIMEOUT',
+			'timeoutHelp' => 'LBL_CURL_TIMEOUT_HELP',
+			'preset' => 'LBL_CURL_PRESET',
+			'presetTeams' => 'LBL_CURL_PRESET_TEAMS',
+			'presetSlack' => 'LBL_CURL_PRESET_SLACK',
+			'presetGeneric' => 'LBL_CURL_PRESET_GENERIC',
+			'presetOverwriteConfirm' => 'LBL_CURL_PRESET_OVERWRITE_CONFIRM',
+			'format' => 'LBL_CURL_FORMAT',
+			'insertField' => 'LBL_CURL_INSERT_FIELD',
+			'testSend' => 'LBL_CURL_TEST_SEND',
+			'testSending' => 'LBL_CURL_TEST_SENDING',
+			'jsonValid' => 'LBL_CURL_JSON_VALID',
+			'jsonInvalid' => 'LBL_CURL_JSON_INVALID',
+			'cancel' => 'LBL_CURL_CANCEL',
+		);
+		$curlLabels = array();
+		foreach ($curlLabelKeys as $prop => $langKey) {
+			$curlLabels[$prop] = vtranslate($langKey, $qualifiedModuleName);
+		}
+		$viewer->assign('CURL_LABELS_JSON', Zend_Json::encode($curlLabels));
+
 		$userList = $currentUser->getAccessibleUsers();
 		$groupList = $currentUser->getAccessibleGroups();
 		$assignedToValues = array();

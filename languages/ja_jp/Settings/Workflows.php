@@ -241,6 +241,9 @@ $languageStrings = array(
 	'LBL_CURL_INSERT_FIELD' => 'フィールド挿入',
 	'LBL_CURL_TEST_SEND' => 'テスト送信',
 	'LBL_CURL_TEST_SENDING' => '送信中...',
+	'LBL_CURL_JSON_VALID' => 'JSON OK',
+	'LBL_CURL_JSON_INVALID' => '不正なJSON',
+	'LBL_CURL_CANCEL' => 'キャンセル',
 );
 
 $jsLanguageStrings = array(
