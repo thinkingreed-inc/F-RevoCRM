@@ -36,6 +36,10 @@ import {
   editPersonalFilter,
   expectFilterInSidebar,
 } from "../../utils/customview";
+import {
+  createSharedFilter,
+  expectSharedVisibleAs,
+} from "../../utils/sharedList";
 import type { CaseId } from "./capabilities";
 
 export class MatrixTest {
@@ -280,6 +284,20 @@ export class MatrixTest {
         await createPersonalFilter(page, this.moduleName, name);
         await editPersonalFilter(page, this.moduleName, name, renamed);
         await deletePersonalFilter(page, this.moduleName, renamed);
+        return;
+      }
+      case "list.cv.shared.self": {
+        const name = `E2Eshr${generateRandomString(6)}`;
+        await createSharedFilter(page, this.moduleName, name);
+        await expectFilterInSidebar(page, this.moduleName, name, true);
+        await deletePersonalFilter(page, this.moduleName, name);
+        return;
+      }
+      case "list.cv.shared.other": {
+        const name = `E2Eshro${generateRandomString(6)}`;
+        await createSharedFilter(page, this.moduleName, name);
+        await expectSharedVisibleAs(browser, this.moduleName, name, "e2e_director");
+        await deletePersonalFilter(page, this.moduleName, name);
         return;
       }
       case "related.search":

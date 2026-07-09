@@ -108,8 +108,32 @@ export const MATRIX: ModuleMatrix[] = [
     app: "MARKETING",
     enabled: true,
     cases: {
-      // Task 2 以降で run へ切替(それまでは未実装 skip)
-      "list.cv.shared.self": "skip",
+      // Task 9 で実装(list.cv.shared.self は run 既定/緑)。
+      // list.cv.shared.other のみ、DB 環境起因のバグにより暫定 skip(詳細下記コメント)。
+      //
+      // 【list.cv.shared.other が現状 skip の理由】
+      // CustomView_Record_Model::getAll() の非 admin 向け SQL は
+      // vtiger_cv2role / vtiger_cv2rs をサブクエリで参照するが、この2テーブルが
+      // e2e/fixtures/e2e_base_install.sql(および現行 e2e_dump.sql)には存在しない。
+      // そのため非admin(例: e2e_director)でログインすると当該SQLが
+      // "Table doesn't exist" で失敗し、admin以外の全ユーザーにおいて
+      // CustomView(個人/共有問わず)が一件も見えなくなる(admin は同関数内の
+      // 分岐でこのサブクエリを通らないため影響を受けず、これまでの Task 1-8 が
+      // 常時 admin ログインだったために未検出だった)。
+      // setup/sql/dump_firstinstall.sql には両テーブルが定義されており、
+      // modules/Migration/schema/660_to_700.php(旧バージョンアップ用スキーマ)にも
+      // 同テーブルの追加コードがあるが、現行の setup/migration/run_migration.php --all は
+      // setup/migration/scripts/ のみを対象にしており、660_to_700.php 側は実行対象外。
+      // つまり e2e_base_install.sql がその旧アップグレードを経由しない状態の
+      // スキーマから作られているため、CI含む全 E2E 環境で再現する見込み。
+      // 追加テーブルを作る新規マイグレーション案(setup/migration/scripts/
+      // 20260709161603_add_missing_cv2role_cv2rs_tables.php、660_to_700.php の
+      // CREATE TABLE 定義を移植)をこのセッションで作成したが、DB スキーマ変更の
+      // 実行自体は本タスクの権限/スコープ外のため未実行・未コミット
+      // (このファイル自体もコミット対象外)。別 PR で
+      // (1) 上記マイグレーションを setup/migration/scripts/ に追加、
+      // (2) e2e_base_install.sql / e2e_dump.sql を再生成、を行い、
+      // その後このケースを skip → run に戻すこと。
       "list.cv.shared.other": "skip",
       // Task 1 で run のまま緑化する再利用系:
       // list.create.detail / list.edit / list.delete / list.search / detail.delete / detail.comment.post
