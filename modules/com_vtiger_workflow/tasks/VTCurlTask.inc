@@ -16,6 +16,13 @@ class VTCurlTask extends VTTask {
 	// Curl requests are typically short, execute immediately
 	public $executeImmediately = true;
 
+	/**
+	 * Called after unserialization - normalize fields
+	 */
+	public function __wakeup() {
+		$this->normalizeFields();
+	}
+
 	public function getFieldNames() {
 		return array("url", "method", "headers", "body", "timeout");
 	}
@@ -28,6 +35,9 @@ class VTCurlTask extends VTTask {
 
 		$entityCache = new VTEntityCache($admin);
 		$entityId = $entity->getId();
+
+		// Ensure headers and body are strings (convert from array if needed)
+		$this->normalizeFields();
 
 		// Render URL with field values
 		$urlTemplate = new VTSimpleTemplate($this->url);
@@ -73,6 +83,40 @@ class VTCurlTask extends VTTask {
 		}
 
 		$util->revertUser();
+	}
+
+	/**
+	 * Normalize fields - convert arrays to strings if needed
+	 * This handles legacy data that was incorrectly saved as arrays
+	 */
+	private function normalizeFields() {
+		// Convert headers array to string
+		if (is_array($this->headers)) {
+			$headerLines = array();
+			foreach ($this->headers as $key => $value) {
+				if (is_numeric($key)) {
+					// Numeric key means it's already a line
+					$headerLines[] = $value;
+				} else {
+					// Associative array, convert to "Key: Value" format
+					$headerLines[] = $key . ': ' . $value;
+				}
+			}
+			$this->headers = implode("\n", $headerLines);
+		}
+
+		// Convert body array to string (JSON format)
+		if (is_array($this->body)) {
+			$this->body = json_encode($this->body, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+		}
+
+		// Ensure empty values are empty strings, not null
+		if (empty($this->headers)) {
+			$this->headers = '';
+		}
+		if (empty($this->body)) {
+			$this->body = '';
+		}
 	}
 
 	/**

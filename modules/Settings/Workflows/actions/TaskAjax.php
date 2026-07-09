@@ -89,7 +89,7 @@ class Settings_Workflows_TaskAjax_Action extends Settings_Vtiger_IndexAjax_View 
 			}
 
 			$fieldNames = $taskObject->getFieldNames();
-						$getRawFields = array('field_value_mapping', 'content', 'fromEmail');
+						$getRawFields = array('field_value_mapping', 'content', 'fromEmail', 'headers', 'body');
 			foreach($fieldNames as $fieldName){
 				if(in_array($fieldName, $getRawFields)) {
 					$taskObject->$fieldName = $request->getRaw($fieldName);
