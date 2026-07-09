@@ -7,6 +7,7 @@ import {
   listSearch,
   listRows,
   clearListSearch,
+  expectSearchCleared,
   deleteViaDetail,
 } from "../../utils/listview";
 import { postComment } from "../../utils/comment";
@@ -75,6 +76,20 @@ export class MatrixTest {
     switch (caseId) {
       case "list.create.detail":
         return this.fr.testRecordCreate(page);
+      case "list.create.listNav": {
+        const { id, name } = await this.createDisposableNamed(page);
+        await gotoList(page, this.moduleName, this.app);
+        await listSearch(page, this.searchField(), name);
+        await expect(listRows(page).first()).toContainText(name);
+        await listRows(page)
+          .first()
+          .locator('a[href*="view=Detail"]:visible')
+          .first()
+          .click();
+        await expect(page).toHaveURL(new RegExp(`record=${id}`));
+        await deleteViaDetail(page, this.moduleName, id);
+        return;
+      }
       case "list.edit":
         return this.fr.testRecordEdit(page);
       case "list.delete":
@@ -89,6 +104,14 @@ export class MatrixTest {
         // 列検索はセッションに残り、後続の gotoList を 0 件化して兄弟テストを
         // 誤失敗させるため、後始末の前に必ずクリアする。
         await clearListSearch(page);
+        await deleteViaDetail(page, this.moduleName, id);
+        return;
+      }
+      case "list.searchReset": {
+        const { id, name } = await this.createDisposableNamed(page);
+        await gotoList(page, this.moduleName, this.app);
+        await listSearch(page, this.searchField(), name);
+        await expectSearchCleared(page);
         await deleteViaDetail(page, this.moduleName, id);
         return;
       }

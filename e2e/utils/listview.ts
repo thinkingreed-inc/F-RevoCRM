@@ -121,6 +121,16 @@ export async function clearListSearch(page: Page): Promise<void> {
   await page.waitForLoadState("networkidle").catch(() => {});
 }
 
+/** 検索をクリアし、列検索入力が空に戻ることを確認する。 */
+export async function expectSearchCleared(page: Page): Promise<void> {
+  await clearListSearch(page);
+  const inputs = page.locator("input.listSearchContributor");
+  const n = await inputs.count();
+  for (let i = 0; i < n; i++) {
+    await expect(inputs.nth(i)).toHaveValue("", { timeout: 5000 });
+  }
+}
+
 /** 先頭行の record ID(数値)を取得する。 */
 export async function firstRecordId(page: Page): Promise<string> {
   const href = await firstRow(page)

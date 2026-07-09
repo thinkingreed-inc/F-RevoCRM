@@ -109,9 +109,7 @@ export const MATRIX: ModuleMatrix[] = [
     enabled: true,
     cases: {
       // Task 2 以降で run へ切替(それまでは未実装 skip)
-      "list.create.listNav": "skip",
       "list.duplicate": "skip",
-      "list.searchReset": "skip",
       "list.cv.shared.self": "skip",
       "list.cv.shared.other": "skip",
       "detail.edit": "skip",
