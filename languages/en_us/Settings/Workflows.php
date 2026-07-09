@@ -232,6 +232,15 @@ $languageStrings = array(
     'LBL_CURL_BODY' => 'Request Body',
     'LBL_CURL_TIMEOUT' => 'Timeout (seconds)',
     'LBL_CURL_TIMEOUT_HELP' => 'Please specify between 1-60 seconds (Default: 30 seconds)',
+    'LBL_CURL_PRESET' => 'Preset',
+    'LBL_CURL_PRESET_TEAMS' => 'Teams',
+    'LBL_CURL_PRESET_SLACK' => 'Slack',
+    'LBL_CURL_PRESET_GENERIC' => 'Generic',
+    'LBL_CURL_PRESET_OVERWRITE_CONFIRM' => 'This will overwrite the existing content. Are you sure?',
+    'LBL_CURL_FORMAT' => 'Format',
+    'LBL_CURL_INSERT_FIELD' => 'Insert Field',
+    'LBL_CURL_TEST_SEND' => 'Test Send',
+    'LBL_CURL_TEST_SENDING' => 'Sending...',
 );
 
 $jsLanguageStrings = array(
