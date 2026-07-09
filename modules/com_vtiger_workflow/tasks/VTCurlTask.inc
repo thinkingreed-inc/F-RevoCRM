@@ -44,7 +44,7 @@ class VTCurlTask extends VTTask {
 		$renderedUrl = $urlTemplate->render($entityCache, $entityId);
 
 		// Validate URL and check for SSRF
-		if (!$this->isValidUrl($renderedUrl)) {
+		if (!self::checkUrl($renderedUrl)) {
 			$log->error("VTCurlTask: Invalid or unsafe URL: " . $renderedUrl);
 			$util->revertUser();
 			return false;
@@ -71,7 +71,7 @@ class VTCurlTask extends VTTask {
 
 		// Execute curl request
 		try {
-			$result = $this->executeCurlRequest($renderedUrl, $method, $renderedHeaders, $renderedBody, $timeout);
+			$result = self::runCurl($renderedUrl, $method, $renderedHeaders, $renderedBody, $timeout);
 
 			if ($result['success']) {
 				$log->info("VTCurlTask: Successfully executed curl request to " . $renderedUrl);
@@ -121,10 +121,11 @@ class VTCurlTask extends VTTask {
 
 	/**
 	 * Validate URL and check for SSRF attacks
+	 * Shared by doTask() and the TestCurlAjax action.
 	 * @param string $url
 	 * @return bool
 	 */
-	private function isValidUrl($url) {
+	public static function checkUrl($url) {
 		// Check if URL is valid
 		if (!filter_var($url, FILTER_VALIDATE_URL)) {
 			return false;
@@ -173,6 +174,7 @@ class VTCurlTask extends VTTask {
 
 	/**
 	 * Execute curl request
+	 * Shared by doTask() and the TestCurlAjax action.
 	 * @param string $url
 	 * @param string $method
 	 * @param string $headers
@@ -180,7 +182,7 @@ class VTCurlTask extends VTTask {
 	 * @param int $timeout
 	 * @return array
 	 */
-	private function executeCurlRequest($url, $method, $headers, $body, $timeout) {
+	public static function runCurl($url, $method, $headers, $body, $timeout) {
 		$ch = curl_init();
 
 		// Set URL
