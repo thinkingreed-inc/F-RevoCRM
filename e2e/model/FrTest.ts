@@ -42,6 +42,14 @@ export class FrTest extends FrBaseModule {
     return filled;
   }
 
+  /** MatrixTest から編集画面の全項目入力を再利用するための公開ラッパ。 */
+  async fillAllFieldsPublic(
+    page: Page,
+    hash: string
+  ): Promise<FRDescribeFieldsTypeWithModuleName[]> {
+    return this.fillAllFields(page, hash);
+  }
+
   /**
    * 編集できる入力UIを持たない項目かどうか。
    * describe上はeditableでも、フォームでは type="hidden" や readonly のinputしか
