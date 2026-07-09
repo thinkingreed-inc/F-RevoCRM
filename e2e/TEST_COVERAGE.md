@@ -30,7 +30,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 | `test/module/`（10 本） | モジュール固有機能（Accounts 一覧表示/カスタマイズ + 各モジュールの詳細固有アクション: Accounts/Contacts/Leads/Potentials/Vendors/HelpDesk のメール・SMS・変換・作成起動、Calendar 作成編集、メール/PDFテンプレート一覧、**在庫系 Invoice/Quotes/SalesOrder/PurchaseOrder の CRUD + 割引/税/合計の監査**(ダイアログ経路=`inventory.spec.ts` / インライン検索+製品・サービス追加=`inventory.lineitem.spec.ts`)） | 🟡→✅ 起動確認 + 在庫は監査済 |
 | `test/admin/*.spec.ts`（36 本） | システム管理画面の C〜I グループ + スモーク（E-02/E-04/F-04/F-08） | ✅/⏭️ 混在 |
 | `test/fr.common.spec.ts` | **17 モジュールの新規作成 / 編集 / 削除**（`FrTest` 汎用ドライバ） | ✅ |
-| `test/matrix/`（マトリクスドライバ, 3 本） | モジュール×機能セル(23 ケース: 再利用系/個人リスト×4/複製×2/詳細編集/ファイル×2/コメント添付/関連×3/共有リスト×2)を `capabilities.ts` の `ModuleMatrix`(`enabled`/`cases`)で判定し `matrix.spec.ts` が生成実行する能力表ドライバ。**Accounts のみ `enabled: true` で全 24 行グリーン**(`list.cv.shared.other` は下記理由で skip)。他 28 モジュール列は `enabled: false` の足場(describe skip・非実行)で、展開ゲート([capabilities.ts](model/matrix/capabilities.ts))を module ごとに `true` へ切り替えて段階有効化する運用 | ✅(Accounts) / 足場(他 28 モジュール) |
+| `test/matrix/`（spec 1 本 + ドライバ: capabilities.ts / MatrixTest.ts） | モジュール×機能セル(23 ケース: 再利用系/個人リスト×4/複製×2/詳細編集/ファイル×2/コメント添付/関連×3/共有リスト×2)を `capabilities.ts` の `ModuleMatrix`(`enabled`/`cases`)で判定し `matrix.spec.ts` が生成実行する能力表ドライバ。**Accounts のみ `enabled: true` で 23 マトリクス行（22 run + 1 skip=`list.cv.shared.other` は下記理由で skip）**。他 28 モジュール列は `enabled: false` の足場(describe skip・非実行)で、展開ゲート([capabilities.ts](model/matrix/capabilities.ts))を module ごとに `true` へ切り替えて段階有効化する運用 | ✅(Accounts) / 足場(他 28 モジュール) |
 | `test/general.spec.ts` | トップ（ダッシュボード）要素、サイドバー開閉 | 🟡 表示確認のみ |
 
 > 並行実行対応: `test/common/` `test/module/` はワーカー単位で個別ログインする `fixtures/isolated.ts` を使用し、各テストが専用レコードを作成→操作→削除する。API セッション取得は `auth.setup` で一度だけ行い使い回す。
@@ -81,7 +81,8 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
   （一覧再利用系 / 個人リスト×4 / 複製×2 / 詳細編集 / ファイル×2 / コメント添付 / 関連×3 /
   共有リスト×2）を `capabilities.ts` の `ModuleMatrix`(`module`/`app`/`enabled`/`cases`) で
   宣言し `test/matrix/matrix.spec.ts` が生成実行する。**Accounts は `enabled: true` で
-  全 24 行グリーン**（後述 1 件のみ理由付き skip）。他 28 モジュール列（顧客担当者/案件/
+  23 マトリクス行（22 run + 1 skip）**（skip は `list.cv.shared.other`、cv2role/cv2rs 欠落で
+  別PR。後述）。他 28 モジュール列（顧客担当者/案件/
   リード/製品/サービス/ドキュメント/プロジェクト/タスク/マイルストーン/資産/契約/発注先/
   価格表/発注/受注/請求/見積/キャンペーン/日報/カレンダー/チケット/FAQ/メール・PDFテンプレ
   ート/SMS通知/ブックマーク(Portal) + 新規モジュール(実体なしのダミー列)/申請(Approval,
@@ -330,7 +331,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - [ ] タグの変更 / フォロー絞り込み（保留。詳細のタグ追加+削除・一覧一括付与は実装済）※タグ変更は Settings/Tags 上に明確な rename UI が見当たらず、フォロー絞り込みは「フォロー中のみ表示」の絞り込み UI が本ビルドに見当たらないため、UI 特定後に着手
 - [ ] ダッシュボード追加・ウィジェット追加/削除（No.13-1）※ウィジェット追加後の DOM が React 混在で不定・管理者ダッシュボードを汚すため保留
 - [x] 閲覧制限の E2E 化（可視範囲＝組織/役割/グループ共有 + カスタム共有ルール + アクション権限 + 項目レベル権限）→ `common.permission.spec.ts` / `common.sharing-rule.spec.ts` / `common.permission-action.spec.ts` / `common.permission-field.spec.ts`。残りはエクスポート/インポート権限・一括所有者変更・設定画面 C-04 SharingAccess の skip 解消
-- [x] モジュール×機能セルの**能力表マトリクス**（複製×2 / ファイル×2 / コメント添付 / 関連×3 / 共有リスト×2 / 個人リスト×4 / 一覧再利用系 / 詳細編集）→ `test/matrix/matrix.spec.ts`（`model/matrix/capabilities.ts` / `model/matrix/MatrixTest.ts`）。Accounts は 24 行中 23 run(green) + `list.cv.shared.other` 1 件 skip（理由は §1 参照）。他 28 モジュールは `enabled: false` の足場のみ→ モジュールごとに §1 の手順で段階有効化
+- [x] モジュール×機能セルの**能力表マトリクス**（複製×2 / ファイル×2 / コメント添付 / 関連×3 / 共有リスト×2 / 個人リスト×4 / 一覧再利用系 / 詳細編集）→ `test/matrix/matrix.spec.ts`（`model/matrix/capabilities.ts` / `model/matrix/MatrixTest.ts`）。Accounts は 23 マトリクス行 = 22 run(green) + `list.cv.shared.other` 1 件 skip（cv2role/cv2rs 欠落で別PR、理由は §1 参照）。他 28 モジュールは `enabled: false` の足場のみ→ モジュールごとに §1 の手順で段階有効化
 
 ### P2: 在庫系モジュールと連携機能
 
