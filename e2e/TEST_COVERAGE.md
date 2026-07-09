@@ -22,12 +22,12 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 ## 1. 現状サマリ
 
-現在の spec ファイルは 82 本。テストは目的別に 4 ディレクトリへ整理。
+現在の spec ファイルは 83 本。テストは目的別に 4 ディレクトリへ整理。
 
 | ディレクトリ | 内容 | 状態 |
 |---|---|---|
 | `test/common/`（34 本） | 全モジュール横断の共通機能（検索/フォロー/タグ+一括タグ/エクスポート/インポート/一括削除+ゴミ箱/クイック作成/クイック編集/一括編集/更新履歴/コメント+一括コメント/関連一覧+関連追加/リスト(CustomView)/概要詳細タブ/クイックプレビュー/カレンダー表示/ログイン失敗/**権限・可視範囲**/**アクション権限**/**項目権限**/**出力権限**/**共有ルール**/**所有者変更**/**タグ絞り込み**/**CustomView条件**/**ページング・列ソート**/**検索・絞り込み**/**更新履歴の削除・復元**/**インポート履歴**/**編集画面の読み取り専用項目表示**） | ✅ 実行中 |
-| `test/module/`（10 本） | モジュール固有機能（Accounts 一覧表示/カスタマイズ + 各モジュールの詳細固有アクション: Accounts/Contacts/Leads/Potentials/Vendors/HelpDesk のメール・SMS・変換・作成起動、Calendar 作成編集、メール/PDFテンプレート一覧、**在庫系 Invoice/Quotes/SalesOrder/PurchaseOrder の CRUD + 割引/税/合計の監査**(ダイアログ経路=`inventory.spec.ts` / インライン検索+製品・サービス追加=`inventory.lineitem.spec.ts`)） | 🟡→✅ 起動確認 + 在庫は監査済 |
+| `test/module/`（11 本） | モジュール固有機能（Accounts 一覧表示/カスタマイズ + 各モジュールの詳細固有アクション: Accounts/Contacts/Leads/Potentials/Vendors/HelpDesk のメール・SMS・変換・作成起動、Calendar 作成編集、メール/PDFテンプレート一覧、**在庫系 Invoice/Quotes/SalesOrder/PurchaseOrder の CRUD + 割引/税/合計の監査**、**カレンダー基本パターン(単一ユーザー: 登録/タイトル・時刻変更/非公開/公開化=`calendar.basic.spec.ts`)**） | 🟡→✅ 起動確認 + 在庫は監査済 + カレンダー基本 |
 | `test/admin/*.spec.ts`（36 本） | システム管理画面の C〜I グループ + スモーク（E-02/E-04/F-04/F-08） | ✅/⏭️ 混在 |
 | `test/fr.common.spec.ts` | **17 モジュールの新規作成 / 編集 / 削除**（`FrTest` 汎用ドライバ） | ✅ |
 | `test/matrix/`（spec 1 本 + ドライバ: capabilities.ts / MatrixTest.ts） | モジュール×機能セル(25 ケース: 再利用系/個人リスト×4/複製×2/詳細編集/ファイル×2/コメント添付/関連×3/共有リスト×2/**マイリスト×2**)を `capabilities.ts` の `ModuleMatrix`(`cases`)で判定し `matrix.spec.ts` が生成実行する能力表ドライバ。**全 29 モジュールを有効化(describe駆動)**。`searchField`(名前列)は describe.labelFields、`relatedSpec`(関連)は親/子 describe から自動導出。使い捨てレコードは Webservice API 優先で作成。汎用ドライバで作成/操作できない特殊モジュール(インベントリ=明細必須 / Calendar / EmailTemplates・PDFTemplates / Portal / Documents・Dailyreports の一部)は reason 付き skip・na に退避(実機能は各専用spec で担保)。フルマトリクスは ~354 パス | ✅(全29モジュール, 特殊ケースは reason 付き skip) |
@@ -98,8 +98,14 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
     追加マイグレーション `setup/migration/scripts/20260709161603_add_missing_cv2role_cv2rs_tables.php` を
     コミットし、ローカル(reset-local-db.sh)・CI(run-e2e.sh)とも dump 投入後の `run_migration.php --all` で
     自動適用されるようにして **run へ復帰**。
-  - ⏭️ **未着手(別途)**: `_ユーザー管理・認証機能` の MFA 記憶(#1397, WebAuthn 仮想オーセンティケータ要) /
-    管理者(ID=1)削除禁止(第2管理者ログインのフィクスチャ要)。テスト基盤の追加が必要なため次段。
+- ✅ **カレンダー基本パターン(単一ユーザー分)を実装** → `test/module/calendar.basic.spec.ts`(+ `utils/calendar.ts`)。
+  標準 Edit フォームで扱える 時間区切り予定の 登録 / タイトル変更 / 時刻変更 / 非公開登録 / 公開化 を、
+  入力値=API 保存値で検証し、Calendar リストビュー(件名の列検索)で登録・表示を確認する。
+  - ⏭️ **カレンダー 次段**: 終日 / 繰り返し(日週月年) / 複製 / 招待 / 他者予定の削除(#864) /
+    共有カレンダーの別ユーザー表示 / その他追加機能(#1186 他ユーザーのカレンダー設定変更, #1191 共有メモ,
+    #1193 マイグループ表示記憶)。終日・繰り返し・招待は FullCalendar(v3)オーバーレイ UI(JS 駆動)が、
+    共有・招待は複数ユーザーのカレンダー共有設定が必要。
+  - ⏭️ **対象外/保留**: MFA 記憶(#1397)=不要(対象外)。管理者(ID=1)削除禁止=第2管理者フィクスチャ要のため保留。
 
 ---
 
