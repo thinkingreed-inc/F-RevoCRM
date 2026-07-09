@@ -1,9 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  DEFAULT_CURL_LABELS,
-  mergeLabels,
-  presetLabel,
-} from "./labels";
+import { DEFAULT_CURL_LABELS, mergeLabels, presetLabel } from "./labels";
 
 describe("mergeLabels", () => {
   it("returns defaults when nothing passed", () => {
