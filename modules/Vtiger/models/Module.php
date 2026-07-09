@@ -1790,6 +1790,17 @@ class Vtiger_Module_Model extends Vtiger_Module {
 		}else{
 			$popupFields = array_values($this->getRelatedListFields());
 		}
+
+		// ラベル(entityname)項目を entityname の順で先頭にまとめる。
+		// 概要/ヘッダー項目でないラベル項目も列として表示する。
+		$nameFields = array();
+		foreach($this->getNameFields() as $nameField){
+			if($this->getField($nameField)){
+				$nameFields[] = $nameField;
+			}
+		}
+		$popupFields = array_merge($nameFields, array_diff($popupFields, $nameFields));
+
 		return $popupFields;
 	}
 
