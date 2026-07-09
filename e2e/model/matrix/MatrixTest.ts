@@ -11,6 +11,7 @@ import {
   deleteViaDetail,
 } from "../../utils/listview";
 import { postComment } from "../../utils/comment";
+import { duplicateViaDetail } from "../../utils/duplicate";
 import {
   createPersonalFilter,
   deletePersonalFilter,
@@ -96,6 +97,27 @@ export class MatrixTest {
       }
       case "list.edit":
         return this.fr.testRecordEdit(page);
+      case "list.duplicate": {
+        const { id, name } = await this.createDisposableNamed(page);
+        const dupId = await duplicateViaDetail(
+          page,
+          this.moduleName,
+          id,
+          this.app
+        );
+        // 複製名は元名+サフィックス(重複防止ルール回避のため)。列検索は
+        // contains 判定のため、元名で検索すると元レコードと複製の両方が
+        // ヒットして2件になる。
+        await gotoList(page, this.moduleName, this.app);
+        await listSearch(page, this.searchField(), name);
+        await expect(listRows(page)).toHaveCount(2, { timeout: 10000 });
+        // 列検索はセッションに残り後続ケースの gotoList を汚染するため、
+        // 後始末の前に必ずクリアする。
+        await clearListSearch(page);
+        await deleteViaDetail(page, this.moduleName, dupId);
+        await deleteViaDetail(page, this.moduleName, id);
+        return;
+      }
       case "list.delete":
       case "detail.delete":
         return this.fr.testRecordDelete(page);
@@ -116,6 +138,21 @@ export class MatrixTest {
         await gotoList(page, this.moduleName, this.app);
         await listSearch(page, this.searchField(), name);
         await expectSearchCleared(page);
+        await deleteViaDetail(page, this.moduleName, id);
+        return;
+      }
+      case "detail.duplicate": {
+        const { id, name } = await this.createDisposableNamed(page);
+        const dupId = await duplicateViaDetail(
+          page,
+          this.moduleName,
+          id,
+          this.app
+        );
+        await gotoDetail(page, this.moduleName, dupId, this.app);
+        // 複製内容(名前は元名を接頭辞として含む)が詳細に表示される
+        await expect(page.locator("#detailView")).toContainText(name);
+        await deleteViaDetail(page, this.moduleName, dupId);
         await deleteViaDetail(page, this.moduleName, id);
         return;
       }
