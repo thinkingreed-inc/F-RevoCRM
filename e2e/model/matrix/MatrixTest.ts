@@ -1,4 +1,6 @@
 import { expect, type Page, type Browser } from "@playwright/test";
+import * as path from "path";
+import * as fs from "fs";
 import { FrTest } from "../FrTest";
 import { generateRandomString } from "../../utils/util";
 import {
@@ -12,6 +14,10 @@ import {
 } from "../../utils/listview";
 import { postComment } from "../../utils/comment";
 import { duplicateViaDetail } from "../../utils/duplicate";
+import {
+  uploadDocumentToRecord,
+  downloadDocumentFromRecord,
+} from "../../utils/documentsFile";
 import {
   createPersonalFilter,
   deletePersonalFilter,
@@ -175,6 +181,42 @@ export class MatrixTest {
         // 複製内容(名前は元名を接頭辞として含む)が詳細に表示される
         await expect(page.locator("#detailView")).toContainText(name);
         await deleteViaDetail(page, this.moduleName, dupId);
+        await deleteViaDetail(page, this.moduleName, id);
+        return;
+      }
+      case "detail.file.upload": {
+        const { id, name } = await this.createDisposableNamed(page);
+        const file = path.resolve("fixtures/upload/sample.txt");
+        await uploadDocumentToRecord(
+          page,
+          this.moduleName,
+          id,
+          file,
+          `doc_${name}`
+        );
+        // 後始末: レコード削除のみ行う(アップロードした Documents レコードは
+        // レコード削除に付随して自動では消えず残り得るが、E2E 用の使い捨てデータであり
+        // 本タスクの検証目的上は許容する)。
+        await deleteViaDetail(page, this.moduleName, id);
+        return;
+      }
+      case "detail.file.download": {
+        const { id, name } = await this.createDisposableNamed(page);
+        const file = path.resolve("fixtures/upload/sample.txt");
+        await uploadDocumentToRecord(
+          page,
+          this.moduleName,
+          id,
+          file,
+          `doc_${name}`
+        );
+        const dest = await downloadDocumentFromRecord(
+          page,
+          this.moduleName,
+          id,
+          `doc_${name}`
+        );
+        expect(fs.existsSync(dest)).toBeTruthy();
         await deleteViaDetail(page, this.moduleName, id);
         return;
       }
