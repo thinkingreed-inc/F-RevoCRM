@@ -1,7 +1,7 @@
 import { test } from "../../fixtures/isolated";
 import { readFileSync } from "fs";
 import { sessionNameFile } from "../../utils/util";
-import { MatrixTest } from "../../model/matrix/MatrixTest";
+import { MatrixTest, UnconfiguredCaseError } from "../../model/matrix/MatrixTest";
 import {
   MATRIX,
   ALL_CASES,
@@ -32,7 +32,17 @@ for (const m of MATRIX) {
         test.setTimeout(120000);
         const cap = capabilityOf(m, caseId);
         test.skip(cap !== "run", reason(cap));
-        await driver.run(page, browser, caseId);
+        try {
+          await driver.run(page, browser, caseId);
+        } catch (e) {
+          // per-module 設定未整備のケースは失敗ではなく理由付き skip に退避する
+          // (全モジュール一括有効化時、名前列/関連仕様が未設定の非Accountsを、
+          //  本物の不具合ではなく「未整備」として区別するため)
+          if (e instanceof UnconfiguredCaseError) {
+            test.skip(true, e.message);
+          }
+          throw e;
+        }
       });
     }
   });

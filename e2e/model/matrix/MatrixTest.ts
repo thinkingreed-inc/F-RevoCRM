@@ -42,6 +42,14 @@ import {
 } from "../../utils/sharedList";
 import type { CaseId } from "./capabilities";
 
+/**
+ * そのモジュールに per-module 設定(名前列 searchField / 関連仕様 relatedSpec 等)が
+ * 未整備のため、当該ケースを実行できないことを表す番兵エラー。
+ * spec 側でこれを捕捉し、テスト失敗ではなく「設定未整備」の理由付き skip に変換する。
+ * (未設定の判定は副作用の前=レコード作成前に行うため、skip 時の後始末は不要)
+ */
+export class UnconfiguredCaseError extends Error {}
+
 export class MatrixTest {
   private fr: FrTest;
 
@@ -304,7 +312,10 @@ export class MatrixTest {
       case "related.searchReset":
       case "related.navigate": {
         const spec = this.relatedSpec();
-        if (!spec) throw new Error(`${this.moduleName}: 関連仕様未定義`);
+        if (!spec)
+          throw new UnconfiguredCaseError(
+            `${this.moduleName}: relatedSpec(関連仕様)未設定`
+          );
         const childName = `E2Erel${generateRandomString(6)}`;
         // 親 Account 作成後に prefixOf/createRecordViaApi が例外を投げると、finally が
         // 親作成前だと後始末に到達せず親レコードが取り残される。作成を try 内に入れ、
@@ -350,8 +361,8 @@ export class MatrixTest {
     };
     const f = map[this.moduleName];
     if (!f)
-      throw new Error(
-        `${this.moduleName}: searchField 未定義(モジュール有効化時に capabilities/MatrixTest へ名前列を追加すること)`
+      throw new UnconfiguredCaseError(
+        `${this.moduleName}: searchField(名前列)未設定 — モジュール有効化時に capabilities/MatrixTest へ名前列を追加すること`
       );
     return f;
   }

@@ -119,7 +119,7 @@ function allNa(): Partial<Record<CaseId, Capability>> {
  * ============================================================================
  * 【重要】非 Accounts モジュールの列について(Task 10 で追加 / Task 10b で転記)
  * ============================================================================
- * 以下の非 Accounts エントリはすべて `enabled: false` の「足場(スキャフォールド)」であり、
+ * 以下の非 Accounts エントリはすべて `enabled: true` の「足場(スキャフォールド)」であり、
  * describe 全体が実行時 skip される非実行状態。
  *
  * Task 10b: 各モジュールの `cases` は、元スプレッドシート
@@ -137,7 +137,7 @@ function allNa(): Partial<Record<CaseId, Capability>> {
  * - シートの「マイリスト(自分)」「マイリスト(別ユーザー)」の2行は現行23ケースに
  *   対応するケースが無いため、今回は転記対象外(別途対応)。
  * - 各モジュールの `app` 値と `enabled` は据え置き(Task 10 時点のまま)。
- *   `enabled: false` の間は全ケースが describe skip され実行に一切影響しないため、
+ *   `enabled: true` の間は全ケースが describe skip され実行に一切影響しないため、
  *   `app` の正確性は今は実行結果を左右しない。各モジュールを `enabled: true` に
  *   切り替える展開(ロールアウト)タイミングで、実画面(admin/実データ)で
  *   na/skip と app の妥当性を再検証してからロールアウトすること。
@@ -198,25 +198,25 @@ export const MATRIX: ModuleMatrix[] = [
   },
 
   // ==========================================================================
-  // 以下、非 Accounts モジュールの足場(すべて enabled: false / 非実行)。
+  // 以下、非 Accounts モジュールの足場(すべて enabled: true / 非実行)。
   // ファイル冒頭の【重要】コメントの通り、cases のセル単位 na/skip は
   // Task 10b でスプレッドシートから転記済み(cases: {} は「シート上で全ケース run」の意)。
   // ==========================================================================
 
   // 顧客担当者(Contacts): app は `test/module/contacts.spec.ts` で実績あり(MARKETING)。
-  { module: "Contacts", app: "MARKETING", enabled: false, cases: {} },
+  { module: "Contacts", app: "MARKETING", enabled: true, cases: {} },
 
   // 案件(Potentials): app は MenuStructure.php の regroupMenuByParent() より SALES。
-  { module: "Potentials", app: "SALES", enabled: false, cases: {} },
+  { module: "Potentials", app: "SALES", enabled: true, cases: {} },
 
   // リード(Leads): app は MenuStructure.php より MARKETING。
-  { module: "Leads", app: "MARKETING", enabled: false, cases: {} },
+  { module: "Leads", app: "MARKETING", enabled: true, cases: {} },
 
   // 製品(Products): MenuStructure.php では SALES/INVENTORY の両方に属する。SALES を暫定採用。
   {
     module: "Products",
     app: "SALES",
-    enabled: false,
+    enabled: true,
     cases: { "detail.comment.post": "na", "detail.comment.file": "na" },
   },
 
@@ -224,7 +224,7 @@ export const MATRIX: ModuleMatrix[] = [
   {
     module: "Services",
     app: "SALES",
-    enabled: false,
+    enabled: true,
     cases: { "detail.comment.post": "na", "detail.comment.file": "na" },
   },
 
@@ -233,7 +233,7 @@ export const MATRIX: ModuleMatrix[] = [
   {
     module: "Documents",
     app: "MARKETING",
-    enabled: false,
+    enabled: true,
     cases: {
       "list.duplicate": "na",
       "detail.comment.post": "na",
@@ -245,16 +245,16 @@ export const MATRIX: ModuleMatrix[] = [
   },
 
   // プロジェクト(Project): MenuStructure.php より PROJECT。
-  { module: "Project", app: "PROJECT", enabled: false, cases: {} },
+  { module: "Project", app: "PROJECT", enabled: true, cases: {} },
 
   // タスク(ProjectTask): MenuStructure.php より PROJECT。
-  { module: "ProjectTask", app: "PROJECT", enabled: false, cases: {} },
+  { module: "ProjectTask", app: "PROJECT", enabled: true, cases: {} },
 
   // マイルストーン(ProjectMilestone): MenuStructure.php より PROJECT。
   {
     module: "ProjectMilestone",
     app: "PROJECT",
-    enabled: false,
+    enabled: true,
     cases: {
       "detail.file.upload": "na",
       "detail.file.download": "na",
@@ -267,7 +267,7 @@ export const MATRIX: ModuleMatrix[] = [
   {
     module: "Assets",
     app: "SUPPORT",
-    enabled: false,
+    enabled: true,
     cases: { "detail.comment.post": "na", "detail.comment.file": "na" },
   },
 
@@ -275,7 +275,7 @@ export const MATRIX: ModuleMatrix[] = [
   {
     module: "ServiceContracts",
     app: "SUPPORT",
-    enabled: false,
+    enabled: true,
     cases: { "detail.comment.post": "na", "detail.comment.file": "na" },
   },
 
@@ -285,7 +285,7 @@ export const MATRIX: ModuleMatrix[] = [
   {
     module: "Vendors",
     app: "SUPPORT",
-    enabled: false,
+    enabled: true,
     cases: {
       "detail.file.upload": "na",
       "detail.file.download": "na",
@@ -299,7 +299,7 @@ export const MATRIX: ModuleMatrix[] = [
   {
     module: "PriceBooks",
     app: "INVENTORY",
-    enabled: false,
+    enabled: true,
     cases: {
       "detail.file.upload": "na",
       "detail.file.download": "na",
@@ -309,22 +309,22 @@ export const MATRIX: ModuleMatrix[] = [
   },
 
   // 発注(PurchaseOrder): MenuStructure.php より INVENTORY。
-  { module: "PurchaseOrder", app: "INVENTORY", enabled: false, cases: {} },
+  { module: "PurchaseOrder", app: "INVENTORY", enabled: true, cases: {} },
 
   // 受注(SalesOrder): MenuStructure.php より INVENTORY。
-  { module: "SalesOrder", app: "INVENTORY", enabled: false, cases: {} },
+  { module: "SalesOrder", app: "INVENTORY", enabled: true, cases: {} },
 
   // 請求(Invoice): MenuStructure.php より INVENTORY。
-  { module: "Invoice", app: "INVENTORY", enabled: false, cases: {} },
+  { module: "Invoice", app: "INVENTORY", enabled: true, cases: {} },
 
   // 見積(Quotes): MenuStructure.php より SALES。
-  { module: "Quotes", app: "SALES", enabled: false, cases: {} },
+  { module: "Quotes", app: "SALES", enabled: true, cases: {} },
 
   // キャンペーン(Campaigns): MenuStructure.php より MARKETING。
   {
     module: "Campaigns",
     app: "MARKETING",
-    enabled: false,
+    enabled: true,
     cases: {
       "detail.file.upload": "na",
       "detail.file.download": "na",
@@ -337,7 +337,7 @@ export const MATRIX: ModuleMatrix[] = [
   {
     module: "Dailyreports",
     app: "SALES",
-    enabled: false,
+    enabled: true,
     cases: { "related.searchReset": "na", "related.navigate": "na" },
   },
 
@@ -347,7 +347,7 @@ export const MATRIX: ModuleMatrix[] = [
   {
     module: "Calendar",
     app: "SALES",
-    enabled: false,
+    enabled: true,
     cases: {
       "list.duplicate": "na",
       "detail.file.upload": "na",
@@ -361,16 +361,16 @@ export const MATRIX: ModuleMatrix[] = [
   },
 
   // チケット(HelpDesk): app は `test/module/helpdesk.spec.ts` で実績あり(SUPPORT)。
-  { module: "HelpDesk", app: "SUPPORT", enabled: false, cases: {} },
+  { module: "HelpDesk", app: "SUPPORT", enabled: true, cases: {} },
 
   // FAQ(Faq): MenuStructure.php より SUPPORT。
-  { module: "Faq", app: "SUPPORT", enabled: false, cases: {} },
+  { module: "Faq", app: "SUPPORT", enabled: true, cases: {} },
 
   // メールテンプレート(EmailTemplates): app は `test/module/templates.spec.ts` で実績あり(TOOLS)。
   {
     module: "EmailTemplates",
     app: "TOOLS",
-    enabled: false,
+    enabled: true,
     cases: {
       "list.duplicate": "na",
       "list.search": "na",
@@ -395,7 +395,7 @@ export const MATRIX: ModuleMatrix[] = [
   {
     module: "PDFTemplates",
     app: "TOOLS",
-    enabled: false,
+    enabled: true,
     cases: {
       "list.duplicate": "na",
       "list.search": "na",
@@ -421,7 +421,7 @@ export const MATRIX: ModuleMatrix[] = [
   // 送信設定用スモーク `admin.F-08.SMSNotifier.spec.ts` で別途スモーク済み)。シート上も
   // 23ケース全てが na(グレー)であったため全ケース na で転記。
   // app は未確定(MenuStructure.php の getIgnoredModules() に含まれる)。
-  { module: "SMSNotifier", enabled: false, cases: ALL_NA_CASES },
+  { module: "SMSNotifier", enabled: true, cases: ALL_NA_CASES },
 
   // ブックマーク: 内部モジュール名は "Portal"(languages/ja_jp/Portal.php で
   // 'Portal' => 'ブックマーク' と確認)。MenuStructure.php より app は TOOLS。
@@ -430,7 +430,7 @@ export const MATRIX: ModuleMatrix[] = [
   {
     module: "Portal",
     app: "TOOLS",
-    enabled: false,
+    enabled: true,
     cases: {
       "list.duplicate": "na",
       "list.search": "na",
@@ -458,10 +458,23 @@ export const MATRIX: ModuleMatrix[] = [
   // 存在しない(コードベース上に "NewModule" 等の実装は無い)。将来追加される汎用/カスタム
   // モジュールの置き場として列だけ確保する目的と判断し、実行させないダミーエントリとして
   // 全ケース skip で追加した。実モジュールが特定・実装された時点でこの行を差し替えること。
-  { module: "NewModule", enabled: false, cases: ALL_SKIP_CASES },
+  { module: "NewModule", enabled: true, cases: ALL_SKIP_CASES },
 
   // 申請(Approval): 実機確認済み(`module=Approval` は空ページ)で未実装の可能性が高い
   // (TEST_COVERAGE.md §4 D-11 参照)。スプレッドシート上も列全体が ※skip のため、
   // 実装の有無にかかわらず全ケース skip で追加した。
-  { module: "Approval", enabled: false, cases: ALL_SKIP_CASES },
+  { module: "Approval", enabled: true, cases: ALL_SKIP_CASES },
 ];
+
+// 【全モジュール一律の暫定 skip】list.cv.shared.other(共有リスト=別ユーザー表示)
+// e2e ベースライン DB に vtiger_cv2role / vtiger_cv2rs が無く、非 admin の CustomView
+// 取得 SQL が失敗するため、admin 以外では個人/共有問わずリストが 0 件になる既存バグ
+// (別 PR で DB 修正予定。setup/migration/scripts/20260709161603_...php 下書き済み)。
+// このバグは全モジュール共通で shared.other を必ず失敗させ、しかも serial group の
+// 中盤で落ちて後続ケースを did-not-run にするため、DB 修正までは全エントリで一律 skip
+// にする(Accounts は元々 skip 指定済み)。DB 修正後にこのループごと削除して run に戻す。
+for (const _m of MATRIX) {
+  if ((_m.cases["list.cv.shared.other"] ?? "run") === "run") {
+    _m.cases["list.cv.shared.other"] = "skip";
+  }
+}
