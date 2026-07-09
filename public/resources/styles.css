@@ -1877,3 +1877,8 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
     }
 }
 
+/* fix1449/検索行の担当フィールド: 2個以上選択したらスクロール（枠は広がらない） */
+.listview-table tr.searchRow .select2_search_div .select2-choices {
+    max-height: 87px;
+    overflow-y: auto;
+}
