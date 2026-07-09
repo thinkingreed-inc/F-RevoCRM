@@ -88,6 +88,10 @@ export class MatrixTest {
           .click();
         await expect(page).toHaveURL(new RegExp(`record=${id}`));
         await deleteViaDetail(page, this.moduleName, id);
+        // 列検索はセッションに残り、後続ケース(list.duplicate 等)の gotoList を
+        // 0 件化しうる。詳細画面にはクリアトリガが無いため、一覧へ戻してクリアする。
+        await gotoList(page, this.moduleName, this.app);
+        await clearListSearch(page);
         return;
       }
       case "list.edit":

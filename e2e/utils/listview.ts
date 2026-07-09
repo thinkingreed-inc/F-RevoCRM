@@ -126,6 +126,9 @@ export async function expectSearchCleared(page: Page): Promise<void> {
   await clearListSearch(page);
   const inputs = page.locator("input.listSearchContributor");
   const n = await inputs.count();
+  // 列検索入力が 1 つも無い一覧では空チェックが空振り(偽陽性)になるため、
+  // 少なくとも 1 つは存在することを先に確認する。
+  expect(n).toBeGreaterThan(0);
   for (let i = 0; i < n; i++) {
     await expect(inputs.nth(i)).toHaveValue("", { timeout: 5000 });
   }
