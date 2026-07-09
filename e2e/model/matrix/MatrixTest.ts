@@ -348,7 +348,12 @@ export class MatrixTest {
     const map: Record<string, string> = {
       Accounts: "accountname",
     };
-    return map[this.moduleName] ?? "";
+    const f = map[this.moduleName];
+    if (!f)
+      throw new Error(
+        `${this.moduleName}: searchField 未定義(モジュール有効化時に capabilities/MatrixTest へ名前列を追加すること)`
+      );
+    return f;
   }
 
   /** 関連テストの仕様(モジュール依存)。関連が無いモジュールは null。 */

@@ -113,7 +113,7 @@ export async function downloadDocumentFromRecord(
   ]);
   const dest = path.join(
     "test-results",
-    `dl-${await download.suggestedFilename()}`
+    `dl-${module}-${await download.suggestedFilename()}`
   );
   await download.saveAs(dest);
   return dest;
