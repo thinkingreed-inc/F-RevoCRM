@@ -191,6 +191,7 @@ class Settings_Workflows_EditV7Task_View extends Settings_Vtiger_Index_View {
 		}
 
 		$structure = $recordStructureInstance->getStructure();
+		$curlFields = array();
 		foreach ($structure as $fields) {
 			foreach ($fields as $field) {
 				if($field->getFieldDataType() == 'blank'){
@@ -202,9 +203,15 @@ class Settings_Workflows_EditV7Task_View extends Settings_Vtiger_Index_View {
 				} else {
 					$allFieldoptions .= '<option value="$' . $field->get('workflow_columnname') . '">' .
 							$field->get('workflow_columnlabel') . '</option>';
+					// VTCurlTask(vt-curl-task)のフィールド差し込み用: {name, label}
+					$curlFields[] = array(
+						'name' => $field->get('workflow_columnname'),
+						'label' => $field->get('workflow_columnlabel'),
+					);
 				}
 			}
 		}
+		$viewer->assign('CURL_FIELDS_JSON', Zend_Json::encode($curlFields));
 
 		$userList = $currentUser->getAccessibleUsers();
 		$groupList = $currentUser->getAccessibleGroups();
