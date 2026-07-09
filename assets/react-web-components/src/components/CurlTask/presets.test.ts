@@ -13,6 +13,13 @@ describe("CURL_PRESETS", () => {
       "content-type: application/json",
     );
   });
+  it("presets do not hard-code field variables ($xxx)", () => {
+    // 決め打ち変数は対象モジュールに無いとそのまま送信されるため含めない
+    expect(CURL_PRESETS.teams.body).not.toContain("$");
+    expect(CURL_PRESETS.slack.body).not.toContain("$");
+    expect(CURL_PRESETS.generic.body).not.toContain("$");
+  });
+
   it("applyPreset returns method/headers/body", () => {
     const r = applyPreset("slack");
     expect(r.method).toBe("POST");

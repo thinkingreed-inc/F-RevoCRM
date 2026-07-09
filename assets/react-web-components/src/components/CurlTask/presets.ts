@@ -1,18 +1,16 @@
 import { CurlPreset, CurlPresetKey } from "./types";
 
+// プリセットは特定フィールド($subject等)を決め打ちしない。
+// 該当フィールドが無いモジュールでは $var がそのまま送られてしまうため。
+// 動的な値は「フィールド挿入」で対象モジュールの実項目を入れてもらう。
 const teamsBody = JSON.stringify(
   {
     "@type": "MessageCard",
     "@context": "https://schema.org/extensions",
-    summary: "$subject",
+    summary: "F-RevoCRM 通知",
     themeColor: "0078D4",
-    title: "$subject",
-    sections: [
-      {
-        activityTitle: "$assigned_user_id",
-        text: "$description",
-      },
-    ],
+    title: "F-RevoCRM 通知",
+    text: "メッセージ本文",
   },
   null,
   2,
@@ -20,11 +18,11 @@ const teamsBody = JSON.stringify(
 
 const slackBody = JSON.stringify(
   {
-    text: "$subject",
+    text: "メッセージ本文",
     blocks: [
       {
         type: "section",
-        text: { type: "mrkdwn", text: "*$subject*\n$description" },
+        text: { type: "mrkdwn", text: "メッセージ本文" },
       },
     ],
   },
