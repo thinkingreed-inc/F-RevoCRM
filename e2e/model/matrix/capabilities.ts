@@ -112,10 +112,6 @@ export const MATRIX: ModuleMatrix[] = [
       "list.create.listNav": "skip",
       "list.duplicate": "skip",
       "list.searchReset": "skip",
-      "list.cv.personal.show": "skip",
-      "list.cv.personal.delete": "skip",
-      "list.cv.personal.dup": "skip",
-      "list.cv.personal.edit": "skip",
       "list.cv.shared.self": "skip",
       "list.cv.shared.other": "skip",
       "detail.edit": "skip",
@@ -128,6 +124,8 @@ export const MATRIX: ModuleMatrix[] = [
       "related.navigate": "skip",
       // Task 1 で run のまま緑化する再利用系:
       // list.create.detail / list.edit / list.delete / list.search / detail.delete / detail.comment.post
+      // Task 2 で実装済み(run 既定):
+      // list.cv.personal.show / list.cv.personal.delete / list.cv.personal.dup / list.cv.personal.edit
     },
   },
 ];

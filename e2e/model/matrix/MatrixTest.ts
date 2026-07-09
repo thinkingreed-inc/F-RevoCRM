@@ -10,6 +10,13 @@ import {
   deleteViaDetail,
 } from "../../utils/listview";
 import { postComment } from "../../utils/comment";
+import {
+  createPersonalFilter,
+  deletePersonalFilter,
+  duplicatePersonalFilter,
+  editPersonalFilter,
+  expectFilterInSidebar,
+} from "../../utils/customview";
 import type { CaseId } from "./capabilities";
 
 export class MatrixTest {
@@ -90,6 +97,36 @@ export class MatrixTest {
         await gotoDetail(page, this.moduleName, id, this.app);
         await postComment(page, `E2Ecmt_${generateRandomString(6)}`);
         await deleteViaDetail(page, this.moduleName, id);
+        return;
+      }
+      case "list.cv.personal.show": {
+        const name = `E2Emxcv${generateRandomString(6)}`;
+        await createPersonalFilter(page, this.moduleName, name);
+        await expectFilterInSidebar(page, this.moduleName, name, true);
+        await deletePersonalFilter(page, this.moduleName, name);
+        return;
+      }
+      case "list.cv.personal.delete": {
+        const name = `E2Emxcvd${generateRandomString(6)}`;
+        await createPersonalFilter(page, this.moduleName, name);
+        await deletePersonalFilter(page, this.moduleName, name);
+        return;
+      }
+      case "list.cv.personal.dup": {
+        const src = `E2Emxsrc${generateRandomString(6)}`;
+        const dup = `E2Emxdup${generateRandomString(6)}`;
+        await createPersonalFilter(page, this.moduleName, src);
+        await duplicatePersonalFilter(page, this.moduleName, src, dup);
+        await deletePersonalFilter(page, this.moduleName, dup);
+        await deletePersonalFilter(page, this.moduleName, src);
+        return;
+      }
+      case "list.cv.personal.edit": {
+        const name = `E2Emxedit${generateRandomString(6)}`;
+        const renamed = `${name}R`;
+        await createPersonalFilter(page, this.moduleName, name);
+        await editPersonalFilter(page, this.moduleName, name, renamed);
+        await deletePersonalFilter(page, this.moduleName, renamed);
         return;
       }
       default:
