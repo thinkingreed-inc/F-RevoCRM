@@ -99,12 +99,25 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
     コミットし、ローカル(reset-local-db.sh)・CI(run-e2e.sh)とも dump 投入後の `run_migration.php --all` で
     自動適用されるようにして **run へ復帰**。
 - ✅ **カレンダー基本パターン(単一ユーザー分)を実装** → `test/module/calendar.basic.spec.ts`(+ `utils/calendar.ts`)。
-  標準 Edit フォームで扱える 時間区切り予定の 登録 / タイトル変更 / 時刻変更 / 非公開登録 / 公開化 を、
-  入力値=API 保存値で検証し、Calendar リストビュー(件名の列検索)で登録・表示を確認する。
-  - ⏭️ **カレンダー 次段**: 終日 / 繰り返し(日週月年) / 複製 / 招待 / 他者予定の削除(#864) /
-    共有カレンダーの別ユーザー表示 / その他追加機能(#1186 他ユーザーのカレンダー設定変更, #1191 共有メモ,
-    #1193 マイグループ表示記憶)。終日・繰り返し・招待は FullCalendar(v3)オーバーレイ UI(JS 駆動)が、
-    共有・招待は複数ユーザーのカレンダー共有設定が必要。
+  標準 Edit フォームで扱える 時間区切り予定の 登録(1.1)/ タイトル変更(1.5)/ 時刻変更(1.2)/ 非公開登録(2.1)/
+  公開化(2.4)/ **複製(1.7, 詳細→その他→複製)** / **削除(1.9, 詳細→その他→削除)** を、入力値=API 保存値で
+  検証し、Calendar リストビュー(件名の列検索)で登録・表示を確認する。
+  - ⏭️ **カレンダー 次段(新規作成モーダル=React QuickCreate で実装可能。調査済みの手掛かり)**:
+    終日(3.x/4.x)/ 繰り返し 日週月年(5.x/6.x)/ 招待(招待シート)/ 共有メモ(#1191)。
+    これらは標準 Edit フォームに無く、カレンダービュー上で
+    **`page.evaluate(() => Calendar_Calendar_Js.showCreateEventModal())`** で開く React モーダル
+    (`assets/react-web-components/src/components/QuickCreate/CalendarForm.tsx`)にのみ存在する。
+    判明済みセレクタ: 件名=`#field_subject` / 共有メモ=`#field_common_memo` / 終日=`label:has-text("終日")`
+    (`{force:true}` クリック)/ 保存=`button:has-text("保存")` / 招待者=可視 text 入力+候補ドロップダウン。
+    日時はカスタム React ピッカー(標準 input でない)。**残課題**: 終日 ON 後に日時バリデーションで保存が
+    通らない(モーダルが閉じずレコード未作成)ため、React の日付ピッカー操作を要解明。検証は allday が
+    Webservice describe 非公開のため DB(`vtiger_activity.allday/notime/common_memo`)直読み or 再オープンで確認。
+    追加ボタン `#calendarview_basicaction_addevent` は `#messageBar` に干渉されるため JS 起動が安定。
+  - ⏭️ **カレンダー 次段(複数ユーザー要)**: 共有カレンダーの別ユーザー表示 / 招待者の各ユーザー表示 /
+    他者予定の削除(#864)。seed の e2e_mgr_a/rep_a/mgr_b/rep_b をマネA/一般A/マネB/一般B に対応付け、
+    一般C/マネC の追加とカレンダー共有設定が必要。
+  - ⏭️ **その他追加機能**: #1186(管理者が他ユーザーのカレンダー設定変更)/ #1193(マイグループ表示記憶)は
+    設定画面 UI。#1191 共有メモは上記モーダルの `#field_common_memo` で対応可能。
   - ⏭️ **対象外/保留**: MFA 記憶(#1397)=不要(対象外)。管理者(ID=1)削除禁止=第2管理者フィクスチャ要のため保留。
 
 ---
