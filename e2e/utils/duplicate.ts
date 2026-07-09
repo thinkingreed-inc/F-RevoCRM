@@ -43,12 +43,22 @@ export async function duplicateViaDetail(
   await page.waitForLoadState("domcontentloaded");
 
   // 重複防止ルールの完全一致チェックを外すため、名前フィールドにサフィックスを付与する。
+  // 【単一名前列前提】このヘルパは名前列が 1 つのモジュール(Accounts 等)を想定し
+  //   `.nameField` の先頭を上書きする。Contacts / Leads のような複合名(姓/名で
+  //   `.nameField` が 2 つ以上ある)モジュールへ流用する際は、先頭だけでは片方の
+  //   サブ項目しか変わらず重複防止を外せない場合があるため、ここを見直すこと。
   const nameInput = page.locator("input.nameField").first();
   const original = await nameInput.inputValue();
   await nameInput.fill(`${original}_${generateRandomString(4)}`);
 
   await page.locator("button.saveButton").first().click();
-  await page.waitForURL(/[?&]record=\d+/, { timeout: 15000 });
+  // 保存後は Detail へ遷移して新 record ID が振られる。ここで単に record=\d+ を
+  // 待つと、複製の EditView URL(view=Edit&record=<元ID>&isDuplicate=true)が既に
+  // record=<元ID> を含むため waitForURL が即時解決し、newId を元 ID と誤読して
+  // `newId === recordId` ガードが誤発火する(実機で確認した post-save 遷移は
+  // view=Detail&record=<新ID>&viewname=..&app=..)。そこで view=Detail を必須にし、
+  // 保存前の Edit URL では条件が成立しないようにする。
+  await page.waitForURL(/[?&]view=Detail[^]*?record=\d+/, { timeout: 15000 });
   const newId = page.url().match(/record=(\d+)/)?.[1];
   if (!newId) throw new Error(`${module}: 複製の保存に失敗`);
   if (newId === recordId) throw new Error(`${module}: 複製で同一 ID(複製失敗)`);
