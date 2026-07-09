@@ -34,7 +34,12 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 | `test/general.spec.ts` | トップ（ダッシュボード）要素、サイドバー開閉 | 🟡 表示確認のみ |
 
 > 並行実行対応: `test/common/` `test/module/` はワーカー単位で個別ログインする `fixtures/isolated.ts` を使用し、各テストが専用レコードを作成→操作→削除する。API セッション取得は `auth.setup` で一度だけ行い使い回す。
-> **CI 並列度は `workers=4`**（`playwright.config.ts`, `retries=2`）。高並列で顕在化する「待ち条件の脆さ」は条件ベース待ちへ順次根治済み（列検索の All CV 固定 / 保存前のモーダル閉じ保証 / 条件追加ボタンの再試行 / サイドバー CV の「もっと」展開 / 条件値の確定待ち）。CI 実行時間は約 14.8 分（workers=1）→ **6.8 分**（workers=4）。残る `networkidle` 依存は新たな flaky が出たら都度 条件ベース待ちへ置換していく方針。
+> **CI 並列度は `workers=4`**（`playwright.config.ts`, `retries=2`）。高並列で顕在化する「待ち条件の脆さ」は条件ベース待ちへ順次根治済み（列検索の All CV 固定 / 保存前のモーダル閉じ保証 / 条件追加ボタンの再試行 / サイドバー CV の「もっと」展開 / 条件値の確定待ち）。残る `networkidle` 依存は新たな flaky が出たら都度 条件ベース待ちへ置換していく方針。
+>
+> **【重要】CI(GitHub Actions)は最小限の最適サブセットのみ、フルはローカル**。全 spec + matrix 全 29 モジュール + admin 一式 + fr.common 17 モジュールを CI で回すと 30 分ジョブに収まらないため、CI は挙動の代表を薄く広くカバーするサブセットに限定する。
+> - **CI で回すもの**（`e2e/ci/run-e2e.sh` の `CI_SPECS` + `E2E_SCOPE=ci`）: matrix 代表 6 モジュール（Accounts/Contacts/Invoice/Calendar/Documents/HelpDesk = 標準・関連・CV / インベントリskip / 特殊フォームskip / ファイルna の代表）、カレンダー基本(`calendar.basic`)、在庫明細(`inventory`)、横断機能の 検索(`common.search`)・CustomView(`common.customview`)・権限可視範囲(`common.permission`)。
+> - **ローカルでフル**: `cd e2e && npm run test:e2e`(`E2E_SCOPE` 未設定 → matrix 全 29 モジュール + 全 spec)。
+> - **サブセット調整**: `e2e/ci/run-e2e.sh` の `CI_SPECS` と `test/matrix/matrix.spec.ts` の `CI_SAMPLE_MODULES` を編集する。
 
 **共通 CRUD の対象モジュール（17）**: Accounts, Contacts, Potentials, Leads, Products, Assets, Campaigns, Dailyreports, Faq, HelpDesk, PriceBooks, Project, ProjectMilestone, ProjectTask, ServiceContracts, Services, Vendors。
 

@@ -10,7 +10,23 @@ import {
   reason,
 } from "../../model/matrix/capabilities";
 
-for (const m of MATRIX) {
+// CI(E2E_SCOPE=ci)ではフルの 29 モジュール実行は時間が掛かりすぎるため、
+// 挙動の代表(標準/関連/CV・インベントリskip・特殊フォームskip・ファイル/na 混在)を
+// カバーする少数モジュールに絞る。ローカル(E2E_SCOPE 未設定)は全モジュール実行。
+const CI_SAMPLE_MODULES = [
+  "Accounts", // 標準フル(作成/編集/複製/CV/共有/マイ/関連/ファイル/コメント)
+  "Contacts", // 標準 + 複合名 + 関連
+  "Invoice", // インベントリ(明細必須 → 作成系 skip の代表)
+  "Calendar", // 特殊フォーム(CV/作成系 skip の代表)
+  "Documents", // ファイル系 na + UIフォーム skip の代表
+  "HelpDesk", // サポート系・関連あり
+];
+const MATRIX_SCOPE =
+  process.env.E2E_SCOPE === "ci"
+    ? MATRIX.filter((m) => CI_SAMPLE_MODULES.includes(m.module))
+    : MATRIX;
+
+for (const m of MATRIX_SCOPE) {
   // FrTest.testRecordDelete は「対象モジュールの最終更新レコード」を API で選び削除する
   // (getOneRecordFromModuleName: ORDER BY modifiedtime desc LIMIT 1)。並行実行すると、
   // 他ケース(list.search/detail.comment.post)が作った使い捨てレコードを先取りして
