@@ -11,6 +11,7 @@
 require_once('modules/com_vtiger_workflow/VTEntityCache.inc');
 require_once('modules/com_vtiger_workflow/VTWorkflowUtils.php');
 require_once('modules/com_vtiger_workflow/VTSimpleTemplate.inc');
+require_once('modules/com_vtiger_workflow/VTJsonTemplate.inc');
 
 class VTCurlTask extends VTTask {
 	// Curl requests are typically short, execute immediately
@@ -54,8 +55,9 @@ class VTCurlTask extends VTTask {
 		$headersTemplate = new VTSimpleTemplate($this->headers);
 		$renderedHeaders = $headersTemplate->render($entityCache, $entityId);
 
-		// Render body with field values
-		$bodyTemplate = new VTSimpleTemplate($this->body);
+		// Render body with field values.
+		// ボディはJSON想定のため、値をJSON文字列エスケープして注入する（"や改行でJSONが壊れるのを防ぐ）
+		$bodyTemplate = new VTJsonTemplate($this->body);
 		$renderedBody = $bodyTemplate->render($entityCache, $entityId);
 
 		// Set default method if not specified

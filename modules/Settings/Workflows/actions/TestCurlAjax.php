@@ -12,6 +12,7 @@ require_once 'modules/com_vtiger_workflow/VTTaskManager.inc'; // 親クラスVTT
 require_once 'modules/com_vtiger_workflow/tasks/VTCurlTask.inc';
 require_once 'modules/com_vtiger_workflow/VTEntityCache.inc';
 require_once 'modules/com_vtiger_workflow/VTSimpleTemplate.inc';
+require_once 'modules/com_vtiger_workflow/VTJsonTemplate.inc';
 require_once 'modules/com_vtiger_workflow/VTWorkflowUtils.php';
 
 /**
@@ -44,7 +45,8 @@ class Settings_Workflows_TestCurlAjax_Action extends Settings_Vtiger_Index_Actio
 			$headersTemplate = new VTSimpleTemplate($headers);
 			$headers = $headersTemplate->render($entityCache, $recordId);
 
-			$bodyTemplate = new VTSimpleTemplate($body);
+			// ボディはJSON想定のため値をJSON文字列エスケープして注入
+			$bodyTemplate = new VTJsonTemplate($body);
 			$body = $bodyTemplate->render($entityCache, $recordId);
 
 			$util->revertUser();
