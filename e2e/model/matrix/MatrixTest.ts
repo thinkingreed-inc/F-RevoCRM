@@ -217,6 +217,9 @@ export class MatrixTest {
           `doc_${name}`
         );
         expect(fs.existsSync(dest)).toBeTruthy();
+        // 存在確認だけだと 0 バイト/失敗ダウンロードでも偽陽性になるため、
+        // 中身が届いた(非空)ことまで確認する。
+        expect(fs.statSync(dest).size).toBeGreaterThan(0);
         await deleteViaDetail(page, this.moduleName, id);
         return;
       }
