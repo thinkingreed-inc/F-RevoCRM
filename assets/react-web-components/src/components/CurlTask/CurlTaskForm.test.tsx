@@ -18,9 +18,7 @@ describe("CurlTaskForm", () => {
       "https://e.com",
     );
     expect(container.querySelector('input[name="timeout"]')).toHaveValue(30);
-    expect(container.querySelector('select[name="method"]')).toHaveValue(
-      "POST",
-    );
+    expect(container.querySelector('input[name="method"]')).toHaveValue("POST");
     const bodyInput = container.querySelector(
       '[name="body"]',
     ) as HTMLInputElement;

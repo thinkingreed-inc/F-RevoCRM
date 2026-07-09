@@ -230,6 +230,7 @@ class Settings_Workflows_EditV7Task_View extends Settings_Vtiger_Index_View {
 			'insertField' => 'LBL_CURL_INSERT_FIELD',
 			'testSend' => 'LBL_CURL_TEST_SEND',
 			'testSending' => 'LBL_CURL_TEST_SENDING',
+			'testSendNote' => 'LBL_CURL_TEST_SEND_NOTE',
 			'jsonValid' => 'LBL_CURL_JSON_VALID',
 			'jsonInvalid' => 'LBL_CURL_JSON_INVALID',
 			'cancel' => 'LBL_CURL_CANCEL',

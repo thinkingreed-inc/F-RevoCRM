@@ -21,6 +21,7 @@ export interface CurlLabels {
   insertField: string;
   testSend: string;
   testSending: string;
+  testSendNote: string;
   jsonValid: string;
   jsonInvalid: string;
   ok: string;
@@ -43,6 +44,8 @@ export const DEFAULT_CURL_LABELS: CurlLabels = {
   insertField: "フィールド挿入",
   testSend: "テスト送信",
   testSending: "送信中...",
+  testSendNote:
+    "テスト送信では $項目名 などのフィールド値は置換されず、そのまま送信されます。実際の値の埋め込みはワークフロー実行時に行われます。",
   jsonValid: "JSON OK",
   jsonInvalid: "不正なJSON",
   ok: "OK",

@@ -244,6 +244,8 @@ $languageStrings = array(
     'LBL_CURL_JSON_VALID' => 'JSON OK',
     'LBL_CURL_JSON_INVALID' => 'Invalid JSON',
     'LBL_CURL_CANCEL' => 'Cancel',
+    'LBL_CURL_TEST_SEND_NOTE' => 'On test send, field values such as $fieldname are sent as-is without substitution. Actual values are embedded when the workflow runs.',
+    'Curl Request' => 'Curl Request',
 );
 
 $jsLanguageStrings = array(

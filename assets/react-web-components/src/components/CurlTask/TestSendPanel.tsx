@@ -21,6 +21,7 @@ interface Props {
   sendTest: (p: TestSendPayload) => Promise<TestSendResult>;
   buttonLabel?: string;
   sendingLabel?: string;
+  note?: string;
 }
 
 export function TestSendPanel({
@@ -28,6 +29,7 @@ export function TestSendPanel({
   sendTest,
   buttonLabel = "テスト送信",
   sendingLabel = "送信中...",
+  note,
 }: Props) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<TestSendResult | null>(null);
@@ -47,6 +49,7 @@ export function TestSendPanel({
 
   return (
     <div className="space-y-2">
+      {note && <p className="text-xs text-muted-foreground">{note}</p>}
       <Button
         type="button"
         size="sm"

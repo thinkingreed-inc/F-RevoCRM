@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { FieldInserter } from "./FieldInserter";
 import { formatJson, validateJson, insertAtCursor } from "./jsonEditorUtils";
 import { FieldOption } from "./types";
@@ -78,14 +79,12 @@ export function JsonTemplateEditor({
           </span>
         )}
       </div>
-      <textarea
+      <Textarea
         ref={ref}
         value={value}
         rows={rows}
         onChange={(e) => onChange(e.target.value)}
-        className={cn(
-          "border-input flex w-full rounded-sm border bg-transparent px-2 py-1 font-mono text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
-        )}
+        className={cn("font-mono text-sm")}
       />
       {formatError && <p className="text-xs text-red-600">{formatError}</p>}
     </div>

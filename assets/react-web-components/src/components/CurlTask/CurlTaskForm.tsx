@@ -1,14 +1,20 @@
 import { useMemo, useState } from "react";
-import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { PresetSelector } from "./PresetSelector";
 import { JsonTemplateEditor } from "./JsonTemplateEditor";
-import { FieldInserter } from "./FieldInserter";
 import {
   TestSendPanel,
   TestSendPayload,
   TestSendResult,
 } from "./TestSendPanel";
-import { insertAtCursor } from "./jsonEditorUtils";
 import { FieldOption } from "./types";
 import { CurlLabels, mergeLabels, presetLabel } from "./labels";
 
@@ -118,10 +124,6 @@ export function CurlTaskForm(props: Props) {
     setBody(r.body);
   };
 
-  const insertIntoUrl = (variable: string) => {
-    setUrl((cur) => insertAtCursor(cur, cur.length, cur.length, variable).text);
-  };
-
   const sendTest = defaultSendTest(props.recordId, props.sourceModule);
   const getPayload = (): TestSendPayload => ({
     url,
@@ -131,12 +133,11 @@ export function CurlTaskForm(props: Props) {
     timeout,
   });
 
-  const inputCls =
-    "border-input flex w-full rounded-sm border bg-transparent px-2 py-1 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50";
-
   return (
-    <div className="space-y-4">
-      {/* 既存の保存パス(serializeFormData)が拾う入力 */}
+    <div className="space-y-6 p-1">
+      {/* 既存の保存パス(serializeFormData)が拾う入力。
+          method/headers/bodyはUI(Select/エディタ)が直接name属性を持たないため隠しinputで同期する。 */}
+      <input type="hidden" name="method" value={method} readOnly />
       <input type="hidden" name="headers" value={headers} readOnly />
       <input type="hidden" name="body" value={body} readOnly />
 
@@ -151,46 +152,38 @@ export function CurlTaskForm(props: Props) {
       />
 
       {/* URL */}
-      <div className="space-y-1">
-        <label className="text-sm font-medium">
+      <div className="space-y-1.5">
+        <Label>
           {labels.url}
           <span className="text-red-600">*</span>
-        </label>
-        <div className="flex items-center gap-2">
-          <input
-            name="url"
-            className={inputCls}
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-          />
-          <FieldInserter
-            fields={fields}
-            onInsert={insertIntoUrl}
-            placeholder={labels.insertField}
-          />
-        </div>
+        </Label>
+        <Input
+          name="url"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+        />
       </div>
 
       {/* Method */}
-      <div className="space-y-1">
-        <label className="text-sm font-medium">{labels.method}</label>
-        <select
-          name="method"
-          className={cn(inputCls, "max-w-[200px]")}
-          value={method}
-          onChange={(e) => setMethod(e.target.value)}
-        >
-          {HTTP_METHODS.map((m) => (
-            <option key={m} value={m}>
-              {m}
-            </option>
-          ))}
-        </select>
+      <div className="space-y-1.5">
+        <Label>{labels.method}</Label>
+        <Select value={method} onValueChange={setMethod}>
+          <SelectTrigger className="w-[200px]" aria-label={labels.method}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {HTTP_METHODS.map((m) => (
+              <SelectItem key={m} value={m}>
+                {m}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Headers */}
-      <div className="space-y-1">
-        <label className="text-sm font-medium">{labels.headers}</label>
+      <div className="space-y-1.5">
+        <Label>{labels.headers}</Label>
         <JsonTemplateEditor
           value={headers}
           onChange={setHeaders}
@@ -202,8 +195,8 @@ export function CurlTaskForm(props: Props) {
       </div>
 
       {/* Body */}
-      <div className="space-y-1">
-        <label className="text-sm font-medium">{labels.body}</label>
+      <div className="space-y-1.5">
+        <Label>{labels.body}</Label>
         <JsonTemplateEditor
           value={body}
           onChange={setBody}
@@ -218,14 +211,14 @@ export function CurlTaskForm(props: Props) {
       </div>
 
       {/* Timeout */}
-      <div className="space-y-1">
-        <label className="text-sm font-medium">{labels.timeout}</label>
-        <input
+      <div className="space-y-1.5">
+        <Label>{labels.timeout}</Label>
+        <Input
           name="timeout"
           type="number"
           min={1}
           max={60}
-          className={cn(inputCls, "max-w-[120px]")}
+          className="w-[120px]"
           value={timeout}
           onChange={(e) => setTimeoutValue(e.target.value)}
         />
@@ -237,6 +230,7 @@ export function CurlTaskForm(props: Props) {
         sendTest={sendTest}
         buttonLabel={labels.testSend}
         sendingLabel={labels.testSending}
+        note={labels.testSendNote}
       />
     </div>
   );
