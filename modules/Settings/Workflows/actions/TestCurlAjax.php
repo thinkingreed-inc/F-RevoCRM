@@ -10,14 +10,14 @@
 
 require_once 'modules/com_vtiger_workflow/VTTaskManager.inc'; // 親クラスVTTaskの定義
 require_once 'modules/com_vtiger_workflow/tasks/VTCurlTask.inc';
-require_once 'modules/com_vtiger_workflow/VTEntityCache.inc';
-require_once 'modules/com_vtiger_workflow/VTSimpleTemplate.inc';
-require_once 'modules/com_vtiger_workflow/VTJsonTemplate.inc';
-require_once 'modules/com_vtiger_workflow/VTWorkflowUtils.php';
 
 /**
  * Curlワークフロータスク設定画面の「テスト送信」用アクション。
  * 保存前に実際のWebhookへ1回リクエストを送り、結果を返す（送りっぱなし）。
+ *
+ * 注意: テスト送信では対象レコードを指定できないため、$項目名 などの
+ * フィールド変数は置換せず、入力された内容をそのまま送信する。
+ * 実際の値の埋め込みはワークフロー実行時(VTCurlTask::doTask)に行われる。
  */
 class Settings_Workflows_TestCurlAjax_Action extends Settings_Vtiger_Index_Action {
 
@@ -31,26 +31,6 @@ class Settings_Workflows_TestCurlAjax_Action extends Settings_Vtiger_Index_Actio
 		$headers = $request->getRaw('headers');
 		$body = $request->getRaw('body');
 		$timeout = (int) $request->get('timeout');
-		$recordId = $request->get('recordId');
-
-		// 対象レコードが指定されていれば、本番同様にフィールド値を埋め込む
-		if (!empty($recordId)) {
-			$util = new VTWorkflowUtils();
-			$admin = $util->adminUser();
-			$entityCache = new VTEntityCache($admin);
-
-			$urlTemplate = new VTSimpleTemplate($url);
-			$url = $urlTemplate->render($entityCache, $recordId);
-
-			$headersTemplate = new VTSimpleTemplate($headers);
-			$headers = $headersTemplate->render($entityCache, $recordId);
-
-			// ボディはJSON想定のため値をJSON文字列エスケープして注入
-			$bodyTemplate = new VTJsonTemplate($body);
-			$body = $bodyTemplate->render($entityCache, $recordId);
-
-			$util->revertUser();
-		}
 
 		$response = new Vtiger_Response();
 

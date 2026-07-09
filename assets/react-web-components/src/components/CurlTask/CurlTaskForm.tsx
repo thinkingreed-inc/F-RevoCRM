@@ -31,8 +31,6 @@ interface Props {
   timeout?: string;
   fieldsJson?: FieldOption[] | string;
   labelsJson?: Partial<CurlLabels> | string;
-  recordId?: string;
-  sourceModule?: string;
 }
 
 const HTTP_METHODS = ["GET", "POST", "PUT", "DELETE", "PATCH"];
@@ -87,11 +85,11 @@ function stringifyError(err: unknown): string {
   return String(err);
 }
 
-/** 本番の保存はapp.request経由。テスト送信はTestCurlAjaxアクションを叩く */
-function defaultSendTest(
-  recordId: string | undefined,
-  sourceModule: string | undefined,
-) {
+/**
+ * テスト送信はTestCurlAjaxアクションを叩く。
+ * テスト送信では対象レコードが無いためフィールド変数は置換されず、入力そのままを送る。
+ */
+function defaultSendTest() {
   return (p: TestSendPayload): Promise<TestSendResult> => {
     const app = (window as unknown as { app?: any }).app;
     if (!app?.request?.post) {
@@ -112,8 +110,6 @@ function defaultSendTest(
             headers: p.headers,
             body: p.body,
             timeout: p.timeout,
-            recordId: recordId || "",
-            sourceModule: sourceModule || "",
           },
         })
         .then(
@@ -155,7 +151,7 @@ export function CurlTaskForm(props: Props) {
     setBody(r.body);
   };
 
-  const sendTest = defaultSendTest(props.recordId, props.sourceModule);
+  const sendTest = defaultSendTest();
   const getPayload = (): TestSendPayload => ({
     url,
     method,
