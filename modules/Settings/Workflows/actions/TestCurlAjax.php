@@ -8,6 +8,7 @@
  * All Rights Reserved.
  *************************************************************************************/
 
+require_once 'modules/com_vtiger_workflow/VTTaskManager.inc'; // 親クラスVTTaskの定義
 require_once 'modules/com_vtiger_workflow/tasks/VTCurlTask.inc';
 require_once 'modules/com_vtiger_workflow/VTEntityCache.inc';
 require_once 'modules/com_vtiger_workflow/VTSimpleTemplate.inc';
