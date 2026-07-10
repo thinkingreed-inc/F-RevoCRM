@@ -11,6 +11,10 @@
 
 class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 
+	public function getDefaultFieldValue() {
+		return $this->defaultvalue;
+	}
+
 	public function delete() {
 		$adb = PearDatabase::getInstance();
 		parent::delete();

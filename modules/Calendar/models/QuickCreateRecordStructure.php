@@ -57,12 +57,7 @@ class Calendar_QuickCreateRecordStructure_Model extends Vtiger_QuickCreateRecord
 				$fieldModel->set('fieldvalue', $fieldValue);
 			} else {
 				$defaultValue = $fieldModel->getDefaultFieldValue();
-				if($fieldModel->getFieldDataType() == "date" && $defaultValue == 'TODAY'){
-					$fieldModel->set('fieldvalue', date('Y-m-d'));
-				}
-				else{
-					$fieldModel->set('fieldvalue', $defaultValue);
-				}
+				$fieldModel->set('fieldvalue', $defaultValue);
 			}
 			$values[$fieldName] = $fieldModel;
 		}
