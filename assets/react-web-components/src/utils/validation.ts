@@ -56,10 +56,11 @@ export function validateEmail(value: string): ValidationResult {
   }
 
   const trimmedValue = value.trim();
-  // 従来と同じ正規表現パターン（旧版と完全一致させるため冗長なエスケープも保持）
+  // 従来の validation.js と同等パターン。ローカル部にアポストロフィ「'」を許容
+  // （RFC上は不可だが docomo など実在アドレス対応。issue #1482 参照）
   // prettier が代入を改行分割するため、行末 disable でregex行を直接対象にする
   const emailFilter =
-    /^[_/a-zA-Z0-9*]+([!"#$%&'()*+,./:;<=>?\^_`'{|}~-]?[a-zA-Z0-9/_/-])*@[a-zA-Z0-9]+([\_\.]?[a-zA-Z0-9\-]+)*\.([\-\_]?[a-zA-Z0-9])+(\.?[a-zA-Z0-9]+)?$/; // eslint-disable-line no-useless-escape
+    /^['_/a-zA-Z0-9*]+([!"#$%&'()*+,./:;<=>?\^_`'{|}~-]?['a-zA-Z0-9/_-])*@[a-zA-Z0-9]+([\_\.]?[a-zA-Z0-9\-]+)*\.([\-\_]?[a-zA-Z0-9])+(\.?[a-zA-Z0-9]+)?$/; // eslint-disable-line no-useless-escape
 
   if (!emailFilter.test(trimmedValue)) {
     return {

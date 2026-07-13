@@ -380,7 +380,8 @@ jQuery.validator.addMethod("time", function(value, element, params) {
 
 jQuery.validator.addMethod("email", function(value, element, params) {
 		value = value.trim();
-		var emailFilter = /^[_/a-zA-Z0-9*]+([!"#$%&'()*+,./:;<=>?\^_`'{|}~-]?[a-zA-Z0-9/_/-])*@[a-zA-Z0-9]+([\_\.]?[a-zA-Z0-9\-]+)*\.([\-\_]?[a-zA-Z0-9])+(\.?[a-zA-Z0-9]+)?$/;
+		// ローカル部に「'」を許容 (issue #1482: docomo 等実在アドレス対応)
+		var emailFilter = /^['_/a-zA-Z0-9*]+([!"#$%&'()*+,./:;<=>?\^_`'{|}~-]?['a-zA-Z0-9/_-])*@[a-zA-Z0-9]+([\_\.]?[a-zA-Z0-9\-]+)*\.([\-\_]?[a-zA-Z0-9])+(\.?[a-zA-Z0-9]+)?$/;
 
 		if(!value) return true;
 
@@ -392,10 +393,13 @@ jQuery.validator.addMethod("email", function(value, element, params) {
 );
 
 jQuery.validator.addMethod("multiEmails", function(value, element, params) {
-		var emailFilter = /^[_/a-zA-Z0-9*]+([!"#$%&'()*+,./:;<=>?\^_`'{|}~-]?[a-zA-Z0-9/_/-])*@[a-zA-Z0-9]+([\_\.]?[a-zA-Z0-9\-]+)*\.([\-\_]?[a-zA-Z0-9])+(\.?[a-zA-Z0-9]+)?$/;
+		// ローカル部に「'」を許容 (issue #1482: docomo 等実在アドレス対応)
+		var emailFilter = /^['_/a-zA-Z0-9*]+([!"#$%&'()*+,./:;<=>?\^_`'{|}~-]?['a-zA-Z0-9/_-])*@[a-zA-Z0-9]+([\_\.]?[a-zA-Z0-9\-]+)*\.([\-\_]?[a-zA-Z0-9])+(\.?[a-zA-Z0-9]+)?$/;
 
 		if(!value) return true;
-		var fieldValuesList = value.split(',');
+		// テンプレート由来のHTMLエンティティ (&#039; 等) をデコードしてから検証
+		var decoded = jQuery('<div/>').html(value).text();
+		var fieldValuesList = decoded.split(',');
 		for (var i in fieldValuesList) {
 			var splittedFieldValue = fieldValuesList[i];
 			splittedFieldValue = splittedFieldValue.trim();
