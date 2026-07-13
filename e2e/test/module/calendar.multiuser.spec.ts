@@ -5,6 +5,8 @@ import { passwordFor } from "../../fixtures/seedSpec";
 import {
   createEventViaModal,
   deleteCalendarEvent,
+  deleteEventViaDetail,
+  expectEventDeleted,
 } from "../../utils/calendar";
 
 /**
@@ -109,6 +111,40 @@ test.describe.serial("カレンダー(複数ユーザー): 招待", () => {
           await context.close();
         }
       }
+    } finally {
+      if (wsId) await deleteCalendarEvent(wsId);
+    }
+  });
+
+  test("#864 参加者(招待された一般A)が他者(admin)の予定を削除できる", async ({
+    page,
+    browser,
+  }) => {
+    test.setTimeout(120000);
+    const subject = `E2Emudel${generateRandomString(5)}`;
+    let wsId = "";
+    try {
+      // admin 作成・一般A を招待
+      const rec = await createEventViaModal(page, {
+        subject,
+        invitees: ["1課員"],
+      });
+      wsId = rec.wsId;
+
+      // 一般A としてログインし、参加者として他者(admin)の予定を削除する(#864 の仕様)
+      const { context, page: repPage } = await loginInIsolatedContext(
+        browser,
+        "e2e_rep_a",
+        passwordFor("e2e_rep_a")
+      );
+      try {
+        await deleteEventViaDetail(repPage, rec.recordId);
+      } finally {
+        await context.close();
+      }
+      // admin 側 API で不在(削除済み)を確認
+      await expectEventDeleted(subject);
+      wsId = "";
     } finally {
       if (wsId) await deleteCalendarEvent(wsId);
     }
