@@ -1,7 +1,7 @@
 import { expect, type Page } from "@playwright/test";
 import { url } from "./util";
 import { apiSession } from "./api";
-import { frQuery, frRetrieve, frDelete } from "../model/fetcher";
+import { frQuery, frRetrieve, frDelete, frCreate } from "../model/fetcher";
 
 /**
  * カレンダー(活動)予定の作成・検証ヘルパ。
@@ -366,6 +366,23 @@ export async function createRecurringEvent(
   recurringType: RecurringType,
   allDay = false
 ): Promise<CreatedCalendarEvent> {
+  // モーダル→詳細入力→フルフォームの一連は重く、高並列時に UI 操作が競合して
+  // まれに失敗する。作成できていなければ 1 度だけやり直す(冪等: 件名で検索して確認)。
+  try {
+    return await attemptCreateRecurringEvent(page, subject, recurringType, allDay);
+  } catch {
+    const existing = await findEventBySubjectOrNull(subject, 3);
+    if (existing) return existing;
+    return await attemptCreateRecurringEvent(page, subject, recurringType, allDay);
+  }
+}
+
+async function attemptCreateRecurringEvent(
+  page: Page,
+  subject: string,
+  recurringType: RecurringType,
+  allDay = false
+): Promise<CreatedCalendarEvent> {
   await page.goto(url("index.php?module=Calendar&view=Calendar&app=SALES"));
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(1200);
@@ -407,6 +424,96 @@ export async function createRecurringEvent(
     throw new Error(`繰り返し予定の作成に失敗(反映遅延を超過?): ${subject}`);
   }
   return rec;
+}
+
+/** 当日から days 日後の日付(yyyy-mm-dd)。0 で当日。 */
+export function dayStr(days = 0): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${mm}-${dd}`;
+}
+
+/** userName から webservice ユーザーID(例 "19x7")を引く。 */
+export async function resolveUserWsId(userName: string): Promise<string> {
+  const sn = await apiSession();
+  const rows = await frQuery(
+    sn,
+    `SELECT id FROM Users WHERE user_name='${userName}';`
+  );
+  const id = rows?.[0]?.id;
+  if (!id) throw new Error(`ユーザーが見つかりません: ${userName}`);
+  return id;
+}
+
+export interface ApiEventInput {
+  subject: string;
+  /** 所有者(assigned_user_id)。webservice ユーザーID(例 "19x7")。 */
+  ownerWsId: string;
+  /** 開始=終了日(yyyy-mm-dd)。 */
+  date: string;
+  timeStart?: string;
+  timeEnd?: string;
+  visibility?: "Public" | "Private";
+  activitytype?: string;
+}
+
+/**
+ * Events を Webservice API で作成し wsId を返す。
+ * 他ユーザー所有・可視性(公開/非公開)を検証するため assigned_user_id を明示指定できる。
+ * Events は duration_hours/duration_minutes が必須(MANDATORY_FIELDS_MISSING 対策)。
+ */
+export async function createEventViaApi(input: ApiEventInput): Promise<string> {
+  const sn = await apiSession();
+  const res = await frCreate(sn, "Events", {
+    subject: input.subject,
+    assigned_user_id: input.ownerWsId,
+    date_start: input.date,
+    due_date: input.date,
+    time_start: input.timeStart ?? "10:00",
+    time_end: input.timeEnd ?? "11:00",
+    duration_hours: "1",
+    duration_minutes: "0",
+    eventstatus: "Planned",
+    activitytype: input.activitytype ?? "Meeting",
+    visibility: input.visibility ?? "Public",
+  });
+  const id = (res as { id?: string } | false) && (res as { id?: string }).id;
+  if (!id) throw new Error(`Events API 作成に失敗: ${input.subject}`);
+  return id;
+}
+
+export interface CalendarFeedItem {
+  id: string;
+  title: string;
+  url: string;
+  visibility: string;
+  start: string;
+  end: string;
+  userid: string;
+}
+
+/**
+ * 指定ユーザーの予定フィード(FullCalendar 用 JSON)を「現在ログイン中ユーザーの視点」で取得する。
+ * 共有カレンダー(他者予定の閲覧)や非公開マスク(予定あり*)の検証に使う。
+ * page はフィードを見る側のユーザーでログイン済みであること(page.request がその Cookie を使う)。
+ */
+export async function fetchCalendarFeed(
+  page: Page,
+  ownerUserId: string,
+  start: string,
+  end: string
+): Promise<CalendarFeedItem[]> {
+  const uid = ownerUserId.includes("x")
+    ? ownerUserId.split("x")[1]
+    : ownerUserId;
+  const feedUrl = url(
+    `index.php?module=Calendar&action=Feed&type=Events&userid=${uid}&start=${start}&end=${end}&color=%233366cc&textColor=white`
+  );
+  const resp = await page.request.get(feedUrl);
+  if (!resp.ok()) throw new Error(`Feed 取得失敗: ${resp.status()}`);
+  return JSON.parse(await resp.text()) as CalendarFeedItem[];
 }
 
 /** 指定件名の予定が存在しない(削除済み)ことを API で確認する(削除の非同期を数回リトライ)。 */

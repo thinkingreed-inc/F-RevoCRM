@@ -22,12 +22,12 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 ## 1. 現状サマリ
 
-現在の spec ファイルは 87 本。テストは目的別に 4 ディレクトリへ整理。
+現在の spec ファイルは 88 本。テストは目的別に 4 ディレクトリへ整理。
 
 | ディレクトリ | 内容 | 状態 |
 |---|---|---|
 | `test/common/`（34 本） | 全モジュール横断の共通機能（検索/フォロー/タグ+一括タグ/エクスポート/インポート/一括削除+ゴミ箱/クイック作成/クイック編集/一括編集/更新履歴/コメント+一括コメント/関連一覧+関連追加/リスト(CustomView)/概要詳細タブ/クイックプレビュー/カレンダー表示/ログイン失敗/**権限・可視範囲**/**アクション権限**/**項目権限**/**出力権限**/**共有ルール**/**所有者変更**/**タグ絞り込み**/**CustomView条件**/**ページング・列ソート**/**検索・絞り込み**/**更新履歴の削除・復元**/**インポート履歴**/**編集画面の読み取り専用項目表示**） | ✅ 実行中 |
-| `test/module/`（12 本） | モジュール固有機能（Accounts 一覧表示/カスタマイズ + 各モジュールの詳細固有アクション: Accounts/Contacts/Leads/Potentials/Vendors/HelpDesk のメール・SMS・変換・作成起動、Calendar 作成編集、メール/PDFテンプレート一覧、**在庫系 Invoice/Quotes/SalesOrder/PurchaseOrder の CRUD + 割引/税/合計の監査**、**カレンダー基本パターン(単一ユーザー=`calendar.basic.spec.ts`)**、**カレンダー モーダル(終日/招待/共有メモ=`calendar.additional.spec.ts`)、繰り返し(=`calendar.recurring.spec.ts`)、複数ユーザー(招待/#864=`calendar.multiuser.spec.ts`)**） | 🟡→✅ 起動確認 + 在庫監査 + カレンダー(基本/モーダル/繰返/複数ユーザー) |
+| `test/module/`（15 本） | モジュール固有機能（Accounts 一覧表示/カスタマイズ + 各モジュールの詳細固有アクション: Accounts/Contacts/Leads/Potentials/Vendors/HelpDesk のメール・SMS・変換・作成起動、Calendar 作成編集、メール/PDFテンプレート一覧、**在庫系 Invoice/Quotes/SalesOrder/PurchaseOrder の CRUD + 割引/税/合計の監査**、**カレンダー基本パターン(単一ユーザー=`calendar.basic.spec.ts`)**、**カレンダー モーダル(終日/招待/共有メモ=`calendar.additional.spec.ts`)、繰り返し(=`calendar.recurring.spec.ts`)、複数ユーザー(招待/3名招集/#864=`calendar.multiuser.spec.ts`)、共有・可視性(共有カレンダー表示/非公開マスク=`calendar.sharing.spec.ts`)**） | 🟡→✅ 起動確認 + 在庫監査 + カレンダー(基本/モーダル/繰返/複数ユーザー/共有) |
 | `test/admin/*.spec.ts`（36 本） | システム管理画面の C〜I グループ + スモーク（E-02/E-04/F-04/F-08） | ✅/⏭️ 混在 |
 | `test/fr.common.spec.ts` | **17 モジュールの新規作成 / 編集 / 削除**（`FrTest` 汎用ドライバ） | ✅ |
 | `test/matrix/`（spec 1 本 + ドライバ: capabilities.ts / MatrixTest.ts） | モジュール×機能セル(25 ケース: 再利用系/個人リスト×4/複製×2/詳細編集/ファイル×2/コメント添付/関連×3/共有リスト×2/**マイリスト×2**)を `capabilities.ts` の `ModuleMatrix`(`cases`)で判定し `matrix.spec.ts` が生成実行する能力表ドライバ。**全 29 モジュールを有効化(describe駆動)**。`searchField`(名前列)は describe.labelFields、`relatedSpec`(関連)は親/子 describe から自動導出。使い捨てレコードは Webservice API 優先で作成。汎用ドライバで作成/操作できない特殊モジュール(インベントリ=明細必須 / Calendar / EmailTemplates・PDFTemplates / Portal / Documents・Dailyreports の一部)は reason 付き skip・na に退避(実機能は各専用spec で担保)。フルマトリクスは ~354 パス | ✅(全29モジュール, 特殊ケースは reason 付き skip) |
@@ -130,10 +130,13 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - ✅ **カレンダー 複数ユーザー(招待・#864)を実装** → `test/module/calendar.multiuser.spec.ts`。
   作成者(admin)が seed ユーザー(一般A=e2e_rep_a「E2E 1課員」/ 一般B=e2e_rep_b「E2E 2課員」)を招待して予定作成し、
   `loginInIsolatedContext` で各招待ユーザーとしてログインして検証:
-  - **招待者が招待予定を閲覧できる**(単一招待 / 複数招待=A・B 両者)
+  - **招待者が招待予定を閲覧できる**(単一招待 / 複数招待=A・B 両者 / **3 名招集=A・B・部長**)
   - **#864 参加者が他者(admin)の予定を削除できる**(招待された一般A が admin の予定を削除→API で不在確認)
-  - ⏭️ 残: **共有カレンダーでの非招待ユーザー表示**(カレンダー共有設定に依存)、非公開予定の「予定あり*」表示、
-    一般C/マネC を要する 3 人以上の招集連鎖(seed に C の追加が必要)。
+- ✅ **カレンダー 共有・可視性を実装** → `test/module/calendar.sharing.spec.ts`(+ `utils/calendar.ts::fetchCalendarFeed`/`createEventViaApi`/`resolveUserWsId`)。
+  予定フィード(`index.php?module=Calendar&action=Feed`)を「他ユーザー(上位役割 e2e_director=部長・非管理者)の視点」で取得し検証:
+  - **共有カレンダー表示**: 非招待の他者からも **公開予定は件名まで見える**(遷移リンク付き)
+  - **非公開マスク**: 他者の **非公開予定は「(名前) - 予定あり*」でマスク**され、件名は露出せず遷移リンク(url)も空
+  - 既存 5 ユーザー(2 課構成 + 部長)で充足するため seed 追加は不要(一般C/マネC は不要と判明)。
   - ⏭️ **その他追加機能**: #1186(管理者が他ユーザーのカレンダー設定変更)/ #1193(マイグループ表示記憶)は設定画面 UI。
   - ⏭️ **対象外/保留**: MFA 記憶(#1397)=不要(対象外)。管理者(ID=1)削除禁止=第2管理者フィクスチャ要のため保留。
 
