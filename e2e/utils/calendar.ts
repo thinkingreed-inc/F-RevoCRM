@@ -89,20 +89,42 @@ export async function editCalendarEvent(
   await page.waitForLoadState("networkidle");
 }
 
-/** 件名で Calendar レコードを引き、recordId/wsId を返す。 */
+/**
+ * 件名で予定(WSレコード)を引く。見つからなければ undefined。
+ *
+ * F-RevoCRM の予定は Webservice 上 2 モジュールに分かれる:
+ *  - Calendar = ToDo(activitytype=Task)
+ *  - Events   = 活動(activitytype=Call/Meeting 等、時間区切り/終日)
+ * モーダルの既定は時間区切り活動(Call)のため Events 側に入る。標準 Edit フォームの
+ * ToDo は Calendar 側。どちらに入るかは作成経路で変わるため、両モジュールを引く。
+ */
+async function queryEvent(
+  sn: string,
+  subject: string
+): Promise<CreatedCalendarEvent | undefined> {
+  for (const mod of ["Events", "Calendar"]) {
+    const rows = await frQuery(
+      sn,
+      `SELECT id FROM ${mod} WHERE subject='${subject}';`
+    );
+    if (rows?.length) {
+      const wsId = rows[0].id;
+      return { recordId: wsId.split("x")[1], wsId };
+    }
+  }
+  return undefined;
+}
+
+/** 件名で予定を引き、recordId/wsId を返す(Calendar/Events 両対応)。 */
 export async function findEventBySubject(
   subject: string
 ): Promise<CreatedCalendarEvent> {
   const sn = await apiSession();
-  const rows = await frQuery(
-    sn,
-    `SELECT id FROM Calendar WHERE subject='${subject}';`
-  );
-  if (!rows.length) {
-    throw new Error(`Calendar 予定が見つかりません(作成失敗?): ${subject}`);
+  const rec = await queryEvent(sn, subject);
+  if (!rec) {
+    throw new Error(`予定が見つかりません(作成失敗?): ${subject}`);
   }
-  const wsId = rows[0].id;
-  return { recordId: wsId.split("x")[1], wsId };
+  return rec;
 }
 
 /** 保存値(API)を取得して返す(subject/date_start/time_start/visibility 等の検証用)。 */
@@ -199,16 +221,88 @@ export async function deleteEventViaDetail(
   await page.waitForTimeout(1500);
 }
 
+/**
+ * 件名で Calendar レコードを引く。無ければ null。
+ * 新規作成モーダルの保存は「POST(200) → 画面表示 → 再フェッチ」と反映が遅いため、
+ * 既定で寛大にリトライ(attempts 回 × 1s)して反映待ちを吸収する。
+ */
+export async function findEventBySubjectOrNull(
+  subject: string,
+  attempts = 20
+): Promise<CreatedCalendarEvent | null> {
+  const sn = await apiSession();
+  for (let i = 0; i < attempts; i++) {
+    const rec = await queryEvent(sn, subject);
+    if (rec) return rec;
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+  return null;
+}
+
+export interface ModalEventInput {
+  subject: string;
+  /** 終日にする(is_allday)。 */
+  allDay?: boolean;
+  /** 共有メモ(common_memo, #1191)。 */
+  commonMemo?: string;
+}
+
+/**
+ * カレンダーの新規作成モーダル(React QuickCreate = CalendarForm.tsx)で予定を作成する。
+ *
+ * 標準 Edit フォームに無い 共有メモ(common_memo)/終日(is_allday)はこのモーダルでのみ設定できる。
+ * モーダルはカレンダービュー上で `Calendar_Calendar_Js.showCreateEventModal()` を実行して開く
+ * (追加ボタンは #messageBar に干渉されるため JS 起動が安定)。日時は既定(当日+現在時刻)を使う。
+ *
+ * 【保存の反映が遅い】保存 POST(module=Events&api=Save)は 200 でも、レコードが WS クエリ・
+ * 一覧・詳細に反映されるまで数秒のラグがある(保存→画面表示→再フェッチ)。そのため保存後は
+ * モーダルの閉じ(=保存受理)を待ってから、件名クエリを寛大にリトライして特定する。
+ */
+export async function createEventViaModal(
+  page: Page,
+  input: ModalEventInput
+): Promise<CreatedCalendarEvent> {
+  await page.goto(url("index.php?module=Calendar&view=Calendar&app=SALES"));
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(1200);
+  await page.evaluate(() => {
+    // @ts-ignore - グローバルのカレンダーJS
+    Calendar_Calendar_Js.showCreateEventModal();
+  });
+  const subjectInput = page.locator("#field_subject");
+  await subjectInput.waitFor({ state: "visible", timeout: 15000 });
+  await subjectInput.fill(input.subject);
+  if (input.commonMemo) {
+    await page.locator("#field_common_memo").fill(input.commonMemo);
+  }
+  if (input.allDay) {
+    await page
+      .locator("label")
+      .filter({ hasText: "終日" })
+      .first()
+      .click({ force: true });
+    await page.waitForTimeout(400);
+  }
+  await page.getByRole("button", { name: "保存", exact: true }).first().click();
+  // 保存受理(モーダルが閉じる)を待つ
+  await subjectInput.waitFor({ state: "hidden", timeout: 15000 }).catch(() => {});
+  // 反映が遅いので件名クエリを寛大にリトライして特定する
+  const rec = await findEventBySubjectOrNull(input.subject, 20);
+  if (!rec) {
+    throw new Error(
+      `カレンダー新規作成モーダル: 保存後に予定が見つかりません(反映遅延を超過?): ${input.subject}`
+    );
+  }
+  return rec;
+}
+
 /** 指定件名の予定が存在しない(削除済み)ことを API で確認する(削除の非同期を数回リトライ)。 */
 export async function expectEventDeleted(subject: string): Promise<void> {
   const sn = await apiSession();
   let count = 1;
   for (let i = 0; i < 5; i++) {
-    const rows = await frQuery(
-      sn,
-      `SELECT id FROM Calendar WHERE subject='${subject}';`
-    );
-    count = rows.length;
+    const rec = await queryEvent(sn, subject);
+    count = rec ? 1 : 0;
     if (count === 0) return;
     await new Promise((r) => setTimeout(r, 1000));
   }
