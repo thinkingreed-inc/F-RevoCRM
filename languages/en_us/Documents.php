@@ -117,4 +117,5 @@ $jsLanguageStrings = array(
     'JS_UPLOAD_FAILED' => 'File Upload Failed',
     'JS_DOCUMENT_CREATED' => 'Document created',
     'JS_DOCUMENT_CREATION_FAILED' => 'Document creation failed',
+    'JS_SELECT_A_FOLDER' => 'Please select a folder',
  );
