@@ -1,6 +1,6 @@
 import { test as setup } from '@playwright/test';
-import { acquireApiSession } from './model/session';
-import { BASE_URL, authFile } from './utils/util';
+import { acquireApiSession } from '../../model/session';
+import { BASE_URL, authFile } from '../../utils/util';
 
 /**
  * 依存関係の起点。ここで「一度だけ」ブラウザ認証(storageState)と

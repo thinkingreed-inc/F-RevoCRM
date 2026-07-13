@@ -1,7 +1,7 @@
 import { test } from "@playwright/test";
-import { FrTest } from "../model/FrTest";
+import { FrTest } from "../../model/FrTest";
 import { readFileSync } from "fs";
-import { sessionNameFile } from "../utils/util";
+import { sessionNameFile } from "../../utils/util";
 
 const moduleMap: Record<string, typeof FrTest> = {
   Accounts: FrTest,

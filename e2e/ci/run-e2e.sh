@@ -143,14 +143,14 @@ echo "==> Playwright 実行"
 #    ローカルの `cd e2e && npm run test:e2e`(E2E_SCOPE 未設定)で実行する運用。
 #  - CI のサブセットを増減したい場合はこの CI_SPECS と matrix.spec.ts の CI_SAMPLE_MODULES を編集する。
 CI_SPECS=(
-  auth.setup.ts
-  seed.setup.ts
-  test/matrix/matrix.spec.ts
-  test/module/calendar.basic.spec.ts
-  test/module/inventory.spec.ts
-  test/common/common.search.spec.ts
-  test/common/common.customview.spec.ts
-  test/common/common.permission.spec.ts
+  tests/0_準備/auth.setup.ts
+  tests/0_準備/seed.setup.ts
+  tests/2_CRUD/マトリクス.spec.ts
+  tests/4_モジュール/カレンダー/基本.spec.ts
+  tests/4_モジュール/在庫/在庫.spec.ts
+  tests/3_共通機能/列検索.spec.ts
+  tests/3_共通機能/リスト.spec.ts
+  tests/3_共通機能/権限.spec.ts
 )
 (
   cd e2e

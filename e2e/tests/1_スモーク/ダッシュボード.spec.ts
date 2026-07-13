@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { url, waitSeconds } from '../utils/util';
-import { sidebarTest } from '../utils/test';
+import { url, waitSeconds } from '../../utils/util';
+import { sidebarTest } from '../../utils/test';
 
 test.describe('基本機能のテスト', () => {
   test.beforeEach(async ({ page }) => {

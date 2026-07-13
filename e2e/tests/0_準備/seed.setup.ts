@@ -1,8 +1,8 @@
 import { test as setup } from "@playwright/test";
-import { frgetDescribe, frCount, frCreate } from "./model/fetcher";
-import { getStoredSessionName, getStoredUserId } from "./model/session";
-import { getFieldValue } from "./utils/field";
-import { generateRandomString } from "./utils/util";
+import { frgetDescribe, frCount, frCreate } from "../../model/fetcher";
+import { getStoredSessionName, getStoredUserId } from "../../model/session";
+import { getFieldValue } from "../../utils/field";
+import { generateRandomString } from "../../utils/util";
 
 /**
  * 関連項目(reference)で「参照される側」になるモジュール。

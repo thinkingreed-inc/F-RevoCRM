@@ -1,11 +1,11 @@
-import { test, expect } from "../../fixtures/isolated";
-import { generateRandomString } from "../../utils/util";
+import { test, expect } from "../../../fixtures/isolated";
+import { generateRandomString } from "../../../utils/util";
 import {
   createRecurringEvent,
   retrieveEvent,
   deleteAllEventsBySubject,
   type RecurringType,
-} from "../../utils/calendar";
+} from "../../../utils/calendar";
 
 /**
  * カレンダー 繰り返し予定 — 元スプレッドシート `_カレンダー基本パターン` 5.x

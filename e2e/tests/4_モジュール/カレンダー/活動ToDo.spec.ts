@@ -1,7 +1,7 @@
-import { test, expect } from "../../fixtures/isolated";
-import { url, generateRandomString } from "../../utils/util";
-import { apiSession } from "../../utils/api";
-import { frQuery, frDelete } from "../../model/fetcher";
+import { test, expect } from "../../../fixtures/isolated";
+import { url, generateRandomString } from "../../../utils/util";
+import { apiSession } from "../../../utils/api";
+import { frQuery, frDelete } from "../../../model/fetcher";
 
 /**
  * 活動 / ToDo (Calendar) の作成・編集 — 機能一覧 39 / 40

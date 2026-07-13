@@ -1,5 +1,5 @@
-import { test, expect } from "../../fixtures/isolated";
-import { generateRandomString } from "../../utils/util";
+import { test, expect } from "../../../fixtures/isolated";
+import { generateRandomString } from "../../../utils/util";
 import {
   createCalendarEvent,
   editCalendarEvent,
@@ -9,7 +9,7 @@ import {
   duplicateEventViaDetail,
   deleteEventViaDetail,
   expectEventDeleted,
-} from "../../utils/calendar";
+} from "../../../utils/calendar";
 
 /**
  * カレンダー基本パターン(単一ユーザー分) — 元スプレッドシート `_カレンダー基本パターン`

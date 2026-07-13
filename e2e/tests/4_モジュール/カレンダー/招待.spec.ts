@@ -1,13 +1,13 @@
-import { test, expect } from "../../fixtures/isolated";
-import { url, generateRandomString } from "../../utils/util";
-import { loginInIsolatedContext } from "../../utils/settings";
-import { passwordFor } from "../../fixtures/seedSpec";
+import { test, expect } from "../../../fixtures/isolated";
+import { url, generateRandomString } from "../../../utils/util";
+import { loginInIsolatedContext } from "../../../utils/settings";
+import { passwordFor } from "../../../fixtures/seedSpec";
 import {
   createEventViaModal,
   deleteCalendarEvent,
   deleteEventViaDetail,
   expectEventDeleted,
-} from "../../utils/calendar";
+} from "../../../utils/calendar";
 
 /**
  * カレンダー(複数ユーザー) — 元スプレッドシート `_カレンダー招待`

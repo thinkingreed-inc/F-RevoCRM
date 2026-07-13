@@ -1,9 +1,9 @@
-import { test, expect } from "../../fixtures/isolated";
-import { url, generateRandomString } from "../../utils/util";
+import { test, expect } from "../../../fixtures/isolated";
+import { url, generateRandomString } from "../../../utils/util";
 import {
   createEventViaModal,
   deleteCalendarEvent,
-} from "../../utils/calendar";
+} from "../../../utils/calendar";
 
 /**
  * カレンダー: 新規作成モーダル(React QuickCreate)でのみ設定できる項目の検証。

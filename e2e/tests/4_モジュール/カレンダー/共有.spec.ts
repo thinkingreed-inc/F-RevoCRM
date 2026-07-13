@@ -1,15 +1,15 @@
-import { test, expect } from "../../fixtures/isolated";
-import { generateRandomString } from "../../utils/util";
-import { loginInIsolatedContext } from "../../utils/settings";
-import { passwordFor } from "../../fixtures/seedSpec";
-import { apiSession } from "../../utils/api";
-import { frDelete } from "../../model/fetcher";
+import { test, expect } from "../../../fixtures/isolated";
+import { generateRandomString } from "../../../utils/util";
+import { loginInIsolatedContext } from "../../../utils/settings";
+import { passwordFor } from "../../../fixtures/seedSpec";
+import { apiSession } from "../../../utils/api";
+import { frDelete } from "../../../model/fetcher";
 import {
   createEventViaApi,
   resolveUserWsId,
   fetchCalendarFeed,
   dayStr,
-} from "../../utils/calendar";
+} from "../../../utils/calendar";
 
 /**
  * カレンダー(共有・可視性) — 元スプレッドシート `_カレンダー`

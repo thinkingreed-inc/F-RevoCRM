@@ -1,9 +1,9 @@
-import { test, expect } from "../../fixtures/isolated";
-import { seedSpec } from "../../fixtures/seedSpec";
-import { createRecordViaApi, deleteRecordViaApi } from "../../utils/record";
-import { deleteViaDetail } from "../../utils/listview";
-import { generateRandomString } from "../../utils/util";
-import * as li from "../../utils/lineitem";
+import { test, expect } from "../../../fixtures/isolated";
+import { seedSpec } from "../../../fixtures/seedSpec";
+import { createRecordViaApi, deleteRecordViaApi } from "../../../utils/record";
+import { deleteViaDetail } from "../../../utils/listview";
+import { generateRandomString } from "../../../utils/util";
+import * as li from "../../../utils/lineitem";
 
 /**
  * 在庫明細の「品目名インライン検索(オートコンプリート)」と「製品追加 / サービス追加」の E2E。
