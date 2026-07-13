@@ -117,4 +117,5 @@ $jsLanguageStrings = array(
     'JS_UPLOAD_FAILED' => 'アップロードに失敗しました',
     'JS_DOCUMENT_CREATED' => 'ドキュメントを登録しました',
     'JS_DOCUMENT_CREATION_FAILED' => 'ドキュメントの登録に失敗しました',
+    'JS_SELECT_A_FOLDER' => 'フォルダを選択してください',
  );
