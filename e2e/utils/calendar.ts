@@ -165,6 +165,20 @@ export async function deleteCalendarEvent(wsId: string): Promise<void> {
   await frDelete(sn, wsId).catch(() => {});
 }
 
+/** 件名に一致する予定を(繰り返しで複数生成された分も含め)全て API 削除する後始末。 */
+export async function deleteAllEventsBySubject(subject: string): Promise<void> {
+  const sn = await apiSession();
+  for (const mod of ["Events", "Calendar"]) {
+    const rows = await frQuery(
+      sn,
+      `SELECT id FROM ${mod} WHERE subject='${subject}';`
+    ).catch(() => [] as any[]);
+    for (const r of rows ?? []) {
+      if (r?.id) await frDelete(sn, r.id).catch(() => {});
+    }
+  }
+}
+
 /**
  * 詳細画面から予定を複製する。複製フォームで件名を新件名に変更して保存し、
  * 新レコード(recordId/wsId)を返す。保存後はカレンダービューへ遷移するため
@@ -327,6 +341,70 @@ export async function createEventViaModal(
     throw new Error(
       `カレンダー新規作成モーダル: 保存後に予定が見つかりません(反映遅延を超過?): ${input.subject}`
     );
+  }
+  return rec;
+}
+
+/** 繰り返し種別(スプレッドシートの 日/週/月/年)。 */
+export type RecurringType = "Daily" | "Weekly" | "Monthly" | "Yearly";
+const RECUR_LABEL: Record<RecurringType, string> = {
+  Daily: "日",
+  Weekly: "週",
+  Monthly: "月",
+  Yearly: "年",
+};
+
+/**
+ * 繰り返し予定を作成する。新規作成モーダル → 「詳細入力」でフル編集画面
+ * (view=Edit&mode=Events)へ遷移し、繰り返し(recurringcheck)を ON にして
+ * 繰り返し種別(recurringtype: 日/週/月/年)を設定して保存する。
+ * (繰り返し UI はモーダルには無く、このフル編集画面にのみ存在する)
+ */
+export async function createRecurringEvent(
+  page: Page,
+  subject: string,
+  recurringType: RecurringType,
+  allDay = false
+): Promise<CreatedCalendarEvent> {
+  await page.goto(url("index.php?module=Calendar&view=Calendar&app=SALES"));
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(1200);
+  await page.evaluate(() => {
+    // @ts-ignore
+    Calendar_Calendar_Js.showCreateEventModal();
+  });
+  await page.locator("#field_subject").waitFor({ state: "visible", timeout: 15000 });
+  await page.locator("#field_subject").fill(subject);
+  // 「詳細入力」でフル編集画面へ(POST 遷移)
+  await page
+    .getByRole("button", { name: "詳細入力", exact: false })
+    .first()
+    .click();
+  await page.waitForURL(/view=Edit/, { timeout: 15000 });
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(800);
+  if (allDay) {
+    const allDayCheck = page.locator("#alldayEvent").first();
+    if (!(await allDayCheck.isChecked().catch(() => false))) {
+      await allDayCheck.check({ force: true });
+    }
+    await page.waitForTimeout(300);
+  }
+  // 繰り返しを ON にして種別を選択
+  const recurCheck = page.locator('input[name="recurringcheck"]').first();
+  if (!(await recurCheck.isChecked().catch(() => false))) {
+    await recurCheck.check({ force: true });
+  }
+  await page.waitForTimeout(400);
+  await page
+    .locator('select[name="recurringtype"]')
+    .selectOption({ label: RECUR_LABEL[recurringType] });
+  await page.waitForTimeout(300);
+  await page.locator("button.saveButton").first().click();
+  await page.waitForLoadState("networkidle");
+  const rec = await findEventBySubjectOrNull(subject, 20);
+  if (!rec) {
+    throw new Error(`繰り返し予定の作成に失敗(反映遅延を超過?): ${subject}`);
   }
   return rec;
 }
