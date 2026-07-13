@@ -1028,7 +1028,8 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 	public static function getImportDetails($user, $moduleName, $importid) {
 		$adb = PearDatabase::getInstance();
 		$tableName = Import_Utils_Helper::getDbTableName($user, $importid);
-		$result = $adb->pquery("SELECT * FROM $tableName where status IN (?,?)", array(self::$IMPORT_RECORD_SKIPPED, self::$IMPORT_RECORD_FAILED));
+		$groupBy = in_array($moduleName, getInventoryModules()) ? ' GROUP BY subject' : '';
+		$result = $adb->pquery("SELECT * FROM $tableName where status IN (?,?)" . $groupBy, array(self::$IMPORT_RECORD_SKIPPED, self::$IMPORT_RECORD_FAILED));
 		$importRecords = array();
 		if ($result) {
 			$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
