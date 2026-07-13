@@ -245,6 +245,38 @@ export interface ModalEventInput {
   allDay?: boolean;
   /** 共有メモ(common_memo, #1191)。 */
   commonMemo?: string;
+  /** 招待するユーザーの検索語(名前の一部)。候補ドロップダウンから一致を選ぶ。 */
+  invitees?: string[];
+}
+
+/** モーダルの招待者検索に語を入れ、候補ドロップダウンから一致ユーザーを選択する。 */
+async function addInvitees(page: Page, terms: string[]): Promise<void> {
+  const search = page
+    .getByPlaceholder("ユーザーを検索して追加...")
+    .first();
+  await search.waitFor({ state: "visible", timeout: 8000 });
+  for (const term of terms) {
+    await search.click();
+    await search.fill(term);
+    await page.waitForTimeout(600);
+    // 候補は Portal で body 直下 [data-rwc-dropdown="invitee"]。一致名をクリック。
+    await page
+      .locator('[data-rwc-dropdown="invitee"]')
+      .getByText(term, { exact: false })
+      .first()
+      .click();
+    await page.waitForTimeout(300);
+    await search.fill("");
+  }
+  // 候補ドロップダウン(body直下・position:fixed・高z-index)は 保存 ボタンに重なって
+  // クリックを妨げるため、確実に閉じる(Escape → blur → 消えるまで待つ)。
+  await search.press("Escape").catch(() => {});
+  await search.blur().catch(() => {});
+  await page
+    .locator('[data-rwc-dropdown="invitee"]')
+    .waitFor({ state: "detached", timeout: 5000 })
+    .catch(() => {});
+  await page.waitForTimeout(300);
 }
 
 /**
@@ -282,6 +314,9 @@ export async function createEventViaModal(
       .first()
       .click({ force: true });
     await page.waitForTimeout(400);
+  }
+  if (input.invitees && input.invitees.length) {
+    await addInvitees(page, input.invitees);
   }
   await page.getByRole("button", { name: "保存", exact: true }).first().click();
   // 保存受理(モーダルが閉じる)を待つ

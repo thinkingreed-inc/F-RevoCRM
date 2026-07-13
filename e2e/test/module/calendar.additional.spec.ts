@@ -48,7 +48,7 @@ test.describe.serial("カレンダー(モーダル): 終日・共有メモ", () 
     }
   });
 
-  test("3.1 終日予定を登録でき、詳細で終日として表示される", async ({ page }) => {
+  test("3.1 終日予定を登録でき、詳細に表示される", async ({ page }) => {
     test.setTimeout(120000);
     const subject = `E2Eallday${generateRandomString(5)}`;
     let wsId = "";
@@ -57,6 +57,27 @@ test.describe.serial("カレンダー(モーダル): 終日・共有メモ", () 
       wsId = rec.wsId;
       // 詳細に件名が出る(=登録され表示される)ことを確認
       await expectOnDetail(page, rec.recordId, subject);
+    } finally {
+      if (wsId) await deleteCalendarEvent(wsId);
+    }
+  });
+
+  test("招待: 他ユーザーを招集して作成でき、詳細に招待者が表示される", async ({
+    page,
+  }) => {
+    test.setTimeout(120000);
+    const subject = `E2Einvite${generateRandomString(5)}`;
+    // seed のユーザー「E2E 1課員」(e2e_rep_a)を招待する
+    const inviteeName = "1課員";
+    let wsId = "";
+    try {
+      const rec = await createEventViaModal(page, {
+        subject,
+        invitees: [inviteeName],
+      });
+      wsId = rec.wsId;
+      // 詳細に招待者名が表示される(＝招待できた)
+      await expectOnDetail(page, rec.recordId, inviteeName);
     } finally {
       if (wsId) await deleteCalendarEvent(wsId);
     }
