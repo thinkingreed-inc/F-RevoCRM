@@ -1870,7 +1870,8 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
    説明文のみスクロール可能にし、完了・編集等のアイコンは常に表示する。
    モバイル表示では二重スクロール回避のため制限を適用しない */
 @media (min-width: 769px) {
-    .webui-popover .calendar-popover-description {
+    .webui-popover .calendar-popover-description,
+    .webui-popover .calendar-popover-common-memo {
         max-height: 200px;
         overflow-y: auto;
         margin-bottom: 4px;
