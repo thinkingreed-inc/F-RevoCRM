@@ -10,6 +10,7 @@
 
 require_once 'include/Webservices/VtigerModuleOperation.php';
 require_once 'include/Webservices/Utils.php';
+require_once 'include/utils/InventoryLineItemPreventDuplicateRecord.php';
 
 /**
  * Description of VtigerInventoryOperation
@@ -80,36 +81,48 @@ class VtigerInventoryOperation extends VtigerModuleOperation {
 			$this->triggerBeforeSaveEvents($sanitizedData, $eventManager);
 			unset($sanitizedData['id']);
 
+			$components = vtws_getIdComponents($element['id']);
+			$crmid = $components[1];
+			// 明細アイテムの重複登録防止ロック開始（save + setLineItems全体をカバー）
+			InventoryLineItemPreventDuplicateRecord::startPreventDuplicate($crmid);
+
 			$currentBulkSaveMode = vglobal('VTIGER_BULK_SAVE_MODE');
 			if ($currentBulkSaveMode === NULL) {
 				$currentBulkSaveMode = false;
 			}
-			vglobal('VTIGER_BULK_SAVE_MODE', true);
-			global $currentModule;
-			$currentModule = getTabname($this->tabId);
+			try {
+				vglobal('VTIGER_BULK_SAVE_MODE', true);
+				global $currentModule;
+				$currentModule = getTabname($this->tabId);
 
-			$updatedElement = parent::update($element);
-			vglobal('VTIGER_BULK_SAVE_MODE', $currentBulkSaveMode);
+				$updatedElement = parent::update($element);
+				vglobal('VTIGER_BULK_SAVE_MODE', $currentBulkSaveMode);
 
-			$handler->setLineItems('LineItem', $lineItemList, $updatedElement);
-			$parent = $handler->getParentById($element['id']);
-			$handler->updateParent($lineItemList, $parent);
-			$updatedParent = $handler->getParentById($element['id']);
-			//since subtotal and grand total is updated in the update parent api
-			$parent['hdnSubTotal'] = $updatedParent['hdnSubTotal'];
-			$parent['hdnGrandTotal'] = $updatedParent['hdnGrandTotal'];
-			$parent['pre_tax_total'] = $updatedParent['pre_tax_total'];
-			$updatedElement = array_merge($updatedElement,$parent);
+				$handler->setLineItems('LineItem', $lineItemList, $updatedElement);
+				$parent = $handler->getParentById($element['id']);
+				$handler->updateParent($lineItemList, $parent);
+				$updatedParent = $handler->getParentById($element['id']);
+				//since subtotal and grand total is updated in the update parent api
+				$parent['hdnSubTotal'] = $updatedParent['hdnSubTotal'];
+				$parent['hdnGrandTotal'] = $updatedParent['hdnGrandTotal'];
+				$parent['pre_tax_total'] = $updatedParent['pre_tax_total'];
+				$updatedElement = array_merge($updatedElement,$parent);
 
-			$currentValue = vglobal('updateInventoryProductRel_deduct_stock');
-			vglobal('updateInventoryProductRel_deduct_stock', false);
-			$original_update_product_array = vglobal('updateInventoryProductRel_update_product_array');
+				$currentValue = vglobal('updateInventoryProductRel_deduct_stock');
+				vglobal('updateInventoryProductRel_deduct_stock', false);
+				$original_update_product_array = vglobal('updateInventoryProductRel_update_product_array');
 
-			$updateInventoryProductRel_update_product_array = array();
-			$this->triggerAfterSaveEvents($updatedElement, $eventManager);
+				$updateInventoryProductRel_update_product_array = array();
+				$this->triggerAfterSaveEvents($updatedElement, $eventManager);
 
-			vglobal('updateInventoryProductRel_update_product_array',$original_update_product_array);
-			vglobal('updateInventoryProductRel_deduct_stock', $currentValue);
+				vglobal('updateInventoryProductRel_update_product_array',$original_update_product_array);
+				vglobal('updateInventoryProductRel_deduct_stock', $currentValue);
+			} finally {
+				// 例外時もBULK_SAVE_MODEを確実に復元
+				vglobal('VTIGER_BULK_SAVE_MODE', $currentBulkSaveMode);
+				// 明細アイテムの重複登録防止ロック解除
+				InventoryLineItemPreventDuplicateRecord::endPreventDuplicate($crmid);
+			}
 
 		} else {
 			$updatedElement = $this->revise($element);
@@ -133,35 +146,44 @@ class VtigerInventoryOperation extends VtigerModuleOperation {
 			$sanitizedData['id'] = $element['id'];
 			$this->triggerBeforeSaveEvents($sanitizedData, $eventManager);
 			unset($sanitizedData['id']);
+			// 明細アイテムの重複登録防止ロック開始（save + setLineItems全体をカバー）
+			InventoryLineItemPreventDuplicateRecord::startPreventDuplicate($parentId);
 			$currentBulkSaveMode = vglobal('VTIGER_BULK_SAVE_MODE');
 			if ($currentBulkSaveMode === NULL) {
 				$currentBulkSaveMode = false;
 			}
-			vglobal('VTIGER_BULK_SAVE_MODE', true);
+			try {
+				vglobal('VTIGER_BULK_SAVE_MODE', true);
 
-			$updatedElement = parent::revise($element);
-			vglobal('VTIGER_BULK_SAVE_MODE', $currentBulkSaveMode);
+				$updatedElement = parent::revise($element);
+				vglobal('VTIGER_BULK_SAVE_MODE', $currentBulkSaveMode);
 
-			$handler->setLineItems('LineItem', $lineItemList, $updatedElement);
-			$parent = $handler->getParentById($element['id']);
-			$handler->updateParent($lineItemList, $parent);
-			$updatedParent = $handler->getParentById($element['id']);
-			//since subtotal and grand total is updated in the update parent api
-			$parent['hdnSubTotal'] = $updatedParent['hdnSubTotal'];
-			$parent['hdnGrandTotal'] = $updatedParent['hdnGrandTotal'];
-			$parent['pre_tax_total'] = $updatedParent['pre_tax_total'];
-			$parent['LineItems'] = $handler->getAllLineItemForParent($parentId);
+				$handler->setLineItems('LineItem', $lineItemList, $updatedElement);
+				$parent = $handler->getParentById($element['id']);
+				$handler->updateParent($lineItemList, $parent);
+				$updatedParent = $handler->getParentById($element['id']);
+				//since subtotal and grand total is updated in the update parent api
+				$parent['hdnSubTotal'] = $updatedParent['hdnSubTotal'];
+				$parent['hdnGrandTotal'] = $updatedParent['hdnGrandTotal'];
+				$parent['pre_tax_total'] = $updatedParent['pre_tax_total'];
+				$parent['LineItems'] = $handler->getAllLineItemForParent($parentId);
 
-			$updatedElement = array_merge($updatedElement,$parent);
-			$currentValue = vglobal('updateInventoryProductRel_deduct_stock');
-			vglobal('updateInventoryProductRel_deduct_stock', false);
-			$original_update_product_array = vglobal('updateInventoryProductRel_update_product_array');
+				$updatedElement = array_merge($updatedElement,$parent);
+				$currentValue = vglobal('updateInventoryProductRel_deduct_stock');
+				vglobal('updateInventoryProductRel_deduct_stock', false);
+				$original_update_product_array = vglobal('updateInventoryProductRel_update_product_array');
 
-			$updateInventoryProductRel_update_product_array = array();
-			$this->triggerAfterSaveEvents($updatedElement, $eventManager);
+				$updateInventoryProductRel_update_product_array = array();
+				$this->triggerAfterSaveEvents($updatedElement, $eventManager);
 
-			vglobal('updateInventoryProductRel_update_product_array',$original_update_product_array);
-			vglobal('updateInventoryProductRel_deduct_stock', $currentValue);
+				vglobal('updateInventoryProductRel_update_product_array',$original_update_product_array);
+				vglobal('updateInventoryProductRel_deduct_stock', $currentValue);
+			} finally {
+				// 例外時もBULK_SAVE_MODEを確実に復元
+				vglobal('VTIGER_BULK_SAVE_MODE', $currentBulkSaveMode);
+				// 明細アイテムの重複登録防止ロック解除
+				InventoryLineItemPreventDuplicateRecord::endPreventDuplicate($parentId);
+			}
 		} else {
 			$prevAction = $_REQUEST['action'];
 			// This is added as we are passing data in user format, so in the crmentity insertIntoEntity API
