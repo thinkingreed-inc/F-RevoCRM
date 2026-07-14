@@ -22,10 +22,10 @@
 					{/if}
 					&nbsp;
 					{if $REQ.view eq 'Detail'}
-						<a title="{$RECORD->get('templatename')}">&nbsp;{$RECORD->get('templatename')}&nbsp;</a>
+						<a title="{vtranslate($RECORD->get('templatename'), $MODULE)}">&nbsp;{vtranslate($RECORD->get('templatename'), $MODULE)}&nbsp;</a>
 					{/if}
 					{if $RECORD and $REQ.view eq 'Edit'}
-						<a title="{$RECORD->get('templatename')}">&nbsp;{vtranslate('LBL_EDITING', $MODULE)} : {$RECORD->get('templatename')} &nbsp;</a>
+						<a title="{vtranslate($RECORD->get('templatename'), $MODULE)}">&nbsp;{vtranslate('LBL_EDITING', $MODULE)} : {vtranslate($RECORD->get('templatename'), $MODULE)} &nbsp;</a>
 					{else if $REQ.view eq 'Edit'}
 						<a>&nbsp;{vtranslate('LBL_ADDING_NEW', $MODULE)}&nbsp;</a>
 					{/if}
