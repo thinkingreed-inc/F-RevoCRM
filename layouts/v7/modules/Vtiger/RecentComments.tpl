@@ -215,6 +215,11 @@
 		<div class="commentTextArea row">
 			<textarea name="commentcontent" class="commentcontent col-lg-12" placeholder="{vtranslate('LBL_ADD_YOUR_COMMENT_HERE', $MODULE_NAME)}" rows="{$COMMENT_TEXTAREA_DEFAULT_ROWS}"></textarea>
 		</div>
+		{if $FIELD_MODEL->getProfileReadWritePermission()}
+			<div class="commentAttachmentContainer paddingTop10">
+				{include file=vtemplate_path($FIELD_MODEL->getUITypeModel()->getTemplateName(),$MODULE_NAME) MODULE="ModComments"}
+			</div>
+		{/if}
 		<div class="pull-right row">
 			{if in_array($MODULE_NAME, $PRIVATE_COMMENT_MODULES)}
 				<div class="checkbox">
