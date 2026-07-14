@@ -81,7 +81,11 @@
 											{assign var=LISTVIEW_HEADERNAME value=$LISTVIEW_HEADER->get('name')}
 											{assign var=LAST_COLUMN value=$LISTVIEW_HEADER@last}
 											<td class="listViewEntryValue textOverflowEllipsis {$WIDTHTYPE}" width="{$WIDTH}%" nowrap>
-												{vtranslate($LISTVIEW_ENTRY->getDisplayValue($LISTVIEW_HEADERNAME), $QUALIFIED_MODULE)}
+												{if $MODULE eq 'Groups' and $LISTVIEW_HEADERNAME eq 'groupname'}
+													{$LISTVIEW_ENTRY->getDisplayValue($LISTVIEW_HEADERNAME)}
+												{else}
+													{vtranslate($LISTVIEW_ENTRY->getDisplayValue($LISTVIEW_HEADERNAME), $QUALIFIED_MODULE)}
+												{/if}
 												{if $LAST_COLUMN && $LISTVIEW_ENTRY->getRecordLinks()}
 													</td>
 												{/if}
