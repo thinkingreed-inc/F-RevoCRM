@@ -24,7 +24,9 @@ DUMP="e2e/fixtures/e2e_dump.sql"
 [ -f "$CONFIG" ] || { echo "!! $CONFIG が見つかりません"; exit 1; }
 [ -f "$DUMP" ]   || { echo "!! $DUMP が見つかりません"; exit 1; }
 
-val() { grep "\$dbconfig\['$1'\]" "$CONFIG" | sed -E "s/.*= '([^']*)'.*/\1/"; }
+# 代入行(= '...')のみを対象にする。db_server は参照行($dbconfig['db_server'].$dbconfig['db_port'])
+# でも一致してしまうため、クォート付き代入に限定して 1 件だけ取る。
+val() { grep -E "\\\$dbconfig\['$1'\] *= *'" "$CONFIG" | head -1 | sed -E "s/.*= '([^']*)'.*/\1/"; }
 DB_USER="$(val db_username)"
 DB_PASS="$(val db_password)"
 DB_NAME="$(val db_name)"

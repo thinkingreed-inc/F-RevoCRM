@@ -145,12 +145,12 @@ echo "==> Playwright 実行"
 CI_SPECS=(
   tests/0_準備/auth.setup.ts
   tests/0_準備/seed.setup.ts
-  tests/2_CRUD/マトリクス.spec.ts
-  tests/4_モジュール/カレンダー/基本.spec.ts
-  tests/4_モジュール/在庫/在庫.spec.ts
-  tests/3_共通機能/列検索.spec.ts
-  tests/3_共通機能/リスト.spec.ts
-  tests/3_共通機能/権限.spec.ts
+  tests/2_CRUD/2-1_マトリクス.spec.ts
+  tests/4_モジュール/4-8_カレンダー/1_基本.spec.ts
+  tests/4_モジュール/4-9_在庫/1_在庫.spec.ts
+  tests/3_共通機能/3-01_列検索.spec.ts
+  tests/3_共通機能/3-04_リスト.spec.ts
+  tests/3_共通機能/3-28_権限.spec.ts
 )
 (
   cd e2e
