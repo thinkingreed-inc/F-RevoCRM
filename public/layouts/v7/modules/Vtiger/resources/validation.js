@@ -918,13 +918,24 @@ function calculateValidationRules(form,params,meta){
 		'focusInvalid': true,
 		//Refer for explanation on ignore attrbute https://github.com/select2/select2/issues/215
 		//As element with class select2-input doesn't have name attribute is leading to issue
-		'ignore' : ":hidden,.ignore-validation,.select2-input",
+		'ignore' : ":hidden:not(.joditEditorSource),.ignore-validation,.select2-input",
 		errorPlacement: function(error, element) {
 			if($(error).text()) {
 				$(error).text(app.vtranslate($(error).text()));
 
 				if(element.hasClass('select2')) {
 					element = app.helper.getSelect2FromSelect(element);
+				}
+
+				// Jodit配下textareaは:hiddenのため、qtipの位置計算が0となり画面非表示。
+				// 同じ親要素内に生成される可視要素(.jodit-container)へリターゲットして表示可能にする。
+				var isJoditTarget = false;
+				if(element.hasClass('joditEditorSource')) {
+					var joditContainer = element.parent().find('.jodit-container').first();
+					if(joditContainer.length) {
+						element = joditContainer;
+						isJoditTarget = true;
+					}
 				}
 
 				var positionsConf = {
@@ -994,6 +1005,17 @@ function calculateValidationRules(form,params,meta){
 					}
 				});
 				element.trigger('Vtiger.Validation.Show.Messsage');
+				// Jodit配下textareaはerrorPlacement初回呼出時にqtipのshow.eventが初期化直後に
+				// 空振りする(qtip側でrender完了前にtriggerが処理される)ため、次tickで強制表示する。
+				if(isJoditTarget) {
+					var $joditEl = element;
+					setTimeout(function() {
+						var joditApi = $joditEl.qtip('api');
+						if(joditApi) {
+							joditApi.show();
+						}
+					}, 0);
+				}
 			}
 			/*
 			 * Experimental : Using tooltipster
