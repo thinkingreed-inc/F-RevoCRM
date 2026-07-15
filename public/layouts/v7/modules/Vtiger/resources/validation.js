@@ -965,6 +965,13 @@ function calculateValidationRules(form,params,meta){
 						};
 						positionContainer = overlayElement;
 					}
+					var elRect = element[0].getBoundingClientRect();
+					var overlayHeader = element.closest('.modal-content').find('> .overlayHeader');
+					var blockingBottom = overlayHeader.length ? overlayHeader[0].getBoundingClientRect().bottom : (positionsConf.container[0].getBoundingClientRect ? positionsConf.container[0].getBoundingClientRect().top : 0);
+					if (elRect.top - blockingBottom < 40) {
+						positionsConf.my = 'top left';
+						positionsConf.at = 'bottom left';
+					}
 				}
 
 				element.qtip({
