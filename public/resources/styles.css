@@ -1399,16 +1399,17 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
 @media (min-width: 0px) and (max-width: 830px) {
   .multi_factor_credentialList {
     overflow-x: auto !important;
-    width: 100vw !important;
+    -webkit-overflow-scrolling: touch;
+    width: 100% !important;
+    max-width: 100% !important;
     display: block !important;
   }
 
   .multi_factor_credentialList > table {
     display: table !important;
-    table-layout: fixed !important;
-  width: 100% !important;
-  white-space: nowrap !important;
-  overflow-x: auto !important;
+    table-layout: auto !important;
+    width: auto !important;
+    min-width: 100%;
   }
   .multi_factor_credentialList > table tr,
   .multi_factor_credentialList > table td,
@@ -1418,7 +1419,22 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
   .multi_factor_credentialList > table td,
   .multi_factor_credentialList > table th {
     display: table-cell !important;
-    width: 100% !important;
+    width: auto !important;
+    padding-right: 16px;
+    vertical-align: middle;
+  }
+  .multi_factor_credentialList > table th:last-child,
+  .multi_factor_credentialList > table td:last-child {
+    text-align: center;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .multi_factor_credentialList .textOverflowEllipsis {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: nowrap;
+    display: inline;
+    max-width: none;
   }
 }
 
