@@ -178,7 +178,7 @@ class Calendar_GetActivities_Api extends Vtiger_Api_Controller {
             // Status can be in different fields depending on which Module's getCalendarActivities is used:
             // - Accounts_Module_Model uses 'status' (from CASE WHEN in SQL)
             // - Vtiger_Module_Model uses 'eventstatus' or 'taskstatus' directly from vtiger_activity
-            $status = $activityModel->get('status') ?: $activityModel->get('eventstatus') ?: $activityModel->get('taskstatus');
+            $status = $activityModel->get('status') ?: $activityModel->get('eventstatus') ?: $activityModel->get('taskstatus') ?: '';
             $dateStart = $activityModel->get('date_start');
             $timeStart = $activityModel->get('time_start');
             $dueDate = $activityModel->get('due_date');

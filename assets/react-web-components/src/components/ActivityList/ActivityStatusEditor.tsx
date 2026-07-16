@@ -32,9 +32,9 @@ export interface ActivityStatusEditorProps {
  * Get badge variant based on status
  */
 const getStatusVariant = (
-  status: string,
+  status: string | null | undefined,
 ): "default" | "success" | "warning" | "destructive" | "secondary" => {
-  const lowerStatus = status.toLowerCase();
+  const lowerStatus = (status ?? "").toLowerCase();
 
   if (
     lowerStatus.includes("completed") ||
