@@ -444,13 +444,14 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 	public function isFieldsSortableAllowed($blockName) {
 		$moduleName = $this->getName();
 		$blocksEliminatedArray = array('HelpDesk' => array('LBL_TICKET_RESOLUTION', 'LBL_COMMENTS'),
+										'Faq' => array('LBL_COMMENT_INFORMATION'),
 										'Calendar' => array('LBL_TASK_INFORMATION', 'LBL_DESCRIPTION_INFORMATION'),
 										'Invoice' => array('LBL_ITEM_DETAILS'),
 										'Quotes' => array('LBL_ITEM_DETAILS'),
 										'SalesOrder' => array('LBL_ITEM_DETAILS'),
 										'PurchaseOrder' => array('LBL_ITEM_DETAILS'),
 										'Events' => array('LBL_EVENT_INFORMATION', 'LBL_REMINDER_INFORMATION', 'LBL_RECURRENCE_INFORMATION', 'LBL_RELATED_TO', 'LBL_DESCRIPTION_INFORMATION', 'LBL_INVITE_USER_BLOCK'));
-		if (in_array($moduleName, array_merge(getInventoryModules(), array('Calendar', 'Events', 'HelpDesk')))) {
+		if (in_array($moduleName, array_merge(getInventoryModules(), array('Calendar', 'Events', 'HelpDesk', 'Faq')))) {
 			if(!empty($blocksEliminatedArray[$moduleName])) {
 				if(in_array($blockName, $blocksEliminatedArray[$moduleName])) {
 					return false;
