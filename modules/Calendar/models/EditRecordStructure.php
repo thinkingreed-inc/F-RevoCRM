@@ -53,14 +53,16 @@ class Calendar_EditRecordStructure_Model extends Vtiger_EditRecordStructure_Mode
 								$currentUserModel = Users_Record_Model::getCurrentUserModel();
 								$defaulteventstatus = $currentUserModel->get('defaulteventstatus');
 								$fieldValue = $defaulteventstatus;
-								if(!$defaulteventstatus || $defaulteventstatus=='Select an Option'){
+								$selectOptionLabel = vtranslate('LBL_SELECT_OPTION', 'Vtiger');
+								if(!$defaulteventstatus || $defaulteventstatus=='Select an Option' || $defaulteventstatus===$selectOptionLabel){
 									$fieldValue=$fieldModel->getDefaultFieldValue();
 								}
 							} else if($fieldName == 'activitytype' && empty($fieldValue)) {
 								$currentUserModel = Users_Record_Model::getCurrentUserModel();
 								$defaultactivitytype = $currentUserModel->get('defaultactivitytype');
 								$fieldValue = $defaultactivitytype;
-								if(!$defaultactivitytype || $defaultactivitytype=='Select an Option'){
+								$selectOptionLabel = vtranslate('LBL_SELECT_OPTION', 'Vtiger');
+								if(!$defaultactivitytype || $defaultactivitytype=='Select an Option' || $defaultactivitytype===$selectOptionLabel){
 									$fieldValue=$fieldModel->getDefaultFieldValue();
 								}
 							}
