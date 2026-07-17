@@ -804,6 +804,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
             disabled={disabled || field.readonly}
             error={error}
             className={className}
+            labelClassName={labelClassName}
           />
         );
 
