@@ -114,6 +114,31 @@ export function useQuickCreateSave(
           processedData = transformProductTaxData(processedData, fields);
         }
 
+        // reminder_time (分) → set_reminder/remdays/remhrs/remmin へ展開。
+        // Activity::insertIntoReminderTable が $_REQUEST から読む前提のため、
+        // これを送らないと通知設定が保存されない。
+        if (isCalendarModule) {
+          const reminderTimeRaw = processedData.reminder_time;
+          const reminderTotalMinutes =
+            reminderTimeRaw !== undefined &&
+            reminderTimeRaw !== null &&
+            reminderTimeRaw !== ""
+              ? parseInt(String(reminderTimeRaw), 10)
+              : 0;
+          if (reminderTotalMinutes > 0) {
+            processedData.set_reminder = 1;
+            const remdays = Math.floor(reminderTotalMinutes / (24 * 60));
+            const remhrs = Math.floor(
+              (reminderTotalMinutes - remdays * 24 * 60) / 60,
+            );
+            const remmin = reminderTotalMinutes % 60;
+            processedData.remdays = remdays;
+            processedData.remhrs = remhrs;
+            processedData.remmin = remmin;
+          }
+          delete processedData.reminder_time;
+        }
+
         // Calendar/Events用のcalendarModuleパラメータ追加
         // VtigerのSaveAjaxはCalendarモジュール保存時にcalendarModuleパラメータを必要とする
         if (isCalendarModule) {
