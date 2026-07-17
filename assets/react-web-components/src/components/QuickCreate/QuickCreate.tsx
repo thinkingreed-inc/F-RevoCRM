@@ -1044,6 +1044,31 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
       });
     }
 
+    // reminder_time (分) → set_reminder/remdays/remhrs/remmin へ展開。
+    // Edit.php は set_reminder + remdays/remhrs/remmin を見てリマインダーの
+    // 初期表示を組み立てるため、これを送らないと引き継がれない。
+    if (isCalendarVariant) {
+      const reminderTimeRaw = processedFormData.reminder_time;
+      const reminderTotalMinutes =
+        reminderTimeRaw !== undefined &&
+        reminderTimeRaw !== null &&
+        reminderTimeRaw !== ""
+          ? parseInt(String(reminderTimeRaw), 10)
+          : 0;
+      if (reminderTotalMinutes > 0) {
+        processedFormData.set_reminder = 1;
+        const remdays = Math.floor(reminderTotalMinutes / (24 * 60));
+        const remhrs = Math.floor(
+          (reminderTotalMinutes - remdays * 24 * 60) / 60,
+        );
+        const remmin = reminderTotalMinutes % 60;
+        processedFormData.remdays = remdays;
+        processedFormData.remhrs = remhrs;
+        processedFormData.remmin = remmin;
+      }
+      delete processedFormData.reminder_time;
+    }
+
     if (onGoToFullForm) {
       onGoToFullForm({ editUrl: editViewUrl, formData: processedFormData });
       return;
