@@ -349,6 +349,7 @@ Vtiger_BasicSearch_Js("Vtiger_AdvanceSearch_Js",{
         }
         this.initiateSearch().then(function() {
             self.selectBasicSearchValue();
+            self.registerFooterEvents();
         });
     },
     
@@ -379,6 +380,19 @@ Vtiger_BasicSearch_Js("Vtiger_AdvanceSearch_Js",{
                 thisInstance.selectBasicSearchValue();
             });
 		});
+
+		//DO nothing on submit of filter form
+		this.getFilterForm().on('submit',function(e){
+			e.preventDefault();
+		})
+
+		//To set the search module with the currently selected values.
+		this.setSearchModule(jQuery('#searchModuleList').val());
+	},
+
+	registerFooterEvents : function() {
+		var thisInstance = this;
+		var container = this.getContainer();
 
 		jQuery('#advanceSearchButton').on('click', function(e){
 			var searchModule = thisInstance.getSearchModule();
@@ -435,13 +449,5 @@ Vtiger_BasicSearch_Js("Vtiger_AdvanceSearch_Js",{
 				thisInstance.saveAndViewFilter(params);
 			});
 		});
-
-		//DO nothing on submit of filter form
-		this.getFilterForm().on('submit',function(e){
-			e.preventDefault();
-		})
-
-		//To set the search module with the currently selected values.
-		this.setSearchModule(jQuery('#searchModuleList').val());
 	}
 })
