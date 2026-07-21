@@ -50,6 +50,12 @@ const isRichTextFields = {
 export const dontTestFieldsName = (
   field: FRDescribeFieldsTypeWithModuleName
 ) => {
+  // E2E 項目バリデーション専用フィールドは専用フォルダ(6_項目バリデーション)で検証するため
+  // 汎用CRUDドライバの対象外にする。
+  if (field.label && field.label.startsWith("検証_")) {
+    return true;
+  }
+
   // 編集不可な項目はテストしない
   if (field.editable === false) {
     return true;
