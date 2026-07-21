@@ -41,7 +41,7 @@ export const FIELD_LABELS: Record<FieldKey, string> = {
 };
 
 export const FIELD_GROUP: Record<string, FieldKey[]> = {
-  単数行: ["str5", "str255"],
+  単数行: ["str5", "str255", "text"],
   数値: ["decimal", "integer", "percent", "currency"],
   日付時刻: ["date", "time"],
   書式: ["email", "phone", "url"],
