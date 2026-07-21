@@ -146,7 +146,7 @@ $languageStrings = array(
   'LBL_OCTOBER' => 'Octombrie',
   'LBL_NOVEMBER' => 'Noiembrie',
   'LBL_DECEMBER' => 'Decembrie',
-	'LBL_CLICK_HERE_TO_VIEW' => 'Apasa aici pentru a vizualiza',
+	'LBL_CLICK_HERE_TO_VIEW' => 'Apasă aici pentru a vizualiza înregistrarea',
 
 	'LBL_TOTAL_EVENTS_DUPLICATED' => 'Nr de evenimente duplicate omit',
 	'LBL_TOTAL_TASKS_DUPLICATED' => 'Nr Sarcini duplicate omit',

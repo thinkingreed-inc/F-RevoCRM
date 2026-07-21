@@ -146,7 +146,7 @@ $languageStrings = array(
   'LBL_OCTOBER' => 'Október',
   'LBL_NOVEMBER' => 'November',
   'LBL_DECEMBER' => 'December',
-	'LBL_CLICK_HERE_TO_VIEW' => 'Ide kattintva megtekintheti',
+	'LBL_CLICK_HERE_TO_VIEW' => 'Ide kattintva megtekintheti a rekordot',
 
 	'LBL_TOTAL_EVENTS_DUPLICATED' => 'Nem ismétlődő események kimarad',
 	'LBL_TOTAL_TASKS_DUPLICATED' => 'Nem ismétlődő feladatok kimarad',
