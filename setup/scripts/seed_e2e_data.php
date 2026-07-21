@@ -660,4 +660,63 @@ if (!empty($spec['inventory'])) {
     out('inventory セクション無し (skip)');
 }
 
+// ============================================================================
+// 15. 検証用カスタム項目 (Faq / E2E_ValidationFields ブロック)
+//     項目バリデーション E2E 用の 16 種の項目を LayoutEditor と同一経路で作成する。
+//     カラム名は cf_<fieldid> と自動採番されるため、テスト側はラベルで同定する。
+//     冪等: 既存ラベルはスキップ。migration ではないので本番には作られない。
+// ============================================================================
+require_once 'modules/Settings/LayoutEditor/models/Module.php';
+include_once 'vtlib/Vtiger/Module.php';
+include_once 'vtlib/Vtiger/Block.php';
+
+out('--- 検証用カスタム項目 (Faq) ---');
+if (!empty($spec['validationFields'])) {
+    $vf = $spec['validationFields'];
+    $moduleName = $vf['module'];
+    $blockLabel = $vf['block'];
+
+    // ブロックを確保(無ければ作成)
+    $tabId = getTabid($moduleName);
+    $br = $adb->pquery('SELECT blockid FROM vtiger_blocks WHERE tabid=? AND blocklabel=?', array($tabId, $blockLabel));
+    if ($adb->num_rows($br) > 0) {
+        $blockId = (int) $adb->query_result($br, 0, 'blockid');
+        out("既存ブロック流用: {$blockLabel} = {$blockId}");
+    } else {
+        $moduleInstance = Vtiger_Module::getInstance($moduleName);
+        $block = new Vtiger_Block();
+        $block->label = $blockLabel;
+        $moduleInstance->addBlock($block);
+        $blockId = (int) $block->id;
+        out("作成: ブロック {$blockLabel} = {$blockId}");
+    }
+
+    $layoutModule = Settings_LayoutEditor_Module_Model::getInstanceByName($moduleName);
+    foreach ($vf['fields'] as $f) {
+        if ($layoutModule->checkFieldExists($f['label'])) {
+            out("既存項目流用: {$f['label']} (skip)");
+            continue;
+        }
+        $params = array(
+            'fieldType'         => $f['type'],
+            'fieldLabel'        => $f['label'],
+            'fieldName'         => '',
+            'fieldLength'       => isset($f['length']) ? (int) $f['length'] : 100,
+            'decimal'           => isset($f['decimal']) ? (int) $f['decimal'] : 0,
+            'pickListValues'    => isset($f['options']) ? implode(',', $f['options']) : '',
+            'relationmodule'    => isset($f['referenceModule']) ? $f['referenceModule'] : array(),
+            'mandatory'         => 'O',
+            'masseditable'      => 1,
+            'summaryfield'      => 0,
+            'headerfield'       => null,
+            'quickcreate'       => 1,
+            'fieldDefaultValue' => '',
+        );
+        $fieldModel = $layoutModule->addField($f['type'], $blockId, $params);
+        out("作成: 項目 {$f['label']} ({$f['type']}) = " . $fieldModel->get('name'));
+    }
+} else {
+    out('validationFields セクション無し (skip)');
+}
+
 out('=== 完了。setup/scripts/RecreateUserFiles.php を実行してキャッシュを再生成すること ===');
