@@ -634,7 +634,11 @@ class EnhancedQueryGenerator extends QueryGenerator {
 			$tableName = $field->getTableName().$parentReferenceField;
 			$fieldSql = '(';
 			$fieldGlue = '';
-			$valueSqlList = $this->getConditionValue($conditionInfo['value'], $conditionInfo['operator'], $field);
+
+			// Users関連フィールド、かつ、完全一致(e)/不一致(n)の場合、氏名をIDに変換する
+			$convertedValue = $this->convertUserNamesToIds($conditionInfo, $baseFieldName);
+
+			$valueSqlList = $this->getConditionValue($convertedValue, $conditionInfo['operator'], $field);
 			$operator = strtolower($conditionInfo['operator']);
 			if ($operator == 'between' && $this->isDateType($field->getFieldDataType())) {
 				$start = explode(' ', $conditionInfo['value'][0]);
@@ -666,8 +670,9 @@ class EnhancedQueryGenerator extends QueryGenerator {
 					$moduleList = $this->referenceFieldInfoList[$baseFieldName];
 					if(in_array('Users', $moduleList)) {
 						$columnSqlTable = 'vtiger_users'.$parentReferenceField.$fieldName;
-						$columnSql = getSqlForNameInDisplayFormat(array('last_name'=>$columnSqlTable.'.last_name',
-																		'first_name'=>$columnSqlTable.'.first_name'),'Users');
+						$usersColumnInfo = $this->getUsersReferenceColumnSql($columnSqlTable, $conditionInfo['operator'], $trim);
+						$columnSql = $usersColumnInfo['columnSql'];
+						$trim = $usersColumnInfo['trim'];
 					} else if(in_array('DocumentFolders', $moduleList)) {
 						if($conditionInfo['operator'] == 'e' || $conditionInfo['operator'] == 'n') {
 							$columnSql = "vtiger_attachmentsfolder".$fieldName.".folderid";
@@ -692,8 +697,14 @@ class EnhancedQueryGenerator extends QueryGenerator {
 						$fieldSql .= "$fieldGlue $trim($columnSql) IS NULL OR $tableName.$columnName $valueSql OR $tableName.$columnName = '0'";
 						$fieldGlue = ' OR';
 					} else if ($conditionInfo['operator'] == 'k' || $conditionInfo['operator'] == 'n') {
-						$fieldSql .= " $fieldGlue ( $trim($columnSql) $valueSql OR $trim($columnSql) IS NULL )";
-						$fieldGlue = 'OR';
+						if($valueSql === "<> ''"){
+							//空ではない の条件の場合、NULLは含めない
+							$fieldSql .= " $fieldGlue ( $trim($columnSql) $valueSql)";
+						}else{
+							$fieldSql .= " $fieldGlue ( $trim($columnSql) $valueSql OR $trim($columnSql) IS NULL )";
+						}
+						// 'n'（等しくない）と'k'（含まない）の場合はANDで結合
+						$fieldGlue = ' AND';
 					} else{
 						$fieldSql .= "$fieldGlue $trim($columnSql) $valueSql";
 						$fieldGlue = ' OR';
@@ -814,12 +825,17 @@ class EnhancedQueryGenerator extends QueryGenerator {
 						}
 					}
 				}
-				if (($conditionInfo['operator'] == 'n' || $conditionInfo['operator'] == 'k') && ($field->getFieldDataType() == 'owner' ||
-						$field->getFieldDataType() == 'picklist' || $field->getFieldDataType() == 'multipicklist')) {
+				
+				$isNegativeOperator = ($operator == 'n' || $operator == 'k');
+				$isAndRequiredType = in_array($field->getFieldDataType(), array('owner', 'picklist', 'multipicklist', 'reference'));
+				if ($isNegativeOperator && $isAndRequiredType) {
+					// 選択肢系等の項目は、否定条件を複数指定する場合、全ての否定条件を同時に満たす必要がある（AND結合）
 					$fieldGlue = ' AND';
 				} else {
+					// テキスト等の自由入力フィールドはOR結合
 					$fieldGlue = ' OR';
 				}
+
 				if ($conditionInfo['operator'] == 'range') {
 					$fieldGlue = ' AND';
 				}
@@ -866,6 +882,67 @@ class EnhancedQueryGenerator extends QueryGenerator {
 		$sql .= " AND $baseTable.$baseTableIndex > 0";
 		$this->whereClause = $sql;
 		return $sql;
+	}
+
+	/**
+	 * ユーザー氏名をIDに変換する
+	 * 氏名のままだとWHERE句でuserlabelの文字列比較になり遅いため、IDに変換してインデックスを活用する
+	 * @param array $conditionInfo 条件情報
+	 * @param string $baseFieldName フィールド名
+	 * @return mixed 変換後の値（カンマ区切りID文字列）または元の値
+	 */
+	private function convertUserNamesToIds($conditionInfo, $baseFieldName) {
+		$isReferenceField = in_array($baseFieldName, $this->referenceFieldList);
+		$isUsersModule = $isReferenceField && in_array('Users', $this->referenceFieldInfoList[$baseFieldName]);
+		$isExactMatchOperator = in_array($conditionInfo['operator'], array('e', 'n'));
+
+		$value = $conditionInfo['value'];
+		if (!($isUsersModule && $isExactMatchOperator)) return $value;
+
+		// 条件値をカンマ区切りで配列化（複数ユーザー指定に対応）
+		if (is_string($value)) {
+			$valueArray = explode(',', $value);
+		} elseif (is_array($value)) {
+			$valueArray = $value;
+		} else {
+			$valueArray = array($value);
+		}
+
+		$userIds = Users_Module_Model::getIdsByUserNames($valueArray);
+
+		// IDが見つかった場合はIDで返す。見つからなければ元の値をそのまま返す
+		if (count($userIds) > 0) {
+			return implode(',', $userIds);
+		} else {
+			return $value;
+		}
+	}
+
+	/**
+	 * Usersモジュールのreferenceフィールドに対して、オペレーターに応じたカラムSQLとTRIM設定を返す
+	 * 'e','n','y','ny'はID比較、それ以外（LIKE系）は氏名比較
+	 * @param string $columnSqlTable テーブル名
+	 * @param string $operator オペレーター
+	 * @param string $trim 呼び出し元のTRIM設定（LIKE系の場合そのまま引き継ぐ）
+	 * @return array ['columnSql' => string, 'trim' => string]
+	 */
+	private function getUsersReferenceColumnSql($columnSqlTable, $operator, $trim = 'TRIM') {
+		// ID比較対象のオペレーター: 完全一致(e), 不一致(n), 空(y), 空でない(ny)		
+		if (in_array($operator, array('e', 'n', 'y', 'ny'))) {
+			$columnSql = $columnSqlTable . '.id';
+			// IDは数値なのでTRIMは不要→空文字で上書き
+			$trim = '';
+		} else {
+			// LIKE系オペレーター(s, ew, c, k等)は氏名のCONCAT結果で検索
+			$columnSql = getSqlForNameInDisplayFormat(
+				array(
+					'last_name' => $columnSqlTable . '.last_name',
+					'first_name' => $columnSqlTable . '.first_name'
+				),
+				'Users'
+			);
+		}
+		return array('columnSql' => $columnSql, 'trim' => $trim);
 	}
 
 	/**
