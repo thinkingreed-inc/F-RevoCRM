@@ -70,6 +70,14 @@ export const KNOWN_DIVERGENCES: { field: FieldKey; scenario: string; reason: str
       "実挙動: 保存時に前後の空白を自動トリムして正常保存する(Excel期待=エラーで保存拒否)。" +
       "record=841/846 で確認: char_length(cf_871)=255、先頭バイトは半角空白(0x20)ではなく'A'(0x41) = 先頭スペースは除去された上でLONG255がそのまま保存されている。要CRM調査/別PR。",
   },
+  {
+    field: "integer",
+    scenario: "長さ超過",
+    reason:
+      "実挙動: 桁数超過(11桁 '12345678901')でもエラー拒否されずMySQL int型の上限に丸めて正常保存する" +
+      "(Excel期待=エラーで保存拒否)。record=892 で確認: vtiger_faqcf.cf_873(int型)=2147483647(INT32上限)。" +
+      "バリデーションが桁数ではなくPHP/DB側のint丸めに依存しているため。要CRM調査/別PR。",
+  },
 ];
 
 export const CASES: ValidationCase[] = [

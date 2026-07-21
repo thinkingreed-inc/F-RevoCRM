@@ -71,8 +71,21 @@ export class FieldValidation {
     switch (c.expect.kind) {
       case "rejectWithError": {
         // 保存されず編集画面に留まる。可視のバリデーションエラーがある。
+        // エラー表現は項目種別により異なる: jQuery validate の label/span.error の他、
+        // 数値系は qTip ツールチップ(.qtip-red)+ input.input-error/aria-invalid で示される。
         expect(saved, `保存されない想定だが record=${saved?.[1]} が発行された`).toBeNull();
-        const errs = await page.locator("label.error:visible, span.error:visible").count();
+        const errs = await page
+          .locator(
+            [
+              "label.error:visible",
+              "span.error:visible",
+              ".qtip-red:visible",
+              "input.input-error:visible",
+              "select.input-error:visible",
+              '[aria-invalid="true"]:visible',
+            ].join(", ")
+          )
+          .count();
         expect(errs).toBeGreaterThan(0);
         return;
       }
