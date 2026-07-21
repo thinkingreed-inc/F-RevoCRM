@@ -78,6 +78,23 @@ export const KNOWN_DIVERGENCES: { field: FieldKey; scenario: string; reason: str
       "(Excel期待=エラーで保存拒否)。record=892 で確認: vtiger_faqcf.cf_873(int型)=2147483647(INT32上限)。" +
       "バリデーションが桁数ではなくPHP/DB側のint丸めに依存しているため。要CRM調査/別PR。",
   },
+  {
+    field: "date",
+    scenario: "その他無効",
+    reason:
+      "実挙動: 存在しない日付(2026-02-30)でもエラー拒否されず'0000-00-00'として正常保存する" +
+      "(Excel期待=エラーで保存拒否)。record=915 で確認: vtiger_faqcf.cf_876(date型)='0000-00-00'。" +
+      "CRM側で日付の実在性チェックをしておらずMySQL date型がそのまま無効値をゼロ日付に丸めているため。要CRM調査/別PR。",
+  },
+  {
+    field: "time",
+    scenario: "マイナス",
+    reason:
+      "実挙動: 負の時刻(-10:00)がエラー拒否されず正常保存する(Excel期待=エラーで保存拒否)。" +
+      "record=914 で確認: vtiger_faqcf.cf_884(time型)='-10:00:00'。MySQLのTIME型は" +
+      "時刻ではなく期間を表現できるため-838:59:59〜838:59:59の負値を許容し、CRM側も" +
+      "時刻としての妥当性チェックをしていないため。要CRM調査/別PR。",
+  },
 ];
 
 export const CASES: ValidationCase[] = [
