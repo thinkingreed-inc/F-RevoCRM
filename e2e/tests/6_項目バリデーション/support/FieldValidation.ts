@@ -58,7 +58,8 @@ export class FieldValidation {
     if (c.field === "reference") {
       await fillField(page, target, ""); // fillField(reference)が先頭Accountsを選択
     } else if (c.field === "multipick") {
-      await page.selectOption(`select[name="${target.name}"]`, c.input.split(","));
+      // 選択肢複数の実DOMは配列送信用に name="xxx[]" となるため両対応で選択する
+      await page.selectOption(`select[name="${target.name}"], select[name="${target.name}[]"]`, c.input.split(","));
     } else {
       await fillField(page, target, c.input);
     }
@@ -100,6 +101,14 @@ export class FieldValidation {
         expect(["1", "on", "true"]).toContain(String(stored).toLowerCase());
       } else if (c.field === "reference") {
         expect(stored).not.toBe("");
+      } else if (c.field === "multipick") {
+        // 選択肢複数は " |##| " 区切りで保存される(カンマではない)。順不同で集合比較する。
+        const norm = (s: string) =>
+          s.split(/\s*\|##\|\s*|,/).map((x) => x.trim()).filter(Boolean).sort();
+        expect(norm(stored)).toEqual(norm(c.input));
+      } else if (c.field === "time") {
+        // 保存は HH:MM:SS、入力は HH:MM のため先頭5文字(HH:MM)で比較する。
+        expect(stored.slice(0, 5)).toBe(c.input.slice(0, 5));
       } else {
         expect(stored.trim()).toBe(c.input.trim());
       }
