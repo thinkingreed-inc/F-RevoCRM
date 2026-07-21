@@ -43,7 +43,7 @@
 				{/if}
 				<option value="{$OWNER_ID}" data-picklistvalue= '{$OWNER_NAME}' {if $FIELD_VALUE eq $OWNER_ID && $VIEW_SOURCE neq 'MASSEDIT'} selected {/if}
 					data-recordaccess=true
-					{if vtws_getOwnerType($OWNER_ID)=="Users"} data-userId="{$CURRENT_USER_ID}" data-userkbn="{Users_Privileges_Model::getInstanceById($OWNER_ID)->get('user_kbn')}"{/if}>
+					{if vtws_getOwnerType($OWNER_ID)=="Users"} data-userId="{$CURRENT_USER_ID}" data-userkbn=""{/if}>
 				{$OWNER_NAME}
 				</option>
 			{/if}
