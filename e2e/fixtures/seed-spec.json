@@ -150,5 +150,28 @@
     "services": [
       { "name": "[E2E-INV] サービスA", "searchKey": "サービスA", "unitPrice": 5000 }
     ]
+  },
+
+  "validationFields": {
+    "module": "Faq",
+    "block": "E2E_ValidationFields",
+    "fields": [
+      { "key": "str5",      "label": "検証_単数行5",    "type": "Text",             "length": 5 },
+      { "key": "str255",    "label": "検証_単数行255",  "type": "Text",             "length": 255 },
+      { "key": "decimal",   "label": "検証_小数点",     "type": "Decimal",          "length": 10, "decimal": 5 },
+      { "key": "integer",   "label": "検証_整数",       "type": "Integer",          "length": 10 },
+      { "key": "percent",   "label": "検証_パーセント", "type": "Percent" },
+      { "key": "currency",  "label": "検証_通貨",       "type": "Currency",         "length": 10, "decimal": 2 },
+      { "key": "date",      "label": "検証_日付",       "type": "Date" },
+      { "key": "email",     "label": "検証_メール",     "type": "Email" },
+      { "key": "phone",     "label": "検証_電話番号",   "type": "Phone" },
+      { "key": "picklist",  "label": "検証_選択肢単数", "type": "Picklist",         "options": ["A","B","C","D"] },
+      { "key": "url",       "label": "検証_URL",        "type": "URL" },
+      { "key": "checkbox",  "label": "検証_チェック",   "type": "Checkbox" },
+      { "key": "text",      "label": "検証_複数行",     "type": "TextArea" },
+      { "key": "multipick", "label": "検証_選択肢複数", "type": "MultiSelectCombo", "options": ["A","B","C","D"] },
+      { "key": "time",      "label": "検証_時刻",       "type": "Time" },
+      { "key": "reference", "label": "検証_関連",       "type": "Reference",        "referenceModule": ["Accounts"] }
+    ]
   }
 }
