@@ -1,4 +1,4 @@
-# F-RevoCRM 8.0.2
+# F-RevoCRM 8.0.3
 
 F-RevoCRM は日本企業に合わせた形で開発された高機能なCRMです。
 あらゆる顧客接点を管理するために、キャンペーン・リード管理から顧客・商談管理、販売管理、サポート管理・プロジェクト管理まで幅広い機能を持ち合わせています。
@@ -12,7 +12,7 @@ Vtiger Public License 1.2
 ## サーバ推奨要件
 * 2コア以上、8GB以上のメモリ、40GB以上の空き容量（利用人数・用途によってスペックが大幅に変わる）
 * Apache 2.4以上
-* PHP 8.3
+* PHP 8.3～8.5
   * php-gd
   * php-mysqlnd
   * php-imap
@@ -28,7 +28,7 @@ Vtiger Public License 1.2
   * error_reporting (E_ERROR & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED)
   * display_errors = OFF
   * short_open_tag = OFF
-* MySQL 8.0,8.4(LTS)
+* MySQL 8.4(LTS)
   * storage_engine = InnoDB
   * local_infile = ON (under [mysqld] section)
   * sql_mode = NO_ENGINE_SUBSTITUTION
