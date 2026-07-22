@@ -42,8 +42,12 @@ import {
   expectFilterHiddenAs,
 } from "../../utils/sharedList";
 import type { CaseId } from "./capabilities";
-import { frgetDescribe } from "../fetcher";
+import { frgetDescribe, frQuery, frDelete } from "../fetcher";
 import type { FRDescribeType } from "../types/frBase";
+import type { FRDescribeFieldsTypeWithModuleName } from "../types/frTest";
+import { getFieldValue } from "../../utils/field";
+import { apiSession } from "../../utils/api";
+import { runImport } from "../../utils/import";
 
 /** 関連(親→子)テストの仕様。 */
 interface RelatedSpec {
@@ -454,8 +458,90 @@ export class MatrixTest {
         }
         return;
       }
+      case "import.create":
+        return this.testImportCreate(page);
       default:
         throw new Error(`未実装ケース: ${caseId}`);
+    }
+  }
+
+  /**
+   * CSV インポートで新規レコードを作成し、API で件数を確認して後始末する。
+   *
+   * describe から必須項目を解決し、フラット CSV(名前列 + 必須項目)を組み立てる:
+   *  - owner(assigned_user_id)はインポートウィザードがインポート実行ユーザーへ
+   *    自動割当するため CSV 列にしない。
+   *  - reference(必須の関連項目)は参照先の既存レコード名/ID が要るためフラット CSV で
+   *    充足できず、UnconfiguredCaseError(理由付き skip)に退避する。
+   *  - それ以外(string/text/picklist/date 等)は getFieldValue で妥当値を生成する。
+   *    生成できない型(time/multipicklist 等)も UnconfiguredCaseError に退避。
+   * 名前列だけは一意プレフィックスで上書きし、2 行を作成。API で 2 件を確認後、
+   * プレフィックス前方一致で削除して冪等にする。
+   */
+  private async testImportCreate(page: Page): Promise<void> {
+    const describe = await this.fr.getDescribe();
+    if (!describe || typeof describe === "boolean") {
+      throw new UnconfiguredCaseError(
+        `${this.moduleName}: describe を取得できずインポート CSV を組み立てられない`
+      );
+    }
+    const nameField = this.searchField();
+
+    // 名前列以外の必須項目(owner を除く)を CSV 列として組み立てる。
+    const extraCols: { name: string; value: string }[] = [];
+    const hash = generateRandomString(8);
+    for (const field of describe.fields) {
+      if (!field.mandatory || field.editable === false) continue;
+      if (field.name === nameField) continue; // 名前列は一意値で別途組み立て
+      if (field.type.name === "owner") continue; // インポートが実行ユーザーへ自動割当
+      if (field.type.name === "reference") {
+        throw new UnconfiguredCaseError(
+          `${this.moduleName}: 必須の関連項目 ${field.name} はフラット CSV で充足できない`
+        );
+      }
+      const value = await getFieldValue(
+        { moduleName: this.moduleName, ...field } as FRDescribeFieldsTypeWithModuleName,
+        hash
+      );
+      if (value === false || value === "") {
+        throw new UnconfiguredCaseError(
+          `${this.moduleName}: 必須項目 ${field.name}(${field.type.name})の CSV 値を生成できない`
+        );
+      }
+      extraCols.push({ name: field.name, value });
+    }
+
+    const prefix = `E2Eimp${generateRandomString(6)}`;
+    const escape = (v: string): string =>
+      /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+    const header = [nameField, ...extraCols.map((c) => c.name)];
+    const dataRow = (n: number): string =>
+      [`${prefix}_${n}`, ...extraCols.map((c) => c.value)].map(escape).join(",");
+    const csv = `${header.map(escape).join(",")}\n${dataRow(1)}\n${dataRow(2)}\n`;
+
+    // runImport 内部でワーカー横断のインポートロックを取得・直列化するため、ここでは
+    // 直接呼ぶ(検証/後始末の API はプレフィックスで独立しておりロック不要)。
+    await runImport(page, {
+      module: this.moduleName,
+      csv,
+      mappings: header,
+      // 一意レコードのため重複処理は不要。既定の突合項目が無いモジュールでも
+      // 進めるよう「この手順をスキップ」でマッピングへ直行する。
+      skipDuplicateStep: true,
+    });
+
+    // API で作成件数(=2)を確認し、確認の成否に関わらず前方一致で後始末する。
+    const sn = await apiSession();
+    const rows = await frQuery(
+      sn,
+      `SELECT id,${nameField} FROM ${this.moduleName} WHERE ${nameField} LIKE '${prefix}%';`
+    );
+    try {
+      expect(rows.length).toBe(2);
+    } finally {
+      for (const r of rows) {
+        if (r.id) await frDelete(sn, r.id);
+      }
     }
   }
 

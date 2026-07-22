@@ -23,7 +23,8 @@ export type CaseId =
   | "detail.comment.file"
   | "related.search"
   | "related.searchReset"
-  | "related.navigate";
+  | "related.navigate"
+  | "import.create";
 
 /** run=対象(空欄) / na=機能なし(グレー) / skip=※skip または未実装 */
 export type Capability = "run" | "na" | "skip";
@@ -62,6 +63,7 @@ export const ALL_CASES: CaseId[] = [
   "related.search",
   "related.searchReset",
   "related.navigate",
+  "import.create",
 ];
 
 /** 人間可読ラベル(spec のテスト名に使う) */
@@ -91,6 +93,7 @@ export const CASE_LABELS: Record<CaseId, string> = {
   "related.search": "関連-検索できる",
   "related.searchReset": "関連-検索がリセットできる",
   "related.navigate": "関連-関連レコード詳細へ遷移・表示できる",
+  "import.create": "インポート-CSVから新規作成でき API で確認できる",
 };
 
 export function reason(cap: Capability): string {
@@ -590,3 +593,49 @@ applySkip("Dailyreports", [
   "detail.comment.file",
   "related.search",
 ]);
+
+// ============================================================================
+// 【インポート(import.create)の na 適用】
+// import.create は「フラット CSV(名前列 + 必須項目)で新規レコードを作り、
+// API で件数を確認して後始末する」汎用ドライバ(MatrixTest)を使う。
+// 既定は run。以下は汎用フラット CSV では成立しないため na(機能なし相当)にする。
+// (MatrixTest 側でも必須 reference/未対応型に当たれば UnconfiguredCaseError で
+//  理由付き skip に退避するが、恒久的に不可能なものは capabilities で明示 na にする)
+//
+// na にするモジュールと理由:
+//  - インポート非対応(view=Import を持たない/一覧・詳細モジュールでない):
+//      Documents, Faq, Campaigns, Assets, EmailTemplates, PDFTemplates, Portal
+//      (SMSNotifier は ALL_NA_CASES で既に na)
+//  - Calendar: インポートが .ics 専用フロー(FORMAT='ics')で、汎用 CSV ウィザードの
+//      merge_type/マッピング step とは別 UI。必須にも time 型(date_start/time_start)を含む。
+//  - PriceBooks: 必須の関連項目 currency_id(reference)をフラット CSV で充足できない。
+//  - インベントリ(Invoice/Quotes/SalesOrder/PurchaseOrder): 必須の明細(productid)+
+//      account_id/vendor_id(reference)がフラット CSV で充足不可。
+//  - ProjectMilestone/ProjectTask: 必須の projectid(reference)が充足不可。
+//  - Dailyreports: 必須の reports_to_id(reference)が充足不可。
+// run(グリーン対象)= Accounts, Contacts, Potentials, Leads, HelpDesk, Products,
+//   Vendors, ServiceContracts, Services, Project(名前列 + string/picklist/date のみで充足)。
+// ============================================================================
+const IMPORT_NA_MODULES: string[] = [
+  // インポート非対応モジュール
+  "Documents",
+  "Faq",
+  "Campaigns",
+  "Assets",
+  "EmailTemplates",
+  "PDFTemplates",
+  "Portal",
+  // 特殊フロー / 必須 reference・明細・未対応型でフラット CSV 不成立
+  "Calendar",
+  "PriceBooks",
+  "Invoice",
+  "Quotes",
+  "SalesOrder",
+  "PurchaseOrder",
+  "ProjectMilestone",
+  "ProjectTask",
+  "Dailyreports",
+];
+for (const mod of IMPORT_NA_MODULES) {
+  applyNa(mod, ["import.create"]);
+}

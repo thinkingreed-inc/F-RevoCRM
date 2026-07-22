@@ -45,7 +45,9 @@ for (const m of MATRIX_SCOPE) {
 
     for (const caseId of ALL_CASES) {
       test(CASE_LABELS[caseId], async ({ page, browser }) => {
-        test.setTimeout(120000);
+        // インポートはワーカー横断のロックで直列化するため、順番待ちを見込んで
+        // 他ケース(120s)より長い上限を与える。
+        test.setTimeout(caseId === "import.create" ? 300000 : 120000);
         const cap = capabilityOf(m, caseId);
         test.skip(cap !== "run", reason(cap));
         try {

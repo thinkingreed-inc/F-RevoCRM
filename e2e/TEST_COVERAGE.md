@@ -37,7 +37,9 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 | `tests/6_項目バリデーション/` | 8 | Faq に用意した検証用16項目(seedでdumpに凍結)に対し、Excel「項目テスト」マトリクスの入力シナリオを検証。`0_項目作成`(項目作成UI)/`1_単数行`/`2_数値`/`3_日付時刻`/`4_書式`/`5_選択`/`6_関連`/`7_必須`。項目作成UIと必須は使い捨て項目で検証しfinallyで削除 | ✅(一部 test.fixme) |
 | `tests/7_モジュール管理/` | 1 | Excel「3_〇_OSS版_モジュール管理.xlsx」判定=OK の 30 モジュールを対象に、ModuleManager UI(`input[name="moduleStatus"]`)でトグルし ON→メニューにリンク出現 / OFF→非出現 を検証(データ駆動: 1 モジュール 1 テスト)。メニューは描画場所別(サイドバー`#app-menu` / `.app-item-misc` / 上部ナビ)に判定。try/finally + afterAll の DB 強制復帰(presence=0)+`RecreateUserFiles` で共有CRMに無効モジュールを残さない。Webforms は トップメニューにリンクが無く除外、メール/Webmails/承認アクション/Googleカレンダーは NA、申請/Excelテンプレートは OSS 非搭載で SKIP | ✅ |
 
-> マトリクス(`tests/2_CRUD/2-1_マトリクス.spec.ts`)の詳細: 25 ケース(再利用系/個人リスト×4/複製×2/詳細編集/ファイル×2/コメント添付/関連×3/共有リスト×2/**マイリスト×2**)を `model/matrix/capabilities.ts` の `ModuleMatrix`(`cases`)で判定し生成実行。**全 29 モジュールを有効化(describe駆動)**。`searchField`(名前列)は describe.labelFields、`relatedSpec`(関連)は親/子 describe から自動導出。使い捨てレコードは Webservice API 優先で作成。汎用ドライバで作成/操作できない特殊モジュール(インベントリ=明細必須 / Calendar / EmailTemplates・PDFTemplates / Portal / Documents・Dailyreports の一部)は reason 付き skip・na に退避(実機能は各専用spec で担保)。フルマトリクスは ~354 パス。
+> マトリクス(`tests/2_CRUD/2-1_マトリクス.spec.ts`)の詳細: 26 ケース(再利用系/個人リスト×4/複製×2/詳細編集/ファイル×2/コメント添付/関連×3/共有リスト×2/**マイリスト×2**/**インポート作成×1**)を `model/matrix/capabilities.ts` の `ModuleMatrix`(`cases`)で判定し生成実行。**全 29 モジュールを有効化(describe駆動)**。`searchField`(名前列)は describe.labelFields、`relatedSpec`(関連)は親/子 describe から自動導出。使い捨てレコードは Webservice API 優先で作成。汎用ドライバで作成/操作できない特殊モジュール(インベントリ=明細必須 / Calendar / EmailTemplates・PDFTemplates / Portal / Documents・Dailyreports の一部)は reason 付き skip・na に退避(実機能は各専用spec で担保)。フルマトリクスは ~354 パス。
+>
+> **インポート(`import.create`)**: describe から必須項目を解決してフラット CSV(名前列 + 必須項目、2 行)を生成 → `utils/import.ts::runImport`(モジュール可変・重複処理ステップの有無を `getUnsupportedDuplicateHandlingModules` 相当集合で分岐・ワーカー横断の `withImportLock` で直列化)で 3 ステップウィザードを実行 → Webservice API で作成 2 件を確認 → プレフィックス前方一致で削除して冪等化。**インポート対応(run=green, 10)**: Accounts / Contacts / Potentials / Leads / HelpDesk / Products / Vendors / ServiceContracts / Services / Project。**na(19)**: 非インポート(Documents / Faq / Campaigns / Assets / EmailTemplates / PDFTemplates / Portal / SMSNotifier)、必須 reference(PriceBooks=currency_id / ProjectMilestone・ProjectTask=projectid / Dailyreports=reports_to_id)、明細+reference 必須のインベントリ(Invoice / Quotes / SalesOrder / PurchaseOrder)、.ics 専用フローの Calendar。skip(2): NewModule / Approval(プレースホルダ)。MatrixTest 側でも必須 reference/未対応型に当たれば `UnconfiguredCaseError`(理由付き skip)へ退避。2 連続実行で 12 pass / 19 skip / 0 fail・残留レコード 0 を確認。
 >
 > 並行実行対応: `tests/3_共通機能/` `tests/4_モジュール/` はワーカー単位で個別ログインする `fixtures/isolated.ts` を使用し、各テストが専用レコードを作成→操作→削除する。API セッション取得は `auth.setup` で一度だけ行い使い回す。
 > **CI 並列度は `workers=4`**（`playwright.config.ts`, `retries=2`）。高並列で顕在化する「待ち条件の脆さ」は条件ベース待ちへ順次根治済み（列検索の All CV 固定 / 保存前のモーダル閉じ保証 / 条件追加ボタンの再試行 / サイドバー CV の「もっと」展開 / 条件値の確定待ち）。残る `networkidle` 依存は新たな flaky が出たら都度 条件ベース待ちへ置換していく方針。
@@ -201,7 +203,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 | — | レコード複製（一覧・詳細） | 詳細「その他」→ LBL_DUPLICATE / `utils/duplicate.ts` | ✅(Accounts) | `tests/2_CRUD/2-1_マトリクス.spec.ts`（一覧経由の複製→一覧に2件表示、詳細経由の複製→複製先詳細に元内容を反映。**添付ファイルの引き継ぎは非検証**）。他モジュールは `capabilities.ts` の展開ゲートで段階有効化 |
 | — | ファイル（アップロード / ダウンロード, Documents 経由） | `utils/documentsFile.ts` | ✅(Accounts) | `tests/2_CRUD/2-1_マトリクス.spec.ts`（詳細からファイルをアップロードして表示確認、アップロード済ファイルをダウンロードして非空を確認）。他モジュールは展開ゲートで段階有効化 |
 | 10-1 | CSV エクスポート | `modules/Vtiger/actions/ExportData.php` | ✅ | `common/tests/3_共通機能/3-22_エクスポート.spec.ts` |
-| 11-1 | CSV インポート | `modules/Import/` | ✅ | `common/tests/3_共通機能/3-23_インポート.spec.ts`（複数行/ヘッダなし/スキップ/上書き/マージ。マッピング保存・他モジュールは未） |
+| 11-1 | CSV インポート | `modules/Import/` | ✅ | `tests/3_共通機能/3-23_インポート.spec.ts`（Accounts の重複処理: 複数行/ヘッダなし/スキップ/上書き/マージ）+ `tests/3_共通機能/3-24_インポート履歴.spec.ts`（履歴確認）+ **`tests/2_CRUD/2-1_マトリクス.spec.ts` の `import.create` で全インポート対応 10 モジュールを網羅**（describe 駆動で CSV 生成→作成→API 確認→削除）。3-23/3-24 は Accounts 固有の重複処理・履歴の深掘りとして維持 |
 | 12-1 | 一覧から登録（EditView） | `modules/Vtiger/views/Edit.php` | ✅ | 17 モジュールで実施済（`FrTest`） |
 | 12-2 | クイック作成（＋ボタン） | `views/QuickCreateAjax.php`（React WC） | ✅ | `common/tests/3_共通機能/3-07_クイック作成.spec.ts` |
 | 12-2 | 編集（編集画面） | 同上 | ✅ | 17 モジュールで実施済 |
@@ -386,7 +388,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - [x] クイック編集（鉛筆・インライン）（No.12-2） → `tests/3_共通機能/3-08_クイック編集.spec.ts`（概要の1項目編集）
 - [x] CSV エクスポート（No.10-1） → `tests/3_共通機能/3-22_エクスポート.spec.ts`
 - [ ] 一覧ダブルクリック編集（No.12-2）※調査済・未採用。行 dblclick でインライン編集は動くが、同時にクイックプレビューが開き後続操作を阻害しハングするため安定化が必要（`.listViewEntries` dblclick → `input[name=...]` → `.inline-save .save`）
-- [x] CSV インポート（No.11-1） → `tests/3_共通機能/3-23_インポート.spec.ts`（Accounts、パターン別5種: 複数行/ヘッダなし/重複スキップ/上書き/マージ）。ウィザードは `utils/import.ts` で driver 化。**知見**: ヘッダは自動マップされず列順に明示割当が必要／重複突合は既定 `accountname`／スキップは未更新・上書き/マージは更新（本ビルドでは CSV に列自体が無い項目の空白化は起きず保持）。※他モジュール展開は未
+- [x] CSV インポート（No.11-1） → `tests/3_共通機能/3-23_インポート.spec.ts`（Accounts、パターン別5種: 複数行/ヘッダなし/重複スキップ/上書き/マージ）。ウィザードは `utils/import.ts` で driver 化。**知見**: ヘッダは自動マップされず列順に明示割当が必要／重複突合は既定 `accountname`／スキップは未更新・上書き/マージは更新（本ビルドでは CSV に列自体が無い項目の空白化は起きず保持）。**他モジュール展開**: マトリクス `import.create`(§1)で全インポート対応 10 モジュール(Accounts/Contacts/Potentials/Leads/HelpDesk/Products/Vendors/ServiceContracts/Services/Project)を網羅済み。3-23/3-24 は Accounts 固有の重複処理・履歴の深掘りとして維持
 - [x] タグの一括付与（一覧）（No.4-1）→ `tests/3_共通機能/3-19_一括タグ.spec.ts`（一覧で選択→一括「タグの追加」で新規タグ作成・付与、詳細で確認）
 - [x] リスト機能 CustomView（個人リスト 作成 / 切替 / 複製 / 削除）（No.2-2）→ `tests/3_共通機能/3-04_リスト.spec.ts`。**知見**: 作成/複製モーダルの保存は AJAX ハンドラ登録後にクリックしないとネイティブ GET になり保存されない（クリック前に待機を入れる）。切替は `#module-filters a.filterName`(すべて#4 含む)、複製は行アクションポップオーバー `li.duplicateFilter`(元名がプリセット)、削除は `li.deleteFilter`。**高並列知見(workers=4対応)**: サイドバーは CV を先頭10件しか表示せず11件目以降は `filterHidden hide`(「もっと」`a.toggleFilterSize` の裏)。並列で他テストの CV が増えると作成直後の CV が隠れて可視待ちがタイムアウトするため、行を探す前にトグルを展開する(`revealHiddenFilters`)。ロールへの共有設定は未
 - [x] 概要/詳細タブ（No.6-1/6-2）→ `tests/3_共通機能/3-10_概要タブ.spec.ts`（概要タブ主要項目、詳細タブ全項目）
@@ -409,7 +411,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 - [ ] タグの変更 / フォロー絞り込み（保留。詳細のタグ追加+削除・一覧一括付与は実装済）※タグ変更は Settings/Tags 上に明確な rename UI が見当たらず、フォロー絞り込みは「フォロー中のみ表示」の絞り込み UI が本ビルドに見当たらないため、UI 特定後に着手
 - [ ] ダッシュボード追加・ウィジェット追加/削除（No.13-1）※ウィジェット追加後の DOM が React 混在で不定・管理者ダッシュボードを汚すため保留
 - [x] 閲覧制限の E2E 化（可視範囲＝組織/役割/グループ共有 + カスタム共有ルール + アクション権限 + 項目レベル権限）→ `tests/3_共通機能/3-28_権限.spec.ts` / `tests/3_共通機能/3-32_共有ルール.spec.ts` / `tests/3_共通機能/3-29_権限_アクション.spec.ts` / `tests/3_共通機能/3-30_権限_項目.spec.ts`。残りはエクスポート/インポート権限・一括所有者変更・設定画面 C-04 SharingAccess の skip 解消
-- [x] モジュール×機能セルの**能力表マトリクス**（複製×2 / ファイル×2 / コメント添付 / 関連×3 / 共有リスト×2 / マイリスト×2 / 個人リスト×4 / 一覧再利用系 / 詳細編集）→ `tests/2_CRUD/2-1_マトリクス.spec.ts`（`model/matrix/capabilities.ts` / `model/matrix/MatrixTest.ts`）。**全 29 モジュールを describe 駆動で展開**(searchField/relatedSpec を describe から自動導出、レコードは API 優先作成)。フルマトリクス ~354 パス。特殊モジュール(インベントリ/Calendar/テンプレート/Portal/Documents・Dailyreports の一部 等)は reason 付き skip・na(実機能は各専用spec で担保)。§1 参照
+- [x] モジュール×機能セルの**能力表マトリクス**（複製×2 / ファイル×2 / コメント添付 / 関連×3 / 共有リスト×2 / マイリスト×2 / 個人リスト×4 / 一覧再利用系 / 詳細編集 / **インポート作成×1**）→ `tests/2_CRUD/2-1_マトリクス.spec.ts`（`model/matrix/capabilities.ts` / `model/matrix/MatrixTest.ts`）。**全 29 モジュールを describe 駆動で展開**(searchField/relatedSpec を describe から自動導出、レコードは API 優先作成)。フルマトリクス ~354 パス。特殊モジュール(インベントリ/Calendar/テンプレート/Portal/Documents・Dailyreports の一部 等)は reason 付き skip・na(実機能は各専用spec で担保)。§1 参照
 
 ### P2: 在庫系モジュールと連携機能
 
