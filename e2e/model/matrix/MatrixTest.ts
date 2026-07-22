@@ -478,6 +478,26 @@ export class MatrixTest {
    * 名前列だけは一意プレフィックスで上書きし、2 行を作成。API で 2 件を確認後、
    * プレフィックス前方一致で削除して冪等にする。
    */
+  /**
+   * getFieldValue が明示ケースで妥当な CSV 値を返せる型の集合。
+   * ここに無い型(time/datetime/multipicklist 等)は getFieldValue の default: 節が
+   * 「ラベル_ハッシュ」のゴミ文字列を返すため、必須項目がこれ以外の型のときは
+   * インポートを実行せず理由付き skip に退避する(testImportCreate 参照)。
+   */
+  private static readonly CSV_VALUE_TYPES = new Set<string>([
+    "string",
+    "text",
+    "url",
+    "email",
+    "integer",
+    "currency",
+    "double",
+    "date",
+    "phone",
+    "picklist",
+    "boolean",
+  ]);
+
   private async testImportCreate(page: Page): Promise<void> {
     const describe = await this.fr.getDescribe();
     if (!describe || typeof describe === "boolean") {
@@ -497,6 +517,15 @@ export class MatrixTest {
       if (field.type.name === "reference") {
         throw new UnconfiguredCaseError(
           `${this.moduleName}: 必須の関連項目 ${field.name} はフラット CSV で充足できない`
+        );
+      }
+      // getFieldValue が明示ケースで妥当値を返せない型(time/multipicklist 等)は
+      // default: 節が「ラベル_ハッシュ」のゴミ文字列を返してしまい、CSV に詰めると
+      // 不正値のまま取り込まれる。恒久的に成立しないので理由付き skip に退避する
+      // (メソッド冒頭コメントの「生成できない型は UnconfiguredCaseError」を実装で担保)。
+      if (!MatrixTest.CSV_VALUE_TYPES.has(field.type.name)) {
+        throw new UnconfiguredCaseError(
+          `${this.moduleName}: 必須項目 ${field.name}(${field.type.name})は CSV 用の妥当値を生成できない型`
         );
       }
       const value = await getFieldValue(
@@ -519,30 +548,35 @@ export class MatrixTest {
       [`${prefix}_${n}`, ...extraCols.map((c) => c.value)].map(escape).join(",");
     const csv = `${header.map(escape).join(",")}\n${dataRow(1)}\n${dataRow(2)}\n`;
 
-    // runImport 内部でワーカー横断のインポートロックを取得・直列化するため、ここでは
-    // 直接呼ぶ(検証/後始末の API はプレフィックスで独立しておりロック不要)。
-    await runImport(page, {
-      module: this.moduleName,
-      csv,
-      mappings: header,
-      // 一意レコードのため重複処理は不要。既定の突合項目が無いモジュールでも
-      // 進めるよう「この手順をスキップ」でマッピングへ直行する。
-      skipDuplicateStep: true,
-    });
-
-    // API で作成件数(=2)を確認し、確認の成否に関わらず前方一致で後始末する。
+    // ウィザードがサーバ側でレコードを作成した後に post-submit 待ちが例外を投げると、
+    // 後始末に到達できず E2Eimp<prefix>_* が取り残される。これを防ぐため runImport を
+    // try で囲み、件数確認クエリ→前方一致削除の後始末を finally で「必ず」実行する。
+    // 作成件数(=2)の検証は finally で捕捉した件数に対し try/finally の後で行う:
+    // これにより本物の作成失敗はテスト失敗のまま・後始末は常に走る、を両立する。
+    // (runImport 内部でワーカー横断のインポートロックを直列化する。検証/後始末の API は
+    //  プレフィックスで独立しておりロック不要。)
     const sn = await apiSession();
-    const rows = await frQuery(
-      sn,
-      `SELECT id,${nameField} FROM ${this.moduleName} WHERE ${nameField} LIKE '${prefix}%';`
-    );
+    let createdCount = 0;
     try {
-      expect(rows.length).toBe(2);
+      await runImport(page, {
+        module: this.moduleName,
+        csv,
+        mappings: header,
+        // 一意レコードのため重複処理は不要。既定の突合項目が無いモジュールでも
+        // 進めるよう「この手順をスキップ」でマッピングへ直行する。
+        skipDuplicateStep: true,
+      });
     } finally {
+      const rows = await frQuery(
+        sn,
+        `SELECT id,${nameField} FROM ${this.moduleName} WHERE ${nameField} LIKE '${prefix}%';`
+      );
+      createdCount = rows.length;
       for (const r of rows) {
         if (r.id) await frDelete(sn, r.id);
       }
     }
+    expect(createdCount).toBe(2);
   }
 
   /**
