@@ -130,7 +130,20 @@ export async function runImport(page: Page, opts: ImportOptions): Promise<void> 
 
   // ファイル入力はドロップゾーンで視覚的に隠れているため attached を待つ。
   const fileInput = page.locator('input[type="file"][name="import_file"]');
-  await fileInput.waitFor({ state: "attached", timeout: 20000 });
+  try {
+    await fileInput.waitFor({ state: "attached", timeout: 15000 });
+  } catch {
+    // 直前に停止(HALTED)した取り込みが同一ユーザーに残っていると、Import.php の
+    // checkImportStatus がアップロード画面の代わりにステータス画面を描画し、ファイル
+    // 入力が現れない(この滞留はユーザー単位のため後続の全モジュールの取り込みを阻む)。
+    // アプリ自身の「破損データをクリア」(mode=clearCorruptedData → clearUserImportInfo:
+    // ロック解除 + キュー掃除)で滞留を解消し、アップロード画面を出し直してから続行する。
+    await page.goto(
+      url(`index.php?module=${module}&view=Import&mode=clearCorruptedData`)
+    );
+    await page.waitForLoadState("networkidle");
+    await fileInput.waitFor({ state: "attached", timeout: 20000 });
+  }
   await fileInput.setInputFiles({
     name: "import.csv",
     mimeType: "text/csv",

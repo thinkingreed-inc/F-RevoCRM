@@ -507,6 +507,9 @@ export class MatrixTest {
     }
     const nameField = this.searchField();
 
+    // 検証・後始末に加え、必須の関連項目(reference)の実値解決にも使う API セッション。
+    const sn = await apiSession();
+
     // 名前列以外の必須項目(owner を除く)を CSV 列として組み立てる。
     const extraCols: { name: string; value: string }[] = [];
     const hash = generateRandomString(8);
@@ -515,9 +518,20 @@ export class MatrixTest {
       if (field.name === nameField) continue; // 名前列は一意値で別途組み立て
       if (field.type.name === "owner") continue; // インポートが実行ユーザーへ自動割当
       if (field.type.name === "reference") {
-        throw new UnconfiguredCaseError(
-          `${this.moduleName}: 必須の関連項目 ${field.name} はフラット CSV で充足できない`
+        // 必須の関連項目は、参照先モジュールの既存レコードを1件引き当て、
+        // インポートウィザードが解決に使う「表示名(entityname)」を CSV 値に充てる。
+        // (Users は user_name、Currency は currency_name、その他は labelFields 連結)。
+        const value = await this.resolveReferenceCsvValue(
+          sn,
+          field.type.refersTo ?? []
         );
+        if (!value) {
+          throw new UnconfiguredCaseError(
+            `${this.moduleName}: 必須の関連項目 ${field.name}(参照先 ${(field.type.refersTo ?? []).join("|") || "不明"})の CSV 値を解決できない`
+          );
+        }
+        extraCols.push({ name: field.name, value });
+        continue;
       }
       // getFieldValue が明示ケースで妥当値を返せない型(time/multipicklist 等)は
       // default: 節が「ラベル_ハッシュ」のゴミ文字列を返してしまい、CSV に詰めると
@@ -554,8 +568,7 @@ export class MatrixTest {
     // 作成件数(=2)の検証は finally で捕捉した件数に対し try/finally の後で行う:
     // これにより本物の作成失敗はテスト失敗のまま・後始末は常に走る、を両立する。
     // (runImport 内部でワーカー横断のインポートロックを直列化する。検証/後始末の API は
-    //  プレフィックスで独立しておりロック不要。)
-    const sn = await apiSession();
+    //  プレフィックスで独立しておりロック不要。sn は冒頭で取得済みを使い回す。)
     let createdCount = 0;
     try {
       await runImport(page, {
@@ -577,6 +590,61 @@ export class MatrixTest {
       }
     }
     expect(createdCount).toBe(2);
+  }
+
+  /**
+   * 必須の関連項目(reference)を CSV 列に載せるための実値を、参照先の既存レコードから解決する。
+   *
+   * インポートウィザード(modules/Import/actions/Data.php::transformForImport)は、reference 列の
+   * 値を参照先の「表示名」で名前解決する:
+   *  - Users    : vtiger_users.user_name(未解決/権限無しは実行ユーザーへフォールバック)
+   *  - Currency : vtiger_currency_info.currency_name(未一致は基軸通貨 id=1 へフォールバック)
+   *  - その他   : getEntityId により entityname(=labelFields をスペース連結した表示名)で解決
+   *
+   * refersTo を順に見て、最初に実値を得られた参照先モジュールの表示名を返す。
+   * 解決できなければ undefined(呼び出し側で理由付き skip に退避)。
+   */
+  private async resolveReferenceCsvValue(
+    sn: string,
+    refersTo: string[]
+  ): Promise<string | undefined> {
+    for (const refModule of refersTo) {
+      if (refModule === "Users") {
+        // インポート実行ユーザー(= API と同一)の user_name。未解決でも実行ユーザーへ寄る。
+        const uname = process.env.E2E_USER_NAME;
+        if (uname) return uname;
+        continue;
+      }
+      if (refModule === "Currency") {
+        const rows = await frQuery(sn, `SELECT currency_name FROM Currency LIMIT 1;`);
+        const name = rows?.[0]?.currency_name;
+        if (name) return name;
+        continue;
+      }
+      // 通常エンティティ: 参照先の labelFields(表示名を構成する列)を連結した値を充てる。
+      const desc = await frgetDescribe(this.sessionName, refModule).catch(
+        () => false as const
+      );
+      if (!desc || typeof desc === "boolean") continue;
+      const labelCols = (desc.labelFields || "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (!labelCols.length) continue;
+      const rows = await frQuery(
+        sn,
+        `SELECT ${labelCols.join(",")} FROM ${refModule} LIMIT 1;`
+      );
+      const row = rows?.[0];
+      if (!row) continue;
+      // getEntityId は trim(concat(col1,' ',col2,...)) で突合するためスペース連結・trim する。
+      const label = labelCols
+        .map((c) => row[c] ?? "")
+        .join(" ")
+        .trim();
+      if (label) return label;
+    }
+    return undefined;
   }
 
   /**

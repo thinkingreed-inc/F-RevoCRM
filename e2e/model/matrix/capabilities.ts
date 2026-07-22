@@ -608,13 +608,23 @@ applySkip("Dailyreports", [
 //      (SMSNotifier は ALL_NA_CASES で既に na)
 //  - Calendar: インポートが .ics 専用フロー(FORMAT='ics')で、汎用 CSV ウィザードの
 //      merge_type/マッピング step とは別 UI。必須にも time 型(date_start/time_start)を含む。
-//  - PriceBooks: 必須の関連項目 currency_id(reference)をフラット CSV で充足できない。
 //  - インベントリ(Invoice/Quotes/SalesOrder/PurchaseOrder): 必須の明細(productid)+
 //      account_id/vendor_id(reference)がフラット CSV で充足不可。
-//  - ProjectMilestone/ProjectTask: 必須の projectid(reference)が充足不可。
-//  - Dailyreports: 必須の reports_to_id(reference)が充足不可。
+//  - PriceBooks: 必須の関連項目は currency_id(reference→Currency)で、インポートは
+//      currency_name で名前解決するが、本 DB の通貨名は "Japan, Yen" のようにカンマを含み、
+//      Import の参照パーサ(modules/Import/actions/Data.php)がカンマで分割してしまい解決不能。
+//      さらに PriceBooks の CSV 取り込みは 2 行中 1 行目だけ作成して停止(IMPORT_STATUS_HALTED)し、
+//      キューロックが残ってユーザー単位で後続取り込みを阻む(実測)。恒久的に不成立のため na 継続。
+//
+// 【na → run へ拡張(必須 reference をシード参照 CSV で網羅)】
+//  必須の関連項目(reference)は、参照先の既存レコードの「表示名」を CSV 値に充て、
+//  インポートウィザードに名前解決させることで充足できる(MatrixTest.resolveReferenceCsvValue)。
+//   - ProjectMilestone/ProjectTask: projectid → Project(シード済)の projectname を充当。
+//   - Dailyreports: reports_to_id → Users の user_name(実行ユーザー admin)を充当。
+//  これにより上記3モジュールは na → run(グリーン)へ拡張した。
 // run(グリーン対象)= Accounts, Contacts, Potentials, Leads, HelpDesk, Products,
-//   Vendors, ServiceContracts, Services, Project(名前列 + string/picklist/date のみで充足)。
+//   Vendors, ServiceContracts, Services, Project(フラット項目のみで充足)+
+//   ProjectMilestone, ProjectTask, Dailyreports(必須 reference をシード参照名で充足)。
 // ============================================================================
 const IMPORT_NA_MODULES: string[] = [
   // インポート非対応モジュール
@@ -625,16 +635,13 @@ const IMPORT_NA_MODULES: string[] = [
   "EmailTemplates",
   "PDFTemplates",
   "Portal",
-  // 特殊フロー / 必須 reference・明細・未対応型でフラット CSV 不成立
+  // 特殊フロー / 明細必須 / モジュール固有の停止でフラット CSV 不成立
   "Calendar",
-  "PriceBooks",
   "Invoice",
   "Quotes",
   "SalesOrder",
   "PurchaseOrder",
-  "ProjectMilestone",
-  "ProjectTask",
-  "Dailyreports",
+  "PriceBooks",
 ];
 for (const mod of IMPORT_NA_MODULES) {
   applyNa(mod, ["import.create"]);
