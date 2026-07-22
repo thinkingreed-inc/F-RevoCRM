@@ -134,15 +134,34 @@ done
 echo "==> Playwright 実行"
 # Playwright 一式(package.json / playwright.config.ts)は e2e/ 配下にあるためそこで実行する。
 # サブシェルで囲い、親の cwd はリポジトリルートのまま保つ(EXIT トラップの config 復元がルート基準のため)。
+#
+# 【CI は最小限の最適サブセットのみ実行】(フル実行は 30 分ジョブに収まらないため)
+#  - E2E_SCOPE=ci を渡すと matrix は代表 6 モジュールだけに絞られる(matrix.spec.ts)。
+#  - CI で回す spec は下記の CI_SPECS に限定する(挙動の代表を薄く広く: matrix 代表 /
+#    カレンダー・在庫の専用ドライバ / 横断機能の 検索・CustomView・権限)。
+#  - フル版(全 spec・matrix 全 29 モジュール・admin 一式・fr.common 17 モジュール 等)は
+#    ローカルの `cd e2e && npm run test:e2e`(E2E_SCOPE 未設定)で実行する運用。
+#  - CI のサブセットを増減したい場合はこの CI_SPECS と matrix.spec.ts の CI_SAMPLE_MODULES を編集する。
+CI_SPECS=(
+  tests/0_準備/auth.setup.ts
+  tests/0_準備/seed.setup.ts
+  tests/2_CRUD/2-1_マトリクス.spec.ts
+  tests/4_モジュール/4-8_カレンダー/1_基本.spec.ts
+  tests/4_モジュール/4-9_在庫/1_在庫.spec.ts
+  tests/3_共通機能/3-01_列検索.spec.ts
+  tests/3_共通機能/3-04_リスト.spec.ts
+  tests/3_共通機能/3-28_権限.spec.ts
+)
 (
   cd e2e
   npm install --no-audit --no-fund
   # ubuntu-latest は Chromium の必要ライブラリを概ね同梱しており、ブラウザバイナリは
   # actions/cache 済みのため --with-deps(apt) は付けない(毎回の apt を省略)。
   npx playwright install chromium
+  E2E_SCOPE=ci \
   E2E_BASE_URL="$BASE_URL" \
   E2E_USER_NAME="$E2E_USER_NAME" \
   E2E_USER_PASSWORD="$E2E_USER_PASSWORD" \
   E2E_USER_ACCESSKEY="$E2E_USER_ACCESSKEY" \
-    npx playwright test
+    npx playwright test "${CI_SPECS[@]}"
 )

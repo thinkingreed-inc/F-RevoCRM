@@ -75,7 +75,9 @@ export async function loginInIsolatedContext(
     storageState: { cookies: [], origins: [] },
   });
   const page = await context.newPage();
-  await page.goto(BASE_URL);
+  // ログイン画面は外部 CDN 画像を参照するため 'load' 待ちだとオフライン環境で
+  // タイムアウトする。DOM 構築完了で十分(フォームはサーバ描画済み)。
+  await page.goto(BASE_URL, { waitUntil: "domcontentloaded" });
   await page.fill("id=username", username);
   await page.fill("id=password", password);
   await page.getByRole("button", { name: "ログイン" }).click();

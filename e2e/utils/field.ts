@@ -50,6 +50,12 @@ const isRichTextFields = {
 export const dontTestFieldsName = (
   field: FRDescribeFieldsTypeWithModuleName
 ) => {
+  // E2E 項目バリデーション専用フィールドは専用フォルダ(6_項目バリデーション)で検証するため
+  // 汎用CRUDドライバの対象外にする。
+  if (field.label && field.label.startsWith("検証_")) {
+    return true;
+  }
+
   // 編集不可な項目はテストしない
   if (field.editable === false) {
     return true;
@@ -153,20 +159,27 @@ export const fillField = async (
   // ことがあるため、編集フィールドはこのIDでスコープする。
   const editId = `#${fieldObj.moduleName}_editView_fieldName_${fieldObj.name}`;
 
-  if (
-    isRichTextFields[fieldObj.moduleName] &&
-    isRichTextFields[fieldObj.moduleName].includes(fieldObj.name)
-  ) {
+  // リッチテキスト(Jodit)判定: 既知マップに加え、当該項目セル内に
+  // Jodit エディタ(.jodit-wysiwyg)が実在するかを動的にも判定する。
+  // これにより Documents.notecontent 等、マップ未登録でも Jodit 化された
+  // text 項目を取りこぼさない(モジュールごとのハードコード漏れを防ぐ)。
+  const knownRich =
+    !!isRichTextFields[fieldObj.moduleName] &&
+    isRichTextFields[fieldObj.moduleName].includes(fieldObj.name);
+  const richCell = page
+    .locator(editId)
+    .locator('xpath=ancestor::*[contains(@class,"fieldValue")][1]');
+  const richEditor = richCell.locator(".jodit-wysiwyg").first();
+  const hasJodit = knownRich || (await richEditor.count()) > 0;
+
+  if (hasJodit) {
     /**********************************************************************************************
      * リッチテキスト項目への値登録
      * エディタはJodit(contenteditableなdiv)。旧CKEditor(iframe)は廃止済み。
      * 値の実体は隠しtextareaに同期される。同じ項目セル内のJoditエディタ
      * (.jodit-wysiwyg)を特定して入力する。
      **********************************************************************************************/
-    const richCell = page
-      .locator(`#${fieldObj.moduleName}_editView_fieldName_${fieldObj.name}`)
-      .locator('xpath=ancestor::*[contains(@class,"fieldValue")][1]');
-    const editor = richCell.locator(".jodit-wysiwyg").first();
+    const editor = richEditor;
     await editor.click();
     await editor.fill(`${value}`);
     // Joditから隠しtextareaへ値を同期させる

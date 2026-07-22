@@ -1,0 +1,177 @@
+{
+  "_comment": "E2E 拡充ベースラインの単一の真実 (Single Source of Truth)。setup/scripts/seed_e2e_data.php が投入時に読み、e2e/fixtures/seedSpec.ts が期待値の検証に読む。数値/名前を変える時はここだけ直し、build-e2e-dump.sh で dump を再生成すること。",
+
+  "password": "Test1234/",
+
+  "roles": [
+    { "key": "DIR",  "name": "E2E営業部長",   "parent": "H2" },
+    { "key": "MGRA", "name": "E2E営業1課長", "parent": "DIR" },
+    { "key": "REPA", "name": "E2E営業1課員", "parent": "MGRA" },
+    { "key": "MGRB", "name": "E2E営業2課長", "parent": "DIR" },
+    { "key": "REPB", "name": "E2E営業2課員", "parent": "MGRB" }
+  ],
+
+  "users": [
+    { "userName": "e2e_director", "lastName": "部長",       "roleKey": "DIR",  "ownerCode": "DIR"  },
+    { "userName": "e2e_mgr_a",    "lastName": "1課長",      "roleKey": "MGRA", "ownerCode": "MGRA" },
+    { "userName": "e2e_rep_a",    "lastName": "1課員",      "roleKey": "REPA", "ownerCode": "REPA" },
+    { "userName": "e2e_mgr_b",    "lastName": "2課長",      "roleKey": "MGRB", "ownerCode": "MGRB" },
+    { "userName": "e2e_rep_b",    "lastName": "2課員",      "roleKey": "REPB", "ownerCode": "REPB" }
+  ],
+
+  "group": {
+    "name": "E2Eクロスグループ",
+    "memberUserNames": ["e2e_rep_a", "e2e_rep_b"]
+  },
+
+  "privateModules": ["Leads"],
+
+  "leadPerm": {
+    "module": "Leads",
+    "prefix": "[E2E-PERM]",
+    "perOwner": 4,
+    "ownerCodes": ["DIR", "MGRA", "REPA", "MGRB", "REPB"],
+    "expectedVisible": {
+      "admin": 20,
+      "e2e_director": 20,
+      "e2e_mgr_a": 8,
+      "e2e_rep_a": 4,
+      "e2e_mgr_b": 8,
+      "e2e_rep_b": 4
+    }
+  },
+
+  "leadGroup": {
+    "module": "Leads",
+    "prefix": "[E2E-GRP]",
+    "count": 4,
+    "expectedVisible": {
+      "admin": 4,
+      "e2e_director": 0,
+      "e2e_mgr_a": 0,
+      "e2e_rep_a": 4,
+      "e2e_mgr_b": 0,
+      "e2e_rep_b": 4
+    }
+  },
+
+  "accountPaging": {
+    "module": "Accounts",
+    "prefix": "[E2E-PAGE]",
+    "count": 250,
+    "pageSize": 20
+  },
+
+  "accountSearch": {
+    "module": "Accounts",
+    "prefix": "[E2E-SRCH]",
+    "industries": ["Banking", "Chemicals", "Construction", "Consulting", "Education", "Energy"],
+    "perIndustry": 10,
+    "ratings": ["Active", "Acquired"],
+    "globalToken": "ZZUNIQAcctFindme"
+  },
+
+  "actionPerm": {
+    "_comment": "プロファイル(役割)による アクション権限 の検証用。Sales Profile(id=2) を複製し対象モジュールの権限だけ書き換えた制限プロファイルを、専用ロール+ユーザーに割り当てる。可視範囲(sharing)と切り離す為 module は Public 共有の Accounts を使う。",
+    "module": "Accounts",
+    "personas": [
+      {
+        "userName": "e2e_p_hidden",
+        "roleName": "E2E権限_非表示",
+        "profileName": "E2E_権限_Accounts非表示",
+        "restriction": "module_hidden",
+        "expect": { "moduleVisible": false, "canCreate": false, "canEdit": false, "canDelete": false }
+      },
+      {
+        "userName": "e2e_p_readonly",
+        "roleName": "E2E権限_閲覧のみ",
+        "profileName": "E2E_権限_Accounts閲覧のみ",
+        "restriction": "read_only",
+        "expect": { "moduleVisible": true, "canCreate": false, "canEdit": false, "canDelete": false }
+      },
+      {
+        "userName": "e2e_p_nodelete",
+        "roleName": "E2E権限_削除不可",
+        "profileName": "E2E_権限_Accounts削除不可",
+        "restriction": "no_delete",
+        "expect": { "moduleVisible": true, "canCreate": true, "canEdit": true, "canDelete": false }
+      }
+    ]
+  },
+
+  "fieldPerm": {
+    "_comment": "項目レベル権限。Sales Profile 複製プロファイルで Accounts の特定項目だけ制限(モジュール/アクションは通常)。この項目だけ見えない/編集できない を検証する。",
+    "module": "Accounts",
+    "userName": "e2e_p_field",
+    "roleName": "E2E権限_項目制限",
+    "profileName": "E2E_権限_Accounts項目制限",
+    "hiddenField": "phone",
+    "readonlyField": "website",
+    "normalField": "accountname"
+  },
+
+  "sharingRule": {
+    "_comment": "カスタム共有ルール(vtiger_datashare_role2role)。何も所有しない観測者ロールに、Leads の『1課長(MGRA)ロール所有レコード』を read-only 共有する。階層では見えないものがルールで見えるようになることを検証(既存の階層テストの件数は変えない)。",
+    "module": "Leads",
+    "observerUserName": "e2e_observer",
+    "observerRoleName": "E2E共有_観測者",
+    "sourceRoleName": "E2E営業1課長",
+    "leadPrefix": "[E2E-PERM]",
+    "sharedOwnerCode": "MGRA",
+    "notSharedOwnerCodes": ["MGRB", "REPA"],
+    "expectedSharedCount": 4,
+    "expectedNotSharedCount": 0
+  },
+
+  "exportImportPerm": {
+    "_comment": "エクスポート/インポート権限。Sales Profile(id2)は既定で Export/Import 拒否のため、複製プロファイルで Accounts の profile2utility Export(activityid 6)/Import(5) を許可(permission=0)したペルソナを用意し、既定拒否の Sales ユーザー(e2e_director)と対比する。",
+    "module": "Accounts",
+    "userName": "e2e_p_export",
+    "roleName": "E2E権限_出力可",
+    "profileName": "E2E_権限_Accounts出力可",
+    "negativeUserName": "e2e_director"
+  },
+
+  "tagFilter": {
+    "_comment": "サイドバーのタグ絞り込み。テスト時にタグを作ると反映が不定なので、タグ(vtiger_freetags)と付与(vtiger_freetagged_objects)を dump に焼き込んで安定化する。[E2E-PAGE] の先頭 taggedCount 件に付与。",
+    "module": "Accounts",
+    "tagName": "E2Eタグ絞込",
+    "taggedNamePrefix": "[E2E-PAGE]",
+    "taggedCount": 7
+  },
+
+  "inventory": {
+    "_comment": "在庫系(Invoice/Quotes/SalesOrder/PurchaseOrder)の明細登録を成立させるための 有効・価格付き 商品/サービス。名称検索 Products_Record_Model::getSearchResult() は discontinued=1(有効)を要求するため、必ず discontinued=1 で投入する(API最小シードは discontinued=0 になり検索0件=CRUDブロックの実因)。unitPrice は合計/割引/税の検算に使う既知値。検索キーは name の一意な部分文字列(商品A/商品B/サービスA)。",
+    "searchModule": "Invoice",
+    "products": [
+      { "name": "[E2E-INV] 商品A", "searchKey": "商品A", "unitPrice": 1000 },
+      { "name": "[E2E-INV] 商品B", "searchKey": "商品B", "unitPrice": 2500 }
+    ],
+    "services": [
+      { "name": "[E2E-INV] サービスA", "searchKey": "サービスA", "unitPrice": 5000 }
+    ]
+  },
+
+  "validationFields": {
+    "module": "Faq",
+    "block": "E2E_ValidationFields",
+    "fields": [
+      { "key": "str5",      "label": "検証_単数行5",    "type": "Text",             "length": 5 },
+      { "key": "str255",    "label": "検証_単数行255",  "type": "Text",             "length": 255 },
+      { "key": "decimal",   "label": "検証_小数点",     "type": "Decimal",          "length": 10, "decimal": 5 },
+      { "key": "integer",   "label": "検証_整数",       "type": "Integer",          "length": 10 },
+      { "key": "percent",   "label": "検証_パーセント", "type": "Percent" },
+      { "key": "currency",  "label": "検証_通貨",       "type": "Currency",         "length": 10, "decimal": 2 },
+      { "key": "date",      "label": "検証_日付",       "type": "Date" },
+      { "key": "email",     "label": "検証_メール",     "type": "Email" },
+      { "key": "phone",     "label": "検証_電話番号",   "type": "Phone" },
+      { "key": "picklist",  "label": "検証_選択肢単数", "type": "Picklist",         "options": ["A","B","C","D"] },
+      { "key": "url",       "label": "検証_URL",        "type": "URL" },
+      { "key": "checkbox",  "label": "検証_チェック",   "type": "Checkbox" },
+      { "key": "text",      "label": "検証_複数行",     "type": "TextArea" },
+      { "key": "multipick", "label": "検証_選択肢複数", "type": "MultiSelectCombo", "options": ["A","B","C","D"] },
+      { "key": "time",      "label": "検証_時刻",       "type": "Time" },
+      { "key": "reference", "label": "検証_関連",       "type": "Reference",        "referenceModule": ["Accounts"] }
+    ]
+  }
+}
