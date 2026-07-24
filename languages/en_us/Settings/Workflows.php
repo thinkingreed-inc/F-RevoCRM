@@ -223,6 +223,30 @@ $languageStrings = array(
     'week days ago' => '%s week days ago',
     'more than week days ago' => 'more than %s week days ago',
     'less than week days ago' => 'less than %s week days ago',
+
+		// Curl Task
+    'VTCurlTask' => 'Curl Request',
+    'LBL_CURL_URL' => 'Request URL',
+    'LBL_CURL_METHOD' => 'HTTP Method',
+    'LBL_CURL_HEADERS' => 'Request Headers',
+    'LBL_CURL_BODY' => 'Request Body',
+    'LBL_CURL_TIMEOUT' => 'Timeout (seconds)',
+    'LBL_CURL_TIMEOUT_HELP' => 'Please specify between 1-60 seconds (Default: 30 seconds)',
+    'LBL_CURL_PRESET' => 'Preset',
+    'LBL_CURL_PRESET_TEAMS' => 'Teams',
+    'LBL_CURL_PRESET_SLACK' => 'Slack',
+    'LBL_CURL_PRESET_GENERIC' => 'Generic',
+    'LBL_CURL_PRESET_OVERWRITE_CONFIRM' => 'This will overwrite the existing content. Are you sure?',
+    'LBL_CURL_FORMAT' => 'Format',
+    'LBL_CURL_INSERT_FIELD' => 'Insert Field',
+    'LBL_CURL_TEST_SEND' => 'Test Send',
+    'LBL_CURL_TEST_SENDING' => 'Sending...',
+    'LBL_CURL_JSON_VALID' => 'JSON OK',
+    'LBL_CURL_JSON_INVALID' => 'Invalid JSON',
+    'LBL_CURL_CANCEL' => 'Cancel',
+    'LBL_CURL_TEST_SEND_NOTE' => 'On test send, field values such as $fieldname are sent as-is without substitution. Actual values are embedded when the workflow runs.',
+    'LBL_CURL_ADAPTIVE_CARD_DESIGNER' => 'Edit in Adaptive Card Designer',
+    'Curl Request' => 'Curl Request',
 );
 
 $jsLanguageStrings = array(
@@ -238,9 +262,9 @@ $jsLanguageStrings = array(
     'VTCreateTodoTask' => 'Create Task',
     'VTCreateEventTask' => 'Create Event',
     'VTUpdateFieldsTask' => 'Update Fields',
-    'VTSMSTask' => 'SMS Task', 
+    'VTSMSTask' => 'SMS Task',
     'VTPushNotificationTask' => 'Mobile Push Notification',
     'VTCreateEntityTask' => 'Create Record',
-    'LBL_EXPRESSION_INVALID' => 'Expression Invalid'
+    'LBL_EXPRESSION_INVALID' => 'Expression Invalid',
 );
 

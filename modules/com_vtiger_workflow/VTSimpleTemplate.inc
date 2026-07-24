@@ -19,7 +19,7 @@ class VTSimpleTemplate{
 		return $this->parseTemplate();
 	}
 
-	private function matchHandler($match){
+	protected function matchHandler($match){
 		preg_match('/\((\w+) : \(([_\w]+)\) (\w+)\)/', $match[1], $matches);
 		if ($match[1] == 'logo') {
 			return $this->getMetaValue($match[1]);

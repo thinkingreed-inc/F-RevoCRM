@@ -223,6 +223,30 @@ $languageStrings = array(
 	'week days ago' => '営業日前',
 	'more than week days ago' => '営業日以上前',
 	'less than week days ago' => '営業日未満前',
+
+	// Curl Task
+	'VTCurlTask' => 'Curlリクエスト',
+	'LBL_CURL_URL' => 'リクエストURL',
+	'LBL_CURL_METHOD' => 'HTTPメソッド',
+	'LBL_CURL_HEADERS' => 'リクエストヘッダー',
+	'LBL_CURL_BODY' => 'リクエストボディ',
+	'LBL_CURL_TIMEOUT' => 'タイムアウト（秒）',
+	'LBL_CURL_TIMEOUT_HELP' => '1〜60秒の範囲で指定してください（デフォルト: 30秒）',
+	'LBL_CURL_PRESET' => 'プリセット',
+	'LBL_CURL_PRESET_TEAMS' => 'Teams',
+	'LBL_CURL_PRESET_SLACK' => 'Slack',
+	'LBL_CURL_PRESET_GENERIC' => '汎用',
+	'LBL_CURL_PRESET_OVERWRITE_CONFIRM' => '既存の内容を上書きします。よろしいですか？',
+	'LBL_CURL_FORMAT' => '整形',
+	'LBL_CURL_INSERT_FIELD' => 'フィールド挿入',
+	'LBL_CURL_TEST_SEND' => 'テスト送信',
+	'LBL_CURL_TEST_SENDING' => '送信中...',
+	'LBL_CURL_JSON_VALID' => 'JSON OK',
+	'LBL_CURL_JSON_INVALID' => '不正なJSON',
+	'LBL_CURL_CANCEL' => 'キャンセル',
+	'LBL_CURL_TEST_SEND_NOTE' => 'テスト送信では $項目名 などのフィールド値は置換されず、そのまま送信されます。実際の値の埋め込みはワークフロー実行時に行われます。',
+	'LBL_CURL_ADAPTIVE_CARD_DESIGNER' => 'Adaptive Card デザイナーで編集',
+	'Curl Request' => 'Curlリクエスト',
 );
 
 $jsLanguageStrings = array(
@@ -238,9 +262,9 @@ $jsLanguageStrings = array(
     'VTCreateTodoTask' => 'TODOの作成',
     'VTCreateEventTask' => '活動の作成',
     'VTUpdateFieldsTask' => '項目の値の更新',
-    'VTSMSTask' => 'SMS送信', 
+    'VTSMSTask' => 'SMS送信',
     'VTPushNotificationTask' => 'モバイルプッシュ通知',
     'VTCreateEntityTask' => 'レコードの作成',
-    'LBL_EXPRESSION_INVALID' => '表現式が間違っています'
+    'LBL_EXPRESSION_INVALID' => '表現式が間違っています',
 );
 
