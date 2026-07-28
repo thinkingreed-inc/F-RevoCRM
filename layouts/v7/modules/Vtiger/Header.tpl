@@ -53,9 +53,9 @@
 		<script src="{vresource_url('layouts/v7/lib/jquery/jquery.min.js')}"></script>
 		<script src="{vresource_url('layouts/v7/lib/jquery/jquery-migrate-1.4.1.js')}"></script>
 		<script type="text/javascript">
-			var _META = { 'module': "{$MODULE}", view: "{$VIEW}", 'parent': "{$PARENT_MODULE}", 'notifier':"{$NOTIFIER_URL}", 'app':"{$SELECTED_MENU_CATEGORY}" };
+			var _META = { 'module': "{$MODULE|escape:'javascript'}", view: "{$VIEW|escape:'javascript'}", 'parent': "{$PARENT_MODULE|escape:'javascript'}", 'notifier':"{$NOTIFIER_URL|escape:'javascript'}", 'app':"{$SELECTED_MENU_CATEGORY|escape:'javascript'}" };
             {if $EXTENSION_MODULE}
-                var _EXTENSIONMETA = { 'module': "{$EXTENSION_MODULE}", view: "{$EXTENSION_VIEW}"};
+                var _EXTENSIONMETA = { 'module': "{$EXTENSION_MODULE|escape:'javascript'}", view: "{$EXTENSION_VIEW|escape:'javascript'}"};
             {/if}
             var _USERMETA;
             {if $CURRENT_USER_MODEL}
