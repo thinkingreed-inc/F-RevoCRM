@@ -602,8 +602,29 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 
 						if (php7_count($fieldValueDetails) > 1) {
 							$referenceModuleName = trim($fieldValueDetails[0]);
-							$referenceValueList = $fieldDetails;
-							$entityId = getEntityIdByColumns($referenceModuleName, $referenceValueList, $cache);
+							if (empty($fieldDetails) && php7_count($fieldValueDetails) == 2) {
+								// 従来形式「モジュール名::::レコード名」の場合はラベルで参照解決する（7.4.2までの動作）
+								// 「====」を含まない値をgetEntityIdByColumnsに渡すとImportExceptionにより行全体がスキップされるため
+								$entityLabel = trim($fieldValueDetails[1]);
+								if ($referenceModuleName == 'Users') {
+									$query = "SELECT id FROM vtiger_users WHERE trim(concat(last_name,' ',first_name)) = ? ;";
+									$result = $adb->pquery($query, array($entityLabel));
+									if ($adb->num_rows($result) > 0) {
+										$entityId = $adb->query_result($result, 0, "id");
+									} elseif ($fieldInstance->isMandatory()) {
+										$entityId = $this->user->id;
+									}
+								} else {
+									try {
+										$entityId = getEntityId($referenceModuleName, decode_html($entityLabel));
+									} catch (ImportException $e) {
+										$entityId = 0;
+									}
+								}
+							} else {
+								$referenceValueList = $fieldDetails;
+								$entityId = getEntityIdByColumns($referenceModuleName, $referenceValueList, $cache);
+							}
 						} else {
 							$referencedModules = $fieldInstance->getReferenceList();
 							$entityLabel = $referenceEntry;
