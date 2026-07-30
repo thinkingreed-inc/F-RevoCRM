@@ -2061,6 +2061,7 @@ $jsLanguageStrings = array(
 	'JS_INTERNAL_COMMENT_INFO' => 'The comment will only be seen by CRM users, if the internal comment checkbox is enabled. To notify customers (through configurable workflows or customer portal) leave this checkbox disabled',
 
 	'JS_NO_TAXES_EXISTS' => 'No taxes exist',
+	'JS_SET_TAX_FOR' => 'Set Tax for',
 	'JS_CONFIRM_TAXES_AND_CHARGES_REPLACE' => 'Do you want to update tax & charge values corresponding to selected region?',
 	'JS_PRINTTEMPLATEMODULE_DISABLED' => 'PrintTemplates module is disabled. Cannot perform the operation',
 	'JS_SENT_FOR_SIGNATURE' => 'Sent for signature',
