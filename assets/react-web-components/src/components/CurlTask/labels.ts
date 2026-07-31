@@ -9,6 +9,7 @@ export interface CurlLabels {
   url: string;
   method: string;
   headers: string;
+  headersHelp: string;
   body: string;
   timeout: string;
   timeoutHelp: string;
@@ -37,6 +38,8 @@ export const DEFAULT_CURL_LABELS: CurlLabels = {
   url: "リクエストURL",
   method: "HTTPメソッド",
   headers: "リクエストヘッダー",
+  headersHelp:
+    "1行に1ヘッダーを記述してください（例: Content-Type: application/json）",
   body: "リクエストボディ",
   timeout: "タイムアウト（秒）",
   timeoutHelp: "1〜60秒の範囲で指定してください（デフォルト: 30秒）",

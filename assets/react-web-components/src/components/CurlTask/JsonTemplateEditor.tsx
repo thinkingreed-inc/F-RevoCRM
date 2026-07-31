@@ -12,6 +12,8 @@ interface Props {
   fields: FieldOption[];
   rows?: number;
   validate?: boolean;
+  /** JSON整形ボタンを出すか。ヘッダー欄はJSONではないためfalseにする */
+  showFormat?: boolean;
   formatLabel?: string;
   insertLabel?: string;
   validLabel?: string;
@@ -24,6 +26,7 @@ export function JsonTemplateEditor({
   fields,
   rows = 8,
   validate,
+  showFormat = true,
   formatLabel = "整形",
   insertLabel,
   validLabel = "JSON OK",
@@ -60,14 +63,16 @@ export function JsonTemplateEditor({
   return (
     <div className="space-y-1">
       <div className="flex items-center gap-2">
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={handleFormat}
-        >
-          {formatLabel}
-        </Button>
+        {showFormat && (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={handleFormat}
+          >
+            {formatLabel}
+          </Button>
+        )}
         <FieldInserter
           fields={fields}
           onInsert={handleInsert}

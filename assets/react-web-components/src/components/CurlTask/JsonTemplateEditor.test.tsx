@@ -24,4 +24,19 @@ describe("JsonTemplateEditor", () => {
     );
     expect(screen.getByText(/不正|invalid/i)).toBeInTheDocument();
   });
+
+  it("hides the format button when showFormat is false", () => {
+    // ヘッダー欄はJSONではないため整形ボタンを出さない
+    render(
+      <JsonTemplateEditor
+        value="Content-Type: application/json"
+        onChange={() => {}}
+        fields={[]}
+        showFormat={false}
+      />,
+    );
+    expect(
+      screen.queryByRole("button", { name: /整形|format/i }),
+    ).not.toBeInTheDocument();
+  });
 });

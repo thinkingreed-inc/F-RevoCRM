@@ -16,6 +16,14 @@ describe("mergeLabels", () => {
   });
 });
 
+describe("CurlLabels の網羅", () => {
+  it("すべてのラベルに空でないデフォルトがある", () => {
+    for (const [key, value] of Object.entries(DEFAULT_CURL_LABELS)) {
+      expect(value, `${key} のデフォルトが空`).not.toBe("");
+    }
+  });
+});
+
 describe("presetLabel", () => {
   it("maps preset keys to labels", () => {
     const labels = mergeLabels({
