@@ -5,9 +5,11 @@
  */
 
 require_once dirname(__FILE__) . '/../FRMigrationClass.php';
+require_once 'vtlib/Vtiger/Utils.php';
+require_once 'modules/com_vtiger_workflow/VTTaskManager.inc';
 
 class Migration20251117110747_AddCurlWorkflowTask extends FRMigrationClass {
-    
+
     /**
      * マイグレーションを実行する
      * VTCurlTaskをワークフローシステムに登録
@@ -15,40 +17,36 @@ class Migration20251117110747_AddCurlWorkflowTask extends FRMigrationClass {
     public function process() {
         $db = PearDatabase::getInstance();
 
-        // Check if VTCurlTask already exists
+        // 既に登録済みなら何もしない（再実行しても重複させない）
         $result = $db->pquery("SELECT id FROM com_vtiger_workflow_tasktypes WHERE tasktypename = ?", array('VTCurlTask'));
 
-        if ($db->num_rows($result) == 0) {
-            // Get next available task type id
-            $taskTypeResult = $db->pquery("SELECT MAX(id) as max_id FROM com_vtiger_workflow_tasktypes", array());
-            $maxId = $taskTypeResult->fields['max_id'];
-            $newTaskTypeId = $maxId + 1;
-
-            // Define task type data
-            $defaultModules = array('include' => array(), 'exclude' => array());
-            $modulesJson = json_encode($defaultModules);
-
-            // Insert VTCurlTask into workflow task types
-            $db->pquery(
-                "INSERT INTO com_vtiger_workflow_tasktypes (id, tasktypename, label, classname, classpath, templatepath, modules, sourcemodule)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                array(
-                    $newTaskTypeId,
-                    'VTCurlTask',
-                    'Curl Request',
-                    'VTCurlTask',
-                    'modules/com_vtiger_workflow/tasks/VTCurlTask.inc',
-                    'modules/Settings/Workflows/Tasks/VTCurlTask.tpl',
-                    $modulesJson,
-                    ''
-                )
-            );
-
-            $this->log("VTCurlTaskをワークフローシステムに登録しました (ID: {$newTaskTypeId})");
-        } else {
+        if ($db->num_rows($result) > 0) {
             $this->log("VTCurlTaskは既に登録されています");
+            $this->log("マイグレーション add_curl_workflow_task が正常に完了しました");
+            return;
         }
 
+        // IDの採番はフレームワーク側に任せる。
+        // MAX(id)+1 を自前で計算すると同時実行時に衝突し、既存の採番方式ともずれる。
+        // VTTaskManager::registerTaskType() は内部で $adb->getUniqueID() を使う。
+        VTTaskManager::registerTaskType(array(
+            'name' => 'VTCurlTask',
+            'label' => 'Curl Request',
+            'classname' => 'VTCurlTask',
+            'classpath' => 'modules/com_vtiger_workflow/tasks/VTCurlTask.inc',
+            'templatepath' => 'modules/Settings/Workflows/Tasks/VTCurlTask.tpl',
+            'modules' => array('include' => array(), 'exclude' => array()),
+            'sourcemodule' => '',
+        ));
+
+        $registered = $db->pquery("SELECT id FROM com_vtiger_workflow_tasktypes WHERE tasktypename = ?", array('VTCurlTask'));
+        if ($db->num_rows($registered) === 0) {
+            $this->log("VTCurlTaskの登録に失敗しました");
+            return;
+        }
+
+        $taskTypeId = $db->query_result($registered, 0, 'id');
+        $this->log("VTCurlTaskをワークフローシステムに登録しました (ID: {$taskTypeId})");
         $this->log("マイグレーション add_curl_workflow_task が正常に完了しました");
     }
 
