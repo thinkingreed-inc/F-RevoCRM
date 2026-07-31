@@ -10,11 +10,8 @@ import {
 } from "@/components/ui/select";
 import { PresetSelector } from "./PresetSelector";
 import { JsonTemplateEditor } from "./JsonTemplateEditor";
-import {
-  TestSendPanel,
-  TestSendPayload,
-  TestSendResult,
-} from "./TestSendPanel";
+import { TestSendPanel, TestSendPayload } from "./TestSendPanel";
+import { defaultSendTest } from "./sendTest";
 import { FieldOption } from "./types";
 import {
   ADAPTIVE_CARD_DESIGNER_URL,
@@ -64,67 +61,6 @@ function toLabels(
   } catch {
     return undefined;
   }
-}
-
-/** app.request 等が返す様々な形のエラーを、人が読める文字列にする */
-function stringifyError(err: unknown): string {
-  if (err == null) return "不明なエラー";
-  if (typeof err === "string") return err;
-  if (typeof err === "object") {
-    const o = err as Record<string, unknown>;
-    if (typeof o.responseText === "string" && o.responseText) {
-      return o.responseText;
-    }
-    if (typeof o.message === "string" && o.message) return o.message;
-    try {
-      return JSON.stringify(err);
-    } catch {
-      return String(err);
-    }
-  }
-  return String(err);
-}
-
-/**
- * テスト送信はTestCurlAjaxアクションを叩く。
- * テスト送信では対象レコードが無いためフィールド変数は置換されず、入力そのままを送る。
- */
-function defaultSendTest() {
-  return (p: TestSendPayload): Promise<TestSendResult> => {
-    const app = (window as unknown as { app?: any }).app;
-    if (!app?.request?.post) {
-      return Promise.resolve({
-        success: false,
-        error: "app.request is not available",
-      });
-    }
-    return new Promise<TestSendResult>((resolve) => {
-      app.request
-        .post({
-          data: {
-            module: "Workflows",
-            parent: "Settings",
-            action: "TestCurlAjax",
-            url: p.url,
-            method: p.method,
-            headers: p.headers,
-            body: p.body,
-            timeout: p.timeout,
-          },
-        })
-        .then(
-          (err: unknown, data: TestSendResult) => {
-            if (err) resolve({ success: false, error: stringifyError(err) });
-            else if (data == null)
-              resolve({ success: false, error: "サーバから応答がありません" });
-            else resolve(data);
-          },
-          // Deferredがrejectされた場合(通信失敗・非JSON応答など)
-          (rejectErr: unknown) =>
-            resolve({ success: false, error: stringifyError(rejectErr) }),
-        );
-    });
-  };
 }
 
 export function CurlTaskForm(props: Props) {
@@ -218,7 +154,7 @@ export function CurlTaskForm(props: Props) {
         </Select>
       </div>
 
-      {/* Headers */}
+      {/* Headers: JSONではなく "Key: Value" の行形式。整形ボタンは出さない */}
       <div className="space-y-1.5">
         <Label>{labels.headers}</Label>
         <JsonTemplateEditor
@@ -226,9 +162,10 @@ export function CurlTaskForm(props: Props) {
           onChange={setHeaders}
           fields={fields}
           rows={4}
-          formatLabel={labels.format}
+          showFormat={false}
           insertLabel={labels.insertField}
         />
+        <p className="text-xs text-muted-foreground">{labels.headersHelp}</p>
       </div>
 
       {/* Body */}

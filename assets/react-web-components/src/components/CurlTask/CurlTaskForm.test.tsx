@@ -53,6 +53,20 @@ describe("CurlTaskForm", () => {
     expect(screen.getByText("HTTPメソッド")).toBeInTheDocument();
   });
 
+  it("shows the format button only for the body editor", () => {
+    // ヘッダーは "Key: Value" の行形式でJSONではないため整形対象にしない
+    const { container } = render(<CurlTaskForm body="" fieldsJson={[]} />);
+    const formatButtons = Array.from(
+      container.querySelectorAll("button"),
+    ).filter((b) => (b.textContent || "").trim() === "整形");
+    expect(formatButtons).toHaveLength(1);
+  });
+
+  it("renders the headers hint", () => {
+    render(<CurlTaskForm body="" fieldsJson={[]} />);
+    expect(screen.getByText(/1行に1ヘッダー/)).toBeInTheDocument();
+  });
+
   it("parses fieldsJson passed as string", () => {
     const { container } = render(
       <CurlTaskForm body="" fieldsJson='[{"name":"subject","label":"件名"}]' />,
