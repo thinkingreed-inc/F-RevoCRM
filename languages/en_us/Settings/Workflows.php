@@ -151,6 +151,7 @@ $languageStrings = array(
     'LBL_VTSMSTask' => 'SMS', 
     'LBL_VTPushNotificationTask' => 'Mobile Notification',
     'LBL_VTCreateEntityTask' => 'Create Record',
+    'LBL_VTCurlTask' => 'Curl Request',
 	'LBL_MAX_SCHEDULED_WORKFLOWS_EXCEEDED' => 'Maximum number(%s) of scheduled workflows has been exceeded',
     
 	//F-RevoCRM
@@ -224,11 +225,12 @@ $languageStrings = array(
     'more than week days ago' => 'more than %s week days ago',
     'less than week days ago' => 'less than %s week days ago',
 
-		// Curl Task
+    // Curl Task
     'VTCurlTask' => 'Curl Request',
     'LBL_CURL_URL' => 'Request URL',
     'LBL_CURL_METHOD' => 'HTTP Method',
     'LBL_CURL_HEADERS' => 'Request Headers',
+    'LBL_CURL_HEADERS_HELP' => 'Write one header per line (e.g. Content-Type: application/json)',
     'LBL_CURL_BODY' => 'Request Body',
     'LBL_CURL_TIMEOUT' => 'Timeout (seconds)',
     'LBL_CURL_TIMEOUT_HELP' => 'Please specify between 1-60 seconds (Default: 30 seconds)',
@@ -243,6 +245,7 @@ $languageStrings = array(
     'LBL_CURL_TEST_SENDING' => 'Sending...',
     'LBL_CURL_JSON_VALID' => 'JSON OK',
     'LBL_CURL_JSON_INVALID' => 'Invalid JSON',
+    'LBL_CURL_OK' => 'OK',
     'LBL_CURL_CANCEL' => 'Cancel',
     'LBL_CURL_TEST_SEND_NOTE' => 'On test send, field values such as $fieldname are sent as-is without substitution. Actual values are embedded when the workflow runs.',
     'LBL_CURL_ADAPTIVE_CARD_DESIGNER' => 'Edit in Adaptive Card Designer',
@@ -265,6 +268,7 @@ $jsLanguageStrings = array(
     'VTSMSTask' => 'SMS Task',
     'VTPushNotificationTask' => 'Mobile Push Notification',
     'VTCreateEntityTask' => 'Create Record',
+    'VTCurlTask' => 'Curl Request',
     'LBL_EXPRESSION_INVALID' => 'Expression Invalid',
 );
 
