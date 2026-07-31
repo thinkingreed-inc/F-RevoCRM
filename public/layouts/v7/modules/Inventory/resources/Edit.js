@@ -1533,7 +1533,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 							'<tr>'+
 								'<td>  '+taxInfo.taxlabel+'</td>'+
 								'<td style="text-align: right;">'+
-									'<input type="text" name="'+taxName+'_percentage'+rowNumber+'" data-rule-positive=true data-rule-inventory_percentage=true  id="'+taxName+'_percentage'+rowNumber+'" value="'+taxInfo.taxpercentage+'" class="taxPercentage" data-compound-on='+taxInfo.compoundOn+' data-regions-list="'+taxInfo.regionsList+'">&nbsp;%'+
+									'<input type="text" name="'+taxName+'_percentage'+rowNumber+'" data-rule-positive=true data-rule-inventory_percentage=true  id="'+taxName+'_percentage'+rowNumber+'" value="'+taxInfo.taxpercentage+'" class="span1 taxPercentage" data-compound-on='+taxInfo.compoundOn+' data-regions-list="'+taxInfo.regionsList+'">&nbsp;%'+
 								'</td>'+
 								'<td style="text-align: right; padding-right: 10px;">'+
 									'<input type="text" name="popup_tax_row'+rowNumber+'" class="cursorPointer span1 taxTotal taxTotal'+taxInfo.taxid+'" value="0.0" readonly>'+
