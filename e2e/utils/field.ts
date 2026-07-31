@@ -171,6 +171,18 @@ export const fillField = async (
     await editor.fill(`${value}`);
     // Joditから隠しtextareaへ値を同期させる
     await editor.blur();
+    // Joditのchangeハンドラがtextarea.valueへ同期するまで待機。
+    // 同期前に保存すると必須バリデーションで空判定されsubmitがブロックされる。
+    await page.waitForFunction(
+      ({ name, expected }) => {
+        const ta = document.querySelector(
+          `textarea[name="${name}"]`
+        ) as HTMLTextAreaElement | null;
+        return !!ta && ta.value.includes(expected);
+      },
+      { name: fieldObj.name, expected: value },
+      { timeout: 5000 }
+    );
   } else if (fieldObj.type.name === "text") {
     /**********************************************************************************************
      * テキスト項目への値登録

@@ -1102,7 +1102,25 @@ class Vtiger_Module_Model extends Vtiger_Module {
 			}
 		}
 
+		// Task の共有権限判定を SQL 段で行う。
+		// PHP 側の isToDoPermittedBySharing() で unset するだけだと、SQL の LIMIT 内が全部
+		// 権限外 Task で埋まったとき、Event 等が残っていても取得できず 0 件になる。
+		$permittedTaskOwnerIds = self::getPermittedTaskOwnerIdsForCalendar($currentUser);
+		$taskOwnerCondition = '';
+		if ($permittedTaskOwnerIds !== null) {
+			if (!empty($permittedTaskOwnerIds)) {
+				$placeholders = generateQuestionMarks($permittedTaskOwnerIds);
+				$taskOwnerCondition = " AND (vtiger_activity.activitytype != 'Task' OR vtiger_crmentity.smownerid IN ($placeholders))";
+			} else {
+				$taskOwnerCondition = " AND vtiger_activity.activitytype != 'Task'";
+			}
+			$query .= $taskOwnerCondition;
+		}
+
 		$params = array($this->getName());
+		if (!empty($permittedTaskOwnerIds)) {
+			$params = array_merge($params, $permittedTaskOwnerIds);
+		}
 
 		if ($recordId) {
 			$query .= " AND vtiger_seactivityrel.crmid = ?";
@@ -1179,6 +1197,43 @@ class Vtiger_Module_Model extends Vtiger_Module {
 		}
 
 		return $activities;
+	}
+
+	/**
+	 * カレンダーの Task で SQL 段の smownerid IN 絞り込みに使う ID 集合を返す。
+	 * isToDoPermittedBySharing() の判定を SQL 化するためのもの。
+	 * - 管理者、または profileGlobalPermission が全許可のユーザーは絞り込み不要 → null
+	 * - それ以外は「自分 + 部下ロール配下ユーザー + 全グループ」を許可
+	 *   （グループ所有 Task と自分より下位ロールの Task は isToDoPermittedBySharing で常に 'Yes'）
+	 */
+	private static function getPermittedTaskOwnerIdsForCalendar($currentUser) {
+		if ($currentUser->isAdminUser()) {
+			return null;
+		}
+		$userId = $currentUser->getId();
+		require('user_privileges/user_privileges_'.$userId.'.php');
+		// $profileGlobalPermission[1]==0 or [2]==0 のとき isToDoPermittedBySharing は常に 'Yes' なので絞り込み不要
+		if ((isset($profileGlobalPermission[1]) && $profileGlobalPermission[1] == 0)
+			|| (isset($profileGlobalPermission[2]) && $profileGlobalPermission[2] == 0)) {
+			return null;
+		}
+		$ids = array((int)$userId);
+		if (!empty($subordinate_roles_users) && is_array($subordinate_roles_users)) {
+			foreach ($subordinate_roles_users as $roleUsers) {
+				if (is_array($roleUsers)) {
+					foreach ($roleUsers as $uid) {
+						$ids[] = (int)$uid;
+					}
+				}
+			}
+		}
+		$db = PearDatabase::getInstance();
+		$rs = $db->pquery('SELECT groupid FROM vtiger_groups', array());
+		$n = $db->num_rows($rs);
+		for ($i = 0; $i < $n; $i++) {
+			$ids[] = (int)$db->query_result($rs, $i, 'groupid');
+		}
+		return array_values(array_unique($ids));
 	}
 
 	/**

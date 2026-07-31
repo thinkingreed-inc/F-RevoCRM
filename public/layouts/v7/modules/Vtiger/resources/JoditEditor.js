@@ -616,6 +616,11 @@ jQuery.Class("Vtiger_Jodit_Js", {
                 );
                 wrapper.lastKnownEditorValue = bodyVal;
                 wrapper.lastKnownData = fullHtml;
+                // textareaへライブ同期。jQuery Validateがsubmit時に読む値を最新化し、
+                // data-rule-required等の必須チェックが実入力内容を判定できるようにする。
+                if (self.element && self.element.length > 0) {
+                    self.element.val(fullHtml);
+                }
             }
         });
         var restoreLastKnownContent = function () {

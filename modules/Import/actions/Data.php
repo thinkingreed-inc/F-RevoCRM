@@ -416,6 +416,10 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 									$createdRecords[] = $entityIdComponents[1];
 								}
 							} catch (Exception $e) {
+								global $log;
+								if ($log) {
+									$log->error('[Import create] failed: '.$e->getMessage()."\n".$e->getTraceAsString());
+								}
 							}
 						}
 					} catch (ImportException $e) {
@@ -1028,7 +1032,8 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 	public static function getImportDetails($user, $moduleName, $importid) {
 		$adb = PearDatabase::getInstance();
 		$tableName = Import_Utils_Helper::getDbTableName($user, $importid);
-		$result = $adb->pquery("SELECT * FROM $tableName where status IN (?,?)", array(self::$IMPORT_RECORD_SKIPPED, self::$IMPORT_RECORD_FAILED));
+		$groupBy = in_array($moduleName, getInventoryModules()) ? ' GROUP BY subject' : '';
+		$result = $adb->pquery("SELECT * FROM $tableName where status IN (?,?)" . $groupBy, array(self::$IMPORT_RECORD_SKIPPED, self::$IMPORT_RECORD_FAILED));
 		$importRecords = array();
 		if ($result) {
 			$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
@@ -1156,12 +1161,13 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 					if ($fieldDataType == 'picklist') {
 						$fieldValue = trim($recordData[$fieldName]);
 						$picklistValues = $fieldModel->getPicklistValues();
+						// getPicklistValues() は [key(DB値) => label(翻訳)] を返す。
+						// この段階の $fieldValue は transformForImport で既に DB キーへ変換済みのため、
+						// キーとラベル両方を許容してチェックする。
+						$picklistCandidates = array_merge(array_keys($picklistValues), array_values($picklistValues));
 
 						$fieldValueInLowerCase = strtolower($fieldValue);
-						$picklistValuesInLowerCase = array_map('strtolower', $picklistValues);
-						if (sizeof($picklistValuesInLowerCase)&& sizeof($picklistValues)) {
-							$picklistDetails = array_combine($picklistValuesInLowerCase, $picklistValues);
-						}
+						$picklistValuesInLowerCase = array_map('strtolower', $picklistCandidates);
 
 						if (!in_array($fieldValueInLowerCase, $picklistValuesInLowerCase)
 								&& $fieldName !== 'visibility'
@@ -1215,6 +1221,10 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 						}
 					}
 				} catch (Exception $e) {
+					global $log;
+					if ($log) {
+						$log->error('[Import Calendar] '.$operation.' failed: '.$e->getMessage()."\n".$e->getTraceAsString());
+					}
 					if ($operation != 'create') {
 						$entityInfo['status'] = self::$IMPORT_RECORD_SKIPPED;
 					}
@@ -1258,6 +1268,10 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 				}
 			}
 		} catch (Exception $e) {
+			global $log;
+			if ($log) {
+				$log->error('[Import '.$this->module.'] '.$operation.' failed: '.$e->getMessage()."\n".$e->getTraceAsString());
+			}
 			if ($operation != 'create') {
 				$entityInfo['status'] = self::$IMPORT_RECORD_SKIPPED;
 			}
