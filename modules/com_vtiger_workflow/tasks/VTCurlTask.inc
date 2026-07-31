@@ -11,11 +11,26 @@
 require_once('modules/com_vtiger_workflow/VTEntityCache.inc');
 require_once('modules/com_vtiger_workflow/VTWorkflowUtils.php');
 require_once('modules/com_vtiger_workflow/VTSimpleTemplate.inc');
+require_once('modules/com_vtiger_workflow/VTPlainTextTemplate.inc');
 require_once('modules/com_vtiger_workflow/VTJsonTemplate.inc');
+require_once('modules/com_vtiger_workflow/VTHeaderTemplate.inc');
+require_once('modules/com_vtiger_workflow/VTUrlTemplate.inc');
 
 class VTCurlTask extends VTTask {
 	// Curl requests are typically short, execute immediately
 	public $executeImmediately = true;
+
+	/** タイムアウトの既定値（秒） */
+	const DEFAULT_TIMEOUT = 30;
+
+	/** タイムアウトの上限（秒）。ワークフローを長時間ブロックさせない */
+	const MAX_TIMEOUT = 60;
+
+	/** 保持するレスポンスの上限バイト数。巨大な応答でメモリを食わせない */
+	const MAX_RESPONSE_BYTES = 65536;
+
+	/** 許可するスキーム。file:// や gopher:// 等を使わせない */
+	const ALLOWED_SCHEMES = array('http', 'https');
 
 	/**
 	 * Called after unserialization - normalize fields
@@ -34,46 +49,29 @@ class VTCurlTask extends VTTask {
 		$util = new VTWorkflowUtils();
 		$admin = $util->adminUser();
 
-		$entityCache = new VTEntityCache($admin);
-		$entityId = $entity->getId();
-
-		// Ensure headers and body are strings (convert from array if needed)
-		$this->normalizeFields();
-
-		// Render URL with field values
-		$urlTemplate = new VTSimpleTemplate($this->url);
-		$renderedUrl = $urlTemplate->render($entityCache, $entityId);
-
-		// Validate URL and check for SSRF
-		if (!self::checkUrl($renderedUrl)) {
-			$log->error("VTCurlTask: Invalid or unsafe URL: " . $renderedUrl);
-			$util->revertUser();
-			return false;
-		}
-
-		// Render headers with field values
-		$headersTemplate = new VTSimpleTemplate($this->headers);
-		$renderedHeaders = $headersTemplate->render($entityCache, $entityId);
-
-		// Render body with field values.
-		// ボディはJSON想定のため、値をJSON文字列エスケープして注入する（"や改行でJSONが壊れるのを防ぐ）
-		$bodyTemplate = new VTJsonTemplate($this->body);
-		$renderedBody = $bodyTemplate->render($entityCache, $entityId);
-
-		// Set default method if not specified
-		$method = !empty($this->method) ? strtoupper($this->method) : 'POST';
-
-		// Set default timeout if not specified
-		$timeout = !empty($this->timeout) ? intval($this->timeout) : 30;
-
-		// Limit timeout to maximum 60 seconds for security
-		if ($timeout > 60) {
-			$timeout = 60;
-		}
-
-		// Execute curl request
 		try {
-			$result = self::runCurl($renderedUrl, $method, $renderedHeaders, $renderedBody, $timeout);
+			$entityCache = new VTEntityCache($admin);
+			$entityId = $entity->getId();
+
+			// Ensure headers and body are strings (convert from array if needed)
+			$this->normalizeFields();
+
+			// URLの差し込み値はパーセントエンコードする（& や空白でURLが変わるのを防ぐ）
+			$urlTemplate = new VTUrlTemplate($this->url);
+			$renderedUrl = $urlTemplate->render($entityCache, $entityId);
+
+			// ヘッダーの差し込み値は改行を除去する（任意ヘッダー注入を防ぐ）
+			$headersTemplate = new VTHeaderTemplate($this->headers);
+			$renderedHeaders = $headersTemplate->render($entityCache, $entityId);
+
+			// ボディはJSON想定のため、値をJSON文字列エスケープして注入する（"や改行でJSONが壊れるのを防ぐ）
+			$bodyTemplate = new VTJsonTemplate($this->body);
+			$renderedBody = $bodyTemplate->render($entityCache, $entityId);
+
+			$method = !empty($this->method) ? strtoupper($this->method) : 'POST';
+			$timeout = self::normalizeTimeout($this->timeout);
+
+			$result = self::execute($renderedUrl, $method, $renderedHeaders, $renderedBody, $timeout);
 
 			if ($result['success']) {
 				$log->info("VTCurlTask: Successfully executed curl request to " . $renderedUrl);
@@ -82,9 +80,10 @@ class VTCurlTask extends VTTask {
 			}
 		} catch (Exception $e) {
 			$log->error("VTCurlTask: Exception during curl execution: " . $e->getMessage());
+		} finally {
+			// 例外が出ても管理者ユーザーへの切り替えは必ず戻す
+			$util->revertUser();
 		}
-
-		$util->revertUser();
 	}
 
 	/**
@@ -112,62 +111,205 @@ class VTCurlTask extends VTTask {
 			$this->body = json_encode($this->body, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 		}
 
-		// Ensure empty values are empty strings, not null
-		if (empty($this->headers)) {
+		// null等は空文字に寄せる。empty()で判定すると "0" が消えるため is_string で見る
+		if (!is_string($this->headers)) {
 			$this->headers = '';
 		}
-		if (empty($this->body)) {
+		if (!is_string($this->body)) {
 			$this->body = '';
 		}
 	}
 
 	/**
-	 * Validate URL and check for SSRF attacks
-	 * Shared by doTask() and the TestCurlAjax action.
+	 * タイムアウト値を 1〜MAX_TIMEOUT 秒に正規化する。
+	 * doTask とテスト送信で同じ値になるよう共通化している。
+	 * @param mixed $value
+	 * @return int
+	 */
+	public static function normalizeTimeout($value) {
+		$timeout = (int) $value;
+		if ($timeout <= 0) {
+			return self::DEFAULT_TIMEOUT;
+		}
+		if ($timeout > self::MAX_TIMEOUT) {
+			return self::MAX_TIMEOUT;
+		}
+		return $timeout;
+	}
+
+	/**
+	 * URL検証 → curl実行までをまとめて行う。
+	 * 検証を忘れた経路が生まれないよう、送信は必ずこのメソッドを通す。
+	 *
+	 * @param string $url
+	 * @param string $method
+	 * @param string $headers
+	 * @param string $body
+	 * @param int $timeout
+	 * @return array success / error / http_code / response
+	 */
+	public static function execute($url, $method, $headers, $body, $timeout) {
+		$validation = self::validateUrl($url);
+		if (!$validation['valid']) {
+			return array(
+				'success' => false,
+				'error' => $validation['error'],
+			);
+		}
+		return self::runCurl($url, $method, $headers, $body, self::normalizeTimeout($timeout), $validation);
+	}
+
+	/**
+	 * URLが送信先として妥当かを判定する（真偽値版）。
 	 * @param string $url
 	 * @return bool
 	 */
 	public static function checkUrl($url) {
-		// Check if URL is valid
-		if (!filter_var($url, FILTER_VALIDATE_URL)) {
-			return false;
+		$validation = self::validateUrl($url);
+		return $validation['valid'];
+	}
+
+	/**
+	 * URLを検証し、名前解決結果まで含めて返す。
+	 *
+	 * SSRF対策として次を行う:
+	 *  - スキームを http / https のみに限定
+	 *  - ホスト名が解決する全アドレスを検証し、内部向けが1つでもあれば拒否
+	 *  - 名前解決できない場合は拒否（fail-closed）
+	 *  - IPv6リテラル・末尾ドット・IPv4射影アドレスを正規化してから判定
+	 *
+	 * @param string $url
+	 * @return array valid / error / host / rawHost / port / ips / isLiteralIp
+	 */
+	public static function validateUrl($url) {
+		$url = trim((string) $url);
+
+		if ($url === '' || !filter_var($url, FILTER_VALIDATE_URL)) {
+			return self::urlError('URLの形式が不正です');
 		}
 
-		// Parse URL
 		$parsedUrl = parse_url($url);
-		if (!$parsedUrl || !isset($parsedUrl['host'])) {
-			return false;
+		if (!$parsedUrl || empty($parsedUrl['scheme']) || empty($parsedUrl['host'])) {
+			return self::urlError('URLの形式が不正です');
 		}
 
-		$host = $parsedUrl['host'];
-
-		// Check for localhost
-		if (in_array(strtolower($host), array('localhost', '127.0.0.1', '::1'))) {
-			return false;
+		$scheme = strtolower($parsedUrl['scheme']);
+		if (!in_array($scheme, self::ALLOWED_SCHEMES, true)) {
+			return self::urlError('http / https 以外のスキームは使用できません: ' . $scheme);
 		}
 
-		// Resolve hostname to IP
-		$ip = gethostbyname($host);
-		if ($ip === $host && !filter_var($host, FILTER_VALIDATE_IP)) {
-			// Could not resolve hostname
-			return true; // Allow external domains
+		// parse_url はIPv6リテラルを [::1] の形で返す。末尾ドットも落として正規化する
+		$rawHost = strtolower($parsedUrl['host']);
+		$host = rtrim(trim($rawHost, '[]'), '.');
+		if ($host === '') {
+			return self::urlError('ホスト名が空です');
 		}
 
-		// Check if IP is private
-		if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-			// Check for private IPv4 ranges
-			$private_ranges = array(
-				array('10.0.0.0', '10.255.255.255'),
-				array('172.16.0.0', '172.31.255.255'),
-				array('192.168.0.0', '192.168.255.255'),
-				array('127.0.0.0', '127.255.255.255'),
-			);
+		$port = isset($parsedUrl['port']) ? (int) $parsedUrl['port'] : ($scheme === 'https' ? 443 : 80);
 
-			$ip_long = ip2long($ip);
-			foreach ($private_ranges as $range) {
-				if ($ip_long >= ip2long($range[0]) && $ip_long <= ip2long($range[1])) {
-					return false;
+		$ips = self::resolveHost($host);
+		if (empty($ips)) {
+			// 解決できないホストを許可すると、DNSが引けない環境で検証が無効化される
+			return self::urlError('ホスト名を解決できませんでした: ' . $host);
+		}
+
+		foreach ($ips as $ip) {
+			if (!self::isPublicIp($ip)) {
+				// ホスト名がIPリテラルの場合は同じ値を二度出さない
+				$detail = ($ip === $host) ? $host : $host . ' (' . $ip . ')';
+				return self::urlError('内部ネットワーク宛のURLは使用できません: ' . $detail);
+			}
+		}
+
+		return array(
+			'valid' => true,
+			'error' => '',
+			'host' => $host,
+			'rawHost' => trim($rawHost, '[]'),
+			'port' => $port,
+			'ips' => $ips,
+			'isLiteralIp' => (bool) filter_var($host, FILTER_VALIDATE_IP),
+		);
+	}
+
+	/**
+	 * @param string $message
+	 * @return array
+	 */
+	private static function urlError($message) {
+		return array(
+			'valid' => false,
+			'error' => $message,
+			'host' => '',
+			'rawHost' => '',
+			'port' => 0,
+			'ips' => array(),
+			'isLiteralIp' => false,
+		);
+	}
+
+	/**
+	 * ホスト名を全アドレス（A / AAAA）に解決する。
+	 * @param string $host
+	 * @return array
+	 */
+	private static function resolveHost($host) {
+		if (filter_var($host, FILTER_VALIDATE_IP)) {
+			return array($host);
+		}
+
+		$ips = array();
+
+		$ipv4List = @gethostbynamel($host);
+		if (is_array($ipv4List)) {
+			$ips = $ipv4List;
+		}
+
+		if (function_exists('dns_get_record')) {
+			$records = @dns_get_record($host, DNS_AAAA);
+			if (is_array($records)) {
+				foreach ($records as $record) {
+					if (!empty($record['ipv6'])) {
+						$ips[] = $record['ipv6'];
+					}
 				}
+			}
+		}
+
+		return array_values(array_unique($ips));
+	}
+
+	/**
+	 * 外部へ出しても良いアドレスかを判定する。
+	 * @param string $ip
+	 * @return bool
+	 */
+	private static function isPublicIp($ip) {
+		// IPv4射影(::ffff:a.b.c.d) / NAT64 / 6to4 は埋め込まれたIPv4で判定する
+		$embedded = self::embeddedIpv4($ip);
+		if ($embedded !== null) {
+			return self::isPublicIp($embedded);
+		}
+
+		if (!filter_var($ip, FILTER_VALIDATE_IP)) {
+			return false;
+		}
+
+		// プライベート/予約範囲はPHPのフィルタで除外する
+		//   IPv4: 0.0.0.0/8, 10/8, 127/8, 169.254/16, 172.16/12, 192.168/16, 240/4
+		//   IPv6: ::1/128, ::/128, ::ffff:0:0/96, fc00::/7, fe80::/10
+		if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+			return false;
+		}
+
+		if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+			$ipLong = ip2long($ip);
+			// 100.64.0.0/10 (CGNAT) と 224.0.0.0/4 以降 はPHPのフィルタ対象外なので個別に弾く
+			if ($ipLong >= ip2long('100.64.0.0') && $ipLong <= ip2long('100.127.255.255')) {
+				return false;
+			}
+			if ($ipLong >= ip2long('224.0.0.0')) {
+				return false;
 			}
 		}
 
@@ -175,20 +317,62 @@ class VTCurlTask extends VTTask {
 	}
 
 	/**
+	 * IPv6アドレスに埋め込まれたIPv4を取り出す。
+	 * ::ffff:127.0.0.1 のような表記でループバック判定を回避されるのを防ぐ。
+	 * @param string $ip
+	 * @return string|null
+	 */
+	private static function embeddedIpv4($ip) {
+		$binary = @inet_pton($ip);
+		if ($binary === false || strlen($binary) !== 16) {
+			return null;
+		}
+
+		$hex = bin2hex($binary);
+		$prefixes = array(
+			'00000000000000000000ffff', // ::ffff:0:0/96  IPv4射影
+			'000000000000000000000000', // ::/96          IPv4互換
+			'0064ff9b0000000000000000', // 64:ff9b::/96   NAT64
+		);
+		foreach ($prefixes as $prefix) {
+			if (strpos($hex, $prefix) === 0) {
+				return long2ip((int) hexdec(substr($hex, 24, 8)));
+			}
+		}
+
+		// 2002:a.b.c.d::/16 (6to4)
+		if (strpos($hex, '2002') === 0) {
+			return long2ip((int) hexdec(substr($hex, 4, 8)));
+		}
+
+		return null;
+	}
+
+	/**
 	 * Execute curl request
-	 * Shared by doTask() and the TestCurlAjax action.
+	 * 検証済みのURLに対してのみ呼ぶこと。通常は execute() を使う。
+	 *
 	 * @param string $url
 	 * @param string $method
 	 * @param string $headers
 	 * @param string $body
 	 * @param int $timeout
+	 * @param array|null $validation validateUrl() の結果。名前解決のピン留めに使う
 	 * @return array
 	 */
-	public static function runCurl($url, $method, $headers, $body, $timeout) {
+	public static function runCurl($url, $method, $headers, $body, $timeout, $validation = null) {
+		global $log;
+
 		$ch = curl_init();
 
 		// Set URL
 		curl_setopt($ch, CURLOPT_URL, $url);
+
+		// スキームをhttp/httpsに固定する。URL検証をすり抜けた場合の保険
+		if (defined('CURLPROTO_HTTP') && defined('CURLPROTO_HTTPS')) {
+			curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+			curl_setopt($ch, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+		}
 
 		// Set method
 		switch ($method) {
@@ -239,9 +423,6 @@ class VTCurlTask extends VTTask {
 		curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, min($timeout, 10));
 
-		// Return response
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
 		// SSL verification (enabled for security)
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
@@ -249,8 +430,38 @@ class VTCurlTask extends VTTask {
 		// Disable redirect following for security
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
 
+		// 検証時の名前解決結果に固定し、検証後に別アドレスへ差し替えられるのを防ぐ
+		// (DNSリバインディング対策)
+		if (is_array($validation) && empty($validation['isLiteralIp']) && !empty($validation['ips'])) {
+			$pinnedIp = $validation['ips'][0];
+			$pinnedIp = (strpos($pinnedIp, ':') !== false) ? '[' . $pinnedIp . ']' : $pinnedIp;
+			$resolveList = array();
+			// URL上の表記（末尾ドット付き等）と正規化後の両方を登録しておく
+			foreach (array_unique(array($validation['host'], $validation['rawHost'])) as $pinnedHost) {
+				if ($pinnedHost !== '') {
+					$resolveList[] = $pinnedHost . ':' . $validation['port'] . ':' . $pinnedIp;
+				}
+			}
+			if (!empty($resolveList)) {
+				curl_setopt($ch, CURLOPT_RESOLVE, $resolveList);
+			}
+		}
+
+		// レスポンスは上限バイトまでしか保持しない。
+		// CURLOPT_RETURNTRANSFER の代わりに書き込みコールバックで打ち切る
+		$responseBuffer = '';
+		$maxBytes = self::MAX_RESPONSE_BYTES;
+		curl_setopt($ch, CURLOPT_WRITEFUNCTION, function ($curlHandle, $chunk) use (&$responseBuffer, $maxBytes) {
+			$remaining = $maxBytes - strlen($responseBuffer);
+			if ($remaining > 0) {
+				$responseBuffer .= substr($chunk, 0, $remaining);
+			}
+			// 上限超過分は捨てるが、消費済みとして返し転送は継続させる
+			return strlen($chunk);
+		});
+
 		// Execute request
-		$response = curl_exec($ch);
+		curl_exec($ch);
 		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		$error = curl_error($ch);
 		$errno = curl_errno($ch);
@@ -264,13 +475,13 @@ class VTCurlTask extends VTTask {
 			);
 		}
 
-		global $log;
-		$log->debug("VTCurlTask: Response: " . $response);
+		// レスポンス本文にはトークン等が含まれ得るためログには残さない
+		$log->debug(sprintf('VTCurlTask: HTTP %d, response %d bytes', $httpCode, strlen($responseBuffer)));
 
 		return array(
 			'success' => true,
 			'http_code' => $httpCode,
-			'response' => $response
+			'response' => $responseBuffer
 		);
 	}
 }

@@ -30,32 +30,22 @@ class Settings_Workflows_TestCurlAjax_Action extends Settings_Vtiger_Index_Actio
 		$method = $request->get('method');
 		$headers = $request->getRaw('headers');
 		$body = $request->getRaw('body');
-		$timeout = (int) $request->get('timeout');
-
-		$response = new Vtiger_Response();
-
-		// SSRF/URL検証（本番と同じロジックを共有）
-		if (!VTCurlTask::checkUrl($url)) {
-			$response->setResult(array(
-				'success' => false,
-				'error' => 'Invalid or unsafe URL',
-				'url' => $url,
-			));
-			$response->emit();
-			return;
-		}
+		$timeout = $request->get('timeout');
 
 		if (empty($method)) {
 			$method = 'POST';
 		}
-		if ($timeout <= 0) {
-			$timeout = 30;
-		}
-		if ($timeout > 60) {
-			$timeout = 60;
-		}
 
-		$result = VTCurlTask::runCurl($url, strtoupper($method), $headers, $body, $timeout);
+		// URL検証(SSRF対策)からcurl実行まで、本番と同じ経路を共有する
+		$result = VTCurlTask::execute(
+			$url,
+			strtoupper($method),
+			$headers,
+			$body,
+			VTCurlTask::normalizeTimeout($timeout)
+		);
+
+		$response = new Vtiger_Response();
 		$response->setResult($result);
 		$response->emit();
 	}
