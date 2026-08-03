@@ -17,14 +17,32 @@ vimport ('includes.runtime.EntryPoint');
 class Vtiger_WebUI extends Vtiger_EntryPoint {
 
 	/**
+	 * ログイン後のリダイレクト先として利用できるクエリ文字列かどうかを判定する
+	 * apis(api=)/actions(action=) は画面を返さないため、遷移先として扱わない
+	 * @param string $queryString
+	 * @return boolean
+	 */
+	public static function isRedirectableQueryString($queryString) {
+		if (empty($queryString)) {
+			return false;
+		}
+		$params = array();
+		parse_str($queryString, $params);
+		if (!empty($params['api']) || !empty($params['action'])) {
+			return false;
+		}
+		return true;
+	}
+
+	/**
 	 * Function to check if the User has logged in
 	 * @param Vtiger_Request $request
 	 * @throws AppException
 	 */
 	protected function checkLogin (Vtiger_Request $request) {
 		if (!$this->hasLogin()) {
-			$return_params = $_SERVER['QUERY_STRING'];
-			if($return_params && !$_SESSION['return_params']) {
+			$return_params = isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : '';
+			if(self::isRedirectableQueryString($return_params) && !Vtiger_Session::has('return_params')) {
 				//Take the url that user would like to redirect after they have successfully logged in.
 				$return_params = urlencode($return_params);
 				Vtiger_Session::set('return_params', $return_params);
