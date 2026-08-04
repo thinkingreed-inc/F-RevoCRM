@@ -185,24 +185,24 @@ class VTCurlTask extends VTTask {
 		$url = trim((string) $url);
 
 		if ($url === '' || !filter_var($url, FILTER_VALIDATE_URL)) {
-			return self::urlError('URLの形式が不正です');
+			return self::urlError('LBL_CURL_ERR_INVALID_URL');
 		}
 
 		$parsedUrl = parse_url($url);
 		if (!$parsedUrl || empty($parsedUrl['scheme']) || empty($parsedUrl['host'])) {
-			return self::urlError('URLの形式が不正です');
+			return self::urlError('LBL_CURL_ERR_INVALID_URL');
 		}
 
 		$scheme = strtolower($parsedUrl['scheme']);
 		if (!in_array($scheme, self::ALLOWED_SCHEMES, true)) {
-			return self::urlError('http / https 以外のスキームは使用できません: ' . $scheme);
+			return self::urlError('LBL_CURL_ERR_SCHEME_NOT_ALLOWED', $scheme);
 		}
 
 		// parse_url はIPv6リテラルを [::1] の形で返す。末尾ドットも落として正規化する
 		$rawHost = strtolower($parsedUrl['host']);
 		$host = rtrim(trim($rawHost, '[]'), '.');
 		if ($host === '') {
-			return self::urlError('ホスト名が空です');
+			return self::urlError('LBL_CURL_ERR_EMPTY_HOST');
 		}
 
 		$port = isset($parsedUrl['port']) ? (int) $parsedUrl['port'] : ($scheme === 'https' ? 443 : 80);
@@ -210,14 +210,14 @@ class VTCurlTask extends VTTask {
 		$ips = self::resolveHost($host);
 		if (empty($ips)) {
 			// 解決できないホストを許可すると、DNSが引けない環境で検証が無効化される
-			return self::urlError('ホスト名を解決できませんでした: ' . $host);
+			return self::urlError('LBL_CURL_ERR_DNS_FAILED', $host);
 		}
 
 		foreach ($ips as $ip) {
 			if (!self::isPublicIp($ip)) {
 				// ホスト名がIPリテラルの場合は同じ値を二度出さない
 				$detail = ($ip === $host) ? $host : $host . ' (' . $ip . ')';
-				return self::urlError('内部ネットワーク宛のURLは使用できません: ' . $detail);
+				return self::urlError('LBL_CURL_ERR_PRIVATE_NETWORK', $detail);
 			}
 		}
 
@@ -233,13 +233,25 @@ class VTCurlTask extends VTTask {
 	}
 
 	/**
-	 * @param string $message
+	 * URL検証の失敗結果を組み立てる。
+	 * 文言はテスト送信で画面に出るため翻訳して返す。errorKey は
+	 * 言語設定に依存せず失敗理由を判定したい呼び出し元・テスト向け。
+	 *
+	 * @param string $langKey 言語キー
+	 * @param string $detail 付加情報（ホスト名やスキームなど。翻訳しない）
 	 * @return array
 	 */
-	private static function urlError($message) {
+	private static function urlError($langKey, $detail = '') {
+		// ワークフローのcron実行やCLIから呼ばれる場合に備えて存在確認する
+		$message = function_exists('vtranslate') ? vtranslate($langKey, 'Settings:Workflows') : $langKey;
+		if ($detail !== '') {
+			$message .= ': ' . $detail;
+		}
+
 		return array(
 			'valid' => false,
 			'error' => $message,
+			'errorKey' => $langKey,
 			'host' => '',
 			'rawHost' => '',
 			'port' => 0,

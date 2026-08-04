@@ -22,6 +22,8 @@ interface Props {
   buttonLabel?: string;
   sendingLabel?: string;
   note?: string;
+  errorLabel?: string;
+  responseLabel?: string;
 }
 
 export function TestSendPanel({
@@ -30,6 +32,8 @@ export function TestSendPanel({
   buttonLabel = "テスト送信",
   sendingLabel = "送信中...",
   note,
+  errorLabel = "エラー",
+  responseLabel = "レスポンス",
 }: Props) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<TestSendResult | null>(null);
@@ -74,7 +78,7 @@ export function TestSendPanel({
               {result.error && (
                 <div>
                   <div className="text-xs font-medium text-muted-foreground">
-                    エラー
+                    {errorLabel}
                   </div>
                   <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-all text-red-600">
                     {result.error}
@@ -84,7 +88,7 @@ export function TestSendPanel({
               {result.response != null && result.response !== "" && (
                 <div>
                   <div className="text-xs font-medium text-muted-foreground">
-                    レスポンス
+                    {responseLabel}
                   </div>
                   <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-all">
                     {result.response}

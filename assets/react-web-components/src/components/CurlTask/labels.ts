@@ -23,6 +23,14 @@ export interface CurlLabels {
   testSend: string;
   testSending: string;
   testSendNote: string;
+  /** テスト送信結果の「エラー」見出し */
+  testError: string;
+  /** テスト送信結果の「レスポンス」見出し */
+  testResponse: string;
+  /** エラー内容が判別できなかった場合の文言 */
+  unknownError: string;
+  /** サーバが空応答を返した場合の文言 */
+  noResponse: string;
   jsonValid: string;
   jsonInvalid: string;
   ok: string;
@@ -54,6 +62,10 @@ export const DEFAULT_CURL_LABELS: CurlLabels = {
   testSending: "送信中...",
   testSendNote:
     "テスト送信では $項目名 などのフィールド値は置換されず、そのまま送信されます。実際の値の埋め込みはワークフロー実行時に行われます。",
+  testError: "エラー",
+  testResponse: "レスポンス",
+  unknownError: "不明なエラー",
+  noResponse: "サーバから応答がありません",
   jsonValid: "JSON OK",
   jsonInvalid: "不正なJSON",
   ok: "OK",

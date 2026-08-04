@@ -61,6 +61,26 @@ describe("defaultSendTest", () => {
       error: "サーバから応答がありません",
     });
   });
+
+  it("渡された翻訳済み文言を使う", async () => {
+    (window as unknown as { app?: unknown }).app = {
+      request: {
+        post: () => ({
+          then: (onDone: (err: unknown, data: unknown) => void) =>
+            onDone(null, null),
+        }),
+      },
+    };
+    await expect(
+      defaultSendTest({
+        unknownError: "Unknown error",
+        noResponse: "No response from the server",
+      })(payload),
+    ).resolves.toEqual({
+      success: false,
+      error: "No response from the server",
+    });
+  });
 });
 
 describe("stringifyError", () => {
@@ -72,5 +92,8 @@ describe("stringifyError", () => {
   });
   it("null は既定文言にする", () => {
     expect(stringifyError(null)).toBe("不明なエラー");
+  });
+  it("null のとき渡された文言を使う", () => {
+    expect(stringifyError(null, "Unknown error")).toBe("Unknown error");
   });
 });

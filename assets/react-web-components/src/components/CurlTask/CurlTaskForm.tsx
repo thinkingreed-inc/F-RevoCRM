@@ -87,7 +87,14 @@ export function CurlTaskForm(props: Props) {
     setBody(r.body);
   };
 
-  const sendTest = defaultSendTest();
+  const sendTest = useMemo(
+    () =>
+      defaultSendTest({
+        unknownError: labels.unknownError,
+        noResponse: labels.noResponse,
+      }),
+    [labels.unknownError, labels.noResponse],
+  );
   const getPayload = (): TestSendPayload => ({
     url,
     method,
@@ -205,6 +212,8 @@ export function CurlTaskForm(props: Props) {
         buttonLabel={labels.testSend}
         sendingLabel={labels.testSending}
         note={labels.testSendNote}
+        errorLabel={labels.testError}
+        responseLabel={labels.testResponse}
       />
     </div>
   );
