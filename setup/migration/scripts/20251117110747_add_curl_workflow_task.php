@@ -28,8 +28,9 @@ class Migration20251117110747_AddCurlWorkflowTask extends FRMigrationClass {
 
         // IDの採番はフレームワーク側に任せる。
         // MAX(id)+1 を自前で計算すると同時実行時に衝突し、既存の採番方式ともずれる。
-        // VTTaskManager::registerTaskType() は内部で $adb->getUniqueID() を使う。
-        VTTaskManager::registerTaskType(array(
+        // VTTaskType::registerTaskType() は内部で $adb->getUniqueID() を使う。
+        // 呼び出し方は modules/Install/models/InitSchema.php の標準タスク型登録と同じ。
+        VTTaskType::registerTaskType(array(
             'name' => 'VTCurlTask',
             'label' => 'Curl Request',
             'classname' => 'VTCurlTask',
