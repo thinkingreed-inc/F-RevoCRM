@@ -73,10 +73,13 @@ class VTCurlTask extends VTTask {
 
 			$result = self::execute($renderedUrl, $method, $renderedHeaders, $renderedBody, $timeout);
 
+			// URL自体が資格情報になり得る（Slack/Teams/Power Automate のWebhook URLは
+			// パスやクエリに署名・トークンを含む）ため、ログにはスキームとホストのみ残す
+			$safeUrl = self::redactUrl($renderedUrl);
 			if ($result['success']) {
-				$log->info("VTCurlTask: Successfully executed curl request to " . $renderedUrl);
+				$log->info("VTCurlTask: Successfully executed curl request to " . $safeUrl);
 			} else {
-				$log->error("VTCurlTask: Failed to execute curl request: " . $result['error']);
+				$log->error("VTCurlTask: Failed to execute curl request to " . $safeUrl . ": " . $result['error']);
 			}
 		} catch (Exception $e) {
 			$log->error("VTCurlTask: Exception during curl execution: " . $e->getMessage());
@@ -118,6 +121,27 @@ class VTCurlTask extends VTTask {
 		if (!is_string($this->body)) {
 			$this->body = '';
 		}
+	}
+
+	/**
+	 * ログ出力用にURLからパス・クエリ・認証情報を落とす。
+	 * WebhookのURLはパスやクエリ自体が秘密（Slackの /services/... や
+	 * Power Automate の ?sig=... ）なので、スキームとホストだけ残す。
+	 *
+	 * @param string $url
+	 * @return string
+	 */
+	private static function redactUrl($url) {
+		$parsedUrl = @parse_url($url);
+		if (!$parsedUrl || empty($parsedUrl['host'])) {
+			return '(URL redacted)';
+		}
+
+		$safeUrl = (empty($parsedUrl['scheme']) ? '' : $parsedUrl['scheme'] . '://') . $parsedUrl['host'];
+		if (!empty($parsedUrl['port'])) {
+			$safeUrl .= ':' . $parsedUrl['port'];
+		}
+		return $safeUrl . '/...';
 	}
 
 	/**
@@ -323,9 +347,65 @@ class VTCurlTask extends VTTask {
 			if ($ipLong >= ip2long('224.0.0.0')) {
 				return false;
 			}
+		} elseif (self::isBlockedIpv6Range($ip)) {
+			return false;
 		}
 
 		return true;
+	}
+
+	/**
+	 * PHPのフィルタが見ないIPv6範囲を弾く。
+	 * @param string $ip
+	 * @return bool
+	 */
+	private static function isBlockedIpv6Range($ip) {
+		$binary = @inet_pton($ip);
+		if ($binary === false || strlen($binary) !== 16) {
+			return false;
+		}
+
+		// プレフィックス => ビット長
+		$blockedPrefixes = array(
+			'fec0::'     => 10, // サイトローカル。RFC3879で非推奨だが内部網で使われている
+			'100::'      => 64, // Discard-Only
+			'2001:db8::' => 32, // ドキュメント用
+			'2001::'     => 32, // Teredo。任意の宛先をトンネルできる
+		);
+
+		foreach ($blockedPrefixes as $prefix => $bits) {
+			$prefixBinary = @inet_pton($prefix);
+			if ($prefixBinary === false) {
+				continue;
+			}
+			if (self::ipv6MatchesPrefix($binary, $prefixBinary, $bits)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * IPv6アドレス（16バイト）が指定プレフィックスに含まれるか。
+	 * @param string $binary inet_pton の結果
+	 * @param string $prefixBinary inet_pton の結果
+	 * @param int $bits プレフィックス長
+	 * @return bool
+	 */
+	private static function ipv6MatchesPrefix($binary, $prefixBinary, $bits) {
+		$fullBytes = intdiv($bits, 8);
+		if ($fullBytes > 0 && strncmp($binary, $prefixBinary, $fullBytes) !== 0) {
+			return false;
+		}
+
+		$remainingBits = $bits % 8;
+		if ($remainingBits === 0) {
+			return true;
+		}
+
+		$mask = (0xFF << (8 - $remainingBits)) & 0xFF;
+		return (ord($binary[$fullBytes]) & $mask) === (ord($prefixBinary[$fullBytes]) & $mask);
 	}
 
 	/**
@@ -362,17 +442,19 @@ class VTCurlTask extends VTTask {
 
 	/**
 	 * Execute curl request
-	 * 検証済みのURLに対してのみ呼ぶこと。通常は execute() を使う。
+	 *
+	 * private にしているのは、URL検証を通さない送信経路を作らせないため。
+	 * 送信は必ず execute() から入る。
 	 *
 	 * @param string $url
 	 * @param string $method
 	 * @param string $headers
 	 * @param string $body
 	 * @param int $timeout
-	 * @param array|null $validation validateUrl() の結果。名前解決のピン留めに使う
+	 * @param array $validation validateUrl() の結果。名前解決のピン留めに使う
 	 * @return array
 	 */
-	public static function runCurl($url, $method, $headers, $body, $timeout, $validation = null) {
+	private static function runCurl($url, $method, $headers, $body, $timeout, $validation) {
 		global $log;
 
 		$ch = curl_init();
