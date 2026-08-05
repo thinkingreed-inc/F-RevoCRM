@@ -15,7 +15,12 @@ interface UseFileUploadResult {
   progress: number;
   results: UploadResult[];
   error: string | null;
-  upload: (files: FileList | File[], folderId: number, parentModule?: string, parentId?: number) => Promise<void>;
+  upload: (
+    files: FileList | File[],
+    folderId: number,
+    parentModule?: string,
+    parentId?: number,
+  ) => Promise<void>;
 }
 
 function getCsrfToken(): { name: string; value: string } | null {
@@ -34,7 +39,12 @@ export function useFileUpload(onComplete?: () => void): UseFileUploadResult {
   const [error, setError] = useState<string | null>(null);
 
   const upload = useCallback(
-    async (files: FileList | File[], folderId: number, parentModule?: string, parentId?: number) => {
+    async (
+      files: FileList | File[],
+      folderId: number,
+      parentModule?: string,
+      parentId?: number,
+    ) => {
       const fileArray = Array.from(files);
       if (fileArray.length === 0) return;
       if (fileArray.length > 10) {
@@ -89,8 +99,12 @@ export function useFileUpload(onComplete?: () => void): UseFileUploadResult {
             }
           });
 
-          xhr.addEventListener("error", () => reject(new Error("Network error")));
-          xhr.addEventListener("abort", () => reject(new Error("Upload aborted")));
+          xhr.addEventListener("error", () =>
+            reject(new Error("Network error")),
+          );
+          xhr.addEventListener("abort", () =>
+            reject(new Error("Upload aborted")),
+          );
 
           xhr.open("POST", "index.php");
           xhr.setRequestHeader("Accept", "application/json");
@@ -108,7 +122,7 @@ export function useFileUpload(onComplete?: () => void): UseFileUploadResult {
         setIsUploading(false);
       }
     },
-    [onComplete]
+    [onComplete],
   );
 
   return { isUploading, progress, results, error, upload };

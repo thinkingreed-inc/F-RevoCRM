@@ -68,7 +68,7 @@ export const StarButton: React.FC<StarButtonProps> = ({
         setIsUpdating(false);
       }
     },
-    [recordId, starred, isUpdating, onChange]
+    [recordId, starred, isUpdating, onChange],
   );
 
   return (
@@ -85,8 +85,8 @@ export const StarButton: React.FC<StarButtonProps> = ({
         transition: "color 0.15s",
         lineHeight: 1,
       }}
-      title={starred ? t('LBL_STAR_REMOVE') : t('LBL_STAR_ADD')}
-      aria-label={starred ? t('LBL_STAR_REMOVE') : t('LBL_STAR_ADD')}
+      title={starred ? t("LBL_STAR_REMOVE") : t("LBL_STAR_ADD")}
+      aria-label={starred ? t("LBL_STAR_REMOVE") : t("LBL_STAR_ADD")}
     >
       {starred ? "★" : "☆"}
     </button>

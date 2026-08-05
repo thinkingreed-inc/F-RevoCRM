@@ -59,19 +59,28 @@ export const DocumentsGridView: React.FC<DocumentsGridViewProps> = ({
       : [];
 
   // 親フォルダの特定
-  const currentFolder = selectedFolderId !== "all" ? folders.find((f) => f.id === selectedFolderId) : undefined;
-  const parentTarget: number | "all" | null =
-    currentFolder
-      ? currentFolder.parent_id > 0
-        ? currentFolder.parent_id
-        : "all"
-      : null;
+  const currentFolder =
+    selectedFolderId !== "all"
+      ? folders.find((f) => f.id === selectedFolderId)
+      : undefined;
+  const parentTarget: number | "all" | null = currentFolder
+    ? currentFolder.parent_id > 0
+      ? currentFolder.parent_id
+      : "all"
+    : null;
 
   // フォルダセクションを表示するか
   const showFolderSection = subFolders.length > 0 || parentTarget !== null;
 
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div
+      style={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}
+    >
       {/* ヘッダー情報 */}
       <div
         style={{
@@ -86,23 +95,38 @@ export const DocumentsGridView: React.FC<DocumentsGridViewProps> = ({
         }}
       >
         {subFolders.length > 0 && (
-          <span>{t('LBL_SUBFOLDERS', subFolders.length)}</span>
+          <span>{t("LBL_SUBFOLDERS", subFolders.length)}</span>
         )}
-        <span>{t('LBL_FILES_COUNT', total)}</span>
+        <span>{t("LBL_FILES_COUNT", total)}</span>
         <span style={{ marginLeft: "auto" }}>
-          {(page - 1) * pageLimit + 1} - {Math.min(page * pageLimit, total)} / {total}
+          {(page - 1) * pageLimit + 1} - {Math.min(page * pageLimit, total)} /{" "}
+          {total}
         </span>
         <button
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
-          style={{ padding: "2px 8px", border: "1px solid #E2E8F0", borderRadius: 3, background: "#fff", cursor: page <= 1 ? "not-allowed" : "pointer", opacity: page <= 1 ? 0.4 : 1 }}
+          style={{
+            padding: "2px 8px",
+            border: "1px solid #E2E8F0",
+            borderRadius: 3,
+            background: "#fff",
+            cursor: page <= 1 ? "not-allowed" : "pointer",
+            opacity: page <= 1 ? 0.4 : 1,
+          }}
         >
           &lt;
         </button>
         <button
           disabled={page >= totalPages}
           onClick={() => onPageChange(page + 1)}
-          style={{ padding: "2px 8px", border: "1px solid #E2E8F0", borderRadius: 3, background: "#fff", cursor: page >= totalPages ? "not-allowed" : "pointer", opacity: page >= totalPages ? 0.4 : 1 }}
+          style={{
+            padding: "2px 8px",
+            border: "1px solid #E2E8F0",
+            borderRadius: 3,
+            background: "#fff",
+            cursor: page >= totalPages ? "not-allowed" : "pointer",
+            opacity: page >= totalPages ? 0.4 : 1,
+          }}
         >
           &gt;
         </button>
@@ -113,7 +137,13 @@ export const DocumentsGridView: React.FC<DocumentsGridViewProps> = ({
         {/* サブフォルダ + 上の階層へ */}
         {showFolderSection && (
           <div style={{ marginBottom: 20 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+                gap: 12,
+              }}
+            >
               {/* 上の階層へ戻るカード */}
               {parentTarget !== null && (
                 <div
@@ -129,13 +159,33 @@ export const DocumentsGridView: React.FC<DocumentsGridViewProps> = ({
                     alignItems: "center",
                     gap: 8,
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.08)"; e.currentTarget.style.backgroundColor = "#F7FAFC"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.boxShadow = ""; e.currentTarget.style.backgroundColor = "#fff"; }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow =
+                      "0 2px 8px rgba(0,0,0,0.08)";
+                    e.currentTarget.style.backgroundColor = "#F7FAFC";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = "";
+                    e.currentTarget.style.backgroundColor = "#fff";
+                  }}
                 >
-                  <span style={{ fontSize: 18, color: "#718096", lineHeight: 1 }}>←</span>
+                  <span
+                    style={{ fontSize: 18, color: "#718096", lineHeight: 1 }}
+                  >
+                    ←
+                  </span>
                   <div>
-                    <div style={{ fontWeight: 500, fontSize: 13, color: "#4A5568" }}>
-                      {parentTarget === "all" ? t('LBL_ALL_DOCUMENTS') : folders.find((f) => f.id === parentTarget)?.name || ""}
+                    <div
+                      style={{
+                        fontWeight: 500,
+                        fontSize: 13,
+                        color: "#4A5568",
+                      }}
+                    >
+                      {parentTarget === "all"
+                        ? t("LBL_ALL_DOCUMENTS")
+                        : folders.find((f) => f.id === parentTarget)?.name ||
+                          ""}
                     </div>
                   </div>
                 </div>
@@ -152,13 +202,25 @@ export const DocumentsGridView: React.FC<DocumentsGridViewProps> = ({
                     backgroundColor: "#F7FAFC",
                     transition: "box-shadow 0.15s",
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.08)")}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.boxShadow =
+                      "0 2px 8px rgba(0,0,0,0.08)")
+                  }
                   onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "")}
                 >
-                  <div style={{ fontWeight: 500, fontSize: 13, color: "#2D3748", marginBottom: 4 }}>
+                  <div
+                    style={{
+                      fontWeight: 500,
+                      fontSize: 13,
+                      color: "#2D3748",
+                      marginBottom: 4,
+                    }}
+                  >
                     {folder.name}
                   </div>
-                  <div style={{ fontSize: 12, color: "#A0AEC0" }}>{t('LBL_FOLDER_COUNT', folder.count)}</div>
+                  <div style={{ fontSize: 12, color: "#A0AEC0" }}>
+                    {t("LBL_FOLDER_COUNT", folder.count)}
+                  </div>
                 </div>
               ))}
             </div>
@@ -167,11 +229,21 @@ export const DocumentsGridView: React.FC<DocumentsGridViewProps> = ({
 
         {/* ドキュメントカード */}
         {isLoading && records.length === 0 ? (
-          <div style={{ padding: 40, textAlign: "center", color: "#A0AEC0" }}>{t('LBL_LOADING')}</div>
+          <div style={{ padding: 40, textAlign: "center", color: "#A0AEC0" }}>
+            {t("LBL_LOADING")}
+          </div>
         ) : records.length === 0 ? (
-          <div style={{ padding: 40, textAlign: "center", color: "#A0AEC0" }}>{t('LBL_NO_DOCUMENTS')}</div>
+          <div style={{ padding: 40, textAlign: "center", color: "#A0AEC0" }}>
+            {t("LBL_NO_DOCUMENTS")}
+          </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+              gap: 12,
+            }}
+          >
             {records.map((rec) => (
               <div
                 key={rec.id}
@@ -187,12 +259,26 @@ export const DocumentsGridView: React.FC<DocumentsGridViewProps> = ({
                   transition: "box-shadow 0.15s",
                   backgroundColor: "#fff",
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)")}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.boxShadow =
+                    "0 2px 8px rgba(0,0,0,0.1)")
+                }
                 onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "")}
               >
                 {/* 上部: アイコン + スター */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <FileIcon filetype={rec.filetype} filelocationtype={rec.filelocationtype} filename={rec.filename} size="lg" />
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  <FileIcon
+                    filetype={rec.filetype}
+                    filelocationtype={rec.filelocationtype}
+                    filename={rec.filename}
+                    size="lg"
+                  />
                   <StarButton recordId={rec.id} starred={rec.starred} />
                 </div>
 
@@ -214,8 +300,11 @@ export const DocumentsGridView: React.FC<DocumentsGridViewProps> = ({
                 </div>
 
                 {/* ファイル情報 */}
-                <div style={{ fontSize: 11, color: "#A0AEC0", marginTop: "auto" }}>
-                  {getFileTypeLabel(rec)} ・ {formatFileSize(rec.filesize)} ・ {formatShortDate(rec.modifiedtime)}
+                <div
+                  style={{ fontSize: 11, color: "#A0AEC0", marginTop: "auto" }}
+                >
+                  {getFileTypeLabel(rec)} ・ {formatFileSize(rec.filesize)} ・{" "}
+                  {formatShortDate(rec.modifiedtime)}
                 </div>
               </div>
             ))}

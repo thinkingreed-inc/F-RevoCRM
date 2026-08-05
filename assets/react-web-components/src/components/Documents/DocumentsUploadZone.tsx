@@ -13,7 +13,8 @@ export const DocumentsUploadZone: React.FC<DocumentsUploadZoneProps> = ({
 }) => {
   const { t } = useOptionalTranslation();
   const [isDragging, setIsDragging] = useState(false);
-  const { isUploading, progress, error, upload } = useFileUpload(onUploadComplete);
+  const { isUploading, progress, error, upload } =
+    useFileUpload(onUploadComplete);
   const dragCountRef = useRef(0);
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
@@ -47,7 +48,7 @@ export const DocumentsUploadZone: React.FC<DocumentsUploadZoneProps> = ({
         upload(files, folderId);
       }
     },
-    [upload, folderId]
+    [upload, folderId],
   );
 
   return (
@@ -77,7 +78,7 @@ export const DocumentsUploadZone: React.FC<DocumentsUploadZoneProps> = ({
           }}
         >
           <div style={{ fontSize: 14, color: "#3182CE", fontWeight: 500 }}>
-            {t('LBL_DROP_FILES_HERE')}
+            {t("LBL_DROP_FILES_HERE")}
           </div>
         </div>
       )}
@@ -96,9 +97,23 @@ export const DocumentsUploadZone: React.FC<DocumentsUploadZoneProps> = ({
             zIndex: 11,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
-            <span>{t('LBL_UPLOADING_PROGRESS', progress)}</span>
-            <div style={{ flex: 1, height: 4, backgroundColor: "#BEE3F8", borderRadius: 2 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              fontSize: 13,
+            }}
+          >
+            <span>{t("LBL_UPLOADING_PROGRESS", progress)}</span>
+            <div
+              style={{
+                flex: 1,
+                height: 4,
+                backgroundColor: "#BEE3F8",
+                borderRadius: 2,
+              }}
+            >
               <div
                 style={{
                   width: `${progress}%`,

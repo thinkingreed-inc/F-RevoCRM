@@ -62,7 +62,10 @@ const ContextMenu: React.FC<{
   };
   return (
     <>
-      <div style={{ position: "fixed", inset: 0, zIndex: 999 }} onClick={onClose} />
+      <div
+        style={{ position: "fixed", inset: 0, zIndex: 999 }}
+        onClick={onClose}
+      />
       <div
         style={{
           position: "fixed",
@@ -80,29 +83,35 @@ const ContextMenu: React.FC<{
         <div
           style={menuItemStyle}
           onClick={onAddSubfolder}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#EDF2F7")}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.backgroundColor = "#EDF2F7")
+          }
           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
         >
-          {t('LBL_ADD_SUBFOLDER')}
+          {t("LBL_ADD_SUBFOLDER")}
         </div>
         {!isDefault && (
           <div
             style={menuItemStyle}
             onClick={onEdit}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#EDF2F7")}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "#EDF2F7")
+            }
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
           >
-            {t('LBL_EDIT_FOLDER')}
+            {t("LBL_EDIT_FOLDER")}
           </div>
         )}
         {!isDefault && (
           <div
             style={{ ...menuItemStyle, color: "#E53E3E" }}
             onClick={onDelete}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#FFF5F5")}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "#FFF5F5")
+            }
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
           >
-            {t('LBL_DELETE_FOLDER')}
+            {t("LBL_DELETE_FOLDER")}
           </div>
         )}
       </div>
@@ -141,7 +150,11 @@ const FolderItem: React.FC<{
           paddingLeft: 8 + depth * 16,
           cursor: "pointer",
           borderRadius: 4,
-          backgroundColor: isSelected ? "#EBF8FF" : hovered ? "#F7FAFC" : "transparent",
+          backgroundColor: isSelected
+            ? "#EBF8FF"
+            : hovered
+              ? "#F7FAFC"
+              : "transparent",
           color: isSelected ? "#2B6CB0" : "#4A5568",
           fontSize: 13,
           fontWeight: isSelected ? 600 : 400,
@@ -166,16 +179,31 @@ const FolderItem: React.FC<{
           </span>
         )}
         {!hasChildren && <span style={{ width: 16 }} />}
-        <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <span
+          style={{
+            flex: 1,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
           {node.name}
         </span>
         {(hovered || isSelected) && (
           <span
-            onClick={(e) => { e.stopPropagation(); onEdit(node); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(node);
+            }}
             title="編集"
             style={{
-              fontSize: 11, color: "#A0AEC0", cursor: "pointer", flexShrink: 0,
-              padding: "0 3px", borderRadius: 3, lineHeight: 1,
+              fontSize: 11,
+              color: "#A0AEC0",
+              cursor: "pointer",
+              flexShrink: 0,
+              padding: "0 3px",
+              borderRadius: 3,
+              lineHeight: 1,
             }}
             onMouseEnter={(e) => (e.currentTarget.style.color = "#4A5568")}
             onMouseLeave={(e) => (e.currentTarget.style.color = "#A0AEC0")}
@@ -237,9 +265,12 @@ export const DocumentsFolderTree: React.FC<DocumentsFolderTreeProps> = ({
     return filterNodes(tree);
   }, [tree, searchQuery]);
 
-  const handleContextMenu = useCallback((e: React.MouseEvent, node: FolderNode) => {
-    setContextMenu({ x: e.clientX, y: e.clientY, folder: node });
-  }, []);
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent, node: FolderNode) => {
+      setContextMenu({ x: e.clientX, y: e.clientY, folder: node });
+    },
+    [],
+  );
 
   const closeContextMenu = useCallback(() => setContextMenu(null), []);
 
@@ -278,14 +309,15 @@ export const DocumentsFolderTree: React.FC<DocumentsFolderTreeProps> = ({
         }}
       >
         <span style={{ fontWeight: 700, fontSize: 14, color: "#2D3748" }}>
-          {t('LBL_FOLDERS_SECTION')}
+          {t("LBL_FOLDERS_SECTION")}
         </span>
         <button
           onClick={() => {
-            const parentId = typeof selectedFolderId === "number" ? selectedFolderId : 0;
+            const parentId =
+              typeof selectedFolderId === "number" ? selectedFolderId : 0;
             onFolderCreate(parentId);
           }}
-          title={t('LBL_ADD_FOLDER_TITLE')}
+          title={t("LBL_ADD_FOLDER_TITLE")}
           style={{
             width: 24,
             height: 24,
@@ -311,7 +343,7 @@ export const DocumentsFolderTree: React.FC<DocumentsFolderTreeProps> = ({
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder={t('LBL_SEARCH_FOLDERS')}
+          placeholder={t("LBL_SEARCH_FOLDERS")}
           style={{
             width: "100%",
             padding: "5px 8px",
@@ -328,29 +360,55 @@ export const DocumentsFolderTree: React.FC<DocumentsFolderTreeProps> = ({
       <div style={{ flex: 1, overflowY: "auto", padding: "0 4px" }}>
         {/* 標準フォルダ */}
         <div style={{ marginBottom: 8 }}>
-          <div style={{ padding: "4px 8px", fontSize: 11, color: "#A0AEC0", fontWeight: 600, textTransform: "uppercase" }}>
-            {t('LBL_STANDARD_FOLDERS')}
+          <div
+            style={{
+              padding: "4px 8px",
+              fontSize: 11,
+              color: "#A0AEC0",
+              fontWeight: 600,
+              textTransform: "uppercase",
+            }}
+          >
+            {t("LBL_STANDARD_FOLDERS")}
           </div>
           <div
-            onClick={() => { onFolderSelect("all"); onFilterTypeChange("all"); }}
-            style={smartFolderStyle(filterType === "all" && selectedFolderId === "all")}
+            onClick={() => {
+              onFolderSelect("all");
+              onFilterTypeChange("all");
+            }}
+            style={smartFolderStyle(
+              filterType === "all" && selectedFolderId === "all",
+            )}
           >
-            <span style={{ flex: 1 }}>{t('LBL_ALL_DOCUMENTS')}</span>
+            <span style={{ flex: 1 }}>{t("LBL_ALL_DOCUMENTS")}</span>
             <span style={{ fontSize: 11, color: "#A0AEC0" }}>{totalCount}</span>
           </div>
           <div
-            onClick={() => { onFolderSelect("all"); onFilterTypeChange("starred"); }}
+            onClick={() => {
+              onFolderSelect("all");
+              onFilterTypeChange("starred");
+            }}
             style={smartFolderStyle(filterType === "starred")}
           >
-            <span style={{ flex: 1 }}>{t('LBL_STARRED')}</span>
-            <span style={{ fontSize: 11, color: "#A0AEC0" }}>{starredCount}</span>
+            <span style={{ flex: 1 }}>{t("LBL_STARRED")}</span>
+            <span style={{ fontSize: 11, color: "#A0AEC0" }}>
+              {starredCount}
+            </span>
           </div>
         </div>
 
         {/* ユーザーフォルダ */}
         <div>
-          <div style={{ padding: "4px 8px", fontSize: 11, color: "#A0AEC0", fontWeight: 600, textTransform: "uppercase" }}>
-            {t('LBL_FOLDERS_SECTION')}
+          <div
+            style={{
+              padding: "4px 8px",
+              fontSize: 11,
+              color: "#A0AEC0",
+              fontWeight: 600,
+              textTransform: "uppercase",
+            }}
+          >
+            {t("LBL_FOLDERS_SECTION")}
           </div>
           {filteredTree.map((node) => (
             <FolderItem
@@ -358,7 +416,10 @@ export const DocumentsFolderTree: React.FC<DocumentsFolderTreeProps> = ({
               node={node}
               depth={0}
               selectedId={selectedFolderId}
-              onSelect={(id) => { onFolderSelect(id); onFilterTypeChange("all"); }}
+              onSelect={(id) => {
+                onFolderSelect(id);
+                onFilterTypeChange("all");
+              }}
               onEdit={(folder) => onFolderEdit(folder)}
               onContextMenu={handleContextMenu}
             />
@@ -379,7 +440,11 @@ export const DocumentsFolderTree: React.FC<DocumentsFolderTreeProps> = ({
             closeContextMenu();
           }}
           onDelete={() => {
-            if (window.confirm(t('LBL_CONFIRM_DELETE_FOLDER', contextMenu.folder.name))) {
+            if (
+              window.confirm(
+                t("LBL_CONFIRM_DELETE_FOLDER", contextMenu.folder.name),
+              )
+            ) {
               onFolderDelete(contextMenu.folder.id);
             }
             closeContextMenu();

@@ -49,7 +49,8 @@ export interface ComplianceDetailData extends ComplianceListData {
 /** 監査ログエントリ */
 export interface AuditLogEntry {
   audit_id: number;
-  action_type: "create" | "update" | "delete" | "restore" | "download" | "verify";
+  action_type:
+    "create" | "update" | "delete" | "restore" | "download" | "verify";
   action_detail: any;
   file_hash_before: string | null;
   file_hash_after: string | null;

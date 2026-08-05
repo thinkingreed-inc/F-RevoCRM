@@ -57,7 +57,8 @@ export const ComplianceHistoryModal: React.FC<ComplianceHistoryModalProps> = ({
     fontSize: 13,
     fontWeight: activeTab === tab ? 600 : 400,
     color: activeTab === tab ? "#2D3748" : "#718096",
-    borderBottom: activeTab === tab ? "2px solid #4299E1" : "2px solid transparent",
+    borderBottom:
+      activeTab === tab ? "2px solid #4299E1" : "2px solid transparent",
     cursor: "pointer",
     backgroundColor: "transparent",
     border: "none",
@@ -103,11 +104,24 @@ export const ComplianceHistoryModal: React.FC<ComplianceHistoryModalProps> = ({
           }}
         >
           <div>
-            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: "#2D3748" }}>
+            <h3
+              style={{
+                margin: 0,
+                fontSize: 15,
+                fontWeight: 600,
+                color: "#2D3748",
+              }}
+            >
               {title}
             </h3>
             <div style={{ fontSize: 12, color: "#A0AEC0", marginTop: 2 }}>
-              {t("LBL_HISTORY_SUMMARY", t("LBL_FILE_VERSIONS"), fileVersions.length, t("LBL_AUDIT_LOG"), auditLog.length)}
+              {t(
+                "LBL_HISTORY_SUMMARY",
+                t("LBL_FILE_VERSIONS"),
+                fileVersions.length,
+                t("LBL_AUDIT_LOG"),
+                auditLog.length,
+              )}
             </div>
           </div>
           <button
@@ -127,8 +141,17 @@ export const ComplianceHistoryModal: React.FC<ComplianceHistoryModalProps> = ({
         </div>
 
         {/* タブ */}
-        <div style={{ display: "flex", borderBottom: "1px solid #E2E8F0", padding: "0 20px" }}>
-          <button onClick={() => setActiveTab("versions")} style={tabStyle("versions")}>
+        <div
+          style={{
+            display: "flex",
+            borderBottom: "1px solid #E2E8F0",
+            padding: "0 20px",
+          }}
+        >
+          <button
+            onClick={() => setActiveTab("versions")}
+            style={tabStyle("versions")}
+          >
             {t("LBL_FILE_VERSIONS")}
             <span
               style={{
@@ -143,7 +166,10 @@ export const ComplianceHistoryModal: React.FC<ComplianceHistoryModalProps> = ({
               {fileVersions.length}
             </span>
           </button>
-          <button onClick={() => setActiveTab("audit")} style={tabStyle("audit")}>
+          <button
+            onClick={() => setActiveTab("audit")}
+            style={tabStyle("audit")}
+          >
             {t("LBL_AUDIT_LOG")}
             <span
               style={{
@@ -166,9 +192,17 @@ export const ComplianceHistoryModal: React.FC<ComplianceHistoryModalProps> = ({
           {activeTab === "versions" && (
             <div>
               {fileVersions.length === 0 && (
-                <div style={{ padding: "40px 20px", textAlign: "center", color: "#A0AEC0" }}>
+                <div
+                  style={{
+                    padding: "40px 20px",
+                    textAlign: "center",
+                    color: "#A0AEC0",
+                  }}
+                >
                   <div style={{ fontSize: 32, marginBottom: 8 }}>—</div>
-                  <div style={{ fontSize: 14 }}>{t("LBL_NO_FILE_VERSIONS")}</div>
+                  <div style={{ fontSize: 14 }}>
+                    {t("LBL_NO_FILE_VERSIONS")}
+                  </div>
                 </div>
               )}
               {fileVersions.map((v) => (
@@ -179,7 +213,9 @@ export const ComplianceHistoryModal: React.FC<ComplianceHistoryModalProps> = ({
                     alignItems: "stretch",
                     marginBottom: 12,
                     borderRadius: 6,
-                    border: v.is_current ? "1px solid #C6F6D5" : "1px solid #E2E8F0",
+                    border: v.is_current
+                      ? "1px solid #C6F6D5"
+                      : "1px solid #E2E8F0",
                     backgroundColor: v.is_current ? "#F0FFF4" : "#fff",
                     overflow: "hidden",
                   }}
@@ -207,7 +243,14 @@ export const ComplianceHistoryModal: React.FC<ComplianceHistoryModalProps> = ({
                       v{v.version_number}
                     </div>
                     {v.is_current && (
-                      <div style={{ fontSize: 9, fontWeight: 600, color: "#276749", marginTop: 2 }}>
+                      <div
+                        style={{
+                          fontSize: 9,
+                          fontWeight: 600,
+                          color: "#276749",
+                          marginTop: 2,
+                        }}
+                      >
                         {t("LBL_VERSION_CURRENT")}
                       </div>
                     )}
@@ -223,8 +266,17 @@ export const ComplianceHistoryModal: React.FC<ComplianceHistoryModalProps> = ({
                         marginBottom: 4,
                       }}
                     >
-                      <div style={{ fontSize: 13, fontWeight: 500, color: "#2D3748" }}>
-                        {v.change_reason || (v.version_number === 1 ? t("LBL_ACTION_CREATE") : "")}
+                      <div
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 500,
+                          color: "#2D3748",
+                        }}
+                      >
+                        {v.change_reason ||
+                          (v.version_number === 1
+                            ? t("LBL_ACTION_CREATE")
+                            : "")}
                       </div>
                       {v.download_url && (
                         <a
@@ -244,7 +296,14 @@ export const ComplianceHistoryModal: React.FC<ComplianceHistoryModalProps> = ({
                         </a>
                       )}
                     </div>
-                    <div style={{ display: "flex", gap: 16, fontSize: 12, color: "#718096" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 16,
+                        fontSize: 12,
+                        color: "#718096",
+                      }}
+                    >
                       <span>{v.created_at?.substring(0, 16)}</span>
                       <span>{v.creator_name}</span>
                       <span>{formatFileSize(v.file_size)}</span>
@@ -267,14 +326,24 @@ export const ComplianceHistoryModal: React.FC<ComplianceHistoryModalProps> = ({
 
           {/* 変更履歴タブ */}
           {activeTab === "audit" && auditLog.length === 0 && (
-            <div style={{ padding: "40px 20px", textAlign: "center", color: "#A0AEC0" }}>
+            <div
+              style={{
+                padding: "40px 20px",
+                textAlign: "center",
+                color: "#A0AEC0",
+              }}
+            >
               <div style={{ fontSize: 32, marginBottom: 8 }}>—</div>
               <div style={{ fontSize: 14 }}>{t("LBL_NO_AUDIT_LOG")}</div>
             </div>
           )}
           {activeTab === "audit" && auditLog.length > 0 && (
             <table
-              style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                fontSize: 13,
+              }}
             >
               <thead>
                 <tr>
@@ -333,7 +402,8 @@ export const ComplianceHistoryModal: React.FC<ComplianceHistoryModalProps> = ({
               </thead>
               <tbody>
                 {auditLog.map((entry) => {
-                  const actionColor = ACTION_COLORS[entry.action_type] || "#718096";
+                  const actionColor =
+                    ACTION_COLORS[entry.action_type] || "#718096";
                   const changes =
                     entry.action_detail &&
                     typeof entry.action_detail === "object" &&
@@ -393,12 +463,21 @@ export const ComplianceHistoryModal: React.FC<ComplianceHistoryModalProps> = ({
                               }>
                             ).map((c, i) => (
                               <div key={i} style={{ marginBottom: 2 }}>
-                                <span style={{ color: "#718096" }}>{c.field}:</span>{" "}
-                                <span style={{ textDecoration: "line-through", color: "#E53E3E" }}>
+                                <span style={{ color: "#718096" }}>
+                                  {c.field}:
+                                </span>{" "}
+                                <span
+                                  style={{
+                                    textDecoration: "line-through",
+                                    color: "#E53E3E",
+                                  }}
+                                >
                                   {c.old_value}
                                 </span>{" "}
                                 →{" "}
-                                <span style={{ color: "#38A169", fontWeight: 500 }}>
+                                <span
+                                  style={{ color: "#38A169", fontWeight: 500 }}
+                                >
                                   {c.new_value}
                                 </span>
                               </div>
@@ -406,7 +485,9 @@ export const ComplianceHistoryModal: React.FC<ComplianceHistoryModalProps> = ({
                           </div>
                         )}
                         {reason && (
-                          <div style={{ color: "#718096", fontStyle: "italic" }}>
+                          <div
+                            style={{ color: "#718096", fontStyle: "italic" }}
+                          >
                             {reason}
                           </div>
                         )}

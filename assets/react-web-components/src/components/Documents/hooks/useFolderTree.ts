@@ -54,5 +54,12 @@ export function useFolderTree(): UseFolderTreeResult {
     fetchTree();
   }, [fetchTree]);
 
-  return { folders, totalCount, starredCount, isLoading, error, reload: fetchTree };
+  return {
+    folders,
+    totalCount,
+    starredCount,
+    isLoading,
+    error,
+    reload: fetchTree,
+  };
 }

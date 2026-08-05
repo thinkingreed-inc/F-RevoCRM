@@ -56,7 +56,11 @@ createWebComponent(ActivityList, "activity-list", [
 ]);
 
 // Documents モジュール用コンポーネント
-import { DocumentsPage, DocumentsDetail, DocumentsRelatedList } from "@/components/Documents";
+import {
+  DocumentsPage,
+  DocumentsDetail,
+  DocumentsRelatedList,
+} from "@/components/Documents";
 
 // DocumentsPage: 一覧画面（リスト/グリッド/プレビューの3モード内包）
 // folder-id: 初期表示フォルダID

@@ -1,5 +1,9 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import type { SortConfig, DocumentRecord, DocumentDetail } from "./types/documents";
+import type {
+  SortConfig,
+  DocumentRecord,
+  DocumentDetail,
+} from "./types/documents";
 import { FileIcon } from "./FileIcon";
 import { StarButton } from "./StarButton";
 import { DocumentDetailModal } from "./DocumentDetailModal";
@@ -75,7 +79,10 @@ function useRelatedDocumentsList(params: {
       const response = await fetch("index.php", {
         method: "POST",
         credentials: "same-origin",
-        headers: { Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
         body: body.toString(),
         signal: controller.signal,
       });
@@ -94,9 +101,19 @@ function useRelatedDocumentsList(params: {
     } finally {
       setIsLoading(false);
     }
-  }, [params.parentModule, params.parentId, params.sort.field, params.sort.order, params.page, params.pageLimit, params.searchKeyword]);
+  }, [
+    params.parentModule,
+    params.parentId,
+    params.sort.field,
+    params.sort.order,
+    params.page,
+    params.pageLimit,
+    params.searchKeyword,
+  ]);
 
-  useEffect(() => { fetchList(); }, [fetchList]);
+  useEffect(() => {
+    fetchList();
+  }, [fetchList]);
 
   return { records, total, isLoading, reload: fetchList };
 }
@@ -111,7 +128,12 @@ const SortableHeader: React.FC<{
   const isActive = sort.field === field;
   return (
     <th
-      onClick={() => onSort({ field, order: isActive && sort.order === "DESC" ? "ASC" : "DESC" })}
+      onClick={() =>
+        onSort({
+          field,
+          order: isActive && sort.order === "DESC" ? "ASC" : "DESC",
+        })
+      }
       style={{
         ...style,
         cursor: "pointer",
@@ -126,12 +148,18 @@ const SortableHeader: React.FC<{
       }}
     >
       {label}
-      {isActive && <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.order === "ASC" ? "▲" : "▼"}</span>}
+      {isActive && (
+        <span style={{ marginLeft: 4, fontSize: 10 }}>
+          {sort.order === "ASC" ? "▲" : "▼"}
+        </span>
+      )}
     </th>
   );
 };
 
-export const DocumentsRelatedList: React.FC<DocumentsRelatedListProps> = (props) => (
+export const DocumentsRelatedList: React.FC<DocumentsRelatedListProps> = (
+  props,
+) => (
   <TranslationProvider module="Documents">
     <DocumentsRelatedListInner {...props} />
   </TranslationProvider>
@@ -143,7 +171,10 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
 }) => {
   const { t } = useOptionalTranslation();
   const [page, setPage] = useState(1);
-  const [sort, setSort] = useState<SortConfig>({ field: "modifiedtime", order: "DESC" });
+  const [sort, setSort] = useState<SortConfig>({
+    field: "modifiedtime",
+    order: "DESC",
+  });
   const [searchInput, setSearchInput] = useState("");
   const [searchKeyword, setSearchKeyword] = useState("");
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -167,22 +198,41 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
       setSearchKeyword(searchInput);
       setPage(1);
     }, 300);
-    return () => { if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current); };
+    return () => {
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    };
   }, [searchInput]);
 
   // 詳細モーダル
-  const [detailModalRecordId, setDetailModalRecordId] = useState<number | null>(null);
-  const { document: detailDocument, isLoading: detailLoading, reload: reloadDetail } = useDocumentDetail(detailModalRecordId);
+  const [detailModalRecordId, setDetailModalRecordId] = useState<number | null>(
+    null,
+  );
+  const {
+    document: detailDocument,
+    isLoading: detailLoading,
+    reload: reloadDetail,
+  } = useDocumentDetail(detailModalRecordId);
 
   // 登録/編集モーダル
   const [createEditModalOpen, setCreateEditModalOpen] = useState(false);
-  const [createEditMode, setCreateEditMode] = useState<"create" | "edit">("create");
-  const [editTargetDoc, setEditTargetDoc] = useState<DocumentDetail | null>(null);
+  const [createEditMode, setCreateEditMode] = useState<"create" | "edit">(
+    "create",
+  );
+  const [editTargetDoc, setEditTargetDoc] = useState<DocumentDetail | null>(
+    null,
+  );
 
   // D&D
   const [isDragging, setIsDragging] = useState(false);
   const dragCountRef = useRef(0);
-  const { isUploading, progress, error: uploadError, upload } = useFileUpload(() => { reload(); });
+  const {
+    isUploading,
+    progress,
+    error: uploadError,
+    upload,
+  } = useFileUpload(() => {
+    reload();
+  });
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -196,17 +246,22 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
     if (dragCountRef.current === 0) setIsDragging(false);
   }, []);
 
-  const handleDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); }, []);
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
-    dragCountRef.current = 0;
-    setIsDragging(false);
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-      upload(files, 1, parentModule, parentId);
-    }
-  }, [upload, parentModule, parentId]);
+  }, []);
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      dragCountRef.current = 0;
+      setIsDragging(false);
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        upload(files, 1, parentModule, parentId);
+      }
+    },
+    [upload, parentModule, parentId],
+  );
 
   const handleSortChange = useCallback((newSort: SortConfig) => {
     setSort(newSort);
@@ -215,26 +270,33 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
 
   const totalPages = Math.ceil(total / pageLimit);
 
-  const handleDelete = useCallback(async (recordId: number) => {
-    const csrf = getCsrfToken();
-    if (!csrf) return;
-    const body = new URLSearchParams();
-    body.append(csrf.name, csrf.value);
-    body.append("module", "Documents");
-    body.append("action", "DeleteAjax");
-    body.append("record", String(recordId));
-    try {
-      await fetch("index.php", {
-        method: "POST", credentials: "same-origin",
-        headers: { Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
-        body: body.toString(),
-      });
-      setDetailModalRecordId(null);
-      reload();
-    } catch {
-      alert(t('LBL_DELETE_FAILED'));
-    }
-  }, [reload, t]);
+  const handleDelete = useCallback(
+    async (recordId: number) => {
+      const csrf = getCsrfToken();
+      if (!csrf) return;
+      const body = new URLSearchParams();
+      body.append(csrf.name, csrf.value);
+      body.append("module", "Documents");
+      body.append("action", "DeleteAjax");
+      body.append("record", String(recordId));
+      try {
+        await fetch("index.php", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: body.toString(),
+        });
+        setDetailModalRecordId(null);
+        reload();
+      } catch {
+        alert(t("LBL_DELETE_FAILED"));
+      }
+    },
+    [reload, t],
+  );
 
   return (
     <div
@@ -245,7 +307,15 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
       onDrop={handleDrop}
     >
       {/* ツールバー */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderBottom: "1px solid #E2E8F0" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "8px 12px",
+          borderBottom: "1px solid #E2E8F0",
+        }}
+      >
         {/* 検索 */}
         <div style={{ position: "relative", flex: "0 1 280px", minWidth: 160 }}>
           <input
@@ -254,12 +324,13 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
             onChange={(e) => setSearchInput(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+                if (searchDebounceRef.current)
+                  clearTimeout(searchDebounceRef.current);
                 setSearchKeyword(searchInput);
                 setPage(1);
               }
             }}
-            placeholder={t('LBL_SEARCH_DOCUMENTS')}
+            placeholder={t("LBL_SEARCH_DOCUMENTS")}
             style={{
               width: "100%",
               padding: "5px 28px 5px 28px",
@@ -271,19 +342,44 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
             }}
           />
           <svg
-            width="14" height="14" viewBox="0 0 24 24" fill="none"
-            stroke="#A0AEC0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#A0AEC0"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{
+              position: "absolute",
+              left: 8,
+              top: "50%",
+              transform: "translateY(-50%)",
+              pointerEvents: "none",
+            }}
           >
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
           {searchInput && (
             <button
-              onClick={() => { setSearchInput(""); setSearchKeyword(""); setPage(1); }}
+              onClick={() => {
+                setSearchInput("");
+                setSearchKeyword("");
+                setPage(1);
+              }}
               style={{
-                position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)",
-                border: "none", background: "none", cursor: "pointer", fontSize: 14,
-                color: "#A0AEC0", padding: "0 2px", lineHeight: 1,
+                position: "absolute",
+                right: 6,
+                top: "50%",
+                transform: "translateY(-50%)",
+                border: "none",
+                background: "none",
+                cursor: "pointer",
+                fontSize: 14,
+                color: "#A0AEC0",
+                padding: "0 2px",
+                lineHeight: 1,
               }}
             >
               ×
@@ -295,7 +391,14 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
 
         {/* 件数表示 */}
         <span style={{ fontSize: 12, color: "#718096", whiteSpace: "nowrap" }}>
-          {total > 0 ? t('LBL_PAGINATION_INFO', (page - 1) * pageLimit + 1, Math.min(page * pageLimit, total), total) : t('LBL_PAGINATION_ZERO')}
+          {total > 0
+            ? t(
+                "LBL_PAGINATION_INFO",
+                (page - 1) * pageLimit + 1,
+                Math.min(page * pageLimit, total),
+                total,
+              )
+            : t("LBL_PAGINATION_ZERO")}
         </span>
 
         {/* ページネーション */}
@@ -304,13 +407,33 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
             <button
               disabled={page <= 1}
               onClick={() => setPage(page - 1)}
-              style={{ padding: "2px 8px", border: "1px solid #E2E8F0", borderRadius: 3, background: "#fff", cursor: page <= 1 ? "not-allowed" : "pointer", opacity: page <= 1 ? 0.4 : 1, fontSize: 12 }}
-            >&lt;</button>
+              style={{
+                padding: "2px 8px",
+                border: "1px solid #E2E8F0",
+                borderRadius: 3,
+                background: "#fff",
+                cursor: page <= 1 ? "not-allowed" : "pointer",
+                opacity: page <= 1 ? 0.4 : 1,
+                fontSize: 12,
+              }}
+            >
+              &lt;
+            </button>
             <button
               disabled={page >= totalPages}
               onClick={() => setPage(page + 1)}
-              style={{ padding: "2px 8px", border: "1px solid #E2E8F0", borderRadius: 3, background: "#fff", cursor: page >= totalPages ? "not-allowed" : "pointer", opacity: page >= totalPages ? 0.4 : 1, fontSize: 12 }}
-            >&gt;</button>
+              style={{
+                padding: "2px 8px",
+                border: "1px solid #E2E8F0",
+                borderRadius: 3,
+                background: "#fff",
+                cursor: page >= totalPages ? "not-allowed" : "pointer",
+                opacity: page >= totalPages ? 0.4 : 1,
+                fontSize: 12,
+              }}
+            >
+              &gt;
+            </button>
           </div>
         )}
 
@@ -332,36 +455,99 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
             whiteSpace: "nowrap",
           }}
         >
-          {t('LBL_ADD_DOCUMENT')}
+          {t("LBL_ADD_DOCUMENT")}
         </button>
       </div>
 
       {/* テーブル */}
       <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+        <table
+          style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}
+        >
           <thead>
             <tr>
-              <th style={{ width: 32, padding: "8px 2px", borderBottom: "2px solid #E2E8F0" }} />
-              <th style={{ width: 40, padding: "8px 2px", borderBottom: "2px solid #E2E8F0" }} />
-              <SortableHeader label={t('Title')} field="title" sort={sort} onSort={handleSortChange} />
-              <SortableHeader label={t('Folder Name')} field="foldername" sort={sort} onSort={handleSortChange} style={{ width: 120 }} />
-              <SortableHeader label={t('Assigned To')} field="assigned_user_id" sort={sort} onSort={handleSortChange} style={{ width: 100 }} />
-              <SortableHeader label={t('Modified Time')} field="modifiedtime" sort={sort} onSort={handleSortChange} style={{ width: 110 }} />
-              <SortableHeader label={t('File Size')} field="filesize" sort={sort} onSort={handleSortChange} style={{ width: 80 }} />
-              <th style={{ width: 80, padding: "8px 6px", textAlign: "center", fontSize: 12, fontWeight: 600, color: "#4A5568", borderBottom: "2px solid #E2E8F0" }}>
-                {t('LBL_COLUMN_ACTIONS')}
+              <th
+                style={{
+                  width: 32,
+                  padding: "8px 2px",
+                  borderBottom: "2px solid #E2E8F0",
+                }}
+              />
+              <th
+                style={{
+                  width: 40,
+                  padding: "8px 2px",
+                  borderBottom: "2px solid #E2E8F0",
+                }}
+              />
+              <SortableHeader
+                label={t("Title")}
+                field="title"
+                sort={sort}
+                onSort={handleSortChange}
+              />
+              <SortableHeader
+                label={t("Folder Name")}
+                field="foldername"
+                sort={sort}
+                onSort={handleSortChange}
+                style={{ width: 120 }}
+              />
+              <SortableHeader
+                label={t("Assigned To")}
+                field="assigned_user_id"
+                sort={sort}
+                onSort={handleSortChange}
+                style={{ width: 100 }}
+              />
+              <SortableHeader
+                label={t("Modified Time")}
+                field="modifiedtime"
+                sort={sort}
+                onSort={handleSortChange}
+                style={{ width: 110 }}
+              />
+              <SortableHeader
+                label={t("File Size")}
+                field="filesize"
+                sort={sort}
+                onSort={handleSortChange}
+                style={{ width: 80 }}
+              />
+              <th
+                style={{
+                  width: 80,
+                  padding: "8px 6px",
+                  textAlign: "center",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: "#4A5568",
+                  borderBottom: "2px solid #E2E8F0",
+                }}
+              >
+                {t("LBL_COLUMN_ACTIONS")}
               </th>
             </tr>
           </thead>
           <tbody>
             {isLoading && records.length === 0 && (
-              <tr><td colSpan={8} style={{ padding: 32, textAlign: "center", color: "#A0AEC0" }}>{t('LBL_LOADING')}</td></tr>
+              <tr>
+                <td
+                  colSpan={8}
+                  style={{ padding: 32, textAlign: "center", color: "#A0AEC0" }}
+                >
+                  {t("LBL_LOADING")}
+                </td>
+              </tr>
             )}
             {!isLoading && records.length === 0 && (
               <tr>
-                <td colSpan={8} style={{ padding: 40, textAlign: "center", color: "#A0AEC0" }}>
-                  <div style={{ marginBottom: 8 }}>{t('LBL_NO_DOCUMENTS')}</div>
-                  <div style={{ fontSize: 12 }}>{t('LBL_DROP_HELP_TEXT')}</div>
+                <td
+                  colSpan={8}
+                  style={{ padding: 40, textAlign: "center", color: "#A0AEC0" }}
+                >
+                  <div style={{ marginBottom: 8 }}>{t("LBL_NO_DOCUMENTS")}</div>
+                  <div style={{ fontSize: 12 }}>{t("LBL_DROP_HELP_TEXT")}</div>
                 </td>
               </tr>
             )}
@@ -369,33 +555,91 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
               <tr
                 key={rec.id}
                 style={{ borderBottom: "1px solid #EDF2F7", cursor: "pointer" }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#F7FAFC")}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.backgroundColor = "#F7FAFC")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.backgroundColor = "")
+                }
               >
                 <td style={{ padding: "6px 2px", textAlign: "center" }}>
                   <StarButton recordId={rec.id} starred={rec.starred} />
                 </td>
-                <td style={{ padding: "6px 4px" }} onClick={() => setDetailModalRecordId(rec.id)}>
-                  <FileIcon filetype={rec.filetype} filelocationtype={rec.filelocationtype} filename={rec.filename} size="sm" />
+                <td
+                  style={{ padding: "6px 4px" }}
+                  onClick={() => setDetailModalRecordId(rec.id)}
+                >
+                  <FileIcon
+                    filetype={rec.filetype}
+                    filelocationtype={rec.filelocationtype}
+                    filename={rec.filename}
+                    size="sm"
+                  />
                 </td>
-                <td style={{ padding: "6px 6px", fontWeight: 500, color: "#2D3748" }} onClick={() => setDetailModalRecordId(rec.id)}>
+                <td
+                  style={{
+                    padding: "6px 6px",
+                    fontWeight: 500,
+                    color: "#2D3748",
+                  }}
+                  onClick={() => setDetailModalRecordId(rec.id)}
+                >
                   {rec.title}
                   {rec.filename && rec.filename !== rec.title && (
-                    <div style={{ fontSize: 11, color: "#A0AEC0", fontWeight: 400, marginTop: 1 }}>{rec.filename}</div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "#A0AEC0",
+                        fontWeight: 400,
+                        marginTop: 1,
+                      }}
+                    >
+                      {rec.filename}
+                    </div>
                   )}
                 </td>
-                <td style={{ padding: "6px 6px", color: "#718096" }} onClick={() => setDetailModalRecordId(rec.id)}>{rec.foldername}</td>
-                <td style={{ padding: "6px 6px", color: "#718096" }} onClick={() => setDetailModalRecordId(rec.id)}>{rec.assigned_user_name}</td>
-                <td style={{ padding: "6px 6px", color: "#718096" }} onClick={() => setDetailModalRecordId(rec.id)}>{formatDate(rec.modifiedtime)}</td>
-                <td style={{ padding: "6px 6px", color: "#718096" }} onClick={() => setDetailModalRecordId(rec.id)}>{formatFileSize(rec.filesize)}</td>
+                <td
+                  style={{ padding: "6px 6px", color: "#718096" }}
+                  onClick={() => setDetailModalRecordId(rec.id)}
+                >
+                  {rec.foldername}
+                </td>
+                <td
+                  style={{ padding: "6px 6px", color: "#718096" }}
+                  onClick={() => setDetailModalRecordId(rec.id)}
+                >
+                  {rec.assigned_user_name}
+                </td>
+                <td
+                  style={{ padding: "6px 6px", color: "#718096" }}
+                  onClick={() => setDetailModalRecordId(rec.id)}
+                >
+                  {formatDate(rec.modifiedtime)}
+                </td>
+                <td
+                  style={{ padding: "6px 6px", color: "#718096" }}
+                  onClick={() => setDetailModalRecordId(rec.id)}
+                >
+                  {formatFileSize(rec.filesize)}
+                </td>
                 <td style={{ padding: "6px 6px", textAlign: "center" }}>
-                  <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 6,
+                      justifyContent: "center",
+                    }}
+                  >
                     {rec.download_url && (
                       <a
                         href={rec.download_url}
                         onClick={(e) => e.stopPropagation()}
-                        title={t('Download')}
-                        style={{ color: "#718096", fontSize: 14, textDecoration: "none" }}
+                        title={t("Download")}
+                        style={{
+                          color: "#718096",
+                          fontSize: 14,
+                          textDecoration: "none",
+                        }}
                       >
                         ⬇
                       </a>
@@ -410,31 +654,76 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
 
       {/* D&D オーバーレイ */}
       {isDragging && (
-        <div style={{
-          position: "absolute", inset: 0, backgroundColor: "rgba(49, 130, 206, 0.08)",
-          border: "2px dashed #3182CE", borderRadius: 8, display: "flex",
-          alignItems: "center", justifyContent: "center", zIndex: 20, pointerEvents: "none",
-        }}>
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundColor: "rgba(49, 130, 206, 0.08)",
+            border: "2px dashed #3182CE",
+            borderRadius: 8,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 20,
+            pointerEvents: "none",
+          }}
+        >
           <div style={{ fontSize: 14, color: "#3182CE", fontWeight: 600 }}>
-            {t('LBL_DROP_FILES_HERE')}
+            {t("LBL_DROP_FILES_HERE")}
           </div>
         </div>
       )}
 
       {/* アップロード進捗 */}
       {isUploading && (
-        <div style={{ padding: "8px 12px", backgroundColor: "#EBF8FF", borderTop: "1px solid #BEE3F8" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
-            <span>{t('LBL_UPLOADING_PROGRESS', progress)}</span>
-            <div style={{ flex: 1, height: 4, backgroundColor: "#BEE3F8", borderRadius: 2 }}>
-              <div style={{ width: `${progress}%`, height: "100%", backgroundColor: "#3182CE", borderRadius: 2, transition: "width 0.2s" }} />
+        <div
+          style={{
+            padding: "8px 12px",
+            backgroundColor: "#EBF8FF",
+            borderTop: "1px solid #BEE3F8",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              fontSize: 13,
+            }}
+          >
+            <span>{t("LBL_UPLOADING_PROGRESS", progress)}</span>
+            <div
+              style={{
+                flex: 1,
+                height: 4,
+                backgroundColor: "#BEE3F8",
+                borderRadius: 2,
+              }}
+            >
+              <div
+                style={{
+                  width: `${progress}%`,
+                  height: "100%",
+                  backgroundColor: "#3182CE",
+                  borderRadius: 2,
+                  transition: "width 0.2s",
+                }}
+              />
             </div>
           </div>
         </div>
       )}
 
       {uploadError && (
-        <div style={{ padding: "8px 12px", backgroundColor: "#FED7D7", borderTop: "1px solid #FEB2B2", color: "#C53030", fontSize: 13 }}>
+        <div
+          style={{
+            padding: "8px 12px",
+            backgroundColor: "#FED7D7",
+            borderTop: "1px solid #FEB2B2",
+            color: "#C53030",
+            fontSize: 13,
+          }}
+        >
           {uploadError}
         </div>
       )}
