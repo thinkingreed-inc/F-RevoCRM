@@ -173,7 +173,7 @@ class Emails_Record_Model extends Vtiger_Record_Model {
             $plainBody = decode_emptyspace_html($description);
             $plainBody = preg_replace(array("/<p>/i","/<br>/i","/<br \/>/i"),array("\n","\n","\n"),$plainBody);
             $plainBody .= "\n\n".$currentUserModel->get('signature');
-            $plainBody = utf8_encode(strip_tags($plainBody));
+            $plainBody = mb_convert_encoding(strip_tags($plainBody), 'UTF-8', 'ISO-8859-1');
             $plainBody = Emails_Mailer_Model::convertToAscii($plainBody);
             $plainBody = $this->convertUrlsToTrackUrls($plainBody, $id,'plain');
             $mailer->AltBody = $plainBody;

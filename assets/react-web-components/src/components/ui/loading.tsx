@@ -5,7 +5,12 @@ interface LoadingProps extends React.HTMLAttributes<HTMLDivElement> {
   showText?: boolean;
 }
 
-export function Loading({ size = "md", className, showText = true, ...props }: LoadingProps) {
+export function Loading({
+  size = "md",
+  className,
+  showText = true,
+  ...props
+}: LoadingProps) {
   const sizeClasses = {
     sm: "w-4 h-4 border-2",
     md: "w-6 h-6 border-2",
@@ -24,11 +29,13 @@ export function Loading({ size = "md", className, showText = true, ...props }: L
         className={cn(
           "animate-spin rounded-full border-gray-300 border-t-primary",
           sizeClasses[size],
-          className
+          className,
         )}
       />
       {showText && (
-        <span className={cn("text-muted-foreground", textSizeClasses[size])}>Loading...</span>
+        <span className={cn("text-muted-foreground", textSizeClasses[size])}>
+          Loading...
+        </span>
       )}
     </div>
   );

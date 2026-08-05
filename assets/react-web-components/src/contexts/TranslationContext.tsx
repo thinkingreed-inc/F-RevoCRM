@@ -13,12 +13,12 @@ import {
   useEffect,
   useMemo,
   ReactNode,
-} from 'react';
+} from "react";
 import {
   fetchTranslations,
   mergeTranslations,
   TranslationData,
-} from '../utils/translations';
+} from "../utils/translations";
 
 /**
  * デフォルトの翻訳データ（フォールバック用）
@@ -26,62 +26,62 @@ import {
  */
 const DEFAULT_TRANSLATIONS: TranslationData = {
   // 基本操作
-  LBL_SAVE: '保存',
-  LBL_CANCEL: 'キャンセル',
-  LBL_EDIT: '編集',
-  LBL_DELETE: '削除',
-  LBL_LOADING: '読み込み中',
+  LBL_SAVE: "保存",
+  LBL_CANCEL: "キャンセル",
+  LBL_EDIT: "編集",
+  LBL_DELETE: "削除",
+  LBL_LOADING: "読み込み中",
 
   // QuickCreate
-  LBL_QUICK_CREATE: 'クイック作成',
-  LBL_GO_TO_FULL_FORM: '詳細入力',
-  LBL_BASIC_INFORMATION: '基本情報',
-  LBL_SAVING: '保存中...',
-  LBL_UPDATING: '更新中...',
-  LBL_UPDATE: '更新',
+  LBL_QUICK_CREATE: "クイック作成",
+  LBL_GO_TO_FULL_FORM: "詳細入力",
+  LBL_BASIC_INFORMATION: "基本情報",
+  LBL_SAVING: "保存中...",
+  LBL_UPDATING: "更新中...",
+  LBL_UPDATE: "更新",
 
   // バリデーション
-  LBL_FIELD_REQUIRED: '%sは必須です',
-  LBL_FIELD_MAX_LENGTH: '%sは%s文字以内で入力してください',
-  LBL_END_DATE_AFTER_START: '終了日時は開始日時より後に設定してください',
+  LBL_FIELD_REQUIRED: "%sは必須です",
+  LBL_FIELD_MAX_LENGTH: "%sは%s文字以内で入力してください",
+  LBL_END_DATE_AFTER_START: "終了日時は開始日時より後に設定してください",
 
   // 成功メッセージ
-  LBL_CREATED_SUCCESS: '%sを作成しました',
-  LBL_UPDATED_SUCCESS: '%sを更新しました',
+  LBL_CREATED_SUCCESS: "%sを作成しました",
+  LBL_UPDATED_SUCCESS: "%sを更新しました",
 
   // 状態
-  LBL_LOADING_FIELDS: 'フィールド情報を読み込み中...',
-  LBL_NO_FIELDS_AVAILABLE: '表示できるフィールドがありません',
+  LBL_LOADING_FIELDS: "フィールド情報を読み込み中...",
+  LBL_NO_FIELDS_AVAILABLE: "表示できるフィールドがありません",
 
   // カレンダー
-  LBL_TASK: 'ToDo',
-  LBL_EVENT: '活動',
-  LBL_ALL_DAY: '終日',
-  LBL_SET_REMINDER: '設定する',
-  LBL_SEND_NOTIFICATION: '事前にメールを送信',
-  LBL_START: '開始',
-  LBL_DAYS: '日',
-  LBL_HOURS: '時間',
-  LBL_MINUTES_BEFORE: '分前に通知',
-  LBL_INVITEES: '招待者',
-  LBL_SELECT_INVITEES: '招待者を選択',
-  LBL_INVITEES_SELECTED: '%s名選択中',
-  LBL_CLEAR_ALL: 'すべてクリア',
-  LBL_SEARCH_USERS_PLACEHOLDER: 'ユーザーを検索して追加...',
-  LBL_ALL_USERS_SELECTED: 'すべてのユーザーが選択済みです',
-  LBL_NO_MATCHING_USERS: '該当するユーザーがいません',
-  LBL_NO_MATCHING_CURRENCY: '該当する通貨がありません',
+  LBL_TASK: "ToDo",
+  LBL_EVENT: "活動",
+  LBL_ALL_DAY: "終日",
+  LBL_SET_REMINDER: "設定する",
+  LBL_SEND_NOTIFICATION: "事前にメールを送信",
+  LBL_START: "開始",
+  LBL_DAYS: "日",
+  LBL_HOURS: "時間",
+  LBL_MINUTES_BEFORE: "分前に通知",
+  LBL_INVITEES: "招待者",
+  LBL_SELECT_INVITEES: "招待者を選択",
+  LBL_INVITEES_SELECTED: "%s名選択中",
+  LBL_CLEAR_ALL: "すべてクリア",
+  LBL_SEARCH_USERS_PLACEHOLDER: "ユーザーを検索して追加...",
+  LBL_ALL_USERS_SELECTED: "すべてのユーザーが選択済みです",
+  LBL_NO_MATCHING_USERS: "該当するユーザーがいません",
+  LBL_NO_MATCHING_CURRENCY: "該当する通貨がありません",
 
   // プレースホルダー
-  LBL_PLACEHOLDER_ENTER: '%sを入力してください',
-  LBL_PLACEHOLDER_SEARCH: '%sを検索...',
-  LBL_PLACEHOLDER_SEARCH_AND_ADD: '%sを検索して追加...',
-  LBL_PLACEHOLDER_SEARCH_TITLE: '%sを検索',
-  LBL_PLACEHOLDER_SELECT: '%sを選択してください',
+  LBL_PLACEHOLDER_ENTER: "%sを入力してください",
+  LBL_PLACEHOLDER_SEARCH: "%sを検索...",
+  LBL_PLACEHOLDER_SEARCH_AND_ADD: "%sを検索して追加...",
+  LBL_PLACEHOLDER_SEARCH_TITLE: "%sを検索",
+  LBL_PLACEHOLDER_SELECT: "%sを選択してください",
 
   // オプション関連
-  LBL_NO_OPTIONS_AVAILABLE: '該当する選択肢がありません',
-  LBL_ALL_OPTIONS_SELECTED: 'すべて選択済みです',
+  LBL_NO_OPTIONS_AVAILABLE: "該当する選択肢がありません",
+  LBL_ALL_OPTIONS_SELECTED: "すべて選択済みです",
 };
 
 interface TranslationContextValue {
@@ -130,9 +130,9 @@ export function TranslationProvider({
   language: initialLanguage,
 }: TranslationProviderProps) {
   const [translations, setTranslations] = useState<TranslationData>(
-    initialTranslations || DEFAULT_TRANSLATIONS
+    initialTranslations || DEFAULT_TRANSLATIONS,
   );
-  const [language, setLanguage] = useState<string>(initialLanguage || 'ja_jp');
+  const [language, setLanguage] = useState<string>(initialLanguage || "ja_jp");
   const [isLoading, setIsLoading] = useState(!initialTranslations);
   const [error, setError] = useState<Error | null>(null);
 
@@ -150,8 +150,8 @@ export function TranslationProvider({
       setTranslations({ ...DEFAULT_TRANSLATIONS, ...merged });
       setLanguage(response.language);
     } catch (err) {
-      console.error('Failed to load translations:', err);
-      setError(err instanceof Error ? err : new Error('Unknown error'));
+      console.error("Failed to load translations:", err);
+      setError(err instanceof Error ? err : new Error("Unknown error"));
       // エラー時はデフォルト翻訳を使用
       setTranslations(DEFAULT_TRANSLATIONS);
     } finally {
@@ -184,10 +184,10 @@ export function TranslationProvider({
         if (argIndex < args.length) {
           return String(args[argIndex++]);
         }
-        return '%s'; // 引数が足りない場合はそのまま
+        return "%s"; // 引数が足りない場合はそのまま
       });
     },
-    [translations]
+    [translations],
   );
 
   const value = useMemo<TranslationContextValue>(
@@ -199,7 +199,7 @@ export function TranslationProvider({
       refetch: loadTranslations,
       t,
     }),
-    [translations, language, isLoading, error, loadTranslations, t]
+    [translations, language, isLoading, error, loadTranslations, t],
   );
 
   return (
@@ -218,7 +218,7 @@ export function useTranslationContext(): TranslationContextValue {
   const context = useContext(TranslationContext);
   if (!context) {
     throw new Error(
-      'useTranslationContext must be used within a TranslationProvider'
+      "useTranslationContext must be used within a TranslationProvider",
     );
   }
   return context;
@@ -238,12 +238,12 @@ export function useOptionalTranslationContext(): TranslationContextValue {
       let argIndex = 0;
       return translated.replace(/%s/g, () => {
         if (argIndex < args.length) return String(args[argIndex++]);
-        return '%s';
+        return "%s";
       });
     };
     return {
       translations: DEFAULT_TRANSLATIONS,
-      language: 'ja_jp',
+      language: "ja_jp",
       isLoading: false,
       error: null,
       refetch: async () => {},

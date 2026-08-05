@@ -242,7 +242,7 @@ class Calendar_ListView_Model extends Vtiger_ListView_Model {
 
 		
 		if(empty($orderBy)) {
-            $listQuery .= " ORDER BY vtiger_crmentity.modifiedtime $sortOrder ";
+            $listQuery .= " ORDER BY vtiger_activity.modifiedtime $sortOrder ";
 		} else if($orderBy == 'date_start') {
             $listQuery .= " ORDER BY str_to_date(concat(date_start,time_start),'%Y-%m-%d %H:%i:%s') $sortOrder ";
         } else if($orderBy == 'due_date') {

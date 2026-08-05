@@ -48,8 +48,15 @@ compose.override.yaml
 # Claude Code / superpowers が生成するドキュメント（コミットしない）
 /docs/superpowers/
 
-# playwright (E2E) 成果物（コミットしない）
-playwright-report/
-test-results/
+# for e2e (Playwright) — 一式は e2e/ 配下
+/e2e/node_modules
+/e2e/test-results/
+/e2e/playwright-report/
+/e2e/playwright-results.json
+/e2e/playwright/.cache/
+/e2e/.auth/*
+!/e2e/.auth/.gitkeep
+
+# playwright (E2E) 成果物（web-components）
 /assets/react-web-components/playwright-report
 /assets/react-web-components/test-results

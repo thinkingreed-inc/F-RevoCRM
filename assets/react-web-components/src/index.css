@@ -6,7 +6,9 @@
 
 @theme inline {
   /* Font family - 既存CRMに統一 */
-  --font-family-sans: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Hiragino Kaku Gothic Pro", "Meiryo", "MS PGothic", "MS Gothic", sans-serif;
+  --font-family-sans:
+    "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Hiragino Kaku Gothic Pro",
+    "Meiryo", "MS PGothic", "MS Gothic", sans-serif;
 
   /* Font sizes - F-RevoCRM環境（html font-size: 10px）ベースに合わせたpx固定 */
   --text-xs: 10px;

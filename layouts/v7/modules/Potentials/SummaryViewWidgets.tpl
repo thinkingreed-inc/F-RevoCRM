@@ -81,11 +81,7 @@
 
 	<div class="middle-block col-lg-4 col-md-4 col-sm-4">
 
-		{* Summary View Related Activities Widget*}
-		<div id="relatedActivities">
-			{$RELATED_ACTIVITIES}
-		</div>
-		{* Summary View Related Activities Widget Ends Here*}
+		{include file=vtemplate_path('RelatedActivitiesWidget.tpl','Vtiger')}
 
 		{* Summary View Comments Widget*}
 		{if $COMMENTS_WIDGET_MODEL}

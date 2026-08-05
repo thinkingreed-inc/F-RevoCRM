@@ -5,7 +5,10 @@
  * コンポーネントで簡単に翻訳を使用できるようにする。
  */
 
-import { useTranslationContext, useOptionalTranslationContext } from '../contexts/TranslationContext';
+import {
+  useTranslationContext,
+  useOptionalTranslationContext,
+} from "../contexts/TranslationContext";
 
 /**
  * 翻訳フック

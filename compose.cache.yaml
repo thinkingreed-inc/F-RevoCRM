@@ -1,0 +1,15 @@
+# CI 専用の compose override: Docker イメージビルドを GitHub Actions のキャッシュ(gha)で高速化する。
+#
+# 併せて workflow 側で以下が必要:
+#   - docker/setup-buildx-action (buildx を有効化)
+#   - COMPOSE_BAKE=true (compose build を buildx bake に委譲し cache_from/to を効かせる)
+#
+# gha キャッシュは Actions ランナー内でのみ利用可能なため、ローカルでは使わない
+# (ローカルは compose.debug.yaml を使う)。
+services:
+  php:
+    build:
+      cache_from:
+        - type=gha,scope=frevocrm-php
+      cache_to:
+        - type=gha,scope=frevocrm-php,mode=max

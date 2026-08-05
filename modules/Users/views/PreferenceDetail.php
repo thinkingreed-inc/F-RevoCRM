@@ -100,6 +100,14 @@ class Users_PreferenceDetail_View extends Vtiger_Detail_View {
 			$viewer->assign('HOME_MODULE_MODEL', $homeModuleModel);
 			$viewer->assign('HEADER_LINKS',$this->getHeaderLinks());
 			$viewer->assign('ANNOUNCEMENT', $this->getAnnouncement());
+
+			// WebComponents用アプリメニューデータの構築（基底ビューと同様にヘッダーの<app-menu>へ渡す）
+			$menuGroupedByParent = Settings_MenuEditor_Module_Model::getAllVisibleModules();
+			$supportGroup = $menuGroupedByParent['SUPPORT'];
+			unset($menuGroupedByParent['SUPPORT']);
+			$menuGroupedByParent['SUPPORT'] = $supportGroup;
+			$viewer->assign('HEADER_MENU_APP_MENUS_JSON', $this->buildAppMenuData($menuGroupedByParent));
+
 			$viewer->assign('CURRENT_VIEW', $request->get('view'));
 			$viewer->assign('SKIN_PATH', Vtiger_Theme::getCurrentUserThemePath());
 			$viewer->assign('CURRENT_USER_MODEL', $currentUser);

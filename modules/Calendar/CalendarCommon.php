@@ -164,7 +164,7 @@ function sendInvitation($inviteesid,$mode,$recordModel,$desc) {
 			$attachment = generateIcsAttachment($desc, $inviteeid);
 			$description=getActivityDetails($desc,$inviteeid,"invite",$recordModel);
 			$description = getMergedDescription($description, $recordModel->getId(), 'Events');
-			$to_email = getUserEmailId('id',$inviteeid);
+			$to_email = decode_html(getUserEmailId('id',$inviteeid));
 			$to_name = getUserFullName($inviteeid);
             $mail = new Vtiger_Mailer();
             $mail->IsHTML(true);

@@ -10,9 +10,11 @@
 
 /** Classes to avoid logging */
 class LoggerPropertyConfigurator {
-	
+
 	static $singleton = false;
-	
+	public $types;
+	public $appenders;
+
 	function __construct() {
 	}
 	

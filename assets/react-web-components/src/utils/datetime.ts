@@ -82,8 +82,14 @@ export function formatDateYYYYMMDD(date: Date): string {
 }
 
 // 日付を加算して取得
-export function offsetDate(offset: number, date: string | Date = new Date()): string {
-  const baseDate = typeof date === "string" ? parse(date, "yyyy-MM-dd HH:mm", new Date()) : date;
+export function offsetDate(
+  offset: number,
+  date: string | Date = new Date(),
+): string {
+  const baseDate =
+    typeof date === "string"
+      ? parse(date, "yyyy-MM-dd HH:mm", new Date())
+      : date;
   return format(addDays(baseDate, offset), "yyyy-MM-dd");
 }
 
@@ -92,7 +98,9 @@ export function formatTime(time: string, formatStr: string): string {
   return format(date, formatStr);
 }
 
-export function dayOfWeekToNumber(day: string | undefined): 0 | 1 | 2 | 3 | 4 | 5 | 6 {
+export function dayOfWeekToNumber(
+  day: string | undefined,
+): 0 | 1 | 2 | 3 | 4 | 5 | 6 {
   const days: { [key: string]: 0 | 1 | 2 | 3 | 4 | 5 | 6 } = {
     Sunday: 0,
     Monday: 1,
@@ -125,24 +133,26 @@ export function calcRoundMinDate(date: Date, roundNum: number): Date {
  * // date_start: "2024-01-15T10:00" → date_start: "2024-01-15", time_start: "10:00"
  * // due_date: "2024-01-15T11:00" → due_date: "2024-01-15", time_end: "11:00"
  */
-export function transformCalendarDateTime(data: Record<string, unknown>): Record<string, unknown> {
+export function transformCalendarDateTime(
+  data: Record<string, unknown>,
+): Record<string, unknown> {
   const transformed = { ...data };
 
   // date_start → date_start + time_start
-  if (transformed.date_start && typeof transformed.date_start === 'string') {
+  if (transformed.date_start && typeof transformed.date_start === "string") {
     const dateStartValue = transformed.date_start;
-    if (dateStartValue.includes('T')) {
-      const [datePart, timePart] = dateStartValue.split('T');
+    if (dateStartValue.includes("T")) {
+      const [datePart, timePart] = dateStartValue.split("T");
       transformed.date_start = datePart;
       transformed.time_start = timePart;
     }
   }
 
   // due_date → due_date + time_end
-  if (transformed.due_date && typeof transformed.due_date === 'string') {
+  if (transformed.due_date && typeof transformed.due_date === "string") {
     const dueDateValue = transformed.due_date;
-    if (dueDateValue.includes('T')) {
-      const [datePart, timePart] = dueDateValue.split('T');
+    if (dueDateValue.includes("T")) {
+      const [datePart, timePart] = dueDateValue.split("T");
       transformed.due_date = datePart;
       transformed.time_end = timePart;
     }

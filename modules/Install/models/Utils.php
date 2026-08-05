@@ -73,13 +73,8 @@ class Install_Utils_Model {
 			$directiveValues['max_execution_time'] = ini_get('max_execution_time');
 		if (ini_get('memory_limit') < 32)
 			$directiveValues['memory_limit'] = ini_get('memory_limit');
-			$errorReportingValue = E_WARNING & ~E_NOTICE;
-                if(version_compare(PHP_VERSION, '5.5.0') >= 0){
-                    $errorReportingValue = E_WARNING & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT;
-                }
-                else if(version_compare(PHP_VERSION, '5.3.0') >= 0) {
-			$errorReportingValue = E_WARNING & ~E_NOTICE & ~E_DEPRECATED;
-		}
+			$_e_strict = (PHP_VERSION_ID < 80400) ? E_STRICT : 0;
+			$errorReportingValue = E_WARNING & ~E_NOTICE & ~E_DEPRECATED & ~$_e_strict;
 		if (ini_get('error_reporting') != $errorReportingValue)
 			$directiveValues['error_reporting'] = 'NOT RECOMMENDED';
 		if (ini_get('log_errors') == '1' || stripos(ini_get('log_errors'), 'On') > -1)
@@ -112,10 +107,9 @@ class Install_Utils_Model {
 	 * @return type
 	 */
 	public static function getRecommendedDirectives(){
-            if(version_compare(PHP_VERSION, '5.5.0') >= 0){
-                self::$recommendedDirectives['error_reporting'] = 'E_WARNING & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT';
-            }
-	    else if(version_compare(PHP_VERSION, '5.3.0') >= 0) {
+		if (PHP_VERSION_ID < 80400) {
+			self::$recommendedDirectives['error_reporting'] = 'E_WARNING & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT';
+		} else {
 			self::$recommendedDirectives['error_reporting'] = 'E_WARNING & ~E_NOTICE & ~E_DEPRECATED';
 		}
 		return self::$recommendedDirectives;

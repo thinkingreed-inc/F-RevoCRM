@@ -1034,37 +1034,64 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 				//Handled date field UI
 				var dateField = defaultValueUiContainer.find('.dateField')
 				if (dateField.length > 0) {
+					var isToday = (data.value == 'TODAY');
+					if (defaultValueUiContainer.find('.dateDefaultValueType').length <= 0) {
+						var todayLabel = app.vtranslate('JS_TODAY');
+						var fixedDateLabel = app.vtranslate('JS_FIXED_DATE');
+						var radioHtml = 
+							'<div class="dateDefaultValue">' +
+								'<div class="row" style="margin-bottom: 5px;">' +
+									'<div class="col-sm-12">' +
+										'<label class="radio-inline">' +
+											'<input type="radio" class="dateDefaultValueType" name="dateDefaultValueType" value="fixed" ' + (!isToday ? 'checked' : '') + '> ' + fixedDateLabel +
+										'</label>' +
+										'<label class="radio-inline">' +
+											'<input type="radio" class="dateDefaultValueType" name="dateDefaultValueType" value="today" ' + (isToday ? 'checked' : '') + '> ' + todayLabel +
+										'</label>' +
+									'</div>' +
+								'</div>' +
+							'</div>';
+						var radioElement = jQuery(radioHtml);
+						var dateInputGroup = defaultValueUiContainer.find('.input-group.date');
+						dateInputGroup.before(radioElement);
+						radioElement.append(dateInputGroup);
+						var todayInputHtml = '<input type="text" class="inputElement todayValue ' + (!isToday ? 'hide' : '') + '" value="TODAY" readonly style="width: 75%" ' + (!isToday ? 'disabled' : '') + ' />';
+						dateInputGroup.after(todayInputHtml);
+
+						if (isToday) {
+							dateInputGroup.addClass('hide');
+							dateField.attr('disabled', 'disabled').removeAttr('name');
+							var todayField = defaultValueUiContainer.find('.todayValue');
+							todayField.attr('name', nameAttr);
+						}
+					}
+
 					vtUtils.registerEventForDateFields(dateField);
-					var datedefaultvaluebox = document.getElementsByClassName("inputElement dateField form-control")[0];
-					if(datedefaultvaluebox.value == 'TODAY' || datedefaultvaluebox.value == ''){
-						datedefaultvaluebox.classList.add('ignore-validation');
+					dateField.on("keyup change",function (e) {
+						var datedefaultvaluebox = e.currentTarget;
+						datedefaultvaluebox.classList.remove('ignore-validation');
 						datedefaultvaluebox.classList.remove('input-error');
 						if (typeof vtUtils.hideValidationMessage != 'undefined') {
 							vtUtils.hideValidationMessage(jQuery(datedefaultvaluebox));
 						}
-					}
-					else{
-						datedefaultvaluebox.classList.remove('ignore-validation');
-					}
-					dateField.on("keyup change",function (e) {
-						if(datedefaultvaluebox.value == 'TODAY' || datedefaultvaluebox.value == ''){
-							datedefaultvaluebox.classList.add('ignore-validation');
-							datedefaultvaluebox.classList.remove('input-error');
-							if (typeof vtUtils.hideValidationMessage != 'undefined') {
-								vtUtils.hideValidationMessage(jQuery(datedefaultvaluebox));
-							}
-						}
-						else{
-							datedefaultvaluebox.classList.remove('ignore-validation');
-							datedefaultvaluebox.classList.remove('input-error');
-							if (typeof vtUtils.hideValidationMessage != 'undefined') {
-								vtUtils.hideValidationMessage(jQuery(datedefaultvaluebox));
-							}
-						}
 					});	
 				}
 
-				defaultValueUiContainer.find('[data-rule-required]').removeAttr('data-rule-required');
+				// mandatory項目でも項目設定のデフォルト値入力は必須にしない。
+				// removeAttrだけではjQuery内部dataキャッシュに残ってvalidatorがrequired=trueを返すため、
+				// data-rule-required属性・data-fieldinfo(mandatory)・関連dataキャッシュを合わせて削除する。
+				defaultValueUiContainer.find('[data-rule-required]')
+					.removeAttr('data-rule-required')
+					.removeData('ruleRequired')
+					.removeData('rule-required');
+				defaultValueUiContainer.find('[data-fieldinfo]').each(function () {
+					var el = jQuery(this);
+					var info = el.data('fieldinfo');
+					if (info && info.mandatory) {
+						info.mandatory = false;
+						el.attr('data-fieldinfo', JSON.stringify(info)).data('fieldinfo', info);
+					}
+				});
 				if (defaultValueUi.is('select')) {
 					//generating random id since validation engine needs it 
 					defaultValueUi.attr('id', Math.floor((Math.random() * 10)+1));
@@ -1815,6 +1842,31 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		})
 
 	},
+
+	registerDateDefaultValueEvents: function() {
+		jQuery(document).on('change', '.dateDefaultValueType', function (e) {
+			var currentTarget = jQuery(e.currentTarget);
+			var container = currentTarget.closest('.dateDefaultValue');
+			var dateFieldGroup = container.find('.input-group.date');
+			var dateField = dateFieldGroup.find('.dateField');
+			var todayField = container.find('.todayValue');
+			var nameAttr = dateField.attr('name') || todayField.attr('name');
+
+			if (currentTarget.val() == 'today') {
+				dateFieldGroup.addClass('hide');
+				dateField.attr('disabled', 'disabled').removeAttr('name');
+				todayField.removeClass('hide').removeAttr('disabled').attr('name', nameAttr);
+			} else {
+				dateFieldGroup.removeClass('hide');
+				dateField.removeAttr('disabled').attr('name', nameAttr);
+				if (dateField.val() == 'TODAY') {
+					dateField.val('');
+				}
+				todayField.addClass('hide').attr('disabled', 'disabled').removeAttr('name');
+			}
+		});
+	},
+
 	/**
 	 * Function to register the click event for related modules list tab
 	 */
@@ -2380,6 +2432,7 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		thisInstance.triggerRelatedModulesTabClickEvent();
 		thisInstance.triggerDuplicationTabClickEvent();
 		thisInstance.adjustFieldLabelWidth();
+		thisInstance.registerDateDefaultValueEvents();
 
 		var selectedTab = jQuery('.selectedTab').val();
 		jQuery('#layoutEditorContainer').find('.contents').find('.'+selectedTab).trigger('click');

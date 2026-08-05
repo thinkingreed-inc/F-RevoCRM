@@ -1,0 +1,73 @@
+# assets/react-web-components (React + TypeScript + Vite) の lint / format / test を
+# 自動実行する CI。web-components 配下の変更時のみ動作する。
+# push 時は prettier 自動整形の結果をコミットして push し、フォーマット崩れを溜めない。
+name: web-components CI
+
+on:
+  pull_request:
+    paths:
+      - 'assets/react-web-components/**'
+      - '.github/workflows/web-components-ci.yml'
+  push:
+    paths:
+      - 'assets/react-web-components/**'
+      - '.github/workflows/web-components-ci.yml'
+
+permissions:
+  contents: write # push 時に整形コミットを積むため
+
+jobs:
+  lint-format-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: assets/react-web-components
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          # push 時のみブランチを明示取得(整形コミットの push 用)。
+          # pull_request では空にして既定のマージ ref を使う
+          # (cross-fork PR で base リポジトリに head ブランチが無く checkout 失敗するのを回避)
+          ref: ${{ github.event_name == 'push' && github.ref_name || '' }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22 # 推奨 Node.js (LTS)
+          cache: npm
+          cache-dependency-path: assets/react-web-components/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # Test は整形コミットの push より前に実行する。
+      # (テスト失敗時に整形コミットが push されて赤いコミットが残るのを防ぐ)
+      - name: Test
+        run: npm run test
+
+      # pull_request: フォーマット崩れを検知するのみ（fork PR は書き込み権限が無いため）
+      - name: Format check
+        if: github.event_name == 'pull_request'
+        run: npm run format:check
+
+      # push: prettier --write の結果に差分があれば整形コミットを積んで push する。
+      # GITHUB_TOKEN 由来の push は新たな workflow を再トリガーしないためループしない。
+      - name: Format and commit
+        if: github.event_name == 'push'
+        run: |
+          npm run format:write
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "整形差分なし。"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "[整形] prettier による自動整形 (CI)"
+          # 並行更新による non-fast-forward を避けるため push 前に最新へ rebase
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push

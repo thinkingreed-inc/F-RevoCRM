@@ -2,7 +2,7 @@
  * QuickCreate関連の型定義
  */
 
-import { FieldInfo } from './field';
+import { FieldInfo } from "./field";
 
 /**
  * QuickCreateコンポーネントのProps
@@ -21,7 +21,10 @@ export interface QuickCreateProps {
   /** キャンセル時コールバック */
   onCancel?: () => void;
   /** 完全フォーム遷移時コールバック */
-  onGoToFullForm?: (detail: { editUrl: string; formData: Record<string, any> }) => void;
+  onGoToFullForm?: (detail: {
+    editUrl: string;
+    formData: Record<string, any>;
+  }) => void;
   /** モーダル表示状態変更時コールバック */
   onOpenChange?: (isOpen: boolean) => void;
 }
@@ -281,7 +284,7 @@ export interface QuickCreateSaveResponse {
 export type ValidateFieldFn = (
   field: FieldInfo,
   value: any,
-  formData: Record<string, any>
+  formData: Record<string, any>,
 ) => string | null;
 
 /**

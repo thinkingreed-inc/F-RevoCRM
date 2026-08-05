@@ -1,5 +1,95 @@
 # 更新履歴
 
+# F-RevoCRM8.0.3
+## アップグレード方法
+ - ファイル、DBのバックアップを確実に取得してください
+ - 差分ファイルを上書き更新してください
+ - `composer install` を実行してください
+ - WebComponentsをビルドしてください
+   ```bash
+   cd assets/react-web-components
+   npm install
+   npm run build
+   ```
+ - 以下のURLにアクセスし、マイグレーションを実施してください。
+`https://example.com/frevocrm/index.php?module=Migration&view=Index&mode=step1`
+※ドメインやディレクトリはお使いのF-RevoCRMに合わせてください。
+
+## What's Changed
+* Fix/#1632 共有カレンダーで長い役割名を選択するとレイアウトが崩れる問題を修正 by @junmt in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1633
+* Fix/#1634 カレンダーで活動の文字数が多い場合は内部でスクロールするように修正 by @junmt in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1635
+* Fix/#1629 by @junmt in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1630
+* #1606 [不具合] インポート 非表示にした必須項目があるとすべて失敗になる by @amino1205 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1607
+* Fix/#1608 web-componentsのファイルパスにバージョン情報が含まれるように修正 by @junmt in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1609
+* #1610 [不具合]顧客企業 番地（請求先）がテキストエリアなのに250文字以上入力できない by @amino1205 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1611
+* #1616 受注の繰り返し請求情報ブロック内の非必須項目が必須扱いとなる不具合を修正 by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1619
+* バグ修正: ドキュメントの選択状態とフォルダ絞り込みの不具合を修正 (#1623) by @Remicck in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1624
+* Fix/945-Potentialsのclosingdateにデフォルト値で今日の日付を指定できるようにしてほしい by @chukkoo in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1596
+* fix_1566_カレンダーで時間を範囲指定して活動登録できない by @Maromii in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1584
+* Fix/1558 日報モジュールの「日報/週報」の項目を選択できないように修正 by @Maromii in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1622
+* Fix/1557-List画面を表示した際にエラーが表示される by @chukkoo in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1591
+* fix: 代表項目(ラベル)の改善 — cf列対応(#1574) + HelpDesk/DocumentsのDB移行・ハードコード撤去 by @Remicck in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1654
+* fix/1531 製品・価格表の選択ポップアップで発生するエラーを修正 by @Maromii in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1604
+* Fix/1529-[不具合] 見積のインポートに失敗する by @chukkoo in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1639
+* 金額をカンマ付きで入れると途中で切れるバグを修正 by @Maromii in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1546
+* #1664 クイック作成参照フィールドのハーフモーダル一覧を更新日時順に変更 by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1667
+* #1533 製品-発注の関連リスト重複を削除するマイグレーション追加 by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1636
+* CLAUDE.md を整備する（最小構成） by @Remicck in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1650
+* fix: JoditEditorのenter設定を'p'から'br'に変更 (#1662) by @Remicck in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1663
+* Fix/#1651 メールコンバーターでMessage-IDが同一の場合でも別メールであれば取り込まれるように修正 by @junmt in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1655
+* #1571 活動のクイック作成時、未来の予定を完了に設定出来ないよう修正 by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1676
+* [要望] Import画面に、Workflow等の自動処理が動かない旨の説明を追加 #1672 by @Remicck in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1675
+* feat(#1640): HealthCheck用のエンドポイントを追加 (Web + DB) by @Remicck in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1647
+* #1512 vtiger_crmentityへの参照をbasetableに置換 by @SatoshiHappy in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1513
+* Fix/1569-クイック作成のドキュメント吹き出しのデザイン崩れを修正 by @Remicck in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1578
+* 不具合]複数選択項目を空の状態で保存すると画面がフリーズする  by @chinseika in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1516
+* #1660 [不具合]項目設定 関連 もしくは 重複防止 タブを選択した状態で モジュールを切り替えるとエラーになる by @amino1205 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1661
+* Fix/#1500 MySQL8.4対応 by @junmt in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1628
+* Fix/#1190 概要の活動をweb-component化することでさらに表示の動作を改善 by @junmt in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1567
+* Fix/#1612 PHP8.5対応 by @junmt in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1613
+* メール送信制御追加 by @chinseika in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1492
+* Fix1652-[要望]日付型項目のデフォルト値設定UIに「本日(TODAY)」選択肢を追加し、UI上から存在が分かるようにしたい by @chukkoo in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1668
+* Fix/1532 親の製品の関連付けが削除できない不具合を修正 by @Maromii in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1669
+* #1482 メールの不具合修正 by @SatoshiHappy in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1489
+* [要望] Import画面の注意書きに重複制御の挙動（項目設定の重複制御は動かずインポート設定が優先）を追記 #1672 by @Remicck in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1680
+* [改善] Docker構成のMySQLを8.0から8.4に更新 by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1681
+* [修正] CSPヘッダーを動的生成に変更し、開発モードのweb-componentsを修正 by @junmt in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1683
+* [修正] アクセスキーの変更が成功しても失敗と表示される不具合を修正 (#1696) by @Remicck in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1697
+* [修正] 個人設定「ユーザー情報」「カレンダー設定」画面でヘッダーのアプリメニューが表示されない不具合を修正 (#1694) by @Remicck in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1695
+* [追加] E2Eテスト（Playwright）と GitHub Actions での自動実行 by @Remicck in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1699
+* web-components: 依存一括最新化＋推奨Node.js v22化＋CI追加（Vite 5→8 / React 18→19 ほか） by @Remicck in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1693
+* [修正] 品目名インライン検索が動作しない不具合を修正 by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1705
+* [修正] サービス一覧が表示されない不具合を修正 by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1706
+* [修正] #1707 スマホ・PC表示でのインポート画面／ユーザー管理画面のレイアウト崩れ by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1708
+* [修正] #1709 スマホ表示でメールマネージャー画面のレイアウト崩れ by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1710
+* [修正] #1717 チケット概要画面で幅768–1199pxのとき主要項目・ドキュメントペインが表示されない by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1719
+* [修正] #1720 項目設定 必須日付項目のデフォルト値を削除できない by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1721
+* [修正] #1722 iPhoneでメール送信TO検索結果タップ時に同一メールアドレスが2件設定される by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1723
+* [修正] #1725 項目設定・日付項目のデフォルト値まわり複数不具合 by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1726
+* [修正] #1727 未翻訳ラベル露出（ドキュメント移動モーダル / Inventory系PDFエクスポート） by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1728
+* [修正] #1729 Inventory系インポート スキップ件数と詳細行数の不一致 by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1730
+* [修正] #1731 メールアドレスにアポストロフィ「'」を含む場合の送信・本文空時のFatal error by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1732
+* [修正] #1731 招待者ユーザーのメールアドレスにアポストロフィを含む場合に招待メールが送信されない by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1733
+* [修正] #1734 メールコンバーター LINKアクションで既存レコード検索が常に失敗 by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1735
+* [修正] #1736 カレンダー活動(Events)のCSVインポートが常に失敗する by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1737
+* [修正] #1738 リッチテキストエディタ配下フィールドの必須バリデーションが効かない by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1739
+* [修正] #1740 週次繰り返し予定で終了日と同週の後方曜日が生成されない by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1741
+* [修正] #1742 リスト作成モーダル バリデーションツールチップがヘッダーに埋もれる by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1743
+* [修正] #1746 チケット概要「さらに表示」押下で活動一覧が全消失 by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1747
+* [修正] #1744 個人設定 多要素認証リスト モバイル表示 列重なり解消 by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1745
+* [修正] #1748 概要画面 活動一覧が非管理者ユーザーで0件になるバグ by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1749
+* [修正] #1751 クイック作成 事前にメール送信 保存・引継されない by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1752
+* [修正] #1753 クイック作成 ステータス・活動タイプ 必須バリデーション不発 by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1754
+* [修正] #1755 概要画面 関連タブ件数バッジ非表示 (Emails権限クエリ TypeError修正) by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1756
+* [修正] #1757 クイック作成 uitype=10 入力欄開始位置ずれ by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1758
+
+## New Contributors
+* @chukkoo made their first contribution in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1596
+* @Maromii made their first contribution in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1584
+
+**Full Changelog**: https://github.com/thinkingreed-inc/F-RevoCRM/compare/v8.0.2...v8.0.3
+
+
 # F-RevoCRM8.0.2
 ## アップグレード方法
  - ファイル、DBのバックアップを確実に取得してください

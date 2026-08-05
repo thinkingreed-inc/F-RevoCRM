@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
-import { FieldInfo } from '../../../types/field';
+import { useState, useEffect, useCallback } from "react";
+import { FieldInfo } from "../../../types/field";
 import {
   UseQuickCreateFieldsResult,
   QuickCreateFieldsResponse,
   QuickCreateFieldData,
-  PicklistDependency
-} from '../../../types/quickcreate';
+  PicklistDependency,
+} from "../../../types/quickcreate";
 
 /**
  * useQuickCreateFieldsの拡張戻り値（picklistDependency含む）
@@ -22,13 +22,15 @@ export interface UseQuickCreateFieldsResultExtended extends UseQuickCreateFields
  */
 export function useQuickCreateFields(
   module: string,
-  recordTypeFields?: Record<string, string>
+  recordTypeFields?: Record<string, string>,
 ): UseQuickCreateFieldsResultExtended {
   const [fields, setFields] = useState<FieldInfo[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [editViewUrl, setEditViewUrl] = useState<string | null>(null);
-  const [picklistDependency, setPicklistDependency] = useState<PicklistDependency | undefined>(undefined);
+  const [picklistDependency, setPicklistDependency] = useState<
+    PicklistDependency | undefined
+  >(undefined);
   const [moduleLabel, setModuleLabel] = useState<string | null>(null);
 
   /**
@@ -36,53 +38,59 @@ export function useQuickCreateFields(
    * @param apiField APIから取得したフィールドデータ
    * @param recordTypeFieldNames RecordTypeとして設定されているフィールド名の配列
    */
-  const convertToFieldInfo = useCallback((apiField: QuickCreateFieldData, recordTypeFieldNames: string[]): FieldInfo => {
-    return {
-      name: apiField.name,
-      label: apiField.label,
-      uitype: apiField.uitype,
-      mandatory: apiField.mandatory || false,
-      readonly: apiField.readonly || false,
-      maxlength: apiField.maxlength,
-      // blockはトップレベルに設定（CalendarFormなどでブロック単位グループ化に使用）
-      block: apiField.block,
-      fieldinfo: {
-        ...apiField.fieldinfo,
-        type: apiField.type || 'string',
-        defaultvalue: apiField.defaultValue,  // APIのdefaultValueを優先
-        editable: apiField.editable,
-        displaytype: apiField.displaytype,
+  const convertToFieldInfo = useCallback(
+    (
+      apiField: QuickCreateFieldData,
+      recordTypeFieldNames: string[],
+    ): FieldInfo => {
+      return {
+        name: apiField.name,
+        label: apiField.label,
+        uitype: apiField.uitype,
+        mandatory: apiField.mandatory || false,
+        readonly: apiField.readonly || false,
+        maxlength: apiField.maxlength,
+        // blockはトップレベルに設定（CalendarFormなどでブロック単位グループ化に使用）
         block: apiField.block,
-        referenceModules: apiField.referenceModules
-      },
-      picklistValues: apiField.picklistValues?.map(item => ({
-        label: item.label,
-        value: item.value
-      })),
-      quickcreate: apiField.quickcreate,
-      quickcreatesequence: apiField.quickcreatesequence,
-      referenceModules: apiField.referenceModules,
-      referenceModuleLabels: apiField.referenceModuleLabels,
-      // CustomValidation情報を引き継ぐ
-      customValidations: apiField.customValidations,
-      // Jodit相当のHTMLリッチテキストフィールドかどうか
-      isJoditEditor: apiField.isJoditEditor,
-      // RecordTypeフィールドかどうか
-      isRecordTypeField: recordTypeFieldNames.includes(apiField.name),
-      // multireference型フィールドの識別情報
-      datatype: apiField.datatype,
-      isMultiple: apiField.isMultiple,
-      // ProductTax (UIType 83) の税クラス詳細
-      taxClassDetails: apiField.taxClassDetails
-    };
-  }, []);
+        fieldinfo: {
+          ...apiField.fieldinfo,
+          type: apiField.type || "string",
+          defaultvalue: apiField.defaultValue, // APIのdefaultValueを優先
+          editable: apiField.editable,
+          displaytype: apiField.displaytype,
+          block: apiField.block,
+          referenceModules: apiField.referenceModules,
+        },
+        picklistValues: apiField.picklistValues?.map((item) => ({
+          label: item.label,
+          value: item.value,
+        })),
+        quickcreate: apiField.quickcreate,
+        quickcreatesequence: apiField.quickcreatesequence,
+        referenceModules: apiField.referenceModules,
+        referenceModuleLabels: apiField.referenceModuleLabels,
+        // CustomValidation情報を引き継ぐ
+        customValidations: apiField.customValidations,
+        // Jodit相当のHTMLリッチテキストフィールドかどうか
+        isJoditEditor: apiField.isJoditEditor,
+        // RecordTypeフィールドかどうか
+        isRecordTypeField: recordTypeFieldNames.includes(apiField.name),
+        // multireference型フィールドの識別情報
+        datatype: apiField.datatype,
+        isMultiple: apiField.isMultiple,
+        // ProductTax (UIType 83) の税クラス詳細
+        taxClassDetails: apiField.taxClassDetails,
+      };
+    },
+    [],
+  );
 
   /**
    * フィールド情報を取得
    */
   const fetchFields = useCallback(async () => {
     if (!module || !module.trim()) {
-      setError('モジュール名が指定されていません');
+      setError("モジュール名が指定されていません");
       return;
     }
 
@@ -93,23 +101,23 @@ export function useQuickCreateFields(
       // APIパラメータ構築
       const params = new URLSearchParams({
         module: module,
-        api: 'GetFields',
-        view: 'quickcreate',
-        include_recordtype_info: '1'  // 常にRecordType情報を取得
+        api: "GetFields",
+        view: "quickcreate",
+        include_recordtype_info: "1", // 常にRecordType情報を取得
       });
 
       // RecordType選択値がある場合は追加
       if (recordTypeFields && Object.keys(recordTypeFields).length > 0) {
-        params.append('recordtype_fields', JSON.stringify(recordTypeFields));
+        params.append("recordtype_fields", JSON.stringify(recordTypeFields));
       }
 
       const response = await fetch(`?${params.toString()}`, {
-        method: 'GET',
-        credentials: 'same-origin',
+        method: "GET",
+        credentials: "same-origin",
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
       });
 
       if (!response.ok) {
@@ -126,13 +134,17 @@ export function useQuickCreateFields(
       // フィールド情報の変換と設定
       if (data && data.fields && Array.isArray(data.fields)) {
         // RecordTypeフィールド名を抽出
-        const recordTypeFieldNames: string[] = data.recordTypeInfo?.available?.map(
-          (item: { fieldName: string }) => item.fieldName
-        ) || [];
+        const recordTypeFieldNames: string[] =
+          data.recordTypeInfo?.available?.map(
+            (item: { fieldName: string }) => item.fieldName,
+          ) || [];
 
         const convertedFields = data.fields
-          .filter(field => field.editable && field.displaytype !== '2' && !field.readonly)
-          .map(field => convertToFieldInfo(field, recordTypeFieldNames));
+          .filter(
+            (field) =>
+              field.editable && field.displaytype !== "2" && !field.readonly,
+          )
+          .map((field) => convertToFieldInfo(field, recordTypeFieldNames));
 
         setFields(convertedFields);
 
@@ -140,7 +152,8 @@ export function useQuickCreateFields(
         // Calendar/Events は module=Calendar で統一し、mode パラメータで切り替える
         // （活動: mode=Events、TODO: mode=Calendar）
         // mode パラメータは QuickCreate.tsx の handleGoToFullForm で追加される
-        const editModule = (module === 'Events' || module === 'Calendar') ? 'Calendar' : module;
+        const editModule =
+          module === "Events" || module === "Calendar" ? "Calendar" : module;
         setEditViewUrl(`index.php?module=${editModule}&view=Edit`);
 
         // 翻訳されたモジュール名を設定
@@ -161,10 +174,13 @@ export function useQuickCreateFields(
         setModuleLabel(null);
         setPicklistDependency(undefined);
       }
-
     } catch (err) {
-      console.error('QuickCreate fields fetch error:', err);
-      setError(err instanceof Error ? err.message : 'フィールド情報の取得に失敗しました');
+      console.error("QuickCreate fields fetch error:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "フィールド情報の取得に失敗しました",
+      );
       setFields([]);
     } finally {
       setLoading(false);
@@ -187,7 +203,7 @@ export function useQuickCreateFields(
     refetch: fetchFields,
     editViewUrl,
     moduleLabel,
-    picklistDependency
+    picklistDependency,
   };
 }
 

@@ -40,12 +40,18 @@
 	
 	class CommonToken implements Token {
 
-		
+		public $charPositionInLine;
+		public $input;
+		public $type;
+		public $channel;
+		public $start;
+		public $stop;
+
 		function __construct(){
-			
+
 		}
-		
-		public static function forInput($input=null, $type, $channel=0, $start=0, $stop=0) {
+
+		public static function forInput($input, $type, $channel=0, $start=0, $stop=0) {
 			$ct = new CommonToken();
 			$ct->charPositionInLine=-1;
 			$ct->input = $input;

@@ -174,13 +174,25 @@ class Events_Record_Model extends Calendar_Record_Model {
             $mail_data['assign_type'] = $this->get('assigntype');
             $mail_data['group_name'] = getGroupName($this->get('assigned_user_id'));
             $mail_data['mode'] = $this->get('mode');
-            //TODO : remove dependency on request;
-            $value = getaddEventPopupTime($_REQUEST['time_start'],$_REQUEST['time_end'],'24');
+            // レコードモデルから直接取得。インポート等 $_REQUEST が空のコンテキストでも動作させる。
+            $timeStart = $this->get('time_start') ?: ($_REQUEST['time_start'] ?? '');
+            $timeEnd   = $this->get('time_end')   ?: ($_REQUEST['time_end']   ?? '');
+            $dateStart = $this->get('date_start') ?: ($_REQUEST['date_start'] ?? '');
+            $dueDate   = $this->get('due_date')   ?: ($_REQUEST['due_date']   ?? '');
+            $activityMode = ($this->getModuleName() == 'Calendar') ? 'Task' : 'Events';
+
+            $value = getaddEventPopupTime($timeStart, $timeEnd, '24');
             $start_hour = $value['starthour'].':'.$value['startmin'].''.$value['startfmt'];
-            if($_REQUEST['activity_mode']!='Task')
+            $end_hour = '';
+            if ($activityMode != 'Task') {
                 $end_hour = $value['endhour'] .':'.$value['endmin'].''.$value['endfmt'];
-            $startDate = new DateTimeField($_REQUEST['date_start']." ".$start_hour);
-            $endDate = new DateTimeField($_REQUEST['due_date']." ".$end_hour);
+            }
+            // date_start/due_date は DB では日付部のみ保持されている可能性があるが、
+            // datetime 文字列で渡されるケースもあるため空白で分割して日付部だけを使う。
+            $dateStartDay = explode(' ', trim($dateStart))[0];
+            $dueDateDay   = explode(' ', trim($dueDate))[0];
+            $startDate = new DateTimeField($dateStartDay." ".$start_hour);
+            $endDate = new DateTimeField($dueDateDay." ".$end_hour);
             $mail_data['st_date_time'] = $startDate->getDBInsertDateTimeValue();
             $mail_data['end_date_time'] = $endDate->getDBInsertDateTimeValue();
             $mail_data['location']=$this->get('location');

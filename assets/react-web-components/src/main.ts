@@ -2,6 +2,7 @@ import { createWebComponent } from "@/utils/createWebComponent";
 import "./index.css";
 import { QuickCreate, CalendarQuickCreate } from "@/components/QuickCreate";
 import { AppMenu } from "@/components/AppMenu";
+import { ActivityList } from "@/components/ActivityList";
 
 // QuickCreate本体コンポーネントの登録
 // イベント: save, cancel, go-to-full-form, open-change (CustomEvent)
@@ -21,7 +22,7 @@ createWebComponent(
   QuickCreate,
   "quick-create",
   ["module", "is-open", "initial-data", "variant", "record-id"],
-  ["onSave", "onCancel", "onGoToFullForm", "onOpenChange"]
+  ["onSave", "onCancel", "onGoToFullForm", "onOpenChange"],
 );
 
 // Calendar/Events用QuickCreateコンポーネントの登録
@@ -34,7 +35,7 @@ createWebComponent(
   CalendarQuickCreate,
   "calendar-quick-create",
   ["module", "is-open", "initial-data", "record-id", "is-duplicate"],
-  ["onSave", "onCancel", "onGoToFullForm", "onOpenChange"]
+  ["onSave", "onCancel", "onGoToFullForm", "onOpenChange"],
 );
 
 // AppMenu コンポーネントの登録（Headerのアプリメニュー部分）
@@ -42,6 +43,17 @@ createWebComponent(
 // 使用例（HTML）:
 // <app-menu app-menus='[{"name":"MARKETING","label":"マーケティング","modules":[...]}]'></app-menu>
 createWebComponent(AppMenu, "app-menu", ["app-menus"]);
+
+// ActivityList コンポーネントの登録
+// 親レコードに関連する活動一覧を表示
+// mode: "upcoming" (今後), "overdue" (期限切れ), "all" (すべて)
+createWebComponent(ActivityList, "activity-list", [
+  "module",
+  "record-id",
+  "mode",
+  "limit",
+  "refresh-key",
+]);
 
 // Documents モジュール用コンポーネント
 import { DocumentsPage, DocumentsDetail, DocumentsRelatedList } from "@/components/Documents";
@@ -54,7 +66,7 @@ createWebComponent(
   DocumentsPage,
   "documents-page",
   ["folder-id", "user-id", "initial-view-mode"],
-  ["onNavigate", "onFolderChange"]
+  ["onNavigate", "onFolderChange"],
 );
 
 // DocumentsDetail: 詳細画面（単独ページ）
@@ -63,7 +75,7 @@ createWebComponent(
   DocumentsDetail,
   "documents-detail",
   ["record-id"],
-  ["onEdit", "onDelete", "onNavigateBack"]
+  ["onEdit", "onDelete", "onNavigateBack"],
 );
 
 // DocumentsRelatedList: 他モジュール詳細画面の関連ドキュメント一覧
@@ -73,5 +85,5 @@ createWebComponent(
   DocumentsRelatedList,
   "documents-related-list",
   ["parent-module", "parent-id"],
-  []
+  [],
 );

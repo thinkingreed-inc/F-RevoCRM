@@ -86,4 +86,20 @@
             {/if}
         {/if}
     </table>
+    <div class="alert alert-warning" role="alert">
+        <strong><i class="fa fa-exclamation-triangle"></i>&nbsp;{'LBL_IMPORT_AUTO_PROCESS_NOTICE_TITLE'|@vtranslate:$MODULE}</strong>
+        <p>{'LBL_IMPORT_AUTO_PROCESS_NOTICE_BODY'|@vtranslate:$MODULE}</p>
+        <ul>
+            <li>
+                {'LBL_IMPORT_AUTO_PROCESS_NOTICE_WORKFLOW'|@vtranslate:$MODULE}<br>
+                <small class="text-muted">{'LBL_IMPORT_AUTO_PROCESS_NOTICE_WORKFLOW_EXAMPLES'|@vtranslate:$MODULE}</small>
+            </li>
+            <li>{'LBL_IMPORT_AUTO_PROCESS_NOTICE_INTERNAL'|@vtranslate:$MODULE}</li>
+            <li>
+                {'LBL_IMPORT_AUTO_PROCESS_NOTICE_DUPLICATE'|@vtranslate:$MODULE}<br>
+                <small class="text-muted">{'LBL_IMPORT_AUTO_PROCESS_NOTICE_DUPLICATE_NOTE'|@vtranslate:$MODULE}</small>
+            </li>
+        </ul>
+        <p>{'LBL_IMPORT_AUTO_PROCESS_NOTICE_WORKAROUND'|@vtranslate:$MODULE}</p>
+    </div>
 </div>

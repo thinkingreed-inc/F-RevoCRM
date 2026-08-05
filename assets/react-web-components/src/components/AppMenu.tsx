@@ -41,19 +41,19 @@ const styles = {
     "cursor-pointer flex items-center px-3 py-2 text-[13px] font-normal rounded-none transition-colors",
     "text-[#b3c0ce] hover:text-white hover:bg-transparent",
     "data-[state=open]:bg-transparent data-[state=open]:text-white",
-    "outline-none select-none"
+    "outline-none select-none",
   ),
   content: cn(
     "absolute top-full left-0 mt-0.5",
     "min-w-[160px] bg-white border border-gray-300 p-0 z-[9999]",
     "data-[state=open]:animate-in data-[state=closed]:animate-out",
-    "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+    "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
   ),
   link: cn(
     "cursor-pointer flex items-center px-3 py-1.5 text-[13px] text-gray-700",
     "hover:bg-gray-100 hover:text-gray-900",
     "focus:bg-gray-100 focus:text-gray-900 focus:outline-none",
-    "flex py-6 px-8 gap-4 items-center"
+    "flex py-6 px-8 gap-4 items-center",
   ),
 };
 

@@ -1,9 +1,9 @@
-import React, { useMemo } from 'react';
-import { FieldRenderer } from '../FieldRenderer';
-import { QuickCreateFormProps } from '../../types/quickcreate';
-import { FieldInfo, FieldValue } from '../../types/field';
-import { cn } from '../../lib/utils';
-import { useTranslation } from '../../hooks/useTranslation';
+import React, { useMemo } from "react";
+import { FieldRenderer } from "../FieldRenderer";
+import { QuickCreateFormProps } from "../../types/quickcreate";
+import { FieldInfo, FieldValue } from "../../types/field";
+import { cn } from "../../lib/utils";
+import { useTranslation } from "../../hooks/useTranslation";
 
 /**
  * QuickCreateForm - QuickCreate用フォーム表示コンポーネント
@@ -17,7 +17,7 @@ export const QuickCreateForm: React.FC<QuickCreateFormProps> = ({
   onRecordTypeChange,
   isSaving = false,
   disabled = false,
-  errors = {}
+  errors = {},
 }) => {
   const { t } = useTranslation();
 
@@ -27,8 +27,10 @@ export const QuickCreateForm: React.FC<QuickCreateFormProps> = ({
   const fieldsByBlock = useMemo(() => {
     const blocks: Record<string, FieldInfo[]> = {};
 
-    fields.forEach(field => {
-      const blockLabel = (field.fieldinfo?.block as string | undefined) || t('LBL_BASIC_INFORMATION');
+    fields.forEach((field) => {
+      const blockLabel =
+        (field.fieldinfo?.block as string | undefined) ||
+        t("LBL_BASIC_INFORMATION");
       if (!blocks[blockLabel]) {
         blocks[blockLabel] = [];
       }
@@ -50,7 +52,7 @@ export const QuickCreateForm: React.FC<QuickCreateFormProps> = ({
   if (fields.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
-        {t('LBL_NO_FIELDS_AVAILABLE')}
+        {t("LBL_NO_FIELDS_AVAILABLE")}
       </div>
     );
   }
@@ -59,18 +61,19 @@ export const QuickCreateForm: React.FC<QuickCreateFormProps> = ({
     <div className="quickcreate-form space-y-3 text-md">
       {Object.entries(fieldsByBlock).map(([blockName, blockFields]) => (
         <div key={blockName} className="quickcreate-block">
-            <h4 className="fieldBlockHeader font-bold leading-[1.1] mt-0 mb-2 pb-1 border-b border-gray-300">
-              {blockName}
-            </h4>
+          <h4 className="fieldBlockHeader font-bold leading-[1.1] mt-0 mb-2 pb-1 border-b border-gray-300">
+            {blockName}
+          </h4>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 pr-8">
-            {blockFields.map(field => (
+            {blockFields.map((field) => (
               <div
                 key={field.name}
                 className={cn(
-                  'quickcreate-field',
+                  "quickcreate-field",
                   // TextAreaは2カラム幅
-                  (field.uitype === '19' || field.uitype === '21') && 'md:col-span-2'
+                  (field.uitype === "19" || field.uitype === "21") &&
+                    "md:col-span-2",
                 )}
               >
                 <FieldRenderer

@@ -1,4 +1,4 @@
-# F-RevoCRM 8.0.2
+# F-RevoCRM 8.0.3
 
 F-RevoCRM は日本企業に合わせた形で開発された高機能なCRMです。
 あらゆる顧客接点を管理するために、キャンペーン・リード管理から顧客・商談管理、販売管理、サポート管理・プロジェクト管理まで幅広い機能を持ち合わせています。
@@ -12,7 +12,7 @@ Vtiger Public License 1.2
 ## サーバ推奨要件
 * 2コア以上、8GB以上のメモリ、40GB以上の空き容量（利用人数・用途によってスペックが大幅に変わる）
 * Apache 2.4以上
-* PHP 8.3
+* PHP 8.3～8.5
   * php-gd
   * php-mysqlnd
   * php-imap
@@ -28,7 +28,7 @@ Vtiger Public License 1.2
   * error_reporting (E_ERROR & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED)
   * display_errors = OFF
   * short_open_tag = OFF
-* MySQL 8.0,8.4(LTS)
+* MySQL 8.4(LTS)
   * storage_engine = InnoDB
   * local_infile = ON (under [mysqld] section)
   * sql_mode = NO_ENGINE_SUBSTITUTION
@@ -44,6 +44,23 @@ Vtiger Public License 1.2
 ↓
 <a href="https://example.com/{CRM_DIR}/index.php" rel="noreferrer">F-RevoCRM</a>​​​​​​
 ```
+
+## ヘルスチェック (HealthCheck)
+サーバー監視用に、Web・DB（MySQL）の疎通を確認できるエンドポイントを用意しています。  
+ロードバランサ（ALB/ELB 等）や外形監視からの定期的な死活監視に利用できます。認証は不要です。
+
+* エンドポイント: `https://example.com/{CRM_DIR}/healthcheck.php`
+* メソッド: 任意（GET でよい）
+* チェック内容:
+  * `web` … リクエストに PHP が応答できること
+  * `db` … MySQL へ接続し `SELECT 1` が成功すること
+
+### 返却条件
+* **正常（全チェック成功）**: HTTP `200` / `{"status":"ok","checks":{"web":"ok","db":"ok"}}`
+* **異常（いずれか失敗）**: HTTP `503` / `{"status":"error","checks":{"web":"ok","db":"error"}}`
+
+監視ツール側では基本的に **HTTPステータスコード（200=正常 / 503=異常）** で判定してください（ALB/ELB はボディを参照しません）。  
+レスポンスはホスト名・バージョン・エラー詳細を含まない最小構成です。
 
 ## PCの推奨環境
 * Windows 11 Google Chrome最新 / Microsoft Edge(Chronium)最新

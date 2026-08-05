@@ -1,0 +1,120 @@
+name: E2E (Playwright)
+
+# PR 時と手動実行で、compose 上に F-RevoCRM を立てて E2E を回す。
+# DB は「完了済みインストール dump」を自動投入し、migration でスキーマを最新化してからテストする。
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# 同一 PR で新しい push があったら古い実行はキャンセルする
+concurrency:
+  group: e2e-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: read
+    env:
+      # compose build を buildx bake に委譲し、compose.cache.yaml の gha キャッシュを効かせる
+      COMPOSE_BAKE: "true"
+      # CI 用 override (dump 自動投入 + gha ビルドキャッシュ)
+      COMPOSE_EXTRA: "-f compose.cache.yaml"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Docker イメージ層のキャッシュ (php イメージの apt/pecl ビルドが重いため)
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # GHCR のプリビルド php イメージを pull できるようにログイン(あれば run-e2e.sh がビルドを省略)。
+      # 未公開/未ビルドでも pull 失敗時はローカルビルドにフォールバックするため必須ではない。
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # PHP 依存 (vendor/) をキャッシュ。composer.lock が変わらなければ composer install は即完了
+      - name: Cache composer vendor
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: vendor-${{ hashFiles('composer.lock') }}
+
+      # web-components の node_modules をキャッシュ
+      - name: Cache web-components node_modules
+        uses: actions/cache@v4
+        with:
+          path: assets/react-web-components/node_modules
+          key: wc-node-${{ hashFiles('assets/react-web-components/package-lock.json') }}
+
+      # e2e (Playwright) の node_modules をキャッシュ
+      - name: Cache e2e node_modules
+        uses: actions/cache@v4
+        with:
+          path: e2e/node_modules
+          key: e2e-node-${{ hashFiles('e2e/package-lock.json') }}
+
+      # Playwright のブラウザバイナリをキャッシュ
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ hashFiles('e2e/package-lock.json') }}
+
+      # 失敗時スクショの日本語が豆腐(□)になるのを防ぐ。Playwright の Chromium は
+      # runner 直で動くため、runner 側に CJK フォントを入れておく。
+      - name: Install Japanese fonts (スクショ豆腐対策)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+
+      - name: Run E2E (compose + dump + migration + Playwright)
+        run: ./e2e/ci/run-e2e.sh
+
+      - name: E2E 結果をジョブサマリに出力
+        if: ${{ !cancelled() }}
+        run: |
+          if [ -f e2e/playwright-results.json ]; then
+            node -e '
+              const r = require("./e2e/playwright-results.json");
+              const s = r.stats || {};
+              const pass = s.expected ?? 0, fail = s.unexpected ?? 0;
+              const flaky = s.flaky ?? 0, skip = s.skipped ?? 0;
+              const sec = Math.round((s.duration || 0) / 1000);
+              const icon = fail > 0 ? "❌" : "✅";
+              const md = [
+                `## ${icon} E2E (Playwright)`,
+                "",
+                "| ✅ passed | ❌ failed | ⚠️ flaky | ⏭️ skipped | ⏱️ duration |",
+                "|---:|---:|---:|---:|---:|",
+                `| ${pass} | ${fail} | ${flaky} | ${skip} | ${sec}s |`,
+                "",
+              ].join("\n");
+              require("fs").appendFileSync(process.env.GITHUB_STEP_SUMMARY, md + "\n");
+            '
+          else
+            echo "⚠️ playwright-results.json が見つかりませんでした（テスト実行前に失敗した可能性）" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: e2e/playwright-report/
+          retention-days: 7
+
+      - name: Dump container logs on failure
+        if: ${{ failure() }}
+        run: docker compose -f compose.yaml -f compose.ci.yaml -f compose.cache.yaml logs --no-color --tail=200

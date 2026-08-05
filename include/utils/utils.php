@@ -1069,7 +1069,7 @@ function utf8RawUrlDecode ($source) {
                 $unicodeHexVal = substr ($source, $pos, 4);
                 $unicode = hexdec ($unicodeHexVal);
                 $entity = "&#". $unicode . ';';
-                $decodedStr .= utf8_encode ($entity);
+                $decodedStr .= mb_convert_encoding($entity, 'UTF-8', 'ISO-8859-1');
                 $pos += 4;
 		}
             else {

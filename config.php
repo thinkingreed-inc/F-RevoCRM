@@ -31,6 +31,10 @@ if (file_exists($THIS_DIR.'/config_override.php')) {
 	include_once $THIS_DIR.'/config_override.php';
 }
 
+if (file_exists($THIS_DIR.'/config.customize.php')) {
+	include_once $THIS_DIR.'/config.customize.php';
+}
+
 class VtigerConfig {
 
 	static function get($key, $defvalue='') {

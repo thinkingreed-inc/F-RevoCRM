@@ -215,7 +215,58 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 		$recurringRecordsList[$parentRecurringId] = $childRecords;
 		return $recurringRecordsList;
 	}
-	
+	/**
+	 * 繰り返し予定の send_mail を系列全体に同期する
+	 */
+	public function syncRecurringSendMail($sendMailValue) {
+		global $adb;
+		$recordId = $this->getId();
+		if (empty($recordId)) {
+			return;
+		}
+		// 現在レコードを、その日の親予定IDに正規化する
+		$currentResult = $adb->pquery("SELECT activityid, invitee_parentid FROM vtiger_activity WHERE activityid = ?", array($recordId));
+		if ($adb->num_rows($currentResult) <= 0) {
+			return;
+		}
+		$currentActivityId = $adb->query_result($currentResult, 0, 'activityid');
+		$currentInviteeParentId = $adb->query_result($currentResult, 0, 'invitee_parentid');
+		$currentParentId = !empty($currentInviteeParentId) ? $currentInviteeParentId : $currentActivityId;
+		// 繰り返し系列の全レコードIDを取得
+		$recurringRecordsList = $this->getRecurringRecordsList();
+		$seriesRecordIds = array();
+		if (!empty($recurringRecordsList) && is_array($recurringRecordsList)) {
+			foreach ($recurringRecordsList as $parent => $childs) {
+				$seriesRecordIds[] = $parent;
+				if (!empty($childs) && is_array($childs)) {
+					foreach ($childs as $childId) {
+						$seriesRecordIds[] = $childId;
+					}
+				}
+			}
+		}
+		if (empty($seriesRecordIds)) {
+			$seriesRecordIds[] = $currentParentId;
+		}
+		$seriesRecordIds = array_values(array_unique(array_filter($seriesRecordIds)));
+		// 各レコードIDを、その日の親予定IDに正規化する
+		$parentIds = array();
+		if (!empty($seriesRecordIds)) {
+			$result = $adb->pquery("SELECT activityid, invitee_parentid FROM vtiger_activity WHERE activityid IN (".generateQuestionMarks($seriesRecordIds).")", $seriesRecordIds);
+			$numRows = $adb->num_rows($result);
+			for ($i = 0; $i < $numRows; $i++) {
+				$activityId = $adb->query_result($result, $i, 'activityid');
+				$inviteeParentId = $adb->query_result($result, $i, 'invitee_parentid');
+				$parentIds[] = !empty($inviteeParentId) ? $inviteeParentId : $activityId;
+			}
+		}
+		$parentIds[] = $currentParentId;
+		$parentIds = array_values(array_unique(array_filter($parentIds)));
+		// 各日の親予定と、その親に紐づく現存子予定をまとめて更新する
+		foreach ($parentIds as $parentId) {
+			$adb->pquery("UPDATE vtiger_activity SET send_mail = ? WHERE deleted = 0 AND (activityid = ? OR invitee_parentid = ?)", array($sendMailValue, $parentId, $parentId));
+		}
+	}
 	/**
 	 * Function to get recurring enabled for record
 	 */
