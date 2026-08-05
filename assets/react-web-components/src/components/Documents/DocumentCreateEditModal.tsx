@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import type { DocumentDetail, Folder } from "./types/documents";
 import { useOptionalTranslation } from "../../hooks/useTranslation";
 import { useDocumentFields, DocFieldInfo } from "./hooks/useDocumentFields";
@@ -37,17 +43,37 @@ function getCsrfToken(): { name: string; value: string } | null {
 }
 
 const labelStyle: React.CSSProperties = {
-  display: "block", fontSize: 13, fontWeight: 500, color: "#4A5568", marginBottom: 4,
+  display: "block",
+  fontSize: 13,
+  fontWeight: 500,
+  color: "#4A5568",
+  marginBottom: 4,
 };
 const inputStyle: React.CSSProperties = {
-  width: "100%", padding: "7px 10px", border: "1px solid #E2E8F0", borderRadius: 4, fontSize: 14, outline: "none", boxSizing: "border-box",
+  width: "100%",
+  padding: "7px 10px",
+  border: "1px solid #E2E8F0",
+  borderRadius: 4,
+  fontSize: 14,
+  outline: "none",
+  boxSizing: "border-box",
 };
 
 /** Core document field names handled by hardcoded UI (special behavior: file upload, folder select, etc.) */
 const CORE_FIELD_NAMES = new Set([
-  "notes_title", "filename", "filelocationtype", "folderid", "notecontent",
-  "filestatus", "fileversion", "note_no", "modifiedtime", "createdtime",
-  "modifiedby", "assigned_user_id", "source",
+  "notes_title",
+  "filename",
+  "filelocationtype",
+  "folderid",
+  "notecontent",
+  "filestatus",
+  "fileversion",
+  "note_no",
+  "modifiedtime",
+  "createdtime",
+  "modifiedby",
+  "assigned_user_id",
+  "source",
 ]);
 
 /** Convert DocFieldInfo to FieldInfo for use with FieldRenderer */
@@ -70,15 +96,27 @@ function convertToFieldInfo(docField: DocFieldInfo): FieldInfo {
   };
 }
 
-export const DocumentCreateEditModal: React.FC<DocumentCreateEditModalProps> = ({
-  isOpen, mode, document: doc, folders, defaultFolderId, parentModule, parentId, onSave, onClose,
+export const DocumentCreateEditModal: React.FC<
+  DocumentCreateEditModalProps
+> = ({
+  isOpen,
+  mode,
+  document: doc,
+  folders,
+  defaultFolderId,
+  parentModule,
+  parentId,
+  onSave,
+  onClose,
 }) => {
   const { t } = useOptionalTranslation();
   const isMobile = useIsMobile();
-  const { fields: fieldDefs, isLoading: fieldsLoading } = useDocumentFields(doc?.id);
+  const { fields: fieldDefs, isLoading: fieldsLoading } = useDocumentFields(
+    doc?.id,
+  );
 
   const docTypeLabels: Record<DocType, string> = {
-    I: t('LBL_DOC_TYPE_FILE'),
+    I: t("LBL_DOC_TYPE_FILE"),
     E: "URL",
   };
 
@@ -110,9 +148,12 @@ export const DocumentCreateEditModal: React.FC<DocumentCreateEditModalProps> = (
 
   // Dynamic field values (compliance, scanner, etc.)
   const [dynamicFields, setDynamicFields] = useState<Record<string, any>>({});
-  const handleDynamicFieldChange = useCallback((fieldName: string, value: FieldValue) => {
-    setDynamicFields((prev) => ({ ...prev, [fieldName]: value }));
-  }, []);
+  const handleDynamicFieldChange = useCallback(
+    (fieldName: string, value: FieldValue) => {
+      setDynamicFields((prev) => ({ ...prev, [fieldName]: value }));
+    },
+    [],
+  );
 
   useEffect(() => {
     if (isOpen) {
@@ -140,7 +181,14 @@ export const DocumentCreateEditModal: React.FC<DocumentCreateEditModalProps> = (
         // Fallback: load from compliance object for backward compatibility
         const c = doc.compliance;
         if (c) {
-          for (const key of ["document_category", "preservation_type", "receipt_date", "scan_resolution_dpi", "scan_color_type", "original_paper_size"]) {
+          for (const key of [
+            "document_category",
+            "preservation_type",
+            "receipt_date",
+            "scan_resolution_dpi",
+            "scan_color_type",
+            "original_paper_size",
+          ]) {
             if (dynValues[key] === undefined) {
               const val = (c as any)[key];
               if (val !== undefined && val !== null && val !== "") {
@@ -171,34 +219,40 @@ export const DocumentCreateEditModal: React.FC<DocumentCreateEditModalProps> = (
     }
   }, [isOpen, mode, doc, defaultFolderId, fieldDefs]);
 
-  const handleFileSelect = useCallback((file: File) => {
-    setSelectedFile(file);
-    if (!title) {
-      setTitle(file.name.replace(/\.[^.]+$/, ""));
-    }
-  }, [title]);
+  const handleFileSelect = useCallback(
+    (file: File) => {
+      setSelectedFile(file);
+      if (!title) {
+        setTitle(file.name.replace(/\.[^.]+$/, ""));
+      }
+    },
+    [title],
+  );
 
   /** Append dynamic field values to form params for the main Save action.
    *  空文字もそのまま送信する（vtiger Saveはnullのみスキップするため、
    *  空文字を送れば値を明示的にクリアできる）。 */
-  const appendDynamicFields = useCallback((append: (key: string, val: string) => void) => {
-    for (const [key, val] of Object.entries(dynamicFields)) {
-      if (val === undefined || val === null) continue;
-      append(key, typeof val === "boolean" ? (val ? "1" : "0") : String(val));
-    }
-  }, [dynamicFields]);
+  const appendDynamicFields = useCallback(
+    (append: (key: string, val: string) => void) => {
+      for (const [key, val] of Object.entries(dynamicFields)) {
+        if (val === undefined || val === null) continue;
+        append(key, typeof val === "boolean" ? (val ? "1" : "0") : String(val));
+      }
+    },
+    [dynamicFields],
+  );
 
   const handleSave = useCallback(async () => {
     if (!title.trim()) {
-      setError(t('LBL_TITLE_REQUIRED'));
+      setError(t("LBL_TITLE_REQUIRED"));
       return;
     }
     if (docType === "I" && mode === "create" && !selectedFile) {
-      setError(t('LBL_FILE_REQUIRED'));
+      setError(t("LBL_FILE_REQUIRED"));
       return;
     }
     if (docType === "E" && !filename.trim()) {
-      setError(t('LBL_URL_REQUIRED'));
+      setError(t("LBL_URL_REQUIRED"));
       return;
     }
 
@@ -207,7 +261,7 @@ export const DocumentCreateEditModal: React.FC<DocumentCreateEditModalProps> = (
 
     try {
       const csrf = getCsrfToken();
-      if (!csrf) throw new Error(t('LBL_CSRF_TOKEN_ERROR'));
+      if (!csrf) throw new Error(t("LBL_CSRF_TOKEN_ERROR"));
 
       if (docType === "I" && selectedFile) {
         // ファイルアップロード (FormData)
@@ -239,7 +293,7 @@ export const DocumentCreateEditModal: React.FC<DocumentCreateEditModalProps> = (
         const text = await response.text();
         // Save action redirects, check for error
         if (text.includes("error") && text.includes('"success":false')) {
-          throw new Error(t('LBL_SAVE_FAILED'));
+          throw new Error(t("LBL_SAVE_FAILED"));
         }
 
         // 電帳法メタデータ保存（書類区分が指定されている場合）
@@ -278,7 +332,7 @@ export const DocumentCreateEditModal: React.FC<DocumentCreateEditModalProps> = (
         });
         const text = await response.text();
         if (text.includes('"success":false')) {
-          throw new Error(t('LBL_SAVE_FAILED'));
+          throw new Error(t("LBL_SAVE_FAILED"));
         }
 
         // 電帳法メタデータ保存（書類区分が指定されている場合）
@@ -289,32 +343,54 @@ export const DocumentCreateEditModal: React.FC<DocumentCreateEditModalProps> = (
 
       onSave();
     } catch (e: any) {
-      setError(e.message || t('LBL_SAVE_FAILED'));
+      setError(e.message || t("LBL_SAVE_FAILED"));
     } finally {
       setIsSaving(false);
     }
-  }, [title, docType, filename, folderid, notecontent, filestatus, selectedFile, mode, doc, parentModule, parentId, onSave, dynamicFields, appendDynamicFields, t]);
+  }, [
+    title,
+    docType,
+    filename,
+    folderid,
+    notecontent,
+    filestatus,
+    selectedFile,
+    mode,
+    doc,
+    parentModule,
+    parentId,
+    onSave,
+    dynamicFields,
+    appendDynamicFields,
+    t,
+  ]);
 
-  const saveComplianceMetadata = useCallback(async (notesId: number, csrf: { name: string; value: string }) => {
-    const params = new URLSearchParams();
-    params.append(csrf.name, csrf.value);
-    params.append("module", "Documents");
-    params.append("api", "ComplianceAPI");
-    params.append("mode", "save_compliance");
-    params.append("notesid", String(notesId));
-    // Send all dynamic field values to ComplianceAPI
-    for (const [key, val] of Object.entries(dynamicFields)) {
-      if (val !== undefined && val !== null && val !== "") {
-        params.append(key, typeof val === "boolean" ? (val ? "1" : "0") : String(val));
+  const saveComplianceMetadata = useCallback(
+    async (notesId: number, csrf: { name: string; value: string }) => {
+      const params = new URLSearchParams();
+      params.append(csrf.name, csrf.value);
+      params.append("module", "Documents");
+      params.append("api", "ComplianceAPI");
+      params.append("mode", "save_compliance");
+      params.append("notesid", String(notesId));
+      // Send all dynamic field values to ComplianceAPI
+      for (const [key, val] of Object.entries(dynamicFields)) {
+        if (val !== undefined && val !== null && val !== "") {
+          params.append(
+            key,
+            typeof val === "boolean" ? (val ? "1" : "0") : String(val),
+          );
+        }
       }
-    }
-    await fetch("index.php", {
-      method: "POST",
-      credentials: "same-origin",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: params.toString(),
-    });
-  }, [dynamicFields]);
+      await fetch("index.php", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: params.toString(),
+      });
+    },
+    [dynamicFields],
+  );
 
   if (!isOpen) return null;
 
@@ -322,51 +398,150 @@ export const DocumentCreateEditModal: React.FC<DocumentCreateEditModalProps> = (
 
   return (
     <div
-      style={isMobile
-        ? { position: "fixed", inset: 0, backgroundColor: "#fff", zIndex: 100001, display: "flex", flexDirection: "column" }
-        : { position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100001 }
+      style={
+        isMobile
+          ? {
+              position: "fixed",
+              inset: 0,
+              backgroundColor: "#fff",
+              zIndex: 100001,
+              display: "flex",
+              flexDirection: "column",
+            }
+          : {
+              position: "fixed",
+              inset: 0,
+              backgroundColor: "rgba(0,0,0,0.4)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 100001,
+            }
       }
       onClick={isMobile ? undefined : onClose}
     >
       <div
-        style={isMobile
-          ? { flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }
-          : { backgroundColor: "#fff", borderRadius: 8, width: 1100, maxWidth: "95vw", maxHeight: "90vh", display: "flex", flexDirection: "column", boxShadow: "0 10px 40px rgba(0,0,0,0.2)" }
+        style={
+          isMobile
+            ? {
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden",
+              }
+            : {
+                backgroundColor: "#fff",
+                borderRadius: 8,
+                width: 1100,
+                maxWidth: "95vw",
+                maxHeight: "90vh",
+                display: "flex",
+                flexDirection: "column",
+                boxShadow: "0 10px 40px rgba(0,0,0,0.2)",
+              }
         }
         onClick={isMobile ? undefined : (e) => e.stopPropagation()}
       >
         {/* ヘッダー */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: isMobile ? "10px 12px" : "16px 20px", borderBottom: "1px solid #E2E8F0", flexShrink: 0 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: isMobile ? "10px 12px" : "16px 20px",
+            borderBottom: "1px solid #E2E8F0",
+            flexShrink: 0,
+          }}
+        >
           {isMobile ? (
-            <button onClick={onClose} style={{ border: "none", background: "none", fontSize: 20, color: "#4A5568", cursor: "pointer", padding: "2px 6px", lineHeight: 1 }}>←</button>
+            <button
+              onClick={onClose}
+              style={{
+                border: "none",
+                background: "none",
+                fontSize: 20,
+                color: "#4A5568",
+                cursor: "pointer",
+                padding: "2px 6px",
+                lineHeight: 1,
+              }}
+            >
+              ←
+            </button>
           ) : null}
-          <h3 style={{ margin: 0, fontSize: isMobile ? 14 : 16, fontWeight: 600, color: "#2D3748", flex: 1 }}>
-            {mode === "create" ? t('LBL_DOCUMENT_CREATE') : t('LBL_DOCUMENT_EDIT')}
+          <h3
+            style={{
+              margin: 0,
+              fontSize: isMobile ? 14 : 16,
+              fontWeight: 600,
+              color: "#2D3748",
+              flex: 1,
+            }}
+          >
+            {mode === "create"
+              ? t("LBL_DOCUMENT_CREATE")
+              : t("LBL_DOCUMENT_EDIT")}
           </h3>
           {!isMobile && (
-            <button onClick={onClose} style={{ width: 28, height: 28, border: "none", backgroundColor: "transparent", fontSize: 18, color: "#A0AEC0", cursor: "pointer" }}>×</button>
+            <button
+              onClick={onClose}
+              style={{
+                width: 28,
+                height: 28,
+                border: "none",
+                backgroundColor: "transparent",
+                fontSize: 18,
+                color: "#A0AEC0",
+                cursor: "pointer",
+              }}
+            >
+              ×
+            </button>
           )}
         </div>
 
         {/* コンテンツ */}
-        <div style={{ flex: 1, overflowY: "auto", padding: isMobile ? "12px 16px" : 20 }}>
+        <div
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            padding: isMobile ? "12px 16px" : 20,
+          }}
+        >
           {error && (
-            <div style={{ padding: "8px 12px", backgroundColor: "#FED7D7", color: "#C53030", borderRadius: 4, fontSize: 13, marginBottom: 16 }}>{error}</div>
+            <div
+              style={{
+                padding: "8px 12px",
+                backgroundColor: "#FED7D7",
+                color: "#C53030",
+                borderRadius: 4,
+                fontSize: 13,
+                marginBottom: 16,
+              }}
+            >
+              {error}
+            </div>
           )}
 
           {/* ドキュメント種別（新規のみ） */}
           {mode === "create" && (
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle}>{t('LBL_DOCUMENT_TYPE')}</label>
+              <label style={labelStyle}>{t("LBL_DOCUMENT_TYPE")}</label>
               <div style={{ display: "flex", gap: 8 }}>
                 {(["I", "E"] as DocType[]).map((type) => (
                   <button
                     key={type}
                     onClick={() => setDocType(type)}
                     style={{
-                      flex: 1, padding: "8px 12px", border: `2px solid ${docType === type ? "#4299E1" : "#E2E8F0"}`,
-                      borderRadius: 6, backgroundColor: docType === type ? "#EBF8FF" : "#fff",
-                      color: docType === type ? "#2B6CB0" : "#718096", fontSize: 13, fontWeight: 500, cursor: "pointer",
+                      flex: 1,
+                      padding: "8px 12px",
+                      border: `2px solid ${docType === type ? "#4299E1" : "#E2E8F0"}`,
+                      borderRadius: 6,
+                      backgroundColor: docType === type ? "#EBF8FF" : "#fff",
+                      color: docType === type ? "#2B6CB0" : "#718096",
+                      fontSize: 13,
+                      fontWeight: 500,
+                      cursor: "pointer",
                     }}
                   >
                     {docTypeLabels[type]}
@@ -377,36 +552,75 @@ export const DocumentCreateEditModal: React.FC<DocumentCreateEditModalProps> = (
           )}
 
           {/* 基本情報 */}
-          <div style={{ display: "grid", gridTemplateColumns: gridCols, gap: "12px 16px", marginBottom: 16 }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: gridCols,
+              gap: "12px 16px",
+              marginBottom: 16,
+            }}
+          >
             <div>
-              <label style={labelStyle}>{t('Title')} <span style={{ color: "#E53E3E" }}>*</span></label>
-              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} style={inputStyle} />
+              <label style={labelStyle}>
+                {t("Title")} <span style={{ color: "#E53E3E" }}>*</span>
+              </label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                style={inputStyle}
+              />
             </div>
 
             <div>
-              <label style={labelStyle}>{t('Folder Name')}</label>
-              <select value={folderid} onChange={(e) => setFolderid(Number(e.target.value))} style={inputStyle}>
+              <label style={labelStyle}>{t("Folder Name")}</label>
+              <select
+                value={folderid}
+                onChange={(e) => setFolderid(Number(e.target.value))}
+                style={inputStyle}
+              >
                 {folders.map((f) => (
-                  <option key={f.id} value={f.id}>{f.name}</option>
+                  <option key={f.id} value={f.id}>
+                    {f.name}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label style={labelStyle}>{t('Version')}</label>
+              <label style={labelStyle}>{t("Version")}</label>
               <input
                 type="text"
                 value={fileversion || (mode === "create" ? "1" : "")}
                 readOnly
-                style={{ ...inputStyle, backgroundColor: "#F7FAFC", color: "#718096", cursor: "default" }}
-                title={t('LBL_VERSION_AUTO')}
+                style={{
+                  ...inputStyle,
+                  backgroundColor: "#F7FAFC",
+                  color: "#718096",
+                  cursor: "default",
+                }}
+                title={t("LBL_VERSION_AUTO")}
               />
             </div>
 
             <div>
-              <label style={labelStyle}>{t('LBL_STATUS')}</label>
-              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#4A5568", cursor: "pointer" }}>
-                <input type="checkbox" checked={filestatus} onChange={(e) => setFilestatus(e.target.checked)} /> {t('LBL_STATUS_ACTIVE')}
+              <label style={labelStyle}>{t("LBL_STATUS")}</label>
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  fontSize: 13,
+                  color: "#4A5568",
+                  cursor: "pointer",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={filestatus}
+                  onChange={(e) => setFilestatus(e.target.checked)}
+                />{" "}
+                {t("LBL_STATUS_ACTIVE")}
               </label>
             </div>
           </div>
@@ -414,19 +628,31 @@ export const DocumentCreateEditModal: React.FC<DocumentCreateEditModalProps> = (
           {/* ファイル / URL 入力 */}
           {docType === "I" && (
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle}>{t('LBL_FILE_LABEL')} {mode === "create" && <span style={{ color: "#E53E3E" }}>*</span>}</label>
+              <label style={labelStyle}>
+                {t("LBL_FILE_LABEL")}{" "}
+                {mode === "create" && (
+                  <span style={{ color: "#E53E3E" }}>*</span>
+                )}
+              </label>
               <div
-                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDragging(true);
+                }}
                 onDragLeave={() => setIsDragging(false)}
                 onDrop={(e) => {
-                  e.preventDefault(); setIsDragging(false);
+                  e.preventDefault();
+                  setIsDragging(false);
                   const file = e.dataTransfer.files[0];
                   if (file) handleFileSelect(file);
                 }}
                 onClick={() => fileInputRef.current?.click()}
                 style={{
                   border: `2px dashed ${isDragging ? "#4299E1" : "#E2E8F0"}`,
-                  borderRadius: 6, padding: 20, textAlign: "center", cursor: "pointer",
+                  borderRadius: 6,
+                  padding: 20,
+                  textAlign: "center",
+                  cursor: "pointer",
                   backgroundColor: isDragging ? "#EBF8FF" : "#F7FAFC",
                   transition: "all 0.15s",
                 }}
@@ -449,11 +675,11 @@ export const DocumentCreateEditModal: React.FC<DocumentCreateEditModalProps> = (
                   </div>
                 ) : mode === "edit" && doc?.filename ? (
                   <div style={{ fontSize: 13, color: "#718096" }}>
-                    {t('LBL_CURRENT_FILE', doc.filename)}
+                    {t("LBL_CURRENT_FILE", doc.filename)}
                   </div>
                 ) : (
                   <div style={{ fontSize: 13, color: "#A0AEC0" }}>
-                    {t('LBL_DRAG_DROP_OR_CLICK')}
+                    {t("LBL_DRAG_DROP_OR_CLICK")}
                   </div>
                 )}
               </div>
@@ -462,7 +688,9 @@ export const DocumentCreateEditModal: React.FC<DocumentCreateEditModalProps> = (
 
           {docType === "E" && (
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle}>URL <span style={{ color: "#E53E3E" }}>*</span></label>
+              <label style={labelStyle}>
+                URL <span style={{ color: "#E53E3E" }}>*</span>
+              </label>
               <input
                 type="url"
                 value={filename}
@@ -474,31 +702,60 @@ export const DocumentCreateEditModal: React.FC<DocumentCreateEditModalProps> = (
           )}
 
           {/* Dynamic field blocks (compliance, scanner, etc.) */}
-          {!fieldsLoading && Object.entries(dynamicBlockFields).map(([blockLabel, blockFields]) => (
-            <div key={blockLabel} style={{ marginBottom: 16, paddingTop: 12, borderTop: "1px solid #E2E8F0" }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#4A5568", marginBottom: 10 }}>
-                {blockLabel}
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: gridCols, gap: "12px 16px" }}>
-                {blockFields.map((field) => {
-                  const fieldInfo = convertToFieldInfo(field);
-                  return (
-                    <FieldRenderer
-                      key={field.name}
-                      field={fieldInfo}
-                      value={dynamicFields[field.name] ?? field.defaultvalue ?? ""}
-                      onChange={(name: string, val: FieldValue) => handleDynamicFieldChange(name, val)}
-                      module="Documents"
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+          {!fieldsLoading &&
+            Object.entries(dynamicBlockFields).map(
+              ([blockLabel, blockFields]) => (
+                <div
+                  key={blockLabel}
+                  style={{
+                    marginBottom: 16,
+                    paddingTop: 12,
+                    borderTop: "1px solid #E2E8F0",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: "#4A5568",
+                      marginBottom: 10,
+                    }}
+                  >
+                    {blockLabel}
+                  </div>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: gridCols,
+                      gap: "12px 16px",
+                    }}
+                  >
+                    {blockFields.map((field) => {
+                      const fieldInfo = convertToFieldInfo(field);
+                      return (
+                        <FieldRenderer
+                          key={field.name}
+                          field={fieldInfo}
+                          value={
+                            dynamicFields[field.name] ??
+                            field.defaultvalue ??
+                            ""
+                          }
+                          onChange={(name: string, val: FieldValue) =>
+                            handleDynamicFieldChange(name, val)
+                          }
+                          module="Documents"
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              ),
+            )}
 
           {/* メモ */}
           <div style={{ marginBottom: 8 }}>
-            <label style={labelStyle}>{t('Note')}</label>
+            <label style={labelStyle}>{t("Note")}</label>
             <textarea
               value={notecontent}
               onChange={(e) => setNotecontent(e.target.value)}
@@ -509,23 +766,44 @@ export const DocumentCreateEditModal: React.FC<DocumentCreateEditModalProps> = (
         </div>
 
         {/* フッター */}
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, padding: "14px 20px", borderTop: "1px solid #E2E8F0" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 8,
+            padding: "14px 20px",
+            borderTop: "1px solid #E2E8F0",
+          }}
+        >
           <button
             onClick={onClose}
             disabled={isSaving}
-            style={{ padding: "7px 20px", backgroundColor: "#fff", color: "#4A5568", border: "1px solid #E2E8F0", borderRadius: 4, fontSize: 14, cursor: "pointer" }}
+            style={{
+              padding: "7px 20px",
+              backgroundColor: "#fff",
+              color: "#4A5568",
+              border: "1px solid #E2E8F0",
+              borderRadius: 4,
+              fontSize: 14,
+              cursor: "pointer",
+            }}
           >
-            {t('LBL_CANCEL')}
+            {t("LBL_CANCEL")}
           </button>
           <button
             onClick={handleSave}
             disabled={isSaving}
             style={{
-              padding: "7px 20px", backgroundColor: isSaving ? "#A0AEC0" : "#38A169", color: "#fff",
-              border: "none", borderRadius: 4, fontSize: 14, cursor: isSaving ? "wait" : "pointer",
+              padding: "7px 20px",
+              backgroundColor: isSaving ? "#A0AEC0" : "#38A169",
+              color: "#fff",
+              border: "none",
+              borderRadius: 4,
+              fontSize: 14,
+              cursor: isSaving ? "wait" : "pointer",
             }}
           >
-            {isSaving ? t('LBL_SAVING') : t('LBL_SAVE')}
+            {isSaving ? t("LBL_SAVING") : t("LBL_SAVE")}
           </button>
         </div>
       </div>

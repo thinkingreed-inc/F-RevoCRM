@@ -46,7 +46,8 @@ export const DocumentsPreviewView: React.FC<DocumentsPreviewViewProps> = ({
 }) => {
   const { t } = useOptionalTranslation();
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const { document: selectedDoc, isLoading: detailLoading } = useDocumentDetail(selectedId);
+  const { document: selectedDoc, isLoading: detailLoading } =
+    useDocumentDetail(selectedId);
 
   // サブフォルダを取得（選択中のフォルダの直下のみ）
   const subFolders =
@@ -55,13 +56,15 @@ export const DocumentsPreviewView: React.FC<DocumentsPreviewViewProps> = ({
       : [];
 
   // 親フォルダの特定
-  const currentFolder = selectedFolderId !== "all" ? folders.find((f) => f.id === selectedFolderId) : undefined;
-  const parentTarget: number | "all" | null =
-    currentFolder
-      ? currentFolder.parent_id > 0
-        ? currentFolder.parent_id
-        : "all"
-      : null;
+  const currentFolder =
+    selectedFolderId !== "all"
+      ? folders.find((f) => f.id === selectedFolderId)
+      : undefined;
+  const parentTarget: number | "all" | null = currentFolder
+    ? currentFolder.parent_id > 0
+      ? currentFolder.parent_id
+      : "all"
+    : null;
 
   // フォルダセクションを表示するか
   const showFolderSection = subFolders.length > 0 || parentTarget !== null;
@@ -79,9 +82,19 @@ export const DocumentsPreviewView: React.FC<DocumentsPreviewViewProps> = ({
         }}
       >
         {/* リストヘッダー */}
-        <div style={{ padding: "10px 12px", borderBottom: "1px solid #EDF2F7" }}>
-          <div style={{ fontWeight: 600, fontSize: 14, color: "#2D3748", marginBottom: 4 }}>
-            {folderName} <span style={{ fontWeight: 400, color: "#A0AEC0" }}>{total}</span>
+        <div
+          style={{ padding: "10px 12px", borderBottom: "1px solid #EDF2F7" }}
+        >
+          <div
+            style={{
+              fontWeight: 600,
+              fontSize: 14,
+              color: "#2D3748",
+              marginBottom: 4,
+            }}
+          >
+            {folderName}{" "}
+            <span style={{ fontWeight: 400, color: "#A0AEC0" }}>{total}</span>
           </div>
         </div>
 
@@ -89,7 +102,9 @@ export const DocumentsPreviewView: React.FC<DocumentsPreviewViewProps> = ({
         <div style={{ flex: 1, overflowY: "auto" }}>
           {/* サブフォルダ + 上の階層へ */}
           {showFolderSection && (
-            <div style={{ padding: "8px 12px", borderBottom: "1px solid #EDF2F7" }}>
+            <div
+              style={{ padding: "8px 12px", borderBottom: "1px solid #EDF2F7" }}
+            >
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 {/* 上の階層へ戻る */}
                 {parentTarget !== null && (
@@ -106,12 +121,29 @@ export const DocumentsPreviewView: React.FC<DocumentsPreviewViewProps> = ({
                       gap: 6,
                       transition: "background-color 0.1s",
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#F7FAFC")}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#fff")}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.backgroundColor = "#F7FAFC")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.backgroundColor = "#fff")
+                    }
                   >
-                    <span style={{ fontSize: 14, color: "#718096", lineHeight: 1 }}>←</span>
-                    <span style={{ fontSize: 12, fontWeight: 500, color: "#4A5568" }}>
-                      {parentTarget === "all" ? t('LBL_ALL_DOCUMENTS') : folders.find((f) => f.id === parentTarget)?.name || ""}
+                    <span
+                      style={{ fontSize: 14, color: "#718096", lineHeight: 1 }}
+                    >
+                      ←
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 500,
+                        color: "#4A5568",
+                      }}
+                    >
+                      {parentTarget === "all"
+                        ? t("LBL_ALL_DOCUMENTS")
+                        : folders.find((f) => f.id === parentTarget)?.name ||
+                          ""}
                     </span>
                   </div>
                 )}
@@ -130,13 +162,25 @@ export const DocumentsPreviewView: React.FC<DocumentsPreviewViewProps> = ({
                       alignItems: "center",
                       transition: "background-color 0.1s",
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#EDF2F7")}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#F7FAFC")}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.backgroundColor = "#EDF2F7")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.backgroundColor = "#F7FAFC")
+                    }
                   >
-                    <span style={{ fontSize: 12, fontWeight: 500, color: "#2D3748" }}>
+                    <span
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 500,
+                        color: "#2D3748",
+                      }}
+                    >
                       {folder.name}
                     </span>
-                    <span style={{ fontSize: 11, color: "#A0AEC0" }}>{folder.count}</span>
+                    <span style={{ fontSize: 11, color: "#A0AEC0" }}>
+                      {folder.count}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -144,12 +188,26 @@ export const DocumentsPreviewView: React.FC<DocumentsPreviewViewProps> = ({
           )}
 
           {isLoading && records.length === 0 ? (
-            <div style={{ padding: 30, textAlign: "center", color: "#A0AEC0", fontSize: 13 }}>
-              {t('LBL_LOADING')}
+            <div
+              style={{
+                padding: 30,
+                textAlign: "center",
+                color: "#A0AEC0",
+                fontSize: 13,
+              }}
+            >
+              {t("LBL_LOADING")}
             </div>
           ) : records.length === 0 ? (
-            <div style={{ padding: 30, textAlign: "center", color: "#A0AEC0", fontSize: 13 }}>
-              {t('LBL_NO_DOCUMENTS')}
+            <div
+              style={{
+                padding: 30,
+                textAlign: "center",
+                color: "#A0AEC0",
+                fontSize: 13,
+              }}
+            >
+              {t("LBL_NO_DOCUMENTS")}
             </div>
           ) : (
             records.map((rec) => {
@@ -169,7 +227,8 @@ export const DocumentsPreviewView: React.FC<DocumentsPreviewViewProps> = ({
                     transition: "background-color 0.1s",
                   }}
                   onMouseEnter={(e) => {
-                    if (!isSelected) e.currentTarget.style.backgroundColor = "#F7FAFC";
+                    if (!isSelected)
+                      e.currentTarget.style.backgroundColor = "#F7FAFC";
                   }}
                   onMouseLeave={(e) => {
                     if (!isSelected) e.currentTarget.style.backgroundColor = "";
@@ -194,9 +253,11 @@ export const DocumentsPreviewView: React.FC<DocumentsPreviewViewProps> = ({
                     >
                       {rec.title}
                     </div>
-                    <div style={{ fontSize: 11, color: "#A0AEC0", marginTop: 2 }}>
-                      {getFileTypeLabel(rec)} ・ {formatFileSize(rec.filesize)} ・{" "}
-                      {formatShortDate(rec.modifiedtime)}
+                    <div
+                      style={{ fontSize: 11, color: "#A0AEC0", marginTop: 2 }}
+                    >
+                      {getFileTypeLabel(rec)} ・ {formatFileSize(rec.filesize)}{" "}
+                      ・ {formatShortDate(rec.modifiedtime)}
                     </div>
                   </div>
                   <StarButton recordId={rec.id} starred={rec.starred} />
@@ -208,7 +269,11 @@ export const DocumentsPreviewView: React.FC<DocumentsPreviewViewProps> = ({
       </div>
 
       {/* 右パネル: プレビュー + 情報 */}
-      <DocumentsPreviewPanel document={selectedDoc} isLoading={detailLoading} onEdit={onEdit} />
+      <DocumentsPreviewPanel
+        document={selectedDoc}
+        isLoading={detailLoading}
+        onEdit={onEdit}
+      />
     </div>
   );
 };

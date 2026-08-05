@@ -9,7 +9,7 @@ interface UseDocumentDetailResult {
 }
 
 export function useDocumentDetail(
-  recordId: number | null
+  recordId: number | null,
 ): UseDocumentDetailResult {
   const [document, setDocument] = useState<DocumentDetail | null>(null);
   const [isLoading, setIsLoading] = useState(false);

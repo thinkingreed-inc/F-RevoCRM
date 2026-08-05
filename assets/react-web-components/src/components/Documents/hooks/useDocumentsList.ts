@@ -39,7 +39,7 @@ function getCsrfToken(): { name: string; value: string } | null {
 }
 
 export function useDocumentsList(
-  params: UseDocumentsListParams
+  params: UseDocumentsListParams,
 ): UseDocumentsListResult {
   const [records, setRecords] = useState<DocumentRecord[]>([]);
   const [total, setTotal] = useState(0);
@@ -96,7 +96,10 @@ export function useDocumentsList(
       if (params.complianceStatus) {
         bodyParams.append("compliance_status", params.complianceStatus);
       }
-      if (params.hasRelatedRecord !== undefined && params.hasRelatedRecord !== "") {
+      if (
+        params.hasRelatedRecord !== undefined &&
+        params.hasRelatedRecord !== ""
+      ) {
         bodyParams.append("has_related_record", params.hasRelatedRecord);
       }
       const response = await fetch("index.php", {

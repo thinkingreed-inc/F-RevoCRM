@@ -21,7 +21,10 @@ interface UseDocumentFieldsResult {
   error: string | null;
 }
 
-export function useDocumentFields(recordId?: number | null, includeReadonly?: boolean): UseDocumentFieldsResult {
+export function useDocumentFields(
+  recordId?: number | null,
+  includeReadonly?: boolean,
+): UseDocumentFieldsResult {
   const [fields, setFields] = useState<DocFieldInfo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +71,9 @@ export function useDocumentFields(recordId?: number | null, includeReadonly?: bo
                   label: pv.label,
                 }))
               : undefined,
-            referenceModules: Array.isArray(f.referenceModules) ? f.referenceModules : undefined,
+            referenceModules: Array.isArray(f.referenceModules)
+              ? f.referenceModules
+              : undefined,
             referenceModuleLabels: f.referenceModuleLabels || undefined,
             blockLabel: f.block || "",
           }));

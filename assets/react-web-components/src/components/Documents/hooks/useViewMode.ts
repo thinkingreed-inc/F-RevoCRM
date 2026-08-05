@@ -18,7 +18,7 @@ function getInitialMode(defaultMode?: string): ViewMode {
 
 export function useViewMode(defaultMode?: string) {
   const [viewMode, setViewModeState] = useState<ViewMode>(() =>
-    getInitialMode(defaultMode)
+    getInitialMode(defaultMode),
   );
 
   const setViewMode = useCallback((mode: ViewMode) => {

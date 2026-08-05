@@ -21,7 +21,7 @@ const FILE_CATEGORY_CONFIG: Record<
 
 export function getFileCategory(
   filetype: string | null,
-  filelocationtype: string
+  filelocationtype: string,
 ): FileCategory {
   if (filelocationtype === "E") return "url";
   if (!filetype) return "other";
@@ -32,32 +32,68 @@ export function getFileCategory(
     return "word";
   if (t.includes("excel") || t.includes("spreadsheet") || t.includes(".xls"))
     return "excel";
-  if (t.includes("powerpoint") || t.includes("presentation") || t.includes(".ppt"))
+  if (
+    t.includes("powerpoint") ||
+    t.includes("presentation") ||
+    t.includes(".ppt")
+  )
     return "powerpoint";
   if (t.startsWith("image/")) return "image";
   if (t.startsWith("text/") || t.includes("csv")) return "text";
   if (t.startsWith("video/")) return "video";
   if (t.startsWith("audio/")) return "audio";
-  if (t.includes("zip") || t.includes("tar") || t.includes("compress") || t.includes("archive"))
+  if (
+    t.includes("zip") ||
+    t.includes("tar") ||
+    t.includes("compress") ||
+    t.includes("archive")
+  )
     return "archive";
   return "other";
 }
 
-export function getFileCategoryFromExtension(filename: string | null): FileCategory {
+export function getFileCategoryFromExtension(
+  filename: string | null,
+): FileCategory {
   if (!filename) return "other";
   const ext = filename.split(".").pop()?.toLowerCase();
   if (!ext) return "other";
 
   const map: Record<string, FileCategory> = {
     pdf: "pdf",
-    doc: "word", docx: "word", odt: "word",
-    xls: "excel", xlsx: "excel", ods: "excel", csv: "text",
-    ppt: "powerpoint", pptx: "powerpoint", odp: "powerpoint",
-    jpg: "image", jpeg: "image", png: "image", gif: "image", svg: "image", webp: "image",
-    txt: "text", md: "text", log: "text",
-    mp4: "video", avi: "video", mov: "video", webm: "video", mkv: "video",
-    mp3: "audio", wav: "audio", ogg: "audio", flac: "audio",
-    zip: "archive", tar: "archive", gz: "archive", rar: "archive", "7z": "archive",
+    doc: "word",
+    docx: "word",
+    odt: "word",
+    xls: "excel",
+    xlsx: "excel",
+    ods: "excel",
+    csv: "text",
+    ppt: "powerpoint",
+    pptx: "powerpoint",
+    odp: "powerpoint",
+    jpg: "image",
+    jpeg: "image",
+    png: "image",
+    gif: "image",
+    svg: "image",
+    webp: "image",
+    txt: "text",
+    md: "text",
+    log: "text",
+    mp4: "video",
+    avi: "video",
+    mov: "video",
+    webm: "video",
+    mkv: "video",
+    mp3: "audio",
+    wav: "audio",
+    ogg: "audio",
+    flac: "audio",
+    zip: "archive",
+    tar: "archive",
+    gz: "archive",
+    rar: "archive",
+    "7z": "archive",
   };
   return map[ext] || "other";
 }
@@ -107,7 +143,7 @@ export const FileIcon: React.FC<FileIconProps> = ({
         flexShrink: 0,
         border: `1px solid ${config.color}20`,
       }}
-      aria-label={config.label || t('LBL_FILE_ICON_LABEL')}
+      aria-label={config.label || t("LBL_FILE_ICON_LABEL")}
     >
       {config.label}
     </div>

@@ -7,7 +7,9 @@ interface DocumentsDetailProps {
   recordId: number;
 }
 
-export const DocumentsDetail: React.FC<DocumentsDetailProps> = ({ recordId }) => {
+export const DocumentsDetail: React.FC<DocumentsDetailProps> = ({
+  recordId,
+}) => {
   const { document: doc, isLoading } = useDocumentDetail(recordId);
 
   const handleBack = () => {
@@ -16,9 +18,13 @@ export const DocumentsDetail: React.FC<DocumentsDetailProps> = ({ recordId }) =>
 
   return (
     <TranslationProvider module="Documents">
-    <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      <DocumentsPreviewPanel document={doc} isLoading={isLoading} onBack={handleBack} />
-    </div>
+      <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+        <DocumentsPreviewPanel
+          document={doc}
+          isLoading={isLoading}
+          onBack={handleBack}
+        />
+      </div>
     </TranslationProvider>
   );
 };
