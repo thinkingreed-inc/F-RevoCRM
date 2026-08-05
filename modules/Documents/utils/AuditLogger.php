@@ -8,6 +8,25 @@
 class Documents_AuditLogger {
 
     /**
+     * 変更履歴の追跡対象外カラム
+     * システムが自動更新する項目（ハッシュ・適合状態・自動計算値など）はノイズになるため除外する。
+     */
+    private static $untrackedColumns = array(
+        'modifiedtime', 'modifiedby', 'createdtime', 'smcreatorid', 'viewedtime',
+        'note_no', 'filesize', 'filetype', 'filedownloadcount', 'fileversion',
+        'file_hash', 'file_hash_algorithm',
+        'input_deadline', 'input_deadline_status',
+        'compliance_status', 'compliance_checked_at', 'compliance_notes',
+        'scanned_by', 'scanned_at',
+    );
+
+    /** action_detail に保存する値の最大文字数 */
+    const MAX_VALUE_LENGTH = 255;
+
+    /** Documentsモジュールのフィールドメタ情報キャッシュ */
+    private static $fieldMetaCache = null;
+
+    /**
      * 監査ログを記録する
      *
      * @param int $notesId ドキュメントID
@@ -81,6 +100,269 @@ class Documents_AuditLogger {
         return self::log($notesId, 'update', array(
             'action_detail' => $detail,
         ));
+    }
+
+    /**
+     * Documentsモジュールのフィールドメタ情報を取得する
+     *
+     * @return array フィールド名 => ['table' => ..., 'column' => ..., 'label' => ..., 'uitype' => int]
+     */
+    public static function getFieldMeta() {
+        if (self::$fieldMetaCache !== null) {
+            return self::$fieldMetaCache;
+        }
+        $meta = array();
+        try {
+            $moduleModel = Vtiger_Module_Model::getInstance('Documents');
+            if ($moduleModel) {
+                foreach ($moduleModel->getFields() as $fieldName => $fieldModel) {
+                    $meta[$fieldName] = array(
+                        'table'  => $fieldModel->get('table'),
+                        'column' => $fieldModel->get('column'),
+                        'label'  => $fieldModel->get('label'),
+                        'uitype' => (int) $fieldModel->get('uitype'),
+                    );
+                }
+            }
+        } catch (Exception $e) {
+            $meta = array();
+        }
+        self::$fieldMetaCache = $meta;
+        return $meta;
+    }
+
+    /**
+     * 変更履歴の追跡対象フィールドを取得する
+     *
+     * @return array フィールド名 => メタ情報
+     */
+    public static function getTrackedFields() {
+        $tracked = array();
+        foreach (self::getFieldMeta() as $fieldName => $meta) {
+            if (!in_array($meta['table'], array('vtiger_notes', 'vtiger_crmentity'))) {
+                continue;
+            }
+            if (in_array($meta['column'], self::$untrackedColumns)) {
+                continue;
+            }
+            // 自動採番は追跡しない
+            if ($meta['uitype'] === 4) {
+                continue;
+            }
+            $tracked[$fieldName] = $meta;
+        }
+        return $tracked;
+    }
+
+    /**
+     * 追跡対象フィールドの現在値スナップショットを取得する
+     *
+     * 保存処理の前後で呼び出し、差分を logFieldChanges() に渡して使用する。
+     *
+     * @param int $notesId ドキュメントID
+     * @return array フィールド名 => 値
+     */
+    public static function snapshotFields($notesId) {
+        $notesId = (int) $notesId;
+        if (empty($notesId)) {
+            return array();
+        }
+        $tracked = self::getTrackedFields();
+        if (empty($tracked)) {
+            return array();
+        }
+
+        $db = PearDatabase::getInstance();
+        $rows = array();
+        $tables = array('vtiger_notes' => 'notesid', 'vtiger_crmentity' => 'crmid');
+        foreach ($tables as $table => $keyColumn) {
+            $result = $db->pquery("SELECT * FROM $table WHERE $keyColumn = ?", array($notesId));
+            if ($result !== false && $db->num_rows($result) > 0) {
+                $rows[$table] = $db->query_result_rowdata($result, 0);
+            }
+        }
+
+        $snapshot = array();
+        foreach ($tracked as $fieldName => $meta) {
+            $table = $meta['table'];
+            if (!isset($rows[$table]) || !array_key_exists($meta['column'], $rows[$table])) {
+                continue;
+            }
+            $value = $rows[$table][$meta['column']];
+            $snapshot[$fieldName] = ($value === null) ? null : decode_html($value);
+        }
+        return $snapshot;
+    }
+
+    /**
+     * スナップショットの差分を算出する
+     *
+     * @param array $before 変更前スナップショット
+     * @param array $after 変更後スナップショット
+     * @return array [['field' => ..., 'old_value' => ..., 'new_value' => ...], ...]
+     */
+    public static function diffSnapshots($before, $after) {
+        $changes = array();
+        foreach (array_keys(self::getTrackedFields()) as $fieldName) {
+            if (!array_key_exists($fieldName, $before) || !array_key_exists($fieldName, $after)) {
+                continue;
+            }
+            $oldValue = $before[$fieldName];
+            $newValue = $after[$fieldName];
+            if (self::normalizeValue($oldValue) === self::normalizeValue($newValue)) {
+                continue;
+            }
+            $changes[] = array(
+                'field' => $fieldName,
+                'old_value' => self::truncateValue($oldValue),
+                'new_value' => self::truncateValue($newValue),
+            );
+        }
+        return $changes;
+    }
+
+    /**
+     * 項目値の変更を監査ログに記録する
+     *
+     * @param int $notesId ドキュメントID
+     * @param array $before 変更前スナップショット
+     * @param array $after 変更後スナップショット
+     * @param string|null $reason 変更理由
+     * @return bool 記録した場合true（差分が無い場合はfalse）
+     */
+    public static function logFieldChanges($notesId, $before, $after, $reason = null) {
+        $changes = self::diffSnapshots($before, $after);
+        if (empty($changes)) {
+            return false;
+        }
+        return self::logUpdate($notesId, $changes, $reason);
+    }
+
+    /**
+     * 比較用に値を正規化する
+     *
+     * @param mixed $value
+     * @return string
+     */
+    private static function normalizeValue($value) {
+        if ($value === null) {
+            return '';
+        }
+        $value = trim(str_replace(array("\r\n", "\r"), "\n", (string) $value));
+        if ($value === '0000-00-00' || $value === '0000-00-00 00:00:00') {
+            return '';
+        }
+        return $value;
+    }
+
+    /**
+     * 監査ログに保存する値を最大長で切り詰める
+     *
+     * @param mixed $value
+     * @return string
+     */
+    private static function truncateValue($value) {
+        if ($value === null) {
+            return '';
+        }
+        $value = (string) $value;
+        if (function_exists('mb_strlen') && mb_strlen($value, 'UTF-8') > self::MAX_VALUE_LENGTH) {
+            return mb_substr($value, 0, self::MAX_VALUE_LENGTH, 'UTF-8') . '…';
+        }
+        if (!function_exists('mb_strlen') && strlen($value) > self::MAX_VALUE_LENGTH) {
+            return substr($value, 0, self::MAX_VALUE_LENGTH) . '...';
+        }
+        return $value;
+    }
+
+    /**
+     * 変更内容に表示用のラベル・値を付与する
+     *
+     * @param array $changes
+     * @return array
+     */
+    private static function decorateChanges($changes) {
+        $fieldMeta = self::getFieldMeta();
+        $decorated = array();
+        foreach ($changes as $change) {
+            if (!is_array($change) || !isset($change['field'])) {
+                $decorated[] = $change;
+                continue;
+            }
+            $fieldName = $change['field'];
+            $meta = isset($fieldMeta[$fieldName]) ? $fieldMeta[$fieldName] : null;
+            $change['label'] = $meta ? vtranslate($meta['label'], 'Documents') : $fieldName;
+            $change['old_display'] = self::getDisplayValue(
+                isset($change['old_value']) ? $change['old_value'] : null, $meta);
+            $change['new_display'] = self::getDisplayValue(
+                isset($change['new_value']) ? $change['new_value'] : null, $meta);
+            $decorated[] = $change;
+        }
+        return $decorated;
+    }
+
+    /**
+     * 項目値を表示用の文字列に変換する
+     *
+     * @param mixed $value
+     * @param array|null $meta フィールドメタ情報
+     * @return string
+     */
+    private static function getDisplayValue($value, $meta) {
+        if ($value === null || $value === '' || self::normalizeValue($value) === '') {
+            return '';
+        }
+        $uitype = ($meta === null) ? 0 : (int) $meta['uitype'];
+        switch ($uitype) {
+            case 15: // ピックリスト（ロール依存）
+            case 16: // ピックリスト
+            case 55: // 敬称
+                return vtranslate($value, 'Documents');
+            case 33: // 複数選択ピックリスト
+                $labels = array();
+                foreach (explode(' |##| ', $value) as $item) {
+                    $labels[] = vtranslate($item, 'Documents');
+                }
+                return implode(', ', $labels);
+            case 27: // ダウンロード種別（内部ファイル / 外部URL）
+                return ($value === 'I')
+                    ? vtranslate('LBL_INTERNAL', 'Documents')
+                    : vtranslate('LBL_EXTERNAL', 'Documents');
+            case 26: // フォルダ
+                return self::getFolderName($value);
+            case 52: // ユーザー
+            case 53: // 担当者（ユーザー / グループ）
+                // getOwnerName() は画面表示と同じ表示名（ユーザー名 / グループ名）を返す
+                $ownerLabel = getOwnerName($value);
+                return !empty($ownerLabel) ? decode_html($ownerLabel) : (string) $value;
+            case 10: // 参照
+                $recordLabel = Vtiger_Util_Helper::getRecordName((int) $value);
+                return !empty($recordLabel) ? decode_html($recordLabel) : (string) $value;
+            case 56: // チェックボックス
+                return ((string) $value === '1')
+                    ? vtranslate('LBL_YES', 'Vtiger')
+                    : vtranslate('LBL_NO', 'Vtiger');
+            default:
+                return (string) $value;
+        }
+    }
+
+    /**
+     * フォルダ名を取得する
+     *
+     * @param int $folderId
+     * @return string
+     */
+    private static function getFolderName($folderId) {
+        $db = PearDatabase::getInstance();
+        $result = $db->pquery(
+            "SELECT foldername FROM vtiger_attachmentsfolder WHERE folderid = ?",
+            array((int) $folderId)
+        );
+        if ($result === false || $db->num_rows($result) === 0) {
+            return (string) $folderId;
+        }
+        return decode_html($db->query_result($result, 0, 'foldername'));
     }
 
     /**
@@ -193,6 +475,10 @@ class Documents_AuditLogger {
                 if ($decoded !== null) {
                     $detail = $decoded;
                 }
+            }
+            // 項目値の変更には表示用のラベル・値を付与する
+            if (is_array($detail) && !empty($detail['changes']) && is_array($detail['changes'])) {
+                $detail['changes'] = self::decorateChanges($detail['changes']);
             }
             $records[] = array(
                 'audit_id' => (int) $row['audit_id'],

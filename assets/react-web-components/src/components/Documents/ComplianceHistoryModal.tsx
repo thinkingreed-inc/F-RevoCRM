@@ -1,5 +1,10 @@
 import React, { useState } from "react";
-import type { FileVersionEntry, AuditLogEntry } from "./types/documents";
+import type {
+  FileVersionEntry,
+  AuditLogEntry,
+  AuditLogChange,
+  AuditLogDetail,
+} from "./types/documents";
 import { useOptionalTranslation } from "../../hooks/useTranslation";
 
 interface ComplianceHistoryModalProps {
@@ -29,6 +34,24 @@ function getActionTypeLabel(t: (key: string) => string, key: string): string {
     verify: t("LBL_ACTION_VERIFY"),
   };
   return labels[key] || key;
+}
+
+/** action_detail をオブジェクトとして取り出す（文字列・null の場合は null） */
+function toDetail(
+  actionDetail: AuditLogEntry["action_detail"],
+): AuditLogDetail | null {
+  if (!actionDetail || typeof actionDetail !== "object") return null;
+  return actionDetail;
+}
+
+/** 変更前後の表示値。表示用の値が無い場合は生値、空の場合はプレースホルダを返す */
+function displayValue(
+  value: string | null | undefined,
+  fallback: string | null,
+): string {
+  const resolved = value !== undefined && value !== null ? value : fallback;
+  if (resolved === null || resolved === "") return "—";
+  return resolved;
 }
 
 const ACTION_COLORS: Record<string, string> = {
@@ -404,14 +427,15 @@ export const ComplianceHistoryModal: React.FC<ComplianceHistoryModalProps> = ({
                 {auditLog.map((entry) => {
                   const actionColor =
                     ACTION_COLORS[entry.action_type] || "#718096";
-                  const changes =
-                    entry.action_detail &&
-                    typeof entry.action_detail === "object" &&
-                    entry.action_detail.changes;
-                  const reason =
-                    entry.action_detail &&
-                    typeof entry.action_detail === "object" &&
-                    entry.action_detail.reason;
+                  const detail = toDetail(entry.action_detail);
+                  const changes: AuditLogChange[] = Array.isArray(
+                    detail?.changes,
+                  )
+                    ? (detail?.changes as AuditLogChange[])
+                    : [];
+                  const reason = detail?.reason;
+                  const fileReplaced = detail?.file_replaced === true;
+                  const verifyResult = detail?.result;
 
                   return (
                     <tr
@@ -453,18 +477,15 @@ export const ComplianceHistoryModal: React.FC<ComplianceHistoryModalProps> = ({
                         {entry.performer_name}
                       </td>
                       <td style={{ padding: "8px 10px", fontSize: 12 }}>
-                        {changes && (
+                        {changes.length > 0 && (
                           <div style={{ color: "#2D3748" }}>
-                            {(
-                              changes as Array<{
-                                field: string;
-                                old_value: string;
-                                new_value: string;
-                              }>
-                            ).map((c, i) => (
-                              <div key={i} style={{ marginBottom: 2 }}>
+                            {changes.map((c, i) => (
+                              <div
+                                key={`${c.field}-${i}`}
+                                style={{ marginBottom: 2 }}
+                              >
                                 <span style={{ color: "#718096" }}>
-                                  {c.field}:
+                                  {c.label || c.field}:
                                 </span>{" "}
                                 <span
                                   style={{
@@ -472,16 +493,37 @@ export const ComplianceHistoryModal: React.FC<ComplianceHistoryModalProps> = ({
                                     color: "#E53E3E",
                                   }}
                                 >
-                                  {c.old_value}
+                                  {displayValue(c.old_display, c.old_value)}
                                 </span>{" "}
                                 →{" "}
                                 <span
                                   style={{ color: "#38A169", fontWeight: 500 }}
                                 >
-                                  {c.new_value}
+                                  {displayValue(c.new_display, c.new_value)}
                                 </span>
                               </div>
                             ))}
+                          </div>
+                        )}
+                        {fileReplaced && (
+                          <div style={{ color: "#2D3748" }}>
+                            {t("LBL_FILE_REPLACED")}
+                          </div>
+                        )}
+                        {verifyResult && (
+                          <div
+                            style={{
+                              color:
+                                verifyResult === "success"
+                                  ? "#38A169"
+                                  : "#E53E3E",
+                            }}
+                          >
+                            {t(
+                              verifyResult === "success"
+                                ? "LBL_VERIFY_SUCCESS"
+                                : "LBL_VERIFY_FAILURE",
+                            )}
                           </div>
                         )}
                         {reason && (

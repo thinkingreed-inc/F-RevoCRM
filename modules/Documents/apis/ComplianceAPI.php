@@ -54,22 +54,17 @@ class Documents_ComplianceAPI_Api extends Vtiger_Api_Controller {
 
         $db = PearDatabase::getInstance();
 
-        // 変更前の値を取得（監査ログ用）
-        $beforeResult = $db->pquery(
-            "SELECT document_category, preservation_type, receipt_date,
-                    scan_resolution_dpi, scan_color_type, original_paper_size
-            FROM vtiger_notes WHERE notesid = ?",
-            array($notesId)
-        );
-        if ($beforeResult === false || $db->num_rows($beforeResult) === 0) {
+        $existsResult = $db->pquery("SELECT notesid FROM vtiger_notes WHERE notesid = ?", array($notesId));
+        if ($existsResult === false || $db->num_rows($existsResult) === 0) {
             throw new Exception('Document not found');
         }
-        $beforeData = $db->query_result_rowdata($beforeResult, 0);
+
+        // 変更前の値を取得（監査ログ用）
+        $beforeSnapshot = Documents_AuditLogger::snapshotFields($notesId);
 
         // 更新カラム組み立て
         $updates = array();
         $params = array();
-        $changes = array();
 
         $fields = array(
             'document_category' => $request->get('document_category'),
@@ -84,13 +79,6 @@ class Documents_ComplianceAPI_Api extends Vtiger_Api_Controller {
             if ($value !== null && $value !== '') {
                 $updates[] = "$field = ?";
                 $params[] = $value;
-                if (isset($beforeData[$field]) && $beforeData[$field] !== $value) {
-                    $changes[] = array(
-                        'field' => $field,
-                        'old_value' => $beforeData[$field],
-                        'new_value' => $value,
-                    );
-                }
             }
         }
 
@@ -98,7 +86,12 @@ class Documents_ComplianceAPI_Api extends Vtiger_Api_Controller {
         $receiptDate = $request->get('receipt_date');
         $preservationType = $request->get('preservation_type');
         if ($preservationType === 'scanner' && !empty($receiptDate)) {
-            require_once 'modules/Documents/utils/DeadlineCalculator.php';
+            // DeadlineCalculator は未実装のため、存在する場合のみ利用する
+            // （require_once で直接読み込むと Fatal error になり保存全体が失敗する）
+            $deadlineCalculatorPath = 'modules/Documents/utils/DeadlineCalculator.php';
+            if (file_exists($deadlineCalculatorPath)) {
+                require_once $deadlineCalculatorPath;
+            }
             if (class_exists('Documents_DeadlineCalculator')) {
                 $deadline = Documents_DeadlineCalculator::calculate($receiptDate);
                 if ($deadline) {
@@ -119,10 +112,9 @@ class Documents_ComplianceAPI_Api extends Vtiger_Api_Controller {
             }
         }
 
-        // 監査ログ記録
-        if (!empty($changes)) {
-            Documents_AuditLogger::logUpdate($notesId, $changes);
-        }
+        // 監査ログ記録（項目値が実際に変わった場合のみ）
+        $afterSnapshot = Documents_AuditLogger::snapshotFields($notesId);
+        Documents_AuditLogger::logFieldChanges($notesId, $beforeSnapshot, $afterSnapshot);
 
         // 適合チェック実行
         $complianceResult = Documents_ComplianceChecker::check($notesId);

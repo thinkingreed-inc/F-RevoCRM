@@ -185,11 +185,11 @@ class Documents extends CRMEntity {
 		}
 
 		// 電帳法対応: ファイルハッシュ計算・監査ログ記録
-		if ($filelocationtype == 'I') {
-			try {
-				require_once 'modules/Documents/utils/FileHasher.php';
-				require_once 'modules/Documents/utils/AuditLogger.php';
+		try {
+			require_once 'modules/Documents/utils/FileHasher.php';
+			require_once 'modules/Documents/utils/AuditLogger.php';
 
+			if ($filelocationtype == 'I') {
 				$oldHash = null;
 				if ($insertion_mode == 'edit') {
 					// 既存ハッシュを取得（ファイル差替え検知用）
@@ -202,25 +202,31 @@ class Documents extends CRMEntity {
 				// ハッシュ計算・保存
 				$newHash = Documents_FileHasher::computeAndSave($this->id);
 
-				// 監査ログ
+				// 監査ログ・ファイルバージョン記録
+				// ファイルが変わっていない項目値のみの更新ではバージョンを増やさない
 				if ($insertion_mode != 'edit') {
 					// 新規作成
 					Documents_AuditLogger::logCreate($this->id, array(
 						'title' => $this->column_fields['notes_title'],
 						'filename' => $filename,
 					), $newHash);
+					if ($newHash !== false) {
+						$this->recordFileVersion($this->id, $newHash, $filesize, $insertion_mode);
+					}
 				} elseif ($newHash !== false && $oldHash !== $newHash) {
 					// ファイル差替え
 					Documents_AuditLogger::logFileReplace($this->id, $oldHash, $newHash);
-				}
-
-				// ファイルバージョン記録
-				if ($newHash !== false) {
 					$this->recordFileVersion($this->id, $newHash, $filesize, $insertion_mode);
 				}
-			} catch (Exception $e) {
-				$log->error("Compliance processing failed for record {$this->id}: " . $e->getMessage());
+			} elseif ($insertion_mode != 'edit') {
+				// 外部URL等（ハッシュ対象外）でも登録履歴は残す
+				Documents_AuditLogger::logCreate($this->id, array(
+					'title' => $this->column_fields['notes_title'],
+					'filename' => isset($filename) ? $filename : '',
+				));
 			}
+		} catch (Exception $e) {
+			$log->error("Compliance processing failed for record {$this->id}: " . $e->getMessage());
 		}
 	}
 

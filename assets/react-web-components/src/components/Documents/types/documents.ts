@@ -46,12 +46,43 @@ export interface ComplianceDetailData extends ComplianceListData {
   compliance_notes: string | null;
 }
 
+/** 監査ログの項目値変更 */
+export interface AuditLogChange {
+  /** フィールド名 */
+  field: string;
+  /** 翻訳済みフィールドラベル（サーバー側で付与） */
+  label?: string;
+  old_value: string | null;
+  new_value: string | null;
+  /** 表示用に整形された値（ピックリスト・参照等を解決したもの） */
+  old_display?: string | null;
+  new_display?: string | null;
+}
+
+/** 監査ログの操作詳細 */
+export interface AuditLogDetail {
+  /** 項目値の変更内容 */
+  changes?: AuditLogChange[];
+  /** 変更理由 */
+  reason?: string;
+  /** ファイル差し替えの場合true */
+  file_replaced?: boolean;
+  /** 新規登録時のタイトル */
+  title?: string;
+  /** 新規登録時のファイル名 */
+  filename?: string;
+  /** ハッシュ検証結果 */
+  result?: "success" | "failure";
+  /** ハッシュ検証メッセージ */
+  message?: string;
+}
+
 /** 監査ログエントリ */
 export interface AuditLogEntry {
   audit_id: number;
   action_type:
     "create" | "update" | "delete" | "restore" | "download" | "verify";
-  action_detail: any;
+  action_detail: AuditLogDetail | string | null;
   file_hash_before: string | null;
   file_hash_after: string | null;
   performed_by: number;

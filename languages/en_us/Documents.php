@@ -253,6 +253,17 @@ $languageStrings = array(
 	'LBL_UNRELATED_ONLY' => 'Unrelated Only',
 	'LBL_VERSION_CURRENT' => '(current)',
 	'LBL_HASH_LABEL' => 'Hash',
+	'LBL_DOWNLOAD_VERSION' => 'Download',
+	'LBL_NO_FILE_VERSIONS' => 'No file version history',
+	'LBL_NO_AUDIT_LOG' => 'No change history',
+	'LBL_HISTORY_SUMMARY' => '%s: %s / %s: %s',
+	'LBL_COL_DATETIME' => 'Date',
+	'LBL_COL_ACTION' => 'Action',
+	'LBL_COL_PERFORMER' => 'Performed By',
+	'LBL_COL_DETAIL' => 'Detail',
+	'LBL_FILE_REPLACED' => 'File replaced',
+	'LBL_VERIFY_SUCCESS' => 'Hash verified: match',
+	'LBL_VERIFY_FAILURE' => 'Hash verified: mismatch',
 );
 
 $jsLanguageStrings = array(

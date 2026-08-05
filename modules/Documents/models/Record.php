@@ -134,6 +134,41 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 	}
 
 	/**
+	 * レコードを保存する
+	 *
+	 * 保存前後の項目値を比較し、変更内容を監査ログ（変更履歴）に記録する。
+	 * ファイル差替えの履歴は Documents::save_module() で記録されるため、
+	 * ここでは項目値の変更のみを対象とする。
+	 */
+	public function save() {
+		require_once 'modules/Documents/utils/AuditLogger.php';
+
+		$recordId = $this->getId();
+		$isUpdate = !empty($recordId);
+		$beforeSnapshot = array();
+		if ($isUpdate) {
+			$beforeSnapshot = Documents_AuditLogger::snapshotFields($recordId);
+		}
+
+		parent::save();
+
+		if (!$isUpdate) {
+			return;
+		}
+
+		// 監査ログの記録に失敗しても保存自体は成功として扱う
+		try {
+			$afterSnapshot = Documents_AuditLogger::snapshotFields($recordId);
+			Documents_AuditLogger::logFieldChanges($recordId, $beforeSnapshot, $afterSnapshot);
+		} catch (Exception $e) {
+			global $log;
+			if (isset($log) && is_object($log)) {
+				$log->error("Documents audit log failed for record {$recordId}: " . $e->getMessage());
+			}
+		}
+	}
+
+	/**
 	 * 電帳法対象ドキュメントかどうかを判定する
 	 *
 	 * @return bool
