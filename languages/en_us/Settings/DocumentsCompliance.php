@@ -38,6 +38,20 @@ $languageStrings = array(
 	'LBL_DAY_SUFFIX' => 'business days',
 	'LBL_MONTH_SUFFIX' => 'months',
 
+	// Transaction records per document category
+	'LBL_TRANSACTION_MODULE_SETTINGS' => 'Transaction records',
+	'LBL_TRANSACTION_MODULE_NOTE' => 'For each document category, choose which modules a document must be linked to in order to be considered compliant. This is used for the searchability requirement of the Electronic Books Preservation Act.',
+	'LBL_DOCUMENT_CATEGORY' => 'Document category',
+	'LBL_CATEGORY_MODULES_SAVED' => 'Transaction record settings saved',
+	'LBL_NO_MODULE_SELECTED_NOTE' => 'Categories with no module selected do not require a linked record to be compliant.',
+	'LBL_RECHECK_COMPLIANCE' => 'Re-run compliance check',
+	'LBL_RECHECK_NOTE' => 'Changing the criteria does not update the compliance status of existing documents. Re-run the check if needed.',
+	'LBL_CONFIRM_RECHECK' => 'Re-run the compliance check for all documents in scope using the current criteria. Continue?',
+	'LBL_RECHECK_RESULT' => 'Compliance check finished (%s checked, %s compliant, %s non-compliant)',
+	'LBL_INVALID_CATEGORY_MODULES' => 'Invalid transaction record settings',
+	'LBL_INVALID_CATEGORY' => 'Invalid document category',
+	'LBL_INVALID_MODULE' => 'Documents cannot be linked to the specified module (%s)',
+
 	// Messages
 	'LBL_INVALID_POLICY' => 'Invalid deadline policy',
 	'LBL_INVALID_BUSINESS_DAYS' => 'Enter the grace period as an integer between 1 and %s',

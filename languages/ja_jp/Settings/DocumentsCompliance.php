@@ -38,6 +38,20 @@ $languageStrings = array(
 	'LBL_DAY_SUFFIX' => '営業日',
 	'LBL_MONTH_SUFFIX' => 'か月',
 
+	// 取引レコードの判定（書類区分ごと）
+	'LBL_TRANSACTION_MODULE_SETTINGS' => '取引レコードの判定',
+	'LBL_TRANSACTION_MODULE_NOTE' => '書類区分ごとに、どのモジュールのレコードと関連付けられていれば適合とみなすかを設定します。電帳法の検索要件（取引先などから探せること）を満たすための判定に使います。',
+	'LBL_DOCUMENT_CATEGORY' => '書類区分',
+	'LBL_CATEGORY_MODULES_SAVED' => '取引レコードの判定を保存しました',
+	'LBL_NO_MODULE_SELECTED_NOTE' => 'モジュールを1つも選ばない書類区分は、関連付けを適合の条件にしません。',
+	'LBL_RECHECK_COMPLIANCE' => '適合状態を再判定',
+	'LBL_RECHECK_NOTE' => '判定基準を変更しても既存ドキュメントの適合状態は変わりません。必要に応じて再判定してください。',
+	'LBL_CONFIRM_RECHECK' => '電帳法対象のドキュメントすべての適合状態を、現在の判定基準で再判定します。よろしいですか？',
+	'LBL_RECHECK_RESULT' => '適合状態を再判定しました（対象 %s件 / 適合 %s件 / 不適合 %s件）',
+	'LBL_INVALID_CATEGORY_MODULES' => '取引レコードの判定の指定が正しくありません',
+	'LBL_INVALID_CATEGORY' => '書類区分の指定が正しくありません',
+	'LBL_INVALID_MODULE' => '指定されたモジュール（%s）にはドキュメントを紐づけられません',
+
 	// メッセージ
 	'LBL_INVALID_POLICY' => '入力期限の方針の指定が正しくありません',
 	'LBL_INVALID_BUSINESS_DAYS' => '猶予の営業日数は1〜%s の整数で入力してください',

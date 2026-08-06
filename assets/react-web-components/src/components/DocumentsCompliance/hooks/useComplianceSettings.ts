@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import type {
+  CategoryModules,
   ComplianceSettingsInfo,
   DeadlineSettings,
   RecalculateResult,
+  RecheckResult,
+  SaveCategoryModulesResult,
   SaveSettingsResult,
 } from "../types/documentsCompliance";
 
@@ -78,6 +81,10 @@ interface UseComplianceSettingsResult {
   save: (settings: DeadlineSettings) => Promise<void>;
   /** 既存ドキュメントの入力期限を再計算する */
   recalculate: () => Promise<RecalculateResult>;
+  /** 書類区分ごとの取引レコード判定を保存する */
+  saveCategoryModules: (categoryModules: CategoryModules) => Promise<void>;
+  /** 電帳法対象ドキュメントの適合状態を再判定する */
+  recheckCompliance: () => Promise<RecheckResult>;
 }
 
 /**
@@ -138,5 +145,46 @@ export function useComplianceSettings(): UseComplianceSettingsResult {
     }
   }, []);
 
-  return { info, isLoading, isSaving, error, setError, save, recalculate };
+  const saveCategoryModules = useCallback(
+    async (categoryModules: CategoryModules) => {
+      setIsSaving(true);
+      setError(null);
+      try {
+        const result = await callApi<SaveCategoryModulesResult>(
+          "save_category_modules",
+          { category_modules: JSON.stringify(categoryModules) },
+        );
+        setInfo((current) =>
+          current
+            ? { ...current, category_modules: result.category_modules }
+            : current,
+        );
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [],
+  );
+
+  const recheckCompliance = useCallback(async () => {
+    setIsSaving(true);
+    setError(null);
+    try {
+      return await callApi<RecheckResult>("recheck_compliance");
+    } finally {
+      setIsSaving(false);
+    }
+  }, []);
+
+  return {
+    info,
+    isLoading,
+    isSaving,
+    error,
+    setError,
+    save,
+    recalculate,
+    saveCategoryModules,
+    recheckCompliance,
+  };
 }

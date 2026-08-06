@@ -6,6 +6,7 @@
  * 計算そのものは Documents_DeadlineCalculator（modules/Documents/utils）が行う。
  */
 require_once 'modules/Documents/utils/DeadlineCalculator.php';
+require_once 'modules/Documents/utils/ComplianceChecker.php';
 
 class Settings_DocumentsCompliance_Module_Model extends Settings_Vtiger_Module_Model {
 
@@ -39,6 +40,129 @@ class Settings_DocumentsCompliance_Module_Model extends Settings_Vtiger_Module_M
 	 */
 	public static function getSettings() {
 		return Documents_DeadlineCalculator::getSettings();
+	}
+
+	/**
+	 * 書類区分の選択肢を返す
+	 *
+	 * @return array 値 => 表示名
+	 */
+	public static function getDocumentCategories() {
+		$categories = array();
+		foreach (Documents_ComplianceChecker::VALID_CATEGORIES as $category) {
+			$categories[$category] = vtranslate($category, 'Documents');
+		}
+		return $categories;
+	}
+
+	/**
+	 * 取引レコードとして選べるモジュールを返す
+	 *
+	 * ドキュメントの関連リストを持つ（=ドキュメントを紐づけられる）モジュールを対象とする。
+	 *
+	 * @return array モジュール名 => 表示名
+	 */
+	public static function getRelatableModules() {
+		$db = PearDatabase::getInstance();
+		$documentsTabId = getTabid('Documents');
+		$result = $db->pquery(
+			"SELECT DISTINCT vtiger_tab.name FROM vtiger_relatedlists
+			 INNER JOIN vtiger_tab ON vtiger_tab.tabid = vtiger_relatedlists.tabid
+			 WHERE vtiger_relatedlists.related_tabid = ? AND vtiger_tab.presence = 0
+			 ORDER BY vtiger_tab.name",
+			array($documentsTabId)
+		);
+
+		$modules = array();
+		if ($result !== false) {
+			$count = $db->num_rows($result);
+			for ($i = 0; $i < $count; $i++) {
+				$moduleName = $db->query_result($result, $i, 'name');
+				$modules[$moduleName] = vtranslate($moduleName, $moduleName);
+			}
+		}
+
+		// 設定済みのモジュールが無効化されていても選択状態を保てるように加えておく
+		foreach (Documents_ComplianceChecker::getCategoryTransactionModules() as $categoryModules) {
+			foreach ($categoryModules as $moduleName) {
+				if (!isset($modules[$moduleName])) {
+					$modules[$moduleName] = vtranslate($moduleName, $moduleName);
+				}
+			}
+		}
+		return $modules;
+	}
+
+	/**
+	 * 書類区分ごとの取引モジュール設定を返す
+	 *
+	 * @return array 書類区分 => モジュール名の配列
+	 */
+	public static function getCategoryModules() {
+		$categoryModules = Documents_ComplianceChecker::getCategoryTransactionModules();
+		$result = array();
+		// 画面には既知の書類区分だけを出す
+		foreach (array_keys(self::getDocumentCategories()) as $category) {
+			$result[$category] = isset($categoryModules[$category])
+				? array_values($categoryModules[$category]) : array();
+		}
+		return $result;
+	}
+
+	/**
+	 * 書類区分ごとの取引モジュール設定を検証して保存する
+	 *
+	 * @param array|string $input 書類区分 => モジュール名の配列（JSON文字列も受け付ける）
+	 * @return array 保存後の設定
+	 * @throws Exception 値が不正な場合
+	 */
+	public static function saveCategoryModules($input) {
+		if (is_string($input)) {
+			$input = json_decode($input, true);
+		}
+		if (!is_array($input)) {
+			throw new Exception(vtranslate('LBL_INVALID_CATEGORY_MODULES', self::QUALIFIED_MODULE));
+		}
+
+		$categories = self::getDocumentCategories();
+		$relatableModules = self::getRelatableModules();
+		$saved = array();
+		foreach ($input as $category => $modules) {
+			if (!isset($categories[$category])) {
+				throw new Exception(vtranslate('LBL_INVALID_CATEGORY', self::QUALIFIED_MODULE));
+			}
+			if (!is_array($modules)) {
+				$modules = ($modules === '' || $modules === null) ? array() : explode(',', (string) $modules);
+			}
+			$moduleNames = array();
+			foreach ($modules as $moduleName) {
+				$moduleName = trim((string) $moduleName);
+				if ($moduleName === '') {
+					continue;
+				}
+				if (!isset($relatableModules[$moduleName])) {
+					throw new Exception(vtranslate('LBL_INVALID_MODULE', self::QUALIFIED_MODULE, $moduleName));
+				}
+				if (!in_array($moduleName, $moduleNames, true)) {
+					$moduleNames[] = $moduleName;
+				}
+			}
+			$saved[$category] = $moduleNames;
+		}
+
+		Documents_ComplianceChecker::saveCategoryTransactionModules($saved);
+		return self::getCategoryModules();
+	}
+
+	/**
+	 * 電帳法対象ドキュメントの適合チェックをやり直す
+	 *
+	 * 判定基準を変更しても既存の適合状態は変わらないため、設定画面から再判定できるようにする。
+	 *
+	 * @return array ['checked' => int, 'compliant' => int, 'non_compliant' => int]
+	 */
+	public static function recheckCompliance() {
+		return Documents_ComplianceChecker::batchCheck();
 	}
 
 	/**

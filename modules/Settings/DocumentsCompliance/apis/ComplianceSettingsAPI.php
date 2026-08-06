@@ -46,6 +46,10 @@ class Settings_DocumentsCompliance_ComplianceSettingsAPI_Api extends Vtiger_Api_
                 return $this->sendSuccess($this->save($request));
             case 'recalculate':
                 return $this->sendSuccess($this->recalculate());
+            case 'save_category_modules':
+                return $this->sendSuccess($this->saveCategoryModules($request));
+            case 'recheck_compliance':
+                return $this->sendSuccess(Settings_DocumentsCompliance_Module_Model::recheckCompliance());
             default:
                 $this->sendError('Invalid mode: ' . $mode, 400);
         }
@@ -64,8 +68,20 @@ class Settings_DocumentsCompliance_ComplianceSettingsAPI_Api extends Vtiger_Api_
             );
         }
 
+        $categories = array();
+        foreach (Settings_DocumentsCompliance_Module_Model::getDocumentCategories() as $value => $label) {
+            $categories[] = array('value' => $value, 'label' => $label);
+        }
+        $modules = array();
+        foreach (Settings_DocumentsCompliance_Module_Model::getRelatableModules() as $name => $label) {
+            $modules[] = array('value' => $name, 'label' => $label);
+        }
+
         return array(
             'policies' => $policies,
+            'document_categories' => $categories,
+            'relatable_modules' => $modules,
+            'category_modules' => Settings_DocumentsCompliance_Module_Model::getCategoryModules(),
             'settings' => $this->formatSettings(Settings_DocumentsCompliance_Module_Model::getSettings()),
             'example' => Settings_DocumentsCompliance_Module_Model::getExample(),
             'max_days' => Settings_DocumentsCompliance_Module_Model::MAX_DAYS,
@@ -89,6 +105,17 @@ class Settings_DocumentsCompliance_ComplianceSettingsAPI_Api extends Vtiger_Api_
             'settings' => $this->formatSettings($settings),
             'example' => Settings_DocumentsCompliance_Module_Model::getExample(),
         );
+    }
+
+    /**
+     * 書類区分ごとの取引モジュール設定を保存する
+     *
+     * category_modules は {"invoice":["Invoice",...],...} 形式のJSONで受け取る。
+     */
+    private function saveCategoryModules(Vtiger_Request $request) {
+        $input = $request->get('category_modules');
+        $saved = Settings_DocumentsCompliance_Module_Model::saveCategoryModules($input);
+        return array('category_modules' => $saved);
     }
 
     /**
@@ -125,6 +152,10 @@ class Settings_DocumentsCompliance_ComplianceSettingsAPI_Api extends Vtiger_Api_
             'LBL_SAVE', 'LBL_SAVING', 'LBL_LOADING', 'LBL_SETTINGS_SAVED',
             'LBL_RECALCULATE', 'LBL_RECALCULATE_NOTE', 'LBL_CONFIRM_RECALCULATE',
             'LBL_RECALCULATE_RESULT', 'LBL_DAY_SUFFIX', 'LBL_MONTH_SUFFIX',
+            'LBL_TRANSACTION_MODULE_SETTINGS', 'LBL_TRANSACTION_MODULE_NOTE',
+            'LBL_DOCUMENT_CATEGORY', 'LBL_CATEGORY_MODULES_SAVED',
+            'LBL_RECHECK_COMPLIANCE', 'LBL_RECHECK_NOTE', 'LBL_CONFIRM_RECHECK',
+            'LBL_RECHECK_RESULT', 'LBL_NO_MODULE_SELECTED_NOTE',
         );
         $labels = array();
         foreach ($keys as $key) {

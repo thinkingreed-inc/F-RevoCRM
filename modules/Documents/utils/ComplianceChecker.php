@@ -6,11 +6,35 @@
  */
 class Documents_ComplianceChecker {
 
-    /** 電帳法検索要件を満たすために関連付けが必要なモジュール */
-    const TRANSACTION_MODULES = array(
+    /** 書類区分ごとの設定が無い場合に取引レコードとみなすモジュール */
+    const DEFAULT_TRANSACTION_MODULES = array(
         'SalesOrder', 'Invoice', 'PurchaseOrder', 'Quotes',
-        'Accounts', 'Vendors',
+        'ServiceContracts', 'Accounts', 'Vendors',
     );
+
+    /**
+     * 書類区分ごとに取引レコードとみなすモジュールの既定値
+     * 設定画面（設定 > システム構成 > 電子帳簿保存法）で変更できる。
+     */
+    const DEFAULT_CATEGORY_TRANSACTION_MODULES = array(
+        'invoice' => array('Invoice', 'SalesOrder', 'PurchaseOrder', 'Accounts', 'Vendors'),
+        'receipt' => array('Invoice', 'PurchaseOrder', 'Accounts', 'Vendors'),
+        'contract' => array('ServiceContracts', 'Accounts', 'Vendors'),
+        'estimate' => array('Quotes', 'Potentials', 'Accounts', 'Vendors'),
+        'order' => array('SalesOrder', 'PurchaseOrder', 'Accounts', 'Vendors'),
+        'delivery' => array('SalesOrder', 'Invoice', 'Accounts', 'Vendors'),
+        'other' => array('Invoice', 'SalesOrder', 'PurchaseOrder', 'Quotes',
+            'ServiceContracts', 'Accounts', 'Vendors'),
+    );
+
+    /** 設定テーブル（ドキュメント機能の設定） */
+    const SETTINGS_TABLE = 'vtiger_documents_settings';
+
+    /** 書類区分ごとの取引モジュールを保持する設定名 */
+    const SETTING_CATEGORY_MODULES = 'compliance_transaction_modules';
+
+    /** 設定値のキャッシュ（未読込は null） */
+    private static $categoryModules = null;
 
     /** 書類区分の有効値 */
     const VALID_CATEGORIES = array(
@@ -42,20 +66,151 @@ class Documents_ComplianceChecker {
     }
 
     /**
+     * 書類区分ごとに取引レコードとみなすモジュールの設定を返す
+     *
+     * @return array 書類区分 => モジュール名の配列
+     */
+    public static function getCategoryTransactionModules() {
+        if (self::$categoryModules !== null) {
+            return self::$categoryModules;
+        }
+
+        $stored = self::readSetting(self::SETTING_CATEGORY_MODULES);
+        // 保存時に HTML エンティティ化されるため、復号してから JSON を解析する
+        $settings = ($stored === null) ? null : json_decode(decode_html($stored), true);
+        if (!is_array($settings)) {
+            self::$categoryModules = self::DEFAULT_CATEGORY_TRANSACTION_MODULES;
+            return self::$categoryModules;
+        }
+
+        // 設定に無い書類区分は既定値を使う
+        $categoryModules = self::DEFAULT_CATEGORY_TRANSACTION_MODULES;
+        foreach ($settings as $category => $modules) {
+            if (!is_array($modules)) {
+                continue;
+            }
+            $categoryModules[$category] = array_values(array_unique(array_map('strval', $modules)));
+        }
+        self::$categoryModules = $categoryModules;
+        return self::$categoryModules;
+    }
+
+    /**
+     * 指定した書類区分で取引レコードとみなすモジュールを返す
+     *
+     * @param string|null $category 書類区分（未設定なら全区分の和集合）
+     * @return array モジュール名の配列
+     */
+    public static function getTransactionModules($category = null) {
+        $categoryModules = self::getCategoryTransactionModules();
+        if ($category !== null && $category !== '') {
+            if (isset($categoryModules[$category])) {
+                return $categoryModules[$category];
+            }
+            // 未知の書類区分は既定のモジュールで判定する
+            return self::DEFAULT_TRANSACTION_MODULES;
+        }
+
+        $modules = array();
+        foreach ($categoryModules as $categoryModuleList) {
+            foreach ($categoryModuleList as $module) {
+                if (!in_array($module, $modules, true)) {
+                    $modules[] = $module;
+                }
+            }
+        }
+        return empty($modules) ? self::DEFAULT_TRANSACTION_MODULES : $modules;
+    }
+
+    /**
+     * 設定を保存する
+     *
+     * @param array $categoryModules 書類区分 => モジュール名の配列
+     * @return array 保存後の設定
+     */
+    public static function saveCategoryTransactionModules($categoryModules) {
+        $db = PearDatabase::getInstance();
+        $value = json_encode($categoryModules, JSON_UNESCAPED_UNICODE);
+
+        $existing = $db->pquery(
+            'SELECT name FROM ' . self::SETTINGS_TABLE . ' WHERE name = ?',
+            array(self::SETTING_CATEGORY_MODULES)
+        );
+        if ($existing !== false && $db->num_rows($existing) > 0) {
+            $db->pquery(
+                'UPDATE ' . self::SETTINGS_TABLE . ' SET value = ? WHERE name = ?',
+                array($value, self::SETTING_CATEGORY_MODULES)
+            );
+        } else {
+            $db->pquery(
+                'INSERT INTO ' . self::SETTINGS_TABLE . ' (name, value) VALUES (?, ?)',
+                array(self::SETTING_CATEGORY_MODULES, $value)
+            );
+        }
+
+        self::$categoryModules = null;
+        return self::getCategoryTransactionModules();
+    }
+
+    /**
+     * 設定値のキャッシュを破棄する
+     */
+    public static function clearCache() {
+        self::$categoryModules = null;
+    }
+
+    /**
+     * 設定テーブルから値を読み出す（テーブル・行が無ければ null）
+     *
+     * @param string $name
+     * @return string|null
+     */
+    private static function readSetting($name) {
+        $db = PearDatabase::getInstance();
+        // マイグレーション前でもエラーにしない
+        $tableExists = $db->pquery('SHOW TABLES LIKE ?', array(self::SETTINGS_TABLE));
+        if ($tableExists === false || $db->num_rows($tableExists) === 0) {
+            return null;
+        }
+        $result = $db->pquery(
+            'SELECT value FROM ' . self::SETTINGS_TABLE . ' WHERE name = ?',
+            array($name)
+        );
+        if ($result === false || $db->num_rows($result) === 0) {
+            return null;
+        }
+        return (string) $db->query_result($result, 0, 'value');
+    }
+
+    /**
      * 関連レコードの有無をチェックする
      *
      * @param int $notesId ドキュメントID
-     * @return array ['has_related' => bool, 'related_records' => array]
+     * @param string|null $category 書類区分（省略時はドキュメントの書類区分を使う）
+     * @return array ['has_related' => bool, 'related_records' => array, 'modules' => array]
      */
-    public static function checkRelatedRecords($notesId) {
+    public static function checkRelatedRecords($notesId, $category = null) {
         $db = PearDatabase::getInstance();
+        if ($category === null) {
+            $categoryResult = $db->pquery(
+                "SELECT document_category FROM vtiger_notes WHERE notesid = ?", array($notesId));
+            if ($categoryResult !== false && $db->num_rows($categoryResult) > 0) {
+                $category = $db->query_result($categoryResult, 0, 'document_category');
+            }
+        }
+        $transactionModules = self::getTransactionModules($category);
+        if (empty($transactionModules)) {
+            // 対象モジュールが無い設定なら関連付けは要求しない
+            return array('has_related' => true, 'related_records' => array(), 'modules' => array());
+        }
+
         $result = $db->pquery(
             "SELECT vtiger_senotesrel.crmid, vtiger_crmentity.setype, vtiger_crmentity.label
             FROM vtiger_senotesrel
             INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_senotesrel.crmid
             WHERE vtiger_senotesrel.notesid = ? AND vtiger_crmentity.deleted = 0
-            AND vtiger_crmentity.setype IN (" . generateQuestionMarks(self::TRANSACTION_MODULES) . ")",
-            array_merge(array($notesId), self::TRANSACTION_MODULES)
+            AND vtiger_crmentity.setype IN (" . generateQuestionMarks($transactionModules) . ")",
+            array_merge(array($notesId), $transactionModules)
         );
 
         $relatedRecords = array();
@@ -74,6 +229,7 @@ class Documents_ComplianceChecker {
         return array(
             'has_related' => count($relatedRecords) > 0,
             'related_records' => $relatedRecords,
+            'modules' => $transactionModules,
         );
     }
 
@@ -109,8 +265,8 @@ class Documents_ComplianceChecker {
         }
         $row = $db->query_result_rowdata($result, 0);
 
-        // 1. 関連レコードチェック
-        $relCheck = self::checkRelatedRecords($notesId);
+        // 1. 関連レコードチェック（書類区分ごとに対象モジュールが異なる）
+        $relCheck = self::checkRelatedRecords($notesId, $row['document_category']);
         if (!$relCheck['has_related']) {
             $issueKeys[] = 'LBL_NO_RELATED_RECORD';
         }
