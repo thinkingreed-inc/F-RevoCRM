@@ -22,7 +22,8 @@ $checkCol = $db->pquery(
 	array($dbconfig['db_name'])
 );
 if ($db->num_rows($checkCol) === 0) {
-	echo "[ERROR] indexed_content カラムが存在しません。先に add_indexed_content.php を実行してください。\n";
+	echo "[ERROR] indexed_content カラムが存在しません。先にマイグレーションを実行してください。\n";
+	echo "        php setup/migration/run_migration.php --all\n";
 	exit(1);
 }
 
