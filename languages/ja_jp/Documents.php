@@ -252,7 +252,7 @@ $languageStrings = array(
 
 	// アップロード関連 (React)
 	'LBL_DROP_FILES_HERE' => 'ファイルをここにドロップしてアップロード',
-	'LBL_UPLOADING_PROGRESS' => 'アップロード中... %s%%',
+	'LBL_UPLOADING_PROGRESS' => 'アップロード中... %s%',
 	'LBL_MAX_UPLOAD_FILES' => '一度にアップロードできるファイルは最大10件です',
 	'LBL_DRAG_DROP_OR_CLICK' => 'ファイルをドラッグ&ドロップ または クリックして選択',
 	'LBL_CURRENT_FILE' => '現在のファイル: %s（変更する場合はファイルを選択）',
