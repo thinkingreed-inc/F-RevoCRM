@@ -66,10 +66,11 @@ import {
 // folder-id: 初期表示フォルダID
 // user-id: ログインユーザーID
 // initial-view-mode: 初期表示モード (list|grid|preview)
+// max-upload-size: 1ファイルあたりの最大アップロードサイズ（バイト）
 createWebComponent(
   DocumentsPage,
   "documents-page",
-  ["folder-id", "user-id", "initial-view-mode"],
+  ["folder-id", "user-id", "initial-view-mode", "max-upload-size"],
   ["onNavigate", "onFolderChange"],
 );
 

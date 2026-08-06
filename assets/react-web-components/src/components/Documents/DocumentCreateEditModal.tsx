@@ -29,6 +29,8 @@ interface DocumentCreateEditModalProps {
   defaultFolderId: number;
   parentModule?: string;
   parentId?: number;
+  /** 1ファイルあたりの最大アップロードサイズ（バイト）。0/未指定なら検証しない */
+  maxUploadSize?: number;
   onSave: () => void;
   onClose: () => void;
 }
@@ -96,6 +98,30 @@ function convertToFieldInfo(docField: DocFieldInfo): FieldInfo {
   };
 }
 
+/** バイト数を表示用の文字列にする（例: 2 MB） */
+function formatMaxSize(bytes: number): string {
+  if (bytes >= 1024 * 1024) {
+    return `${Math.round((bytes / (1024 * 1024)) * 10) / 10} MB`;
+  }
+  return `${Math.round(bytes / 1024)} KB`;
+}
+
+/**
+ * Save アクションのレスポンスからエラーメッセージを取り出す。
+ * 成功時はリダイレクト（HTML）が返るため、JSON のエラーだけを拾う。
+ */
+function extractSaveError(text: string): string | null {
+  if (!text.includes('"success":false')) return null;
+  try {
+    const data = JSON.parse(text);
+    const message = data?.error?.message || data?.error?.code;
+    if (typeof message === "string" && message.trim() !== "") return message;
+  } catch {
+    // JSON でない場合はメッセージを取り出せない
+  }
+  return "";
+}
+
 export const DocumentCreateEditModal: React.FC<
   DocumentCreateEditModalProps
 > = ({
@@ -106,6 +132,7 @@ export const DocumentCreateEditModal: React.FC<
   defaultFolderId,
   parentModule,
   parentId,
+  maxUploadSize,
   onSave,
   onClose,
 }) => {
@@ -221,12 +248,20 @@ export const DocumentCreateEditModal: React.FC<
 
   const handleFileSelect = useCallback(
     (file: File) => {
+      // サーバー側の上限を超えるファイルは送信前に弾く
+      // （送信してしまうと PHP がファイルを破棄し、原因の分かりにくいエラーになる）
+      if (maxUploadSize && maxUploadSize > 0 && file.size > maxUploadSize) {
+        setSelectedFile(null);
+        setError(t("LBL_UPLOAD_ERR_SIZE", formatMaxSize(maxUploadSize)));
+        return;
+      }
+      setError(null);
       setSelectedFile(file);
       if (!title) {
         setTitle(file.name.replace(/\.[^.]+$/, ""));
       }
     },
-    [title],
+    [title, maxUploadSize, t],
   );
 
   /** Append dynamic field values to form params for the main Save action.
@@ -291,9 +326,10 @@ export const DocumentCreateEditModal: React.FC<
           body: formData,
         });
         const text = await response.text();
-        // Save action redirects, check for error
-        if (text.includes("error") && text.includes('"success":false')) {
-          throw new Error(t("LBL_SAVE_FAILED"));
+        // 成功時はリダイレクトされる。JSON エラーならサーバーのメッセージを表示する
+        const saveError = extractSaveError(text);
+        if (saveError !== null) {
+          throw new Error(saveError || t("LBL_SAVE_FAILED"));
         }
 
         // 電帳法メタデータ保存（書類区分が指定されている場合）
@@ -331,8 +367,9 @@ export const DocumentCreateEditModal: React.FC<
           body: bodyParams.toString(),
         });
         const text = await response.text();
-        if (text.includes('"success":false')) {
-          throw new Error(t("LBL_SAVE_FAILED"));
+        const saveError = extractSaveError(text);
+        if (saveError !== null) {
+          throw new Error(saveError || t("LBL_SAVE_FAILED"));
         }
 
         // 電帳法メタデータ保存（書類区分が指定されている場合）

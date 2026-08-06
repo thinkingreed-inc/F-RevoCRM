@@ -328,6 +328,16 @@ $languageStrings = array(
 	'LBL_HASH_MATCHED' => 'Hash values match',
 	'LBL_HASH_MISMATCHED' => 'Possible tampering: hash values do not match',
 
+	// Upload errors
+	'LBL_UPLOAD_ERR_SIZE' => 'The file size exceeds the limit (%s)',
+	'LBL_UPLOAD_ERR_PARTIAL' => 'The file was only partially uploaded',
+	'LBL_UPLOAD_ERR_NO_TMP_DIR' => 'The temporary folder is missing on the server',
+	'LBL_UPLOAD_ERR_CANT_WRITE' => 'Failed to write the file on the server',
+	'LBL_UPLOAD_ERR_EXTENSION' => 'A PHP extension stopped the upload',
+	'LBL_UPLOAD_ERR_UNKNOWN' => 'Failed to upload the file',
+	'LBL_UPLOAD_ERR_NO_FILE' => 'No file was uploaded',
+	'LBL_MAX_UPLOAD_SIZE_HINT' => 'Up to %s per file',
+
 	// Error messages
 	'LBL_FILE_NOT_FOUND' => 'File not found',
 	'LBL_FILE_READ_FAILED' => 'Cannot read the file',

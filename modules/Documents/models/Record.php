@@ -134,6 +134,57 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 	}
 
 	/**
+	 * アップロードされたファイルを検証する
+	 *
+	 * アップロードに失敗しているのに保存を続けると、ファイルが添付されていない
+	 * ドキュメントがエラー表示もなく登録されてしまうため、保存前に例外を投げる。
+	 *
+	 * @throws Exception アップロードエラー時
+	 */
+	protected function validateUploadedFile() {
+		$fieldName = 'filename';
+		if (!isset($_FILES[$fieldName]) || !is_array($_FILES[$fieldName])) {
+			return;
+		}
+		$file = $_FILES[$fieldName];
+		// 複数ファイル形式（配列）はこのモジュールでは扱わない
+		if (isset($file['name']) && is_array($file['name'])) {
+			return;
+		}
+
+		$errorCode = isset($file['error']) ? (int) $file['error'] : UPLOAD_ERR_OK;
+		if ($errorCode === UPLOAD_ERR_NO_FILE || (empty($file['name']) && $errorCode === UPLOAD_ERR_OK)) {
+			// ファイル未選択（既存ファイルを維持するケース）
+			return;
+		}
+
+		$maxSizeLabel = Documents_Module_Model::getEffectiveMaxUploadSizeLabel();
+		switch ($errorCode) {
+			case UPLOAD_ERR_OK:
+				break;
+			case UPLOAD_ERR_INI_SIZE:
+			case UPLOAD_ERR_FORM_SIZE:
+				throw new Exception(vtranslate('LBL_UPLOAD_ERR_SIZE', 'Documents', $maxSizeLabel));
+			case UPLOAD_ERR_PARTIAL:
+				throw new Exception(vtranslate('LBL_UPLOAD_ERR_PARTIAL', 'Documents'));
+			case UPLOAD_ERR_NO_TMP_DIR:
+				throw new Exception(vtranslate('LBL_UPLOAD_ERR_NO_TMP_DIR', 'Documents'));
+			case UPLOAD_ERR_CANT_WRITE:
+				throw new Exception(vtranslate('LBL_UPLOAD_ERR_CANT_WRITE', 'Documents'));
+			case UPLOAD_ERR_EXTENSION:
+				throw new Exception(vtranslate('LBL_UPLOAD_ERR_EXTENSION', 'Documents'));
+			default:
+				throw new Exception(vtranslate('LBL_UPLOAD_ERR_UNKNOWN', 'Documents'));
+		}
+
+		// PHP 側の上限を通っても vtiger の upload_maxsize を超える場合は保存しない
+		$maxSize = Documents_Module_Model::getEffectiveMaxUploadSizeInBytes();
+		if ($maxSize > 0 && isset($file['size']) && (int) $file['size'] > $maxSize) {
+			throw new Exception(vtranslate('LBL_UPLOAD_ERR_SIZE', 'Documents', $maxSizeLabel));
+		}
+	}
+
+	/**
 	 * レコードを保存する
 	 *
 	 * 保存前後の項目値を比較し、変更内容を監査ログ（変更履歴）に記録する。
@@ -142,6 +193,9 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 	 */
 	public function save() {
 		require_once 'modules/Documents/utils/AuditLogger.php';
+
+		// アップロード失敗時はレコードを作らずにエラーを返す
+		$this->validateUploadedFile();
 
 		$recordId = $this->getId();
 		$isUpdate = !empty($recordId);

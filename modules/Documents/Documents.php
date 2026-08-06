@@ -112,6 +112,21 @@ class Documents extends CRMEntity {
 							}
 						}
 
+					} else {
+						// アップロード失敗（サイズ超過など）。ファイル情報を空で上書きすると
+						// 添付なしのドキュメントが出来てしまうため、既存の値を維持する
+						$log->error("Documents file upload failed for record {$this->id}: upload error code {$errCode}");
+						$fileres = $adb->pquery("select filetype, filesize, filename, filedownloadcount, filelocationtype from vtiger_notes where notesid=?", array($this->id));
+						if ($adb->num_rows($fileres) > 0) {
+							$filename = $adb->query_result($fileres, 0, 'filename');
+							$filetype = $adb->query_result($fileres, 0, 'filetype');
+							$filesize = $adb->query_result($fileres, 0, 'filesize');
+							$filedownloadcount = $adb->query_result($fileres, 0, 'filedownloadcount');
+							$filelocationtype = $adb->query_result($fileres, 0, 'filelocationtype');
+						}
+						if (empty($filelocationtype)) {
+							$filelocationtype = 'I';
+						}
 					}
 			}elseif($this->mode == 'edit') {
 				$fileres = $adb->pquery("select filetype, filesize,filename,filedownloadcount,filelocationtype from vtiger_notes where notesid=?", array($this->id));

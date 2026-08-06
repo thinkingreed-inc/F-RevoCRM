@@ -376,6 +376,16 @@ $languageStrings = array(
 	'LBL_HASH_MATCHED' => 'ハッシュ値が一致しました',
 	'LBL_HASH_MISMATCHED' => '改ざんの可能性: ハッシュ値が不一致です',
 
+	// アップロードエラー
+	'LBL_UPLOAD_ERR_SIZE' => 'ファイルサイズが上限（%s）を超えています',
+	'LBL_UPLOAD_ERR_PARTIAL' => 'ファイルが完全にアップロードされませんでした',
+	'LBL_UPLOAD_ERR_NO_TMP_DIR' => 'サーバーの一時フォルダが見つかりません',
+	'LBL_UPLOAD_ERR_CANT_WRITE' => 'サーバーにファイルを書き込めませんでした',
+	'LBL_UPLOAD_ERR_EXTENSION' => 'PHP拡張によりアップロードが中断されました',
+	'LBL_UPLOAD_ERR_UNKNOWN' => 'ファイルのアップロードに失敗しました',
+	'LBL_UPLOAD_ERR_NO_FILE' => 'ファイルがアップロードされていません',
+	'LBL_MAX_UPLOAD_SIZE_HINT' => '1ファイルあたり %s まで',
+
 	// エラーメッセージ
 	'LBL_FILE_NOT_FOUND' => 'ファイルが見つかりません',
 	'LBL_FILE_READ_FAILED' => 'ファイルを読み取れません',

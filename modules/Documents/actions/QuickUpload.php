@@ -112,17 +112,20 @@ class Documents_QuickUpload_Action extends Vtiger_Action_Controller {
 		switch ($errorCode) {
 			case UPLOAD_ERR_INI_SIZE:
 			case UPLOAD_ERR_FORM_SIZE:
-				return 'File size exceeds the maximum upload limit';
+				return vtranslate('LBL_UPLOAD_ERR_SIZE', 'Documents',
+					Documents_Module_Model::getEffectiveMaxUploadSizeLabel());
 			case UPLOAD_ERR_PARTIAL:
-				return 'File was only partially uploaded';
+				return vtranslate('LBL_UPLOAD_ERR_PARTIAL', 'Documents');
 			case UPLOAD_ERR_NO_FILE:
-				return 'No file was uploaded';
+				return vtranslate('LBL_UPLOAD_ERR_NO_FILE', 'Documents');
 			case UPLOAD_ERR_NO_TMP_DIR:
-				return 'Missing temporary folder';
+				return vtranslate('LBL_UPLOAD_ERR_NO_TMP_DIR', 'Documents');
 			case UPLOAD_ERR_CANT_WRITE:
-				return 'Failed to write file to disk';
+				return vtranslate('LBL_UPLOAD_ERR_CANT_WRITE', 'Documents');
+			case UPLOAD_ERR_EXTENSION:
+				return vtranslate('LBL_UPLOAD_ERR_EXTENSION', 'Documents');
 			default:
-				return 'Unknown upload error';
+				return vtranslate('LBL_UPLOAD_ERR_UNKNOWN', 'Documents');
 		}
 	}
 

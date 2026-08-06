@@ -26,6 +26,8 @@ interface DocumentsPageProps {
   folderId?: number;
   userId?: string;
   initialViewMode?: string;
+  /** 1ファイルあたりの最大アップロードサイズ（バイト）。テンプレートから渡される */
+  maxUploadSize?: number;
 }
 
 const VIEW_MODE_ICONS: Record<ViewMode, string> = {
@@ -63,6 +65,7 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = (props) => (
 const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
   folderId: initialFolderId,
   initialViewMode,
+  maxUploadSize,
 }) => {
   const { t } = useOptionalTranslation();
   const { viewMode, setViewMode } = useViewMode(initialViewMode);
@@ -929,6 +932,7 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
         defaultFolderId={
           typeof selectedFolderId === "number" ? selectedFolderId : 1
         }
+        maxUploadSize={maxUploadSize}
         onSave={() => {
           setCreateEditModalOpen(false);
           setEditTargetDoc(null);
