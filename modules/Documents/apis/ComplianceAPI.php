@@ -7,6 +7,7 @@
 require_once 'modules/Documents/utils/FileHasher.php';
 require_once 'modules/Documents/utils/AuditLogger.php';
 require_once 'modules/Documents/utils/ComplianceChecker.php';
+require_once 'modules/Documents/utils/DeadlineCalculator.php';
 
 class Documents_ComplianceAPI_Api extends Vtiger_Api_Controller {
 
@@ -82,25 +83,6 @@ class Documents_ComplianceAPI_Api extends Vtiger_Api_Controller {
             }
         }
 
-        // 入力期限自動計算（スキャナ保存で受領日がある場合）
-        $receiptDate = $request->get('receipt_date');
-        $preservationType = $request->get('preservation_type');
-        if ($preservationType === 'scanner' && !empty($receiptDate)) {
-            // DeadlineCalculator は未実装のため、存在する場合のみ利用する
-            // （require_once で直接読み込むと Fatal error になり保存全体が失敗する）
-            $deadlineCalculatorPath = 'modules/Documents/utils/DeadlineCalculator.php';
-            if (file_exists($deadlineCalculatorPath)) {
-                require_once $deadlineCalculatorPath;
-            }
-            if (class_exists('Documents_DeadlineCalculator')) {
-                $deadline = Documents_DeadlineCalculator::calculate($receiptDate);
-                if ($deadline) {
-                    $updates[] = "input_deadline = ?";
-                    $params[] = $deadline;
-                }
-            }
-        }
-
         if (!empty($updates)) {
             $params[] = $notesId;
             $result = $db->pquery(
@@ -111,6 +93,9 @@ class Documents_ComplianceAPI_Api extends Vtiger_Api_Controller {
                 throw new Exception(vtranslate('LBL_COMPLIANCE_SAVE_FAILED', 'Documents'));
             }
         }
+
+        // 入力期限の自動計算（スキャナ保存で受領日がある場合。対象外になったら値を消す）
+        $deadline = Documents_DeadlineCalculator::recalculate($notesId);
 
         // 監査ログ記録（項目値が実際に変わった場合のみ）
         $afterSnapshot = Documents_AuditLogger::snapshotFields($notesId);
@@ -124,6 +109,8 @@ class Documents_ComplianceAPI_Api extends Vtiger_Api_Controller {
             'notesid' => $notesId,
             'compliance_status' => $complianceResult['status'],
             'issues' => $complianceResult['issues'],
+            'input_deadline' => $deadline['input_deadline'],
+            'input_deadline_status' => $deadline['input_deadline_status'],
         );
     }
 

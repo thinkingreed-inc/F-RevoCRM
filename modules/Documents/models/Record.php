@@ -225,6 +225,7 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 	 * 保存前後の項目値を比較し、変更内容を監査ログ（変更履歴）に記録する。
 	 * ファイル差替えの履歴は Documents::save_module() で記録されるため、
 	 * ここでは項目値の変更のみを対象とする。
+	 * 併せてスキャナ保存の入力期限を受領日から再計算する。
 	 */
 	public function save() {
 		require_once 'modules/Documents/utils/AuditLogger.php';
@@ -241,6 +242,9 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 
 		parent::save();
 
+		// 入力期限の自動計算（受領日・保存区分の変更を反映する）
+		$this->recalculateInputDeadline();
+
 		if (!$isUpdate) {
 			return;
 		}
@@ -253,6 +257,31 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 			global $log;
 			if (isset($log) && is_object($log)) {
 				$log->error("Documents audit log failed for record {$recordId}: " . $e->getMessage());
+			}
+		}
+	}
+
+	/**
+	 * スキャナ保存の入力期限を再計算して保存する
+	 *
+	 * 期限は自動計算値のため、計算に失敗しても保存自体は成功として扱う。
+	 */
+	private function recalculateInputDeadline() {
+		$recordId = $this->getId();
+		if (empty($recordId)) {
+			return;
+		}
+		try {
+			require_once 'modules/Documents/utils/DeadlineCalculator.php';
+			$deadline = Documents_DeadlineCalculator::recalculate($recordId);
+			// 画面へ返す値も更新後の内容に合わせる
+			$this->set('input_deadline', $deadline['input_deadline']);
+			$this->set('input_deadline_status', $deadline['input_deadline_status']);
+		} catch (Exception $e) {
+			global $log;
+			if (isset($log) && is_object($log)) {
+				$log->error("Documents input deadline calculation failed for record {$recordId}: "
+					. $e->getMessage());
 			}
 		}
 	}

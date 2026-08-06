@@ -1,0 +1,13 @@
+<?php
+/**
+ * 電子帳簿保存法対応: スキャナ保存の入力期限状態を更新する定期ジョブ
+ *
+ * 入力期限は日付の経過だけで「期限内 → 期限間近 → 期限超過」と変わるため、
+ * 日次で全件の期限状態を洗い替える。期限日そのものは受領日の保存時に計算する。
+ */
+
+vimport('includes.runtime.Globals');
+require_once 'modules/Documents/utils/DeadlineCalculator.php';
+
+$result = Documents_DeadlineCalculator::updateStatuses();
+echo "Documents input deadline status: checked {$result['checked']}, updated {$result['updated']}\n";

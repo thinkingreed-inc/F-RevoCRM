@@ -81,6 +81,16 @@ import { HolidaysPage } from "@/components/Holidays";
 // year: 初期表示年
 createWebComponent(HolidaysPage, "holidays-page", ["year"], []);
 
+import { DocumentsCompliancePage } from "@/components/DocumentsCompliance";
+
+// DocumentsCompliancePage: 電子帳簿保存法設定の管理画面（システム管理者のみ）
+createWebComponent(
+  DocumentsCompliancePage,
+  "documents-compliance-page",
+  [],
+  [],
+);
+
 // DocumentsDetail: 詳細画面（単独ページ）
 // record-id: ドキュメントレコードID
 createWebComponent(
