@@ -8,6 +8,7 @@ import { FileIcon } from "./FileIcon";
 import { StarButton } from "./StarButton";
 import { DocumentDetailModal } from "./DocumentDetailModal";
 import { DocumentCreateEditModal } from "./DocumentCreateEditModal";
+import { DocumentSelectModal } from "./DocumentSelectModal";
 import { useDocumentDetail } from "./hooks/useDocumentDetail";
 import { useFolderTree } from "./hooks/useFolderTree";
 import { useFileUpload } from "./hooks/useFileUpload";
@@ -221,6 +222,9 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
   const [editTargetDoc, setEditTargetDoc] = useState<DocumentDetail | null>(
     null,
   );
+
+  // 既存ドキュメントの紐づけモーダル
+  const [selectModalOpen, setSelectModalOpen] = useState(false);
 
   // D&D
   const [isDragging, setIsDragging] = useState(false);
@@ -436,6 +440,23 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
             </button>
           </div>
         )}
+
+        {/* 既存ドキュメントの紐づけボタン */}
+        <button
+          onClick={() => setSelectModalOpen(true)}
+          style={{
+            padding: "5px 14px",
+            backgroundColor: "#fff",
+            color: "#2B6CB0",
+            border: "1px solid #CBD5E0",
+            borderRadius: 4,
+            fontSize: 13,
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {t("LBL_SELECT_DOCUMENTS")}
+        </button>
 
         {/* 新規追加ボタン */}
         <button
@@ -764,6 +785,19 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
           setCreateEditModalOpen(false);
           setEditTargetDoc(null);
         }}
+      />
+
+      {/* 既存ドキュメントの紐づけモーダル */}
+      <DocumentSelectModal
+        isOpen={selectModalOpen}
+        parentModule={parentModule}
+        parentId={parentId}
+        onLinked={() => {
+          setSelectModalOpen(false);
+          reload();
+        }}
+        onClose={() => setSelectModalOpen(false)}
+        t={t}
       />
     </div>
   );

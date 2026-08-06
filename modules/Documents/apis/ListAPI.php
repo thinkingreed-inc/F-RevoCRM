@@ -39,6 +39,9 @@ class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 		$filterType = $request->get('filter_type'); // 'starred', 'recent'
 		$parentModule = $request->get('parent_module');
 		$parentId = $request->get('parent_id');
+		// 関連付け候補の絞り込み（指定した親レコードに紐づいていないドキュメントのみ）
+		$excludeParentId = (int) $request->get('exclude_parent_id');
+		$activeOnly = $request->get('active_only');
 
 		// 電帳法フィルターパラメータ
 		$complianceFilter = $request->get('compliance_filter');
@@ -85,6 +88,20 @@ class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 		if (!empty($parentId)) {
 			$where .= " AND vtiger_senotesrel.crmid = ?";
 			$params[] = (int) $parentId;
+		}
+
+		// 関連付け候補の絞り込み（既に紐づいているドキュメントを除く）
+		if ($excludeParentId > 0) {
+			$where .= " AND NOT EXISTS (
+				SELECT 1 FROM vtiger_senotesrel excl
+				WHERE excl.notesid = vtiger_notes.notesid AND excl.crmid = ?
+			)";
+			$params[] = $excludeParentId;
+		}
+
+		// 有効なドキュメントのみ（関連付け候補の一覧で使用する）
+		if ($activeOnly === 'true' || $activeOnly === '1') {
+			$where .= " AND vtiger_notes.filestatus = 1";
 		}
 
 		// フォルダフィルタ（選択したフォルダのみ。子フォルダのドキュメントは含めない）
