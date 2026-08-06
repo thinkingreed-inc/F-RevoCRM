@@ -16,6 +16,11 @@ $show_subordinate_roles_list = true;// trueの場合：共有リスト欄に下�
 // 保存時に storage 本体へコピーするため、一時的に2倍の空き容量が必要。
 $documents_upload_maxsize = 2147483648;// 2GB
 
+// 休祝日マスタ：内閣府「国民の祝日について」公表CSVの取得元
+// 設定画面の「内閣府データを取り込む」で使用する。ファイル名が変更された場合や
+// 社内ミラーを使う場合に変更する。外部接続できない環境ではCSVファイルの取り込みを使う。
+$holidays_official_csv_url = 'https://www8.cao.go.jp/chosei/shukujitsu/syukujitsu.csv';
+
 // CSP（Content-Security-Policy）で許可する外部ドメイン
 // 各ディレクティブに対して許可するURLを配列で指定する
 $csp_allowed_domains = array(

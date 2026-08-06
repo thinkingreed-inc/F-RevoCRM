@@ -74,6 +74,13 @@ createWebComponent(
   ["onNavigate", "onFolderChange"],
 );
 
+// 休祝日マスタ（設定）用コンポーネント
+import { HolidaysPage } from "@/components/Holidays";
+
+// HolidaysPage: 休祝日マスタの管理画面（システム管理者のみ）
+// year: 初期表示年
+createWebComponent(HolidaysPage, "holidays-page", ["year"], []);
+
 // DocumentsDetail: 詳細画面（単独ページ）
 // record-id: ドキュメントレコードID
 createWebComponent(
