@@ -384,6 +384,12 @@ $languageStrings = array(
 	'LBL_UPLOAD_ERR_EXTENSION' => 'PHP拡張によりアップロードが中断されました',
 	'LBL_UPLOAD_ERR_UNKNOWN' => 'ファイルのアップロードに失敗しました',
 	'LBL_UPLOAD_ERR_NO_FILE' => 'ファイルがアップロードされていません',
+	'LBL_UPLOAD_ERR_CHUNK_ORDER' => 'アップロードの順序が不正です（期待: %s / 受信: %s）',
+	'LBL_UPLOAD_ERR_CHUNK_FAILED' => '分割データの受信に失敗しました。もう一度お試しください',
+	'LBL_UPLOAD_ERR_SIZE_MISMATCH' => 'アップロードされたファイルのサイズが一致しません',
+	'LBL_UPLOAD_ERR_SESSION_NOT_FOUND' => 'アップロード情報が見つかりません。もう一度お試しください',
+	'LBL_UPLOAD_ERR_DISK_FULL' => 'サーバーの空き容量が不足しています',
+	'LBL_UPLOADING_LARGE_FILE' => '大きなファイルを送信中... %s%',
 	'LBL_MAX_UPLOAD_SIZE_HINT' => '1ファイルあたり %s まで',
 
 	// エラーメッセージ

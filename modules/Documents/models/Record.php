@@ -68,41 +68,70 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 
 	function downloadFile($attachmentId = false) {
 		$fileDetails = $this->getFileDetails();
-		$fileContent = false;
-
-		if (!empty ($fileDetails)) {
-			$filePath = $fileDetails['path'];
-			$fileName = $fileDetails['name'];
-            $storedFileName = $fileDetails['storedname'];
-
-			if ($this->get('filelocationtype') == 'I') {
-				$fileName = html_entity_decode($fileName, ENT_QUOTES, vglobal('default_charset'));
-                if (!empty($fileName)) {
-                    if(!empty($storedFileName)){
-                        $savedFile = $fileDetails['attachmentsid']."_".$storedFileName;
-                    }else if(is_null($storedFileName)){
-                        $savedFile = $fileDetails['attachmentsid']."_".$fileName;
-                    }
-                    while(ob_get_level()) {
-                        ob_end_clean();
-                    }
-                    $fileSize = filesize($filePath.$savedFile);
-                    $fileSize = $fileSize + ($fileSize % 1024);
-
-                    if (fopen($filePath.$savedFile, "r")) {
-                        $fileContent = fread(fopen($filePath.$savedFile, "r"), $fileSize);
-
-                        header("Content-type: ".$fileDetails['type']);
-                        header("Pragma: public");
-                        header("Cache-Control: private");
-                        header("Content-Disposition: attachment; filename=\"$fileName\"");
-                        header("Content-Description: PHP Generated Data");
-                        header("Content-Encoding: none");
-                    }
-                }
-			}
+		if (empty($fileDetails) || $this->get('filelocationtype') != 'I') {
+			return;
 		}
-		echo $fileContent;
+
+		$filePath = $fileDetails['path'];
+		$fileName = html_entity_decode($fileDetails['name'], ENT_QUOTES, vglobal('default_charset'));
+		$storedFileName = $fileDetails['storedname'];
+		if (empty($fileName)) {
+			return;
+		}
+
+		$savedFile = $fileDetails['attachmentsid'] . "_"
+			. (!empty($storedFileName) ? $storedFileName : $fileName);
+
+		self::streamFile($filePath . $savedFile, $fileName, $fileDetails['type']);
+	}
+
+	/**
+	 * ファイルをストリーミングで出力する
+	 *
+	 * 全体をメモリに読み込むと大容量ファイルで memory_limit を超えるため、
+	 * 一定サイズずつ読み出して出力する。
+	 *
+	 * @param string $path 実ファイルのパス
+	 * @param string $downloadName ダウンロード時のファイル名
+	 * @param string $mimeType Content-Type
+	 * @return bool 出力した場合true
+	 */
+	public static function streamFile($path, $downloadName, $mimeType = 'application/octet-stream') {
+		if (!is_file($path)) {
+			return false;
+		}
+		$handle = fopen($path, 'rb');
+		if ($handle === false) {
+			return false;
+		}
+
+		// 出力バッファを閉じてから送出する（バッファに全体を溜めないため）
+		while (ob_get_level()) {
+			ob_end_clean();
+		}
+
+		$fileSize = filesize($path);
+		header("Content-type: " . $mimeType);
+		header("Pragma: public");
+		header("Cache-Control: private");
+		header("Content-Disposition: attachment; filename=\"" . $downloadName . "\"");
+		header("Content-Description: PHP Generated Data");
+		header("Content-Encoding: none");
+		if ($fileSize !== false) {
+			header("Content-Length: " . $fileSize);
+		}
+
+		// 大容量ファイルの転送で実行時間切れにならないようにする
+		if (!ini_get('safe_mode')) {
+			@set_time_limit(0);
+		}
+
+		while (!feof($handle)) {
+			echo fread($handle, 1048576);
+			flush();
+		}
+		fclose($handle);
+		return true;
 	}
 
 	function updateFileStatus() {
@@ -155,6 +184,12 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 		$errorCode = isset($file['error']) ? (int) $file['error'] : UPLOAD_ERR_OK;
 		if ($errorCode === UPLOAD_ERR_NO_FILE || (empty($file['name']) && $errorCode === UPLOAD_ERR_OK)) {
 			// ファイル未選択（既存ファイルを維持するケース）
+			return;
+		}
+
+		// 分割アップロードで結合したファイルは1リクエストの上限を超えるのが前提。
+		// 合計サイズは ChunkUpload API 側で検証済みなのでここでは検証しない
+		if (!empty($file['chunk_upload'])) {
 			return;
 		}
 

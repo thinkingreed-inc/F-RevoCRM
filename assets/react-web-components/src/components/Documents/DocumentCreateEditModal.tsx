@@ -8,6 +8,11 @@ import React, {
 import type { DocumentDetail, Folder } from "./types/documents";
 import { useOptionalTranslation } from "../../hooks/useTranslation";
 import { useDocumentFields, DocFieldInfo } from "./hooks/useDocumentFields";
+import {
+  fetchChunkUploadInfo,
+  uploadFileInChunks,
+  type ChunkUploadInfo,
+} from "./utils/chunkUpload";
 
 function useIsMobile(breakpoint = 768) {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= breakpoint);
@@ -29,7 +34,7 @@ interface DocumentCreateEditModalProps {
   defaultFolderId: number;
   parentModule?: string;
   parentId?: number;
-  /** 1ファイルあたりの最大アップロードサイズ（バイト）。0/未指定なら検証しない */
+  /** 1リクエストで送れる上限（バイト）。これを超えるファイルは分割送信する */
   maxUploadSize?: number;
   onSave: () => void;
   onClose: () => void;
@@ -172,6 +177,9 @@ export const DocumentCreateEditModal: React.FC<
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  // 分割アップロード（1リクエストの上限を超えるファイル用）
+  const [chunkInfo, setChunkInfo] = useState<ChunkUploadInfo | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
   // Dynamic field values (compliance, scanner, etc.)
   const [dynamicFields, setDynamicFields] = useState<Record<string, any>>({});
@@ -182,10 +190,27 @@ export const DocumentCreateEditModal: React.FC<
     [],
   );
 
+  // 分割アップロードの設定値（チャンクサイズ・最大サイズ）を取得する
+  useEffect(() => {
+    if (!isOpen || chunkInfo) return;
+    let cancelled = false;
+    fetchChunkUploadInfo()
+      .then((info) => {
+        if (!cancelled) setChunkInfo(info);
+      })
+      .catch(() => {
+        // 取得できない場合はサーバー側の検証に委ねる
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, chunkInfo]);
+
   useEffect(() => {
     if (isOpen) {
       setError(null);
       setSelectedFile(null);
+      setUploadProgress(null);
       if (mode === "edit" && doc) {
         setDocType((doc.filelocationtype as DocType) || "I");
         setTitle(doc.title || "");
@@ -248,11 +273,16 @@ export const DocumentCreateEditModal: React.FC<
 
   const handleFileSelect = useCallback(
     (file: File) => {
-      // サーバー側の上限を超えるファイルは送信前に弾く
-      // （送信してしまうと PHP がファイルを破棄し、原因の分かりにくいエラーになる）
-      if (maxUploadSize && maxUploadSize > 0 && file.size > maxUploadSize) {
+      // 分割アップロードの上限を超えるファイルは送信前に弾く
+      const limit = chunkInfo ? chunkInfo.maxSize : 0;
+      if (limit > 0 && file.size > limit) {
         setSelectedFile(null);
-        setError(t("LBL_UPLOAD_ERR_SIZE", formatMaxSize(maxUploadSize)));
+        setError(
+          t(
+            "LBL_UPLOAD_ERR_SIZE",
+            chunkInfo?.maxSizeLabel || formatMaxSize(limit),
+          ),
+        );
         return;
       }
       setError(null);
@@ -261,7 +291,7 @@ export const DocumentCreateEditModal: React.FC<
         setTitle(file.name.replace(/\.[^.]+$/, ""));
       }
     },
-    [title, maxUploadSize, t],
+    [title, chunkInfo, t],
   );
 
   /** Append dynamic field values to form params for the main Save action.
@@ -298,7 +328,25 @@ export const DocumentCreateEditModal: React.FC<
       const csrf = getCsrfToken();
       if (!csrf) throw new Error(t("LBL_CSRF_TOKEN_ERROR"));
 
-      if (docType === "I" && selectedFile) {
+      // 1リクエストの上限を超えるファイルは分割アップロードしてから保存する
+      const singleRequestLimit =
+        chunkInfo?.singleRequestLimit ?? maxUploadSize ?? 0;
+      const needsChunkUpload =
+        docType === "I" &&
+        selectedFile !== null &&
+        singleRequestLimit > 0 &&
+        selectedFile.size > singleRequestLimit;
+      let chunkUploadId: string | null = null;
+      if (needsChunkUpload && selectedFile) {
+        setUploadProgress(0);
+        chunkUploadId = await uploadFileInChunks(
+          selectedFile,
+          setUploadProgress,
+        );
+        setUploadProgress(null);
+      }
+
+      if (docType === "I" && selectedFile && !chunkUploadId) {
         // ファイルアップロード (FormData)
         const formData = new FormData();
         formData.append(csrf.name, csrf.value);
@@ -350,6 +398,10 @@ export const DocumentCreateEditModal: React.FC<
         if (docType === "E") {
           bodyParams.append("filename", filename.trim());
         }
+        if (chunkUploadId) {
+          // 分割アップロードで結合済みのファイルを添付する
+          bodyParams.append("chunk_upload_id", chunkUploadId);
+        }
         appendDynamicFields((k, v) => bodyParams.append(k, v));
         if (mode === "edit" && doc) {
           bodyParams.append("record", String(doc.id));
@@ -382,6 +434,7 @@ export const DocumentCreateEditModal: React.FC<
     } catch (e: any) {
       setError(e.message || t("LBL_SAVE_FAILED"));
     } finally {
+      setUploadProgress(null);
       setIsSaving(false);
     }
   }, [
@@ -392,6 +445,8 @@ export const DocumentCreateEditModal: React.FC<
     notecontent,
     filestatus,
     selectedFile,
+    chunkInfo,
+    maxUploadSize,
     mode,
     doc,
     parentModule,
@@ -850,7 +905,11 @@ export const DocumentCreateEditModal: React.FC<
               cursor: isSaving ? "wait" : "pointer",
             }}
           >
-            {isSaving ? t("LBL_SAVING") : t("LBL_SAVE")}
+            {uploadProgress !== null
+              ? t("LBL_UPLOADING_LARGE_FILE", uploadProgress)
+              : isSaving
+                ? t("LBL_SAVING")
+                : t("LBL_SAVE")}
           </button>
         </div>
       </div>

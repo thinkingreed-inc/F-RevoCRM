@@ -336,6 +336,12 @@ $languageStrings = array(
 	'LBL_UPLOAD_ERR_EXTENSION' => 'A PHP extension stopped the upload',
 	'LBL_UPLOAD_ERR_UNKNOWN' => 'Failed to upload the file',
 	'LBL_UPLOAD_ERR_NO_FILE' => 'No file was uploaded',
+	'LBL_UPLOAD_ERR_CHUNK_ORDER' => 'The upload arrived out of order (expected: %s, received: %s)',
+	'LBL_UPLOAD_ERR_CHUNK_FAILED' => 'Failed to receive a part of the file. Please try again',
+	'LBL_UPLOAD_ERR_SIZE_MISMATCH' => 'The size of the uploaded file does not match',
+	'LBL_UPLOAD_ERR_SESSION_NOT_FOUND' => 'The upload session was not found. Please try again',
+	'LBL_UPLOAD_ERR_DISK_FULL' => 'Not enough free space on the server',
+	'LBL_UPLOADING_LARGE_FILE' => 'Uploading a large file... %s%',
 	'LBL_MAX_UPLOAD_SIZE_HINT' => 'Up to %s per file',
 
 	// Error messages

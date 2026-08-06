@@ -75,21 +75,7 @@ class Documents_DownloadVersion_Action extends Vtiger_Action_Controller {
         require_once 'modules/Documents/utils/AuditLogger.php';
         Documents_AuditLogger::logDownload($recordId);
 
-        // ファイル送出
-        while (ob_get_level()) {
-            ob_end_clean();
-        }
-
-        $fileSize = filesize($fullPath);
-        $fileSize = $fileSize + ($fileSize % 1024);
-
-        header("Content-type: " . $fileType);
-        header("Pragma: public");
-        header("Cache-Control: private");
-        header("Content-Disposition: attachment; filename=\"" . $fileName . "\"");
-        header("Content-Description: PHP Generated Data");
-        header("Content-Encoding: none");
-
-        echo fread(fopen($fullPath, "r"), $fileSize);
+        // ファイル送出（大容量でも memory_limit を超えないようストリーミングで出力する）
+        Documents_Record_Model::streamFile($fullPath, $fileName, $fileType);
     }
 }

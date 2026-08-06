@@ -60,20 +60,71 @@ class Documents_Module_Model extends Vtiger_Module_Model {
 		}
 	}
 
+	/** 分割アップロードの既定の上限（2GB） */
+	const DEFAULT_CHUNK_UPLOAD_MAXSIZE = 2147483648;
+
+	/** 1リクエストあたりの余裕（他のPOSTフィールドとmultipartのオーバーヘッド分） */
+	const CHUNK_SIZE_MARGIN = 262144;
+
 	/**
 	 * 最大アップロードサイズを表示用の文字列にする（例: 2 MB）
 	 *
+	 * @param int|null $bytes 省略時は1リクエストの実効上限
 	 * @return string
 	 */
-	public static function getEffectiveMaxUploadSizeLabel() {
-		$bytes = self::getEffectiveMaxUploadSizeInBytes();
+	public static function getEffectiveMaxUploadSizeLabel($bytes = null) {
+		if ($bytes === null) {
+			$bytes = self::getEffectiveMaxUploadSizeInBytes();
+		}
 		if ($bytes <= 0) {
 			return '';
+		}
+		if ($bytes >= 1024 * 1024 * 1024) {
+			return round($bytes / (1024 * 1024 * 1024), 1) . ' GB';
 		}
 		if ($bytes >= 1024 * 1024) {
 			return round($bytes / (1024 * 1024), 1) . ' MB';
 		}
 		return round($bytes / 1024) . ' KB';
+	}
+
+	/**
+	 * 分割アップロード1回分のサイズ（バイト）を返す
+	 *
+	 * PHP の upload_max_filesize / post_max_size を超えないよう、
+	 * 実効上限から余裕を引いた値を使う。
+	 *
+	 * @return int
+	 */
+	public static function getChunkSizeInBytes() {
+		$limit = self::getEffectiveMaxUploadSizeInBytes();
+		if ($limit <= 0) {
+			// 上限なしの場合は 8MB 単位で送る
+			return 8 * 1024 * 1024;
+		}
+		$chunkSize = $limit - self::CHUNK_SIZE_MARGIN;
+		if ($chunkSize < 65536) {
+			// 極端に小さい設定でも最低 64KB は送れるようにする
+			$chunkSize = max(65536, (int) floor($limit * 0.8));
+		}
+		// 64KB 単位に丸める
+		return (int) (floor($chunkSize / 65536) * 65536);
+	}
+
+	/**
+	 * 分割アップロードで受け付ける1ファイルの最大サイズ（バイト）を返す
+	 *
+	 * config.customize.php の $documents_upload_maxsize で変更できる。
+	 * 未設定の場合は 2GB。
+	 *
+	 * @return int
+	 */
+	public static function getChunkUploadMaxSizeInBytes() {
+		$configured = vglobal('documents_upload_maxsize');
+		if (!empty($configured) && (int) $configured > 0) {
+			return (int) $configured;
+		}
+		return self::DEFAULT_CHUNK_UPLOAD_MAXSIZE;
 	}
 
 	/**
