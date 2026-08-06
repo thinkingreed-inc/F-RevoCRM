@@ -127,6 +127,7 @@ const FolderItem: React.FC<{
   onEdit: (folder: FolderNode) => void;
   onContextMenu: (e: React.MouseEvent, node: FolderNode) => void;
 }> = ({ node, depth, selectedId, onSelect, onEdit, onContextMenu }) => {
+  const { t } = useOptionalTranslation();
   const [expanded, setExpanded] = useState(true);
   const [hovered, setHovered] = useState(false);
   const hasChildren = node.children.length > 0;
@@ -195,7 +196,7 @@ const FolderItem: React.FC<{
               e.stopPropagation();
               onEdit(node);
             }}
-            title="編集"
+            title={t("LBL_EDIT")}
             style={{
               fontSize: 11,
               color: "#A0AEC0",

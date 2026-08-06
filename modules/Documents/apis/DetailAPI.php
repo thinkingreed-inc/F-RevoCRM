@@ -1,4 +1,5 @@
 <?php
+require_once 'modules/Documents/utils/ComplianceChecker.php';
 
 class Documents_DetailAPI_Api extends Vtiger_Api_Controller {
 
@@ -148,7 +149,9 @@ class Documents_DetailAPI_Api extends Vtiger_Api_Controller {
 				'input_deadline_status' => $row['input_deadline_status'],
 				'compliance_status' => $row['compliance_status'],
 				'compliance_checked_at' => $row['compliance_checked_at'],
-				'compliance_notes' => $row['compliance_notes'],
+				// 不適合理由は翻訳キーで保存されているため、表示用に翻訳する
+				'compliance_notes' => Documents_ComplianceChecker::translateNotes(
+					decode_html($row['compliance_notes']), false),
 			);
 		}
 
@@ -160,6 +163,10 @@ class Documents_DetailAPI_Api extends Vtiger_Api_Controller {
 			if ($fieldModel->isCustomField() && $fieldModel->get('table') === 'vtiger_notes') {
 				$columnName = $fieldModel->get('column');
 				$value = isset($row[$columnName]) ? $row[$columnName] : null;
+				// 適合チェック備考は翻訳キーで保存されているため、表示用に翻訳する
+				if ($fieldName === 'compliance_notes' && !empty($value)) {
+					$value = Documents_ComplianceChecker::translateNotes(decode_html($value), false);
+				}
 				$dynamicFields[$fieldName] = $value;
 
 				// 参照フィールド（uitype=10等）の場合、表示名を解決
@@ -208,7 +215,9 @@ class Documents_DetailAPI_Api extends Vtiger_Api_Controller {
 						'version_number' => (int) $vRow['version_number'],
 						'file_hash' => $vRow['file_hash'],
 						'file_size' => (int) $vRow['file_size'],
-						'change_reason' => $vRow['change_reason'],
+						// 変更理由は翻訳キーで保存されている（旧データの日本語はそのまま返る）
+						'change_reason' => !empty($vRow['change_reason'])
+							? vtranslate(decode_html($vRow['change_reason']), 'Documents') : null,
 						'created_by' => (int) $vRow['created_by'],
 						'creator_name' => decode_html($vRow['creator_name']),
 						'created_at' => $vRow['created_at'],

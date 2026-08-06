@@ -108,7 +108,7 @@ class Documents_ComplianceAPI_Api extends Vtiger_Api_Controller {
                 $params
             );
             if ($result === false) {
-                throw new Exception('電帳法メタデータの保存に失敗しました');
+                throw new Exception(vtranslate('LBL_COMPLIANCE_SAVE_FAILED', 'Documents'));
             }
         }
 
@@ -227,7 +227,7 @@ class Documents_ComplianceAPI_Api extends Vtiger_Api_Controller {
         );
 
         if ($result === false) {
-            throw new Exception('レポート生成に失敗しました');
+            throw new Exception(vtranslate('LBL_REPORT_GENERATION_FAILED', 'Documents'));
         }
 
         $row = $db->query_result_rowdata($result, 0);

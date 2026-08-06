@@ -37,7 +37,7 @@ class Documents_PreviewContent_Action extends Vtiger_Action_Controller {
 			);
 
 			if ($result === false || $db->num_rows($result) === 0) {
-				throw new Exception('ファイルが見つかりません');
+				throw new Exception(vtranslate('LBL_FILE_NOT_FOUND', 'Documents'));
 			}
 
 			$row = $db->query_result_rowdata($result, 0);
@@ -47,7 +47,7 @@ class Documents_PreviewContent_Action extends Vtiger_Action_Controller {
 			$ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
 
 			if (!file_exists($filePath) || !is_readable($filePath)) {
-				throw new Exception('ファイルを読み取れません');
+				throw new Exception(vtranslate('LBL_FILE_READ_FAILED', 'Documents'));
 			}
 
 			switch ($ext) {
@@ -61,7 +61,7 @@ class Documents_PreviewContent_Action extends Vtiger_Action_Controller {
 					$html = $this->convertDocx($filePath, $fileName);
 					break;
 				default:
-					throw new Exception('プレビュー非対応の形式です');
+					throw new Exception(vtranslate('LBL_PREVIEW_UNSUPPORTED_FORMAT', 'Documents'));
 			}
 
 			$response->setResult(array('html' => $html));
@@ -77,7 +77,7 @@ class Documents_PreviewContent_Action extends Vtiger_Action_Controller {
 	private function convertXlsx($filePath, $fileName) {
 		$zip = new ZipArchive();
 		if ($zip->open($filePath) !== true) {
-			throw new Exception('ファイルを開けません');
+			throw new Exception(vtranslate('LBL_FILE_OPEN_FAILED', 'Documents'));
 		}
 
 		// SharedStrings取得
@@ -197,7 +197,7 @@ class Documents_PreviewContent_Action extends Vtiger_Action_Controller {
 		$zip->close();
 
 		if (empty($html)) {
-			throw new Exception('シートデータが見つかりません');
+			throw new Exception(vtranslate('LBL_SHEET_DATA_NOT_FOUND', 'Documents'));
 		}
 
 		return $html;
@@ -209,7 +209,7 @@ class Documents_PreviewContent_Action extends Vtiger_Action_Controller {
 	private function convertPptx($filePath, $fileName) {
 		$zip = new ZipArchive();
 		if ($zip->open($filePath) !== true) {
-			throw new Exception('ファイルを開けません');
+			throw new Exception(vtranslate('LBL_FILE_OPEN_FAILED', 'Documents'));
 		}
 
 		$html = '';
@@ -221,7 +221,8 @@ class Documents_PreviewContent_Action extends Vtiger_Action_Controller {
 			$doc->loadXML($slideXml);
 
 			$html .= '<div class="slide">';
-			$html .= '<div class="slide-number">スライド ' . $i . '</div>';
+			$html .= '<div class="slide-number">'
+				. htmlspecialchars(vtranslate('LBL_SLIDE_NUMBER', 'Documents', $i)) . '</div>';
 
 			// テキスト要素を抽出
 			$texts = array();
@@ -253,7 +254,8 @@ class Documents_PreviewContent_Action extends Vtiger_Action_Controller {
 					$html .= '<div class="slide-text">' . htmlspecialchars($text) . '</div>';
 				}
 			} else {
-				$html .= '<div class="slide-empty">（テキストなし）</div>';
+				$html .= '<div class="slide-empty">'
+                    . htmlspecialchars(vtranslate('LBL_SLIDE_NO_TEXT', 'Documents')) . '</div>';
 			}
 
 			$html .= '</div>';
@@ -262,7 +264,7 @@ class Documents_PreviewContent_Action extends Vtiger_Action_Controller {
 		$zip->close();
 
 		if (empty($html)) {
-			throw new Exception('スライドデータが見つかりません');
+			throw new Exception(vtranslate('LBL_SLIDE_DATA_NOT_FOUND', 'Documents'));
 		}
 
 		return $html;
@@ -274,14 +276,14 @@ class Documents_PreviewContent_Action extends Vtiger_Action_Controller {
 	private function convertDocx($filePath, $fileName) {
 		$zip = new ZipArchive();
 		if ($zip->open($filePath) !== true) {
-			throw new Exception('ファイルを開けません');
+			throw new Exception(vtranslate('LBL_FILE_OPEN_FAILED', 'Documents'));
 		}
 
 		$content = $zip->getFromName('word/document.xml');
 		$zip->close();
 
 		if ($content === false) {
-			throw new Exception('文書データが見つかりません');
+			throw new Exception(vtranslate('LBL_DOCUMENT_DATA_NOT_FOUND', 'Documents'));
 		}
 
 		$doc = new DOMDocument();

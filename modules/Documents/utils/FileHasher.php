@@ -78,17 +78,17 @@ class Documents_FileHasher {
             array($notesId)
         );
         if ($result === false || $db->num_rows($result) === 0) {
-            return array('valid' => false, 'stored_hash' => null, 'current_hash' => null, 'message' => 'レコードが見つかりません');
+            return array('valid' => false, 'stored_hash' => null, 'current_hash' => null, 'message' => vtranslate('LBL_ISSUE_RECORD_NOT_FOUND', 'Documents'));
         }
         $storedHash = $db->query_result($result, 0, 'file_hash');
         if (empty($storedHash)) {
-            return array('valid' => false, 'stored_hash' => null, 'current_hash' => null, 'message' => 'ハッシュ値が未登録です');
+            return array('valid' => false, 'stored_hash' => null, 'current_hash' => null, 'message' => vtranslate('LBL_HASH_NOT_REGISTERED', 'Documents'));
         }
 
         // 現在のファイルハッシュ計算
         $currentHash = self::calculateHashForRecord($notesId);
         if ($currentHash === false) {
-            return array('valid' => false, 'stored_hash' => $storedHash, 'current_hash' => null, 'message' => 'ファイルが見つかりません');
+            return array('valid' => false, 'stored_hash' => $storedHash, 'current_hash' => null, 'message' => vtranslate('LBL_FILE_NOT_FOUND', 'Documents'));
         }
 
         $isValid = ($storedHash === $currentHash);
@@ -96,7 +96,9 @@ class Documents_FileHasher {
             'valid' => $isValid,
             'stored_hash' => $storedHash,
             'current_hash' => $currentHash,
-            'message' => $isValid ? 'ハッシュ値が一致しました' : '改ざんの可能性: ハッシュ値が不一致です',
+            'message' => $isValid
+                ? vtranslate('LBL_HASH_MATCHED', 'Documents')
+                : vtranslate('LBL_HASH_MISMATCHED', 'Documents'),
         );
     }
 

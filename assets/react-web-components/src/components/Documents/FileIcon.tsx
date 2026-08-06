@@ -2,18 +2,23 @@ import React from "react";
 import type { FileCategory } from "./types/documents";
 import { useOptionalTranslation } from "../../hooks/useTranslation";
 
+/**
+ * ファイル種別バッジの設定。
+ * label はそのまま表示する固定表記（PDF / Word 等の形式名）、
+ * labelKey は言語ファイルで翻訳する表記（画像 / 動画 / 音声）。
+ */
 const FILE_CATEGORY_CONFIG: Record<
   FileCategory,
-  { label: string; color: string; bg: string }
+  { label?: string; labelKey?: string; color: string; bg: string }
 > = {
   pdf: { label: "PDF", color: "#E53E3E", bg: "#FED7D7" },
   word: { label: "Word", color: "#3182CE", bg: "#BEE3F8" },
   excel: { label: "Excel", color: "#38A169", bg: "#C6F6D5" },
   powerpoint: { label: "PPT", color: "#DD6B20", bg: "#FEEBC8" },
-  image: { label: "画像", color: "#805AD5", bg: "#E9D8FD" },
+  image: { labelKey: "LBL_FILE_TYPE_IMAGE", color: "#805AD5", bg: "#E9D8FD" },
   text: { label: "TXT", color: "#718096", bg: "#E2E8F0" },
-  video: { label: "動画", color: "#D53F8C", bg: "#FED7E2" },
-  audio: { label: "音声", color: "#0BC5EA", bg: "#C4F1F9" },
+  video: { labelKey: "LBL_FILE_TYPE_VIDEO", color: "#D53F8C", bg: "#FED7E2" },
+  audio: { labelKey: "LBL_FILE_TYPE_AUDIO", color: "#0BC5EA", bg: "#C4F1F9" },
   archive: { label: "ZIP", color: "#D69E2E", bg: "#FEFCBF" },
   url: { label: "URL", color: "#A0AEC0", bg: "#EDF2F7" },
   other: { label: "", color: "#CBD5E0", bg: "#F7FAFC" },
@@ -126,6 +131,7 @@ export const FileIcon: React.FC<FileIconProps> = ({
 
   const config = FILE_CATEGORY_CONFIG[category];
   const dims = SIZE_MAP[size];
+  const label = config.labelKey ? t(config.labelKey) : config.label || "";
 
   return (
     <div
@@ -143,9 +149,9 @@ export const FileIcon: React.FC<FileIconProps> = ({
         flexShrink: 0,
         border: `1px solid ${config.color}20`,
       }}
-      aria-label={config.label || t("LBL_FILE_ICON_LABEL")}
+      aria-label={label || t("LBL_FILE_ICON_LABEL")}
     >
-      {config.label}
+      {label}
     </div>
   );
 };

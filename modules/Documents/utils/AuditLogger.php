@@ -443,7 +443,7 @@ class Documents_AuditLogger {
             array($notesId)
         );
         if ($countResult === false) {
-            throw new Exception('監査ログの件数取得に失敗しました');
+            throw new Exception(vtranslate('LBL_AUDIT_LOG_COUNT_FAILED', 'Documents'));
         }
         $total = (int) $db->query_result($countResult, 0, 'total');
 
@@ -460,7 +460,7 @@ class Documents_AuditLogger {
         );
 
         if ($result === false) {
-            throw new Exception('監査ログの取得に失敗しました');
+            throw new Exception(vtranslate('LBL_AUDIT_LOG_FETCH_FAILED', 'Documents'));
         }
 
         $records = array();

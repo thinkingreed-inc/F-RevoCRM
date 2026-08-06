@@ -85,7 +85,9 @@ class Documents_ComplianceChecker {
      */
     public static function check($notesId) {
         $db = PearDatabase::getInstance();
-        $issues = array();
+        // 不適合の理由は言語非依存の翻訳キーで保持し、表示時に翻訳する
+        // （compliance_notes に翻訳済みの文字列を保存すると保存時の言語で固定されてしまう）
+        $issueKeys = array();
 
         // 電帳法対象でなければスキップ
         if (!self::isComplianceTarget($notesId)) {
@@ -100,44 +102,73 @@ class Documents_ComplianceChecker {
             array($notesId)
         );
         if ($result === false || $db->num_rows($result) === 0) {
-            return array('status' => 'non_compliant', 'issues' => array('レコードが見つかりません'));
+            return array(
+                'status' => 'non_compliant',
+                'issues' => array(vtranslate('LBL_ISSUE_RECORD_NOT_FOUND', 'Documents')),
+            );
         }
         $row = $db->query_result_rowdata($result, 0);
 
         // 1. 関連レコードチェック
         $relCheck = self::checkRelatedRecords($notesId);
         if (!$relCheck['has_related']) {
-            $issues[] = '取引レコードに関連付けされていません';
+            $issueKeys[] = 'LBL_NO_RELATED_RECORD';
         }
 
         // 2. ファイルハッシュチェック（内部ファイルのみ）
         if ($row['filelocationtype'] === 'I' && empty($row['file_hash'])) {
-            $issues[] = 'ファイルハッシュが未登録です';
+            $issueKeys[] = 'LBL_ISSUE_NO_FILE_HASH';
         }
 
         // 3. 保存区分チェック
         if (empty($row['preservation_type'])) {
-            $issues[] = '保存区分が未設定です';
+            $issueKeys[] = 'LBL_ISSUE_NO_PRESERVATION_TYPE';
         }
 
         // 4. スキャナ保存固有チェック
         if ($row['preservation_type'] === 'scanner') {
             if (!empty($row['scan_resolution_dpi']) && (int) $row['scan_resolution_dpi'] < 200) {
-                $issues[] = 'スキャン解像度が200dpi未満です';
+                $issueKeys[] = 'LBL_ISSUE_LOW_SCAN_RESOLUTION';
             }
         }
 
         // ステータス判定
-        $status = empty($issues) ? 'compliant' : 'non_compliant';
+        $status = empty($issueKeys) ? 'compliant' : 'non_compliant';
 
-        // DBを更新
+        // DBを更新（翻訳キーのまま保存する）
         $db->pquery(
             "UPDATE vtiger_notes SET compliance_status = ?, compliance_checked_at = NOW(),
              compliance_notes = ? WHERE notesid = ?",
-            array($status, implode('; ', $issues), $notesId)
+            array($status, implode('; ', $issueKeys), $notesId)
         );
 
-        return array('status' => $status, 'issues' => $issues);
+        return array('status' => $status, 'issues' => self::translateNotes($issueKeys));
+    }
+
+    /**
+     * compliance_notes を表示用の文字列に変換する
+     *
+     * 翻訳キーで保存された不適合理由を現在の言語に翻訳する。
+     * 過去に日本語のまま保存された値はキーに一致しないため、そのまま返る。
+     *
+     * @param string|array $notes 「; 」区切りの文字列またはキーの配列
+     * @param bool $asArray true なら配列で返す
+     * @return string|array
+     */
+    public static function translateNotes($notes, $asArray = true) {
+        if ($notes === null || $notes === '') {
+            return $asArray ? array() : '';
+        }
+        $keys = is_array($notes) ? $notes : explode('; ', $notes);
+        $labels = array();
+        foreach ($keys as $key) {
+            $key = trim($key);
+            if ($key === '') {
+                continue;
+            }
+            $labels[] = vtranslate($key, 'Documents');
+        }
+        return $asArray ? $labels : implode('; ', $labels);
     }
 
     /**
@@ -155,7 +186,7 @@ class Documents_ComplianceChecker {
         );
 
         if ($result === false) {
-            throw new Exception('一括チェッククエリの実行に失敗しました');
+            throw new Exception(vtranslate('LBL_BATCH_CHECK_FAILED', 'Documents'));
         }
 
         $checked = 0;

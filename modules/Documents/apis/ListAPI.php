@@ -1,4 +1,5 @@
 <?php
+require_once 'modules/Documents/utils/ComplianceChecker.php';
 
 class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 
@@ -241,7 +242,9 @@ class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 					'document_category' => $row['document_category'],
 					'preservation_type' => $row['preservation_type'],
 					'compliance_status' => $row['compliance_status'],
-					'compliance_notes' => $row['compliance_notes'],
+					// 不適合理由は翻訳キーで保存されているため、表示用に翻訳する
+					'compliance_notes' => Documents_ComplianceChecker::translateNotes(
+						decode_html($row['compliance_notes']), false),
 					'input_deadline' => $row['input_deadline'],
 					'input_deadline_status' => $row['input_deadline_status'],
 				);

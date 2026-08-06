@@ -260,7 +260,8 @@ class Documents extends CRMEntity {
 			$attachmentsId = (int) $adb->query_result($attachResult, 0, 'attachmentsid');
 		}
 
-		$changeReason = ($insertionMode != 'edit') ? '初回登録' : 'ファイル差替え';
+		// 変更理由は言語非依存の翻訳キーで保存し、表示時に翻訳する
+		$changeReason = ($insertionMode != 'edit') ? 'LBL_VERSION_INITIAL' : 'LBL_VERSION_FILE_REPLACED';
 
 		$adb->pquery(
 			"INSERT INTO vtiger_notes_file_versions
