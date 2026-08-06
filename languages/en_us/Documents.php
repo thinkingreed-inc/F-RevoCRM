@@ -99,6 +99,26 @@ $languageStrings = array(
 	'LBL_FOLDER_NAME_REQUIRED' => 'Folder name is required',
 	'LBL_FOLDER_HAS_SUBFOLDERS' => 'Cannot delete folder with subfolders',
 
+	// Electronic Book Preservation Act - picklist values
+	// これらは vtiger_field のピックリスト値そのものをキーとして翻訳される
+	// （Vtiger_Field_Model::getPicklistValues() が vtranslate($value, 'Documents') を呼ぶ）
+	'invoice' => 'Invoice',
+	'receipt' => 'Receipt',
+	'contract' => 'Contract',
+	'estimate' => 'Estimate',
+	'order' => 'Order',
+	'delivery' => 'Delivery',
+	'other' => 'Other',
+	'electronic_transaction' => 'Electronic Transaction',
+	'scanner' => 'Scanner Preservation',
+	'compliant' => 'Compliant',
+	'non_compliant' => 'Non-Compliant',
+	'within' => 'Within Deadline',
+	'warning' => 'Near Deadline',
+	'overdue' => 'Overdue',
+	'color' => 'Color',
+	'grayscale' => 'Grayscale',
+
 	// Electronic Book Preservation Act - Blocks
 	'LBL_COMPLIANCE_SECTION' => 'E-Book Preservation Act',
 	'LBL_SCANNER_SECTION' => 'Scanner Preservation',
@@ -264,6 +284,64 @@ $languageStrings = array(
 	'LBL_FILE_REPLACED' => 'File replaced',
 	'LBL_VERIFY_SUCCESS' => 'Hash verified: match',
 	'LBL_VERIFY_FAILURE' => 'Hash verified: mismatch',
+	'LBL_SHOW_HISTORY' => 'View History',
+	'LBL_SHOW_MORE_AUDIT' => 'Show all (%s)',
+	'LBL_SHOW_LESS_AUDIT' => 'Collapse',
+	'LBL_NON_COMPLIANT_REASON' => 'Reasons for non-compliance',
+	'LBL_COUNT_SUFFIX' => '%s items',
+	'LBL_LOCATION_FILE' => 'File',
+	'LBL_LOCATION_URL' => 'URL',
+	'LBL_VERSION_AUTO' => 'The version number is assigned automatically when the file is updated',
+	'LBL_ALL_STATUSES' => 'All Statuses',
+	'LBL_PAGINATION_ZERO' => '0 items',
+	'LBL_FILE_TYPE_IMAGE' => 'Image',
+	'LBL_FILE_TYPE_VIDEO' => 'Video',
+	'LBL_FILE_TYPE_AUDIO' => 'Audio',
+
+	// Folder permissions
+	'LBL_FOLDER_PERMISSIONS' => 'Permissions',
+	'LBL_PERMISSION_VIEW' => 'View Permission',
+	'LBL_PERMISSION_EDIT' => 'Edit Permission',
+	'LBL_TARGET_EVERYONE' => 'Everyone',
+	'LBL_TARGET_USER' => 'User',
+	'LBL_TARGET_ROLE' => 'Role',
+	'LBL_TARGET_GROUP' => 'Group',
+	'LBL_ADD_PERMISSION' => 'Add Permission',
+	'LBL_REMOVE_PERMISSION' => 'Remove',
+	'LBL_PERMISSIONS_SAVED' => 'Permissions saved',
+	'LBL_PERMISSIONS_SAVE_FAILED' => 'Failed to save permissions',
+	'LBL_SELECT_TARGET' => 'Select a target',
+
+	// File versions
+	'LBL_VERSION_INITIAL' => 'Initial upload',
+	'LBL_VERSION_FILE_REPLACED' => 'File replaced',
+
+	// Compliance check results
+	'LBL_ISSUE_RECORD_NOT_FOUND' => 'Record not found',
+	'LBL_ISSUE_NO_FILE_HASH' => 'File hash is not registered',
+	'LBL_ISSUE_NO_PRESERVATION_TYPE' => 'Preservation type is not set',
+	'LBL_ISSUE_LOW_SCAN_RESOLUTION' => 'Scan resolution is below 200 dpi',
+	'LBL_BATCH_CHECK_FAILED' => 'Failed to run the batch compliance check',
+
+	// Hash verification results
+	'LBL_HASH_NOT_REGISTERED' => 'Hash value is not registered',
+	'LBL_HASH_MATCHED' => 'Hash values match',
+	'LBL_HASH_MISMATCHED' => 'Possible tampering: hash values do not match',
+
+	// Error messages
+	'LBL_FILE_NOT_FOUND' => 'File not found',
+	'LBL_FILE_READ_FAILED' => 'Cannot read the file',
+	'LBL_FILE_OPEN_FAILED' => 'Cannot open the file',
+	'LBL_PREVIEW_UNSUPPORTED_FORMAT' => 'Preview is not supported for this format',
+	'LBL_SHEET_DATA_NOT_FOUND' => 'Sheet data not found',
+	'LBL_SLIDE_DATA_NOT_FOUND' => 'Slide data not found',
+	'LBL_DOCUMENT_DATA_NOT_FOUND' => 'Document data not found',
+	'LBL_SLIDE_NUMBER' => 'Slide %s',
+	'LBL_SLIDE_NO_TEXT' => '(no text)',
+	'LBL_AUDIT_LOG_COUNT_FAILED' => 'Failed to count the change history',
+	'LBL_AUDIT_LOG_FETCH_FAILED' => 'Failed to retrieve the change history',
+	'LBL_COMPLIANCE_SAVE_FAILED' => 'Failed to save the E-Book Preservation Act metadata',
+	'LBL_REPORT_GENERATION_FAILED' => 'Failed to generate the report',
 );
 
 $jsLanguageStrings = array(

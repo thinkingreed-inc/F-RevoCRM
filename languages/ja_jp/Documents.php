@@ -351,6 +351,45 @@ $languageStrings = array(
 	'LBL_PERMISSIONS_SAVED' => '権限を保存しました',
 	'LBL_PERMISSIONS_SAVE_FAILED' => '権限の保存に失敗しました',
 	'LBL_SELECT_TARGET' => '対象を選択',
+
+	'LBL_ALL_STATUSES' => 'すべての適合状態',
+	'LBL_PAGINATION_ZERO' => '0件',
+
+	// ファイル種別バッジ
+	'LBL_FILE_TYPE_IMAGE' => '画像',
+	'LBL_FILE_TYPE_VIDEO' => '動画',
+	'LBL_FILE_TYPE_AUDIO' => '音声',
+
+	// ファイルバージョンの変更理由
+	'LBL_VERSION_INITIAL' => '初回登録',
+	'LBL_VERSION_FILE_REPLACED' => 'ファイル差替え',
+
+	// 適合チェック結果
+	'LBL_ISSUE_RECORD_NOT_FOUND' => 'レコードが見つかりません',
+	'LBL_ISSUE_NO_FILE_HASH' => 'ファイルハッシュが未登録です',
+	'LBL_ISSUE_NO_PRESERVATION_TYPE' => '保存区分が未設定です',
+	'LBL_ISSUE_LOW_SCAN_RESOLUTION' => 'スキャン解像度が200dpi未満です',
+	'LBL_BATCH_CHECK_FAILED' => '一括適合チェックの実行に失敗しました',
+
+	// ハッシュ検証結果
+	'LBL_HASH_NOT_REGISTERED' => 'ハッシュ値が未登録です',
+	'LBL_HASH_MATCHED' => 'ハッシュ値が一致しました',
+	'LBL_HASH_MISMATCHED' => '改ざんの可能性: ハッシュ値が不一致です',
+
+	// エラーメッセージ
+	'LBL_FILE_NOT_FOUND' => 'ファイルが見つかりません',
+	'LBL_FILE_READ_FAILED' => 'ファイルを読み取れません',
+	'LBL_FILE_OPEN_FAILED' => 'ファイルを開けません',
+	'LBL_PREVIEW_UNSUPPORTED_FORMAT' => 'プレビュー非対応の形式です',
+	'LBL_SHEET_DATA_NOT_FOUND' => 'シートデータが見つかりません',
+	'LBL_SLIDE_DATA_NOT_FOUND' => 'スライドデータが見つかりません',
+	'LBL_DOCUMENT_DATA_NOT_FOUND' => '文書データが見つかりません',
+	'LBL_SLIDE_NUMBER' => 'スライド %s',
+	'LBL_SLIDE_NO_TEXT' => '（テキストなし）',
+	'LBL_AUDIT_LOG_COUNT_FAILED' => '変更履歴の件数取得に失敗しました',
+	'LBL_AUDIT_LOG_FETCH_FAILED' => '変更履歴の取得に失敗しました',
+	'LBL_COMPLIANCE_SAVE_FAILED' => '電帳法メタデータの保存に失敗しました',
+	'LBL_REPORT_GENERATION_FAILED' => 'レポート生成に失敗しました',
 );
 
 $jsLanguageStrings = array(
