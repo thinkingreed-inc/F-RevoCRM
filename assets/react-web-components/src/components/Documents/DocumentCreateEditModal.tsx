@@ -637,11 +637,21 @@ export const DocumentCreateEditModal: React.FC<
               <div
                 onDragOver={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
                   setIsDragging(true);
                 }}
-                onDragLeave={() => setIsDragging(false)}
+                onDragEnter={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onDragLeave={(e) => {
+                  e.stopPropagation();
+                  setIsDragging(false);
+                }}
                 onDrop={(e) => {
                   e.preventDefault();
+                  // 一覧側のドロップ処理（QuickUpload）に伝播すると二重登録になる
+                  e.stopPropagation();
                   setIsDragging(false);
                   const file = e.dataTransfer.files[0];
                   if (file) handleFileSelect(file);
