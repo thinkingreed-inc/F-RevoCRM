@@ -67,7 +67,19 @@
 - 一時ファイルは `storage/chunk_uploads/` 配下のみを対象に、テスト後に削除する。
 - 他テストが作ったデータ・本番データに依存しない。
 
-## 4. 既存の自動テストとの対応
+## 4. 自動テストと手動テストの振り分け
+
+各ケースには自動化状況（`自動` / `半自動` / `手動`）を付している。
+分類の一覧・実行方法・実行結果・自動化していない理由は
+**[自動テストと手動テストの振り分け](自動テストと手動テストの振り分け.md)** にまとめた。
+
+自動テストは `test/unit/documents/spec/` に実装済みで、**407件が全件成功**している。
+テストが実際に機能することは、実装にわざとバグを入れて落ちることを確認済み（同ドキュメント §1.4）。
+
+> **実行には PHP 8.2 以上が必要**。`composer.lock` の更新で `vendor/` が PHP >= 8.2 を
+> 要求するようになったため、PHP 7.4 では起動しない（同ドキュメント §4）。
+
+## 5. 既存の自動テストとの対応
 
 | スクリプト | 主な対応仕様書 |
 |---|---|
@@ -83,28 +95,30 @@
 | `test/unit/documents/test_documents_crud.php` | TS-07 / TS-08 |
 | `test/unit/documents/test_i18n.php` | TS-12 |
 | `e2e/test/**` | TS-12 |
+| `test/unit/documents/spec/**`（本書のために新規作成） | TS-01 / TS-03 / TS-04 / TS-05 / TS-06 / TS-08 / TS-09 / TS-13 |
 
-**未カバー領域**（本書で新規に定義し、自動化を推奨するもの）
+**未カバー領域**（自動化を推奨するもの）
 
-- `FR_BusinessDay` の境界値（`addBusinessDays(0)` / 負数 / `MAX_SEARCH_DAYS`）
-- `Documents_Module_Model` のサイズ計算（`parseIniSize` / `getChunkSizeInBytes`）
-- `Documents_TextExtractor` / `Documents_PreviewContent_Action` の形式別挙動
 - React コンポーネント（Vitest。現状 Documents 配下にテストなし）
-- マイグレーションの再実行冪等性
+- HTTP 経由の認可（未認証・権限なしユーザー）
+- マイグレーションの再実行冪等性（使い捨て DB が必要）
 
-## 5. 実行方法
+## 6. 実行方法
 
 ```bash
-# PHP 単体テスト（DB を書き換えるため開発環境で実行すること）
+# 本書のテストケースに対応する自動テスト（PHP 8.2 以上・DB を書き換えるため開発環境で実行）
 cd /path/to/frevocrm
-php test/unit/settings/test_holidays.php
-php test/unit/documents/test_deadline.php
-php test/unit/documents/compliance/test_compliance.php
-php test/unit/documents/compliance/test_audit_log.php
-php test/unit/documents/test_chunk_upload.php
-php test/unit/documents/test_upload_error.php
-php test/unit/documents/test_compliance_modules.php
-php test/unit/documents/test_relation.php
+php8.3 test/unit/documents/spec/run_all.php
+
+# 既存の個別スクリプト
+php8.3 test/unit/settings/test_holidays.php
+php8.3 test/unit/documents/test_deadline.php
+php8.3 test/unit/documents/compliance/test_compliance.php
+php8.3 test/unit/documents/compliance/test_audit_log.php
+php8.3 test/unit/documents/test_chunk_upload.php
+php8.3 test/unit/documents/test_upload_error.php
+php8.3 test/unit/documents/test_compliance_modules.php
+php8.3 test/unit/documents/test_relation.php
 
 # フロントエンド（実行前に同じプロセスが動いていないか確認すること）
 cd assets/react-web-components
@@ -115,7 +129,7 @@ npx vitest run
 cd e2e && npx playwright test
 ```
 
-## 6. 要確認事項の一覧（⚠️）と対応状況
+## 7. 要確認事項の一覧（⚠️）と対応状況
 
 テストケースを設計する過程で見つかった「実装と一般的な期待が食い違う可能性がある箇所」と、
 その後の判断・対応の記録。
@@ -160,7 +174,7 @@ cd e2e && npx playwright test
 | Q-31 | マイグレーション M-13 | 全件 `batchCheck()` で所要時間が伸びる | **対応不要**（現状維持と判断） | TS-11 TC-MG-130g |
 | Q-32 | `DocumentSelectModal` | ページ移動時に選択状態が保持されるか未確認 | **確認済**: 保持される（`isOpen` 変化時のみリセット）。ケースを追加 | TS-13 TC-RL-072 |
 
-### 6.1 判断の記録（Q-09 / Q-12 / Q-27 / Q-28 / Q-29 / Q-30）
+### 7.1 判断の記録（Q-09 / Q-12 / Q-27 / Q-28 / Q-29 / Q-30）
 
 判断が必要だった項目の背景と、決定した内容。**すべて対応済み**（コード修正または仕様として明記）。
 
@@ -251,7 +265,7 @@ cd e2e && npx playwright test
   運用手順を **TS-05「1.1.1 判定基準を変更したときの再判定」** に明記し、
   設定画面には `LBL_RECHECK_NOTE` で注意を表示する（TC-CC-039c〜039e）。
 
-## 7. 記法
+## 8. 記法
 
 | 記号 | 意味 |
 |---|---|
@@ -260,7 +274,7 @@ cd e2e && npx playwright test
 | ⚠️ 要確認 | 実装と一般的な期待が食い違う可能性がある箇所。仕様判断が必要 |
 | N/A | 検討したうえで対象外とした観点（理由を併記） |
 
-## 8. テストレベルの方針
+## 9. テストレベルの方針
 
 テストピラミッドに従い、同一のバグを複数層で重複検証しない。
 

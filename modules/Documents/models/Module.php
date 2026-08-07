@@ -100,7 +100,8 @@ class Documents_Module_Model extends Vtiger_Module_Model {
 	 * @return int
 	 */
 	public static function getChunkSizeInBytes() {
-		$limit = self::getEffectiveMaxUploadSizeInBytes();
+		// 上限の取得を差し替えられるよう遅延静的束縛にする（テストで各設定値を確認するため）
+		$limit = static::getEffectiveMaxUploadSizeInBytes();
 		if ($limit <= 0) {
 			// 上限なしの場合は 8MB 単位で送る
 			return 8 * 1024 * 1024;

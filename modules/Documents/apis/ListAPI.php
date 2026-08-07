@@ -9,6 +9,74 @@ class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 	/** LIKE 検索のエスケープ文字（バックスラッシュは sql_mode の影響を受けるため使わない） */
 	const LIKE_ESCAPE_CHAR = '!';
 
+	/** 既定のソートカラム */
+	const DEFAULT_SORT_COLUMN = 'vtiger_crmentity.modifiedtime';
+
+	/**
+	 * ソートに使える項目とカラムの対応
+	 * ここに無い項目は既定にフォールバックする（SQL に値を連結しないため）
+	 */
+	public static function getAllowedSortColumns() {
+		return array(
+			'notes_title' => 'vtiger_notes.title',
+			'title' => 'vtiger_notes.title',
+			'filename' => 'vtiger_notes.filename',
+			'filesize' => 'vtiger_notes.filesize',
+			'modifiedtime' => 'vtiger_crmentity.modifiedtime',
+			'createdtime' => 'vtiger_crmentity.createdtime',
+			'assigned_user_id' => 'vtiger_crmentity.smownerid',
+			'filedownloadcount' => 'vtiger_notes.filedownloadcount',
+		);
+	}
+
+	/**
+	 * ソート項目をカラム名に変換する（ホワイトリスト外は既定）
+	 *
+	 * @param string $sortBy
+	 * @return string
+	 */
+	public static function resolveSortColumn($sortBy) {
+		$allowed = self::getAllowedSortColumns();
+		return isset($allowed[$sortBy]) ? $allowed[$sortBy] : self::DEFAULT_SORT_COLUMN;
+	}
+
+	/**
+	 * ソート順を ASC / DESC に正規化する
+	 *
+	 * @param string $sortOrder
+	 * @return string
+	 */
+	public static function normalizeSortOrder($sortOrder) {
+		return (strtoupper((string) $sortOrder) === 'ASC') ? 'ASC' : 'DESC';
+	}
+
+	/**
+	 * ページ番号を正規化する（1未満は1）
+	 *
+	 * @param mixed $page
+	 * @return int
+	 */
+	public static function normalizePage($page) {
+		$page = (int) $page;
+		return ($page < 1) ? 1 : $page;
+	}
+
+	/**
+	 * 1ページの件数を正規化する
+	 *
+	 * 指定が無い・不正なら既定の20件、上限を超える指定は上限に丸める。
+	 *
+	 * @param mixed $pageLimit
+	 * @return int
+	 */
+	public static function normalizePageLimit($pageLimit) {
+		$pageLimit = (int) $pageLimit;
+		if ($pageLimit < 1) {
+			return 20;
+		}
+		return ($pageLimit > self::MAX_PAGE_LIMIT) ? self::MAX_PAGE_LIMIT : $pageLimit;
+	}
+
 	public function requiresPermission(Vtiger_Request $request) {
 		$permissions = parent::requiresPermission($request);
 		$permissions[] = array('module_parameter' => 'module', 'action' => 'DetailView');
@@ -34,10 +102,8 @@ class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 		// パラメータ取得
 		$page = (int) $request->get('page', 1);
 		$pageLimit = (int) $request->get('pageLimit', 20);
-		if ($page < 1) $page = 1;
-		// 指定が無い・不正なら既定の20件、上限を超える指定は上限に丸める
-		if ($pageLimit < 1) $pageLimit = 20;
-		if ($pageLimit > self::MAX_PAGE_LIMIT) $pageLimit = self::MAX_PAGE_LIMIT;
+		$page = self::normalizePage($page);
+		$pageLimit = self::normalizePageLimit($pageLimit);
 		$startIndex = ($page - 1) * $pageLimit;
 
 		$folderId = $request->get('folder_id');
@@ -59,20 +125,8 @@ class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 		$hasRelatedRecord = $request->get('has_related_record');
 		$inputDeadlineStatus = $request->get('input_deadline_status');
 
-		// ソートカラムのホワイトリスト
-		$allowedSortColumns = array(
-			'notes_title' => 'vtiger_notes.title',
-			'title' => 'vtiger_notes.title',
-			'filename' => 'vtiger_notes.filename',
-			'filesize' => 'vtiger_notes.filesize',
-			'modifiedtime' => 'vtiger_crmentity.modifiedtime',
-			'createdtime' => 'vtiger_crmentity.createdtime',
-			'assigned_user_id' => 'vtiger_crmentity.smownerid',
-			'filedownloadcount' => 'vtiger_notes.filedownloadcount',
-		);
-
-		$sortColumn = isset($allowedSortColumns[$sortBy]) ? $allowedSortColumns[$sortBy] : 'vtiger_crmentity.modifiedtime';
-		$sortOrder = strtoupper($sortOrder) === 'ASC' ? 'ASC' : 'DESC';
+		$sortColumn = self::resolveSortColumn($sortBy);
+		$sortOrder = self::normalizeSortOrder($sortOrder);
 
 		$userId = $currentUser->getId();
 
