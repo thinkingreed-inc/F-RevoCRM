@@ -111,10 +111,10 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 		}
 
 		$fileSize = filesize($path);
-		header("Content-type: " . $mimeType);
+		header("Content-type: " . self::sanitizeHeaderValue($mimeType));
 		header("Pragma: public");
 		header("Cache-Control: private");
-		header("Content-Disposition: attachment; filename=\"" . $downloadName . "\"");
+		header("Content-Disposition: attachment; " . self::buildContentDisposition($downloadName));
 		header("Content-Description: PHP Generated Data");
 		header("Content-Encoding: none");
 		if ($fileSize !== false) {
@@ -132,6 +132,36 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 		}
 		fclose($handle);
 		return true;
+	}
+
+	/**
+	 * Content-Disposition のファイル名部分を組み立てる
+	 *
+	 * ファイル名に含まれる二重引用符・バックスラッシュはヘッダーの構文を壊し、
+	 * 改行はヘッダーインジェクションになるため取り除く。
+	 * マルチバイトのファイル名は RFC 5987 形式（filename*）でも併記する。
+	 *
+	 * @param string $downloadName
+	 * @return string
+	 */
+	private static function buildContentDisposition($downloadName) {
+		$name = self::sanitizeHeaderValue($downloadName);
+		// 引用符とバックスラッシュは quoted-string を壊すため除去する
+		$quoted = str_replace(array('\\', '"'), '', $name);
+		if ($quoted === '') {
+			$quoted = 'download';
+		}
+		return 'filename="' . $quoted . '"; filename*=UTF-8\'\'' . rawurlencode($name);
+	}
+
+	/**
+	 * ヘッダーに出力する値から改行を取り除く
+	 *
+	 * @param string $value
+	 * @return string
+	 */
+	private static function sanitizeHeaderValue($value) {
+		return str_replace(array("\r", "\n", "\0"), '', (string) $value);
 	}
 
 	function updateFileStatus() {

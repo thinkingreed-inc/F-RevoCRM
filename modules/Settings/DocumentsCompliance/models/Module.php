@@ -112,6 +112,10 @@ class Settings_DocumentsCompliance_Module_Model extends Settings_Vtiger_Module_M
 	/**
 	 * 書類区分ごとの取引モジュール設定を検証して保存する
 	 *
+	 * 指定された書類区分だけを更新し、指定が無い区分は現在の設定をそのまま残す。
+	 * （送らなかった区分が既定値に戻ると、意図しない判定基準の変更に気付けないため）
+	 * ある区分の対象モジュールを空にしたい場合は、その区分に空配列を指定する。
+	 *
 	 * @param array|string $input 書類区分 => モジュール名の配列（JSON文字列も受け付ける）
 	 * @return array 保存後の設定
 	 * @throws Exception 値が不正な場合
@@ -120,13 +124,15 @@ class Settings_DocumentsCompliance_Module_Model extends Settings_Vtiger_Module_M
 		if (is_string($input)) {
 			$input = json_decode($input, true);
 		}
-		if (!is_array($input)) {
+		if (!is_array($input) || empty($input)) {
+			// 空の指定は更新対象が無く、誤送信の可能性が高いためエラーにする
 			throw new Exception(vtranslate('LBL_INVALID_CATEGORY_MODULES', self::QUALIFIED_MODULE));
 		}
 
 		$categories = self::getDocumentCategories();
 		$relatableModules = self::getRelatableModules();
-		$saved = array();
+		// 現在の設定を引き継ぎ、指定された区分だけを上書きする
+		$saved = self::getCategoryModules();
 		foreach ($input as $category => $modules) {
 			if (!isset($categories[$category])) {
 				throw new Exception(vtranslate('LBL_INVALID_CATEGORY', self::QUALIFIED_MODULE));

@@ -66,6 +66,9 @@ class Documents_Module_Model extends Vtiger_Module_Model {
 	/** 1リクエストあたりの余裕（他のPOSTフィールドとmultipartのオーバーヘッド分） */
 	const CHUNK_SIZE_MARGIN = 262144;
 
+	/** 分割サイズを丸める単位（64KB） */
+	const CHUNK_SIZE_UNIT = 65536;
+
 	/**
 	 * 最大アップロードサイズを表示用の文字列にする（例: 2 MB）
 	 *
@@ -102,13 +105,21 @@ class Documents_Module_Model extends Vtiger_Module_Model {
 			// 上限なしの場合は 8MB 単位で送る
 			return 8 * 1024 * 1024;
 		}
+
 		$chunkSize = $limit - self::CHUNK_SIZE_MARGIN;
-		if ($chunkSize < 65536) {
-			// 極端に小さい設定でも最低 64KB は送れるようにする
-			$chunkSize = max(65536, (int) floor($limit * 0.8));
+		if ($chunkSize < self::CHUNK_SIZE_UNIT) {
+			// マージンを引くと小さすぎる設定では上限の8割を使う
+			// （multipart のオーバーヘッドがあるため、上限と同じ値にはしない）
+			$chunkSize = (int) floor($limit * 0.8);
 		}
-		// 64KB 単位に丸める
-		return (int) (floor($chunkSize / 65536) * 65536);
+
+		// 64KB 単位に切り下げる
+		$rounded = (int) (floor($chunkSize / self::CHUNK_SIZE_UNIT) * self::CHUNK_SIZE_UNIT);
+		if ($rounded > 0) {
+			return $rounded;
+		}
+		// 上限が 64KB 未満の極端な設定。1リクエストの上限は必ず下回るようにする
+		return max(1, (int) floor($limit * 0.8));
 	}
 
 	/**

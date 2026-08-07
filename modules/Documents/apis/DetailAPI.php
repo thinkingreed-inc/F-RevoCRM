@@ -26,6 +26,7 @@ class Documents_DetailAPI_Api extends Vtiger_Api_Controller {
 		$folderPermWhere = '';
 		$folderPermParams = array();
 		$currentUser = Users_Record_Model::getCurrentUserModel();
+		$currentUserId = (int) $currentUser->getId();
 		if (!$currentUser->isAdminUser()) {
 			$userId = $currentUser->getId();
 			require_once 'include/utils/GetUserGroups.php';
@@ -66,13 +67,17 @@ class Documents_DetailAPI_Api extends Vtiger_Api_Controller {
 					THEN CONCAT(vtiger_users.last_name, ' ', vtiger_users.first_name)
 					ELSE vtiger_groups.groupname
 				END AS assigned_user_name,
-				u2.last_name AS modified_by_lastname, u2.first_name AS modified_by_firstname
+				u2.last_name AS modified_by_lastname, u2.first_name AS modified_by_firstname,
+				CASE WHEN vtiger_crmentity_user_field.starred = '1' THEN 1 ELSE 0 END AS starred
 			FROM vtiger_notes
 			INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_notes.notesid
 			LEFT JOIN vtiger_attachmentsfolder ON vtiger_attachmentsfolder.folderid = vtiger_notes.folderid
 			LEFT JOIN vtiger_users ON vtiger_users.id = vtiger_crmentity.smownerid
 			LEFT JOIN vtiger_groups ON vtiger_groups.groupid = vtiger_crmentity.smownerid
 			LEFT JOIN vtiger_users u2 ON u2.id = vtiger_crmentity.modifiedby
+			LEFT JOIN vtiger_crmentity_user_field
+				ON vtiger_crmentity_user_field.recordid = vtiger_notes.notesid
+				AND vtiger_crmentity_user_field.userid = " . $currentUserId . "
 			WHERE vtiger_notes.notesid = ? AND vtiger_crmentity.deleted = 0" . $folderPermWhere,
 			$params
 		);
@@ -254,7 +259,7 @@ class Documents_DetailAPI_Api extends Vtiger_Api_Controller {
 			'filedownloadcount' => (int) $row['filedownloadcount'],
 			'filestatus' => (int) $row['filestatus'],
 			'fileversion' => $row['fileversion'],
-			'starred' => false,
+			'starred' => (int) $row['starred'] === 1,
 			'notecontent' => decode_html($row['notecontent']),
 			'note_no' => $row['note_no'],
 			'download_url' => $downloadUrl,
@@ -328,12 +333,19 @@ class Documents_DetailAPI_Api extends Vtiger_Api_Controller {
 		);
 	}
 
+	/**
+	 * フォルダのパンくずを組み立てる
+	 *
+	 * 階層の深さで打ち切らない。ただし親子関係が循環しているデータでも
+	 * 止まるよう、たどったフォルダを記録して二度目は打ち切る。
+	 */
 	private function getFolderPath($db, $folderId) {
 		$path = array();
-		$maxDepth = 10;
-		$currentId = $folderId;
+		$visited = array();
+		$currentId = (int) $folderId;
 
-		while ($currentId > 0 && $maxDepth > 0) {
+		while ($currentId > 0 && !isset($visited[$currentId])) {
+			$visited[$currentId] = true;
 			$result = $db->pquery(
 				"SELECT folderid, foldername, COALESCE(parent_folderid, 0) AS parent_folderid
 				FROM vtiger_attachmentsfolder WHERE folderid = ?",
@@ -347,7 +359,6 @@ class Documents_DetailAPI_Api extends Vtiger_Api_Controller {
 				'name' => decode_html($row['foldername']),
 			));
 			$currentId = (int) $row['parent_folderid'];
-			$maxDepth--;
 		}
 		return $path;
 	}

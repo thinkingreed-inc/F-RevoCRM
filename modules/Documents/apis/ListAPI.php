@@ -3,6 +3,12 @@ require_once 'modules/Documents/utils/ComplianceChecker.php';
 
 class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 
+	/** 1ページあたりの最大件数 */
+	const MAX_PAGE_LIMIT = 100;
+
+	/** LIKE 検索のエスケープ文字（バックスラッシュは sql_mode の影響を受けるため使わない） */
+	const LIKE_ESCAPE_CHAR = '!';
+
 	public function requiresPermission(Vtiger_Request $request) {
 		$permissions = parent::requiresPermission($request);
 		$permissions[] = array('module_parameter' => 'module', 'action' => 'DetailView');
@@ -29,7 +35,9 @@ class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 		$page = (int) $request->get('page', 1);
 		$pageLimit = (int) $request->get('pageLimit', 20);
 		if ($page < 1) $page = 1;
-		if ($pageLimit < 1 || $pageLimit > 100) $pageLimit = 20;
+		// 指定が無い・不正なら既定の20件、上限を超える指定は上限に丸める
+		if ($pageLimit < 1) $pageLimit = 20;
+		if ($pageLimit > self::MAX_PAGE_LIMIT) $pageLimit = self::MAX_PAGE_LIMIT;
 		$startIndex = ($page - 1) * $pageLimit;
 
 		$folderId = $request->get('folder_id');
@@ -116,9 +124,13 @@ class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 		}
 
 		// 全文検索（indexed_content + title + filename の OR条件）
+		// 入力に含まれる % や _ はワイルドカードではなく文字として扱う
 		if (!empty($searchKeyword)) {
-			$keyword = '%' . $searchKeyword . '%';
-			$where .= " AND (vtiger_notes.title LIKE ? OR vtiger_notes.filename LIKE ? OR vtiger_notes.indexed_content LIKE ?)";
+			$keyword = '%' . self::escapeLikeValue($searchKeyword) . '%';
+			$escape = " ESCAPE '" . self::LIKE_ESCAPE_CHAR . "'";
+			$where .= " AND (vtiger_notes.title LIKE ?" . $escape
+				. " OR vtiger_notes.filename LIKE ?" . $escape
+				. " OR vtiger_notes.indexed_content LIKE ?" . $escape . ")";
 			$params[] = $keyword;
 			$params[] = $keyword;
 			$params[] = $keyword;
@@ -126,7 +138,7 @@ class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 
 		// 電帳法フィルター
 		if ($complianceFilter) {
-			$where .= " AND vtiger_notes.document_category IS NOT NULL";
+			$where .= " AND " . Documents_ComplianceChecker::TARGET_SQL_CONDITION;
 		}
 		if (!empty($documentCategory)) {
 			$where .= " AND vtiger_notes.document_category = ?";
@@ -146,7 +158,7 @@ class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 		}
 		// 未関連のみ（電帳法対象かつ取引レコードに関連付けなし）
 		if ($hasRelatedRecord === 'false' || $hasRelatedRecord === '0') {
-			$where .= " AND vtiger_notes.document_category IS NOT NULL
+			$where .= " AND " . Documents_ComplianceChecker::TARGET_SQL_CONDITION . "
 				AND NOT EXISTS (
 					SELECT 1 FROM vtiger_senotesrel snr
 					INNER JOIN vtiger_crmentity ce ON ce.crmid = snr.crmid AND ce.deleted = 0
@@ -332,6 +344,23 @@ class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 
 		return array(
 			'columns' => $columns,
+		);
+	}
+
+	/**
+	 * LIKE 検索の値をエスケープする
+	 *
+	 * エスケープ文字自身 → % → _ の順に置換する（二重エスケープを避ける）。
+	 *
+	 * @param string $value
+	 * @return string
+	 */
+	private static function escapeLikeValue($value) {
+		$escape = self::LIKE_ESCAPE_CHAR;
+		return str_replace(
+			array($escape, '%', '_'),
+			array($escape . $escape, $escape . '%', $escape . '_'),
+			(string) $value
 		);
 	}
 

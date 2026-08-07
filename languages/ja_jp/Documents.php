@@ -98,6 +98,9 @@ $languageStrings = array(
 	'LBL_SEARCH_FOR_FOLDER' => 'フォルダから検索',
 	'LBL_FOLDER_NAME_REQUIRED' => 'フォルダ名は必須です',
 	'LBL_FOLDER_HAS_SUBFOLDERS' => 'サブフォルダが存在するため削除できません',
+	'LBL_FOLDER_PARENT_NOT_FOUND' => '指定された親フォルダが見つかりません',
+	'LBL_FOLDER_PARENT_SELF' => 'フォルダ自身を親フォルダに指定することはできません',
+	'LBL_FOLDER_PARENT_CIRCULAR' => '自分の下位にあるフォルダを親フォルダに指定することはできません',
 
 	// 電子帳簿保存法 ピックリスト値の翻訳
 	'invoice' => '請求書',
@@ -407,6 +410,9 @@ $languageStrings = array(
 	'LBL_PREVIEW_UNSUPPORTED_FORMAT' => 'プレビュー非対応の形式です',
 	'LBL_SHEET_DATA_NOT_FOUND' => 'シートデータが見つかりません',
 	'LBL_SLIDE_DATA_NOT_FOUND' => 'スライドデータが見つかりません',
+	'LBL_PREVIEW_TRUNCATED_SHEETS' => 'プレビューは先頭 %s シートまでを表示しています（全 %s シート）。すべての内容はファイルをダウンロードして確認してください。',
+	'LBL_PREVIEW_TRUNCATED_ROWS' => 'プレビューは先頭 %s 行までを表示しています。以降の行は省略しました。',
+	'LBL_PREVIEW_TRUNCATED_SLIDES' => 'プレビューは先頭 %s スライドまでを表示しています（全 %s スライド）。すべての内容はファイルをダウンロードして確認してください。',
 	'LBL_DOCUMENT_DATA_NOT_FOUND' => '文書データが見つかりません',
 	'LBL_SLIDE_NUMBER' => 'スライド %s',
 	'LBL_SLIDE_NO_TEXT' => '（テキストなし）',

@@ -11,6 +11,10 @@ class Migration20260617153210_CreateFolderPermissions extends FRMigrationClass {
 
     public function process() {
         // フォルダ権限テーブル
+        if ($this->checkTableExists('vtiger_folder_permissions')) {
+            $this->log("テーブル vtiger_folder_permissions は既に存在するためスキップします");
+            return;
+        }
         $this->db->pquery("CREATE TABLE vtiger_folder_permissions (
             permission_id INT AUTO_INCREMENT,
             folderid INT NOT NULL,

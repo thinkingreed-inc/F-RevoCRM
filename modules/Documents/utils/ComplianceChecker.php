@@ -46,6 +46,42 @@ class Documents_ComplianceChecker {
         'electronic_transaction', 'scanner',
     );
 
+    /** スキャナ保存で必要な解像度（dpi） */
+    const MIN_SCAN_RESOLUTION_DPI = 200;
+
+    /**
+     * 電帳法対象を抽出する SQL 条件
+     *
+     * 書類区分が空文字のレコードは対象外（isComplianceTarget() と判定を揃える）。
+     * 集計や絞り込みで対象外のドキュメントを数えないよう、条件をここに集約する。
+     */
+    const TARGET_SQL_CONDITION =
+        "vtiger_notes.document_category IS NOT NULL AND vtiger_notes.document_category != ''";
+
+    /**
+     * 解像度の値を整数に整える
+     *
+     * 未入力（空文字・null）は 0 として扱い、要件を満たさない扱いにする。
+     * 数値として解釈できない値は、誤った判定をしないよう例外にする。
+     *
+     * @param mixed $value
+     * @return int
+     * @throws InvalidArgumentException 数値として解釈できない場合
+     */
+    public static function normalizeResolution($value) {
+        if ($value === null || $value === false) {
+            return 0;
+        }
+        $value = trim((string) $value);
+        if ($value === '') {
+            return 0;
+        }
+        if (!preg_match('/^-?\d+$/', $value)) {
+            throw new InvalidArgumentException('Invalid scan resolution: ' . $value);
+        }
+        return (int) $value;
+    }
+
     /**
      * ドキュメントが電帳法対象かどうかを判定する
      *
@@ -282,8 +318,9 @@ class Documents_ComplianceChecker {
         }
 
         // 4. スキャナ保存固有チェック
+        //    解像度は未入力（空・NULL）を 0 として扱い、要件（200dpi以上）を満たさない扱いにする
         if ($row['preservation_type'] === 'scanner') {
-            if (!empty($row['scan_resolution_dpi']) && (int) $row['scan_resolution_dpi'] < 200) {
+            if (self::normalizeResolution($row['scan_resolution_dpi']) < self::MIN_SCAN_RESOLUTION_DPI) {
                 $issueKeys[] = 'LBL_ISSUE_LOW_SCAN_RESOLUTION';
             }
         }
@@ -330,14 +367,17 @@ class Documents_ComplianceChecker {
     /**
      * 電帳法対象ドキュメントの一括適合チェック
      *
-     * @return array ['checked' => int, 'compliant' => int, 'non_compliant' => int]
+     * 電帳法対象でないドキュメント（書類区分が未設定・空文字）は判定せず、
+     * 適合・不適合のどちらにも数えない。
+     *
+     * @return array ['checked' => int, 'compliant' => int, 'non_compliant' => int, 'skipped' => int]
      */
     public static function batchCheck() {
         $db = PearDatabase::getInstance();
         $result = $db->pquery(
             "SELECT vtiger_notes.notesid FROM vtiger_notes
             INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_notes.notesid
-            WHERE vtiger_notes.document_category IS NOT NULL AND vtiger_crmentity.deleted = 0",
+            WHERE " . self::TARGET_SQL_CONDITION . " AND vtiger_crmentity.deleted = 0",
             array()
         );
 
@@ -348,11 +388,29 @@ class Documents_ComplianceChecker {
         $checked = 0;
         $compliant = 0;
         $nonCompliant = 0;
+        $skipped = 0;
 
         $numRows = $db->num_rows($result);
         for ($i = 0; $i < $numRows; $i++) {
             $notesId = $db->query_result($result, $i, 'notesid');
-            $checkResult = self::check($notesId);
+            try {
+                $checkResult = self::check($notesId);
+            } catch (InvalidArgumentException $e) {
+                // 値が不正で判定できないドキュメントで全体を止めない（不適合として数える）
+                global $log;
+                if (isset($log) && is_object($log)) {
+                    $log->error("Documents compliance check failed for record {$notesId}: "
+                        . $e->getMessage());
+                }
+                $checked++;
+                $nonCompliant++;
+                continue;
+            }
+            if ($checkResult['status'] === null) {
+                // 電帳法対象外。不適合として数えない
+                $skipped++;
+                continue;
+            }
             $checked++;
             if ($checkResult['status'] === 'compliant') {
                 $compliant++;
@@ -361,6 +419,11 @@ class Documents_ComplianceChecker {
             }
         }
 
-        return array('checked' => $checked, 'compliant' => $compliant, 'non_compliant' => $nonCompliant);
+        return array(
+            'checked' => $checked,
+            'compliant' => $compliant,
+            'non_compliant' => $nonCompliant,
+            'skipped' => $skipped,
+        );
     }
 }

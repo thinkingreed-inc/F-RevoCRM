@@ -73,14 +73,27 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 			$totalCount = (int) $db->query_result($totalResult, 0, 'total');
 		}
 
-		$starredCount = 0;
-
 		// 現在のユーザーの権限情報を取得
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$isAdmin = $currentUser->isAdminUser();
 		$userId = $currentUser->getId();
 		$userRoleId = $currentUser->get('roleid');
 		$userGroupIds = $this->getUserGroupIds($userId);
+
+		// 実行ユーザーがスターを付けたドキュメント数
+		$starredCount = 0;
+		$starredResult = $db->pquery(
+			"SELECT COUNT(*) AS cnt FROM vtiger_notes
+			INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_notes.notesid
+			INNER JOIN vtiger_crmentity_user_field
+				ON vtiger_crmentity_user_field.recordid = vtiger_notes.notesid
+				AND vtiger_crmentity_user_field.userid = ?
+			WHERE vtiger_crmentity.deleted = 0 AND vtiger_crmentity_user_field.starred = '1'",
+			array($userId)
+		);
+		if ($starredResult !== false && $db->num_rows($starredResult) > 0) {
+			$starredCount = (int) $db->query_result($starredResult, 0, 'cnt');
+		}
 
 		$folders = array();
 		$numRows = $db->num_rows($result);
@@ -128,10 +141,12 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 		}
 
 		$folderModel = Documents_Folder_Model::getInstance();
+		$targetFolderId = 0;
 		if ($saveMode === 'edit') {
 			$folderId = $request->get('folderid');
 			$folderModel = Documents_Folder_Model::getInstanceById($folderId);
 			$folderModel->set('mode', 'edit');
+			$targetFolderId = (int) $folderId;
 		}
 
 		$folderModel->set('foldername', $folderName);
@@ -141,10 +156,14 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 			throw new AppException(vtranslate('LBL_FOLDER_EXISTS', $moduleName));
 		}
 
+		$db = PearDatabase::getInstance();
+		// 親フォルダの指定を検証する（存在しない・自分自身・子孫を親にできない）
+		// 名前だけ保存されて親が更新されない状態にならないよう、保存前に確認する
+		$this->assertValidParentFolder($db, $targetFolderId, $parentFolderId, $moduleName);
+
 		$folderModel->save();
 
 		// parent_folderidの更新
-		$db = PearDatabase::getInstance();
 		$db->pquery(
 			"UPDATE vtiger_attachmentsfolder SET parent_folderid = ? WHERE folderid = ?",
 			array($parentFolderId, $folderModel->getId())
@@ -368,6 +387,54 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 			'roles' => $roles,
 			'groups' => $groups,
 		));
+	}
+
+	/**
+	 * 親フォルダの指定が妥当かどうかを確認する
+	 *
+	 * 自分自身や自分の子孫を親にすると階層が循環し、ツリー表示やパンくずが
+	 * 終わらなくなるため、保存前に弾く。
+	 *
+	 * @param PearDatabase $db
+	 * @param int $folderId 対象フォルダ（新規作成時は 0）
+	 * @param int $parentFolderId 指定された親フォルダ（0 はルート）
+	 * @param string $moduleName
+	 * @throws Exception 妥当でない場合
+	 */
+	private function assertValidParentFolder($db, $folderId, $parentFolderId, $moduleName) {
+		if ($parentFolderId <= 0) {
+			return;// ルート
+		}
+		if ($folderId > 0 && $parentFolderId === $folderId) {
+			throw new Exception(vtranslate('LBL_FOLDER_PARENT_SELF', $moduleName));
+		}
+
+		$exists = $db->pquery(
+			"SELECT folderid FROM vtiger_attachmentsfolder WHERE folderid = ?",
+			array($parentFolderId)
+		);
+		if ($exists === false || $db->num_rows($exists) === 0) {
+			throw new Exception(vtranslate('LBL_FOLDER_PARENT_NOT_FOUND', $moduleName));
+		}
+
+		// 指定された親から根までたどり、対象フォルダに行き当たれば循環する
+		$currentId = $parentFolderId;
+		$visited = array();
+		while ($currentId > 0 && !isset($visited[$currentId])) {
+			if ($currentId === $folderId) {
+				throw new Exception(vtranslate('LBL_FOLDER_PARENT_CIRCULAR', $moduleName));
+			}
+			$visited[$currentId] = true;
+			$result = $db->pquery(
+				"SELECT COALESCE(parent_folderid, 0) AS parent_folderid
+				FROM vtiger_attachmentsfolder WHERE folderid = ?",
+				array($currentId)
+			);
+			if ($result === false || $db->num_rows($result) === 0) {
+				return;
+			}
+			$currentId = (int) $db->query_result($result, 0, 'parent_folderid');
+		}
 	}
 
 	// ─── 権限チェックヘルパー ───

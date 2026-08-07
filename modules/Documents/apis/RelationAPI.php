@@ -11,11 +11,9 @@
  *   POST mode=unlink&parent_module=Accounts&parent_id=123&records[]=456
  */
 require_once 'modules/Documents/utils/ComplianceChecker.php';
+require_once 'modules/Documents/utils/FolderPermission.php';
 
 class Documents_RelationAPI_Api extends Vtiger_Api_Controller {
-
-	/** 1回のリクエストで扱えるドキュメント数の上限 */
-	const MAX_RECORDS = 200;
 
 	public function requiresPermission(Vtiger_Request $request) {
 		$permissions = parent::requiresPermission($request);
@@ -76,9 +74,15 @@ class Documents_RelationAPI_Api extends Vtiger_Api_Controller {
 
 		$processed = 0;
 		$skipped = 0;
+		$denied = 0;
 		foreach ($recordIds as $recordId) {
 			if (!$this->isDocument($recordId)) {
 				$skipped++;
+				continue;
+			}
+			// 参照できないフォルダのドキュメントは紐づけ・解除の対象にしない
+			if (!Documents_FolderPermission::canAccessDocument($recordId)) {
+				$denied++;
 				continue;
 			}
 			$related = $this->isRelated($parentId, $recordId);
@@ -104,6 +108,8 @@ class Documents_RelationAPI_Api extends Vtiger_Api_Controller {
 			'linked' => $link ? $processed : 0,
 			'unlinked' => $link ? 0 : $processed,
 			'skipped' => $skipped,
+			// 参照権限が無く対象外にした件数
+			'denied' => $denied,
 		);
 	}
 
@@ -132,6 +138,9 @@ class Documents_RelationAPI_Api extends Vtiger_Api_Controller {
 	 * リクエストからドキュメントIDの配列を取り出す
 	 *
 	 * records[]（配列）とカンマ区切りの records の両方を受け付ける。
+	 * 指定されたIDは件数で切り捨てず、すべて処理する
+	 * （黙って捨てると関連付け漏れに気付けないため）。
+	 * 1リクエストで送れる件数は PHP の max_input_vars / post_max_size に従う。
 	 *
 	 * @param Vtiger_Request $request
 	 * @return array 重複を除いたドキュメントIDの配列
@@ -152,7 +161,7 @@ class Documents_RelationAPI_Api extends Vtiger_Api_Controller {
 				$recordIds[] = $recordId;
 			}
 		}
-		return array_slice($recordIds, 0, self::MAX_RECORDS);
+		return $recordIds;
 	}
 
 	/**

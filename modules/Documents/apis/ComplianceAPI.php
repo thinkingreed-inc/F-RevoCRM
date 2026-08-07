@@ -8,6 +8,7 @@ require_once 'modules/Documents/utils/FileHasher.php';
 require_once 'modules/Documents/utils/AuditLogger.php';
 require_once 'modules/Documents/utils/ComplianceChecker.php';
 require_once 'modules/Documents/utils/DeadlineCalculator.php';
+require_once 'modules/Documents/utils/FolderPermission.php';
 
 class Documents_ComplianceAPI_Api extends Vtiger_Api_Controller {
 
@@ -48,17 +49,9 @@ class Documents_ComplianceAPI_Api extends Vtiger_Api_Controller {
      * 電帳法メタデータの保存
      */
     private function saveCompliance(Vtiger_Request $request) {
-        $notesId = (int) $request->get('notesid');
-        if (empty($notesId)) {
-            throw new Exception('notesid is required');
-        }
+        $notesId = $this->getAccessibleNotesId($request);
 
         $db = PearDatabase::getInstance();
-
-        $existsResult = $db->pquery("SELECT notesid FROM vtiger_notes WHERE notesid = ?", array($notesId));
-        if ($existsResult === false || $db->num_rows($existsResult) === 0) {
-            throw new Exception('Document not found');
-        }
 
         // 変更前の値を取得（監査ログ用）
         $beforeSnapshot = Documents_AuditLogger::snapshotFields($notesId);
@@ -67,11 +60,17 @@ class Documents_ComplianceAPI_Api extends Vtiger_Api_Controller {
         $updates = array();
         $params = array();
 
+        // 数値として解釈できない解像度は保存前に弾く（例外になる）
+        $rawResolution = $request->get('scan_resolution_dpi');
+        $resolution = (trim((string) $rawResolution) === '')
+            ? $rawResolution
+            : Documents_ComplianceChecker::normalizeResolution($rawResolution);
+
         $fields = array(
             'document_category' => $request->get('document_category'),
             'preservation_type' => $request->get('preservation_type'),
             'receipt_date' => $request->get('receipt_date'),
-            'scan_resolution_dpi' => $request->get('scan_resolution_dpi'),
+            'scan_resolution_dpi' => $resolution,
             'scan_color_type' => $request->get('scan_color_type'),
             'original_paper_size' => $request->get('original_paper_size'),
         );
@@ -118,21 +117,36 @@ class Documents_ComplianceAPI_Api extends Vtiger_Api_Controller {
      * 関連レコードチェック
      */
     private function checkRelated(Vtiger_Request $request) {
+        $notesId = $this->getAccessibleNotesId($request);
+        return Documents_ComplianceChecker::checkRelatedRecords($notesId);
+    }
+
+    /**
+     * リクエストのドキュメントIDを取り出し、参照できることを確認する
+     *
+     * フォルダ権限が無いドキュメントは、存在の有無を漏らさないため
+     * 「見つからない」として扱う。
+     *
+     * @param Vtiger_Request $request
+     * @return int
+     * @throws Exception
+     */
+    private function getAccessibleNotesId(Vtiger_Request $request) {
         $notesId = (int) $request->get('notesid');
         if (empty($notesId)) {
             throw new Exception('notesid is required');
         }
-        return Documents_ComplianceChecker::checkRelatedRecords($notesId);
+        if (!Documents_FolderPermission::canAccessDocument($notesId)) {
+            throw new Exception('Document not found');
+        }
+        return $notesId;
     }
 
     /**
      * ハッシュ検証
      */
     private function verifyHash(Vtiger_Request $request) {
-        $notesId = (int) $request->get('notesid');
-        if (empty($notesId)) {
-            throw new Exception('notesid is required');
-        }
+        $notesId = $this->getAccessibleNotesId($request);
 
         $result = Documents_FileHasher::verifyHash($notesId);
 
@@ -147,9 +161,12 @@ class Documents_ComplianceAPI_Api extends Vtiger_Api_Controller {
      */
     private function batchVerifyHash(Vtiger_Request $request) {
         $notesIds = $request->get('notesids');
-        if (empty($notesIds) || !is_array($notesIds)) {
+        if (!is_array($notesIds)) {
             throw new Exception('notesids array is required');
         }
+        // 0件の指定はエラーではなく、件数0の結果を返す
+        // 参照できないドキュメントは対象から除く（存在の有無を漏らさない）
+        $notesIds = Documents_FolderPermission::filterAccessibleDocuments($notesIds);
 
         $results = array();
         $valid = 0;
@@ -184,10 +201,7 @@ class Documents_ComplianceAPI_Api extends Vtiger_Api_Controller {
      * 監査ログ取得
      */
     private function getAuditLog(Vtiger_Request $request) {
-        $notesId = (int) $request->get('notesid');
-        if (empty($notesId)) {
-            throw new Exception('notesid is required');
-        }
+        $notesId = $this->getAccessibleNotesId($request);
         $page = max(1, (int) $request->get('page', 1));
         $limit = min(100, max(1, (int) $request->get('limit', 20)));
 
@@ -209,7 +223,8 @@ class Documents_ComplianceAPI_Api extends Vtiger_Api_Controller {
                 SUM(CASE WHEN input_deadline_status = 'overdue' THEN 1 ELSE 0 END) AS overdue_count
             FROM vtiger_notes
             INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_notes.notesid
-            WHERE vtiger_notes.document_category IS NOT NULL AND vtiger_crmentity.deleted = 0",
+            WHERE " . Documents_ComplianceChecker::TARGET_SQL_CONDITION . "
+              AND vtiger_crmentity.deleted = 0",
             array()
         );
 
@@ -230,10 +245,7 @@ class Documents_ComplianceAPI_Api extends Vtiger_Api_Controller {
      * 適合チェック実行
      */
     private function checkCompliance(Vtiger_Request $request) {
-        $notesId = (int) $request->get('notesid');
-        if (empty($notesId)) {
-            throw new Exception('notesid is required');
-        }
+        $notesId = $this->getAccessibleNotesId($request);
         return Documents_ComplianceChecker::check($notesId);
     }
 }

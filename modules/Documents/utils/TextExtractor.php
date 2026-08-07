@@ -176,11 +176,12 @@ class Documents_TextExtractor {
 			$texts[] = self::stripXmlTags($sharedStrings);
 		}
 
-		// 各シートからも取得
-		for ($i = 1; $i <= 20; $i++) {
-			$sheet = $zip->getFromName("xl/worksheets/sheet{$i}.xml");
-			if ($sheet === false) break;
-			$texts[] = self::stripXmlTags($sheet);
+		// 各シートからも取得（連番が飛んでいても取りこぼさないよう実在する項目を列挙する）
+		foreach (self::listEntries($zip, '#^xl/worksheets/sheet(\d+)\.xml$#') as $entryName) {
+			$sheet = $zip->getFromName($entryName);
+			if ($sheet !== false) {
+				$texts[] = self::stripXmlTags($sheet);
+			}
 		}
 
 		$zip->close();
@@ -200,10 +201,11 @@ class Documents_TextExtractor {
 		}
 
 		$texts = array();
-		for ($i = 1; $i <= 100; $i++) {
-			$slide = $zip->getFromName("ppt/slides/slide{$i}.xml");
-			if ($slide === false) break;
-			$texts[] = self::stripXmlTags($slide);
+		foreach (self::listEntries($zip, '#^ppt/slides/slide(\d+)\.xml$#') as $entryName) {
+			$slide = $zip->getFromName($entryName);
+			if ($slide !== false) {
+				$texts[] = self::stripXmlTags($slide);
+			}
 		}
 
 		$zip->close();
@@ -227,6 +229,28 @@ class Documents_TextExtractor {
 	}
 
 	// --- ユーティリティ ---
+
+	/**
+	 * ZIP 内の該当する項目を番号順に列挙する
+	 *
+	 * sheet1, sheet3 のように連番が飛んでいるファイルでも取りこぼさないよう、
+	 * 「1から順に開いて失敗したら打ち切る」のではなく実在する項目を列挙する。
+	 *
+	 * @param ZipArchive $zip
+	 * @param string $pattern 1つ目のキャプチャに番号を含む正規表現
+	 * @return array 項目名の配列（番号の昇順）
+	 */
+	private static function listEntries($zip, $pattern) {
+		$entries = array();
+		for ($i = 0; $i < $zip->numFiles; $i++) {
+			$name = $zip->getNameIndex($i);
+			if ($name !== false && preg_match($pattern, $name, $matches)) {
+				$entries[(int) $matches[1]] = $name;
+			}
+		}
+		ksort($entries);
+		return array_values($entries);
+	}
 
 	/**
 	 * XMLタグを除去してテキストのみ抽出

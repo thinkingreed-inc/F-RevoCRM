@@ -98,6 +98,9 @@ $languageStrings = array(
     'LBL_SEARCH_FOR_FOLDER' => 'Search for Folders',
 	'LBL_FOLDER_NAME_REQUIRED' => 'Folder name is required',
 	'LBL_FOLDER_HAS_SUBFOLDERS' => 'Cannot delete folder with subfolders',
+	'LBL_FOLDER_PARENT_NOT_FOUND' => 'The specified parent folder was not found',
+	'LBL_FOLDER_PARENT_SELF' => 'A folder cannot be its own parent',
+	'LBL_FOLDER_PARENT_CIRCULAR' => 'A descendant folder cannot be set as the parent',
 
 	// Electronic Book Preservation Act - picklist values
 	// これらは vtiger_field のピックリスト値そのものをキーとして翻訳される
@@ -359,6 +362,9 @@ $languageStrings = array(
 	'LBL_PREVIEW_UNSUPPORTED_FORMAT' => 'Preview is not supported for this format',
 	'LBL_SHEET_DATA_NOT_FOUND' => 'Sheet data not found',
 	'LBL_SLIDE_DATA_NOT_FOUND' => 'Slide data not found',
+	'LBL_PREVIEW_TRUNCATED_SHEETS' => 'Showing the first %s sheets only (%s in total). Download the file to see everything.',
+	'LBL_PREVIEW_TRUNCATED_ROWS' => 'Showing the first %s rows only. The remaining rows are omitted.',
+	'LBL_PREVIEW_TRUNCATED_SLIDES' => 'Showing the first %s slides only (%s in total). Download the file to see everything.',
 	'LBL_DOCUMENT_DATA_NOT_FOUND' => 'Document data not found',
 	'LBL_SLIDE_NUMBER' => 'Slide %s',
 	'LBL_SLIDE_NO_TEXT' => '(no text)',

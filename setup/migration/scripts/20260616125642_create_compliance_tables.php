@@ -8,6 +8,9 @@ class Migration20260616125642_CreateComplianceTables extends FRMigrationClass {
 
     public function process() {
         // 訂正削除履歴テーブル
+        if ($this->checkTableExists('vtiger_notes_audit_log')) {
+            $this->log("テーブル vtiger_notes_audit_log は既に存在するためスキップします");
+        } else {
         $this->db->pquery("CREATE TABLE vtiger_notes_audit_log (
             audit_id BIGINT AUTO_INCREMENT,
             notesid INT NOT NULL,
@@ -26,8 +29,13 @@ class Migration20260616125642_CreateComplianceTables extends FRMigrationClass {
             INDEX idx_audit_user (performed_by)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci", array());
         $this->log("vtiger_notes_audit_log テーブルを作成しました");
+        }
 
         // ファイルバージョン管理テーブル
+        if ($this->checkTableExists('vtiger_notes_file_versions')) {
+            $this->log("テーブル vtiger_notes_file_versions は既に存在するためスキップします");
+            return;
+        }
         $this->db->pquery("CREATE TABLE vtiger_notes_file_versions (
             version_id BIGINT AUTO_INCREMENT,
             notesid INT NOT NULL,

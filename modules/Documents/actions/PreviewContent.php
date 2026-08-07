@@ -9,6 +9,15 @@
  */
 class Documents_PreviewContent_Action extends Vtiger_Action_Controller {
 
+	/** プレビューで表示するシートの上限 */
+	const MAX_SHEETS = 5;
+
+	/** 1シートあたりに表示する行の上限 */
+	const MAX_ROWS_PER_SHEET = 500;
+
+	/** プレビューで表示するスライドの上限 */
+	const MAX_SLIDES = 50;
+
 	public function requiresPermission(Vtiger_Request $request) {
 		$permissions = parent::requiresPermission($request);
 		$permissions[] = array('module_parameter' => 'module', 'action' => 'DetailView');
@@ -121,11 +130,19 @@ class Documents_PreviewContent_Action extends Vtiger_Action_Controller {
 			}
 		}
 
-		for ($i = 1; $i <= 20; $i++) {
-			$sheetXml = $zip->getFromName("xl/worksheets/sheet{$i}.xml");
-			if ($sheetXml === false) break;
+		// 連番が飛んでいても取りこぼさないよう、実在するシートを列挙する
+		$sheetEntries = $this->listEntries($zip, '#^xl/worksheets/sheet(\d+)\.xml$#');
+		$sheetTotal = count($sheetEntries);
+		$rowsTruncated = false;
 
-			$sheetName = isset($sheetNames[$i - 1]) ? htmlspecialchars($sheetNames[$i - 1]) : "Sheet{$i}";
+		foreach ($sheetEntries as $index => $entryName) {
+			if ($sheetIndex >= self::MAX_SHEETS) break;
+
+			$sheetXml = $zip->getFromName($entryName);
+			if ($sheetXml === false) continue;
+
+			$sheetName = isset($sheetNames[$index])
+				? htmlspecialchars($sheetNames[$index]) : 'Sheet' . ($index + 1);
 			$doc = new DOMDocument();
 			$doc->loadXML($sheetXml);
 
@@ -147,7 +164,14 @@ class Documents_PreviewContent_Action extends Vtiger_Action_Controller {
 				}
 			}
 
+			$renderedRows = 0;
 			foreach ($rows as $row) {
+				// 行が多いファイルは途中で打ち切り、そのことを画面に伝える
+				if ($renderedRows >= self::MAX_ROWS_PER_SHEET) {
+					$rowsTruncated = true;
+					break;
+				}
+				$renderedRows++;
 				$rowNum = (int) $row->getAttribute('r');
 				$cells = $row->getElementsByTagName('c');
 				$cellData = array_fill(0, $maxCol + 1, '');
@@ -188,10 +212,12 @@ class Documents_PreviewContent_Action extends Vtiger_Action_Controller {
 			}
 
 			$html .= '</table>';
+			if ($rowsTruncated) {
+				$html .= $this->truncatedNotice(
+					vtranslate('LBL_PREVIEW_TRUNCATED_ROWS', 'Documents', self::MAX_ROWS_PER_SHEET));
+				$rowsTruncated = false;
+			}
 			$sheetIndex++;
-
-			// 最大500行まで
-			if ($sheetIndex >= 5) break;
 		}
 
 		$zip->close();
@@ -200,7 +226,42 @@ class Documents_PreviewContent_Action extends Vtiger_Action_Controller {
 			throw new Exception(vtranslate('LBL_SHEET_DATA_NOT_FOUND', 'Documents'));
 		}
 
+		// 表示していないシートがあることを伝える
+		if ($sheetTotal > self::MAX_SHEETS) {
+			$html .= $this->truncatedNotice(
+				vtranslate('LBL_PREVIEW_TRUNCATED_SHEETS', 'Documents', self::MAX_SHEETS, $sheetTotal));
+		}
+
 		return $html;
+	}
+
+	/**
+	 * 表示を打ち切ったことを知らせる要素を返す
+	 *
+	 * @param string $message 翻訳済みのメッセージ
+	 * @return string
+	 */
+	private function truncatedNotice($message) {
+		return '<div class="preview-truncated">' . htmlspecialchars($message) . '</div>';
+	}
+
+	/**
+	 * ZIP 内の該当する項目を番号順に列挙する
+	 *
+	 * @param ZipArchive $zip
+	 * @param string $pattern 1つ目のキャプチャに番号を含む正規表現
+	 * @return array 項目名の配列（番号の昇順）
+	 */
+	private function listEntries($zip, $pattern) {
+		$entries = array();
+		for ($i = 0; $i < $zip->numFiles; $i++) {
+			$name = $zip->getNameIndex($i);
+			if ($name !== false && preg_match($pattern, $name, $matches)) {
+				$entries[(int) $matches[1]] = $name;
+			}
+		}
+		ksort($entries);
+		return array_values($entries);
 	}
 
 	/**
@@ -213,16 +274,24 @@ class Documents_PreviewContent_Action extends Vtiger_Action_Controller {
 		}
 
 		$html = '';
-		for ($i = 1; $i <= 50; $i++) {
-			$slideXml = $zip->getFromName("ppt/slides/slide{$i}.xml");
-			if ($slideXml === false) break;
+		// 連番が飛んでいても取りこぼさないよう、実在するスライドを列挙する
+		$slideEntries = $this->listEntries($zip, '#^ppt/slides/slide(\d+)\.xml$#');
+		$slideTotal = count($slideEntries);
+		$slideNumber = 0;
+
+		foreach ($slideEntries as $entryName) {
+			if ($slideNumber >= self::MAX_SLIDES) break;
+
+			$slideXml = $zip->getFromName($entryName);
+			if ($slideXml === false) continue;
+			$slideNumber++;
 
 			$doc = new DOMDocument();
 			$doc->loadXML($slideXml);
 
 			$html .= '<div class="slide">';
 			$html .= '<div class="slide-number">'
-				. htmlspecialchars(vtranslate('LBL_SLIDE_NUMBER', 'Documents', $i)) . '</div>';
+				. htmlspecialchars(vtranslate('LBL_SLIDE_NUMBER', 'Documents', $slideNumber)) . '</div>';
 
 			// テキスト要素を抽出
 			$texts = array();
@@ -265,6 +334,12 @@ class Documents_PreviewContent_Action extends Vtiger_Action_Controller {
 
 		if (empty($html)) {
 			throw new Exception(vtranslate('LBL_SLIDE_DATA_NOT_FOUND', 'Documents'));
+		}
+
+		// 表示していないスライドがあることを伝える
+		if ($slideTotal > self::MAX_SLIDES) {
+			$html .= $this->truncatedNotice(
+				vtranslate('LBL_PREVIEW_TRUNCATED_SLIDES', 'Documents', self::MAX_SLIDES, $slideTotal));
 		}
 
 		return $html;
