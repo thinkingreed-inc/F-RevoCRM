@@ -194,6 +194,7 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 		$productname=$adb->query_result($result,$i-1,'productname');
 		$productdescription=$adb->query_result($result,$i-1,'description');
 		$comment=$adb->query_result($result,$i-1,'comment');
+		$displayname=$adb->query_result($result,$i-1,'displayname');
 		$qtyinstock=$adb->query_result($result,$i-1,'qtyinstock');
 		$qty=$adb->query_result($result,$i-1,'quantity');
 		$unitprice=$adb->query_result($result,$i-1,'unit_price');
@@ -292,6 +293,7 @@ function getAssociatedProducts($module, $focus, $seid = '', $refModuleName = fal
 		}else {
             $product_Detail[$i]['comment'.$i]= $comment;
 		}
+		$product_Detail[$i]['displayname'.$i] = from_html($displayname);
 
 		if($module != 'PurchaseOrder' && $focus->object_name != 'Order') {
 			$checkpresenceresult = $adb->pquery("SELECT * FROM vtiger_field WHERE fieldname=? AND tabid=?",array("qtyinstock", Vtiger_Functions::getModuleId('Products')));

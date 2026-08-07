@@ -15,6 +15,7 @@
     {assign var="hdnProductId" value="hdnProductId"|cat:$row_no}
     {assign var="productName" value="productName"|cat:$row_no}
     {assign var="comment" value="comment"|cat:$row_no}
+    {assign var="displayname" value="displayname"|cat:$row_no}
     {assign var="productDescription" value="productDescription"|cat:$row_no}
     {assign var="qtyInStock" value="qtyInStock"|cat:$row_no}
     {assign var="qty" value="qty"|cat:$row_no}
@@ -125,6 +126,12 @@
 					{/if}
 				</div>
 			{else}
+				{if $DISPLAYNAME_EDITABLE}
+					<div><br>
+						<label class="lineItemDisplayNameLabel">{vtranslate('LBL_DISPLAY_NAME',$MODULE)}</label>
+						<input type="text" id="{$displayname}" name="{$displayname}" class="lineItemDisplayNameBox form-control" style="width: 400px; max-width: 650px;" placeholder="{vtranslate('LBL_DISPLAY_NAME_PLACEHOLDER',$MODULE)}" value="{decode_html($data.$displayname)}">
+					</div>
+				{/if}
 				{if $COMMENT_EDITABLE}
 					<div><br><textarea id="{$comment}" name="{$comment}" class="lineItemCommentBox" style="width: 400px; max-width: 650px; height:150px;">{decode_html($data.$comment)}</textarea></div>
 				{/if}
