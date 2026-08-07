@@ -201,17 +201,15 @@ class Documents_DeadlineCalculator {
      *
      * @param string $receiptDate 受領日 'Y-m-d'
      * @param string|null $policy 方針（省略時は設定値）
-     * @return string|null 入力期限 'Y-m-d'（受領日が不正な場合は null）
+     * @return string|null 入力期限 'Y-m-d'（受領日が未入力の場合は null）
+     * @throws InvalidArgumentException 受領日が日付として解釈できない場合
      */
     public static function calculate($receiptDate, $policy = null) {
-        if (empty($receiptDate) || $receiptDate === '0000-00-00') {
+        // 未入力は null、解釈できない日付は例外（黙って別の日に繰り上げない）
+        $base = FR_BusinessDay::normalizeDate($receiptDate);
+        if ($base === null) {
             return null;
         }
-        $timestamp = strtotime($receiptDate);
-        if ($timestamp === false) {
-            return null;
-        }
-        $base = date('Y-m-d', $timestamp);
 
         if ($policy === null) {
             $policy = self::getPolicy();
@@ -230,18 +228,18 @@ class Documents_DeadlineCalculator {
      *
      * @param string $deadline 入力期限 'Y-m-d'
      * @param string|null $today 基準日 'Y-m-d'（省略時は当日）
-     * @return string|null within / warning / overdue（期限が不正な場合は null）
+     * @return string|null within / warning / overdue（期限が未入力の場合は null）
+     * @throws InvalidArgumentException 日付として解釈できない場合
      */
     public static function calculateStatus($deadline, $today = null) {
-        if (empty($deadline) || $deadline === '0000-00-00') {
+        $deadline = FR_BusinessDay::normalizeDate($deadline);
+        if ($deadline === null) {
             return null;
         }
-        $deadlineTimestamp = strtotime($deadline);
-        if ($deadlineTimestamp === false) {
-            return null;
+        $today = ($today === null) ? date('Y-m-d') : FR_BusinessDay::normalizeDate($today);
+        if ($today === null) {
+            $today = date('Y-m-d');
         }
-        $deadline = date('Y-m-d', $deadlineTimestamp);
-        $today = ($today === null) ? date('Y-m-d') : date('Y-m-d', strtotime($today));
 
         if ($deadline < $today) {
             return self::STATUS_OVERDUE;
@@ -280,8 +278,14 @@ class Documents_DeadlineCalculator {
         $deadline = null;
         $status = null;
         if ($row['preservation_type'] === self::TARGET_PRESERVATION_TYPE) {
-            $deadline = self::calculate($row['receipt_date']);
-            $status = self::calculateStatus($deadline);
+            try {
+                $deadline = self::calculate($row['receipt_date']);
+                $status = self::calculateStatus($deadline);
+            } catch (InvalidArgumentException $e) {
+                // 保存されている受領日が不正な場合は期限を空にする（一括処理を止めない）
+                $deadline = null;
+                $status = null;
+            }
         }
 
         // 値が変わらない場合は更新しない（modifiedtime を動かさない）
@@ -327,7 +331,12 @@ class Documents_DeadlineCalculator {
         for ($i = 0; $i < $count; $i++) {
             $row = $db->query_result_rowdata($result, $i);
             $checked++;
-            $status = self::calculateStatus($row['input_deadline'], $today);
+            try {
+                $status = self::calculateStatus($row['input_deadline'], $today);
+            } catch (InvalidArgumentException $e) {
+                // 不正な値が保存されている1件で全体を止めない
+                continue;
+            }
             if ($status === null || $status === $row['input_deadline_status']) {
                 continue;
             }
@@ -375,15 +384,18 @@ class Documents_DeadlineCalculator {
     /**
      * 日付を 'Y-m-d' に正規化する（空・0000-00-00 は null）
      *
+     * DB から読み出した値の比較に使う。不正な値が保存されていても
+     * 一括処理を止めないよう、ここでは例外にせず null として扱う。
+     *
      * @param string|null $date
      * @return string|null
      */
     private static function normalizeDate($date) {
-        if (empty($date) || $date === '0000-00-00') {
+        try {
+            return FR_BusinessDay::normalizeDate($date);
+        } catch (InvalidArgumentException $e) {
             return null;
         }
-        $timestamp = strtotime($date);
-        return ($timestamp === false) ? null : date('Y-m-d', $timestamp);
     }
 
     /**

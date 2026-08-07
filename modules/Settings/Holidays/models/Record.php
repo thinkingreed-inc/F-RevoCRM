@@ -73,7 +73,10 @@ class Settings_Holidays_Record_Model extends Settings_Vtiger_Record_Model {
 		$holidayType = (string) $this->get('holiday_type');
 		$description = (string) $this->get('description');
 
-		if ($date === '' || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) || strtotime($date) === false) {
+		// 実在しない日付（2月30日など）は strtotime が翌月へ繰り上げてしまうため、
+		// 書式だけでなく実在するかどうかも確認する
+		if ($date === '' || !preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $date, $dateParts)
+			|| !checkdate((int) $dateParts[2], (int) $dateParts[3], (int) $dateParts[1])) {
 			throw new Exception(vtranslate('LBL_INVALID_DATE', $qualifiedModule));
 		}
 		if ($name === '') {

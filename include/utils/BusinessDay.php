@@ -21,7 +21,11 @@ class FR_BusinessDay {
     /** 所定休日だが営業日として扱う日（休日出勤日） */
     const DAY_TYPE_WORKDAY = 'workday';
 
-    /** 営業日計算で許容する最大の探索日数（無限ループ防止） */
+    /**
+     * 営業日を探索する際の最大日数（無限ループ防止）
+     * すべての曜日が週休の設定でも打ち切れるようにするためのもので、
+     * 期間内の営業日数（countBusinessDays）には上限を設けない。
+     */
     const MAX_SEARCH_DAYS = 3650;
 
     /** 休祝日マスタの設定テーブル */
@@ -150,8 +154,11 @@ class FR_BusinessDay {
     /**
      * 週休の曜日かどうか
      *
+     * 空（未入力）は false。日付として解釈できない値は例外を投げる。
+     *
      * @param string $date 'Y-m-d'
      * @return bool
+     * @throws InvalidArgumentException 日付が不正な場合
      */
     public static function isWeeklyHoliday($date) {
         $timestamp = self::toTimestamp($date);
@@ -164,8 +171,11 @@ class FR_BusinessDay {
     /**
      * 休日かどうか（週休またはマスタの休日。営業日指定があればそちらを優先）
      *
+     * 空（未入力）は false（＝休日ではない）。日付として解釈できない値は例外を投げる。
+     *
      * @param string $date 'Y-m-d'
      * @return bool
+     * @throws InvalidArgumentException 日付が不正な場合
      */
     public static function isHoliday($date) {
         $date = self::normalize($date);
@@ -201,7 +211,8 @@ class FR_BusinessDay {
      *
      * @param string $date 'Y-m-d'
      * @param int $days 営業日数
-     * @return string|null 'Y-m-d'（日付が不正な場合は null）
+     * @return string|null 'Y-m-d'（未入力・探索上限に達した場合は null）
+     * @throws InvalidArgumentException 日付が不正な場合
      */
     public static function addBusinessDays($date, $days) {
         $date = self::normalize($date);
@@ -249,9 +260,13 @@ class FR_BusinessDay {
     /**
      * 期間内の営業日数を数える（両端を含む）
      *
+     * 期間の長さに上限は設けない。1日ずつ数えると長期間で時間がかかるため、
+     * 週休の曜日から算出し、休祝日マスタの登録分だけを補正する。
+     *
      * @param string $from 'Y-m-d'
      * @param string $to 'Y-m-d'
      * @return int
+     * @throws InvalidArgumentException 日付が不正な場合
      */
     public static function countBusinessDays($from, $to) {
         $from = self::normalize($from);
@@ -265,13 +280,34 @@ class FR_BusinessDay {
             $to = $swap;
         }
 
-        $count = 0;
-        $current = $from;
-        for ($i = 0; $i <= self::MAX_SEARCH_DAYS && $current <= $to; $i++) {
-            if (self::isBusinessDay($current)) {
+        $fromTimestamp = strtotime($from);
+        $totalDays = (int) round((strtotime($to) - $fromTimestamp) / 86400) + 1;
+
+        // 1. 週休の曜日から営業日数を求める
+        $weeklyHolidays = self::getWeeklyHolidays();
+        $holidayCount = 0;
+        if (!empty($weeklyHolidays)) {
+            $fullWeeks = (int) floor($totalDays / 7);
+            $holidayCount = $fullWeeks * count($weeklyHolidays);
+            $startWeekday = (int) date('w', $fromTimestamp);
+            for ($i = 0; $i < $totalDays % 7; $i++) {
+                if (in_array(($startWeekday + $i) % 7, $weeklyHolidays, true)) {
+                    $holidayCount++;
+                }
+            }
+        }
+        $count = $totalDays - $holidayCount;
+
+        // 2. 休祝日マスタの登録で補正する
+        //    休日:  週休でない日に登録されていれば1日減る
+        //    営業日: 週休の日に登録されていれば1日増える
+        foreach (self::getRegisteredDays($from, $to) as $row) {
+            $isWeeklyHoliday = self::isWeeklyHoliday($row['holiday_date']);
+            if ($row['day_type'] === self::DAY_TYPE_HOLIDAY && !$isWeeklyHoliday) {
+                $count--;
+            } elseif ($row['day_type'] === self::DAY_TYPE_WORKDAY && $isWeeklyHoliday) {
                 $count++;
             }
-            $current = date('Y-m-d', strtotime($current . ' +1 day'));
         }
         return $count;
     }
@@ -317,6 +353,17 @@ class FR_BusinessDay {
             );
         }
         return $rows;
+    }
+
+    /**
+     * 日付を 'Y-m-d' に正規化する（他のクラスから共通の検証を使うための入口）
+     *
+     * @param string|null $date
+     * @return string|null 空の場合 null
+     * @throws InvalidArgumentException 日付が不正な場合
+     */
+    public static function normalizeDate($date) {
+        return self::normalize($date);
     }
 
     /**
@@ -369,8 +416,13 @@ class FR_BusinessDay {
     /**
      * 日付を 'Y-m-d' に正規化する
      *
-     * @param string $date
-     * @return string|null 不正な場合 null
+     * 空（未入力）は null を返し、書式が解釈できない・実在しない日付は例外を投げる。
+     * 誤った日付を黙って別の日に繰り上げる（2月30日 → 3月2日）と、
+     * 期限計算の結果が静かにずれるため、呼び出し元に気付かせる。
+     *
+     * @param string|null $date
+     * @return string|null 空の場合 null
+     * @throws InvalidArgumentException 日付として解釈できない場合
      */
     private static function normalize($date) {
         $timestamp = self::toTimestamp($date);
@@ -380,13 +432,39 @@ class FR_BusinessDay {
     /**
      * タイムスタンプに変換する
      *
-     * @param string $date
-     * @return int|false
+     * @param string|null $date
+     * @return int|false 空の場合 false
+     * @throws InvalidArgumentException 日付として解釈できない場合
      */
     private static function toTimestamp($date) {
-        if (empty($date) || $date === '0000-00-00') {
+        if (self::isEmptyDate($date)) {
             return false;
         }
-        return strtotime($date);
+        $value = trim((string) $date);
+        $timestamp = strtotime($value);
+        if ($timestamp === false) {
+            throw new InvalidArgumentException('Invalid date: ' . $value);
+        }
+        // strtotime は 2026-02-30 のような実在しない日付を翌月へ繰り上げるため、
+        // 年月日の形をしている場合は実在するかどうかを確認する
+        if (preg_match('#^(\d{4})[-/](\d{1,2})[-/](\d{1,2})#', $value, $matches)
+            && !checkdate((int) $matches[2], (int) $matches[3], (int) $matches[1])) {
+            throw new InvalidArgumentException('Invalid date: ' . $value);
+        }
+        return $timestamp;
+    }
+
+    /**
+     * 未入力とみなす値かどうか（空文字・null・ゼロ日付）
+     *
+     * @param mixed $date
+     * @return bool
+     */
+    private static function isEmptyDate($date) {
+        if ($date === null || $date === false || $date === '') {
+            return true;
+        }
+        $value = trim((string) $date);
+        return ($value === '' || $value === '0000-00-00' || $value === '0000-00-00 00:00:00');
     }
 }
