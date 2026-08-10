@@ -80,6 +80,7 @@ Class CustomView_EditAjax_View extends Vtiger_IndexAjax_View {
 		$currentUserModel = Users_Record_Model::getCurrentUserModel();
 
 		$viewer->assign('CUSTOMVIEW_MODEL', $customViewModel);
+		$viewer->assign('SORT_CONDITIONS', $customViewModel->getSortConditions());
 		$viewer->assign('RECORD_ID', $record);
 		$viewer->assign('MODULE', $module);
 		$viewer->assign('SOURCE_MODULE',$moduleName);

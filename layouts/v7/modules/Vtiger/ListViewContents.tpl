@@ -33,7 +33,7 @@
 	<input type="hidden" name="currentSearchParams" value="{Vtiger_Util_Helper::toSafeHTML(Zend_JSON::encode($SEARCH_DETAILS))}" id="currentSearchParams" />
         <input type="hidden" name="currentTagParams" value="{Vtiger_Util_Helper::toSafeHTML(Zend_JSON::encode($TAG_DETAILS))}" id="currentTagParams" />
 	<input type="hidden" name="noFilterCache" value="{$NO_SEARCH_PARAMS_CACHE}" id="noFilterCache" >
-	<input type="hidden" name="orderBy" value="{$ORDER_BY}" id="orderBy">
+	<input type="hidden" name="orderBy" value="{Vtiger_Util_Helper::toSafeHTML($ORDER_BY)}" id="orderBy">
 	<input type="hidden" name="sortOrder" value="{$SORT_ORDER}" id="sortOrder">
 	<input type="hidden" name="list_headers" value='{$LIST_HEADER_FIELDS}'/>
 	<input type="hidden" name="tag" value="{$CURRENT_TAG}" />
@@ -98,20 +98,32 @@
 					{if $LISTVIEW_HEADER->get('uitype') eq '999'}
 						{continue}
 					{/if}
-					<th {if !$MODULE_MODEL->isFilterColumnEnabled() && !$LISTVIEW_ENTRIES_COUNT eq '0'}class="table-bottom-border" {/if}{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')} nowrap="nowrap" {/if}>
-						<a href="#" class="{if $NO_SORTING}noSorting{else}listViewContentHeaderValues{/if}" {if !$NO_SORTING}data-nextsortorderval="{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')}{$NEXT_SORT_ORDER}{else}ASC{/if}" data-columnname="{$LISTVIEW_HEADER->get('name')}"{/if} data-field-id='{$LISTVIEW_HEADER->getId()}'>
+					{assign var=HEADER_NAME value=$LISTVIEW_HEADER->get('name')}
+					{assign var=HEADER_SORT_RANK value=0}
+					{assign var=HEADER_SORT_ORDER value='ASC'}
+					{if !empty($SORT_CONDITIONS) && !$IS_DEFAULT_SORT}
+						{foreach from=$SORT_CONDITIONS key=SORT_INDEX item=SORT_COND}
+							{if $SORT_COND.field eq $HEADER_NAME}
+								{assign var=HEADER_SORT_RANK value=$SORT_INDEX+1}
+								{assign var=HEADER_SORT_ORDER value=$SORT_COND.order}
+							{/if}
+						{/foreach}
+					{/if}
+					<th {if !$MODULE_MODEL->isFilterColumnEnabled() && !$LISTVIEW_ENTRIES_COUNT eq '0'}class="table-bottom-border" {/if}{if $HEADER_SORT_RANK gt 0} nowrap="nowrap" {/if}>
+						<a href="#" class="{if $NO_SORTING}noSorting{else}listViewContentHeaderValues{/if}" {if !$NO_SORTING}data-nextsortorderval="{if $HEADER_SORT_RANK gt 0}{if $HEADER_SORT_ORDER eq 'ASC'}DESC{else}ASC{/if}{else}ASC{/if}" data-columnname="{$HEADER_NAME}"{/if} data-field-id='{$LISTVIEW_HEADER->getId()}'>
 							{if !$NO_SORTING}
-								{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')}
-									<i class="fa fa-sort {$FASORT_IMAGE}"></i>
+								{if $HEADER_SORT_RANK gt 0}
+									<i class="fa fa-sort {if $HEADER_SORT_ORDER eq 'DESC'}fa-sort-desc{else}fa-sort-asc{/if}"></i>
+									<span class="badge" style="font-size: 9px; padding: 2px 4px; margin-left: 2px; background-color: #5bb75b;">{$HEADER_SORT_RANK}</span>
 								{else}
 									<i class="fa fa-sort customsort"></i>
 								{/if}
 							{/if}
 							&nbsp;{vtranslate($LISTVIEW_HEADER->get('label'), $LISTVIEW_HEADER->getModuleName())}&nbsp;
 						</a>
-						{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')}
-							<a href="#" class="removeSorting"><i class="fa fa-remove"></i></a>
-							{/if}
+						{if $HEADER_SORT_RANK gt 0}
+							<a href="#" class="removeSorting" data-remove-column="{$HEADER_NAME}" title="{vtranslate('LBL_REMOVE_SORTING', 'Vtiger')}"><i class="fa fa-remove"></i></a>
+						{/if}
 					</th>
 				{/foreach}
 				</tr>
