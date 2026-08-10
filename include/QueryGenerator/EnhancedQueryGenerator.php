@@ -875,13 +875,21 @@ class EnhancedQueryGenerator extends QueryGenerator {
 	 */
 	function getOrderByColumn($fieldName) {
 		$fieldList = $this->getModuleFields();
-		$orderByFieldModel = $fieldList[$fieldName];
 
 		$parentReferenceField = '';
+		$referenceModule = '';
 		preg_match('/(\w+) ; \((\w+)\) (\w+)/', $fieldName, $matches);
 		if (php7_count($matches) != 0) {
 			list($full, $parentReferenceField, $referenceModule, $fieldName) = $matches;
 		}
+		if (!empty($parentReferenceField) && !empty($referenceModule)) {
+			$referenceModuleMeta = $this->getMeta($referenceModule);
+			$referenceModuleFields = $referenceModuleMeta ? $referenceModuleMeta->getModuleFields() : array();
+			$orderByFieldModel = isset($referenceModuleFields[$fieldName]) ? $referenceModuleFields[$fieldName] : null;
+		} else {
+			$orderByFieldModel = isset($fieldList[$fieldName]) ? $fieldList[$fieldName] : null;
+		}
+		$orderByColumn = '';
 		if ($orderByFieldModel && $orderByFieldModel->getFieldDataType() == 'reference') {
 			$referenceModules = $orderByFieldModel->getReferenceList();
 			if (in_array('DocumentFolders', $referenceModules)) {
@@ -907,7 +915,7 @@ class EnhancedQueryGenerator extends QueryGenerator {
 			} else {
 				$orderByColumn = 'COALESCE(CONCAT(vtiger_users.last_name,vtiger_users.first_name),vtiger_groups.groupname)';
 			}
-		} else if (($orderByFieldModel->getFieldName() == 'taskstatus' || $orderByFieldModel->getFieldName() == 'eventstatus') && $this->module == 'Calendar') {
+		} else if ($orderByFieldModel && ($orderByFieldModel->getFieldName() == 'taskstatus' || $orderByFieldModel->getFieldName() == 'eventstatus') && $this->module == 'Calendar') {
 			$orderByColumn = 'status';
 		} else if ($orderByFieldModel) {
 			$orderByColumn = $orderByFieldModel->getTableName().$parentReferenceField.'.'.$orderByFieldModel->getColumnName();

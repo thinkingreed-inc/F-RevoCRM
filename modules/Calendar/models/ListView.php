@@ -205,26 +205,9 @@ class Calendar_ListView_Model extends Vtiger_ListView_Model {
 			$queryGenerator->addUserSearchConditions(array('search_field' => $searchKey, 'search_text' => $searchValue, 'operator' => $operator));
 		}
         
-        $orderBy = $this->getForSql('orderby');
-		if(is_countable($querySetFields) && !in_array($orderBy, $querySetFields, true)) {
-			$orderBy = '';
-		}
-		
-		$sortOrder = $this->getForSql('sortorder');
-        if(empty($sortOrder)) {
-            $sortOrder = 'DESC';
-        }
+		$sortConditions = $this->getSortConditions();
+		$this->setupQueryGeneratorForSort($queryGenerator, $sortConditions);
 
-        if(!empty($orderBy)){
-			$queryGenerator = $this->get('query_generator');
-			$fieldModels = $queryGenerator->getModuleFields();
-			$orderByFieldModel = $fieldModels[$orderBy];
-           if($orderByFieldModel && ($orderByFieldModel->getFieldDataType() == Vtiger_Field_Model::REFERENCE_TYPE ||
-					$orderByFieldModel->getFieldDataType() == Vtiger_Field_Model::OWNER_TYPE)){
-                $queryGenerator->addWhereField($orderBy);
-            }
-        }
-		
 		$listQuery = $this->getQuery();
 
 		$sourceModule = $this->get('src_module');
@@ -240,16 +223,7 @@ class Calendar_ListView_Model extends Vtiger_ListView_Model {
 		// If activity is related to two entity records(Contacts/Accounts/...) then we'll get duplicates
         $listQuery .= " GROUP BY $moduleFocus->table_name.$moduleFocus->table_index ";
 
-		
-		if(empty($orderBy)) {
-            $listQuery .= " ORDER BY vtiger_activity.modifiedtime $sortOrder ";
-		} else if($orderBy == 'date_start') {
-            $listQuery .= " ORDER BY str_to_date(concat(date_start,time_start),'%Y-%m-%d %H:%i:%s') $sortOrder ";
-        } else if($orderBy == 'due_date') {
-            $listQuery .= " ORDER BY str_to_date(concat(due_date,time_end),'%Y-%m-%d %H:%i:%s') $sortOrder ";
-        } else if(!empty($orderBy) && $orderByFieldModel) {
-			$listQuery .= ' ORDER BY '.$queryGenerator->getOrderByColumn($orderBy).' '.$sortOrder;
-		}
+		$listQuery .= $this->getOrderBySql($queryGenerator, $sortConditions, $moduleFocus);
 
 		$startIndex = $pagingModel->getStartIndex();
 		$pageLimit = $pagingModel->getPageLimit();

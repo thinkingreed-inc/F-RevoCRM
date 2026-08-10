@@ -60,7 +60,8 @@ class CustomView_Save_Action extends Vtiger_Action_Controller {
 					'setmetrics' => $request->get('setmetrics'),
 					'status' => $request->get('status'),
 					'orderby' => $request->get('orderby'),
-					'sortorder' => $request->get('sortorder')
+					'sortorder' => $request->get('sortorder'),
+					'sort_conditions' => $request->get('sort_conditions')
 		);
 		$selectedColumnsList = $request->get('columnslist');
 		if(!empty($selectedColumnsList)) {

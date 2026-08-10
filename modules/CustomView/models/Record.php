@@ -261,6 +261,16 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 	/**
 	 * Function to save the custom view record
 	 */
+	/**
+	 * Function to get list of sort conditions for this custom view
+	 * @return <Array> Array of array('field' => string, 'order' => 'ASC'|'DESC')
+	 */
+	public function getSortConditions() {
+		$orderby = $this->get('orderby');
+		$sortorder = $this->get('sortorder');
+		return Vtiger_ListView_Model::cleanSortConditions($orderby, $sortorder);
+	}
+
 	public function save($partial = false) {
 		$db = PearDatabase::getInstance();
 		$currentUserModel = Users_Record_Model::getCurrentUserModel();
@@ -272,8 +282,24 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 		$setDefault = $this->get('setdefault');
 		$setMetrics = $this->get('setmetrics');
 		$status = $this->get('status');
-		$orderby = $this->get('orderby');
-		$sortorder = $this->get('sortorder');
+
+		$sortConditions = $this->get('sort_conditions');
+		if (is_array($sortConditions) && !empty($sortConditions)) {
+			$validConditions = Vtiger_ListView_Model::cleanSortConditions($sortConditions);
+			if (!empty($validConditions)) {
+				$orderby = json_encode($validConditions);
+				$sortorder = $validConditions[0]['order'];
+			} else {
+				$orderby = '';
+				$sortorder = 'ASC';
+			}
+		} else if ($this->has('sort_conditions') && empty($sortConditions)) {
+			$orderby = '';
+			$sortorder = 'ASC';
+		} else {
+			$orderby = $this->get('orderby');
+			$sortorder = $this->get('sortorder');
+		}
 
 		if($status == self::CV_STATUS_PENDING) {
 			if($currentUserModel->isAdminUser()) {

@@ -113,7 +113,7 @@
 									{/foreach}
 								</select>
 								<input type="hidden" name="columnslist" value='{Vtiger_Functions::jsonEncode($SELECTED_FIELDS)}' />
-								<input type="hidden" name="orderby" id="saved_orderby" value='{$CUSTOMVIEW_MODEL->get("orderby")}' />
+								<input type="hidden" id="saved_orderby" value='{$CUSTOMVIEW_MODEL->get("orderby")}' />
 								<input id="mandatoryFieldsList" type="hidden" value='{Vtiger_Util_Helper::toSafeHTML(ZEND_JSON::encode($MANDATORY_FIELDS))}' />
 							</div>
 							<div class="col-lg-2 col-md-2 col-sm-2"></div>
@@ -124,30 +124,65 @@
 								{include file='AdvanceFilter.tpl'|@vtemplate_path}
 							</div>
 						</div>
-						<div class="form-group clearfix">
+						{assign var=SORT_CONDITIONS value=$CUSTOMVIEW_MODEL->getSortConditions()}
+						<div class="form-group clearfix" id="sortConditionsContainer">
 							<div class="col-sm-2 col-xs-12">
 								<label style="margin-top: 5px;">
-										{vtranslate('LBL_DEFAULT_SORT',$MODULE)} 
+									{vtranslate('LBL_DEFAULT_SORT',$MODULE)} 
 								</label>
 							</div>
-							<div class="col-sm-4 col-xs-7">
-								<select id='orderby' name='orderby' class="select2 form-control">
-									<option value="">{vtranslate('LBL_NONE',$MODULE)}</option>
+							<div class="col-sm-10 col-xs-12">
+								<div id="sortRowsList">
+									{foreach from=$SORT_CONDITIONS key=INDEX item=SORT_ROW}
+										<div class="sort-condition-row row" style="margin-bottom: 8px;">
+											<div class="col-sm-2 col-xs-3" style="padding-top: 6px;">
+												<span class="sort-prefix-label text-muted" style="font-weight: bold;">{vtranslate('LBL_SORT_CONDITION_LABEL', 'Vtiger')|replace:'%s':($INDEX+1)}</span>
+											</div>
+											<div class="col-sm-5 col-xs-5">
+												<select name="sort_conditions[{$INDEX}][field]" class="select2 form-control sort-field-select">
+													{foreach key=BLOCK_LABEL item=BLOCK_FIELDS from=$RECORD_STRUCTURE}
+														<optgroup label='{vtranslate($BLOCK_LABEL, $SOURCE_MODULE)}'>
+															{foreach key=FIELD_NAME item=FIELD_MODEL from=$BLOCK_FIELDS}
+																{assign var=FIELD_MODULE_NAME value=$FIELD_MODEL->getModule()->getName()}
+																{assign var=WITH_MODULENAME value="("|cat:{vtranslate($FIELD_MODULE_NAME, $SOURCE_MODULE)}|cat:")-"}
+																<option value="{$FIELD_NAME}" {if $SORT_ROW.field eq $FIELD_NAME || ($SORT_ROW.field eq $FIELD_MODEL->get('name') && $FIELD_MODULE_NAME eq $SOURCE_MODULE)}selected{/if}>
+																	{Vtiger_Util_Helper::toSafeHTML(vtranslate($FIELD_MODEL->get('label'), $SOURCE_MODULE)|replace:"-":$WITH_MODULENAME)}
+																</option>
+															{/foreach}
+														</optgroup>
+													{/foreach}
+												</select>
+											</div>
+											<div class="col-sm-3 col-xs-3">
+												<select name="sort_conditions[{$INDEX}][order]" class="select2 form-control sort-order-select">
+													<option value="ASC" {if $SORT_ROW.order neq 'DESC'}selected{/if}>{vtranslate('LBL_ASCENDING', $MODULE)}</option>
+													<option value="DESC" {if $SORT_ROW.order eq 'DESC'}selected{/if}>{vtranslate('LBL_DESCENDING', $MODULE)}</option>
+												</select>
+											</div>
+											<div class="col-sm-2 col-xs-1" style="padding-top: 2px;">
+												<button type="button" class="btn btn-default addSortRowBtn {if $INDEX >= 4}hide{/if}" title="{vtranslate('LBL_ADD_SORT_ROW', $MODULE)}"><i class="fa fa-plus"></i></button>
+												<button type="button" class="btn btn-default deleteSortRowBtn" title="{vtranslate('LBL_DELETE', $MODULE)}"><i class="fa fa-trash"></i></button>
+											</div>
+										</div>
+									{/foreach}
+								</div>
+								<div id="addFirstSortRowContainer" class="{if php7_count($SORT_CONDITIONS) gt 0}hide{/if}" style="margin-top: 4px;">
+									<button type="button" class="btn btn-default addSortRowBtn" title="{vtranslate('LBL_DEFAULT_SORT', $MODULE)}">
+										<i class="fa fa-plus"></i> {vtranslate('LBL_DEFAULT_SORT', $MODULE)}
+									</button>
+								</div>
+								<select id="sortFieldOptionsTemplate" class="hide">
 									{foreach key=BLOCK_LABEL item=BLOCK_FIELDS from=$RECORD_STRUCTURE}
 										<optgroup label='{vtranslate($BLOCK_LABEL, $SOURCE_MODULE)}'>
 											{foreach key=FIELD_NAME item=FIELD_MODEL from=$BLOCK_FIELDS}
-												<option value="{$FIELD_MODEL->get('name')}" {if $CUSTOMVIEW_MODEL->get('orderby') eq $FIELD_MODEL->get('name')}selected{/if}>
-													{Vtiger_Util_Helper::toSafeHTML(vtranslate($FIELD_MODEL->get('label'), $SOURCE_MODULE))}
+												{assign var=FIELD_MODULE_NAME value=$FIELD_MODEL->getModule()->getName()}
+												{assign var=WITH_MODULENAME value="("|cat:{vtranslate($FIELD_MODULE_NAME, $SOURCE_MODULE)}|cat:")-"}
+												<option value="{$FIELD_NAME}">
+													{Vtiger_Util_Helper::toSafeHTML(vtranslate($FIELD_MODEL->get('label'), $SOURCE_MODULE)|replace:"-":$WITH_MODULENAME)}
 												</option>
 											{/foreach}
 										</optgroup>
 									{/foreach}
-								</select>
-							</div>
-							<div class="col-sm-3 col-xs-5">
-								<select id='sortorder' name='sortorder' class="select2 form-control">
-									<option value="ASC" {if $CUSTOMVIEW_MODEL->get('sortorder') neq 'DESC'}selected{/if}>{vtranslate('LBL_ASCENDING', $MODULE)}</option>
-									<option value="DESC" {if $CUSTOMVIEW_MODEL->get('sortorder') eq 'DESC'}selected{/if}>{vtranslate('LBL_DESCENDING', $MODULE)}</option>
 								</select>
 							</div>
 						</div>
