@@ -714,7 +714,17 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			this.updateRangeFields(container, options);
 		}
 	},
+	/**
+	 * カレンダーの色をプリセットパレットから1つ選ぶ。
+	 * パレットは色選択UI(<calendar-color-picker>)と同じ定義を
+	 * window.CalendarColorPalette 経由で共有し、色表を二重に持たない。
+	 */
 	getRandomColor: function () {
+		var palette = window.CalendarColorPalette;
+		if (Array.isArray(palette) && palette.length > 0) {
+			return palette[Math.floor(Math.random() * palette.length)];
+		}
+		// web-components が読み込まれていない場合のフォールバック
 		return '#' + (0x1000000 + (Math.random()) * 0xffffff).toString(16).substr(1, 6);
 	},
 	registerDateFieldChangeEvent: function (modalContainer) {

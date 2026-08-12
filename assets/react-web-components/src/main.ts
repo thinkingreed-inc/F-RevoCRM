@@ -3,7 +3,17 @@ import "./index.css";
 import { QuickCreate, CalendarQuickCreate } from "@/components/QuickCreate";
 import { AppMenu } from "@/components/AppMenu";
 import { ActivityList } from "@/components/ActivityList";
-import { CalendarColorPicker } from "@/components/CalendarColorPicker";
+import {
+  CalendarColorPicker,
+  getCalendarColorHexes,
+} from "@/components/CalendarColorPicker";
+
+declare global {
+  interface Window {
+    /** カレンダー色のプリセット（#rrggbb の配列）。Calendar.js から参照する */
+    CalendarColorPalette?: string[];
+  }
+}
 
 // QuickCreate本体コンポーネントの登録
 // イベント: save, cancel, go-to-full-form, open-change (CustomEvent)
@@ -71,3 +81,7 @@ createWebComponent(
   ["value"],
   ["onChange"],
 );
+
+// カレンダー側の JS（Calendar.js の getRandomColor）が、色選択UIと同じプリセットから
+// 色を選べるようにパレットを公開する。色表を JS 側に複製しないための共有ポイント。
+window.CalendarColorPalette = getCalendarColorHexes();
