@@ -14,6 +14,7 @@ $scripts = array(
     'spec_TS05_compliance.php'   => 'TS-04/TS-05 電帳法・監査ログ',
     'spec_TS06_upload.php'       => 'TS-06/TS-09 アップロード・ファイル処理',
     'spec_TS08_api.php'          => 'TS-08/TS-13 API・関連付け',
+    'spec_TS14_bulk.php'         => 'TS-14 一括操作',
 );
 
 $dir = dirname(__FILE__);

@@ -1,4 +1,10 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, {
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+  useMemo,
+} from "react";
 import type {
   SortConfig,
   FilterType,
@@ -9,6 +15,13 @@ import type {
 } from "./types/documents";
 import { DocumentsFolderTree } from "./DocumentsFolderTree";
 import { DocumentsListView } from "./DocumentsListView";
+import { DocumentsBulkActionBar } from "./DocumentsBulkActionBar";
+import {
+  buildListUrl,
+  isSameListUrlState,
+  parseListUrlState,
+  type DocumentsListUrlState,
+} from "./utils/listUrlState";
 import { DocumentsGridView } from "./DocumentsGridView";
 import { DocumentsPreviewView } from "./DocumentsPreviewView";
 import { FolderDialog } from "./FolderDialog";
@@ -71,17 +84,37 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
   const { viewMode, setViewMode } = useViewMode(initialViewMode);
   const isMobile = useIsMobile();
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-  const [selectedFolderId, setSelectedFolderId] = useState<number | "all">(
-    initialFolderId || "all",
+  // フォルダ・ページ・絞り込み・検索はURLに反映し、ブラウザの戻る／進むで復元する
+  const initialUrlState = useMemo<DocumentsListUrlState>(
+    () =>
+      parseListUrlState(window.location.search, {
+        folderId: initialFolderId || "all",
+        page: 1,
+        filterType: "all",
+        searchKeyword: "",
+      }),
+    // 初回のみ評価する（以降は state を正とする）
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
   );
-  const [filterType, setFilterType] = useState<FilterType>("all");
-  const [page, setPage] = useState(1);
+  const [selectedFolderId, setSelectedFolderId] = useState<number | "all">(
+    initialUrlState.folderId,
+  );
+  const [filterType, setFilterType] = useState<FilterType>(
+    initialUrlState.filterType,
+  );
+  const [page, setPage] = useState(initialUrlState.page);
+  // 一括操作で選択中のドキュメント
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [bulkMessage, setBulkMessage] = useState<string | null>(null);
   const [sort, setSort] = useState<SortConfig>({
     field: "modifiedtime",
     order: "DESC",
   });
-  const [searchKeyword, setSearchKeyword] = useState("");
-  const [searchInput, setSearchInput] = useState("");
+  const [searchKeyword, setSearchKeyword] = useState(
+    initialUrlState.searchKeyword,
+  );
+  const [searchInput, setSearchInput] = useState(initialUrlState.searchKeyword);
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 電帳法フィルター
@@ -116,7 +149,13 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
   });
 
   // 検索入力のdebounce
+  // 初回描画では実行しない（URLで指定されたページを1ページ目に戻してしまうため）
+  const isFirstSearchRef = useRef(true);
   useEffect(() => {
+    if (isFirstSearchRef.current) {
+      isFirstSearchRef.current = false;
+      return;
+    }
     if (searchDebounceRef.current) {
       clearTimeout(searchDebounceRef.current);
     }
@@ -201,6 +240,69 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
     },
     [upload, selectedFolderId],
   );
+
+  // 一覧の対象そのものが変わったら選択を解除する（別の絞り込みの内容を操作しないため）。
+  // ページ送りでは解除しない（ページをまたいで選択できるようにする）
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [selectedFolderId, searchKeyword, filterType]);
+
+  // 表示状態をURLへ反映する（戻る／進むで前の状態に戻れるようにする）
+  const urlState = useMemo<DocumentsListUrlState>(
+    () => ({ folderId: selectedFolderId, page, filterType, searchKeyword }),
+    [selectedFolderId, page, filterType, searchKeyword],
+  );
+  // 検索キーワードだけの変化は履歴を増やさない（入力のたびに戻る操作が必要になるため）
+  const previousUrlStateRef = useRef<DocumentsListUrlState>(urlState);
+
+  useEffect(() => {
+    const url = buildListUrl(
+      window.location.search,
+      urlState,
+      window.location.pathname,
+    );
+    const current = `${window.location.pathname}${window.location.search}`;
+    if (url === current) {
+      previousUrlStateRef.current = urlState;
+      return;
+    }
+
+    const previous = previousUrlStateRef.current;
+    const onlyKeywordChanged =
+      previous.folderId === urlState.folderId &&
+      previous.page === urlState.page &&
+      previous.filterType === urlState.filterType;
+    previousUrlStateRef.current = urlState;
+
+    if (onlyKeywordChanged) {
+      window.history.replaceState(null, "", url);
+    } else {
+      window.history.pushState(null, "", url);
+    }
+  }, [urlState]);
+
+  // 戻る／進むでURLの状態に戻す
+  useEffect(() => {
+    const handlePopState = () => {
+      const restored = parseListUrlState(window.location.search, {
+        folderId: initialFolderId || "all",
+        page: 1,
+        filterType: "all",
+        searchKeyword: "",
+      });
+      if (isSameListUrlState(restored, previousUrlStateRef.current)) {
+        return;
+      }
+      previousUrlStateRef.current = restored;
+      setSelectedFolderId(restored.folderId);
+      setFilterType(restored.filterType);
+      setPage(restored.page);
+      setSearchKeyword(restored.searchKeyword);
+      setSearchInput(restored.searchKeyword);
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [initialFolderId]);
 
   const handleFolderSelect = useCallback((id: number | "all") => {
     setSelectedFolderId(id);
@@ -664,6 +766,42 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
         </button>
       </div>
 
+      {/* 一括操作の結果（ツールバーの下に1行で表示する） */}
+      {bulkMessage && (
+        <div
+          role="status"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            padding: "4px 12px",
+            backgroundColor: "#F0FFF4",
+            borderBottom: "1px solid #9AE6B4",
+            fontSize: 12,
+            color: "#22543D",
+            flexShrink: 0,
+          }}
+        >
+          <span>{bulkMessage}</span>
+          <button
+            type="button"
+            onClick={() => setBulkMessage(null)}
+            aria-label={t("LBL_CLOSE")}
+            style={{
+              border: "none",
+              background: "transparent",
+              color: "#22543D",
+              cursor: "pointer",
+              fontSize: 14,
+              lineHeight: 1,
+            }}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       {/* メインエリア */}
       <div
         style={{
@@ -754,6 +892,20 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
         )}
         {!isMobile && viewMode === "list" && (
           <DocumentsListView
+            bulkActions={
+              <DocumentsBulkActionBar
+                selectedIds={selectedIds}
+                folders={folders}
+                onClear={() => setSelectedIds([])}
+                onCompleted={(message) => {
+                  setSelectedIds([]);
+                  setBulkMessage(message);
+                  reloadList();
+                  reloadFolders();
+                }}
+                t={t}
+              />
+            }
             records={records}
             total={total}
             page={page}
@@ -766,6 +918,8 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
             onPageChange={setPage}
             onRecordClick={handleRecordClick}
             onFolderClick={handleFolderSelect}
+            selectedIds={selectedIds}
+            onSelectionChange={setSelectedIds}
           />
         )}
         {!isMobile && viewMode === "preview" && (
