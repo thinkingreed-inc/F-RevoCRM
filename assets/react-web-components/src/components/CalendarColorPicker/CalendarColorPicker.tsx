@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Check } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CALENDAR_COLOR_PALETTE, isPresetColor, normalizeHex } from "./colors";
+import { CALENDAR_COLOR_BLOCKS, isPresetColor, normalizeHex } from "./colors";
 
 /** カスタム(RGB)入力の初期表示に使うフォールバック色 */
 const FALLBACK_COLOR = "#3b82f6";
@@ -117,70 +117,98 @@ export const CalendarColorPicker: React.FC<CalendarColorPickerProps> = ({
   const colorInputValue = normalizeHex(current) ?? FALLBACK_COLOR;
 
   return (
-    <div ref={rootRef} className="inline-flex flex-col gap-3 align-top">
-      {/* プリセット色（Tailwind パレット） */}
+    <div ref={rootRef} className="inline-flex w-fit flex-col gap-3 align-top">
+      {/*
+        プリセット色。横=色相 / 縦=明るさ（1列がその色相の濃淡）のグリッド。
+        全色相は横幅に収まらないため、色相を上下2グループに分けている
+        （各 3行 × 7列）。列数は CALENDAR_COLOR_COLUMNS と grid-cols-7 を
+        一致させること。
+        グループ間の間隔は行間と同じにして、全体が 6行 × 7列 の一枚の表として
+        見えるようにする。
+
+        サイズは rem ではなく px で指定する。CRM 本体が html に font-size:10px を
+        設定しているため、rem ベースの指定（h-7 等）は 62.5% に縮んでしまう。
+      */}
       <div
-        className="flex max-w-[320px] flex-wrap gap-1.5"
+        className="flex flex-col gap-[6px]"
         role="listbox"
         aria-label="プリセットカラー"
       >
-        {CALENDAR_COLOR_PALETTE.map((swatch) => {
-          const selected = normalizeHex(current) === swatch.hex;
-          return (
-            <button
-              key={swatch.name}
-              type="button"
-              role="option"
-              aria-selected={selected}
-              aria-label={swatch.name}
-              title={swatch.name}
-              onClick={() => commit(swatch.hex)}
-              style={{ backgroundColor: swatch.hex }}
-              className={cn(
-                "flex h-6 w-6 items-center justify-center rounded-md border border-black/10 transition-transform",
-                "hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-700 focus-visible:ring-offset-1",
-                selected && "ring-2 ring-gray-800 ring-offset-1",
-              )}
-            >
-              {selected && (
-                <Check
-                  className="h-4 w-4"
-                  style={{ color: getReadableTextColor(swatch.hex) }}
-                  aria-hidden="true"
-                />
-              )}
-            </button>
-          );
-        })}
+        {CALENDAR_COLOR_BLOCKS.map((block) => (
+          <div key={block[0].hue} className="grid grid-cols-7 gap-[6px]">
+            {block.map((swatch) => {
+              const selected = normalizeHex(current) === swatch.hex;
+              return (
+                <button
+                  key={swatch.name}
+                  type="button"
+                  role="option"
+                  aria-selected={selected}
+                  aria-label={swatch.label}
+                  title={swatch.label}
+                  onClick={() => commit(swatch.hex)}
+                  style={{ backgroundColor: swatch.hex }}
+                  className={cn(
+                    "flex h-[28px] w-[44px] items-center justify-center rounded-[5px] border border-black/10 transition",
+                    "hover:ring-2 hover:ring-gray-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-700 focus-visible:ring-offset-1",
+                    selected &&
+                      "ring-2 ring-gray-800 ring-offset-1 hover:ring-gray-800",
+                  )}
+                >
+                  {selected && (
+                    <Check
+                      className="h-[16px] w-[16px]"
+                      style={{ color: getReadableTextColor(swatch.hex) }}
+                      aria-hidden="true"
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        ))}
       </div>
 
       {/* カスタム(RGB)指定 */}
-      <div className="flex items-center gap-2">
-        <span className="text-md text-gray-700">カスタム</span>
+      <div className="flex items-center gap-[8px]">
+        <span className="text-base text-gray-700">カスタム</span>
+
+        {/*
+          ネイティブのカラーピッカーを開くボタン。input[type=color] 自体は
+          見た目を制御できないため透明にして重ね、枠線・ホバー・アイコンで
+          「押せる」ことが分かる見た目をラベル側で作る。
+          m-0 は CRM 本体の Bootstrap が持つ label{margin-bottom:5px} の打ち消し。
+          これが無いと隣の入力欄と縦位置が 2.5px ずれる。
+        */}
         <label
           className={cn(
-            "relative flex h-6 w-6 cursor-pointer items-center justify-center rounded-md border border-black/10",
+            "relative m-0 flex h-[32px] flex-shrink-0 cursor-pointer items-center gap-[8px] rounded-[6px] border border-input bg-white px-[10px]",
+            "shadow-sm transition hover:bg-gray-50 focus-within:ring-2 focus-within:ring-gray-700 focus-within:ring-offset-1",
             usingCustomColor && "ring-2 ring-gray-800 ring-offset-1",
           )}
-          style={{ backgroundColor: colorInputValue }}
-          title="カスタムカラーを選択"
+          title="クリックしてカラーピッカーを開く"
         >
-          {/* ネイティブのカラーピッカー（RGB指定）。見た目はラベルの背景色で表現 */}
+          <span
+            className="h-[20px] w-[20px] flex-shrink-0 rounded-[4px] border border-black/10"
+            style={{ backgroundColor: colorInputValue }}
+            aria-hidden="true"
+          />
+          <span className="text-base whitespace-nowrap text-gray-700">
+            色を選ぶ
+          </span>
+          <ChevronDown
+            className="h-[16px] w-[16px] flex-shrink-0 text-gray-500"
+            aria-hidden="true"
+          />
           <input
             type="color"
             value={colorInputValue}
             onChange={(e) => commit(e.target.value)}
             className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-            aria-label="カスタムカラー（RGB）"
           />
-          {usingCustomColor && (
-            <Check
-              className="pointer-events-none h-4 w-4"
-              style={{ color: getReadableTextColor(colorInputValue) }}
-              aria-hidden="true"
-            />
-          )}
         </label>
+
+        {/* 現在の色（HEX）。#込みの7文字が省略されない幅・等幅フォントで表示する */}
         <input
           type="text"
           value={hexDraft}
@@ -188,28 +216,15 @@ export const CalendarColorPicker: React.FC<CalendarColorPickerProps> = ({
           onBlur={handleHexInputBlur}
           placeholder="#RRGGBB"
           maxLength={7}
+          size={8}
           spellCheck={false}
           autoComplete="off"
           aria-label="カラーコード（16進数）"
           className={cn(
-            "h-6 w-24 rounded-sm border border-input bg-transparent px-2 text-md uppercase outline-none",
+            "m-0 h-[32px] w-[104px] flex-shrink-0 rounded-[6px] border border-input bg-transparent px-[8px] font-mono text-[14px] uppercase outline-none",
             "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[2px]",
           )}
         />
-      </div>
-
-      {/* 現在の選択プレビュー */}
-      <div className="flex items-center gap-2">
-        <span
-          className="h-4 w-4 flex-shrink-0 rounded-sm border border-black/10"
-          style={{
-            backgroundColor: hasSelection ? colorInputValue : "transparent",
-          }}
-          aria-hidden="true"
-        />
-        <span className="text-md text-gray-600">
-          {hasSelection ? current.toUpperCase() : "未選択"}
-        </span>
       </div>
     </div>
   );

@@ -1,64 +1,173 @@
 /**
  * カレンダー色選択用のプリセットパレット
  *
- * Tailwind CSS のカラー定義から、カレンダー上で視認しやすく区別しやすい
- * 色を厳選している。各色相について標準（500）と濃色（600）の2階調を用意し、
- * 「ちょうどいい色をそれなりの種類」から選べるようにしている。
- * ここに無い色はカスタム（RGB）指定で自由に選択できる。
+ * 「1列 = 1色相の濃淡」「1行 = 同じ明るさ」のグリッドとして定義する。
+ * 全色相を1行に並べると横幅に収まらないため、色相を上下2グループに分け、
+ * それぞれを 3行 × 7列 のブロックとして描画する。
+ * どちらのグループも色相環の順（暖色 → 寒色 → ピンク／グレー）に並ぶので、
+ * 画面上に軸ラベルを出さなくても並びの基準が伝わる。
+ *
+ * 色値は Tailwind CSS のカラーパレットから、カレンダー上で
+ * 互いに判別しやすい色相を抜き出したもの。
+ * ここに無い色はカスタム指定（HEX／RGB）で自由に選択できる。
  */
+
+/** 明るさの段階。Tailwind の階調番号をそのまま識別子に使う（画面には出さない） */
+export type CalendarColorTier = 400 | 500 | 600;
+
+/** 明るさの段階を明るい順に並べたもの。ブロック内の行順になる */
+export const CALENDAR_COLOR_TIERS: readonly CalendarColorTier[] = [
+  400, 500, 600,
+];
+
+/** 明るさの段階に対応する表示名 */
+const TIER_LABELS: Record<CalendarColorTier, string> = {
+  400: "明るめ",
+  500: "標準",
+  600: "濃いめ",
+};
+
+/** 1色相分の定義 */
+export interface CalendarColorHue {
+  /** 内部識別子（例: "red"） */
+  key: string;
+  /** 表示名（例: "赤"）。Tailwind の内部名は画面に出さない */
+  label: string;
+  /** 明るさの段階ごとの #rrggbb */
+  shades: Record<CalendarColorTier, string>;
+}
+
+/**
+ * 色相の定義。1つの配列が1ブロック（= 3行 × 7列）の列構成になる。
+ * 上下どちらのブロックも色相環を一周するよう、色相環の順に交互に振り分けている。
+ */
+export const CALENDAR_COLOR_HUE_GROUPS: readonly (readonly CalendarColorHue[])[] =
+  [
+    [
+      {
+        key: "red",
+        label: "赤",
+        shades: { 400: "#f87171", 500: "#ef4444", 600: "#dc2626" },
+      },
+      {
+        key: "amber",
+        label: "アンバー",
+        shades: { 400: "#fbbf24", 500: "#f59e0b", 600: "#d97706" },
+      },
+      {
+        key: "lime",
+        label: "ライム",
+        shades: { 400: "#a3e635", 500: "#84cc16", 600: "#65a30d" },
+      },
+      {
+        key: "emerald",
+        label: "エメラルド",
+        shades: { 400: "#34d399", 500: "#10b981", 600: "#059669" },
+      },
+      {
+        key: "cyan",
+        label: "シアン",
+        shades: { 400: "#22d3ee", 500: "#06b6d4", 600: "#0891b2" },
+      },
+      {
+        key: "indigo",
+        label: "インディゴ",
+        shades: { 400: "#818cf8", 500: "#6366f1", 600: "#4f46e5" },
+      },
+      {
+        key: "pink",
+        label: "ピンク",
+        shades: { 400: "#f472b6", 500: "#ec4899", 600: "#db2777" },
+      },
+    ],
+    [
+      {
+        key: "orange",
+        label: "オレンジ",
+        shades: { 400: "#fb923c", 500: "#f97316", 600: "#ea580c" },
+      },
+      {
+        key: "yellow",
+        label: "黄",
+        shades: { 400: "#facc15", 500: "#eab308", 600: "#ca8a04" },
+      },
+      {
+        key: "green",
+        label: "緑",
+        shades: { 400: "#4ade80", 500: "#22c55e", 600: "#16a34a" },
+      },
+      {
+        key: "teal",
+        label: "ティール",
+        shades: { 400: "#2dd4bf", 500: "#14b8a6", 600: "#0d9488" },
+      },
+      {
+        key: "blue",
+        label: "青",
+        shades: { 400: "#60a5fa", 500: "#3b82f6", 600: "#2563eb" },
+      },
+      {
+        key: "violet",
+        label: "バイオレット",
+        shades: { 400: "#a78bfa", 500: "#8b5cf6", 600: "#7c3aed" },
+      },
+      {
+        key: "gray",
+        label: "グレー",
+        shades: { 400: "#9ca3af", 500: "#6b7280", 600: "#4b5563" },
+      },
+    ],
+  ];
+
+/**
+ * グリッドの列数。画面側の grid-cols-* と一致させる必要がある。
+ */
+export const CALENDAR_COLOR_COLUMNS = CALENDAR_COLOR_HUE_GROUPS[0].length;
 
 /** プリセット1色分の定義 */
 export interface CalendarColorSwatch {
-  /** Tailwind の色名（例: "blue-500"）。ツールチップ／aria-label に使用 */
+  /** 内部識別子（例: "red-500"）。React の key に使用 */
   name: string;
+  /** 表示名（例: "赤（標準）"）。tooltip／aria-label に使用 */
+  label: string;
+  /** 色相の識別子（例: "red"） */
+  hue: string;
+  /** 明るさの段階 */
+  tier: CalendarColorTier;
   /** #rrggbb 形式の16進数カラーコード */
   hex: string;
 }
 
 /**
- * プリセットパレット本体。
- * Tailwind の各色相 × 標準/濃色の2階調を色相順に並べている。
+ * 上下2つのブロック。grid は DOM 順に左上から埋まるため、
+ * 行（明るさ）を外側、列（色相）を内側にして並べる。
  */
-export const CALENDAR_COLOR_PALETTE: readonly CalendarColorSwatch[] = [
-  { name: "red-500", hex: "#ef4444" },
-  { name: "red-600", hex: "#dc2626" },
-  { name: "orange-500", hex: "#f97316" },
-  { name: "orange-600", hex: "#ea580c" },
-  { name: "amber-500", hex: "#f59e0b" },
-  { name: "amber-600", hex: "#d97706" },
-  { name: "yellow-500", hex: "#eab308" },
-  { name: "yellow-600", hex: "#ca8a04" },
-  { name: "lime-500", hex: "#84cc16" },
-  { name: "lime-600", hex: "#65a30d" },
-  { name: "green-500", hex: "#22c55e" },
-  { name: "green-600", hex: "#16a34a" },
-  { name: "emerald-500", hex: "#10b981" },
-  { name: "emerald-600", hex: "#059669" },
-  { name: "teal-500", hex: "#14b8a6" },
-  { name: "teal-600", hex: "#0d9488" },
-  { name: "cyan-500", hex: "#06b6d4" },
-  { name: "cyan-600", hex: "#0891b2" },
-  { name: "sky-500", hex: "#0ea5e9" },
-  { name: "sky-600", hex: "#0284c7" },
-  { name: "blue-500", hex: "#3b82f6" },
-  { name: "blue-600", hex: "#2563eb" },
-  { name: "indigo-500", hex: "#6366f1" },
-  { name: "indigo-600", hex: "#4f46e5" },
-  { name: "violet-500", hex: "#8b5cf6" },
-  { name: "violet-600", hex: "#7c3aed" },
-  { name: "purple-500", hex: "#a855f7" },
-  { name: "purple-600", hex: "#9333ea" },
-  { name: "fuchsia-500", hex: "#d946ef" },
-  { name: "fuchsia-600", hex: "#c026d3" },
-  { name: "pink-500", hex: "#ec4899" },
-  { name: "pink-600", hex: "#db2777" },
-  { name: "rose-500", hex: "#f43f5e" },
-  { name: "rose-600", hex: "#e11d48" },
-  { name: "slate-500", hex: "#64748b" },
-  { name: "slate-600", hex: "#475569" },
-  { name: "gray-500", hex: "#6b7280" },
-  { name: "gray-700", hex: "#374151" },
-];
+export const CALENDAR_COLOR_BLOCKS: readonly (readonly CalendarColorSwatch[])[] =
+  CALENDAR_COLOR_HUE_GROUPS.map((hues) =>
+    CALENDAR_COLOR_TIERS.flatMap((tier) =>
+      hues.map((hue) => ({
+        name: `${hue.key}-${tier}`,
+        label: `${hue.label}（${TIER_LABELS[tier]}）`,
+        hue: hue.key,
+        tier,
+        hex: hue.shades[tier],
+      })),
+    ),
+  );
+
+/** パレット本体。ブロックを上から順に連結した並び */
+export const CALENDAR_COLOR_PALETTE: readonly CalendarColorSwatch[] =
+  CALENDAR_COLOR_BLOCKS.flat();
+
+/**
+ * プリセット全色の #rrggbb を並び順どおりに返す。
+ *
+ * カレンダー側の JS（Calendar.js の getRandomColor）が色をランダムに選ぶ際に
+ * 参照する。色の定義をこのファイルに一元化し、JS 側に同じ色表を持たせない。
+ */
+export function getCalendarColorHexes(): string[] {
+  return CALENDAR_COLOR_PALETTE.map((swatch) => swatch.hex);
+}
 
 /** 16進数カラーコード（#rrggbb / #rgb）にマッチする正規表現 */
 const HEX_COLOR_REGEX = /^#?([0-9a-f]{6}|[0-9a-f]{3})$/i;
