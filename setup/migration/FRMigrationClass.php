@@ -161,6 +161,21 @@ abstract class FRMigrationClass {
     }
     
     /**
+     * カラムが存在するかどうかをチェックする
+     *
+     * @param string $tableName テーブル名
+     * @param string $columnName カラム名
+     * @return boolean
+     */
+    protected function checkColumnExists($tableName, $columnName) {
+        $query = "SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS
+                  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?";
+        $result = $this->db->pquery($query, array($tableName, $columnName));
+
+        return ($result !== false && (int) $this->db->query_result($result, 0, 'cnt') > 0);
+    }
+
+    /**
      * マイグレーション追跡テーブルを作成する
      */
     protected function createMigrationsTable() {

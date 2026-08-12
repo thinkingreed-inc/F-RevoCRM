@@ -31,7 +31,7 @@
 | 8 | ドキュメント API（一覧・詳細・フォルダ・スター） | `apis/ListAPI`, `apis/DetailAPI`, `apis/FolderAPI`, `apis/StarAPI` | [TS-08](TS-08_ドキュメントAPI.md) |
 | 9 | テキスト抽出・プレビュー・ダウンロード | `TextExtractor`, `PreviewContent`, `DownloadVersion`, `streamFile` | [TS-09](TS-09_テキスト抽出とプレビュー.md) |
 | 10 | フロントエンド（React 画面） | `assets/react-web-components/src/components/Documents/**` ほか | [TS-10](TS-10_フロントエンド.md) |
-| 11 | マイグレーション | `setup/migration/scripts/2026*` 13本 | [TS-11](TS-11_マイグレーション.md) |
+| 11 | マイグレーション | `setup/migration/scripts/2026*` 5本 | [TS-11](TS-11_マイグレーション.md) |
 | 12 | 既存機能への影響（回帰） | Web ドキュメント廃止、共有設定、関連リスト、E2E ユーティリティ、翻訳 | [TS-12](TS-12_回帰テスト.md) |
 | 13 | 既存ドキュメントの紐づけ | `apis/RelationAPI`, `ListAPI`（候補絞り込み）, React `DocumentSelectModal` | [TS-13](TS-13_ドキュメント関連付け.md) |
 
@@ -164,14 +164,14 @@ cd e2e && npx playwright test
 | Q-21 | `TextExtractor` / `PreviewContent` | シート・スライドの走査が `break` のため途中打ち切りになる | **修正済**: ZIP 内の実在項目を列挙 | TS-09 BV-2 |
 | Q-22 | `PreviewContent` | シート数・行数の上限に達しても利用者に伝わらない | **修正済**: 省略した旨を画面に表示 | TS-09 S-15 |
 | Q-23 | `Documents_Record_Model::streamFile()` | `Content-Disposition` のファイル名をエスケープしていない | **修正済**: 改行・引用符を除去し `filename*` を併記 | TS-09 BV-5 |
-| Q-24 | マイグレーション M-03 / M-04 | `CREATE TABLE` に存在チェックが無い | **修正済**: `checkTableExists()` を追加 | TS-11 TC-MG-002 |
+| Q-24 | マイグレーション M-02 / M-03 | `CREATE TABLE` に存在チェックが無い | **修正済**: `checkTableExists()` を追加 | TS-11 TC-MG-002 |
 | Q-25 | `composer.json` / `composer.lock` | `smalot/pdfparser` の追加が未コミット | **修正済**: コミット `bea107977`（※ lock に他パッケージ更新も含む。TS-12 R-11 参照） | TS-12 R-11 |
 | Q-26 | `modules/Vtiger/models/RelationListView.php` | コア相当ファイルを変更している | **対応不要**（現状維持と判断） | TS-12 R-02 |
 | Q-27 | `saveCategoryModules()` | 送信されたキーだけで設定を置き換えるため、送らなかった区分が既定値に戻る | **修正済**: 現在の設定にマージする方式へ変更 | TS-04 S-14b |
 | Q-28 | 同上 | `{}`（空オブジェクト）が例外にならず、全区分が既定値に戻る | **修正済**: 空の指定はエラー（何も変更しない） | TS-04 S-14c |
 | Q-29 | `RelationAPI::getRecordIds()` | 201件目以降を黙って切り捨てる | **修正済**: 件数の上限を撤廃し全件処理 | TS-13 S-05 |
 | Q-30 | 判定基準の変更と既存データ | 設定を変えても既存の `compliance_status` は変わらない | **仕様**: 運用手順（再判定の実行）を明記 | TS-05 1.1.1 |
-| Q-31 | マイグレーション M-13 | 全件 `batchCheck()` で所要時間が伸びる | **対応不要**（現状維持と判断） | TS-11 TC-MG-130g |
+| Q-31 | マイグレーション M-05 | 全件 `batchCheck()` で所要時間が伸びる | **対応不要**（現状維持と判断） | TS-11 TC-MG-130g |
 | Q-32 | `DocumentSelectModal` | ページ移動時に選択状態が保持されるか未確認 | **確認済**: 保持される（`isOpen` 変化時のみリセット）。ケースを追加 | TS-13 TC-RL-072 |
 
 ### 7.1 判断の記録（Q-09 / Q-12 / Q-27 / Q-28 / Q-29 / Q-30）
