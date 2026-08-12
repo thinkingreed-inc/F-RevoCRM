@@ -147,7 +147,7 @@ Calendar_Calendar_Js('Calendar_SharedCalendar_Js', {
 				currentColor = feedCheckbox.data('calendarFeedColor');
 			}
 			modalContainer.find('.selectedColor').val(currentColor);
-			modalContainer.find('.calendarColorPicker').ColorPickerSetColor(currentColor);
+			modalContainer.find('calendar-color-picker').attr('value', currentColor);
 		});
 	},
 
@@ -229,13 +229,6 @@ Calendar_Calendar_Js('Calendar_SharedCalendar_Js', {
 	registerColorEditorEvents : function(modalContainer,feedIndicator) {
 		var thisInstance = this;
 		var editorMode = modalContainer.find('.editorMode').val();
-
-		var colorPickerHost = modalContainer.find('.calendarColorPicker');
-		var selectedColor = modalContainer.find('.selectedColor');
-		thisInstance.initializeColorPicker(colorPickerHost, {}, function(hsb, hex, rgb) {
-			var selectedColorCode = '#'+hex;
-			selectedColor.val(selectedColorCode);
-		});
 
 		thisInstance.registerUserChangeEvent(modalContainer);
 
