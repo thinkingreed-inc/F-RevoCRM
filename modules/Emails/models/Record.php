@@ -673,11 +673,11 @@ class Emails_Record_Model extends Vtiger_Record_Model {
 				$moduleModel = $this->getModule();
 				$emails = $moduleModel->searchEmails($fromEmail);
 				if ($emails) {
-					if ($emails[$relatedModule][$relatedRecordId]) {
+					if (!empty($emails[$relatedModule][$relatedRecordId])) {
 						return $emails[$relatedModule][$relatedRecordId][0]['name'];
 					}
 
-					if ($emails['Users']) {
+					if (!empty($emails['Users'])) {
 						$emailInfo = array_values($emails['Users']);
 					} else {
 						$emailsInfo = array_values($emails);
