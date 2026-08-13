@@ -805,59 +805,6 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		return $fieldData;
 	}
 
-	public function createEntityRecord($moduleName, $entityLabel) {
-		$moduleHandler = vtws_getModuleHandlerFromName($moduleName, $this->user);
-		$moduleMeta = $moduleHandler->getMeta();
-		$moduleFields = $moduleMeta->getModuleFields();
-		$mandatoryFields = $moduleMeta->getMandatoryFields();
-		$entityNameFieldsString = $moduleMeta->getNameFields();
-		$entityNameFields = explode(',', $entityNameFieldsString);
-		$fieldData = array();
-		foreach ($entityNameFields as $entityNameField) {
-			$entityNameField = trim($entityNameField);
-			if (in_array($entityNameField, $mandatoryFields)) {
-				$fieldData[$entityNameField] = $entityLabel;
-			}
-		}
-		foreach ($mandatoryFields as $mandatoryField) {
-			if (empty($fieldData[$mandatoryField])) {
-				$fieldInstance = $moduleFields[$mandatoryField];
-				if ($fieldInstance->getFieldDataType() == 'owner') {
-					$fieldData[$mandatoryField] = $this->user->id;
-				} else if (!in_array($mandatoryField, $entityNameFields) && $fieldInstance->getFieldDataType() != 'reference') {
-					$fieldData[$mandatoryField] = '????';
-				}
-			}
-		}
-
-		$fieldData = DataTransform::sanitizeData($fieldData, $moduleMeta);
-		$entityIdInfo = vtws_create($moduleName, $fieldData, $this->user);
-		$adb = PearDatabase::getInstance();
-		$entityIdComponents = vtws_getIdComponents($entityIdInfo['id']);
-		$recordId = $entityIdComponents[1];
-		$entityfields = getEntityFieldNames($moduleName);
-		$label = '';
-		if (is_array($entityfields['fieldname'])) {
-			foreach ($entityfields['fieldname'] as $field) {
-				$label .= $fieldData[$field]." ";
-			}
-		} else {
-			$label = $fieldData[$entityfields['fieldname']];
-		}
-
-		$label = trim($label);
-		$adb->pquery('UPDATE vtiger_crmentity SET label=? WHERE crmid=?', array($label, $recordId));
-		CRMEntity::updateBasicInformation($moduleName, $recordId);
-
-		$recordModel = Vtiger_Record_Model::getCleanInstance($moduleName);
-		$focus = $recordModel->getEntity();
-		$focus->id = $recordId;
-		$focus->column_fields = $fieldData;
-		$this->entitydata[] = VTEntityData::fromCRMEntity($focus);
-		$focus->updateMissingSeqNumber($moduleName);
-		return $entityIdInfo;
-	}
-
 	public function getImportStatusCount() {
 		$adb = PearDatabase::getInstance();
 		$tableName = Import_Utils_Helper::getDbTableName($this->user, $this->id);
@@ -1225,32 +1172,6 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		}
 
 		return $entityInfo;
-	}
-
-	public function getEntityIdsList($referenceModuleName, $fieldValueDetails) {
-		$entityIdsList = array();
-		if ($referenceModuleName && $fieldValueDetails) {
-			foreach ($fieldValueDetails as $value) {
-				$entityLabel = str_replace($referenceModuleName, '', $value);
-				$entityLabel = trim(trim($entityLabel), ',');
-				$entityId = getEntityId($referenceModuleName, decode_html($entityLabel));
-				if (!$entityId) {
-					if (isPermitted($referenceModuleName, 'CreateView') == 'yes') {
-						try {
-							$wsEntityIdInfo = $this->createEntityRecord($referenceModuleName, $entityLabel);
-							$wsEntityId = $wsEntityIdInfo['id'];
-							$entityIdComponents = vtws_getIdComponents($wsEntityId);
-							$entityId = $entityIdComponents[1];
-						} catch (Exception $e) {
-						}
-					}
-				}
-				if ($entityId) {
-					$entityIdsList[] = $entityId;
-				}
-			}
-		}
-		return $entityIdsList;
 	}
 
 	public function createCacheForReference($moduleFields) {
