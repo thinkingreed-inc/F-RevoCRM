@@ -108,9 +108,12 @@ class Import_Reference_Model extends Vtiger_Base_Model {
 	/**
 	 * ラベルでレコードを特定する。
 	 *
-	 * 一致条件はエンティティ名項目をスペース連結した全体一致。Contacts なら
-	 * 「山田 太郎」で一致し、「山田」単独では一致しない。画面表示および
-	 * エクスポート出力のラベルと揃えるため。
+	 * 2段階で照合する。Contacts（lastname,firstname）の例:
+	 *   1段目: 連結した全体一致 …… 「山田 太郎」で一致
+	 *   2段目: 構成項目の個別一致 … 1段目で見つからなければ「山田」「太郎」でも一致
+	 *
+	 * 1段目を優先するのは、画面表示およびエクスポート出力のラベルと同じ形だから。
+	 * 2段目を残すのは、姓だけ・名だけを書いた既存のCSVを解決できるようにするため。
 	 *
 	 * @param string $module モジュール名
 	 * @param string $label  ラベル
@@ -134,13 +137,48 @@ class Import_Reference_Model extends Vtiger_Base_Model {
 		$fieldNames = is_array($entityInfo['fieldname'])
 				? $entityInfo['fieldname'] : array($entityInfo['fieldname']);
 
-		$matchedIds = self::matchLabelInCache($module, $label, $cache, $fieldNames, $entityInfo['entityidfield']);
-		if ($matchedIds === null) {
-			// キャッシュが無い、または照合に必要な列が揃っていない
-			$matchedIds = self::matchLabelInDb($label, $fieldNames, $entityInfo);
+		// 1段目：エンティティ名項目を連結した全体一致。
+		// 画面表示およびエクスポート出力のラベルと同じ形なので、これを優先する
+		$matchedIds = self::matchLabel($module, $label, $cache, array($fieldNames), $entityInfo);
+
+		// 2段目：見つからなければ構成項目の個別一致も試す。
+		// 「山田」のように姓だけ・名だけを書いた既存のCSVを解決できるようにするため。
+		// 複数項目でラベルを構成するモジュール（Contacts / Leads / Users）のみ対象
+		if (empty($matchedIds) && count($fieldNames) > 1) {
+			$singleFieldGroups = array();
+			foreach ($fieldNames as $fieldName) {
+				$singleFieldGroups[] = array($fieldName);
+			}
+			$matchedIds = self::matchLabel($module, $label, $cache, $singleFieldGroups, $entityInfo);
 		}
 
 		return self::single($matchedIds, $module, $label);
+	}
+
+	/**
+	 * ラベルを照合する。キャッシュが使えればキャッシュ、そうでなければ DB を引く。
+	 *
+	 * @param array $fieldGroups 照合単位の配列。各要素は連結して1つのラベルを構成する
+	 *                           項目名の配列。例: array(array('lastname','firstname')) なら
+	 *                           「姓 名」の全体一致、array(array('lastname'),array('firstname'))
+	 *                           なら姓または名の個別一致
+	 * @return array 一致した crmid の配列
+	 */
+	private static function matchLabel($module, $label, $cache, $fieldGroups, $entityInfo) {
+		$allFieldNames = array();
+		foreach ($fieldGroups as $group) {
+			foreach ($group as $fieldName) {
+				$allFieldNames[] = $fieldName;
+			}
+		}
+
+		$matchedIds = self::matchLabelInCache($module, $label, $cache, $fieldGroups, $allFieldNames, $entityInfo['entityidfield']);
+		if ($matchedIds === null) {
+			// キャッシュが無い、または照合に必要な列が揃っていない
+			$matchedIds = self::matchLabelInDb($label, $fieldGroups, $entityInfo);
+		}
+
+		return $matchedIds;
 	}
 
 	/**
@@ -243,9 +281,11 @@ class Import_Reference_Model extends Vtiger_Base_Model {
 	/**
 	 * キャッシュ上でラベルを照合する。
 	 *
+	 * @param array $fieldGroups 照合単位。各要素は連結して1ラベルを構成する項目名の配列
+	 * @param array $allFieldNames $fieldGroups に現れる全項目名（列の有無判定に使う）
 	 * @return array|null 一致した crmid の配列。キャッシュが使えない場合は null
 	 */
-	private static function matchLabelInCache($module, $label, $cache, $fieldNames, $entityIdField) {
+	private static function matchLabelInCache($module, $label, $cache, $fieldGroups, $allFieldNames, $entityIdField) {
 		if (empty($cache[$module])) {
 			return null;
 		}
@@ -256,7 +296,7 @@ class Import_Reference_Model extends Vtiger_Base_Model {
 		if (!is_array($firstRow) || !array_key_exists($entityIdField, $firstRow)) {
 			return null;
 		}
-		foreach ($fieldNames as $fieldName) {
+		foreach ($allFieldNames as $fieldName) {
 			if (!array_key_exists($fieldName, $firstRow)) {
 				return null;
 			}
@@ -264,21 +304,24 @@ class Import_Reference_Model extends Vtiger_Base_Model {
 
 		$matchedIds = array();
 		foreach ($cache[$module] as $recordModel) {
-			$values = array();
-			$hasNull = false;
-			foreach ($fieldNames as $fieldName) {
-				if (!array_key_exists($fieldName, $recordModel) || $recordModel[$fieldName] === null) {
-					// SQL の concat() は引数に NULL があると NULL を返して一致しない。挙動を揃える
-					$hasNull = true;
-					break;
+			foreach ($fieldGroups as $group) {
+				$values = array();
+				$hasNull = false;
+				foreach ($group as $fieldName) {
+					if (!array_key_exists($fieldName, $recordModel) || $recordModel[$fieldName] === null) {
+						// SQL の concat() は引数に NULL があると NULL を返して一致しない。挙動を揃える
+						$hasNull = true;
+						break;
+					}
+					$values[] = $recordModel[$fieldName];
 				}
-				$values[] = $recordModel[$fieldName];
-			}
-			if ($hasNull) {
-				continue;
-			}
-			if (trim(implode(' ', $values)) === $label) {
-				$matchedIds[] = $recordModel[$entityIdField];
+				if ($hasNull) {
+					continue;
+				}
+				if (trim(implode(' ', $values)) === $label) {
+					$matchedIds[] = $recordModel[$entityIdField];
+					break;   // 同一レコードを複数回数えない
+				}
 			}
 		}
 
@@ -288,9 +331,10 @@ class Import_Reference_Model extends Vtiger_Base_Model {
 	/**
 	 * DB 上でラベルを照合する。
 	 *
+	 * @param array $fieldGroups 照合単位。各要素は連結して1ラベルを構成する項目名の配列
 	 * @return array 一致した crmid の配列
 	 */
-	private static function matchLabelInDb($label, $fieldNames, $entityInfo) {
+	private static function matchLabelInDb($label, $fieldGroups, $entityInfo) {
 		$adb = PearDatabase::getInstance();
 
 		$tableName = $entityInfo['tablename'];
@@ -299,16 +343,25 @@ class Import_Reference_Model extends Vtiger_Base_Model {
 			return array();
 		}
 
-		if (count($fieldNames) > 1) {
-			$labelExpression = 'trim(concat(' . implode(",' ',", $fieldNames) . '))';
-		} else {
-			$labelExpression = $fieldNames[0];
+		$conditions = array();
+		$params = array();
+		foreach ($fieldGroups as $group) {
+			if (count($group) > 1) {
+				$labelExpression = 'trim(concat(' . implode(",' ',", $group) . '))';
+			} else {
+				$labelExpression = $group[0];
+			}
+			$conditions[] = $labelExpression . ' = ?';
+			$params[] = $label;
+		}
+		if (empty($conditions)) {
+			return array();
 		}
 
 		$sql = "SELECT $tableName.$entityIdField FROM $tableName"
 				. " INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = $tableName.$entityIdField"
-				. " WHERE vtiger_crmentity.deleted = 0 AND $labelExpression = ?";
-		$result = $adb->pquery($sql, array($label));
+				. " WHERE vtiger_crmentity.deleted = 0 AND (" . implode(' OR ', $conditions) . ")";
+		$result = $adb->pquery($sql, $params);
 		if (!$result) {
 			return array();
 		}
