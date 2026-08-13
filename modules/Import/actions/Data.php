@@ -301,6 +301,18 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 							case 'reference':	$parsedMergeValue = Import_Reference_Model::parse($comparisonValue);
 												if ($parsedMergeValue['label'] !== null) {
 													$comparisonValue = $parsedMergeValue['label'];
+												} elseif (!empty($parsedMergeValue['columns'])) {
+													// カラム指定形式は値にラベルを含まないため、レコードを特定してその
+													// ラベルを比較値にする。従来は 'field====value' をそのまま比較して
+													// いたため、この形式では重複が永久に見つからなかった
+													try {
+														$mergeEntityId = Import_Reference_Model::resolve(
+															$parsedMergeValue, $fieldInstance, $cache, $this->user, $moduleName);
+													} catch (ImportException $e) {
+														$mergeEntityId = false;
+													}
+													$comparisonValue = $mergeEntityId
+														? Vtiger_Functions::getCRMRecordLabel($mergeEntityId) : '';
 												}
 												break;
 							case 'currency'	:	if (!empty($comparisonValue)) {
@@ -570,50 +582,10 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 				$implodeValue = implode(' |##| ', $explodedValue);
 				$fieldData[$fieldName] = $implodeValue;
 			} elseif ($fieldDataType == 'reference') {
-				$entityId = false;
 				if (!empty($fieldValue)) {
 					$parsed = Import_Reference_Model::parse($fieldValue);
-
-					if (!empty($parsed['columns'])) {
-						// Module::::field====value 形式：指定カラムのAND条件でレコードを特定する
-						$columns = array();
-						foreach ($parsed['columns'] as $columnName => $columnValue) {
-							$columns[$columnName] = decode_html($columnValue);
-						}
-						$entityId = getEntityIdByColumns($parsed['module'], $columns, $cache);
-					} else if ($parsed['label'] !== null) {
-						$entityLabel = $parsed['label'];
-						if ($parsed['module'] !== null) {
-							// Module::::Label / Module:::Label 形式：モジュールを限定する
-							$referencedModules = array($parsed['module']);
-						} else {
-							// Label のみ：項目の参照先モジュールを順に試す
-							$referencedModules = $fieldInstance->getReferenceList();
-						}
-
-						foreach ($referencedModules as $referenceModule) {
-							if ($referenceModule == 'Users') {
-								$referenceEntityId = getUserId_Ol($entityLabel);
-								if (empty($referenceEntityId) ||
-										!Import_Utils_Helper::hasAssignPrivilege($moduleName, $referenceEntityId)) {
-									$referenceEntityId = $this->user->id;
-								}
-							} elseif ($referenceModule == 'Currency') {
-								$referenceEntityId = getCurrencyId($entityLabel);
-							} else {
-								try {
-									$referenceEntityId = getEntityId($referenceModule, decode_html($entityLabel));
-								} catch (ImportException $e) {
-									$referenceEntityId = 0;
-								}
-							}
-							if ($referenceEntityId != 0) {
-								$entityId = $referenceEntityId;
-								break;
-							}
-						}
-					}
-					$fieldData[$fieldName] = $entityId;
+					$fieldData[$fieldName] = Import_Reference_Model::resolve(
+							$parsed, $fieldInstance, $cache, $this->user, $moduleName);
 				} else {
 					$referencedModules = $fieldInstance->getReferenceList();
 					if ($referencedModules[0] == 'Users') {
@@ -1334,42 +1306,23 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			foreach($referenceColumns as $referenceColumn) {
 				$referencevalue = $row[$referenceColumn];
 				if (!empty($referencevalue)){
+					$fieldInstance = null;
+					foreach ($allModuleFields as $mFields) {
+						if (isset($mFields[$referenceColumn])) {
+							$fieldInstance = $mFields[$referenceColumn];
+							break;
+						}
+					}
+					// 解決側と同じ宣言から必要な列を導くことで、両者の解釈がずれないようにする
 					$parsed = Import_Reference_Model::parse($referencevalue);
-
-					if (!empty($parsed['columns'])) {
-						// Module::::field====value 形式：指定されたカラムをキャッシュ対象にする
-						if (!isset($columnsForCache[$parsed['module']])){
-							$columnsForCache[$parsed['module']] = array();
+					$neededColumns = Import_Reference_Model::getCacheColumns($parsed, $fieldInstance);
+					foreach ($neededColumns as $refModule => $columns) {
+						if (!isset($columnsForCache[$refModule])) {
+							$columnsForCache[$refModule] = array();
 						}
-						foreach (array_keys($parsed['columns']) as $columnName) {
-							if (!in_array($columnName, $columnsForCache[$parsed['module']])){
-								array_push($columnsForCache[$parsed['module']], $columnName);
-							}
-						}
-					} else if ($parsed['label'] !== null) {
-						// ラベル形式：候補モジュールのエンティティ名項目をキャッシュ対象にする
-						if ($parsed['module'] !== null) {
-							$referencedModules = array($parsed['module']);
-						} else {
-							$fieldInstance = null;
-							foreach ($allModuleFields as $mFields) {
-								if (isset($mFields[$referenceColumn])) {
-									$fieldInstance = $mFields[$referenceColumn];
-									break;
-								}
-							}
-							$referencedModules = $fieldInstance ? $fieldInstance->getReferenceList() : array();
-						}
-						foreach ($referencedModules as $refModule) {
-							$entityNameInfo = getEntityFieldNames($refModule);
-							if (!$entityNameInfo) continue;
-							$fieldNames = $entityNameInfo['fieldname'];
-							if (!is_array($fieldNames)) $fieldNames = array($fieldNames);
-							if (!isset($columnsForCache[$refModule])) $columnsForCache[$refModule] = array();
-							foreach ($fieldNames as $fn) {
-								if (!in_array($fn, $columnsForCache[$refModule])) {
-									array_push($columnsForCache[$refModule], $fn);
-								}
+						foreach ($columns as $column) {
+							if (!in_array($column, $columnsForCache[$refModule])) {
+								array_push($columnsForCache[$refModule], $column);
 							}
 						}
 					}

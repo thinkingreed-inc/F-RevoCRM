@@ -1436,28 +1436,14 @@ function isRecordExistInDB($fieldData, $moduleMeta, $user, $cache) {
 			$referenceModuleName = null;
 			if (!empty($fieldValue)) {
 				$parsed = Import_Reference_Model::parse($fieldValue);
-
-				if (!empty($parsed['columns'])) {
-					$referenceModuleName = $parsed['module'];
-					$entityId = getEntityIdByColumns($referenceModuleName, $parsed['columns'], $cache);
-				} else if ($parsed['label'] !== null) {
-					if ($parsed['module'] !== null) {
-						$referencedModules = array($parsed['module']);
-					} else {
-						$referencedModules = $fieldInstance->getReferenceList();
-					}
-					foreach ($referencedModules as $referenceModule) {
-						try {
-							$referenceEntityId = getEntityIdByColumns($referenceModule, $parsed['label'], $cache);
-							if ($referenceEntityId != 0) {
-								$entityId = $referenceEntityId;
-								$referenceModuleName = $referenceModule;
-								break;
-							}
-						} catch (ImportException $e) {
-							continue;
-						}
-					}
+				try {
+					$entityId = Import_Reference_Model::resolve($parsed, $fieldInstance, $cache, $user, $moduleMeta->getEntityName());
+				} catch (ImportException $e) {
+					$entityId = false;
+				}
+				if (!empty($entityId)) {
+					// 解決に使われたモジュールを権限判定のために特定する
+					$referenceModuleName = ($parsed['module'] !== null) ? $parsed['module'] : getSalesEntityType($entityId);
 				}
 				if (!empty($entityId) && $entityId != 0) {
 					$types = vtws_listtypes(null, $user);

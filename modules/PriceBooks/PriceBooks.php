@@ -484,12 +484,18 @@ class PriceBooks extends CRMEntity {
 				if(!$product['relatedto'])
 					continue;
 				$parsed = Import_Reference_Model::parse($product['relatedto']);
-				if (!empty($parsed['columns'])) {
-					$productId = getEntityIdByColumns($parsed['module'], $parsed['columns'], $cache);
-				} else if ($parsed['label'] !== null) {
-					$productModule = ($parsed['module'] !== null) ? $parsed['module'] : 'Products';
-					$productId = getEntityIdByColumns($productModule, $parsed['label'], $cache);
-				} else {
+				$productId = false;
+				try {
+					if (!empty($parsed['columns'])) {
+						$productId = Import_Reference_Model::resolveByColumns($parsed['module'], $parsed['columns'], $cache);
+					} else if ($parsed['label'] !== null) {
+						$productModule = ($parsed['module'] !== null) ? $parsed['module'] : 'Products';
+						$productId = Import_Reference_Model::resolveByLabel($productModule, $parsed['label'], $cache);
+					}
+				} catch (ImportException $e) {
+					$productId = false;
+				}
+				if (!$productId) {
 					continue;
 				}
                 $presence = isRecordExists($productId);
@@ -510,12 +516,18 @@ class PriceBooks extends CRMEntity {
 		$entityIds = array();
 		foreach($productList as $product){
 			$parsed = Import_Reference_Model::parse($product['relatedto']);
-			if (!empty($parsed['columns'])) {
-				$productId = getEntityIdByColumns($parsed['module'], $parsed['columns'], $cache);
-			} else if ($parsed['label'] !== null) {
-				$productModule = ($parsed['module'] !== null) ? $parsed['module'] : 'Products';
-				$productId = getEntityIdByColumns($productModule, $parsed['label'], $cache);
-			} else {
+			$productId = 0;
+			try {
+				if (!empty($parsed['columns'])) {
+					$productId = Import_Reference_Model::resolveByColumns($parsed['module'], $parsed['columns'], $cache);
+				} else if ($parsed['label'] !== null) {
+					$productModule = ($parsed['module'] !== null) ? $parsed['module'] : 'Products';
+					$productId = Import_Reference_Model::resolveByLabel($productModule, $parsed['label'], $cache);
+				}
+			} catch (ImportException $e) {
+				$productId = 0;
+			}
+			if (!$productId) {
 				$productId = 0;
 			}
 			array_push($entityIds, $productId);
