@@ -301,19 +301,11 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 							case 'reference':	$parsedMergeValue = Import_Reference_Model::parse($comparisonValue);
 												if ($parsedMergeValue['label'] !== null) {
 													$comparisonValue = $parsedMergeValue['label'];
-												} elseif (!empty($parsedMergeValue['columns'])) {
-													// カラム指定形式は値にラベルを含まないため、レコードを特定してその
-													// ラベルを比較値にする。従来は 'field====value' をそのまま比較して
-													// いたため、この形式では重複が永久に見つからなかった
-													try {
-														$mergeEntityId = Import_Reference_Model::resolve(
-															$parsedMergeValue, $fieldInstance, $cache, $this->user, $moduleName);
-													} catch (ImportException $e) {
-														$mergeEntityId = false;
-													}
-													$comparisonValue = $mergeEntityId
-														? Vtiger_Functions::getCRMRecordLabel($mergeEntityId) : '';
 												}
+												// Module::::field====value 形式は値にラベルを含まないため、比較値を
+												// 作れずこの形式では重複が検出されない。従来からの挙動であり、
+												// 重複マージは既存レコードを上書き・マージする処理のため、
+												// 挙動を変える場合は影響の確認を分けて行う。
 												break;
 							case 'currency'	:	if (!empty($comparisonValue)) {
 													$comparisonValue = CurrencyField::convertToUserFormat($comparisonValue, $this->user, TRUE, FALSE);
