@@ -575,68 +575,69 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 				$fieldData[$fieldName] = $implodeValue;
 			} elseif ($fieldDataType == 'reference') {
 				$entityId = false;
-				$fieldDetails = false;
+				$fieldDetails = array();
 				if (!empty($fieldValue)) {
-					$referenceEntries = preg_split('/\s*,\s*/', trim($fieldValue));
-					$entityIds = array();
-					foreach ($referenceEntries as $referenceEntry) {
-						if ($referenceEntry === '') {
-							continue;
-						}
-						$entityId = false;
-						$fieldDetails = false;
-						if (strpos($referenceEntry, '::::') > 0) {
-							$fieldValueDetails = explode('::::', $referenceEntry);
-						} else if (strpos($referenceEntry, ':::') > 0) {
-							$fieldValueDetails = explode(':::', $referenceEntry);
-						} else {
-							$fieldValueDetails = $referenceEntry;
-						}
+					// 参照項目は常に単一レコードを指すため、セル値を区切り文字で分割しない。
+					// ラベルや値そのものがカンマを含むことがあるため。
+					// 複数レコードの指定は multireference 型の責務とする。
+					$referenceEntry = trim($fieldValue);
+					if (strpos($referenceEntry, '::::') > 0) {
+						$fieldValueDetails = explode('::::', $referenceEntry);
+					} else if (strpos($referenceEntry, ':::') > 0) {
+						$fieldValueDetails = explode(':::', $referenceEntry);
+					} else {
+						$fieldValueDetails = $referenceEntry;
+					}
 
-						foreach($fieldValueDetails as $fieldValueDetail){
+					if (is_array($fieldValueDetails)) {
+						foreach ($fieldValueDetails as $fieldValueDetail) {
 							if (strpos($fieldValueDetail, '====') > 0) {
 								$fieldDetail = explode('====', $fieldValueDetail);
 								$fieldDetails[$fieldDetail[0]] = decode_html(trim($fieldDetail[1]));
 							}
 						}
+					}
 
-						if (php7_count($fieldValueDetails) > 1) {
-							$referenceModuleName = trim($fieldValueDetails[0]);
-							$referenceValueList = $fieldDetails;
-							$entityId = getEntityIdByColumns($referenceModuleName, $referenceValueList, $cache);
+					$referencedModules = array();
+					$entityLabel = '';
+					if (php7_count($fieldValueDetails) > 1) {
+						$referenceModuleName = trim($fieldValueDetails[0]);
+						if (!empty($fieldDetails)) {
+							// Module::::field====value 形式：指定カラムのAND条件でレコードを特定する
+							$entityId = getEntityIdByColumns($referenceModuleName, $fieldDetails, $cache);
 						} else {
-							$referencedModules = $fieldInstance->getReferenceList();
-							$entityLabel = $referenceEntry;
-							foreach ($referencedModules as $referenceModule) {
-								$referenceModuleName = $referenceModule;
-								if ($referenceModule == 'Users') {
-									$referenceEntityId = getUserId_Ol($entityLabel);
-									if (empty($referenceEntityId) ||
-											!Import_Utils_Helper::hasAssignPrivilege($moduleName, $referenceEntityId)) {
-										$referenceEntityId = $this->user->id;
-									}
-								} elseif ($referenceModule == 'Currency') {
-									$referenceEntityId = getCurrencyId($entityLabel);
-								} else {
-									try {
-										$referenceEntityId = getEntityId($referenceModule, decode_html($entityLabel));
-									} catch (ImportException $e) {
-										$referenceEntityId = 0;
-									}
-								}
-								if ($referenceEntityId != 0) {
-									$entityId = $referenceEntityId;
-									break;
-								}
+							// Module::::Label / Module:::Label 形式：モジュールを限定してラベルで特定する
+							// （旧・複数レコード形式 Module:::L1:::L2 は単一参照では扱わないため先頭のみ採用）
+							$referencedModules = array($referenceModuleName);
+							$entityLabel = trim($fieldValueDetails[1]);
+						}
+					} else {
+						// Label のみ：項目の参照先モジュールを順に試す
+						$referencedModules = $fieldInstance->getReferenceList();
+						$entityLabel = $referenceEntry;
+					}
+
+					foreach ($referencedModules as $referenceModule) {
+						$referenceModuleName = $referenceModule;
+						if ($referenceModule == 'Users') {
+							$referenceEntityId = getUserId_Ol($entityLabel);
+							if (empty($referenceEntityId) ||
+									!Import_Utils_Helper::hasAssignPrivilege($moduleName, $referenceEntityId)) {
+								$referenceEntityId = $this->user->id;
+							}
+						} elseif ($referenceModule == 'Currency') {
+							$referenceEntityId = getCurrencyId($entityLabel);
+						} else {
+							try {
+								$referenceEntityId = getEntityId($referenceModule, decode_html($entityLabel));
+							} catch (ImportException $e) {
+								$referenceEntityId = 0;
 							}
 						}
-						if (!empty($entityId)) {
-							$entityIds[] = $entityId;
+						if ($referenceEntityId != 0) {
+							$entityId = $referenceEntityId;
+							break;
 						}
-					}
-				
-					if ($entityIds) {
-						$entityId = implode(', ', $entityIds);
 					}
 					$fieldData[$fieldName] = $entityId;
 				} else {
