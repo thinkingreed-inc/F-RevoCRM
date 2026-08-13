@@ -1433,34 +1433,25 @@ function isRecordExistInDB($fieldData, $moduleMeta, $user, $cache) {
 		$fieldInstance = $moduleFields[$fieldName];
 		if ($fieldInstance->getFieldDataType() == 'reference') {
 			$entityId = false;
+			$referenceModuleName = null;
 			if (!empty($fieldValue)) {
-				if(strpos($fieldValue, '::::') > 0) {
-					$fieldValueDetails = explode('::::', $fieldValue);
-				} else if (strpos($fieldValue, ':::') > 0) {
-					$fieldValueDetails = explode(':::', $fieldValue);
-				} else {
-					$fieldValueDetails = array($fieldValue);
-				}
-				$fieldDetails = array();
-				foreach($fieldValueDetails as $fieldValueDetail){
-					if (strpos($fieldValueDetail, '====') > 0) {
-						$fieldDetail = explode('====', $fieldValueDetail);
-						$fieldDetails[$fieldDetail[0]] = $fieldDetail[1];
+				$parsed = Import_Reference_Model::parse($fieldValue);
+
+				if (!empty($parsed['columns'])) {
+					$referenceModuleName = $parsed['module'];
+					$entityId = getEntityIdByColumns($referenceModuleName, $parsed['columns'], $cache);
+				} else if ($parsed['label'] !== null) {
+					if ($parsed['module'] !== null) {
+						$referencedModules = array($parsed['module']);
+					} else {
+						$referencedModules = $fieldInstance->getReferenceList();
 					}
-				}
-				if (php7_count($fieldValueDetails) > 1 && !empty($fieldDetails)) {
-					$referenceModuleName = trim($fieldValueDetails[0]);
-					$referenceValueList = $fieldDetails;
-					$entityId = getEntityIdByColumns($referenceModuleName, $referenceValueList, $cache);
-				} else {
-					$referencedModules = $fieldInstance->getReferenceList();
-					$entityLabel = $fieldValue;
 					foreach ($referencedModules as $referenceModule) {
-						$referenceModuleName = $referenceModule;
 						try {
-							$referenceEntityId = getEntityIdByColumns($referenceModule, $entityLabel,$cache);
+							$referenceEntityId = getEntityIdByColumns($referenceModule, $parsed['label'], $cache);
 							if ($referenceEntityId != 0) {
 								$entityId = $referenceEntityId;
+								$referenceModuleName = $referenceModule;
 								break;
 							}
 						} catch (ImportException $e) {

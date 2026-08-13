@@ -298,13 +298,9 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 							case 'owner'	:	$userId = getUserId_Ol($comparisonValue);
 												$comparisonValue = getUserFullName($userId);
 												break;
-							case 'reference':	if (strpos($comparisonValue, '::::') > 0) {
-													$referenceFileValueComponents = explode('::::', $comparisonValue);
-												} else {
-													$referenceFileValueComponents = explode(':::', $comparisonValue);
-												}
-												if (php7_count($referenceFileValueComponents) > 1) {
-													$comparisonValue = trim($referenceFileValueComponents[1]);
+							case 'reference':	$parsedMergeValue = Import_Reference_Model::parse($comparisonValue);
+												if ($parsedMergeValue['label'] !== null) {
+													$comparisonValue = $parsedMergeValue['label'];
 												}
 												break;
 							case 'currency'	:	if (!empty($comparisonValue)) {
@@ -575,68 +571,46 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 				$fieldData[$fieldName] = $implodeValue;
 			} elseif ($fieldDataType == 'reference') {
 				$entityId = false;
-				$fieldDetails = array();
 				if (!empty($fieldValue)) {
-					// 参照項目は常に単一レコードを指すため、セル値を区切り文字で分割しない。
-					// ラベルや値そのものがカンマを含むことがあるため。
-					// 複数レコードの指定は multireference 型の責務とする。
-					$referenceEntry = trim($fieldValue);
-					if (strpos($referenceEntry, '::::') > 0) {
-						$fieldValueDetails = explode('::::', $referenceEntry);
-					} else if (strpos($referenceEntry, ':::') > 0) {
-						$fieldValueDetails = explode(':::', $referenceEntry);
-					} else {
-						$fieldValueDetails = $referenceEntry;
-					}
+					$parsed = Import_Reference_Model::parse($fieldValue);
 
-					if (is_array($fieldValueDetails)) {
-						foreach ($fieldValueDetails as $fieldValueDetail) {
-							if (strpos($fieldValueDetail, '====') > 0) {
-								$fieldDetail = explode('====', $fieldValueDetail);
-								$fieldDetails[$fieldDetail[0]] = decode_html(trim($fieldDetail[1]));
-							}
+					if (!empty($parsed['columns'])) {
+						// Module::::field====value 形式：指定カラムのAND条件でレコードを特定する
+						$columns = array();
+						foreach ($parsed['columns'] as $columnName => $columnValue) {
+							$columns[$columnName] = decode_html($columnValue);
 						}
-					}
-
-					$referencedModules = array();
-					$entityLabel = '';
-					if (php7_count($fieldValueDetails) > 1) {
-						$referenceModuleName = trim($fieldValueDetails[0]);
-						if (!empty($fieldDetails)) {
-							// Module::::field====value 形式：指定カラムのAND条件でレコードを特定する
-							$entityId = getEntityIdByColumns($referenceModuleName, $fieldDetails, $cache);
+						$entityId = getEntityIdByColumns($parsed['module'], $columns, $cache);
+					} else if ($parsed['label'] !== null) {
+						$entityLabel = $parsed['label'];
+						if ($parsed['module'] !== null) {
+							// Module::::Label / Module:::Label 形式：モジュールを限定する
+							$referencedModules = array($parsed['module']);
 						} else {
-							// Module::::Label / Module:::Label 形式：モジュールを限定してラベルで特定する
-							// （旧・複数レコード形式 Module:::L1:::L2 は単一参照では扱わないため先頭のみ採用）
-							$referencedModules = array($referenceModuleName);
-							$entityLabel = trim($fieldValueDetails[1]);
+							// Label のみ：項目の参照先モジュールを順に試す
+							$referencedModules = $fieldInstance->getReferenceList();
 						}
-					} else {
-						// Label のみ：項目の参照先モジュールを順に試す
-						$referencedModules = $fieldInstance->getReferenceList();
-						$entityLabel = $referenceEntry;
-					}
 
-					foreach ($referencedModules as $referenceModule) {
-						$referenceModuleName = $referenceModule;
-						if ($referenceModule == 'Users') {
-							$referenceEntityId = getUserId_Ol($entityLabel);
-							if (empty($referenceEntityId) ||
-									!Import_Utils_Helper::hasAssignPrivilege($moduleName, $referenceEntityId)) {
-								$referenceEntityId = $this->user->id;
+						foreach ($referencedModules as $referenceModule) {
+							if ($referenceModule == 'Users') {
+								$referenceEntityId = getUserId_Ol($entityLabel);
+								if (empty($referenceEntityId) ||
+										!Import_Utils_Helper::hasAssignPrivilege($moduleName, $referenceEntityId)) {
+									$referenceEntityId = $this->user->id;
+								}
+							} elseif ($referenceModule == 'Currency') {
+								$referenceEntityId = getCurrencyId($entityLabel);
+							} else {
+								try {
+									$referenceEntityId = getEntityId($referenceModule, decode_html($entityLabel));
+								} catch (ImportException $e) {
+									$referenceEntityId = 0;
+								}
 							}
-						} elseif ($referenceModule == 'Currency') {
-							$referenceEntityId = getCurrencyId($entityLabel);
-						} else {
-							try {
-								$referenceEntityId = getEntityId($referenceModule, decode_html($entityLabel));
-							} catch (ImportException $e) {
-								$referenceEntityId = 0;
+							if ($referenceEntityId != 0) {
+								$entityId = $referenceEntityId;
+								break;
 							}
-						}
-						if ($referenceEntityId != 0) {
-							$entityId = $referenceEntityId;
-							break;
 						}
 					}
 					$fieldData[$fieldName] = $entityId;
@@ -1360,24 +1334,23 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			foreach($referenceColumns as $referenceColumn) {
 				$referencevalue = $row[$referenceColumn];
 				if (!empty($referencevalue)){
-					if (strpos($referencevalue, '::::') > 0) {
-						$fieldValueDetails = explode('::::', $referencevalue);
-					} else if (strpos($referencevalue, ':::') > 0) {
-						$fieldValueDetails = explode(':::', $referencevalue);
-					} else {
-						$fieldValueDetails = array($referencevalue);
-					}
+					$parsed = Import_Reference_Model::parse($referencevalue);
 
-					foreach($fieldValueDetails as $fieldValueDetail){
-						if (strpos($fieldValueDetail, '====') > 0) {
-							$fieldDetail = explode('====', $fieldValueDetail);
-							if (!isset($columnsForCache[$fieldValueDetails[0]])){
-								$columnsForCache[$fieldValueDetails[0]] = array();
+					if (!empty($parsed['columns'])) {
+						// Module::::field====value 形式：指定されたカラムをキャッシュ対象にする
+						if (!isset($columnsForCache[$parsed['module']])){
+							$columnsForCache[$parsed['module']] = array();
+						}
+						foreach (array_keys($parsed['columns']) as $columnName) {
+							if (!in_array($columnName, $columnsForCache[$parsed['module']])){
+								array_push($columnsForCache[$parsed['module']], $columnName);
 							}
-							if (!in_array($fieldDetail[0],$columnsForCache[$fieldValueDetails[0]])){
-								array_push($columnsForCache[$fieldValueDetails[0]],$fieldDetail[0]);
-							}
-						} else if (php7_count($fieldValueDetails) == 1) {
+						}
+					} else if ($parsed['label'] !== null) {
+						// ラベル形式：候補モジュールのエンティティ名項目をキャッシュ対象にする
+						if ($parsed['module'] !== null) {
+							$referencedModules = array($parsed['module']);
+						} else {
 							$fieldInstance = null;
 							foreach ($allModuleFields as $mFields) {
 								if (isset($mFields[$referenceColumn])) {
@@ -1385,19 +1358,17 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 									break;
 								}
 							}
-							if ($fieldInstance) {
-								$referencedModules = $fieldInstance->getReferenceList();
-								foreach ($referencedModules as $refModule) {
-									$entityNameInfo = getEntityFieldNames($refModule);
-									if (!$entityNameInfo) continue;
-									$fieldNames = $entityNameInfo['fieldname'];
-									if (!is_array($fieldNames)) $fieldNames = array($fieldNames);
-									if (!isset($columnsForCache[$refModule])) $columnsForCache[$refModule] = array();
-									foreach ($fieldNames as $fn) {
-										if (!in_array($fn, $columnsForCache[$refModule])) {
-											array_push($columnsForCache[$refModule], $fn);
-										}
-									}
+							$referencedModules = $fieldInstance ? $fieldInstance->getReferenceList() : array();
+						}
+						foreach ($referencedModules as $refModule) {
+							$entityNameInfo = getEntityFieldNames($refModule);
+							if (!$entityNameInfo) continue;
+							$fieldNames = $entityNameInfo['fieldname'];
+							if (!is_array($fieldNames)) $fieldNames = array($fieldNames);
+							if (!isset($columnsForCache[$refModule])) $columnsForCache[$refModule] = array();
+							foreach ($fieldNames as $fn) {
+								if (!in_array($fn, $columnsForCache[$refModule])) {
+									array_push($columnsForCache[$refModule], $fn);
 								}
 							}
 						}

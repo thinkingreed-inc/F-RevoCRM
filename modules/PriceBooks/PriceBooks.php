@@ -483,16 +483,15 @@ class PriceBooks extends CRMEntity {
 			foreach($productList as $product){
 				if(!$product['relatedto'])
 					continue;
-				$productDetails = $product['relatedto'];
-				$productDetails = explode('::::', $productDetails);
-				$productValueDetails = false;
-				foreach($productDetails as $productDetail){
-					if (strpos($productDetail, '====') > 0) {
-						$productValueDetail = explode('====', $productDetail);
-						$productValueDetails[$productValueDetail[0]] = $productValueDetail[1];
-					}
+				$parsed = Import_Reference_Model::parse($product['relatedto']);
+				if (!empty($parsed['columns'])) {
+					$productId = getEntityIdByColumns($parsed['module'], $parsed['columns'], $cache);
+				} else if ($parsed['label'] !== null) {
+					$productModule = ($parsed['module'] !== null) ? $parsed['module'] : 'Products';
+					$productId = getEntityIdByColumns($productModule, $parsed['label'], $cache);
+				} else {
+					continue;
 				}
-				$productId = getEntityIdByColumns($productDetails[0], $productValueDetails, $cache);
                 $presence = isRecordExists($productId);
                 if($presence){
                     $productInstance = Vtiger_Record_Model::getInstanceById($productId);
@@ -510,16 +509,15 @@ class PriceBooks extends CRMEntity {
 		$isProductsExist = false;
 		$entityIds = array();
 		foreach($productList as $product){
-			$productDetails = $product['relatedto'];
-			$productDetails = explode('::::', $productDetails);
-			$productValueDetails = false;
-			foreach($productDetails as $productDetail){
-				if (strpos($productDetail, '====') > 0) {
-					$productValueDetail = explode('====', $productDetail);
-					$productValueDetails[$productValueDetail[0]] = $productValueDetail[1];
-				}
+			$parsed = Import_Reference_Model::parse($product['relatedto']);
+			if (!empty($parsed['columns'])) {
+				$productId = getEntityIdByColumns($parsed['module'], $parsed['columns'], $cache);
+			} else if ($parsed['label'] !== null) {
+				$productModule = ($parsed['module'] !== null) ? $parsed['module'] : 'Products';
+				$productId = getEntityIdByColumns($productModule, $parsed['label'], $cache);
+			} else {
+				$productId = 0;
 			}
-			$productId = getEntityIdByColumns($productDetails[0], $productValueDetails, $cache);
 			array_push($entityIds, $productId);
 		}
 
