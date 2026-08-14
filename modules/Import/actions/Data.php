@@ -298,14 +298,14 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 							case 'owner'	:	$userId = getUserId_Ol($comparisonValue);
 												$comparisonValue = getUserFullName($userId);
 												break;
-							case 'reference':	if (strpos($comparisonValue, '::::') > 0) {
-													$referenceFileValueComponents = explode('::::', $comparisonValue);
-												} else {
-													$referenceFileValueComponents = explode(':::', $comparisonValue);
+							case 'reference':	$parsedMergeValue = Import_Reference_Model::parse($comparisonValue);
+												if ($parsedMergeValue['label'] !== null) {
+													$comparisonValue = $parsedMergeValue['label'];
 												}
-												if (php7_count($referenceFileValueComponents) > 1) {
-													$comparisonValue = trim($referenceFileValueComponents[1]);
-												}
+												// Module::::field====value 形式は値にラベルを含まないため、比較値を
+												// 作れずこの形式では重複が検出されない。従来からの挙動であり、
+												// 重複マージは既存レコードを上書き・マージする処理のため、
+												// 挙動を変える場合は影響の確認を分けて行う。
 												break;
 							case 'currency'	:	if (!empty($comparisonValue)) {
 													$comparisonValue = CurrencyField::convertToUserFormat($comparisonValue, $this->user, TRUE, FALSE);
@@ -574,71 +574,10 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 				$implodeValue = implode(' |##| ', $explodedValue);
 				$fieldData[$fieldName] = $implodeValue;
 			} elseif ($fieldDataType == 'reference') {
-				$entityId = false;
-				$fieldDetails = false;
 				if (!empty($fieldValue)) {
-					$referenceEntries = preg_split('/\s*,\s*/', trim($fieldValue));
-					$entityIds = array();
-					foreach ($referenceEntries as $referenceEntry) {
-						if ($referenceEntry === '') {
-							continue;
-						}
-						$entityId = false;
-						$fieldDetails = false;
-						if (strpos($referenceEntry, '::::') > 0) {
-							$fieldValueDetails = explode('::::', $referenceEntry);
-						} else if (strpos($referenceEntry, ':::') > 0) {
-							$fieldValueDetails = explode(':::', $referenceEntry);
-						} else {
-							$fieldValueDetails = $referenceEntry;
-						}
-
-						foreach($fieldValueDetails as $fieldValueDetail){
-							if (strpos($fieldValueDetail, '====') > 0) {
-								$fieldDetail = explode('====', $fieldValueDetail);
-								$fieldDetails[$fieldDetail[0]] = decode_html(trim($fieldDetail[1]));
-							}
-						}
-
-						if (php7_count($fieldValueDetails) > 1) {
-							$referenceModuleName = trim($fieldValueDetails[0]);
-							$referenceValueList = $fieldDetails;
-							$entityId = getEntityIdByColumns($referenceModuleName, $referenceValueList, $cache);
-						} else {
-							$referencedModules = $fieldInstance->getReferenceList();
-							$entityLabel = $referenceEntry;
-							foreach ($referencedModules as $referenceModule) {
-								$referenceModuleName = $referenceModule;
-								if ($referenceModule == 'Users') {
-									$referenceEntityId = getUserId_Ol($entityLabel);
-									if (empty($referenceEntityId) ||
-											!Import_Utils_Helper::hasAssignPrivilege($moduleName, $referenceEntityId)) {
-										$referenceEntityId = $this->user->id;
-									}
-								} elseif ($referenceModule == 'Currency') {
-									$referenceEntityId = getCurrencyId($entityLabel);
-								} else {
-									try {
-										$referenceEntityId = getEntityId($referenceModule, decode_html($entityLabel));
-									} catch (ImportException $e) {
-										$referenceEntityId = 0;
-									}
-								}
-								if ($referenceEntityId != 0) {
-									$entityId = $referenceEntityId;
-									break;
-								}
-							}
-						}
-						if (!empty($entityId)) {
-							$entityIds[] = $entityId;
-						}
-					}
-				
-					if ($entityIds) {
-						$entityId = implode(', ', $entityIds);
-					}
-					$fieldData[$fieldName] = $entityId;
+					$parsed = Import_Reference_Model::parse($fieldValue);
+					$fieldData[$fieldName] = Import_Reference_Model::resolve(
+							$parsed, $fieldInstance, $cache, $this->user, $moduleName);
 				} else {
 					$referencedModules = $fieldInstance->getReferenceList();
 					if ($referencedModules[0] == 'Users') {
@@ -856,59 +795,6 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		}
 
 		return $fieldData;
-	}
-
-	public function createEntityRecord($moduleName, $entityLabel) {
-		$moduleHandler = vtws_getModuleHandlerFromName($moduleName, $this->user);
-		$moduleMeta = $moduleHandler->getMeta();
-		$moduleFields = $moduleMeta->getModuleFields();
-		$mandatoryFields = $moduleMeta->getMandatoryFields();
-		$entityNameFieldsString = $moduleMeta->getNameFields();
-		$entityNameFields = explode(',', $entityNameFieldsString);
-		$fieldData = array();
-		foreach ($entityNameFields as $entityNameField) {
-			$entityNameField = trim($entityNameField);
-			if (in_array($entityNameField, $mandatoryFields)) {
-				$fieldData[$entityNameField] = $entityLabel;
-			}
-		}
-		foreach ($mandatoryFields as $mandatoryField) {
-			if (empty($fieldData[$mandatoryField])) {
-				$fieldInstance = $moduleFields[$mandatoryField];
-				if ($fieldInstance->getFieldDataType() == 'owner') {
-					$fieldData[$mandatoryField] = $this->user->id;
-				} else if (!in_array($mandatoryField, $entityNameFields) && $fieldInstance->getFieldDataType() != 'reference') {
-					$fieldData[$mandatoryField] = '????';
-				}
-			}
-		}
-
-		$fieldData = DataTransform::sanitizeData($fieldData, $moduleMeta);
-		$entityIdInfo = vtws_create($moduleName, $fieldData, $this->user);
-		$adb = PearDatabase::getInstance();
-		$entityIdComponents = vtws_getIdComponents($entityIdInfo['id']);
-		$recordId = $entityIdComponents[1];
-		$entityfields = getEntityFieldNames($moduleName);
-		$label = '';
-		if (is_array($entityfields['fieldname'])) {
-			foreach ($entityfields['fieldname'] as $field) {
-				$label .= $fieldData[$field]." ";
-			}
-		} else {
-			$label = $fieldData[$entityfields['fieldname']];
-		}
-
-		$label = trim($label);
-		$adb->pquery('UPDATE vtiger_crmentity SET label=? WHERE crmid=?', array($label, $recordId));
-		CRMEntity::updateBasicInformation($moduleName, $recordId);
-
-		$recordModel = Vtiger_Record_Model::getCleanInstance($moduleName);
-		$focus = $recordModel->getEntity();
-		$focus->id = $recordId;
-		$focus->column_fields = $fieldData;
-		$this->entitydata[] = VTEntityData::fromCRMEntity($focus);
-		$focus->updateMissingSeqNumber($moduleName);
-		return $entityIdInfo;
 	}
 
 	public function getImportStatusCount() {
@@ -1280,32 +1166,6 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		return $entityInfo;
 	}
 
-	public function getEntityIdsList($referenceModuleName, $fieldValueDetails) {
-		$entityIdsList = array();
-		if ($referenceModuleName && $fieldValueDetails) {
-			foreach ($fieldValueDetails as $value) {
-				$entityLabel = str_replace($referenceModuleName, '', $value);
-				$entityLabel = trim(trim($entityLabel), ',');
-				$entityId = getEntityId($referenceModuleName, decode_html($entityLabel));
-				if (!$entityId) {
-					if (isPermitted($referenceModuleName, 'CreateView') == 'yes') {
-						try {
-							$wsEntityIdInfo = $this->createEntityRecord($referenceModuleName, $entityLabel);
-							$wsEntityId = $wsEntityIdInfo['id'];
-							$entityIdComponents = vtws_getIdComponents($wsEntityId);
-							$entityId = $entityIdComponents[1];
-						} catch (Exception $e) {
-						}
-					}
-				}
-				if ($entityId) {
-					$entityIdsList[] = $entityId;
-				}
-			}
-		}
-		return $entityIdsList;
-	}
-
 	public function createCacheForReference($moduleFields) {
 		$adb = PearDatabase::getInstance();
 
@@ -1359,45 +1219,23 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			foreach($referenceColumns as $referenceColumn) {
 				$referencevalue = $row[$referenceColumn];
 				if (!empty($referencevalue)){
-					if (strpos($referencevalue, '::::') > 0) {
-						$fieldValueDetails = explode('::::', $referencevalue);
-					} else if (strpos($referencevalue, ':::') > 0) {
-						$fieldValueDetails = explode(':::', $referencevalue);
-					} else {
-						$fieldValueDetails = array($referencevalue);
+					$fieldInstance = null;
+					foreach ($allModuleFields as $mFields) {
+						if (isset($mFields[$referenceColumn])) {
+							$fieldInstance = $mFields[$referenceColumn];
+							break;
+						}
 					}
-
-					foreach($fieldValueDetails as $fieldValueDetail){
-						if (strpos($fieldValueDetail, '====') > 0) {
-							$fieldDetail = explode('====', $fieldValueDetail);
-							if (!isset($columnsForCache[$fieldValueDetails[0]])){
-								$columnsForCache[$fieldValueDetails[0]] = array();
-							}
-							if (!in_array($fieldDetail[0],$columnsForCache[$fieldValueDetails[0]])){
-								array_push($columnsForCache[$fieldValueDetails[0]],$fieldDetail[0]);
-							}
-						} else if (php7_count($fieldValueDetails) == 1) {
-							$fieldInstance = null;
-							foreach ($allModuleFields as $mFields) {
-								if (isset($mFields[$referenceColumn])) {
-									$fieldInstance = $mFields[$referenceColumn];
-									break;
-								}
-							}
-							if ($fieldInstance) {
-								$referencedModules = $fieldInstance->getReferenceList();
-								foreach ($referencedModules as $refModule) {
-									$entityNameInfo = getEntityFieldNames($refModule);
-									if (!$entityNameInfo) continue;
-									$fieldNames = $entityNameInfo['fieldname'];
-									if (!is_array($fieldNames)) $fieldNames = array($fieldNames);
-									if (!isset($columnsForCache[$refModule])) $columnsForCache[$refModule] = array();
-									foreach ($fieldNames as $fn) {
-										if (!in_array($fn, $columnsForCache[$refModule])) {
-											array_push($columnsForCache[$refModule], $fn);
-										}
-									}
-								}
+					// 解決側と同じ宣言から必要な列を導くことで、両者の解釈がずれないようにする
+					$parsed = Import_Reference_Model::parse($referencevalue);
+					$neededColumns = Import_Reference_Model::getCacheColumns($parsed, $fieldInstance);
+					foreach ($neededColumns as $refModule => $columns) {
+						if (!isset($columnsForCache[$refModule])) {
+							$columnsForCache[$refModule] = array();
+						}
+						foreach ($columns as $column) {
+							if (!in_array($column, $columnsForCache[$refModule])) {
+								array_push($columnsForCache[$refModule], $column);
 							}
 						}
 					}

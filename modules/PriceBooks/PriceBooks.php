@@ -483,16 +483,21 @@ class PriceBooks extends CRMEntity {
 			foreach($productList as $product){
 				if(!$product['relatedto'])
 					continue;
-				$productDetails = $product['relatedto'];
-				$productDetails = explode('::::', $productDetails);
-				$productValueDetails = false;
-				foreach($productDetails as $productDetail){
-					if (strpos($productDetail, '====') > 0) {
-						$productValueDetail = explode('====', $productDetail);
-						$productValueDetails[$productValueDetail[0]] = $productValueDetail[1];
+				$parsed = Import_Reference_Model::parse($product['relatedto']);
+				$productId = false;
+				try {
+					if (!empty($parsed['columns'])) {
+						$productId = Import_Reference_Model::resolveByColumns($parsed['module'], $parsed['columns'], $cache);
+					} else if ($parsed['label'] !== null) {
+						$productModule = ($parsed['module'] !== null) ? $parsed['module'] : 'Products';
+						$productId = Import_Reference_Model::resolveByLabel($productModule, $parsed['label'], $cache);
 					}
+				} catch (ImportException $e) {
+					$productId = false;
 				}
-				$productId = getEntityIdByColumns($productDetails[0], $productValueDetails, $cache);
+				if (!$productId) {
+					continue;
+				}
                 $presence = isRecordExists($productId);
                 if($presence){
                     $productInstance = Vtiger_Record_Model::getInstanceById($productId);
@@ -510,16 +515,21 @@ class PriceBooks extends CRMEntity {
 		$isProductsExist = false;
 		$entityIds = array();
 		foreach($productList as $product){
-			$productDetails = $product['relatedto'];
-			$productDetails = explode('::::', $productDetails);
-			$productValueDetails = false;
-			foreach($productDetails as $productDetail){
-				if (strpos($productDetail, '====') > 0) {
-					$productValueDetail = explode('====', $productDetail);
-					$productValueDetails[$productValueDetail[0]] = $productValueDetail[1];
+			$parsed = Import_Reference_Model::parse($product['relatedto']);
+			$productId = 0;
+			try {
+				if (!empty($parsed['columns'])) {
+					$productId = Import_Reference_Model::resolveByColumns($parsed['module'], $parsed['columns'], $cache);
+				} else if ($parsed['label'] !== null) {
+					$productModule = ($parsed['module'] !== null) ? $parsed['module'] : 'Products';
+					$productId = Import_Reference_Model::resolveByLabel($productModule, $parsed['label'], $cache);
 				}
+			} catch (ImportException $e) {
+				$productId = 0;
 			}
-			$productId = getEntityIdByColumns($productDetails[0], $productValueDetails, $cache);
+			if (!$productId) {
+				$productId = 0;
+			}
 			array_push($entityIds, $productId);
 		}
 
