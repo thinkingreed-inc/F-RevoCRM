@@ -424,13 +424,11 @@ class Vtiger_RelationListView_Model extends Vtiger_Base_Model {
 			}
 		}
 
-		$nameFields = $relatedModuleModel->getNameFields();
-		foreach($nameFields as $fieldName){
-			if(!$headerFields[$fieldName]) {
-				$headerFields[$fieldName] = $relatedModuleModel->getField($fieldName);
-			}
-		}
-
+		// ラベル(entityname)項目の無条件追加は行わない。
+		// getHeaderAndSummaryViewFieldsList() が設定値どおりの項目を返し、
+		// かつラベル項目が全て無効な場合は先頭の1項目を保証するため、
+		// ここで追加すると「見出しだけあって値が空の列」ができてしまう
+		// （値は getConfigureRelatedListFields() 側で決まる）。
 		return $headerFields;
 	}
 

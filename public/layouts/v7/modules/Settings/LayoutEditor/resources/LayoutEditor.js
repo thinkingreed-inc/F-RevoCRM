@@ -668,11 +668,11 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 							}
 							thisInstance.reArrangeBlockFields(block);
 						}
-					}, function () {
+					}, function (err) {
 						app.helper.hideProgress();
 						saveButton.removeAttr('disabled');
 						app.helper.showAlertNotification({
-							'message': app.vtranslate('JS_MAXIMUM_HEADER_FIELDS_ALLOWED', thisInstance.maxNumberOfHeaderFields)
+							'message': (err && err.message) ? err.message : app.vtranslate('JS_MAXIMUM_HEADER_FIELDS_ALLOWED', thisInstance.maxNumberOfHeaderFields)
 						});
 					});
 				} else {
@@ -1786,7 +1786,8 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 						app.helper.showSuccessNotification(params);
 						aDeferred.resolve(data);
 					} else {
-						aDeferred.reject();
+						//サーバ側のエラーメッセージを呼び出し側で表示できるように渡す
+						aDeferred.reject(err);
 					}
 				});
 		}
@@ -2151,10 +2152,10 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 					app.helper.hideProgress();
 					thisInstance.setFieldDetails(data, fieldContatiner);
 				},
-				function () {
+				function (err) {
 					app.helper.hideProgress();
 					app.helper.showAlertNotification({
-						'message': app.vtranslate('JS_MAXIMUM_HEADER_FIELDS_ALLOWED', thisInstance.maxNumberOfHeaderFields)
+						'message': (err && err.message) ? err.message : app.vtranslate('JS_MAXIMUM_HEADER_FIELDS_ALLOWED', thisInstance.maxNumberOfHeaderFields)
 					});
 				});
 		});

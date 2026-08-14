@@ -200,9 +200,14 @@
 									</label>
 									<div class="controls col-sm-2">
 										<input type="hidden" name="summaryfield" value="0"/>
+										{* ラベル(entityname)項目のうち、表示が有効な最後の1項目は無効にできないようにする *}
+										{assign var=IS_LAST_VISIBLE_NAME_FIELD value=$FIELD_MODEL->isLastVisibleNameField()}
+										{assign var=SUMMARY_FIELD_LOCKED value=$IS_LAST_VISIBLE_NAME_FIELD && $FIELD_MODEL->get('summaryfield') eq '1'}
+										{assign var=HEADER_FIELD_LOCKED value=$IS_LAST_VISIBLE_NAME_FIELD && $FIELD_MODEL->get('headerfield') eq '1'}
 										<label class="checkbox" style="margin-left: 6%;">
-											<input type="checkbox" class="{if $FIELD_MODEL->isSummaryFieldOptionDisabled() || $SELECTED_MODULE_NAME eq 'Users'} cursorPointerNotAllowed {else} cursorPointer{/if}" name="summaryfield" value="1" {if $FIELD_MODEL->get('summaryfield') eq '1'}checked="checked"{/if}
-												{if $FIELD_MODEL->isSummaryFieldOptionDisabled() || $SELECTED_MODULE_NAME eq 'Users'}readonly="readonly"{/if} />
+											<input type="checkbox" class="{if $FIELD_MODEL->isSummaryFieldOptionDisabled() || $SUMMARY_FIELD_LOCKED || $SELECTED_MODULE_NAME eq 'Users'} cursorPointerNotAllowed {else} cursorPointer{/if}" name="summaryfield" value="1" {if $FIELD_MODEL->get('summaryfield') eq '1'}checked="checked"{/if}
+												{if $SUMMARY_FIELD_LOCKED}title="{vtranslate('LBL_LAST_NAME_FIELD_CANNOT_BE_HIDDEN',$QUALIFIED_MODULE)}"{/if}
+												{if $FIELD_MODEL->isSummaryFieldOptionDisabled() || $SUMMARY_FIELD_LOCKED || $SELECTED_MODULE_NAME eq 'Users'}readonly="readonly"{/if} />
 										</label>
 									</div>
 								</div>
@@ -213,8 +218,9 @@
 									<div class="controls col-sm-5">
 										<input type="hidden" name="headerfield" value="0"/>
 										<label class="checkbox" style="margin-left: 9%;">
-											<input type="checkbox" class="{if $FIELD_MODEL->isHeaderFieldOptionDisabled() || $SELECTED_MODULE_NAME eq 'Users'} cursorPointerNotAllowed {else} cursorPointer{/if}" name="headerfield" value="1" {if $FIELD_MODEL->get('headerfield') eq '1'}checked="checked"{/if}
-												{if $FIELD_MODEL->isHeaderFieldOptionDisabled() || $SELECTED_MODULE_NAME eq 'Users'}readonly="readonly"{/if} />
+											<input type="checkbox" class="{if $FIELD_MODEL->isHeaderFieldOptionDisabled() || $HEADER_FIELD_LOCKED || $SELECTED_MODULE_NAME eq 'Users'} cursorPointerNotAllowed {else} cursorPointer{/if}" name="headerfield" value="1" {if $FIELD_MODEL->get('headerfield') eq '1'}checked="checked"{/if}
+												{if $HEADER_FIELD_LOCKED}title="{vtranslate('LBL_LAST_NAME_FIELD_CANNOT_BE_HIDDEN',$QUALIFIED_MODULE)}"{/if}
+												{if $FIELD_MODEL->isHeaderFieldOptionDisabled() || $HEADER_FIELD_LOCKED || $SELECTED_MODULE_NAME eq 'Users'}readonly="readonly"{/if} />
 										</label>
 									</div>
 								</div>

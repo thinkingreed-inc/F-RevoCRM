@@ -1489,6 +1489,16 @@ class Vtiger_Module_Model extends Vtiger_Module {
 					$relationListViewFields[$nameField] = $allRelationListViewFields[$nameField];
 				}
 			}
+			// ラベル項目が1つも有効でない場合、関連一覧・検索ポップアップから
+			// レコードを識別する列が無くなってしまうため、entityname 先頭の項目を必ず残す。
+			// 項目設定側でも最後の1項目は無効にできないようにしているが、
+			// DB・API 経由の変更でもこの状態にならないようにするための保証。
+			if(empty($relationListViewFields) && !empty($nameFields)) {
+				$fallbackFieldModel = $this->getField($nameFields[0]);
+				if($fallbackFieldModel && $fallbackFieldModel->isViewable()) {
+					$relationListViewFields[$nameFields[0]] = $fallbackFieldModel;
+				}
+			}
 			foreach($allRelationListViewFields as $fieldName => $fieldModel) {
 				if(!in_array($fieldName, $nameFields)) {
 					$relationListViewFields[$fieldName] = $fieldModel;

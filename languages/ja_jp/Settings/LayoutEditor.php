@@ -157,6 +157,7 @@ $languageStrings = array(
     'LBL_HEADER' => '関連一覧',
     'LBL_DETAIL_HEADER' => '関連一覧',
     'LBL_HEADER_FIELD' => '関連一覧に表示',
+    'LBL_LAST_NAME_FIELD_CANNOT_BE_HIDDEN' => 'ラベル項目のうち最低1つは「関連一覧に表示」または「主要項目」を有効にする必要があるため、この項目は無効にできません',
 
 	'LBL_DUPLICATE_HANDLING' => '重複登録の防止',
 	'LBL_DUPLICATE_CHECK' => '重複チェックを有効にする',
