@@ -534,7 +534,7 @@ class Emails extends CRMEntity {
 				== 1 && $defaultOrgSharingPermission[$tabId] == 3) {
 			$tableName = 'vt_tmp_u' . $user->id;
 			$sharingRuleInfoVariable = $module . '_share_read_permission';
-			$sharingRuleInfo = $sharingRuleInfoVariable;
+			$sharingRuleInfo = isset($$sharingRuleInfoVariable) ? $$sharingRuleInfoVariable : null;
 			$sharedTabId = null;
 			if (!empty($sharingRuleInfo) && (php7_count($sharingRuleInfo['ROLE']) > 0 ||
 					php7_count($sharingRuleInfo['GROUP']) > 0)) {

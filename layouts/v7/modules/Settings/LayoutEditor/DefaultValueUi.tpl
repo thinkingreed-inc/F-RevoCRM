@@ -64,8 +64,8 @@
 							</div>
 							<div class="input-group date {if $DEFAULT_VALUE eq 'TODAY'}hide{/if}">
 								{assign var=FIELD_NAME value=$FIELD_MODEL->get('name')}
-								<input type="text" class="inputElement dateField" {if $DEFAULT_VALUE neq 'TODAY'}name="{$NAME_ATTR}"{/if} data-toregister="date" data-date-format="{$USER_MODEL->get('date_format')}" 
-									value="{if $DEFAULT_VALUE eq 'TODAY'}{else}{$FIELD_MODEL->getEditViewDisplayValue($DEFAULT_VALUE)}{/if}" style='width: 75%' {if $DEFAULT_VALUE eq 'TODAY'}disabled{/if}/>
+								<input type="text" class="inputElement dateField" {if $DEFAULT_VALUE neq 'TODAY'}name="{$NAME_ATTR}"{/if} data-toregister="date" data-date-format="{$USER_MODEL->get('date_format')}"
+									value="{if $DEFAULT_VALUE eq 'TODAY' or $DEFAULT_VALUE eq ''}{else}{$FIELD_MODEL->getEditViewDisplayValue($DEFAULT_VALUE)}{/if}" style='width: 75%' {if $DEFAULT_VALUE eq 'TODAY'}disabled{/if}/>
 								<span class="input-group-addon">
 									<i class="fa fa-calendar"></i>
 								</span>

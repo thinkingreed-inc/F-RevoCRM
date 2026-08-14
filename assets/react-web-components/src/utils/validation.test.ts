@@ -57,6 +57,12 @@ describe("validateEmail", () => {
     expect(validateEmail("user+tag@example.com")).toEqual({ valid: true });
   });
 
+  it("アポストロフィを含むアドレスを許可 (issue #1482)", () => {
+    expect(validateEmail("o'brien@example.com")).toEqual({ valid: true });
+    expect(validateEmail("'foo@example.com")).toEqual({ valid: true });
+    expect(validateEmail("foo'@example.com")).toEqual({ valid: true });
+  });
+
   it("無効なメールアドレスを拒否", () => {
     const result1 = validateEmail("invalid");
     expect(result1.valid).toBe(false);
