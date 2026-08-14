@@ -628,16 +628,8 @@ class Vtiger_Module_Model extends Vtiger_Module {
 			}
 		}
 
-		if(php7_count($relatedListFields)>0) {
-			$nameFields = $this->getNameFields();
-			foreach($nameFields as $fieldName){
-				if(!isset($relatedListFields[$fieldName]) || !$relatedListFields[$fieldName]) {
-					$fieldModel = $this->getField($fieldName);
-					$relatedListFields[$fieldModel->get('column')] = $fieldModel->get('name');
-				}
-			}
-		}
-
+		// ラベル(entityname)項目の無条件追加は行わない。
+		// 項目設定の「関連一覧に表示」「主要項目」の設定値をそのまま反映する。
 		return $relatedListFields;
 	}
 
@@ -1488,9 +1480,13 @@ class Vtiger_Module_Model extends Vtiger_Module {
 			$allRelationListViewFields = array_merge($headerViewFields,$summaryViewFields);
 			$relationListViewFields = array();
 			$nameFields = $this->getNameFields();
+			// ラベル(entityname)項目は entityname に登録された順で先頭にまとめる。
+			// 「主要項目」「関連一覧に表示」のどちらで有効化されていても列に含める
+			// （旧実装は「主要項目」のみを見ていたため、「関連一覧に表示」だけが
+			//  有効なラベル項目が後続のループでも除外され、列から欠落していた）。
 			foreach($nameFields as $nameField) {
-				if(array_key_exists($nameField, $summaryViewFields)) {
-					$relationListViewFields[$nameField] = $summaryViewFields[$nameField];
+				if(array_key_exists($nameField, $allRelationListViewFields)) {
+					$relationListViewFields[$nameField] = $allRelationListViewFields[$nameField];
 				}
 			}
 			foreach($allRelationListViewFields as $fieldName => $fieldModel) {
@@ -1845,17 +1841,6 @@ class Vtiger_Module_Model extends Vtiger_Module {
 		}else{
 			$popupFields = array_values($this->getRelatedListFields());
 		}
-
-		// ラベル(entityname)項目を entityname の順で先頭にまとめる。
-		// 概要/ヘッダー項目でないラベル項目も列として表示する。
-		$nameFields = array();
-		foreach($this->getNameFields() as $nameField){
-			if($this->getField($nameField)){
-				$nameFields[] = $nameField;
-			}
-		}
-		$popupFields = array_merge($nameFields, array_diff($popupFields, $nameFields));
-
 		return $popupFields;
 	}
 

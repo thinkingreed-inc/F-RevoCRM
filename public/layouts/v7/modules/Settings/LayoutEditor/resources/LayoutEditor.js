@@ -434,7 +434,6 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 			if (typeof currentElement.attr('readonly') != "undefined") {
 				return;
 			}
-			var fieldName = container.find('[name="fieldname"]').val();
 			var currentFlagName = currentElement.attr('name');
 			var dependentFlagName = 'headerfield';
 			if (currentFlagName === dependentFlagName) {
@@ -445,17 +444,9 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 						.prop('checked', false).attr('readonly', 'readonly')
 						.removeClass('cursorPointer').addClass('cursorPointerNotAllowed');
 			} else {
-				if (dependentFlagName === 'headerfield') {
-					if (thisInstance.nameFields.indexOf(fieldName) === -1) {
-						container.find('input[type="checkbox"][name="'+dependentFlagName+'"]')
-								.removeAttr('readonly', 'readonly').removeClass('cursorPointerNotAllowed')
-								.addClass('cursorPointer');
-					}
-				} else {
-					container.find('input[type="checkbox"][name="'+dependentFlagName+'"]')
-							.removeAttr('readonly', 'readonly').removeClass('cursorPointerNotAllowed')
-							.addClass('cursorPointer');
-				}
+				container.find('input[type="checkbox"][name="'+dependentFlagName+'"]')
+						.removeAttr('readonly', 'readonly').removeClass('cursorPointerNotAllowed')
+						.addClass('cursorPointer');
 			}
 		}).filter(':checked').trigger('change');
 	},
@@ -2131,16 +2122,6 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 				valueToUpdate = element.find('i').data('enableValue');
 				if (typeof valueToUpdate == 'undefined')
 					valueToUpdate = element.find('img').data('enable-value');
-			}
-
-			if (fieldPropertyName === 'headerfield') {
-				//name fields are header enabled by default
-				if (thisInstance.nameFields.indexOf(fieldName) !== -1) {
-					app.helper.showAlertNotification({
-						'message': app.vtranslate('JS_NAME_FIELDS_APPEAR_IN_HEADER_BY_DEFAULT')
-					});
-					return;
-				}
 			}
 
 			if (fieldPropertyName === 'summaryfield' || fieldPropertyName === 'headerfield') {
