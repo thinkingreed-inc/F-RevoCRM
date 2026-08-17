@@ -25,6 +25,7 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { transformCalendarDateTime } from "../../utils/datetime";
 import { validateFieldByUIType } from "../../utils/validation";
 import { syncJoditEditorFormData } from "../../utils/joditEditor";
+import { toBooleanProp } from "../../utils/webComponentProps";
 import { isFutureEventHeldInvalid } from "./utils/calendarValidation";
 
 /**
@@ -40,8 +41,11 @@ export interface ExtendedQuickCreateProps extends QuickCreateProps {
   variant?: "default" | "calendar";
   /** Record ID for edit mode */
   recordId?: string;
-  /** Duplicate mode flag (when true, treat as new record even with recordId) */
-  isDuplicate?: boolean;
+  /**
+   * Duplicate mode flag (when true, treat as new record even with recordId).
+   * カスタム要素の属性経由では文字列で渡るため boolean と文字列の双方を受け付ける。
+   */
+  isDuplicate?: boolean | string;
 }
 
 /**
@@ -117,7 +121,8 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
     explicitVariant ?? (isCalendarModule ? "calendar" : "default");
   const isCalendarVariant = variant === "calendar";
   // 複製モード時はrecordIdが存在しても編集モードではなく新規作成として扱う
-  const isDuplicateMode = isDuplicate === true;
+  // カスタム要素の is-duplicate 属性は文字列で渡るため、真偽値へ正規化してから判定する
+  const isDuplicateMode = toBooleanProp(isDuplicate);
   const isEditMode = !!recordId && !isDuplicateMode;
 
   // Modal state
