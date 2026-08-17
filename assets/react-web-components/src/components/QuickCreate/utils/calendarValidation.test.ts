@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { isFutureEventHeldInvalid } from "./calendarValidation";
+import {
+  isDateRangeInvalid,
+  isFutureEventHeldInvalid,
+} from "./calendarValidation";
 
 describe("isFutureEventHeldInvalid", () => {
   const now = new Date("2026-06-24T12:00:00");
@@ -89,5 +92,94 @@ describe("isFutureEventHeldInvalid", () => {
 
   it("eventstatus が null は OK (false)", () => {
     expect(isFutureEventHeldInvalid(null, "2026-07-15T10:00", now)).toBe(false);
+  });
+});
+
+describe("isDateRangeInvalid", () => {
+  describe("ToDo (due_date が日付のみ)", () => {
+    it("同一日 + 開始 14:30 は OK (false)", () => {
+      // 旧実装では new Date("2026-08-17") が UTC 0:00 (= JST 9:00) と解釈され、
+      // 開始時刻が 9:00 以降のとき誤って NG 判定されていた
+      expect(isDateRangeInvalid("2026-08-17T14:30", "2026-08-17")).toBe(false);
+    });
+
+    it("同一日 + 開始 08:30 は OK (false)", () => {
+      expect(isDateRangeInvalid("2026-08-17T08:30", "2026-08-17")).toBe(false);
+    });
+
+    it("同一日 + 開始 23:59 は OK (false) — 終了日はその日の終わりまで", () => {
+      expect(isDateRangeInvalid("2026-08-17T23:59", "2026-08-17")).toBe(false);
+    });
+
+    it("開始日が終了日の翌日は NG (true)", () => {
+      expect(isDateRangeInvalid("2026-08-18T09:00", "2026-08-17")).toBe(true);
+    });
+
+    it("開始日が終了日より前は OK (false)", () => {
+      expect(isDateRangeInvalid("2026-08-16T09:00", "2026-08-17")).toBe(false);
+    });
+  });
+
+  describe("Events (開始・終了とも日時)", () => {
+    it("終了が開始より後は OK (false)", () => {
+      expect(isDateRangeInvalid("2026-08-17T14:30", "2026-08-17T15:00")).toBe(
+        false,
+      );
+    });
+
+    it("終了が開始より前は NG (true)", () => {
+      expect(isDateRangeInvalid("2026-08-17T15:00", "2026-08-17T14:30")).toBe(
+        true,
+      );
+    });
+
+    it("開始と終了が同時刻は OK (false)", () => {
+      expect(isDateRangeInvalid("2026-08-17T14:30", "2026-08-17T14:30")).toBe(
+        false,
+      );
+    });
+
+    it("日跨ぎ (翌日終了) は OK (false)", () => {
+      expect(isDateRangeInvalid("2026-08-17T23:30", "2026-08-18T00:30")).toBe(
+        false,
+      );
+    });
+  });
+
+  describe("終日 (開始・終了とも日付のみ)", () => {
+    it("同一日は OK (false)", () => {
+      expect(isDateRangeInvalid("2026-08-17", "2026-08-17")).toBe(false);
+    });
+
+    it("開始日が終了日より後は NG (true)", () => {
+      expect(isDateRangeInvalid("2026-08-18", "2026-08-17")).toBe(true);
+    });
+  });
+
+  describe("値が不足・不正な場合はチェックしない (false)", () => {
+    it("date_start が空文字", () => {
+      expect(isDateRangeInvalid("", "2026-08-17")).toBe(false);
+    });
+
+    it("due_date が空文字", () => {
+      expect(isDateRangeInvalid("2026-08-17T14:30", "")).toBe(false);
+    });
+
+    it("date_start が undefined", () => {
+      expect(isDateRangeInvalid(undefined, "2026-08-17")).toBe(false);
+    });
+
+    it("due_date が undefined", () => {
+      expect(isDateRangeInvalid("2026-08-17T14:30", undefined)).toBe(false);
+    });
+
+    it("文字列以外 (数値)", () => {
+      expect(isDateRangeInvalid(20260817, "2026-08-17")).toBe(false);
+    });
+
+    it("不正な日付文字列 — 必須チェック側で弾く", () => {
+      expect(isDateRangeInvalid("not-a-date", "2026-08-17")).toBe(false);
+      expect(isDateRangeInvalid("2026-08-17T14:30", "not-a-date")).toBe(false);
+    });
   });
 });
