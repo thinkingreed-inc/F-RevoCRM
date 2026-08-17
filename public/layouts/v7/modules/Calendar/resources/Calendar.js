@@ -1833,7 +1833,8 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		};
 
 		var overlapData = {
-			module: 'Events',
+			// 実モジュールを渡す
+			module: event.module,
 			record: event.id,
 			date_start: event.start.format(dateFormat),
 			time_start: event.start.format(timeFormat),
@@ -1889,7 +1890,8 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		};
 		
 		var overlapData = {
-			module: 'Events',
+			// 実モジュールを渡す
+			module: event.module,
 			record: event.id,
 			date_start: event.start.format(dateFormat),
 			time_start: event.start.format(timeFormat),
