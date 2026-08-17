@@ -411,13 +411,50 @@ class Vtiger_Field_Model extends Vtiger_Field {
 		return $mandatory=='M' ? true:false;
 	}
 
+	protected static $tableColumnsMetaCache = array();
+
 	/**
 	 * Function to get the maximum field length
-	 * @return <String> max length of the field
+	 * @return <int|null> max length of the field
 	 */
 	public function getMaxFieldLength() {
-		list($type,$mandatory,$LE,$maxlength)= explode('~',$this->get('typeofdata'));
-		return $maxlength;
+		$typeOfData = explode('~', (string)$this->get('typeofdata'));
+		if (isset($typeOfData[2]) && $typeOfData[2] === 'LE' && isset($typeOfData[3]) && is_numeric($typeOfData[3])) {
+			return (int)$typeOfData[3];
+		}
+
+		$maxlength = $this->get('maximumlength');
+		if (!empty($maxlength) && is_numeric($maxlength) && $maxlength > 0) {
+			return (int)$maxlength;
+		}
+
+		$uiType = (int)$this->get('uitype');
+		if (in_array($uiType, array(19, 20))) {
+			return null;
+		}
+
+		$tableName = $this->get('table');
+		$columnName = $this->get('column');
+		if (!empty($tableName) && !empty($columnName)) {
+			if (!isset(self::$tableColumnsMetaCache[$tableName])) {
+				$db = PearDatabase::getInstance();
+				if (isset($db->database) && method_exists($db->database, 'MetaColumns')) {
+					$metaColumns = $db->database->MetaColumns($tableName);
+					self::$tableColumnsMetaCache[$tableName] = $metaColumns ? array_change_key_case($metaColumns, CASE_UPPER) : array();
+				} else {
+					self::$tableColumnsMetaCache[$tableName] = array();
+				}
+			}
+			$upperCol = strtoupper($columnName);
+			if (isset(self::$tableColumnsMetaCache[$tableName][$upperCol])) {
+				$colMeta = self::$tableColumnsMetaCache[$tableName][$upperCol];
+				if (isset($colMeta->max_length) && $colMeta->max_length > 0 && in_array(strtolower($colMeta->type), array('varchar', 'char', 'string', 'var_string'))) {
+					return (int)$colMeta->max_length;
+				}
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -837,6 +874,11 @@ class Vtiger_Field_Model extends Vtiger_Field {
 
 		if($this->getFieldDataType() == 'reference') {
 			$this->fieldInfo['referencemodules'] = $this->getReferenceList();
+		}
+
+		$maxlength = $this->getMaxFieldLength();
+		if (!empty($maxlength)) {
+			$this->fieldInfo['maxlength'] = (int)$maxlength;
 		}
 
 		$this->fieldInfo['validator'] = $this->getValidator();

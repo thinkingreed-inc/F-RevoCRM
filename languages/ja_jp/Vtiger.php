@@ -53,6 +53,7 @@ $languageStrings = array(
 	'LBL_EDIT_MAILSCANNER' => 'メールコンバーター',
 	'LBL_RECORD_DELETE' => '指定したレコードは削除されています。',
 	'LBL_RECORD_NOT_FOUND' => 'Record you are trying to access is not found',
+	'LBL_FIELD_EXCEEDS_MAX_LENGTH' => '%s は %d 文字以内で入力してください。',
 	'LBL_EDIT_REASON' => '編集の理由',
 	'Result' => "リザルト",
 	//'LBL_EDIT_CURRENT_FILTER' => 'Edit Current Filter',

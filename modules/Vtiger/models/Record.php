@@ -259,6 +259,40 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
 	}
 
 	/**
+	 * Function to validate the current Record Model
+	 * @return boolean true on success, throws AppException on failure
+	 */
+	public function validate() {
+		$moduleModel = $this->getModule();
+		if (!$moduleModel) {
+			return true;
+		}
+		$fieldModelList = $moduleModel->getFields();
+		foreach ($fieldModelList as $fieldName => $fieldModel) {
+			$value = $this->get($fieldName);
+			if ($value === null || is_array($value) || is_object($value)) {
+				continue;
+			}
+			$maxLength = $fieldModel->getMaxFieldLength();
+			if ($maxLength !== null && $maxLength > 0) {
+				$strValue = (string)$value;
+				$length = mb_strlen($strValue, 'UTF-8');
+				if ($length > $maxLength) {
+					$fieldLabel = vtranslate($fieldModel->get('label'), $moduleModel->getName());
+					$translatedFormat = vtranslate('LBL_FIELD_EXCEEDS_MAX_LENGTH', $moduleModel->getName());
+					if ($translatedFormat !== 'LBL_FIELD_EXCEEDS_MAX_LENGTH' && !empty($translatedFormat)) {
+						$msg = sprintf($translatedFormat, $fieldLabel, $maxLength);
+					} else {
+						$msg = sprintf('%s cannot exceed %d characters.', $fieldLabel, $maxLength);
+					}
+					throw new AppException($msg);
+				}
+			}
+		}
+		return true;
+	}
+
+	/**
 	 * Function to save the current Record Model
 	 */
 	public function save() {

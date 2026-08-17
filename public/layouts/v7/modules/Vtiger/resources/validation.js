@@ -6,6 +6,10 @@
  * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
  *************************************************************************************/
+jQuery.extend(jQuery.validator.messages, {
+	maxlength: jQuery.validator.format(app.vtranslate('JS_MAX_ALLOWED_CHARACTERS') + ' {0}')
+});
+
 jQuery.validator.addMethod("date", function(value, element, params) {
 		try {
 			if(value) {
@@ -684,11 +688,11 @@ jQuery.validator.addMethod("documentsFolder", function(value, element, params) {
 );
 
 jQuery.validator.addMethod("maximumlength", function(value, element, params) {
-		if(value > params) {
+		if(value && value.length > params) {
 			return false;
 		}
 		return true;
-	}, jQuery.validator.format(app.vtranslate('JS_LENGTH_SHOULD_BE_LESS_THAN_EQUAL_TO') + ' {0}')
+	}, jQuery.validator.format(app.vtranslate('JS_MAX_ALLOWED_CHARACTERS') + ' {0}')
 );
 
 jQuery.validator.addMethod("maxsize", function(value, element, params) {
@@ -834,6 +838,9 @@ function calculateValidationRules(form,params,meta){
 				if(params.ignoreTypes.indexOf('mandatory') === -1){
 					rules[ruleFieldName]['required'] = true;
 				}
+			}
+			if(fieldBasicInfo['maxlength']) {
+				rules[ruleFieldName]['maxlength'] = parseInt(fieldBasicInfo['maxlength']);
 			}
 			if(fieldBasicInfo['type'] in jQuery.validator.methods){
 				rules[ruleFieldName][fieldBasicInfo['type']] = true;

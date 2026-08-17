@@ -53,6 +53,7 @@ $languageStrings = array(
 	'LBL_EDIT_MAILSCANNER' => 'Mail Converter',
 	'LBL_RECORD_DELETE' => 'The record you are trying to view has been deleted.',
 	'LBL_RECORD_NOT_FOUND' => 'Record you are trying to access is not found',
+	'LBL_FIELD_EXCEEDS_MAX_LENGTH' => '%s cannot exceed %d characters.',
 	'LBL_EDIT_REASON' => 'Edit reason',
 	'Result' => 'Result',
 	//'LBL_EDIT_CURRENT_FILTER' => 'Edit Current Filter',

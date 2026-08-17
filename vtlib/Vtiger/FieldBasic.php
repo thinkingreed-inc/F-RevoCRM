@@ -72,6 +72,7 @@ class Vtiger_FieldBasic {
 		$this->readonly      = $valuemap['readonly'];
 		$this->presence      = $valuemap['presence'];
 		$this->defaultvalue  = $valuemap['defaultvalue'];
+		$this->maximumlength = isset($valuemap['maximumlength']) ? $valuemap['maximumlength'] : null;
 		$this->quickcreate = $valuemap['quickcreate'];
 		$this->sequence = $valuemap['sequence'];
 		$this->summaryfield = $valuemap['summaryfield'];

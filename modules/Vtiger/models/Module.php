@@ -147,6 +147,7 @@ class Vtiger_Module_Model extends Vtiger_Module {
 	 * @param Vtiger_Record_Model $recordModel
 	 */
 	public function saveRecord(Vtiger_Record_Model $recordModel) {
+		$recordModel->validate();
 		$moduleName = $this->get('name');
 		$focus = $recordModel->getEntity();
 		$fields = $focus->column_fields;
