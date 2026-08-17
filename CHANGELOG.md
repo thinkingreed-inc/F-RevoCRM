@@ -1,5 +1,28 @@
 # 更新履歴
 
+# F-RevoCRM8.0.4
+## アップグレード方法
+ - ファイル、DBのバックアップを確実に取得してください
+ - 差分ファイルを上書き更新してください
+ - `composer install` を実行してください
+ - WebComponentsをビルドしてください
+   ```bash
+   cd assets/react-web-components
+   npm install
+   npm run build
+   ```
+ - 以下のURLにアクセスし、マイグレーションを実施してください。
+`https://example.com/frevocrm/index.php?module=Migration&view=Index&mode=step1`
+※ドメインやディレクトリはお使いのF-RevoCRMに合わせてください。
+
+## What's Changed
+* [修正] #1796 インポート 参照項目の値がカンマで分割され参照が解決できない by @Remicck in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1797
+* [修正] Enterprise版で修正済みの不具合9件を標準版へ取り込み by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1802
+* [修正] Header.tplのJSコンテキストXSS（_META / _EXTENSIONMETA / _USERMETA） by @hasesho28 in https://github.com/thinkingreed-inc/F-RevoCRM/pull/1803
+
+**Full Changelog**: https://github.com/thinkingreed-inc/F-RevoCRM/compare/v8.0.3...v8.0.4
+
+
 # F-RevoCRM8.0.3
 ## アップグレード方法
  - ファイル、DBのバックアップを確実に取得してください
