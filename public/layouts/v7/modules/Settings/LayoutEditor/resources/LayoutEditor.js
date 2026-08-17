@@ -76,11 +76,10 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 	 */
 	makeBlocksListSortable: function () {
 		var thisInstance = this;
-		var contents = jQuery('#layoutEditorContainer').find('.contents');
-		var table = contents.find('.blockSortable');
-		contents.sortable({
-			'containment': contents,
-			'items': table,
+		var moduleBlocks = jQuery('#moduleBlocks');
+		moduleBlocks.sortable({
+			'items': '> .blockSortable',
+			'handle': '.blockLabel .cursorPointerMove',
 			'revert': true,
 			'tolerance': 'pointer',
 			'cursor': 'move',

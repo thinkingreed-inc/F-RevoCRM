@@ -16,7 +16,12 @@
         {assign var=RULE_MODEL_EXISTS value=false}
     {/if}
     <div class="modal-dialog modelContainer"'>
-        {assign var=HEADER_TITLE value={vtranslate('LBL_ADD_CUSTOM_RULE_TO', $QUALIFIED_MODULE)}|cat:" "|cat:{vtranslate($MODULE_MODEL->get('name'), $MODULE)}}
+        {if $MODULE_MODEL->get('name') == 'Accounts'}
+            {assign var=MODULE_LABEL value={vtranslate($MODULE_MODEL->get('name'), $QUALIFIED_MODULE)}}
+        {else}
+            {assign var=MODULE_LABEL value={vtranslate($MODULE_MODEL->get('name'), $MODULE_MODEL->get('name'))}}
+        {/if}
+        {assign var=HEADER_TITLE value={vtranslate('LBL_ADD_CUSTOM_RULE_TO', $QUALIFIED_MODULE)}|cat:" "|cat:$MODULE_LABEL}
         {include file="ModalHeader.tpl"|vtemplate_path:$MODULE TITLE=$HEADER_TITLE}
         <div class="modal-content">
             <form class="form-horizontal" id="editCustomRule" method="post">
@@ -25,7 +30,7 @@
                 <div name='massEditContent'>
                     <div class="modal-body">
                         <div class="form-group">
-                            <label class="control-label fieldLabel col-sm-5">{vtranslate($MODULE_MODEL->get('name'), $MODULE)}</label>
+                            <label class="control-label fieldLabel col-sm-5">{if $MODULE_MODEL->get('name') == 'Accounts'}{vtranslate($MODULE_MODEL->get('name'), $QUALIFIED_MODULE)}{else}{vtranslate($MODULE_MODEL->get('name'), $MODULE_MODEL->get('name'))}{/if}</label>
                             <div class="controls fieldValue col-xs-6">
                                 <select class="select2 col-sm-9" name="source_id">
                                     {foreach from=$ALL_RULE_MEMBERS key=GROUP_LABEL item=ALL_GROUP_MEMBERS}

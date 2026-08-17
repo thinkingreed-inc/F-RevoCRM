@@ -21,6 +21,8 @@ class PurchaseOrder_GetTaxes_Action extends Inventory_GetTaxes_Action {
 			$recordId = $request->get('record');
 			$idList = array($recordId);
 		}
+		// 税ラベルの翻訳は表示元モジュール (仕入注文など) の言語で引く
+		$sourceModule = $request->get('sourceModule') ? $request->get('sourceModule') : $request->getModule();
 
 		$response = new Vtiger_Response();
 		$namesList = $purchaseCostsList = $taxesList = $listPricesList = $listPriceValuesList = array();
@@ -34,7 +36,7 @@ class PurchaseOrder_GetTaxes_Action extends Inventory_GetTaxes_Action {
 				$taxes[$key] = $taxInfo;
 			}
 
-			$taxesList[$id]				= $taxes;
+			$taxesList[$id]				= self::translateTaxLabels($taxes, $sourceModule);
 			$namesList[$id]				= decode_html($recordModel->getName());
 			$quantitiesList[$id]		= $recordModel->get('qtyinstock');
 			$descriptionsList[$id]		= decode_html($recordModel->get('description'));
