@@ -3938,11 +3938,18 @@ th {
   color: white;
 }
 .activitytypes .activitytype-indicator {
-  padding: 5%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
   margin: 8px;
   font-size: 80%;
   min-height: 35px;
   word-wrap: break-word;
+}
+.activitytypes .activitytype-indicator:before,
+.activitytypes .activitytype-indicator:after {
+  content: none;
 }
 .calendar-sidebar-tabs .sidebar-widget-header a {
   color: #BDBDBD;
@@ -3967,6 +3974,9 @@ th {
 }
 .activitytypes .activitytype-indicator .activitytype-actions i {
   font-size: 14px !important;
+}
+.activitytypes .activitytype-indicator .activitytype-actions {
+  flex-shrink: 0;
 }
 .activitytypes .activitytype-indicator .activitytype-actions input[type="checkbox"] {
   margin-bottom: -1px;
