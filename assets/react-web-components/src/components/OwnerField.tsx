@@ -351,7 +351,9 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
     setIsOpen(true);
     const currentValue = valueRef.current;
     if (currentValue) {
-      const selectedIndex = allOptions.findIndex((opt) => opt.id === currentValue);
+      const selectedIndex = allOptions.findIndex(
+        (opt) => opt.id === currentValue,
+      );
       setHighlightedIndex(selectedIndex >= 0 ? selectedIndex : 0);
     } else {
       setHighlightedIndex(0);

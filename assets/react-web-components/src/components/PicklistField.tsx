@@ -318,7 +318,9 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
     // 現在選択されている項目にハイライトを合わせる
     const currentValue = valueRef.current;
     if (currentValue) {
-      const selectedIndex = options.findIndex((opt) => opt.value === currentValue);
+      const selectedIndex = options.findIndex(
+        (opt) => opt.value === currentValue,
+      );
       setHighlightedIndex(selectedIndex >= 0 ? selectedIndex : 0);
     } else {
       setHighlightedIndex(0);
