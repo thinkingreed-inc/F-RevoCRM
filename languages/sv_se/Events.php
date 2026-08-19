@@ -30,7 +30,7 @@ $languageStrings = array(
 	//Fields
 	'Start Date & Time'=>'Startdatum & Tid',
 	'Recurrence' => 'Återkommande',
-	'Send Notification' => 'Skicka Notifiering',
+	'Send Notification' => 'Visa popup-påminnelse',
 	'Location'=>'Plats',
 	'Send Reminder' => 'Skicka Påminnelse',
 	'End Date & Time' => 'Slutdatum & Tid',
