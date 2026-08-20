@@ -36,9 +36,12 @@ const ModuleIcon: React.FC<{ iconHtml: string }> = ({ iconHtml }) => {
 // スタイル定義（コンポーネント内で完結）
 // ※ triggerの色はTailwind preflightが無効なため、インラインスタイルで直接指定
 const styles = {
-  root: "flex items-center border-0 bg-transparent h-[42px] gap-0",
+  // ヘッダーが Flexbox の 1 行レイアウトなので、min-w-0 で縮めるようにしておく
+  // (これが無いとカスタム要素の中身が縮まず、ヘッダーを押し広げてしまう)
+  root: "flex items-center border-0 bg-transparent h-[42px] gap-0 min-w-0",
   trigger: cn(
     "cursor-pointer flex items-center px-3 py-2 text-[13px] font-normal rounded-none transition-colors",
+    "min-w-0 max-w-full",
     "text-[#b3c0ce] hover:text-white hover:bg-transparent",
     "data-[state=open]:bg-transparent data-[state=open]:text-white",
     "outline-none select-none",
@@ -62,15 +65,18 @@ export const AppMenu: React.FC<AppMenuProps> = ({ appMenus }) => {
 
   return (
     <NavigationMenuPrimitive.Root className={styles.root}>
-      <NavigationMenuPrimitive.List className="flex items-center gap-0 list-none m-0 p-0 h-[42px] ">
+      <NavigationMenuPrimitive.List className="flex flex-nowrap items-center gap-0 list-none m-0 p-0 h-[42px] min-w-0">
         {menus.map((app) => (
-          <NavigationMenuPrimitive.Item key={app.name} className="relative">
+          <NavigationMenuPrimitive.Item
+            key={app.name}
+            className="relative min-w-0"
+          >
             <NavigationMenuPrimitive.Trigger
               className={styles.trigger}
               style={{ color: "#333" }}
             >
-              {app.label}
-              <ChevronDown className="ml-1 h-3 w-3 opacity-90" />
+              <span className="truncate">{app.label}</span>
+              <ChevronDown className="ml-1 h-3 w-3 shrink-0 opacity-90" />
             </NavigationMenuPrimitive.Trigger>
             <NavigationMenuPrimitive.Content className={styles.content}>
               {app.modules.map((module) => (

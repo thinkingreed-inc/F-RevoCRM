@@ -81,8 +81,15 @@ body > .mCSB_inside > .mCSB_container {
   margin-bottom: 0;
   border-top: 0;
 }
+/* ヘッダー(グローバルナビ)は Bootstrap のグリッド/float をやめ、Flexbox の 1 行レイアウトにする。
+   カラム落ちを防ぐため flex-wrap: nowrap を基本とし、各要素は min-width: 0 で縮められるようにする。 */
 .global-nav {
   position: relative;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  min-height: 42px;
+  padding: 0;
 }
 .global-nav .global-actions {
   padding-right: 15px;
@@ -113,13 +120,6 @@ body > .mCSB_inside > .mCSB_container {
   min-height: inherit;
 }
 @media (min-width: 992px) {
-  .global-nav .logo-container {
-    display: inline-block;
-    width: 150px;
-    z-index: 2;
-    padding-left: 6%;
-    margin-top: 1px;
-  }
   .app-nav .module-action-bar {
     padding-left: 42px;
     top: 0px;
@@ -212,16 +212,21 @@ body > .mCSB_inside > .mCSB_container {
 /**********************************/
 /******** Navigation styles *******/
 /**********************************/
+/* ロゴは固定幅をやめ、上限だけ決めて縦横比を保ったまま収める */
 .company-logo {
   height: 40px;
-  width: 180px;
-  margin: 0 0;
-  display: inline-block;
-  margin-left: 1px;
+  max-width: 180px;
+  margin: 0 0 0 1px;
+  display: flex;
+  align-items: center;
+  min-width: 0;
 }
 .company-logo img {
-  max-height: 100%;
+  max-height: 40px;
   max-width: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 .navbar .fa {
   font-size: 15px;
@@ -237,20 +242,185 @@ body > .mCSB_inside > .mCSB_container {
 .global-nav .navbar-nav > li div a {
   padding: 13px;
 }
-#navbar > ul > li > div > div > a {
-  float: left;
+/* 左端: アプリスイッチャー + ロゴ。縮まないが、はみ出しもしない */
+.global-nav .app-navigator-container {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  min-width: 0;
+  height: 42px;
 }
-#navbar > ul > li > div > a {
-  float: left;
+.global-nav .app-switcher-container {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
 }
-.global-nav > ul {
-  margin-right: 20px;
+.global-nav .app-switcher-container .app-navigator {
+  height: 42px;
 }
+.global-nav .app-switcher-container .app-icon {
+  line-height: 42px;
+}
+.global-nav .logo-container {
+  display: flex;
+  align-items: center;
+  flex: 0 1 auto;
+  min-width: 0;
+  padding: 0 12px;
+}
+/* アプリメニュー(Web コンポーネント <app-menu>): 余った幅を吸収する。
+   min-width: 0 が無いとカスタム要素の中身が縮まず親を押し広げてしまう。
+   狭いときはコンポーネント側でラベルを ellipsis 省略する(AppMenu.tsx)。
+   ドロップダウンを切らないため、ここでは overflow: hidden を掛けない。 */
+.global-nav .app-list {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.global-nav .app-list app-menu,
+.global-nav .app-list .web-components-wrapper {
+  display: flex;
+  align-items: center;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+/* Radix NavigationMenu は Root(nav) と List(ul) の間に class の無い div を挟む。
+   これは min-width: auto のままだとメニューの min-content 幅で突っ張ってしまい、
+   ヘッダーを押し広げるので明示的に 0 にする。 */
+.global-nav .app-list app-menu nav > div {
+  min-width: 0;
+}
+/* Bootstrap は .navbar > .container-fluid 直下の .navbar-header / .navbar-collapse に
+   margin-left/right: -15px を当てて container の左右 padding を打ち消している。
+   .global-nav の padding を 0 にしたので、この負マージンは 15px のはみ出しになる。 */
+.global-nav .navbar-header,
+.global-nav .search-links-container,
+.global-nav .global-actions {
+  margin-left: 0;
+  margin-right: 0;
+}
+/* グローバル検索: 基準幅 300px から縮む。.search-link は Workflows 画面でも
+   使い回されているため、ヘッダー側だけ .global-nav で限定して上書きする。 */
 .global-nav .search-links-container {
   padding-right: 15px;
+  flex: 0 6 300px;
+  min-width: 0;
 }
-.global-nav .app-navigator-container {
-  height: 42px;
+/* アプリメニューを出す幅(>=992px)では、検索欄が潰れきらないよう下限を持たせる。
+   アプリメニューのラベルが先に省略されるより検索欄が狭くなるほうがまし、という優先順位。
+   991px 以下はアプリメニュー自体を出さないので下限は不要(アイコンが増えた場合に効く)。 */
+@media (min-width: 992px) {
+  .global-nav .search-links-container {
+    min-width: 130px;
+  }
+}
+.global-nav .search-link {
+  display: flex;
+  align-items: center;
+  float: none;
+  flex: 1 1 auto;
+  width: auto;
+  height: 32px;
+  min-width: 0;
+  margin: 0;
+}
+.global-nav .search-link .keyword-input {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  margin: 0 0 0 5px;
+}
+.global-nav .search-link .adv-search {
+  flex: 0 0 auto;
+  margin-top: 0;
+  margin-inline-start: auto;
+  padding-left: 5px;
+}
+/* 右端: グローバルアクション。pull-right / float ではなく margin-inline-start:auto で右寄せ */
+.global-nav .global-actions {
+  flex: 0 0 auto;
+  min-width: 0;
+  margin-inline-start: auto;
+}
+/* スマホ用トグル(虫めがね / アプリ)。こちらも auto マージンで右寄せ */
+.global-nav .navbar-header {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+}
+/* アイコン列。元は li 内の a を float: left して横並びにしていた(li の高さが 0 に
+   潰れる作り)ので、flex に置き換える。スマホでトグルを開いたときも横 1 列を保つため、
+   これは @media で囲わず全幅で効かせる。 */
+.global-nav .global-actions .navbar-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  float: none;
+  margin: 0;
+  min-height: 42px;
+}
+.global-nav .global-actions .navbar-nav > li {
+  display: flex;
+  align-items: center;
+  float: none;
+  min-height: 42px;
+}
+.global-nav .global-actions .navbar-nav > li > div > a,
+.global-nav .global-actions .navbar-nav > li > div > div > a {
+  display: flex;
+  align-items: center;
+  float: none;
+  min-height: 42px;
+  padding: 0 13px;
+}
+/* デスクトップ: collapse 対象の 2 ブロックも 1 行の flex アイテムとして並べる。
+   Bootstrap の .navbar-collapse.collapse{display:block!important} を上書きする必要がある。 */
+@media (min-width: 768px) {
+  .global-nav .search-links-container.collapse,
+  .global-nav .global-actions.collapse {
+    display: flex !important;
+    align-items: center;
+    width: auto;
+  }
+  .global-nav .global-actions .navbar-nav {
+    flex-wrap: nowrap;
+    height: 42px;
+  }
+  .global-nav .global-actions .navbar-nav > li {
+    height: 42px;
+  }
+  /* li の中の入れ物も flex にして高さを揃える。.dropdown-menu を除外するのは、
+     display: flex が Bootstrap の display: none(閉じた状態)を打ち消してしまうため。
+     スマホ幅では Bootstrap が開いた .dropdown-menu を position: static にするので、
+     ここを flex にするとパネルがトリガーの横に並んでしまう。よってデスクトップ限定。 */
+  .global-nav .global-actions .navbar-nav > li > div:not(.dropdown-menu),
+  .global-nav .global-actions .navbar-nav > li > div > div:not(.dropdown-menu) {
+    display: flex;
+    align-items: center;
+    height: 42px;
+  }
+}
+/* スマホ: トグルで開く 2 ブロックだけは行を分ける(collapse の開閉挙動を維持するため)。
+   ユーザー名の項目は元が pull-right だったので、auto マージンで右端に寄せる。 */
+@media (max-width: 767px) {
+  .global-nav {
+    flex-wrap: wrap;
+  }
+  .global-nav .search-links-container,
+  .global-nav .global-actions {
+    flex: 1 0 100%;
+    margin-inline-start: 0;
+  }
+  .global-nav .global-actions .navbar-nav > li.dropdown:last-child {
+    margin-inline-start: auto;
+  }
+  /* 開いたドロップダウンが static になって li が縦に伸びても、
+     他のアイコンが釣られて中央寄せにならないようにする */
+  .global-nav .global-actions .navbar-nav {
+    align-items: flex-start;
+  }
 }
 .link-text-xs-only {
   padding: 0px 15px;
@@ -300,16 +470,8 @@ body > .mCSB_inside > .mCSB_container {
   .module-action-bar .navbar-right .nav > li a {
     padding: 0 10px;
   }
-  .global-nav .logo-container {
-    border-bottom: 0;
-    width: 150px;
-  }
 }
 @media (max-width: 991px) {
-  .global-nav .logo-container {
-    border-bottom: 0;
-    width: 150px;
-  }
   .notificationMessageHolder {
     padding-left: 45%;
   }
