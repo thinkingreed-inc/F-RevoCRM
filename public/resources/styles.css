@@ -380,14 +380,6 @@ div.detailview-content.container-fluid span.value img {
 .textOverflowTest{
 	width: 600px;
 }
-@media all and (min-width:992px) and (max-width: 1290px) {
-    .global-nav .app-list {
-        display: none;
-    }
-}
-.app-navigator-container {
-  width: 222px;
-}
 /*
  * カスタム項目編集画面
  */
