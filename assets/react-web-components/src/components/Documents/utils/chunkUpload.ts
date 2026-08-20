@@ -115,6 +115,10 @@ export async function uploadFileInChunks(
   const chunkSize = Number(init.chunk_size);
 
   try {
+    // chunk_size が 0 や不正値だと1チャンクも進まず無限ループになるため、先に弾く
+    if (!Number.isFinite(chunkSize) || chunkSize <= 0) {
+      throw new Error("Invalid chunk size");
+    }
     let offset = 0;
     let index = 0;
     while (offset < file.size) {

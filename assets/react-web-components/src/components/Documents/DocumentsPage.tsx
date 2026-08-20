@@ -32,6 +32,10 @@ import { useDocumentDetail } from "./hooks/useDocumentDetail";
 import { useFolderTree } from "./hooks/useFolderTree";
 import { useViewMode } from "./hooks/useViewMode";
 import { useFileUpload } from "./hooks/useFileUpload";
+import {
+  UploadProgressBar,
+  DuplicateConfirmDialog,
+} from "./DocumentsUploadStatus";
 import { TranslationProvider } from "../../contexts/TranslationContext";
 import { useOptionalTranslation } from "../../hooks/useTranslation";
 
@@ -127,6 +131,7 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
     folders,
     totalCount,
     starredCount,
+    isAdmin: isFolderAdmin,
     reload: reloadFolders,
   } = useFolderTree();
 
@@ -202,9 +207,13 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
   const dragCountRef = useRef(0);
   const {
     isUploading,
-    progress,
+    uploadProgress,
     error: uploadError,
-    upload,
+    errorArgs: uploadErrorArgs,
+    duplicatePrompt,
+    respondDuplicate,
+    cancel: cancelUpload,
+    uploadDrop,
   } = useFileUpload(() => {
     reloadList();
     reloadFolders();
@@ -231,14 +240,12 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
       e.preventDefault();
       dragCountRef.current = 0;
       setIsDragging(false);
-      const files = e.dataTransfer.files;
-      if (files.length > 0) {
-        const targetFolder =
-          typeof selectedFolderId === "number" ? selectedFolderId : 1;
-        upload(files, targetFolder);
-      }
+      // フォルダのドロップは dataTransfer.items から階層をたどる
+      const targetFolder =
+        typeof selectedFolderId === "number" ? selectedFolderId : 1;
+      uploadDrop(e.dataTransfer, targetFolder);
     },
-    [upload, selectedFolderId],
+    [uploadDrop, selectedFolderId],
   );
 
   // 一覧の対象そのものが変わったら選択を解除する（別の絞り込みの内容を操作しないため）。
@@ -961,47 +968,11 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
         )}
 
         {isUploading && (
-          <div
-            style={{
-              position: "absolute",
-              bottom: 0,
-              left: 220,
-              right: 0,
-              padding: "8px 16px",
-              backgroundColor: "#EBF8FF",
-              borderTop: "1px solid #BEE3F8",
-              zIndex: 21,
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                fontSize: 13,
-              }}
-            >
-              <span>{t("LBL_UPLOADING_PROGRESS", progress)}</span>
-              <div
-                style={{
-                  flex: 1,
-                  height: 4,
-                  backgroundColor: "#BEE3F8",
-                  borderRadius: 2,
-                }}
-              >
-                <div
-                  style={{
-                    width: `${progress}%`,
-                    height: "100%",
-                    backgroundColor: "#3182CE",
-                    borderRadius: 2,
-                    transition: "width 0.2s",
-                  }}
-                />
-              </div>
-            </div>
-          </div>
+          <UploadProgressBar
+            progress={uploadProgress}
+            onCancel={cancelUpload}
+            left={220}
+          />
         )}
 
         {uploadError && (
@@ -1019,10 +990,18 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
               zIndex: 21,
             }}
           >
-            {uploadError}
+            {t(uploadError, ...uploadErrorArgs)}
           </div>
         )}
       </div>
+
+      {/* 同名ファイルの上書き確認 */}
+      {duplicatePrompt && (
+        <DuplicateConfirmDialog
+          prompt={duplicatePrompt}
+          onRespond={respondDuplicate}
+        />
+      )}
 
       {/* フォルダ作成/編集ダイアログ */}
       <FolderDialog
@@ -1031,6 +1010,7 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
         folder={folderDialogTarget}
         parentFolderId={folderDialogParentId}
         folders={folders}
+        isAdmin={isFolderAdmin}
         onSave={handleFolderSave}
         onDelete={handleFolderDelete}
         onClose={() => setFolderDialogOpen(false)}

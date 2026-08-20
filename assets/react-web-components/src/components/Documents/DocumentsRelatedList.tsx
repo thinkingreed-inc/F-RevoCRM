@@ -12,6 +12,10 @@ import { DocumentSelectModal } from "./DocumentSelectModal";
 import { useDocumentDetail } from "./hooks/useDocumentDetail";
 import { useFolderTree } from "./hooks/useFolderTree";
 import { useFileUpload } from "./hooks/useFileUpload";
+import {
+  UploadProgressBar,
+  DuplicateConfirmDialog,
+} from "./DocumentsUploadStatus";
 import { TranslationProvider } from "../../contexts/TranslationContext";
 import { useOptionalTranslation } from "../../hooks/useTranslation";
 
@@ -231,9 +235,13 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
   const dragCountRef = useRef(0);
   const {
     isUploading,
-    progress,
+    uploadProgress,
     error: uploadError,
-    upload,
+    errorArgs: uploadErrorArgs,
+    duplicatePrompt,
+    respondDuplicate,
+    cancel: cancelUpload,
+    uploadDrop,
   } = useFileUpload(() => {
     reload();
   });
@@ -259,12 +267,10 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
       e.preventDefault();
       dragCountRef.current = 0;
       setIsDragging(false);
-      const files = e.dataTransfer.files;
-      if (files.length > 0) {
-        upload(files, 1, parentModule, parentId);
-      }
+      // フォルダのドロップも階層ごと登録する
+      uploadDrop(e.dataTransfer, 1, parentModule, parentId);
     },
-    [upload, parentModule, parentId],
+    [uploadDrop, parentModule, parentId],
   );
 
   const handleSortChange = useCallback((newSort: SortConfig) => {
@@ -695,43 +701,13 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
         </div>
       )}
 
-      {/* アップロード進捗 */}
+      {/* アップロード進捗（関連リストは絶対配置しない） */}
       {isUploading && (
-        <div
-          style={{
-            padding: "8px 12px",
-            backgroundColor: "#EBF8FF",
-            borderTop: "1px solid #BEE3F8",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              fontSize: 13,
-            }}
-          >
-            <span>{t("LBL_UPLOADING_PROGRESS", progress)}</span>
-            <div
-              style={{
-                flex: 1,
-                height: 4,
-                backgroundColor: "#BEE3F8",
-                borderRadius: 2,
-              }}
-            >
-              <div
-                style={{
-                  width: `${progress}%`,
-                  height: "100%",
-                  backgroundColor: "#3182CE",
-                  borderRadius: 2,
-                  transition: "width 0.2s",
-                }}
-              />
-            </div>
-          </div>
+        <div style={{ position: "relative", paddingBottom: 40 }}>
+          <UploadProgressBar
+            progress={uploadProgress}
+            onCancel={cancelUpload}
+          />
         </div>
       )}
 
@@ -745,8 +721,16 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
             fontSize: 13,
           }}
         >
-          {uploadError}
+          {t(uploadError, ...uploadErrorArgs)}
         </div>
+      )}
+
+      {/* 同名ファイルの上書き確認 */}
+      {duplicatePrompt && (
+        <DuplicateConfirmDialog
+          prompt={duplicatePrompt}
+          onRespond={respondDuplicate}
+        />
       )}
 
       {/* 詳細モーダル */}
