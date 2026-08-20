@@ -110,6 +110,14 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 			ob_end_clean();
 		}
 
+		// セッションのロックを先に解放する。
+		// PHP のファイルセッションは1リクエストがロックを保持するため、
+		// 大容量ファイルの送出中は同じユーザーの他のリクエスト（詳細画面のAPI等）が
+		// すべて待たされ、画面が固まったように見える。
+		if (function_exists('session_write_close') && session_id() !== '') {
+			session_write_close();
+		}
+
 		$fileSize = filesize($path);
 		header("Content-type: " . self::sanitizeHeaderValue($mimeType));
 		header("Pragma: public");

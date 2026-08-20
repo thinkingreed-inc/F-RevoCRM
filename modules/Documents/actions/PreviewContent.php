@@ -59,6 +59,12 @@ class Documents_PreviewContent_Action extends Vtiger_Action_Controller {
 				throw new Exception(vtranslate('LBL_FILE_READ_FAILED', 'Documents'));
 			}
 
+			// 大きなファイルは変換でメモリ・時間を使い切るため、サイズで先に断る
+			$fileSize = (int) @filesize($filePath);
+			if (!Documents_Module_Model::isPreviewableSize($fileSize)) {
+				throw new Exception(vtranslate('LBL_PREVIEW_TOO_LARGE', 'Documents'));
+			}
+
 			switch ($ext) {
 				case 'xlsx':
 					$html = $this->convertXlsx($filePath, $fileName);

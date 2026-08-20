@@ -10,6 +10,10 @@ interface FilePreviewRendererProps {
   previewUrl: string;
   title: string;
   maxHeight?: number;
+  /** サイズ上限を超えていないか（サーバー判定）。false ならプレビューしない */
+  previewable?: boolean;
+  /** プレビュー可能な上限の表示用文字列（例: 20 MB） */
+  previewMaxSizeLabel?: string;
   /** trueにするとマウント時に拡大モーダルを即時表示する */
   expandOnMount?: boolean;
   /** 拡大モーダルが閉じられたときのコールバック */
@@ -272,6 +276,8 @@ const PreviewContent: React.FC<{
   isTextFile: boolean;
   textContent: string | null;
   textLoading: boolean;
+  previewable: boolean;
+  previewMaxSizeLabel?: string;
 }> = ({
   ext,
   category,
@@ -284,8 +290,42 @@ const PreviewContent: React.FC<{
   isTextFile,
   textContent,
   textLoading,
+  previewable,
+  previewMaxSizeLabel,
 }) => {
   const { t } = useOptionalTranslation();
+
+  // サイズ上限を超えるファイルは解析に時間・メモリがかかり画面が固まるため出さない
+  if (!previewable) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 12,
+          padding: 40,
+        }}
+      >
+        <FileIcon
+          filetype={filetype}
+          filelocationtype={filelocationtype}
+          filename={filename}
+          size="lg"
+        />
+        <span style={{ fontSize: 12, color: "#A0AEC0", textAlign: "center" }}>
+          {previewMaxSizeLabel
+            ? t("LBL_PREVIEW_TOO_LARGE_WITH_LIMIT", previewMaxSizeLabel)
+            : t("LBL_PREVIEW_TOO_LARGE")}
+        </span>
+        {downloadUrl && (
+          <a href={downloadUrl} style={{ fontSize: 12 }}>
+            {t("LBL_DOWNLOAD_FILE")}
+          </a>
+        )}
+      </div>
+    );
+  }
 
   if (filelocationtype !== "I" || !downloadUrl) {
     return (
@@ -490,6 +530,8 @@ export const FilePreviewRenderer: React.FC<FilePreviewRendererProps> = ({
   previewUrl: _,
   title,
   maxHeight = 400,
+  previewable = true,
+  previewMaxSizeLabel,
   expandOnMount = false,
   onExpandClose,
 }) => {
@@ -516,10 +558,13 @@ export const FilePreviewRenderer: React.FC<FilePreviewRendererProps> = ({
       "py",
       "sh",
     ].includes(ext);
-  const canExpand = isPreviewable(ext, category, filelocationtype, downloadUrl);
+  const canExpand =
+    previewable && isPreviewable(ext, category, filelocationtype, downloadUrl);
 
   useEffect(() => {
-    if (filelocationtype !== "I" || !downloadUrl || !isTextFile) return;
+    // 全体を取得して先頭だけ表示するため、上限超過のファイルでは取得しない
+    if (filelocationtype !== "I" || !downloadUrl || !isTextFile || !previewable)
+      return;
     setTextLoading(true);
     fetch(downloadUrl)
       .then((res) => {
@@ -535,7 +580,7 @@ export const FilePreviewRenderer: React.FC<FilePreviewRendererProps> = ({
       })
       .catch(() => setTextContent(null))
       .finally(() => setTextLoading(false));
-  }, [downloadUrl, filelocationtype, isTextFile]);
+  }, [downloadUrl, filelocationtype, isTextFile, previewable, t]);
 
   const handleExpand = useCallback(() => setExpanded(true), []);
   const handleClose = useCallback(() => {
@@ -554,6 +599,8 @@ export const FilePreviewRenderer: React.FC<FilePreviewRendererProps> = ({
     isTextFile,
     textContent,
     textLoading,
+    previewable,
+    previewMaxSizeLabel,
   };
 
   return (

@@ -18,6 +18,8 @@
 <div id="error"></div>
 <div id="result"></div>
 
+<!-- 文言は F-RevoCRM の言語ファイルから取得する（ライブラリ本体は変更しない） -->
+<script src="../../../resources/preview-i18n.js"></script>
 <script src="../jquery.min.js"></script>
 <script src="js/jszip.min.js"></script>
 <script src="js/filereader.js"></script>
@@ -28,12 +30,25 @@
 <script src="js/divs2slides.min.js"></script>
 <script>
 (function() {
+  var finished = false;
+
+  // 読み込み中の表示も翻訳する（取得できるまでは既定の日本語を出す）
+  PreviewI18n.apply('#loading', 'LBL_PREVIEW_LOADING', '読み込み中...');
+
   var params = new URLSearchParams(window.location.search);
   var fileUrl = params.get('file');
   if (!fileUrl) {
-    showError('ファイルURLが指定されていません');
+    showError('LBL_PREVIEW_FILE_URL_REQUIRED', 'ファイルURLが指定されていません');
     return;
   }
+
+  // ライブラリ内部の非同期エラーは throw されないため、window 経由でも拾う
+  window.addEventListener('error', function() {
+    showError('LBL_PREVIEW_PPTX_PARSE_FAILED', 'PowerPointファイルを読み込めませんでした。ファイルが壊れている可能性があります。');
+  });
+  window.addEventListener('unhandledrejection', function() {
+    showError('LBL_PREVIEW_PPTX_PARSE_FAILED', 'PowerPointファイルを読み込めませんでした。ファイルが壊れている可能性があります。');
+  });
 
   try {
     document.getElementById('loading').style.display = 'none';
@@ -43,14 +58,26 @@
       mediaProcess: true
     });
   } catch(e) {
-    showError('PowerPointの解析中にエラーが発生しました: ' + e.message);
+    showError('LBL_PREVIEW_PPTX_PARSE_FAILED', 'PowerPointファイルを読み込めませんでした。ファイルが壊れている可能性があります。');
   }
 
-  function showError(msg) {
+  /**
+   * エラーを表示する
+   *
+   * @param {string} key 翻訳キー
+   * @param {string} fallback 翻訳が取得できない場合の文言
+   */
+  function showError(key, fallback) {
+    if (finished) return;
+    finished = true;
     document.getElementById('loading').style.display = 'none';
     var el = document.getElementById('error');
-    el.textContent = msg;
+    // 先にフォールバックを出し、翻訳が取れたら差し替える
+    el.textContent = fallback || key;
     el.style.display = 'block';
+    PreviewI18n.text(key, fallback).then(function(message) {
+      el.textContent = message;
+    });
   }
 })();
 </script>

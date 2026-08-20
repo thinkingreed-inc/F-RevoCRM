@@ -109,6 +109,10 @@ class Documents_DetailAPI_Api extends Vtiger_Api_Controller {
 			}
 		}
 
+		// 大きなファイルはブラウザ・サーバーともに解析しきれないためプレビューしない
+		$previewable = $previewUrl !== ''
+			&& Documents_Module_Model::isPreviewableSize((int) $row['filesize']);
+
 		// 関連レコード（モジュール日本語名・取引サマリ付き）
 		$relatedRecords = array();
 		$relResult = $db->pquery(
@@ -264,6 +268,11 @@ class Documents_DetailAPI_Api extends Vtiger_Api_Controller {
 			'note_no' => $row['note_no'],
 			'download_url' => $downloadUrl,
 			'preview_url' => $previewUrl,
+			'previewable' => $previewable,
+			'preview_max_size' => Documents_Module_Model::getPreviewMaxSizeInBytes(),
+			'preview_max_size_label' => Documents_Module_Model::getEffectiveMaxUploadSizeLabel(
+				Documents_Module_Model::getPreviewMaxSizeInBytes()
+			),
 			'related_records' => $relatedRecords,
 			'compliance' => $compliance,
 			'dynamic_fields' => $dynamicFields,

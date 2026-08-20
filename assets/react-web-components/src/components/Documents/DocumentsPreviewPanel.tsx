@@ -198,6 +198,8 @@ export const DocumentsPreviewPanel: React.FC<DocumentsPreviewPanelProps> = ({
           filename={doc.filename}
           downloadUrl={doc.download_url}
           previewUrl={doc.preview_url}
+          previewable={doc.previewable !== false}
+          previewMaxSizeLabel={doc.preview_max_size_label}
           title={doc.title}
           expandOnMount
           onExpandClose={() => setShowMobilePreview(false)}
@@ -250,6 +252,8 @@ export const DocumentsPreviewPanel: React.FC<DocumentsPreviewPanelProps> = ({
               filename={doc.filename}
               downloadUrl={doc.download_url}
               previewUrl={doc.preview_url}
+              previewable={doc.previewable !== false}
+              previewMaxSizeLabel={doc.preview_max_size_label}
               title={doc.title}
               maxHeight={400}
             />

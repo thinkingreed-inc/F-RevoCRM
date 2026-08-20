@@ -69,6 +69,41 @@ class Documents_Module_Model extends Vtiger_Module_Model {
 	/** 分割サイズを丸める単位（64KB） */
 	const CHUNK_SIZE_UNIT = 65536;
 
+	/** プレビュー可能な既定の上限（20MB） */
+	const DEFAULT_PREVIEW_MAXSIZE = 20971520;
+
+	/**
+	 * プレビュー可能な最大ファイルサイズ（バイト）を返す
+	 *
+	 * 大きなファイルはブラウザ側の解析（pdf.js / Luckysheet）や
+	 * サーバー側の変換でメモリ・時間を使い切るため、サイズで制限する。
+	 * config.customize.php の $documents_preview_maxsize で変更できる。
+	 * 未設定の場合は 20MB。0 以下を設定するとサイズによる制限をしない。
+	 *
+	 * @return int 0 以下は無制限
+	 */
+	public static function getPreviewMaxSizeInBytes() {
+		$configured = vglobal('documents_preview_maxsize');
+		if ($configured === null || $configured === '' || $configured === false) {
+			return self::DEFAULT_PREVIEW_MAXSIZE;
+		}
+		return (int) $configured;
+	}
+
+	/**
+	 * サイズの観点でプレビュー可能かどうかを返す
+	 *
+	 * @param int $fileSize バイト
+	 * @return bool
+	 */
+	public static function isPreviewableSize($fileSize) {
+		$limit = self::getPreviewMaxSizeInBytes();
+		if ($limit <= 0) {
+			return true;// 無制限
+		}
+		return (int) $fileSize <= $limit;
+	}
+
 	/**
 	 * 最大アップロードサイズを表示用の文字列にする（例: 2 MB）
 	 *

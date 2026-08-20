@@ -815,6 +815,8 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
             filename={doc.filename}
             downloadUrl={doc.download_url}
             previewUrl={doc.preview_url}
+            previewable={doc.previewable !== false}
+            previewMaxSizeLabel={doc.preview_max_size_label}
             title={doc.title}
             expandOnMount
             onExpandClose={() => setShowMobilePreview(false)}
@@ -1261,6 +1263,8 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
                       filename={doc.filename}
                       downloadUrl={doc.download_url}
                       previewUrl={doc.preview_url}
+                      previewable={doc.previewable !== false}
+                      previewMaxSizeLabel={doc.preview_max_size_label}
                       title={doc.title}
                       maxHeight={520}
                     />

@@ -128,6 +128,12 @@ export interface DocumentDetail extends DocumentRecord {
   folder_path: FolderPathItem[];
   modified_by_name: string;
   preview_url: string;
+  /** サイズ上限内でプレビュー可能か（サーバー判定） */
+  previewable?: boolean;
+  /** プレビュー可能な上限（バイト） */
+  preview_max_size?: number;
+  /** プレビュー可能な上限の表示用文字列（例: 20 MB） */
+  preview_max_size_label?: string;
   related_records: RelatedRecord[];
   compliance: ComplianceDetailData | null;
   audit_log: AuditLogEntry[];
