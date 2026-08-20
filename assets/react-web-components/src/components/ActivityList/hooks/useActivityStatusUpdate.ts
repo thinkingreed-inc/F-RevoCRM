@@ -95,6 +95,7 @@ export function useActivityStatusUpdate(): UseActivityStatusUpdateResult {
         formData.append("__vtrftk", csrfToken);
         formData.append("module", "Calendar");
         formData.append("calendarModule", calendarModule);
+        formData.append("activitytype", activityType);
         formData.append("action", "SaveAjax");
         formData.append("record", activityId);
         formData.append("field", fieldName);

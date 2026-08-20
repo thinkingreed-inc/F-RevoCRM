@@ -161,7 +161,11 @@ class Events_SaveAjax_Action extends Events_Save_Action {
 			$this->setRecurrenceInfo($recordModel);
 		}
 
-		$recordModel->set("is_allday", $_REQUEST['is_allday'] == "on" ? true : false);
+		// リクエストに is_allday が含まれない編集（インライン編集など）では、既存の終日設定を変更しない
+		// （set しなければ CRMEntity::setAllDay() は DB の値を読むだけで更新しない）
+		if ($request->has('is_allday')) {
+			$recordModel->set("is_allday", $request->get('is_allday') == "on" ? true : false);
+		}
 
 		$startDate = $request->get('date_start');
 		if (!empty($startDate)) {
@@ -200,11 +204,15 @@ class Events_SaveAjax_Action extends Events_Save_Action {
 
 		$activityType = $request->get('activitytype');
 		$visibility = $request->get('visibility');
-		if (empty($activityType)) {
+		// 編集時にリクエストへ activitytype が含まれない場合、既存の値を保持する
+		// （インライン編集で行動が ToDo に変わってしまう問題への対応）
+		if (empty($activityType) && empty($recordModel->get('activitytype'))) {
 			$recordModel->set('activitytype', 'Task');
 		}
 
-		if (empty($visibility)) {
+		// 編集時にリクエストへ visibility が含まれない場合、既存の値を保持する
+		// （インライン編集で非公開の活動が公開に変わってしまう問題への対応）
+		if (empty($visibility) && empty($recordModel->get('visibility'))) {
 			$assignedUserId = $recordModel->get('assigned_user_id');
 			$sharedType = Calendar_Module_Model::getSharedType($assignedUserId);
 			if ($sharedType == 'selectedusers') {
@@ -213,11 +221,12 @@ class Events_SaveAjax_Action extends Events_Save_Action {
 			$recordModel->set('visibility', ucfirst($sharedType));
 		}
 
-		$setReminder = $request->get('set_reminder');
-		if ($setReminder) {
-			$_REQUEST['set_reminder'] = 'Yes';
+		// リクエストに set_reminder が含まれない編集（インライン編集など）では、既存のリマインダー設定を変更しない
+		// （Activity::insertIntoReminderTable は 'Yes'/'No' 以外の値では何も処理しない）
+		if ($request->has('set_reminder')) {
+			$_REQUEST['set_reminder'] = $request->get('set_reminder') ? 'Yes' : 'No';
 		} else {
-			$_REQUEST['set_reminder'] = 'No';
+			$_REQUEST['set_reminder'] = '';
 		}
 
 		return $recordModel;
