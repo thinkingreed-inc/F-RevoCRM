@@ -24,6 +24,7 @@ function useIsMobile(breakpoint = 768) {
   return isMobile;
 }
 import { FieldRenderer } from "../FieldRenderer";
+import { isComplianceFieldVisible } from "./utils/complianceFields";
 import { FieldInfo, FieldValue } from "../../types/field";
 
 interface DocumentCreateEditModalProps {
@@ -173,6 +174,7 @@ export const DocumentCreateEditModal: React.FC<
   const [fileversion, setFileversion] = useState("");
   const [filestatus, setFilestatus] = useState(true);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -183,6 +185,40 @@ export const DocumentCreateEditModal: React.FC<
 
   // Dynamic field values (compliance, scanner, etc.)
   const [dynamicFields, setDynamicFields] = useState<Record<string, any>>({});
+
+  /**
+   * 電帳法・スキャナ保存の入力欄を出すかどうか
+   *
+   * - URL（filelocationtype = E）は電帳法の対象外なので、両ブロックとも出さない
+   * - 書類区分を選ぶまでは、保存区分・受領日などの関連項目を出さない
+   * - スキャナ固有の項目（解像度・カラー区分など）は保存区分が
+   *   「スキャナ保存」のときだけ出す
+   */
+  const isDynamicFieldVisible = useCallback(
+    (fieldName: string, blockLabel: string): boolean =>
+      isComplianceFieldVisible({
+        fieldName,
+        blockLabel,
+        docType,
+        documentCategory: String(dynamicFields["document_category"] ?? ""),
+        preservationType: String(dynamicFields["preservation_type"] ?? ""),
+        complianceBlockLabel: t("LBL_COMPLIANCE_SECTION"),
+        scannerBlockLabel: t("LBL_SCANNER_SECTION"),
+      }),
+    [docType, dynamicFields, t],
+  );
+
+  /** 表示している項目だけに絞ったブロック（空になったブロックは出さない） */
+  const visibleBlockFields = useMemo(() => {
+    const blocks: Array<[string, DocFieldInfo[]]> = [];
+    for (const [blockLabel, fields] of Object.entries(dynamicBlockFields)) {
+      const visible = fields.filter((f) =>
+        isDynamicFieldVisible(f.name, blockLabel),
+      );
+      if (visible.length > 0) blocks.push([blockLabel, visible]);
+    }
+    return blocks;
+  }, [dynamicBlockFields, isDynamicFieldVisible]);
   const handleDynamicFieldChange = useCallback(
     (fieldName: string, value: FieldValue) => {
       setDynamicFields((prev) => ({ ...prev, [fieldName]: value }));
@@ -297,14 +333,27 @@ export const DocumentCreateEditModal: React.FC<
   /** Append dynamic field values to form params for the main Save action.
    *  空文字もそのまま送信する（vtiger Saveはnullのみスキップするため、
    *  空文字を送れば値を明示的にクリアできる）。 */
+  /** 項目名 → ブロック名（表示判定に使う） */
+  const blockLabelOf = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const [blockLabel, fields] of Object.entries(dynamicBlockFields)) {
+      for (const f of fields) map[f.name] = blockLabel;
+    }
+    return map;
+  }, [dynamicBlockFields]);
+
   const appendDynamicFields = useCallback(
     (append: (key: string, val: string) => void) => {
       for (const [key, val] of Object.entries(dynamicFields)) {
         if (val === undefined || val === null) continue;
+        // 画面に出していない電帳法の項目は送らない
+        // （URLに変更した場合や、スキャナ保存から電子取引に変えた場合など）
+        const blockLabel = blockLabelOf[key];
+        if (blockLabel && !isDynamicFieldVisible(key, blockLabel)) continue;
         append(key, typeof val === "boolean" ? (val ? "1" : "0") : String(val));
       }
     },
-    [dynamicFields],
+    [dynamicFields, blockLabelOf, isDynamicFieldVisible],
   );
 
   const handleSave = useCallback(async () => {
@@ -805,55 +854,51 @@ export const DocumentCreateEditModal: React.FC<
 
           {/* Dynamic field blocks (compliance, scanner, etc.) */}
           {!fieldsLoading &&
-            Object.entries(dynamicBlockFields).map(
-              ([blockLabel, blockFields]) => (
+            visibleBlockFields.map(([blockLabel, blockFields]) => (
+              <div
+                key={blockLabel}
+                style={{
+                  marginBottom: 16,
+                  paddingTop: 12,
+                  borderTop: "1px solid #E2E8F0",
+                }}
+              >
                 <div
-                  key={blockLabel}
                   style={{
-                    marginBottom: 16,
-                    paddingTop: 12,
-                    borderTop: "1px solid #E2E8F0",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#4A5568",
+                    marginBottom: 10,
                   }}
                 >
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: "#4A5568",
-                      marginBottom: 10,
-                    }}
-                  >
-                    {blockLabel}
-                  </div>
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: gridCols,
-                      gap: "12px 16px",
-                    }}
-                  >
-                    {blockFields.map((field) => {
-                      const fieldInfo = convertToFieldInfo(field);
-                      return (
-                        <FieldRenderer
-                          key={field.name}
-                          field={fieldInfo}
-                          value={
-                            dynamicFields[field.name] ??
-                            field.defaultvalue ??
-                            ""
-                          }
-                          onChange={(name: string, val: FieldValue) =>
-                            handleDynamicFieldChange(name, val)
-                          }
-                          module="Documents"
-                        />
-                      );
-                    })}
-                  </div>
+                  {blockLabel}
                 </div>
-              ),
-            )}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: gridCols,
+                    gap: "12px 16px",
+                  }}
+                >
+                  {blockFields.map((field) => {
+                    const fieldInfo = convertToFieldInfo(field);
+                    return (
+                      <FieldRenderer
+                        key={field.name}
+                        field={fieldInfo}
+                        value={
+                          dynamicFields[field.name] ?? field.defaultvalue ?? ""
+                        }
+                        onChange={(name: string, val: FieldValue) =>
+                          handleDynamicFieldChange(name, val)
+                        }
+                        module="Documents"
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
 
           {/* メモ */}
           <div style={{ marginBottom: 8 }}>
