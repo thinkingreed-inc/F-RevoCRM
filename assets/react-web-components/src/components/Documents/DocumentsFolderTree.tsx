@@ -190,7 +190,8 @@ const FolderItem: React.FC<{
         >
           {node.name}
         </span>
-        {(hovered || isSelected) && (
+        {/* 編集権限が無いフォルダには設定を出さない（サーバーの can_edit に従う） */}
+        {(hovered || isSelected) && node.can_edit !== false && (
           <span
             onClick={(e) => {
               e.stopPropagation();

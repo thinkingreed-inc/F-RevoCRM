@@ -12,6 +12,8 @@ interface FolderDialogProps {
   folder?: Folder | null;
   parentFolderId: number;
   folders: Folder[];
+  /** 権限設定を編集できるか（サーバー判定。管理者のみ true） */
+  isAdmin?: boolean;
   onSave: (data: {
     foldername: string;
     folderdesc: string;
@@ -57,6 +59,7 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
   folder,
   parentFolderId,
   folders,
+  isAdmin = false,
   onSave,
   onDelete,
   onClose,
@@ -73,26 +76,7 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
   const [permLoading, setPermLoading] = useState(false);
   const [permSaving, setPermSaving] = useState(false);
   const [permMessage, setPermMessage] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  // 管理者判定
-  useEffect(() => {
-    const u = (window as any).userIsAdmin;
-    // Fallback: check for admin marker in DOM
-    if (u !== undefined) {
-      setIsAdmin(!!u);
-    } else {
-      const meta = document.querySelector('meta[name="user-is-admin"]');
-      setIsAdmin(meta?.getAttribute("content") === "1");
-      // Last resort: check if Settings menu is visible
-      if (!meta) {
-        const settingsLink = document.querySelector(
-          '[href*="parent=Settings"]',
-        );
-        setIsAdmin(!!settingsLink);
-      }
-    }
-  }, []);
+  // 管理者判定は DOM から推測せず、サーバー（FolderAPI tree の is_admin）の結果を使う
 
   useEffect(() => {
     if (isOpen) {
@@ -181,29 +165,9 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
     }
   }, [isOpen, mode, isAdmin]);
 
-  const handleSave = useCallback(async () => {
-    const trimmedName = name.trim();
-    if (!trimmedName) {
-      setError(t("LBL_FOLDER_NAME_REQUIRED"));
-      return;
-    }
-    onSave({
-      foldername: trimmedName,
-      folderdesc: desc.trim(),
-      parent_folderid: parentId,
-      ...(mode === "edit" && folder
-        ? { savemode: "edit", folderid: folder.id }
-        : {}),
-    });
-
-    // 権限保存（editモードかつ管理者のみ）
-    if (isAdmin && mode === "edit" && folder) {
-      await savePermissions(folder.id);
-    }
-  }, [name, desc, parentId, mode, folder, onSave, isAdmin, permRows, t]);
-
+  /** 権限を保存する。成功したら true */
   const savePermissions = useCallback(
-    async (folderId: number) => {
+    async (folderId: number): Promise<boolean> => {
       setPermSaving(true);
       try {
         const csrf = getCsrfToken();
@@ -223,7 +187,7 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
             })),
           ),
         );
-        await fetch("index.php", {
+        const response = await fetch("index.php", {
           method: "POST",
           credentials: "same-origin",
           headers: {
@@ -232,13 +196,47 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
           },
           body: body.toString(),
         });
+        const data = await response.json();
+        if (!response.ok || data.success === false || data.error) {
+          // 失敗を黙って捨てると「保存したのに戻っている」ように見えるため必ず出す
+          setError(data?.error?.message || t("LBL_PERMISSION_SAVE_FAILED"));
+          return false;
+        }
+        return true;
       } catch {
-        /* ignore */
+        setError(t("LBL_PERMISSION_SAVE_FAILED"));
+        return false;
+      } finally {
+        setPermSaving(false);
       }
-      setPermSaving(false);
     },
-    [permRows],
+    [permRows, t],
   );
+
+  const handleSave = useCallback(async () => {
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      setError(t("LBL_FOLDER_NAME_REQUIRED"));
+      return;
+    }
+    setError(null);
+
+    // 権限を先に保存する。フォルダ保存でダイアログが閉じると
+    // 権限の保存結果をユーザーに返せなくなるため。
+    if (isAdmin && mode === "edit" && folder) {
+      const saved = await savePermissions(folder.id);
+      if (!saved) return; // エラーを表示したまま閉じない
+    }
+
+    onSave({
+      foldername: trimmedName,
+      folderdesc: desc.trim(),
+      parent_folderid: parentId,
+      ...(mode === "edit" && folder
+        ? { savemode: "edit", folderid: folder.id }
+        : {}),
+    });
+  }, [name, desc, parentId, mode, folder, onSave, isAdmin, savePermissions, t]);
 
   const addPermRow = useCallback(() => {
     setPermRows((prev) => [

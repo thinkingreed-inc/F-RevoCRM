@@ -6,6 +6,7 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 		parent::__construct();
 		$this->exposeMethod('tree');
 		$this->exposeMethod('save');
+		$this->exposeMethod('ensurePath');
 		$this->exposeMethod('delete');
 		$this->exposeMethod('getPermissions');
 		$this->exposeMethod('savePermissions');
@@ -124,6 +125,8 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 
 		return $this->sendSuccess(array(
 			'folders' => $folders,
+			// 権限設定を編集できるかどうかは画面側で推測させず、サーバーの判定を渡す
+			'is_admin' => (bool) $isAdmin,
 			'totalCount' => $totalCount,
 			'starredCount' => $starredCount,
 		));
@@ -151,6 +154,8 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 
 		$folderModel->set('foldername', $folderName);
 		$folderModel->set('description', $folderDesc);
+		// 重複判定は同じ親フォルダの中だけで行うため、判定前に親を渡す
+		$folderModel->set('parent_folderid', $parentFolderId);
 
 		if ($folderModel->checkDuplicate()) {
 			throw new AppException(vtranslate('LBL_FOLDER_EXISTS', $moduleName));
@@ -160,6 +165,14 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 		// 親フォルダの指定を検証する（存在しない・自分自身・子孫を親にできない）
 		// 名前だけ保存されて親が更新されない状態にならないよう、保存前に確認する
 		$this->assertValidParentFolder($db, $targetFolderId, $parentFolderId, $moduleName);
+
+		// モジュールの権限だけでは通してしまうため、フォルダ単位の編集権限を確認する
+		if ($saveMode === 'edit') {
+			$this->assertCanEditFolder($db, $targetFolderId);
+		} else {
+			// 新規作成は置き場所（親フォルダ）に対する編集権限で判断する
+			$this->assertCanEditFolder($db, $parentFolderId);
+		}
 
 		$folderModel->save();
 
@@ -172,8 +185,7 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 		// 新規作成時: デフォルト権限（全員: 編集可能）を設定
 		// 編集権限があれば参照も可能なため、editのみで十分
 		if ($saveMode !== 'edit') {
-			$newFolderId = $folderModel->getId();
-			$db->pquery("INSERT IGNORE INTO vtiger_folder_permissions (folderid, permission_type, target_type, target_id) VALUES (?, 'edit', 'everyone', NULL)", array($newFolderId));
+			$this->addDefaultFolderPermission($db, $folderModel->getId());
 		}
 
 		return $this->sendSuccess(array(
@@ -188,9 +200,128 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 		));
 	}
 
+	/** ensurePath で受け付けるフォルダ階層の深さ上限 */
+	const MAX_PATH_DEPTH = 20;
+
+	/** フォルダ名の最大文字数（vtiger_attachmentsfolder.foldername = varchar(200) に合わせる） */
+	const MAX_FOLDER_NAME_LENGTH = 200;
+
+	/**
+	 * フォルダ階層を用意して、末端のフォルダIDを返す
+	 *
+	 * フォルダのドラッグ＆ドロップで使う。指定された親フォルダの下に path の各段を
+	 * 上から順にたどり、同じ親に同名フォルダがあれば再利用し、無ければ作成する。
+	 *
+	 * @param Vtiger_Request $request path（JSON配列）, parent_folderid
+	 * @return array folderid（末端）, created（新規作成したフォルダID）
+	 */
+	public function ensurePath($request) {
+		$moduleName = $request->getModule();
+		$parentFolderId = (int) $request->get('parent_folderid', 0);
+		$segments = $this->parsePathSegments($request->get('path'), $moduleName);
+
+		$db = PearDatabase::getInstance();
+		if ($parentFolderId > 0) {
+			// 起点のフォルダが存在することを確認する
+			$this->assertValidParentFolder($db, 0, $parentFolderId, $moduleName);
+		} else {
+			$parentFolderId = 0;
+		}
+		$this->assertCanEditFolder($db, $parentFolderId);
+
+		$currentParentId = $parentFolderId;
+		$created = array();
+		$path = array();
+		foreach ($segments as $segment) {
+			$existingId = Documents_Folder_Model::findByNameAndParent($segment, $currentParentId);
+			if ($existingId > 0) {
+				$currentParentId = $existingId;
+				$path[] = array('id' => $existingId, 'name' => $segment);
+				continue;
+			}
+
+			$folderModel = Documents_Folder_Model::getInstance();
+			$folderModel->set('foldername', $segment);
+			$folderModel->set('description', '');
+			$folderModel->set('parent_folderid', $currentParentId);
+			$folderModel->save();
+			$newFolderId = (int) $folderModel->getId();
+
+			$db->pquery(
+				"UPDATE vtiger_attachmentsfolder SET parent_folderid = ? WHERE folderid = ?",
+				array($currentParentId, $newFolderId)
+			);
+			// 新規作成時のデフォルト権限（全員: 編集可能）は save と同じ扱いにする
+			$this->addDefaultFolderPermission($db, $newFolderId);
+
+			$created[] = $newFolderId;
+			$currentParentId = $newFolderId;
+			$path[] = array('id' => $newFolderId, 'name' => $segment);
+		}
+
+		return $this->sendSuccess(array(
+			'folderid' => $currentParentId,
+			'created' => $created,
+			'path' => $path,
+		));
+	}
+
+	/**
+	 * path パラメータをフォルダ名の配列に整える
+	 *
+	 * 空要素・`.`・`..` は取り除く（親をさかのぼる指定を作らせない）。
+	 *
+	 * @param mixed $rawPath JSON文字列または配列
+	 * @param string $moduleName
+	 * @return array フォルダ名の配列
+	 * @throws Exception 深すぎる／名前が不正な場合
+	 */
+	private function parsePathSegments($rawPath, $moduleName) {
+		$decoded = $rawPath;
+		if (is_string($rawPath)) {
+			$decoded = json_decode($rawPath, true);
+			if (!is_array($decoded)) {
+				// 単一のフォルダ名として扱う
+				$decoded = array($rawPath);
+			}
+		}
+		if (!is_array($decoded)) {
+			throw new Exception(vtranslate('LBL_FOLDER_NAME_REQUIRED', $moduleName));
+		}
+
+		$segments = array();
+		foreach ($decoded as $segment) {
+			if (!is_string($segment) && !is_numeric($segment)) {
+				continue;
+			}
+			$name = trim((string) $segment);
+			if ($name === '' || $name === '.' || $name === '..') {
+				continue;
+			}
+			// フォルダ名に区切り文字は含めない（1段ずつ受け取る）
+			$name = str_replace(array('/', '\\'), '_', $name);
+			// カラム長を超える名前は切り詰める（マルチバイトを壊さない）
+			if (function_exists('mb_substr')) {
+				$name = mb_substr($name, 0, self::MAX_FOLDER_NAME_LENGTH, 'UTF-8');
+			} else {
+				$name = substr($name, 0, self::MAX_FOLDER_NAME_LENGTH);
+			}
+			$segments[] = $name;
+		}
+
+		if (empty($segments)) {
+			throw new Exception(vtranslate('LBL_FOLDER_NAME_REQUIRED', $moduleName));
+		}
+		if (count($segments) > self::MAX_PATH_DEPTH) {
+			throw new Exception(vtranslate('LBL_FOLDER_PATH_TOO_DEEP', $moduleName));
+		}
+		return $segments;
+	}
+
 	public function delete($request) {
 		$moduleName = $request->getModule();
 		$folderId = $request->get('folderid');
+		$this->assertCanEditFolder(PearDatabase::getInstance(), $folderId);
 
 		if (empty($folderId)) {
 			throw new Exception('Folder ID is required');
@@ -230,8 +361,10 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 			throw new Exception('Folder ID is required');
 		}
 
+		// 過去の不具合で target_id が NULL の行が重複していることがあるため、
+		// 同じ内容の行はまとめて返す（UNIQUE 制約は NULL を別値として扱い重複を防げない）
 		$result = $db->pquery(
-			"SELECT fp.*,
+			"SELECT MIN(fp.permission_id) AS permission_id, fp.permission_type, fp.target_type, fp.target_id,
 				CASE fp.target_type
 					WHEN 'user' THEN CONCAT(u.last_name, ' ', u.first_name)
 					WHEN 'role' THEN r.rolename
@@ -243,6 +376,7 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 			LEFT JOIN vtiger_role r ON fp.target_type = 'role' AND fp.target_id = r.roleid
 			LEFT JOIN vtiger_groups g ON fp.target_type = 'group' AND fp.target_id = g.groupid
 			WHERE fp.folderid = ?
+			GROUP BY fp.permission_type, fp.target_type, fp.target_id, target_name
 			ORDER BY fp.permission_type, fp.target_type, fp.target_id",
 			array($folderId)
 		);
@@ -286,8 +420,12 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 			throw new Exception('Admin permission required');
 		}
 
-		$permissionsJson = $request->get('permissions');
-		$permissions = json_decode($permissionsJson, true);
+		// Vtiger_Request::get() は "[" / "{" で始まる値を自動でデコードして配列にして返すため、
+		// 文字列で来た場合だけ json_decode する（配列を json_decode すると PHP 8 で TypeError になる）
+		$permissions = $request->get('permissions');
+		if (is_string($permissions)) {
+			$permissions = json_decode($permissions, true);
+		}
 		if (!is_array($permissions)) {
 			throw new Exception('Invalid permissions data');
 		}
@@ -299,6 +437,9 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 		$validTypes = array('view', 'edit');
 		$validTargets = array('everyone', 'user', 'role', 'group');
 		$inserted = 0;
+		// 同じ内容が2回送られても1件にする（target_id が NULL の行は
+		// UNIQUE 制約でも重複を防げないため、ここで弾く）
+		$seen = array();
 
 		foreach ($permissions as $perm) {
 			$permType = isset($perm['permission_type']) ? $perm['permission_type'] : '';
@@ -314,6 +455,12 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 			} else if (empty($targetId)) {
 				continue;
 			}
+
+			$key = $permType . '|' . $targetType . '|' . (string) $targetId;
+			if (isset($seen[$key])) {
+				continue;
+			}
+			$seen[$key] = true;
 
 			$db->pquery(
 				"INSERT IGNORE INTO vtiger_folder_permissions (folderid, permission_type, target_type, target_id) VALUES (?, ?, ?, ?)",
@@ -351,8 +498,9 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 
 		// 役割一覧
 		$roles = array();
+		// 最上位の役割（Organization）は権限の付与先として意味がないため除外する
 		$rResult = $db->pquery(
-			"SELECT roleid, rolename, depth FROM vtiger_role ORDER BY parentrole",
+			"SELECT roleid, rolename, depth FROM vtiger_role WHERE depth > 0 ORDER BY parentrole",
 			array()
 		);
 		if ($rResult !== false) {
@@ -438,6 +586,60 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 	}
 
 	// ─── 権限チェックヘルパー ───
+
+	/**
+	 * 対象フォルダを編集する権限があることを確認する
+	 *
+	 * モジュールの権限だけでは足りない（フォルダ単位の編集権限が必要）ため、
+	 * 保存・削除・階層作成の前に必ず通す。
+	 *
+	 * @param PearDatabase $db
+	 * @param int $folderId 0 はルート（フォルダ単位の制限なし）
+	 * @throws Exception 権限が無い場合
+	 */
+	private function assertCanEditFolder($db, $folderId) {
+		$folderId = (int) $folderId;
+		if ($folderId <= 0) {
+			return;// ルート直下は個別フォルダの権限対象外
+		}
+
+		$currentUser = Users_Record_Model::getCurrentUserModel();
+		if ($currentUser->isAdminUser()) {
+			return;
+		}
+
+		$userId = $currentUser->getId();
+		$userRoleId = $currentUser->get('roleid');
+		$userGroupIds = $this->getUserGroupIds($userId);
+		if (!$this->hasPermission($db, $folderId, 'edit', $userId, $userRoleId, $userGroupIds)) {
+			throw new Exception(vtranslate('LBL_FOLDER_EDIT_DENIED', 'Documents'));
+		}
+	}
+
+	/**
+	 * 新規フォルダに既定の権限（全員: 編集可能）を1件だけ入れる
+	 *
+	 * target_id が NULL の行は UNIQUE 制約で重複を防げない（MySQL は NULL を別値として扱う）ため、
+	 * 存在確認をしてから挿入する。
+	 *
+	 * @param PearDatabase $db
+	 * @param int $folderId
+	 */
+	private function addDefaultFolderPermission($db, $folderId) {
+		$exists = $db->pquery(
+			"SELECT 1 FROM vtiger_folder_permissions
+			WHERE folderid = ? AND permission_type = 'edit' AND target_type = 'everyone'",
+			array($folderId)
+		);
+		if ($exists !== false && $db->num_rows($exists) > 0) {
+			return;
+		}
+		$db->pquery(
+			"INSERT INTO vtiger_folder_permissions (folderid, permission_type, target_type, target_id)
+			VALUES (?, 'edit', 'everyone', NULL)",
+			array($folderId)
+		);
+	}
 
 	/**
 	 * 指定ユーザーがフォルダに対して指定権限を持つかチェック

@@ -5,6 +5,8 @@ interface UseFolderTreeResult {
   folders: Folder[];
   totalCount: number;
   starredCount: number;
+  /** 実行ユーザーが管理者か（サーバー判定） */
+  isAdmin: boolean;
   isLoading: boolean;
   error: string | null;
   reload: () => void;
@@ -14,6 +16,7 @@ export function useFolderTree(): UseFolderTreeResult {
   const [folders, setFolders] = useState<Folder[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [starredCount, setStarredCount] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,6 +46,7 @@ export function useFolderTree(): UseFolderTreeResult {
       setFolders(result.folders);
       setTotalCount(result.totalCount);
       setStarredCount(result.starredCount);
+      setIsAdmin(result.is_admin === true);
     } catch (e: any) {
       setError(e.message || "Unknown error");
     } finally {
@@ -58,6 +62,7 @@ export function useFolderTree(): UseFolderTreeResult {
     folders,
     totalCount,
     starredCount,
+    isAdmin,
     isLoading,
     error,
     reload: fetchTree,
