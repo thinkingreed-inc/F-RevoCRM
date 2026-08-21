@@ -377,6 +377,26 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 	}
 
 	/**
+	 * 削除（ごみ箱への移動）をブロックする
+	 *
+	 * 電帳法対象のドキュメントは保存義務があるため削除させない。
+	 * 単一削除・一括削除（MassDelete / BulkAction API）はいずれも
+	 * このメソッドを通るため、まとめてここで止める。
+	 *
+	 * @throws AppException 電帳法対象の場合
+	 */
+	public function delete() {
+		if ($this->isComplianceTarget()) {
+			// cron や CLI 経由でも動くように読み込みを保証する
+			if (!class_exists('AppException')) {
+				vimport('includes.exceptions.AppException');
+			}
+			throw new AppException(vtranslate('LBL_COMPLIANCE_DELETE_BLOCKED', 'Documents'));
+		}
+		parent::delete();
+	}
+
+	/**
 	 * 電帳法対象ドキュメントの物理削除をブロックする
 	 * ゴミ箱からの完全削除時に呼ばれる
 	 *

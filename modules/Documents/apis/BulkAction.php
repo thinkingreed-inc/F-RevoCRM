@@ -58,11 +58,11 @@ class Documents_BulkAction_Api extends Vtiger_Api_Controller {
 			}
 			try {
 				$recordModel = Vtiger_Record_Model::getInstanceById($recordId, 'Documents');
-				// 電帳法対象は削除時点の内容を監査ログに残す
+				// 削除できた場合だけ監査ログに残す（削除が拒否されたら例外で下に進まない）
+				$recordModel->delete();
 				if (method_exists($recordModel, 'logDeletion')) {
 					$recordModel->logDeletion();
 				}
-				$recordModel->delete();
 				$deleted++;
 			} catch (Exception $e) {
 				$this->logError("Documents bulk delete failed for record {$recordId}", $e);

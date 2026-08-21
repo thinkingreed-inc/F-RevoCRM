@@ -175,6 +175,37 @@ class Documents_Module_Model extends Vtiger_Module_Model {
 	}
 
 	/**
+	 * 完全削除させないレコードIDを返す
+	 *
+	 * 電帳法対象（書類区分あり）のドキュメントは保存義務があるため、
+	 * ごみ箱からの完全削除も許可しない。
+	 * ごみ箱（RecycleBin）から呼ばれる。
+	 *
+	 * @param array $recordIds
+	 * @return array 削除を許可しないレコードID
+	 */
+	public static function getNonDeletableRecordIds($recordIds) {
+		if (empty($recordIds)) {
+			return array();
+		}
+		$db = PearDatabase::getInstance();
+		$result = $db->pquery(
+			"SELECT notesid FROM vtiger_notes
+			WHERE notesid IN (" . generateQuestionMarks($recordIds) . ")
+			AND document_category IS NOT NULL AND document_category != ''",
+			$recordIds
+		);
+		$blocked = array();
+		if ($result !== false) {
+			$numRows = $db->num_rows($result);
+			for ($i = 0; $i < $numRows; $i++) {
+				$blocked[] = (int) $db->query_result($result, $i, 'notesid');
+			}
+		}
+		return $blocked;
+	}
+
+	/**
 	 * Functions tells if the module supports workflow
 	 * @return boolean
 	 */
