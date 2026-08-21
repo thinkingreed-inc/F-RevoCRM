@@ -296,6 +296,32 @@ const PreviewContent: React.FC<{
   const { t } = useOptionalTranslation();
 
   // サイズ上限を超えるファイルは解析に時間・メモリがかかり画面が固まるため出さない
+  // URL（filelocationtype = E）は同梱ビューアで開けないため、その旨を出す
+  if (filelocationtype !== "I") {
+    return (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 12,
+          padding: 40,
+        }}
+      >
+        <FileIcon
+          filetype={filetype}
+          filelocationtype={filelocationtype}
+          filename={filename}
+          size="lg"
+        />
+        <span style={{ fontSize: 12, color: "#A0AEC0", textAlign: "center" }}>
+          {t("LBL_PREVIEW_NOT_SUPPORTED_URL")}
+        </span>
+      </div>
+    );
+  }
+
   if (!previewable) {
     return (
       <div
@@ -327,7 +353,7 @@ const PreviewContent: React.FC<{
     );
   }
 
-  if (filelocationtype !== "I" || !downloadUrl) {
+  if (!downloadUrl) {
     return (
       <div
         style={{

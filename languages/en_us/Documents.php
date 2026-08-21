@@ -265,6 +265,7 @@ $languageStrings = array(
 	'LBL_PREVIEW_EXCEL_PARSE_FAILED' => 'Failed to parse the Excel data. The file may be corrupted.',
 	'LBL_PREVIEW_EXCEL_LOAD_FAILED' => 'Failed to load the Excel file. It may be corrupted.',
 	'LBL_PREVIEW_PPTX_PARSE_FAILED' => 'Failed to load the PowerPoint file. It may be corrupted.',
+	'LBL_PREVIEW_NOT_SUPPORTED_URL' => 'Preview is not available for URL documents.',
 	'LBL_PREVIEW_TOO_LARGE' => 'This file is too large to preview. Please download it instead.',
 	'LBL_PREVIEW_TOO_LARGE_WITH_LIMIT' => 'This file is too large to preview (limit %s). Please download it instead.',
 	'LBL_MAX_UPLOAD_FILES' => 'Maximum %s files per upload (%s files selected)',

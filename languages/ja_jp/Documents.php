@@ -288,6 +288,7 @@ $languageStrings = array(
 	'LBL_PREVIEW_EXCEL_PARSE_FAILED' => 'Excelデータの解析に失敗しました。ファイルが壊れている可能性があります。',
 	'LBL_PREVIEW_EXCEL_LOAD_FAILED' => 'Excelファイルを読み込めませんでした。ファイルが壊れている可能性があります。',
 	'LBL_PREVIEW_PPTX_PARSE_FAILED' => 'PowerPointファイルを読み込めませんでした。ファイルが壊れている可能性があります。',
+	'LBL_PREVIEW_NOT_SUPPORTED_URL' => 'URLはプレビューに対応しておりません。',
 	'LBL_PREVIEW_TOO_LARGE' => 'ファイルが大きいためプレビューを表示しません。ダウンロードしてご確認ください。',
 	'LBL_PREVIEW_TOO_LARGE_WITH_LIMIT' => 'ファイルが大きいためプレビューを表示しません（上限 %s）。ダウンロードしてご確認ください。',
 	'LBL_MAX_UPLOAD_FILES' => '一度にアップロードできるファイルは最大%s件です（%s件選択されました）',
