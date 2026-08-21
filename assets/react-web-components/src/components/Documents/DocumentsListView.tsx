@@ -8,6 +8,7 @@ import type {
 } from "./types/documents";
 import { FileIcon } from "./FileIcon";
 import { StarButton } from "./StarButton";
+import { DeadlineStatusBadge } from "./DeadlineStatusBadge";
 
 interface DocumentsListViewProps {
   records: DocumentRecord[];
@@ -435,6 +436,19 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
                 </th>
                 <th
                   style={{
+                    width: 76,
+                    padding: "8px 6px",
+                    textAlign: "left",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "#4A5568",
+                    borderBottom: "2px solid #E2E8F0",
+                  }}
+                >
+                  {t("LBL_COLUMN_DEADLINE_STATUS")}
+                </th>
+                <th
+                  style={{
                     padding: "8px 6px",
                     textAlign: "left",
                     fontSize: 12,
@@ -451,7 +465,7 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
               {isLoading && records.length === 0 && (
                 <tr>
                   <td
-                    colSpan={12}
+                    colSpan={13}
                     style={{
                       padding: 40,
                       textAlign: "center",
@@ -465,7 +479,7 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
               {!isLoading && records.length === 0 && (
                 <tr>
                   <td
-                    colSpan={12}
+                    colSpan={13}
                     style={{
                       padding: 40,
                       textAlign: "center",
@@ -581,6 +595,16 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
                           rec.compliance.document_category
                         ] || ""
                       : ""}
+                  </td>
+                  <td
+                    style={{ padding: "6px 6px" }}
+                    onClick={() => onRecordClick(rec)}
+                  >
+                    <DeadlineStatusBadge
+                      status={rec.compliance?.input_deadline_status}
+                      deadline={rec.compliance?.input_deadline}
+                      compact
+                    />
                   </td>
                   <td
                     style={{

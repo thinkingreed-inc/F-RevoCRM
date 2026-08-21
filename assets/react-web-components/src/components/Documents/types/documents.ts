@@ -29,7 +29,8 @@ export interface ComplianceListData {
   compliance_status: ComplianceStatus | null;
   compliance_notes: string | null;
   input_deadline: string | null;
-  input_deadline_status: DeadlineStatus;
+  /** スキャナ保存以外は入力期限を持たないため null になる */
+  input_deadline_status: DeadlineStatus | null;
 }
 
 /** 電帳法コンプライアンス情報（詳細用） */

@@ -3,6 +3,7 @@ import { useOptionalTranslation } from "../../hooks/useTranslation";
 import type { DocumentRecord, Folder } from "./types/documents";
 import { FileIcon } from "./FileIcon";
 import { StarButton } from "./StarButton";
+import { DeadlineStatusBadge } from "./DeadlineStatusBadge";
 
 interface DocumentsGridViewProps {
   records: DocumentRecord[];
@@ -298,6 +299,18 @@ export const DocumentsGridView: React.FC<DocumentsGridViewProps> = ({
                 >
                   {rec.title}
                 </div>
+
+                {/* 入力期限状態（スキャナ保存の書類のみ） */}
+                {rec.compliance?.input_deadline &&
+                  rec.compliance?.input_deadline_status && (
+                    <div>
+                      <DeadlineStatusBadge
+                        status={rec.compliance.input_deadline_status}
+                        deadline={rec.compliance.input_deadline}
+                        compact
+                      />
+                    </div>
+                  )}
 
                 {/* ファイル情報 */}
                 <div

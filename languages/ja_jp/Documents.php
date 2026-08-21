@@ -352,6 +352,7 @@ $languageStrings = array(
 	'LBL_COLUMN_ACTIONS' => '操作',
 	'LBL_COLUMN_COMPLIANCE' => '適合',
 	'LBL_COLUMN_CATEGORY' => '書類区分',
+	'LBL_COLUMN_DEADLINE_STATUS' => '期限',
 
 	// グリッドビュー (React)
 	'LBL_SUBFOLDERS' => 'サブフォルダ %s',
@@ -371,6 +372,7 @@ $languageStrings = array(
 	'LBL_ALL_CATEGORIES' => '全書類区分',
 	'LBL_ALL_RECORDS' => '全レコード',
 	'LBL_UNRELATED_ONLY' => '未関連のみ',
+	'LBL_ALL_DEADLINE_STATUSES' => 'すべての期限状態',
 
 	// ファイルバージョン (React)
 	'LBL_VERSION_CURRENT' => '(現行)',

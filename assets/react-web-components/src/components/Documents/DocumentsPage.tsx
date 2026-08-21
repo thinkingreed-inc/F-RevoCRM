@@ -127,6 +127,7 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
   const [complianceCategoryFilter, setComplianceCategoryFilter] = useState("");
   const [complianceStatusFilter, setComplianceStatusFilter] = useState("");
   const [unrealatedFilter, setUnrelatedFilter] = useState("");
+  const [deadlineStatusFilter, setDeadlineStatusFilter] = useState("");
 
   const {
     folders,
@@ -152,6 +153,7 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
     documentCategory: complianceCategoryFilter,
     complianceStatus: complianceStatusFilter,
     hasRelatedRecord: unrealatedFilter,
+    inputDeadlineStatus: deadlineStatusFilter,
   });
 
   // 検索入力のdebounce
@@ -646,6 +648,7 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
                     setComplianceCategoryFilter("");
                     setComplianceStatusFilter("");
                     setUnrelatedFilter("");
+                    setDeadlineStatusFilter("");
                   }
                   setPage(1);
                 }}
@@ -713,6 +716,27 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
                 >
                   <option value="">{t("LBL_ALL_RECORDS")}</option>
                   <option value="false">{t("LBL_UNRELATED_ONLY")}</option>
+                </select>
+                <select
+                  aria-label={t("LBL_INPUT_DEADLINE_STATUS")}
+                  title={t("LBL_INPUT_DEADLINE_STATUS")}
+                  value={deadlineStatusFilter}
+                  onChange={(e) => {
+                    setDeadlineStatusFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  style={{
+                    padding: "3px 4px",
+                    border: "1px solid #E2E8F0",
+                    borderRadius: 3,
+                    fontSize: 11,
+                    color: "#4A5568",
+                  }}
+                >
+                  <option value="">{t("LBL_ALL_DEADLINE_STATUSES")}</option>
+                  <option value="within">{t("LBL_DEADLINE_WITHIN")}</option>
+                  <option value="warning">{t("LBL_DEADLINE_WARNING")}</option>
+                  <option value="overdue">{t("LBL_DEADLINE_OVERDUE")}</option>
                 </select>
               </>
             )}

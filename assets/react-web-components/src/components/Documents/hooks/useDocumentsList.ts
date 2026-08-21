@@ -17,6 +17,8 @@ interface UseDocumentsListParams {
   documentCategory?: string;
   complianceStatus?: string;
   hasRelatedRecord?: string;
+  /** 入力期限状態（within / warning / overdue） */
+  inputDeadlineStatus?: string;
 }
 
 interface UseDocumentsListResult {
@@ -102,6 +104,9 @@ export function useDocumentsList(
       ) {
         bodyParams.append("has_related_record", params.hasRelatedRecord);
       }
+      if (params.inputDeadlineStatus) {
+        bodyParams.append("input_deadline_status", params.inputDeadlineStatus);
+      }
       const response = await fetch("index.php", {
         method: "POST",
         credentials: "same-origin",
@@ -140,6 +145,7 @@ export function useDocumentsList(
     params.documentCategory,
     params.complianceStatus,
     params.hasRelatedRecord,
+    params.inputDeadlineStatus,
   ]);
 
   useEffect(() => {
