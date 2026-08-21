@@ -208,7 +208,7 @@ $languageStrings = array(
 	'LBL_SIZE_B4' => 'B4',
 	'LBL_SIZE_B5' => 'B5',
 	'LBL_SIZE_OTHER' => 'Other',
-	'LBL_COMPLIANCE_DELETE_BLOCKED' => 'Compliance documents cannot be permanently deleted',
+	'LBL_COMPLIANCE_DELETE_BLOCKED' => 'Compliance documents cannot be deleted',
 
 	// UIType Test Block
 	'LBL_UITYPE_TEST' => 'UIType Test',

@@ -226,7 +226,7 @@ $languageStrings = array(
 	'LBL_SIZE_OTHER' => 'その他',
 
 	// 削除制限
-	'LBL_COMPLIANCE_DELETE_BLOCKED' => '電帳法対象のドキュメントは完全削除できません',
+	'LBL_COMPLIANCE_DELETE_BLOCKED' => '電帳法対象のドキュメントは削除できません',
 
 	// UITypeテスト用ブロック
 	'LBL_UITYPE_TEST' => 'UITypeテスト',
