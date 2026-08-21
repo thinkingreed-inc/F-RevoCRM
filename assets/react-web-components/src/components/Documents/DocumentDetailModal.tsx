@@ -78,6 +78,7 @@ const DETAIL_CORE_FIELDS = new Set([
   "source",
   "filedownloadcount",
   "filesize",
+  "filetype",
 ]);
 
 // ─── FieldCell: renders a single field with type-aware display ───
@@ -639,7 +640,8 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
         rawValue: doc.modifiedtime,
       },
     ];
-    blockMap["LBL_NOTE_INFORMATION"] = {
+    // キーは翻訳済みラベルで揃える（後続の動的項目が同じブロックに合流するため）
+    blockMap[t("LBL_NOTE_INFORMATION")] = {
       label: t("LBL_NOTE_INFORMATION"),
       accent: BLOCK_ACCENTS["LBL_NOTE_INFORMATION"] || DEFAULT_ACCENT,
       fields: coreInfo,
@@ -647,7 +649,7 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
 
     // Description block
     if (doc.notecontent) {
-      blockMap["LBL_DESCRIPTION"] = {
+      blockMap[t("LBL_DESCRIPTION")] = {
         label: t("LBL_DESCRIPTION"),
         accent: BLOCK_ACCENTS["LBL_DESCRIPTION"] || DEFAULT_ACCENT,
         fields: [
@@ -726,7 +728,7 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
         rawValue: t("LBL_DOWNLOAD_COUNT_SUFFIX", doc.filedownloadcount),
       },
     ];
-    blockMap["LBL_FILE_INFORMATION"] = {
+    blockMap[t("LBL_FILE_INFORMATION")] = {
       label: t("LBL_FILE_INFORMATION"),
       accent: BLOCK_ACCENTS["LBL_FILE_INFORMATION"] || DEFAULT_ACCENT,
       fields: fileFields,

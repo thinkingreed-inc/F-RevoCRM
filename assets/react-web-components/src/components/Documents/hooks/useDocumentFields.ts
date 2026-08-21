@@ -33,10 +33,12 @@ export function useDocumentFields(
     setIsLoading(true);
     setError(null);
     try {
+      // 詳細画面では入力期限・適合状態などの読み取り専用項目も必要になるため、
+      // 読み取り専用項目を含めて返す view=detail を使う
       const params = new URLSearchParams({
         module: "Documents",
         api: "GetFields",
-        view: "edit",
+        view: includeReadonly ? "detail" : "edit",
       });
       if (recordId) {
         params.append("record", String(recordId));
