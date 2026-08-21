@@ -894,6 +894,8 @@ export const DocumentCreateEditModal: React.FC<
                         }
                         // 参照・ユーザー項目の表示名（<name>_display）を渡す
                         formData={dynamicFields}
+                        // ユーザー追加項目は標準の編集画面と同じく案内文を出さない
+                        placeholder=""
                         module="Documents"
                       />
                     );
