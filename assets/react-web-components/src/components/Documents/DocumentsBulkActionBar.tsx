@@ -29,6 +29,8 @@ interface BulkResult {
   denied?: number;
   skipped?: number;
   failed?: number;
+  /** 電帳法対象のため削除できなかった件数 */
+  blocked?: number;
 }
 
 /** 一括操作 API を呼ぶ */
@@ -94,6 +96,8 @@ export const DocumentsBulkActionBar: React.FC<DocumentsBulkActionBarProps> = ({
       mode === "delete"
         ? t("LBL_BULK_DELETE_RESULT", done)
         : t("LBL_BULK_MOVE_RESULT", done);
+    if (result.blocked)
+      message += t("LBL_BULK_SKIPPED_COMPLIANCE", result.blocked);
     if (result.denied) message += t("LBL_BULK_SKIPPED_DENIED", result.denied);
     if (result.skipped) message += t("LBL_BULK_SKIPPED_SAME", result.skipped);
     if (result.failed) message += t("LBL_BULK_FAILED", result.failed);

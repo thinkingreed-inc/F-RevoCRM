@@ -32,6 +32,7 @@ import { useDocumentDetail } from "./hooks/useDocumentDetail";
 import { useFolderTree } from "./hooks/useFolderTree";
 import { useViewMode } from "./hooks/useViewMode";
 import { useFileUpload } from "./hooks/useFileUpload";
+import { deleteDocument } from "./utils/deleteDocument";
 import {
   UploadProgressBar,
   DuplicateConfirmDialog,
@@ -1031,23 +1032,13 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
           }, 100);
         }}
         onDelete={async (recordId) => {
-          const csrf = getCsrfToken();
-          if (!csrf) return;
-          const bodyParams = new URLSearchParams();
-          bodyParams.append(csrf.name, csrf.value);
-          bodyParams.append("module", "Documents");
-          bodyParams.append("action", "DeleteAjax");
-          bodyParams.append("record", String(recordId));
           try {
-            await fetch("index.php", {
-              method: "POST",
-              credentials: "same-origin",
-              headers: {
-                Accept: "application/json",
-                "Content-Type": "application/x-www-form-urlencoded",
-              },
-              body: bodyParams.toString(),
-            });
+            const result = await deleteDocument(recordId);
+            if (!result.ok) {
+              // 削除できなかったことを必ず伝える（電帳法対象など）
+              alert(result.message || t("LBL_DELETE_FAILED"));
+              return;
+            }
             setDetailModalRecordId(null);
             reloadList();
             reloadFolders();

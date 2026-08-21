@@ -111,6 +111,7 @@ $languageStrings = array(
 	'LBL_BULK_MOVE_RESULT' => 'Moved %s document(s)',
 	'LBL_BULK_SKIPPED_DENIED' => ' (%s skipped: no permission)',
 	'LBL_BULK_SKIPPED_SAME' => ' (%s skipped: already in the destination)',
+	'LBL_BULK_SKIPPED_COMPLIANCE' => ' (%s cannot be deleted: e-book preservation)',
 	'LBL_BULK_FAILED' => ' (%s failed)',
 	'LBL_BULK_MOVE_TARGET' => 'Destination folder',
 	'LBL_BULK_MOVE_APPLY' => 'Move',

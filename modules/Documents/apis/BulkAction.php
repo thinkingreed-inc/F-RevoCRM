@@ -50,6 +50,7 @@ class Documents_BulkAction_Api extends Vtiger_Api_Controller {
 		$deleted = 0;
 		$denied = 0;
 		$failed = 0;
+		$blocked = 0;
 
 		foreach ($recordIds as $recordId) {
 			if (!$this->canDelete($recordId)) {
@@ -58,6 +59,12 @@ class Documents_BulkAction_Api extends Vtiger_Api_Controller {
 			}
 			try {
 				$recordModel = Vtiger_Record_Model::getInstanceById($recordId, 'Documents');
+				// 電帳法対象は削除できない。理由が分かるように失敗と分けて数える
+				if (method_exists($recordModel, 'isComplianceTarget')
+					&& $recordModel->isComplianceTarget()) {
+					$blocked++;
+					continue;
+				}
 				// 削除できた場合だけ監査ログに残す（削除が拒否されたら例外で下に進まない）
 				$recordModel->delete();
 				if (method_exists($recordModel, 'logDeletion')) {
@@ -75,6 +82,8 @@ class Documents_BulkAction_Api extends Vtiger_Api_Controller {
 			'deleted' => $deleted,
 			'denied' => $denied,
 			'failed' => $failed,
+			// 電帳法対象のため削除できなかった件数
+			'blocked' => $blocked,
 		);
 	}
 

@@ -111,6 +111,7 @@ $languageStrings = array(
 	'LBL_BULK_MOVE_RESULT' => '%s件を移動しました',
 	'LBL_BULK_SKIPPED_DENIED' => '（権限が無い %s件は対象外）',
 	'LBL_BULK_SKIPPED_SAME' => '（既に移動先にある %s件は対象外）',
+	'LBL_BULK_SKIPPED_COMPLIANCE' => '（電帳法対象の %s件は削除できません）',
 	'LBL_BULK_FAILED' => '（%s件は失敗）',
 	'LBL_BULK_MOVE_TARGET' => '移動先のフォルダ',
 	'LBL_BULK_MOVE_APPLY' => '移動',
