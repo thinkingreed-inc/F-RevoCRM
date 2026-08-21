@@ -73,6 +73,9 @@ class Documents_ComplianceAPI_Api extends Vtiger_Api_Controller {
             'scan_resolution_dpi' => $resolution,
             'scan_color_type' => $request->get('scan_color_type'),
             'original_paper_size' => $request->get('original_paper_size'),
+            // スキャン実施者・スキャン日時もこの経路で保存する
+            'scanned_by' => $request->get('scanned_by'),
+            'scanned_at' => $request->get('scanned_at'),
         );
 
         foreach ($fields as $field => $value) {

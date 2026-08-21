@@ -89,6 +89,12 @@ class Migration20260821005929_FixDocumentsScannerFieldTypes extends FRMigrationC
      * スキャン解像度のピックリストを用意する
      *
      * uitype 16 は vtiger_<fieldname> テーブルを選択肢の入れ物として使う。
+     * 既存の電帳法ピックリスト（vtiger_document_category 等）と同じ作りに揃える。
+     *   - 役割ごとの選択肢制御はしない（vtiger_picklist には登録しない）。
+     *     登録すると、あとから追加した役割に選択肢が割り当てられず空になる
+     *   - color 列は必須。Vtiger_Field_Model::getPicklistColors() が
+     *     「SELECT <name>, color FROM vtiger_<name>」を実行するため、
+     *     無いと一覧・詳細画面が落ちる
      */
     private function createResolutionPicklist() {
         $table = 'vtiger_scan_resolution_dpi';
@@ -97,20 +103,22 @@ class Migration20260821005929_FixDocumentsScannerFieldTypes extends FRMigrationC
                 "CREATE TABLE {$table} (
                     scan_resolution_dpiid INT NOT NULL AUTO_INCREMENT,
                     scan_resolution_dpi VARCHAR(200) NOT NULL,
-                    presence INT(1) NOT NULL DEFAULT 1,
-                    picklist_valueid INT NOT NULL DEFAULT 0,
                     sortorderid INT DEFAULT 0,
+                    presence INT NOT NULL DEFAULT 1,
+                    color VARCHAR(10) DEFAULT NULL,
                     PRIMARY KEY (scan_resolution_dpiid),
                     UNIQUE KEY scan_resolution_dpi (scan_resolution_dpi)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8",
                 array()
             );
             $this->log("テーブル {$table} を作成しました");
+        } else if (!$this->checkColumnExists($table, 'color')) {
+            // 先に作られたテーブルに color が無い場合は足す
+            $this->db->pquery("ALTER TABLE {$table} ADD COLUMN color VARCHAR(10) DEFAULT NULL", array());
+            $this->log("テーブル {$table} に color 列を追加しました");
         }
 
-        // ピックリストの登録（vtiger_picklist / vtiger_role2picklist にも登録する）
-        $picklistId = $this->ensurePicklistId('scan_resolution_dpi');
-        $sortOrder = 1;
+        $sortOrder = 0;
         foreach (self::RESOLUTION_VALUES as $value) {
             $exists = $this->db->pquery(
                 "SELECT 1 FROM {$table} WHERE scan_resolution_dpi = ?", array($value)
@@ -119,64 +127,34 @@ class Migration20260821005929_FixDocumentsScannerFieldTypes extends FRMigrationC
                 $sortOrder++;
                 continue;
             }
-            $valueId = $this->nextPicklistValueId();
             $this->db->pquery(
-                "INSERT INTO {$table} (scan_resolution_dpi, presence, picklist_valueid, sortorderid)
-                VALUES (?, 1, ?, ?)",
-                array($value, $valueId, $sortOrder)
+                "INSERT INTO {$table} (scan_resolution_dpi, sortorderid, presence) VALUES (?, ?, 1)",
+                array($value, $sortOrder)
             );
-            $this->assignPicklistToRoles($picklistId, $valueId);
             $this->log("スキャン解像度の選択肢 {$value} を追加しました");
             $sortOrder++;
         }
+
+        // 役割ごとの選択肢制御はしないため、登録済みなら取り消す
+        $this->removeRoleBasedRegistration('scan_resolution_dpi');
     }
 
     /**
-     * vtiger_picklist の picklistid を返す（無ければ作る）
+     * 役割ベースのピックリスト登録を取り消す
+     *
+     * @param string $name
      */
-    private function ensurePicklistId($name) {
+    private function removeRoleBasedRegistration($name) {
         $result = $this->db->pquery(
             'SELECT picklistid FROM vtiger_picklist WHERE name = ?', array($name)
         );
-        if ($result !== false && $this->db->num_rows($result) > 0) {
-            return (int) $this->db->query_result($result, 0, 'picklistid');
-        }
-        $next = $this->db->pquery(
-            'SELECT COALESCE(MAX(picklistid), 0) + 1 AS next FROM vtiger_picklist', array()
-        );
-        $picklistId = (int) $this->db->query_result($next, 0, 'next');
-        $this->db->pquery(
-            'INSERT INTO vtiger_picklist (picklistid, name) VALUES (?, ?)',
-            array($picklistId, $name)
-        );
-        return $picklistId;
-    }
-
-    /**
-     * 次の picklist_valueid を返す
-     *
-     * vtiger 標準の採番（vtiger_picklistvalues のシーケンス）に合わせる。
-     */
-    private function nextPicklistValueId() {
-        require_once 'include/ComboUtil.php';
-        return (int) getUniquePicklistID();
-    }
-
-    /**
-     * すべての役割に選択肢を割り当てる（役割ごとの選択肢制御はしない）
-     */
-    private function assignPicklistToRoles($picklistId, $valueId) {
-        $roles = $this->db->pquery('SELECT roleid FROM vtiger_role', array());
-        if ($roles === false) {
+        if ($result === false || $this->db->num_rows($result) === 0) {
             return;
         }
-        for ($i = 0; $i < $this->db->num_rows($roles); $i++) {
-            $roleId = $this->db->query_result($roles, $i, 'roleid');
-            $this->db->pquery(
-                'INSERT IGNORE INTO vtiger_role2picklist (roleid, picklistvalueid, picklistid, sortid)
-                VALUES (?, ?, ?, ?)',
-                array($roleId, $valueId, $picklistId, 1)
-            );
-        }
+        $picklistId = (int) $this->db->query_result($result, 0, 'picklistid');
+        $this->db->pquery('DELETE FROM vtiger_role2picklist WHERE picklistid = ?', array($picklistId));
+        $this->db->pquery('DELETE FROM vtiger_picklist WHERE picklistid = ?', array($picklistId));
+        $this->log("ピックリスト {$name} の役割別登録を取り消しました");
     }
+
 }

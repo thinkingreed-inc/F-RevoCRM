@@ -25,6 +25,7 @@ function useIsMobile(breakpoint = 768) {
 }
 import { FieldRenderer } from "../FieldRenderer";
 import { isComplianceFieldVisible } from "./utils/complianceFields";
+import { toServerValue } from "./utils/serverValue";
 import { FieldInfo, FieldValue } from "../../types/field";
 
 interface DocumentCreateEditModalProps {
@@ -333,6 +334,13 @@ export const DocumentCreateEditModal: React.FC<
   /** Append dynamic field values to form params for the main Save action.
    *  空文字もそのまま送信する（vtiger Saveはnullのみスキップするため、
    *  空文字を送れば値を明示的にクリアできる）。 */
+  /** 項目名 → uitype（送信形式の調整に使う） */
+  const uitypeOf = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const f of fieldDefs) map[f.name] = String(f.uitype);
+    return map;
+  }, [fieldDefs]);
+
   /** 項目名 → ブロック名（表示判定に使う） */
   const blockLabelOf = useMemo(() => {
     const map: Record<string, string> = {};
@@ -350,10 +358,11 @@ export const DocumentCreateEditModal: React.FC<
         // （URLに変更した場合や、スキャナ保存から電子取引に変えた場合など）
         const blockLabel = blockLabelOf[key];
         if (blockLabel && !isDynamicFieldVisible(key, blockLabel)) continue;
-        append(key, typeof val === "boolean" ? (val ? "1" : "0") : String(val));
+        const raw = typeof val === "boolean" ? (val ? "1" : "0") : String(val);
+        append(key, toServerValue(uitypeOf[key], raw));
       }
     },
-    [dynamicFields, blockLabelOf, isDynamicFieldVisible],
+    [dynamicFields, blockLabelOf, isDynamicFieldVisible, uitypeOf],
   );
 
   const handleSave = useCallback(async () => {
@@ -517,10 +526,9 @@ export const DocumentCreateEditModal: React.FC<
       // Send all dynamic field values to ComplianceAPI
       for (const [key, val] of Object.entries(dynamicFields)) {
         if (val !== undefined && val !== null && val !== "") {
-          params.append(
-            key,
-            typeof val === "boolean" ? (val ? "1" : "0") : String(val),
-          );
+          const raw =
+            typeof val === "boolean" ? (val ? "1" : "0") : String(val);
+          params.append(key, toServerValue(uitypeOf[key], raw));
         }
       }
       await fetch("index.php", {
@@ -530,7 +538,7 @@ export const DocumentCreateEditModal: React.FC<
         body: params.toString(),
       });
     },
-    [dynamicFields],
+    [dynamicFields, uitypeOf],
   );
 
   if (!isOpen) return null;

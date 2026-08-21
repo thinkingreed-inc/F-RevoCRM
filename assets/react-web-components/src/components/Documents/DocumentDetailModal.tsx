@@ -143,6 +143,9 @@ function getFieldTone(
   return { pillBg: "#eef2f7", pillColor: "#4a5560" };
 }
 
+/** ユーザーを指す項目（値はユーザーID、表示はユーザー名） */
+const USER_FIELD_UITYPES = ["52", "53"];
+
 const FieldCell: React.FC<{
   field: DocFieldInfo;
   rawValue: any;
@@ -203,7 +206,10 @@ const FieldCell: React.FC<{
             ? `¥${Number(rawValue).toLocaleString()}`
             : field.uitype === "9"
               ? `${strVal}%`
-              : strVal}
+              : // ユーザー項目（uitype 52 / 53）はIDではなくユーザー名を出す
+                USER_FIELD_UITYPES.includes(field.uitype)
+                ? dynamicFields?.[field.name + "_display"] || strVal
+                : strVal}
         </div>
       ) : variant === "mono" ? (
         <div

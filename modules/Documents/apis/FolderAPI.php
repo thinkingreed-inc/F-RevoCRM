@@ -345,6 +345,15 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 
 		$folderModel->delete();
 
+		// フォルダを消したら権限行も消す。残しておくと、
+		// 採番（max(folderid)+1）でIDが再利用されたときに
+		// 新しいフォルダが以前の権限を引き継いでしまう
+		$db = PearDatabase::getInstance();
+		$db->pquery(
+			'DELETE FROM vtiger_folder_permissions WHERE folderid = ?',
+			array((int) $folderId)
+		);
+
 		return $this->sendSuccess(array(
 			'success' => true,
 			'message' => vtranslate('LBL_FOLDER_DELETED', $moduleName),
