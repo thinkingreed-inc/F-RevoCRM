@@ -152,7 +152,7 @@ export const DocumentCreateEditModal: React.FC<
 
   const docTypeLabels: Record<DocType, string> = {
     I: t("LBL_DOC_TYPE_FILE"),
-    E: "URL",
+    E: t("LBL_DOC_TYPE_URL"),
   };
 
   // Group dynamic (non-core) fields by block label
@@ -883,7 +883,7 @@ export const DocumentCreateEditModal: React.FC<
           {docType === "E" && (
             <div style={{ marginBottom: 16 }}>
               <label style={labelStyle}>
-                URL <span style={{ color: "#E53E3E" }}>*</span>
+                {t("LBL_FILE_URL")} <span style={{ color: "#E53E3E" }}>*</span>
               </label>
               <input
                 type="url"
