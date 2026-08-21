@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import type { DocumentDetail, RelatedRecord } from "./types/documents";
 import { FilePreviewRenderer } from "./FilePreviewRenderer";
 import { ComplianceHistoryModal } from "./ComplianceHistoryModal";
+import { unlinkDocument } from "./utils/unlinkDocument";
 import { useOptionalTranslation } from "../../hooks/useTranslation";
 import { useDocumentFields, DocFieldInfo } from "./hooks/useDocumentFields";
 
@@ -12,6 +13,12 @@ interface DocumentDetailModalProps {
   onClose: () => void;
   onEdit: (doc: DocumentDetail) => void;
   onDelete: (recordId: number) => void;
+  /**
+   * 関連レコードの紐づけを解除したときに、解除した親レコードを渡して呼ばれる
+   *
+   * 渡されない場合は解除の操作を出さない（読み取り専用で使う画面のため）。
+   */
+  onRelationChanged?: (parentModule: string, parentId: number) => void;
 }
 
 function formatFileSize(bytes: number): string {
@@ -490,7 +497,12 @@ const BlockCard: React.FC<{
 
 // ─── Related record card ───
 
-const RelatedRecordCard: React.FC<{ record: RelatedRecord }> = ({ record }) => (
+const RelatedRecordCard: React.FC<{
+  record: RelatedRecord;
+  /** 紐づけ解除のラベル（渡されたときだけ解除ボタンを出す） */
+  unlinkLabel?: string;
+  onUnlink?: () => void;
+}> = ({ record, unlinkLabel, onUnlink }) => (
   <a
     href={`index.php?module=${record.module}&view=Detail&record=${record.id}`}
     style={{
@@ -538,6 +550,32 @@ const RelatedRecordCard: React.FC<{ record: RelatedRecord }> = ({ record }) => (
           </div>
         )}
       </div>
+      {onUnlink && unlinkLabel && (
+        <button
+          type="button"
+          onClick={(e) => {
+            // カード全体がリンクなので、遷移させずに解除だけ行う
+            e.preventDefault();
+            e.stopPropagation();
+            onUnlink();
+          }}
+          aria-label={unlinkLabel}
+          title={unlinkLabel}
+          style={{
+            border: "1px solid #E2E8F0",
+            borderRadius: 4,
+            background: "#fff",
+            color: "#718096",
+            cursor: "pointer",
+            fontSize: 11,
+            padding: "3px 8px",
+            marginRight: 8,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {unlinkLabel}
+        </button>
+      )}
       <span style={{ color: "#A0AEC0", fontSize: 16 }}>→</span>
     </div>
   </a>
@@ -552,12 +590,47 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
   onClose,
   onEdit,
   onDelete,
+  onRelationChanged,
 }) => {
   const { t } = useOptionalTranslation();
   const isMobile = useIsMobile();
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const { fields: fieldDefs } = useDocumentFields(doc?.id, true);
+
+  /**
+   * 関連レコードとの紐づけを解除する（ドキュメント自体は消さない）
+   *
+   * 電帳法対象のドキュメントは取引レコードとの紐づけが適合の条件になるため、
+   * 解除で不適合になり得ることを確認時に伝える。
+   */
+  const handleUnlinkRelated = useCallback(
+    async (rel: RelatedRecord) => {
+      if (!doc) return;
+      const note = doc.compliance
+        ? "\n\n" + t("LBL_UNLINK_COMPLIANCE_NOTE")
+        : "";
+      const target = rel.label || rel.module_label || rel.module;
+      if (!window.confirm(t("LBL_UNLINK_CONFIRM_RELATED", target) + note)) {
+        return;
+      }
+      const result = await unlinkDocument({
+        parentModule: rel.module,
+        parentId: rel.id,
+        recordId: doc.id,
+      });
+      if (!result.ok) {
+        alert(
+          result.denied > 0
+            ? t("LBL_UNLINK_DENIED")
+            : result.message || t("LBL_UNLINK_FAILED"),
+        );
+        return;
+      }
+      onRelationChanged?.(rel.module, rel.id);
+    },
+    [doc, onRelationChanged, t],
+  );
 
   /** Get raw value for a dynamic field */
   const getDynamicFieldValue = (fieldName: string): any => {
@@ -979,7 +1052,20 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
                 <div style={{ padding: "12px 16px" }}>
                   {doc.related_records && doc.related_records.length > 0 ? (
                     doc.related_records.map((rel) => (
-                      <RelatedRecordCard key={rel.id} record={rel} />
+                      <RelatedRecordCard
+                        key={rel.id}
+                        record={rel}
+                        unlinkLabel={
+                          onRelationChanged
+                            ? t("LBL_UNLINK_DOCUMENT")
+                            : undefined
+                        }
+                        onUnlink={
+                          onRelationChanged
+                            ? () => handleUnlinkRelated(rel)
+                            : undefined
+                        }
+                      />
                     ))
                   ) : doc.compliance ? (
                     <div
@@ -1425,7 +1511,20 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
                     <div style={{ padding: "12px 16px" }}>
                       {doc.related_records && doc.related_records.length > 0 ? (
                         doc.related_records.map((rel) => (
-                          <RelatedRecordCard key={rel.id} record={rel} />
+                          <RelatedRecordCard
+                            key={rel.id}
+                            record={rel}
+                            unlinkLabel={
+                              onRelationChanged
+                                ? t("LBL_UNLINK_DOCUMENT")
+                                : undefined
+                            }
+                            onUnlink={
+                              onRelationChanged
+                                ? () => handleUnlinkRelated(rel)
+                                : undefined
+                            }
+                          />
                         ))
                       ) : doc.compliance ? (
                         <div

@@ -13,6 +13,7 @@ import { useDocumentDetail } from "./hooks/useDocumentDetail";
 import { useFolderTree } from "./hooks/useFolderTree";
 import { useFileUpload } from "./hooks/useFileUpload";
 import { deleteDocument } from "./utils/deleteDocument";
+import { unlinkDocument } from "./utils/unlinkDocument";
 import {
   UploadProgressBar,
   DuplicateConfirmDialog,
@@ -297,6 +298,38 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
       }
     },
     [reload, t],
+  );
+
+  /**
+   * このレコードとの紐づけを解除する（ドキュメント自体は消さない）
+   *
+   * 電帳法対象のドキュメントは取引レコードとの紐づけが適合の条件になるため、
+   * 解除で不適合になり得ることを確認時に伝える。
+   */
+  const handleUnlink = useCallback(
+    async (rec: DocumentRecord) => {
+      const note = rec.compliance
+        ? "\n\n" + t("LBL_UNLINK_COMPLIANCE_NOTE")
+        : "";
+      if (!window.confirm(t("LBL_UNLINK_CONFIRM", rec.title) + note)) {
+        return;
+      }
+      const result = await unlinkDocument({
+        parentModule,
+        parentId,
+        recordId: rec.id,
+      });
+      if (!result.ok) {
+        alert(
+          result.denied > 0
+            ? t("LBL_UNLINK_DENIED")
+            : result.message || t("LBL_UNLINK_FAILED"),
+        );
+        return;
+      }
+      reload();
+    },
+    [parentModule, parentId, reload, t],
   );
 
   return (
@@ -662,6 +695,41 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
                         ⬇
                       </a>
                     )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleUnlink(rec);
+                      }}
+                      aria-label={t("LBL_UNLINK_DOCUMENT")}
+                      title={t("LBL_UNLINK_DOCUMENT")}
+                      style={{
+                        border: "none",
+                        background: "none",
+                        cursor: "pointer",
+                        color: "#718096",
+                        padding: 0,
+                        lineHeight: 1,
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
+                      {/* 鎖が切れた形（削除ではなく紐づけ解除であることを示す） */}
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M18.84 12.16a4 4 0 0 0 0-5.66l-1.34-1.34a4 4 0 0 0-5.66 0L10.5 6.5" />
+                        <path d="M5.16 11.84a4 4 0 0 0 0 5.66l1.34 1.34a4 4 0 0 0 5.66 0l1.34-1.34" />
+                        <line x1="2" y1="2" x2="22" y2="22" />
+                      </svg>
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -739,6 +807,15 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
           }, 100);
         }}
         onDelete={handleDelete}
+        onRelationChanged={(unlinkedModule, unlinkedId) => {
+          // このレコードとの紐づけを外した場合だけ一覧から消えるので閉じる
+          if (unlinkedModule === parentModule && unlinkedId === parentId) {
+            setDetailModalRecordId(null);
+          } else {
+            reloadDetail();
+          }
+          reload();
+        }}
       />
 
       {/* 登録/編集モーダル */}

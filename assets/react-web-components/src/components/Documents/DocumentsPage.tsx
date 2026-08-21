@@ -1070,6 +1070,11 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
             alert(t("LBL_DELETE_FAILED"));
           }
         }}
+        onRelationChanged={() => {
+          // 適合状態が変わるため一覧も読み直す
+          reloadDetail();
+          reloadList();
+        }}
       />
 
       {/* 登録/編集モーダル */}
