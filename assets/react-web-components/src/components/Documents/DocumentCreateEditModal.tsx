@@ -13,6 +13,7 @@ import {
   uploadFileInChunks,
   type ChunkUploadInfo,
 } from "./utils/chunkUpload";
+import { pickSingleDroppedFile } from "./utils/dropEntries";
 
 function useIsMobile(breakpoint = 768) {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= breakpoint);
@@ -329,6 +330,41 @@ export const DocumentCreateEditModal: React.FC<
       }
     },
     [title, chunkInfo, t],
+  );
+
+  /** ドロップされた項目を受け取る。単体ファイル以外は理由を添えて弾く */
+  const handleDropFiles = useCallback(
+    (dataTransfer: DataTransfer) => {
+      const dropped = pickSingleDroppedFile(dataTransfer);
+      switch (dropped.kind) {
+        case "file":
+          handleFileSelect(dropped.file);
+          return;
+        case "folder":
+          setError(t("LBL_UPLOAD_ERR_FOLDER_NOT_ALLOWED"));
+          return;
+        case "multiple":
+          setError(t("LBL_UPLOAD_ERR_SINGLE_FILE_ONLY", dropped.count));
+          return;
+        default:
+          // ファイルを含まないドロップ（テキストの選択範囲など）は何もしない
+          return;
+      }
+    },
+    [handleFileSelect, t],
+  );
+
+  /** ファイル選択ダイアログからの受け取り。複数選択された場合は弾く */
+  const handleInputFiles = useCallback(
+    (files: FileList | null) => {
+      if (!files || files.length === 0) return;
+      if (files.length > 1) {
+        setError(t("LBL_UPLOAD_ERR_SINGLE_FILE_ONLY", files.length));
+        return;
+      }
+      handleFileSelect(files[0]);
+    },
+    [handleFileSelect, t],
   );
 
   /** Append dynamic field values to form params for the main Save action.
@@ -802,8 +838,7 @@ export const DocumentCreateEditModal: React.FC<
                   // 一覧側のドロップ処理（QuickUpload）に伝播すると二重登録になる
                   e.stopPropagation();
                   setIsDragging(false);
-                  const file = e.dataTransfer.files[0];
-                  if (file) handleFileSelect(file);
+                  handleDropFiles(e.dataTransfer);
                 }}
                 onClick={() => fileInputRef.current?.click()}
                 style={{
@@ -819,10 +854,10 @@ export const DocumentCreateEditModal: React.FC<
                 <input
                   ref={fileInputRef}
                   type="file"
+                  multiple={false}
                   style={{ display: "none" }}
                   onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleFileSelect(file);
+                    handleInputFiles(e.target.files);
                   }}
                 />
                 {selectedFile ? (

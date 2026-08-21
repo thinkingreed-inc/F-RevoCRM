@@ -303,7 +303,7 @@ $languageStrings = array(
 	'LBL_DUPLICATE_OVERWRITE' => 'すべて上書きする',
 	'LBL_DUPLICATE_SKIP' => '同名のファイルはスキップする',
 	'LBL_UPLOAD_RESULT_SUMMARY' => '登録 %s件 / 上書き %s件 / スキップ %s件 / 失敗 %s件',
-	'LBL_DRAG_DROP_OR_CLICK' => 'ファイルをドラッグ&ドロップ または クリックして選択',
+	'LBL_DRAG_DROP_OR_CLICK' => 'ファイル1件をドラッグ&ドロップ または クリックして選択',
 	'LBL_CURRENT_FILE' => '現在のファイル: %s（変更する場合はファイルを選択）',
 	'LBL_DELETE_FAILED' => '削除に失敗しました',
 	'LBL_SAVE_FAILED' => '保存に失敗しました',
@@ -454,6 +454,8 @@ $languageStrings = array(
 	'LBL_UPLOAD_ERR_SIZE_MISMATCH' => 'アップロードされたファイルのサイズが一致しません',
 	'LBL_UPLOAD_ERR_SESSION_NOT_FOUND' => 'アップロード情報が見つかりません。もう一度お試しください',
 	'LBL_UPLOAD_ERR_DISK_FULL' => 'サーバーの空き容量が不足しています',
+	'LBL_UPLOAD_ERR_SINGLE_FILE_ONLY' => 'この画面ではファイルを1件だけ指定できます（%s件が指定されました）。複数のファイルは一覧画面へのドラッグ&ドロップで登録してください',
+	'LBL_UPLOAD_ERR_FOLDER_NOT_ALLOWED' => 'この画面ではフォルダを指定できません。ファイルを1件だけ指定してください。フォルダごと登録する場合は一覧画面へドラッグ&ドロップしてください',
 	'LBL_UPLOADING_LARGE_FILE' => '大きなファイルを送信中... %s%',
 	'LBL_MAX_UPLOAD_SIZE_HINT' => '1ファイルあたり %s まで',
 

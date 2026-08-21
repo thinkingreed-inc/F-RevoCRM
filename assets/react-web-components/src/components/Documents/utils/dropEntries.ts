@@ -55,6 +55,49 @@ function getEntry(item: DataTransferItem): FileSystemEntryLike | null {
   }
 }
 
+/** 単体ファイルだけを受け付ける場所へのドロップ結果 */
+export type SingleFileDrop =
+  | { kind: "file"; file: File }
+  /** 複数の項目がドロップされた */
+  | { kind: "multiple"; count: number }
+  /** フォルダがドロップされた */
+  | { kind: "folder" }
+  /** ファイルが含まれていない（テキストの選択範囲など） */
+  | { kind: "none" };
+
+/**
+ * 単体ファイルだけを受け付ける場所（ドキュメント登録・編集）のドロップを判定する
+ *
+ * フォルダは DataTransfer.files では中身のないファイルに見えるため、
+ * そのまま送るとサーバー側で意味の分からないエラーになる。
+ * webkitGetAsEntry() でフォルダかどうかを判定し、呼び出し側が
+ * 適切なメッセージを出せるように種別を返す。
+ */
+export function pickSingleDroppedFile(
+  dataTransfer: DataTransfer,
+): SingleFileDrop {
+  const items = dataTransfer.items
+    ? Array.from(dataTransfer.items).filter((item) => item.kind === "file")
+    : [];
+  const files = Array.from(dataTransfer.files || []);
+  const count = Math.max(items.length, files.length);
+
+  if (count === 0) return { kind: "none" };
+  if (count > 1) return { kind: "multiple", count };
+
+  const entry = items.length === 1 ? getEntry(items[0]) : null;
+  if (entry && entry.isDirectory) return { kind: "folder" };
+
+  const file = files[0];
+  if (!file) return { kind: "none" };
+
+  // webkitGetAsEntry に対応しないブラウザ向けの保険。
+  // フォルダは種別が空・サイズ 0 になるため、その場合はフォルダとして扱う
+  if (!entry && file.size === 0 && file.type === "") return { kind: "folder" };
+
+  return { kind: "file", file };
+}
+
 function readFile(entry: FileSystemEntryLike): Promise<File | null> {
   return new Promise((resolve) => {
     if (typeof entry.file !== "function") {

@@ -280,7 +280,7 @@ $languageStrings = array(
 	'LBL_DUPLICATE_OVERWRITE' => 'Overwrite all',
 	'LBL_DUPLICATE_SKIP' => 'Skip duplicates',
 	'LBL_UPLOAD_RESULT_SUMMARY' => 'Added %s / Overwritten %s / Skipped %s / Failed %s',
-	'LBL_DRAG_DROP_OR_CLICK' => 'Drag & drop or click to select files',
+	'LBL_DRAG_DROP_OR_CLICK' => 'Drag & drop or click to select a single file',
 	'LBL_CURRENT_FILE' => 'Current file: %s (select a new file to replace)',
 	'LBL_DELETE_FAILED' => 'Failed to delete',
 	'LBL_SAVE_FAILED' => 'Failed to save',
@@ -406,6 +406,8 @@ $languageStrings = array(
 	'LBL_UPLOAD_ERR_SIZE_MISMATCH' => 'The size of the uploaded file does not match',
 	'LBL_UPLOAD_ERR_SESSION_NOT_FOUND' => 'The upload session was not found. Please try again',
 	'LBL_UPLOAD_ERR_DISK_FULL' => 'Not enough free space on the server',
+	'LBL_UPLOAD_ERR_SINGLE_FILE_ONLY' => 'Only one file can be selected on this screen (%s selected). To add multiple files, drag & drop them onto the list view',
+	'LBL_UPLOAD_ERR_FOLDER_NOT_ALLOWED' => 'Folders cannot be selected on this screen. Please select a single file. To add a whole folder, drag & drop it onto the list view',
 	'LBL_UPLOADING_LARGE_FILE' => 'Uploading a large file... %s%',
 	'LBL_MAX_UPLOAD_SIZE_HINT' => 'Up to %s per file',
 
