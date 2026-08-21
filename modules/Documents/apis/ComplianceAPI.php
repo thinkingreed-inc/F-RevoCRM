@@ -201,14 +201,17 @@ class Documents_ComplianceAPI_Api extends Vtiger_Api_Controller {
     }
 
     /**
-     * 監査ログ取得
+     * 変更履歴取得
+     *
+     * vtiger 標準の更新履歴（ModTracker）と電帳法の監査ログを1本にまとめて返す。
      */
     private function getAuditLog(Vtiger_Request $request) {
         $notesId = $this->getAccessibleNotesId($request);
         $page = max(1, (int) $request->get('page', 1));
         $limit = min(100, max(1, (int) $request->get('limit', 20)));
 
-        return Documents_AuditLogger::getAuditLog($notesId, $page, $limit);
+        require_once 'modules/Documents/utils/HistoryLog.php';
+        return Documents_HistoryLog::getHistory($notesId, $page, $limit);
     }
 
     /**

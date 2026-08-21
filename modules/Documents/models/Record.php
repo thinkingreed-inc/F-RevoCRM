@@ -394,6 +394,9 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 			throw new AppException(vtranslate('LBL_COMPLIANCE_DELETE_BLOCKED', 'Documents'));
 		}
 		parent::delete();
+		// 削除の記録は経路（詳細画面の削除・一覧の一括削除・MassDelete）によらず残す。
+		// 呼び出し側に任せると、呼び忘れた経路の削除が履歴に出ない
+		$this->logDeletion();
 	}
 
 	/**
@@ -412,22 +415,38 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 
 	/**
 	 * 削除時に監査ログを記録する
+	 *
+	 * 電帳法対象は delete() で削除自体を止めるため、ここに来るのは対象外の
+	 * ドキュメント。対象かどうかで記録を分けると削除の履歴が残らなくなるので、
+	 * すべての削除を記録する。
+	 *
+	 * 記録に失敗しても削除自体は完了しているため、例外は投げずにログへ残す。
 	 */
 	function logDeletion() {
-		if (!$this->isComplianceTarget()) {
+		$recordId = $this->getId();
+		if (empty($recordId)) {
 			return;
 		}
-		require_once 'modules/Documents/utils/AuditLogger.php';
-		$db = PearDatabase::getInstance();
-		$result = $db->pquery(
-			"SELECT * FROM vtiger_notes WHERE notesid = ?",
-			array($this->getId())
-		);
-		$recordData = array();
-		if ($result !== false && $db->num_rows($result) > 0) {
-			$recordData = $db->query_result_rowdata($result, 0);
+		try {
+			require_once 'modules/Documents/utils/AuditLogger.php';
+			$db = PearDatabase::getInstance();
+			// 削除はごみ箱への移動なので、削除後も vtiger_notes の行は残っている
+			$result = $db->pquery(
+				"SELECT * FROM vtiger_notes WHERE notesid = ?",
+				array($recordId)
+			);
+			$recordData = array();
+			if ($result !== false && $db->num_rows($result) > 0) {
+				$recordData = $db->query_result_rowdata($result, 0);
+			}
+			Documents_AuditLogger::logDelete($recordId, $recordData);
+		} catch (Exception $e) {
+			global $log;
+			if (isset($log) && is_object($log)) {
+				$log->error("Documents delete audit log failed for record {$recordId}: "
+					. $e->getMessage());
+			}
 		}
-		Documents_AuditLogger::logDelete($this->getId(), $recordData);
 	}
 
 	/**

@@ -30,7 +30,8 @@ function getActionTypeLabel(t: (key: string) => string, key: string): string {
     update: t("LBL_ACTION_UPDATE"),
     delete: t("LBL_ACTION_DELETE"),
     restore: t("LBL_ACTION_RESTORE"),
-    download: t("Download"),
+    // 他の操作と同じ LBL_ACTION_* を使う（'Download' は項目ラベル用）
+    download: t("LBL_ACTION_DOWNLOAD"),
     verify: t("LBL_ACTION_VERIFY"),
   };
   return labels[key] || key;
@@ -107,9 +108,10 @@ export const ComplianceHistoryModal: React.FC<ComplianceHistoryModalProps> = ({
         style={{
           backgroundColor: "#fff",
           borderRadius: 8,
-          width: 720,
+          // 変更履歴は日時・操作・操作者・詳細の4列。狭いと操作者が1文字ずつ折り返される
+          width: 1040,
           maxWidth: "95vw",
-          maxHeight: "85vh",
+          maxHeight: "90vh",
           display: "flex",
           flexDirection: "column",
           boxShadow: "0 10px 40px rgba(0,0,0,0.25)",
@@ -210,7 +212,15 @@ export const ComplianceHistoryModal: React.FC<ComplianceHistoryModalProps> = ({
         </div>
 
         {/* コンテンツ */}
-        <div style={{ flex: 1, overflowY: "auto", padding: 20 }}>
+        {/* 幅の狭い画面では表を横スクロールさせる（列を潰さない） */}
+        <div
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            overflowX: "auto",
+            padding: 20,
+          }}
+        >
           {/* ファイルバージョンタブ */}
           {activeTab === "versions" && (
             <div>
@@ -366,6 +376,11 @@ export const ComplianceHistoryModal: React.FC<ComplianceHistoryModalProps> = ({
                 width: "100%",
                 borderCollapse: "collapse",
                 fontSize: 13,
+                // 詳細列にファイルハッシュのような長い文字列が入ると、
+                // 自動レイアウトでは他の列が限界まで詰められてしまう
+                tableLayout: "fixed",
+                // 狭い画面では列を潰さず横スクロールさせる
+                minWidth: 720,
               }}
             >
               <thead>
@@ -391,7 +406,8 @@ export const ComplianceHistoryModal: React.FC<ComplianceHistoryModalProps> = ({
                       fontWeight: 600,
                       color: "#718096",
                       borderBottom: "2px solid #E2E8F0",
-                      width: 80,
+                      // 「ダウンロード」が入るので余裕を持たせる
+                      width: 110,
                     }}
                   >
                     {t("LBL_COL_ACTION")}
@@ -404,7 +420,7 @@ export const ComplianceHistoryModal: React.FC<ComplianceHistoryModalProps> = ({
                       fontWeight: 600,
                       color: "#718096",
                       borderBottom: "2px solid #E2E8F0",
-                      width: 110,
+                      width: 150,
                     }}
                   >
                     {t("LBL_COL_PERFORMER")}
@@ -439,7 +455,7 @@ export const ComplianceHistoryModal: React.FC<ComplianceHistoryModalProps> = ({
 
                   return (
                     <tr
-                      key={entry.audit_id}
+                      key={`${entry.source}-${entry.entry_id}`}
                       style={{ borderBottom: "1px solid #F7FAFC" }}
                     >
                       <td
@@ -472,11 +488,20 @@ export const ComplianceHistoryModal: React.FC<ComplianceHistoryModalProps> = ({
                           padding: "8px 10px",
                           color: "#4A5568",
                           fontSize: 12,
+                          // 「シ ス テ ム 管 理 者」のような1文字ずつの折り返しを防ぐ
+                          wordBreak: "keep-all",
                         }}
                       >
                         {entry.performer_name}
                       </td>
-                      <td style={{ padding: "8px 10px", fontSize: 12 }}>
+                      <td
+                        style={{
+                          padding: "8px 10px",
+                          fontSize: 12,
+                          // ハッシュのような区切りの無い長い値は列内で折り返す
+                          overflowWrap: "anywhere",
+                        }}
+                      >
                         {changes.length > 0 && (
                           <div style={{ color: "#2D3748" }}>
                             {changes.map((c, i) => (

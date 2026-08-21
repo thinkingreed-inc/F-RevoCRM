@@ -278,10 +278,13 @@ class Documents_AuditLogger {
     /**
      * 変更内容に表示用のラベル・値を付与する
      *
+     * ModTracker の項目変更にも同じ付け方をするため、外部からも使う
+     * （Documents_HistoryLog）。
+     *
      * @param array $changes
      * @return array
      */
-    private static function decorateChanges($changes) {
+    public static function decorateChanges($changes) {
         $fieldMeta = self::getFieldMeta();
         $decorated = array();
         foreach ($changes as $change) {
@@ -397,6 +400,18 @@ class Documents_AuditLogger {
         return self::log($notesId, 'delete', array(
             'action_detail' => $recordData,
         ));
+    }
+
+    /**
+     * 復元ログ（ごみ箱からの復元）
+     *
+     * 削除と対で残さないと、消えたのか戻したのかが履歴から追えない。
+     *
+     * @param int $notesId ドキュメントID
+     * @return bool
+     */
+    public static function logRestore($notesId) {
+        return self::log($notesId, 'restore');
     }
 
     /**

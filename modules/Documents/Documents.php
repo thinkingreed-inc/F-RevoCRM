@@ -646,6 +646,19 @@ class Documents extends CRMEntity {
 				$adb->pquery("UPDATE vtiger_notes set folderid = 1 WHERE notesid = ?", array($id));
 			}
 		}
+
+		// 復元も監査ログに残す（削除と対で残さないと履歴から追えない）。
+		// 記録に失敗しても復元は完了しているため、例外は投げずにログへ残す
+		try {
+			require_once 'modules/Documents/utils/AuditLogger.php';
+			Documents_AuditLogger::logRestore($id);
+		} catch (Exception $e) {
+			global $log;
+			if (isset($log) && is_object($log)) {
+				$log->error("Documents restore audit log failed for record {$id}: "
+					. $e->getMessage());
+			}
+		}
 	}
 
 	function getQueryByModuleField($module, $fieldname, $srcrecord, $query) {

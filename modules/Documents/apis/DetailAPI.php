@@ -212,10 +212,11 @@ class Documents_DetailAPI_Api extends Vtiger_Api_Controller {
 			}
 		}
 
-		// 監査ログ（直近10件）— 全ドキュメント対象
+		// 変更履歴（直近10件）— 全ドキュメント対象
+		// vtiger 標準の更新履歴（ModTracker）と電帳法の監査ログを1本にまとめて返す
 		$auditLog = array();
-		require_once 'modules/Documents/utils/AuditLogger.php';
-		$auditResult = Documents_AuditLogger::getAuditLog($recordId, 1, 10);
+		require_once 'modules/Documents/utils/HistoryLog.php';
+		$auditResult = Documents_HistoryLog::getHistory($recordId, 1, 10);
 		$auditLog = $auditResult['records'];
 
 		// ファイルバージョン — 全ドキュメント対象

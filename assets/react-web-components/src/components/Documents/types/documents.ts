@@ -78,17 +78,24 @@ export interface AuditLogDetail {
   message?: string;
 }
 
-/** 監査ログエントリ */
+/** 変更履歴の記録元（vtiger 標準の更新履歴 / 電帳法の監査ログ） */
+export type HistorySource = "modtracker" | "audit";
+
+/** 変更履歴エントリ（ModTracker と監査ログを統合したもの） */
 export interface AuditLogEntry {
-  audit_id: number;
+  /** 記録元ごとのID。記録元をまたぐと重複するため、単独ではキーにしない */
+  entry_id: number;
+  source: HistorySource;
   action_type:
     "create" | "update" | "delete" | "restore" | "download" | "verify";
   action_detail: AuditLogDetail | string | null;
   file_hash_before: string | null;
   file_hash_after: string | null;
-  performed_by: number;
+  /** ModTracker は操作者が入らない場合がある */
+  performed_by: number | null;
   performer_name: string;
   performed_at: string;
+  /** ModTracker は IP アドレスを持たない */
   ip_address: string | null;
 }
 
