@@ -178,6 +178,23 @@ class Documents_DetailAPI_Api extends Vtiger_Api_Controller {
 				}
 				$dynamicFields[$fieldName] = $value;
 
+				// ユーザー参照（uitype 52 / 53）はユーザー名を解決する
+				// （ユーザーは vtiger_crmentity に無いため、参照レコードとしては引けない）
+				$uitype = (int) $fieldModel->get('uitype');
+				if (in_array($uitype, array(52, 53), true) && intval($value) > 0) {
+					$userResult = $db->pquery(
+						"SELECT CONCAT(last_name, ' ', first_name) AS name
+						FROM vtiger_users WHERE id = ? AND deleted = 0",
+						array(intval($value))
+					);
+					if ($userResult !== false && $db->num_rows($userResult) > 0) {
+						$dynamicFields[$fieldName . '_display'] =
+							decode_html($db->query_result($userResult, 0, 'name'));
+						$dynamicFields[$fieldName . '_module'] = 'Users';
+					}
+					continue;
+				}
+
 				// 参照フィールド（uitype=10等）の場合、表示名を解決
 				if ($fieldModel->isReferenceField() && !empty($value) && intval($value) > 0) {
 					try {

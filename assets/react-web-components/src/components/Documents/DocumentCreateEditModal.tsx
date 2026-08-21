@@ -892,6 +892,8 @@ export const DocumentCreateEditModal: React.FC<
                         onChange={(name: string, val: FieldValue) =>
                           handleDynamicFieldChange(name, val)
                         }
+                        // 参照・ユーザー項目の表示名（<name>_display）を渡す
+                        formData={dynamicFields}
                         module="Documents"
                       />
                     );
