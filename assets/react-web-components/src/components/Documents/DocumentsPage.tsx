@@ -252,10 +252,20 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
   );
 
   // 一覧の対象そのものが変わったら選択を解除する（別の絞り込みの内容を操作しないため）。
+  // 電帳法フィルターも一覧の対象を変えるので同じ扱いにする。
   // ページ送りでは解除しない（ページをまたいで選択できるようにする）
   useEffect(() => {
     setSelectedIds([]);
-  }, [selectedFolderId, searchKeyword, filterType]);
+  }, [
+    selectedFolderId,
+    searchKeyword,
+    filterType,
+    complianceFilter,
+    complianceCategoryFilter,
+    complianceStatusFilter,
+    unrealatedFilter,
+    deadlineStatusFilter,
+  ]);
 
   // 表示状態をURLへ反映する（戻る／進むで前の状態に戻れるようにする）
   const urlState = useMemo<DocumentsListUrlState>(
