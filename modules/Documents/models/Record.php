@@ -283,6 +283,10 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 		// 入力期限の自動計算（受領日・保存区分の変更を反映する）
 		$this->recalculateInputDeadline();
 
+		// 電帳法の適合判定（初回登録でも判定が付くようにする）
+		// 画面や API からの追加呼び出しに依存せず、保存の経路すべてで判定する
+		$this->recheckCompliance();
+
 		if (!$isUpdate) {
 			return;
 		}
@@ -295,6 +299,36 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 			global $log;
 			if (isset($log) && is_object($log)) {
 				$log->error("Documents audit log failed for record {$recordId}: " . $e->getMessage());
+			}
+		}
+	}
+
+	/**
+	 * 電帳法の適合判定をやり直して保存する
+	 *
+	 * 書類区分が未指定（電帳法対象外）の場合は ComplianceChecker 側で
+	 * 何もしない。判定に失敗しても保存自体は成功として扱う。
+	 *
+	 * ファイルハッシュは parent::save() の中で計算・保存済みのため、
+	 * ここで判定すると「ハッシュ未計算」を誤検知しない。
+	 */
+	private function recheckCompliance() {
+		$recordId = $this->getId();
+		if (empty($recordId)) {
+			return;
+		}
+		try {
+			require_once 'modules/Documents/utils/ComplianceChecker.php';
+			$result = Documents_ComplianceChecker::check($recordId);
+			// 画面へ返す値も判定後の内容に合わせる
+			if (isset($result['status'])) {
+				$this->set('compliance_status', $result['status']);
+			}
+		} catch (Exception $e) {
+			global $log;
+			if (isset($log) && is_object($log)) {
+				$log->error("Documents compliance check failed for record {$recordId}: "
+					. $e->getMessage());
 			}
 		}
 	}
