@@ -55,7 +55,11 @@
 							<div class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
 								<a href="#" id="menubar_quickCreate" class="qc-button fa fa-plus-circle" title="{vtranslate('LBL_QUICK_CREATE',$MODULE)}" aria-hidden="true"></a>
 							</div>
-							<ul class="dropdown-menu quickCreateDropdown" role="menu" aria-labelledby="dropdownMenu1">
+							{* dropdown-menu-right: パネルをトリガーの右端基準で開く(左方向に展開)。
+							   #1815 で #navbar から navbar-right を外し Bootstrap の
+							   `.navbar-right .dropdown-menu{right:0;left:auto}` が外れたため、
+							   float の副作用を持たない dropdown-menu-right で明示する。 *}
+							<ul class="dropdown-menu dropdown-menu-right quickCreateDropdown" role="menu" aria-labelledby="dropdownMenu1">
 								<li class="title" style="padding: 5px 0 0 15px;">
 									<strong>{vtranslate('LBL_QUICK_CREATE',$MODULE)}</strong>
 								</li>
@@ -96,7 +100,7 @@
 																<span class="quick-create-module">{vtranslate($singularLabel,$moduleName)}</span>
 																<i class="fa fa-caret-down quickcreateMoreDropdownAction"></i>
 															</a>
-															<ul class="dropdown-menu quickcreateMoreDropdown" aria-labelledby="menubar_quickCreate_{$moduleModel->getName()}">
+															<ul class="dropdown-menu dropdown-menu-right quickcreateMoreDropdown" aria-labelledby="menubar_quickCreate_{$moduleModel->getName()}">
 																<li class="dropdown-header"><i class="fa fa-upload"></i> {vtranslate('LBL_FILE_UPLOAD', $moduleName)}</li>
 																<li id="VtigerAction">
 																	<a href="javascript:Documents_Index_Js.uploadTo('Vtiger')">
@@ -148,7 +152,7 @@
 									  ({$USER_MODEL->get('user_name')})"></span>
 								<span class="link-text-xs-only hidden-lg hidden-md hidden-sm">{$USER_MODEL->getName()}</span>
 							</a>
-							<div class="dropdown-menu logout-content" role="menu">
+							<div class="dropdown-menu dropdown-menu-right logout-content" role="menu">
 								<div class="row">
 									<div class="col-lg-4 col-sm-4">
 										<div class="profile-img-container">
