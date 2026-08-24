@@ -52,11 +52,11 @@ class ModComments_FilePreview_View extends Vtiger_IndexAjax_View {
 		$contents = $fileContent;
 		$filename = $fileDetails['name'];
 		$parts = explode('.', $filename);
-		if ($recordModel->get('filename')) {
-                    $fileDetails = $recordModel->getFileNameAndDownloadURL($recordId, $attachmentId);
-                    $downloadUrl =  $recordModel->getDownloadFileURL($attachmentId);
-                    $trimmedFileName = $fileDetails[0]['trimmedFileName'];
-                }
+		if (!empty($fileDetails)) {
+					$attachmentDetails = $recordModel->getFileNameAndDownloadURL($recordId, $attachmentId);
+					$downloadUrl = $recordModel->getDownloadFileURL($attachmentId);
+					$trimmedFileName = $attachmentDetails[0]['trimmedFileName'];
+				}
 
 		//support for plain/text document
 		$extn = 'txt';

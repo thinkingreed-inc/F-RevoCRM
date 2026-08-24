@@ -702,6 +702,7 @@ function vtlib_purify($input, $ignore = false) {
             $config->set('CSS.AllowTricky', true);
             $config->set('URI.AllowedSchemes', $allowedSchemes);
             $config->set('Attr.EnableID', true);
+            $config->set('Attr.DefaultImageAlt', '');
 
             $__htmlpurifier_instance = new HTMLPurifier($config);
         }
@@ -713,8 +714,30 @@ function vtlib_purify($input, $ignore = false) {
                     $value[$k] = vtlib_purify($v, $ignore);
                 }
             } else { // Simple type
+                // 1. Temporarily strip base64 data in img src to avoid HTMLPurifier stripping them and prevent XSS (exclude SVG to prevent XSS)
+                $tmp_markers = array();
+                if (!is_array($input) && (stripos($input, 'data:image/') !== false) && (stripos($input, ';base64,') !== false)) {
+                    $input = preg_replace_callback(
+                        '/(["\'])(data:image\/(?!svg)[^;]+;base64,[^"\']+?)\1/i',
+                        function($matches) use (&$tmp_markers) {
+                            $marker = "VTIGERB64STRIPMARKER_" . md5(uniqid(mt_rand(), true)) . "_" . count($tmp_markers);
+                            $tmp_markers[$marker] = $matches[2];
+                            return $matches[1] . $marker . $matches[1];
+                        },
+                        $input
+                    );
+                }
+
+                // 2. Perform HTML sanitization on the cleaned HTML
                 $value = $__htmlpurifier_instance->purify($input);
                 $value = purifyHtmlEventAttributes($value, true);
+
+                // 3. Restore the stripped base64 data after sanitization is complete
+                if ($tmp_markers) {
+                    foreach ($tmp_markers as $marker => $original_data) {
+                        $value = str_replace($marker, $original_data, $value);
+                    }
+                }
             }
         }
         if ($encryptInput != null) {
