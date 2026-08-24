@@ -188,17 +188,6 @@ class Documents extends CRMEntity {
 		$this->column_fields['filetype'] = $filetype;
 		$this->column_fields['filedownloadcount'] = $filedownloadcount;
 
-		// ファイル内テキスト抽出（全文検索用）
-		if ($filelocationtype == 'I') {
-			try {
-				require_once 'modules/Documents/utils/TextExtractor.php';
-				Documents_TextExtractor::indexRecord($this->id);
-			} catch (Exception $e) {
-				// 抽出失敗はログに記録するがエラーにはしない
-				$log->error("TextExtractor failed for record {$this->id}: " . $e->getMessage());
-			}
-		}
-
 		// 電帳法対応: ファイルハッシュ計算・監査ログ記録
 		try {
 			require_once 'modules/Documents/utils/FileHasher.php';
@@ -242,6 +231,20 @@ class Documents extends CRMEntity {
 			}
 		} catch (Exception $e) {
 			$log->error("Compliance processing failed for record {$this->id}: " . $e->getMessage());
+		}
+
+		// ファイル内テキスト抽出（全文検索用）
+		// 電帳法の記録より後に行う。抽出はファイルの中身を解析するため、
+		// 大きなPDFなどで memory_limit を超えて処理が中断することがある。
+		// 中断は致命的エラーで catch できないため、先に記録を済ませておく
+		if ($filelocationtype == 'I') {
+			try {
+				require_once 'modules/Documents/utils/TextExtractor.php';
+				Documents_TextExtractor::indexRecord($this->id);
+			} catch (Exception $e) {
+				// 抽出失敗はログに記録するがエラーにはしない
+				$log->error("TextExtractor failed for record {$this->id}: " . $e->getMessage());
+			}
 		}
 	}
 
