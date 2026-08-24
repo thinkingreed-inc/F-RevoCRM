@@ -62,20 +62,24 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 			}
 		}
 
+		// 現在のユーザーの権限情報を取得
+		$currentUser = Users_Record_Model::getCurrentUserModel();
+
 		// 全ドキュメント数
+		// 参照できないフォルダのドキュメントは数えない（一覧と件数を一致させる）
+		require_once 'modules/Documents/utils/FolderPermission.php';
+		$access = Documents_FolderPermission::buildAccessibleCondition();
 		$totalResult = $db->pquery(
 			"SELECT COUNT(*) AS total FROM vtiger_notes
 			INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_notes.notesid
-			WHERE vtiger_crmentity.deleted = 0",
-			array()
+			WHERE vtiger_crmentity.deleted = 0" . $access['sql'],
+			$access['params']
 		);
 		$totalCount = 0;
 		if ($totalResult !== false) {
 			$totalCount = (int) $db->query_result($totalResult, 0, 'total');
 		}
 
-		// 現在のユーザーの権限情報を取得
-		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$isAdmin = $currentUser->isAdminUser();
 		$userId = $currentUser->getId();
 		$userRoleId = $currentUser->get('roleid');
@@ -83,14 +87,16 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 
 		// 実行ユーザーがスターを付けたドキュメント数
 		$starredCount = 0;
+		// スター付きも参照できるものだけ数える
 		$starredResult = $db->pquery(
 			"SELECT COUNT(*) AS cnt FROM vtiger_notes
 			INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_notes.notesid
 			INNER JOIN vtiger_crmentity_user_field
 				ON vtiger_crmentity_user_field.recordid = vtiger_notes.notesid
 				AND vtiger_crmentity_user_field.userid = ?
-			WHERE vtiger_crmentity.deleted = 0 AND vtiger_crmentity_user_field.starred = '1'",
-			array($userId)
+			WHERE vtiger_crmentity.deleted = 0 AND vtiger_crmentity_user_field.starred = '1'"
+			. $access['sql'],
+			array_merge(array($userId), $access['params'])
 		);
 		if ($starredResult !== false && $db->num_rows($starredResult) > 0) {
 			$starredCount = (int) $db->query_result($starredResult, 0, 'cnt');

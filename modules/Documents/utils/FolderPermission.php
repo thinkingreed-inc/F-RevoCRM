@@ -88,6 +88,59 @@ class Documents_FolderPermission {
     }
 
     /**
+     * 参照できるドキュメントに限定する SQL 条件を返す
+     *
+     * 件数と一覧で判定がずれないよう、絞り込みの条件はここで組み立てる。
+     * 管理者は制限しないため空の条件を返す。
+     *
+     * @param string $folderColumn 判定に使うフォルダIDの列。
+     *   SQL にそのまま埋め込むため、呼び出し側が定数で渡すこと（入力値を渡さない）
+     * @param int|null $userId 省略時は実行ユーザー
+     * @return array ['sql' => string, 'params' => array]
+     *   sql は " AND EXISTS (...)" 形式。制限しない場合は空文字
+     */
+    public static function buildAccessibleCondition(
+        $folderColumn = 'vtiger_notes.folderid', $userId = null) {
+        $currentUser = Users_Record_Model::getCurrentUserModel();
+        $isCurrentUser = ($userId === null);
+        if ($isCurrentUser) {
+            $userId = ($currentUser === false || empty($currentUser)) ? 0 : (int) $currentUser->getId();
+        }
+        $userId = (int) $userId;
+
+        // 管理者はすべてのフォルダを参照できる
+        $isAdmin = ($currentUser !== false && !empty($currentUser)
+            && (int) $currentUser->getId() === $userId && $currentUser->isAdminUser());
+        if ($isAdmin) {
+            return array('sql' => '', 'params' => array());
+        }
+
+        $conditions = array(
+            "(fp.target_type = 'everyone')",
+            "(fp.target_type = 'user' AND fp.target_id = ?)",
+        );
+        $params = array($userId);
+
+        $roleId = self::getRoleId($userId);
+        if (!empty($roleId)) {
+            $conditions[] = "(fp.target_type = 'role' AND fp.target_id = ?)";
+            $params[] = $roleId;
+        }
+
+        $groupIds = self::getUserGroupIds($userId);
+        if (!empty($groupIds)) {
+            $placeholders = implode(',', array_fill(0, count($groupIds), '?'));
+            $conditions[] = "(fp.target_type = 'group' AND fp.target_id IN ($placeholders))";
+            $params = array_merge($params, $groupIds);
+        }
+
+        $sql = ' AND EXISTS (SELECT 1 FROM vtiger_folder_permissions fp'
+            . ' WHERE fp.folderid = ' . $folderColumn
+            . ' AND (' . implode(' OR ', $conditions) . '))';
+        return array('sql' => $sql, 'params' => $params);
+    }
+
+    /**
      * フォルダに対する権限を持つか（view / edit は区別しない）
      *
      * @param int $folderId
