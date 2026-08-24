@@ -51,6 +51,11 @@ class Documents_ComplianceAPI_Api extends Vtiger_Api_Controller {
     private function saveCompliance(Vtiger_Request $request) {
         $notesId = $this->getAccessibleNotesId($request);
 
+        // 参照のみのフォルダに入っているドキュメントは電帳法情報も変更させない
+        if (!Documents_FolderPermission::canEditDocument($notesId)) {
+            throw new Exception(vtranslate('LBL_DOCUMENT_READONLY', 'Documents'));
+        }
+
         $db = PearDatabase::getInstance();
 
         // 変更前の値を取得（監査ログ用）

@@ -594,6 +594,8 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
 }) => {
   const { t } = useOptionalTranslation();
   const isMobile = useIsMobile();
+  // フォルダの権限が「参照」だけなら変更できない（サーバーの判定に従う）
+  const canEdit = doc?.can_edit !== false;
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const { fields: fieldDefs } = useDocumentFields(doc?.id, true);
@@ -1103,21 +1105,23 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
               flexShrink: 0,
             }}
           >
-            <button
-              onClick={() => onEdit(doc)}
-              style={{
-                flex: 1,
-                padding: "10px 0",
-                border: "1px solid #E2E8F0",
-                borderRadius: 6,
-                fontSize: 14,
-                color: "#4A5568",
-                backgroundColor: "#fff",
-                cursor: "pointer",
-              }}
-            >
-              {t("LBL_EDIT")}
-            </button>
+            {canEdit && (
+              <button
+                onClick={() => onEdit(doc)}
+                style={{
+                  flex: 1,
+                  padding: "10px 0",
+                  border: "1px solid #E2E8F0",
+                  borderRadius: 6,
+                  fontSize: 14,
+                  color: "#4A5568",
+                  backgroundColor: "#fff",
+                  cursor: "pointer",
+                }}
+              >
+                {t("LBL_EDIT")}
+              </button>
+            )}
             <button
               onClick={() => setShowHistory(true)}
               style={{
@@ -1151,22 +1155,24 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
                 {t("Download")}
               </a>
             )}
-            <button
-              onClick={() => {
-                if (window.confirm(t("LBL_CONFIRM_DELETE"))) onDelete(doc.id);
-              }}
-              style={{
-                padding: "10px 16px",
-                border: "1px solid #FEB2B2",
-                borderRadius: 6,
-                fontSize: 14,
-                color: "#E53E3E",
-                backgroundColor: "#fff",
-                cursor: "pointer",
-              }}
-            >
-              {t("LBL_DELETE")}
-            </button>
+            {canEdit && (
+              <button
+                onClick={() => {
+                  if (window.confirm(t("LBL_CONFIRM_DELETE"))) onDelete(doc.id);
+                }}
+                style={{
+                  padding: "10px 16px",
+                  border: "1px solid #FEB2B2",
+                  borderRadius: 6,
+                  fontSize: 14,
+                  color: "#E53E3E",
+                  backgroundColor: "#fff",
+                  cursor: "pointer",
+                }}
+              >
+                {t("LBL_DELETE")}
+              </button>
+            )}
           </div>
         )}
         <ComplianceHistoryModal
@@ -1240,9 +1246,11 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
           <div style={{ flex: 1 }} />
           {doc && (
             <>
-              <button onClick={() => onEdit(doc)} style={btnStyle}>
-                {t("LBL_EDIT")}
-              </button>
+              {canEdit && (
+                <button onClick={() => onEdit(doc)} style={btnStyle}>
+                  {t("LBL_EDIT")}
+                </button>
+              )}
               <button onClick={() => setShowHistory(true)} style={btnStyle}>
                 {t("LBL_SHOW_HISTORY")}
               </button>
@@ -1260,18 +1268,21 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
                   {t("Download")}
                 </a>
               )}
-              <button
-                onClick={() => {
-                  if (window.confirm(t("LBL_CONFIRM_DELETE"))) onDelete(doc.id);
-                }}
-                style={{
-                  ...btnStyle,
-                  border: "1px solid #e3b4b4",
-                  color: "#cf5a5a",
-                }}
-              >
-                {t("LBL_DELETE")}
-              </button>
+              {canEdit && (
+                <button
+                  onClick={() => {
+                    if (window.confirm(t("LBL_CONFIRM_DELETE")))
+                      onDelete(doc.id);
+                  }}
+                  style={{
+                    ...btnStyle,
+                    border: "1px solid #e3b4b4",
+                    color: "#cf5a5a",
+                  }}
+                >
+                  {t("LBL_DELETE")}
+                </button>
+              )}
             </>
           )}
           <button

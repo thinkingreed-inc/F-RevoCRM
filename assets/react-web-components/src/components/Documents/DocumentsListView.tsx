@@ -133,9 +133,12 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
   const totalPages = Math.ceil(total / pageLimit);
 
   // 表示中のドキュメントがすべて選択されているか（全選択チェックボックス用）
+  // 参照のみのフォルダのドキュメントは一括操作（削除・移動）できないため選択させない
+  const selectableRecords = records.filter((r) => r.can_edit !== false);
   const allChecked =
-    records.length > 0 && records.every((r) => selectedIds.includes(r.id));
-  const someChecked = records.some((r) => selectedIds.includes(r.id));
+    selectableRecords.length > 0 &&
+    selectableRecords.every((r) => selectedIds.includes(r.id));
+  const someChecked = selectableRecords.some((r) => selectedIds.includes(r.id));
   const hasSelection = selectedIds.length > 0;
 
   // 一括操作をヘッダー行にぴったり重ねるため、ヘッダーの高さを測る
@@ -153,7 +156,7 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
   }, [records.length, hasSelection]);
 
   const toggleAll = (checked: boolean) => {
-    const idsOnPage = records.map((r) => r.id);
+    const idsOnPage = selectableRecords.map((r) => r.id);
     onSelectionChange(
       checked
         ? Array.from(new Set([...selectedIds, ...idsOnPage]))
@@ -344,6 +347,7 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
                     type="checkbox"
                     aria-label={t("LBL_SELECT_ALL")}
                     title={t("LBL_SELECT_ALL")}
+                    disabled={selectableRecords.length === 0}
                     checked={allChecked}
                     ref={(el) => {
                       // 一部だけ選択されている状態を示す
@@ -508,10 +512,20 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
                     <input
                       type="checkbox"
                       aria-label={rec.title}
+                      // 参照のみのフォルダは一括操作できないため選択させない
+                      disabled={rec.can_edit === false}
+                      title={
+                        rec.can_edit === false
+                          ? t("LBL_DOCUMENT_READONLY")
+                          : undefined
+                      }
                       checked={selectedIds.includes(rec.id)}
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) => toggleOne(rec.id, e.target.checked)}
-                      style={{ cursor: "pointer" }}
+                      style={{
+                        cursor:
+                          rec.can_edit === false ? "not-allowed" : "pointer",
+                      }}
                     />
                   </td>
                   <td style={{ padding: "6px 2px", textAlign: "center" }}>

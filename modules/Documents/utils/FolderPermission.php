@@ -1,19 +1,28 @@
 <?php
 /**
- * ドキュメントフォルダの参照権限判定
+ * ドキュメントフォルダの権限判定
  *
  * 一覧・詳細 API では SQL の EXISTS 条件でフォルダ権限を絞り込んでいるが、
  * ドキュメントIDを直接受け取る API（適合情報の保存・関連付けなど）では
- * 個別に参照可否を確認する必要があるため、判定をここに集約する。
+ * 個別に可否を確認する必要があるため、判定をここに集約する。
  *
  * 権限は vtiger_folder_permissions に対して
  * 全員(everyone) / ユーザー(user) / 役割(role) / グループ(group) のいずれかが
- * 一致すれば参照できるものとして扱う（view / edit は区別しない）。
+ * 一致すれば与えられているものとして扱う。
+ *
+ * 参照と変更を区別する:
+ *   参照（view または edit）  一覧・詳細の表示、ダウンロード
+ *   変更（edit のみ）         編集・ファイル差し替え・削除・移動・
+ *                             電帳法情報の保存・そのフォルダへの新規登録
+ * 「参照」だけのフォルダに入っているドキュメントは読み取り専用になる。
  */
 class Documents_FolderPermission {
 
-    /** ユーザーごとの判定結果キャッシュ（'userId:notesId' => bool） */
+    /** 参照可否のキャッシュ（'userId:notesId' => bool） */
     private static $cache = array();
+
+    /** 編集可否のキャッシュ（'userId:folderId' => bool） */
+    private static $editCache = array();
 
     /**
      * 指定ユーザーがドキュメントを参照できるか
@@ -81,10 +90,133 @@ class Documents_FolderPermission {
     }
 
     /**
+     * 指定ユーザーがドキュメントを変更できるか
+     *
+     * フォルダの権限が「参照」だけの場合、その中のドキュメントは
+     * 閲覧・ダウンロードのみで、変更（編集・差し替え・削除・移動・
+     * 電帳法情報の保存）はできない。
+     *
+     * @param int $notesId ドキュメントID
+     * @param int|null $userId 省略時は実行ユーザー
+     * @return bool 存在しない・削除済みのドキュメントは false
+     */
+    public static function canEditDocument($notesId, $userId = null) {
+        $notesId = (int) $notesId;
+        if ($notesId <= 0) {
+            return false;
+        }
+
+        $db = PearDatabase::getInstance();
+        $result = $db->pquery(
+            "SELECT vtiger_notes.folderid FROM vtiger_notes
+             INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_notes.notesid
+             WHERE vtiger_notes.notesid = ? AND vtiger_crmentity.deleted = 0",
+            array($notesId)
+        );
+        if ($result === false || $db->num_rows($result) === 0) {
+            return false;
+        }
+
+        return self::canEditFolder((int) $db->query_result($result, 0, 'folderid'), $userId);
+    }
+
+    /**
+     * 指定ユーザーがフォルダに書き込めるか
+     *
+     * 新規登録先・移動先の判定にも使う。
+     *
+     * @param int $folderId フォルダID
+     * @param int|null $userId 省略時は実行ユーザー
+     * @return bool
+     */
+    public static function canEditFolder($folderId, $userId = null) {
+        $folderId = (int) $folderId;
+        if ($folderId <= 0) {
+            return false;
+        }
+        $currentUser = Users_Record_Model::getCurrentUserModel();
+        if ($userId === null) {
+            $userId = ($currentUser === false || empty($currentUser)) ? 0 : (int) $currentUser->getId();
+        }
+        $userId = (int) $userId;
+
+        // 管理者はすべてのフォルダを変更できる
+        $isAdmin = ($currentUser !== false && !empty($currentUser)
+            && (int) $currentUser->getId() === $userId && $currentUser->isAdminUser());
+        if ($isAdmin) {
+            return true;
+        }
+
+        $cacheKey = $userId . ':' . $folderId;
+        if (isset(self::$editCache[$cacheKey])) {
+            return self::$editCache[$cacheKey];
+        }
+        self::$editCache[$cacheKey] = self::hasFolderPermission($folderId, $userId, 'edit');
+        return self::$editCache[$cacheKey];
+    }
+
+    /**
+     * 変更できるフォルダIDの一覧を返す
+     *
+     * 一覧 API で行ごとに問い合わせると件数分のクエリになるため、
+     * まとめて取得して突き合わせる。
+     *
+     * @param int|null $userId 省略時は実行ユーザー
+     * @return array|null フォルダIDの配列。管理者は null（すべて変更できる）
+     */
+    public static function getEditableFolderIds($userId = null) {
+        $currentUser = Users_Record_Model::getCurrentUserModel();
+        if ($userId === null) {
+            $userId = ($currentUser === false || empty($currentUser)) ? 0 : (int) $currentUser->getId();
+        }
+        $userId = (int) $userId;
+
+        $isAdmin = ($currentUser !== false && !empty($currentUser)
+            && (int) $currentUser->getId() === $userId && $currentUser->isAdminUser());
+        if ($isAdmin) {
+            return null;
+        }
+
+        $conditions = array(
+            "(fp.target_type = 'everyone')",
+            "(fp.target_type = 'user' AND fp.target_id = ?)",
+        );
+        $params = array($userId);
+
+        $roleId = self::getRoleId($userId);
+        if (!empty($roleId)) {
+            $conditions[] = "(fp.target_type = 'role' AND fp.target_id = ?)";
+            $params[] = $roleId;
+        }
+
+        $groupIds = self::getUserGroupIds($userId);
+        if (!empty($groupIds)) {
+            $placeholders = implode(',', array_fill(0, count($groupIds), '?'));
+            $conditions[] = "(fp.target_type = 'group' AND fp.target_id IN ($placeholders))";
+            $params = array_merge($params, $groupIds);
+        }
+
+        $db = PearDatabase::getInstance();
+        $result = $db->pquery(
+            "SELECT DISTINCT fp.folderid FROM vtiger_folder_permissions fp
+             WHERE fp.permission_type = 'edit' AND (" . implode(' OR ', $conditions) . ")",
+            $params
+        );
+        $folderIds = array();
+        if ($result !== false) {
+            for ($i = 0; $i < $db->num_rows($result); $i++) {
+                $folderIds[] = (int) $db->query_result($result, $i, 'folderid');
+            }
+        }
+        return $folderIds;
+    }
+
+    /**
      * 判定結果のキャッシュを破棄する（権限を変更した後に呼ぶ）
      */
     public static function clearCache() {
         self::$cache = array();
+        self::$editCache = array();
     }
 
     /**
@@ -141,20 +273,32 @@ class Documents_FolderPermission {
     }
 
     /**
-     * フォルダに対する権限を持つか（view / edit は区別しない）
+     * フォルダに対する権限を持つか
      *
      * @param int $folderId
      * @param int $userId
+     * @param string|null $permissionType 'edit' を渡すと編集権限だけを見る。
+     *   null なら view / edit を区別しない（参照できるか）
      * @return bool
      */
-    private static function hasFolderPermission($folderId, $userId) {
+    private static function hasFolderPermission($folderId, $userId, $permissionType = null) {
         $db = PearDatabase::getInstance();
+
+        // プレースホルダの順番は SQL の並び（folderid → permission_type → 付与先）と
+        // そろえる。並びが違うと別の条件に値が入ってしまう
+        $params = array($folderId);
+
+        $typeCondition = '';
+        if ($permissionType !== null) {
+            $typeCondition = ' AND fp.permission_type = ?';
+            $params[] = $permissionType;
+        }
 
         $conditions = array(
             "(fp.target_type = 'everyone')",
             "(fp.target_type = 'user' AND fp.target_id = ?)",
         );
-        $params = array($folderId, $userId);
+        $params[] = $userId;
 
         $roleId = self::getRoleId($userId);
         if (!empty($roleId)) {
@@ -171,7 +315,8 @@ class Documents_FolderPermission {
 
         $result = $db->pquery(
             "SELECT 1 FROM vtiger_folder_permissions fp
-             WHERE fp.folderid = ? AND (" . implode(' OR ', $conditions) . ") LIMIT 1",
+             WHERE fp.folderid = ?" . $typeCondition
+             . " AND (" . implode(' OR ', $conditions) . ") LIMIT 1",
             $params
         );
         return ($result !== false && $db->num_rows($result) > 0);

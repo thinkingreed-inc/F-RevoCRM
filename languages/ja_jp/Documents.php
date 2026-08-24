@@ -123,6 +123,9 @@ $languageStrings = array(
 	'LBL_FOLDER_PARENT_SELF' => 'フォルダ自身を親フォルダに指定することはできません',
 	'LBL_FOLDER_PARENT_CIRCULAR' => '自分の下位にあるフォルダを親フォルダに指定することはできません',
 	'LBL_FOLDER_EDIT_DENIED' => 'このフォルダを編集する権限がありません',
+	'LBL_DOCUMENT_READONLY' => 'このフォルダは参照のみのため、ドキュメントを変更できません',
+	'LBL_DOCUMENT_READONLY_DELETE' => 'このフォルダは参照のみのため、ドキュメントを削除できません',
+	'LBL_BULK_SKIPPED_READONLY' => '（参照のみのフォルダにある %s件は対象外）',
 	'LBL_PERMISSION_SAVE_FAILED' => '権限設定の保存に失敗しました',
 	'LBL_FOLDER_PATH_TOO_DEEP' => 'フォルダの階層が深すぎます',
 

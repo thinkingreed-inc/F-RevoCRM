@@ -260,6 +260,10 @@ class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 		}
 		$total = (int) $db->query_result($countResult, 0, 'total');
 
+		// 変更できるフォルダの一覧（行ごとに問い合わせず、まとめて取得して突き合わせる）
+		require_once 'modules/Documents/utils/FolderPermission.php';
+		$editableFolderIds = Documents_FolderPermission::getEditableFolderIds();
+
 		// カスタムフィールド定義を取得
 		$customFieldDefs = array();
 		$moduleModel = Vtiger_Module_Model::getInstance('Documents');
@@ -341,6 +345,9 @@ class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 
 			$records[] = array(
 				'id' => $recordId,
+				// 参照のみのフォルダなら変更できない（画面側で一括操作の対象外にする）
+				'can_edit' => ($editableFolderIds === null)
+					|| in_array((int) $row['folderid'], $editableFolderIds, true),
 				'title' => decode_html($row['title']),
 				'filename' => decode_html($row['filename']),
 				'filetype' => $row['filetype'],

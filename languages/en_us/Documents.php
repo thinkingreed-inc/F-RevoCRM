@@ -123,6 +123,9 @@ $languageStrings = array(
 	'LBL_FOLDER_PARENT_SELF' => 'A folder cannot be its own parent',
 	'LBL_FOLDER_PARENT_CIRCULAR' => 'A descendant folder cannot be set as the parent',
 	'LBL_FOLDER_EDIT_DENIED' => 'You do not have permission to edit this folder',
+	'LBL_DOCUMENT_READONLY' => 'This folder is view-only, so the document cannot be changed',
+	'LBL_DOCUMENT_READONLY_DELETE' => 'This folder is view-only, so the document cannot be deleted',
+	'LBL_BULK_SKIPPED_READONLY' => ' (%s skipped: view-only folder)',
 	'LBL_PERMISSION_SAVE_FAILED' => 'Failed to save the permission settings',
 	'LBL_FOLDER_PATH_TOO_DEEP' => 'The folder hierarchy is too deep',
 

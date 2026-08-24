@@ -268,6 +268,9 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 	public function save() {
 		require_once 'modules/Documents/utils/AuditLogger.php';
 
+		// 参照のみのフォルダのドキュメントは変更させない（保存先も含めて確認する）
+		$this->assertFolderIsEditable();
+
 		// アップロード失敗時はレコードを作らずにエラーを返す
 		$this->validateUploadedFile();
 
@@ -380,10 +383,11 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 	 * 削除（ごみ箱への移動）をブロックする
 	 *
 	 * 電帳法対象のドキュメントは保存義務があるため削除させない。
+	 * 参照のみのフォルダに入っているドキュメントも削除させない。
 	 * 単一削除・一括削除（MassDelete / BulkAction API）はいずれも
 	 * このメソッドを通るため、まとめてここで止める。
 	 *
-	 * @throws AppException 電帳法対象の場合
+	 * @throws AppException 電帳法対象、またはフォルダが参照のみの場合
 	 */
 	public function delete() {
 		if ($this->isComplianceTarget()) {
@@ -393,10 +397,70 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 			}
 			throw new AppException(vtranslate('LBL_COMPLIANCE_DELETE_BLOCKED', 'Documents'));
 		}
+		if (!$this->isFolderEditable()) {
+			if (!class_exists('AppException')) {
+				vimport('includes.exceptions.AppException');
+			}
+			throw new AppException(vtranslate('LBL_DOCUMENT_READONLY_DELETE', 'Documents'));
+		}
 		parent::delete();
 		// 削除の記録は経路（詳細画面の削除・一覧の一括削除・MassDelete）によらず残す。
 		// 呼び出し側に任せると、呼び忘れた経路の削除が履歴に出ない
 		$this->logDeletion();
+	}
+
+	/**
+	 * このドキュメントが入っているフォルダを変更できるか
+	 *
+	 * 参照のみのフォルダに入っているドキュメントは読み取り専用にする。
+	 * 新規登録（IDが無い）はフォルダ側の判定に任せるため true を返す。
+	 *
+	 * @return bool
+	 */
+	private function isFolderEditable() {
+		$recordId = $this->getId();
+		if (empty($recordId)) {
+			return true;
+		}
+		require_once 'modules/Documents/utils/FolderPermission.php';
+		return Documents_FolderPermission::canEditDocument($recordId);
+	}
+
+	/**
+	 * 保存できるかを確認する（参照のみのフォルダを拒否する）
+	 *
+	 * 更新なら現在のフォルダ、フォルダを変える保存なら保存先も見る。
+	 * 新規登録は保存先のフォルダだけを見る。
+	 *
+	 * @throws AppException 参照のみのフォルダが絡む場合
+	 */
+	private function assertFolderIsEditable() {
+		require_once 'modules/Documents/utils/FolderPermission.php';
+
+		// 更新: 現在入っているフォルダを変更できること
+		if (!$this->isFolderEditable()) {
+			$this->throwReadOnly();
+		}
+
+		// 保存先のフォルダ（新規登録・フォルダ変更）に書き込めること
+		$targetFolderId = (int) $this->get('folderid');
+		if ($targetFolderId > 0
+			&& !Documents_FolderPermission::canEditFolder($targetFolderId)) {
+			$this->throwReadOnly();
+		}
+	}
+
+	/**
+	 * 参照のみで変更できないことを例外で伝える
+	 *
+	 * @throws AppException
+	 */
+	private function throwReadOnly() {
+		// cron や CLI 経由でも動くように読み込みを保証する
+		if (!class_exists('AppException')) {
+			vimport('includes.exceptions.AppException');
+		}
+		throw new AppException(vtranslate('LBL_DOCUMENT_READONLY', 'Documents'));
 	}
 
 	/**

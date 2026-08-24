@@ -1,5 +1,6 @@
 <?php
 require_once 'modules/Documents/utils/ComplianceChecker.php';
+require_once 'modules/Documents/utils/FolderPermission.php';
 
 class Documents_DetailAPI_Api extends Vtiger_Api_Controller {
 
@@ -287,6 +288,8 @@ class Documents_DetailAPI_Api extends Vtiger_Api_Controller {
 			'download_url' => $downloadUrl,
 			'preview_url' => $previewUrl,
 			'previewable' => $previewable,
+			// 参照のみのフォルダなら変更できない。画面側で編集・削除を出さないために返す
+			'can_edit' => Documents_FolderPermission::canEditDocument($recordId),
 			'preview_max_size' => Documents_Module_Model::getPreviewMaxSizeInBytes(),
 			'preview_max_size_label' => Documents_Module_Model::getEffectiveMaxUploadSizeLabel(
 				Documents_Module_Model::getPreviewMaxSizeInBytes()

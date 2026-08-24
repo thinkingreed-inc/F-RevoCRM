@@ -20,6 +20,13 @@ export interface DocumentRecord {
   note_no: string;
   download_url: string;
   compliance: ComplianceListData | null;
+  /**
+   * 変更できるか（フォルダの権限が「参照」だけなら false）
+   *
+   * false のドキュメントは編集・削除・移動ができないため、
+   * 画面側でも操作を出さない。
+   */
+  can_edit?: boolean;
 }
 
 /** 電帳法コンプライアンス情報（一覧用） */

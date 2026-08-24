@@ -197,18 +197,22 @@ class Documents_BulkAction_Api extends Vtiger_Api_Controller {
 	}
 
 	/**
-	 * 削除できるか（フォルダを参照できて、削除権限がある）
+	 * 削除できるか（フォルダを変更できて、削除権限がある）
+	 *
+	 * 参照のみのフォルダに入っているドキュメントは削除させない。
 	 */
 	private function canDelete($recordId) {
-		return Documents_FolderPermission::canAccessDocument($recordId)
+		return Documents_FolderPermission::canEditDocument($recordId)
 			&& Users_Privileges_Model::isPermitted('Documents', 'Delete', $recordId);
 	}
 
 	/**
-	 * 編集できるか（フォルダを参照できて、編集権限がある）
+	 * 編集できるか（フォルダを変更できて、編集権限がある）
+	 *
+	 * 参照のみのフォルダに入っているドキュメントは移動もさせない。
 	 */
 	private function canEdit($recordId) {
-		return Documents_FolderPermission::canAccessDocument($recordId)
+		return Documents_FolderPermission::canEditDocument($recordId)
 			&& Users_Privileges_Model::isPermitted('Documents', 'EditView', $recordId);
 	}
 
