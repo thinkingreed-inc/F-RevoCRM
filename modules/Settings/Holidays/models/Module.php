@@ -6,6 +6,7 @@
  * 休日判定・営業日計算そのものは FR_BusinessDay（include/utils/BusinessDay.php）を使用する。
  */
 require_once 'include/utils/BusinessDay.php';
+require_once 'modules/Documents/utils/DeadlineCalculator.php';
 require_once 'include/utils/JapaneseHolidays.php';
 
 class Settings_Holidays_Module_Model extends Settings_Vtiger_Module_Model {
@@ -129,6 +130,8 @@ class Settings_Holidays_Module_Model extends Settings_Vtiger_Module_Model {
 			$registered++;
 		}
 		FR_BusinessDay::clearCache();
+		// 営業日の定義が変わると入力期限の状態も変わるため、次の定期ジョブで洗い替える
+		Documents_DeadlineCalculator::clearStatusUpdatedOn();
 
 		return array('registered' => $registered, 'skipped' => $skipped);
 	}
@@ -233,6 +236,8 @@ class Settings_Holidays_Module_Model extends Settings_Vtiger_Module_Model {
 			}
 		}
 		FR_BusinessDay::clearCache();
+		// 営業日の定義が変わると入力期限の状態も変わるため、次の定期ジョブで洗い替える
+		Documents_DeadlineCalculator::clearStatusUpdatedOn();
 
 		$years = array_keys($byYear);
 		sort($years);
@@ -297,6 +302,8 @@ class Settings_Holidays_Module_Model extends Settings_Vtiger_Module_Model {
 			array((int) $recordId)
 		);
 		FR_BusinessDay::clearCache();
+		// 営業日の定義が変わると入力期限の状態も変わるため、次の定期ジョブで洗い替える
+		Documents_DeadlineCalculator::clearStatusUpdatedOn();
 		return $result !== false;
 	}
 }

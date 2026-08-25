@@ -55,6 +55,15 @@ class Documents_DeadlineCalculator {
     /** 設定名: 期限間近とみなす営業日数 */
     const SETTING_WARNING_DAYS = 'input_deadline_warning_days';
 
+    /** 設定名: 期限状態を最後に洗い替えた基準日（内部用・設定画面には出さない） */
+    const SETTING_STATUS_UPDATED_ON = 'input_deadline_status_updated_on';
+
+    /** 期限状態の一括更新で1回に更新する件数 */
+    const UPDATE_CHUNK_SIZE = 2000;
+
+    /** 日付として扱う下限（'0000-00-00' などを除くため） */
+    const MIN_VALID_DATE = '1000-01-01';
+
     /** 既定の猶予営業日数（おおむね7営業日以内） */
     const DEFAULT_BUSINESS_DAYS = 7;
 
@@ -113,7 +122,6 @@ class Documents_DeadlineCalculator {
      * @return array 保存後の設定値
      */
     public static function saveSettings($settings) {
-        $db = PearDatabase::getInstance();
         $allowed = array(
             self::SETTING_POLICY, self::SETTING_BUSINESS_DAYS,
             self::SETTING_CYCLE_MONTHS, self::SETTING_WARNING_DAYS,
@@ -123,25 +131,38 @@ class Documents_DeadlineCalculator {
             if (!in_array($name, $allowed, true)) {
                 continue;
             }
-            $existing = $db->pquery(
-                'SELECT name FROM ' . self::SETTINGS_TABLE . ' WHERE name = ?',
-                array($name)
-            );
-            if ($existing !== false && $db->num_rows($existing) > 0) {
-                $db->pquery(
-                    'UPDATE ' . self::SETTINGS_TABLE . ' SET value = ? WHERE name = ?',
-                    array((string) $value, $name)
-                );
-            } else {
-                $db->pquery(
-                    'INSERT INTO ' . self::SETTINGS_TABLE . ' (name, value) VALUES (?, ?)',
-                    array($name, (string) $value)
-                );
-            }
+            self::putSetting($name, (string) $value);
         }
 
+        // 警告日数などが変わると既存の期限状態も変わるため、次の cron で洗い替える
+        self::clearStatusUpdatedOn();
         self::clearCache();
         return self::getSettings();
+    }
+
+    /**
+     * 設定値を1件書き込む
+     *
+     * @param string $name 設定名
+     * @param string $value 値
+     */
+    private static function putSetting($name, $value) {
+        if (!self::settingsTableExists()) {
+            return;
+        }
+        $db = PearDatabase::getInstance();
+        $existing = $db->pquery(
+            'SELECT name FROM ' . self::SETTINGS_TABLE . ' WHERE name = ?', array($name));
+        if ($existing !== false && $db->num_rows($existing) > 0) {
+            $db->pquery(
+                'UPDATE ' . self::SETTINGS_TABLE . ' SET value = ? WHERE name = ?',
+                array($value, $name));
+        } else {
+            $db->pquery(
+                'INSERT INTO ' . self::SETTINGS_TABLE . ' (name, value) VALUES (?, ?)',
+                array($name, $value));
+        }
+        self::clearCache();
     }
 
     /**
@@ -193,6 +214,8 @@ class Documents_DeadlineCalculator {
                 $updated++;
             }
         }
+        // 期限が動いた分だけ状態も変わるため、次の cron で洗い替える
+        self::clearStatusUpdatedOn();
         return array('checked' => $checked, 'updated' => $updated);
     }
 
@@ -303,50 +326,184 @@ class Documents_DeadlineCalculator {
     }
 
     /**
-     * 入力期限がある全ドキュメントの期限状態を更新する（cron から実行）
+     * 日付が前回実行日から変わっていれば期限状態を更新する（cron から実行）
      *
-     * 日付の経過だけで期限内→期限間近→期限超過と変わるため、日次で洗い替える。
+     * 期限状態は基準日にしか依存しないため、同じ日に何度実行しても結果は変わらない。
+     * cron は15分ごとに起動するが、実際に洗い替えるのは日付が変わった最初の1回だけにする。
+     * （保存時の状態は recalculate() が設定するので、日中の登録・更新が漏れることはない）
+     *
+     * 設定・休祝日マスタを変更したときは clearStatusUpdatedOn() で前回実行日を消し、
+     * 次の起動で必ず洗い替えるようにする。
      *
      * @param string|null $today 基準日 'Y-m-d'（省略時は当日）
-     * @return array ['checked' => int, 'updated' => int]
+     * @return array ['updated' => int, 'skipped' => bool]
      */
-    public static function updateStatuses($today = null) {
-        $db = PearDatabase::getInstance();
-        $result = $db->pquery(
-            "SELECT vtiger_notes.notesid, vtiger_notes.input_deadline, vtiger_notes.input_deadline_status
-             FROM vtiger_notes
-             INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_notes.notesid
-             WHERE vtiger_crmentity.deleted = 0
-               AND vtiger_notes.preservation_type = ?
-               AND vtiger_notes.input_deadline IS NOT NULL",
-            array(self::TARGET_PRESERVATION_TYPE)
-        );
-        if ($result === false) {
-            return array('checked' => 0, 'updated' => 0);
+    public static function updateStatusesIfDateChanged($today = null) {
+        $today = self::resolveToday($today);
+        if (self::getSetting(self::SETTING_STATUS_UPDATED_ON, null) === $today) {
+            return array('updated' => 0, 'skipped' => true);
         }
 
-        $checked = 0;
+        $result = self::updateStatuses($today);
+        self::putSetting(self::SETTING_STATUS_UPDATED_ON, $today);
+        $result['skipped'] = false;
+        return $result;
+    }
+
+    /**
+     * 入力期限がある全ドキュメントの期限状態を更新する
+     *
+     * 期限状態は基準日と期限日だけで決まり、期限日が後ろになるほど
+     * 「期限超過 → 期限間近 → 期限内」と一方向に変わる。
+     * そのため基準日ごとに境界日を1回求めれば、あとは日付の範囲指定で
+     * まとめて更新できる（1件ずつ PHP で判定すると100万件規模で破綻する）。
+     *
+     * 更新は状態が実際に変わる行だけを対象にし、1回の UPDATE が肥大化しないよう
+     * UPDATE_CHUNK_SIZE 件ずつに分けて実行する。
+     *
+     * @param string|null $today 基準日 'Y-m-d'（省略時は当日）
+     * @return array ['updated' => int]
+     */
+    public static function updateStatuses($today = null) {
+        $today = self::resolveToday($today);
+        $warningEnd = self::getWarningEndDate($today);
+
         $updated = 0;
-        $count = $db->num_rows($result);
-        for ($i = 0; $i < $count; $i++) {
-            $row = $db->query_result_rowdata($result, $i);
-            $checked++;
-            try {
-                $status = self::calculateStatus($row['input_deadline'], $today);
-            } catch (InvalidArgumentException $e) {
-                // 不正な値が保存されている1件で全体を止めない
-                continue;
-            }
-            if ($status === null || $status === $row['input_deadline_status']) {
-                continue;
-            }
-            $db->pquery(
-                "UPDATE vtiger_notes SET input_deadline_status = ? WHERE notesid = ?",
-                array($status, (int) $row['notesid'])
-            );
-            $updated++;
+        // 期限超過: 期限 < 基準日
+        $updated += self::applyStatus(self::STATUS_OVERDUE,
+            'AND vtiger_notes.input_deadline < ?', array($today));
+
+        if ($warningEnd === null) {
+            // 基準日当日が既に「期限内」＝期限間近の範囲が無い（警告日数の設定次第）
+            $updated += self::applyStatus(self::STATUS_WITHIN,
+                'AND vtiger_notes.input_deadline >= ?', array($today));
+        } else {
+            // 期限間近: 基準日 <= 期限 <= 境界日
+            $updated += self::applyStatus(self::STATUS_WARNING,
+                'AND vtiger_notes.input_deadline BETWEEN ? AND ?', array($today, $warningEnd));
+            // 期限内: 境界日 < 期限
+            $updated += self::applyStatus(self::STATUS_WITHIN,
+                'AND vtiger_notes.input_deadline > ?', array($warningEnd));
         }
-        return array('checked' => $checked, 'updated' => $updated);
+        return array('updated' => $updated);
+    }
+
+    /**
+     * 「期限間近」とみなす期限日の上限を返す
+     *
+     * 残り営業日数は期限日が後ろになるほど増えるため、基準日から1日ずつ進めて
+     * 期限間近でなくなる直前の日を探せばよい（数回〜十数回で終わる）。
+     *
+     * @param string $today 基準日 'Y-m-d'
+     * @return string|null 上限日 'Y-m-d'（期限間近の範囲が無い場合は null）
+     */
+    private static function getWarningEndDate($today) {
+        $end = null;
+        $date = $today;
+        // 連休を挟んでも終わるだけの余裕を持たせた打ち切り（無限ループ防止）
+        $limit = self::getWarningDays() * 7 + 60;
+        for ($i = 0; $i < $limit; $i++) {
+            if (self::calculateStatus($date, $today) !== self::STATUS_WARNING) {
+                break;
+            }
+            $end = $date;
+            $date = date('Y-m-d', strtotime($date . ' +1 day'));
+        }
+        return $end;
+    }
+
+    /**
+     * 指定した期限日の範囲の行を、状態が違うものだけまとめて更新する
+     *
+     * 更新すると WHERE の条件から外れるため、空になるまで繰り返せば全件処理できる。
+     *
+     * @param string $status 設定する状態
+     * @param string $rangeSql 期限日の範囲条件（'AND vtiger_notes.input_deadline ...'）
+     * @param array $rangeParams 範囲条件のパラメータ
+     * @return int 更新した件数
+     */
+    private static function applyStatus($status, $rangeSql, $rangeParams) {
+        $db = PearDatabase::getInstance();
+        // '0000-00-00' など日付として扱えない値は対象外にする
+        $sql = "SELECT vtiger_notes.notesid
+                FROM vtiger_notes
+                INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_notes.notesid
+                WHERE vtiger_crmentity.deleted = 0
+                  AND vtiger_notes.preservation_type = ?
+                  AND vtiger_notes.input_deadline >= '" . self::MIN_VALID_DATE . "'
+                  " . $rangeSql . "
+                  AND (vtiger_notes.input_deadline_status IS NULL
+                       OR vtiger_notes.input_deadline_status <> ?)
+                LIMIT " . self::UPDATE_CHUNK_SIZE;
+        $params = array_merge(array(self::TARGET_PRESERVATION_TYPE), $rangeParams, array($status));
+
+        $updated = 0;
+        while (true) {
+            $result = $db->pquery($sql, $params);
+            if ($result === false) {
+                break;
+            }
+            $ids = array();
+            $count = $db->num_rows($result);
+            for ($i = 0; $i < $count; $i++) {
+                $ids[] = (int) $db->query_result($result, $i, 'notesid');
+            }
+            if (empty($ids)) {
+                break;
+            }
+            $updateResult = $db->pquery(
+                'UPDATE vtiger_notes SET input_deadline_status = ? WHERE notesid IN ('
+                    . generateQuestionMarks($ids) . ')',
+                array_merge(array($status), $ids)
+            );
+            // 更新できていない場合は同じ行を拾い続けてしまうため打ち切る
+            if ($updateResult === false || $db->getAffectedRowCount($updateResult) < 1) {
+                break;
+            }
+            $updated += count($ids);
+            if ($count < self::UPDATE_CHUNK_SIZE) {
+                break;
+            }
+        }
+        return $updated;
+    }
+
+    /**
+     * 基準日を 'Y-m-d' に正規化する（解釈できない場合は当日）
+     *
+     * @param string|null $today
+     * @return string 'Y-m-d'
+     */
+    private static function resolveToday($today) {
+        if ($today === null) {
+            return date('Y-m-d');
+        }
+        $normalized = self::normalizeDate($today);
+        return ($normalized === null) ? date('Y-m-d') : $normalized;
+    }
+
+    /**
+     * 期限状態の前回実行日を消す（次の cron 起動で必ず洗い替える）
+     */
+    public static function clearStatusUpdatedOn() {
+        if (!self::settingsTableExists()) {
+            return;
+        }
+        $db = PearDatabase::getInstance();
+        $db->pquery('DELETE FROM ' . self::SETTINGS_TABLE . ' WHERE name = ?',
+            array(self::SETTING_STATUS_UPDATED_ON));
+        self::clearCache();
+    }
+
+    /**
+     * 設定テーブルがあるかどうか（マイグレーション前でもエラーにしない）
+     *
+     * @return bool
+     */
+    private static function settingsTableExists() {
+        $db = PearDatabase::getInstance();
+        $result = $db->pquery('SHOW TABLES LIKE ?', array(self::SETTINGS_TABLE));
+        return ($result !== false && $db->num_rows($result) > 0);
     }
 
     /**

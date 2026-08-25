@@ -2,6 +2,9 @@
 /**
  * 休祝日マスタのレコードモデル
  */
+require_once 'include/utils/BusinessDay.php';
+require_once 'modules/Documents/utils/DeadlineCalculator.php';
+
 class Settings_Holidays_Record_Model extends Settings_Vtiger_Record_Model {
 
 	public function getId() {
@@ -120,6 +123,8 @@ class Settings_Holidays_Record_Model extends Settings_Vtiger_Record_Model {
 		}
 
 		FR_BusinessDay::clearCache();
+		// 営業日の定義が変わると入力期限の状態も変わるため、次の定期ジョブで洗い替える
+		Documents_DeadlineCalculator::clearStatusUpdatedOn();
 		return $recordId;
 	}
 
