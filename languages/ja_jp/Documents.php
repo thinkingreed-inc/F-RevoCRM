@@ -410,6 +410,7 @@ $languageStrings = array(
 	'LBL_FOLDER_PERMISSIONS' => '権限設定',
 	'LBL_PERMISSION_VIEW' => '参照権限',
 	'LBL_PERMISSION_EDIT' => '編集権限',
+	'LBL_PERMISSION_OWNER' => 'オーナー',
 	'LBL_TARGET_EVERYONE' => '全員',
 	'LBL_TARGET_USER' => 'ユーザー',
 	'LBL_TARGET_ROLE' => '役割',
@@ -419,6 +420,9 @@ $languageStrings = array(
 	'LBL_PERMISSIONS_SAVED' => '権限を保存しました',
 	'LBL_PERMISSIONS_SAVE_FAILED' => '権限の保存に失敗しました',
 	'LBL_SELECT_TARGET' => '対象を選択',
+	'LBL_FOLDER_PERMISSION_DENIED' => 'このフォルダの権限を変更する権限がありません',
+	'LBL_FOLDER_OWNER_REQUIRED' => 'オーナーを1件以上残してください。オーナーがいないと、管理者以外は権限を変更できなくなります',
+	'LBL_PERMISSION_OWNER_HINT' => 'オーナーはこのフォルダの権限を変更できます',
 
 	'LBL_ALL_STATUSES' => 'すべての適合状態',
 	'LBL_PAGINATION_ZERO' => '0件',

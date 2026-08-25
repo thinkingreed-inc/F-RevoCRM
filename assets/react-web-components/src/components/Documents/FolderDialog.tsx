@@ -5,6 +5,7 @@ import type {
   PermissionTargets,
 } from "./types/documents";
 import { useOptionalTranslation } from "../../hooks/useTranslation";
+import { buildFolderOptions } from "./utils/folderOptions";
 
 interface FolderDialogProps {
   isOpen: boolean;
@@ -12,14 +13,18 @@ interface FolderDialogProps {
   folder?: Folder | null;
   parentFolderId: number;
   folders: Folder[];
-  /** 権限設定を編集できるか（サーバー判定。管理者のみ true） */
+  /** 実行ユーザーが管理者か（サーバー判定） */
   isAdmin?: boolean;
+  /** 実行ユーザーのID（新規フォルダの既定オーナーに使う） */
+  currentUserId?: number | null;
   onSave: (data: {
     foldername: string;
     folderdesc: string;
     parent_folderid: number;
     savemode?: string;
     folderid?: number;
+    /** 新規作成時に一緒に保存する権限（作成後に別リクエストを投げずに済む） */
+    permissions?: string;
   }) => void;
   onDelete?: (folderId: number) => void;
   onClose: () => void;
@@ -42,7 +47,7 @@ const inputStyle: React.CSSProperties = {
   boxSizing: "border-box",
 };
 
-type PermType = "view" | "edit";
+type PermType = "view" | "edit" | "owner";
 type TargetType = "everyone" | "user" | "role" | "group";
 
 interface PermRow {
@@ -53,6 +58,10 @@ interface PermRow {
   target_name?: string | null;
 }
 
+/** オーナーは「全員」に付けられない（誰でも権限を書き換えられてしまうため） */
+const OWNER_TARGET_TYPES: TargetType[] = ["user", "role", "group"];
+const ALL_TARGET_TYPES: TargetType[] = ["everyone", "user", "role", "group"];
+
 export const FolderDialog: React.FC<FolderDialogProps> = ({
   isOpen,
   mode,
@@ -60,6 +69,7 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
   parentFolderId,
   folders,
   isAdmin = false,
+  currentUserId = null,
   onSave,
   onDelete,
   onClose,
@@ -76,7 +86,12 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
   const [permLoading, setPermLoading] = useState(false);
   const [permSaving, setPermSaving] = useState(false);
   const [permMessage, setPermMessage] = useState<string | null>(null);
-  // 管理者判定は DOM から推測せず、サーバー（FolderAPI tree の is_admin）の結果を使う
+  // 権限を編集できるかは DOM から推測せず、サーバーの判定（is_admin /
+  // can_manage_permissions）を使う。新規作成は作成者がオーナーになるため常に編集できる
+  const canEditPermissions =
+    mode === "create"
+      ? true
+      : isAdmin || folder?.can_manage_permissions === true;
 
   useEffect(() => {
     if (isOpen) {
@@ -96,7 +111,7 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
 
   // 権限付与先候補の取得（1回のみ）
   useEffect(() => {
-    if (!isOpen || !isAdmin || targets) return;
+    if (!isOpen || !canEditPermissions || targets) return;
     (async () => {
       try {
         const res = await fetch(
@@ -117,11 +132,11 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
         /* ignore */
       }
     })();
-  }, [isOpen, isAdmin, targets]);
+  }, [isOpen, canEditPermissions, targets]);
 
   // 権限設定の読み込み（editモード時）
   useEffect(() => {
-    if (!isOpen || !isAdmin || mode !== "edit" || !folder) return;
+    if (!isOpen || !canEditPermissions || mode !== "edit" || !folder) return;
     setPermLoading(true);
     (async () => {
       try {
@@ -149,21 +164,29 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
       }
       setPermLoading(false);
     })();
-  }, [isOpen, isAdmin, mode, folder]);
+  }, [isOpen, canEditPermissions, mode, folder]);
 
-  // 新規作成時はデフォルト権限をセット
+  // 新規作成時の既定はオーナー＝ログインユーザー、編集＝全員。
+  // 作った本人が公開範囲を決められるよう、必ずオーナーを入れておく
   useEffect(() => {
-    if (isOpen && mode === "create" && isAdmin) {
-      setPermRows([
-        {
-          key: "d1",
-          permission_type: "edit",
-          target_type: "everyone",
-          target_id: null,
-        },
-      ]);
+    if (!isOpen || mode !== "create") return;
+    const rows: PermRow[] = [];
+    if (currentUserId !== null) {
+      rows.push({
+        key: "d0",
+        permission_type: "owner",
+        target_type: "user",
+        target_id: currentUserId,
+      });
     }
-  }, [isOpen, mode, isAdmin]);
+    rows.push({
+      key: "d1",
+      permission_type: "edit",
+      target_type: "everyone",
+      target_id: null,
+    });
+    setPermRows(rows);
+  }, [isOpen, mode, currentUserId]);
 
   /** 権限を保存する。成功したら true */
   const savePermissions = useCallback(
@@ -221,9 +244,21 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
     }
     setError(null);
 
-    // 権限を先に保存する。フォルダ保存でダイアログが閉じると
+    // オーナーを全部消すと自分で権限を戻せなくなるため、送る前に止める。
+    // 新規作成はオーナーが無ければサーバー側で作成者を入れるので対象外
+    if (
+      canEditPermissions &&
+      !isAdmin &&
+      mode === "edit" &&
+      !permRows.some((r) => r.permission_type === "owner")
+    ) {
+      setError(t("LBL_FOLDER_OWNER_REQUIRED"));
+      return;
+    }
+
+    // 更新は権限を先に保存する。フォルダ保存でダイアログが閉じると
     // 権限の保存結果をユーザーに返せなくなるため。
-    if (isAdmin && mode === "edit" && folder) {
+    if (canEditPermissions && mode === "edit" && folder) {
       const saved = await savePermissions(folder.id);
       if (!saved) return; // エラーを表示したまま閉じない
     }
@@ -234,9 +269,30 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
       parent_folderid: parentId,
       ...(mode === "edit" && folder
         ? { savemode: "edit", folderid: folder.id }
-        : {}),
+        : {
+            // 新規はフォルダIDが無いので、作成リクエストに権限を同梱する
+            permissions: JSON.stringify(
+              permRows.map((r) => ({
+                permission_type: r.permission_type,
+                target_type: r.target_type,
+                target_id: r.target_id,
+              })),
+            ),
+          }),
     });
-  }, [name, desc, parentId, mode, folder, onSave, isAdmin, savePermissions, t]);
+  }, [
+    name,
+    desc,
+    parentId,
+    mode,
+    folder,
+    onSave,
+    isAdmin,
+    canEditPermissions,
+    permRows,
+    savePermissions,
+    t,
+  ]);
 
   const addPermRow = useCallback(() => {
     setPermRows((prev) => [
@@ -262,6 +318,16 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
           const updated = { ...r, [field]: value };
           if (field === "target_type") {
             updated.target_id = value === "everyone" ? null : "";
+            updated.target_name = null;
+          }
+          // オーナーに「全員」は指定できないため、ユーザー指定に切り替える
+          if (
+            field === "permission_type" &&
+            value === "owner" &&
+            updated.target_type === "everyone"
+          ) {
+            updated.target_type = "user";
+            updated.target_id = "";
             updated.target_name = null;
           }
           return updated;
@@ -291,7 +357,8 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
     mode === "edit" && folder
       ? [folder.id, ...getDescendantIds(folder.id)]
       : [];
-  const parentOptions = folders.filter((f) => !excludeIds.includes(f.id));
+  // どのフォルダの下なのか分かるよう、階層順に並べてインデントを付ける
+  const parentOptions = buildFolderOptions(folders, { excludeIds });
 
   const targetTypeLabels: Record<TargetType, string> = {
     everyone: t("LBL_TARGET_EVERYONE"),
@@ -318,7 +385,7 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
           backgroundColor: "#fff",
           borderRadius: 8,
           padding: 24,
-          width: isAdmin ? 600 : 400,
+          width: canEditPermissions ? 600 : 400,
           maxWidth: "90vw",
           maxHeight: "85vh",
           overflowY: "auto",
@@ -418,14 +485,14 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
             <option value={0}>{t("LBL_ROOT_FOLDER")}</option>
             {parentOptions.map((f) => (
               <option key={f.id} value={f.id}>
-                {f.name}
+                {f.label}
               </option>
             ))}
           </select>
         </div>
 
-        {/* 権限設定（管理者のみ） */}
-        {isAdmin && (
+        {/* 権限設定（管理者・オーナー・新規作成時） */}
+        {canEditPermissions && (
           <div
             style={{
               borderTop: "1px solid #E2E8F0",
@@ -519,6 +586,7 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
                     >
                       <option value="view">{t("LBL_PERMISSION_VIEW")}</option>
                       <option value="edit">{t("LBL_PERMISSION_EDIT")}</option>
+                      <option value="owner">{t("LBL_PERMISSION_OWNER")}</option>
                     </select>
 
                     {/* 対象種別 */}
@@ -535,8 +603,9 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
                         width: 90,
                       }}
                     >
-                      {(
-                        ["everyone", "user", "role", "group"] as TargetType[]
+                      {(row.permission_type === "owner"
+                        ? OWNER_TARGET_TYPES
+                        : ALL_TARGET_TYPES
                       ).map((tt) => (
                         <option key={tt} value={tt}>
                           {targetTypeLabels[tt]}

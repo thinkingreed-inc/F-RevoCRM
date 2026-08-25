@@ -370,6 +370,7 @@ $languageStrings = array(
 	'LBL_FOLDER_PERMISSIONS' => 'Permissions',
 	'LBL_PERMISSION_VIEW' => 'View Permission',
 	'LBL_PERMISSION_EDIT' => 'Edit Permission',
+	'LBL_PERMISSION_OWNER' => 'Owner',
 	'LBL_TARGET_EVERYONE' => 'Everyone',
 	'LBL_TARGET_USER' => 'User',
 	'LBL_TARGET_ROLE' => 'Role',
@@ -379,6 +380,9 @@ $languageStrings = array(
 	'LBL_PERMISSIONS_SAVED' => 'Permissions saved',
 	'LBL_PERMISSIONS_SAVE_FAILED' => 'Failed to save permissions',
 	'LBL_SELECT_TARGET' => 'Select a target',
+	'LBL_FOLDER_PERMISSION_DENIED' => 'You do not have permission to change the permissions of this folder',
+	'LBL_FOLDER_OWNER_REQUIRED' => 'Keep at least one owner. Without an owner, only administrators can change the permissions',
+	'LBL_PERMISSION_OWNER_HINT' => 'Owners can change the permissions of this folder',
 
 	// File versions
 	'LBL_VERSION_INITIAL' => 'Initial upload',

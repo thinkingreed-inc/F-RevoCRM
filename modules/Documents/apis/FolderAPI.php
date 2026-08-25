@@ -84,6 +84,8 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 		$userId = $currentUser->getId();
 		$userRoleId = $currentUser->get('roleid');
 		$userGroupIds = $this->getUserGroupIds($userId);
+		// オーナーのフォルダはまとめて引く（フォルダごとに問い合わせると件数分のクエリになる）
+		$ownedFolderIds = $isAdmin ? array() : Documents_FolderPermission::getOwnedFolderIds($userId);
 
 		// 実行ユーザーがスターを付けたドキュメント数
 		$starredCount = 0;
@@ -117,6 +119,8 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 			}
 
 			$canEdit = $isAdmin || $this->hasPermission($db, $fid, 'edit', $userId, $userRoleId, $userGroupIds);
+			// 権限設定を変えられるのは管理者とオーナーだけ
+			$canManagePermissions = $isAdmin || in_array($fid, $ownedFolderIds, true);
 
 			$folders[] = array(
 				'id' => $fid,
@@ -126,6 +130,7 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 				'sequence' => (int) $row['sequence'],
 				'count' => isset($folderCounts[$fid]) ? $folderCounts[$fid] : 0,
 				'can_edit' => $canEdit,
+				'can_manage_permissions' => $canManagePermissions,
 			);
 		}
 
@@ -133,6 +138,8 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 			'folders' => $folders,
 			// 権限設定を編集できるかどうかは画面側で推測させず、サーバーの判定を渡す
 			'is_admin' => (bool) $isAdmin,
+			// 新規作成時の既定（オーナー＝ログインユーザー）を画面で組み立てるために渡す
+			'current_user_id' => (int) $userId,
 			'totalCount' => $totalCount,
 			'starredCount' => $starredCount,
 		));
@@ -188,10 +195,15 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 			array($parentFolderId, $folderModel->getId())
 		);
 
-		// 新規作成時: デフォルト権限（全員: 編集可能）を設定
-		// 編集権限があれば参照も可能なため、editのみで十分
+		// 新規作成時: 権限を設定する。作成画面で指定されていればそれを使い、
+		// 未指定なら既定（オーナー＝作成者 / 編集＝全員）を入れる
 		if ($saveMode !== 'edit') {
-			$this->addDefaultFolderPermission($db, $folderModel->getId());
+			$permissions = $request->get('permissions');
+			if (is_string($permissions)) {
+				$permissions = json_decode($permissions, true);
+			}
+			$this->addDefaultFolderPermission($db, $folderModel->getId(),
+				is_array($permissions) ? $permissions : null);
 		}
 
 		return $this->sendSuccess(array(
@@ -429,11 +441,13 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 			throw new Exception('Folder ID is required');
 		}
 
-		// 管理者のみ
+		// 管理者か、そのフォルダのオーナーのみ
 		$currentUser = Users_Record_Model::getCurrentUserModel();
-		if (!$currentUser->isAdminUser()) {
-			throw new Exception('Admin permission required');
+		require_once 'modules/Documents/utils/FolderPermission.php';
+		if (!Documents_FolderPermission::canManageFolderPermissions($folderId)) {
+			throw new AppException(vtranslate('LBL_FOLDER_PERMISSION_DENIED', 'Documents'));
 		}
+		$isAdmin = $currentUser->isAdminUser();
 
 		// Vtiger_Request::get() は "[" / "{" で始まる値を自動でデコードして配列にして返すため、
 		// 文字列で来た場合だけ json_decode する（配列を json_decode すると PHP 8 で TypeError になる）
@@ -445,15 +459,38 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 			throw new Exception('Invalid permissions data');
 		}
 
-		// 既存権限を削除
-		$db->pquery("DELETE FROM vtiger_folder_permissions WHERE folderid = ?", array($folderId));
+		$rows = $this->normalizePermissionRows($permissions);
 
-		// 新しい権限を挿入
-		$validTypes = array('view', 'edit');
+		// 管理者以外がオーナーを全部消すと、そのフォルダは管理者しか
+		// 権限を変えられなくなる。誤って手放さないよう保存を止める
+		if (!$isAdmin && !$this->hasOwnerRow($rows)) {
+			throw new AppException(vtranslate('LBL_FOLDER_OWNER_REQUIRED', 'Documents'));
+		}
+
+		// 既存権限を削除して入れ直す（全件置換）
+		$db->pquery("DELETE FROM vtiger_folder_permissions WHERE folderid = ?", array($folderId));
+		$inserted = $this->insertPermissionRows($db, $folderId, $rows);
+		Documents_FolderPermission::clearCache();
+
+		return $this->sendSuccess(array(
+			'success' => true,
+			'inserted' => $inserted,
+		));
+	}
+
+	/**
+	 * 送られてきた権限の配列を、保存できる形に整える
+	 *
+	 * 不正な種別・対象未指定は落とし、同じ内容の重複はまとめる
+	 * （target_id が NULL の行は UNIQUE 制約でも重複を防げないため）。
+	 *
+	 * @param array $permissions
+	 * @return array 正規化した行の配列
+	 */
+	private function normalizePermissionRows($permissions) {
+		$validTypes = array('view', 'edit', 'owner');
 		$validTargets = array('everyone', 'user', 'role', 'group');
-		$inserted = 0;
-		// 同じ内容が2回送られても1件にする（target_id が NULL の行は
-		// UNIQUE 制約でも重複を防げないため、ここで弾く）
+		$rows = array();
 		$seen = array();
 
 		foreach ($permissions as $perm) {
@@ -461,7 +498,12 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 			$targetType = isset($perm['target_type']) ? $perm['target_type'] : '';
 			$targetId = isset($perm['target_id']) ? $perm['target_id'] : null;
 
-			if (!in_array($permType, $validTypes) || !in_array($targetType, $validTargets)) {
+			if (!in_array($permType, $validTypes, true)
+				|| !in_array($targetType, $validTargets, true)) {
+				continue;
+			}
+			// 「全員がオーナー」は誰でも権限を書き換えられてしまうため受け付けない
+			if ($permType === 'owner' && $targetType === 'everyone') {
 				continue;
 			}
 
@@ -476,18 +518,46 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 				continue;
 			}
 			$seen[$key] = true;
+			$rows[] = array(
+				'permission_type' => $permType,
+				'target_type' => $targetType,
+				'target_id' => $targetId,
+			);
+		}
+		return $rows;
+	}
 
+	/**
+	 * 正規化済みの権限行を保存する
+	 *
+	 * @param PearDatabase $db
+	 * @param int $folderId
+	 * @param array $rows
+	 * @return int 保存した件数
+	 */
+	private function insertPermissionRows($db, $folderId, $rows) {
+		foreach ($rows as $row) {
 			$db->pquery(
 				"INSERT IGNORE INTO vtiger_folder_permissions (folderid, permission_type, target_type, target_id) VALUES (?, ?, ?, ?)",
-				array($folderId, $permType, $targetType, $targetId)
+				array($folderId, $row['permission_type'], $row['target_type'], $row['target_id'])
 			);
-			$inserted++;
 		}
+		return count($rows);
+	}
 
-		return $this->sendSuccess(array(
-			'success' => true,
-			'inserted' => $inserted,
-		));
+	/**
+	 * オーナーの行が含まれているか
+	 *
+	 * @param array $rows 正規化済みの権限行
+	 * @return bool
+	 */
+	private function hasOwnerRow($rows) {
+		foreach ($rows as $row) {
+			if ($row['permission_type'] === 'owner') {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -632,53 +702,74 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 	}
 
 	/**
-	 * 新規フォルダに既定の権限（全員: 編集可能）を1件だけ入れる
+	 * 新規フォルダの権限を保存する
 	 *
-	 * target_id が NULL の行は UNIQUE 制約で重複を防げない（MySQL は NULL を別値として扱う）ため、
-	 * 存在確認をしてから挿入する。
+	 * 画面から権限が送られていればそれを使い、無ければ既定
+	 * （オーナー＝作成者 / 編集＝全員）を入れる。
+	 * どちらの場合も、オーナーが1件も無ければ作成者をオーナーにする。
+	 * オーナーがいないと、作った本人が公開範囲を変えられなくなるため。
 	 *
 	 * @param PearDatabase $db
 	 * @param int $folderId
+	 * @param array|null $permissions 画面から送られた権限（未指定は null）
 	 */
-	private function addDefaultFolderPermission($db, $folderId) {
-		$exists = $db->pquery(
-			"SELECT 1 FROM vtiger_folder_permissions
-			WHERE folderid = ? AND permission_type = 'edit' AND target_type = 'everyone'",
-			array($folderId)
-		);
-		if ($exists !== false && $db->num_rows($exists) > 0) {
-			return;
+	private function addDefaultFolderPermission($db, $folderId, $permissions = null) {
+		$currentUser = Users_Record_Model::getCurrentUserModel();
+		$userId = (int) $currentUser->getId();
+
+		if (is_array($permissions)) {
+			$rows = $this->normalizePermissionRows($permissions);
+		} else {
+			$rows = array(
+				array('permission_type' => 'edit', 'target_type' => 'everyone', 'target_id' => null),
+			);
 		}
-		$db->pquery(
-			"INSERT INTO vtiger_folder_permissions (folderid, permission_type, target_type, target_id)
-			VALUES (?, 'edit', 'everyone', NULL)",
-			array($folderId)
-		);
+		if (!$this->hasOwnerRow($rows)) {
+			array_unshift($rows, array(
+				'permission_type' => 'owner', 'target_type' => 'user', 'target_id' => $userId,
+			));
+		}
+
+		// 作成直後は権限が無いはずだが、ID再利用などで残っていた場合に備えて入れ直す
+		$db->pquery("DELETE FROM vtiger_folder_permissions WHERE folderid = ?", array($folderId));
+		$this->insertPermissionRows($db, $folderId, $rows);
+
+		require_once 'modules/Documents/utils/FolderPermission.php';
+		Documents_FolderPermission::clearCache();
 	}
 
 	/**
 	 * 指定ユーザーがフォルダに対して指定権限を持つかチェック
+	 *
+	 * 強い権限は弱い権限を兼ねるため、'edit' を求めたときは 'owner' も該当する。
+	 *
+	 * @param string $permissionType 'view' / 'edit' / 'owner'
 	 */
 	private function hasPermission($db, $folderId, $permissionType, $userId, $roleId, $groupIds) {
+		// 'edit' はオーナーも含める（オーナーは編集も参照もできる）
+		$types = ($permissionType === 'edit') ? array('edit', 'owner') : array($permissionType);
+		$typeMarks = implode(',', array_fill(0, count($types), '?'));
+		$typeSql = "permission_type IN ($typeMarks)";
+
 		// everyone権限チェック
 		$evResult = $db->pquery(
-			"SELECT 1 FROM vtiger_folder_permissions WHERE folderid = ? AND permission_type = ? AND target_type = 'everyone'",
-			array($folderId, $permissionType)
+			"SELECT 1 FROM vtiger_folder_permissions WHERE folderid = ? AND $typeSql AND target_type = 'everyone'",
+			array_merge(array($folderId), $types)
 		);
 		if ($evResult !== false && $db->num_rows($evResult) > 0) return true;
 
 		// ユーザー個別権限
 		$uResult = $db->pquery(
-			"SELECT 1 FROM vtiger_folder_permissions WHERE folderid = ? AND permission_type = ? AND target_type = 'user' AND target_id = ?",
-			array($folderId, $permissionType, $userId)
+			"SELECT 1 FROM vtiger_folder_permissions WHERE folderid = ? AND $typeSql AND target_type = 'user' AND target_id = ?",
+			array_merge(array($folderId), $types, array($userId))
 		);
 		if ($uResult !== false && $db->num_rows($uResult) > 0) return true;
 
 		// ロール権限
 		if (!empty($roleId)) {
 			$rResult = $db->pquery(
-				"SELECT 1 FROM vtiger_folder_permissions WHERE folderid = ? AND permission_type = ? AND target_type = 'role' AND target_id = ?",
-				array($folderId, $permissionType, $roleId)
+				"SELECT 1 FROM vtiger_folder_permissions WHERE folderid = ? AND $typeSql AND target_type = 'role' AND target_id = ?",
+				array_merge(array($folderId), $types, array($roleId))
 			);
 			if ($rResult !== false && $db->num_rows($rResult) > 0) return true;
 		}
@@ -687,8 +778,8 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 		if (!empty($groupIds)) {
 			$placeholders = implode(',', array_fill(0, count($groupIds), '?'));
 			$gResult = $db->pquery(
-				"SELECT 1 FROM vtiger_folder_permissions WHERE folderid = ? AND permission_type = ? AND target_type = 'group' AND target_id IN ($placeholders)",
-				array_merge(array($folderId, $permissionType), $groupIds)
+				"SELECT 1 FROM vtiger_folder_permissions WHERE folderid = ? AND $typeSql AND target_type = 'group' AND target_id IN ($placeholders)",
+				array_merge(array($folderId), $types, $groupIds)
 			);
 			if ($gResult !== false && $db->num_rows($gResult) > 0) return true;
 		}

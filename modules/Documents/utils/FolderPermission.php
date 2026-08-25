@@ -10,19 +10,36 @@
  * 全員(everyone) / ユーザー(user) / 役割(role) / グループ(group) のいずれかが
  * 一致すれば与えられているものとして扱う。
  *
- * 参照と変更を区別する:
- *   参照（view または edit）  一覧・詳細の表示、ダウンロード
- *   変更（edit のみ）         編集・ファイル差し替え・削除・移動・
- *                             電帳法情報の保存・そのフォルダへの新規登録
+ * 権限は強い順に オーナー(owner) > 編集(edit) > 参照(view) の3種類で、
+ * 強い権限は弱い権限を兼ねる:
+ *   参照（view / edit / owner）  一覧・詳細の表示、ダウンロード
+ *   変更（edit / owner）         編集・ファイル差し替え・削除・移動・
+ *                                電帳法情報の保存・そのフォルダへの新規登録
+ *   権限設定（owner のみ）       そのフォルダの権限そのものの変更
  * 「参照」だけのフォルダに入っているドキュメントは読み取り専用になる。
+ *
+ * オーナーを設けているのは、一般ユーザーが自分で作ったフォルダの公開範囲を
+ * 管理者に頼まずに決められるようにするため。
  */
 class Documents_FolderPermission {
+
+    /** 参照だけできる */
+    const TYPE_VIEW = 'view';
+
+    /** 変更もできる（参照を兼ねる） */
+    const TYPE_EDIT = 'edit';
+
+    /** 権限設定もできる（変更・参照を兼ねる） */
+    const TYPE_OWNER = 'owner';
 
     /** 参照可否のキャッシュ（'userId:notesId' => bool） */
     private static $cache = array();
 
     /** 編集可否のキャッシュ（'userId:folderId' => bool） */
     private static $editCache = array();
+
+    /** 権限設定可否のキャッシュ（'userId:folderId' => bool） */
+    private static $ownerCache = array();
 
     /**
      * 指定ユーザーがドキュメントを参照できるか
@@ -151,8 +168,57 @@ class Documents_FolderPermission {
         if (isset(self::$editCache[$cacheKey])) {
             return self::$editCache[$cacheKey];
         }
-        self::$editCache[$cacheKey] = self::hasFolderPermission($folderId, $userId, 'edit');
+        self::$editCache[$cacheKey] = self::hasFolderPermission($folderId, $userId, self::TYPE_EDIT);
         return self::$editCache[$cacheKey];
+    }
+
+    /**
+     * 指定ユーザーがフォルダの権限設定を変更できるか
+     *
+     * 管理者か、そのフォルダのオーナーに該当する場合のみ。
+     * オーナーはユーザー・役割・グループのいずれでも指定できる。
+     *
+     * @param int $folderId フォルダID
+     * @param int|null $userId 省略時は実行ユーザー
+     * @return bool
+     */
+    public static function canManageFolderPermissions($folderId, $userId = null) {
+        $folderId = (int) $folderId;
+        if ($folderId <= 0) {
+            return false;
+        }
+        $currentUser = Users_Record_Model::getCurrentUserModel();
+        if ($userId === null) {
+            $userId = ($currentUser === false || empty($currentUser)) ? 0 : (int) $currentUser->getId();
+        }
+        $userId = (int) $userId;
+
+        // 管理者はすべてのフォルダの権限を変更できる
+        $isAdmin = ($currentUser !== false && !empty($currentUser)
+            && (int) $currentUser->getId() === $userId && $currentUser->isAdminUser());
+        if ($isAdmin) {
+            return true;
+        }
+
+        $cacheKey = $userId . ':' . $folderId;
+        if (isset(self::$ownerCache[$cacheKey])) {
+            return self::$ownerCache[$cacheKey];
+        }
+        self::$ownerCache[$cacheKey] = self::hasFolderPermission($folderId, $userId, self::TYPE_OWNER);
+        return self::$ownerCache[$cacheKey];
+    }
+
+    /**
+     * オーナーになっているフォルダIDの一覧を返す
+     *
+     * フォルダ一覧でフォルダごとに問い合わせると件数分のクエリになるため、
+     * まとめて取得して突き合わせる。
+     *
+     * @param int|null $userId 省略時は実行ユーザー
+     * @return array|null フォルダIDの配列。管理者は null（すべて変更できる）
+     */
+    public static function getOwnedFolderIds($userId = null) {
+        return self::getFolderIdsByPermission(self::TYPE_OWNER, $userId);
     }
 
     /**
@@ -165,6 +231,17 @@ class Documents_FolderPermission {
      * @return array|null フォルダIDの配列。管理者は null（すべて変更できる）
      */
     public static function getEditableFolderIds($userId = null) {
+        return self::getFolderIdsByPermission(self::TYPE_EDIT, $userId);
+    }
+
+    /**
+     * 指定した権限を持つフォルダIDの一覧を返す
+     *
+     * @param string $permissionType self::TYPE_EDIT または self::TYPE_OWNER
+     * @param int|null $userId 省略時は実行ユーザー
+     * @return array|null フォルダIDの配列。管理者は null（すべて対象）
+     */
+    private static function getFolderIdsByPermission($permissionType, $userId = null) {
         $currentUser = Users_Record_Model::getCurrentUserModel();
         if ($userId === null) {
             $userId = ($currentUser === false || empty($currentUser)) ? 0 : (int) $currentUser->getId();
@@ -199,7 +276,8 @@ class Documents_FolderPermission {
         $db = PearDatabase::getInstance();
         $result = $db->pquery(
             "SELECT DISTINCT fp.folderid FROM vtiger_folder_permissions fp
-             WHERE fp.permission_type = 'edit' AND (" . implode(' OR ', $conditions) . ")",
+             WHERE " . self::buildTypeCondition($permissionType)
+             . " AND (" . implode(' OR ', $conditions) . ")",
             $params
         );
         $folderIds = array();
@@ -212,11 +290,28 @@ class Documents_FolderPermission {
     }
 
     /**
+     * 権限種別の SQL 条件を返す（強い権限は弱い権限を兼ねる）
+     *
+     * 値は定数から組み立てるため、SQL に直接埋め込んでも入力値は混ざらない。
+     *
+     * @param string $permissionType
+     * @return string
+     */
+    private static function buildTypeCondition($permissionType) {
+        if ($permissionType === self::TYPE_OWNER) {
+            return "fp.permission_type = '" . self::TYPE_OWNER . "'";
+        }
+        // 編集を求めるときはオーナーも該当する
+        return "fp.permission_type IN ('" . self::TYPE_EDIT . "', '" . self::TYPE_OWNER . "')";
+    }
+
+    /**
      * 判定結果のキャッシュを破棄する（権限を変更した後に呼ぶ）
      */
     public static function clearCache() {
         self::$cache = array();
         self::$editCache = array();
+        self::$ownerCache = array();
     }
 
     /**
@@ -277,21 +372,21 @@ class Documents_FolderPermission {
      *
      * @param int $folderId
      * @param int $userId
-     * @param string|null $permissionType 'edit' を渡すと編集権限だけを見る。
-     *   null なら view / edit を区別しない（参照できるか）
+     * @param string|null $permissionType self::TYPE_EDIT を渡すと変更できるか
+     *   （edit または owner）、self::TYPE_OWNER なら権限設定できるかを見る。
+     *   null なら種別を区別しない（参照できるか）
      * @return bool
      */
     private static function hasFolderPermission($folderId, $userId, $permissionType = null) {
         $db = PearDatabase::getInstance();
 
-        // プレースホルダの順番は SQL の並び（folderid → permission_type → 付与先）と
-        // そろえる。並びが違うと別の条件に値が入ってしまう
+        // プレースホルダの順番は SQL の並び（folderid → 付与先）とそろえる。
+        // 並びが違うと別の条件に値が入ってしまう
         $params = array($folderId);
 
         $typeCondition = '';
         if ($permissionType !== null) {
-            $typeCondition = ' AND fp.permission_type = ?';
-            $params[] = $permissionType;
+            $typeCondition = ' AND ' . self::buildTypeCondition($permissionType);
         }
 
         $conditions = array(

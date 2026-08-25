@@ -134,6 +134,7 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
     totalCount,
     starredCount,
     isAdmin: isFolderAdmin,
+    currentUserId,
     reload: reloadFolders,
   } = useFolderTree();
 
@@ -370,6 +371,7 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
       parent_folderid: number;
       savemode?: string;
       folderid?: number;
+      permissions?: string;
     }) => {
       const csrf = getCsrfToken();
       const bodyParams = new URLSearchParams();
@@ -382,6 +384,8 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
       bodyParams.append("parent_folderid", String(data.parent_folderid));
       if (data.savemode) bodyParams.append("savemode", data.savemode);
       if (data.folderid) bodyParams.append("folderid", String(data.folderid));
+      // 新規作成は権限を同梱する（作成前はフォルダIDが無いため）
+      if (data.permissions) bodyParams.append("permissions", data.permissions);
 
       try {
         const response = await fetch("index.php", {
@@ -1046,6 +1050,7 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
         parentFolderId={folderDialogParentId}
         folders={folders}
         isAdmin={isFolderAdmin}
+        currentUserId={currentUserId}
         onSave={handleFolderSave}
         onDelete={handleFolderDelete}
         onClose={() => setFolderDialogOpen(false)}

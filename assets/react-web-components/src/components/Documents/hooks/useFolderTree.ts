@@ -7,6 +7,8 @@ interface UseFolderTreeResult {
   starredCount: number;
   /** 実行ユーザーが管理者か（サーバー判定） */
   isAdmin: boolean;
+  /** 実行ユーザーのID（新規フォルダの既定オーナーに使う） */
+  currentUserId: number | null;
   isLoading: boolean;
   error: string | null;
   reload: () => void;
@@ -17,6 +19,7 @@ export function useFolderTree(): UseFolderTreeResult {
   const [totalCount, setTotalCount] = useState(0);
   const [starredCount, setStarredCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,6 +50,11 @@ export function useFolderTree(): UseFolderTreeResult {
       setTotalCount(result.totalCount);
       setStarredCount(result.starredCount);
       setIsAdmin(result.is_admin === true);
+      setCurrentUserId(
+        typeof result.current_user_id === "number"
+          ? result.current_user_id
+          : null,
+      );
     } catch (e: any) {
       setError(e.message || "Unknown error");
     } finally {
@@ -63,6 +71,7 @@ export function useFolderTree(): UseFolderTreeResult {
     totalCount,
     starredCount,
     isAdmin,
+    currentUserId,
     isLoading,
     error,
     reload: fetchTree,

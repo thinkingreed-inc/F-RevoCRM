@@ -268,8 +268,9 @@ class Documents_BulkAction_Api extends Vtiger_Api_Controller {
 		}
 
 		$result = $db->pquery(
+			// オーナーは編集も兼ねる
 			"SELECT 1 FROM vtiger_folder_permissions fp
-			 WHERE fp.folderid = ? AND fp.permission_type = 'edit'
+			 WHERE fp.folderid = ? AND fp.permission_type IN ('edit', 'owner')
 			   AND (" . implode(' OR ', $conditions) . ") LIMIT 1",
 			$params
 		);

@@ -184,12 +184,17 @@ export interface Folder {
   sequence: number;
   count: number;
   can_edit?: boolean;
+  /** 権限設定を変更できるか（管理者またはオーナー。サーバー判定） */
+  can_manage_permissions?: boolean;
 }
+
+/** フォルダ権限の種類（強い順に owner > edit > view。強い権限は弱い権限を兼ねる） */
+export type FolderPermissionType = "view" | "edit" | "owner";
 
 /** フォルダ権限エントリ */
 export interface FolderPermission {
   permission_id?: number;
-  permission_type: "view" | "edit";
+  permission_type: FolderPermissionType;
   target_type: "everyone" | "user" | "role" | "group";
   target_id: string | number | null;
   target_name?: string | null;
