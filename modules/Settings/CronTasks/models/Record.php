@@ -8,6 +8,8 @@
  * All Rights Reserved.
  *************************************************************************************/
 
+include_once 'vtlib/Vtiger/Cron.php';
+
 class Settings_CronTasks_Record_Model extends Settings_Vtiger_Record_Model {
 
 	static $STATUS_DISABLED = 0;
@@ -171,8 +173,12 @@ class Settings_CronTasks_Record_Model extends Settings_Vtiger_Record_Model {
 	public function save() {
 		$db = PearDatabase::getInstance();
 
-		$updateQuery = "UPDATE vtiger_cron_task SET frequency = ?, status = ? WHERE id = ?";
-		$params = array($this->get('frequency'), $this->get('status'), $this->getId());
+		// 周期を変更したら次回実行予定時刻も新しいグリッドに合わせて引き直す。
+		// これをしないと、変更が次回の完了時まで反映されない。
+		$nextRunAt = Vtiger_Cron::computeNextRunAt($this->get('frequency'));
+
+		$updateQuery = "UPDATE vtiger_cron_task SET frequency = ?, status = ?, next_run_at = ? WHERE id = ?";
+		$params = array($this->get('frequency'), $this->get('status'), $nextRunAt, $this->getId());
 		$db->pquery($updateQuery, $params);
 	}
 
