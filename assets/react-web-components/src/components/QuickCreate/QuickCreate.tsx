@@ -18,14 +18,17 @@ import { usePicklistDependency } from "./hooks/usePicklistDependency";
 import { useCalendarFields } from "./hooks/useCalendarFields";
 import { useRecordData } from "./hooks/useRecordData";
 import { QuickCreateProps } from "../../types/quickcreate";
-import { FieldInfo, FieldValue, UI_TYPES } from "../../types/field";
+import { FieldInfo, FieldValue } from "../../types/field";
 import { cn } from "../../lib/utils";
 import { TranslationProvider } from "../../contexts/TranslationContext";
 import { useTranslation } from "../../hooks/useTranslation";
 import { transformCalendarDateTime } from "../../utils/datetime";
 import { validateFieldByUIType } from "../../utils/validation";
 import { syncJoditEditorFormData } from "../../utils/joditEditor";
-import { isFutureEventHeldInvalid } from "./utils/calendarValidation";
+import {
+  isDateRangeInvalid,
+  isFutureEventHeldInvalid,
+} from "./utils/calendarValidation";
 
 /**
  * Activity type for Calendar variant
@@ -491,16 +494,9 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
       if (field.name === "assigned_user_id") {
         return (window as any)._USERMETA?.id || "1";
       }
-      // 必須のpicklistフィールドは先頭の選択肢をデフォルト値として設定
-      // ただし、multipicklistは複数選択のため、ユーザーに選択させる（自動選択しない）
-      if (
-        field.mandatory &&
-        field.picklistValues &&
-        field.picklistValues.length > 0 &&
-        field.uitype !== UI_TYPES.MULTIPICKLIST
-      ) {
-        return field.picklistValues[0].value;
-      }
+      // 必須picklistでも自動選択しない（従来のEdit画面挙動と揃える）。
+      // カレンダー設定でデフォルトを空選択にしたユーザーは「未選択」を期待するため、
+      // ここで picklistValues[0] を強制すると意図と食い違いバリデーションも回避される。
       return undefined;
     };
 
@@ -539,6 +535,11 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
 
     if (calendarFields.length > 0) {
       const calInitial: Record<string, any> = { ...initialData };
+      // 終日（is_allday）は活動（Events）のみの概念。
+      // カレンダーの終日エリアクリックでは initialData に is_allday が入るが、
+      // ToDo タブには終日チェックボックスが無く、持ち込むと開始時刻の入力欄が
+      // 消えたまま解除できなくなるため除外する
+      delete calInitial.is_allday;
       calendarFields.forEach((field) => {
         if (!(field.name in calInitial)) {
           const initialValue = getFieldInitialValue(field);
@@ -837,15 +838,8 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
     if (isCalendarVariant) {
       const dateStart = currentCalendarFormData["date_start"];
       const dueDate = currentCalendarFormData["due_date"];
-      if (
-        typeof dateStart === "string" &&
-        typeof dueDate === "string" &&
-        dateStart &&
-        dueDate
-      ) {
-        if (new Date(dateStart) > new Date(dueDate)) {
-          errors["due_date"] = t("LBL_END_DATE_AFTER_START");
-        }
+      if (isDateRangeInvalid(dateStart, dueDate)) {
+        errors["due_date"] = t("LBL_END_DATE_AFTER_START");
       }
       // 未来日付の活動はステータス「完了」(Held) で登録不可
       if (
@@ -1042,6 +1036,31 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
           }
         }
       });
+    }
+
+    // reminder_time (分) → set_reminder/remdays/remhrs/remmin へ展開。
+    // Edit.php は set_reminder + remdays/remhrs/remmin を見てリマインダーの
+    // 初期表示を組み立てるため、これを送らないと引き継がれない。
+    if (isCalendarVariant) {
+      const reminderTimeRaw = processedFormData.reminder_time;
+      const reminderTotalMinutes =
+        reminderTimeRaw !== undefined &&
+        reminderTimeRaw !== null &&
+        reminderTimeRaw !== ""
+          ? parseInt(String(reminderTimeRaw), 10)
+          : 0;
+      if (reminderTotalMinutes > 0) {
+        processedFormData.set_reminder = 1;
+        const remdays = Math.floor(reminderTotalMinutes / (24 * 60));
+        const remhrs = Math.floor(
+          (reminderTotalMinutes - remdays * 24 * 60) / 60,
+        );
+        const remmin = reminderTotalMinutes % 60;
+        processedFormData.remdays = remdays;
+        processedFormData.remhrs = remhrs;
+        processedFormData.remmin = remmin;
+      }
+      delete processedFormData.reminder_time;
     }
 
     if (onGoToFullForm) {

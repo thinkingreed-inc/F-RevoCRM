@@ -53,15 +53,15 @@
 		<script src="{vresource_url('layouts/v7/lib/jquery/jquery.min.js')}"></script>
 		<script src="{vresource_url('layouts/v7/lib/jquery/jquery-migrate-1.4.1.js')}"></script>
 		<script type="text/javascript">
-			var _META = { 'module': "{$MODULE}", view: "{$VIEW}", 'parent': "{$PARENT_MODULE}", 'notifier':"{$NOTIFIER_URL}", 'app':"{$SELECTED_MENU_CATEGORY}" };
+			var _META = { 'module': "{$MODULE|escape:'javascript'}", view: "{$VIEW|escape:'javascript'}", 'parent': "{$PARENT_MODULE|escape:'javascript'}", 'notifier':"{$NOTIFIER_URL|escape:'javascript'}", 'app':"{$SELECTED_MENU_CATEGORY|escape:'javascript'}" };
             {if $EXTENSION_MODULE}
-                var _EXTENSIONMETA = { 'module': "{$EXTENSION_MODULE}", view: "{$EXTENSION_VIEW}"};
+                var _EXTENSIONMETA = { 'module': "{$EXTENSION_MODULE|escape:'javascript'}", view: "{$EXTENSION_VIEW|escape:'javascript'}"};
             {/if}
             var _USERMETA;
             {if $CURRENT_USER_MODEL}
-               _USERMETA =  { 'id' : "{$CURRENT_USER_MODEL->get('id')}", 'menustatus' : "{$CURRENT_USER_MODEL->get('leftpanelhide')}",
-                              'currency' : "{$USER_CURRENCY_SYMBOL}", 'currencySymbolPlacement' : "{$CURRENT_USER_MODEL->get('currency_symbol_placement')}",
-                          'currencyGroupingPattern' : "{$CURRENT_USER_MODEL->get('currency_grouping_pattern')}", 'truncateTrailingZeros' : "{$CURRENT_USER_MODEL->get('truncate_trailing_zeros')}"};
+               _USERMETA =  { 'id' : "{$CURRENT_USER_MODEL->get('id')|escape:'javascript'}", 'menustatus' : "{$CURRENT_USER_MODEL->get('leftpanelhide')|escape:'javascript'}",
+                              'currency' : "{$USER_CURRENCY_SYMBOL|escape:'javascript'}", 'currencySymbolPlacement' : "{$CURRENT_USER_MODEL->get('currency_symbol_placement')|escape:'javascript'}",
+                          'currencyGroupingPattern' : "{$CURRENT_USER_MODEL->get('currency_grouping_pattern')|escape:'javascript'}", 'truncateTrailingZeros' : "{$CURRENT_USER_MODEL->get('truncate_trailing_zeros')|escape:'javascript'}"};
             {/if}
             {* WebComponents版QuickCreateを無効にするモジュールリスト（ブラックリスト形式） *}
             {* 基本的にはWebComponents版を使用し、未対応モジュールのみ除外 *}

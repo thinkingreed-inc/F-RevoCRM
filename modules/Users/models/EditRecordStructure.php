@@ -40,12 +40,11 @@ class Users_EditRecordStructure_Model extends Vtiger_EditRecordStructure_Model {
 					if (in_array($fieldModel->get('uitype'), array(156)) && $currentUserModel->getId() !== $recordId) {
 						$fieldModel->set('editable', true);
 						if ($fieldModel->get('uitype') == 156) {
-							$fieldValue = false;
-							$defaultValue = $fieldModel->getDefaultFieldValue();
-							if ($recordModel->get($fieldName) === 'on') {
-								$fieldValue = true;
-							}
-							$recordModel->set($fieldName, $fieldValue);
+							$adminFieldValue = self::normalizeAdminFieldValue($recordModel->get($fieldName));
+							$recordModel->set($fieldName, $adminFieldValue);
+							// 項目モデルはプロセス内でキャッシュされるため、OFF のときは
+							// 前レコードの値が残らないよう明示的に空値を設定する
+							$fieldModel->set('fieldvalue', $adminFieldValue);
 						}
 					}
 					if($fieldName == 'is_owner') {
@@ -74,5 +73,20 @@ class Users_EditRecordStructure_Model extends Vtiger_EditRecordStructure_Model {
 		}
 		$this->structuredValues = $values;
 		return $values;
+	}
+
+	/**
+	 * システム管理者(is_admin, uitype 156)の値を、編集画面のチェックボックス表示用に正規化する。
+	 *
+	 * Boolean.tpl の checked 判定は
+	 *   $fieldvalue == true && $fieldvalue != 'no' && $fieldvalue != vtranslate('LBL_NO')
+	 * であり、真偽値 true を渡すと `true != 'no'` が false になり checked が出力されない。
+	 * そのため ON は 'on' のまま、OFF は空文字を返す。
+	 *
+	 * @param mixed $value レコードが保持する is_admin の値
+	 * @return string 'on'(チェック済み) または ''(未チェック)
+	 */
+	public static function normalizeAdminFieldValue($value) {
+		return ($value === 'on') ? 'on' : '';
 	}
 }

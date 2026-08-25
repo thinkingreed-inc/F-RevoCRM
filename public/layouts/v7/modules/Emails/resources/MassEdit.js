@@ -291,6 +291,25 @@ jQuery.Class("Emails_MassEdit_Js",{},{
 		}).on("change", function (selectedData) {
 			var addedElement = selectedData.added;
 			if (typeof addedElement != 'undefined') {
+				var emailField = container.find('#emailField');
+				if (!thisInstance.__dedupPending) {
+					thisInstance.__dedupPending = true;
+					setTimeout(function(){
+						thisInstance.__dedupPending = false;
+						var pd = thisInstance.getPreloadData() || [];
+						var seen = {}, uniqPd = [];
+						for (var i = 0; i < pd.length; i++) {
+							var idv = pd[i].id;
+							if (seen[idv]) continue;
+							seen[idv] = true;
+							uniqPd.push(pd[i]);
+						}
+						if (uniqPd.length !== pd.length) {
+							thisInstance.setPreloadData(uniqPd);
+							emailField.select2('data', uniqPd, false);
+						}
+					}, 100);
+				}
 				var data = {
 					'id' : addedElement.recordId,
 					'name' : addedElement.text,
@@ -476,7 +495,9 @@ jQuery.Class("Emails_MassEdit_Js",{},{
 		if(value == ""){
 			value = new Array();
 		}
-		value.push(mailInfo.emailid);
+		if(jQuery.inArray(mailInfo.emailid, value) === -1){
+			value.push(mailInfo.emailid);
+		}
 		toEmails.val(JSON.stringify(value));
 	},
 
@@ -490,8 +511,10 @@ jQuery.Class("Emails_MassEdit_Js",{},{
 		//existing email id
 		 if(existingToMailInfo.hasOwnProperty(mailInfo.id) === true){
 			var existingValues = existingToMailInfo[mailInfo.id];
-			var newValue = new Array(mailInfo.emailid);
-			existingToMailInfo[mailInfo.id] = jQuery.merge(existingValues,newValue);
+			if(jQuery.inArray(mailInfo.emailid, existingValues) === -1){
+				existingValues.push(mailInfo.emailid);
+			}
+			existingToMailInfo[mailInfo.id] = existingValues;
 		} else {
 			existingToMailInfo[mailInfo.id] = new Array(mailInfo.emailid);
 		}

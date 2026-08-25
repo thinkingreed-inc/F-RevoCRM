@@ -429,7 +429,7 @@
 									<tbody>
 										{foreach key=DEDUCTED_TAX_ID item=DEDUCTED_TAX_INFO from=$DEDUCTED_TAXES}
 											<tr>
-												<td class="lineOnTop">{$DEDUCTED_TAX_INFO['taxlabel']}</td>
+												<td class="lineOnTop">{vtranslate($DEDUCTED_TAX_INFO['taxlabel'],$MODULE)}</td>
 												<td class="lineOnTop">
 													<input type="text" class="span1 deductTaxPercentage" name="{$DEDUCTED_TAX_INFO['taxname']}_group_percentage" value="{if $DEDUCTED_TAX_INFO['selected'] || !$RECORD_ID}{$DEDUCTED_TAX_INFO['percentage']}{else}0{/if}"
 														   data-rule-positive=true data-rule-inventory_percentage=true />&nbsp;%

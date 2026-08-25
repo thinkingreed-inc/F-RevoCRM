@@ -147,9 +147,9 @@ class Emails_Module_Model extends Vtiger_Module_Model{
                         for($i=0; $i<$numOfRows; $i++) {
                             $row = $db->query_result_rowdata($result, $i);
                             foreach ($emailFields as $emailField) {
-                                    $emailFieldValue = $row[$emailField];
+                                    $emailFieldValue = decode_html($row[$emailField]);
                                     if ($emailFieldValue) {
-                                            $recordLabel = getEntityFieldNameDisplay($moduleName, $nameFields, $row);
+                                            $recordLabel = decode_html(getEntityFieldNameDisplay($moduleName, $nameFields, $row));
                                             if (strpos($emailFieldValue, $searchValue) !== false || strpos($recordLabel, $searchValue) !== false) {
                                                     $emailsResult[vtranslate($moduleName, $moduleName)][$row[$moduleInstance->table_index]][]
                                                                             = array('value'	=> $emailFieldValue,
