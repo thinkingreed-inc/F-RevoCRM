@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import type { Folder } from "./types/documents";
+import { buildFolderOptions } from "./utils/folderOptions";
 
 interface DocumentsBulkActionBarProps {
   /** 選択中のドキュメントID */
@@ -206,13 +207,14 @@ export const DocumentsBulkActionBar: React.FC<DocumentsBulkActionBarProps> = ({
             }}
           >
             <option value="">{t("LBL_BULK_MOVE_TARGET")}</option>
-            {folders
-              .filter((f) => f.can_edit !== false)
-              .map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.name}
-                </option>
-              ))}
+            {/* 階層順に並べ、移動できないフォルダは目印として残す（親をたどれるように） */}
+            {buildFolderOptions(folders, {
+              isDisabled: (f) => f.can_edit === false,
+            }).map((f) => (
+              <option key={f.id} value={f.id} disabled={f.disabled}>
+                {f.label}
+              </option>
+            ))}
           </select>
           <button
             type="button"

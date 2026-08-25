@@ -27,6 +27,7 @@ function useIsMobile(breakpoint = 768) {
 import { FieldRenderer } from "../FieldRenderer";
 import { isComplianceFieldVisible } from "./utils/complianceFields";
 import { toServerValue } from "./utils/serverValue";
+import { buildFolderOptions } from "./utils/folderOptions";
 import { FieldInfo, FieldValue } from "../../types/field";
 
 interface DocumentCreateEditModalProps {
@@ -764,9 +765,12 @@ export const DocumentCreateEditModal: React.FC<
                 onChange={(e) => setFolderid(Number(e.target.value))}
                 style={inputStyle}
               >
-                {folders.map((f) => (
-                  <option key={f.id} value={f.id}>
-                    {f.name}
+                {/* 階層順に並べ、登録できないフォルダは選択不可で残す */}
+                {buildFolderOptions(folders, {
+                  isDisabled: (f) => f.can_edit === false,
+                }).map((f) => (
+                  <option key={f.id} value={f.id} disabled={f.disabled}>
+                    {f.label}
                   </option>
                 ))}
               </select>
