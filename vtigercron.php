@@ -99,6 +99,7 @@ function vtigercron_parse_arguments($argv) {
  * 自分のサーバーが担当しているタスクは、子プロセスの生死まで確認して分類する。
  *   RUNNING  : 正常に実行中
  *   STARTING : 実行権を取った直後で、子プロセスがまだ起動途中
+ *   NOSTART  : 猶予を過ぎても子プロセスが起動していない（PHP バイナリを実行できない等）
  *   HUNG     : 子プロセスは生きているが retry_timeout を超過している（ハングの疑い）
  *   DEAD     : 子プロセスが存在しない（異常終了して実行状態が残っている）
  *   UNKNOWN  : 生死を判定できない環境
@@ -118,7 +119,7 @@ function vtigercron_print_status($cronTasks) {
 			'NAME', 'STATE', 'HOST', 'LAST START', 'NEXT RUN', 'FREQ', 'ELAPSED', 'PID');
 	echo str_repeat('-', 118)."\n";
 
-	$attention = array('HUNG', 'DEAD', 'STALE');
+	$attention = array('HUNG', 'DEAD', 'STALE', 'NOSTART');
 	$exitCode = 0;
 	foreach ($rows as $row) {
 		printf("%-20s %-9s %-16s %-20s %-20s %8s %10s %8s\n",
@@ -176,8 +177,69 @@ function vtigercron_begin_task($cronTask, $claimed, $cronRunId) {
 	// 複数のサーバーから参照できるようデータベースに持つ。
 	FR_CronDispatcher::recordChildPid($cronTask);
 
+	// このタスクの出力をタスクごとのログファイルへも残す
+	vtigercron_start_task_logging($cronTask);
+
 	echo sprintf('[CRON],"%s",%s,%s,"%s","",[STARTS]',$cronRunId,$site_URL,$cronTask->getName(),date('Y-m-d H:i:s',$cronTask->getLastStart()))."\n";
 	return true;
+}
+
+/**
+ * このタスクの出力を、タスクごとのログファイルへ書き出し始める。
+ *
+ * 振り分けモードでは子プロセスの標準出力をシェルがログへリダイレクトしているため、
+ * ログはそちらに残る。一方で逐次実行や単体実行（--service=）はこのプロセスで直接
+ * 実行するため、従来はタスクごとのログが残らなかった。実行モードによらず同じ場所に
+ * ログが残るよう、リダイレクトが効いていない場合はこちらで書き出す。
+ *
+ * 出力はバッファのコールバックでファイルへ追記し、そのまま標準出力へも流す。
+ * cron のメール通知や画面表示は従来どおりになる。
+ *
+ * @param Vtiger_Cron $cronTask
+ */
+function vtigercron_start_task_logging($cronTask) {
+	if (!empty($GLOBALS['vtigercron_log_active'])) {
+		return;
+	}
+	// 子プロセスはシェルのリダイレクトで既に同じファイルへ書かれている
+	if (!empty($GLOBALS['vtigercron_options']['child'])) {
+		return;
+	}
+
+	$logFile = FR_CronDispatcher::getLogFile($cronTask);
+	// 書き込めない場所ならログを諦めて実行そのものは続ける
+	$directory = dirname($logFile);
+	if (!is_dir($directory) || !is_writable($directory)) {
+		return;
+	}
+
+	// ハンドルを持ち回すとシャットダウン時に閉じられている恐れがあるため、
+	// コールバックの中で毎回追記する
+	$writer = function ($buffer) use ($logFile) {
+		if ($buffer !== '') {
+			@file_put_contents($logFile, $buffer, FILE_APPEND);
+		}
+		// 標準出力へはそのまま流す
+		return $buffer;
+	};
+
+	if (ob_start($writer, 4096)) {
+		$GLOBALS['vtigercron_log_active'] = true;
+	}
+}
+
+/**
+ * タスクごとのログ書き出しを終える。
+ *
+ * 呼ばれないまま停止した場合も、PHP がシャットダウン時にバッファを流すため
+ * それまでの出力はログに残る。
+ */
+function vtigercron_stop_task_logging() {
+	if (empty($GLOBALS['vtigercron_log_active'])) {
+		return;
+	}
+	$GLOBALS['vtigercron_log_active'] = false;
+	@ob_end_flush();
 }
 
 /**
@@ -193,6 +255,8 @@ function vtigercron_end_task($cronTask, $cronRunId) {
 	$GLOBALS['vtigercron_current_task'] = null;
 
 	echo "\n".sprintf('[CRON],"%s",%s,%s,"%s","%s",[ENDS]',$cronRunId,$site_URL,$cronTask->getName(),date('Y-m-d H:i:s',$cronTask->getLastStart()),date('Y-m-d H:i:s',$cronTask->getLastEnd()))."\n";
+
+	vtigercron_stop_task_logging();
 }
 
 /**
@@ -211,6 +275,8 @@ function vtigercron_fail_task($cronTask, $throwable) {
 	echo sprintf("[ERROR]: %s - cron task execution throwed exception.\n", $cronTask->getName());
 	echo $throwable->getMessage().PHP_EOL;
 	echo $throwable->getTraceAsString().PHP_EOL;
+
+	vtigercron_stop_task_logging();
 }
 
 /**
@@ -239,6 +305,8 @@ function vtigercron_shutdown_handler() {
 		echo sprintf("[ERROR]: %s - cron task did not complete as the process exited unexpectedly.\n",
 				$cronTask->getName());
 	}
+
+	vtigercron_stop_task_logging();
 }
 
 if (!vtigercron_detect_run_in_cli()
@@ -249,6 +317,9 @@ if (!vtigercron_detect_run_in_cli()
 }
 
 $vtigercronOptions = vtigercron_parse_arguments(isset($argv) ? $argv : array());
+// タスクごとのログ書き出しの判定で参照する
+$GLOBALS['vtigercron_options'] = &$vtigercronOptions;
+$GLOBALS['vtigercron_log_active'] = false;
 if ($vtigercronOptions['service'] === false && isset($_REQUEST['service'])) {
 	$vtigercronOptions['service'] = $_REQUEST['service'];
 }
@@ -316,6 +387,11 @@ if ($vtigercronParallel) {
 		echo sprintf("[WARN] %s - was marked as running but its process (pid %d) is gone - released\n",
 				$vtigercronName, $vtigercronPid);
 	}
+	foreach ($vtigercronSummary['notstarted'] as $vtigercronName => $vtigercronElapsed) {
+		echo sprintf("[ERROR]: %s - a child process never started (released after %d seconds)"
+				. " - check the php binary (\$cron_php_binary) and logs/cron\n",
+				$vtigercronName, $vtigercronElapsed);
+	}
 	foreach ($vtigercronSummary['hung'] as $vtigercronName => $vtigercronHang) {
 		echo sprintf("[WARN] %s - still running after %d seconds (retry timeout %d seconds, pid %d) - possibly hung\n",
 				$vtigercronName, $vtigercronHang['elapsed'], $vtigercronHang['timeout'], $vtigercronHang['pid']);
@@ -324,6 +400,12 @@ if ($vtigercronParallel) {
 		echo sprintf("[WARN] %s - terminated the hung process (pid %d) and released the task\n",
 				$vtigercronName, $vtigercronPid);
 	}
+	if (count($vtigercronSummary['prunedlogs']) > 0) {
+		echo sprintf("[INFO] removed %d old log file(s) from %s (keeping %d generation(s) per task by default)\n",
+				count($vtigercronSummary['prunedlogs']),
+				FR_CronDispatcher::LOG_DIRECTORY,
+				FR_CronDispatcher::getLogRetentionCount());
+	}
 	foreach ($vtigercronSummary['dispatched'] as $vtigercronName) {
 		echo sprintf("[INFO] %s - dispatched to a child process\n", $vtigercronName);
 	}
@@ -331,7 +413,8 @@ if ($vtigercronParallel) {
 		echo sprintf("[INFO] %s - skipped (%s)\n", $vtigercronName, $vtigercronReason);
 	}
 	foreach ($vtigercronSummary['failed'] as $vtigercronName) {
-		echo sprintf("[ERROR]: %s - failed to start a child process\n", $vtigercronName);
+		echo sprintf("[ERROR]: %s - failed to start a child process (php binary: %s)\n",
+				$vtigercronName, FR_CronDispatcher::getPhpBinary());
 	}
 
 	echo sprintf('[CRON],"%s",%s,Instance,"%s","%s",[ENDS]',$cronRunId,$site_URL,$cronStarts,date('Y-m-d H:i:s'))."\n";

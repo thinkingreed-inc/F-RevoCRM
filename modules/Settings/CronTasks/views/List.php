@@ -59,6 +59,8 @@ class Settings_CronTasks_List_View extends Settings_Vtiger_List_View {
 
 		$cssFileNames = array(
 			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/jquery/perfect-scrollbar/css/perfect-scrollbar.css",
+			// 一覧のカーソルなど、この画面だけの調整
+			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/modules/Settings/CronTasks/resources/css/style.css",
 		);
 		$cssInstances = $this->checkAndConvertCssStyles($cssFileNames);
 		$headerCssInstances = array_merge($headerCssInstances, $cssInstances);

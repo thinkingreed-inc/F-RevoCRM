@@ -33,6 +33,24 @@ class FR_CronDispatcher {
 	/** 子プロセスの出力先ディレクトリ */
 	const LOG_DIRECTORY = 'logs/cron';
 
+	/** 実行ログを残す世代数（ファイル数）の既定値 */
+	const LOG_RETENTION_DEFAULT_COUNT = 30;
+
+	/** 古いログを削除した日を記録するファイル（1 日 1 回に抑えるため） */
+	const LOG_PRUNE_STAMP = '.last_prune';
+
+	/**
+	 * 子プロセスが自分の PID を記録するまで待つ猶予秒数。
+	 *
+	 * 実行権を獲得してから子プロセスが recordChildPid() に到達するまでには、
+	 * PHP の起動と F-RevoCRM の初期化に掛かる時間がある。その間 owner_pid は 0 のままで、
+	 * これは異常ではない。ただし猶予を過ぎても記録されないなら、子プロセスは起動できて
+	 * いない（起動直後に停止した、PHP バイナリを実行できなかった等）と判断する。
+	 *
+	 * cron の起動間隔（1 分）の数回分を見込んだ値にしておくこと。
+	 */
+	const CHILD_STARTUP_GRACE = 120;
+
 	/** @var boolean 名前付きロックを保持しているか */
 	protected $lockAcquired = false;
 
@@ -108,6 +126,35 @@ class FR_CronDispatcher {
 			return PHP_BINARY;
 		}
 		return 'php';
+	}
+
+	/**
+	 * 子プロセスの起動に使う PHP バイナリを実際に実行できるか。
+	 *
+	 * spawn() は起動コマンドをバックグラウンド実行するため、exec() の終了コードは
+	 * シェル自身のもので常に 0 になり、バイナリを実行できなかったことを検出できない。
+	 * 起動を試みる前にここで確かめることで、$cron_php_binary の設定誤りや、cron の
+	 * 実行ユーザーの PATH に php が無い環境を、静かに失敗させずに報告できるようにする。
+	 *
+	 * @return boolean
+	 */
+	public static function isPhpBinaryExecutable() {
+		$php = self::getPhpBinary();
+
+		// パス指定ならそのまま確認する
+		if (strpos($php, '/') !== false || strpos($php, DIRECTORY_SEPARATOR) !== false) {
+			return is_executable($php);
+		}
+
+		// コマンド名のみの指定は PATH から探す。exec() が使えない環境では判定できないため通す。
+		if (!function_exists('exec')) {
+			return true;
+		}
+		$output = array();
+		$status = 0;
+		$lookup = self::isWindows() ? 'where %s' : 'command -v %s';
+		@exec(sprintf($lookup, escapeshellarg($php)), $output, $status);
+		return intval($status) === 0;
 	}
 
 	/**
@@ -358,17 +405,27 @@ class FR_CronDispatcher {
 	 * 同時実行数の上限に達している状況で常に sequence 順で振り分けると、後ろのタスクが
 	 * いつまでも実行されない（飢餓状態になる）。予定時刻からの遅れが大きい順に処理する。
 	 *
+	 * 遅れは next_run_at からの経過で測る。周期に頼ると、毎日決まった時刻に実行するタスクは
+	 * 周期と実際の予定が対応しないため、遅れを正しく測れない。next_run_at が未設定の
+	 * 移行直後のタスクだけ、従来どおり前回実行時刻と周期から求める。
+	 *
 	 * @param array $cronTasks Vtiger_Cron の配列
 	 * @return array 並べ替えた Vtiger_Cron の配列
 	 */
 	public static function sortByUrgency($cronTasks) {
-		$now = time();
+		$now = Vtiger_Cron::currentTime();
 		$entries = array();
 		foreach (array_values($cronTasks) as $index => $cronTask) {
-			// Vtiger_Cron::isRunnable() と同じ基準時刻を使う
-			$lastTime = ($cronTask->getLastStart() > 0) ? $cronTask->getLastStart() : $cronTask->getLastEnd();
+			$nextRunAt = $cronTask->getNextRunAt();
+			if ($nextRunAt > 0) {
+				$overdue = $now - $nextRunAt;
+			} else {
+				// Vtiger_Cron::isRunnable() のフォールバックと同じ基準時刻を使う
+				$lastTime = ($cronTask->getLastStart() > 0) ? $cronTask->getLastStart() : $cronTask->getLastEnd();
+				$overdue = ($now - $lastTime) - $cronTask->getFrequency();
+			}
 			$entries[] = array(
-				'overdue' => ($now - $lastTime) - $cronTask->getFrequency(),
+				'overdue' => $overdue,
 				'index' => $index,
 				'task' => $cronTask,
 			);
@@ -395,13 +452,245 @@ class FR_CronDispatcher {
 	 * @return string
 	 */
 	public static function getLogFile($cronTask) {
-		$directory = self::getRootDirectory() . DIRECTORY_SEPARATOR . self::LOG_DIRECTORY;
+		$directory = self::getLogDirectory();
 		if (!is_dir($directory)) {
 			@mkdir($directory, 0755, true);
 		}
-		// ファイル名に使えない文字を含むタスク名があり得るため置換する
-		$name = preg_replace('/[^A-Za-z0-9_\-]/', '_', $cronTask->getName());
-		return $directory . DIRECTORY_SEPARATOR . $name . '_' . date('Ymd') . '.log';
+		return $directory . DIRECTORY_SEPARATOR . self::getLogFileName($cronTask, date('Ymd'));
+	}
+
+	/**
+	 * 子プロセスの出力先ディレクトリ（作成はしない）。
+	 * @return string
+	 */
+	public static function getLogDirectory() {
+		return self::getRootDirectory() . DIRECTORY_SEPARATOR . self::LOG_DIRECTORY;
+	}
+
+	/**
+	 * ログファイル名。タスク名に使えない文字が含まれ得るため置換する。
+	 *
+	 * 置換によりファイル名は必ず英数字・アンダースコア・ハイフンだけになる。
+	 * タスク名をそのままパスに使わないので、ここを通す限りディレクトリ遡上は起きない。
+	 *
+	 * @param Vtiger_Cron $cronTask
+	 * @param string $date Ymd 形式の日付。'*' を渡すと glob 用のパターンになる。
+	 * @return string
+	 */
+	public static function getLogFileName($cronTask, $date) {
+		return self::getLogBaseName($cronTask) . '_' . $date . '.log';
+	}
+
+	/**
+	 * ログファイル名の、日付より前の部分。
+	 *
+	 * タスク名に使えない文字を置換した結果なので、必ず英数字・アンダースコア・
+	 * ハイフンだけになる。
+	 *
+	 * @param Vtiger_Cron $cronTask
+	 * @return string
+	 */
+	public static function getLogBaseName($cronTask) {
+		return preg_replace('/[^A-Za-z0-9_\-]/', '_', $cronTask->getName());
+	}
+
+	/**
+	 * このタスクのログファイルを新しい順に返す。
+	 *
+	 * @param Vtiger_Cron $cronTask
+	 * @param integer $limit 返す最大件数
+	 * @return array ファイルパスの配列（新しい順）
+	 */
+	public static function findLogFiles($cronTask, $limit = 10) {
+		$pattern = self::getLogDirectory() . DIRECTORY_SEPARATOR . self::getLogFileName($cronTask, '*');
+		$files = glob($pattern);
+		if ($files === false || count($files) === 0) {
+			return array();
+		}
+		// ファイル名に含まれる日付が新しい順（名前の降順と一致する）
+		rsort($files);
+		return array_slice($files, 0, max(1, intval($limit)));
+	}
+
+	/**
+	 * このタスクの最新のログファイル。無ければ null。
+	 *
+	 * @param Vtiger_Cron $cronTask
+	 * @return string|null
+	 */
+	public static function getLatestLogFile($cronTask) {
+		$files = self::findLogFiles($cronTask, 1);
+		return count($files) > 0 ? $files[0] : null;
+	}
+
+	/**
+	 * 実行ログを残す世代数の既定値。
+	 * config.inc.php の $cron_log_retention_count で変更できる。
+	 *
+	 * ログは日付ごとにファイルが分かれるが、放っておくと際限なく溜まる。タスクごとに
+	 * 新しいものをこの数だけ残し、それより古いファイルは削除する。
+	 * 0 以下を指定すると削除しない（無期限に残す）。
+	 *
+	 * タスクごとの指定（スケジューラー画面）があればそちらが優先される。
+	 *
+	 * @return integer
+	 */
+	public static function getLogRetentionCount() {
+		global $cron_log_retention_count;
+
+		if (!isset($cron_log_retention_count)) {
+			return self::LOG_RETENTION_DEFAULT_COUNT;
+		}
+		return intval($cron_log_retention_count);
+	}
+
+	/**
+	 * このタスクに適用する保持世代数。
+	 * タスク側が未設定なら全体の既定値を使う。
+	 *
+	 * @param Vtiger_Cron $cronTask
+	 * @return integer
+	 */
+	public static function getEffectiveLogRetentionCount($cronTask) {
+		$configured = $cronTask->getLogRetentionCount();
+		return ($configured === null) ? self::getLogRetentionCount() : $configured;
+	}
+
+	/**
+	 * 保持世代数を超えた実行ログを削除する。
+	 *
+	 * タスクごとに、ファイル名の日付が新しいものを保持世代数だけ残し、それより古いものを
+	 * 削除する。日数ではなく世代数で数えるのは、実行間隔がタスクごとに違うため。
+	 * 毎日動くタスクなら世代数がそのまま日数になり、月 1 回のタスクでも直近の実行分が残る。
+	 *
+	 * 保持世代数はタスクごとの指定を優先し、未設定なら config.inc.php の既定値を使う。
+	 * ログの命名（<タスク名>_<日付>.log）に合わないファイルには手を出さない。
+	 * また、対応するタスクが見つからないログ（削除されたタスクの残骸）は既定値で扱う。
+	 *
+	 * @param array $cronTasks 対象タスク。省略時は登録済みのすべてのタスク。
+	 * @return array 削除したファイル名の配列
+	 */
+	public static function pruneLogFiles($cronTasks = null) {
+		$directory = self::getLogDirectory();
+		if (!is_dir($directory)) {
+			return array();
+		}
+
+		if ($cronTasks === null) {
+			// 無効化されたタスクのログも対象にするため、状態を問わず全件取得する
+			$cronTasks = Vtiger_Cron::listAllActiveInstances(1);
+		}
+
+		// ログ名の前半 => 保持世代数
+		$limits = array();
+		foreach ($cronTasks as $cronTask) {
+			$limits[self::getLogBaseName($cronTask)] = self::getEffectiveLogRetentionCount($cronTask);
+		}
+		$defaultLimit = self::getLogRetentionCount();
+
+		// タスクごとにまとめる
+		$groups = array();
+		$files = glob($directory . DIRECTORY_SEPARATOR . '*.log');
+		if ($files === false) {
+			return array();
+		}
+		foreach ($files as $file) {
+			if (!preg_match('/^(.+)_(\d{8})\.log$/', basename($file), $matches)) {
+				continue;
+			}
+			$groups[$matches[1]][$matches[2]] = $file;
+		}
+
+		$removed = array();
+		foreach ($groups as $baseName => $groupFiles) {
+			$limit = isset($limits[$baseName]) ? $limits[$baseName] : $defaultLimit;
+			if ($limit <= 0) {
+				// 無期限に残す
+				continue;
+			}
+			// 日付の降順（新しい順）に並べ、保持数を超えた分を削除する
+			krsort($groupFiles);
+			$kept = 0;
+			foreach ($groupFiles as $groupFile) {
+				$kept++;
+				if ($kept <= $limit) {
+					continue;
+				}
+				if (@unlink($groupFile)) {
+					$removed[] = basename($groupFile);
+				}
+			}
+		}
+		return $removed;
+	}
+
+	/**
+	 * 当日まだ古いログの削除をしていなければ実行する。
+	 *
+	 * 振り分けは毎分動くため、その度にディレクトリを走査しないよう 1 日 1 回に抑える。
+	 *
+	 * @param array $cronTasks 対象タスク。省略時は登録済みのすべてのタスク。
+	 * @return array 削除したファイル名の配列
+	 */
+	public static function pruneLogFilesOncePerDay($cronTasks = null) {
+		$directory = self::getLogDirectory();
+		if (!is_dir($directory)) {
+			return array();
+		}
+
+		$today = date('Ymd');
+		$stamp = $directory . DIRECTORY_SEPARATOR . self::LOG_PRUNE_STAMP;
+		if (is_file($stamp) && trim((string) @file_get_contents($stamp)) === $today) {
+			return array();
+		}
+
+		// 削除の前に記録する。削除に失敗しても毎分走査しないようにするため。
+		@file_put_contents($stamp, $today);
+		return self::pruneLogFiles($cronTasks);
+	}
+
+	/**
+	 * ログファイルの末尾を読み出す。
+	 *
+	 * 実行の度に追記されるため、ログは際限なく大きくなる。全体を読むとメモリを使い切る
+	 * 恐れがあるので、末尾から一定バイトだけ読み、そこから必要な行数を取り出す。
+	 *
+	 * @param string $file
+	 * @param integer $lines 取り出す行数
+	 * @param integer $maxBytes 末尾から読むバイト数の上限
+	 * @return array truncated / content / size / modified をキーに持つ配列
+	 */
+	public static function tailLogFile($file, $lines = 200, $maxBytes = 262144) {
+		$result = array('truncated' => false, 'content' => '', 'size' => 0, 'modified' => 0);
+
+		if ($file === null || !is_file($file) || !is_readable($file)) {
+			return $result;
+		}
+
+		$size = filesize($file);
+		$result['size'] = intval($size);
+		$result['modified'] = intval(filemtime($file));
+
+		$handle = @fopen($file, 'rb');
+		if ($handle === false) {
+			return $result;
+		}
+		if ($size > $maxBytes) {
+			fseek($handle, $size - $maxBytes);
+			$result['truncated'] = true;
+			// 途中から読み始めた最初の行は切れているので捨てる
+			fgets($handle);
+		}
+		$content = stream_get_contents($handle);
+		fclose($handle);
+
+		$rows = preg_split('/\r\n|\r|\n/', rtrim((string) $content, "\r\n"));
+		if (count($rows) > $lines) {
+			$rows = array_slice($rows, -$lines);
+			$result['truncated'] = true;
+		}
+		$result['content'] = implode("\n", $rows);
+		return $result;
 	}
 
 	/**
@@ -560,20 +849,22 @@ class FR_CronDispatcher {
 	 * プロセスは生死を確認することも終了させることもできないため、絶対に手を出さない。
 	 * 担当サーバーが落ちた場合は、ハートビートの途絶を根拠に claim() が引き継ぐ。
 	 *
-	 * 自分の担当分の判定は以下の 3 通り。
-	 *   dead      : 子プロセスが存在しない。異常終了して実行状態が解除されなかったもの。
-	 *               retry_timeout を待たずに解放し、同時実行スロットを空ける。
-	 *   hung      : 子プロセスは生きているが retry_timeout を超過している。ハングの疑い。
-	 *               $cron_kill_timed_out が true なら強制終了して解放する。
-	 *   heartbeat : 正常に実行中。ハートビートを更新し、他サーバーに引き継がれないようにする。
+	 * 自分の担当分の判定は以下の 4 通り。
+	 *   dead       : 子プロセスが存在しない。異常終了して実行状態が解除されなかったもの。
+	 *                retry_timeout を待たずに解放し、同時実行スロットを空ける。
+	 *   notstarted : 猶予を過ぎても子プロセスが PID を記録していない。起動できていない。
+	 *                解放して報告する（放置すると同じ失敗を黙って繰り返す）。
+	 *   hung       : 子プロセスは生きているが retry_timeout を超過している。ハングの疑い。
+	 *                $cron_kill_timed_out が true なら強制終了して解放する。
+	 *   heartbeat  : 正常に実行中。ハートビートを更新し、他サーバーに引き継がれないようにする。
 	 *
 	 * @param array $cronTasks Vtiger_Cron の配列
-	 * @return array dead / hung / killed / remote / stale をキーに持つ配列
+	 * @return array dead / notstarted / hung / killed / remote / stale をキーに持つ配列
 	 */
 	public static function reap($cronTasks) {
 		$findings = array(
 			'dead' => array(), 'hung' => array(), 'killed' => array(),
-			'remote' => array(), 'stale' => array(),
+			'remote' => array(), 'stale' => array(), 'notstarted' => array(),
 		);
 		$now = Vtiger_Cron::currentTime();
 
@@ -599,8 +890,17 @@ class FR_CronDispatcher {
 
 			$pid = $cronTask->getOwnerPid();
 			if ($pid <= 0) {
-				// 実行権を取った直後で、子プロセスがまだ PID を記録していない。
+				// 実行権を取った直後は、子プロセスがまだ PID を記録していないだけ。
 				// ハートビートは claim() が打ってあるので、次回の起動で改めて確認する。
+				$sinceClaim = $now - $cronTask->getLastStart();
+				if ($sinceClaim <= self::CHILD_STARTUP_GRACE) {
+					continue;
+				}
+				// 猶予を過ぎても記録されない＝子プロセスが起動していない。
+				// 放置するとハートビートが途絶えるまで実行中のまま残り、
+				// その後も同じ失敗を繰り返すだけで運用者に気付く手掛かりが無い。
+				$cronTask->markFinished();
+				$findings['notstarted'][$name] = $sinceClaim;
 				continue;
 			}
 
@@ -645,10 +945,20 @@ class FR_CronDispatcher {
 	 * 子プロセスは vtigercron.php を --child --service=<名前> で再実行する形で起動する。
 	 * 実行権は呼び出し元（dispatch）が claim() で獲得済みである前提。
 	 *
+	 * 戻り値が true でも、子プロセスが起動できたことまでは保証できない。バックグラウンド
+	 * 実行のため exec() の終了コードはシェル自身のものになるためである。実行前に
+	 * isPhpBinaryExecutable() で確かめ、それでも起動しなかった場合は reap() が
+	 * CHILD_STARTUP_GRACE 経過後に検出して解放する。
+	 *
 	 * @param Vtiger_Cron $cronTask
 	 * @return boolean 起動コマンドを発行できたか
 	 */
 	public function spawn($cronTask) {
+		// バックグラウンド実行では起動の失敗を終了コードから知れないため、先に確かめる
+		if (!self::isPhpBinaryExecutable()) {
+			return false;
+		}
+
 		$php = escapeshellarg(self::getPhpBinary());
 		$script = escapeshellarg(self::getRootDirectory() . DIRECTORY_SEPARATOR . 'vtigercron.php');
 		$service = escapeshellarg('--service=' . $cronTask->getName());
@@ -690,10 +1000,12 @@ class FR_CronDispatcher {
 			'skipped' => array(),
 			'failed' => array(),
 			'dead' => array(),
+			'notstarted' => array(),
 			'hung' => array(),
 			'killed' => array(),
 			'remote' => array(),
 			'stale' => array(),
+			'prunedlogs' => array(),
 		);
 
 		if (!$this->acquireLock()) {
@@ -704,9 +1016,13 @@ class FR_CronDispatcher {
 		}
 
 		try {
+			// 保持日数を過ぎたログを片付ける（1 日 1 回だけ走る）
+			$summary['prunedlogs'] = self::pruneLogFilesOncePerDay();
+
 			// 実行中のまま終わらないタスクを先に始末して、空けられるスロットを回収する
 			$findings = self::reap($cronTasks);
 			$summary['dead'] = $findings['dead'];
+			$summary['notstarted'] = $findings['notstarted'];
 			$summary['hung'] = $findings['hung'];
 			$summary['killed'] = $findings['killed'];
 			$summary['remote'] = $findings['remote'];
@@ -787,6 +1103,7 @@ class FR_CronDispatcher {
 	 *   RUNNING : 正常に実行中
 	 *   HUNG    : プロセスは生きているが retry_timeout を超過している（ハングの疑い）
 	 *   DEAD    : プロセスが存在しない（異常終了して実行状態が残っている）
+	 *   NOSTART : 猶予を過ぎても子プロセスが PID を記録していない（起動できていない）
 	 *   UNKNOWN : PID を確認できず生死を判定できない
 	 *
 	 * @param array $cronTasks Vtiger_Cron の配列
@@ -832,8 +1149,9 @@ class FR_CronDispatcher {
 
 			$pid = $cronTask->getOwnerPid();
 			if ($pid <= 0) {
-				// 実行権を取った直後で、子プロセスがまだ PID を記録していない
-				$row['state'] = 'STARTING';
+				// 実行権を取った直後で、子プロセスがまだ PID を記録していない。
+				// 猶予を過ぎても記録されないなら子プロセスが起動できていない。
+				$row['state'] = ($row['elapsed'] > self::CHILD_STARTUP_GRACE) ? 'NOSTART' : 'STARTING';
 				$rows[] = $row;
 				continue;
 			}

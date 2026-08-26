@@ -24,6 +24,21 @@ class Vtiger_Cron {
 	static $STATUS_ENABLED = 1;
 	static $STATUS_RUNNING = 2;
 	static $STATUS_COMPLETED = 3;
+
+	/** 一定の周期で実行する（従来の方式。frequency を使う） */
+	const SCHEDULE_INTERVAL = 'interval';
+	/** 毎日、決まった時刻に実行する */
+	const SCHEDULE_DAILY = 'daily';
+	/** 毎週、決まった曜日の決まった時刻に実行する */
+	const SCHEDULE_WEEKLY = 'weekly';
+	/** 毎月、決まった日の決まった時刻に実行する */
+	const SCHEDULE_MONTHLY = 'monthly';
+
+	/** run_on_day に指定したときに「月末」を意味する値 */
+	const RUN_ON_LAST_DAY_OF_MONTH = 0;
+
+	/** @var array 指定できる実行タイミングの種別 */
+	static $SCHEDULE_TYPES = array('interval', 'daily', 'weekly', 'monthly');
 	protected $data;
 	protected $bulkMode = false;
 
@@ -108,6 +123,157 @@ class Vtiger_Cron {
 	}
 
 	/**
+	 * 実行タイミングの種別。
+	 *
+	 * 列が無い（マイグレーション前）場合や空の場合は、run_at_minutes の有無から推定する。
+	 * 部分的に移行された状態でも従来どおり動くようにするため。
+	 *
+	 * @return string interval / daily / weekly / monthly
+	 */
+	function getScheduleType() {
+		$type = isset($this->data['schedule_type']) ? (string) $this->data['schedule_type'] : '';
+		if (in_array($type, self::$SCHEDULE_TYPES, true)) {
+			return $type;
+		}
+		return ($this->getRunAtMinutes() === null) ? self::SCHEDULE_INTERVAL : self::SCHEDULE_DAILY;
+	}
+
+	/**
+	 * 実行する時刻（0 時からの経過分）。時刻の指定が無い場合は null。
+	 * @return integer|null
+	 */
+	function getRunAtMinutes() {
+		if (!isset($this->data['run_at_minutes']) || $this->data['run_at_minutes'] === null
+				|| $this->data['run_at_minutes'] === '') {
+			return null;
+		}
+		$minutes = intval($this->data['run_at_minutes']);
+		return ($minutes >= 0 && $minutes < 1440) ? $minutes : null;
+	}
+
+	/**
+	 * 実行する曜日の一覧（0=日曜 〜 6=土曜）。指定が無い場合は空配列。
+	 *
+	 * 複数の曜日を指定できるよう、データベースにはカンマ区切りで保持している。
+	 * 範囲外の値と重複は取り除き、昇順に並べて返す。
+	 *
+	 * @return array
+	 */
+	function getRunOnWeekdays() {
+		if (!isset($this->data['run_on_weekdays']) || $this->data['run_on_weekdays'] === null
+				|| $this->data['run_on_weekdays'] === '') {
+			return array();
+		}
+		return self::parseWeekdays($this->data['run_on_weekdays']);
+	}
+
+	/**
+	 * カンマ区切りの曜日指定を配列に変換する。
+	 *
+	 * @param string|array $weekdays
+	 * @return array 0〜6 の整数の配列（昇順・重複なし）
+	 */
+	static function parseWeekdays($weekdays) {
+		if (!is_array($weekdays)) {
+			$weekdays = explode(',', (string) $weekdays);
+		}
+
+		$parsed = array();
+		foreach ($weekdays as $weekday) {
+			if ($weekday === null || trim((string) $weekday) === '' || !is_numeric(trim((string) $weekday))) {
+				continue;
+			}
+			$weekday = intval(trim((string) $weekday));
+			if ($weekday >= 0 && $weekday <= 6 && !in_array($weekday, $parsed, true)) {
+				$parsed[] = $weekday;
+			}
+		}
+		sort($parsed);
+		return $parsed;
+	}
+
+	/**
+	 * このタスクの実行ログを残す世代数。
+	 *
+	 * 未設定（NULL）の場合は null を返し、呼び出し側が全体の既定値を使う。
+	 * 0 は「削除しない（無期限に残す）」を意味する。
+	 *
+	 * @return integer|null
+	 */
+	function getLogRetentionCount() {
+		if (!isset($this->data['log_retention_count']) || $this->data['log_retention_count'] === null
+				|| $this->data['log_retention_count'] === '') {
+			return null;
+		}
+		return max(0, intval($this->data['log_retention_count']));
+	}
+
+	/**
+	 * 実行する日（1〜31）。0 は月末。指定が無い場合は null。
+	 * @return integer|null
+	 */
+	function getRunOnDay() {
+		if (!isset($this->data['run_on_day']) || $this->data['run_on_day'] === null
+				|| $this->data['run_on_day'] === '') {
+			return null;
+		}
+		$day = intval($this->data['run_on_day']);
+		return ($day >= 0 && $day <= 31) ? $day : null;
+	}
+
+	/**
+	 * 決まった時刻に実行する指定（毎日・毎週・毎月）になっているか。
+	 * @return boolean
+	 */
+	function isFixedTimeSchedule() {
+		return $this->getScheduleType() !== self::SCHEDULE_INTERVAL;
+	}
+
+	/**
+	 * 毎日決まった時刻に実行する指定になっているか。
+	 * @return boolean
+	 */
+	function isDailySchedule() {
+		return $this->getScheduleType() === self::SCHEDULE_DAILY;
+	}
+
+	/**
+	 * このタスクの次回実行予定時刻を求める。
+	 *
+	 * 指定の種別に応じて、周期のグリッド・毎日・毎週・毎月のいずれかで求める。
+	 * 時刻や曜日・日の指定が欠けている場合は周期実行として扱い、予定を失わないようにする。
+	 *
+	 * @param integer $reference 基準時刻（UNIX時間）。省略時は現在時刻。
+	 * @return integer
+	 */
+	function computeNextRun($reference = null) {
+		if ($reference === null) {
+			$reference = self::currentTime();
+		}
+
+		$minutes = $this->getRunAtMinutes();
+		if ($minutes !== null) {
+			switch ($this->getScheduleType()) {
+				case self::SCHEDULE_DAILY:
+					return self::computeNextDailyRunAt($minutes, $reference);
+				case self::SCHEDULE_WEEKLY:
+					$weekdays = $this->getRunOnWeekdays();
+					if (count($weekdays) > 0) {
+						return self::computeNextWeeklyRunAt($weekdays, $minutes, $reference);
+					}
+					break;
+				case self::SCHEDULE_MONTHLY:
+					$day = $this->getRunOnDay();
+					if ($day !== null) {
+						return self::computeNextMonthlyRunAt($day, $minutes, $reference);
+					}
+					break;
+			}
+		}
+		return self::computeNextRunAt($this->getFrequency(), $reference);
+	}
+
+	/**
 	 * 実行中のまま終わらないタスクを再実行可能とみなすまでの秒数。
 	 */
 	function getRetryTimeout() {
@@ -181,6 +347,138 @@ class Vtiger_Cron {
 		$dayStart = mktime(0, 0, 0, date('n', $reference), date('j', $reference), date('Y', $reference));
 		$slots = (int) floor(($reference - $dayStart) / $frequency) + 1;
 		return $dayStart + ($slots * $frequency);
+	}
+
+	/**
+	 * 「毎日この時刻に実行する」指定に対する次回実行予定時刻を求める。
+	 *
+	 * 基準時刻より後で最初に来る指定時刻を返す。当日の指定時刻を過ぎていれば翌日になる。
+	 * 夏時間の切り替えがある地域でも指定時刻を保つよう、日付を進めてから時刻を組み立てる。
+	 *
+	 * @param integer $runAtMinutes 実行する時刻（0 時からの経過分。0〜1439）
+	 * @param integer $reference 基準時刻（UNIX時間）。省略時は現在時刻。
+	 * @return integer 次の実行予定時刻（UNIX時間）
+	 */
+	static function computeNextDailyRunAt($runAtMinutes, $reference = null) {
+		$runAtMinutes = self::normalizeRunAtMinutes($runAtMinutes);
+		if ($reference === null) {
+			$reference = self::currentTime();
+		}
+
+		$hour = (int) floor($runAtMinutes / 60);
+		$minute = $runAtMinutes % 60;
+
+		$nextRunAt = mktime($hour, $minute, 0,
+				date('n', $reference), date('j', $reference), date('Y', $reference));
+		if ($nextRunAt <= $reference) {
+			// 当日の指定時刻を過ぎている（またはちょうど）ので翌日にする
+			$nextRunAt = mktime($hour, $minute, 0,
+					date('n', $reference), date('j', $reference) + 1, date('Y', $reference));
+		}
+		return $nextRunAt;
+	}
+
+	/**
+	 * 「毎週この曜日のこの時刻に実行する」指定に対する次回実行予定時刻を求める。
+	 *
+	 * 曜日は複数指定できる。基準時刻より後で最初に来る、指定曜日の指定時刻を返す。
+	 * 当日が指定曜日でも時刻を過ぎていれば、次の該当曜日（同じ週の後の曜日、または翌週）になる。
+	 *
+	 * @param integer|array $weekdays 曜日（0=日曜 〜 6=土曜）。配列またはカンマ区切りで複数指定できる。
+	 * @param integer $runAtMinutes 実行する時刻（0 時からの経過分）
+	 * @param integer $reference 基準時刻（UNIX時間）。省略時は現在時刻。
+	 * @return integer
+	 */
+	static function computeNextWeeklyRunAt($weekdays, $runAtMinutes, $reference = null) {
+		$weekdays = self::parseWeekdays($weekdays);
+		if (count($weekdays) === 0) {
+			// 指定が無い場合は日曜として扱う（呼び出し側で検証済みだが念のため）
+			$weekdays = array(0);
+		}
+		if ($reference === null) {
+			$reference = self::currentTime();
+		}
+		$runAtMinutes = self::normalizeRunAtMinutes($runAtMinutes);
+		$hour = (int) floor($runAtMinutes / 60);
+		$minute = $runAtMinutes % 60;
+
+		// 指定された曜日それぞれの「次に来る日時」を求め、最も早いものを採る
+		$earliest = null;
+		foreach ($weekdays as $weekday) {
+			// 基準日から指定曜日までの日数（0〜6）
+			$offset = ($weekday - (int) date('w', $reference) + 7) % 7;
+			$candidate = mktime($hour, $minute, 0,
+					date('n', $reference), date('j', $reference) + $offset, date('Y', $reference));
+			if ($candidate <= $reference) {
+				// 当日が指定曜日で、既に時刻を過ぎている
+				$candidate = mktime($hour, $minute, 0,
+						date('n', $reference), date('j', $reference) + $offset + 7, date('Y', $reference));
+			}
+			if ($earliest === null || $candidate < $earliest) {
+				$earliest = $candidate;
+			}
+		}
+		return $earliest;
+	}
+
+	/**
+	 * 「毎月この日のこの時刻に実行する」指定に対する次回実行予定時刻を求める。
+	 *
+	 * 基準時刻より後で最初に来る、指定日の指定時刻を返す。
+	 * $day に RUN_ON_LAST_DAY_OF_MONTH（0）を渡すと月末になる。
+	 *
+	 * 指定日がその月に存在しない場合（2 月に 31 日を指定した場合など）は、その月の
+	 * 末日に寄せる。実行しない月を作らないためで、月末を明示したい場合は 0 を使う。
+	 *
+	 * @param integer $day 実行する日（1〜31、または 0 で月末）
+	 * @param integer $runAtMinutes 実行する時刻（0 時からの経過分）
+	 * @param integer $reference 基準時刻（UNIX時間）。省略時は現在時刻。
+	 * @return integer
+	 */
+	static function computeNextMonthlyRunAt($day, $runAtMinutes, $reference = null) {
+		$day = intval($day);
+		if ($day < 0 || $day > 31) {
+			$day = self::RUN_ON_LAST_DAY_OF_MONTH;
+		}
+		if ($reference === null) {
+			$reference = self::currentTime();
+		}
+		$runAtMinutes = self::normalizeRunAtMinutes($runAtMinutes);
+		$hour = (int) floor($runAtMinutes / 60);
+		$minute = $runAtMinutes % 60;
+
+		$year = (int) date('Y', $reference);
+		$month = (int) date('n', $reference);
+
+		// 当月と翌月を順に見る。当月の指定日時を過ぎていれば翌月になる。
+		for ($step = 0; $step < 2; $step++) {
+			$targetMonth = $month + $step;
+			$targetYear = $year;
+			if ($targetMonth > 12) {
+				$targetMonth -= 12;
+				$targetYear++;
+			}
+			$lastDay = (int) date('t', mktime(12, 0, 0, $targetMonth, 1, $targetYear));
+			$targetDay = ($day === self::RUN_ON_LAST_DAY_OF_MONTH) ? $lastDay : min($day, $lastDay);
+
+			$nextRunAt = mktime($hour, $minute, 0, $targetMonth, $targetDay, $targetYear);
+			if ($nextRunAt > $reference) {
+				return $nextRunAt;
+			}
+		}
+
+		// ここには到達しないが、念のため翌月の 1 日を返す
+		return mktime($hour, $minute, 0, $month + 2, 1, $year);
+	}
+
+	/**
+	 * 時刻（0 時からの経過分）を 0〜1439 に収める。
+	 * @param integer $runAtMinutes
+	 * @return integer
+	 */
+	protected static function normalizeRunAtMinutes($runAtMinutes) {
+		$runAtMinutes = intval($runAtMinutes);
+		return ($runAtMinutes < 0 || $runAtMinutes > 1439) ? 0 : $runAtMinutes;
 	}
 	/**
 	 * Get the timestamp lastrun started.
@@ -334,11 +632,12 @@ class Vtiger_Cron {
 	 * update frequency
 	*/
 	function updateFrequency($frequency) {
-		// 周期を変えたら次回実行予定時刻も新しいグリッドに合わせて引き直す
-		$nextRunAt = self::computeNextRunAt($frequency);
+		// 周期を変えたら次回実行予定時刻も新しいグリッドに合わせて引き直す。
+		// 毎日決まった時刻の指定がある場合は周期に関係なくその時刻を保つ。
+		$this->data['frequency'] = $frequency;
+		$nextRunAt = $this->computeNextRun();
 		self::querySilent('UPDATE vtiger_cron_task SET frequency=?, next_run_at=? WHERE id=?',
 				array($frequency, $nextRunAt, $this->getId()));
-		$this->data['frequency'] = $frequency;
 		$this->data['next_run_at'] = $nextRunAt;
 	}
 
@@ -370,10 +669,11 @@ class Vtiger_Cron {
 	 *
 	 * 完了時点を基準に次回実行予定時刻を引き直す。実行に周期以上の時間が掛かった場合は
 	 * その間のグリッドを飛ばし、完了後の次のグリッドから再開する（遅れを取り戻さない）。
+	 * 毎日決まった時刻の指定がある場合は、完了後に来る最初のその時刻になる。
 	 */
 	function markFinished() {
 		$time = self::currentTime();
-		$nextRunAt = self::computeNextRunAt($this->getFrequency(), $time);
+		$nextRunAt = $this->computeNextRun($time);
 		// owner_pid と last_heartbeat は実行中であることを示す情報なのでここで消す。
 		// owner_host は「最後にどのサーバーが実行したか」として残す。
 		self::querySilent('UPDATE vtiger_cron_task SET status=?, lastend=?, next_run_at=?, owner_pid=0, last_heartbeat=0 WHERE id=?',
