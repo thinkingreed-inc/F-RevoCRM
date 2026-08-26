@@ -304,6 +304,31 @@ async function addInvitees(page: Page, terms: string[]): Promise<void> {
  * 一覧・詳細に反映されるまで数秒のラグがある(保存→画面表示→再フェッチ)。そのため保存後は
  * モーダルの閉じ(=保存受理)を待ってから、件名クエリを寛大にリトライして特定する。
  */
+/**
+ * React 新規作成モーダルの「必須ピックリストの既定値が入るまで」待つ。
+ *
+ * モーダルは開いた直後に項目定義を非同期取得し、そのあとで ステータス(eventstatus)と
+ * 活動タイプ(activitytype)の既定値(「計画済み」「電話」)を埋める。
+ * これを待たずに保存 / 「詳細入力」へ進むと、値が空のまま扱われ
+ * 「ステータスは必須です」「活動タイプは必須です」で弾かれて保存が成立しない。
+ *
+ * 2026-08-26 の CI 実行で実測した失敗要因(ローカルは描画が速いため通っていた)。
+ * 表示用の input は Radix ベースの select の一部なので、値を直接入力せず
+ * 既定値が反映されるのを待つ。
+ */
+async function waitModalRequiredDefaults(page: Page): Promise<void> {
+  for (const id of ["field_eventstatus", "field_activitytype"]) {
+    const el = page.locator(`#${id}`);
+    if ((await el.count()) === 0) continue;
+    await expect
+      .poll(async () => (await el.inputValue().catch(() => "")).trim(), {
+        timeout: 20000,
+        intervals: [200, 300, 500, 1000],
+      })
+      .not.toBe("");
+  }
+}
+
 export async function createEventViaModal(
   page: Page,
   input: ModalEventInput
@@ -332,6 +357,7 @@ export async function createEventViaModal(
   if (input.invitees && input.invitees.length) {
     await addInvitees(page, input.invitees);
   }
+  await waitModalRequiredDefaults(page);
   await page.getByRole("button", { name: "保存", exact: true }).first().click();
   // 保存受理(モーダルが閉じる)を待つ
   await subjectInput.waitFor({ state: "hidden", timeout: 15000 }).catch(() => {});
@@ -392,6 +418,9 @@ async function attemptCreateRecurringEvent(
   });
   await page.locator("#field_subject").waitFor({ state: "visible", timeout: 15000 });
   await page.locator("#field_subject").fill(subject);
+  // 既定値が入る前に「詳細入力」へ進むと、必須項目が空のままフル編集画面へ
+  // 引き継がれて保存が弾かれる(上記 waitModalRequiredDefaults のコメント参照)。
+  await waitModalRequiredDefaults(page);
   // 「詳細入力」でフル編集画面へ(POST 遷移)
   await page
     .getByRole("button", { name: "詳細入力", exact: false })
