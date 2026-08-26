@@ -378,6 +378,139 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 > チェックボックスは着手・完了管理用。上から着手推奨。
 
+### P0-B: 「モジュール個別実装」観点の棚卸し（2026-08-26）
+
+CustomView を CI から外す判断の妥当性を検証する過程で、「共通機能だと思っていたものに
+モジュール個別実装があるか」を全機能で洗った。結果、**CustomView が例外的に共通実装**で、
+CRUD / 一覧 / 詳細は個別実装が前提だと分かった。
+
+| 機能 | モジュール個別実装の数 |
+|---|---:|
+| `actions/Save.php` | 19 |
+| `views/Edit.php` | 20 |
+| `views/Detail.php` | 27 |
+| `models/DetailView.php` | 22 |
+| `models/ListView.php` | 31（ほぼ全モジュール） |
+| `actions/MassSave.php`（一括編集） | 7 |
+| `actions/MassDelete.php` | 5 |
+| `views/Export.php` | 1（Calendar = iCal） |
+| `views/Import.php` | 3（Calendar / Google / Users） |
+
+対して CustomView は `Vtiger_CustomView_Model` の override が 0、`modules/*/views/ListView.php` も 0。
+→ CV は 1 モジュール代表で足りるが、**CRUD 系はモジュールを増やす意味がある**。
+
+- [x] **関連(related.*) ケースが設計時から一度も動いていなかった** — マトリクスの実測で
+  関連 3 ケースが全モジュール skip。理由は `relatedSpec(関連仕様)を describe から導出できず`。
+  `MatrixTest.resolveRelatedSpec` は describe の `relatedModules` を前提にしているが、
+  **F-RevoCRM の Webservice describe はそのキーを返していない**
+  (`include/Webservices/VtigerModuleOperation::describe()` の返却は label / name / createable /
+  updateable / deleteable / retrieveable / fields / idPrefix / isEntity / allowDuplicates /
+  labelFields のみ。E2E 側 `model/types/frBase.ts` の `relatedModules` は期待だけで実体が無い)。
+  → `2-1_マトリクス.spec.ts` の `UNSUPPORTED_CASES` として CI/ローカルとも生成しないようにし
+  (無駄な collect と「PRで実行」への誤計上をやめる)、関連機能は
+  `3-12_関連一覧` / `3-13_関連追加` を CI_SPECS に追加してカバーした。
+  **describe API が relatedModules を返すようになれば除外を外して自動導出を生かせる。**
+- [x] **CI マトリクスの代表に Leads / Potentials を追加** — どちらも `actions/Save.php` に
+  個別実装がある(23 行 / 35 行)のに CI で UI 保存を通していなかった。実測コストは
+  1 モジュールあたり CPU 約 140 秒(15 ケース)。
+- [x] **モジュール固有アクションを CI に追加** — `4-3_リード`(メール/SMS/予定/昇格の起動 +
+  **昇格の保存**まで) / `4-4_案件`(メール/プロジェクト変換/見積・受注 作成画面の起動)。
+- [ ] **Products / PriceBooks の Save 個別実装が未カバー** — Products は 13 行だが
+  PriceBooks は 39 行で `saveRecord` を override(価格表固有)。専用 spec が無く、
+  マトリクス代表にも入っていない。代表に足すか専用 spec を作るか要判断。
+- [ ] **在庫系の一括編集(MassSave)が未カバー** — `Invoice/actions/MassSave.php` は 75 行で
+  `getRecordModelsFromRequest` を override(明細の一括更新)。`Products` 47 行 / `Inventory` 35 行。
+  `3-25_一括編集` は Accounts 固定なので、在庫系の独自実装は誰も通していない。
+- [ ] **MassDelete の個別実装が未カバー** — Calendar / Reports / Portal / EmailTemplates /
+  PDFTemplates。`3-26_ゴミ箱` は Accounts 固定。
+- [ ] **Calendar の iCal Export / Import** — `views/Export.php` / `views/Import.php` の
+  個別実装(このモジュールのみ)。§3 の「iCal 未実装」と同じタスク。
+
+### P0: 未着手の重大ギャップ（2026-08-25 棚卸しで洗い出し）
+
+「機能として存在するのに E2E が 0 本」または「設定だけテストして動作を見ていない」もの。
+各項目は**実装可能性を裏取り済み**（到達 URL / 既存 dump データ / 流用できるドライバを明記）。
+
+- [x] **P0-1 レポート（Reports）** → `tests/4_モジュール/4-10_レポート.spec.ts`（一覧/実行(集計結果に実データが出る)/CSV/Excel の 4 本） — 機能一覧 41-1 の正式機能だが **spec 0 本**（`tests/` 内で一度も言及されない）。
+  裏取り: `modules/Reports/` に完全な MVC（`views/List` / `Detail` / `ExportReport` / `ChartDetail` / `Folder`）。
+  **dump に既存レポートが入っている**（`vtiger_report`: `Contacts by Accounts` / `Contacts without Accounts`、
+  共有 = Public）ので、レポート作成を待たずに 一覧表示 → 実行（Detail）→ エクスポート → フォルダ操作 が書ける。
+  レポート新規作成（ステップ UI）は次段。
+- [x] **P0-2 PDF エクスポート（在庫 4 モジュール）** → `tests/4_モジュール/4-9_在庫/3_PDF.spec.ts`（4 モジュール。DL したファイルの先頭が `%PDF-` であることまで確認） — 業務必須だが 0 本。
+  裏取り: `vtiger_pdftemplates` に **Quotes / Invoice / SalesOrder / PurchaseOrder 各 1 件が dump 済み**。
+  詳細画面の DETAILVIEW リンク（`Vtiger_DetailView_Model::getDetailViewLinks`、ラベル
+  `LBL_EXPORT_TO_PDF`=「PDFにエクスポート(テンプレート名)」）→ `index.php?module=<M>&action=ExportPDF&record=<id>&template=<tid>`。
+  `PDF_helper` が `Content-Disposition: attachment` を返すので `page.waitForEvent("download")` で受け取れる
+  （既存パターン: `tests/3_共通機能/3-22_エクスポート.spec.ts` / `utils/documentsFile.ts`）。
+  レコード作成は `utils/lineitem.ts` を流用（明細必須のため API では作れない）。
+- [x] **P0-3 在庫系の相互生成（見積 → 受注 / 請求 / 発注）** → `tests/4_モジュール/4-9_在庫/4_相互生成.spec.ts`（3 本。**知見**: 発注は「定価 = 仕入原価」評価のため商品行は引き継がれても単価が 0 になる → 保存前に定価を明示設定する。仕入先(vendor_id)も見積からは引き継がれないので API 作成して設定する） — 販売フローの本体だが 0 本。
+  裏取り: `Quotes_Record_Model` に `getCreateInvoiceUrl` / `getCreateSalesOrderUrl` / `getCreatePurchaseOrderUrl` が実装済みで、
+  遷移先は `index.php?module=Invoice&view=Edit&quote_id=<id>`（明細引き継ぎ）。
+  見積作成 → 詳細の生成リンク → Edit に明細が載っている → 保存 → API 検証。
+- [x] **P0-4 ワークフローの実発火** → `tests/5_管理設定/E-03_ワークフロー.spec.ts`（「顧客企業の更新時に website を上書き」を設定 → 顧客企業を保存 → API で値を確認）。**知見**: タスク編集は「アクションの追加」からモーダル(`loadPageContentOverlay`)で開かないと `registerVTUpdateFieldsTaskEvents` が走らず `#addFieldBtn` が無反応。値要素は `[data-value="value"]`（初期テンプレートの `name="fieldValue"` は UI 差し替えで失われる）。保存ボタンは非表示テンプレート側にも同じものがあるため `:visible` で絞り、モーダルの独自スクロール領域のため `force` クリックが必要 — `E-03_ワークフロー` は設定 CRUD のみで、**アクションが実際に動くかを誰も見ていない**。
+  裏取り: `VTWorkflowManager` の `ON_FIRST_SAVE(1)` / `ON_EVERY_SAVE(3)` / `ON_MODIFY(4)` は保存時に即時実行される
+  （cron 不要。`ON_SCHEDULE(6)` のみ cron 依存）。ワークフロー作成（対象 Accounts / トリガ=保存時 / アクション=フィールド更新）
+  → レコード保存 → 値が更新されている、で E2E 完結できる。
+- [x] **P0-5 管理設定 skip の解消（環境要因のもの）**
+  - **F-05 構成エディタ: skip 解除済み**。`ci/run-e2e.sh` で `chmod 0666 config.inc.php` を行い、
+    www-data から保存できるようにした。
+  - **H-01 税の管理: skip 解除済み**。真因は「作成した税が在庫系/製品系のフォームに `taxN` として
+    増え、全項目を埋める汎用ドライバがそこでタイムアウトする」ことだったので、
+    `utils/field.ts::dontTestFieldsName` で `/^tax\d+$/` を入力対象から除外して根治した
+    （税額そのものの検証は `utils/lineitem.ts` が担う）。税を追加した状態で CI セット全体が
+    green になることを実測で確認済み。
+  - [ ] D-06 入力制限 / D-09 レコードタイプ / D-10 申請フィールド: 本 checkout にモジュール未導入のため
+    skip 据え置き。dump への導入可否の判断が先。
+- [ ] **P0-6 D-11 承認フローの存在判定** — `module=Approval` は空ページで**未実装の可能性大**。
+  テストを書く前に「機能があるか」を判定し、無ければ「対象外」として文書化のうえ skip を畳む
+  （D-09 レコードタイプ / D-10 申請フィールドも同様にモジュール導入可否の判断が先）。
+
+> **E2E が 0 本のモジュール（2026-08-25 時点、機械的に確認）**: `Reports` / `MailManager` / `Emails` / `Google`。
+> `tests/` 配下の spec で一度も言及されない（`tests/7_モジュール管理/fixtures/modules.ts` のメニュー ON/OFF 対象として
+> 名前が出るだけ）。Reports は P0-1 で着手。`Emails` は各モジュールの「メールを送る」**起動のみ**検証済みで
+> 送信フロー自体は未（ダミー SMTP を compose に足せば検証可能）。`MailManager`(IMAP) / `Google`(地図・外部依存) は
+> オフライン CI で成立しないため優先度低〜対象外。
+
+
+> **2026-08-25 の副産物(テスト基盤の修正)**:
+> - `utils/api.ts::apiSession()` が毎回 login していたため、workers=4 で API を使う spec が
+>   増えると getchallenge のトークン競合で確率的に落ちていた。`auth.setup` が取得済みの
+>   セッションを使い回す実装に変更(未取得時のみ login、競合に備えて再試行)。
+> - `E-03_ワークフロー` の後始末が「無効化(トグル OFF)」だけで、実行を重ねるとワークフローが
+>   一覧の 1 ページ目(20 件)を埋めて別テストを壊す(かつ有効なまま残ると全テストの
+>   顧客企業保存で発火し続ける)。行アクションから**削除**する後始末に変更。
+> - 在庫 4 モジュールのヘッダ設定表を `utils/lineitem.ts::INVENTORY_MODULES` に集約し、
+>   レコード作成を `createInventoryRecord` として共通化(PDF / 相互生成 spec で共用)。
+
+> **CI サブセットの再構成 (2026-08-25)**: `ci/run-e2e.sh` の `CI_SPECS` を刷新し、2 段構成にした。
+> - 1 段目(並列, workers=4): スモーク / matrix 代表 6 モジュール / 横断機能(検索・CustomView・
+>   一括編集・ゴミ箱・権限) / カレンダー一式 / 在庫一式(CRUD・明細・PDF・相互生成) / レポート / 管理設定一式。
+> - 2 段目(workers=1): `tests/7_モジュール管理`(モジュールをグローバルに ON/OFF するため単独実行が必須)。
+> - matrix の **CustomView 系 8 ケースは CI では生成しない**(`CI_SKIP_CASES`)。7/22 の CI 実測で
+>   マトリクス CPU 時間の 68.6%(1066/1554 秒)を占めていた。
+>   **根拠**: CustomView はモジュール非依存(`Vtiger_CustomView_Model` を override している
+>   モジュールは無く、`modules/*/views/ListView.php` のモジュール別実装も無い)。UI 側に差が
+>   あるのは「CV サイドバーを持たない側」だけ(Calendar は独自 `ListViewPreProcess.tpl` で
+>   CV サイドバー無し、EmailTemplates/PDFTemplates/SMSNotifier は capabilities で `na`、
+>   Reports は CV ではなく独自フォルダ)。よって Accounts 1 モジュールで代表検証すれば足りる。
+>   **その代わり `3-04_リスト` を 3 → 7 テストに拡充した**(個人リストの 作成/切替/複製/**編集** +
+>   **共有リスト(自分/別ユーザー)** + **マイリスト(非公開)が別ユーザーに出ない**)。
+>   共有リストの可視範囲は過去に本体不具合があった箇所(`vtiger_cv2role`/`vtiger_cv2rs` 欠落で
+>   非 admin の CustomView が 0 件 → migration `20260709161603_...` で解消)なので、
+>   CI から落とすと回帰を検知できなくなる。追加コストは実測 CPU +93 秒。
+> - **副作用として Invoice / Calendar はマトリクスの実行件数が 0 になった**(18 件 collect /
+>   全件 capability 判定で実行時 skip)。この 2 モジュールがマトリクスで回していたのは CV 系だけ
+>   だったため。機能面は `4-9_在庫/`(CRUD・明細・PDF・相互生成)と `4-8_カレンダー/`(7 spec)が
+>   担保しており穴ではない。collect のみで時間はほぼ 0 なので代表からは外さず、
+>   `2-1_マトリクス.spec.ts` にこの実態をコメントで明記した。
+> - 結果(2026-08-26 時点): CI 実行対象は **280 テスト**(旧 179)。うち実測で実際に走るのは 241 件、
+>   残り 39 件はマトリクスの capability 判定による実行時 skip
+>   (この内訳は `docs/e2e-catalog` に実測 json を取り込むと画面で確認できる)。ローカル実測(workers=4)で 1 段目 4.6 分 + 2 段目 1.4 分。
+>   7/22 の CI 実測(同一ワークロードで CI:ローカル ≒ 1.6)から CI では **13〜20 分 + 固定費 1.6 分**と
+>   見込む。目標 20 分に対して幅の上端が接するため、**実際の CI 実行での計測が必要**。
+>   超過する場合の削減候補: マトリクス代表を 8 → 6 モジュールに戻す(-70 秒 wall)、
+>   `5_管理設定` の一部を paths 条件付き実行に回す(実行 65 件でここが最大)。
+
 ### P1: 影響が大きく、汎用ドライバで横展開しやすい共通機能
 
 - [x] 一覧の列検索（絞り込み → 該当レコード検証）（No.2-4） → `tests/3_共通機能/3-01_列検索.spec.ts`
