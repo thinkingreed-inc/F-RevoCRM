@@ -103,6 +103,9 @@ echo "==> アプリが書き込むディレクトリの権限調整"
 # Apache が Smarty のコンパイル先 (test/templates_c) や cache/ に書けず Fatal になる。
 # 使い捨て環境なので該当ディレクトリを 0777 にして回避する。
 $COMPOSE exec -T php bash -lc 'mkdir -p test/templates_c test/vtlib cache/images cache/import storage logs user_privileges && chmod -R 0777 test cache storage logs user_privileges'
+# 構成エディタ(F-05)は保存で config.inc.php を書き換えるため、www-data から
+# 書けるようにしておく。書けないと保存が黙って失敗し、値が反映されない。
+$COMPOSE exec -T php bash -lc 'chmod 0666 config.inc.php'
 
 echo "==> composer install"
 # マウントした repo は uid 1000 所有・exec は root のため git が dubious ownership を出す
@@ -138,19 +141,40 @@ echo "==> Playwright 実行"
 # 【CI は最小限の最適サブセットのみ実行】(フル実行は 30 分ジョブに収まらないため)
 #  - E2E_SCOPE=ci を渡すと matrix は代表 6 モジュールだけに絞られる(matrix.spec.ts)。
 #  - CI で回す spec は下記の CI_SPECS に限定する(挙動の代表を薄く広く: matrix 代表 /
-#    カレンダー・在庫の専用ドライバ / 横断機能の 検索・CustomView・権限)。
+#    スモーク / 横断機能(検索・CustomView・一括編集・ゴミ箱・権限) / カレンダー一式 /
+#    在庫一式(CRUD・明細・PDF・相互生成) / レポート / 管理設定一式)。
+#  - matrix の CustomView 系 8 ケースは CI では生成しない(matrix.spec.ts の CI_SKIP_CASES)。
+#    実測でマトリクス CPU 時間の 68% を占めており、CustomView 自体は 3-04_リスト が担保する。
 #  - フル版(全 spec・matrix 全 29 モジュール・admin 一式・fr.common 17 モジュール 等)は
 #    ローカルの `cd e2e && npm run test:e2e`(E2E_SCOPE 未設定)で実行する運用。
 #  - CI のサブセットを増減したい場合はこの CI_SPECS と matrix.spec.ts の CI_SAMPLE_MODULES を編集する。
 CI_SPECS=(
   tests/0_準備/auth.setup.ts
   tests/0_準備/seed.setup.ts
+  tests/1_スモーク/1-1_ダッシュボード.spec.ts
   tests/2_CRUD/2-1_マトリクス.spec.ts
-  tests/4_モジュール/4-8_カレンダー/1_基本.spec.ts
-  tests/4_モジュール/4-9_在庫/1_在庫.spec.ts
   tests/3_共通機能/3-01_列検索.spec.ts
   tests/3_共通機能/3-04_リスト.spec.ts
+  tests/3_共通機能/3-25_一括編集.spec.ts
+  tests/3_共通機能/3-26_ゴミ箱.spec.ts
   tests/3_共通機能/3-28_権限.spec.ts
+  # 関連一覧はマトリクスでは検証できない(describe API に relatedModules が無く自動導出不可)
+  tests/3_共通機能/3-12_関連一覧.spec.ts
+  tests/3_共通機能/3-13_関連追加.spec.ts
+  # モジュール固有アクション(リード昇格 / 案件コンバート)。Save の個別実装がある領域
+  tests/4_モジュール/4-3_リード.spec.ts
+  tests/4_モジュール/4-4_案件.spec.ts
+  tests/4_モジュール/4-8_カレンダー/
+  tests/4_モジュール/4-9_在庫/
+  tests/4_モジュール/4-10_レポート.spec.ts
+  tests/5_管理設定/
+)
+
+# 【単独実行が必要な spec】
+#  tests/7_モジュール管理 は共有 CRM の vtiger_tab.presence をグローバルに ON/OFF するため、
+#  他 spec と並列に流すと干渉する(TEST_COVERAGE.md §1 参照)。CI_SPECS とは別に workers=1 で回す。
+CI_SERIAL_SPECS=(
+  tests/7_モジュール管理/
 )
 (
   cd e2e
@@ -158,10 +182,27 @@ CI_SPECS=(
   # ubuntu-latest は Chromium の必要ライブラリを概ね同梱しており、ブラウザバイナリは
   # actions/cache 済みのため --with-deps(apt) は付けない(毎回の apt を省略)。
   npx playwright install chromium
+  RC=0
+
+  # 1段目: 通常の並列実行(workers は playwright.config.ts の CI 設定 = 4)。
+  # ジョブサマリ用の playwright-results.json はこの段のものを使う。
   E2E_SCOPE=ci \
   E2E_BASE_URL="$BASE_URL" \
   E2E_USER_NAME="$E2E_USER_NAME" \
   E2E_USER_PASSWORD="$E2E_USER_PASSWORD" \
   E2E_USER_ACCESSKEY="$E2E_USER_ACCESSKEY" \
-    npx playwright test "${CI_SPECS[@]}"
+    npx playwright test "${CI_SPECS[@]}" || RC=1
+
+  # 2段目: 単独実行が必要な spec(モジュールのグローバル ON/OFF を伴うもの)。
+  # json は 1段目の成果物を上書きしないよう別名で出す
+  # (docs/e2e-catalog の実測列は両方を取り込める: e2e:catalog -- --results <json> …)。
+  PLAYWRIGHT_JSON_OUTPUT_NAME=playwright-results-serial.json \
+  E2E_SCOPE=ci \
+  E2E_BASE_URL="$BASE_URL" \
+  E2E_USER_NAME="$E2E_USER_NAME" \
+  E2E_USER_PASSWORD="$E2E_USER_PASSWORD" \
+  E2E_USER_ACCESSKEY="$E2E_USER_ACCESSKEY" \
+    npx playwright test "${CI_SERIAL_SPECS[@]}" --workers=1 --reporter=list,github,json || RC=1
+
+  exit $RC
 )
