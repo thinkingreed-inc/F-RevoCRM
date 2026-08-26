@@ -37,6 +37,9 @@
 
 	$API_VERSION = "0.22";
 
+	// 許可オリジンが設定されている場合のみ CORS ヘッダを返す（未設定時は現行動作）
+	vtws_sendCORSHeaders();
+
 	global $seclog,$log;
 	$seclog =Logger::getLogger('SECURITY');
 	$log = Logger::getLogger('webservice');

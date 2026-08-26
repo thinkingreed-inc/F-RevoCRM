@@ -191,5 +191,12 @@ $email_tracking = 'Yes';
 //Maximum Listview Fields Selection Size
 $maxListFieldsSelectionSize = 15;
 
+// Web API（public/webservice.php）で CORS を許可するオリジンのホワイトリスト
+// 別オリジンのブラウザアプリから Web API を呼び出す場合に、許可するオリジンを列挙する
+// 例: $webservice_cors_allowed_origins = array('https://example.com');
+// 空配列・未設定の場合は CORS ヘッダを一切返さない（既定）
+// セキュリティ上 '*'（ワイルドカード）は指定できない
+$webservice_cors_allowed_origins = array();
+
 include_once 'config.security.php';
 ?>
