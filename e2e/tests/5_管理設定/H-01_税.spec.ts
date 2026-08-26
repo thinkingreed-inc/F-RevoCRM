@@ -29,14 +29,15 @@ import { gotoSettings, saveAndSettle } from "../../utils/settings";
  * 明示的に待ってからリロードする。これにより保存の往復完了を保証したうえで、
  * リロード後の永続化を検証する。
  *
- * ※スキップ理由: 税は UI から削除できず(有効/無効の切替のみ)、作成した税は
- *   在庫系モジュール(製品/サービス等)の作成フォームに税項目(input[name="taxN"])
- *   として残り続ける。共有された1回の直列 CI ランでは、後続の標準モジュール CRUD
- *   (fr.common の Products/Services レコード新規作成が全項目を自動入力する)が
- *   この税項目でタイムアウトし波及する。後始末できないグローバル変更のため、
- *   共有ランでは対象外とする(ローカル単体では green)。
+ * 注: 税は UI から削除できず(有効/無効の切替のみ)、作成した税は在庫系/製品系の
+ * 作成フォームに税項目(input[name="taxN"])として残り続ける。以前はこれが原因で
+ * 後続の標準モジュール CRUD(全項目を自動入力する汎用ドライバ)がタイムアウトし
+ * 波及していたため skip されていた。汎用ドライバ側で税項目(tax1, tax2, …)を
+ * 入力対象から除外したことで影響しなくなったため skip 解除
+ * (2026-08-25。`utils/field.ts::dontTestFieldsName` / TEST_COVERAGE P0-5)。
+ * 税額そのものの検証は在庫の明細ドライバ(utils/lineitem.ts)が担う。
  */
-test.describe.skip("管理: 税の管理 (TaxIndex)", () => {
+test.describe.serial("管理: 税の管理 (TaxIndex)", () => {
   const listParams = { module: "Vtiger", view: "TaxIndex" };
   const token = generateRandomString(8);
   const taxName = `e2etax${token}`;

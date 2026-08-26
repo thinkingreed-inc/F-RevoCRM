@@ -34,12 +34,12 @@ import { generateRandomString } from "../../utils/util";
  *     得るため racy)ではなく、編集フォームを開き直して当該 input の toHaveValue
  *     を長めのタイムアウトでポーリングする。
  *
- * ※スキップ理由: 構成エディタの保存は config.inc.php を書き換える。dump ベースの
- *   CI 環境では config.inc.php が Web サーバー(www-data)から書き込み可能とは限らず、
- *   保存が黙って失敗し値が反映されない(旧値のまま)。ローカルは書き込み可能なため
- *   green。CI で有効化するには CI 側で config.inc.php を書き込み可能にする必要がある。
+ * 注: 構成エディタの保存は config.inc.php を書き換えるため、Web サーバー(www-data)から
+ * 書き込み可能である必要がある。書けないと保存が黙って失敗し値が反映されない(旧値のまま)。
+ * CI は `ci/run-e2e.sh` が config.inc.php に 0666 を付与するため成立する
+ * (2026-08-25 に skip 解除。TEST_COVERAGE P0-5)。
  */
-test.describe.skip("管理: 構成エディタ (ConfigEditor)", () => {
+test.describe("管理: 構成エディタ (ConfigEditor)", () => {
   const detailParams = { module: "Vtiger", view: "ConfigEditorDetail" };
   const FIELD = "list_max_entries_per_page";
   const FORM = "#ConfigEditorForm";
