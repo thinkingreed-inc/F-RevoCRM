@@ -175,12 +175,13 @@ CI_SPECS=(
 # 【単独実行が必要な spec】
 #  他 spec と並列に流せない(グローバルな状態を変える)ものをここに置き、workers=1 で回す。
 #
-#  tests/7_モジュール管理 は現在 CI では実行できない:
-#    後始末が runner 上で `php -r` を実行して DB へ直接接続するが、CI の db_server は
-#    compose のサービス名 "db" のため runner から名前解決できず
-#    "getaddrinfo for db failed" で失敗する(2026-08-26 の CI 実行で実測)。
-#    DB 操作を `docker compose exec` 経由か Webservice API 経由に直せば CI に戻せる。
-CI_SERIAL_SPECS=()
+#  tests/7_モジュール管理 は共有 CRM の vtiger_tab.presence をグローバルに ON/OFF するため
+#  他 spec と並列に流せない。後始末は UI 経由に統一済み
+#  (以前は runner 上で php -r して DB へ直接接続しており、CI では db が名前解決できず
+#   "getaddrinfo for db failed" で失敗していた)。
+CI_SERIAL_SPECS=(
+  tests/7_モジュール管理/
+)
 (
   cd e2e
   # lock 固定で入れる(web-components と同じ理由: 実行ごとに解決結果が変わると

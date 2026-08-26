@@ -7,7 +7,8 @@ import {
   MODULE_NAMES,
   type ManagedModule,
 } from "./fixtures/modules";
-import { forceRestoreAll, findStillDisabled, getPresence } from "./support/db";
+import { loginInIsolatedContext } from "../../utils/settings";
+import { passwordFor } from "../../fixtures/seedSpec";
 
 /**
  * 7 モジュール管理: ON/OFF でアプリメニューの表示が切り替わることを検証する。
@@ -22,9 +23,10 @@ import { forceRestoreAll, findStillDisabled, getPresence } from "./support/db";
  *  - 各テストは try/finally で必ず有効へ戻す。
  *  - describe.serial + workers=1 で直列実行(トグル競合と共有モジュール
  *    (Contacts/Accounts 等)無効化中の他テスト巻き込みを防ぐ)。
- *  - afterAll で全対象を DB で presence=0 に強制復帰し、RecreateUserFiles で
+ *  - afterAll で全対象が有効に戻っているかを一覧で検証し、残っていれば UI で復帰して
  *    キャッシュを再生成する最終防波堤を張る。
- *  - 実行後に「無効のまま残った対象が無い」ことを DB で検証する。
+ *  - 残ってしまった場合は対象名と復旧手順を添えて失敗させる(DB へは直接接続しない:
+ *    Playwright と DB が同一ホストという前提は CI では成立しないため)。
  */
 
 const MODULE_MANAGER = { module: "ModuleManager", view: "List" };
@@ -94,18 +96,47 @@ async function assertMenu(
 }
 
 test.describe.serial("モジュール管理: ON/OFF でメニュー表示切替", () => {
-  test.afterAll(() => {
-    // 最終防波堤: 全対象を有効へ強制復帰 + キャッシュ再生成 + 検証。
-    forceRestoreAll(MODULE_NAMES);
-    const left = findStillDisabled(MODULE_NAMES);
-    if (left.length > 0) {
-      throw new Error(`無効のまま残った対象モジュール: ${left.join(", ")}`);
-    }
-    // eslint-disable-next-line no-console
-    console.log(
-      "SAFETY_NET_OK 全対象を presence=0 へ復帰:",
-      JSON.stringify(getPresence(MODULE_NAMES))
+  /**
+   * 最終確認: 対象が全て有効に戻っているかを ModuleManager の一覧で検証し、
+   * 残っていれば UI で復帰を試みる。それでも残る場合は対象名と復旧手順を添えて失敗させる。
+   *
+   * 以前は DB へ直接 UPDATE する「強制復帰」を置いていたが、その実装は
+   * Playwright と同じホストから DB に到達できる前提(db_server=localhost)だったため、
+   * CI(compose のサービス名 db)では `getaddrinfo for db failed` で必ず失敗していた。
+   * E2E の目的は「壊れを検知すること」であり、後続を無理に通すことではない。
+   * UI が壊れていればこのテスト自身が落ちて検知できる(CI は毎回クリーンな dump なので
+   * 次の実行へ影響しない)。共有環境で無効のまま残った場合は下記メッセージの手順で復旧する。
+   */
+  test.afterAll(async ({ browser }) => {
+    const { context, page } = await loginInIsolatedContext(
+      browser,
+      process.env.E2E_USER_NAME || "admin",
+      passwordFor("admin")
     );
+    try {
+      const stillDisabled: string[] = [];
+      for (const name of MODULE_NAMES) {
+        await gotoSettings(page, MODULE_MANAGER);
+        const cb = toggle(page, name);
+        if ((await cb.count()) === 0) continue; // 一覧に出ないモジュールは対象外
+        if (await cb.isChecked().catch(() => false)) continue; // 既に有効
+        // 有効へ戻す(UI 経由なのでキャッシュ再生成も本体側で行われる)
+        await setModuleEnabled(page, name, true).catch(() => {});
+        await gotoSettings(page, MODULE_MANAGER);
+        if (!(await toggle(page, name).isChecked().catch(() => false))) {
+          stillDisabled.push(name);
+        }
+      }
+      if (stillDisabled.length > 0) {
+        throw new Error(
+          `無効のまま残った対象モジュール: ${stillDisabled.join(", ")}\n` +
+            `復旧: 管理設定 > モジュール管理 で有効化する。` +
+            `E2E 用 DB なら cd e2e && npm run e2e:reset でベースラインへ戻せる。`
+        );
+      }
+    } finally {
+      await context.close();
+    }
   });
 
   for (const mod of MODULES) {
