@@ -32,24 +32,8 @@ function expectClose(actual: number, expected: number, tol = 0.5): void {
   ).toBeLessThanOrEqual(tol);
 }
 
-interface ModuleCfg {
-  module: string;
-  /** 参照必須項目とその参照先モジュール。 */
-  refField: string;
-  refModule: string;
-  refNameField: string;
-  /** 既定が空の必須ピックリスト(保存前に実値を入れる)。 */
-  picklists: string[];
-}
-
-const MODULES: ModuleCfg[] = [
-  { module: "Invoice", refField: "account_id", refModule: "Accounts", refNameField: "accountname", picklists: [] },
-  { module: "Quotes", refField: "account_id", refModule: "Accounts", refNameField: "accountname", picklists: ["quotestage"] },
-  { module: "SalesOrder", refField: "account_id", refModule: "Accounts", refNameField: "accountname", picklists: ["sostatus", "invoicestatus"] },
-  { module: "PurchaseOrder", refField: "vendor_id", refModule: "Vendors", refNameField: "vendorname", picklists: ["postatus"] },
-];
-
-for (const cfg of MODULES) {
+// モジュール設定表は utils/lineitem.ts に集約(PDF/相互生成の spec と共用)。
+for (const cfg of li.INVENTORY_MODULES) {
   test.describe(`在庫: ${cfg.module}`, () => {
     test("CRUD + 割引/税/合計の監査", async ({ page }) => {
       const suffix = generateRandomString(6);

@@ -1,5 +1,6 @@
 import { expect, Page, Locator } from "@playwright/test";
 import { url } from "./util";
+import { createRecordViaApi } from "./record";
 
 /**
  * 在庫系(Invoice/Quotes/SalesOrder/PurchaseOrder)の明細(LineItems)ドライバ。
@@ -100,7 +101,7 @@ export async function setReference(
 }
 
 /** 必須ピックリストを「オプションの選択(空)」でなく最初の実値にする。 */
-async function setPicklistFirstValue(
+export async function setPicklistFirstValue(
   page: Page,
   name: string
 ): Promise<void> {
@@ -353,4 +354,94 @@ export async function setQty(
 /** 保存ボタン(明細フォーム)。 */
 export function saveButton(page: Page): Locator {
   return page.locator("#EditView button.saveButton").first();
+}
+
+/* ------------------------------------------------------------------ *
+ * 在庫レコードの用意(PDF / 相互生成など「作った後」を検証する spec 用)
+ * ------------------------------------------------------------------ */
+
+/** 在庫 4 モジュールのヘッダ必須項目の差分。 */
+export interface InventoryModuleCfg {
+  module: string;
+  /** 参照必須項目とその参照先モジュール。 */
+  refField: string;
+  refModule: string;
+  refNameField: string;
+  /** 既定が空の必須ピックリスト(保存前に実値を入れる)。 */
+  picklists: string[];
+}
+
+/**
+ * 在庫 4 モジュールの設定表。
+ * 明細 UI は共通なので、差分はヘッダの参照項目と必須ピックリストだけ。
+ */
+export const INVENTORY_MODULES: InventoryModuleCfg[] = [
+  { module: "Invoice", refField: "account_id", refModule: "Accounts", refNameField: "accountname", picklists: [] },
+  { module: "Quotes", refField: "account_id", refModule: "Accounts", refNameField: "accountname", picklists: ["quotestage"] },
+  { module: "SalesOrder", refField: "account_id", refModule: "Accounts", refNameField: "accountname", picklists: ["sostatus", "invoicestatus"] },
+  { module: "PurchaseOrder", refField: "vendor_id", refModule: "Vendors", refNameField: "vendorname", picklists: ["postatus"] },
+];
+
+/** createInventoryRecord の戻り値(後始末に必要な情報を含む)。 */
+export interface CreatedInventoryRecord {
+  recordId: string;
+  subject: string;
+  /** ヘッダの参照先(取引先/仕入先)。API で作ったので API で消す。 */
+  ref: { session: string; wsId: string; name: string };
+}
+
+/**
+ * 在庫レコードを 1 件 UI で作成して record ID を返す。
+ *
+ * 明細(productid)が必須で Webservice API では作れないため、作成だけは UI を通す。
+ * ヘッダの参照レコード(取引先/仕入先)は検証対象ではないので API で用意する。
+ * 呼び出し側は finally で `deleteViaDetail` + `deleteRecordViaApi` を行うこと。
+ */
+export async function createInventoryRecord(
+  page: Page,
+  cfg: InventoryModuleCfg,
+  opts: {
+    /** 件名の接頭辞(既定 "[E2E-INV]")。一意化は suffix で行う。 */
+    prefix?: string;
+    suffix: string;
+    /** 明細に使う商品の検索キーと単価(seedSpec.inventory 由来)。 */
+    product: { searchKey: string; unitPrice: number };
+    qty?: number;
+  }
+): Promise<CreatedInventoryRecord> {
+  const prefix = opts.prefix ?? "[E2E-INV]";
+  const refName = `[E2E-INV-REF] ${cfg.refModule} ${opts.suffix}`;
+  const ref = await createRecordViaApi(cfg.refModule, {
+    [cfg.refNameField]: refName,
+  });
+
+  const subject = `${prefix} ${cfg.module} ${opts.suffix}`;
+  await gotoInventoryEdit(page, cfg.module);
+  await fillInventoryHeader(page, {
+    subject,
+    reference: {
+      field: cfg.refField,
+      recordId: ref.recordId,
+      displayName: refName,
+    },
+    picklists: cfg.picklists,
+  });
+  await fillProductLine(page, {
+    searchKey: opts.product.searchKey,
+    qty: opts.qty ?? 1,
+    listPrice: opts.product.unitPrice,
+  });
+
+  await saveButton(page).click();
+  await page.waitForURL(/[?&]record=\d+/, { timeout: 20000 });
+  const recordId = page.url().match(/record=(\d+)/)?.[1] ?? "";
+  if (!recordId) {
+    throw new Error(`在庫レコードの作成に失敗しました: ${cfg.module}`);
+  }
+
+  return {
+    recordId,
+    subject,
+    ref: { session: ref.session, wsId: ref.wsId, name: refName },
+  };
 }
