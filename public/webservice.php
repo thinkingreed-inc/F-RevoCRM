@@ -37,7 +37,7 @@
 
 	$API_VERSION = "0.22";
 
-	// 許可オリジンが設定されている場合のみ CORS ヘッダを返す（未設定時は現行動作）
+	// リクエストの Origin が許可オリジンに一致する場合のみ CORS ヘッダを返す
 	vtws_sendCORSHeaders();
 
 	global $seclog,$log;

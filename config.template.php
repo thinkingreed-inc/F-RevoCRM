@@ -194,7 +194,8 @@ $maxListFieldsSelectionSize = 15;
 // Web API（public/webservice.php）で CORS を許可するオリジンのホワイトリスト
 // 別オリジンのブラウザアプリから Web API を呼び出す場合に、許可するオリジンを列挙する
 // 例: $webservice_cors_allowed_origins = array('https://example.com');
-// 空配列・未設定の場合は CORS ヘッダを一切返さない（既定）
+// ここに指定したオリジンは、製品の組み込み既定値
+// （include/Webservices/Utils.php の vtws_getDefaultCORSOrigins）に追加される
 // セキュリティ上 '*'（ワイルドカード）は指定できない
 $webservice_cors_allowed_origins = array();
 

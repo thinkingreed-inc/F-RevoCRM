@@ -1353,10 +1353,25 @@ function vtws_getAllowedCORSOrigin($origin, $allowedOrigins) {
 }
 
 /**
+ * 製品として既定で許可するオリジンを返す。
+ *
+ * 「F-RevoCRM Data Connector」（Excel アドイン）は下記オリジンでホストされており、
+ * サイトごとの設定なしで利用できるよう既定で許可する。
+ *
+ * @return array 既定で許可するオリジンの配列
+ */
+function vtws_getDefaultCORSOrigins() {
+    return array(
+        // F-RevoCRM Data Connector（Excel アドイン）
+        'https://fr-excel-addin.azurewebsites.net',
+    );
+}
+
+/**
  * Web API（webservice.php）のレスポンスに CORS ヘッダを送出する。
  *
- * $webservice_cors_allowed_origins（config.inc.php）が未設定・空配列の場合は
- * 何も送出しない（＝現行動作を維持する）。
+ * 許可オリジンは vtws_getDefaultCORSOrigins() の組み込み既定値と、
+ * $webservice_cors_allowed_origins（config.inc.php）の設定値を合わせたものになる。
  *
  * 認証は sessionName リクエストパラメータ方式で Cookie に依存しないため、
  * Access-Control-Allow-Credentials は送出しない。
@@ -1364,7 +1379,11 @@ function vtws_getAllowedCORSOrigin($origin, $allowedOrigins) {
 function vtws_sendCORSHeaders() {
     global $webservice_cors_allowed_origins;
 
-    if (empty($webservice_cors_allowed_origins) || !is_array($webservice_cors_allowed_origins)) {
+    $allowedOrigins = vtws_getDefaultCORSOrigins();
+    if (!empty($webservice_cors_allowed_origins) && is_array($webservice_cors_allowed_origins)) {
+        $allowedOrigins = array_merge($allowedOrigins, $webservice_cors_allowed_origins);
+    }
+    if (empty($allowedOrigins)) {
         return;
     }
 
@@ -1372,7 +1391,7 @@ function vtws_sendCORSHeaders() {
     header('Vary: Origin', false);
 
     $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
-    $allowedOrigin = vtws_getAllowedCORSOrigin($origin, $webservice_cors_allowed_origins);
+    $allowedOrigin = vtws_getAllowedCORSOrigin($origin, $allowedOrigins);
     if ($allowedOrigin !== null) {
         header('Access-Control-Allow-Origin: ' . $allowedOrigin);
     }
