@@ -115,10 +115,12 @@ $COMPOSE exec -T php git config --global --add safe.directory /var/www/html
 $COMPOSE exec -T php composer install --no-interaction --no-progress --optimize-autoloader --ignore-platform-reqs
 
 echo "==> web-components ビルド"
-# 注: 現状 assets/react-web-components の package-lock.json が package.json と
-#     完全同期しておらず npm ci が失敗するため、CI では npm install で導入する。
-#     (lock を整備できたら npm ci に戻すのが望ましい)
-$COMPOSE exec -T php bash -lc 'cd assets/react-web-components && npm install --no-audit --no-fund && npm run build'
+# package-lock.json は package.json と同期済みなので npm ci で lock どおりに入れる。
+# npm install だと解決結果が実行ごとに変わり、ローカルと CI で別の成果物になる
+# (2026-08-26: ローカルの node_modules が vite 5 のまま古く、CI は vite 8 でビルドしており
+#  成果物が 458KB / 496KB と食い違っていた。カレンダーの CI 失敗調査で判明)。
+# 再現性のため lock 固定にする。
+$COMPOSE exec -T php bash -lc 'cd assets/react-web-components && npm ci --no-audit --no-fund && npm run build'
 
 echo "==> migration 適用 (スキーマ最新化)"
 $COMPOSE exec -T php php setup/migration/run_migration.php --all
@@ -171,14 +173,19 @@ CI_SPECS=(
 )
 
 # 【単独実行が必要な spec】
-#  tests/7_モジュール管理 は共有 CRM の vtiger_tab.presence をグローバルに ON/OFF するため、
-#  他 spec と並列に流すと干渉する(TEST_COVERAGE.md §1 参照)。CI_SPECS とは別に workers=1 で回す。
-CI_SERIAL_SPECS=(
-  tests/7_モジュール管理/
-)
+#  他 spec と並列に流せない(グローバルな状態を変える)ものをここに置き、workers=1 で回す。
+#
+#  tests/7_モジュール管理 は現在 CI では実行できない:
+#    後始末が runner 上で `php -r` を実行して DB へ直接接続するが、CI の db_server は
+#    compose のサービス名 "db" のため runner から名前解決できず
+#    "getaddrinfo for db failed" で失敗する(2026-08-26 の CI 実行で実測)。
+#    DB 操作を `docker compose exec` 経由か Webservice API 経由に直せば CI に戻せる。
+CI_SERIAL_SPECS=()
 (
   cd e2e
-  npm install --no-audit --no-fund
+  # lock 固定で入れる(web-components と同じ理由: 実行ごとに解決結果が変わると
+  #  ローカルと CI で Playwright のバージョンがずれ、再現性が失われる)。
+  npm ci --no-audit --no-fund
   # ubuntu-latest は Chromium の必要ライブラリを概ね同梱しており、ブラウザバイナリは
   # actions/cache 済みのため --with-deps(apt) は付けない(毎回の apt を省略)。
   npx playwright install chromium
@@ -193,16 +200,19 @@ CI_SERIAL_SPECS=(
   E2E_USER_ACCESSKEY="$E2E_USER_ACCESSKEY" \
     npx playwright test "${CI_SPECS[@]}" || RC=1
 
-  # 2段目: 単独実行が必要な spec(モジュールのグローバル ON/OFF を伴うもの)。
-  # json は 1段目の成果物を上書きしないよう別名で出す
-  # (docs/e2e-catalog の実測列は両方を取り込める: e2e:catalog -- --results <json> …)。
-  PLAYWRIGHT_JSON_OUTPUT_NAME=playwright-results-serial.json \
-  E2E_SCOPE=ci \
-  E2E_BASE_URL="$BASE_URL" \
-  E2E_USER_NAME="$E2E_USER_NAME" \
-  E2E_USER_PASSWORD="$E2E_USER_PASSWORD" \
-  E2E_USER_ACCESSKEY="$E2E_USER_ACCESSKEY" \
-    npx playwright test "${CI_SERIAL_SPECS[@]}" --workers=1 --reporter=list,github,json || RC=1
+  # 2段目: 単独実行が必要な spec。空のときは実行しない
+  # (空配列を渡すと絞り込み無し = 全 spec 実行になってしまうため)。
+  if [ ${#CI_SERIAL_SPECS[@]} -gt 0 ]; then
+    # json は 1段目の成果物を上書きしないよう別名で出す
+    # (docs/e2e-catalog の実測列は両方を取り込める: e2e:catalog -- --results <json> …)。
+    PLAYWRIGHT_JSON_OUTPUT_NAME=playwright-results-serial.json \
+    E2E_SCOPE=ci \
+    E2E_BASE_URL="$BASE_URL" \
+    E2E_USER_NAME="$E2E_USER_NAME" \
+    E2E_USER_PASSWORD="$E2E_USER_PASSWORD" \
+    E2E_USER_ACCESSKEY="$E2E_USER_ACCESSKEY" \
+      npx playwright test "${CI_SERIAL_SPECS[@]}" --workers=1 --reporter=list,github,json || RC=1
+  fi
 
   exit $RC
 )
