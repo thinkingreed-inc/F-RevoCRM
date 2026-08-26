@@ -172,6 +172,35 @@ foreach ($spec['users'] as $u) {
 }
 
 // ============================================================================
+// 2.5 admin の個人設定(カレンダーの既定値)
+//     カレンダーのクイック作成モーダルは 必須項目 ステータス / 活動タイプ の既定値を
+//     vtiger_users.defaulteventstatus / defaultactivitytype から取る
+//     (Calendar_QuickCreateRecordStructure_Model::getStructure)。vtiger_field.defaultvalue が
+//     空でフォールバックも効かないため、素のインストール状態(未設定)ではモーダルから保存できず
+//     「ステータスは必須です」「活動タイプは必須です」で弾かれる。
+//     実運用では管理者が個人設定を持つのが自然なので、ベースラインでも設定済みにする。
+// ============================================================================
+out('--- admin の個人設定(カレンダー既定値) ---');
+if (!empty($spec['adminPreferences'])) {
+    $pref = $spec['adminPreferences'];
+    $prefUserId = findUserIdByName($pref['userName']);
+    if ($prefUserId) {
+        $adb->pquery(
+            'UPDATE vtiger_users SET defaulteventstatus = ?, defaultactivitytype = ? WHERE id = ?',
+            array($pref['defaulteventstatus'], $pref['defaultactivitytype'], $prefUserId)
+        );
+        out(sprintf(
+            '  %s: defaulteventstatus=%s / defaultactivitytype=%s',
+            $pref['userName'],
+            $pref['defaulteventstatus'],
+            $pref['defaultactivitytype']
+        ));
+    } else {
+        out('  !! ユーザーが見つからないためスキップ: ' . $pref['userName']);
+    }
+}
+
+// ============================================================================
 // 3. グループ(別ブランチの平社員 2 名を束ねる)
 // ============================================================================
 out('--- グループ ---');
