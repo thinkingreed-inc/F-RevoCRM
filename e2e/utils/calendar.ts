@@ -316,6 +316,30 @@ async function addInvitees(page: Page, terms: string[]): Promise<void> {
  * 表示用の input は Radix ベースの select の一部なので、値を直接入力せず
  * 既定値が反映されるのを待つ。
  */
+/**
+ * 保存時に出る「期間の重複する活動が登録されています / 活動を保存しますか？」
+ * (Events.php の OVERLAPPING_EXISTS) を承認する。
+ *
+ * 並列実行では他のカレンダーテストが同じ時間帯に admin の予定を作るため、
+ * このダイアログが出て保存が止まる(2026-08-26 の CI / ローカル並列実行で実測。
+ * 単体実行では他の予定が無いので出ないため気付きにくい)。
+ * 重複検出そのものはこのヘルパを使うテストの検証対象ではないので、出たら Yes で進める。
+ * 出ないのが正常系でもあるため、待ちは短くして見つからなければ何もしない。
+ */
+async function acceptOverlapConfirmIfShown(page: Page): Promise<void> {
+  const dialog = page
+    .locator(".modal-content:visible")
+    .filter({ hasText: "期間の重複する活動" })
+    .first();
+  await dialog.waitFor({ state: "visible", timeout: 3000 }).catch(() => {});
+  if (!(await dialog.isVisible().catch(() => false))) return;
+  await dialog
+    .getByRole("button", { name: "Yes", exact: true })
+    .first()
+    .click()
+    .catch(() => {});
+}
+
 async function waitModalRequiredDefaults(page: Page): Promise<void> {
   for (const id of ["field_eventstatus", "field_activitytype"]) {
     const el = page.locator(`#${id}`);
@@ -359,6 +383,7 @@ export async function createEventViaModal(
   }
   await waitModalRequiredDefaults(page);
   await page.getByRole("button", { name: "保存", exact: true }).first().click();
+  await acceptOverlapConfirmIfShown(page);
   // 保存受理(モーダルが閉じる)を待つ
   await subjectInput.waitFor({ state: "hidden", timeout: 15000 }).catch(() => {});
   // 反映が遅いので件名クエリを寛大にリトライして特定する
@@ -447,6 +472,7 @@ async function attemptCreateRecurringEvent(
     .selectOption({ label: RECUR_LABEL[recurringType] });
   await page.waitForTimeout(300);
   await page.locator("button.saveButton").first().click();
+  await acceptOverlapConfirmIfShown(page);
   await page.waitForLoadState("networkidle");
   const rec = await findEventBySubjectOrNull(subject, 20);
   if (!rec) {
