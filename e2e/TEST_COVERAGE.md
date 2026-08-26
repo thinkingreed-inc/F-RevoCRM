@@ -378,6 +378,46 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 
 > チェックボックスは着手・完了管理用。上から着手推奨。
 
+### CI 実測で判明した知見（2026-08-26 / run 32941145475）
+
+CI サブセット再構成後の初回 CI 実行は **16 分 49 秒**（目標 20 分内）。内訳:
+セットアップ約 30 秒 / ブートストラップ 55 秒 / 1 段目 9.2 分 / 2 段目 5.7 分。
+ローカル比は 1 段目 1.44 倍、**2 段目 3.8 倍**（workers=1 は並列の恩恵が無く CPU 差が直に出る）。
+
+結果は failure で、原因は 3 系統。**いずれもローカルでは再現しない CI 固有の問題**だった。
+
+- [x] **カレンダー 3 本の失敗（保存がバリデーションで弾かれていた）**
+  `2_モーダル`(#1191 共有メモ) / `3_繰り返し`(5.1 Daily) / `4_招待`(招待された一般A) が
+  「保存後に予定が見つかりません(反映遅延を超過?)」で 3 回リトライとも失敗（約 6 分を消費）。
+  artifact のスナップショットに **「ステータスは必須です」「活動タイプは必須です」** が写っており、
+  遅延ではなく保存自体が成立していなかった。
+  真因: React 新規作成モーダルは開いた直後に項目定義を非同期取得し、そのあとで
+  `eventstatus`(計画済み) / `activitytype`(電話) の既定値を埋める。CI のような低速環境では
+  これを待たずに保存 / 「詳細入力」へ進むため、必須が空のまま扱われる。
+  → `utils/calendar.ts` に `waitModalRequiredDefaults()` を追加し、モーダル保存前と
+  「詳細入力」遷移前に既定値の反映を待つようにした（表示用 input は Radix ベースの
+  select の一部なので値の直接入力はしない）。
+- [x] **`tests/7_モジュール管理` は CI では実行できない（環境非互換）**
+  `getaddrinfo for db failed`。後始末が runner 上で `php -r` を実行して DB へ直接接続するが、
+  CI の `db_server` は compose のサービス名 `db` で runner から名前解決できない。
+  → `CI_SERIAL_SPECS` を空にして CI から除外（空配列だと全 spec 実行になるのでガードも追加）。
+  DB 操作を `docker compose exec` 経由か Webservice API 経由に直せば CI に戻せる。
+- [x] **ローカルと CI で web-components のビルド成果物が別物だった**
+  ローカルの `node_modules` が **vite 5.4.21** のまま古く（package.json / lock は **vite 8.1.2**）、
+  成果物が 458KB。CI は `npm install` で vite 8 を入れて 496KB。
+  `modules transformed` も 2103 / 456 と食い違っていた。**ローカル検証が CI と別物のビルドで
+  行われていた**ことになる。
+  → ローカルを `npm ci` で lock に揃え、CI 側も web-components / e2e とも
+  `npm install` → **`npm ci`** に変更して再現性を固定（run-e2e.sh の「lock が非同期で npm ci が
+  失敗する」という注記はもう古く、lock は package.json と同期していた）。
+- [ ] **`C-03_プロファイル` の「プロファイルの複製」が CI で flaky**（retries で通過）。
+  低速環境での不安定。根治は条件ベース待ちへの置換。
+
+> **運用上の教訓**: `public/resources/web-components/*` は .gitignore なので、
+> ローカルの成果物が古いままだと E2E は「実際に CI で動くもの」とは別物を検証してしまう。
+> E2E を触る前に `cd assets/react-web-components && npm ci && npm run build` で
+> lock どおりの成果物に揃えること。
+
 ### P0-B: 「モジュール個別実装」観点の棚卸し（2026-08-26）
 
 CustomView を CI から外す判断の妥当性を検証する過程で、「共通機能だと思っていたものに
