@@ -59,10 +59,12 @@ test.describe.serial("管理: ワークフロー (Workflows)", () => {
     await page.getByText("新しいワークフロー").first().click();
     await page.locator('input[name="workflowname"]').fill(name);
     await page.locator("button.saveButton").click();
+    // 保存の完了を待たずに一覧へ遷移すると反映前の一覧を見てしまう(CI で flaky)
+    await page.waitForLoadState("networkidle");
 
     // 一覧に作成したワークフローが現れること
     await gotoSettings(page, listParams);
-    await expect(row(page, name)).toBeVisible();
+    await expect(row(page, name)).toBeVisible({ timeout: 15000 });
   });
 
   test("ワークフローの編集", async ({ page }) => {
@@ -73,10 +75,11 @@ test.describe.serial("管理: ワークフロー (Workflows)", () => {
     await expect(nameInput).toBeVisible();
     await nameInput.fill(editedName);
     await page.locator("button.saveButton").click();
+    await page.waitForLoadState("networkidle");
 
     // 一覧に変更後の名称が現れ、元の名称は消えていること
     await gotoSettings(page, listParams);
-    await expect(row(page, editedName)).toBeVisible();
+    await expect(row(page, editedName)).toBeVisible({ timeout: 15000 });
     await expect(row(page, name)).toHaveCount(0);
   });
 
@@ -169,6 +172,7 @@ test.describe.serial("管理: ワークフローの実発火 (フィールド更
       .check();
 
     await page.locator("button.saveButton").click();
+    await page.waitForLoadState("networkidle");
     // 保存後は詳細ではなく一覧へ戻る(record= は付かない)。作成した行を開いて ID を得る。
     await page.waitForURL(/view=List/, { timeout: 20000 });
     const created = page
