@@ -25,8 +25,13 @@
  *        指定した 1 タスクをこのプロセスで同期実行する。手動実行・調査用。
  *
  *   4. 逐次実行（--serial、または並列実行が使えない環境でのフォールバック）
- *        従来通り全タスクを 1 プロセスで順番に実行する。
- *        config.inc.php で $cron_max_parallel = 1 とした場合もこのモードになる。
+ *        従来通り全タスクを順番に実行する。config.inc.php で $cron_max_parallel = 1
+ *        とした場合もこのモードになる。
+ *        ただし 1 タスクずつ子プロセスへ追い出して待ち合わせる。fatal error は
+ *        try/catch で捕捉できずプロセスごと停止するため、1 プロセスで全タスクを
+ *        実行すると 1 タスクの fatal error で後続タスクが実行されなくなる。
+ *        子プロセスを起動できない環境（exec()/popen() が無効）では従来通り同じ
+ *        プロセスで実行し、停止した場合は実行されなかったタスクを報告する。
  *
  * このほか --status で、タスクを実行せずに現在の状態（実行中プロセスの生死を含む）を
  * 一覧表示できる。ハングしたタスクがあれば終了コード 1 を返すので監視から利用できる。
@@ -243,6 +248,28 @@ function vtigercron_stop_task_logging() {
 }
 
 /**
+ * タスクのログファイルへ直接追記する。
+ *
+ * fatal error で停止した場合、PHP は出力バッファのコールバック（ユーザー定義関数）を
+ * 呼ばずにバッファを吐き出すため、vtigercron_start_task_logging() の仕組みではログに
+ * 残らない。停止の理由はログにこそ残す必要があるため、この経路だけは自分で書き込む。
+ *
+ * @param Vtiger_Cron $cronTask
+ * @param string $message
+ */
+function vtigercron_append_task_log($cronTask, $message) {
+	// 子プロセスはシェルのリダイレクトで既に同じファイルへ書かれているため二重に書かない
+	if (!empty($GLOBALS['vtigercron_options']['child'])) {
+		return;
+	}
+	$logFile = FR_CronDispatcher::getLogFile($cronTask);
+	if (!is_dir(dirname($logFile))) {
+		return;
+	}
+	@file_put_contents($logFile, $message, FILE_APPEND);
+}
+
+/**
  * cron タスクの正常終了を記録する。
  *
  * @param Vtiger_Cron $cronTask
@@ -299,14 +326,24 @@ function vtigercron_shutdown_handler() {
 	$error = error_get_last();
 	$fatalTypes = array(E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR);
 	if ($error !== null && in_array($error['type'], $fatalTypes, true)) {
-		echo sprintf("[ERROR]: %s - cron task was terminated by a fatal error: %s in %s on line %d\n",
+		$message = sprintf("[ERROR]: %s - cron task was terminated by a fatal error: %s in %s on line %d\n",
 				$cronTask->getName(), $error['message'], $error['file'], $error['line']);
 	} else {
-		echo sprintf("[ERROR]: %s - cron task did not complete as the process exited unexpectedly.\n",
+		$message = sprintf("[ERROR]: %s - cron task did not complete as the process exited unexpectedly.\n",
 				$cronTask->getName());
 	}
 
+	// 子プロセスへ分離できない環境では、ここで停止すると後続タスクもこの回は実行されない。
+	// 次回の cron で実行されるが、取りこぼしに気付けるよう残ったタスクを報告する。
+	if (!empty($GLOBALS['vtigercron_pending_tasks'])) {
+		$message .= sprintf("[WARN] these cron task(s) were not executed in this run because the process stopped: %s\n",
+				implode(', ', $GLOBALS['vtigercron_pending_tasks']));
+	}
+
+	echo $message;
 	vtigercron_stop_task_logging();
+	// 出力バッファのコールバックは fatal error 時に呼ばれないため、ログへは自分で書く
+	vtigercron_append_task_log($cronTask, $message);
 }
 
 if (!vtigercron_detect_run_in_cli()
@@ -430,13 +467,60 @@ if ($vtigercronParallel) {
 // include するとスコープが変わって正しく動作しない。
 echo sprintf('[CRON],"%s",%s,Instance,"%s","",[STARTS]',$cronRunId,$site_URL,$cronStarts)."\n";
 
-foreach ($vtigercronTasks as $vtigercronTask) {
+// 逐次実行で複数タスクを回す場合は、1 タスクずつ子プロセスへ追い出して実行する。
+// fatal error（メモリ不足、max_execution_time 超過、ハンドラ内の exit() など）は
+// try/catch で捕捉できずプロセスごと停止するため、同じプロセスで全タスクを実行すると
+// 1 タスクの fatal error で後続タスクが実行されないままになる。子プロセスを待ち合わせる
+// ことで、実行順序を保ったまま停止の影響をそのタスクだけに閉じ込める。
+//
+// 単体実行（--service=）と子プロセス（--child）は 1 タスクだけなので分離しない。
+$vtigercronIsolate = $vtigercronOptions['service'] === false
+		&& !$vtigercronOptions['child']
+		&& count($vtigercronTasks) > 1
+		&& vtigercron_detect_run_in_cli()
+		&& FR_CronDispatcher::isChildLaunchable();
+$vtigercronForegroundDispatcher = $vtigercronIsolate ? new FR_CronDispatcher() : null;
+
+// 分離できない環境で fatal error が起きた場合に、この回で実行されなかったタスクを
+// 報告できるようにしておく（shutdown handler が参照する）
+$GLOBALS['vtigercron_pending_tasks'] = array();
+
+foreach ($vtigercronTasks as $vtigercronIndex => $vtigercronTask) {
+	$GLOBALS['vtigercron_pending_tasks'] = array_map(
+			function ($pending) { return $pending->getName(); },
+			array_slice($vtigercronTasks, $vtigercronIndex + 1));
+
+	if ($vtigercronIsolate) {
+		// 子プロセスの起動自体が無駄にならないよう、実行対象かどうかは先にここで確かめる。
+		// 実行権の獲得は子プロセス側の claim() が行うため、二重起動にはならない。
+		if (!$vtigercronTask->isRunnable()) {
+			echo sprintf("[INFO] %s - not ready to run as the time to run again is not completed\n", $vtigercronTask->getName());
+			continue;
+		}
+		$vtigercronExitCode = $vtigercronForegroundDispatcher->runForeground($vtigercronTask);
+		if ($vtigercronExitCode === null) {
+			// 子プロセスを起動できなかった。このタスクはこのプロセスで実行する。
+			echo sprintf("[WARN] %s - could not run in a separate process (php binary: %s) - running inline\n",
+					$vtigercronTask->getName(), FR_CronDispatcher::getPhpBinary());
+		} else {
+			continue;
+		}
+	}
+
 	if (!vtigercron_begin_task($vtigercronTask, $vtigercronOptions['child'], $cronRunId)) {
 		continue;
 	}
 	try {
-		checkFileAccess($vtigercronTask->getHandlerFile());
-		require_once $vtigercronTask->getHandlerFile();
+		// checkFileAccess() は条件を満たさないと die() でプロセス全体を止めてしまうため使わない。
+		// ハンドラファイルが無いタスクが 1 つあるだけで後続タスクが道連れになるのを防ぐ。
+		// また、存在しないファイルの require_once は捕捉できない fatal error になるため、
+		// 読み込む前に必ずここで判定する。
+		$vtigercronHandlerFile = $vtigercronTask->getHandlerFile();
+		if (!isFileAccessible($vtigercronHandlerFile)) {
+			throw new RuntimeException(sprintf(
+					'handler file is missing or outside the application directory: %s', $vtigercronHandlerFile));
+		}
+		require_once $vtigercronHandlerFile;
 
 		vtigercron_end_task($vtigercronTask, $cronRunId);
 	} catch (Throwable $vtigercronThrowable) {

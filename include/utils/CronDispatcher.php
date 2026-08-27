@@ -187,12 +187,96 @@ class FR_CronDispatcher {
 		if (self::getMaxParallel() <= 1) {
 			return false;
 		}
-		$required = self::isWindows() ? 'popen' : 'exec';
-		if (!function_exists($required)) {
+		// spawn() のバックグラウンド実行が使う関数に合わせて判定する
+		return self::isFunctionUsable(self::isWindows() ? 'popen' : 'exec');
+	}
+
+	/**
+	 * 子プロセスを起動して完了まで待てる環境か。並列で動かすかどうかは問わない。
+	 *
+	 * 逐次実行（--serial や $cron_max_parallel = 1）でも、タスクを 1 つずつ子プロセスへ
+	 * 追い出せればプロセスを分離できる。fatal error は try/catch で捕捉できないため、
+	 * 同じプロセスで全タスクを実行すると 1 タスクの fatal error でそれ以降のタスクが
+	 * 実行されない。分離できるかどうかの判定にこれを使う。
+	 *
+	 * runForeground() は popen() と exec() のどちらでも待ち合わせられるため、
+	 * バックグラウンド実行（isSupported）より条件が緩い。
+	 *
+	 * @return boolean
+	 */
+	public static function isChildLaunchable() {
+		return self::isFunctionUsable('popen') || self::isFunctionUsable('exec');
+	}
+
+	/**
+	 * 関数が存在し、かつ disable_functions で無効化されていないか。
+	 *
+	 * @param string $function
+	 * @return boolean
+	 */
+	protected static function isFunctionUsable($function) {
+		if (!function_exists($function)) {
 			return false;
 		}
 		$disabled = array_map('trim', explode(',', (string) ini_get('disable_functions')));
-		return !in_array($required, $disabled, true);
+		return !in_array($function, $disabled, true);
+	}
+
+	/**
+	 * タスクを子プロセスとして起動し、完了まで待つ。
+	 *
+	 * 逐次実行でプロセスを分離するために使う。spawn() と違って待ち合わせるため実行順序は
+	 * 保たれ、かつ子プロセスが fatal error で停止しても呼び出し元は生き残るので、後続の
+	 * タスクを続けて実行できる。
+	 *
+	 * 実行権の獲得・ログ出力・終了記録はすべて子プロセス側（--service=<名前> の単体実行）が
+	 * 行うため、呼び出し元は claim() しない。二重起動は子プロセス側の claim() で防がれる。
+	 *
+	 * 子プロセスの出力はこのプロセスの標準出力へそのまま流す。cron のメール通知の内容は
+	 * 同じプロセスで実行した場合と変わらない。
+	 *
+	 * @param Vtiger_Cron $cronTask
+	 * @return integer|null 子プロセスの終了コード。起動できなかった場合は null
+	 */
+	public function runForeground($cronTask) {
+		if (!self::isPhpBinaryExecutable()) {
+			return null;
+		}
+
+		$php = escapeshellarg(self::getPhpBinary());
+		$script = escapeshellarg(self::getRootDirectory() . DIRECTORY_SEPARATOR . 'vtigercron.php');
+		$service = escapeshellarg('--service=' . $cronTask->getName());
+		// "--" 以降が vtigercron.php への引数として $argv に渡る。
+		// 標準エラー出力も取り込み、fatal error の内容を取り落とさないようにする。
+		$command = sprintf('%s -f %s -- %s 2>&1', $php, $script, $service);
+
+		if (self::isFunctionUsable('popen')) {
+			$handle = @popen($command, 'r');
+			if ($handle !== false) {
+				// 実行の様子が分かるよう、読めた分から順に流す
+				while (!feof($handle)) {
+					$chunk = fread($handle, 4096);
+					if ($chunk === false) {
+						break;
+					}
+					echo $chunk;
+				}
+				$status = @pclose($handle);
+				return ($status === false || $status === -1) ? null : intval($status);
+			}
+		}
+
+		// exec() は末尾に "&" を付けなければ完了まで待ち、出力を配列で返す
+		if (!self::isFunctionUsable('exec')) {
+			return null;
+		}
+		$output = array();
+		$status = 0;
+		@exec($command, $output, $status);
+		if (count($output) > 0) {
+			echo implode(PHP_EOL, $output) . PHP_EOL;
+		}
+		return intval($status);
 	}
 
 	/**
