@@ -17,7 +17,8 @@ import { gotoSettings, saveAndSettle, confirmYes } from "../../utils/settings";
  * ハイライト用で一覧表示には不要なため付けない(gotoSettings 方針)。
  */
 test.describe.skip("管理: 入力制限 (CustomValidation)", () => {
-  // 本環境(このcheckout)には CustomValidation モジュールが未導入のためスキップ
+  // OSS 版には CustomValidation モジュールが搭載されていないため恒久的に対象外(2026-08-27 判断)。
+  // spec は EE 版など搭載環境で使える形で残しておく。
   const listParams = { module: "CustomValidation", view: "List" };
   const token = generateRandomString(8);
   // 追加時と編集時で名前を重複させない(部分一致による誤検出を避ける)

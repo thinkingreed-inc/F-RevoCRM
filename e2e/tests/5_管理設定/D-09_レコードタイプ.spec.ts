@@ -20,7 +20,8 @@ import { gotoSettings, saveAndSettle } from "../../utils/settings";
  * 「先頭の候補」を選ぶことで、特定のピックリスト値に依存しない。
  */
 test.describe.skip("管理: レコードタイプ (RecordType)", () => {
-  // 本環境には RecordType モジュール(WC版は別ブランチ)が未導入のためスキップ
+  // OSS 版には RecordType モジュールが搭載されていないため恒久的に対象外(2026-08-27 判断)。
+  // spec は EE 版など搭載環境で使える形で残しておく。
   const params = { module: "RecordType", view: "List" };
   const token = generateRandomString(8);
   const nameAdd = `e2ert${token}`;

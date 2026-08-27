@@ -2,6 +2,9 @@ import { test, expect } from "../../fixtures/isolated";
 import type { Page } from "@playwright/test";
 import { generateRandomString } from "../../utils/util";
 import { gotoSettings, loginInIsolatedContext, saveAndSettle } from "../../utils/settings";
+import { listSearch } from "../../utils/listview";
+import { apiSession } from "../../utils/api";
+import { frQuery } from "../../model/fetcher";
 
 /**
  * C-01 ユーザー (ユーザー管理 > ユーザー)
@@ -26,6 +29,36 @@ test.describe.serial("管理: ユーザー (Users)", () => {
   const row = (page: Page) =>
     page.locator("tr.listViewEntries").filter({ hasText: token });
 
+  /**
+   * 一覧を開いて、このテストのユーザー行だけに絞り込んでから返す。
+   *
+   * ユーザーは vtiger の仕様上 削除できず(無効化のみ)、E2E が作ったユーザーは
+   * 実行を重ねるたびに増える。一覧は 1 ページ 20 件なので、素朴に
+   * 「一覧を開いて token で filter」すると作成直後の行が 1 ページ目に出ず
+   * 「見つからない」で落ちる(2026-08-26 に実際に踏んだ)。必ず列検索で絞る。
+   */
+  const openRow = async (page: Page) => {
+    await gotoSettings(page, listParams);
+    await listSearch(page, "user_name", userName);
+    const target = row(page);
+    await expect(target.first()).toBeVisible({ timeout: 15000 });
+    return target;
+  };
+
+  /**
+   * 作成したユーザーの record id を API で引く。
+   * 一覧の 1 ページ目に依存しないようにするため(上記 openRow と同じ理由)。
+   */
+  const fetchUserId = async (): Promise<string> => {
+    const session = await apiSession();
+    const rows = await frQuery(
+      session,
+      `SELECT id FROM Users WHERE user_name = '${userName}';`
+    );
+    const wsId = rows?.[0]?.id ?? "";
+    return wsId.includes("x") ? wsId.split("x")[1] : wsId;
+  };
+
   test("ユーザーの追加", async ({ page }) => {
     await gotoSettings(page, listParams);
     await page.getByText("ユーザーの追加").first().click();
@@ -37,10 +70,11 @@ test.describe.serial("管理: ユーザー (Users)", () => {
     await page.locator('input[name="confirm_password"]').fill(password1);
     await saveAndSettle(page, page.locator("button.saveButton"));
 
-    await gotoSettings(page, listParams);
-    await expect(row(page)).toBeVisible();
-    userId = (await row(page).first().getAttribute("data-id")) || "";
-    expect(userId).not.toBe("");
+    // 一覧に現れること(列検索で絞ってから確認する)
+    await openRow(page);
+    // record id は一覧の行属性ではなく API で引く(1 ページ目に依存しないため)
+    userId = await fetchUserId();
+    expect(userId, "作成したユーザーの record id が引けること").not.toBe("");
   });
 
   test("ユーザーの編集", async ({ page }) => {
@@ -58,8 +92,7 @@ test.describe.serial("管理: ユーザー (Users)", () => {
   });
 
   test("パスワードの変更", async ({ page }) => {
-    await gotoSettings(page, listParams);
-    const target = row(page).first();
+    const target = (await openRow(page)).first();
     // 各行の dropdown に「パスワードの変更」があるため、自分の行のメニューに限定する
     await target.locator("span.dropdown-toggle").click();
     await target.locator(".dropdown-menu").getByText("パスワードの変更").click();

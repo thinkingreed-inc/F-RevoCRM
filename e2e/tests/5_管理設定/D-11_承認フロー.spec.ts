@@ -14,7 +14,8 @@ import { gotoSettings, saveAndSettle, confirmYes } from "../../utils/settings";
  * モーダル操作は表示中の土台(.modal-content:visible)へスコープする。
  */
 test.describe.skip("管理: 承認フロー (ApprovalFlow)", () => {
-  // 本環境には ApprovalFlow モジュールが未導入のためスキップ
+  // OSS 版には ApprovalFlow(承認フロー)が搭載されていないため恒久的に対象外(2026-08-27 判断)。
+  // module=Approval が空ページなのも同じ理由。spec は搭載環境で使える形で残しておく。
   const listParams = { module: "ApprovalFlow", view: "List" };
   const token = generateRandomString(8);
   const flowName = `e2e承認add${token}`;

@@ -13,7 +13,8 @@ import { gotoSettings, saveAndSettle, confirmYes } from "../../utils/settings";
  * 削除で後始末して永続的な残りを残さない。
  */
 test.describe.skip("管理: 申請フィールド (RecordField)", () => {
-  // 本環境には RecordField モジュールが未導入のためスキップ
+  // OSS 版には RecordField モジュールが搭載されていないため恒久的に対象外(2026-08-27 判断)。
+  // spec は EE 版など搭載環境で使える形で残しておく。
   const listParams = { module: "RecordField", view: "List" };
   const token = generateRandomString(5);
   const nameAdd = `テスト${token}`;
