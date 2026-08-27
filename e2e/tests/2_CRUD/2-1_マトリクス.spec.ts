@@ -33,24 +33,24 @@ const CI_SAMPLE_MODULES = [
   "Contacts", // 標準 + 複合名。actions/Save 個別実装あり
   "Leads", // actions/Save 個別実装あり(昇格前提の項目処理)
   "Potentials", // actions/Save 個別実装あり
-  "Invoice", // インベントリ(明細必須 → 作成系 skip の代表)
-  "Calendar", // 特殊フォーム(作成系 skip の代表)
-  "Documents", // ファイル系 na + UIフォーム skip の代表
+  "Documents", // UIフォーム skip + ファイル系 na の代表。API 作成できるケースは run で残る
   "HelpDesk", // サポート系
+  //
+  // 【Invoice / Calendar を CI 代表から外している理由】(2026-08-26 実測)
+  // capabilities.ts の applySkip(..., RECORD_DEPENDENT_CASES) により、
+  // この 2 モジュールは「レコードを 1 件作る必要があるケース」がすべて skip される:
+  //   - Invoice(インベントリ系): 明細(productid)が無いと API/UI どちらでも保存できない
+  //   - Calendar: 日時ウィジェット等の特殊コントロールで UI/API とも作成できない
+  // 残っていた run は CustomView 系だけで、それを CI から外した(CI_SKIP_CASES)ため
+  // CI では 15 件 collect / 15 件すべて実行時 skip = 実行 0 件になっていた。
+  // collect だけ払って何も検証せず、カタログ上の「PRで実行」も過大に見えるので代表から外す。
+  //
+  // 機能面の穴ではない: Invoice は tests/4_モジュール/4-9_在庫/(CRUD・明細・PDF・相互生成)、
+  // Calendar は tests/4_モジュール/4-8_カレンダー/(基本・モーダル・繰り返し・招待・共有・
+  // 活動ToDo・追加機能)が CI に入っており、専用ドライバで厚く担保している。
+  // ローカルのフル実行(E2E_SCOPE 未設定)では全 29 モジュールが対象なので、
+  // capability が run に変わった際の検知はそちらで行う。
 ];
-
-/**
- * 注意(2026-08-25 実測): CI で CV 系ケースを外した結果、
- * **Invoice と Calendar はマトリクスの実行件数が 0 になっている**
- * (18 件 collect / 18 件すべて capability 判定で実行時 skip)。
- * この 2 モジュールがマトリクスで実際に回していたのは CV 系だけだったため。
- *
- * 機能面の穴ではない: Invoice は `tests/4_モジュール/4-9_在庫/`(CRUD・明細・PDF・相互生成)、
- * Calendar は `tests/4_モジュール/4-8_カレンダー/`(基本・モーダル・繰り返し・招待・共有・
- * 活動ToDo・追加機能)が CI に入っており、専用ドライバで厚く担保している。
- * collect のみで実行時間はほぼ 0 なので代表から外さずに残す
- * (将来 capability が run に変われば自動でマトリクスに乗る)。
- */
 const MATRIX_SCOPE =
   process.env.E2E_SCOPE === "ci"
     ? MATRIX.filter((m) => CI_SAMPLE_MODULES.includes(m.module))
