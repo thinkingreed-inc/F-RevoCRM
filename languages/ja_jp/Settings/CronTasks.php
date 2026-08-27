@@ -77,6 +77,11 @@ $languageStrings = array(
 	'LBL_MONTHLY_SCHEDULE_INFO' => '「月末」を選ぶと、月の日数に関わらずその月の最後の日に実行します。29〜31日を選んだ場合、その日が無い月はその月の末日に実行します。',
 	'LBL_FREQUENCY_NOT_ALIGNED' => 'この周期は1日を割り切れないため、実行予定時刻が固定されません。実行が遅れるとその分だけ次回以降の時刻がずれていきます。時刻を固定したい場合は「毎日決まった時刻に実行」を選んでください。',
 
+	// 並列実行
+	'LBL_MAX_PARALLEL' => '並列実行可能数',
+	'LBL_MAX_PARALLEL_INFO' => '同時に実行するタスク数の上限です。上限に達した回は、実行時刻を迎えていても次回のスケジューラー（cron）起動まで見送られます。変更は config.inc.php の $cron_max_parallel で行います。',
+	'LBL_PARALLEL_UNAVAILABLE_INFO' => 'この環境では並列実行が使えないため、タスクは 1 つずつ順番に実行されます（exec()／popen() が無効、または $cron_max_parallel が 1）。',
+
 	// 実行ログ
 	'LBL_VIEW_LOG' => '実行ログ',
 	'LBL_EXECUTION_LOG' => '実行ログ',

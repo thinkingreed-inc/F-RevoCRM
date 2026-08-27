@@ -77,6 +77,11 @@ $languageStrings = array(
 	'LBL_MONTHLY_SCHEDULE_INFO' => 'Choosing "Last day of month" runs the task on the final day whatever the month length. If you choose 29-31, months without that date run on their last day.',
 	'LBL_FREQUENCY_NOT_ALIGNED' => 'This interval does not divide a day evenly, so run times are not pinned to fixed slots. Any delay carries over to later runs. Choose "Run daily at a given time" to pin the time.',
 
+	// Parallel execution
+	'LBL_MAX_PARALLEL' => 'Max parallel tasks',
+	'LBL_MAX_PARALLEL_INFO' => 'The maximum number of tasks run at the same time. Once the limit is reached, tasks that are due are deferred to the next scheduler (cron) run. Change it with $cron_max_parallel in config.inc.php.',
+	'LBL_PARALLEL_UNAVAILABLE_INFO' => 'Parallel execution is not available in this environment, so tasks run one at a time (exec()/popen() disabled, or $cron_max_parallel is 1).',
+
 	// Execution log
 	'LBL_VIEW_LOG' => 'Execution log',
 	'LBL_EXECUTION_LOG' => 'Execution log',
