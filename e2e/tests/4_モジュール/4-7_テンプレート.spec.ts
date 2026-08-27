@@ -85,13 +85,19 @@ test.describe("テンプレート系モジュール", () => {
       await expect(del).toBeEnabled();
       await del.click();
       await confirmYes(page);
-      await page.waitForLoadState("networkidle");
 
-      // 一覧から消えている(MassDelete の固有実装が通った)
+      // 一括削除は Ajax(完了後に一覧が再読込される)。ここで goto してしまうと
+      // POST を中断して「削除されないまま次の一覧を見る」ことになり CI で flaky に
+      // なるため、まずその場で行が消えるのを待つ。
+      await expect(
+        page.locator("tr.listViewEntries").filter({ hasText: name })
+      ).toHaveCount(0, { timeout: 30000 });
+
+      // 一覧を開き直しても消えている(MassDelete の固有実装が通った)
       await gotoTemplateList(page, module);
       await expect(
         page.locator("tr.listViewEntries").filter({ hasText: name })
-      ).toHaveCount(0);
+      ).toHaveCount(0, { timeout: 15000 });
     });
   }
 
@@ -100,24 +106,26 @@ test.describe("テンプレート系モジュール", () => {
   }) => {
     test.setTimeout(120000);
     // dump には systemtemplate=1 のテンプレートが焼き込まれている。
-    // 一覧では「システム」列/バッジで判別できないので、
-    // 詳細を開かずに済むよう API 不要の方法として ListView の行に付く
-    // data-id を使い、削除後に件数が減っていないことで確認する。
+    // 一覧では判別できないので、行の record id から Edit 画面を開き
+    // hidden input(.isSystemTemplate)で判定してテンプレート名を得る。
+    // (件数の増減で判定すると、並列実行中の他テストがテンプレートを作成/削除して
+    //  件数を動かすため flaky になる。名前で判定する。)
     await gotoTemplateList(page, "EmailTemplates");
     const rows = page.locator("tr.listViewEntries");
-    const before = await rows.count();
-    expect(before, "テンプレートが 1 件以上あること").toBeGreaterThan(0);
+    const total = await rows.count();
+    expect(total, "テンプレートが 1 件以上あること").toBeGreaterThan(0);
 
-    // システムテンプレートを特定する: 詳細ページの削除導線が無いものがそれ。
-    // 行のリンク先(data-recordurl)から record id を取り、
-    // Edit 画面の .isSystemTemplate(hidden input)で判定する。
-    let systemRow = -1;
-    for (let i = 0; i < before; i++) {
+    const recordIds: string[] = [];
+    for (let i = 0; i < total; i++) {
       const rec = await rows
         .nth(i)
         .getAttribute("data-recordurl")
         .then((u) => u?.match(/record=(\d+)/)?.[1]);
-      if (!rec) continue;
+      if (rec) recordIds.push(rec);
+    }
+
+    let systemName = "";
+    for (const rec of recordIds) {
       await page.goto(
         url(
           `index.php?module=EmailTemplates&view=Edit&record=${rec}&app=TOOLS`
@@ -128,26 +136,32 @@ test.describe("テンプレート系モジュール", () => {
         .first()
         .getAttribute("value");
       if (flag === "1" || flag === "true") {
-        systemRow = i;
+        systemName =
+          (await page.locator('input[name="templatename"]').inputValue()) ?? "";
         break;
       }
-      await gotoTemplateList(page, "EmailTemplates");
     }
     expect(
-      systemRow,
+      systemName,
       "dump にシステムテンプレートが含まれること"
-    ).toBeGreaterThanOrEqual(0);
+    ).not.toBe("");
 
+    // 一覧でそのシステムテンプレートを選んで一括削除を試みる
     await gotoTemplateList(page, "EmailTemplates");
-    await rows.nth(systemRow).locator("input.listViewEntriesCheckBox").check();
+    const target = rows.filter({ hasText: systemName }).first();
+    await expect(target).toBeVisible({ timeout: 20000 });
+    await target.locator("input.listViewEntriesCheckBox").check();
     const del = page.locator("#EmailTemplates_listView_massAction_LBL_DELETE");
     await expect(del).toBeEnabled();
     await del.click();
     await confirmYes(page);
     await page.waitForLoadState("networkidle");
 
-    // 削除されていない(件数が変わらない)
+    // 削除されていない(システムテンプレートは保護される)
     await gotoTemplateList(page, "EmailTemplates");
-    await expect(page.locator("tr.listViewEntries")).toHaveCount(before);
+    await expect(
+      rows.filter({ hasText: systemName }),
+      "システムテンプレートは削除されず一覧に残ること"
+    ).toHaveCount(1, { timeout: 15000 });
   });
 });

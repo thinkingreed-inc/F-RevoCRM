@@ -62,11 +62,17 @@ test.describe("カレンダー: 一括削除(繰り返し予定)", () => {
       await expect(del).toBeEnabled();
       await del.click();
       await confirmYes(page);
-      await page.waitForLoadState("networkidle");
 
-      // 一覧から消えている
+      // 削除は Ajax。goto で POST を中断しないよう、まずその場で消えるのを待つ
+      await expect(page.locator("tr.listViewEntries")).toHaveCount(0, {
+        timeout: 30000,
+      });
+
+      // 一覧を開き直しても消えている
       await gotoCalendarListBySubject(page, subject);
-      await expect(page.locator("tr.listViewEntries")).toHaveCount(0);
+      await expect(page.locator("tr.listViewEntries")).toHaveCount(0, {
+        timeout: 15000,
+      });
 
       // API でも残っていない(ゴミ箱送りではなく deleted=1 になる)
       expect(

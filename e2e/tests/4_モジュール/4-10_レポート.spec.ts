@@ -198,9 +198,13 @@ test.describe("レポート(Reports)", () => {
     await expect(del).toBeEnabled();
     await del.click();
     await confirmYes(page);
-    await page.waitForLoadState("networkidle");
 
-    // --- 一覧から消えている(固有実装の削除許可ルートを通った) ---
+    // 削除は Ajax。goto で POST を中断しないよう、まずその場で消えるのを待つ
+    await expect(
+      page.locator("tr.listViewEntries").filter({ hasText: name })
+    ).toHaveCount(0, { timeout: 30000 });
+
+    // --- 一覧を開き直しても消えている(固有実装の削除許可ルートを通った) ---
     await gotoReportList(page);
     await listSearch(page, "reportname", name);
     await expect(
