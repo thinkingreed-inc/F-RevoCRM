@@ -46,7 +46,8 @@
 					<div class="form-group">
 						<label class="control-label fieldLabel col-xs-5">{vtranslate('LBL_SCHEDULE_TYPE',$QUALIFIED_MODULE)}</label>
 						<div class="controls fieldValue col-xs-5">
-							<select class="select2 inputElement" id="schedule_type">
+							{* name が無いと送信されず、指定した種別が保存されない *}
+							<select class="select2 inputElement" name="schedule_type" id="schedule_type">
 								<option value="interval" {if $SCHEDULE_TYPE eq 'interval'} selected="" {/if}>{vtranslate('LBL_SCHEDULE_INTERVAL',$QUALIFIED_MODULE)}</option>
 								<option value="daily" {if $SCHEDULE_TYPE eq 'daily'} selected="" {/if}>{vtranslate('LBL_SCHEDULE_DAILY',$QUALIFIED_MODULE)}</option>
 								<option value="weekly" {if $SCHEDULE_TYPE eq 'weekly'} selected="" {/if}>{vtranslate('LBL_SCHEDULE_WEEKLY',$QUALIFIED_MODULE)}</option>
