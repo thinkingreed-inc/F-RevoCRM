@@ -51,28 +51,39 @@ test.describe("カレンダー: 一括削除(繰り返し予定)", () => {
       await createRecurringEvent(page, subject, "Daily");
 
       await gotoCalendarListBySubject(page, subject);
-      const rows = page.locator("tr.listViewEntries");
-      await expect(rows.first(), "作成した予定が一覧に出ること").toBeVisible({
-        timeout: 30000,
-      });
+      const targetRows = page
+        .locator("tr.listViewEntries")
+        .filter({ hasText: subject });
+      await expect(
+        targetRows.first(),
+        "作成した予定が一覧に出ること"
+      ).toBeVisible({ timeout: 30000 });
 
-      // 全件選択(ヘッダのチェックボックス)→ 一括削除
-      await page.locator("input.listViewEntriesMainCheckBox").first().check();
+      // 対象の行だけを個別に選択して一括削除する。
+      // ヘッダの全選択(input.listViewEntriesMainCheckBox)は、検索が効いていない
+      // 状態だと並列実行中の他テストの予定まで消してしまうため使わない。
+      const targetCount = await targetRows.count();
+      expect(targetCount, "繰り返しのインスタンスが並ぶこと").toBeGreaterThan(0);
+      for (let i = 0; i < targetCount; i++) {
+        await targetRows.nth(i).locator("input.listViewEntriesCheckBox").check();
+      }
       const del = page.locator("#Calendar_listView_massAction_LBL_DELETE");
       await expect(del).toBeEnabled();
       await del.click();
       await confirmYes(page);
 
-      // 削除は Ajax。goto で POST を中断しないよう、まずその場で消えるのを待つ
-      await expect(page.locator("tr.listViewEntries")).toHaveCount(0, {
-        timeout: 30000,
-      });
+      // 削除は Ajax。goto で POST を中断しないよう、まずその場で消えるのを待つ。
+      // 削除後の再読込では URL で指定した検索条件(search_key=subject)が外れて
+      // 全件が並ぶので、全行数ではなく **件名で絞った行数** で判定する。
+      await expect(
+        page.locator("tr.listViewEntries").filter({ hasText: subject })
+      ).toHaveCount(0, { timeout: 30000 });
 
       // 一覧を開き直しても消えている
       await gotoCalendarListBySubject(page, subject);
-      await expect(page.locator("tr.listViewEntries")).toHaveCount(0, {
-        timeout: 15000,
-      });
+      await expect(
+        page.locator("tr.listViewEntries").filter({ hasText: subject })
+      ).toHaveCount(0, { timeout: 15000 });
 
       // API でも残っていない(ゴミ箱送りではなく deleted=1 になる)
       expect(
