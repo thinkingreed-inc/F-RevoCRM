@@ -169,6 +169,13 @@ CI_SPECS=(
   tests/4_モジュール/4-8_カレンダー/
   tests/4_モジュール/4-9_在庫/
   tests/4_モジュール/4-10_レポート.spec.ts
+  # 一括削除 / 保存にモジュール固有実装があり、共通機能側(Accounts 固定)では通らない領域。
+  #  4-7  : EmailTemplates / PDFTemplates の MassDelete(独自 getRecordsListFromRequest)
+  #  4-11 : PriceBooks の Save(relationOperation で一覧価格を初期化)
+  #  4-12 : Portal の MassDelete(vtiger_portal を直接 DELETE)
+  tests/4_モジュール/4-7_テンプレート.spec.ts
+  tests/4_モジュール/4-11_価格表.spec.ts
+  tests/4_モジュール/4-12_マイサイト.spec.ts
   tests/5_管理設定/
 )
 

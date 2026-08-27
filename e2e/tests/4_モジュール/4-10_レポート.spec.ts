@@ -1,6 +1,8 @@
 import { test, expect } from "../../fixtures/isolated";
 import { createRecordViaApi, deleteRecordViaApi } from "../../utils/record";
 import { url, generateRandomString } from "../../utils/util";
+import { confirmYes } from "../../utils/settings";
+import { listSearch, clearListSearch } from "../../utils/listview";
 import { readFileSync } from "fs";
 
 /**
@@ -19,6 +21,14 @@ import { readFileSync } from "fs";
  *  - 出力:   button.reportActions[data-href*="mode=GetCSV"] / mode=GetXLS
  *            (`Reports_Record_Model` が Content-Disposition: attachment を返すため
  *             page.waitForEvent("download") で受け取れる)
+ *
+ * 一括削除は **モジュール固有実装** (TEST_COVERAGE P0-B / B3):
+ *   modules/Reports/actions/MassDelete.php (53 行)
+ * `Vtiger_Mass_Action` を直接継承し、`isDefault()` / `isEditable()` /
+ * `isEditableBySharing()` を満たさないレポートを削除せず
+ * **拒否リスト(LBL_DENIED_REPORTS)としてエラー返却**する独自ロジックを持つ。
+ * 共通機能側の一括削除テスト(3-26_ゴミ箱)は Accounts 固定なので、
+ * この固有実装は誰も通していなかった。
  *
  * 検証に使う固定レポート: record=1 = "Contacts by Accounts"
  * (顧客企業に紐づく顧客担当者の一覧。dump 固定なのでレポート名も併せて assert し、
@@ -140,5 +150,63 @@ test.describe("レポート(Reports)", () => {
     const buf = readFileSync(filePath!);
     expect(buf.length).toBeGreaterThan(0);
     expect(buf.subarray(0, 2).toString("latin1")).toBe("PK");
+  });
+
+  test("作成したレポートを一括削除できる", async ({ page }) => {
+    test.setTimeout(180000);
+    const name = `E2Erpt${generateRandomString(6)}`;
+
+    // --- レポートを作成する(Step1: 名前/フォルダ/対象モジュール → Step2 → Step3 で生成) ---
+    await page.goto(url("index.php?module=Reports&view=Edit"));
+    await page.waitForLoadState("networkidle");
+    await page.locator('input[name="reportname"]').fill(name);
+    await page.locator("#primary_module").selectOption("Contacts");
+    // フッタは Step1/2/3 分が同一 DOM に並ぶので :visible で表示中のものだけを掴む。
+    // また #messageBar(通知バー)と重なることがあるため force クリックする。
+    await page.locator("button.nextStep:visible").first().click({ force: true });
+    await page.waitForLoadState("networkidle");
+    // Step2(カラムの選択): #reportsColumnsList は必須(data-rule-required)なので
+    // 先頭のカラムを 1 つ選ぶ。select2 だが native select はそのまま操作できる。
+    const columns = page.locator("#reportsColumnsList");
+    await expect(columns).toBeAttached({ timeout: 20000 });
+    const firstColumn = await columns
+      .locator("option")
+      .first()
+      .getAttribute("value");
+    await columns.selectOption([firstColumn!]);
+    await page.locator("button.nextStep:visible").first().click({ force: true });
+    await page.waitForLoadState("networkidle");
+    // Step3(フィルタ)で生成 → 実行結果画面へ(#generateReport が保存ボタン)
+    await page.locator("#generateReport").click({ force: true });
+    await page.waitForURL(/module=Reports.*record=\d+/, { timeout: 60000 });
+    await page.waitForLoadState("networkidle");
+
+    // --- 一覧で対象を選択して一括削除 ---
+    // dump に 24 件の既存レポートがあり 1 ページに収まらないので列検索で絞る
+    await gotoReportList(page);
+    await listSearch(page, "reportname", name);
+    const row = page
+      .locator("tr.listViewEntries")
+      .filter({ hasText: name })
+      .first();
+    await expect(row, "作成したレポートが一覧に出ること").toBeVisible({
+      timeout: 20000,
+    });
+    await row.locator("input.listViewEntriesCheckBox").check();
+
+    const del = page.locator("#Reports_listView_massAction_LBL_DELETE");
+    await expect(del).toBeEnabled();
+    await del.click();
+    await confirmYes(page);
+    await page.waitForLoadState("networkidle");
+
+    // --- 一覧から消えている(固有実装の削除許可ルートを通った) ---
+    await gotoReportList(page);
+    await listSearch(page, "reportname", name);
+    await expect(
+      page.locator("tr.listViewEntries").filter({ hasText: name })
+    ).toHaveCount(0);
+    // 検索条件はセッションに残るため解除しておく
+    await clearListSearch(page);
   });
 });

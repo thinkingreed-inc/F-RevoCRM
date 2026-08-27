@@ -58,7 +58,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 ### 進捗と残り
 
 - ✅ **横断共通機能はひと通り実装**（§2 参照）: 一覧検索 / フォロー / タグ追加削除 / エクスポート / インポート(パターン別) / 一括削除+ゴミ箱 / クイック作成 / クイック編集 / 更新履歴 / コメント / 関連一覧表示 / ログイン失敗。
-- 🟡 **モジュール固有機能は主要な「起動/遷移」を検証** — メール送信 / SMS / 組織階層 / 予定・ToDo登録 / **リード昇格（起動+保存）** / 案件のプロジェクト変換 / 見積・受注・発注の作成画面遷移 / チケット→FAQ変換 を Accounts/Contacts/Leads/Potentials/Vendors/HelpDesk で検証（§3）。**保存まで**の相互生成 / PDF エクスポート / 繰り返し請求 / 地図 / iCal は未（§3）。
+- 🟡 **モジュール固有機能は主要な「起動/遷移」を検証** — メール送信 / SMS / 組織階層 / 予定・ToDo登録 / **リード昇格（起動+保存）** / 案件のプロジェクト変換 / 見積・受注・発注の作成画面遷移 / チケット→FAQ変換 を Accounts/Contacts/Leads/Potentials/Vendors/HelpDesk で検証（§3）。**保存まで**の相互生成 / PDF エクスポート / iCal(Export/Import) は実装済み（§3, P0/P0-B）。繰り返し請求 / 地図は未。
 - ✅ **在庫系 4 モジュール** — CRUD + **割引/税/合計/調整の監査**を実装（`module/tests/4_モジュール/4-9_在庫/在庫.spec.ts`、明細ドライバ `utils/lineitem.ts`）。相互生成 / PDF / 繰返請求は次段（§3 / P2）。
 - 🟡 **管理設定** — 未テスト画面 4 種はスモーク追加済み。skip 中（C-04/D-06/F-05/H-01 等）の有効化が残る（§4）。
 - 🟡 **認証系** — ログイン失敗は実装済。パスワード再発行・MFA は未（§5）。
@@ -213,7 +213,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 | 12-2 | 一覧からの更新（ダブルクリック） | `List.js` inline edit | ❌ | 調査済・未採用（dblclick でクイックプレビューが重なりハング。要安定化） |
 | 12-3 | 削除 / 一括削除 | 詳細「その他」/ 一覧ゴミ箱 | ✅ | 単体は `FrTest`、一括削除は `common/tests/3_共通機能/3-26_ゴミ箱.spec.ts` |
 | 13-1 | ダッシュボード / ウィジェット | `modules/Home/views/DashBoard.php` | 🟡 | 表示確認のみ(`general`)。ダッシュボード追加・ウィジェット追加/削除は未 |
-| 14-1 | カレンダー（月/週/日/概要） | `modules/Calendar/views/Calendar.php` | 🟡 | `common/tests/3_共通機能/3-33_カレンダー表示.spec.ts`（月/週/日/概要 の表示モード切替）+ イベント作成/編集は `module/tests/4_モジュール/4-8_カレンダー/活動ToDo.spec.ts`。iCal・カンバンは未 |
+| 14-1 | カレンダー（月/週/日/概要） | `modules/Calendar/views/Calendar.php` | 🟡 | `common/tests/3_共通機能/3-33_カレンダー表示.spec.ts`（月/週/日/概要 の表示モード切替）+ イベント作成/編集は `module/tests/4_モジュール/4-8_カレンダー/活動ToDo.spec.ts`、iCal は `4-8_カレンダー/9_iCal.spec.ts`。カンバンは未 |
 | 35-1 | ゴミ箱（復元 / 完全削除） | `modules/RecycleBin/` | ✅ | `common/tests/3_共通機能/3-26_ゴミ箱.spec.ts`（削除→復元→完全削除） |
 | — | グローバル検索 | `modules/Vtiger/apis/SearchRecords.php` | ✅ | `common/tests/3_共通機能/3-03_全文検索.spec.ts`（ヘッダー検索→統合検索結果にヒット） |
 
@@ -246,7 +246,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 | 33 | タスク ProjectTask | ✅ | （固有機能なし） | — | — |
 | 34 | マイルストーン ProjectMilestone | ✅ | （Project 内ウィジェット経由） | ❌ | — |
 | — | 資産 Assets | ✅ | ❓ 固有機能不明 | ❓ | 固有機能の有無を確認 |
-| 39/40 | 活動 / ToDo（Calendar） | 🟡 作成・編集 → `module/tests/4_モジュール/4-8_カレンダー/活動ToDo.spec.ts` | iCal インポート/エクスポート, 繰り返し, 重複検出, 共有カレンダー, カンバン(ToDo) | ❌ | UI削除・iCal・カンバン・カレンダー表示 |
+| 39/40 | 活動 / ToDo（Calendar） | 🟡 作成・編集 → `module/tests/4_モジュール/4-8_カレンダー/活動ToDo.spec.ts`、iCal Export/Import → `9_iCal.spec.ts`、一括削除(繰り返し) → `8_一括削除.spec.ts` | 繰り返し, 重複検出, 共有カレンダー, カンバン(ToDo) | ❌ | UI削除・カンバン・カレンダー表示 |
 
 > **注**: 上表「CRUD ✅」は `tests/2_CRUD/2-2_汎用モジュール.spec.ts` の対象を指す。Calendar（活動/ToDo）は共通 CRUD の対象外で、専用画面のため個別対応が必要。
 > **固有機能の検証状況**: Accounts・Vendors はローカルにレコードがあり詳細の固有アクションを**実機確認済**。それ以外（Contacts / Leads / Potentials / HelpDesk / Quotes / Invoice / Assets / Documents 等）はローカル DB に 0 件のため実データで詳細を開けず、**コード確認のみ**（agent 調査＋`modules/<M>/views|actions` の実装で裏取り）。テスト作成時は事前シードが前提。
@@ -496,16 +496,63 @@ CRUD / 一覧 / 詳細は個別実装が前提だと分かった。
   1 モジュールあたり CPU 約 140 秒(15 ケース)。
 - [x] **モジュール固有アクションを CI に追加** — `4-3_リード`(メール/SMS/予定/昇格の起動 +
   **昇格の保存**まで) / `4-4_案件`(メール/プロジェクト変換/見積・受注 作成画面の起動)。
-- [ ] **Products / PriceBooks の Save 個別実装が未カバー** — Products は 13 行だが
-  PriceBooks は 39 行で `saveRecord` を override(価格表固有)。専用 spec が無く、
-  マトリクス代表にも入っていない。代表に足すか専用 spec を作るか要判断。
-- [ ] **在庫系の一括編集(MassSave)が未カバー** — `Invoice/actions/MassSave.php` は 75 行で
-  `getRecordModelsFromRequest` を override(明細の一括更新)。`Products` 47 行 / `Inventory` 35 行。
-  `3-25_一括編集` は Accounts 固定なので、在庫系の独自実装は誰も通していない。
-- [ ] **MassDelete の個別実装が未カバー** — Calendar / Reports / Portal / EmailTemplates /
-  PDFTemplates。`3-26_ゴミ箱` は Accounts 固定。
-- [ ] **Calendar の iCal Export / Import** — `views/Export.php` / `views/Import.php` の
-  個別実装(このモジュールのみ)。§3 の「iCal 未実装」と同じタスク。
+- [x] **B1 在庫系の一括編集(MassSave)** → `tests/4_モジュール/4-9_在庫/5_一括編集.spec.ts`(4 モジュール)
+  — `Invoice/actions/MassSave.php` は 75 行で `getRecordModelsFromRequest` を override し、
+  コメントに「Inventory line items getting wiped out」とあるように
+  **一括編集で明細が消えるのを防いでいる**。`Products` 47 行 / `Inventory` 35 行。
+  `3-25_一括編集` は Accounts 固定だったため誰も通していなかった。
+  spec は「一括編集の前後で総計(hdnGrandTotal)が変わらない = 明細が保持される」を検証する。
+- [x] **B2 PriceBooks の Save 個別実装** → `tests/4_モジュール/4-11_価格表.spec.ts`
+  — `PriceBooks/actions/Save.php` は `relationOperation` のときだけ
+  親と関連付け + `updateListPrice()` で **一覧価格を親製品の単価で初期化**する。
+  検証は製品詳細の価格表関連一覧に出る `a.editListPrice[data-list-price]` を実測値として使う。
+  なお現行 UI の関連一覧「追加」は React ダイアログ(`modules/Vtiger/apis/Save.php` =
+  `Vtiger_Save_Api`)を通り **この固有実装を通らない**ため、spec は
+  `view=Edit&relationOperation=true&sourceModule=Products&sourceRecord=<id>` を直接開く。
+  `Products/actions/Save.php` は空クラス(`extends Vtiger_Save_Action {}`)なのでテスト不要。
+- [x] **B3 MassDelete の個別実装** — Calendar / Reports / Portal / EmailTemplates / PDFTemplates を
+  すべてカバーした(`3-26_ゴミ箱` は Accounts 固定だったため誰も通していなかった)。
+  - `tests/4_モジュール/4-7_テンプレート.spec.ts` — EmailTemplates / PDFTemplates。
+    ユーザー作成テンプレの一括削除 + **システムテンプレートは削除されない**こと。
+    → **本体不具合を検出**(下記)。
+  - `tests/4_モジュール/4-10_レポート.spec.ts` — Reports。レポートを 3 ステップ UI で作成 →
+    一括削除。`isDefault()`/`isEditable()`/`isEditableBySharing()` の許可ルートを通る。
+  - `tests/4_モジュール/4-12_マイサイト.spec.ts` — Portal(マイサイト)。ブックマーク登録 →
+    一括削除(`Portal_Module_Model::deleteRecords` が `vtiger_portal` を直接 DELETE)。
+  - `tests/4_モジュール/4-8_カレンダー/8_一括削除.spec.ts` — Calendar。**繰り返し予定**を
+    一括削除して全インスタンスが消えること(`vtiger_activity_recurring_info` の削除と
+    二重削除スキップを同時に通す)。
+- [x] **B4 Calendar の iCal Export / Import** → `tests/4_モジュール/4-8_カレンダー/9_iCal.spec.ts`
+  — エクスポートは一覧「その他」→ エクスポート → **形式 ics**(Calendar だけ形式選択がある)で
+  `Calendar_ExportData_Action` の iCal 経路を通し、`BEGIN:VCALENDAR` と件名を検証。
+  インポートは「インポート」→ ランディング(`mode=landing`) → `#icsImport` →
+  ICS 用 1 ステップ画面 → `#importButton`(`mode=importResult`)、
+  さらに結果画面の「最後のインポートの結果を取り消す」(`mode=undoIcalImport`)まで検証する。
+  → **本体不具合を検出**(下記)。なお `Calendar/views/Export.php` は空クラスなので
+  エクスポート画面自体の固有実装は無い。
+
+#### P0-B で検出した本体不具合(このブランチで併せて修正)
+
+1. **メールテンプレート / PDF テンプレートの一括削除が PHP Fatal error で動かない**
+   ```
+   PHP Fatal error: Declaration of EmailTemplates_MassDelete_Action::getRecordsListFromRequest(
+     Vtiger_Request $request, $recordModel) must be compatible with
+     Vtiger_Mass_Action::getRecordsListFromRequest(Vtiger_Request $request)
+   ```
+   親より引数が多いのに既定値が無く、PHP 8 の LSP チェックに引っかかる。画面上は
+   確認ダイアログまで進んで「何も起きない」ため気付きにくい。
+   → `$recordModel = null` にして親互換にし、null 時は `Vtiger_Module_Model::getInstance()`
+   でモジュールを引くようにした(併せて未初期化の `$systemTemplate` も初期化)。
+   `modules/{EmailTemplates,PDFTemplates}/actions/MassDelete.php`
+2. **iCal インポートが PHP Fatal error で動かない**
+   ```
+   PHP Fatal error: Uncaught Error: Class "VTEntityDelta" not found in
+     modules/Calendar/Activity.php:1676  (Activity->getBeforeAssignedUserID())
+   ```
+   `VTEntityDelta` は通常 ModTracker のイベントハンドラ経由で読み込まれるが、
+   インポートは `VTIGER_BULK_SAVE_MODE = true` でハンドラが動かないため未ロードで到達する。
+   → `getBeforeAssignedUserID()` の先頭で `require_once 'data/VTEntityDelta.php'` を追加。
+   `modules/Calendar/Activity.php`
 
 ### P0: 未着手の重大ギャップ（2026-08-25 棚卸しで洗い出し）
 
@@ -663,7 +710,7 @@ CRUD / 一覧 / 詳細は個別実装が前提だと分かった。
 - [x] チケット → FAQ 変換（No.29-2）→ `module/tests/4_モジュール/4-6_チケット.spec.ts`（解決策が空のチケットで FAQ 編集画面への遷移=変換フロー起動を検証。解決策ありの即時FAQ生成は未）
 - [x] メール送信起動 / SMS 起動（Accounts/Contacts/Leads/Vendors/HelpDesk/Potentials の各 `module/*.spec.ts`。Accounts は組織階層/SMS/予定・TODO、Leads は SMS/予定・TODO も）※地図表示は残
 - [x] リード昇格 ConvertLead（No.16-2）→ `module/tests/4_モジュール/4-3_リード.spec.ts`（**起動**＋**保存**まで検証。昇格で顧客企業が作成され詳細へ遷移、作成された顧客企業/顧客担当者は後始末で削除）。**根本原因（過去の未成立）**: リードに company が無いと Accounts 作成チェックがオンにならず、`vtValidate` が必須項目（会社名など）未入力で native submit を止めていた／`submitHandler` バインド前にクリックし `modules` 空で `SaveConvertLead` に届いていた。対策: company+lastname を持つ fresh リードを用意し、`#convertLeadForm` 描画（=submit 登録完了）を待ってから保存する。**注意**: 昇格済みリードは `isLeadConverted()` で昇格ボタンが消えるため、毎回使い捨てリードを作る
-- [x] 活動/ToDo の作成・編集（No.39/40） → `tests/4_モジュール/4-8_カレンダー/活動ToDo.spec.ts`（UI削除はカレンダー上の別フロー・iCal・カンバン・カレンダー表示は残）
+- [x] 活動/ToDo の作成・編集（No.39/40） → `tests/4_モジュール/4-8_カレンダー/活動ToDo.spec.ts`（UI削除はカレンダー上の別フロー・カンバン・カレンダー表示は残。iCal は `9_iCal.spec.ts` で実装済み）
 - [x] 関連一覧の表示（No.7-1） → `tests/3_共通機能/3-12_関連一覧.spec.ts`（顧客担当者タブを開いて関連一覧表示を確認。「追加」からの登録までは未）
 - [x] コメント投稿（No.9-1） → `tests/3_共通機能/3-14_コメント.spec.ts`
 
