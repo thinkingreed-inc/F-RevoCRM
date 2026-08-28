@@ -544,7 +544,27 @@ CRUD / 一覧 / 詳細は個別実装が前提だと分かった。
    → `$recordModel = null` にして親互換にし、null 時は `Vtiger_Module_Model::getInstance()`
    でモジュールを引くようにした(併せて未初期化の `$systemTemplate` も初期化)。
    `modules/{EmailTemplates,PDFTemplates}/actions/MassDelete.php`
-2. **iCal インポートが PHP Fatal error で動かない**
+2. **Webフォームの編集画面が PHP Fatal error で開かない**（E-01 の skip 解消で判明）
+   ```
+   PHP Fatal error: array_key_exists(): Argument #2 ($array) must be of type array, null given
+     in .../Settings/Webforms/FieldsEditView.tpl.php
+   ```
+   原因は 2 つ:
+   - `vtiger_webforms_field` テーブルの欠落。`setup/sql/dump_firstinstall.sql` には
+     定義があるが、この環境の DB には無かった（`vtiger_cv2role`/`vtiger_cv2rs` と同じ経緯）。
+     `Settings_Webforms_Record_Model::getSelectedFieldsList()` がこのテーブルを SELECT しており、
+     欠落するとクエリが失敗して選択項目リストが空のままになる。
+     → migration `20260828021711_add_missing_webforms_field_table.php` で作成（トリガーも復元）。
+   - 同メソッドの `$selectedFields` 未初期化。項目が 1 件も無い Webフォームでは
+     未定義変数のまま代入されて null になり、テンプレートの `array_key_exists()` で TypeError。
+     → `array()` で初期化。
+   E-01 の「Webフォームの編集」は以前「遅い CI で描画が間に合わない」と誤診して skip していたが、
+   実際にはローカルでも Fatal error で開いていなかった。
+   **なお `e2e_base_install.sql` には他にも欠落テーブルがある**（`vtiger_extnstore_users` /
+   `vtiger_pbxmanager*` / `vtiger_report_sharerole` / `vtiger_report_sharers`）。
+   いずれも `dump_firstinstall.sql` には存在する。該当機能を E2E で触る際は同様の
+   Fatal error に注意する。
+3. **iCal インポートが PHP Fatal error で動かない**
    ```
    PHP Fatal error: Uncaught Error: Class "VTEntityDelta" not found in
      modules/Calendar/Activity.php:1676  (Activity->getBeforeAssignedUserID())
@@ -733,8 +753,16 @@ CRUD / 一覧 / 詳細は個別実装が前提だと分かった。
 - [x] D-06 入力制限は OSS 版非搭載のため恒久的に対象外（P0-6）
 - [x] D-09 レコードタイプ / D-10 申請フィールド / D-11 承認フローは OSS 版非搭載のため恒久的に対象外（P0-6）
 - [x] 新規 spec: E-02 スケジューラー / E-04 メールコンバーター / F-04 送信メールサーバー / F-08 SMS通知（各スモーク） → `tests/5_管理設定/`
-- [ ] 新規 spec（残）: メール・PDF テンプレート
-- [ ] E-01 Webフォーム「編集」テストの有効化
+- [x] 新規 spec（残）: メール・PDF テンプレート → `tests/4_モジュール/4-7_テンプレート.spec.ts`
+  （一覧スモーク / 作成 → 詳細表示(説明・本文プレビュー iframe) → 編集 → 単体削除 の CRUD 一巡 /
+  一括削除（モジュール固有実装）/ システムテンプレートが削除されないこと）。
+  **知見**: 行アクション（「…」メニュー）は vtiger が開いたメニューを **body 直下へ移動**し、
+  元の行を `data('original-menu')` から辿る（`app.helper.getDropDownmenuParent`）。
+  削除ハンドラはこの仕組みで record id を得るため **メニューを実際に開かないと削除が実行されない**。
+  さらにトグルもメニュー項目も opacity で可視判定を満たさないため、
+  クリックは `dispatchEvent("click")` で叩く（force クリックは座標指定のため隣の行を押してしまう）。
+  「編集」だけは `data-url` に遷移先を持つのでそれを読んで `goto` する。
+- [x] E-01 Webフォーム「編集」テストの有効化 → skip 解消（下記の本体不具合 2 件を修正して green）
 
 ### P5: 認証・その他
 

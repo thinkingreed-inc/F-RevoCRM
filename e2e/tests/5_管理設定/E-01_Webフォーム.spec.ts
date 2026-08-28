@@ -110,11 +110,24 @@ test.describe.serial("管理: Webフォーム (Webforms)", () => {
     });
   };
 
-  // ※スキップ理由: Webフォーム編集画面(form#EditView)は Edit.js の重い初期化
-  // (select2/sortable/フィールド構造描画)を伴い、遅い docker CI ではフォームが
-  // 規定時間内に描画されず不安定。追加/削除でCRUDの要点は担保できるため、編集は
-  // CI 安定化のため対象外とする(ローカルでは green)。
-  test.skip("Webフォームの編集", async ({ page }) => {
+  // 【skip 解消の経緯 (2026-08-28)】
+  // 以前は「Edit.js の重い初期化で遅い CI では描画が間に合わない」と判断して
+  // skip していたが、これは誤診だった。実際には編集画面が **Fatal error で
+  // 開いていなかった**:
+  //   array_key_exists(): Argument #2 ($array) must be of type array, null given
+  //   in .../Settings/Webforms/FieldsEditView.tpl.php
+  // 原因は 2 つ。どちらも本体側を修正済み:
+  //   1. vtiger_webforms_field テーブルの欠落。
+  //      setup/sql/dump_firstinstall.sql には定義があるが、この環境の DB には
+  //      無かった(vtiger_cv2role / vtiger_cv2rs と同じ経緯)。
+  //      → migration 20260828021711_add_missing_webforms_field_table.php で作成。
+  //   2. Settings_Webforms_Record_Model::getSelectedFieldsList() の $selectedFields
+  //      未初期化。項目が 1 件も無い Webフォームでは未定義変数のまま代入されて
+  //      null になり、テンプレートの array_key_exists() で TypeError になっていた。
+  //      → array() で初期化。
+  // このテストは「フィールドを持たない Webフォームの編集」を通るので、
+  // 上記の回帰をそのまま検知できる。
+  test("Webフォームの編集", async ({ page }) => {
     await gotoSettings(page, listParams);
 
     // 対象行の編集アイコン(fa-pencil / title=編集)から編集画面へ

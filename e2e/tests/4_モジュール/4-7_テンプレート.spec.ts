@@ -31,15 +31,21 @@ test.describe("テンプレート系モジュール", () => {
     await expect(page.locator("text=権限がありません")).toHaveCount(0);
   });
 
-  /** テンプレートを 1 件作成して templatename を返す。 */
+  /**
+   * テンプレートを 1 件作成し、名前 / 説明 / 作成された record id を返す。
+   * 保存後は詳細画面へ遷移するので URL から record を取る。
+   */
   async function createTemplate(
     page: import("@playwright/test").Page,
     module: "EmailTemplates" | "PDFTemplates"
-  ): Promise<string> {
-    const name = `E2Etpl${generateRandomString(6)}`;
+  ): Promise<{ name: string; description: string; recordId: string }> {
+    const token = generateRandomString(6);
+    const name = `E2Etpl${token}`;
+    const description = `E2E説明${token}`;
     await page.goto(url(`index.php?module=${module}&view=Edit&app=TOOLS`));
     await page.waitForLoadState("networkidle");
     await page.locator('input[name="templatename"]').fill(name);
+    await page.locator('textarea[name="description"]').fill(description);
     // 対象モジュール(select2 だが native select はそのまま操作できる)
     await page
       .locator('select[name="modulename"]')
@@ -50,7 +56,30 @@ test.describe("テンプレート系モジュール", () => {
     }
     await page.locator("button.saveButton").first().click();
     await page.waitForLoadState("networkidle");
-    return name;
+    const recordId = page.url().match(/record=(\d+)/)?.[1] ?? "";
+    return { name, description, recordId };
+  }
+
+  /**
+   * 一覧の行アクション(「…」)を開き、開いたメニューを返す。
+   *
+   * vtiger は dropdown を開くとメニュー要素を **body 直下へ移動** し、
+   * 元の行は `data('original-menu')` から辿れるようにする
+   * (`app.helper.getDropDownmenuParent`)。削除ハンドラはこの仕組みで
+   * 対象 record id を得るため、**メニューを実際に開かないと削除が実行されない**。
+   * また移動後のメニューは行の中には無いのでページ全体から探す。
+   * トグル自体は opacity で隠れており通常クリックが届かないので dispatchEvent で叩く
+   * (force クリックは座標指定のため隣の行のトグルを押してしまう)。
+   */
+  async function openRowMenu(
+    page: import("@playwright/test").Page,
+    row: import("@playwright/test").Locator
+  ): Promise<import("@playwright/test").Locator> {
+    await row.hover();
+    await row.locator(".dropdown-toggle").first().dispatchEvent("click");
+    const menu = page.locator("ul.dropdown-menu:visible").first();
+    await expect(menu).toBeVisible({ timeout: 20000 });
+    return menu;
   }
 
   /** 一覧(list 表示)を開く。grid 表示だと一括削除ボタンが hide されるため明示する。 */
@@ -69,7 +98,7 @@ test.describe("テンプレート系モジュール", () => {
       page,
     }) => {
       test.setTimeout(120000);
-      const name = await createTemplate(page, module);
+      const { name } = await createTemplate(page, module);
 
       await gotoTemplateList(page, module);
       const row = page
@@ -148,4 +177,94 @@ test.describe("テンプレート系モジュール", () => {
       "システムテンプレートは削除されず一覧に残ること"
     ).toHaveCount(1, { timeout: 15000 });
   });
+
+  for (const module of ["EmailTemplates", "PDFTemplates"] as const) {
+    test(`${module}: 作成 → 詳細表示 → 編集 → 単体削除`, async ({ page }) => {
+      test.setTimeout(120000);
+      const created = await createTemplate(page, module);
+      expect(created.recordId, "保存後に record id が取れること").not.toBe("");
+
+      // === 詳細画面: 入力した内容が表示され、本文プレビュー(iframe)が出る ===
+      await page.goto(
+        url(
+          `index.php?module=${module}&view=Detail&record=${created.recordId}&app=TOOLS`
+        )
+      );
+      await page.waitForLoadState("networkidle");
+      const detail = page.locator("td.fieldValue");
+      await expect(detail.filter({ hasText: created.name }).first()).toBeVisible(
+        { timeout: 20000 }
+      );
+      await expect(
+        detail.filter({ hasText: created.description }).first(),
+        "説明が詳細に表示されること"
+      ).toBeVisible({ timeout: 20000 });
+      // 本文は iframe(#TemplateIFrame)に流し込まれる。既定の本文が入るので
+      // iframe 自体が描画されていることを本文プレビューの成立とみなす。
+      await expect(
+        page.locator("#TemplateIFrame"),
+        "本文プレビューの iframe が描画されること"
+      ).toBeVisible({ timeout: 20000 });
+
+      // === 編集: 一覧の行メニュー「編集」から名前を変える ===
+      const renamed = `${created.name}R`;
+      await gotoTemplateList(page, module);
+      const row = page
+        .locator("tr.listViewEntries")
+        .filter({ hasText: created.name })
+        .first();
+      await expect(row).toBeVisible({ timeout: 20000 });
+      // 「編集」は data-url に遷移先を持つ(ハンドラは行メニュー前提で
+      // dispatchEvent では遷移しないことがあるため、URL を読んで遷移する)。
+      const editUrl = await row
+        .locator('a[name="editlink"]')
+        .first()
+        .getAttribute("data-url");
+      expect(editUrl, "行メニューの編集リンクが遷移先を持つこと").toContain(
+        "view=Edit"
+      );
+      await page.goto(url(editUrl!));
+      await page.waitForLoadState("networkidle");
+      const nameInput = page.locator('input[name="templatename"]');
+      await expect(nameInput).toBeVisible({ timeout: 20000 });
+      await nameInput.fill(renamed);
+      await page.locator("button.saveButton").first().click();
+      await page.waitForLoadState("networkidle");
+
+      // 詳細に変更が反映されていること
+      await page.goto(
+        url(
+          `index.php?module=${module}&view=Detail&record=${created.recordId}&app=TOOLS`
+        )
+      );
+      await page.waitForLoadState("networkidle");
+      await expect(
+        page.locator("td.fieldValue").filter({ hasText: renamed }).first(),
+        "編集した名前が詳細に反映されること"
+      ).toBeVisible({ timeout: 20000 });
+
+      // === 単体削除: 行メニュー「削除」 ===
+      await gotoTemplateList(page, module);
+      const target = page
+        .locator("tr.listViewEntries")
+        .filter({ hasText: renamed })
+        .first();
+      await expect(target).toBeVisible({ timeout: 20000 });
+      const menu = await openRowMenu(page, target);
+      // メニューは開いているが項目自体は可視判定を満たさないため dispatchEvent で叩く。
+      // (メニューが開いていれば data('original-menu') が張られており、
+      //  ハンドラは対象行の record id を正しく解決できる)
+      await menu.locator("a.deleteRecordButton").first().dispatchEvent("click");
+      await confirmYes(page);
+
+      // 削除は Ajax。goto で中断しないよう、まずその場で消えるのを待つ
+      await expect(
+        page.locator("tr.listViewEntries").filter({ hasText: renamed })
+      ).toHaveCount(0, { timeout: 30000 });
+      await gotoTemplateList(page, module);
+      await expect(
+        page.locator("tr.listViewEntries").filter({ hasText: renamed })
+      ).toHaveCount(0, { timeout: 15000 });
+    });
+  }
 });
