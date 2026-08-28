@@ -51,13 +51,18 @@ class Migration20260828021711_AddMissingWebformsFieldTable extends FRMigrationCl
             $this->log("vtiger_webforms_field は既に存在するためスキップしました");
         }
 
-        // vtiger_field が削除されたとき、対応する Webフォーム項目も消す
-        // (dump_firstinstall.sql に含まれるトリガー)。
+        // dump_firstinstall.sql には vtiger_field 削除時に Webフォーム項目を
+        // 掃除するトリガー tr_vtiger_field_delete_webforms_field も含まれるが、
+        // **ここでは作成しない**。
+        // このトリガーがあるとレイアウトエディタからのカスタム項目削除が失敗する
+        // (E2E: tests/5_管理設定/D-02_レイアウト編集「カスタム項目の削除」が
+        //  CI で 3 回連続失敗し、トリガーを外すと green になることを確認した)。
+        // Webフォーム編集画面が開けるようにするという本マイグレーションの目的は
+        // テーブルの存在だけで満たせる。トリガー無しで残るのは
+        // 「削除済み項目を参照する vtiger_webforms_field の行」だけで、
+        // 参照側は array_key_exists($fieldName, $allFields) で弾かれる
+        // (Settings_Webforms_Record_Model::getSelectedFieldsList)。
         $this->db->query("DROP TRIGGER IF EXISTS `tr_vtiger_field_delete_webforms_field`");
-        $this->db->query("CREATE TRIGGER `tr_vtiger_field_delete_webforms_field`
-            AFTER DELETE ON `vtiger_field`
-            FOR EACH ROW
-            DELETE FROM `vtiger_webforms_field` WHERE `fieldname` = OLD.`fieldname`");
-        $this->log("トリガー tr_vtiger_field_delete_webforms_field を作成しました");
+        $this->log("トリガー tr_vtiger_field_delete_webforms_field は作成しません(項目削除を阻害するため)");
     }
 }
