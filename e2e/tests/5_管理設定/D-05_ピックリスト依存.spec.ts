@@ -1,6 +1,7 @@
 import { test, expect } from "../../fixtures/isolated";
 import type { Page } from "@playwright/test";
 import { gotoSettings, saveAndSettle, confirmYes } from "../../utils/settings";
+import { url } from "../../utils/util";
 
 /**
  * D-05 選択肢の連動設定 (モジュール管理 > 選択肢の連動設定)
@@ -27,6 +28,12 @@ import { gotoSettings, saveAndSettle, confirmYes } from "../../utils/settings";
  *   成功後は当該 <tr> を fadeOut().remove() でクライアント側から取り除く(画面遷移なし)。
  *   このため削除確認後は「行が DOM から消える」ことを直接検証し、加えて再読込後の
  *   一覧にも当該行が存在しないことを確認する。
+ *
+ * さらに「連動設定が実際に効くか」を検証する。連動は保存後、レコードの編集画面で
+ * 連動元 select の change をきっかけに連動先 select の option を差し替える実装
+ * (`layouts/v7/modules/Vtiger/resources/Edit.js` の picklistDependency 処理)なので、
+ * 設定画面だけでは動作を担保できない。案件の フェーズ(sales_stage) → タイプ
+ * (opportunity_type) で連動を作り、作成画面で絞り込みが起きることを確認する。
  *
  * 環境メモ: 蓄積された e2e テストデータが混在しうるため、行の特定は
  * 「モジュール表示ラベル + 連動元ラベル + 連動先ラベル」の3点で行い、
@@ -135,5 +142,141 @@ test.describe.serial("管理: 選択肢の連動設定 (PickListDependency)", ()
     await expect(
       row(page, moduleLabel, sourceLabel, targetLabel)
     ).toHaveCount(0);
+  });
+
+  test("連動設定を作ると、レコード作成画面で連動先の選択肢が絞られる", async ({
+    page,
+  }) => {
+    test.setTimeout(180000);
+    page.on("dialog", (d) => d.accept().catch(() => {}));
+
+    // 案件の フェーズ(連動元) → タイプ(連動先)。値が既知で選択肢数が少なく検証しやすい。
+    const SOURCE_MODULE = "Potentials";
+    const SOURCE_FIELD = "sales_stage";
+    const TARGET_FIELD = "opportunity_type";
+    let created = false;
+    let srcLabel = "";
+    let tgtLabel = "";
+    let modLabel = "";
+
+    try {
+      // === 1. 連動設定を追加する ===
+      await gotoSettings(page, listParams);
+      await page.getByText("選択肢の連動設定の追加").first().click();
+
+      const sourceModule = page.locator('select[name="sourceModule"]');
+      const sourceField = page.locator('select[name="sourceField"]');
+      const targetField = page.locator('select[name="targetField"]');
+      await expect(sourceModule).toBeAttached({ timeout: 20000 });
+
+      // モジュールを切り替えると連動元/連動先の選択肢が AJAX で差し替わる
+      await sourceModule.selectOption(SOURCE_MODULE);
+      await expect(
+        sourceField.locator(`option[value="${SOURCE_FIELD}"]`)
+      ).toBeAttached({ timeout: 20000 });
+      await targetField.selectOption(TARGET_FIELD);
+      await sourceField.selectOption(SOURCE_FIELD);
+
+      // 一覧行の特定に使う表示ラベルは、翻訳に依存しないよう option から読み取る
+      srcLabel = (
+        (await sourceField
+          .locator(`option[value="${SOURCE_FIELD}"]`)
+          .textContent()) || ""
+      ).trim();
+      tgtLabel = (
+        (await targetField
+          .locator(`option[value="${TARGET_FIELD}"]`)
+          .textContent()) || ""
+      ).trim();
+      expect(srcLabel.length, "連動元のラベルが取れること").toBeGreaterThan(0);
+      expect(tgtLabel.length, "連動先のラベルが取れること").toBeGreaterThan(0);
+
+      // 連動表が描画される(既定は全セル選択状態)
+      const cells = dependencyGraph(page).locator("td.picklistValueMapping");
+      await expect(cells.first()).toBeVisible({ timeout: 20000 });
+
+      // 連動元の 1 値を対象に、連動先を 1 つだけ残して他を解除する
+      const pickedSource = await cells
+        .first()
+        .getAttribute("data-source-value");
+      expect(pickedSource, "連動元の値が取れること").toBeTruthy();
+      const sameSource = dependencyGraph(page).locator(
+        `td.picklistValueMapping[data-source-value="${pickedSource}"]`
+      );
+      const sameSourceCount = await sameSource.count();
+      expect(
+        sameSourceCount,
+        "連動先の選択肢が 2 つ以上あること(絞り込みを検証するため)"
+      ).toBeGreaterThan(1);
+
+      const keepValue = await sameSource.nth(0).getAttribute("data-target-value");
+      for (let i = 1; i < sameSourceCount; i++) {
+        const cell = sameSource.nth(i);
+        const selected = await cell.evaluate((e) =>
+          e.classList.contains("selectedCell")
+        );
+        if (selected) await cell.click();
+      }
+      // 残した 1 セルは選択状態のままであること
+      await expect(sameSource.nth(0)).toHaveClass(/selectedCell/);
+
+      await saveAndSettle(
+        page,
+        page.locator("#pickListDependencyForm button.saveButton"),
+        { force: true }
+      );
+      created = true;
+
+      // 一覧に出たことを確認し、後始末用のラベルを押さえる
+      await gotoSettings(page, listParams);
+      const createdRow = row(page, srcLabel, tgtLabel).first();
+      await expect(createdRow, "連動設定が一覧に出ること").toBeVisible({
+        timeout: 20000,
+      });
+      modLabel = ((await createdRow.locator("td").nth(1).textContent()) || "").trim();
+
+      // === 2. レコード作成画面で絞り込みが効くこと ===
+      await page.goto(url(`index.php?module=${SOURCE_MODULE}&view=Edit`));
+      await page.waitForLoadState("networkidle");
+      const src = page.locator(`select[name="${SOURCE_FIELD}"]`);
+      const tgt = page.locator(`select[name="${TARGET_FIELD}"]`);
+      await expect(src).toBeAttached({ timeout: 20000 });
+      await expect(tgt).toBeAttached({ timeout: 20000 });
+
+      // 連動前は連動先に複数の選択肢がある
+      const before = await tgt
+        .locator("option")
+        .evaluateAll((els) =>
+          (els as HTMLOptionElement[]).map((o) => o.value).filter((v) => v !== "")
+        );
+      expect(before.length).toBeGreaterThan(1);
+
+      // 連動元を対象値にすると、連動先が残した 1 値だけになる
+      await src.selectOption(pickedSource!);
+      await expect
+        .poll(
+          async () =>
+            await tgt
+              .locator("option")
+              .evaluateAll((els) =>
+                (els as HTMLOptionElement[])
+                  .map((o) => o.value)
+                  .filter((v) => v !== "")
+              ),
+          { timeout: 20000 }
+        )
+        .toEqual([keepValue]);
+    } finally {
+      // === 後始末: 作成した連動設定を削除する ===
+      if (created) {
+        await gotoSettings(page, listParams).catch(() => {});
+        const target = row(page, modLabel, srcLabel, tgtLabel).first();
+        if ((await target.count()) > 0) {
+          await target.locator(".table-actions span.fa-trash-o").click();
+          await confirmYes(page);
+          await expect(target).toHaveCount(0, { timeout: 15000 });
+        }
+      }
+    }
   });
 });

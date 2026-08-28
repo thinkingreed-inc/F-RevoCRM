@@ -157,6 +157,9 @@ CI_SPECS=(
   tests/2_CRUD/2-1_マトリクス.spec.ts
   tests/3_共通機能/3-01_列検索.spec.ts
   tests/3_共通機能/3-04_リスト.spec.ts
+  # インポートは 新規 / ヘッダなし / 重複時の スキップ・上書き・マージ を一通り通す。
+  # 1 ユーザーにつき同時実行できない(ロック)ため spec 内は describe.serial。
+  tests/3_共通機能/3-23_インポート.spec.ts
   tests/3_共通機能/3-25_一括編集.spec.ts
   tests/3_共通機能/3-26_ゴミ箱.spec.ts
   tests/3_共通機能/3-28_権限.spec.ts
@@ -172,23 +175,29 @@ CI_SPECS=(
   # 一括削除 / 保存にモジュール固有実装があり、共通機能側(Accounts 固定)では通らない領域。
   #  4-7  : EmailTemplates / PDFTemplates の MassDelete(独自 getRecordsListFromRequest)
   #  4-11 : PriceBooks の Save(relationOperation で一覧価格を初期化)
-  #  4-12 : Portal の MassDelete(vtiger_portal を直接 DELETE)
+  # (Portal = マイサイト/ブックマークは機能 OFF 予定のため spec ごと廃止した)
   tests/4_モジュール/4-7_テンプレート.spec.ts
   tests/4_モジュール/4-11_価格表.spec.ts
-  tests/4_モジュール/4-12_マイサイト.spec.ts
   tests/5_管理設定/
 )
 
 # 【単独実行が必要な spec】
 #  他 spec と並列に流せない(グローバルな状態を変える)ものをここに置き、workers=1 で回す。
 #
-#  tests/7_モジュール管理 は共有 CRM の vtiger_tab.presence をグローバルに ON/OFF するため
-#  他 spec と並列に流せない。後始末は UI 経由に統一済み
-#  (以前は runner 上で php -r して DB へ直接接続しており、CI では db が名前解決できず
-#   "getaddrinfo for db failed" で失敗していた)。
+#  D-01_モジュール管理 は共有 CRM の vtiger_tab.presence をグローバルに ON/OFF する
+#  (代表モジュール = 顧客企業を一時的に無効化する)ため他 spec と並列に流せない。
+#  1 段目では下記 CI_GREP_INVERT で除外し、この 2 段目で直列実行する。
+#  以前は tests/7_モジュール管理 で 38 モジュールを総当たりしていたが、検証対象は
+#  「トグル → presence 更新 → メニュー再生成」というモジュール非依存の共通経路のため
+#  代表 1 モジュールに集約した(2026-08-28)。
 CI_SERIAL_SPECS=(
-  tests/7_モジュール管理/
+  tests/5_管理設定/D-01_モジュール管理.spec.ts
 )
+
+# 1 段目(並列)から外すテスト。CI_SERIAL_SPECS で直列実行するものを二重に走らせない。
+# (CI_SPECS は tests/5_管理設定/ をディレクトリ指定しているため、
+#  ファイル単位ではなく describe 名で除外する)
+CI_GREP_INVERT='管理: モジュール管理'
 (
   cd e2e
   # lock 固定で入れる(web-components と同じ理由: 実行ごとに解決結果が変わると
@@ -206,7 +215,7 @@ CI_SERIAL_SPECS=(
   E2E_USER_NAME="$E2E_USER_NAME" \
   E2E_USER_PASSWORD="$E2E_USER_PASSWORD" \
   E2E_USER_ACCESSKEY="$E2E_USER_ACCESSKEY" \
-    npx playwright test "${CI_SPECS[@]}" || RC=1
+    npx playwright test "${CI_SPECS[@]}" --grep-invert "$CI_GREP_INVERT" || RC=1
 
   # 2段目: 単独実行が必要な spec。空のときは実行しない
   # (空配列を渡すと絞り込み無し = 全 spec 実行になってしまうため)。

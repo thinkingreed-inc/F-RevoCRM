@@ -152,21 +152,28 @@ test.describe("レポート(Reports)", () => {
     expect(buf.subarray(0, 2).toString("latin1")).toBe("PK");
   });
 
-  test("作成したレポートを一括削除できる", async ({ page }) => {
-    test.setTimeout(180000);
-    const name = `E2Erpt${generateRandomString(6)}`;
-
-    // --- レポートを作成する(Step1: 名前/フォルダ/対象モジュール → Step2 → Step3 で生成) ---
+  /**
+   * レポートを 3 ステップ UI で新規作成し、生成後の record id を返す。
+   *   Step1: レポート名 / 対象モジュール
+   *   Step2: カラムの選択(必須)
+   *   Step3: フィルタ → #generateReport で生成
+   * フッタは Step1/2/3 分が同一 DOM に並ぶので :visible で表示中のものだけを掴む。
+   * また #messageBar(通知バー)と重なることがあるため force クリックする。
+   */
+  async function createReport(
+    page: import("@playwright/test").Page,
+    name: string,
+    primaryModule = "Contacts"
+  ): Promise<string> {
     await page.goto(url("index.php?module=Reports&view=Edit"));
     await page.waitForLoadState("networkidle");
     await page.locator('input[name="reportname"]').fill(name);
-    await page.locator("#primary_module").selectOption("Contacts");
-    // フッタは Step1/2/3 分が同一 DOM に並ぶので :visible で表示中のものだけを掴む。
-    // また #messageBar(通知バー)と重なることがあるため force クリックする。
+    await page.locator("#primary_module").selectOption(primaryModule);
     await page.locator("button.nextStep:visible").first().click({ force: true });
     await page.waitForLoadState("networkidle");
-    // Step2(カラムの選択): #reportsColumnsList は必須(data-rule-required)なので
-    // 先頭のカラムを 1 つ選ぶ。select2 だが native select はそのまま操作できる。
+
+    // Step2: #reportsColumnsList は必須(data-rule-required)なので先頭のカラムを選ぶ。
+    // select2 だが native select はそのまま操作できる。
     const columns = page.locator("#reportsColumnsList");
     await expect(columns).toBeAttached({ timeout: 20000 });
     const firstColumn = await columns
@@ -176,41 +183,86 @@ test.describe("レポート(Reports)", () => {
     await columns.selectOption([firstColumn!]);
     await page.locator("button.nextStep:visible").first().click({ force: true });
     await page.waitForLoadState("networkidle");
-    // Step3(フィルタ)で生成 → 実行結果画面へ(#generateReport が保存ボタン)
+
+    // Step3: 生成 → 実行結果画面へ
     await page.locator("#generateReport").click({ force: true });
     await page.waitForURL(/module=Reports.*record=\d+/, { timeout: 60000 });
     await page.waitForLoadState("networkidle");
+    return page.url().match(/record=(\d+)/)?.[1] ?? "";
+  }
 
-    // --- 一覧で対象を選択して一括削除 ---
-    // dump に 24 件の既存レポートがあり 1 ページに収まらないので列検索で絞る
-    await gotoReportList(page);
-    await listSearch(page, "reportname", name);
-    const row = page
-      .locator("tr.listViewEntries")
-      .filter({ hasText: name })
-      .first();
-    await expect(row, "作成したレポートが一覧に出ること").toBeVisible({
-      timeout: 20000,
+  test("レポートを新規作成して実行結果を確認し、削除できる", async ({ page }) => {
+    test.setTimeout(180000);
+    const token = generateRandomString(6);
+    const name = `E2Erpt${token}`;
+
+    // 作成したレポート(Contacts 対象)の結果に現れる実データを用意する
+    const contact = await createRecordViaApi("Contacts", {
+      lastname: `RPTNEW${token}`,
     });
-    await row.locator("input.listViewEntriesCheckBox").check();
 
-    const del = page.locator("#Reports_listView_massAction_LBL_DELETE");
-    await expect(del).toBeEnabled();
-    await del.click();
-    await confirmYes(page);
+    try {
+      // === 新規作成 ===
+      const reportId = await createReport(page, name);
+      expect(reportId, "生成後に record id が取れること").not.toBe("");
 
-    // 削除は Ajax。goto で POST を中断しないよう、まずその場で消えるのを待つ
-    await expect(
-      page.locator("tr.listViewEntries").filter({ hasText: name })
-    ).toHaveCount(0, { timeout: 30000 });
+      // === 確認: 生成直後の画面が作成したレポートの実行結果になっている ===
+      await expect(
+        page.getByText(name).first(),
+        "作成したレポート名が表示されること"
+      ).toBeVisible({ timeout: 20000 });
+      const count = page.locator("#countValue");
+      await expect(count).toBeVisible({ timeout: 20000 });
+      await expect
+        .poll(async () => Number((await count.textContent())?.trim() || "0"), {
+          timeout: 20000,
+        })
+        .toBeGreaterThan(0);
+      // 明細に用意した顧客担当者が現れる(集計が実データを拾っている)
+      await expect(
+        page.locator("#reportDetails"),
+        "明細に対象モジュールのデータが出ること"
+      ).toContainText(`RPTNEW${token}`, { timeout: 20000 });
 
-    // --- 一覧を開き直しても消えている(固有実装の削除許可ルートを通った) ---
-    await gotoReportList(page);
-    await listSearch(page, "reportname", name);
-    await expect(
-      page.locator("tr.listViewEntries").filter({ hasText: name })
-    ).toHaveCount(0);
-    // 検索条件はセッションに残るため解除しておく
-    await clearListSearch(page);
+      // 開き直しても同じレポートが実行できる
+      await gotoReportDetail(page, reportId);
+      await expect(page.getByText(name).first()).toBeVisible({
+        timeout: 20000,
+      });
+
+      // === 削除(一括削除。Reports 固有の MassDelete 実装を通る) ===
+      // dump に 24 件の既存レポートがあり 1 ページに収まらないので列検索で絞る
+      await gotoReportList(page);
+      await listSearch(page, "reportname", name);
+      const row = page
+        .locator("tr.listViewEntries")
+        .filter({ hasText: name })
+        .first();
+      await expect(row, "作成したレポートが一覧に出ること").toBeVisible({
+        timeout: 20000,
+      });
+      await row.locator("input.listViewEntriesCheckBox").check();
+
+      const del = page.locator("#Reports_listView_massAction_LBL_DELETE");
+      await expect(del).toBeEnabled();
+      await del.click();
+      await confirmYes(page);
+
+      // 削除は Ajax。goto で POST を中断しないよう、まずその場で消えるのを待つ
+      await expect(
+        page.locator("tr.listViewEntries").filter({ hasText: name })
+      ).toHaveCount(0, { timeout: 30000 });
+
+      // 一覧を開き直しても消えている
+      await gotoReportList(page);
+      await listSearch(page, "reportname", name);
+      await expect(
+        page.locator("tr.listViewEntries").filter({ hasText: name })
+      ).toHaveCount(0);
+      // 検索条件はセッションに残るため解除しておく
+      await clearListSearch(page);
+    } finally {
+      await deleteRecordViaApi(contact.session, contact.wsId);
+    }
   });
 });

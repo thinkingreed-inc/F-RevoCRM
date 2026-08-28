@@ -2,6 +2,7 @@ import { test, expect } from "../../fixtures/isolated";
 import type { Page, Locator } from "@playwright/test";
 import { generateRandomString } from "../../utils/util";
 import { gotoSettings, saveAndSettle, confirmYes } from "../../utils/settings";
+import { url } from "../../utils/util";
 
 /**
  * D-07 文言変更 (モジュール管理 > 文言変更 / LanguageConverter)
@@ -25,6 +26,13 @@ import { gotoSettings, saveAndSettle, confirmYes } from "../../utils/settings";
  *   - 行の特定・存在確認は after_string の文言だけで行う(before は表示されない)。
  *   - 「同じ行に before も表示される」ことは原理上あり得ないので確認しない。
  *   - 削除対象の特定も、その時点で有効な after_string(追加後は afterAdd、編集後は afterEdit)で行う。
+ *
+ * 【実画面での変換確認】
+ * 上記のとおり一覧の表示自体も変換されるが、それだけでは「業務画面の文言が変わるか」を
+ * 担保できないため、実在ラベルを対象にしたルールを作って実画面で確認するテストも持つ。
+ * 対象は **キャンペーン(Campaigns)** に限定する(対象モジュールを common にすると
+ * 全画面に影響し、並列実行中の他 spec を巻き込むため)。「キャンペーン」は
+ * 他の spec がセレクタに使っていない文言なので副作用が小さい。
  *
  * さらにフォーム入力後は toHaveValue で値の定着を確認してから保存する
  * (モーダル描画直後の select2 初期化・再レンダリングで入力が失われる事象を早期に検出するため)。
@@ -129,5 +137,85 @@ test.describe.serial("管理: 文言変更 (LanguageConverter)", () => {
       await gotoSettings(page, params);
       await expect(rowByAfter(page, afterEdit)).toHaveCount(0, { timeout: 3000 });
     }).toPass({ timeout: 30000 });
+  });
+
+  test("文言変更ルールを作ると実画面の文言が変わり、削除すると元に戻る", async ({
+    page,
+  }) => {
+    test.setTimeout(180000);
+    const suffix = generateRandomString(8);
+    const beforeText = "キャンペーン";
+    const afterText = `E2Eキャンペーン${suffix}`;
+    let ruleAdded = false;
+
+    /** キャンペーン一覧を開き、パンくず/見出しに使われる文言を取得する。 */
+    const openCampaignList = async () => {
+      await page.goto(url("index.php?module=Campaigns&view=List&app=MARKETING"));
+      await page.waitForLoadState("networkidle");
+    };
+
+    try {
+      // === 事前確認: 変換前の文言が画面に出ている ===
+      await openCampaignList();
+      await expect(
+        page.locator("body"),
+        "変換前はもとの文言が表示されること"
+      ).toContainText(beforeText, { timeout: 20000 });
+
+      // === 1. 対象モジュールを Campaigns に限定してルールを追加する ===
+      await gotoSettings(page, params);
+      await page.locator("button.addButton").first().click();
+      await expect(form(page)).toBeVisible({ timeout: 20000 });
+
+      // 対象モジュール(select2 だが native select はそのまま操作できる)
+      await form(page).locator('select[name="modulename"]').selectOption("Campaigns");
+      await fillAndConfirm(page, "before_string", beforeText);
+      await fillAndConfirm(page, "after_string", afterText);
+      await saveAndSettle(page, form(page).locator('button[name="saveButton"]'));
+      ruleAdded = true;
+
+      // 一覧にルールが載ったこと(表示は after 側になる)
+      await gotoSettings(page, params);
+      await expect(rowByAfter(page, afterText)).toHaveCount(1, {
+        timeout: 20000,
+      });
+
+      // === 2. 実画面の文言が変換されていること ===
+      await openCampaignList();
+      await expect(
+        page.locator("body"),
+        "ルール適用後は変換後の文言が表示されること"
+      ).toContainText(afterText, { timeout: 20000 });
+
+      // === 3. ルールを削除すると元の文言に戻ること ===
+      await gotoSettings(page, params);
+      const target = rowByAfter(page, afterText).first();
+      // 削除リンクは <a title="削除">(ListViewRecordActions.tpl)
+      await target.locator('a[title="削除"]').click();
+      await confirmYes(page);
+      await expect(target).toHaveCount(0, { timeout: 20000 });
+      ruleAdded = false;
+
+      await openCampaignList();
+      await expect(
+        page.locator("body"),
+        "削除後は変換後の文言が残っていないこと"
+      ).not.toContainText(afterText, { timeout: 20000 });
+      await expect(
+        page.locator("body"),
+        "削除後はもとの文言に戻ること"
+      ).toContainText(beforeText, { timeout: 20000 });
+    } finally {
+      // 失敗時もルールを残さない(全画面の翻訳に影響するため)
+      if (ruleAdded) {
+        await gotoSettings(page, params).catch(() => {});
+        const left = rowByAfter(page, afterText).first();
+        if ((await left.count()) > 0) {
+          await left.locator('a[title="削除"]').click();
+          await confirmYes(page);
+          await expect(left).toHaveCount(0, { timeout: 20000 });
+        }
+      }
+    }
   });
 });
