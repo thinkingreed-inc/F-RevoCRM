@@ -105,52 +105,36 @@ test.describe("テンプレート系モジュール", () => {
     page,
   }) => {
     test.setTimeout(120000);
-    // dump には systemtemplate=1 のテンプレートが焼き込まれている。
-    // 一覧では判別できないので、行の record id から Edit 画面を開き
-    // hidden input(.isSystemTemplate)で判定してテンプレート名を得る。
-    // (件数の増減で判定すると、並列実行中の他テストがテンプレートを作成/削除して
-    //  件数を動かすため flaky になる。名前で判定する。)
-    await gotoTemplateList(page, "EmailTemplates");
-    const rows = page.locator("tr.listViewEntries");
-    const total = await rows.count();
-    expect(total, "テンプレートが 1 件以上あること").toBeGreaterThan(0);
+    // dump に焼き込まれたシステムテンプレート(systemtemplate=1)を対象にする。
+    // 一覧では systemtemplate を判別できないため固定レコードを使い、
+    // dump が差し替わった場合に気付けるよう名前とフラグの両方を assert する
+    // (一覧の全行の Edit 画面を順に開いて探す実装は CI で 120 秒を超えたためやめた)。
+    const target = { id: "16", name: "Invite Users" };
 
-    const recordIds: string[] = [];
-    for (let i = 0; i < total; i++) {
-      const rec = await rows
-        .nth(i)
-        .getAttribute("data-recordurl")
-        .then((u) => u?.match(/record=(\d+)/)?.[1]);
-      if (rec) recordIds.push(rec);
-    }
-
-    let systemName = "";
-    for (const rec of recordIds) {
-      await page.goto(
-        url(
-          `index.php?module=EmailTemplates&view=Edit&record=${rec}&app=TOOLS`
-        )
-      );
-      const flag = await page
+    await page.goto(
+      url(
+        `index.php?module=EmailTemplates&view=Edit&record=${target.id}&app=TOOLS`
+      )
+    );
+    await page.waitForLoadState("networkidle");
+    expect(
+      await page.locator('input[name="templatename"]').inputValue(),
+      "対象がシステムテンプレートであること(dump 差し替え検知)"
+    ).toBe(target.name);
+    expect(
+      await page
         .locator("input.isSystemTemplate")
         .first()
-        .getAttribute("value");
-      if (flag === "1" || flag === "true") {
-        systemName =
-          (await page.locator('input[name="templatename"]').inputValue()) ?? "";
-        break;
-      }
-    }
-    expect(
-      systemName,
-      "dump にシステムテンプレートが含まれること"
-    ).not.toBe("");
+        .getAttribute("value"),
+      "systemtemplate=1 のテンプレートであること"
+    ).toBe("1");
 
     // 一覧でそのシステムテンプレートを選んで一括削除を試みる
     await gotoTemplateList(page, "EmailTemplates");
-    const target = rows.filter({ hasText: systemName }).first();
-    await expect(target).toBeVisible({ timeout: 20000 });
-    await target.locator("input.listViewEntriesCheckBox").check();
+    const rows = page.locator("tr.listViewEntries");
+    const row = rows.filter({ hasText: target.name }).first();
+    await expect(row).toBeVisible({ timeout: 20000 });
+    await row.locator("input.listViewEntriesCheckBox").check();
     const del = page.locator("#EmailTemplates_listView_massAction_LBL_DELETE");
     await expect(del).toBeEnabled();
     await del.click();
@@ -160,7 +144,7 @@ test.describe("テンプレート系モジュール", () => {
     // 削除されていない(システムテンプレートは保護される)
     await gotoTemplateList(page, "EmailTemplates");
     await expect(
-      rows.filter({ hasText: systemName }),
+      rows.filter({ hasText: target.name }),
       "システムテンプレートは削除されず一覧に残ること"
     ).toHaveCount(1, { timeout: 15000 });
   });

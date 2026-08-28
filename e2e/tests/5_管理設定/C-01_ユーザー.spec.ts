@@ -15,6 +15,10 @@ import { frQuery } from "../../model/fetcher";
  * このテストで作成したユーザーに対して行う。
  */
 test.describe.serial("管理: ユーザー (Users)", () => {
+  // 一覧の列検索 → 行のメニュー → モーダル保存と手数が多く、CI 負荷時に
+  // Playwright 既定の 30 秒では足りない(「パスワードの変更」が flaky になった)。
+  test.describe.configure({ timeout: 90000 });
+
   const listParams = { module: "Users", view: "List" };
   const token = generateRandomString(6).toLowerCase();
   const userName = `e2e${token}`;
