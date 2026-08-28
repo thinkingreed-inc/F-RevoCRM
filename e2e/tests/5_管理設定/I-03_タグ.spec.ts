@@ -10,7 +10,8 @@ import { gotoSettings, saveAndSettle, confirmYes } from "../../utils/settings";
  * 一覧の各行は tr.listViewEntries で、タグ名は td.listViewEntryValue に表示される。
  * 行アクションは編集(triggerEdit / fa-pencil)と削除(triggerDelete / fa-trash)。
  *
- * 追加/編集はいずれも AJAX 保存(画面遷移しない)ため saveAndSettle で完了を待つ。
+ * 追加/編集はいずれも AJAX 保存(画面遷移しない)ため saveAndSettle + モーダルが閉じるまで
+ * 待って完了を判定する(saveAndSettle だけでは CI 負荷時に反映前の一覧を見て flaky になった)。
  * モーダルは追加(#addTagSettings 内)と編集(#editTagContainer)で別物なので、
  * それぞれ表示中(.modal-content:visible)へスコープして操作する。
  * 作成したタグはテスト末尾で削除して後始末する。
@@ -43,10 +44,14 @@ test.describe.serial("管理: 個人タグ (Tags)", () => {
       page,
       modal(page).locator('button[name="saveButton"]')
     );
+    // AJAX 保存の完了はモーダルが閉じたことで判定する
+    await expect(page.locator(".modal-content:visible")).toHaveCount(0, {
+      timeout: 20000,
+    });
 
     // 再読込して一覧に追加したタグが現れること
     await gotoSettings(page, params);
-    await expect(row(page, nameAdd)).toHaveCount(1);
+    await expect(row(page, nameAdd)).toHaveCount(1, { timeout: 20000 });
   });
 
   test("個人タグの編集", async ({ page }) => {
@@ -63,10 +68,13 @@ test.describe.serial("管理: 個人タグ (Tags)", () => {
       page,
       modal(page).locator('button.saveTag[name="saveButton"]')
     );
+    await expect(page.locator(".modal-content:visible")).toHaveCount(0, {
+      timeout: 20000,
+    });
 
     // 再読込して 新しい名前が現れ、元の名前は消えていること
     await gotoSettings(page, params);
-    await expect(row(page, nameEdit)).toHaveCount(1);
+    await expect(row(page, nameEdit)).toHaveCount(1, { timeout: 20000 });
     await expect(row(page, nameAdd)).toHaveCount(0);
   });
 
@@ -76,10 +84,11 @@ test.describe.serial("管理: 個人タグ (Tags)", () => {
     // 編集後のタグ行の削除アイコン → 確認ダイアログで「はい」
     await row(page, nameEdit).locator('a[onclick*="triggerDelete"]').click();
     await confirmYes(page);
-    await page.waitForLoadState("networkidle").catch(() => {});
+    // 削除も AJAX。goto で中断しないよう、まずその場で行が消えるのを待つ
+    await expect(row(page, nameEdit)).toHaveCount(0, { timeout: 20000 });
 
     // 再読込して一覧から削除したタグが消えていること
     await gotoSettings(page, params);
-    await expect(row(page, nameEdit)).toHaveCount(0);
+    await expect(row(page, nameEdit)).toHaveCount(0, { timeout: 20000 });
   });
 });

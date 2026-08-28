@@ -38,6 +38,9 @@ export async function gotoSettings(
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       await page.goto(target);
+      // 設定画面は一覧や select2 を JS で描画するものがあり、goto 既定の "load" だけでは
+      // 要素が揃っていないことがある(CI 負荷時に「5 秒待っても見つからない」で flaky)。
+      await page.waitForLoadState("networkidle").catch(() => {});
       return;
     } catch (e) {
       if (attempt === 2) throw e;

@@ -36,7 +36,8 @@ test.describe("管理: カレンダー設定 (CalendarSettings)", () => {
   async function changeSharedType(page: Page, value: string): Promise<void> {
     await gotoSettings(page, { ...detailParams, mode: "Edit" });
     const select = page.locator("#sharedType");
-    await expect(select).toBeAttached();
+    // select2 の初期化を挟むため既定 5 秒では CI 負荷時に間に合わないことがある
+    await expect(select).toBeAttached({ timeout: 20000 });
     await select.selectOption(value);
     await saveAndSettle(page, page.locator("button.saveButton"));
   }
@@ -61,7 +62,8 @@ test.describe("管理: カレンダー設定 (CalendarSettings)", () => {
     // リロード後、詳細に変更後のラベルが反映されていること
     await gotoSettings(page, detailParams);
     await expect(page.locator(detailCell).first()).toHaveText(
-      typeLabel[targetValue]
+      typeLabel[targetValue],
+      { timeout: 20000 }
     );
 
     // 原状復帰: 元の共有タイプ(private/public)に戻す
@@ -73,7 +75,8 @@ test.describe("管理: カレンダー設定 (CalendarSettings)", () => {
     // リロード後、共有タイプが復帰していること
     await gotoSettings(page, detailParams);
     await expect(page.locator(detailCell).first()).toHaveText(
-      typeLabel[restoreValue]
+      typeLabel[restoreValue],
+      { timeout: 20000 }
     );
   });
 });
