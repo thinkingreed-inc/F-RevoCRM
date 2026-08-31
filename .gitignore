@@ -60,3 +60,7 @@ compose.override.yaml
 # playwright (E2E) 成果物（web-components）
 /assets/react-web-components/playwright-report
 /assets/react-web-components/test-results
+
+# for PHPUnit — 一式は tests/ 配下
+/tests/.phpunit.cache/
+.phpunit.result.cache
