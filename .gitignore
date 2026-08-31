@@ -64,3 +64,6 @@ compose.override.yaml
 # for PHPUnit — 一式は tests/ 配下
 /tests/.phpunit.cache/
 .phpunit.result.cache
+
+# for php-cs-fixer / phpstan
+.php-cs-fixer.cache

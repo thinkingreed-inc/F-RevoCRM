@@ -58,6 +58,13 @@ F-RevoCRM は vtiger ベースの PHP 製 CRM。`modules/` 配下に機能モジ
 - 共通スタブ・ヘルパは `tests/Support/` に置く。書き方の詳細は `tests/README.md`。
 - 実行は `composer test`（`vendor/bin/phpunit` のエイリアス）でもよい。
 
+### 静的解析・整形（php-cs-fixer / phpstan）
+
+- **対象は新規・変更したファイルだけ**。既存コードは vtiger 由来で PSR-12 差分と型指摘が大量に出るため、一括適用しない（baseline も持たない）。
+- 整形: `composer cs-check -- <path>` で差分確認 → `composer cs-fix -- <path>` で適用。設定は `.php-cs-fixer.dist.php`（`@PSR12` ベース）。
+- 静的解析: `composer phpstan -- <path>`（level 9）。`phpstan-shim.php` を `auto_prepend_file` で読ませないと `Vtiger_Loader` が `php7_count()` 未定義で落ちるため、素の `vendor/bin/phpstan` ではなく composer script 経由で実行する。
+- `strict_param` は**有効化しない**。`in_array` の第 3 引数が強制 true 化され、`Vtiger_Module_Model::isActive()` が常に false を返す事故があった（`.php-cs-fixer.dist.php` のコメント参照）。
+
 ### マイグレーション（DB 変更）
 
 - DB のスキーマ・データ変更は手動 SQL でなく `setup/migration/` のコマンドで行う。詳細は `setup/migration/README.md`。
