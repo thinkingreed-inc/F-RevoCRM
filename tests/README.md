@@ -24,6 +24,11 @@ composer test                                          # 全件（./vendor/bin/p
 
 設定は `phpunit.xml`（bootstrap / testsuite / カバレッジ対象）。
 
+main 向けの Pull Request では GitHub Actions（`.github/workflows/phpunit.yml`）が同じテストを実行する。
+`tests/Unit` は DB を使わないため、CI では DB を立てずに `config.template.php` から生成した
+`config.inc.php`（接続情報はダミー）で実行している。DB を使う `tests/Integration` を追加する場合は、
+CI 側にも DB を用意するステップが必要になる。
+
 ## ディレクトリ構成
 
 | パス | 役割 |
