@@ -17,6 +17,10 @@ jobs:
   phpunit:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # テストを回すだけなので読み取りのみ。既定の権限に依らず最小権限を明示する
+    # (E2E: .github/workflows/e2e.yml と同じ方針)
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
