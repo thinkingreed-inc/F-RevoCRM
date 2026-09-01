@@ -140,3 +140,35 @@ export const frRetrieve = async (sessionName: string, id: string) => {
   }
   return response.data.result;
 };
+
+/**
+ * 任意の query を実行して行配列を返す(検証用)。
+ * 例: SELECT accountname,phone FROM Accounts WHERE accountname='x';
+ */
+export const frQuery = async (
+  sessionName: string,
+  query: string
+): Promise<Record<string, string>[]> => {
+  const response = await client.get<FRResponse<Record<string, string>[]>>(
+    `?operation=query&query=${encodeURIComponent(query)}&sessionName=${sessionName}`
+  );
+  if (response.data.success === false) {
+    return [];
+  }
+  return response.data.result || [];
+};
+
+/**
+ * Webservice ID(`<prefix>x<id>`)でレコードを削除する(後始末用)。
+ */
+export const frDelete = async (
+  sessionName: string,
+  id: string
+): Promise<boolean> => {
+  const formData = new FormData();
+  formData.append("operation", "delete");
+  formData.append("sessionName", sessionName);
+  formData.append("id", id);
+  const response = await client.post<FRResponse<unknown>>("", formData);
+  return response.data.success !== false;
+};

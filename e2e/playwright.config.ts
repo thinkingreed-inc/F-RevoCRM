@@ -18,8 +18,15 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* CI の並列度 = 4(実行時間を最優先)。per-worker セッション分離(fixtures/isolated.ts)+
+   * 高並列で顕在化する待ち条件の根治を積み上げている:
+   *  - 列検索の CustomView 汚染 → 一覧を All CV に固定(utils/listview.ts)
+   *  - 保存ボタンのモーダル横取り → 保存前に #popupModal の閉じ切りを保証(model/FrTest.ts)
+   *  - 条件追加ボタンの空振り → 行が出るまで再試行(common.customview-condition)
+   *  - サイドバー CV が 10 件超で隠れる → 「もっと」トグルを展開してから探す(common.customview)
+   * 残る単一コンテナ由来の稀なタイムアウトは retries=2 で吸収する(flaky 許容の運用方針)。
+   * 新たな flaky が出たら「固定待ち/networkidle → 条件ベース待ち」へ都度根治していく。 */
+  workers: process.env.CI ? 4 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   // CI では GitHub 注釈(失敗をrun/PRにインライン表示) + HTMLレポート(artifact) +
   // JSON(ジョブサマリ生成用) を出す。ローカルは従来どおり HTML のみ。
@@ -45,7 +52,15 @@ export default defineConfig({
 
   /* Configure projects for major browsers */
   projects: [
-    { name: 'setup', testMatch: /.*\.setup\.ts/ },
+    // 起点: ブラウザ認証 + API セッション(sessionName/userId)を「一度だけ」取得。
+    { name: 'setup', testMatch: /auth\.setup\.ts/ },
+    // シード: setup 完了後に実行し、保存済みセッションを使い回す(再 login しない)。
+    // これにより getchallenge の競合が起きず、workers=1 に頼らなくてよい。
+    {
+      name: 'seed',
+      testMatch: /seed\.setup\.ts/,
+      dependencies: ['setup'],
+    },
     {
       name: 'chrome',
       use: {
@@ -56,7 +71,7 @@ export default defineConfig({
         },
         storageState: '.auth/user.json',
       },
-      dependencies: ['setup'],
+      dependencies: ['setup', 'seed'],
     },
   
     // {

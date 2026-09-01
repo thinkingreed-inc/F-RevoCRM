@@ -8,7 +8,9 @@
   "scripts": {
     "test:e2e": "dotenv -e ../.env -- playwright test",
     "test:e2e:ui": "dotenv -e ../.env -- playwright test --ui",
-    "e2e:reset": "bash scripts/reset-local-db.sh"
+    "e2e:reset": "bash scripts/reset-local-db.sh",
+    "e2e:catalog": "node scripts/gen-test-catalog.mjs",
+    "test:e2e:selected": "node scripts/run-selected.mjs"
   },
   "keywords": [],
   "author": "",

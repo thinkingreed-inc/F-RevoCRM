@@ -42,6 +42,14 @@ export class FrTest extends FrBaseModule {
     return filled;
   }
 
+  /** MatrixTest から編集画面の全項目入力を再利用するための公開ラッパ。 */
+  async fillAllFieldsPublic(
+    page: Page,
+    hash: string
+  ): Promise<FRDescribeFieldsTypeWithModuleName[]> {
+    return this.fillAllFields(page, hash);
+  }
+
   /**
    * 編集できる入力UIを持たない項目かどうか。
    * describe上はeditableでも、フォームでは type="hidden" や readonly のinputしか
@@ -84,6 +92,20 @@ export class FrTest extends FrBaseModule {
     hash: string,
     filledFields: FRDescribeFieldsTypeWithModuleName[]
   ) {
+    // 参照選択ポップアップ(#popupModal)が閉じ切る前に保存を押すと、モーダルが
+    // クリックを横取りして 30s タイムアウトする(高並列で閉じ AJAX/アニメーションが
+    // 遅延すると field.ts 側の 10s 待ちを取りこぼすことがある)。保存前に閉じ切りを
+    // 保証し、それでも残る場合は Escape で閉じてから押す。
+    const popupModal = page.locator("#popupModal");
+    await popupModal
+      .waitFor({ state: "hidden", timeout: 8000 })
+      .catch(async () => {
+        await page.keyboard.press("Escape").catch(() => {});
+        await popupModal
+          .waitFor({ state: "hidden", timeout: 5000 })
+          .catch(() => {});
+      });
+
     // メインの保存ボタン(EditView.tplの btn-success saveButton)。
     // インベントリ系は割引ポップアップ等にも "保存" があり text=保存 では
     // 複数マッチするため、クラスで一意に指定する。
