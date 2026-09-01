@@ -95,6 +95,32 @@ require_once $projectRoot . '/includes/runtime/Globals.php';
 require_once $projectRoot . '/include/utils/utils.php';
 require_once $projectRoot . '/include/database/PearDatabase.php';
 
+// 上の require で include/logging.php が config.php を読み、config.php は
+// config.inc.php を include_once ではなく include で読み直す。この bootstrap が
+// ファイルスコープで読み込まれた場合（PHPUnit のプロセス分離で作られる子プロセスなど）は
+// その再読み込みがグローバルの $dbconfig へ届き、接続先が開発用DBへ戻ってしまう。
+// テスト用DBの指定を読み直しの後にもう一度あてて、接続をやり直す。
+$GLOBALS['dbconfig']['db_name'] = $testDbName;
+if ($envDbHost !== false && $envDbHost !== '') {
+    $GLOBALS['dbconfig']['db_server'] = $envDbHost;
+}
+if ($envDbUsername !== false && $envDbUsername !== '') {
+    $GLOBALS['dbconfig']['db_username'] = $envDbUsername;
+}
+if ($envDbPassword !== false) {
+    $GLOBALS['dbconfig']['db_password'] = $envDbPassword;
+}
+$GLOBALS['dbconfig']['db_hostname'] = $dbConfigString($GLOBALS['dbconfig'], 'db_server')
+    . $dbConfigString($GLOBALS['dbconfig'], 'db_port');
+try {
+    $bootstrapReconnect = PearDatabase::getInstance();
+    $bootstrapReconnect->resetSettings('', '', '', '', '');
+    $bootstrapReconnect->connect();
+} catch (\Throwable $bootstrapReconnectEx) {
+    // DB未接続環境はテスト個別で扱う。bootstrap では強制終了しない。
+}
+unset($bootstrapReconnect, $bootstrapReconnectEx);
+
 // 安全装置: 上記の $dbconfig 上書きは PearDatabase 内部の config.inc.php 直読みで
 // 効かない場合があり、開発用DBに接続して TRUNCATE が走る危険がある。
 // PearDatabase 初期化後に SELECT DATABASE() で実接続先を取得し _test suffix を強制する。
