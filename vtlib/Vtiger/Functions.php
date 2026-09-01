@@ -799,7 +799,7 @@ class Vtiger_Functions {
             }
         }
 
-        if ($saveimage && in_array($filetype, ['svg+xml', $mimeSubtype])) {
+        if ($saveimage && ($filetype === 'svg' || $mimeSubtype === 'svg+xml' || $file_details['type'] === 'image/svg+xml')) {
             // Remove malicious HTML attributes with values from the contents.
             $imageContents = purifyHtmlEventAttributes($imageContents, true);
             file_put_contents($tmpFileName, $imageContents);
