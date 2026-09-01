@@ -1,0 +1,124 @@
+name: PHPUnit
+
+# PR 時と手動実行で、PHP 側のテスト (tests/) を回す。
+# tests/Unit は DB を使わないため compose は立てず、runner 上で直接実行する。
+# (DB を使う tests/Integration を追加する際は、DB を用意するステップが別途必要)
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# 同一 PR で新しい push があったら古い実行はキャンセルする
+concurrency:
+  group: phpunit-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # テストを回すだけなので読み取りのみ。既定の権限に依らず最小権限を明示する
+    # (E2E: .github/workflows/e2e.yml と同じ方針)
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # composer.json の config.platform.php (8.3.0) に合わせる。
+      # 対応 PHP は 8.3〜8.5 だが、依存解決の基準である 8.3 でテストする。
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mysqli, imap, mbstring, intl, zip, gd
+          coverage: none
+
+      # キャッシュするのは composer のダウンロード済みパッケージ (zip) であって vendor/ ではない。
+      # vendor/ をキャッシュすると、ヒット時に composer install が実質何もせず終わるため、
+      # キャッシュに入っていた内容が composer.lock と一致するか検証されないまま実行コードになる。
+      # ダウンロードキャッシュなら composer install が毎回走り、lock の dist ハッシュで検証される。
+      - name: composer のキャッシュディレクトリを取得
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache composer downloads
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-php83-${{ hashFiles('composer.lock') }}
+          # lock が変わってもダウンロード済みパッケージは再利用できる (差分だけ取りに行く)
+          restore-keys: composer-php83-
+
+      - name: composer install
+        run: composer install --no-interaction --no-progress --optimize-autoloader
+
+      # tests/bootstrap.php は config.inc.php を必須とするため、テンプレートから生成する。
+      # tests/Unit は DB に触らず、bootstrap は DB 接続に失敗しても続行するため接続情報はダミーで良い。
+      # (bootstrap は db_name に '_test' を付けた名前へ接続し、_test で終わらない DB を指した場合は中止する)
+      - name: config.inc.php を生成
+        run: |
+          sed -e "s#_DBC_SERVER_#127.0.0.1#g" \
+              -e "s#_DBC_PORT_#3306#g" \
+              -e "s#_DBC_USER_#ci#g" \
+              -e "s#_DBC_PASS_#ci#g" \
+              -e "s#_DBC_NAME_#frevocrm#g" \
+              -e "s#_DBC_TYPE_#mysqli#g" \
+              -e "s#_DB_STAT_#true#g" \
+              -e "s#_SITE_URL_#http://localhost#g" \
+              -e "s#_VT_ROOTDIR_#${GITHUB_WORKSPACE}/#g" \
+              -e "s#_VT_CACHEDIR_#cache/#g" \
+              -e "s#_VT_TMPDIR_#cache/images/#g" \
+              -e "s#_VT_UPLOADDIR_#storage/#g" \
+              -e "s#_MASTER_CURRENCY_#Japan, Yen#g" \
+              -e "s#_VT_CHARSET_#UTF-8#g" \
+              -e "s#_VT_DEFAULT_LANGUAGE_#ja_jp#g" \
+              -e "s#_VT_APP_UNIQKEY_#0123456789abcdef0123456789abcdef#g" \
+              -e "s#_USER_SUPPORT_EMAIL_#support@example.com#g" \
+              config.template.php > config.inc.php
+
+      - name: PHPUnit 実行
+        run: composer test -- --log-junit tests/.phpunit.cache/junit.xml
+
+      - name: PHPUnit 結果をジョブサマリに出力
+        if: ${{ !cancelled() }}
+        run: |
+          php -r '
+            $path = "tests/.phpunit.cache/junit.xml";
+            $summary = getenv("GITHUB_STEP_SUMMARY");
+            if (!is_file($path)) {
+                file_put_contents($summary, "⚠️ junit.xml が見つかりませんでした（テスト実行前に失敗した可能性）\n", FILE_APPEND);
+                exit(0);
+            }
+            $xml = simplexml_load_file($path);
+            $root = $xml->testsuite[0] ?? null;
+            if ($root === null) {
+                file_put_contents($summary, "⚠️ junit.xml を解析できませんでした\n", FILE_APPEND);
+                exit(0);
+            }
+            $tests      = (int)$root["tests"];
+            $assertions = (int)$root["assertions"];
+            $failures   = (int)$root["failures"];
+            $errors     = (int)$root["errors"];
+            $skipped    = (int)$root["skipped"];
+            $sec        = round((float)$root["time"], 2);
+            $passed     = $tests - $failures - $errors - $skipped;
+            $icon       = ($failures + $errors) > 0 ? "❌" : "✅";
+            $md = implode("\n", [
+                "## {$icon} PHPUnit",
+                "",
+                "| ✅ passed | ❌ failed | 💥 errors | ⏭️ skipped | 🔍 assertions | ⏱️ duration |",
+                "|---:|---:|---:|---:|---:|---:|",
+                "| {$passed} | {$failures} | {$errors} | {$skipped} | {$assertions} | {$sec}s |",
+                "",
+            ]);
+            file_put_contents($summary, $md . "\n", FILE_APPEND);
+          '
+
+      - name: Upload JUnit XML
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpunit-junit
+          path: tests/.phpunit.cache/junit.xml
+          retention-days: 7
