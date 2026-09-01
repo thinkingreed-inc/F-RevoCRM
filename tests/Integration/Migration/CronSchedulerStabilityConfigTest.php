@@ -10,9 +10,10 @@ declare(strict_types=1);
  * All Rights Reserved.
  ************************************************************************************/
 
-namespace Tests\Unit\Migration;
+namespace Tests\Integration\Migration;
 
 use Migration20260825112920_SetupCronSchedulerStability as CronMigration;
+use PearDatabase;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use PHPUnit\Framework\TestCase;
@@ -23,6 +24,9 @@ use PHPUnit\Framework\TestCase;
  * 対象: setup/migration/scripts/20260825112920_setup_cron_scheduler_stability.php の applyTo()
  *
  * 実際の config.inc.php は触らず、一時ディレクトリへ作った複製に対して検証する。
+ * 検証対象はファイルの書き換えだけだが、マイグレーションの基底クラス
+ * （FRMigrationClass）はコンストラクタで com_vtiger_migrations の有無を問い合わせるため、
+ * インスタンスを作るだけで DB が要る。そのため Unit ではなく Integration に置く。
  *
  *   1  設定が 1 つも書かれていないファイルには、扱う全キーを追記する（正常系）
  *   2  追記後のファイルが PHP として正しい
@@ -64,6 +68,17 @@ final class CronSchedulerStabilityConfigTest extends TestCase
         // ここで読まないと、スタブを持つ親で二重宣言になる。
         require_once dirname(__DIR__, 3)
             . '/setup/migration/scripts/20260825112920_setup_cron_scheduler_stability.php';
+
+        // 基底クラスがコンストラクタで DB を触るため、接続できなければ実行しない
+        try {
+            $db = PearDatabase::getInstance();
+            $result = $db->pquery('SELECT 1 AS ok', []);
+        } catch (\Throwable $e) {
+            self::markTestSkipped('テスト用DBに接続できないため実行しない: ' . $e->getMessage());
+        }
+        if ($result === false) {
+            self::markTestSkipped('テスト用DBに接続できないため実行しない');
+        }
 
         $this->workDirectory = sys_get_temp_dir() . DIRECTORY_SEPARATOR
             . 'frtest_cron_config_' . getmypid() . '_' . spl_object_id($this);
