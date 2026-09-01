@@ -50,7 +50,7 @@ class PDF_helper {
 			
 			$recordModel = PDFTemplates_Record_Model::getInstanceById($templateId);
 			$pdffilename = Vtiger_InventoryPDFController::getMergedDescription($recordModel->get("pdffilename"), $recordIdData, $moduleName);
-			$filename = ($pdffilename ? $pdffilename : $templateName);
+			$filename = strip_tags($pdffilename ? $pdffilename : $templateName);
 			header("Pragma: public");
 			header("Expires: 0");
 			header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
@@ -137,7 +137,7 @@ class PDF_helper {
 				
 				$pdffilename = Vtiger_InventoryPDFController::getMergedDescription($recordModel->get("pdffilename"), $recordId, $moduleName);
 				$pdffilename = Vtiger_InventoryPDFController::applyingFunctions($pdffilename, $recordId, $moduleName);
-				$filename = ($pdffilename ? $pdffilename : $templateName);
+				$filename = strip_tags($pdffilename ? $pdffilename : $templateName);
 				$hostfilepath = $hostfiledirectory.$uniquekey;
 				$dockerfilepath = $dokerfiledirectory.$uniquekey;
 		
