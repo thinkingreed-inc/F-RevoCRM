@@ -988,7 +988,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 							}
 						} else if (!in_array($fieldName, array('date_start', 'due_date'))) {
 							if ($fieldModel) {
-								if ($fieldDataType != 'picklist'){
+								if (!in_array($fieldDataType, array('picklist', 'string', 'text'))){
 									$recordData[$fieldName] = $fieldModel->getDisplayValue($fieldValue);
 								}
 							}

@@ -1167,7 +1167,7 @@ Vtiger.Class("Vtiger_Detail_Js",{
 			fieldName = multiPicklistFieldName[0];
 		}
 
-		var customHandlingFields = ['owner','ownergroup','picklist','multipicklist','reference','currencyList','text', 'documentsFolder', 'url'];
+		var customHandlingFields = ['owner','ownergroup','picklist','multipicklist','reference','currencyList','text', 'documentsFolder', 'url', 'string'];
 		if(jQuery.inArray(fieldType, customHandlingFields) !== -1){
 			value = rawValue;
 		}
@@ -1310,7 +1310,7 @@ Vtiger.Class("Vtiger_Detail_Js",{
 			}
 
 			// prev Value should be taken based on field Type
-			var customHandlingFields = ['owner','ownergroup','picklist','multipicklist','reference','boolean', 'url']; 
+			var customHandlingFields = ['owner','ownergroup','picklist','multipicklist','reference','boolean', 'url', 'string']; 
 			if(jQuery.inArray(fieldType, customHandlingFields) !== -1){
 				previousValue = fieldBasicData.data('value');
 			}

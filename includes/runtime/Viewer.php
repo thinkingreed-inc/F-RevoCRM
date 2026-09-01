@@ -86,7 +86,7 @@ class Vtiger_Viewer extends Smarty {
 			'Vtiger_Tag_Model', 'Settings_Vtiger_Module_Model', 'PBXManager_Server_Model',
 			'Vtiger_Functions', 'Users', 'CurrencyField', 'Reports_Field_Model', 
 			'DateTimeField', 'Calendar_Time_UIType', 'Calendar_Field_Model',
-			'Vtiger_Date_UIType', 'Vtiger_Time_UIType', 'Vtiger_RelationListView_Model',
+			'Vtiger_Date_UIType', 'Vtiger_Time_UIType', 'Vtiger_Text_UIType', 'Vtiger_RelationListView_Model',
 			'Inventory_TaxRegion_Model', 'EmailTemplates_Module_Model', 'Project_Record_Model', 'Settings_SMSNotifier_ProviderField_Model',);
 
 		if ($inSettings) {
