@@ -34,12 +34,21 @@ jobs:
           extensions: mysqli, imap, mbstring, intl, zip, gd
           coverage: none
 
-      # PHP 依存 (vendor/) をキャッシュ。composer.lock が変わらなければ composer install は即完了
-      - name: Cache composer vendor
+      # キャッシュするのは composer のダウンロード済みパッケージ (zip) であって vendor/ ではない。
+      # vendor/ をキャッシュすると、ヒット時に composer install が実質何もせず終わるため、
+      # キャッシュに入っていた内容が composer.lock と一致するか検証されないまま実行コードになる。
+      # ダウンロードキャッシュなら composer install が毎回走り、lock の dist ハッシュで検証される。
+      - name: composer のキャッシュディレクトリを取得
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache composer downloads
         uses: actions/cache@v4
         with:
-          path: vendor
-          key: vendor-php83-${{ hashFiles('composer.lock') }}
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-php83-${{ hashFiles('composer.lock') }}
+          # lock が変わってもダウンロード済みパッケージは再利用できる (差分だけ取りに行く)
+          restore-keys: composer-php83-
 
       - name: composer install
         run: composer install --no-interaction --no-progress --optimize-autoloader
