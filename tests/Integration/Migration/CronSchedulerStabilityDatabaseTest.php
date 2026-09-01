@@ -51,6 +51,17 @@ final class CronSchedulerStabilityDatabaseTest extends TestCase
 
     private ?PearDatabase $db = null;
 
+    private function db(): PearDatabase
+    {
+        $db = $this->db;
+        if (!$db instanceof PearDatabase) {
+            $db = PearDatabase::getInstance();
+            $this->db = $db;
+        }
+
+        return $db;
+    }
+
     protected function setUp(): void
     {
         // 分離した子プロセス側で読み込む。setUpBeforeClass は親プロセスで動くため
@@ -60,9 +71,8 @@ final class CronSchedulerStabilityDatabaseTest extends TestCase
         require_once $root . '/vtlib/Vtiger/Cron.php';
         require_once $root . '/setup/migration/scripts/20260825112920_setup_cron_scheduler_stability.php';
 
-        $this->db = PearDatabase::getInstance();
         try {
-            $result = $this->db->pquery('SELECT 1 AS ok FROM vtiger_cron_task LIMIT 1', []);
+            $result = $this->db()->pquery('SELECT 1 AS ok FROM vtiger_cron_task LIMIT 1', []);
         } catch (\Throwable $e) {
             self::markTestSkipped('テスト用DBに接続できないため実行しない: ' . $e->getMessage());
         }
@@ -104,9 +114,18 @@ final class CronSchedulerStabilityDatabaseTest extends TestCase
     /** @return array<string, mixed> 検証用タスクの行 */
     private function fetchTask(): array
     {
-        $result = $this->db->pquery('SELECT * FROM vtiger_cron_task WHERE name = ?', [self::TASK_NAME]);
+        $result = $this->db()->pquery('SELECT * FROM vtiger_cron_task WHERE name = ?', [self::TASK_NAME]);
+        $row = $this->db()->query_result_rowdata($result, 0);
 
-        return $this->db->query_result_rowdata($result, 0);
+        return is_array($row) ? $row : [];
+    }
+
+    /** 検証用タスクの列を文字列で取り出す */
+    private function taskColumn(string $column): string
+    {
+        $value = $this->fetchTask()[$column] ?? null;
+
+        return is_scalar($value) ? (string) $value : '';
     }
 
     /** @return array<int, array{0: string}> */
@@ -120,16 +139,16 @@ final class CronSchedulerStabilityDatabaseTest extends TestCase
     {
         $this->applyDatabaseChanges();
 
-        $result = $this->db->pquery('SHOW COLUMNS FROM vtiger_cron_task LIKE ?', [$column]);
+        $result = $this->db()->pquery('SHOW COLUMNS FROM vtiger_cron_task LIKE ?', [$column]);
 
         self::assertNotFalse($result, $column . ' 列を確認できる');
-        self::assertGreaterThan(0, $this->db->num_rows($result), $column . ' 列が存在する');
+        self::assertGreaterThan(0, $this->db()->num_rows($result), $column . ' 列が存在する');
     }
 
     public function test_14_15_既に入っている値を上書きせず空の種別だけ揃える(): void
     {
         // 運用者が値を変えている状況を作る
-        $this->db->pquery(
+        $this->db()->pquery(
             "UPDATE vtiger_cron_task SET retry_timeout = 111, next_run_at = 222,
                 schedule_type = '' WHERE name = ?",
             [self::TASK_NAME]
@@ -137,22 +156,21 @@ final class CronSchedulerStabilityDatabaseTest extends TestCase
 
         $this->applyDatabaseChanges();
 
-        $row = $this->fetchTask();
-        self::assertSame('111', (string) $row['retry_timeout'], '14 既に入っているタイムアウトを上書きしない');
-        self::assertSame('222', (string) $row['next_run_at'], '14 既に入っている次回実行予定を上書きしない');
-        self::assertSame('interval', (string) $row['schedule_type'], '15 空の実行タイミングを周期実行に揃える');
+        self::assertSame('111', $this->taskColumn('retry_timeout'), '14 既に入っているタイムアウトを上書きしない');
+        self::assertSame('222', $this->taskColumn('next_run_at'), '14 既に入っている次回実行予定を上書きしない');
+        self::assertSame('interval', $this->taskColumn('schedule_type'), '15 空の実行タイミングを周期実行に揃える');
     }
 
     public function test_13_未設定の次回実行予定が埋まる(): void
     {
-        $this->db->pquery(
+        $this->db()->pquery(
             'UPDATE vtiger_cron_task SET retry_timeout = 0, next_run_at = 0 WHERE name = ?',
             [self::TASK_NAME]
         );
 
         $this->applyDatabaseChanges();
 
-        self::assertGreaterThan(0, (int) $this->fetchTask()['next_run_at'], '13 未設定の次回実行予定が埋まる');
+        self::assertGreaterThan(0, (int) $this->taskColumn('next_run_at'), '13 未設定の次回実行予定が埋まる');
     }
 
     public function test_13_2回実行しても壊れない(): void

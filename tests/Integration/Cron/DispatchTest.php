@@ -14,11 +14,19 @@ namespace Tests\Integration\Cron;
 
 use FR_CronDispatcher;
 use mysqli;
+use mysqli_result;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\CronTestSupport;
 use Vtiger_Cron;
 
 require_once dirname(__DIR__, 2) . '/Support/CronTestSupport.php';
+
+$cronTestRoot = dirname(__DIR__, 3);
+
+require_once $cronTestRoot . '/include/database/PearDatabase.php';
+require_once $cronTestRoot . '/include/utils/CommonUtils.php';
+require_once $cronTestRoot . '/vtlib/Vtiger/Cron.php';
+require_once $cronTestRoot . '/include/utils/CronDispatcher.php';
 
 /**
  * C. 振り分け（dispatch）— #1823
@@ -43,11 +51,6 @@ final class DispatchTest extends TestCase
 
     /** @var array<string, int|string> 実行時刻を迎えた状態 */
     private array $due = [];
-
-    public static function setUpBeforeClass(): void
-    {
-        self::loadCronClasses();
-    }
 
     protected function setUp(): void
     {
@@ -109,8 +112,8 @@ final class DispatchTest extends TestCase
 
         // 子プロセスの完了を待つ（副作用の確認）
         for ($i = 0; $i < 100; $i++) {
-            if ((string) $this->getCol($this->taskA, 'status') === (string) Vtiger_Cron::$STATUS_ENABLED
-                && (int) $this->getCol($this->taskA, 'lastend') > 0) {
+            if ($this->getColString($this->taskA, 'status') === (string) Vtiger_Cron::$STATUS_ENABLED
+                && $this->getColInt($this->taskA, 'lastend') > 0) {
                 break;
             }
             usleep(100000);
@@ -118,7 +121,7 @@ final class DispatchTest extends TestCase
 
         self::assertSame(
             (string) Vtiger_Cron::$STATUS_ENABLED,
-            (string) $this->getCol($this->taskA, 'status'),
+            $this->getColString($this->taskA, 'status'),
             'C1 子プロセスが実行を完了して解放される'
         );
         self::assertFileExists($logFile, 'C1 子プロセスの出力が logs/cron へ保存される');
@@ -201,12 +204,13 @@ final class DispatchTest extends TestCase
 
     public function test_C5_ロックを取得できなければ何も振り分けない(): void
     {
+        /** @var array<string, string> $dbconfig */
         $dbconfig = $GLOBALS['dbconfig'];
         $other = @new mysqli(
-            (string) $dbconfig['db_hostname'],
-            (string) $dbconfig['db_username'],
-            (string) $dbconfig['db_password'],
-            (string) $dbconfig['db_name']
+            $dbconfig['db_hostname'],
+            $dbconfig['db_username'],
+            $dbconfig['db_password'],
+            $dbconfig['db_name']
         );
         if ($other->connect_error) {
             self::markTestSkipped('DB へ別接続を張れなかった');
@@ -214,7 +218,8 @@ final class DispatchTest extends TestCase
 
         $lockName = FR_CronDispatcher::getLockName();
         $lock = $other->query("SELECT GET_LOCK('" . $other->real_escape_string($lockName) . "', 0) AS acquired");
-        $acquired = $lock ? (int) $lock->fetch_assoc()['acquired'] : 0;
+        $lockRow = ($lock instanceof mysqli_result) ? $lock->fetch_assoc() : null;
+        $acquired = is_array($lockRow) ? (int) $lockRow['acquired'] : 0;
         if ($acquired !== 1) {
             $other->close();
             self::markTestSkipped('別接続でロックを取得できなかった');
@@ -230,7 +235,7 @@ final class DispatchTest extends TestCase
             self::assertSame([], $summary['dispatched'], 'C5 ロック中は何も振り分けない');
             self::assertSame(
                 (string) Vtiger_Cron::$STATUS_ENABLED,
-                (string) $this->getCol($this->taskA, 'status'),
+                $this->getColString($this->taskA, 'status'),
                 'C5 ロック中はタスクを実行中にしない'
             );
         } finally {
@@ -259,7 +264,7 @@ final class DispatchTest extends TestCase
         self::assertSame([], $summary['dispatched'], 'C6 起動できなかったタスクは dispatched に入らない');
         self::assertSame(
             (string) Vtiger_Cron::$STATUS_ENABLED,
-            (string) $this->getCol($this->taskA, 'status'),
+            $this->getColString($this->taskA, 'status'),
             'C6 起動できなかったタスクは解放される'
         );
     }

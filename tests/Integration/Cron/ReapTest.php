@@ -19,6 +19,13 @@ use Vtiger_Cron;
 
 require_once dirname(__DIR__, 2) . '/Support/CronTestSupport.php';
 
+$cronTestRoot = dirname(__DIR__, 3);
+
+require_once $cronTestRoot . '/include/database/PearDatabase.php';
+require_once $cronTestRoot . '/include/utils/CommonUtils.php';
+require_once $cronTestRoot . '/vtlib/Vtiger/Cron.php';
+require_once $cronTestRoot . '/include/utils/CronDispatcher.php';
+
 /**
  * B. 実行中のまま終わらないタスクの後始末（reap）— #1823
  *
@@ -41,11 +48,6 @@ final class ReapTest extends TestCase
 
     private string $taskName = '';
     private string $host = '';
-
-    public static function setUpBeforeClass(): void
-    {
-        self::loadCronClasses();
-    }
 
     protected function setUp(): void
     {
@@ -78,7 +80,7 @@ final class ReapTest extends TestCase
         self::assertArrayHasKey($this->taskName, $findings['dead'], 'B1 プロセス不在のタスクは dead として報告される');
         self::assertSame(
             (string) Vtiger_Cron::$STATUS_ENABLED,
-            (string) $this->getCol($this->taskName, 'status'),
+            $this->getColString($this->taskName, 'status'),
             'B1 dead のタスクは解放される（retry_timeout を待たない）'
         );
     }
@@ -110,12 +112,12 @@ final class ReapTest extends TestCase
         );
         self::assertSame(
             (string) Vtiger_Cron::$STATUS_RUNNING,
-            (string) $this->getCol($this->taskName, 'status'),
+            $this->getColString($this->taskName, 'status'),
             'B2 実行中のまま維持される'
         );
         self::assertGreaterThan(
             $now - 30,
-            (int) $this->getCol($this->taskName, 'last_heartbeat'),
+            $this->getColInt($this->taskName, 'last_heartbeat'),
             'B2 ハートビートが更新される'
         );
     }
@@ -149,7 +151,7 @@ final class ReapTest extends TestCase
         self::assertTrue($this->isPidAlive($pid), 'B4 プロセスは終了させられない');
         self::assertSame(
             (string) Vtiger_Cron::$STATUS_RUNNING,
-            (string) $this->getCol($this->taskName, 'status'),
+            $this->getColString($this->taskName, 'status'),
             'B4 タスクは解放されない'
         );
     }
@@ -189,7 +191,7 @@ final class ReapTest extends TestCase
         );
         self::assertSame(
             (string) Vtiger_Cron::$STATUS_ENABLED,
-            (string) $this->getCol($this->taskName, 'status'),
+            $this->getColString($this->taskName, 'status'),
             'B3 タスクが解放される'
         );
     }
@@ -244,7 +246,7 @@ final class ReapTest extends TestCase
         );
         self::assertSame(
             (string) Vtiger_Cron::$STATUS_RUNNING,
-            (string) $this->getCol($this->taskName, 'status'),
+            $this->getColString($this->taskName, 'status'),
             'B5 他サーバーのタスクには手を出さない'
         );
     }
@@ -272,7 +274,7 @@ final class ReapTest extends TestCase
         );
         self::assertSame(
             (string) Vtiger_Cron::$STATUS_RUNNING,
-            (string) $this->getCol($this->taskName, 'status'),
+            $this->getColString($this->taskName, 'status'),
             'B6 stale でもプロセスには手を出さない'
         );
     }
@@ -295,7 +297,7 @@ final class ReapTest extends TestCase
         self::assertSame([], $findings['notstarted'], 'B7 PID 未記録でも猶予内なら notstarted にしない');
         self::assertSame(
             (string) Vtiger_Cron::$STATUS_RUNNING,
-            (string) $this->getCol($this->taskName, 'status'),
+            $this->getColString($this->taskName, 'status'),
             'B7 実行中のまま維持される'
         );
     }
@@ -322,7 +324,7 @@ final class ReapTest extends TestCase
         );
         self::assertSame(
             (string) Vtiger_Cron::$STATUS_ENABLED,
-            (string) $this->getCol($this->taskName, 'status'),
+            $this->getColString($this->taskName, 'status'),
             'B10 notstarted のタスクは解放される'
         );
     }

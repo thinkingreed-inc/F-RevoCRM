@@ -19,6 +19,13 @@ use Vtiger_Cron;
 
 require_once dirname(__DIR__, 2) . '/Support/CronTestSupport.php';
 
+$cronTestRoot = dirname(__DIR__, 3);
+
+require_once $cronTestRoot . '/include/database/PearDatabase.php';
+require_once $cronTestRoot . '/include/utils/CommonUtils.php';
+require_once $cronTestRoot . '/vtlib/Vtiger/Cron.php';
+require_once $cronTestRoot . '/include/utils/CronDispatcher.php';
+
 /**
  * D. 飢餓の回避（sortByUrgency）/ E. 実行判定と次回実行予定時刻 — #1823
  *
@@ -36,11 +43,6 @@ require_once dirname(__DIR__, 2) . '/Support/CronTestSupport.php';
 final class ScheduleDecisionTest extends TestCase
 {
     use CronTestSupport;
-
-    public static function setUpBeforeClass(): void
-    {
-        self::loadCronClasses();
-    }
 
     protected function setUp(): void
     {
@@ -140,7 +142,7 @@ final class ScheduleDecisionTest extends TestCase
         $this->setCols($name, ['status' => Vtiger_Cron::$STATUS_RUNNING]);
 
         $this->reload($name)->markFinished();
-        $nextRunAt = (int) $this->getCol($name, 'next_run_at');
+        $nextRunAt = $this->getColInt($name, 'next_run_at');
 
         self::assertSame(0, $nextRunAt % 900, 'E5 完了後の next_run_at が 900 秒のグリッドに乗る');
         self::assertGreaterThan($this->dbNow(), $nextRunAt, 'E5 next_run_at が未来になる');

@@ -155,6 +155,7 @@ final class DispatcherConfigTest extends TestCase
         $referenced = array_keys($referenced);
         self::assertGreaterThan(20, count($referenced), 'M14 参照しているラベルを収集できる');
 
+        /** @var array<string, string> $languageStrings */
         $languageStrings = [];
         require $root . '/languages/' . $language . '/Settings/CronTasks.php';
 

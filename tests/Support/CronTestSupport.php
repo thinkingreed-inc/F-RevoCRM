@@ -128,7 +128,9 @@ trait CronTestSupport
         set_error_handler(static fn (): bool => true, E_WARNING | E_NOTICE | E_DEPRECATED);
         try {
             foreach ($modules as $module) {
-                vtranslate('LBL_STATUS', $module);
+                // 戻り値は使わない。言語ファイルを読ませること（＝キャッシュの生成）が目的
+                $warmed = vtranslate('LBL_STATUS', $module);
+                unset($warmed);
             }
         } finally {
             restore_error_handler();
@@ -137,11 +139,13 @@ trait CronTestSupport
 
     protected function cronDb(): PearDatabase
     {
-        if ($this->cronDb === null) {
-            $this->cronDb = PearDatabase::getInstance();
+        $db = $this->cronDb;
+        if (!$db instanceof PearDatabase) {
+            $db = PearDatabase::getInstance();
+            $this->cronDb = $db;
         }
 
-        return $this->cronDb;
+        return $db;
     }
 
     /**
@@ -183,12 +187,8 @@ trait CronTestSupport
             restore_error_handler();
         }
 
-        if (!empty($adminUser)) {
-            $GLOBALS['current_user'] = $adminUser;
-            if (function_exists('vglobal')) {
-                vglobal('current_user', $adminUser);
-            }
-        }
+        // vglobal() も結局 $GLOBALS へ入れるだけなので、ここでは直接入れる
+        $GLOBALS['current_user'] = $adminUser;
     }
 
     /** 起動した擬似プロセスとテスト用タスクを片付ける */
@@ -277,13 +277,30 @@ trait CronTestSupport
         return $db->query_result($result, 0, 'value');
     }
 
+    /** 列の値を文字列で取り出す */
+    protected function getColString(string $name, string $column): string
+    {
+        $value = $this->getCol($name, $column);
+
+        return is_scalar($value) ? (string) $value : '';
+    }
+
+    /** 列の値を整数で取り出す */
+    protected function getColInt(string $name, string $column): int
+    {
+        $value = $this->getCol($name, $column);
+
+        return is_scalar($value) ? (int) $value : 0;
+    }
+
     /** データベースの現在時刻（判定と同じ基準を使う） */
     protected function dbNow(): int
     {
         $db = $this->cronDb();
         $result = $db->pquery('SELECT UNIX_TIMESTAMP() AS now', []);
+        $now = $db->query_result($result, 0, 'now');
 
-        return (int) $db->query_result($result, 0, 'now');
+        return is_scalar($now) ? (int) $now : 0;
     }
 
     /**

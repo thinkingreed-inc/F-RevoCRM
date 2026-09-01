@@ -18,6 +18,13 @@ use Tests\Support\CronTestSupport;
 
 require_once dirname(__DIR__, 2) . '/Support/CronTestSupport.php';
 
+$cronTestRoot = dirname(__DIR__, 3);
+
+require_once $cronTestRoot . '/include/database/PearDatabase.php';
+require_once $cronTestRoot . '/include/utils/CommonUtils.php';
+require_once $cronTestRoot . '/vtlib/Vtiger/Cron.php';
+require_once $cronTestRoot . '/include/utils/CronDispatcher.php';
+
 /**
  * K. 実行ログの閲覧とローテーション — #1823
  *
@@ -45,11 +52,6 @@ final class ExecutionLogTest extends TestCase
 
     /** @var array<int, string> テスト中に作ったログファイル */
     private array $written = [];
-
-    public static function setUpBeforeClass(): void
-    {
-        self::loadCronClasses();
-    }
 
     protected function setUp(): void
     {
@@ -91,6 +93,16 @@ final class ExecutionLogTest extends TestCase
         }
 
         return $files;
+    }
+
+    /**
+     * makeLogs() が返した一覧から、指定日のパスを取り出す。
+     *
+     * @param array<string, string> $files
+     */
+    private function logPath(array $files, string $date): string
+    {
+        return $files[$date] ?? self::fail('ログを作れていない: ' . $date);
     }
 
     public function test_K1_ログが無い状態を安全に扱う(): void
@@ -192,11 +204,11 @@ final class ExecutionLogTest extends TestCase
 
         $removed = FR_CronDispatcher::pruneLogFiles([$this->reload($pruneName)]);
 
-        self::assertFileDoesNotExist($files['20260101'], 'K6 保持世代数を超えた古いログを削除する');
-        self::assertFileDoesNotExist($files['20260102'], 'K6 保持世代数を超えた古いログを削除する');
-        self::assertFileExists($files['20260103'], 'K6 境界: 保持数に収まるログは残す');
-        self::assertFileExists($files['20260104'], 'K6 境界: 保持数に収まるログは残す');
-        self::assertFileExists($files['20260105'], 'K6 境界: 保持数に収まるログは残す');
+        self::assertFileDoesNotExist($this->logPath($files, '20260101'), 'K6 保持世代数を超えた古いログを削除する');
+        self::assertFileDoesNotExist($this->logPath($files, '20260102'), 'K6 保持世代数を超えた古いログを削除する');
+        self::assertFileExists($this->logPath($files, '20260103'), 'K6 境界: 保持数に収まるログは残す');
+        self::assertFileExists($this->logPath($files, '20260104'), 'K6 境界: 保持数に収まるログは残す');
+        self::assertFileExists($this->logPath($files, '20260105'), 'K6 境界: 保持数に収まるログは残す');
         self::assertCount(2, $removed, 'K6 削除件数を返す');
 
         self::assertFileExists($stray, 'K8 日付でないファイル名には手を出さない');
@@ -212,7 +224,7 @@ final class ExecutionLogTest extends TestCase
         $files = $this->makeLogs($base, ['20260101', '20260102', '20260103', '20260104', '20260105']);
 
         self::assertSame([], FR_CronDispatcher::pruneLogFiles([$this->reload($pruneName)]), 'K7 保持世代数 0 なら削除しない');
-        self::assertFileExists($files['20260101'], 'K7 保持世代数 0 ならファイルが残る');
+        self::assertFileExists($this->logPath($files, '20260101'), 'K7 保持世代数 0 ならファイルが残る');
     }
 
     public function test_K10_タスクごとの指定が既定値より優先される(): void
@@ -226,9 +238,9 @@ final class ExecutionLogTest extends TestCase
         $files = $this->makeLogs($base, $dates);
         FR_CronDispatcher::pruneLogFiles([$this->reload($pruneName)]);
 
-        self::assertFileDoesNotExist($files['20260103'], 'K10 タスク側の指定（2 世代）が使われる');
-        self::assertFileExists($files['20260104'], 'K10 タスク側の指定（2 世代）が使われる');
-        self::assertFileExists($files['20260105'], 'K10 タスク側の指定（2 世代）が使われる');
+        self::assertFileDoesNotExist($this->logPath($files, '20260103'), 'K10 タスク側の指定（2 世代）が使われる');
+        self::assertFileExists($this->logPath($files, '20260104'), 'K10 タスク側の指定（2 世代）が使われる');
+        self::assertFileExists($this->logPath($files, '20260105'), 'K10 タスク側の指定（2 世代）が使われる');
 
         // タスク側で 0（無期限）を指定した場合
         $this->setCols($pruneName, ['log_retention_count' => 0]);
@@ -252,8 +264,8 @@ final class ExecutionLogTest extends TestCase
         $orphanFiles = $this->makeLogs('FRTestCronOrphan', ['20260101', '20260102']);
         FR_CronDispatcher::pruneLogFiles([$this->reload($pruneName)]);
 
-        self::assertFileDoesNotExist($orphanFiles['20260101'], 'K11 タスクの無いログも既定値で削除される');
-        self::assertFileExists($orphanFiles['20260102'], 'K11 保持数に収まる分は残る');
+        self::assertFileDoesNotExist($this->logPath($orphanFiles, '20260101'), 'K11 タスクの無いログも既定値で削除される');
+        self::assertFileExists($this->logPath($orphanFiles, '20260102'), 'K11 保持数に収まる分は残る');
     }
 
     public function test_K12_タスクごとに独立して数える(): void
@@ -269,11 +281,11 @@ final class ExecutionLogTest extends TestCase
 
         FR_CronDispatcher::pruneLogFiles([$this->reload($pruneName), $this->reload($otherName)]);
 
-        self::assertFileDoesNotExist($filesA['20260101'], 'K12 一方のタスクは 2 世代に絞られる');
-        self::assertFileExists($filesA['20260102'], 'K12 一方のタスクは 2 世代に絞られる');
-        self::assertFileExists($filesA['20260103'], 'K12 一方のタスクは 2 世代に絞られる');
-        self::assertFileExists($filesB['20260101'], 'K12 他方のタスクは 2 世代なので残る');
-        self::assertFileExists($filesB['20260102'], 'K12 他方のタスクは 2 世代なので残る');
+        self::assertFileDoesNotExist($this->logPath($filesA, '20260101'), 'K12 一方のタスクは 2 世代に絞られる');
+        self::assertFileExists($this->logPath($filesA, '20260102'), 'K12 一方のタスクは 2 世代に絞られる');
+        self::assertFileExists($this->logPath($filesA, '20260103'), 'K12 一方のタスクは 2 世代に絞られる');
+        self::assertFileExists($this->logPath($filesB, '20260101'), 'K12 他方のタスクは 2 世代なので残る');
+        self::assertFileExists($this->logPath($filesB, '20260102'), 'K12 他方のタスクは 2 世代なので残る');
     }
 
     public function test_K9_1日1回だけ走る(): void
@@ -290,7 +302,7 @@ final class ExecutionLogTest extends TestCase
             $files = $this->makeLogs($base, ['20260101', '20260102']);
             $firstRun = FR_CronDispatcher::pruneLogFilesOncePerDay([$this->reload($pruneName)]);
             self::assertNotEmpty($firstRun, 'K9 1 回目は削除される');
-            self::assertFileDoesNotExist($files['20260101'], 'K9 1 回目は削除される');
+            self::assertFileDoesNotExist($this->logPath($files, '20260101'), 'K9 1 回目は削除される');
             self::assertFileExists($stamp, 'K9 実行した日が記録される');
             self::assertSame(date('Ymd'), trim((string) file_get_contents($stamp)), 'K9 実行した日が記録される');
 
@@ -300,7 +312,7 @@ final class ExecutionLogTest extends TestCase
                 FR_CronDispatcher::pruneLogFilesOncePerDay([$this->reload($pruneName)]),
                 'K9 同じ日の 2 回目は走らない'
             );
-            self::assertFileExists($files['20260101'], 'K9 2 回目では削除されない');
+            self::assertFileExists($this->logPath($files, '20260101'), 'K9 2 回目では削除されない');
         } finally {
             if ($originalStamp === null) {
                 @unlink($stamp);

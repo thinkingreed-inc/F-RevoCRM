@@ -19,6 +19,13 @@ use Vtiger_Cron;
 
 require_once dirname(__DIR__, 2) . '/Support/CronTestSupport.php';
 
+$cronTestRoot = dirname(__DIR__, 3);
+
+require_once $cronTestRoot . '/include/database/PearDatabase.php';
+require_once $cronTestRoot . '/include/utils/CommonUtils.php';
+require_once $cronTestRoot . '/vtlib/Vtiger/Cron.php';
+require_once $cronTestRoot . '/include/utils/CronDispatcher.php';
+
 /**
  * L. 子プロセス以外の実行でも個別ログが残る — #1823
  *
@@ -43,11 +50,6 @@ final class IndividualLogTest extends TestCase
 
     /** @var array<int, string> テスト中に作ったログファイル */
     private array $written = [];
-
-    public static function setUpBeforeClass(): void
-    {
-        self::loadCronClasses();
-    }
 
     protected function setUp(): void
     {

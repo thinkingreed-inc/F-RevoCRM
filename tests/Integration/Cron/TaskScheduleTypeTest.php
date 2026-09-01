@@ -18,6 +18,13 @@ use Vtiger_Cron;
 
 require_once dirname(__DIR__, 2) . '/Support/CronTestSupport.php';
 
+$cronTestRoot = dirname(__DIR__, 3);
+
+require_once $cronTestRoot . '/include/database/PearDatabase.php';
+require_once $cronTestRoot . '/include/utils/CommonUtils.php';
+require_once $cronTestRoot . '/vtlib/Vtiger/Cron.php';
+require_once $cronTestRoot . '/include/utils/CronDispatcher.php';
+
 /**
  * I. 実行タイミングの種別がタスクの設定から使われるか — #1823
  *
@@ -44,17 +51,12 @@ final class TaskScheduleTypeTest extends TestCase
     /** 基準時刻: 2026-08-25 10:07:33（火曜日） */
     private int $reference = 0;
 
-    public static function setUpBeforeClass(): void
-    {
-        self::loadCronClasses();
-    }
-
     protected function setUp(): void
     {
         $this->requireCronDatabase();
         $this->cleanUpCronTasks();
         $this->taskName = $this->makeTask('Daily', $this->fixtureHandler('noop1.service'));
-        $this->reference = mktime(10, 7, 33, 8, 25, 2026);
+        $this->reference = (int) mktime(10, 7, 33, 8, 25, 2026);
     }
 
     protected function tearDown(): void
@@ -89,7 +91,7 @@ final class TaskScheduleTypeTest extends TestCase
 
         self::assertTrue($task->isDailySchedule(), 'I5 daily 指定なら毎日実行');
         self::assertSame(
-            mktime(3, 0, 0, 8, 26, 2026),
+            (int) mktime(3, 0, 0, 8, 26, 2026),
             $task->computeNextRun($this->reference),
             'I5 毎日実行なら指定時刻で計算する'
         );
@@ -107,7 +109,7 @@ final class TaskScheduleTypeTest extends TestCase
         ]);
 
         $this->reload($this->taskName)->markFinished();
-        $nextRunAt = (int) $this->getCol($this->taskName, 'next_run_at');
+        $nextRunAt = $this->getColInt($this->taskName, 'next_run_at');
 
         self::assertSame('03:00', date('H:i', $nextRunAt), 'I6 完了後の next_run_at が指定時刻（3:00）になる');
         self::assertGreaterThan($this->dbNow(), $nextRunAt, 'I6 next_run_at が未来になる');
@@ -140,7 +142,7 @@ final class TaskScheduleTypeTest extends TestCase
         ]);
 
         self::assertSame(
-            mktime(9, 0, 0, 8, 28, 2026),
+            (int) mktime(9, 0, 0, 8, 28, 2026),
             $this->reload($this->taskName)->computeNextRun($this->reference),
             'I8 タスクの指定（毎週金曜 9:00）で計算される'
         );
@@ -156,7 +158,7 @@ final class TaskScheduleTypeTest extends TestCase
         ]);
 
         self::assertSame(
-            mktime(9, 0, 0, 8, 26, 2026),
+            (int) mktime(9, 0, 0, 8, 26, 2026),
             $this->reload($this->taskName)->computeNextRun($this->reference),
             'I15 タスクの指定（毎週月・水・金 9:00）で計算される'
         );
@@ -178,7 +180,7 @@ final class TaskScheduleTypeTest extends TestCase
         ]);
 
         self::assertSame(
-            mktime(9, 0, 0, 8, 31, 2026),
+            (int) mktime(9, 0, 0, 8, 31, 2026),
             $this->reload($this->taskName)->computeNextRun($this->reference),
             'I11 タスクの指定（毎月末 9:00）で計算される'
         );

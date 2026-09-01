@@ -19,6 +19,13 @@ use Vtiger_Cron;
 
 require_once dirname(__DIR__, 2) . '/Support/CronTestSupport.php';
 
+$cronTestRoot = dirname(__DIR__, 3);
+
+require_once $cronTestRoot . '/include/database/PearDatabase.php';
+require_once $cronTestRoot . '/include/utils/CommonUtils.php';
+require_once $cronTestRoot . '/vtlib/Vtiger/Cron.php';
+require_once $cronTestRoot . '/include/utils/CronDispatcher.php';
+
 /**
  * A. 実行権の獲得（二重起動の防止）— #1823
  *
@@ -42,11 +49,6 @@ final class ClaimTest extends TestCase
 
     private string $taskName = '';
 
-    public static function setUpBeforeClass(): void
-    {
-        self::loadCronClasses();
-    }
-
     protected function setUp(): void
     {
         $this->requireCronDatabase();
@@ -67,17 +69,17 @@ final class ClaimTest extends TestCase
         self::assertTrue(FR_CronDispatcher::claim($task), 'A1 待機中のタスクは実行権を獲得できる');
         self::assertSame(
             (string) Vtiger_Cron::$STATUS_RUNNING,
-            (string) $this->getCol($this->taskName, 'status'),
+            $this->getColString($this->taskName, 'status'),
             'A1 status が実行中になる'
         );
         self::assertSame(
             FR_CronDispatcher::getHostName(),
-            (string) $this->getCol($this->taskName, 'owner_host'),
+            $this->getColString($this->taskName, 'owner_host'),
             'A1 owner_host に自ホストが記録される'
         );
         self::assertGreaterThan(
             0,
-            (int) $this->getCol($this->taskName, 'last_heartbeat'),
+            $this->getColInt($this->taskName, 'last_heartbeat'),
             'A1 last_heartbeat が記録される'
         );
     }
@@ -139,7 +141,7 @@ final class ClaimTest extends TestCase
         );
         self::assertSame(
             FR_CronDispatcher::getHostName(),
-            (string) $this->getCol($this->taskName, 'owner_host'),
+            $this->getColString($this->taskName, 'owner_host'),
             'A5 引き継いだ後 owner_host が自ホストになる'
         );
     }

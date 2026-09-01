@@ -739,7 +739,7 @@ class FR_CronDispatcher {
 	 * 実行の度に追記されるため、ログは際限なく大きくなる。全体を読むとメモリを使い切る
 	 * 恐れがあるので、末尾から一定バイトだけ読み、そこから必要な行数を取り出す。
 	 *
-	 * @param string $file
+	 * @param string|null $file 読み出すログファイル。未指定・存在しない場合は空を返す
 	 * @param integer $lines 取り出す行数
 	 * @param integer $maxBytes 末尾から読むバイト数の上限
 	 * @return array truncated / content / size / modified をキーに持つ配列

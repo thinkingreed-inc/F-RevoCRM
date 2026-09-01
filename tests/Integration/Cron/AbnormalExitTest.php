@@ -19,6 +19,13 @@ use Vtiger_Cron;
 
 require_once dirname(__DIR__, 2) . '/Support/CronTestSupport.php';
 
+$cronTestRoot = dirname(__DIR__, 3);
+
+require_once $cronTestRoot . '/include/database/PearDatabase.php';
+require_once $cronTestRoot . '/include/utils/CommonUtils.php';
+require_once $cronTestRoot . '/vtlib/Vtiger/Cron.php';
+require_once $cronTestRoot . '/include/utils/CronDispatcher.php';
+
 /**
  * F. 子プロセスが異常終了した場合の実行状態 / G. 並列実行が使えない場合のフォールバック — #1823
  *
@@ -37,11 +44,6 @@ final class AbnormalExitTest extends TestCase
 
     /** @var array<string, int> 一時的に先送りした既存タスクの next_run_at（name => 元の値） */
     private array $frozenTasks = [];
-
-    public static function setUpBeforeClass(): void
-    {
-        self::loadCronClasses();
-    }
 
     protected function setUp(): void
     {
@@ -106,7 +108,7 @@ final class AbnormalExitTest extends TestCase
         FR_CronDispatcher::claim($this->reload($name));
         self::assertSame(
             (string) Vtiger_Cron::$STATUS_RUNNING,
-            (string) $this->getCol($name, 'status'),
+            $this->getColString($name, 'status'),
             '前提として実行中になっている'
         );
 
@@ -114,11 +116,11 @@ final class AbnormalExitTest extends TestCase
 
         self::assertSame(
             (string) Vtiger_Cron::$STATUS_ENABLED,
-            (string) $this->getCol($name, 'status'),
+            $this->getColString($name, 'status'),
             '異常終了でも実行状態が残らない'
         );
-        self::assertGreaterThan(0, (int) $this->getCol($name, 'lastend'), '異常終了でも lastend が記録される');
-        self::assertSame('0', (string) $this->getCol($name, 'owner_pid'), '異常終了でも owner_pid が消される');
+        self::assertGreaterThan(0, $this->getColInt($name, 'lastend'), '異常終了でも lastend が記録される');
+        self::assertSame('0', $this->getColString($name, 'owner_pid'), '異常終了でも owner_pid が消される');
     }
 
     public function test_F4_1タスクの異常終了で後続タスクが止まらない(): void
@@ -142,10 +144,10 @@ final class AbnormalExitTest extends TestCase
             $run['output'],
             'F4 後続タスクが実行される'
         );
-        self::assertGreaterThan(0, (int) $this->getCol($second, 'lastend'), 'F4 後続タスクの lastend が記録される');
+        self::assertGreaterThan(0, $this->getColInt($second, 'lastend'), 'F4 後続タスクの lastend が記録される');
         self::assertSame(
             (string) Vtiger_Cron::$STATUS_ENABLED,
-            (string) $this->getCol($second, 'status'),
+            $this->getColString($second, 'status'),
             'F4 後続タスクが正常に完了する'
         );
     }
@@ -177,9 +179,9 @@ final class AbnormalExitTest extends TestCase
         );
         self::assertSame(
             (string) Vtiger_Cron::$STATUS_ENABLED,
-            (string) $this->getCol($name, 'status'),
+            $this->getColString($name, 'status'),
             'G2 単体実行後にタスクが解放される'
         );
-        self::assertGreaterThan(0, (int) $this->getCol($name, 'lastend'), 'G2 単体実行で lastend が記録される');
+        self::assertGreaterThan(0, $this->getColInt($name, 'lastend'), 'G2 単体実行で lastend が記録される');
     }
 }

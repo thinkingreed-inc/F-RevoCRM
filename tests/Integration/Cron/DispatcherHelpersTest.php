@@ -21,6 +21,13 @@ use Vtiger_Cron;
 
 require_once dirname(__DIR__, 2) . '/Support/CronTestSupport.php';
 
+$cronTestRoot = dirname(__DIR__, 3);
+
+require_once $cronTestRoot . '/include/database/PearDatabase.php';
+require_once $cronTestRoot . '/include/utils/CommonUtils.php';
+require_once $cronTestRoot . '/vtlib/Vtiger/Cron.php';
+require_once $cronTestRoot . '/include/utils/CronDispatcher.php';
+
 /**
  * M. 補助関数・設定・整合性（DB / 管理画面クラスを使う範囲）— #1823
  *
@@ -45,7 +52,6 @@ final class DispatcherHelpersTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        self::loadCronClasses();
         self::enableVtigerAutoload();
         self::primeLanguageCache();
     }
@@ -70,12 +76,55 @@ final class DispatcherHelpersTest extends TestCase
         $this->cleanUpCron();
     }
 
-    /** protected メソッドを呼ぶ */
+    /**
+     * protected メソッドを呼ぶ
+     *
+     * @param array<int, mixed> $arguments
+     * @return mixed
+     */
     private function invokeProtected(object $object, string $method, array $arguments = [])
     {
         $target = (new ReflectionClass($object))->getMethod($method);
 
         return $target->invokeArgs($object, $arguments);
+    }
+
+    /**
+     * protected メソッドを呼び、配列として受け取る
+     *
+     * @param array<int, mixed> $arguments
+     * @return array<int|string, mixed>
+     */
+    private function invokeProtectedArray(object $object, string $method, array $arguments = []): array
+    {
+        $result = $this->invokeProtected($object, $method, $arguments);
+
+        return is_array($result) ? $result : [];
+    }
+
+    /**
+     * protected メソッドを呼び、文字列として受け取る
+     *
+     * @param array<int, mixed> $arguments
+     */
+    private function invokeProtectedString(object $object, string $method, array $arguments = []): string
+    {
+        $result = $this->invokeProtected($object, $method, $arguments);
+
+        return is_scalar($result) ? (string) $result : '';
+    }
+
+    /**
+     * 選択肢の配列から value を取り出す
+     *
+     * @param array<int|string, mixed> $choices
+     * @return mixed
+     */
+    private function choiceValue(array $choices, int $index)
+    {
+        $choice = $choices[$index] ?? null;
+
+        return is_array($choice) ? ($choice['value'] ?? null) : null;
     }
 
     public function test_M3_getLogFile_がログディレクトリを用意する(): void
@@ -172,9 +221,9 @@ final class DispatcherHelpersTest extends TestCase
 
         FR_CronDispatcher::recordChildPid($this->reload($name));
 
-        self::assertSame($this->host, (string) $this->getCol($name, 'owner_host'), 'M8 担当ホストを記録する');
-        self::assertSame((string) getmypid(), (string) $this->getCol($name, 'owner_pid'), 'M8 自分の PID を記録する');
-        self::assertGreaterThan(0, (int) $this->getCol($name, 'last_heartbeat'), 'M8 ハートビートを記録する');
+        self::assertSame($this->host, $this->getColString($name, 'owner_host'), 'M8 担当ホストを記録する');
+        self::assertSame((string) getmypid(), $this->getColString($name, 'owner_pid'), 'M8 自分の PID を記録する');
+        self::assertGreaterThan(0, $this->getColInt($name, 'last_heartbeat'), 'M8 ハートビートを記録する');
     }
 
     public function test_M6_実行中の件数(): void
@@ -226,7 +275,7 @@ final class DispatcherHelpersTest extends TestCase
     public function test_M13_担当サーバー名のサニタイズと表示(): void
     {
         $name = $this->makeTask('Display', $this->fixtureHandler('noop5.service'));
-        $id = (int) $this->getCol($name, 'id');
+        $id = $this->getColInt($name, 'id');
         $now = $this->dbNow();
 
         $this->setCols($name, [
@@ -253,12 +302,12 @@ final class DispatcherHelpersTest extends TestCase
         $this->setCols($name, ['owner_host' => 'app01; rm -rf /x']);
         $this->clearCronInstanceCache();
         $dirty = Settings_CronTasks_Record_Model::getInstanceById($id, 'Settings:CronTasks');
-        self::assertSame('app01rm-rfx', $this->invokeProtected($dirty, 'getSafeOwnerHost'), 'M13 ホスト名から記号と空白を落とす');
+        self::assertSame('app01rm-rfx', $this->invokeProtectedString($dirty, 'getSafeOwnerHost'), 'M13 ホスト名から記号と空白を落とす');
 
         $this->setCols($name, ['owner_host' => 'app-01.example.com']);
         $this->clearCronInstanceCache();
         $clean = Settings_CronTasks_Record_Model::getInstanceById($id, 'Settings:CronTasks');
-        self::assertSame('app-01.example.com', $this->invokeProtected($clean, 'getSafeOwnerHost'), 'M13 通常のホスト名はそのまま通す');
+        self::assertSame('app-01.example.com', $this->invokeProtectedString($clean, 'getSafeOwnerHost'), 'M13 通常のホスト名はそのまま通す');
 
         // ハートビート途絶
         $this->setCols($name, [
@@ -277,7 +326,7 @@ final class DispatcherHelpersTest extends TestCase
     public function test_M18_ログ保持世代数の表示(): void
     {
         $name = $this->makeTask('Display', $this->fixtureHandler('noop5.service'));
-        $id = (int) $this->getCol($name, 'id');
+        $id = $this->getColInt($name, 'id');
 
         $this->setCols($name, ['log_retention_count' => null]);
         $this->clearCronInstanceCache();
@@ -306,6 +355,7 @@ final class DispatcherHelpersTest extends TestCase
     public function test_M15_一覧の列と編集対象の項目が_DB_に存在する(): void
     {
         $moduleModel = \Settings_CronTasks_Module_Model::getInstance('Settings:CronTasks');
+        self::assertInstanceOf(\Settings_CronTasks_Module_Model::class, $moduleModel, 'M15 モジュールモデルを取得できる');
 
         // PearDatabase は連想キーを小文字にして返す
         $db = $this->cronDb();
@@ -331,31 +381,31 @@ final class DispatcherHelpersTest extends TestCase
     {
         $view = new \Settings_CronTasks_EditAjax_View();
 
-        $hours = $this->invokeProtected($view, 'getHourChoices');
+        $hours = $this->invokeProtectedArray($view, 'getHourChoices');
         self::assertCount(24, $hours, 'M16 時の候補は 24 個');
-        self::assertSame(['00', '23'], [$hours[0], $hours[23]], 'M16 時は 2 桁で並ぶ');
+        self::assertSame(['00', '23'], [$hours[0] ?? null, $hours[23] ?? null], 'M16 時は 2 桁で並ぶ');
 
-        $weekdays = $this->invokeProtected($view, 'getWeekdayChoices');
+        $weekdays = $this->invokeProtectedArray($view, 'getWeekdayChoices');
         self::assertCount(7, $weekdays, 'M16 曜日の候補は 7 個');
-        self::assertSame(0, $weekdays[0]['value'], 'M16 曜日は日曜（0）から始まる');
+        self::assertSame(0, $this->choiceValue($weekdays, 0), 'M16 曜日は日曜（0）から始まる');
 
-        $days = $this->invokeProtected($view, 'getDayChoices');
+        $days = $this->invokeProtectedArray($view, 'getDayChoices');
         self::assertCount(32, $days, 'M16 日の候補は月末 + 31 個');
-        self::assertSame(0, $days[0]['value'], 'M16 先頭は月末（0）');
+        self::assertSame(0, $this->choiceValue($days, 0), 'M16 先頭は月末（0）');
 
         // 分は 5 分刻み。5 分刻みでない値が設定されている場合はその値も候補に含める
         $name = $this->makeTask('Choices', $this->fixtureHandler('noop1.service'));
-        $id = (int) $this->getCol($name, 'id');
+        $id = $this->getColInt($name, 'id');
 
         $this->setCols($name, ['schedule_type' => Vtiger_Cron::SCHEDULE_DAILY, 'run_at_minutes' => 3 * 60]);
         $this->clearCronInstanceCache();
         $record = Settings_CronTasks_Record_Model::getInstanceById($id, 'Settings:CronTasks');
-        self::assertCount(12, $this->invokeProtected($view, 'getMinuteChoices', [$record]), 'M16 分の候補は 5 分刻みで 12 個');
+        self::assertCount(12, $this->invokeProtectedArray($view, 'getMinuteChoices', [$record]), 'M16 分の候補は 5 分刻みで 12 個');
 
         $this->setCols($name, ['run_at_minutes' => 3 * 60 + 7]);
         $this->clearCronInstanceCache();
         $record = Settings_CronTasks_Record_Model::getInstanceById($id, 'Settings:CronTasks');
-        $minutes = $this->invokeProtected($view, 'getMinuteChoices', [$record]);
+        $minutes = $this->invokeProtectedArray($view, 'getMinuteChoices', [$record]);
         self::assertCount(13, $minutes, 'M16 5 分刻みでない現在値を候補に足す');
         self::assertContains('07', $minutes, 'M16 現在値（07）が候補に含まれる');
     }
@@ -367,8 +417,10 @@ final class DispatcherHelpersTest extends TestCase
             Settings_CronTasks_Record_Model::getInstanceById(0, 'Settings:CronTasks'),
             'M17 存在しないレコードはモデルを取得できない'
         );
-        self::assertTrue(
-            is_subclass_of('Settings_CronTasks_LogAjax_View', 'Settings_Vtiger_Index_View'),
+        // 継承チェーンを実際にたどって確かめる（リテラル同士の is_subclass_of は静的に畳まれる）
+        self::assertContains(
+            'Settings_Vtiger_Index_View',
+            array_keys(class_parents(\Settings_CronTasks_LogAjax_View::class) ?: []),
             'M17 実行ログ画面は管理者向けの基底クラスを継承する'
         );
         self::assertGreaterThan(0, \Settings_CronTasks_LogAjax_View::DISPLAY_LINES, 'M17 表示行数に上限がある');

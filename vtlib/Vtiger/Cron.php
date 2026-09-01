@@ -384,7 +384,7 @@ class Vtiger_Cron {
 	 * 曜日は複数指定できる。基準時刻より後で最初に来る、指定曜日の指定時刻を返す。
 	 * 当日が指定曜日でも時刻を過ぎていれば、次の該当曜日（同じ週の後の曜日、または翌週）になる。
 	 *
-	 * @param integer|array $weekdays 曜日（0=日曜 〜 6=土曜）。配列またはカンマ区切りで複数指定できる。
+	 * @param integer|array|string $weekdays 曜日（0=日曜 〜 6=土曜）。配列またはカンマ区切りの文字列で複数指定できる。
 	 * @param integer $runAtMinutes 実行する時刻（0 時からの経過分）
 	 * @param integer $reference 基準時刻（UNIX時間）。省略時は現在時刻。
 	 * @return integer

@@ -100,18 +100,22 @@ require_once $projectRoot . '/include/database/PearDatabase.php';
 // ファイルスコープで読み込まれた場合（PHPUnit のプロセス分離で作られる子プロセスなど）は
 // その再読み込みがグローバルの $dbconfig へ届き、接続先が開発用DBへ戻ってしまう。
 // テスト用DBの指定を読み直しの後にもう一度あてて、接続をやり直す。
-$GLOBALS['dbconfig']['db_name'] = $testDbName;
+/** @var array<string, mixed> $reloadedDbConfig */
+$reloadedDbConfig = $GLOBALS['dbconfig'];
+$reloadedDbConfig['db_name'] = $testDbName;
 if ($envDbHost !== false && $envDbHost !== '') {
-    $GLOBALS['dbconfig']['db_server'] = $envDbHost;
+    $reloadedDbConfig['db_server'] = $envDbHost;
 }
 if ($envDbUsername !== false && $envDbUsername !== '') {
-    $GLOBALS['dbconfig']['db_username'] = $envDbUsername;
+    $reloadedDbConfig['db_username'] = $envDbUsername;
 }
 if ($envDbPassword !== false) {
-    $GLOBALS['dbconfig']['db_password'] = $envDbPassword;
+    $reloadedDbConfig['db_password'] = $envDbPassword;
 }
-$GLOBALS['dbconfig']['db_hostname'] = $dbConfigString($GLOBALS['dbconfig'], 'db_server')
-    . $dbConfigString($GLOBALS['dbconfig'], 'db_port');
+$reloadedDbConfig['db_hostname'] = $dbConfigString($reloadedDbConfig, 'db_server')
+    . $dbConfigString($reloadedDbConfig, 'db_port');
+$GLOBALS['dbconfig'] = $reloadedDbConfig;
+unset($reloadedDbConfig);
 try {
     $bootstrapReconnect = PearDatabase::getInstance();
     $bootstrapReconnect->resetSettings('', '', '', '', '');

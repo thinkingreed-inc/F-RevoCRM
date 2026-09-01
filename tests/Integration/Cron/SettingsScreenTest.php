@@ -21,6 +21,13 @@ use Vtiger_Cron;
 
 require_once dirname(__DIR__, 2) . '/Support/CronTestSupport.php';
 
+$cronTestRoot = dirname(__DIR__, 3);
+
+require_once $cronTestRoot . '/include/database/PearDatabase.php';
+require_once $cronTestRoot . '/include/utils/CommonUtils.php';
+require_once $cronTestRoot . '/vtlib/Vtiger/Cron.php';
+require_once $cronTestRoot . '/include/utils/CronDispatcher.php';
+
 /**
  * J. 管理画面（システム設定 > スケジューラ）— #1823
  *
@@ -50,7 +57,6 @@ final class SettingsScreenTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        self::loadCronClasses();
         self::enableVtigerAutoload();
         self::primeLanguageCache();
     }
@@ -72,7 +78,7 @@ final class SettingsScreenTest extends TestCase
         self::suppressCoreWarnings();
 
         $this->taskName = $this->makeTask('Ui', $this->fixtureHandler('noop1.service'));
-        $this->recordId = (int) $this->getCol($this->taskName, 'id');
+        $this->recordId = $this->getColInt($this->taskName, 'id');
     }
 
     protected function tearDown(): void
@@ -81,7 +87,11 @@ final class SettingsScreenTest extends TestCase
         $this->cleanUpCron();
     }
 
-    /** 管理画面からの保存と同じ経路を通す */
+    /**
+     * 管理画面からの保存と同じ経路を通す
+     *
+     * @param array<string, mixed> $values
+     */
     private function saveViaSettings(array $values): void
     {
         $record = Settings_CronTasks_Record_Model::getInstanceById($this->recordId, 'Settings:CronTasks');
@@ -110,7 +120,7 @@ final class SettingsScreenTest extends TestCase
 
         self::assertSame(
             '00',
-            date('i', (int) $this->getCol($this->taskName, 'next_run_at')),
+            date('i', $this->getColInt($this->taskName, 'next_run_at')),
             'J1 周期 3600 秒なら next_run_at が毎時 00 分になる'
         );
         self::assertNull($this->getCol($this->taskName, 'run_at_minutes'), 'J1 周期実行では run_at_minutes が NULL のまま');
@@ -126,14 +136,14 @@ final class SettingsScreenTest extends TestCase
             'retry_timeout'  => 0,
         ]);
 
-        self::assertSame('daily', (string) $this->getCol($this->taskName, 'schedule_type'), 'J2 schedule_type が daily になる');
-        self::assertSame('210', (string) $this->getCol($this->taskName, 'run_at_minutes'), 'J2 run_at_minutes が保存される');
+        self::assertSame('daily', $this->getColString($this->taskName, 'schedule_type'), 'J2 schedule_type が daily になる');
+        self::assertSame('210', $this->getColString($this->taskName, 'run_at_minutes'), 'J2 run_at_minutes が保存される');
         self::assertSame(
             '03:30',
-            date('H:i', (int) $this->getCol($this->taskName, 'next_run_at')),
+            date('H:i', $this->getColInt($this->taskName, 'next_run_at')),
             'J2 next_run_at が指定時刻（3:30）になる'
         );
-        self::assertSame('86400', (string) $this->getCol($this->taskName, 'frequency'), 'J2 周期は 1 日に揃えられる');
+        self::assertSame('86400', $this->getColString($this->taskName, 'frequency'), 'J2 周期は 1 日に揃えられる');
     }
 
     public function test_J2_毎週実行へ変更できる(): void
@@ -147,13 +157,13 @@ final class SettingsScreenTest extends TestCase
             'retry_timeout'    => 0,
         ]);
 
-        self::assertSame('weekly', (string) $this->getCol($this->taskName, 'schedule_type'), 'J2 毎週: schedule_type が weekly になる');
-        self::assertSame('5', (string) $this->getCol($this->taskName, 'run_on_weekdays'), 'J2 毎週: 曜日が保存される');
+        self::assertSame('weekly', $this->getColString($this->taskName, 'schedule_type'), 'J2 毎週: schedule_type が weekly になる');
+        self::assertSame('5', $this->getColString($this->taskName, 'run_on_weekdays'), 'J2 毎週: 曜日が保存される');
 
-        $nextRunAt = (int) $this->getCol($this->taskName, 'next_run_at');
+        $nextRunAt = $this->getColInt($this->taskName, 'next_run_at');
         self::assertSame('5', date('w', $nextRunAt), 'J2 毎週: next_run_at が金曜になる');
         self::assertSame('09:00', date('H:i', $nextRunAt), 'J2 毎週: next_run_at の時刻が 09:00');
-        self::assertSame('604800', (string) $this->getCol($this->taskName, 'frequency'), 'J2 毎週: 周期は 1 週間に揃えられる');
+        self::assertSame('604800', $this->getColString($this->taskName, 'frequency'), 'J2 毎週: 周期は 1 週間に揃えられる');
     }
 
     public function test_J2_毎月実行_月末_へ変更できる(): void
@@ -167,10 +177,10 @@ final class SettingsScreenTest extends TestCase
             'retry_timeout'  => 0,
         ]);
 
-        self::assertSame('monthly', (string) $this->getCol($this->taskName, 'schedule_type'), 'J2 毎月: schedule_type が monthly になる');
-        self::assertSame('0', (string) $this->getCol($this->taskName, 'run_on_day'), 'J2 毎月: 月末（0）が保存される');
+        self::assertSame('monthly', $this->getColString($this->taskName, 'schedule_type'), 'J2 毎月: schedule_type が monthly になる');
+        self::assertSame('0', $this->getColString($this->taskName, 'run_on_day'), 'J2 毎月: 月末（0）が保存される');
 
-        $nextRunAt = (int) $this->getCol($this->taskName, 'next_run_at');
+        $nextRunAt = $this->getColInt($this->taskName, 'next_run_at');
         self::assertSame(date('t', $nextRunAt), date('j', $nextRunAt), 'J2 毎月: next_run_at が月末の日になる');
         self::assertSame('02:00', date('H:i', $nextRunAt), 'J2 毎月: next_run_at の時刻が 02:00');
         self::assertNull($this->getCol($this->taskName, 'run_on_weekdays'), 'J2 毎月: 曜日は消される');
@@ -187,9 +197,9 @@ final class SettingsScreenTest extends TestCase
             'retry_timeout'   => 0,
         ]);
 
-        self::assertSame('1,3,5', (string) $this->getCol($this->taskName, 'run_on_weekdays'), 'J2 複数曜日: 重複を除き昇順で保存される');
+        self::assertSame('1,3,5', $this->getColString($this->taskName, 'run_on_weekdays'), 'J2 複数曜日: 重複を除き昇順で保存される');
 
-        $nextRunAt = (int) $this->getCol($this->taskName, 'next_run_at');
+        $nextRunAt = $this->getColInt($this->taskName, 'next_run_at');
         self::assertContains(
             (int) date('w', $nextRunAt),
             [1, 3, 5],
@@ -205,7 +215,7 @@ final class SettingsScreenTest extends TestCase
             'run_on_weekdays' => '4,2',
             'retry_timeout'   => 0,
         ]);
-        self::assertSame('2,4', (string) $this->getCol($this->taskName, 'run_on_weekdays'), 'J2 複数曜日: カンマ区切りの文字列でも保存できる');
+        self::assertSame('2,4', $this->getColString($this->taskName, 'run_on_weekdays'), 'J2 複数曜日: カンマ区切りの文字列でも保存できる');
     }
 
     public function test_J3_周期実行へ戻すと時刻や曜日の指定が消える(): void
@@ -228,10 +238,10 @@ final class SettingsScreenTest extends TestCase
             'retry_timeout'   => 0,
         ]);
 
-        self::assertSame('interval', (string) $this->getCol($this->taskName, 'schedule_type'), 'J3 周期実行に戻すと schedule_type が interval になる');
+        self::assertSame('interval', $this->getColString($this->taskName, 'schedule_type'), 'J3 周期実行に戻すと schedule_type が interval になる');
         self::assertNull($this->getCol($this->taskName, 'run_at_minutes'), 'J3 周期実行に戻すと run_at_minutes が消える');
         self::assertNull($this->getCol($this->taskName, 'run_on_day'), 'J3 周期実行に戻すと run_on_day が消える');
-        self::assertSame('900', (string) $this->getCol($this->taskName, 'frequency'), 'J3 周期が指定値に戻る');
+        self::assertSame('900', $this->getColString($this->taskName, 'frequency'), 'J3 周期が指定値に戻る');
     }
 
     /**
@@ -247,6 +257,7 @@ final class SettingsScreenTest extends TestCase
         ];
     }
 
+    /** @param array<string, mixed> $input */
     #[DataProvider('invalidScheduleInputs')]
     public function test_J4_値が欠けているか範囲外なら周期実行にフォールバックする(array $input, string $message): void
     {
@@ -255,7 +266,7 @@ final class SettingsScreenTest extends TestCase
             $input
         ));
 
-        self::assertSame('interval', (string) $this->getCol($this->taskName, 'schedule_type'), $message);
+        self::assertSame('interval', $this->getColString($this->taskName, 'schedule_type'), $message);
     }
 
     public function test_J5_タイムアウトの保存と表示(): void
@@ -268,7 +279,7 @@ final class SettingsScreenTest extends TestCase
             'retry_timeout'  => 1800,
         ]);
 
-        self::assertSame('1800', (string) $this->getCol($this->taskName, 'retry_timeout'), 'J5 タイムアウトが保存される');
+        self::assertSame('1800', $this->getColString($this->taskName, 'retry_timeout'), 'J5 タイムアウトが保存される');
         self::assertSame('00:30', $this->record()->getDisplayValue('retry_timeout'), 'J5 タイムアウトの表示が 00:30 になる');
 
         $this->saveViaSettings([
@@ -386,7 +397,7 @@ final class SettingsScreenTest extends TestCase
 
     public function test_J9_日時列は経過時間ではなく日時で表示する(): void
     {
-        $timestamp = mktime(14, 30, 0, 8, 20, 2026);
+        $timestamp = (int) mktime(14, 30, 0, 8, 20, 2026);
         $this->setCols($this->taskName, [
             'laststart'   => $timestamp,
             'lastend'     => $timestamp + 90,
@@ -439,10 +450,10 @@ final class SettingsScreenTest extends TestCase
             'retry_timeout'  => 0,
         ]);
 
-        self::assertSame('300', (string) $this->getCol($this->taskName, 'frequency'), 'J11 5 分（300 秒）の周期を保存できる');
+        self::assertSame('300', $this->getColString($this->taskName, 'frequency'), 'J11 5 分（300 秒）の周期を保存できる');
         self::assertSame(
             0,
-            (int) $this->getCol($this->taskName, 'next_run_at') % 300,
+            $this->getColInt($this->taskName, 'next_run_at') % 300,
             'J11 5 分周期の next_run_at が 5 分のグリッドに乗る'
         );
     }
