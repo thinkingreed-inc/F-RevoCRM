@@ -174,7 +174,7 @@ $languageStrings = array(
   'LBL_OCTOBER' => 'Oktober',
   'LBL_NOVEMBER' => 'November',
   'LBL_DECEMBER' => 'December',
-	'LBL_CLICK_HERE_TO_VIEW' => 'Klicka här för att se',
+	'LBL_CLICK_HERE_TO_VIEW' => 'Klicka här för att se posten',
 
 	'LBL_TOTAL_EVENTS_DUPLICATED' => 'Antal dubbla händelser hoppas över',
 	'LBL_TOTAL_TASKS_DUPLICATED' => 'Antal dubbla uppgifter hoppas över',
