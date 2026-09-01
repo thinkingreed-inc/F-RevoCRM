@@ -77,7 +77,7 @@ final class SettingsScreenTest extends TestCase
         // 表示系は vtiger の言語処理・日時処理を通り、そこに既存の警告があるため
         self::suppressCoreWarnings();
 
-        $this->taskName = $this->makeTask('Ui', $this->fixtureHandler('noop1.service'));
+        $this->taskName = $this->makeTask('Ui', $this->stubHandler('noop1.service'));
         $this->recordId = $this->getColInt($this->taskName, 'id');
     }
 

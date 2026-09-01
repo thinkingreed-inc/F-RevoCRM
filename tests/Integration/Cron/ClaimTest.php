@@ -54,7 +54,7 @@ final class ClaimTest extends TestCase
         $this->requireCronDatabase();
         $this->prepareCronCurrentUser();
         $this->cleanUpCronTasks();
-        $this->taskName = $this->makeTask('ClaimA', $this->fixtureHandler('noop1.service'));
+        $this->taskName = $this->makeTask('ClaimA', $this->stubHandler('noop1.service'));
     }
 
     protected function tearDown(): void
@@ -202,7 +202,7 @@ final class ClaimTest extends TestCase
         $handles = [];
         for ($i = 0; $i < $workers; $i++) {
             $command = sprintf(
-                '%s -d xdebug.mode=off -f tests/fixtures/cron/claim_worker.php -- %s %s %s 2>/dev/null',
+                '%s -d xdebug.mode=off -f tests/Support/cron/claim_worker.php -- %s %s %s 2>/dev/null',
                 escapeshellarg(PHP_BINARY),
                 escapeshellarg($this->taskName),
                 escapeshellarg(sprintf('%.4f', $startAt)),

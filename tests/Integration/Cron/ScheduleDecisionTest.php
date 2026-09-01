@@ -58,9 +58,9 @@ final class ScheduleDecisionTest extends TestCase
     public function test_D1_D2_遅れが大きい順に並び同着は入力順を保つ(): void
     {
         $now = $this->dbNow();
-        $slight = $this->makeTask('UrgSlight', $this->fixtureHandler('noop1.service'));
-        $heavy = $this->makeTask('UrgHeavy', $this->fixtureHandler('noop2.service'));
-        $tie = $this->makeTask('UrgTie', $this->fixtureHandler('noop3.service'));
+        $slight = $this->makeTask('UrgSlight', $this->stubHandler('noop1.service'));
+        $heavy = $this->makeTask('UrgHeavy', $this->stubHandler('noop2.service'));
+        $tie = $this->makeTask('UrgTie', $this->stubHandler('noop3.service'));
 
         // 遅れは予定時刻（next_run_at）からの経過で測る。
         // slight = 60 秒 / heavy = 3600 秒 / tie = 60 秒
@@ -83,8 +83,8 @@ final class ScheduleDecisionTest extends TestCase
     public function test_D3_next_run_at_未設定なら従来の相対計算で並べる(): void
     {
         $now = $this->dbNow();
-        $slight = $this->makeTask('UrgSlight', $this->fixtureHandler('noop1.service'));
-        $heavy = $this->makeTask('UrgHeavy', $this->fixtureHandler('noop2.service'));
+        $slight = $this->makeTask('UrgSlight', $this->stubHandler('noop1.service'));
+        $heavy = $this->makeTask('UrgHeavy', $this->stubHandler('noop2.service'));
 
         $this->setCols($slight, ['next_run_at' => 0, 'laststart' => $now - 960, 'lastend' => $now - 960]);
         $this->setCols($heavy, ['next_run_at' => 0, 'laststart' => $now - 4500, 'lastend' => $now - 4500]);
@@ -100,7 +100,7 @@ final class ScheduleDecisionTest extends TestCase
 
     public function test_E1_E2_next_run_at_で実行するかを決める(): void
     {
-        $name = $this->makeTask('Sched', $this->fixtureHandler('noop1.service'));
+        $name = $this->makeTask('Sched', $this->stubHandler('noop1.service'));
         $now = $this->dbNow();
 
         $this->setCols($name, ['next_run_at' => $now + 600]);
@@ -112,7 +112,7 @@ final class ScheduleDecisionTest extends TestCase
 
     public function test_E3_next_run_at_未設定なら従来の相対判定にフォールバックする(): void
     {
-        $name = $this->makeTask('Sched', $this->fixtureHandler('noop1.service'));
+        $name = $this->makeTask('Sched', $this->stubHandler('noop1.service'));
         $now = $this->dbNow();
 
         $this->setCols($name, ['next_run_at' => 0, 'laststart' => $now - 100, 'lastend' => 0]);
@@ -130,7 +130,7 @@ final class ScheduleDecisionTest extends TestCase
 
     public function test_E4_無効化されたタスクは実行しない(): void
     {
-        $name = $this->makeTask('Sched', $this->fixtureHandler('noop1.service'));
+        $name = $this->makeTask('Sched', $this->stubHandler('noop1.service'));
         $this->setCols($name, ['status' => Vtiger_Cron::$STATUS_DISABLED, 'next_run_at' => 1]);
 
         self::assertFalse($this->reload($name)->isRunnable(), 'E4 無効化されたタスクは実行しない');
@@ -138,7 +138,7 @@ final class ScheduleDecisionTest extends TestCase
 
     public function test_E5_完了後の次回予定がグリッドに乗り遅れを持ち越さない(): void
     {
-        $name = $this->makeTask('Sched', $this->fixtureHandler('noop1.service'));
+        $name = $this->makeTask('Sched', $this->stubHandler('noop1.service'));
         $this->setCols($name, ['status' => Vtiger_Cron::$STATUS_RUNNING]);
 
         $this->reload($name)->markFinished();

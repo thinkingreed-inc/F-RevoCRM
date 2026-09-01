@@ -49,7 +49,7 @@ final class StatusTest extends TestCase
         $this->prepareCronCurrentUser();
         $this->cleanUpCronTasks();
         $this->host = FR_CronDispatcher::getHostName();
-        $this->taskName = $this->makeTask('Status', $this->fixtureHandler('noop1.service'));
+        $this->taskName = $this->makeTask('Status', $this->stubHandler('noop1.service'));
     }
 
     protected function tearDown(): void

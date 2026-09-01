@@ -107,7 +107,7 @@ final class ExecutionLogTest extends TestCase
 
     public function test_K1_ログが無い状態を安全に扱う(): void
     {
-        $name = $this->makeTask('Log', $this->fixtureHandler('noop1.service'));
+        $name = $this->makeTask('Log', $this->stubHandler('noop1.service'));
         $task = $this->reload($name);
         foreach (FR_CronDispatcher::findLogFiles($task, 10) as $existing) {
             @unlink($existing);
@@ -122,7 +122,7 @@ final class ExecutionLogTest extends TestCase
 
     public function test_K2_最新の日付のログが選ばれる(): void
     {
-        $name = $this->makeTask('Log', $this->fixtureHandler('noop1.service'));
+        $name = $this->makeTask('Log', $this->stubHandler('noop1.service'));
         $task = $this->reload($name);
 
         $older = $this->directory . DIRECTORY_SEPARATOR . FR_CronDispatcher::getLogFileName($task, '20260101');
@@ -138,7 +138,7 @@ final class ExecutionLogTest extends TestCase
 
     public function test_K3_指定した行数だけ末尾から取り出す(): void
     {
-        $name = $this->makeTask('Log', $this->fixtureHandler('noop1.service'));
+        $name = $this->makeTask('Log', $this->stubHandler('noop1.service'));
         $task = $this->reload($name);
         $file = $this->directory . DIRECTORY_SEPARATOR . FR_CronDispatcher::getLogFileName($task, '20260102');
         $this->written[] = $file;
@@ -160,7 +160,7 @@ final class ExecutionLogTest extends TestCase
 
     public function test_K4_バイト上限で切り詰める(): void
     {
-        $name = $this->makeTask('Log', $this->fixtureHandler('noop1.service'));
+        $name = $this->makeTask('Log', $this->stubHandler('noop1.service'));
         $task = $this->reload($name);
         $file = $this->directory . DIRECTORY_SEPARATOR . FR_CronDispatcher::getLogFileName($task, '20260102');
         $this->written[] = $file;
@@ -175,7 +175,7 @@ final class ExecutionLogTest extends TestCase
 
     public function test_K5_タスク名の記号はファイル名に持ち込まない(): void
     {
-        $trickyName = $this->makeTask('../../etc/passwd Log', $this->fixtureHandler('noop2.service'));
+        $trickyName = $this->makeTask('../../etc/passwd Log', $this->stubHandler('noop2.service'));
         $fileName = FR_CronDispatcher::getLogFileName($this->reload($trickyName), '20260101');
 
         self::assertSame(0, preg_match('#[^A-Za-z0-9_\-\.]#', $fileName), 'K5 ファイル名に記号やパス区切りが残らない');
@@ -187,7 +187,7 @@ final class ExecutionLogTest extends TestCase
         self::assertSame(30, FR_CronDispatcher::getLogRetentionCount(), 'K6 保持世代数の既定は 30');
 
         $GLOBALS['cron_log_retention_count'] = 3;
-        $pruneName = $this->makeTask('Prune', $this->fixtureHandler('noop4.service'));
+        $pruneName = $this->makeTask('Prune', $this->stubHandler('noop4.service'));
         $base = FR_CronDispatcher::getLogBaseName($this->reload($pruneName));
 
         $dates = ['20260101', '20260102', '20260103', '20260104', '20260105'];
@@ -219,7 +219,7 @@ final class ExecutionLogTest extends TestCase
     public function test_K7_保持世代数0なら削除しない(): void
     {
         $GLOBALS['cron_log_retention_count'] = 0;
-        $pruneName = $this->makeTask('Prune', $this->fixtureHandler('noop4.service'));
+        $pruneName = $this->makeTask('Prune', $this->stubHandler('noop4.service'));
         $base = FR_CronDispatcher::getLogBaseName($this->reload($pruneName));
         $files = $this->makeLogs($base, ['20260101', '20260102', '20260103', '20260104', '20260105']);
 
@@ -230,7 +230,7 @@ final class ExecutionLogTest extends TestCase
     public function test_K10_タスクごとの指定が既定値より優先される(): void
     {
         $GLOBALS['cron_log_retention_count'] = 30;
-        $pruneName = $this->makeTask('Prune', $this->fixtureHandler('noop4.service'));
+        $pruneName = $this->makeTask('Prune', $this->stubHandler('noop4.service'));
         $base = FR_CronDispatcher::getLogBaseName($this->reload($pruneName));
         $dates = ['20260101', '20260102', '20260103', '20260104', '20260105'];
 
@@ -259,7 +259,7 @@ final class ExecutionLogTest extends TestCase
     public function test_K11_対応するタスクが無いログも既定値で削除される(): void
     {
         $GLOBALS['cron_log_retention_count'] = 1;
-        $pruneName = $this->makeTask('Prune', $this->fixtureHandler('noop4.service'));
+        $pruneName = $this->makeTask('Prune', $this->stubHandler('noop4.service'));
 
         $orphanFiles = $this->makeLogs('FRTestCronOrphan', ['20260101', '20260102']);
         FR_CronDispatcher::pruneLogFiles([$this->reload($pruneName)]);
@@ -271,8 +271,8 @@ final class ExecutionLogTest extends TestCase
     public function test_K12_タスクごとに独立して数える(): void
     {
         $GLOBALS['cron_log_retention_count'] = 2;
-        $pruneName = $this->makeTask('Prune', $this->fixtureHandler('noop4.service'));
-        $otherName = $this->makeTask('PruneOther', $this->fixtureHandler('noop5.service'));
+        $pruneName = $this->makeTask('Prune', $this->stubHandler('noop4.service'));
+        $otherName = $this->makeTask('PruneOther', $this->stubHandler('noop5.service'));
         $base = FR_CronDispatcher::getLogBaseName($this->reload($pruneName));
         $otherBase = FR_CronDispatcher::getLogBaseName($this->reload($otherName));
 
@@ -295,7 +295,7 @@ final class ExecutionLogTest extends TestCase
         @unlink($stamp);
 
         $GLOBALS['cron_log_retention_count'] = 1;
-        $pruneName = $this->makeTask('Prune', $this->fixtureHandler('noop4.service'));
+        $pruneName = $this->makeTask('Prune', $this->stubHandler('noop4.service'));
         $base = FR_CronDispatcher::getLogBaseName($this->reload($pruneName));
 
         try {

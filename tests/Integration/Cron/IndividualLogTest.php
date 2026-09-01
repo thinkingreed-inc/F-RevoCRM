@@ -92,7 +92,7 @@ final class IndividualLogTest extends TestCase
 
     public function test_L1_L3_単体実行でタスクごとのログが作られる(): void
     {
-        $name = $this->makeTask('SingleLog', $this->fixtureHandler('noop1.service'));
+        $name = $this->makeTask('SingleLog', $this->stubHandler('noop1.service'));
         $logFile = $this->todaysLogFile($name);
         @unlink($logFile);
         $this->markDue($name);
@@ -111,7 +111,7 @@ final class IndividualLogTest extends TestCase
 
     public function test_L5_同じ日の再実行で追記される(): void
     {
-        $name = $this->makeTask('SingleLog', $this->fixtureHandler('noop1.service'));
+        $name = $this->makeTask('SingleLog', $this->stubHandler('noop1.service'));
         $logFile = $this->todaysLogFile($name);
         @unlink($logFile);
 
@@ -129,7 +129,7 @@ final class IndividualLogTest extends TestCase
 
     public function test_L4_例外で終わってもログが残る(): void
     {
-        $failName = $this->makeTask('SingleLogFail', $this->fixtureHandler('thrower.service'));
+        $failName = $this->makeTask('SingleLogFail', $this->stubHandler('thrower.service'));
         $failLog = $this->todaysLogFile($failName);
         @unlink($failLog);
         $this->markDue($failName);
@@ -146,7 +146,7 @@ final class IndividualLogTest extends TestCase
 
     public function test_L6_子プロセスモードでは二重に書かない(): void
     {
-        $childName = $this->makeTask('ChildLog', $this->fixtureHandler('noop2.service'));
+        $childName = $this->makeTask('ChildLog', $this->stubHandler('noop2.service'));
         $childLog = $this->todaysLogFile($childName);
         @unlink($childLog);
 

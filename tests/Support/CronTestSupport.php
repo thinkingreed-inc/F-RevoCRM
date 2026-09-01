@@ -392,7 +392,7 @@ trait CronTestSupport
     protected function runCli(string $arguments): array
     {
         $command = sprintf(
-            '%s -d xdebug.mode=off -f tests/fixtures/cron/run_vtigercron.php -- %s 2>&1',
+            '%s -d xdebug.mode=off -f tests/Support/cron/run_vtigercron.php -- %s 2>&1',
             escapeshellarg(PHP_BINARY),
             $arguments
         );
@@ -403,9 +403,13 @@ trait CronTestSupport
         return ['output' => implode("\n", $output), 'status' => (int) $status];
     }
 
-    /** テスト用ハンドラ（.service）の、プロジェクトルートからの相対パス */
-    protected function fixtureHandler(string $fileName): string
+    /**
+     * スタブのハンドラ（.service）の、プロジェクトルートからの相対パス。
+     *
+     * 実物の cron ハンドラの代わりにテスト対象へ実行させる小さなスクリプト。
+     */
+    protected function stubHandler(string $fileName): string
     {
-        return 'tests/fixtures/cron/' . $fileName;
+        return 'tests/Support/cron/' . $fileName;
     }
 }

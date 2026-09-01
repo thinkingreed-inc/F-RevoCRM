@@ -129,7 +129,7 @@ final class DispatcherHelpersTest extends TestCase
 
     public function test_M3_getLogFile_がログディレクトリを用意する(): void
     {
-        $name = $this->makeTask('LogDir', $this->fixtureHandler('noop1.service'));
+        $name = $this->makeTask('LogDir', $this->stubHandler('noop1.service'));
         $directory = FR_CronDispatcher::getLogDirectory();
 
         // 空であれば「無い状態から作られる」ことまで確認できる
@@ -150,7 +150,7 @@ final class DispatcherHelpersTest extends TestCase
 
     public function test_M4_実効的なタイムアウト(): void
     {
-        $name = $this->makeTask('Timeout', $this->fixtureHandler('noop2.service'));
+        $name = $this->makeTask('Timeout', $this->stubHandler('noop2.service'));
 
         $this->setCols($name, ['retry_timeout' => 120]);
         self::assertSame(120, FR_CronDispatcher::getEffectiveRetryTimeout($this->reload($name)), 'M4 タスクに値があればそれを使う');
@@ -165,7 +165,7 @@ final class DispatcherHelpersTest extends TestCase
 
     public function test_M9_タイムアウト超過の境界(): void
     {
-        $name = $this->makeTask('Timeout', $this->fixtureHandler('noop2.service'));
+        $name = $this->makeTask('Timeout', $this->stubHandler('noop2.service'));
         $now = $this->dbNow();
 
         $this->setCols($name, [
@@ -189,7 +189,7 @@ final class DispatcherHelpersTest extends TestCase
 
     public function test_M9_ハートビート途絶の境界(): void
     {
-        $name = $this->makeTask('Timeout', $this->fixtureHandler('noop2.service'));
+        $name = $this->makeTask('Timeout', $this->stubHandler('noop2.service'));
         $now = $this->dbNow();
         $heartbeatTimeout = FR_CronDispatcher::getHeartbeatTimeout();
 
@@ -202,7 +202,7 @@ final class DispatcherHelpersTest extends TestCase
 
     public function test_M9_担当ホストの判定(): void
     {
-        $name = $this->makeTask('Timeout', $this->fixtureHandler('noop2.service'));
+        $name = $this->makeTask('Timeout', $this->stubHandler('noop2.service'));
 
         $this->setCols($name, ['owner_host' => $this->host]);
         self::assertTrue(FR_CronDispatcher::isOwnedByThisHost($this->reload($name)), 'M9 担当が自ホストなら true');
@@ -216,7 +216,7 @@ final class DispatcherHelpersTest extends TestCase
 
     public function test_M8_子プロセスの_PID_を記録する(): void
     {
-        $name = $this->makeTask('Timeout', $this->fixtureHandler('noop2.service'));
+        $name = $this->makeTask('Timeout', $this->stubHandler('noop2.service'));
         $this->setCols($name, ['owner_host' => '', 'owner_pid' => 0, 'last_heartbeat' => 0]);
 
         FR_CronDispatcher::recordChildPid($this->reload($name));
@@ -228,7 +228,7 @@ final class DispatcherHelpersTest extends TestCase
 
     public function test_M6_実行中の件数(): void
     {
-        $name = $this->makeTask('Count', $this->fixtureHandler('noop3.service'));
+        $name = $this->makeTask('Count', $this->stubHandler('noop3.service'));
         $now = $this->dbNow();
         $this->setCols($name, [
             'status'         => Vtiger_Cron::$STATUS_RUNNING,
@@ -261,7 +261,7 @@ final class DispatcherHelpersTest extends TestCase
 
     public function test_M10_describe_が返す配列の形(): void
     {
-        $name = $this->makeTask('Describe', $this->fixtureHandler('noop4.service'));
+        $name = $this->makeTask('Describe', $this->stubHandler('noop4.service'));
 
         $rows = FR_CronDispatcher::describe([$this->reload($name)]);
 
@@ -274,7 +274,7 @@ final class DispatcherHelpersTest extends TestCase
 
     public function test_M13_担当サーバー名のサニタイズと表示(): void
     {
-        $name = $this->makeTask('Display', $this->fixtureHandler('noop5.service'));
+        $name = $this->makeTask('Display', $this->stubHandler('noop5.service'));
         $id = $this->getColInt($name, 'id');
         $now = $this->dbNow();
 
@@ -325,7 +325,7 @@ final class DispatcherHelpersTest extends TestCase
 
     public function test_M18_ログ保持世代数の表示(): void
     {
-        $name = $this->makeTask('Display', $this->fixtureHandler('noop5.service'));
+        $name = $this->makeTask('Display', $this->stubHandler('noop5.service'));
         $id = $this->getColInt($name, 'id');
 
         $this->setCols($name, ['log_retention_count' => null]);
@@ -394,7 +394,7 @@ final class DispatcherHelpersTest extends TestCase
         self::assertSame(0, $this->choiceValue($days, 0), 'M16 先頭は月末（0）');
 
         // 分は 5 分刻み。5 分刻みでない値が設定されている場合はその値も候補に含める
-        $name = $this->makeTask('Choices', $this->fixtureHandler('noop1.service'));
+        $name = $this->makeTask('Choices', $this->stubHandler('noop1.service'));
         $id = $this->getColInt($name, 'id');
 
         $this->setCols($name, ['schedule_type' => Vtiger_Cron::SCHEDULE_DAILY, 'run_at_minutes' => 3 * 60]);

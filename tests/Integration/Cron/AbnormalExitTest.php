@@ -102,7 +102,7 @@ final class AbnormalExitTest extends TestCase
     #[\PHPUnit\Framework\Attributes\DataProvider('abnormalExitCases')]
     public function test_F1_F3_異常終了しても実行状態が残らない(string $suffix, string $handler): void
     {
-        $name = $this->makeTask($suffix, $this->fixtureHandler($handler));
+        $name = $this->makeTask($suffix, $this->stubHandler($handler));
 
         // 子プロセスモードは実行権を親が獲得済みである前提
         FR_CronDispatcher::claim($this->reload($name));
@@ -127,8 +127,8 @@ final class AbnormalExitTest extends TestCase
     {
         $this->freezeExistingTasks();
 
-        $first = $this->makeTask('SerialFail', $this->fixtureHandler('thrower.service'));
-        $second = $this->makeTask('SerialOk', $this->fixtureHandler('noop1.service'));
+        $first = $this->makeTask('SerialFail', $this->stubHandler('thrower.service'));
+        $second = $this->makeTask('SerialOk', $this->stubHandler('noop1.service'));
         $this->setCols($first, ['next_run_at' => 1, 'status' => Vtiger_Cron::$STATUS_ENABLED]);
         $this->setCols($second, ['next_run_at' => 1, 'status' => Vtiger_Cron::$STATUS_ENABLED]);
 
@@ -163,7 +163,7 @@ final class AbnormalExitTest extends TestCase
 
     public function test_G2_単体実行でタスクが同期実行され完了が記録される(): void
     {
-        $name = $this->makeTask('Single', $this->fixtureHandler('noop1.service'));
+        $name = $this->makeTask('Single', $this->stubHandler('noop1.service'));
         $this->setCols($name, [
             'next_run_at' => 1,
             'status'      => Vtiger_Cron::$STATUS_ENABLED,

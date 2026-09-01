@@ -54,7 +54,7 @@ final class ReapTest extends TestCase
         $this->requireCronDatabase();
         $this->cleanUpCronTasks();
         $this->host = FR_CronDispatcher::getHostName();
-        $this->taskName = $this->makeTask('ReapB', $this->fixtureHandler('noop1.service'));
+        $this->taskName = $this->makeTask('ReapB', $this->stubHandler('noop1.service'));
     }
 
     protected function tearDown(): void

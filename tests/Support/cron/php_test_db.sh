@@ -24,4 +24,4 @@ if [ "$1" = "--" ]; then
 fi
 
 exec "${FREVOCRM_TEST_PHP:-php}" -d xdebug.mode=off \
-    -f "$TESTS_DIR/fixtures/cron/run_vtigercron.php" -- "$@"
+    -f "$TESTS_DIR/Support/cron/run_vtigercron.php" -- "$@"

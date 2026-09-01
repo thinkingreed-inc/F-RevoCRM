@@ -1,4 +1,5 @@
 <?php
+
 /**
  * 実行権の獲得（FR_CronDispatcher::claim）を複数プロセスから同時に行うためのワーカー。
  *

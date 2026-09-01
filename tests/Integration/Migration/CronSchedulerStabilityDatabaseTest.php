@@ -83,7 +83,7 @@ final class CronSchedulerStabilityDatabaseTest extends TestCase
         Vtiger_Cron::deregister(self::TASK_NAME);
         Vtiger_Cron::register(
             self::TASK_NAME,
-            'tests/fixtures/cron/noop1.service',
+            'tests/Support/cron/noop1.service',
             900,
             'Home',
             1,

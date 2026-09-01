@@ -57,8 +57,8 @@ final class DispatchTest extends TestCase
         $this->requireCronDatabase();
         $this->cleanUpCronTasks();
 
-        $this->taskA = $this->makeTask('DispA', $this->fixtureHandler('noop1.service'));
-        $this->taskB = $this->makeTask('DispB', $this->fixtureHandler('noop2.service'));
+        $this->taskA = $this->makeTask('DispA', $this->stubHandler('noop1.service'));
+        $this->taskB = $this->makeTask('DispB', $this->stubHandler('noop2.service'));
 
         $this->due = [
             'status'         => Vtiger_Cron::$STATUS_ENABLED,
@@ -96,7 +96,7 @@ final class DispatchTest extends TestCase
         @unlink($logFile);
 
         // 子プロセスもテスト用DB へ接続させる
-        $GLOBALS['cron_php_binary'] = dirname(__DIR__, 2) . '/fixtures/cron/php_test_db.sh';
+        $GLOBALS['cron_php_binary'] = dirname(__DIR__, 2) . '/Support/cron/php_test_db.sh';
         putenv('FREVOCRM_TEST_PHP=' . PHP_BINARY);
 
         $this->allowParallel();

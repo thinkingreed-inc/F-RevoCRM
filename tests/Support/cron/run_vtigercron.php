@@ -1,4 +1,5 @@
 <?php
+
 /**
  * vtigercron.php を「テスト用DB へ接続した状態」で実行するための入口。
  *
@@ -13,7 +14,7 @@
  * PHPUnit が bootstrap を関数スコープで読み込むのと同じ理屈。
  *
  * 引数はそのまま vtigercron.php へ渡す。
- *   php tests/fixtures/cron/run_vtigercron.php --serial
+ *   php tests/Support/cron/run_vtigercron.php --serial
  */
 
 (static function (): void {

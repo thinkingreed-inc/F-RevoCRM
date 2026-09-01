@@ -55,7 +55,7 @@ final class TaskScheduleTypeTest extends TestCase
     {
         $this->requireCronDatabase();
         $this->cleanUpCronTasks();
-        $this->taskName = $this->makeTask('Daily', $this->fixtureHandler('noop1.service'));
+        $this->taskName = $this->makeTask('Daily', $this->stubHandler('noop1.service'));
         $this->reference = (int) mktime(10, 7, 33, 8, 25, 2026);
     }
 
