@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         colors="true"
+         cacheDirectory="tests/.phpunit.cache"
+         executionOrder="depends,defects"
+         beStrictAboutOutputDuringTests="true"
+         failOnRisky="true"
+         failOnWarning="true">
+    <!-- テストDB名は tests/bootstrap.php が決める (既定: config.inc.php の db_name + '_test')。
+         別名を使う場合は環境変数 FREVOCRM_TEST_DB_NAME を指定する。
+         例: <php><env name="FREVOCRM_TEST_DB_NAME" value="frevocrm_test" force="true"/></php> -->
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Integration">
+            <directory>tests/Integration</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory suffix=".php">modules/Inventory/actions</directory>
+            <directory suffix=".php">modules/PurchaseOrder/actions</directory>
+            <directory suffix=".php">modules/Users/actions</directory>
+            <directory suffix=".php">modules/Users/models</directory>
+        </include>
+    </source>
+</phpunit>

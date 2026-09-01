@@ -26,5 +26,27 @@
         "nyholm/psr7": "^1.8",
         "nyholm/psr7-server": "^1.1",
         "symfony/http-foundation": "^5.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10",
+        "friendsofphp/php-cs-fixer": "^3.86",
+        "phpstan/phpstan": "^2.1"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "FrevoCRM\\Tests\\": "tests/",
+            "Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "platform": {
+            "php": "8.3.0"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "cs-check": "php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff",
+        "cs-fix": "php-cs-fixer fix --config=.php-cs-fixer.dist.php",
+        "phpstan": "@php -d auto_prepend_file=phpstan-shim.php vendor/bin/phpstan analyse"
     }
 }

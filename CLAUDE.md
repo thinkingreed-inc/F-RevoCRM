@@ -15,6 +15,7 @@ F-RevoCRM は vtiger ベースの PHP 製 CRM。`modules/` 配下に機能モジ
 | `languages/` | 多言語ファイル |
 | `cron/` | 定期実行ジョブ |
 | `assets/react-web-components/` | React 製 Web コンポーネント（Vite / Vitest / Tailwind） |
+| `tests/` | PHP 側テスト（PHPUnit）。詳細は `tests/README.md` |
 
 ## 構造・命名規約
 
@@ -49,6 +50,21 @@ F-RevoCRM は vtiger ベースの PHP 製 CRM。`modules/` 配下に機能モジ
 - **JSON は必ず型付けする**: レスポンス／データには `src/types` に型定義を置き、`any` を避ける。
 - コミット前に **`npm run lint` / `npm run format`** を通す。
 
+### PHPUnit（PHP 側テスト）
+
+- 設定は `phpunit.xml`、ブートストラップは `tests/bootstrap.php`。実行は `./vendor/bin/phpunit`。
+- テストは `tests/Unit/`（DB 不要）と `tests/Integration/`（DB 使用）に分け、本体のディレクトリ構成に合わせて配置する。
+- `tests/bootstrap.php` が接続先を **テスト用 DB（既定は `config.inc.php` の `db_name` + `_test`）に強制**する。開発 DB を壊さないための安全装置なので外さないこと。
+- 共通スタブ・ヘルパは `tests/Support/` に置く。書き方の詳細は `tests/README.md`。
+- 実行は `composer test`（`vendor/bin/phpunit` のエイリアス）でもよい。
+
+### 静的解析・整形（php-cs-fixer / phpstan）
+
+- **対象は新規・変更したファイルだけ**。既存コードは vtiger 由来で PSR-12 差分と型指摘が大量に出るため、一括適用しない（baseline も持たない）。
+- 整形: `composer cs-check -- <path>` で差分確認 → `composer cs-fix -- <path>` で適用。設定は `.php-cs-fixer.dist.php`（`@PSR12` ベース）。
+- 静的解析: `composer phpstan -- <path>`（level 9）。`phpstan-shim.php` を `auto_prepend_file` で読ませないと `Vtiger_Loader` が `php7_count()` 未定義で落ちるため、素の `vendor/bin/phpstan` ではなく composer script 経由で実行する。
+- `strict_param` は**有効化しない**。`in_array` の第 3 引数が強制 true 化され、`Vtiger_Module_Model::isActive()` が常に false を返す事故があった（`.php-cs-fixer.dist.php` のコメント参照）。
+
 ### マイグレーション（DB 変更）
 
 - DB のスキーマ・データ変更は手動 SQL でなく `setup/migration/` のコマンドで行う。詳細は `setup/migration/README.md`。
@@ -63,4 +79,4 @@ F-RevoCRM は vtiger ベースの PHP 製 CRM。`modules/` 配下に機能モジ
 ### Don't
 - **コア由来を直接改変しない**: `vtlib/` / `includes/` / `modules/Vtiger/`（アップグレードで上書き・フォールバック元のため）
 - `config*.php` の秘匿値をコミットしない
-- **テスト・ビルド系コマンド（`vitest` / `npm run build` 等）は、実行前に同じプロセスが動いていないか確認**してから実行する
+- **テスト・ビルド系コマンド（`phpunit` / `vitest` / `npm run build` 等）は、実行前に同じプロセスが動いていないか確認**してから実行する

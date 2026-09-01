@@ -100,6 +100,10 @@ jobs:
                 "|---:|---:|---:|---:|---:|",
                 `| ${pass} | ${fail} | ${flaky} | ${skip} | ${sec}s |`,
                 "",
+                "> 単独実行が必要な spec (`tests/7_モジュール管理`: モジュールを",
+                "> グローバルに ON/OFF するため workers=1 の別実行) の結果はこの表に",
+                "> 含まれません。ジョブのログと Playwright レポートを参照してください。",
+                "",
               ].join("\n");
               require("fs").appendFileSync(process.env.GITHUB_STEP_SUMMARY, md + "\n");
             '
@@ -114,6 +118,21 @@ jobs:
           name: playwright-report
           path: e2e/playwright-report/
           retention-days: 7
+
+      # 実測結果(json)。docs/e2e-catalog の「実測」列に取り込める:
+      #   gh run download <run-id> -n playwright-results -D /tmp/ci
+      #   cd e2e && npm run e2e:catalog -- --results /tmp/ci/playwright-results.json \
+      #                                    --results /tmp/ci/playwright-results-serial.json
+      - name: Upload Playwright results (json)
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: |
+            e2e/playwright-results.json
+            e2e/playwright-results-serial.json
+          retention-days: 7
+          if-no-files-found: warn
 
       - name: Dump container logs on failure
         if: ${{ failure() }}
