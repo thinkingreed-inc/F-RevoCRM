@@ -1,0 +1,9 @@
+<?php
+/**
+ * テスト用の cron ハンドラ（Error を投げる）。
+ *
+ * PHP 7 以降、未定義関数の呼び出しは Exception ではなく Error になる。
+ * catch (Exception) では捕捉できず catch (Throwable) が必要であることを確認するために使う。
+ */
+echo "FRTestCron: calling an undefined function\n";
+fr_test_cron_undefined_function();

@@ -1,0 +1,17 @@
+<?php
+/**
+ * テスト用の cron ハンドラ（捕捉できない fatal error で停止する）。
+ *
+ * try/catch で捕捉できる Error（未定義関数の呼び出しや require の失敗など）ではなく、
+ * メモリ不足による E_ERROR を起こす。これは Throwable ではないため catch では止められず、
+ * markFinished() に到達しないまま停止する。
+ * vtigercron.php の register_shutdown_function が実行状態を解除できるかを確認するために使う。
+ */
+echo "FRTestCron: about to die with a fatal error (memory exhaustion)\n";
+
+// 現在の使用量に少しだけ上乗せした上限を設定し、そこを超えるまで確保し続ける
+ini_set('memory_limit', memory_get_usage(true) + 8 * 1024 * 1024);
+$frTestCronBuffer = array();
+while (true) {
+    $frTestCronBuffer[] = str_repeat('x', 1024 * 1024);
+}

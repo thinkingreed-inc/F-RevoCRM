@@ -2325,6 +2325,16 @@ CREATE TABLE `vtiger_cron_task` (
   `module` varchar(100) DEFAULT NULL,
   `sequence` int DEFAULT NULL,
   `description` text,
+  `retry_timeout` int DEFAULT '0',
+  `next_run_at` int unsigned DEFAULT '0',
+  `owner_host` varchar(255) DEFAULT NULL,
+  `owner_pid` int unsigned DEFAULT '0',
+  `last_heartbeat` int unsigned DEFAULT '0',
+  `schedule_type` varchar(16) NOT NULL DEFAULT 'interval',
+  `run_at_minutes` int DEFAULT NULL,
+  `run_on_weekdays` varchar(20) DEFAULT NULL,
+  `run_on_day` tinyint DEFAULT NULL,
+  `log_retention_count` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   UNIQUE KEY `handler_file` (`handler_file`)
@@ -2337,7 +2347,7 @@ CREATE TABLE `vtiger_cron_task` (
 
 LOCK TABLES `vtiger_cron_task` WRITE;
 /*!40000 ALTER TABLE `vtiger_cron_task` DISABLE KEYS */;
-INSERT INTO `vtiger_cron_task` VALUES (1,'Workflow','cron/modules/com_vtiger_workflow/com_vtiger_workflow.service',900,NULL,NULL,1,'com_vtiger_workflow',1,'Recommended frequency for Workflow is 15 mins'),(2,'RecurringInvoice','cron/modules/SalesOrder/RecurringInvoice.service',43200,NULL,NULL,1,'SalesOrder',2,'Recommended frequency for RecurringInvoice is 12 hours'),(3,'SendReminder','cron/SendReminder.service',900,NULL,NULL,1,'Calendar',3,'Recommended frequency for SendReminder is 15 mins'),(5,'MailScanner','cron/MailScanner.service',900,NULL,NULL,1,'Settings',5,'Recommended frequency for MailScanner is 15 mins'),(6,'Scheduled Import','cron/modules/Import/ScheduledImport.service',900,NULL,NULL,0,'Import',6,'Recommended frequency for MailScanner is 15 mins'),(7,'ScheduleReports','cron/modules/Reports/ScheduleReports.service',900,NULL,NULL,1,'Reports',7,'Recommended frequency for ScheduleReports is 15 mins');
+INSERT INTO `vtiger_cron_task` VALUES (1,'Workflow','cron/modules/com_vtiger_workflow/com_vtiger_workflow.service',900,NULL,NULL,1,'com_vtiger_workflow',1,'Recommended frequency for Workflow is 15 mins',3600,0,NULL,0,0,'interval',NULL,NULL,NULL,NULL),(2,'RecurringInvoice','cron/modules/SalesOrder/RecurringInvoice.service',43200,NULL,NULL,1,'SalesOrder',2,'Recommended frequency for RecurringInvoice is 12 hours',86400,0,NULL,0,0,'interval',NULL,NULL,NULL,NULL),(3,'SendReminder','cron/SendReminder.service',900,NULL,NULL,1,'Calendar',3,'Recommended frequency for SendReminder is 15 mins',3600,0,NULL,0,0,'interval',NULL,NULL,NULL,NULL),(5,'MailScanner','cron/MailScanner.service',900,NULL,NULL,1,'Settings',5,'Recommended frequency for MailScanner is 15 mins',3600,0,NULL,0,0,'interval',NULL,NULL,NULL,NULL),(6,'Scheduled Import','cron/modules/Import/ScheduledImport.service',900,NULL,NULL,0,'Import',6,'Recommended frequency for MailScanner is 15 mins',21600,0,NULL,0,0,'interval',NULL,NULL,NULL,NULL),(7,'ScheduleReports','cron/modules/Reports/ScheduleReports.service',900,NULL,NULL,1,'Reports',7,'Recommended frequency for ScheduleReports is 15 mins',10800,0,NULL,0,0,'interval',NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `vtiger_cron_task` ENABLE KEYS */;
 UNLOCK TABLES;
 

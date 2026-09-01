@@ -12,7 +12,11 @@ class Settings_CronTasks_Module_Model extends Settings_Vtiger_Module_Model {
 
 	var $baseTable = 'vtiger_cron_task';
 	var $baseIndex = 'id';
-	var $listFields = array('sequence' => 'Sequence', 'name' => 'Cron Job', 'frequency' => 'Frequency(H:M)', 'status' => 'Status', 'laststart' => 'Last Start', 'lastend' => 'Last End');
+	// frequency 列は周期だけでなく「毎日 03:30」のような指定も表示するため、
+	// 見出しは「周期」ではなく「実行タイミング」にしている
+	var $listFields = array('sequence' => 'Sequence', 'name' => 'Cron Job', 'frequency' => 'LBL_SCHEDULE_TYPE',
+			'retry_timeout' => 'LBL_RETRY_TIMEOUT', 'status' => 'Status',
+			'laststart' => 'Last Start', 'lastend' => 'Last End', 'next_run_at' => 'LBL_NEXT_RUN_AT');
 	var $nameFields = array('');
 	var $name = 'CronTasks';
 
@@ -21,7 +25,9 @@ class Settings_CronTasks_Module_Model extends Settings_Vtiger_Module_Model {
 	 * @return <Array> List of fieldNames
 	 */
 	public function getEditableFieldsList() {
-		return array('frequency', 'status');
+		return array('frequency', 'status', 'retry_timeout',
+				'schedule_type', 'run_at_minutes', 'run_on_weekdays', 'run_on_day',
+				'log_retention_count');
 	}
 
 	/**

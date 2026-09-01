@@ -8,6 +8,8 @@
  * All Rights Reserved.
  *************************************************************************************/
 
+include_once 'include/utils/CronDispatcher.php';
+
 class Settings_CronTasks_List_View extends Settings_Vtiger_List_View {
 
 	public function initializeListViewContents(Vtiger_Request $request, Vtiger_Viewer $viewer) {
@@ -33,6 +35,11 @@ class Settings_CronTasks_List_View extends Settings_Vtiger_List_View {
 		$viewer->assign('LISTVIEW_HEADERS', $this->listViewHeaders);
 		$viewer->assign('LISTVIEW_ENTRIES', $this->listViewEntries);
 		$viewer->assign('CURRENT_USER_MODEL', Users_Record_Model::getCurrentUserModel());
+
+		// 同時に実行できるタスク数。上限に達した回は次回の起動まで見送られるため、
+		// 実行が遅れる原因の切り分けに使えるよう画面から見えるようにする。
+		$viewer->assign('MAX_PARALLEL', FR_CronDispatcher::getMaxParallel());
+		$viewer->assign('IS_PARALLEL_SUPPORTED', FR_CronDispatcher::isSupported());
 	}
 
 	/**
@@ -59,6 +66,8 @@ class Settings_CronTasks_List_View extends Settings_Vtiger_List_View {
 
 		$cssFileNames = array(
 			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/jquery/perfect-scrollbar/css/perfect-scrollbar.css",
+			// 一覧のカーソルなど、この画面だけの調整
+			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/modules/Settings/CronTasks/resources/css/style.css",
 		);
 		$cssInstances = $this->checkAndConvertCssStyles($cssFileNames);
 		$headerCssInstances = array_merge($headerCssInstances, $cssInstances);

@@ -7,6 +7,9 @@
 .claude
 .idea/*
 logs/*.log
+logs/cron/
+cache/cron/
+cache/vtigercron.lock
 cache/images/*
 !cache/images/.htaccess
 cache/import/*
