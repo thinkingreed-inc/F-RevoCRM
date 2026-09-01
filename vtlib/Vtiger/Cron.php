@@ -732,6 +732,10 @@ class Vtiger_Cron {
 	protected static function initializeSchema() {
 		if(!self::$schemaInitialized) {
 			if(!Vtiger_Utils::CheckTable('vtiger_cron_task')) {
+				// 列の構成は setup/sql/dump_firstinstall.sql および
+				// setup/migration/scripts/20260825112920_setup_cron_scheduler_stability.php と
+				// 揃えること。新規インストールと移行はそちらで行われるためこの経路は通常通らないが、
+				// 食い違うとテーブルが無い環境でだけ列が欠けた状態になる。
 				Vtiger_Utils::CreateTable('vtiger_cron_task',
 						'(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 					name VARCHAR(100) UNIQUE KEY, handler_file VARCHAR(100) UNIQUE KEY,
@@ -739,7 +743,10 @@ class Vtiger_Cron {
 										sequence int,description TEXT,
 										retry_timeout int DEFAULT 0, next_run_at int(11) unsigned DEFAULT 0,
 										owner_host VARCHAR(255) DEFAULT NULL, owner_pid int(11) unsigned DEFAULT 0,
-										last_heartbeat int(11) unsigned DEFAULT 0 )',true);
+										last_heartbeat int(11) unsigned DEFAULT 0,
+										schedule_type VARCHAR(16) NOT NULL DEFAULT \'interval\',
+										run_at_minutes int DEFAULT NULL, run_on_weekdays VARCHAR(20) DEFAULT NULL,
+										run_on_day tinyint DEFAULT NULL, log_retention_count int DEFAULT NULL )',true);
 			}
 			self::$schemaInitialized = true;
 		}
