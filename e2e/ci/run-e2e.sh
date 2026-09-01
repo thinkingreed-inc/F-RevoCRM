@@ -16,6 +16,10 @@
 #   ./e2e/ci/run-e2e.sh
 #   ※既存の db-store ボリュームがあると dump が投入されないため、先に `docker compose down -v` すること。
 #   ※普段の開発 (実 DB 直アクセス) には使わない。
+#   ※アプリが書き込むディレクトリ (test / cache / storage / logs / user_privileges) を 0777 にする。
+#     コンテナには repo ツリーをマウントしているためホスト側にも反映され、終了しても戻らない。
+#     開発機で実行する場合はこの点に注意すること。
+#     (config.inc.php は内容・パーミッションとも終了時に復元する)
 #
 # 認証情報は dump に焼き込んだ「固定テスト値」と一致させること (下記デフォルト)。
 set -euo pipefail
@@ -36,15 +40,26 @@ E2E_USER_ACCESSKEY="${E2E_USER_ACCESSKEY:-PqllmJsVZ0Kv5ICx}"
 # (ローカル実行時、この repo ツリーの config.inc.php が開発用の実設定である場合に
 #  CI 用の値で恒久的に上書きしてしまうのを防ぐ。CI はまっさらなので退避対象なし)
 CONFIG_BAK=""
+CONFIG_MODE=""
 if [ -f config.inc.php ]; then
   CONFIG_BAK="$(mktemp)"
   cp config.inc.php "$CONFIG_BAK"
+  # 後段で 0666 に緩めるため、元のパーミッションも控えて終了時に戻す
+  CONFIG_MODE="$(stat -c '%a' config.inc.php 2>/dev/null || stat -f '%Lp' config.inc.php 2>/dev/null || echo '')"
   echo "==> 既存 config.inc.php を退避 (終了時に復元します)"
 fi
 restore_config() {
   if [ -n "$CONFIG_BAK" ] && [ -f "$CONFIG_BAK" ]; then
     cp "$CONFIG_BAK" config.inc.php && rm -f "$CONFIG_BAK"
-    echo "==> config.inc.php を復元しました"
+    # config.inc.php は DB 接続情報を含むため、0666 のまま放置しない。
+    # (内容だけ戻してパーミッションを戻さないと、同一ホストの他ユーザーから
+    #  読み書きできる状態が残る)
+    if [ -n "$CONFIG_MODE" ]; then
+      chmod "$CONFIG_MODE" config.inc.php
+      echo "==> config.inc.php を復元しました (パーミッションも ${CONFIG_MODE} に戻しました)"
+    else
+      echo "==> config.inc.php を復元しました"
+    fi
   fi
 }
 trap restore_config EXIT
@@ -105,6 +120,7 @@ echo "==> アプリが書き込むディレクトリの権限調整"
 $COMPOSE exec -T php bash -lc 'mkdir -p test/templates_c test/vtlib cache/images cache/import storage logs user_privileges && chmod -R 0777 test cache storage logs user_privileges'
 # 構成エディタ(F-05)は保存で config.inc.php を書き換えるため、www-data から
 # 書けるようにしておく。書けないと保存が黙って失敗し、値が反映されない。
+# (DB 接続情報を含むファイルなので、終了時に restore_config が元のパーミッションへ戻す)
 $COMPOSE exec -T php bash -lc 'chmod 0666 config.inc.php'
 
 echo "==> composer install"
