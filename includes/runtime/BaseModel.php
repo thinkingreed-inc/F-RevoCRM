@@ -84,7 +84,13 @@ class Vtiger_Base_Model {
 	 * @param String $key
 	 */
 	public function has($key) {
-		return array_key_exists($key, $this->valueMap);
+		if (is_array($this->valueMap)) {
+			return array_key_exists($key, $this->valueMap);
+		}
+		if ($this->valueMap instanceof ArrayAccess) {
+			return $this->valueMap->offsetExists($key);
+		}
+		return false;
 	}
 
 	/**
