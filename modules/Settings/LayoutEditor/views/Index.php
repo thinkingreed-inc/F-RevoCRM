@@ -196,7 +196,6 @@ class Settings_LayoutEditor_Index_View extends Settings_Vtiger_Index_View {
 		$viewer->assign('QUALIFIED_MODULE', $qualifiedModule);
 		$viewer->assign('USER_MODEL', Users_Record_Model::getCurrentUserModel());
 		$viewer->assign('HEADER_FIELDS_COUNT', $headerFieldsCount);
-		$viewer->assign('IS_NAME_FIELD', in_array($fieldInstance->getName(), $moduleModel->getNameFields()));
 
 		$cleanFieldModel = Settings_LayoutEditor_Field_Model::getCleanInstance();
 		$cleanFieldModel->setModule($moduleModel);
