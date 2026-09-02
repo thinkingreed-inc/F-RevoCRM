@@ -3,6 +3,17 @@ import "./index.css";
 import { QuickCreate, CalendarQuickCreate } from "@/components/QuickCreate";
 import { AppMenu } from "@/components/AppMenu";
 import { ActivityList } from "@/components/ActivityList";
+import {
+  CalendarColorPicker,
+  getCalendarColorHexes,
+} from "@/components/CalendarColorPicker";
+
+declare global {
+  interface Window {
+    /** カレンダー色のプリセット（#rrggbb の配列）。Calendar.js から参照する */
+    CalendarColorPalette?: string[];
+  }
+}
 
 // QuickCreate本体コンポーネントの登録
 // イベント: save, cancel, go-to-full-form, open-change (CustomEvent)
@@ -54,3 +65,23 @@ createWebComponent(ActivityList, "activity-list", [
   "limit",
   "refresh-key",
 ]);
+
+// CalendarColorPicker コンポーネントの登録（カレンダーの色選択UI）
+// Tailwind のプリセット色から選ぶか、カスタム(RGB)で自由に指定できる。
+// 選択結果は同一 <form> 内の hidden input（input.selectedColor）へ書き込むため、
+// 保存・送信などの周辺処理は既存実装のまま変更不要。
+// value属性: 現在の色（#rrggbb）。フィールド/ユーザー変更時の自動設定にも使われる。
+// イベント: change (CustomEvent, detail = #rrggbb)
+//
+// 使用例（HTML）:
+// <calendar-color-picker value="#3b82f6"></calendar-color-picker>
+createWebComponent(
+  CalendarColorPicker,
+  "calendar-color-picker",
+  ["value"],
+  ["onChange"],
+);
+
+// カレンダー側の JS（Calendar.js の getRandomColor）が、色選択UIと同じプリセットから
+// 色を選べるようにパレットを公開する。色表を JS 側に複製しないための共有ポイント。
+window.CalendarColorPalette = getCalendarColorHexes();
