@@ -178,6 +178,9 @@ class Settings_Workflows_EditTask_View extends Settings_Vtiger_Index_View {
             }
         }
         
+		// VTCurlTask(vt-curl-task)用の差し込みフィールドと翻訳済みラベル
+		Settings_Workflows_CurlTask_Model::assignViewerData($viewer, $recordStructureInstance, $qualifiedModuleName);
+
 		$userList = $currentUser->getAccessibleUsers();
 		$groupList = $currentUser->getAccessibleGroups();
 		$assignedToValues = array();
