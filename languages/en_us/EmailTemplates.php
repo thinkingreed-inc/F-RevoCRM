@@ -23,6 +23,7 @@ $languageStrings = array(
 	'LBL_EMAIL_TEMPLATE_DESCRIPTION'=>'Manage templates for E-Mail module',
 	'LBL_NO_PERMISSIONS_TO_DELETE_SYSTEM_TEMPLATE' => 'No Permissions to delete System Template',
 	'LBL_RECORD_ID' => 'Record ID',
+	'LBL_MESSAGE' => 'Message',
 	
 	'Current Date' => 'Current Date',
 	'Current Time' => 'Current Time',
@@ -35,7 +36,41 @@ $languageStrings = array(
 	'Portal Url' => 'Portal Login URL',
 
 	'Email Template - Properties of ' => 'Email Template - Properties of ',
+	
+	// Email Template Names, Subjects, and Descriptions
+	'Invite Users' => 'Invite Users',
+	'Invitation' => 'Invitation',
+	'ToDo Reminder' => 'ToDo Reminder',
+	'Activity Reminder' => 'Activity Reminder',
+	'Reminder' => 'Reminder',
+	'Support end notification before a month' => 'Support end notification before a month',
+	'VtigerCRM Support Notification' => 'VtigerCRM Support Notification',
+	'Send Notification mail to customer before a month of support end date' => 'Send Notification mail to customer before a month of support end date',
+	'Support end notification before a week' => 'Support end notification before a week',
+	'Send Notification mail to customer before a week of support end date' => 'Send Notification mail to customer before a week of support end date',
+	'Customer Login Details' => 'Customer Login Details',
+	'Send Portal login details to customer' => 'Send Portal login details to customer',
+	'Thanks Note' => 'Thanks Note',
+	'Note of thanks' => 'Note of thanks',
+	'Target Crossed!' => 'Target Crossed!',
+	'Fantastic Sales Spree!' => 'Fantastic Sales Spree!',
+	'Follow Up' => 'Follow Up',
+	'Follow Up of meeting' => 'Follow Up of meeting',
+	'Address Change' => 'Address Change',
+	'Change of Address' => 'Change of Address',
+	'Accept Order' => 'Accept Order',
+	'Acknowledgement/Acceptance of Order' => 'Acknowledgement/Acceptance of Order',
+	'Goods received acknowledgement' => 'Goods received acknowledgement',
+	'Acknowledged Receipt of Goods' => 'Acknowledged Receipt of Goods',
+	'Acceptance Proposal' => 'Acceptance Proposal',
+	'Acceptance of Proposal' => 'Acceptance of Proposal',
+	'Pending Invoices' => 'Pending Invoices',
+	'Invoices Pending' => 'Invoices Pending',
+	'Payment Due' => 'Payment Due',
+	'Announcement for Release' => 'Announcement for Release',
+	'Announcement of a release' => 'Announcement of a release',
 );
+
 
 $jsLanguageStrings = array(
     'LBL_CUTOMER_LOGIN_DETAILS_TEMPLATE_DELETE_MESSAGE' => 'You will not be able to send the customer portal login details to the contact if you delete "Customer Login Details" template. Do you wish to continue ?',
