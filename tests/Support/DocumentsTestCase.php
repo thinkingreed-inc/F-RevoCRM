@@ -47,7 +47,33 @@ abstract class DocumentsTestCase extends TestCase
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
+        self::requireTestDatabase();
         self::bootFrevoCrm();
+    }
+
+    /**
+     * テスト用 DB につながらなければ、このクラスのテストをまるごと飛ばす
+     *
+     * CI（.github/workflows/phpunit.yml）は DB を立てずに composer test を走らせる。
+     * つながらないまま本体を初期化すると原因の分かりにくいエラーになるため、
+     * 理由を添えて skip する。ローカルで動かす手順は tests/README.md を参照。
+     */
+    private static function requireTestDatabase(): void
+    {
+        try {
+            $db = PearDatabase::getInstance();
+            $result = $db->pquery('SELECT DATABASE() AS dbname', []);
+            $connected = ($result !== false && $db->num_rows($result) === 1)
+                ? (string) $db->query_result($result, 0, 'dbname')
+                : '';
+        } catch (\Throwable $e) {
+            $connected = '';
+        }
+        if ($connected === '') {
+            self::markTestSkipped(
+                'テスト用DBに接続できないため飛ばします（tests/README.md のテスト用DBを参照）'
+            );
+        }
     }
 
     protected function setUp(): void

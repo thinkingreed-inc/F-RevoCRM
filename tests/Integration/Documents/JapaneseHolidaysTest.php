@@ -1,12 +1,12 @@
 <?php
 
-namespace Tests\Unit\Documents;
+namespace Tests\Integration\Documents;
 
-use FR_JapaneseHolidays;
 use Exception;
-use PHPUnit\Framework\TestCase;
+use FR_JapaneseHolidays;
+use Tests\Support\DocumentsTestCase;
 
-require_once dirname(__DIR__, 3) . '/tests/Support/LanguageHandlerStubs.php';
+require_once dirname(__DIR__, 3) . '/tests/Support/DocumentsTestCase.php';
 require_once dirname(__DIR__, 3) . '/include/utils/JapaneseHolidays.php';
 
 /**
@@ -16,9 +16,14 @@ require_once dirname(__DIR__, 3) . '/include/utils/JapaneseHolidays.php';
  *   4.5 国民の祝日の算出（DT-3 / BV-5）
  *   4.6 内閣府公表CSVの解析（DT-4）
  *
- * FR_JapaneseHolidays は DB を参照しないため Unit に置く。
+ * FR_JapaneseHolidays 自体は DB を参照しないが、例外メッセージの組み立てで
+ * vtranslate() を使う。この関数は includes/runtime/LanguageHandler.php が
+ * ガード無しで宣言しており、Unit 用のスタブで先に宣言すると結合テストが
+ * 本体を読み込む際に「Cannot redeclare」で落ちる。本体の vtranslate() は
+ * 実行ユーザー（Users_Record_Model）を要求するため Unit 単体では動かない。
+ * そのため本体を初期化する結合テスト側に置く。
  */
-final class JapaneseHolidaysTest extends TestCase
+final class JapaneseHolidaysTest extends DocumentsTestCase
 {
     /** CSV のヘッダー行（内閣府公表ファイルと同じ） */
     private const CSV_HEADER = "国民の祝日・休日月日,国民の祝日・休日名称\n";

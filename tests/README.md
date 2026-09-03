@@ -14,8 +14,9 @@ PHPUnit は `require-dev` に入っている。`composer.json` の `config.platf
 ## 実行
 
 ```bash
-composer test                                          # 全件（./vendor/bin/phpunit のエイリアス）
-./vendor/bin/phpunit                                   # 全件
+composer test                                          # Unit（既定。DB 不要）
+composer test:integration                              # Integration（テスト用 DB が要る）
+./vendor/bin/phpunit                                   # Unit（phpunit.xml の defaultTestSuite）
 ./vendor/bin/phpunit --testsuite Unit                  # Unit のみ
 ./vendor/bin/phpunit tests/Unit/Inventory              # ディレクトリ指定
 ./vendor/bin/phpunit tests/Unit/Inventory/IndividualTaxTranslationTest.php  # ファイル指定
@@ -23,6 +24,12 @@ composer test                                          # 全件（./vendor/bin/p
 ```
 
 設定は `phpunit.xml`（bootstrap / testsuite / カバレッジ対象）。
+`defaultTestSuite="Unit"` にしているため、引数なしの実行は Unit だけを走らせる。
+
+Unit と Integration を同じプロセスで走らせることはできない。Unit 用のスタブ
+（`tests/Support/LanguageHandlerStubs.php` の `Vtiger_Language_Handler` など）と
+本体のクラス・関数が衝突するため（本体側は再宣言のガードを持たない）。
+Integration は `composer test:integration` で別に実行する。
 
 main 向けの Pull Request では GitHub Actions（`.github/workflows/phpunit.yml`）が同じテストを実行する。
 `tests/Unit` は DB を使わないため、CI では DB を立てずに `config.template.php` から生成した
@@ -45,7 +52,7 @@ CI 側にも DB を用意するステップが必要になる。
 
 | パス | 対応する仕様書 |
 |---|---|
-| `tests/Unit/Documents/JapaneseHolidaysTest.php` | TS-01 4.5 祝日の算出 / 4.6 CSV解析（DB 不要） |
+| `tests/Integration/Documents/JapaneseHolidaysTest.php` | TS-01 4.5 祝日の算出 / 4.6 CSV解析 |
 | `tests/Integration/Documents/BusinessDayTest.php` | TS-01 4.1〜4.4 営業日・休祝日 |
 | `tests/Integration/Documents/DeadlineTest.php` | TS-03 入力期限 |
 | `tests/Integration/Documents/DeleteGuardTest.php` | TS-05 電帳法対象の削除禁止 |
@@ -77,6 +84,13 @@ final class FooTest extends DocumentsTestCase
 `tests/bootstrap.php` は `Vtiger_Loader` のオートロードを外すが、結合テストは本体を
 まるごと使うため `DocumentsTestCase::setUpBeforeClass()` で登録し直している
 （PHPUnit のクラス探索が終わった後なので探索には影響しない）。
+
+`FR_JapaneseHolidays` 自体は DB を使わないが、例外メッセージの組み立てで `vtranslate()` を
+呼ぶ。この関数は本体の `includes/runtime/LanguageHandler.php` にあり、実行ユーザーを要求する
+（Unit のスタブで代用すると Integration 側と衝突する）。そのため Integration に置いている。
+
+テスト用 DB につながらない場合、`DocumentsTestCase` を継承したテストは理由付きで skip する。
+DB を用意していない CI でも `composer test:integration` が赤くならないようにするため。
 
 vtiger のコア側（`LanguageHandler` / `VTEntityDelta` / log4php など）が出す
 PHP 警告・非推奨の通知が大量に出るが、これは移植前からある既存の状態で、
