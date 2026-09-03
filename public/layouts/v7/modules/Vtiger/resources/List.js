@@ -723,7 +723,7 @@ Vtiger.Class("Vtiger_List_Js", {
 		if (totalPageNumber === "") {
 			var totalCountElem = listViewContainer.find('#totalCount');
 			var totalRecordCount = totalCountElem.val();
-			if (totalRecordCount !== '') {
+			if (totalRecordCount !== '' && totalRecordCount !== '0') {
 				var recordPerPage = listViewContainer.find('#pageLimit').val();
 				if (recordPerPage === '0')
 					recordPerPage = 1;
