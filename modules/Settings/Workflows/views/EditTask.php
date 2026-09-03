@@ -136,8 +136,10 @@ class Settings_Workflows_EditTask_View extends Settings_Vtiger_Index_View {
 		}
         
         $usersModuleModel = Vtiger_Module_Model::getInstance('Users');
-        $emailFieldoptions .= '<option value=",$(general : (__VtigerMeta__) reports_to_id)"> '.
-                                    vtranslate($moduleModel->getField('assigned_user_id')->get('label'),'Users').' : (' . vtranslate('Users','Users') . ') '. vtranslate($usersModuleModel->getField('reports_to_id')->get('label'),'Users') .'</option>';
+        if($moduleModel->getField('assigned_user_id')) {
+            $emailFieldoptions .= '<option value=",$(general : (__VtigerMeta__) reports_to_id)"> '.
+                                        vtranslate($moduleModel->getField('assigned_user_id')->get('label'),'Users').' : (' . vtranslate('Users','Users') . ') '. vtranslate($usersModuleModel->getField('reports_to_id')->get('label'),'Users') .'</option>';
+        }
         
 		$nameFields = $recordStructureInstance->getNameFields();
 		$fromEmailFieldOptions = '<option value="">'. vtranslate('Optional', $qualifiedModuleName) .'</option>';

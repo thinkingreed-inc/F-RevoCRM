@@ -25,7 +25,10 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { transformCalendarDateTime } from "../../utils/datetime";
 import { validateFieldByUIType } from "../../utils/validation";
 import { syncJoditEditorFormData } from "../../utils/joditEditor";
-import { isFutureEventHeldInvalid } from "./utils/calendarValidation";
+import {
+  isDateRangeInvalid,
+  isFutureEventHeldInvalid,
+} from "./utils/calendarValidation";
 
 /**
  * Activity type for Calendar variant
@@ -532,6 +535,11 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
 
     if (calendarFields.length > 0) {
       const calInitial: Record<string, any> = { ...initialData };
+      // 終日（is_allday）は活動（Events）のみの概念。
+      // カレンダーの終日エリアクリックでは initialData に is_allday が入るが、
+      // ToDo タブには終日チェックボックスが無く、持ち込むと開始時刻の入力欄が
+      // 消えたまま解除できなくなるため除外する
+      delete calInitial.is_allday;
       calendarFields.forEach((field) => {
         if (!(field.name in calInitial)) {
           const initialValue = getFieldInitialValue(field);
@@ -830,15 +838,8 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
     if (isCalendarVariant) {
       const dateStart = currentCalendarFormData["date_start"];
       const dueDate = currentCalendarFormData["due_date"];
-      if (
-        typeof dateStart === "string" &&
-        typeof dueDate === "string" &&
-        dateStart &&
-        dueDate
-      ) {
-        if (new Date(dateStart) > new Date(dueDate)) {
-          errors["due_date"] = t("LBL_END_DATE_AFTER_START");
-        }
+      if (isDateRangeInvalid(dateStart, dueDate)) {
+        errors["due_date"] = t("LBL_END_DATE_AFTER_START");
       }
       // 未来日付の活動はステータス「完了」(Held) で登録不可
       if (

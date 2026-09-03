@@ -1433,40 +1433,17 @@ function isRecordExistInDB($fieldData, $moduleMeta, $user, $cache) {
 		$fieldInstance = $moduleFields[$fieldName];
 		if ($fieldInstance->getFieldDataType() == 'reference') {
 			$entityId = false;
+			$referenceModuleName = null;
 			if (!empty($fieldValue)) {
-				if(strpos($fieldValue, '::::') > 0) {
-					$fieldValueDetails = explode('::::', $fieldValue);
-				} else if (strpos($fieldValue, ':::') > 0) {
-					$fieldValueDetails = explode(':::', $fieldValue);
-				} else {
-					$fieldValueDetails = array($fieldValue);
+				$parsed = Import_Reference_Model::parse($fieldValue);
+				try {
+					$entityId = Import_Reference_Model::resolve($parsed, $fieldInstance, $cache, $user, $moduleMeta->getEntityName());
+				} catch (ImportException $e) {
+					$entityId = false;
 				}
-				$fieldDetails = array();
-				foreach($fieldValueDetails as $fieldValueDetail){
-					if (strpos($fieldValueDetail, '====') > 0) {
-						$fieldDetail = explode('====', $fieldValueDetail);
-						$fieldDetails[$fieldDetail[0]] = $fieldDetail[1];
-					}
-				}
-				if (php7_count($fieldValueDetails) > 1 && !empty($fieldDetails)) {
-					$referenceModuleName = trim($fieldValueDetails[0]);
-					$referenceValueList = $fieldDetails;
-					$entityId = getEntityIdByColumns($referenceModuleName, $referenceValueList, $cache);
-				} else {
-					$referencedModules = $fieldInstance->getReferenceList();
-					$entityLabel = $fieldValue;
-					foreach ($referencedModules as $referenceModule) {
-						$referenceModuleName = $referenceModule;
-						try {
-							$referenceEntityId = getEntityIdByColumns($referenceModule, $entityLabel,$cache);
-							if ($referenceEntityId != 0) {
-								$entityId = $referenceEntityId;
-								break;
-							}
-						} catch (ImportException $e) {
-							continue;
-						}
-					}
+				if (!empty($entityId)) {
+					// 解決に使われたモジュールを権限判定のために特定する
+					$referenceModuleName = ($parsed['module'] !== null) ? $parsed['module'] : getSalesEntityType($entityId);
 				}
 				if (!empty($entityId) && $entityId != 0) {
 					$types = vtws_listtypes(null, $user);

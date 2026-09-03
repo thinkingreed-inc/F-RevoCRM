@@ -1674,6 +1674,10 @@ function insertIntoRecurringTable(& $recurObj)
 	
 
 	function getBeforeAssignedUserID() {
+		// VTEntityDelta は通常 ModTracker のイベントハンドラ経由で読み込まれるが、
+		// iCal インポート等(VTIGER_BULK_SAVE_MODE でハンドラが動かない経路)では
+		// 未ロードのまま到達して Fatal error になるため明示的に読み込む。
+		require_once 'data/VTEntityDelta.php';
 		$vtEntityDelta = new VTEntityDelta();
 		$delta = $vtEntityDelta->getEntityDelta('Events', $this->id, true);
 		if(!is_array($delta))						{	return 0;	}

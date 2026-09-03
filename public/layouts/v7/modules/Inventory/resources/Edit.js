@@ -1521,7 +1521,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 		var loopIterator = 1;
 		var taxDiv =
 				'<div class="taxUI hide" id="tax_div'+rowNumber+'">'+
-                     '<p class="popover_title hide"> Set Tax for : <span class="variable"></span></p>';
+                     '<p class="popover_title hide"> '+app.vtranslate('JS_SET_TAX_FOR')+' : <span class="variable"></span></p>';
 			if(!jQuery.isEmptyObject(taxObj)){
 				taxDiv +=
 					'<div class="individualTaxDiv">'+
@@ -1533,7 +1533,7 @@ Vtiger_Edit_Js("Inventory_Edit_Js", {
 							'<tr>'+
 								'<td>  '+taxInfo.taxlabel+'</td>'+
 								'<td style="text-align: right;">'+
-									'<input type="text" name="'+taxName+'_percentage'+rowNumber+'" data-rule-positive=true data-rule-inventory_percentage=true  id="'+taxName+'_percentage'+rowNumber+'" value="'+taxInfo.taxpercentage+'" class="taxPercentage" data-compound-on='+taxInfo.compoundOn+' data-regions-list="'+taxInfo.regionsList+'">&nbsp;%'+
+									'<input type="text" name="'+taxName+'_percentage'+rowNumber+'" data-rule-positive=true data-rule-inventory_percentage=true  id="'+taxName+'_percentage'+rowNumber+'" value="'+taxInfo.taxpercentage+'" class="span1 taxPercentage" data-compound-on='+taxInfo.compoundOn+' data-regions-list="'+taxInfo.regionsList+'">&nbsp;%'+
 								'</td>'+
 								'<td style="text-align: right; padding-right: 10px;">'+
 									'<input type="text" name="popup_tax_row'+rowNumber+'" class="cursorPointer span1 taxTotal taxTotal'+taxInfo.taxid+'" value="0.0" readonly>'+

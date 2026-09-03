@@ -16,6 +16,10 @@
 #   ./e2e/ci/run-e2e.sh
 #   ※既存の db-store ボリュームがあると dump が投入されないため、先に `docker compose down -v` すること。
 #   ※普段の開発 (実 DB 直アクセス) には使わない。
+#   ※アプリが書き込むディレクトリ (test / cache / storage / logs / user_privileges) を 0777 にする。
+#     コンテナには repo ツリーをマウントしているためホスト側にも反映され、終了しても戻らない。
+#     開発機で実行する場合はこの点に注意すること。
+#     (config.inc.php は内容・パーミッションとも終了時に復元する)
 #
 # 認証情報は dump に焼き込んだ「固定テスト値」と一致させること (下記デフォルト)。
 set -euo pipefail
@@ -36,15 +40,26 @@ E2E_USER_ACCESSKEY="${E2E_USER_ACCESSKEY:-PqllmJsVZ0Kv5ICx}"
 # (ローカル実行時、この repo ツリーの config.inc.php が開発用の実設定である場合に
 #  CI 用の値で恒久的に上書きしてしまうのを防ぐ。CI はまっさらなので退避対象なし)
 CONFIG_BAK=""
+CONFIG_MODE=""
 if [ -f config.inc.php ]; then
   CONFIG_BAK="$(mktemp)"
   cp config.inc.php "$CONFIG_BAK"
+  # 後段で 0666 に緩めるため、元のパーミッションも控えて終了時に戻す
+  CONFIG_MODE="$(stat -c '%a' config.inc.php 2>/dev/null || stat -f '%Lp' config.inc.php 2>/dev/null || echo '')"
   echo "==> 既存 config.inc.php を退避 (終了時に復元します)"
 fi
 restore_config() {
   if [ -n "$CONFIG_BAK" ] && [ -f "$CONFIG_BAK" ]; then
     cp "$CONFIG_BAK" config.inc.php && rm -f "$CONFIG_BAK"
-    echo "==> config.inc.php を復元しました"
+    # config.inc.php は DB 接続情報を含むため、0666 のまま放置しない。
+    # (内容だけ戻してパーミッションを戻さないと、同一ホストの他ユーザーから
+    #  読み書きできる状態が残る)
+    if [ -n "$CONFIG_MODE" ]; then
+      chmod "$CONFIG_MODE" config.inc.php
+      echo "==> config.inc.php を復元しました (パーミッションも ${CONFIG_MODE} に戻しました)"
+    else
+      echo "==> config.inc.php を復元しました"
+    fi
   fi
 }
 trap restore_config EXIT
@@ -103,6 +118,10 @@ echo "==> アプリが書き込むディレクトリの権限調整"
 # Apache が Smarty のコンパイル先 (test/templates_c) や cache/ に書けず Fatal になる。
 # 使い捨て環境なので該当ディレクトリを 0777 にして回避する。
 $COMPOSE exec -T php bash -lc 'mkdir -p test/templates_c test/vtlib cache/images cache/import storage logs user_privileges && chmod -R 0777 test cache storage logs user_privileges'
+# 構成エディタ(F-05)は保存で config.inc.php を書き換えるため、www-data から
+# 書けるようにしておく。書けないと保存が黙って失敗し、値が反映されない。
+# (DB 接続情報を含むファイルなので、終了時に restore_config が元のパーミッションへ戻す)
+$COMPOSE exec -T php bash -lc 'chmod 0666 config.inc.php'
 
 echo "==> composer install"
 # マウントした repo は uid 1000 所有・exec は root のため git が dubious ownership を出す
@@ -112,10 +131,12 @@ $COMPOSE exec -T php git config --global --add safe.directory /var/www/html
 $COMPOSE exec -T php composer install --no-interaction --no-progress --optimize-autoloader --ignore-platform-reqs
 
 echo "==> web-components ビルド"
-# 注: 現状 assets/react-web-components の package-lock.json が package.json と
-#     完全同期しておらず npm ci が失敗するため、CI では npm install で導入する。
-#     (lock を整備できたら npm ci に戻すのが望ましい)
-$COMPOSE exec -T php bash -lc 'cd assets/react-web-components && npm install --no-audit --no-fund && npm run build'
+# package-lock.json は package.json と同期済みなので npm ci で lock どおりに入れる。
+# npm install だと解決結果が実行ごとに変わり、ローカルと CI で別の成果物になる
+# (2026-08-26: ローカルの node_modules が vite 5 のまま古く、CI は vite 8 でビルドしており
+#  成果物が 458KB / 496KB と食い違っていた。カレンダーの CI 失敗調査で判明)。
+# 再現性のため lock 固定にする。
+$COMPOSE exec -T php bash -lc 'cd assets/react-web-components && npm ci --no-audit --no-fund && npm run build'
 
 echo "==> migration 適用 (スキーマ最新化)"
 $COMPOSE exec -T php php setup/migration/run_migration.php --all
@@ -134,15 +155,97 @@ done
 echo "==> Playwright 実行"
 # Playwright 一式(package.json / playwright.config.ts)は e2e/ 配下にあるためそこで実行する。
 # サブシェルで囲い、親の cwd はリポジトリルートのまま保つ(EXIT トラップの config 復元がルート基準のため)。
+#
+# 【CI は最小限の最適サブセットのみ実行】(フル実行は 30 分ジョブに収まらないため)
+#  - E2E_SCOPE=ci を渡すと matrix は代表 6 モジュールだけに絞られる(matrix.spec.ts)。
+#  - CI で回す spec は下記の CI_SPECS に限定する(挙動の代表を薄く広く: matrix 代表 /
+#    スモーク / 横断機能(検索・CustomView・一括編集・ゴミ箱・権限) / カレンダー一式 /
+#    在庫一式(CRUD・明細・PDF・相互生成) / レポート / 管理設定一式)。
+#  - matrix の CustomView 系 8 ケースは CI では生成しない(matrix.spec.ts の CI_SKIP_CASES)。
+#    実測でマトリクス CPU 時間の 68% を占めており、CustomView 自体は 3-04_リスト が担保する。
+#  - フル版(全 spec・matrix 全 29 モジュール・admin 一式・fr.common 17 モジュール 等)は
+#    ローカルの `cd e2e && npm run test:e2e`(E2E_SCOPE 未設定)で実行する運用。
+#  - CI のサブセットを増減したい場合はこの CI_SPECS と matrix.spec.ts の CI_SAMPLE_MODULES を編集する。
+CI_SPECS=(
+  tests/0_準備/auth.setup.ts
+  tests/0_準備/seed.setup.ts
+  tests/1_スモーク/1-1_ダッシュボード.spec.ts
+  tests/2_CRUD/2-1_マトリクス.spec.ts
+  tests/3_共通機能/3-01_列検索.spec.ts
+  tests/3_共通機能/3-04_リスト.spec.ts
+  # インポートは 新規 / ヘッダなし / 重複時の スキップ・上書き・マージ を一通り通す。
+  # 1 ユーザーにつき同時実行できない(ロック)ため spec 内は describe.serial。
+  tests/3_共通機能/3-23_インポート.spec.ts
+  tests/3_共通機能/3-25_一括編集.spec.ts
+  tests/3_共通機能/3-26_ゴミ箱.spec.ts
+  tests/3_共通機能/3-28_権限.spec.ts
+  # 関連一覧はマトリクスでは検証できない(describe API に relatedModules が無く自動導出不可)
+  tests/3_共通機能/3-12_関連一覧.spec.ts
+  tests/3_共通機能/3-13_関連追加.spec.ts
+  # モジュール固有アクション(リード昇格 / 案件コンバート)。Save の個別実装がある領域
+  tests/4_モジュール/4-3_リード.spec.ts
+  tests/4_モジュール/4-4_案件.spec.ts
+  tests/4_モジュール/4-8_カレンダー/
+  tests/4_モジュール/4-9_在庫/
+  tests/4_モジュール/4-10_レポート.spec.ts
+  # 一括削除 / 保存にモジュール固有実装があり、共通機能側(Accounts 固定)では通らない領域。
+  #  4-7  : EmailTemplates / PDFTemplates の MassDelete(独自 getRecordsListFromRequest)
+  #  4-11 : PriceBooks の Save(relationOperation で一覧価格を初期化)
+  # (Portal = マイサイト/ブックマークは機能 OFF 予定のため spec ごと廃止した)
+  tests/4_モジュール/4-7_テンプレート.spec.ts
+  tests/4_モジュール/4-11_価格表.spec.ts
+  tests/5_管理設定/
+)
+
+# 【単独実行が必要な spec】
+#  他 spec と並列に流せない(グローバルな状態を変える)ものをここに置き、workers=1 で回す。
+#
+#  D-01_モジュール管理 は共有 CRM の vtiger_tab.presence をグローバルに ON/OFF する
+#  (代表モジュール = 顧客企業を一時的に無効化する)ため他 spec と並列に流せない。
+#  1 段目では下記 CI_GREP_INVERT で除外し、この 2 段目で直列実行する。
+#  以前は tests/7_モジュール管理 で 38 モジュールを総当たりしていたが、検証対象は
+#  「トグル → presence 更新 → メニュー再生成」というモジュール非依存の共通経路のため
+#  代表 1 モジュールに集約した(2026-08-28)。
+CI_SERIAL_SPECS=(
+  tests/5_管理設定/D-01_モジュール管理.spec.ts
+)
+
+# 1 段目(並列)から外すテスト。CI_SERIAL_SPECS で直列実行するものを二重に走らせない。
+# (CI_SPECS は tests/5_管理設定/ をディレクトリ指定しているため、
+#  ファイル単位ではなく describe 名で除外する)
+CI_GREP_INVERT='管理: モジュール管理'
 (
   cd e2e
-  npm install --no-audit --no-fund
+  # lock 固定で入れる(web-components と同じ理由: 実行ごとに解決結果が変わると
+  #  ローカルと CI で Playwright のバージョンがずれ、再現性が失われる)。
+  npm ci --no-audit --no-fund
   # ubuntu-latest は Chromium の必要ライブラリを概ね同梱しており、ブラウザバイナリは
   # actions/cache 済みのため --with-deps(apt) は付けない(毎回の apt を省略)。
   npx playwright install chromium
+  RC=0
+
+  # 1段目: 通常の並列実行(workers は playwright.config.ts の CI 設定 = 4)。
+  # ジョブサマリ用の playwright-results.json はこの段のものを使う。
+  E2E_SCOPE=ci \
   E2E_BASE_URL="$BASE_URL" \
   E2E_USER_NAME="$E2E_USER_NAME" \
   E2E_USER_PASSWORD="$E2E_USER_PASSWORD" \
   E2E_USER_ACCESSKEY="$E2E_USER_ACCESSKEY" \
-    npx playwright test
+    npx playwright test "${CI_SPECS[@]}" --grep-invert "$CI_GREP_INVERT" || RC=1
+
+  # 2段目: 単独実行が必要な spec。空のときは実行しない
+  # (空配列を渡すと絞り込み無し = 全 spec 実行になってしまうため)。
+  if [ ${#CI_SERIAL_SPECS[@]} -gt 0 ]; then
+    # json は 1段目の成果物を上書きしないよう別名で出す
+    # (docs/e2e-catalog の実測列は両方を取り込める: e2e:catalog -- --results <json> …)。
+    PLAYWRIGHT_JSON_OUTPUT_NAME=playwright-results-serial.json \
+    E2E_SCOPE=ci \
+    E2E_BASE_URL="$BASE_URL" \
+    E2E_USER_NAME="$E2E_USER_NAME" \
+    E2E_USER_PASSWORD="$E2E_USER_PASSWORD" \
+    E2E_USER_ACCESSKEY="$E2E_USER_ACCESSKEY" \
+      npx playwright test "${CI_SERIAL_SPECS[@]}" --workers=1 --reporter=list,github,json || RC=1
+  fi
+
+  exit $RC
 )

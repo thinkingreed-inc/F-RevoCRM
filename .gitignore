@@ -53,6 +53,7 @@ compose.override.yaml
 /e2e/test-results/
 /e2e/playwright-report/
 /e2e/playwright-results.json
+/e2e/playwright-results-serial.json
 /e2e/playwright/.cache/
 /e2e/.auth/*
 !/e2e/.auth/.gitkeep
@@ -60,3 +61,10 @@ compose.override.yaml
 # playwright (E2E) 成果物（web-components）
 /assets/react-web-components/playwright-report
 /assets/react-web-components/test-results
+
+# for PHPUnit — 一式は tests/ 配下
+/tests/.phpunit.cache/
+.phpunit.result.cache
+
+# for php-cs-fixer / phpstan
+.php-cs-fixer.cache

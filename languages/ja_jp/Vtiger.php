@@ -2068,6 +2068,7 @@ $jsLanguageStrings = array(
 	'JS_INTERNAL_COMMENT_INFO' => '内部コメントチェックボックスが有効になっている場合、コメントはCRMユーザーにのみ表示されます。 （構成可能なワークフローまたは顧客ポータルを通じて）顧客に通知するには、このチェックボックスを無効のままにします',
 
 	'JS_NO_TAXES_EXISTS' => '税金はありません',
+	'JS_SET_TAX_FOR' => '課税対象：',
 	'JS_CONFIRM_TAXES_AND_CHARGES_REPLACE' => '選択した地域に対応する税金と料金の値を更新しますか？',
 	'JS_PRINTTEMPLATEMODULE_DISABLED' => 'PrintTemplatesモジュールが無効になっています。操作を実行できません',
 	'JS_SENT_FOR_SIGNATURE' => '署名のために送信',

@@ -120,9 +120,9 @@ class Import_Queue_Action extends Vtiger_Action_Controller {
 		}
 		
 		$user = new Users();
-		if(method_exists($userid, 'getId')){
+		if(is_object($userid) && method_exists($userid, 'getId')){
 			$user->id = $userid->getId();
-		} else if (!empty($userid->id)) {
+		} else if (is_object($userid) && !empty($userid->id)) {
 			$user->id = $userid->id;
 		} else {
 			$user->id = $userid;
