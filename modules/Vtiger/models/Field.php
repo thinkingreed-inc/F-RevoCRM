@@ -1355,6 +1355,7 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	 * @return <Boolean>
 	 */
 	public function getPermissions($accessmode = 'readonly') {
+		
 		$user = Users_Record_Model::getCurrentUserModel();
 		$privileges = $user->getPrivileges();
 		if ($privileges->hasGlobalReadPermission()) {
