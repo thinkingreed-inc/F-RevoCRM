@@ -334,7 +334,7 @@ class Reports_ScheduleReports_Model extends Vtiger_Base_Model {
 			if($reportType == 'chart') {
 				$status = $scheduledReport->sendEmail();
 			} else {
-				$query = $reportRecordModel->getReportSQL();
+				$query = $reportRecordModel->getReportSQL(false, 'PDF');
 				$countQuery = $reportRecordModel->generateCountQuery($query);
 				if($reportRecordModel->getReportsCount($countQuery) > 0){
 					$status = $scheduledReport->sendEmail();
