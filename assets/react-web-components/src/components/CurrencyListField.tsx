@@ -289,7 +289,7 @@ export const CurrencyListField: React.FC<CurrencyListFieldProps> = ({
                 key={option.value}
                 onClick={() => handleSelectOption(option)}
                 className={cn(
-                  "px-3 py-1.5 text-md cursor-pointer hover:bg-blue-50",
+                  "px-3 py-1.5 text-sm cursor-pointer hover:bg-blue-50",
                   value === option.value && "bg-blue-100",
                 )}
               >
@@ -298,7 +298,7 @@ export const CurrencyListField: React.FC<CurrencyListFieldProps> = ({
             ))}
           </div>
         ) : (
-          <div className="px-3 py-1.5 text-md text-gray-500 text-center">
+          <div className="px-3 py-1.5 text-sm text-gray-500 text-center">
             {t("LBL_NO_MATCHING_CURRENCY")}
           </div>
         )}
@@ -313,7 +313,7 @@ export const CurrencyListField: React.FC<CurrencyListFieldProps> = ({
       {/* ラベル（旧版スタイル：右寄せ） */}
       <span
         className={cn(
-          "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+          "text-sm text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
           disabled && "text-gray-400",
         )}
       >
