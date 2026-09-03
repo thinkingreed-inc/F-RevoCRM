@@ -152,7 +152,7 @@ Vtiger.Class('Vtiger_ListSidebar_Js',{},{
     
     unMarkAllTags : function() {
         var container = jQuery('#listViewTagContainer');
-        container.find('.tag').removeClass('active').find('i.activeToggleIcon').removeClass('fa-circle-o').addClass('fa-circle');
+        container.find('.tag').removeClass('active').find('i.activeToggleIcon').removeClass('fa-circle').addClass('fa-circle-o');
     },
     
     registerPopOverContent: function () {
@@ -243,21 +243,41 @@ Vtiger.Class('Vtiger_ListSidebar_Js',{},{
             var viewId = container.data('viewId');
             
             self.unMarkAllFilters();
-            self.unMarkAllTags();
-            element.addClass('active');
-            element.find('i.activeToggleIcon').removeClass('fa-circle').addClass('fa-circle-o');
-            var listSearchParams = new Array();
-            listSearchParams[0] = new Array();
-            var tagSearchParams = new Array();
-            tagSearchParams.push('tags');
-            tagSearchParams.push('e');
-            tagSearchParams.push(tagId);
-            listSearchParams[0].push(tagSearchParams);
-            var params = {};
-            params.search_params = ''; 
-            params.tag_params = JSON.stringify(listSearchParams);
-            params.tag = tagId;
-            params.page = '';
+            
+            element.toggleClass('active');
+            if (element.hasClass('active')) {
+                element.find('i.activeToggleIcon').removeClass('fa-circle-o').addClass('fa-circle');
+            } else {
+                element.find('i.activeToggleIcon').removeClass('fa-circle').addClass('fa-circle-o');
+            }
+
+            var activeTags = container.find('.tag.active');
+            var tagIds = [];
+            activeTags.each(function() {
+                tagIds.push(jQuery(this).data('id'));
+            });
+
+            var params = {
+                'search_params' : '',
+                'page' : ''
+            };
+
+            if (tagIds.length > 0) {
+                var listSearchParams = new Array();
+                listSearchParams[0] = new Array();
+                var tagSearchParams = new Array();
+                tagSearchParams.push('tags');
+                tagSearchParams.push('e');
+                tagSearchParams.push(tagIds);
+                listSearchParams[0].push(tagSearchParams);
+                
+                params.tag_params = JSON.stringify(listSearchParams);
+                params.tag = tagIds.join(',');
+            } else {
+                params.tag = '';
+                params.tag_params = '';
+            }
+            
             self.loadListView(viewId, params);
         });
         
