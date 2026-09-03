@@ -43,18 +43,9 @@ class Products_ListView_Model extends Vtiger_ListView_Model {
 			$queryGenerator->addUserSearchConditions(array('search_field' => $searchKey, 'search_text' => $searchValue, 'operator' => $operator));
 		}
         
-        $orderBy = $this->getForSql('orderby');
-		$sortOrder = $this->getForSql('sortorder');
-		
-        if(!empty($orderBy)){
-			$queryGenerator = $this->get('query_generator');
-			$fieldModels = $queryGenerator->getModuleFields();
-			$orderByFieldModel = $fieldModels[$orderBy];
-			if($orderByFieldModel && ($orderByFieldModel->getFieldDataType() == Vtiger_Field_Model::REFERENCE_TYPE ||
-					$orderByFieldModel->getFieldDataType() == Vtiger_Field_Model::OWNER_TYPE)){
-                $queryGenerator->addWhereField($orderBy);
-            }
-        }
+		$sortConditions = $this->getSortConditions();
+		$this->setupQueryGeneratorForSort($queryGenerator, $sortConditions);
+
 		$listQuery = $this->getQuery();
 
 		if($this->get('subProductsPopup')){
@@ -75,12 +66,7 @@ class Products_ListView_Model extends Vtiger_ListView_Model {
 		$startIndex = $pagingModel->getStartIndex();
 		$pageLimit = $pagingModel->getPageLimit();
 
-		if(!empty($orderBy) && $orderByFieldModel) {
-			$listQuery .= ' ORDER BY '.$queryGenerator->getOrderByColumn($orderBy).' '.$sortOrder;
-		} else if(empty($orderBy) && empty($sortOrder)){
-			//List view will be displayed on recently created/modified records
-			$listQuery .= ' ORDER BY '.$moduleFocus->table_name.'.modifiedtime DESC';
-		}
+		$listQuery .= $this->getOrderBySql($queryGenerator, $sortConditions, $moduleFocus);
 
 		$viewid = ListViewSession::getCurrentView($moduleName);
         if(empty($viewid)){

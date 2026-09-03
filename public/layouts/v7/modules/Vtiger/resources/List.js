@@ -316,13 +316,73 @@ Vtiger.Class("Vtiger_List_Js", {
 	noRecordSelectedAlert: function () {
 		return app.helper.showAlertBox({message: app.vtranslate('JS_PLEASE_SELECT_ONE_RECORD')});
 	},
+	getSortConditionsFromInput: function (listViewContainer) {
+		if (typeof listViewContainer === 'undefined' || !listViewContainer) {
+			listViewContainer = this.getListViewContainer();
+		}
+		var currentOrderByRaw = listViewContainer.find('[name="orderBy"]').val();
+		var currentSortConditions = [];
+		if (currentOrderByRaw) {
+			try {
+				var decoded = JSON.parse(currentOrderByRaw);
+				if (!Array.isArray(decoded) && typeof app.helper.decodeHTML === 'function') {
+					decoded = JSON.parse(app.helper.decodeHTML(currentOrderByRaw));
+				}
+				if (Array.isArray(decoded)) {
+					currentSortConditions = decoded;
+				}
+			} catch (err) {
+				try {
+					if (typeof app.helper.decodeHTML === 'function') {
+						var decoded2 = JSON.parse(app.helper.decodeHTML(currentOrderByRaw));
+						if (Array.isArray(decoded2)) {
+							currentSortConditions = decoded2;
+						}
+					}
+				} catch (e2) {
+					currentSortConditions = [];
+				}
+			}
+			if (currentSortConditions.length === 0 && typeof currentOrderByRaw === 'string' && currentOrderByRaw.indexOf('[') === -1 && currentOrderByRaw.indexOf('{') === -1) {
+				var trimmedField = jQuery.trim(currentOrderByRaw);
+				if (trimmedField) {
+					var currentSortOrder = listViewContainer.find('[name="sortOrder"]').val() || 'ASC';
+					currentSortConditions.push({field: trimmedField, order: currentSortOrder});
+				}
+			}
+		}
+		return currentSortConditions;
+	},
 	registerRemoveListViewSort: function () {
 		var listViewContainer = this.getListViewContainer();
 		var thisInstance = this;
 
 		listViewContainer.on('click', '.removeSorting', function (e) {
+			e.preventDefault();
+			e.stopPropagation();
+			var removeColumn = jQuery(e.currentTarget).data('removeColumn');
+			var currentSortConditions = thisInstance.getSortConditionsFromInput(listViewContainer);
+
+			if (removeColumn && currentSortConditions.length > 0) {
+				var newConditions = currentSortConditions.filter(function(item) {
+					return item.field !== removeColumn;
+				});
+				if (newConditions.length > 0) {
+					var newOrderByJson = JSON.stringify(newConditions);
+					var newSortOrder = newConditions[0].order;
+					listViewContainer.find('[name="sortOrder"]').val(newSortOrder);
+					listViewContainer.find('[name="orderBy"]').val(newOrderByJson);
+					thisInstance.loadListViewRecords({'orderby': newOrderByJson, 'sortorder': newSortOrder});
+					return;
+				}
+			}
+
 			var cvId = thisInstance.getCurrentCvId();
-			thisInstance.loadFilter(cvId, {'mode': 'removeSorting'});
+			listViewContainer.find('[name="orderBy"]').val('');
+			listViewContainer.find('#orderBy').val('');
+			listViewContainer.find('[name="sortOrder"]').val('');
+			listViewContainer.find('#sortOrder').val('');
+			thisInstance.loadFilter(cvId, {'mode': 'removeSorting', 'orderby': '', 'sortorder': ''});
 		});
 	},
 	registerResetColumnWidths: function () {
@@ -442,15 +502,54 @@ Vtiger.Class("Vtiger_List_Js", {
 		var listViewContainer = this.getListViewContainer();
 		var thisInstance = this;
 		listViewContainer.on('click', '.listViewContentHeaderValues', function (e) {
-			var fieldName = jQuery(e.currentTarget).data('columnname');
-			var sortOrderVal = jQuery(e.currentTarget).data('nextsortorderval');
-			if (sortOrderVal === 'ASC') {
-				jQuery('i', e.currentTarget).addClass('fa-sort-asc');
-			} else {
-				jQuery('i', e.currentTarget).addClass('fa-sort-desc');
+			var element = jQuery(e.currentTarget);
+			var fieldName = element.data('columnname');
+			var sortOrderVal = element.data('nextsortorderval');
+
+			// ソートアイコン（i要素）またはその直近がクリックされた場合、上下の位置で昇順/降順を直接決定
+			var target = jQuery(e.target);
+			var iconEl = target.is('i') ? target : target.closest('.listViewContentHeaderValues').find('i.fa');
+			if (target.is('i') || target.hasClass('fa-sort') || target.hasClass('customsort')) {
+				var offset = iconEl.offset();
+				var height = iconEl.outerHeight() || 14;
+				var clickY = e.pageY - offset.top;
+				if (clickY > height / 2) {
+					sortOrderVal = 'DESC';
+				} else {
+					sortOrderVal = 'ASC';
+				}
 			}
-			listViewContainer.find('[name="sortOrder"]').val(sortOrderVal);
-			listViewContainer.find('[name="orderBy"]').val(fieldName);
+
+			var currentSortConditions = thisInstance.getSortConditionsFromInput(listViewContainer);
+
+			var foundIndex = -1;
+			for (var i = 0; i < currentSortConditions.length; i++) {
+				if (currentSortConditions[i].field === fieldName) {
+					foundIndex = i;
+					break;
+				}
+			}
+
+			if (foundIndex !== -1) {
+				currentSortConditions[foundIndex].order = sortOrderVal;
+			} else {
+				if (currentSortConditions.length >= 5) {
+					app.helper.showAlertBox({message: app.vtranslate('JS_MAX_SORT_CONDITIONS_LIMIT')});
+					return;
+				}
+				currentSortConditions.push({field: fieldName, order: sortOrderVal});
+			}
+
+			if (sortOrderVal === 'ASC') {
+				jQuery('i', element).removeClass('fa-sort-desc customsort').addClass('fa-sort-asc');
+			} else {
+				jQuery('i', element).removeClass('fa-sort-asc customsort').addClass('fa-sort-desc');
+			}
+
+			var newOrderByJson = JSON.stringify(currentSortConditions);
+			listViewContainer.find('[name="sortOrder"]').val(currentSortConditions[0].order);
+			listViewContainer.find('[name="orderBy"]').val(newOrderByJson);
+
 			var cvId = thisInstance.getCurrentCvId();
 			thisInstance.loadListViewRecords();
 		});

@@ -1244,6 +1244,7 @@ $languageStrings = array(
 	'LBL_MARKET_PLACE' => 'Market Place',
 
 	'LBL_SHARE_THIS_LIST' => 'リストを共有',
+	'LBL_DEFAULT_SORT' => 'デフォルトのソートを設定',
 	'LBL_ADD_USERS_ROLES' => 'ユーザー、役割の追加',
 	'EmailTemplates' => 'メールテンプレート',
 	'LBL_BILLING' => '請求',
@@ -1726,6 +1727,13 @@ $languageStrings = array(
 	'LBL_PLACEHOLDER_SEARCH_AND_ADD' => '%sを検索して追加...',
 	'LBL_PLACEHOLDER_SEARCH_TITLE' => '%sを検索',
 	'LBL_PLACEHOLDER_SELECT' => '%sを選択してください',
+
+	//Custom view default sort translations.
+	'LBL_SORT_CONDITION_LABEL' => '第%sソート:',
+	'LBL_ASCENDING' => '昇順',
+	'LBL_DESCENDING' => '降順',
+	'LBL_ADD_SORT_ROW' => 'ソート条件を追加',
+	'LBL_REMOVE_SORTING' => 'この項目のソートを解除',
 );
 
 $jsLanguageStrings = array(
@@ -2276,6 +2284,14 @@ $jsLanguageStrings = array(
 	'JS_MAIL_DRAFTED_SUCCESSFULLY'=>'メールが下書きされました',
 
 	//Custom view default sort translations.
+	'LBL_SORT_CONDITION_LABEL' => '第%sソート:',
+	'JS_MAX_SORT_CONDITIONS_LIMIT' => 'ソート条件は最大5個まで指定できます。',
+	'JS_PLEASE_SELECT_SORT_ORDER' => 'ソート順（昇順・降順）を選択してください。',
+	'JS_DUPLICATE_SORT_FIELD_NOT_ALLOWED' => '同じ項目を複数のソート条件に指定することはできません。',
+	'LBL_ASCENDING' => '昇順',
+	'LBL_DESCENDING' => '降順',
+	'LBL_ADD_SORT_ROW' => 'ソート条件を追加',
+	'LBL_REMOVE_SORTING' => 'この項目のソートを解除',
 	'JS_PLEASE_REMOVE_ONE_FIELD_FROM_CHOOSE_COLUMNS_LIST_TO_ADD_DEFAULT_SORT_FIELD' => 'ソート列を含むリストビューでは、16列のみが許可されます。',
 	'JS_DEFAULT_SORT_NOTIFY' => 'リストがデフォルトのソート列でソートされるようになりました',
 	'JS_ENABLED' => '有効',

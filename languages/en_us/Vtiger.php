@@ -1239,6 +1239,7 @@ $languageStrings = array(
 	'LBL_MARKET_PLACE' => 'Market Place',
 
 	'LBL_SHARE_THIS_LIST' => 'Share the list',
+	'LBL_DEFAULT_SORT' => 'Set default sort',
 	'LBL_ADD_USERS_ROLES' => 'Add Users, Roles...',
 	'EmailTemplates' => 'Email Templates',
 	'LBL_BILLING' => 'Billing',
@@ -1721,6 +1722,13 @@ $languageStrings = array(
 	'LBL_PLACEHOLDER_SEARCH_AND_ADD' => 'Search and add %s...',
 	'LBL_PLACEHOLDER_SEARCH_TITLE' => 'Search %s',
 	'LBL_PLACEHOLDER_SELECT' => 'Select %s',
+
+	//Custom view default sort translations.
+	'LBL_SORT_CONDITION_LABEL' => 'Sort %s:',
+	'LBL_ASCENDING' => 'Ascending',
+	'LBL_DESCENDING' => 'Descending',
+	'LBL_ADD_SORT_ROW' => 'Add sort condition',
+	'LBL_REMOVE_SORTING' => 'Remove sorting for this column',
 );
 
 $jsLanguageStrings = array(
@@ -2270,6 +2278,14 @@ $jsLanguageStrings = array(
 	'JS_MAIL_DRAFTED_SUCCESSFULLY'=>'Mail drafted successfully',
 
 	//Custom view default sort translations.
+	'LBL_SORT_CONDITION_LABEL' => 'Sort %s:',
+	'JS_MAX_SORT_CONDITIONS_LIMIT' => 'You can specify up to 5 sort conditions maximum.',
+	'JS_PLEASE_SELECT_SORT_ORDER' => 'Please select a sort order (Ascending or Descending).',
+	'JS_DUPLICATE_SORT_FIELD_NOT_ALLOWED' => 'Duplicate fields are not allowed in sort conditions.',
+	'LBL_ASCENDING' => 'Ascending',
+	'LBL_DESCENDING' => 'Descending',
+	'LBL_ADD_SORT_ROW' => 'Add sort condition',
+	'LBL_REMOVE_SORTING' => 'Remove sorting for this column',
 	'JS_PLEASE_REMOVE_ONE_FIELD_FROM_CHOOSE_COLUMNS_LIST_TO_ADD_DEFAULT_SORT_FIELD' => 'Only 16 columns are allowed in a list view including sort columns.',
 	'JS_DEFAULT_SORT_NOTIFY' => 'List is now sorted on default sort column ',
 	'JS_ENABLED' => 'Enabled',
