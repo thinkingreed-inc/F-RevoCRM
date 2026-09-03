@@ -40,6 +40,9 @@ class Calendar_Save_Action extends Vtiger_Save_Action {
 			} else {
 				$loadUrl = 'index.php?module=Calendar&view=Calendar&calendarStartDate='. $recordModel->get('date_start');
 			}
+			if($parsedParams['referer'] == 'Detail') {
+				$loadUrl = 'index.php?module=Calendar&view=Detail&record='. $recordModel->get('id');
+			}
 
 			if ($request->get('fromQuickCreate')) {
 				$loadUrl = 'index.php'.$request->get('quickCreateReturnURL');
