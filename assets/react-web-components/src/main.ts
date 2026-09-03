@@ -54,3 +54,58 @@ createWebComponent(ActivityList, "activity-list", [
   "limit",
   "refresh-key",
 ]);
+
+// Documents モジュール用コンポーネント
+import {
+  DocumentsPage,
+  DocumentsDetail,
+  DocumentsRelatedList,
+} from "@/components/Documents";
+
+// DocumentsPage: 一覧画面（リスト/グリッド/プレビューの3モード内包）
+// folder-id: 初期表示フォルダID
+// user-id: ログインユーザーID
+// initial-view-mode: 初期表示モード (list|grid|preview)
+// max-upload-size: 1ファイルあたりの最大アップロードサイズ（バイト）
+createWebComponent(
+  DocumentsPage,
+  "documents-page",
+  ["folder-id", "user-id", "initial-view-mode", "max-upload-size"],
+  ["onNavigate", "onFolderChange"],
+);
+
+// 休祝日マスタ（設定）用コンポーネント
+import { HolidaysPage } from "@/components/Holidays";
+
+// HolidaysPage: 休祝日マスタの管理画面（システム管理者のみ）
+// year: 初期表示年
+createWebComponent(HolidaysPage, "holidays-page", ["year"], []);
+
+import { DocumentsCompliancePage } from "@/components/DocumentsCompliance";
+
+// DocumentsCompliancePage: 電子帳簿保存法設定の管理画面（システム管理者のみ）
+createWebComponent(
+  DocumentsCompliancePage,
+  "documents-compliance-page",
+  [],
+  [],
+);
+
+// DocumentsDetail: 詳細画面（単独ページ）
+// record-id: ドキュメントレコードID
+createWebComponent(
+  DocumentsDetail,
+  "documents-detail",
+  ["record-id"],
+  ["onEdit", "onDelete", "onNavigateBack"],
+);
+
+// DocumentsRelatedList: 他モジュール詳細画面の関連ドキュメント一覧
+// parent-module: 親モジュール名 (例: Potentials, Accounts)
+// parent-id: 親レコードID
+createWebComponent(
+  DocumentsRelatedList,
+  "documents-related-list",
+  ["parent-module", "parent-id"],
+  [],
+);

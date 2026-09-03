@@ -145,8 +145,8 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
       const lowerSearch = searchTerm.toLowerCase();
       filtered = filtered.filter(
         (opt) =>
-          opt.label.toLowerCase().includes(lowerSearch) ||
-          opt.value.toLowerCase().includes(lowerSearch),
+          String(opt.label).toLowerCase().includes(lowerSearch) ||
+          String(opt.value).toLowerCase().includes(lowerSearch),
       );
     }
     return filtered;
@@ -169,7 +169,7 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
    * 選択済みの値からラベルを取得
    */
   const getLabel = (val: string): string => {
-    const option = options.find((opt) => opt.value === val);
+    const option = options.find((opt) => String(opt.value) === String(val));
     return option ? option.label : val;
   };
 

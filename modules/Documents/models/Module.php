@@ -11,6 +11,201 @@
 class Documents_Module_Model extends Vtiger_Module_Model {
 
 	/**
+	 * 実際にアップロード可能な最大サイズ（バイト）を返す
+	 *
+	 * vtiger の $upload_maxsize と PHP の upload_max_filesize / post_max_size の
+	 * 最も小さい値が実効上限になる。
+	 *
+	 * @return int
+	 */
+	public static function getEffectiveMaxUploadSizeInBytes() {
+		$limits = array();
+
+		$vtigerLimit = (int) vglobal('upload_maxsize');
+		if ($vtigerLimit > 0) {
+			$limits[] = $vtigerLimit;
+		}
+		foreach (array('upload_max_filesize', 'post_max_size') as $iniKey) {
+			$iniLimit = self::parseIniSize(ini_get($iniKey));
+			if ($iniLimit > 0) {
+				$limits[] = $iniLimit;
+			}
+		}
+
+		return empty($limits) ? 0 : min($limits);
+	}
+
+	/**
+	 * php.ini のサイズ表記（2M / 8K など）をバイトに変換する
+	 *
+	 * @param string $value
+	 * @return int 0 は無制限または解釈不能
+	 */
+	private static function parseIniSize($value) {
+		$value = trim((string) $value);
+		if ($value === '' || $value === '-1') {
+			return 0;
+		}
+		$unit = strtolower(substr($value, -1));
+		$number = (int) $value;
+		switch ($unit) {
+			case 'g':
+				return $number * 1024 * 1024 * 1024;
+			case 'm':
+				return $number * 1024 * 1024;
+			case 'k':
+				return $number * 1024;
+			default:
+				return $number;
+		}
+	}
+
+	/** 分割アップロードの既定の上限（2GB） */
+	const DEFAULT_CHUNK_UPLOAD_MAXSIZE = 2147483648;
+
+	/** 1リクエストあたりの余裕（他のPOSTフィールドとmultipartのオーバーヘッド分） */
+	const CHUNK_SIZE_MARGIN = 262144;
+
+	/** 分割サイズを丸める単位（64KB） */
+	const CHUNK_SIZE_UNIT = 65536;
+
+	/** プレビュー可能な既定の上限（20MB） */
+	const DEFAULT_PREVIEW_MAXSIZE = 20971520;
+
+	/**
+	 * プレビュー可能な最大ファイルサイズ（バイト）を返す
+	 *
+	 * 大きなファイルはブラウザ側の解析（pdf.js / Luckysheet）や
+	 * サーバー側の変換でメモリ・時間を使い切るため、サイズで制限する。
+	 * config.customize.php の $documents_preview_maxsize で変更できる。
+	 * 未設定の場合は 20MB。0 以下を設定するとサイズによる制限をしない。
+	 *
+	 * @return int 0 以下は無制限
+	 */
+	public static function getPreviewMaxSizeInBytes() {
+		$configured = vglobal('documents_preview_maxsize');
+		if ($configured === null || $configured === '' || $configured === false) {
+			return self::DEFAULT_PREVIEW_MAXSIZE;
+		}
+		return (int) $configured;
+	}
+
+	/**
+	 * サイズの観点でプレビュー可能かどうかを返す
+	 *
+	 * @param int $fileSize バイト
+	 * @return bool
+	 */
+	public static function isPreviewableSize($fileSize) {
+		$limit = self::getPreviewMaxSizeInBytes();
+		if ($limit <= 0) {
+			return true;// 無制限
+		}
+		return (int) $fileSize <= $limit;
+	}
+
+	/**
+	 * 最大アップロードサイズを表示用の文字列にする（例: 2 MB）
+	 *
+	 * @param int|null $bytes 省略時は1リクエストの実効上限
+	 * @return string
+	 */
+	public static function getEffectiveMaxUploadSizeLabel($bytes = null) {
+		if ($bytes === null) {
+			$bytes = self::getEffectiveMaxUploadSizeInBytes();
+		}
+		if ($bytes <= 0) {
+			return '';
+		}
+		if ($bytes >= 1024 * 1024 * 1024) {
+			return round($bytes / (1024 * 1024 * 1024), 1) . ' GB';
+		}
+		if ($bytes >= 1024 * 1024) {
+			return round($bytes / (1024 * 1024), 1) . ' MB';
+		}
+		return round($bytes / 1024) . ' KB';
+	}
+
+	/**
+	 * 分割アップロード1回分のサイズ（バイト）を返す
+	 *
+	 * PHP の upload_max_filesize / post_max_size を超えないよう、
+	 * 実効上限から余裕を引いた値を使う。
+	 *
+	 * @return int
+	 */
+	public static function getChunkSizeInBytes() {
+		// 上限の取得を差し替えられるよう遅延静的束縛にする（テストで各設定値を確認するため）
+		$limit = static::getEffectiveMaxUploadSizeInBytes();
+		if ($limit <= 0) {
+			// 上限なしの場合は 8MB 単位で送る
+			return 8 * 1024 * 1024;
+		}
+
+		$chunkSize = $limit - self::CHUNK_SIZE_MARGIN;
+		if ($chunkSize < self::CHUNK_SIZE_UNIT) {
+			// マージンを引くと小さすぎる設定では上限の8割を使う
+			// （multipart のオーバーヘッドがあるため、上限と同じ値にはしない）
+			$chunkSize = (int) floor($limit * 0.8);
+		}
+
+		// 64KB 単位に切り下げる
+		$rounded = (int) (floor($chunkSize / self::CHUNK_SIZE_UNIT) * self::CHUNK_SIZE_UNIT);
+		if ($rounded > 0) {
+			return $rounded;
+		}
+		// 上限が 64KB 未満の極端な設定。1リクエストの上限は必ず下回るようにする
+		return max(1, (int) floor($limit * 0.8));
+	}
+
+	/**
+	 * 分割アップロードで受け付ける1ファイルの最大サイズ（バイト）を返す
+	 *
+	 * config.customize.php の $documents_upload_maxsize で変更できる。
+	 * 未設定の場合は 2GB。
+	 *
+	 * @return int
+	 */
+	public static function getChunkUploadMaxSizeInBytes() {
+		$configured = vglobal('documents_upload_maxsize');
+		if (!empty($configured) && (int) $configured > 0) {
+			return (int) $configured;
+		}
+		return self::DEFAULT_CHUNK_UPLOAD_MAXSIZE;
+	}
+
+	/**
+	 * 完全削除させないレコードIDを返す
+	 *
+	 * 電帳法対象（書類区分あり）のドキュメントは保存義務があるため、
+	 * ごみ箱からの完全削除も許可しない。
+	 * ごみ箱（RecycleBin）から呼ばれる。
+	 *
+	 * @param array $recordIds
+	 * @return array 削除を許可しないレコードID
+	 */
+	public static function getNonDeletableRecordIds($recordIds) {
+		if (empty($recordIds)) {
+			return array();
+		}
+		$db = PearDatabase::getInstance();
+		$result = $db->pquery(
+			"SELECT notesid FROM vtiger_notes
+			WHERE notesid IN (" . generateQuestionMarks($recordIds) . ")
+			AND document_category IS NOT NULL AND document_category != ''",
+			$recordIds
+		);
+		$blocked = array();
+		if ($result !== false) {
+			$numRows = $db->num_rows($result);
+			for ($i = 0; $i < $numRows; $i++) {
+				$blocked[] = (int) $db->query_result($result, $i, 'notesid');
+			}
+		}
+		return $blocked;
+	}
+
+	/**
 	 * Functions tells if the module supports workflow
 	 * @return boolean
 	 */
@@ -146,12 +341,6 @@ class Documents_Module_Model extends Vtiger_Module_Model {
 					'linktype' => 'LISTVIEW',
 					'linklabel' => 'LBL_EXTERNAL_DOCUMENT_TYPE',
 					'linkurl' => 'javascript:Vtiger_Header_Js.getQuickCreateFormForModule("index.php?module=Documents&view=EditAjax&type=E")',
-					'linkicon' => ''
-				);
-                $basicListViewLinks[] = array(
-					'linktype' => 'LISTVIEW',
-					'linklabel' => 'LBL_WEBDOCUMENT_TYPE',
-					'linkurl' => 'javascript:Vtiger_Header_Js.getQuickCreateFormForModule("index.php?module=Documents&view=EditAjax&type=W")',
 					'linkicon' => ''
 				);
             }

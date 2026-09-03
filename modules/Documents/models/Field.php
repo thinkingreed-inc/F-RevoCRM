@@ -18,6 +18,12 @@ class Documents_Field_Model extends Vtiger_Field_Model {
 	public function getDisplayValue($value, $record=false, $recordInstance = false) {
 		$fieldName = $this->getName();
 
+		// 適合チェック備考は翻訳キーで保存されているため、表示時に翻訳する
+		if($fieldName == 'compliance_notes' && !empty($value)) {
+			require_once 'modules/Documents/utils/ComplianceChecker.php';
+			return Documents_ComplianceChecker::translateNotes(decode_html($value), false);
+		}
+
 		if($fieldName == 'filesize' && $recordInstance) {
 			$downloadType = $recordInstance->get('filelocationtype');
 			if($downloadType == 'I') {

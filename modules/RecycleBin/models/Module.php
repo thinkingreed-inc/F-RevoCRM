@@ -133,11 +133,76 @@ class RecycleBin_Module_Model extends Vtiger_Module_Model {
 				$recordIds[$i]=$db->query_result($resultIds,$i,'crmid');
 			}
 		}
+		// モジュール側が削除を禁じているレコードは残す（例: 電帳法対象のドキュメント）
+		$recordIds = self::excludeNonDeletableRecords($recordIds);
+		if (empty($recordIds)) {
+			return true;
+		}
+
 		$this->deleteFiles($recordIds);
-		$db->pquery('DELETE FROM vtiger_crmentity WHERE deleted = 1', array());
-		$db->pquery('DELETE FROM vtiger_relatedlists_rb', array());
+		$db->pquery(
+			'DELETE FROM vtiger_crmentity WHERE deleted = 1 AND crmid IN ('
+				. generateQuestionMarks($recordIds) . ')',
+			$recordIds
+		);
+		$db->pquery(
+			'DELETE FROM vtiger_relatedlists_rb WHERE entityid IN ('
+				. generateQuestionMarks($recordIds) . ')',
+			$recordIds
+		);
 
 		return true;
+	}
+
+	/**
+	 * モジュールが完全削除を許可しないレコードを除いて返す
+	 *
+	 * モジュールのモデルに getNonDeletableRecordIds() があれば、その判定に従う。
+	 * 法令で保存が必要なレコード（電帳法対象のドキュメントなど）を
+	 * ごみ箱から消せないようにするための仕組み。
+	 *
+	 * @param array $recordIds
+	 * @return array 削除してよいレコードID
+	 */
+	public static function excludeNonDeletableRecords($recordIds) {
+		if (empty($recordIds)) {
+			return array();
+		}
+
+		// モジュールごとにまとめて問い合わせる
+		$idsByModule = array();
+		foreach ($recordIds as $recordId) {
+			$moduleName = getSalesEntityType($recordId);
+			if (empty($moduleName)) {
+				continue;
+			}
+			$idsByModule[$moduleName][] = $recordId;
+		}
+
+		$blocked = array();
+		foreach ($idsByModule as $moduleName => $ids) {
+			$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
+			if (empty($moduleModel)) {
+				continue;
+			}
+			$modelClass = get_class($moduleModel);
+			if (!method_exists($modelClass, 'getNonDeletableRecordIds')) {
+				continue;
+			}
+			$moduleBlocked = call_user_func(array($modelClass, 'getNonDeletableRecordIds'), $ids);
+			if (!empty($moduleBlocked)) {
+				$blocked = array_merge($blocked, $moduleBlocked);
+			}
+		}
+
+		if (empty($blocked)) {
+			return $recordIds;
+		}
+		// 数値と文字列が混在しても比較できるように揃える
+		$blocked = array_map('strval', $blocked);
+		return array_values(array_filter($recordIds, function ($recordId) use ($blocked) {
+			return !in_array((string) $recordId, $blocked, true);
+		}));
 	}
 
 	/**
@@ -146,6 +211,12 @@ class RecycleBin_Module_Model extends Vtiger_Module_Model {
 	 */
 	public function deleteRecords($recordIds){
 		$db = PearDatabase::getInstance();
+
+		// モジュール側が削除を禁じているレコードは残す（例: 電帳法対象のドキュメント）
+		$recordIds = self::excludeNonDeletableRecords($recordIds);
+		if (empty($recordIds)) {
+			return;
+		}
 
 		$query = 'DELETE FROM vtiger_relatedlists_rb WHERE entityid in('.generateQuestionMarks($recordIds).')';
 		$db->pquery($query, array($recordIds));

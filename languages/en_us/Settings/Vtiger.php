@@ -74,6 +74,12 @@ $languageStrings = array(
 	'EMAILTEMPLATES' => 'E-mail Templates',
 	'LBL_EMAIL_TEMPLATE_DESCRIPTION' => 'Manage templates for E-Mail module',
 
+	'LBL_DOCUMENTS_COMPLIANCE' => 'Electronic Bookkeeping',
+	'LBL_DOCUMENTS_COMPLIANCE_DESCRIPTION' => 'Configure how the input deadline for scanned documents is calculated',
+
+	'LBL_HOLIDAYS' => 'Holidays',
+	'LBL_HOLIDAYS_DESCRIPTION' => 'Configure public holidays, company holidays and weekly days off',
+
 	'LBL_COMPANY_DETAILS' => 'Company Details',
 	'LBL_COMPANY_DESCRIPTION' => 'Specify business address of company',
 

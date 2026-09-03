@@ -1,0 +1,1017 @@
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
+import type { DocumentDetail, Folder } from "./types/documents";
+import { useOptionalTranslation } from "../../hooks/useTranslation";
+import { useDocumentFields, DocFieldInfo } from "./hooks/useDocumentFields";
+import {
+  fetchChunkUploadInfo,
+  uploadFileInChunks,
+  type ChunkUploadInfo,
+} from "./utils/chunkUpload";
+import { pickSingleDroppedFile } from "./utils/dropEntries";
+
+function useIsMobile(breakpoint = 768) {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= breakpoint);
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth <= breakpoint);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, [breakpoint]);
+  return isMobile;
+}
+import { FieldRenderer } from "../FieldRenderer";
+import { isComplianceFieldVisible } from "./utils/complianceFields";
+import { toServerValue } from "./utils/serverValue";
+import { buildFolderOptions } from "./utils/folderOptions";
+import { FieldInfo, FieldValue } from "../../types/field";
+
+interface DocumentCreateEditModalProps {
+  isOpen: boolean;
+  mode: "create" | "edit";
+  document?: DocumentDetail | null;
+  folders: Folder[];
+  defaultFolderId: number;
+  parentModule?: string;
+  parentId?: number;
+  /** 1リクエストで送れる上限（バイト）。これを超えるファイルは分割送信する */
+  maxUploadSize?: number;
+  onSave: () => void;
+  onClose: () => void;
+}
+
+type DocType = "I" | "E";
+
+function getCsrfToken(): { name: string; value: string } | null {
+  const csrfName = (window as any).csrfMagicName;
+  const csrfToken = (window as any).csrfMagicToken;
+  if (csrfName && csrfToken) return { name: csrfName, value: csrfToken };
+  return null;
+}
+
+const labelStyle: React.CSSProperties = {
+  display: "block",
+  fontSize: 13,
+  fontWeight: 500,
+  color: "#4A5568",
+  marginBottom: 4,
+};
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "7px 10px",
+  border: "1px solid #E2E8F0",
+  borderRadius: 4,
+  fontSize: 14,
+  outline: "none",
+  boxSizing: "border-box",
+};
+
+/** Core document field names handled by hardcoded UI (special behavior: file upload, folder select, etc.) */
+const CORE_FIELD_NAMES = new Set([
+  "notes_title",
+  "filename",
+  "filelocationtype",
+  "folderid",
+  "notecontent",
+  "filestatus",
+  "fileversion",
+  "note_no",
+  "modifiedtime",
+  "createdtime",
+  "modifiedby",
+  "assigned_user_id",
+  "source",
+]);
+
+/** Convert DocFieldInfo to FieldInfo for use with FieldRenderer */
+function convertToFieldInfo(docField: DocFieldInfo): FieldInfo {
+  return {
+    name: docField.name,
+    label: docField.label,
+    uitype: docField.uitype,
+    mandatory: docField.mandatory,
+    readonly: !docField.editable,
+    fieldinfo: {
+      type: docField.type,
+      defaultvalue: docField.defaultvalue || undefined,
+      editable: docField.editable,
+      displaytype: docField.displaytype || "1",
+    },
+    picklistValues: docField.picklistValues,
+    referenceModules: docField.referenceModules,
+    referenceModuleLabels: docField.referenceModuleLabels,
+  };
+}
+
+/** バイト数を表示用の文字列にする（例: 2 MB） */
+function formatMaxSize(bytes: number): string {
+  if (bytes >= 1024 * 1024) {
+    return `${Math.round((bytes / (1024 * 1024)) * 10) / 10} MB`;
+  }
+  return `${Math.round(bytes / 1024)} KB`;
+}
+
+/**
+ * Save アクションのレスポンスからエラーメッセージを取り出す。
+ * 成功時はリダイレクト（HTML）が返るため、JSON のエラーだけを拾う。
+ */
+function extractSaveError(text: string): string | null {
+  if (!text.includes('"success":false')) return null;
+  try {
+    const data = JSON.parse(text);
+    const message = data?.error?.message || data?.error?.code;
+    if (typeof message === "string" && message.trim() !== "") return message;
+  } catch {
+    // JSON でない場合はメッセージを取り出せない
+  }
+  return "";
+}
+
+export const DocumentCreateEditModal: React.FC<
+  DocumentCreateEditModalProps
+> = ({
+  isOpen,
+  mode,
+  document: doc,
+  folders,
+  defaultFolderId,
+  parentModule,
+  parentId,
+  maxUploadSize,
+  onSave,
+  onClose,
+}) => {
+  const { t } = useOptionalTranslation();
+  const isMobile = useIsMobile();
+  const { fields: fieldDefs, isLoading: fieldsLoading } = useDocumentFields(
+    doc?.id,
+  );
+
+  const docTypeLabels: Record<DocType, string> = {
+    I: t("LBL_DOC_TYPE_FILE"),
+    E: t("LBL_DOC_TYPE_URL"),
+  };
+
+  // Group dynamic (non-core) fields by block label
+  const dynamicBlockFields = useMemo(() => {
+    const blocks: Record<string, DocFieldInfo[]> = {};
+    for (const f of fieldDefs) {
+      if (CORE_FIELD_NAMES.has(f.name)) continue;
+      if (String(f.displaytype) === "2") continue; // system-managed, skip in edit
+      if (!f.blockLabel) continue;
+      if (!blocks[f.blockLabel]) blocks[f.blockLabel] = [];
+      blocks[f.blockLabel].push(f);
+    }
+    return blocks;
+  }, [fieldDefs]);
+
+  const [docType, setDocType] = useState<DocType>("I");
+  const [title, setTitle] = useState("");
+  const [filename, setFilename] = useState("");
+  const [folderid, setFolderid] = useState(defaultFolderId || 1);
+  const [notecontent, setNotecontent] = useState("");
+  const [fileversion, setFileversion] = useState("");
+  const [filestatus, setFilestatus] = useState(true);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  // 分割アップロード（1リクエストの上限を超えるファイル用）
+  const [chunkInfo, setChunkInfo] = useState<ChunkUploadInfo | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+
+  // Dynamic field values (compliance, scanner, etc.)
+  const [dynamicFields, setDynamicFields] = useState<Record<string, any>>({});
+
+  /**
+   * 電帳法・スキャナ保存の入力欄を出すかどうか
+   *
+   * - URL（filelocationtype = E）は電帳法の対象外なので、両ブロックとも出さない
+   * - 書類区分を選ぶまでは、保存区分・受領日などの関連項目を出さない
+   * - スキャナ固有の項目（解像度・カラー区分など）は保存区分が
+   *   「スキャナ保存」のときだけ出す
+   */
+  const isDynamicFieldVisible = useCallback(
+    (fieldName: string, blockLabel: string): boolean =>
+      isComplianceFieldVisible({
+        fieldName,
+        blockLabel,
+        docType,
+        documentCategory: String(dynamicFields["document_category"] ?? ""),
+        preservationType: String(dynamicFields["preservation_type"] ?? ""),
+        complianceBlockLabel: t("LBL_COMPLIANCE_SECTION"),
+        scannerBlockLabel: t("LBL_SCANNER_SECTION"),
+      }),
+    [docType, dynamicFields, t],
+  );
+
+  /** 表示している項目だけに絞ったブロック（空になったブロックは出さない） */
+  const visibleBlockFields = useMemo(() => {
+    const blocks: Array<[string, DocFieldInfo[]]> = [];
+    for (const [blockLabel, fields] of Object.entries(dynamicBlockFields)) {
+      const visible = fields.filter((f) =>
+        isDynamicFieldVisible(f.name, blockLabel),
+      );
+      if (visible.length > 0) blocks.push([blockLabel, visible]);
+    }
+    return blocks;
+  }, [dynamicBlockFields, isDynamicFieldVisible]);
+  const handleDynamicFieldChange = useCallback(
+    (fieldName: string, value: FieldValue) => {
+      setDynamicFields((prev) => ({ ...prev, [fieldName]: value }));
+    },
+    [],
+  );
+
+  // 分割アップロードの設定値（チャンクサイズ・最大サイズ）を取得する
+  useEffect(() => {
+    if (!isOpen || chunkInfo) return;
+    let cancelled = false;
+    fetchChunkUploadInfo()
+      .then((info) => {
+        if (!cancelled) setChunkInfo(info);
+      })
+      .catch(() => {
+        // 取得できない場合はサーバー側の検証に委ねる
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, chunkInfo]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setError(null);
+      setSelectedFile(null);
+      setUploadProgress(null);
+      if (mode === "edit" && doc) {
+        setDocType((doc.filelocationtype as DocType) || "I");
+        setTitle(doc.title || "");
+        setFilename(doc.filename || "");
+        setFolderid(doc.folderid || 1);
+        setNotecontent(doc.notecontent || "");
+        setFileversion(doc.fileversion || "");
+        setFilestatus(doc.filestatus === 1);
+        // Populate dynamic fields from doc.dynamic_fields (returned by DetailAPI)
+        const dynValues: Record<string, any> = {};
+        const df = doc.dynamic_fields;
+        // First, load all values from dynamic_fields (空文字も保持する)
+        if (df) {
+          for (const [key, val] of Object.entries(df)) {
+            if (val !== undefined && val !== null) {
+              dynValues[key] = String(val);
+            }
+          }
+        }
+        // Fallback: load from compliance object for backward compatibility
+        const c = doc.compliance;
+        if (c) {
+          for (const key of [
+            "document_category",
+            "preservation_type",
+            "receipt_date",
+            "scan_resolution_dpi",
+            "scan_color_type",
+            "original_paper_size",
+          ]) {
+            if (dynValues[key] === undefined) {
+              const val = (c as any)[key];
+              if (val !== undefined && val !== null && val !== "") {
+                dynValues[key] = String(val);
+              }
+            }
+          }
+        }
+        setDynamicFields(dynValues);
+      } else {
+        setDocType("I");
+        setTitle("");
+        setFilename("");
+        setFolderid(defaultFolderId || 1);
+        setNotecontent("");
+        setFileversion("");
+        setFilestatus(true);
+        // Set defaults from field definitions
+        const defaults: Record<string, any> = {};
+        for (const f of fieldDefs) {
+          if (CORE_FIELD_NAMES.has(f.name)) continue;
+          if (f.defaultvalue) {
+            defaults[f.name] = f.defaultvalue;
+          }
+        }
+        setDynamicFields(defaults);
+      }
+    }
+  }, [isOpen, mode, doc, defaultFolderId, fieldDefs]);
+
+  const handleFileSelect = useCallback(
+    (file: File) => {
+      // 分割アップロードの上限を超えるファイルは送信前に弾く
+      const limit = chunkInfo ? chunkInfo.maxSize : 0;
+      if (limit > 0 && file.size > limit) {
+        setSelectedFile(null);
+        setError(
+          t(
+            "LBL_UPLOAD_ERR_SIZE",
+            chunkInfo?.maxSizeLabel || formatMaxSize(limit),
+          ),
+        );
+        return;
+      }
+      setError(null);
+      setSelectedFile(file);
+      if (!title) {
+        setTitle(file.name.replace(/\.[^.]+$/, ""));
+      }
+    },
+    [title, chunkInfo, t],
+  );
+
+  /** ドロップされた項目を受け取る。単体ファイル以外は理由を添えて弾く */
+  const handleDropFiles = useCallback(
+    (dataTransfer: DataTransfer) => {
+      const dropped = pickSingleDroppedFile(dataTransfer);
+      switch (dropped.kind) {
+        case "file":
+          handleFileSelect(dropped.file);
+          return;
+        case "folder":
+          setError(t("LBL_UPLOAD_ERR_FOLDER_NOT_ALLOWED"));
+          return;
+        case "multiple":
+          setError(t("LBL_UPLOAD_ERR_SINGLE_FILE_ONLY", dropped.count));
+          return;
+        default:
+          // ファイルを含まないドロップ（テキストの選択範囲など）は何もしない
+          return;
+      }
+    },
+    [handleFileSelect, t],
+  );
+
+  /** ファイル選択ダイアログからの受け取り。複数選択された場合は弾く */
+  const handleInputFiles = useCallback(
+    (files: FileList | null) => {
+      if (!files || files.length === 0) return;
+      if (files.length > 1) {
+        setError(t("LBL_UPLOAD_ERR_SINGLE_FILE_ONLY", files.length));
+        return;
+      }
+      handleFileSelect(files[0]);
+    },
+    [handleFileSelect, t],
+  );
+
+  /** Append dynamic field values to form params for the main Save action.
+   *  空文字もそのまま送信する（vtiger Saveはnullのみスキップするため、
+   *  空文字を送れば値を明示的にクリアできる）。 */
+  /** 項目名 → uitype（送信形式の調整に使う） */
+  const uitypeOf = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const f of fieldDefs) map[f.name] = String(f.uitype);
+    return map;
+  }, [fieldDefs]);
+
+  /** 項目名 → ブロック名（表示判定に使う） */
+  const blockLabelOf = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const [blockLabel, fields] of Object.entries(dynamicBlockFields)) {
+      for (const f of fields) map[f.name] = blockLabel;
+    }
+    return map;
+  }, [dynamicBlockFields]);
+
+  const appendDynamicFields = useCallback(
+    (append: (key: string, val: string) => void) => {
+      for (const [key, val] of Object.entries(dynamicFields)) {
+        if (val === undefined || val === null) continue;
+        // 画面に出していない電帳法の項目は送らない
+        // （URLに変更した場合や、スキャナ保存から電子取引に変えた場合など）
+        const blockLabel = blockLabelOf[key];
+        if (blockLabel && !isDynamicFieldVisible(key, blockLabel)) continue;
+        const raw = typeof val === "boolean" ? (val ? "1" : "0") : String(val);
+        append(key, toServerValue(uitypeOf[key], raw));
+      }
+    },
+    [dynamicFields, blockLabelOf, isDynamicFieldVisible, uitypeOf],
+  );
+
+  const handleSave = useCallback(async () => {
+    if (!title.trim()) {
+      setError(t("LBL_TITLE_REQUIRED"));
+      return;
+    }
+    if (docType === "I" && mode === "create" && !selectedFile) {
+      setError(t("LBL_FILE_REQUIRED"));
+      return;
+    }
+    if (docType === "E" && !filename.trim()) {
+      setError(t("LBL_URL_REQUIRED"));
+      return;
+    }
+
+    setIsSaving(true);
+    setError(null);
+
+    try {
+      const csrf = getCsrfToken();
+      if (!csrf) throw new Error(t("LBL_CSRF_TOKEN_ERROR"));
+
+      // 1リクエストの上限を超えるファイルは分割アップロードしてから保存する
+      const singleRequestLimit =
+        chunkInfo?.singleRequestLimit ?? maxUploadSize ?? 0;
+      const needsChunkUpload =
+        docType === "I" &&
+        selectedFile !== null &&
+        singleRequestLimit > 0 &&
+        selectedFile.size > singleRequestLimit;
+      let chunkUploadId: string | null = null;
+      if (needsChunkUpload && selectedFile) {
+        setUploadProgress(0);
+        chunkUploadId = await uploadFileInChunks(
+          selectedFile,
+          setUploadProgress,
+        );
+        setUploadProgress(null);
+      }
+
+      if (docType === "I" && selectedFile && !chunkUploadId) {
+        // ファイルアップロード (FormData)
+        const formData = new FormData();
+        formData.append(csrf.name, csrf.value);
+        formData.append("module", "Documents");
+        formData.append("action", "Save");
+        formData.append("notes_title", title.trim());
+        formData.append("filelocationtype", "I");
+        formData.append("filestatus", filestatus ? "1" : "0");
+        formData.append("folderid", String(folderid));
+        formData.append("notecontent", notecontent);
+        formData.append("filename", selectedFile, selectedFile.name);
+        appendDynamicFields((k, v) => formData.append(k, v));
+        if (mode === "edit" && doc) {
+          formData.append("record", String(doc.id));
+        }
+        if (mode === "create" && parentModule && parentId) {
+          formData.append("relationOperation", "true");
+          formData.append("sourceModule", parentModule);
+          formData.append("sourceRecord", String(parentId));
+        }
+
+        const response = await fetch("index.php", {
+          method: "POST",
+          credentials: "same-origin",
+          body: formData,
+        });
+        const text = await response.text();
+        // 成功時はリダイレクトされる。JSON エラーならサーバーのメッセージを表示する
+        const saveError = extractSaveError(text);
+        if (saveError !== null) {
+          throw new Error(saveError || t("LBL_SAVE_FAILED"));
+        }
+
+        // 電帳法メタデータ保存（書類区分が指定されている場合）
+        if (dynamicFields["document_category"] && mode === "edit" && doc) {
+          await saveComplianceMetadata(doc.id, csrf);
+        }
+      } else {
+        // 非ファイル (URLSearchParams)
+        const bodyParams = new URLSearchParams();
+        bodyParams.append(csrf.name, csrf.value);
+        bodyParams.append("module", "Documents");
+        bodyParams.append("action", "Save");
+        bodyParams.append("notes_title", title.trim());
+        bodyParams.append("filelocationtype", docType);
+        bodyParams.append("filestatus", filestatus ? "1" : "0");
+        bodyParams.append("folderid", String(folderid));
+        bodyParams.append("notecontent", notecontent);
+        if (docType === "E") {
+          bodyParams.append("filename", filename.trim());
+        }
+        if (chunkUploadId) {
+          // 分割アップロードで結合済みのファイルを添付する
+          bodyParams.append("chunk_upload_id", chunkUploadId);
+        }
+        appendDynamicFields((k, v) => bodyParams.append(k, v));
+        if (mode === "edit" && doc) {
+          bodyParams.append("record", String(doc.id));
+        }
+        if (mode === "create" && parentModule && parentId) {
+          bodyParams.append("relationOperation", "true");
+          bodyParams.append("sourceModule", parentModule);
+          bodyParams.append("sourceRecord", String(parentId));
+        }
+
+        const response = await fetch("index.php", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: bodyParams.toString(),
+        });
+        const text = await response.text();
+        const saveError = extractSaveError(text);
+        if (saveError !== null) {
+          throw new Error(saveError || t("LBL_SAVE_FAILED"));
+        }
+
+        // 電帳法メタデータ保存（書類区分が指定されている場合）
+        if (dynamicFields["document_category"] && mode === "edit" && doc) {
+          await saveComplianceMetadata(doc.id, csrf);
+        }
+      }
+
+      onSave();
+    } catch (e: any) {
+      setError(e.message || t("LBL_SAVE_FAILED"));
+    } finally {
+      setUploadProgress(null);
+      setIsSaving(false);
+    }
+  }, [
+    title,
+    docType,
+    filename,
+    folderid,
+    notecontent,
+    filestatus,
+    selectedFile,
+    chunkInfo,
+    maxUploadSize,
+    mode,
+    doc,
+    parentModule,
+    parentId,
+    onSave,
+    dynamicFields,
+    appendDynamicFields,
+    t,
+  ]);
+
+  const saveComplianceMetadata = useCallback(
+    async (notesId: number, csrf: { name: string; value: string }) => {
+      const params = new URLSearchParams();
+      params.append(csrf.name, csrf.value);
+      params.append("module", "Documents");
+      params.append("api", "ComplianceAPI");
+      params.append("mode", "save_compliance");
+      params.append("notesid", String(notesId));
+      // Send all dynamic field values to ComplianceAPI
+      for (const [key, val] of Object.entries(dynamicFields)) {
+        if (val !== undefined && val !== null && val !== "") {
+          const raw =
+            typeof val === "boolean" ? (val ? "1" : "0") : String(val);
+          params.append(key, toServerValue(uitypeOf[key], raw));
+        }
+      }
+      await fetch("index.php", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: params.toString(),
+      });
+    },
+    [dynamicFields, uitypeOf],
+  );
+
+  if (!isOpen) return null;
+
+  const gridCols = isMobile ? "1fr" : "1fr 1fr";
+
+  return (
+    <div
+      style={
+        isMobile
+          ? {
+              position: "fixed",
+              inset: 0,
+              backgroundColor: "#fff",
+              zIndex: 100001,
+              display: "flex",
+              flexDirection: "column",
+            }
+          : {
+              position: "fixed",
+              inset: 0,
+              backgroundColor: "rgba(0,0,0,0.4)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 100001,
+            }
+      }
+      onClick={isMobile ? undefined : onClose}
+    >
+      <div
+        style={
+          isMobile
+            ? {
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden",
+              }
+            : {
+                backgroundColor: "#fff",
+                borderRadius: 8,
+                width: 1100,
+                maxWidth: "95vw",
+                maxHeight: "90vh",
+                display: "flex",
+                flexDirection: "column",
+                boxShadow: "0 10px 40px rgba(0,0,0,0.2)",
+              }
+        }
+        onClick={isMobile ? undefined : (e) => e.stopPropagation()}
+      >
+        {/* ヘッダー */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: isMobile ? "10px 12px" : "16px 20px",
+            borderBottom: "1px solid #E2E8F0",
+            flexShrink: 0,
+          }}
+        >
+          {isMobile ? (
+            <button
+              onClick={onClose}
+              style={{
+                border: "none",
+                background: "none",
+                fontSize: 20,
+                color: "#4A5568",
+                cursor: "pointer",
+                padding: "2px 6px",
+                lineHeight: 1,
+              }}
+            >
+              ←
+            </button>
+          ) : null}
+          <h3
+            style={{
+              margin: 0,
+              fontSize: isMobile ? 14 : 16,
+              fontWeight: 600,
+              color: "#2D3748",
+              flex: 1,
+            }}
+          >
+            {mode === "create"
+              ? t("LBL_DOCUMENT_CREATE")
+              : t("LBL_DOCUMENT_EDIT")}
+          </h3>
+          {!isMobile && (
+            <button
+              onClick={onClose}
+              style={{
+                width: 28,
+                height: 28,
+                border: "none",
+                backgroundColor: "transparent",
+                fontSize: 18,
+                color: "#A0AEC0",
+                cursor: "pointer",
+              }}
+            >
+              ×
+            </button>
+          )}
+        </div>
+
+        {/* コンテンツ */}
+        <div
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            padding: isMobile ? "12px 16px" : 20,
+          }}
+        >
+          {error && (
+            <div
+              style={{
+                padding: "8px 12px",
+                backgroundColor: "#FED7D7",
+                color: "#C53030",
+                borderRadius: 4,
+                fontSize: 13,
+                marginBottom: 16,
+              }}
+            >
+              {error}
+            </div>
+          )}
+
+          {/* ドキュメント種別（新規のみ） */}
+          {mode === "create" && (
+            <div style={{ marginBottom: 16 }}>
+              <label style={labelStyle}>{t("LBL_DOCUMENT_TYPE")}</label>
+              <div style={{ display: "flex", gap: 8 }}>
+                {(["I", "E"] as DocType[]).map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => setDocType(type)}
+                    style={{
+                      flex: 1,
+                      padding: "8px 12px",
+                      border: `2px solid ${docType === type ? "#4299E1" : "#E2E8F0"}`,
+                      borderRadius: 6,
+                      backgroundColor: docType === type ? "#EBF8FF" : "#fff",
+                      color: docType === type ? "#2B6CB0" : "#718096",
+                      fontSize: 13,
+                      fontWeight: 500,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {docTypeLabels[type]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 基本情報 */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: gridCols,
+              gap: "12px 16px",
+              marginBottom: 16,
+            }}
+          >
+            <div>
+              <label style={labelStyle}>
+                {t("Title")} <span style={{ color: "#E53E3E" }}>*</span>
+              </label>
+              <input
+                data-testid="document-title-input"
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+
+            <div>
+              <label style={labelStyle}>{t("Folder Name")}</label>
+              <select
+                value={folderid}
+                onChange={(e) => setFolderid(Number(e.target.value))}
+                style={inputStyle}
+              >
+                {/* 階層順に並べ、登録できないフォルダは選択不可で残す */}
+                {buildFolderOptions(folders, {
+                  isDisabled: (f) => f.can_edit === false,
+                }).map((f) => (
+                  <option key={f.id} value={f.id} disabled={f.disabled}>
+                    {f.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label style={labelStyle}>{t("Version")}</label>
+              <input
+                type="text"
+                value={fileversion || (mode === "create" ? "1" : "")}
+                readOnly
+                style={{
+                  ...inputStyle,
+                  backgroundColor: "#F7FAFC",
+                  color: "#718096",
+                  cursor: "default",
+                }}
+                title={t("LBL_VERSION_AUTO")}
+              />
+            </div>
+
+            <div>
+              <label style={labelStyle}>{t("LBL_STATUS")}</label>
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  fontSize: 13,
+                  color: "#4A5568",
+                  cursor: "pointer",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={filestatus}
+                  onChange={(e) => setFilestatus(e.target.checked)}
+                />{" "}
+                {t("LBL_STATUS_ACTIVE")}
+              </label>
+            </div>
+          </div>
+
+          {/* ファイル / URL 入力 */}
+          {docType === "I" && (
+            <div style={{ marginBottom: 16 }}>
+              <label style={labelStyle}>
+                {t("LBL_FILE_LABEL")}{" "}
+                {mode === "create" && (
+                  <span style={{ color: "#E53E3E" }}>*</span>
+                )}
+              </label>
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsDragging(true);
+                }}
+                onDragEnter={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onDragLeave={(e) => {
+                  e.stopPropagation();
+                  setIsDragging(false);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  // 一覧側のドロップ処理（QuickUpload）に伝播すると二重登録になる
+                  e.stopPropagation();
+                  setIsDragging(false);
+                  handleDropFiles(e.dataTransfer);
+                }}
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  border: `2px dashed ${isDragging ? "#4299E1" : "#E2E8F0"}`,
+                  borderRadius: 6,
+                  padding: 20,
+                  textAlign: "center",
+                  cursor: "pointer",
+                  backgroundColor: isDragging ? "#EBF8FF" : "#F7FAFC",
+                  transition: "all 0.15s",
+                }}
+              >
+                <input
+                  data-testid="document-file-input"
+                  ref={fileInputRef}
+                  type="file"
+                  multiple={false}
+                  style={{ display: "none" }}
+                  onChange={(e) => {
+                    handleInputFiles(e.target.files);
+                  }}
+                />
+                {selectedFile ? (
+                  <div style={{ fontSize: 13, color: "#2D3748" }}>
+                    <span style={{ fontWeight: 500 }}>{selectedFile.name}</span>
+                    <span style={{ color: "#A0AEC0", marginLeft: 8 }}>
+                      ({(selectedFile.size / 1024).toFixed(0)} KB)
+                    </span>
+                  </div>
+                ) : mode === "edit" && doc?.filename ? (
+                  <div style={{ fontSize: 13, color: "#718096" }}>
+                    {t("LBL_CURRENT_FILE", doc.filename)}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 13, color: "#A0AEC0" }}>
+                    {t("LBL_DRAG_DROP_OR_CLICK")}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {docType === "E" && (
+            <div style={{ marginBottom: 16 }}>
+              <label style={labelStyle}>
+                {t("LBL_FILE_URL")} <span style={{ color: "#E53E3E" }}>*</span>
+              </label>
+              <input
+                type="url"
+                value={filename}
+                onChange={(e) => setFilename(e.target.value)}
+                placeholder="https://example.com/document"
+                style={inputStyle}
+              />
+            </div>
+          )}
+
+          {/* Dynamic field blocks (compliance, scanner, etc.) */}
+          {!fieldsLoading &&
+            visibleBlockFields.map(([blockLabel, blockFields]) => (
+              <div
+                key={blockLabel}
+                style={{
+                  marginBottom: 16,
+                  paddingTop: 12,
+                  borderTop: "1px solid #E2E8F0",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#4A5568",
+                    marginBottom: 10,
+                  }}
+                >
+                  {blockLabel}
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: gridCols,
+                    gap: "12px 16px",
+                  }}
+                >
+                  {blockFields.map((field) => {
+                    const fieldInfo = convertToFieldInfo(field);
+                    return (
+                      <FieldRenderer
+                        key={field.name}
+                        field={fieldInfo}
+                        value={
+                          dynamicFields[field.name] ?? field.defaultvalue ?? ""
+                        }
+                        onChange={(name: string, val: FieldValue) =>
+                          handleDynamicFieldChange(name, val)
+                        }
+                        // 参照・ユーザー項目の表示名（<name>_display）を渡す
+                        formData={dynamicFields}
+                        // ユーザー追加項目は標準の編集画面と同じく案内文を出さない
+                        placeholder=""
+                        module="Documents"
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+
+          {/* メモ */}
+          <div style={{ marginBottom: 8 }}>
+            <label style={labelStyle}>{t("Note")}</label>
+            <textarea
+              value={notecontent}
+              onChange={(e) => setNotecontent(e.target.value)}
+              rows={4}
+              style={{ ...inputStyle, resize: "vertical" }}
+            />
+          </div>
+        </div>
+
+        {/* フッター */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 8,
+            padding: "14px 20px",
+            borderTop: "1px solid #E2E8F0",
+          }}
+        >
+          <button
+            onClick={onClose}
+            disabled={isSaving}
+            style={{
+              padding: "7px 20px",
+              backgroundColor: "#fff",
+              color: "#4A5568",
+              border: "1px solid #E2E8F0",
+              borderRadius: 4,
+              fontSize: 14,
+              cursor: "pointer",
+            }}
+          >
+            {t("LBL_CANCEL")}
+          </button>
+          <button
+            data-testid="document-save-button"
+            onClick={handleSave}
+            disabled={isSaving}
+            style={{
+              padding: "7px 20px",
+              backgroundColor: isSaving ? "#A0AEC0" : "#38A169",
+              color: "#fff",
+              border: "none",
+              borderRadius: 4,
+              fontSize: 14,
+              cursor: isSaving ? "wait" : "pointer",
+            }}
+          >
+            {uploadProgress !== null
+              ? t("LBL_UPLOADING_LARGE_FILE", uploadProgress)
+              : isSaving
+                ? t("LBL_SAVING")
+                : t("LBL_SAVE")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};

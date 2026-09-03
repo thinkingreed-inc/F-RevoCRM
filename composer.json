@@ -25,6 +25,7 @@
         "web-auth/webauthn-lib": "3.3.12",
         "nyholm/psr7": "^1.8",
         "nyholm/psr7-server": "^1.1",
+        "smalot/pdfparser": "^2.12",
         "symfony/http-foundation": "^5.4"
     },
     "require-dev": {
@@ -45,6 +46,7 @@
     },
     "scripts": {
         "test": "phpunit",
+        "test:integration": "phpunit --testsuite Integration",
         "cs-check": "php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff",
         "cs-fix": "php-cs-fixer fix --config=.php-cs-fixer.dist.php",
         "phpstan": "@php -d auto_prepend_file=phpstan-shim.php vendor/bin/phpstan analyse"

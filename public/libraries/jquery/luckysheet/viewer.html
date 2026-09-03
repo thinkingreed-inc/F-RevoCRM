@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Excel Preview</title>
+<link rel="stylesheet" href="css/pluginsCss.css">
+<link rel="stylesheet" href="css/plugins.css">
+<link rel="stylesheet" href="css/luckysheet.css">
+<link rel="stylesheet" href="css/iconfont.css">
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
+  #loading { display: flex; align-items: center; justify-content: center; height: 100%; color: #A0AEC0; font-family: sans-serif; font-size: 14px; }
+  #error { display: none; padding: 40px; text-align: center; color: #E53E3E; font-family: sans-serif; }
+  /* 行を打ち切ったことの告知（シートの上に重ねる） */
+  #notice {
+    display: none; position: absolute; left: 0; right: 0; top: 0; z-index: 1000;
+    padding: 6px 12px; background: #FFFAF0; border-bottom: 1px solid #FBD38D;
+    color: #975A16; font-family: sans-serif; font-size: 12px; text-align: center;
+  }
+  /* 読み取り専用: 数式バー・入力を無効化 */
+  #luckysheet-wa-editor, #luckysheet-input-box, .luckysheet-wa-calculate { display: none !important; }
+  #luckysheet-cell-main .luckysheet-cell-input { pointer-events: none !important; }
+  /* 右クリックメニューを非表示 */
+  .luckysheet-cols-menu, .luckysheet-rightclick-menu { display: none !important; }
+  /* Luckysheet はシートバーのアイコンに Font Awesome（<i class="fa fa-caret-left">）を使うが、
+     css/plugins.css が参照する fonts/fontawesome-webfont.* を同梱していないため
+     字形が無く □ で表示される。製品に同梱済みの Font Awesome を指し直して補う。
+     （ライブラリのCSSは変更せず、同じ font-family を後から宣言して上書きする） */
+  @font-face {
+    font-family: 'FontAwesome';
+    src: url('../../../layouts/v7/lib/font-awesome/fonts/fontawesome-webfont.woff2') format('woff2'),
+         url('../../../layouts/v7/lib/font-awesome/fonts/fontawesome-webfont.woff') format('woff'),
+         url('../../../layouts/v7/lib/font-awesome/fonts/fontawesome-webfont.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+  }
+  /* 読み取り専用: シートの追加・一覧・タブごとのメニューは出さない */
+  #luckysheet-sheets-add,
+  .luckysheet-sheets-add,
+  .luckysheet-sheets-m,
+  .luckysheet-sheets-item-menu { display: none !important; }
+  /* シート切り替えの左右ボタン */
+  #luckysheet-sheets-leftscroll, #luckysheet-sheets-rightscroll {
+    color: #4A5568; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div id="loading">読み込み中...</div>
+<div id="error"></div>
+<div id="notice"></div>
+<div id="luckysheet" style="margin: 0; padding: 0; position: absolute; width: 100%; height: 100%; left: 0; top: 0;"></div>
+
+<!-- 文言は F-RevoCRM の言語ファイルから取得する（ライブラリ本体は変更しない） -->
+<script src="../../../resources/preview-i18n.js"></script>
+<script src="js/plugin.js"></script>
+<script src="js/luckysheet.umd.js"></script>
+<script src="js/luckyexcel.umd.js"></script>
+<script>
+(function() {
+  // 解析が終わらない・例外が外に出ない場合でも読み込み中のままにしないための保険
+  var PARSE_TIMEOUT_MS = 60000;
+  /**
+   * 1シートに描画する行数の上限（既定）
+   *
+   * luckysheet の描画はメインスレッドで動くため、行数が多いと解析後に
+   * 画面が固まる。呼び出し側から maxRows で変更できる。0 以下は無制限。
+   */
+  var DEFAULT_MAX_ROWS = 5000;
+  var finished = false;
+  var parseTimer = null;
+  /** 解析用のワーカー（打ち切り時に止めるため保持する） */
+  var worker = null;
+
+  // 読み込み中の表示も翻訳する（取得できるまでは既定の日本語を出す）
+  PreviewI18n.apply('#loading', 'LBL_PREVIEW_LOADING', '読み込み中...');
+
+  var params = new URLSearchParams(window.location.search);
+  var fileUrl = params.get('file');
+  var maxRows = parseInt(params.get('maxRows'), 10);
+  if (isNaN(maxRows) || maxRows < 0) maxRows = DEFAULT_MAX_ROWS;
+  if (!fileUrl) {
+    showError('LBL_PREVIEW_FILE_URL_REQUIRED', 'ファイルURLが指定されていません');
+    return;
+  }
+
+  // LuckyExcel は解析失敗を内部で握りつぶしコールバックを呼ばないことがあるため、
+  // 非同期のエラーも拾ってエラー表示に回す
+  window.addEventListener('error', function() {
+    showError('LBL_PREVIEW_EXCEL_LOAD_FAILED', 'Excelファイルを読み込めませんでした。ファイルが壊れている可能性があります。');
+  });
+  window.addEventListener('unhandledrejection', function() {
+    showError('LBL_PREVIEW_EXCEL_LOAD_FAILED', 'Excelファイルを読み込めませんでした。ファイルが壊れている可能性があります。');
+  });
+
+  // XHRでファイルを取得（fetchだとArrayBufferの扱いが異なるため）
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', fileUrl, true);
+  xhr.responseType = 'arraybuffer';
+  xhr.onload = function() {
+    if (xhr.status !== 200) {
+      showError('LBL_PREVIEW_FETCH_FAILED', 'ファイルの取得に失敗しました');
+      return;
+    }
+    if (!isZipFile(xhr.response)) {
+      // xlsx は ZIP なので、先頭が PK でなければ壊れている（または別形式）
+      showError('LBL_PREVIEW_EXCEL_BROKEN', 'Excelファイルとして読み込めませんでした。ファイルが壊れている可能性があります。');
+      return;
+    }
+    // 解析はワーカーに任せる。メインスレッドで解析すると大きなファイルで
+    // タブごと固まり、この打ち切りタイマーも発火しない
+    parseTimer = window.setTimeout(function() {
+      if (worker) worker.terminate();
+      showError('LBL_PREVIEW_LOAD_TIMEOUT', 'ファイルの読み込みに時間がかかりすぎたため中止しました。');
+    }, PARSE_TIMEOUT_MS);
+    parseInWorker(xhr.response);
+  };
+  xhr.onerror = function() {
+    showError('LBL_PREVIEW_FETCH_FAILED', 'ファイルの取得に失敗しました');
+  };
+  xhr.send();
+
+  /**
+   * ワーカーで解析する。ワーカーが使えない場合はこのスレッドで解析する
+   *
+   * @param {ArrayBuffer} buffer xlsx の中身
+   */
+  function parseInWorker(buffer) {
+    if (typeof Worker === 'undefined') {
+      parseOnMainThread(buffer);
+      return;
+    }
+    try {
+      worker = new Worker('js/excel-parse-worker.js');
+    } catch (e) {
+      parseOnMainThread(buffer);
+      return;
+    }
+
+    worker.onmessage = function(event) {
+      var data = event.data || {};
+      if (data.ok) {
+        render(data.json, data.truncated);
+        return;
+      }
+      // ライブラリを読めなかった場合だけこのスレッドで解析し直す
+      // （解析自体の失敗はやり直しても同じ結果になるため出さない）
+      if (data.error === 'LIB_LOAD_FAILED') {
+        parseOnMainThread(buffer);
+        return;
+      }
+      showError('LBL_PREVIEW_EXCEL_PARSE_FAILED', 'Excelデータの解析に失敗しました。ファイルが壊れている可能性があります。');
+    };
+    worker.onerror = function() {
+      // ワーカーの起動に失敗した場合の保険
+      parseOnMainThread(buffer);
+    };
+
+    // ArrayBuffer は転送せず複製で渡す。転送するとこちら側が空になり、
+    // ワーカーが使えなかったときにメインスレッドで解析し直せなくなる
+    worker.postMessage({ buffer: buffer, maxRows: maxRows });
+  }
+
+  /**
+   * このスレッドで解析する（ワーカーが使えない環境向けの保険）
+   *
+   * @param {ArrayBuffer} buffer xlsx の中身
+   */
+  function parseOnMainThread(buffer) {
+    if (finished || !buffer || buffer.byteLength === 0) return;
+    try {
+      LuckyExcel.transformExcelToLucky(buffer, function(exportJson) {
+        if (!exportJson || !exportJson.sheets || exportJson.sheets.length === 0) {
+          showError('LBL_PREVIEW_EXCEL_PARSE_FAILED', 'Excelデータの解析に失敗しました。ファイルが壊れている可能性があります。');
+          return;
+        }
+        render(exportJson, truncateRows(exportJson.sheets, maxRows));
+      });
+    } catch(e) {
+      showError('LBL_PREVIEW_EXCEL_PARSE_FAILED', 'Excelデータの解析に失敗しました。ファイルが壊れている可能性があります。');
+    }
+  }
+
+  /**
+   * 解析結果を読み取り専用で描画する
+   *
+   * @param {Object} exportJson LuckyExcel の出力
+   * @param {boolean} truncated 行を打ち切ったか
+   */
+  function render(exportJson, truncated) {
+    if (finished) return;
+    finished = true;
+    if (parseTimer) window.clearTimeout(parseTimer);
+    document.getElementById('loading').style.display = 'none';
+    if (truncated) showTruncatedNotice();
+    // 全シートを読み取り専用に設定
+    exportJson.sheets.forEach(function(sheet) {
+      if (!sheet.config) sheet.config = {};
+      sheet.config.authority = {
+        sheet: 1, // シート全体を保護
+        hintText: '',
+        selectLockedCells: 1,
+        selectunLockedCells: 1,
+        formatCells: 0, formatColumns: 0, formatRows: 0,
+        insertColumns: 0, insertRows: 0, insertHyperlinks: 0,
+        deleteColumns: 0, deleteRows: 0,
+        sort: 0, filter: 0, usePivotTablereports: 0,
+        editObjects: 0, editScenarios: 0
+      };
+    });
+    luckysheet.create({
+      container: 'luckysheet',
+      data: exportJson.sheets,
+      title: '',
+      allowUpdate: false,
+      allowEdit: false,
+      allowCopy: false,
+      showtoolbar: false,
+      showinfobar: false,
+      showsheetbar: true,
+      showstatisticBar: false,
+      showFormulaBar: false,
+      enableAddRow: false,
+      enableAddBackTop: false,
+      userInfo: false,
+      showRowBar: false,
+      showColumnBar: false,
+      sheetRightClickConfig: { delete: false, copy: false, rename: false, hide: false, move: false },
+      cellRightClickConfig: { copy: false, paste: false, insertRow: false, insertColumn: false, deleteRow: false, deleteColumn: false, deleteCell: false, hideRow: false, hideColumn: false, clear: false, matrix: false, sort: false, filter: false, chart: false, image: false, link: false, data: false }
+    });
+  }
+
+  /**
+   * 各シートを先頭 maxRows 行までに切る（ワーカーが使えない場合用）
+   *
+   * ワーカー側の同名処理と同じ内容。描画で固まらないよう渡す量を減らす。
+   *
+   * @param {Array} sheets LuckyExcel の出力の sheets
+   * @param {number} limit 0 以下は無制限
+   * @return {boolean} 1シートでも切ったら true
+   */
+  function truncateRows(sheets, limit) {
+    if (limit <= 0) return false;
+    var truncated = false;
+    sheets.forEach(function(sheet) {
+      if (Object.prototype.toString.call(sheet.celldata) === '[object Array]') {
+        var kept = sheet.celldata.filter(function(cell) {
+          return cell && cell.r < limit;
+        });
+        if (kept.length !== sheet.celldata.length) {
+          truncated = true;
+          sheet.celldata = kept;
+        }
+      }
+      if (Object.prototype.toString.call(sheet.calcChain) === '[object Array]') {
+        sheet.calcChain = sheet.calcChain.filter(function(item) {
+          return item && item.r < limit;
+        });
+      }
+    });
+    return truncated;
+  }
+
+  /** 行を打ち切ったことを画面に出す */
+  function showTruncatedNotice() {
+    var el = document.getElementById('notice');
+    el.textContent = 'プレビューは先頭 ' + maxRows + ' 行までを表示しています。以降の行は省略しました。';
+    el.style.display = 'block';
+    PreviewI18n.text('LBL_PREVIEW_TRUNCATED_ROWS',
+      'プレビューは先頭 %s 行までを表示しています。以降の行は省略しました。', maxRows)
+      .then(function(message) { el.textContent = message; });
+  }
+
+  /** xlsx（= ZIP）かどうかを先頭の署名で判定する */
+  function isZipFile(buffer) {
+    if (!buffer || buffer.byteLength < 4) return false;
+    var head = new Uint8Array(buffer, 0, 4);
+    // "PK\x03\x04"（空アーカイブの "PK\x05\x06" も許容）
+    return head[0] === 0x50 && head[1] === 0x4b
+      && (head[2] === 0x03 || head[2] === 0x05 || head[2] === 0x07);
+  }
+
+  /**
+   * エラーを表示する
+   *
+   * @param {string} key 翻訳キー
+   * @param {string} fallback 翻訳が取得できない場合の文言
+   */
+  function showError(key, fallback) {
+    // 表示に成功したあとの後発エラーで画面を潰さない
+    if (finished) return;
+    finished = true;
+    if (parseTimer) window.clearTimeout(parseTimer);
+    // 解析を続けさせない（エラー表示後もCPUを使い続けないように）
+    if (worker) { worker.terminate(); worker = null; }
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('luckysheet').style.display = 'none';
+    var el = document.getElementById('error');
+    // 先にフォールバックを出し、翻訳が取れたら差し替える
+    el.textContent = fallback || key;
+    el.style.display = 'block';
+    PreviewI18n.text(key, fallback).then(function(message) {
+      el.textContent = message;
+    });
+  }
+})();
+</script>
+</body>
+</html>

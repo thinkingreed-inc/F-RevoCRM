@@ -1543,6 +1543,7 @@ $languageStrings = array(
 	'MailScanner' => 'メールコンバータ',
 	'Scheduled Import' => 'スケジュール入力',
 	'ScheduleReports' => 'スケジュールレポート',
+	'DocumentsInputDeadlineStatus' => 'ドキュメントの入力期限状態',
 	//設定>販売管理
 	'Compound' => '複合(Compound)',
 	'Simple' => '単純(Simple)',

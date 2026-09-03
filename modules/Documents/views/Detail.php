@@ -9,13 +9,13 @@
  ************************************************************************************/
 
 class Documents_Detail_View extends Vtiger_Detail_View {
-	
+
 	function preProcess(Vtiger_Request $request, $display = true) {
 		$viewer = $this->getViewer($request);
 		$viewer->assign('NO_SUMMARY', true);
 		parent::preProcess($request);
 	}
-	
+
 	/**
 	 * Function to get Ajax is enabled or not
 	 * @param Vtiger_Record_Model record model

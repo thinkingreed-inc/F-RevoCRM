@@ -151,6 +151,13 @@ export interface FieldRendererProps {
   formData?: Record<string, FieldValue>;
   /** 対象モジュール名 */
   module?: string;
+  /**
+   * placeholder の上書き
+   *
+   * 未指定なら項目に応じた既定の案内文を出す。
+   * 空文字を渡すと案内文を出さない（標準の編集画面と同じ見た目にする場合）。
+   */
+  placeholder?: string;
 }
 
 /**

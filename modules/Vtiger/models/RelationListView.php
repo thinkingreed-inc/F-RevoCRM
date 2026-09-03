@@ -213,11 +213,6 @@ class Vtiger_RelationListView_Model extends Vtiger_Base_Model {
 					'label' => 'LBL_EXTERNAL_DOCUMENT_TYPE',
 					'url' => 'index.php?module=Documents&view=EditAjax&type=E'.$relationParameters
 				),
-				array(
-					'type' => 'W',
-					'label' => 'LBL_WEBDOCUMENT_TYPE',
-					'url' => 'index.php?module=Documents&view=EditAjax&type=W'.$relationParameters
-				)
 			);
 			$addLinkList[] = array(
 				'linktype' => 'LISTVIEWBASIC',
