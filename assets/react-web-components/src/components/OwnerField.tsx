@@ -78,6 +78,13 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputContainerRef = useRef<HTMLDivElement>(null);
+  const isSelectingRef = useRef<boolean>(false);
+  const valueRef = useRef<string | undefined>(value);
+
+  // valueRefを最新のvalueに同期
+  useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
 
   // ドロップダウンの位置
   const [dropdownPosition, setDropdownPosition] = useState<{
@@ -212,11 +219,13 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
       const selected = allOptions.find((opt) => opt.id === value);
       if (selected) {
         setDisplayLabel(selected.name);
+      } else if (!isOpen) {
+        setDisplayLabel("");
       }
-    } else {
+    } else if (!isOpen) {
       setDisplayLabel("");
     }
-  }, [value, allOptions]);
+  }, [value, allOptions, isOpen]);
 
   /**
    * 検索入力変更
@@ -232,6 +241,7 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
     }
 
     // ドロップダウンを開く
+    updateDropdownPosition();
     setIsOpen(true);
   };
 
@@ -239,10 +249,15 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
    * オプション選択
    */
   const handleSelectOption = (option: OwnerOption) => {
+    isSelectingRef.current = true;
+    valueRef.current = option.id;
     setDisplayLabel(option.name);
     setSearchTerm("");
     setIsOpen(false);
     onChange(name, option.id);
+    setTimeout(() => {
+      isSelectingRef.current = false;
+    }, 200);
   };
 
   /**
@@ -287,6 +302,21 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
     },
     [isOpen, filteredOptions, highlightedIndex],
   );
+  /**
+   * 表示状態のリセット/復元
+   */
+  const resetOrRestoreDisplay = useCallback(() => {
+    if (isSelectingRef.current) return;
+    setIsOpen(false);
+    setSearchTerm("");
+    const currentValue = valueRef.current;
+    if (currentValue) {
+      const selected = allOptions.find((opt) => opt.id === currentValue);
+      setDisplayLabel(selected ? selected.name : "");
+    } else {
+      setDisplayLabel("");
+    }
+  }, [allOptions]);
 
   /**
    * 選択をクリア
@@ -313,11 +343,31 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
   }, []);
 
   /**
-   * フォーカス時にドロップダウンを開く
+   * フォーカス時またはクリック時にドロップダウンを開く（検索語をリセットして全選択肢を表示）
    */
-  const handleFocus = () => {
+  const openDropdown = useCallback(() => {
     updateDropdownPosition();
+    setSearchTerm("");
     setIsOpen(true);
+    const currentValue = valueRef.current;
+    if (currentValue) {
+      const selectedIndex = allOptions.findIndex(
+        (opt) => opt.id === currentValue,
+      );
+      setHighlightedIndex(selectedIndex >= 0 ? selectedIndex : 0);
+    } else {
+      setHighlightedIndex(0);
+    }
+  }, [allOptions, updateDropdownPosition]);
+
+  const handleFocus = () => {
+    openDropdown();
+  };
+
+  const handleClick = () => {
+    if (!isOpen) {
+      openDropdown();
+    }
   };
 
   /**
@@ -330,18 +380,13 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
       const isInsideInput = inputContainerRef.current?.contains(target);
 
       if (!isInsideDropdown && !isInsideInput) {
-        setIsOpen(false);
-        // 選択されていない場合は入力をクリア
-        if (!value && displayLabel) {
-          setDisplayLabel("");
-          setSearchTerm("");
-        }
+        resetOrRestoreDisplay();
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [value, displayLabel]);
+  }, [resetOrRestoreDisplay]);
 
   /**
    * スクロール・リサイズ時にドロップダウンの位置を更新
@@ -393,16 +438,22 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
                 </div>
                 {filteredUsers.map((user, i) => {
                   const globalIndex = i;
+                  const isSelected = value === user.id;
+                  const isHighlighted = globalIndex === highlightedIndex;
+
                   return (
                     <div
                       key={`user_${user.id}`}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                      }}
                       onClick={() => handleSelectOption(user)}
                       className={cn(
                         "px-3 py-1.5 text-md cursor-pointer",
-                        globalIndex === highlightedIndex
-                          ? "bg-blue-100"
-                          : value === user.id
-                            ? "bg-blue-100"
+                        isSelected
+                          ? "bg-blue-100 text-blue-900 font-medium"
+                          : isHighlighted
+                            ? "bg-gray-100"
                             : "hover:bg-blue-50",
                       )}
                     >
@@ -421,16 +472,22 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
                 </div>
                 {filteredGroups.map((group, i) => {
                   const globalIndex = filteredUsers.length + i;
+                  const isSelected = value === group.id;
+                  const isHighlighted = globalIndex === highlightedIndex;
+
                   return (
                     <div
                       key={`group_${group.id}`}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                      }}
                       onClick={() => handleSelectOption(group)}
                       className={cn(
                         "px-3 py-1.5 text-md cursor-pointer",
-                        globalIndex === highlightedIndex
-                          ? "bg-blue-100"
-                          : value === group.id
-                            ? "bg-blue-100"
+                        isSelected
+                          ? "bg-blue-100 text-blue-900 font-medium"
+                          : isHighlighted
+                            ? "bg-gray-100"
                             : "hover:bg-blue-50",
                       )}
                     >
@@ -508,11 +565,14 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
               value={displayLabel}
               onChange={handleSearchChange}
               onFocus={handleFocus}
+              onClick={handleClick}
               onKeyDown={handleKeyDown}
               onBlur={() => {
                 // Tab離脱等の blur でドロップダウンを閉じる
                 // 候補クリック時の選択処理を妨げないよう150ms遅延
-                setTimeout(() => setIsOpen(false), 150);
+                setTimeout(() => {
+                  resetOrRestoreDisplay();
+                }, 150);
               }}
               disabled={disabled}
               placeholder={t("LBL_PLACEHOLDER_SEARCH", label)}
@@ -527,12 +587,31 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
                   type="button"
                   onClick={handleClear}
                   disabled={disabled}
-                  className="p-1 hover:bg-gray-100 rounded"
+                  className="p-1 hover:bg-gray-100 rounded cursor-pointer"
+                  aria-label="クリア"
                 >
                   <X className="w-4 h-4 text-gray-400" />
                 </button>
               ) : (
-                <ChevronDown className="w-4 h-4 text-gray-400" />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!disabled) {
+                      if (isOpen) {
+                        setIsOpen(false);
+                      } else {
+                        openDropdown();
+                        inputRef.current?.focus();
+                      }
+                    }
+                  }}
+                  disabled={disabled}
+                  tabIndex={-1}
+                  className="p-1 hover:bg-gray-100 rounded cursor-pointer text-gray-400"
+                  aria-label="選択肢を表示"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </button>
               )}
             </div>
           </div>
