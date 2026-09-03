@@ -254,6 +254,24 @@ class Vtiger_List_View extends Vtiger_Index_View {
 			}
 			$listViewModel->setSortParamsSession($listViewSessionKey, $params);
 		}
+		$isDefaultSort = false;
+		global $db;
+		$db = PearDatabase::getInstance();
+		$query = "SELECT orderby, sortorder from vtiger_customview WHERE cvid = ?";
+		$result = $db->pquery($query, array($cvId));
+		$db_orderBy = '';
+		$db_sortOrder = '';
+		if ($result && $db->num_rows($result) > 0) {
+			$db_orderBy = $db->query_result($result, 0, 'orderby');
+			$db_sortOrder = $db->query_result($result, 0, 'sortorder');
+		}
+
+		if (!empty($db_orderBy)) {
+			// If a default sort is set, it locks the sorting for this custom view.
+			$orderBy = $db_orderBy;
+			$sortOrder = $db_sortOrder;
+			$isDefaultSort = true;
+		}
 		if($sortOrder == "ASC"){
 			$nextSortOrder = "DESC";
 			$sortImage = "icon-chevron-down";
@@ -292,6 +310,19 @@ class Vtiger_List_View extends Vtiger_Index_View {
 			$viewer->assign('OPERATOR',$operator);
 			$viewer->assign('ALPHABET_VALUE',$searchValue);
 		}
+		$viewer->assign('ORDER_BY',$orderBy);
+		$viewer->assign('SORT_ORDER',$sortOrder);
+		$viewer->assign('NEXT_SORT_ORDER',$nextSortOrder);
+		$viewer->assign('SORT_IMAGE',$sortImage);
+		$viewer->assign('FASORT_IMAGE',$faSortImage);
+		if(!$isDefaultSort) {
+			$viewer->assign('COLUMN_NAME',$orderBy);
+			$viewer->assign('IS_DEFAULT_SORT', false);
+		} else {
+			$viewer->assign('COLUMN_NAME','');
+			$viewer->assign('IS_DEFAULT_SORT', true);
+		}
+		
 		if(!empty($searchKey) && !empty($searchValue)) {
 			$listViewModel->set('search_key', $searchKey);
 			$listViewModel->set('search_value', $searchValue);
@@ -384,7 +415,13 @@ class Vtiger_List_View extends Vtiger_Index_View {
 		$viewer->assign('NEXT_SORT_ORDER',$nextSortOrder);
 		$viewer->assign('SORT_IMAGE',$sortImage);
 		$viewer->assign('FASORT_IMAGE',$faSortImage);
-		$viewer->assign('COLUMN_NAME',$orderBy);
+		if(!$isDefaultSort) {
+			$viewer->assign('COLUMN_NAME',$orderBy);
+			$viewer->assign('IS_DEFAULT_SORT', false);
+		} else {
+			$viewer->assign('COLUMN_NAME','');
+			$viewer->assign('IS_DEFAULT_SORT', true);
+		}
 		$viewer->assign('VIEWNAME',$this->viewName);
 
 		$viewer->assign('LISTVIEW_ENTRIES_COUNT',$noOfEntries);
