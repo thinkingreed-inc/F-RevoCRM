@@ -13,6 +13,27 @@
  */
 class Inventory_Record_Model extends Vtiger_Record_Model {
 
+	/**
+	 * 明細行の重複登録を防止するロック付きsave
+	 * API経由（BULK_SAVE_MODE）の場合はVtigerInventoryOperation側でロック管理するためスキップ
+	 */
+	public function save() {
+		require_once 'include/utils/InventoryLineItemPreventDuplicateRecord.php';
+		$id = $this->getId();
+		$needsLock = !empty($id) && !CRMEntity::isBulkSaveMode();
+
+		if ($needsLock) {
+			InventoryLineItemPreventDuplicateRecord::startPreventDuplicate($id);
+		}
+		try {
+			parent::save();
+		} finally {
+			if ($needsLock) {
+				InventoryLineItemPreventDuplicateRecord::endPreventDuplicate($id);
+			}
+		}
+	}
+
 	function getCurrencyInfo() {
 		$moduleName = $this->getModuleName();
 		$currencyInfo = getInventoryCurrencyInfo($moduleName, $this->getId());
