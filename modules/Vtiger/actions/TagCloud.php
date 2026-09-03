@@ -92,7 +92,7 @@ class Vtiger_TagCloud_Action extends Vtiger_Mass_Action {
 
 		$tagsList = $request->get('tagsList');
 		$newTags = $tagsList['new'];
-		if(empty($newTags)) {
+		if(empty($newTags) || !is_array($newTags)) {
 			$newTags = array();
 		}
 		$existingTags = $tagsList['existing'];
@@ -109,6 +109,13 @@ class Vtiger_TagCloud_Action extends Vtiger_Mass_Action {
 		if(!is_array($existingTags)) {
 			$existingTags = array();
 		}
+
+		// 「タグA, タグB」のようにカンマ+空白区切りで入力された場合に前後の空白が残ると
+		// 同名タグが重複作成されるため, 正規化した上で重複を除去する
+		$newTags = array_map(array('Vtiger_Tag_Model', 'normalizeName'), $newTags);
+		$newTags = array_values(array_unique(array_filter($newTags, function($tagName) {
+			return $tagName !== '';
+		})));
 
 		$result = array();
 		$invalidTagName = array();
@@ -159,7 +166,7 @@ class Vtiger_TagCloud_Action extends Vtiger_Mass_Action {
 	public function update(Vtiger_Request $request) {
 		$module = $request->get('module');
 		$tagId = $request->get('id');
-		$tagName = $request->get('name');
+		$tagName = Vtiger_Tag_Model::normalizeName($request->get('name'));
 		$visibility = $request->get('visibility');
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 
