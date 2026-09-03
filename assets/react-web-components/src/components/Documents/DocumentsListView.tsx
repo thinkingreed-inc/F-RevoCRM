@@ -497,6 +497,8 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
               {records.map((rec) => (
                 <tr
                   key={rec.id}
+                  data-testid="documents-row"
+                  data-record-id={rec.id}
                   style={{
                     borderBottom: "1px solid #EDF2F7",
                     cursor: "pointer",

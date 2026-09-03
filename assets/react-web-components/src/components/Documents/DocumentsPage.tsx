@@ -571,6 +571,7 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
           }}
         >
           <input
+            data-testid="documents-search-input"
             type="text"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
@@ -791,6 +792,7 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
 
         {/* 新規追加ボタン */}
         <button
+          data-testid="documents-add"
           onClick={() => {
             setCreateEditMode("create");
             setEditTargetDoc(null);

@@ -473,6 +473,7 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
 
         {/* 既存ドキュメントの紐づけボタン */}
         <button
+          data-testid="documents-related-select"
           onClick={() => setSelectModalOpen(true)}
           style={{
             padding: "5px 14px",
@@ -490,6 +491,7 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
 
         {/* 新規追加ボタン */}
         <button
+          data-testid="documents-related-add"
           onClick={() => {
             setCreateEditMode("create");
             setEditTargetDoc(null);
@@ -683,6 +685,7 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
                   >
                     {rec.download_url && (
                       <a
+                        data-testid="documents-related-download"
                         href={rec.download_url}
                         onClick={(e) => e.stopPropagation()}
                         title={t("Download")}

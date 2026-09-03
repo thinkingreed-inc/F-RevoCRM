@@ -1107,6 +1107,7 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
           >
             {canEdit && (
               <button
+                data-testid="document-detail-edit"
                 onClick={() => onEdit(doc)}
                 style={{
                   flex: 1,
@@ -1157,6 +1158,7 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
             )}
             {canEdit && (
               <button
+                data-testid="document-detail-delete"
                 onClick={() => {
                   if (window.confirm(t("LBL_CONFIRM_DELETE"))) onDelete(doc.id);
                 }}
@@ -1247,7 +1249,11 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
           {doc && (
             <>
               {canEdit && (
-                <button onClick={() => onEdit(doc)} style={btnStyle}>
+                <button
+                  data-testid="document-detail-edit"
+                  onClick={() => onEdit(doc)}
+                  style={btnStyle}
+                >
                   {t("LBL_EDIT")}
                 </button>
               )}
@@ -1270,6 +1276,7 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
               )}
               {canEdit && (
                 <button
+                  data-testid="document-detail-delete"
                   onClick={() => {
                     if (window.confirm(t("LBL_CONFIRM_DELETE")))
                       onDelete(doc.id);

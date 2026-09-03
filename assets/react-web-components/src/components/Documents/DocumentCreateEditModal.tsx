@@ -751,6 +751,7 @@ export const DocumentCreateEditModal: React.FC<
                 {t("Title")} <span style={{ color: "#E53E3E" }}>*</span>
               </label>
               <input
+                data-testid="document-title-input"
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -856,6 +857,7 @@ export const DocumentCreateEditModal: React.FC<
                 }}
               >
                 <input
+                  data-testid="document-file-input"
                   ref={fileInputRef}
                   type="file"
                   multiple={false}
@@ -989,6 +991,7 @@ export const DocumentCreateEditModal: React.FC<
             {t("LBL_CANCEL")}
           </button>
           <button
+            data-testid="document-save-button"
             onClick={handleSave}
             disabled={isSaving}
             style={{
