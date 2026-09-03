@@ -69,3 +69,23 @@ if (!class_exists('Vtiger_Language_Handler')) {
         }
     }
 }
+
+// 本番の vtranslate() は includes/runtime/LanguageHandler.php にあるが、
+// このファイルは Vtiger_Loader / DB に依存するため Unit テストでは読み込めない。
+// 翻訳を使う本体コード（例外メッセージなど）がそのまま動くよう最小限のスタブを置く。
+if (!function_exists('vtranslate')) {
+    /**
+     * @param string $key 翻訳キー
+     * @param string $moduleName モジュール名
+     * @param mixed ...$args sprintf に渡す差し込み値
+     */
+    function vtranslate($key, $moduleName = '', ...$args): string
+    {
+        $translated = Vtiger_Language_Handler::getTranslatedString($key, $moduleName);
+        if ($args === []) {
+            return $translated;
+        }
+
+        return vsprintf($translated, $args);
+    }
+}

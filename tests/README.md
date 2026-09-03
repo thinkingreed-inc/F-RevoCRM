@@ -38,6 +38,50 @@ CI 側にも DB を用意するステップが必要になる。
 | `tests/Integration/` | DB を使うテスト |
 | `tests/Support/` | テスト用のスタブ・ヘルパ（テスト本体ではない） |
 
+## ドキュメントモジュールのテスト
+
+`docs/tests/Documents/` の仕様書に対応する。各テストメソッドのメッセージに
+仕様書のケースID（`TC-BD-001` など）を入れてあるので、失敗したら仕様書を引ける。
+
+| パス | 対応する仕様書 |
+|---|---|
+| `tests/Unit/Documents/JapaneseHolidaysTest.php` | TS-01 4.5 祝日の算出 / 4.6 CSV解析（DB 不要） |
+| `tests/Integration/Documents/BusinessDayTest.php` | TS-01 4.1〜4.4 営業日・休祝日 |
+| `tests/Integration/Documents/DeadlineTest.php` | TS-03 入力期限 |
+| `tests/Integration/Documents/DeleteGuardTest.php` | TS-05 電帳法対象の削除禁止 |
+| `tests/Integration/Documents/ComplianceOnSaveTest.php` | TS-05 保存時の適合判定 |
+
+結合テストは `Tests\Support\DocumentsTestCase` を継承する。この基底クラスが
+F-RevoCRM 本体の読み込み・実行ユーザーの切り替え・テストデータの後始末を引き受ける。
+
+```php
+namespace Tests\Integration\Documents;
+
+use Tests\Support\DocumentsTestCase;
+
+require_once dirname(__DIR__, 3) . '/tests/Support/DocumentsTestCase.php';
+
+final class FooTest extends DocumentsTestCase
+{
+    public function test_TC_XX_001_なにをどう検証するか(): void
+    {
+        $notesId = $this->createDocument('Foo');
+        // ...
+    }
+}
+```
+
+作成したドキュメント・フォルダ・休祝日は接頭辞 `SPECTEST_` を付け、
+`tearDown()` でまとめて消す。ドキュメント設定と週休設定はテストごとに退避・復元する。
+
+`tests/bootstrap.php` は `Vtiger_Loader` のオートロードを外すが、結合テストは本体を
+まるごと使うため `DocumentsTestCase::setUpBeforeClass()` で登録し直している
+（PHPUnit のクラス探索が終わった後なので探索には影響しない）。
+
+vtiger のコア側（`LanguageHandler` / `VTEntityDelta` / log4php など）が出す
+PHP 警告・非推奨の通知が大量に出るが、これは移植前からある既存の状態で、
+テストの成否には影響しない。
+
 命名は `<対象>Test.php`、namespace は配置に合わせる（例: `tests/Unit/Inventory/` → `namespace Tests\Unit\Inventory;`）。
 `composer.json` の `autoload-dev` で `Tests\` → `tests/` を PSR-4 マップしている。
 
@@ -57,6 +101,13 @@ F-RevoCRM のスキーマを投入しておく。
 
 ```bash
 mysql -u <user> -p -e "CREATE DATABASE <db_name>_test DEFAULT CHARACTER SET utf8mb4"
+```
+
+`tests/Integration/Documents/` は初期データ（ユーザー・役割・グループ・フォルダ・
+選択リスト）に依存するため、スキーマだけでは動かない。開発DBを丸ごと複製するのが手早い。
+
+```bash
+mysqldump -u <user> -p --single-transaction <db_name> | mysql -u <user> -p <db_name>_test
 ```
 
 ## テストの書き方
