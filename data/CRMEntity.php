@@ -786,6 +786,13 @@ class CRMEntity {
 			$explodetagName[0] = $implodeTagName;
 		}
 
+		// 「タグA, タグB」のようにカンマ+空白区切りの場合に前後の空白が残ると
+		// 同名タグが重複作成されるため, 正規化した上で重複を除去する
+		$explodetagName = array_map(array('Vtiger_Tag_Model', 'normalizeName'), $explodetagName);
+		$explodetagName = array_values(array_unique(array_filter($explodetagName, function($tagName) {
+			return $tagName !== '';
+		})));
+
 		foreach($explodetagName as $tagName){
 			if(Vtiger_Tag_Model::checkTagExistence(array('tagName' => $tagName))){ // 新規作成
 				$id = $db->getUniqueId('vtiger_freetags');
@@ -800,9 +807,11 @@ class CRMEntity {
 				}else{
 					$DBTagsValue = Vtiger_Cache::get('DBTags', 'DBTagsValue'); // Vtiger_Tag_Model::checkTagExistence()にてキャッシュが用意される
 					$otherTagsWithSameName = array_filter($DBTagsValue, function($item) use ($tagName, $userId) {
-						if($item['tag'] == $tagName && $item['owner'] == $userId){
+						// DB側も正規化して比較する(Vtiger_Tag_Model::checkTagExistence()と同じ規則)
+						$DBTagName = Vtiger_Tag_Model::normalizeName($item['tag']);
+						if($DBTagName == $tagName && $item['owner'] == $userId){
 							return true;
-						}elseif($item['tag'] == $tagName && $item['visibility'] == 'public'){
+						}elseif($DBTagName == $tagName && $item['visibility'] == 'public'){
 							return true;
 						}
 						return false;
