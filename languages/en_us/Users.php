@@ -245,6 +245,7 @@ $languageStrings = array(
 	'LBL_TRANSFER_OWNERSHIP_TO_USER' => 'Transfer Ownership to User',
 	'LBL_OWNERSHIP_TRANSFERRED_SUCCESSFULLY' => 'CRM Owner changed successfully',
 	'LBL_OWNERSHIP_TRANSFERRED_FAILED' => 'Failed changing CRM owner',
+	'LBL_TRANSFER_OWNERSHIP_DESC' => 'You can transfer the "System Owner" privilege, currently held by "%1$s", to another user with administrator privileges.',
 	'Account Owner' => 'Account Owner',
 	'Starting Day of the week' => 'Starting Day of the week',
 	'Day starts at' => 'Day starts at',
