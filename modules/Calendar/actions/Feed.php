@@ -303,7 +303,9 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 		// }
 
 		$queryGenerator->setFields(array('subject', 'eventstatus', 'visibility','date_start','time_start','due_date','time_end','assigned_user_id','id','activitytype','recurringtype','parent_id','description', 'location', 'creator', 'modifiedby'));
-		$query = $queryGenerator->getQuery();
+		$query = "SELECT vtiger_activity.invitee_parentid, " . $queryGenerator->getSelectClauseColumnSQL();
+		$query .= $queryGenerator->getFromClause();
+		$query .= $queryGenerator->getWhereClause();
 
 		$query.= " AND vtiger_activity.activitytype NOT IN ('Emails','Task') AND ";
 		$hideCompleted = $currentUser->get('hidecompletedevents');
@@ -331,6 +333,7 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 
 		$creatorfield = Vtiger_Field_Model::getInstance('creator', $moduleModel);
 
+		$dedupResult = array();
 		while($record = $db->fetchByAssoc($queryResult)){
 			if(!array_key_exists($record['smownerid'], $this->cacheUser)) {
 				$this->cacheUser[$record['smownerid']] = Vtiger_functions::getUserRecordLabel($record['smownerid']);
@@ -454,6 +457,19 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 				$item['description'] = $record['description'].$inviteeMessage;
 			}
 
+			$invitee_parentid = $record['invitee_parentid'];
+			if (empty($invitee_parentid)) {
+				$invitee_parentid = $record['activityid'];
+			}
+			if (isset($dedupResult[$invitee_parentid])) {
+				if ($ownerId == $eventUserId) {
+					$dedupResult[$invitee_parentid] = $item;
+				}
+			} else {
+				$dedupResult[$invitee_parentid] = $item;
+			}
+		}
+		foreach ($dedupResult as $item) {
 			$result[] = $item;
 		}
 	}
