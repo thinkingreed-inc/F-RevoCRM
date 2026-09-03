@@ -2381,6 +2381,7 @@ Vtiger.Class("Vtiger_List_Js", {
 				self.addToExistingTagSelector(newTagEle.clone(true));
 			}
 			app.helper.showSuccessNotification({"message": ''});
+			window.location.reload();
 		});
 
 		app.event.trigger('Request.MassTag.show', container, recordParams);
