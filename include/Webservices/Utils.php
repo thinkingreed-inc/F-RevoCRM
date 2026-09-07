@@ -1318,4 +1318,83 @@ function vtws_getAttachmentRecordId($attachmentId) {
     }
     return $crmid;
 }
+/**
+ * リクエストの Origin が許可オリジンのホワイトリストに一致するか判定する。
+ *
+ * セキュリティ上、ワイルドカード（*）は許可しない。webservice.php は
+ * 全モジュールの読み書きが可能なエンドポイントのため、完全一致のみを許可する。
+ *
+ * @param string $origin リクエストの Origin ヘッダの値
+ * @param array $allowedOrigins 許可オリジンのホワイトリスト
+ * @return string|null 一致したオリジン。一致しない場合は null
+ */
+function vtws_getAllowedCORSOrigin($origin, $allowedOrigins) {
+    if (!is_string($origin) || !is_array($allowedOrigins)) {
+        return null;
+    }
+    $origin = trim($origin);
+    // ヘッダインジェクション防止のため、エコーバックする値の形式を検証する
+    if (!preg_match('#^https?://[A-Za-z0-9._\-]+(:[0-9]{1,5})?$#i', $origin)) {
+        return null;
+    }
+    foreach ($allowedOrigins as $allowedOrigin) {
+        if (!is_string($allowedOrigin)) {
+            continue;
+        }
+        $allowedOrigin = rtrim(trim($allowedOrigin), '/');
+        if ($allowedOrigin === '' || $allowedOrigin === '*') {
+            continue;
+        }
+        if (strcasecmp($origin, $allowedOrigin) === 0) {
+            return $origin;
+        }
+    }
+    return null;
+}
+
+/**
+ * 製品として既定で許可するオリジンを返す。
+ *
+ * 「F-RevoCRM Data Connector」（Excel アドイン）は下記オリジンでホストされており、
+ * サイトごとの設定なしで利用できるよう既定で許可する。
+ *
+ * @return array 既定で許可するオリジンの配列
+ */
+function vtws_getDefaultCORSOrigins() {
+    return array(
+        // F-RevoCRM Data Connector（Excel アドイン）
+        'https://fr-excel-addin.azurewebsites.net',
+    );
+}
+
+/**
+ * Web API（webservice.php）のレスポンスに CORS ヘッダを送出する。
+ *
+ * 許可オリジンは vtws_getDefaultCORSOrigins() の組み込み既定値と、
+ * $webservice_cors_allowed_origins（config.inc.php）の設定値を合わせたものになる。
+ *
+ * 認証は sessionName リクエストパラメータ方式で Cookie に依存しないため、
+ * Access-Control-Allow-Credentials は送出しない。
+ */
+function vtws_sendCORSHeaders() {
+    global $webservice_cors_allowed_origins;
+
+    $allowedOrigins = vtws_getDefaultCORSOrigins();
+    if (!empty($webservice_cors_allowed_origins) && is_array($webservice_cors_allowed_origins)) {
+        $allowedOrigins = array_merge($allowedOrigins, $webservice_cors_allowed_origins);
+    }
+    if (empty($allowedOrigins)) {
+        return;
+    }
+
+    // オリジンによってレスポンスが変わるため、不一致時もキャッシュ汚染を防ぐ目的で常に送出する
+    header('Vary: Origin', false);
+
+    $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
+    $allowedOrigin = vtws_getAllowedCORSOrigin($origin, $allowedOrigins);
+    if ($allowedOrigin !== null) {
+        header('Access-Control-Allow-Origin: ' . $allowedOrigin);
+    }
+}
+
 ?>
