@@ -1710,6 +1710,7 @@ $languageStrings = array(
 	'LBL_ALL_USERS_SELECTED' => 'All users are selected',
 	'LBL_NO_MATCHING_USERS' => 'No matching users',
 	'LBL_NO_MATCHING_CURRENCY' => 'No matching currency',
+	'LBL_NO_MATCHING_OWNER' => 'No matching owner',
 	'LBL_TASK' => 'Task',
 	'LBL_EVENT' => 'Event',
 	'LBL_INVITEE_BLOCK' => 'Invitee Information',

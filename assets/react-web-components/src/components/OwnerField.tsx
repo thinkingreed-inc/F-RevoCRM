@@ -133,8 +133,8 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
   }, [isOpen, dropdownPosition]);
 
   // 翻訳済みのラベルをキーとして使用（APIは翻訳済み文字列をキーとして返す）
-  const userLabel = t("LBL_USERS", "ユーザー");
-  const groupLabel = t("LBL_GROUPS", "グループ");
+  const userLabel = t("LBL_USERS");
+  const groupLabel = t("LBL_GROUPS");
 
   /**
    * picklistvaluesからユーザーとグループのオプションを抽出
@@ -443,7 +443,7 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
           </div>
         ) : (
           <div className="px-3 py-1.5 text-md text-gray-500 text-center">
-            {t("LBL_NO_MATCHING_OWNER", "該当する担当者がいません")}
+            {t("LBL_NO_MATCHING_OWNER")}
           </div>
         )}
       </div>

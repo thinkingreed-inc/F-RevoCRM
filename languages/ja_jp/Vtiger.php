@@ -1715,6 +1715,7 @@ $languageStrings = array(
 	'LBL_ALL_USERS_SELECTED' => 'すべてのユーザーが選択済みです',
 	'LBL_NO_MATCHING_USERS' => '該当するユーザーがいません',
 	'LBL_NO_MATCHING_CURRENCY' => '該当する通貨がありません',
+	'LBL_NO_MATCHING_OWNER' => '該当する担当者がいません',
 	'LBL_TASK' => 'ToDo',
 	'LBL_EVENT' => '活動',
 	'LBL_INVITEE_BLOCK' => '招待者情報',

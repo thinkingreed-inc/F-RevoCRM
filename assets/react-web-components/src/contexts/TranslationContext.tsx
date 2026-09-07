@@ -71,6 +71,7 @@ const DEFAULT_TRANSLATIONS: TranslationData = {
   LBL_ALL_USERS_SELECTED: "すべてのユーザーが選択済みです",
   LBL_NO_MATCHING_USERS: "該当するユーザーがいません",
   LBL_NO_MATCHING_CURRENCY: "該当する通貨がありません",
+  LBL_NO_MATCHING_OWNER: "該当する担当者がいません",
 
   // プレースホルダー
   LBL_PLACEHOLDER_ENTER: "%sを入力してください",
