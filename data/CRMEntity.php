@@ -315,13 +315,11 @@ class CRMEntity {
 				$params = array($ownerid, $groupid, $current_user->id, $description_val, $adb->formatDate($date_var, true));
 			} else {
 				$profileList = getCurrentUserProfileList();
-				$perm_qry = "SELECT columnname FROM vtiger_field INNER JOIN vtiger_profile2field ON vtiger_profile2field.fieldid = vtiger_field.fieldid INNER JOIN vtiger_def_org_field ON vtiger_def_org_field.fieldid = vtiger_field.fieldid WHERE vtiger_field.tabid = ? AND vtiger_profile2field.visible = 0 AND vtiger_profile2field.readonly = 0 AND vtiger_profile2field.profileid IN (" . generateQuestionMarks($profileList) . ") AND vtiger_def_org_field.visible = 0 and vtiger_field.tablename='vtiger_crmentity' and vtiger_field.displaytype in (1,3) and vtiger_field.presence in (0,2);";
+				// description は vtiger_field.tablename がベーステーブル (vtiger_activity 等) へ
+				// 移行済みのため tablename では特定できない。columnname で権限を判定する。
+				$perm_qry = "SELECT columnname FROM vtiger_field INNER JOIN vtiger_profile2field ON vtiger_profile2field.fieldid = vtiger_field.fieldid INNER JOIN vtiger_def_org_field ON vtiger_def_org_field.fieldid = vtiger_field.fieldid WHERE vtiger_field.tabid = ? AND vtiger_profile2field.visible = 0 AND vtiger_profile2field.readonly = 0 AND vtiger_profile2field.profileid IN (" . generateQuestionMarks($profileList) . ") AND vtiger_def_org_field.visible = 0 and vtiger_field.columnname='description' and vtiger_field.displaytype in (1,3) and vtiger_field.presence in (0,2);";
 				$perm_result = $adb->pquery($perm_qry, array($tabid, $profileList));
-				$perm_rows = $adb->num_rows($perm_result);
-				for ($i = 0; $i < $perm_rows; $i++) {
-					$columname[] = $adb->query_result($perm_result, $i, "columnname");
-				}
-				if (is_array($columname) && in_array("description", $columname)) {
+				if ($adb->num_rows($perm_result) > 0) {
 					$sql = "update vtiger_crmentity set smownerid=?, smgroupid=?, modifiedby=?,description=?, modifiedtime=?";
 					$params = array($ownerid, $groupid, $current_user->id, $description_val, $adb->formatDate($date_var, true));
 				} else {
