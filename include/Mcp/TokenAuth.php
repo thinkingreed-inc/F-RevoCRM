@@ -85,4 +85,72 @@ class Mcp_TokenAuth
 
         return $raw;
     }
+
+    /**
+     * 指定ユーザーのトークン一覧を取得する（新しい順）。
+     *
+     * @param int $userid
+     * @return array<int, array<string, mixed>>
+     */
+    public static function listByUser(int $userid): array
+    {
+        $db = PearDatabase::getInstance();
+        $result = $db->pquery(
+            'SELECT id, label, token_prefix, enabled, created_at, last_used_at, expires_at
+             FROM vtiger_mcp_token WHERE userid = ? ORDER BY created_at DESC',
+            [$userid]
+        );
+        if ($result === false) {
+            throw new Exception('トークン一覧の取得に失敗しました');
+        }
+
+        $rows = [];
+        $num = $db->num_rows($result);
+        for ($i = 0; $i < $num; $i++) {
+            $rows[] = [
+                'id'           => (int) $db->query_result($result, $i, 'id'),
+                'label'        => $db->query_result($result, $i, 'label'),
+                'token_prefix' => $db->query_result($result, $i, 'token_prefix'),
+                'enabled'      => (int) $db->query_result($result, $i, 'enabled'),
+                'created_at'   => $db->query_result($result, $i, 'created_at'),
+                'last_used_at' => $db->query_result($result, $i, 'last_used_at'),
+                'expires_at'   => $db->query_result($result, $i, 'expires_at'),
+            ];
+        }
+        return $rows;
+    }
+
+    /**
+     * 1 件のトークンを取得する（失効時の所有者確認に使う）。
+     *
+     * @param int $id
+     * @return array<string, mixed>|null 見つからなければ null
+     */
+    public static function getById(int $id): ?array
+    {
+        $db = PearDatabase::getInstance();
+        $result = $db->pquery('SELECT id, userid, enabled FROM vtiger_mcp_token WHERE id = ?', [$id]);
+        if (!$result || $db->num_rows($result) === 0) {
+            return null;
+        }
+        return [
+            'id'      => (int) $db->query_result($result, 0, 'id'),
+            'userid'  => (int) $db->query_result($result, 0, 'userid'),
+            'enabled' => (int) $db->query_result($result, 0, 'enabled'),
+        ];
+    }
+
+    /**
+     * トークンを失効させる（物理削除ではなく enabled=0）。
+     *
+     * @param int $id
+     */
+    public static function disable(int $id): void
+    {
+        $db = PearDatabase::getInstance();
+        $result = $db->pquery('UPDATE vtiger_mcp_token SET enabled = 0 WHERE id = ?', [$id]);
+        if ($result === false) {
+            throw new Exception('トークンの失効に失敗しました');
+        }
+    }
 }
