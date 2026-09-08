@@ -317,9 +317,8 @@ class Mcp_CrmTools
                 throw new \InvalidArgumentException("Invalid operator: {$op}");
             }
 
-            // VTQL値エスケープ: VTQLのリテラルはシングルクオート二重化('')が正(バックスラッシュは
-            // 通常データ扱い)。末尾バックスラッシュはリテラル未終端→下流SQL破壊の恐れがあるため除去。
-            // 制御文字も除去する。
+            // VTQL のリテラルはシングルクオート二重化('')でエスケープする
+            // 末尾バックスラッシュと制御文字はリテラル未終端になるため除去する
             $safeValue = preg_replace('/[\x00-\x1f]/', '', (string) $value);
             $safeValue = str_replace('\\', '', $safeValue);
             $safeValue = str_replace("'", "''", $safeValue);
@@ -543,6 +542,221 @@ class Mcp_CrmTools
     }
 
     /**
+     * フィールド名を格納先DBカラムの型に対応付ける（宣言型とは異なる場合がある。例: Invoice.tax1 は宣言 'string' だが decimal 列）。
+     * @return array<string, array{type: string, max_length: int}>
+     */
+    private function getColumnTypes(string $module): array
+    {
+        static $cache = [];
+        if (isset($cache[$module])) {
+            return $cache[$module];
+        }
+
+        $db = PearDatabase::getInstance();
+        $result = $db->pquery(
+            'SELECT fieldname, tablename, columnname FROM vtiger_field WHERE tabid = ?',
+            [getTabid($module)]
+        );
+        if ($result === false) {
+            throw new \RuntimeException("Failed to read field definitions for module '{$module}'");
+        }
+
+        $types = [];
+        $tableMeta = [];
+        while ($row = $db->fetch_array($result)) {
+            $table = $row['tablename'];
+            if (!isset($tableMeta[$table])) {
+                $columns = [];
+                foreach ($db->database->MetaColumns($table) as $col) {
+                    $columns[$col->name] = $col;
+                }
+                $tableMeta[$table] = $columns;
+            }
+            if (isset($tableMeta[$table][$row['columnname']])) {
+                $col = $tableMeta[$table][$row['columnname']];
+                $types[$row['fieldname']] = [
+                    'type'       => $col->type,
+                    'max_length' => (int) $col->max_length,
+                ];
+            }
+        }
+
+        $cache[$module] = $types;
+        return $types;
+    }
+
+    /**
+     * 値を格納先カラムの型に照らして検証する（例: decimal 列に対する文字列）。
+     * @param mixed $value
+     */
+    private function validateAgainstColumn(string $name, $value, array $column): void
+    {
+        switch ($column['type']) {
+            case 'int':
+            case 'decimal':
+                if (is_bool($value) || !is_numeric($value)) {
+                    $this->rejectValue($name, "is stored as {$column['type']} and expects a number", $value);
+                }
+                break;
+            case 'varchar':
+                // max_length は varchar では文字数（decimal では精度のため上の分岐では使わない）
+                if ($column['max_length'] > 0 && mb_strlen((string) $value) > $column['max_length']) {
+                    throw new \InvalidArgumentException(
+                        "Field '{$name}' exceeds its maximum length of {$column['max_length']} characters"
+                        . ' (got ' . mb_strlen((string) $value) . ')'
+                    );
+                }
+                break;
+            default:
+                // date/datetime は宣言型の検証で担保済み、text/longtext は実質的な長さ制限なし
+                break;
+        }
+    }
+
+    /**
+     * 値をフィールドの宣言型に照らして検証する（vtws_create / vtws_revise は型検査をしない）。
+     * @param mixed $value
+     */
+    private function validateFieldValue(string $name, $value, array $meta): void
+    {
+        $type = $meta['type']['name'] ?? 'string';
+
+        // null は項目のクリアを意味し、許可された項目でのみ有効
+        if ($value === null) {
+            if (isset($meta['nullable']) && !$meta['nullable']) {
+                throw new \InvalidArgumentException("Field '{$name}' cannot be null");
+            }
+            return;
+        }
+
+        // 配列・オブジェクトは書き込み経路が格納できるスカラー表現を持たない
+        if (is_array($value)) {
+            $hint = ($type === 'multipicklist')
+                ? " Pass multipicklist values as a single string separated by ' |##| '."
+                : '';
+            throw new \InvalidArgumentException("Field '{$name}' ({$type}) does not accept an array.{$hint}");
+        }
+
+        switch ($type) {
+            case 'date':
+                $this->assertDateTimeFormat($name, $type, $value, 'Y-m-d');
+                break;
+            case 'datetime':
+                $this->assertDateTimeFormat($name, $type, $value, 'Y-m-d H:i:s');
+                break;
+            case 'time':
+                // 画面が保存する値に合わせ H:i と H:i:s を許容する
+                if (!is_string($value) || !preg_match('/^([01][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/', $value)) {
+                    $this->rejectValue($name, '(time) expects HH:MM or HH:MM:SS', $value);
+                }
+                break;
+            case 'integer':
+                if (is_bool($value) || !is_numeric($value) || (string) (int) $value !== ltrim((string) $value, '+')) {
+                    $this->rejectValue($name, '(integer) expects an integer', $value);
+                }
+                break;
+            case 'double':
+            case 'currency':
+                if (is_bool($value) || !is_numeric($value)) {
+                    $this->rejectValue($name, "({$type}) expects a number", $value);
+                }
+                break;
+            case 'boolean':
+                if (!is_bool($value) && !in_array((string) $value, ['0', '1'], true)) {
+                    $this->rejectValue($name, '(boolean) expects true/false or 0/1', $value);
+                }
+                break;
+            case 'picklist':
+                $this->assertPicklistValue($name, $type, (string) $value, $meta);
+                break;
+            case 'multipicklist':
+                foreach (explode(' |##| ', (string) $value) as $part) {
+                    $this->assertPicklistValue($name, $type, $part, $meta);
+                }
+                break;
+            case 'email':
+                if (filter_var((string) $value, FILTER_VALIDATE_EMAIL) === false) {
+                    $this->rejectValue($name, '(email) expects an email address', $value);
+                }
+                break;
+            default:
+                // 残りの型(string/text/phone/url/reference/owner/...)は任意のスカラーを許容する。
+                // 未知の型は素通しし、新しく追加された型を誤って弾かないようにする。
+                break;
+        }
+    }
+
+    /**
+     * 値が DBカラムの保存する日付/時刻フォーマットと厳密に一致する文字列か検証する。
+     * @param mixed $value
+     */
+    private function assertDateTimeFormat(string $name, string $type, $value, string $format): void
+    {
+        $valid = false;
+        if (is_string($value) && $value !== '') {
+            // '!' で未指定部分をリセットし、部分一致が通らないようにする
+            $parsed = \DateTime::createFromFormat('!' . $format, $value);
+            $errors = \DateTime::getLastErrors();
+            $errorCount = is_array($errors) ? ($errors['warning_count'] + $errors['error_count']) : 0;
+            // ゼロ日付は正常にパースされるが、MySQL が不正入力を置換した値なので弾く
+            $valid = ($parsed !== false && $errorCount === 0 && strpos($value, '0000-00-00') !== 0);
+            // createFromFormat は範囲外の日/月を弾かず繰り上げる
+            // （例: "2026-02-31" が黙って 2026-03-03 になる）ため、往復して元と完全一致するか確認する。
+            $valid = $valid && $parsed->format($format) === $value;
+        }
+        if (!$valid) {
+            $this->rejectValue($name, "({$type}) expects format '{$format}'", $value);
+        }
+    }
+
+    /**
+     * 値がフィールドに定義された選択肢のいずれかであることを検証する。
+     */
+    private function assertPicklistValue(string $name, string $type, string $value, array $meta): void
+    {
+        $allowed = [];
+        foreach ($meta['type']['picklistValues'] ?? [] as $pv) {
+            $allowed[] = (string) $pv['value'];
+        }
+        // 選択肢リストが無ければ照合対象が無い
+        if (empty($allowed) || in_array($value, $allowed, true)) {
+            return;
+        }
+        $this->rejectValue($name, "({$type}) expects one of [" . implode(', ', $allowed) . ']', $value);
+    }
+
+    /**
+     * 共通の "Field '{name}' {descriptor}, got <value>" 検証エラーを送出する。
+     * @param mixed $value
+     */
+    private function rejectValue(string $name, string $descriptor, $value): void
+    {
+        throw new \InvalidArgumentException(
+            "Field '{$name}' {$descriptor}, got " . $this->describeValue($value)
+        );
+    }
+
+    /**
+     * 拒否した値をエラーメッセージ用に整形する（短く・型を明示）。
+     * @param mixed $value
+     */
+    private function describeValue($value): string
+    {
+        if (is_string($value)) {
+            // 40: エラーメッセージ表示用の切り詰め長（値そのものの制約ではない）
+            $shown = mb_strlen($value) > 40 ? mb_substr($value, 0, 40) . '...' : $value;
+            return "string \"{$shown}\"";
+        }
+        if (is_bool($value)) {
+            return 'boolean ' . ($value ? 'true' : 'false');
+        }
+        if (is_array($value)) {
+            return 'array';
+        }
+        return gettype($value) . ' ' . (string) $value;
+    }
+
+    /**
      * Prepare an element for vtws_create / vtws_revise.
      * Convert numeric reference field values to webservice IDs.
      */
@@ -561,7 +775,19 @@ class Mcp_CrmTools
             // If the field is a reference (owner/reference) and value is a plain integer,
             // convert to webservice ID
             if (isset($fieldMeta[$name])) {
+                // 書き込み経路に渡る前に呼び出し側の値を検証する
+                $this->validateFieldValue($name, $value, $fieldMeta[$name]);
+
                 $fType = $fieldMeta[$name]['type']['name'] ?? '';
+
+                // owner/reference は webservice id("19x1")も受け付けるため
+                // 数値カラムでも非数値になる。格納先カラムの型検証からは除く
+                if ($fType !== 'owner' && $fType !== 'reference') {
+                    $columnTypes = $this->getColumnTypes($module);
+                    if (isset($columnTypes[$name]) && $value !== null) {
+                        $this->validateAgainstColumn($name, $value, $columnTypes[$name]);
+                    }
+                }
                 if (($fType === 'owner' || $fType === 'reference') && is_numeric($value) && strpos((string) $value, 'x') === false) {
                     if ($fType === 'owner') {
                         // Owner fields reference Users
