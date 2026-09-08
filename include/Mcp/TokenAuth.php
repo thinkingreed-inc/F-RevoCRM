@@ -10,6 +10,9 @@ class Mcp_TokenAuth
     /** トークン接頭辞。書式は frevo_pat_ + 64hex */
     const TOKEN_PREFIX = 'frevo_pat_';
 
+    /** 発行できる有効期限（日数）。0 = 無期限 */
+    const ALLOWED_EXPIRES_DAYS = [0, 30, 60, 90];
+
     /**
      * Authenticate a Bearer token and return the user ID.
      *

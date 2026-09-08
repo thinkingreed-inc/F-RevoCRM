@@ -32,7 +32,8 @@ class Settings_MCPTokens_SaveAjax_Action extends Settings_Vtiger_Basic_Action {
 			if (mb_strlen($label) > 100) {
 				throw new Exception('ラベルは100文字以内で入力してください');
 			}
-			if (!in_array($expiresDays, array(0, 30, 60, 90), true)) {
+			require_once 'include/Mcp/TokenAuth.php';
+			if (!in_array($expiresDays, Mcp_TokenAuth::ALLOWED_EXPIRES_DAYS, true)) {
 				throw new Exception('有効期限の指定が不正です');
 			}
 
@@ -47,7 +48,6 @@ class Settings_MCPTokens_SaveAjax_Action extends Settings_Vtiger_Basic_Action {
 			}
 
 			// トークン発行（平文は戻り値で1度だけ取得）
-			require_once 'include/Mcp/TokenAuth.php';
 			$rawToken = Mcp_TokenAuth::generateToken($userid, $label, $expiresDays ?: null);
 
 			// 平文トークンをレスポンスで返す（この1回きり）

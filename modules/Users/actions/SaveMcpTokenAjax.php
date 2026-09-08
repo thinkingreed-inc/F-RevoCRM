@@ -10,9 +10,6 @@
 
 class Users_SaveMcpTokenAjax_Action extends Vtiger_SaveAjax_Action {
 
-    /** 発行できる有効期限（日数）。0 = 無期限 */
-    private static $ALLOWED_EXPIRES_DAYS = [0, 30, 60, 90];
-
     public function requiresPermission(\Vtiger_Request $request) {
         return array();
     }
@@ -48,12 +45,12 @@ class Users_SaveMcpTokenAjax_Action extends Vtiger_SaveAjax_Action {
                 throw new Exception(vtranslate('LBL_MCP_TOKEN_LABEL_TOO_LONG', 'Users'));
             }
 
+            require_once 'include/Mcp/TokenAuth.php';
             $expiresDays = (int) $request->get('expires_days');
-            if (!in_array($expiresDays, self::$ALLOWED_EXPIRES_DAYS, true)) {
+            if (!in_array($expiresDays, Mcp_TokenAuth::ALLOWED_EXPIRES_DAYS, true)) {
                 throw new Exception(vtranslate('LBL_MCP_TOKEN_EXPIRES_INVALID', 'Users'));
             }
 
-            require_once 'include/Mcp/TokenAuth.php';
             $rawToken = Mcp_TokenAuth::generateToken($userid, $label, $expiresDays ?: null);
 
             // 発行した行の表示用データ（一覧に即時追加するため。平文以外）

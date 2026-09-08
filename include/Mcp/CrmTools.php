@@ -370,8 +370,9 @@ class Mcp_CrmTools
                 throw new \InvalidArgumentException("Invalid operator: {$op}");
             }
 
-            // VTQL のリテラルはシングルクオート二重化('')でエスケープする
-            // 末尾バックスラッシュと制御文字はリテラル未終端になるため除去する
+            // VTQL値エスケープ: VTQLのリテラルはシングルクオート二重化('')が正(バックスラッシュは
+            // 通常データ扱い)。末尾バックスラッシュはリテラル未終端→下流SQL破壊の恐れがあるため除去。
+            // 制御文字も除去する。
             $safeValue = preg_replace('/[\x00-\x1f]/', '', (string) $value);
             $safeValue = str_replace('\\', '', $safeValue);
             $safeValue = str_replace("'", "''", $safeValue);
