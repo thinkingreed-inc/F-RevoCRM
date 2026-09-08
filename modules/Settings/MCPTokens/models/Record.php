@@ -35,11 +35,23 @@ class Settings_MCPTokens_Record_Model extends Settings_Vtiger_Record_Model {
 		if ($fieldName === 'enabled') {
 			return $fieldValue ? vtranslate('LBL_YES', 'Settings:MCPTokens') : vtranslate('LBL_NO', 'Settings:MCPTokens');
 		}
-		if ($fieldName === 'created_at') {
+		if ($fieldName === 'created_at' || $fieldName === 'last_used_at') {
 			if ($fieldValue && $fieldValue !== '0000-00-00 00:00:00') {
 				return Vtiger_Datetime_UIType::getDateTimeValue($fieldValue);
 			}
 			return '---';
+		}
+		if ($fieldName === 'token_prefix') {
+			return $fieldValue ? $fieldValue . '…' : '---';
+		}
+		if ($fieldName === 'expires_at') {
+			if (!$fieldValue || $fieldValue === '0000-00-00 00:00:00') {
+				return vtranslate('LBL_MCP_EXPIRES_NONE', 'Settings:MCPTokens');
+			}
+			if ($fieldValue <= date('Y-m-d H:i:s')) {
+				return vtranslate('LBL_MCP_EXPIRED', 'Settings:MCPTokens');
+			}
+			return Vtiger_Datetime_UIType::getDateTimeValue($fieldValue);
 		}
 		return $fieldValue;
 	}

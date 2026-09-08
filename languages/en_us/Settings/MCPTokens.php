@@ -27,4 +27,12 @@ $languageStrings = array(
 	'LBL_COPY'               => 'Copy',
 	'LBL_SAVED_AND_CLOSE'    => 'Saved & Close',
 	'LBL_NO_TOKENS_FOUND'    => 'No MCP tokens found',
+	'LBL_MCP_PREFIX'       => 'Prefix',
+	'LBL_MCP_LAST_USED'    => 'Last used',
+	'LBL_MCP_EXPIRES'      => 'Expires',
+	'LBL_MCP_EXPIRES_30'   => '30 days',
+	'LBL_MCP_EXPIRES_60'   => '60 days',
+	'LBL_MCP_EXPIRES_90'   => '90 days',
+	'LBL_MCP_EXPIRES_NONE' => 'No expiry',
+	'LBL_MCP_EXPIRED'      => 'Expired',
 );

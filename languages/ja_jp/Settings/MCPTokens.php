@@ -27,4 +27,12 @@ $languageStrings = array(
 	'LBL_COPY'               => 'コピー',
 	'LBL_SAVED_AND_CLOSE'    => '保管済み・閉じる',
 	'LBL_NO_TOKENS_FOUND'    => 'MCPトークンがありません',
+	'LBL_MCP_PREFIX'       => '接頭辞',
+	'LBL_MCP_LAST_USED'    => '最終使用日時',
+	'LBL_MCP_EXPIRES'      => '有効期限',
+	'LBL_MCP_EXPIRES_30'   => '30 日',
+	'LBL_MCP_EXPIRES_60'   => '60 日',
+	'LBL_MCP_EXPIRES_90'   => '90 日',
+	'LBL_MCP_EXPIRES_NONE' => '無期限',
+	'LBL_MCP_EXPIRED'      => '期限切れ',
 );

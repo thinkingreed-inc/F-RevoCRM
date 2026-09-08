@@ -41,8 +41,11 @@
 								<th nowrap>ID</th>
 								<th nowrap>{vtranslate('LBL_LABEL', $QUALIFIED_MODULE)}</th>
 								<th nowrap>{vtranslate('LBL_USER', $QUALIFIED_MODULE)}</th>
+								<th nowrap>{vtranslate('LBL_MCP_PREFIX', $QUALIFIED_MODULE)}</th>
 								<th nowrap>{vtranslate('LBL_ENABLED', $QUALIFIED_MODULE)}</th>
 								<th nowrap>{vtranslate('LBL_CREATED_AT', $QUALIFIED_MODULE)}</th>
+								<th nowrap>{vtranslate('LBL_MCP_LAST_USED', $QUALIFIED_MODULE)}</th>
+								<th nowrap>{vtranslate('LBL_MCP_EXPIRES', $QUALIFIED_MODULE)}</th>
 								<th nowrap>{vtranslate('LBL_ACTIONS', $QUALIFIED_MODULE)}</th>
 							</tr>
 						</thead>
@@ -52,6 +55,7 @@
 								<td class="listViewEntryValue">{$LISTVIEW_ENTRY->getId()}</td>
 								<td class="listViewEntryValue">{$LISTVIEW_ENTRY->getDisplayValue('label')}</td>
 								<td class="listViewEntryValue">{$LISTVIEW_ENTRY->getDisplayValue('user_name')}</td>
+								<td class="listViewEntryValue">{$LISTVIEW_ENTRY->getDisplayValue('token_prefix')}</td>
 								<td class="listViewEntryValue">
 									{if $LISTVIEW_ENTRY->get('enabled')}
 										<span class="label label-success">{vtranslate('LBL_ACTIVE', $QUALIFIED_MODULE)}</span>
@@ -60,6 +64,8 @@
 									{/if}
 								</td>
 								<td class="listViewEntryValue">{$LISTVIEW_ENTRY->getDisplayValue('created_at')}</td>
+								<td class="listViewEntryValue">{$LISTVIEW_ENTRY->getDisplayValue('last_used_at')}</td>
+								<td class="listViewEntryValue">{$LISTVIEW_ENTRY->getDisplayValue('expires_at')}</td>
 								<td class="listViewEntryValue">
 									{if $LISTVIEW_ENTRY->get('enabled')}
 										<button class="btn btn-danger btn-xs btnDisableToken" data-id="{$LISTVIEW_ENTRY->getId()}" data-label="{$LISTVIEW_ENTRY->get('label')|escape:'html'}">
