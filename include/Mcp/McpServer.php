@@ -149,6 +149,9 @@ class Mcp_McpServer
             switch ($method) {
                 case 'initialize':
                     $result = $this->handleInitialize($params);
+                    // MCP 接続確立(initialize)を画面ログインと同等にログイン履歴へ残す
+                    // tools/call ごとに記録すると履歴が爆発するため initialize のみ
+                    $this->recordMcpLoginHistory($current_user);
                     break;
                 case 'tools/list':
                     $result = ['tools' => $tools->listTools()];
@@ -185,6 +188,27 @@ class Mcp_McpServer
     // ================================================================
     //  Method handlers
     // ================================================================
+
+    /**
+     * MCP 接続時にログイン履歴へ login_type='mcp' で 1 行残す。
+     * 付随処理のため、失敗しても MCP 応答は止めない。
+     */
+    private function recordMcpLoginHistory($currentUser): void
+    {
+        try {
+            $username = '';
+            if (is_object($currentUser)) {
+                $username = $currentUser->column_fields['user_name']
+                    ?? ($currentUser->user_name ?? '');
+            }
+            if ($username === '') {
+                return; // saveLoginHistory は空ユーザー名で false を返すため事前に抜ける
+            }
+            Users_Module_Model::getInstance('Users')->saveLoginHistory($username, false, 'mcp');
+        } catch (\Throwable $e) {
+            error_log('[MCP] loginhistory record failed: ' . $e->getMessage());
+        }
+    }
 
     private function handleInitialize(array $params): array
     {
