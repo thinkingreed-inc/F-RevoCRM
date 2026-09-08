@@ -10,7 +10,7 @@ Settings_Vtiger_List_Js("Settings_MCPTokens_List_Js", {}, {
 	 * 「新規発行」ボタンクリック → モーダル表示
 	 */
 	registerCreateTokenEvent: function () {
-		jQuery('#btnCreateToken').on('click', function () {
+		jQuery('#btnCreateToken').off('click.mcp').on('click.mcp', function () {
 			// フォームリセット
 			jQuery('#createTokenForm')[0].reset();
 			jQuery('#createTokenModal').modal('show');
@@ -22,7 +22,12 @@ Settings_Vtiger_List_Js("Settings_MCPTokens_List_Js", {}, {
 	 */
 	registerSubmitTokenEvent: function () {
 		var thisInstance = this;
-		jQuery('#btnSubmitToken').on('click', function () {
+		jQuery('#btnSubmitToken').off('click.mcp').on('click.mcp', function () {
+			var $btn = jQuery(this);
+			// 送信中は二重送信を防ぐ
+			if ($btn.prop('disabled')) {
+				return;
+			}
 			var userid = jQuery('#tokenUserid').val();
 			var label = jQuery.trim(jQuery('#tokenLabel').val());
 
@@ -36,6 +41,7 @@ Settings_Vtiger_List_Js("Settings_MCPTokens_List_Js", {}, {
 				return;
 			}
 
+			$btn.prop('disabled', true);
 			app.helper.showProgress();
 
 			var params = {
@@ -49,6 +55,7 @@ Settings_Vtiger_List_Js("Settings_MCPTokens_List_Js", {}, {
 
 			app.request.post({ data: params }).then(function (err, data) {
 				app.helper.hideProgress();
+				$btn.prop('disabled', false);
 
 				if (err === null && data && data.token) {
 					// 発行モーダルを閉じる
@@ -69,7 +76,7 @@ Settings_Vtiger_List_Js("Settings_MCPTokens_List_Js", {}, {
 	 * トークンコピーボタン
 	 */
 	registerCopyTokenEvent: function () {
-		jQuery('#btnCopyToken').on('click', function () {
+		jQuery('#btnCopyToken').off('click.mcp').on('click.mcp', function () {
 			var tokenInput = document.getElementById('generatedToken');
 			tokenInput.select();
 			tokenInput.setSelectionRange(0, 99999);
@@ -90,7 +97,7 @@ Settings_Vtiger_List_Js("Settings_MCPTokens_List_Js", {}, {
 	 * 結果モーダルを閉じたらページリロード
 	 */
 	registerCloseResultEvent: function () {
-		jQuery('#btnCloseTokenResult').on('click', function () {
+		jQuery('#btnCloseTokenResult').off('click.mcp').on('click.mcp', function () {
 			jQuery('#tokenResultModal').modal('hide');
 			// 平文をDOMから完全消去
 			jQuery('#generatedToken').val('');
@@ -102,7 +109,7 @@ Settings_Vtiger_List_Js("Settings_MCPTokens_List_Js", {}, {
 	 * 無効化ボタン
 	 */
 	registerDisableTokenEvent: function () {
-		jQuery(document).on('click', '.btnDisableToken', function () {
+		jQuery(document).off('click.mcpDisable').on('click.mcpDisable', '.btnDisableToken', function () {
 			var tokenId = jQuery(this).data('id');
 			var tokenLabel = jQuery(this).data('label');
 
