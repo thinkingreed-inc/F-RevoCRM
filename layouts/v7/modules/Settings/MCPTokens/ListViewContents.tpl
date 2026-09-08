@@ -121,6 +121,15 @@
 						<input type="text" id="tokenLabel" name="label" class="form-control" maxlength="100"
 							placeholder="{vtranslate('LBL_LABEL_PLACEHOLDER', $QUALIFIED_MODULE)}" required />
 					</div>
+					<div class="form-group">
+						<label for="tokenExpires">{vtranslate('LBL_MCP_EXPIRES', $QUALIFIED_MODULE)}</label>
+						<select id="tokenExpires" name="expires_days" class="form-control">
+							<option value="30">{vtranslate('LBL_MCP_EXPIRES_30', $QUALIFIED_MODULE)}</option>
+							<option value="60">{vtranslate('LBL_MCP_EXPIRES_60', $QUALIFIED_MODULE)}</option>
+							<option value="90" selected>{vtranslate('LBL_MCP_EXPIRES_90', $QUALIFIED_MODULE)}</option>
+							<option value="0">{vtranslate('LBL_MCP_EXPIRES_NONE', $QUALIFIED_MODULE)}</option>
+						</select>
+					</div>
 				</form>
 			</div>
 			<div class="modal-footer">

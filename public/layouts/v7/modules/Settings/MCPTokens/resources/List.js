@@ -43,7 +43,8 @@ Settings_Vtiger_List_Js("Settings_MCPTokens_List_Js", {}, {
 				parent: 'Settings',
 				action: 'SaveAjax',
 				userid: userid,
-				label: label
+				label: label,
+				expires_days: jQuery('#tokenExpires').val()
 			};
 
 			app.request.post({ data: params }).then(function (err, data) {
