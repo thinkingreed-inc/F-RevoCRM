@@ -36,3 +36,13 @@ $languageStrings = array(
 	'LBL_MCP_EXPIRES_NONE' => '無期限',
 	'LBL_MCP_EXPIRED'      => '期限切れ',
 );
+
+$jsLanguageStrings = array(
+	'JS_MCP_SELECT_USER_REQUIRED' => 'ユーザーを選択してください',
+	'JS_MCP_LABEL_REQUIRED'       => 'ラベルを入力してください',
+	'JS_MCP_ISSUE_FAILED'         => 'トークンの発行に失敗しました',
+	'JS_MCP_COPIED'               => 'コピーしました',
+	'JS_MCP_DISABLE_CONFIRM'      => 'トークン「%s」を無効化しますか？ この操作は元に戻せません。',
+	'JS_MCP_DISABLED'             => 'トークンを無効化しました',
+	'JS_MCP_DISABLE_FAILED'       => '無効化に失敗しました',
+);

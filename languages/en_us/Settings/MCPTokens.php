@@ -36,3 +36,13 @@ $languageStrings = array(
 	'LBL_MCP_EXPIRES_NONE' => 'No expiry',
 	'LBL_MCP_EXPIRED'      => 'Expired',
 );
+
+$jsLanguageStrings = array(
+	'JS_MCP_SELECT_USER_REQUIRED' => 'Please select a user',
+	'JS_MCP_LABEL_REQUIRED'       => 'Please enter a label',
+	'JS_MCP_ISSUE_FAILED'         => 'Failed to issue the token',
+	'JS_MCP_COPIED'               => 'Copied',
+	'JS_MCP_DISABLE_CONFIRM'      => 'Disable token "%s"? This cannot be undone.',
+	'JS_MCP_DISABLED'             => 'The token has been disabled',
+	'JS_MCP_DISABLE_FAILED'       => 'Failed to disable the token',
+);

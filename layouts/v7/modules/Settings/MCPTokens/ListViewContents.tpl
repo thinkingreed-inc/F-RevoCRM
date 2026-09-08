@@ -68,7 +68,7 @@
 								<td class="listViewEntryValue">{$LISTVIEW_ENTRY->getDisplayValue('expires_at')}</td>
 								<td class="listViewEntryValue">
 									{if $LISTVIEW_ENTRY->get('enabled')}
-										<button class="btn btn-danger btn-xs btnDisableToken" data-id="{$LISTVIEW_ENTRY->getId()}" data-label="{$LISTVIEW_ENTRY->get('label')|escape:'html'}">
+										<button class="btn btn-danger btn-xs btnDisableToken" data-id="{$LISTVIEW_ENTRY->getId()}" data-label="{$LISTVIEW_ENTRY->get('label')}">
 											<i class="fa fa-ban"></i>&nbsp;{vtranslate('LBL_DISABLE', $QUALIFIED_MODULE)}
 										</button>
 									{else}

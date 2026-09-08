@@ -13,6 +13,11 @@ class Mcp_TokenAuth
     /** 発行できる有効期限（日数）。0 = 無期限 */
     const ALLOWED_EXPIRES_DAYS = [0, 30, 60, 90];
 
+    /** 有効期限の状態。表示側はこれを見て文言を選ぶ */
+    const EXPIRY_NONE    = 'none';
+    const EXPIRY_EXPIRED = 'expired';
+    const EXPIRY_ACTIVE  = 'active';
+
     /**
      * Authenticate a Bearer token and return the user ID.
      *
@@ -167,5 +172,19 @@ class Mcp_TokenAuth
         if ($result === false) {
             throw new Exception('トークンの失効に失敗しました');
         }
+    }
+
+    /**
+     * 有効期限の状態を返す。管理画面と個人設定画面で同じ判定を使うための共通処理。
+     *
+     * @param string|null $expiresAt DB の expires_at（NULL = 無期限）
+     * @return string self::EXPIRY_NONE / EXPIRY_EXPIRED / EXPIRY_ACTIVE
+     */
+    public static function getExpiryState(?string $expiresAt): string
+    {
+        if (empty($expiresAt) || $expiresAt === '0000-00-00 00:00:00') {
+            return self::EXPIRY_NONE;
+        }
+        return ($expiresAt <= date('Y-m-d H:i:s')) ? self::EXPIRY_EXPIRED : self::EXPIRY_ACTIVE;
     }
 }

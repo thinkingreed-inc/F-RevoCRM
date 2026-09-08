@@ -33,11 +33,11 @@ Settings_Vtiger_List_Js("Settings_MCPTokens_List_Js", {}, {
 
 			// クライアント側バリデーション
 			if (!userid) {
-				app.helper.showErrorNotification({ message: 'ユーザーを選択してください' });
+				app.helper.showErrorNotification({ message: app.vtranslate('JS_MCP_SELECT_USER_REQUIRED') });
 				return;
 			}
 			if (!label) {
-				app.helper.showErrorNotification({ message: 'ラベルを入力してください' });
+				app.helper.showErrorNotification({ message: app.vtranslate('JS_MCP_LABEL_REQUIRED') });
 				return;
 			}
 
@@ -65,7 +65,7 @@ Settings_Vtiger_List_Js("Settings_MCPTokens_List_Js", {}, {
 					jQuery('#generatedToken').val(data.token);
 					jQuery('#tokenResultModal').modal('show');
 				} else {
-					var msg = (err && err.message) ? err.message : 'トークンの発行に失敗しました';
+					var msg = (err && err.message) ? err.message : app.vtranslate('JS_MCP_ISSUE_FAILED');
 					app.helper.showErrorNotification({ message: msg });
 				}
 			});
@@ -83,12 +83,12 @@ Settings_Vtiger_List_Js("Settings_MCPTokens_List_Js", {}, {
 
 			if (navigator.clipboard && navigator.clipboard.writeText) {
 				navigator.clipboard.writeText(tokenInput.value).then(function () {
-					app.helper.showSuccessNotification({ message: 'コピーしました' });
+					app.helper.showSuccessNotification({ message: app.vtranslate('JS_MCP_COPIED') });
 				});
 			} else {
 				// フォールバック
 				document.execCommand('copy');
-				app.helper.showSuccessNotification({ message: 'コピーしました' });
+				app.helper.showSuccessNotification({ message: app.vtranslate('JS_MCP_COPIED') });
 			}
 		});
 	},
@@ -112,30 +112,30 @@ Settings_Vtiger_List_Js("Settings_MCPTokens_List_Js", {}, {
 		jQuery(document).off('click.mcpDisable').on('click.mcpDisable', '.btnDisableToken', function () {
 			var tokenId = jQuery(this).data('id');
 			var tokenLabel = jQuery(this).data('label');
+			var message = app.vtranslate('JS_MCP_DISABLE_CONFIRM').replace('%s', tokenLabel);
 
-			if (!confirm('トークン「' + tokenLabel + '」を無効化しますか？\nこの操作は元に戻せません。')) {
-				return;
-			}
+			// htmlSupportEnable:false でラベルをテキストとして扱う（既定は html() 挿入のため）
+			app.helper.showConfirmationBox({ message: message, htmlSupportEnable: false }).then(function () {
+				app.helper.showProgress();
 
-			app.helper.showProgress();
+				var params = {
+					module: 'MCPTokens',
+					parent: 'Settings',
+					action: 'Delete',
+					record: tokenId
+				};
 
-			var params = {
-				module: 'MCPTokens',
-				parent: 'Settings',
-				action: 'Delete',
-				record: tokenId
-			};
+				app.request.post({ data: params }).then(function (err, data) {
+					app.helper.hideProgress();
 
-			app.request.post({ data: params }).then(function (err, data) {
-				app.helper.hideProgress();
-
-				if (err === null && data && data.success) {
-					app.helper.showSuccessNotification({ message: 'トークンを無効化しました' });
-					window.location.reload();
-				} else {
-					var msg = (err && err.message) ? err.message : '無効化に失敗しました';
-					app.helper.showErrorNotification({ message: msg });
-				}
+					if (err === null && data && data.success) {
+						app.helper.showSuccessNotification({ message: app.vtranslate('JS_MCP_DISABLED') });
+						window.location.reload();
+					} else {
+						var msg = (err && err.message) ? err.message : app.vtranslate('JS_MCP_DISABLE_FAILED');
+						app.helper.showErrorNotification({ message: msg });
+					}
+				});
 			});
 		});
 	},

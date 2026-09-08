@@ -191,7 +191,8 @@ Vtiger.Class("Users_McpToken_Js",{},{
 			var label = jQuery(this).data('label');
 			var $row = jQuery(this).closest('tr');
 			var message = app.vtranslate('JS_MCP_TOKEN_REVOKE_CONFIRM').replace('%s', label);
-			app.helper.showConfirmationBox({ message: message }).then(function() {
+			// htmlSupportEnable:false でラベルをテキストとして扱う（既定は html() 挿入のため）
+			app.helper.showConfirmationBox({ message: message, htmlSupportEnable: false }).then(function() {
 				app.helper.showProgress();
 				app.request.post({ data: {
 					module: 'Users',

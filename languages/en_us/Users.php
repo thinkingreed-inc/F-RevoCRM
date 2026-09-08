@@ -362,7 +362,6 @@ If you specify a full-width number, a string that cannot be recognized as a numb
 	'LBL_MCP_TOKEN_LAST_USED' => 'Last used',
 	'LBL_MCP_TOKEN_EXPIRES' => 'Expires',
 	'LBL_MCP_TOKEN_REVOKE' => 'Revoke',
-	'LBL_MCP_TOKEN_REVOKED' => 'Revoked',
 	'LBL_MCP_TOKEN_EMPTY' => 'No MCP tokens',
 	'LBL_MCP_TOKEN_EXPIRES_30' => '30 days',
 	'LBL_MCP_TOKEN_EXPIRES_60' => '60 days',

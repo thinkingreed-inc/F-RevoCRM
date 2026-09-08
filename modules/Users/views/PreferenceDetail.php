@@ -194,12 +194,11 @@ class Users_PreferenceDetail_View extends Vtiger_Detail_View {
         // 全ユーザー横断で無効行も見るのは MCPトークン管理画面（Settings）の役割。
         require_once 'include/Mcp/TokenAuth.php';
         $mcpTokens = array();
-        $now = date('Y-m-d H:i:s');
         foreach (Mcp_TokenAuth::listByUser((int) $recordId) as $mcpToken) {
             if (empty($mcpToken['enabled'])) {
                 continue;
             }
-            $mcpToken['is_expired'] = (!empty($mcpToken['expires_at']) && $mcpToken['expires_at'] <= $now);
+            $mcpToken['expiry_state'] = Mcp_TokenAuth::getExpiryState($mcpToken['expires_at']);
             $mcpTokens[] = $mcpToken;
         }
         global $site_URL;

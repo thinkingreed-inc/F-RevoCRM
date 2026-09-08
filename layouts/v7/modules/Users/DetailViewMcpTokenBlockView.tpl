@@ -118,9 +118,9 @@
                             <td>{if $TOKEN.created_at}{$TOKEN.created_at}{else}—{/if}</td>
                             <td>{if $TOKEN.last_used_at}{$TOKEN.last_used_at}{else}—{/if}</td>
                             <td>
-                            {if !$TOKEN.expires_at}
+                            {if $TOKEN.expiry_state == Mcp_TokenAuth::EXPIRY_NONE}
                                 {vtranslate('LBL_MCP_TOKEN_EXPIRES_NONE', 'Users')}
-                            {elseif $TOKEN.is_expired}
+                            {elseif $TOKEN.expiry_state == Mcp_TokenAuth::EXPIRY_EXPIRED}
                                 {vtranslate('LBL_MCP_TOKEN_EXPIRED', 'Users')}
                             {else}
                                 {$TOKEN.expires_at}

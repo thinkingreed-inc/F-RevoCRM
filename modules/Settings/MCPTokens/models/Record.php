@@ -45,13 +45,15 @@ class Settings_MCPTokens_Record_Model extends Settings_Vtiger_Record_Model {
 			return $fieldValue ? $fieldValue . '…' : '---';
 		}
 		if ($fieldName === 'expires_at') {
-			if (!$fieldValue || $fieldValue === '0000-00-00 00:00:00') {
-				return vtranslate('LBL_MCP_EXPIRES_NONE', 'Settings:MCPTokens');
+			require_once 'include/Mcp/TokenAuth.php';
+			switch (Mcp_TokenAuth::getExpiryState($fieldValue)) {
+				case Mcp_TokenAuth::EXPIRY_NONE:
+					return vtranslate('LBL_MCP_EXPIRES_NONE', 'Settings:MCPTokens');
+				case Mcp_TokenAuth::EXPIRY_EXPIRED:
+					return vtranslate('LBL_MCP_EXPIRED', 'Settings:MCPTokens');
+				default:
+					return Vtiger_Datetime_UIType::getDateTimeValue($fieldValue);
 			}
-			if ($fieldValue <= date('Y-m-d H:i:s')) {
-				return vtranslate('LBL_MCP_EXPIRED', 'Settings:MCPTokens');
-			}
-			return Vtiger_Datetime_UIType::getDateTimeValue($fieldValue);
 		}
 		return $fieldValue;
 	}
