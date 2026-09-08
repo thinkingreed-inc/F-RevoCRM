@@ -173,25 +173,78 @@ class Mcp_CrmTools
      */
     public function callTool(string $toolName, array $args)
     {
-        switch ($toolName) {
-            case 'crm_list_modules':
-                return $this->listModules();
-            case 'crm_describe':
-                return $this->describe($args);
-            case 'crm_search':
-                return $this->search($args);
-            case 'crm_get':
-                return $this->get($args);
-            case 'crm_create':
-                return $this->create($args);
-            case 'crm_update':
-                return $this->update($args);
-            case 'crm_delete':
-                return $this->delete($args);
-            case 'crm_list_users':
-                return $this->listUsers();
-            default:
-                throw new \InvalidArgumentException("Unknown tool: {$toolName}");
+        try {
+            switch ($toolName) {
+                case 'crm_list_modules':
+                    $result = $this->listModules();
+                    break;
+                case 'crm_describe':
+                    $result = $this->describe($args);
+                    break;
+                case 'crm_search':
+                    $result = $this->search($args);
+                    break;
+                case 'crm_get':
+                    $result = $this->get($args);
+                    break;
+                case 'crm_create':
+                    $result = $this->create($args);
+                    break;
+                case 'crm_update':
+                    $result = $this->update($args);
+                    break;
+                case 'crm_delete':
+                    $result = $this->delete($args);
+                    break;
+                case 'crm_list_users':
+                    $result = $this->listUsers();
+                    break;
+                default:
+                    throw new \InvalidArgumentException("Unknown tool: {$toolName}");
+            }
+        } catch (\Throwable $e) {
+            $this->logToSystemLog($toolName, $args, false, $e->getMessage());
+            throw $e;
+        }
+
+        $this->logToSystemLog($toolName, $args, true, null);
+        return $result;
+    }
+
+    /**
+     * MCP のツール実行を log4php（logs/vtigercrm.log）にも残す。監査専用の Mcp_AuditLogger（logs/mcp_audit.log）とは別物。
+     */
+    private function logToSystemLog(string $toolName, array $args, bool $success, ?string $error): void
+    {
+        try {
+            $log = Logger::getLogger('MCP');
+
+            $userName = $this->user->column_fields['user_name']
+                ?? ($this->user->user_name ?? ('user#' . ($this->user->id ?? '?')));
+            $module = isset($args['module']) ? (string) $args['module'] : '-';
+            $recordId = isset($args['id']) ? (string) $args['id'] : '-';
+
+            $msg = sprintf(
+                'MCP action tool=%s user=%s module=%s id=%s result=%s',
+                $toolName,
+                $userName,
+                $module,
+                $recordId,
+                $success ? 'success' : 'failure'
+            );
+            if (!$success && $error !== null) {
+                $msg .= ' error=' . $error;
+            }
+
+            // 作成・更新・削除は画面操作と同じく info、読み取り系は debug で記録する
+            $isWrite = in_array($toolName, ['crm_create', 'crm_update', 'crm_delete'], true);
+            if ($isWrite) {
+                $log->info($msg);
+            } else {
+                $log->debug($msg);
+            }
+        } catch (\Throwable $ignore) {
+            // ログ出力の失敗で本処理を止めない
         }
     }
 
