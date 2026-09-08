@@ -65,7 +65,17 @@ class Mcp_McpServer
         }
 
         // ── Bearer token extraction ──
-        $authHeader  = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+        $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+        if ($authHeader === '' && function_exists('apache_request_headers')) {
+            // mod_php では SetEnvIf/RewriteRule で転送を設定しても、
+            // Authorization が apache_request_headers() 経由でしか取れないことがある。
+            foreach (apache_request_headers() as $headerName => $headerValue) {
+                if (strcasecmp($headerName, 'Authorization') === 0) {
+                    $authHeader = $headerValue;
+                    break;
+                }
+            }
+        }
         $bearerToken = '';
         if (strpos($authHeader, 'Bearer ') === 0) {
             $bearerToken = substr($authHeader, 7);
