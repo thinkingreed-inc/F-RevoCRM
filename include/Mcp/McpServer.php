@@ -152,6 +152,9 @@ class Mcp_McpServer
                     // MCP 接続確立(initialize)を画面ログインと同等にログイン履歴へ残す
                     // tools/call ごとに記録すると履歴が爆発するため initialize のみ
                     $this->recordMcpLoginHistory($current_user);
+                    if ($authMethod === 'static_token') {
+                        Mcp_TokenAuth::touchLastUsed($bearerToken);
+                    }
                     break;
                 case 'tools/list':
                     $result = ['tools' => $tools->listTools()];

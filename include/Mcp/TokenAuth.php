@@ -13,7 +13,7 @@ class Mcp_TokenAuth
     /**
      * Authenticate a Bearer token and return the user ID.
      *
-     * 有効期限内・有効なトークンのみ通す。成功時に最終使用日時を更新する。
+     * 有効期限内・有効なトークンのみ通す。
      *
      * @param string $bearerToken Authorization ヘッダの生トークン
      * @return int User ID
@@ -30,7 +30,7 @@ class Mcp_TokenAuth
 
         // 有効期限を判定に含める（列を足すだけでは期限切れトークンが通ってしまうため）
         $result = $db->pquery(
-            'SELECT id, userid FROM vtiger_mcp_token
+            'SELECT userid FROM vtiger_mcp_token
              WHERE token_hash = ? AND enabled = 1
                AND (expires_at IS NULL OR expires_at > NOW())',
             [$hash]
@@ -40,13 +40,25 @@ class Mcp_TokenAuth
             throw new Exception('Invalid or disabled token');
         }
 
-        $id = (int) $db->query_result($result, 0, 'id');
-        $userid = (int) $db->query_result($result, 0, 'userid');
+        return (int) $db->query_result($result, 0, 'userid');
+    }
 
-        // 最終使用日時を更新する（間引きせず毎回更新する）
-        $db->pquery('UPDATE vtiger_mcp_token SET last_used_at = NOW() WHERE id = ?', [$id]);
-
-        return $userid;
+    /**
+     * 最終使用日時を更新する。
+     * 接続確立(initialize)時のみ呼ぶ。tools/call ごとに更新すると同一行への書き込みが集中する。
+     *
+     * @param string $bearerToken Authorization ヘッダの生トークン
+     */
+    public static function touchLastUsed(string $bearerToken): void
+    {
+        if ($bearerToken === '') {
+            return;
+        }
+        $db = PearDatabase::getInstance();
+        $db->pquery(
+            'UPDATE vtiger_mcp_token SET last_used_at = NOW() WHERE token_hash = ?',
+            [hash('sha256', $bearerToken)]
+        );
     }
 
     /**
