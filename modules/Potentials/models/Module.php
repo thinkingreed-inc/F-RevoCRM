@@ -395,6 +395,6 @@ class Potentials_Module_Model extends Vtiger_Module_Model {
      * Function to get supported utility actions for a module
      */
     function getUtilityActionsNames() {
-        return array('Import', 'Export', 'DuplicatesHandling');
+        return array('Import', 'Export', 'Merge', 'DuplicatesHandling');
     }
 }
