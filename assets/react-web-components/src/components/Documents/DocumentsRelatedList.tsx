@@ -11,12 +11,15 @@ import { DocumentCreateEditModal } from "./DocumentCreateEditModal";
 import { DocumentSelectModal } from "./DocumentSelectModal";
 import { useDocumentDetail } from "./hooks/useDocumentDetail";
 import { useFolderTree } from "./hooks/useFolderTree";
-import { useFileUpload } from "./hooks/useFileUpload";
+import { useFileUpload, MAX_FILES } from "./hooks/useFileUpload";
 import { deleteDocument } from "./utils/deleteDocument";
 import { unlinkDocument } from "./utils/unlinkDocument";
+import { collectDroppedEntries } from "./utils/dropEntries";
+import type { DroppedFile } from "./utils/dropEntries";
 import {
   UploadProgressBar,
   DuplicateConfirmDialog,
+  UploadFolderDialog,
 } from "./DocumentsUploadStatus";
 import { TranslationProvider } from "../../contexts/TranslationContext";
 import { useOptionalTranslation } from "../../hooks/useTranslation";
@@ -25,6 +28,9 @@ interface DocumentsRelatedListProps {
   parentModule: string;
   parentId: number;
 }
+
+/** 既定フォルダ（Default）のID。フォルダ一覧を取得できるまでの初期値 */
+const DEFAULT_FOLDER_ID = 1;
 
 function getCsrfToken(): { name: string; value: string } | null {
   const csrfName = (window as any).csrfMagicName;
@@ -198,6 +204,9 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
 
   const { folders } = useFolderTree();
 
+  // 直近に選んだアップロード先（次回ドロップと新規登録モーダルの初期値にする）
+  const [uploadFolderId, setUploadFolderId] = useState(DEFAULT_FOLDER_ID);
+
   // 検索 debounce
   useEffect(() => {
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
@@ -243,10 +252,27 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
     duplicatePrompt,
     respondDuplicate,
     cancel: cancelUpload,
-    uploadDrop,
+    uploadEntries,
   } = useFileUpload(() => {
     reload();
   });
+
+  /** 展開済みのドロップ結果。登録先フォルダの選択待ち */
+  const [pendingDrop, setPendingDrop] = useState<{
+    entries: DroppedFile[];
+    truncated: boolean;
+  } | null>(null);
+  /** ドロップされた項目を展開している最中か */
+  const [isCollectingDrop, setIsCollectingDrop] = useState(false);
+  /** 展開中にキャンセル・再ドロップされた場合に、古い結果を捨てるための目印 */
+  const dropTokenRef = useRef(0);
+
+  const closeUploadFolderDialog = useCallback(() => {
+    // 展開が終わっても、この結果でダイアログを開き直さない
+    dropTokenRef.current++;
+    setPendingDrop(null);
+    setIsCollectingDrop(false);
+  }, []);
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -269,10 +295,61 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
       e.preventDefault();
       dragCountRef.current = 0;
       setIsDragging(false);
-      // フォルダのドロップも階層ごと登録する
-      uploadDrop(e.dataTransfer, 1, parentModule, parentId);
+
+      // DataTransfer はドロップ直後にしか読めないため、フォルダを選んでもらう前に
+      // ここで展開だけ済ませておく（フォルダのドロップも階層ごと展開する）
+      const collecting = collectDroppedEntries(e.dataTransfer);
+      dropTokenRef.current++;
+      const token = dropTokenRef.current;
+      setPendingDrop(null);
+      setIsCollectingDrop(true);
+
+      collecting
+        .then(({ files, truncated }) => {
+          // キャンセル・再ドロップで用済みになった結果は捨てる
+          if (token !== dropTokenRef.current) return;
+          setIsCollectingDrop(false);
+          if (files.length === 0) return;
+          if (truncated || files.length > MAX_FILES) {
+            // どのみち登録できないので、フォルダを選ばせずに理由を出す
+            uploadEntries(
+              files,
+              uploadFolderId,
+              parentModule,
+              parentId,
+              truncated,
+            );
+            return;
+          }
+          setPendingDrop({ entries: files, truncated });
+        })
+        .catch(() => {
+          if (token !== dropTokenRef.current) return;
+          setIsCollectingDrop(false);
+        });
     },
-    [uploadDrop, parentModule, parentId],
+    [uploadEntries, uploadFolderId, parentModule, parentId],
+  );
+
+  /** ダイアログで選ばれたフォルダへ登録する */
+  const handleUploadFolderConfirm = useCallback(
+    (folderId: number) => {
+      const target = pendingDrop;
+      dropTokenRef.current++;
+      setPendingDrop(null);
+      setIsCollectingDrop(false);
+      // 次のドロップと新規登録モーダルの初期値に引き継ぐ
+      setUploadFolderId(folderId);
+      if (!target) return;
+      uploadEntries(
+        target.entries,
+        folderId,
+        parentModule,
+        parentId,
+        target.truncated,
+      );
+    },
+    [pendingDrop, uploadEntries, parentModule, parentId],
   );
 
   const handleSortChange = useCallback((newSort: SortConfig) => {
@@ -787,6 +864,17 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
         </div>
       )}
 
+      {/* 登録先フォルダの選択（ドロップ直後に出す） */}
+      {(isCollectingDrop || pendingDrop) && (
+        <UploadFolderDialog
+          fileCount={pendingDrop ? pendingDrop.entries.length : null}
+          folders={folders}
+          defaultFolderId={uploadFolderId}
+          onConfirm={handleUploadFolderConfirm}
+          onCancel={closeUploadFolderDialog}
+        />
+      )}
+
       {/* 同名ファイルの上書き確認 */}
       {duplicatePrompt && (
         <DuplicateConfirmDialog
@@ -827,7 +915,7 @@ const DocumentsRelatedListInner: React.FC<DocumentsRelatedListProps> = ({
         mode={createEditMode}
         document={editTargetDoc}
         folders={folders}
-        defaultFolderId={1}
+        defaultFolderId={uploadFolderId}
         parentModule={parentModule}
         parentId={parentId}
         onSave={() => {

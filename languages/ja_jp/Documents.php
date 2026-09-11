@@ -282,6 +282,12 @@ $languageStrings = array(
 
 	// アップロード関連 (React)
 	'LBL_DROP_FILES_HERE' => 'ファイルをここにドロップしてアップロード',
+	'LBL_UPLOAD_TO_FOLDER' => 'アップロード先',
+	'LBL_UPLOAD_DESTINATION_TITLE' => 'アップロード先の選択',
+	'LBL_UPLOAD_PREPARING' => 'ドロップされたファイルを確認しています...',
+	'LBL_UPLOAD_FILE_COUNT' => '%s件のファイルをアップロードします',
+	'LBL_UPLOAD_START' => 'アップロード',
+	'LBL_NO_WRITABLE_FOLDER' => 'アップロードできるフォルダがありません',
 	'LBL_UPLOADING_PROGRESS' => 'アップロード中... %s%',
 	// プレビュー用ビューア（iframe）の文言。public/resources/preview-i18n.js が取得する
 	'LBL_PREVIEW_LOADING' => '読み込み中...',

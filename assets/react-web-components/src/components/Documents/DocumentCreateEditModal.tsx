@@ -760,8 +760,11 @@ export const DocumentCreateEditModal: React.FC<
             </div>
 
             <div>
-              <label style={labelStyle}>{t("Folder Name")}</label>
+              <label htmlFor="document-folderid" style={labelStyle}>
+                {t("Folder Name")}
+              </label>
               <select
+                id="document-folderid"
                 value={folderid}
                 onChange={(e) => setFolderid(Number(e.target.value))}
                 style={inputStyle}

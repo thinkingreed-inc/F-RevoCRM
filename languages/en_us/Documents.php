@@ -259,6 +259,12 @@ $languageStrings = array(
 	'LBL_FOLDER_DELETE_FAILED' => 'Failed to delete folder',
 	'LBL_FOLDER_COUNT' => '%s items',
 	'LBL_DROP_FILES_HERE' => 'Drop files here to upload',
+	'LBL_UPLOAD_TO_FOLDER' => 'Upload to',
+	'LBL_UPLOAD_DESTINATION_TITLE' => 'Choose upload folder',
+	'LBL_UPLOAD_PREPARING' => 'Checking the dropped files...',
+	'LBL_UPLOAD_FILE_COUNT' => 'Uploading %s file(s)',
+	'LBL_UPLOAD_START' => 'Upload',
+	'LBL_NO_WRITABLE_FOLDER' => 'There is no folder you can upload to',
 	'LBL_UPLOADING_PROGRESS' => 'Uploading... %s%',
 	// Labels for the preview viewers in iframes (fetched by public/resources/preview-i18n.js)
 	'LBL_PREVIEW_LOADING' => 'Loading...',
