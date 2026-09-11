@@ -1,0 +1,8 @@
+<?php
+/**
+ * テスト用の cron ハンドラ（正常終了）。
+ *
+ * vtiger_cron_task.handler_file は UNIQUE 制約があるため、同時に複数のテストタスクを
+ * 登録できるように noop2 / noop2 / noop3 と内容が同じものを分けて用意している。
+ */
+echo "FRTestCron: noop2 handler executed\n";

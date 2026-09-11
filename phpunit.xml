@@ -11,6 +11,12 @@
     <!-- テストDB名は tests/bootstrap.php が決める (既定: config.inc.php の db_name + '_test')。
          別名を使う場合は環境変数 FREVOCRM_TEST_DB_NAME を指定する。
          例: <php><env name="FREVOCRM_TEST_DB_NAME" value="frevocrm_test" force="true"/></php> -->
+    <php>
+        <!-- プロセス分離で起動する子プロセスは親の -d xdebug.mode=off を引き継がない。
+             Xdebug が有効な開発環境だと接続失敗の通知が子の出力に混ざり、
+             beStrictAboutOutputDuringTests で落ちるため、ここで無効にしておく。 -->
+        <env name="XDEBUG_MODE" value="off"/>
+    </php>
     <testsuites>
         <testsuite name="Unit">
             <directory>tests/Unit</directory>

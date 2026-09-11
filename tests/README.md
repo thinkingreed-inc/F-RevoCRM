@@ -38,6 +38,11 @@ CI 側にも DB を用意するステップが必要になる。
 | `tests/Integration/` | DB を使うテスト |
 | `tests/Support/` | テスト用のスタブ・ヘルパ（テスト本体ではない） |
 
+`tests/Support/` にはテスト対象の代わりに動かすスタブや、テストから起動するスクリプトも置く。
+クラス以外をまとめる場合は対象ごとの小文字のサブディレクトリにする（名前空間ではないため）。
+例: `tests/Support/cron/` にはスケジューラのテストが実行する `.service` スタブハンドラと、
+テスト用DB を指したまま `vtigercron.php` を起動するための入口スクリプトがある。
+
 命名は `<対象>Test.php`、namespace は配置に合わせる（例: `tests/Unit/Inventory/` → `namespace Tests\Unit\Inventory;`）。
 `composer.json` の `autoload-dev` で `Tests\` → `tests/` を PSR-4 マップしている。
 

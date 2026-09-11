@@ -24,3 +24,13 @@ parameters:
         - libraries/InStyle/InStyle.php
         - libraries/csrf-magic/csrf-magic.php
         - setup/migration/FRMigrationClass.php
+        # スケジューラ（#1823）のテストが参照するクラス。テスト側では実行時に
+        # require するが、パスを変数で組み立てるため phpstan は追えない。
+        - include/database/PearDatabase.php
+        - vtlib/Vtiger/Cron.php
+        - include/utils/CronDispatcher.php
+        - modules/Settings/CronTasks/models/Module.php
+        - modules/Settings/CronTasks/models/Record.php
+        - modules/Settings/CronTasks/views/EditAjax.php
+        - modules/Settings/CronTasks/views/LogAjax.php
+        - setup/migration/scripts/20260825112920_setup_cron_scheduler_stability.php
