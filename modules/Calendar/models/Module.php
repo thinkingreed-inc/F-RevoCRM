@@ -61,8 +61,9 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 	 * Function returns the URL for creating Events
 	 * @return <String>
 	 */
+	//一覧表示から活動を追加後、詳細画面に遷移できるようにrefererを追加。
 	public function getCreateEventRecordUrl() {
-		return 'index.php?module='.$this->get('name').'&view='.$this->getEditViewName().'&mode=Events';
+		return 'index.php?module='.$this->get('name').'&view='.$this->getEditViewName().'&referer=Detail&mode=Events';
 	}
 
 	/**
@@ -88,8 +89,9 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 	 * Function returns the URL for creating Task
 	 * @return <String>
 	 */
+	//一覧表示からTODOを追加後、詳細画面に遷移できるようにrefererを追加。
 	public function getCreateTaskRecordUrl() {
-		return 'index.php?module='.$this->get('name').'&view='.$this->getEditViewName().'&mode=Calendar';
+		return 'index.php?module='.$this->get('name').'&view='.$this->getEditViewName().'&referer=Detail&mode=Calendar';
 	}
 
 	/**
