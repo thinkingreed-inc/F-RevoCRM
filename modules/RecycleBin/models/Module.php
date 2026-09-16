@@ -122,9 +122,6 @@ class RecycleBin_Module_Model extends Vtiger_Module_Model {
 	public function emptyRecycleBin(){
 		$db = PearDatabase::getInstance();
 
-		$db->pquery('DELETE vtiger_modtracker_basic.* FROM vtiger_modtracker_basic INNER JOIN vtiger_crmentity on 
-					vtiger_crmentity.crmid = vtiger_modtracker_basic.crmid AND vtiger_crmentity.deleted = 1', array());
-
 		$getIdsQuery='SELECT crmid from vtiger_crmentity WHERE deleted=?';
 		$resultIds=$db->pquery($getIdsQuery,array(1));
 		$recordIds=array();
@@ -138,6 +135,15 @@ class RecycleBin_Module_Model extends Vtiger_Module_Model {
 		if (empty($recordIds)) {
 			return true;
 		}
+
+		// 更新履歴の削除も残すレコードを避ける。
+		// 先に全件消すと、削除を禁じたレコード（電帳法対象のドキュメント）の
+		// 履歴だけが失われ、証跡を残す目的と逆になる
+		$db->pquery(
+			'DELETE FROM vtiger_modtracker_basic WHERE crmid IN ('
+				. generateQuestionMarks($recordIds) . ')',
+			$recordIds
+		);
 
 		$this->deleteFiles($recordIds);
 		$db->pquery(

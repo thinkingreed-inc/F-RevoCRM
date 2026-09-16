@@ -100,6 +100,33 @@ final class DeleteGuardTest extends DocumentsTestCase
         $this->assertNull($this->deletedFlagOf($normal), 'TC-CM-129 電帳法対象外は消える');
     }
 
+    public function test_TC_CM_130_ごみ箱を空にしても電帳法対象の更新履歴は残る(): void
+    {
+        // 更新履歴の削除を除外処理より前に行っていた頃は、レコードは残るのに
+        // 履歴だけが消え、証跡を残す目的と逆になっていた
+        $inTrash = $this->createTrashedComplianceDocument('DeleteGuardInTrash');
+        $normal = $this->createDocument('DeleteGuardNormal');
+        $this->trashDocument($normal);
+        $this->addModTrackerRow($inTrash);
+        $this->addModTrackerRow($normal);
+        // 本体の保存・削除でも履歴が増えるため、件数は実測して比べる
+        $before = $this->modTrackerCountOf($inTrash);
+        $this->assertGreaterThan(0, $before, '前提: 更新履歴がある');
+
+        (new RecycleBin_Module_Model())->emptyRecycleBin();
+
+        $this->assertSame(
+            $before,
+            $this->modTrackerCountOf($inTrash),
+            'TC-CM-130 電帳法対象の更新履歴は残る'
+        );
+        $this->assertSame(
+            0,
+            $this->modTrackerCountOf($normal),
+            'TC-CM-130 完全削除したレコードの更新履歴は消える'
+        );
+    }
+
     // ---- 削除の記録 -----------------------------------------------------
 
     public function test_TC_CM_140_141_削除が監査ログに記録される(): void
@@ -132,6 +159,29 @@ final class DeleteGuardTest extends DocumentsTestCase
     }
 
     // ---- ヘルパ ---------------------------------------------------------
+
+    /** 更新履歴（modtracker）の行を1件作る */
+    private function addModTrackerRow(int $recordId): void
+    {
+        $result = $this->db->pquery('SELECT MAX(id) AS maxid FROM vtiger_modtracker_basic', []);
+        $nextId = ($result === false) ? 1 : ((int) $this->db->query_result($result, 0, 'maxid') + 1);
+        $this->db->pquery(
+            'INSERT INTO vtiger_modtracker_basic (id, crmid, module, whodid, changedon, status)
+             VALUES (?, ?, ?, ?, ?, 0)',
+            [$nextId, $recordId, 'Documents', self::ADMIN_USER_ID, date('Y-m-d H:i:s')]
+        );
+    }
+
+    /** 更新履歴の件数 */
+    private function modTrackerCountOf(int $recordId): int
+    {
+        $result = $this->db->pquery(
+            'SELECT COUNT(*) AS cnt FROM vtiger_modtracker_basic WHERE crmid = ?',
+            [$recordId]
+        );
+
+        return ($result === false) ? 0 : (int) $this->db->query_result($result, 0, 'cnt');
+    }
 
     /** 電帳法対象（書類区分あり）のドキュメントを作る */
     private function createComplianceDocument(string $suffix): int
