@@ -339,6 +339,9 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
                   style={{
                     width: 36,
                     padding: "8px 4px",
+                    // th の text-align は外側の CSS で left になるため、
+                    // 行側のチェックボックス（td は center）と位置を揃える
+                    textAlign: "center",
                     borderBottom: "2px solid #E2E8F0",
                     backgroundColor: hasSelection ? "#EBF4FF" : undefined,
                   }}
