@@ -88,7 +88,34 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 		$savedFile = $fileDetails['attachmentsid'] . "_"
 			. (!empty($storedFileName) ? $storedFileName : $fileName);
 
+		// ダウンロードの記録も経路（詳細画面・一覧・共通の DownloadAttachment）に
+		// よらずここで残す。呼び出し側に任せると、呼び忘れた経路が履歴に出ない。
+		// 電帳法対象かどうかで分けず、登録・変更・削除と同じくすべて記録する
+		$this->logDownload();
+
 		self::streamFile($filePath . $savedFile, $fileName, $fileDetails['type']);
+	}
+
+	/**
+	 * ダウンロードを変更履歴（監査ログ）に記録する
+	 *
+	 * 記録に失敗してもダウンロード自体は続ける。
+	 */
+	private function logDownload() {
+		$recordId = $this->getId();
+		if (empty($recordId)) {
+			return;
+		}
+		try {
+			require_once 'modules/Documents/utils/AuditLogger.php';
+			Documents_AuditLogger::logDownload($recordId);
+		} catch (Exception $e) {
+			global $log;
+			if (isset($log) && is_object($log)) {
+				$log->error("Documents download audit log failed for record {$recordId}: "
+					. $e->getMessage());
+			}
+		}
 	}
 
 	/**
