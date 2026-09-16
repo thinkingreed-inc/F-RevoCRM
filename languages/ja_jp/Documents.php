@@ -328,10 +328,12 @@ $languageStrings = array(
 	'LBL_DOCUMENT_TYPE' => 'ドキュメント種別',
 	'LBL_DOC_TYPE_FILE' => 'ファイル',
 	'LBL_DOC_TYPE_URL' => 'URL',
+	'LBL_DOC_TYPE_NOTE' => 'メモ',
 	'LBL_FILE_LABEL' => 'ファイル',
 	'LBL_TITLE_REQUIRED' => 'タイトルを入力してください',
 	'LBL_FILE_REQUIRED' => 'ファイルを選択してください',
 	'LBL_URL_REQUIRED' => 'URLを入力してください',
+	'LBL_NOTE_REQUIRED' => 'メモを入力してください',
 	'LBL_RELATE_NOTICE' => 'この書類は取引レコード（受注・請求書等）に関連付けてください。',
 
 	// ファイルプレビュー (React)

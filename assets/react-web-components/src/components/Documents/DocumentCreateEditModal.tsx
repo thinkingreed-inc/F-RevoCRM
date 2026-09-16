@@ -44,7 +44,12 @@ interface DocumentCreateEditModalProps {
   onClose: () => void;
 }
 
-type DocType = "I" | "E";
+/**
+ * ドキュメント種別
+ *  I: ファイル / E: URL / W: メモだけのドキュメント（旧UIの「Webドキュメント」）
+ *  W は画面上の種別で、保存時は filelocationtype = "I"（ファイル無し）になる
+ */
+type DocType = "I" | "E" | "W";
 
 function getCsrfToken(): { name: string; value: string } | null {
   const csrfName = (window as any).csrfMagicName;
@@ -154,6 +159,7 @@ export const DocumentCreateEditModal: React.FC<
   const docTypeLabels: Record<DocType, string> = {
     I: t("LBL_DOC_TYPE_FILE"),
     E: t("LBL_DOC_TYPE_URL"),
+    W: t("LBL_DOC_TYPE_NOTE"),
   };
 
   // Group dynamic (non-core) fields by block label
@@ -415,6 +421,11 @@ export const DocumentCreateEditModal: React.FC<
       setError(t("LBL_URL_REQUIRED"));
       return;
     }
+    // メモだけのドキュメントは、メモが空だと中身が無くなる
+    if (docType === "W" && !notecontent.trim()) {
+      setError(t("LBL_NOTE_REQUIRED"));
+      return;
+    }
 
     setIsSaving(true);
     setError(null);
@@ -486,7 +497,8 @@ export const DocumentCreateEditModal: React.FC<
         bodyParams.append("module", "Documents");
         bodyParams.append("action", "Save");
         bodyParams.append("notes_title", title.trim());
-        bodyParams.append("filelocationtype", docType);
+        // メモ（W）は画面上の種別。ファイル無しのドキュメントとして保存する
+        bodyParams.append("filelocationtype", docType === "W" ? "I" : docType);
         bodyParams.append("filestatus", filestatus ? "1" : "0");
         bodyParams.append("folderid", String(folderid));
         bodyParams.append("notecontent", notecontent);
@@ -714,7 +726,7 @@ export const DocumentCreateEditModal: React.FC<
             <div style={{ marginBottom: 16 }}>
               <label style={labelStyle}>{t("LBL_DOCUMENT_TYPE")}</label>
               <div style={{ display: "flex", gap: 8 }}>
-                {(["I", "E"] as DocType[]).map((type) => (
+                {(["I", "E", "W"] as DocType[]).map((type) => (
                   <button
                     key={type}
                     onClick={() => setDocType(type)}
@@ -958,7 +970,10 @@ export const DocumentCreateEditModal: React.FC<
 
           {/* メモ */}
           <div style={{ marginBottom: 8 }}>
-            <label style={labelStyle}>{t("Note")}</label>
+            <label style={labelStyle}>
+              {t("Note")}{" "}
+              {docType === "W" && <span style={{ color: "#E53E3E" }}>*</span>}
+            </label>
             <textarea
               value={notecontent}
               onChange={(e) => setNotecontent(e.target.value)}
