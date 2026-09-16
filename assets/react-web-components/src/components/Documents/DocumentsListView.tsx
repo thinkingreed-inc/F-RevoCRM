@@ -9,6 +9,7 @@ import type {
 import { FileIcon } from "./FileIcon";
 import { StarButton } from "./StarButton";
 import { DeadlineStatusBadge } from "./DeadlineStatusBadge";
+import { htmlToSummaryText } from "./utils/richText";
 
 interface DocumentsListViewProps {
   records: DocumentRecord[];
@@ -633,7 +634,8 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
                     }}
                     onClick={() => onRecordClick(rec)}
                   >
-                    {truncate(rec.notecontent, 30)}
+                    {/* メモはリッチテキストの HTML なので、タグを落として要約する */}
+                    {truncate(htmlToSummaryText(rec.notecontent), 30) || "—"}
                   </td>
                 </tr>
               ))}

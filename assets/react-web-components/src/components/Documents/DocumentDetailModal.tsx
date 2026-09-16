@@ -3,6 +3,7 @@ import type { DocumentDetail, RelatedRecord } from "./types/documents";
 import { FilePreviewRenderer } from "./FilePreviewRenderer";
 import { ComplianceHistoryModal } from "./ComplianceHistoryModal";
 import { unlinkDocument } from "./utils/unlinkDocument";
+import { htmlToPlainText } from "./utils/richText";
 import { useOptionalTranslation } from "../../hooks/useTranslation";
 import { useDocumentFields, DocFieldInfo } from "./hooks/useDocumentFields";
 
@@ -723,7 +724,10 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
     };
 
     // Description block
-    if (doc.notecontent) {
+    // メモはリッチテキストの HTML。ここはテキストとして表示するため、
+    // 中身が空（<p><br /></p> など）ならブロックごと出さない
+    const noteText = htmlToPlainText(doc.notecontent);
+    if (noteText !== "") {
       blockMap[t("LBL_DESCRIPTION")] = {
         label: t("LBL_DESCRIPTION"),
         accent: BLOCK_ACCENTS["LBL_DESCRIPTION"] || DEFAULT_ACCENT,
@@ -735,7 +739,7 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
               uitype: "19",
               blockLabel: "",
             } as DocFieldInfo,
-            rawValue: doc.notecontent,
+            rawValue: noteText,
             wide: true,
           },
         ],

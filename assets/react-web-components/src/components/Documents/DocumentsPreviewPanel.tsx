@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import type { DocumentDetail } from "./types/documents";
 import { FilePreviewRenderer } from "./FilePreviewRenderer";
 import { useOptionalTranslation } from "../../hooks/useTranslation";
+import { htmlToPlainText } from "./utils/richText";
 
 interface DocumentsPreviewPanelProps {
   document: DocumentDetail | null;
@@ -98,6 +99,8 @@ export const DocumentsPreviewPanel: React.FC<DocumentsPreviewPanelProps> = ({
 
   const folderPathStr =
     doc.folder_path?.map((f) => f.name).join(" / ") || doc.foldername;
+  // 中身が空でも <p><br /></p> が入るため、テキストにしてから有無を判断する
+  const noteText = htmlToPlainText(doc.notecontent);
 
   return (
     <div
@@ -296,8 +299,8 @@ export const DocumentsPreviewPanel: React.FC<DocumentsPreviewPanelProps> = ({
           )}
         </div>
 
-        {/* メモ */}
-        {doc.notecontent && (
+        {/* メモ（リッチテキストの HTML なので、テキストにしてから出す） */}
+        {noteText !== "" && (
           <div
             style={{
               marginTop: 12,
@@ -323,7 +326,7 @@ export const DocumentsPreviewPanel: React.FC<DocumentsPreviewPanelProps> = ({
                 whiteSpace: "pre-wrap",
               }}
             >
-              {doc.notecontent}
+              {noteText}
             </div>
           </div>
         )}
