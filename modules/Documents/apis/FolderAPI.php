@@ -705,13 +705,13 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$userId = (int) $currentUser->getId();
 
-		if (is_array($permissions)) {
-			$rows = $this->normalizePermissionRows($permissions);
-		} else {
-			$rows = array(
-				array('permission_type' => 'edit', 'target_type' => 'everyone', 'target_id' => null),
-			);
+		if (!is_array($permissions)) {
+			// 指定が無いときの既定は、画面を経由しない作成（旧UI）と同じ扱いにする
+			Documents_FolderPermission::applyDefaultPermissions($folderId, $userId);
+			return;
 		}
+
+		$rows = $this->normalizePermissionRows($permissions);
 		if (!$this->hasOwnerRow($rows)) {
 			array_unshift($rows, array(
 				'permission_type' => 'owner', 'target_type' => 'user', 'target_id' => $userId,

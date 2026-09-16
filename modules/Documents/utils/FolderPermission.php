@@ -331,6 +331,43 @@ class Documents_FolderPermission {
     }
 
     /**
+     * 新しく作ったフォルダに既定の権限を入れる
+     *
+     * 既定は「オーナー＝作成者 / 編集＝全員」。オーナーを入れるのは、作った本人が
+     * 公開範囲を後から変えられるようにするため。
+     * 画面から権限を指定して作る場合（FolderAPI）は、そちらの内容を優先する。
+     *
+     * @param int $folderId フォルダID
+     * @param int|null $userId 作成者。省略時は実行ユーザー
+     * @return void
+     */
+    public static function applyDefaultPermissions($folderId, $userId = null) {
+        $folderId = (int) $folderId;
+        if ($folderId <= 0) {
+            return;
+        }
+        if ($userId === null) {
+            $currentUser = Users_Record_Model::getCurrentUserModel();
+            $userId = ($currentUser === false || empty($currentUser)) ? 0 : (int) $currentUser->getId();
+        }
+
+        $db = PearDatabase::getInstance();
+        // 作成直後は権限が無いはずだが、ID再利用などで残っていた場合に備えて入れ直す
+        $db->pquery("DELETE FROM vtiger_folder_permissions WHERE folderid = ?", array($folderId));
+        $db->pquery(
+            "INSERT IGNORE INTO vtiger_folder_permissions
+                (folderid, permission_type, target_type, target_id) VALUES (?, ?, ?, ?)",
+            array($folderId, self::TYPE_OWNER, 'user', (int) $userId)
+        );
+        $db->pquery(
+            "INSERT IGNORE INTO vtiger_folder_permissions
+                (folderid, permission_type, target_type, target_id) VALUES (?, ?, ?, ?)",
+            array($folderId, self::TYPE_EDIT, 'everyone', null)
+        );
+        self::clearCache();
+    }
+
+    /**
      * オーナーになっているフォルダIDの一覧を返す
      *
      * フォルダ一覧でフォルダごとに問い合わせると件数分のクエリになるため、
