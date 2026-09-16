@@ -24,3 +24,4 @@ parameters:
         - libraries/InStyle/InStyle.php
         - libraries/csrf-magic/csrf-magic.php
         - setup/migration/FRMigrationClass.php
+        - modules/Users/CreateUserPrivilegeFile.php

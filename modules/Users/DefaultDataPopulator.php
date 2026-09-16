@@ -1040,7 +1040,7 @@ class DefaultDataPopulator extends CRMEntity {
 		$this->db->query("insert into vtiger_def_org_share values (" . $this->db->getUniqueID('vtiger_def_org_share') . ",22,2,0)");
 		$this->db->query("insert into vtiger_def_org_share values (" . $this->db->getUniqueID('vtiger_def_org_share') . ",23,2,0)");
 		$this->db->query("insert into vtiger_def_org_share values (" . $this->db->getUniqueID('vtiger_def_org_share') . ",26,2,0)");
-		$this->db->query("insert into vtiger_def_org_share values (" . $this->db->getUniqueID('vtiger_def_org_share') . ",8,2,0)");
+		$this->db->query("insert into vtiger_def_org_share values (" . $this->db->getUniqueID('vtiger_def_org_share') . ",8,2,2)");
 		$this->db->query("insert into vtiger_def_org_share values (".$this->db->getUniqueID('vtiger_def_org_share').",14,2,0)");
 
 		//Populating the DataShare Related Modules
