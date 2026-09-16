@@ -8,6 +8,8 @@
  * All Rights Reserved.
  *************************************************************************************/
 
+require_once 'modules/Documents/utils/FolderPermission.php';
+
 class Documents_FilePreview_View extends Vtiger_IndexAjax_View {
 
 	public function requiresPermission(Vtiger_Request $request){
@@ -19,7 +21,10 @@ class Documents_FilePreview_View extends Vtiger_IndexAjax_View {
 
 
 	public function checkPermission(Vtiger_Request $request) {
-		return parent::checkPermission($request);
+		parent::checkPermission($request);
+		// フォルダ権限（標準の権限判定はフォルダを見ない）
+		Documents_FolderPermission::checkRequestAccess($request);
+		return true;
 	}
 
 	public function process(Vtiger_Request $request) {

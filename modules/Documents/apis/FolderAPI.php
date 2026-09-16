@@ -1,4 +1,5 @@
 <?php
+require_once 'modules/Documents/utils/FolderPermission.php';
 
 class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 
@@ -67,7 +68,6 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 
 		// 全ドキュメント数
 		// 参照できないフォルダのドキュメントは数えない（一覧と件数を一致させる）
-		require_once 'modules/Documents/utils/FolderPermission.php';
 		$access = Documents_FolderPermission::buildAccessibleCondition();
 		$totalResult = $db->pquery(
 			"SELECT COUNT(*) AS total FROM vtiger_notes
@@ -82,8 +82,6 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 
 		$isAdmin = $currentUser->isAdminUser();
 		$userId = $currentUser->getId();
-		$userRoleId = $currentUser->get('roleid');
-		$userGroupIds = $this->getUserGroupIds($userId);
 		// オーナーのフォルダはまとめて引く（フォルダごとに問い合わせると件数分のクエリになる）
 		$ownedFolderIds = $isAdmin ? array() : Documents_FolderPermission::getOwnedFolderIds($userId);
 
@@ -110,15 +108,13 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 			$row = $db->query_result_rowdata($result, $i);
 			$fid = (int) $row['folderid'];
 
-			// 管理者は全フォルダ参照可能。一般ユーザーは権限チェック
-			// 編集権限があれば参照も可能
-			if (!$isAdmin
-				&& !$this->hasPermission($db, $fid, 'view', $userId, $userRoleId, $userGroupIds)
-				&& !$this->hasPermission($db, $fid, 'edit', $userId, $userRoleId, $userGroupIds)) {
+			// 参照権限があるフォルダだけ返す
+			// （編集・オーナーは参照を兼ねる。判定は Documents_FolderPermission に集約）
+			if (!Documents_FolderPermission::canAccessFolder($fid, $userId)) {
 				continue;
 			}
 
-			$canEdit = $isAdmin || $this->hasPermission($db, $fid, 'edit', $userId, $userRoleId, $userGroupIds);
+			$canEdit = Documents_FolderPermission::canEditFolder($fid, $userId);
 			// 権限設定を変えられるのは管理者とオーナーだけ
 			$canManagePermissions = $isAdmin || in_array($fid, $ownedFolderIds, true);
 
@@ -443,7 +439,6 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 
 		// 管理者か、そのフォルダのオーナーのみ
 		$currentUser = Users_Record_Model::getCurrentUserModel();
-		require_once 'modules/Documents/utils/FolderPermission.php';
 		if (!Documents_FolderPermission::canManageFolderPermissions($folderId)) {
 			throw new AppException(vtranslate('LBL_FOLDER_PERMISSION_DENIED', 'Documents'));
 		}
@@ -688,15 +683,8 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 			return;// ルート直下は個別フォルダの権限対象外
 		}
 
-		$currentUser = Users_Record_Model::getCurrentUserModel();
-		if ($currentUser->isAdminUser()) {
-			return;
-		}
-
-		$userId = $currentUser->getId();
-		$userRoleId = $currentUser->get('roleid');
-		$userGroupIds = $this->getUserGroupIds($userId);
-		if (!$this->hasPermission($db, $folderId, 'edit', $userId, $userRoleId, $userGroupIds)) {
+		// 管理者はすべてのフォルダを変更できる（判定は canEditFolder が持つ）
+		if (!Documents_FolderPermission::canEditFolder($folderId)) {
 			throw new Exception(vtranslate('LBL_FOLDER_EDIT_DENIED', 'Documents'));
 		}
 	}
@@ -734,68 +722,7 @@ class Documents_FolderAPI_Api extends Vtiger_Api_Controller {
 		$db->pquery("DELETE FROM vtiger_folder_permissions WHERE folderid = ?", array($folderId));
 		$this->insertPermissionRows($db, $folderId, $rows);
 
-		require_once 'modules/Documents/utils/FolderPermission.php';
 		Documents_FolderPermission::clearCache();
-	}
-
-	/**
-	 * 指定ユーザーがフォルダに対して指定権限を持つかチェック
-	 *
-	 * 強い権限は弱い権限を兼ねるため、'edit' を求めたときは 'owner' も該当する。
-	 *
-	 * @param string $permissionType 'view' / 'edit' / 'owner'
-	 */
-	private function hasPermission($db, $folderId, $permissionType, $userId, $roleId, $groupIds) {
-		// 'edit' はオーナーも含める（オーナーは編集も参照もできる）
-		$types = ($permissionType === 'edit') ? array('edit', 'owner') : array($permissionType);
-		$typeMarks = implode(',', array_fill(0, count($types), '?'));
-		$typeSql = "permission_type IN ($typeMarks)";
-
-		// everyone権限チェック
-		$evResult = $db->pquery(
-			"SELECT 1 FROM vtiger_folder_permissions WHERE folderid = ? AND $typeSql AND target_type = 'everyone'",
-			array_merge(array($folderId), $types)
-		);
-		if ($evResult !== false && $db->num_rows($evResult) > 0) return true;
-
-		// ユーザー個別権限
-		$uResult = $db->pquery(
-			"SELECT 1 FROM vtiger_folder_permissions WHERE folderid = ? AND $typeSql AND target_type = 'user' AND target_id = ?",
-			array_merge(array($folderId), $types, array($userId))
-		);
-		if ($uResult !== false && $db->num_rows($uResult) > 0) return true;
-
-		// ロール権限
-		if (!empty($roleId)) {
-			$rResult = $db->pquery(
-				"SELECT 1 FROM vtiger_folder_permissions WHERE folderid = ? AND $typeSql AND target_type = 'role' AND target_id = ?",
-				array_merge(array($folderId), $types, array($roleId))
-			);
-			if ($rResult !== false && $db->num_rows($rResult) > 0) return true;
-		}
-
-		// グループ権限
-		if (!empty($groupIds)) {
-			$placeholders = implode(',', array_fill(0, count($groupIds), '?'));
-			$gResult = $db->pquery(
-				"SELECT 1 FROM vtiger_folder_permissions WHERE folderid = ? AND $typeSql AND target_type = 'group' AND target_id IN ($placeholders)",
-				array_merge(array($folderId), $types, $groupIds)
-			);
-			if ($gResult !== false && $db->num_rows($gResult) > 0) return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * ユーザーの所属グループIDを取得
-	 */
-	private function getUserGroupIds($userId) {
-		$db = PearDatabase::getInstance();
-		require_once 'include/utils/GetUserGroups.php';
-		$userGroups = new GetUserGroups();
-		$userGroups->getAllUserGroups($userId);
-		return $userGroups->user_groups;
 	}
 
 	function validateRequest(Vtiger_Request $request) {

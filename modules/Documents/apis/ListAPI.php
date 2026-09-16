@@ -220,37 +220,11 @@ class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 				)";
 		}
 
-		// フォルダ権限チェック（非管理者の場合）
-		$currentUserModel = Users_Record_Model::getCurrentUserModel();
-		if (!$currentUserModel->isAdminUser()) {
-			require_once 'include/utils/GetUserGroups.php';
-			$userGroups = new GetUserGroups();
-			$userGroups->getAllUserGroups($currentUser->getId());
-			$groupIds = $userGroups->user_groups;
-
-			$userRoleId = '';
-			$roleResult = $db->pquery("SELECT roleid FROM vtiger_user2role WHERE userid = ?", array($userId));
-			if ($roleResult !== false && $db->num_rows($roleResult) > 0) {
-				$userRoleId = $db->query_result($roleResult, 0, 'roleid');
-			}
-
-			$fpConditions = array(
-				"(fp.target_type = 'everyone')",
-				"(fp.target_type = 'user' AND fp.target_id = ?)",
-				"(fp.target_type = 'role' AND fp.target_id = ?)",
-			);
-			$fpParams = array($userId, $userRoleId);
-
-			if (!empty($groupIds)) {
-				$groupPlaceholders = implode(',', array_fill(0, count($groupIds), '?'));
-				$fpConditions[] = "(fp.target_type = 'group' AND fp.target_id IN ($groupPlaceholders))";
-				$fpParams = array_merge($fpParams, $groupIds);
-			}
-
-			$fpWhere = implode(' OR ', $fpConditions);
-			$where .= " AND EXISTS (SELECT 1 FROM vtiger_folder_permissions fp WHERE fp.folderid = vtiger_notes.folderid AND ($fpWhere))";
-			$params = array_merge($params, $fpParams);
-		}
+		// フォルダ権限で絞り込む（詳細 API と同じ条件を使う）
+		require_once 'modules/Documents/utils/FolderPermission.php';
+		$folderPermission = Documents_FolderPermission::buildAccessibleCondition();
+		$where .= $folderPermission['sql'];
+		$params = array_merge($params, $folderPermission['params']);
 
 		// 件数取得
 		$countQuery = "SELECT COUNT(*) AS total " . $baseQuery . $where;
@@ -261,7 +235,6 @@ class Documents_ListAPI_Api extends Vtiger_Api_Controller {
 		$total = (int) $db->query_result($countResult, 0, 'total');
 
 		// 変更できるフォルダの一覧（行ごとに問い合わせず、まとめて取得して突き合わせる）
-		require_once 'modules/Documents/utils/FolderPermission.php';
 		$editableFolderIds = Documents_FolderPermission::getEditableFolderIds();
 
 		// カスタムフィールド定義を取得

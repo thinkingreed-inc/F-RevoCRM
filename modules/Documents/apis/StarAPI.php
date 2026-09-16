@@ -6,6 +6,8 @@
  * 既存の vtiger_crmentity_user_field テーブルを使用する。
  * Vtiger_SaveStar_Action と同じアーキテクチャ。
  */
+require_once 'modules/Documents/utils/FolderPermission.php';
+
 class Documents_StarAPI_Api extends Vtiger_Api_Controller {
 
 	public function requiresPermission(Vtiger_Request $request) {
@@ -36,6 +38,10 @@ class Documents_StarAPI_Api extends Vtiger_Api_Controller {
 		if ($checkResult === false || $db->num_rows($checkResult) === 0) {
 			$this->sendError('Record not found', 404);
 		}
+
+		// 参照できないフォルダのドキュメントには印を付けさせない
+		// （付けられると「スター付き」一覧から存在が分かってしまう）
+		Documents_FolderPermission::assertDocumentAccess($recordId);
 
 		// vtiger_crmentity_user_field を更新（既存アーキテクチャに準拠）
 		$focus = CRMEntity::getInstance($module);

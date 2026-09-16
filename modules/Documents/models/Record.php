@@ -67,6 +67,12 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 	}
 
 	function downloadFile($attachmentId = false) {
+		// フォルダ権限の最後の砦。Documents の DownloadFile だけでなく、
+		// 共通の DownloadAttachment アクションからも呼ばれるため、
+		// 入口ではなくここでも確認する
+		require_once 'modules/Documents/utils/FolderPermission.php';
+		Documents_FolderPermission::assertDocumentAccess($this->getId());
+
 		$fileDetails = $this->getFileDetails();
 		if (empty($fileDetails) || $this->get('filelocationtype') != 'I') {
 			return;

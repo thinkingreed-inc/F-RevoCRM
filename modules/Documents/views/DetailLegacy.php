@@ -8,8 +8,19 @@
  * All Rights Reserved.
  ************************************************************************************/
 
+require_once 'modules/Documents/utils/FolderPermission.php';
+
 class Documents_DetailLegacy_View extends Vtiger_Detail_View {
-	
+
+	/**
+	 * フォルダ権限を確認する（標準の権限判定はフォルダを見ない）
+	 */
+	public function checkPermission(Vtiger_Request $request) {
+		parent::checkPermission($request);
+		Documents_FolderPermission::checkRequestAccess($request);
+		return true;
+	}
+
 	function preProcess(Vtiger_Request $request, $display = true) {
 		$viewer = $this->getViewer($request);
 		$viewer->assign('NO_SUMMARY', true);

@@ -390,4 +390,23 @@ class Documents_Module_Model extends Vtiger_Module_Model {
 	public function isFieldsDuplicateCheckAllowed() {
 		return false;
 	}
+
+	/**
+	 * エクスポート用のクエリにフォルダ権限の条件を足す
+	 *
+	 * エクスポートは一覧とは別のクエリを組み立てるため、条件を足さないと
+	 * 参照できないフォルダのドキュメントまで書き出せてしまう。
+	 * 条件は一覧・詳細と同じ Documents_FolderPermission のものを使う。
+	 *
+	 * Documents_ExportData_Action からのみ呼ばれる（呼び出しの登録も
+	 * そのアクションで行う）。
+	 *
+	 * @param CRMEntity $focus
+	 * @param string $query 組み立て済みのエクスポートクエリ
+	 * @return string
+	 */
+	public function getExportQuery($focus, $query) {
+		require_once 'modules/Documents/utils/FolderPermission.php';
+		return $query . Documents_FolderPermission::buildAccessibleConditionSql();
+	}
 }

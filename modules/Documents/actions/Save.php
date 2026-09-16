@@ -7,11 +7,24 @@
  * 通常の保存フロー（項目値・関連付け・変更履歴・ファイルバージョン）をそのまま利用できる。
  */
 require_once 'modules/Documents/utils/ChunkUploadStore.php';
+require_once 'modules/Documents/utils/FolderPermission.php';
 
 class Documents_Save_Action extends Vtiger_Save_Action {
 
 	/** 展開した分割アップロードのID（保存後に一時ファイルを削除する） */
 	private $chunkUploadId = null;
+
+	/**
+	 * フォルダ権限を確認する（標準の権限判定はフォルダを見ない）
+	 *
+	 * 保存自体は Documents_Record_Model::save() も止めるが、
+	 * 大きなファイルの結合・コピーを始める前に断るためここでも見る。
+	 */
+	public function checkPermission(Vtiger_Request $request) {
+		parent::checkPermission($request);
+		Documents_FolderPermission::checkRequestEdit($request);
+		return true;
+	}
 
 	public function process(Vtiger_Request $request) {
 		$this->prepareChunkUploadedFile($request);

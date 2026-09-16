@@ -1,5 +1,7 @@
 <?php
 
+require_once 'modules/Documents/utils/FolderPermission.php';
+
 class Documents_DetailRedesign_View extends Vtiger_Index_View {
 
 	public function requiresPermission(Vtiger_Request $request) {
@@ -9,7 +11,10 @@ class Documents_DetailRedesign_View extends Vtiger_Index_View {
 	}
 
 	public function checkPermission(Vtiger_Request $request) {
-		return parent::checkPermission($request);
+		parent::checkPermission($request);
+		// フォルダ権限（標準の権限判定はフォルダを見ない）
+		Documents_FolderPermission::checkRequestAccess($request);
+		return true;
 	}
 
 	public function preProcess(Vtiger_Request $request, $display = true) {

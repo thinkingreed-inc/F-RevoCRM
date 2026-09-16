@@ -230,51 +230,10 @@ class Documents_BulkAction_Api extends Vtiger_Api_Controller {
 			throw new Exception(vtranslate('LBL_BULK_FOLDER_NOT_FOUND', 'Documents'));
 		}
 
-		$currentUser = Users_Record_Model::getCurrentUserModel();
-		if ($currentUser->isAdminUser()) {
-			return;
-		}
-		// 移動先フォルダに編集権限が必要
-		if (!$this->hasFolderEditPermission($folderId, (int) $currentUser->getId())) {
+		// 移動先フォルダに編集権限が必要（管理者はすべて通る）
+		if (!Documents_FolderPermission::canEditFolder($folderId)) {
 			throw new Exception(vtranslate('LBL_BULK_FOLDER_DENIED', 'Documents'));
 		}
-	}
-
-	/**
-	 * フォルダの編集権限を持つか
-	 */
-	private function hasFolderEditPermission($folderId, $userId) {
-		$db = PearDatabase::getInstance();
-
-		$conditions = array(
-			"(fp.target_type = 'everyone')",
-			"(fp.target_type = 'user' AND fp.target_id = ?)",
-		);
-		$params = array($folderId, $userId);
-
-		$roleResult = $db->pquery("SELECT roleid FROM vtiger_user2role WHERE userid = ?", array($userId));
-		if ($roleResult !== false && $db->num_rows($roleResult) > 0) {
-			$conditions[] = "(fp.target_type = 'role' AND fp.target_id = ?)";
-			$params[] = $db->query_result($roleResult, 0, 'roleid');
-		}
-
-		require_once 'include/utils/GetUserGroups.php';
-		$userGroups = new GetUserGroups();
-		$userGroups->getAllUserGroups($userId);
-		if (!empty($userGroups->user_groups)) {
-			$placeholders = implode(',', array_fill(0, count($userGroups->user_groups), '?'));
-			$conditions[] = "(fp.target_type = 'group' AND fp.target_id IN ($placeholders))";
-			$params = array_merge($params, $userGroups->user_groups);
-		}
-
-		$result = $db->pquery(
-			// オーナーは編集も兼ねる
-			"SELECT 1 FROM vtiger_folder_permissions fp
-			 WHERE fp.folderid = ? AND fp.permission_type IN ('edit', 'owner')
-			   AND (" . implode(' OR ', $conditions) . ") LIMIT 1",
-			$params
-		);
-		return ($result !== false && $db->num_rows($result) > 0);
 	}
 
 	/**

@@ -20,6 +20,11 @@
  *
  * オーナーを設けているのは、一般ユーザーが自分で作ったフォルダの公開範囲を
  * 管理者に頼まずに決められるようにするため。
+ *
+ * 権限行が1件も無いフォルダは、作成者（vtiger_attachmentsfolder.createdby）だけが
+ * 参照・変更（中のドキュメントの編集・削除・移動）できる。誰にも見えないフォルダが
+ * できてしまうのを避けるための扱いで、権限設定（オーナー）までは与えない。
+ * 権限行が1件でもあれば、その内容だけで判断する（作成者も例外にしない）。
  */
 class Documents_FolderPermission {
 
@@ -32,7 +37,7 @@ class Documents_FolderPermission {
     /** 権限設定もできる（変更・参照を兼ねる） */
     const TYPE_OWNER = 'owner';
 
-    /** 参照可否のキャッシュ（'userId:notesId' => bool） */
+    /** 参照可否のキャッシュ（ドキュメントは 'userId:notesId'、フォルダは 'userId:fFolderId'） */
     private static $cache = array();
 
     /** 編集可否のキャッシュ（'userId:folderId' => bool） */
@@ -64,18 +69,11 @@ class Documents_FolderPermission {
             return self::$cache[$cacheKey];
         }
 
-        $db = PearDatabase::getInstance();
-        $result = $db->pquery(
-            "SELECT vtiger_notes.folderid FROM vtiger_notes
-             INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_notes.notesid
-             WHERE vtiger_notes.notesid = ? AND vtiger_crmentity.deleted = 0",
-            array($notesId)
-        );
-        if ($result === false || $db->num_rows($result) === 0) {
+        $folderId = self::getDocumentFolderId($notesId);
+        if ($folderId === null) {
             self::$cache[$cacheKey] = false;
             return false;
         }
-        $folderId = (int) $db->query_result($result, 0, 'folderid');
 
         // 管理者はすべてのフォルダを参照できる
         $isAdmin = ($currentUser !== false && !empty($currentUser)
@@ -123,18 +121,12 @@ class Documents_FolderPermission {
             return false;
         }
 
-        $db = PearDatabase::getInstance();
-        $result = $db->pquery(
-            "SELECT vtiger_notes.folderid FROM vtiger_notes
-             INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_notes.notesid
-             WHERE vtiger_notes.notesid = ? AND vtiger_crmentity.deleted = 0",
-            array($notesId)
-        );
-        if ($result === false || $db->num_rows($result) === 0) {
+        $folderId = self::getDocumentFolderId($notesId);
+        if ($folderId === null) {
             return false;
         }
 
-        return self::canEditFolder((int) $db->query_result($result, 0, 'folderid'), $userId);
+        return self::canEditFolder($folderId, $userId);
     }
 
     /**
@@ -206,6 +198,136 @@ class Documents_FolderPermission {
         }
         self::$ownerCache[$cacheKey] = self::hasFolderPermission($folderId, $userId, self::TYPE_OWNER);
         return self::$ownerCache[$cacheKey];
+    }
+
+    /**
+     * 指定ユーザーがフォルダを参照できるか
+     *
+     * フォルダ単位で問い合わせる画面（同名チェックなど、ドキュメントIDを
+     * 伴わない処理）で使う。
+     *
+     * @param int $folderId フォルダID
+     * @param int|null $userId 省略時は実行ユーザー
+     * @return bool
+     */
+    public static function canAccessFolder($folderId, $userId = null) {
+        $folderId = (int) $folderId;
+        if ($folderId <= 0) {
+            return false;
+        }
+        $currentUser = Users_Record_Model::getCurrentUserModel();
+        if ($userId === null) {
+            $userId = ($currentUser === false || empty($currentUser)) ? 0 : (int) $currentUser->getId();
+        }
+        $userId = (int) $userId;
+
+        // 管理者はすべてのフォルダを参照できる
+        $isAdmin = ($currentUser !== false && !empty($currentUser)
+            && (int) $currentUser->getId() === $userId && $currentUser->isAdminUser());
+        if ($isAdmin) {
+            return true;
+        }
+
+        $cacheKey = $userId . ':f' . $folderId;
+        if (isset(self::$cache[$cacheKey])) {
+            return self::$cache[$cacheKey];
+        }
+        self::$cache[$cacheKey] = self::hasFolderPermission($folderId, $userId);
+        return self::$cache[$cacheKey];
+    }
+
+    /**
+     * 参照できなければ例外を投げる
+     *
+     * ダウンロード・プレビュー・詳細表示など、ドキュメントIDを直接受け取る
+     * 入口から呼ぶ。可否の判定（can*）と止め方をここに揃えることで、
+     * 入口ごとにメッセージや戻り値の扱いがばらつかないようにする。
+     *
+     * @param int $notesId ドキュメントID
+     * @param int|null $userId 省略時は実行ユーザー
+     * @return void
+     * @throws AppException 参照できない場合
+     */
+    public static function assertDocumentAccess($notesId, $userId = null) {
+        if (!self::canAccessDocument($notesId, $userId)) {
+            self::throwDenied('LBL_DOCUMENT_ACCESS_DENIED');
+        }
+    }
+
+    /**
+     * 変更できなければ例外を投げる
+     *
+     * @param int $notesId ドキュメントID
+     * @param int|null $userId 省略時は実行ユーザー
+     * @return void
+     * @throws AppException 変更できない場合
+     */
+    public static function assertDocumentEditable($notesId, $userId = null) {
+        // 参照できないものは「参照できない」と伝える（存在を伏せない代わりに
+        // 読み取り専用と混同させない）
+        self::assertDocumentAccess($notesId, $userId);
+        if (!self::canEditDocument($notesId, $userId)) {
+            self::throwDenied('LBL_DOCUMENT_READONLY');
+        }
+    }
+
+    /**
+     * フォルダを参照できなければ例外を投げる
+     *
+     * @param int $folderId フォルダID
+     * @param int|null $userId 省略時は実行ユーザー
+     * @return void
+     * @throws AppException 参照できない場合
+     */
+    public static function assertFolderAccess($folderId, $userId = null) {
+        if (!self::canAccessFolder($folderId, $userId)) {
+            self::throwDenied('LBL_DOCUMENT_ACCESS_DENIED');
+        }
+    }
+
+    /**
+     * リクエストのドキュメントIDに対して参照権限を確認する
+     *
+     * 画面・アクション・API の checkPermission() から呼ぶ。標準の権限判定
+     * （Users_Privileges_Model::isPermitted）はフォルダ権限を見ないため、
+     * ドキュメントを扱う入口はここを通して塞ぐ。
+     *
+     * ドキュメントIDが無いリクエスト（新規作成・一覧など）は対象外として
+     * 素通りさせる。
+     *
+     * @param Vtiger_Request $request
+     * @param string $recordParameter ドキュメントIDが入っているパラメータ名
+     * @return void
+     * @throws AppException 参照できない場合
+     */
+    public static function checkRequestAccess($request, $recordParameter = 'record') {
+        $recordId = (int) $request->get($recordParameter);
+        if ($recordId <= 0) {
+            return;
+        }
+        self::assertDocumentAccess($recordId);
+    }
+
+    /**
+     * リクエストのドキュメントIDに対して編集権限を確認する
+     *
+     * 編集画面・保存など、内容を変える入口から呼ぶ。参照だけのフォルダに
+     * 入っているドキュメントはここで止まる。
+     *
+     * ドキュメントIDが無いリクエスト（新規作成）は対象外として素通りさせる
+     * （新規の保存先フォルダは Documents_Record_Model::save() が見る）。
+     *
+     * @param Vtiger_Request $request
+     * @param string $recordParameter ドキュメントIDが入っているパラメータ名
+     * @return void
+     * @throws AppException 参照できない、または変更できない場合
+     */
+    public static function checkRequestEdit($request, $recordParameter = 'record') {
+        $recordId = (int) $request->get($recordParameter);
+        if ($recordId <= 0) {
+            return;
+        }
+        self::assertDocumentEditable($recordId);
     }
 
     /**
@@ -286,6 +408,27 @@ class Documents_FolderPermission {
                 $folderIds[] = (int) $db->query_result($result, $i, 'folderid');
             }
         }
+
+        // 権限行が1件も無いフォルダは作成者が変更できる（権限設定は与えない）
+        if ($permissionType !== self::TYPE_OWNER) {
+            $ownFolders = $db->pquery(
+                "SELECT af.folderid FROM vtiger_attachmentsfolder af
+                 WHERE af.createdby = ?
+                   AND NOT EXISTS (
+                       SELECT 1 FROM vtiger_folder_permissions fp WHERE fp.folderid = af.folderid
+                   )",
+                array($userId)
+            );
+            if ($ownFolders !== false) {
+                for ($i = 0; $i < $db->num_rows($ownFolders); $i++) {
+                    $folderId = (int) $db->query_result($ownFolders, $i, 'folderid');
+                    if (!in_array($folderId, $folderIds, true)) {
+                        $folderIds[] = $folderId;
+                    }
+                }
+            }
+        }
+
         return $folderIds;
     }
 
@@ -361,10 +504,81 @@ class Documents_FolderPermission {
             $params = array_merge($params, $groupIds);
         }
 
-        $sql = ' AND EXISTS (SELECT 1 FROM vtiger_folder_permissions fp'
+        // 権限行が1件も無いフォルダは作成者だけが扱える（hasFolderPermission と同じ扱い）
+        $sql = ' AND (EXISTS (SELECT 1 FROM vtiger_folder_permissions fp'
             . ' WHERE fp.folderid = ' . $folderColumn
-            . ' AND (' . implode(' OR ', $conditions) . '))';
+            . ' AND (' . implode(' OR ', $conditions) . '))'
+            . ' OR EXISTS (SELECT 1 FROM vtiger_attachmentsfolder af'
+            . ' WHERE af.folderid = ' . $folderColumn . ' AND af.createdby = ?'
+            . ' AND NOT EXISTS (SELECT 1 FROM vtiger_folder_permissions fpx'
+            . ' WHERE fpx.folderid = af.folderid)))';
+        $params[] = $userId;
+
         return array('sql' => $sql, 'params' => $params);
+    }
+
+    /**
+     * 権限が無いことを例外で伝える
+     *
+     * @param string $labelKey 表示するメッセージのラベル
+     * @return void
+     * @throws AppException
+     */
+    private static function throwDenied($labelKey) {
+        // cron や CLI 経由でも動くように読み込みを保証する
+        if (!class_exists('AppException')) {
+            vimport('includes.exceptions.AppException');
+        }
+        throw new AppException(vtranslate($labelKey, 'Documents'));
+    }
+
+    /**
+     * ドキュメントが入っているフォルダIDを返す
+     *
+     * @param int $notesId
+     * @return int|null 存在しない・削除済みの場合は null
+     */
+    private static function getDocumentFolderId($notesId) {
+        $db = PearDatabase::getInstance();
+        $result = $db->pquery(
+            "SELECT vtiger_notes.folderid FROM vtiger_notes
+             INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_notes.notesid
+             WHERE vtiger_notes.notesid = ? AND vtiger_crmentity.deleted = 0",
+            array($notesId)
+        );
+        if ($result === false || $db->num_rows($result) === 0) {
+            return null;
+        }
+        return (int) $db->query_result($result, 0, 'folderid');
+    }
+
+    /**
+     * 参照できるドキュメントに限定する SQL 条件を、値を埋め込んだ形で返す
+     *
+     * エクスポートのようにプレースホルダを使えない（組み立て済みの SQL 文字列に
+     * 足し込む）経路のために用意する。条件そのものは
+     * buildAccessibleCondition() を使うため、判定が二重にならない。
+     *
+     * @param string $folderColumn 判定に使うフォルダIDの列
+     *   （呼び出し側が定数で渡すこと）
+     * @param int|null $userId 省略時は実行ユーザー
+     * @return string " AND EXISTS (...)" 形式。制限しない場合は空文字
+     */
+    public static function buildAccessibleConditionSql(
+        $folderColumn = 'vtiger_notes.folderid', $userId = null) {
+        $condition = self::buildAccessibleCondition($folderColumn, $userId);
+        if ($condition['sql'] === '') {
+            return '';
+        }
+
+        $db = PearDatabase::getInstance();
+        // プレースホルダは値の個数と必ず一致する（同じ処理で組み立てているため）
+        $segments = explode('?', $condition['sql']);
+        $sql = $segments[0];
+        foreach ($condition['params'] as $index => $value) {
+            $sql .= "'" . $db->sql_escape_string((string) $value) . "'" . $segments[$index + 1];
+        }
+        return $sql;
     }
 
     /**
@@ -413,6 +627,39 @@ class Documents_FolderPermission {
              WHERE fp.folderid = ?" . $typeCondition
              . " AND (" . implode(' OR ', $conditions) . ") LIMIT 1",
             $params
+        );
+        if ($result !== false && $db->num_rows($result) > 0) {
+            return true;
+        }
+
+        // 権限行が1件も無いフォルダは作成者だけが扱える。
+        // 権限設定（オーナー）までは与えない
+        if ($permissionType === self::TYPE_OWNER) {
+            return false;
+        }
+        return self::isCreatorOfUnrestrictedFolder($folderId, $userId);
+    }
+
+    /**
+     * 権限行が1件も無いフォルダの作成者か
+     *
+     * 権限行が無いフォルダは誰にも見えなくなってしまうため、作成した本人には
+     * 参照・変更（＝中のドキュメントの編集・削除・移動）を許す。
+     * 権限行が1件でもあれば、その内容だけで判断する（作成者でも例外にしない）。
+     *
+     * @param int $folderId
+     * @param int $userId
+     * @return bool
+     */
+    private static function isCreatorOfUnrestrictedFolder($folderId, $userId) {
+        $db = PearDatabase::getInstance();
+        $result = $db->pquery(
+            "SELECT 1 FROM vtiger_attachmentsfolder af
+             WHERE af.folderid = ? AND af.createdby = ?
+               AND NOT EXISTS (
+                   SELECT 1 FROM vtiger_folder_permissions fp WHERE fp.folderid = af.folderid
+               ) LIMIT 1",
+            array($folderId, $userId)
         );
         return ($result !== false && $db->num_rows($result) > 0);
     }

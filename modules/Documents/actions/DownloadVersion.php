@@ -5,6 +5,8 @@
  * vtiger_notes_file_versions テーブルの attachmentsid を使って
  * 指定バージョンのファイルをダウンロードする。
  */
+require_once 'modules/Documents/utils/FolderPermission.php';
+
 class Documents_DownloadVersion_Action extends Vtiger_Action_Controller {
 
     public function requiresPermission(\Vtiger_Request $request) {
@@ -14,7 +16,10 @@ class Documents_DownloadVersion_Action extends Vtiger_Action_Controller {
     }
 
     public function checkPermission(Vtiger_Request $request) {
-        return parent::checkPermission($request);
+        parent::checkPermission($request);
+        // フォルダ権限（標準の権限判定はフォルダを見ない）
+        Documents_FolderPermission::checkRequestAccess($request);
+        return true;
     }
 
     public function process(Vtiger_Request $request) {

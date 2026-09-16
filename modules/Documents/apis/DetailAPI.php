@@ -23,42 +23,14 @@ class Documents_DetailAPI_Api extends Vtiger_Api_Controller {
 	private function getDocumentDetail($recordId) {
 		$db = PearDatabase::getInstance();
 
-		// フォルダ権限チェック（非管理者の場合）
-		$folderPermWhere = '';
-		$folderPermParams = array();
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$currentUserId = (int) $currentUser->getId();
-		if (!$currentUser->isAdminUser()) {
-			$userId = $currentUser->getId();
-			require_once 'include/utils/GetUserGroups.php';
-			$userGroups = new GetUserGroups();
-			$userGroups->getAllUserGroups($userId);
-			$groupIds = $userGroups->user_groups;
 
-			$userRoleId = '';
-			$roleResult = $db->pquery("SELECT roleid FROM vtiger_user2role WHERE userid = ?", array($userId));
-			if ($roleResult !== false && $db->num_rows($roleResult) > 0) {
-				$userRoleId = $db->query_result($roleResult, 0, 'roleid');
-			}
+		// フォルダ権限の絞り込み（一覧と同じ条件を使う）
+		$folderPermission = Documents_FolderPermission::buildAccessibleCondition();
+		$folderPermWhere = $folderPermission['sql'];
 
-			$fpConditions = array(
-				"(fp.target_type = 'everyone')",
-				"(fp.target_type = 'user' AND fp.target_id = ?)",
-				"(fp.target_type = 'role' AND fp.target_id = ?)",
-			);
-			$folderPermParams = array($userId, $userRoleId);
-
-			if (!empty($groupIds)) {
-				$groupPlaceholders = implode(',', array_fill(0, count($groupIds), '?'));
-				$fpConditions[] = "(fp.target_type = 'group' AND fp.target_id IN ($groupPlaceholders))";
-				$folderPermParams = array_merge($folderPermParams, $groupIds);
-			}
-
-			$fpWhere = implode(' OR ', $fpConditions);
-			$folderPermWhere = " AND EXISTS (SELECT 1 FROM vtiger_folder_permissions fp WHERE fp.folderid = vtiger_notes.folderid AND ($fpWhere))";
-		}
-
-		$params = array_merge(array($recordId), $folderPermParams);
+		$params = array_merge(array($recordId), $folderPermission['params']);
 		$result = $db->pquery(
 			"SELECT vtiger_notes.*, vtiger_crmentity.smownerid, vtiger_crmentity.modifiedtime,
 				vtiger_crmentity.createdtime, vtiger_crmentity.modifiedby,

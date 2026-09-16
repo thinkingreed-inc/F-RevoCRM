@@ -25,3 +25,4 @@ parameters:
         - libraries/csrf-magic/csrf-magic.php
         - setup/migration/FRMigrationClass.php
         - modules/Users/CreateUserPrivilegeFile.php
+        - modules/Documents/utils/FolderPermission.php

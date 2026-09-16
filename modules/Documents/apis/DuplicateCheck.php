@@ -11,6 +11,8 @@
  *
  * レスポンス: duplicates = [{ filename, recordid, title }]
  */
+require_once 'modules/Documents/utils/FolderPermission.php';
+
 class Documents_DuplicateCheck_Api extends Vtiger_Api_Controller {
 
 	/** 一度に問い合わせできるファイル名の上限 */
@@ -27,6 +29,9 @@ class Documents_DuplicateCheck_Api extends Vtiger_Api_Controller {
 		if ($folderId <= 0) {
 			$this->sendError('Folder ID is required', 400);
 		}
+
+		// 参照できないフォルダの中身（タイトル・ファイル名）を返さない
+		Documents_FolderPermission::assertFolderAccess($folderId);
 
 		$fileNames = $this->parseFileNames($request->get('filenames'));
 		if (empty($fileNames)) {
