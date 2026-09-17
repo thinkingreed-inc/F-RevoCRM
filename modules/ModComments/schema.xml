@@ -8,14 +8,14 @@
   `commentcontent` text,
   `related_to` varchar(100) NOT NULL,
   `parent_comments` varchar(100) default NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></sql>
+) ENGINE=InnoDB DEFAULT CHARSET=utf8]]></sql>
 		</table>
 		<table>
 			<name>vtiger_modcommentscf</name>
 			<sql><![CDATA[CREATE TABLE `vtiger_modcommentscf` (
   `modcommentsid` int(11) NOT NULL,
   PRIMARY KEY (`modcommentsid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></sql>
+) ENGINE=InnoDB DEFAULT CHARSET=utf8]]></sql>
 		</table>
 	</tables>
 </schema>

@@ -8,9 +8,11 @@
  * サロゲートペアの文字が切り捨てられたり「?」に置き換わったりする。
  *
  * 前提:
- *  - MySQL 5.7.7 以上（innodb_large_prefix が既定で有効。8.0 は常に有効）。MariaDB は対象外
- *  - CLI から単発で実行する（FOREIGN_KEY_CHECKS を一時的に落とすため、
- *    接続を使い回す Web リクエストからは実行しない）
+ *  - MySQL 5.7.7 以上（innodb_large_prefix が既定で有効。8.0 は常に有効）。MariaDB は対象外。
+ *    対象外の環境では変換を見送る（インストーラ・アップグレード画面からも実行されるため、
+ *    ここで例外にすると導入そのものが止まってしまう）
+ *  - FOREIGN_KEY_CHECKS を一時的に落とす。接続を使い回す環境で途中終了しても
+ *    元に戻るよう、finally に加えて終了時にも戻す
  *  - collation は vtiger 互換を優先して utf8mb4_general_ci に揃える
  *    （MySQL 8 の既定 utf8mb4_0900_ai_ci のままだと、文字列を JOIN する箇所で
  *      照合順序の不一致になるため、既に utf8mb4 でも collation が違えば変換する）
@@ -32,7 +34,9 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
      * @return void
      */
     public function process() {
-        $this->checkMySQLRequirements();
+        if (!$this->canConvert($this->fetchServerVersion())) {
+            return;
+        }
 
         $dbName = $this->getDatabaseName();
         $this->log("変換対象データベース: {$dbName}");
@@ -63,6 +67,11 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
         // 復帰は finally に任せる。PHP 自体が落ちた場合は復帰しないが、
         // このマイグレーションは CLI の単発実行なので接続ごと終了する。
         $this->query("SET FOREIGN_KEY_CHECKS = 0");
+        // 接続を使い回す環境（永続接続）で途中終了した場合に備え、終了時にも戻す。
+        $database = $this->db->database;
+        register_shutdown_function(function () use ($database) {
+            @$database->Execute("SET FOREIGN_KEY_CHECKS = 1");
+        });
         try {
             $index = 0;
             foreach ($tables as $table) {
@@ -74,7 +83,7 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
                     continue;
                 }
 
-                $error = $this->convertTable($dbName, $tableName, $table['row_format']);
+                $error = $this->convertTable($dbName, $tableName, $table['row_format'], $table['engine']);
                 if ($error === null) {
                     $converted++;
                     $this->log("[{$index}/{$total}] 変換完了: {$tableName}");
@@ -84,7 +93,11 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
                 }
             }
         } finally {
-            $this->query("SET FOREIGN_KEY_CHECKS = 1");
+            // ここで例外を投げると、変換中に起きた本来の失敗を覆い隠してしまう。
+            $restoreError = $this->tryQuery("SET FOREIGN_KEY_CHECKS = 1");
+            if ($restoreError !== null) {
+                $this->log("※外部キー制約の検査を元に戻せなかった: {$restoreError}");
+            }
         }
 
         $this->log("変換したテーブル数: {$converted}");
@@ -165,7 +178,7 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
     private function getDatabaseName() {
         // fetchByAssoc は結果を参照で受け取るため、戻り値を直接渡さず一度変数に入れる。
         $result = $this->db->pquery("SELECT DATABASE() AS db_name", array());
-        $row = $this->db->fetchByAssoc($result);
+        $row = $this->db->fetchByAssoc($result, -1, false);
         $dbName = isset($row['db_name']) ? (string)$row['db_name'] : '';
 
         if ($dbName === '') {
@@ -210,11 +223,11 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
      * 4 バイト文字を保存できない。列の照合順序も見て変換要否を決める。
      *
      * @param string $dbName
-     * @return array<int, array{name: string, collation: string, row_format: string, needs_conversion: bool}>
+     * @return array<int, array{name: string, collation: string, row_format: string, engine: string, needs_conversion: bool}>
      */
     private function fetchTargetTables($dbName) {
         $result = $this->db->pquery(
-            "SELECT TABLE_NAME, TABLE_COLLATION, ROW_FORMAT
+            "SELECT TABLE_NAME, TABLE_COLLATION, ROW_FORMAT, ENGINE
                FROM information_schema.TABLES
               WHERE TABLE_SCHEMA = ?
                 AND TABLE_TYPE = 'BASE TABLE'
@@ -229,13 +242,14 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
         $legacyColumnTables = $this->fetchTablesHavingLegacyColumns($dbName);
 
         $tables = array();
-        while ($row = $this->db->fetchByAssoc($result)) {
+        while ($row = $this->db->fetchByAssoc($result, -1, false)) {
             $name = (string)$row['table_name'];
             $collation = (string)$row['table_collation'];
             $tables[] = array(
                 'name'             => $name,
                 'collation'        => $collation,
                 'row_format'       => isset($row['row_format']) ? (string)$row['row_format'] : '',
+                'engine'           => isset($row['engine']) ? (string)$row['engine'] : '',
                 'needs_conversion' => ($collation !== self::TARGET_COLLATION) || isset($legacyColumnTables[$name]),
             );
         }
@@ -264,7 +278,7 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
         }
 
         $tables = array();
-        while ($row = $this->db->fetchByAssoc($result)) {
+        while ($row = $this->db->fetchByAssoc($result, -1, false)) {
             $tables[(string)$row['table_name']] = true;
         }
 
@@ -297,7 +311,7 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
         }
 
         $tables = array();
-        while ($row = $this->db->fetchByAssoc($result)) {
+        while ($row = $this->db->fetchByAssoc($result, -1, false)) {
             $tables[(string)$row['table_name']] = (string)$row['charsets'];
         }
 
@@ -330,7 +344,7 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
         }
 
         $columns = array();
-        while ($row = $this->db->fetchByAssoc($result)) {
+        while ($row = $this->db->fetchByAssoc($result, -1, false)) {
             $columns[] = array(
                 'name'     => (string)$row['column_name'],
                 'type'     => (string)$row['column_type'],
@@ -400,9 +414,10 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
      * @param string $dbName
      * @param string $tableName
      * @param string $rowFormat
+     * @param string $engine
      * @return string|null 成功なら null、失敗ならエラーメッセージ
      */
-    private function convertTable($dbName, $tableName, $rowFormat) {
+    private function convertTable($dbName, $tableName, $rowFormat, $engine) {
         $textColumns = $this->fetchTextColumns($dbName, $tableName);
 
         $sql = "ALTER TABLE `{$tableName}` CONVERT TO CHARACTER SET " . self::TARGET_CHARSET
@@ -411,7 +426,10 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
         // COMPACT / REDUNDANT はインデックスの接頭辞が 767 バイトまで。
         // utf8mb4 の VARCHAR(255) は 1020 バイトになるため DYNAMIC へ変える。
         // 同じ ALTER にまとめ、テーブルの作り直しを 1 回で済ませる。
-        if (strcasecmp($rowFormat, 'DYNAMIC') !== 0 && strcasecmp($rowFormat, 'COMPRESSED') !== 0) {
+        // ROW_FORMAT は InnoDB の話。MyISAM などに当てると charset と関係のない変更になる。
+        if (strcasecmp($engine, 'InnoDB') === 0
+            && strcasecmp($rowFormat, 'DYNAMIC') !== 0
+            && strcasecmp($rowFormat, 'COMPRESSED') !== 0) {
             $sql .= ", ROW_FORMAT=DYNAMIC";
         }
 
@@ -424,49 +442,67 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
     }
 
     /**
-     * utf8mb4 に耐えられる MySQL かどうかを確かめる。
+     * 接続先のバージョン文字列を取得する。
+     *
+     * @return string
+     */
+    private function fetchServerVersion() {
+        $versionResult = $this->db->pquery("SELECT VERSION() AS version", array());
+        $row = $this->db->fetchByAssoc($versionResult, -1, false);
+
+        return isset($row['version']) ? (string)$row['version'] : '';
+    }
+
+    /**
+     * utf8mb4 へ変換してよい環境かどうかを判断する。
      *
      * utf8mb4 では VARCHAR(255) のインデックスが 1020 バイトになる。
-     * InnoDB が 767 バイトまでしか許さない設定のままだと、変換の途中で必ず失敗するため、
-     * テーブルに触る前に止める。
+     * InnoDB が 767 バイトまでしか許さない設定のままだと変換の途中で必ず失敗するため、
+     * そのような環境では何もしない。
      *
-     * @return void
+     * ここで例外を投げないのは、このマイグレーションがインストーラ
+     * （Install_InitSchema_Model::executeFRMigrations）とアップグレード画面からも
+     * 実行されるため。止めるとインストールが中断し、アップグレードは
+     * 以降のマイグレーションが実行されなくなる。
+     *
+     * @param string $version
+     * @return bool 変換してよければ true
      */
-    private function checkMySQLRequirements() {
-        $versionResult = $this->db->pquery("SELECT VERSION() AS version", array());
-        $row = $this->db->fetchByAssoc($versionResult);
-        $version = isset($row['version']) ? (string)$row['version'] : '';
+    private function canConvert($version) {
         $this->log("MySQL バージョン: {$version}");
 
         if ($version === '') {
-            throw new Exception("MySQL のバージョンを取得できませんでした。");
+            $this->log("※バージョンを取得できなかったため変換を見送る");
+
+            return false;
         }
 
         if (stripos($version, 'mariadb') !== false) {
-            throw new Exception(
-                "MariaDB は動作確認の対象外。手動で ALTER DATABASE / ALTER TABLE ... CONVERT TO を実行すること。" .
-                "現在のバージョン: {$version}"
-            );
+            $this->log("※MariaDB は動作確認の対象外のため変換を見送る。"
+                . "手動で ALTER DATABASE / ALTER TABLE ... CONVERT TO を実行すること");
+
+            return false;
         }
 
         if (version_compare($version, '5.7.7', '<')) {
-            throw new Exception(
-                "MySQL 5.7.7 未満は utf8mb4 のインデックス長制限（767 バイト）に抵触するため対象外。" .
-                "現在のバージョン: {$version}"
-            );
+            $this->log("※MySQL 5.7.7 未満は utf8mb4 のインデックス長制限（767 バイト）に抵触するため変換を見送る");
+
+            return false;
         }
 
         // 5.7 系は innodb_large_prefix を切れる。8.0 では廃止され常に有効。
         if (version_compare($version, '8.0.0', '<')) {
             $largePrefixResult = $this->db->pquery("SHOW VARIABLES LIKE 'innodb_large_prefix'", array());
-            $largePrefixRow = $this->db->fetchByAssoc($largePrefixResult);
+            $largePrefixRow = $this->db->fetchByAssoc($largePrefixResult, -1, false);
             $largePrefix = isset($largePrefixRow['value']) ? strtoupper((string)$largePrefixRow['value']) : '';
             if ($largePrefix !== '' && $largePrefix !== 'ON' && $largePrefix !== '1') {
-                throw new Exception(
-                    "innodb_large_prefix が無効。utf8mb4 ではインデックス長の上限を超えるため、" .
-                    "有効にしてから実行すること。現在値: {$largePrefix}"
-                );
+                $this->log("※innodb_large_prefix が無効なため変換を見送る。"
+                    . "有効にしてから実行し直すこと。現在値: {$largePrefix}");
+
+                return false;
             }
         }
+
+        return true;
     }
 }

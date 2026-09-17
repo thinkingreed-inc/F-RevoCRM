@@ -70,6 +70,20 @@ php setup/migration/run_migration.php setup/migration/scripts/20250825123456_add
 php setup/migration/run_migration.php --all
 ```
 
+## utf8mb4 への変換について（#77）
+
+`setup/migration/scripts/20260917072813_convert_all_tables_to_utf8mb4.php` は、
+データベース全体を utf8mb4 / utf8mb4_general_ci に揃える。
+
+- 実行前にデータベースのバックアップを取ること。`ALTER TABLE` は暗黙のコミットを起こすため巻き戻せない
+- 大きなテーブルを含む場合はメタデータロックがかかるため、メンテナンス時間帯に実行すること
+- MariaDB と MySQL 5.7.7 未満では変換を見送る（インストールやアップグレードを止めないため）。
+  その場合は手動で `ALTER DATABASE` / `ALTER TABLE ... CONVERT TO` を実行する
+- latin1 など utf8 系でない文字セットの列を持つテーブルは変換しない。
+  UTF-8 のバイト列がそのまま入っている場合、変換すると文字化けして戻せないため。
+  **対象のテーブルは実行時のログに一覧で出る。2 回目以降は「実行済み」としてスキップされ一覧が出ないので、
+  初回の実行ログを保存し、必要なテーブルは内容を確認したうえで手動で変換すること**
+
 ## マイグレーションクラスの構造
 
 ### 必須メソッド

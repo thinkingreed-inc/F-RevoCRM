@@ -346,7 +346,8 @@ final class Utf8mb4ConversionTest extends TestCase
               WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?',
             [$table, $column]
         );
-        $row = $this->db()->fetchByAssoc($result);
+        // 既定では to_html() を通してしまうため、DB に入っている値そのものを読む
+        $row = $this->db()->fetchByAssoc($result, -1, false);
 
         return [
             'collation' => (string) ($row['collation_name'] ?? ''),
@@ -398,7 +399,7 @@ final class Utf8mb4ConversionTest extends TestCase
             "CREATE TABLE `" . self::TEXT_TABLE . "` (
                 id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                 body TEXT,
-                note MEDIUMTEXT NOT NULL COMMENT '備考',
+                note MEDIUMTEXT NOT NULL COMMENT 'A&B <x> 備考',
                 label VARCHAR(100) DEFAULT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci",
             []
@@ -414,7 +415,7 @@ final class Utf8mb4ConversionTest extends TestCase
         self::assertSame('utf8mb4_general_ci', $body['collation'], '11 TEXT 列が utf8mb4 になっていない');
         self::assertSame('utf8mb4_general_ci', $note['collation'], '11 MEDIUMTEXT 列が utf8mb4 になっていない');
         self::assertSame('NO', $note['nullable'], '11 NOT NULL が失われている');
-        self::assertSame('備考', $note['comment'], '11 列コメントが失われている');
+        self::assertSame('A&B <x> 備考', $note['comment'], '11 列コメントが HTML エンコードされて壊れている');
         self::assertSame('varchar(100)', $this->columnInfo(self::TEXT_TABLE, 'label')['type'], '11 VARCHAR の型が変わっている');
     }
 
@@ -532,7 +533,6 @@ final class Utf8mb4ConversionTest extends TestCase
 
         $migration = new Utf8mb4Migration();
         $method = new \ReflectionMethod($migration, 'tryQueryQuietly');
-        $method->setAccessible(true);
 
         $this->db()->database->StartTrans();
         $error = $method->invoke($migration, 'ALTER DATABASE `__frtest_no_such_db__` CHARACTER SET utf8mb4');
@@ -541,5 +541,66 @@ final class Utf8mb4ConversionTest extends TestCase
 
         self::assertNotNull($error, '15 前提: 失敗するクエリを使っている');
         self::assertTrue($transOk, '15 握り潰したはずの失敗でトランザクションが失敗扱いになり、台帳に記録されなくなる');
+    }
+
+    public function test_16_対応していないMySQLでは例外にせず見送る(): void
+    {
+        // このマイグレーションは CLI だけでなく、インストーラとアップグレード画面からも実行される
+        // （Install_InitSchema_Model::executeFRMigrations）。例外にすると
+        // インストールが途中で止まり、アップグレードは以降のマイグレーションが動かなくなるため、
+        // 変換を見送って知らせるだけにする。
+        $migration = new Utf8mb4Migration();
+        $method = new \ReflectionMethod($migration, 'canConvert');
+
+        ob_start();
+        try {
+            $mariadb = $method->invoke($migration, '10.11.6-MariaDB');
+            $tooOld = $method->invoke($migration, '5.6.51');
+            $supported = $method->invoke($migration, '8.0.46-0ubuntu0.22.04.4');
+        } finally {
+            $output = (string) ob_get_clean();
+        }
+
+        self::assertFalse($mariadb, '16 MariaDB を変換対象にしている');
+        self::assertFalse($tooOld, '16 MySQL 5.7.7 未満を変換対象にしている');
+        self::assertTrue($supported, '16 対応している MySQL を変換対象から外している');
+        self::assertStringContainsString('MariaDB', $output, '16 見送った理由を知らせていない');
+    }
+
+    public function test_17_未変換のutf8mb3列でも本体のSQLが動く(): void
+    {
+        // 列に直接 COLLATE utf8mb4_bin を当てると、utf8mb3 のままの列では
+        // 「COLLATION 'utf8mb4_bin' is not valid for CHARACTER SET 'utf8mb3'」になる。
+        // コードだけ更新して変換をまだ流していない環境でも動く書き方でなければならない。
+        $this->db()->pquery(
+            'CREATE TABLE `' . self::LEGACY_TABLE . '` (
+                id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                clientid VARCHAR(50) DEFAULT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci',
+            []
+        );
+
+        $sources = [
+            'modules/WSAPP/SyncServer.php',
+            'modules/PickList/DependentPickListUtils.php',
+        ];
+        $root = dirname(__DIR__, 3);
+        foreach ($sources as $source) {
+            $contents = (string) file_get_contents($root . '/' . $source);
+            self::assertDoesNotMatchRegularExpression(
+                '/`?[a-z_]+`?\s+COLLATE\s+utf8mb4_/i',
+                $contents,
+                '17 ' . $source . ' が列に直接 COLLATE を当てており、未変換の列で動かない'
+            );
+        }
+
+        // 実際に utf8mb3 の列へ当てて確かめる
+        $result = $this->db()->pquery(
+            'SELECT id FROM `' . self::LEGACY_TABLE . '`
+              WHERE CAST(clientid AS CHAR CHARACTER SET utf8mb4) COLLATE utf8mb4_bin = ?',
+            ['x']
+        );
+
+        self::assertNotFalse($result, '17 未変換の utf8mb3 列に対して照合順序を指定した検索が失敗する');
     }
 }

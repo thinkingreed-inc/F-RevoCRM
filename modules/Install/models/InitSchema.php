@@ -20,14 +20,15 @@ class Install_InitSchema_Model {
 	 * @return void
 	 */
 	public static function alignDatabaseCharset($adb) {
-		global $dbconfig;
-
-		$dbName = isset($dbconfig['db_name']) ? (string)$dbconfig['db_name'] : '';
+		// インストール中は config.inc.php をまだ読み込んでいないため $dbconfig は当てにできない。
+		// 接続の設定に入っている DB 名を使う（Install_Index_View が resetSettings() で入れている）。
+		$dbName = (string)$adb->dbName;
 		if ($dbName === '') {
 			return;
 		}
 
-		$adb->query("ALTER DATABASE `{$dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
+		$quoted = '`' . str_replace('`', '``', $dbName) . '`';
+		$adb->query("ALTER DATABASE {$quoted} CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
 	}
 
 	/**

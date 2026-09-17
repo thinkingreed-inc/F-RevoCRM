@@ -45,10 +45,18 @@ final class Utf8mb4ConfigurationTest extends TestCase
         . '|\butf8(?:mb3)?_(?:general_ci|unicode_ci|bin|[a-z0-9]+_ci|[a-z0-9]+_bin)\b/i';
 
     /** 走査する対象（プロジェクト直下からの相対パス） */
-    private const SCAN_DIRECTORIES = ['setup', 'modules', 'vtlib', 'include', 'includes', 'cron', 'e2e', 'packages'];
+    private const SCAN_DIRECTORIES = ['setup', 'modules', 'vtlib', 'include', 'includes', 'cron', 'e2e'];
 
-    /** 走査する拡張子。テーブルを作る記述は .php / .sql だけでなく .inc や schema.xml にもある */
-    private const SCAN_EXTENSIONS = 'php|sql|sh|inc|xml';
+    /**
+     * 走査する拡張子。テーブルを作る記述は .php / .sql のほか .inc にもある。
+     *
+     * .xml は対象にしない。modules/<Module>/schema.xml と packages 配下の manifest.xml は
+     * vtlib/Vtiger/PackageImport.php がモジュール導入時に書き出す成果物で、
+     * テーブル定義の出どころは packages/vtiger/**\/*.zip の側にある。
+     * zip が作るテーブルは、インストールの最後に走る変換マイグレーションで utf8mb4 になる
+     * （modules/Install/views/Index.php が initSchemas() のあとに upgrade() を呼ぶ）。
+     */
+    private const SCAN_EXTENSIONS = 'php|sql|sh|inc';
 
     /**
      * 走査から外す場所。

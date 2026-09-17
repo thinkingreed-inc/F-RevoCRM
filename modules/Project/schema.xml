@@ -17,14 +17,14 @@
   `projecttype` varchar(100) default NULL,
   `progress` varchar(100) default NULL,
   `linktoaccountscontacts` varchar(100) default NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></sql>
+) ENGINE=InnoDB DEFAULT CHARSET=utf8]]></sql>
 		</table>
 		<table>
 			<name>vtiger_projectcf</name>
 			<sql><![CDATA[CREATE TABLE `vtiger_projectcf` (
   `projectid` int(11) NOT NULL,
   PRIMARY KEY  (`projectid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></sql>
+) ENGINE=InnoDB DEFAULT CHARSET=utf8]]></sql>
 		</table>
 	</tables>
 </schema>
