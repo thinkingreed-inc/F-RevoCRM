@@ -1,5 +1,15 @@
 <?php
 
+declare(strict_types=1);
+/*+**********************************************************************************
+ * The contents of this file are subject to the vtiger CRM Public License Version 1.1
+ * ("License"); You may not use this file except in compliance with the License
+ * The Original Code is:  F-RevoCRM Open Source
+ * The Initial Developer of the Original Code is F-RevoCRM.
+ * Portions created by thinkingreed are Copyright (C) F-RevoCRM.
+ * All Rights Reserved.
+ ************************************************************************************/
+
 namespace Tests\Unit\Migration;
 
 use PHPUnit\Framework\TestCase;
@@ -70,9 +80,10 @@ final class FRMigrationCacheTest extends TestCase
         self::assertFalse(Vtiger_Cache::$cacheEnable);
     }
 
-    public function test_Vtiger_Cache未ロードでも例外にならない(): void
+    public function test_キャッシュが空のまま続けて呼んでも例外にならない(): void
     {
-        // マイグレーションが Vtiger_Cache を一度も使っていない場合を模した呼び出し
+        // 何もキャッシュしていないマイグレーションが続く場合を模した呼び出し
+        \FRMigrationCache::clear();
         \FRMigrationCache::clear();
 
         $this->expectNotToPerformAssertions();

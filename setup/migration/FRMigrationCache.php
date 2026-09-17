@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * マイグレーション実行時の Vtiger_Cache クリア
  *
@@ -11,6 +13,8 @@
  * Vtiger_Cache は「キー名 = プロパティ名」で値を保持しており、まとめて初期化する手段が
  * 用意されていない。コア (includes/) を書き換えずに済ませるため、ここでリフレクション経由で
  * 初期値へ戻す。
+ *
+ * 対象は Vtiger_Cache だけで、Vtiger_Functions や VTCacheUtils が持つ静的キャッシュは残る。
  */
 class FRMigrationCache
 {
@@ -46,60 +50,55 @@ class FRMigrationCache
      *
      * 既定の Vtiger_Cache_Connector_Memory は値をオブジェクトの動的プロパティとして持ち、
      * flush() が何もしない実装のため、プロパティを直接落とす。
-     * config_override.php で別のコネクタに差し替えている場合は、そのコネクタの
-     * flush() に任せる。
+     *
+     * キャッシュを消せないままマイグレーションを止めても得られるものが無いので、
+     * コア側の作りが変わってプロパティを辿れなくなった場合は黙って何もしない。
      *
      * @param ReflectionClass<object> $cacheClass
      */
     private static function clearConnector(ReflectionClass $cacheClass): void
     {
-        $instanceProperty = $cacheClass->getProperty('selfInstance');
-        $cacheInstance = $instanceProperty->getValue();
+        if (!$cacheClass->hasProperty('selfInstance') || !$cacheClass->hasProperty('connector')) {
+            return;
+        }
+
+        $cacheInstance = $cacheClass->getProperty('selfInstance')->getValue();
 
         // 一度も getInstance() されていなければコネクタ自体が存在しない
         if (!is_object($cacheInstance)) {
             return;
         }
 
-        $connectorProperty = $cacheClass->getProperty('connector');
-        $connector = $connectorProperty->getValue($cacheInstance);
+        $connector = $cacheClass->getProperty('connector')->getValue($cacheInstance);
 
         if (!is_object($connector)) {
             return;
         }
 
-        $connection = self::getConnection($connector);
+        $connectorClass = new ReflectionObject($connector);
 
-        if ($connection instanceof Vtiger_Cache_Connector_Memory) {
-            foreach (array_keys(get_object_vars($connection)) as $key) {
-                unset($connection->$key);
+        if ($connectorClass->hasProperty('connection')) {
+            $connection = $connectorClass->getProperty('connection')->getValue($connector);
+
+            if ($connection instanceof Vtiger_Cache_Connector_Memory) {
+                foreach (array_keys(get_object_vars($connection)) as $key) {
+                    unset($connection->$key);
+                }
+                return;
             }
-            return;
+
+            // 接続が未設定なら保持している値も無い
+            if (!is_object($connection)) {
+                return;
+            }
         }
 
+        // config_override.php で差し替えた独自コネクタ。値の持ち方が分からないため flush() に任せる。
+        // 既定の Vtiger_Cache_Connector::flush() を引き継いでいる場合は最大 1 秒のビジーループが
+        // マイグレーション 1 本ごとに走るため、実行時間が本数分だけ延びる。
         if (method_exists($connector, 'flush')) {
             $connector->flush();
         }
-    }
-
-    /**
-     * コネクタが内部で使っている接続オブジェクトを取り出す。
-     *
-     * @param object $connector
-     * @return object|null 取り出せない構造のコネクタなら null
-     */
-    private static function getConnection(object $connector): ?object
-    {
-        $connectorClass = new ReflectionObject($connector);
-
-        if (!$connectorClass->hasProperty('connection')) {
-            return null;
-        }
-
-        $connectionProperty = $connectorClass->getProperty('connection');
-        $connection = $connectionProperty->getValue($connector);
-
-        return is_object($connection) ? $connection : null;
     }
 
     /**
@@ -107,6 +106,7 @@ class FRMigrationCache
      * クラス定義時の初期値へ戻す。
      *
      * 初期値はクラス定義から取るため、コア側にキャッシュ用プロパティが増えても追従する。
+     * 初期値を持たない型付きプロパティは戻す値が決まらないため対象外とする。
      *
      * @param ReflectionClass<object> $cacheClass
      */
@@ -121,7 +121,11 @@ class FRMigrationCache
                 continue;
             }
 
-            $property->setValue(null, $defaults[$name] ?? null);
+            if (!array_key_exists($name, $defaults)) {
+                continue;
+            }
+
+            $property->setValue(null, $defaults[$name]);
         }
     }
 }
