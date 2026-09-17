@@ -61,12 +61,23 @@ final class Utf8mb4ConfigurationTest extends TestCase
     /**
      * 走査から外す場所。
      *
-     * modules/Migration/schema は 6.x / 7.x からのアップグレード専用スクリプトで、
-     * そこで作られたテーブルは本 issue の変換マイグレーションが後から utf8mb4 にする。
-     * include/simplehtmldom は外部ライブラリ。
+     * ここに挙げたものが作るテーブルは、いずれも変換マイグレーション
+     * （setup/migration/scripts/20260917072813_convert_all_tables_to_utf8mb4.php）より
+     * 先に作られるため、後から utf8mb4 になる。先回りして直す意味がないので対象外にする。
+     *
+     *   modules/Migration/schema      6.x / 7.x からのアップグレード専用スクリプト。
+     *                                 setup/scripts/*.php もここから読み込まれる
+     *   setup/scripts                 上記から読み込まれるセットアップ用スクリプト
+     *   setup/migration/FRMigration…  マイグレーションの実行記録を持つ台帳テーブル
+     *   setup/migration/scripts       変換マイグレーションより前に実行される既存の移行処理
+     *                                 （変換マイグレーション自身は test_5 / Integration 側で見る）
+     *   include/simplehtmldom         外部ライブラリ
      */
     private const SCAN_EXCLUDES = [
         'modules/Migration/schema',
+        'setup/scripts',
+        'setup/migration/FRMigrationClass.php',
+        'setup/migration/scripts',
         'include/simplehtmldom',
         'e2e/node_modules',
     ];

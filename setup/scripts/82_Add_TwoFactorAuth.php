@@ -24,7 +24,7 @@ $adb->query("
     `totp_secret` varchar(32) DEFAULT NULL,
     `passkey_credential` json DEFAULT NULL,
     `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 ");
 
 if($adb->num_rows($result) == 0) {
@@ -34,7 +34,7 @@ if($adb->num_rows($result) == 0) {
         `userid` int NOT NULL,
         `signature_count` tinyint(1) NOT NULL,
         `lock_time` datetime NOT NULL
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
     ");
 }
 

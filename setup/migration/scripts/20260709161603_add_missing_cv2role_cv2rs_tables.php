@@ -36,7 +36,7 @@ class Migration20260709161603_AddMissingCv2roleCv2rsTables extends FRMigrationCl
                 KEY `vtiger_cv2role_roleid_idx` (`roleid`),
                 CONSTRAINT `fk_cv2role_cvid` FOREIGN KEY (`cvid`) REFERENCES `vtiger_customview` (`cvid`) ON DELETE CASCADE,
                 CONSTRAINT `fk_cv2role_roleid` FOREIGN KEY (`roleid`) REFERENCES `vtiger_role` (`roleid`) ON DELETE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
             $this->log("vtiger_cv2role テーブルを作成しました");
         } else {
             $this->log("vtiger_cv2role は既に存在するためスキップしました");
@@ -50,7 +50,7 @@ class Migration20260709161603_AddMissingCv2roleCv2rsTables extends FRMigrationCl
                 KEY `vtiger_cv2rs_rsid_idx` (`rsid`),
                 CONSTRAINT `fk_cv2rs_cvid` FOREIGN KEY (`cvid`) REFERENCES `vtiger_customview` (`cvid`) ON DELETE CASCADE,
                 CONSTRAINT `fk_cv2rs_rsid` FOREIGN KEY (`rsid`) REFERENCES `vtiger_role` (`roleid`) ON DELETE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
             $this->log("vtiger_cv2rs テーブルを作成しました");
         } else {
             $this->log("vtiger_cv2rs は既に存在するためスキップしました");

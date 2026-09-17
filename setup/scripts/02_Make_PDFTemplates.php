@@ -59,13 +59,13 @@ CREATE TABLE `vtiger_pdftemplates` (
     `templateid` int(19) NOT NULL AUTO_INCREMENT,
     PRIMARY KEY (`templateid`),
     KEY `pdftemplates_foldernamd_templatename_subject_idx` (`foldername`,`templatename`,`subject`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8
 ");
 
 $db->query("
 CREATE TABLE  `vtiger_pdftemplates_seq` (
     `id` int(11) NOT NULL
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8
 ");
 
 

@@ -169,7 +169,7 @@ abstract class FRMigrationClass {
                 migration_name VARCHAR(255) PRIMARY KEY,
                 executed_at DATETIME NOT NULL,
                 INDEX idx_executed_at (executed_at)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8
         ";
         
         $this->db->pquery($createTableSQL, array());
