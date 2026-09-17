@@ -221,7 +221,7 @@ class Install_Index_view extends Vtiger_View_Controller {
 
 			global $adb;
 			$adb->resetSettings($configParams['db_type'], $configParams['db_hostname'], $configParams['db_name'], $configParams['db_username'], $configParams['db_password']);
-			$adb->query('SET NAMES utf8mb4');
+			$adb->query('SET NAMES utf8mb4 COLLATE utf8mb4_general_ci');
 
 			// Initialize and set up tables
 			Install_InitSchema_Model::initialize();

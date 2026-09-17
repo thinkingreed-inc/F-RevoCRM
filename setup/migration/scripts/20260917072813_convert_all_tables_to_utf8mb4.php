@@ -8,7 +8,9 @@
  * サロゲートペアの文字が切り捨てられたり「?」に置き換わったりする。
  *
  * 前提:
- *  - MySQL 5.7.7 以上（innodb_large_prefix が既定で有効。8.0 は常に有効）
+ *  - MySQL 5.7.7 以上（innodb_large_prefix が既定で有効。8.0 は常に有効）。MariaDB は対象外
+ *  - CLI から単発で実行する（FOREIGN_KEY_CHECKS を一時的に落とすため、
+ *    接続を使い回す Web リクエストからは実行しない）
  *  - collation は vtiger 互換を優先して utf8mb4_general_ci に揃える
  *    （MySQL 8 の既定 utf8mb4_0900_ai_ci のままだと、文字列を JOIN する箇所で
  *      照合順序の不一致になるため、既に utf8mb4 でも collation が違えば変換する）
@@ -42,6 +44,16 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
         $total = count($tables);
         $this->log("テーブル数: {$total}");
 
+        $foreignCharsetTables = $this->fetchTablesHavingForeignCharsetColumns($dbName);
+        if (!empty($foreignCharsetTables)) {
+            $this->log("※utf8 系でない文字セットの列を持つテーブルは変換しない（" . count($foreignCharsetTables) . " 件）。");
+            $this->log("※UTF-8 のバイト列がそのまま入っている場合、変換すると文字化けして戻せないため。"
+                . "内容を確認のうえ手動で変換すること。");
+            foreach ($foreignCharsetTables as $tableName => $charsets) {
+                $this->log("  - {$tableName}: {$charsets}");
+            }
+        }
+
         $converted = 0;
         $skipped = 0;
         $failed = array();
@@ -57,7 +69,7 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
                 $index++;
                 $tableName = $table['name'];
 
-                if (!$table['needs_conversion']) {
+                if (isset($foreignCharsetTables[$tableName]) || !$table['needs_conversion']) {
                     $skipped++;
                     continue;
                 }
@@ -112,6 +124,29 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
     }
 
     /**
+     * 失敗しても構わない SQL を実行する。
+     *
+     * ADOdb は StartTrans() の間、失敗したクエリを見つけると _transOK を落とす
+     * （libraries/adodb_vtigerfix/adodb.inc.php の ADODB_TransMonitor）。
+     * FRMigrationClass::execute() はその印を見て「SQL エラーが起きた」と判断するため、
+     * 呼び出し側で失敗を握り潰しても、マイグレーション全体が失敗扱いになってしまう。
+     * ADOdb 自身が GenID() で使っているのと同じ方法で、監視を一時的に外す。
+     *
+     * @param string $sql
+     * @return string|null 成功なら null、失敗ならエラーメッセージ
+     */
+    protected function tryQueryQuietly($sql) {
+        $connection = $this->db->database;
+        $savedHandler = $connection->raiseErrorFn;
+        $connection->raiseErrorFn = false;
+        try {
+            return $this->tryQuery($sql);
+        } finally {
+            $connection->raiseErrorFn = $savedHandler;
+        }
+    }
+
+    /**
      * 失敗を許容しない SQL を実行する。
      *
      * @param string $sql
@@ -150,7 +185,7 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
     private function convertDatabaseDefault($dbName) {
         // 共有ホスティングなどではスキーマへの ALTER 権限が無いことがある。
         // ここで止めるとテーブルの変換（#77 の本題）に進めないため、警告だけ出して続ける。
-        $error = $this->tryQuery(
+        $error = $this->tryQueryQuietly(
             "ALTER DATABASE `{$dbName}` CHARACTER SET " . self::TARGET_CHARSET
             . " COLLATE " . self::TARGET_COLLATION
         );
@@ -219,7 +254,7 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
             "SELECT DISTINCT TABLE_NAME
                FROM information_schema.COLUMNS
               WHERE TABLE_SCHEMA = ?
-                AND COLLATION_NAME IS NOT NULL
+                AND CHARACTER_SET_NAME IN ('utf8', 'utf8mb3', 'utf8mb4')
                 AND COLLATION_NAME <> ?",
             array($dbName, self::TARGET_COLLATION)
         );
@@ -231,6 +266,39 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
         $tables = array();
         while ($row = $this->db->fetchByAssoc($result)) {
             $tables[(string)$row['table_name']] = true;
+        }
+
+        return $tables;
+    }
+
+    /**
+     * utf8 系でない文字セットの列を持つテーブルを集める。
+     *
+     * latin1 などの列に UTF-8 のバイト列がそのまま入っている DB（旧 vtiger でよく見られる）を
+     * CONVERT TO すると、バイト列が読み替えられて文字化けし、DDL は巻き戻せないため復旧できない。
+     * 自動では変換せず、利用者に知らせて判断してもらう。
+     *
+     * @param string $dbName
+     * @return array<string, string> テーブル名 => 見つかった文字セット（カンマ区切り）
+     */
+    private function fetchTablesHavingForeignCharsetColumns($dbName) {
+        $result = $this->db->pquery(
+            "SELECT TABLE_NAME, GROUP_CONCAT(DISTINCT CHARACTER_SET_NAME) AS charsets
+               FROM information_schema.COLUMNS
+              WHERE TABLE_SCHEMA = ?
+                AND CHARACTER_SET_NAME IS NOT NULL
+                AND CHARACTER_SET_NAME NOT IN ('utf8', 'utf8mb3', 'utf8mb4')
+              GROUP BY TABLE_NAME",
+            array($dbName)
+        );
+
+        if ($result === false) {
+            return array();
+        }
+
+        $tables = array();
+        while ($row = $this->db->fetchByAssoc($result)) {
+            $tables[(string)$row['table_name']] = (string)$row['charsets'];
         }
 
         return $tables;
@@ -256,6 +324,8 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
         );
 
         if ($result === false) {
+            $this->log("※{$tableName} の TEXT 系の列を取得できなかった。型が広がっても元に戻せない");
+
             return array();
         }
 
@@ -312,7 +382,16 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
             return null;
         }
 
-        return $this->tryQuery("ALTER TABLE `{$tableName}` " . implode(', ', $clauses));
+        $error = $this->tryQuery("ALTER TABLE `{$tableName}` " . implode(', ', $clauses));
+        if ($error !== null) {
+            // この時点でテーブルは既に utf8mb4 になっているため、
+            // 実行し直しても変換対象から外れて型は戻らない。手当ての方法を残す。
+            $this->log("※{$tableName} の TEXT 系の列の型を元に戻せなかった。"
+                . "実行し直しても戻らないため、次の SQL を手動で実行すること: "
+                . "ALTER TABLE `{$tableName}` " . implode(', ', $clauses));
+        }
+
+        return $error;
     }
 
     /**
@@ -361,6 +440,13 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
 
         if ($version === '') {
             throw new Exception("MySQL のバージョンを取得できませんでした。");
+        }
+
+        if (stripos($version, 'mariadb') !== false) {
+            throw new Exception(
+                "MariaDB は動作確認の対象外。手動で ALTER DATABASE / ALTER TABLE ... CONVERT TO を実行すること。" .
+                "現在のバージョン: {$version}"
+            );
         }
 
         if (version_compare($version, '5.7.7', '<')) {

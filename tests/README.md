@@ -66,7 +66,7 @@ utf8mb4 に変換される。開発 DB は bootstrap の安全装置で守られ
 テスト用 DB の文字セットを別の値のまま使いたい場合はこのテストを外すこと。
 
 ```bash
-mysql -u <user> -p -e "CREATE DATABASE <db_name>_test DEFAULT CHARACTER SET utf8mb4"
+mysql -u <user> -p -e "CREATE DATABASE <db_name>_test DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_general_ci"
 ```
 
 ## テストの書き方

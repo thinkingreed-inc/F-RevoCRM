@@ -13,11 +13,36 @@ vimport('~~include/PopulateComboValues.php');
 class Install_InitSchema_Model {
 
 	/**
+	 * データベースの既定 charset / collation を utf8mb4 / utf8mb4_general_ci に揃える。
+	 * 権限が無い環境もあるため、失敗してもインストールは続ける。
+	 *
+	 * @param PearDatabase $adb
+	 * @return void
+	 */
+	public static function alignDatabaseCharset($adb) {
+		global $dbconfig;
+
+		$dbName = isset($dbconfig['db_name']) ? (string)$dbconfig['db_name'] : '';
+		if ($dbName === '') {
+			return;
+		}
+
+		$adb->query("ALTER DATABASE `{$dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
+	}
+
+	/**
 	 * Function starts applying schema changes
 	 */
 	public static function initialize() {
 		global $adb;
 		$adb = PearDatabase::getInstance();
+
+		// 利用者があらかじめ作ったデータベースへインストールする場合、インストーラは
+		// CREATE DATABASE を通らない。MySQL 8 の既定 (utf8mb4_0900_ai_ci) のままだと、
+		// 明示的に utf8mb4_general_ci で作る表と照合順序が食い違い、
+		// 文字列を JOIN する箇所で「Illegal mix of collations」になるため、ここで揃える。
+		self::alignDatabaseCharset($adb);
+
 		$adb->createTables("schema/DatabaseSchema.xml");
 
 		$defaultDataPopulator = new DefaultDataPopulator();

@@ -39,6 +39,8 @@ use PHPUnit\Framework\TestCase;
  *  11 変換で TEXT 系の列の型が広がらない（新規インストールとスキーマを揃える）
  *  12 execute() が成功すると台帳（com_vtiger_migrations）に記録される
  *  13 変換に失敗すると台帳に記録されず、直してから実行し直せる
+ *  14 utf8 系でない列（latin1 など）を持つテーブルは変換せず、警告として知らせる
+ *  15 データベースの既定 charset を変えられなくても、テーブルの変換まで進む
  *
  * 注意: このマイグレーションは接続中の DB 全体を対象にする。
  * そのためこのテストを実行すると、テスト用 DB のテーブルがすべて utf8mb4 に変換される。
@@ -58,6 +60,7 @@ final class Utf8mb4ConversionTest extends TestCase
     private const COMPACT_TABLE = 'frtest_utf8mb4_compact';
     private const TOO_LONG_INDEX_TABLE = 'frtest_utf8mb4_toolong';
     private const MIXED_TABLE = 'frtest_utf8mb4_mixed';
+    private const LATIN_TABLE = 'frtest_utf8mb4_latin';
     private const TEXT_TABLE = 'frtest_utf8mb4_text';
 
     /** 4 バイト文字。絵文字とサロゲートペアの漢字（issue の「𠮷田」） */
@@ -104,7 +107,7 @@ final class Utf8mb4ConversionTest extends TestCase
     {
         $tables = [
             self::LEGACY_TABLE, self::MODERN_TABLE, self::COMPACT_TABLE,
-            self::TOO_LONG_INDEX_TABLE, self::MIXED_TABLE, self::TEXT_TABLE,
+            self::TOO_LONG_INDEX_TABLE, self::MIXED_TABLE, self::TEXT_TABLE, self::LATIN_TABLE,
         ];
         foreach ($tables as $table) {
             $this->db()->pquery("DROP TABLE IF EXISTS `{$table}`", []);
@@ -494,5 +497,49 @@ final class Utf8mb4ConversionTest extends TestCase
             $this->collationOf(self::LEGACY_TABLE),
             '13 変換できたテーブルまで巻き戻っている'
         );
+    }
+
+    public function test_14_utf8系でない列を持つテーブルは変換せず知らせる(): void
+    {
+        // latin1 の列に UTF-8 のバイト列が入っている DB（旧 vtiger でよくある二重エンコード）を
+        // そのまま CONVERT TO すると、バイト列が読み替えられて文字化けし、元に戻せない。
+        // 自動変換の対象から外し、利用者に知らせる。
+        $this->db()->pquery(
+            'CREATE TABLE `' . self::LATIN_TABLE . '` (
+                id INT NOT NULL PRIMARY KEY,
+                v VARCHAR(50) CHARACTER SET latin1 COLLATE latin1_swedish_ci
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci',
+            []
+        );
+        $this->db()->pquery('INSERT INTO `' . self::LATIN_TABLE . "` VALUES (1, _binary'日本')", []);
+
+        $output = $this->runMigration();
+
+        $result = $this->db()->pquery('SELECT HEX(v) AS hex FROM `' . self::LATIN_TABLE . '` WHERE id = 1', []);
+        $row = $this->db()->fetchByAssoc($result);
+
+        self::assertSame('E697A5E69CAC', strtoupper((string) ($row['hex'] ?? '')), '14 latin1 列のバイト列が読み替えられて壊れている');
+        self::assertStringContainsString(self::LATIN_TABLE, $output, '14 変換しなかったテーブルを知らせていない');
+        self::assertStringContainsString('latin1', $output, '14 どの文字セットが対象外なのか分からない');
+    }
+
+    public function test_15_データベースの既定を変えられなくてもテーブルの変換は進む(): void
+    {
+        // 共有ホスティングなどでは ALTER DATABASE の権限が無いことがある。
+        // ADOdb はトランザクション中に失敗したクエリを見つけると _transOK を落とすため、
+        // 握り潰したつもりでも execute() が失敗扱いになり、台帳に記録されず毎回止まってしまう。
+        $this->createLegacyTable();
+
+        $migration = new Utf8mb4Migration();
+        $method = new \ReflectionMethod($migration, 'tryQueryQuietly');
+        $method->setAccessible(true);
+
+        $this->db()->database->StartTrans();
+        $error = $method->invoke($migration, 'ALTER DATABASE `__frtest_no_such_db__` CHARACTER SET utf8mb4');
+        $transOk = $this->db()->database->_transOK;
+        $this->db()->database->CompleteTrans();
+
+        self::assertNotNull($error, '15 前提: 失敗するクエリを使っている');
+        self::assertTrue($transOk, '15 握り潰したはずの失敗でトランザクションが失敗扱いになり、台帳に記録されなくなる');
     }
 }

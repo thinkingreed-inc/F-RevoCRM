@@ -264,7 +264,7 @@ class PearDatabase{
 
 			$sql_start_time = microtime(true);
 
-			$setnameSql = "SET NAMES utf8mb4";
+			$setnameSql = "SET NAMES utf8mb4 COLLATE utf8mb4_general_ci";
 			$this->database->Execute($setnameSql);
 			$this->logSqlTiming($sql_start_time, microtime(true), $setnameSql);
 		}

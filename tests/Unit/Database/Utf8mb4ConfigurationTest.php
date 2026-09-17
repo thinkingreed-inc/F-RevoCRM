@@ -30,6 +30,7 @@ use PHPUnit\Framework\TestCase;
  *   6  初期データ SQL に utf8mb3 指定が残っていない
  *   7  テーブルを作る PHP に utf8mb3 指定が残っていない
  *   8  テーブル定義は collation まで明示する（MySQL 8 の既定 utf8mb4_0900_ai_ci との混在を防ぐ）
+ *   9  インストール時にデータベースの既定 collation を揃える
  */
 final class Utf8mb4ConfigurationTest extends TestCase
 {
@@ -44,7 +45,10 @@ final class Utf8mb4ConfigurationTest extends TestCase
         . '|\butf8(?:mb3)?_(?:general_ci|unicode_ci|bin|[a-z0-9]+_ci|[a-z0-9]+_bin)\b/i';
 
     /** 走査する対象（プロジェクト直下からの相対パス） */
-    private const SCAN_DIRECTORIES = ['setup', 'modules', 'vtlib', 'include', 'includes', 'cron', 'e2e'];
+    private const SCAN_DIRECTORIES = ['setup', 'modules', 'vtlib', 'include', 'includes', 'cron', 'e2e', 'packages'];
+
+    /** 走査する拡張子。テーブルを作る記述は .php / .sql だけでなく .inc や schema.xml にもある */
+    private const SCAN_EXTENSIONS = 'php|sql|sh|inc|xml';
 
     /**
      * 走査から外す場所。
@@ -103,10 +107,12 @@ final class Utf8mb4ConfigurationTest extends TestCase
     {
         $found = [];
         foreach (explode("\n", $this->contents($relativePath)) as $index => $line) {
-            if (stripos($line, 'CHARSET=utf8mb4') === false) {
+            // テーブル定義の「CHARSET=utf8mb4」だけを見る。
+            // CAST(... CHARACTER SET utf8mb4) のような式は照合順序を別に指定するため対象外。
+            if (preg_match('/CHARSET\s*=\s*utf8mb4\b/i', $line) !== 1) {
                 continue;
             }
-            if (stripos($line, 'utf8mb4_general_ci') === false) {
+            if (preg_match('/\butf8mb4_[a-z0-9_]+/i', $line) !== 1) {
                 $found[] = ($index + 1) . ': ' . trim($line);
             }
         }
@@ -116,10 +122,13 @@ final class Utf8mb4ConfigurationTest extends TestCase
 
     public function test_1_DB接続時のSET_NAMESがutf8mb4(): void
     {
+        // SET NAMES utf8mb4 だけだと、MySQL 8 では接続の照合順序が utf8mb4_0900_ai_ci になる。
+        // テーブル側（utf8mb4_general_ci）と食い違い、CAST した値との比較で
+        // 「Illegal mix of collations」になるため、照合順序まで指定する。
         self::assertStringContainsString(
-            '"SET NAMES utf8mb4"',
+            '"SET NAMES utf8mb4 COLLATE utf8mb4_general_ci"',
             $this->contents('include/database/PearDatabase.php'),
-            '1 接続のたびに実行する SET NAMES が utf8mb4 でなければ 4 バイト文字が欠落する'
+            '1 接続の文字セットと照合順序が utf8mb4 / utf8mb4_general_ci でなければ 4 バイト文字の欠落や照合順序の不一致が起きる'
         );
     }
 
@@ -138,9 +147,9 @@ final class Utf8mb4ConfigurationTest extends TestCase
     public function test_3_インストーラの初期データ投入時のSET_NAMESがutf8mb4(): void
     {
         self::assertStringContainsString(
-            "'SET NAMES utf8mb4'",
+            "'SET NAMES utf8mb4 COLLATE utf8mb4_general_ci'",
             $this->contents('modules/Install/views/Index.php'),
-            '3 初期データ投入時の接続も utf8mb4 でなければ投入値が欠落する'
+            '3 初期データ投入時の接続も utf8mb4 / utf8mb4_general_ci でなければ投入値が欠落する'
         );
     }
 
@@ -199,7 +208,7 @@ final class Utf8mb4ConfigurationTest extends TestCase
             );
             foreach ($iterator as $file) {
                 $relative = substr($file->getPathname(), strlen($root) + 1);
-                if (preg_match('/\.(php|sql|sh)$/', $relative) !== 1) {
+                if (preg_match('/\.(' . self::SCAN_EXTENSIONS . ')$/', $relative) !== 1) {
                     continue;
                 }
                 foreach (self::SCAN_EXCLUDES as $exclude) {
@@ -247,6 +256,20 @@ final class Utf8mb4ConfigurationTest extends TestCase
             $found,
             '8 collation を指定していないテーブル定義が ' . count($found) . ' 件ある: '
             . implode(' / ', array_slice($found, 0, 5))
+        );
+    }
+
+    public function test_9_インストール時にデータベースの既定collationを揃える(): void
+    {
+        // 利用者があらかじめ作った DB にインストールする場合、インストーラは CREATE DATABASE を
+        // 通らない。MySQL 8 の既定は utf8mb4_0900_ai_ci なので、スキーマ側で明示している
+        // utf8mb4_general_ci の表と混在し、文字列を JOIN する箇所で落ちる。
+        $contents = $this->contents('modules/Install/models/InitSchema.php');
+
+        self::assertMatchesRegularExpression(
+            '/ALTER DATABASE.+utf8mb4.+utf8mb4_general_ci/s',
+            $contents,
+            '9 インストール時にデータベースの既定 charset / collation を揃えていない'
         );
     }
 }

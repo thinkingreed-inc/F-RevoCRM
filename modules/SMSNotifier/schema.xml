@@ -7,14 +7,14 @@
   `smsnotifierid` int(19) NOT NULL PRIMARY KEY,
   `message` text,
   `status` varchar(100) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8]]></sql>
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></sql>
 		</table>
 		<table>
 			<name>vtiger_smsnotifiercf</name>
 			<sql><![CDATA[CREATE TABLE `vtiger_smsnotifiercf` (
   `smsnotifierid` int(19) NOT NULL,
   PRIMARY KEY (`smsnotifierid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8]]></sql>
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></sql>
 		</table>
 		<table>
 			<name>vtiger_smsnotifier_servers</name>
@@ -26,7 +26,7 @@
   `username` varchar(255) DEFAULT NULL,
   `parameters` text,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8]]></sql>
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></sql>
 		</table>
 		<table>
 			<name>vtiger_smsnotifier_status</name>
@@ -39,7 +39,7 @@
   `statusid` int(11) NOT NULL AUTO_INCREMENT,
   `statusmessage` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`statusid`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8]]></sql>
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></sql>
 		</table>
 	</tables>
 </schema>

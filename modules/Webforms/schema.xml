@@ -20,7 +20,7 @@
   UNIQUE KEY `webformname` (`name`),
   UNIQUE KEY `publicid` (`id`),
   KEY `webforms_webforms_id_idx` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8]]></sql>
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></sql>
 		</table>
 		<table>
 			<name>vtiger_webforms_field</name>
@@ -39,7 +39,7 @@
   KEY `fk_2_vtiger_webforms_field` (`fieldname`),
   CONSTRAINT `fk_1_vtiger_webforms_field` FOREIGN KEY (`webformid`) REFERENCES `vtiger_webforms` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_3_vtiger_webforms_field` FOREIGN KEY (`fieldname`) REFERENCES `vtiger_field` (`fieldname`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8]]></sql>
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></sql>
 		</table>
 	</tables>
 </schema>
