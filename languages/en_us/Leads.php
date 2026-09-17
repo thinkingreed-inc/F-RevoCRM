@@ -69,9 +69,18 @@ $languageStrings = array(
 	'Hot Leads' => 'High Potential Customers',
 	'This Month Leads' => 'Leads of This Month',
 	'last_action_date' => 'Last Activity Date',
+
+	//Parameters
+	'LBL_SETUP_PARAMETER_MESSAGE_SHOW_CONVERTED_LEADS' => 'Controls whether converted Leads are listed in the CRM.
+true  : Converted Leads are shown in list views, searches, related lists and dashboards.
+false : Converted Leads are hidden (default behaviour).',
+	'LBL_SETUP_PARAMETER_MESSAGE_ALLOW_RECONVERT_LEAD' => 'Controls whether an already converted Lead can be converted again.
+true  : A converted Lead can be converted again. A new Contact / Opportunity is created on every conversion (an existing Organization with the same name is reused).
+false : A Lead can be converted only once (default behaviour).',
 );
 $jsLanguageStrings = array(
 	'JS_SELECT_CONTACTS' => 'Select Contacts to proceed',
 	'JS_SELECT_ORGANIZATION' => 'Select Organization to proceed',
-	'JS_SELECT_ORGANIZATION_OR_CONTACT_TO_CONVERT_LEAD' => 'Conversion requires selection of Contact or Organization'
+	'JS_SELECT_ORGANIZATION_OR_CONTACT_TO_CONVERT_LEAD' => 'Conversion requires selection of Contact or Organization',
+	'JS_LEAD_ALREADY_CONVERTED_CONFIRMATION' => 'This Lead has already been converted.<br>A new Contact / Opportunity will be created (an existing Organization with the same name is reused).<br>Do you want to convert it again?'
 );

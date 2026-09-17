@@ -578,7 +578,7 @@ class Documents extends CRMEntity {
 
 		//eliminate lead converted 
 		if($related_module == 'Leads') {
-			$query .= " AND vtiger_leaddetails.converted=0 ";
+			$query .= Leads_ConvertSetting_Model::getConvertedFilterCondition();
 		}
 
 		$return_value = GetRelatedList('Documents', $related_module, $other, $query, '', $returnset);

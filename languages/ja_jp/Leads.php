@@ -69,9 +69,18 @@ $languageStrings = array(
 	'Hot Leads' => '確度の高い顧客',
 	'This Month Leads' => '今月のリード',
 	'last_action_date' => '最終活動日',
+
+	//パラメーター設定
+	'LBL_SETUP_PARAMETER_MESSAGE_SHOW_CONVERTED_LEADS' => '昇格済みのリードを一覧などに表示するかどうかのフラグです。
+true : 昇格済みのリードもリストビュー・検索・関連リスト・ダッシュボードなどに表示します。
+false : 昇格済みのリードを表示しません（従来の動作）。',
+	'LBL_SETUP_PARAMETER_MESSAGE_ALLOW_RECONVERT_LEAD' => '昇格済みのリードを再度昇格できるようにするかどうかのフラグです。
+true : 昇格済みのリードでも再度昇格できます。昇格するたびに顧客担当者・商談が新規に作成されます（同名の顧客企業がすでにある場合は、その顧客企業に紐付きます）。
+false : 一度昇格したリードは再度昇格できません（従来の動作）。',
 );
 $jsLanguageStrings = array(
 	'JS_SELECT_CONTACTS' => '顧客担当者を選択して続行',
 	'JS_SELECT_ORGANIZATION' => '顧客企業を選択して続行',
-	'JS_SELECT_ORGANIZATION_OR_CONTACT_TO_CONVERT_LEAD' => '昇格には顧客企業または顧客担当者の選択が必要です'
+	'JS_SELECT_ORGANIZATION_OR_CONTACT_TO_CONVERT_LEAD' => '昇格には顧客企業または顧客担当者の選択が必要です',
+	'JS_LEAD_ALREADY_CONVERTED_CONFIRMATION' => 'このリードはすでに昇格済みです。<br>実行すると顧客担当者・商談が新規に作成されます（同名の顧客企業がすでにある場合は、その顧客企業に紐付きます）。<br>昇格しますか？'
 );

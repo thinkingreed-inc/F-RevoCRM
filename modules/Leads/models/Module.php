@@ -58,7 +58,7 @@ class Leads_Module_Model extends Vtiger_Module_Model {
     * Function returns deleted records condition
     */
     public function getDeletedRecordCondition() {
-       return 'vtiger_crmentity.deleted = 0 AND vtiger_leaddetails.converted = 0';
+       return 'vtiger_crmentity.deleted = 0'.Leads_ConvertSetting_Model::getConvertedFilterCondition();
     }
 
     /**
@@ -111,7 +111,7 @@ class Leads_Module_Model extends Vtiger_Module_Model {
 
 		$result = $db->pquery('SELECT COUNT(*) AS count, date(createdtime) AS time FROM vtiger_leaddetails
 						INNER JOIN vtiger_crmentity ON vtiger_leaddetails.leadid = vtiger_crmentity.crmid
-						AND deleted=0 '.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()).$ownerSql.' '.$dateFilterSql.' AND converted = 0 GROUP BY week(createdtime)',
+						AND deleted=0 '.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()).$ownerSql.' '.$dateFilterSql.Leads_ConvertSetting_Model::getConvertedFilterCondition().' GROUP BY week(createdtime)',
 					$params);
 
 		$response = array();
@@ -154,8 +154,8 @@ class Leads_Module_Model extends Vtiger_Module_Model {
 						.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()). 
 						' INNER JOIN vtiger_leadstatus ON vtiger_leaddetails.leadstatus = vtiger_leadstatus.leadstatus 
                         WHERE vtiger_leaddetails.leadstatus IN ('.generateQuestionMarks($picklistvaluesmap).')
-						AND vtiger_leaddetails.deleted = 0 
-						AND vtiger_leaddetails.converted = 0'
+						AND vtiger_leaddetails.deleted = 0 '
+						.Leads_ConvertSetting_Model::getConvertedFilterCondition()
 						.$ownerSql.$dateFilterSql.
 						' GROUP BY leadstatusvalue ORDER BY vtiger_leadstatus.sortorderid', $params);
 
@@ -205,8 +205,8 @@ class Leads_Module_Model extends Vtiger_Module_Model {
 						.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()).
 						' INNER JOIN vtiger_leadsource ON vtiger_leaddetails.leadsource = vtiger_leadsource.leadsource 
                         WHERE vtiger_leaddetails.leadsource IN ('.generateQuestionMarks($picklistvaluesmap).') 
-						AND vtiger_leaddetails.deleted = 0 
-						AND vtiger_leaddetails.converted = 0'
+						AND vtiger_leaddetails.deleted = 0 '
+						.Leads_ConvertSetting_Model::getConvertedFilterCondition()
 						.$ownerSql.$dateFilterSql.
 						' GROUP BY leadsourcevalue ORDER BY vtiger_leadsource.sortorderid', $params);
 		
@@ -255,8 +255,8 @@ class Leads_Module_Model extends Vtiger_Module_Model {
 						.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()).
 						' INNER JOIN vtiger_industry ON vtiger_leaddetails.industry = vtiger_industry.industry 
                         WHERE vtiger_leaddetails.industry IN ('.generateQuestionMarks($picklistvaluesmap).') 
-						AND vtiger_leaddetails.deleted = 0 
-						AND vtiger_leaddetails.converted = 0'
+						AND vtiger_leaddetails.deleted = 0 '
+						.Leads_ConvertSetting_Model::getConvertedFilterCondition()
 						.$ownerSql.$dateFilterSql.
 						' GROUP BY industryvalue ORDER BY vtiger_industry.sortorderid', $params);
 		
