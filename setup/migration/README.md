@@ -16,6 +16,7 @@ F-RevoCRMのデータベーススキーマやデータの変更を管理する�
 ```
 setup/migration/
 ├── FRMigrationClass.php       # マイグレーションの基底クラス
+├── FRMigrationCache.php       # 実行ごとに Vtiger_Cache を空にする処理
 ├── generate_migration.php     # マイグレーション雛形生成スクリプト
 ├── run_migration.php         # マイグレーション実行スクリプト
 ├── README.md                 # このドキュメント
@@ -89,6 +90,16 @@ php setup/migration/run_migration.php --all
 - 各マイグレーションの実行状態は `com_vtiger_migrations` テーブルに記録されます
 - 既に実行済みのマイグレーションは自動的にスキップされます
 - テーブルが存在しない場合は自動的に作成されます
+
+## 実行ごとのキャッシュクリア
+
+- 各マイグレーションの `process()` 実行前に `Vtiger_Cache` のキャッシュを空にします（`FRMigrationCache::clear()`）
+- 一括実行は 1 プロセスで複数のスクリプトを続けて動かすため、先に動いたスクリプトが
+  `Vtiger_Module::getInstance()` などで載せたインスタンスを、後のスクリプトがそのまま
+  受け取ってしまうのを防ぐためです
+- クリアの対象は `Vtiger_Cache` だけです。`Vtiger_Functions` や `VTCacheUtils` が持つ
+  静的キャッシュは残るため、モジュールや項目の定義を SQL で直接書き換えるマイグレーションでは、
+  後続スクリプトが古い定義を読む前提で組み立ててください
 
 ## データベーステーブル: com_vtiger_migrations
 
