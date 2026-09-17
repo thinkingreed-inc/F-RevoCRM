@@ -35,6 +35,13 @@ use PHPUnit\Framework\TestCase;
  *   7 2 回実行しても結果が変わらない（冪等性）
  *   8 変換に失敗するテーブルがあれば例外を投げる（異常系）
  *   9 変換が失敗しても FOREIGN_KEY_CHECKS を元に戻す（後片付け）
+ *  10 テーブルの既定が utf8mb4 でも、列が utf8mb3 のまま残っていれば変換する
+ *  11 変換で TEXT 系の列の型が広がらない（新規インストールとスキーマを揃える）
+ *  12 execute() が成功すると台帳（com_vtiger_migrations）に記録される
+ *  13 変換に失敗すると台帳に記録されず、直してから実行し直せる
+ *
+ * 注意: このマイグレーションは接続中の DB 全体を対象にする。
+ * そのためこのテストを実行すると、テスト用 DB のテーブルがすべて utf8mb4 に変換される。
  *
  * 検証用のテーブル（frtest_utf8mb4_ で始まる名前）だけを作って操作する。
  * マイグレーション自体は DB 全体を対象にするため、テスト用DB でのみ実行する。
@@ -50,6 +57,8 @@ final class Utf8mb4ConversionTest extends TestCase
     private const MODERN_TABLE = 'frtest_utf8mb4_modern';
     private const COMPACT_TABLE = 'frtest_utf8mb4_compact';
     private const TOO_LONG_INDEX_TABLE = 'frtest_utf8mb4_toolong';
+    private const MIXED_TABLE = 'frtest_utf8mb4_mixed';
+    private const TEXT_TABLE = 'frtest_utf8mb4_text';
 
     /** 4 バイト文字。絵文字とサロゲートペアの漢字（issue の「𠮷田」） */
     private const EMOJI = '絵文字😀テスト';
@@ -93,7 +102,11 @@ final class Utf8mb4ConversionTest extends TestCase
 
     private function dropTestTables(): void
     {
-        foreach ([self::LEGACY_TABLE, self::MODERN_TABLE, self::COMPACT_TABLE, self::TOO_LONG_INDEX_TABLE] as $table) {
+        $tables = [
+            self::LEGACY_TABLE, self::MODERN_TABLE, self::COMPACT_TABLE,
+            self::TOO_LONG_INDEX_TABLE, self::MIXED_TABLE, self::TEXT_TABLE,
+        ];
+        foreach ($tables as $table) {
             $this->db()->pquery("DROP TABLE IF EXISTS `{$table}`", []);
         }
     }
@@ -104,10 +117,11 @@ final class Utf8mb4ConversionTest extends TestCase
      */
     private function runMigration(): string
     {
-        $migration = new Utf8mb4Migration();
-
+        // 基底クラスのコンストラクタは台帳テーブルが無いと作成メッセージを出力する。
+        // PHPUnit の出力検査に引っかからないよう、生成もバッファの内側で行う。
         ob_start();
         try {
+            $migration = new Utf8mb4Migration();
             $migration->process();
         } finally {
             $output = (string) ob_get_clean();
@@ -314,5 +328,171 @@ final class Utf8mb4ConversionTest extends TestCase
         $row = $this->db()->fetchByAssoc($result);
 
         self::assertSame('1', (string) ($row['fk'] ?? ''), '9 外部キー制約の検査が無効のまま残っている');
+    }
+
+    /**
+     * 列の文字セット・型・NULL 可否・コメントを返す。
+     *
+     * @return array{collation: string, type: string, nullable: string, comment: string}
+     */
+    private function columnInfo(string $table, string $column): array
+    {
+        $result = $this->db()->pquery(
+            'SELECT COLLATION_NAME, COLUMN_TYPE, IS_NULLABLE, COLUMN_COMMENT
+               FROM information_schema.COLUMNS
+              WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?',
+            [$table, $column]
+        );
+        $row = $this->db()->fetchByAssoc($result);
+
+        return [
+            'collation' => (string) ($row['collation_name'] ?? ''),
+            'type'      => (string) ($row['column_type'] ?? ''),
+            'nullable'  => (string) ($row['is_nullable'] ?? ''),
+            'comment'   => (string) ($row['column_comment'] ?? ''),
+        ];
+    }
+
+    public function test_10_テーブルが既にutf8mb4でも列がutf8mb3なら変換する(): void
+    {
+        // 「ALTER TABLE ... DEFAULT CHARACTER SET utf8mb4」だけを当てた状態を作る。
+        // テーブルの既定は utf8mb4 になるが、既存の列は utf8mb3 のまま残り、
+        // 4 バイト文字を保存できない。応急処置として打たれていることがある。
+        $this->db()->pquery(
+            'CREATE TABLE `' . self::MIXED_TABLE . '` (
+                id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                label VARCHAR(100) DEFAULT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci',
+            []
+        );
+        $this->db()->pquery(
+            'ALTER TABLE `' . self::MIXED_TABLE . '` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci',
+            []
+        );
+        self::assertSame('utf8mb4_general_ci', $this->collationOf(self::MIXED_TABLE), '10 前提: テーブルの既定は utf8mb4');
+        self::assertSame('utf8mb3_general_ci', $this->columnInfo(self::MIXED_TABLE, 'label')['collation'], '10 前提: 列は utf8mb3');
+
+        $this->runMigration();
+
+        self::assertSame(
+            'utf8mb4_general_ci',
+            $this->columnInfo(self::MIXED_TABLE, 'label')['collation'],
+            '10 列が utf8mb3 のまま残り、4 バイト文字を保存できない'
+        );
+
+        $this->db()->pquery('INSERT INTO `' . self::MIXED_TABLE . '` (label) VALUES (?)', [self::SURROGATE_KANJI]);
+        $result = $this->db()->pquery('SELECT label FROM `' . self::MIXED_TABLE . '` ORDER BY id LIMIT 1', []);
+        $row = $this->db()->fetchByAssoc($result);
+
+        self::assertSame(self::SURROGATE_KANJI, $row['label'] ?? '', '10 変換後も 4 バイト文字を保存できない');
+    }
+
+    public function test_11_変換でTEXT系の列の型が広がらない(): void
+    {
+        // CONVERT TO は「バイト数を保つ」ため TEXT を MEDIUMTEXT へ、MEDIUMTEXT を LONGTEXT へ広げる。
+        // そのままだと新規インストールした DB とアップグレードした DB でスキーマが食い違う。
+        $this->db()->pquery(
+            "CREATE TABLE `" . self::TEXT_TABLE . "` (
+                id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                body TEXT,
+                note MEDIUMTEXT NOT NULL COMMENT '備考',
+                label VARCHAR(100) DEFAULT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci",
+            []
+        );
+
+        $this->runMigration();
+
+        $body = $this->columnInfo(self::TEXT_TABLE, 'body');
+        $note = $this->columnInfo(self::TEXT_TABLE, 'note');
+
+        self::assertSame('text', $body['type'], '11 TEXT が MEDIUMTEXT に広がっている');
+        self::assertSame('mediumtext', $note['type'], '11 MEDIUMTEXT が LONGTEXT に広がっている');
+        self::assertSame('utf8mb4_general_ci', $body['collation'], '11 TEXT 列が utf8mb4 になっていない');
+        self::assertSame('utf8mb4_general_ci', $note['collation'], '11 MEDIUMTEXT 列が utf8mb4 になっていない');
+        self::assertSame('NO', $note['nullable'], '11 NOT NULL が失われている');
+        self::assertSame('備考', $note['comment'], '11 列コメントが失われている');
+        self::assertSame('varchar(100)', $this->columnInfo(self::TEXT_TABLE, 'label')['type'], '11 VARCHAR の型が変わっている');
+    }
+
+    /**
+     * 台帳（com_vtiger_migrations）にこのマイグレーションが記録されているか。
+     */
+    private function isRecordedInLedger(): bool
+    {
+        $result = $this->db()->pquery(
+            'SELECT migration_name FROM com_vtiger_migrations WHERE migration_name = ?',
+            ['Migration20260917072813_ConvertAllTablesToUtf8mb4']
+        );
+
+        return $this->db()->fetchByAssoc($result) !== null;
+    }
+
+    private function forgetLedgerEntry(): void
+    {
+        $this->db()->pquery(
+            'DELETE FROM com_vtiger_migrations WHERE migration_name = ?',
+            ['Migration20260917072813_ConvertAllTablesToUtf8mb4']
+        );
+    }
+
+    /**
+     * process() ではなく execute() で動かす。台帳の記録とトランザクション制御まで通る。
+     */
+    private function runMigrationThroughExecute(): string
+    {
+        ob_start();
+        try {
+            $migration = new Utf8mb4Migration();
+            $migration->execute();
+        } finally {
+            $output = (string) ob_get_clean();
+        }
+
+        return $output;
+    }
+
+    public function test_12_executeが成功すると台帳に記録される(): void
+    {
+        $this->forgetLedgerEntry();
+        $this->createLegacyTable();
+        self::assertFalse($this->isRecordedInLedger(), '12 前提: 実行前は台帳に記録されていない');
+
+        $this->runMigrationThroughExecute();
+
+        self::assertTrue($this->isRecordedInLedger(), '12 成功したのに台帳へ記録されていない');
+        self::assertSame('utf8mb4_general_ci', $this->collationOf(self::LEGACY_TABLE), '12 テーブルが変換されていない');
+    }
+
+    public function test_13_失敗すると台帳に記録されず実行し直せる(): void
+    {
+        $this->forgetLedgerEntry();
+        $this->createLegacyTable();
+        $this->db()->pquery(
+            'CREATE TABLE `' . self::TOO_LONG_INDEX_TABLE . '` (
+                id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                label VARCHAR(1000) NOT NULL,
+                UNIQUE KEY uq_label (label)
+            ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci',
+            []
+        );
+
+        self::assertFalse($this->isRecordedInLedger(), '13 前提: 実行前は台帳に記録されていない');
+
+        $thrown = false;
+        try {
+            $this->runMigrationThroughExecute();
+        } catch (\Exception $e) {
+            $thrown = true;
+        }
+
+        self::assertTrue($thrown, '13 変換できないテーブルがあるのに例外にならない');
+        self::assertFalse($this->isRecordedInLedger(), '13 失敗したのに台帳へ記録され、実行し直せなくなる');
+        // ALTER TABLE は暗黙のコミットを起こすため、成功した分は取り消されない。
+        self::assertSame(
+            'utf8mb4_general_ci',
+            $this->collationOf(self::LEGACY_TABLE),
+            '13 変換できたテーブルまで巻き戻っている'
+        );
     }
 }

@@ -45,7 +45,7 @@ class Migration20260828021711_AddMissingWebformsFieldTable extends FRMigrationCl
                 KEY `fk_2_vtiger_webforms_field` (`fieldname`),
                 CONSTRAINT `fk_1_vtiger_webforms_field` FOREIGN KEY (`webformid`)
                     REFERENCES `vtiger_webforms` (`id`) ON DELETE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
             $this->log("vtiger_webforms_field テーブルを作成しました");
         } else {
             $this->log("vtiger_webforms_field は既に存在するためスキップしました");

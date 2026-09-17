@@ -60,7 +60,7 @@ echo "==> 1/6 DB を作り直して素の dump 投入 ($BASE)"
 # 過去のテスト実行で残った孤立テーブル(vtiger_import_1_* 等)を確実に排除する為、
 # まず DB ごと作り直す。`mysql < dump` は dump に含まれるテーブルしか DROP しないので、
 # 作り直さないと過去実行の残骸が拡充 dump に混入する。
-mysql_root -e "DROP DATABASE IF EXISTS \`${DB_NAME}\`; CREATE DATABASE \`${DB_NAME}\` CHARACTER SET utf8mb4;"
+mysql_root -e "DROP DATABASE IF EXISTS \`${DB_NAME}\`; CREATE DATABASE \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"
 mysql_in < "$BASE"
 
 echo "==> 2/6 migration 適用 (スキーマ最新化)"

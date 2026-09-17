@@ -10,6 +10,9 @@ F-RevoCRMのデータベーススキーマやデータの変更を管理する�
 - 重複実行制御（同じマイグレーションの重複実行を防止）
 - 実行状態の追跡（`com_vtiger_migrations`テーブルに記録）
 - トランザクション制御によるデータ整合性の保証
+  - ただし `ALTER TABLE` などの DDL は MySQL が暗黙にコミットするため巻き戻らない。
+    DDL を含むマイグレーションは、失敗しても途中まで適用された状態になることを前提に書くこと
+    （失敗時は `com_vtiger_migrations` に記録されないため、直してから実行し直せる）
 
 ## ディレクトリ構成
 
@@ -97,7 +100,7 @@ CREATE TABLE com_vtiger_migrations (
     migration_name VARCHAR(255) PRIMARY KEY,
     executed_at DATETIME NOT NULL,
     INDEX idx_executed_at (executed_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
 ```
 
 ## マイグレーションの例
@@ -112,7 +115,7 @@ public function process() {
         description TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8";
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
     
     $this->query($sql);
     $this->log("Created vtiger_custom_module table");

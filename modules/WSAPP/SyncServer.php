@@ -283,7 +283,7 @@ class SyncServer {
 			if (empty($clientRecordId)) continue;
 
 			$lookupRecordId = false;
-			$lookupResult = $db->pquery("SELECT serverid,clientmodifiedtime FROM vtiger_wsapp_recordmapping WHERE appid=? AND clientid COLLATE utf8_bin =?", array($appid, $clientRecordId));
+			$lookupResult = $db->pquery("SELECT serverid,clientmodifiedtime FROM vtiger_wsapp_recordmapping WHERE appid=? AND clientid COLLATE utf8mb4_bin =?", array($appid, $clientRecordId));
 			if ($db->num_rows($lookupResult)) $lookupRecordId = $db->query_result($lookupResult, 0, 'serverid');
 			if (empty($lookupRecordId) && $record['mode'] !="delete") {
 				$createRecords[$clientRecordId] = $record['values'];

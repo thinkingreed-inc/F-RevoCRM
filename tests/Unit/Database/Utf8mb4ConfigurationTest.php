@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Database;
 
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -36,11 +35,29 @@ final class Utf8mb4ConfigurationTest extends TestCase
 {
     /**
      * charset・collation の指定のうち utf8mb4 以外を拾う正規表現。
-     * utf8mb4_general_ci は「utf8」の次が「_」ではないため collation 側にはかからない。
+     *
+     * 照合順序は末尾が _ci / _bin のものだけを対象にする。
+     * `$isdb_default_utf8_charset` のような変数名や utf8_encode() を拾わないため。
      */
     private const LEGACY_CHARSET_PATTERN =
-        '/(?:CHARSET\s*=\s*|SET\s+NAMES\s+|CHARACTER\s+SET\s+|COLLATE\s*=?\s*)utf8(?:mb3)?(?![0-9a-z])'
-        . '|\butf8(?:mb3)?_[a-z0-9_]+/i';
+        '/(?:CHARSET\s*=\s*|SET\s+NAMES\s+|CHARACTER\s+SET\s+|COLLATE\s*=?\s*)utf8(?:mb3)?(?![0-9a-zA-Z_])'
+        . '|\butf8(?:mb3)?_(?:general_ci|unicode_ci|bin|[a-z0-9]+_ci|[a-z0-9]+_bin)\b/i';
+
+    /** 走査する対象（プロジェクト直下からの相対パス） */
+    private const SCAN_DIRECTORIES = ['setup', 'modules', 'vtlib', 'include', 'includes', 'cron', 'e2e'];
+
+    /**
+     * 走査から外す場所。
+     *
+     * modules/Migration/schema は 6.x / 7.x からのアップグレード専用スクリプトで、
+     * そこで作られたテーブルは本 issue の変換マイグレーションが後から utf8mb4 にする。
+     * include/simplehtmldom は外部ライブラリ。
+     */
+    private const SCAN_EXCLUDES = [
+        'modules/Migration/schema',
+        'include/simplehtmldom',
+        'e2e/node_modules',
+    ];
 
     private function projectRoot(): string
     {
@@ -160,47 +177,75 @@ final class Utf8mb4ConfigurationTest extends TestCase
     /**
      * @return array<string, array{string}>
      */
-    public static function tableCreatingPhpFiles(): array
-    {
-        return [
-            '二要素認証のセットアップ' => ['setup/scripts/82_Add_TwoFactorAuth.php'],
-            '言語コンバータ' => ['modules/Settings/LanguageConverter/models/Module.php'],
-        ];
-    }
-
-    #[DataProvider('tableCreatingPhpFiles')]
-    public function test_7_テーブルを作るPHPにutf8mb3指定が残っていない(string $relativePath): void
-    {
-        self::assertSame(
-            [],
-            $this->legacyCharsetLines($relativePath),
-            '7 ' . $relativePath . ' が utf8mb3 のテーブルを作る'
-        );
-    }
-
     /**
-     * @return array<string, array{string}>
+     * 走査対象のファイルを返す（プロジェクト直下からの相対パス）。
+     *
+     * @return list<string>
      */
-    public static function tableDefinitionFiles(): array
+    private function scanTargetFiles(): array
     {
-        return [
-            '初期データ SQL' => ['setup/sql/dump_firstinstall.sql'],
-            'vtlib のテーブル生成' => ['vtlib/Vtiger/Utils.php'],
-            'マイグレーション雛形' => ['setup/migration/generate_migration.php'],
-            '二要素認証のセットアップ' => ['setup/scripts/82_Add_TwoFactorAuth.php'],
-            '言語コンバータ' => ['modules/Settings/LanguageConverter/models/Module.php'],
-        ];
+        $root = $this->projectRoot();
+        $files = [];
+
+        foreach (self::SCAN_DIRECTORIES as $directory) {
+            $base = $root . '/' . $directory;
+            if (!is_dir($base)) {
+                continue;
+            }
+
+            /** @var iterable<string, \SplFileInfo> $iterator */
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($base, \FilesystemIterator::SKIP_DOTS)
+            );
+            foreach ($iterator as $file) {
+                $relative = substr($file->getPathname(), strlen($root) + 1);
+                if (preg_match('/\.(php|sql|sh)$/', $relative) !== 1) {
+                    continue;
+                }
+                foreach (self::SCAN_EXCLUDES as $exclude) {
+                    if (str_starts_with($relative, $exclude)) {
+                        continue 2;
+                    }
+                }
+                $files[] = $relative;
+            }
+        }
+
+        sort($files);
+
+        return $files;
     }
 
-    #[DataProvider('tableDefinitionFiles')]
-    public function test_8_テーブル定義はcollationまで明示する(string $relativePath): void
+    public function test_7_本体に利用時のutf8mb3指定が残っていない(): void
     {
-        $found = $this->collationMissingLines($relativePath);
+        $found = [];
+        foreach ($this->scanTargetFiles() as $relative) {
+            foreach ($this->legacyCharsetLines($relative) as $line) {
+                $found[] = $relative . ' ' . $line;
+            }
+        }
 
         self::assertSame(
             [],
             $found,
-            '8 ' . $relativePath . ' に collation 未指定のテーブル定義が ' . count($found) . ' 件ある: '
+            '7 utf8mb3 の charset / 照合順序が ' . count($found) . ' 件残っている: '
+            . implode(' / ', array_slice($found, 0, 5))
+        );
+    }
+
+    public function test_8_テーブル定義はcollationまで明示する(): void
+    {
+        $found = [];
+        foreach ($this->scanTargetFiles() as $relative) {
+            foreach ($this->collationMissingLines($relative) as $line) {
+                $found[] = $relative . ' ' . $line;
+            }
+        }
+
+        self::assertSame(
+            [],
+            $found,
+            '8 collation を指定していないテーブル定義が ' . count($found) . ' 件ある: '
             . implode(' / ', array_slice($found, 0, 5))
         );
     }
