@@ -48,7 +48,7 @@ class Settings_LanguageConverter_Module_Model extends Settings_Vtiger_Module_Mod
             `language` varchar(10) default 'all',
             `sequence` int(19),
             PRIMARY KEY (`id`)
-           ) AUTO_INCREMENT=1 DEFAULT CHARSET=utf8");
+           ) AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
     }
 
     public static function convertTranslate($str, $moduleName = null, $language = 'all') {
