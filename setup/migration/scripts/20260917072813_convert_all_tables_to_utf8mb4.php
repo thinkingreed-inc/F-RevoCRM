@@ -64,13 +64,16 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
 
         // 外部キーで結ばれたテーブルは、参照先と参照元の charset が一時的に食い違う。
         // 変換の順序を気にせず済むよう、この処理の間だけ検査を止める。
-        // 復帰は finally に任せる。PHP 自体が落ちた場合は復帰しないが、
-        // このマイグレーションは CLI の単発実行なので接続ごと終了する。
         $this->query("SET FOREIGN_KEY_CHECKS = 0");
         // 接続を使い回す環境（永続接続）で途中終了した場合に備え、終了時にも戻す。
         $database = $this->db->database;
         register_shutdown_function(function () use ($database) {
-            @$database->Execute("SET FOREIGN_KEY_CHECKS = 1");
+            try {
+                @$database->Execute("SET FOREIGN_KEY_CHECKS = 1");
+            } catch (Throwable $e) {
+                // 接続が既に閉じている場合は何もできない（接続ごと消えるので実害もない）。
+                // ここで投げると終了処理中の未捕捉エラーになり、画面に混ざってしまう。
+            }
         });
         try {
             $index = 0;
@@ -178,6 +181,9 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
     private function getDatabaseName() {
         // fetchByAssoc は結果を参照で受け取るため、戻り値を直接渡さず一度変数に入れる。
         $result = $this->db->pquery("SELECT DATABASE() AS db_name", array());
+        if ($result === false) {
+            throw new Exception("接続中のデータベース名を取得できませんでした。");
+        }
         $row = $this->db->fetchByAssoc($result, -1, false);
         $dbName = isset($row['db_name']) ? (string)$row['db_name'] : '';
 
@@ -448,6 +454,9 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
      */
     private function fetchServerVersion() {
         $versionResult = $this->db->pquery("SELECT VERSION() AS version", array());
+        if ($versionResult === false) {
+            return '';
+        }
         $row = $this->db->fetchByAssoc($versionResult, -1, false);
 
         return isset($row['version']) ? (string)$row['version'] : '';
@@ -480,24 +489,33 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
         if (stripos($version, 'mariadb') !== false) {
             $this->log("※MariaDB は動作確認の対象外のため変換を見送る。"
                 . "手動で ALTER DATABASE / ALTER TABLE ... CONVERT TO を実行すること");
+            $this->log("※環境を整えたあとに変換するには、先に実行記録を消すこと: php setup/migration/run_migration.php setup/migration/scripts/20260917072813_convert_all_tables_to_utf8mb4.php -d （そのうえで -d なしで実行する）");
 
             return false;
         }
 
-        if (version_compare($version, '5.7.7', '<')) {
+        $numericVersion = preg_match('/^(\d+\.\d+\.\d+)/', $version, $matches) === 1 ? $matches[1] : $version;
+
+        if (version_compare($numericVersion, '5.7.7', '<')) {
             $this->log("※MySQL 5.7.7 未満は utf8mb4 のインデックス長制限（767 バイト）に抵触するため変換を見送る");
+            $this->log("※環境を整えたあとに変換するには、先に実行記録を消すこと: php setup/migration/run_migration.php setup/migration/scripts/20260917072813_convert_all_tables_to_utf8mb4.php -d （そのうえで -d なしで実行する）");
 
             return false;
         }
 
         // 5.7 系は innodb_large_prefix を切れる。8.0 では廃止され常に有効。
-        if (version_compare($version, '8.0.0', '<')) {
+        if (version_compare($numericVersion, '8.0.0', '<')) {
             $largePrefixResult = $this->db->pquery("SHOW VARIABLES LIKE 'innodb_large_prefix'", array());
+            if ($largePrefixResult === false) {
+                $this->log("※innodb_large_prefix を確認できなかったため変換を見送る");
+
+                return false;
+            }
             $largePrefixRow = $this->db->fetchByAssoc($largePrefixResult, -1, false);
             $largePrefix = isset($largePrefixRow['value']) ? strtoupper((string)$largePrefixRow['value']) : '';
             if ($largePrefix !== '' && $largePrefix !== 'ON' && $largePrefix !== '1') {
-                $this->log("※innodb_large_prefix が無効なため変換を見送る。"
-                    . "有効にしてから実行し直すこと。現在値: {$largePrefix}");
+                $this->log("※innodb_large_prefix が無効なため変換を見送る。現在値: {$largePrefix}");
+                $this->log("※環境を整えたあとに変換するには、先に実行記録を消すこと: php setup/migration/run_migration.php setup/migration/scripts/20260917072813_convert_all_tables_to_utf8mb4.php -d （そのうえで -d なしで実行する）");
 
                 return false;
             }

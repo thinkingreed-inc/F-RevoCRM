@@ -78,7 +78,21 @@ php setup/migration/run_migration.php --all
 - 実行前にデータベースのバックアップを取ること。`ALTER TABLE` は暗黙のコミットを起こすため巻き戻せない
 - 大きなテーブルを含む場合はメタデータロックがかかるため、メンテナンス時間帯に実行すること
 - MariaDB と MySQL 5.7.7 未満では変換を見送る（インストールやアップグレードを止めないため）。
-  その場合は手動で `ALTER DATABASE` / `ALTER TABLE ... CONVERT TO` を実行する
+  見送った場合も実行記録は残るため、環境を整えたあとに変換するには先に記録を消す。
+
+  ```bash
+  # 実行記録を消す
+  php setup/migration/run_migration.php setup/migration/scripts/20260917072813_convert_all_tables_to_utf8mb4.php -d
+  # そのうえで実行する
+  php setup/migration/run_migration.php setup/migration/scripts/20260917072813_convert_all_tables_to_utf8mb4.php
+  ```
+
+  **見送った環境へ新規インストールした場合、モジュール側のテーブル（`vtiger_modcomments`、
+  `vtiger_projecttask`、`vtiger_wsapp_*` など）は utf8mb3 のままになる**。
+  これらは packages 配下の zip から作られ、変換はこのマイグレーションに任せているため。
+  該当する環境では上の手順で変換するか、手動で `ALTER DATABASE` / `ALTER TABLE ... CONVERT TO` を実行する
+- 途中で中断すると、変換済みのテーブルで TEXT 系の列の型が広がったまま残ることがある
+  （`TEXT` → `MEDIUMTEXT`）。データは失われないが、新規インストールした DB とは型が食い違う
 - latin1 など utf8 系でない文字セットの列を持つテーブルは変換しない。
   UTF-8 のバイト列がそのまま入っている場合、変換すると文字化けして戻せないため。
   **対象のテーブルは実行時のログに一覧で出る。2 回目以降は「実行済み」としてスキップされ一覧が出ないので、
