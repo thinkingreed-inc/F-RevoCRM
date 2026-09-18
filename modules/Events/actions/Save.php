@@ -157,8 +157,11 @@ class Events_Save_Action extends Calendar_Save_Action {
 		}
 		$recurringEditMode = $request->get('recurringEditMode');
 		// 更新範囲が指定されない編集（インライン編集・API 経由など）では、
-		// 系列の他の回に触れないようこの回だけの更新として扱う
-		if($recordModel->get('mode') == 'edit' && empty($recurringEditMode)) {
+		// 系列の他の回に触れないようこの回だけの更新として扱う。
+		// 判定は保存前の $recurObjDb で行う。繰り返しでない活動を編集して繰り返しに
+		// 変更する場合は確認ダイアログが出ず recurringEditMode が空のまま送られるため、
+		// ここで current に倒すと繰り返しの回が作られなくなる
+		if($recordModel->get('mode') == 'edit' && empty($recurringEditMode) && !empty($recurObjDb)) {
 			$recurringEditMode = 'current';
 		}
 		$recordModel->set('recurringEditMode', $recurringEditMode);
