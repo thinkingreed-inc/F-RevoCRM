@@ -34,8 +34,10 @@ use PHPUnit\Framework\TestCase;
  *   4  .log 以外のファイルには触らない（対象の限定）
  *   5  サブディレクトリには触らない（対象の限定）
  *   6  シンボリックリンクのリンク先には触らない（対象の限定）
- *   7  パスに glob のメタ文字を含んでも処理する
- *   8  ディレクトリが存在しない場合も例外を投げない（異常系）
+ *   7  .log で終わる名前のディレクトリには触らない（対象の限定）
+ *   8  パスに glob のメタ文字を含んでも処理する
+ *   9  変更件数を集計して出力する
+ *  10  ディレクトリが存在しない場合も例外を投げない（異常系）
  *
  * 基底クラスは includes/runtime/LanguageHandler.php を実物で読み込む。tests/Support/ の
  * スタブが同名クラスを定義するため同じプロセスに同居できない。独立したプロセスで動かし、
@@ -162,9 +164,10 @@ final class FixLogFilePermissionsTest extends TestCase
     {
         $broken = $this->createFile('vtigercrm_20260915.log', 01232);
 
-        $this->apply($this->tmpDir);
+        $output = $this->apply($this->tmpDir);
 
         $this->assertSame('0666', $this->permsOf($broken));
+        $this->assertStringContainsString('変更: 1, スキップ: 0, 失敗: 0', $output, '件数を集計して出力する');
     }
 
     public function test_既に0666のログは変更しない(): void
@@ -230,6 +233,22 @@ final class FixLogFilePermissionsTest extends TestCase
             $this->assertSame('0200', $this->permsOf($target), 'リンク先の権限を書き換えない');
         } finally {
             unlink($link);
+        }
+    }
+
+    public function test_log拡張子のディレクトリには触らない(): void
+    {
+        // ディレクトリを 0666 にするとファイルより影響が大きい。is_file() ガードの固定。
+        $dir = $this->tmpDir . '/archive.log';
+        mkdir($dir, 0300);
+
+        try {
+            $this->apply($this->tmpDir);
+
+            $this->assertSame('0300', $this->permsOf($dir));
+        } finally {
+            chmod($dir, 0700);
+            rmdir($dir);
         }
     }
 
