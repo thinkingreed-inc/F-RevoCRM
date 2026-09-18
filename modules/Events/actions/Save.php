@@ -156,6 +156,11 @@ class Events_Save_Action extends Calendar_Save_Action {
 			$heldevent = true;
 		}
 		$recurringEditMode = $request->get('recurringEditMode');
+		// 更新範囲が指定されない編集（インライン編集・API 経由など）では、
+		// 系列の他の回に触れないようこの回だけの更新として扱う
+		if($recordModel->get('mode') == 'edit' && empty($recurringEditMode)) {
+			$recurringEditMode = 'current';
+		}
 		$recordModel->set('recurringEditMode', $recurringEditMode);
 
 		vimport('~~/modules/Calendar/RepeatEvents.php');

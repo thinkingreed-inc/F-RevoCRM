@@ -131,6 +131,94 @@ class Calendar_RepeatEvents {
 	}
 
 	/**
+	 * 繰り返し系列の親 ID と、更新対象になる活動 ID を返す。
+	 *
+	 * 招待された参加者用にコピーされた活動（invitee_parentid が自分以外）は
+	 * vtiger_activity_recurring_info に登録されないため、招待元の活動をたどって
+	 * 本体の系列を返す。論理削除済みの回は更新対象から除く。
+	 *
+	 * 戻り値の recordId は、渡された活動が系列上のどの回にあたるかを示す。
+	 * 招待コピーを渡した場合は招待元の回の ID になる。
+	 *
+	 * @param int|string $recordId
+	 * @return array{parentId: int|null, recordId: int|null, records: list<int>}
+	 */
+	static function resolveSeries($recordId) {
+		$adb = PearDatabase::getInstance();
+		$recordId = (int) $recordId;
+		$seriesRecordId = $recordId;
+		$parentId = self::findSeriesParentId($recordId);
+
+		if (empty($parentId)) {
+			$result = $adb->pquery('SELECT invitee_parentid FROM vtiger_activity WHERE activityid = ?', array($recordId));
+			if ($adb->num_rows($result) > 0) {
+				$inviteeParentId = (int) $adb->query_result($result, 0, 'invitee_parentid');
+				if (!empty($inviteeParentId) && $inviteeParentId !== $recordId) {
+					$parentId = self::findSeriesParentId($inviteeParentId);
+					if (!empty($parentId)) {
+						$seriesRecordId = $inviteeParentId;
+					}
+				}
+			}
+		}
+
+		if (empty($parentId)) {
+			return array('parentId' => null, 'recordId' => null, 'records' => array());
+		}
+
+		$result = $adb->pquery('SELECT ri.recurrenceid FROM vtiger_activity_recurring_info ri
+					INNER JOIN vtiger_crmentity ce ON ce.crmid = ri.recurrenceid
+					INNER JOIN vtiger_activity a ON a.activityid = ri.recurrenceid
+					WHERE ri.activityid = ? AND ce.deleted = 0
+					ORDER BY a.date_start, a.time_start, ri.recurrenceid', array($parentId));
+
+		$records = array();
+		$noofrows = $adb->num_rows($result);
+		for ($i = 0; $i < $noofrows; $i++) {
+			$records[] = (int) $adb->query_result($result, $i, 'recurrenceid');
+		}
+
+		return array('parentId' => $parentId, 'recordId' => $seriesRecordId, 'records' => $records);
+	}
+
+	/**
+	 * 活動を繰り返し系列から取り除く。
+	 *
+	 * 削除された活動が系列に残っていると、以降の更新で回と活動の対応がずれ、
+	 * 末尾の回に変更が届かなくなるため、削除時には必ず取り除く。
+	 * 系列の親を取り除いた場合も、残りの回は同じ親の系列にとどまる。
+	 *
+	 * @param int|string $recordId
+	 * @return void
+	 */
+	static function removeFromSeries($recordId) {
+		$adb = PearDatabase::getInstance();
+		$adb->pquery('DELETE FROM vtiger_activity_recurring_info WHERE recurrenceid = ?', array((int) $recordId));
+	}
+
+	/**
+	 * 活動が属する繰り返し系列の親 ID を返す。属していなければ null。
+	 *
+	 * @param int $recordId
+	 * @return int|null
+	 */
+	private static function findSeriesParentId($recordId) {
+		$adb = PearDatabase::getInstance();
+
+		$result = $adb->pquery('SELECT 1 FROM vtiger_activity_recurring_info WHERE activityid = ? LIMIT 1', array($recordId));
+		if ($adb->num_rows($result) > 0) {
+			return (int) $recordId;
+		}
+
+		$result = $adb->pquery('SELECT activityid FROM vtiger_activity_recurring_info WHERE recurrenceid = ? LIMIT 1', array($recordId));
+		if ($adb->num_rows($result) > 0) {
+			return (int) $adb->query_result($result, 0, 'activityid');
+		}
+
+		return null;
+	}
+
+	/**
 	 * Repeat Activity instance till given limit.
 	 */
 	static function repeat($focus, $recurObj) {
@@ -148,48 +236,50 @@ class Calendar_RepeatEvents {
 		$skip_focus_fields = Array ('record_id', 'createdtime', 'modifiedtime');
 		
 		if($focus->column_fields['mode'] == 'edit') {
-			$childRecords = array();
-			$result = $adb->pquery("SELECT * FROM vtiger_activity_recurring_info WHERE activityid=?", array($parentId));
-			$noofrows = $adb->num_rows($result);
-			$parentRecurringId = $parentId;
-			if($noofrows <= 0) {
-				$queryResult = $adb->pquery("SELECT * FROM vtiger_activity_recurring_info WHERE recurrenceid=?", array($parentId));
-				if($adb->num_rows($queryResult) > 0) {
-					$parentRecurringId = $adb->query_result($queryResult, 0,"activityid");
-					$result = $adb->pquery("SELECT * FROM vtiger_activity_recurring_info WHERE activityid=?", array($parentRecurringId));
-					$noofrows = $adb->num_rows($result);
-					
-					if($focus->column_fields['recurringEditMode'] == 'all') {
-						$parentModel = Vtiger_Record_Model::getInstanceById($parentId);
-						$parentResult = $adb->pquery("SELECT 1 FROM vtiger_activity_recurring_info WHERE recurrenceid=?", array($parentRecurringId));
-						if($adb->num_rows($parentResult) >= 1) {
-							$parentModel = Vtiger_Record_Model::getInstanceById($parentRecurringId);
-						} else {
-							$recurringRecordsList = $parentModel->getRecurringRecordsList();
-							foreach($recurringRecordsList as $parent=>$childs) {
-								$parentRecurringId = $parent;
-								$recurringRecords = $childs;
-							}
-							$parentModel = Vtiger_Record_Model::getInstanceById($recurringRecords[0]);
-						}
-						$_REQUEST['date_start'] = $parentModel->get('date_start');
-						$recurObj = getrecurringObjValue();
-					}
-				}
+			$recurringEditMode = $focus->column_fields['recurringEditMode'];
+			if($recurringEditMode != 'future' && $recurringEditMode != 'all') {
+				// この回だけを更新する場合、系列の他の回には触らない
+				return;
 			}
-			for($i=0; $i<$noofrows; $i++) {
-				$childRecords[] = $adb->query_result($result, $i,"recurrenceid");
+
+			$series = self::resolveSeries($parentId);
+			$parentRecurringId = $series['parentId'];
+			// 招待された参加者用のコピーを編集した場合、系列上の位置は招待元の回で判定する
+			$seriesRecordId = $series['recordId'];
+			$childRecords = $series['records'];
+
+			// 系列を引けない活動をここで繰り返すと、元の系列とは別に活動が作られて
+			// 重複するため、繰り返しの対象外として扱う
+			if(empty($childRecords)) {
+				return;
 			}
+
+			if($seriesRecordId != $parentId) {
+				// 招待された参加者用のコピーを起点にした場合、新しく作る回の担当は系列の活動に合わせる
+				$seriesRecordModel = Vtiger_Record_Model::getInstanceById($seriesRecordId, 'Events');
+				$focus->column_fields['assigned_user_id'] = $seriesRecordModel->get('assigned_user_id');
+			}
+
+			if($focus->column_fields['recurringEditMode'] == 'all' && $seriesRecordId != $childRecords[0]) {
+				// 全ての回を対象にする場合は、系列の 1 回目を起点に日付を計算し直す
+				$parentModel = Vtiger_Record_Model::getInstanceById($childRecords[0]);
+				$_REQUEST['date_start'] = $parentModel->get('date_start');
+				$recurObj = getrecurringObjValue();
+			}
+
 			if($focus->column_fields['recurringEditMode'] == 'future') {
-				$parentKey = array_keys($childRecords, $parentId);
-				$childRecords = array_slice($childRecords, $parentKey[0]);
+				$parentKey = array_keys($childRecords, $seriesRecordId);
+				if(!empty($parentKey)) {
+					$childRecords = array_slice($childRecords, $parentKey[0]);
+				}
 			}
 			$eventStartDate = $focus->column_fields['date_start'];
 			$interval = strtotime($focus->column_fields['due_date']) - 
 						strtotime($focus->column_fields['date_start']);
 			$i = 0;
-			$updatedRecords = array();
-			
+			// 編集した回そのものは保存済み。削除対象に回さないよう更新済みとして扱う
+			$updatedRecords = array($seriesRecordId);
+
 			if(self::$recurringTypeChanged && $focus->column_fields['recurringEditMode'] == 'future') {
 				foreach($childRecords as $record) {
 					$adb->pquery("DELETE FROM vtiger_activity_recurring_info WHERE activityid=? AND recurrenceid=?", array($parentRecurringId, $record));
@@ -280,10 +370,7 @@ class Calendar_RepeatEvents {
 				foreach($deletingRecords as $record) {
 					//delete reocrd with that reocrdid
 					$recordModel = Vtiger_Record_Model::getInstanceById($record);
-					if(!empty($parentRecurringId)) {
-						$parentId = $parentRecurringId;
-					} 
-					$adb->pquery("DELETE FROM vtiger_activity_recurring_info WHERE activityid=? AND recurrenceid=?", array($parentId, $record));
+					self::removeFromSeries($record);
 					$recordModel->delete();
 				}
 			}
@@ -358,7 +445,7 @@ class Calendar_RepeatEvents {
 		} else {
 			self::$recurringTypeChanged = false;
 		}
-		if($focus->column_fields['recurringtype'] != '' && $focus->column_fields['recurringtype'] != '--None--' && $focus->column_field['recurringEditMode'] != 'current') {
+		if($focus->column_fields['recurringtype'] != '' && $focus->column_fields['recurringtype'] != '--None--' && $focus->column_fields['recurringEditMode'] != 'current') {
 			//If no followup mode, recurring events status should not be held for future events
 			if($focus->column_fields['eventstatus'] == 'Held') {
 				if($focus->column_fields['mode'] == '') {
