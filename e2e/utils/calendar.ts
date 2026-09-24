@@ -411,20 +411,31 @@ const RECUR_LABEL: Record<RecurringType, string> = {
  * 繰り返し種別(recurringtype: 日/週/月/年)を設定して保存する。
  * (繰り返し UI はモーダルには無く、このフル編集画面にのみ存在する)
  */
+export interface RecurringEventOptions {
+  /**
+   * 繰り返しの終了日(yyyy-mm-dd)。省略するとフォーム既定(開始日の翌日)になるため、
+   * 回数を数えるテストでは必ず指定する(既定のままだと 日=2回、週/月/年=1回 しか作られない)。
+   */
+  limitDate?: string;
+  /** 参加者として招待するユーザーの user_name。招待した回ごとに参加者用のコピーが作られる。 */
+  inviteeUserNames?: string[];
+}
+
 export async function createRecurringEvent(
   page: Page,
   subject: string,
   recurringType: RecurringType,
-  allDay = false
+  allDay = false,
+  options: RecurringEventOptions = {}
 ): Promise<CreatedCalendarEvent> {
   // モーダル→詳細入力→フルフォームの一連は重く、高並列時に UI 操作が競合して
   // まれに失敗する。作成できていなければ 1 度だけやり直す(冪等: 件名で検索して確認)。
   try {
-    return await attemptCreateRecurringEvent(page, subject, recurringType, allDay);
+    return await attemptCreateRecurringEvent(page, subject, recurringType, allDay, options);
   } catch {
     const existing = await findEventBySubjectOrNull(subject, 3);
     if (existing) return existing;
-    return await attemptCreateRecurringEvent(page, subject, recurringType, allDay);
+    return await attemptCreateRecurringEvent(page, subject, recurringType, allDay, options);
   }
 }
 
@@ -432,7 +443,8 @@ async function attemptCreateRecurringEvent(
   page: Page,
   subject: string,
   recurringType: RecurringType,
-  allDay = false
+  allDay = false,
+  options: RecurringEventOptions = {}
 ): Promise<CreatedCalendarEvent> {
   await page.goto(url("index.php?module=Calendar&view=Calendar&app=SALES"));
   await page.waitForLoadState("networkidle");
@@ -471,6 +483,15 @@ async function attemptCreateRecurringEvent(
     .locator('select[name="recurringtype"]')
     .selectOption({ label: RECUR_LABEL[recurringType] });
   await page.waitForTimeout(300);
+  if (options.limitDate) {
+    await page
+      .locator('input[name="calendar_repeat_limit_date"]')
+      .fill(options.limitDate);
+    await page.waitForTimeout(300);
+  }
+  if (options.inviteeUserNames?.length) {
+    await selectInviteesOnEditForm(page, options.inviteeUserNames);
+  }
   await page.locator("button.saveButton").first().click();
   await acceptOverlapConfirmIfShown(page);
   await page.waitForLoadState("networkidle");
@@ -582,4 +603,189 @@ export async function expectEventDeleted(subject: string): Promise<void> {
     await new Promise((r) => setTimeout(r, 1000));
   }
   expect(count).toBe(0);
+}
+
+/**
+ * フル編集画面(view=Edit&mode=Events)の「参加者の招待」で参加者を選ぶ。
+ *
+ * モーダル側の招待 UI(`addInvitees`)とは別物で、こちらは素の複数選択 select
+ * (`selectedusers[]`)。value はユーザーID(数値)なので user_name から引き直す。
+ */
+async function selectInviteesOnEditForm(
+  page: Page,
+  userNames: string[]
+): Promise<void> {
+  const ids: string[] = [];
+  for (const name of userNames) {
+    const wsId = await resolveUserWsId(name);
+    ids.push(wsId.split("x")[1]);
+  }
+  const select = page.locator('select[name="selectedusers[]"]').first();
+  await select.waitFor({ state: "attached", timeout: 10000 });
+  // 既に選ばれている作成者(admin)を外さないよう、現在の選択に足して指定し直す。
+  const current = await select.evaluate((el) =>
+    Array.from((el as HTMLSelectElement).selectedOptions).map((o) => o.value)
+  );
+  const merged = Array.from(new Set([...current, ...ids]));
+  await select.selectOption(merged.map((value) => ({ value })));
+  await page.waitForTimeout(300);
+}
+
+/** 繰り返し予定の 1 回分。件名で引いた結果を日付順に並べたもの。 */
+export interface EventOccurrence {
+  wsId: string;
+  recordId: string;
+  dateStart: string;
+  location: string;
+  /** 担当(webservice ユーザーID 例 "19x7")。招待コピーは参加者、本体は招集者。 */
+  assignedUserId: string;
+  /** 招待元の活動ID。自分自身以外を指していれば参加者用のコピー。 */
+  inviteeParentId: string;
+}
+
+/**
+ * 件名に一致する予定を全て引き、開始日順に並べて返す。
+ *
+ * 繰り返しは 1 回ごとにレコードが作られ、参加者を招待するとさらに参加者用の
+ * コピーが回ごとに作られる(コピーは `vtiger_activity_recurring_info` には載らない)。
+ * 「何回分できたか」「どの回まで更新が届いたか」を数えるための土台。
+ *
+ * 保存の反映には数秒のラグがあるため、期待件数が分かっている場合は
+ * `expectedCount` を渡して満たすまで待つ。
+ */
+export async function listEventsBySubject(
+  subject: string,
+  expectedCount?: number,
+  attempts = 20
+): Promise<EventOccurrence[]> {
+  const sn = await apiSession();
+  let rows: Record<string, string>[] = [];
+  for (let i = 0; i < attempts; i++) {
+    rows = await frQuery(
+      sn,
+      `SELECT * FROM Events WHERE subject='${subject}';`
+    ).catch(() => [] as Record<string, string>[]);
+    if (expectedCount === undefined ? rows.length > 0 : rows.length === expectedCount) {
+      break;
+    }
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+  return rows
+    .map((r) => ({
+      wsId: r.id,
+      recordId: String(r.id).split("x")[1],
+      dateStart: r.date_start ?? "",
+      location: r.location ?? "",
+      assignedUserId: r.assigned_user_id ?? "",
+      inviteeParentId: r.invitee_parentid ?? "",
+    }))
+    .sort(
+      (a, b) =>
+        a.dateStart.localeCompare(b.dateStart) ||
+        Number(a.recordId) - Number(b.recordId)
+    );
+}
+
+/** 更新範囲の確認ダイアログの選択肢。 */
+export type RecurringEditScope = "current" | "future" | "all";
+
+const RECUR_SCOPE_CLASS: Record<RecurringEditScope, string> = {
+  current: "onlyThisEvent",
+  future: "futureEvents",
+  all: "allEvents",
+};
+
+/**
+ * 繰り返し予定の編集画面で保存し、出てきた「繰り返し予定の変更」ダイアログで
+ * 更新範囲を選ぶ。
+ *
+ * ダイアログはテンプレート側の `.recurringEventsUpdation` を複製して表示するため、
+ * DOM には非表示の原本も残る。可視側だけを掴む。
+ * 選択後は重複確認ダイアログが挟まることがあるので、出たら承認して先へ進める。
+ */
+export async function saveWithRecurringScope(
+  page: Page,
+  scope: RecurringEditScope
+): Promise<void> {
+  await page.locator("button.saveButton").first().click();
+  const button = page
+    .locator(`.recurringEventsUpdation:visible .${RECUR_SCOPE_CLASS[scope]}`)
+    .first();
+  await button.waitFor({ state: "visible", timeout: 20000 });
+  await button.click();
+  await acceptOverlapConfirmIfShown(page);
+  await page.waitForLoadState("networkidle");
+}
+
+/**
+ * 既存の予定(繰り返しでないもの)を編集して繰り返しに変更する。
+ *
+ * この経路は確認ダイアログが出ない(まだ繰り返しでないため)。
+ * 新規作成から繰り返しを作る経路とは別処理を通るので、分けて検証する必要がある。
+ */
+export async function convertEventToRecurring(
+  page: Page,
+  recordId: string,
+  recurringType: RecurringType,
+  limitDate: string
+): Promise<void> {
+  await page.goto(
+    url(`index.php?module=Calendar&view=Edit&mode=Events&record=${recordId}&app=SALES`)
+  );
+  await page.waitForLoadState("networkidle");
+  const recurCheck = page.locator('input[name="recurringcheck"]').first();
+  await recurCheck.waitFor({ state: "attached", timeout: 15000 });
+  if (!(await recurCheck.isChecked().catch(() => false))) {
+    await recurCheck.check({ force: true });
+  }
+  await page.waitForTimeout(400);
+  await page
+    .locator('select[name="recurringtype"]')
+    .selectOption({ label: RECUR_LABEL[recurringType] });
+  await page.locator('input[name="calendar_repeat_limit_date"]').fill(limitDate);
+  await page.waitForTimeout(300);
+  await page.locator("button.saveButton").first().click();
+  await acceptOverlapConfirmIfShown(page);
+  await page.waitForLoadState("networkidle");
+}
+
+/**
+ * 繰り返し予定の 1 回分を開いて「場所」を書き換え、更新範囲を選んで保存する。
+ * どの回まで更新が届いたかを「場所」で追えるようにするためのヘルパ。
+ */
+export async function updateEventLocationWithScope(
+  page: Page,
+  recordId: string,
+  location: string,
+  scope: RecurringEditScope
+): Promise<void> {
+  await page.goto(
+    url(`index.php?module=Calendar&view=Edit&mode=Events&record=${recordId}&app=SALES`)
+  );
+  await page.waitForLoadState("networkidle");
+  const field = page.locator('input[name="location"]').first();
+  await field.waitFor({ state: "visible", timeout: 15000 });
+  await field.fill(location);
+  await saveWithRecurringScope(page, scope);
+}
+
+/**
+ * 繰り返しでない予定の「場所」を書き換えて保存する。
+ * 繰り返しの確認ダイアログは出ないので、そのまま保存まで進む。
+ */
+export async function updateEventLocation(
+  page: Page,
+  recordId: string,
+  location: string
+): Promise<void> {
+  await page.goto(
+    url(`index.php?module=Calendar&view=Edit&mode=Events&record=${recordId}&app=SALES`)
+  );
+  await page.waitForLoadState("networkidle");
+  const field = page.locator('input[name="location"]').first();
+  await field.waitFor({ state: "visible", timeout: 15000 });
+  await field.fill(location);
+  await page.locator("button.saveButton").first().click();
+  await acceptOverlapConfirmIfShown(page);
+  await page.waitForLoadState("networkidle");
 }

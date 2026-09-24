@@ -100,7 +100,11 @@ class Calendar_QuickCreateAjax_View extends Vtiger_QuickCreateAjax_View {
 
 		if($moduleName=='Events') {
 			$currentUser = Users_Record_Model::getCurrentUserModel();
-			$accessibleUsers = $currentUser->getAccessibleUsers();
+			// 既存の参加者は割り当て可能ユーザーの範囲外でも候補に残す(Edit.php と同じ理由)
+			$accessibleUsers = $recordModel->getInviteeOptions(
+				$currentUser->getAccessibleUsers(),
+				$currentUser->getAccessibleGroups()
+			);
 			$viewer->assign('ACCESSIBLE_USERS', $accessibleUsers);
 			$viewer->assign('INVITIES_SELECTED', $recordModel->getInvities());
 			$viewer->assign('INVITEES_DETAILS', $recordModel->getInviteesDetails());
