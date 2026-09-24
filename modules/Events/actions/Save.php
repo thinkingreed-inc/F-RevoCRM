@@ -101,8 +101,15 @@ class Events_Save_Action extends Calendar_Save_Action {
 		$adb = PearDatabase::getInstance();
 		$recordModel = $this->getRecordModelFromRequest($request);
 		$recurObjDb = false;
+		$preSaveData = null;
 		if($recordModel->get('mode') == 'edit') {
 			$recurObjDb = $recordModel->getRecurringObject();
+			// 繰り返しの他の回へコピーするフィールドを判定するための保存前スナップショット。
+			// 保存後に動くワークフロー (VTUpdateFieldsTask) が vtiger.entity.beforesave を
+			// 再発火して VTEntityDelta の保存前データを保存後の値で上書きするため、
+			// 保存前のここで控えておく
+			vimport('~~/modules/Calendar/RepeatEvents.php');
+			$preSaveData = Calendar_RepeatEvents::captureEntitySnapshot($recordModel->getId());
 		}
 		$recordModel->save();
 		$originalRecordId = $recordModel->getId();
@@ -180,7 +187,7 @@ class Events_Save_Action extends Calendar_Save_Action {
 				$focus->is_allday = false;
 			}
 			try {
-				Calendar_RepeatEvents::repeatFromRequest($focus, $recurObjDb);
+				Calendar_RepeatEvents::repeatFromRequest($focus, $recurObjDb, $preSaveData);
 			} catch (DuplicateException $e) {
                 $requestData = $request->getAll();
 			    $requestData['view'] = 'Edit';
