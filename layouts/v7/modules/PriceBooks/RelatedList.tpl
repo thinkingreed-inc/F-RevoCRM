@@ -97,6 +97,8 @@
 												{assign var=CURRENCY_VALUE value=CurrencyField::convertToUserFormat($RELATED_RECORD->get($RELATED_HEADERNAME), null, true)}
 											{/if}
 											{CurrencyField::appendCurrencySymbol($CURRENCY_VALUE, $CURRENCY_SYMBOL)}
+										{else if $HEADER_FIELD->getFieldDataType() eq 'text'}
+											{$RELATED_RECORD->getDisplayValue($RELATED_HEADERNAME)|decode_html|strip_tags|escape:'html'}
 										{else}
 											{$RELATED_RECORD->getDisplayValue($RELATED_HEADERNAME)}
 										{/if}

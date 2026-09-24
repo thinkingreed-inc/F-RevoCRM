@@ -20,11 +20,11 @@
 			<div class="recordBasicInfo">
 				<div class="info-row">
 					<h4>
-						<span class="recordLabel pushDown" title="{$RECORD->getName()}">
+						<span class="recordLabel pushDown" title="{$RECORD->getName()|decode_html|strip_tags|escape:'html'}">
 							{foreach item=NAME_FIELD from=$MODULE_MODEL->getNameFields()}
 								{assign var=FIELD_MODEL value=$MODULE_MODEL->getField($NAME_FIELD)}
 								{if $FIELD_MODEL->getPermissions()}
-									<span class="{$NAME_FIELD}">{$RECORD->get($NAME_FIELD)}</span>&nbsp;
+									<span class="{$NAME_FIELD}">{$RECORD->get($NAME_FIELD)|decode_html|strip_tags|escape:'html'}</span>&nbsp;
 								{/if}
 							{/foreach}
 						</span>

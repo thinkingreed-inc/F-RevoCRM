@@ -131,7 +131,7 @@
 							{foreach item=HEADER_FIELD from=$RELATED_HEADERS}
 								{assign var=RELATED_HEADERNAME value=$HEADER_FIELD->get('name')}
 								{assign var=RELATED_LIST_VALUE value=$RELATED_RECORD->get($RELATED_HEADERNAME)}
-								<td class="relatedListEntryValues" title="{strip_tags($RELATED_RECORD->getDisplayValue($RELATED_HEADERNAME))}" data-field-type="{$HEADER_FIELD->getFieldDataType()}" nowrap>
+								<td class="relatedListEntryValues" title="{$RELATED_RECORD->getDisplayValue($RELATED_HEADERNAME)|decode_html|strip_tags|escape:'html'}" data-field-type="{$HEADER_FIELD->getFieldDataType()}" nowrap>
 									<span class="value textOverflowEllipsis">
 										{if $RELATED_MODULE_NAME eq 'Documents' && $RELATED_HEADERNAME eq 'document_source'}
 											<center>{$RELATED_RECORD->get($RELATED_HEADERNAME)}</center>
@@ -187,19 +187,23 @@
 											{else}
 												{if $RELATED_RECORD->get('visibility') == vtranslate('Private', $MODULE ) && $OWNER_ID != $CURRENT_USER_ID && !$CURRENT_USER_MODEL->isAdminUser()}
 													{else}
-														{$RELATED_RECORD->getDisplayValue($RELATED_HEADERNAME)}
-														{* Documents list view special actions "view file" and "download file" *}
-														{if $RELATED_MODULE_NAME eq 'Documents' && $RELATED_HEADERNAME eq 'filename' && isPermitted($RELATED_MODULE_NAME, 'DetailView', $RELATED_RECORD->getId()) eq 'yes'}
-															<span class="actionImages">
-																{assign var=RECORD_ID value=$RELATED_RECORD->getId()}
-																{assign var="DOCUMENT_RECORD_MODEL" value=Vtiger_Record_Model::getInstanceById($RECORD_ID)}
-																{if $DOCUMENT_RECORD_MODEL->get('filename') && $DOCUMENT_RECORD_MODEL->get('filestatus')}
-																	<a name="viewfile" href="javascript:void(0)" data-filelocationtype="{$DOCUMENT_RECORD_MODEL->get('filelocationtype')}" data-filename="{$DOCUMENT_RECORD_MODEL->get('filename')}" onclick="Vtiger_Header_Js.previewFile(event)"><i title="{vtranslate('LBL_VIEW_FILE', $RELATED_MODULE_NAME)}" class="icon-picture alignMiddle"></i></a>&nbsp;
-																	{/if}
-																	{if $DOCUMENT_RECORD_MODEL->get('filename') && $DOCUMENT_RECORD_MODEL->get('filestatus') && $DOCUMENT_RECORD_MODEL->get('filelocationtype') eq 'I'}
-																	<a name="downloadfile" href="{$DOCUMENT_RECORD_MODEL->getDownloadFileURL()}"><i title="{vtranslate('LBL_DOWNLOAD_FILE', $RELATED_MODULE_NAME)}" class="icon-download-alt alignMiddle"></i></a>&nbsp;
-																	{/if}
-															</span>
+														{if $HEADER_FIELD->getFieldDataType() eq 'text'}
+															{$RELATED_RECORD->getDisplayValue($RELATED_HEADERNAME)|decode_html|strip_tags|escape:'html'}
+														{else}
+															{$RELATED_RECORD->getDisplayValue($RELATED_HEADERNAME)}
+															{* Documents list view special actions "view file" and "download file" *}
+															{if $RELATED_MODULE_NAME eq 'Documents' && $RELATED_HEADERNAME eq 'filename' && isPermitted($RELATED_MODULE_NAME, 'DetailView', $RELATED_RECORD->getId()) eq 'yes'}
+																<span class="actionImages">
+																	{assign var=RECORD_ID value=$RELATED_RECORD->getId()}
+																	{assign var="DOCUMENT_RECORD_MODEL" value=Vtiger_Record_Model::getInstanceById($RECORD_ID)}
+																	{if $DOCUMENT_RECORD_MODEL->get('filename') && $DOCUMENT_RECORD_MODEL->get('filestatus')}
+																		<a name="viewfile" href="javascript:void(0)" data-filelocationtype="{$DOCUMENT_RECORD_MODEL->get('filelocationtype')}" data-filename="{$DOCUMENT_RECORD_MODEL->get('filename')}" onclick="Vtiger_Header_Js.previewFile(event)"><i title="{vtranslate('LBL_VIEW_FILE', $RELATED_MODULE_NAME)}" class="icon-picture alignMiddle"></i></a>&nbsp;
+																		{/if}
+																		{if $DOCUMENT_RECORD_MODEL->get('filename') && $DOCUMENT_RECORD_MODEL->get('filestatus') && $DOCUMENT_RECORD_MODEL->get('filelocationtype') eq 'I'}
+																		<a name="downloadfile" href="{$DOCUMENT_RECORD_MODEL->getDownloadFileURL()}"><i title="{vtranslate('LBL_DOWNLOAD_FILE', $RELATED_MODULE_NAME)}" class="icon-download-alt alignMiddle"></i></a>&nbsp;
+																		{/if}
+																</span>
+															{/if}
 														{/if}
 												{/if}
 											{/if}
