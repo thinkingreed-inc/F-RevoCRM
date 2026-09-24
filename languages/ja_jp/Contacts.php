@@ -31,7 +31,6 @@ $languageStrings = array(
 	'Assistant' => 'アシスタント名',
 	'Assistant Phone' => 'アシスタント電話番号',
 	'Do Not Call' => '連絡不可',
-	'Reference' => '参照',
 	'Portal User' => 'ポータルユーザー',
 	'Mailing Street' => '番地 (郵送先)',
 	'Mailing City' => '市町村区 (郵送先)',
