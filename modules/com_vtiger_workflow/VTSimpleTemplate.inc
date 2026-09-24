@@ -19,7 +19,7 @@ class VTSimpleTemplate{
 		return $this->parseTemplate();
 	}
 
-	private function matchHandler($match){
+	protected function matchHandler($match){
 		preg_match('/\((\w+) : \(([_\w]+)\) (\w+)\)/', $match[1], $matches);
 		if ($match[1] == 'logo') {
 			return $this->getMetaValue($match[1]);
@@ -132,7 +132,24 @@ class VTSimpleTemplate{
 	}
 
 	function parseTemplate(){
-		return preg_replace_callback('/\\$(\w+|\((\w+) : \(([_\w]+)\) (\w+)\))/', array($this,"matchHandler"), $this->template);
+		return preg_replace_callback('/\\$(\w+|\((\w+) : \(([_\w]+)\) (\w+)\))/', array($this,"renderMatch"), $this->template);
+	}
+
+	/**
+	 * 差し込み1件分をレンダリングする。
+	 * 正規表現をサブクラスへ複製させないための中継点。
+	 */
+	protected function renderMatch($match){
+		return $this->escapeValue($this->matchHandler($match));
+	}
+
+	/**
+	 * 差し込み値の後処理フック。
+	 * 既定は素通し（メール本文のようにHTMLをそのまま使う用途）。
+	 * 出力先がJSON / HTTPヘッダー / URL の場合はサブクラスで上書きする。
+	 */
+	protected function escapeValue($value){
+		return $value;
 	}
 
 	function getCompanySetting($fieldname) {

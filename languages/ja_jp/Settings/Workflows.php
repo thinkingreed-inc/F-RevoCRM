@@ -151,6 +151,7 @@ $languageStrings = array(
     'LBL_VTSMSTask' => 'SMS', 
     'LBL_VTPushNotificationTask' => 'モバイル通知',
     'LBL_VTCreateEntityTask' => 'レコードの作成',
+    'LBL_VTCurlTask' => 'Curlリクエスト',
 	'LBL_MAX_SCHEDULED_WORKFLOWS_EXCEEDED' => '最大%sのスケジュールワークフローが作成できます。最大数を超えました。',
 
 	//F-RevoCRM
@@ -223,6 +224,41 @@ $languageStrings = array(
 	'week days ago' => '営業日前',
 	'more than week days ago' => '営業日以上前',
 	'less than week days ago' => '営業日未満前',
+
+	// Curl Task
+	'VTCurlTask' => 'Curlリクエスト',
+	'LBL_CURL_URL' => 'リクエストURL',
+	'LBL_CURL_METHOD' => 'HTTPメソッド',
+	'LBL_CURL_HEADERS' => 'リクエストヘッダー',
+	'LBL_CURL_HEADERS_HELP' => '1行に1ヘッダーを記述してください（例: Content-Type: application/json）',
+	'LBL_CURL_BODY' => 'リクエストボディ',
+	'LBL_CURL_TIMEOUT' => 'タイムアウト（秒）',
+	'LBL_CURL_TIMEOUT_HELP' => '1〜60秒の範囲で指定してください（デフォルト: 30秒）',
+	'LBL_CURL_PRESET' => 'プリセット',
+	'LBL_CURL_PRESET_TEAMS' => 'Teams',
+	'LBL_CURL_PRESET_SLACK' => 'Slack',
+	'LBL_CURL_PRESET_GENERIC' => '汎用',
+	'LBL_CURL_PRESET_OVERWRITE_CONFIRM' => '既存の内容を上書きします。よろしいですか？',
+	'LBL_CURL_FORMAT' => '整形',
+	'LBL_CURL_INSERT_FIELD' => 'フィールド挿入',
+	'LBL_CURL_TEST_SEND' => 'テスト送信',
+	'LBL_CURL_TEST_SENDING' => '送信中...',
+	'LBL_CURL_TEST_ERROR' => 'エラー',
+	'LBL_CURL_TEST_RESPONSE' => 'レスポンス',
+	'LBL_CURL_UNKNOWN_ERROR' => '不明なエラー',
+	'LBL_CURL_NO_RESPONSE' => 'サーバから応答がありません',
+	'LBL_CURL_ERR_INVALID_URL' => 'URLの形式が不正です',
+	'LBL_CURL_ERR_SCHEME_NOT_ALLOWED' => 'http / https 以外のスキームは使用できません',
+	'LBL_CURL_ERR_EMPTY_HOST' => 'ホスト名が空です',
+	'LBL_CURL_ERR_DNS_FAILED' => 'ホスト名を解決できませんでした',
+	'LBL_CURL_ERR_PRIVATE_NETWORK' => '内部ネットワーク宛のURLは使用できません',
+	'LBL_CURL_JSON_VALID' => 'JSON OK',
+	'LBL_CURL_JSON_INVALID' => '不正なJSON',
+	'LBL_CURL_OK' => 'OK',
+	'LBL_CURL_CANCEL' => 'キャンセル',
+	'LBL_CURL_TEST_SEND_NOTE' => 'テスト送信では $項目名 などのフィールド値は置換されず、そのまま送信されます。実際の値の埋め込みはワークフロー実行時に行われます。',
+	'LBL_CURL_ADAPTIVE_CARD_DESIGNER' => 'Adaptive Card デザイナーで編集',
+	'Curl Request' => 'Curlリクエスト',
 );
 
 $jsLanguageStrings = array(
@@ -238,9 +274,10 @@ $jsLanguageStrings = array(
     'VTCreateTodoTask' => 'TODOの作成',
     'VTCreateEventTask' => '活動の作成',
     'VTUpdateFieldsTask' => '項目の値の更新',
-    'VTSMSTask' => 'SMS送信', 
+    'VTSMSTask' => 'SMS送信',
     'VTPushNotificationTask' => 'モバイルプッシュ通知',
     'VTCreateEntityTask' => 'レコードの作成',
-    'LBL_EXPRESSION_INVALID' => '表現式が間違っています'
+    'VTCurlTask' => 'Curlリクエスト',
+    'LBL_EXPRESSION_INVALID' => '表現式が間違っています',
 );
 

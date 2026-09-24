@@ -3,6 +3,7 @@ import "./index.css";
 import { QuickCreate, CalendarQuickCreate } from "@/components/QuickCreate";
 import { AppMenu } from "@/components/AppMenu";
 import { ActivityList } from "@/components/ActivityList";
+import { CurlTaskForm } from "@/components/CurlTask";
 
 // QuickCreate本体コンポーネントの登録
 // イベント: save, cancel, go-to-full-form, open-change (CustomEvent)
@@ -53,4 +54,17 @@ createWebComponent(ActivityList, "activity-list", [
   "mode",
   "limit",
   "refresh-key",
+]);
+
+// Curlワークフロータスクの設定UI
+// 属性: url, method, headers, body, timeout, fields-json, record-id, source-module
+// fields-json: 差し込み可能フィールド一覧 [{"name":"subject","label":"件名"}, ...]
+createWebComponent(CurlTaskForm, "vt-curl-task", [
+  "url",
+  "method",
+  "headers",
+  "body",
+  "timeout",
+  "fields-json",
+  "labels-json",
 ]);
