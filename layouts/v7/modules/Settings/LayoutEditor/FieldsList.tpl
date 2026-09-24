@@ -146,21 +146,25 @@
                                   />&nbsp;{vtranslate('LBL_MASS_EDIT',$QUALIFIED_MODULE)}
                             </span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                             {assign var=IS_HEADER_FIELD value=$FIELD_MODEL->isHeaderField()}
+                            {* ラベル(entityname)項目のうち、表示が有効な最後の1項目は無効にできないようにする *}
+                            {assign var=IS_LAST_VISIBLE_NAME_FIELD value=$FIELD_MODEL->isLastVisibleNameField()}
+                            {assign var=HEADER_FIELD_LOCKED value=$IS_LAST_VISIBLE_NAME_FIELD && $IS_HEADER_FIELD}
+                            {assign var=SUMMARY_FIELD_LOCKED value=$IS_LAST_VISIBLE_NAME_FIELD && $FIELD_MODEL->isSummaryField()}
                             <span class="header switch {if (!$IS_HEADER_FIELD)} disabled {/if} 
-                                {if $FIELD_MODEL->isHeaderFieldOptionDisabled()} cursorPointerNotAllowed {else} cursorPointer {/if}"
-                                data-toggle="tooltip" {if $IS_HEADER_FIELD} title="{$NOT_H_FIELD_TITLE}" {else} title="{$H_FIELD_TITLE}" {/if}>
+                                {if $FIELD_MODEL->isHeaderFieldOptionDisabled() || $HEADER_FIELD_LOCKED} cursorPointerNotAllowed {else} cursorPointer {/if}"
+                                data-toggle="tooltip" {if $HEADER_FIELD_LOCKED} title="{vtranslate('LBL_LAST_NAME_FIELD_CANNOT_BE_HIDDEN',$QUALIFIED_MODULE)}" {elseif $IS_HEADER_FIELD} title="{$NOT_H_FIELD_TITLE}" {else} title="{$H_FIELD_TITLE}" {/if}>
                               <i class="fa fa-flag-o" data-name="headerfield" 
                                 data-enable-value="1" data-disable-value="0"
-                                {if $FIELD_MODEL->isHeaderFieldOptionDisabled()}readonly="readonly"{/if}
+                                {if $FIELD_MODEL->isHeaderFieldOptionDisabled() || $HEADER_FIELD_LOCKED}readonly="readonly"{/if}
                                 title="{vtranslate('LBL_HEADER',$QUALIFIED_MODULE)}"></i>&nbsp;{vtranslate('LBL_HEADER',$QUALIFIED_MODULE)}
                             </span><br><br>
                             {assign var=IS_SUMMARY_VIEW_ENABLED value=$FIELD_MODEL->isSummaryField()}
                             <span class="summary switch {if (!$IS_SUMMARY_VIEW_ENABLED)} disabled {/if} 
-                                {if $FIELD_MODEL->isSummaryFieldOptionDisabled()} cursorPointerNotAllowed {else} cursorPointer {/if}"
-                                data-toggle="tooltip" {if $IS_SUMMARY_VIEW_ENABLED} title="{$NOT_S_FIELD_TITLE}" {else} title="{$S_FIELD_TITLE}" {/if}>
+                                {if $FIELD_MODEL->isSummaryFieldOptionDisabled() || $SUMMARY_FIELD_LOCKED} cursorPointerNotAllowed {else} cursorPointer {/if}"
+                                data-toggle="tooltip" {if $SUMMARY_FIELD_LOCKED} title="{vtranslate('LBL_LAST_NAME_FIELD_CANNOT_BE_HIDDEN',$QUALIFIED_MODULE)}" {elseif $IS_SUMMARY_VIEW_ENABLED} title="{$NOT_S_FIELD_TITLE}" {else} title="{$S_FIELD_TITLE}" {/if}>
                               <i class="fa fa-key" data-name="summaryfield" 
                                 data-enable-value="1" data-disable-value="0"
-                                {if $FIELD_MODEL->isSummaryFieldOptionDisabled()}readonly="readonly"{/if}
+                                {if $FIELD_MODEL->isSummaryFieldOptionDisabled() || $SUMMARY_FIELD_LOCKED}readonly="readonly"{/if}
                                 title="{vtranslate('LBL_KEY_FIELD',$QUALIFIED_MODULE)}"></i>&nbsp;{vtranslate('LBL_KEY_FIELD',$QUALIFIED_MODULE)}
                             </span><br><br>
                             <div class="defaultValue col-sm-12 {if !$FIELD_MODEL->hasDefaultValue()}disabled{/if} 
