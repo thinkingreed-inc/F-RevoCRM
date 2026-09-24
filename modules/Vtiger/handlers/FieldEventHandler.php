@@ -58,7 +58,7 @@ class FieldEventHandler extends VTEventHandler {
 			$db->pquery($query, array($fieldId));
 		}
 
-		if (in_array($fieldEntity->uitype, array(15, 33))) {
+		if (in_array($fieldEntity->uitype, array(15, 16, 33))) {
 			$db->pquery('DROP TABLE IF EXISTS vtiger_' . $db->sql_escape_string($columnName), array());
 			$db->pquery('DROP TABLE IF EXISTS vtiger_' . $db->sql_escape_string($columnName) . '_seq', array()); //To Delete Sequence Table  
 			$db->pquery('DELETE FROM vtiger_picklist_dependency WHERE sourcefield=? OR targetfield=?', array($columnName, $columnName));
