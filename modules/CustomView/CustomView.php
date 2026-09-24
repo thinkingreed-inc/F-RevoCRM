@@ -1914,7 +1914,6 @@ class CustomView extends CRMEntity {
 		// Tabid mapped to the list of block labels to be skipped for that tab.
 		$skipBlocksList = array(
 			getTabid('HelpDesk') => array('LBL_COMMENTS'),
-			getTabid('Faq') => array('LBL_COMMENT_INFORMATION'),
 			getTabid('Quotes') => array('LBL_RELATED_PRODUCTS'),
 			getTabid('PurchaseOrder') => array('LBL_RELATED_PRODUCTS'),
 			getTabid('SalesOrder') => array('LBL_RELATED_PRODUCTS'),
