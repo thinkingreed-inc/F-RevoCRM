@@ -768,3 +768,24 @@ export async function updateEventLocationWithScope(
   await field.fill(location);
   await saveWithRecurringScope(page, scope);
 }
+
+/**
+ * 繰り返しでない予定の「場所」を書き換えて保存する。
+ * 繰り返しの確認ダイアログは出ないので、そのまま保存まで進む。
+ */
+export async function updateEventLocation(
+  page: Page,
+  recordId: string,
+  location: string
+): Promise<void> {
+  await page.goto(
+    url(`index.php?module=Calendar&view=Edit&mode=Events&record=${recordId}&app=SALES`)
+  );
+  await page.waitForLoadState("networkidle");
+  const field = page.locator('input[name="location"]').first();
+  await field.waitFor({ state: "visible", timeout: 15000 });
+  await field.fill(location);
+  await page.locator("button.saveButton").first().click();
+  await acceptOverlapConfirmIfShown(page);
+  await page.waitForLoadState("networkidle");
+}
