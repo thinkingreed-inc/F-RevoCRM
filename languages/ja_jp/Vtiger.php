@@ -1664,6 +1664,8 @@ $languageStrings = array(
 	'LBL_TASK_SEND_EMAIL_WHEN_COMMENTED' => 'コメントが追加されたときポータルユーザーである顧客担当者にメールを送るワークフロー',
 	'LBL_A_WORKFLOW_TO_SEND_AN_EMAIL_WHEN_A_COMMENT_IS_ADDED' => 'コメントが追加された際にメールを送るワークフロー',
 	'LBL_ELIGIBLE_FOR_REDUCED_TAX_RATE' => '軽減税率対象',
+	'LBL_DISPLAY_NAME' => '表示名称',
+	'LBL_DISPLAY_NAME_PLACEHOLDER' => '未入力の場合は商品名を表示',
 	'LBL_TESTMAIL_SMTP_BODY' => 'さん <br><br><b> これは、設定したSMTPサーバーを介してメールが実際に送信され' .
 			'ているかどうかを確認するために送信されるテストメールです。 </b><br>削除していただいてかまいません。' .
 			'<br><br>よろしくお願いいたします。<br> F-RevoCRM <br><br>',
