@@ -7,7 +7,7 @@
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!50503 SET NAMES utf8 */;
+/*!50503 SET NAMES utf8mb4 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -26,7 +26,7 @@ CREATE TABLE `com_vtiger_workflow_activatedonce` (
   `workflow_id` int NOT NULL,
   `entity_id` int NOT NULL,
   PRIMARY KEY (`workflow_id`,`entity_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -54,7 +54,7 @@ CREATE TABLE `com_vtiger_workflow_tasktypes` (
   `templatepath` varchar(255) DEFAULT NULL,
   `modules` varchar(500) DEFAULT NULL,
   `sourcemodule` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -76,7 +76,7 @@ DROP TABLE IF EXISTS `com_vtiger_workflow_tasktypes_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `com_vtiger_workflow_tasktypes_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -115,7 +115,7 @@ CREATE TABLE `com_vtiger_workflows` (
   `workflowname` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`workflow_id`),
   UNIQUE KEY `com_vtiger_workflows_idx` (`workflow_id`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -137,7 +137,7 @@ DROP TABLE IF EXISTS `com_vtiger_workflows_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `com_vtiger_workflows_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -163,7 +163,7 @@ CREATE TABLE `com_vtiger_workflowtask_queue` (
   `do_after` int DEFAULT NULL,
   `relatedinfo` varchar(255) DEFAULT NULL,
   `task_contents` text
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -189,7 +189,7 @@ CREATE TABLE `com_vtiger_workflowtasks` (
   `task` text,
   PRIMARY KEY (`task_id`),
   UNIQUE KEY `com_vtiger_workflowtasks_idx` (`task_id`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -217,7 +217,7 @@ CREATE TABLE `com_vtiger_workflowtasks_entitymethod` (
   `function_name` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`workflowtasks_entitymethod_id`),
   UNIQUE KEY `com_vtiger_workflowtasks_entitymethod_idx` (`workflowtasks_entitymethod_id`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -239,7 +239,7 @@ DROP TABLE IF EXISTS `com_vtiger_workflowtasks_entitymethod_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `com_vtiger_workflowtasks_entitymethod_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -261,7 +261,7 @@ DROP TABLE IF EXISTS `com_vtiger_workflowtasks_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `com_vtiger_workflowtasks_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -287,7 +287,7 @@ CREATE TABLE `com_vtiger_workflowtemplates` (
   `title` varchar(400) DEFAULT NULL,
   `template` text,
   PRIMARY KEY (`template_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -333,7 +333,7 @@ CREATE TABLE `vtiger_account` (
   KEY `account_account_type_idx` (`account_type`),
   KEY `email_idx` (`email1`,`email2`),
   CONSTRAINT `fk_1_vtiger_account` FOREIGN KEY (`accountid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -362,7 +362,7 @@ CREATE TABLE `vtiger_accountbillads` (
   `bill_pobox` varchar(30) DEFAULT NULL,
   PRIMARY KEY (`accountaddressid`),
   CONSTRAINT `fk_1_vtiger_accountbillads` FOREIGN KEY (`accountaddressid`) REFERENCES `vtiger_account` (`accountid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -388,7 +388,7 @@ CREATE TABLE `vtiger_accountrating` (
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`accountratingid`),
   UNIQUE KEY `accountrating_rating_idx` (`rating`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -411,7 +411,7 @@ CREATE TABLE `vtiger_accountscf` (
   `accountid` int NOT NULL,
   PRIMARY KEY (`accountid`),
   CONSTRAINT `fk_1_vtiger_accountscf` FOREIGN KEY (`accountid`) REFERENCES `vtiger_account` (`accountid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -440,7 +440,7 @@ CREATE TABLE `vtiger_accountshipads` (
   `ship_street` varchar(250) DEFAULT NULL,
   PRIMARY KEY (`accountaddressid`),
   CONSTRAINT `fk_1_vtiger_accountshipads` FOREIGN KEY (`accountaddressid`) REFERENCES `vtiger_account` (`accountid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -468,7 +468,7 @@ CREATE TABLE `vtiger_accounttype` (
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`accounttypeid`),
   UNIQUE KEY `accounttype_accounttype_idx` (`accounttype`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -490,7 +490,7 @@ DROP TABLE IF EXISTS `vtiger_accounttype_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_accounttype_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -515,7 +515,7 @@ CREATE TABLE `vtiger_actionmapping` (
   `actionname` varchar(200) NOT NULL,
   `securitycheck` int DEFAULT NULL,
   PRIMARY KEY (`actionid`,`actionname`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -566,7 +566,7 @@ CREATE TABLE `vtiger_activity` (
   KEY `activity_status_idx` (`status`),
   KEY `invitee_parentid` (`invitee_parentid`),
   CONSTRAINT `fk_1_vtiger_activity` FOREIGN KEY (`activityid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -588,7 +588,7 @@ DROP TABLE IF EXISTS `vtiger_activity_recurring_info`;
 CREATE TABLE `vtiger_activity_recurring_info` (
   `activityid` int NOT NULL,
   `recurrenceid` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -614,7 +614,7 @@ CREATE TABLE `vtiger_activity_reminder` (
   `recurringid` int NOT NULL,
   PRIMARY KEY (`activity_id`,`recurringid`),
   CONSTRAINT `fk_activityid_vtiger_activity_reminder` FOREIGN KEY (`activity_id`) REFERENCES `vtiger_activity` (`activityid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -641,7 +641,7 @@ CREATE TABLE `vtiger_activity_reminder_popup` (
   `time_start` varchar(100) NOT NULL,
   `status` int NOT NULL,
   PRIMARY KEY (`reminderid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -666,7 +666,7 @@ CREATE TABLE `vtiger_activity_view` (
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`activity_viewid`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -688,7 +688,7 @@ DROP TABLE IF EXISTS `vtiger_activity_view_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_activity_view_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -712,7 +712,7 @@ CREATE TABLE `vtiger_activitycf` (
   `activityid` int NOT NULL,
   PRIMARY KEY (`activityid`),
   CONSTRAINT `fk_activityid_vtiger_activitycf` FOREIGN KEY (`activityid`) REFERENCES `vtiger_activity` (`activityid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -738,7 +738,7 @@ CREATE TABLE `vtiger_activityproductrel` (
   KEY `activityproductrel_activityid_idx` (`activityid`),
   KEY `activityproductrel_productid_idx` (`productid`),
   CONSTRAINT `fk_2_vtiger_activityproductrel` FOREIGN KEY (`productid`) REFERENCES `vtiger_products` (`productid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -766,7 +766,7 @@ CREATE TABLE `vtiger_activitytype` (
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`activitytypeid`),
   UNIQUE KEY `activitytype_activitytype_idx` (`activitytype`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -788,7 +788,7 @@ DROP TABLE IF EXISTS `vtiger_activitytype_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_activitytype_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -815,7 +815,7 @@ CREATE TABLE `vtiger_announcement` (
   `time` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`creatorid`),
   KEY `announcement_creatorid_idx` (`creatorid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -841,7 +841,7 @@ CREATE TABLE `vtiger_app2tab` (
   `visible` int DEFAULT '1',
   KEY `vtiger_app2tab_fk_tab` (`tabid`),
   CONSTRAINT `vtiger_app2tab_fk_tab` FOREIGN KEY (`tabid`) REFERENCES `vtiger_tab` (`tabid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -879,7 +879,7 @@ CREATE TABLE `vtiger_assets` (
   `tags` varchar(1) DEFAULT NULL,
   PRIMARY KEY (`assetsid`),
   CONSTRAINT `fk_1_vtiger_assets` FOREIGN KEY (`assetsid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -902,7 +902,7 @@ CREATE TABLE `vtiger_assetscf` (
   `assetsid` int NOT NULL,
   PRIMARY KEY (`assetsid`),
   CONSTRAINT `fk_assetsid_vtiger_assetscf` FOREIGN KEY (`assetsid`) REFERENCES `vtiger_assets` (`assetsid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -929,7 +929,7 @@ CREATE TABLE `vtiger_assetstatus` (
   `sortorderid` int DEFAULT '0',
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`assetstatusid`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -951,7 +951,7 @@ DROP TABLE IF EXISTS `vtiger_assetstatus_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_assetstatus_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -977,7 +977,7 @@ CREATE TABLE `vtiger_asterisk` (
   `username` varchar(50) DEFAULT NULL,
   `password` varchar(50) DEFAULT NULL,
   `version` varchar(50) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1000,7 +1000,7 @@ CREATE TABLE `vtiger_asteriskextensions` (
   `userid` int DEFAULT NULL,
   `asterisk_extension` varchar(50) DEFAULT NULL,
   `use_asterisk` varchar(3) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1028,7 +1028,7 @@ CREATE TABLE `vtiger_asteriskincomingcalls` (
   `flag` int DEFAULT NULL,
   `timer` int DEFAULT NULL,
   `refuid` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1059,7 +1059,7 @@ CREATE TABLE `vtiger_asteriskincomingevents` (
   `pbxrecordid` int DEFAULT NULL,
   `relcrmid` int DEFAULT NULL,
   PRIMARY KEY (`uid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1089,7 +1089,7 @@ CREATE TABLE `vtiger_attachments` (
   PRIMARY KEY (`attachmentsid`),
   KEY `attachments_attachmentsid_idx` (`attachmentsid`),
   CONSTRAINT `fk_1_vtiger_attachments` FOREIGN KEY (`attachmentsid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1115,7 +1115,7 @@ CREATE TABLE `vtiger_attachmentsfolder` (
   `createdby` int NOT NULL,
   `sequence` int DEFAULT NULL,
   PRIMARY KEY (`folderid`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1137,7 +1137,7 @@ DROP TABLE IF EXISTS `vtiger_attachmentsfolder_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_attachmentsfolder_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1165,7 +1165,7 @@ CREATE TABLE `vtiger_audit_trial` (
   `recordid` varchar(20) DEFAULT NULL,
   `actiondate` datetime DEFAULT NULL,
   PRIMARY KEY (`auditid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1199,7 +1199,7 @@ CREATE TABLE `vtiger_blocks` (
   PRIMARY KEY (`blockid`),
   KEY `block_tabid_idx` (`tabid`),
   CONSTRAINT `fk_1_vtiger_blocks` FOREIGN KEY (`tabid`) REFERENCES `vtiger_tab` (`tabid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1221,7 +1221,7 @@ DROP TABLE IF EXISTS `vtiger_blocks_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_blocks_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1249,7 +1249,7 @@ CREATE TABLE `vtiger_calendar_default_activitytypes` (
   `isdefault` int DEFAULT '1',
   `conditions` varchar(255) DEFAULT '',
   PRIMARY KEY (`id`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1271,7 +1271,7 @@ DROP TABLE IF EXISTS `vtiger_calendar_default_activitytypes_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_calendar_default_activitytypes_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1298,7 +1298,7 @@ CREATE TABLE `vtiger_calendar_user_activitytypes` (
   `color` varchar(50) DEFAULT NULL,
   `visible` int DEFAULT '1',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1320,7 +1320,7 @@ DROP TABLE IF EXISTS `vtiger_calendar_user_activitytypes_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_calendar_user_activitytypes_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1346,7 +1346,7 @@ CREATE TABLE `vtiger_calendarsharedtype` (
   `sortorderid` int DEFAULT NULL,
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`calendarsharedtypeid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1368,7 +1368,7 @@ DROP TABLE IF EXISTS `vtiger_calendarsharedtype_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_calendarsharedtype_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1394,7 +1394,7 @@ CREATE TABLE `vtiger_callduration` (
   `sortorderid` int DEFAULT NULL,
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`calldurationid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1416,7 +1416,7 @@ DROP TABLE IF EXISTS `vtiger_callduration_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_callduration_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1464,7 +1464,7 @@ CREATE TABLE `vtiger_campaign` (
   KEY `campaign_campaignname_idx` (`campaignname`),
   KEY `campaign_campaignid_idx` (`campaignid`),
   CONSTRAINT `fk_crmid_vtiger_campaign` FOREIGN KEY (`campaignid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1487,7 +1487,7 @@ CREATE TABLE `vtiger_campaignaccountrel` (
   `campaignid` int DEFAULT NULL,
   `accountid` int DEFAULT NULL,
   `campaignrelstatusid` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1513,7 +1513,7 @@ CREATE TABLE `vtiger_campaigncontrel` (
   PRIMARY KEY (`campaignid`,`contactid`,`campaignrelstatusid`),
   KEY `campaigncontrel_contractid_idx` (`contactid`),
   CONSTRAINT `fk_2_vtiger_campaigncontrel` FOREIGN KEY (`contactid`) REFERENCES `vtiger_contactdetails` (`contactid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1539,7 +1539,7 @@ CREATE TABLE `vtiger_campaignleadrel` (
   PRIMARY KEY (`campaignid`,`leadid`,`campaignrelstatusid`),
   KEY `campaignleadrel_leadid_campaignid_idx` (`leadid`,`campaignid`),
   CONSTRAINT `fk_2_vtiger_campaignleadrel` FOREIGN KEY (`leadid`) REFERENCES `vtiger_leaddetails` (`leadid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1564,7 +1564,7 @@ CREATE TABLE `vtiger_campaignrelstatus` (
   `sortorderid` int DEFAULT NULL,
   `presence` int DEFAULT NULL,
   `color` varchar(10) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1586,7 +1586,7 @@ DROP TABLE IF EXISTS `vtiger_campaignrelstatus_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_campaignrelstatus_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1610,7 +1610,7 @@ CREATE TABLE `vtiger_campaignscf` (
   `campaignid` int NOT NULL,
   PRIMARY KEY (`campaignid`),
   CONSTRAINT `fk_1_vtiger_campaignscf` FOREIGN KEY (`campaignid`) REFERENCES `vtiger_campaign` (`campaignid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1638,7 +1638,7 @@ CREATE TABLE `vtiger_campaignstatus` (
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`campaignstatusid`),
   KEY `campaignstatus_campaignstatus_idx` (`campaignstatus`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1660,7 +1660,7 @@ DROP TABLE IF EXISTS `vtiger_campaignstatus_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_campaignstatus_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1689,7 +1689,7 @@ CREATE TABLE `vtiger_campaigntype` (
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`campaigntypeid`),
   UNIQUE KEY `campaigntype_campaigntype_idx` (`campaigntype`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1711,7 +1711,7 @@ DROP TABLE IF EXISTS `vtiger_campaigntype_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_campaigntype_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1740,7 +1740,7 @@ CREATE TABLE `vtiger_carrier` (
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`carrierid`),
   UNIQUE KEY `carrier_carrier_idx` (`carrier`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1762,7 +1762,7 @@ DROP TABLE IF EXISTS `vtiger_carrier_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_carrier_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1789,7 +1789,7 @@ CREATE TABLE `vtiger_cntactivityrel` (
   KEY `cntactivityrel_contactid_idx` (`contactid`),
   KEY `cntactivityrel_activityid_idx` (`activityid`),
   CONSTRAINT `fk_2_vtiger_cntactivityrel` FOREIGN KEY (`contactid`) REFERENCES `vtiger_contactdetails` (`contactid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1824,7 +1824,7 @@ CREATE TABLE `vtiger_contactaddress` (
   `otherpobox` varchar(30) DEFAULT NULL,
   PRIMARY KEY (`contactaddressid`),
   CONSTRAINT `fk_1_vtiger_contactaddress` FOREIGN KEY (`contactaddressid`) REFERENCES `vtiger_contactdetails` (`contactid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1873,7 +1873,7 @@ CREATE TABLE `vtiger_contactdetails` (
   KEY `contactdetails_accountid_idx` (`accountid`),
   KEY `email_idx` (`email`),
   CONSTRAINT `fk_1_vtiger_contactdetails` FOREIGN KEY (`contactid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1896,7 +1896,7 @@ CREATE TABLE `vtiger_contactscf` (
   `contactid` int NOT NULL,
   PRIMARY KEY (`contactid`),
   CONSTRAINT `fk_1_vtiger_contactscf` FOREIGN KEY (`contactid`) REFERENCES `vtiger_contactdetails` (`contactid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1927,7 +1927,7 @@ CREATE TABLE `vtiger_contactsubdetails` (
   `leadsource` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`contactsubscriptionid`),
   CONSTRAINT `fk_1_vtiger_contactsubdetails` FOREIGN KEY (`contactsubscriptionid`) REFERENCES `vtiger_contactdetails` (`contactid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1953,7 +1953,7 @@ CREATE TABLE `vtiger_contpotentialrel` (
   KEY `contpotentialrel_potentialid_idx` (`potentialid`),
   KEY `contpotentialrel_contactid_idx` (`contactid`),
   CONSTRAINT `fk_2_vtiger_contpotentialrel` FOREIGN KEY (`potentialid`) REFERENCES `vtiger_potential` (`potentialid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1980,7 +1980,7 @@ CREATE TABLE `vtiger_contract_priority` (
   `sortorderid` int DEFAULT '0',
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`contract_priorityid`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2002,7 +2002,7 @@ DROP TABLE IF EXISTS `vtiger_contract_priority_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_contract_priority_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2030,7 +2030,7 @@ CREATE TABLE `vtiger_contract_status` (
   `sortorderid` int DEFAULT '0',
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`contract_statusid`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2052,7 +2052,7 @@ DROP TABLE IF EXISTS `vtiger_contract_status_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_contract_status_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2080,7 +2080,7 @@ CREATE TABLE `vtiger_contract_type` (
   `sortorderid` int DEFAULT '0',
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`contract_typeid`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2102,7 +2102,7 @@ DROP TABLE IF EXISTS `vtiger_contract_type_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_contract_type_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2130,7 +2130,7 @@ CREATE TABLE `vtiger_convertleadmapping` (
   `potentialfid` int DEFAULT NULL,
   `editable` int DEFAULT '1',
   PRIMARY KEY (`cfmid`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2156,7 +2156,7 @@ CREATE TABLE `vtiger_convertpotentialmapping` (
   `projectfid` int DEFAULT NULL,
   `editable` int DEFAULT '1',
   PRIMARY KEY (`cfmid`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2199,7 +2199,7 @@ CREATE TABLE `vtiger_crmentity` (
   KEY `crmentity_deleted_idx` (`deleted`),
   KEY `crm_ownerid_del_setype_idx` (`smownerid`,`deleted`,`setype`),
   KEY `vtiger_crmentity_labelidx` (`label`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2220,7 +2220,7 @@ DROP TABLE IF EXISTS `vtiger_crmentity_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_crmentity_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2246,7 +2246,7 @@ CREATE TABLE `vtiger_crmentity_user_field` (
   `starred` varchar(100) DEFAULT NULL,
   KEY `record_user_idx` (`recordid`,`userid`),
   CONSTRAINT `fk_vtiger_crmentity_user_field_recordid` FOREIGN KEY (`recordid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2272,7 +2272,7 @@ CREATE TABLE `vtiger_crmentityrel` (
   `relmodule` varchar(100) NOT NULL,
   KEY `crmid_idx` (`crmid`),
   KEY `relcrmid_idx` (`relcrmid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2294,7 +2294,7 @@ DROP TABLE IF EXISTS `vtiger_crmsetup`;
 CREATE TABLE `vtiger_crmsetup` (
   `userid` int DEFAULT NULL,
   `setup_status` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2338,7 +2338,7 @@ CREATE TABLE `vtiger_cron_task` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   UNIQUE KEY `handler_file` (`handler_file`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2364,7 +2364,7 @@ CREATE TABLE `vtiger_currencies` (
   `currency_code` varchar(50) DEFAULT NULL,
   `currency_symbol` varchar(11) DEFAULT NULL,
   PRIMARY KEY (`currencyid`)
-) ENGINE=InnoDB AUTO_INCREMENT=139 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=139 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2386,7 +2386,7 @@ DROP TABLE IF EXISTS `vtiger_currencies_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_currencies_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2413,7 +2413,7 @@ CREATE TABLE `vtiger_currency` (
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`currencyid`),
   UNIQUE KEY `currency_currency_idx` (`currency`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2438,7 +2438,7 @@ CREATE TABLE `vtiger_currency_decimal_separator` (
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`currency_decimal_separatorid`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2460,7 +2460,7 @@ DROP TABLE IF EXISTS `vtiger_currency_decimal_separator_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_currency_decimal_separator_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2486,7 +2486,7 @@ CREATE TABLE `vtiger_currency_grouping_pattern` (
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`currency_grouping_patternid`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2508,7 +2508,7 @@ DROP TABLE IF EXISTS `vtiger_currency_grouping_pattern_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_currency_grouping_pattern_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2534,7 +2534,7 @@ CREATE TABLE `vtiger_currency_grouping_separator` (
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`currency_grouping_separatorid`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2556,7 +2556,7 @@ DROP TABLE IF EXISTS `vtiger_currency_grouping_separator_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_currency_grouping_separator_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2586,7 +2586,7 @@ CREATE TABLE `vtiger_currency_info` (
   `defaultid` varchar(10) NOT NULL DEFAULT '0',
   `deleted` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2608,7 +2608,7 @@ DROP TABLE IF EXISTS `vtiger_currency_info_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_currency_info_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2634,7 +2634,7 @@ CREATE TABLE `vtiger_currency_symbol_placement` (
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`currency_symbol_placementid`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2656,7 +2656,7 @@ DROP TABLE IF EXISTS `vtiger_currency_symbol_placement_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_currency_symbol_placement_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2683,7 +2683,7 @@ CREATE TABLE `vtiger_customaction` (
   `content` text,
   KEY `customaction_cvid_idx` (`cvid`),
   CONSTRAINT `fk_1_vtiger_customaction` FOREIGN KEY (`cvid`) REFERENCES `vtiger_customview` (`cvid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2709,7 +2709,7 @@ CREATE TABLE `vtiger_customerdetails` (
   `support_end_date` date DEFAULT NULL,
   PRIMARY KEY (`customerid`),
   CONSTRAINT `fk_1_vtiger_customerdetails` FOREIGN KEY (`customerid`) REFERENCES `vtiger_contactdetails` (`contactid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2733,7 +2733,7 @@ CREATE TABLE `vtiger_customerportal_fields` (
   `fieldinfo` text,
   `records_visible` int DEFAULT NULL,
   PRIMARY KEY (`tabid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2758,7 +2758,7 @@ CREATE TABLE `vtiger_customerportal_prefs` (
   `prefkey` varchar(100) NOT NULL,
   `prefvalue` int DEFAULT NULL,
   PRIMARY KEY (`tabid`,`prefkey`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2782,7 +2782,7 @@ CREATE TABLE `vtiger_customerportal_relatedmoduleinfo` (
   `tabid` int NOT NULL,
   `relatedmodules` text,
   PRIMARY KEY (`tabid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2811,7 +2811,7 @@ CREATE TABLE `vtiger_customerportal_settings` (
   `shortcuts` text,
   `widgets` text,
   `charts` text
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2838,7 +2838,7 @@ CREATE TABLE `vtiger_customerportal_tabs` (
   `createrecord` tinyint(1) NOT NULL DEFAULT '0',
   `editrecord` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`tabid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2869,7 +2869,7 @@ CREATE TABLE `vtiger_customview` (
   PRIMARY KEY (`cvid`),
   KEY `customview_entitytype_idx` (`entitytype`),
   CONSTRAINT `fk_1_vtiger_customview` FOREIGN KEY (`entitytype`) REFERENCES `vtiger_tab` (`name`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2891,7 +2891,7 @@ DROP TABLE IF EXISTS `vtiger_customview_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_customview_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2918,7 +2918,7 @@ CREATE TABLE `vtiger_cv2group` (
   KEY `vtiger_groups_ibfk_1` (`groupid`),
   CONSTRAINT `vtiger_customview_ibfk_2` FOREIGN KEY (`cvid`) REFERENCES `vtiger_customview` (`cvid`) ON DELETE CASCADE,
   CONSTRAINT `vtiger_groups_ibfk_1` FOREIGN KEY (`groupid`) REFERENCES `vtiger_groups` (`groupid`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2944,7 +2944,7 @@ CREATE TABLE `vtiger_cv2role` (
   KEY `vtiger_role_ibfk_1` (`roleid`),
   CONSTRAINT `vtiger_customview_ibfk_3` FOREIGN KEY (`cvid`) REFERENCES `vtiger_customview` (`cvid`) ON DELETE CASCADE,
   CONSTRAINT `vtiger_role_ibfk_1` FOREIGN KEY (`roleid`) REFERENCES `vtiger_role` (`roleid`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2970,7 +2970,7 @@ CREATE TABLE `vtiger_cv2rs` (
   KEY `vtiger_rolesd_ibfk_1` (`rsid`),
   CONSTRAINT `vtiger_customview_ibfk_4` FOREIGN KEY (`cvid`) REFERENCES `vtiger_customview` (`cvid`) ON DELETE CASCADE,
   CONSTRAINT `vtiger_rolesd_ibfk_1` FOREIGN KEY (`rsid`) REFERENCES `vtiger_role` (`roleid`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2996,7 +2996,7 @@ CREATE TABLE `vtiger_cv2users` (
   KEY `vtiger_users_ibfk_1` (`userid`),
   CONSTRAINT `vtiger_customview_ibfk_1` FOREIGN KEY (`cvid`) REFERENCES `vtiger_customview` (`cvid`) ON DELETE CASCADE,
   CONSTRAINT `vtiger_users_ibfk_1` FOREIGN KEY (`userid`) REFERENCES `vtiger_users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3026,7 +3026,7 @@ CREATE TABLE `vtiger_cvadvfilter` (
   PRIMARY KEY (`cvid`,`columnindex`),
   KEY `cvadvfilter_cvid_idx` (`cvid`),
   CONSTRAINT `fk_1_vtiger_cvadvfilter` FOREIGN KEY (`cvid`) REFERENCES `vtiger_customview` (`cvid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3052,7 +3052,7 @@ CREATE TABLE `vtiger_cvadvfilter_grouping` (
   `group_condition` varchar(255) DEFAULT NULL,
   `condition_expression` text,
   PRIMARY KEY (`groupid`,`cvid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3080,7 +3080,7 @@ CREATE TABLE `vtiger_cvcolumnlist` (
   KEY `cvcolumnlist_columnindex_idx` (`columnindex`),
   KEY `cvcolumnlist_cvid_idx` (`cvid`),
   CONSTRAINT `fk_1_vtiger_cvcolumnlist` FOREIGN KEY (`cvid`) REFERENCES `vtiger_customview` (`cvid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3108,7 +3108,7 @@ CREATE TABLE `vtiger_cvstdfilter` (
   `enddate` date DEFAULT NULL,
   KEY `cvstdfilter_cvid_idx` (`cvid`),
   CONSTRAINT `fk_1_vtiger_cvstdfilter` FOREIGN KEY (`cvid`) REFERENCES `vtiger_customview` (`cvid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3140,7 +3140,7 @@ CREATE TABLE `vtiger_dashboard_tabs` (
   UNIQUE KEY `tabname` (`tabname`,`userid`),
   KEY `vtiger_dashboard_tabs_ibfk_1` (`userid`),
   CONSTRAINT `vtiger_dashboard_tabs_ibfk_1` FOREIGN KEY (`userid`) REFERENCES `vtiger_users` (`id`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3169,7 +3169,7 @@ CREATE TABLE `vtiger_datashare_grp2grp` (
   KEY `datashare_grp2grp_share_groupid_idx` (`share_groupid`),
   KEY `datashare_grp2grp_to_groupid_idx` (`to_groupid`),
   CONSTRAINT `fk_3_vtiger_datashare_grp2grp` FOREIGN KEY (`to_groupid`) REFERENCES `vtiger_groups` (`groupid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3197,7 +3197,7 @@ CREATE TABLE `vtiger_datashare_grp2role` (
   KEY `idx_datashare_grp2role_share_groupid` (`share_groupid`),
   KEY `idx_datashare_grp2role_to_roleid` (`to_roleid`),
   CONSTRAINT `fk_3_vtiger_datashare_grp2role` FOREIGN KEY (`to_roleid`) REFERENCES `vtiger_role` (`roleid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3225,7 +3225,7 @@ CREATE TABLE `vtiger_datashare_grp2rs` (
   KEY `datashare_grp2rs_share_groupid_idx` (`share_groupid`),
   KEY `datashare_grp2rs_to_roleandsubid_idx` (`to_roleandsubid`),
   CONSTRAINT `fk_3_vtiger_datashare_grp2rs` FOREIGN KEY (`to_roleandsubid`) REFERENCES `vtiger_role` (`roleid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3251,7 +3251,7 @@ CREATE TABLE `vtiger_datashare_module_rel` (
   PRIMARY KEY (`shareid`),
   KEY `idx_datashare_module_rel_tabid` (`tabid`),
   CONSTRAINT `fk_1_vtiger_datashare_module_rel` FOREIGN KEY (`tabid`) REFERENCES `vtiger_tab` (`tabid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3276,7 +3276,7 @@ CREATE TABLE `vtiger_datashare_relatedmodule_permission` (
   `permission` int DEFAULT NULL,
   PRIMARY KEY (`shareid`,`datashare_relatedmodule_id`),
   KEY `datashare_relatedmodule_permission_shareid_permissions_idx` (`shareid`,`permission`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3303,7 +3303,7 @@ CREATE TABLE `vtiger_datashare_relatedmodules` (
   KEY `datashare_relatedmodules_tabid_idx` (`tabid`),
   KEY `datashare_relatedmodules_relatedto_tabid_idx` (`relatedto_tabid`),
   CONSTRAINT `fk_2_vtiger_datashare_relatedmodules` FOREIGN KEY (`tabid`) REFERENCES `vtiger_tab` (`tabid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3325,7 +3325,7 @@ DROP TABLE IF EXISTS `vtiger_datashare_relatedmodules_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_datashare_relatedmodules_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3354,7 +3354,7 @@ CREATE TABLE `vtiger_datashare_role2group` (
   KEY `idx_datashare_role2group_share_roleid` (`share_roleid`),
   KEY `idx_datashare_role2group_to_groupid` (`to_groupid`),
   CONSTRAINT `fk_3_vtiger_datashare_role2group` FOREIGN KEY (`share_roleid`) REFERENCES `vtiger_role` (`roleid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3382,7 +3382,7 @@ CREATE TABLE `vtiger_datashare_role2role` (
   KEY `datashare_role2role_share_roleid_idx` (`share_roleid`),
   KEY `datashare_role2role_to_roleid_idx` (`to_roleid`),
   CONSTRAINT `fk_3_vtiger_datashare_role2role` FOREIGN KEY (`to_roleid`) REFERENCES `vtiger_role` (`roleid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3410,7 +3410,7 @@ CREATE TABLE `vtiger_datashare_role2rs` (
   KEY `datashare_role2s_share_roleid_idx` (`share_roleid`),
   KEY `datashare_role2s_to_roleandsubid_idx` (`to_roleandsubid`),
   CONSTRAINT `fk_3_vtiger_datashare_role2rs` FOREIGN KEY (`to_roleandsubid`) REFERENCES `vtiger_role` (`roleid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3438,7 +3438,7 @@ CREATE TABLE `vtiger_datashare_rs2grp` (
   KEY `datashare_rs2grp_share_roleandsubid_idx` (`share_roleandsubid`),
   KEY `datashare_rs2grp_to_groupid_idx` (`to_groupid`),
   CONSTRAINT `fk_3_vtiger_datashare_rs2grp` FOREIGN KEY (`share_roleandsubid`) REFERENCES `vtiger_role` (`roleid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3466,7 +3466,7 @@ CREATE TABLE `vtiger_datashare_rs2role` (
   KEY `datashare_rs2role_share_roleandsubid_idx` (`share_roleandsubid`),
   KEY `datashare_rs2role_to_roleid_idx` (`to_roleid`),
   CONSTRAINT `fk_3_vtiger_datashare_rs2role` FOREIGN KEY (`to_roleid`) REFERENCES `vtiger_role` (`roleid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3494,7 +3494,7 @@ CREATE TABLE `vtiger_datashare_rs2rs` (
   KEY `datashare_rs2rs_share_roleandsubid_idx` (`share_roleandsubid`),
   KEY `idx_datashare_rs2rs_to_roleandsubid_idx` (`to_roleandsubid`),
   CONSTRAINT `fk_3_vtiger_datashare_rs2rs` FOREIGN KEY (`to_roleandsubid`) REFERENCES `vtiger_role` (`roleid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3519,7 +3519,7 @@ CREATE TABLE `vtiger_date_format` (
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`date_formatid`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3541,7 +3541,7 @@ DROP TABLE IF EXISTS `vtiger_date_format_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_date_format_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3567,7 +3567,7 @@ CREATE TABLE `vtiger_dayoftheweek` (
   `sortorderid` int DEFAULT NULL,
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`dayoftheweekid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3589,7 +3589,7 @@ DROP TABLE IF EXISTS `vtiger_dayoftheweek_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_dayoftheweek_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3618,7 +3618,7 @@ CREATE TABLE `vtiger_def_org_field` (
   KEY `def_org_field_tabid_fieldid_idx` (`tabid`,`fieldid`),
   KEY `def_org_field_tabid_idx` (`tabid`),
   KEY `def_org_field_visible_fieldid_idx` (`visible`,`fieldid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3646,7 +3646,7 @@ CREATE TABLE `vtiger_def_org_share` (
   PRIMARY KEY (`ruleid`),
   KEY `fk_1_vtiger_def_org_share` (`permission`),
   CONSTRAINT `fk_1_vtiger_def_org_share` FOREIGN KEY (`permission`) REFERENCES `vtiger_org_share_action_mapping` (`share_action_id`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3668,7 +3668,7 @@ DROP TABLE IF EXISTS `vtiger_def_org_share_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_def_org_share_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3694,7 +3694,7 @@ CREATE TABLE `vtiger_default_record_view` (
   `sortorderid` int DEFAULT NULL,
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`default_record_viewid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3716,7 +3716,7 @@ DROP TABLE IF EXISTS `vtiger_default_record_view_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_default_record_view_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3743,7 +3743,7 @@ CREATE TABLE `vtiger_defaultactivitytype` (
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT '0',
   PRIMARY KEY (`defaultactivitytypeid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3765,7 +3765,7 @@ DROP TABLE IF EXISTS `vtiger_defaultactivitytype_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_defaultactivitytype_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3791,7 +3791,7 @@ CREATE TABLE `vtiger_defaultcalendarview` (
   `sortorderid` int DEFAULT NULL,
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`defaultcalendarviewid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3813,7 +3813,7 @@ DROP TABLE IF EXISTS `vtiger_defaultcalendarview_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_defaultcalendarview_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3839,7 +3839,7 @@ CREATE TABLE `vtiger_defaultcv` (
   `query` text,
   PRIMARY KEY (`tabid`),
   CONSTRAINT `fk_1_vtiger_defaultcv` FOREIGN KEY (`tabid`) REFERENCES `vtiger_tab` (`tabid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3865,7 +3865,7 @@ CREATE TABLE `vtiger_defaulteventstatus` (
   `picklist_valueid` int NOT NULL DEFAULT '0',
   `sortorderid` int DEFAULT '0',
   PRIMARY KEY (`defaulteventstatusid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3887,7 +3887,7 @@ DROP TABLE IF EXISTS `vtiger_defaulteventstatus_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_defaulteventstatus_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3915,7 +3915,7 @@ CREATE TABLE `vtiger_defaultlandingpage` (
   `sortorderid` int DEFAULT '0',
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`defaultlandingpageid`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3937,7 +3937,7 @@ DROP TABLE IF EXISTS `vtiger_defaultlandingpage_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_defaultlandingpage_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3964,7 +3964,7 @@ CREATE TABLE `vtiger_duration_minutes` (
   `presence` int NOT NULL DEFAULT '1',
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`minutesid`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3986,7 +3986,7 @@ DROP TABLE IF EXISTS `vtiger_duration_minutes_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_duration_minutes_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4012,7 +4012,7 @@ CREATE TABLE `vtiger_durationhrs` (
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`hrsid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4037,7 +4037,7 @@ CREATE TABLE `vtiger_durationmins` (
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`minsid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4061,7 +4061,7 @@ CREATE TABLE `vtiger_email_access` (
   `mailid` int DEFAULT NULL,
   `accessdate` date DEFAULT NULL,
   `accesstime` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4086,7 +4086,7 @@ CREATE TABLE `vtiger_email_track` (
   `access_count` int DEFAULT NULL,
   `click_count` int NOT NULL DEFAULT '0',
   UNIQUE KEY `link_tabidtype_idx` (`crmid`,`mailid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4115,7 +4115,7 @@ CREATE TABLE `vtiger_emaildetails` (
   `idlists` text,
   `email_flag` varchar(50) NOT NULL DEFAULT '',
   PRIMARY KEY (`emailid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4140,7 +4140,7 @@ CREATE TABLE `vtiger_emails_recipientprefs` (
   `prefs` varchar(255) DEFAULT NULL,
   `userid` int DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4167,7 +4167,7 @@ CREATE TABLE `vtiger_emailslookup` (
   UNIQUE KEY `emailslookup_crmid_setype_fieldname_uk` (`crmid`,`setype`,`fieldid`),
   KEY `emailslookup_fieldid_setype_idx` (`fieldid`,`setype`),
   CONSTRAINT `emailslookup_crmid_fk` FOREIGN KEY (`crmid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4199,7 +4199,7 @@ CREATE TABLE `vtiger_emailtemplates` (
   `module` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`templateid`),
   KEY `emailtemplates_foldernamd_templatename_subject_idx` (`foldername`,`templatename`,`subject`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4221,7 +4221,7 @@ DROP TABLE IF EXISTS `vtiger_emailtemplates_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_emailtemplates_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4251,7 +4251,7 @@ CREATE TABLE `vtiger_entityname` (
   PRIMARY KEY (`tabid`),
   KEY `entityname_tabid_idx` (`tabid`),
   CONSTRAINT `fk_1_vtiger_entityname` FOREIGN KEY (`tabid`) REFERENCES `vtiger_tab` (`tabid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4276,7 +4276,7 @@ CREATE TABLE `vtiger_eventhandler_module` (
   `module_name` varchar(100) DEFAULT NULL,
   `handler_class` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`eventhandler_module_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4298,7 +4298,7 @@ DROP TABLE IF EXISTS `vtiger_eventhandler_module_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_eventhandler_module_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4328,7 +4328,7 @@ CREATE TABLE `vtiger_eventhandlers` (
   `dependent_on` varchar(255) DEFAULT '[]',
   PRIMARY KEY (`eventhandler_id`,`event_name`,`handler_class`),
   UNIQUE KEY `eventhandler_idx` (`eventhandler_id`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4350,7 +4350,7 @@ DROP TABLE IF EXISTS `vtiger_eventhandlers_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_eventhandlers_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4378,7 +4378,7 @@ CREATE TABLE `vtiger_eventstatus` (
   `sortorderid` int DEFAULT NULL,
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`eventstatusid`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4400,7 +4400,7 @@ DROP TABLE IF EXISTS `vtiger_eventstatus_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_eventstatus_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4429,7 +4429,7 @@ CREATE TABLE `vtiger_expectedresponse` (
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`expectedresponseid`),
   UNIQUE KEY `CampaignExpRes_UK01` (`expectedresponse`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4451,7 +4451,7 @@ DROP TABLE IF EXISTS `vtiger_expectedresponse_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_expectedresponse_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4479,7 +4479,7 @@ CREATE TABLE `vtiger_extnstore_users` (
   `createdon` datetime DEFAULT NULL,
   `deleted` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4510,7 +4510,7 @@ CREATE TABLE `vtiger_faq` (
   PRIMARY KEY (`id`),
   KEY `faq_id_idx` (`id`),
   CONSTRAINT `fk_1_vtiger_faq` FOREIGN KEY (`id`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4537,7 +4537,7 @@ CREATE TABLE `vtiger_faqcategories` (
   `sortorderid` int DEFAULT NULL,
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`faqcategories_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4559,7 +4559,7 @@ DROP TABLE IF EXISTS `vtiger_faqcategories_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_faqcategories_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4583,7 +4583,7 @@ CREATE TABLE `vtiger_faqcf` (
   `faqid` int NOT NULL,
   PRIMARY KEY (`faqid`),
   CONSTRAINT `fk_1_vtiger_faqcf` FOREIGN KEY (`faqid`) REFERENCES `vtiger_faq` (`id`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4610,7 +4610,7 @@ CREATE TABLE `vtiger_faqcomments` (
   PRIMARY KEY (`commentid`),
   KEY `faqcomments_faqid_idx` (`faqid`),
   CONSTRAINT `fk_1_vtiger_faqcomments` FOREIGN KEY (`faqid`) REFERENCES `vtiger_faq` (`id`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4637,7 +4637,7 @@ CREATE TABLE `vtiger_faqstatus` (
   `sortorderid` int DEFAULT NULL,
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`faqstatus_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4659,7 +4659,7 @@ DROP TABLE IF EXISTS `vtiger_faqstatus_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_faqstatus_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4682,7 +4682,7 @@ DROP TABLE IF EXISTS `vtiger_feedback`;
 CREATE TABLE `vtiger_feedback` (
   `userid` int DEFAULT NULL,
   `dontshow` varchar(19) DEFAULT 'false'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4732,7 +4732,7 @@ CREATE TABLE `vtiger_field` (
   KEY `field_block_idx` (`block`),
   KEY `field_displaytype_idx` (`displaytype`),
   CONSTRAINT `fk_1_vtiger_field` FOREIGN KEY (`tabid`) REFERENCES `vtiger_tab` (`tabid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=852 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=852 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4754,7 +4754,7 @@ DROP TABLE IF EXISTS `vtiger_field_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_field_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4780,7 +4780,7 @@ CREATE TABLE `vtiger_fieldmodulerel` (
   `relmodule` varchar(100) NOT NULL,
   `status` varchar(10) DEFAULT NULL,
   `sequence` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4808,7 +4808,7 @@ CREATE TABLE `vtiger_freetagged_objects` (
   `module` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`tag_id`,`tagger_id`,`object_id`),
   KEY `freetagged_objects_tag_id_tagger_id_object_id_idx` (`tag_id`,`tagger_id`,`object_id`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4834,7 +4834,7 @@ CREATE TABLE `vtiger_freetags` (
   `visibility` varchar(100) NOT NULL DEFAULT 'PRIVATE',
   `owner` int NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4855,7 +4855,7 @@ DROP TABLE IF EXISTS `vtiger_freetags_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_freetags_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4884,7 +4884,7 @@ CREATE TABLE `vtiger_glacct` (
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`glacctid`),
   UNIQUE KEY `glacct_glacct_idx` (`glacct`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4906,7 +4906,7 @@ DROP TABLE IF EXISTS `vtiger_glacct_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_glacct_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4930,7 +4930,7 @@ CREATE TABLE `vtiger_google_event_calendar_mapping` (
   `event_id` varchar(255) DEFAULT NULL,
   `calendar_id` varchar(255) DEFAULT NULL,
   `user_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4954,7 +4954,7 @@ CREATE TABLE `vtiger_google_oauth2` (
   `access_token` varchar(500) DEFAULT NULL,
   `refresh_token` varchar(500) DEFAULT NULL,
   `userid` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4979,7 +4979,7 @@ CREATE TABLE `vtiger_google_sync_fieldmapping` (
   `google_field_type` varchar(255) DEFAULT NULL,
   `google_custom_label` varchar(255) DEFAULT NULL,
   `user` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5004,7 +5004,7 @@ CREATE TABLE `vtiger_google_sync_settings` (
   `clientgroup` varchar(255) DEFAULT NULL,
   `direction` varchar(50) DEFAULT NULL,
   `enabled` tinyint DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5028,7 +5028,7 @@ CREATE TABLE `vtiger_group2grouprel` (
   `containsgroupid` int NOT NULL,
   PRIMARY KEY (`groupid`,`containsgroupid`),
   CONSTRAINT `fk_2_vtiger_group2grouprel` FOREIGN KEY (`groupid`) REFERENCES `vtiger_groups` (`groupid`) ON DELETE CASCADE ON UPDATE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5053,7 +5053,7 @@ CREATE TABLE `vtiger_group2role` (
   PRIMARY KEY (`groupid`,`roleid`),
   KEY `fk_2_vtiger_group2role` (`roleid`),
   CONSTRAINT `fk_2_vtiger_group2role` FOREIGN KEY (`roleid`) REFERENCES `vtiger_role` (`roleid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5079,7 +5079,7 @@ CREATE TABLE `vtiger_group2rs` (
   PRIMARY KEY (`groupid`,`roleandsubid`),
   KEY `fk_2_vtiger_group2rs` (`roleandsubid`),
   CONSTRAINT `fk_2_vtiger_group2rs` FOREIGN KEY (`roleandsubid`) REFERENCES `vtiger_role` (`roleid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5105,7 +5105,7 @@ CREATE TABLE `vtiger_groups` (
   `description` text,
   PRIMARY KEY (`groupid`),
   UNIQUE KEY `groups_groupname_idx` (`groupname`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5129,7 +5129,7 @@ CREATE TABLE `vtiger_home_layout` (
   `userid` int NOT NULL,
   `layout` int NOT NULL DEFAULT '4',
   PRIMARY KEY (`userid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5155,7 +5155,7 @@ CREATE TABLE `vtiger_homedashbd` (
   PRIMARY KEY (`stuffid`),
   KEY `stuff_stuffid_idx` (`stuffid`),
   CONSTRAINT `fk_1_vtiger_homedashbd` FOREIGN KEY (`stuffid`) REFERENCES `vtiger_homestuff` (`stuffid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5182,7 +5182,7 @@ CREATE TABLE `vtiger_homedefault` (
   PRIMARY KEY (`stuffid`),
   KEY `stuff_stuffid_idx` (`stuffid`),
   CONSTRAINT `fk_1_vtiger_homedefault` FOREIGN KEY (`stuffid`) REFERENCES `vtiger_homestuff` (`stuffid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5211,7 +5211,7 @@ CREATE TABLE `vtiger_homemodule` (
   PRIMARY KEY (`stuffid`),
   KEY `stuff_stuffid_idx` (`stuffid`),
   CONSTRAINT `fk_1_vtiger_homemodule` FOREIGN KEY (`stuffid`) REFERENCES `vtiger_homestuff` (`stuffid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5235,7 +5235,7 @@ CREATE TABLE `vtiger_homemoduleflds` (
   `fieldname` varchar(100) DEFAULT NULL,
   KEY `stuff_stuffid_idx` (`stuffid`),
   CONSTRAINT `fk_1_vtiger_homemoduleflds` FOREIGN KEY (`stuffid`) REFERENCES `vtiger_homemodule` (`stuffid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5259,7 +5259,7 @@ CREATE TABLE `vtiger_homereportchart` (
   `reportid` int DEFAULT NULL,
   `reportcharttype` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`stuffid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5285,7 +5285,7 @@ CREATE TABLE `vtiger_homerss` (
   PRIMARY KEY (`stuffid`),
   KEY `stuff_stuffid_idx` (`stuffid`),
   CONSTRAINT `fk_1_vtiger_homerss` FOREIGN KEY (`stuffid`) REFERENCES `vtiger_homestuff` (`stuffid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5315,7 +5315,7 @@ CREATE TABLE `vtiger_homestuff` (
   KEY `stuff_stuffid_idx` (`stuffid`),
   KEY `fk_1_vtiger_homestuff` (`userid`),
   CONSTRAINT `fk_1_vtiger_homestuff` FOREIGN KEY (`userid`) REFERENCES `vtiger_users` (`id`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5337,7 +5337,7 @@ DROP TABLE IF EXISTS `vtiger_homestuff_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_homestuff_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5363,7 +5363,7 @@ CREATE TABLE `vtiger_hour_format` (
   `sortorderid` int DEFAULT NULL,
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`hour_formatid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5385,7 +5385,7 @@ DROP TABLE IF EXISTS `vtiger_hour_format_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_hour_format_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5412,7 +5412,7 @@ CREATE TABLE `vtiger_import_locks` (
   `importid` int NOT NULL,
   `locked_since` datetime DEFAULT NULL,
   PRIMARY KEY (`vtiger_import_lock_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5444,7 +5444,7 @@ CREATE TABLE `vtiger_import_maps` (
   `is_published` varchar(3) NOT NULL DEFAULT 'no',
   PRIMARY KEY (`id`),
   KEY `import_maps_assigned_user_id_module_name_deleted_idx` (`assigned_user_id`,`module`,`name`,`deleted`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5475,7 +5475,7 @@ CREATE TABLE `vtiger_import_queue` (
   `lineitem_currency_id` int DEFAULT NULL,
   `paging` int DEFAULT '0',
   PRIMARY KEY (`importid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5503,7 +5503,7 @@ CREATE TABLE `vtiger_industry` (
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`industryid`),
   UNIQUE KEY `industry_industry_idx` (`industry`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5525,7 +5525,7 @@ DROP TABLE IF EXISTS `vtiger_industry_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_industry_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5550,7 +5550,7 @@ CREATE TABLE `vtiger_inventory_tandc` (
   `type` varchar(30) NOT NULL,
   `tandc` text,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5572,7 +5572,7 @@ DROP TABLE IF EXISTS `vtiger_inventory_tandc_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_inventory_tandc_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5603,7 +5603,7 @@ CREATE TABLE `vtiger_inventorycharges` (
   `taxes` varchar(1024) DEFAULT NULL,
   `deleted` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`chargeid`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5626,7 +5626,7 @@ DROP TABLE IF EXISTS `vtiger_inventorychargesrel`;
 CREATE TABLE `vtiger_inventorychargesrel` (
   `recordid` int NOT NULL,
   `charges` text
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5653,7 +5653,7 @@ CREATE TABLE `vtiger_inventorynotification` (
   `label` varchar(50) DEFAULT NULL,
   `status` varchar(30) DEFAULT NULL,
   PRIMARY KEY (`notificationid`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5675,7 +5675,7 @@ DROP TABLE IF EXISTS `vtiger_inventorynotification_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_inventorynotification_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5717,7 +5717,7 @@ CREATE TABLE `vtiger_inventoryproductrel` (
   KEY `inventoryproductrel_id_idx` (`id`),
   KEY `inventoryproductrel_productid_idx` (`productid`),
   CONSTRAINT `fk_crmid_vtiger_inventoryproductrel` FOREIGN KEY (`id`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5738,7 +5738,7 @@ DROP TABLE IF EXISTS `vtiger_inventoryproductrel_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_inventoryproductrel_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5764,7 +5764,7 @@ CREATE TABLE `vtiger_inventoryshippingrel` (
   `shtax2` decimal(7,3) DEFAULT NULL,
   `shtax3` decimal(7,3) DEFAULT NULL,
   KEY `inventoryishippingrel_id_idx` (`id`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5788,7 +5788,7 @@ CREATE TABLE `vtiger_inventorysubproductrel` (
   `sequence_no` int NOT NULL,
   `productid` int NOT NULL,
   `quantity` int DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5819,7 +5819,7 @@ CREATE TABLE `vtiger_inventorytaxinfo` (
   `regions` text,
   PRIMARY KEY (`taxid`),
   KEY `inventorytaxinfo_taxname_idx` (`taxname`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5841,7 +5841,7 @@ DROP TABLE IF EXISTS `vtiger_inventorytaxinfo_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_inventorytaxinfo_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5866,7 +5866,7 @@ CREATE TABLE `vtiger_invitees` (
   `inviteeid` int NOT NULL,
   `status` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`activityid`,`inviteeid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5926,7 +5926,7 @@ CREATE TABLE `vtiger_invoice` (
   KEY `fk_2_vtiger_invoice` (`salesorderid`),
   CONSTRAINT `fk_2_vtiger_invoice` FOREIGN KEY (`salesorderid`) REFERENCES `vtiger_salesorder` (`salesorderid`) ON DELETE CASCADE,
   CONSTRAINT `fk_crmid_vtiger_invoice` FOREIGN KEY (`invoiceid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5955,7 +5955,7 @@ CREATE TABLE `vtiger_invoice_recurring_info` (
   `invoice_status` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`salesorderid`),
   CONSTRAINT `fk_salesorderid_vtiger_invoice_recurring_info` FOREIGN KEY (`salesorderid`) REFERENCES `vtiger_salesorder` (`salesorderid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5984,7 +5984,7 @@ CREATE TABLE `vtiger_invoicebillads` (
   `bill_pobox` varchar(30) DEFAULT NULL,
   PRIMARY KEY (`invoicebilladdressid`),
   CONSTRAINT `fk_1_vtiger_invoicebillads` FOREIGN KEY (`invoicebilladdressid`) REFERENCES `vtiger_invoice` (`invoiceid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6007,7 +6007,7 @@ CREATE TABLE `vtiger_invoicecf` (
   `invoiceid` int NOT NULL,
   PRIMARY KEY (`invoiceid`),
   CONSTRAINT `fk_1_vtiger_invoicecf` FOREIGN KEY (`invoiceid`) REFERENCES `vtiger_invoice` (`invoiceid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6036,7 +6036,7 @@ CREATE TABLE `vtiger_invoiceshipads` (
   `ship_pobox` varchar(30) DEFAULT NULL,
   PRIMARY KEY (`invoiceshipaddressid`),
   CONSTRAINT `fk_1_vtiger_invoiceshipads` FOREIGN KEY (`invoiceshipaddressid`) REFERENCES `vtiger_invoice` (`invoiceid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6064,7 +6064,7 @@ CREATE TABLE `vtiger_invoicestatus` (
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`invoicestatusid`),
   UNIQUE KEY `invoicestatus_invoiestatus_idx` (`invoicestatus`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6086,7 +6086,7 @@ DROP TABLE IF EXISTS `vtiger_invoicestatus_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_invoicestatus_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6116,7 +6116,7 @@ CREATE TABLE `vtiger_invoicestatushistory` (
   PRIMARY KEY (`historyid`),
   KEY `invoicestatushistory_invoiceid_idx` (`invoiceid`),
   CONSTRAINT `fk_1_vtiger_invoicestatushistory` FOREIGN KEY (`invoiceid`) REFERENCES `vtiger_invoice` (`invoiceid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6145,7 +6145,7 @@ CREATE TABLE `vtiger_language` (
   `isdefault` int DEFAULT NULL,
   `active` int DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6173,7 +6173,7 @@ CREATE TABLE `vtiger_language_rules` (
   `language` varchar(10) DEFAULT 'all',
   `sequence` int DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6194,7 +6194,7 @@ DROP TABLE IF EXISTS `vtiger_language_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_language_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6220,7 +6220,7 @@ CREATE TABLE `vtiger_lead_view` (
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`lead_viewid`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6242,7 +6242,7 @@ DROP TABLE IF EXISTS `vtiger_lead_view_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_lead_view_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6276,7 +6276,7 @@ CREATE TABLE `vtiger_leadaddress` (
   `leadaddresstype` varchar(30) DEFAULT 'Billing',
   PRIMARY KEY (`leadaddressid`),
   CONSTRAINT `fk_1_vtiger_leadaddress` FOREIGN KEY (`leadaddressid`) REFERENCES `vtiger_leaddetails` (`leadid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6336,7 +6336,7 @@ CREATE TABLE `vtiger_leaddetails` (
   KEY `leaddetails_converted_leadstatus_idx` (`converted`,`leadstatus`),
   KEY `email_idx` (`email`),
   CONSTRAINT `fk_1_vtiger_leaddetails` FOREIGN KEY (`leadid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6359,7 +6359,7 @@ CREATE TABLE `vtiger_leadscf` (
   `leadid` int NOT NULL,
   PRIMARY KEY (`leadid`),
   CONSTRAINT `fk_1_vtiger_leadscf` FOREIGN KEY (`leadid`) REFERENCES `vtiger_leaddetails` (`leadid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6386,7 +6386,7 @@ CREATE TABLE `vtiger_leadsource` (
   `sortorderid` int DEFAULT NULL,
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`leadsourceid`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6408,7 +6408,7 @@ DROP TABLE IF EXISTS `vtiger_leadsource_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_leadsource_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6435,7 +6435,7 @@ CREATE TABLE `vtiger_leadstage` (
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`leadstageid`),
   UNIQUE KEY `leadstage_stage_idx` (`stage`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6462,7 +6462,7 @@ CREATE TABLE `vtiger_leadstatus` (
   `sortorderid` int DEFAULT NULL,
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`leadstatusid`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6484,7 +6484,7 @@ DROP TABLE IF EXISTS `vtiger_leadstatus_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_leadstatus_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6512,7 +6512,7 @@ CREATE TABLE `vtiger_leadsubdetails` (
   `empct` int DEFAULT '0',
   PRIMARY KEY (`leadsubscriptionid`),
   CONSTRAINT `fk_1_vtiger_leadsubdetails` FOREIGN KEY (`leadsubscriptionid`) REFERENCES `vtiger_leaddetails` (`leadid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6545,7 +6545,7 @@ CREATE TABLE `vtiger_links` (
   `parent_link` int DEFAULT NULL,
   PRIMARY KEY (`linkid`),
   KEY `link_tabidtype_idx` (`tabid`,`linktype`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6567,7 +6567,7 @@ DROP TABLE IF EXISTS `vtiger_links_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_links_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6595,7 +6595,7 @@ CREATE TABLE `vtiger_loginhistory` (
   `login_time` datetime DEFAULT NULL,
   `status` varchar(25) DEFAULT NULL,
   PRIMARY KEY (`login_id`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6634,7 +6634,7 @@ CREATE TABLE `vtiger_mail_accounts` (
   `set_default` int DEFAULT NULL,
   `sent_folder` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`account_id`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6665,7 +6665,7 @@ CREATE TABLE `vtiger_mailer_queue` (
   `failed` int NOT NULL DEFAULT '0',
   `failreason` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6690,7 +6690,7 @@ CREATE TABLE `vtiger_mailer_queueattachments` (
   `name` varchar(100) DEFAULT NULL,
   `encoding` varchar(50) DEFAULT NULL,
   `type` varchar(100) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6714,7 +6714,7 @@ CREATE TABLE `vtiger_mailer_queueinfo` (
   `name` varchar(100) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
   `type` varchar(7) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6742,7 +6742,7 @@ CREATE TABLE `vtiger_mailmanager_mailattachments` (
   `path` varchar(200) NOT NULL,
   `cid` varchar(100) DEFAULT NULL,
   KEY `userid_muid_idx` (`userid`,`muid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6782,7 +6782,7 @@ CREATE TABLE `vtiger_mailmanager_mailrecord` (
   `mfolder` varchar(250) DEFAULT NULL,
   KEY `userid_lastsavedtime_idx` (`userid`,`lastsavedtime`),
   KEY `userid_muid_idx` (`userid`,`muid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6805,7 +6805,7 @@ CREATE TABLE `vtiger_mailmanager_mailrel` (
   `mailuid` varchar(999) DEFAULT NULL,
   `crmid` int DEFAULT NULL,
   `emailid` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6840,7 +6840,7 @@ CREATE TABLE `vtiger_mailscanner` (
   `scanfrom` varchar(10) DEFAULT 'ALL',
   `time_zone` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`scannerid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6867,7 +6867,7 @@ CREATE TABLE `vtiger_mailscanner_actions` (
   `lookup` varchar(30) DEFAULT NULL,
   `sequence` int DEFAULT NULL,
   PRIMARY KEY (`actionid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6895,7 +6895,7 @@ CREATE TABLE `vtiger_mailscanner_folders` (
   `enabled` int DEFAULT NULL,
   PRIMARY KEY (`folderid`),
   KEY `folderid_idx` (`folderid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6921,7 +6921,7 @@ CREATE TABLE `vtiger_mailscanner_ids` (
   `refids` text,
   KEY `scanner_message_ids_idx` (`scannerid`,`messageid`),
   KEY `messageids_crmid_idx` (`crmid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6943,7 +6943,7 @@ DROP TABLE IF EXISTS `vtiger_mailscanner_ruleactions`;
 CREATE TABLE `vtiger_mailscanner_ruleactions` (
   `ruleid` int DEFAULT NULL,
   `actionid` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -6977,7 +6977,7 @@ CREATE TABLE `vtiger_mailscanner_rules` (
   `cc` varchar(255) DEFAULT NULL,
   `bcc` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`ruleid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7005,7 +7005,7 @@ CREATE TABLE `vtiger_manufacturer` (
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`manufacturerid`),
   UNIQUE KEY `manufacturer_manufacturer_idx` (`manufacturer`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7027,7 +7027,7 @@ DROP TABLE IF EXISTS `vtiger_manufacturer_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_manufacturer_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7054,7 +7054,7 @@ CREATE TABLE `vtiger_mobile_alerts` (
   `sequence` int DEFAULT NULL,
   `deleted` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7088,7 +7088,7 @@ CREATE TABLE `vtiger_modcomments` (
   PRIMARY KEY (`modcommentsid`),
   KEY `relatedto_idx` (`related_to`),
   CONSTRAINT `fk_crmid_vtiger_modcomments` FOREIGN KEY (`modcommentsid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7111,7 +7111,7 @@ CREATE TABLE `vtiger_modcommentscf` (
   `modcommentsid` int NOT NULL,
   PRIMARY KEY (`modcommentsid`),
   CONSTRAINT `fk_modcommentsid_vtiger_modcommentscf` FOREIGN KEY (`modcommentsid`) REFERENCES `vtiger_modcomments` (`modcommentsid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7140,7 +7140,7 @@ CREATE TABLE `vtiger_modentity_num` (
   PRIMARY KEY (`num_id`),
   UNIQUE KEY `num_idx` (`num_id`),
   KEY `semodule_active_idx` (`semodule`,`active`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7162,7 +7162,7 @@ DROP TABLE IF EXISTS `vtiger_modentity_num_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_modentity_num_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7192,7 +7192,7 @@ CREATE TABLE `vtiger_modtracker_basic` (
   PRIMARY KEY (`id`),
   KEY `crmidx` (`crmid`),
   KEY `idx` (`id`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7217,7 +7217,7 @@ CREATE TABLE `vtiger_modtracker_detail` (
   `prevalue` text,
   `postvalue` text,
   KEY `idx` (`id`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7242,7 +7242,7 @@ CREATE TABLE `vtiger_modtracker_relations` (
   `targetid` int NOT NULL,
   `changedon` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7265,7 +7265,7 @@ CREATE TABLE `vtiger_modtracker_tabs` (
   `tabid` int NOT NULL,
   `visible` int DEFAULT '0',
   PRIMARY KEY (`tabid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7299,7 +7299,7 @@ CREATE TABLE `vtiger_module_dashboard_widgets` (
   PRIMARY KEY (`id`),
   KEY `dashboardtabid` (`dashboardtabid`),
   CONSTRAINT `vtiger_module_dashboard_widgets_ibfk_1` FOREIGN KEY (`dashboardtabid`) REFERENCES `vtiger_dashboard_tabs` (`id`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7324,7 +7324,7 @@ CREATE TABLE `vtiger_no_of_currency_decimals` (
   `sortorderid` int DEFAULT NULL,
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`no_of_currency_decimalsid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7346,7 +7346,7 @@ DROP TABLE IF EXISTS `vtiger_no_of_currency_decimals_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_no_of_currency_decimals_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7370,7 +7370,7 @@ CREATE TABLE `vtiger_notebook_contents` (
   `userid` int NOT NULL,
   `notebookid` int NOT NULL,
   `contents` text
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7407,7 +7407,7 @@ CREATE TABLE `vtiger_notes` (
   KEY `notes_title_idx` (`title`),
   KEY `notes_notesid_idx` (`notesid`),
   CONSTRAINT `fk_1_vtiger_notes` FOREIGN KEY (`notesid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7430,7 +7430,7 @@ CREATE TABLE `vtiger_notescf` (
   `notesid` int NOT NULL,
   PRIMARY KEY (`notesid`),
   CONSTRAINT `fk_notesid_vtiger_notescf` FOREIGN KEY (`notesid`) REFERENCES `vtiger_notes` (`notesid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7459,7 +7459,7 @@ CREATE TABLE `vtiger_notificationscheduler` (
   `type` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`schedulednotificationid`),
   UNIQUE KEY `notificationscheduler_schedulednotificationname_idx` (`schedulednotificationname`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7481,7 +7481,7 @@ DROP TABLE IF EXISTS `vtiger_notificationscheduler_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_notificationscheduler_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7510,7 +7510,7 @@ CREATE TABLE `vtiger_opportunity_type` (
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`opptypeid`),
   UNIQUE KEY `opportunity_type_opportunity_type_idx` (`opportunity_type`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7532,7 +7532,7 @@ DROP TABLE IF EXISTS `vtiger_opportunity_type_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_opportunity_type_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7560,7 +7560,7 @@ CREATE TABLE `vtiger_opportunitystage` (
   `probability` decimal(3,2) DEFAULT '0.00',
   PRIMARY KEY (`potstageid`),
   UNIQUE KEY `opportunitystage_stage_idx` (`stage`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7585,7 +7585,7 @@ CREATE TABLE `vtiger_org_share_action2tab` (
   PRIMARY KEY (`share_action_id`,`tabid`),
   KEY `fk_2_vtiger_org_share_action2tab` (`tabid`),
   CONSTRAINT `fk_2_vtiger_org_share_action2tab` FOREIGN KEY (`tabid`) REFERENCES `vtiger_tab` (`tabid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7609,7 +7609,7 @@ CREATE TABLE `vtiger_org_share_action_mapping` (
   `share_action_id` int NOT NULL,
   `share_action_name` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`share_action_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7644,7 +7644,7 @@ CREATE TABLE `vtiger_organizationdetails` (
   `logo` text,
   `vatid` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`organization_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7666,7 +7666,7 @@ DROP TABLE IF EXISTS `vtiger_organizationdetails_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_organizationdetails_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7692,7 +7692,7 @@ CREATE TABLE `vtiger_othereventduration` (
   `sortorderid` int DEFAULT NULL,
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`othereventdurationid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7714,7 +7714,7 @@ DROP TABLE IF EXISTS `vtiger_othereventduration_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_othereventduration_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7741,7 +7741,7 @@ CREATE TABLE `vtiger_parenttab` (
   `visible` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`parenttabid`),
   KEY `parenttab_parenttabid_parenttabl_label_visible_idx` (`parenttabid`,`parenttab_label`,`visible`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7769,7 +7769,7 @@ CREATE TABLE `vtiger_parenttabrel` (
   KEY `fk_2_vtiger_parenttabrel` (`parenttabid`),
   CONSTRAINT `fk_1_vtiger_parenttabrel` FOREIGN KEY (`tabid`) REFERENCES `vtiger_tab` (`tabid`) ON DELETE CASCADE,
   CONSTRAINT `fk_2_vtiger_parenttabrel` FOREIGN KEY (`parenttabid`) REFERENCES `vtiger_parenttab` (`parenttabid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7795,7 +7795,7 @@ CREATE TABLE `vtiger_payment_duration` (
   `sortorderid` int DEFAULT NULL,
   `presence` int DEFAULT NULL,
   `color` varchar(10) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7817,7 +7817,7 @@ DROP TABLE IF EXISTS `vtiger_payment_duration_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_payment_duration_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7856,7 +7856,7 @@ CREATE TABLE `vtiger_pbxmanager` (
   KEY `index_sourceuuid` (`sourceuuid`),
   KEY `index_pbxmanager_id` (`pbxmanagerid`),
   CONSTRAINT `fk_crmid_vtiger_pbxmanager` FOREIGN KEY (`pbxmanagerid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7880,7 +7880,7 @@ CREATE TABLE `vtiger_pbxmanager_gateway` (
   `gateway` varchar(20) DEFAULT NULL,
   `parameters` text,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7908,7 +7908,7 @@ CREATE TABLE `vtiger_pbxmanager_phonelookup` (
   UNIQUE KEY `unique_key` (`crmid`,`setype`,`fieldname`),
   KEY `index_phone_number` (`fnumber`,`rnumber`),
   CONSTRAINT `vtiger_pbxmanager_phonelookup_ibfk_1` FOREIGN KEY (`crmid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7931,7 +7931,7 @@ CREATE TABLE `vtiger_pbxmanagercf` (
   `pbxmanagerid` int NOT NULL,
   PRIMARY KEY (`pbxmanagerid`),
   CONSTRAINT `fk_pbxmanagerid_vtiger_pbxmanagercf` FOREIGN KEY (`pbxmanagerid`) REFERENCES `vtiger_pbxmanager` (`pbxmanagerid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7955,7 +7955,7 @@ CREATE TABLE `vtiger_picklist` (
   `name` varchar(200) NOT NULL,
   PRIMARY KEY (`picklistid`),
   UNIQUE KEY `picklist_name_idx` (`name`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -7984,7 +7984,7 @@ CREATE TABLE `vtiger_picklist_dependency` (
   `targetvalues` text,
   `criteria` text,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8005,7 +8005,7 @@ DROP TABLE IF EXISTS `vtiger_picklist_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_picklist_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8030,7 +8030,7 @@ CREATE TABLE `vtiger_picklist_transitions` (
   `module` varchar(100) NOT NULL,
   `transition_data` varchar(1000) NOT NULL,
   PRIMARY KEY (`fieldname`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8051,7 +8051,7 @@ DROP TABLE IF EXISTS `vtiger_picklistvalues_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_picklistvalues_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8081,7 +8081,7 @@ CREATE TABLE `vtiger_pobillads` (
   `bill_pobox` varchar(30) DEFAULT NULL,
   PRIMARY KEY (`pobilladdressid`),
   CONSTRAINT `fk_1_vtiger_pobillads` FOREIGN KEY (`pobilladdressid`) REFERENCES `vtiger_purchaseorder` (`purchaseorderid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8109,7 +8109,7 @@ CREATE TABLE `vtiger_portal` (
   `createdtime` datetime DEFAULT NULL,
   PRIMARY KEY (`portalid`),
   KEY `portal_portalname_idx` (`portalname`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8140,7 +8140,7 @@ CREATE TABLE `vtiger_portalinfo` (
   `isactive` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   CONSTRAINT `fk_1_vtiger_portalinfo` FOREIGN KEY (`id`) REFERENCES `vtiger_contactdetails` (`contactid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8169,7 +8169,7 @@ CREATE TABLE `vtiger_poshipads` (
   `ship_pobox` varchar(30) DEFAULT NULL,
   PRIMARY KEY (`poshipaddressid`),
   CONSTRAINT `fk_1_vtiger_poshipads` FOREIGN KEY (`poshipaddressid`) REFERENCES `vtiger_purchaseorder` (`purchaseorderid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8197,7 +8197,7 @@ CREATE TABLE `vtiger_postatus` (
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`postatusid`),
   UNIQUE KEY `postatus_postatus_idx` (`postatus`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8219,7 +8219,7 @@ DROP TABLE IF EXISTS `vtiger_postatus_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_postatus_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8249,7 +8249,7 @@ CREATE TABLE `vtiger_postatushistory` (
   PRIMARY KEY (`historyid`),
   KEY `postatushistory_purchaseorderid_idx` (`purchaseorderid`),
   CONSTRAINT `fk_1_vtiger_postatushistory` FOREIGN KEY (`purchaseorderid`) REFERENCES `vtiger_purchaseorder` (`purchaseorderid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8305,7 +8305,7 @@ CREATE TABLE `vtiger_potential` (
   KEY `potentail_sales_stage_idx` (`sales_stage`),
   KEY `potentail_sales_stage_amount_idx` (`amount`,`sales_stage`),
   CONSTRAINT `fk_1_vtiger_potential` FOREIGN KEY (`potentialid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8328,7 +8328,7 @@ CREATE TABLE `vtiger_potentialscf` (
   `potentialid` int NOT NULL,
   PRIMARY KEY (`potentialid`),
   CONSTRAINT `fk_1_vtiger_potentialscf` FOREIGN KEY (`potentialid`) REFERENCES `vtiger_potential` (`potentialid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8359,7 +8359,7 @@ CREATE TABLE `vtiger_potstagehistory` (
   PRIMARY KEY (`historyid`),
   KEY `potstagehistory_potentialid_idx` (`potentialid`),
   CONSTRAINT `fk_1_vtiger_potstagehistory` FOREIGN KEY (`potentialid`) REFERENCES `vtiger_potential` (`potentialid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8387,7 +8387,7 @@ CREATE TABLE `vtiger_pricebook` (
   `tags` varchar(1) DEFAULT NULL,
   PRIMARY KEY (`pricebookid`),
   CONSTRAINT `fk_1_vtiger_pricebook` FOREIGN KEY (`pricebookid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8410,7 +8410,7 @@ CREATE TABLE `vtiger_pricebookcf` (
   `pricebookid` int NOT NULL,
   PRIMARY KEY (`pricebookid`),
   CONSTRAINT `fk_1_vtiger_pricebookcf` FOREIGN KEY (`pricebookid`) REFERENCES `vtiger_pricebook` (`pricebookid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8438,7 +8438,7 @@ CREATE TABLE `vtiger_pricebookproductrel` (
   KEY `pricebookproductrel_pricebookid_idx` (`pricebookid`),
   KEY `pricebookproductrel_productid_idx` (`productid`),
   CONSTRAINT `fk_1_vtiger_pricebookproductrel` FOREIGN KEY (`pricebookid`) REFERENCES `vtiger_pricebook` (`pricebookid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8464,7 +8464,7 @@ CREATE TABLE `vtiger_priority` (
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`priorityid`),
   UNIQUE KEY `priority_priority_idx` (`priority`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8492,7 +8492,7 @@ CREATE TABLE `vtiger_productcategory` (
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`productcategoryid`),
   UNIQUE KEY `productcategory_productcategory_idx` (`productcategory`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8514,7 +8514,7 @@ DROP TABLE IF EXISTS `vtiger_productcategory_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_productcategory_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8538,7 +8538,7 @@ CREATE TABLE `vtiger_productcf` (
   `productid` int NOT NULL,
   PRIMARY KEY (`productid`),
   CONSTRAINT `fk_1_vtiger_productcf` FOREIGN KEY (`productid`) REFERENCES `vtiger_products` (`productid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8562,7 +8562,7 @@ CREATE TABLE `vtiger_productcurrencyrel` (
   `currencyid` int NOT NULL,
   `converted_price` decimal(28,8) DEFAULT NULL,
   `actual_price` decimal(28,8) DEFAULT NULL
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8619,7 +8619,7 @@ CREATE TABLE `vtiger_products` (
   `tags` varchar(1) DEFAULT NULL,
   PRIMARY KEY (`productid`),
   CONSTRAINT `fk_1_vtiger_products` FOREIGN KEY (`productid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8646,7 +8646,7 @@ CREATE TABLE `vtiger_producttaxrel` (
   KEY `producttaxrel_productid_idx` (`productid`),
   KEY `producttaxrel_taxid_idx` (`taxid`),
   CONSTRAINT `fk_crmid_vtiger_producttaxrel` FOREIGN KEY (`productid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8671,7 +8671,7 @@ CREATE TABLE `vtiger_profile` (
   `description` text,
   `directly_related_to_role` int DEFAULT '0',
   PRIMARY KEY (`profileid`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8701,7 +8701,7 @@ CREATE TABLE `vtiger_profile2field` (
   KEY `profile2field_profileid_tabid_fieldname_idx` (`profileid`,`tabid`),
   KEY `profile2field_tabid_profileid_idx` (`tabid`,`profileid`),
   KEY `profile2field_visible_profileid_idx` (`visible`,`profileid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8728,7 +8728,7 @@ CREATE TABLE `vtiger_profile2globalpermissions` (
   PRIMARY KEY (`profileid`,`globalactionid`),
   KEY `idx_profile2globalpermissions` (`profileid`,`globalactionid`),
   CONSTRAINT `fk_1_vtiger_profile2globalpermissions` FOREIGN KEY (`profileid`) REFERENCES `vtiger_profile` (`profileid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8755,7 +8755,7 @@ CREATE TABLE `vtiger_profile2standardpermissions` (
   `permissions` int DEFAULT NULL,
   PRIMARY KEY (`profileid`,`tabid`,`operation`),
   KEY `profile2standardpermissions_profileid_tabid_operation_idx` (`profileid`,`tabid`,`operation`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8780,7 +8780,7 @@ CREATE TABLE `vtiger_profile2tab` (
   `tabid` int DEFAULT NULL,
   `permissions` int NOT NULL DEFAULT '0',
   KEY `profile2tab_profileid_tabid_idx` (`profileid`,`tabid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8807,7 +8807,7 @@ CREATE TABLE `vtiger_profile2utility` (
   `permission` int DEFAULT NULL,
   PRIMARY KEY (`profileid`,`tabid`,`activityid`),
   KEY `profile2utility_profileid_tabid_activityid_idx` (`profileid`,`tabid`,`activityid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8829,7 +8829,7 @@ DROP TABLE IF EXISTS `vtiger_profile_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_profile_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8857,7 +8857,7 @@ CREATE TABLE `vtiger_progress` (
   `sortorderid` int DEFAULT '0',
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`progressid`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8879,7 +8879,7 @@ DROP TABLE IF EXISTS `vtiger_progress_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_progress_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8918,7 +8918,7 @@ CREATE TABLE `vtiger_project` (
   `potentialid` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`projectid`),
   CONSTRAINT `fk_crmid_vtiger_project` FOREIGN KEY (`projectid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8941,7 +8941,7 @@ CREATE TABLE `vtiger_projectcf` (
   `projectid` int NOT NULL,
   PRIMARY KEY (`projectid`),
   CONSTRAINT `fk_projectid_vtiger_projectcf` FOREIGN KEY (`projectid`) REFERENCES `vtiger_project` (`projectid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8970,7 +8970,7 @@ CREATE TABLE `vtiger_projectmilestone` (
   `tags` varchar(1) DEFAULT NULL,
   PRIMARY KEY (`projectmilestoneid`),
   CONSTRAINT `fk_crmid_vtiger_projectmilestone` FOREIGN KEY (`projectmilestoneid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8993,7 +8993,7 @@ CREATE TABLE `vtiger_projectmilestonecf` (
   `projectmilestoneid` int NOT NULL,
   PRIMARY KEY (`projectmilestoneid`),
   CONSTRAINT `fk_projectmilestoneid_vtiger_projectmilestonecf` FOREIGN KEY (`projectmilestoneid`) REFERENCES `vtiger_projectmilestone` (`projectmilestoneid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9020,7 +9020,7 @@ CREATE TABLE `vtiger_projectmilestonetype` (
   `sortorderid` int DEFAULT '0',
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`projectmilestonetypeid`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9042,7 +9042,7 @@ DROP TABLE IF EXISTS `vtiger_projectmilestonetype_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_projectmilestonetype_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9070,7 +9070,7 @@ CREATE TABLE `vtiger_projectpriority` (
   `sortorderid` int DEFAULT '0',
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`projectpriorityid`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9092,7 +9092,7 @@ DROP TABLE IF EXISTS `vtiger_projectpriority_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_projectpriority_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9120,7 +9120,7 @@ CREATE TABLE `vtiger_projectstatus` (
   `sortorderid` int DEFAULT '0',
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`projectstatusid`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9142,7 +9142,7 @@ DROP TABLE IF EXISTS `vtiger_projectstatus_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_projectstatus_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9178,7 +9178,7 @@ CREATE TABLE `vtiger_projecttask` (
   `projecttaskstatus` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`projecttaskid`),
   CONSTRAINT `fk_crmid_vtiger_projecttask` FOREIGN KEY (`projecttaskid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9202,7 +9202,7 @@ CREATE TABLE `vtiger_projecttask_status_color` (
   `defaultcolor` varchar(50) DEFAULT NULL,
   `color` varchar(50) DEFAULT NULL,
   UNIQUE KEY `status` (`status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9226,7 +9226,7 @@ CREATE TABLE `vtiger_projecttaskcf` (
   `projecttaskid` int NOT NULL,
   PRIMARY KEY (`projecttaskid`),
   CONSTRAINT `fk_projecttaskid_vtiger_projecttaskcf` FOREIGN KEY (`projecttaskid`) REFERENCES `vtiger_projecttask` (`projecttaskid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9253,7 +9253,7 @@ CREATE TABLE `vtiger_projecttaskpriority` (
   `sortorderid` int DEFAULT '0',
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`projecttaskpriorityid`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9275,7 +9275,7 @@ DROP TABLE IF EXISTS `vtiger_projecttaskpriority_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_projecttaskpriority_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9303,7 +9303,7 @@ CREATE TABLE `vtiger_projecttaskprogress` (
   `sortorderid` int DEFAULT '0',
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`projecttaskprogressid`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9325,7 +9325,7 @@ DROP TABLE IF EXISTS `vtiger_projecttaskprogress_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_projecttaskprogress_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9353,7 +9353,7 @@ CREATE TABLE `vtiger_projecttaskstatus` (
   `sortorderid` int DEFAULT '0',
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`projecttaskstatusid`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9375,7 +9375,7 @@ DROP TABLE IF EXISTS `vtiger_projecttaskstatus_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_projecttaskstatus_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9403,7 +9403,7 @@ CREATE TABLE `vtiger_projecttasktype` (
   `sortorderid` int DEFAULT '0',
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`projecttasktypeid`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9425,7 +9425,7 @@ DROP TABLE IF EXISTS `vtiger_projecttasktype_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_projecttasktype_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9453,7 +9453,7 @@ CREATE TABLE `vtiger_projecttype` (
   `sortorderid` int DEFAULT '0',
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`projecttypeid`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9475,7 +9475,7 @@ DROP TABLE IF EXISTS `vtiger_projecttype_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_projecttype_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9533,7 +9533,7 @@ CREATE TABLE `vtiger_purchaseorder` (
   KEY `purchaseorder_contactid_idx` (`contactid`),
   CONSTRAINT `fk_4_vtiger_purchaseorder` FOREIGN KEY (`vendorid`) REFERENCES `vtiger_vendor` (`vendorid`) ON DELETE CASCADE,
   CONSTRAINT `fk_crmid_vtiger_purchaseorder` FOREIGN KEY (`purchaseorderid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9556,7 +9556,7 @@ CREATE TABLE `vtiger_purchaseordercf` (
   `purchaseorderid` int NOT NULL,
   PRIMARY KEY (`purchaseorderid`),
   CONSTRAINT `fk_1_vtiger_purchaseordercf` FOREIGN KEY (`purchaseorderid`) REFERENCES `vtiger_purchaseorder` (`purchaseorderid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9609,7 +9609,7 @@ CREATE TABLE `vtiger_quotes` (
   KEY `quotes_contactid_idx` (`contactid`),
   CONSTRAINT `fk_3_vtiger_quotes` FOREIGN KEY (`potentialid`) REFERENCES `vtiger_potential` (`potentialid`) ON DELETE CASCADE,
   CONSTRAINT `fk_crmid_vtiger_quotes` FOREIGN KEY (`quoteid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9638,7 +9638,7 @@ CREATE TABLE `vtiger_quotesbillads` (
   `bill_pobox` varchar(30) DEFAULT NULL,
   PRIMARY KEY (`quotebilladdressid`),
   CONSTRAINT `fk_1_vtiger_quotesbillads` FOREIGN KEY (`quotebilladdressid`) REFERENCES `vtiger_quotes` (`quoteid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9661,7 +9661,7 @@ CREATE TABLE `vtiger_quotescf` (
   `quoteid` int NOT NULL,
   PRIMARY KEY (`quoteid`),
   CONSTRAINT `fk_1_vtiger_quotescf` FOREIGN KEY (`quoteid`) REFERENCES `vtiger_quotes` (`quoteid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9690,7 +9690,7 @@ CREATE TABLE `vtiger_quotesshipads` (
   `ship_pobox` varchar(30) DEFAULT NULL,
   PRIMARY KEY (`quoteshipaddressid`),
   CONSTRAINT `fk_1_vtiger_quotesshipads` FOREIGN KEY (`quoteshipaddressid`) REFERENCES `vtiger_quotes` (`quoteid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9718,7 +9718,7 @@ CREATE TABLE `vtiger_quotestage` (
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`quotestageid`),
   UNIQUE KEY `quotestage_quotestage_idx` (`quotestage`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9740,7 +9740,7 @@ DROP TABLE IF EXISTS `vtiger_quotestage_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_quotestage_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9770,7 +9770,7 @@ CREATE TABLE `vtiger_quotestagehistory` (
   PRIMARY KEY (`historyid`),
   KEY `quotestagehistory_quoteid_idx` (`quoteid`),
   CONSTRAINT `fk_1_vtiger_quotestagehistory` FOREIGN KEY (`quoteid`) REFERENCES `vtiger_quotes` (`quoteid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9797,7 +9797,7 @@ CREATE TABLE `vtiger_rating` (
   `sortorderid` int DEFAULT NULL,
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`rating_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9819,7 +9819,7 @@ DROP TABLE IF EXISTS `vtiger_rating_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_rating_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9845,7 +9845,7 @@ CREATE TABLE `vtiger_recurring_frequency` (
   `sortorderid` int DEFAULT NULL,
   `presence` int DEFAULT NULL,
   `color` varchar(10) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9867,7 +9867,7 @@ DROP TABLE IF EXISTS `vtiger_recurring_frequency_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_recurring_frequency_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9898,7 +9898,7 @@ CREATE TABLE `vtiger_recurringevents` (
   PRIMARY KEY (`recurringid`),
   KEY `fk_1_vtiger_recurringevents` (`activityid`),
   CONSTRAINT `fk_1_vtiger_recurringevents` FOREIGN KEY (`activityid`) REFERENCES `vtiger_activity` (`activityid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9925,7 +9925,7 @@ CREATE TABLE `vtiger_recurringtype` (
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`recurringeventid`),
   UNIQUE KEY `recurringtype_status_idx` (`recurringtype`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9947,7 +9947,7 @@ DROP TABLE IF EXISTS `vtiger_recurringtype_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_recurringtype_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -9981,7 +9981,7 @@ CREATE TABLE `vtiger_relatedlists` (
   `relationtype` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`relation_id`),
   KEY `relatedlists_relation_id_idx` (`relation_id`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10008,7 +10008,7 @@ CREATE TABLE `vtiger_relatedlists_rb` (
   `rel_column` varchar(200) DEFAULT NULL,
   `ref_column` varchar(200) DEFAULT NULL,
   `related_crm_ids` text
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10029,7 +10029,7 @@ DROP TABLE IF EXISTS `vtiger_relatedlists_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_relatedlists_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10060,7 +10060,7 @@ CREATE TABLE `vtiger_relcriteria` (
   PRIMARY KEY (`queryid`,`columnindex`),
   KEY `relcriteria_queryid_idx` (`queryid`),
   CONSTRAINT `fk_1_vtiger_relcriteria` FOREIGN KEY (`queryid`) REFERENCES `vtiger_selectquery` (`queryid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10086,7 +10086,7 @@ CREATE TABLE `vtiger_relcriteria_grouping` (
   `group_condition` varchar(256) DEFAULT NULL,
   `condition_expression` text,
   PRIMARY KEY (`groupid`,`queryid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10112,7 +10112,7 @@ CREATE TABLE `vtiger_reminder_interval` (
   `sortorderid` int NOT NULL,
   `presence` int NOT NULL,
   PRIMARY KEY (`reminder_intervalid`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10134,7 +10134,7 @@ DROP TABLE IF EXISTS `vtiger_reminder_interval_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_reminder_interval_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10170,7 +10170,7 @@ CREATE TABLE `vtiger_report` (
   KEY `report_queryid_idx` (`queryid`),
   KEY `report_folderid_idx` (`folderid`),
   CONSTRAINT `fk_2_vtiger_report` FOREIGN KEY (`queryid`) REFERENCES `vtiger_selectquery` (`queryid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10197,7 +10197,7 @@ CREATE TABLE `vtiger_report_sharegroups` (
   KEY `vtiger_groups_groupid_ibfk_1` (`groupid`),
   CONSTRAINT `vtiger_groups_groupid_ibfk_1` FOREIGN KEY (`groupid`) REFERENCES `vtiger_groups` (`groupid`) ON DELETE CASCADE,
   CONSTRAINT `vtiger_report_reportid_ibfk_2` FOREIGN KEY (`reportid`) REFERENCES `vtiger_report` (`reportid`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10223,7 +10223,7 @@ CREATE TABLE `vtiger_report_sharerole` (
   KEY `vtiger_role_roleid_ibfk_1` (`roleid`),
   CONSTRAINT `vtiger_report_reportid_ibfk_3` FOREIGN KEY (`reportid`) REFERENCES `vtiger_report` (`reportid`) ON DELETE CASCADE,
   CONSTRAINT `vtiger_role_roleid_ibfk_1` FOREIGN KEY (`roleid`) REFERENCES `vtiger_role` (`roleid`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10249,7 +10249,7 @@ CREATE TABLE `vtiger_report_sharers` (
   KEY `vtiger_rolesd_rsid_ibfk_1` (`rsid`),
   CONSTRAINT `vtiger_report_reportid_ibfk_4` FOREIGN KEY (`reportid`) REFERENCES `vtiger_report` (`reportid`) ON DELETE CASCADE,
   CONSTRAINT `vtiger_rolesd_rsid_ibfk_1` FOREIGN KEY (`rsid`) REFERENCES `vtiger_role` (`roleid`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10275,7 +10275,7 @@ CREATE TABLE `vtiger_report_shareusers` (
   KEY `vtiger_users_userid_ibfk_1` (`userid`),
   CONSTRAINT `vtiger_reports_reportid_ibfk_1` FOREIGN KEY (`reportid`) REFERENCES `vtiger_report` (`reportid`) ON DELETE CASCADE,
   CONSTRAINT `vtiger_users_userid_ibfk_1` FOREIGN KEY (`userid`) REFERENCES `vtiger_users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10303,7 +10303,7 @@ CREATE TABLE `vtiger_reportdatefilter` (
   PRIMARY KEY (`datefilterid`),
   KEY `reportdatefilter_datefilterid_idx` (`datefilterid`),
   CONSTRAINT `fk_1_vtiger_reportdatefilter` FOREIGN KEY (`datefilterid`) REFERENCES `vtiger_report` (`reportid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10326,7 +10326,7 @@ DROP TABLE IF EXISTS `vtiger_reportfilters`;
 CREATE TABLE `vtiger_reportfilters` (
   `filterid` int NOT NULL,
   `name` varchar(200) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10352,7 +10352,7 @@ CREATE TABLE `vtiger_reportfolder` (
   `description` varchar(250) DEFAULT '',
   `state` varchar(50) DEFAULT 'SAVED',
   PRIMARY KEY (`folderid`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10379,7 +10379,7 @@ CREATE TABLE `vtiger_reportgroupbycolumn` (
   `dategroupbycriteria` varchar(250) DEFAULT NULL,
   KEY `fk_1_vtiger_reportgroupbycolumn` (`reportid`),
   CONSTRAINT `fk_1_vtiger_reportgroupbycolumn` FOREIGN KEY (`reportid`) REFERENCES `vtiger_report` (`reportid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10404,7 +10404,7 @@ CREATE TABLE `vtiger_reportmodules` (
   `secondarymodules` varchar(250) DEFAULT '',
   PRIMARY KEY (`reportmodulesid`),
   CONSTRAINT `fk_1_vtiger_reportmodules` FOREIGN KEY (`reportmodulesid`) REFERENCES `vtiger_report` (`reportid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10428,7 +10428,7 @@ CREATE TABLE `vtiger_reportsharing` (
   `reportid` int NOT NULL,
   `shareid` int NOT NULL,
   `setype` varchar(200) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10455,7 +10455,7 @@ CREATE TABLE `vtiger_reportsortcol` (
   PRIMARY KEY (`sortcolid`,`reportid`),
   KEY `fk_1_vtiger_reportsortcol` (`reportid`),
   CONSTRAINT `fk_1_vtiger_reportsortcol` FOREIGN KEY (`reportid`) REFERENCES `vtiger_report` (`reportid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10482,7 +10482,7 @@ CREATE TABLE `vtiger_reportsummary` (
   PRIMARY KEY (`reportsummaryid`,`summarytype`,`columnname`),
   KEY `reportsummary_reportsummaryid_idx` (`reportsummaryid`),
   CONSTRAINT `fk_1_vtiger_reportsummary` FOREIGN KEY (`reportsummaryid`) REFERENCES `vtiger_report` (`reportid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10506,7 +10506,7 @@ CREATE TABLE `vtiger_reporttype` (
   `data` text,
   PRIMARY KEY (`reportid`),
   CONSTRAINT `fk_1_vtiger_reporttype` FOREIGN KEY (`reportid`) REFERENCES `vtiger_report` (`reportid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10532,7 +10532,7 @@ CREATE TABLE `vtiger_role` (
   `depth` int DEFAULT NULL,
   `allowassignedrecordsto` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`roleid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10562,7 +10562,7 @@ CREATE TABLE `vtiger_role2picklist` (
   KEY `fk_2_vtiger_role2picklist` (`picklistid`),
   CONSTRAINT `fk_1_vtiger_role2picklist` FOREIGN KEY (`roleid`) REFERENCES `vtiger_role` (`roleid`) ON DELETE CASCADE,
   CONSTRAINT `fk_2_vtiger_role2picklist` FOREIGN KEY (`picklistid`) REFERENCES `vtiger_picklist` (`picklistid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10587,7 +10587,7 @@ CREATE TABLE `vtiger_role2profile` (
   `profileid` int NOT NULL,
   PRIMARY KEY (`roleid`,`profileid`),
   KEY `role2profile_roleid_profileid_idx` (`roleid`,`profileid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10609,7 +10609,7 @@ DROP TABLE IF EXISTS `vtiger_role_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_role_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10635,7 +10635,7 @@ CREATE TABLE `vtiger_rollupcomments_settings` (
   `tabid` int NOT NULL,
   `rollup_status` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`rollupid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10660,7 +10660,7 @@ CREATE TABLE `vtiger_rowheight` (
   `sortorderid` int DEFAULT NULL,
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`rowheightid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10682,7 +10682,7 @@ DROP TABLE IF EXISTS `vtiger_rowheight_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_rowheight_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10709,7 +10709,7 @@ CREATE TABLE `vtiger_rss` (
   `rsstype` int DEFAULT '0',
   `starred` int DEFAULT '0',
   PRIMARY KEY (`rssid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10736,7 +10736,7 @@ CREATE TABLE `vtiger_sales_stage` (
   `sortorderid` int DEFAULT NULL,
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`sales_stage_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10758,7 +10758,7 @@ DROP TABLE IF EXISTS `vtiger_sales_stage_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_sales_stage_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10785,7 +10785,7 @@ CREATE TABLE `vtiger_salesmanactivityrel` (
   KEY `salesmanactivityrel_activityid_idx` (`activityid`),
   KEY `salesmanactivityrel_smid_idx` (`smid`),
   CONSTRAINT `fk_2_vtiger_salesmanactivityrel` FOREIGN KEY (`smid`) REFERENCES `vtiger_users` (`id`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10811,7 +10811,7 @@ CREATE TABLE `vtiger_salesmanattachmentsrel` (
   KEY `salesmanattachmentsrel_smid_idx` (`smid`),
   KEY `salesmanattachmentsrel_attachmentsid_idx` (`attachmentsid`),
   CONSTRAINT `fk_2_vtiger_salesmanattachmentsrel` FOREIGN KEY (`attachmentsid`) REFERENCES `vtiger_attachments` (`attachmentsid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10837,7 +10837,7 @@ CREATE TABLE `vtiger_salesmanticketrel` (
   KEY `salesmanticketrel_smid_idx` (`smid`),
   KEY `salesmanticketrel_id_idx` (`id`),
   CONSTRAINT `fk_2_vtiger_salesmanticketrel` FOREIGN KEY (`smid`) REFERENCES `vtiger_users` (`id`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10896,7 +10896,7 @@ CREATE TABLE `vtiger_salesorder` (
   KEY `salesorder_contactid_idx` (`contactid`),
   CONSTRAINT `fk_3_vtiger_salesorder` FOREIGN KEY (`vendorid`) REFERENCES `vtiger_vendor` (`vendorid`) ON DELETE CASCADE,
   CONSTRAINT `fk_crmid_vtiger_salesorder` FOREIGN KEY (`salesorderid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10919,7 +10919,7 @@ CREATE TABLE `vtiger_salesordercf` (
   `salesorderid` int NOT NULL,
   PRIMARY KEY (`salesorderid`),
   CONSTRAINT `fk_1_vtiger_salesordercf` FOREIGN KEY (`salesorderid`) REFERENCES `vtiger_salesorder` (`salesorderid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10946,7 +10946,7 @@ CREATE TABLE `vtiger_salutationtype` (
   `sortorderid` int DEFAULT NULL,
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`salutationid`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10968,7 +10968,7 @@ DROP TABLE IF EXISTS `vtiger_salutationtype_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_salutationtype_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -10995,7 +10995,7 @@ CREATE TABLE `vtiger_scheduled_reports` (
   `format` varchar(10) DEFAULT NULL,
   `next_trigger_time` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`reportid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11026,7 +11026,7 @@ CREATE TABLE `vtiger_schedulereports` (
   `specificemails` varchar(500) DEFAULT NULL,
   `next_trigger_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `fileformat` varchar(10) DEFAULT 'CSV'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11052,7 +11052,7 @@ CREATE TABLE `vtiger_seactivityrel` (
   KEY `seactivityrel_activityid_idx` (`activityid`),
   KEY `seactivityrel_crmid_idx` (`crmid`),
   CONSTRAINT `fk_2_vtiger_seactivityrel` FOREIGN KEY (`crmid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11073,7 +11073,7 @@ DROP TABLE IF EXISTS `vtiger_seactivityrel_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_seactivityrel_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11101,7 +11101,7 @@ CREATE TABLE `vtiger_seattachmentsrel` (
   KEY `seattachmentsrel_crmid_idx` (`crmid`),
   KEY `seattachmentsrel_attachmentsid_crmid_idx` (`attachmentsid`,`crmid`),
   CONSTRAINT `fk_2_vtiger_seattachmentsrel` FOREIGN KEY (`crmid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11127,7 +11127,7 @@ CREATE TABLE `vtiger_selectcolumn` (
   PRIMARY KEY (`queryid`,`columnindex`),
   KEY `selectcolumn_queryid_idx` (`queryid`),
   CONSTRAINT `fk_1_vtiger_selectcolumn` FOREIGN KEY (`queryid`) REFERENCES `vtiger_selectquery` (`queryid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11153,7 +11153,7 @@ CREATE TABLE `vtiger_selectquery` (
   `numofobjects` int DEFAULT '0',
   PRIMARY KEY (`queryid`),
   KEY `selectquery_queryid_idx` (`queryid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11175,7 +11175,7 @@ DROP TABLE IF EXISTS `vtiger_selectquery_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_selectquery_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11203,7 +11203,7 @@ CREATE TABLE `vtiger_senotesrel` (
   KEY `senotesrel_crmid_idx` (`crmid`),
   CONSTRAINT `fk1_crmid` FOREIGN KEY (`crmid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE,
   CONSTRAINT `fk_2_vtiger_senotesrel` FOREIGN KEY (`notesid`) REFERENCES `vtiger_notes` (`notesid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11231,7 +11231,7 @@ CREATE TABLE `vtiger_seproductsrel` (
   KEY `seproductsrel_productid_idx` (`productid`),
   KEY `seproductrel_crmid_idx` (`crmid`),
   CONSTRAINT `fk_2_vtiger_seproductsrel` FOREIGN KEY (`productid`) REFERENCES `vtiger_products` (`productid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11271,7 +11271,7 @@ CREATE TABLE `vtiger_service` (
   `purchase_cost` decimal(27,8) DEFAULT NULL,
   PRIMARY KEY (`serviceid`),
   CONSTRAINT `fk_1_vtiger_service` FOREIGN KEY (`serviceid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11298,7 +11298,7 @@ CREATE TABLE `vtiger_service_usageunit` (
   `sortorderid` int DEFAULT '0',
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`service_usageunitid`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11320,7 +11320,7 @@ DROP TABLE IF EXISTS `vtiger_service_usageunit_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_service_usageunit_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11348,7 +11348,7 @@ CREATE TABLE `vtiger_servicecategory` (
   `sortorderid` int DEFAULT '0',
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`servicecategoryid`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11370,7 +11370,7 @@ DROP TABLE IF EXISTS `vtiger_servicecategory_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_servicecategory_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11394,7 +11394,7 @@ CREATE TABLE `vtiger_servicecf` (
   `serviceid` int NOT NULL,
   PRIMARY KEY (`serviceid`),
   CONSTRAINT `fk_serviceid_vtiger_servicecf` FOREIGN KEY (`serviceid`) REFERENCES `vtiger_service` (`serviceid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11433,7 +11433,7 @@ CREATE TABLE `vtiger_servicecontracts` (
   `tags` varchar(1) DEFAULT NULL,
   PRIMARY KEY (`servicecontractsid`),
   CONSTRAINT `fk_crmid_vtiger_servicecontracts` FOREIGN KEY (`servicecontractsid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11456,7 +11456,7 @@ CREATE TABLE `vtiger_servicecontractscf` (
   `servicecontractsid` int NOT NULL,
   PRIMARY KEY (`servicecontractsid`),
   CONSTRAINT `fk_servicecontractsid_vtiger_servicecontractscf` FOREIGN KEY (`servicecontractsid`) REFERENCES `vtiger_servicecontracts` (`servicecontractsid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11482,7 +11482,7 @@ CREATE TABLE `vtiger_seticketsrel` (
   KEY `seticketsrel_crmid_idx` (`crmid`),
   KEY `seticketsrel_ticketid_idx` (`ticketid`),
   CONSTRAINT `fk_2_vtiger_seticketsrel` FOREIGN KEY (`ticketid`) REFERENCES `vtiger_troubletickets` (`ticketid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11506,7 +11506,7 @@ CREATE TABLE `vtiger_settings_blocks` (
   `label` varchar(250) DEFAULT NULL,
   `sequence` int DEFAULT NULL,
   PRIMARY KEY (`blockid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11528,7 +11528,7 @@ DROP TABLE IF EXISTS `vtiger_settings_blocks_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_settings_blocks_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11561,7 +11561,7 @@ CREATE TABLE `vtiger_settings_field` (
   PRIMARY KEY (`fieldid`),
   KEY `fk_1_vtiger_settings_field` (`blockid`),
   CONSTRAINT `fk_1_vtiger_settings_field` FOREIGN KEY (`blockid`) REFERENCES `vtiger_settings_blocks` (`blockid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11583,7 +11583,7 @@ DROP TABLE IF EXISTS `vtiger_settings_field_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_settings_field_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11607,7 +11607,7 @@ CREATE TABLE `vtiger_sharedcalendar` (
   `userid` int NOT NULL,
   `sharedid` int NOT NULL,
   PRIMARY KEY (`userid`,`sharedid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11631,7 +11631,7 @@ CREATE TABLE `vtiger_shareduserinfo` (
   `shareduserid` int NOT NULL DEFAULT '0',
   `color` varchar(50) DEFAULT NULL,
   `visible` int DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11662,7 +11662,7 @@ CREATE TABLE `vtiger_shippingtaxinfo` (
   `regions` text,
   PRIMARY KEY (`taxid`),
   KEY `shippingtaxinfo_taxname_idx` (`taxname`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11684,7 +11684,7 @@ DROP TABLE IF EXISTS `vtiger_shippingtaxinfo_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_shippingtaxinfo_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11714,7 +11714,7 @@ CREATE TABLE `vtiger_shorturls` (
   `onetime` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `uid` (`uid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11739,7 +11739,7 @@ CREATE TABLE `vtiger_smsnotifier` (
   `status` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`smsnotifierid`),
   CONSTRAINT `fk_crmid_vtiger_smsnotifier` FOREIGN KEY (`smsnotifierid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11766,7 +11766,7 @@ CREATE TABLE `vtiger_smsnotifier_servers` (
   `username` varchar(255) DEFAULT NULL,
   `parameters` text,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11794,7 +11794,7 @@ CREATE TABLE `vtiger_smsnotifier_status` (
   `statusid` int NOT NULL AUTO_INCREMENT,
   `statusmessage` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`statusid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11817,7 +11817,7 @@ CREATE TABLE `vtiger_smsnotifiercf` (
   `smsnotifierid` int NOT NULL,
   PRIMARY KEY (`smsnotifierid`),
   CONSTRAINT `fk_smsnotifierid_vtiger_smsnotifiercf` FOREIGN KEY (`smsnotifierid`) REFERENCES `vtiger_smsnotifier` (`smsnotifierid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11840,7 +11840,7 @@ CREATE TABLE `vtiger_soapservice` (
   `id` int DEFAULT NULL,
   `type` varchar(25) DEFAULT NULL,
   `sessionid` varchar(100) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11869,7 +11869,7 @@ CREATE TABLE `vtiger_sobillads` (
   `bill_pobox` varchar(30) DEFAULT NULL,
   PRIMARY KEY (`sobilladdressid`),
   CONSTRAINT `fk_1_vtiger_sobillads` FOREIGN KEY (`sobilladdressid`) REFERENCES `vtiger_salesorder` (`salesorderid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11898,7 +11898,7 @@ CREATE TABLE `vtiger_soshipads` (
   `ship_pobox` varchar(30) DEFAULT NULL,
   PRIMARY KEY (`soshipaddressid`),
   CONSTRAINT `fk_1_vtiger_soshipads` FOREIGN KEY (`soshipaddressid`) REFERENCES `vtiger_salesorder` (`salesorderid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11926,7 +11926,7 @@ CREATE TABLE `vtiger_sostatus` (
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`sostatusid`),
   UNIQUE KEY `sostatus_sostatus_idx` (`sostatus`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11948,7 +11948,7 @@ DROP TABLE IF EXISTS `vtiger_sostatus_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_sostatus_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -11978,7 +11978,7 @@ CREATE TABLE `vtiger_sostatushistory` (
   PRIMARY KEY (`historyid`),
   KEY `sostatushistory_salesorderid_idx` (`salesorderid`),
   CONSTRAINT `fk_1_vtiger_sostatushistory` FOREIGN KEY (`salesorderid`) REFERENCES `vtiger_salesorder` (`salesorderid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12004,7 +12004,7 @@ CREATE TABLE `vtiger_sqltimelog` (
   `started` decimal(20,6) DEFAULT NULL,
   `ended` decimal(20,6) DEFAULT NULL,
   `loggedon` datetime DEFAULT NULL
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12029,7 +12029,7 @@ CREATE TABLE `vtiger_start_hour` (
   `sortorderid` int DEFAULT NULL,
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`start_hourid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12051,7 +12051,7 @@ DROP TABLE IF EXISTS `vtiger_start_hour_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_start_hour_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12077,7 +12077,7 @@ CREATE TABLE `vtiger_status` (
   `presence` int NOT NULL DEFAULT '1',
   `picklist_valueid` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`statusid`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12099,7 +12099,7 @@ DROP TABLE IF EXISTS `vtiger_status_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_status_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12130,7 +12130,7 @@ CREATE TABLE `vtiger_systems` (
   `server_path` varchar(256) DEFAULT NULL,
   `from_email_field` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12171,7 +12171,7 @@ CREATE TABLE `vtiger_tab` (
   UNIQUE KEY `tab_name_idx` (`name`),
   KEY `tab_modifiedby_idx` (`modifiedby`),
   KEY `tab_tabid_idx` (`tabid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12197,7 +12197,7 @@ CREATE TABLE `vtiger_tab_info` (
   `prefvalue` varchar(256) DEFAULT NULL,
   KEY `fk_1_vtiger_tab_info` (`tabid`),
   CONSTRAINT `fk_1_vtiger_tab_info` FOREIGN KEY (`tabid`) REFERENCES `vtiger_tab` (`tabid`) ON DELETE CASCADE ON UPDATE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12225,7 +12225,7 @@ CREATE TABLE `vtiger_taskpriority` (
   `sortorderid` int DEFAULT NULL,
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`taskpriorityid`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12247,7 +12247,7 @@ DROP TABLE IF EXISTS `vtiger_taskpriority_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_taskpriority_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12275,7 +12275,7 @@ CREATE TABLE `vtiger_taskstatus` (
   `sortorderid` int DEFAULT NULL,
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`taskstatusid`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12297,7 +12297,7 @@ DROP TABLE IF EXISTS `vtiger_taskstatus_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_taskstatus_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12324,7 +12324,7 @@ CREATE TABLE `vtiger_taxclass` (
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`taxclassid`),
   UNIQUE KEY `taxclass_carrier_idx` (`taxclass`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12346,7 +12346,7 @@ DROP TABLE IF EXISTS `vtiger_taxclass_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_taxclass_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12370,7 +12370,7 @@ CREATE TABLE `vtiger_taxregions` (
   `regionid` int NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
   PRIMARY KEY (`regionid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12397,7 +12397,7 @@ CREATE TABLE `vtiger_ticketcategories` (
   `sortorderid` int DEFAULT NULL,
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`ticketcategories_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12419,7 +12419,7 @@ DROP TABLE IF EXISTS `vtiger_ticketcategories_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ticketcategories_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12444,7 +12444,7 @@ CREATE TABLE `vtiger_ticketcf` (
   `from_portal` varchar(3) DEFAULT NULL,
   PRIMARY KEY (`ticketid`),
   CONSTRAINT `fk_1_vtiger_ticketcf` FOREIGN KEY (`ticketid`) REFERENCES `vtiger_troubletickets` (`ticketid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12473,7 +12473,7 @@ CREATE TABLE `vtiger_ticketcomments` (
   PRIMARY KEY (`commentid`),
   KEY `ticketcomments_ticketid_idx` (`ticketid`),
   CONSTRAINT `fk_1_vtiger_ticketcomments` FOREIGN KEY (`ticketid`) REFERENCES `vtiger_troubletickets` (`ticketid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12500,7 +12500,7 @@ CREATE TABLE `vtiger_ticketpriorities` (
   `sortorderid` int DEFAULT NULL,
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`ticketpriorities_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12522,7 +12522,7 @@ DROP TABLE IF EXISTS `vtiger_ticketpriorities_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ticketpriorities_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12550,7 +12550,7 @@ CREATE TABLE `vtiger_ticketseverities` (
   `sortorderid` int DEFAULT NULL,
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`ticketseverities_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12572,7 +12572,7 @@ DROP TABLE IF EXISTS `vtiger_ticketseverities_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ticketseverities_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12600,7 +12600,7 @@ CREATE TABLE `vtiger_ticketstatus` (
   `sortorderid` int DEFAULT NULL,
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`ticketstatus_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12622,7 +12622,7 @@ DROP TABLE IF EXISTS `vtiger_ticketstatus_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ticketstatus_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12648,7 +12648,7 @@ CREATE TABLE `vtiger_time_zone` (
   `sortorderid` int NOT NULL DEFAULT '0',
   `presence` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`time_zoneid`)
-) ENGINE=InnoDB AUTO_INCREMENT=98 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=98 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12670,7 +12670,7 @@ DROP TABLE IF EXISTS `vtiger_time_zone_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_time_zone_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12698,7 +12698,7 @@ CREATE TABLE `vtiger_tmp_read_group_rel_sharing_per` (
   PRIMARY KEY (`userid`,`tabid`,`relatedtabid`,`sharedgroupid`),
   KEY `tmp_read_group_rel_sharing_per_userid_sharedgroupid_tabid` (`userid`,`sharedgroupid`,`tabid`),
   CONSTRAINT `fk_4_vtiger_tmp_read_group_rel_sharing_per` FOREIGN KEY (`userid`) REFERENCES `vtiger_users` (`id`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12724,7 +12724,7 @@ CREATE TABLE `vtiger_tmp_read_group_sharing_per` (
   PRIMARY KEY (`userid`,`tabid`,`sharedgroupid`),
   KEY `tmp_read_group_sharing_per_userid_sharedgroupid_idx` (`userid`,`sharedgroupid`),
   CONSTRAINT `fk_3_vtiger_tmp_read_group_sharing_per` FOREIGN KEY (`userid`) REFERENCES `vtiger_users` (`id`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12751,7 +12751,7 @@ CREATE TABLE `vtiger_tmp_read_user_rel_sharing_per` (
   PRIMARY KEY (`userid`,`tabid`,`relatedtabid`,`shareduserid`),
   KEY `tmp_read_user_rel_sharing_per_userid_shared_reltabid_idx` (`userid`,`shareduserid`,`relatedtabid`),
   CONSTRAINT `fk_4_vtiger_tmp_read_user_rel_sharing_per` FOREIGN KEY (`userid`) REFERENCES `vtiger_users` (`id`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12777,7 +12777,7 @@ CREATE TABLE `vtiger_tmp_read_user_sharing_per` (
   PRIMARY KEY (`userid`,`tabid`,`shareduserid`),
   KEY `tmp_read_user_sharing_per_userid_shareduserid_idx` (`userid`,`shareduserid`),
   CONSTRAINT `fk_3_vtiger_tmp_read_user_sharing_per` FOREIGN KEY (`userid`) REFERENCES `vtiger_users` (`id`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12804,7 +12804,7 @@ CREATE TABLE `vtiger_tmp_write_group_rel_sharing_per` (
   PRIMARY KEY (`userid`,`tabid`,`relatedtabid`,`sharedgroupid`),
   KEY `tmp_write_group_rel_sharing_per_userid_sharedgroupid_tabid_idx` (`userid`,`sharedgroupid`,`tabid`),
   CONSTRAINT `fk_4_vtiger_tmp_write_group_rel_sharing_per` FOREIGN KEY (`userid`) REFERENCES `vtiger_users` (`id`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12830,7 +12830,7 @@ CREATE TABLE `vtiger_tmp_write_group_sharing_per` (
   PRIMARY KEY (`userid`,`tabid`,`sharedgroupid`),
   KEY `tmp_write_group_sharing_per_UK1` (`userid`,`sharedgroupid`),
   CONSTRAINT `fk_3_vtiger_tmp_write_group_sharing_per` FOREIGN KEY (`userid`) REFERENCES `vtiger_users` (`id`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12857,7 +12857,7 @@ CREATE TABLE `vtiger_tmp_write_user_rel_sharing_per` (
   PRIMARY KEY (`userid`,`tabid`,`relatedtabid`,`shareduserid`),
   KEY `tmp_write_user_rel_sharing_per_userid_sharduserid_tabid_idx` (`userid`,`shareduserid`,`tabid`),
   CONSTRAINT `fk_4_vtiger_tmp_write_user_rel_sharing_per` FOREIGN KEY (`userid`) REFERENCES `vtiger_users` (`id`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12883,7 +12883,7 @@ CREATE TABLE `vtiger_tmp_write_user_sharing_per` (
   PRIMARY KEY (`userid`,`tabid`,`shareduserid`),
   KEY `tmp_write_user_sharing_per_userid_shareduserid_idx` (`userid`,`shareduserid`),
   CONSTRAINT `fk_3_vtiger_tmp_write_user_sharing_per` FOREIGN KEY (`userid`) REFERENCES `vtiger_users` (`id`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12909,7 +12909,7 @@ CREATE TABLE `vtiger_tracker` (
   `item_id` varchar(36) DEFAULT NULL,
   `item_summary` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12936,7 +12936,7 @@ CREATE TABLE `vtiger_tracking_unit` (
   `sortorderid` int DEFAULT '0',
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`tracking_unitid`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -12958,7 +12958,7 @@ DROP TABLE IF EXISTS `vtiger_tracking_unit_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_tracking_unit_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13000,7 +13000,7 @@ CREATE TABLE `vtiger_troubletickets` (
   KEY `troubletickets_ticketid_idx` (`ticketid`),
   KEY `troubletickets_status_idx` (`status`),
   CONSTRAINT `fk_1_vtiger_troubletickets` FOREIGN KEY (`ticketid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13028,7 +13028,7 @@ CREATE TABLE `vtiger_usageunit` (
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`usageunitid`),
   UNIQUE KEY `usageunit_usageunit_idx` (`usageunit`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13050,7 +13050,7 @@ DROP TABLE IF EXISTS `vtiger_usageunit_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_usageunit_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13076,7 +13076,7 @@ CREATE TABLE `vtiger_user2mergefields` (
   `fieldid` int DEFAULT NULL,
   `visible` int DEFAULT NULL,
   KEY `userid_tabid_idx` (`userid`,`tabid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13101,7 +13101,7 @@ CREATE TABLE `vtiger_user2role` (
   PRIMARY KEY (`userid`),
   KEY `user2role_roleid_idx` (`roleid`),
   CONSTRAINT `fk_2_vtiger_user2role` FOREIGN KEY (`userid`) REFERENCES `vtiger_users` (`id`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13128,7 +13128,7 @@ CREATE TABLE `vtiger_user_module_preferences` (
   PRIMARY KEY (`userid`,`tabid`),
   KEY `fk_2_vtiger_user_module_preferences` (`tabid`),
   CONSTRAINT `fk_2_vtiger_user_module_preferences` FOREIGN KEY (`tabid`) REFERENCES `vtiger_tab` (`tabid`) ON DELETE CASCADE ON UPDATE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13224,7 +13224,7 @@ CREATE TABLE `vtiger_users` (
   PRIMARY KEY (`id`),
   KEY `user_user_name_idx` (`user_name`),
   KEY `user_user_password_idx` (`user_password`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13252,7 +13252,7 @@ CREATE TABLE `vtiger_users2group` (
   KEY `users2group_groupname_uerid_idx` (`groupid`,`userid`),
   KEY `fk_2_vtiger_users2group` (`userid`),
   CONSTRAINT `fk_2_vtiger_users2group` FOREIGN KEY (`userid`) REFERENCES `vtiger_users` (`id`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13280,7 +13280,7 @@ CREATE TABLE `vtiger_users_last_import` (
   `deleted` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `idx_user_id` (`assigned_user_id`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13301,7 +13301,7 @@ DROP TABLE IF EXISTS `vtiger_users_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_users_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13340,7 +13340,7 @@ CREATE TABLE `vtiger_vendor` (
   `tags` varchar(1) DEFAULT NULL,
   PRIMARY KEY (`vendorid`),
   CONSTRAINT `fk_1_vtiger_vendor` FOREIGN KEY (`vendorid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13363,7 +13363,7 @@ CREATE TABLE `vtiger_vendorcf` (
   `vendorid` int NOT NULL,
   PRIMARY KEY (`vendorid`),
   CONSTRAINT `fk_1_vtiger_vendorcf` FOREIGN KEY (`vendorid`) REFERENCES `vtiger_vendor` (`vendorid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13389,7 +13389,7 @@ CREATE TABLE `vtiger_vendorcontactrel` (
   KEY `vendorcontactrel_vendorid_idx` (`vendorid`),
   KEY `vendorcontactrel_contact_idx` (`contactid`),
   CONSTRAINT `fk_2_vtiger_vendorcontactrel` FOREIGN KEY (`vendorid`) REFERENCES `vtiger_vendor` (`vendorid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13413,7 +13413,7 @@ CREATE TABLE `vtiger_version` (
   `old_version` varchar(30) DEFAULT NULL,
   `current_version` varchar(30) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13435,7 +13435,7 @@ DROP TABLE IF EXISTS `vtiger_version_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_version_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13463,7 +13463,7 @@ CREATE TABLE `vtiger_visibility` (
   `color` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`visibilityid`),
   UNIQUE KEY `visibility_visibility_idx` (`visibility`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13485,7 +13485,7 @@ DROP TABLE IF EXISTS `vtiger_visibility_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_visibility_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13514,7 +13514,7 @@ CREATE TABLE `vtiger_webform_file_fields` (
   PRIMARY KEY (`id`),
   KEY `fk_vtiger_webforms` (`webformid`),
   CONSTRAINT `fk_vtiger_webforms` FOREIGN KEY (`webformid`) REFERENCES `vtiger_webforms` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13550,7 +13550,7 @@ CREATE TABLE `vtiger_webforms` (
   UNIQUE KEY `webformname` (`name`),
   UNIQUE KEY `publicid` (`id`),
   KEY `webforms_webforms_id_idx` (`id`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13583,7 +13583,7 @@ CREATE TABLE `vtiger_webforms_field` (
   KEY `fk_1_vtiger_webforms_field` (`webformid`),
   KEY `fk_2_vtiger_webforms_field` (`fieldname`),
   CONSTRAINT `fk_1_vtiger_webforms_field` FOREIGN KEY (`webformid`) REFERENCES `vtiger_webforms` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Trigger to cascade delete vtiger_webforms_field when vtiger_field is deleted
@@ -13627,7 +13627,7 @@ CREATE TABLE `vtiger_wordtemplates` (
   `filetype` varchar(20) NOT NULL,
   `deleted` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`templateid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13653,7 +13653,7 @@ CREATE TABLE `vtiger_ws_entity` (
   `handler_class` varchar(64) NOT NULL,
   `ismodule` int NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13680,7 +13680,7 @@ CREATE TABLE `vtiger_ws_entity_fieldtype` (
   `fieldtype` varchar(200) NOT NULL,
   PRIMARY KEY (`fieldtypeid`),
   UNIQUE KEY `vtiger_idx_1_tablename_fieldname` (`table_name`,`field_name`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13702,7 +13702,7 @@ DROP TABLE IF EXISTS `vtiger_ws_entity_fieldtype_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ws_entity_fieldtype_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13728,7 +13728,7 @@ CREATE TABLE `vtiger_ws_entity_name` (
   `index_field` varchar(50) NOT NULL,
   `table_name` varchar(50) NOT NULL,
   PRIMARY KEY (`entity_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13753,7 +13753,7 @@ CREATE TABLE `vtiger_ws_entity_referencetype` (
   `type` varchar(25) NOT NULL,
   PRIMARY KEY (`fieldtypeid`,`type`),
   CONSTRAINT `vtiger_fk_1_actors_referencetype` FOREIGN KEY (`fieldtypeid`) REFERENCES `vtiger_ws_entity_fieldtype` (`fieldtypeid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13775,7 +13775,7 @@ DROP TABLE IF EXISTS `vtiger_ws_entity_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ws_entity_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13800,7 +13800,7 @@ CREATE TABLE `vtiger_ws_entity_tables` (
   `table_name` varchar(50) NOT NULL,
   PRIMARY KEY (`webservice_entity_id`,`table_name`),
   CONSTRAINT `fk_1_vtiger_ws_actor_tables` FOREIGN KEY (`webservice_entity_id`) REFERENCES `vtiger_ws_entity` (`id`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13825,7 +13825,7 @@ CREATE TABLE `vtiger_ws_fieldinfo` (
   `property_name` varchar(32) DEFAULT NULL,
   `property_value` varchar(64) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13851,7 +13851,7 @@ CREATE TABLE `vtiger_ws_fieldtype` (
   `fieldtype` varchar(200) NOT NULL,
   PRIMARY KEY (`fieldtypeid`),
   UNIQUE KEY `uitype_idx` (`uitype`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13879,7 +13879,7 @@ CREATE TABLE `vtiger_ws_operation` (
   `type` varchar(8) NOT NULL,
   `prelogin` int NOT NULL,
   PRIMARY KEY (`operationid`)
-) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13905,7 +13905,7 @@ CREATE TABLE `vtiger_ws_operation_parameters` (
   `type` varchar(64) NOT NULL,
   `sequence` int NOT NULL,
   PRIMARY KEY (`operationid`,`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13927,7 +13927,7 @@ DROP TABLE IF EXISTS `vtiger_ws_operation_seq`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ws_operation_seq` (
   `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13952,7 +13952,7 @@ CREATE TABLE `vtiger_ws_referencetype` (
   `type` varchar(25) NOT NULL,
   PRIMARY KEY (`fieldtypeid`,`type`),
   CONSTRAINT `fk_1_vtiger_referencetype` FOREIGN KEY (`fieldtypeid`) REFERENCES `vtiger_ws_fieldtype` (`fieldtypeid`) ON DELETE CASCADE
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -13978,7 +13978,7 @@ CREATE TABLE `vtiger_ws_userauthtoken` (
   `expiretime` int NOT NULL,
   PRIMARY KEY (`userid`,`expiretime`),
   UNIQUE KEY `userid_idx` (`userid`)
-) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -14003,7 +14003,7 @@ CREATE TABLE `vtiger_wsapp` (
   `appkey` varchar(255) DEFAULT NULL,
   `type` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`appid`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -14027,7 +14027,7 @@ CREATE TABLE `vtiger_wsapp_handlerdetails` (
   `type` varchar(200) NOT NULL,
   `handlerclass` varchar(100) DEFAULT NULL,
   `handlerpath` varchar(300) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -14062,7 +14062,7 @@ CREATE TABLE `vtiger_wsapp_logs_basic` (
   `vt_skip_count` int DEFAULT NULL,
   `userid` int DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -14093,7 +14093,7 @@ CREATE TABLE `vtiger_wsapp_logs_details` (
   `vt_skip_info` mediumtext,
   KEY `vtiger_wsapp_logs_basic_ibfk_1` (`id`),
   CONSTRAINT `vtiger_wsapp_logs_basic_ibfk_1` FOREIGN KEY (`id`) REFERENCES `vtiger_wsapp_logs_basic` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -14117,7 +14117,7 @@ CREATE TABLE `vtiger_wsapp_queuerecords` (
   `details` varchar(300) DEFAULT NULL,
   `flag` varchar(100) DEFAULT NULL,
   `appid` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -14145,7 +14145,7 @@ CREATE TABLE `vtiger_wsapp_recordmapping` (
   `servermodifiedtime` datetime DEFAULT NULL,
   `serverappid` int DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -14170,7 +14170,7 @@ CREATE TABLE `vtiger_wsapp_sync_state` (
   `stateencodedvalues` varchar(300) NOT NULL,
   `userid` int DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

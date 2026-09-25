@@ -49,7 +49,8 @@ class Logger {
 	}
         
 	static function getlogger($name = 'ROOT') {
-		if(self::$instances[$name]) {
+		// 未登録の名前で呼ばれると PHP 8 では警告になるため、存在確認してから読む
+		if(isset(self::$instances[$name])) {
 			return self::$instances[$name];
 		}
 

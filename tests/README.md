@@ -60,8 +60,13 @@ Unit テストは DB に触らないため、テスト DB が存在しなくて�
 `tests/Integration/` にテストを追加する場合は、あらかじめテスト用 DB を作成し
 F-RevoCRM のスキーマを投入しておく。
 
+`tests/Integration/Migration/Utf8mb4ConversionTest.php` は接続中の DB 全体を対象にする
+マイグレーション（#77）を実際に動かすため、実行するとテスト用 DB の全テーブルが
+utf8mb4 に変換される。開発 DB は bootstrap の安全装置で守られているが、
+テスト用 DB の文字セットを別の値のまま使いたい場合はこのテストを外すこと。
+
 ```bash
-mysql -u <user> -p -e "CREATE DATABASE <db_name>_test DEFAULT CHARACTER SET utf8mb4"
+mysql -u <user> -p -e "CREATE DATABASE <db_name>_test DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_general_ci"
 ```
 
 ## テストの書き方

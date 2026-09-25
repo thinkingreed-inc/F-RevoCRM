@@ -264,7 +264,7 @@ class PearDatabase{
 
 			$sql_start_time = microtime(true);
 
-			$setnameSql = "SET NAMES utf8";
+			$setnameSql = "SET NAMES utf8mb4 COLLATE utf8mb4_general_ci";
 			$this->database->Execute($setnameSql);
 			$this->logSqlTiming($sql_start_time, microtime(true), $setnameSql);
 		}
@@ -844,7 +844,7 @@ class PearDatabase{
 		if ($result) {
 			$this->database->LogSQL($this->enableSQLlog);
 
-			// 'SET NAMES UTF8' needs to be executed even if database has default CHARSET UTF8
+			// 'SET NAMES utf8mb4' needs to be executed even if database has default CHARSET utf8mb4
 			// as mysql server might be running with different charset!
 			// We will notice problem reading UTF8 characters otherwise.
 			if($this->isdb_default_utf8_charset) {

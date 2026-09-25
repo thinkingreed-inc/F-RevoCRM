@@ -22,7 +22,7 @@ class MailScannerEntityMethodManager {
 		 	`function_path` varchar(400) ,
 			 	`function_name` varchar(100) ,
  	PRIMARY KEY (`mailscanner_entitymethod_id`)
- ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 ', array());
 
  $adb->pquery('ALTER TABLE `vtiger_mailscanner_entitymethod`
@@ -32,7 +32,7 @@ class MailScannerEntityMethodManager {
 /*
  $adb->pquery('CREATE TABLE IF NOT EXISTS `vtiger_mailscanner_entitymethod_seq` (
   `id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 ', array());*/
 
 $adb->pquery('ALTER TABLE `vtiger_mailscanner_actions`
