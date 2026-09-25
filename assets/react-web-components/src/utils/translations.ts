@@ -19,10 +19,13 @@ export interface TranslationData {
  * キー: `${module}:${language}` 形式
  * 同一モジュール・言語の重複API呼び出しを防止
  */
-const translationCache = new Map<string, {
-  data: TranslationsResponse;
-  timestamp: number;
-}>();
+const translationCache = new Map<
+  string,
+  {
+    data: TranslationsResponse;
+    timestamp: number;
+  }
+>();
 
 /** キャッシュの有効期限（ミリ秒）: 5分 */
 const CACHE_TTL = 5 * 60 * 1000;
@@ -47,7 +50,7 @@ export interface GetTranslationsParams {
  * キャッシュキーを生成
  */
 function getCacheKey(module: string, language?: string): string {
-  return `${module}:${language || 'default'}`;
+  return `${module}:${language || "default"}`;
 }
 
 /**
@@ -71,7 +74,7 @@ export function clearTranslationCache(): void {
  */
 export async function fetchTranslations(
   params: GetTranslationsParams,
-  options: { skipCache?: boolean } = {}
+  options: { skipCache?: boolean } = {},
 ): Promise<TranslationsResponse> {
   const cacheKey = getCacheKey(params.module, params.language);
 
@@ -84,20 +87,20 @@ export async function fetchTranslations(
   }
 
   const searchParams = new URLSearchParams();
-  searchParams.set('module', params.module);
-  searchParams.set('api', 'GetTranslations');
+  searchParams.set("module", params.module);
+  searchParams.set("api", "GetTranslations");
 
   if (params.language) {
-    searchParams.set('language', params.language);
+    searchParams.set("language", params.language);
   }
 
   const url = `index.php?${searchParams.toString()}`;
 
   const response = await fetch(url, {
-    method: 'GET',
-    credentials: 'include',
+    method: "GET",
+    credentials: "include",
     headers: {
-      Accept: 'application/json',
+      Accept: "application/json",
     },
   });
 
@@ -110,12 +113,12 @@ export async function fetchTranslations(
   try {
     data = await response.json();
   } catch (parseError) {
-    throw new Error('Invalid JSON response from server');
+    throw new Error("Invalid JSON response from server");
   }
 
   // APIレスポンスの形式を確認
   if (data.success === false) {
-    throw new Error(data.error?.message || 'Failed to fetch translations');
+    throw new Error(data.error?.message || "Failed to fetch translations");
   }
 
   // result wrapper がある場合とない場合に対応
@@ -144,7 +147,7 @@ export async function fetchTranslations(
  * @returns マージされた翻訳データ
  */
 export function mergeTranslations(
-  translations: TranslationsResponse
+  translations: TranslationsResponse,
 ): TranslationData {
   const merged: TranslationData = {};
 
@@ -161,9 +164,9 @@ export function mergeTranslations(
 
   // 他のモジュールを上書き適用
   for (const [moduleName, moduleTranslations] of Object.entries(
-    translations.translations
+    translations.translations,
   )) {
-    if (moduleName !== 'Vtiger' && moduleName !== 'Vtiger_JS') {
+    if (moduleName !== "Vtiger" && moduleName !== "Vtiger_JS") {
       // モジュール固有のJS翻訳も適用
       Object.assign(merged, moduleTranslations);
     }

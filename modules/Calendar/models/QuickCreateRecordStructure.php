@@ -43,7 +43,8 @@ class Calendar_QuickCreateRecordStructure_Model extends Vtiger_QuickCreateRecord
 				$currentUserModel = Users_Record_Model::getCurrentUserModel();
 				$defaulteventstatus = $currentUserModel->get('defaulteventstatus');
 				$fieldValue = $defaulteventstatus;
-				if (!$defaulteventstatus || $defaulteventstatus == 'Select an Option') {
+				$selectOptionLabel = vtranslate('LBL_SELECT_OPTION', 'Vtiger');
+				if (!$defaulteventstatus || $defaulteventstatus == 'Select an Option' || $defaulteventstatus === $selectOptionLabel) {
 					$fieldValue = $fieldModel->getDefaultFieldValue();
 				}
 				$fieldModel->set('fieldvalue', $fieldValue);
@@ -51,18 +52,14 @@ class Calendar_QuickCreateRecordStructure_Model extends Vtiger_QuickCreateRecord
 				$currentUserModel = Users_Record_Model::getCurrentUserModel();
 				$defaultactivitytype = $currentUserModel->get('defaultactivitytype');
 				$fieldValue = $defaultactivitytype;
-				if (!$defaultactivitytype || $defaultactivitytype == 'Select an Option') {
+				$selectOptionLabel = vtranslate('LBL_SELECT_OPTION', 'Vtiger');
+				if (!$defaultactivitytype || $defaultactivitytype == 'Select an Option' || $defaultactivitytype === $selectOptionLabel) {
 					$fieldValue = $fieldModel->getDefaultFieldValue();
 				}
 				$fieldModel->set('fieldvalue', $fieldValue);
 			} else {
 				$defaultValue = $fieldModel->getDefaultFieldValue();
-				if($fieldModel->getFieldDataType() == "date" && $defaultValue == 'TODAY'){
-					$fieldModel->set('fieldvalue', date('Y-m-d'));
-				}
-				else{
-					$fieldModel->set('fieldvalue', $defaultValue);
-				}
+				$fieldModel->set('fieldvalue', $defaultValue);
 			}
 			$values[$fieldName] = $fieldModel;
 		}

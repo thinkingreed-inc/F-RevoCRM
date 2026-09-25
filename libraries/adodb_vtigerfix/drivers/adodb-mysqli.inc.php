@@ -42,6 +42,7 @@ if (!defined('MYSQLI_READ_DEFAULT_GROUP')) define('MYSQLI_READ_DEFAULT_GROUP',1)
 class ADODB_mysqli extends ADOConnection {
 	var $databaseType = 'mysqli';
 	var $dataProvider = 'mysql';
+	var $databaseName;
 	var $hasInsertID = true;
 	var $hasAffectedRows = true;
 	var $metaTablesSQL = "SELECT
@@ -1248,6 +1249,7 @@ class ADORecordSet_mysqli extends ADORecordSet{
 
 	var $databaseType = "mysqli";
 	var $canSeek = true;
+	var $adodbFetchMode;
 
 	function __construct($queryID, $mode = false)
 	{

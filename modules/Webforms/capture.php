@@ -9,7 +9,8 @@
  * ********************************************************************************** */
 // Switch the working directory to base
 chdir(dirname(__FILE__) . '/../..');
-ini_set('display_errors','on'); error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT & ~E_USER_NOTICE & ~E_USER_DEPRECATED);
+$_e_strict = (PHP_VERSION_ID < 80400) ? E_STRICT : 0;
+ini_set('display_errors','on'); error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED & ~$_e_strict & ~E_USER_NOTICE & ~E_USER_DEPRECATED);
 
 include_once 'include/Zend/Json.php';
 include_once 'vtlib/Vtiger/Module.php';

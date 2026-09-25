@@ -50,11 +50,7 @@
 
     <div class="right-block col-lg-7 col-md-7 col-sm-7">
 
-        {* Summary View Related Activities Widget*}
-        <div id="relatedActivities">
-            {$RELATED_ACTIVITIES}
-        </div>
-        {* Summary View Related Activities Widget Ends Here*}
+        {include file=vtemplate_path('RelatedActivitiesWidget.tpl','Vtiger')}
 
         {foreach item=DETAIL_VIEW_WIDGET from=$DETAILVIEW_LINKS['DETAILVIEWWIDGET'] name=count}
             {if $smarty.foreach.count.index % 2 != 0}

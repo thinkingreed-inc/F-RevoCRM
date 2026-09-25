@@ -160,6 +160,8 @@ class Settings_LayoutEditor_Index_View extends Settings_Vtiger_Index_View {
 		$viewer->assign('RELATION_FIELDS', $relationFields);
 		$viewer->assign('HIDDEN_TAB_EXISTS', $hiddenRelationTabExists);
 		$viewer->assign('MODULE_MODEL', $moduleModel);
+		// Index.tpl で参照する SELECTED_MODULE_MODEL を assign（未設定だとモジュール切替時に null 参照で Fatal になる #1660）
+		$viewer->assign('SELECTED_MODULE_MODEL', $moduleModel);
 		$viewer->assign('QUALIFIED_MODULE', $qualifiedModule);
 
 		if ($request->isAjax() && !$request->get('showFullContents')) {
@@ -228,6 +230,8 @@ class Settings_LayoutEditor_Index_View extends Settings_Vtiger_Index_View {
 		$viewer->assign('SOURCE_MODULE', $sourceModuleName);
 		$viewer->assign('QUALIFIED_MODULE', $qualifiedModule);
 		$viewer->assign('SOURCE_MODULE_MODEL', $moduleModel);
+		// Index.tpl で参照する SELECTED_MODULE_MODEL を assign（未設定だとモジュール切替時に null 参照で Fatal になる #1660）
+		$viewer->assign('SELECTED_MODULE_MODEL', $moduleModel);
 		$viewer->assign('ACTIONS', Vtiger_Module_Model::getSyncActionsInDuplicatesCheck());
 		$viewer->assign('USER_MODEL', Users_Record_Model::getCurrentUserModel());
 

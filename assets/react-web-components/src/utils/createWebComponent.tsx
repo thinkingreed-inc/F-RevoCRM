@@ -16,7 +16,7 @@ export function createWebComponent(
   Component: React.ComponentType<any>,
   tagName: string,
   observedAttributes: string[] = [],
-  eventCallbacks: string[] = []
+  eventCallbacks: string[] = [],
 ) {
   class ReactWebComponent extends HTMLElement {
     private root: ReturnType<typeof createRoot> | null = null;
@@ -36,17 +36,21 @@ export function createWebComponent(
       this.root = createRoot(this.container);
 
       // 初期属性値を設定
-      (this.constructor as any).observedAttributes.forEach((attrName: string) => {
-        const attrValue = this.getAttribute(attrName);
-        if (attrValue !== null) {
-          const propName = attrName.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
-          try {
-            this.props[propName] = JSON.parse(attrValue);
-          } catch {
-            this.props[propName] = attrValue;
+      (this.constructor as any).observedAttributes.forEach(
+        (attrName: string) => {
+          const attrValue = this.getAttribute(attrName);
+          if (attrValue !== null) {
+            const propName = attrName.replace(/-([a-z])/g, (_, letter) =>
+              letter.toUpperCase(),
+            );
+            try {
+              this.props[propName] = JSON.parse(attrValue);
+            } catch {
+              this.props[propName] = attrValue;
+            }
           }
-        }
-      });
+        },
+      );
 
       this.updateComponent();
     }
@@ -57,9 +61,15 @@ export function createWebComponent(
       }
     }
 
-    attributeChangedCallback(name: string, _oldValue: string, newValue: string) {
+    attributeChangedCallback(
+      name: string,
+      _oldValue: string,
+      newValue: string,
+    ) {
       // ケバブケースをキャメルケースに変換
-      const propName = name.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+      const propName = name.replace(/-([a-z])/g, (_, letter) =>
+        letter.toUpperCase(),
+      );
 
       try {
         this.props[propName] = JSON.parse(newValue);
@@ -77,25 +87,24 @@ export function createWebComponent(
      */
     private createEventCallbacks(): WebComponentProps {
       const callbacks: WebComponentProps = {};
-      const element = this;
 
-      eventCallbacks.forEach(callbackName => {
+      eventCallbacks.forEach((callbackName) => {
         // onSave -> save, onGoToFullForm -> go-to-full-form
         // 1. "on"プレフィックスを除去
         // 2. キャメルケースをケバブケースに変換
-        const withoutOn = callbackName.replace(/^on/, '');
+        const withoutOn = callbackName.replace(/^on/, "");
         const eventName = withoutOn
-          .replace(/([A-Z])/g, '-$1')
+          .replace(/([A-Z])/g, "-$1")
           .toLowerCase()
-          .replace(/^-/, ''); // 先頭のハイフンを除去
+          .replace(/^-/, ""); // 先頭のハイフンを除去
 
         callbacks[callbackName] = (...args: any[]) => {
           const event = new CustomEvent(eventName, {
             detail: args.length === 1 ? args[0] : args,
             bubbles: true,
-            composed: true
+            composed: true,
           });
-          element.dispatchEvent(event);
+          this.dispatchEvent(event);
         };
       });
 
@@ -113,7 +122,7 @@ export function createWebComponent(
       this.root.render(
         <React.StrictMode>
           <Component {...props} />
-        </React.StrictMode>
+        </React.StrictMode>,
       );
     }
   }

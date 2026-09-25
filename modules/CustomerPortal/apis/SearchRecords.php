@@ -44,12 +44,6 @@ class CustomerPortal_SearchRecords extends CustomerPortal_API_Abstract {
 
 							$describe = vtws_describe($module, $current_user);
 							$labelFields = $describe['labelFields'];
-							if ($module == 'Documents') {
-								$labelFields = 'notes_title';
-							}
-							if ($module == 'HelpDesk') {
-								$labelFields = 'ticket_title';
-							}
 
 							//generate query using Query Generator
 							$queryGenerator = new QueryGenerator($module, $current_user);

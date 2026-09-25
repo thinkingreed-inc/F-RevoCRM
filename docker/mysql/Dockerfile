@@ -1,4 +1,4 @@
-FROM mysql:8.0
+FROM mysql:8.4
 RUN mkdir /var/log/mysql
 RUN chown mysql:mysql /var/log/mysql
 ADD ./docker/mysql/my.cnf /etc/mysql/conf.d/my.cnf

@@ -40,7 +40,7 @@ class Settings_LanguageConverter_Module_Model extends Settings_Vtiger_Module_Mod
 
         $table = self::$TABLE_NAME;
 
-        $adb->query("CREATE TABLE ${table} (
+        $adb->query("CREATE TABLE {$table} (
             `id` int(19) NOT NULL AUTO_INCREMENT,
             `modulename` varchar(100) NOT NULL,
             `before_string` varchar(1000) NOT NULL,

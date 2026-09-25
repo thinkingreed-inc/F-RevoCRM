@@ -1,0 +1,9 @@
+<?php
+/**
+ * テスト用の cron ハンドラ（処理の途中で exit する）。
+ *
+ * exit() は例外を投げないため markFinished() に到達しない。
+ * シャットダウン時に実行状態が解除されるかを確認するために使う。
+ */
+echo "FRTestCron: exiting in the middle of the task\n";
+exit(0);

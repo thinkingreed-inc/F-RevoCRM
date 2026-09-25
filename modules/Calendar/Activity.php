@@ -152,7 +152,14 @@ class Activity extends CRMEntity {
 				$this->invitee_array[] = $smownerid;
 			}
 			if(!in_array($request_assigned_user_id, $this->invitee_array)){
-				$this->invitee_array[] = $request_assigned_user_id;
+				require_once 'include/utils/GetGroupUsers.php';
+				$userGroups = new GetGroupUsers();
+				$userGroups->getAllUsersInGroup($request_assigned_user_id);
+				if(!empty($userGroups->group_users)){ // 担当がグループである場合
+					$this->invitee_array = array_unique(array_merge($this->invitee_array, $userGroups->group_users));
+				}else{
+					$this->invitee_array[] = $request_assigned_user_id;
+				}
 			}
 		} else if(empty($this->invitee_array) && php7_count($_REQUEST['selectedusers']) > 0){// 概要欄や関連からの遷移の場合
 			$this->invitee_array = $_REQUEST['selectedusers'];
@@ -162,7 +169,14 @@ class Activity extends CRMEntity {
 				$this->invitee_array[] = $smownerid;
 			}
 			if(!in_array($request_assigned_user_id, $this->invitee_array)){
-				$this->invitee_array[] = $request_assigned_user_id;
+				require_once 'include/utils/GetGroupUsers.php';
+				$userGroups = new GetGroupUsers();
+				$userGroups->getAllUsersInGroup($request_assigned_user_id);
+				if(!empty($userGroups->group_users)){ // 担当がグループである場合
+					$this->invitee_array = array_unique(array_merge($this->invitee_array, $userGroups->group_users));
+				}else{
+					$this->invitee_array[] = $request_assigned_user_id;
+				}
 			}
 		} else {// リクエストに入っていない場合はDBから取得を試みる
 			$this->loadInvitees();
@@ -1659,6 +1673,10 @@ function insertIntoRecurringTable(& $recurObj)
 	
 
 	function getBeforeAssignedUserID() {
+		// VTEntityDelta は通常 ModTracker のイベントハンドラ経由で読み込まれるが、
+		// iCal インポート等(VTIGER_BULK_SAVE_MODE でハンドラが動かない経路)では
+		// 未ロードのまま到達して Fatal error になるため明示的に読み込む。
+		require_once 'data/VTEntityDelta.php';
 		$vtEntityDelta = new VTEntityDelta();
 		$delta = $vtEntityDelta->getEntityDelta('Events', $this->id, true);
 		if(!is_array($delta))						{	return 0;	}

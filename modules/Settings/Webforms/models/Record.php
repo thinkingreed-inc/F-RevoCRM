@@ -156,6 +156,11 @@ class Settings_Webforms_Record_Model extends Settings_Vtiger_Record_Model {
 	 */
 	public function getSelectedFieldsList($mode='') {
 		if (!$this->selectedFields) {
+			// 初期化しないと、対象モジュール未設定 / 項目が 1 件も無い Webフォームで
+			// 未定義変数のまま $this->selectedFields に代入され null になる。
+			// 呼び出し元のテンプレート(FieldsEditView.tpl)は array_key_exists() に
+			// 渡すため、PHP 8 では TypeError で編集画面が開かなくなる。
+			$selectedFields = array();
 			$targetModule = $this->get('targetmodule');
 			if ($targetModule) {
 				$db = PearDatabase::getInstance();

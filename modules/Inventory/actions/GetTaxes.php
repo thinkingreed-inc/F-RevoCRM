@@ -15,7 +15,28 @@ class Inventory_GetTaxes_Action extends Vtiger_Action_Controller {
 		$permissions[] = array('module_parameter' => 'sourceModule', 'action' => 'DetailView');
 		return $permissions;
 	}
-	
+
+	/**
+	 * 税ラベルを表示用に翻訳する。
+	 *
+	 * vtiger_inventorytaxinfo.taxlabel には翻訳キー ('LBL_CONSUMPTION_TAX') が
+	 * 格納されるため (setup/scripts/17_Update_Inventory.php)、品目の税モーダルへ
+	 * 渡す前に現在の言語へ変換する。管理画面から追加した任意の税名は翻訳キーを
+	 * 持たないためそのまま返る。
+	 *
+	 * @param array $taxes       Products_Record_Model::getTaxes() 由来の税情報
+	 * @param string $moduleName 翻訳を引くモジュール名
+	 * @return array taxlabel を翻訳した税情報 (他の属性は変更しない)
+	 */
+	public static function translateTaxLabels(array $taxes, string $moduleName) {
+		foreach ($taxes as $key => $taxInfo) {
+			if (!empty($taxInfo['taxlabel'])) {
+				$taxes[$key]['taxlabel'] = Vtiger_Language_Handler::getTranslatedString($taxInfo['taxlabel'], $moduleName);
+			}
+		}
+		return $taxes;
+	}
+
 	function process(Vtiger_Request $request) {
 		$decimalPlace = getCurrencyDecimalPlaces();
 		$currencyId = $request->get('currency_id');
@@ -27,6 +48,8 @@ class Inventory_GetTaxes_Action extends Vtiger_Action_Controller {
 			$recordId = $request->get('record');
 			$idList = array($recordId);
 		}
+		// 税ラベルの翻訳は表示元モジュール (見積・受注など) の言語で引く
+		$sourceModule = $request->get('sourceModule') ? $request->get('sourceModule') : $request->getModule();
 
 		$response = new Vtiger_Response();
 		$namesList = $purchaseCostsList = $taxesList = $listPricesList = $listPriceValuesList = $reducedtaxrateList = array();
@@ -40,7 +63,7 @@ class Inventory_GetTaxes_Action extends Vtiger_Action_Controller {
 				$taxes[$key] = $taxInfo;
 			}
 
-			$taxesList[$id]				= $taxes;
+			$taxesList[$id]				= self::translateTaxLabels($taxes, $sourceModule);
 			$namesList[$id]				= decode_html($recordModel->getName());
 			$quantitiesList[$id]		= $recordModel->get('qtyinstock');
 			$descriptionsList[$id]		= decode_html($recordModel->get('description'));

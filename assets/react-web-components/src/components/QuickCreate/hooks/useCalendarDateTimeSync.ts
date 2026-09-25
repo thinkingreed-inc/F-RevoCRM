@@ -1,10 +1,10 @@
-import { useRef, useEffect, useCallback } from 'react';
-import { FieldValue } from '../../../types/field';
+import { useRef, useEffect, useCallback } from "react";
+import { FieldValue } from "../../../types/field";
 
 /**
  * Activity type: Calendar (ToDo) or Events (Call/Meeting)
  */
-type ActivityType = 'Calendar' | 'Events';
+type ActivityType = "Calendar" | "Events";
 
 /**
  * Options for useCalendarDateTimeSync hook
@@ -25,7 +25,10 @@ export interface UseCalendarDateTimeSyncOptions {
   /** Whether all-day is checked */
   isAllDay: boolean;
   /** Parse datetime value to date and time */
-  parseDateTimeValue: (value: string | undefined) => { date: string; time: string };
+  parseDateTimeValue: (value: string | undefined) => {
+    date: string;
+    time: string;
+  };
   /** Combine date and time to datetime value */
   combineDateTimeValue: (date: string, time: string) => string;
 }
@@ -85,29 +88,34 @@ export function useCalendarDateTimeSync({
     }
 
     // Use default based on activity type
-    return activeTab === 'Events' ? defaultOtherEventDuration : defaultCallDuration;
+    return activeTab === "Events"
+      ? defaultOtherEventDuration
+      : defaultCallDuration;
   }, [activeTab, defaultOtherEventDuration, defaultCallDuration]);
 
   /**
    * Calculate datetime from date and time strings
    */
-  const parseToDate = useCallback((dateStr: string, timeStr: string): Date | null => {
-    if (!dateStr) return null;
-    const time = timeStr || '00:00';
-    const [hours, minutes] = time.split(':').map(Number);
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return null;
-    date.setHours(hours || 0, minutes || 0, 0, 0);
-    return date;
-  }, []);
+  const parseToDate = useCallback(
+    (dateStr: string, timeStr: string): Date | null => {
+      if (!dateStr) return null;
+      const time = timeStr || "00:00";
+      const [hours, minutes] = time.split(":").map(Number);
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return null;
+      date.setHours(hours || 0, minutes || 0, 0, 0);
+      return date;
+    },
+    [],
+  );
 
   /**
    * Format date to YYYY-MM-DD
    */
   const formatDate = useCallback((date: Date): string => {
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   }, []);
 
@@ -115,120 +123,161 @@ export function useCalendarDateTimeSync({
    * Format time to HH:MM
    */
   const formatTime = useCallback((date: Date): string => {
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
     return `${hours}:${minutes}`;
   }, []);
 
   /**
    * Calculate and update end datetime based on start datetime
    */
-  const updateEndDateTime = useCallback((startDate: string, startTime: string) => {
-    if (isUpdatingRef.current) return;
-    if (!syncEnabledRef.current) return;
-    if (isAllDay) return; // Skip time sync for all-day events
+  const updateEndDateTime = useCallback(
+    (startDate: string, startTime: string) => {
+      if (isUpdatingRef.current) return;
+      if (!syncEnabledRef.current) return;
+      if (isAllDay) return; // Skip time sync for all-day events
 
-    const startDateTime = parseToDate(startDate, startTime);
-    if (!startDateTime) return;
+      const startDateTime = parseToDate(startDate, startTime);
+      if (!startDateTime) return;
 
-    const durationMinutes = getEffectiveDuration();
-    const endDateTime = new Date(startDateTime.getTime() + durationMinutes * 60 * 1000);
+      const durationMinutes = getEffectiveDuration();
+      const endDateTime = new Date(
+        startDateTime.getTime() + durationMinutes * 60 * 1000,
+      );
 
-    const newEndDate = formatDate(endDateTime);
-    const newEndTime = formatTime(endDateTime);
+      const newEndDate = formatDate(endDateTime);
+      const newEndTime = formatTime(endDateTime);
 
-    // ToDoの完了日（due_date）は日付のみ（編集画面と同じ仕様）
-    // Calendarタブ（ToDo）の場合は時刻を含めない
-    const newDueDate = activeTab === 'Calendar'
-      ? newEndDate
-      : combineDateTimeValue(newEndDate, newEndTime);
+      // ToDoの完了日（due_date）は日付のみ（編集画面と同じ仕様）
+      // Calendarタブ（ToDo）の場合は時刻を含めない
+      const newDueDate =
+        activeTab === "Calendar"
+          ? newEndDate
+          : combineDateTimeValue(newEndDate, newEndTime);
 
-    isUpdatingRef.current = true;
-    onFieldChange('due_date', newDueDate);
-    isUpdatingRef.current = false;
-  }, [isAllDay, parseToDate, getEffectiveDuration, formatDate, formatTime, combineDateTimeValue, onFieldChange, activeTab]);
+      isUpdatingRef.current = true;
+      onFieldChange("due_date", newDueDate);
+      isUpdatingRef.current = false;
+    },
+    [
+      isAllDay,
+      parseToDate,
+      getEffectiveDuration,
+      formatDate,
+      formatTime,
+      combineDateTimeValue,
+      onFieldChange,
+      activeTab,
+    ],
+  );
 
   /**
    * Handle date_start change
    */
-  const handleDateStartChange = useCallback((newValue: string) => {
-    onFieldChange('date_start', newValue);
+  const handleDateStartChange = useCallback(
+    (newValue: string) => {
+      onFieldChange("date_start", newValue);
 
-    if (!syncEnabledRef.current) return;
+      if (!syncEnabledRef.current) return;
 
-    const { date: newDate, time } = parseDateTimeValue(newValue);
-    const currentTime = time || parseDateTimeValue(formData['date_start'] as string | undefined).time;
+      const { date: newDate, time } = parseDateTimeValue(newValue);
+      const currentTime =
+        time ||
+        parseDateTimeValue(formData["date_start"] as string | undefined).time;
 
-    updateEndDateTime(newDate, currentTime);
-  }, [onFieldChange, parseDateTimeValue, formData, updateEndDateTime]);
+      updateEndDateTime(newDate, currentTime);
+    },
+    [onFieldChange, parseDateTimeValue, formData, updateEndDateTime],
+  );
 
   /**
    * Handle time_start change (from TimeComboBox)
    * @param newTime - The new time value
    * @param currentDate - The current date value from UI (to avoid stale formData)
    */
-  const handleTimeStartChange = useCallback((newTime: string, currentDate: string) => {
-    const newValue = combineDateTimeValue(currentDate, newTime);
-    onFieldChange('date_start', newValue);
+  const handleTimeStartChange = useCallback(
+    (newTime: string, currentDate: string) => {
+      const newValue = combineDateTimeValue(currentDate, newTime);
+      onFieldChange("date_start", newValue);
 
-    if (!syncEnabledRef.current) return;
+      if (!syncEnabledRef.current) return;
 
-    updateEndDateTime(currentDate, newTime);
-  }, [combineDateTimeValue, onFieldChange, updateEndDateTime]);
+      updateEndDateTime(currentDate, newTime);
+    },
+    [combineDateTimeValue, onFieldChange, updateEndDateTime],
+  );
 
   /**
    * Handle due_date change
    */
-  const handleDueDateChange = useCallback((newValue: string) => {
-    onFieldChange('due_date', newValue);
+  const handleDueDateChange = useCallback(
+    (newValue: string) => {
+      onFieldChange("due_date", newValue);
 
-    // Don't update user duration on programmatic changes
-    if (isUpdatingRef.current) return;
-    if (!syncEnabledRef.current) return;
+      // Don't update user duration on programmatic changes
+      if (isUpdatingRef.current) return;
+      if (!syncEnabledRef.current) return;
 
-    // Calculate new duration from user's edit
-    const startValue = formData['date_start'] as string | undefined;
-    const { date: startDate, time: startTime } = parseDateTimeValue(startValue);
-    const { date: endDate, time: endTime } = parseDateTimeValue(newValue);
+      // Calculate new duration from user's edit
+      const startValue = formData["date_start"] as string | undefined;
+      const { date: startDate, time: startTime } =
+        parseDateTimeValue(startValue);
+      const { date: endDate, time: endTime } = parseDateTimeValue(newValue);
 
-    const startDateTime = parseToDate(startDate, startTime);
-    const endDateTime = parseToDate(endDate, endTime);
+      const startDateTime = parseToDate(startDate, startTime);
+      const endDateTime = parseToDate(endDate, endTime);
 
-    if (startDateTime && endDateTime) {
-      const diffMinutes = Math.round((endDateTime.getTime() - startDateTime.getTime()) / (60 * 1000));
-      if (diffMinutes > 0) {
-        userChangedDurationRef.current = diffMinutes;
+      if (startDateTime && endDateTime) {
+        const diffMinutes = Math.round(
+          (endDateTime.getTime() - startDateTime.getTime()) / (60 * 1000),
+        );
+        if (diffMinutes > 0) {
+          userChangedDurationRef.current = diffMinutes;
+        }
       }
-    }
-  }, [onFieldChange, formData, parseDateTimeValue, parseToDate]);
+    },
+    [onFieldChange, formData, parseDateTimeValue, parseToDate],
+  );
 
   /**
    * Handle time_end change (from TimeComboBox)
    * @param newTime - The new time value
    * @param currentDate - The current date value from UI (to avoid stale formData)
    */
-  const handleTimeEndChange = useCallback((newTime: string, currentDate: string) => {
-    const newValue = combineDateTimeValue(currentDate, newTime);
-    onFieldChange('due_date', newValue);
+  const handleTimeEndChange = useCallback(
+    (newTime: string, currentDate: string) => {
+      const newValue = combineDateTimeValue(currentDate, newTime);
+      onFieldChange("due_date", newValue);
 
-    // Don't update user duration on programmatic changes
-    if (isUpdatingRef.current) return;
-    if (!syncEnabledRef.current) return;
+      // Don't update user duration on programmatic changes
+      if (isUpdatingRef.current) return;
+      if (!syncEnabledRef.current) return;
 
-    // Calculate new duration from user's edit
-    const startValue = formData['date_start'] as string | undefined;
-    const { date: startDate, time: startTime } = parseDateTimeValue(startValue);
+      // Calculate new duration from user's edit
+      const startValue = formData["date_start"] as string | undefined;
+      const { date: startDate, time: startTime } =
+        parseDateTimeValue(startValue);
 
-    const startDateTime = parseToDate(startDate, startTime);
-    const endDateTime = parseToDate(currentDate, newTime);
+      const startDateTime = parseToDate(startDate, startTime);
+      const endDateTime = parseToDate(currentDate, newTime);
 
-    if (startDateTime && endDateTime) {
-      const diffMinutes = Math.round((endDateTime.getTime() - startDateTime.getTime()) / (60 * 1000));
-      if (diffMinutes > 0) {
-        userChangedDurationRef.current = diffMinutes;
+      if (startDateTime && endDateTime) {
+        const diffMinutes = Math.round(
+          (endDateTime.getTime() - startDateTime.getTime()) / (60 * 1000),
+        );
+        if (diffMinutes > 0) {
+          userChangedDurationRef.current = diffMinutes;
+        }
       }
-    }
-  }, [formData, combineDateTimeValue, onFieldChange, parseDateTimeValue, parseToDate]);
+    },
+    [
+      formData,
+      combineDateTimeValue,
+      onFieldChange,
+      parseDateTimeValue,
+      parseToDate,
+    ],
+  );
 
   /**
    * Handle datetime field focus - enables sync in edit mode

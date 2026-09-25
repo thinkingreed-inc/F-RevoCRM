@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Checkbox } from './ui/checkbox';
-import { Input } from './ui/input';
+import React, { useState, useEffect, useCallback } from "react";
+import { Checkbox } from "./ui/checkbox";
+import { Input } from "./ui/input";
 
 /**
  * ProductTaxFieldコンポーネントのProps
@@ -38,19 +38,19 @@ export const ProductTaxField: React.FC<ProductTaxFieldProps> = ({
   onChange,
   disabled = false,
   error,
-  className = '',
+  className = "",
 }) => {
   // チェック状態（valueが存在すればチェック済み）
-  const [isChecked, setIsChecked] = useState<boolean>(!!value && value !== '');
+  const [isChecked, setIsChecked] = useState<boolean>(!!value && value !== "");
   // ローカルの表示値（チェックON直後にdefaultTaxRateを表示するため）
-  const [localValue, setLocalValue] = useState<string>(value || '');
+  const [localValue, setLocalValue] = useState<string>(value || "");
   // フォーカス状態（編集中は生の値を表示、フォーカスアウト時にフォーマット）
   const [isFocused, setIsFocused] = useState<boolean>(false);
 
   // valueの変更に応じてチェック状態とローカル値を同期
   useEffect(() => {
-    setIsChecked(!!value && value !== '');
-    setLocalValue(value || '');
+    setIsChecked(!!value && value !== "");
+    setLocalValue(value || "");
   }, [value]);
 
   // 税率入力の変更ハンドラ
@@ -60,7 +60,7 @@ export const ProductTaxField: React.FC<ProductTaxFieldProps> = ({
       setLocalValue(newValue);
       onChange(name, newValue);
     },
-    [name, onChange]
+    [name, onChange],
   );
 
   // フォーカスアウト時のハンドラ（小数点3桁にフォーマット）
@@ -84,10 +84,14 @@ export const ProductTaxField: React.FC<ProductTaxFieldProps> = ({
   // 表示値：フォーカス中は生の値、フォーカス外は小数点3桁フォーマット
   const displayValue = isFocused
     ? localValue
-    : (localValue ? parseFloat(localValue).toFixed(3) : '0.000');
+    : localValue
+      ? parseFloat(localValue).toFixed(3)
+      : "0.000";
 
   return (
-    <div className={`product-tax-field flex items-center gap-2 w-full ${className}`}>
+    <div
+      className={`product-tax-field flex items-center gap-2 w-full ${className}`}
+    >
       {/* チェックボックス（既存のCheckboxコンポーネントを使用） */}
       <Checkbox
         id={`${name}_check`}
@@ -99,8 +103,8 @@ export const ProductTaxField: React.FC<ProductTaxFieldProps> = ({
             setLocalValue(defaultTaxRate);
             onChange(name, defaultTaxRate);
           } else {
-            setLocalValue('');
-            onChange(name, '');
+            setLocalValue("");
+            onChange(name, "");
           }
         }}
         disabled={disabled}
@@ -118,7 +122,7 @@ export const ProductTaxField: React.FC<ProductTaxFieldProps> = ({
           onFocus={handleFocus}
           onBlur={handleBlur}
           disabled={disabled}
-          className={`flex-1 ${error ? 'border-red-500' : ''}`}
+          className={`flex-1 ${error ? "border-red-500" : ""}`}
         />
       )}
     </div>

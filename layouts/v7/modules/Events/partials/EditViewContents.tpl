@@ -28,9 +28,20 @@
 									{$USER_NAME}
 								</option>
 							{/foreach}
+							{foreach key=GROUP_ID item=GROUP_NAME from=$ACCESSIBLE_GROUPS}
+								<option value="{$GROUP_ID}" {if in_array($GROUP_ID,$INVITIES_SELECTED)}selected{/if}>
+									{$GROUP_NAME}
+								</option>
+							{/foreach}
 						</select>
 					</td>
-					<td></td><td></td>
+					<td class="fieldLabel alignMiddle">{vtranslate('LBL_SEND_MAIL', $MODULE)}</td>
+					<td class="fieldValue">
+						{if isset($SEND_MAIL_FIELD)}
+							{assign var="FIELD_MODEL" value=$SEND_MAIL_FIELD}
+							{include file=vtemplate_path($FIELD_MODEL->getUITypeModel()->getTemplateName(),$MODULE)}
+						{/if}
+					</td>
 				</tr>
 			</table>
 			<input type="hidden" name="recurringEditMode" value="" />

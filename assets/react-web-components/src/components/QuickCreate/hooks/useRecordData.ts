@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { FieldValue } from '../../../types/field';
+import { useState, useEffect, useCallback } from "react";
+import { FieldValue } from "../../../types/field";
 
 /**
  * useRecordData hook parameters
@@ -68,8 +68,8 @@ function buildApiUrl(module: string, recordId: string): string {
   const baseUrl = window.location.origin + window.location.pathname;
   const params = new URLSearchParams({
     module,
-    api: 'GetRecord',
-    record: recordId
+    api: "GetRecord",
+    record: recordId,
   });
   return `${baseUrl}?${params.toString()}`;
 }
@@ -90,7 +90,7 @@ function transformRecordData(
   data: Record<string, string>,
   module: string,
   displayValues?: Record<string, string>,
-  selectedusers?: number[]
+  selectedusers?: number[],
 ): Record<string, FieldValue> {
   const transformed: Record<string, FieldValue> = { ...data };
 
@@ -100,25 +100,25 @@ function transformRecordData(
   delete transformed.label;
 
   // Calendar/Events specific transformations
-  if (module === 'Calendar' || module === 'Events') {
+  if (module === "Calendar" || module === "Events") {
     // Convert date_start + time_start to datetime-local format (YYYY-MM-DDTHH:MM)
-    if (data.date_start && !data.date_start.includes('T')) {
+    if (data.date_start && !data.date_start.includes("T")) {
       const date = data.date_start;
-      const time = data.time_start || '00:00';
+      const time = data.time_start || "00:00";
       // time_start may include seconds (HH:MM:SS), extract HH:MM
       transformed.date_start = `${date}T${time.substring(0, 5)}`;
     }
 
     // Convert due_date + time_end to datetime-local format
-    if (data.due_date && !data.due_date.includes('T')) {
+    if (data.due_date && !data.due_date.includes("T")) {
       const date = data.due_date;
-      const time = data.time_end || '00:00';
+      const time = data.time_end || "00:00";
       transformed.due_date = `${date}T${time.substring(0, 5)}`;
     }
 
     // Convert allday flag to is_allday boolean
     // Database stores allday as '0' or '1' string
-    if (data.allday === '1' || data.allday === 1 as any) {
+    if (data.allday === "1" || data.allday === (1 as any)) {
       transformed.is_allday = true;
     } else {
       transformed.is_allday = false;
@@ -131,7 +131,7 @@ function transformRecordData(
 
     // Add selectedusers (invitees) as string array
     if (selectedusers && selectedusers.length > 0) {
-      transformed.selectedusers = selectedusers.map(id => String(id));
+      transformed.selectedusers = selectedusers.map((id) => String(id));
     }
   }
 
@@ -179,7 +179,9 @@ function transformRecordData(
  * await refetch();
  * ```
  */
-export function useRecordData(params: UseRecordDataParams): UseRecordDataResult {
+export function useRecordData(
+  params: UseRecordDataParams,
+): UseRecordDataResult {
   const { module, recordId, skip = false } = params;
 
   // Initialize loading to true if we have a recordId and not skipping
@@ -208,11 +210,11 @@ export function useRecordData(params: UseRecordDataParams): UseRecordDataResult 
     try {
       const url = buildApiUrl(module, recordId);
       const response = await fetch(url, {
-        method: 'GET',
-        credentials: 'include', // Include cookies for authentication
+        method: "GET",
+        credentials: "include", // Include cookies for authentication
         headers: {
-          'Accept': 'application/json'
-        }
+          Accept: "application/json",
+        },
       });
 
       if (!response.ok) {
@@ -223,28 +225,41 @@ export function useRecordData(params: UseRecordDataParams): UseRecordDataResult 
 
       // Check for error response (success: false with error object)
       if (result.success === false || result.error) {
-        throw new Error(result.error?.message || 'レコードの取得に失敗しました');
+        throw new Error(
+          result.error?.message || "レコードの取得に失敗しました",
+        );
       }
 
       // API returns record directly (not wrapped in result)
       if (!result.record) {
-        throw new Error('レコードデータが見つかりません');
+        throw new Error("レコードデータが見つかりません");
       }
 
-      const { record, displayValues, selectedusers, module: responseModule } = result;
+      const {
+        record,
+        displayValues,
+        selectedusers,
+        module: responseModule,
+      } = result;
 
       // Transform data for form usage
-      const transformedData = transformRecordData(record, responseModule || module, displayValues, selectedusers);
+      const transformedData = transformRecordData(
+        record,
+        responseModule || module,
+        displayValues,
+        selectedusers,
+      );
 
       setData(transformedData);
       setActualModule(responseModule || module);
       setError(null);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'レコードの取得に失敗しました';
+      const errorMessage =
+        err instanceof Error ? err.message : "レコードの取得に失敗しました";
       setError(errorMessage);
       setData(null);
       setActualModule(null);
-      console.error('[useRecordData] Error fetching record:', err);
+      console.error("[useRecordData] Error fetching record:", err);
     } finally {
       setLoading(false);
     }
@@ -269,7 +284,7 @@ export function useRecordData(params: UseRecordDataParams): UseRecordDataResult 
     loading,
     error,
     refetch,
-    actualModule
+    actualModule,
   };
 }
 

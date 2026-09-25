@@ -22,14 +22,8 @@ class Mobile_WS_FetchReferenceRecords extends Mobile_WS_Controller {
         $referenceModule = $request->get('module');
         $searchKey = $request->get('searchValue');
         
-        if($referenceModule=='Documents') {
-            $labelFields = 'notes_title';
-        } else if($referenceModule=='HelpDesk') {
-            $labelFields = 'ticket_title';
-        } else {
-            $describe = vtws_describe($referenceModule, $current_user);
-            $labelFields = $describe['labelFields'];
-        }
+        $describe = vtws_describe($referenceModule, $current_user);
+        $labelFields = $describe['labelFields'];
         
         $labelFieldsArray = explode(',', $labelFields);
         

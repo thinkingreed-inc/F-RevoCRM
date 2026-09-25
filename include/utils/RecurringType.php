@@ -351,7 +351,15 @@ class RecurringType {
 			$dayDiff = $dateDiff/3600/24;
 		}
 
-		while ($tempdate <= $enddate) {
+		// 週次は基準日(tempdate)と生成日(repeatDate)が最大±6日ズレる。
+		// 基準日単独で判定するとenddateと同週の未処理曜日を取りこぼすため、週次のみ6日分許容。
+		// 実際の採否は内側の $repeatDate <= $enddate で担保。
+		$loopEnddate = $enddate;
+		if ($this->recur_type == 'Weekly') {
+			$loopEnddate = date('Y-m-d', strtotime($enddate . ' +6 days'));
+		}
+
+		while ($tempdate <= $loopEnddate) {
 			$date = $tempdateObj->get_Date();
 			$month = $tempdateObj->getMonth();
 			$year = $tempdateObj->getYear();

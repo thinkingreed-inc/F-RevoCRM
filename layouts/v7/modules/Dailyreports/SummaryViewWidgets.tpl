@@ -32,10 +32,7 @@
 	</div>
 
 	<div class="middle-block col-lg-8">
-		{* Summary View Related Activities Widget*}
-		<div id="relatedActivities">
-			{$RELATED_ACTIVITIES}
-		</div>
+		{include file=vtemplate_path('RelatedActivitiesWidget.tpl','Vtiger')}
 
 		{* Summary View Comments Widget*}
 		{if $COMMENTS_WIDGET_MODEL}

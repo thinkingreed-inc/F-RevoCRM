@@ -290,13 +290,7 @@ class CRMEntity {
 
 		$entityFields = Vtiger_Functions::getEntityModuleInfo($module);
         $entityFieldNames  = explode(',', $entityFields['fieldname']);
-        switch ($module) {
-            case 'HelpDesk': $entityFieldNames = array('ticket_title');
-                break;
-            case 'Documents': $entityFieldNames = array('notes_title');
-                break;
-		}
-		
+
 		$record_label = '';
 		foreach($entityFieldNames as $entityFieldName) {
 			$record_label .= $this->column_fields[$entityFieldName]." ";
@@ -321,13 +315,11 @@ class CRMEntity {
 				$params = array($ownerid, $groupid, $current_user->id, $description_val, $adb->formatDate($date_var, true));
 			} else {
 				$profileList = getCurrentUserProfileList();
-				$perm_qry = "SELECT columnname FROM vtiger_field INNER JOIN vtiger_profile2field ON vtiger_profile2field.fieldid = vtiger_field.fieldid INNER JOIN vtiger_def_org_field ON vtiger_def_org_field.fieldid = vtiger_field.fieldid WHERE vtiger_field.tabid = ? AND vtiger_profile2field.visible = 0 AND vtiger_profile2field.readonly = 0 AND vtiger_profile2field.profileid IN (" . generateQuestionMarks($profileList) . ") AND vtiger_def_org_field.visible = 0 and vtiger_field.tablename='vtiger_crmentity' and vtiger_field.displaytype in (1,3) and vtiger_field.presence in (0,2);";
+				// description は vtiger_field.tablename がベーステーブル (vtiger_activity 等) へ
+				// 移行済みのため tablename では特定できない。columnname で権限を判定する。
+				$perm_qry = "SELECT columnname FROM vtiger_field INNER JOIN vtiger_profile2field ON vtiger_profile2field.fieldid = vtiger_field.fieldid INNER JOIN vtiger_def_org_field ON vtiger_def_org_field.fieldid = vtiger_field.fieldid WHERE vtiger_field.tabid = ? AND vtiger_profile2field.visible = 0 AND vtiger_profile2field.readonly = 0 AND vtiger_profile2field.profileid IN (" . generateQuestionMarks($profileList) . ") AND vtiger_def_org_field.visible = 0 and vtiger_field.columnname='description' and vtiger_field.displaytype in (1,3) and vtiger_field.presence in (0,2);";
 				$perm_result = $adb->pquery($perm_qry, array($tabid, $profileList));
-				$perm_rows = $adb->num_rows($perm_result);
-				for ($i = 0; $i < $perm_rows; $i++) {
-					$columname[] = $adb->query_result($perm_result, $i, "columnname");
-				}
-				if (is_array($columname) && in_array("description", $columname)) {
+				if ($adb->num_rows($perm_result) > 0) {
 					$sql = "update vtiger_crmentity set smownerid=?, smgroupid=?, modifiedby=?,description=?, modifiedtime=?";
 					$params = array($ownerid, $groupid, $current_user->id, $description_val, $adb->formatDate($date_var, true));
 				} else {
@@ -993,12 +985,26 @@ class CRMEntity {
 					// added to compute label needed in event handlers
 					$entityFields = Vtiger_Functions::getEntityModuleInfo($module);
 					if(!empty($entityFields['fieldname'])) {
-						$entityFieldNames  = explode(',', $entityFields['fieldname']);
-						if(php7_count($entityFieldNames) > 1) {
-							 $this->column_fields['label'] = $resultrow[$entityFields['tablename'].$entityFieldNames[0]].' '.$resultrow[$entityFields['tablename'].$entityFieldNames[1]];
-						} else {
-							$this->column_fields['label'] = $resultrow[$entityFields['tablename'].$entityFieldNames[0]];
+						// Values live in $resultrow under the same alias used when
+						// building the query (createColumnAliasForField =
+						// strtolower(tablename.fieldname)). Resolve each entity field
+						// to its fieldinfo so the alias matches even when the column
+						// or table differs from the field name; concatenate all
+						// fields (not just the first two).
+						$fieldInfoByName = array();
+						foreach ($cachedModuleFields as $fieldinfo) {
+							$fieldInfoByName[$fieldinfo['fieldname']] = $fieldinfo;
 						}
+						$labelValues = array();
+						foreach (explode(',', $entityFields['fieldname']) as $entityFieldName) {
+							$fieldkey = isset($fieldInfoByName[$entityFieldName])
+								? $this->createColumnAliasForField($fieldInfoByName[$entityFieldName])
+								: strtolower($entityFields['tablename'].$entityFieldName);
+							if (isset($resultrow[$fieldkey]) && $resultrow[$fieldkey] !== '') {
+								$labelValues[] = $resultrow[$fieldkey];
+							}
+						}
+						$this->column_fields['label'] = implode(' ', $labelValues);
 					}
 				}
 				foreach ($cachedModuleFields as $fieldinfo) {
@@ -3424,10 +3430,12 @@ class TrackableObject implements ArrayAccess, IteratorAggregate {
 		$this->storage = $value;
 	}
 
+	#[\ReturnTypeWillChange]
 	function offsetExists($key) {
 		return isset($this->storage[$key]) || array_key_exists($key, $this->storage);
 	}
 
+	#[\ReturnTypeWillChange]
 	function offsetSet($key, $value) {
 		if($this->tracking && $this->trackingEnabled) {
 			$olderValue = $this->offsetGet($key);
@@ -3441,14 +3449,17 @@ class TrackableObject implements ArrayAccess, IteratorAggregate {
 		$this->storage[$key] = $value;
 	}
 
+	#[\ReturnTypeWillChange]
 	public function offsetUnset($key) {
 		unset($this->storage[$key]);
 	}
 
+	#[\ReturnTypeWillChange]
 	public function offsetGet($key) {
 		return isset($this->storage[$key]) || array_key_exists($key, $this->storage) ? $this->storage[$key] : null;
 	}
 
+	#[\ReturnTypeWillChange]
 	public function getIterator() {
 		$iterator = new ArrayObject($this->storage);
 		return $iterator->getIterator();

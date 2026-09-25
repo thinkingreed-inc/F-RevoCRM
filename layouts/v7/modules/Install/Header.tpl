@@ -43,13 +43,13 @@
 
 			<script src="{vresource_url('layouts/v7/lib/jquery/jquery.min.js')}"></script>
 			<script type="text/javascript">
-				var _META = { 'module': "{$MODULE}", view: "{$VIEW}", 'parent': "{$PARENT_MODULE}" };
+				var _META = { 'module': "{$MODULE|escape:'javascript'}", view: "{$VIEW|escape:'javascript'}", 'parent': "{$PARENT_MODULE|escape:'javascript'}" };
 				{if $EXTENSION_MODULE}
-					var _EXTENSIONMETA = { 'module': "{$EXTENSION_MODULE}", view: "{$EXTENSION_VIEW}"};
+					var _EXTENSIONMETA = { 'module': "{$EXTENSION_MODULE|escape:'javascript'}", view: "{$EXTENSION_VIEW|escape:'javascript'}"};
 				{/if}
 				var _USERMETA;
 				{if $CURRENT_USER_MODEL}
-					_USERMETA =  { 'id' : "{$CURRENT_USER_MODEL->get('id')}", 'menustatus' : "{$CURRENT_USER_MODEL->get('leftpanelhide')}" };
+					_USERMETA =  { 'id' : "{$CURRENT_USER_MODEL->get('id')|escape:'javascript'}", 'menustatus' : "{$CURRENT_USER_MODEL->get('leftpanelhide')|escape:'javascript'}" };
 				{/if}
 			</script>
 		</head>

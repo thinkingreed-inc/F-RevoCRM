@@ -197,9 +197,16 @@ Class Calendar_Edit_View extends Vtiger_Edit_View {
 		}
 		$picklistDependencyDatasource = Vtiger_DependencyPicklist::getPicklistDependencyDatasource($moduleName);
 		$accessibleUsers = $currentUser->getAccessibleUsers();
+		$accessibleGroups = $currentUser->getAccessibleGroups();
+		if($recordModel instanceof Events_Record_Model) {
+			// 既にこの活動の参加者になっている利用者は、割り当て可能ユーザーの範囲外でも
+			// 候補に残す。候補から漏れると保存時に参加者から外れ、その参加者の活動が削除される
+			$accessibleUsers = $recordModel->getInviteeOptions($accessibleUsers, $accessibleGroups);
+		}
 
 		$viewer->assign('PICKIST_DEPENDENCY_DATASOURCE',Vtiger_Functions::jsonEncode($picklistDependencyDatasource));
 		$viewer->assign('ACCESSIBLE_USERS', $accessibleUsers);
+		$viewer->assign('ACCESSIBLE_GROUPS', $accessibleGroups);
 		if($request->get('selectedusers')) {
 			$invetees = $request->get('selectedusers');
 			if(!is_array($invetees)) {
@@ -208,6 +215,16 @@ Class Calendar_Edit_View extends Vtiger_Edit_View {
 			$viewer->assign('INVITIES_SELECTED', $invetees);
 		} else {
 			$viewer->assign('INVITIES_SELECTED', $recordModel->getInvities());
+		}
+		if ($request->has('send_mail')) {
+			$sendMailValue = ($request->get('send_mail') == '1') ? '1' : '0';
+		} else {
+			$sendMailValue = ($recordModel->get('send_mail') == '1') ? '1' : '0';
+		}
+		$sendMailField = Vtiger_Field_Model::getInstance('send_mail', $moduleModel);
+		if ($sendMailField) {
+			$sendMailField->set('fieldvalue', $sendMailValue);
+			$viewer->assign('SEND_MAIL_FIELD', $sendMailField);
 		}
 		$viewer->assign('CURRENT_USER', $currentUser);
 

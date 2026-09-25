@@ -34,6 +34,7 @@ class PDFTemplates_MassDelete_Action extends Vtiger_Mass_Action {
 	public function process(Vtiger_Request $request) {
 		$moduleName = $request->getModule();
 
+		$systemTemplate = false;
 		$recordModel = new PDFTemplates_Record_Model();
 		$recordModel->setModule($moduleName);
 		$selectedIds = $request->get('selected_ids');
@@ -62,7 +63,13 @@ class PDFTemplates_MassDelete_Action extends Vtiger_Mass_Action {
 		$response->emit();
 	}
 	
-	public function getRecordsListFromRequest(Vtiger_Request $request, $recordModel) {
+	/**
+	 * 親(Vtiger_Mass_Action::getRecordsListFromRequest)は $request のみを取るため、
+	 * $recordModel はオプショナルにして LSP 互換を保つ
+	 * (必須引数のままだと PHP 8 で「must be compatible」の Fatal error になり
+	 *  一括削除が一切動かなくなる)。
+	 */
+	public function getRecordsListFromRequest(Vtiger_Request $request, $recordModel = null) {
 		$selectedIds = $request->get('selected_ids');
 		$excludedIds = $request->get('excluded_ids');
 		
@@ -72,7 +79,8 @@ class PDFTemplates_MassDelete_Action extends Vtiger_Mass_Action {
 			}
 		}
 		if(!empty($excludedIds)){
-			$moduleModel = $recordModel->getModule();
+			$moduleModel = $recordModel ? $recordModel->getModule()
+					: Vtiger_Module_Model::getInstance($request->getModule());
 			$recordIds  = $moduleModel->getRecordIds($excludedIds);
 			return $recordIds;
 		}

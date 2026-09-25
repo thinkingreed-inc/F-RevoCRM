@@ -101,6 +101,10 @@ class Emails_Mailer_Model extends Vtiger_Mailer {
 	}
 
 	public function convertToValidURL($htmlContent) {
+		// 本文空 → DOMDocument::loadHTML が PHP8 で ValueError スロー。空はそのまま返す
+		if ($htmlContent === null || trim((string)$htmlContent) === '') {
+			return (string)$htmlContent;
+		}
 		if (!$this->dom) {
 			$this->dom = new DOMDocument();
 			@$this->dom->loadHTML($htmlContent);

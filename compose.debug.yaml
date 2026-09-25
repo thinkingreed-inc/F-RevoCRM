@@ -1,0 +1,18 @@
+# ローカル検証用の compose override (CI では使わない)。
+#
+# 目的: ホスト側で動いている Apache(80) / MySQL(3306) と衝突しないよう、
+#       検証用コンテナのポートを退避する。
+#   - web は 8080 に公開 (E2E_BASE_URL=http://localhost:8080/ を併せて指定する)
+#   - db はホストに公開しない (compose 内通信のみで十分)
+#
+# 使い方:
+#   docker compose -f compose.yaml -f compose.ci.yaml -f compose.debug.yaml down -v
+#   E2E_BASE_URL=http://localhost:8080/ COMPOSE_EXTRA="-f compose.debug.yaml" ./e2e/ci/run-e2e.sh
+#
+# ports の !override / !reset は元リストを「置換」する (既定は追記され 80:80 が残ってしまうため)。
+services:
+  php:
+    ports: !override
+      - "8080:80"
+  db:
+    ports: !reset []

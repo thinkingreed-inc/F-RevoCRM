@@ -187,25 +187,45 @@ class Vtiger_MailScanner {
 	 */
 	function isMessageScanned($mailrecord, $lookAtFolder) {
 		global $adb;
-		$messages = $adb->pquery("SELECT 1 FROM vtiger_mailscanner_ids WHERE scannerid=? AND messageid=?",
-			Array($this->_scannerinfo->scannerid, $mailrecord->_uniqueid));
+		$scannerid = $this->_scannerinfo->scannerid;
+		$uniqueid = $mailrecord->_uniqueid;
 
-		$folderRescan = $this->_scannerinfo->needRescan($lookAtFolder);
-		$isScanned = false;
+		// 新フォーマット(Message-ID|udate)で検索
+		$result = $adb->pquery("SELECT crmid FROM vtiger_mailscanner_ids WHERE scannerid=? AND messageid=?",
+			Array($scannerid, $uniqueid));
 
-		if($adb->num_rows($messages)) {
-			$isScanned = true;
+		$matchedId = $uniqueid;
+		$isSentinel = false;
 
-			// If folder is scheduled for rescan and earlier message was not acted upon?
-			$relatedCRMId = $adb->query_result($messages, 0, 'crmid');
-
-			if($folderRescan && empty($relatedCRMId)) {
-				$adb->pquery("DELETE FROM vtiger_mailscanner_ids WHERE scannerid=? AND messageid=?",
-					Array($this->_scannerinfo->scannerid, $mailrecord->_uniqueid));
-				$isScanned = false;
-			}
+		// 新フォーマットで未ヒット → マイグレーション済みの旧レコード(Message-ID|0)を検索
+		if(!$adb->num_rows($result) && !empty($mailrecord->_messageid)) {
+			$sentinelId = $mailrecord->_messageid . '|0';
+			$result = $adb->pquery("SELECT crmid FROM vtiger_mailscanner_ids WHERE scannerid=? AND messageid=?",
+				Array($scannerid, $sentinelId));
+			$matchedId = $sentinelId;
+			$isSentinel = true;
 		}
-		return $isScanned;
+
+		// どちらにも未ヒット → 未スキャン
+		if(!$adb->num_rows($result)) {
+			return false;
+		}
+
+		// フォルダ再スキャン要求かつ未紐付なら DELETE して再取り込みを許可
+		$relatedCRMId = $adb->query_result($result, 0, 'crmid');
+		if($this->_scannerinfo->needRescan($lookAtFolder) && empty($relatedCRMId)) {
+			$adb->pquery("DELETE FROM vtiger_mailscanner_ids WHERE scannerid=? AND messageid=?",
+				Array($scannerid, $matchedId));
+			return false;
+		}
+
+		// sentinel レコードを新フォーマットに書き換え（次回以降は新フォーマットでヒットする）
+		if($isSentinel) {
+			$adb->pquery("UPDATE vtiger_mailscanner_ids SET messageid=? WHERE scannerid=? AND messageid=?",
+				Array($uniqueid, $scannerid, $matchedId));
+		}
+
+		return true;
 	}
 
 	/**
@@ -249,7 +269,7 @@ class Vtiger_MailScanner {
 			return $this->_cachedContactIds[$email];
 		}
 		$contactid = false;
-		$contactres = $adb->pquery("SELECT contactid FROM vtiger_contactdetails INNER JOIN vtiger_crmentity ON crmid = contactid WHERE setype = ? AND email = ? AND deleted = ?", array('Contacts', $email, 0));
+		$contactres = $adb->pquery("SELECT contactid FROM vtiger_contactdetails INNER JOIN vtiger_crmentity ON crmid = contactid WHERE setype = ? AND email = ? AND vtiger_contactdetails.deleted = ?", array('Contacts', $email, 0));
 		if($adb->num_rows($contactres)) {
 			$deleted = $adb->query_result($contactres, 0, 'deleted');
 			if ($deleted != 1) {
@@ -275,7 +295,7 @@ class Vtiger_MailScanner {
 			return $this->_cachedLeadIds[$email];
 		}
 		$leadid = false;
-		$leadres = $adb->pquery("SELECT leadid FROM vtiger_leaddetails INNER JOIN vtiger_crmentity ON crmid = leadid WHERE setype=? AND email = ? AND converted = ? AND deleted = ?", array('Leads', $email, 0, 0));
+		$leadres = $adb->pquery("SELECT leadid FROM vtiger_leaddetails INNER JOIN vtiger_crmentity ON crmid = leadid WHERE setype=? AND email = ? AND converted = ? AND vtiger_leaddetails.deleted = ?", array('Leads', $email, 0, 0));
 		if ($adb->num_rows($leadres)) {
 			$deleted = $adb->query_result($leadres, 0, 'deleted');
 			if ($deleted != 1) {
@@ -302,7 +322,7 @@ class Vtiger_MailScanner {
 		}
 
 		$accountid = false;
-		$accountres = $adb->pquery("SELECT accountid FROM vtiger_account INNER JOIN vtiger_crmentity ON crmid = accountid WHERE setype=? AND (email1 = ? OR email2 = ?) AND deleted = ?", Array('Accounts', $email, $email, 0));
+		$accountres = $adb->pquery("SELECT accountid FROM vtiger_account INNER JOIN vtiger_crmentity ON crmid = accountid WHERE setype=? AND (email1 = ? OR email2 = ?) AND vtiger_account.deleted = ?", Array('Accounts', $email, $email, 0));
 		if($adb->num_rows($accountres)) {
 			$deleted = $adb->query_result($accountres, 0, 'deleted');
 			if ($deleted != 1) {

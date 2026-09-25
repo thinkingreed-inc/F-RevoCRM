@@ -35,7 +35,8 @@ class Import_Main_View extends Vtiger_View_Controller{
 		if($fileReadStatus) {
 			$importController->updateQueueData($importId);
 		} else {
-			Import_Queue_Action::remove($importId);
+			Import_Queue_Action::remove($importId, $user);
+			return;
 		}
 
 		$isImportScheduled = $importController->request->get('is_scheduled');

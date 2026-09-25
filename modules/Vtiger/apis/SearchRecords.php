@@ -195,16 +195,17 @@ class Vtiger_SearchRecords_Api extends Vtiger_Api_Controller {
             $first = false;
         }
 
-        // クエリ実行（limit+1件取得）
+        // モジュールのIDフィールド名を取得
+        $focus = CRMEntity::getInstance($moduleName);
+        $idColumn = $focus->table_index ?? 'crmid';
+
+        // クエリ実行（limit+1件取得、basetable側で更新日時降順ソート）
         $query = $queryGenerator->getQuery();
+        $query .= $this->getOrderByClause($focus, $query);
         $query .= " LIMIT " . (int)$offset . ", " . (int)($limit + 1);
 
         global $adb;
         $queryResult = $adb->pquery($query, array());
-
-        // モジュールのIDフィールド名を取得
-        $focus = CRMEntity::getInstance($moduleName);
-        $idColumn = $focus->table_index ?? 'crmid';
 
         $records = array();
         $hasNextPage = false;
@@ -247,6 +248,47 @@ class Vtiger_SearchRecords_Api extends Vtiger_Api_Controller {
             'records' => $records,
             'hasNextPage' => $hasNextPage
         );
+    }
+
+    /**
+     * ソート用 ORDER BY 句を生成
+     * basetable に modifiedtime カラムがあれば modifiedtime 降順、なければ主キー降順
+     * @param Vtiger_CRMEntity $focus
+     * @param string $existingQuery 既存クエリ（既に ORDER BY / UNION を含む場合は注入をスキップ）
+     * @return string ORDER BY 句（先頭スペース付き、注入不可時は空文字）
+     */
+    private function getOrderByClause($focus, $existingQuery = '') {
+        global $adb;
+        $baseTable = $focus->table_name ?? '';
+        $idColumn = $focus->table_index ?? 'crmid';
+
+        // 識別子バリデーション（深層防御：basetable/idColumn は通常モジュールクラスのハードコード値）
+        if (!preg_match('/^[A-Za-z0-9_]+$/', $baseTable) || !preg_match('/^[A-Za-z0-9_]+$/', $idColumn)) {
+            return '';
+        }
+
+        // 既存クエリに ORDER BY / UNION が含まれる場合は注入をスキップ
+        // （末尾連結だと UNION 全体に効かず、ORDER BY 重複は構文エラーになるため）
+        if (!empty($existingQuery)) {
+            if (stripos($existingQuery, ' ORDER BY ') !== false || stripos($existingQuery, ' UNION ') !== false) {
+                return '';
+            }
+        }
+
+        // basetable に modifiedtime カラムがあるか確認（リクエスト内 static cache）
+        static $hasModifiedTimeCache = array();
+        if (!isset($hasModifiedTimeCache[$baseTable])) {
+            $columnResult = $adb->pquery(
+                "SHOW COLUMNS FROM " . $baseTable . " LIKE 'modifiedtime'",
+                array()
+            );
+            $hasModifiedTimeCache[$baseTable] = ($columnResult && $adb->num_rows($columnResult) > 0);
+        }
+
+        if ($hasModifiedTimeCache[$baseTable]) {
+            return " ORDER BY " . $baseTable . ".modifiedtime DESC, " . $baseTable . "." . $idColumn . " DESC";
+        }
+        return " ORDER BY " . $baseTable . "." . $idColumn . " DESC";
     }
 
     /**
@@ -421,17 +463,18 @@ class Vtiger_SearchRecords_Api extends Vtiger_Api_Controller {
         // ListView_Modelを使用してクエリを生成（モジュール固有の処理を適用）
         $listViewModel = Vtiger_ListView_Model::getInstanceForPopup($moduleName);
 
-        // クエリ取得
+        // モジュールのIDフィールド名を取得
+        $focus = CRMEntity::getInstance($moduleName);
+        $idColumn = $focus->table_index ?? 'crmid';
+
+        // クエリ取得 + basetable側で更新日時降順ソート
         $query = $listViewModel->getQuery();
+        $query .= $this->getOrderByClause($focus, $query);
 
         // limit+1件取得して次ページ有無を判定
         $query .= " LIMIT " . (int)$offset . ", " . (int)($limit + 1);
 
         $result = $adb->pquery($query, array());
-
-        // モジュールのIDフィールド名を取得
-        $focus = CRMEntity::getInstance($moduleName);
-        $idColumn = $focus->table_index ?? 'crmid';
 
         $count = 0;
         while ($row = $adb->fetch_array($result)) {

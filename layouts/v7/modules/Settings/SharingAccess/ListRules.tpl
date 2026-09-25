@@ -15,7 +15,7 @@
             <div class="rulehead col-sm-6">
                 <!-- Check if the module should the for module to get the translations-->
                 <strong>{vtranslate('LBL_SHARING_RULE', $QUALIFIED_MODULE)}&nbsp;{vtranslate('LBL_FOR', $MODULE)}&nbsp;
-                        {if $FOR_MODULE == 'Accounts'}{vtranslate($FOR_MODULE, $QUALIFIED_MODULE)}{else}{vtranslate($FOR_MODULE, $MODULE)}{/if} :</strong>
+                        {if $FOR_MODULE == 'Accounts'}{vtranslate($FOR_MODULE, $QUALIFIED_MODULE)}{else}{vtranslate($FOR_MODULE, $FOR_MODULE)}{/if} :</strong>
             </div>
             <div class="col-sm-6">
                 <div class="pull-right">
@@ -33,7 +33,7 @@
                             <tr class="customRuleHeaders">
                                 <th>{vtranslate('LBL_RULE_NO', $QUALIFIED_MODULE)}</th>
                                 <!-- Check if the module should the for module to get the translations -->
-                                <th>{if $FOR_MODULE == 'Accounts'}{vtranslate($FOR_MODULE, $QUALIFIED_MODULE)}{else}{vtranslate($FOR_MODULE, $MODULE)}{/if}
+                                <th>{if $FOR_MODULE == 'Accounts'}{vtranslate($FOR_MODULE, $QUALIFIED_MODULE)}{else}{vtranslate($FOR_MODULE, $FOR_MODULE)}{/if}
                                         &nbsp;{vtranslate('LBL_OF', $MODULE)}</th>
                                 <th>{vtranslate('LBL_CAN_ACCESSED_BY', $QUALIFIED_MODULE)}</th>
                                 <th>{vtranslate('LBL_PRIVILEGES', $QUALIFIED_MODULE)}</th>

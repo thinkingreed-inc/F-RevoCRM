@@ -23,7 +23,8 @@ class Migration_Index_View extends Vtiger_View_Controller {
 
 	public function process(Vtiger_Request $request) {
 		// Override error reporting to production mode
-		ini_set('display_errors','on'); error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
+		$_e_strict = (PHP_VERSION_ID < 80400) ? E_STRICT : 0;
+		ini_set('display_errors','on'); error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED & ~$_e_strict);
 		// Migration could be heavy at-times.
 		set_time_limit(0);	
 

@@ -14,7 +14,7 @@
         <h4>{vtranslate("LBL_MULTI_FACTOR_AUTH","Users")}</h4>
     </div>
     <hr>
-    <div class="blockData multi_factor_credentialList">
+    <div class="blockData multi_factor_credentialList table-responsive">
         <table class="table detailview-table no-border">
             <thead>
                 <tr>

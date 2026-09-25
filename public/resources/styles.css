@@ -156,10 +156,15 @@ td.listViewEntryValue  .fieldValue .value {
    width: 90%;
  }
 
+.importview-content,
+.customview-content {
+  max-height: calc(100vh - 210px) !important;
+}
+
 /*
  * モバイル表示
  */
-@media (max-width: 768px) { 
+@media (max-width: 768px) {
   .settingsIcon {
     display: none;
   }
@@ -176,7 +181,7 @@ td.listViewEntryValue  .fieldValue .value {
   }
   .main-container .module-nav {
     width: 100%;
-    z-index: 1100;
+    z-index: 1050;
     background-color: #2C3B49;
     background: #2C3B49;
   }
@@ -236,9 +241,30 @@ td.listViewEntryValue  .fieldValue .value {
   .main-container.main-container-Calendar .module-nav {
     order: 2;
     width: 100%;
-    z-index: 1100;
+    z-index: 1050;
     background-color: #2C3B49;
     background: #2C3B49;
+  }
+  body.modal-open .main-container .module-nav,
+  body.modal-open .main-container.main-container-Calendar .module-nav {
+    z-index: 0;
+  }
+  .importview-content,
+  .customview-content {
+    max-height: calc(100vh - 210px) !important;
+    padding-bottom: 60px;
+  }
+  .main-container > .settingsPageDiv {
+    padding-top: 45px;
+  }
+  .main-container-MailManager .listViewPageDiv {
+    padding-left: 0 !important;
+  }
+  .main-container-MailManager .mmDescription {
+    width: auto !important;
+    height: auto !important;
+    margin-left: 15px !important;
+    margin-right: 15px !important;
   }
   .main-container.main-container-Calendar .module-nav div.modules-menu {
     position: relative;
@@ -353,14 +379,6 @@ div.detailview-content.container-fluid span.value img {
 }
 .textOverflowTest{
 	width: 600px;
-}
-@media all and (min-width:992px) and (max-width: 1290px) {
-    .global-nav .app-list {
-        display: none;
-    }
-}
-.app-navigator-container {
-  width: 222px;
 }
 /*
  * カスタム項目編集画面
@@ -1373,16 +1391,17 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
 @media (min-width: 0px) and (max-width: 830px) {
   .multi_factor_credentialList {
     overflow-x: auto !important;
-    width: 100vw !important;
+    -webkit-overflow-scrolling: touch;
+    width: 100% !important;
+    max-width: 100% !important;
     display: block !important;
   }
 
   .multi_factor_credentialList > table {
     display: table !important;
-    table-layout: fixed !important;
-  width: 100% !important;
-  white-space: nowrap !important;
-  overflow-x: auto !important;
+    table-layout: auto !important;
+    width: auto !important;
+    min-width: 100%;
   }
   .multi_factor_credentialList > table tr,
   .multi_factor_credentialList > table td,
@@ -1392,7 +1411,22 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
   .multi_factor_credentialList > table td,
   .multi_factor_credentialList > table th {
     display: table-cell !important;
-    width: 100% !important;
+    width: auto !important;
+    padding-right: 16px;
+    vertical-align: middle;
+  }
+  .multi_factor_credentialList > table th:last-child,
+  .multi_factor_credentialList > table td:last-child {
+    text-align: center;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .multi_factor_credentialList .textOverflowEllipsis {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: nowrap;
+    display: inline;
+    max-width: none;
   }
 }
 

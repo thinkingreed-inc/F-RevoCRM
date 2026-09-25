@@ -63,7 +63,6 @@ class Vtiger_Response {
 	 * Security headers to prevent common attacks
 	 */
 	private static $securityHeaders = array(
-		"Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'self'; form-action 'self'; base-uri 'self'",
 		"X-Content-Type-Options: nosniff",
 		"X-Frame-Options: SAMEORIGIN",
 		"X-XSS-Protection: 1; mode=block",
@@ -78,9 +77,44 @@ class Vtiger_Response {
 	}
 
 	/**
+	 * Build Content-Security-Policy header based on environment
+	 */
+	public static function buildCSPHeader() {
+		global $csp_allowed_domains;
+
+		$directives = array(
+			'script-src'  => "'self' 'unsafe-inline' 'unsafe-eval'",
+			'style-src'   => "'self' 'unsafe-inline'",
+			'img-src'     => "'self' data: blob:",
+			'font-src'    => "'self'",
+			'connect-src' => "'self'",
+			'frame-src'   => "'self'",
+		);
+
+		if (!empty($csp_allowed_domains) && is_array($csp_allowed_domains)) {
+			foreach ($directives as $directive => $value) {
+				if (!empty($csp_allowed_domains[$directive])) {
+					$directives[$directive] .= ' ' . implode(' ', $csp_allowed_domains[$directive]);
+				}
+			}
+		}
+
+		$parts = array("default-src 'self'");
+		foreach ($directives as $directive => $value) {
+			$parts[] = "{$directive} {$value}";
+		}
+		$parts[] = "frame-ancestors 'self'";
+		$parts[] = "form-action 'self'";
+		$parts[] = "base-uri 'self'";
+
+		return "Content-Security-Policy: " . implode('; ', $parts);
+	}
+
+	/**
 	 * Send security headers to prevent common attacks (XSS, clickjacking, etc.)
 	 */
 	protected function sendSecurityHeaders() {
+		header(self::buildCSPHeader());
 		foreach (self::$securityHeaders as $header) {
 			header($header);
 		}

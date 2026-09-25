@@ -323,14 +323,14 @@ class VtigerLineItemOperation extends VtigerActorOperation {
 		$quantity = $element['quantity'];
 		$discount_amount = $element['discount_amount'];
 		$discount_percent = $element['discount_percent'];
-		$productTotal = $listPrice * $quantity;
+		$productTotal = (double)$listPrice * (double)$quantity;
 		$total_after_discount = $productTotal;
 
 		if (!empty($discount_amount)) {
 			$total_after_discount -= $discount_amount;
 		}
 		if (!empty($discount_percent)) {
-			$percentage_discount = ($productTotal * $discount_percent) / 100;
+			$percentage_discount = ((double)$productTotal * (double)$discount_percent) / 100;
 			$total_after_discount -= $percentage_discount;
 		}
 
@@ -505,7 +505,7 @@ class VtigerLineItemOperation extends VtigerActorOperation {
 		if(!empty($parent['hdnDiscountAmount']) && ((double)$parent['hdnDiscountAmount']) > 0){
 			$discount = ($parent['hdnDiscountAmount']);
 		} elseif(!empty($parent['hdnDiscountPercent'])){
-			$discount = ($parent['hdnDiscountPercent']/100 * $parent['hdnSubTotal']);
+			$discount = ((double)$parent['hdnDiscountPercent']/100 * (double)$parent['hdnSubTotal']);
 		} else {
 			$discount = 0;
 		}
@@ -526,7 +526,7 @@ class VtigerLineItemOperation extends VtigerActorOperation {
 			}
 			$taxAmountsList = array();
 			foreach ($this->taxList as $taxName => $taxInfo) {
-				$taxAmountsList[$allTaxes[$taxName]['taxid']] = array('percentage' => $taxInfo['percentage'], 'amount' => ($taxTotal * $taxInfo['percentage']) / 100);
+				$taxAmountsList[$allTaxes[$taxName]['taxid']] = array('percentage' => $taxInfo['percentage'], 'amount' => ((double)$taxTotal * (double)$taxInfo['percentage']) / 100);
 			}
 
 			foreach ($taxAmountsList as $taxId => $taxInfo) {
@@ -535,7 +535,7 @@ class VtigerLineItemOperation extends VtigerActorOperation {
 					foreach ($compoundOn[$taxId] as $comTaxId) {
 						$amount += $taxAmountsList[$comTaxId]['amount'];
 					}
-					$taxInfo['amount'] = $taxAmountsList[$taxId]['amount'] = ($amount * $taxInfo['percentage']) / 100;
+					$taxInfo['amount'] = $taxAmountsList[$taxId]['amount'] = ((double)$amount * (double)$taxInfo['percentage']) / 100;
 				}
 
 				$taxAmount += $taxInfo['amount'];

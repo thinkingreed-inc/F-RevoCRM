@@ -1,9 +1,15 @@
-import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import { Input } from './ui/input';
-import { X, ChevronDown } from 'lucide-react';
-import { cn } from '../lib/utils';
-import { useOptionalTranslation } from '../hooks/useTranslation';
+import React, {
+  useState,
+  useMemo,
+  useRef,
+  useEffect,
+  useCallback,
+} from "react";
+import { createPortal } from "react-dom";
+import { Input } from "./ui/input";
+import { X, ChevronDown } from "lucide-react";
+import { cn } from "../lib/utils";
+import { useOptionalTranslation } from "../hooks/useTranslation";
 
 /**
  * 通貨オプションの型
@@ -50,7 +56,7 @@ export const CurrencyListField: React.FC<CurrencyListFieldProps> = ({
   mandatory = false,
   disabled = false,
   error,
-  className
+  className,
 }) => {
   // 翻訳フック（TranslationProvider外でも安全に使用可能）
   const { t } = useOptionalTranslation();
@@ -59,15 +65,15 @@ export const CurrencyListField: React.FC<CurrencyListFieldProps> = ({
   const options = useMemo<CurrencyOption[]>(() => {
     return Object.entries(currencyList).map(([id, name]) => ({
       value: id,
-      label: name
+      label: name,
     }));
   }, [currencyList]);
 
   // 検索キーワード
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   // 表示用のラベル
-  const [displayLabel, setDisplayLabel] = useState<string>('');
+  const [displayLabel, setDisplayLabel] = useState<string>("");
 
   // ドロップダウン表示状態
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -78,7 +84,11 @@ export const CurrencyListField: React.FC<CurrencyListFieldProps> = ({
   const inputContainerRef = useRef<HTMLDivElement>(null);
 
   // ドロップダウンの位置
-  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [dropdownPosition, setDropdownPosition] = useState<{
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
 
   // タッチスワイプ用のref
   const touchStartYRef = useRef<number | null>(null);
@@ -109,14 +119,16 @@ export const CurrencyListField: React.FC<CurrencyListFieldProps> = ({
       touchStartYRef.current = null;
     };
 
-    dropdown.addEventListener('touchstart', handleTouchStart, { passive: true });
-    dropdown.addEventListener('touchmove', handleTouchMove, { passive: false });
-    dropdown.addEventListener('touchend', handleTouchEnd, { passive: true });
+    dropdown.addEventListener("touchstart", handleTouchStart, {
+      passive: true,
+    });
+    dropdown.addEventListener("touchmove", handleTouchMove, { passive: false });
+    dropdown.addEventListener("touchend", handleTouchEnd, { passive: true });
 
     return () => {
-      dropdown.removeEventListener('touchstart', handleTouchStart);
-      dropdown.removeEventListener('touchmove', handleTouchMove);
-      dropdown.removeEventListener('touchend', handleTouchEnd);
+      dropdown.removeEventListener("touchstart", handleTouchStart);
+      dropdown.removeEventListener("touchmove", handleTouchMove);
+      dropdown.removeEventListener("touchend", handleTouchEnd);
     };
   }, [isOpen, dropdownPosition]);
 
@@ -126,9 +138,10 @@ export const CurrencyListField: React.FC<CurrencyListFieldProps> = ({
   const filteredOptions = useMemo(() => {
     if (!searchTerm) return options;
     const lowerSearch = searchTerm.toLowerCase();
-    return options.filter(opt =>
-      opt.label.toLowerCase().includes(lowerSearch) ||
-      opt.value.toLowerCase().includes(lowerSearch)
+    return options.filter(
+      (opt) =>
+        opt.label.toLowerCase().includes(lowerSearch) ||
+        opt.value.toLowerCase().includes(lowerSearch),
     );
   }, [options, searchTerm]);
 
@@ -137,12 +150,12 @@ export const CurrencyListField: React.FC<CurrencyListFieldProps> = ({
    */
   useEffect(() => {
     if (value) {
-      const selected = options.find(opt => opt.value === value);
+      const selected = options.find((opt) => opt.value === value);
       if (selected) {
         setDisplayLabel(selected.label);
       }
     } else {
-      setDisplayLabel('');
+      setDisplayLabel("");
     }
   }, [value, options]);
 
@@ -156,7 +169,7 @@ export const CurrencyListField: React.FC<CurrencyListFieldProps> = ({
 
     // 既存の選択をクリア
     if (value) {
-      onChange(name, '');
+      onChange(name, "");
     }
 
     // ドロップダウンを開く
@@ -168,7 +181,7 @@ export const CurrencyListField: React.FC<CurrencyListFieldProps> = ({
    */
   const handleSelectOption = (option: CurrencyOption) => {
     setDisplayLabel(option.label);
-    setSearchTerm('');
+    setSearchTerm("");
     setIsOpen(false);
     onChange(name, option.value);
   };
@@ -177,9 +190,9 @@ export const CurrencyListField: React.FC<CurrencyListFieldProps> = ({
    * 選択をクリア
    */
   const handleClear = () => {
-    setDisplayLabel('');
-    setSearchTerm('');
-    onChange(name, '');
+    setDisplayLabel("");
+    setSearchTerm("");
+    onChange(name, "");
     inputRef.current?.focus();
   };
 
@@ -192,7 +205,7 @@ export const CurrencyListField: React.FC<CurrencyListFieldProps> = ({
       setDropdownPosition({
         top: rect.bottom + window.scrollY,
         left: rect.left + window.scrollX,
-        width: rect.width
+        width: rect.width,
       });
     }
   }, []);
@@ -218,14 +231,14 @@ export const CurrencyListField: React.FC<CurrencyListFieldProps> = ({
         setIsOpen(false);
         // 選択されていない場合は入力をクリア
         if (!value && displayLabel) {
-          setDisplayLabel('');
-          setSearchTerm('');
+          setDisplayLabel("");
+          setSearchTerm("");
         }
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [value, displayLabel]);
 
   /**
@@ -238,12 +251,12 @@ export const CurrencyListField: React.FC<CurrencyListFieldProps> = ({
       updateDropdownPosition();
     };
 
-    window.addEventListener('scroll', handleScrollOrResize, true);
-    window.addEventListener('resize', handleScrollOrResize);
+    window.addEventListener("scroll", handleScrollOrResize, true);
+    window.addEventListener("resize", handleScrollOrResize);
 
     return () => {
-      window.removeEventListener('scroll', handleScrollOrResize, true);
-      window.removeEventListener('resize', handleScrollOrResize);
+      window.removeEventListener("scroll", handleScrollOrResize, true);
+      window.removeEventListener("resize", handleScrollOrResize);
     };
   }, [isOpen, updateDropdownPosition]);
 
@@ -261,7 +274,7 @@ export const CurrencyListField: React.FC<CurrencyListFieldProps> = ({
         style={{
           top: dropdownPosition.top,
           left: dropdownPosition.left,
-          width: dropdownPosition.width
+          width: dropdownPosition.width,
         }}
         onWheel={(e) => {
           e.stopPropagation();
@@ -271,13 +284,13 @@ export const CurrencyListField: React.FC<CurrencyListFieldProps> = ({
       >
         {filteredOptions.length > 0 ? (
           <div className="py-1">
-            {filteredOptions.map(option => (
+            {filteredOptions.map((option) => (
               <div
                 key={option.value}
                 onClick={() => handleSelectOption(option)}
                 className={cn(
-                  'px-3 py-1.5 text-md cursor-pointer hover:bg-blue-50',
-                  value === option.value && 'bg-blue-100'
+                  "px-3 py-1.5 text-md cursor-pointer hover:bg-blue-50",
+                  value === option.value && "bg-blue-100",
                 )}
               >
                 {option.label}
@@ -286,7 +299,7 @@ export const CurrencyListField: React.FC<CurrencyListFieldProps> = ({
           </div>
         ) : (
           <div className="px-3 py-1.5 text-md text-gray-500 text-center">
-            {t('LBL_NO_MATCHING_CURRENCY')}
+            {t("LBL_NO_MATCHING_CURRENCY")}
           </div>
         )}
       </div>
@@ -296,20 +309,23 @@ export const CurrencyListField: React.FC<CurrencyListFieldProps> = ({
   };
 
   return (
-    <div className={cn('flex items-start gap-2', className)}>
+    <div className={cn("flex items-start gap-2", className)}>
       {/* ラベル（旧版スタイル：右寄せ） */}
       <span
         className={cn(
-          'text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]',
-          disabled && 'text-gray-400'
+          "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+          disabled && "text-gray-400",
         )}
       >
         {label}
         {mandatory && <span className="sr-only"> (必須)</span>}
       </span>
       {/* 必須マーク：固定幅で位置を確保し、入力欄の開始位置を揃える */}
-      <span className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0" aria-hidden="true">
-        {mandatory ? '*' : ''}
+      <span
+        className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0"
+        aria-hidden="true"
+      >
+        {mandatory ? "*" : ""}
       </span>
 
       {/* 入力エリア */}
@@ -325,12 +341,9 @@ export const CurrencyListField: React.FC<CurrencyListFieldProps> = ({
               onChange={handleSearchChange}
               onFocus={handleFocus}
               disabled={disabled}
-              placeholder={t('LBL_PLACEHOLDER_SELECT', label)}
+              placeholder={t("LBL_PLACEHOLDER_SELECT", label)}
               autoComplete="off"
-              className={cn(
-                'pr-10',
-                error && 'border-red-500'
-              )}
+              className={cn("pr-10", error && "border-red-500")}
             />
 
             {/* クリアボタン or ドロップダウンアイコン */}
@@ -355,13 +368,21 @@ export const CurrencyListField: React.FC<CurrencyListFieldProps> = ({
         </div>
 
         {/* 隠しフィールド */}
-        <input type="hidden" name={name} value={value || ''} />
+        <input type="hidden" name={name} value={value || ""} />
 
         {/* エラーメッセージ */}
         {error && (
           <div className="mt-1 text-sm text-red-600 flex items-center">
-            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            <svg
+              className="w-4 h-4 mr-1"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
             </svg>
             {error}
           </div>

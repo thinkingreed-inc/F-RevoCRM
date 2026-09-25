@@ -1,0 +1,22 @@
+/*
+ * システム設定 > スケジューラ 一覧の見た目の調整。
+ *
+ * v7 の共通スタイルは「一覧の行はクリックできる」前提で
+ * `.listViewEntries td:not(:first-child) { cursor: pointer; }` を当てている。
+ * この一覧は行をクリックしても何も起きず、並べ替えも左端のハンドルからしか行えないため、
+ * そのままではクリック・ドラッグできそうに見えてしまう。この画面に限って打ち消す。
+ */
+.listview-table .listViewEntries td:not(:first-child) {
+    cursor: default;
+}
+
+/* 並べ替えのハンドル。掴んで動かせることが分かるカーソルにする */
+.listview-table .listViewEntries .listViewDragHandle {
+    cursor: move;
+}
+
+/* 曜日のチェックボックスは横に並べる。狭い画面では折り返す */
+.runOnWeekdayLabel {
+    margin-right: 12px;
+    white-space: nowrap;
+}

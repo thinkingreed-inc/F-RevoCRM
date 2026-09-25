@@ -669,6 +669,7 @@ $languageStrings = array(
 	'Country' => '国',
 	'Description' => '詳細内容',
 	'Common Memo' => '共有メモ',
+	'LBL_SEND_MAIL' => 'メール送信する',
 
 	'Created'=>'登録済み',
 	'Approved'=>'承認済み',
@@ -1141,6 +1142,7 @@ $languageStrings = array(
 	'LBL_CLICK_HERE_TO_SELECT_ALL_RECORDS'=>'このページのレコードを選択',
 	'LBL_CLICK_HERE_TO_MANAGE_LIST_COLUMNS'=>'リストの列を選択するには、ここをクリックしてください。',
 	'LBL_SHOW_MORE' =>'さらに表示',
+	'LBL_RETRY' => '再試行',
 	'LBL_DISPLAYING_RESULTS' => '結果の表示',
 	'LBL_ADD_STAR' => 'スターを付ける',
 	'LBL_REMOVE_STAR' => 'スターを外す',
@@ -2065,6 +2067,7 @@ $jsLanguageStrings = array(
 	'JS_INTERNAL_COMMENT_INFO' => '内部コメントチェックボックスが有効になっている場合、コメントはCRMユーザーにのみ表示されます。 （構成可能なワークフローまたは顧客ポータルを通じて）顧客に通知するには、このチェックボックスを無効のままにします',
 
 	'JS_NO_TAXES_EXISTS' => '税金はありません',
+	'JS_SET_TAX_FOR' => '課税対象：',
 	'JS_CONFIRM_TAXES_AND_CHARGES_REPLACE' => '選択した地域に対応する税金と料金の値を更新しますか？',
 	'JS_PRINTTEMPLATEMODULE_DISABLED' => 'PrintTemplatesモジュールが無効になっています。操作を実行できません',
 	'JS_SENT_FOR_SIGNATURE' => '署名のために送信',

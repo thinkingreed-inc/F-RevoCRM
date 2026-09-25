@@ -664,6 +664,7 @@ $languageStrings = array(
 	'Country' => 'Country',
 	'Description' => 'Description',
 	'Common Memo' => 'Common Memo',
+	'LBL_SEND_MAIL' => 'Send Mail',
 
 	'Created'=>'Created',
 	'Approved'=>'Approved',
@@ -1136,6 +1137,7 @@ $languageStrings = array(
 	'LBL_CLICK_HERE_TO_SELECT_ALL_RECORDS'=>'Select all records in this page',
 	'LBL_CLICK_HERE_TO_MANAGE_LIST_COLUMNS'=>'Click here to manage List columns',
 	'LBL_SHOW_MORE' =>'Show more',
+	'LBL_RETRY' => 'Retry',
 	'LBL_DISPLAYING_RESULTS' => 'Displaying Results',
 	'LBL_ADD_STAR' => 'Add Star',
 	'LBL_REMOVE_STAR' => 'Remove Star',
@@ -2059,6 +2061,7 @@ $jsLanguageStrings = array(
 	'JS_INTERNAL_COMMENT_INFO' => 'The comment will only be seen by CRM users, if the internal comment checkbox is enabled. To notify customers (through configurable workflows or customer portal) leave this checkbox disabled',
 
 	'JS_NO_TAXES_EXISTS' => 'No taxes exist',
+	'JS_SET_TAX_FOR' => 'Set Tax for',
 	'JS_CONFIRM_TAXES_AND_CHARGES_REPLACE' => 'Do you want to update tax & charge values corresponding to selected region?',
 	'JS_PRINTTEMPLATEMODULE_DISABLED' => 'PrintTemplates module is disabled. Cannot perform the operation',
 	'JS_SENT_FOR_SIGNATURE' => 'Sent for signature',

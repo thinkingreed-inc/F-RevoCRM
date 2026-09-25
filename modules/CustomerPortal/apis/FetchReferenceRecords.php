@@ -27,13 +27,6 @@ class CustomerPortal_FetchReferenceRecords extends CustomerPortal_API_Abstract {
 
 			$describe = vtws_describe($module, $current_user);
 			$labelFields = $describe['labelFields'];
-			//Describe giving wrong labels for HelpDesk and Documents.
-			if ($module == 'Documents') {
-				$labelFields = 'notes_title';
-			}
-			if ($module == 'HelpDesk') {
-				$labelFields = 'ticket_title';
-			}
 			$sql = sprintf("SELECT %s FROM %s ", $labelFields, $module);
 			$labelFieldsArray = explode(',', $labelFields);
 

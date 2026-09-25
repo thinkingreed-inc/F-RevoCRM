@@ -22,8 +22,7 @@ RedirectMatch 404 /\.git
     # X-Frame-Options - クリックジャッキング防止
     Header always set X-Frame-Options "SAMEORIGIN"
 
-    # Content Security Policy (CSP) - XSS攻撃やコードインジェクション攻撃を軽減
-    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'self'; form-action 'self'; base-uri 'self'"
+    # Content Security Policy (CSP) - PHP側(Vtiger_Response::buildCSPHeader)で環境に応じて動的に設定
 
     # X-Content-Type-Options - MIMEタイプスニッフィング防止
     Header always set X-Content-Type-Options "nosniff"

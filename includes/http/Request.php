@@ -16,15 +16,19 @@ class Vtiger_Request implements ArrayAccess {
 	private $defaultmap = array();
 
 	// ArrayAccess Start
+	#[\ReturnTypeWillChange]
 	public function offsetExists($key) {
 		return $this->has($key);
 	}
+	#[\ReturnTypeWillChange]
 	public function offsetSet($key, $value) {
 		$this->set($key, $value);
 	}
+	#[\ReturnTypeWillChange]
 	public function offsetGet($key) {
 		return $this->get($key);
 	}
+	#[\ReturnTypeWillChange]
 	public function offsetUnset($key) {
 		// Ignore
 	}

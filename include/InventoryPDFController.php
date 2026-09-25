@@ -21,6 +21,7 @@ include_once 'data/CRMEntity.php';
 class Vtiger_InventoryPDFController {
 
 	protected $module;
+	protected $moduleName;
 	protected $focus = null;
 
 	function __construct($module) {
@@ -557,7 +558,7 @@ class Vtiger_InventoryPDFController {
 		return $referenceRecordCount;
 	}
 
-	private static function getChildReferenceRecordIdWithConditions($parentModuleName, $childConditions, $childModuleName, $childModuleReferenceColumn, $recordId, $looplimit = "", $startcount, $limitcount)
+	private static function getChildReferenceRecordIdWithConditions($parentModuleName, $childConditions, $childModuleName, $childModuleReferenceColumn, $recordId, $looplimit, $startcount, $limitcount)
 	{
 		// 子モジュールの条件を設定する場合[FUNCTION|子モジュール項目名|=|値|FUNCTION]
 		$allowOperator = array("==" => "=", "===" => "=", "<=>" => "<=>", "<>" => "<>", "!=" => "!=", "!==" => "!=", "<" => "<", "<=" => "<=", ">" => ">", ">=" => ">=", "contain" => "LIKE", "notcontain" => "NOT LIKE");

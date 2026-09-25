@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import { cn } from '@/lib/utils';
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
+import { cn } from "@/lib/utils";
 
 /**
  * Time option for dropdown selection
@@ -62,7 +62,7 @@ export function TimeComboBox({
   error = false,
   timeOptions,
   className,
-  placeholder = '--:--'
+  placeholder = "--:--",
 }: TimeComboBoxProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState(value);
@@ -108,14 +108,16 @@ export function TimeComboBox({
       touchStartYRef.current = null;
     };
 
-    dropdown.addEventListener('touchstart', handleTouchStart, { passive: true });
-    dropdown.addEventListener('touchmove', handleTouchMove, { passive: false });
-    dropdown.addEventListener('touchend', handleTouchEnd, { passive: true });
+    dropdown.addEventListener("touchstart", handleTouchStart, {
+      passive: true,
+    });
+    dropdown.addEventListener("touchmove", handleTouchMove, { passive: false });
+    dropdown.addEventListener("touchend", handleTouchEnd, { passive: true });
 
     return () => {
-      dropdown.removeEventListener('touchstart', handleTouchStart);
-      dropdown.removeEventListener('touchmove', handleTouchMove);
-      dropdown.removeEventListener('touchend', handleTouchEnd);
+      dropdown.removeEventListener("touchstart", handleTouchStart);
+      dropdown.removeEventListener("touchmove", handleTouchMove);
+      dropdown.removeEventListener("touchend", handleTouchEnd);
     };
   }, [isOpen]);
 
@@ -133,7 +135,7 @@ export function TimeComboBox({
     setDropdownPosition({
       top: rect.bottom + window.scrollY + 4,
       left: rect.left + window.scrollX,
-      width: rect.width
+      width: rect.width,
     });
   }, []);
 
@@ -171,67 +173,85 @@ export function TimeComboBox({
   }, [inputValue, lastValidValue, onChange]);
 
   // Handle input change
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setInputValue(newValue);
-  }, []);
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = e.target.value;
+      setInputValue(newValue);
+    },
+    [],
+  );
 
   // Handle option click
-  const handleOptionClick = useCallback((option: TimeOption) => {
-    // Mark that an option was selected to skip blur normalization
-    optionSelectedRef.current = true;
-    setInputValue(option.value);
-    setLastValidValue(option.value);
-    onChange(option.value);
-    setIsOpen(false);
-    inputRef.current?.focus();
-  }, [onChange]);
+  const handleOptionClick = useCallback(
+    (option: TimeOption) => {
+      // Mark that an option was selected to skip blur normalization
+      optionSelectedRef.current = true;
+      setInputValue(option.value);
+      setLastValidValue(option.value);
+      onChange(option.value);
+      setIsOpen(false);
+      inputRef.current?.focus();
+    },
+    [onChange],
+  );
 
   // Handle keyboard navigation
-  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!isOpen) {
-      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-        e.preventDefault();
-        setIsOpen(true);
-        updateDropdownPosition();
-      }
-      return;
-    }
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setHighlightedIndex(prev =>
-          prev < timeOptions.length - 1 ? prev + 1 : 0
-        );
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setHighlightedIndex(prev =>
-          prev > 0 ? prev - 1 : timeOptions.length - 1
-        );
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (highlightedIndex >= 0 && highlightedIndex < timeOptions.length) {
-          handleOptionClick(timeOptions[highlightedIndex]);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (!isOpen) {
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+          e.preventDefault();
+          setIsOpen(true);
+          updateDropdownPosition();
         }
-        break;
-      case 'Escape':
-        e.preventDefault();
-        setIsOpen(false);
-        break;
-    }
-  }, [isOpen, highlightedIndex, timeOptions, handleOptionClick, updateDropdownPosition]);
+        return;
+      }
+
+      switch (e.key) {
+        case "ArrowDown":
+          e.preventDefault();
+          setHighlightedIndex((prev) =>
+            prev < timeOptions.length - 1 ? prev + 1 : 0,
+          );
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          setHighlightedIndex((prev) =>
+            prev > 0 ? prev - 1 : timeOptions.length - 1,
+          );
+          break;
+        case "Enter":
+          e.preventDefault();
+          if (highlightedIndex >= 0 && highlightedIndex < timeOptions.length) {
+            handleOptionClick(timeOptions[highlightedIndex]);
+          }
+          break;
+        case "Escape":
+          e.preventDefault();
+          setIsOpen(false);
+          break;
+      }
+    },
+    [
+      isOpen,
+      highlightedIndex,
+      timeOptions,
+      handleOptionClick,
+      updateDropdownPosition,
+    ],
+  );
 
   // Scroll highlighted option into view
   useEffect(() => {
     if (isOpen && highlightedIndex >= 0 && dropdownRef.current) {
       const highlightedElement = dropdownRef.current.querySelector(
-        `[data-index="${highlightedIndex}"]`
+        `[data-index="${highlightedIndex}"]`,
       ) as HTMLElement;
       if (highlightedElement) {
-        highlightedElement.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        highlightedElement.scrollIntoView({
+          block: "nearest",
+          behavior: "smooth",
+        });
       }
     }
   }, [isOpen, highlightedIndex]);
@@ -250,15 +270,17 @@ export function TimeComboBox({
 
     const handleClickOutside = (e: MouseEvent) => {
       if (
-        inputRef.current && !inputRef.current.contains(e.target as Node) &&
-        dropdownRef.current && !dropdownRef.current.contains(e.target as Node)
+        inputRef.current &&
+        !inputRef.current.contains(e.target as Node) &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
       ) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
   // Update dropdown position on window resize
@@ -266,8 +288,8 @@ export function TimeComboBox({
     if (!isOpen) return;
 
     const handleResize = () => updateDropdownPosition();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [isOpen, updateDropdownPosition]);
 
   return (
@@ -283,50 +305,53 @@ export function TimeComboBox({
         disabled={disabled}
         placeholder={placeholder}
         className={cn(
-          'w-28 h-[30px] px-2 text-md border border-input rounded-sm shadow-xs transition-[color,box-shadow]',
-          'focus:outline-none focus:ring-[3px] focus:ring-ring/50 focus:border-ring',
-          'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
-          error && 'border-red-500 bg-red-50',
-          className
+          "w-28 h-[30px] px-2 text-md border border-input rounded-sm shadow-xs transition-[color,box-shadow]",
+          "focus:outline-none focus:ring-[3px] focus:ring-ring/50 focus:border-ring",
+          "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
+          error && "border-red-500 bg-red-50",
+          className,
         )}
       />
 
-      {isOpen && !disabled && dropdownPosition && createPortal(
-        <div
-          ref={dropdownRef}
-          className="fixed z-[100003] bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-auto pointer-events-auto select-none"
-          style={{
-            top: dropdownPosition.top,
-            left: dropdownPosition.left,
-            width: dropdownPosition.width
-          }}
-          onWheel={(e) => {
-            e.stopPropagation();
-            const target = e.currentTarget;
-            target.scrollTop += e.deltaY * 0.3;
-          }}
-        >
-          <div className="py-1">
-            {timeOptions.map((option, index) => (
-              <div
-                key={option.value}
-                data-index={index}
-                onClick={() => handleOptionClick(option)}
-                className={cn(
-                  'px-3 py-1.5 text-md cursor-pointer',
-                  highlightedIndex === index
-                    ? 'bg-blue-100'
-                    : 'hover:bg-blue-50',
-                  value === option.value && 'font-semibold'
-                )}
-              >
-                {option.label}
-              </div>
-            ))}
-          </div>
-        </div>,
-        document.body
-      )}
+      {isOpen &&
+        !disabled &&
+        dropdownPosition &&
+        createPortal(
+          <div
+            ref={dropdownRef}
+            className="fixed z-[100003] bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-auto pointer-events-auto select-none"
+            style={{
+              top: dropdownPosition.top,
+              left: dropdownPosition.left,
+              width: dropdownPosition.width,
+            }}
+            onWheel={(e) => {
+              e.stopPropagation();
+              const target = e.currentTarget;
+              target.scrollTop += e.deltaY * 0.3;
+            }}
+          >
+            <div className="py-1">
+              {timeOptions.map((option, index) => (
+                <div
+                  key={option.value}
+                  data-index={index}
+                  onClick={() => handleOptionClick(option)}
+                  className={cn(
+                    "px-3 py-1.5 text-md cursor-pointer",
+                    highlightedIndex === index
+                      ? "bg-blue-100"
+                      : "hover:bg-blue-50",
+                    value === option.value && "font-semibold",
+                  )}
+                >
+                  {option.label}
+                </div>
+              ))}
+            </div>
+          </div>,
+          document.body,
+        )}
     </>
   );
 }
@@ -351,12 +376,12 @@ function normalizeTimeInput(input: string): string | null {
 
   // Already in HH:MM format
   if (/^\d{1,2}:\d{2}$/.test(cleaned)) {
-    const [hourStr, minuteStr] = cleaned.split(':');
+    const [hourStr, minuteStr] = cleaned.split(":");
     const hour = parseInt(hourStr, 10);
     const minute = parseInt(minuteStr, 10);
 
     if (isValidTime(hour, minute)) {
-      return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+      return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
     }
     return null;
   }
@@ -369,7 +394,7 @@ function normalizeTimeInput(input: string): string | null {
       // "9" → "09:00", "14" → "14:00"
       const hour = parseInt(digits, 10);
       if (isValidTime(hour, 0)) {
-        return `${String(hour).padStart(2, '0')}:00`;
+        return `${String(hour).padStart(2, "0")}:00`;
       }
       return null;
     }
@@ -379,7 +404,7 @@ function normalizeTimeInput(input: string): string | null {
       const hour = parseInt(digits.substring(0, 1), 10);
       const minute = parseInt(digits.substring(1, 3), 10);
       if (isValidTime(hour, minute)) {
-        return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+        return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
       }
       return null;
     }
@@ -389,7 +414,7 @@ function normalizeTimeInput(input: string): string | null {
       const hour = parseInt(digits.substring(0, 2), 10);
       const minute = parseInt(digits.substring(2, 4), 10);
       if (isValidTime(hour, minute)) {
-        return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+        return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
       }
       return null;
     }
@@ -411,18 +436,18 @@ function isValidTime(hour: number, minute: number): boolean {
 function findClosestOptionIndex(value: string, options: TimeOption[]): number {
   if (!value || options.length === 0) return 0;
 
-  const index = options.findIndex(opt => opt.value === value);
+  const index = options.findIndex((opt) => opt.value === value);
   if (index >= 0) return index;
 
   // Find closest time
-  const [hourStr, minuteStr] = value.split(':');
+  const [hourStr, minuteStr] = value.split(":");
   const currentMinutes = parseInt(hourStr, 10) * 60 + parseInt(minuteStr, 10);
 
   let closestIndex = 0;
   let minDiff = Infinity;
 
   options.forEach((opt, idx) => {
-    const [optHour, optMinute] = opt.value.split(':');
+    const [optHour, optMinute] = opt.value.split(":");
     const optMinutes = parseInt(optHour, 10) * 60 + parseInt(optMinute, 10);
     const diff = Math.abs(currentMinutes - optMinutes);
 

@@ -307,7 +307,7 @@ DROP TABLE IF EXISTS `vtiger_account`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_account` (
-  `accountid` int NOT NULL DEFAULT '0',
+  `accountid` int NOT NULL,
   `account_no` varchar(100) NOT NULL,
   `accountname` varchar(100) NOT NULL,
   `parentid` int DEFAULT '0',
@@ -353,7 +353,7 @@ DROP TABLE IF EXISTS `vtiger_accountbillads`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_accountbillads` (
-  `accountaddressid` int NOT NULL DEFAULT '0',
+  `accountaddressid` int NOT NULL,
   `bill_city` varchar(30) DEFAULT NULL,
   `bill_code` varchar(30) DEFAULT NULL,
   `bill_country` varchar(30) DEFAULT NULL,
@@ -408,7 +408,7 @@ DROP TABLE IF EXISTS `vtiger_accountscf`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_accountscf` (
-  `accountid` int NOT NULL DEFAULT '0',
+  `accountid` int NOT NULL,
   PRIMARY KEY (`accountid`),
   CONSTRAINT `fk_1_vtiger_accountscf` FOREIGN KEY (`accountid`) REFERENCES `vtiger_account` (`accountid`) ON DELETE CASCADE
 ) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -431,7 +431,7 @@ DROP TABLE IF EXISTS `vtiger_accountshipads`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_accountshipads` (
-  `accountaddressid` int NOT NULL DEFAULT '0',
+  `accountaddressid` int NOT NULL,
   `ship_city` varchar(30) DEFAULT NULL,
   `ship_code` varchar(30) DEFAULT NULL,
   `ship_country` varchar(30) DEFAULT NULL,
@@ -536,7 +536,7 @@ DROP TABLE IF EXISTS `vtiger_activity`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_activity` (
-  `activityid` int NOT NULL DEFAULT '0',
+  `activityid` int NOT NULL,
   `subject` varchar(255) DEFAULT NULL,
   `semodule` varchar(20) DEFAULT NULL,
   `activitytype` varchar(200) NOT NULL,
@@ -709,7 +709,7 @@ DROP TABLE IF EXISTS `vtiger_activitycf`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_activitycf` (
-  `activityid` int NOT NULL DEFAULT '0',
+  `activityid` int NOT NULL,
   PRIMARY KEY (`activityid`),
   CONSTRAINT `fk_activityid_vtiger_activitycf` FOREIGN KEY (`activityid`) REFERENCES `vtiger_activity` (`activityid`) ON DELETE CASCADE
 ) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -732,8 +732,8 @@ DROP TABLE IF EXISTS `vtiger_activityproductrel`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_activityproductrel` (
-  `activityid` int NOT NULL DEFAULT '0',
-  `productid` int NOT NULL DEFAULT '0',
+  `activityid` int NOT NULL,
+  `productid` int NOT NULL,
   PRIMARY KEY (`activityid`,`productid`),
   KEY `activityproductrel_activityid_idx` (`activityid`),
   KEY `activityproductrel_productid_idx` (`productid`),
@@ -1508,7 +1508,7 @@ DROP TABLE IF EXISTS `vtiger_campaigncontrel`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_campaigncontrel` (
   `campaignid` int NOT NULL DEFAULT '0',
-  `contactid` int NOT NULL DEFAULT '0',
+  `contactid` int NOT NULL,
   `campaignrelstatusid` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`campaignid`,`contactid`,`campaignrelstatusid`),
   KEY `campaigncontrel_contractid_idx` (`contactid`),
@@ -1534,7 +1534,7 @@ DROP TABLE IF EXISTS `vtiger_campaignleadrel`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_campaignleadrel` (
   `campaignid` int NOT NULL DEFAULT '0',
-  `leadid` int NOT NULL DEFAULT '0',
+  `leadid` int NOT NULL,
   `campaignrelstatusid` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`campaignid`,`leadid`,`campaignrelstatusid`),
   KEY `campaignleadrel_leadid_campaignid_idx` (`leadid`,`campaignid`),
@@ -1607,7 +1607,7 @@ DROP TABLE IF EXISTS `vtiger_campaignscf`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_campaignscf` (
-  `campaignid` int NOT NULL DEFAULT '0',
+  `campaignid` int NOT NULL,
   PRIMARY KEY (`campaignid`),
   CONSTRAINT `fk_1_vtiger_campaignscf` FOREIGN KEY (`campaignid`) REFERENCES `vtiger_campaign` (`campaignid`) ON DELETE CASCADE
 ) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -1783,7 +1783,7 @@ DROP TABLE IF EXISTS `vtiger_cntactivityrel`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_cntactivityrel` (
-  `contactid` int NOT NULL DEFAULT '0',
+  `contactid` int NOT NULL,
   `activityid` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`contactid`,`activityid`),
   KEY `cntactivityrel_contactid_idx` (`contactid`),
@@ -1809,7 +1809,7 @@ DROP TABLE IF EXISTS `vtiger_contactaddress`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_contactaddress` (
-  `contactaddressid` int NOT NULL DEFAULT '0',
+  `contactaddressid` int NOT NULL,
   `mailingcity` varchar(40) DEFAULT NULL,
   `mailingstreet` varchar(250) DEFAULT NULL,
   `mailingcountry` varchar(40) DEFAULT NULL,
@@ -1844,7 +1844,7 @@ DROP TABLE IF EXISTS `vtiger_contactdetails`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_contactdetails` (
-  `contactid` int NOT NULL DEFAULT '0',
+  `contactid` int NOT NULL,
   `contact_no` varchar(100) NOT NULL,
   `accountid` int DEFAULT NULL,
   `salutation` varchar(200) DEFAULT NULL,
@@ -1893,7 +1893,7 @@ DROP TABLE IF EXISTS `vtiger_contactscf`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_contactscf` (
-  `contactid` int NOT NULL DEFAULT '0',
+  `contactid` int NOT NULL,
   PRIMARY KEY (`contactid`),
   CONSTRAINT `fk_1_vtiger_contactscf` FOREIGN KEY (`contactid`) REFERENCES `vtiger_contactdetails` (`contactid`) ON DELETE CASCADE
 ) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -1916,7 +1916,7 @@ DROP TABLE IF EXISTS `vtiger_contactsubdetails`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_contactsubdetails` (
-  `contactsubscriptionid` int NOT NULL DEFAULT '0',
+  `contactsubscriptionid` int NOT NULL,
   `homephone` varchar(50) DEFAULT NULL,
   `otherphone` varchar(50) DEFAULT NULL,
   `assistant` varchar(30) DEFAULT NULL,
@@ -1947,8 +1947,8 @@ DROP TABLE IF EXISTS `vtiger_contpotentialrel`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_contpotentialrel` (
-  `contactid` int NOT NULL DEFAULT '0',
-  `potentialid` int NOT NULL DEFAULT '0',
+  `contactid` int NOT NULL,
+  `potentialid` int NOT NULL,
   PRIMARY KEY (`contactid`,`potentialid`),
   KEY `contpotentialrel_potentialid_idx` (`potentialid`),
   KEY `contpotentialrel_contactid_idx` (`contactid`),
@@ -2325,6 +2325,16 @@ CREATE TABLE `vtiger_cron_task` (
   `module` varchar(100) DEFAULT NULL,
   `sequence` int DEFAULT NULL,
   `description` text,
+  `retry_timeout` int DEFAULT '0',
+  `next_run_at` int unsigned DEFAULT '0',
+  `owner_host` varchar(255) DEFAULT NULL,
+  `owner_pid` int unsigned DEFAULT '0',
+  `last_heartbeat` int unsigned DEFAULT '0',
+  `schedule_type` varchar(16) NOT NULL DEFAULT 'interval',
+  `run_at_minutes` int DEFAULT NULL,
+  `run_on_weekdays` varchar(20) DEFAULT NULL,
+  `run_on_day` tinyint DEFAULT NULL,
+  `log_retention_count` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   UNIQUE KEY `handler_file` (`handler_file`)
@@ -2337,7 +2347,7 @@ CREATE TABLE `vtiger_cron_task` (
 
 LOCK TABLES `vtiger_cron_task` WRITE;
 /*!40000 ALTER TABLE `vtiger_cron_task` DISABLE KEYS */;
-INSERT INTO `vtiger_cron_task` VALUES (1,'Workflow','cron/modules/com_vtiger_workflow/com_vtiger_workflow.service',900,NULL,NULL,1,'com_vtiger_workflow',1,'Recommended frequency for Workflow is 15 mins'),(2,'RecurringInvoice','cron/modules/SalesOrder/RecurringInvoice.service',43200,NULL,NULL,1,'SalesOrder',2,'Recommended frequency for RecurringInvoice is 12 hours'),(3,'SendReminder','cron/SendReminder.service',900,NULL,NULL,1,'Calendar',3,'Recommended frequency for SendReminder is 15 mins'),(5,'MailScanner','cron/MailScanner.service',900,NULL,NULL,1,'Settings',5,'Recommended frequency for MailScanner is 15 mins'),(6,'Scheduled Import','cron/modules/Import/ScheduledImport.service',900,NULL,NULL,0,'Import',6,'Recommended frequency for MailScanner is 15 mins'),(7,'ScheduleReports','cron/modules/Reports/ScheduleReports.service',900,NULL,NULL,1,'Reports',7,'Recommended frequency for ScheduleReports is 15 mins');
+INSERT INTO `vtiger_cron_task` VALUES (1,'Workflow','cron/modules/com_vtiger_workflow/com_vtiger_workflow.service',900,NULL,NULL,1,'com_vtiger_workflow',1,'Recommended frequency for Workflow is 15 mins',3600,0,NULL,0,0,'interval',NULL,NULL,NULL,NULL),(2,'RecurringInvoice','cron/modules/SalesOrder/RecurringInvoice.service',43200,NULL,NULL,1,'SalesOrder',2,'Recommended frequency for RecurringInvoice is 12 hours',86400,0,NULL,0,0,'interval',NULL,NULL,NULL,NULL),(3,'SendReminder','cron/SendReminder.service',900,NULL,NULL,1,'Calendar',3,'Recommended frequency for SendReminder is 15 mins',3600,0,NULL,0,0,'interval',NULL,NULL,NULL,NULL),(5,'MailScanner','cron/MailScanner.service',900,NULL,NULL,1,'Settings',5,'Recommended frequency for MailScanner is 15 mins',3600,0,NULL,0,0,'interval',NULL,NULL,NULL,NULL),(6,'Scheduled Import','cron/modules/Import/ScheduledImport.service',900,NULL,NULL,0,'Import',6,'Recommended frequency for MailScanner is 15 mins',21600,0,NULL,0,0,'interval',NULL,NULL,NULL,NULL),(7,'ScheduleReports','cron/modules/Reports/ScheduleReports.service',900,NULL,NULL,1,'Reports',7,'Recommended frequency for ScheduleReports is 15 mins',10800,0,NULL,0,0,'interval',NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `vtiger_cron_task` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -4232,7 +4242,7 @@ DROP TABLE IF EXISTS `vtiger_entityname`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_entityname` (
-  `tabid` int NOT NULL DEFAULT '0',
+  `tabid` int NOT NULL,
   `modulename` varchar(100) DEFAULT NULL,
   `tablename` varchar(100) NOT NULL,
   `fieldname` varchar(150) NOT NULL,
@@ -4250,7 +4260,7 @@ CREATE TABLE `vtiger_entityname` (
 
 LOCK TABLES `vtiger_entityname` WRITE;
 /*!40000 ALTER TABLE `vtiger_entityname` DISABLE KEYS */;
-INSERT INTO `vtiger_entityname` VALUES (2,'Potentials','vtiger_potential','potentialname','potentialid','potential_id'),(4,'Contacts','vtiger_contactdetails','firstname,lastname','contactid','contact_id'),(6,'Accounts','vtiger_account','accountname','accountid','account_id'),(7,'Leads','vtiger_leaddetails','firstname,lastname','leadid','leadid'),(8,'Documents','vtiger_notes','title','notesid','notesid'),(9,'Calendar','vtiger_activity','subject','activityid','activityid'),(10,'Emails','vtiger_activity','subject','activityid','activityid'),(13,'HelpDesk','vtiger_troubletickets','title','ticketid','ticketid'),(14,'Products','vtiger_products','productname','productid','product_id'),(15,'Faq','vtiger_faq','question','id','id'),(18,'Vendors','vtiger_vendor','vendorname','vendorid','vendor_id'),(19,'PriceBooks','vtiger_pricebook','bookname','pricebookid','pricebookid'),(20,'Quotes','vtiger_quotes','subject','quoteid','quote_id'),(21,'PurchaseOrder','vtiger_purchaseorder','subject','purchaseorderid','purchaseorderid'),(22,'SalesOrder','vtiger_salesorder','subject','salesorderid','salesorder_id'),(23,'Invoice','vtiger_invoice','subject','invoiceid','invoiceid'),(26,'Campaigns','vtiger_campaign','campaignname','campaignid','campaignid'),(29,'Users','vtiger_users','first_name,last_name','id','id'),(34,'ServiceContracts','vtiger_servicecontracts','subject','servicecontractsid','servicecontractsid'),(35,'Services','vtiger_service','servicename','serviceid','serviceid'),(36,'PBXManager','vtiger_pbxmanager','customernumber','pbxmanagerid','pbxmanagerid'),(38,'ModComments','vtiger_modcomments','commentcontent','modcommentsid','modcommentsid'),(40,'ProjectMilestone','vtiger_projectmilestone','projectmilestonename','projectmilestoneid','projectmilestoneid'),(41,'ProjectTask','vtiger_projecttask','projecttaskname','projecttaskid','projecttaskid'),(42,'Project','vtiger_project','projectname','projectid','projectid'),(43,'SMSNotifier','vtiger_smsnotifier','message','smsnotifierid','smsnotifierid'),(44,'Assets','vtiger_assets','assetname','assetsid','assetsid');
+INSERT INTO `vtiger_entityname` VALUES (2,'Potentials','vtiger_potential','potentialname','potentialid','potential_id'),(4,'Contacts','vtiger_contactdetails','firstname,lastname','contactid','contact_id'),(6,'Accounts','vtiger_account','accountname','accountid','account_id'),(7,'Leads','vtiger_leaddetails','firstname,lastname','leadid','leadid'),(8,'Documents','vtiger_notes','notes_title','notesid','notesid'),(9,'Calendar','vtiger_activity','subject','activityid','activityid'),(10,'Emails','vtiger_activity','subject','activityid','activityid'),(13,'HelpDesk','vtiger_troubletickets','ticket_title','ticketid','ticketid'),(14,'Products','vtiger_products','productname','productid','product_id'),(15,'Faq','vtiger_faq','question','id','id'),(18,'Vendors','vtiger_vendor','vendorname','vendorid','vendor_id'),(19,'PriceBooks','vtiger_pricebook','bookname','pricebookid','pricebookid'),(20,'Quotes','vtiger_quotes','subject','quoteid','quote_id'),(21,'PurchaseOrder','vtiger_purchaseorder','subject','purchaseorderid','purchaseorderid'),(22,'SalesOrder','vtiger_salesorder','subject','salesorderid','salesorder_id'),(23,'Invoice','vtiger_invoice','subject','invoiceid','invoiceid'),(26,'Campaigns','vtiger_campaign','campaignname','campaignid','campaignid'),(29,'Users','vtiger_users','first_name,last_name','id','id'),(34,'ServiceContracts','vtiger_servicecontracts','subject','servicecontractsid','servicecontractsid'),(35,'Services','vtiger_service','servicename','serviceid','serviceid'),(36,'PBXManager','vtiger_pbxmanager','customernumber','pbxmanagerid','pbxmanagerid'),(38,'ModComments','vtiger_modcomments','commentcontent','modcommentsid','modcommentsid'),(40,'ProjectMilestone','vtiger_projectmilestone','projectmilestonename','projectmilestoneid','projectmilestoneid'),(41,'ProjectTask','vtiger_projecttask','projecttaskname','projecttaskid','projecttaskid'),(42,'Project','vtiger_project','projectname','projectid','projectid'),(43,'SMSNotifier','vtiger_smsnotifier','message','smsnotifierid','smsnotifierid'),(44,'Assets','vtiger_assets','assetname','assetsid','assetsid');
 /*!40000 ALTER TABLE `vtiger_entityname` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -4570,7 +4580,7 @@ DROP TABLE IF EXISTS `vtiger_faqcf`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_faqcf` (
-  `faqid` int NOT NULL DEFAULT '0',
+  `faqid` int NOT NULL,
   PRIMARY KEY (`faqid`),
   CONSTRAINT `fk_1_vtiger_faqcf` FOREIGN KEY (`faqid`) REFERENCES `vtiger_faq` (`id`) ON DELETE CASCADE
 ) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -5139,7 +5149,7 @@ DROP TABLE IF EXISTS `vtiger_homedashbd`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_homedashbd` (
-  `stuffid` int NOT NULL DEFAULT '0',
+  `stuffid` int NOT NULL,
   `dashbdname` varchar(100) DEFAULT NULL,
   `dashbdtype` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`stuffid`),
@@ -5165,7 +5175,7 @@ DROP TABLE IF EXISTS `vtiger_homedefault`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_homedefault` (
-  `stuffid` int NOT NULL DEFAULT '0',
+  `stuffid` int NOT NULL,
   `hometype` varchar(30) NOT NULL,
   `maxentries` int DEFAULT NULL,
   `setype` varchar(30) DEFAULT NULL,
@@ -5269,7 +5279,7 @@ DROP TABLE IF EXISTS `vtiger_homerss`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_homerss` (
-  `stuffid` int NOT NULL DEFAULT '0',
+  `stuffid` int NOT NULL,
   `url` varchar(100) DEFAULT NULL,
   `maxentries` int NOT NULL,
   PRIMARY KEY (`stuffid`),
@@ -5295,7 +5305,7 @@ DROP TABLE IF EXISTS `vtiger_homestuff`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_homestuff` (
-  `stuffid` int NOT NULL DEFAULT '0',
+  `stuffid` int NOT NULL,
   `stuffsequence` int NOT NULL DEFAULT '0',
   `stufftype` varchar(100) DEFAULT NULL,
   `userid` int NOT NULL,
@@ -5876,7 +5886,7 @@ DROP TABLE IF EXISTS `vtiger_invoice`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_invoice` (
-  `invoiceid` int NOT NULL DEFAULT '0',
+  `invoiceid` int NOT NULL,
   `subject` varchar(100) DEFAULT NULL,
   `salesorderid` int DEFAULT NULL,
   `customerno` varchar(100) DEFAULT NULL,
@@ -5965,7 +5975,7 @@ DROP TABLE IF EXISTS `vtiger_invoicebillads`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_invoicebillads` (
-  `invoicebilladdressid` int NOT NULL DEFAULT '0',
+  `invoicebilladdressid` int NOT NULL,
   `bill_city` varchar(30) DEFAULT NULL,
   `bill_code` varchar(30) DEFAULT NULL,
   `bill_country` varchar(30) DEFAULT NULL,
@@ -5994,7 +6004,7 @@ DROP TABLE IF EXISTS `vtiger_invoicecf`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_invoicecf` (
-  `invoiceid` int NOT NULL DEFAULT '0',
+  `invoiceid` int NOT NULL,
   PRIMARY KEY (`invoiceid`),
   CONSTRAINT `fk_1_vtiger_invoicecf` FOREIGN KEY (`invoiceid`) REFERENCES `vtiger_invoice` (`invoiceid`) ON DELETE CASCADE
 ) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -6017,7 +6027,7 @@ DROP TABLE IF EXISTS `vtiger_invoiceshipads`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_invoiceshipads` (
-  `invoiceshipaddressid` int NOT NULL DEFAULT '0',
+  `invoiceshipaddressid` int NOT NULL,
   `ship_city` varchar(30) DEFAULT NULL,
   `ship_code` varchar(30) DEFAULT NULL,
   `ship_country` varchar(30) DEFAULT NULL,
@@ -6253,7 +6263,7 @@ DROP TABLE IF EXISTS `vtiger_leadaddress`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_leadaddress` (
-  `leadaddressid` int NOT NULL DEFAULT '0',
+  `leadaddressid` int NOT NULL,
   `city` varchar(30) DEFAULT NULL,
   `code` varchar(30) DEFAULT NULL,
   `state` varchar(30) DEFAULT NULL,
@@ -6346,7 +6356,7 @@ DROP TABLE IF EXISTS `vtiger_leadscf`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_leadscf` (
-  `leadid` int NOT NULL DEFAULT '0',
+  `leadid` int NOT NULL,
   PRIMARY KEY (`leadid`),
   CONSTRAINT `fk_1_vtiger_leadscf` FOREIGN KEY (`leadid`) REFERENCES `vtiger_leaddetails` (`leadid`) ON DELETE CASCADE
 ) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -6495,7 +6505,7 @@ DROP TABLE IF EXISTS `vtiger_leadsubdetails`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_leadsubdetails` (
-  `leadsubscriptionid` int NOT NULL DEFAULT '0',
+  `leadsubscriptionid` int NOT NULL,
   `website` varchar(255) DEFAULT NULL,
   `callornot` int DEFAULT '0',
   `readornot` int DEFAULT '0',
@@ -7065,7 +7075,7 @@ DROP TABLE IF EXISTS `vtiger_modcomments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_modcomments` (
-  `modcommentsid` int DEFAULT NULL,
+  `modcommentsid` int NOT NULL,
   `commentcontent` text,
   `related_to` int DEFAULT NULL,
   `parent_comments` int DEFAULT NULL,
@@ -7075,8 +7085,8 @@ CREATE TABLE `vtiger_modcomments` (
   `is_private` int DEFAULT '0',
   `filename` varchar(255) DEFAULT NULL,
   `related_email_id` int DEFAULT NULL,
+  PRIMARY KEY (`modcommentsid`),
   KEY `relatedto_idx` (`related_to`),
-  KEY `fk_crmid_vtiger_modcomments` (`modcommentsid`),
   CONSTRAINT `fk_crmid_vtiger_modcomments` FOREIGN KEY (`modcommentsid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
 ) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -7380,7 +7390,7 @@ DROP TABLE IF EXISTS `vtiger_notes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_notes` (
-  `notesid` int NOT NULL DEFAULT '0',
+  `notesid` int NOT NULL,
   `note_no` varchar(100) NOT NULL,
   `title` varchar(50) NOT NULL,
   `filename` varchar(200) DEFAULT NULL,
@@ -7417,7 +7427,7 @@ DROP TABLE IF EXISTS `vtiger_notescf`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_notescf` (
-  `notesid` int NOT NULL DEFAULT '0',
+  `notesid` int NOT NULL,
   PRIMARY KEY (`notesid`),
   CONSTRAINT `fk_notesid_vtiger_notescf` FOREIGN KEY (`notesid`) REFERENCES `vtiger_notes` (`notesid`) ON DELETE CASCADE
 ) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -8062,7 +8072,7 @@ DROP TABLE IF EXISTS `vtiger_pobillads`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_pobillads` (
-  `pobilladdressid` int NOT NULL DEFAULT '0',
+  `pobilladdressid` int NOT NULL,
   `bill_city` varchar(30) DEFAULT NULL,
   `bill_code` varchar(30) DEFAULT NULL,
   `bill_country` varchar(30) DEFAULT NULL,
@@ -8150,7 +8160,7 @@ DROP TABLE IF EXISTS `vtiger_poshipads`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_poshipads` (
-  `poshipaddressid` int NOT NULL DEFAULT '0',
+  `poshipaddressid` int NOT NULL,
   `ship_city` varchar(30) DEFAULT NULL,
   `ship_code` varchar(30) DEFAULT NULL,
   `ship_country` varchar(30) DEFAULT NULL,
@@ -8259,7 +8269,7 @@ DROP TABLE IF EXISTS `vtiger_potential`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_potential` (
-  `potentialid` int NOT NULL DEFAULT '0',
+  `potentialid` int NOT NULL,
   `potential_no` varchar(100) NOT NULL,
   `related_to` int DEFAULT NULL,
   `potentialname` varchar(120) NOT NULL,
@@ -8315,7 +8325,7 @@ DROP TABLE IF EXISTS `vtiger_potentialscf`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_potentialscf` (
-  `potentialid` int NOT NULL DEFAULT '0',
+  `potentialid` int NOT NULL,
   PRIMARY KEY (`potentialid`),
   CONSTRAINT `fk_1_vtiger_potentialscf` FOREIGN KEY (`potentialid`) REFERENCES `vtiger_potential` (`potentialid`) ON DELETE CASCADE
 ) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -8369,7 +8379,7 @@ DROP TABLE IF EXISTS `vtiger_pricebook`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_pricebook` (
-  `pricebookid` int NOT NULL DEFAULT '0',
+  `pricebookid` int NOT NULL,
   `pricebook_no` varchar(100) NOT NULL,
   `bookname` varchar(100) DEFAULT NULL,
   `active` int DEFAULT NULL,
@@ -8397,7 +8407,7 @@ DROP TABLE IF EXISTS `vtiger_pricebookcf`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_pricebookcf` (
-  `pricebookid` int NOT NULL DEFAULT '0',
+  `pricebookid` int NOT NULL,
   PRIMARY KEY (`pricebookid`),
   CONSTRAINT `fk_1_vtiger_pricebookcf` FOREIGN KEY (`pricebookid`) REFERENCES `vtiger_pricebook` (`pricebookid`) ON DELETE CASCADE
 ) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -8525,7 +8535,7 @@ DROP TABLE IF EXISTS `vtiger_productcf`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_productcf` (
-  `productid` int NOT NULL DEFAULT '0',
+  `productid` int NOT NULL,
   PRIMARY KEY (`productid`),
   CONSTRAINT `fk_1_vtiger_productcf` FOREIGN KEY (`productid`) REFERENCES `vtiger_products` (`productid`) ON DELETE CASCADE
 ) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -8980,7 +8990,7 @@ DROP TABLE IF EXISTS `vtiger_projectmilestonecf`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_projectmilestonecf` (
-  `projectmilestoneid` int NOT NULL DEFAULT '0',
+  `projectmilestoneid` int NOT NULL,
   PRIMARY KEY (`projectmilestoneid`),
   CONSTRAINT `fk_projectmilestoneid_vtiger_projectmilestonecf` FOREIGN KEY (`projectmilestoneid`) REFERENCES `vtiger_projectmilestone` (`projectmilestoneid`) ON DELETE CASCADE
 ) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -9213,7 +9223,7 @@ DROP TABLE IF EXISTS `vtiger_projecttaskcf`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_projecttaskcf` (
-  `projecttaskid` int NOT NULL DEFAULT '0',
+  `projecttaskid` int NOT NULL,
   PRIMARY KEY (`projecttaskid`),
   CONSTRAINT `fk_projecttaskid_vtiger_projecttaskcf` FOREIGN KEY (`projecttaskid`) REFERENCES `vtiger_projecttask` (`projecttaskid`) ON DELETE CASCADE
 ) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -9486,7 +9496,7 @@ DROP TABLE IF EXISTS `vtiger_purchaseorder`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_purchaseorder` (
-  `purchaseorderid` int NOT NULL DEFAULT '0',
+  `purchaseorderid` int NOT NULL,
   `subject` varchar(100) DEFAULT NULL,
   `quoteid` int DEFAULT NULL,
   `vendorid` int DEFAULT NULL,
@@ -9543,7 +9553,7 @@ DROP TABLE IF EXISTS `vtiger_purchaseordercf`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_purchaseordercf` (
-  `purchaseorderid` int NOT NULL DEFAULT '0',
+  `purchaseorderid` int NOT NULL,
   PRIMARY KEY (`purchaseorderid`),
   CONSTRAINT `fk_1_vtiger_purchaseordercf` FOREIGN KEY (`purchaseorderid`) REFERENCES `vtiger_purchaseorder` (`purchaseorderid`) ON DELETE CASCADE
 ) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -9566,7 +9576,7 @@ DROP TABLE IF EXISTS `vtiger_quotes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_quotes` (
-  `quoteid` int NOT NULL DEFAULT '0',
+  `quoteid` int NOT NULL,
   `subject` varchar(100) DEFAULT NULL,
   `potentialid` int DEFAULT NULL,
   `quotestage` varchar(200) DEFAULT NULL,
@@ -9619,7 +9629,7 @@ DROP TABLE IF EXISTS `vtiger_quotesbillads`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_quotesbillads` (
-  `quotebilladdressid` int NOT NULL DEFAULT '0',
+  `quotebilladdressid` int NOT NULL,
   `bill_city` varchar(30) DEFAULT NULL,
   `bill_code` varchar(30) DEFAULT NULL,
   `bill_country` varchar(30) DEFAULT NULL,
@@ -9648,7 +9658,7 @@ DROP TABLE IF EXISTS `vtiger_quotescf`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_quotescf` (
-  `quoteid` int NOT NULL DEFAULT '0',
+  `quoteid` int NOT NULL,
   PRIMARY KEY (`quoteid`),
   CONSTRAINT `fk_1_vtiger_quotescf` FOREIGN KEY (`quoteid`) REFERENCES `vtiger_quotes` (`quoteid`) ON DELETE CASCADE
 ) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -9671,7 +9681,7 @@ DROP TABLE IF EXISTS `vtiger_quotesshipads`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_quotesshipads` (
-  `quoteshipaddressid` int NOT NULL DEFAULT '0',
+  `quoteshipaddressid` int NOT NULL,
   `ship_city` varchar(30) DEFAULT NULL,
   `ship_code` varchar(30) DEFAULT NULL,
   `ship_country` varchar(30) DEFAULT NULL,
@@ -10150,7 +10160,7 @@ CREATE TABLE `vtiger_report` (
   `reportname` varchar(100) DEFAULT '',
   `description` varchar(250) DEFAULT '',
   `reporttype` varchar(50) DEFAULT '',
-  `queryid` int NOT NULL DEFAULT '0',
+  `queryid` int NOT NULL,
   `state` varchar(50) DEFAULT 'SAVED',
   `customizable` int DEFAULT '1',
   `category` int DEFAULT '1',
@@ -10769,7 +10779,7 @@ DROP TABLE IF EXISTS `vtiger_salesmanactivityrel`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_salesmanactivityrel` (
-  `smid` int NOT NULL DEFAULT '0',
+  `smid` int NOT NULL,
   `activityid` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`smid`,`activityid`),
   KEY `salesmanactivityrel_activityid_idx` (`activityid`),
@@ -10795,8 +10805,8 @@ DROP TABLE IF EXISTS `vtiger_salesmanattachmentsrel`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_salesmanattachmentsrel` (
-  `smid` int NOT NULL DEFAULT '0',
-  `attachmentsid` int NOT NULL DEFAULT '0',
+  `smid` int NOT NULL,
+  `attachmentsid` int NOT NULL,
   PRIMARY KEY (`smid`,`attachmentsid`),
   KEY `salesmanattachmentsrel_smid_idx` (`smid`),
   KEY `salesmanattachmentsrel_attachmentsid_idx` (`attachmentsid`),
@@ -10821,7 +10831,7 @@ DROP TABLE IF EXISTS `vtiger_salesmanticketrel`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_salesmanticketrel` (
-  `smid` int NOT NULL DEFAULT '0',
+  `smid` int NOT NULL,
   `id` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`smid`,`id`),
   KEY `salesmanticketrel_smid_idx` (`smid`),
@@ -10847,7 +10857,7 @@ DROP TABLE IF EXISTS `vtiger_salesorder`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_salesorder` (
-  `salesorderid` int NOT NULL DEFAULT '0',
+  `salesorderid` int NOT NULL,
   `subject` varchar(100) DEFAULT NULL,
   `potentialid` int DEFAULT NULL,
   `customerno` varchar(100) DEFAULT NULL,
@@ -10906,7 +10916,7 @@ DROP TABLE IF EXISTS `vtiger_salesordercf`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_salesordercf` (
-  `salesorderid` int NOT NULL DEFAULT '0',
+  `salesorderid` int NOT NULL,
   PRIMARY KEY (`salesorderid`),
   CONSTRAINT `fk_1_vtiger_salesordercf` FOREIGN KEY (`salesorderid`) REFERENCES `vtiger_salesorder` (`salesorderid`) ON DELETE CASCADE
 ) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -11084,7 +11094,7 @@ DROP TABLE IF EXISTS `vtiger_seattachmentsrel`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_seattachmentsrel` (
-  `crmid` int NOT NULL DEFAULT '0',
+  `crmid` int NOT NULL,
   `attachmentsid` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`crmid`,`attachmentsid`),
   KEY `seattachmentsrel_attachmentsid_idx` (`attachmentsid`),
@@ -11186,8 +11196,8 @@ DROP TABLE IF EXISTS `vtiger_senotesrel`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_senotesrel` (
-  `crmid` int NOT NULL DEFAULT '0',
-  `notesid` int NOT NULL DEFAULT '0',
+  `crmid` int NOT NULL,
+  `notesid` int NOT NULL,
   PRIMARY KEY (`crmid`,`notesid`),
   KEY `senotesrel_notesid_idx` (`notesid`),
   KEY `senotesrel_crmid_idx` (`crmid`),
@@ -11213,8 +11223,8 @@ DROP TABLE IF EXISTS `vtiger_seproductsrel`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_seproductsrel` (
-  `crmid` int NOT NULL DEFAULT '0',
-  `productid` int NOT NULL DEFAULT '0',
+  `crmid` int NOT NULL,
+  `productid` int NOT NULL,
   `setype` varchar(30) NOT NULL,
   `quantity` int DEFAULT '1',
   PRIMARY KEY (`crmid`,`productid`),
@@ -11381,7 +11391,7 @@ DROP TABLE IF EXISTS `vtiger_servicecf`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_servicecf` (
-  `serviceid` int NOT NULL DEFAULT '0',
+  `serviceid` int NOT NULL,
   PRIMARY KEY (`serviceid`),
   CONSTRAINT `fk_serviceid_vtiger_servicecf` FOREIGN KEY (`serviceid`) REFERENCES `vtiger_service` (`serviceid`) ON DELETE CASCADE
 ) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -11404,7 +11414,7 @@ DROP TABLE IF EXISTS `vtiger_servicecontracts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_servicecontracts` (
-  `servicecontractsid` int DEFAULT NULL,
+  `servicecontractsid` int NOT NULL,
   `start_date` date DEFAULT NULL,
   `end_date` date DEFAULT NULL,
   `sc_related_to` int DEFAULT NULL,
@@ -11421,7 +11431,7 @@ CREATE TABLE `vtiger_servicecontracts` (
   `progress` decimal(5,2) DEFAULT NULL,
   `contract_no` varchar(100) DEFAULT NULL,
   `tags` varchar(1) DEFAULT NULL,
-  KEY `fk_crmid_vtiger_servicecontracts` (`servicecontractsid`),
+  PRIMARY KEY (`servicecontractsid`),
   CONSTRAINT `fk_crmid_vtiger_servicecontracts` FOREIGN KEY (`servicecontractsid`) REFERENCES `vtiger_crmentity` (`crmid`) ON DELETE CASCADE
 ) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -11467,7 +11477,7 @@ DROP TABLE IF EXISTS `vtiger_seticketsrel`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_seticketsrel` (
   `crmid` int NOT NULL DEFAULT '0',
-  `ticketid` int NOT NULL DEFAULT '0',
+  `ticketid` int NOT NULL,
   PRIMARY KEY (`crmid`,`ticketid`),
   KEY `seticketsrel_crmid_idx` (`crmid`),
   KEY `seticketsrel_ticketid_idx` (`ticketid`),
@@ -11850,7 +11860,7 @@ DROP TABLE IF EXISTS `vtiger_sobillads`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_sobillads` (
-  `sobilladdressid` int NOT NULL DEFAULT '0',
+  `sobilladdressid` int NOT NULL,
   `bill_city` varchar(30) DEFAULT NULL,
   `bill_code` varchar(30) DEFAULT NULL,
   `bill_country` varchar(30) DEFAULT NULL,
@@ -11879,7 +11889,7 @@ DROP TABLE IF EXISTS `vtiger_soshipads`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_soshipads` (
-  `soshipaddressid` int NOT NULL DEFAULT '0',
+  `soshipaddressid` int NOT NULL,
   `ship_city` varchar(30) DEFAULT NULL,
   `ship_code` varchar(30) DEFAULT NULL,
   `ship_country` varchar(30) DEFAULT NULL,
@@ -12140,7 +12150,7 @@ DROP TABLE IF EXISTS `vtiger_tab`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_tab` (
-  `tabid` int NOT NULL DEFAULT '0',
+  `tabid` int NOT NULL,
   `name` varchar(25) NOT NULL,
   `presence` int NOT NULL DEFAULT '1',
   `tabsequence` int DEFAULT NULL,
@@ -12430,7 +12440,7 @@ DROP TABLE IF EXISTS `vtiger_ticketcf`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_ticketcf` (
-  `ticketid` int NOT NULL DEFAULT '0',
+  `ticketid` int NOT NULL,
   `from_portal` varchar(3) DEFAULT NULL,
   PRIMARY KEY (`ticketid`),
   CONSTRAINT `fk_1_vtiger_ticketcf` FOREIGN KEY (`ticketid`) REFERENCES `vtiger_troubletickets` (`ticketid`) ON DELETE CASCADE
@@ -13312,7 +13322,7 @@ DROP TABLE IF EXISTS `vtiger_vendor`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_vendor` (
-  `vendorid` int NOT NULL DEFAULT '0',
+  `vendorid` int NOT NULL,
   `vendor_no` varchar(100) NOT NULL,
   `vendorname` varchar(100) DEFAULT NULL,
   `phone` varchar(100) DEFAULT NULL,
@@ -13350,7 +13360,7 @@ DROP TABLE IF EXISTS `vtiger_vendorcf`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_vendorcf` (
-  `vendorid` int NOT NULL DEFAULT '0',
+  `vendorid` int NOT NULL,
   PRIMARY KEY (`vendorid`),
   CONSTRAINT `fk_1_vtiger_vendorcf` FOREIGN KEY (`vendorid`) REFERENCES `vtiger_vendor` (`vendorid`) ON DELETE CASCADE
 ) /*!50100 TABLESPACE `innodb_system` */ ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -13373,7 +13383,7 @@ DROP TABLE IF EXISTS `vtiger_vendorcontactrel`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vtiger_vendorcontactrel` (
-  `vendorid` int NOT NULL DEFAULT '0',
+  `vendorid` int NOT NULL,
   `contactid` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`vendorid`,`contactid`),
   KEY `vendorcontactrel_vendorid_idx` (`vendorid`),
@@ -13572,9 +13582,21 @@ CREATE TABLE `vtiger_webforms_field` (
   KEY `webforms_webforms_field_idx` (`id`),
   KEY `fk_1_vtiger_webforms_field` (`webformid`),
   KEY `fk_2_vtiger_webforms_field` (`fieldname`),
-  CONSTRAINT `fk_1_vtiger_webforms_field` FOREIGN KEY (`webformid`) REFERENCES `vtiger_webforms` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_3_vtiger_webforms_field` FOREIGN KEY (`fieldname`) REFERENCES `vtiger_field` (`fieldname`) ON DELETE CASCADE
+  CONSTRAINT `fk_1_vtiger_webforms_field` FOREIGN KEY (`webformid`) REFERENCES `vtiger_webforms` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Trigger to cascade delete vtiger_webforms_field when vtiger_field is deleted
+-- (replaces fk_3_vtiger_webforms_field which referenced non-unique vtiger_field.fieldname)
+--
+DROP TRIGGER IF EXISTS `tr_vtiger_field_delete_webforms_field`;
+DELIMITER ;;
+CREATE TRIGGER `tr_vtiger_field_delete_webforms_field` AFTER DELETE ON `vtiger_field`
+FOR EACH ROW
+BEGIN
+  DELETE FROM `vtiger_webforms_field` WHERE `fieldname` = OLD.`fieldname`;
+END;;
+DELIMITER ;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

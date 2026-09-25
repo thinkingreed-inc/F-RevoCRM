@@ -50,12 +50,7 @@ class Vtiger_QuickCreateRecordStructure_Model extends Vtiger_RecordStructure_Mod
             } else{
                 $defaultValue = $fieldModel->getDefaultFieldValue();
                 if($defaultValue) {
-                    if($fieldModel->getFieldDataType() == "date" && $defaultValue == 'TODAY'){
-                        $fieldModel->set('fieldvalue', date('Y-m-d'));
-                    }
-                    else{
-                        $fieldModel->set('fieldvalue', $defaultValue);
-                    }
+                    $fieldModel->set('fieldvalue', $defaultValue);
                 }
             }
 			$values[$fieldName] = $fieldModel;

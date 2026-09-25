@@ -2265,7 +2265,7 @@ class PHPExcel_Calculation {
 		$formula = trim($formula);
 		if ($formula[0] != '=') return self::_wrapResult($formula);
 		$formula = ltrim(substr($formula,1));
-		if (!isset($formula{0})) return self::_wrapResult($formula);
+		if (!isset($formula[0])) return self::_wrapResult($formula);
 
 		$wsTitle = "\x00Wrk";
 		if ($pCell !== NULL) {
