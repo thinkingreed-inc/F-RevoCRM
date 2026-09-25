@@ -186,6 +186,128 @@ class Calendar_RepeatEvents {
 	}
 
 	/**
+	 * 保存前のスナップショットと保存後の値から、変更されたフィールドを返す。
+	 *
+	 * 比較の仕方は VTEntityDelta::computeDelta() に合わせる。保存前の値が空なら
+	 * 値の入ったフィールドをすべて変更扱いにし、改行コードだけの違いは変更としない。
+	 *
+	 * @param array<string, mixed>|null $oldData 保存前のフィールド値
+	 * @param array<string, mixed> $newData 保存後のフィールド値
+	 * @return array<string, array{oldValue: mixed, currentValue: mixed}>
+	 */
+	static function computeDeltaFromSnapshot($oldData, $newData) {
+		$delta = array();
+		$oldData = is_array($oldData) ? $oldData : array();
+
+		foreach ($newData as $fieldName => $newValue) {
+			$oldValue = array_key_exists($fieldName, $oldData) ? $oldData[$fieldName] : null;
+			$isModified = false;
+
+			if (empty($oldValue)) {
+				if (!empty($newValue)) {
+					$isModified = true;
+				}
+			} elseif (self::normalizeForComparison($oldValue) != self::normalizeForComparison($newValue)) {
+				$isModified = true;
+			}
+
+			if ($isModified) {
+				$delta[$fieldName] = array('oldValue' => $oldValue, 'currentValue' => $newValue);
+			}
+		}
+
+		return $delta;
+	}
+
+	/**
+	 * 活動の保存前スナップショットを取る。
+	 *
+	 * 繰り返しの他の回へコピーするのは「今回の保存で変更されたフィールド」だけで、
+	 * その判定に VTEntityDelta の保存前データを使っていた。しかし保存後に動く
+	 * ワークフロー (VTUpdateFieldsTask) が vtiger.entity.beforesave を再発火して
+	 * 保存前データを保存後の値で上書きするため、差分が空になり他の回へ何も
+	 * 反映されなくなる。保存前にここで控えた値を使う。
+	 *
+	 * @param int|string $recordId
+	 * @return array<string, mixed>|null
+	 */
+	static function captureEntitySnapshot($recordId) {
+		if (empty($recordId)) {
+			return null;
+		}
+
+		// 保存前に呼ばれるため、イベントハンドラ経由の読み込みを当てにできない
+		require_once 'include/events/VTEntityData.inc';
+
+		$adb = PearDatabase::getInstance();
+		/** @var VTEntityData $entityData コアの docblock が壊れており型を解決できないため明示する */
+		$entityData = VTEntityData::fromEntityId($adb, $recordId, 'Events');
+
+		return self::normalizeSnapshot($entityData->getData());
+	}
+
+	/**
+	 * 他の回へコピーするフィールドを決める差分を返す。
+	 *
+	 * 保存前スナップショットがあればそれと保存後の値を突き合わせる。
+	 * 無い場合は従来どおり VTEntityDelta に任せる。
+	 *
+	 * @param int|string $recordId
+	 * @param array<string, mixed>|null $preSaveData
+	 * @return array<string, array{oldValue: mixed, currentValue: mixed}>
+	 */
+	private static function resolveEntityDelta($recordId, $preSaveData) {
+		if (is_array($preSaveData)) {
+			$currentData = self::captureEntitySnapshot($recordId);
+
+			return self::computeDeltaFromSnapshot($preSaveData, is_array($currentData) ? $currentData : array());
+		}
+
+		require_once 'data/VTEntityDelta.php';
+
+		$vtEntityDelta = new VTEntityDelta();
+
+		return $vtEntityDelta->getEntityDelta('Events', $recordId, true);
+	}
+
+	/**
+	 * 保存前スナップショットを差分計算で扱える配列にそろえる。
+	 *
+	 * CRMEntity の column_fields は素の配列のことも TrackableObject のこともある。
+	 * どちらでもない場合は「保存前データなし」として null を返す。
+	 *
+	 * @param mixed $data
+	 * @return array<mixed, mixed>|null
+	 */
+	static function normalizeSnapshot($data) {
+		if (is_array($data)) {
+			return $data;
+		}
+
+		if (is_object($data) && method_exists($data, 'getColumnFields')) {
+			$fields = $data->getColumnFields();
+
+			return is_array($fields) ? $fields : null;
+		}
+
+		return null;
+	}
+
+	/**
+	 * 差分比較用に値をそろえる。改行コードの違いは変更とみなさない。
+	 *
+	 * @param mixed $value
+	 * @return mixed
+	 */
+	private static function normalizeForComparison($value) {
+		if (!is_string($value)) {
+			return $value;
+		}
+
+		return str_replace(array("\r\n", "\r", "\n"), '', $value);
+	}
+
+	/**
 	 * 活動を繰り返し系列から取り除く。
 	 *
 	 * 削除された活動が系列に残っていると、以降の更新で回と活動の対応がずれ、
@@ -224,8 +346,10 @@ class Calendar_RepeatEvents {
 
 	/**
 	 * Repeat Activity instance till given limit.
+	 *
+	 * @param array<mixed, mixed>|null $preSaveData 保存前スナップショット。null なら VTEntityDelta にフォールバックする
 	 */
-	static function repeat($focus, $recurObj) {
+	static function repeat($focus, $recurObj, $preSaveData = null) {
 		$adb = PearDatabase::getInstance();
 		$frequency = $recurObj->recur_freq;
 		$repeattype= $recurObj->recur_type;
@@ -235,8 +359,7 @@ class Calendar_RepeatEvents {
 		$base_focus->id = $focus->id;
 		$parentId = $focus->column_fields['id'];
 		
-		$vtEntityDelta = new VTEntityDelta();
-        $delta = $vtEntityDelta->getEntityDelta('Events', $parentId, true);
+		$delta = self::resolveEntityDelta($parentId, $preSaveData);
 		$skip_focus_fields = Array ('record_id', 'createdtime', 'modifiedtime');
 		
 		if($focus->column_fields['mode'] == 'edit') {
@@ -457,7 +580,12 @@ class Calendar_RepeatEvents {
 		}
 	}
 	
-	static function repeatFromRequest($focus, $recurObjDb = false) {
+	/**
+	 * リクエストの繰り返し設定をもとに系列を作り直す。
+	 *
+	 * @param array<mixed, mixed>|null $preSaveData 保存前スナップショット。repeat() へそのまま渡す
+	 */
+	static function repeatFromRequest($focus, $recurObjDb = false, $preSaveData = null) {
 		global $log, $default_charset, $current_user;
 		$adb = PearDatabase::getInstance();
 		$recurObj = getrecurringObjValue();
@@ -482,7 +610,7 @@ class Calendar_RepeatEvents {
 			if(empty($recurObjDb) && self::$recurringDataChanged) {
 				$adb->pquery("INSERT INTO vtiger_activity_recurring_info VALUES (?,?)", array($originalRecordId, $originalRecordId));
 			}
-			self::repeat($focus, $recurObj);
+			self::repeat($focus, $recurObj, $preSaveData);
 		} else if(empty($recurObj) && self::$recurringDataChanged) {
 			//If recurring info unchecked, should delete all the events in the series
 			self::deleteRepeatEvents($focus->column_fields['id']);
