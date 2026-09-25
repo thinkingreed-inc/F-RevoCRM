@@ -313,7 +313,12 @@ class Migration20260917072813_ConvertAllTablesToUtf8mb4 extends FRMigrationClass
         );
 
         if ($result === false) {
-            return array();
+            // 空配列を返して続けると、保護したいテーブルまで変換してしまう。
+            // 文字化けした DDL は巻き戻せないため、判別できない時点で止める。
+            throw new Exception(
+                "列の文字セットを取得できませんでした。"
+                . "utf8 系でない文字セットの列を持つテーブルを判別できないため中断する。"
+            );
         }
 
         $tables = array();

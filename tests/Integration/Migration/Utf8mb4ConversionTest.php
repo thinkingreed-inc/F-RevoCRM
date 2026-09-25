@@ -603,4 +603,32 @@ final class Utf8mb4ConversionTest extends TestCase
 
         self::assertNotFalse($result, '17 未変換の utf8mb3 列に対して照合順序を指定した検索が失敗する');
     }
+
+    public function test_18_utf8系でない列を調べられなければ中断する(): void
+    {
+        // latin1 列を持つテーブルを変換対象から外せるかは、この問い合わせの結果だけが頼り。
+        // 失敗を空配列で流すと保護対象が全件変換され、文字化けしても DDL は戻せない。
+        // 同じ information_schema を引く他の 2 つと同様、失敗したら中断する。
+        $migration = new Utf8mb4Migration();
+
+        $property = new \ReflectionProperty(Utf8mb4Migration::class, 'db');
+        $property->setValue($migration, new class () {
+            /**
+             * @param  string       $sql
+             * @param  array<mixed> $params
+             * @return false
+             */
+            public function pquery($sql, $params = [])
+            {
+                return false;
+            }
+        });
+
+        $method = new \ReflectionMethod($migration, 'fetchTablesHavingForeignCharsetColumns');
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('列の文字セットを取得できませんでした');
+
+        $method->invoke($migration, 'frtest_no_such_db');
+    }
 }
