@@ -18,7 +18,11 @@ class Logger {
 		$level = $this->getLogLevel($configinfo['level']);
 
 		// RotatingFileHandler追加。日単位でログファイルを残す。
-		$rotatingFileHandler = new Monolog\Handler\RotatingFileHandler($filepath, $maxbackup, $level, true, 666);
+		// 第5引数 filePermission は8進数リテラルで指定すること。
+		// 10進数 666 を渡すと8進数 1232 (--w--wx-wT) になりログが読めなくなる。
+		// 0666 にしているのは、cron の実行ユーザーと Web の実行ユーザーが異なる環境でも
+		// 同じログファイルへ追記できるようにするため。logs/ は公開ディレクトリではない。
+		$rotatingFileHandler = new Monolog\Handler\RotatingFileHandler($filepath, $maxbackup, $level, true, 0666);
 		$rotatingFileHandler->setFilenameFormat('{filename}_{date}', 'Ymd');
 		$rotatingFileHandler->setFormatter($formatter); // ログ書式
 		$log = new Monolog\Logger($name);
