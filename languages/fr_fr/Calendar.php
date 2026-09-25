@@ -146,7 +146,7 @@ $languageStrings = array(
 	'LBL_OCTOBER' => 'Octobre',
 	'LBL_NOVEMBER' => 'Novembre',
 	'LBL_DECEMBER' => 'Décembre',
-	'LBL_CLICK_HERE_TO_VIEW' => 'Cliquez ici pour afficher',
+	'LBL_CLICK_HERE_TO_VIEW' => 'Cliquez ici pour afficher l\'enregistrement',
 
 	'LBL_TOTAL_EVENTS_DUPLICATED' => 'Nombre de dupliquer des événements ignorés',
 	'LBL_TOTAL_TASKS_DUPLICATED' => 'Nombre de tâches en double sautée',
