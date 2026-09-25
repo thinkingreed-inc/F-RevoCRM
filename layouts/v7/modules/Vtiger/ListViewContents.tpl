@@ -218,6 +218,8 @@
 										{else if $LISTVIEW_HEADER->getFieldDataType() eq 'reference'}
 											{$LISTVIEW_ENTRY->getTitle($LISTVIEW_HEADER)}
 										{else if $LISTVIEW_HEADER->get('uitype') eq '360'}
+										{else if $LISTVIEW_HEADER->getFieldDataType() eq 'string' || $LISTVIEW_HEADER->getFieldDataType() eq 'text'}
+											{Vtiger_Text_UIType::linkifyUrlsForList(vtranslate($LISTVIEW_ENTRY_VALUE, $MODULE))}
 										{else}
 											{vtranslate($LISTVIEW_ENTRY_VALUE, $MODULE)}
 										{/if}
