@@ -129,10 +129,10 @@ class Calendar_Record_Model extends Vtiger_Record_Model {
 				$deletedRecords[] = $record;
 			}
 		} else {
-			if($recurringEditMode == 'current') {
-				$parentRecurringId = $this->getParentRecurringRecord();
-				$adb->pquery("DELETE FROM vtiger_activity_recurring_info WHERE activityid=? AND recurrenceid=?", array($parentRecurringId, $this->getId()));
-			}
+			// 確認ダイアログを経由しない削除（一括削除・関連リストからの削除など）でも、
+			// 削除した回を系列に残さない。残すと以降の更新で回と活動の対応がずれる
+			vimport('~~/modules/Calendar/RepeatEvents.php');
+			Calendar_RepeatEvents::removeFromSeries($this->getId());
 			$inviteeDeletedRecords = $this->deleteInviteeRecord();
 			$deletedRecords = array_merge($deletedRecords, $inviteeDeletedRecords);
 			$this->getModule()->deleteRecord($this);
