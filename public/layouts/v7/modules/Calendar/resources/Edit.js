@@ -66,7 +66,8 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 		jQuery.extend(formData, optionParam);
 		
 		if (formData.module != "Events") {
-			return Promise.resolve();
+			// 呼び出し側が .fail() を繋ぐため、重複チェックを行わない場合も jQuery Deferred を返す
+			return jQuery.Deferred().resolve().promise();
 		}
 		
 		// formDataから以下のプロパティが存在するか確認して存在する場合はプロパティの値を取得して配列にする
