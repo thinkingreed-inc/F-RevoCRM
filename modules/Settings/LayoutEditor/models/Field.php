@@ -524,7 +524,8 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 	}
 
 	public function isOptionsRestrictedField(){
-		$restrictedFields =  array('isconvertedfrompotential','isconvertedfromlead');
+		// converted はリード昇格処理だけが書き換えるため、設定変更を禁止する（移動は可）
+		$restrictedFields =  array('isconvertedfrompotential','isconvertedfromlead','converted');
 		if(in_array($this->getName(), $restrictedFields)){
 			return true;
 		}else{

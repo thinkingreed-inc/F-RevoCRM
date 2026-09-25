@@ -13,9 +13,28 @@ Vtiger_Detail_Js("Leads_Detail_Js", {
     //Holds detail view instance
     detailCurrentInstance: false,
     /* function to trigger Convert Lead action
+     * @param: Convert Lead url, currentElement, 昇格済みかどうか.
+     */
+    convertLead: function (convertLeadUrl, buttonElement, isConverted) {
+        // 昇格済みのリードを再度昇格する場合は、重複してレコードが作られることを確認してもらう
+        if (isConverted) {
+            var message = app.vtranslate('JS_LEAD_ALREADY_CONVERTED_CONFIRMATION');
+            app.helper.showConfirmationBox({'message': message}).then(
+                    function () {
+                        Leads_Detail_Js.openConvertLeadModal(convertLeadUrl, buttonElement);
+                    },
+                    function (error, err) {
+
+                    }
+            );
+            return;
+        }
+        Leads_Detail_Js.openConvertLeadModal(convertLeadUrl, buttonElement);
+    },
+    /* function to open the Convert Lead modal
      * @param: Convert Lead url, currentElement.
      */
-    convertLead: function (convertLeadUrl, buttonElement) {
+    openConvertLeadModal: function (convertLeadUrl, buttonElement) {
         var instance = Leads_Detail_Js.detailCurrentInstance;
         //Initially clear the elements to overwtite earliear cache
         instance.convertLeadContainer = false;

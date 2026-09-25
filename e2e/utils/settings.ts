@@ -105,3 +105,32 @@ export async function saveAndSettle(
   ]);
   await page.waitForLoadState("networkidle").catch(() => {});
 }
+
+/**
+ * システム変数(Settings.Parameters)の値を書き換える。
+ *
+ * 既存キーの値だけを変更する用途。グローバルな設定のため、呼び出し側は
+ * 必ず finally 等で元の値へ戻すこと。
+ */
+export async function setParameterValue(
+  page: Page,
+  key: string,
+  value: string
+): Promise<void> {
+  await gotoSettings(page, { module: "Parameters", view: "List" });
+
+  const row = page
+    .locator("#listview-table tr.listViewEntries")
+    .filter({ hasText: key });
+  await expect(row).toBeVisible();
+  await row.locator("a[title] i.fa-pencil").click();
+
+  // EditAjax のフォーム id は流用元のまま #editCurrency
+  const modal = page.locator(".modal-content:visible form#editCurrency");
+  await expect(modal).toBeVisible();
+  // 別の行を開いていないことを確かめてから値を変更する
+  await expect(modal.locator('input[name="key"]')).toHaveValue(key);
+  await modal.locator('input[name="value"]').fill(value);
+
+  await saveAndSettle(page, modal.locator('button[name="saveButton"]'));
+}

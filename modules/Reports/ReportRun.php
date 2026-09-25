@@ -2259,7 +2259,7 @@ class ReportRun extends CRMEntity {
 
 			$query .= " " . $this->getRelatedModulesQuery($module,$this->secondarymodule).
 					getNonAdminAccessControlQuery($this->primarymodule,$current_user).
-					" where vtiger_leaddetails.deleted=0 and vtiger_leaddetails.converted=0";
+					" where vtiger_leaddetails.deleted=0".Leads_ConvertSetting_Model::getConvertedFilterCondition('and');
 		} else if ($module == "Accounts") {
 			$query = "from vtiger_account
 				inner join vtiger_crmentity on vtiger_crmentity.crmid=vtiger_account.accountid";

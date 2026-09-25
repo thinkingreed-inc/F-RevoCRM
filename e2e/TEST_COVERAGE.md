@@ -227,7 +227,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 |---|---|---|---|---|---|
 | 18 | 顧客企業 Accounts | ✅ | 組織階層, SMSを送る, 予定/TODOの登録, 担当の変更, 複製, メール, 地図(Google) | 🟡 メール/組織階層/SMS/予定・TODO登録 の起動を検証 → `module/tests/4_モジュール/4-1_顧客企業.spec.ts` | 地図表示、担当変更/複製 |
 | 17 | 顧客担当者 Contacts | ✅ | メール, 活動, ToDo, SMS, 地図, vCard インポート | 🟡 メール/SMS の起動を検証 → `module/tests/4_モジュール/4-2_顧客担当者.spec.ts` | 地図（vCard インポートは本ビルドに機能なし） |
-| 16 | リード Leads | ✅ | **昇格 `ConvertLead`**, メール, 活動, ToDo, SMS, 地図 | ✅ メール/SMS/予定・TODO 起動 + **昇格の保存(顧客企業作成)** を検証 → `module/tests/4_モジュール/4-3_リード.spec.ts` | 地図、昇格時の案件(Potentials)同時作成 |
+| 16 | リード Leads | ✅ | **昇格 `ConvertLead`**, メール, 活動, ToDo, SMS, 地図 | ✅ メール/SMS/予定・TODO 起動 + **昇格の保存(顧客企業作成)** を検証 → `module/tests/4_モジュール/4-3_リード.spec.ts`。昇格済みリードの表示／再昇格オプション(#1854)は ⏭️ `tests/4_モジュール/4-3-1_リード昇格オプション.spec.ts`(グローバル設定を書き換えるため既定は skip。`E2E_LEAD_CONVERT_OPTION=1` を付けて単独実行) | 地図、昇格時の案件(Potentials)同時作成 |
 | 19 | 案件 Potentials | ✅ | 見積/請求/受注作成, **プロジェクト変換 `ConvertPotential`**, 活動, ToDo | 🟡 メール/プロジェクト変換モーダル/見積・受注 作成画面遷移 の起動を検証 → `module/tests/4_モジュール/4-4_案件.spec.ts` | 見積/請求/受注 **生成の保存**、活動/ToDo |
 | 20 | 製品 Products | ✅ | 見積/請求/発注/受注作成, 在庫管理, 自動計算, SubProducts | ❌ | 在庫・自動計算、各ドキュメント生成 |
 | 21 | サービス Services | ✅ | 見積/請求/発注/受注作成 | ❌ | 各ドキュメント生成 |
