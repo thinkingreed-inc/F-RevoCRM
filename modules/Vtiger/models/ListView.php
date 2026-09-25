@@ -291,6 +291,138 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 	}
 
 	/**
+	 * 検索条件・並び順を適用した結果セット全体の先頭・末尾レコードIDを取得する(現在ページ内ではなく全体)。
+	 * 現在ページが先頭ページ/最終ページであれば取得済みのページデータからIDを読み取り、
+	 * 判明しない側だけ "ORDER BY ... LIMIT 1" で取得する。
+	 * order by用のJOINが登録済みである必要があるため getListViewEntries() の後に呼ぶこと。
+	 * @param <Array> $listViewEntries - getListViewEntries()が返した現在ページのレコード(レコードIDをキーとし一覧の並び順)
+	 * @param Vtiger_Paging_Model $pagingModel - 上記と同じ呼び出しで使用したページングモデル
+	 * @return <Array> - array($firstRecordId, $lastRecordId) 結果が0件の場合はnullを返す
+	 */
+	public function getFirstAndLastRecordId($listViewEntries = array(), $pagingModel = null) {
+		$firstRecordId = null;
+		$lastRecordId = null;
+
+		if (!empty($listViewEntries)) {
+			$entryIds = array_keys($listViewEntries);
+			if ($pagingModel && $pagingModel->getStartIndex() == 0) {
+				// 先頭ページなので取得済みデータの1件目が結果セット全体の先頭
+				$firstRecordId = $entryIds[0];
+			}
+			if ($pagingModel && !$pagingModel->isNextPageExists()) {
+				// 最終ページなので取得済みデータの最終件が結果セット全体の末尾
+				$lastRecordId = $entryIds[php7_count($entryIds)-1];
+			}
+		}
+
+		if ($firstRecordId !== null && $lastRecordId !== null) {
+			return array($firstRecordId, $lastRecordId);
+		}
+
+		$db = PearDatabase::getInstance();
+		$moduleName = $this->getModule()->get('name');
+		$queryGenerator = $this->get('query_generator');
+
+		$meta = $queryGenerator->getMeta($moduleName);
+		$columnIndex = $meta->getObectIndexColumn();
+		$baseTable = $meta->getEntityBaseTable();
+
+		$listQuery = $this->getQuery();
+		$position = stripos($listQuery, ' from ');
+		if (!$position) {
+			return array($firstRecordId, $lastRecordId);
+		}
+		$split = preg_split('/ from /i', $listQuery);
+		$splitCount = php7_count($split);
+		$narrowedQuery = "SELECT $baseTable.$columnIndex AS recordid ";
+		for ($i=1; $i<$splitCount; $i++) {
+			$narrowedQuery = $narrowedQuery. ' FROM ' .$split[$i];
+		}
+
+		list($normalOrderBy, $reverseOrderBy) = $this->buildBoundaryOrderByClauses();
+
+		if ($firstRecordId === null) {
+			$firstResult = $db->pquery($narrowedQuery.$normalOrderBy.' LIMIT 1', array());
+			$firstRecordId = $db->num_rows($firstResult) ? $db->query_result($firstResult, 0, 'recordid') : null;
+		}
+
+		if ($lastRecordId === null) {
+			$lastResult = $db->pquery($narrowedQuery.$reverseOrderBy.' LIMIT 1', array());
+			$lastRecordId = $db->num_rows($lastResult) ? $db->query_result($lastResult, 0, 'recordid') : null;
+		}
+
+		return array($firstRecordId, $lastRecordId);
+	}
+
+	/**
+	 * 一覧表示と同じORDER BY句と、その昇順降順を逆にした句を組み立てる(getListViewEntries()と同じ条件分岐)。
+	 * ソート対象の値が重複していても先頭/末尾が一意に決まるよう、IDカラムを最後の並び替え条件として付与する。
+	 * @return <Array> - array($normalOrderBy, $reversedOrderBy) いずれも先頭に " ORDER BY " を含む
+	 */
+	private function buildBoundaryOrderByClauses() {
+		$moduleName = $this->getModule()->get('name');
+		$moduleFocus = CRMEntity::getInstance($moduleName);
+		$queryGenerator = $this->get('query_generator');
+
+		$meta = $queryGenerator->getMeta($moduleName);
+		$columnIndex = $meta->getObectIndexColumn();
+		$baseTable = $meta->getEntityBaseTable();
+		$idColumn = $baseTable.'.'.$columnIndex;
+
+		$orderBy = $this->getForSql('orderby');
+		$sortOrder = $this->getForSql('sortorder');
+		$orderByFieldModel = null;
+		if (!empty($orderBy)) {
+			$fieldModels = $queryGenerator->getModuleFields();
+			$orderByFieldModel = $fieldModels[$orderBy];
+		}
+
+		$sortColumns = array();
+		$normalDirection = !empty($sortOrder) ? strtoupper($sortOrder) : 'ASC';
+
+		if (!empty($orderBy) && $orderByFieldModel) {
+			if ($orderBy == 'roleid' && $moduleName == 'Users') {
+				$sortColumns[] = 'vtiger_role.rolename';
+			} else {
+				$sortColumns[] = $queryGenerator->getOrderByColumn($orderBy);
+			}
+			if ($orderBy == 'first_name' && $moduleName == 'Users') {
+				$sortColumns[] = 'last_name';
+				$sortColumns[] = 'email1';
+			}
+		} else if ($moduleName != 'Users') {
+			// ソート未指定時に getListViewEntries() が適用するデフォルトの並び順に合わせる
+			$defaultTable = $moduleFocus->table_name;
+			if (empty($defaultTable)) {
+				$defaultTable = 'vtiger_crmentity';
+			}
+			$sortColumns[] = $defaultTable.'.modifiedtime';
+			$normalDirection = 'DESC';
+		} else {
+			// Usersはソート未指定時に一覧側でORDER BYが付かず順序が不定のため、本メソッド内でのみIDカラムで代用する
+			$sortColumns[] = $idColumn;
+		}
+		if (!in_array($idColumn, $sortColumns)) {
+			$sortColumns[] = $idColumn;
+		}
+
+		$reverseDirection = ($normalDirection == 'ASC') ? 'DESC' : 'ASC';
+
+		return array(
+			$this->buildOrderByClause($sortColumns, $normalDirection),
+			$this->buildOrderByClause($sortColumns, $reverseDirection),
+		);
+	}
+
+	private function buildOrderByClause($columns, $direction) {
+		$parts = array();
+		foreach ($columns as $column) {
+			$parts[] = $column.' '.$direction;
+		}
+		return ' ORDER BY '.implode(', ', $parts);
+	}
+
+	/**
 	 * Function to get the list view entries
 	 * @param Vtiger_Paging_Model $pagingModel
 	 * @return <Array> - Associative array of record id mapped to Vtiger_Record_Model instance.

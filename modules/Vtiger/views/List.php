@@ -16,6 +16,8 @@ class Vtiger_List_View extends Vtiger_Index_View {
 	protected $noOfEntries = false;
 	protected $pagingModel = false;
 	protected $listViewModel = false;
+	protected $firstRecordId = false;
+	protected $lastRecordId = false;
 	function __construct() {
 		parent::__construct();
 	}
@@ -340,6 +342,11 @@ class Vtiger_List_View extends Vtiger_Index_View {
 		if(!$this->listViewEntries){
 			$this->listViewEntries = $listViewModel->getListViewEntries($pagingModel);
 		}
+		if($this->firstRecordId === false && $this->lastRecordId === false){
+			list($this->firstRecordId, $this->lastRecordId) = $listViewModel->getFirstAndLastRecordId($this->listViewEntries, $pagingModel);
+		}
+		$viewer->assign('LISTVIEW_FIRST_ID', $this->firstRecordId);
+		$viewer->assign('LISTVIEW_LAST_ID', $this->lastRecordId);
 		//if list view entries restricted to show, paging should not fail
 		if(!$this->noOfEntries) {
 			$this->noOfEntries = $pagingModel->get('_listcount');

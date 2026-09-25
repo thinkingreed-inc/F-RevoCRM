@@ -140,7 +140,7 @@
 				<tbody class="overflow-y">
 					{foreach item=LISTVIEW_ENTRY from=$LISTVIEW_ENTRIES name=listview}
 						{assign var=DATA_ID value=$LISTVIEW_ENTRY->getId()}
-						{assign var=DATA_URL value=$LISTVIEW_ENTRY->getDetailViewUrl()}
+						{assign var=DATA_URL value=$LISTVIEW_ENTRY->getDetailViewUrl()|cat:"&firstId="|cat:$LISTVIEW_FIRST_ID|cat:"&lastId="|cat:$LISTVIEW_LAST_ID}
 						{if $SEARCH_MODE_RESULTS && $LISTVIEW_ENTRY->getModuleName() == "ModComments"}
 							{assign var=RELATED_TO value=$LISTVIEW_ENTRY->get('related_to_model')}
 							{assign var=DATA_ID value=$RELATED_TO->getId()}
@@ -164,7 +164,7 @@
 							<span class="fieldValue">
 								<span class="value">
 									{if ($LISTVIEW_HEADER->isNameField() eq true or $LISTVIEW_HEADER->get('uitype') eq '4') and $MODULE_MODEL->isListViewNameFieldNavigationEnabled() eq true }
-										<a href="{$LISTVIEW_ENTRY->getDetailViewUrl()}&app={$SELECTED_MENU_CATEGORY}">{$LISTVIEW_ENTRY->get($LISTVIEW_HEADERNAME)}</a>
+										<a href="{$LISTVIEW_ENTRY->getDetailViewUrl()}&app={$SELECTED_MENU_CATEGORY}&firstId={$LISTVIEW_FIRST_ID}&lastId={$LISTVIEW_LAST_ID}">{$LISTVIEW_ENTRY->get($LISTVIEW_HEADERNAME)}</a>
 										{if $MODULE eq 'Products' &&$LISTVIEW_ENTRY->isBundle()}
 											&nbsp;-&nbsp;<i class="mute">{vtranslate('LBL_PRODUCT_BUNDLE', $MODULE)}</i>
 										{/if}
