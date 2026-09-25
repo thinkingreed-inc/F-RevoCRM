@@ -40,6 +40,7 @@ class Emails_Module_Model extends Vtiger_Module_Model{
 		
 		$relatedModules = vtws_listtypes(array('email'), Users_Record_Model::getCurrentUserModel());
 		$relatedModules = $relatedModules['types'];
+		$emailRelatedModules = array();
 
 		foreach ($relatedModules as $key => $moduleName) {
 			if ($moduleName === 'Users') {
@@ -66,6 +67,9 @@ class Emails_Module_Model extends Vtiger_Module_Model{
 		$emailsResult = array();
         $params = array();
 		$db = PearDatabase::getInstance();
+		//メールアドレス項目が1つも参照できないモジュールでも動作するよう初期化する
+		$activeModules = array();
+		$fieldIds = array();
 
 		$EmailsModuleModel = Vtiger_Module_Model::getInstance('Emails');
 		$emailSupportedModulesList = $EmailsModuleModel->getEmailRelatedModules();
@@ -85,37 +89,40 @@ class Emails_Module_Model extends Vtiger_Module_Model{
 			if ($moduleName) {
                 $activeModules = array($moduleName);
             }
-            
-            $query = "SELECT vtiger_emailslookup.crmid, vtiger_emailslookup.setype, vtiger_emailslookup.value, 
-                          vtiger_crmentity.label FROM vtiger_emailslookup INNER JOIN vtiger_crmentity on 
-                          vtiger_crmentity.crmid = vtiger_emailslookup.crmid AND vtiger_crmentity.deleted=0 WHERE 
-						  vtiger_emailslookup.fieldid in (".generateQuestionMarks($fieldIds).") and 
-						  vtiger_emailslookup.setype in (".generateQuestionMarks($activeModules).") 
-                          and (vtiger_emailslookup.value LIKE ? OR vtiger_crmentity.label LIKE ?)";
-            $params = array_merge($params, $fieldIds);
-            $params = array_merge($params, $activeModules);
-            array_push($params, "%$searchValue%");
-            array_push($params, "%$searchValue%");
-			$emailOptOutIds = $this->getEmailOptOutRecordIds();
-			if (!empty($emailOptOutIds)) {
-				$query .= " AND vtiger_emailslookup.crmid NOT IN (". generateQuestionMarks($emailOptOutIds).")";
-                $params = array_merge($params, $emailOptOutIds);
-			}
 
-			$result = $db->pquery($query, $params);
-            $isAdmin = is_admin($current_user);
-			while ($row = $db->fetchByAssoc($result)) {
-				if (!$isAdmin) {
-					$recordPermission = Users_Privileges_Model::isPermitted($row['setype'], 'DetailView', $row['crmid']);
-					if (!$recordPermission) {
-						continue;
-					}
-				}
-			$emailsResult[vtranslate($row['setype'], $row['setype'])][$row['crmid']][] = array('value' => $row['value'],
-																								'label' => decode_html($row['label']).' ('.$row['value'].')',
-																								'name' => decode_html($row['label']),);
+            //参照可能なメールアドレス項目が1つも無い場合はCRMレコードの検索を行わない
+            if (!empty($fieldIds) && !empty($activeModules)) {
+                $query = "SELECT vtiger_emailslookup.crmid, vtiger_emailslookup.setype, vtiger_emailslookup.value,
+                              vtiger_crmentity.label FROM vtiger_emailslookup INNER JOIN vtiger_crmentity on
+                              vtiger_crmentity.crmid = vtiger_emailslookup.crmid AND vtiger_crmentity.deleted=0 WHERE
+                              vtiger_emailslookup.fieldid in (".generateQuestionMarks($fieldIds).") and
+                              vtiger_emailslookup.setype in (".generateQuestionMarks($activeModules).")
+                              and (vtiger_emailslookup.value LIKE ? OR vtiger_crmentity.label LIKE ?)";
+                $params = array_merge($params, $fieldIds);
+                $params = array_merge($params, $activeModules);
+                array_push($params, "%$searchValue%");
+                array_push($params, "%$searchValue%");
+                $emailOptOutIds = $this->getEmailOptOutRecordIds();
+                if (!empty($emailOptOutIds)) {
+                    $query .= " AND vtiger_emailslookup.crmid NOT IN (". generateQuestionMarks($emailOptOutIds).")";
+                    $params = array_merge($params, $emailOptOutIds);
+                }
+
+                $result = $db->pquery($query, $params);
+                $isAdmin = is_admin($current_user);
+                while ($row = $db->fetchByAssoc($result)) {
+                    if (!$isAdmin) {
+                        $recordPermission = Users_Privileges_Model::isPermitted($row['setype'], 'DetailView', $row['crmid']);
+                        if (!$recordPermission) {
+                            continue;
+                        }
+                    }
+                    $emailsResult[vtranslate($row['setype'], $row['setype'])][$row['crmid']][] = array('value' => $row['value'],
+                                                                                    'label' => decode_html($row['label']).' ('.$row['value'].')',
+                                                                                    'name' => decode_html($row['label']),);
+                }
             }
-            
+
             // For Users we should only search in users table
             $additionalModule = array('Users');
             if(!$moduleName || in_array($moduleName, $additionalModule)){
