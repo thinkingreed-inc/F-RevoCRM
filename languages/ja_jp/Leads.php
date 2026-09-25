@@ -24,6 +24,7 @@ $languageStrings = array(
 	'Website' => 'Webサイト',
 	'Industry' => '業界',
 	'Lead Status' => 'ステータス',
+	'Converted' => '昇格済み',
 	'No Of Employees' => '従業員数',
 	'Phone' => '電話番号',
 	'Secondary Email' => 'メールアドレス(予備)',

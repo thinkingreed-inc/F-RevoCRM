@@ -24,6 +24,7 @@ $languageStrings = array(
 	'Website' => 'Website',
 	'Industry' => 'Industry',
 	'Lead Status' => 'Lead Status',
+	'Converted' => 'Converted',
 	'No Of Employees' => 'Number of Employees',
 	'Phone' => 'Primary Phone',
 	'Secondary Email' => 'Secondary Email',
