@@ -152,6 +152,38 @@ jQuery.Class("Vtiger_CustomView_Js",{
 		var aDeferred = jQuery.Deferred();
 		var formElement = jQuery("#CustomView");
 
+		var hasInvalidSort = false;
+		var fieldsUsed = [];
+		var hasDuplicateSortField = false;
+		formElement.find('.sort-condition-row').each(function() {
+			var row = jQuery(this);
+			var fieldSelect = row.find('.sort-field-select');
+			// select2 v3 対応: select2 が適用されている場合は select2('val') で正確な値を取得
+			var fieldVal = fieldSelect.data('select2') ? fieldSelect.select2('val') : fieldSelect.val();
+			var orderSelect = row.find('.sort-order-select');
+			var orderVal = orderSelect.data('select2') ? orderSelect.select2('val') : orderSelect.val();
+			if (fieldVal && !orderVal) {
+				hasInvalidSort = true;
+			}
+			if (fieldVal) {
+				if (fieldsUsed.indexOf(fieldVal) !== -1) {
+					hasDuplicateSortField = true;
+				} else {
+					fieldsUsed.push(fieldVal);
+				}
+			}
+		});
+		if (hasInvalidSort) {
+			app.helper.showErrorNotification({message: app.vtranslate('JS_PLEASE_SELECT_SORT_ORDER')});
+			aDeferred.reject();
+			return aDeferred.promise();
+		}
+		if (hasDuplicateSortField) {
+			app.helper.showErrorNotification({message: app.vtranslate('JS_DUPLICATE_SORT_FIELD_NOT_ALLOWED')});
+			aDeferred.reject();
+			return aDeferred.promise();
+		}
+
 		// Temporarily disable filter value inputs to prevent them from being serialized
 		var filterValueInputs = formElement.find('.filterConditionsDiv [data-value="value"]');
 		filterValueInputs.each(function() {
@@ -224,6 +256,218 @@ jQuery.Class("Vtiger_CustomView_Js",{
 		});
 	},
 
+	registerOrderbyChangeEvent : function() {
+		var form = jQuery('#CustomView');
+		var sortContainer = form.find('#sortConditionsContainer');
+		if (sortContainer.length === 0) return;
+
+		var sortRowsList = sortContainer.find('#sortRowsList');
+		var addFirstContainer = sortContainer.find('#addFirstSortRowContainer');
+
+		var updateRowVisibility = function() {
+			var rows = sortRowsList.find('.sort-condition-row');
+			if (rows.length === 0) {
+				addFirstContainer.removeClass('hide');
+			} else {
+				addFirstContainer.addClass('hide');
+			}
+
+			rows.each(function(index, rowElement) {
+				var row = jQuery(rowElement);
+				var addBtn = row.find('.addSortRowBtn');
+				var deleteBtn = row.find('.deleteSortRowBtn');
+				var prefixLabel = row.find('.sort-prefix-label');
+
+				if (prefixLabel.length > 0) {
+					var labelTpl = app.vtranslate('LBL_SORT_CONDITION_LABEL');
+					prefixLabel.text(labelTpl.replace('%s', index + 1));
+				}
+
+				deleteBtn.removeClass('hide');
+
+				if (index === rows.length - 1 && rows.length < 5) {
+					addBtn.removeClass('hide');
+				} else {
+					addBtn.addClass('hide');
+				}
+			});
+		};
+
+		var reindexRows = function() {
+			var rows = sortRowsList.find('.sort-condition-row');
+			rows.each(function(index, rowElement) {
+				var row = jQuery(rowElement);
+				var fieldSelect = row.find('.sort-field-select');
+				var orderSelect = row.find('.sort-order-select');
+				fieldSelect.attr('name', 'sort_conditions[' + index + '][field]');
+				orderSelect.attr('name', 'sort_conditions[' + index + '][order]');
+			});
+			updateRowVisibility();
+		};
+
+		// Initialize select2 for existing sort selects
+		sortRowsList.find('select.select2').each(function() {
+			vtUtils.showSelect2ElementView(jQuery(this));
+		});
+
+		updateRowVisibility();
+
+		// select2 の val() 変更が change を再発火させるのを防ぐフラグ
+		var isReverting = false;
+
+		sortContainer.on('change', '.sort-field-select', function() {
+			if (isReverting) return;
+
+			var changedSelect = jQuery(this);
+			var changedVal = changedSelect.val();
+			if (!changedVal) return;
+
+			// 同じ項目が他の行で既に選ばれていないかチェック
+			var rows = sortRowsList.find('.sort-condition-row');
+			var duplicateFound = false;
+			rows.each(function() {
+				var fieldSelect = jQuery(this).find('.sort-field-select');
+				if (fieldSelect[0] === changedSelect[0]) return; // 自分自身はスキップ
+				if (fieldSelect.val() === changedVal) {
+					duplicateFound = true;
+					return false;
+				}
+			});
+
+			if (duplicateFound) {
+				var msg = app.vtranslate('JS_DUPLICATE_SORT_FIELD_NOT_ALLOWED');
+				app.helper.showErrorNotification({message: msg});
+				// 直前の値（変更前）に戻す
+				var prevVal = changedSelect.data('prev-sort-val');
+				if (prevVal) {
+					isReverting = true;
+					// select2 v3 は select2('val') で UI ごと正しく戻す
+					if (changedSelect.data('select2')) {
+						changedSelect.select2('val', prevVal);
+					} else {
+						changedSelect.val(prevVal);
+					}
+					isReverting = false;
+				}
+			} else {
+				// 正常な選択：今の値を「前の値」として保存
+				changedSelect.data('prev-sort-val', changedVal);
+			}
+		});
+
+		// 初期値を記憶しておく（編集時は DB から来た値がそのまま入る）
+		sortRowsList.find('.sort-field-select').each(function() {
+			var sel = jQuery(this);
+			sel.data('prev-sort-val', sel.val());
+		});
+
+		sortContainer.on('click', '.addSortRowBtn', function() {
+			var rows = sortRowsList.find('.sort-condition-row');
+			if (rows.length >= 5) return;
+
+			var selectedFields = [];
+			rows.each(function() {
+				var val = jQuery(this).find('.sort-field-select').val();
+				if (val) selectedFields.push(val);
+			});
+
+			var newRow;
+			if (rows.length > 0) {
+				var lastRow = rows.last();
+				newRow = lastRow.clone();
+				newRow.find('.select2-container').remove();
+				newRow.find('select').each(function() {
+					var sel = jQuery(this);
+					sel.removeClass('select2-offscreen select2-hidden-accessible');
+					sel.removeAttr('id');
+					sel.removeData('select2');
+					sel.removeData();
+				});
+
+				newRow.find('option').prop('selected', false).prop('disabled', false).removeClass('hide');
+
+				// 既存の行で選ばれていない最初の項目を初期値にする
+				var nextFieldOpt = null;
+				newRow.find('.sort-field-select option').each(function() {
+					var optVal = jQuery(this).val();
+					if (optVal && selectedFields.indexOf(optVal) === -1 && !nextFieldOpt) {
+						nextFieldOpt = optVal;
+					}
+				});
+
+				if (nextFieldOpt) {
+					newRow.find('.sort-field-select option').filter(function() {
+						return jQuery(this).val() === nextFieldOpt;
+					}).prop('selected', true);
+					newRow.find('.sort-field-select').val(nextFieldOpt);
+				}
+				newRow.find('.sort-order-select option[value="ASC"]').prop('selected', true);
+				newRow.find('.sort-order-select').val('ASC');
+
+				lastRow.after(newRow);
+			} else {
+				var fieldOptionsTemplate = form.find('#sortFieldOptionsTemplate');
+				var fieldOptionsHtml = '';
+				if (fieldOptionsTemplate.length > 0) {
+					fieldOptionsHtml = fieldOptionsTemplate.html();
+				} else {
+					var fieldSelect = form.find('.columnsSelect');
+					fieldSelect.find('optgroup').each(function() {
+						var grp = jQuery(this);
+						fieldOptionsHtml += '<optgroup label="' + grp.attr('label') + '">';
+						grp.find('option').each(function() {
+							var opt = jQuery(this);
+							var fieldVal = opt.attr('data-field-name') || opt.data('fieldName') || opt.val();
+							fieldOptionsHtml += '<option value="' + fieldVal + '">' + opt.text().replace(/\s*\*\s*$/, '') + '</option>';
+						});
+						fieldOptionsHtml += '</optgroup>';
+					});
+				}
+				var rowHtml = '<div class="sort-condition-row row" style="margin-bottom: 8px;">' +
+					'<div class="col-sm-2 col-xs-3" style="padding-top: 6px;">' +
+						'<span class="sort-prefix-label text-muted" style="font-weight: bold;">' + app.vtranslate('LBL_SORT_CONDITION_LABEL').replace('%s', 1) + '</span>' +
+					'</div>' +
+					'<div class="col-sm-5 col-xs-5">' +
+						'<select class="select2 form-control sort-field-select">' + fieldOptionsHtml + '</select>' +
+					'</div>' +
+					'<div class="col-sm-3 col-xs-3">' +
+						'<select class="select2 form-control sort-order-select">' +
+							'<option value="ASC">' + app.vtranslate('LBL_ASCENDING') + '</option>' +
+							'<option value="DESC">' + app.vtranslate('LBL_DESCENDING') + '</option>' +
+						'</select>' +
+					'</div>' +
+					'<div class="col-sm-2 col-xs-1" style="padding-top: 2px;">' +
+						'<button type="button" class="btn btn-default addSortRowBtn" title="' + app.vtranslate('LBL_ADD_SORT_ROW') + '"><i class="fa fa-plus"></i></button>' +
+						'<button type="button" class="btn btn-default deleteSortRowBtn" title="' + app.vtranslate('LBL_DELETE') + '"><i class="fa fa-trash"></i></button>' +
+					'</div>' +
+				'</div>';
+				newRow = jQuery(rowHtml);
+				sortRowsList.append(newRow);
+			}
+
+			newRow.find('select').each(function() {
+				var selectEl = jQuery(this);
+				if (selectEl.hasClass('select2')) {
+					vtUtils.showSelect2ElementView(selectEl);
+				}
+			});
+
+			// 新しい行の初期値を記憶
+			newRow.find('.sort-field-select').each(function() {
+				var sel = jQuery(this);
+				sel.data('prev-sort-val', sel.val());
+			});
+
+			reindexRows();
+		});
+
+		sortContainer.on('click', '.deleteSortRowBtn', function() {
+			var row = jQuery(this).closest('.sort-condition-row');
+			row.remove();
+			reindexRows();
+		});
+	},
+
 	/**
 	 * Function which will register the select2 elements for columns selection
 	 */
@@ -239,6 +483,7 @@ jQuery.Class("Vtiger_CustomView_Js",{
 		this.makeColumnListSortable();
 		this.registerToogleShareList();
 		this.registerOnlyAllUsersInSharedList();
+		this.registerOrderbyChangeEvent();
 		var customViewForm = jQuery('#CustomView');
 
 		if(customViewForm.length > 0) {
@@ -247,7 +492,7 @@ jQuery.Class("Vtiger_CustomView_Js",{
 					var form = jQuery(form); 
 						  var selectElement = form.find('#viewColumnsSelect'); 
 						  var mandatoryFieldsList = JSON.parse(jQuery('#mandatoryFieldsList').val()); 
-						  var selectedOptions = selectElement.val(); 
+						  var selectedOptions = selectElement.val();
 						  var mandatoryFieldsMissing = true; 
 						  for(var i=0; i<selectedOptions.length; i++) { 
 						if(jQuery.inArray(selectedOptions[i], mandatoryFieldsList) >= 0) { 
@@ -258,6 +503,26 @@ jQuery.Class("Vtiger_CustomView_Js",{
 						  if(mandatoryFieldsMissing){ 
 						app.helper.showErrorNotification({message: app.vtranslate('Select atleast one mandatory value.')}); 
 							  return false; 
+					} 
+
+					var fieldsUsed = [];
+					var hasDuplicateSortField = false;
+					form.find('.sort-condition-row').each(function() {
+						var row = jQuery(this);
+						var fieldSelect = row.find('.sort-field-select');
+						// select2 v3 対応: select2 が適用されている場合は select2('val') で正確な値を取得
+						var fieldVal = fieldSelect.data('select2') ? fieldSelect.select2('val') : fieldSelect.val();
+						if (fieldVal) {
+							if (fieldsUsed.indexOf(fieldVal) !== -1) {
+								hasDuplicateSortField = true;
+							} else {
+								fieldsUsed.push(fieldVal);
+							}
+						}
+					});
+					if (hasDuplicateSortField) {
+						app.helper.showErrorNotification({message: app.vtranslate('JS_DUPLICATE_SORT_FIELD_NOT_ALLOWED')});
+						return false;
 					} 
 					//handled advanced filters saved values.
 					var advfilterlist = self.advanceFilterInstance.getValues();
@@ -346,5 +611,6 @@ jQuery.Class("Vtiger_CustomView_Js",{
 				target.trigger('post.ToggleDefault.saved',data);
 			})
 		});
-	}
+	},
+
 });

@@ -212,18 +212,9 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 			$queryGenerator->addUserSearchConditions(array('search_field' => $searchKey, 'search_text' => $searchValue, 'operator' => $operator));
 		}
 
-		$orderBy = $this->getForSql('orderby');
-		$sortOrder = $this->getForSql('sortorder');
+		$sortConditions = $this->getSortConditions();
+		$this->setupQueryGeneratorForSort($queryGenerator, $sortConditions);
 
-		if(!empty($orderBy)){
-			$queryGenerator = $this->get('query_generator');
-			$fieldModels = $queryGenerator->getModuleFields();
-			$orderByFieldModel = $fieldModels[$orderBy];
-			if($orderByFieldModel && ($orderByFieldModel->getFieldDataType() == Vtiger_Field_Model::REFERENCE_TYPE ||
-					$orderByFieldModel->getFieldDataType() == Vtiger_Field_Model::OWNER_TYPE)){
-				$queryGenerator->addWhereField($orderBy);
-			}
-		}
 		$listQuery = $this->getQuery();
 
 		$sourceModule = $this->get('src_module');
@@ -239,23 +230,7 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 		$startIndex = $pagingModel->getStartIndex();
 		$pageLimit = $pagingModel->getPageLimit();
 
-		if(!empty($orderBy) && $orderByFieldModel) {
-			if($orderBy == 'roleid' && $moduleName == 'Users'){
-				$listQuery .= ' ORDER BY vtiger_role.rolename '.' '. $sortOrder; 
-			} else {
-				$listQuery .= ' ORDER BY '.$queryGenerator->getOrderByColumn($orderBy).' '.$sortOrder;
-			}
-
-			if ($orderBy == 'first_name' && $moduleName == 'Users') {
-				$listQuery .= ' , last_name '.' '. $sortOrder .' ,  email1 '. ' '. $sortOrder;
-			} 
-		} else if(empty($orderBy) && empty($sortOrder) && $moduleName != "Users"){
-			$baseTable = $moduleFocus->table_name;
-			if(empty($baseTable)) {
-				$baseTable = "vtiger_crmentity";
-			}
-			$listQuery .= " ORDER BY ".$baseTable.".modifiedtime DESC";
-		}
+		$listQuery .= $this->getOrderBySql($queryGenerator, $sortConditions, $moduleFocus);
 
 		$viewid = ListViewSession::getCurrentView($moduleName);
 		if(empty($viewid)) {
@@ -568,5 +543,174 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Helper method to clean and parse sort conditions from array or JSON string.
+	 * @param mixed $rawSortConditions
+	 * @param string $defaultOrder
+	 * @return array
+	 */
+	public static function cleanSortConditions($rawSortConditions, $defaultOrder = 'ASC') {
+		$sortConditions = array();
+		if (empty($rawSortConditions)) {
+			return $sortConditions;
+		}
+
+		$decoded = null;
+		if (is_array($rawSortConditions)) {
+			$decoded = $rawSortConditions;
+		} else if (is_string($rawSortConditions)) {
+			$decoded = json_decode($rawSortConditions, true);
+			if (!is_array($decoded)) {
+				$decoded = json_decode(html_entity_decode($rawSortConditions, ENT_QUOTES, 'UTF-8'), true);
+			}
+			if (!is_array($decoded)) {
+				$decoded = json_decode(htmlspecialchars_decode($rawSortConditions), true);
+			}
+			if (!is_array($decoded)) {
+				$decoded = json_decode(stripslashes($rawSortConditions), true);
+			}
+		}
+
+		if (is_array($decoded) && !empty($decoded)) {
+			foreach ($decoded as $item) {
+				if (is_object($item)) $item = (array)$item;
+				if (is_array($item) && !empty($item['field']) && is_string($item['field'])) {
+					$field = trim($item['field']);
+					$order = (!empty($item['order']) && is_string($item['order']) && strtoupper($item['order']) === 'DESC') ? 'DESC' : 'ASC';
+					$sortConditions[] = array('field' => $field, 'order' => $order);
+				}
+			}
+		} else if (is_string($rawSortConditions) && strpos($rawSortConditions, '[') === false && strpos($rawSortConditions, '{') === false) {
+			$field = trim($rawSortConditions);
+			if (!empty($field)) {
+				$order = (strtoupper($defaultOrder) === 'DESC') ? 'DESC' : 'ASC';
+				$sortConditions[] = array('field' => $field, 'order' => $order);
+			}
+		}
+		return $sortConditions;
+	}
+
+	public function getSortConditions() {
+		$moduleName = $this->getModule()->get('name');
+		$orderBy = $this->get('orderby');
+		$sortOrder = $this->get('sortorder');
+
+		$sortConditions = array();
+		if (!empty($orderBy)) {
+			$sortConditions = self::cleanSortConditions($orderBy, $sortOrder);
+		} else {
+			$viewid = ListViewSession::getCurrentView($moduleName);
+			if (!empty($viewid)) {
+				$cvModel = CustomView_Record_Model::getInstanceById($viewid);
+				if ($cvModel) {
+					$sortConditions = $cvModel->getSortConditions();
+				}
+			}
+		}
+		return $sortConditions;
+	}
+
+	public function setupQueryGeneratorForSort($queryGenerator, $sortConditions) {
+		if (!empty($sortConditions)) {
+			$fieldModels = $queryGenerator->getModuleFields();
+			foreach ($sortConditions as $cond) {
+				if (is_object($cond)) $cond = (array)$cond;
+				$rawFieldName = isset($cond['field']) ? $cond['field'] : '';
+				if (empty($rawFieldName)) continue;
+
+				$pureFieldName = $rawFieldName;
+				$parentField = '';
+				preg_match('/(\w+) ; \((\w+)\) (\w+)/', $rawFieldName, $m);
+				if (!empty($m[1])) {
+					$parentField = $m[1];
+					$pureFieldName = $m[3];
+				}
+
+				$checkField = !empty($parentField) ? $parentField : $pureFieldName;
+				if (isset($fieldModels[$checkField])) {
+					$condFieldModel = $fieldModels[$checkField];
+					if ($condFieldModel && ($condFieldModel->getFieldDataType() == Vtiger_Field_Model::REFERENCE_TYPE ||
+							$condFieldModel->getFieldDataType() == Vtiger_Field_Model::OWNER_TYPE)) {
+						$queryGenerator->addWhereField($rawFieldName);
+					}
+				}
+			}
+		}
+	}
+
+	public function getOrderBySql($queryGenerator, $sortConditions, $moduleFocus = null) {
+		$moduleName = $this->getModule()->get('name');
+		$orderBySql = '';
+		if (!empty($sortConditions)) {
+			$fieldModels = $queryGenerator->getModuleFields();
+			$orderByParts = array();
+			foreach ($sortConditions as $cond) {
+				if (is_object($cond)) $cond = (array)$cond;
+				$rawFieldName = isset($cond['field']) ? $cond['field'] : '';
+				if (empty($rawFieldName)) continue;
+				$order = (!empty($cond['order']) && strtoupper($cond['order']) === 'DESC') ? 'DESC' : 'ASC';
+
+				$pureFieldName = $rawFieldName;
+				$parentField = '';
+				preg_match('/(\w+) ; \((\w+)\) (\w+)/', $rawFieldName, $m);
+				if (!empty($m[1])) {
+					$parentField = $m[1];
+					$pureFieldName = $m[3];
+				}
+
+				// Whitelist validation: check if field exists in module or is an allowed special field
+				$checkField = !empty($parentField) ? $parentField : $pureFieldName;
+				$isValidField = isset($fieldModels[$checkField]);
+				if (!$isValidField && $moduleName === 'Users' && ($pureFieldName === 'roleid' || $pureFieldName === 'first_name')) {
+					$isValidField = true;
+				}
+				if (!$isValidField && $moduleName === 'Calendar' && ($pureFieldName === 'date_start' || $pureFieldName === 'due_date')) {
+					$isValidField = true;
+				}
+
+				if (!$isValidField) {
+					continue;
+				}
+
+				if ($pureFieldName == 'roleid' && $moduleName == 'Users') {
+					$orderByParts[] = 'vtiger_role.rolename ' . $order;
+				} else if ($pureFieldName == 'date_start' && $moduleName == 'Calendar') {
+					$orderByParts[] = "str_to_date(concat(date_start,time_start),'%Y-%m-%d %H:%i:%s') " . $order;
+				} else if ($pureFieldName == 'due_date' && $moduleName == 'Calendar') {
+					$orderByParts[] = "str_to_date(concat(due_date,time_end),'%Y-%m-%d %H:%i:%s') " . $order;
+				} else {
+					$columnSql = $queryGenerator->getOrderByColumn($rawFieldName);
+					if (!empty($columnSql)) {
+						$orderByParts[] = $columnSql . ' ' . $order;
+					}
+				}
+			}
+			if (!empty($orderByParts)) {
+				$orderBySql = ' ORDER BY ' . implode(', ', $orderByParts);
+				if (isset($sortConditions[0]['field']) && $sortConditions[0]['field'] == 'first_name' && $moduleName == 'Users') {
+					$existingFields = array();
+					foreach ($sortConditions as $cond) {
+						$f = isset($cond['field']) ? $cond['field'] : '';
+						preg_match('/(\w+) ; \((\w+)\) (\w+)/', $f, $m);
+						$existingFields[] = !empty($m[3]) ? $m[3] : $f;
+					}
+					if (!in_array('last_name', $existingFields)) {
+						$orderBySql .= ' , last_name ' . $sortConditions[0]['order'];
+					}
+					if (!in_array('email1', $existingFields)) {
+						$orderBySql .= ' , email1 ' . $sortConditions[0]['order'];
+					}
+				}
+			}
+		} else if ($moduleName != "Users") {
+			$baseTable = $moduleFocus ? $moduleFocus->table_name : '';
+			if(empty($baseTable)) {
+				$baseTable = "vtiger_crmentity";
+			}
+			$orderBySql = " ORDER BY ".$baseTable.".modifiedtime DESC";
+		}
+		return $orderBySql;
 	}
 }
