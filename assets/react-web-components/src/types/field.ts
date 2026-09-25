@@ -242,8 +242,6 @@ export const UI_TYPES = {
   REFERENCE_USER2: "101",
 
   // 追加のテキスト系UIType
-  /** テキストエリア20 */
-  TEXTAREA_20: "20",
   /** テキスト106 */
   STRING_106: "106",
 

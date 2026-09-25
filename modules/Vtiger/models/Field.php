@@ -55,7 +55,6 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	const UITYPE_PICKLIST = 16; //non-role based picklist
 	const UITYPE_URL = 17;
 	const UITYPE_FULL_WIDTH_TEXT_AREA = 19;
-	const UITYPE_FAQ = 20;
 	const UITYPE_HALF_WIDTH_TEXT_AREA = 21;
 	const UITYPE_TICKET_TITLE = 22;
 	const UITYPE_DATE_2 = 23;
