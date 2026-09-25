@@ -438,6 +438,8 @@ class Calendar_FetchOverlapEventsBeforeSave_Action extends Vtiger_BasicAjax_Acti
 		}
 		
 		$query     .= 'WHERE deleted = 0 '.
+						// ToDo・メールは重複判定の対象外
+						'AND activitytype NOT IN (\'Task\', \'Emails\') '.
 						'AND smownerid IN ('.generateQuestionMarks($checkOverlapUserIds).') '.
 						'AND (
 							-- 1. 活動が$start前に始まり, $end後に終わる場合
