@@ -74,6 +74,12 @@ $languageStrings = array(
 	'EMAILTEMPLATES' => 'メールテンプレート',
 	'LBL_EMAIL_TEMPLATE_DESCRIPTION' => 'メールのテンプレートを管理します',
 
+	'LBL_DOCUMENTS_COMPLIANCE' => '電子帳簿保存法',
+	'LBL_DOCUMENTS_COMPLIANCE_DESCRIPTION' => 'スキャナ保存の入力期限の計算方針を設定します',
+
+	'LBL_HOLIDAYS' => '休祝日マスタ',
+	'LBL_HOLIDAYS_DESCRIPTION' => '祝日・会社休日と週休を設定します',
+
 	'LBL_COMPANY_DETAILS' => '企業の詳細',
 	'LBL_COMPANY_DESCRIPTION' => '企業の所在地を指定します',
 

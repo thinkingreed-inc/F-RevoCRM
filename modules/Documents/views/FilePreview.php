@@ -8,6 +8,8 @@
  * All Rights Reserved.
  *************************************************************************************/
 
+require_once 'modules/Documents/utils/FolderPermission.php';
+
 class Documents_FilePreview_View extends Vtiger_IndexAjax_View {
 
 	public function requiresPermission(Vtiger_Request $request){
@@ -19,7 +21,10 @@ class Documents_FilePreview_View extends Vtiger_IndexAjax_View {
 
 
 	public function checkPermission(Vtiger_Request $request) {
-		return parent::checkPermission($request);
+		parent::checkPermission($request);
+		// フォルダ権限（標準の権限判定はフォルダを見ない）
+		Documents_FolderPermission::checkRequestAccess($request);
+		return true;
 	}
 
 	public function process(Vtiger_Request $request) {
@@ -38,6 +43,7 @@ class Documents_FilePreview_View extends Vtiger_IndexAjax_View {
 		$fileDetails = $recordModel->getFileDetails();
 
 		$fileContent = false;
+		$previewTooLarge = false;
 		if (!empty ($fileDetails)) {
 			$filePath = $fileDetails['path'];
 			$fileName = $fileDetails['name'];
@@ -50,8 +56,16 @@ class Documents_FilePreview_View extends Vtiger_IndexAjax_View {
 				$fileSize = filesize($filePath.$savedFile);
 				$fileSize = $fileSize + ($fileSize % 1024);
 
-				if (fopen($filePath.$savedFile, "r")) {
-					$fileContent = fread(fopen($filePath.$savedFile, "r"), $fileSize);
+				// ファイル全体をメモリに読むため、大きいファイルは読み込まない
+				// （memory_limit を超えて画面が白くなるのを防ぐ）
+				if (Documents_Module_Model::isPreviewableSize($fileSize)) {
+					$handle = fopen($filePath.$savedFile, "r");
+					if ($handle !== false) {
+						$fileContent = fread($handle, $fileSize);
+						fclose($handle);
+					}
+				} else {
+					$previewTooLarge = true;
 				}
 			}
 		}
@@ -71,7 +85,15 @@ class Documents_FilePreview_View extends Vtiger_IndexAjax_View {
 		}
 		$viewer = $this->getViewer($request);
 		$viewer->assign('MODULE_NAME',$moduleName);
-		if(in_array($extn,$basicFileTypes))
+		if ($previewTooLarge) {
+			// サイズ超過はプレビューせず、ダウンロードを促す
+			$viewer->assign('PREVIEW_TOO_LARGE', 'yes');
+			$viewer->assign('PREVIEW_MAX_SIZE_LABEL', Documents_Module_Model::getEffectiveMaxUploadSizeLabel(
+				Documents_Module_Model::getPreviewMaxSizeInBytes()
+			));
+			$viewer->assign('FILE_PREVIEW_NOT_SUPPORTED','yes');
+		}
+		else if(in_array($extn,$basicFileTypes))
 			$viewer->assign('BASIC_FILE_TYPE','yes');
 		else if(in_array($type,$videoFileTypes))
 			$viewer->assign('VIDEO_FILE_TYPE','yes');

@@ -338,6 +338,7 @@ class PriceBooks extends CRMEntity {
 		$rel_tables = array (
 			"Products" => array("vtiger_pricebookproductrel"=>array("pricebookid","productid"),"vtiger_pricebook"=>"pricebookid"),
 			"Services" => array("vtiger_pricebookproductrel"=>array("pricebookid","productid"),"vtiger_pricebook"=>"pricebookid"),
+			"Documents" => array("vtiger_senotesrel"=>array("crmid","notesid"),"vtiger_pricebook"=>"pricebookid"),
 		);
 		return $rel_tables[$secmodule];
 	}

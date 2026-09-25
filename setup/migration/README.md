@@ -76,6 +76,14 @@ php setup/migration/run_migration.php --all
 ### 利用可能なヘルパーメソッド
 
 - `$this->log($message)` - ログメッセージの出力
+- `$this->checkTableExists($tableName)` - テーブルの存在確認
+- `$this->checkColumnExists($tableName, $columnName)` - カラムの存在確認
+
+### 冪等性
+
+`com_vtiger_migrations` による重複実行制御とは別に、**マイグレーション自身も
+「既にあるならスキップする」ように書くこと**。適用済みの記録が消えた環境や、
+途中まで適用された環境でも安全に再実行できるようにするため。
 
 ## マイグレーションファイルの命名規則
 

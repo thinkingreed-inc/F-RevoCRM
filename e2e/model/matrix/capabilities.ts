@@ -516,6 +516,28 @@ applySkip("Documents", UI_FORM_CASES);
 // ドキュメント自身には「Documents」関連タブが無い(自分にドキュメントを添付しない)ため
 // detail.file.* は機能なし(na)。ファイル添付は他モジュール側で検証する。
 applyNa("Documents", ["detail.file.upload", "detail.file.download"]);
+// ドキュメントの一覧・詳細は React の専用画面(ListRedesign / DetailRedesign)に
+// 置き換わっており、汎用ドライバが前提とする vtiger 標準の DOM
+// (input.listSearchContributor による列検索、一覧の行リンク、詳細のインライン編集)を
+// 持たない。汎用マトリクスでは操作できないため対象外にする。
+// この画面の CRUD・検索は React 側の Vitest と PHP 側の結合テストで検証している。
+// (専用の E2E は別途 e2e/tests に用意する)
+applyNa("Documents", [
+  "list.create.listNav",
+  "list.delete",
+  "list.search",
+  "list.searchReset",
+  "list.cv.personal.show",
+  "list.cv.personal.delete",
+  "list.cv.personal.dup",
+  "list.cv.personal.edit",
+  "list.cv.shared.self",
+  "list.cv.shared.other",
+  "list.cv.mine.self",
+  "list.cv.mine.other",
+  "detail.duplicate",
+  "detail.delete",
+]);
 
 // カレンダー: 予定登録フォームは日時(date_start/time_start/due_date)ウィジェット等の
 // 特殊コントロールを持ち、UI フォーム作成も API 作成(日時型の値生成不可)もできない。

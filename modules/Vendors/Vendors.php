@@ -457,6 +457,7 @@ class Vendors extends CRMEntity {
 			"PurchaseOrder" =>array("vtiger_purchaseorder"=>array("vendorid","purchaseorderid"),"vtiger_vendor"=>"vendorid"),
 			"Contacts" =>array("vtiger_vendorcontactrel"=>array("vendorid","contactid"),"vtiger_vendor"=>"vendorid"),
 			"Emails" => array("vtiger_seactivityrel"=>array("crmid","activityid"),"vtiger_vendor"=>"vendorid"),
+			"Documents" => array("vtiger_senotesrel"=>array("crmid","notesid"),"vtiger_vendor"=>"vendorid"),
 		);
 		return $rel_tables[$secmodule];
 	}

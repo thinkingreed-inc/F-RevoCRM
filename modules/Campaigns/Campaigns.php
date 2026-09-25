@@ -613,6 +613,7 @@ class Campaigns extends CRMEntity {
 			"Potentials" => array("vtiger_potential"=>array("campaignid","potentialid"),"vtiger_campaign"=>"campaignid"),
 			"Calendar" => array("vtiger_seactivityrel"=>array("crmid","activityid"),"vtiger_campaign"=>"campaignid"),
 			"Products" => array("vtiger_campaign"=>array("campaignid","product_id")),
+			"Documents" => array("vtiger_senotesrel"=>array("crmid","notesid"),"vtiger_campaign"=>"campaignid"),
 		);
 		return $rel_tables[$secmodule];
 	}

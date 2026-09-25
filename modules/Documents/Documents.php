@@ -112,6 +112,21 @@ class Documents extends CRMEntity {
 							}
 						}
 
+					} else {
+						// アップロード失敗（サイズ超過など）。ファイル情報を空で上書きすると
+						// 添付なしのドキュメントが出来てしまうため、既存の値を維持する
+						$log->error("Documents file upload failed for record {$this->id}: upload error code {$errCode}");
+						$fileres = $adb->pquery("select filetype, filesize, filename, filedownloadcount, filelocationtype from vtiger_notes where notesid=?", array($this->id));
+						if ($adb->num_rows($fileres) > 0) {
+							$filename = $adb->query_result($fileres, 0, 'filename');
+							$filetype = $adb->query_result($fileres, 0, 'filetype');
+							$filesize = $adb->query_result($fileres, 0, 'filesize');
+							$filedownloadcount = $adb->query_result($fileres, 0, 'filedownloadcount');
+							$filelocationtype = $adb->query_result($fileres, 0, 'filelocationtype');
+						}
+						if (empty($filelocationtype)) {
+							$filelocationtype = 'I';
+						}
 					}
 			}elseif($this->mode == 'edit') {
 				$fileres = $adb->pquery("select filetype, filesize,filename,filedownloadcount,filelocationtype from vtiger_notes where notesid=?", array($this->id));
@@ -148,6 +163,17 @@ class Documents extends CRMEntity {
 		}
 		$query = "UPDATE vtiger_notes SET filename = ? ,filesize = ?, filetype = ? , filelocationtype = ? , filedownloadcount = ? WHERE notesid = ?";
 		$re=$adb->pquery($query,array(decode_html($filename),$filesize,$filetype,$filelocationtype,$filedownloadcount,$this->id));
+
+		// 新規作成時にfileversionが未設定なら「1」をセット
+		if ($insertion_mode != 'edit') {
+			$verResult = $adb->pquery("SELECT fileversion FROM vtiger_notes WHERE notesid = ?", array($this->id));
+			$currentVersion = ($verResult !== false && $adb->num_rows($verResult) > 0)
+				? $adb->query_result($verResult, 0, 'fileversion') : '';
+			if (empty($currentVersion)) {
+				$adb->pquery("UPDATE vtiger_notes SET fileversion = '1' WHERE notesid = ?", array($this->id));
+			}
+		}
+
 		//Inserting into attachments table
 		if($filelocationtype == 'I') {
 			$this->insertIntoAttachment($this->id,'Documents');
@@ -161,6 +187,112 @@ class Documents extends CRMEntity {
 		$this->column_fields['filesize'] = $filesize;
 		$this->column_fields['filetype'] = $filetype;
 		$this->column_fields['filedownloadcount'] = $filedownloadcount;
+
+		// 電帳法対応: ファイルハッシュ計算・監査ログ記録
+		try {
+			require_once 'modules/Documents/utils/FileHasher.php';
+			require_once 'modules/Documents/utils/AuditLogger.php';
+
+			if ($filelocationtype == 'I') {
+				$oldHash = null;
+				if ($insertion_mode == 'edit') {
+					// 既存ハッシュを取得（ファイル差替え検知用）
+					$hashResult = $adb->pquery("SELECT file_hash FROM vtiger_notes WHERE notesid = ?", array($this->id));
+					if ($hashResult !== false && $adb->num_rows($hashResult) > 0) {
+						$oldHash = $adb->query_result($hashResult, 0, 'file_hash');
+					}
+				}
+
+				// ハッシュ計算・保存
+				$newHash = Documents_FileHasher::computeAndSave($this->id);
+
+				// 監査ログ・ファイルバージョン記録
+				// ファイルが変わっていない項目値のみの更新ではバージョンを増やさない
+				if ($insertion_mode != 'edit') {
+					// 新規作成
+					Documents_AuditLogger::logCreate($this->id, array(
+						'title' => $this->column_fields['notes_title'],
+						'filename' => $filename,
+					), $newHash);
+					if ($newHash !== false) {
+						$this->recordFileVersion($this->id, $newHash, $filesize, $insertion_mode);
+					}
+				} elseif ($newHash !== false && $oldHash !== $newHash) {
+					// ファイル差替え
+					Documents_AuditLogger::logFileReplace($this->id, $oldHash, $newHash);
+					$this->recordFileVersion($this->id, $newHash, $filesize, $insertion_mode);
+				}
+			} elseif ($insertion_mode != 'edit') {
+				// 外部URL等（ハッシュ対象外）でも登録履歴は残す
+				Documents_AuditLogger::logCreate($this->id, array(
+					'title' => $this->column_fields['notes_title'],
+					'filename' => isset($filename) ? $filename : '',
+				));
+			}
+		} catch (Exception $e) {
+			$log->error("Compliance processing failed for record {$this->id}: " . $e->getMessage());
+		}
+
+		// ファイル内テキスト抽出（全文検索用）
+		// 電帳法の記録より後に行う。抽出はファイルの中身を解析するため、
+		// 大きなPDFなどで memory_limit を超えて処理が中断することがある。
+		// 中断は致命的エラーで catch できないため、先に記録を済ませておく
+		if ($filelocationtype == 'I') {
+			try {
+				require_once 'modules/Documents/utils/TextExtractor.php';
+				Documents_TextExtractor::indexRecord($this->id);
+			} catch (Exception $e) {
+				// 抽出失敗はログに記録するがエラーにはしない
+				$log->error("TextExtractor failed for record {$this->id}: " . $e->getMessage());
+			}
+		}
+	}
+
+	/**
+	 * ファイルバージョンを記録する
+	 */
+	private function recordFileVersion($notesId, $fileHash, $fileSize, $insertionMode) {
+		global $adb;
+		$currentUser = Users_Record_Model::getCurrentUserModel();
+		$userId = $currentUser ? $currentUser->getId() : 0;
+
+		// 現行バージョンフラグをリセット
+		$adb->pquery("UPDATE vtiger_notes_file_versions SET is_current = 0 WHERE notesid = ?", array($notesId));
+
+		// 次のバージョン番号を取得
+		$versionResult = $adb->pquery(
+			"SELECT COALESCE(MAX(version_number), 0) + 1 AS next_version FROM vtiger_notes_file_versions WHERE notesid = ?",
+			array($notesId)
+		);
+		$nextVersion = ($versionResult !== false && $adb->num_rows($versionResult) > 0)
+			? (int) $adb->query_result($versionResult, 0, 'next_version')
+			: 1;
+
+		// attachmentsid取得
+		$attachResult = $adb->pquery(
+			"SELECT attachmentsid FROM vtiger_seattachmentsrel WHERE crmid = ?",
+			array($notesId)
+		);
+		$attachmentsId = 0;
+		if ($attachResult !== false && $adb->num_rows($attachResult) > 0) {
+			$attachmentsId = (int) $adb->query_result($attachResult, 0, 'attachmentsid');
+		}
+
+		// 変更理由は言語非依存の翻訳キーで保存し、表示時に翻訳する
+		$changeReason = ($insertionMode != 'edit') ? 'LBL_VERSION_INITIAL' : 'LBL_VERSION_FILE_REPLACED';
+
+		$adb->pquery(
+			"INSERT INTO vtiger_notes_file_versions
+				(notesid, version_number, attachmentsid, file_hash, file_size, change_reason, created_by, is_current)
+			VALUES (?, ?, ?, ?, ?, ?, ?, 1)",
+			array($notesId, $nextVersion, $attachmentsId, $fileHash, (int) $fileSize, $changeReason, $userId)
+		);
+
+		// vtiger_notes.fileversion を現在のバージョン番号で自動更新
+		$adb->pquery(
+			"UPDATE vtiger_notes SET fileversion = ? WHERE notesid = ?",
+			array((string) $nextVersion, $notesId)
+		);
 	}
 
 
@@ -515,6 +647,19 @@ class Documents extends CRMEntity {
 			if(!$this->isFolderPresent($folderid)) {
 				// Re-link to default folder
 				$adb->pquery("UPDATE vtiger_notes set folderid = 1 WHERE notesid = ?", array($id));
+			}
+		}
+
+		// 復元も監査ログに残す（削除と対で残さないと履歴から追えない）。
+		// 記録に失敗しても復元は完了しているため、例外は投げずにログへ残す
+		try {
+			require_once 'modules/Documents/utils/AuditLogger.php';
+			Documents_AuditLogger::logRestore($id);
+		} catch (Exception $e) {
+			global $log;
+			if (isset($log) && is_object($log)) {
+				$log->error("Documents restore audit log failed for record {$id}: "
+					. $e->getMessage());
 			}
 		}
 	}
