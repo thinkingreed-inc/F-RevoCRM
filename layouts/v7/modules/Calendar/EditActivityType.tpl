@@ -59,7 +59,7 @@
             <div class="form-group">
                 <label class="control-label fieldLabel col-sm-4">{vtranslate('LBL_SELECT_CALENDAR_COLOR', $MODULE)}</label>
                 <div class="controls fieldValue col-sm-8">
-                    <p class="calendarColorPicker"></p>
+                    <calendar-color-picker value=""></calendar-color-picker>
                 </div>
             </div>
         </form>
