@@ -31,6 +31,8 @@ const DEFAULT_TRANSLATIONS: TranslationData = {
   LBL_EDIT: "編集",
   LBL_DELETE: "削除",
   LBL_LOADING: "読み込み中",
+  LBL_YES: "はい",
+  LBL_NO: "いいえ",
 
   // QuickCreate
   LBL_QUICK_CREATE: "クイック作成",
@@ -71,6 +73,7 @@ const DEFAULT_TRANSLATIONS: TranslationData = {
   LBL_ALL_USERS_SELECTED: "すべてのユーザーが選択済みです",
   LBL_NO_MATCHING_USERS: "該当するユーザーがいません",
   LBL_NO_MATCHING_CURRENCY: "該当する通貨がありません",
+  OVERLAPPING_EXISTS: "期間の重複する活動が登録されています",
 
   // プレースホルダー
   LBL_PLACEHOLDER_ENTER: "%sを入力してください",

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QuickCreate } from "./QuickCreate";
@@ -58,6 +58,10 @@ const mockEventsFields = [
 
 const mockSave = vi.fn();
 const mockClearError = vi.fn();
+/** 期間重複チェック。既定では重複なし（null）を返す */
+const mockCheckOverlap = vi.fn<
+  (module: string, formData: Record<string, unknown>) => Promise<string | null>
+>(async () => null);
 
 const mockUseQuickCreateSave = vi.fn(() => ({
   save: mockSave,
@@ -118,6 +122,14 @@ vi.mock("./hooks/useRecordData", () => ({
   useRecordData: () => ({ data: null, loading: false, error: null }),
 }));
 
+vi.mock("./hooks/useOverlapCheck", () => ({
+  useOverlapCheck: (module: string) => ({
+    checkOverlap: (formData: Record<string, unknown>) =>
+      mockCheckOverlap(module, formData),
+    isChecking: false,
+  }),
+}));
+
 vi.mock("./hooks/useCalendarFields", () => ({
   useCalendarFields: (params: { activeTab: string }) =>
     mockUseCalendarFields(params.activeTab),
@@ -134,6 +146,14 @@ describe("QuickCreate (calendar variant) の日付範囲バリデーション", 
       recordLabel: "テストToDo",
       module: "Calendar",
     });
+    mockCheckOverlap.mockResolvedValue(null);
+  });
+
+  afterEach(() => {
+    // Radix Dialog が body に残すスクロールロックを戻す。
+    // 残っているとクリックが pointer-events: none で無視され、後続テストが落ちる
+    document.body.style.pointerEvents = "";
+    document.body.removeAttribute("data-scroll-locked");
   });
 
   describe("ToDo（due_date が日付のみ）", () => {
@@ -309,5 +329,107 @@ describe("QuickCreate (calendar variant) の終日フラグとタブの関係", 
     });
 
     expect(screen.queryAllByPlaceholderText("--:--")).toHaveLength(0);
+  });
+
+  describe("期間の重複チェック", () => {
+    const OVERLAP_MESSAGE_TEXT = "期間が重複している活動";
+    const overlapHtml = `<div>${OVERLAP_MESSAGE_TEXT}</div>`;
+
+    /** 活動タブで重複する日時を入力した QuickCreate を描画する */
+    function renderEventsQuickCreate() {
+      return render(
+        <QuickCreate
+          module="Events"
+          isOpen={true}
+          initialData={{
+            subject: "重複する活動",
+            date_start: "2026-08-17T14:30",
+            due_date: "2026-08-17T15:00",
+          }}
+        />,
+      );
+    }
+
+    it("重複が無ければ確認ダイアログを出さずに保存する", async () => {
+      const user = userEvent.setup();
+      mockCheckOverlap.mockResolvedValue(null);
+
+      renderEventsQuickCreate();
+
+      await user.click(screen.getByRole("button", { name: /保存/i }));
+
+      await waitFor(() => {
+        expect(mockSave).toHaveBeenCalled();
+      });
+      expect(screen.queryByText(OVERLAP_MESSAGE_TEXT)).not.toBeInTheDocument();
+    });
+
+    it("重複がある場合は確認ダイアログを表示し、すぐには保存しない", async () => {
+      const user = userEvent.setup();
+      mockCheckOverlap.mockResolvedValue(overlapHtml);
+
+      renderEventsQuickCreate();
+
+      await user.click(screen.getByRole("button", { name: /保存/i }));
+
+      expect(await screen.findByText(OVERLAP_MESSAGE_TEXT)).toBeInTheDocument();
+      expect(mockSave).not.toHaveBeenCalled();
+    });
+
+    it("確認ダイアログで「はい」を選ぶと保存する", async () => {
+      const user = userEvent.setup();
+      mockCheckOverlap.mockResolvedValue(overlapHtml);
+
+      renderEventsQuickCreate();
+
+      await user.click(screen.getByRole("button", { name: /保存/i }));
+      await screen.findByText(OVERLAP_MESSAGE_TEXT);
+
+      await user.click(screen.getByRole("button", { name: "はい" }));
+
+      await waitFor(() => {
+        expect(mockSave).toHaveBeenCalled();
+      });
+      // 「はい」を選んだあとは重複チェックを繰り返さない
+      expect(mockCheckOverlap).toHaveBeenCalledTimes(1);
+    });
+
+    it("確認ダイアログで「いいえ」を選ぶと保存しない", async () => {
+      const user = userEvent.setup();
+      mockCheckOverlap.mockResolvedValue(overlapHtml);
+
+      renderEventsQuickCreate();
+
+      await user.click(screen.getByRole("button", { name: /保存/i }));
+      await screen.findByText(OVERLAP_MESSAGE_TEXT);
+
+      await user.click(screen.getByRole("button", { name: "いいえ" }));
+
+      await waitFor(() => {
+        expect(
+          screen.queryByText(OVERLAP_MESSAGE_TEXT),
+        ).not.toBeInTheDocument();
+      });
+      expect(mockSave).not.toHaveBeenCalled();
+    });
+
+    it("重複チェックが失敗した場合は保存せずエラーを表示する", async () => {
+      const user = userEvent.setup();
+      mockCheckOverlap.mockRejectedValue(
+        new Error("重複チェックに失敗しました"),
+      );
+
+      renderEventsQuickCreate();
+
+      await user.click(screen.getByRole("button", { name: /保存/i }));
+
+      expect(
+        await screen.findByText("重複チェックに失敗しました"),
+      ).toBeInTheDocument();
+      expect(mockSave).not.toHaveBeenCalled();
+    });
+
+    // ToDo（Calendar）が重複チェックの対象外であることは
+    // useOverlapCheck の単体テスト（module が Events 以外なら問い合わせない）で担保する
   });
 });
