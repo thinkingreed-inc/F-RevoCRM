@@ -540,10 +540,12 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 			}
 			m.add(parseInt(minutesToAdd), 'minutes');
 			if ((container.find('[name="time_start"]').data('userChangedDateTime') !== 1) || (container.find('[name="module"]').val()==='Calendar' || container.find('[name="module"]').val()==='Events')) {
-					if(m.format(vtUtils.getMomentDateFormat()) == 'Invalid date') {
-						m.format(vtUtils.getMomentDateFormat()) = '';
+					// 関数の戻り値には代入できないため、いったん変数へ受けてから空文字に置き換える
+					var formattedEndDate = m.format(vtUtils.getMomentDateFormat());
+					if(formattedEndDate == 'Invalid date') {
+						formattedEndDate = '';
 					}
-					endDateElement.val(m.format(vtUtils.getMomentDateFormat()));
+					endDateElement.val(formattedEndDate);
 				}
 			endTimeElement.val(m.format(vtUtils.getMomentTimeFormat()));
 
