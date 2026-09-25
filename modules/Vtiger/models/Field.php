@@ -1219,6 +1219,10 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	*/
 	/**TODO: field validator need to be handled in specific module getValidator api  **/
 	function getValidator() {
+		static $validationCache = array();
+		if(isset($validationCache[$this->id])) {
+			return $validationCache[$this->id];
+		}
 		$validator = array();
 		$fieldName = $this->getName();
 		switch($fieldName) {
@@ -1270,6 +1274,8 @@ class Vtiger_Field_Model extends Vtiger_Field {
 		if (isset($funcName) && $funcName) {
 			array_push($validator, $funcName);
 		}
+
+		$validationCache[$this->id] = $validator;
 		return $validator;
 	}
 
