@@ -68,7 +68,8 @@ class Vtiger_Session {
 	 * Is key defined in session?
 	 */
 	static function has($key) {
-		return HTTP_Session2::is_set($key);
+		// HTTP_Session2 に is_set() は存在しないため、get()/set() と同じく $_SESSION を直接参照する
+		return isset($_SESSION[$key]);
 	}
 
 	/**

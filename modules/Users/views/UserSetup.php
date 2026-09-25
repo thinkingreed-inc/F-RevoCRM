@@ -46,14 +46,16 @@ class Users_UserSetup_View extends Vtiger_Index_View {
 			$viewer->assign('USER_ID', $request->get('record'));
 			$viewer->view('UserSetup.tpl', $moduleName);
 		} else {
-			if(isset($_SESSION['return_params'])) {
-				$return_params = urldecode($_SESSION['return_params']);
+			$return_params = urldecode(Vtiger_Session::get('return_params', ''));
+			// 一度使ったらクリアして、以降のログインに持ち越さないようにする
+			Vtiger_Session::set('return_params', null);
+			// apis/actions の URL は画面を返さないため、index.php を開く
+			if(Vtiger_WebUI::isRedirectableQueryString($return_params)) {
 				header("Location: index.php?$return_params");
-				exit();
 			} else {
 				header("Location: index.php");
-				exit();
 			}
+			exit();
 		}
 	}
 
