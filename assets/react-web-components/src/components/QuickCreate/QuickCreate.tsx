@@ -249,7 +249,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
   } = useQuickCreateSave(isCalendarVariant ? activeTab : "");
 
   // 活動の期間重複チェック。旧UI（編集画面）と同じアクションを呼び、同じ確認文面を使う
-  const { checkOverlap } = useOverlapCheck(
+  const { checkOverlap, isChecking: isCheckingOverlap } = useOverlapCheck(
     isCalendarVariant ? activeTab : module,
   );
   /** 重複確認ダイアログに表示するメッセージHTML。null のときは非表示 */
@@ -1318,7 +1318,11 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
               onCancel={() => handleOpenChange(false)}
               onGoToFullForm={handleGoToFullForm}
               isSaving={isSaving}
-              saveDisabled={!!successMessage || fields.length === 0}
+              // 重複チェックの応答待ちも保存不可にする。
+              // ここを空けると、確認ダイアログが出る前に連打されて二重登録になる
+              saveDisabled={
+                !!successMessage || fields.length === 0 || isCheckingOverlap
+              }
               isEditMode={isEditMode}
             />
           )}

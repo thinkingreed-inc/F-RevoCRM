@@ -122,13 +122,28 @@ vi.mock("./hooks/useRecordData", () => ({
   useRecordData: () => ({ data: null, loading: false, error: null }),
 }));
 
-vi.mock("./hooks/useOverlapCheck", () => ({
-  useOverlapCheck: (module: string) => ({
-    checkOverlap: (formData: Record<string, unknown>) =>
-      mockCheckOverlap(module, formData),
-    isChecking: false,
-  }),
-}));
+// 問い合わせ中に isChecking が true になる点まで本物と揃える。
+// ここを固定値にすると「チェック中はボタンを無効化する」挙動を検証できない
+vi.mock("./hooks/useOverlapCheck", async () => {
+  const { useState, useCallback } = await import("react");
+  return {
+    useOverlapCheck: (module: string) => {
+      const [isChecking, setIsChecking] = useState(false);
+      const checkOverlap = useCallback(
+        async (formData: Record<string, unknown>) => {
+          setIsChecking(true);
+          try {
+            return await mockCheckOverlap(module, formData);
+          } finally {
+            setIsChecking(false);
+          }
+        },
+        [module],
+      );
+      return { checkOverlap, isChecking };
+    },
+  };
+});
 
 vi.mock("./hooks/useCalendarFields", () => ({
   useCalendarFields: (params: { activeTab: string }) =>
@@ -480,6 +495,59 @@ describe("QuickCreate (calendar variant) の終日フラグとタブの関係", 
         await screen.findByText("重複チェックに失敗しました"),
       ).toBeInTheDocument();
       expect(mockSave).not.toHaveBeenCalled();
+    });
+
+    it("重複チェックの問い合わせ中は保存ボタンを押せない", async () => {
+      const user = userEvent.setup();
+      let resolveCheck: (message: string | null) => void = () => {};
+      mockCheckOverlap.mockImplementation(
+        () =>
+          new Promise<string | null>((resolve) => {
+            resolveCheck = resolve;
+          }),
+      );
+
+      renderEventsQuickCreate();
+
+      const saveButton = screen.getByRole("button", { name: /保存/i });
+      await user.click(saveButton);
+
+      // 応答待ちの間に押せてしまうと、重複確認を経ずに二重登録される
+      await waitFor(() => {
+        expect(saveButton).toBeDisabled();
+      });
+
+      resolveCheck(null);
+
+      await waitFor(() => {
+        expect(mockSave).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it("問い合わせ中に保存を連打しても保存は一度だけ走る", async () => {
+      const user = userEvent.setup();
+      let resolveCheck: (message: string | null) => void = () => {};
+      mockCheckOverlap.mockImplementation(
+        () =>
+          new Promise<string | null>((resolve) => {
+            resolveCheck = resolve;
+          }),
+      );
+
+      renderEventsQuickCreate();
+
+      const saveButton = screen.getByRole("button", { name: /保存/i });
+      await user.click(saveButton);
+      await user.click(saveButton);
+      await user.click(saveButton);
+
+      expect(mockCheckOverlap).toHaveBeenCalledTimes(1);
+
+      resolveCheck(null);
+
+      await waitFor(() => {
+        expect(mockSave).toHaveBeenCalledTimes(1);
+      });
     });
 
     // ToDo（Calendar）が重複チェックの対象外であることは
