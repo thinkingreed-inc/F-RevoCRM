@@ -1659,6 +1659,8 @@ $languageStrings = array(
 	'LBL_TASK_SEND_EMAIL_WHEN_COMMENTED' => 'Workflow to Send an Email to a Portal User Who Is a Customer Representative When a Comment Is Added',
 	'LBL_A_WORKFLOW_TO_SEND_AN_EMAIL_WHEN_A_COMMENT_IS_ADDED' => 'Workflow to Send an Email When a Comment Is Added',
 	'LBL_ELIGIBLE_FOR_REDUCED_TAX_RATE' => 'Eligible for Reduced Tax Rate',
+	'LBL_DISPLAY_NAME' => 'Display Name',
+	'LBL_DISPLAY_NAME_PLACEHOLDER' => 'Uses product name if left blank',
 	'LBL_TESTMAIL_SMTP_BODY' => 'Dear <br><br><b>This is a test email sent to verify if the configured SMTP server is working correctly.</b><br>You may delete this email.<br><br>Best regards,<br>F-RevoCRM<br><br>',
 	
 	

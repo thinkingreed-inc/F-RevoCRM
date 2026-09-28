@@ -21,6 +21,7 @@
 {assign var=LIST_PRICE_VIEWABLE value=false}
 {assign var=MARGIN_VIEWABLE value=false}
 {assign var=COMMENT_VIEWABLE value=false}
+{assign var=DISPLAYNAME_VIEWABLE value=false}
 {assign var=ITEM_DISCOUNT_AMOUNT_VIEWABLE value=false}
 {assign var=ITEM_DISCOUNT_PERCENT_VIEWABLE value=false}
 {assign var=SH_PERCENT_VIEWABLE value=false}
@@ -53,6 +54,9 @@
 {/if}
 {if $LINEITEM_FIELDS['comment']}
     {assign var=COMMENT_VIEWABLE value=$LINEITEM_FIELDS['comment']->isViewable()}
+{/if}
+{if $LINEITEM_FIELDS['displayname']}
+    {assign var=DISPLAYNAME_VIEWABLE value=$LINEITEM_FIELDS['displayname']->isViewable()}
 {/if}
 {if $LINEITEM_FIELDS['discount_amount']}
     {assign var=ITEM_DISCOUNT_AMOUNT_VIEWABLE value=$LINEITEM_FIELDS['discount_amount']->isViewable()}
@@ -164,6 +168,11 @@
                                 <div>
                                     {$LINE_ITEM_DETAIL["subprod_names$INDEX"]}
                                 </div>
+                                {if $DISPLAYNAME_VIEWABLE && !empty($LINE_ITEM_DETAIL["displayname$INDEX"])}
+                                    <div>
+                                        <strong>{vtranslate('LBL_DISPLAY_NAME',$MODULE)}:</strong> {decode_html($LINE_ITEM_DETAIL["displayname$INDEX"])}
+                                    </div>
+                                {/if}
                                 {if $COMMENT_VIEWABLE && !empty($LINE_ITEM_DETAIL["productName$INDEX"])}
                                     <div>
                                         {decode_html($LINE_ITEM_DETAIL["comment$INDEX"])|nl2br}

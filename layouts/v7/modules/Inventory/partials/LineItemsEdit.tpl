@@ -38,6 +38,9 @@
 {if $LINEITEM_FIELDS['comment']}
 	{assign var=COMMENT_EDITABLE value=$LINEITEM_FIELDS['comment']->isEditable()}
 {/if}
+{if $LINEITEM_FIELDS['displayname']}
+	{assign var=DISPLAYNAME_EDITABLE value=$LINEITEM_FIELDS['displayname']->isEditable()}
+{/if}
 {if $LINEITEM_FIELDS['discount_amount']}
 	{assign var=ITEM_DISCOUNT_AMOUNT_EDITABLE value=$LINEITEM_FIELDS['discount_amount']->isEditable()}
 {/if}
