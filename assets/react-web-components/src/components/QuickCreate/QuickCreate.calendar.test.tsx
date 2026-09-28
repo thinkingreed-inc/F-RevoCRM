@@ -580,7 +580,9 @@ describe("QuickCreate (calendar variant) の終日フラグとタブの関係", 
       const user = userEvent.setup();
       const deferred = deferCheckOverlap();
 
-      const { rerender } = render(<QuickCreate {...eventsProps} isOpen={true} />);
+      const { rerender } = render(
+        <QuickCreate {...eventsProps} isOpen={true} />,
+      );
       await user.click(screen.getByRole("button", { name: /保存/i }));
 
       // 応答を待っている途中で閉じる
@@ -604,7 +606,9 @@ describe("QuickCreate (calendar variant) の終日フラグとタブの関係", 
       const user = userEvent.setup();
       const deferred = deferCheckOverlap();
 
-      const { rerender } = render(<QuickCreate {...eventsProps} isOpen={true} />);
+      const { rerender } = render(
+        <QuickCreate {...eventsProps} isOpen={true} />,
+      );
       await user.click(screen.getByRole("button", { name: /保存/i }));
 
       rerender(<QuickCreate {...eventsProps} isOpen={false} />);
