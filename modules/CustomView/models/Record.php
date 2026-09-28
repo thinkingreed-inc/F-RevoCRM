@@ -271,6 +271,32 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 		return Vtiger_ListView_Model::cleanSortConditions($orderby, $sortorder);
 	}
 
+	/**
+	 * ソート条件から、リスト編集画面で選択できない項目（モジュールに存在しない項目など）を除外する
+	 * @param <Array> $sortConditions Array of array('field' => string, 'order' => 'ASC'|'DESC')
+	 * @return <Array>
+	 */
+	public function filterSortConditionsBySelectableFields($sortConditions) {
+		if (empty($sortConditions)) {
+			return array();
+		}
+		$recordStructure = Vtiger_RecordStructure_Model::getInstanceForModule($this->getModule(), Vtiger_RecordStructure_Model::RECORD_STRUCTURE_MODE_FILTER);
+		$selectableFieldNames = array();
+		foreach ($recordStructure->getStructure() as $blockFields) {
+			foreach ($blockFields as $fieldName => $fieldModel) {
+				$selectableFieldNames[$fieldName] = true;
+			}
+		}
+
+		$validConditions = array();
+		foreach ($sortConditions as $sortCondition) {
+			if (isset($selectableFieldNames[$sortCondition['field']])) {
+				$validConditions[] = $sortCondition;
+			}
+		}
+		return $validConditions;
+	}
+
 	public function save($partial = false) {
 		$db = PearDatabase::getInstance();
 		$currentUserModel = Users_Record_Model::getCurrentUserModel();
@@ -285,7 +311,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 
 		$sortConditions = $this->get('sort_conditions');
 		if (is_array($sortConditions) && !empty($sortConditions)) {
-			$validConditions = Vtiger_ListView_Model::cleanSortConditions($sortConditions);
+			$validConditions = $this->filterSortConditionsBySelectableFields(Vtiger_ListView_Model::cleanSortConditions($sortConditions));
 			if (!empty($validConditions)) {
 				$orderby = json_encode($validConditions);
 				$sortorder = $validConditions[0]['order'];
