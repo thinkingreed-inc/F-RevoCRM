@@ -145,7 +145,7 @@
 															{foreach key=FIELD_NAME item=FIELD_MODEL from=$BLOCK_FIELDS}
 																{assign var=FIELD_MODULE_NAME value=$FIELD_MODEL->getModule()->getName()}
 																{assign var=WITH_MODULENAME value="("|cat:{vtranslate($FIELD_MODULE_NAME, $SOURCE_MODULE)}|cat:")-"}
-																<option value="{$FIELD_NAME}" {if $SORT_ROW.field eq $FIELD_NAME || ($SORT_ROW.field eq $FIELD_MODEL->get('name') && $FIELD_MODULE_NAME eq $SOURCE_MODULE)}selected{/if}>
+																<option value="{$FIELD_NAME}" {if $SORT_ROW.field eq $FIELD_NAME}selected{/if}>
 																	{Vtiger_Util_Helper::toSafeHTML(vtranslate($FIELD_MODEL->get('label'), $SOURCE_MODULE)|replace:"-":$WITH_MODULENAME)}
 																</option>
 															{/foreach}
