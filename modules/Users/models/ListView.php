@@ -135,4 +135,44 @@ class Users_ListView_Model extends Vtiger_ListView_Model {
 
 		return $advancedLinks;
 	}
+
+	/**
+	 * Function to get the ORDER BY clause for the sort conditions
+	 * Users list has no default order, and sorting by first name is followed by last name and email
+	 */
+	public function getOrderBySql($queryGenerator, $sortConditions, $moduleFocus = null) {
+		if (empty($sortConditions)) {
+			return '';
+		}
+		$orderBySql = parent::getOrderBySql($queryGenerator, $sortConditions, $moduleFocus);
+		if (!empty($orderBySql) && isset($sortConditions[0]['field']) && $sortConditions[0]['field'] == 'first_name') {
+			$existingFields = array();
+			foreach ($sortConditions as $cond) {
+				$f = isset($cond['field']) ? $cond['field'] : '';
+				preg_match('/(\w+) ; \((\w+)\) (\w+)/', $f, $m);
+				$existingFields[] = !empty($m[3]) ? $m[3] : $f;
+			}
+			if (!in_array('last_name', $existingFields)) {
+				$orderBySql .= ' , last_name ' . $sortConditions[0]['order'];
+			}
+			if (!in_array('email1', $existingFields)) {
+				$orderBySql .= ' , email1 ' . $sortConditions[0]['order'];
+			}
+		}
+		return $orderBySql;
+	}
+
+	/**
+	 * Function to get the ORDER BY column expression for the sort field
+	 * Role is sorted by role name
+	 */
+	protected function getSortColumnSql($queryGenerator, $rawFieldName) {
+		if ($rawFieldName == 'roleid') {
+			return 'vtiger_role.rolename';
+		}
+		if ($rawFieldName == 'first_name') {
+			return $queryGenerator->getOrderByColumn($rawFieldName);
+		}
+		return parent::getSortColumnSql($queryGenerator, $rawFieldName);
+	}
 }

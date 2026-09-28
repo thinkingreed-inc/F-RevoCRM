@@ -294,4 +294,18 @@ class Calendar_ListView_Model extends Vtiger_ListView_Model {
 		}
 		return $listViewRecordModels;
 	}
+
+	/**
+	 * Function to get the ORDER BY column expression for the sort field
+	 * Start / due date are sorted together with their time
+	 */
+	protected function getSortColumnSql($queryGenerator, $rawFieldName) {
+		if ($rawFieldName == 'date_start') {
+			return "str_to_date(concat(date_start,time_start),'%Y-%m-%d %H:%i:%s')";
+		}
+		if ($rawFieldName == 'due_date') {
+			return "str_to_date(concat(due_date,time_end),'%Y-%m-%d %H:%i:%s')";
+		}
+		return parent::getSortColumnSql($queryGenerator, $rawFieldName);
+	}
 }

@@ -641,10 +641,8 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 	}
 
 	public function getOrderBySql($queryGenerator, $sortConditions, $moduleFocus = null) {
-		$moduleName = $this->getModule()->get('name');
 		$orderBySql = '';
 		if (!empty($sortConditions)) {
-			$fieldModels = $queryGenerator->getModuleFields();
 			$orderByParts = array();
 			foreach ($sortConditions as $cond) {
 				if (is_object($cond)) $cond = (array)$cond;
@@ -652,59 +650,15 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 				if (empty($rawFieldName)) continue;
 				$order = (!empty($cond['order']) && strtoupper($cond['order']) === 'DESC') ? 'DESC' : 'ASC';
 
-				$pureFieldName = $rawFieldName;
-				$parentField = '';
-				preg_match('/(\w+) ; \((\w+)\) (\w+)/', $rawFieldName, $m);
-				if (!empty($m[1])) {
-					$parentField = $m[1];
-					$pureFieldName = $m[3];
-				}
-
-				// Whitelist validation: check if field exists in module or is an allowed special field
-				$checkField = !empty($parentField) ? $parentField : $pureFieldName;
-				$isValidField = isset($fieldModels[$checkField]);
-				if (!$isValidField && $moduleName === 'Users' && ($pureFieldName === 'roleid' || $pureFieldName === 'first_name')) {
-					$isValidField = true;
-				}
-				if (!$isValidField && $moduleName === 'Calendar' && ($pureFieldName === 'date_start' || $pureFieldName === 'due_date')) {
-					$isValidField = true;
-				}
-
-				if (!$isValidField) {
-					continue;
-				}
-
-				if ($pureFieldName == 'roleid' && $moduleName == 'Users') {
-					$orderByParts[] = 'vtiger_role.rolename ' . $order;
-				} else if ($pureFieldName == 'date_start' && $moduleName == 'Calendar') {
-					$orderByParts[] = "str_to_date(concat(date_start,time_start),'%Y-%m-%d %H:%i:%s') " . $order;
-				} else if ($pureFieldName == 'due_date' && $moduleName == 'Calendar') {
-					$orderByParts[] = "str_to_date(concat(due_date,time_end),'%Y-%m-%d %H:%i:%s') " . $order;
-				} else {
-					$columnSql = $queryGenerator->getOrderByColumn($rawFieldName);
-					if (!empty($columnSql)) {
-						$orderByParts[] = $columnSql . ' ' . $order;
-					}
+				$columnSql = $this->getSortColumnSql($queryGenerator, $rawFieldName);
+				if (!empty($columnSql)) {
+					$orderByParts[] = $columnSql . ' ' . $order;
 				}
 			}
 			if (!empty($orderByParts)) {
 				$orderBySql = ' ORDER BY ' . implode(', ', $orderByParts);
-				if (isset($sortConditions[0]['field']) && $sortConditions[0]['field'] == 'first_name' && $moduleName == 'Users') {
-					$existingFields = array();
-					foreach ($sortConditions as $cond) {
-						$f = isset($cond['field']) ? $cond['field'] : '';
-						preg_match('/(\w+) ; \((\w+)\) (\w+)/', $f, $m);
-						$existingFields[] = !empty($m[3]) ? $m[3] : $f;
-					}
-					if (!in_array('last_name', $existingFields)) {
-						$orderBySql .= ' , last_name ' . $sortConditions[0]['order'];
-					}
-					if (!in_array('email1', $existingFields)) {
-						$orderBySql .= ' , email1 ' . $sortConditions[0]['order'];
-					}
-				}
 			}
-		} else if ($moduleName != "Users") {
+		} else {
 			$baseTable = $moduleFocus ? $moduleFocus->table_name : '';
 			if(empty($baseTable)) {
 				$baseTable = "vtiger_crmentity";
@@ -712,5 +666,26 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 			$orderBySql = " ORDER BY ".$baseTable.".modifiedtime DESC";
 		}
 		return $orderBySql;
+	}
+
+	/**
+	 * Function to get the ORDER BY column expression for the sort field
+	 * Modules which need a special expression for their fields should override this function
+	 * @param QueryGenerator $queryGenerator
+	 * @param string $rawFieldName field name, or reference field name like "(account_id ; (Accounts) industry)"
+	 * @return string column expression, or empty string when the field is not sortable
+	 */
+	protected function getSortColumnSql($queryGenerator, $rawFieldName) {
+		// Whitelist validation: check if field (or reference field) exists in module
+		$checkField = $rawFieldName;
+		preg_match('/(\w+) ; \((\w+)\) (\w+)/', $rawFieldName, $m);
+		if (!empty($m[1])) {
+			$checkField = $m[1];
+		}
+		$fieldModels = $queryGenerator->getModuleFields();
+		if (!isset($fieldModels[$checkField])) {
+			return '';
+		}
+		return $queryGenerator->getOrderByColumn($rawFieldName);
 	}
 }
