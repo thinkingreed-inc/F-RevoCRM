@@ -550,6 +550,78 @@ describe("QuickCreate (calendar variant) の終日フラグとタブの関係", 
       });
     });
 
+    /** 応答を手動で解決できるようにした checkOverlap を仕込む */
+    function deferCheckOverlap() {
+      let resolveCheck: (message: string | null) => void = () => {};
+      let rejectCheck: (reason: Error) => void = () => {};
+      mockCheckOverlap.mockImplementation(
+        () =>
+          new Promise<string | null>((resolve, reject) => {
+            resolveCheck = resolve;
+            rejectCheck = reject;
+          }),
+      );
+      return {
+        resolve: (message: string | null) => resolveCheck(message),
+        reject: (reason: Error) => rejectCheck(reason),
+      };
+    }
+
+    const eventsProps = {
+      module: "Events" as const,
+      initialData: {
+        subject: "重複する活動",
+        date_start: "2026-08-17T14:30",
+        due_date: "2026-08-17T15:00",
+      },
+    };
+
+    it("問い合わせ中にモーダルを閉じると、開き直したときに確認が残らない", async () => {
+      const user = userEvent.setup();
+      const deferred = deferCheckOverlap();
+
+      const { rerender } = render(<QuickCreate {...eventsProps} isOpen={true} />);
+      await user.click(screen.getByRole("button", { name: /保存/i }));
+
+      // 応答を待っている途中で閉じる
+      rerender(<QuickCreate {...eventsProps} isOpen={false} />);
+
+      // 閉じたあとに「重複あり」が返ってくる
+      deferred.resolve(overlapHtml);
+      await new Promise((r) => setTimeout(r, 0));
+
+      rerender(<QuickCreate {...eventsProps} isOpen={true} />);
+
+      await waitFor(() => {
+        expect(
+          screen.queryByText(OVERLAP_MESSAGE_TEXT),
+        ).not.toBeInTheDocument();
+      });
+      expect(mockSave).not.toHaveBeenCalled();
+    });
+
+    it("問い合わせ中にモーダルを閉じると、開き直したときにエラーが残らない", async () => {
+      const user = userEvent.setup();
+      const deferred = deferCheckOverlap();
+
+      const { rerender } = render(<QuickCreate {...eventsProps} isOpen={true} />);
+      await user.click(screen.getByRole("button", { name: /保存/i }));
+
+      rerender(<QuickCreate {...eventsProps} isOpen={false} />);
+
+      // 閉じたあとに問い合わせが失敗する
+      deferred.reject(new Error("重複チェックに失敗しました"));
+      await new Promise((r) => setTimeout(r, 0));
+
+      rerender(<QuickCreate {...eventsProps} isOpen={true} />);
+
+      await waitFor(() => {
+        expect(
+          screen.queryByText("重複チェックに失敗しました"),
+        ).not.toBeInTheDocument();
+      });
+    });
+
     // ToDo（Calendar）が重複チェックの対象外であることは
     // useOverlapCheck の単体テスト（module が Events 以外なら問い合わせない）で担保する
   });

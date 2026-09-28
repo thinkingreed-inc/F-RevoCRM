@@ -260,6 +260,12 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
   );
   /** 重複チェック自体が失敗したときのエラー */
   const [overlapError, setOverlapError] = useState<string | null>(null);
+  /**
+   * 重複チェックの応答が返った時点でモーダルがまだ開いているかの判定用。
+   * 応答を待っている間に閉じられた場合、その結果を state に入れると
+   * 閉じたときのクリアより後に値が入り、次に開いたときへ持ち越されてしまう
+   */
+  const isOpenRef = useRef(isOpen);
 
   // ========================================
   // Computed values based on variant
@@ -689,6 +695,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
       setOverlapError(null);
       pendingSaveParamsRef.current = undefined;
     }
+    isOpenRef.current = isOpen;
   }, [isOpen]);
 
   /**
@@ -913,6 +920,11 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
         setOverlapError(null);
         try {
           const message = await checkOverlap(saveData);
+          // 応答を待っている間に閉じられていたら、結果は捨てて保存もしない。
+          // ここで state を更新すると、次に開いたとき前回の確認が出てしまう
+          if (!isOpenRef.current) {
+            return;
+          }
           if (message) {
             pendingSaveParamsRef.current = additionalParams;
             setOverlapMessage(message);
@@ -920,6 +932,9 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
           }
         } catch (err) {
           // 重複チェックが行えない場合は保存を中断する（編集画面と同じ挙動）
+          if (!isOpenRef.current) {
+            return;
+          }
           setOverlapError(
             err instanceof Error ? err.message : "重複チェックに失敗しました",
           );
