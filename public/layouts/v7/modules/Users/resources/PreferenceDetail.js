@@ -24,5 +24,6 @@ Users_Detail_Js("Settings_Users_PreferenceDetail_Js",{},{
 		this._super();
 		Settings_Users_PreferenceEdit_Js.registerChangeEventForCurrencySeparator();
 		Settings_Users_PreferenceEdit_Js.registerNameFieldChangeEvent();
+		new Users_McpToken_Js().registerEvents();
 	}
 });

@@ -1,0 +1,20 @@
+# MCP OAuth 2.1 サブパス方式 .well-known ルーティング
+#
+# /mcp-oauth/.well-known/oauth-protected-resource
+#   → ../well-known-resource.php (RFC 9728 Protected Resource Metadata)
+#
+# /mcp-oauth/.well-known/oauth-authorization-server
+#   → ../well-known-server.php (RFC 8414 Authorization Server Metadata)
+#
+# Xserverはドメインルートの /.well-known/ を 403 で拒否するが、
+# サブパス /mcp-oauth/.well-known/ は通常どおり .htaccess が有効。
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Protected Resource Metadata
+    RewriteRule ^oauth-protected-resource$ ../well-known-resource.php [L,QSA]
+
+    # Authorization Server Metadata
+    RewriteRule ^oauth-authorization-server$ ../well-known-server.php [L,QSA]
+</IfModule>

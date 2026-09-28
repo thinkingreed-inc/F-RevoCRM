@@ -1721,6 +1721,9 @@ $languageStrings = array(
 	'LBL_PLACEHOLDER_SEARCH_AND_ADD' => 'Search and add %s...',
 	'LBL_PLACEHOLDER_SEARCH_TITLE' => 'Search %s',
 	'LBL_PLACEHOLDER_SELECT' => 'Select %s',
+
+	// Settings sidebar menu item names
+	'LBL_MCP_TOKENS' => 'MCP Token Management',
 );
 
 $jsLanguageStrings = array(

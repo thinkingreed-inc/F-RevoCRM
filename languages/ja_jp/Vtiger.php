@@ -1726,6 +1726,9 @@ $languageStrings = array(
 	'LBL_PLACEHOLDER_SEARCH_AND_ADD' => '%sを検索して追加...',
 	'LBL_PLACEHOLDER_SEARCH_TITLE' => '%sを検索',
 	'LBL_PLACEHOLDER_SELECT' => '%sを選択してください',
+
+	// 設定サイドバーメニュー項目名
+	'LBL_MCP_TOKENS' => 'MCPトークン管理',
 );
 
 $jsLanguageStrings = array(

@@ -359,6 +359,32 @@ false: 強制しない',
 	'LBL_CONFIRM_UNLOCK_USER' => 'このユーザーのログインロックを解除しますか？',
 	'LBL_UNLOCK_SUCCESS' => 'ログインロックを解除しました',
 	'LBL_UNLOCK_FAILED' => 'ロック解除に失敗しました',
+	// MCP トークン自己管理
+	'LBL_MCP_TOKEN' => 'MCP トークン',
+	'LBL_MCP_TOKEN_LABEL_PLACEHOLDER' => '用途がわかる名前（例: 仕事用 Mac）',
+	'LBL_MCP_TOKEN_ISSUE' => '発行',
+	'LBL_MCP_TOKEN_COPY' => 'コピー',
+	'LBL_MCP_TOKEN_WARNING' => 'この画面を離れると二度と表示されません。いますぐコピーしてください。',
+	'LBL_MCP_TOKEN_CLIENT_CONFIG' => 'クライアントの設定',
+	'LBL_MCP_TOKEN_NAME' => '名前',
+	'LBL_MCP_TOKEN_PREFIX' => '接頭辞',
+	'LBL_MCP_TOKEN_CREATED' => '作成日時',
+	'LBL_MCP_TOKEN_LAST_USED' => '最終使用日時',
+	'LBL_MCP_TOKEN_EXPIRES' => '有効期限',
+	'LBL_MCP_TOKEN_REVOKE' => '失効',
+	'LBL_MCP_TOKEN_EMPTY' => 'MCP トークンがありません',
+	'LBL_MCP_TOKEN_EXPIRES_30' => '30 日',
+	'LBL_MCP_TOKEN_EXPIRES_60' => '60 日',
+	'LBL_MCP_TOKEN_EXPIRES_90' => '90 日',
+	'LBL_MCP_TOKEN_EXPIRES_NONE' => '無期限',
+	'LBL_MCP_TOKEN_EXPIRED' => '期限切れ',
+	'LBL_MCP_TOKEN_LABEL_REQUIRED' => '用途がわかる名前を入力してください',
+	'LBL_MCP_TOKEN_LABEL_TOO_LONG' => '用途名は 100 文字以内で入力してください',
+	'LBL_MCP_TOKEN_EXPIRES_INVALID' => '有効期限の指定が不正です',
+	'LBL_MCP_TOKEN_INVALID_RECORD' => '無効なレコードIDです',
+	'LBL_MCP_TOKEN_NOT_FOUND' => '指定されたトークンが見つかりません',
+	'LBL_MCP_TOKEN_PERMISSION_DENIED' => 'このトークンを操作する権限がありません',
+	'LBL_MCP_TOKEN_ISSUE_TITLE' => 'トークンを発行する',
 );
 
 $jsLanguageStrings = array(
@@ -389,4 +415,14 @@ $jsLanguageStrings = array(
 
 	// Unlock user
 	'LBL_CONFIRM_UNLOCK_USER' => 'このユーザーのログインロックを解除しますか？',
+
+	// MCP token (JS)
+	'JS_MCP_TOKEN_COPIED' => 'コピーしました',
+	'JS_MCP_TOKEN_LABEL_REQUIRED' => '用途がわかる名前を入力してください',
+	'JS_MCP_TOKEN_ISSUE_FAILED' => 'トークンの発行に失敗しました',
+	'JS_MCP_TOKEN_REVOKE_CONFIRM' => 'トークン「%s」を失効しますか？ この操作は元に戻せません。',
+	'JS_MCP_TOKEN_REVOKED' => 'トークンを失効しました',
+	'JS_MCP_TOKEN_REVOKE_FAILED' => 'トークンの失効に失敗しました',
+	'JS_MCP_TOKEN_EXPIRES_NONE' => '無期限',
+	'JS_MCP_TOKEN_REVOKE' => '失効',
 );
