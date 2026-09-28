@@ -232,6 +232,24 @@ class Vtiger_List_View extends Vtiger_Index_View {
                     $tagParams = $orderParams['tag_params'];
 		}
                 
+		// ソート・検索・ページ指定が無いリクエストは、セッションに保持した一覧の状態を復元する
+		$isRestoreRequest = empty($orderBy) && empty($searchValue) && empty($pageNumber);
+		if($isRestoreRequest && $orderParams) {
+			$pageNumber = $orderParams['page'];
+			$searchKey = $orderParams['search_key'];
+			$searchValue = $orderParams['search_value'];
+			$operator = $orderParams['operator'];
+			if(empty($tagParams)){
+				$tagParams = $orderParams['tag_params'];
+			}
+			if(empty($searchParams)) {
+				$searchParams = $orderParams['search_params'];
+			}
+			if(empty($starFilterMode)) {
+				$starFilterMode = $orderParams['star_filter_mode'];
+			}
+		}
+
 		$requestOrderBy = $request->get('orderby');
 		$requestSortOrder = $request->get('sortorder');
 
@@ -274,7 +292,7 @@ class Vtiger_List_View extends Vtiger_Index_View {
 			$isDefaultSort = false;
 		}
 
-		if ($request->get('nolistcache') != 1 && !empty($orderBy)) {
+		if (!$isRestoreRequest && $request->get('nolistcache') != 1) {
 			$params = array('page' => $pageNumber, 'orderby' => $orderBy, 'sortorder' => $sortOrder, 'search_key' => $searchKey,
 				'search_value' => $searchValue, 'operator' => $operator, 'tag_params' => $tagParams,'star_filter_mode'=> $starFilterMode,'search_params' =>$searchParams, 'is_default_sort' => $isDefaultSort);
 
