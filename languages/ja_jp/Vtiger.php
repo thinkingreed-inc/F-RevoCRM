@@ -148,6 +148,7 @@ $languageStrings = array(
 	'Modified Time' => '最終更新日時',
 	'Description' => '詳細',
 	'Assigned To'=>'担当',
+	'smcreatorid' => '作成者',
 
 	//Loading Labels
 	'LBL_LOADING' => '読み込み中',
