@@ -413,6 +413,59 @@ describe("QuickCreate (calendar variant) の終日フラグとタブの関係", 
       expect(mockSave).not.toHaveBeenCalled();
     });
 
+    it("確認を表示したままモーダルを閉じると確認状態が残らない", async () => {
+      const user = userEvent.setup();
+      mockCheckOverlap.mockResolvedValue(overlapHtml);
+
+      const { rerender } = render(
+        <QuickCreate
+          module="Events"
+          isOpen={true}
+          initialData={{
+            subject: "重複する活動",
+            date_start: "2026-08-17T14:30",
+            due_date: "2026-08-17T15:00",
+          }}
+        />,
+      );
+
+      await user.click(screen.getByRole("button", { name: /保存/i }));
+      await screen.findByText(OVERLAP_MESSAGE_TEXT);
+
+      // 確認を出したままモーダルを閉じる
+      rerender(
+        <QuickCreate
+          module="Events"
+          isOpen={false}
+          initialData={{
+            subject: "重複する活動",
+            date_start: "2026-08-17T14:30",
+            due_date: "2026-08-17T15:00",
+          }}
+        />,
+      );
+
+      // 開き直したときに前回の確認が残っていないこと
+      rerender(
+        <QuickCreate
+          module="Events"
+          isOpen={true}
+          initialData={{
+            subject: "重複する活動",
+            date_start: "2026-08-17T14:30",
+            due_date: "2026-08-17T15:00",
+          }}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.queryByText(OVERLAP_MESSAGE_TEXT),
+        ).not.toBeInTheDocument();
+      });
+      expect(mockSave).not.toHaveBeenCalled();
+    });
+
     it("重複チェックが失敗した場合は保存せずエラーを表示する", async () => {
       const user = userEvent.setup();
       mockCheckOverlap.mockRejectedValue(

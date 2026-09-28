@@ -126,8 +126,12 @@ export function useOverlapCheck(module: string): UseOverlapCheckResult {
         const bodyParams = new URLSearchParams();
         bodyParams.append(csrf.name, csrf.value);
 
-        if (isSendableValue(formData.record_id)) {
-          bodyParams.append("record_id", String(formData.record_id));
+        // QuickCreate のフォームは編集中のレコードIDを `record` で保持する。
+        // これを送らないとサーバ側で編集中の活動・参加者の活動・繰り返し系列が
+        // 除外されず、自分自身が重複相手として並んでしまう。
+        const recordIdValue = formData.record ?? formData.record_id;
+        if (isSendableValue(recordIdValue)) {
+          bodyParams.append("record_id", String(recordIdValue));
         }
         if (isSendableValue(formData.assigned_user_id)) {
           bodyParams.append(
@@ -149,8 +153,15 @@ export function useOverlapCheck(module: string): UseOverlapCheckResult {
           bodyParams.append("time_end", String(timeEnd));
         }
 
-        // 終日は PHP 側が "on" を期待する
-        if (formData.is_allday === true || formData.is_allday === "on") {
+        // 終日は PHP 側が "on" を期待する。
+        // Calendar.js からの起動時は文字列で渡ることがあるため表記の揺れを吸収する
+        const allDay = formData.is_allday;
+        if (
+          allDay === true ||
+          allDay === "on" ||
+          allDay === "true" ||
+          allDay === "1"
+        ) {
           bodyParams.append("is_allday", "on");
         }
 

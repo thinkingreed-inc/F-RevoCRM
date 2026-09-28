@@ -27,7 +27,13 @@ export interface OverlapCheckResponse {
  * QuickCreate のフォーム値をそのまま受け取れるよう、未知のキーも許容する。
  */
 export interface OverlapCheckFormData {
-  /** レコードID（編集時のみ） */
+  /**
+   * 編集中のレコードID。
+   * QuickCreate のフォームは `record` を使い、旧UI（Edit.js）は `record_id` を使うため
+   * 両方を受け取れるようにしている。
+   */
+  record?: string | number;
+  /** 編集中のレコードID（旧UI互換） */
   record_id?: string | number;
   /** 担当ユーザID */
   assigned_user_id?: string | number;

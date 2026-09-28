@@ -194,6 +194,78 @@ describe("useOverlapCheck", () => {
       expect(body.get("is_allday")).toBe("on");
     });
 
+    it.each(["on", "true", "1"])(
+      "終日が文字列 %s でも is_allday を on として送る",
+      async (value) => {
+        mockFetch.mockResolvedValue(okResponse(""));
+
+        const { result } = renderHook(() => useOverlapCheck("Events"));
+
+        await act(async () => {
+          await result.current.checkOverlap({
+            date_start: "2026-10-15",
+            time_start: "10:00",
+            is_allday: value,
+          });
+        });
+
+        const body = new URLSearchParams(mockFetch.mock.calls[0][1].body);
+        expect(body.get("is_allday")).toBe("on");
+      },
+    );
+
+    it("編集中のレコードIDを record_id として送る（QuickCreate は record を使う）", async () => {
+      // record_id が送られないと、サーバ側で編集中の活動・参加者の活動・
+      // 繰り返し系列が除外されず、自分自身が重複相手として並んでしまう
+      mockFetch.mockResolvedValue(okResponse(""));
+
+      const { result } = renderHook(() => useOverlapCheck("Events"));
+
+      await act(async () => {
+        await result.current.checkOverlap({
+          record: 12345,
+          date_start: "2026-10-15",
+          time_start: "10:00",
+        });
+      });
+
+      const body = new URLSearchParams(mockFetch.mock.calls[0][1].body);
+      expect(body.get("record_id")).toBe("12345");
+    });
+
+    it("record_id が直接指定された場合も送る（旧UI互換）", async () => {
+      mockFetch.mockResolvedValue(okResponse(""));
+
+      const { result } = renderHook(() => useOverlapCheck("Events"));
+
+      await act(async () => {
+        await result.current.checkOverlap({
+          record_id: 999,
+          date_start: "2026-10-15",
+          time_start: "10:00",
+        });
+      });
+
+      const body = new URLSearchParams(mockFetch.mock.calls[0][1].body);
+      expect(body.get("record_id")).toBe("999");
+    });
+
+    it("新規作成時は record_id を送らない", async () => {
+      mockFetch.mockResolvedValue(okResponse(""));
+
+      const { result } = renderHook(() => useOverlapCheck("Events"));
+
+      await act(async () => {
+        await result.current.checkOverlap({
+          date_start: "2026-10-15",
+          time_start: "10:00",
+        });
+      });
+
+      const body = new URLSearchParams(mockFetch.mock.calls[0][1].body);
+      expect(body.has("record_id")).toBe(false);
+    });
+
     it("空の値は送らない", async () => {
       mockFetch.mockResolvedValue(okResponse(""));
 

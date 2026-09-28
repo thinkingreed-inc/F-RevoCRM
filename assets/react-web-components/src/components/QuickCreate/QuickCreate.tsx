@@ -680,6 +680,17 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
     [externalIsOpen, isCalendarVariant, onOpenChange, onCancel],
   );
 
+  // 重複確認を出したまま閉じられた場合、状態を持ち越すと次に開いたときに
+  // 確認が表示されたままになる。isOpen は外部からも制御されるため、
+  // handleOpenChange ではなく isOpen の変化を見てクリアする
+  useEffect(() => {
+    if (!isOpen) {
+      setOverlapMessage(null);
+      setOverlapError(null);
+      pendingSaveParamsRef.current = undefined;
+    }
+  }, [isOpen]);
+
   /**
    * Handle RecordType field change
    * RecordTypeフィールドの値が変更された時、フィールド一覧を再取得する
@@ -1325,6 +1336,9 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
               aria-label={t("OVERLAPPING_EXISTS")}
             >
               <div className="max-h-full w-full max-w-[600px] overflow-y-auto rounded-md bg-white p-6 shadow-lg">
+                {/* サーバ（FetchOverlapEventsBeforeSave）が組み立てたHTMLをそのまま表示している。
+                    編集画面と同じ文面を使うためだが、メッセージ内の活動タイトル・担当者名は
+                    サーバ側でエスケープされていない点に注意すること */}
                 <div
                   className="overlap-confirm-message text-sm text-gray-800"
                   dangerouslySetInnerHTML={{ __html: overlapMessage }}
@@ -1333,6 +1347,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
                   <Button
                     type="button"
                     onClick={handleOverlapConfirm}
+                    disabled={isSaving}
                     className="h-auto px-6 py-1.5 font-bold !bg-blue-600 hover:!bg-blue-700 !text-white"
                   >
                     {t("LBL_YES")}
@@ -1341,6 +1356,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
                     type="button"
                     variant="outline"
                     onClick={handleOverlapCancel}
+                    disabled={isSaving}
                     className="h-auto border-gray-300 bg-white px-6 py-1.5 font-bold hover:bg-gray-100"
                   >
                     {t("LBL_NO")}
