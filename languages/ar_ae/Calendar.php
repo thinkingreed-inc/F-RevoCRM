@@ -174,7 +174,7 @@ $languageStrings = array(
   'LBL_OCTOBER' => 'تشرين الأول / أكتوبر',
   'LBL_NOVEMBER' => 'تشرين الثاني / نوفمبر',
   'LBL_DECEMBER' => 'كانون الأول / ديسمبر',
-	'LBL_CLICK_HERE_TO_VIEW' => 'انقر هنا لعرض',
+	'LBL_CLICK_HERE_TO_VIEW' => 'انقر هنا لعرض السجل',
 
 	'LBL_TOTAL_EVENTS_DUPLICATED' => 'عدد الأحداث المكررة تخطي',
 	'LBL_TOTAL_TASKS_DUPLICATED' => 'عدد المهام المكررة تخطي',
