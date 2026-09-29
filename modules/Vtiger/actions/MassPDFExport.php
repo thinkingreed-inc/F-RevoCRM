@@ -139,9 +139,9 @@ class Vtiger_MassPDFExport_Action extends Vtiger_Mass_Action
         $queryGenerator->initForCustomViewById($cvId);
         $fieldInstances = $this->moduleFieldInstances;
 
-        $orderBy = $request->get('orderby');
-        $orderByFieldModel = $fieldInstances[$orderBy];
-        $sortOrder = $request->get('sortorder');
+        // 一覧のソート条件（複数条件の JSON または項目名）を一覧と同じ ORDER BY 句にする
+        $sortConditions = Vtiger_ListView_Model::cleanSortConditions($request->get('orderby'), $request->get('sortorder'));
+        $sortListViewModel = Vtiger_ListView_Model::getInstanceForSort($moduleName);
 
         if ($mode !== 'ExportAllData') {
             $operator = $request->get('operator');
@@ -170,11 +170,7 @@ class Vtiger_MassPDFExport_Action extends Vtiger_Mass_Action
                 $queryGenerator->addUserSearchConditions(array('search_field' => $searchKey, 'search_text' => $searchValue, 'operator' => $operator));
             }
 
-            if ($orderBy && $orderByFieldModel) {
-                if ($orderByFieldModel->getFieldDataType() == Vtiger_Field_Model::REFERENCE_TYPE || $orderByFieldModel->getFieldDataType() == Vtiger_Field_Model::OWNER_TYPE) {
-                    $queryGenerator->addWhereField($orderBy);
-                }
-            }
+            $sortListViewModel->setupQueryGeneratorForSort($queryGenerator, $sortConditions);
         }
 
         /**
@@ -203,9 +199,11 @@ class Vtiger_MassPDFExport_Action extends Vtiger_Mass_Action
             $query = $this->moduleInstance->getExportQuery($this->focus, $query);
         }
 
+        $orderBySql = !empty($sortConditions) ? $sortListViewModel->getOrderBySql($queryGenerator, $sortConditions, $this->focus) : '';
+
         switch ($mode) {
-            case 'ExportAllData':	if ($orderBy && $orderByFieldModel) {
-                $query .= ' ORDER BY '.$queryGenerator->getOrderByColumn($orderBy).' '.$sortOrder;
+            case 'ExportAllData':	if (!empty($orderBySql)) {
+                $query .= $orderBySql;
             }
                                         break;
 
@@ -222,8 +220,8 @@ class Vtiger_MassPDFExport_Action extends Vtiger_Mass_Action
                                             $currentPageStart = 0;
                                         }
 
-                                        if ($orderBy && $orderByFieldModel) {
-                                            $query .= ' ORDER BY '.$queryGenerator->getOrderByColumn($orderBy).' '.$sortOrder;
+                                        if (!empty($orderBySql)) {
+                                            $query .= $orderBySql;
                                         }
                                         $query .= ' LIMIT '.$currentPageStart.','.$limit;
                                         break;
@@ -240,8 +238,8 @@ class Vtiger_MassPDFExport_Action extends Vtiger_Mass_Action
                                                 $query .= ' AND '.$baseTable.'.'.$baseTableColumnId.' NOT IN ('.implode(',', $request->get('excluded_ids')).')';
                                             }
 
-                                            if ($orderBy && $orderByFieldModel) {
-                                                $query .= ' ORDER BY '.$queryGenerator->getOrderByColumn($orderBy).' '.$sortOrder;
+                                            if (!empty($orderBySql)) {
+                                                $query .= $orderBySql;
                                             }
                                             break;
 

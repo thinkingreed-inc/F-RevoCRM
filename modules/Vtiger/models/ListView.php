@@ -592,6 +592,18 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 		return $sortConditions;
 	}
 
+	/**
+	 * Function to get the list view model of the module to build the sort clause (e.g. for export)
+	 * The query generator and custom view are not initialized
+	 * @param string $moduleName
+	 * @return Vtiger_ListView_Model or Module specific ListView Model instance
+	 */
+	public static function getInstanceForSort($moduleName) {
+		$modelClassName = Vtiger_Loader::getComponentClassName('Model', 'ListView', $moduleName);
+		$instance = new $modelClassName();
+		return $instance->set('module', Vtiger_Module_Model::getInstance($moduleName));
+	}
+
 	public function getSortConditions() {
 		$moduleName = $this->getModule()->get('name');
 		$orderBy = $this->get('orderby');

@@ -24,8 +24,10 @@ class Vtiger_Export_View extends Vtiger_Index_View {
 		$viewId = $request->get('viewname');
 		$selectedIds = $request->get('selected_ids');
 		$excludedIds = $request->get('excluded_ids');
-		$orderBy = $request->get('orderby');
 		$sortOrder = $request->get('sortorder');
+		// 一覧のソート条件は複数条件の JSON で送られるため、エクスポート実行時にそのまま引き継げる文字列にする
+		$sortConditions = Vtiger_ListView_Model::cleanSortConditions($request->get('orderby'), $sortOrder);
+		$orderBy = !empty($sortConditions) ? json_encode($sortConditions) : '';
 		$tagParams = $request->get('tag_params');
 		$page = $request->get('page');
 
