@@ -1219,6 +1219,14 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	*/
 	/**TODO: field validator need to be handled in specific module getValidator api  **/
 	function getValidator() {
+		// id は DB 由来でないフィールドでは null のままになる。配列のキーでは空文字に
+		// 丸められ、別のフィールド同士が同じ検証ルールを共有してしまうため、
+		// id を持つフィールドだけキャッシュする。
+		static $validationCache = array();
+		$cacheKey = $this->id;
+		if($cacheKey && isset($validationCache[$cacheKey])) {
+			return $validationCache[$cacheKey];
+		}
 		$validator = array();
 		$fieldName = $this->getName();
 		switch($fieldName) {
@@ -1269,6 +1277,10 @@ class Vtiger_Field_Model extends Vtiger_Field {
 		}
 		if (isset($funcName) && $funcName) {
 			array_push($validator, $funcName);
+		}
+
+		if($cacheKey) {
+			$validationCache[$cacheKey] = $validator;
 		}
 		return $validator;
 	}
