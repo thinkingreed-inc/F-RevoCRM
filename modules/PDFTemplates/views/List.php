@@ -205,6 +205,8 @@ class PDFTemplates_List_View extends Vtiger_Index_View {
 		$viewer->assign('PAGE_NUMBER', $pageNumber);
 		$viewer->assign('VIEWTYPE', $viewType);
 		$viewer->assign('ORDER_BY', $orderBy);
+		// 一覧のヘッダーはソート条件の配列でソート中の項目と次の昇順/降順を判定するため渡す
+		$viewer->assign('SORT_CONDITIONS', Vtiger_ListView_Model::cleanSortConditions($orderBy, $sortOrder));
 		$viewer->assign('SORT_ORDER', $sortOrder);
 		$viewer->assign('SEARCH_VALUE', $searchValue);
 		$viewer->assign('NEXT_SORT_ORDER', $nextSortOrder);
