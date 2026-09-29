@@ -40,6 +40,15 @@ class Users_List_View extends Settings_Vtiger_List_View {
 		$pageNumber = $request->get('page');
 		$orderBy = $request->get('orderby');
 		$sortOrder = $request->get('sortorder');
+		// 一覧ヘッダーのソートは複数条件（JSON）で送られるが、本一覧は単一項目のソートのみ対応のため最後に指定された条件を使う
+		$sortConditions = Vtiger_ListView_Model::cleanSortConditions($orderBy, $sortOrder);
+		if (!empty($sortConditions)) {
+			$lastSortCondition = end($sortConditions);
+			$orderBy = $lastSortCondition['field'];
+			$sortOrder = $lastSortCondition['order'];
+		} else {
+			$orderBy = '';
+		}
 		$searchParams = $request->get('search_params');
 		if($sortOrder == "ASC"){
 			$nextSortOrder = "DESC";

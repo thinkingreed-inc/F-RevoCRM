@@ -86,6 +86,15 @@ class PDFTemplates_List_View extends Vtiger_Index_View {
 		$pageNumber = $request->get('page');
 		$orderBy = $request->get('orderby');
 		$sortOrder = $request->get('sortorder');
+		// 一覧ヘッダーのソートは複数条件（JSON）で送られるが、本一覧は単一項目のソートのみ対応のため最後に指定された条件を使う
+		$sortConditions = Vtiger_ListView_Model::cleanSortConditions($orderBy, $sortOrder);
+		if (!empty($sortConditions)) {
+			$lastSortCondition = end($sortConditions);
+			$orderBy = $lastSortCondition['field'];
+			$sortOrder = $lastSortCondition['order'];
+		} else {
+			$orderBy = '';
+		}
 		$searchKey = $request->get('search_key');
 		$searchValue = $request->get('search_value');
 		$sourceModule = $request->get('sourceModule');
@@ -196,6 +205,8 @@ class PDFTemplates_List_View extends Vtiger_Index_View {
 		$viewer->assign('PAGE_NUMBER', $pageNumber);
 		$viewer->assign('VIEWTYPE', $viewType);
 		$viewer->assign('ORDER_BY', $orderBy);
+		// 一覧のヘッダーはソート条件の配列でソート中の項目と次の昇順/降順を判定するため渡す
+		$viewer->assign('SORT_CONDITIONS', Vtiger_ListView_Model::cleanSortConditions($orderBy, $sortOrder));
 		$viewer->assign('SORT_ORDER', $sortOrder);
 		$viewer->assign('SEARCH_VALUE', $searchValue);
 		$viewer->assign('NEXT_SORT_ORDER', $nextSortOrder);
