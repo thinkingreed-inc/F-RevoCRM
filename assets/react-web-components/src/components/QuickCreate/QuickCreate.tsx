@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { Dialog, DialogContent, DialogDescription } from "../ui/dialog";
 import { Alert, AlertDescription } from "../ui/alert";
+import { Button } from "../ui/button";
 import { Loader2, XCircle } from "lucide-react";
 import { QuickCreateForm } from "./QuickCreateForm";
 import { CalendarForm } from "./CalendarForm";
@@ -17,6 +18,7 @@ import { useQuickCreateSave } from "./hooks/useQuickCreateSave";
 import { usePicklistDependency } from "./hooks/usePicklistDependency";
 import { useCalendarFields } from "./hooks/useCalendarFields";
 import { useRecordData } from "./hooks/useRecordData";
+import { useOverlapCheck } from "./hooks/useOverlapCheck";
 import { QuickCreateProps } from "../../types/quickcreate";
 import { FieldInfo, FieldValue } from "../../types/field";
 import { cn } from "../../lib/utils";
@@ -245,6 +247,25 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
     error: calendarSaveError,
     clearError: clearCalendarSaveError,
   } = useQuickCreateSave(isCalendarVariant ? activeTab : "");
+
+  // 活動の期間重複チェック。旧UI（編集画面）と同じアクションを呼び、同じ確認文面を使う
+  const { checkOverlap, isChecking: isCheckingOverlap } = useOverlapCheck(
+    isCalendarVariant ? activeTab : module,
+  );
+  /** 重複確認ダイアログに表示するメッセージHTML。null のときは非表示 */
+  const [overlapMessage, setOverlapMessage] = useState<string | null>(null);
+  /** 重複確認で「はい」を選んだときに引き継ぐ保存パラメータ */
+  const pendingSaveParamsRef = useRef<Record<string, any> | undefined>(
+    undefined,
+  );
+  /** 重複チェック自体が失敗したときのエラー */
+  const [overlapError, setOverlapError] = useState<string | null>(null);
+  /**
+   * 重複チェックの応答が返った時点でモーダルがまだ開いているかの判定用。
+   * 応答を待っている間に閉じられた場合、その結果を state に入れると
+   * 閉じたときのクリアより後に値が入り、次に開いたときへ持ち越されてしまう
+   */
+  const isOpenRef = useRef(isOpen);
 
   // ========================================
   // Computed values based on variant
@@ -665,6 +686,18 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
     [externalIsOpen, isCalendarVariant, onOpenChange, onCancel],
   );
 
+  // 重複確認を出したまま閉じられた場合、状態を持ち越すと次に開いたときに
+  // 確認が表示されたままになる。isOpen は外部からも制御されるため、
+  // handleOpenChange ではなく isOpen の変化を見てクリアする
+  useEffect(() => {
+    if (!isOpen) {
+      setOverlapMessage(null);
+      setOverlapError(null);
+      pendingSaveParamsRef.current = undefined;
+    }
+    isOpenRef.current = isOpen;
+  }, [isOpen]);
+
   /**
    * Handle RecordType field change
    * RecordTypeフィールドの値が変更された時、フィールド一覧を再取得する
@@ -868,14 +901,46 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
   /**
    * Internal save function that performs the actual save
    * @param additionalParams Optional parameters to merge (e.g., recurringEditMode)
+   * @param options skipOverlapCheck を指定すると期間重複チェックを行わずに保存する
    */
   const doSave = useCallback(
-    async (additionalParams?: Record<string, any>) => {
+    async (
+      additionalParams?: Record<string, any>,
+      options?: { skipOverlapCheck?: boolean },
+    ) => {
       const saveFn = isCalendarVariant ? calendarSave : defaultSave;
       const baseData = isCalendarVariant ? currentCalendarFormData : formData;
       const saveData = additionalParams
         ? { ...baseData, ...additionalParams }
         : baseData;
+
+      // 期間が重複する活動があれば確認ダイアログを出し、保存はいったん中断する。
+      // 「はい」を選んだ場合は skipOverlapCheck 付きで再度ここへ来る。
+      if (!options?.skipOverlapCheck) {
+        setOverlapError(null);
+        try {
+          const message = await checkOverlap(saveData);
+          // 応答を待っている間に閉じられていたら、結果は捨てて保存もしない。
+          // ここで state を更新すると、次に開いたとき前回の確認が出てしまう
+          if (!isOpenRef.current) {
+            return;
+          }
+          if (message) {
+            pendingSaveParamsRef.current = additionalParams;
+            setOverlapMessage(message);
+            return;
+          }
+        } catch (err) {
+          // 重複チェックが行えない場合は保存を中断する（編集画面と同じ挙動）
+          if (!isOpenRef.current) {
+            return;
+          }
+          setOverlapError(
+            err instanceof Error ? err.message : "重複チェックに失敗しました",
+          );
+          return;
+        }
+      }
 
       const result = await saveFn(saveData);
 
@@ -910,6 +975,7 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
       module,
       onSave,
       handleOpenChange,
+      checkOverlap,
       t,
     ],
   );
@@ -977,6 +1043,24 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
     recordId,
     doSave,
   ]);
+
+  /**
+   * 重複確認ダイアログで「はい」を選んだとき。重複チェックを行わずに保存する
+   */
+  const handleOverlapConfirm = useCallback(async () => {
+    const params = pendingSaveParamsRef.current;
+    pendingSaveParamsRef.current = undefined;
+    setOverlapMessage(null);
+    await doSave(params, { skipOverlapCheck: true });
+  }, [doSave]);
+
+  /**
+   * 重複確認ダイアログで「いいえ」を選んだとき。保存せずに入力へ戻る
+   */
+  const handleOverlapCancel = useCallback(() => {
+    pendingSaveParamsRef.current = undefined;
+    setOverlapMessage(null);
+  }, []);
 
   /**
    * Handle go to full form
@@ -1133,127 +1217,176 @@ const QuickCreateInner: React.FC<ExtendedQuickCreateProps> = ({
   // ========================================
   // Render
   // ========================================
-  const errorMessage = fieldsError || saveError;
+  const errorMessage = fieldsError || saveError || overlapError;
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent
-        className={cn(
-          "max-h-[90vh] overflow-hidden flex flex-col p-0",
-          "sm:max-w-[900px]",
-        )}
-        closeButtonClassName="absolute top-2 right-3 !text-white hover:!text-gray-200 transition-opacity"
-        portalClassName="quickcreate-dialog-portal"
-        onEscapeKeyDown={(e) => {
-          // 子要素のドロップダウン(招待者・Picklist 等)が開いている時はDialog自体を閉じない。
-          // Field 側で Esc を受け取りドロップダウンのみ閉じるため、Radix Dialog の
-          // 既定の閉じる挙動を抑制する必要がある。
-          if (document.querySelector("[data-rwc-dropdown]")) {
-            e.preventDefault();
-          }
-        }}
-      >
-        <DialogDescription className="sr-only">
-          {moduleLabel || module}
-        </DialogDescription>
-
-        {/* Header - 両バリアントで統一コンポーネントを使用 */}
-        <QuickCreateHeader
-          moduleLabel={moduleLabel || module}
-          variant={variant}
-          isEditMode={isEditMode}
-          activeTab={activeTab}
-        />
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto px-8 py-4">
-          {/* Error message - アクセシビリティ対応 */}
-          {errorMessage && (
-            <Alert
-              variant="destructive"
-              className="mb-4"
-              role="alert"
-              aria-live="assertive"
-              aria-atomic="true"
-            >
-              <XCircle className="h-4 w-4" aria-hidden="true" />
-              <AlertDescription>{errorMessage}</AlertDescription>
-            </Alert>
+    <>
+      <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+        <DialogContent
+          className={cn(
+            "max-h-[90vh] overflow-hidden flex flex-col p-0",
+            "sm:max-w-[900px]",
           )}
+          closeButtonClassName="absolute top-2 right-3 !text-white hover:!text-gray-200 transition-opacity"
+          portalClassName="quickcreate-dialog-portal"
+          onEscapeKeyDown={(e) => {
+            // 子要素のドロップダウン(招待者・Picklist 等)が開いている時はDialog自体を閉じない。
+            // Field 側で Esc を受け取りドロップダウンのみ閉じるため、Radix Dialog の
+            // 既定の閉じる挙動を抑制する必要がある。
+            if (document.querySelector("[data-rwc-dropdown]")) {
+              e.preventDefault();
+            }
+          }}
+        >
+          <DialogDescription className="sr-only">
+            {moduleLabel || module}
+          </DialogDescription>
 
-          {/* Loading - アクセシビリティ対応 */}
-          {fieldsLoading ? (
-            <div
-              className="flex items-center justify-center py-12"
-              role="status"
-              aria-live="polite"
-              aria-busy="true"
-            >
-              <Loader2
-                className="h-8 w-8 animate-spin text-gray-400"
-                aria-hidden="true"
-              />
-              <span className="ml-2 text-gray-500">
-                {t("LBL_LOADING_FIELDS")}
-              </span>
-            </div>
-          ) : isCalendarVariant ? (
-            /* Calendar form */
-            <CalendarForm
-              activeTab={activeTab}
-              onTabChange={handleTabChange}
-              formData={currentCalendarFormData}
-              onFieldChange={handleCalendarFieldChange}
-              onRecordTypeChange={handleRecordTypeChange}
-              currentFields={calendarCurrentFields}
-              isSaving={isSaving}
-              successMessage={successMessage}
-              validationErrors={validationErrors}
-              isEditMode={isEditMode}
-              isDuplicateMode={isDuplicateMode}
-              availableUsers={availableUsers}
-              timeOptions={timeOptions}
-              parseDateTimeValue={parseDateTimeValue}
-              combineDateTimeValue={combineDateTimeValue}
-              parseReminderValue={parseReminderValue}
-              combineReminderValue={combineReminderValue}
-              initialSelectedInvitees={
-                (isEditMode || isDuplicateMode) && recordData?.selectedusers
-                  ? (recordData.selectedusers as string[])
-                  : undefined
-              }
-              defaultCallDuration={defaultCallDuration}
-              defaultOtherEventDuration={defaultOtherEventDuration}
-            />
-          ) : (
-            /* Default form */
-            <QuickCreateForm
-              module={module}
-              fields={filteredFields}
-              formData={formData}
-              onFieldChange={handleDefaultFieldChange}
-              onRecordTypeChange={handleRecordTypeChange}
-              isSaving={isSaving}
-              disabled={!!successMessage}
-              errors={validationErrors}
-            />
-          )}
-        </div>
-
-        {/* Footer */}
-        {!fieldsLoading && (
-          <QuickCreateFooter
-            module={module}
-            onSave={handleSave}
-            onCancel={() => handleOpenChange(false)}
-            onGoToFullForm={handleGoToFullForm}
-            isSaving={isSaving}
-            saveDisabled={!!successMessage || fields.length === 0}
+          {/* Header - 両バリアントで統一コンポーネントを使用 */}
+          <QuickCreateHeader
+            moduleLabel={moduleLabel || module}
+            variant={variant}
             isEditMode={isEditMode}
+            activeTab={activeTab}
           />
-        )}
-      </DialogContent>
-    </Dialog>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto px-8 py-4">
+            {/* Error message - アクセシビリティ対応 */}
+            {errorMessage && (
+              <Alert
+                variant="destructive"
+                className="mb-4"
+                role="alert"
+                aria-live="assertive"
+                aria-atomic="true"
+              >
+                <XCircle className="h-4 w-4" aria-hidden="true" />
+                <AlertDescription>{errorMessage}</AlertDescription>
+              </Alert>
+            )}
+
+            {/* Loading - アクセシビリティ対応 */}
+            {fieldsLoading ? (
+              <div
+                className="flex items-center justify-center py-12"
+                role="status"
+                aria-live="polite"
+                aria-busy="true"
+              >
+                <Loader2
+                  className="h-8 w-8 animate-spin text-gray-400"
+                  aria-hidden="true"
+                />
+                <span className="ml-2 text-gray-500">
+                  {t("LBL_LOADING_FIELDS")}
+                </span>
+              </div>
+            ) : isCalendarVariant ? (
+              /* Calendar form */
+              <CalendarForm
+                activeTab={activeTab}
+                onTabChange={handleTabChange}
+                formData={currentCalendarFormData}
+                onFieldChange={handleCalendarFieldChange}
+                onRecordTypeChange={handleRecordTypeChange}
+                currentFields={calendarCurrentFields}
+                isSaving={isSaving}
+                successMessage={successMessage}
+                validationErrors={validationErrors}
+                isEditMode={isEditMode}
+                isDuplicateMode={isDuplicateMode}
+                availableUsers={availableUsers}
+                timeOptions={timeOptions}
+                parseDateTimeValue={parseDateTimeValue}
+                combineDateTimeValue={combineDateTimeValue}
+                parseReminderValue={parseReminderValue}
+                combineReminderValue={combineReminderValue}
+                initialSelectedInvitees={
+                  (isEditMode || isDuplicateMode) && recordData?.selectedusers
+                    ? (recordData.selectedusers as string[])
+                    : undefined
+                }
+                defaultCallDuration={defaultCallDuration}
+                defaultOtherEventDuration={defaultOtherEventDuration}
+              />
+            ) : (
+              /* Default form */
+              <QuickCreateForm
+                module={module}
+                fields={filteredFields}
+                formData={formData}
+                onFieldChange={handleDefaultFieldChange}
+                onRecordTypeChange={handleRecordTypeChange}
+                isSaving={isSaving}
+                disabled={!!successMessage}
+                errors={validationErrors}
+              />
+            )}
+          </div>
+
+          {/* Footer */}
+          {!fieldsLoading && (
+            <QuickCreateFooter
+              module={module}
+              onSave={handleSave}
+              onCancel={() => handleOpenChange(false)}
+              onGoToFullForm={handleGoToFullForm}
+              isSaving={isSaving}
+              // 重複チェックの応答待ちも保存不可にする。
+              // ここを空けると、確認ダイアログが出る前に連打されて二重登録になる
+              saveDisabled={
+                !!successMessage || fields.length === 0 || isCheckingOverlap
+              }
+              isEditMode={isEditMode}
+            />
+          )}
+
+          {/* 期間の重複確認。
+              メッセージHTMLはサーバ（FetchOverlapEventsBeforeSave）が組み立てたものを
+              そのまま表示し、編集画面と同じ文面・同じ一覧を見せる。
+              Radix Dialog を入れ子にすると相互に aria-hidden となり操作できないため、
+              モーダル内のオーバーレイとして描画する */}
+          {overlapMessage !== null && (
+            <div
+              className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+              role="alertdialog"
+              aria-modal="true"
+              aria-label={t("OVERLAPPING_EXISTS")}
+            >
+              <div className="max-h-full w-full max-w-[600px] overflow-y-auto rounded-md bg-white p-6 shadow-lg">
+                {/* サーバ（FetchOverlapEventsBeforeSave）が組み立てたHTMLをそのまま表示している。
+                    編集画面と同じ文面を使うためだが、メッセージ内の活動タイトル・担当者名は
+                    サーバ側でエスケープされていない点に注意すること */}
+                <div
+                  className="overlap-confirm-message text-sm text-gray-800"
+                  dangerouslySetInnerHTML={{ __html: overlapMessage }}
+                />
+                <div className="mt-4 flex items-center justify-end gap-3">
+                  <Button
+                    type="button"
+                    onClick={handleOverlapConfirm}
+                    disabled={isSaving}
+                    className="h-auto px-6 py-1.5 font-bold !bg-blue-600 hover:!bg-blue-700 !text-white"
+                  >
+                    {t("LBL_YES")}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleOverlapCancel}
+                    disabled={isSaving}
+                    className="h-auto border-gray-300 bg-white px-6 py-1.5 font-bold hover:bg-gray-100"
+                  >
+                    {t("LBL_NO")}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
