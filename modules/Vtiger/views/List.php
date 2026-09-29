@@ -255,7 +255,6 @@ class Vtiger_List_View extends Vtiger_Index_View {
 
 		$customViewModel = CustomView_Record_Model::getInstanceById($cvId);
 		$cvSortConditions = ($customViewModel) ? $customViewModel->getSortConditions() : array();
-		$rawCvOrderBy = ($customViewModel) ? $customViewModel->get('orderby') : '';
 
 		if (!empty($requestOrderBy)) {
 			// 1. Direct user action on list header column
@@ -267,7 +266,8 @@ class Vtiger_List_View extends Vtiger_Index_View {
 				$orderBy = '';
 				$sortOrder = '';
 			}
-			$isDefaultSort = false;
+			// デフォルトソートのままページ送りした場合など、デフォルトソートと同じ条件はデフォルトソートとして扱う
+			$isDefaultSort = !empty($sortConditions) && $sortConditions === $cvSortConditions;
 		} else if ($orderParams && !empty($orderParams['orderby']) && empty($orderParams['is_default_sort'])) {
 			// 2. User manual sort state restored from session
 			$sortConditions = Vtiger_ListView_Model::cleanSortConditions($orderParams['orderby'], isset($orderParams['sortorder']) ? $orderParams['sortorder'] : 'ASC');
@@ -282,7 +282,8 @@ class Vtiger_List_View extends Vtiger_Index_View {
 		} else if (!empty($cvSortConditions)) {
 			// 3. CustomView default sort conditions
 			$sortConditions = $cvSortConditions;
-			$orderBy = $rawCvOrderBy;
+			// DB の値は HTML エンコード済みのため、正規化した条件から組み立て直す
+			$orderBy = json_encode($sortConditions);
 			$sortOrder = !empty($sortConditions[0]['order']) ? $sortConditions[0]['order'] : 'ASC';
 			$isDefaultSort = true;
 		} else {
