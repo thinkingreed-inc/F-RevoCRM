@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 import { url } from "./util";
 import { apiSession } from "./api";
 import { frQuery, frRetrieve, frDelete, frCreate } from "../model/fetcher";
@@ -325,16 +325,29 @@ async function addInvitees(page: Page, terms: string[]): Promise<void> {
  * 単体実行では他の予定が無いので出ないため気付きにくい)。
  * 重複検出そのものはこのヘルパを使うテストの検証対象ではないので、出たら Yes で進める。
  * 出ないのが正常系でもあるため、待ちは短くして見つからなければ何もしない。
+ *
+ * ダイアログは経路によって別物が出る(#1862 でクイック作成にも重複チェックが入った)。
+ *  - 旧UI(編集画面): app.helper.showConfirmationBox の `.modal-content` / ボタン "Yes"
+ *  - 新UI(React クイック作成モーダル): role=alertdialog のオーバーレイ / ボタン「はい」
+ * 片方しか見ていないと、もう片方では承認できずに保存が止まったままになる。
  */
-async function acceptOverlapConfirmIfShown(page: Page): Promise<void> {
-  const dialog = page
+function overlapConfirmDialog(page: Page): Locator {
+  const hasOverlapText = { hasText: "期間の重複する活動" };
+  const legacyDialog = page
     .locator(".modal-content:visible")
-    .filter({ hasText: "期間の重複する活動" })
-    .first();
+    .filter(hasOverlapText);
+  const reactDialog = page
+    .locator('[role="alertdialog"]:visible')
+    .filter(hasOverlapText);
+  return legacyDialog.or(reactDialog).first();
+}
+
+async function acceptOverlapConfirmIfShown(page: Page): Promise<void> {
+  const dialog = overlapConfirmDialog(page);
   await dialog.waitFor({ state: "visible", timeout: 3000 }).catch(() => {});
   if (!(await dialog.isVisible().catch(() => false))) return;
   await dialog
-    .getByRole("button", { name: "Yes", exact: true })
+    .getByRole("button", { name: /^(Yes|はい)$/ })
     .first()
     .click()
     .catch(() => {});
@@ -383,6 +396,18 @@ export async function createEventViaModal(
   }
   await waitModalRequiredDefaults(page);
   await page.getByRole("button", { name: "保存", exact: true }).first().click();
+  // クイック作成の重複チェックはサーバへ問い合わせてから確認を出すため、
+  // 押した直後にはまだ何も起きていない。保存受理(モーダルが閉じる)と
+  // 重複確認の表示のどちらが先に来ても待てるようにしておく
+  // (固定待ちにすると、重複なしの正常系で毎回その秒数を捨てることになる)。
+  // 各 waitFor に catch を付けるのは、先に決着しなかった側が後から reject して
+  // unhandled rejection になるのを防ぐため
+  await Promise.race([
+    subjectInput.waitFor({ state: "hidden", timeout: 15000 }).catch(() => {}),
+    overlapConfirmDialog(page)
+      .waitFor({ state: "visible", timeout: 15000 })
+      .catch(() => {}),
+  ]);
   await acceptOverlapConfirmIfShown(page);
   // 保存受理(モーダルが閉じる)を待つ
   await subjectInput.waitFor({ state: "hidden", timeout: 15000 }).catch(() => {});
