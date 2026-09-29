@@ -2815,15 +2815,27 @@ Vtiger.Class("Vtiger_Detail_Js",{
 		});
 		detailContentsHolder.on('click','.moreRecentUpdates', function() {
 			app.helper.showProgress();
-			var currentPage = jQuery("#updatesCurrentPage").val();
+			var currentPage = parseInt(jQuery("#updatesCurrentPage").val());
+			// 表示済みの1ページあたりの件数。初回表示はタブが list_max_entries_per_page、
+			// サマリ表示のウィジェットが limit=5 と異なるため、サーバーから受け取った値を使う。
+			var pageLimit = parseInt(jQuery("#updatesPageLimit").val());
 			var recordId = jQuery("#recordId").val();
-			var nextPage = parseInt(currentPage) + 1;
+			var nextLimit = 5;
+			if (isNaN(currentPage) || currentPage < 1) {
+				currentPage = 1;
+			}
+			if (isNaN(pageLimit) || pageLimit < 1) {
+				pageLimit = nextLimit;
+			}
+			// 表示済み件数（currentPage * pageLimit）を追加読み込み件数で割り、続きのページ番号を求める。
+			var nextPage = Math.floor((currentPage * pageLimit) / nextLimit) + 1;
 			var url = "index.php?module=" + app.getModuleName() + "&view=Detail&record=" + recordId + "&mode=showRecentActivities&page=" 
-					  + nextPage + "&limit=5&tab_label=LBL_UPDATES";
+					  + nextPage + "&limit=" + nextLimit + "&tab_label=LBL_UPDATES";
 			var postParams  = app.convertUrlToDataParams(url);
 
 			app.request.post({data:postParams}).then(function(err,data){
 				jQuery("#updatesCurrentPage").remove();
+				jQuery("#updatesPageLimit").remove();
 				jQuery("#moreLink").remove();
 				jQuery("#more_button").remove();
 				data = jQuery(data).removeClass("recentActivitiesContainer");
