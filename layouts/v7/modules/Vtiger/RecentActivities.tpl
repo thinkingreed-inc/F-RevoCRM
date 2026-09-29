@@ -9,8 +9,8 @@
 
 {strip}
     <div class="recentActivitiesContainer" id="updates">
-        <input type="hidden" id="updatesCurrentPage" value="{$PAGING_MODEL->get('page')}"/>
-        <input type="hidden" id="updatesPageLimit" value="{$PAGING_MODEL->getPageLimit()}"/>
+        <input type="hidden" id="updatesCurrentPage" value="{$PAGING_MODEL->get('page')|escape:"html"}"/>
+        <input type="hidden" id="updatesPageLimit" value="{$PAGING_MODEL->getPageLimit()|escape:"html"}"/>
         <div class='history'>
             {if !empty($RECENT_ACTIVITIES)}
                 <ul class="updates_timeline">
