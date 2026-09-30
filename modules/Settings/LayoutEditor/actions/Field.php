@@ -84,6 +84,10 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
         $headerField = $request->get('headerfield',null);
         $fieldDefaultValue = $request->get('fieldDefaultValue', null);
 
+        // ラベル(entityname)項目のうち、表示が有効な最後の1項目かどうかは
+        // set() で値を上書きする前に、現在の設定値で判定しておく必要がある
+        $isLastVisibleNameField = $fieldInstance->isLastVisibleNameField();
+
 		if (!$fieldLabel) {
 			$fieldInstance->set('label', $fieldLabel);
 		}
@@ -123,6 +127,11 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
 
 		$response = new Vtiger_Response();
         try{
+            // ラベル項目を全て非表示にすると、関連一覧・検索ポップアップから
+            // レコードを識別する列が無くなってしまうため、最後の1項目は無効にできない
+            if($isLastVisibleNameField && !$fieldInstance->isHeaderField() && !$fieldInstance->isSummaryField()) {
+                throw new Exception(vtranslate('LBL_LAST_NAME_FIELD_CANNOT_BE_HIDDEN', $request->getModule(false)));
+            }
             $fieldInstance->save();
 			$fieldInstance = Settings_LayoutEditor_Field_Model::getInstance($fieldId);
 			$fieldLabel = decode_html($request->get('fieldLabel'));
