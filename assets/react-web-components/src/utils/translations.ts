@@ -42,7 +42,6 @@ export interface TranslationsResponse {
 export interface GetTranslationsParams {
   /** 対象モジュール名（必須） */
   module: string;
-  //adachi
   /** 親モジュール名（Settings配下など） */
   parent?: string;
   /** 言語コード（省略時はサーバー側でユーザー設定を使用） */
@@ -93,9 +92,8 @@ export async function fetchTranslations(
   searchParams.set("module", params.module);
   searchParams.set("api", "GetTranslations");
 
-  //adachi
   if (params.parent) {
-    searchParams.set('parent', params.parent);
+    searchParams.set("parent", params.parent);
   }
 
   if (params.language) {

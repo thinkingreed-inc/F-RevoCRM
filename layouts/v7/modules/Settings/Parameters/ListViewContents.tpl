@@ -31,7 +31,8 @@
 					</div>
 					<div class="col-md-6">
 						{assign var=RECORD_COUNT value=$LISTVIEW_ENTRIES_COUNT}
-						{include file="Pagination.tpl"|vtemplate_path:$MODULE SHOWPAGEJUMP=true}
+						{* システム変数一覧は件数カウントを実装していないため、ページャは表示しない *}
+						{* {include file="Pagination.tpl"|vtemplate_path:$MODULE SHOWPAGEJUMP=true} *}
 					</div>
 				</div>
 			{/if}
@@ -48,10 +49,8 @@
 											{vtranslate('LBL_ACTIONS', $QUALIFIED_MODULE)}
 										</th>
 									{else if $MODULE neq 'Currency'}
-										{* {if $SHOW_LISTVIEW_CHECKBOX eq true} *}
-										<th class="fix-data-column" style="width:60px !important; min-width:60px !important; max-width:60px !important;">
-											{* 画面の配列の関係上ここにブロックは必要 *}
-										</th>
+										{* 編集アイコンを置くアクション列。見出しは持たないが列数を揃えるために必要 *}
+										<th class="fix-data-column"></th>
 									{/if}
 									{if $MODULE eq 'Tags' or $MODULE eq 'CronTasks' or $LISTVIEW_ACTIONS_ENABLED eq true}
 										<th>
@@ -59,6 +58,7 @@
 										</th>
 									{/if}
 									{foreach item=LISTVIEW_HEADER from=$LISTVIEW_HEADERS}
+										{* ID列は内部管理用のため表示しない *}
 										{if $LISTVIEW_HEADER->get('name') neq 'id'}
 											<th nowrap>
 												<a {if !($LISTVIEW_HEADER->has('sort'))} class="listViewHeaderValues cursorPointer" data-nextsortorderval="{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')}{$NEXT_SORT_ORDER}{else}ASC{/if}" data-columnname="{$LISTVIEW_HEADER->get('name')}" {/if}>
@@ -72,16 +72,17 @@
 							</thead>
 							<tbody class="overflow-y">
 								{foreach item=LISTVIEW_ENTRY from=$LISTVIEW_ENTRIES}
+									{* 行クリック・編集アイコンのハンドラは Parameters.js で登録する *}
 									<tr class="listViewEntries" data-id="{$LISTVIEW_ENTRY->getId()}"
 										{if method_exists($LISTVIEW_ENTRY,'getDetailViewUrl')}data-recordurl="{$LISTVIEW_ENTRY->getDetailViewUrl()}"{/if}
-										{if method_exists($LISTVIEW_ENTRY,'getRowInfo')}data-info="{Vtiger_Util_Helper::toSafeHTML(ZEND_JSON::Encode($LISTVIEW_ENTRY->getRowInfo()))}"{/if} onclick="event.stopPropagation(); openParameterEdit({$LISTVIEW_ENTRY->getId()});">
-											<td class="fix-data-column" style="width:60px !important; min-width:60px !important; max-width:60px !important;">
+										{if method_exists($LISTVIEW_ENTRY,'getRowInfo')}data-info="{Vtiger_Util_Helper::toSafeHTML(ZEND_JSON::Encode($LISTVIEW_ENTRY->getRowInfo()))}"{/if}>
+											<td class="fix-data-column">
 												{include file="ListViewRecordActions.tpl"|vtemplate_path:$QUALIFIED_MODULE }
 											</td>
 										{foreach item=LISTVIEW_HEADER from=$LISTVIEW_HEADERS}
 											{assign var=LISTVIEW_HEADERNAME value=$LISTVIEW_HEADER->get('name')}
 											{if $LISTVIEW_HEADERNAME neq 'id'}
-												<td class="listViewEntryValue textOverflowEllipsis {$WIDTHTYPE}" width="{$WIDTH}%" nowrap onclick="event.stopPropagation(); openParameterEdit({$LISTVIEW_ENTRY->getId()});">
+												<td class="listViewEntryValue textOverflowEllipsis {$WIDTHTYPE}" width="{$WIDTH}%" nowrap>
 													{$LISTVIEW_ENTRY->getDisplayValue($LISTVIEW_HEADERNAME)}
 												</td>
 											{/if}
@@ -107,38 +108,6 @@
 		</div>
 	</div>
 
-	{* ParameterEdit WebComponent *}
+	{* システム変数編集ダイアログ（React WebComponent）。イベント登録は Parameters.js が行う *}
 	<parameter-edit id="parameterEditComponent" is-open="false"></parameter-edit>
-
-	<script>
-	{literal}
-	function openParameterEdit(recordId) {
-		var pe = document.getElementById('parameterEditComponent');
-		if (pe) {
-			pe.setAttribute('record-id', recordId);
-			pe.setAttribute('is-open', 'true');
-		}
-	}
-
-	document.addEventListener('DOMContentLoaded', function() {
-		var pe = document.getElementById('parameterEditComponent');
-		if (pe) {
-			// 保存成功時: ページをリロード
-			pe.addEventListener('save', function(e) {
-				location.reload();
-			});
-			// キャンセル・閉じる時: is-openをfalseに
-			pe.addEventListener('cancel', function() {
-				pe.setAttribute('is-open', 'false');
-			});
-			pe.addEventListener('open-change', function(e) {
-				// e.detail が false または { isOpen: false } の両方に対応
-				if (e.detail === false || (e.detail && typeof e.detail === 'object' && e.detail.isOpen === false)) {
-					pe.setAttribute('is-open', 'false');
-				}
-			});
-		}
-	});
-	{/literal}
-	</script>
 {/strip}

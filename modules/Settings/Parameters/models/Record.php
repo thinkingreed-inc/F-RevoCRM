@@ -209,7 +209,7 @@ class Settings_Parameters_Record_Model extends Settings_Vtiger_Record_Model {
      * Function to get Edit view url 
      */
     public function getEditViewUrl() {
-          return "javascript:openParameterEdit('".$this->getId()."')";
+        return 'module=Parameters&parent=Settings&view=EditAjax&record='.$this->getId();
     }
 
     public function getRecordLinks() {
@@ -219,8 +219,9 @@ class Settings_Parameters_Record_Model extends Settings_Vtiger_Record_Model {
             'linkicon' => 'icon-pencil'
         );
         $editLinkInstance = Vtiger_Link_Model::getInstanceFromValues($editLink);
-        
-      return array($editLinkInstance);
+
+        // 削除リンクは表示しない（システム変数は画面からの削除を許可しない）
+        return array($editLinkInstance);
     }
 
     /**

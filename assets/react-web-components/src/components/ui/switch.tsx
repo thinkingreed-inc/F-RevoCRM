@@ -16,7 +16,7 @@ function Switch({
         "disabled:cursor-not-allowed disabled:opacity-50",
         "data-[state=checked]:bg-primary",
         "data-[state=unchecked]:bg-input",
-        className
+        className,
       )}
       {...props}
     >
@@ -26,7 +26,7 @@ function Switch({
           "pointer-events-none block size-5 rounded-full bg-background shadow-sm ring-0",
           "transition-transform",
           "data-[state=checked]:translate-x-5",
-          "data-[state=unchecked]:translate-x-0"
+          "data-[state=unchecked]:translate-x-0",
         )}
       />
     </SwitchPrimitives.Root>

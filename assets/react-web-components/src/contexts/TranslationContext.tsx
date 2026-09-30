@@ -164,8 +164,7 @@ export function TranslationProvider({
     } finally {
       setIsLoading(false);
     }
-  }, /* [module, initialLanguage] */
-  [module, parent, initialLanguage]);
+  }, [module, parent, initialLanguage]);
 
   useEffect(() => {
     if (!initialTranslations) {

@@ -28,6 +28,8 @@ class Settings_Parameters_GetRecord_Api extends Vtiger_Api_Controller {
 
     /**
      * ログイン必須
+     *
+     * @return bool
      */
     function loginRequired() {
         return true;
@@ -35,6 +37,9 @@ class Settings_Parameters_GetRecord_Api extends Vtiger_Api_Controller {
 
     /**
      * 権限チェック
+     *
+     * @param Vtiger_Request $request
+     * @return bool
      */
     function checkPermission(Vtiger_Request $request) {
         $currentUserModel = Users_Record_Model::getCurrentUserModel();
@@ -46,6 +51,9 @@ class Settings_Parameters_GetRecord_Api extends Vtiger_Api_Controller {
 
     /**
      * API処理
+     *
+     * @param Vtiger_Request $request
+     * @return Vtiger_Response
      */
     protected function processApi(Vtiger_Request $request) {
         $id = $request->get('id');

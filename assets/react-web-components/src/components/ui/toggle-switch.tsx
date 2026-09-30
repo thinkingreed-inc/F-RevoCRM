@@ -2,7 +2,7 @@ import * as React from "react";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
-const CONTROL_HEIGHT_CLASS = 'h-9 flex items-center';
+const CONTROL_HEIGHT_CLASS = "h-9 flex items-center";
 
 type ToggleSwitchProps = {
   value: boolean;
@@ -22,7 +22,7 @@ export const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
   className = "",
 }) => {
   return (
-    <div className={cn(`${CONTROL_HEIGHT_CLASS} ${CONTROL_HEIGHT_CLASS}`, className, 'gap-3')}>
+    <div className={cn(CONTROL_HEIGHT_CLASS, className, "gap-3")}>
       <Switch
         checked={value}
         onCheckedChange={onChange}

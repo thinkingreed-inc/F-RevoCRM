@@ -7,12 +7,15 @@
  * All Rights Reserved.
  *************************************************************************************/
 Vtiger.Class('Settings_Parameters_Js', {
-	
+
 	//holds the current instance
 	currentInstance : false,
 
 	isLabelChange : false,
-	
+
+	//WebComponentのイベントを登録済みかどうか（document に委譲するため一度だけ登録する）
+	componentEventsRegistered : false,
+
 	/**
 	 * This function used to triggerAdd Currency
 	 */
@@ -21,30 +24,31 @@ Vtiger.Class('Settings_Parameters_Js', {
 		var instance = Settings_Parameters_Js.currentInstance;
 		instance.showEditView();
 	},
-	
+
 	/**
 	 * This function used to trigger Edit Currency
 	 */
 	triggerEdit : function(event, id) {
-	if (event) {
+		if (event) {
 			if (event.preventDefault) event.preventDefault();
 			if (event.stopPropagation) event.stopPropagation();
 			if (event.stopImmediatePropagation) event.stopImmediatePropagation();
 		}
-		if (typeof openParameterEdit === 'function') {
-			openParameterEdit(id);
+		var instance = Settings_Parameters_Js.currentInstance;
+		if (instance) {
+			instance.showEditView(id);
 		}
 		return false;
-	}	,
-	
+	},
+
 	/**
 	 * This function used to trigger Delete Currency
 	 */
 	triggerDelete : function(event, id) {
 		event.stopPropagation();
-         
+
 		var currentTarget = jQuery(event.currentTarget);
-		var currentTrEle = currentTarget.closest('tr'); 
+		var currentTrEle = currentTarget.closest('tr');
 		var instance = Settings_Parameters_Js.currentInstance;
 
         var params = {};
@@ -65,15 +69,15 @@ Vtiger.Class('Settings_Parameters_Js', {
             });
         })
 	}
-	
+
 }, {
-	
+
 	//constructor
 	init : function() {
 		Settings_Parameters_Js.currentInstance = this;
 	},
 
-	
+
 
 	/**
 	 * This function will save the currency details
@@ -105,7 +109,7 @@ Vtiger.Class('Settings_Parameters_Js', {
 			}
 		);
 	},
-	
+
 	/**
 	 * This function will load the listView contents after Add/Edit currency
 	 */
@@ -115,7 +119,7 @@ Vtiger.Class('Settings_Parameters_Js', {
 		params['module'] = app.getModuleName();
 		params['parent'] = app.getParentModuleName();
 		params['view'] = 'List';
-		
+
 		app.request.post({"data":params}).then(
 			function(err,data) {
                 if(err === null) {
@@ -149,28 +153,98 @@ Vtiger.Class('Settings_Parameters_Js', {
 				}
 		});
 	},
-	
+
     registerRowClick : function() {
 		var thisInstance = this;
 		jQuery('.listViewEntries').on('click',function(e) {
+			// 編集アイコンのクリックは registerEditButtonClick が処理する。
+			// 行に直接バインドしたこのハンドラは document への委譲より先に走るため、
+			// ここで除外しないとダイアログを開く処理が二重に走る。
+			if(jQuery(e.target).closest('.parameter-edit-btn').length > 0) {
+				return;
+			}
 			var row = jQuery(e.currentTarget);
 			if(row.find('.fa-pencil').length <= 0) {
 				return;
-			} 
+			}
 			thisInstance.showEditView(row.data('id'));
-		})  
-	},
-		
-	registerEvents : function() {
-		this.registerRowClick();
+		})
 	},
 
-	// WebComponent起動用 showEditView を独立して追加
-	showEditView : function(id) {
-		if (typeof window.openParameterEdit === 'function') {
-			window.openParameterEdit(id);
+	/**
+	 * 編集アイコンのクリックを登録する
+	 * 一覧を再描画しても効くよう document に委譲する
+	 */
+	registerEditButtonClick : function() {
+		var thisInstance = this;
+		jQuery(document).off('click.parameterEdit', '.parameter-edit-btn')
+			.on('click.parameterEdit', '.parameter-edit-btn', function(e) {
+				e.preventDefault();
+				// 行クリック側のハンドラと二重に発火させない
+				e.stopPropagation();
+				thisInstance.showEditView(jQuery(e.currentTarget).data('record-id'));
+			});
+	},
+
+	/**
+	 * 編集ダイアログ（React WebComponent）のイベントを登録する
+	 * WebComponent 側は bubbles:true で発火するため document で受ける
+	 */
+	registerParameterEditComponent : function() {
+		if (Settings_Parameters_Js.componentEventsRegistered) {
+			return;
 		}
+		Settings_Parameters_Js.componentEventsRegistered = true;
+
+		var isTarget = function(target) {
+			return !!target && target.id === 'parameterEditComponent';
+		};
+
+		// 保存成功時: サーバー側の値を反映するため一覧を再読み込みする
+		document.addEventListener('save', function(e) {
+			if (!isTarget(e.target)) {
+				return;
+			}
+			window.location.reload();
+		});
+
+		// キャンセル・閉じる時: is-open を false に戻す
+		document.addEventListener('cancel', function(e) {
+			if (!isTarget(e.target)) {
+				return;
+			}
+			e.target.setAttribute('is-open', 'false');
+		});
+
+		document.addEventListener('open-change', function(e) {
+			if (!isTarget(e.target)) {
+				return;
+			}
+			// e.detail が false または { isOpen: false } の両方に対応
+			var detail = e.detail;
+			if (detail === false || (detail && typeof detail === 'object' && detail.isOpen === false)) {
+				e.target.setAttribute('is-open', 'false');
+			}
+		});
+	},
+
+	registerEvents : function() {
+		this.registerRowClick();
+		this.registerEditButtonClick();
+		this.registerParameterEditComponent();
+	},
+
+	/**
+	 * 編集ダイアログ（React WebComponent）を開く
+	 */
+	showEditView : function(id) {
+		var component = document.getElementById('parameterEditComponent');
+		if (!component || !id) {
+			return false;
+		}
+		component.setAttribute('record-id', id);
+		component.setAttribute('is-open', 'true');
 		return false;
 	}
-	
+
 });

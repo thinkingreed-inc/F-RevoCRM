@@ -1,0 +1,10 @@
+/*
+ * システム変数一覧の調整
+ */
+
+/* 編集アイコンを置くアクション列。listview-table の既定幅より優先させる */
+#listview-table .fix-data-column {
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+}

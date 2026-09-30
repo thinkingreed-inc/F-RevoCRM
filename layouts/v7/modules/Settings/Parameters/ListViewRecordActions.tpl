@@ -10,21 +10,19 @@
  ********************************************************************************/
 -->*}
 {strip}
-    <div class="table-actions">      
+    <div class="table-actions">
             {foreach item=RECORD_LINK from=$LISTVIEW_ENTRY->getRecordLinks()}
                 <span>
-                {assign var="RECORD_LINK_URL" value=$RECORD_LINK->getUrl()}
-                
                 {if $RECORD_LINK->getIcon() eq 'icon-pencil' }
-                      <a href="javascript:void(0);" 
-                         title='{vtranslate('LBL_EDIT', $MODULE)}' 
+                      {* クリックハンドラは Parameters.js が data-record-id を見て登録する *}
+                      <a href="javascript:void(0);"
+                         title='{vtranslate('LBL_EDIT', $MODULE)}'
                          class="parameter-edit-btn"
-                         data-record-id="{$LISTVIEW_ENTRY->getId()}"
-                         onclick="event.stopPropagation(); openParameterEdit({$LISTVIEW_ENTRY->getId()});">
+                         data-record-id="{$LISTVIEW_ENTRY->getId()}">
                       <i class="fa fa-pencil" ></i>
                       </a>
                 {/if}
-                {* 削除ボタンは非表示（システム変数は削除不可） *}
+                {* 削除ボタンは非表示（システム変数は画面からの削除を許可しない） *}
                 </span>
             {/foreach}
     </div>

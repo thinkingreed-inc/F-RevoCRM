@@ -90,6 +90,3 @@ class Migration20260305100000_AddParametersTypeAndSecretColumns extends FRMigrat
         $this->log("integer型のパラメータを設定しました: " . implode(', ', $integerKeys));
     }
 }
-
-$migration = new Migration20260305100000_AddParametersTypeAndSecretColumns();
-$migration->process();

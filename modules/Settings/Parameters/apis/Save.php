@@ -25,12 +25,16 @@
  * Note: 
  *   - key, type の変更は受け付けない（valueのみ更新可能）
  *   - secretは 0↔1 双方向変更可能
- *   - 空欄保存は常に空文字で上書き
+ *   - value パラメータが未送信の場合は既存値を維持する。
+ *     シークレット変数は GetRecord が値を返さないため、値欄に触れずに保存された
+ *     場合に既存値を破壊しないようにするための仕様。
  */
 class Settings_Parameters_Save_Api extends Vtiger_Api_Controller {
 
     /**
      * ログイン必須
+     *
+     * @return bool
      */
     function loginRequired() {
         return true;
@@ -38,6 +42,9 @@ class Settings_Parameters_Save_Api extends Vtiger_Api_Controller {
 
     /**
      * 権限チェック
+     *
+     * @param Vtiger_Request $request
+     * @return bool
      */
     function checkPermission(Vtiger_Request $request) {
         $currentUserModel = Users_Record_Model::getCurrentUserModel();
@@ -49,6 +56,9 @@ class Settings_Parameters_Save_Api extends Vtiger_Api_Controller {
 
     /**
      * API処理
+     *
+     * @param Vtiger_Request $request
+     * @return void
      */
     protected function processApi(Vtiger_Request $request) {
         // システム変数編集画面保存時のJSONレスポンス統一対応
@@ -58,7 +68,6 @@ class Settings_Parameters_Save_Api extends Vtiger_Api_Controller {
             $request->validateWriteAccess();
 
             $id = $request->get('id');
-            $value = $request->get('value');
             $secret = $request->get('secret');
             $description = $request->get('description');
 
@@ -87,27 +96,24 @@ class Settings_Parameters_Save_Api extends Vtiger_Api_Controller {
                 $recordModel->set('secret', (int)$secret ? 1 : 0);
             }
 
-            // 型に応じたバリデーション（空文字もそのまま保存）
-            try {
-                $validatedValue = $this->validateValue($value, $recordModel->getType());
-                $validatedDescription = (string)$description;
-            } catch (Exception $e) {
-                echo json_encode([
-                    'success' => false,
-                    'error' => ['message' => $e->getMessage()]
-                ]);
-                return;
+            // 値は value が送信された場合のみ更新する。
+            // シークレット変数は GetRecord が値を返さないため、値欄に触れずに保存されたときに
+            // 既存値を空文字で上書きしてしまわないよう、value 未送信＝変更なしとして扱う。
+            if ($request->has('value')) {
+                try {
+                    $validatedValue = $this->validateValue($request->get('value'), $recordModel->getType());
+                } catch (Exception $e) {
+                    echo json_encode([
+                        'success' => false,
+                        'error' => ['message' => $e->getMessage()]
+                    ]);
+                    return;
+                }
+                $recordModel->set('value', $validatedValue);
             }
 
-
-
-
-
-            // 値を更新
-            $recordModel->set('value', $validatedValue);
-
             // 備考を更新
-            $recordModel->set('description', $validatedDescription);
+            $recordModel->set('description', is_scalar($description) ? (string)$description : '');
 
             try {
                 $recordModel->save();
@@ -139,10 +145,16 @@ class Settings_Parameters_Save_Api extends Vtiger_Api_Controller {
      * @throws ApiBadRequestException バリデーションエラー時
      */
     private function validateValue($value, $type) {
+        // 配列やオブジェクトが送られた場合は文字列化できないため弾く
+        if ($value !== null && !is_scalar($value)) {
+            throw new ApiBadRequestException('Invalid value type');
+        }
+        $stringValue = $value === null ? '' : (string)$value;
+
         switch ($type) {
             case 'boolean':
                 // true/false、1/0、yes/no を受け付ける
-                $lowerValue = strtolower((string)$value);
+                $lowerValue = strtolower($stringValue);
                 if (in_array($lowerValue, array('true', '1', 'yes', 'on'), true)) {
                     return 'true';
                 } else if (in_array($lowerValue, array('false', '0', 'no', 'off', ''), true)) {
@@ -152,21 +164,21 @@ class Settings_Parameters_Save_Api extends Vtiger_Api_Controller {
                 
             case 'integer':
                 // 空文字は0として扱う
-                if ($value === '' || $value === null) {
+                if ($stringValue === '') {
                     return '0';
                 }
-                if (!is_numeric($value)) {
+                if (!is_numeric($stringValue)) {
                     throw new ApiBadRequestException('Invalid integer value');
                 }
-                return (string)(int)$value;
+                return (string)(int)$stringValue;
                 
             case 'string':
             default:
-                // 512バイト制限
-                if (strlen((string)$value) > 512) {
-                    throw new ApiBadRequestException('Value exceeds maximum length (512 bytes)');
+                // 512文字制限（フロント側の maxLength と単位を揃える）
+                if (mb_strlen($stringValue) > 512) {
+                    throw new ApiBadRequestException('Value exceeds maximum length (512 characters)');
                 }
-                return (string)$value;
+                return $stringValue;
         }
     }
 }

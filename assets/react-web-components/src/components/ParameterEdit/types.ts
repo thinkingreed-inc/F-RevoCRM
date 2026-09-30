@@ -5,7 +5,7 @@
 /**
  * パラメータの値の型
  */
-export type ParameterType = 'boolean' | 'integer' | 'string';
+export type ParameterType = "boolean" | "integer" | "string";
 
 /**
  * パラメータレコード
@@ -32,16 +32,38 @@ export interface ParameterRecord {
 export interface ParameterSaveRequest {
   /** レコードID */
   id: number;
-  /** 新しい値 */
-  value: string;
+  /**
+   * 新しい値
+   * 省略した場合は送信されず、サーバー側の既存値が維持される。
+   * シークレット変数の値を変更しないまま保存するケースで使う。
+   */
+  value?: string;
   /** 新しい備考 */
   description: string;
-  /** シークレットフラグ（オプション、0→1のみ可能） */
+  /** シークレットフラグ（オプション、0↔1 双方向変更可能） */
   secret?: number;
 }
 
 /**
- * Save APIのレスポンス
+ * GetRecord APIのレスポンス
+ * Vtiger_Api_Controller は結果を result に包んで返す
+ */
+export interface ParameterGetRecordApiResponse {
+  success?: boolean;
+  result?: ParameterRecord;
+  error?: { message?: string };
+}
+
+/**
+ * Save APIのレスポンス（サーバーが返す生のJSON）
+ */
+export interface ParameterSaveApiResponse {
+  success: boolean;
+  error?: { message?: string };
+}
+
+/**
+ * Save APIのレスポンス（フックが返す形式）
  */
 export interface ParameterSaveResponse {
   success: boolean;
@@ -57,7 +79,12 @@ export interface ParameterEditProps {
   /** モーダルの開閉状態 */
   isOpen?: boolean;
   /** 保存成功時のコールバック */
-  onSave?: (data: { id: number; key: string; value: string; description: string }) => void;
+  onSave?: (data: {
+    id: number;
+    key: string;
+    value: string;
+    description: string;
+  }) => void;
   /** キャンセル時のコールバック */
   onCancel?: () => void;
   /** 開閉状態変更時のコールバック */
