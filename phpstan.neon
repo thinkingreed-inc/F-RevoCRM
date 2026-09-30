@@ -24,6 +24,7 @@ parameters:
         - libraries/InStyle/InStyle.php
         - libraries/csrf-magic/csrf-magic.php
         - setup/migration/FRMigrationClass.php
+        - setup/migration/FRMigrationCache.php
         # スケジューラ（#1823）のテストが参照するクラス。テスト側では実行時に
         # require するが、パスを変数で組み立てるため phpstan は追えない。
         - include/database/PearDatabase.php

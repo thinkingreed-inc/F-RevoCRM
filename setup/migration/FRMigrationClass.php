@@ -23,6 +23,9 @@ include_once 'includes/runtime/BaseModel.php';
 include_once 'includes/runtime/Globals.php';
 include_once 'includes/runtime/LanguageHandler.php';
 
+// マイグレーション基盤
+require_once dirname(__FILE__) . '/FRMigrationCache.php';
+
 // F-RevoCRMセットアップユーティリティ
 require_once 'setup/utils/FRFieldSetting.php';
 require_once 'setup/utils/FRFilterSetting.php';
@@ -80,6 +83,9 @@ abstract class FRMigrationClass {
             if (class_exists('Users_Record_Model')) {
                 Users_Record_Model::$currentUserModels = array();
             }
+
+            // 前のマイグレーションが Vtiger_Cache に載せたインスタンスを引き継がない
+            FRMigrationCache::clear();
 
             // マイグレーション実行
             $this->process();
