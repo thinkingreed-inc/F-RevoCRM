@@ -267,12 +267,34 @@ export class FrTest extends FrBaseModule {
     await page.click("text=その他");
     await page.click("text=削除");
     await page.waitForLoadState("networkidle");
-    // .modal-contentの Yes ボタンをクリック
-    await page.click(".modal-content >> text=Yes");
-    await page.waitForTimeout(1000);
-    await page.waitForLoadState("domcontentloaded");
 
-    await page.goto(this.getDetailUrl(recordId));
+    // 削除は Detail.js の remove() が非同期 POST を投げ、その応答を受けてから
+    // window.location.href で一覧へ飛ばす。固定待ちのまま次の goto を発行すると
+    // 「goto 開始 → 直後に location.href が発火」で goto が net::ERR_ABORTED に
+    // なる(シード量の多い Accounts で実際に発生)。POST 応答と一覧への遷移完了を
+    // 明示的に待ってから次へ進む。
+    await Promise.all([
+      page
+        .waitForResponse(
+          (r) => r.request().method() === "POST" && r.url().includes("index.php"),
+          { timeout: 15000 }
+        )
+        .catch(() => {}),
+      page.click(".modal-content >> text=Yes"),
+    ]);
+    await page.waitForURL(/view=List/, { timeout: 15000 }).catch(() => {});
+    await page.waitForLoadState("domcontentloaded").catch(() => {});
+
+    // 遷移が残っていた場合の保険。saveAndVerify / gotoSettings と同じリトライ。
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await page.goto(this.getDetailUrl(recordId));
+        break;
+      } catch (e) {
+        if (attempt === 2) throw e;
+        await page.waitForTimeout(500);
+      }
+    }
     await page.waitForLoadState("domcontentloaded");
 
     // 削除済みレコードを開いたときのメッセージ(LBL_RECORD_DELETE)。
