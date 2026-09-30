@@ -91,6 +91,25 @@ test.describe.serial("管理: システム変数 (Parameters)", () => {
     await cancelDialog(booleanDialog);
   });
 
+  test("キー列がアクション列の固定幅に潰されない", async ({ page }) => {
+    // List.js は一覧の先頭 2 列へ fix-title-column / fix-data-column を動的に付ける。
+    // アクション列の幅指定にそのクラスを使うとキー列まで同じ幅に潰れるため、
+    // この画面専用のクラスで指定していることを担保する。
+    await gotoSettings(page, listParams);
+
+    const firstRow = page.locator("#listview-table tbody tr.listViewEntries").first();
+    const actionBox = await firstRow
+      .locator("td.parameters-action-column")
+      .boundingBox();
+    const keyBox = await firstRow
+      .locator("td.listViewEntryValue")
+      .first()
+      .boundingBox();
+
+    expect(actionBox?.width ?? 0).toBeLessThanOrEqual(80);
+    expect(keyBox?.width ?? 0).toBeGreaterThan(120);
+  });
+
   test("値セルのクリックでも編集ダイアログが開く", async ({ page }) => {
     await gotoSettings(page, listParams);
 

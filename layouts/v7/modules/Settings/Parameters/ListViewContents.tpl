@@ -50,7 +50,7 @@
 										</th>
 									{else if $MODULE neq 'Currency'}
 										{* 編集アイコンを置くアクション列。見出しは持たないが列数を揃えるために必要 *}
-										<th class="fix-data-column"></th>
+										<th class="parameters-action-column"></th>
 									{/if}
 									{if $MODULE eq 'Tags' or $MODULE eq 'CronTasks' or $LISTVIEW_ACTIONS_ENABLED eq true}
 										<th>
@@ -76,7 +76,7 @@
 									<tr class="listViewEntries" data-id="{$LISTVIEW_ENTRY->getId()}"
 										{if method_exists($LISTVIEW_ENTRY,'getDetailViewUrl')}data-recordurl="{$LISTVIEW_ENTRY->getDetailViewUrl()}"{/if}
 										{if method_exists($LISTVIEW_ENTRY,'getRowInfo')}data-info="{Vtiger_Util_Helper::toSafeHTML(ZEND_JSON::Encode($LISTVIEW_ENTRY->getRowInfo()))}"{/if}>
-											<td class="fix-data-column">
+											<td class="parameters-action-column">
 												{include file="ListViewRecordActions.tpl"|vtemplate_path:$QUALIFIED_MODULE }
 											</td>
 										{foreach item=LISTVIEW_HEADER from=$LISTVIEW_HEADERS}
