@@ -24,10 +24,11 @@
  * 
  * Note: 
  *   - key, type の変更は受け付けない（valueのみ更新可能）
- *   - secretは 0↔1 双方向変更可能
  *   - value パラメータが未送信の場合は既存値を維持する。
  *     シークレット変数は GetRecord が値を返さないため、値欄に触れずに保存された
  *     場合に既存値を破壊しないようにするための仕様。
+ *   - secret を 1 から 0 へ戻す場合は value の再送信を必須にする。
+ *     未入力のまま解除できると、秘匿していた値をそのまま画面へ露出させられるため。
  */
 class Settings_Parameters_Save_Api extends Vtiger_Api_Controller {
 
@@ -91,9 +92,27 @@ class Settings_Parameters_Save_Api extends Vtiger_Api_Controller {
                 return;
             }
 
+            // 変更前のシークレット状態。解除の判定に使う
+            $originalSecret = $recordModel->getSecret();
+
             // シークレットフラグの処理（0↔1 どちらにも変更可能）
+            $requestedSecret = null;
             if ($secret !== null && $secret !== '') {
-                $recordModel->set('secret', (int)$secret ? 1 : 0);
+                $requestedSecret = (int)$secret ? 1 : 0;
+                $recordModel->set('secret', $requestedSecret);
+            }
+
+            // シークレットを解除する場合は値の再入力を必須にする。
+            // 未入力のまま解除できると、秘匿していた値をそのまま画面へ露出させられてしまう。
+            if ($originalSecret === 1 && $requestedSecret === 0) {
+                $hasNewValue = $request->has('value') && (string)$request->get('value') !== '';
+                if (!$hasNewValue) {
+                    echo json_encode([
+                        'success' => false,
+                        'error' => ['message' => 'A new value is required to turn off the secret setting']
+                    ]);
+                    return;
+                }
             }
 
             // 値は value が送信された場合のみ更新する。

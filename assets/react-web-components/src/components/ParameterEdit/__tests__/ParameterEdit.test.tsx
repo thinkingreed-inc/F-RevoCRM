@@ -147,6 +147,80 @@ describe("ParameterEdit", () => {
       expect(sentParams().value).toBe("45");
     });
 
+    it("シークレットを解除するには値の再入力が必要", async () => {
+      givenRecord({ secret: 1, value: "", type: "integer" });
+
+      render(<ParameterEdit recordId="2" isOpen />);
+      await screen.findByRole("heading", { name: "USER_LOCK_TIME" });
+
+      // 値を入力せずにシークレットを解除しようとする
+      await userEvent.click(
+        screen.getByRole("switch", { name: "LBL_SECRET_ON" }),
+      );
+      await userEvent.click(save());
+
+      expect(await screen.findByText("LBL_VALUE_REQUIRED")).toBeInTheDocument();
+      expect(mockPost).not.toHaveBeenCalled();
+    });
+
+    it("解除を選ぶと値の再入力を促す案内に切り替わる", async () => {
+      givenRecord({ secret: 1, value: "", type: "integer" });
+
+      render(<ParameterEdit recordId="2" isOpen />);
+      await screen.findByRole("heading", { name: "USER_LOCK_TIME" });
+      expect(screen.getByText("LBL_SECRET_VALUE_HIDDEN")).toBeInTheDocument();
+
+      await userEvent.click(
+        screen.getByRole("switch", { name: "LBL_SECRET_ON" }),
+      );
+
+      expect(
+        await screen.findByText("LBL_SECRET_RELEASE_REQUIRES_VALUE"),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText("LBL_SECRET_VALUE_HIDDEN"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("値を入力すればシークレットを解除できる", async () => {
+      givenRecord({ secret: 1, value: "", type: "integer" });
+
+      render(<ParameterEdit recordId="2" isOpen />);
+      await screen.findByRole("heading", { name: "USER_LOCK_TIME" });
+
+      await userEvent.click(
+        screen.getByRole("switch", { name: "LBL_SECRET_ON" }),
+      );
+      await userEvent.type(screen.getByRole("spinbutton"), "45");
+      await userEvent.click(save());
+
+      await waitFor(() => expect(mockPost).toHaveBeenCalled());
+      expect(sentParams().value).toBe("45");
+      expect(sentParams().secret).toBe("0");
+    });
+
+    it("boolean 型の解除ではトグルの表示値をそのまま送る", async () => {
+      // boolean は選択肢が 2 つしかないため、解除時にトグル操作を強制しない
+      givenRecord({
+        key: "FORCE_MULTI_FACTOR_AUTH",
+        type: "boolean",
+        secret: 1,
+        value: "",
+      });
+
+      render(<ParameterEdit recordId="1" isOpen />);
+      await screen.findByRole("heading", { name: "FORCE_MULTI_FACTOR_AUTH" });
+
+      await userEvent.click(
+        screen.getByRole("switch", { name: "LBL_SECRET_ON" }),
+      );
+      await userEvent.click(save());
+
+      await waitFor(() => expect(mockPost).toHaveBeenCalled());
+      expect(sentParams().value).toBe("false");
+      expect(sentParams().secret).toBe("0");
+    });
+
     it("boolean 型でもトグルを操作しなければ value を送らない", async () => {
       givenRecord({
         key: "FORCE_MULTI_FACTOR_AUTH",

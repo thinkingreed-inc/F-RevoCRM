@@ -124,7 +124,7 @@ test.describe.serial("管理: システム変数 (Parameters)", () => {
     }
   });
 
-  test("シークレット ON で一覧がマスクされ、備考だけの編集では値が消えない", async ({
+  test("シークレット ON で値がマスクされ、解除には値の再入力が必要", async ({
     page,
   }) => {
     await gotoSettings(page, listParams);
@@ -148,20 +148,34 @@ test.describe.serial("管理: システム変数 (Parameters)", () => {
       opened = await openEditDialog(page, INTEGER_KEY);
       await expect(opened.getByRole("spinbutton")).toHaveValue("");
       await expect(
-        opened.getByText("現在の値は表示されません。入力した場合のみ値を上書きします。")
+        opened.getByText(/現在の値は表示されません/)
       ).toBeVisible();
 
-      // 4. 値欄に触れず備考だけ変更して保存する
+      // 4. 値欄に触れず備考だけ変更しても保存できること
+      //    (このとき既存値が壊れないことは Vitest / PHPUnit 側で検証している)
       await opened.getByRole("textbox").fill(editedDescription);
       await saveDialog(page, opened);
-
-      // 5. シークレットを OFF に戻すと、元の値がそのまま残っていること
-      //    (value 未送信時にサーバー側が既存値を維持しないと 0 に落ちる)
       await gotoSettings(page, listParams);
+      await expect(valueCellOf(page, INTEGER_KEY)).toHaveText("*******");
+
+      // 5. 値を入力せずに解除しようとすると弾かれること。
+      //    解除するだけで秘匿していた値を一覧で覗けてしまうのを防ぐ。
       opened = await openEditDialog(page, INTEGER_KEY);
       await opened.getByRole("switch", { name: "値を隠す" }).click();
-      await saveDialog(page, opened);
+      await expect(
+        opened.getByText(/シークレットを解除する場合は/)
+      ).toBeVisible();
+      await opened.getByRole("button", { name: "保存" }).click();
+      // 案内文にも同じ言い回しが含まれるため、エラー表示だけを完全一致で拾う
+      await expect(
+        opened.getByText("値を入力してください", { exact: true })
+      ).toBeVisible();
+      // 保存されず、ダイアログは開いたままになる
+      await expect(opened).toBeVisible();
 
+      // 6. 新しい値を入れれば解除でき、その値が一覧に出ること
+      await opened.getByRole("spinbutton").fill(originalValue);
+      await saveDialog(page, opened);
       await gotoSettings(page, listParams);
       await expect(valueCellOf(page, INTEGER_KEY)).toHaveText(originalValue);
     } finally {

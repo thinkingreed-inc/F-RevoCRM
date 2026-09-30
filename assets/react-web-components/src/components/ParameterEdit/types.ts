@@ -40,7 +40,11 @@ export interface ParameterSaveRequest {
   value?: string;
   /** 新しい備考 */
   description: string;
-  /** シークレットフラグ（オプション、0↔1 双方向変更可能） */
+  /**
+   * シークレットフラグ（オプション）
+   * 0↔1 のどちらにも変更できるが、1→0（解除）には value の再送信が必要。
+   * 未入力のまま解除できると、秘匿していた値がそのまま画面に出てしまうため。
+   */
   secret?: number;
 }
 

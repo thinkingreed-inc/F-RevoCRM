@@ -301,7 +301,32 @@ final class SaveApiTest extends TestCase
         $this->assertSame('0', \ParametersApiTestState::savedValue(2, 'value'));
     }
 
-    public function test_secretは双方向に変更できる(): void
+    // ------------------------------------------------------------------
+    // シークレットの切り替え
+    // ------------------------------------------------------------------
+
+    public function test_シークレットを有効にできる(): void
+    {
+        \ParametersApiTestState::seed([
+            'id' => 2,
+            'key' => 'USER_LOCK_TIME',
+            'value' => '30',
+            'type' => 'integer',
+            'secret' => 0,
+            'description' => '備考',
+        ]);
+
+        $this->runApi([
+            'id' => '2',
+            'value' => '30',
+            'description' => '備考',
+            'secret' => '1',
+        ]);
+
+        $this->assertSame(1, \ParametersApiTestState::savedValue(2, 'secret'));
+    }
+
+    public function test_新しい値を伴えばシークレットを解除できる(): void
     {
         \ParametersApiTestState::seed([
             'id' => 2,
@@ -314,12 +339,101 @@ final class SaveApiTest extends TestCase
 
         $this->runApi([
             'id' => '2',
-            'value' => '30',
+            'value' => '45',
             'description' => '備考',
             'secret' => '0',
         ]);
 
         $this->assertSame(0, \ParametersApiTestState::savedValue(2, 'secret'));
+        $this->assertSame('45', \ParametersApiTestState::savedValue(2, 'value'));
+    }
+
+    public function test_値を伴わないシークレット解除は拒否する(): void
+    {
+        // 値を入力せずに解除できると、秘匿していた値をそのまま画面へ露出させられてしまう
+        \ParametersApiTestState::seed([
+            'id' => 2,
+            'key' => 'USER_LOCK_TIME',
+            'value' => '30',
+            'type' => 'integer',
+            'secret' => 1,
+            'description' => '備考',
+        ]);
+
+        $response = $this->runApi([
+            'id' => '2',
+            'description' => '備考',
+            'secret' => '0',
+        ]);
+
+        $this->assertFalse($response['success']);
+        $this->assertFalse(\ParametersApiTestState::hasSaved());
+    }
+
+    public function test_空文字を伴うシークレット解除も拒否する(): void
+    {
+        \ParametersApiTestState::seed([
+            'id' => 2,
+            'key' => 'USER_LOCK_TIME',
+            'value' => '30',
+            'type' => 'integer',
+            'secret' => 1,
+            'description' => '備考',
+        ]);
+
+        $response = $this->runApi([
+            'id' => '2',
+            'value' => '',
+            'description' => '備考',
+            'secret' => '0',
+        ]);
+
+        $this->assertFalse($response['success']);
+        $this->assertFalse(\ParametersApiTestState::hasSaved());
+    }
+
+    public function test_シークレットのまま値を省略した保存は許可する(): void
+    {
+        // 解除ではないため、備考だけの編集は従来どおり通る
+        \ParametersApiTestState::seed([
+            'id' => 2,
+            'key' => 'USER_LOCK_TIME',
+            'value' => '30',
+            'type' => 'integer',
+            'secret' => 1,
+            'description' => '旧備考',
+        ]);
+
+        $response = $this->runApi([
+            'id' => '2',
+            'description' => '新備考',
+            'secret' => '1',
+        ]);
+
+        $this->assertTrue($response['success']);
+        $this->assertSame('30', \ParametersApiTestState::savedValue(2, 'value'));
+    }
+
+    public function test_もともとシークレットでなければ値の省略を許可する(): void
+    {
+        // secret=0 のまま保存する場合は解除にあたらない
+        \ParametersApiTestState::seed([
+            'id' => 2,
+            'key' => 'USER_LOCK_TIME',
+            'value' => '30',
+            'type' => 'integer',
+            'secret' => 0,
+            'description' => '旧備考',
+        ]);
+
+        $response = $this->runApi([
+            'id' => '2',
+            'description' => '新備考',
+            'secret' => '0',
+        ]);
+
+        $this->assertTrue($response['success']);
+        $this->assertSame('30', \ParametersApiTestState::savedValue(2, 'value'));
     }
 
     public function test_不正なidはエラーを返し保存しない(): void

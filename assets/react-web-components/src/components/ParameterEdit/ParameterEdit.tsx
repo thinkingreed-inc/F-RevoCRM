@@ -101,8 +101,18 @@ const ParameterEditInner: React.FC<ParameterEditProps> = ({
   const validateValue = useCallback((): boolean => {
     if (!data) return false;
 
-    // シークレット変数で値欄を編集していない場合は送信しないため検証不要
-    if (data.secret === 1 && !valueTouched) {
+    // シークレットを解除する場合は値の再入力を必須にする。
+    // 未入力のまま解除できると、秘匿していた値がそのまま画面に出てしまう。
+    if (data.secret === 1 && !formState.secret && formState.value === "") {
+      setFormState((prev: ParameterFormState) => ({
+        ...prev,
+        error: t("LBL_VALUE_REQUIRED"),
+      }));
+      return false;
+    }
+
+    // シークレットのまま値欄を編集していない場合は送信しないため検証不要
+    if (data.secret === 1 && formState.secret && !valueTouched) {
       return true;
     }
 
@@ -125,7 +135,7 @@ const ParameterEditInner: React.FC<ParameterEditProps> = ({
 
     setFormState((prev: ParameterFormState) => ({ ...prev, error: null }));
     return true;
-  }, [data, formState.value, valueTouched, t]);
+  }, [data, formState.value, formState.secret, valueTouched, t]);
 
   /**
    * 保存処理
@@ -141,7 +151,9 @@ const ParameterEditInner: React.FC<ParameterEditProps> = ({
 
     // シークレット変数は元の値を取得できないため、値欄を編集したときだけ送信する。
     // 未送信の場合はサーバー側が既存値を維持する。
-    if (data.secret !== 1 || valueTouched) {
+    // ただしシークレットを解除する場合は、必ず新しい値で上書きする。
+    const releasingSecret = data.secret === 1 && !formState.secret;
+    if (data.secret !== 1 || valueTouched || releasingSecret) {
       payload.value = formState.value;
     }
 
@@ -197,11 +209,17 @@ const ParameterEditInner: React.FC<ParameterEditProps> = ({
   const handleSecretChange = useCallback(
     (secret: boolean) => {
       setFormState((prev: ParameterFormState) => {
-        // シークレットをOFFにした場合、値をクリアして新規入力を促す
+        // シークレットを解除する場合は値を入力し直してもらう。
+        // boolean は選択肢が 2 つしかないため、トグルの表示値をそのまま初期値にする。
         if (!secret && data?.secret === 1) {
-          return { ...prev, secret, value: "" };
+          return {
+            ...prev,
+            secret,
+            value: data.type === "boolean" ? "false" : "",
+            error: null,
+          };
         }
-        return { ...prev, secret };
+        return { ...prev, secret, error: null };
       });
     },
     [data],

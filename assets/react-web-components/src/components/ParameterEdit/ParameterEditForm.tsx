@@ -70,6 +70,9 @@ export const ParameterEditForm: React.FC<ParameterEditFormProps> = ({
   const { t } = useTranslation();
   const descriptionRef = useRef<HTMLTextAreaElement | null>(null);
 
+  // シークレットを解除しようとしている状態。値の再入力が必要になる
+  const releasingSecret = record.secret === 1 && !secret;
+
   useEffect(() => {
     adjustTextareaHeight(descriptionRef.current);
   }, [description]);
@@ -130,10 +133,12 @@ export const ParameterEditForm: React.FC<ParameterEditFormProps> = ({
         <div className={RIGHT_COLUMN_CLASS}>
           {renderValueInput(record.type)}
 
-          {/* シークレット変数は現在の値を取得できないため、編集時のみ上書きされる旨を明示する */}
+          {/* シークレット変数は現在の値を取得できないため、値の扱いを明示する */}
           {record.secret === 1 && (
             <p className="mt-1 text-xs text-muted-foreground">
-              {t("LBL_SECRET_VALUE_HIDDEN")}
+              {releasingSecret
+                ? t("LBL_SECRET_RELEASE_REQUIRES_VALUE")
+                : t("LBL_SECRET_VALUE_HIDDEN")}
             </p>
           )}
 
