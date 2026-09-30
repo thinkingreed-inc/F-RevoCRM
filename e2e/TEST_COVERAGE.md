@@ -303,7 +303,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 | **F-04** | （欠番）**送信メールサーバー** | — | ❌ 新規。実機確認済: `module=Vtiger&parent=Settings&view=OutgoingServerDetail`（画面名「送信メールサーバー」） |
 | F-05 | 構成エディタ ConfigEditor | `F-05` | ⏭️ **skip** → 有効化タスク |
 | F-06 | メニュー設定 MenuEditor | `F-06` | ✅ |
-| F-07 | システム変数 Parameters | `F-07` | ✅ |
+| F-07 | システム変数 Parameters | `F-07` | ✅ #1469 の React 編集ダイアログに追随。追加/削除の非表示・型別入力 UI・シークレット(マスク表示 / 備考のみ編集時の値保持)を検証 |
 
 ### G グループ: マッピング
 

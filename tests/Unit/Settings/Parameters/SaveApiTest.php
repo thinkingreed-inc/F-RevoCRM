@@ -1,0 +1,409 @@
+<?php
+
+/*+**********************************************************************************
+ * The contents of this file are subject to the vtiger CRM Public License Version 1.1
+ * ("License"); You may not use this file except in compliance with the License
+ * The Original Code is:  F-RevoCRM Open Source
+ * The Initial Developer of the Original Code is F-RevoCRM.
+ * Portions created by thinkingreed are Copyright (C) F-RevoCRM.
+ * All Rights Reserved.
+ ************************************************************************************/
+
+namespace Tests\Unit\Settings\Parameters;
+
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
+
+$root = dirname(__DIR__, 4);
+
+require_once $root . '/tests/Support/ParametersApiTestSupport.php';
+require_once $root . '/modules/Settings/Parameters/apis/Save.php';
+
+/**
+ * protected / private のメソッドをテストから呼ぶためのサブクラス
+ */
+class SaveApiTestDouble extends \Settings_Parameters_Save_Api
+{
+    public function exposeProcessApi(\Vtiger_Request $request): void
+    {
+        $this->processApi($request);
+    }
+
+    public function exposeValidateValue(mixed $value, string $type): mixed
+    {
+        $method = new \ReflectionMethod(\Settings_Parameters_Save_Api::class, 'validateValue');
+
+        return $method->invoke($this, $value, $type);
+    }
+}
+
+final class SaveApiTest extends TestCase
+{
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        \ParametersApiTestState::reset();
+        $GLOBALS['__test_csrf_pass'] = true;
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        unset($_SERVER['HTTP_REFERER']);
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        \ParametersApiTestState::reset();
+        unset($GLOBALS['__test_csrf_pass'], $_SERVER['REQUEST_METHOD']);
+    }
+
+    /**
+     * @param array<string, mixed> $values
+     */
+    private function makeRequest(array $values): \Vtiger_Request
+    {
+        return new \Vtiger_Request($values, $values);
+    }
+
+    /**
+     * API を実行し、レスポンスの JSON をデコードして返す
+     *
+     * @param array<string, mixed> $values
+     * @return array<string, mixed>
+     */
+    private function runApi(array $values): array
+    {
+        $api = new SaveApiTestDouble();
+
+        ob_start();
+        try {
+            $api->exposeProcessApi($this->makeRequest($values));
+        } finally {
+            $output = (string)ob_get_clean();
+        }
+
+        $decoded = json_decode($output, true);
+        $this->assertIsArray($decoded, 'API はJSONを返すこと: ' . $output);
+
+        return $decoded;
+    }
+
+    /**
+     * エラーレスポンスからメッセージを取り出す
+     *
+     * @param array<string, mixed> $response
+     */
+    private function errorMessage(array $response): ?string
+    {
+        $error = $response['error'] ?? null;
+        if (!is_array($error)) {
+            return null;
+        }
+        $message = $error['message'] ?? null;
+
+        return is_string($message) ? $message : null;
+    }
+
+    // ------------------------------------------------------------------
+    // validateValue: 型ごとの正規化
+    // ------------------------------------------------------------------
+
+    /**
+     * @return array<array-key, array{0: mixed, 1: string}>
+     */
+    public static function booleanTrueProvider(): array
+    {
+        return [
+            'true' => ['true', 'true'],
+            '1' => ['1', 'true'],
+            'yes' => ['yes', 'true'],
+            'on' => ['on', 'true'],
+            '大文字TRUE' => ['TRUE', 'true'],
+        ];
+    }
+
+    #[DataProvider('booleanTrueProvider')]
+    public function test_boolean型は真を表す値をtrueへ正規化する(mixed $input, string $expected): void
+    {
+        $api = new SaveApiTestDouble();
+
+        $this->assertSame($expected, $api->exposeValidateValue($input, 'boolean'));
+    }
+
+    /**
+     * @return array<array-key, array{0: mixed}>
+     */
+    public static function booleanFalseProvider(): array
+    {
+        return [
+            'false' => ['false'],
+            '0' => ['0'],
+            'no' => ['no'],
+            'off' => ['off'],
+            '空文字' => [''],
+        ];
+    }
+
+    #[DataProvider('booleanFalseProvider')]
+    public function test_boolean型は偽を表す値をfalseへ正規化する(mixed $input): void
+    {
+        $api = new SaveApiTestDouble();
+
+        $this->assertSame('false', $api->exposeValidateValue($input, 'boolean'));
+    }
+
+    public function test_boolean型は解釈できない値を拒否する(): void
+    {
+        $api = new SaveApiTestDouble();
+
+        $this->expectException(\ApiBadRequestException::class);
+        $api->exposeValidateValue('maybe', 'boolean');
+    }
+
+    public function test_integer型は空文字を0として扱う(): void
+    {
+        $api = new SaveApiTestDouble();
+
+        $this->assertSame('0', $api->exposeValidateValue('', 'integer'));
+    }
+
+    public function test_integer型は数値を整数文字列へ正規化する(): void
+    {
+        $api = new SaveApiTestDouble();
+
+        $this->assertSame('45', $api->exposeValidateValue('45', 'integer'));
+        $this->assertSame('-3', $api->exposeValidateValue('-3', 'integer'));
+    }
+
+    public function test_integer型は数値でない値を拒否する(): void
+    {
+        $api = new SaveApiTestDouble();
+
+        $this->expectException(\ApiBadRequestException::class);
+        $api->exposeValidateValue('abc', 'integer');
+    }
+
+    public function test_string型は512文字までを許可する(): void
+    {
+        $api = new SaveApiTestDouble();
+        $value = str_repeat('あ', 512);
+
+        $this->assertSame($value, $api->exposeValidateValue($value, 'string'));
+    }
+
+    public function test_string型は512文字を超えると拒否する(): void
+    {
+        $api = new SaveApiTestDouble();
+
+        $this->expectException(\ApiBadRequestException::class);
+        $api->exposeValidateValue(str_repeat('あ', 513), 'string');
+    }
+
+    public function test_スカラーでない値は拒否する(): void
+    {
+        $api = new SaveApiTestDouble();
+
+        $this->expectException(\ApiBadRequestException::class);
+        $api->exposeValidateValue(['array'], 'string');
+    }
+
+    // ------------------------------------------------------------------
+    // processApi: value 未送信時の既存値維持（シークレット変数の値破壊防止）
+    // ------------------------------------------------------------------
+
+    public function test_value未送信なら既存値を維持する_integer(): void
+    {
+        \ParametersApiTestState::seed([
+            'id' => 2,
+            'key' => 'USER_LOCK_TIME',
+            'value' => '30',
+            'type' => 'integer',
+            'secret' => 1,
+            'description' => '旧備考',
+        ]);
+
+        $response = $this->runApi([
+            'id' => '2',
+            'description' => '新備考',
+            'secret' => '1',
+        ]);
+
+        $this->assertTrue($response['success']);
+        $this->assertSame(
+            '30',
+            \ParametersApiTestState::savedValue(2, 'value'),
+            'value 未送信時は既存値を維持すること'
+        );
+        $this->assertSame('新備考', \ParametersApiTestState::savedValue(2, 'description'));
+    }
+
+    public function test_value未送信なら既存値を維持する_boolean(): void
+    {
+        \ParametersApiTestState::seed([
+            'id' => 4,
+            'key' => 'SHOW_SCHEDULE_CONFIRM_FLAG',
+            'value' => 'true',
+            'type' => 'boolean',
+            'secret' => 1,
+            'description' => '旧備考',
+        ]);
+
+        $this->runApi([
+            'id' => '4',
+            'description' => '新備考',
+            'secret' => '1',
+        ]);
+
+        $this->assertSame(
+            'true',
+            \ParametersApiTestState::savedValue(4, 'value'),
+            'boolean でも false に落ちないこと'
+        );
+    }
+
+    public function test_value送信時は値を更新する(): void
+    {
+        \ParametersApiTestState::seed([
+            'id' => 2,
+            'key' => 'USER_LOCK_TIME',
+            'value' => '30',
+            'type' => 'integer',
+            'secret' => 0,
+            'description' => '備考',
+        ]);
+
+        $this->runApi([
+            'id' => '2',
+            'value' => '45',
+            'description' => '備考',
+        ]);
+
+        $this->assertSame('45', \ParametersApiTestState::savedValue(2, 'value'));
+    }
+
+    public function test_value空文字送信時はサーバー側の正規化が働く(): void
+    {
+        \ParametersApiTestState::seed([
+            'id' => 2,
+            'key' => 'USER_LOCK_TIME',
+            'value' => '30',
+            'type' => 'integer',
+            'secret' => 0,
+            'description' => '備考',
+        ]);
+
+        $this->runApi([
+            'id' => '2',
+            'value' => '',
+            'description' => '備考',
+        ]);
+
+        $this->assertSame('0', \ParametersApiTestState::savedValue(2, 'value'));
+    }
+
+    public function test_secretは双方向に変更できる(): void
+    {
+        \ParametersApiTestState::seed([
+            'id' => 2,
+            'key' => 'USER_LOCK_TIME',
+            'value' => '30',
+            'type' => 'integer',
+            'secret' => 1,
+            'description' => '備考',
+        ]);
+
+        $this->runApi([
+            'id' => '2',
+            'value' => '30',
+            'description' => '備考',
+            'secret' => '0',
+        ]);
+
+        $this->assertSame(0, \ParametersApiTestState::savedValue(2, 'secret'));
+    }
+
+    public function test_不正なidはエラーを返し保存しない(): void
+    {
+        $response = $this->runApi([
+            'id' => '0',
+            'description' => '備考',
+        ]);
+
+        $this->assertFalse($response['success']);
+        $this->assertFalse(\ParametersApiTestState::hasSaved());
+    }
+
+    public function test_存在しないレコードはエラーを返す(): void
+    {
+        $response = $this->runApi([
+            'id' => '999',
+            'description' => '備考',
+        ]);
+
+        $this->assertFalse($response['success']);
+        $this->assertSame('Record not found', $this->errorMessage($response));
+    }
+
+    public function test_型に合わない値はエラーを返し保存しない(): void
+    {
+        \ParametersApiTestState::seed([
+            'id' => 2,
+            'key' => 'USER_LOCK_TIME',
+            'value' => '30',
+            'type' => 'integer',
+            'secret' => 0,
+            'description' => '備考',
+        ]);
+
+        $response = $this->runApi([
+            'id' => '2',
+            'value' => 'abc',
+            'description' => '備考',
+        ]);
+
+        $this->assertFalse($response['success']);
+        $this->assertFalse(\ParametersApiTestState::hasSaved());
+    }
+
+    // ------------------------------------------------------------------
+    // checkPermission
+    // ------------------------------------------------------------------
+
+    public function test_管理者以外は拒否される(): void
+    {
+        \ParametersApiTestState::$isAdmin = false;
+        $api = new SaveApiTestDouble();
+
+        $this->expectException(\ApiForbiddenException::class);
+        $api->checkPermission($this->makeRequest(['id' => '2']));
+    }
+
+    public function test_管理者は許可される(): void
+    {
+        $api = new SaveApiTestDouble();
+
+        $this->assertTrue($api->checkPermission($this->makeRequest(['id' => '2'])));
+    }
+
+    public function test_CSRF検証に失敗すると保存しない(): void
+    {
+        \ParametersApiTestState::seed([
+            'id' => 2,
+            'key' => 'USER_LOCK_TIME',
+            'value' => '30',
+            'type' => 'integer',
+            'secret' => 0,
+            'description' => '備考',
+        ]);
+        $GLOBALS['__test_csrf_pass'] = false;
+
+        $response = $this->runApi([
+            'id' => '2',
+            'value' => '45',
+            'description' => '備考',
+        ]);
+
+        $this->assertFalse($response['success']);
+        $this->assertFalse(\ParametersApiTestState::hasSaved());
+    }
+}
