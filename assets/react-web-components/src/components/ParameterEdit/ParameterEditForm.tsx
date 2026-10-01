@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "../ui/textarea";
-import { Label } from "@/components/ui/label";
 import { ParameterRecord, ParameterType } from "./types";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
@@ -27,12 +26,15 @@ interface ParameterEditFormProps {
   disabled?: boolean;
 }
 
-// 表示位置調整用 共通クラス
+// 表示位置調整用の共通クラス。
+// クイック作成（QuickCreateForm / FieldRenderer）と同じ指定に揃えている。
+const FIELDS_CLASS = "space-y-3 pr-8";
 const ROW_CLASS = "flex items-start gap-2";
-const LABEL_WRAP_CLASS = "flex-shrink-0 w-[130px] pr-6";
-const LABEL_CLASS = "block text-md text-gray-700 text-right leading-none";
+const LABEL_CLASS =
+  "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]";
+/** クイック作成で必須マークが入る位置。入力の開始位置を揃えるためのスペーサー */
+const LABEL_SPACER_CLASS = "w-3 flex-shrink-0";
 const RIGHT_COLUMN_CLASS = "flex-1 min-w-0";
-const CONTROL_HEIGHT_CLASS = "h-9 flex items-center";
 
 const adjustTextareaHeight = (textarea: HTMLTextAreaElement | null) => {
   if (!textarea) {
@@ -113,49 +115,46 @@ export const ParameterEditForm: React.FC<ParameterEditFormProps> = ({
     );
   };
 
+  /** 項目 1 行分。ラベル幅と入力の開始位置をクイック作成と揃える */
+  const renderRow = (label: string, children: React.ReactNode) => (
+    <div className={ROW_CLASS}>
+      <span className={LABEL_CLASS}>{label}</span>
+      <span className={LABEL_SPACER_CLASS} aria-hidden="true" />
+      <div className={RIGHT_COLUMN_CLASS}>{children}</div>
+    </div>
+  );
+
   return (
-    <div className="flex-1 overflow-auto px-8 py-4">
+    <div className="flex-1 overflow-auto px-8 py-4 text-md">
       {/* キー（読み取り専用） */}
-      <div className="px-4">
-        <h4 className="fieldBlockHeader font-bold leading-[1.1] mt-0 mb-2 pb-1 border-b border-gray-300">
-          {record.key}
-        </h4>
-      </div>
+      <h4 className="fieldBlockHeader font-bold leading-[1.1] mt-0 mb-2 pb-1 border-b border-gray-300">
+        {record.key}
+      </h4>
 
-      {/* 値 */}
-      <div className={ROW_CLASS}>
-        <div
-          className={`${LABEL_WRAP_CLASS} ${CONTROL_HEIGHT_CLASS} flex items-end justify-end`}
-        >
-          <Label className={LABEL_CLASS}>{t("Value")}</Label>
-        </div>
+      <div className={FIELDS_CLASS}>
+        {/* 値 */}
+        {renderRow(
+          t("Value"),
+          <>
+            {renderValueInput(record.type)}
 
-        <div className={RIGHT_COLUMN_CLASS}>
-          {renderValueInput(record.type)}
+            {/* シークレット変数は現在の値を取得できないため、値の扱いを明示する */}
+            {record.secret === 1 && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                {releasingSecret
+                  ? t("LBL_SECRET_RELEASE_REQUIRES_VALUE")
+                  : t("LBL_SECRET_VALUE_HIDDEN")}
+              </p>
+            )}
 
-          {/* シークレット変数は現在の値を取得できないため、値の扱いを明示する */}
-          {record.secret === 1 && (
-            <p className="mt-1 text-xs text-muted-foreground">
-              {releasingSecret
-                ? t("LBL_SECRET_RELEASE_REQUIRES_VALUE")
-                : t("LBL_SECRET_VALUE_HIDDEN")}
-            </p>
-          )}
+            {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
+          </>,
+        )}
 
-          {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
-        </div>
-      </div>
-
-      {/* 備考 */}
-      {record.description !== undefined && (
-        <div className={ROW_CLASS}>
-          <div
-            className={`${LABEL_WRAP_CLASS} ${CONTROL_HEIGHT_CLASS} flex items-end justify-end`}
-          >
-            <Label className={LABEL_CLASS}>{t("Description")}</Label>
-          </div>
-
-          <div className={RIGHT_COLUMN_CLASS}>
+        {/* 備考 */}
+        {record.description !== undefined &&
+          renderRow(
+            t("Description"),
             <Textarea
               ref={descriptionRef}
               value={description ?? ""}
@@ -165,22 +164,15 @@ export const ParameterEditForm: React.FC<ParameterEditFormProps> = ({
               }}
               rows={3}
               disabled={disabled}
-              className="w-[90%] resize-none overflow-hidden pt-[9px]"
-            />
-          </div>
-        </div>
-      )}
+              className="w-full resize-none overflow-hidden pt-[9px]"
+            />,
+          )}
 
-      {/* シークレット設定（boolean は値が 2 択しかなくマスクの意味がないため出さない） */}
-      {record.type !== "boolean" && (
-        <div className="pt-5">
-          <div className={ROW_CLASS}>
-            <div
-              className={`${LABEL_WRAP_CLASS} ${CONTROL_HEIGHT_CLASS} flex items-end justify-end`}
-            >
-              <Label className={LABEL_CLASS}>{t("LBL_SECRET")}</Label>
-            </div>
-            <div className="items-start text-left">
+        {/* シークレット設定（boolean は値が 2 択しかなくマスクの意味がないため出さない） */}
+        {record.type !== "boolean" &&
+          renderRow(
+            t("LBL_SECRET"),
+            <>
               <ToggleSwitch
                 value={secret}
                 onChange={onSecretChange}
@@ -191,10 +183,9 @@ export const ParameterEditForm: React.FC<ParameterEditFormProps> = ({
               <p className="mt-1 text-xs text-muted-foreground">
                 {t("LBL_SECRET_HELP")}
               </p>
-            </div>
-          </div>
-        </div>
-      )}
+            </>,
+          )}
+      </div>
     </div>
   );
 };
