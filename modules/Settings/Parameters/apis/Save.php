@@ -29,6 +29,8 @@
  *     場合に既存値を破壊しないようにするための仕様。
  *   - secret を 1 から 0 へ戻す場合は value の再送信を必須にする。
  *     未入力のまま解除できると、秘匿していた値をそのまま画面へ露出させられるため。
+ *   - boolean 型は secret を設定できない。値が true / false の 2 択しかなく、
+ *     マスクしても秘匿にならないため。
  */
 class Settings_Parameters_Save_Api extends Vtiger_Api_Controller {
 
@@ -99,12 +101,29 @@ class Settings_Parameters_Save_Api extends Vtiger_Api_Controller {
             $requestedSecret = null;
             if ($secret !== null && $secret !== '') {
                 $requestedSecret = (int)$secret ? 1 : 0;
+            }
+
+            // boolean 型は値が true / false の 2 択しかなく、マスクしても値を推測できるため
+            // シークレットを許可しない。不整合なデータが残っていても保存時に解消する。
+            if ($recordModel->getType() === 'boolean') {
+                if ($requestedSecret === 1) {
+                    echo json_encode([
+                        'success' => false,
+                        'error' => ['message' => 'Secret is not available for boolean parameters']
+                    ]);
+                    return;
+                }
+                $requestedSecret = 0;
+            }
+
+            if ($requestedSecret !== null) {
                 $recordModel->set('secret', $requestedSecret);
             }
 
             // シークレットを解除する場合は値の再入力を必須にする。
             // 未入力のまま解除できると、秘匿していた値をそのまま画面へ露出させられてしまう。
-            if ($originalSecret === 1 && $requestedSecret === 0) {
+            // boolean はシークレット自体を許可しないため対象外（不整合の解消を妨げない）。
+            if ($originalSecret === 1 && $requestedSecret === 0 && $recordModel->getType() !== 'boolean') {
                 $hasNewValue = $request->has('value') && (string)$request->get('value') !== '';
                 if (!$hasNewValue) {
                     echo json_encode([

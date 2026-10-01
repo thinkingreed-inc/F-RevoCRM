@@ -103,10 +103,39 @@ describe("ParameterEdit", () => {
     render(<ParameterEdit recordId="4" isOpen />);
 
     await screen.findByRole("heading", { name: "SHOW_SCHEDULE_CONFIRM_FLAG" });
-    // 値のトグルとシークレットのトグルで 2 つ
+    // boolean はシークレットを設定できないため、トグルは値の 1 つだけ
     const switches = screen.getAllByRole("switch");
-    expect(switches).toHaveLength(2);
+    expect(switches).toHaveLength(1);
     expect(switches[0]).toBeChecked();
+  });
+
+  it("boolean 型にはシークレットの設定欄を出さない", async () => {
+    // 値が true / false の 2 択しかなく、マスクしても値を推測できる
+    givenRecord({
+      key: "SHOW_SCHEDULE_CONFIRM_FLAG",
+      type: "boolean",
+      value: "true",
+    });
+
+    render(<ParameterEdit recordId="4" isOpen />);
+
+    await screen.findByRole("heading", { name: "SHOW_SCHEDULE_CONFIRM_FLAG" });
+    expect(screen.queryByText("LBL_SECRET")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("switch", { name: "LBL_SECRET_OFF" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("integer 型にはシークレットの設定欄を出す", async () => {
+    givenRecord({ type: "integer", value: "30" });
+
+    render(<ParameterEdit recordId="2" isOpen />);
+
+    await screen.findByRole("heading", { name: "USER_LOCK_TIME" });
+    expect(screen.getByText("LBL_SECRET")).toBeInTheDocument();
+    expect(
+      screen.getByRole("switch", { name: "LBL_SECRET_OFF" }),
+    ).toBeInTheDocument();
   });
 
   describe("シークレット変数の値の扱い", () => {
@@ -199,29 +228,9 @@ describe("ParameterEdit", () => {
       expect(sentParams().secret).toBe("0");
     });
 
-    it("boolean 型の解除ではトグルの表示値をそのまま送る", async () => {
-      // boolean は選択肢が 2 つしかないため、解除時にトグル操作を強制しない
-      givenRecord({
-        key: "FORCE_MULTI_FACTOR_AUTH",
-        type: "boolean",
-        secret: 1,
-        value: "",
-      });
-
-      render(<ParameterEdit recordId="1" isOpen />);
-      await screen.findByRole("heading", { name: "FORCE_MULTI_FACTOR_AUTH" });
-
-      await userEvent.click(
-        screen.getByRole("switch", { name: "LBL_SECRET_ON" }),
-      );
-      await userEvent.click(save());
-
-      await waitFor(() => expect(mockPost).toHaveBeenCalled());
-      expect(sentParams().value).toBe("false");
-      expect(sentParams().secret).toBe("0");
-    });
-
-    it("boolean 型でもトグルを操作しなければ value を送らない", async () => {
+    it("boolean 型に不整合なシークレットが残っていても値を送らない", async () => {
+      // boolean はシークレットを設定できないが、過去のデータが残っていても
+      // トグルを操作しない限り値を上書きしない
       givenRecord({
         key: "FORCE_MULTI_FACTOR_AUTH",
         type: "boolean",

@@ -239,19 +239,19 @@ final class SaveApiTest extends TestCase
 
     public function test_value未送信なら既存値を維持する_boolean(): void
     {
+        // boolean はシークレットを持てないが、value 未送信で false に落ちないことは変わらない
         \ParametersApiTestState::seed([
             'id' => 4,
             'key' => 'SHOW_SCHEDULE_CONFIRM_FLAG',
             'value' => 'true',
             'type' => 'boolean',
-            'secret' => 1,
+            'secret' => 0,
             'description' => '旧備考',
         ]);
 
         $this->runApi([
             'id' => '4',
             'description' => '新備考',
-            'secret' => '1',
         ]);
 
         $this->assertSame(
@@ -346,6 +346,52 @@ final class SaveApiTest extends TestCase
 
         $this->assertSame(0, \ParametersApiTestState::savedValue(2, 'secret'));
         $this->assertSame('45', \ParametersApiTestState::savedValue(2, 'value'));
+    }
+
+    public function test_boolean型にシークレットは設定できない(): void
+    {
+        // 値が true / false の 2 択しかなく、マスクしても値を推測できる
+        \ParametersApiTestState::seed([
+            'id' => 1,
+            'key' => 'FORCE_MULTI_FACTOR_AUTH',
+            'value' => 'false',
+            'type' => 'boolean',
+            'secret' => 0,
+            'description' => '備考',
+        ]);
+
+        $response = $this->runApi([
+            'id' => '1',
+            'value' => 'false',
+            'description' => '備考',
+            'secret' => '1',
+        ]);
+
+        $this->assertFalse($response['success']);
+        $this->assertFalse(\ParametersApiTestState::hasSaved());
+    }
+
+    public function test_boolean型のシークレットは保存時に解除される(): void
+    {
+        // 不整合なデータが残っていても、保存すれば解消される
+        \ParametersApiTestState::seed([
+            'id' => 1,
+            'key' => 'FORCE_MULTI_FACTOR_AUTH',
+            'value' => 'false',
+            'type' => 'boolean',
+            'secret' => 1,
+            'description' => '旧備考',
+        ]);
+
+        $response = $this->runApi([
+            'id' => '1',
+            'description' => '新備考',
+        ]);
+
+        $this->assertTrue($response['success']);
+        $this->assertSame(0, \ParametersApiTestState::savedValue(1, 'secret'));
+        // 値の再入力を求めずに解除する（boolean は解除チェックの対象外）
+        $this->assertSame('false', \ParametersApiTestState::savedValue(1, 'value'));
     }
 
     public function test_値を伴わないシークレット解除は拒否する(): void

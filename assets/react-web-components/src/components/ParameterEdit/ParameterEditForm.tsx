@@ -171,28 +171,30 @@ export const ParameterEditForm: React.FC<ParameterEditFormProps> = ({
         </div>
       )}
 
-      {/* シークレット設定 */}
-      <div className="pt-5">
-        <div className={ROW_CLASS}>
-          <div
-            className={`${LABEL_WRAP_CLASS} ${CONTROL_HEIGHT_CLASS} flex items-end justify-end`}
-          >
-            <Label className={LABEL_CLASS}>{t("LBL_SECRET")}</Label>
-          </div>
-          <div className="items-start text-left">
-            <ToggleSwitch
-              value={secret}
-              onChange={onSecretChange}
-              disabled={disabled}
-              trueLabel={t("LBL_SECRET_ON")}
-              falseLabel={t("LBL_SECRET_OFF")}
-            />
-            <p className="mt-1 text-xs text-muted-foreground">
-              {t("LBL_SECRET_HELP")}
-            </p>
+      {/* シークレット設定（boolean は値が 2 択しかなくマスクの意味がないため出さない） */}
+      {record.type !== "boolean" && (
+        <div className="pt-5">
+          <div className={ROW_CLASS}>
+            <div
+              className={`${LABEL_WRAP_CLASS} ${CONTROL_HEIGHT_CLASS} flex items-end justify-end`}
+            >
+              <Label className={LABEL_CLASS}>{t("LBL_SECRET")}</Label>
+            </div>
+            <div className="items-start text-left">
+              <ToggleSwitch
+                value={secret}
+                onChange={onSecretChange}
+                disabled={disabled}
+                trueLabel={t("LBL_SECRET_ON")}
+                falseLabel={t("LBL_SECRET_OFF")}
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t("LBL_SECRET_HELP")}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

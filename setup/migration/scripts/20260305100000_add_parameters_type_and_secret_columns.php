@@ -88,5 +88,10 @@ class Migration20260305100000_AddParametersTypeAndSecretColumns extends FRMigrat
             $adb->pquery("UPDATE vtiger_parameters SET `type` = 'integer' WHERE `key` = ?", array($key));
         }
         $this->log("integer型のパラメータを設定しました: " . implode(', ', $integerKeys));
+
+        // boolean型は値が true / false の2択しかなく、マスクしても値を推測できるため
+        // シークレットを設定しない
+        $adb->pquery("UPDATE vtiger_parameters SET `secret` = 0 WHERE `type` = 'boolean'", array());
+        $this->log("boolean型のパラメータのシークレットを解除しました");
     }
 }

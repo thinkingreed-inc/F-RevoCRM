@@ -81,13 +81,16 @@ test.describe.serial("管理: システム変数 (Parameters)", () => {
     // integer 型は数値入力。トグルはシークレットの 1 つだけ
     const integerDialog = await openEditDialog(page, INTEGER_KEY);
     await expect(integerDialog.getByRole("spinbutton")).toBeVisible();
+    await expect(integerDialog.getByText("シークレット", { exact: true })).toBeVisible();
     await expect(integerDialog.getByRole("switch")).toHaveCount(1);
     await cancelDialog(integerDialog);
 
-    // boolean 型は値もトグル。値とシークレットで 2 つになる
+    // boolean 型は値がトグル。シークレットは設定できないため欄ごと出ない
+    // （値が true / false の 2 択しかなく、マスクしても値を推測できるため）
     const booleanDialog = await openEditDialog(page, BOOLEAN_KEY);
     await expect(booleanDialog.getByRole("spinbutton")).toHaveCount(0);
-    await expect(booleanDialog.getByRole("switch")).toHaveCount(2);
+    await expect(booleanDialog.getByText("シークレット", { exact: true })).toHaveCount(0);
+    await expect(booleanDialog.getByRole("switch")).toHaveCount(1);
     await cancelDialog(booleanDialog);
   });
 

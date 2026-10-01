@@ -209,15 +209,9 @@ const ParameterEditInner: React.FC<ParameterEditProps> = ({
   const handleSecretChange = useCallback(
     (secret: boolean) => {
       setFormState((prev: ParameterFormState) => {
-        // シークレットを解除する場合は値を入力し直してもらう。
-        // boolean は選択肢が 2 つしかないため、トグルの表示値をそのまま初期値にする。
+        // シークレットを解除する場合は値を入力し直してもらう
         if (!secret && data?.secret === 1) {
-          return {
-            ...prev,
-            secret,
-            value: data.type === "boolean" ? "false" : "",
-            error: null,
-          };
+          return { ...prev, secret, value: "", error: null };
         }
         return { ...prev, secret, error: null };
       });
