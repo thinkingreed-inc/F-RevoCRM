@@ -13,6 +13,7 @@ class Settings_Parameters_ListView_Model extends Settings_Vtiger_ListView_Model 
 									`id`,
 									`key`,
 									`value`,
+									`type`,
 									`description`,
 									`secret`
 								FROM
@@ -27,6 +28,9 @@ class Settings_Parameters_ListView_Model extends Settings_Vtiger_ListView_Model 
 			$record->set("secret", $adb->query_result($result, $i, "secret"));
 			$record->set("id", $adb->query_result($result, $i, "id"));
 			$record->set("key", $adb->query_result($result, $i, "key"));
+			// type を入れずに save() されると getType() の既定値 'string' で上書きされるため、
+			// 一覧から取得したレコードにも必ず設定する
+			$record->set("type", $adb->query_result($result, $i, "type"));
 			if ((string)$record->get("secret") === "1") {
 				$record->set("value", "*******");
 			} else {
