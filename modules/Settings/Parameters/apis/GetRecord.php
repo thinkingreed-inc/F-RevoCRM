@@ -23,6 +23,14 @@
  *     "secret": 1,
  *     "description": "多要素認証を強制するフラグです..."
  *   }
+ *
+ * Note:
+ *   - key / value / description は DB に保存されたままの文字列を返す。
+ *     PearDatabase::query_result() が to_html() で HTML エスケープした値を返すため、
+ *     API 側で元へ戻してから JSON に載せる。
+ *     エスケープしたまま返すと、編集ダイアログに `&amp;` のような実体参照が表示され、
+ *     そのまま保存して二重エスケープが蓄積してしまう。
+ *     JSON としての安全性は json_encode が担保し、表示側は React がエスケープする。
  */
 class Settings_Parameters_GetRecord_Api extends Vtiger_Api_Controller {
 
@@ -74,13 +82,31 @@ class Settings_Parameters_GetRecord_Api extends Vtiger_Api_Controller {
         // レスポンス構築
         $result = array(
             'id' => (int)$recordModel->getId(),
-            'key' => $recordModel->getKey(),
-            'value' => $recordModel->getSecret() ? '' : $recordModel->getValue(),
+            'key' => $this->decodeHtmlEntities($recordModel->getKey()),
+            'value' => $recordModel->getSecret() ? '' : $this->decodeHtmlEntities($recordModel->getValue()),
             'type' => $recordModel->getType(),
             'secret' => (int)$recordModel->getSecret(),
-            'description' => $recordModel->getDescription()
+            'description' => $this->decodeHtmlEntities($recordModel->getDescription())
         );
-        
+
         return $this->sendSuccess($result);
+    }
+
+    /**
+     * to_html() で変換された HTML 実体参照を元の文字列へ戻す
+     *
+     * @param mixed $value
+     * @return mixed 文字列ならデコード結果、それ以外はそのまま
+     */
+    private function decodeHtmlEntities($value) {
+        global $default_charset;
+
+        if (!is_string($value)) {
+            return $value;
+        }
+
+        $charset = empty($default_charset) ? 'UTF-8' : $default_charset;
+
+        return html_entity_decode($value, ENT_QUOTES, $charset);
     }
 }

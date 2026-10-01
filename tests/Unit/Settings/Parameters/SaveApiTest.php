@@ -501,6 +501,90 @@ final class SaveApiTest extends TestCase
         $this->assertSame('30', \ParametersApiTestState::savedValue(2, 'value'));
     }
 
+    // ------------------------------------------------------------------
+    // processApi: 入力値を加工せずに保存する
+    // ------------------------------------------------------------------
+
+    public function test_HTML特殊文字を含む値をそのまま保存する(): void
+    {
+        // Vtiger_Request::get() は vtlib_purify() を通すため < が &lt; に変換される。
+        // システム変数はトークンなど任意の文字列を持つため、生の値を保存する
+        \ParametersApiTestState::seed([
+            'id' => 5,
+            'key' => 'EXAMPLE_API_TOKEN',
+            'value' => '',
+            'type' => 'string',
+            'secret' => 0,
+            'description' => '備考',
+        ]);
+
+        $this->runApi([
+            'id' => '5',
+            'value' => 'x & y < z',
+        ]);
+
+        $this->assertSame('x & y < z', \ParametersApiTestState::savedValue(5, 'value'));
+    }
+
+    public function test_JSON形式の文字列も値として保存できる(): void
+    {
+        // Vtiger_Request::get() は { や [ で始まる値を配列へデコードしてしまう
+        \ParametersApiTestState::seed([
+            'id' => 5,
+            'key' => 'EXAMPLE_JSON',
+            'value' => '',
+            'type' => 'string',
+            'secret' => 0,
+            'description' => '備考',
+        ]);
+
+        $this->runApi([
+            'id' => '5',
+            'value' => '{"a":1}',
+        ]);
+
+        $this->assertSame('{"a":1}', \ParametersApiTestState::savedValue(5, 'value'));
+    }
+
+    public function test_HTML特殊文字を含む備考をそのまま保存する(): void
+    {
+        \ParametersApiTestState::seed([
+            'id' => 5,
+            'key' => 'EXAMPLE_API_TOKEN',
+            'value' => 'token',
+            'type' => 'string',
+            'secret' => 0,
+            'description' => '旧備考',
+        ]);
+
+        $this->runApi([
+            'id' => '5',
+            'description' => '条件: a < b & c',
+        ]);
+
+        $this->assertSame('条件: a < b & c', \ParametersApiTestState::savedValue(5, 'description'));
+    }
+
+    public function test_配列で送られた値は拒否し保存しない(): void
+    {
+        \ParametersApiTestState::seed([
+            'id' => 5,
+            'key' => 'EXAMPLE_API_TOKEN',
+            'value' => 'token',
+            'type' => 'string',
+            'secret' => 0,
+            'description' => '備考',
+        ]);
+
+        $message = $this->runApiExpectingError([
+            'id' => '5',
+            'value' => ['a', 'b'],
+        ]);
+
+        $this->assertSame('Invalid value type', $message);
+        $this->assertFalse(\ParametersApiTestState::hasSaved());
+    }
+
     public function test_不正なidはエラーを返し保存しない(): void
     {
         $message = $this->runApiExpectingError([

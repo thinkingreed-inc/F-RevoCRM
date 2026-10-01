@@ -21,7 +21,7 @@
  *   { "saved": true }
  *   エラー時は Vtiger_Response が { "success": false, "error": {...} } を返す
  * 
- * Note: 
+ * Note:
  *   - key, type の変更は受け付けない（valueのみ更新可能）
  *   - value / description は未送信の場合に既存値を維持する。
  *     シークレット変数は GetRecord が値を返さないため、値欄に触れずに保存された
@@ -30,6 +30,11 @@
  *     未入力のまま解除できると、秘匿していた値をそのまま画面へ露出させられるため。
  *   - boolean 型は secret を設定できない。値が true / false の 2 択しかなく、
  *     マスクしても秘匿にならないため。
+ *   - value / description は Vtiger_Request::getRaw() で受け取る。
+ *     get() は vtlib_purify() で HTML 特殊文字を実体参照へ変換し、`{` `[` で始まる値を
+ *     JSON としてデコードしてしまうため、トークンのような任意の文字列を保存できない。
+ *     値の検証は validateValue() が型・最大長・スカラー判定で行う。
+ *     保存値をそのまま HTML へ出力する箇所（一覧）では表示側でエスケープすること。
  */
 class Settings_Parameters_Save_Api extends Vtiger_Api_Controller {
 
@@ -84,6 +89,12 @@ class Settings_Parameters_Save_Api extends Vtiger_Api_Controller {
         // 変更前のシークレット状態。解除の判定に使う
         $originalSecret = $recordModel->getSecret();
 
+        // value / description は get() ではなく getRaw() で受け取る。
+        // get() は vtlib_purify() で HTML 特殊文字を実体参照へ変換し、`{` `[` で始まる値を
+        // JSON へデコードしてしまうため、入力した文字列をそのまま保存できない。
+        $hasValueParam = $request->has('value');
+        $rawValue = $hasValueParam ? $request->getRaw('value') : null;
+
         // シークレットフラグの処理（0↔1 どちらにも変更可能）
         $requestedSecret = null;
         if ($secret !== null && $secret !== '') {
@@ -107,7 +118,7 @@ class Settings_Parameters_Save_Api extends Vtiger_Api_Controller {
         // 未入力のまま解除できると、秘匿していた値をそのまま画面へ露出させられてしまう。
         // boolean はシークレット自体を許可しないため対象外（不整合の解消を妨げない）。
         if ($originalSecret === 1 && $requestedSecret === 0 && $recordModel->getType() !== 'boolean') {
-            $hasNewValue = $request->has('value') && (string)$request->get('value') !== '';
+            $hasNewValue = $hasValueParam && is_scalar($rawValue) && (string)$rawValue !== '';
             if (!$hasNewValue) {
                 throw new ApiBadRequestException('A new value is required to turn off the secret setting');
             }
@@ -116,13 +127,13 @@ class Settings_Parameters_Save_Api extends Vtiger_Api_Controller {
         // 値は value が送信された場合のみ更新する。
         // シークレット変数は GetRecord が値を返さないため、値欄に触れずに保存されたときに
         // 既存値を空文字で上書きしてしまわないよう、value 未送信＝変更なしとして扱う。
-        if ($request->has('value')) {
-            $recordModel->set('value', $this->validateValue($request->get('value'), $recordModel->getType()));
+        if ($hasValueParam) {
+            $recordModel->set('value', $this->validateValue($rawValue, $recordModel->getType()));
         }
 
         // 備考も value と同様、送信された場合のみ更新する
         if ($request->has('description')) {
-            $description = $request->get('description');
+            $description = $request->getRaw('description');
             $recordModel->set('description', is_scalar($description) ? (string)$description : '');
         }
 

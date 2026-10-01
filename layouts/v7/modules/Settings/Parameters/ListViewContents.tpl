@@ -82,6 +82,8 @@
 										{foreach item=LISTVIEW_HEADER from=$LISTVIEW_HEADERS}
 											{assign var=LISTVIEW_HEADERNAME value=$LISTVIEW_HEADER->get('name')}
 											{if $LISTVIEW_HEADERNAME neq 'id'}
+												{* 値は PearDatabase::query_result() の to_html() で
+												   HTML エスケープ済みのため、ここでは二重に変換しない *}
 												<td class="listViewEntryValue textOverflowEllipsis {$WIDTHTYPE}" width="{$WIDTH}%" nowrap>
 													{$LISTVIEW_ENTRY->getDisplayValue($LISTVIEW_HEADERNAME)}
 												</td>
