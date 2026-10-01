@@ -55,11 +55,13 @@ class Vtiger_Text_UIType extends Vtiger_Base_UIType {
 			}
 			$url = $matches[1];
 			$tail = '';
+			// 対応する開き括弧があるかを見る閉じ括弧の組
+			$bracketPairs = array(')' => '(', ']' => '[');
 			// 文末記号と対応しない閉じ括弧・角括弧はURLから外して本文側に残す
 			while($url !== '') {
 				$last = substr($url, -1);
-				$unpaired = ($last === ')' && substr_count($url, '(') < substr_count($url, ')'));
-				if(strpos('.,;:!?]', $last) === false && !$unpaired) {
+				$unpaired = isset($bracketPairs[$last]) && substr_count($url, $bracketPairs[$last]) < substr_count($url, $last);
+				if(strpos('.,;:!?', $last) === false && !$unpaired) {
 					break;
 				}
 				$tail = $last.$tail;
