@@ -39,9 +39,21 @@ class SaveApiTestDouble extends \Settings_Parameters_Save_Api
 
 final class SaveApiTest extends TestCase
 {
+    private ?string $errorLogFile = null;
+
+    private string $previousErrorLog = '';
+
     protected function setUp(): void
     {
         parent::setUp();
+
+        // API は予期しないエラーを error_log へ出す。テスト出力に混ざるので一時ファイルへ退避する
+        $this->previousErrorLog = (string)ini_get('error_log');
+        $logFile = tempnam(sys_get_temp_dir(), 'phpunit-errorlog-');
+        if (is_string($logFile)) {
+            $this->errorLogFile = $logFile;
+            ini_set('error_log', $logFile);
+        }
 
         \ParametersApiTestState::reset();
         $GLOBALS['__test_csrf_pass'] = true;
@@ -52,6 +64,12 @@ final class SaveApiTest extends TestCase
     protected function tearDown(): void
     {
         parent::tearDown();
+
+        ini_set('error_log', $this->previousErrorLog);
+        if ($this->errorLogFile !== null && file_exists($this->errorLogFile)) {
+            unlink($this->errorLogFile);
+        }
+        $this->errorLogFile = null;
 
         \ParametersApiTestState::reset();
         unset($GLOBALS['__test_csrf_pass'], $_SERVER['REQUEST_METHOD']);
@@ -523,6 +541,101 @@ final class SaveApiTest extends TestCase
 
         $this->assertFalse($response['success']);
         $this->assertFalse(\ParametersApiTestState::hasSaved());
+    }
+
+    // ------------------------------------------------------------------
+    // 備考（description）の扱い
+    // ------------------------------------------------------------------
+
+    public function test_description未送信なら既存の備考を維持する(): void
+    {
+        \ParametersApiTestState::seed([
+            'id' => 2,
+            'key' => 'USER_LOCK_TIME',
+            'value' => '30',
+            'type' => 'integer',
+            'secret' => 0,
+            'description' => '元の備考',
+        ]);
+
+        $response = $this->runApi([
+            'id' => '2',
+            'value' => '45',
+        ]);
+
+        $this->assertTrue($response['success']);
+        $this->assertSame('元の備考', \ParametersApiTestState::savedValue(2, 'description'));
+        $this->assertSame('45', \ParametersApiTestState::savedValue(2, 'value'));
+    }
+
+    public function test_description空文字送信なら備考を空にする(): void
+    {
+        \ParametersApiTestState::seed([
+            'id' => 2,
+            'key' => 'USER_LOCK_TIME',
+            'value' => '30',
+            'type' => 'integer',
+            'secret' => 0,
+            'description' => '元の備考',
+        ]);
+
+        $this->runApi([
+            'id' => '2',
+            'description' => '',
+        ]);
+
+        $this->assertSame('', \ParametersApiTestState::savedValue(2, 'description'));
+    }
+
+    // ------------------------------------------------------------------
+    // エラー応答
+    // ------------------------------------------------------------------
+
+    public function test_保存に失敗しても内部のエラー詳細を返さない(): void
+    {
+        \ParametersApiTestState::seed([
+            'id' => 2,
+            'key' => 'USER_LOCK_TIME',
+            'value' => '30',
+            'type' => 'integer',
+            'secret' => 0,
+            'description' => '備考',
+        ]);
+        \ParametersApiTestState::$throwOnSave = true;
+
+        $response = $this->runApi([
+            'id' => '2',
+            'value' => '45',
+            'description' => '備考',
+        ]);
+
+        $this->assertFalse($response['success']);
+        $message = (string)$this->errorMessage($response);
+        $this->assertSame('Failed to save the parameter', $message);
+        // SQL エラーの内容がクライアントへ漏れないこと
+        $this->assertStringNotContainsString('SQLSTATE', $message);
+        $this->assertStringNotContainsString('vtiger_parameters', $message);
+    }
+
+    public function test_入力値の誤りはそのまま利用者へ返す(): void
+    {
+        \ParametersApiTestState::seed([
+            'id' => 2,
+            'key' => 'USER_LOCK_TIME',
+            'value' => '30',
+            'type' => 'integer',
+            'secret' => 0,
+            'description' => '備考',
+        ]);
+
+        $response = $this->runApi([
+            'id' => '2',
+            'value' => 'abc',
+            'description' => '備考',
+        ]);
+
+        $this->assertFalse($response['success']);
+        $this->assertSame('Invalid integer value', $this->errorMessage($response));
     }
 
     // ------------------------------------------------------------------

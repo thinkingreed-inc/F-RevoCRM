@@ -132,6 +132,10 @@ if (!class_exists('Settings_Parameters_Record_Model')) {
 
         public function save(): void
         {
+            if (ParametersApiTestState::$throwOnSave) {
+                // 実際の DB エラーを模した、内部情報を含むメッセージ
+                throw new Exception("SQLSTATE[42S02]: Base table or view not found: vtiger_parameters");
+            }
             ParametersApiTestState::$saved[ParametersApiTestState::toId($this->get('id'))] = $this->data;
         }
     }

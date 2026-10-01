@@ -146,8 +146,13 @@ const ParameterEditInner: React.FC<ParameterEditProps> = ({
     const payload: ParameterSaveRequest = {
       id: data.id,
       description: formState.description,
-      secret: formState.secret ? 1 : 0,
     };
+
+    // boolean はシークレットを設定できないため送らない。
+    // 過去のデータに secret=1 が残っていても、サーバー側が 0 に正規化して解消する。
+    if (data.type !== "boolean") {
+      payload.secret = formState.secret ? 1 : 0;
+    }
 
     // シークレット変数は元の値を取得できないため、値欄を編集したときだけ送信する。
     // 未送信の場合はサーバー側が既存値を維持する。

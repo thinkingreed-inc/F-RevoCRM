@@ -228,6 +228,24 @@ describe("ParameterEdit", () => {
       expect(sentParams().secret).toBe("0");
     });
 
+    it("boolean 型では secret を送らない（不整合データを保存で解消できる）", async () => {
+      // boolean に secret=1 を送るとサーバーが拒否するため、画面から修正できなくなる
+      givenRecord({
+        key: "FORCE_MULTI_FACTOR_AUTH",
+        type: "boolean",
+        secret: 1,
+        value: "",
+      });
+
+      render(<ParameterEdit recordId="1" isOpen />);
+      await screen.findByRole("heading", { name: "FORCE_MULTI_FACTOR_AUTH" });
+
+      await userEvent.click(save());
+
+      await waitFor(() => expect(mockPost).toHaveBeenCalled());
+      expect(sentParams()).not.toHaveProperty("secret");
+    });
+
     it("boolean 型に不整合なシークレットが残っていても値を送らない", async () => {
       // boolean はシークレットを設定できないが、過去のデータが残っていても
       // トグルを操作しない限り値を上書きしない
@@ -246,6 +264,18 @@ describe("ParameterEdit", () => {
       await waitFor(() => expect(mockPost).toHaveBeenCalled());
       expect(sentParams()).not.toHaveProperty("value");
     });
+  });
+
+  it("boolean 以外は secret を送る", async () => {
+    givenRecord({ type: "integer", secret: 0, value: "30" });
+
+    render(<ParameterEdit recordId="2" isOpen />);
+    await screen.findByRole("heading", { name: "USER_LOCK_TIME" });
+
+    await userEvent.click(save());
+
+    await waitFor(() => expect(mockPost).toHaveBeenCalled());
+    expect(sentParams().secret).toBe("0");
   });
 
   it("シークレットでない変数は値欄を編集しなくても value を送る", async () => {

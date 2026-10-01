@@ -33,11 +33,15 @@ class ParametersApiTestState
      */
     public static array $saved = [];
 
+    /** save() で例外を投げさせるか（エラー応答の検証用） */
+    public static bool $throwOnSave = false;
+
     public static function reset(): void
     {
         self::$records = [];
         self::$saved = [];
         self::$isAdmin = true;
+        self::$throwOnSave = false;
     }
 
     /**

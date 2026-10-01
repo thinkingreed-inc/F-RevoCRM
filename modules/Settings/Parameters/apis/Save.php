@@ -24,7 +24,7 @@
  * 
  * Note: 
  *   - key, type の変更は受け付けない（valueのみ更新可能）
- *   - value パラメータが未送信の場合は既存値を維持する。
+ *   - value / description は未送信の場合に既存値を維持する。
  *     シークレット変数は GetRecord が値を返さないため、値欄に触れずに保存された
  *     場合に既存値を破壊しないようにするための仕様。
  *   - secret を 1 から 0 へ戻す場合は value の再送信を必須にする。
@@ -72,7 +72,6 @@ class Settings_Parameters_Save_Api extends Vtiger_Api_Controller {
 
             $id = $request->get('id');
             $secret = $request->get('secret');
-            $description = $request->get('description');
 
             // IDのバリデーション
             if (empty($id) || !is_numeric($id) || (int)$id <= 0) {
@@ -138,37 +137,32 @@ class Settings_Parameters_Save_Api extends Vtiger_Api_Controller {
             // シークレット変数は GetRecord が値を返さないため、値欄に触れずに保存されたときに
             // 既存値を空文字で上書きしてしまわないよう、value 未送信＝変更なしとして扱う。
             if ($request->has('value')) {
-                try {
-                    $validatedValue = $this->validateValue($request->get('value'), $recordModel->getType());
-                } catch (Exception $e) {
-                    echo json_encode([
-                        'success' => false,
-                        'error' => ['message' => $e->getMessage()]
-                    ]);
-                    return;
-                }
-                $recordModel->set('value', $validatedValue);
+                // バリデーションエラー（ApiBadRequestException）は最外の catch でそのまま返す
+                $recordModel->set('value', $this->validateValue($request->get('value'), $recordModel->getType()));
             }
 
-            // 備考を更新
-            $recordModel->set('description', is_scalar($description) ? (string)$description : '');
-
-            try {
-                $recordModel->save();
-            } catch (Exception $e) {
-                echo json_encode([
-                    'success' => false,
-                    'error' => ['message' => $e->getMessage()]
-                ]);
-                return;
+            // 備考も value と同様、送信された場合のみ更新する
+            if ($request->has('description')) {
+                $description = $request->get('description');
+                $recordModel->set('description', is_scalar($description) ? (string)$description : '');
             }
+
+            $recordModel->save();
 
             // 正常系レスポンス（既存構造維持）
             echo json_encode(['success' => true]);
-        } catch (Exception $e) {
+        } catch (ApiException $e) {
+            // 入力値の誤りなど、利用者に伝えるべきエラーはそのまま返す
             echo json_encode([
                 'success' => false,
                 'error' => ['message' => $e->getMessage()]
+            ]);
+        } catch (Exception $e) {
+            // 予期しないエラーの詳細（SQL エラー等）はクライアントへ返さず、内部ログにのみ出す
+            error_log('Parameters Save API Error: ' . $e->getMessage());
+            echo json_encode([
+                'success' => false,
+                'error' => ['message' => 'Failed to save the parameter']
             ]);
         }
         return;
