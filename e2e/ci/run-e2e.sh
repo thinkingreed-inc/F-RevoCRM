@@ -178,6 +178,9 @@ CI_SPECS=(
   tests/3_共通機能/3-23_インポート.spec.ts
   tests/3_共通機能/3-25_一括編集.spec.ts
   tests/3_共通機能/3-26_ゴミ箱.spec.ts
+  # ごみ箱のモジュール権限(issue #1205)。一覧からの除外と sourceModule 直接指定の
+  # 拒否は 3-26(admin のみ)では通らないため、権限ペルソナを使う本 spec で担保する。
+  tests/3_共通機能/3-35_ゴミ箱権限.spec.ts
   tests/3_共通機能/3-28_権限.spec.ts
   # 関連一覧はマトリクスでは検証できない(describe API に relatedModules が無く自動導出不可)
   tests/3_共通機能/3-12_関連一覧.spec.ts
