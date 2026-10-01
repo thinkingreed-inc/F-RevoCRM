@@ -1886,3 +1886,11 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
     }
 }
 
+/* #1562 活動のドラッグ・リサイズ中は吹き出しを隠す。
+   吹き出しはマウスオーバーで表示されるため、操作中も表示され続け、
+   移動先・変更先が隠れて指定できなくなる。
+   Calendar.js が操作中だけ body に calendar-dragging を付けるので、その間は隠す。
+   ライブラリが要素へ直接 display を書き込むため !important で打ち消す */
+body.calendar-dragging .webui-popover {
+    display: none !important;
+}

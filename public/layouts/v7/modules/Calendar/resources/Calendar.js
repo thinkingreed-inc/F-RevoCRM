@@ -2473,6 +2473,10 @@ Vtiger.Class("Calendar_Calendar_Js", {
 	performMouseOverActions: function (event, jsEvent, view) {
 //var currentTarget = jQuery(jsEvent.currentTarget);
 	},
+	// 活動のドラッグ・リサイズ中は吹き出しの表示を抑止する
+	setCalendarDraggingState: function (isDragging) {
+		jQuery('body').toggleClass('calendar-dragging', isDragging);
+	},
 	getCalendarHeight: function (view) {
 		var portion = 0.86;
 		if (typeof view !== 'undefined') {
@@ -2714,6 +2718,18 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			},
 			eventDrop: function (event, delta, revertFunc, jsEvent, ui, view) {
 				thisInstance.updateEventOnDrop(event, delta, revertFunc, jsEvent, ui, view);
+			},
+			eventDragStart: function (event, jsEvent, ui, view) {
+				thisInstance.setCalendarDraggingState(true);
+			},
+			eventDragStop: function (event, jsEvent, ui, view) {
+				thisInstance.setCalendarDraggingState(false);
+			},
+			eventResizeStart: function (event, jsEvent, ui, view) {
+				thisInstance.setCalendarDraggingState(true);
+			},
+			eventResizeStop: function (event, jsEvent, ui, view) {
+				thisInstance.setCalendarDraggingState(false);
 			},
 			select: function (startDate, endDate, jsEvent, view){
 				thisInstance.performDayDragAction(startDate, endDate, jsEvent, view);
