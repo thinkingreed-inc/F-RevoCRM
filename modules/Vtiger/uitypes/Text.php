@@ -60,6 +60,11 @@ class Vtiger_Text_UIType extends Vtiger_Base_UIType {
 			// 文末記号と対応しない閉じ括弧・角括弧はURLから外して本文側に残す
 			while($url !== '') {
 				$last = substr($url, -1);
+				// 末尾が &amp; や &#039; のようなHTMLエンティティの場合、';' を削ると
+				// エンティティが壊れるためURLの一部として残す
+				if($last === ';' && preg_match('/&(#[0-9]+|#x[0-9a-fA-F]+|[a-zA-Z][a-zA-Z0-9]*);$/', $url)) {
+					break;
+				}
 				$unpaired = isset($bracketPairs[$last]) && substr_count($url, $bracketPairs[$last]) < substr_count($url, $last);
 				if(strpos('.,;:!?', $last) === false && !$unpaired) {
 					break;

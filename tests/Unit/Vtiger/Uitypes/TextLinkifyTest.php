@@ -64,4 +64,32 @@ final class TextLinkifyTest extends TestCase
         $this->assertStringContainsString('href="https://example.com/?a=1&amp;b=2"', $result);
         $this->assertStringNotContainsString('&amp;amp;', $result);
     }
+
+    /** 末尾がエンティティ '&amp;' のURLは ';' を削らずリンク化する */
+    public function testKeepsTrailingNamedEntity(): void
+    {
+        $result = Vtiger_Text_UIType::linkifyUrls('https://example.com/?a=1&amp;');
+
+        $this->assertStringContainsString('href="https://example.com/?a=1&amp;"', $result);
+        $this->assertStringEndsWith('</a>', $result);
+        $this->assertStringNotContainsString('&amp;amp', $result);
+    }
+
+    /** 末尾が数値文字参照 '&#039;' のURLも ';' を削らずリンク化する */
+    public function testKeepsTrailingNumericEntity(): void
+    {
+        $result = Vtiger_Text_UIType::linkifyUrls('https://example.com/x&#039;');
+
+        $this->assertStringContainsString('href="https://example.com/x&#039;"', $result);
+        $this->assertStringEndsWith('</a>', $result);
+    }
+
+    /** エンティティでない末尾の ';' は従来どおりURLから外して本文側へ残す */
+    public function testDropsTrailingSemicolonThatIsNotEntity(): void
+    {
+        $result = Vtiger_Text_UIType::linkifyUrls('https://example.com/path;');
+
+        $this->assertStringContainsString('href="https://example.com/path"', $result);
+        $this->assertStringEndsWith('</a>;', $result);
+    }
 }
