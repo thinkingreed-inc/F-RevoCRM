@@ -1,0 +1,26 @@
+/*
+ * システム変数一覧の調整
+ */
+
+/*
+ * 編集アイコンだけを置くアクション列。listview-table の既定幅より優先させる。
+ * クラス名はこの画面専用にする。List.js の列固定処理が先頭 2 列へ
+ * fix-title-column / fix-data-column を動的に付けるため、そちらを使うと
+ * キー列（2 列目）まで同じ幅に潰れてしまう。
+ */
+#listview-table .parameters-action-column {
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+}
+
+/*
+ * 列幅は内容に応じて決まるため、既定の余白（左右 3px）では隣の列と文字が
+ * 詰まって読みにくい。値を持つセルにだけ余白を足す
+ * （アクション列は固定幅のため対象外）。
+ */
+#listview-table thead th:not(.parameters-action-column),
+#listview-table tbody td.listViewEntryValue {
+    padding-left: 10px;
+    padding-right: 16px;
+}

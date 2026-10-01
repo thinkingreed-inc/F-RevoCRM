@@ -31,6 +31,7 @@
 					</div>
 					<div class="col-md-6">
 						{assign var=RECORD_COUNT value=$LISTVIEW_ENTRIES_COUNT}
+						{* システム変数一覧は件数カウントを実装していないため、ページャは表示しない *}
 						{* {include file="Pagination.tpl"|vtemplate_path:$MODULE SHOWPAGEJUMP=true} *}
 					</div>
 				</div>
@@ -48,13 +49,8 @@
 											{vtranslate('LBL_ACTIONS', $QUALIFIED_MODULE)}
 										</th>
 									{else if $MODULE neq 'Currency'}
-										{if $SHOW_LISTVIEW_CHECKBOX eq true}
-											<th>
-												<span class="input">
-													<input class="listViewEntriesMainCheckBox" type="checkbox">
-												</span>
-											</th>
-										{/if}
+										{* 編集アイコンを置くアクション列。見出しは持たないが列数を揃えるために必要 *}
+										<th class="parameters-action-column"></th>
 									{/if}
 									{if $MODULE eq 'Tags' or $MODULE eq 'CronTasks' or $LISTVIEW_ACTIONS_ENABLED eq true}
 										<th>
@@ -62,30 +58,36 @@
 										</th>
 									{/if}
 									{foreach item=LISTVIEW_HEADER from=$LISTVIEW_HEADERS}
-										<th nowrap>
-											<a {if !($LISTVIEW_HEADER->has('sort'))} class="listViewHeaderValues cursorPointer" data-nextsortorderval="{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')}{$NEXT_SORT_ORDER}{else}ASC{/if}" data-columnname="{$LISTVIEW_HEADER->get('name')}" {/if}>{vtranslate($LISTVIEW_HEADER->get('label'), $QUALIFIED_MODULE)}
-												&nbsp;{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')}<img class="{$SORT_IMAGE} icon-white">{/if}</a>&nbsp;
-										</th>
+										{* ID列は内部管理用のため表示しない *}
+										{if $LISTVIEW_HEADER->get('name') neq 'id'}
+											<th nowrap>
+												<a {if !($LISTVIEW_HEADER->has('sort'))} class="listViewHeaderValues cursorPointer" data-nextsortorderval="{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')}{$NEXT_SORT_ORDER}{else}ASC{/if}" data-columnname="{$LISTVIEW_HEADER->get('name')}" {/if}>
+													{vtranslate($LISTVIEW_HEADER->get('label'), $QUALIFIED_MODULE)}
+													&nbsp;{if $COLUMN_NAME eq $LISTVIEW_HEADER->get('name')}<img class="{$SORT_IMAGE} icon-white">{/if}
+												</a>&nbsp;
+											</th>
+										{/if}
 									{/foreach}
 								</tr>
 							</thead>
 							<tbody class="overflow-y">
 								{foreach item=LISTVIEW_ENTRY from=$LISTVIEW_ENTRIES}
+									{* 行クリック・編集アイコンのハンドラは Parameters.js で登録する *}
 									<tr class="listViewEntries" data-id="{$LISTVIEW_ENTRY->getId()}"
 										{if method_exists($LISTVIEW_ENTRY,'getDetailViewUrl')}data-recordurl="{$LISTVIEW_ENTRY->getDetailViewUrl()}"{/if}
 										{if method_exists($LISTVIEW_ENTRY,'getRowInfo')}data-info="{Vtiger_Util_Helper::toSafeHTML(ZEND_JSON::Encode($LISTVIEW_ENTRY->getRowInfo()))}"{/if}>
-										<td width="10%">
-											{include file="ListViewRecordActions.tpl"|vtemplate_path:$QUALIFIED_MODULE}
-										</td>
+											<td class="parameters-action-column">
+												{include file="ListViewRecordActions.tpl"|vtemplate_path:$QUALIFIED_MODULE }
+											</td>
 										{foreach item=LISTVIEW_HEADER from=$LISTVIEW_HEADERS}
 											{assign var=LISTVIEW_HEADERNAME value=$LISTVIEW_HEADER->get('name')}
-											{assign var=LAST_COLUMN value=$LISTVIEW_HEADER@last}
-											<td class="listViewEntryValue textOverflowEllipsis {$WIDTHTYPE}" width="{$WIDTH}%" nowrap>
-												{$LISTVIEW_ENTRY->getDisplayValue($LISTVIEW_HEADERNAME)}
-												{if $LAST_COLUMN && $LISTVIEW_ENTRY->getRecordLinks()}
-													</td>
-												{/if}
-											</td>
+											{if $LISTVIEW_HEADERNAME neq 'id'}
+												{* 値は PearDatabase::query_result() の to_html() で
+												   HTML エスケープ済みのため、ここでは二重に変換しない *}
+												<td class="listViewEntryValue textOverflowEllipsis {$WIDTHTYPE}" width="{$WIDTH}%" nowrap>
+													{$LISTVIEW_ENTRY->getDisplayValue($LISTVIEW_HEADERNAME)}
+												</td>
+											{/if}
 										{/foreach}
 									</tr>
 								{/foreach}
@@ -107,4 +109,7 @@
 			</div>
 		</div>
 	</div>
+
+	{* システム変数編集ダイアログ（React WebComponent）。イベント登録は Parameters.js が行う *}
+	<parameter-edit id="parameterEditComponent" is-open="false"></parameter-edit>
 {/strip}

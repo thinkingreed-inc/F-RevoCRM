@@ -10,21 +10,18 @@
  ********************************************************************************/
 -->*}
 {strip}
-    <div class="table-actions">      
+    <div class="table-actions">
             {foreach item=RECORD_LINK from=$LISTVIEW_ENTRY->getRecordLinks()}
                 <span>
-                {assign var="RECORD_LINK_URL" value=$RECORD_LINK->getUrl()}
-                
                 {if $RECORD_LINK->getIcon() eq 'icon-pencil' }
-                      <a {if stripos($RECORD_LINK_URL, 'javascript:')===0} title='{vtranslate('LBL_EDIT', $MODULE)}' onclick="{$RECORD_LINK_URL|substr:strlen("javascript:")};if(event.stopPropagation){ldelim}event.stopPropagation();{rdelim}else{ldelim}event.cancelBubble=true;{rdelim}" {else} href='{$RECORD_LINK_URL}' {/if}>
+                      {* クリックは Parameters.js が行（tr[data-id]）単位で拾うため、ここでは登録しない *}
+                      <a href="javascript:void(0);"
+                         title='{vtranslate('LBL_EDIT', $MODULE)}'
+                         class="parameter-edit-btn">
                       <i class="fa fa-pencil" ></i>
                       </a>
                 {/if}
-                {if  $RECORD_LINK->getIcon() eq 'icon-trash'}
-                    <a {if stripos($RECORD_LINK_URL, 'javascript:')===0} title="{vtranslate('LBL_DELETE', $MODULE)}" onclick="{$RECORD_LINK_URL|substr:strlen("javascript:")};if(event.stopPropagation){ldelim}event.stopPropagation();{rdelim}else{ldelim}event.cancelBubble=true;{rdelim}" {else} href='{$RECORD_LINK_URL}' {/if}>
-                    <i class="fa fa-trash" ></i>
-                    </a>
-                {/if}
+                {* 削除ボタンは非表示（システム変数は画面からの削除を許可しない） *}
                 </span>
             {/foreach}
     </div>

@@ -39,3 +39,7 @@ parameters:
         - setup/migration/scripts/20260917021741_fix_log_file_permissions.php
         # 繰り返し活動の系列解決のテストが参照するクラス
         - modules/Calendar/RepeatEvents.php
+        # システム変数（#1469）の API テストがスタブ制御に使うクラス。
+        # スタブ本体（ParametersApiTestSupport.php）は vtiger と同名のクラスを
+        # 定義するため解析対象にしない（本物の定義と食い違う）。
+        - tests/Support/ParametersApiTestState.php

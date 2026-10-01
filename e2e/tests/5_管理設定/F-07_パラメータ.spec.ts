@@ -1,101 +1,218 @@
 import { test, expect } from "../../fixtures/isolated";
-import type { Page } from "@playwright/test";
-import { gotoSettings, saveAndSettle, confirmYes } from "../../utils/settings";
-import { generateRandomString } from "../../utils/util";
+import type { Locator, Page } from "@playwright/test";
+import { gotoSettings } from "../../utils/settings";
 
 /**
  * F-07 システム変数 (System > システム構成 > システム変数 / Settings.Parameters)
  *
- * カスタムパラメータ(システム変数)の 追加 → 編集 → 削除 を通しで検証する。
- * これらはグローバルなシステム変数のため、既存の値には手を触れず、
- * ユニークなトークンで自分専用の 1 レコードを作成 → 検証 → 最後に必ず削除して
- * 原状復帰する(後続テストへ痕跡を残さない)。
+ * #1469 で編集 UI が React WebComponent(<parameter-edit>)のダイアログに置き換わり、
+ * 追加・削除の導線が一覧から外れた。そのため旧 UI(EditAjax のモーダル form#editCurrency)
+ * 前提の「追加 → 編集 → 削除」シナリオは成立しない。
  *
- * 追加/編集/削除で状態を引き継ぐため serial で実行する。
+ * システム変数はグローバル設定のため新規追加できない前提に合わせ、既存の変数を
+ * 一時的に編集して検証し、各テストの最後に必ず元の値へ戻す(後続テストへ痕跡を残さない)。
+ *
+ * 型ごとの入力 UI と、シークレット(値のマスク)の挙動を通しで確認するため serial で実行する。
  */
 test.describe.serial("管理: システム変数 (Parameters)", () => {
   // settingsUrl が parent=Settings を付与するため、module/view のみ指定する
   const listParams = { module: "Parameters", view: "List" };
 
-  // 一意トークン。キーは英数と ._ のみ許可(SaveAjax のクライアント検証に準拠)
-  const token = generateRandomString(6);
-  const paramKey = `e2e_test_${token}`;
-  const paramValue = `value_${token}`;
-  const editedValue = `edited_${token}`;
+  // 検証に使う既存のシステム変数(初期データとして必ず存在する)
+  const INTEGER_KEY = "USER_LOCK_TIME";
+  const BOOLEAN_KEY = "SHOW_SCHEDULE_CONFIRM_FLAG";
 
-  /** 表示中のモーダル内フォーム(EditAjax の #editCurrency)へスコープする */
-  const editModal = (page: Page) =>
-    page.locator(".modal-content:visible form#editCurrency");
-
-  test("システム変数を追加できる", async ({ page }) => {
-    await gotoSettings(page, listParams);
-
-    // ツールバーの「追加」ボタン。triggerAdd でモーダルが開く
-    await page.locator("button.addButton").first().click();
-
-    const modal = editModal(page);
-    await expect(modal).toBeVisible();
-    await modal.locator('input[name="key"]').fill(paramKey);
-    await modal.locator('input[name="value"]').fill(paramValue);
-
-    // AJAX 保存。保存後は一覧が再描画される
-    await saveAndSettle(page, modal.locator('button[name="saveButton"]'));
-
-    // 追加したキーが一覧に現れること(リロードして永続化を確認)
-    await gotoSettings(page, listParams);
-    await expect(
-      page.locator("#listview-table").getByText(paramKey, { exact: true })
-    ).toBeVisible();
-    await expect(
-      page.locator("#listview-table").getByText(paramValue, { exact: true })
-    ).toBeVisible();
-  });
-
-  test("システム変数を編集して値が反映される", async ({ page }) => {
-    await gotoSettings(page, listParams);
-
-    // 追加したキーの行の編集(鉛筆)アイコンをクリックしてモーダルを開く
-    const targetRow = page
+  /**
+   * 一覧の指定キーの行。
+   * 備考に別のキー名が登場する変数があるため(USER_LOCK_COUNT の備考に USER_LOCK_TIME 等)、
+   * 部分一致ではなくセルの完全一致で絞る。
+   */
+  const rowOf = (page: Page, key: string) =>
+    page
       .locator("#listview-table tr.listViewEntries")
-      .filter({ hasText: paramKey });
-    await expect(targetRow).toBeVisible();
-    await targetRow.locator("a[title] i.fa-pencil").click();
+      .filter({ has: page.getByText(key, { exact: true }) });
 
-    const modal = editModal(page);
-    await expect(modal).toBeVisible();
-    // キーが編集対象の行のものであることを確認してから値を変更する
-    await expect(modal.locator('input[name="key"]')).toHaveValue(paramKey);
-    await modal.locator('input[name="value"]').fill(editedValue);
+  /** 一覧の「値」セル(列は キー / 値 / 備考 の順。ID 列は非表示) */
+  const valueCellOf = (page: Page, key: string) =>
+    rowOf(page, key).locator("td.listViewEntryValue").nth(1);
 
-    await saveAndSettle(page, modal.locator('button[name="saveButton"]'));
+  /** 編集ダイアログ。Radix は閉じた後も非表示要素を残すため :visible で絞る */
+  const dialog = (page: Page) => page.locator('[role="dialog"]:visible');
 
-    // 変更後の値がリロード後も一覧に反映されていること
-    await gotoSettings(page, listParams);
-    await expect(
-      page.locator("#listview-table").getByText(editedValue, { exact: true })
-    ).toBeVisible();
-    await expect(
-      page.locator("#listview-table").getByText(paramValue, { exact: true })
-    ).toHaveCount(0);
-  });
+  /** 指定キーの編集ダイアログを開く */
+  const openEditDialog = async (page: Page, key: string): Promise<Locator> => {
+    await rowOf(page, key).locator("a.parameter-edit-btn").click();
+    const opened = dialog(page);
+    await expect(opened.getByRole("heading", { name: key })).toBeVisible();
+    return opened;
+  };
 
-  test("システム変数を削除して原状復帰する", async ({ page }) => {
-    await gotoSettings(page, listParams);
-
-    const targetRow = page
-      .locator("#listview-table tr.listViewEntries")
-      .filter({ hasText: paramKey });
-    await expect(targetRow).toBeVisible();
-
-    // 削除(ゴミ箱)アイコン → 確認ダイアログの「はい」
-    await targetRow.locator("a[title] i.fa-trash").click();
-    await confirmYes(page);
+  /**
+   * ダイアログの保存。保存に成功すると Parameters.js が一覧をリロードするため、
+   * ダイアログが閉じ切るまで待ってから次の操作へ進む。
+   */
+  const saveDialog = async (page: Page, opened: Locator): Promise<void> => {
+    await opened.getByRole("button", { name: "保存" }).click();
+    await expect(opened).toBeHidden({ timeout: 15000 });
     await page.waitForLoadState("networkidle").catch(() => {});
+  };
 
-    // リロード後、追加したキーが一覧から消えていること
+  /** ダイアログを保存せずに閉じる */
+  const cancelDialog = async (opened: Locator): Promise<void> => {
+    await opened.getByRole("button", { name: "キャンセル" }).click();
+    await expect(opened).toBeHidden();
+  };
+
+  test("追加・削除の導線が一覧に出ない", async ({ page }) => {
     await gotoSettings(page, listParams);
-    await expect(
-      page.locator("#listview-table").getByText(paramKey, { exact: true })
-    ).toHaveCount(0);
+
+    await expect(page.locator("#listview-table")).toBeVisible();
+    // 追加ボタン(triggerAdd)は hasCreatePermissions() で非表示にしている
+    await expect(page.locator("button.addButton")).toHaveCount(0);
+    // 削除アイコンは getRecordLinks() から外している
+    await expect(page.locator("#listview-table i.fa-trash")).toHaveCount(0);
+    // 編集アイコンは残っている
+    await expect(page.locator("#listview-table i.fa-pencil").first()).toBeVisible();
+  });
+
+  test("型に応じた入力 UI で編集ダイアログが開く", async ({ page }) => {
+    await gotoSettings(page, listParams);
+
+    // integer 型は数値入力。トグルはシークレットの 1 つだけ
+    const integerDialog = await openEditDialog(page, INTEGER_KEY);
+    await expect(integerDialog.getByRole("spinbutton")).toBeVisible();
+    await expect(integerDialog.getByText("シークレット", { exact: true })).toBeVisible();
+    await expect(integerDialog.getByRole("switch")).toHaveCount(1);
+    await cancelDialog(integerDialog);
+
+    // boolean 型は値がトグル。シークレットは設定できないため欄ごと出ない
+    // （値が true / false の 2 択しかなく、マスクしても値を推測できるため）
+    const booleanDialog = await openEditDialog(page, BOOLEAN_KEY);
+    await expect(booleanDialog.getByRole("spinbutton")).toHaveCount(0);
+    await expect(booleanDialog.getByText("シークレット", { exact: true })).toHaveCount(0);
+    await expect(booleanDialog.getByRole("switch")).toHaveCount(1);
+    await cancelDialog(booleanDialog);
+  });
+
+  test("キー列がアクション列の固定幅に潰されない", async ({ page }) => {
+    // List.js は一覧の先頭 2 列へ fix-title-column / fix-data-column を動的に付ける。
+    // アクション列の幅指定にそのクラスを使うとキー列まで同じ幅に潰れるため、
+    // この画面専用のクラスで指定していることを担保する。
+    await gotoSettings(page, listParams);
+
+    const firstRow = page.locator("#listview-table tbody tr.listViewEntries").first();
+    const actionBox = await firstRow
+      .locator("td.parameters-action-column")
+      .boundingBox();
+    const keyBox = await firstRow
+      .locator("td.listViewEntryValue")
+      .first()
+      .boundingBox();
+
+    expect(actionBox?.width ?? 0).toBeLessThanOrEqual(80);
+    expect(keyBox?.width ?? 0).toBeGreaterThan(120);
+  });
+
+  test("値セルのクリックでも編集ダイアログが開く", async ({ page }) => {
+    await gotoSettings(page, listParams);
+
+    await valueCellOf(page, INTEGER_KEY).click();
+
+    const opened = dialog(page);
+    await expect(opened.getByRole("heading", { name: INTEGER_KEY })).toBeVisible();
+    await cancelDialog(opened);
+  });
+
+  test("値を変更すると一覧に反映される", async ({ page }) => {
+    await gotoSettings(page, listParams);
+
+    const originalValue = (await valueCellOf(page, INTEGER_KEY).innerText()).trim();
+    // 元の値と必ず異なる値にする
+    const editedValue = String(Number(originalValue) + 5);
+
+    try {
+      const opened = await openEditDialog(page, INTEGER_KEY);
+      await opened.getByRole("spinbutton").fill(editedValue);
+      await saveDialog(page, opened);
+
+      await gotoSettings(page, listParams);
+      await expect(valueCellOf(page, INTEGER_KEY)).toHaveText(editedValue);
+    } finally {
+      // 原状復帰
+      await gotoSettings(page, listParams);
+      const opened = await openEditDialog(page, INTEGER_KEY);
+      await opened.getByRole("spinbutton").fill(originalValue);
+      await saveDialog(page, opened);
+    }
+  });
+
+  test("シークレット ON で値がマスクされ、解除には値の再入力が必要", async ({
+    page,
+  }) => {
+    await gotoSettings(page, listParams);
+
+    const originalValue = (await valueCellOf(page, INTEGER_KEY).innerText()).trim();
+    const editedDescription = `E2E シークレット検証 ${Date.now()}`;
+    let originalDescription = "";
+
+    try {
+      // 1. シークレットを ON にして保存する
+      let opened = await openEditDialog(page, INTEGER_KEY);
+      originalDescription = await opened.getByRole("textbox").inputValue();
+      await opened.getByRole("switch", { name: "値を表示する" }).click();
+      await saveDialog(page, opened);
+
+      // 2. 一覧ではマスク表示になり、実際の値が見えないこと
+      await gotoSettings(page, listParams);
+      await expect(valueCellOf(page, INTEGER_KEY)).toHaveText("*******");
+
+      // 3. 編集ダイアログでも現在の値は表示されず、その旨の注記が出ること
+      opened = await openEditDialog(page, INTEGER_KEY);
+      await expect(opened.getByRole("spinbutton")).toHaveValue("");
+      await expect(
+        opened.getByText(/現在の値は表示されません/)
+      ).toBeVisible();
+
+      // 4. 値欄に触れず備考だけ変更しても保存できること
+      //    (このとき既存値が壊れないことは Vitest / PHPUnit 側で検証している)
+      await opened.getByRole("textbox").fill(editedDescription);
+      await saveDialog(page, opened);
+      await gotoSettings(page, listParams);
+      await expect(valueCellOf(page, INTEGER_KEY)).toHaveText("*******");
+
+      // 5. 値を入力せずに解除しようとすると弾かれること。
+      //    解除するだけで秘匿していた値を一覧で覗けてしまうのを防ぐ。
+      opened = await openEditDialog(page, INTEGER_KEY);
+      await opened.getByRole("switch", { name: "値を隠す" }).click();
+      await expect(
+        opened.getByText(/シークレットを解除する場合は/)
+      ).toBeVisible();
+      await opened.getByRole("button", { name: "保存" }).click();
+      // 案内文にも同じ言い回しが含まれるため、エラー表示だけを完全一致で拾う
+      await expect(
+        opened.getByText("値を入力してください", { exact: true })
+      ).toBeVisible();
+      // 保存されず、ダイアログは開いたままになる
+      await expect(opened).toBeVisible();
+
+      // 6. 新しい値を入れれば解除でき、その値が一覧に出ること
+      await opened.getByRole("spinbutton").fill(originalValue);
+      await saveDialog(page, opened);
+      await gotoSettings(page, listParams);
+      await expect(valueCellOf(page, INTEGER_KEY)).toHaveText(originalValue);
+    } finally {
+      // 原状復帰(シークレット OFF・元の値・元の備考)
+      await gotoSettings(page, listParams);
+      const opened = await openEditDialog(page, INTEGER_KEY);
+      const secretOn = opened.getByRole("switch", { name: "値を隠す" });
+      if (await secretOn.count()) {
+        await secretOn.click();
+      }
+      await opened.getByRole("spinbutton").fill(originalValue);
+      if (originalDescription) {
+        await opened.getByRole("textbox").fill(originalDescription);
+      }
+      await saveDialog(page, opened);
+    }
   });
 });

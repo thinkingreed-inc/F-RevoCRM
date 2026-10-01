@@ -31,8 +31,12 @@ class Settings_Parameters_Module_Model extends Settings_Vtiger_Module_Model{
     /*
      * Function to get Create view url 
      */
-    public function getCreateRecordUrl() {
-        return "javascript:Settings_Parameters_Js.triggerAdd(event)";
+    /**
+     * Function to check if create button should be shown
+     * @return <Boolean> false to hide add button
+     */
+    public function hasCreatePermissions() {
+        return false;
     }
 
 }

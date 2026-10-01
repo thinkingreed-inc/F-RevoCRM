@@ -42,6 +42,8 @@ export interface TranslationsResponse {
 export interface GetTranslationsParams {
   /** 対象モジュール名（必須） */
   module: string;
+  /** 親モジュール名（Settings配下など） */
+  parent?: string;
   /** 言語コード（省略時はサーバー側でユーザー設定を使用） */
   language?: string;
 }
@@ -89,6 +91,10 @@ export async function fetchTranslations(
   const searchParams = new URLSearchParams();
   searchParams.set("module", params.module);
   searchParams.set("api", "GetTranslations");
+
+  if (params.parent) {
+    searchParams.set("parent", params.parent);
+  }
 
   if (params.language) {
     searchParams.set("language", params.language);
