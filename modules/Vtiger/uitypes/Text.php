@@ -71,7 +71,10 @@ class Vtiger_Text_UIType extends Vtiger_Base_UIType {
 			if(!preg_match('/^https?:\/\/./ui', $url)) {
 				return $matches[0];
 			}
-			return '<a class="urlField cursorPointer" href="'.$url.'" target="_blank" rel="noopener noreferrer">'.$url.'</a>'.$tail;
+			// 属性値・テキストの双方をエスケープする。渡される値は purifyHtmlEventAttributes()
+			// を通過済みでエンティティが残る場合があるため二重エスケープはしない
+			$escapedUrl = htmlspecialchars($url, ENT_QUOTES, 'UTF-8', false);
+			return '<a class="urlField cursorPointer" href="'.$escapedUrl.'" target="_blank" rel="noopener noreferrer">'.$escapedUrl.'</a>'.$tail;
 		}, $value);
 		// 不正なUTF-8バイト列ではnullが返るため元の値を表示する
 		return $result === null ? $value : $result;

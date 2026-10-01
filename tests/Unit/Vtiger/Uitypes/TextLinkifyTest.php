@@ -45,4 +45,23 @@ final class TextLinkifyTest extends TestCase
         $this->assertStringContainsString('href="https://example.com/path"', $result);
         $this->assertStringEndsWith('</a>]', $result);
     }
+
+    /** クエリ文字列の '&' は href とリンクテキストの双方でエスケープする */
+    public function testEscapesAmpersandInUrl(): void
+    {
+        $result = Vtiger_Text_UIType::linkifyUrls('https://example.com/?a=1&b=2');
+
+        $this->assertStringContainsString('href="https://example.com/?a=1&amp;b=2"', $result);
+        $this->assertStringContainsString('>https://example.com/?a=1&amp;b=2</a>', $result);
+        $this->assertStringNotContainsString('?a=1&b=2', $result);
+    }
+
+    /** 既にエンティティ化された '&amp;' を二重エスケープしない */
+    public function testDoesNotDoubleEscapeExistingEntity(): void
+    {
+        $result = Vtiger_Text_UIType::linkifyUrls('https://example.com/?a=1&amp;b=2');
+
+        $this->assertStringContainsString('href="https://example.com/?a=1&amp;b=2"', $result);
+        $this->assertStringNotContainsString('&amp;amp;', $result);
+    }
 }
