@@ -18,6 +18,16 @@ class RecycleBin_List_View extends Vtiger_Index_View {
 		if(!$currentUserPriviligesModel->hasModulePermission($moduleModel->getId())) {
 			throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
 		}
+
+		//ごみ箱は sourceModule で表示対象のモジュールを切り替えるため、
+		//RecycleBin 自身だけでなく表示対象モジュール側の権限も検証する
+		$sourceModule = $request->get('sourceModule');
+		if(!empty($sourceModule)) {
+			$sourceModuleModel = Vtiger_Module_Model::getInstance($sourceModule);
+			if(!$sourceModuleModel || !$currentUserPriviligesModel->hasModulePermission($sourceModuleModel->getId())) {
+				throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
+			}
+		}
 	}
 
 	function preProcess(Vtiger_Request $request, $display=true) {
