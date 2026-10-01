@@ -501,6 +501,101 @@ final class SaveApiTest extends TestCase
         $this->assertSame('30', \ParametersApiTestState::savedValue(2, 'value'));
     }
 
+    public function test_シークレットのまま値を空文字で送っても既存値を維持する_integer(): void
+    {
+        // 値欄に一度入力してから消した場合、フロントが空文字を送ることがある。
+        // 空文字で上書きすると 0 になり、一覧はマスク表示のため破壊に気づけない。
+        \ParametersApiTestState::seed([
+            'id' => 2,
+            'key' => 'USER_LOCK_TIME',
+            'value' => '30',
+            'type' => 'integer',
+            'secret' => 1,
+            'description' => '旧備考',
+        ]);
+
+        $response = $this->runApi([
+            'id' => '2',
+            'value' => '',
+            'description' => '新備考',
+            'secret' => '1',
+        ]);
+
+        $this->assertSame(true, $response['saved']);
+        $this->assertSame(
+            '30',
+            \ParametersApiTestState::savedValue(2, 'value'),
+            'シークレットのままの空文字送信では既存値を維持すること'
+        );
+        $this->assertSame('新備考', \ParametersApiTestState::savedValue(2, 'description'));
+    }
+
+    public function test_シークレットのまま値を空文字で送っても既存値を維持する_string(): void
+    {
+        \ParametersApiTestState::seed([
+            'id' => 5,
+            'key' => 'EXAMPLE_API_TOKEN',
+            'value' => 'secret-token',
+            'type' => 'string',
+            'secret' => 1,
+            'description' => '旧備考',
+        ]);
+
+        $this->runApi([
+            'id' => '5',
+            'value' => '',
+            'description' => '新備考',
+            'secret' => '1',
+        ]);
+
+        $this->assertSame(
+            'secret-token',
+            \ParametersApiTestState::savedValue(5, 'value'),
+            'シークレットのままの空文字送信では既存値を維持すること'
+        );
+    }
+
+    public function test_シークレットの指定を省略した空文字送信でも既存値を維持する(): void
+    {
+        // secret 未送信は「シークレットのまま」を意味するため、解除扱いにしない
+        \ParametersApiTestState::seed([
+            'id' => 2,
+            'key' => 'USER_LOCK_TIME',
+            'value' => '30',
+            'type' => 'integer',
+            'secret' => 1,
+            'description' => '備考',
+        ]);
+
+        $this->runApi([
+            'id' => '2',
+            'value' => '',
+        ]);
+
+        $this->assertSame('30', \ParametersApiTestState::savedValue(2, 'value'));
+    }
+
+    public function test_シークレットでなければ空文字送信は従来どおり正規化する(): void
+    {
+        // 既存値の維持はシークレット変数に限る。通常の変数は画面で結果を確認できる
+        \ParametersApiTestState::seed([
+            'id' => 2,
+            'key' => 'USER_LOCK_TIME',
+            'value' => '30',
+            'type' => 'integer',
+            'secret' => 0,
+            'description' => '備考',
+        ]);
+
+        $this->runApi([
+            'id' => '2',
+            'value' => '',
+            'secret' => '0',
+        ]);
+
+        $this->assertSame('0', \ParametersApiTestState::savedValue(2, 'value'));
+    }
+
     // ------------------------------------------------------------------
     // processApi: 入力値を加工せずに保存する
     // ------------------------------------------------------------------

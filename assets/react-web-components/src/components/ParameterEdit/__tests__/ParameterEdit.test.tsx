@@ -178,6 +178,23 @@ describe("ParameterEdit", () => {
       expect(sentParams().get("value")).toBe("45");
     });
 
+    it("値欄を編集してから消した場合は value を送らない（既存値が保持される）", async () => {
+      // 入力してから消しただけで既存値を空文字で上書きすると、
+      // 一覧はマスク表示のままで値の破壊に気づけない
+      givenRecord({ secret: 1, value: "" });
+
+      render(<ParameterEdit recordId="2" isOpen />);
+      await screen.findByRole("heading", { name: "USER_LOCK_TIME" });
+
+      const input = screen.getByRole("spinbutton");
+      await userEvent.type(input, "45");
+      await userEvent.clear(input);
+      await userEvent.click(save());
+
+      await waitFor(() => expect(savePosted()).toBe(true));
+      expect(sentParams().has("value")).toBe(false);
+    });
+
     it("シークレットを解除するには値の再入力が必要", async () => {
       givenRecord({ secret: 1, value: "", type: "integer" });
 

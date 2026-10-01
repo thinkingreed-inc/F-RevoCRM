@@ -154,11 +154,15 @@ const ParameterEditInner: React.FC<ParameterEditProps> = ({
       payload.secret = formState.secret ? 1 : 0;
     }
 
-    // シークレット変数は元の値を取得できないため、値欄を編集したときだけ送信する。
+    // シークレット変数は元の値を取得できないため、値欄に入力があったときだけ送信する。
     // 未送信の場合はサーバー側が既存値を維持する。
-    // ただしシークレットを解除する場合は、必ず新しい値で上書きする。
+    // valueTouched だけで判定すると、入力してから消した場合に空文字を送ってしまい、
+    // 一覧はマスク表示のままで値が壊れたことに気づけない。
+    // ただしシークレットを解除する場合は、必ず新しい値で上書きする
+    // （値が未入力のときは validateValue() が先に止める）。
     const releasingSecret = data.secret === 1 && !formState.secret;
-    if (data.secret !== 1 || valueTouched || releasingSecret) {
+    const hasValueInput = valueTouched && formState.value !== "";
+    if (data.secret !== 1 || hasValueInput || releasingSecret) {
       payload.value = formState.value;
     }
 
