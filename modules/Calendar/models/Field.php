@@ -63,7 +63,7 @@ class Calendar_Field_Model extends Vtiger_Field_Model {
 	/**
 	 * Customize the display value for detail view.
 	 */
-	public function getDisplayValue($value, $record = false, $recordInstance = false) {
+	public function getDisplayValue($value, $record = false, $recordInstance = false, $removeTags = false) {
 		if ($recordInstance) {
 			if ($this->getName() == 'date_start') {
 				$dateTimeValue = $value . ' '. $recordInstance->get('time_start');
@@ -87,7 +87,7 @@ class Calendar_Field_Model extends Vtiger_Field_Model {
 				return $startDate . ' ' . $startTime;
 			}
 		}
-		return parent::getDisplayValue($value, $record, $recordInstance);
+		return parent::getDisplayValue($value, $record, $recordInstance, $removeTags);
 	}
 
 	/**

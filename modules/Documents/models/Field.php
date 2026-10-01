@@ -15,7 +15,7 @@ class Documents_Field_Model extends Vtiger_Field_Model {
 	 * @param <String> $value - value which need to be converted to display value
 	 * @return <String> - converted display value
 	 */
-	public function getDisplayValue($value, $record=false, $recordInstance = false) {
+	public function getDisplayValue($value, $record=false, $recordInstance = false, $removeTags = false) {
 		$fieldName = $this->getName();
 
 		if($fieldName == 'filesize' && $recordInstance) {
@@ -34,7 +34,7 @@ class Documents_Field_Model extends Vtiger_Field_Model {
 			return $value;
 		}
 
-		return parent::getDisplayValue($value, $record, $recordInstance);
+		return parent::getDisplayValue($value, $record, $recordInstance, $removeTags);
 	}
     
     public function hasCustomLock() {

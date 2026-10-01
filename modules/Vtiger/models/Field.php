@@ -174,14 +174,15 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	/**
 	 * Function to retieve display value for a value
 	 * @param <String> $value - value which need to be converted to display value
+	 * @param <Boolean> $removeTags - メール差込などHTMLを含めたくない場合にtrueを渡す
 	 * @return <String> - converted display value
 	 */
-	public function getDisplayValue($value, $record=false, $recordInstance = false) {
+	public function getDisplayValue($value, $record=false, $recordInstance = false, $removeTags = false) {
 		if(!isset($this->uitype_instance) || !$this->uitype_instance) {
 			$this->uitype_instance = Vtiger_Base_UIType::getInstanceFromField($this);
 		}
 		$uiTypeInstance = $this->uitype_instance;
-		return $uiTypeInstance->getDisplayValue($value, $record, $recordInstance);
+		return $uiTypeInstance->getDisplayValue($value, $record, $recordInstance, $removeTags);
 	}
 
 	/**

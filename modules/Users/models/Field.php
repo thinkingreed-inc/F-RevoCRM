@@ -151,7 +151,7 @@ class Users_Field_Model extends Vtiger_Field_Model {
 	 * @param <String> $value - value which need to be converted to display value
 	 * @return <String> - converted display value
 	 */
-	public function getDisplayValue($value, $recordId = false,$recordInstance=false) {
+	public function getDisplayValue($value, $recordId = false,$recordInstance=false, $removeTags = false) {
 
 		 if($this->get('uitype') == 32){
 			return Vtiger_Language_Handler::getLanguageLabel($value);
@@ -160,7 +160,7 @@ class Users_Field_Model extends Vtiger_Field_Model {
 		 if(($fieldName == 'currency_decimal_separator' || $fieldName == 'currency_grouping_separator') && ($value == "&nbsp;")) {
 			 return vtranslate('Space', 'Users');
 		 }
-		return parent::getDisplayValue($value, $recordId);
+		return parent::getDisplayValue($value, $recordId, false, $removeTags);
 	}
 
 	/**
