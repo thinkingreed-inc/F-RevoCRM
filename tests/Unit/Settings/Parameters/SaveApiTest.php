@@ -24,9 +24,9 @@ require_once $root . '/modules/Settings/Parameters/apis/Save.php';
  */
 class SaveApiTestDouble extends \Settings_Parameters_Save_Api
 {
-    public function exposeProcessApi(\Vtiger_Request $request): void
+    public function exposeProcessApi(\Vtiger_Request $request): \Vtiger_Response
     {
-        $this->processApi($request);
+        return $this->processApi($request);
     }
 
     public function exposeValidateValue(mixed $value, string $type): mixed
@@ -84,7 +84,9 @@ final class SaveApiTest extends TestCase
     }
 
     /**
-     * API を実行し、レスポンスの JSON をデコードして返す
+     * API を実行し、成功時の結果を返す
+     *
+     * 失敗時は ApiException が投げられるため、呼び出し側は runApiExpectingError() を使う。
      *
      * @param array<string, mixed> $values
      * @return array<string, mixed>
@@ -92,34 +94,33 @@ final class SaveApiTest extends TestCase
     private function runApi(array $values): array
     {
         $api = new SaveApiTestDouble();
+        $result = $api->exposeProcessApi($this->makeRequest($values))->getResult();
 
-        ob_start();
-        try {
-            $api->exposeProcessApi($this->makeRequest($values));
-        } finally {
-            $output = (string)ob_get_clean();
+        $this->assertIsArray($result);
+        $normalized = [];
+        foreach ($result as $key => $value) {
+            $normalized[(string)$key] = $value;
         }
 
-        $decoded = json_decode($output, true);
-        $this->assertIsArray($decoded, 'API はJSONを返すこと: ' . $output);
-
-        return $decoded;
+        return $normalized;
     }
 
     /**
-     * エラーレスポンスからメッセージを取り出す
+     * API を実行し、投げられた例外のメッセージを返す
      *
-     * @param array<string, mixed> $response
+     * @param array<string, mixed> $values
      */
-    private function errorMessage(array $response): ?string
+    private function runApiExpectingError(array $values): string
     {
-        $error = $response['error'] ?? null;
-        if (!is_array($error)) {
-            return null;
-        }
-        $message = $error['message'] ?? null;
+        $api = new SaveApiTestDouble();
 
-        return is_string($message) ? $message : null;
+        try {
+            $api->exposeProcessApi($this->makeRequest($values));
+        } catch (\ApiException $e) {
+            return $e->getMessage();
+        }
+
+        $this->fail('ApiException が投げられること');
     }
 
     // ------------------------------------------------------------------
@@ -246,7 +247,7 @@ final class SaveApiTest extends TestCase
             'secret' => '1',
         ]);
 
-        $this->assertTrue($response['success']);
+        $this->assertSame(true, $response['saved']);
         $this->assertSame(
             '30',
             \ParametersApiTestState::savedValue(2, 'value'),
@@ -378,14 +379,14 @@ final class SaveApiTest extends TestCase
             'description' => '備考',
         ]);
 
-        $response = $this->runApi([
+        $message = $this->runApiExpectingError([
             'id' => '1',
             'value' => 'false',
             'description' => '備考',
             'secret' => '1',
         ]);
 
-        $this->assertFalse($response['success']);
+        $this->assertSame('Secret is not available for boolean parameters', $message);
         $this->assertFalse(\ParametersApiTestState::hasSaved());
     }
 
@@ -406,7 +407,7 @@ final class SaveApiTest extends TestCase
             'description' => '新備考',
         ]);
 
-        $this->assertTrue($response['success']);
+        $this->assertSame(true, $response['saved']);
         $this->assertSame(0, \ParametersApiTestState::savedValue(1, 'secret'));
         // 値の再入力を求めずに解除する（boolean は解除チェックの対象外）
         $this->assertSame('false', \ParametersApiTestState::savedValue(1, 'value'));
@@ -424,13 +425,13 @@ final class SaveApiTest extends TestCase
             'description' => '備考',
         ]);
 
-        $response = $this->runApi([
+        $message = $this->runApiExpectingError([
             'id' => '2',
             'description' => '備考',
             'secret' => '0',
         ]);
 
-        $this->assertFalse($response['success']);
+        $this->assertSame('A new value is required to turn off the secret setting', $message);
         $this->assertFalse(\ParametersApiTestState::hasSaved());
     }
 
@@ -445,14 +446,14 @@ final class SaveApiTest extends TestCase
             'description' => '備考',
         ]);
 
-        $response = $this->runApi([
+        $message = $this->runApiExpectingError([
             'id' => '2',
             'value' => '',
             'description' => '備考',
             'secret' => '0',
         ]);
 
-        $this->assertFalse($response['success']);
+        $this->assertSame('A new value is required to turn off the secret setting', $message);
         $this->assertFalse(\ParametersApiTestState::hasSaved());
     }
 
@@ -474,7 +475,7 @@ final class SaveApiTest extends TestCase
             'secret' => '1',
         ]);
 
-        $this->assertTrue($response['success']);
+        $this->assertSame(true, $response['saved']);
         $this->assertSame('30', \ParametersApiTestState::savedValue(2, 'value'));
     }
 
@@ -496,30 +497,29 @@ final class SaveApiTest extends TestCase
             'secret' => '0',
         ]);
 
-        $this->assertTrue($response['success']);
+        $this->assertSame(true, $response['saved']);
         $this->assertSame('30', \ParametersApiTestState::savedValue(2, 'value'));
     }
 
     public function test_不正なidはエラーを返し保存しない(): void
     {
-        $response = $this->runApi([
+        $message = $this->runApiExpectingError([
             'id' => '0',
             'description' => '備考',
         ]);
 
-        $this->assertFalse($response['success']);
+        $this->assertSame('Invalid ID', $message);
         $this->assertFalse(\ParametersApiTestState::hasSaved());
     }
 
     public function test_存在しないレコードはエラーを返す(): void
     {
-        $response = $this->runApi([
+        $message = $this->runApiExpectingError([
             'id' => '999',
             'description' => '備考',
         ]);
 
-        $this->assertFalse($response['success']);
-        $this->assertSame('Record not found', $this->errorMessage($response));
+        $this->assertSame('Record not found', $message);
     }
 
     public function test_型に合わない値はエラーを返し保存しない(): void
@@ -533,13 +533,13 @@ final class SaveApiTest extends TestCase
             'description' => '備考',
         ]);
 
-        $response = $this->runApi([
+        $message = $this->runApiExpectingError([
             'id' => '2',
             'value' => 'abc',
             'description' => '備考',
         ]);
 
-        $this->assertFalse($response['success']);
+        $this->assertSame('Invalid integer value', $message);
         $this->assertFalse(\ParametersApiTestState::hasSaved());
     }
 
@@ -563,7 +563,7 @@ final class SaveApiTest extends TestCase
             'value' => '45',
         ]);
 
-        $this->assertTrue($response['success']);
+        $this->assertSame(true, $response['saved']);
         $this->assertSame('元の備考', \ParametersApiTestState::savedValue(2, 'description'));
         $this->assertSame('45', \ParametersApiTestState::savedValue(2, 'value'));
     }
@@ -603,14 +603,12 @@ final class SaveApiTest extends TestCase
         ]);
         \ParametersApiTestState::$throwOnSave = true;
 
-        $response = $this->runApi([
+        $message = $this->runApiExpectingError([
             'id' => '2',
             'value' => '45',
             'description' => '備考',
         ]);
 
-        $this->assertFalse($response['success']);
-        $message = (string)$this->errorMessage($response);
         $this->assertSame('Failed to save the parameter', $message);
         // SQL エラーの内容がクライアントへ漏れないこと
         $this->assertStringNotContainsString('SQLSTATE', $message);
@@ -628,14 +626,13 @@ final class SaveApiTest extends TestCase
             'description' => '備考',
         ]);
 
-        $response = $this->runApi([
+        $message = $this->runApiExpectingError([
             'id' => '2',
             'value' => 'abc',
             'description' => '備考',
         ]);
 
-        $this->assertFalse($response['success']);
-        $this->assertSame('Invalid integer value', $this->errorMessage($response));
+        $this->assertSame('Invalid integer value', $message);
     }
 
     // ------------------------------------------------------------------
@@ -670,13 +667,19 @@ final class SaveApiTest extends TestCase
         ]);
         $GLOBALS['__test_csrf_pass'] = false;
 
-        $response = $this->runApi([
-            'id' => '2',
-            'value' => '45',
-            'description' => '備考',
-        ]);
+        $api = new SaveApiTestDouble();
 
-        $this->assertFalse($response['success']);
+        try {
+            $api->exposeProcessApi($this->makeRequest([
+                'id' => '2',
+                'value' => '45',
+                'description' => '備考',
+            ]));
+            $this->fail('CSRF 検証に失敗した場合は例外が投げられること');
+        } catch (\Exception $e) {
+            $this->assertSame('Unsupported request', $e->getMessage());
+        }
+
         $this->assertFalse(\ParametersApiTestState::hasSaved());
     }
 }

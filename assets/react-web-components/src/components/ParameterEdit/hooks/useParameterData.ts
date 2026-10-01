@@ -19,18 +19,26 @@ const getApiBaseUrl = () => {
 };
 
 /**
- * CSRFトークンを取得
+ * CSRF トークンのパラメータ名と値を取得する
+ *
+ * csrf-magic は XMLHttpRequest だけを書き換えてトークンを自動付与するため、
+ * fetch で POST する場合は自分で付ける必要がある。
+ * 値は csrf-magic.js がグローバル（csrfMagicName / csrfMagicToken）に持っている。
  */
-export const getCsrfToken = (): string => {
-  const metaTag = document.querySelector('meta[name="csrf-token"]');
-  if (metaTag) {
-    return metaTag.getAttribute("content") || "";
+export const getCsrfParam = (): { name: string; token: string } => {
+  const name =
+    typeof window.csrfMagicName === "string"
+      ? window.csrfMagicName
+      : "__vtrftk";
+  if (typeof window.csrfMagicToken === "string") {
+    return { name, token: window.csrfMagicToken };
   }
-  // フォールバック: hidden inputから取得
+
+  // フォールバック: 画面に埋め込まれた hidden input から取得する
   const input = document.querySelector(
     'input[name="__vtrftk"]',
-  ) as HTMLInputElement;
-  return input?.value || "";
+  ) as HTMLInputElement | null;
+  return { name, token: input?.value ?? "" };
 };
 
 /**
@@ -94,43 +102,60 @@ export function useParameterData() {
    * レコードを保存
    */
   const saveRecord = useCallback(
-    (request: ParameterSaveRequest): Promise<ParameterSaveResponse> => {
+    async (request: ParameterSaveRequest): Promise<ParameterSaveResponse> => {
       setSaving(true);
       setError(null);
 
-      return new Promise((resolve) => {
-        const params: Record<string, string> = {
+      try {
+        const params = new URLSearchParams({
           module: "Parameters",
           parent: "Settings",
           api: "Save",
           id: String(request.id),
-          description: request.description ?? "",
-        };
-        // value は変更する場合のみ送信する。
+        });
+        // value / description は変更する場合のみ送信する。
         // 未送信の場合はサーバー側が既存値を維持するため、値を取得できない
         // シークレット変数を備考だけ編集しても値が壊れない。
         if (request.value !== undefined) {
-          params.value = request.value;
+          params.set("value", request.value);
+        }
+        if (request.description !== undefined) {
+          params.set("description", request.description);
         }
         if (request.secret !== undefined) {
-          params.secret = String(request.secret);
+          params.set("secret", String(request.secret));
+        }
+        const csrf = getCsrfParam();
+        params.set(csrf.name, csrf.token);
+
+        const response = await fetch(`${getApiBaseUrl()}/index.php`, {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Accept: "application/json",
+          },
+          body: params.toString(),
+        });
+
+        const result: ParameterSaveApiResponse = await response.json();
+        // 成功時は API が { saved: true } を返す。
+        // エラー時は Vtiger_Response が { success: false, error: {...} } を返す。
+        if (result.success === false) {
+          throw new Error(result.error?.message || "Save failed");
+        }
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
         }
 
-        // app.request.post方式（vtiger標準API呼び出し）
-        app.request
-          .post<ParameterSaveApiResponse>({ data: params })
-          .then(function (err, data) {
-            setSaving(false);
-            if (err === null && data && data.success) {
-              resolve({ success: true });
-            } else {
-              const errorMsg =
-                err?.message || data?.error?.message || "Save failed";
-              setError(errorMsg);
-              resolve({ success: false, error: errorMsg });
-            }
-          });
-      });
+        return { success: true };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Save failed";
+        setError(message);
+        return { success: false, error: message };
+      } finally {
+        setSaving(false);
+      }
     },
     [],
   );

@@ -4,26 +4,29 @@ import { useParameterData } from "../useParameterData";
 import type { ParameterSaveApiResponse } from "../../types";
 
 const mockFetch = vi.fn();
-const mockPost = vi.fn();
 
-/** app.request.post の戻り値（vtiger の Deferred 相当）を組み立てる */
-const postResult = (error: unknown, data: ParameterSaveApiResponse) => ({
-  then: (callback: (err: unknown, data: ParameterSaveApiResponse) => void) =>
-    callback(error, data),
-});
+/** Save API のレスポンスを差し込む */
+const givenSaveResponse = (
+  body: ParameterSaveApiResponse,
+  ok = true,
+  status = 200,
+) => {
+  mockFetch.mockResolvedValue({ ok, status, json: async () => body });
+};
 
 /** saveRecord が実際に送信したパラメータを取り出す */
-const sentParams = (): Record<string, string> =>
-  mockPost.mock.calls[0][0].data as Record<string, string>;
+const sentParams = (): URLSearchParams => {
+  const call = mockFetch.mock.calls.find(([, init]) => init?.method === "POST");
+  return new URLSearchParams(String(call?.[1]?.body ?? ""));
+};
 
 describe("useParameterData", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     global.fetch = mockFetch;
-    // app は vtiger が提供するグローバル。テストでは差し替える
-    (globalThis as unknown as { app: unknown }).app = {
-      request: { post: mockPost },
-    };
+    // csrf-magic が定義するグローバル。fetch では自分でトークンを付ける
+    window.csrfMagicName = "__vtrftk";
+    window.csrfMagicToken = "test-token";
     Object.defineProperty(window, "location", {
       value: {
         origin: "http://localhost",
@@ -86,7 +89,7 @@ describe("useParameterData", () => {
 
   describe("saveRecord", () => {
     beforeEach(() => {
-      mockPost.mockImplementation(() => postResult(null, { success: true }));
+      givenSaveResponse({ saved: true });
     });
 
     it("value を省略した場合は value を送信しない（既存値を維持させる）", async () => {
@@ -101,10 +104,12 @@ describe("useParameterData", () => {
       });
 
       const params = sentParams();
-      expect(params).not.toHaveProperty("value");
-      expect(params.id).toBe("2");
-      expect(params.description).toBe("備考だけ変更");
-      expect(params.secret).toBe("1");
+      expect(params.has("value")).toBe(false);
+      expect(params.get("id")).toBe("2");
+      expect(params.get("description")).toBe("備考だけ変更");
+      expect(params.get("secret")).toBe("1");
+      // csrf-magic のトークンを自分で付けていること
+      expect(params.get("__vtrftk")).toBe("test-token");
     });
 
     it("value に空文字を渡した場合は空文字として送信する", async () => {
@@ -118,7 +123,17 @@ describe("useParameterData", () => {
         });
       });
 
-      expect(sentParams()).toHaveProperty("value", "");
+      expect(sentParams().get("value")).toBe("");
+    });
+
+    it("description を省略した場合は description を送信しない", async () => {
+      const { result } = renderHook(() => useParameterData());
+
+      await act(async () => {
+        await result.current.saveRecord({ id: 2, description: undefined });
+      });
+
+      expect(sentParams().has("description")).toBe(false);
     });
 
     it("value を渡した場合はその値を送信する", async () => {
@@ -132,12 +147,15 @@ describe("useParameterData", () => {
         });
       });
 
-      expect(sentParams().value).toBe("45");
+      expect(sentParams().get("value")).toBe("45");
     });
 
     it("保存に失敗した場合は success:false とエラーメッセージを返す", async () => {
-      mockPost.mockImplementation(() =>
-        postResult({ message: "Invalid integer value" }, { success: false }),
+      // エラー時は Vtiger_Response が { success: false, error: {...} } を返す
+      givenSaveResponse(
+        { success: false, error: { message: "Invalid integer value" } },
+        false,
+        400,
       );
 
       const { result } = renderHook(() => useParameterData());

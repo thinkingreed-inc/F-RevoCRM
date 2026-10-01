@@ -14,11 +14,10 @@
             {foreach item=RECORD_LINK from=$LISTVIEW_ENTRY->getRecordLinks()}
                 <span>
                 {if $RECORD_LINK->getIcon() eq 'icon-pencil' }
-                      {* クリックハンドラは Parameters.js が data-record-id を見て登録する *}
+                      {* クリックは Parameters.js が行（tr[data-id]）単位で拾うため、ここでは登録しない *}
                       <a href="javascript:void(0);"
                          title='{vtranslate('LBL_EDIT', $MODULE)}'
-                         class="parameter-edit-btn"
-                         data-record-id="{$LISTVIEW_ENTRY->getId()}">
+                         class="parameter-edit-btn">
                       <i class="fa fa-pencil" ></i>
                       </a>
                 {/if}

@@ -38,8 +38,11 @@ export interface ParameterSaveRequest {
    * シークレット変数の値を変更しないまま保存するケースで使う。
    */
   value?: string;
-  /** 新しい備考 */
-  description: string;
+  /**
+   * 新しい備考
+   * 省略した場合は送信されず、サーバー側の既存値が維持される。
+   */
+  description?: string;
   /**
    * シークレットフラグ（オプション）
    * 0↔1 のどちらにも変更できるが、1→0（解除）には value の再送信が必要。
@@ -61,9 +64,13 @@ export interface ParameterGetRecordApiResponse {
 
 /**
  * Save APIのレスポンス（サーバーが返す生のJSON）
+ *
+ * 成功時は API が { saved: true } を返し、
+ * エラー時は Vtiger_Response が { success: false, error: {...} } を返す。
  */
 export interface ParameterSaveApiResponse {
-  success: boolean;
+  saved?: boolean;
+  success?: boolean;
   error?: { message?: string };
 }
 
@@ -83,12 +90,15 @@ export interface ParameterEditProps {
   recordId?: string;
   /** モーダルの開閉状態 */
   isOpen?: boolean;
-  /** 保存成功時のコールバック */
+  /**
+   * 保存成功時のコールバック
+   * value / description は送信した場合のみ渡す（未送信＝既存値を維持）
+   */
   onSave?: (data: {
     id: number;
     key: string;
-    value: string;
-    description: string;
+    value?: string;
+    description?: string;
   }) => void;
   /** キャンセル時のコールバック */
   onCancel?: () => void;

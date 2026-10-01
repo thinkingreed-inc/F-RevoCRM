@@ -165,11 +165,12 @@ const ParameterEditInner: React.FC<ParameterEditProps> = ({
     const result = await saveRecord(payload);
 
     if (result.success) {
+      // 送らなかった項目は既存値のままなので、実際に更新した値だけを通知する
       onSave?.({
         id: data.id,
         key: data.key,
-        value: formState.value,
-        description: formState.description,
+        value: payload.value,
+        description: payload.description,
       });
       clearData();
       setValueTouched(false);

@@ -205,13 +205,6 @@ class Settings_Parameters_Record_Model extends Settings_Vtiger_Record_Model {
         return $this->exsitsKey();
     }
 
-    /*
-     * Function to get Edit view url 
-     */
-    public function getEditViewUrl() {
-        return 'module=Parameters&parent=Settings&view=EditAjax&record='.$this->getId();
-    }
-
     public function getRecordLinks() {
         $editLink = array(
             'linkurl' => "javascript:Settings_Parameters_Js.triggerEdit(event, '".$this->getId()."')",

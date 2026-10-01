@@ -16,29 +16,47 @@ vi.mock("@/contexts/TranslationContext", () => ({
 }));
 
 const mockFetch = vi.fn();
-const mockPost = vi.fn();
 
-/** GetRecord のレスポンスを差し込む */
+/**
+ * GetRecord のレスポンスを差し込む。
+ * Save（POST）は常に成功を返す。
+ */
 const givenRecord = (record: Partial<ParameterRecord>) => {
-  mockFetch.mockResolvedValue({
-    ok: true,
-    json: async () => ({
-      result: {
-        id: 2,
-        key: "USER_LOCK_TIME",
-        value: "30",
-        type: "integer",
-        secret: 0,
-        description: "ロック時間",
-        ...record,
-      },
-    }),
+  mockFetch.mockImplementation((_url: string, init?: RequestInit) => {
+    if (init?.method === "POST") {
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({ saved: true }) as ParameterSaveApiResponse,
+      });
+    }
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        result: {
+          id: 2,
+          key: "USER_LOCK_TIME",
+          value: "30",
+          type: "integer",
+          secret: 0,
+          description: "ロック時間",
+          ...record,
+        },
+      }),
+    });
   });
 };
 
 /** Save API へ実際に送信されたパラメータ */
-const sentParams = (): Record<string, string> =>
-  mockPost.mock.calls[0][0].data as Record<string, string>;
+const sentParams = (): URLSearchParams => {
+  const call = mockFetch.mock.calls.find(([, init]) => init?.method === "POST");
+  return new URLSearchParams(String(call?.[1]?.body ?? ""));
+};
+
+/** Save API が呼ばれたか */
+const savePosted = (): boolean =>
+  mockFetch.mock.calls.some(([, init]) => init?.method === "POST");
 
 const save = () => screen.getByRole("button", { name: "LBL_SAVE" });
 
@@ -46,25 +64,9 @@ describe("ParameterEdit", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     global.fetch = mockFetch;
-    (globalThis as unknown as { app: unknown }).app = {
-      request: {
-        post: () => ({
-          then: (
-            callback: (err: unknown, data: ParameterSaveApiResponse) => void,
-          ) => callback(null, { success: true }),
-        }),
-      },
-    };
-    // 送信内容を検証するため post 自体もスパイしておく
-    (globalThis as unknown as { app: { request: { post: unknown } } }).app = {
-      request: {
-        post: mockPost.mockImplementation(() => ({
-          then: (
-            callback: (err: unknown, data: ParameterSaveApiResponse) => void,
-          ) => callback(null, { success: true }),
-        })),
-      },
-    };
+    // csrf-magic が定義するグローバル。fetch では自分でトークンを付ける
+    window.csrfMagicName = "__vtrftk";
+    window.csrfMagicToken = "test-token";
     Object.defineProperty(window, "location", {
       value: { origin: "http://localhost", pathname: "/frevocrm/index.php" },
       writable: true,
@@ -148,9 +150,9 @@ describe("ParameterEdit", () => {
 
       await userEvent.click(save());
 
-      await waitFor(() => expect(mockPost).toHaveBeenCalled());
-      expect(sentParams()).not.toHaveProperty("value");
-      expect(sentParams().description).toBe("ロック時間");
+      await waitFor(() => expect(savePosted()).toBe(true));
+      expect(sentParams().has("value")).toBe(false);
+      expect(sentParams().get("description")).toBe("ロック時間");
     });
 
     it("現在の値が表示されない旨の注記を出す", async () => {
@@ -172,8 +174,8 @@ describe("ParameterEdit", () => {
       await userEvent.type(screen.getByRole("spinbutton"), "45");
       await userEvent.click(save());
 
-      await waitFor(() => expect(mockPost).toHaveBeenCalled());
-      expect(sentParams().value).toBe("45");
+      await waitFor(() => expect(savePosted()).toBe(true));
+      expect(sentParams().get("value")).toBe("45");
     });
 
     it("シークレットを解除するには値の再入力が必要", async () => {
@@ -189,7 +191,7 @@ describe("ParameterEdit", () => {
       await userEvent.click(save());
 
       expect(await screen.findByText("LBL_VALUE_REQUIRED")).toBeInTheDocument();
-      expect(mockPost).not.toHaveBeenCalled();
+      expect(savePosted()).toBe(false);
     });
 
     it("解除を選ぶと値の再入力を促す案内に切り替わる", async () => {
@@ -223,9 +225,9 @@ describe("ParameterEdit", () => {
       await userEvent.type(screen.getByRole("spinbutton"), "45");
       await userEvent.click(save());
 
-      await waitFor(() => expect(mockPost).toHaveBeenCalled());
-      expect(sentParams().value).toBe("45");
-      expect(sentParams().secret).toBe("0");
+      await waitFor(() => expect(savePosted()).toBe(true));
+      expect(sentParams().get("value")).toBe("45");
+      expect(sentParams().get("secret")).toBe("0");
     });
 
     it("boolean 型では secret を送らない（不整合データを保存で解消できる）", async () => {
@@ -242,8 +244,8 @@ describe("ParameterEdit", () => {
 
       await userEvent.click(save());
 
-      await waitFor(() => expect(mockPost).toHaveBeenCalled());
-      expect(sentParams()).not.toHaveProperty("secret");
+      await waitFor(() => expect(savePosted()).toBe(true));
+      expect(sentParams().has("secret")).toBe(false);
     });
 
     it("boolean 型に不整合なシークレットが残っていても値を送らない", async () => {
@@ -261,8 +263,8 @@ describe("ParameterEdit", () => {
 
       await userEvent.click(save());
 
-      await waitFor(() => expect(mockPost).toHaveBeenCalled());
-      expect(sentParams()).not.toHaveProperty("value");
+      await waitFor(() => expect(savePosted()).toBe(true));
+      expect(sentParams().has("value")).toBe(false);
     });
   });
 
@@ -274,8 +276,8 @@ describe("ParameterEdit", () => {
 
     await userEvent.click(save());
 
-    await waitFor(() => expect(mockPost).toHaveBeenCalled());
-    expect(sentParams().secret).toBe("0");
+    await waitFor(() => expect(savePosted()).toBe(true));
+    expect(sentParams().get("secret")).toBe("0");
   });
 
   it("シークレットでない変数は値欄を編集しなくても value を送る", async () => {
@@ -286,8 +288,8 @@ describe("ParameterEdit", () => {
 
     await userEvent.click(save());
 
-    await waitFor(() => expect(mockPost).toHaveBeenCalled());
-    expect(sentParams().value).toBe("30");
+    await waitFor(() => expect(savePosted()).toBe(true));
+    expect(sentParams().get("value")).toBe("30");
   });
 
   it("integer 型で値を空にすると空文字を送る（サーバー側で 0 に正規化される）", async () => {
@@ -299,8 +301,8 @@ describe("ParameterEdit", () => {
     await userEvent.clear(screen.getByRole("spinbutton"));
     await userEvent.click(save());
 
-    await waitFor(() => expect(mockPost).toHaveBeenCalled());
-    expect(sentParams()).toHaveProperty("value", "");
+    await waitFor(() => expect(savePosted()).toBe(true));
+    expect(sentParams().get("value")).toBe("");
   });
 
   it("キャンセルすると onCancel と onOpenChange(false) を呼ぶ", async () => {

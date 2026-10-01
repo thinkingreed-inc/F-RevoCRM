@@ -14,13 +14,12 @@
  * Parameters:
  *   - id: レコードID
  *   - value: 新しい値
- *   - secret: シークレットフラグ（オプション、0↔1 双方向変更可能）
+ *   - secret: シークレットフラグ（オプション。設定できる条件は Note を参照）
  *   - description: 備考
  * 
  * Response:
- *   { "success": true }
- *   または
- *   { "success": false, "error": "エラーメッセージ" }
+ *   { "saved": true }
+ *   エラー時は Vtiger_Response が { "success": false, "error": {...} } を返す
  * 
  * Note: 
  *   - key, type の変更は受け付けない（valueのみ更新可能）
@@ -61,111 +60,81 @@ class Settings_Parameters_Save_Api extends Vtiger_Api_Controller {
      * API処理
      *
      * @param Vtiger_Request $request
-     * @return void
+     * @return Vtiger_Response
      */
     protected function processApi(Vtiger_Request $request) {
-        // システム変数編集画面保存時のJSONレスポンス統一対応
-        header('Content-Type: application/json; charset=utf-8');
+        // CSRFトークン検証
+        $request->validateWriteAccess();
+
+        $id = $request->get('id');
+        $secret = $request->get('secret');
+
+        // IDのバリデーション
+        if (empty($id) || !is_numeric($id) || (int)$id <= 0) {
+            throw new ApiBadRequestException('Invalid ID');
+        }
+        $id = (int)$id;
+
+        // レコード取得
+        $recordModel = Settings_Parameters_Record_Model::getInstanceById($id);
+        if (!$recordModel->getId()) {
+            throw new ApiNotFoundException('Record not found');
+        }
+
+        // 変更前のシークレット状態。解除の判定に使う
+        $originalSecret = $recordModel->getSecret();
+
+        // シークレットフラグの処理（0↔1 どちらにも変更可能）
+        $requestedSecret = null;
+        if ($secret !== null && $secret !== '') {
+            $requestedSecret = (int)$secret ? 1 : 0;
+        }
+
+        // boolean 型は値が true / false の 2 択しかなく、マスクしても値を推測できるため
+        // シークレットを許可しない。不整合なデータが残っていても保存時に解消する。
+        if ($recordModel->getType() === 'boolean') {
+            if ($requestedSecret === 1) {
+                throw new ApiBadRequestException('Secret is not available for boolean parameters');
+            }
+            $requestedSecret = 0;
+        }
+
+        if ($requestedSecret !== null) {
+            $recordModel->set('secret', $requestedSecret);
+        }
+
+        // シークレットを解除する場合は値の再入力を必須にする。
+        // 未入力のまま解除できると、秘匿していた値をそのまま画面へ露出させられてしまう。
+        // boolean はシークレット自体を許可しないため対象外（不整合の解消を妨げない）。
+        if ($originalSecret === 1 && $requestedSecret === 0 && $recordModel->getType() !== 'boolean') {
+            $hasNewValue = $request->has('value') && (string)$request->get('value') !== '';
+            if (!$hasNewValue) {
+                throw new ApiBadRequestException('A new value is required to turn off the secret setting');
+            }
+        }
+
+        // 値は value が送信された場合のみ更新する。
+        // シークレット変数は GetRecord が値を返さないため、値欄に触れずに保存されたときに
+        // 既存値を空文字で上書きしてしまわないよう、value 未送信＝変更なしとして扱う。
+        if ($request->has('value')) {
+            $recordModel->set('value', $this->validateValue($request->get('value'), $recordModel->getType()));
+        }
+
+        // 備考も value と同様、送信された場合のみ更新する
+        if ($request->has('description')) {
+            $description = $request->get('description');
+            $recordModel->set('description', is_scalar($description) ? (string)$description : '');
+        }
+
         try {
-            // CSRFトークン検証
-            $request->validateWriteAccess();
-
-            $id = $request->get('id');
-            $secret = $request->get('secret');
-
-            // IDのバリデーション
-            if (empty($id) || !is_numeric($id) || (int)$id <= 0) {
-                echo json_encode([
-                    'success' => false,
-                    'error' => ['message' => 'Invalid ID']
-                ]);
-                return;
-            }
-            $id = (int)$id;
-
-            // レコード取得
-            $recordModel = Settings_Parameters_Record_Model::getInstanceById($id);
-            if (!$recordModel->getId()) {
-                echo json_encode([
-                    'success' => false,
-                    'error' => ['message' => 'Record not found']
-                ]);
-                return;
-            }
-
-            // 変更前のシークレット状態。解除の判定に使う
-            $originalSecret = $recordModel->getSecret();
-
-            // シークレットフラグの処理（0↔1 どちらにも変更可能）
-            $requestedSecret = null;
-            if ($secret !== null && $secret !== '') {
-                $requestedSecret = (int)$secret ? 1 : 0;
-            }
-
-            // boolean 型は値が true / false の 2 択しかなく、マスクしても値を推測できるため
-            // シークレットを許可しない。不整合なデータが残っていても保存時に解消する。
-            if ($recordModel->getType() === 'boolean') {
-                if ($requestedSecret === 1) {
-                    echo json_encode([
-                        'success' => false,
-                        'error' => ['message' => 'Secret is not available for boolean parameters']
-                    ]);
-                    return;
-                }
-                $requestedSecret = 0;
-            }
-
-            if ($requestedSecret !== null) {
-                $recordModel->set('secret', $requestedSecret);
-            }
-
-            // シークレットを解除する場合は値の再入力を必須にする。
-            // 未入力のまま解除できると、秘匿していた値をそのまま画面へ露出させられてしまう。
-            // boolean はシークレット自体を許可しないため対象外（不整合の解消を妨げない）。
-            if ($originalSecret === 1 && $requestedSecret === 0 && $recordModel->getType() !== 'boolean') {
-                $hasNewValue = $request->has('value') && (string)$request->get('value') !== '';
-                if (!$hasNewValue) {
-                    echo json_encode([
-                        'success' => false,
-                        'error' => ['message' => 'A new value is required to turn off the secret setting']
-                    ]);
-                    return;
-                }
-            }
-
-            // 値は value が送信された場合のみ更新する。
-            // シークレット変数は GetRecord が値を返さないため、値欄に触れずに保存されたときに
-            // 既存値を空文字で上書きしてしまわないよう、value 未送信＝変更なしとして扱う。
-            if ($request->has('value')) {
-                // バリデーションエラー（ApiBadRequestException）は最外の catch でそのまま返す
-                $recordModel->set('value', $this->validateValue($request->get('value'), $recordModel->getType()));
-            }
-
-            // 備考も value と同様、送信された場合のみ更新する
-            if ($request->has('description')) {
-                $description = $request->get('description');
-                $recordModel->set('description', is_scalar($description) ? (string)$description : '');
-            }
-
             $recordModel->save();
-
-            // 正常系レスポンス（既存構造維持）
-            echo json_encode(['success' => true]);
-        } catch (ApiException $e) {
-            // 入力値の誤りなど、利用者に伝えるべきエラーはそのまま返す
-            echo json_encode([
-                'success' => false,
-                'error' => ['message' => $e->getMessage()]
-            ]);
         } catch (Exception $e) {
             // 予期しないエラーの詳細（SQL エラー等）はクライアントへ返さず、内部ログにのみ出す
             error_log('Parameters Save API Error: ' . $e->getMessage());
-            echo json_encode([
-                'success' => false,
-                'error' => ['message' => 'Failed to save the parameter']
-            ]);
+            return $this->sendError('Failed to save the parameter', 500);
         }
-        return;
+
+        return $this->sendSuccess(['saved' => true]);
     }
     
     /**
