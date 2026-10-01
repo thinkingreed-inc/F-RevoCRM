@@ -165,3 +165,79 @@ public function process() {
     $this->log("Updated account priorities and added custom settings");
 }
 ```
+
+### 3. システム変数（Settings > システム変数）の追加
+
+システム変数（`vtiger_parameters`）は画面から追加できない（一覧の追加・削除ボタンは
+非表示）。**新しいシステム変数はマイグレーションで投入する。**
+
+`setup/migration/scripts/20260305100000_add_parameters_type_and_secret_columns.php`
+で `type` / `secret` カラムを追加済みのため、新規追加時はこの 2 つも必ず指定する。
+
+| カラム | 内容 |
+|---|---|
+| `key` | 変数名。画面では変更できない |
+| `value` | 値。文字列として保存する（boolean は `'true'` / `'false'`） |
+| `type` | `boolean` / `integer` / `string`。編集画面の入力 UI がこれで切り替わる |
+| `secret` | `1` で一覧がマスク表示になり、編集画面にも値を出さない。`boolean` には設定できない（値が 2 択しかなくマスクしても推測できるため） |
+| `description` | 画面の「備考」に出る説明 |
+
+```php
+public function process() {
+    global $adb;
+
+    $key = 'EXAMPLE_FEATURE_ENABLED';
+
+    // 既に存在する場合は何もしない（マイグレーションは冪等にする）
+    $exists = $adb->pquery("SELECT 1 FROM vtiger_parameters WHERE `key` = ?", array($key));
+    if ($adb->num_rows($exists) > 0) {
+        $this->log("システム変数 {$key} は既に存在します");
+        return;
+    }
+
+    $adb->pquery(
+        "INSERT INTO vtiger_parameters (`key`, `value`, `type`, `secret`, `description`)
+         VALUES (?, ?, ?, ?, ?)",
+        array(
+            $key,
+            'false',
+            'boolean',
+            0,
+            "サンプル機能を有効にするフラグです。\ntrue: 有効\nfalse: 無効",
+        )
+    );
+
+    $this->log("システム変数 {$key} を追加しました");
+}
+```
+
+値を秘匿したい場合（`string` / `integer` のみ）:
+
+```php
+    $adb->pquery(
+        "INSERT INTO vtiger_parameters (`key`, `value`, `type`, `secret`, `description`)
+         VALUES (?, ?, ?, ?, ?)",
+        array(
+            'EXAMPLE_API_TOKEN',
+            '',
+            'string',
+            1,
+            '外部連携用のトークンです。保存後は画面に表示されません。',
+        )
+    );
+```
+
+`secret = 1` の変数は、編集画面でも現在の値が表示されない。シークレットを解除する
+保存には値の再入力が必要になる（未入力のまま解除できると、秘匿していた値をそのまま
+画面に出せてしまうため）。
+
+既存のシステム変数の値を変えるだけなら `UPDATE` でよいが、ユーザーが画面から変更した
+値を上書きしないよう、条件を絞るか初期投入時のみに限定すること。
+
+```php
+    // 例: 既定値のままのレコードだけを新しい既定値へ移行する
+    $adb->pquery(
+        "UPDATE vtiger_parameters SET `value` = ? WHERE `key` = ? AND `value` = ?",
+        array('30', 'USER_LOCK_TIME', '10')
+    );
+```
