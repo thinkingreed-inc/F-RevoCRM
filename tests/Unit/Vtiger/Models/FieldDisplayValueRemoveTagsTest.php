@@ -128,4 +128,44 @@ final class FieldDisplayValueRemoveTagsTest extends TestCase
 
         $this->assertStringContainsString('<a ', (string) $displayValue);
     }
+
+    /**
+     * Vtiger_Field_Model を継承するモジュール側 Field Model は、第4引数まで含めた
+     * 互換シグネチャで getDisplayValue() を宣言する。
+     *
+     * 第4引数が欠けていると PHP 8 がクラス宣言の時点で Fatal error を出し、
+     * その Field Model を使う画面がまったく描画されなくなる。
+     * クラス宣言エラーは catch できないため、別プロセスで読み込んで終了コードを見る。
+     *
+     * @dataProvider fieldModelFileProvider
+     */
+    public function testSubclassFieldModelIsLoadable(string $relativePath): void
+    {
+        $root = dirname(__DIR__, 4);
+        $code = sprintf(
+            'require %s; require %s; require %s;',
+            var_export($root . '/includes/runtime/BaseModel.php', true),
+            var_export($root . '/modules/Vtiger/models/Field.php', true),
+            var_export($root . '/' . $relativePath, true)
+        );
+
+        $output = [];
+        $status = 0;
+        exec(escapeshellarg(PHP_BINARY) . ' -r ' . escapeshellarg($code) . ' 2>&1', $output, $status);
+
+        $this->assertSame(0, $status, $relativePath . ' の読み込みに失敗: ' . implode("\n", $output));
+    }
+
+    /** @return array<string, array{string}> */
+    public static function fieldModelFileProvider(): array
+    {
+        return [
+            'Calendar' => ['modules/Calendar/models/Field.php'],
+            'Documents' => ['modules/Documents/models/Field.php'],
+            'Faq' => ['modules/Faq/models/Field.php'],
+            'HelpDesk' => ['modules/HelpDesk/models/Field.php'],
+            'Users' => ['modules/Users/models/Field.php'],
+            'Settings:Webforms' => ['modules/Settings/Webforms/models/Field.php'],
+        ];
+    }
 }
