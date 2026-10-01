@@ -2511,9 +2511,6 @@ Vtiger.Class("Calendar_Calendar_Js", {
 	},
 	getCalendarConfigs: function () {
 		var thisInstance = this;
-		if (jQuery('#calendarDraggingStyle').length === 0) {
-			jQuery('<style id="calendarDraggingStyle">body.calendar-dragging .webui-popover { display: none !important; }</style>').appendTo('head');
-		}
 		var userDefaultActivityView = thisInstance.getDefaultCalendarView();
 		var userDefaultTimeFormat = thisInstance.getDefaultCalendarTimeFormat();
                 
