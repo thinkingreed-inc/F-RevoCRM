@@ -17,11 +17,11 @@ class HelpDesk_Field_Model extends Vtiger_Field_Model {
 	 * @param <String> $value - value which need to be converted to display value
 	 * @return <String> - converted display value
 	 */
-	public function getDisplayValue($value, $record=false, $recordInstance = false) {
+	public function getDisplayValue($value, $record=false, $recordInstance = false, $removeTags = false) {
 		if($this->getName() == 'description' || $this->getName() == 'solution') {
 				return html_entity_decode($value);
 		}
-		return parent::getDisplayValue($value, $record, $recordInstance);
+		return parent::getDisplayValue($value, $record, $recordInstance, $removeTags);
 	}
 	public function isJoditEditor() {
 		if($this->getName() == 'description' || $this->getName() == 'solution') {

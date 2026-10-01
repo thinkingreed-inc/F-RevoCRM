@@ -13,9 +13,13 @@ class Vtiger_String_UIType extends Vtiger_Base_UIType {
 	/**
 	 * Function to get the Display Value, for the current field type with given DB Insert Value
 	 * @param <Object> $value
+	 * @param <Boolean> $removeTags - メール差込などHTMLを含めたくない場合にtrueを渡す
 	 * @return <Object>
 	 */
-	public function getDisplayValue($value, $record=false, $recordInstance=false) {
+	public function getDisplayValue($value, $record=false, $recordInstance=false, $removeTags = false) {
+		if($removeTags) {
+			return $value;
+		}
 		return Vtiger_Text_UIType::linkifyUrls($value);
 	}
 }
