@@ -110,7 +110,9 @@ class RecycleBin_Module_Model extends Vtiger_Module_Model {
 		$restrictedModules = array('Emails', 'ProjectMilestone', 'ModComments', 'Rss', 'Portal', 'Integration', 'PBXManager', 'Dashboard', 'Home', 'Events');
 		$currentUserPrivilegesModel = Users_Privileges_Model::getCurrentUserPrivilegesModel();
 		foreach($moduleModels as $key => $moduleModel){
-			if(in_array($moduleModel->getName(),$restrictedModules) || $moduleModel->get('isentitytype') != 1 || !$currentUserPrivilegesModel->hasModulePermission($moduleModel->getId())){
+			if(in_array($moduleModel->getName(), $restrictedModules)
+				|| $moduleModel->get('isentitytype') != 1
+				|| !$currentUserPrivilegesModel->hasModulePermission($moduleModel->getId())){
 				unset($moduleModels[$key]);
 			}
 		}
