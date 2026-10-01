@@ -90,6 +90,10 @@ class Faq extends CRMEntity {
             self::__construct();
 	}
 
+	/**
+	 * コメントブロック廃止により保存処理は不要になったが、data/CRMEntity.php の save() から
+	 * 呼ばれるため空実装で残している（削除すると保存時に Fatal error になる）。
+	 */
 	function save_module($module) {}
 
 	/*
