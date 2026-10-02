@@ -554,7 +554,7 @@ jQuery.Class("Vtiger_Popup_Js",{
 		if(totalPageNumber === ""){
 			var totalCountElem = popupContainer.find('#totalCount');
 			var totalRecordCount = totalCountElem.val();
-			if(totalRecordCount !== '') {
+			if(!thisInstance.isTotalCountUnknown(totalRecordCount)) {
 				var recordPerPage = popupContainer.find('#pageLimit').val();
 				if(recordPerPage === '0') recordPerPage = 1;
 				pageCount = Math.ceil(totalRecordCount/recordPerPage);
@@ -618,7 +618,22 @@ jQuery.Class("Vtiger_Popup_Js",{
 		params['mode'] = 'getPageCount';
 		return params;
 	},
-	
+
+	/**
+	 * 総レコード件数がまだ取得されていないかどうかを返す。
+	 *
+	 * 件数の算出は重いので、一覧は総件数を持たない状態で描画され、利用者が「？」を
+	 * 押したときだけ非同期で取りに行く。その「未取得」状態を #totalCount が空文字か
+	 * どうかで判定していたが、includes/runtime/Controller.php が Smarty 変数の既定値
+	 * として LISTVIEW_COUNT = 0 を割り当てているため、実際の未取得時の値は空文字では
+	 * なく "0" になる。空文字だけを未取得とみなすと件数を取りに行かないまま
+	 * 「0 件」として扱ってしまう（#1873）。
+	 */
+	isTotalCountUnknown : function(totalCount){
+		var count = parseInt(totalCount, 10);
+		return isNaN(count) || count === 0;
+	},
+
 	/**
 	 * Function to get page count and total number of records in list
 	 */
@@ -632,9 +647,21 @@ jQuery.Class("Vtiger_Popup_Js",{
 		
 		app.request.get(params).then(
 			function(err, data) {
+				// 通信エラー・サーバエラー時は data が undefined で渡ってくる。
+				// そのまま JSON.parse すると例外で中断し、呼び出し側の then が
+				// 二度と呼ばれず「？」が消えたまま戻らなくなるので失敗として通知する。
+				if(err !== null || typeof data === "undefined" || data === null){
+					aDeferred.reject(err);
+					return;
+				}
 				var response;
 				if(typeof data !== "object"){
-					response = JSON.parse(data);
+					try {
+						response = JSON.parse(data);
+					} catch(e) {
+						aDeferred.reject(e);
+						return;
+					}
 				} else{
 					response = data;
 				}
@@ -644,21 +671,36 @@ jQuery.Class("Vtiger_Popup_Js",{
 		return aDeferred.promise();
 	},
 	
+	totalNumOfRecords_performingAsyncAction : false,
 	totalNumOfRecords : function (currentEle) {
 		var thisInstance = this;
 		var popupContainer = thisInstance.getPopupPageContainer();
 		var totalRecordsElement = popupContainer.find('#totalCount');
 		var totalNumberOfRecords = totalRecordsElement.val();
-		currentEle.addClass('hide');
 
-		if(totalNumberOfRecords === '') {
+		// 取得中の連打で同じ問い合わせを何度も投げないようにする
+		if(thisInstance.totalNumOfRecords_performingAsyncAction) {
+			return;
+		}
+
+		if(thisInstance.isTotalCountUnknown(totalNumberOfRecords)) {
+			thisInstance.totalNumOfRecords_performingAsyncAction = true;
+			// 取得中はアイコンだけ隠す。失敗したら押し直せるよう本体は残す
+			currentEle.find('.showTotalCountIcon').addClass('hide');
 			thisInstance.getPageCount().then(function(data){
+				thisInstance.totalNumOfRecords_performingAsyncAction = false;
 				totalNumberOfRecords = data.numberOfRecords;
 				totalRecordsElement.val(totalNumberOfRecords);
-				popupContainer.find('ul#listViewPageJumpDropDown #totalPageCount').text(data.page);
+				popupContainer.find('ul#PageJumpDropDown #totalPageCount').text(data.page);
+				currentEle.addClass('hide');
 				thisInstance.showPagingInfo();
+			}, function(){
+				// 取得に失敗したので「？」を押せる状態へ戻す（件数は表示しない）
+				thisInstance.totalNumOfRecords_performingAsyncAction = false;
+				currentEle.find('.showTotalCountIcon').removeClass('hide');
 			});
 		}else{
+			currentEle.addClass('hide');
 			thisInstance.showPagingInfo();
 		}
 	},
