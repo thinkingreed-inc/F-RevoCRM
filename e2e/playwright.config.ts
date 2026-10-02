@@ -27,8 +27,11 @@ export default defineConfig({
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  /* CI は 2 回、ローカルは 1 回リトライする。
+   * ローカルを 0 にしていると、並列実行の負荷で出た一過性のタイムアウトと
+   * 実際のバグが見分けられず、無い原因を追うことになる。1 回リトライして
+   * 通れば flaky、落ちれば真の不具合、と結果だけで切り分けられる。 */
+  retries: process.env.CI ? 2 : 1,
   /* CI の並列度 = 4(実行時間を最優先)。per-worker セッション分離(fixtures/isolated.ts)+
    * 高並列で顕在化する待ち条件の根治を積み上げている:
    *  - 列検索の CustomView 汚染 → 一覧を All CV に固定(utils/listview.ts)
