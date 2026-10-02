@@ -39,7 +39,12 @@ class Leads_ConvertLead_View extends Vtiger_Index_View {
 		$viewer->assign('CONVERT_LEAD_FIELDS', $recordModel->getConvertLeadFields());
 
 		$assignedToFieldModel = $moduleModel->getField('assigned_user_id');
-		$assignedToFieldModel->set('fieldvalue', $recordModel->get('assigned_user_id'));
+		// パラメータ設定 LEAD_CONVERT_ASSIGN_CURRENT_USER が true ならログインユーザーを初期値にする
+		$assignedUserId = Leads_ConvertLeadAssignee_Model::getDefaultAssignedUserId(
+			$recordModel->get('assigned_user_id'),
+			Users_Record_Model::getCurrentUserModel()->getId()
+		);
+		$assignedToFieldModel->set('fieldvalue', $assignedUserId);
 		$viewer->assign('ASSIGN_TO', $assignedToFieldModel);
 
 		$potentialModuleModel = Vtiger_Module_Model::getInstance('Potentials');
