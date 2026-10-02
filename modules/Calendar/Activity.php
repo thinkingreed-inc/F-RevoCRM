@@ -1222,6 +1222,7 @@ function insertIntoRecurringTable(& $recurObj)
 			"Leads" => array("vtiger_seactivityrel"=>array("activityid","crmid"),"vtiger_activity"=>"activityid"),
 			"Accounts" => array("vtiger_seactivityrel"=>array("activityid","crmid"),"vtiger_activity"=>"activityid"),
 			"Potentials" => array("vtiger_seactivityrel"=>array("activityid","crmid"),"vtiger_activity"=>"activityid"),
+			"Documents" => array("vtiger_senotesrel"=>array("crmid","notesid"),"vtiger_activity"=>"activityid"),
 		);
 		return $rel_tables[$secmodule];
 	}

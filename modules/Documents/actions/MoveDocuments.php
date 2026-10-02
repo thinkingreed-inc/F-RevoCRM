@@ -8,6 +8,8 @@
  * All Rights Reserved.
  *************************************************************************************/
 
+require_once 'modules/Documents/utils/FolderPermission.php';
+
 class Documents_MoveDocuments_Action extends Vtiger_Mass_Action {
 	
 	public function requiresPermission(Vtiger_Request $request){
@@ -18,7 +20,13 @@ class Documents_MoveDocuments_Action extends Vtiger_Mass_Action {
 
 
 	public function checkPermission(Vtiger_Request $request) {
-		return parent::checkPermission($request);
+		parent::checkPermission($request);
+		// 移動先フォルダに書き込めること（移動元は1件ずつ process() で見る）
+		$folderId = (int) $request->get('folderid');
+		if ($folderId > 0 && !Documents_FolderPermission::canEditFolder($folderId)) {
+			throw new AppException(vtranslate('LBL_FOLDER_EDIT_DENIED', 'Documents'));
+		}
+		return true;
 	}
 
 	public function process(Vtiger_Request $request) {
@@ -29,7 +37,10 @@ class Documents_MoveDocuments_Action extends Vtiger_Mass_Action {
 		if (!empty ($documentIdsList)) {
 			foreach ($documentIdsList as $documentId) {
 				$documentModel = Vtiger_Record_Model::getInstanceById($documentId, $moduleName);
-				if (Users_Privileges_Model::isPermitted($moduleName, 'EditView', $documentId)) {
+				// 参照のみのフォルダにあるものは動かさない。
+				// 1件で全体を止めず、動かせなかったものとして数える
+				if (Users_Privileges_Model::isPermitted($moduleName, 'EditView', $documentId)
+						&& Documents_FolderPermission::canEditDocument($documentId)) {
 					$documentModel->set('folderid', $folderId);
 					$documentModel->set('mode', 'edit');
 					$documentModel->save();

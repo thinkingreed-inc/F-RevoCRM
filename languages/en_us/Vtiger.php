@@ -1540,6 +1540,7 @@ $languageStrings = array(
 	'MailScanner' => 'Mail Converter',
 	'Scheduled Import' => 'Scheduled Import',
 	'ScheduleReports' => 'Scheduled Reports',
+	'DocumentsInputDeadlineStatus' => 'Documents Input Deadline Status',
 	// Settings > Sales Management
 	'Compound' => 'Compound',
 	'Simple' => 'Simple',

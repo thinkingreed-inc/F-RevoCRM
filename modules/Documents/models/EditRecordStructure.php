@@ -11,6 +11,25 @@
 class Documents_EditRecordStructure_Model extends Vtiger_EditRecordStructure_Model {
 
 	/**
+	 * 読み取り専用項目（displaytype=2）も構造に含めるかどうか
+	 *
+	 * 通常の編集画面では false。詳細画面向けに項目定義を取得する場合
+	 * （Documents_GetFields_Api の view=detail）だけ true にする。
+	 *
+	 * @var bool
+	 */
+	private static $includeReadonlyFields = false;
+
+	/**
+	 * 読み取り専用項目を構造に含めるかどうかを切り替える
+	 *
+	 * @param bool $include
+	 */
+	public static function setIncludeReadonlyFields($include) {
+		self::$includeReadonlyFields = (bool) $include;
+	}
+
+	/**
 	 * Function to get the values in stuctured format
 	 * @return <array> - values in structure array('block'=>array(fieldinfo));
 	 */
@@ -30,7 +49,8 @@ class Documents_EditRecordStructure_Model extends Vtiger_EditRecordStructure_Mod
 			if (!empty ($fieldModelList)) {
 				$values[$blockLabel] = array();
 				foreach($fieldModelList as $fieldName=>$fieldModel) {
-					if($fieldModel->isEditable()) {
+					if($fieldModel->isEditable()
+							|| (self::$includeReadonlyFields && $fieldModel->isReadonlyEditView())) {
 						$fieldValue = $recordModel->get($fieldName);
 
 						if ((!$fieldValue && strlen($fieldValue) == 0) && !$recordId) {

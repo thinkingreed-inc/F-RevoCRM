@@ -8,6 +8,8 @@
  * All Rights Reserved.
  *************************************************************************************/
 
+require_once 'modules/Documents/utils/FolderPermission.php';
+
 class Documents_Folder_Action extends Vtiger_Action_Controller {
 
 	function __construct() {
@@ -22,8 +24,23 @@ class Documents_Folder_Action extends Vtiger_Action_Controller {
 		return $permissions;
 	}
 
+	/**
+	 * フォルダ単位の権限を確認する
+	 *
+	 * 標準の権限判定はモジュール単位までしか見ないため、既存フォルダを
+	 * 変更・削除する場合は apis/FolderAPI と同じ判定を通す。
+	 * 新規作成はフォルダを特定できないため、ここでは判定しない。
+	 */
 	public function checkPermission(Vtiger_Request $request) {
-		return parent::checkPermission($request);
+		parent::checkPermission($request);
+
+		$folderId = (int) $request->get('folderid');
+		$isExistingFolder = ($request->getMode() === 'delete' || $request->get('savemode') === 'edit');
+		if ($isExistingFolder && $folderId > 0
+			&& !Documents_FolderPermission::canEditFolder($folderId)) {
+			throw new AppException(vtranslate('LBL_FOLDER_EDIT_DENIED', 'Documents'));
+		}
+		return true;
 	}
 
 	public function process(Vtiger_Request $request) {
@@ -57,6 +74,11 @@ class Documents_Folder_Action extends Vtiger_Action_Controller {
 			}
 
 			$folderModel->save();
+			if ($saveMode != 'edit') {
+				// 新UIの作成と同じく既定の権限（オーナー＝作成者 / 編集＝全員）を入れる。
+				// 入れないと、権限行の無いフォルダとして作成者以外から見えなくなる
+				Documents_FolderPermission::applyDefaultPermissions($folderModel->getId());
+			}
 			$result = array('success'=>true, 'message'=>vtranslate('LBL_FOLDER_SAVED', $moduleName), 'info'=>$folderModel->getInfoArray());
 
 			$response = new Vtiger_Response();

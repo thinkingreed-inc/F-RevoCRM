@@ -166,6 +166,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
   onRecordTypeChange,
   formData,
   module,
+  placeholder: placeholderOverride,
 }) => {
   // 翻訳フック（TranslationProvider外でも安全に使用可能）
   const { t } = useOptionalTranslation();
@@ -305,9 +306,12 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       value: toInputValue(value) || "",
       disabled: disabled || field.readonly,
       className: cn("w-full", error && "border-red-500"),
-      placeholder: field.readonly
-        ? ""
-        : t("LBL_PLACEHOLDER_ENTER", field.label),
+      placeholder:
+        placeholderOverride !== undefined
+          ? placeholderOverride
+          : field.readonly
+            ? ""
+            : t("LBL_PLACEHOLDER_ENTER", field.label),
       "aria-describedby": errorId,
       "aria-invalid": !!error,
       "aria-required": field.mandatory,
@@ -469,7 +473,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
                 {...inputProps}
                 type="email"
                 onChange={handleInputChange}
-                placeholder="user@example.com"
+                placeholder={placeholderOverride ?? "user@example.com"}
               />
               {renderError()}
             </div>
@@ -486,7 +490,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
                 {...inputProps}
                 type="tel"
                 onChange={handleInputChange}
-                placeholder="03-1234-5678"
+                placeholder={placeholderOverride ?? "03-1234-5678"}
               />
               {renderError()}
             </div>
@@ -503,7 +507,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
                 {...inputProps}
                 type="url"
                 onChange={handleInputChange}
-                placeholder="https://example.com"
+                placeholder={placeholderOverride ?? "https://example.com"}
               />
               {renderError()}
             </div>
@@ -630,7 +634,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
                   step="0.01"
                   onChange={handleInputChange}
                   className={cn(inputProps.className, "pl-8")}
-                  placeholder="0.00"
+                  placeholder={placeholderOverride ?? "0.00"}
                 />
               </div>
               {renderError()}
@@ -653,7 +657,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
                   max="100"
                   onChange={handleInputChange}
                   className={cn(inputProps.className, "pr-8")}
-                  placeholder="0"
+                  placeholder={placeholderOverride ?? "0"}
                 />
                 <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
                   %
@@ -694,7 +698,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
                 {...inputProps}
                 type="password"
                 onChange={handleInputChange}
-                placeholder="••••••••"
+                placeholder={placeholderOverride ?? "••••••••"}
                 autoComplete="new-password"
               />
               {renderError()}

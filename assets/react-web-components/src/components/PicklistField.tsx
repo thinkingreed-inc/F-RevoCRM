@@ -146,10 +146,13 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
   const filteredOptions = useMemo(() => {
     if (!searchTerm) return options;
     const lowerSearch = searchTerm.toLowerCase();
+    // 値・ラベルは文字列とは限らない（数値だけのピックリストはサーバーが
+    // 数値で返す。PHP の配列キーが自動的に整数になるため）。
+    // そのまま toLowerCase() を呼ぶと落ちて画面が真っ白になる
     return options.filter(
       (opt) =>
-        opt.label.toLowerCase().includes(lowerSearch) ||
-        opt.value.toLowerCase().includes(lowerSearch),
+        String(opt.label).toLowerCase().includes(lowerSearch) ||
+        String(opt.value).toLowerCase().includes(lowerSearch),
     );
   }, [options, searchTerm]);
 
@@ -165,7 +168,9 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
    */
   useEffect(() => {
     if (value) {
-      const selected = options.find((opt) => opt.value === value);
+      const selected = options.find(
+        (opt) => String(opt.value) === String(value),
+      );
       if (selected) {
         setDisplayLabel(selected.label);
       }
@@ -198,11 +203,11 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
     setDisplayLabel(option.label);
     setSearchTerm("");
     setIsOpen(false);
-    onChange(name, option.value);
+    onChange(name, String(option.value));
 
     // RecordTypeフィールドの場合、追加で親コンポーネントに通知
     if (isRecordTypeField && onRecordTypeChange) {
-      onRecordTypeChange(name, option.value);
+      onRecordTypeChange(name, String(option.value));
     }
   };
 
@@ -356,7 +361,7 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
                   "px-3 py-1.5 text-md cursor-pointer",
                   index === highlightedIndex
                     ? "bg-blue-100"
-                    : value === option.value
+                    : String(value) === String(option.value)
                       ? "bg-blue-100"
                       : "hover:bg-blue-50",
                 )}

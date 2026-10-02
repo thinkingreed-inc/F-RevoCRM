@@ -1,0 +1,758 @@
+import React, { useState, useEffect, useCallback } from "react";
+import type {
+  Folder,
+  FolderPermission,
+  PermissionTargets,
+} from "./types/documents";
+import { useOptionalTranslation } from "../../hooks/useTranslation";
+import { buildFolderOptions } from "./utils/folderOptions";
+
+interface FolderDialogProps {
+  isOpen: boolean;
+  mode: "create" | "edit";
+  folder?: Folder | null;
+  parentFolderId: number;
+  folders: Folder[];
+  /** 実行ユーザーが管理者か（サーバー判定） */
+  isAdmin?: boolean;
+  /** 実行ユーザーのID（新規フォルダの既定オーナーに使う） */
+  currentUserId?: number | null;
+  onSave: (data: {
+    foldername: string;
+    folderdesc: string;
+    parent_folderid: number;
+    savemode?: string;
+    folderid?: number;
+    /** 新規作成時に一緒に保存する権限（作成後に別リクエストを投げずに済む） */
+    permissions?: string;
+  }) => void;
+  onDelete?: (folderId: number) => void;
+  onClose: () => void;
+}
+
+function getCsrfToken(): { name: string; value: string } | null {
+  const csrfName = (window as any).csrfMagicName;
+  const csrfToken = (window as any).csrfMagicToken;
+  if (csrfName && csrfToken) return { name: csrfName, value: csrfToken };
+  return null;
+}
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "6px 10px",
+  border: "1px solid #E2E8F0",
+  borderRadius: 4,
+  fontSize: 13,
+  outline: "none",
+  boxSizing: "border-box",
+};
+
+type PermType = "view" | "edit" | "owner";
+type TargetType = "everyone" | "user" | "role" | "group";
+
+interface PermRow {
+  key: string;
+  permission_type: PermType;
+  target_type: TargetType;
+  target_id: string | number | null;
+  target_name?: string | null;
+}
+
+/** オーナーは「全員」に付けられない（誰でも権限を書き換えられてしまうため） */
+const OWNER_TARGET_TYPES: TargetType[] = ["user", "role", "group"];
+const ALL_TARGET_TYPES: TargetType[] = ["everyone", "user", "role", "group"];
+
+export const FolderDialog: React.FC<FolderDialogProps> = ({
+  isOpen,
+  mode,
+  folder,
+  parentFolderId,
+  folders,
+  isAdmin = false,
+  currentUserId = null,
+  onSave,
+  onDelete,
+  onClose,
+}) => {
+  const { t } = useOptionalTranslation();
+  const [name, setName] = useState("");
+  const [desc, setDesc] = useState("");
+  const [parentId, setParentId] = useState(parentFolderId);
+  const [error, setError] = useState<string | null>(null);
+
+  // 権限設定
+  const [permRows, setPermRows] = useState<PermRow[]>([]);
+  const [targets, setTargets] = useState<PermissionTargets | null>(null);
+  const [permLoading, setPermLoading] = useState(false);
+  const [permSaving, setPermSaving] = useState(false);
+  const [permMessage, setPermMessage] = useState<string | null>(null);
+  // 権限を編集できるかは DOM から推測せず、サーバーの判定（is_admin /
+  // can_manage_permissions）を使う。新規作成は作成者がオーナーになるため常に編集できる
+  const canEditPermissions =
+    mode === "create"
+      ? true
+      : isAdmin || folder?.can_manage_permissions === true;
+
+  useEffect(() => {
+    if (isOpen) {
+      if (mode === "edit" && folder) {
+        setName(folder.name);
+        setDesc(folder.description || "");
+        setParentId(folder.parent_id);
+      } else {
+        setName("");
+        setDesc("");
+        setParentId(parentFolderId);
+      }
+      setError(null);
+      setPermMessage(null);
+    }
+  }, [isOpen, mode, folder, parentFolderId]);
+
+  // 権限付与先候補の取得（1回のみ）
+  useEffect(() => {
+    if (!isOpen || !canEditPermissions || targets) return;
+    (async () => {
+      try {
+        const res = await fetch(
+          `index.php?module=Documents&api=FolderAPI&mode=getPermissionTargets`,
+          {
+            credentials: "same-origin",
+            headers: { Accept: "application/json" },
+          },
+        );
+        const data = await res.json();
+        const result = data.result || data;
+        setTargets({
+          users: result.users || [],
+          roles: result.roles || [],
+          groups: result.groups || [],
+        });
+      } catch {
+        /* ignore */
+      }
+    })();
+  }, [isOpen, canEditPermissions, targets]);
+
+  // 権限設定の読み込み（editモード時）
+  useEffect(() => {
+    if (!isOpen || !canEditPermissions || mode !== "edit" || !folder) return;
+    setPermLoading(true);
+    (async () => {
+      try {
+        const res = await fetch(
+          `index.php?module=Documents&api=FolderAPI&mode=getPermissions&folderid=${folder.id}`,
+          {
+            credentials: "same-origin",
+            headers: { Accept: "application/json" },
+          },
+        );
+        const data = await res.json();
+        const perms: FolderPermission[] =
+          (data.result || data).permissions || [];
+        setPermRows(
+          perms.map((p, i) => ({
+            key: `e${i}`,
+            permission_type: p.permission_type as PermType,
+            target_type: p.target_type as TargetType,
+            target_id: p.target_id,
+            target_name: p.target_name,
+          })),
+        );
+      } catch {
+        /* ignore */
+      }
+      setPermLoading(false);
+    })();
+  }, [isOpen, canEditPermissions, mode, folder]);
+
+  // 新規作成時の既定はオーナー＝ログインユーザー、編集＝全員。
+  // 作った本人が公開範囲を決められるよう、必ずオーナーを入れておく
+  useEffect(() => {
+    if (!isOpen || mode !== "create") return;
+    const rows: PermRow[] = [];
+    if (currentUserId !== null) {
+      rows.push({
+        key: "d0",
+        permission_type: "owner",
+        target_type: "user",
+        target_id: currentUserId,
+      });
+    }
+    rows.push({
+      key: "d1",
+      permission_type: "edit",
+      target_type: "everyone",
+      target_id: null,
+    });
+    setPermRows(rows);
+  }, [isOpen, mode, currentUserId]);
+
+  /** 権限を保存する。成功したら true */
+  const savePermissions = useCallback(
+    async (folderId: number): Promise<boolean> => {
+      setPermSaving(true);
+      try {
+        const csrf = getCsrfToken();
+        const body = new URLSearchParams();
+        if (csrf) body.append(csrf.name, csrf.value);
+        body.append("module", "Documents");
+        body.append("api", "FolderAPI");
+        body.append("mode", "savePermissions");
+        body.append("folderid", String(folderId));
+        body.append(
+          "permissions",
+          JSON.stringify(
+            permRows.map((r) => ({
+              permission_type: r.permission_type,
+              target_type: r.target_type,
+              target_id: r.target_id,
+            })),
+          ),
+        );
+        const response = await fetch("index.php", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Accept: "application/json",
+          },
+          body: body.toString(),
+        });
+        const data = await response.json();
+        if (!response.ok || data.success === false || data.error) {
+          // 失敗を黙って捨てると「保存したのに戻っている」ように見えるため必ず出す
+          setError(data?.error?.message || t("LBL_PERMISSION_SAVE_FAILED"));
+          return false;
+        }
+        return true;
+      } catch {
+        setError(t("LBL_PERMISSION_SAVE_FAILED"));
+        return false;
+      } finally {
+        setPermSaving(false);
+      }
+    },
+    [permRows, t],
+  );
+
+  const handleSave = useCallback(async () => {
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      setError(t("LBL_FOLDER_NAME_REQUIRED"));
+      return;
+    }
+    setError(null);
+
+    // オーナーを全部消すと自分で権限を戻せなくなるため、送る前に止める。
+    // 新規作成はオーナーが無ければサーバー側で作成者を入れるので対象外
+    if (
+      canEditPermissions &&
+      !isAdmin &&
+      mode === "edit" &&
+      !permRows.some((r) => r.permission_type === "owner")
+    ) {
+      setError(t("LBL_FOLDER_OWNER_REQUIRED"));
+      return;
+    }
+
+    // 更新は権限を先に保存する。フォルダ保存でダイアログが閉じると
+    // 権限の保存結果をユーザーに返せなくなるため。
+    if (canEditPermissions && mode === "edit" && folder) {
+      const saved = await savePermissions(folder.id);
+      if (!saved) return; // エラーを表示したまま閉じない
+    }
+
+    onSave({
+      foldername: trimmedName,
+      folderdesc: desc.trim(),
+      parent_folderid: parentId,
+      ...(mode === "edit" && folder
+        ? { savemode: "edit", folderid: folder.id }
+        : {
+            // 新規はフォルダIDが無いので、作成リクエストに権限を同梱する
+            permissions: JSON.stringify(
+              permRows.map((r) => ({
+                permission_type: r.permission_type,
+                target_type: r.target_type,
+                target_id: r.target_id,
+              })),
+            ),
+          }),
+    });
+  }, [
+    name,
+    desc,
+    parentId,
+    mode,
+    folder,
+    onSave,
+    isAdmin,
+    canEditPermissions,
+    permRows,
+    savePermissions,
+    t,
+  ]);
+
+  const addPermRow = useCallback(() => {
+    setPermRows((prev) => [
+      ...prev,
+      {
+        key: `n${Date.now()}`,
+        permission_type: "view",
+        target_type: "everyone",
+        target_id: null,
+      },
+    ]);
+  }, []);
+
+  const removePermRow = useCallback((key: string) => {
+    setPermRows((prev) => prev.filter((r) => r.key !== key));
+  }, []);
+
+  const updatePermRow = useCallback(
+    (key: string, field: string, value: any) => {
+      setPermRows((prev) =>
+        prev.map((r) => {
+          if (r.key !== key) return r;
+          const updated = { ...r, [field]: value };
+          if (field === "target_type") {
+            updated.target_id = value === "everyone" ? null : "";
+            updated.target_name = null;
+          }
+          // オーナーに「全員」は指定できないため、ユーザー指定に切り替える
+          if (
+            field === "permission_type" &&
+            value === "owner" &&
+            updated.target_type === "everyone"
+          ) {
+            updated.target_type = "user";
+            updated.target_id = "";
+            updated.target_name = null;
+          }
+          return updated;
+        }),
+      );
+    },
+    [],
+  );
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    },
+    [onClose],
+  );
+
+  if (!isOpen) return null;
+
+  const getDescendantIds = (id: number): number[] => {
+    const children = folders.filter((f) => f.parent_id === id);
+    return children.reduce<number[]>(
+      (acc, c) => [...acc, c.id, ...getDescendantIds(c.id)],
+      [],
+    );
+  };
+  const excludeIds =
+    mode === "edit" && folder
+      ? [folder.id, ...getDescendantIds(folder.id)]
+      : [];
+  // どのフォルダの下なのか分かるよう、階層順に並べてインデントを付ける
+  const parentOptions = buildFolderOptions(folders, { excludeIds });
+
+  const targetTypeLabels: Record<TargetType, string> = {
+    everyone: t("LBL_TARGET_EVERYONE"),
+    user: t("LBL_TARGET_USER"),
+    role: t("LBL_TARGET_ROLE"),
+    group: t("LBL_TARGET_GROUP"),
+  };
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        backgroundColor: "rgba(0,0,0,0.3)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1000,
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          backgroundColor: "#fff",
+          borderRadius: 8,
+          padding: 24,
+          width: canEditPermissions ? 600 : 400,
+          maxWidth: "90vw",
+          maxHeight: "85vh",
+          overflowY: "auto",
+          boxShadow: "0 8px 30px rgba(0,0,0,0.15)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3
+          style={{
+            margin: "0 0 16px",
+            fontSize: 16,
+            fontWeight: 600,
+            color: "#2D3748",
+          }}
+        >
+          {mode === "create"
+            ? t("LBL_ADD_FOLDER_TITLE")
+            : t("LBL_EDIT_FOLDER_TITLE")}
+        </h3>
+
+        {error && (
+          <div
+            style={{
+              padding: "6px 10px",
+              backgroundColor: "#FED7D7",
+              color: "#C53030",
+              borderRadius: 4,
+              fontSize: 13,
+              marginBottom: 12,
+            }}
+          >
+            {error}
+          </div>
+        )}
+
+        {/* 基本情報 */}
+        <div style={{ marginBottom: 12 }}>
+          <label
+            style={{
+              display: "block",
+              fontSize: 13,
+              fontWeight: 500,
+              color: "#4A5568",
+              marginBottom: 4,
+            }}
+          >
+            {t("LBL_FOLDER_NAME_LABEL")}{" "}
+            <span style={{ color: "#E53E3E" }}>*</span>
+          </label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={handleKeyDown}
+            autoFocus
+            style={inputStyle}
+          />
+        </div>
+
+        <div style={{ marginBottom: 12 }}>
+          <label
+            style={{
+              display: "block",
+              fontSize: 13,
+              fontWeight: 500,
+              color: "#4A5568",
+              marginBottom: 4,
+            }}
+          >
+            {t("LBL_FOLDER_DESCRIPTION_LABEL")}
+          </label>
+          <textarea
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
+            rows={2}
+            style={{ ...inputStyle, resize: "vertical" }}
+          />
+        </div>
+
+        <div style={{ marginBottom: 20 }}>
+          <label
+            style={{
+              display: "block",
+              fontSize: 13,
+              fontWeight: 500,
+              color: "#4A5568",
+              marginBottom: 4,
+            }}
+          >
+            {t("LBL_PARENT_FOLDER")}
+          </label>
+          <select
+            value={parentId}
+            onChange={(e) => setParentId(Number(e.target.value))}
+            style={inputStyle}
+          >
+            <option value={0}>{t("LBL_ROOT_FOLDER")}</option>
+            {parentOptions.map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* 権限設定（管理者・オーナー・新規作成時） */}
+        {canEditPermissions && (
+          <div
+            style={{
+              borderTop: "1px solid #E2E8F0",
+              paddingTop: 16,
+              marginBottom: 16,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 10,
+              }}
+            >
+              <label
+                style={{ fontSize: 14, fontWeight: 600, color: "#2D3748" }}
+              >
+                {t("LBL_FOLDER_PERMISSIONS")}
+              </label>
+              <button
+                onClick={addPermRow}
+                style={{
+                  padding: "3px 10px",
+                  fontSize: 12,
+                  border: "1px solid #E2E8F0",
+                  borderRadius: 4,
+                  backgroundColor: "#fff",
+                  color: "#4299E1",
+                  cursor: "pointer",
+                }}
+              >
+                + {t("LBL_ADD_PERMISSION")}
+              </button>
+            </div>
+
+            {permLoading ? (
+              <div
+                style={{
+                  padding: 12,
+                  textAlign: "center",
+                  color: "#A0AEC0",
+                  fontSize: 13,
+                }}
+              >
+                {t("LBL_LOADING")}
+              </div>
+            ) : permRows.length === 0 ? (
+              <div
+                style={{
+                  padding: 12,
+                  textAlign: "center",
+                  color: "#A0AEC0",
+                  fontSize: 13,
+                }}
+              >
+                {t("LBL_ADD_PERMISSION")}
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {permRows.map((row) => (
+                  <div
+                    key={row.key}
+                    style={{
+                      display: "flex",
+                      gap: 6,
+                      alignItems: "center",
+                      padding: "6px 8px",
+                      backgroundColor: "#F7FAFC",
+                      borderRadius: 4,
+                      border: "1px solid #EDF2F7",
+                    }}
+                  >
+                    {/* 権限種別 */}
+                    <select
+                      value={row.permission_type}
+                      onChange={(e) =>
+                        updatePermRow(
+                          row.key,
+                          "permission_type",
+                          e.target.value,
+                        )
+                      }
+                      style={{
+                        padding: "4px 6px",
+                        border: "1px solid #E2E8F0",
+                        borderRadius: 3,
+                        fontSize: 12,
+                        width: 90,
+                      }}
+                    >
+                      <option value="view">{t("LBL_PERMISSION_VIEW")}</option>
+                      <option value="edit">{t("LBL_PERMISSION_EDIT")}</option>
+                      <option value="owner">{t("LBL_PERMISSION_OWNER")}</option>
+                    </select>
+
+                    {/* 対象種別 */}
+                    <select
+                      value={row.target_type}
+                      onChange={(e) =>
+                        updatePermRow(row.key, "target_type", e.target.value)
+                      }
+                      style={{
+                        padding: "4px 6px",
+                        border: "1px solid #E2E8F0",
+                        borderRadius: 3,
+                        fontSize: 12,
+                        width: 90,
+                      }}
+                    >
+                      {(row.permission_type === "owner"
+                        ? OWNER_TARGET_TYPES
+                        : ALL_TARGET_TYPES
+                      ).map((tt) => (
+                        <option key={tt} value={tt}>
+                          {targetTypeLabels[tt]}
+                        </option>
+                      ))}
+                    </select>
+
+                    {/* 対象ID選択 */}
+                    {row.target_type !== "everyone" && targets && (
+                      <select
+                        value={row.target_id ?? ""}
+                        onChange={(e) =>
+                          updatePermRow(
+                            row.key,
+                            "target_id",
+                            e.target.value || null,
+                          )
+                        }
+                        style={{
+                          flex: 1,
+                          padding: "4px 6px",
+                          border: "1px solid #E2E8F0",
+                          borderRadius: 3,
+                          fontSize: 12,
+                          minWidth: 0,
+                        }}
+                      >
+                        <option value="">{t("LBL_SELECT_TARGET")}</option>
+                        {row.target_type === "user" &&
+                          targets.users.map((u) => (
+                            <option key={u.id} value={u.id}>
+                              {u.name}
+                            </option>
+                          ))}
+                        {row.target_type === "role" &&
+                          targets.roles.map((r) => (
+                            <option key={r.id} value={r.id}>
+                              {r.name}
+                            </option>
+                          ))}
+                        {row.target_type === "group" &&
+                          targets.groups.map((g) => (
+                            <option key={g.id} value={g.id}>
+                              {g.name}
+                            </option>
+                          ))}
+                      </select>
+                    )}
+
+                    {row.target_type === "everyone" && (
+                      <div style={{ flex: 1 }} />
+                    )}
+
+                    {/* 削除ボタン */}
+                    <button
+                      onClick={() => removePermRow(row.key)}
+                      style={{
+                        padding: "2px 8px",
+                        border: "1px solid #FEB2B2",
+                        borderRadius: 3,
+                        backgroundColor: "#fff",
+                        color: "#E53E3E",
+                        cursor: "pointer",
+                        fontSize: 11,
+                        flexShrink: 0,
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {permMessage && (
+              <div style={{ marginTop: 8, fontSize: 12, color: "#38A169" }}>
+                {permMessage}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* フッターボタン */}
+        <div
+          style={{ display: "flex", justifyContent: "space-between", gap: 8 }}
+        >
+          <div>
+            {mode === "edit" &&
+              folder &&
+              folder.name !== "Default" &&
+              onDelete && (
+                <button
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        t("LBL_CONFIRM_DELETE_FOLDER", folder.name),
+                      )
+                    )
+                      onDelete(folder.id);
+                  }}
+                  style={{
+                    padding: "6px 14px",
+                    backgroundColor: "#fff",
+                    color: "#E53E3E",
+                    border: "1px solid #FEB2B2",
+                    borderRadius: 4,
+                    fontSize: 13,
+                    cursor: "pointer",
+                  }}
+                >
+                  {t("LBL_DELETE")}
+                </button>
+              )}
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={onClose}
+              style={{
+                padding: "6px 14px",
+                backgroundColor: "#fff",
+                color: "#4A5568",
+                border: "1px solid #E2E8F0",
+                borderRadius: 4,
+                fontSize: 13,
+                cursor: "pointer",
+              }}
+            >
+              {t("LBL_CANCEL")}
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={permSaving}
+              style={{
+                padding: "6px 14px",
+                backgroundColor: "#4299E1",
+                color: "#fff",
+                border: "none",
+                borderRadius: 4,
+                fontSize: 13,
+                cursor: permSaving ? "wait" : "pointer",
+              }}
+            >
+              {mode === "create" ? t("LBL_ADD") : t("LBL_SAVE")}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

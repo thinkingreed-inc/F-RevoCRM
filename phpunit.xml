@@ -7,10 +7,14 @@
          executionOrder="depends,defects"
          beStrictAboutOutputDuringTests="true"
          failOnRisky="true"
-         failOnWarning="true">
+         failOnWarning="true"
+         defaultTestSuite="Unit">
     <!-- テストDB名は tests/bootstrap.php が決める (既定: config.inc.php の db_name + '_test')。
          別名を使う場合は環境変数 FREVOCRM_TEST_DB_NAME を指定する。
          例: <php><env name="FREVOCRM_TEST_DB_NAME" value="frevocrm_test" force="true"/></php> -->
+    <!-- 既定は Unit のみ。Integration は DB が要るうえ、Unit 用のスタブ
+         (tests/Support/LanguageHandlerStubs.php 等) と本体のクラスが同一プロセスで
+         衝突するため、同時に走らせない。実行は composer test:integration。 -->
     <php>
         <!-- プロセス分離で起動する子プロセスは親の -d xdebug.mode=off を引き継がない。
              Xdebug が有効な開発環境だと接続失敗の通知が子の出力に混ざり、

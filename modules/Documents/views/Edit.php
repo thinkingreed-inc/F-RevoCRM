@@ -8,8 +8,21 @@
  * All Rights Reserved.
  *************************************************************************************/
 
+require_once 'modules/Documents/utils/FolderPermission.php';
+
 Class Documents_Edit_View extends Vtiger_Edit_View {
-	
+
+	/**
+	 * フォルダ権限を確認する（標準の権限判定はフォルダを見ない）
+	 *
+	 * 編集画面なので、参照だけでなく変更できることまで求める。
+	 */
+	public function checkPermission(Vtiger_Request $request) {
+		parent::checkPermission($request);
+		Documents_FolderPermission::checkRequestEdit($request);
+		return true;
+	}
+
 	/**
 	 * Function to get the list of Script models to be included
 	 * @param Vtiger_Request $request
