@@ -48,6 +48,13 @@ class Documents_ListLegacy_View extends Vtiger_List_View {
 		$pageNumber = $request->get('page');
 		$orderBy = $request->get('orderby');
 		$sortOrder = $request->get('sortorder');
+		$sortConditions = Vtiger_ListView_Model::cleanSortConditions($orderBy, $sortOrder);
+		if (!empty($sortConditions)) {
+			$orderBy = json_encode($sortConditions);
+			$sortOrder = $sortConditions[0]['order'];
+		} else {
+			$orderBy = '';
+		}
 		$searchKey = $request->get('search_key');
 		$searchValue = $request->get('search_value');
 		$operator = $request->get('operator');
@@ -124,6 +131,9 @@ class Documents_ListLegacy_View extends Vtiger_List_View {
 			}
 			Vtiger_ListView_Model::setSortParamsSession($listViewSessionKey, $params);
 		}
+
+		// セッションから復元した値も含め、テンプレートで扱うソート条件の配列にする
+		$sortConditions = Vtiger_ListView_Model::cleanSortConditions($orderBy, $sortOrder);
 
 		if($sortOrder == "ASC"){
 			$nextSortOrder = "DESC";
@@ -254,10 +264,11 @@ class Documents_ListLegacy_View extends Vtiger_List_View {
 		$listViewController = $listViewModel->get('listview_controller');
 		$selectedHeaderFields = $listViewController->getListViewHeaderFields();
 		$viewer->assign('ORDER_BY',$orderBy);
+		$viewer->assign('SORT_CONDITIONS', $sortConditions);
 		$viewer->assign('SORT_ORDER',$sortOrder);
 		$viewer->assign('NEXT_SORT_ORDER',$nextSortOrder);
 		$viewer->assign('SORT_IMAGE',$sortImage);
-		$viewer->assign('COLUMN_NAME',$orderBy);
+		$viewer->assign('COLUMN_NAME', !empty($sortConditions) ? $sortConditions[0]['field'] : '');
 		$viewer->assign('FOLDER_NAME',$request->get('folder_value'));
 
 		$viewer->assign('LISTVIEW_ENTRIES_COUNT',$noOfEntries);

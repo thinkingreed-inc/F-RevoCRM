@@ -198,6 +198,11 @@ Class Calendar_Edit_View extends Vtiger_Edit_View {
 		$picklistDependencyDatasource = Vtiger_DependencyPicklist::getPicklistDependencyDatasource($moduleName);
 		$accessibleUsers = $currentUser->getAccessibleUsers();
 		$accessibleGroups = $currentUser->getAccessibleGroups();
+		if($recordModel instanceof Events_Record_Model) {
+			// 既にこの活動の参加者になっている利用者は、割り当て可能ユーザーの範囲外でも
+			// 候補に残す。候補から漏れると保存時に参加者から外れ、その参加者の活動が削除される
+			$accessibleUsers = $recordModel->getInviteeOptions($accessibleUsers, $accessibleGroups);
+		}
 
 		$viewer->assign('PICKIST_DEPENDENCY_DATASOURCE',Vtiger_Functions::jsonEncode($picklistDependencyDatasource));
 		$viewer->assign('ACCESSIBLE_USERS', $accessibleUsers);

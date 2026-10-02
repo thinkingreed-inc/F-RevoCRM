@@ -183,7 +183,7 @@ false : Persists checkbox states only for My Group. Other organization or role v
 	'LBL_OCTOBER' => 'October',
 	'LBL_NOVEMBER' => 'November',
 	'LBL_DECEMBER' => 'December',
-	'LBL_CLICK_HERE_TO_VIEW' => 'Click here to view',
+	'LBL_CLICK_HERE_TO_VIEW' => 'Click here to view record',
 
 	//F-RevoCRM
 	'Send Reminder' => 'Send Reminder',
@@ -282,4 +282,6 @@ $jsLanguageStrings = array(
 	'JS_MONTHTITLEFORMAT' => 'YYYY-MM',
 	'JS_DAYTITLEFORMAT' => 'YYYY-MM-DD',
 	'JS_WEEKTITLEFORMAT' => 'YYYY-MM-DD',
+	'LBL_DESCRIPTION' => 'Description',
+	'Common Memo' => 'Common Memo',
 );

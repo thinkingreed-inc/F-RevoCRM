@@ -174,14 +174,15 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	/**
 	 * Function to retieve display value for a value
 	 * @param <String> $value - value which need to be converted to display value
+	 * @param <Boolean> $removeTags - メール差込などHTMLを含めたくない場合にtrueを渡す
 	 * @return <String> - converted display value
 	 */
-	public function getDisplayValue($value, $record=false, $recordInstance = false) {
+	public function getDisplayValue($value, $record=false, $recordInstance = false, $removeTags = false) {
 		if(!isset($this->uitype_instance) || !$this->uitype_instance) {
 			$this->uitype_instance = Vtiger_Base_UIType::getInstanceFromField($this);
 		}
 		$uiTypeInstance = $this->uitype_instance;
-		return $uiTypeInstance->getDisplayValue($value, $record, $recordInstance);
+		return $uiTypeInstance->getDisplayValue($value, $record, $recordInstance, $removeTags);
 	}
 
 	/**
@@ -1219,6 +1220,14 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	*/
 	/**TODO: field validator need to be handled in specific module getValidator api  **/
 	function getValidator() {
+		// id は DB 由来でないフィールドでは null のままになる。配列のキーでは空文字に
+		// 丸められ、別のフィールド同士が同じ検証ルールを共有してしまうため、
+		// id を持つフィールドだけキャッシュする。
+		static $validationCache = array();
+		$cacheKey = $this->id;
+		if($cacheKey && isset($validationCache[$cacheKey])) {
+			return $validationCache[$cacheKey];
+		}
 		$validator = array();
 		$fieldName = $this->getName();
 		switch($fieldName) {
@@ -1269,6 +1278,10 @@ class Vtiger_Field_Model extends Vtiger_Field {
 		}
 		if (isset($funcName) && $funcName) {
 			array_push($validator, $funcName);
+		}
+
+		if($cacheKey) {
+			$validationCache[$cacheKey] = $validator;
 		}
 		return $validator;
 	}

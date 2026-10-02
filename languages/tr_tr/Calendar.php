@@ -146,7 +146,7 @@ $languageStrings = array(
   'LBL_OCTOBER' => 'Ekim',
   'LBL_NOVEMBER' => 'Kasım',
   'LBL_DECEMBER' => 'Aralık',
-	'LBL_CLICK_HERE_TO_VIEW' => 'görmek için buraya tıklayın',
+	'LBL_CLICK_HERE_TO_VIEW' => 'Kaydı görmek için buraya tıklayın',
 
 	'LBL_TOTAL_EVENTS_DUPLICATED' => 'yinelenen Olayların sayılı atlanır',
 	'LBL_TOTAL_TASKS_DUPLICATED' => 'yinelenen Görevlerin sayılı atlanır',

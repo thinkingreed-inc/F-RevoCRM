@@ -119,6 +119,41 @@ class Events_Record_Model extends Calendar_Record_Model {
      public function getInvities() {
          return array_keys($this->getInviteesDetails());
      }
+
+     /**
+      * Function to get the list of users to offer in the invitee field
+      *
+      * ロールの「担当者として割り当て可能なユーザー」(vtiger_role.allowassignedrecordsto)が
+      * 「全ユーザー」以外だと、上位ロールの招集者などは候補に出ない。編集画面の参加者欄は
+      * 候補にある利用者しか option にできないため、候補外の参加者は選択状態のまま送り返せず、
+      * 保存時に「参加者から外された」と判定されてその参加者の活動ごと削除されてしまう
+      * (modules/Calendar/Activity.php の save_module)。
+      * 既にこの活動の参加者になっている利用者は、候補の範囲外でも必ず候補に含める。
+      *
+      * @param <Array> $accessibleUsers - 割り当て可能なユーザー (ID => 表示名)
+      * @param <Array> $accessibleGroups - 割り当て可能なグループ (ID => 表示名)
+      * @return <Array> - $accessibleUsers に、候補から漏れていた参加者を足したもの
+      */
+     public function getInviteeOptions($accessibleUsers, $accessibleGroups = array()) {
+         if (!$this->getId()) {
+             return $accessibleUsers;
+         }
+
+         $reachableIds = array_merge(array_keys($accessibleUsers), array_keys($accessibleGroups));
+         $missingIds = array_values(array_diff($this->getInvities(), $reachableIds));
+         if (empty($missingIds)) {
+             return $accessibleUsers;
+         }
+
+         $labels = Vtiger_Functions::getOwnerRecordLabels($missingIds);
+         foreach ($missingIds as $inviteeId) {
+             if (!empty($labels[$inviteeId])) {
+                 $accessibleUsers[$inviteeId] = $labels[$inviteeId];
+             }
+         }
+
+         return $accessibleUsers;
+     }
      
      /**
       * Function to update invitation status

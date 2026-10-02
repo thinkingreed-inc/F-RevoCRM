@@ -1167,7 +1167,7 @@ Vtiger.Class("Vtiger_Detail_Js",{
 			fieldName = multiPicklistFieldName[0];
 		}
 
-		var customHandlingFields = ['owner','ownergroup','picklist','multipicklist','reference','currencyList','text', 'documentsFolder'];
+		var customHandlingFields = ['owner','ownergroup','picklist','multipicklist','reference','currencyList','text', 'documentsFolder', 'url', 'string'];
 		if(jQuery.inArray(fieldType, customHandlingFields) !== -1){
 			value = rawValue;
 		}
@@ -1310,7 +1310,7 @@ Vtiger.Class("Vtiger_Detail_Js",{
 			}
 
 			// prev Value should be taken based on field Type
-			var customHandlingFields = ['owner','ownergroup','picklist','multipicklist','reference','boolean']; 
+			var customHandlingFields = ['owner','ownergroup','picklist','multipicklist','reference','boolean', 'url', 'string']; 
 			if(jQuery.inArray(fieldType, customHandlingFields) !== -1){
 				previousValue = fieldBasicData.data('value');
 			}
@@ -1410,6 +1410,7 @@ Vtiger.Class("Vtiger_Detail_Js",{
 							}
 							fieldBasicData.data('displayvalue',postSaveRecordDetails[fieldName].display_value);
 							fieldBasicData.data('value',postSaveRecordDetails[fieldName].value);
+							fieldBasicData.attr('data-value',postSaveRecordDetails[fieldName].value);
 							jQuery(currentTdElement).find('.input-group-addon').removeClass("disabled");
 
 							detailViewValue.css('display', 'inline-block');
@@ -1518,8 +1519,13 @@ Vtiger.Class("Vtiger_Detail_Js",{
 			var fieldBasicData = editElement.find('.fieldBasicData');
 			var inputElement = editElement.find('.inputElement');
 			inputElement.attr('data-value', fieldBasicData.attr('data-value'));
-			inputElement.data('value', fieldBasicData.data('value'));
-			inputElement.val(inputElement.attr('data-value'));
+			var fieldType = fieldBasicData.data('type');
+			var dataValue = inputElement.attr('data-value');
+			if (fieldType === 'multipicklist') {
+				inputElement.val(dataValue ? dataValue.split(' |##| ') : []);
+			} else {
+				inputElement.val(dataValue);
+			}
 			detailViewValue.css('display', 'inline-block');
 			editElement.addClass('hide');
 			editElement.find('.inputElement').trigger('Vtiger.Validation.Hide.Messsage')
@@ -2815,15 +2821,27 @@ Vtiger.Class("Vtiger_Detail_Js",{
 		});
 		detailContentsHolder.on('click','.moreRecentUpdates', function() {
 			app.helper.showProgress();
-			var currentPage = jQuery("#updatesCurrentPage").val();
+			var currentPage = parseInt(jQuery("#updatesCurrentPage").val());
+			// 表示済みの1ページあたりの件数。初回表示はタブが list_max_entries_per_page、
+			// サマリ表示のウィジェットが limit=5 と異なるため、サーバーから受け取った値を使う。
+			var pageLimit = parseInt(jQuery("#updatesPageLimit").val());
 			var recordId = jQuery("#recordId").val();
-			var nextPage = parseInt(currentPage) + 1;
+			var nextLimit = 5;
+			if (isNaN(currentPage) || currentPage < 1) {
+				currentPage = 1;
+			}
+			if (isNaN(pageLimit) || pageLimit < 1) {
+				pageLimit = nextLimit;
+			}
+			// 表示済み件数（currentPage * pageLimit）を追加読み込み件数で割り、続きのページ番号を求める。
+			var nextPage = Math.floor((currentPage * pageLimit) / nextLimit) + 1;
 			var url = "index.php?module=" + app.getModuleName() + "&view=Detail&record=" + recordId + "&mode=showRecentActivities&page=" 
-					  + nextPage + "&limit=5&tab_label=LBL_UPDATES";
+					  + nextPage + "&limit=" + nextLimit + "&tab_label=LBL_UPDATES";
 			var postParams  = app.convertUrlToDataParams(url);
 
 			app.request.post({data:postParams}).then(function(err,data){
 				jQuery("#updatesCurrentPage").remove();
+				jQuery("#updatesPageLimit").remove();
 				jQuery("#moreLink").remove();
 				jQuery("#more_button").remove();
 				data = jQuery(data).removeClass("recentActivitiesContainer");

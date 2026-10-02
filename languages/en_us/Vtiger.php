@@ -148,6 +148,7 @@ $languageStrings = array(
 	'Modified Time' => 'Modified Time',
 	'Description' => 'Description',
 	'Assigned To'=>'Assigned To',
+	'smcreatorid' => 'Created By',
 
 	//Loading Labels
 	'LBL_LOADING' => 'Loading',
@@ -1239,6 +1240,7 @@ $languageStrings = array(
 	'LBL_MARKET_PLACE' => 'Market Place',
 
 	'LBL_SHARE_THIS_LIST' => 'Share the list',
+	'LBL_DEFAULT_SORT' => 'Set default sort',
 	'LBL_ADD_USERS_ROLES' => 'Add Users, Roles...',
 	'EmailTemplates' => 'Email Templates',
 	'LBL_BILLING' => 'Billing',
@@ -1660,6 +1662,8 @@ $languageStrings = array(
 	'LBL_TASK_SEND_EMAIL_WHEN_COMMENTED' => 'Workflow to Send an Email to a Portal User Who Is a Customer Representative When a Comment Is Added',
 	'LBL_A_WORKFLOW_TO_SEND_AN_EMAIL_WHEN_A_COMMENT_IS_ADDED' => 'Workflow to Send an Email When a Comment Is Added',
 	'LBL_ELIGIBLE_FOR_REDUCED_TAX_RATE' => 'Eligible for Reduced Tax Rate',
+	'LBL_DISPLAY_NAME' => 'Display Name',
+	'LBL_DISPLAY_NAME_PLACEHOLDER' => 'Uses product name if left blank',
 	'LBL_TESTMAIL_SMTP_BODY' => 'Dear <br><br><b>This is a test email sent to verify if the configured SMTP server is working correctly.</b><br>You may delete this email.<br><br>Best regards,<br>F-RevoCRM<br><br>',
 	
 	
@@ -1722,6 +1726,13 @@ $languageStrings = array(
 	'LBL_PLACEHOLDER_SEARCH_AND_ADD' => 'Search and add %s...',
 	'LBL_PLACEHOLDER_SEARCH_TITLE' => 'Search %s',
 	'LBL_PLACEHOLDER_SELECT' => 'Select %s',
+
+	//Custom view default sort translations.
+	'LBL_SORT_CONDITION_LABEL' => 'Sort %s:',
+	'LBL_ASCENDING' => 'Ascending',
+	'LBL_DESCENDING' => 'Descending',
+	'LBL_ADD_SORT_ROW' => 'Add sort condition',
+	'LBL_REMOVE_SORTING' => 'Remove sorting for this column',
 );
 
 $jsLanguageStrings = array(
@@ -2271,6 +2282,14 @@ $jsLanguageStrings = array(
 	'JS_MAIL_DRAFTED_SUCCESSFULLY'=>'Mail drafted successfully',
 
 	//Custom view default sort translations.
+	'LBL_SORT_CONDITION_LABEL' => 'Sort %s:',
+	'JS_MAX_SORT_CONDITIONS_LIMIT' => 'You can specify up to 5 sort conditions maximum.',
+	'JS_PLEASE_SELECT_SORT_ORDER' => 'Please select a sort order (Ascending or Descending).',
+	'JS_DUPLICATE_SORT_FIELD_NOT_ALLOWED' => 'Duplicate fields are not allowed in sort conditions.',
+	'LBL_ASCENDING' => 'Ascending',
+	'LBL_DESCENDING' => 'Descending',
+	'LBL_ADD_SORT_ROW' => 'Add sort condition',
+	'LBL_REMOVE_SORTING' => 'Remove sorting for this column',
 	'JS_PLEASE_REMOVE_ONE_FIELD_FROM_CHOOSE_COLUMNS_LIST_TO_ADD_DEFAULT_SORT_FIELD' => 'Only 16 columns are allowed in a list view including sort columns.',
 	'JS_DEFAULT_SORT_NOTIFY' => 'List is now sorted on default sort column ',
 	'JS_ENABLED' => 'Enabled',

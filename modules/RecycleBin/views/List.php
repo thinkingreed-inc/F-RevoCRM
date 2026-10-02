@@ -18,6 +18,16 @@ class RecycleBin_List_View extends Vtiger_Index_View {
 		if(!$currentUserPriviligesModel->hasModulePermission($moduleModel->getId())) {
 			throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
 		}
+
+		//ごみ箱は sourceModule で表示対象のモジュールを切り替えるため、
+		//RecycleBin 自身だけでなく表示対象モジュール側の権限も検証する
+		$sourceModule = $request->get('sourceModule');
+		if(!empty($sourceModule)) {
+			$sourceModuleModel = Vtiger_Module_Model::getInstance($sourceModule);
+			if(!$sourceModuleModel || !$currentUserPriviligesModel->hasModulePermission($sourceModuleModel->getId())) {
+				throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
+			}
+		}
 	}
 
 	function preProcess(Vtiger_Request $request, $display=true) {
@@ -74,6 +84,15 @@ class RecycleBin_List_View extends Vtiger_Index_View {
 		$pageNumber = $request->get('page');
 		$orderBy = $request->get('orderby');
 		$sortOrder = $request->get('sortorder');
+		// 一覧ヘッダーのソートは複数条件（JSON）で送られるが、本一覧は単一項目のソートのみ対応のため最後に指定された条件を使う
+		$sortConditions = Vtiger_ListView_Model::cleanSortConditions($orderBy, $sortOrder);
+		if (!empty($sortConditions)) {
+			$lastSortCondition = end($sortConditions);
+			$orderBy = $lastSortCondition['field'];
+			$sortOrder = $lastSortCondition['order'];
+		} else {
+			$orderBy = '';
+		}
 		$searchKey = $request->get('search_key');
 		$searchValue = $request->get('search_value');
 		$operator = $request->get('operator');

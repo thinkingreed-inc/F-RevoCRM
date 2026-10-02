@@ -5,8 +5,12 @@ import { passwordFor } from "../../../fixtures/seedSpec";
 import {
   createEventViaModal,
   deleteCalendarEvent,
+  deleteAllEventsBySubject,
   deleteEventViaDetail,
   expectEventDeleted,
+  listEventsBySubject,
+  resolveUserWsId,
+  updateEventLocation,
 } from "../../../utils/calendar";
 
 /**
@@ -196,6 +200,59 @@ test.describe.serial("カレンダー(複数ユーザー): 招待", () => {
       wsId = "";
     } finally {
       if (wsId) await deleteCalendarEvent(wsId);
+    }
+  });
+  test("招待された一般Aが自分のコピーを保存しても、招集者の予定が消えない", async ({
+    page,
+    browser,
+  }) => {
+    // 参加者欄の候補はロールの「担当者として割り当て可能なユーザー」で絞られる。
+    // 一般A(E2E営業1課員)のロールは「同レベル+配下」なので、上位ロールの admin は
+    // 候補に出ない。候補に無い参加者は選択状態を送り返せないため、保存時に
+    // 「参加者から外された」と判定されて招集者の予定ごと削除されていた。
+    test.setTimeout(150000);
+    const subject = `E2Emukeep${generateRandomString(5)}`;
+    const location = `KEEP${generateRandomString(4)}`;
+    try {
+      // admin 作成・一般A を招待 → 本体(admin)と招待コピー(一般A)の 2 件になる
+      await createEventViaModal(page, { subject, invitees: ["1課員"] });
+
+      const repWsId = await resolveUserWsId("e2e_rep_a");
+      const created = await listEventsBySubject(subject, 2);
+      expect(created, "本体 + 招待コピーの 2 件").toHaveLength(2);
+      const copy = created.find((e) => e.assignedUserId === repWsId);
+      expect(copy, "一般A の招待コピーが存在すること").toBeTruthy();
+
+      // 一般A が自分のコピーを普通に編集して保存する
+      const { context, page: repPage } = await loginInIsolatedContext(
+        browser,
+        "e2e_rep_a",
+        passwordFor("e2e_rep_a")
+      );
+      try {
+        await updateEventLocation(repPage, copy!.recordId, location);
+      } finally {
+        await context.close();
+      }
+
+      await expect
+        .poll(
+          async () => {
+            const rows = await listEventsBySubject(subject, undefined, 1);
+            return rows.filter((e) => e.location === location).length;
+          },
+          { timeout: 30000, message: "保存が反映されること" }
+        )
+        .toBeGreaterThan(0);
+
+      const after = await listEventsBySubject(subject, undefined, 1);
+      expect(after, "招集者の予定が削除されていないこと").toHaveLength(2);
+      expect(
+        after.some((e) => e.assignedUserId !== repWsId),
+        "招集者(admin)の予定が残っていること"
+      ).toBe(true);
+    } finally {
+      await deleteAllEventsBySubject(subject);
     }
   });
 });

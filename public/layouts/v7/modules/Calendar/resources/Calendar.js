@@ -1833,7 +1833,8 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		};
 
 		var overlapData = {
-			module: 'Events',
+			// 実モジュールを渡す
+			module: event.module,
 			record: event.id,
 			date_start: event.start.format(dateFormat),
 			time_start: event.start.format(timeFormat),
@@ -1889,7 +1890,8 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		};
 		
 		var overlapData = {
-			module: 'Events',
+			// 実モジュールを渡す
+			module: event.module,
 			record: event.id,
 			date_start: event.start.format(dateFormat),
 			time_start: event.start.format(timeFormat),
@@ -2250,7 +2252,15 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			}
 
 			if(eventObj.description && eventObj.description != '') {
-				popOverHTML += '<div class="calendar-popover-description">' + eventObj.description + '</div>';
+				popOverHTML += '<div class="calendar-popover-description">' + app.vtranslate('LBL_DESCRIPTION') + ': ' + eventObj.description + '</div>';
+			}
+
+			if(eventObj.common_memo && eventObj.common_memo != '') {
+				popOverHTML += '<div class="calendar-popover-common-memo">' + app.vtranslate('Common Memo') + ': ' + eventObj.common_memo + '</div>';
+			}
+
+			if(eventObj.invitees && eventObj.invitees != '') {
+				popOverHTML += '<div class="calendar-popover-invitees">' + eventObj.invitees_field_label + ': ' + eventObj.invitees + '</div>';
 			}
 
 			if(event.creator && event.creator != '' || event.modifiedby && event.modifiedby != '') {
@@ -2462,6 +2472,10 @@ Vtiger.Class("Calendar_Calendar_Js", {
 	},
 	performMouseOverActions: function (event, jsEvent, view) {
 //var currentTarget = jQuery(jsEvent.currentTarget);
+	},
+	// 活動のドラッグ・リサイズ中は吹き出しの表示を抑止する
+	setCalendarDraggingState: function (isDragging) {
+		jQuery('body').toggleClass('calendar-dragging', isDragging);
 	},
 	getCalendarHeight: function (view) {
 		var portion = 0.86;
@@ -2704,6 +2718,18 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			},
 			eventDrop: function (event, delta, revertFunc, jsEvent, ui, view) {
 				thisInstance.updateEventOnDrop(event, delta, revertFunc, jsEvent, ui, view);
+			},
+			eventDragStart: function (event, jsEvent, ui, view) {
+				thisInstance.setCalendarDraggingState(true);
+			},
+			eventDragStop: function (event, jsEvent, ui, view) {
+				thisInstance.setCalendarDraggingState(false);
+			},
+			eventResizeStart: function (event, jsEvent, ui, view) {
+				thisInstance.setCalendarDraggingState(true);
+			},
+			eventResizeStop: function (event, jsEvent, ui, view) {
+				thisInstance.setCalendarDraggingState(false);
 			},
 			select: function (startDate, endDate, jsEvent, view){
 				thisInstance.performDayDragAction(startDate, endDate, jsEvent, view);

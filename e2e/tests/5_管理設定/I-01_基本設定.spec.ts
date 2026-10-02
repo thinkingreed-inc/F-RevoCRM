@@ -1,4 +1,4 @@
-import { test, expect } from "../../fixtures/isolated";
+import { test, expect } from "../../fixtures/privileges";
 import { gotoSettings, saveAndSettle } from "../../utils/settings";
 import { generateRandomString } from "../../utils/util";
 

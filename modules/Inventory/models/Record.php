@@ -658,6 +658,7 @@ class Inventory_Record_Model extends Vtiger_Record_Model {
 			$productData["hdnProductId$i"]	= $productId;
 			$productData["productName$i"]	= $itemRecordModel->getName();
 			$productData["comment$i"]		= $requestData["comment$i"];
+			$productData["displayname$i"]	= $requestData["displayname$i"];
 			$productData["qtyInStock$i"]	= $itemRecordModel->get('qtyinstock');
 			$productData["qty$i"]			= $requestData["qty$i"];
 			$productData["listPrice$i"]		= number_format($requestData["listPrice$i"], $noOfDecimalPlaces, '.', '');

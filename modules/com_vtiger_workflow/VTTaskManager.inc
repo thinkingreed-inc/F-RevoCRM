@@ -244,7 +244,7 @@ class VTTaskType {
 						classpath varchar(255),
 						templatepath varchar(255),
 						modules text(500),
-						sourcemodule varchar(255)) ENGINE=InnoDB DEFAULT CHARSET=utf8",
+						sourcemodule varchar(255))",
 					true);
 		}
 

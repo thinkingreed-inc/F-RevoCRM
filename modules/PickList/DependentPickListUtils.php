@@ -97,7 +97,7 @@ class Vtiger_DependencyPicklist {
 			}
 			//to handle Accent Sensitive search in MySql
 			//reference Links http://dev.mysql.com/doc/refman/5.0/en/charset-convert.html , http://stackoverflow.com/questions/500826/how-to-conduct-an-accent-sensitive-search-in-mysql
-			$checkForExistenceResult = $adb->pquery("SELECT id FROM vtiger_picklist_dependency WHERE tabid=? AND sourcefield=? AND targetfield=? AND sourcevalue=CAST(? AS CHAR CHARACTER SET utf8) COLLATE utf8_bin",
+			$checkForExistenceResult = $adb->pquery("SELECT id FROM vtiger_picklist_dependency WHERE tabid=? AND sourcefield=? AND targetfield=? AND sourcevalue=CAST(? AS CHAR CHARACTER SET utf8mb4) COLLATE utf8mb4_bin",
 					array($tabId, $sourceField, $targetField, $sourceValue));
 			if($adb->num_rows($checkForExistenceResult) > 0) {
 				$dependencyId = $adb->query_result($checkForExistenceResult, 0, 'id');

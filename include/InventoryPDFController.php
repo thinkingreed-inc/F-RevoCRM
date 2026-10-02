@@ -131,6 +131,9 @@ class Vtiger_InventoryPDFController {
 			$totaltaxes = number_format($totaltaxes, $no_of_decimal_places,'.','');
 			$discountPercentage = $productLineItem["discount_percent{$productLineItemIndex}"];
 			$productName = decode_html($productLineItem["productName{$productLineItemIndex}"]);
+			if (!empty($productLineItem["displayname{$productLineItemIndex}"])) {
+				$productName = decode_html($productLineItem["displayname{$productLineItemIndex}"]);
+			}
 			//get the sub product
 			$subProducts = $productLineItem["subProductArray{$productLineItemIndex}"];
 			if($subProducts != '') {
@@ -748,6 +751,9 @@ class Vtiger_InventoryPDFController {
 		foreach($relatedProducts as $key => $product) {
 			$block = $blocktemplate;
 			$product = self::getPDFDisplayValue($product, $cnt);
+			if (!empty($product["displayname{$cnt}"])) {
+				$product["productName{$cnt}"] = $product["displayname{$cnt}"];
+			}
 			foreach($product as $name => $value) {
 				if(is_array($value)) {
 					continue;

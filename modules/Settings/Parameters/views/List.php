@@ -35,6 +35,8 @@ class Settings_Parameters_List_View extends Settings_Vtiger_List_View {
 
 		$cssFileNames = array(
 			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/lib/jquery/perfect-scrollbar/css/perfect-scrollbar.css",
+			// 一覧のアクション列幅など、この画面だけの調整
+			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/modules/Settings/Parameters/resources/css/style.css",
 		);
 		$cssInstances = $this->checkAndConvertCssStyles($cssFileNames);
 		$headerCssInstances = array_merge($headerCssInstances, $cssInstances);

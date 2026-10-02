@@ -216,6 +216,12 @@ class Vtiger_List_View extends Vtiger_Index_View {
 			$listViewModel->deleteParamsSession($listViewSessionKey, array('orderby', 'sortorder'));
 			$orderBy = '';
 			$sortOrder = '';
+			$request->set('orderby', '');
+			$request->set('sortorder', '');
+			if (is_array($orderParams)) {
+				$orderParams['orderby'] = '';
+				$orderParams['sortorder'] = '';
+			}
 		}
 		if(empty($listHeaders) && is_array($orderParams)) {
 			$listHeaders = $orderParams['list_headers'];
@@ -226,28 +232,70 @@ class Vtiger_List_View extends Vtiger_Index_View {
                     $tagParams = $orderParams['tag_params'];
 		}
                 
-		if(empty($orderBy) && empty($searchValue) && empty($pageNumber)) {
-			if($orderParams) {
-				$pageNumber = $orderParams['page'];
-				$orderBy = $orderParams['orderby'];
-				$sortOrder = $orderParams['sortorder'];
-				$searchKey = $orderParams['search_key'];
-				$searchValue = $orderParams['search_value'];
-				$operator = $orderParams['operator'];
-                                if(empty($tagParams)){
-					$tagParams = $orderParams['tag_params'];
-				}
-				if(empty($searchParams)) {
-					$searchParams = $orderParams['search_params']; 
-				}
-
-				if(empty($starFilterMode)) {
-					$starFilterMode = $orderParams['star_filter_mode'];
-				}
+		// ソート・検索・ページ指定が無いリクエストは、セッションに保持した一覧の状態を復元する
+		$isRestoreRequest = empty($orderBy) && empty($searchValue) && empty($pageNumber);
+		if($isRestoreRequest && $orderParams) {
+			$pageNumber = $orderParams['page'];
+			$searchKey = $orderParams['search_key'];
+			$searchValue = $orderParams['search_value'];
+			$operator = $orderParams['operator'];
+			if(empty($tagParams)){
+				$tagParams = $orderParams['tag_params'];
 			}
-		} else if($request->get('nolistcache') != 1) {
+			if(empty($searchParams)) {
+				$searchParams = $orderParams['search_params'];
+			}
+			if(empty($starFilterMode)) {
+				$starFilterMode = $orderParams['star_filter_mode'];
+			}
+		}
+
+		$requestOrderBy = $request->get('orderby');
+		$requestSortOrder = $request->get('sortorder');
+
+		$customViewModel = CustomView_Record_Model::getInstanceById($cvId);
+		$cvSortConditions = ($customViewModel) ? $customViewModel->getSortConditions() : array();
+
+		if (!empty($requestOrderBy)) {
+			// 1. Direct user action on list header column
+			$sortConditions = Vtiger_ListView_Model::cleanSortConditions($requestOrderBy, $requestSortOrder);
+			if (!empty($sortConditions)) {
+				$orderBy = json_encode($sortConditions);
+				$sortOrder = $sortConditions[0]['order'];
+			} else {
+				$orderBy = '';
+				$sortOrder = '';
+			}
+			// デフォルトソートのままページ送りした場合など、デフォルトソートと同じ条件はデフォルトソートとして扱う
+			$isDefaultSort = !empty($sortConditions) && $sortConditions === $cvSortConditions;
+		} else if ($orderParams && !empty($orderParams['orderby']) && empty($orderParams['is_default_sort'])) {
+			// 2. User manual sort state restored from session
+			$sortConditions = Vtiger_ListView_Model::cleanSortConditions($orderParams['orderby'], isset($orderParams['sortorder']) ? $orderParams['sortorder'] : 'ASC');
+			if (!empty($sortConditions)) {
+				$orderBy = json_encode($sortConditions);
+				$sortOrder = $sortConditions[0]['order'];
+			} else {
+				$orderBy = '';
+				$sortOrder = '';
+			}
+			$isDefaultSort = false;
+		} else if (!empty($cvSortConditions)) {
+			// 3. CustomView default sort conditions
+			$sortConditions = $cvSortConditions;
+			// DB の値は HTML エンコード済みのため、正規化した条件から組み立て直す
+			$orderBy = json_encode($sortConditions);
+			$sortOrder = !empty($sortConditions[0]['order']) ? $sortConditions[0]['order'] : 'ASC';
+			$isDefaultSort = true;
+		} else {
+			$sortConditions = array();
+			$orderBy = '';
+			$sortOrder = '';
+			$isDefaultSort = false;
+		}
+
+		if (!$isRestoreRequest && $request->get('nolistcache') != 1) {
 			$params = array('page' => $pageNumber, 'orderby' => $orderBy, 'sortorder' => $sortOrder, 'search_key' => $searchKey,
-				'search_value' => $searchValue, 'operator' => $operator, 'tag_params' => $tagParams,'star_filter_mode'=> $starFilterMode,'search_params' =>$searchParams);
+				'search_value' => $searchValue, 'operator' => $operator, 'tag_params' => $tagParams,'star_filter_mode'=> $starFilterMode,'search_params' =>$searchParams, 'is_default_sort' => $isDefaultSort);
 
 			if(!empty($listHeaders)) {
 				$params['list_headers'] = $listHeaders;
@@ -292,6 +340,22 @@ class Vtiger_List_View extends Vtiger_Index_View {
 			$viewer->assign('OPERATOR',$operator);
 			$viewer->assign('ALPHABET_VALUE',$searchValue);
 		}
+		$rawOrderByString = is_array($orderBy) ? json_encode($orderBy) : $orderBy;
+		$firstSortField = (!empty($sortConditions)) ? $sortConditions[0]['field'] : $rawOrderByString;
+		$viewer->assign('ORDER_BY', $rawOrderByString);
+		$viewer->assign('SORT_CONDITIONS', $sortConditions);
+		$viewer->assign('SORT_ORDER', $sortOrder);
+		$viewer->assign('NEXT_SORT_ORDER', $nextSortOrder);
+		$viewer->assign('SORT_IMAGE', $sortImage);
+		$viewer->assign('FASORT_IMAGE', $faSortImage);
+		if (!$isDefaultSort) {
+			$viewer->assign('COLUMN_NAME', $firstSortField);
+			$viewer->assign('IS_DEFAULT_SORT', false);
+		} else {
+			$viewer->assign('COLUMN_NAME', '');
+			$viewer->assign('IS_DEFAULT_SORT', true);
+		}
+		
 		if(!empty($searchKey) && !empty($searchValue)) {
 			$listViewModel->set('search_key', $searchKey);
 			$listViewModel->set('search_value', $searchValue);
@@ -379,12 +443,21 @@ class Vtiger_List_View extends Vtiger_Index_View {
 		$listViewController = $listViewModel->get('listview_controller');
 		$selectedHeaderFields = $listViewController->getListViewHeaderFields();
 
-		$viewer->assign('ORDER_BY',$orderBy);
-		$viewer->assign('SORT_ORDER',$sortOrder);
-		$viewer->assign('NEXT_SORT_ORDER',$nextSortOrder);
-		$viewer->assign('SORT_IMAGE',$sortImage);
-		$viewer->assign('FASORT_IMAGE',$faSortImage);
-		$viewer->assign('COLUMN_NAME',$orderBy);
+		$rawOrderByString = is_array($orderBy) ? json_encode($orderBy) : $orderBy;
+		$firstSortField = (!empty($sortConditions)) ? $sortConditions[0]['field'] : $rawOrderByString;
+		$viewer->assign('ORDER_BY', $rawOrderByString);
+		$viewer->assign('SORT_CONDITIONS', $sortConditions);
+		$viewer->assign('SORT_ORDER', $sortOrder);
+		$viewer->assign('NEXT_SORT_ORDER', $nextSortOrder);
+		$viewer->assign('SORT_IMAGE', $sortImage);
+		$viewer->assign('FASORT_IMAGE', $faSortImage);
+		if (!$isDefaultSort) {
+			$viewer->assign('COLUMN_NAME', $firstSortField);
+			$viewer->assign('IS_DEFAULT_SORT', false);
+		} else {
+			$viewer->assign('COLUMN_NAME', '');
+			$viewer->assign('IS_DEFAULT_SORT', true);
+		}
 		$viewer->assign('VIEWNAME',$this->viewName);
 
 		$viewer->assign('LISTVIEW_ENTRIES_COUNT',$noOfEntries);

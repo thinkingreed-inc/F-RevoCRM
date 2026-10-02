@@ -1878,10 +1878,19 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
    説明文のみスクロール可能にし、完了・編集等のアイコンは常に表示する。
    モバイル表示では二重スクロール回避のため制限を適用しない */
 @media (min-width: 769px) {
-    .webui-popover .calendar-popover-description {
+    .webui-popover .calendar-popover-description,
+    .webui-popover .calendar-popover-common-memo {
         max-height: 200px;
         overflow-y: auto;
         margin-bottom: 4px;
     }
 }
 
+/* #1562 活動のドラッグ・リサイズ中は吹き出しを隠す。
+   吹き出しはマウスオーバーで表示されるため、操作中も表示され続け、
+   移動先・変更先が隠れて指定できなくなる。
+   Calendar.js が操作中だけ body に calendar-dragging を付けるので、その間は隠す。
+   ライブラリが要素へ直接 display を書き込むため !important で打ち消す */
+body.calendar-dragging .webui-popover {
+    display: none !important;
+}

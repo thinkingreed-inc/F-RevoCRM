@@ -1,0 +1,337 @@
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, Loader2 } from "lucide-react";
+import { ParameterEditForm } from "./ParameterEditForm";
+import { useParameterData } from "./hooks/useParameterData";
+import {
+  ParameterEditProps,
+  ParameterFormState,
+  ParameterSaveRequest,
+} from "./types";
+import { TranslationProvider } from "../../contexts/TranslationContext";
+import { useTranslation } from "@/hooks/useTranslation";
+
+/**
+ * ParameterEdit - システム変数編集ダイアログ
+ *
+ * WebComponentとして使用される。
+ * 外部からisOpen/onOpenChangeを制御し、ダイアログ形式で編集を行う。
+ */
+const ParameterEditInner: React.FC<ParameterEditProps> = ({
+  recordId,
+  isOpen = false,
+  onSave,
+  onCancel,
+  onOpenChange,
+}) => {
+  // 翻訳フック
+  const { t } = useTranslation();
+  // API通信用フック
+  const {
+    data,
+    loading,
+    saving,
+    error,
+    fetchRecord,
+    saveRecord,
+    clearData,
+    clearError,
+  } = useParameterData();
+
+  // フォーム状態
+  const [formState, setFormState] = useState<ParameterFormState>({
+    value: "",
+    secret: false,
+    description: "",
+    error: null,
+  });
+
+  // 値欄が編集されたか。
+  // シークレット変数は GetRecord が値を返さないため、未編集のまま保存すると
+  // 空文字で既存値を上書きしてしまう。未編集なら value を送らず既存値を維持する。
+  const [valueTouched, setValueTouched] = useState(false);
+
+  /**
+   * ダイアログが開かれたらレコードを取得
+   */
+  useEffect(() => {
+    // 初回展開時のref警告とJSONパースエラー対策
+    if (isOpen && recordId) {
+      const id = parseInt(recordId, 10);
+      if (!isNaN(id)) {
+        clearError();
+        fetchRecord(id).then((record) => {
+          if (record) {
+            setValueTouched(false);
+            setFormState({
+              value: record.value ?? "",
+              description: record.description ?? "",
+              secret: record.secret === 1,
+              error: null,
+            });
+          }
+        });
+      }
+    }
+  }, [isOpen, recordId, fetchRecord, clearError]);
+
+  /**
+   * ダイアログを閉じる
+   */
+  const handleClose = useCallback(() => {
+    clearData();
+    setValueTouched(false);
+    setFormState({ value: "", description: "", secret: false, error: null });
+    onOpenChange?.(false);
+    onCancel?.();
+  }, [clearData, onOpenChange, onCancel]);
+
+  /**
+   * 値のバリデーション
+   */
+  const validateValue = useCallback((): boolean => {
+    if (!data) return false;
+
+    // シークレットを解除する場合は値の再入力を必須にする。
+    // 未入力のまま解除できると、秘匿していた値がそのまま画面に出てしまう。
+    if (data.secret === 1 && !formState.secret && formState.value === "") {
+      setFormState((prev: ParameterFormState) => ({
+        ...prev,
+        error: t("LBL_VALUE_REQUIRED"),
+      }));
+      return false;
+    }
+
+    // シークレットのまま値欄を編集していない場合は送信しないため検証不要
+    if (data.secret === 1 && formState.secret && !valueTouched) {
+      return true;
+    }
+
+    // 空値は許可（シークレットOFFでも空文字で保存可能）
+    if (formState.value === "") {
+      return true;
+    }
+
+    // 整数型のバリデーション（値がある場合のみ）
+    if (data.type === "integer") {
+      const num = Number(formState.value);
+      if (isNaN(num) || !Number.isInteger(num)) {
+        setFormState((prev: ParameterFormState) => ({
+          ...prev,
+          error: t("LBL_INTEGER_ERROR"),
+        }));
+        return false;
+      }
+    }
+
+    setFormState((prev: ParameterFormState) => ({ ...prev, error: null }));
+    return true;
+  }, [data, formState.value, formState.secret, valueTouched, t]);
+
+  /**
+   * 保存処理
+   */
+  const handleSave = useCallback(async () => {
+    if (!data || !validateValue()) return;
+
+    const payload: ParameterSaveRequest = {
+      id: data.id,
+      description: formState.description,
+    };
+
+    // boolean はシークレットを設定できないため送らない。
+    // 過去のデータに secret=1 が残っていても、サーバー側が 0 に正規化して解消する。
+    if (data.type !== "boolean") {
+      payload.secret = formState.secret ? 1 : 0;
+    }
+
+    // シークレット変数は元の値を取得できないため、値欄に入力があったときだけ送信する。
+    // 未送信の場合はサーバー側が既存値を維持する。
+    // valueTouched だけで判定すると、入力してから消した場合に空文字を送ってしまい、
+    // 一覧はマスク表示のままで値が壊れたことに気づけない。
+    // ただしシークレットを解除する場合は、必ず新しい値で上書きする
+    // （値が未入力のときは validateValue() が先に止める）。
+    const releasingSecret = data.secret === 1 && !formState.secret;
+    const hasValueInput = valueTouched && formState.value !== "";
+    if (data.secret !== 1 || hasValueInput || releasingSecret) {
+      payload.value = formState.value;
+    }
+
+    const result = await saveRecord(payload);
+
+    if (result.success) {
+      // 送らなかった項目は既存値のままなので、実際に更新した値だけを通知する
+      onSave?.({
+        id: data.id,
+        key: data.key,
+        value: payload.value,
+        description: payload.description,
+      });
+      clearData();
+      setValueTouched(false);
+      setFormState({ value: "", description: "", secret: false, error: null });
+      onOpenChange?.(false);
+    }
+  }, [
+    data,
+    formState,
+    valueTouched,
+    validateValue,
+    saveRecord,
+    onSave,
+    onOpenChange,
+    clearData,
+  ]);
+
+  /**
+   * 値変更ハンドラ
+   */
+  const handleValueChange = useCallback((value: string) => {
+    setValueTouched(true);
+    setFormState((prev: ParameterFormState) => ({
+      ...prev,
+      value,
+      error: null,
+    }));
+  }, []);
+
+  /** 備考変更ハンドラ */
+  const handleDescriptionChange = useCallback((description: string) => {
+    setFormState((prev: ParameterFormState) => ({
+      ...prev,
+      description,
+      error: null,
+    }));
+  }, []);
+
+  /**
+   * シークレット変更ハンドラ
+   */
+  const handleSecretChange = useCallback(
+    (secret: boolean) => {
+      setFormState((prev: ParameterFormState) => {
+        // シークレットを解除する場合は値を入力し直してもらう
+        if (!secret && data?.secret === 1) {
+          return { ...prev, secret, value: "", error: null };
+        }
+        return { ...prev, secret, error: null };
+      });
+    },
+    [data],
+  );
+
+  /**
+   * ダイアログ開閉ハンドラ
+   */
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        handleClose();
+        return;
+      }
+      onOpenChange?.(open);
+    },
+    [handleClose, onOpenChange],
+  );
+
+  return (
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent
+        className="sm:max-w-[600px] p-0 gap-0 overflow-hidden rounded-md border border-[#d6d6d6] shadow-md"
+        closeButtonClassName="absolute top-[14px] right-[14px] text-white transition-all [&_svg]:size-[24px]"
+      >
+        <DialogHeader className="gap-0">
+          <div className="bg-[#596875] text-white px-4 py-2">
+            <DialogTitle asChild>
+              <h4 className="text-white text-lg">{t("LBL_EDIT_MODULE")}</h4>
+            </DialogTitle>
+          </div>
+          <DialogDescription className="sr-only">
+            {t("LBL_EDIT_DESCRIPTION")}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="px-8 py-4">
+          {/* ローディング */}
+          {loading && (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          )}
+
+          {/* エラー表示 */}
+          {error && !loading && (
+            <Alert className="mb-4" variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* フォーム */}
+          {data && !loading && (
+            <ParameterEditForm
+              record={data}
+              value={formState.value}
+              onValueChange={handleValueChange}
+              description={formState.description}
+              onDescriptionChange={handleDescriptionChange}
+              secret={formState.secret}
+              onSecretChange={handleSecretChange}
+              error={formState.error}
+              disabled={saving}
+            />
+          )}
+        </div>
+
+        <DialogFooter className="border-t px-5 py-3">
+          <div className="flex flex-row justify-center gap-4 w-full">
+            <Button
+              type="button"
+              onClick={handleSave}
+              disabled={loading || saving || !data}
+              className="px-6 py-1.5 h-auto text-md font-bold !bg-green-600 hover:!bg-green-700 !text-white"
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin text-white" />
+                  {t("LBL_SAVING")}
+                </>
+              ) : (
+                t("LBL_SAVE")
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="link"
+              onClick={handleClose}
+              disabled={saving}
+              className="px-2.5 py-1.5 h-auto text-md !text-red-600 hover:!text-red-800 hover:no-underline"
+            >
+              {t("LBL_CANCEL")}
+            </Button>
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export const ParameterEdit: React.FC<ParameterEditProps> = (props) => {
+  if (!props.isOpen) {
+    return null; // ダイアログが開いていない場合は何もレンダリングしない
+  }
+  return (
+    <TranslationProvider module="Parameters" parent="Settings">
+      <ParameterEditInner {...props} />
+    </TranslationProvider>
+  );
+};

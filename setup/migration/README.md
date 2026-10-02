@@ -10,12 +10,16 @@ F-RevoCRMのデータベーススキーマやデータの変更を管理する�
 - 重複実行制御（同じマイグレーションの重複実行を防止）
 - 実行状態の追跡（`com_vtiger_migrations`テーブルに記録）
 - トランザクション制御によるデータ整合性の保証
+  - ただし `ALTER TABLE` などの DDL は MySQL が暗黙にコミットするため巻き戻らない。
+    DDL を含むマイグレーションは、失敗しても途中まで適用された状態になることを前提に書くこと
+    （失敗時は `com_vtiger_migrations` に記録されないため、直してから実行し直せる）
 
 ## ディレクトリ構成
 
 ```
 setup/migration/
 ├── FRMigrationClass.php       # マイグレーションの基底クラス
+├── FRMigrationCache.php       # 実行ごとに Vtiger_Cache を空にする処理
 ├── generate_migration.php     # マイグレーション雛形生成スクリプト
 ├── run_migration.php         # マイグレーション実行スクリプト
 ├── README.md                 # このドキュメント
@@ -67,6 +71,34 @@ php setup/migration/run_migration.php setup/migration/scripts/20250825123456_add
 php setup/migration/run_migration.php --all
 ```
 
+## utf8mb4 への変換について（#77）
+
+`setup/migration/scripts/20260917072813_convert_all_tables_to_utf8mb4.php` は、
+データベース全体を utf8mb4 / utf8mb4_general_ci に揃える。
+
+- 実行前にデータベースのバックアップを取ること。`ALTER TABLE` は暗黙のコミットを起こすため巻き戻せない
+- 大きなテーブルを含む場合はメタデータロックがかかるため、メンテナンス時間帯に実行すること
+- MariaDB と MySQL 5.7.7 未満では変換を見送る（インストールやアップグレードを止めないため）。
+  見送った場合も実行記録は残るため、環境を整えたあとに変換するには先に記録を消す。
+
+  ```bash
+  # 実行記録を消す
+  php setup/migration/run_migration.php setup/migration/scripts/20260917072813_convert_all_tables_to_utf8mb4.php -d
+  # そのうえで実行する
+  php setup/migration/run_migration.php setup/migration/scripts/20260917072813_convert_all_tables_to_utf8mb4.php
+  ```
+
+  **見送った環境へ新規インストールした場合、モジュール側のテーブル（`vtiger_modcomments`、
+  `vtiger_projecttask`、`vtiger_wsapp_*` など）は utf8mb3 のままになる**。
+  これらは packages 配下の zip から作られ、変換はこのマイグレーションに任せているため。
+  該当する環境では上の手順で変換するか、手動で `ALTER DATABASE` / `ALTER TABLE ... CONVERT TO` を実行する
+- 途中で中断すると、変換済みのテーブルで TEXT 系の列の型が広がったまま残ることがある
+  （`TEXT` → `MEDIUMTEXT`）。データは失われないが、新規インストールした DB とは型が食い違う
+- latin1 など utf8 系でない文字セットの列を持つテーブルは変換しない。
+  UTF-8 のバイト列がそのまま入っている場合、変換すると文字化けして戻せないため。
+  **対象のテーブルは実行時のログに一覧で出る。2 回目以降は「実行済み」としてスキップされ一覧が出ないので、
+  初回の実行ログを保存し、必要なテーブルは内容を確認したうえで手動で変換すること**
+
 ## マイグレーションクラスの構造
 
 ### 必須メソッド
@@ -98,6 +130,16 @@ php setup/migration/run_migration.php --all
 - 既に実行済みのマイグレーションは自動的にスキップされます
 - テーブルが存在しない場合は自動的に作成されます
 
+## 実行ごとのキャッシュクリア
+
+- 各マイグレーションの `process()` 実行前に `Vtiger_Cache` のキャッシュを空にします（`FRMigrationCache::clear()`）
+- 一括実行は 1 プロセスで複数のスクリプトを続けて動かすため、先に動いたスクリプトが
+  `Vtiger_Module::getInstance()` などで載せたインスタンスを、後のスクリプトがそのまま
+  受け取ってしまうのを防ぐためです
+- クリアの対象は `Vtiger_Cache` だけです。`Vtiger_Functions` や `VTCacheUtils` が持つ
+  静的キャッシュは残るため、モジュールや項目の定義を SQL で直接書き換えるマイグレーションでは、
+  後続スクリプトが古い定義を読む前提で組み立ててください
+
 ## データベーステーブル: com_vtiger_migrations
 
 ```sql
@@ -105,7 +147,7 @@ CREATE TABLE com_vtiger_migrations (
     migration_name VARCHAR(255) PRIMARY KEY,
     executed_at DATETIME NOT NULL,
     INDEX idx_executed_at (executed_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
 ```
 
 ## マイグレーションの例
@@ -120,7 +162,7 @@ public function process() {
         description TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8";
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
     
     $this->query($sql);
     $this->log("Created vtiger_custom_module table");
@@ -141,4 +183,80 @@ public function process() {
     
     $this->log("Updated account priorities and added custom settings");
 }
+```
+
+### 3. システム変数（Settings > システム変数）の追加
+
+システム変数（`vtiger_parameters`）は画面から追加できない（一覧の追加・削除ボタンは
+非表示）。**新しいシステム変数はマイグレーションで投入する。**
+
+`setup/migration/scripts/20260305100000_add_parameters_type_and_secret_columns.php`
+で `type` / `secret` カラムを追加済みのため、新規追加時はこの 2 つも必ず指定する。
+
+| カラム | 内容 |
+|---|---|
+| `key` | 変数名。画面では変更できない |
+| `value` | 値。文字列として保存する（boolean は `'true'` / `'false'`） |
+| `type` | `boolean` / `integer` / `string`。編集画面の入力 UI がこれで切り替わる |
+| `secret` | `1` で一覧がマスク表示になり、編集画面にも値を出さない。`boolean` には設定できない（値が 2 択しかなくマスクしても推測できるため） |
+| `description` | 画面の「備考」に出る説明 |
+
+```php
+public function process() {
+    global $adb;
+
+    $key = 'EXAMPLE_FEATURE_ENABLED';
+
+    // 既に存在する場合は何もしない（マイグレーションは冪等にする）
+    $exists = $adb->pquery("SELECT 1 FROM vtiger_parameters WHERE `key` = ?", array($key));
+    if ($adb->num_rows($exists) > 0) {
+        $this->log("システム変数 {$key} は既に存在します");
+        return;
+    }
+
+    $adb->pquery(
+        "INSERT INTO vtiger_parameters (`key`, `value`, `type`, `secret`, `description`)
+         VALUES (?, ?, ?, ?, ?)",
+        array(
+            $key,
+            'false',
+            'boolean',
+            0,
+            "サンプル機能を有効にするフラグです。\ntrue: 有効\nfalse: 無効",
+        )
+    );
+
+    $this->log("システム変数 {$key} を追加しました");
+}
+```
+
+値を秘匿したい場合（`string` / `integer` のみ）:
+
+```php
+    $adb->pquery(
+        "INSERT INTO vtiger_parameters (`key`, `value`, `type`, `secret`, `description`)
+         VALUES (?, ?, ?, ?, ?)",
+        array(
+            'EXAMPLE_API_TOKEN',
+            '',
+            'string',
+            1,
+            '外部連携用のトークンです。保存後は画面に表示されません。',
+        )
+    );
+```
+
+`secret = 1` の変数は、編集画面でも現在の値が表示されない。シークレットを解除する
+保存には値の再入力が必要になる（未入力のまま解除できると、秘匿していた値をそのまま
+画面に出せてしまうため）。
+
+既存のシステム変数の値を変えるだけなら `UPDATE` でよいが、ユーザーが画面から変更した
+値を上書きしないよう、条件を絞るか初期投入時のみに限定すること。
+
+```php
+    // 例: 既定値のままのレコードだけを新しい既定値へ移行する
+    $adb->pquery(
+        "UPDATE vtiger_parameters SET `value` = ? WHERE `key` = ? AND `value` = ?",
+        array('30', 'USER_LOCK_TIME', '10')
+    );
 ```

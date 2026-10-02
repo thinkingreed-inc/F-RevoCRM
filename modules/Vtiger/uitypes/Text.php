@@ -16,13 +16,86 @@ class Vtiger_Text_UIType extends Vtiger_Base_UIType {
 	 * @return <Object>
 	 */
 	public function getDisplayValue($value, $record=false, $recordInstance = false,$removeTags = false) {
+		// nullでPHP8.1以降の非推奨警告が出ないよう文字列に揃える
+		$value = (string)$value;
 		if(in_array($this->get('field')->getFieldName(),array('signature','commentcontent'))) {
 			return $value;
 		}
                 if($removeTags){
                     $value = strip_tags($value,'<br>');
                 }
-		return nl2br(purifyHtmlEventAttributes($value, true));
+		$value = nl2br(purifyHtmlEventAttributes($value, true));
+		if(!$removeTags) {
+			$value = self::linkifyUrls($value);
+		}
+		return $value;
+	}
+
+	/**
+	 * テキスト中のURLをリンク表示に変換する
+	 * @param <String> $value
+	 * @return <String>
+	 */
+	public static function linkifyUrls($value) {
+		// 文字列以外が渡された場合は変換せずそのまま返す
+		if(!is_string($value)) {
+			return $value;
+		}
+		// URLに含めない和文文字の範囲
+		$cjk = '\x{3000}-\x{30FF}\x{3400}-\x{4DBF}\x{4E00}-\x{9FFF}\x{F900}-\x{FAFF}\x{FF00}-\x{FFEF}\x{20000}-\x{3FFFF}';
+		// URLに使える文字。空白・タグ文字・引用符・和文文字は含めない
+		$urlChar = '[^\s<>"\''.$cjk.']';
+		// 既存のリンク要素とタグを先にマッチさせて読み飛ばし、裸のURLのみリンク化する
+		$pattern = '/<a\b[^>]*>.*?<\/a>'.
+			'|<[^>]*>'.
+			'|(https?:\/\/'.$urlChar.'+)/uis';
+		$result = preg_replace_callback($pattern, function($matches) {
+			if(empty($matches[1])) {
+				return $matches[0];
+			}
+			$url = $matches[1];
+			$tail = '';
+			// 対応する開き括弧があるかを見る閉じ括弧の組
+			$bracketPairs = array(')' => '(', ']' => '[');
+			// 文末記号と対応しない閉じ括弧・角括弧はURLから外して本文側に残す
+			while($url !== '') {
+				$last = substr($url, -1);
+				// 末尾が &amp; や &#039; のようなHTMLエンティティの場合、';' を削ると
+				// エンティティが壊れるためURLの一部として残す
+				if($last === ';' && preg_match('/&(#[0-9]+|#x[0-9a-fA-F]+|[a-zA-Z][a-zA-Z0-9]*);$/', $url)) {
+					break;
+				}
+				$unpaired = isset($bracketPairs[$last]) && substr_count($url, $bracketPairs[$last]) < substr_count($url, $last);
+				if(strpos('.,;:!?', $last) === false && !$unpaired) {
+					break;
+				}
+				$tail = $last.$tail;
+				$url = substr($url, 0, -1);
+			}
+			// 削り込みでスキームだけになった場合はリンク化しない
+			if(!preg_match('/^https?:\/\/./ui', $url)) {
+				return $matches[0];
+			}
+			// 属性値・テキストの双方をエスケープする。渡される値は purifyHtmlEventAttributes()
+			// を通過済みでエンティティが残る場合があるため二重エスケープはしない
+			$escapedUrl = htmlspecialchars($url, ENT_QUOTES, 'UTF-8', false);
+			return '<a class="urlField cursorPointer" href="'.$escapedUrl.'" target="_blank" rel="noopener noreferrer">'.$escapedUrl.'</a>'.$tail;
+		}, $value);
+		// 不正なUTF-8バイト列ではnullが返るため元の値を表示する
+		return $result === null ? $value : $result;
+	}
+
+	/**
+	 * 一覧画面の表示値をリンク表示に変換する
+	 * @param <String> $value
+	 * @return <String>
+	 */
+	public static function linkifyUrlsForList($value) {
+		// 文字数制限で切り詰められた値はURLも切れている可能性があるためリンク化しない
+		if(is_string($value) && substr($value, -3) === '...') {
+			return $value;
+		}
+		return self::linkifyUrls($value);
 	}
     
     /**

@@ -148,6 +148,7 @@ $languageStrings = array(
 	'Modified Time' => '最終更新日時',
 	'Description' => '詳細',
 	'Assigned To'=>'担当',
+	'smcreatorid' => '作成者',
 
 	//Loading Labels
 	'LBL_LOADING' => '読み込み中',
@@ -1244,6 +1245,7 @@ $languageStrings = array(
 	'LBL_MARKET_PLACE' => 'Market Place',
 
 	'LBL_SHARE_THIS_LIST' => 'リストを共有',
+	'LBL_DEFAULT_SORT' => 'デフォルトのソートを設定',
 	'LBL_ADD_USERS_ROLES' => 'ユーザー、役割の追加',
 	'EmailTemplates' => 'メールテンプレート',
 	'LBL_BILLING' => '請求',
@@ -1665,6 +1667,8 @@ $languageStrings = array(
 	'LBL_TASK_SEND_EMAIL_WHEN_COMMENTED' => 'コメントが追加されたときポータルユーザーである顧客担当者にメールを送るワークフロー',
 	'LBL_A_WORKFLOW_TO_SEND_AN_EMAIL_WHEN_A_COMMENT_IS_ADDED' => 'コメントが追加された際にメールを送るワークフロー',
 	'LBL_ELIGIBLE_FOR_REDUCED_TAX_RATE' => '軽減税率対象',
+	'LBL_DISPLAY_NAME' => '表示名称',
+	'LBL_DISPLAY_NAME_PLACEHOLDER' => '未入力の場合は商品名を表示',
 	'LBL_TESTMAIL_SMTP_BODY' => 'さん <br><br><b> これは、設定したSMTPサーバーを介してメールが実際に送信され' .
 			'ているかどうかを確認するために送信されるテストメールです。 </b><br>削除していただいてかまいません。' .
 			'<br><br>よろしくお願いいたします。<br> F-RevoCRM <br><br>',
@@ -1727,6 +1731,13 @@ $languageStrings = array(
 	'LBL_PLACEHOLDER_SEARCH_AND_ADD' => '%sを検索して追加...',
 	'LBL_PLACEHOLDER_SEARCH_TITLE' => '%sを検索',
 	'LBL_PLACEHOLDER_SELECT' => '%sを選択してください',
+
+	//Custom view default sort translations.
+	'LBL_SORT_CONDITION_LABEL' => '第%sソート:',
+	'LBL_ASCENDING' => '昇順',
+	'LBL_DESCENDING' => '降順',
+	'LBL_ADD_SORT_ROW' => 'ソート条件を追加',
+	'LBL_REMOVE_SORTING' => 'この項目のソートを解除',
 );
 
 $jsLanguageStrings = array(
@@ -2277,6 +2288,14 @@ $jsLanguageStrings = array(
 	'JS_MAIL_DRAFTED_SUCCESSFULLY'=>'メールが下書きされました',
 
 	//Custom view default sort translations.
+	'LBL_SORT_CONDITION_LABEL' => '第%sソート:',
+	'JS_MAX_SORT_CONDITIONS_LIMIT' => 'ソート条件は最大5個まで指定できます。',
+	'JS_PLEASE_SELECT_SORT_ORDER' => 'ソート順（昇順・降順）を選択してください。',
+	'JS_DUPLICATE_SORT_FIELD_NOT_ALLOWED' => '同じ項目を複数のソート条件に指定することはできません。',
+	'LBL_ASCENDING' => '昇順',
+	'LBL_DESCENDING' => '降順',
+	'LBL_ADD_SORT_ROW' => 'ソート条件を追加',
+	'LBL_REMOVE_SORTING' => 'この項目のソートを解除',
 	'JS_PLEASE_REMOVE_ONE_FIELD_FROM_CHOOSE_COLUMNS_LIST_TO_ADD_DEFAULT_SORT_FIELD' => 'ソート列を含むリストビューでは、16列のみが許可されます。',
 	'JS_DEFAULT_SORT_NOTIFY' => 'リストがデフォルトのソート列でソートされるようになりました',
 	'JS_ENABLED' => '有効',

@@ -66,7 +66,8 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 		jQuery.extend(formData, optionParam);
 		
 		if (formData.module != "Events") {
-			return Promise.resolve();
+			// 呼び出し側が .fail() を繋ぐため、重複チェックを行わない場合も jQuery Deferred を返す
+			return jQuery.Deferred().resolve().promise();
 		}
 		
 		// formDataから以下のプロパティが存在するか確認して存在する場合はプロパティの値を取得して配列にする
@@ -539,10 +540,12 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 			}
 			m.add(parseInt(minutesToAdd), 'minutes');
 			if ((container.find('[name="time_start"]').data('userChangedDateTime') !== 1) || (container.find('[name="module"]').val()==='Calendar' || container.find('[name="module"]').val()==='Events')) {
-					if(m.format(vtUtils.getMomentDateFormat()) == 'Invalid date') {
-						m.format(vtUtils.getMomentDateFormat()) = '';
+					// 関数の戻り値には代入できないため、いったん変数へ受けてから空文字に置き換える
+					var formattedEndDate = m.format(vtUtils.getMomentDateFormat());
+					if(formattedEndDate == 'Invalid date') {
+						formattedEndDate = '';
 					}
-					endDateElement.val(m.format(vtUtils.getMomentDateFormat()));
+					endDateElement.val(formattedEndDate);
 				}
 			endTimeElement.val(m.format(vtUtils.getMomentTimeFormat()));
 

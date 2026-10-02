@@ -177,7 +177,7 @@ $languageStrings = array(
 	'LBL_OCTOBER' => 'Outubro',
 	'LBL_NOVEMBER' => 'Novembro',
 	'LBL_DECEMBER' => 'Dezembro',
-	'LBL_CLICK_HERE_TO_VIEW' => 'Clique aqui para visualizar',
+	'LBL_CLICK_HERE_TO_VIEW' => 'Clique aqui para visualizar o registro',
 );
 
 $jsLanguageStrings = array(

@@ -29,7 +29,7 @@ if(defined('VTIGER_UPGRADE')) {
 				`scanfrom` VARCHAR(10) DEFAULT 'ALL',
 				`time_zone` VARCHAR(10) DEFAULT NULL,
 				PRIMARY KEY (`scannerid`)
-			  ) ENGINE=InnoDB DEFAULT CHARSET=utf8", true);
+			  )", true);
 	}
 
 	$updateModulesList = array(	'Project'		=> 'packages/vtiger/optional/Projects.zip',

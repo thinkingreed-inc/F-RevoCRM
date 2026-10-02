@@ -82,7 +82,7 @@ class Settings_Webforms_Field_Model extends Vtiger_Field_Model {
 		return $this->getPicklistValues();
 	}
 	
-	public function getDisplayValue($value, $record=false, $recordInstance = false) {
+	public function getDisplayValue($value, $record=false, $recordInstance = false, $removeTags = false) {
 		if ($this->getName() === 'enabled') {
 			$moduleName = 'Settings:Webforms';
 			if ($value) {
@@ -90,7 +90,7 @@ class Settings_Webforms_Field_Model extends Vtiger_Field_Model {
 			}
 			return vtranslate('LBL_INACTIVE', $moduleName);
 		}
-		return parent::getDisplayValue($value);
+		return parent::getDisplayValue($value, false, false, $removeTags);
 	}
     
 	public function getPermissions($accessmode = 'readonly') {

@@ -182,9 +182,11 @@ false : マイグループのみチェック状態を記憶し、他の組織・
 	'LBL_OCTOBER' => '10月',
 	'LBL_NOVEMBER' => '11月',
 	'LBL_DECEMBER' => '12月',
-	'LBL_CLICK_HERE_TO_VIEW' => 'Click here to view',
+	'LBL_CLICK_HERE_TO_VIEW' => '詳細はこちら',
 
 	//F-RevoCRM
+	'Reminder' => 'リマインダー',
+	'Activity Reminder' => 'リマインダー',
 	'Send Reminder' => '事前にメールを送信',
 	'Start Date & Time,Due Date' => '開始日時,終了日',
 	'My Group' => 'マイグループ',
@@ -281,4 +283,6 @@ $jsLanguageStrings = array(
 	'JS_MONTHTITLEFORMAT' => 'YYYY年MM月',
 	'JS_DAYTITLEFORMAT' => 'YYYY年MM月DD日',
 	'JS_WEEKTITLEFORMAT' => 'YYYY年MM月DD日',
+	'LBL_DESCRIPTION' => '詳細内容',
+	'Common Memo' => '共有メモ',
 );
