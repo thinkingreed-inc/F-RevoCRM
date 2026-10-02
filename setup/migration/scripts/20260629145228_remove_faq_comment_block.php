@@ -21,8 +21,15 @@ require_once dirname(__FILE__) . '/../FRMigrationClass.php';
  *
  * 復旧が必要になった場合は、削除した行を次の内容で復元する
  * （ロールバック機構が無いため手作業になる。<blockid> / <fieldid> は採番値）。
+ * vtiger_field はカラムが後から追加されており値の列挙では桁が合わないため、カラム名を明示する。
  *   insert into vtiger_blocks values (<blockid>,15,'LBL_COMMENT_INFORMATION',4,0,0,1,0,0,1,0);
- *   insert into vtiger_field values (15,<fieldid>,'comments','vtiger_faqcomments',1,'19','comments','Add Comment',1,0,'',100,1,<blockid>,1,'V~O',3,null,'BAS',0);
+ *   insert into vtiger_field
+ *     (tabid,fieldid,columnname,tablename,generatedtype,uitype,fieldname,fieldlabel,readonly,presence,
+ *      defaultvalue,maximumlength,sequence,block,displaytype,typeofdata,quickcreate,quickcreatesequence,info_type,masseditable)
+ *     values
+ *     (15,<fieldid>,'comments','vtiger_faqcomments',1,'19','comments','Add Comment',1,0,'',100,1,<blockid>,1,'V~O',3,null,'BAS',0);
+ *   insert into vtiger_def_org_field values (15,<fieldid>,0,0);
+ *   insert into vtiger_profile2field values (1,15,<fieldid>,0,0),(2,15,<fieldid>,0,0),(3,15,<fieldid>,0,0),(4,15,<fieldid>,0,0);
  */
 class Migration20260629145228_RemoveFaqCommentBlock extends FRMigrationClass {
 
