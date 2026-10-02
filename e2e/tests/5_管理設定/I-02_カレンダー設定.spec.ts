@@ -1,4 +1,4 @@
-import { test, expect } from "../../fixtures/isolated";
+import { test, expect } from "../../fixtures/privileges";
 import type { Page } from "@playwright/test";
 import { gotoSettings, saveAndSettle } from "../../utils/settings";
 
