@@ -1,6 +1,7 @@
 import { test as base, expect } from "@playwright/test";
 import { BASE_URL } from "../utils/util";
 import * as path from "path";
+import { withUserPrivilegesLock } from "./userPrivilegesLock";
 
 /**
  * ワーカー単位で独立したログインセッションを与えるフィクスチャ。
@@ -27,19 +28,25 @@ export const test = base.extend<{}, { workerStorageState: string }>({
         `.auth/worker-${workerInfo.workerIndex}.json`
       );
 
-      const page = await browser.newPage({ storageState: undefined });
-      // ログイン画面は外部 CDN 画像を参照するため 'load' 待ちだとオフライン環境で
-      // タイムアウトする。DOM 構築完了で十分(フォームはサーバ描画済み)。
-      await page.goto(BASE_URL, { waitUntil: "domcontentloaded" });
-      await page.fill("id=username", process.env.E2E_USER_NAME || "admin");
-      await page.fill(
-        "id=password",
-        process.env.E2E_USER_PASSWORD || "Admin1234/"
-      );
-      await page.getByRole("button", { name: "ログイン" }).click();
-      await page.waitForURL(`${BASE_URL}index.php**`);
-      await page.context().storageState({ path: fileName });
-      await page.close();
+      // ログイン(modules/Users/Authenticate.php)は admin の
+      // user_privileges_1.php を再生成する。再生成中はファイルが一時的に空になり、
+      // それを読んだ別リクエストが Fatal error になるため、権限ファイルを
+      // 書き換える他の処理と排他する。詳細は fixtures/userPrivilegesLock.ts 参照。
+      await withUserPrivilegesLock(async () => {
+        const page = await browser.newPage({ storageState: undefined });
+        // ログイン画面は外部 CDN 画像を参照するため 'load' 待ちだとオフライン環境で
+        // タイムアウトする。DOM 構築完了で十分(フォームはサーバ描画済み)。
+        await page.goto(BASE_URL, { waitUntil: "domcontentloaded" });
+        await page.fill("id=username", process.env.E2E_USER_NAME || "admin");
+        await page.fill(
+          "id=password",
+          process.env.E2E_USER_PASSWORD || "Admin1234/"
+        );
+        await page.getByRole("button", { name: "ログイン" }).click();
+        await page.waitForURL(`${BASE_URL}index.php**`);
+        await page.context().storageState({ path: fileName });
+        await page.close();
+      });
 
       await use(fileName);
     },

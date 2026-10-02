@@ -8,6 +8,17 @@ import { defineConfig, devices } from '@playwright/test';
 // dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 /**
+ * user_privileges_<id>.php を作り直す管理設定テスト。
+ *
+ * ロール/プロファイル/グループ/ユーザーの更新は所属ユーザー全員分の権限ファイルを
+ * 再生成する。再生成中はファイルが一時的に空になり、それを読んだ別リクエストが
+ * Fatal error で白画面になるため、一般テストとは時間を分けて実行する
+ * (下の 'chrome-privileges' プロジェクト)。
+ * 詳細は fixtures/userPrivilegesLock.ts 参照。
+ */
+const PRIVILEGE_SPECS = /5_管理設定[\\/](C-0[1-5]|I-0[12])_/;
+
+/**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
@@ -63,6 +74,7 @@ export default defineConfig({
     },
     {
       name: 'chrome',
+      testIgnore: PRIVILEGE_SPECS,
       use: {
         ...devices['Desktop Chrome'],
         headless: true,
@@ -73,7 +85,26 @@ export default defineConfig({
       },
       dependencies: ['setup', 'seed'],
     },
-  
+    // 権限ファイルを作り直す管理設定テスト。chrome の完了後に実行して一般テストを
+    // 巻き込まないようにし、テスト同士は fixtures/privileges.ts のロックで直列化する。
+    // ロック待ちの間も実行時間に算入されるため、既定の 30 秒では待ちきれない。
+    // ワーカーのログインもロックを取る(fixtures/isolated.ts)ので、
+    // 他ワーカーのテスト 1 件分を待てる長さにしておく。
+    {
+      name: 'chrome-privileges',
+      testMatch: PRIVILEGE_SPECS,
+      timeout: 120_000,
+      use: {
+        ...devices['Desktop Chrome'],
+        headless: true,
+        launchOptions: {
+          args: [],
+        },
+        storageState: '.auth/user.json',
+      },
+      dependencies: ['setup', 'seed', 'chrome'],
+    },
+
     // {
     //   name: 'firefox',
     //   use: { ...devices['Desktop Firefox'] },
