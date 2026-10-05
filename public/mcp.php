@@ -1,4 +1,13 @@
 <?php
+
+/*+***********************************************************************************
+ * The contents of this file are subject to the Vtiger Public License Version 1.2
+ * ("License"); You may not use this file except in compliance with the License
+ * The Original Code is: frevo-mcp (https://github.com/ratorin/frevo-mcp)
+ * The Initial Developer of the Original Code is ratorin.
+ * Portions created by ratorin are Copyright (C) ratorin.
+ * All Rights Reserved.
+ *************************************************************************************/
 /**
  * F-revo CRM MCP Server Endpoint
  *
@@ -9,7 +18,7 @@
  *   config.inc.php -> Loader -> EntryPoint -> Users
  *
  * URL:
- *   Local:  http://localhost/ct/public/mcp.php
+ *   Local:  http://localhost/<crm-dir>/public/mcp.php
  *   Prod:   https://your-crm.example.com/mcp.php (symlink or copy)
  */
 
@@ -20,7 +29,7 @@ while (ob_get_level()) {
 
 // ── Boot F-revo core ──
 // Note: vendor/autoload.php already loads includes/Loader.php via composer autoload_files
-chdir(dirname(__DIR__));  // Set working directory to ct/
+chdir(dirname(__DIR__));  // Set working directory to the CRM root
 
 require_once 'config.inc.php';
 if (file_exists('config_override.php')) {

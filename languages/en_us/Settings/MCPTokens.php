@@ -1,4 +1,12 @@
 <?php
+/*+***********************************************************************************
+ * The contents of this file are subject to the Vtiger Public License Version 1.2
+ * ("License"); You may not use this file except in compliance with the License
+ * The Original Code is: frevo-mcp (https://github.com/ratorin/frevo-mcp)
+ * The Initial Developer of the Original Code is ratorin.
+ * Portions created by ratorin are Copyright (C) ratorin.
+ * All Rights Reserved.
+ *************************************************************************************/
 /**
  * MCP Token Management - English Language File
  */

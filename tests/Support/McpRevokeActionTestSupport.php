@@ -1,12 +1,13 @@
 <?php
 
-/*+**********************************************************************************
- * The contents of this file are subject to the vtiger CRM Public License Version 1.1
+/*+***********************************************************************************
+ * The contents of this file are subject to the Vtiger Public License Version 1.2
  * ("License"); You may not use this file except in compliance with the License
- * The Original Code is:  frevo-mcp (https://github.com/ratorin/frevo-mcp)
+ * The Original Code is: frevo-mcp (https://github.com/ratorin/frevo-mcp)
  * The Initial Developer of the Original Code is ratorin.
+ * Portions created by ratorin are Copyright (C) ratorin.
  * All Rights Reserved.
- ************************************************************************************/
+ *************************************************************************************/
 
 // PHPUnit テスト環境用: MCP の失効アクション（Users_DeleteMcpTokenAjax_Action /
 // Users_DeleteMcpOAuthAjax_Action）を DB なしで動かすためのスタブ。

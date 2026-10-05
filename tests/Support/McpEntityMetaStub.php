@@ -1,12 +1,13 @@
 <?php
 
-/*+**********************************************************************************
- * The contents of this file are subject to the vtiger CRM Public License Version 1.1
+/*+***********************************************************************************
+ * The contents of this file are subject to the Vtiger Public License Version 1.2
  * ("License"); You may not use this file except in compliance with the License
- * The Original Code is:  frevo-mcp (https://github.com/ratorin/frevo-mcp)
+ * The Original Code is: frevo-mcp (https://github.com/ratorin/frevo-mcp)
  * The Initial Developer of the Original Code is ratorin.
+ * Portions created by ratorin are Copyright (C) ratorin.
  * All Rights Reserved.
- ************************************************************************************/
+ *************************************************************************************/
 
 // PHPUnit テスト環境用: Mcp_CrmTools::getEntityMeta() が返す webservice メタ（EntityMeta）の代替。
 // 実在判定 exists() と実体モジュール判定 getObjectEntityName() だけをメモリ上の表で評価する。

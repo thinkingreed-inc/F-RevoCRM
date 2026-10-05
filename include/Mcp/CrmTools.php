@@ -1,4 +1,13 @@
 <?php
+
+/*+***********************************************************************************
+ * The contents of this file are subject to the Vtiger Public License Version 1.2
+ * ("License"); You may not use this file except in compliance with the License
+ * The Original Code is: frevo-mcp (https://github.com/ratorin/frevo-mcp)
+ * The Initial Developer of the Original Code is ratorin.
+ * Portions created by ratorin are Copyright (C) ratorin.
+ * All Rights Reserved.
+ *************************************************************************************/
 /**
  * MCP CRM Tools - vtws_* based implementations
  *
@@ -53,6 +62,7 @@ class Mcp_CrmTools
 
     /**
      * MCP からの登録・更新・削除を禁止するモジュール（参照は可）。
+     * 単一レコード表・子テーブルは登録が上書き、削除が物理削除になるため対象外とする。
      */
     private const READONLY_MODULES = [
         'Users', 'Groups', 'Services', 'Products',
@@ -322,6 +332,7 @@ class Mcp_CrmTools
 
     /**
      * vtws_describe の結果に Calendar 固有の補正を加えて返す。
+     * 画面と違い webservice 経由では activitytype='Task' が選択肢に無く空文字保存になるため。
      */
     protected function describeModule(string $module): array
     {
@@ -346,6 +357,7 @@ class Mcp_CrmTools
 
     /**
      * カレンダー・メール・活動の取り違えを拒否する。
+     * 読取と保存で判定基準が食い違い、取り違えたまま保存すると項目が落ちるため。
      */
     private function assertActivityTypeMatchesModule(string $module, array $fields): void
     {
@@ -569,7 +581,7 @@ class Mcp_CrmTools
             'label'      => $desc['label'] ?? $module,
             'idPrefix'   => $desc['idPrefix'] ?? '',
             'isEntity'   => $desc['isEntity'] ?? false,
-            'labelFields'=> $desc['labelFields'] ?? '',
+            'labelFields' => $desc['labelFields'] ?? '',
             'fields'     => $fields,
         ];
     }
@@ -778,6 +790,7 @@ class Mcp_CrmTools
 
     /**
      * id パラメータが正の整数であることを確認する。
+     * `<= 0` のみの判定では id=true や "12abc" が (int) キャストにより通過するため、型も含めて検証する。
      *
      * @param mixed  $value     crm_get/crm_update/crm_delete の id 引数
      * @param string $paramName エラーメッセージに出す引数名
