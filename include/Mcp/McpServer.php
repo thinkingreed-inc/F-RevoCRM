@@ -11,7 +11,6 @@
  */
 
 require_once 'include/Mcp/TokenAuth.php';
-require_once 'include/Mcp/AuditLogger.php';
 require_once 'include/Mcp/RateLimiter.php';
 require_once 'include/Mcp/CrmTools.php';
 require_once 'include/Mcp/OAuthHelper.php';
@@ -21,9 +20,6 @@ class Mcp_McpServer
     private const PROTOCOL_VERSION = '2025-03-26';
     private const SERVER_NAME      = 'frevo-crm';
     private const SERVER_VERSION   = '1.0.0';
-
-    /** @var Mcp_AuditLogger */
-    private $audit;
 
     /** @var Mcp_RateLimiter */
     private $rateLimiter;
@@ -38,8 +34,23 @@ class Mcp_McpServer
     {
         $this->rootDir     = rtrim($rootDir, '/\\');
         $this->debug       = $debug;
-        $this->audit       = new Mcp_AuditLogger($this->rootDir . '/logs');
         $this->rateLimiter = new Mcp_RateLimiter($this->rootDir . '/cache');
+    }
+
+    /**
+     * 認証の成否を log4php の SECURITY ロガー（logs/security.log）に記録する。
+     * 独自ログ実装は持たず、認証イベントという用途が合致する既存ロガーに寄せる。値は記録しない。
+     */
+    private function logAuth(string $ip, bool $success, string $detail = ''): void
+    {
+        $log = Logger::getLogger('SECURITY');
+        $status = $success ? 'auth_ok' : 'auth_fail';
+        $msg = "MCP {$status} ip={$ip}" . ($detail !== '' ? " {$detail}" : '');
+        if ($success) {
+            $log->info($msg);
+        } else {
+            $log->warn($msg);
+        }
     }
 
     /**
@@ -59,13 +70,23 @@ class Mcp_McpServer
 
         // ── Rate limiting (before auth) ──
         if (!$this->rateLimiter->check($ip)) {
-            $this->audit->logAuth($ip, false, 'rate_limited');
             $this->sendJsonRpcError(null, -32002, 'Rate limit exceeded (max 20 requests per 10 seconds)', 429);
+            $this->logAuth($ip, false, 'rate_limited');
             return;
         }
 
         // ── Bearer token extraction ──
-        $authHeader  = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+        $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+        if ($authHeader === '' && function_exists('apache_request_headers')) {
+            // mod_php では SetEnvIf/RewriteRule で転送を設定しても、
+            // Authorization が apache_request_headers() 経由でしか取れないことがある。
+            foreach (apache_request_headers() as $headerName => $headerValue) {
+                if (strcasecmp($headerName, 'Authorization') === 0) {
+                    $authHeader = $headerValue;
+                    break;
+                }
+            }
+        }
         $bearerToken = '';
         if (strpos($authHeader, 'Bearer ') === 0) {
             $bearerToken = substr($authHeader, 7);
@@ -101,12 +122,15 @@ class Mcp_McpServer
 
         if ($userId === 0) {
             $reason = ($bearerToken === '') ? 'no_token' : 'invalid_token';
-            $this->audit->logAuth($ip, false, $reason);
+            $this->logAuth($ip, false, $reason);
+            if ($reason === 'invalid_token') {
+                $this->recordMcpLoginErrorHistory($bearerToken);
+            }
             $this->sendOAuthChallenge();
             return;
         }
 
-        $this->audit->logAuth($ip, true, "user={$userId},method={$authMethod}");
+        $this->logAuth($ip, true, "user={$userId},method={$authMethod}");
 
         // ── Set current_user to the token's user ──
         global $current_user;
@@ -134,17 +158,23 @@ class Mcp_McpServer
 
         // ── Dispatch ──
         try {
-            $tools = new Mcp_CrmTools($current_user);
+            $tools = new Mcp_CrmTools($current_user, $ip);
 
             switch ($method) {
                 case 'initialize':
                     $result = $this->handleInitialize($params);
+                    // MCP 接続確立(initialize)を画面ログインと同等にログイン履歴へ残す
+                    // tools/call ごとに記録すると履歴が爆発するため initialize のみ
+                    $this->recordMcpLoginHistory($current_user);
+                    if ($authMethod === 'static_token') {
+                        Mcp_TokenAuth::touchLastUsed($bearerToken);
+                    }
                     break;
                 case 'tools/list':
                     $result = ['tools' => $tools->listTools()];
                     break;
                 case 'tools/call':
-                    $result = $this->handleToolsCall($tools, $params, $ip, $userId);
+                    $result = $this->handleToolsCall($tools, $params);
                     break;
                 case 'ping':
                     $result = ['status' => 'pong'];
@@ -176,12 +206,46 @@ class Mcp_McpServer
     //  Method handlers
     // ================================================================
 
+    /**
+     * MCP 接続時にログイン履歴へ login_type='mcp' で 1 行残す。
+     * 付随処理のため、失敗しても MCP 応答は止めない。
+     */
+    private function recordMcpLoginHistory($currentUser): void
+    {
+        try {
+            $username = '';
+            if (is_object($currentUser)) {
+                $username = $currentUser->column_fields['user_name']
+                    ?? ($currentUser->user_name ?? '');
+            }
+            if ($username === '') {
+                return; // saveLoginHistory は空ユーザー名で false を返すため事前に抜ける
+            }
+            Users_Module_Model::getInstance('Users')->saveLoginHistory($username, false, 'mcp');
+        } catch (\Throwable $e) {
+            error_log('[MCP] loginhistory record failed: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * 認証失敗をログイン履歴へ「Signed in error」として記録する
+     * （画面ログイン失敗時と同じ扱い）。
+     * トークン本体は記録せず、管理画面表示用の接頭辞のみを user_name に設定する。
+     */
+    private function recordMcpLoginErrorHistory(string $bearerToken): void
+    {
+        try {
+            $prefix = substr($bearerToken, 0, strlen(Mcp_TokenAuth::TOKEN_PREFIX) + 4);
+            Users_Module_Model::getInstance('Users')->saveLoginErrorHistory($prefix, false, 'mcp');
+        } catch (\Throwable $e) {
+            error_log('[MCP] loginhistory error record failed: ' . $e->getMessage());
+        }
+    }
+
     private function handleInitialize(array $params): array
     {
-        $clientVersion = $params['protocolVersion'] ?? self::PROTOCOL_VERSION;
-
         return [
-            'protocolVersion' => $clientVersion,
+            'protocolVersion' => self::PROTOCOL_VERSION,
             'serverInfo'      => [
                 'name'    => self::SERVER_NAME,
                 'version' => self::SERVER_VERSION,
@@ -221,7 +285,7 @@ class Mcp_McpServer
         ]);
     }
 
-    private function handleToolsCall(Mcp_CrmTools $tools, array $params, string $ip, int $userId): array
+    private function handleToolsCall(Mcp_CrmTools $tools, array $params): array
     {
         $toolName = $params['name'] ?? '';
         $toolArgs = $params['arguments'] ?? [];
@@ -230,11 +294,8 @@ class Mcp_McpServer
             throw new \InvalidArgumentException('tools/call requires "name" parameter');
         }
 
-        $success  = false;
-        $errorMsg = null;
         try {
-            $result  = $tools->callTool($toolName, $toolArgs);
-            $success = true;
+            $result = $tools->callTool($toolName, $toolArgs);
 
             $text = json_encode($result, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
             return [
@@ -255,8 +316,6 @@ class Mcp_McpServer
                 ],
                 'isError' => true,
             ];
-        } finally {
-            $this->audit->logToolCall($ip, $userId, $toolName, $toolArgs, $success, $errorMsg);
         }
     }
 

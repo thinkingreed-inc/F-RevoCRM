@@ -24,13 +24,17 @@ class Mcp_CrmTools
     /** @var Users */
     private $user;
 
+    /** 接続元 IP（ツール実行ログ用） */
+    private string $clientIp;
+
     /** Max records per search query */
     private const SEARCH_LIMIT_MAX = 100;
     private const SEARCH_LIMIT_DEFAULT = 20;
 
-    public function __construct(Users $user)
+    public function __construct(Users $user, string $clientIp = '-')
     {
         $this->user = $user;
+        $this->clientIp = $clientIp;
     }
 
     // ================================================================
@@ -173,27 +177,101 @@ class Mcp_CrmTools
      */
     public function callTool(string $toolName, array $args)
     {
-        switch ($toolName) {
-            case 'crm_list_modules':
-                return $this->listModules();
-            case 'crm_describe':
-                return $this->describe($args);
-            case 'crm_search':
-                return $this->search($args);
-            case 'crm_get':
-                return $this->get($args);
-            case 'crm_create':
-                return $this->create($args);
-            case 'crm_update':
-                return $this->update($args);
-            case 'crm_delete':
-                return $this->delete($args);
-            case 'crm_list_users':
-                return $this->listUsers();
-            default:
-                throw new \InvalidArgumentException("Unknown tool: {$toolName}");
+        try {
+            switch ($toolName) {
+                case 'crm_list_modules':
+                    $result = $this->listModules();
+                    break;
+                case 'crm_describe':
+                    $result = $this->describe($args);
+                    break;
+                case 'crm_search':
+                    $result = $this->search($args);
+                    break;
+                case 'crm_get':
+                    $result = $this->get($args);
+                    break;
+                case 'crm_create':
+                    $result = $this->create($args);
+                    break;
+                case 'crm_update':
+                    $result = $this->update($args);
+                    break;
+                case 'crm_delete':
+                    $result = $this->delete($args);
+                    break;
+                default:
+                    throw new \InvalidArgumentException("Unknown tool: {$toolName}");
+            }
+        } catch (\Throwable $e) {
+            $this->logToSystemLog($toolName, $args, false, $e->getMessage());
+            throw $e;
+        }
+
+        $this->logToSystemLog($toolName, $args, true, null);
+        return $result;
+    }
+
+    /**
+     * MCP のツール実行を log4php のシステムログ
+     * （logs/vtigercrm.log、rootLogger の設定に従う）へ記録する。
+     * 独自の監査ログ（Mcp_AuditLogger）は、ログローテーションおよび
+     * 日本語文字列の切り詰めに問題があったため廃止した。
+     */
+    private function logToSystemLog(string $toolName, array $args, bool $success, ?string $error): void
+    {
+        try {
+            $log = Logger::getLogger('MCP');
+
+            $userName = $this->user->column_fields['user_name']
+                ?? ($this->user->user_name ?? ('user#' . ($this->user->id ?? '?')));
+            $module = isset($args['module']) ? (string) $args['module'] : '-';
+            $recordId = isset($args['id']) ? (string) $args['id'] : '-';
+
+            $msg = sprintf(
+                'MCP action tool=%s ip=%s user=%s module=%s id=%s%s result=%s',
+                $toolName,
+                $this->clientIp,
+                $userName,
+                $module,
+                $recordId,
+                $this->summarizeArgKeys($args),
+                $success ? 'success' : 'failure'
+            );
+            if (!$success && $error !== null) {
+                $msg .= ' error=' . $error;
+            }
+
+            // 作成・更新・削除は画面操作と同じく info、読み取り系は debug で記録する
+            $isWrite = in_array($toolName, ['crm_create', 'crm_update', 'crm_delete'], true);
+            if ($isWrite) {
+                $log->info($msg);
+            } else {
+                $log->debug($msg);
+            }
+        } catch (\Throwable $ignore) {
+            // ログ出力の失敗で本処理を止めない
         }
     }
+
+    /**
+     * 引数から項目名と件数のみを返す。
+     * 顧客名や電話番号などの値はログに記録しない。
+     */
+    private function summarizeArgKeys(array $args): string
+    {
+        $summary = '';
+        if (isset($args['fields']) && is_array($args['fields']) && $args['fields'] !== array_values($args['fields'])) {
+            $names = array_keys($args['fields']);
+            $summary .= ' fields=' . implode(',', $names) . '(' . count($names) . ')';
+        }
+        if (isset($args['conditions']) && is_array($args['conditions'])) {
+            $names = array_map(static fn ($c) => is_array($c) ? (string) ($c['field'] ?? '?') : '?', $args['conditions']);
+            $summary .= ' conditions=' . implode(',', $names) . '(' . count($names) . ')';
+        }
+        return $summary;
+    }
+
 
     // ================================================================
     //  Tool implementations

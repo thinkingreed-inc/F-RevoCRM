@@ -7,10 +7,13 @@
  */
 class Mcp_TokenAuth
 {
+    /** トークン接頭辞。書式は frevo_pat_ + 64hex */
+    public const TOKEN_PREFIX = 'frevo_pat_';
     /**
      * Authenticate a Bearer token and return the user ID.
      *
      * @param string $bearerToken Raw token from Authorization header
+     * 有効期限内・有効なトークンのみ通す。
      * @return int User ID
      * @throws Exception On invalid/missing/disabled token
      */
@@ -33,6 +36,24 @@ class Mcp_TokenAuth
         }
 
         return (int) $db->query_result($result, 0, 'userid');
+    }
+
+    /**
+     * 最終使用日時を更新する。
+     * 接続確立(initialize)時のみ呼ぶ。tools/call ごとに更新すると同一行への書き込みが集中する。
+     *
+     * @param string $bearerToken Authorization ヘッダの生トークン
+     */
+    public static function touchLastUsed(string $bearerToken): void
+    {
+        if ($bearerToken === '') {
+            return;
+        }
+        $db = PearDatabase::getInstance();
+        $db->pquery(
+            'UPDATE vtiger_mcp_token SET last_used_at = NOW() WHERE token_hash = ?',
+            [hash('sha256', $bearerToken)]
+        );
     }
 
     /**
