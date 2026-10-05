@@ -1,0 +1,28 @@
+<?xml version='1.0'?>
+<module>
+	<exporttime>2026-06-16</exporttime>
+	<name>MCPTokens</name>
+	<label>MCPトークン管理</label>
+	<parent>Settings</parent>
+	<type>extension</type>
+	<version>1.0.0</version>
+	<dependencies>
+		<vtiger_version>7.0.0</vtiger_version>
+		<vtiger_max_version>7.*</vtiger_max_version>
+	</dependencies>
+	<tables>
+		<table>
+			<name>vtiger_mcp_token</name>
+			<sql><![CDATA[CREATE TABLE IF NOT EXISTS `vtiger_mcp_token` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `token_hash` CHAR(64) NOT NULL COMMENT 'SHA-256 hash of the Bearer token',
+  `userid` INT NOT NULL COMMENT 'F-revo user ID (vtiger_users.id)',
+  `label` VARCHAR(100) NOT NULL DEFAULT '' COMMENT 'Human-readable label',
+  `enabled` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '1=active, 0=disabled',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY `idx_token_hash` (`token_hash`),
+  KEY `idx_userid` (`userid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='MCP Bearer token to F-revo user mapping']]></sql>
+		</table>
+	</tables>
+</module>

@@ -1,0 +1,7 @@
+# MCP OAuth エンドポイント専用の CSP 上書き。
+# 親(public/.htaccess)は form-action 'self' のため、同意フォーム送信後の
+# claude.ai へのクロスドメイン302リダイレクトがブロックされる。
+# OAuthフローのため form-action に https://claude.ai を追加する。
+<IfModule mod_headers.c>
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'self'; form-action 'self' https://claude.ai https://*.claude.ai; base-uri 'self'"
+</IfModule>
