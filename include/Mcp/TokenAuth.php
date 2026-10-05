@@ -9,13 +9,23 @@ class Mcp_TokenAuth
 {
     /** トークン接頭辞。書式は frevo_pat_ + 64hex */
     public const TOKEN_PREFIX = 'frevo_pat_';
+
+    /** 発行できる有効期限（日数）。0 = 無期限 */
+    public const ALLOWED_EXPIRES_DAYS = [0, 30, 60, 90];
+
+    /** 有効期限の状態。表示側はこれを見て文言を選ぶ */
+    public const EXPIRY_NONE    = 'none';
+    public const EXPIRY_EXPIRED = 'expired';
+    public const EXPIRY_ACTIVE  = 'active';
+
     /**
      * Authenticate a Bearer token and return the user ID.
      *
-     * @param string $bearerToken Raw token from Authorization header
      * 有効期限内・有効なトークンのみ通す。
+     *
+     * @param string $bearerToken Authorization ヘッダの生トークン
      * @return int User ID
-     * @throws Exception On invalid/missing/disabled token
+     * @throws Exception 無効・失効・期限切れ・不明なトークンのとき
      */
     public static function authenticate(string $bearerToken): int
     {
@@ -26,8 +36,11 @@ class Mcp_TokenAuth
         $hash = hash('sha256', $bearerToken);
         $db = PearDatabase::getInstance();
 
+        // 有効期限を判定に含める（列を足すだけでは期限切れトークンが通ってしまうため）
         $result = $db->pquery(
-            'SELECT userid FROM vtiger_mcp_token WHERE token_hash = ? AND enabled = 1',
+            'SELECT userid FROM vtiger_mcp_token
+             WHERE token_hash = ? AND enabled = 1
+               AND (expires_at IS NULL OR expires_at > NOW())',
             [$hash]
         );
 
@@ -60,21 +73,115 @@ class Mcp_TokenAuth
      * Generate a new token and insert into DB.
      * Returns the raw token (show once to user, never stored in plaintext).
      *
-     * @param int    $userid F-revo user ID
-     * @param string $label  Human-readable label
-     * @return string Raw token (64 hex chars)
+     * @param int      $userid      F-revo user ID
+     * @param string   $label       用途名（識別用ラベル）
+     * @param int|null $expiresDays 有効期限（日数）。null または 0 で無期限
+     * @return string 生トークン（frevo_pat_ + 64hex）
      */
-    public static function generateToken(int $userid, string $label = ''): string
+    public static function generateToken(int $userid, string $label = '', ?int $expiresDays = null): string
     {
-        $raw = bin2hex(random_bytes(32)); // 64 hex chars
+        // 接頭辞込みの文字列を生成し、そのハッシュを保存する
+        $raw = self::TOKEN_PREFIX . bin2hex(random_bytes(32));
         $hash = hash('sha256', $raw);
-        $db = PearDatabase::getInstance();
+        // 接頭辞 + hex 先頭 4 文字を表示用に持つ
+        $prefix = substr($raw, 0, strlen(self::TOKEN_PREFIX) + 4);
 
-        $db->pquery(
-            'INSERT INTO vtiger_mcp_token (token_hash, userid, label, enabled, created_at) VALUES (?, ?, ?, 1, NOW())',
-            [$hash, $userid, $label]
+        // 有効期限は PHP 側で算出して束縛する（NULL = 無期限）
+        $expiresAt = null;
+        if ($expiresDays !== null && $expiresDays > 0) {
+            $expiresAt = date('Y-m-d H:i:s', strtotime('+' . (int) $expiresDays . ' days'));
+        }
+
+        $db = PearDatabase::getInstance();
+        $result = $db->pquery(
+            'INSERT INTO vtiger_mcp_token
+                (token_hash, userid, label, token_prefix, enabled, created_at, expires_at)
+             VALUES (?, ?, ?, ?, 1, NOW(), ?)',
+            [$hash, $userid, $label, $prefix, $expiresAt]
         );
+        if ($result === false) {
+            throw new Exception(vtranslate('LBL_MCP_TOKEN_ISSUE_FAILED', 'Settings:MCPTokens'));
+        }
 
         return $raw;
+    }
+
+    /**
+     * 指定ユーザーのトークン一覧を取得する（新しい順）。
+     *
+     * @param int $userid
+     * @return array<int, array<string, mixed>>
+     */
+    public static function listByUser(int $userid): array
+    {
+        $db = PearDatabase::getInstance();
+        $result = $db->pquery(
+            'SELECT id, label, token_prefix, enabled, created_at, last_used_at, expires_at
+             FROM vtiger_mcp_token WHERE userid = ? ORDER BY created_at DESC',
+            [$userid]
+        );
+        if ($result === false) {
+            throw new Exception(vtranslate('LBL_MCP_TOKEN_LIST_FAILED', 'Settings:MCPTokens'));
+        }
+
+        $rows = [];
+        $num = $db->num_rows($result);
+        for ($i = 0; $i < $num; $i++) {
+            $rows[] = [
+                'id'           => (int) $db->query_result($result, $i, 'id'),
+                'label'        => $db->query_result($result, $i, 'label'),
+                'token_prefix' => $db->query_result($result, $i, 'token_prefix'),
+                'enabled'      => (int) $db->query_result($result, $i, 'enabled'),
+                'created_at'   => $db->query_result($result, $i, 'created_at'),
+                'last_used_at' => $db->query_result($result, $i, 'last_used_at'),
+                'expires_at'   => $db->query_result($result, $i, 'expires_at'),
+            ];
+        }
+        return $rows;
+    }
+
+    /**
+     * 1 件のトークンを取得する（失効時の所有者確認に使う）。
+     *
+     * @param int $id
+     * @return array<string, mixed>|null 見つからなければ null
+     */
+    public static function getById(int $id): ?array
+    {
+        $db = PearDatabase::getInstance();
+        $result = $db->pquery('SELECT id, userid, enabled FROM vtiger_mcp_token WHERE id = ?', [$id]);
+        if (!$result || $db->num_rows($result) === 0) {
+            return null;
+        }
+        return [
+            'id'      => (int) $db->query_result($result, 0, 'id'),
+            'userid'  => (int) $db->query_result($result, 0, 'userid'),
+            'enabled' => (int) $db->query_result($result, 0, 'enabled'),
+        ];
+    }
+
+    /**
+     * トークンを失効させる（物理削除ではなく enabled=0）。
+     *
+     * @param int $id
+     */
+    public static function disable(int $id): void
+    {
+        require_once 'include/Mcp/TokenCommon.php';
+        mcp_disable_token_row('vtiger_mcp_token', $id, vtranslate('LBL_MCP_TOKEN_DISABLE_FAILED', 'Settings:MCPTokens'));
+    }
+
+    /**
+     * 有効期限の状態を返す。管理画面と個人設定画面で同じ判定を使うための共通処理。
+     *
+     * @param string|null $expiresAt DB の expires_at（NULL = 無期限）
+     * @return string self::EXPIRY_NONE / EXPIRY_EXPIRED / EXPIRY_ACTIVE
+     */
+    public static function getExpiryState(?string $expiresAt): string
+    {
+        if (empty($expiresAt) || $expiresAt === '0000-00-00 00:00:00') {
+            return self::EXPIRY_NONE;
+        }
+        return ($expiresAt <= date('Y-m-d H:i:s')) ? self::EXPIRY_EXPIRED : self::EXPIRY_ACTIVE;
     }
 }

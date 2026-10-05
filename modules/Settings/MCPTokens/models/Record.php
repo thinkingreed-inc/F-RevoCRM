@@ -1,4 +1,12 @@
 <?php
+/*+***********************************************************************************
+ * The contents of this file are subject to the Vtiger Public License Version 1.2
+ * ("License"); You may not use this file except in compliance with the License
+ * The Original Code is: frevo-mcp (https://github.com/ratorin/frevo-mcp)
+ * The Initial Developer of the Original Code is ratorin.
+ * Portions created by ratorin are Copyright (C) ratorin.
+ * All Rights Reserved.
+ *************************************************************************************/
 /**
  * MCPトークン管理 - Record Model
  *
@@ -32,14 +40,25 @@ class Settings_MCPTokens_Record_Model extends Settings_Vtiger_Record_Model {
 	public function getDisplayValue($fieldName, $recordId = false) {
 		$fieldValue = $this->get($fieldName);
 
-		if ($fieldName === 'enabled') {
-			return $fieldValue ? vtranslate('LBL_YES', 'Settings:MCPTokens') : vtranslate('LBL_NO', 'Settings:MCPTokens');
-		}
-		if ($fieldName === 'created_at') {
+		if ($fieldName === 'created_at' || $fieldName === 'last_used_at') {
 			if ($fieldValue && $fieldValue !== '0000-00-00 00:00:00') {
 				return Vtiger_Datetime_UIType::getDateTimeValue($fieldValue);
 			}
 			return '---';
+		}
+		if ($fieldName === 'token_prefix') {
+			return $fieldValue ? $fieldValue . '…' : '---';
+		}
+		if ($fieldName === 'expires_at') {
+			require_once 'include/Mcp/TokenAuth.php';
+			switch (Mcp_TokenAuth::getExpiryState($fieldValue)) {
+				case Mcp_TokenAuth::EXPIRY_NONE:
+					return vtranslate('LBL_MCP_EXPIRES_NONE', 'Settings:MCPTokens');
+				case Mcp_TokenAuth::EXPIRY_EXPIRED:
+					return vtranslate('LBL_MCP_EXPIRED', 'Settings:MCPTokens');
+				default:
+					return Vtiger_Datetime_UIType::getDateTimeValue($fieldValue);
+			}
 		}
 		return $fieldValue;
 	}

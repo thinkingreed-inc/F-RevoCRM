@@ -1,4 +1,13 @@
 <?php
+
+/*+***********************************************************************************
+ * The contents of this file are subject to the Vtiger Public License Version 1.2
+ * ("License"); You may not use this file except in compliance with the License
+ * The Original Code is: frevo-mcp (https://github.com/ratorin/frevo-mcp)
+ * The Initial Developer of the Original Code is ratorin.
+ * Portions created by ratorin are Copyright (C) ratorin.
+ * All Rights Reserved.
+ *************************************************************************************/
 /**
  * マイグレーション: create_mcp_tables
  * 生成日時: 20260903180854
@@ -6,10 +15,13 @@
 
 require_once dirname(__FILE__) . '/../FRMigrationClass.php';
 
-class Migration20260903180854_CreateMcpTables extends FRMigrationClass {
-
+class Migration20260903180854_CreateMcpTables extends FRMigrationClass
+{
     /** 設定メニューに登録する項目の翻訳キー */
     private const SETTINGS_FIELD_NAME = 'LBL_MCP_TOKENS';
+
+    /** 配置先の設定ブロック（他の設定） */
+    private const SETTINGS_BLOCK_LABEL = 'LBL_OTHER_SETTINGS';
 
     /**
      * マイグレーションを実行する
@@ -20,7 +32,8 @@ class Migration20260903180854_CreateMcpTables extends FRMigrationClass {
      * run_migration.php で一括実行できるようにし、
      * public 配下にインストーラを露出させないため移設した。
      */
-    public function process() {
+    public function process()
+    {
         $this->createTokenTable();
         $this->createOAuthClientTable();
         $this->createOAuthCodeTable();
@@ -32,7 +45,8 @@ class Migration20260903180854_CreateMcpTables extends FRMigrationClass {
      * 固定 Bearer トークン表
      * トークンは平文で保存せず SHA-256 ハッシュのみを持つ
      */
-    private function createTokenTable() {
+    private function createTokenTable()
+    {
         if ($this->checkTableExists('vtiger_mcp_token')) {
             $this->log('vtiger_mcp_token は既に存在するためスキップしました');
             return;
@@ -53,7 +67,8 @@ class Migration20260903180854_CreateMcpTables extends FRMigrationClass {
     /**
      * OAuth 動的クライアント登録(DCR)で登録されたクライアント
      */
-    private function createOAuthClientTable() {
+    private function createOAuthClientTable()
+    {
         if ($this->checkTableExists('vtiger_mcp_oauth_client')) {
             $this->log('vtiger_mcp_oauth_client は既に存在するためスキップしました');
             return;
@@ -73,7 +88,8 @@ class Migration20260903180854_CreateMcpTables extends FRMigrationClass {
     /**
      * OAuth 認可コード（短命・使い捨て）
      */
-    private function createOAuthCodeTable() {
+    private function createOAuthCodeTable()
+    {
         if ($this->checkTableExists('vtiger_mcp_oauth_code')) {
             $this->log('vtiger_mcp_oauth_code は既に存在するためスキップしました');
             return;
@@ -96,7 +112,8 @@ class Migration20260903180854_CreateMcpTables extends FRMigrationClass {
     /**
      * OAuth アクセス/リフレッシュトークン
      */
-    private function createOAuthTokenTable() {
+    private function createOAuthTokenTable()
+    {
         if ($this->checkTableExists('vtiger_mcp_oauth_token')) {
             $this->log('vtiger_mcp_oauth_token は既に存在するためスキップしました');
             return;
@@ -123,10 +140,11 @@ class Migration20260903180854_CreateMcpTables extends FRMigrationClass {
      * fieldid は本体と同じく getUniqueID() で採番する
      * （MAX(fieldid)+1 は同時実行で衝突しうるため使わない）。
      */
-    private function registerSettingsField() {
+    private function registerSettingsField()
+    {
         $exists = $this->db->pquery(
             'SELECT fieldid FROM vtiger_settings_field WHERE name = ?',
-            array(self::SETTINGS_FIELD_NAME)
+            [self::SETTINGS_FIELD_NAME]
         );
         if ($exists === false) {
             throw new Exception('vtiger_settings_field の存在確認に失敗しました');
@@ -141,7 +159,7 @@ class Migration20260903180854_CreateMcpTables extends FRMigrationClass {
 
         $seqResult = $this->db->pquery(
             'SELECT COALESCE(MAX(sequence), 0) AS maxseq FROM vtiger_settings_field WHERE blockid = ?',
-            array($blockId)
+            [$blockId]
         );
         if ($seqResult === false) {
             throw new Exception('sequence の取得に失敗しました');
@@ -152,49 +170,45 @@ class Migration20260903180854_CreateMcpTables extends FRMigrationClass {
         $insert = $this->db->pquery(
             'INSERT INTO vtiger_settings_field (fieldid, blockid, name, iconpath, description, linkto, sequence, active, pinned)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            array(
+            [
                 $fieldId,
                 $blockId,
                 self::SETTINGS_FIELD_NAME,
                 '',
-                'MCPトークンの発行・一覧・無効化を管理します',
+                'LBL_MCP_TOKENS_DESCRIPTION',
                 'index.php?module=MCPTokens&parent=Settings&view=List',
                 $sequence,
                 0,
                 0,
-            )
+            ]
         );
         if ($insert === false) {
             throw new Exception('vtiger_settings_field への登録に失敗しました');
         }
         $this->log(sprintf(
             '%s を登録しました (fieldid=%d, blockid=%d, sequence=%d)',
-            self::SETTINGS_FIELD_NAME, $fieldId, $blockId, $sequence
+            self::SETTINGS_FIELD_NAME,
+            $fieldId,
+            $blockId,
+            $sequence
         ));
     }
 
     /**
      * 配置先の設定ブロックIDを返す
-     * セキュリティ管理ブロックが無い環境では最後のブロックにフォールバックする
      */
-    private function resolveSettingsBlockId() {
+    private function resolveSettingsBlockId()
+    {
         $result = $this->db->pquery(
             'SELECT blockid FROM vtiger_settings_blocks WHERE label = ? LIMIT 1',
-            array('LBL_SECURITY_MANAGEMENT')
+            [self::SETTINGS_BLOCK_LABEL]
         );
-        if ($result !== false && $this->db->num_rows($result) > 0) {
-            return (int) $this->db->query_result($result, 0, 'blockid');
+        if ($result === false) {
+            throw new Exception('vtiger_settings_blocks の検索に失敗しました');
         }
-
-        $fallback = $this->db->pquery(
-            'SELECT blockid FROM vtiger_settings_blocks ORDER BY sequence DESC LIMIT 1',
-            array()
-        );
-        if ($fallback === false || $this->db->num_rows($fallback) === 0) {
-            throw new Exception('vtiger_settings_blocks に配置先ブロックが見つかりません');
+        if ($this->db->num_rows($result) === 0) {
+            throw new Exception(self::SETTINGS_BLOCK_LABEL . ' ブロックが見つかりません');
         }
-        $blockId = (int) $this->db->query_result($fallback, 0, 'blockid');
-        $this->log('LBL_SECURITY_MANAGEMENT が無いため blockid=' . $blockId . ' を使用します');
-        return $blockId;
+        return (int) $this->db->query_result($result, 0, 'blockid');
     }
 }

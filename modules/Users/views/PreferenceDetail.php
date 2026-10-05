@@ -188,7 +188,39 @@ class Users_PreferenceDetail_View extends Vtiger_Detail_View {
         $runtime_configs = Vtiger_Runtime_Configs::getInstance();
         $password_regex = $runtime_configs->getValidationRegex('password_regex');
         $viewer->assign('PWD_REGEX', $password_regex);
+
+        // MCP トークンブロック用のデータ
+        // 個人設定画面では失効（enabled=0）したトークンは表示しない。
+        // 全ユーザー横断で無効行も見るのは MCPトークン管理画面（Settings）の役割。
+        require_once 'include/Mcp/TokenAuth.php';
+        $mcpTokens = array();
+        foreach (Mcp_TokenAuth::listByUser((int) $recordId) as $mcpToken) {
+            if (empty($mcpToken['enabled'])) {
+                continue;
+            }
+            $mcpToken['expiry_state'] = Mcp_TokenAuth::getExpiryState($mcpToken['expires_at']);
+            $mcpToken['created_at_display'] = $this->getMcpDisplayDateTime($mcpToken['created_at']);
+            $mcpToken['last_used_at_display'] = $this->getMcpDisplayDateTime($mcpToken['last_used_at']);
+            $mcpToken['expires_at_display'] = $this->getMcpDisplayDateTime($mcpToken['expires_at']);
+            $mcpTokens[] = $mcpToken;
+        }
+        global $site_URL;
+        $currentUserModel = Users_Record_Model::getCurrentUserModel();
+        $viewer->assign('MCP_TOKEN_LIST', $mcpTokens);
+        $viewer->assign('MCP_ENDPOINT_URL', rtrim($site_URL, '/') . '/mcp.php');
+        $viewer->assign('MCP_IS_OWN_PAGE', ((int) $currentUserModel->getId() === (int) $recordId));
+
 		return parent::process($request);
+	}
+
+	/**
+	 * MCP ブロックの日時を管理画面（Settings:MCPTokens）と同じユーザー表示形式にする（未設定は空文字）
+	 */
+	private function getMcpDisplayDateTime($dateTime) {
+		if ($dateTime && $dateTime !== '0000-00-00 00:00:00') {
+			return Vtiger_Datetime_UIType::getDateTimeValue($dateTime);
+		}
+		return '';
 	}
 
 	public function getHeaderScripts(Vtiger_Request $request) {
@@ -203,12 +235,26 @@ class Users_PreferenceDetail_View extends Vtiger_Detail_View {
 			'modules.'.$moduleName.'.resources.PreferenceDetail',
 			'modules.'.$moduleName.'.resources.PreferenceEdit',
 			'modules.Settings.Vtiger.resources.Index',
+			'modules.Users.resources.McpToken',
 			"~layouts/v7/lib/jquery/Lightweight-jQuery-In-page-Filtering-Plugin-instaFilta/instafilta.min.js"
 		);
 
 		$jsScriptInstances = $this->checkAndConvertJsScripts($jsFileNames);
 		$headerScriptInstances = array_merge($headerScriptInstances, $jsScriptInstances);
 		return $headerScriptInstances;
+	}
+
+	public function getHeaderCss(Vtiger_Request $request) {
+		$headerCssInstances = parent::getHeaderCss($request);
+
+		$cssFileNames = array(
+			// MCPトークン・連携アプリケーションのブロック
+			"~layouts/".Vtiger_Viewer::getDefaultLayoutName()."/modules/Users/resources/css/McpBlock.css",
+		);
+		$cssInstances = $this->checkAndConvertCssStyles($cssFileNames);
+		$headerCssInstances = array_merge($headerCssInstances, $cssInstances);
+
+		return $headerCssInstances;
 	}
 
 }

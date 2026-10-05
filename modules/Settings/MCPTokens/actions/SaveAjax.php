@@ -1,4 +1,12 @@
 <?php
+/*+***********************************************************************************
+ * The contents of this file are subject to the Vtiger Public License Version 1.2
+ * ("License"); You may not use this file except in compliance with the License
+ * The Original Code is: frevo-mcp (https://github.com/ratorin/frevo-mcp)
+ * The Initial Developer of the Original Code is ratorin.
+ * Portions created by ratorin are Copyright (C) ratorin.
+ * All Rights Reserved.
+ *************************************************************************************/
 /**
  * MCPトークン管理 - 発行Action
  *
@@ -14,22 +22,27 @@ class Settings_MCPTokens_SaveAjax_Action extends Settings_Vtiger_Basic_Action {
 		try {
 			// 管理者権限チェック（Settings配下だがAction側でも明示）
 			$currentUser = Users_Record_Model::getCurrentUserModel();
-			if ($currentUser->get('is_admin') !== 'on') {
-				throw new Exception('管理者権限が必要です');
+			if (!$currentUser->isAdminUser()) {
+				throw new Exception(vtranslate('LBL_MCP_ADMIN_REQUIRED', 'Settings:MCPTokens'));
 			}
 
 			$userid = (int) $request->get('userid');
 			$label  = trim($request->get('label'));
+			$expiresDays = (int) $request->get('expires_days');
 
 			// バリデーション
 			if ($userid <= 0) {
-				throw new Exception('ユーザーを選択してください');
+				throw new Exception(vtranslate('LBL_MCP_SELECT_USER_REQUIRED', 'Settings:MCPTokens'));
 			}
 			if ($label === '') {
-				throw new Exception('ラベルを入力してください');
+				throw new Exception(vtranslate('LBL_MCP_LABEL_REQUIRED', 'Settings:MCPTokens'));
 			}
 			if (mb_strlen($label) > 100) {
-				throw new Exception('ラベルは100文字以内で入力してください');
+				throw new Exception(vtranslate('LBL_MCP_LABEL_TOO_LONG', 'Settings:MCPTokens'));
+			}
+			require_once 'include/Mcp/TokenAuth.php';
+			if (!in_array($expiresDays, Mcp_TokenAuth::ALLOWED_EXPIRES_DAYS, true)) {
+				throw new Exception(vtranslate('LBL_MCP_INVALID_EXPIRES', 'Settings:MCPTokens'));
 			}
 
 			// 指定ユーザーが存在し、Activeかチェック
@@ -39,12 +52,11 @@ class Settings_MCPTokens_SaveAjax_Action extends Settings_Vtiger_Basic_Action {
 				array($userid, 'Active')
 			);
 			if ($db->num_rows($userCheck) === 0) {
-				throw new Exception('指定されたユーザーが見つからないか無効です');
+				throw new Exception(vtranslate('LBL_MCP_USER_NOT_FOUND', 'Settings:MCPTokens'));
 			}
 
 			// トークン発行（平文は戻り値で1度だけ取得）
-			require_once 'include/Mcp/TokenAuth.php';
-			$rawToken = Mcp_TokenAuth::generateToken($userid, $label);
+			$rawToken = Mcp_TokenAuth::generateToken($userid, $label, $expiresDays ?: null);
 
 			// 平文トークンをレスポンスで返す（この1回きり）
 			$response->setResult(array(

@@ -1,4 +1,12 @@
 <?php
+/*+***********************************************************************************
+ * The contents of this file are subject to the Vtiger Public License Version 1.2
+ * ("License"); You may not use this file except in compliance with the License
+ * The Original Code is: frevo-mcp (https://github.com/ratorin/frevo-mcp)
+ * The Initial Developer of the Original Code is ratorin.
+ * Portions created by ratorin are Copyright (C) ratorin.
+ * All Rights Reserved.
+ *************************************************************************************/
 /**
  * MCPトークン管理 - ListView Model
  *
@@ -26,10 +34,18 @@ class Settings_MCPTokens_ListView_Model extends Settings_Vtiger_ListView_Model {
 					CASE WHEN {$userNameSql} <> '' THEN {$userNameSql} ELSE CONCAT('User#', {$module->baseTable}.userid) END AS user_name,
 					{$module->baseTable}.enabled,
 					{$module->baseTable}.created_at,
+					{$module->baseTable}.token_prefix,
+					{$module->baseTable}.last_used_at,
+					{$module->baseTable}.expires_at,
 					{$module->baseTable}.userid
 				FROM {$module->baseTable}
-				LEFT JOIN vtiger_users ON vtiger_users.id = {$module->baseTable}.userid
-				ORDER BY {$module->baseTable}.created_at DESC";
+				LEFT JOIN vtiger_users ON vtiger_users.id = {$module->baseTable}.userid";
+
+		// 並び替え指定がない場合のみ新しい順を既定とする
+		// （指定がある場合は親クラスが ORDER BY を追加する）
+		if (!$this->get('orderby')) {
+			$query .= " ORDER BY {$module->baseTable}.created_at DESC";
+		}
 
 		return $query;
 	}
@@ -50,6 +66,9 @@ class Settings_MCPTokens_ListView_Model extends Settings_Vtiger_ListView_Model {
 		$db = PearDatabase::getInstance();
 		$module = $this->getModule();
 		$result = $db->pquery("SELECT COUNT(*) AS count FROM {$module->baseTable}", array());
+		if ($result === false) {
+			throw new Exception(vtranslate('LBL_MCP_TOKEN_COUNT_FAILED', 'Settings:MCPTokens'));
+		}
 		return $db->query_result($result, 0, 'count');
 	}
 }

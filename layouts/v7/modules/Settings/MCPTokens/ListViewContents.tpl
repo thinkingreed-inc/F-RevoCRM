@@ -1,3 +1,11 @@
+{*+**********************************************************************************
+* The contents of this file are subject to the Vtiger Public License Version 1.2
+* ("License"); You may not use this file except in compliance with the License
+* The Original Code is: frevo-mcp (https://github.com/ratorin/frevo-mcp)
+* The Initial Developer of the Original Code is ratorin.
+* Portions created by ratorin are Copyright (C) ratorin.
+* All Rights Reserved.
+*************************************************************************************}
 {*
 /**
  * MCPトークン管理 - 一覧テンプレート
@@ -41,8 +49,11 @@
 								<th nowrap>ID</th>
 								<th nowrap>{vtranslate('LBL_LABEL', $QUALIFIED_MODULE)}</th>
 								<th nowrap>{vtranslate('LBL_USER', $QUALIFIED_MODULE)}</th>
+								<th nowrap>{vtranslate('LBL_MCP_PREFIX', $QUALIFIED_MODULE)}</th>
 								<th nowrap>{vtranslate('LBL_ENABLED', $QUALIFIED_MODULE)}</th>
 								<th nowrap>{vtranslate('LBL_CREATED_AT', $QUALIFIED_MODULE)}</th>
+								<th nowrap>{vtranslate('LBL_MCP_LAST_USED', $QUALIFIED_MODULE)}</th>
+								<th nowrap>{vtranslate('LBL_MCP_EXPIRES', $QUALIFIED_MODULE)}</th>
 								<th nowrap>{vtranslate('LBL_ACTIONS', $QUALIFIED_MODULE)}</th>
 							</tr>
 						</thead>
@@ -52,6 +63,7 @@
 								<td class="listViewEntryValue">{$LISTVIEW_ENTRY->getId()}</td>
 								<td class="listViewEntryValue">{$LISTVIEW_ENTRY->getDisplayValue('label')}</td>
 								<td class="listViewEntryValue">{$LISTVIEW_ENTRY->getDisplayValue('user_name')}</td>
+								<td class="listViewEntryValue">{$LISTVIEW_ENTRY->getDisplayValue('token_prefix')}</td>
 								<td class="listViewEntryValue">
 									{if $LISTVIEW_ENTRY->get('enabled')}
 										<span class="label label-success">{vtranslate('LBL_ACTIVE', $QUALIFIED_MODULE)}</span>
@@ -60,9 +72,11 @@
 									{/if}
 								</td>
 								<td class="listViewEntryValue">{$LISTVIEW_ENTRY->getDisplayValue('created_at')}</td>
+								<td class="listViewEntryValue">{$LISTVIEW_ENTRY->getDisplayValue('last_used_at')}</td>
+								<td class="listViewEntryValue">{$LISTVIEW_ENTRY->getDisplayValue('expires_at')}</td>
 								<td class="listViewEntryValue">
 									{if $LISTVIEW_ENTRY->get('enabled')}
-										<button class="btn btn-danger btn-xs btnDisableToken" data-id="{$LISTVIEW_ENTRY->getId()}" data-label="{$LISTVIEW_ENTRY->get('label')|escape:'html'}">
+										<button class="btn btn-danger btn-xs btnDisableToken" data-id="{$LISTVIEW_ENTRY->getId()}" data-label="{$LISTVIEW_ENTRY->get('label')}">
 											<i class="fa fa-ban"></i>&nbsp;{vtranslate('LBL_DISABLE', $QUALIFIED_MODULE)}
 										</button>
 									{else}
@@ -115,6 +129,15 @@
 						<input type="text" id="tokenLabel" name="label" class="form-control" maxlength="100"
 							placeholder="{vtranslate('LBL_LABEL_PLACEHOLDER', $QUALIFIED_MODULE)}" required />
 					</div>
+					<div class="form-group">
+						<label for="tokenExpires">{vtranslate('LBL_MCP_EXPIRES', $QUALIFIED_MODULE)}</label>
+						<select id="tokenExpires" name="expires_days" class="form-control">
+							<option value="30">{vtranslate('LBL_MCP_EXPIRES_30', $QUALIFIED_MODULE)}</option>
+							<option value="60">{vtranslate('LBL_MCP_EXPIRES_60', $QUALIFIED_MODULE)}</option>
+							<option value="90" selected>{vtranslate('LBL_MCP_EXPIRES_90', $QUALIFIED_MODULE)}</option>
+							<option value="0">{vtranslate('LBL_MCP_EXPIRES_NONE', $QUALIFIED_MODULE)}</option>
+						</select>
+					</div>
 				</form>
 			</div>
 			<div class="modal-footer">
@@ -156,20 +179,3 @@
 	</div>
 </div>
 {/strip}
-{* List.js のロード(getHeaderScripts)とページコントローラー自動初期化に依存せず、
-   未ロードなら動的に読み込んでから確実にイベントを登録する *}
-<script type="text/javascript">
-jQuery(document).ready(function () {
-	function initMcpTokens() {
-		if (typeof Settings_MCPTokens_List_Js !== 'undefined' && !window.__mcpTokensInit) {
-			window.__mcpTokensInit = true;
-			new Settings_MCPTokens_List_Js().registerEvents();
-		}
-	}
-	if (typeof Settings_MCPTokens_List_Js !== 'undefined') {
-		initMcpTokens();
-	} else {
-		jQuery.getScript('layouts/v7/modules/Settings/MCPTokens/resources/List.js').done(initMcpTokens);
-	}
-});
-</script>

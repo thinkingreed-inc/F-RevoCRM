@@ -48,7 +48,7 @@ if (!function_exists('csrf_check')) {
 
 /**
  * Users_Record_Model のスタブ。
- * API の checkPermission() が使う管理者判定だけを差し替える。
+ * checkPermission() が使う管理者判定と現在ユーザーの id だけを差し替える。
  */
 if (!class_exists('Users_Record_Model')) {
     class Users_Record_Model
@@ -56,6 +56,11 @@ if (!class_exists('Users_Record_Model')) {
         public static function getCurrentUserModel(): self
         {
             return new self();
+        }
+
+        public function getId(): int
+        {
+            return ParametersApiTestState::$userId;
         }
 
         public function isAdminUser(): bool
