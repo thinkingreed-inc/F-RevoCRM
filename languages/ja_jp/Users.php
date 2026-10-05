@@ -386,6 +386,39 @@ false: 強制しない',
 	'LBL_MCP_TOKEN_NOT_FOUND' => '指定されたトークンが見つかりません',
 	'LBL_MCP_TOKEN_PERMISSION_DENIED' => 'このトークンを操作する権限がありません',
 	'LBL_MCP_TOKEN_ISSUE_TITLE' => 'トークンを発行する',
+	// MCP OAuth 認可（同意画面）
+	'LBL_MCP_OAUTH_PAGE_TITLE_CONSENT' => 'アクセス許可 - F-revo CRM',
+	'LBL_MCP_OAUTH_PAGE_TITLE_ERROR' => 'エラー - F-revo CRM',
+	'LBL_MCP_OAUTH_CONSENT_HEADING' => 'アクセス許可の確認',
+	'LBL_MCP_OAUTH_REQUESTS' => 'が以下の操作を要求しています：',
+	'LBL_MCP_OAUTH_LOGIN_USER' => 'ログインユーザー',
+	'LBL_MCP_OAUTH_SCOPE_MCP_READ' => 'CRM データの読み取り・検索',
+	'LBL_MCP_OAUTH_SCOPE_MCP_WRITE' => 'CRM データの作成・更新・削除',
+	'LBL_MCP_OAUTH_SCOPE_MCP_LIMIT' => 'あなたの権限の範囲内での操作のみ',
+	'LBL_MCP_OAUTH_ALLOW' => '許可する',
+	'LBL_MCP_OAUTH_DENY' => '拒否する',
+	'LBL_MCP_OAUTH_CONSENT_HINT' => '許可すると、このアプリケーションがあなたのアカウントで F-revo CRM を操作できるようになります。',
+	'LBL_MCP_OAUTH_WAITING' => '処理中… Claude に戻ります。少々お待ちください',
+	'LBL_MCP_OAUTH_REDIRECTING' => 'リダイレクトしています…',
+	'LBL_MCP_OAUTH_REDIRECT_MANUAL' => '移動しない場合はこちら',
+	'LBL_MCP_OAUTH_ERROR' => 'エラー',
+	'LBL_MCP_OAUTH_ERROR_HINT' => 'ブラウザを閉じて、接続元のアプリケーションからやり直してください。',
+	'LBL_MCP_OAUTH_ERR_CLIENT_ID_MISSING' => 'client_id が指定されていません。',
+	'LBL_MCP_OAUTH_ERR_CLIENT_ID_INVALID' => '無効な client_id です。クライアントが登録されていません。',
+	'LBL_MCP_OAUTH_ERR_REDIRECT_URI_MISSING' => 'redirect_uri が指定されていません。',
+	'LBL_MCP_OAUTH_ERR_REDIRECT_URI_MISMATCH' => 'redirect_uri が登録されたクライアントのものと一致しません。',
+	'LBL_MCP_OAUTH_ERR_CODE_ISSUE_FAILED' => '認可コードの発行に失敗しました。しばらくしてからやり直してください。',
+	'LBL_MCP_OAUTH_ERR_INVALID_DECISION' => '無効な操作です。',
+
+	// MCP OAuth 連携アプリケーション
+	'LBL_MCP_OAUTH_APPS' => '連携中のアプリケーション',
+	'LBL_MCP_OAUTH_APPS_DESC' => '心当たりのないアプリケーションがある場合は連携を解除してください。',
+	'LBL_MCP_OAUTH_APP_NAME' => 'アプリケーション名',
+	'LBL_MCP_OAUTH_CONNECTED_AT' => '連携日時',
+	'LBL_MCP_OAUTH_REVOKE' => '解除',
+	'LBL_MCP_OAUTH_EMPTY' => '連携中のアプリケーションはありません',
+	'LBL_MCP_OAUTH_NOT_FOUND' => '指定された連携が見つかりません',
+	'LBL_MCP_OAUTH_PERMISSION_DENIED' => 'この連携を操作する権限がありません',
 );
 
 $jsLanguageStrings = array(
@@ -431,4 +464,9 @@ $jsLanguageStrings = array(
 	'JS_MCP_TOKEN_NOTE_COPILOT' => 'ワークスペースの .vscode/mcp.json に記述します。',
 	'JS_MCP_TOKEN_NOTE_CURSOR' => '~/.cursor/mcp.json に記述します。',
 	'JS_MCP_TOKEN_NOTE_CLAUDE_DESKTOP' => 'claude_desktop_config.json に記述します。',
+
+	// MCP OAuth 連携アプリケーション (JS)
+	'JS_MCP_OAUTH_REVOKE_CONFIRM' => '「%s」の連携を解除しますか？',
+	'JS_MCP_OAUTH_REVOKED' => '連携を解除しました',
+	'JS_MCP_OAUTH_REVOKE_FAILED' => '連携の解除に失敗しました',
 );

@@ -204,8 +204,17 @@ class Users_PreferenceDetail_View extends Vtiger_Detail_View {
             $mcpToken['expires_at_display'] = $this->getMcpDisplayDateTime($mcpToken['expires_at']);
             $mcpTokens[] = $mcpToken;
         }
+        // OAuth 連携ブロック用のデータ（一覧は有効な行のみ。listByUser が enabled=1 で絞る）
+        require_once 'include/Mcp/OAuthStorage.php';
+        $mcpOAuthApps = array();
+        foreach (Mcp_OAuthStorage::listByUser((int) $recordId) as $mcpOAuthApp) {
+            $mcpOAuthApp['created_at_display'] = $this->getMcpDisplayDateTime($mcpOAuthApp['created_at']);
+            $mcpOAuthApps[] = $mcpOAuthApp;
+        }
+
         global $site_URL;
         $currentUserModel = Users_Record_Model::getCurrentUserModel();
+        $viewer->assign('MCP_OAUTH_APP_LIST', $mcpOAuthApps);
         $viewer->assign('MCP_TOKEN_LIST', $mcpTokens);
         $viewer->assign('MCP_ENDPOINT_URL', rtrim($site_URL, '/') . '/mcp.php');
         $viewer->assign('MCP_IS_OWN_PAGE', ((int) $currentUserModel->getId() === (int) $recordId));

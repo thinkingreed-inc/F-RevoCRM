@@ -226,9 +226,48 @@ Vtiger.Class("Users_McpToken_Js",{},{
 	},
 
 	/**
+	 * 連携解除ボタン（OAuth 連携アプリケーション）
+	 */
+	registerOAuthRevokeEvent : function() {
+		jQuery(document).off('click.mcpOAuthRevoke').on('click.mcpOAuthRevoke', '.mcpOAuthRevokeBtn', function() {
+			var id = jQuery(this).data('id');
+			var label = jQuery(this).data('label');
+			var $row = jQuery(this).closest('tr');
+			var message = app.vtranslate('JS_MCP_OAUTH_REVOKE_CONFIRM').replace('%s', label);
+			// htmlSupportEnable:false でラベルをテキストとして扱う（既定は html() 挿入のため）
+			app.helper.showConfirmationBox({ message: message, htmlSupportEnable: false }).then(function() {
+				app.helper.showProgress();
+				app.request.post({ data: {
+					module: 'Users',
+					action: 'DeleteMcpOAuthAjax',
+					record: id
+				}}).then(function(err, data) {
+					app.helper.hideProgress();
+					if (err === null && data && data.success) {
+						app.helper.showSuccessNotification({ message: app.vtranslate('JS_MCP_OAUTH_REVOKED') });
+						// 解除した行は消す（一覧は有効な連携のみを出す画面のため）
+						$row.remove();
+						if (jQuery('#mcpOAuthListBody tr').length === 0) {
+							jQuery('#mcpOAuthEmpty').show();
+						}
+					} else {
+						var msg = (err && err.message) ? err.message : app.vtranslate('JS_MCP_OAUTH_REVOKE_FAILED');
+						app.helper.showErrorNotification({ message: msg });
+					}
+				});
+			});
+		});
+	},
+
+	/**
 	 * MCP トークンブロックが存在する画面でのみイベントを登録する
 	 */
 	registerEvents : function() {
+		// 連携ブロックはトークンブロックと独立に出るため、別に判定する
+		if (jQuery('.mcp_oauth_block').length > 0) {
+			this.registerOAuthRevokeEvent();
+		}
+
 		var $block = jQuery('.mcp_token_block');
 		if ($block.length === 0) {
 			return;

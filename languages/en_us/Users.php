@@ -376,6 +376,39 @@ If you specify a full-width number, a string that cannot be recognized as a numb
 	'LBL_MCP_TOKEN_NOT_FOUND' => 'The specified token was not found',
 	'LBL_MCP_TOKEN_PERMISSION_DENIED' => 'You do not have permission to operate this token',
 	'LBL_MCP_TOKEN_ISSUE_TITLE' => 'Issue a token',
+	// MCP OAuth authorization (consent screen)
+	'LBL_MCP_OAUTH_PAGE_TITLE_CONSENT' => 'Authorize access - F-revo CRM',
+	'LBL_MCP_OAUTH_PAGE_TITLE_ERROR' => 'Error - F-revo CRM',
+	'LBL_MCP_OAUTH_CONSENT_HEADING' => 'Confirm access',
+	'LBL_MCP_OAUTH_REQUESTS' => 'is requesting the following:',
+	'LBL_MCP_OAUTH_LOGIN_USER' => 'Signed in as',
+	'LBL_MCP_OAUTH_SCOPE_MCP_READ' => 'Read and search CRM data',
+	'LBL_MCP_OAUTH_SCOPE_MCP_WRITE' => 'Create, update and delete CRM data',
+	'LBL_MCP_OAUTH_SCOPE_MCP_LIMIT' => 'Limited to your own permissions',
+	'LBL_MCP_OAUTH_ALLOW' => 'Allow',
+	'LBL_MCP_OAUTH_DENY' => 'Deny',
+	'LBL_MCP_OAUTH_CONSENT_HINT' => 'If you allow this, the application will be able to operate F-revo CRM with your account.',
+	'LBL_MCP_OAUTH_WAITING' => 'Working... returning you to Claude. Please wait',
+	'LBL_MCP_OAUTH_REDIRECTING' => 'Redirecting...',
+	'LBL_MCP_OAUTH_REDIRECT_MANUAL' => 'Click here if you are not redirected',
+	'LBL_MCP_OAUTH_ERROR' => 'Error',
+	'LBL_MCP_OAUTH_ERROR_HINT' => 'Please close this browser window and start again from the application you connected from.',
+	'LBL_MCP_OAUTH_ERR_CLIENT_ID_MISSING' => 'client_id is missing.',
+	'LBL_MCP_OAUTH_ERR_CLIENT_ID_INVALID' => 'Invalid client_id. The client is not registered.',
+	'LBL_MCP_OAUTH_ERR_REDIRECT_URI_MISSING' => 'redirect_uri is missing.',
+	'LBL_MCP_OAUTH_ERR_REDIRECT_URI_MISMATCH' => 'redirect_uri does not match the one registered for this client.',
+	'LBL_MCP_OAUTH_ERR_CODE_ISSUE_FAILED' => 'Failed to issue the authorization code. Please try again later.',
+	'LBL_MCP_OAUTH_ERR_INVALID_DECISION' => 'Invalid operation.',
+
+	// MCP OAuth connected applications
+	'LBL_MCP_OAUTH_APPS' => 'Connected applications',
+	'LBL_MCP_OAUTH_APPS_DESC' => 'If you see any applications you do not recognize, revoke their access below.',
+	'LBL_MCP_OAUTH_APP_NAME' => 'Application',
+	'LBL_MCP_OAUTH_CONNECTED_AT' => 'Connected',
+	'LBL_MCP_OAUTH_REVOKE' => 'Revoke',
+	'LBL_MCP_OAUTH_EMPTY' => 'No connected applications',
+	'LBL_MCP_OAUTH_NOT_FOUND' => 'The connection was not found',
+	'LBL_MCP_OAUTH_PERMISSION_DENIED' => 'You do not have permission to manage this connection',
 );
 
 $jsLanguageStrings = array(
@@ -420,4 +453,9 @@ $jsLanguageStrings = array(
 	'JS_MCP_TOKEN_NOTE_COPILOT' => 'Add this to .vscode/mcp.json in your workspace.',
 	'JS_MCP_TOKEN_NOTE_CURSOR' => 'Add this to ~/.cursor/mcp.json.',
 	'JS_MCP_TOKEN_NOTE_CLAUDE_DESKTOP' => 'Add this to claude_desktop_config.json.',
+
+	// MCP OAuth connected applications (JS)
+	'JS_MCP_OAUTH_REVOKE_CONFIRM' => 'Revoke access for "%s"?',
+	'JS_MCP_OAUTH_REVOKED' => 'Access revoked',
+	'JS_MCP_OAUTH_REVOKE_FAILED' => 'Failed to revoke access',
 );
