@@ -27,4 +27,13 @@ $languageStrings = array(
 	'LBL_COPY'               => 'コピー',
 	'LBL_SAVED_AND_CLOSE'    => '保管済み・閉じる',
 	'LBL_NO_TOKENS_FOUND'    => 'MCPトークンがありません',
+	'LBL_SETUP_PARAMETER_MESSAGE_MCP_RATE_LIMIT_WINDOW' => 'MCP のレート制限を数える時間の幅（秒）です。
+設定は半角の正の整数値で行ってください。
+正の整数以外（小数・0 以下・数値でない文字列）を指定した場合は既定値（10 秒）が使われます。
+変更した値は次のリクエストから反映されます。',
+	'LBL_SETUP_PARAMETER_MESSAGE_MCP_RATE_LIMIT_MAX' => 'MCP_RATE_LIMIT_WINDOW の時間内に許可するリクエスト数の上限です。
+認証前（認証に失敗したリクエストとクライアント登録）は接続元 IP 単位、認証後は利用者単位で数えます。
+設定は半角の正の整数値で行ってください。
+正の整数以外（小数・0 以下・数値でない文字列）を指定した場合は既定値（20 回）が使われます。
+変更した値は次のリクエストから反映されます。',
 );

@@ -30,11 +30,40 @@ class Mcp_McpServer
     /** @var string */
     private $rootDir;
 
+    /** @var int */
+    private $rateWindow;
+
+    /** @var int */
+    private $rateMax;
+
     public function __construct(string $rootDir, bool $debug = false)
     {
         $this->rootDir     = rtrim($rootDir, '/\\');
         $this->debug       = $debug;
-        $this->rateLimiter = new Mcp_RateLimiter($this->rootDir . '/cache');
+        $this->rateWindow  = $this->rateLimitParameter('MCP_RATE_LIMIT_WINDOW', Mcp_RateLimiter::DEFAULT_WINDOW_SEC);
+        $this->rateMax     = $this->rateLimitParameter('MCP_RATE_LIMIT_MAX', Mcp_RateLimiter::DEFAULT_MAX_REQUESTS);
+        $this->rateLimiter = new Mcp_RateLimiter($this->rootDir . '/cache', $this->rateWindow, $this->rateMax);
+    }
+
+    /**
+     * レート制限値をシステム変数から取得する。
+     * 未設定または不正な値の場合は既定値を使用する。
+     */
+    private function rateLimitParameter(string $key, int $default): int
+    {
+        return Mcp_RateLimiter::parseLimitValue(Settings_Parameters_Record_Model::getParameterValue($key), $default);
+    }
+
+    /**
+     * 実際のレート制限値を使用して超過メッセージを生成する。
+     */
+    private function rateLimitMessage(): string
+    {
+        return sprintf(
+            'Rate limit exceeded (max %d requests per %d seconds)',
+            $this->rateMax,
+            $this->rateWindow
+        );
     }
 
     /**
@@ -69,9 +98,9 @@ class Mcp_McpServer
         $ip = $this->getClientIp();
 
         // ── Rate limiting (before auth) ──
-        if (!$this->rateLimiter->check($ip)) {
-            $this->sendJsonRpcError(null, -32002, 'Rate limit exceeded (max 20 requests per 10 seconds)', 429);
+        if ($this->rateLimiter->isLimited($ip)) {
             $this->logAuth($ip, false, 'rate_limited');
+            $this->sendJsonRpcError(null, -32002, $this->rateLimitMessage(), 429);
             return;
         }
 
@@ -123,10 +152,19 @@ class Mcp_McpServer
         if ($userId === 0) {
             $reason = ($bearerToken === '') ? 'no_token' : 'invalid_token';
             $this->logAuth($ip, false, $reason);
+            // 認証失敗のみ接続元 IP の枠に計数する
+            $this->rateLimiter->check($ip);
             if ($reason === 'invalid_token') {
                 $this->recordMcpLoginErrorHistory($bearerToken);
             }
             $this->sendOAuthChallenge();
+            return;
+        }
+
+        // 認証前は接続元 IP 単位、認証後はユーザー単位でカウントする
+        if (!$this->rateLimiter->check('user:' . $userId)) {
+            $this->logAuth($ip, false, "rate_limited,user={$userId}");
+            $this->sendJsonRpcError(null, -32002, $this->rateLimitMessage(), 429);
             return;
         }
 

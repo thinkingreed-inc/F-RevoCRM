@@ -27,4 +27,11 @@ $languageStrings = array(
 	'LBL_COPY'               => 'Copy',
 	'LBL_SAVED_AND_CLOSE'    => 'Saved & Close',
 	'LBL_NO_TOKENS_FOUND'    => 'No MCP tokens found',
+	'LBL_SETUP_PARAMETER_MESSAGE_MCP_RATE_LIMIT_WINDOW' => 'The length of the MCP rate limit window in seconds.
+Use a positive integer. Anything else (decimals, 0 or less, non-numeric text) falls back to the default (10 seconds).
+A changed value takes effect from the next request.',
+	'LBL_SETUP_PARAMETER_MESSAGE_MCP_RATE_LIMIT_MAX' => 'The maximum number of requests allowed within MCP_RATE_LIMIT_WINDOW.
+Counted per source IP before authentication (failed authentication attempts and client registration) and per user after authentication.
+Use a positive integer. Anything else (decimals, 0 or less, non-numeric text) falls back to the default (20 requests).
+A changed value takes effect from the next request.',
 );
