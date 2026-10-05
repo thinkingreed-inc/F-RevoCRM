@@ -314,12 +314,15 @@ class Mcp_McpServer
             '- 関連付けは「参照フィールド」に相手レコードの数値ID(crmid)を入れて行う。例: 連絡先や案件の取引先紐付けは account_id、担当者は assigned_user_id。',
             '- どのフィールドが参照型かは crm_describe の結果で type が "reference" または "owner" のフィールドを見る。"refersTo" にどのモジュールを参照できるかが載っている。',
             '- 値は crm_search/crm_get で得た相手レコードの crmid(数値) をそのまま渡せばよい(内部で vtiger形式に変換される)。',
-            '- 担当者(assigned_user_id)の候補は crm_list_users で取得できる。',
+            '- 参照項目の値は crmid(数値)でも crm_get の結果にある <項目名>_raw の値(例: "13x42")でもよく、いずれも参照先レコードの実在を確認する。',
+            '- 担当者(assigned_user_id)は多くのモジュールで必須。省略するとエラーになり、自動補完はされない。',
+            '- 認証ユーザー自身を担当者にする場合も明示的に指定する。使う ID は必須項目不足エラーの文面に含まれる。',
             '',
             '注意:',
             '- IDはツール入出力では module名 + crmid(数値) を使う。',
             '- crm_delete は物理削除でなくゴミ箱(論理削除)。CRM画面から復元可能。',
             '- 作成・更新・削除は変更履歴(modtracker)に自動記録される。',
+            '- crm_list_modules で readOnly が true のモジュールは参照のみ可。crm_create / crm_update / crm_delete は拒否される。',
         ]);
     }
 
