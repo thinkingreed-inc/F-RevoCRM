@@ -25,7 +25,7 @@
 <input type='hidden' value="{$PAGING_MODEL->getPageLimit()}" id='pageLimit'>
 <input type="hidden" value="{$LISTVIEW_ENTRIES_COUNT}" id="noOfEntries">
 {* ページ送りでも絞り込みを保つため、List.js がこの値を毎回のリクエストに載せる *}
-<input type="hidden" id="mcpOAuthFilterUserName" value="{$FILTER_USER_NAME}">
+<input type="hidden" id="mcpOAuthFilterUserName" value="{$FILTER_USER_NAME|escape}">
 
 <div class="col-sm-12 col-xs-12">
 	<div id="listview-actions" class="listview-actions-container">
@@ -35,7 +35,7 @@
 				<div class="form-inline">
 					<div class="form-group">
 						<label for="mcpOAuthUserFilter">{vtranslate('LBL_MCP_OAUTH_FILTER_USER', $QUALIFIED_MODULE)}</label>&nbsp;
-						<input type="text" class="form-control" id="mcpOAuthUserFilter" value="{$FILTER_USER_NAME}">
+						<input type="text" class="form-control" id="mcpOAuthUserFilter" value="{$FILTER_USER_NAME|escape}">
 					</div>
 					&nbsp;
 					<button type="button" class="btn btn-success" id="mcpOAuthSearchBtn">
