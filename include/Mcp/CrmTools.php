@@ -627,6 +627,7 @@ class Mcp_CrmTools
         // Build WHERE clause with validated fields and escaped values
         $whereParts = [];
         $allowedOps = ['=', '!=', '<', '>', '<=', '>=', 'like'];
+        $idFieldModules = empty($conditions) ? [] : $this->getSearchIdFieldModules($module);
         foreach ($conditions as $cond) {
             $field = $cond['field'] ?? '';
             $op    = $cond['operator'] ?? '=';
@@ -637,6 +638,9 @@ class Mcp_CrmTools
             }
             if (!in_array($op, $allowedOps, true)) {
                 throw new \InvalidArgumentException("Invalid operator: {$op}");
+            }
+            if (array_key_exists($field, $idFieldModules)) {
+                $value = $this->toSearchIdValue($field, $value, $idFieldModules[$field]);
             }
 
             // VTQL値エスケープ: VTQLのリテラルはシングルクオート二重化('')が正(バックスラッシュは
@@ -654,7 +658,7 @@ class Mcp_CrmTools
         }
         $query .= " LIMIT {$limit};";
 
-        $records = vtws_query($query, $this->user);
+        $records = $this->runQuery($query);
 
         // Convert webservice IDs to crmid integers in results
         $converted = [];
@@ -667,6 +671,15 @@ class Mcp_CrmTools
             'count'   => count($converted),
             'records' => $converted,
         ];
+    }
+
+    /**
+     * 組み立てた VTQL を実行する。テストで実行せずに VTQL を確認できるよう分ける。
+     * @return array<int, array<string, mixed>>
+     */
+    protected function runQuery(string $query): array
+    {
+        return vtws_query($query, $this->user);
     }
 
     /**
@@ -927,6 +940,46 @@ class Mcp_CrmTools
             }
         }
         return $names;
+    }
+
+    /**
+     * VTQL が値の引用符を外して SQL に埋め込む項目（id・参照・担当者）と、crmid に付ける接頭辞のモジュールを返す。
+     * @return array<string, string|null> 項目名 => 接頭辞のモジュール（参照先が無ければ null）
+     */
+    private function getSearchIdFieldModules(string $module): array
+    {
+        $fieldModules = ['id' => $module];
+        $desc = $this->describeModule($module);
+        foreach ($desc['fields'] ?? [] as $f) {
+            $type = $f['type']['name'] ?? '';
+            if ($type === 'owner') {
+                $fieldModules[$f['name']] = 'Users';
+            } elseif ($type === 'reference') {
+                $fieldModules[$f['name']] = $f['type']['refersTo'][0] ?? null;
+            }
+        }
+        return $fieldModules;
+    }
+
+    /**
+     * id・参照・担当者の検索値を webservice ID にそろえる。crmid と webservice ID 以外は拒否する。
+     * VTQL は "x" の後ろの crmid だけを使うため、接頭辞は参照先の先頭モジュールでよい。
+     * @param mixed $value
+     */
+    private function toSearchIdValue(string $field, $value, ?string $prefixModule): string
+    {
+        if (is_string($value) && preg_match('/^\d+x\d+$/', $value) === 1) {
+            return $value;
+        }
+        try {
+            $crmid = $this->assertCrmId($value, $field);
+        } catch (\InvalidArgumentException $e) {
+            throw new \InvalidArgumentException("{$field} must be a crmid or a webservice ID (e.g. 12x34)");
+        }
+        if ($prefixModule === null) {
+            throw new \InvalidArgumentException("{$field} must be a webservice ID (e.g. 12x34)");
+        }
+        return vtws_getId($this->getEntityMeta($prefixModule)->getEntityId(), $crmid);
     }
 
     /**
