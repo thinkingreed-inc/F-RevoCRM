@@ -412,6 +412,10 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				function (start, end, timezone, render) {
 					thisInstance.getCalendarViewContainer().fullCalendar('removeEvents');
 					var activeFeeds = jQuery('input[data-calendar-feed]:checked');
+					// 表示中のフィードはここで一括取得し直すため、応答待ちの個別取得の応答は反映しない
+					activeFeeds.each(function () {
+						thisInstance._startFeedRequest(jQuery(this));
+					});
 					var activeFeedsRequestParams = {};
 					activeFeeds.each(function () {
 						var feedCheckbox = jQuery(this);
@@ -522,7 +526,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				}
 				// 応答待ちの間にチェックが外された場合は、予定を追加しない
 				if (feedCheckbox.first().is(':checked')) {
-					thisInstance.getCalendarViewContainer().fullCalendar('addEventSource', events);
+					thisInstance.getCalendarViewContainer().fullCalendar('renderEvents', events);
 				}
 				feedCheckbox.removeAttr('disabled');
 			}, function (e) {
@@ -1798,7 +1802,7 @@ Vtiger.Class("Calendar_Calendar_Js", {
 				thisInstance.removeEvents(feedCheckbox);
 				// 応答待ちの間にチェックが外された場合は、予定を追加しない
 				if (feedCheckbox.first().is(':checked')) {
-					thisInstance.getCalendarViewContainer().fullCalendar('addEventSource', events);
+					thisInstance.getCalendarViewContainer().fullCalendar('renderEvents', events);
 				}
 				feedCheckbox.removeAttr('disabled');
 			}, function (e) {
