@@ -953,6 +953,7 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
                 onFolderCreate={handleFolderCreate}
                 onFolderEdit={handleFolderEdit}
                 onFolderDelete={handleFolderDelete}
+                fillWidth
               />
             </div>
           </>
