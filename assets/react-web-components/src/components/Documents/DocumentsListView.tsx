@@ -74,6 +74,37 @@ function complianceStatusIcon(
   return null;
 }
 
+/**
+ * 一覧の列幅(px)。title だけは幅を固定せず残りを使い、TITLE_MIN_WIDTH を下限にする。
+ *
+ * フォルダのように列が並ぶ表現のため、画面が狭いときに列を押し潰して折り返すのではなく、
+ * 各列の幅を保ったまま横スクロールさせる。収まらない文字列は省略表示(…)にする。
+ */
+const COLUMN_WIDTHS = {
+  select: 36,
+  star: 32,
+  icon: 40,
+  filetype: 100,
+  folder: 110,
+  assigned: 110,
+  modified: 100,
+  filesize: 100,
+  compliance: 48,
+  category: 80,
+  deadline: 84,
+  note: 140,
+} as const;
+const TITLE_MIN_WIDTH = 200;
+const TABLE_MIN_WIDTH =
+  Object.values(COLUMN_WIDTHS).reduce((sum, w) => sum + w, 0) + TITLE_MIN_WIDTH;
+
+/** 列幅に収まらない文字列を 1 行で省略表示する */
+const ELLIPSIS: React.CSSProperties = {
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+};
+
 const SortableHeader: React.FC<{
   label: string;
   field: string;
@@ -92,9 +123,9 @@ const SortableHeader: React.FC<{
       }
       style={{
         ...style,
+        ...ELLIPSIS,
         cursor: "pointer",
         userSelect: "none",
-        whiteSpace: "nowrap",
         padding: "8px 6px",
         textAlign: "left",
         fontSize: 12,
@@ -208,7 +239,11 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
   const showFolderSection = subFolders.length > 0 || parentTarget !== null;
 
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+    // minWidth: 0 が無いと flex の既定(min-width: auto)でテーブル幅を譲らず、
+    // 左のフォルダツリーを押し潰してしまう
+    <div
+      style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}
+    >
       <div style={{ flex: 1, overflowX: "auto" }}>
         {/* サブフォルダ + 上の階層へ */}
         {showFolderSection && (
@@ -305,7 +340,8 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
           </div>
         )}
 
-        <div style={{ position: "relative" }}>
+        {/* 横スクロール時も一括操作の帯がテーブル全幅に掛かるよう、外枠も最小幅を持つ */}
+        <div style={{ position: "relative", minWidth: TABLE_MIN_WIDTH }}>
           {/* 選択中はヘッダー行に一括操作を重ねる（行を増やさず列幅も動かさない） */}
           {hasSelection && bulkActions && headerHeight > 0 && (
             <div
@@ -330,6 +366,8 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
           <table
             style={{
               width: "100%",
+              minWidth: TABLE_MIN_WIDTH,
+              tableLayout: "fixed",
               borderCollapse: "collapse",
               fontSize: 13,
             }}
@@ -338,7 +376,7 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
               <tr>
                 <th
                   style={{
-                    width: 36,
+                    width: COLUMN_WIDTHS.select,
                     padding: "8px 4px",
                     // th の text-align は外側の CSS で left になるため、
                     // 行側のチェックボックス（td は center）と位置を揃える
@@ -363,14 +401,14 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
                 </th>
                 <th
                   style={{
-                    width: 32,
+                    width: COLUMN_WIDTHS.star,
                     padding: "8px 2px",
                     borderBottom: "2px solid #E2E8F0",
                   }}
                 />
                 <th
                   style={{
-                    width: 40,
+                    width: COLUMN_WIDTHS.icon,
                     padding: "8px 2px",
                     borderBottom: "2px solid #E2E8F0",
                   }}
@@ -380,45 +418,47 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
                   field="title"
                   sort={sort}
                   onSort={onSortChange}
+                  style={{ minWidth: TITLE_MIN_WIDTH }}
                 />
                 <SortableHeader
                   label={t("File Type")}
                   field="filetype"
                   sort={sort}
                   onSort={onSortChange}
-                  style={{ width: 100 }}
+                  style={{ width: COLUMN_WIDTHS.filetype }}
                 />
                 <SortableHeader
                   label={t("Folder Name")}
                   field="foldername"
                   sort={sort}
                   onSort={onSortChange}
-                  style={{ width: 120 }}
+                  style={{ width: COLUMN_WIDTHS.folder }}
                 />
                 <SortableHeader
                   label={t("Assigned To")}
                   field="assigned_user_id"
                   sort={sort}
                   onSort={onSortChange}
-                  style={{ width: 100 }}
+                  style={{ width: COLUMN_WIDTHS.assigned }}
                 />
                 <SortableHeader
                   label={t("Modified Time")}
                   field="modifiedtime"
                   sort={sort}
                   onSort={onSortChange}
-                  style={{ width: 100 }}
+                  style={{ width: COLUMN_WIDTHS.modified }}
                 />
                 <SortableHeader
                   label={t("File Size")}
                   field="filesize"
                   sort={sort}
                   onSort={onSortChange}
-                  style={{ width: 80 }}
+                  style={{ width: COLUMN_WIDTHS.filesize }}
                 />
                 <th
                   style={{
-                    width: 40,
+                    ...ELLIPSIS,
+                    width: COLUMN_WIDTHS.compliance,
                     padding: "8px 4px",
                     textAlign: "center",
                     fontSize: 12,
@@ -431,7 +471,8 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
                 </th>
                 <th
                   style={{
-                    width: 70,
+                    ...ELLIPSIS,
+                    width: COLUMN_WIDTHS.category,
                     padding: "8px 6px",
                     textAlign: "left",
                     fontSize: 12,
@@ -444,7 +485,8 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
                 </th>
                 <th
                   style={{
-                    width: 76,
+                    ...ELLIPSIS,
+                    width: COLUMN_WIDTHS.deadline,
                     padding: "8px 6px",
                     textAlign: "left",
                     fontSize: 12,
@@ -457,6 +499,8 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
                 </th>
                 <th
                   style={{
+                    ...ELLIPSIS,
+                    width: COLUMN_WIDTHS.note,
                     padding: "8px 6px",
                     textAlign: "left",
                     fontSize: 12,
@@ -550,16 +594,22 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
                   </td>
                   <td
                     style={{
+                      ...ELLIPSIS,
                       padding: "6px 6px",
                       fontWeight: 500,
                       color: "#2D3748",
                     }}
+                    title={rec.title}
                     onClick={() => onRecordClick(rec)}
                   >
                     {rec.title}
                   </td>
                   <td
-                    style={{ padding: "6px 6px", color: "#718096" }}
+                    style={{
+                      ...ELLIPSIS,
+                      padding: "6px 6px",
+                      color: "#718096",
+                    }}
                     onClick={() => onRecordClick(rec)}
                   >
                     {rec.filetype
@@ -569,25 +619,43 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
                         : "—"}
                   </td>
                   <td
-                    style={{ padding: "6px 6px", color: "#718096" }}
+                    style={{
+                      ...ELLIPSIS,
+                      padding: "6px 6px",
+                      color: "#718096",
+                    }}
+                    title={rec.foldername}
                     onClick={() => onRecordClick(rec)}
                   >
                     {rec.foldername}
                   </td>
                   <td
-                    style={{ padding: "6px 6px", color: "#718096" }}
+                    style={{
+                      ...ELLIPSIS,
+                      padding: "6px 6px",
+                      color: "#718096",
+                    }}
+                    title={rec.assigned_user_name}
                     onClick={() => onRecordClick(rec)}
                   >
                     {rec.assigned_user_name}
                   </td>
                   <td
-                    style={{ padding: "6px 6px", color: "#718096" }}
+                    style={{
+                      ...ELLIPSIS,
+                      padding: "6px 6px",
+                      color: "#718096",
+                    }}
                     onClick={() => onRecordClick(rec)}
                   >
                     {formatDate(rec.modifiedtime)}
                   </td>
                   <td
-                    style={{ padding: "6px 6px", color: "#718096" }}
+                    style={{
+                      ...ELLIPSIS,
+                      padding: "6px 6px",
+                      color: "#718096",
+                    }}
                     onClick={() => onRecordClick(rec)}
                   >
                     {formatFileSize(rec.filesize)}
@@ -604,6 +672,7 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
                   </td>
                   <td
                     style={{
+                      ...ELLIPSIS,
                       padding: "6px 6px",
                       color: "#718096",
                       fontSize: 12,
@@ -628,10 +697,12 @@ export const DocumentsListView: React.FC<DocumentsListViewProps> = ({
                   </td>
                   <td
                     style={{
+                      ...ELLIPSIS,
                       padding: "6px 6px",
                       color: "#A0AEC0",
                       fontSize: 12,
                     }}
+                    title={htmlToSummaryText(rec.notecontent) || undefined}
                     onClick={() => onRecordClick(rec)}
                   >
                     {/* メモはリッチテキストの HTML なので、タグを落として要約する */}

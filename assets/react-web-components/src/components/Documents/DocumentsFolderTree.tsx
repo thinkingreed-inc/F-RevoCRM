@@ -293,7 +293,10 @@ export const DocumentsFolderTree: React.FC<DocumentsFolderTreeProps> = ({
   return (
     <div
       style={{
+        // 一覧側が広がってもフォルダツリーは潰さない(縮めず最小幅を保つ)
         width: 220,
+        minWidth: 220,
+        flexShrink: 0,
         borderRight: "1px solid #E2E8F0",
         height: "100%",
         display: "flex",
