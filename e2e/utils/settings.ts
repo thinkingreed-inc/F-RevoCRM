@@ -61,6 +61,28 @@ export async function confirmYes(page: Page): Promise<void> {
 }
 
 /**
+ * 確認ダイアログの「はい」を押し、それで始まる処理の通信(POST)の完了まで待つ。
+ *
+ * 押した直後の waitForLoadState("networkidle") は、通信が始まる前に解決して
+ * しまうことがある(高並列時)。その後すぐ別ページへ遷移すると、削除・復元が
+ * 終わる前に結果を確認したり、処理そのものを中断したりする。
+ * action には URL かリクエスト本文に含まれる処理名(MassDelete / restoreRecords 等)を渡す。
+ */
+export async function confirmYesAndWait(
+  page: Page,
+  action: RegExp
+): Promise<void> {
+  const done = page.waitForResponse(
+    (r) =>
+      r.request().method() === "POST" &&
+      (action.test(r.url()) || action.test(r.request().postData() ?? "")),
+    { timeout: 30000 }
+  );
+  await confirmYes(page);
+  await done;
+}
+
+/**
  * 別ユーザーのログインを、共有 storageState を汚さない独立 context で検証する。
  * 呼び出し側は finally で context.close() すること。
  */
