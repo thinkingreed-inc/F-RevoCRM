@@ -498,17 +498,40 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		});
 		return aDeferred.promise();
 	},
+	// フィード取得の要求番号を採番する（応答待ちの間に再取得された場合、古い応答を判別するため）
+	// 取得条件は先頭のチェックボックスから作られるため、要求番号も先頭のチェックボックスで管理する
+	_startFeedRequest: function (feedCheckbox) {
+		this._feedRequestSeq = (this._feedRequestSeq || 0) + 1;
+		feedCheckbox.first().data('feedRequestSeq', this._feedRequestSeq);
+		return this._feedRequestSeq;
+	},
+	_isLatestFeedRequest: function (feedCheckbox, requestSeq) {
+		return feedCheckbox.first().data('feedRequestSeq') === requestSeq;
+	},
 	addEvents: function (feedCheckbox) {
 		var thisInstance = this;
 		if (feedCheckbox.is(':checked')) {
 			app.helper.showProgress();
 			feedCheckbox.attr('disabled', 'disabled');
+			var requestSeq = thisInstance._startFeedRequest(feedCheckbox);
 			thisInstance.fetchEvents(feedCheckbox).then(function (events) {
-				thisInstance.getCalendarViewContainer().fullCalendar('addEventSource', events);
-				feedCheckbox.removeAttr('disabled');
 				app.helper.hideProgress();
+				// 後続の取得が進行中の場合は、この応答を反映しない（無効化の解除も後続の応答で行う）
+				if (!thisInstance._isLatestFeedRequest(feedCheckbox, requestSeq)) {
+					return;
+				}
+				// 応答待ちの間にチェックが外された場合は、予定を追加しない
+				if (feedCheckbox.first().is(':checked')) {
+					thisInstance.getCalendarViewContainer().fullCalendar('addEventSource', events);
+				}
+				feedCheckbox.removeAttr('disabled');
 			}, function (e) {
 				console.log("error while fetching events : ", feedCheckbox, e);
+				// 最新の取得が失敗した場合は、チェックボックスを操作できる状態に戻す
+				if (thisInstance._isLatestFeedRequest(feedCheckbox, requestSeq)) {
+					feedCheckbox.removeAttr('disabled');
+					app.helper.hideProgress();
+				}
 			});
 		}
 	},
@@ -1766,12 +1789,24 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var thisInstance = this;
 		if (feedCheckbox.is(':checked')) {
 			feedCheckbox.attr('disabled', 'disabled');
+			var requestSeq = thisInstance._startFeedRequest(feedCheckbox);
 			thisInstance.fetchEvents(feedCheckbox).then(function (events) {
+				// 後続の取得が進行中の場合は、この応答を反映しない（無効化の解除も後続の応答で行う）
+				if (!thisInstance._isLatestFeedRequest(feedCheckbox, requestSeq)) {
+					return;
+				}
 				thisInstance.removeEvents(feedCheckbox);
-				thisInstance.getCalendarViewContainer().fullCalendar('addEventSource', events);
+				// 応答待ちの間にチェックが外された場合は、予定を追加しない
+				if (feedCheckbox.first().is(':checked')) {
+					thisInstance.getCalendarViewContainer().fullCalendar('addEventSource', events);
+				}
 				feedCheckbox.removeAttr('disabled');
 			}, function (e) {
 				console.log("error while fetching events : ", feedCheckbox, e);
+				// 最新の取得が失敗した場合は、チェックボックスを操作できる状態に戻す
+				if (thisInstance._isLatestFeedRequest(feedCheckbox, requestSeq)) {
+					feedCheckbox.removeAttr('disabled');
+				}
 			});
 		}
 	},
