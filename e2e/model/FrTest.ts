@@ -5,6 +5,9 @@ import { dontTestFieldsName, fillField, getFieldValue } from "../utils/field";
 import type { FRDescribeFieldsTypeWithModuleName } from "./types/frTest";
 
 export class FrTest extends FrBaseModule {
+  /** testRecordCreate で作成したレコードの ID。編集・削除の対象に使う */
+  private createdRecordId: string | null = null;
+
   constructor(public moduleName: string, sessionName: string) {
     super(moduleName, sessionName);
   }
@@ -91,7 +94,7 @@ export class FrTest extends FrBaseModule {
     page: Page,
     hash: string,
     filledFields: FRDescribeFieldsTypeWithModuleName[]
-  ) {
+  ): Promise<string> {
     // 参照選択ポップアップ(#popupModal)が閉じ切る前に保存を押すと、モーダルが
     // クリックを横取りして 30s タイムアウトする(高並列で閉じ AJAX/アニメーションが
     // 遅延すると field.ts 側の 10s 待ちを取りこぼすことがある)。保存前に閉じ切りを
@@ -114,7 +117,12 @@ export class FrTest extends FrBaseModule {
     // networkidle直後にURLを読むとリダイレクト完了前で誤判定する(レース)ため、
     // 遷移そのものを明示的に待つ。失敗時はタイムアウトし、extractRecordIdFromUrl
     // がバリデーションエラーを添えて投げる。
-    await page.waitForURL(/[?&]record=\d+/, { timeout: 15000 }).catch(() => {});
+    // 編集画面の URL にも record= が既に含まれるため、record= だけを待つと
+    // 保存完了前に解決し、更新前の詳細を検証してしまう。view=Detail を必須にする
+    // (MatrixTest の detail.edit と同じレース対策)。
+    await page
+      .waitForURL(/[?&]view=Detail[^]*?record=\d+/, { timeout: 15000 })
+      .catch(() => {});
 
     const recordId = await this.extractRecordIdFromUrl(page);
 
@@ -138,7 +146,7 @@ export class FrTest extends FrBaseModule {
     // 実保存値を取得し、各項目の表示値が詳細画面に表示されていることを検証する
     const stored = await this.retrieveRecord(recordId);
     if (!stored) {
-      return;
+      return recordId;
     }
     for (const field of filledFields) {
       const expected = this.expectedDisplayValue(field, stored[field.name]);
@@ -149,6 +157,7 @@ export class FrTest extends FrBaseModule {
         page.locator(`#detailView >> text=${expected}`).first()
       ).toBeVisible();
     }
+    return recordId;
   }
 
   /**
@@ -223,25 +232,45 @@ export class FrTest extends FrBaseModule {
   /**
    * レコードが正常に作成されたことを確認するテスト
    */
-  async testRecordCreate(page: Page) {
+  async testRecordCreate(page: Page): Promise<string> {
     await page.goto(this.getCreateUrl());
     await page.waitForLoadState("domcontentloaded");
 
     const hash = generateRandomString(8);
     const filledFields = await this.fillAllFields(page, hash);
-    await this.saveAndVerify(page, hash, filledFields);
+    this.createdRecordId = await this.saveAndVerify(page, hash, filledFields);
+    return this.createdRecordId;
   }
 
   /**
-   * レコードが正常に編集されたことを確認するテスト
+   * 編集・削除の対象レコードを決める。
+   *
+   * 明示指定 > このインスタンスが testRecordCreate で作ったレコード > 最終更新レコード
+   * の順に使う。最終更新レコードは並列実行中だと他のテスト(別 spec を含む)が
+   * 作った使い捨てレコードになり、他人のレコードを編集・削除してしまうため、
+   * 指定も作成済みも無いときだけの後方互換として残している。
    */
-  async testRecordEdit(page: Page) {
+  private async resolveTargetRecordId(
+    recordId?: string
+  ): Promise<string | false> {
+    if (recordId) return recordId;
+    if (this.createdRecordId) return this.createdRecordId;
     const recordWsId = await this.getOneRecordFromModuleName(this.moduleName);
     if (!recordWsId) {
       return false;
     }
     // recordWsId.id は 22x1 のような形式なため、xで分割した後ろの数字だけを取得する
-    const recordId = recordWsId.id.split("x")[1];
+    return recordWsId.id.split("x")[1];
+  }
+
+  /**
+   * レコードが正常に編集されたことを確認するテスト
+   */
+  async testRecordEdit(page: Page, targetRecordId?: string) {
+    const recordId = await this.resolveTargetRecordId(targetRecordId);
+    if (!recordId) {
+      return false;
+    }
     await page.goto(this.getEditUrl(recordId));
     await page.waitForLoadState("domcontentloaded");
 
@@ -253,13 +282,11 @@ export class FrTest extends FrBaseModule {
   /**
    * レコードが正常に削除されたことを確認するテスト
    */
-  async testRecordDelete(page: Page) {
-    const recordWsId = await this.getOneRecordFromModuleName(this.moduleName);
-    if (!recordWsId) {
+  async testRecordDelete(page: Page, targetRecordId?: string) {
+    const recordId = await this.resolveTargetRecordId(targetRecordId);
+    if (!recordId) {
       return false;
     }
-    // recordWsId.id は 22x1 のような形式なため、xで分割した後ろの数字だけを取得する
-    const recordId = recordWsId.id.split("x")[1];
     await page.goto(this.getDetailUrl(recordId));
     await page.waitForLoadState("domcontentloaded");
 
@@ -302,5 +329,8 @@ export class FrTest extends FrBaseModule {
     await expect(
       page.locator(`text=指定したレコードは削除されています`).first()
     ).toBeVisible();
+    if (recordId === this.createdRecordId) {
+      this.createdRecordId = null;
+    }
   }
 }
