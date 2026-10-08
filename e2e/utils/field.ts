@@ -1,6 +1,6 @@
 import { format, subDays } from "date-fns";
 import { base62ToInt } from "./util";
-import { Page } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import { FRDescribeFieldsTypeWithModuleName } from "../model/types/frTest";
 
 // 以下のリストに含まれているものはテストしない
@@ -249,11 +249,21 @@ export const fillField = async (
       .locator(".modal-body .listview-table .listViewEntries")
       .first();
     await entry.waitFor({ state: "visible", timeout: 15000 });
-    await entry.click();
-    await page
-      .locator("#popupModal")
-      .waitFor({ state: "hidden", timeout: 10000 })
-      .catch(() => {});
+    // 高負荷時はエントリが見えていてもポップアップ側のクリック処理の登録が
+    // 終わっておらず、クリックしても選択されないことがある。選択の成否は
+    // 表示欄(_display)に値が入ったかで判定し、入らなければ押し直す。
+    const popupModal = page.locator("#popupModal");
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await entry.click({ timeout: 5000 }).catch(() => {});
+      // 表示欄が無い項目は成否を判定できないため、従来どおり1回だけ押す
+      if ((await displayInput.count()) === 0) break;
+      const selected = await expect(displayInput)
+        .not.toHaveValue(/^\s*$/, { timeout: 5000 })
+        .then(() => true)
+        .catch(() => false);
+      if (selected) break;
+    }
+    await popupModal.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
     await page.waitForTimeout(300);
   } else if (fieldObj.type.name === "date") {
     /**********************************************************************************************
