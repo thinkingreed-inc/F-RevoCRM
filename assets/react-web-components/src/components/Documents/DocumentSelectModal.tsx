@@ -311,24 +311,27 @@ export const DocumentSelectModal: React.FC<DocumentSelectModalProps> = ({
               )}
               {!isLoading &&
                 records.map((record) => (
-                  <tr key={record.id}>
+                  <tr
+                    key={record.id}
+                    onClick={() => toggle(record.id)}
+                    style={{ cursor: "pointer" }}
+                  >
                     <td style={{ ...tdStyle, width: 32 }}>
                       <input
                         type="checkbox"
                         checked={selectedIds.includes(record.id)}
                         onChange={() => toggle(record.id)}
+                        // 行のクリックでも切り替えるため、二重に反転しないよう伝播を止める
+                        onClick={(e) => e.stopPropagation()}
                         style={{ margin: 0, cursor: "pointer" }}
                       />
                     </td>
                     <td style={tdStyle}>
-                      <label
+                      <div
                         style={{
                           display: "flex",
                           alignItems: "center",
                           gap: 6,
-                          margin: 0,
-                          fontWeight: 400,
-                          cursor: "pointer",
                         }}
                       >
                         <FileIcon
@@ -337,13 +340,8 @@ export const DocumentSelectModal: React.FC<DocumentSelectModalProps> = ({
                           filename={record.filename}
                           size="sm"
                         />
-                        <span
-                          onClick={() => toggle(record.id)}
-                          style={{ cursor: "pointer" }}
-                        >
-                          {record.title}
-                        </span>
-                      </label>
+                        <span>{record.title}</span>
+                      </div>
                     </td>
                     <td
                       style={{
