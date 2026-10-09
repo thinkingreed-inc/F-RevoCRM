@@ -30,13 +30,13 @@
 						<div class="col-lg-2 col-md-2 col-sm-2 control-label fieldLabel">
 							<label>{vtranslate('LBL_PROFILE_NAME', $QUALIFIED_MODULE)}</label>
 						</div>
-						<div class="fieldValue col-lg-6 col-md-6 col-sm-12"  name="profilename" id="profilename" value="{$RECORD_MODEL->getName()}"><strong>{$RECORD_MODEL->getName()}</strong></div>
+						<div class="fieldValue col-lg-6 col-md-6 col-sm-12"  name="profilename" id="profilename" value="{$RECORD_MODEL->getName()}"><strong>{vtranslate($RECORD_MODEL->getName(), $QUALIFIED_MODULE)}</strong></div>					
 					</div>
 					<div class="row form-group">
 						<div class="col-lg-2 col-md-2 col-sm-2 control-label fieldLabel">
 							<label>{vtranslate('LBL_DESCRIPTION', $QUALIFIED_MODULE)}:</label>
 						</div>
-						<div class="fieldValue col-lg-6 col-md-6 col-sm-12" name="description" id="description"><strong>{$RECORD_MODEL->getDescription()}</strong></div>
+						<div class="fieldValue col-lg-6 col-md-6 col-sm-12" name="description" id="description"><strong>{vtranslate($RECORD_MODEL->getDescription(), $QUALIFIED_MODULE)}</strong></div>
 					</div>
 					<br>
 					{assign var="ENABLE_IMAGE_PATH" value="{vimage_path('Enable.png')}"}

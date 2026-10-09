@@ -43,7 +43,7 @@
 									<strong>{vtranslate('LBL_PROFILE_NAME', $QUALIFIED_MODULE)}</strong>&nbsp;<span class="redColor">*</span>:&nbsp;
 								</label></div>
 							<div class="fieldValue col-lg-6 col-md-6 col-sm-6" > 
-								<input type="text" class="inputElement" name="profilename" id="profilename" value="{$RECORD_MODEL->getName()}" data-rule-required="true" />
+								<input type="text" class="inputElement" name="profilename" id="profilename" value="{vtranslate($RECORD_MODEL->getName(), $QUALIFIED_MODULE)}" data-rule-required="true" />
 							</div>
 						</div>
 
@@ -52,7 +52,7 @@
 									<strong>{vtranslate('LBL_DESCRIPTION', $QUALIFIED_MODULE)}&nbsp;:&nbsp;</strong>
 								</label></div>
 							<div class="fieldValue col-lg-6 col-md-6 col-sm-6">
-								<textarea name="description" class="inputElement" id="description" style="height:50px; resize: vertical;padding:5px 8px;">{$RECORD_MODEL->getDescription()}</textarea>
+								<textarea name="description" class="inputElement" id="description" style="height:50px; resize: vertical;padding:5px 8px;">{vtranslate($RECORD_MODEL->getDescription(), $QUALIFIED_MODULE)}</textarea>
 							</div>
 						</div>
 						{include file='EditViewContents.tpl'|vtemplate_path:$QUALIFIED_MODULE}
