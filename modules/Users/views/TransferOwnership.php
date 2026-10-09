@@ -25,8 +25,10 @@ class Users_TransferOwnership_View extends Vtiger_Index_View {
         $moduleName = $request->getModule();
         $usersList = Users_Record_Model::getActiveAdminUsers();
         $activeAdminId = Users::getActiveAdminId();
+        $activeAdminModel = Users_Record_Model::getInstanceById($activeAdminId, 'Users');
         unset($usersList[$activeAdminId]);
         $viewer = $this->getViewer($request);
+        $viewer->assign('ACTIVE_ADMIN_NAME', $activeAdminModel->getName());
         $viewer->assign('USERS_MODEL', $usersList);
         $viewer->assign('MODULE', $moduleName);
         $viewer->view('TransferOwnership.tpl', $moduleName);
