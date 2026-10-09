@@ -29,7 +29,7 @@ $languageStrings = array(
 	//Fields
 	'Start Date & Time'=>'Start Date & Time',
 	'Recurrence' => 'Recurrence',
-	'Send Notification' => 'Send Notification',
+	'Send Notification' => 'Show Reminder Popup',
 	'Location'=>'Location',
 	'Send Reminder' => 'Send Email Reminder Before',
 	'End Date & Time' => 'End Date & Time',

@@ -29,7 +29,7 @@ $languageStrings = array(
 	//Fields
 	'Start Date & Time'=>'開始日時',
 	'Recurrence' => '繰り返し',
-	'Send Notification' => '通知する',
+	'Send Notification' => 'ポップアップ表示',
 	'Location'=>'場所',
 	'Send Reminder' => '事前にメールを送信',
 	'End Date & Time' => '終了日時',
