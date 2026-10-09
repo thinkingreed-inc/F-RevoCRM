@@ -1,0 +1,41 @@
+/*+**********************************************************************************
+* The contents of this file are subject to the Vtiger Public License Version 1.2
+* ("License"); You may not use this file except in compliance with the License
+* The Original Code is: frevo-mcp (https://github.com/ratorin/frevo-mcp)
+* The Initial Developer of the Original Code is ratorin.
+* Portions created by ratorin are Copyright (C) ratorin.
+* All Rights Reserved.
+*************************************************************************************/
+
+/* ブロック間の余白は既存の標準ブロック（table margin-bottom = 18px）に合わせる */
+.mcpBlock { margin-top:18px; }
+/* 多要素認証ブロックに枠が無いので、こちらも枠を付けず平坦に並べる */
+/* 様式は MCPトークンブロックに合わせる（同じ .mcpCard / .mcpListCard を使う） */
+.mcpBlock .mcpCard { margin-bottom:16px; }
+.mcpBlock .mcpListCard table { width:100%; margin:0; }
+.mcpBlock .mcpListCard thead th { color:#999; font-size:11px; letter-spacing:1px; font-weight:normal; border-bottom:1px solid #eee; padding:8px 6px; text-align:left; }
+.mcpBlock .mcpListCard tbody td { padding:14px 6px; border-bottom:1px solid #f0f0f0; vertical-align:middle; }
+.mcpBlock .mcpListCard tbody tr:last-child td { border-bottom:0; }
+
+.mcp_token_block .mcpCardHead { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.mcp_token_block .mcpCardTitle { font-weight:bold; margin:0; }
+.mcp_token_block .mcpIssueRow { display:flex; gap:8px; align-items:center; }
+.mcp_token_block .mcpIssueRow #mcpTokenLabel { flex:1 1 auto; height:34px; padding:6px 10px; border:1px solid #ccc; border-radius:4px; }
+.mcp_token_block .mcpIssueRow #mcpTokenExpires { flex:0 0 auto; height:34px; border:1px solid #ccc; border-radius:4px; }
+.mcp_token_block .mcpIssueRow #mcpTokenIssueBtn { flex:0 0 auto; }
+.mcp_token_block #mcpTokenResult { border:1px solid #bce8f1; background:#d9edf7; color:#31708f; border-radius:6px; padding:14px 16px; margin-bottom:16px; }
+.mcp_token_block #mcpTokenResult .mcpResultHead { display:flex; justify-content:space-between; align-items:center; }
+.mcp_token_block #mcpTokenPlain { display:block; margin-top:8px; font-family:monospace; word-break:break-all; }
+.mcp_token_block .mcpClientTabs { display:inline-flex; border:1px solid #ddd; border-radius:6px; overflow:hidden; margin:0; padding:0; list-style:none; }
+.mcp_token_block .mcpClientTabs li { margin:0; }
+.mcp_token_block .mcpClientTabs a { display:block; padding:6px 14px; color:#555; text-decoration:none; font-size:13px; border-left:1px solid #ddd; }
+.mcp_token_block .mcpClientTabs li:first-child a { border-left:0; }
+.mcp_token_block .mcpClientTabs li.active a { background:#3f3d56; color:#fff; }
+.mcp_token_block .mcpTermHead { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.mcp_token_block .mcpTerminalLabel { color:#999; font-size:11px; letter-spacing:1px; }
+.mcp_token_block #mcpClientCommand { background:#f6f6f6; border:0; border-radius:4px; padding:14px 16px; white-space:pre-wrap; word-break:break-all; margin:0; font-size:13px; }
+.mcp_token_block #mcpClientNote { color:#888; margin:10px 0 0 0; }
+.mcp_token_block .mcpPrefix { color:#999; font-family:monospace; }
+.mcp_token_block .mcpCopyLink { color:#555; text-decoration:none; cursor:pointer; font-size:13px; }
+
+.mcp_oauth_block .mcpCardDesc { color:#888; margin:0 0 12px 0; }

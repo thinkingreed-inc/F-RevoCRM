@@ -313,6 +313,9 @@ Vtiger_Detail_Js("Users_Detail_Js",{
 		FR_MultiFactorAuthentication_Js.registerDeleteCredentialEvent();
 		FR_MultiFactorAuthentication_Js.registerTotpEvents();
 		FR_MultiFactorAuthentication_Js.registerPasskeyEvents();
+		if (typeof Users_McpToken_Js !== 'undefined') {
+			new Users_McpToken_Js().registerEvents();
+		}
 	}
 });
 

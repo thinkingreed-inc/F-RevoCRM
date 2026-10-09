@@ -1,0 +1,60 @@
+<?php
+/*+***********************************************************************************
+ * The contents of this file are subject to the Vtiger Public License Version 1.2
+ * ("License"); You may not use this file except in compliance with the License
+ * The Original Code is: frevo-mcp (https://github.com/ratorin/frevo-mcp)
+ * The Initial Developer of the Original Code is ratorin.
+ * Portions created by ratorin are Copyright (C) ratorin.
+ * All Rights Reserved.
+ *************************************************************************************/
+
+class Users_DeleteMcpOAuthAjax_Action extends Vtiger_Action_Controller {
+
+    public function requiresPermission(\Vtiger_Request $request) {
+        return array();
+    }
+
+    public function checkPermission(Vtiger_Request $request) {
+        $currentUser = Users_Record_Model::getCurrentUserModel();
+        $recordId = (int) $request->get('record');
+        if ($recordId <= 0) {
+            throw new AppException(vtranslate('LBL_MCP_TOKEN_INVALID_RECORD', 'Users'));
+        }
+
+        require_once 'include/Mcp/OAuthStorage.php';
+        $connection = Mcp_OAuthStorage::getById($recordId);
+        if ($connection === null) {
+            throw new AppException(vtranslate('LBL_MCP_OAUTH_NOT_FOUND', 'Users'));
+        }
+
+        // 画面のパラメータではなく、取得した行の userid で判定する
+        $isOwner = ((int) $connection['userid'] === (int) $currentUser->getId());
+        if (!$isOwner && !$currentUser->isAdminUser()) {
+            throw new AppException(vtranslate('LBL_MCP_OAUTH_PERMISSION_DENIED', 'Users'));
+        }
+    }
+
+    /**
+     * CSRF 対策: 書き込みアクセスを検証する
+     */
+    public function validateRequest(Vtiger_Request $request) {
+        $request->validateWriteAccess();
+    }
+
+    public function process(Vtiger_Request $request) {
+        $response = new Vtiger_Response();
+        $response->setEmitType(Vtiger_Response::$EMIT_JSON);
+
+        $recordId = (int) $request->get('record');
+
+        try {
+            require_once 'include/Mcp/OAuthStorage.php';
+            Mcp_OAuthStorage::disable($recordId);
+            $response->setResult(array('success' => true));
+        } catch (Exception $e) {
+            $response->setError($e->getCode(), $e->getMessage());
+        }
+
+        $response->emit();
+    }
+}
