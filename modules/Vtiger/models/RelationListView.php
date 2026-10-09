@@ -375,6 +375,9 @@ class Vtiger_RelationListView_Model extends Vtiger_Base_Model {
 					}
 					$newRow['subject'] = vtranslate('Busy','Events').'*';
 				}
+				if (empty($newRow['taskstatus']) && !empty($row['eventstatus'])) {
+					$newRow['taskstatus'] = $row['eventstatus'];
+				}
 			}
 
 			$record = Vtiger_Record_Model::getCleanInstance($relationModule->get('name'));
