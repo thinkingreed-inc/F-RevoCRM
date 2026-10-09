@@ -10,6 +10,7 @@ import {
 import { writeFileSync, readFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
+import { withImportLock } from "../../../utils/import";
 
 /**
  * カレンダーの iCal 連携(エクスポート / インポート) — TEST_COVERAGE P0-B / B4
@@ -73,13 +74,21 @@ test.describe("カレンダー: iCal 連携", () => {
       await page.waitForLoadState("networkidle");
 
       // 一括操作の「その他」→ エクスポート(共通導線)
-      await page
+      // 高負荷時はメニューの初期化前に押して開かないことがあるため、
+      // 項目が見えるまで開き直す(開かないまま項目を押すとテスト上限まで待ち続ける)。
+      const moreMenu = page
         .locator(".listViewMassActions button.dropdown-toggle")
-        .first()
-        .click();
-      await page
-        .locator("#Calendar_listView_advancedAction_LBL_EXPORT")
-        .click();
+        .first();
+      const exportItem = page.locator(
+        "#Calendar_listView_advancedAction_LBL_EXPORT"
+      );
+      await expect(async () => {
+        if (!(await exportItem.isVisible())) {
+          await moreMenu.click();
+        }
+        await expect(exportItem).toBeVisible({ timeout: 2000 });
+      }).toPass({ timeout: 20000 });
+      await exportItem.click();
 
       // カレンダーだけ形式選択(csv / ics)がある。ics を選ぶと固有実装を通る。
       const modal = page.locator(".modal-content:visible").first();
@@ -106,7 +115,8 @@ test.describe("カレンダー: iCal 連携", () => {
   });
 
   test("iCal(.ics)をインポートすると予定が作成される", async ({ page }) => {
-    test.setTimeout(120000);
+    // ロックの順番待ちを見込み、CSV インポートのケースと同じ上限にする
+    test.setTimeout(300000);
     const token = generateRandomString(6);
     const subject = `E2Eical入${token}`;
     const icsPath = join(tmpdir(), `e2e-ical-${token}.ics`);
@@ -118,55 +128,60 @@ test.describe("カレンダー: iCal 連携", () => {
         "インポート前は同名の予定が無いこと"
       ).toBeNull();
 
-      // カレンダーのインポートは「ランディング画面」で CSV / iCal を選ばせる。
-      // view=Import を直に開くと CSV ウィザードになるので、
-      // mode=landing → #icsImport(ICS ファイル)の導線を通す。
-      await page.goto(url("index.php?module=Calendar&view=List&app=SALES"));
-      await page.waitForLoadState("networkidle");
-      await page.locator("#Calendar_basicAction_LBL_IMPORT").click();
-      const icsCard = page.locator("#icsImport");
-      await expect(icsCard, "ICS ファイルの導線があること").toBeVisible({
-        timeout: 20000,
-      });
-      await icsCard.click();
+      // インポートはユーザー単位でサーバ側が直列のため、他のインポート系テスト
+      // (3-23 / マトリクスのインポート)と同時に走るとロック画面になり
+      // ICS の導線が出ない。CSV と同じワーカー横断ロックで直列化する。
+      await withImportLock(async () => {
+        // カレンダーのインポートは「ランディング画面」で CSV / iCal を選ばせる。
+        // view=Import を直に開くと CSV ウィザードになるので、
+        // mode=landing → #icsImport(ICS ファイル)の導線を通す。
+        await page.goto(url("index.php?module=Calendar&view=List&app=SALES"));
+        await page.waitForLoadState("networkidle");
+        await page.locator("#Calendar_basicAction_LBL_IMPORT").click();
+        const icsCard = page.locator("#icsImport");
+        await expect(icsCard, "ICS ファイルの導線があること").toBeVisible({
+          timeout: 20000,
+        });
+        await icsCard.click();
 
-      // ICS 用のインポート画面(1 ステップのみ)。実行は #importButton
-      // (`Calendar_Edit_Js.uploadAndParse()` → mode=importResult)。
-      const importFile = page.locator('input[name="import_file"]');
-      await expect(importFile).toBeAttached({ timeout: 20000 });
-      await importFile.setInputFiles(icsPath);
-      await page.locator("#importButton").click();
-      await page.waitForLoadState("networkidle");
+        // ICS 用のインポート画面(1 ステップのみ)。実行は #importButton
+        // (`Calendar_Edit_Js.uploadAndParse()` → mode=importResult)。
+        const importFile = page.locator('input[name="import_file"]');
+        await expect(importFile).toBeAttached({ timeout: 20000 });
+        await importFile.setInputFiles(icsPath);
+        await page.locator("#importButton").click();
+        await page.waitForLoadState("networkidle");
 
-      // 取り込み結果画面(ImportResult.tpl)が出ること
-      // 結果はオーバーレイページとして描画される(モーダルではない)
-      const undoButton = page
-        .locator("button.btn-danger")
-        .filter({ hasText: "取り消す" })
-        .first();
-      await expect(undoButton, "インポート結果画面が出ること").toBeVisible({
-        timeout: 30000,
-      });
-      await expect(
-        page.locator("body"),
-        "取り込んだ予定の件数が出ること"
-      ).toContainText("No. of Events Successfully Imported");
-
-      // 取り込んだ予定が API から引けること(Events として登録される)
-      await expect
-        .poll(async () => !!(await findEventBySubjectOrNull(subject, 3)), {
+        // 取り込み結果画面(ImportResult.tpl)が出ること
+        // 結果はオーバーレイページとして描画される(モーダルではない)
+        const undoButton = page
+          .locator("button.btn-danger")
+          .filter({ hasText: "取り消す" })
+          .first();
+        await expect(undoButton, "インポート結果画面が出ること").toBeVisible({
           timeout: 30000,
-        })
-        .toBe(true);
+        });
+        await expect(
+          page.locator("body"),
+          "取り込んだ予定の件数が出ること"
+        ).toContainText("No. of Events Successfully Imported");
 
-      // --- 取り消し(undoIcalImport): iCalLastImport に記録した分が消える ---
-      await undoButton.click();
-      await page.waitForLoadState("networkidle");
-      await expect
-        .poll(async () => !!(await findEventBySubjectOrNull(subject, 3)), {
-          timeout: 30000,
-        })
-        .toBe(false);
+        // 取り込んだ予定が API から引けること(Events として登録される)
+        await expect
+          .poll(async () => !!(await findEventBySubjectOrNull(subject, 3)), {
+            timeout: 30000,
+          })
+          .toBe(true);
+
+        // --- 取り消し(undoIcalImport): iCalLastImport に記録した分が消える ---
+        await undoButton.click();
+        await page.waitForLoadState("networkidle");
+        await expect
+          .poll(async () => !!(await findEventBySubjectOrNull(subject, 3)), {
+            timeout: 30000,
+          })
+          .toBe(false);
+      });
     } finally {
       await deleteAllEventsBySubject(subject);
     }

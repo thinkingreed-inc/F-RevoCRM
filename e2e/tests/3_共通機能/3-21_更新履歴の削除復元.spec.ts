@@ -1,7 +1,7 @@
 import { test, expect } from "../../fixtures/isolated";
 import { url, generateRandomString } from "../../utils/util";
 import { gotoList, listRows, listSearch, clearListSearch } from "../../utils/listview";
-import { confirmYes } from "../../utils/settings";
+import { confirmYesAndWait } from "../../utils/settings";
 import {
   createRecordViaApi,
   deleteRecordViaApi,
@@ -42,8 +42,7 @@ test.describe("追加(UI/UX): 更新履歴の削除・復元", () => {
       const del = page.locator(`#${module}_listView_massAction_LBL_DELETE`);
       await expect(del).toBeEnabled();
       await del.click();
-      await confirmYes(page);
-      await page.waitForLoadState("networkidle");
+      await confirmYesAndWait(page, /MassDelete/);
       await clearListSearch(page).catch(() => {});
 
       // --- ゴミ箱から復元(名前で検索して対象行を一意に絞り込む)---
@@ -60,8 +59,7 @@ test.describe("追加(UI/UX): 更新履歴の削除・復元", () => {
       const restore = page.locator("#RecycleBin_listView_massAction_LBL_RESTORE");
       await expect(restore).toBeEnabled();
       await restore.click();
-      await confirmYes(page);
-      await page.waitForLoadState("networkidle");
+      await confirmYesAndWait(page, /restoreRecords/);
 
       // --- 更新履歴に「削除」「復元」が表示される ---
       await page.goto(

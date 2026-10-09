@@ -13,7 +13,15 @@ interface DocumentsFolderTreeProps {
   onFolderCreate: (parentId: number) => void;
   onFolderEdit: (folder: Folder) => void;
   onFolderDelete: (folderId: number) => void;
+  /**
+   * 親の幅いっぱいに広げる（スマホのドロワー内で使う）。
+   * 省略時は PC の横並び用に 220px で固定し、一覧側に押し潰されないようにする。
+   */
+  fillWidth?: boolean;
 }
+
+/** PC の横並び時のフォルダツリーの幅 */
+const SIDEBAR_WIDTH = 220;
 
 interface FolderNode extends Folder {
   children: FolderNode[];
@@ -247,6 +255,7 @@ export const DocumentsFolderTree: React.FC<DocumentsFolderTreeProps> = ({
   onFolderCreate,
   onFolderEdit,
   onFolderDelete,
+  fillWidth = false,
 }) => {
   const { t } = useOptionalTranslation();
   const [searchQuery, setSearchQuery] = useState("");
@@ -293,7 +302,10 @@ export const DocumentsFolderTree: React.FC<DocumentsFolderTreeProps> = ({
   return (
     <div
       style={{
-        width: 220,
+        // 一覧側が広がってもフォルダツリーは潰さない(縮めず最小幅を保つ)
+        width: fillWidth ? "100%" : SIDEBAR_WIDTH,
+        minWidth: fillWidth ? undefined : SIDEBAR_WIDTH,
+        flexShrink: 0,
         borderRight: "1px solid #E2E8F0",
         height: "100%",
         display: "flex",

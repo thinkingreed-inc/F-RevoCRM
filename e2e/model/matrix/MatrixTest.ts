@@ -207,8 +207,14 @@ export class MatrixTest {
         await clearListSearch(page);
         return;
       }
-      case "list.edit":
-        return this.fr.testRecordEdit(page);
+      case "list.edit": {
+        // 対象は自分で作ったレコードに限る(最終更新レコードは並列実行中の
+        // 他テストのものを掴みうる。FrTest.resolveTargetRecordId 参照)
+        const { id } = await this.createDisposableNamed(page);
+        await this.fr.testRecordEdit(page, id);
+        await deleteViaDetail(page, this.moduleName, id);
+        return;
+      }
       case "list.duplicate": {
         const { id, name } = await this.createDisposableNamed(page);
         const dupId = await duplicateViaDetail(
@@ -231,8 +237,11 @@ export class MatrixTest {
         return;
       }
       case "list.delete":
-      case "detail.delete":
-        return this.fr.testRecordDelete(page);
+      case "detail.delete": {
+        const { id } = await this.createDisposableNamed(page);
+        await this.fr.testRecordDelete(page, id);
+        return;
+      }
       case "list.search": {
         const { id, name } = await this.createDisposableNamed(page);
         await gotoList(page, this.moduleName, this.app);

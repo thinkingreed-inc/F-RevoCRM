@@ -39,6 +39,8 @@ test.describe("共通: フォロー(スター)", () => {
     // 作成直後は未フォロー(fa-star-o)。クリックで active になる。
     await star.click();
     await expect(star).toHaveClass(/\bactive\b/);
+    // 保存の通信中(processing)はクリックが無視されるため、終わるのを待ってから戻す
+    await expect(star).not.toHaveClass(/processing/, { timeout: 30000 });
 
     // もう一度で解除
     await star.click();
@@ -69,6 +71,8 @@ test.describe("共通: フォロー(スター)", () => {
         toggle.evaluate((el) => el.classList.contains("active"))
       )
       .toBe(!wasActive);
+    // 保存の通信中(processing)はクリックが無視されるため、終わるのを待ってから戻す
+    await expect(toggle).not.toHaveClass(/processing/, { timeout: 30000 });
 
     await toggle.click();
     await expect

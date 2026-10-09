@@ -111,10 +111,10 @@ const SCOPED_CASES = ALL_CASES.filter(
 );
 
 for (const m of MATRIX_SCOPE) {
-  // FrTest.testRecordDelete は「対象モジュールの最終更新レコード」を API で選び削除する
-  // (getOneRecordFromModuleName: ORDER BY modifiedtime desc LIMIT 1)。並行実行すると、
-  // 他ケース(list.search/detail.comment.post)が作った使い捨てレコードを先取りして
-  // 削除してしまう(既存の fr.common.spec.ts と同じ理由で .serial が必須)。
+  // 各ケースは自分で作った使い捨てレコードだけを編集・削除する
+  // (FrTest.resolveTargetRecordId)。以前は「最終更新レコード」を選んでいたため、
+  // 並列実行中の他ケース・他 spec のレコードを先取りして削除していた。
+  // ケース間で列検索のセッション状態を共有するため、引き続き .serial で流す。
   test.describe.serial(`マトリクス: ${m.module}`, () => {
     if (!m.enabled) {
       test.skip(true, "未有効化(展開ゲート)");

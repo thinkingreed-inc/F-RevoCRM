@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useMemo,
 } from "react";
+import { LayoutGrid, List, PanelLeft, type LucideIcon } from "lucide-react";
 import type {
   SortConfig,
   FilterType,
@@ -48,11 +49,61 @@ interface DocumentsPageProps {
   maxUploadSize?: number;
 }
 
-const VIEW_MODE_ICONS: Record<ViewMode, string> = {
-  list: "☰",
-  grid: "⊞",
-  preview: "⊟",
+const VIEW_MODE_ICONS: Record<ViewMode, LucideIcon> = {
+  list: List,
+  grid: LayoutGrid,
+  preview: PanelLeft,
 };
+
+/** ツールバーに並ぶ操作要素の高さ。検索欄・フィルター・表示切替・追加ボタンをこれで揃える */
+const TOOLBAR_CONTROL_HEIGHT = 30;
+
+interface ToolbarSelectOption {
+  value: string;
+  label: string;
+}
+
+interface ToolbarSelectProps {
+  value: string;
+  options: ToolbarSelectOption[];
+  onChange: (value: string) => void;
+  /** 先頭の値に何も選ばれていないとき、意味が伝わらないセレクト用の補足 */
+  label?: string;
+}
+
+/** ツールバー用の高さを揃えたセレクト（電帳法フィルターで使う） */
+function ToolbarSelect({
+  value,
+  options,
+  onChange,
+  label,
+}: ToolbarSelectProps) {
+  return (
+    <select
+      aria-label={label}
+      title={label}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      style={{
+        height: TOOLBAR_CONTROL_HEIGHT,
+        margin: 0,
+        padding: "0 4px",
+        border: "1px solid #E2E8F0",
+        borderRadius: 4,
+        fontSize: 12,
+        color: "#4A5568",
+        backgroundColor: "#fff",
+        boxSizing: "border-box",
+      }}
+    >
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  );
+}
 
 function getCsrfToken(): { name: string; value: string } | null {
   const csrfName = (window as any).csrfMagicName;
@@ -586,7 +637,9 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
             placeholder={t("LBL_SEARCH_DOCUMENTS")}
             style={{
               width: "100%",
-              padding: "5px 30px 5px 28px",
+              height: TOOLBAR_CONTROL_HEIGHT,
+              margin: 0,
+              padding: "0 30px 0 28px",
               border: "1px solid #E2E8F0",
               borderRadius: 4,
               fontSize: 13,
@@ -647,8 +700,12 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 3,
+                gap: 4,
+                height: TOOLBAR_CONTROL_HEIGHT,
+                margin: 0,
                 fontSize: 12,
+                fontWeight: "normal",
+                lineHeight: 1,
                 color: "#718096",
                 cursor: "pointer",
                 whiteSpace: "nowrap",
@@ -667,92 +724,69 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
                   }
                   setPage(1);
                 }}
+                style={{ margin: 0, flexShrink: 0 }}
               />
               {t("LBL_COMPLIANCE_FILTER_LABEL")}
             </label>
             {complianceFilter && (
               <>
-                <select
+                <ToolbarSelect
                   value={complianceCategoryFilter}
-                  onChange={(e) => {
-                    setComplianceCategoryFilter(e.target.value);
+                  onChange={(value) => {
+                    setComplianceCategoryFilter(value);
                     setPage(1);
                   }}
-                  style={{
-                    padding: "3px 4px",
-                    border: "1px solid #E2E8F0",
-                    borderRadius: 3,
-                    fontSize: 11,
-                    color: "#4A5568",
-                  }}
-                >
-                  <option value="">{t("LBL_ALL_CATEGORIES")}</option>
-                  <option value="invoice">{t("LBL_CATEGORY_INVOICE")}</option>
-                  <option value="receipt">{t("LBL_CATEGORY_RECEIPT")}</option>
-                  <option value="contract">{t("LBL_CATEGORY_CONTRACT")}</option>
-                  <option value="estimate">{t("LBL_CATEGORY_ESTIMATE")}</option>
-                  <option value="order">{t("LBL_CATEGORY_ORDER")}</option>
-                  <option value="delivery">{t("LBL_CATEGORY_DELIVERY")}</option>
-                  <option value="other">{t("LBL_CATEGORY_OTHER")}</option>
-                </select>
-                <select
+                  options={[
+                    { value: "", label: t("LBL_ALL_CATEGORIES") },
+                    { value: "invoice", label: t("LBL_CATEGORY_INVOICE") },
+                    { value: "receipt", label: t("LBL_CATEGORY_RECEIPT") },
+                    { value: "contract", label: t("LBL_CATEGORY_CONTRACT") },
+                    { value: "estimate", label: t("LBL_CATEGORY_ESTIMATE") },
+                    { value: "order", label: t("LBL_CATEGORY_ORDER") },
+                    { value: "delivery", label: t("LBL_CATEGORY_DELIVERY") },
+                    { value: "other", label: t("LBL_CATEGORY_OTHER") },
+                  ]}
+                />
+                <ToolbarSelect
                   value={complianceStatusFilter}
-                  onChange={(e) => {
-                    setComplianceStatusFilter(e.target.value);
+                  onChange={(value) => {
+                    setComplianceStatusFilter(value);
                     setPage(1);
                   }}
-                  style={{
-                    padding: "3px 4px",
-                    border: "1px solid #E2E8F0",
-                    borderRadius: 3,
-                    fontSize: 11,
-                    color: "#4A5568",
-                  }}
-                >
-                  <option value="">{t("LBL_ALL_STATUSES")}</option>
-                  <option value="compliant">{t("LBL_STATUS_COMPLIANT")}</option>
-                  <option value="non_compliant">
-                    {t("LBL_STATUS_NON_COMPLIANT")}
-                  </option>
-                </select>
-                <select
+                  options={[
+                    { value: "", label: t("LBL_ALL_STATUSES") },
+                    { value: "compliant", label: t("LBL_STATUS_COMPLIANT") },
+                    {
+                      value: "non_compliant",
+                      label: t("LBL_STATUS_NON_COMPLIANT"),
+                    },
+                  ]}
+                />
+                <ToolbarSelect
                   value={unrealatedFilter}
-                  onChange={(e) => {
-                    setUnrelatedFilter(e.target.value);
+                  onChange={(value) => {
+                    setUnrelatedFilter(value);
                     setPage(1);
                   }}
-                  style={{
-                    padding: "3px 4px",
-                    border: "1px solid #E2E8F0",
-                    borderRadius: 3,
-                    fontSize: 11,
-                    color: "#4A5568",
-                  }}
-                >
-                  <option value="">{t("LBL_ALL_RECORDS")}</option>
-                  <option value="false">{t("LBL_UNRELATED_ONLY")}</option>
-                </select>
-                <select
-                  aria-label={t("LBL_INPUT_DEADLINE_STATUS")}
-                  title={t("LBL_INPUT_DEADLINE_STATUS")}
+                  options={[
+                    { value: "", label: t("LBL_ALL_RECORDS") },
+                    { value: "false", label: t("LBL_UNRELATED_ONLY") },
+                  ]}
+                />
+                <ToolbarSelect
+                  label={t("LBL_INPUT_DEADLINE_STATUS")}
                   value={deadlineStatusFilter}
-                  onChange={(e) => {
-                    setDeadlineStatusFilter(e.target.value);
+                  onChange={(value) => {
+                    setDeadlineStatusFilter(value);
                     setPage(1);
                   }}
-                  style={{
-                    padding: "3px 4px",
-                    border: "1px solid #E2E8F0",
-                    borderRadius: 3,
-                    fontSize: 11,
-                    color: "#4A5568",
-                  }}
-                >
-                  <option value="">{t("LBL_ALL_DEADLINE_STATUSES")}</option>
-                  <option value="within">{t("LBL_DEADLINE_WITHIN")}</option>
-                  <option value="warning">{t("LBL_DEADLINE_WARNING")}</option>
-                  <option value="overdue">{t("LBL_DEADLINE_OVERDUE")}</option>
-                </select>
+                  options={[
+                    { value: "", label: t("LBL_ALL_DEADLINE_STATUSES") },
+                    { value: "within", label: t("LBL_DEADLINE_WITHIN") },
+                    { value: "warning", label: t("LBL_DEADLINE_WARNING") },
+                    { value: "overdue", label: t("LBL_DEADLINE_OVERDUE") },
+                  ]}
+                />
               </>
             )}
           </div>
@@ -763,30 +797,43 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
           <div
             style={{
               display: "flex",
-              gap: 2,
+              flexShrink: 0,
+              height: TOOLBAR_CONTROL_HEIGHT,
               border: "1px solid #E2E8F0",
               borderRadius: 4,
               overflow: "hidden",
+              boxSizing: "border-box",
             }}
           >
-            {(["list", "grid", "preview"] as ViewMode[]).map((mode) => (
-              <button
-                key={mode}
-                onClick={() => setViewMode(mode)}
-                style={{
-                  padding: "4px 10px",
-                  border: "none",
-                  backgroundColor: viewMode === mode ? "#4299E1" : "#fff",
-                  color: viewMode === mode ? "#fff" : "#718096",
-                  cursor: "pointer",
-                  fontSize: 14,
-                  lineHeight: 1,
-                }}
-                title={viewModeTitles[mode]}
-              >
-                {VIEW_MODE_ICONS[mode]}
-              </button>
-            ))}
+            {(["list", "grid", "preview"] as ViewMode[]).map((mode, index) => {
+              const Icon = VIEW_MODE_ICONS[mode];
+              return (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setViewMode(mode)}
+                  aria-pressed={viewMode === mode}
+                  aria-label={viewModeTitles[mode]}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: 32,
+                    height: "100%",
+                    margin: 0,
+                    padding: 0,
+                    border: "none",
+                    borderLeft: index === 0 ? "none" : "1px solid #E2E8F0",
+                    backgroundColor: viewMode === mode ? "#4299E1" : "#fff",
+                    color: viewMode === mode ? "#fff" : "#718096",
+                    cursor: "pointer",
+                  }}
+                  title={viewModeTitles[mode]}
+                >
+                  <Icon size={15} strokeWidth={2} aria-hidden="true" />
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -799,7 +846,11 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
             setCreateEditModalOpen(true);
           }}
           style={{
-            padding: isMobile ? "5px 10px" : "5px 14px",
+            display: "flex",
+            alignItems: "center",
+            height: TOOLBAR_CONTROL_HEIGHT,
+            margin: 0,
+            padding: isMobile ? "0 10px" : "0 14px",
             backgroundColor: "#4299E1",
             color: "#fff",
             border: "none",
@@ -902,6 +953,7 @@ const DocumentsPageInner: React.FC<DocumentsPageProps> = ({
                 onFolderCreate={handleFolderCreate}
                 onFolderEdit={handleFolderEdit}
                 onFolderDelete={handleFolderDelete}
+                fillWidth
               />
             </div>
           </>
