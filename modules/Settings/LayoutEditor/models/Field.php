@@ -527,8 +527,13 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 		$restrictedFields =  array('isconvertedfrompotential','isconvertedfromlead');
 		if(in_array($this->getName(), $restrictedFields)){
 			return true;
-		}else{
-			return false;
 		}
+		// converted はリード昇格処理だけが書き換えるため、設定変更を禁止する（移動は可）
+		// 他モジュールに同名の項目があっても対象にしないよう、リードの項目に限る
+		if($this->getName() === 'converted'){
+			$moduleModel = $this->getModule();
+			return $moduleModel && $moduleModel->getName() === 'Leads';
+		}
+		return false;
 	}
 }

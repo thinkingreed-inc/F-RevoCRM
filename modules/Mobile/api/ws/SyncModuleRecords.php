@@ -141,11 +141,14 @@ class Mobile_WS_SyncModuleRecords extends Mobile_WS_SaveRecord {
 					LEFT JOIN vtiger_groups ON vtiger_groups.groupid = vtiger_crmentity.smownerid WHERE 1=1	$andsmowneridequal ",
 				$queryDeletedParameters);
 			} else if ($module == 'Leads') {
+				// 昇格済みリードを表示する設定のときは、昇格を「削除」として同期しない
+				$convertedAsDeleted = Leads_ConvertSetting_Model::showConvertedLeads()
+						? '' : 'OR (vtiger_crmentity.deleted=0 AND vtiger_leaddetails.converted=1)';
 				$queryDeleted = $adb->pquery("SELECT crmid, modifiedtime, setype FROM vtiger_crmentity
 				INNER JOIN vtiger_leaddetails ON vtiger_leaddetails.leadid=vtiger_crmentity.crmid
 				LEFT JOIN vtiger_users ON vtiger_users.id = vtiger_crmentity.smownerid
 				LEFT JOIN vtiger_groups ON vtiger_groups.groupid = vtiger_crmentity.smownerid
-				WHERE (vtiger_crmentity.deleted=1 OR (vtiger_crmentity.deleted=0 AND vtiger_leaddetails.converted=1)) AND vtiger_crmentity.setype=? AND vtiger_crmentity.modifiedtime > ? $andsmowneridequal", $queryDeletedParameters);
+				WHERE (vtiger_crmentity.deleted=1 $convertedAsDeleted) AND vtiger_crmentity.setype=? AND vtiger_crmentity.modifiedtime > ? $andsmowneridequal", $queryDeletedParameters);
 			} else {
 				$queryDeleted = $adb->pquery("SELECT crmid, modifiedtime, setype FROM vtiger_crmentity
 				LEFT JOIN vtiger_users ON vtiger_users.id = vtiger_crmentity.smownerid
