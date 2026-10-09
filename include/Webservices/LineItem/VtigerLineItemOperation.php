@@ -226,7 +226,15 @@ class VtigerLineItemOperation extends VtigerActorOperation {
 					$this->taxList = $this->providedTaxList;
 				}
 			} elseif ($found == false) {
-				array_merge($this->taxList, $productTaxList);
+				// 個別税モード・消費税未設定の商品：tax列をNULLに設定
+				foreach ($moduleFields as $fieldName => $field) {
+					if (preg_match('/tax\d+/', $fieldName) != 0) {
+						$this->taxList[$fieldName] = array(
+							'label' => $field->getFieldLabelKey(),
+							'percentage' => NULL
+						);
+					}
+				}
 			}
 		} else {
 			$meta = $this->getMeta();
