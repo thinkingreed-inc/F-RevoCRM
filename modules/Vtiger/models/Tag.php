@@ -63,7 +63,7 @@ class Vtiger_Tag_Model extends Vtiger_Base_Model {
 
 	public function create(){
 		$db = PearDatabase::getInstance();
-		$tagName = $this->getName();
+		$tagName = self::normalizeName($this->getName());
 		$visibility = $this->getType();
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$id = $db->getUniqueId('vtiger_freetags');
@@ -75,7 +75,8 @@ class Vtiger_Tag_Model extends Vtiger_Base_Model {
 	public function update() {
 		$db = PearDatabase::getInstance();
 		$query = "UPDATE vtiger_freetags SET tag=?, raw_tag=?, visibility=? WHERE id=?";
-		$db->pquery($query, array($this->getName(), $this->getName(), $this->getType(), $this->getId()));
+		$tagName = self::normalizeName($this->getName());
+		$db->pquery($query, array($tagName, $tagName, $this->getType(), $this->getId()));
 		return true;
 	}
 
@@ -269,6 +270,7 @@ class Vtiger_Tag_Model extends Vtiger_Base_Model {
 
 	public static function getInstanceByName($name, $userId, $excludedTagId = false) {
 		$db = PearDatabase::getInstance();
+		$name = self::normalizeName($name);
 		$query = "SELECT * FROM vtiger_freetags WHERE (tag=? OR raw_tag=?) AND (owner=? OR visibility=?)";
 		$params = array($name, $name, $userId, self::PUBLIC_TYPE);
 		if($excludedTagId !== false) {
@@ -293,6 +295,22 @@ class Vtiger_Tag_Model extends Vtiger_Base_Model {
 		//TODO : check for module specific delete query as well 
 		$result = $db->pquery($checkQuery, array($tagId, $userIdToExclude));
 		return $db->num_rows($result) > 0 ? true : false;
+	}
+
+	/**
+	 * タグ名を正規化する（前後の半角・全角スペースや改行等を除去）
+	 * 「タグA, タグB」のようにカンマ+空白区切りで入力された場合に,
+	 * 空白付きの名前が別タグとして扱われ重複作成されるのを防ぐ
+	 * @param string $tagName
+	 * @return string 正規化したタグ名
+	 */
+	public static function normalizeName($tagName) {
+		if(!is_string($tagName)) {
+			return $tagName;
+		}
+		$normalizedName = preg_replace('/^[\s\x{3000}]+|[\s\x{3000}]+$/u', '', $tagName);
+		// 不正な文字コード等でpreg_replaceが失敗した場合は半角空白のみ除去する
+		return ($normalizedName === null) ? trim($tagName) : $normalizedName;
 	}
 
 	/*
@@ -321,7 +339,7 @@ class Vtiger_Tag_Model extends Vtiger_Base_Model {
 			Vtiger_Cache::set('DBTags', 'DBTagsValue', $DBTagsValue);
 		}
 
-		$tagName = $tagValue['tagName'];
+		$tagName = self::normalizeName($tagValue['tagName']);
 		$tagId = isset($tagValue['tagId']) ? $tagValue['tagId'] : '';
 		$previousVisibility = '';
 		$otherTagsWithSameName = array_filter($DBTagsValue, function($item) use ($tagName, $tagId, &$previousVisibility) {
@@ -329,7 +347,9 @@ class Vtiger_Tag_Model extends Vtiger_Base_Model {
 				$previousVisibility = $item['visibility'];
 				return false;
 			}
-			return $item['tag'] == $tagName;
+			// DB側も正規化して比較する. 既に空白付きで保存されてしまったタグが
+			// 同名チェックをすり抜けて重複を増やし続けるのを防ぐ
+			return self::normalizeName($item['tag']) == $tagName;
 		});
 		$otherTagsWithSameName = array_values($otherTagsWithSameName);
 
@@ -360,7 +380,7 @@ class Vtiger_Tag_Model extends Vtiger_Base_Model {
 		$DBTagsValue = Vtiger_Cache::get('DBTags', 'DBTagsValue');
 		$DBTagsValue[] = array(
 			'id' => $tagValue['tagId'],
-			'tag' => $tagValue['tagName'],
+			'tag' => self::normalizeName($tagValue['tagName']),
 			'owner' => $tagValue['owner'],
 			'visibility' => $tagValue['visibility']
 		);
