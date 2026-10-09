@@ -35,7 +35,7 @@
 				{foreach from=$pickList key=keys item=value}
 					{if $keys eq 'vendor' or $keys eq 'contact' or $keys eq 'account'}
 						{$modl = ucfirst($keys|cat:"s")}
-						{if  vtlib_isModuleActive($modl)}
+						{if  vtlib_isModuleActive($modl) and array_key_exists($keys|cat:'_id', $RECORD_STRUCTURE['LBL_PO_INFORMATION'])}
 							<option value="{$keys}">{vtranslate($value,$MODULE)}</option>
 						{/if}
 					{else}
@@ -51,7 +51,7 @@
 					{foreach from=$pickList key=keys item=value}
 					{if $keys eq 'vendor' or $keys eq 'contact' or $keys eq 'account'}
 						{$modl = ucfirst($keys|cat:"s")}
-						{if  vtlib_isModuleActive($modl)}
+						{if  vtlib_isModuleActive($modl) and array_key_exists($keys|cat:'_id', $RECORD_STRUCTURE['LBL_PO_INFORMATION'])}
 							<option value="{$keys}">{vtranslate($value,$MODULE)}</option>
 						{/if}
 					{else}
