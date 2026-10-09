@@ -60,6 +60,8 @@ class Logger {
 
 		$configinfo = LoggerPropertyConfigurator::getInstance()->getConfigInfo($name);
 		$logger = new Logger($name, $configinfo);
+		// 名前ごとに使い回す。登録しないと呼ばれるたびにハンドラが作られ、ログファイルが開いたまま増えていく
+		self::$instances[$name] = $logger;
 
 		return $logger;
 	}
