@@ -51,12 +51,15 @@ class Settings_LanguageConverter_Module_Model extends Settings_Vtiger_Module_Mod
            ) AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
     }
 
-    public static function convertTranslate($str, $moduleName = null, $language = 'all') {
+    public static function convertTranslate($str, $moduleName = null, $language = null) {
         if(!self::$isLoaded) {
             self::loadAll();
         }
         if(php7_count(self::$cache) == 0) {
             return $str;
+        }
+        if($language === null) {
+            $language = class_exists('Vtiger_Language_Handler') ? Vtiger_Language_Handler::getLanguage() : 'all';
         }
         // 全モジュール共通の変換
         foreach(self::$cache['common'] as $commonLang) {
