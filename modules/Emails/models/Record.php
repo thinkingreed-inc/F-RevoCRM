@@ -171,10 +171,13 @@ class Emails_Record_Model extends Vtiger_Record_Model {
             $mailer->Subject = decode_html(strip_tags($subject));
 
             $plainBody = decode_emptyspace_html($description);
+            // 署名は HTML 版と同じく、署名を付ける指定があるときだけ付ける
+            if ($this->get('signature') == 'Yes' && $currentUserModel->get('signature') != '') {
+                $plainBody .= "\n\n".decode_html($currentUserModel->get('signature'));
+            }
             $plainBody = preg_replace(array("/<p>/i","/<br>/i","/<br \/>/i"),array("\n","\n","\n"),$plainBody);
-            $plainBody .= "\n\n".$currentUserModel->get('signature');
-            $plainBody = mb_convert_encoding(strip_tags($plainBody), 'UTF-8', 'ISO-8859-1');
-            $plainBody = Emails_Mailer_Model::convertToAscii($plainBody);
+            // 本文は UTF-8 のまま扱う (ISO-8859-1 からの変換や ASCII 変換をすると日本語が文字化けする)
+            $plainBody = html_entity_decode(strip_tags($plainBody), ENT_QUOTES, 'UTF-8');
             $plainBody = $this->convertUrlsToTrackUrls($plainBody, $id,'plain');
             $mailer->AltBody = $plainBody;
      //       $mailer->AddAddress($email);
