@@ -376,7 +376,6 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       // pt-[7px]でラベル（leading-[30px]）の1行目と縦位置を揃える
       case UI_TYPES.TEXTAREA:
       case UI_TYPES.TEXTAREA_LONG:
-      case UI_TYPES.TEXTAREA_20:
         return (
           <div className={cn("flex items-start gap-2", className)}>
             {renderLabel()}
@@ -873,7 +872,6 @@ export const isUITypeSupported = (uitype: string): boolean => {
     // テキストエリア系
     UI_TYPES.TEXTAREA,
     UI_TYPES.TEXTAREA_LONG,
-    UI_TYPES.TEXTAREA_20,
     // 数値系
     UI_TYPES.NUMBER,
     UI_TYPES.DECIMAL,
@@ -936,7 +934,6 @@ export const getSupportedUITypes = (): string[] => {
     // テキストエリア系
     UI_TYPES.TEXTAREA,
     UI_TYPES.TEXTAREA_LONG,
-    UI_TYPES.TEXTAREA_20,
     // 数値系
     UI_TYPES.NUMBER,
     UI_TYPES.DECIMAL,
