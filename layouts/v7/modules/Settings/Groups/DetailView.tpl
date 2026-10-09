@@ -54,10 +54,17 @@
 												{vtranslate($GROUP_LABEL,$QUALIFIED_MODULE)}
 											</li>
 											{foreach item=GROUP_MEMBER_INFO from=$GROUP_MEMBERS}
-												<li>
-													<a href="{$GROUP_MEMBER_INFO->getDetailViewUrl()}">{$GROUP_MEMBER_INFO->get('name')}</a>
-												</li>
-											{/foreach}
+	<li>
+		<a href="{$GROUP_MEMBER_INFO->getDetailViewUrl()}">
+			{assign var="MEMBER_NAME" value=$GROUP_MEMBER_INFO->get('name')}
+			{if ($GROUP_LABEL eq 'Roles' or $GROUP_LABEL eq 'RoleAndSubordinates')}
+				{vtranslate($MEMBER_NAME, 'Settings:Roles')}
+			{else}
+				{$MEMBER_NAME}
+			{/if}
+		</a>
+	</li>
+{/foreach}
 										{/if}
 									{/foreach}
 								</ul>
