@@ -305,7 +305,7 @@ export function TimeComboBox({
         disabled={disabled}
         placeholder={placeholder}
         className={cn(
-          "w-28 h-[30px] px-2 text-md border border-input rounded-sm shadow-xs transition-[color,box-shadow]",
+          "w-28 h-[30px] px-2 text-sm border border-input rounded-sm shadow-xs transition-[color,box-shadow]",
           "focus:outline-none focus:ring-[3px] focus:ring-ring/50 focus:border-ring",
           "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
           error && "border-red-500 bg-red-50",
@@ -338,7 +338,7 @@ export function TimeComboBox({
                   data-index={index}
                   onClick={() => handleOptionClick(option)}
                   className={cn(
-                    "px-3 py-1.5 text-md cursor-pointer",
+                    "px-3 py-1.5 text-sm cursor-pointer",
                     highlightedIndex === index
                       ? "bg-blue-100"
                       : "hover:bg-blue-50",

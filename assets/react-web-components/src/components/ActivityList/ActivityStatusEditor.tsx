@@ -175,7 +175,7 @@ export const ActivityStatusEditor: React.FC<ActivityStatusEditorProps> = ({
       <Badge
         variant={statusVariant}
         className={cn(
-          "px-4 text-md",
+          "px-4 text-sm",
           canEdit && [
             "cursor-pointer",
             "hover:ring-2 hover:ring-offset-1 hover:ring-blue-400",
@@ -210,7 +210,7 @@ export const ActivityStatusEditor: React.FC<ActivityStatusEditorProps> = ({
         disabled={isSaving}
       >
         <SelectTrigger
-          className="h-6 min-w-[120px] text-md"
+          className="h-6 min-w-[120px] text-sm"
           aria-label={`Select ${fieldName}`}
         >
           <SelectValue placeholder="選択..." />

@@ -58,7 +58,7 @@ export const QuickCreateForm: React.FC<QuickCreateFormProps> = ({
   }
 
   return (
-    <div className="quickcreate-form space-y-3 text-md">
+    <div className="quickcreate-form space-y-3 text-sm">
       {Object.entries(fieldsByBlock).map(([blockName, blockFields]) => (
         <div key={blockName} className="quickcreate-block">
           <h4 className="fieldBlockHeader font-bold leading-[1.1] mt-0 mb-2 pb-1 border-b border-gray-300">
