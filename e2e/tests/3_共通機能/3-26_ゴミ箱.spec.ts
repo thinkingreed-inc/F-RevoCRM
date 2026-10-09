@@ -6,7 +6,7 @@ import {
   listSearch,
   clearListSearch,
 } from "../../utils/listview";
-import { confirmYes } from "../../utils/settings";
+import { confirmYesAndWait } from "../../utils/settings";
 
 /**
  * 共通機能: 一括削除 と ゴミ箱(復元 / 完全削除) — 機能一覧 12-3 / 35-1
@@ -46,8 +46,7 @@ test.describe("共通: 一括削除とゴミ箱", () => {
       const del = page.locator("#Accounts_listView_massAction_LBL_DELETE");
       await expect(del).toBeEnabled();
       await del.click();
-      await confirmYes(page);
-      await page.waitForLoadState("networkidle");
+      await confirmYesAndWait(page, /MassDelete/);
     };
     await selectAndDelete();
 
@@ -74,8 +73,7 @@ test.describe("共通: 一括削除とゴミ箱", () => {
     );
     await expect(restore).toBeEnabled();
     await restore.click();
-    await confirmYes(page);
-    await page.waitForLoadState("networkidle");
+    await confirmYesAndWait(page, /restoreRecords/);
 
     // 復元後: ゴミ箱から消えている
     await gotoBin();
@@ -92,8 +90,7 @@ test.describe("共通: 一括削除とゴミ箱", () => {
     const purge = page.locator("#RecycleBin_listView_massAction_LBL_DELETE");
     await expect(purge).toBeEnabled();
     await purge.click();
-    await confirmYes(page);
-    await page.waitForLoadState("networkidle");
+    await confirmYesAndWait(page, /deleteRecords/);
 
     // 完全削除後: ゴミ箱から消えている
     await gotoBin();

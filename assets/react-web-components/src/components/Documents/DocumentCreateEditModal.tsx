@@ -303,18 +303,25 @@ export const DocumentCreateEditModal: React.FC<
         setNotecontent("");
         setFileversion("");
         setFilestatus(true);
-        // Set defaults from field definitions
-        const defaults: Record<string, any> = {};
-        for (const f of fieldDefs) {
-          if (CORE_FIELD_NAMES.has(f.name)) continue;
-          if (f.defaultvalue) {
-            defaults[f.name] = f.defaultvalue;
-          }
-        }
-        setDynamicFields(defaults);
+        setDynamicFields({});
       }
     }
-  }, [isOpen, mode, doc, defaultFolderId, fieldDefs]);
+  }, [isOpen, mode, doc, defaultFolderId]);
+
+  // 項目定義の既定値を入れる。項目定義は開いた後に非同期で届くため、
+  // 上の初期化に含めると、届いた時点で入力済みのタイトルや選択したファイルまで
+  // 消してしまう。既定値は利用者がまだ触っていない項目にだけ補う。
+  useEffect(() => {
+    if (!isOpen || mode === "edit") return;
+    const defaults: Record<string, any> = {};
+    for (const f of fieldDefs) {
+      if (CORE_FIELD_NAMES.has(f.name)) continue;
+      if (f.defaultvalue) {
+        defaults[f.name] = f.defaultvalue;
+      }
+    }
+    setDynamicFields((prev) => ({ ...defaults, ...prev }));
+  }, [isOpen, mode, fieldDefs]);
 
   const handleFileSelect = useCallback(
     (file: File) => {
