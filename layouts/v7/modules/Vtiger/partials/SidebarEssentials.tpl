@@ -140,6 +140,7 @@
                     <div id="listViewTagContainer" class="multiLevelTagList" 
                         {if $ALL_CUSTOMVIEW_MODEL} data-view-id="{$ALL_CUSTOMVIEW_MODEL->getId()}" {/if}
                         data-list-tag-count="{Vtiger_Tag_Model::NUM_OF_TAGS_LIST}">
+                        {assign var=CURRENT_TAGS value=explode(',', $CURRENT_TAG)}
                         {foreach item=TAG_MODEL from=$TAGS name=tagCounter}
                             {assign var=TAG_LABEL value=$TAG_MODEL->getName()}
                             {assign var=TAG_ID value=$TAG_MODEL->getId()}
@@ -147,7 +148,7 @@
                             {if $smarty.foreach.tagCounter.iteration gt Vtiger_Tag_Model::NUM_OF_TAGS_LIST}
                                 {break}
                             {/if}
-                            {include file="Tag.tpl"|vtemplate_path:$MODULE NO_DELETE=true ACTIVE= $CURRENT_TAG eq $TAG_ID}
+                            {include file="Tag.tpl"|vtemplate_path:$MODULE NO_DELETE=true ACTIVE=in_array($TAG_ID, $CURRENT_TAGS)}
                         {/foreach}
                         <div> 
                             <a class="moreTags {if (php7_count($TAGS) - Vtiger_Tag_Model::NUM_OF_TAGS_LIST) le 0} hide {/if}">
@@ -159,7 +160,8 @@
                                     {if $smarty.foreach.tagCounter.iteration le Vtiger_Tag_Model::NUM_OF_TAGS_LIST}
                                         {continue}
                                     {/if}
-                                    {include file="Tag.tpl"|vtemplate_path:$MODULE NO_DELETE=true ACTIVE= $CURRENT_TAG eq $TAG_ID}
+                                    {assign var=TAG_ID value=$TAG_MODEL->getId()}
+                                    {include file="Tag.tpl"|vtemplate_path:$MODULE NO_DELETE=true ACTIVE=in_array($TAG_ID, $CURRENT_TAGS)}
                                 {/foreach}
                             </div>
                         </div>
