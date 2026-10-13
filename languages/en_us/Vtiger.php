@@ -1733,6 +1733,7 @@ $languageStrings = array(
 	'LBL_DESCENDING' => 'Descending',
 	'LBL_ADD_SORT_ROW' => 'Add sort condition',
 	'LBL_REMOVE_SORTING' => 'Remove sorting for this column',
+	'import_failure_reason' => 'Reason',
 );
 
 $jsLanguageStrings = array(
