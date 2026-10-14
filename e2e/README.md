@@ -100,9 +100,9 @@ SKIP_E2E=1 npm run test:e2e:fresh
 
 | 変数 | 既定値 | 説明 |
 |---|---|---|
-| `FRESH_DIR` | リポジトリの隣の `<リポジトリ名>_fresh` | 複製先。毎回作り直す |
+| `FRESH_DIR` | リポジトリの隣の `<リポジトリ名>_fresh` | 複製先。毎回作り直す。空のディレクトリか、このスクリプトで作ったディレクトリ（目印 `.fresh-install-target` あり）だけ指定できる |
 | `FRESH_URL` | `http://localhost/<FRESH_DIR の名前>/` | 複製先の URL |
-| `FRESH_DB` | `<config.inc.php の db_name>_fresh` | インストール先の DB。毎回作り直す |
+| `FRESH_DB` | `<config.inc.php の db_name>_fresh` | インストール先の DB。毎回作り直す。英数字と `_` からなり、末尾が `_fresh` の名前だけ指定できる |
 | `FORCE` | なし | `1` で確認プロンプトを省略 |
 | `SKIP_E2E` | なし | `1` でインストールと検証だけ行う |
 

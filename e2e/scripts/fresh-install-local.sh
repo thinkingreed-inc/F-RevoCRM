@@ -35,7 +35,7 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/../.."   # リポジトリルート
-SRC_DIR="$(pwd)"
+SRC_DIR="$(pwd -P)"
 
 CONFIG="config.inc.php"
 [ -f "$CONFIG" ] || { echo "!! $CONFIG が見つかりません"; exit 1; }
@@ -72,8 +72,16 @@ case "$(realpath -m "$FRESH_DIR")" in
   "$SRC_DIR"|"$SRC_DIR"/*|/|"$(dirname "$SRC_DIR")")
     echo "!! FRESH_DIR に開発用ディレクトリ ($FRESH_DIR) は指定できません"; exit 1 ;;
 esac
-if [ -z "$FRESH_DB" ] || [ "$FRESH_DB" = "$DEV_DB" ]; then
-  echo "!! FRESH_DB に開発用 DB ($DEV_DB) は指定できません"; exit 1
+# 作り直すのは、本スクリプトが作ったディレクトリ (目印のファイルがある) か、空のディレクトリだけ。
+# rsync --delete は複製先にしか無いファイルを消すため、別の作業ツリーなどを誤って指定すると消えてしまう。
+MARKER="$FRESH_DIR/.fresh-install-target"
+if [ -d "$FRESH_DIR" ] && [ -n "$(ls -A "$FRESH_DIR")" ] && [ ! -f "$MARKER" ]; then
+  echo "!! $FRESH_DIR は空でなく、このスクリプトで作ったディレクトリでもありません。別のディレクトリを指定してください"; exit 1
+fi
+# DB は末尾 _fresh の名前だけ作り直す (github_e2e や PHPUnit 用の _test を誤って消さないため)。
+# 英数字と _ に限定し、SQL へそのまま埋め込めるようにする。
+if ! [[ "$FRESH_DB" =~ ^[A-Za-z0-9_]+_fresh$ ]] || [ "$FRESH_DB" = "$DEV_DB" ]; then
+  echo "!! FRESH_DB は英数字と _ からなり、末尾が _fresh の名前にしてください (指定: $FRESH_DB)"; exit 1
 fi
 case "$FRESH_URL" in */) ;; *) FRESH_URL="$FRESH_URL/" ;; esac
 
@@ -103,8 +111,10 @@ echo "==> 1/6 作業ツリーを複製"
 # インストールで作られるファイル (config.inc.php / tabdata.php / 権限キャッシュ) と、
 # 実行時のデータ (storage / logs / cache / Smarty のコンパイル結果) は複製しない。
 mkdir -p "$FRESH_DIR"
+touch "$MARKER"
 rsync -a --delete \
   --exclude='/.git' \
+  --exclude='/.fresh-install-target' \
   --exclude='/.env' \
   --exclude='/config.inc.php' \
   --exclude='/config.inc.php.*' \

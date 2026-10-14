@@ -71,7 +71,12 @@ final class ParametersTypeColumnsTest extends TestCase
             self::markTestSkipped('テスト用DBに接続できないため実行しない');
         }
 
-        $this->db()->pquery('DROP TABLE IF EXISTS `' . self::BACKUP_TABLE . '`', []);
+        // 前回の実行が異常終了して tearDown が走らなかった場合、退避した本物が残っている。
+        // 消さずに先に戻してから退避し直す。
+        if ($this->tableExists(self::BACKUP_TABLE)) {
+            $this->db()->pquery('DROP TABLE IF EXISTS `vtiger_parameters`', []);
+            $this->db()->pquery('RENAME TABLE `' . self::BACKUP_TABLE . '` TO `vtiger_parameters`', []);
+        }
         if ($this->tableExists('vtiger_parameters')) {
             $this->db()->pquery('RENAME TABLE `vtiger_parameters` TO `' . self::BACKUP_TABLE . '`', []);
             $this->backedUp = true;
