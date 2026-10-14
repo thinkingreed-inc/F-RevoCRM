@@ -593,6 +593,9 @@ class DefaultDataPopulator extends CRMEntity {
 		$this->db->query("insert into vtiger_field values (15," . $this->db->getUniqueID("vtiger_field") . ",'status','vtiger_faq',1,'15','faqstatus','Status',1,2,'',100,3,37,1,'V~M',3,null,'BAS',1)");
 		$this->db->query("insert into vtiger_field values (15," . $this->db->getUniqueID("vtiger_field") . ",'question','vtiger_faq',1,'20','question','Question',1,2,'',100,7,37,1,'V~M',3,null,'BAS',1)");
 		$this->db->query("insert into vtiger_field values (15," . $this->db->getUniqueID("vtiger_field") . ",'answer','vtiger_faq',1,'20','faq_answer','Answer',1,2,'',100,8,37,1,'V~M',3,null,'BAS',1)");
+		// FAQ のコメント項目（comments）は削除したが、ID 285 は欠番として消費する。
+		// マイグレーション（741_to_742.php の vtiger_fieldmodulerel など）が項目 ID を固定値で参照しているため、詰めるとずれる
+		$this->db->getUniqueID("vtiger_field");
 		$this->db->query("insert into vtiger_field values (15," . $this->db->getUniqueID("vtiger_field") . ",'createdtime','vtiger_crmentity',1,'70','createdtime','Created Time',1,0,'',100,5,37,2,'DT~O',3,null,'BAS',0)");
 		$this->db->query("insert into vtiger_field values (15," . $this->db->getUniqueID("vtiger_field") . ",'modifiedtime','vtiger_crmentity',1,'70','modifiedtime','Modified Time',1,0,'',100,6,37,2,'DT~O',3,null,'BAS',0)");
 		$this->db->query("insert into vtiger_field values (15," . $this->db->getUniqueID("vtiger_field") . ",'modifiedby','vtiger_crmentity',1,'52','modifiedby','Last Modified By',1,0,'',100,7,37,3,'V~O',3,null,'BAS',0)");
