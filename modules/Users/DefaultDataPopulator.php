@@ -99,6 +99,9 @@ class DefaultDataPopulator extends CRMEntity {
 		$this->db->query("insert into vtiger_blocks values (" . $this->db->getUniqueID('vtiger_blocks') . ",15,'LBL_FAQ_INFORMATION',1,0,0,0,0,0,1,0)");
 		//$this->db->query("insert into vtiger_blocks values (".$this->db->getUniqueID('vtiger_blocks').",15,'',2,1,0,0,0,0,1,0)");
 		//$this->db->query("insert into vtiger_blocks values (".$this->db->getUniqueID('vtiger_blocks').",15,'',3,1,0,0,0,0,1,0)");
+		// FAQ のコメントブロック（LBL_COMMENT_INFORMATION）は削除したが、ID 38 は欠番として消費する。
+		// 以降の項目はブロック ID を固定値で参照しているため、詰めるとずれる（dump_firstinstall.sql も 38 は欠番）
+		$this->db->getUniqueID('vtiger_blocks');
 		$this->db->query("insert into vtiger_blocks values (" . $this->db->getUniqueID('vtiger_blocks') . ",16,'LBL_EVENT_INFORMATION',1,0,0,0,0,0,1,0)");
 		$this->db->query("insert into vtiger_blocks values (" . $this->db->getUniqueID('vtiger_blocks') . ",16,'',2,1,0,0,0,0,1,0)");
 		$this->db->query("insert into vtiger_blocks values (" . $this->db->getUniqueID('vtiger_blocks') . ",16,'',3,1,0,0,0,0,1,0)");
