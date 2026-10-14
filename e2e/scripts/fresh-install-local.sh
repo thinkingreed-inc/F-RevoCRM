@@ -142,6 +142,14 @@ rm -rf "$FRESH_DIR"/storage/20* "$FRESH_DIR"/cache/* "$FRESH_DIR"/test/templates
 rm -f "$FRESH_DIR"/logs/*.log "$FRESH_DIR"/logs/fresh-install-*.html
 mkdir -p "$FRESH_DIR/cache/images" "$FRESH_DIR/cache/import" "$FRESH_DIR/test/templates_c"
 
+# インストーラの Step7 はアンケート（sendSurvery）を外部の CRM へ送信する。
+# テストのたびに送信しないよう、複製先でだけ呼び出しを無効にする（リポジトリのコードは変えない）。
+INSTALL_VIEW="$FRESH_DIR/modules/Install/views/Index.php"
+if ! grep -q '\$this->sendSurvery();' "$INSTALL_VIEW"; then
+  echo "!! $INSTALL_VIEW にアンケート送信の呼び出しが見つかりません。外部へ送信しないよう、処理を確認してからスクリプトを直してください"; exit 1
+fi
+sed -i 's#\$this->sendSurvery();#// $this->sendSurvery(); // fresh-install-local.sh で無効化#' "$INSTALL_VIEW"
+
 echo "==> 2/6 DB を空で作り直す ($FRESH_DB)"
 sql -e "DROP DATABASE IF EXISTS \`${FRESH_DB}\`; CREATE DATABASE \`${FRESH_DB}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"
 
