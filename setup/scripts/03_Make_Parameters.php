@@ -19,6 +19,8 @@ if($adb->num_rows($result) == 0) {
             `id` int(19) NOT NULL AUTO_INCREMENT,
             `key` varchar(200) DEFAULT NULL,
             `value` text DEFAULT NULL,
+            `type` varchar(20) NOT NULL DEFAULT 'string',
+            `secret` tinyint(1) NOT NULL DEFAULT 0,
             `description` text,
             PRIMARY KEY (`id`),
             KEY `key` (`key`)
