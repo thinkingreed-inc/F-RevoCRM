@@ -405,6 +405,10 @@ $languageStrings = array(
 	'Workflow' => 'Workflow',
 	'LanguageConverter' => 'Language Converter',
 	'LBL_LANGUAGECONVERTER_DESCRIPTION' => 'Modify displayed text',
+	'LBL_MCP_TOKENS' => 'MCP Token Management',
+	'LBL_MCP_TOKENS_DESCRIPTION' => 'Issue, list and disable MCP tokens',
+	'LBL_MCP_OAUTH_APPS_ADMIN' => 'MCP Connected Applications',
+	'LBL_MCP_OAUTH_APPS_ADMIN_DESCRIPTION' => 'Review applications connected via MCP across users and revoke access',
 	'LBL_JAPAN' => 'japan',
 
 	// Edit Charge
