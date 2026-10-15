@@ -368,8 +368,8 @@ class WebserviceField{
                 }
             } else {
 				$hardCodedPickListNames = array('hdntaxtype','email_flag');
-				$hardCodedPickListValues = array('hdntaxtype'=> array(	array('label' => 'Individual',	'value' => 'individual'),
-																		array('label' => 'Group',		'value' => 'group')),
+				$hardCodedPickListValues = array('hdntaxtype'=> array(	array('label' => 'individual',	'value' => 'individual'),
+																		array('label' => 'group',		'value' => 'group')),
 												 'email_flag'=> array(	array('label' => 'SAVED',		'value' => 'SAVED'),
 																		array('label' => 'SENT',		'value' => 'SENT'),
 																		array('label' => 'MAILSCANNER',	'value' => 'MAILSCANNER')));
