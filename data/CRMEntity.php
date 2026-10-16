@@ -2446,7 +2446,7 @@ class CRMEntity {
 
 		$query = $this->getRelationQuery($module, $secmodule, "$tablename", "$tableindex", $queryPlanner, $reportid);
 
-		// 保存済みのレポート定義は、vtiger_crmentity 上の項目（作成日時・最終更新日時・説明など）を
+		// 保存済みのレポート定義は、vtiger_crmentity 上の項目（作成日時・最終更新日時など）を
 		// vtiger_crmentity$secmodule という別名で参照する（modules/Reports/Reports.php）。
 		// #899 以降の正のデータは基本テーブル側にあるため、vtiger_crmentity ではなく基本テーブルを
 		// この別名で結合する。削除済みのレコードは getRelationQuery() の $tablename.deleted = 0 で除外済み
