@@ -2448,23 +2448,24 @@ class CRMEntity {
 		$query = $this->getRelationQuery($module, $secmodule, "$tablename", "$tableindex", $queryPlanner, $reportid);
 
 		if ($queryPlanner->requireTable("vtiger_crmentity$secmodule", $matrix)) {
-			$query .= " left join vtiger_crmentity as vtiger_crmentity$secmodule on vtiger_crmentity$secmodule.crmid = $tablename.$tableindex AND vtiger_crmentity$secmodule.deleted=0";
+			// $query .= " left join vtiger_crmentity as vtiger_crmentity$secmodule on vtiger_crmentity$secmodule.crmid = $tablename.$tableindex AND vtiger_crmentity$secmodule.deleted=0";
 		}
 
 		// Add the pre-joined custom table query
 		$query .= " ".$cfquery;
 
+		// 担当・最終更新者・作成者は vtiger_crmentity ではなく基本テーブルの値を参照する
 		if ($queryPlanner->requireTable("vtiger_groups$secmodule")) {
-			$query .= " left join vtiger_groups as vtiger_groups" . $secmodule . " on vtiger_groups" . $secmodule . ".groupid = vtiger_crmentity$secmodule.smownerid";
+			$query .= " left join vtiger_groups as vtiger_groups" . $secmodule . " on vtiger_groups" . $secmodule . ".groupid = $tablename.smownerid";
 		}
 		if ($queryPlanner->requireTable("vtiger_users$secmodule")) {
-			$query .= " left join vtiger_users as vtiger_users" . $secmodule . " on vtiger_users" . $secmodule . ".id = vtiger_crmentity$secmodule.smownerid";
+			$query .= " left join vtiger_users as vtiger_users" . $secmodule . " on vtiger_users" . $secmodule . ".id = $tablename.smownerid";
 		}
 		if ($queryPlanner->requireTable("vtiger_lastModifiedBy$secmodule")) {
-			$query .= " left join vtiger_users as vtiger_lastModifiedBy" . $secmodule . " on vtiger_lastModifiedBy" . $secmodule . ".id = vtiger_crmentity" . $secmodule . ".modifiedby";
+			$query .= " left join vtiger_users as vtiger_lastModifiedBy" . $secmodule . " on vtiger_lastModifiedBy" . $secmodule . ".id = $tablename.modifiedby";
 		}
 		if ($queryPlanner->requireTable('vtiger_createdby'.$secmodule)) {
-			$query .= " LEFT JOIN vtiger_users AS vtiger_createdby$secmodule ON vtiger_createdby$secmodule.id=vtiger_crmentity.smcreatorid";
+			$query .= " LEFT JOIN vtiger_users AS vtiger_createdby$secmodule ON vtiger_createdby$secmodule.id = $tablename.smcreatorid";
 		}
 		// Add the pre-joined relation table query
 		$query .= " " . $relquery;
