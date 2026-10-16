@@ -4,6 +4,7 @@ import { QuickCreate, CalendarQuickCreate } from "@/components/QuickCreate";
 import { AppMenu } from "@/components/AppMenu";
 import { ActivityList } from "@/components/ActivityList";
 import { ParameterEdit } from "@/components/ParameterEdit/ParameterEdit";
+import { registerMultiPicklistFieldElement } from "@/components/MultiPicklistFieldElement";
 
 // QuickCreate本体コンポーネントの登録
 // イベント: save, cancel, go-to-full-form, open-change (CustomEvent)
@@ -120,3 +121,9 @@ createWebComponent(
   ["record-id", "is-open"],
   ["onSave", "onCancel", "onOpenChange"],
 );
+
+// MultiPicklistFieldElement の登録（#1677: 複数選択uitype33のチェックボックス表示）
+// 標準Edit画面のネイティブ<select multiple>をラップし、選択肢<=threshold でチェックボックス、
+// 超過で従来ドロップダウン表示に切替える。送信/必須検証はネイティブselectが担う。
+// 使用例（Smarty）: <multi-picklist-field threshold="100"><select multiple ...>...</select></multi-picklist-field>
+registerMultiPicklistFieldElement();
