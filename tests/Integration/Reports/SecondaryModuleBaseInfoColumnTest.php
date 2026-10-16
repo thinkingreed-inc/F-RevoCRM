@@ -40,6 +40,18 @@ final class SecondaryModuleBaseInfoColumnTest extends ReportsTestCase
 
     private const FILTER_REPORT_ID = 990204;
 
+    private const SORT_REPORT_ID = 990205;
+
+    /** 並び順の検証用に追加する顧客担当者・プロジェクト */
+    private const SECOND_CONTACT_ID = 990213;
+
+    private const SECOND_PROJECT_ID = 990223;
+
+    /** 2件目のプロジェクトの作成日時。基本テーブルでは1件目より古く、vtiger_crmentity では新しくする */
+    private const SECOND_BASE_CREATED_TIME = '2030-01-01 00:00:00';
+
+    private const SECOND_CRMENTITY_CREATED_TIME = '2040-01-01 00:00:00';
+
     private const CONTACT_ID = 990211;
 
     private const DELETED_PROJECT_CONTACT_ID = 990212;
@@ -180,6 +192,57 @@ final class SecondaryModuleBaseInfoColumnTest extends ReportsTestCase
             [self::PREFIX . 'owner'],
             array_keys($rows),
             '作成日時が空でないプロジェクトを持つ顧客担当者だけが返り、基本テーブルで削除済みのプロジェクトは対象外'
+        );
+        $this->assertDoesNotJoinCrmentity($sql);
+    }
+
+    /**
+     * グループ化（並び順を兼ねる）に関連モジュールの作成日時を指定すると、基本テーブルの値で並ぶこと
+     *
+     * @testWith ["tabular"]
+     *           ["summary"]
+     */
+    public function test_関連モジュールの作成日時でグループ化すると基本テーブルの値の順に並ぶ(string $reportType): void
+    {
+        $this->createContact(self::SECOND_CONTACT_ID, self::PREFIX . 'second');
+        $this->createProject(self::SECOND_PROJECT_ID, self::SECOND_CONTACT_ID, 0);
+        $this->db->pquery('UPDATE vtiger_project SET createdtime = ? WHERE projectid = ?', [self::SECOND_BASE_CREATED_TIME, self::SECOND_PROJECT_ID]);
+        $this->db->pquery('UPDATE vtiger_crmentity SET createdtime = ? WHERE crmid = ?', [self::SECOND_CRMENTITY_CREATED_TIME, self::SECOND_PROJECT_ID]);
+
+        $this->createReport(
+            self::SORT_REPORT_ID,
+            'Contacts',
+            'Project',
+            'Project::Project::linktoaccountscontacts',
+            [self::LASTNAME_COLUMN, self::CREATED_TIME_COLUMN],
+            [['columnname' => self::CREATED_TIME_COLUMN, 'comparator' => 'ny']]
+        );
+        $this->db->pquery('UPDATE vtiger_report SET reporttype = ? WHERE reportid = ?', [$reportType, self::SORT_REPORT_ID]);
+        $this->db->pquery('DELETE FROM vtiger_reportsortcol WHERE reportid = ?', [self::SORT_REPORT_ID]);
+        $this->db->pquery(
+            "INSERT INTO vtiger_reportsortcol (sortcolid, reportid, columnname, sortorder) VALUES (1, ?, ?, 'Descending'), (2, ?, 'none', ''), (3, ?, 'none', '')",
+            [self::SORT_REPORT_ID, self::CREATED_TIME_COLUMN, self::SORT_REPORT_ID, self::SORT_REPORT_ID]
+        );
+
+        try {
+            $sql = $this->buildReportSql(ReportRun::getInstance(self::SORT_REPORT_ID), self::SORT_REPORT_ID);
+            $lastnames = [];
+            foreach ($this->fetchAll($sql) as $row) {
+                $row = array_change_key_case($row, CASE_LOWER);
+                $lastname = $row['contacts_last_name'] ?? null;
+                if (is_string($lastname) && str_starts_with($lastname, self::PREFIX)) {
+                    $lastnames[] = $lastname;
+                }
+            }
+        } finally {
+            $this->db->pquery('DELETE FROM vtiger_reportsortcol WHERE reportid = ?', [self::SORT_REPORT_ID]);
+        }
+
+        self::assertStringContainsString('order by vtiger_crmentityProject.createdtime DESC', $sql, '作成日時の降順で並べること');
+        self::assertSame(
+            [self::PREFIX . 'owner', self::PREFIX . 'second'],
+            $lastnames,
+            '基本テーブルの作成日時（' . self::BASE_CREATED_TIME . ' > ' . self::SECOND_BASE_CREATED_TIME . '）の降順に並ぶこと'
         );
         $this->assertDoesNotJoinCrmentity($sql);
     }
