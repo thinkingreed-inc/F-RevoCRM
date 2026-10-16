@@ -18,21 +18,27 @@ use Tests\Support\ReportsTestCase;
 require_once dirname(__DIR__, 2) . '/Support/ReportsTestCase.php';
 
 /**
- * 関連モジュールの担当・最終更新者・登録者 — CRMEntity::generateReportsSecQuery()
+ * 関連モジュールの基本情報（担当・最終更新者・登録者・作成日時・最終更新日時等） — CRMEntity::generateReportsSecQuery()
  *
- * #899 で vtiger_crmentity の基本情報は各モジュールの基本テーブルへ移行した。
- * generateReportsSecQuery() を上書きしていないモジュール（プロジェクト等）を関連モジュールにし、
- * 担当を表示項目に含めると、存在しない vtiger_crmentity<Module> を参照して SQL エラーになっていた（issue #1914）。
+ * #899 で vtiger_crmentity の基本情報は各モジュールの基本テーブルへ移行し、
+ * 関連モジュールの vtiger_crmentity<Module> の結合も無くなった。
+ * 一方、保存済みのレポート定義と ReportRun は vtiger_crmentity<Module> という別名を参照し続けるため、
+ * generateReportsSecQuery() を上書きしていないモジュール（プロジェクト等）を関連モジュールにすると、
+ * 担当・作成日時・最終更新日時・チェックボックス項目などを表示項目や条件に含めたレポートが
+ * SQL エラーになっていた（issue #1914）。
  *
- * 担当・最終更新者・登録者が基本テーブルの値で表示されること、
- * vtiger_crmentity 側の値が食い違っていてもそちらは使わないこと、
- * 基本テーブルで削除済みのレコードは表示されないことを固定する。
+ * これらが基本テーブルの値で表示されること、vtiger_crmentity 側の値が食い違っていても
+ * そちらは使わないこと、基本テーブルで削除済みのレコードは結合しないことを固定する。
  */
-final class SecondaryModuleOwnerColumnTest extends ReportsTestCase
+final class SecondaryModuleBaseInfoColumnTest extends ReportsTestCase
 {
-    private const PROJECT_REPORT_ID = 990201;
+    private const OWNER_REPORT_ID = 990201;
 
     private const POTENTIAL_REPORT_ID = 990202;
+
+    private const DATE_REPORT_ID = 990203;
+
+    private const FILTER_REPORT_ID = 990204;
 
     private const CONTACT_ID = 990211;
 
@@ -45,6 +51,16 @@ final class SecondaryModuleOwnerColumnTest extends ReportsTestCase
     private const POTENTIAL_ID = 990231;
 
     private const LASTNAME_COLUMN = 'vtiger_contactdetails:lastname:Contacts_Last_Name:lastname:V';
+
+    private const CREATED_TIME_COLUMN = 'vtiger_crmentityProject:createdtime:Project_Created_Time:createdtime:DT';
+
+    /** 基本テーブル側の作成日時・最終更新日時 */
+    private const BASE_CREATED_TIME = '2031-01-02 03:04:05';
+
+    private const BASE_MODIFIED_TIME = '2031-02-03 04:05:06';
+
+    /** vtiger_crmentity 側だけに入れる日時（基本テーブルとの食い違いを作る） */
+    private const CRMENTITY_TIME = '2001-01-01 00:00:00';
 
     /** vtiger_crmentity 側だけに入れる別ユーザー（基本テーブルとの食い違いを作る） */
     private int $otherUserId = 0;
@@ -64,17 +80,21 @@ final class SecondaryModuleOwnerColumnTest extends ReportsTestCase
         $this->createProject(self::PROJECT_ID, self::CONTACT_ID, 0);
         $this->createProject(self::DELETED_PROJECT_ID, self::DELETED_PROJECT_CONTACT_ID, 1);
 
-        // 基本テーブルは管理者、vtiger_crmentity は別ユーザー・未削除にして食い違わせる
         $this->db->pquery(
-            'UPDATE vtiger_crmentity SET smownerid = ?, modifiedby = ?, smcreatorid = ?, deleted = 0 WHERE crmid IN (?, ?)',
-            [$this->otherUserId, $this->otherUserId, $this->otherUserId, self::PROJECT_ID, self::DELETED_PROJECT_ID]
+            'UPDATE vtiger_project SET createdtime = ?, modifiedtime = ?, isconvertedfrompotential = 1 WHERE projectid = ?',
+            [self::BASE_CREATED_TIME, self::BASE_MODIFIED_TIME, self::PROJECT_ID]
+        );
+        // 基本テーブルは管理者・上記の日時、vtiger_crmentity は別ユーザー・別日時・未削除にして食い違わせる
+        $this->db->pquery(
+            'UPDATE vtiger_crmentity SET smownerid = ?, modifiedby = ?, smcreatorid = ?, createdtime = ?, modifiedtime = ?, deleted = 0 WHERE crmid IN (?, ?)',
+            [$this->otherUserId, $this->otherUserId, $this->otherUserId, self::CRMENTITY_TIME, self::CRMENTITY_TIME, self::PROJECT_ID, self::DELETED_PROJECT_ID]
         );
     }
 
     public function test_関連モジュールの担当_最終更新者_登録者が基本テーブルの値で表示される(): void
     {
         $this->createReport(
-            self::PROJECT_REPORT_ID,
+            self::OWNER_REPORT_ID,
             'Contacts',
             'Project',
             'Project::Project::linktoaccountscontacts',
@@ -87,7 +107,7 @@ final class SecondaryModuleOwnerColumnTest extends ReportsTestCase
             ]
         );
 
-        $sql = $this->buildReportSql(ReportRun::getInstance(self::PROJECT_REPORT_ID), self::PROJECT_REPORT_ID);
+        $sql = $this->buildReportSql(ReportRun::getInstance(self::OWNER_REPORT_ID), self::OWNER_REPORT_ID);
 
         $rows = $this->rowsByLastname($this->fetchAll($sql));
         $admin = $this->userNames(self::ADMIN_USER_ID);
@@ -108,7 +128,60 @@ final class SecondaryModuleOwnerColumnTest extends ReportsTestCase
         self::assertEmpty($deletedRow['project_project_name'], '基本テーブルで削除済みのプロジェクトは結合しない');
         self::assertEmpty($deletedRow['project_assigned_to'], '基本テーブルで削除済みのプロジェクトの担当は表示しない');
 
-        self::assertStringNotContainsString('vtiger_crmentityProject', $sql, '関連モジュールの担当等で vtiger_crmentity を参照しない');
+        $this->assertDoesNotJoinCrmentity($sql);
+    }
+
+    public function test_関連モジュールの作成日時_最終更新日時_チェックボックス項目が基本テーブルの値で表示される(): void
+    {
+        $this->createReport(
+            self::DATE_REPORT_ID,
+            'Contacts',
+            'Project',
+            'Project::Project::linktoaccountscontacts',
+            [
+                self::LASTNAME_COLUMN,
+                self::CREATED_TIME_COLUMN,
+                'vtiger_crmentityProject:modifiedtime:Project_Modified_Time:modifiedtime:DT',
+                'vtiger_project:isconvertedfrompotential:Project_Is_Converted_From_Opportunity:isconvertedfrompotential:C',
+            ]
+        );
+
+        $sql = $this->buildReportSql(ReportRun::getInstance(self::DATE_REPORT_ID), self::DATE_REPORT_ID);
+        $rows = $this->rowsByLastname($this->fetchAll($sql));
+
+        $row = $rows[self::PREFIX . 'owner'] ?? [];
+        self::assertSame(self::BASE_CREATED_TIME, $row['project_created_time'] ?? null, '作成日時は基本テーブルの値から表示する');
+        self::assertSame(self::BASE_MODIFIED_TIME, $row['project_modified_time'] ?? null, '最終更新日時は基本テーブルの値から表示する');
+        self::assertSame('yes', $row['project_is_converted_from_opportunity'] ?? null, 'チェックボックス項目が表示されること');
+
+        $deletedRow = $rows[self::PREFIX . 'deleted'] ?? [];
+        self::assertArrayHasKey('project_created_time', $deletedRow, '削除済みプロジェクトの顧客担当者も主モジュールとしては表示される');
+        self::assertEmpty($deletedRow['project_created_time'], '基本テーブルで削除済みのプロジェクトの作成日時は表示しない');
+        self::assertSame('-', $deletedRow['project_is_converted_from_opportunity'] ?? null, '関連レコードが無い場合のチェックボックス項目は「-」');
+
+        $this->assertDoesNotJoinCrmentity($sql);
+    }
+
+    public function test_関連モジュールの作成日時を絞り込み条件に使える(): void
+    {
+        $this->createReport(
+            self::FILTER_REPORT_ID,
+            'Contacts',
+            'Project',
+            'Project::Project::linktoaccountscontacts',
+            [self::LASTNAME_COLUMN],
+            [['columnname' => self::CREATED_TIME_COLUMN, 'comparator' => 'ny']]
+        );
+
+        $sql = $this->buildReportSql(ReportRun::getInstance(self::FILTER_REPORT_ID), self::FILTER_REPORT_ID);
+        $rows = $this->rowsByLastname($this->fetchAll($sql));
+
+        self::assertSame(
+            [self::PREFIX . 'owner'],
+            array_keys($rows),
+            '作成日時が空でないプロジェクトを持つ顧客担当者だけが返り、基本テーブルで削除済みのプロジェクトは対象外'
+        );
+        $this->assertDoesNotJoinCrmentity($sql);
     }
 
     public function test_generateReportsSecQueryを上書きしているモジュールの担当も表示される(): void
@@ -137,6 +210,16 @@ final class SecondaryModuleOwnerColumnTest extends ReportsTestCase
             $this->userNames(self::ADMIN_USER_ID)['userlabel'],
             $rows[self::PREFIX . 'owner']['potentials_assigned_to'] ?? null,
             '案件の担当が表示されること'
+        );
+    }
+
+    /** 関連モジュール（プロジェクト）の基本情報のために vtiger_crmentity 自体を結合しないこと */
+    private function assertDoesNotJoinCrmentity(string $sql): void
+    {
+        self::assertDoesNotMatchRegularExpression(
+            '/join\s+vtiger_crmentity\s+as\s+vtiger_crmentityProject\b/i',
+            $sql,
+            '関連モジュールの基本情報は vtiger_crmentity ではなく基本テーブルから取得する'
         );
     }
 
