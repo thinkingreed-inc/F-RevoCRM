@@ -1342,7 +1342,8 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	 * @return <String> defaultvalue
 	 */
 	public function getDefaultFieldValue(){
-		if ($this->getFieldDataType() == 'date' && $this->defaultvalue == 'TODAY') {
+		// getFieldDataType() はログイン中のユーザーの権限を参照するため、TODAY のときだけ呼ぶ
+		if ($this->defaultvalue == 'TODAY' && $this->getFieldDataType() == 'date') {
 			return date('Y-m-d');
 		}
 		return $this->defaultvalue;
