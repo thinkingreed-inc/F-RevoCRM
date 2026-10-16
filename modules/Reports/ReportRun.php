@@ -1057,6 +1057,15 @@ class ReportRun extends CRMEntity {
 						$emailTableName = "vtiger_activityEmails";
 					}
 
+					// 関連モジュールの項目で絞り込む場合は、そのモジュールの基本テーブルも結合対象にする
+					// (cfテーブル等の項目のみの場合、generateReportsSecQuery が関連モジュールを結合しないため)
+					if ($fieldcolname != "" && $moduleName != $this->primarymodule && in_array($moduleName, explode(':', $this->secondarymodule))) {
+						$secondaryModuleModel = Vtiger_Module_Model::getInstance($moduleName);
+						if ($secondaryModuleModel) {
+							$this->queryPlanner->addTable($secondaryModuleModel->get('basetable'));
+						}
+					}
+
 					if ($fieldcolname != "" && $comparator != "") {
 						if (in_array($comparator, $dateSpecificConditions)) {
 							if ($fieldcolname != 'none') {
