@@ -2438,7 +2438,6 @@ class CRMEntity {
 		}
 
 		// Update forward table dependencies
-		$matrix->setDependency("vtiger_crmentity$secmodule", array("vtiger_groups$secmodule", "vtiger_users$secmodule", "vtiger_lastModifiedBy$secmodule"));
 		$matrix->addDependency($tablename, "vtiger_crmentity$secmodule");
 
 		// if (!$queryPlanner->requireTable($tablename, $matrix) && !$queryPlanner->requireTable($modulecftable)) {
@@ -2447,8 +2446,13 @@ class CRMEntity {
 
 		$query = $this->getRelationQuery($module, $secmodule, "$tablename", "$tableindex", $queryPlanner, $reportid);
 
-		if ($queryPlanner->requireTable("vtiger_crmentity$secmodule", $matrix)) {
-			// $query .= " left join vtiger_crmentity as vtiger_crmentity$secmodule on vtiger_crmentity$secmodule.crmid = $tablename.$tableindex AND vtiger_crmentity$secmodule.deleted=0";
+		// 保存済みのレポート定義は、vtiger_crmentity 上の項目（作成日時・最終更新日時・説明など）を
+		// vtiger_crmentity$secmodule という別名で参照する（modules/Reports/Reports.php）。
+		// #899 以降の正のデータは基本テーブル側にあるため、vtiger_crmentity ではなく基本テーブルを
+		// この別名で結合する。削除済みのレコードは getRelationQuery() の $tablename.deleted = 0 で除外済み
+		if ($queryPlanner->requireTable("vtiger_crmentity$secmodule")) {
+			$query .= " left join (SELECT $tablename.*, $tablename.$tableindex AS crmid FROM $tablename) as vtiger_crmentity$secmodule"
+				. " on vtiger_crmentity$secmodule.crmid = $tablename.$tableindex";
 		}
 
 		// Add the pre-joined custom table query
