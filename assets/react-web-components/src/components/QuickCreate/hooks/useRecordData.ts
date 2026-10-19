@@ -46,6 +46,8 @@ interface GetRecordApiResponse {
   record: Record<string, string>;
   /** Display values for reference fields (e.g., contact_id -> "John Doe") */
   displayValues?: Record<string, string>;
+  /** Referenced module per reference field (e.g., parent_id -> "Accounts") */
+  displayModules?: Record<string, string>;
   /** Invitees with details (Events only) */
   invitees?: InviteeInfo[];
   /** Selected user IDs for invitees (Events only) */
@@ -83,6 +85,7 @@ function buildApiUrl(module: string, recordId: string): string {
  * - Converts allday flag to is_allday boolean
  * - Removes 'label' field to prevent confusion with 'subject'
  * - Adds display values for reference fields (e.g., contact_id_display)
+ * - Adds referenced module for reference fields (e.g., parent_id_module)
  * - Converts selectedusers (invitees) to string array
  * - Preserves all other fields as-is
  */
@@ -91,6 +94,7 @@ function transformRecordData(
   module: string,
   displayValues?: Record<string, string>,
   selectedusers?: number[],
+  displayModules?: Record<string, string>,
 ): Record<string, FieldValue> {
   const transformed: Record<string, FieldValue> = { ...data };
 
@@ -140,6 +144,15 @@ function transformRecordData(
   if (displayValues) {
     for (const [fieldName, displayValue] of Object.entries(displayValues)) {
       transformed[`${fieldName}_display`] = displayValue;
+    }
+  }
+
+  // Add referenced module for reference fields (e.g., parent_id_module)
+  // Polymorphic references (関連) need this to restore the module selector;
+  // without it the field falls back to the first candidate module.
+  if (displayModules) {
+    for (const [fieldName, moduleName] of Object.entries(displayModules)) {
+      transformed[`${fieldName}_module`] = moduleName;
     }
   }
 
@@ -238,6 +251,7 @@ export function useRecordData(
       const {
         record,
         displayValues,
+        displayModules,
         selectedusers,
         module: responseModule,
       } = result;
@@ -248,6 +262,7 @@ export function useRecordData(
         responseModule || module,
         displayValues,
         selectedusers,
+        displayModules,
       );
 
       setData(transformedData);

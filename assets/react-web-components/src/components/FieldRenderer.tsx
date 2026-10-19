@@ -793,6 +793,9 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       case UI_TYPES.REFERENCE_USER2:
         // Get display value for reference field (e.g., contact_id_display)
         const referenceDisplayValue = formData?.[`${field.name}_display`];
+        // Get the module the stored record belongs to (e.g., parent_id_module).
+        // Polymorphic references (関連) need it to restore the module selector.
+        const referenceValueModule = formData?.[`${field.name}_module`];
         return (
           <ReferenceField
             name={field.name}
@@ -802,6 +805,9 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
             value={String(value ?? "")}
             displayValue={
               referenceDisplayValue ? String(referenceDisplayValue) : undefined
+            }
+            valueModule={
+              referenceValueModule ? String(referenceValueModule) : undefined
             }
             onChange={onChange}
             mandatory={field.mandatory}
