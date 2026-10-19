@@ -83,11 +83,14 @@ class Leads_DetailView_Model extends Accounts_DetailView_Model {
 			$linkModelList['DETAILVIEW'][] = Vtiger_Link_Model::getInstanceFromValues($basicLink);
 		}
 
-		if(Users_Privileges_Model::isPermitted($moduleModel->getName(), 'ConvertLead', $recordModel->getId()) && Users_Privileges_Model::isPermitted($moduleModel->getName(), 'EditView', $recordModel->getId()) && !$recordModel->isLeadConverted()) {
+		// 昇格済みのリードでも、パラメーター ALLOW_RECONVERT_LEAD が有効なら再度昇格できるようにする
+		$isLeadConverted = $recordModel->isLeadConverted();
+		$isConvertLeadAllowed = !$isLeadConverted || Leads_ConvertSetting_Model::allowReconvert();
+		if(Users_Privileges_Model::isPermitted($moduleModel->getName(), 'ConvertLead', $recordModel->getId()) && Users_Privileges_Model::isPermitted($moduleModel->getName(), 'EditView', $recordModel->getId()) && $isConvertLeadAllowed) {
 			$basicActionLink = array(
 				'linktype' => 'DETAILVIEWBASIC',
 				'linklabel' => 'LBL_CONVERT_LEAD',
-				'linkurl' => 'Javascript:Leads_Detail_Js.convertLead("'.$recordModel->getConvertLeadUrl().'",this);',
+				'linkurl' => 'Javascript:Leads_Detail_Js.convertLead("'.$recordModel->getConvertLeadUrl().'",this,'.($isLeadConverted ? 'true' : 'false').');',
 				'linkicon' => ''
 			);
 			$linkModelList['DETAILVIEWBASIC'][] = Vtiger_Link_Model::getInstanceFromValues($basicActionLink);

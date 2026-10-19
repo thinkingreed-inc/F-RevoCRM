@@ -138,7 +138,7 @@ class Leads extends CRMEntity {
 				";
 
 		$query .= $this->getNonAdminAccessControlQuery('Leads',$current_user);
-		$where_auto = " vtiger_crmentity.deleted=0 AND vtiger_leaddetails.converted =0";
+		$where_auto = " vtiger_crmentity.deleted=0 ".Leads_ConvertSetting_Model::getConvertedFilterCondition();
 
 		if($where != "")
 			$query .= " where ($where) AND ".$where_auto;
@@ -701,7 +701,7 @@ class Leads extends CRMEntity {
 			}
 		}
 
-		$whereClause = " WHERE vtiger_crmentity.deleted = 0 AND vtiger_leaddetails.converted=0 ";
+		$whereClause = " WHERE vtiger_crmentity.deleted = 0 ".Leads_ConvertSetting_Model::getConvertedFilterCondition();
 		$whereClause .= $this->getListViewSecurityParameter($module);
 
 		if($ignoreEmpty) {

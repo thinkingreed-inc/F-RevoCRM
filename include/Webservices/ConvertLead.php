@@ -37,18 +37,22 @@ function vtws_convertlead($element, $leadId, $assignedTo, $accountName, $avoidPo
 
 
 	$leadInfo = vtws_retrieve($element['leadId'], $activeAdminUser);
-	$sql = "select converted from vtiger_leaddetails where converted = 1 and leadid=?";
 	$leadIdComponents = vtws_getIdComponents($element['leadId']);
-	$result = $adb->pquery($sql, array($leadIdComponents[1]));
-	if ($result === false) {
-		throw new WebServiceException(WebServiceErrorCode::$DATABASEQUERYERROR,
-				vtws_getWebserviceTranslatedString('LBL_' .
-						WebServiceErrorCode::$DATABASEQUERYERROR));
-	}
-	$rowCount = $adb->num_rows($result);
-	if ($rowCount > 0) {
-		throw new WebServiceException(WebServiceErrorCode::$LEAD_ALREADY_CONVERTED,
-				"Lead is already converted");
+
+	// パラメーター ALLOW_RECONVERT_LEAD が有効な場合は、昇格済みのリードでも再度昇格できるようにする
+	if (!Leads_ConvertSetting_Model::allowReconvert()) {
+		$sql = "select converted from vtiger_leaddetails where converted = 1 and leadid=?";
+		$result = $adb->pquery($sql, array($leadIdComponents[1]));
+		if ($result === false) {
+			throw new WebServiceException(WebServiceErrorCode::$DATABASEQUERYERROR,
+					vtws_getWebserviceTranslatedString('LBL_' .
+							WebServiceErrorCode::$DATABASEQUERYERROR));
+		}
+		$rowCount = $adb->num_rows($result);
+		if ($rowCount > 0) {
+			throw new WebServiceException(WebServiceErrorCode::$LEAD_ALREADY_CONVERTED,
+					"Lead is already converted");
+		}
 	}
 
 	$leadHasImage = false;

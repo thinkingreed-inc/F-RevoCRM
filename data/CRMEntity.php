@@ -1996,7 +1996,7 @@ class CRMEntity {
 		$query .= " LEFT  JOIN vtiger_groups ON vtiger_groups.groupid = vtiger_crmentity.smownerid";
 		$query .= " WHERE vtiger_crmentity.deleted = 0 AND (vtiger_crmentityrel.crmid = $id OR vtiger_crmentityrel.relcrmid = $id)";
 		if($related_module == 'Leads') {
-			$query .= " AND vtiger_leaddetails.converted=0 ";
+			$query .= Leads_ConvertSetting_Model::getConvertedFilterCondition();
 		}
 
 		$return_value = GetRelatedList($currentModule, $related_module, $other, $query, $button, $returnset);
@@ -2168,7 +2168,7 @@ class CRMEntity {
 
 			$query .= " WHERE vtiger_crmentity.deleted = 0 AND $this->table_name$this->moduleName.$this->table_index = $id";
 			if($related_module == 'Leads') {
-				$query .= " AND vtiger_leaddetails.converted=0 ";
+				$query .= Leads_ConvertSetting_Model::getConvertedFilterCondition();
 			}
 			$return_value = GetRelatedList($currentModule, $related_module, $other, $query, $button, $returnset);
 		}

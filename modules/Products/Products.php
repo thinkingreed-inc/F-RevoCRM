@@ -348,7 +348,7 @@ class Products extends CRMEntity {
 			INNER JOIN vtiger_leadscf ON vtiger_leaddetails.leadid = vtiger_leadscf.leadid
 			LEFT JOIN vtiger_users ON vtiger_users.id = vtiger_crmentity.smownerid
 			LEFT JOIN vtiger_groups ON vtiger_groups.groupid = vtiger_crmentity.smownerid
-			WHERE vtiger_crmentity.deleted = 0 AND vtiger_leaddetails.converted=0 AND vtiger_products.productid = ".$id;
+			WHERE vtiger_crmentity.deleted = 0 ".Leads_ConvertSetting_Model::getConvertedFilterCondition()." AND vtiger_products.productid = ".$id;
 
 		$return_value = GetRelatedList($this_module, $related_module, $other, $query, $button, $returnset);
 

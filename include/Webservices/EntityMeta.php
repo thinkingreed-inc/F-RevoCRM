@@ -269,7 +269,7 @@ abstract class EntityMeta{
 	public function getEntityDeletedQuery(){
 		$baseTable = $this->getEntityBaseTable();
 		if($this->getEntityName() == 'Leads') {
-			return "$baseTable.deleted=0 and vtiger_leaddetails.converted=0";
+			return "$baseTable.deleted=0".Leads_ConvertSetting_Model::getConvertedFilterCondition('and');
 		}
 		if($this->getEntityName() != "Users"){
 			return "$baseTable.deleted=0";
