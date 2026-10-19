@@ -23,12 +23,7 @@ class Users_Module_Model extends Vtiger_Module_Model {
 			if(!empty($record)){
                 		$db = PearDatabase::getInstance();
                 		$condition = $db->convert2Sql(' AND vtiger_users.id != ? ', array($record));
-				$currentUser = Users_Record_Model::getCurrentUserModel();
 				$overRideQuery = $overRideQuery. $condition;
-				$allSubordinates = $currentUser->getAllSubordinatesByReportsToField($record);
-				if(php7_count($allSubordinates) > 0) {
-					$overRideQuery .= " AND vtiger_users.id NOT IN (". implode(',',$allSubordinates) .")"; // do not allow the subordinates
-				}
 			}
 			return $overRideQuery;
 		}
@@ -47,14 +42,7 @@ class Users_Module_Model extends Vtiger_Module_Model {
 			$db = PearDatabase::getInstance();
 
 			$query = 'SELECT * FROM vtiger_users WHERE userlabel LIKE ? AND status = ?';
-			$currentUser = Users_Record_Model::getCurrentUserModel();
-			$allSubordinates = $currentUser->getAllSubordinatesByReportsToField($currentUser->getId());
 			$params = array("%$searchValue%", 'Active');
-
-			// do not allow the subordinates
-			if(php7_count($allSubordinates) > 0) {
-				$query .= " AND vtiger_users.id NOT IN (". implode(',',$allSubordinates) .")";
-			}
 
 			$result = $db->pquery($query, $params);
 			$noOfRows = $db->num_rows($result);
