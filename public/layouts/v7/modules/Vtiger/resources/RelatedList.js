@@ -464,8 +464,9 @@ jQuery.Class("Vtiger_RelatedList_Js",{
 		if(totalPageNumber === ""){
 			var totalCountElem = jQuery('.relatedContainer').find('#totalCount');
 			var totalRecordCount = totalCountElem.val();
+			var isPageCountFetched = jQuery('#totalPageCount').text() !== '';
 
-			if(totalRecordCount !== '') {
+			if(totalRecordCount !== '' && (totalRecordCount !== '0' || isPageCountFetched)) {
 				var recordPerPage = jQuery('#pageLimit').val();
 				if(recordPerPage === '0') recordPerPage = 1;
 				pageCount = Math.ceil(totalRecordCount/recordPerPage);
