@@ -45,6 +45,7 @@ $languageStrings = array(
 	'LBL_CONVERT_SETTINGS_ERR_INCOMPLETE' => 'Select a lead field and at least one target field',
 	'LBL_CONVERT_SETTINGS_LOAD_FAILED' => 'Failed to load the settings',
 	'LBL_CONVERT_SETTINGS_UNSAVED' => 'You have unsaved changes',
+	'LBL_CONVERT_SETTINGS_LEGACY' => 'Open the previous mapping screen',
 	//Actions
 	'LBL_CONVERT_LEAD_FIELD_MAPPING' => 'Convert Lead Mapping',
 	'LBL_ORGANIZATIONS' => 'Organizations',

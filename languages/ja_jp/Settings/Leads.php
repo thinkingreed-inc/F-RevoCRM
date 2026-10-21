@@ -45,6 +45,7 @@ $languageStrings = array(
 	'LBL_CONVERT_SETTINGS_ERR_INCOMPLETE' => 'リードの項目と、少なくとも1つの昇格先の項目を選んでください',
 	'LBL_CONVERT_SETTINGS_LOAD_FAILED' => '設定を取得できませんでした',
 	'LBL_CONVERT_SETTINGS_UNSAVED' => '未保存の変更があります',
+	'LBL_CONVERT_SETTINGS_LEGACY' => '従来のマッピング画面を開く',
 	//Actions
 	'LBL_CONVERT_LEAD_FIELD_MAPPING' => 'リードの昇格のマッピング',
 	'LBL_ORGANIZATIONS' => '顧客企業',

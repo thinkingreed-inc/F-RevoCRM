@@ -133,3 +133,8 @@ createWebComponent(
   ["record-id", "is-open"],
   ["onConverted", "onCancel", "onOpenChange"],
 );
+
+// リードマッピング設定画面（設定 > リードマッピング。システム管理者のみ）
+import { LeadMappingSettings } from "@/components/LeadMapping";
+
+createWebComponent(LeadMappingSettings, "lead-mapping-settings", [], []);
