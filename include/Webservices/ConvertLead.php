@@ -11,14 +11,27 @@
 require_once 'include/Webservices/Retrieve.php';
 require_once 'include/Webservices/Create.php';
 require_once 'include/Webservices/Delete.php';
+require_once 'include/Webservices/Revise.php';
 require_once 'include/Webservices/DescribeObject.php';
 require_once 'includes/Loader.php';
 vimport ('includes.runtime.Globals');
 vimport ('includes.runtime.BaseModel');
 
+/**
+ * リードを昇格する
+ *
+ * 任意パラメータ（Web Components 版の昇格画面から使う。省略時は従来どおり）:
+ *   $element['entities']['Accounts'|'Contacts']['existingId']
+ *       既存レコードの Webservice ID。指定するとそのレコードに紐づけ、新規作成もリードの値での上書きもしない。
+ *       既存担当者の所属企業（account_id）が空のときだけ、昇格で決まった企業をセットする。
+ *   $element['strict'] = true
+ *       同じ会社名の企業を黙って再利用しない。entities に渡した値は空でもそのまま使い、
+ *       必須項目が空なら '????' で埋めずに例外を投げる。途中で失敗したら作成済みのレコードを消す。
+ */
 function vtws_convertlead($element, $leadId, $assignedTo, $accountName, $avoidPotential, $potential, $user) {
 
 	global $adb, $log;
+	$strict = !empty($element['strict']);
 	if (empty($element['assignedTo'])) {
 		$element['assignedTo'] = vtws_getWebserviceEntityId('Users', $user->id);
 	}
@@ -57,6 +70,8 @@ function vtws_convertlead($element, $leadId, $assignedTo, $accountName, $avoidPo
 		$imageAttachmentId = $element['imageAttachmentId'];
 	}
 	$entityIds = array();
+	// 今回の昇格で新しく作ったレコード（失敗時に消してよいのはこれだけ）
+	$createdEntityIds = array();
 
 	$availableModules = array('Accounts', 'Contacts', 'Potentials');
 
@@ -78,6 +93,15 @@ function vtws_convertlead($element, $leadId, $assignedTo, $accountName, $avoidPo
 	foreach ($availableModules as $entityName) {
 		if ($element['entities'][$entityName]['create']) {
 			$entityvalue = $element['entities'][$entityName];
+			if (!empty($entityvalue['existingId']) && in_array($entityName, array('Accounts', 'Contacts'))) {
+				try {
+					$entityIds[$entityName] = vtws_convertLeadAttachExisting($entityName, $entityvalue['existingId'], $entityIds, $activeAdminUser);
+				} catch (Exception $e) {
+					vtws_convertLeadDeleteCreated($createdEntityIds, $user);
+					throw $e;
+				}
+				continue;
+			}
 			$entityObject = VtigerWebserviceObject::fromName($adb, $entityName);
 			$handlerPath = $entityObject->getHandlerPath();
 			$handlerClass = $entityObject->getHandlerClass();
@@ -88,7 +112,12 @@ function vtws_convertlead($element, $leadId, $assignedTo, $accountName, $avoidPo
 
 			$entityObjectValues = array();
 			$entityObjectValues['assigned_user_id'] = $element['assignedTo'];
-			$entityObjectValues = vtws_populateConvertLeadEntities($entityvalue, $entityObjectValues, $entityHandler, $leadHandler, $leadInfo, $entityName);
+			try {
+				$entityObjectValues = vtws_populateConvertLeadEntities($entityvalue, $entityObjectValues, $entityHandler, $leadHandler, $leadInfo, $entityName, $strict);
+			} catch (Exception $e) {
+				vtws_convertLeadDeleteCreated($createdEntityIds, $user);
+				throw $e;
+			}
 
 			//update potential related to property
 			if ($entityName == 'Potentials') {
@@ -109,7 +138,7 @@ function vtws_convertlead($element, $leadId, $assignedTo, $accountName, $avoidPo
 
 			try {
 				$create = true;
-				if ($entityName == 'Accounts') {
+				if ($entityName == 'Accounts' && !$strict) {
 					$sql = "SELECT vtiger_account.accountid FROM vtiger_account,vtiger_crmentity WHERE vtiger_crmentity.crmid=vtiger_account.accountid AND vtiger_account.accountname=? AND vtiger_crmentity.deleted=0";
 					$result = $adb->pquery($sql, array($entityvalue['accountname']));
 					if ($adb->num_rows($result) > 0) {
@@ -127,6 +156,7 @@ function vtws_convertlead($element, $leadId, $assignedTo, $accountName, $avoidPo
 					$entityObjectValues['isconvertedfromlead'] = 1;
 					$entityRecord = vtws_create($entityName, $entityObjectValues, $activeAdminUser);
 					$entityIds[$entityName] = $entityRecord['id'];
+					$createdEntityIds[$entityName] = $entityRecord['id'];
 					if($leadHasImage && in_array($entityName,array('Accounts','Contacts'))) {
 						$idComponents = explode('x',$entityIds[$entityName]);
 						$crmId = $idComponents[1];
@@ -135,8 +165,14 @@ function vtws_convertlead($element, $leadId, $assignedTo, $accountName, $avoidPo
 					}
 				}
 			} catch (DuplicateException $e) {
+				if ($strict) {
+					vtws_convertLeadDeleteCreated($createdEntityIds, $user);
+				}
 				throw $e;
 			} catch (Exception $e) {
+				if ($strict) {
+					vtws_convertLeadDeleteCreated($createdEntityIds, $user);
+				}
 				throw new WebServiceException(WebServiceErrorCode::$UNKNOWNOPERATION,
 						$e->getMessage().' : '.$entityName);
 			}
@@ -179,9 +215,8 @@ function vtws_convertlead($element, $leadId, $assignedTo, $accountName, $avoidPo
 		vtws_getRelatedActivities($leadIdComponents[1], $accountId, $contactId, $relatedIdComponents[1]);
 		vtws_updateConvertLeadStatus($entityIds, $element['leadId'], $user);
 	} catch (Exception $e) {
-		foreach ($entityIds as $entity => $id) {
-			vtws_delete($id, $user);
-		}
+		// 既存レコード（暗黙に再利用した企業・指定した既存レコード）は消さない
+		vtws_convertLeadDeleteCreated($createdEntityIds, $user);
 		return null;
 	}
 
@@ -206,7 +241,7 @@ function vtws_convertlead($element, $leadId, $assignedTo, $accountName, $avoidPo
  * returns the entity array.
  */
 
-function vtws_populateConvertLeadEntities($entityvalue, $entity, $entityHandler, $leadHandler, $leadinfo, $entityName) {
+function vtws_populateConvertLeadEntities($entityvalue, $entity, $entityHandler, $leadHandler, $leadinfo, $entityName, $strict = false) {
 	global $adb, $log;
 	$column = "";
 	$sql = "SELECT * FROM vtiger_convertleadmapping";
@@ -253,14 +288,68 @@ function vtws_populateConvertLeadEntities($entityvalue, $entity, $entityHandler,
 		}
 
 		foreach ($entityvalue as $fieldname => $fieldvalue) {
-			if (!empty($fieldvalue)) {
+			// strict では呼び出し側が決めた最終的な値をそのまま使う（空にした値を復活させない）
+			if ($strict || !empty($fieldvalue)) {
 				$entity[$fieldname] = $fieldvalue;
 			}
 		}
 
-		$entity = vtws_validateConvertEntityMandatoryValues($entity, $entityHandler, $entityName);
+		if ($strict) {
+			vtws_assertConvertEntityMandatoryValues($entity, $entityHandler, $entityName);
+		} else {
+			$entity = vtws_validateConvertEntityMandatoryValues($entity, $entityHandler, $entityName);
+		}
 	}
 	return $entity;
+}
+
+/**
+ * strict モード用: 必須項目が空なら '????' で埋めずに例外を投げる
+ */
+function vtws_assertConvertEntityMandatoryValues($entity, $entityHandler, $module) {
+	$missing = array();
+	foreach ($entityHandler->getMeta()->getMandatoryFields() as $field) {
+		if ($field === 'assigned_user_id') {
+			continue;
+		}
+		if (!isset($entity[$field]) || trim((string) $entity[$field]) === '') {
+			$missing[] = $field;
+		}
+	}
+	if ($missing) {
+		throw new WebServiceException(WebServiceErrorCode::$MANDFIELDSMISSING,
+				'Mandatory fields are empty : ' . $module . ' (' . implode(', ', $missing) . ')');
+	}
+}
+
+/**
+ * 既存レコードに紐づける。値は書き換えない
+ *
+ * 担当者は所属企業が空のときだけ、昇格で決まった企業をセットする。
+ * @return string 紐づけたレコードの Webservice ID
+ */
+function vtws_convertLeadAttachExisting($entityName, $existingId, $entityIds, $activeAdminUser) {
+	$idComponents = vtws_getIdComponents($existingId);
+	if (getSalesEntityType($idComponents[1]) !== $entityName) {
+		throw new WebServiceException(WebServiceErrorCode::$INVALIDID, "Id specified is not $entityName");
+	}
+	$existing = vtws_retrieve($existingId, $activeAdminUser);
+	if ($entityName == 'Contacts' && !empty($entityIds['Accounts']) && empty($existing['account_id'])) {
+		vtws_revise(array('id' => $existing['id'], 'account_id' => $entityIds['Accounts']), $activeAdminUser);
+	}
+	return $existing['id'];
+}
+
+/** 今回の昇格で作ったレコードだけを消す（後始末の失敗で元の例外を隠さない） */
+function vtws_convertLeadDeleteCreated($createdEntityIds, $user) {
+	foreach ($createdEntityIds as $id) {
+		try {
+			vtws_delete($id, $user);
+		} catch (Exception $e) {
+			global $log;
+			$log->error('ConvertLead rollback failed for ' . $id . ': ' . $e->getMessage());
+		}
+	}
 }
 
 //function to handle the transferring of related records for lead
