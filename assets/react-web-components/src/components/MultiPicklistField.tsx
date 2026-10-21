@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { createPortal } from "react-dom";
 import { Input } from "./ui/input";
+import { Checkbox } from "./ui/checkbox";
 import { X, ChevronDown } from "lucide-react";
 import { cn } from "../lib/utils";
 import { useOptionalTranslation } from "../hooks/useTranslation";
@@ -17,7 +18,17 @@ import { useOptionalTranslation } from "../hooks/useTranslation";
 interface PicklistOption {
   value: string;
   label: string;
+  /** 選択肢の色（picklistColors）。指定時はチェックボックス行に色スウォッチを表示 */
+  color?: string;
 }
+
+/**
+ * 選択肢値を HTML id / data-testid に使える安全なトークンへ変換する。
+ * ピックリスト値は空白や記号を含み得る（例「North America」）。HTML の id に空白は不正で
+ * label[for] 連携やセレクタが壊れるため、英数・ハイフン・アンダースコア以外を "_" に置換する。
+ */
+const toIdToken = (value: string): string =>
+  value.replace(/[^a-zA-Z0-9_-]/g, "_");
 
 /**
  * MultiPicklistFieldのProps
@@ -43,6 +54,32 @@ export interface MultiPicklistFieldProps {
   className?: string;
   /** ラベルのカスタムクラス名（縦並び時の左寄せなどに使用） */
   labelClassName?: string;
+  /**
+   * 表示モード (#1677)
+   * - "auto"（既定）: 選択肢数が threshold 以下ならチェックボックス、超える場合はドロップダウン
+   * - "checkbox": 常にチェックボックス
+   * - "dropdown": 常に従来のドロップダウン＋タグ
+   */
+  renderMode?: "auto" | "checkbox" | "dropdown";
+  /** auto 判定の閾値（選択肢数がこの値以下でチェックボックス）。既定 100 */
+  threshold?: number;
+  /**
+   * 左のラベル列を描画するか（既定 true）。
+   * 標準Edit画面のようにラベルを外側レイアウトが持つ場合は false。
+   */
+  showLabel?: boolean;
+  /**
+   * name付きの隠しinputを描画するか（既定 true）。
+   * カスタム要素(<multi-picklist-field>)経由でネイティブselectが送信を担う場合は
+   * false にして name 重複を避ける。
+   */
+  renderHiddenInput?: boolean;
+  /**
+   * ドロップダウンモードの検索入力プレースホルダー。
+   * 未指定時は "%sを選択してください"(LBL_PLACEHOLDER_SELECT)。標準Edit画面では
+   * 既存の単一ピックリストに合わせて "オプションの選択"(LBL_SELECT_OPTION) を渡す。
+   */
+  placeholder?: string;
 }
 
 /**
@@ -60,8 +97,21 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
   error,
   className,
   labelClassName,
+  renderMode = "auto",
+  threshold = 100,
+  renderHiddenInput = true,
+  showLabel = true,
+  placeholder,
 }) => {
   const { t } = useOptionalTranslation();
+
+  // 表示モードの決定（#1677）: auto のときは選択肢数が閾値以下でチェックボックス
+  const effectiveMode: "checkbox" | "dropdown" =
+    renderMode === "auto"
+      ? options.length <= threshold
+        ? "checkbox"
+        : "dropdown"
+      : renderMode;
 
   // 選択済みの値（配列）
   const selectedValues = useMemo(() => {
@@ -195,6 +245,18 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
    */
   const handleRemoveTag = (optionValue: string) => {
     const newValues = selectedValues.filter((v) => v !== optionValue);
+    onChange(name, newValues.join(" |##| "));
+  };
+
+  /**
+   * チェックボックスのトグル（#1677）
+   * 追加は末尾へ（従来のドロップダウン追加と同挙動）、除外はフィルタ
+   */
+  const handleToggleValue = (optionValue: string) => {
+    if (disabled) return;
+    const newValues = selectedValues.includes(optionValue)
+      ? selectedValues.filter((v) => v !== optionValue)
+      : [...selectedValues, optionValue];
     onChange(name, newValues.join(" |##| "));
   };
 
@@ -350,110 +412,173 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
     return createPortal(dropdown, document.body);
   };
 
+  // チェックボックス一覧のレンダリング（#1677: 選択肢が閾値以下のとき）
+  const renderCheckboxList = () => {
+    if (options.length === 0) {
+      return (
+        <div className="px-1 py-1.5 text-md text-gray-500">
+          {t("LBL_NO_OPTIONS_AVAILABLE")}
+        </div>
+      );
+    }
+    return (
+      <div
+        role="group"
+        aria-label={label}
+        className="flex flex-wrap items-center gap-2 min-h-[30px]"
+      >
+        {options.map((option, index) => {
+          // id は index で一意性を保証（同一トークンへ正規化される値の衝突を回避）
+          const checkboxId = `mpf_${name}_${index}`;
+          const checked = selectedValues.includes(option.value);
+          return (
+            <label
+              key={option.value}
+              htmlFor={checkboxId}
+              className={cn(
+                "inline-flex items-center gap-2 text-md whitespace-nowrap",
+                disabled
+                  ? "cursor-not-allowed text-gray-400"
+                  : "cursor-pointer text-gray-700",
+              )}
+            >
+              <Checkbox
+                id={checkboxId}
+                checked={checked}
+                disabled={disabled}
+                onCheckedChange={() => handleToggleValue(option.value)}
+              />
+              {option.color && (
+                <span
+                  data-testid={`mpf-color-${toIdToken(option.value)}`}
+                  className="inline-block w-3 h-3 rounded-sm flex-shrink-0 border border-black/10"
+                  style={{ backgroundColor: option.color }}
+                  aria-hidden="true"
+                />
+              )}
+              <span>{option.label}</span>
+            </label>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className={cn("flex items-start gap-2", className)}>
-      {labelClassName ? (
-        <div className="flex items-baseline md:contents">
-          <span
-            className={cn(
-              "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
-              disabled && "text-gray-400",
-              labelClassName,
-            )}
-          >
-            {label}
-            {mandatory && (
-              <span className="text-red-500" aria-hidden="true">
-                *
-              </span>
-            )}
-            {mandatory && <span className="sr-only"> (必須)</span>}
-          </span>
-          <span
-            className="w-3 flex-shrink-0 hidden md:block"
-            aria-hidden="true"
-          />
-        </div>
-      ) : (
-        <>
-          <span
-            className={cn(
-              "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
-              disabled && "text-gray-400",
-            )}
-          >
-            {label}
-            {mandatory && <span className="sr-only"> (必須)</span>}
-          </span>
-          <span
-            className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0"
-            aria-hidden="true"
-          >
-            {mandatory ? "*" : ""}
-          </span>
-        </>
-      )}
+      {showLabel &&
+        (labelClassName ? (
+          <div className="flex items-baseline md:contents">
+            <span
+              className={cn(
+                "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+                disabled && "text-gray-400",
+                labelClassName,
+              )}
+            >
+              {label}
+              {mandatory && (
+                <span className="text-red-500" aria-hidden="true">
+                  *
+                </span>
+              )}
+              {mandatory && <span className="sr-only"> (必須)</span>}
+            </span>
+            <span
+              className="w-3 flex-shrink-0 hidden md:block"
+              aria-hidden="true"
+            />
+          </div>
+        ) : (
+          <>
+            <span
+              className={cn(
+                "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+                disabled && "text-gray-400",
+              )}
+            >
+              {label}
+              {mandatory && <span className="sr-only"> (必須)</span>}
+            </span>
+            <span
+              className="w-3 leading-[30px] text-red-500 text-center flex-shrink-0"
+              aria-hidden="true"
+            >
+              {mandatory ? "*" : ""}
+            </span>
+          </>
+        ))}
 
       {/* 入力エリア */}
       <div className="flex-1 min-w-0">
-        {/* 検索入力 */}
-        <div className="relative" ref={inputContainerRef}>
-          <div className="relative flex items-center">
-            <Input
-              ref={inputRef}
-              id={`field_${name}`}
-              type="text"
-              value={searchTerm}
-              onChange={handleSearchChange}
-              onFocus={handleFocus}
-              onKeyDown={handleKeyDown}
-              onBlur={() => {
-                // Tab離脱等の blur でドロップダウンを閉じる
-                // 候補クリック時の選択処理を妨げないよう150ms遅延
-                setTimeout(() => setIsOpen(false), 150);
-              }}
-              disabled={disabled}
-              placeholder={t("LBL_PLACEHOLDER_SELECT", label)}
-              autoComplete="off"
-              className={cn("pr-10", error && "border-red-500")}
-            />
+        {effectiveMode === "dropdown" ? (
+          <>
+            {/* 検索入力 */}
+            <div className="relative" ref={inputContainerRef}>
+              <div className="relative flex items-center">
+                <Input
+                  ref={inputRef}
+                  id={`field_${name}`}
+                  type="text"
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  onFocus={handleFocus}
+                  onKeyDown={handleKeyDown}
+                  onBlur={() => {
+                    // Tab離脱等の blur でドロップダウンを閉じる
+                    // 候補クリック時の選択処理を妨げないよう150ms遅延
+                    setTimeout(() => setIsOpen(false), 150);
+                  }}
+                  disabled={disabled}
+                  placeholder={
+                    placeholder ?? t("LBL_PLACEHOLDER_SELECT", label)
+                  }
+                  autoComplete="off"
+                  className={cn("pr-10", error && "border-red-500")}
+                />
 
-            {/* ドロップダウンアイコン */}
-            <div className="absolute right-3 flex items-center pointer-events-none">
-              <ChevronDown className="w-4 h-4 text-gray-400" />
-            </div>
-          </div>
-
-          {/* ドロップダウン */}
-          {renderDropdown()}
-        </div>
-
-        {/* 選択済みタグ表示 */}
-        {selectedValues.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-2">
-            {selectedValues.map((val) => (
-              <div
-                key={val}
-                className="relative inline-flex items-center bg-blue-100 text-blue-800 rounded-md text-md"
-              >
-                <span className="pl-3 pr-6 py-1.5">{getLabel(val)}</span>
-                {!disabled && (
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveTag(val)}
-                    className="absolute right-0 top-0 bottom-0 w-6 flex items-center justify-center hover:bg-blue-200 rounded-r-md transition-colors cursor-pointer"
-                    aria-label={`${getLabel(val)}を削除`}
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
+                {/* ドロップダウンアイコン */}
+                <div className="absolute right-3 flex items-center pointer-events-none">
+                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                </div>
               </div>
-            ))}
-          </div>
+
+              {/* ドロップダウン */}
+              {renderDropdown()}
+            </div>
+
+            {/* 選択済みタグ表示 */}
+            {selectedValues.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {selectedValues.map((val) => (
+                  <div
+                    key={val}
+                    className="relative inline-flex items-center bg-blue-100 text-blue-800 rounded-md text-md"
+                  >
+                    <span className="pl-3 pr-6 py-1.5">{getLabel(val)}</span>
+                    {!disabled && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTag(val)}
+                        className="absolute right-0 top-0 bottom-0 w-6 flex items-center justify-center hover:bg-blue-200 rounded-r-md transition-colors cursor-pointer"
+                        aria-label={`${getLabel(val)}を削除`}
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          renderCheckboxList()
         )}
 
-        {/* 隠しフィールド */}
-        <input type="hidden" name={name} value={value || ""} />
+        {/* 隠しフィールド（カスタム要素経由ではネイティブselectが送信を担うため抑止可） */}
+        {renderHiddenInput && (
+          <input type="hidden" name={name} value={value || ""} />
+        )}
 
         {/* エラーメッセージ */}
         {error && (
