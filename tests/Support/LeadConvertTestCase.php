@@ -224,6 +224,11 @@ abstract class LeadConvertTestCase extends TestCase
         return is_scalar($value) ? (string) $value : '';
     }
 
+    protected static function intValue(mixed $value): int
+    {
+        return is_numeric($value) ? (int) $value : 0;
+    }
+
     protected function isDeleted(int $crmId): bool
     {
         $result = $this->db->pquery('SELECT deleted FROM vtiger_crmentity WHERE crmid = ?', [$crmId]);
