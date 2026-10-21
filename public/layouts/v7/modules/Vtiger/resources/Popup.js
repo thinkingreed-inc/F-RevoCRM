@@ -554,7 +554,7 @@ jQuery.Class("Vtiger_Popup_Js",{
 		if(totalPageNumber === ""){
 			var totalCountElem = popupContainer.find('#totalCount');
 			var totalRecordCount = totalCountElem.val();
-			if(totalRecordCount !== '') {
+			if(totalRecordCount !== '' && totalRecordCount !== '0') {
 				var recordPerPage = popupContainer.find('#pageLimit').val();
 				if(recordPerPage === '0') recordPerPage = 1;
 				pageCount = Math.ceil(totalRecordCount/recordPerPage);
