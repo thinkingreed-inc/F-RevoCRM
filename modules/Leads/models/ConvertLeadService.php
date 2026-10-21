@@ -332,7 +332,8 @@ class Leads_ConvertLeadService_Model
             ['Potentials', 'contact_id', 'Contacts'],
         ];
         foreach ($required as [$module, $fieldName, $target]) {
-            if ($isOn($module) && !$isOn($target) && self::isFieldMandatory($module, $fieldName)) {
+            // 既存レコードに紐づける場合は項目を保存しないので、必須の参照先は要らない
+            if ($requests[$module]['mode'] === self::MODE_CREATE && !$isOn($target) && self::isFieldMandatory($module, $fieldName)) {
                 $errors[] = self::generalError(vtranslate(
                     'LBL_CONVERT_ERR_LINK_REQUIRED',
                     'Leads',

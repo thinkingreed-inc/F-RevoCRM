@@ -73,13 +73,15 @@ export function forcedBy(
   constraints: ConvertConstraints,
 ): Partial<Record<ConvertModule, ConvertModule>> {
   const forced: Partial<Record<ConvertModule, ConvertModule>> = {};
-  if (isOn(sections.Potentials) && constraints.potentialAccountMandatory) {
+  // 既存レコードに紐づける場合は項目を保存しないので、参照先を強制しない
+  const creates = (module: ConvertModule) => sections[module].mode === "create";
+  if (creates("Potentials") && constraints.potentialAccountMandatory) {
     forced.Accounts = "Potentials";
   }
-  if (isOn(sections.Potentials) && constraints.potentialContactMandatory) {
+  if (creates("Potentials") && constraints.potentialContactMandatory) {
     forced.Contacts = "Potentials";
   }
-  if (isOn(sections.Contacts) && constraints.contactAccountMandatory) {
+  if (creates("Contacts") && constraints.contactAccountMandatory) {
     forced.Accounts = "Contacts";
   }
   return forced;

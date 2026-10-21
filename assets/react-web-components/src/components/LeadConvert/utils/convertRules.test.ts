@@ -203,6 +203,25 @@ describe("changeMode / forcedBy", () => {
     expect(sections.Contacts.mode).toBe("existing");
     expect(sections.Contacts.existingId).toBe("7");
   });
+  it("既存の担当者に紐づけるときは顧客企業名が必須でも企業を強制しない", () => {
+    const data = info({
+      constraints: {
+        contactAccountMandatory: true,
+        potentialAccountMandatory: false,
+        potentialContactMandatory: false,
+      },
+    });
+    data.modules.Accounts.values = { accountname: "" };
+    let sections = changeMode(
+      initialSections(data),
+      "Contacts",
+      "existing",
+      data,
+    );
+    sections = changeMode(sections, "Accounts", "none", data);
+    expect(sections.Accounts.mode).toBe("none");
+    expect(forcedBy(sections, data.constraints).Accounts).toBeUndefined();
+  });
 });
 
 describe("validateSections", () => {

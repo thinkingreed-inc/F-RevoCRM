@@ -72,6 +72,8 @@ function vtws_convertlead($element, $leadId, $assignedTo, $accountName, $avoidPo
 	$entityIds = array();
 	// 今回の昇格で新しく作ったレコード（失敗時に消してよいのはこれだけ）
 	$createdEntityIds = array();
+	// 所属企業が空の既存担当者（企業が決まった後、すべての作成に成功してからセットする）
+	$contactToLinkAccount = null;
 
 	$availableModules = array('Accounts', 'Contacts', 'Potentials');
 
@@ -95,9 +97,13 @@ function vtws_convertlead($element, $leadId, $assignedTo, $accountName, $avoidPo
 			$entityvalue = $element['entities'][$entityName];
 			if (!empty($entityvalue['existingId']) && in_array($entityName, array('Accounts', 'Contacts'))) {
 				try {
-					$entityIds[$entityName] = vtws_convertLeadAttachExisting($entityName, $entityvalue['existingId'], $entityIds, $activeAdminUser);
+					$existing = vtws_convertLeadRetrieveExisting($entityName, $entityvalue['existingId'], $user);
+					$entityIds[$entityName] = $existing['id'];
+					if ($entityName == 'Contacts' && empty($existing['account_id'])) {
+						$contactToLinkAccount = $existing['id'];
+					}
 				} catch (Exception $e) {
-					vtws_convertLeadDeleteCreated($createdEntityIds, $user);
+					vtws_convertLeadDeleteCreated($createdEntityIds, $activeAdminUser);
 					throw $e;
 				}
 				continue;
@@ -115,7 +121,7 @@ function vtws_convertlead($element, $leadId, $assignedTo, $accountName, $avoidPo
 			try {
 				$entityObjectValues = vtws_populateConvertLeadEntities($entityvalue, $entityObjectValues, $entityHandler, $leadHandler, $leadInfo, $entityName, $strict);
 			} catch (Exception $e) {
-				vtws_convertLeadDeleteCreated($createdEntityIds, $user);
+				vtws_convertLeadDeleteCreated($createdEntityIds, $activeAdminUser);
 				throw $e;
 			}
 
@@ -133,6 +139,16 @@ function vtws_convertlead($element, $leadId, $assignedTo, $accountName, $avoidPo
 			if ($entityName == 'Contacts') {
 				if (!empty($entityIds['Accounts'])) {
 					$entityObjectValues['account_id'] = $entityIds['Accounts'];
+				}
+			}
+
+			if ($strict) {
+				// 関連づけ（account_id / related_to / contact_id）を入れた後の値で必須を確かめる
+				try {
+					vtws_assertConvertEntityMandatoryValues($entityObjectValues, $entityHandler, $entityName);
+				} catch (Exception $e) {
+					vtws_convertLeadDeleteCreated($createdEntityIds, $activeAdminUser);
+					throw $e;
 				}
 			}
 
@@ -166,16 +182,25 @@ function vtws_convertlead($element, $leadId, $assignedTo, $accountName, $avoidPo
 				}
 			} catch (DuplicateException $e) {
 				if ($strict) {
-					vtws_convertLeadDeleteCreated($createdEntityIds, $user);
+					vtws_convertLeadDeleteCreated($createdEntityIds, $activeAdminUser);
 				}
 				throw $e;
 			} catch (Exception $e) {
 				if ($strict) {
-					vtws_convertLeadDeleteCreated($createdEntityIds, $user);
+					vtws_convertLeadDeleteCreated($createdEntityIds, $activeAdminUser);
 				}
 				throw new WebServiceException(WebServiceErrorCode::$UNKNOWNOPERATION,
 						$e->getMessage().' : '.$entityName);
 			}
+		}
+	}
+
+	if ($contactToLinkAccount !== null && !empty($entityIds['Accounts'])) {
+		try {
+			vtws_revise(array('id' => $contactToLinkAccount, 'account_id' => $entityIds['Accounts']), $activeAdminUser);
+		} catch (Exception $e) {
+			vtws_convertLeadDeleteCreated($createdEntityIds, $activeAdminUser);
+			throw $e;
 		}
 	}
 
@@ -216,7 +241,7 @@ function vtws_convertlead($element, $leadId, $assignedTo, $accountName, $avoidPo
 		vtws_updateConvertLeadStatus($entityIds, $element['leadId'], $user);
 	} catch (Exception $e) {
 		// 既存レコード（暗黙に再利用した企業・指定した既存レコード）は消さない
-		vtws_convertLeadDeleteCreated($createdEntityIds, $user);
+		vtws_convertLeadDeleteCreated($createdEntityIds, $activeAdminUser);
 		return null;
 	}
 
@@ -294,9 +319,8 @@ function vtws_populateConvertLeadEntities($entityvalue, $entity, $entityHandler,
 			}
 		}
 
-		if ($strict) {
-			vtws_assertConvertEntityMandatoryValues($entity, $entityHandler, $entityName);
-		} else {
+		// strict の必須チェックは関連づけの値を入れた後に vtws_convertlead 側で行う
+		if (!$strict) {
 			$entity = vtws_validateConvertEntityMandatoryValues($entity, $entityHandler, $entityName);
 		}
 	}
@@ -323,24 +347,23 @@ function vtws_assertConvertEntityMandatoryValues($entity, $entityHandler, $modul
 }
 
 /**
- * 既存レコードに紐づける。値は書き換えない
+ * 紐づける既存レコードを、昇格を実行するユーザーの権限で読む（閲覧できなければ例外）
  *
- * 担当者は所属企業が空のときだけ、昇格で決まった企業をセットする。
- * @return string 紐づけたレコードの Webservice ID
+ * 既存レコードの値は書き換えない（担当者の所属企業だけは、空のとき昇格の最後にセットする）。
+ * @return array 既存レコード
  */
-function vtws_convertLeadAttachExisting($entityName, $existingId, $entityIds, $activeAdminUser) {
+function vtws_convertLeadRetrieveExisting($entityName, $existingId, $user) {
 	$idComponents = vtws_getIdComponents($existingId);
 	if (getSalesEntityType($idComponents[1]) !== $entityName) {
 		throw new WebServiceException(WebServiceErrorCode::$INVALIDID, "Id specified is not $entityName");
 	}
-	$existing = vtws_retrieve($existingId, $activeAdminUser);
-	if ($entityName == 'Contacts' && !empty($entityIds['Accounts']) && empty($existing['account_id'])) {
-		vtws_revise(array('id' => $existing['id'], 'account_id' => $entityIds['Accounts']), $activeAdminUser);
-	}
-	return $existing['id'];
+	return vtws_retrieve($existingId, $user);
 }
 
-/** 今回の昇格で作ったレコードだけを消す（後始末の失敗で元の例外を隠さない） */
+/**
+ * 今回の昇格で作ったレコードだけを消す（後始末の失敗で元の例外を隠さない）
+ * 作成と同じく管理者として消す（実行ユーザーに削除権限が無くても孤立レコードを残さない）
+ */
 function vtws_convertLeadDeleteCreated($createdEntityIds, $user) {
 	foreach ($createdEntityIds as $id) {
 		try {

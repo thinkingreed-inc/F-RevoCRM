@@ -206,4 +206,24 @@ final class VtwsConvertLeadTest extends LeadConvertTestCase
             'Accounts' => ['existingId' => vtws_getWebserviceEntityId('Contacts', $contactId)],
         ], true);
     }
+
+    public function test_途中で失敗したら既存担当者の所属企業も元に戻す(): void
+    {
+        $contactId = $this->createContact('NoAccount');
+
+        try {
+            $this->convert($this->createLead('R'), [
+                'Accounts' => ['accountname' => self::PREFIX . 'Rollback2'],
+                'Contacts' => ['existingId' => vtws_getWebserviceEntityId('Contacts', $contactId)],
+                'Potentials' => ['potentialname' => '', 'closingdate' => '2030-01-01', 'sales_stage' => 'Prospecting'],
+            ], true);
+            self::fail('必須が空なのに昇格できた');
+        } catch (Exception $e) {
+            self::assertStringContainsString('potentialname', $e->getMessage());
+        }
+
+        // 所属企業が空のまま（空は '' または '0' で返る）
+        self::assertContains($this->fieldValue('Contacts', $contactId, 'account_id'), ['', '0']);
+        self::assertFalse($this->isDeleted($contactId));
+    }
 }
