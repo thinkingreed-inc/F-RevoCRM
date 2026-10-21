@@ -32,6 +32,8 @@ export interface ReferenceFieldProps {
   value?: string;
   /** 現在のラベル（表示用） */
   displayValue?: string;
+  /** 現在の値が属するモジュール名（関連などポリモーフィック参照の復元用） */
+  valueModule?: string;
   /** 値変更時のコールバック */
   onChange: (name: string, value: string, record?: ReferenceRecord) => void;
   /** 必須フィールド */
@@ -57,6 +59,7 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
   referenceModuleLabels = {},
   value,
   displayValue,
+  valueModule,
   onChange,
   mandatory = false,
   disabled = false,
@@ -74,9 +77,15 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
     return referenceModuleLabels[moduleName] || moduleName;
   };
   // 現在選択中のモジュール（複数参照の場合）
-  const [selectedModule, setSelectedModule] = useState<string>(
-    referenceModules.length > 0 ? referenceModules[0] : "",
-  );
+  // 既存値があるときはそのレコードが属するモジュールを優先する。
+  // これが無いと、関連のように参照先候補が複数ある項目で常に先頭の候補
+  // （顧客企業）が選ばれた状態になり、実際の参照先と食い違う。
+  const [selectedModule, setSelectedModule] = useState<string>(() => {
+    if (valueModule && referenceModules.includes(valueModule)) {
+      return valueModule;
+    }
+    return referenceModules.length > 0 ? referenceModules[0] : "";
+  });
 
   // 検索キーワード
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -486,6 +495,19 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
       setDisplayLabel(displayValue);
     }
   }, [displayValue]);
+
+  /**
+   * 既存値のモジュールの設定
+   *
+   * API 応答は非同期で届くため、マウント時の初期値だけでは間に合わない。
+   * 候補に無いモジュール名が来た場合は選択を変えない。
+   */
+  useEffect(() => {
+    if (valueModule && referenceModules.includes(valueModule)) {
+      setSelectedModule(valueModule);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [valueModule]);
 
   // モジュール選択ドロップダウンのレンダリング（Portal使用）
   const renderModuleDropdown = () => {
