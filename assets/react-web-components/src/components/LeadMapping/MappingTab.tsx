@@ -139,7 +139,7 @@ export function MappingTab({ info, t, save }: MappingTabProps) {
                   </Button>
                 )}
               </div>
-              <label className="flex flex-col gap-1">
+              <label className="m-0 flex flex-col gap-1 font-normal">
                 <span className="text-xs text-gray-500 md:sr-only">
                   {headers[0]}
                 </span>
@@ -169,7 +169,10 @@ export function MappingTab({ info, t, save }: MappingTabProps) {
                 {leadField?.type ?? ""}
               </span>
               {TARGET_MODULES.map((module, index) => (
-                <label key={module} className="flex flex-col gap-1">
+                <label
+                  key={module}
+                  className="m-0 flex flex-col gap-1 font-normal"
+                >
                   <span className="text-xs text-gray-500 md:sr-only">
                     {headers[index + 2]}
                   </span>

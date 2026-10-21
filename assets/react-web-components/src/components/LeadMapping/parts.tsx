@@ -1,6 +1,6 @@
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { Button } from "../ui/button";
-import { cn } from "../../lib/utils";
+import { SegmentedControl } from "../ui/segmented-control";
 
 export type Translate = (key: string, ...args: (string | number)[]) => string;
 
@@ -22,32 +22,15 @@ export function ModuleSwitcher<T extends string>({
   name: string;
 }) {
   return (
-    <div
-      role="radiogroup"
-      className="inline-grid w-full auto-cols-fr grid-flow-col overflow-hidden rounded-md border border-gray-300 text-sm sm:w-auto"
-    >
-      {modules.map((module) => (
-        <label
-          key={module}
-          className={cn(
-            "flex cursor-pointer items-center justify-center border-l border-gray-300 px-4 py-2 first:border-l-0 sm:py-1.5",
-            value === module
-              ? "bg-blue-600 font-semibold text-white"
-              : "bg-white text-gray-700 hover:bg-gray-50",
-          )}
-        >
-          <input
-            type="radio"
-            className="sr-only"
-            name={name}
-            value={module}
-            checked={value === module}
-            onChange={() => onChange(module)}
-          />
-          {labels[module]}
-        </label>
-      ))}
-    </div>
+    <SegmentedControl
+      ariaLabel={name}
+      value={value}
+      onChange={onChange}
+      options={modules.map((module) => ({
+        value: module,
+        label: labels[module],
+      }))}
+    />
   );
 }
 
@@ -101,7 +84,7 @@ export function SaveBar({
         type="button"
         onClick={onSave}
         disabled={saving || !dirty}
-        className="h-10 !bg-blue-600 px-6 font-bold !text-white hover:!bg-blue-700 sm:h-9"
+        className="h-auto px-6 py-1.5 text-md font-bold !bg-green-600 !text-white hover:!bg-green-700"
         data-testid={testId}
       >
         {saving && (

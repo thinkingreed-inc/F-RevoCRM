@@ -298,8 +298,14 @@ function LeadConvertDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         className="flex h-[100dvh] max-h-[100dvh] w-screen max-w-none flex-col gap-0 rounded-none p-0 sm:h-auto sm:max-h-[90vh] sm:w-full sm:max-w-[820px] sm:rounded-lg"
-        closeButtonClassName="absolute top-3 right-3 text-white opacity-80 hover:opacity-100"
+        closeButtonClassName="absolute top-2 right-3 !text-white hover:!text-gray-200 transition-opacity"
         portalClassName="lead-convert-dialog-portal"
+        onOpenAutoFocus={(e) => {
+          // 開いた直後は読み込み中で押せるのがキャンセルだけのため、既定ではキャンセルに
+          // フォーカス（リング）が付く。本文にフォーカスを移してダイアログ内に留める
+          e.preventDefault();
+          bodyRef.current?.focus();
+        }}
         onEscapeKeyDown={(e) => {
           if (document.querySelector("[data-rwc-dropdown]")) {
             e.preventDefault();
@@ -307,8 +313,9 @@ function LeadConvertDialog({
         }}
         data-testid="lead-convert-dialog"
       >
-        <div className="bg-[#2c3b49] px-5 py-3 pr-12 text-white sm:rounded-t-lg">
-          <DialogTitle className="m-0 truncate text-base font-semibold text-white">
+        {/* ヘッダーは QuickCreate（QuickCreateHeader）と同じ見た目 */}
+        <div className="bg-[#596875] px-4 py-1.5 pr-12 text-white sm:rounded-t-lg">
+          <DialogTitle className="m-0 truncate text-lg font-normal text-white">
             {title}
           </DialogTitle>
           <DialogDescription className="sr-only">
@@ -318,7 +325,8 @@ function LeadConvertDialog({
 
         <div
           ref={bodyRef}
-          className="flex-1 space-y-4 overflow-y-auto bg-gray-50 px-3 py-4 sm:px-5"
+          tabIndex={-1}
+          className="flex-1 space-y-4 overflow-y-auto bg-white px-3 py-4 outline-none sm:px-8"
         >
           {(error || generalErrors.length > 0) && (
             <div
@@ -385,73 +393,85 @@ function LeadConvertDialog({
             })}
 
           {info && sections && (
-            <section className="space-y-3 rounded-lg border border-gray-200 bg-white px-4 py-3">
-              <h3 className="m-0 text-base font-semibold text-gray-800">
+            <section className="rounded border border-gray-200 bg-white">
+              <h3 className="m-0 border-b border-gray-200 bg-gray-50 px-4 py-2 text-base leading-normal font-semibold text-gray-800">
                 {t("LBL_CONVERT_COMMON")}
               </h3>
-              {ownerField && (
-                <FieldRenderer
-                  field={{ ...ownerField, mandatory: true }}
-                  value={assignedUserId}
-                  onChange={(_name, value) =>
-                    setAssignedUserId(String(value ?? ""))
-                  }
-                  disabled={submitting}
-                  className="w-full flex-col items-stretch md:flex-row md:items-start"
-                  labelClassName="w-full text-left leading-normal md:w-[140px] md:text-right md:leading-[30px]"
-                  module="Leads"
-                />
-              )}
-              <fieldset className="m-0 flex flex-col gap-2 border-0 p-0 md:flex-row md:items-center">
-                <legend className="float-left mb-1 w-full border-0 p-0 text-sm leading-normal text-gray-700 md:mb-0 md:w-[140px] md:pr-2 md:text-right">
-                  {t("LBL_TRANSFER_RELATED_RECORD")}
-                </legend>
-                <div className="flex flex-wrap gap-4">
-                  {info.transferOptions.map((option) => (
-                    <label
-                      key={option.module}
-                      className="flex cursor-pointer items-center gap-2 text-sm"
-                    >
-                      <input
-                        type="radio"
-                        name="lead-convert-transfer"
-                        value={option.module}
-                        checked={transferTo === option.module}
-                        disabled={
-                          submitting || sections[option.module].mode === "none"
-                        }
-                        onChange={() => setTransferTo(option.module)}
-                      />
-                      {option.label}
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
+              <div className="space-y-3 px-4 py-3">
+                {ownerField && (
+                  <FieldRenderer
+                    field={{ ...ownerField, mandatory: true }}
+                    value={assignedUserId}
+                    onChange={(_name, value) =>
+                      setAssignedUserId(String(value ?? ""))
+                    }
+                    disabled={submitting}
+                    className="w-full flex-col items-stretch md:flex-row md:items-start"
+                    labelClassName="w-full text-left leading-normal md:w-[140px] md:text-right md:leading-[30px]"
+                    module="Leads"
+                  />
+                )}
+                <fieldset className="m-0 flex flex-col gap-2 border-0 p-0 md:flex-row md:items-center">
+                  <legend className="float-left mb-1 w-full border-0 p-0 text-sm leading-normal text-gray-700 md:mb-0 md:w-[140px] md:pr-2 md:text-right">
+                    {t("LBL_TRANSFER_RELATED_RECORD")}
+                  </legend>
+                  <div className="flex flex-wrap gap-4">
+                    {info.transferOptions.map((option) => (
+                      <label
+                        key={option.module}
+                        className="m-0 flex cursor-pointer items-center gap-2 text-sm font-normal"
+                      >
+                        <input
+                          type="radio"
+                          className="m-0"
+                          name="lead-convert-transfer"
+                          value={option.module}
+                          checked={transferTo === option.module}
+                          disabled={
+                            submitting ||
+                            sections[option.module].mode === "none"
+                          }
+                          onChange={() => setTransferTo(option.module)}
+                        />
+                        {option.label}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              </div>
             </section>
           )}
         </div>
 
-        <div className="flex flex-col-reverse gap-2 border-t border-gray-200 bg-white px-4 py-3 sm:flex-row sm:justify-end sm:rounded-b-lg">
+        {/* フッターは QuickCreate（QuickCreateFooter）と同じ: 実行は btn-success 相当、キャンセルは赤文字のリンク */}
+        <div className="flex items-center justify-center gap-4 border-t border-gray-200 bg-white px-4 py-3 sm:rounded-b-lg">
           <Button
             type="button"
-            variant="outline"
-            className="h-10 sm:h-9"
-            onClick={() => handleOpenChange(false)}
-            disabled={submitting}
-          >
-            {t("LBL_CANCEL")}
-          </Button>
-          <Button
-            type="button"
-            className="h-10 !bg-blue-600 font-bold !text-white hover:!bg-blue-700 sm:h-9"
+            className="h-auto px-6 py-1.5 text-md font-bold !bg-green-600 !text-white hover:!bg-green-700"
             onClick={() => void handleSubmit()}
             disabled={submitting || !info || !sections}
             data-testid="lead-convert-submit"
           >
-            {submitting && (
-              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+            {submitting ? (
+              <>
+                <Loader2
+                  className="mr-2 h-4 w-4 animate-spin"
+                  aria-hidden="true"
+                />
+                {t("LBL_CONVERT_SUBMITTING")}
+              </>
+            ) : (
+              t("LBL_CONVERT_SUBMIT")
             )}
-            {submitting ? t("LBL_CONVERT_SUBMITTING") : t("LBL_CONVERT_SUBMIT")}
+          </Button>
+          <Button
+            type="button"
+            variant="link"
+            className="h-auto px-2.5 py-1.5 text-md !text-red-600 hover:!text-red-800 hover:no-underline"
+            onClick={() => handleOpenChange(false)}
+            disabled={submitting}
+          >
+            {t("LBL_CANCEL")}
           </Button>
         </div>
       </DialogContent>

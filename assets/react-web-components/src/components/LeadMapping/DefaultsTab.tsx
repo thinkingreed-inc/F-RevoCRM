@@ -168,7 +168,7 @@ export function DefaultsTab({ info, t, save }: DefaultsTabProps) {
           </div>
         ))}
         {fieldsByModule[module] && (
-          <label className="flex flex-col gap-1 md:flex-row md:items-center md:gap-2">
+          <label className="m-0 flex flex-col gap-1 font-normal md:flex-row md:items-center md:gap-2">
             <span className="text-sm text-gray-600 md:w-[160px] md:text-right">
               {t("LBL_CONVERT_SETTINGS_ADD_FIELD")}
             </span>

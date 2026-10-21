@@ -44,7 +44,10 @@ function LeadMappingSettingsPage() {
       </h2>
       <div
         role="tablist"
-        className="mb-4 flex gap-1 overflow-x-auto border-b border-gray-200"
+        // overflow-x だけを指定すると縦方向も auto になり、タブの下線が 1px でもはみ出すと
+        // 縦スクロールバーが出る。縦は hidden にし、区切り線は内側の影で描いてはみ出さないようにする。
+        // スマホ幅でタブが収まらないときは横スクロールだけ許す
+        className="mb-4 flex gap-1 overflow-x-auto overflow-y-hidden shadow-[inset_0_-1px_0_#e5e7eb]"
       >
         {TABS.map((item) => (
           <button
@@ -54,10 +57,10 @@ function LeadMappingSettingsPage() {
             aria-selected={tab === item.key}
             onClick={() => setTab(item.key)}
             className={cn(
-              "-mb-px shrink-0 border-b-2 bg-transparent px-3 py-2 text-sm whitespace-nowrap",
+              "shrink-0 border-0 border-b-2 bg-transparent px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors",
               tab === item.key
-                ? "border-blue-600 font-semibold text-blue-700"
-                : "border-transparent text-gray-600 hover:text-gray-900",
+                ? "border-blue-500 font-medium text-blue-600"
+                : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700",
             )}
           >
             {t(item.label)}
