@@ -111,7 +111,7 @@ export function ConvertSection({
     >
       <div
         className={cn(
-          "flex flex-col gap-2 bg-gray-50 px-4 py-2 sm:flex-row sm:items-center sm:justify-between",
+          "flex flex-col gap-3 bg-gray-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-5",
           hasBody && "border-b border-gray-200",
         )}
       >
@@ -136,7 +136,7 @@ export function ConvertSection({
       </div>
 
       {hasBody && (
-        <div className="space-y-3 px-4 py-3">
+        <div className="space-y-4 px-4 py-4 sm:px-5 sm:py-5">
           {forcedByLabel !== null && (
             <p className="m-0 flex items-center gap-1 text-xs text-gray-500">
               <Info className="h-3.5 w-3.5" aria-hidden="true" />
@@ -147,7 +147,7 @@ export function ConvertSection({
           {showMatch && match && (
             <div
               role="status"
-              className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+              className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900"
               data-testid={`lead-convert-match-${module}`}
             >
               <p className="m-0 flex items-start gap-2 font-semibold">
@@ -162,15 +162,15 @@ export function ConvertSection({
                   match.total,
                 )}
               </p>
-              <p className="m-0 mt-1 pl-6 text-xs">
+              <p className="m-0 mt-1.5 pl-6 text-xs">
                 {t("LBL_CONVERT_MATCH_HINT")}
               </p>
               {match.records.length > 1 && (
-                <fieldset className="m-0 mt-2 border-0 p-0 pl-6">
+                <fieldset className="m-0 mt-3 border-0 p-0 pl-6">
                   <legend className="mb-1 w-auto border-0 p-0 text-xs font-semibold text-amber-900">
                     {t("LBL_CONVERT_MATCH_CANDIDATES")}
                   </legend>
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-1.5">
                     {match.records.map((record) => (
                       <label
                         key={record.id}
@@ -205,7 +205,7 @@ export function ConvertSection({
           )}
 
           {state.mode === "existing" && (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <ReferenceField
                 name={`${module}_existing`}
                 label={t("LBL_CONVERT_SELECT_EXISTING")}
@@ -226,7 +226,7 @@ export function ConvertSection({
                 summary.id === Number(state.existingId) &&
                 summary.fields.length > 0 && (
                   <dl
-                    className="m-0 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 rounded-md bg-gray-50 px-3 py-2 text-sm md:ml-[148px]"
+                    className="m-0 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 rounded-md border border-gray-200 bg-gray-50 px-4 py-3 text-sm leading-relaxed md:ml-[148px]"
                     data-testid={`lead-convert-summary-${module}`}
                   >
                     {summary.fields.map((item) => (
@@ -243,7 +243,7 @@ export function ConvertSection({
                 <p
                   role="status"
                   className={cn(
-                    "m-0 flex items-start gap-2 rounded-md px-3 py-2 text-sm md:ml-[148px]",
+                    "m-0 flex items-start gap-2 rounded-md px-4 py-3 text-sm leading-relaxed md:ml-[148px]",
                     notice.tone === "warning"
                       ? "border border-amber-300 bg-amber-50 text-amber-900"
                       : "border border-gray-200 bg-gray-50 text-gray-700",
@@ -275,7 +275,7 @@ export function ConvertSection({
               )}
               {regularFields.map(renderField)}
               {addedFields.length > 0 && (
-                <div className="space-y-3 rounded-md border border-red-200 bg-red-50/40 p-3">
+                <div className="space-y-3 rounded-md border border-red-200 bg-red-50/40 p-4">
                   <p className="m-0 text-xs font-semibold text-red-700">
                     {t("LBL_CONVERT_ADDED_FIELD")}
                   </p>

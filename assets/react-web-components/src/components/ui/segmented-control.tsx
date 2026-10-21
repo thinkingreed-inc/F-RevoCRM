@@ -53,7 +53,7 @@ export function SegmentedControl<T extends string>({
               if (!checked) onChange(option.value);
             }}
             className={cn(
-              "m-0 flex min-h-[32px] items-center justify-center border-0 border-l border-gray-300 px-3 py-1 text-center text-sm leading-tight font-normal whitespace-normal transition-colors first:border-l-0 focus-visible:relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#596875]",
+              "m-0 flex min-h-[34px] items-center justify-center border-0 border-l border-gray-300 px-4 py-1.5 text-center text-sm leading-tight font-normal whitespace-normal transition-colors first:border-l-0 focus-visible:relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#596875]",
               checked
                 ? "bg-[#596875] text-white"
                 : "bg-white text-gray-700 hover:bg-gray-100",

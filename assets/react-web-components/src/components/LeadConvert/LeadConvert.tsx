@@ -297,7 +297,7 @@ function LeadConvertDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
-        className="flex h-[100dvh] max-h-[100dvh] w-screen max-w-none flex-col gap-0 rounded-none p-0 sm:h-auto sm:max-h-[90vh] sm:w-full sm:max-w-[820px] sm:rounded-lg"
+        className="flex h-[100dvh] max-h-[100dvh] w-screen max-w-none flex-col gap-0 rounded-none p-0 sm:h-auto sm:max-h-[90vh] sm:w-full sm:max-w-[860px] sm:rounded-lg"
         closeButtonClassName="absolute top-2 right-3 !text-white hover:!text-gray-200 transition-opacity"
         portalClassName="lead-convert-dialog-portal"
         onOpenAutoFocus={(e) => {
@@ -326,12 +326,12 @@ function LeadConvertDialog({
         <div
           ref={bodyRef}
           tabIndex={-1}
-          className="flex-1 space-y-4 overflow-y-auto bg-white px-3 py-4 outline-none sm:px-8"
+          className="flex-1 space-y-5 overflow-y-auto bg-white px-4 py-5 outline-none sm:space-y-6 sm:px-8 sm:py-6"
         >
           {(error || generalErrors.length > 0) && (
             <div
               role="alert"
-              className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800"
+              className="rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm leading-relaxed text-red-800"
               data-testid="lead-convert-errors"
             >
               <p className="m-0 flex items-center gap-2 font-semibold">
@@ -394,10 +394,10 @@ function LeadConvertDialog({
 
           {info && sections && (
             <section className="rounded border border-gray-200 bg-white">
-              <h3 className="m-0 border-b border-gray-200 bg-gray-50 px-4 py-2 text-base leading-normal font-semibold text-gray-800">
+              <h3 className="m-0 border-b border-gray-200 bg-gray-50 px-4 py-3 text-base leading-normal font-semibold text-gray-800 sm:px-5">
                 {t("LBL_CONVERT_COMMON")}
               </h3>
-              <div className="space-y-3 px-4 py-3">
+              <div className="space-y-4 px-4 py-4 sm:px-5 sm:py-5">
                 {ownerField && (
                   <FieldRenderer
                     field={{ ...ownerField, mandatory: true }}
@@ -411,11 +411,11 @@ function LeadConvertDialog({
                     module="Leads"
                   />
                 )}
-                <fieldset className="m-0 flex flex-col gap-2 border-0 p-0 md:flex-row md:items-center">
+                <fieldset className="m-0 flex flex-col gap-2 border-0 p-0 md:flex-row md:items-center md:gap-0">
                   <legend className="float-left mb-1 w-full border-0 p-0 text-sm leading-normal text-gray-700 md:mb-0 md:w-[140px] md:pr-2 md:text-right">
                     {t("LBL_TRANSFER_RELATED_RECORD")}
                   </legend>
-                  <div className="flex flex-wrap gap-4">
+                  <div className="flex flex-wrap gap-x-6 gap-y-2 py-1 md:pl-2">
                     {info.transferOptions.map((option) => (
                       <label
                         key={option.module}
@@ -444,7 +444,7 @@ function LeadConvertDialog({
         </div>
 
         {/* フッターは QuickCreate（QuickCreateFooter）と同じ: 実行は btn-success 相当、キャンセルは赤文字のリンク */}
-        <div className="flex items-center justify-center gap-4 border-t border-gray-200 bg-white px-4 py-3 sm:rounded-b-lg">
+        <div className="flex items-center justify-center gap-4 border-t border-gray-200 bg-white px-4 py-3.5 sm:rounded-b-lg">
           <Button
             type="button"
             className="h-auto px-6 py-1.5 text-md font-bold !bg-green-600 !text-white hover:!bg-green-700"
