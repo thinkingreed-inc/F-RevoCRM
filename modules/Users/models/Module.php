@@ -430,4 +430,28 @@ class Users_Module_Model extends Vtiger_Module_Model {
 		}
 		return $importableFieldModels;
 	}
+
+	/**
+	 * userlabelからユーザーIDを一括取得する
+	 * @param array $userNames ユーザー名の配列
+	 * @return array ユーザーIDの配列
+	 */
+	public static function getIdsByUserNames($userNames) {
+		global $adb;
+
+		$userNames = array_filter(array_map('trim', $userNames), function($v) { return $v !== ''; });
+		if (empty($userNames)) {
+			return array();
+		}
+
+		$placeholders = generateQuestionMarks($userNames);
+		$query = "SELECT id FROM vtiger_users WHERE userlabel IN ($placeholders)";
+		$result = $adb->pquery($query, array_values($userNames));
+
+		$userIds = array();
+		for ($i = 0; $i < $adb->num_rows($result); $i++) {
+			$userIds[] = $adb->query_result($result, $i, 'id');
+		}
+		return $userIds;
+	}
 }
