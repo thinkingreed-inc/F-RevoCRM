@@ -98,6 +98,7 @@ final class ConvertLeadServiceTest extends LeadConvertTestCase
         $errors = $result['errors'];
         $emailError = array_values(array_filter($errors, static fn (array $e): bool => $e['field'] === 'email'))[0];
         self::assertTrue($emailError['hidden']);
+        self::assertSame('broken@', $emailError['value']);
         self::assertTrue($emailError['editable']);
         self::assertFalse(Leads_ConvertLeadService_Model::isConverted($leadId));
     }

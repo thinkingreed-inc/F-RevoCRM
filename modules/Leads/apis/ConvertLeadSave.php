@@ -21,7 +21,7 @@
  *
  * 応答（HTTP 200）:
  *   成功   { converted: true, redirectUrl, entityIds }
- *   失敗   { converted: false, errors: [{ module, field, label, message, hidden, editable }] }
+ *   失敗   { converted: false, errors: [{ module, field, label, message, hidden, editable, value }] }
  *          hidden=true は画面に出していない項目のエラー（画面側で項目を追加表示する）。
  *          editable=false は編集権限の無い項目のエラー（画面では直せない）。
  *          field が空のエラーは項目に紐づかないエラー（重複・組み合わせ・権限など）。

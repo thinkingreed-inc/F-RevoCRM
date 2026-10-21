@@ -512,7 +512,7 @@ class Leads_ConvertLeadService_Model
      */
     private static function generalError(string $message, string $module = ''): array
     {
-        return ['module' => $module, 'field' => '', 'label' => '', 'message' => $message, 'hidden' => false, 'editable' => true];
+        return ['module' => $module, 'field' => '', 'label' => '', 'message' => $message, 'hidden' => false, 'editable' => true, 'value' => ''];
     }
 
     /**

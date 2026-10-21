@@ -100,7 +100,7 @@ class Leads_ConvertLeadValidator_Model
      * @param array<string, mixed> $values     保存される最終的な値
      * @param list<string>         $displayed  昇格画面に出している項目
      * @param list<string>         $skipFields 昇格処理が値を入れる項目（関連づけ用の参照など）
-     * @return list<array{module: string, field: string, label: string, message: string, hidden: bool, editable: bool}>
+     * @return list<array{module: string, field: string, label: string, message: string, hidden: bool, editable: bool, value: string}>
      */
     public static function validateModule(string $module, array $values, array $displayed, array $skipFields = []): array
     {
@@ -142,6 +142,8 @@ class Leads_ConvertLeadValidator_Model
                 'message' => $message,
                 'hidden' => !in_array($fieldName, $displayed, true),
                 'editable' => $editable,
+                // 追加表示した項目に、保存しようとした値をそのまま出して直せるようにする
+                'value' => is_scalar($value) ? (string) $value : '',
             ];
         }
 
