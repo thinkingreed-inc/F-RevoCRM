@@ -333,7 +333,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 
 							if ($mergeType == Import_Utils_Helper::$AUTO_MERGE_OVERWRITE) {
 								try {
-									$fieldData = $this->transformForImport($fieldData, $moduleMeta, $cache);
+									$fieldData = $this->transformForImport($fieldData, $moduleMeta, $cache, true, true, $baseRecordId);
 									$fieldData['id'] = $baseEntityId;
 									$entityInfo = $this->importRecord($fieldData, 'update');
 									if ($entityInfo) {
@@ -375,7 +375,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 								}
 
 								try {
-									$filteredFieldData = $this->transformForImport($filteredFieldData, $moduleMeta, $cache, $fillDefault, $mandatoryValueChecks);
+									$filteredFieldData = $this->transformForImport($filteredFieldData, $moduleMeta, $cache, $fillDefault, $mandatoryValueChecks, $baseRecordId);
 									$filteredFieldData['id'] = $baseEntityId;
 									if ($userPriviligesModel->hasModuleActionPermission($tabId, 'EditView')) {
 										$entityInfo = $this->importRecord($filteredFieldData, 'revise');
@@ -502,7 +502,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		return true;
 	}
 
-	public function transformForImport($fieldData, $moduleMeta, $cache, $fillDefault = true, $checkMandatoryFieldValues = true) {
+	public function transformForImport($fieldData, $moduleMeta, $cache, $fillDefault = true, $checkMandatoryFieldValues = true, $existingRecordId = null) {
 		global $current_user;
 		$adb = PearDatabase::getInstance();
 		$moduleImportableFields = array();
@@ -770,6 +770,24 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 				$_REQUEST['cur_'.$this->lineitem_currency_id.'_check'] = 1;
 			}
 			$fieldData['currency_id'] = $this->lineitem_currency_id;
+
+			// マージで既存レコードを更新する場合、VtigerProductOperation::sanitizeCurrency()が
+			// $element(=$fieldData)の'currency{通貨ID}'キーを見て$_REQUESTの通貨別チェック状態を
+			// 再構築するため、インポートで触れていない通貨は補完しないと単価が消えてしまう。
+			// 既存の通貨別単価を'currency{通貨ID}'として$fieldDataに補完して保持する。
+			if (!empty($existingRecordId) && isset($moduleFields['unit_price'])) {
+				$existingCurrencyRows = $adb->pquery(
+					'SELECT currencyid, actual_price FROM vtiger_productcurrencyrel WHERE productid = ? AND currencyid != ?',
+					array($existingRecordId, $this->lineitem_currency_id)
+				);
+				for ($i = 0; $i < $adb->num_rows($existingCurrencyRows); $i++) {
+					$existingCurrencyId = $adb->query_result($existingCurrencyRows, $i, 'currencyid');
+					$existingActualPrice = $adb->query_result($existingCurrencyRows, $i, 'actual_price');
+					if ($existingActualPrice !== null && $existingActualPrice !== '') {
+						$fieldData['currency'.$existingCurrencyId] = $existingActualPrice;
+					}
+				}
+			}
 		}
 
 		$skippedCalendarFields = array('contact_id', 'duration_hours', 'duration_minutes', 'recurringtype', 'reminder_time', 'smcreatorid');
