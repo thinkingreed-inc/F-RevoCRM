@@ -2,6 +2,8 @@
  * ファイルアップロード項目（uitype 998 / UI_TYPES.FILE_UPLOAD）の型定義
  *
  * 項目の値はアップロードしたファイルを登録したドキュメントのID。
+ * 画面でファイルを選んだ（手書きした）直後は一時ファイルを指す値（draft:...）を入れ、
+ * レコードの保存時にサーバーがドキュメントにして ID に置き換える。
  * API は module=<項目を持つモジュール>&api=FileField（modules/Vtiger/apis/FileField.php）。
  */
 
@@ -9,15 +11,17 @@ import type { WebComponentFieldProps } from "./webComponentField";
 
 /** 画面に渡すファイル情報（Documents_FieldFile::toClientInfo） */
 export interface FieldFileInfo {
-  /** ドキュメントID（項目の値） */
+  /** ドキュメントID（項目の値）。保存前の一時ファイルなら 0 */
   id: number;
   filename: string;
   filetype: string;
   filesize: number;
   /** サムネイルを出せる画像か */
   is_image: boolean;
-  /** ドキュメントのダウンロード URL（相対パス） */
+  /** ドキュメントのダウンロード URL（相対パス）。保存前の一時ファイルなら空 */
   download_url: string;
+  /** 保存前の一時ファイルを指す値（draft:...）。あればこれを項目の値にする */
+  draft?: string;
 }
 
 /** 縮小画像（Documents_FieldFile::buildThumbnail） */
@@ -28,14 +32,20 @@ export interface FieldThumbnail {
   mime: string;
 }
 
-/** mode=upload の応答 */
-export interface FileFieldUploadResponse extends FieldFileInfo {
+/** mode=upload の応答（一時ファイルに置いた結果） */
+export interface FileFieldUploadResponse {
+  /** 項目に入れる値（draft:...） */
+  draft: string;
+  filename: string;
+  filetype: string;
+  filesize: number;
+  is_image: boolean;
   thumbnail: FieldThumbnail | null;
 }
 
-/** mode=thumbnail の応答 */
+/** mode=thumbnail の応答（record だけ指定して項目が空なら file は null） */
 export interface FileFieldThumbnailResponse {
-  file: FieldFileInfo;
+  file: FieldFileInfo | null;
   thumbnail: FieldThumbnail | null;
 }
 

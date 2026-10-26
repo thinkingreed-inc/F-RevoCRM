@@ -8,9 +8,12 @@
  * ファイルの実体・ダウンロード・監査ログはドキュメント側の仕組みをそのまま使う。
  *
  *   1. 画面でファイルを選ぶ（手書き項目なら書いた内容を PNG にする）と、
- *      Vtiger_FileField_Api（mode=upload）がドキュメントを作ってIDを返す
- *   2. 画面はそのIDを項目の値としてレコードと一緒に保存する
- *   3. FileFieldHandler が保存前に参照権限を確かめ、保存後にレコードへ関連付ける
+ *      Vtiger_FileField_Api（mode=upload）が一時ファイルに置き、それを指す値を返す
+ *      （Documents_FieldFileDraft。手書きの自動保存は同じ一時ファイルを上書きする）
+ *   2. 画面はその値を項目の値としてレコードと一緒に保存する
+ *   3. FileFieldHandler が保存前に一時ファイルをドキュメントにする。項目に既存の
+ *      ドキュメントがあれば、そのドキュメントのファイルを差し替えて版を足す
+ *      （編集できないドキュメントなら新しく作る）。保存後にレコードへ関連付ける
  *
  * 手書き入力にするかどうかは vtiger_field.handwriting に持つ。
  *
@@ -185,25 +188,73 @@ class Documents_FieldFile
         $recordModel->set('folderid', $folderId ?: self::DEFAULT_FOLDER_ID);
         $recordModel->set('assigned_user_id', $currentUser->getId());
         $recordModel->set('mode', '');
+        self::saveWithFile($recordModel, $file);
 
-        // ドキュメントの保存は $_FILES['filename'] からファイルを拾い、
-        // 添付の登録は $_FILES の全件を対象にする。他の入力欄のファイルを
-        // 巻き込まないよう、保存の間だけこのファイル 1 件に差し替える。
+        return self::toInt($recordModel->getId());
+    }
+
+    /**
+     * 項目の既存のドキュメントを差し替えてよいか（実行ユーザーが編集できる）
+     */
+    public static function canReplaceDocument(int $notesId): bool
+    {
+        if ($notesId <= 0 || !self::canAttachDocument($notesId)) {
+            return false;
+        }
+        require_once 'modules/Documents/utils/FolderPermission.php';
+        return (bool) Users_Privileges_Model::isPermitted('Documents', 'EditView', $notesId)
+            && Documents_FolderPermission::canEditDocument($notesId);
+    }
+
+    /**
+     * ドキュメントのファイルを差し替える（ドキュメントの版が 1 つ増える）
+     *
+     * タイトルも新しいファイル名に合わせる。
+     *
+     * @param array<mixed> $file $_FILES 形式（name, type, tmp_name, error, size）
+     * @throws Exception ファイルが不正・保存できない場合
+     */
+    public static function replaceDocumentFile(int $notesId, array $file): void
+    {
+        self::assertUploadedFile($file);
+        $fileName = self::toString($file['name'] ?? '');
+        $title = pathinfo($fileName, PATHINFO_FILENAME);
+
+        $recordModel = Vtiger_Record_Model::getInstanceById($notesId, 'Documents');
+        $recordModel->set('id', $notesId);
+        $recordModel->set('mode', 'edit');
+        $recordModel->set('notes_title', $title !== '' ? $title : $fileName);
+        $recordModel->set('filename', $fileName);
+        $recordModel->set('filelocationtype', 'I');
+        $recordModel->set('filesize', self::toInt($file['size'] ?? 0));
+        $recordModel->set('filetype', self::toString($file['type'] ?? ''));
+        self::saveWithFile($recordModel, $file);
+    }
+
+    /**
+     * ファイル 1 件を添えてドキュメントを保存する
+     *
+     * ドキュメントの保存は $_FILES['filename'] からファイルを拾い、
+     * 添付の登録は $_FILES の全件を対象にする。他の入力欄のファイルを
+     * 巻き込まないよう、保存の間だけこのファイル 1 件に差し替える。
+     *
+     * @param array<mixed> $file $_FILES 形式（name, type, tmp_name, error, size）
+     */
+    private static function saveWithFile(Vtiger_Record_Model $recordModel, array $file): void
+    {
         $originalFiles = $_FILES;
         $_FILES = ['filename' => [
-            'name' => $fileName,
-            'type' => $fileType,
+            'name' => self::toString($file['name'] ?? ''),
+            'type' => self::toString($file['type'] ?? ''),
             'tmp_name' => self::toString($file['tmp_name'] ?? ''),
             'error' => self::toInt($file['error'] ?? UPLOAD_ERR_NO_FILE),
-            'size' => $fileSize,
+            'size' => self::toInt($file['size'] ?? 0),
         ]];
         try {
             $recordModel->save();
         } finally {
             $_FILES = $originalFiles;
         }
-
-        return self::toInt($recordModel->getId());
     }
 
     /**

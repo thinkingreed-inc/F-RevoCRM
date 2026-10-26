@@ -466,6 +466,7 @@ $languageStrings = array(
 	'LBL_UPLOAD_ERR_UNKNOWN' => 'ファイルのアップロードに失敗しました',
 	// ファイルアップロード項目
 	'LBL_FILE_FIELD_DOCUMENT_DENIED' => 'ファイル項目に指定されたドキュメントを参照する権限がありません',
+	'LBL_FILE_FIELD_DRAFT_INVALID' => 'アップロードしたファイルの期限が切れたか、使用できません。ファイルを選び直してください',
 	'LBL_FILE_FIELD_HANDWRITING_PNG_ONLY' => '手書き入力の項目には PNG 画像だけを登録できます',
 	'LBL_FILE_FIELD_NOT_FOUND' => 'ファイルアップロード項目が見つかりません',
 	'LBL_FILE_FIELD_SELECT' => 'ファイルを選択',
@@ -476,7 +477,7 @@ $languageStrings = array(
 	'LBL_FILE_FIELD_TOO_LARGE' => 'ファイルが大きすぎます（上限 %s）',
 	'LBL_FILE_FIELD_HANDWRITING_PLACEHOLDER' => 'ここに書いてください',
 	'LBL_FILE_FIELD_HANDWRITING_CLEAR' => '書き直す',
-	'LBL_FILE_FIELD_HANDWRITING_SAVED' => '保存しました',
+	'LBL_FILE_FIELD_HANDWRITING_SAVED' => '入力しました（レコードを保存すると登録されます）',
 	'LBL_FILE_FIELD_HANDWRITING_REDRAW' => '書き直す',
 	'LBL_FILE_FIELD_CANCEL' => 'やめる',
 	'LBL_FILE_FIELD_DOWNLOAD' => 'ダウンロード',

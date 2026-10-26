@@ -610,7 +610,7 @@ describe("FieldRenderer", () => {
       vi.restoreAllMocks();
     });
 
-    it("ファイル選択を出し、登録したドキュメントIDを値にする", async () => {
+    it("ファイル選択を出し、置いた一時ファイルを指す値にする", async () => {
       const fetchMock = vi.fn(
         (input: RequestInfo | URL, init?: RequestInit) => {
           const mode =
@@ -628,12 +628,11 @@ describe("FieldRenderer", () => {
                   max_upload_size_label: "1 KB",
                 }
               : {
-                  id: 31,
+                  draft: `draft:${"c".repeat(32)}`,
                   filename: "a.txt",
                   filetype: "text/plain",
                   filesize: 1,
                   is_image: false,
-                  download_url: "x",
                   thumbnail: null,
                 };
           return Promise.resolve({
@@ -666,7 +665,10 @@ describe("FieldRenderer", () => {
       });
 
       await vi.waitFor(() =>
-        expect(onChange).toHaveBeenCalledWith("cf_9", "31"),
+        expect(onChange).toHaveBeenCalledWith(
+          "cf_9",
+          `draft:${"c".repeat(32)}`,
+        ),
       );
       vi.unstubAllGlobals();
     });

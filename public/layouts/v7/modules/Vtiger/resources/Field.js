@@ -694,6 +694,9 @@ Vtiger_Field_Js('Vtiger_Fileupload_Field_Js',{
 
 	TAG_NAME : 'fr-field-fileupload',
 
+	/** 保存前の一時ファイルを指す値（Documents_FieldFileDraft） */
+	DRAFT_PATTERN : /^draft:[0-9a-f]{32}$/,
+
 	/**
 	 * 詳細画面のインライン編集で保存した後、表示を Web コンポーネントで出し直す
 	 * （保存後の表示は標準ではファイル名の文字に置き換わり、サムネイルが消えるため）
@@ -712,18 +715,48 @@ Vtiger_Field_Js('Vtiger_Fileupload_Field_Js',{
 			if (!saved || !valueElement.length) {
 				return;
 			}
-			var props = {
-				mode : 'detail',
-				module : app.getModuleName(),
-				fieldName : fieldName,
-				fieldLabel : '',
-				recordId : Number(app.getRecordId()) || 0,
-				mandatory : false,
-				readonly : false,
-				file : null,
-				value : String(saved.value || '')
+			// インライン編集の入力欄は一度作ると使い回されるため、保存前の値（一時ファイルなど）が
+			// 残らないよう捨てる。次に編集するときに保存後の値（data-value）から作り直される
+			fieldBasicData.closest('.edit').find('.editElement').remove();
+			var moduleName = app.getModuleName();
+			var recordId = Number(app.getRecordId()) || 0;
+			var render = function(value) {
+				var props = {
+					mode : 'detail',
+					module : moduleName,
+					fieldName : fieldName,
+					fieldLabel : '',
+					recordId : recordId,
+					mandatory : false,
+					readonly : false,
+					file : null,
+					value : value
+				};
+				valueElement.empty().append(jQuery(document.createElement(Vtiger_Fileupload_Field_Js.TAG_NAME)).attr('props', JSON.stringify(props)));
 			};
-			valueElement.empty().append(jQuery(document.createElement(Vtiger_Fileupload_Field_Js.TAG_NAME)).attr('props', JSON.stringify(props)));
+			var value = String(saved.value || '');
+			if (!Vtiger_Fileupload_Field_Js.DRAFT_PATTERN.test(value)) {
+				render(value);
+				return;
+			}
+			// 保存の応答には一時ファイルを指す値（draft:...）が返る（ドキュメントIDへの置き換えは
+			// 保存処理の中で行われ、応答には反映されない）。次のインライン編集で一時ファイルを
+			// 送り直さないよう、レコードに入ったドキュメントIDを引き直して値を差し替える
+			jQuery.getJSON('index.php', {
+				module : moduleName,
+				api : 'FileField',
+				mode : 'thumbnail',
+				field : fieldName,
+				record : recordId
+			}).then(function(response) {
+				var file = response ? response.file : null;
+				var documentId = file ? String(file.id) : '';
+				fieldBasicData.data('value', documentId);
+				fieldBasicData.attr('data-value', documentId);
+				render(documentId);
+			}, function() {
+				render('');
+			});
 		});
 	}
 },{

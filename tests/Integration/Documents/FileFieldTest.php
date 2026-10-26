@@ -23,6 +23,8 @@ require_once dirname(__DIR__, 3) . '/tests/Support/DocumentsTestCase.php';
  *
  *   - レイアウトエディタで項目を追加でき、手書き入力の指定を保存できる
  *   - ファイルをドキュメントとして登録する（手書き項目は PNG だけ）
+ *   - アップロードは一時ファイルに置くだけにし、レコードの保存時にドキュメントにする
+ *     （項目に既存のドキュメントがあれば版を足す。手書きの自動保存では版を増やさない）
  *   - レコードの保存でドキュメントを関連付け、参照できないドキュメントは入れさせない
  *   - 表示（詳細・レポート）はファイル名を出す
  *   - 一覧の列検索・フィルターの条件には出さない（値はドキュメントIDのため検索できない）
@@ -41,10 +43,14 @@ final class FileFieldTest extends DocumentsTestCase
     /** テストで作った一時ファイル */
     private array $tempFiles = [];
 
+    /** テストでアップロードした一時ファイル（項目の値） */
+    private array $drafts = [];
+
     protected function setUp(): void
     {
         parent::setUp();
         require_once 'modules/Documents/utils/FieldFile.php';
+        require_once 'modules/Documents/utils/FieldFileDraft.php';
         require_once 'modules/Documents/utils/FolderPermission.php';
         require_once 'modules/Reports/ReportUtils.php';
         require_once 'modules/Vtiger/apis/FileField.php';
@@ -70,6 +76,10 @@ final class FileFieldTest extends DocumentsTestCase
             }
         }
         $this->tempFiles = [];
+        foreach ($this->drafts as $draft) {
+            \Documents_FieldFileDraft::delete($draft);
+        }
+        $this->drafts = [];
         parent::tearDown();
     }
 
@@ -262,6 +272,127 @@ final class FileFieldTest extends DocumentsTestCase
         $this->saveAccount('other2', [self::$fields['file']['fieldname'] => (string) $accountId]);
     }
 
+    // ---- 一時ファイルと保存時の版 -------------------------------------------
+
+    public function test_アップロードは一時ファイルに置くだけでドキュメントを作らない(): void
+    {
+        $before = $this->countDocuments();
+
+        $result = $this->uploadDraft('file', 'draft.png');
+
+        $this->assertMatchesRegularExpression('/^draft:[0-9a-f]{32}$/', $result['draft']);
+        $this->assertSame(self::PREFIX . 'draft.png', $result['filename']);
+        $this->assertTrue($result['is_image']);
+        $this->assertStringStartsWith('data:image/png;base64,', $result['thumbnail']['data_uri']);
+        $this->assertSame($before, $this->countDocuments(), 'レコードを保存するまでドキュメントは作らない');
+    }
+
+    public function test_手書きの自動保存は同じ一時ファイルを上書きする(): void
+    {
+        $before = $this->countDocuments();
+        $first = $this->uploadDraft('handwriting', 'sign1.png');
+
+        $second = $this->uploadDraft('handwriting', 'sign2.png', $first['draft'], 80);
+
+        $this->assertSame($first['draft'], $second['draft']);
+        $this->assertSame(self::PREFIX . 'sign2.png', $second['filename']);
+        $this->assertSame($before, $this->countDocuments());
+    }
+
+    public function test_他人の一時ファイルは上書きせず別の一時ファイルにする(): void
+    {
+        $adminDraft = $this->uploadDraft('handwriting', 'admin.png');
+
+        $this->loginAs(self::REP_USER_ID);
+        $repDraft = $this->uploadDraft('handwriting', 'rep.png', $adminDraft['draft']);
+
+        $this->assertNotSame($adminDraft['draft'], $repDraft['draft']);
+        $this->loginAs(self::ADMIN_USER_ID);
+        $this->assertNotNull(
+            \Documents_FieldFileDraft::get($adminDraft['draft'], self::ADMIN_USER_ID, self::$fields['handwriting']['fieldid']),
+            '他人の一時ファイルは書き換えない'
+        );
+    }
+
+    public function test_一時ファイルを入れて新しいレコードを保存するとドキュメントを作って値をそのIDにする(): void
+    {
+        $draft = $this->uploadDraft('handwriting', 'new.png')['draft'];
+
+        $accountId = $this->saveAccount('new', [self::$fields['handwriting']['fieldname'] => $draft]);
+
+        $notesId = Documents_FieldFile::getStoredDocumentId($accountId, $this->fieldInfo('handwriting'), 'Accounts');
+        $this->assertGreaterThan(0, $notesId);
+        $this->assertSame(self::PREFIX . 'new.png', Documents_FieldFile::getFileInfo($notesId)['filename']);
+        $this->assertSame(1, $this->countVersions($notesId));
+        $this->assertTrue($this->isLinked($accountId, $notesId));
+        $this->assertNull(
+            \Documents_FieldFileDraft::get($draft, self::ADMIN_USER_ID, self::$fields['handwriting']['fieldid']),
+            '保存したら一時ファイルは消す'
+        );
+    }
+
+    public function test_ファイルを変えて保存すると同じドキュメントに版を足す(): void
+    {
+        $fieldName = self::$fields['handwriting']['fieldname'];
+        $accountId = $this->saveAccount('version', [$fieldName => $this->uploadDraft('handwriting', 'v1.png')['draft']]);
+        $notesId = Documents_FieldFile::getStoredDocumentId($accountId, $this->fieldInfo('handwriting'), 'Accounts');
+        $before = $this->countDocuments();
+
+        $this->saveAccount('version', [$fieldName => $this->uploadDraft('handwriting', 'v2.png', null, 80)['draft']], $accountId);
+
+        $this->assertSame($notesId, Documents_FieldFile::getStoredDocumentId($accountId, $this->fieldInfo('handwriting'), 'Accounts'));
+        $this->assertSame(2, $this->countVersions($notesId));
+        $this->assertSame($before, $this->countDocuments(), 'ドキュメントは増やさない');
+        $this->assertSame(self::PREFIX . 'v2.png', Documents_FieldFile::getFileInfo($notesId)['filename']);
+        $this->assertSame(self::PREFIX . 'v2', $this->notesColumn($notesId, 'title'), 'タイトルも新しいファイルに合わせる');
+    }
+
+    public function test_ファイルが変わらなければ版を増やさない(): void
+    {
+        $fieldName = self::$fields['handwriting']['fieldname'];
+        $accountId = $this->saveAccount('same', [$fieldName => $this->uploadDraft('handwriting', 'same.png')['draft']]);
+        $notesId = Documents_FieldFile::getStoredDocumentId($accountId, $this->fieldInfo('handwriting'), 'Accounts');
+
+        $this->saveAccount('same', [$fieldName => (string) $notesId, 'description' => 'updated'], $accountId);
+
+        $this->assertSame(1, $this->countVersions($notesId));
+    }
+
+    public function test_既存のドキュメントを編集できなければ新しいドキュメントにする(): void
+    {
+        $restrictedId = $this->createRestrictedDocument('readonly');
+        $fieldName = self::$fields['file']['fieldname'];
+        $accountId = $this->saveAccount('readonly', [$fieldName => (string) $restrictedId], null, self::REP_USER_ID);
+
+        $this->loginAs(self::REP_USER_ID);
+        $draft = $this->uploadDraft('file', 'mine.png')['draft'];
+        $this->saveAccount('readonly', [$fieldName => $draft], $accountId, self::REP_USER_ID);
+
+        $notesId = Documents_FieldFile::getStoredDocumentId($accountId, $this->fieldInfo('file'), 'Accounts');
+        $this->assertNotSame($restrictedId, $notesId);
+        $this->assertSame(self::PREFIX . 'mine.png', Documents_FieldFile::getFileInfo($notesId)['filename']);
+        $this->assertSame(1, $this->countVersions($restrictedId), '編集できないドキュメントには触らない');
+    }
+
+    public function test_他人や別の項目の一時ファイルではレコードを保存できない(): void
+    {
+        $draft = $this->uploadDraft('handwriting', 'others.png')['draft'];
+
+        foreach ([
+            [self::REP_USER_ID, self::$fields['handwriting']['fieldname']],
+            [self::ADMIN_USER_ID, self::$fields['file']['fieldname']],
+        ] as [$userId, $fieldName]) {
+            $this->loginAs($userId);
+            try {
+                $this->saveAccount('others', [$fieldName => $draft], null, $userId);
+                $this->fail('自分がこの項目に置いた一時ファイルでなければ保存できない');
+            } catch (\Exception $e) {
+                $this->assertSame(vtranslate('LBL_FILE_FIELD_DRAFT_INVALID', 'Documents'), $e->getMessage());
+            }
+        }
+        $this->assertSame(0, $this->countAccounts('others'), 'レコードも作らない');
+    }
+
     // ---- 表示 ---------------------------------------------------------------
 
     public function test_詳細とレポートではファイル名を出す(): void
@@ -384,6 +515,24 @@ final class FileFieldTest extends DocumentsTestCase
                 $this->assertSame(403, $e->getHttpStatusCode());
             }
         }
+    }
+
+    public function test_サムネイルAPIはドキュメントを指定しなければレコードの項目に入っているドキュメントを返す(): void
+    {
+        // インライン編集の保存直後、画面は一時ファイルを指す値しか知らないため、レコードから引き直す
+        $fieldName = self::$fields['handwriting']['fieldname'];
+        $accountId = $this->saveAccount('stored', [$fieldName => $this->uploadDraft('handwriting', 'stored.png')['draft']]);
+        $notesId = Documents_FieldFile::getStoredDocumentId($accountId, $this->fieldInfo('handwriting'), 'Accounts');
+        $emptyAccountId = $this->saveAccount('stored-empty');
+        $params = ['module' => 'Accounts', 'api' => 'FileField', 'mode' => 'thumbnail', 'field' => $fieldName];
+
+        $result = $this->callApi($params + ['record' => $accountId]);
+        $this->assertSame($notesId, $result['file']['id']);
+        $this->assertStringStartsWith('data:image/png;base64,', $result['thumbnail']['data_uri']);
+
+        $empty = $this->callApi($params + ['record' => $emptyAccountId]);
+        $this->assertNull($empty['file'], '項目が空なら file は null');
+        $this->assertNull($empty['thumbnail']);
     }
 
     // ---- ヘルパー -----------------------------------------------------------
@@ -510,6 +659,35 @@ final class FileFieldTest extends DocumentsTestCase
         $method = new \ReflectionMethod($api, 'processApi');
         $response = $method->invoke($api, $request);
         return $this->responseResult($response);
+    }
+
+    /**
+     * アップロード API（mode=upload）で一時ファイルを置き、応答を返す
+     *
+     * @param string|null $draft 上書きする一時ファイル（手書きの自動保存）
+     * @return array<string, mixed>
+     */
+    private function uploadDraft(string $fieldKey, string $name, ?string $draft = null, int $width = 60): array
+    {
+        $png = $this->tempFile('png', $this->pngBinary($width, 30));
+        $_FILES = ['file' => $this->fileEntry($png, self::PREFIX . $name, 'image/png')];
+        $params = ['module' => 'Accounts', 'api' => 'FileField', 'mode' => 'upload', 'field' => self::$fields[$fieldKey]['fieldname']];
+        if ($draft !== null) {
+            $params['draft'] = $draft;
+        }
+        try {
+            $result = $this->callApi($params);
+        } finally {
+            $_FILES = [];
+        }
+        $this->drafts[] = (string) $result['draft'];
+        return $result;
+    }
+
+    private function countVersions(int $notesId): int
+    {
+        $result = $this->db->pquery('SELECT COUNT(*) AS cnt FROM vtiger_notes_file_versions WHERE notesid = ?', [$notesId]);
+        return (int) $this->db->query_result($result, 0, 'cnt');
     }
 
     /**

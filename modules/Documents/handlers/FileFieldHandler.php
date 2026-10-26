@@ -3,13 +3,18 @@
 /**
  * ファイルアップロード項目（uitype 998）に入ったドキュメントの確認と関連付け
  *
- * 保存前: 項目の値が変わったときに、入れようとしているドキュメントを
- *         実行ユーザーが参照できるか確かめる。参照できないドキュメントの ID を
- *         送り込んで、他人のファイルを自分のレコードから見られるようにするのを防ぐ。
+ * 保存前: 項目の値が一時ファイル（Documents_FieldFileDraft）なら、ドキュメントにして
+ *         値をそのドキュメントIDに置き換える。項目に既存のドキュメントがあれば、
+ *         そのドキュメントのファイルを差し替えて版を足す（編集できなければ新しく作る）。
+ *         ファイルが変わったときだけ版が増え、手書きの途中の内容は版に残らない。
+ *         値がドキュメントIDで変わったときは、実行ユーザーが参照できるか確かめる。
+ *         参照できないドキュメントの ID を送り込んで、他人のファイルを
+ *         自分のレコードから見られるようにするのを防ぐ。
  * 保存後: 項目に入ったドキュメントをレコードに関連付ける（関連ドキュメントに出す）。
  *         差し替え前のドキュメントは関連付けを残す（履歴として辿れるようにする）。
  */
 require_once 'modules/Documents/utils/FieldFile.php';
+require_once 'modules/Documents/utils/FieldFileDraft.php';
 
 /**
  * @phpstan-import-type FileFieldInfo from Documents_FieldFile
@@ -32,9 +37,44 @@ class FileFieldHandler extends VTEventHandler
         }
 
         if ($eventName === 'vtiger.entity.beforesave') {
+            $this->saveDrafts($entityData, $fields, $moduleName);
             $this->assertAttachableDocuments($entityData, $fields, $moduleName);
         } elseif ($eventName === 'vtiger.entity.aftersave') {
             $this->linkDocuments($entityData, $fields);
+        }
+    }
+
+    /**
+     * 一時ファイルの入った項目をドキュメントにし、値をドキュメントIDに置き換える
+     *
+     * @param array<string, FileFieldInfo> $fields
+     * @throws Exception 実行ユーザーがこの項目に置いた一時ファイルでない（期限切れを含む）場合
+     */
+    private function saveDrafts(VTEntityData $entityData, array $fields, string $moduleName): void
+    {
+        /** @var mixed $isNew VTEntityData の phpdoc は戻り値の型を表していないため mixed として受ける */
+        $isNew = $entityData->isNew();
+        $recordId = $isNew ? 0 : Documents_FieldFile::normalizeDocumentId($entityData->getId());
+        $userId = (int) Users_Record_Model::getCurrentUserModel()->getId();
+        foreach ($fields as $fieldName => $fieldInfo) {
+            $value = $this->getEntityValue($entityData, $fieldName);
+            if (!Documents_FieldFileDraft::isDraftValue($value)) {
+                continue;
+            }
+            $draft = Documents_FieldFileDraft::get($value, $userId, $fieldInfo['fieldid']);
+            if ($draft === null) {
+                throw new Exception(vtranslate('LBL_FILE_FIELD_DRAFT_INVALID', 'Documents'));
+            }
+            $file = Documents_FieldFileDraft::toFileEntry($draft);
+            $storedId = Documents_FieldFile::getStoredDocumentId($recordId, $fieldInfo, $moduleName);
+            if (Documents_FieldFile::canReplaceDocument($storedId)) {
+                Documents_FieldFile::replaceDocumentFile($storedId, $file);
+                $notesId = $storedId;
+            } else {
+                $notesId = Documents_FieldFile::createDocument($file, $fieldInfo);
+            }
+            $entityData->set($fieldName, $notesId);
+            Documents_FieldFileDraft::delete($value);
         }
     }
 

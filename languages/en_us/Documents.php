@@ -418,6 +418,7 @@ $languageStrings = array(
 	'LBL_UPLOAD_ERR_UNKNOWN' => 'Failed to upload the file',
 	// File upload fields
 	'LBL_FILE_FIELD_DOCUMENT_DENIED' => 'You do not have permission to view the document set in the file field',
+	'LBL_FILE_FIELD_DRAFT_INVALID' => 'The uploaded file has expired or is not available. Please select the file again',
 	'LBL_FILE_FIELD_HANDWRITING_PNG_ONLY' => 'Only PNG images can be saved in a handwriting field',
 	'LBL_FILE_FIELD_NOT_FOUND' => 'The file upload field was not found',
 	'LBL_FILE_FIELD_SELECT' => 'Select file',
@@ -428,7 +429,7 @@ $languageStrings = array(
 	'LBL_FILE_FIELD_TOO_LARGE' => 'The file is too large (max %s)',
 	'LBL_FILE_FIELD_HANDWRITING_PLACEHOLDER' => 'Write here',
 	'LBL_FILE_FIELD_HANDWRITING_CLEAR' => 'Clear',
-	'LBL_FILE_FIELD_HANDWRITING_SAVED' => 'Saved',
+	'LBL_FILE_FIELD_HANDWRITING_SAVED' => 'Entered (registered when you save the record)',
 	'LBL_FILE_FIELD_HANDWRITING_REDRAW' => 'Redraw',
 	'LBL_FILE_FIELD_CANCEL' => 'Cancel',
 	'LBL_FILE_FIELD_DOWNLOAD' => 'Download',

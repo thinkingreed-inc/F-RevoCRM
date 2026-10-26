@@ -59,12 +59,17 @@ export async function fetchFileFieldConfig(
   return readJson<FileFieldConfigResponse>(response);
 }
 
-/** ファイルをドキュメントとして登録する */
+/**
+ * ファイルを一時ファイルに置く（ドキュメントはレコードの保存時に作られる）
+ *
+ * @param draft 上書きする一時ファイル（手書きの自動保存で一時ファイルを増やさないため）
+ */
 export async function uploadFieldFile(
   module: string,
   fieldName: string,
   file: Blob,
   fileName: string,
+  draft?: string,
 ): Promise<FileFieldUploadResponse> {
   const body = new FormData();
   body.append("module", module);
@@ -72,6 +77,9 @@ export async function uploadFieldFile(
   body.append("mode", "upload");
   body.append("field", fieldName);
   body.append("file", file, fileName);
+  if (draft) {
+    body.append("draft", draft);
+  }
   if (window.csrfMagicName && window.csrfMagicToken) {
     body.append(window.csrfMagicName, window.csrfMagicToken);
   }

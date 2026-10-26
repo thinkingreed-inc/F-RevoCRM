@@ -37,6 +37,20 @@ const thumbnail = {
   mime: "image/png",
 };
 
+const DRAFT_A = `draft:${"a".repeat(32)}`;
+
+/** mode=upload の応答（一時ファイルに置いた結果） */
+function draftResponse(draft: string, filename = "photo.png") {
+  return {
+    draft,
+    filename,
+    filetype: "image/png",
+    filesize: 2048,
+    is_image: true,
+    thumbnail,
+  };
+}
+
 function jsonResponse(data: unknown, ok = true) {
   return Promise.resolve({
     ok,
@@ -159,10 +173,8 @@ describe("FileUploadField", () => {
   });
 
   describe("編集（ファイル選択）", () => {
-    it("ファイルを選ぶとドキュメントとして登録し、ドキュメントIDを返す", async () => {
-      mockFetch.mockImplementation(() =>
-        jsonResponse({ ...imageFile, id: 99, thumbnail }),
-      );
+    it("ファイルを選ぶと一時ファイルに置き、それを指す値を返す（ドキュメントはレコードの保存時に作る）", async () => {
+      mockFetch.mockImplementation(() => jsonResponse(draftResponse(DRAFT_A)));
       const onChange = vi.fn();
 
       render(
@@ -184,13 +196,17 @@ describe("FileUploadField", () => {
 
       await waitFor(() =>
         expect(onChange).toHaveBeenCalledWith(
-          "99",
-          expect.objectContaining({ id: 99 }),
+          DRAFT_A,
+          expect.objectContaining({ draft: DRAFT_A, filename: "photo.png" }),
         ),
       );
       expect(screen.getByTestId("file-field-thumbnail")).toHaveAttribute(
         "src",
         thumbnail.data_uri,
+      );
+      // 保存前はドキュメントが無いのでダウンロードのリンクは出さない
+      expect(screen.getByTestId("file-field-filename")).not.toHaveAttribute(
+        "href",
       );
 
       const [, init] = mockFetch.mock.calls[0];
@@ -367,9 +383,7 @@ describe("FileUploadField", () => {
 
     it("手書き項目は書き終わって少し待つと PNG で登録し、書く欄は出したままにする", async () => {
       vi.useFakeTimers({ shouldAdvanceTime: true });
-      mockFetch.mockImplementation(() =>
-        jsonResponse({ ...imageFile, id: 77, thumbnail }),
-      );
+      mockFetch.mockImplementation(() => jsonResponse(draftResponse(DRAFT_A)));
       const onChange = vi.fn();
 
       render(
@@ -395,8 +409,8 @@ describe("FileUploadField", () => {
 
       await waitFor(() =>
         expect(onChange).toHaveBeenCalledWith(
-          "77",
-          expect.objectContaining({ id: 77 }),
+          DRAFT_A,
+          expect.objectContaining({ draft: DRAFT_A }),
         ),
       );
       const body = mockFetch.mock.calls[0][1].body as FormData;
@@ -413,9 +427,7 @@ describe("FileUploadField", () => {
 
     it("書き続けている間は登録しない", () => {
       vi.useFakeTimers({ shouldAdvanceTime: true });
-      mockFetch.mockImplementation(() =>
-        jsonResponse({ ...imageFile, id: 77, thumbnail }),
-      );
+      mockFetch.mockImplementation(() => jsonResponse(draftResponse(DRAFT_A)));
 
       render(
         <FileUploadField
@@ -447,9 +459,7 @@ describe("FileUploadField", () => {
     });
 
     it("マウスが書く欄から外れたら待たずに登録する（保存ボタンへ移る前に値を入れる）", async () => {
-      mockFetch.mockImplementation(() =>
-        jsonResponse({ ...imageFile, id: 77, thumbnail }),
-      );
+      mockFetch.mockImplementation(() => jsonResponse(draftResponse(DRAFT_A)));
       const onChange = vi.fn();
 
       render(
@@ -468,15 +478,13 @@ describe("FileUploadField", () => {
       fireEvent.pointerLeave(canvas, { pointerId: 1, pointerType: "mouse" });
 
       await waitFor(() =>
-        expect(onChange).toHaveBeenCalledWith("77", expect.anything()),
+        expect(onChange).toHaveBeenCalledWith(DRAFT_A, expect.anything()),
       );
     });
 
     it("書き直すと値を書く前（空）に戻す", async () => {
       vi.useFakeTimers({ shouldAdvanceTime: true });
-      mockFetch.mockImplementation(() =>
-        jsonResponse({ ...imageFile, id: 77, thumbnail }),
-      );
+      mockFetch.mockImplementation(() => jsonResponse(draftResponse(DRAFT_A)));
       const onChange = vi.fn();
 
       render(
@@ -493,7 +501,7 @@ describe("FileUploadField", () => {
       drawStroke();
       waitAutoSave();
       await waitFor(() =>
-        expect(onChange).toHaveBeenCalledWith("77", expect.anything()),
+        expect(onChange).toHaveBeenCalledWith(DRAFT_A, expect.anything()),
       );
 
       fireEvent.click(screen.getByTestId("handwriting-clear"));
@@ -507,7 +515,7 @@ describe("FileUploadField", () => {
       mockFetch.mockImplementation(
         (input: RequestInfo | URL, init?: RequestInit) =>
           modeOf(input, init) === "upload"
-            ? jsonResponse({ ...imageFile, id: 77, thumbnail })
+            ? jsonResponse(draftResponse(DRAFT_A))
             : jsonResponse({ file: imageFile, thumbnail }),
       );
       const onChange = vi.fn();
@@ -527,7 +535,7 @@ describe("FileUploadField", () => {
       drawStroke();
       waitAutoSave();
       await waitFor(() =>
-        expect(onChange).toHaveBeenCalledWith("77", expect.anything()),
+        expect(onChange).toHaveBeenCalledWith(DRAFT_A, expect.anything()),
       );
 
       fireEvent.click(screen.getByTestId("handwriting-cancel"));
@@ -545,17 +553,17 @@ describe("FileUploadField", () => {
       ).toBeInTheDocument();
     });
 
-    it("先に送った登録の結果が後から返ってきても、新しい方の値を残す", async () => {
+    it("書き足すと同じ一時ファイルを上書きし、送信中に書き足した分は送信が終わってから送る", async () => {
       vi.useFakeTimers({ shouldAdvanceTime: true });
-      const pending: Array<(id: number) => void> = [];
+      const pending: Array<() => void> = [];
       mockFetch.mockImplementation(
         () =>
           new Promise<Response>((resolve) => {
-            pending.push((id) =>
+            pending.push(() =>
               resolve({
                 ok: true,
                 status: 200,
-                json: () => Promise.resolve({ ...imageFile, id, thumbnail }),
+                json: () => Promise.resolve(draftResponse(DRAFT_A)),
               } as Response),
             );
           }),
@@ -577,18 +585,52 @@ describe("FileUploadField", () => {
       waitAutoSave();
       drawStroke();
       waitAutoSave();
-      expect(pending).toHaveLength(2);
+      // 1 回目の送信が終わるまで 2 回目は送らない（古い内容で上書きされないように）
+      expect(pending).toHaveLength(1);
+      expect(
+        (mockFetch.mock.calls[0][1].body as FormData).get("draft"),
+      ).toBeNull();
 
-      pending[1](78);
-      await waitFor(() =>
-        expect(onChange).toHaveBeenCalledWith("78", expect.anything()),
+      pending[0]();
+      await waitFor(() => expect(pending).toHaveLength(2));
+      expect((mockFetch.mock.calls[1][1].body as FormData).get("draft")).toBe(
+        DRAFT_A,
       );
-      pending[0](77);
-      await act(async () => {
-        await Promise.resolve();
-      });
+      pending[1]();
+      await waitFor(() => expect(onChange).toHaveBeenCalledTimes(2));
+      expect(onChange).toHaveBeenLastCalledWith(DRAFT_A, expect.anything());
+    });
 
-      expect(onChange).not.toHaveBeenCalledWith("77", expect.anything());
+    it("書き直してから書いても、同じ一時ファイルを上書きする", async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      mockFetch.mockImplementation(() => jsonResponse(draftResponse(DRAFT_A)));
+      const onChange = vi.fn();
+
+      render(
+        <FileUploadField
+          module="Accounts"
+          fieldName="cf_2"
+          mode="edit"
+          file={null}
+          handwriting
+          maxUploadSize={1024 * 1024}
+          onChange={onChange}
+        />,
+      );
+      drawStroke();
+      waitAutoSave();
+      await waitFor(() =>
+        expect(onChange).toHaveBeenCalledWith(DRAFT_A, expect.anything()),
+      );
+      fireEvent.click(screen.getByTestId("handwriting-clear"));
+
+      drawStroke();
+      waitAutoSave();
+
+      await waitFor(() => expect(uploadCount()).toBe(2));
+      expect((mockFetch.mock.calls[1][1].body as FormData).get("draft")).toBe(
+        DRAFT_A,
+      );
     });
 
     it("手書きかどうか渡されなければ API から取得して出し分ける", async () => {

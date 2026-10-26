@@ -23,7 +23,8 @@ const FALLBACK_LABELS: Record<string, string> = {
   LBL_FILE_FIELD_TOO_LARGE: "ファイルが大きすぎます（上限 %s）",
   LBL_FILE_FIELD_HANDWRITING_PLACEHOLDER: "ここに書いてください",
   LBL_FILE_FIELD_HANDWRITING_CLEAR: "書き直す",
-  LBL_FILE_FIELD_HANDWRITING_SAVED: "保存しました",
+  LBL_FILE_FIELD_HANDWRITING_SAVED:
+    "入力しました（レコードを保存すると登録されます）",
   LBL_FILE_FIELD_HANDWRITING_REDRAW: "書き直す",
   LBL_FILE_FIELD_CANCEL: "やめる",
   LBL_FILE_FIELD_DOWNLOAD: "ダウンロード",
@@ -54,6 +55,12 @@ export interface FileUploadFieldProps {
   className?: string;
 }
 
+/** 項目に入れる値（保存前の一時ファイルなら draft:...、それ以外はドキュメントID） */
+function fieldValueOf(file: FieldFileInfo | null): string {
+  if (!file) return "";
+  return file.draft ?? String(file.id);
+}
+
 function formatFileSize(bytes: number): string {
   if (!bytes) return "";
   if (bytes < 1024) return `${bytes} B`;
@@ -64,9 +71,11 @@ function formatFileSize(bytes: number): string {
 /**
  * ファイルアップロード項目の入力・表示
  *
- * 編集: ファイルを選ぶ（手書き項目なら書く）と、その場でドキュメントとして登録し、
- *       ドキュメントIDを onChange で返す。レコードの保存時にこのIDが項目に入る。
- *       手書きは書き終わるたびに自動で登録し直し、書く欄は出したままにする（続けて書けるように）。
+ * 編集: ファイルを選ぶ（手書き項目なら書く）と、その場で一時ファイルに置き、
+ *       それを指す値（draft:...）を onChange で返す。ドキュメントはレコードの保存時に
+ *       サーバーが作る（項目に既存のドキュメントがあれば版を足す）。
+ *       手書きは書き終わるたびに同じ一時ファイルを上書きし、書く欄は出したままにする
+ *       （続けて書けるように。途中の内容はドキュメントにも版にも残らない）。
  * 詳細: 画像ならサムネイル、それ以外はファイル名とダウンロードのリンクを出す。
  */
 export const FileUploadField: React.FC<FileUploadFieldProps> = ({
@@ -109,8 +118,13 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   /** 書き直しを始める前のファイル（書き直す・やめるで戻す先） */
   const fileBeforeEditRef = useRef<FieldFileInfo | null>(initialFile);
-  /** 最後に送った登録の番号（先に送った登録の結果が後から返っても上書きしない） */
+  /** 最後に送った登録の番号（書き直し・やめた後に返った結果では上書きしない） */
   const uploadSeqRef = useRef(0);
+  /** この入力欄で置いた一時ファイル（手書きはこれを上書きして増やさない） */
+  const lastDraftRef = useRef<string | undefined>(undefined);
+  /** 送信中か、送信中に書き足された分（送信が終わってから最新の 1 件だけ送る） */
+  const inFlightRef = useRef(false);
+  const queuedRef = useRef<{ blob: Blob; fileName: string } | null>(null);
 
   // 親から渡されるファイルが変わったら（別レコードの表示など）追従する
   useEffect(() => {
@@ -165,7 +179,7 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
 
   // 画像ならサムネイルを取得する
   useEffect(() => {
-    if (!file || !file.is_image || thumbnail) return;
+    if (!file || !file.is_image || file.draft || thumbnail) return;
     let cancelled = false;
     fetchFieldThumbnail(module, fieldName, file.id, recordId)
       .then((response) => {
@@ -186,36 +200,65 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
       );
       return;
     }
+    // 同じ一時ファイルへの送信が重なると古い内容で上書きされうるため、1 件ずつ送る
+    if (inFlightRef.current) {
+      queuedRef.current = { blob, fileName };
+      return;
+    }
+    inFlightRef.current = true;
     setError(null);
     setIsUploading(true);
     const seq = ++uploadSeqRef.current;
     try {
-      const response = await uploadFieldFile(module, fieldName, blob, fileName);
-      if (seq !== uploadSeqRef.current) return;
-      const { thumbnail: uploadedThumbnail, ...uploadedFile } = response;
-      setFile(uploadedFile);
-      setThumbnail(uploadedThumbnail);
-      // 手書きは続けて書けるよう書く欄を出したままにする
-      setIsEditing(Boolean(handwriting));
-      if (!handwriting) fileBeforeEditRef.current = uploadedFile;
-      onChange?.(String(uploadedFile.id), uploadedFile);
+      const response = await uploadFieldFile(
+        module,
+        fieldName,
+        blob,
+        fileName,
+        handwriting ? lastDraftRef.current : undefined,
+      );
+      lastDraftRef.current = response.draft;
+      if (seq === uploadSeqRef.current) {
+        const { thumbnail: uploadedThumbnail, draft, ...uploaded } = response;
+        const uploadedFile: FieldFileInfo = {
+          ...uploaded,
+          id: 0,
+          download_url: "",
+          draft,
+        };
+        setFile(uploadedFile);
+        setThumbnail(uploadedThumbnail);
+        // 手書きは続けて書けるよう書く欄を出したままにする
+        setIsEditing(Boolean(handwriting));
+        if (!handwriting) fileBeforeEditRef.current = uploadedFile;
+        onChange?.(draft, uploadedFile);
+      }
     } catch (e) {
-      if (seq !== uploadSeqRef.current) return;
-      setError(e instanceof Error ? e.message : String(e));
+      if (seq === uploadSeqRef.current) {
+        setError(e instanceof Error ? e.message : String(e));
+      }
     } finally {
-      if (seq === uploadSeqRef.current) setIsUploading(false);
+      inFlightRef.current = false;
+      const queued = queuedRef.current;
+      queuedRef.current = null;
+      if (queued) {
+        void upload(queued.blob, queued.fileName);
+      } else if (seq === uploadSeqRef.current) {
+        setIsUploading(false);
+      }
     }
   };
 
   /** 書き直し前のファイルに戻す（登録中の結果は捨てる） */
   const revertToFileBeforeEdit = () => {
     uploadSeqRef.current++;
+    queuedRef.current = null;
     setIsUploading(false);
     setError(null);
     const original = fileBeforeEditRef.current;
     setFile(original);
     setThumbnail(null);
-    onChange?.(original ? String(original.id) : "", original);
+    onChange?.(fieldValueOf(original), original);
   };
 
   const startEditing = () => {
@@ -230,6 +273,7 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
 
   const handleRemove = () => {
     uploadSeqRef.current++;
+    queuedRef.current = null;
     setIsUploading(false);
     fileBeforeEditRef.current = null;
     setFile(null);
@@ -241,6 +285,10 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
 
   const renderFileSummary = () => {
     if (!file) return null;
+    // 保存前の一時ファイルはドキュメントが無いのでダウンロードのリンクにしない
+    const linkProps = file.download_url
+      ? { href: file.download_url, title: label("LBL_FILE_FIELD_DOWNLOAD") }
+      : {};
     return (
       <div
         className="flex flex-wrap items-start gap-x-3 gap-y-1"
@@ -248,11 +296,7 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
         data-document-id={file.id}
       >
         {file.is_image && thumbnail && (
-          <a
-            href={file.download_url}
-            title={label("LBL_FILE_FIELD_DOWNLOAD")}
-            className="shrink-0"
-          >
+          <a {...linkProps} className="shrink-0">
             <img
               src={thumbnail.data_uri}
               width={thumbnail.width}
@@ -265,9 +309,11 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
         )}
         <div className="flex min-w-0 flex-col gap-0.5">
           <a
-            href={file.download_url}
-            className="flex items-center gap-1 break-all text-[#15c] hover:underline"
-            title={label("LBL_FILE_FIELD_DOWNLOAD")}
+            {...linkProps}
+            className={cn(
+              "flex items-center gap-1 break-all",
+              file.download_url && "text-[#15c] hover:underline",
+            )}
             data-testid="file-field-filename"
           >
             <Paperclip className="size-3.5 shrink-0" aria-hidden="true" />
@@ -360,16 +406,14 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
               placeholder: label("LBL_FILE_FIELD_HANDWRITING_PLACEHOLDER"),
             }}
           />
-          {file &&
-            file.id !== fileBeforeEditRef.current?.id &&
-            !isUploading && (
-              <span
-                className="text-xs text-gray-500"
-                data-testid="handwriting-saved"
-              >
-                {label("LBL_FILE_FIELD_HANDWRITING_SAVED")}
-              </span>
-            )}
+          {file?.draft && !isUploading && (
+            <span
+              className="text-xs text-gray-500"
+              data-testid="handwriting-saved"
+            >
+              {label("LBL_FILE_FIELD_HANDWRITING_SAVED")}
+            </span>
+          )}
         </>
       )}
 

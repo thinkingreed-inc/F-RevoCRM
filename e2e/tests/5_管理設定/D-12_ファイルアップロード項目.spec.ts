@@ -148,7 +148,8 @@ test.describe.serial("管理: ファイルアップロード項目", () => {
       .setInputFiles({ name: imageName, mimeType: "image/png", buffer: imageBuffer });
     await expect(fileField.locator('[data-testid="file-field-thumbnail"]')).toBeVisible({ timeout: 20000 });
     await expect(fileField.locator('[data-testid="file-field-filename"]')).toContainText(imageName);
-    await expect(fileField.locator(`input[name="${fileFieldName}"]`)).toHaveValue(/^[1-9][0-9]*$/);
+    // 保存するまではドキュメントを作らず、一時ファイルを指す値を入れる
+    await expect(fileField.locator(`input[name="${fileFieldName}"]`)).toHaveValue(/^draft:[0-9a-f]{32}$/);
 
     // 手書きの項目: ファイル選択の代わりに書く欄が出る。書き終わると確定ボタンなしで自動で画像として登録する
     const signField = editField(page, signFieldName);
@@ -165,7 +166,7 @@ test.describe.serial("管理: ファイルアップロード項目", () => {
     }
     await page.mouse.up();
     await expect(signField.locator('[data-testid="handwriting-saved"]')).toBeVisible({ timeout: 20000 });
-    await expect(signField.locator(`input[name="${signFieldName}"]`)).toHaveValue(/^[1-9][0-9]*$/);
+    await expect(signField.locator(`input[name="${signFieldName}"]`)).toHaveValue(/^draft:[0-9a-f]{32}$/);
     // 続けて書けるよう、書く欄は出したまま
     await expect(canvas).toBeVisible();
 
@@ -183,6 +184,45 @@ test.describe.serial("管理: ファイルアップロード項目", () => {
     const signDetail = detailValue(page, signFieldName);
     await expect(signDetail.locator('[data-testid="file-field-thumbnail"]')).toBeVisible({ timeout: 20000 });
     await expect(signDetail.locator('[data-testid="file-field-filename"]')).toContainText(`${signLabel}_`);
+  });
+
+  test("手書きを書き直して保存すると、同じドキュメントのまま版が増える", async ({ page }) => {
+    await page.goto(detailUrl());
+    const before = detailValue(page, signFieldName).locator('[data-testid="file-field-value"]');
+    await expect(before).toBeVisible({ timeout: 20000 });
+    const documentId = await before.getAttribute("data-document-id");
+    expect(documentId).toMatch(/^[1-9][0-9]*$/);
+
+    await page.goto(`${BASE_URL}index.php?module=${MODULE}&view=Edit&record=${record!.recordId}`);
+    const signField = editField(page, signFieldName);
+    await signField.locator('[data-testid="file-field-change"]').click({ timeout: 20000 });
+    const canvas = signField.locator('[data-testid="handwriting-canvas"]');
+    await canvas.scrollIntoViewIfNeeded();
+    const box = await canvas.boundingBox();
+    if (!box) throw new Error("手書き欄の位置が取れません");
+    // 何度か書き足しても（自動保存が何回走っても）版は保存時の 1 回分だけ増える
+    for (let stroke = 0; stroke < 3; stroke++) {
+      await page.mouse.move(box.x + 30, box.y + 30 + stroke * 40);
+      await page.mouse.down();
+      await page.mouse.move(box.x + 200, box.y + 40 + stroke * 40, { steps: 10 });
+      await page.mouse.up();
+      await expect(signField.locator('[data-testid="handwriting-saved"]')).toBeVisible({ timeout: 20000 });
+    }
+    await Promise.all([
+      page.waitForURL(/view=Detail/, { timeout: 30000 }),
+      page.locator('#EditView button[type="submit"]').first().click(),
+    ]);
+
+    await page.goto(detailUrl());
+    const after = detailValue(page, signFieldName).locator('[data-testid="file-field-value"]');
+    await expect(after).toHaveAttribute("data-document-id", documentId ?? "", { timeout: 20000 });
+    // 手書きのドキュメントは 1 件のまま（途中の内容でドキュメントを増やさない）
+    const rows = await frQuery(
+      record!.session,
+      `SELECT id, fileversion FROM Documents WHERE notes_title LIKE '${signLabel}%';`,
+    );
+    expect(rows).toHaveLength(1);
+    expect(String(rows[0].fileversion)).toBe("2");
   });
 
   test("一覧にはファイルの印とファイル名が出る", async ({ page }) => {
@@ -224,6 +264,40 @@ test.describe.serial("管理: ファイルアップロード項目", () => {
     });
   });
 
+  test("詳細画面のインライン編集でファイルを差し替えると、再読み込みせずに表示され続けて編集できる", async ({ page }) => {
+    await page.goto(detailUrl());
+    const cell = detailValue(page, fileFieldName);
+    await expect(cell.locator('[data-testid="file-field-thumbnail"]')).toBeVisible({ timeout: 20000 });
+    const documentId = await cell.locator('[data-testid="file-field-value"]').getAttribute("data-document-id");
+
+    await cell.hover();
+    await cell.locator(".editAction").first().click({ force: true });
+    const editor = cell.locator(".editElement fr-field-fileupload");
+    await editor.locator('[data-testid="file-field-change"]').click({ timeout: 20000 });
+    await editor
+      .locator('[data-testid="file-field-input"]')
+      .setInputFiles({ name: `${imageTitle}-v2.png`, mimeType: "image/png", buffer: imageBuffer });
+    await expect(cell.locator(`input[name="${fileFieldName}"]`)).toHaveValue(/^draft:/, { timeout: 20000 });
+    await Promise.all([
+      page.waitForResponse((r) => r.request().method() === "POST", { timeout: 15000 }),
+      cell.locator(".inlineAjaxSave").click(),
+    ]);
+
+    // 保存後は同じドキュメント（版が増える）を再読み込みなしで表示する（編集欄は隠れて残るため表示側を見る）
+    const shown = cell.locator(".value");
+    await expect(shown.locator('[data-testid="file-field-value"]')).toHaveAttribute("data-document-id", documentId ?? "", {
+      timeout: 20000,
+    });
+    await expect(shown.locator('[data-testid="file-field-filename"]')).toContainText(`${imageTitle}-v2.png`);
+    await expect(cell.locator(".fieldBasicData")).toHaveAttribute("data-value", documentId ?? "");
+
+    // 続けてインライン編集しても、保存済みのファイルとして扱う
+    await cell.hover();
+    await cell.locator(".editAction").first().click({ force: true });
+    await expect(cell.locator(`input[name="${fileFieldName}"]`)).toHaveValue(documentId ?? "");
+    await cell.locator(".inlineAjaxCancel").click();
+  });
+
   test("詳細画面のインライン編集でファイルを外せる", async ({ page }) => {
     await page.goto(detailUrl());
     const cell = detailValue(page, fileFieldName);
@@ -232,7 +306,8 @@ test.describe.serial("管理: ファイルアップロード項目", () => {
     await cell.hover();
     await cell.locator(".editAction").first().click({ force: true });
     const editor = cell.locator(".editElement fr-field-fileupload");
-    await expect(editor.locator('[data-testid="file-field-filename"]')).toContainText(imageName, { timeout: 20000 });
+    // 直前のテストでインライン編集から差し替えたファイル（${imageTitle}-v2.png）が入っている
+    await expect(editor.locator('[data-testid="file-field-filename"]')).toContainText(imageTitle, { timeout: 20000 });
 
     await editor.locator('[data-testid="file-field-remove"]').click();
     await expect(cell.locator(`input[name="${fileFieldName}"]`)).toHaveValue("");

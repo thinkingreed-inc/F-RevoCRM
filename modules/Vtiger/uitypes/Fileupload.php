@@ -9,6 +9,7 @@
  *************************************************************************************/
 
 require_once 'modules/Documents/utils/FieldFile.php';
+require_once 'modules/Documents/utils/FieldFileDraft.php';
 
 /**
  * @phpstan-import-type ClientFileInfo from Documents_FieldFile
@@ -101,11 +102,19 @@ class Vtiger_Fileupload_UIType extends Vtiger_Base_UIType
     }
 
     /**
+     * 画面から送られた値
+     *
+     * 一時ファイルを指す値（draft:...）はそのまま通す。保存前に FileFieldHandler が
+     * ドキュメントにして、値をドキュメントIDに置き換える。
+     *
      * @param mixed $value
-     * @return int|string ドキュメントID（無ければ空文字）
+     * @return int|string ドキュメントID・一時ファイルを指す値（無ければ空文字）
      */
     public function getUserRequestValue($value): int|string
     {
+        if (Documents_FieldFileDraft::isDraftValue($value)) {
+            return $value;
+        }
         return $this->getDBInsertValue($value);
     }
 
