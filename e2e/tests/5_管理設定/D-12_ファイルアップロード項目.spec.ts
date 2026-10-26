@@ -150,7 +150,7 @@ test.describe.serial("管理: ファイルアップロード項目", () => {
     await expect(fileField.locator('[data-testid="file-field-filename"]')).toContainText(imageName);
     await expect(fileField.locator(`input[name="${fileFieldName}"]`)).toHaveValue(/^[1-9][0-9]*$/);
 
-    // 手書きの項目: ファイル選択の代わりに書く欄が出る。書いて確定すると画像になる
+    // 手書きの項目: ファイル選択の代わりに書く欄が出る。書き終わると確定ボタンなしで自動で画像として登録する
     const signField = editField(page, signFieldName);
     const canvas = signField.locator('[data-testid="handwriting-canvas"]');
     await expect(canvas).toBeVisible();
@@ -164,9 +164,10 @@ test.describe.serial("管理: ファイルアップロード項目", () => {
       await page.mouse.move(box.x + 20 + i * 15, box.y + box.height / 2 + Math.sin(i / 2) * 30);
     }
     await page.mouse.up();
-    await signField.locator('[data-testid="handwriting-save"]').click();
-    await expect(signField.locator('[data-testid="file-field-thumbnail"]')).toBeVisible({ timeout: 20000 });
-    await expect(signField.locator('[data-testid="file-field-filename"]')).toContainText(`${signLabel}_`);
+    await expect(signField.locator('[data-testid="handwriting-saved"]')).toBeVisible({ timeout: 20000 });
+    await expect(signField.locator(`input[name="${signFieldName}"]`)).toHaveValue(/^[1-9][0-9]*$/);
+    // 続けて書けるよう、書く欄は出したまま
+    await expect(canvas).toBeVisible();
 
     // 保存
     await Promise.all([
@@ -179,9 +180,9 @@ test.describe.serial("管理: ファイルアップロード項目", () => {
     const fileDetail = detailValue(page, fileFieldName);
     await expect(fileDetail.locator('[data-testid="file-field-thumbnail"]')).toBeVisible({ timeout: 20000 });
     await expect(fileDetail.locator('[data-testid="file-field-filename"]')).toContainText(imageName);
-    await expect(detailValue(page, signFieldName).locator('[data-testid="file-field-thumbnail"]')).toBeVisible({
-      timeout: 20000,
-    });
+    const signDetail = detailValue(page, signFieldName);
+    await expect(signDetail.locator('[data-testid="file-field-thumbnail"]')).toBeVisible({ timeout: 20000 });
+    await expect(signDetail.locator('[data-testid="file-field-filename"]')).toContainText(`${signLabel}_`);
   });
 
   test("一覧にはファイルの印とファイル名が出る", async ({ page }) => {

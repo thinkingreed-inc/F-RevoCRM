@@ -6,16 +6,20 @@ const BACKGROUND_COLOR = "#ffffff";
 const STROKE_COLOR = "#111827";
 const STROKE_WIDTH = 2.5;
 
+/** 書き終わってから自動で保存するまでの待ち時間（ミリ秒） */
+export const HANDWRITING_AUTO_SAVE_DELAY_MS = 800;
+
 export interface HandwritingPadLabels {
   clear: string;
-  save: string;
   cancel: string;
   placeholder: string;
 }
 
 interface HandwritingPadProps {
-  /** 書いた内容（PNG）を受け取る */
+  /** 書いた内容（PNG）を受け取る。書き終わって少し待つと自動で呼ぶ */
   onSave: (image: Blob) => void;
+  /** 書いた内容を消したとき */
+  onClear?: () => void;
   /** やめる（既存のファイルがあるときだけ出す） */
   onCancel?: () => void;
   disabled?: boolean;
@@ -29,9 +33,14 @@ interface HandwritingPadProps {
  *
  * マウス・タッチ・ペンを Pointer Events でまとめて扱う。
  * 高解像度の画面でも線がぼやけないよう、表示の大きさ × devicePixelRatio で描く。
+ *
+ * 確定ボタンは置かず、書き終わって少し待つと自動で onSave を呼ぶ（続けて書けば待ち直す）。
+ * マウスが書く欄から外れたとき（保存ボタンへ移るときなど）は待たずに呼ぶ。
+ * タッチ・ペンは指を離すたびに欄から外れた扱いになるため、待ち時間だけで判断する。
  */
 export const HandwritingPad: React.FC<HandwritingPadProps> = ({
   onSave,
+  onClear,
   onCancel,
   disabled = false,
   labels,
@@ -41,6 +50,10 @@ export const HandwritingPad: React.FC<HandwritingPadProps> = ({
   const drawingRef = useRef(false);
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
   const [hasStroke, setHasStroke] = useState(false);
+  /** 自動保存の待ち（書いたがまだ保存していない間だけ持つ） */
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onSaveRef = useRef(onSave);
+  onSaveRef.current = onSave;
 
   const getContext = useCallback((): CanvasRenderingContext2D | null => {
     return canvasRef.current?.getContext("2d") ?? null;
@@ -76,6 +89,30 @@ export const HandwritingPad: React.FC<HandwritingPadProps> = ({
     fillBackground();
   }, [height, getContext, fillBackground]);
 
+  const cancelAutoSave = useCallback(() => {
+    if (autoSaveTimerRef.current !== null) {
+      clearTimeout(autoSaveTimerRef.current);
+      autoSaveTimerRef.current = null;
+    }
+  }, []);
+
+  const save = useCallback(() => {
+    cancelAutoSave();
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    canvas.toBlob((blob) => {
+      if (blob) onSaveRef.current(blob);
+    }, "image/png");
+  }, [cancelAutoSave]);
+
+  const scheduleAutoSave = useCallback(() => {
+    cancelAutoSave();
+    autoSaveTimerRef.current = setTimeout(save, HANDWRITING_AUTO_SAVE_DELAY_MS);
+  }, [cancelAutoSave, save]);
+
+  // 閉じたら保存しない（やめたときなど）
+  useEffect(() => cancelAutoSave, [cancelAutoSave]);
+
   const toPoint = (event: React.PointerEvent<HTMLCanvasElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
     return { x: event.clientX - rect.left, y: event.clientY - rect.top };
@@ -85,6 +122,7 @@ export const HandwritingPad: React.FC<HandwritingPadProps> = ({
     if (disabled) return;
     event.preventDefault();
     event.currentTarget.setPointerCapture?.(event.pointerId);
+    cancelAutoSave();
     drawingRef.current = true;
     const point = toPoint(event);
     lastPointRef.current = point;
@@ -114,22 +152,32 @@ export const HandwritingPad: React.FC<HandwritingPadProps> = ({
     lastPointRef.current = point;
   };
 
-  const handlePointerUp = () => {
+  const endStroke = () => {
+    if (!drawingRef.current) return false;
     drawingRef.current = false;
     lastPointRef.current = null;
+    return true;
+  };
+
+  const handlePointerUp = () => {
+    if (endStroke()) scheduleAutoSave();
+  };
+
+  const handlePointerLeave = (event: React.PointerEvent<HTMLCanvasElement>) => {
+    const ended = endStroke();
+    if (event.pointerType === "mouse") {
+      // 保存ボタンを押す前に値が入るよう、待たずに保存する
+      if (ended || autoSaveTimerRef.current !== null) save();
+    } else if (ended) {
+      scheduleAutoSave();
+    }
   };
 
   const handleClear = () => {
+    cancelAutoSave();
     fillBackground();
     setHasStroke(false);
-  };
-
-  const handleSave = () => {
-    const canvas = canvasRef.current;
-    if (!canvas || !hasStroke) return;
-    canvas.toBlob((blob) => {
-      if (blob) onSave(blob);
-    }, "image/png");
+    onClear?.();
   };
 
   return (
@@ -143,7 +191,7 @@ export const HandwritingPad: React.FC<HandwritingPadProps> = ({
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
-          onPointerLeave={handlePointerUp}
+          onPointerLeave={handlePointerLeave}
           onPointerCancel={handlePointerUp}
           aria-label={labels.placeholder}
           role="img"
@@ -164,15 +212,6 @@ export const HandwritingPad: React.FC<HandwritingPadProps> = ({
           data-testid="handwriting-clear"
         >
           {labels.clear}
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          onClick={handleSave}
-          disabled={disabled || !hasStroke}
-          data-testid="handwriting-save"
-        >
-          {labels.save}
         </Button>
         {onCancel && (
           <Button

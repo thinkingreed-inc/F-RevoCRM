@@ -23,7 +23,7 @@ const FALLBACK_LABELS: Record<string, string> = {
   LBL_FILE_FIELD_TOO_LARGE: "ファイルが大きすぎます（上限 %s）",
   LBL_FILE_FIELD_HANDWRITING_PLACEHOLDER: "ここに書いてください",
   LBL_FILE_FIELD_HANDWRITING_CLEAR: "書き直す",
-  LBL_FILE_FIELD_HANDWRITING_SAVE: "確定",
+  LBL_FILE_FIELD_HANDWRITING_SAVED: "保存しました",
   LBL_FILE_FIELD_HANDWRITING_REDRAW: "書き直す",
   LBL_FILE_FIELD_CANCEL: "やめる",
   LBL_FILE_FIELD_DOWNLOAD: "ダウンロード",
@@ -66,6 +66,7 @@ function formatFileSize(bytes: number): string {
  *
  * 編集: ファイルを選ぶ（手書き項目なら書く）と、その場でドキュメントとして登録し、
  *       ドキュメントIDを onChange で返す。レコードの保存時にこのIDが項目に入る。
+ *       手書きは書き終わるたびに自動で登録し直し、書く欄は出したままにする（続けて書けるように）。
  * 詳細: 画像ならサムネイル、それ以外はファイル名とダウンロードのリンクを出す。
  */
 export const FileUploadField: React.FC<FileUploadFieldProps> = ({
@@ -106,11 +107,16 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
   const [isDragOver, setIsDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  /** 書き直しを始める前のファイル（書き直す・やめるで戻す先） */
+  const fileBeforeEditRef = useRef<FieldFileInfo | null>(initialFile);
+  /** 最後に送った登録の番号（先に送った登録の結果が後から返っても上書きしない） */
+  const uploadSeqRef = useRef(0);
 
   // 親から渡されるファイルが変わったら（別レコードの表示など）追従する
   useEffect(() => {
     setFile(initialFile);
     setThumbnail(null);
+    fileBeforeEditRef.current = initialFile;
   }, [initialFile?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 項目の設定が渡されていなければ取得する（React 版のクイック作成など）
@@ -147,6 +153,7 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
         if (cancelled) return;
         setFile(response.file);
         setThumbnail(response.thumbnail);
+        fileBeforeEditRef.current = response.file;
       })
       .catch(() => {
         // 参照できないファイルは出さない（値はそのまま残る）
@@ -181,18 +188,39 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
     }
     setError(null);
     setIsUploading(true);
+    const seq = ++uploadSeqRef.current;
     try {
       const response = await uploadFieldFile(module, fieldName, blob, fileName);
+      if (seq !== uploadSeqRef.current) return;
       const { thumbnail: uploadedThumbnail, ...uploadedFile } = response;
       setFile(uploadedFile);
       setThumbnail(uploadedThumbnail);
-      setIsEditing(false);
+      // 手書きは続けて書けるよう書く欄を出したままにする
+      setIsEditing(Boolean(handwriting));
+      if (!handwriting) fileBeforeEditRef.current = uploadedFile;
       onChange?.(String(uploadedFile.id), uploadedFile);
     } catch (e) {
+      if (seq !== uploadSeqRef.current) return;
       setError(e instanceof Error ? e.message : String(e));
     } finally {
-      setIsUploading(false);
+      if (seq === uploadSeqRef.current) setIsUploading(false);
     }
+  };
+
+  /** 書き直し前のファイルに戻す（登録中の結果は捨てる） */
+  const revertToFileBeforeEdit = () => {
+    uploadSeqRef.current++;
+    setIsUploading(false);
+    setError(null);
+    const original = fileBeforeEditRef.current;
+    setFile(original);
+    setThumbnail(null);
+    onChange?.(original ? String(original.id) : "", original);
+  };
+
+  const startEditing = () => {
+    fileBeforeEditRef.current = file;
+    setIsEditing(true);
   };
 
   const handleFileSelected = (selected: File | undefined) => {
@@ -201,6 +229,9 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
   };
 
   const handleRemove = () => {
+    uploadSeqRef.current++;
+    setIsUploading(false);
+    fileBeforeEditRef.current = null;
     setFile(null);
     setThumbnail(null);
     setError(null);
@@ -279,7 +310,7 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
                 type="button"
                 size="sm"
                 variant="outline"
-                onClick={() => setIsEditing(true)}
+                onClick={startEditing}
                 data-testid="file-field-change"
               >
                 {handwriting ? (
@@ -307,19 +338,39 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
       )}
 
       {showInput && inputReady && !disabled && handwriting && (
-        <HandwritingPad
-          disabled={isBusy}
-          onSave={(image) =>
-            void upload(image, buildHandwritingFileName(fieldLabel))
-          }
-          onCancel={file ? () => setIsEditing(false) : undefined}
-          labels={{
-            clear: label("LBL_FILE_FIELD_HANDWRITING_CLEAR"),
-            save: label("LBL_FILE_FIELD_HANDWRITING_SAVE"),
-            cancel: label("LBL_FILE_FIELD_CANCEL"),
-            placeholder: label("LBL_FILE_FIELD_HANDWRITING_PLACEHOLDER"),
-          }}
-        />
+        <>
+          <HandwritingPad
+            // 登録中も書き続けられるようにする（書き終われば登録し直す）
+            disabled={disabled}
+            onSave={(image) =>
+              void upload(image, buildHandwritingFileName(fieldLabel))
+            }
+            onClear={revertToFileBeforeEdit}
+            onCancel={
+              fileBeforeEditRef.current
+                ? () => {
+                    revertToFileBeforeEdit();
+                    setIsEditing(false);
+                  }
+                : undefined
+            }
+            labels={{
+              clear: label("LBL_FILE_FIELD_HANDWRITING_CLEAR"),
+              cancel: label("LBL_FILE_FIELD_CANCEL"),
+              placeholder: label("LBL_FILE_FIELD_HANDWRITING_PLACEHOLDER"),
+            }}
+          />
+          {file &&
+            file.id !== fileBeforeEditRef.current?.id &&
+            !isUploading && (
+              <span
+                className="text-xs text-gray-500"
+                data-testid="handwriting-saved"
+              >
+                {label("LBL_FILE_FIELD_HANDWRITING_SAVED")}
+              </span>
+            )}
+        </>
       )}
 
       {showInput && inputReady && !disabled && !handwriting && (

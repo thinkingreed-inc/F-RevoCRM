@@ -1,6 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import {
+  act,
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+} from "@testing-library/react";
 import { FileUploadField } from "../FileUploadField";
+import { HANDWRITING_AUTO_SAVE_DELAY_MS } from "../HandwritingPad";
 import type { FieldFileInfo } from "@/types/fileUploadField";
 
 const imageFile: FieldFileInfo = {
@@ -322,7 +329,44 @@ describe("FileUploadField", () => {
       );
     });
 
-    it("手書き項目はファイル選択の代わりに書く欄を出し、書いた画像を PNG で登録する", async () => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    /** 書く欄に 1 画書く */
+    function drawStroke(pointerType = "pen") {
+      const canvas = screen.getByTestId("handwriting-canvas");
+      fireEvent.pointerDown(canvas, {
+        clientX: 10,
+        clientY: 10,
+        pointerId: 1,
+        pointerType,
+      });
+      fireEvent.pointerMove(canvas, {
+        clientX: 30,
+        clientY: 20,
+        pointerId: 1,
+        pointerType,
+      });
+      fireEvent.pointerUp(canvas, { pointerId: 1, pointerType });
+      return canvas;
+    }
+
+    /** 自動で登録するまでの待ち時間を進める */
+    function waitAutoSave() {
+      act(() => {
+        vi.advanceTimersByTime(HANDWRITING_AUTO_SAVE_DELAY_MS);
+      });
+    }
+
+    function uploadCount() {
+      return mockFetch.mock.calls.filter(
+        ([input, init]) => modeOf(input, init) === "upload",
+      ).length;
+    }
+
+    it("手書き項目は書き終わって少し待つと PNG で登録し、書く欄は出したままにする", async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
       mockFetch.mockImplementation(() =>
         jsonResponse({ ...imageFile, id: 77, thumbnail }),
       );
@@ -342,16 +386,12 @@ describe("FileUploadField", () => {
       );
 
       expect(screen.queryByTestId("file-field-input")).not.toBeInTheDocument();
-      const save = screen.getByTestId("handwriting-save");
-      expect(save).toBeDisabled();
+      expect(screen.queryByTestId("handwriting-save")).not.toBeInTheDocument();
 
-      const canvas = screen.getByTestId("handwriting-canvas");
-      fireEvent.pointerDown(canvas, { clientX: 10, clientY: 10, pointerId: 1 });
-      fireEvent.pointerMove(canvas, { clientX: 30, clientY: 20, pointerId: 1 });
-      fireEvent.pointerUp(canvas, { pointerId: 1 });
-      expect(save).toBeEnabled();
+      drawStroke();
+      expect(uploadCount()).toBe(0);
 
-      fireEvent.click(save);
+      waitAutoSave();
 
       await waitFor(() =>
         expect(onChange).toHaveBeenCalledWith(
@@ -364,9 +404,19 @@ describe("FileUploadField", () => {
       const uploaded = body.get("file") as File;
       expect(uploaded.type).toBe("image/png");
       expect(uploaded.name).toMatch(/^サイン_\d{8}-\d{6}\.png$/);
+      // 続けて書けるよう書く欄は出したまま
+      expect(screen.getByTestId("handwriting-canvas")).toBeInTheDocument();
+      expect(
+        await screen.findByTestId("handwriting-saved"),
+      ).toBeInTheDocument();
     });
 
-    it("書き直すと保存できない状態に戻る", () => {
+    it("書き続けている間は登録しない", () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      mockFetch.mockImplementation(() =>
+        jsonResponse({ ...imageFile, id: 77, thumbnail }),
+      );
+
       render(
         <FileUploadField
           module="Accounts"
@@ -374,17 +424,171 @@ describe("FileUploadField", () => {
           mode="edit"
           file={null}
           handwriting
-          maxUploadSize={1024}
+          maxUploadSize={1024 * 1024}
         />,
       );
-      const canvas = screen.getByTestId("handwriting-canvas");
-      fireEvent.pointerDown(canvas, { clientX: 10, clientY: 10, pointerId: 1 });
-      fireEvent.pointerUp(canvas, { pointerId: 1 });
-      expect(screen.getByTestId("handwriting-save")).toBeEnabled();
+
+      drawStroke();
+      act(() => {
+        vi.advanceTimersByTime(HANDWRITING_AUTO_SAVE_DELAY_MS - 100);
+      });
+      // 待ち時間内に次の画を書き始めたら、登録は書き終わるまで待つ
+      fireEvent.pointerDown(screen.getByTestId("handwriting-canvas"), {
+        clientX: 40,
+        clientY: 40,
+        pointerId: 1,
+        pointerType: "pen",
+      });
+      act(() => {
+        vi.advanceTimersByTime(HANDWRITING_AUTO_SAVE_DELAY_MS * 2);
+      });
+
+      expect(uploadCount()).toBe(0);
+    });
+
+    it("マウスが書く欄から外れたら待たずに登録する（保存ボタンへ移る前に値を入れる）", async () => {
+      mockFetch.mockImplementation(() =>
+        jsonResponse({ ...imageFile, id: 77, thumbnail }),
+      );
+      const onChange = vi.fn();
+
+      render(
+        <FileUploadField
+          module="Accounts"
+          fieldName="cf_2"
+          mode="edit"
+          file={null}
+          handwriting
+          maxUploadSize={1024 * 1024}
+          onChange={onChange}
+        />,
+      );
+
+      const canvas = drawStroke("mouse");
+      fireEvent.pointerLeave(canvas, { pointerId: 1, pointerType: "mouse" });
+
+      await waitFor(() =>
+        expect(onChange).toHaveBeenCalledWith("77", expect.anything()),
+      );
+    });
+
+    it("書き直すと値を書く前（空）に戻す", async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      mockFetch.mockImplementation(() =>
+        jsonResponse({ ...imageFile, id: 77, thumbnail }),
+      );
+      const onChange = vi.fn();
+
+      render(
+        <FileUploadField
+          module="Accounts"
+          fieldName="cf_2"
+          mode="edit"
+          file={null}
+          handwriting
+          maxUploadSize={1024 * 1024}
+          onChange={onChange}
+        />,
+      );
+      drawStroke();
+      waitAutoSave();
+      await waitFor(() =>
+        expect(onChange).toHaveBeenCalledWith("77", expect.anything()),
+      );
 
       fireEvent.click(screen.getByTestId("handwriting-clear"));
 
-      expect(screen.getByTestId("handwriting-save")).toBeDisabled();
+      expect(onChange).toHaveBeenLastCalledWith("", null);
+      expect(screen.getByTestId("handwriting-clear")).toBeDisabled();
+    });
+
+    it("登録済みの手書きを書き直してやめると、元のファイルに戻す", async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      mockFetch.mockImplementation(
+        (input: RequestInfo | URL, init?: RequestInit) =>
+          modeOf(input, init) === "upload"
+            ? jsonResponse({ ...imageFile, id: 77, thumbnail })
+            : jsonResponse({ file: imageFile, thumbnail }),
+      );
+      const onChange = vi.fn();
+
+      render(
+        <FileUploadField
+          module="Accounts"
+          fieldName="cf_2"
+          mode="edit"
+          file={imageFile}
+          handwriting
+          maxUploadSize={1024 * 1024}
+          onChange={onChange}
+        />,
+      );
+      fireEvent.click(screen.getByTestId("file-field-change"));
+      drawStroke();
+      waitAutoSave();
+      await waitFor(() =>
+        expect(onChange).toHaveBeenCalledWith("77", expect.anything()),
+      );
+
+      fireEvent.click(screen.getByTestId("handwriting-cancel"));
+
+      expect(onChange).toHaveBeenLastCalledWith("45", imageFile);
+      expect(
+        screen.queryByTestId("handwriting-canvas"),
+      ).not.toBeInTheDocument();
+      expect(screen.getByTestId("file-field-value")).toHaveAttribute(
+        "data-document-id",
+        "45",
+      ); // 戻したファイルのサムネイルを取り直す
+      expect(
+        await screen.findByTestId("file-field-thumbnail"),
+      ).toBeInTheDocument();
+    });
+
+    it("先に送った登録の結果が後から返ってきても、新しい方の値を残す", async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const pending: Array<(id: number) => void> = [];
+      mockFetch.mockImplementation(
+        () =>
+          new Promise<Response>((resolve) => {
+            pending.push((id) =>
+              resolve({
+                ok: true,
+                status: 200,
+                json: () => Promise.resolve({ ...imageFile, id, thumbnail }),
+              } as Response),
+            );
+          }),
+      );
+      const onChange = vi.fn();
+
+      render(
+        <FileUploadField
+          module="Accounts"
+          fieldName="cf_2"
+          mode="edit"
+          file={null}
+          handwriting
+          maxUploadSize={1024 * 1024}
+          onChange={onChange}
+        />,
+      );
+      drawStroke();
+      waitAutoSave();
+      drawStroke();
+      waitAutoSave();
+      expect(pending).toHaveLength(2);
+
+      pending[1](78);
+      await waitFor(() =>
+        expect(onChange).toHaveBeenCalledWith("78", expect.anything()),
+      );
+      pending[0](77);
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      expect(onChange).not.toHaveBeenCalledWith("77", expect.anything());
     });
 
     it("手書きかどうか渡されなければ API から取得して出し分ける", async () => {
