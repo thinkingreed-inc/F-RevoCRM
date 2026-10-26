@@ -91,12 +91,17 @@ export async function uploadFieldFile(
   return readJson<FileFieldUploadResponse>(response);
 }
 
-/** 画像の縮小版を取得する */
+/**
+ * 画像の縮小版を取得する
+ *
+ * @param size "large" なら拡大表示用の大きな画像
+ */
 export async function fetchFieldThumbnail(
   module: string,
   fieldName: string,
   documentId: number,
   recordId?: number,
+  size?: "large",
 ): Promise<FileFieldThumbnailResponse> {
   const params: Record<string, string | number> = {
     module,
@@ -107,6 +112,9 @@ export async function fetchFieldThumbnail(
   };
   if (recordId) {
     params.record = recordId;
+  }
+  if (size) {
+    params.size = size;
   }
   const response = await fetch(`${ENDPOINT}?${buildQuery(params)}`, {
     credentials: "same-origin",

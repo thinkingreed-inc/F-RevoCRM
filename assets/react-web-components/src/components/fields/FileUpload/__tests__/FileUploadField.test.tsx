@@ -30,6 +30,23 @@ const pdfFile: FieldFileInfo = {
     "index.php?module=Documents&action=DownloadFile&record=50&fileid=51",
 };
 
+/** ドキュメントの詳細（module=Documents&api=DetailAPI） */
+const documentDetail = {
+  id: 45,
+  title: "photo",
+  filename: "photo.png",
+  filetype: "image/png",
+  filesize: 2048,
+  filelocationtype: "I",
+  folderid: 1,
+  foldername: "Default",
+  can_edit: true,
+  download_url:
+    "index.php?module=Documents&action=DownloadFile&record=45&fileid=46",
+  related_records: [],
+  file_versions: [],
+};
+
 const thumbnail = {
   data_uri: "data:image/png;base64,AAAA",
   width: 320,
@@ -104,9 +121,9 @@ describe("FileUploadField", () => {
       expect(screen.getByTestId("file-field-filename")).toHaveTextContent(
         "photo.png",
       );
-      expect(screen.getByTestId("file-field-filename")).toHaveAttribute(
+      // 押してもダウンロードしない（詳細を出す）
+      expect(screen.getByTestId("file-field-filename")).not.toHaveAttribute(
         "href",
-        imageFile.download_url,
       );
 
       const url = new URL(
@@ -118,6 +135,68 @@ describe("FileUploadField", () => {
       expect(url.searchParams.get("mode")).toBe("thumbnail");
       expect(url.searchParams.get("document")).toBe("45");
       expect(url.searchParams.get("record")).toBe("12");
+    });
+
+    it("サムネイルを押すと、ダウンロードせずにドキュメントの詳細を出す（削除は出さない）", async () => {
+      mockFetch.mockImplementation((input: RequestInfo | URL) => {
+        const url = new URL(String(input), "http://localhost/");
+        if (url.searchParams.get("api") === "DetailAPI") {
+          return jsonResponse({ success: true, result: documentDetail });
+        }
+        return jsonResponse({ file: imageFile, thumbnail });
+      });
+
+      render(
+        <FileUploadField
+          module="Accounts"
+          fieldName="cf_1"
+          mode="detail"
+          recordId={12}
+          file={{ ...imageFile, viewable: true }}
+        />,
+      );
+      fireEvent.click(await screen.findByTestId("file-field-thumbnail"));
+
+      expect(
+        await screen.findByTestId("document-detail-edit"),
+      ).toBeInTheDocument();
+      const detailCall = mockFetch.mock.calls
+        .map(([input]) => new URL(String(input), "http://localhost/"))
+        .find((url) => url.searchParams.get("api") === "DetailAPI");
+      expect(detailCall?.searchParams.get("record")).toBe("45");
+      expect(screen.queryByTestId("document-detail-delete")).toBeNull();
+    });
+
+    it("ドキュメント自体を参照できなければ、画像を大きく出すだけにする", async () => {
+      const large = { ...thumbnail, data_uri: "data:image/png;base64,LARGE" };
+      mockFetch.mockImplementation((input: RequestInfo | URL) => {
+        const url = new URL(String(input), "http://localhost/");
+        return jsonResponse({
+          file: imageFile,
+          thumbnail:
+            url.searchParams.get("size") === "large" ? large : thumbnail,
+        });
+      });
+
+      render(
+        <FileUploadField
+          module="Accounts"
+          fieldName="cf_1"
+          mode="detail"
+          recordId={12}
+          file={{ ...imageFile, viewable: false }}
+        />,
+      );
+      fireEvent.click(await screen.findByTestId("file-field-filename"));
+
+      expect(
+        await screen.findByTestId("file-field-preview-image"),
+      ).toHaveAttribute("src", large.data_uri);
+      expect(
+        mockFetch.mock.calls.some(([input]) =>
+          String(input).includes("api=DetailAPI"),
+        ),
+      ).toBe(false);
     });
 
     it("画像でなければサムネイルを取りに行かずファイル名だけ出す", () => {
@@ -218,6 +297,40 @@ describe("FileUploadField", () => {
       expect(body.get("field")).toBe("cf_1");
       expect(body.get("__vtrftk")).toBe("token-1");
       expect((body.get("file") as File).name).toBe("photo.png");
+    });
+
+    it("保存前に選んだ画像は、押すと選んだ画像を大きく出す", async () => {
+      mockFetch.mockImplementation(() => jsonResponse(draftResponse(DRAFT_A)));
+      const createObjectURL = vi.fn(() => "blob:selected-image");
+      Object.defineProperty(URL, "createObjectURL", {
+        configurable: true,
+        value: createObjectURL,
+      });
+      Object.defineProperty(URL, "revokeObjectURL", {
+        configurable: true,
+        value: vi.fn(),
+      });
+
+      render(
+        <FileUploadField
+          module="Accounts"
+          fieldName="cf_1"
+          mode="edit"
+          file={null}
+          handwriting={false}
+          maxUploadSize={1024 * 1024}
+        />,
+      );
+      fireEvent.change(screen.getByTestId("file-field-input"), {
+        target: {
+          files: [new File(["abc"], "photo.png", { type: "image/png" })],
+        },
+      });
+      fireEvent.click(await screen.findByTestId("file-field-thumbnail"));
+
+      expect(
+        await screen.findByTestId("file-field-preview-image"),
+      ).toHaveAttribute("src", "blob:selected-image");
     });
 
     it("登録に失敗したらメッセージを出し、値は変えない", async () => {

@@ -19,7 +19,7 @@
  *
  * @phpstan-type FileFieldInfo array{fieldid: int, fieldname: string, fieldlabel: string, tablename: string, columnname: string, handwriting: bool}
  * @phpstan-type FileInfo array{id: int, title: string, filename: string, filetype: string, filesize: int, is_image: bool, download_url: string, attachment_id: int, path: string}
- * @phpstan-type ClientFileInfo array{id: int, filename: string, filetype: string, filesize: int, is_image: bool, download_url: string}
+ * @phpstan-type ClientFileInfo array{id: int, filename: string, filetype: string, filesize: int, is_image: bool, download_url: string, viewable: bool}
  * @phpstan-type Thumbnail array{data_uri: string, width: int, height: int, mime: string}
  */
 class Documents_FieldFile
@@ -38,6 +38,9 @@ class Documents_FieldFile
 
     /** サムネイルの長辺（ピクセル） */
     public const THUMBNAIL_MAX_SIZE = 320;
+
+    /** 拡大表示の画像の長辺（ピクセル）。ドキュメント自体を参照できない人に、画像だけを大きく見せる */
+    public const PREVIEW_MAX_SIZE = 1600;
 
     /** サムネイルを作る元画像の上限（バイト）。これより大きい画像はサムネイルを出さない */
     public const THUMBNAIL_SOURCE_MAX_BYTES = 20971520;
@@ -503,6 +506,10 @@ class Documents_FieldFile
     /**
      * 画面に渡すファイル情報（サーバー上のパスなどを除く）
      *
+     * viewable は実行ユーザーがドキュメント自体を参照できるか。画面はこれを見て、
+     * 参照できればドキュメントの詳細を、できなければ画像の拡大表示だけを出す
+     * （項目のファイルはレコードを参照できれば見られるが、ドキュメント側の権限は別のため）。
+     *
      * @param FileInfo|null $info getFileInfo() の戻り値
      * @return ClientFileInfo|null
      */
@@ -518,6 +525,7 @@ class Documents_FieldFile
             'filesize' => $info['filesize'],
             'is_image' => $info['is_image'],
             'download_url' => $info['download_url'],
+            'viewable' => self::canAttachDocument($info['id']),
         ];
     }
 

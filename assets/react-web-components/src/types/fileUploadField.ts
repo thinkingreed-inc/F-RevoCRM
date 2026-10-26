@@ -22,6 +22,11 @@ export interface FieldFileInfo {
   download_url: string;
   /** 保存前の一時ファイルを指す値（draft:...）。あればこれを項目の値にする */
   draft?: string;
+  /**
+   * 実行ユーザーがドキュメント自体を参照できるか。参照できなければ詳細は出さず、
+   * 画像の拡大表示だけにする（レコードからは見られるが、ドキュメント側の権限は別のため）
+   */
+  viewable?: boolean;
 }
 
 /** 縮小画像（Documents_FieldFile::buildThumbnail） */

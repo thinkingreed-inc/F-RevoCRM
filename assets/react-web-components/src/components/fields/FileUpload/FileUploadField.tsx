@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Paperclip, PenLine, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -6,6 +6,10 @@ import { useOptionalTranslation } from "@/hooks/useTranslation";
 import type { FieldFileInfo, FieldThumbnail } from "@/types/fileUploadField";
 import type { WebComponentFieldMode } from "@/types/webComponentField";
 import { HandwritingPad } from "./HandwritingPad";
+import {
+  FileFieldDocumentDialog,
+  FileFieldImageDialog,
+} from "./FileFieldViewer";
 import { buildHandwritingFileName } from "./handwritingFileName";
 import {
   fetchFieldThumbnail,
@@ -27,7 +31,8 @@ const FALLBACK_LABELS: Record<string, string> = {
     "入力しました（レコードを保存すると登録されます）",
   LBL_FILE_FIELD_HANDWRITING_REDRAW: "書き直す",
   LBL_FILE_FIELD_CANCEL: "やめる",
-  LBL_FILE_FIELD_DOWNLOAD: "ダウンロード",
+  LBL_FILE_FIELD_SHOW_DETAIL: "詳細を表示",
+  LBL_FILE_FIELD_SHOW_IMAGE: "拡大して表示",
 };
 
 export interface FileUploadFieldProps {
@@ -76,7 +81,9 @@ function formatFileSize(bytes: number): string {
  *       サーバーが作る（項目に既存のドキュメントがあれば版を足す）。
  *       手書きは書き終わるたびに同じ一時ファイルを上書きし、書く欄は出したままにする
  *       （続けて書けるように。途中の内容はドキュメントにも版にも残らない）。
- * 詳細: 画像ならサムネイル、それ以外はファイル名とダウンロードのリンクを出す。
+ * 詳細: 画像ならサムネイル、それ以外はファイル名を出す。押すとダウンロードせずに、
+ *       ドキュメントの詳細（プレビュー・版の履歴・ダウンロード）を出す。ドキュメント自体を
+ *       参照できない人と保存前のファイルは、画像の拡大表示だけにする。
  */
 export const FileUploadField: React.FC<FileUploadFieldProps> = ({
   module,
@@ -125,6 +132,17 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
   /** 送信中か、送信中に書き足された分（送信が終わってから最新の 1 件だけ送る） */
   const inFlightRef = useRef(false);
   const queuedRef = useRef<{ blob: Blob; fileName: string } | null>(null);
+  /** 出しているもの（ドキュメントの詳細・画像の拡大表示） */
+  const [viewer, setViewer] = useState<"document" | "image" | null>(null);
+  /** 保存前に選んだ画像（拡大表示に使う。ドキュメントがまだ無いため） */
+  const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
+
+  useEffect(
+    () => () => {
+      if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
+    },
+    [localPreviewUrl],
+  );
 
   // 親から渡されるファイルが変わったら（別レコードの表示など）追従する
   useEffect(() => {
@@ -228,6 +246,9 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
         };
         setFile(uploadedFile);
         setThumbnail(uploadedThumbnail);
+        setLocalPreviewUrl(
+          blob.type.startsWith("image/") ? URL.createObjectURL(blob) : null,
+        );
         // 手書きは続けて書けるよう書く欄を出したままにする
         setIsEditing(Boolean(handwriting));
         if (!handwriting) fileBeforeEditRef.current = uploadedFile;
@@ -283,12 +304,68 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
     onChange?.("", null);
   };
 
+  const loadLargeImage = useCallback(async () => {
+    if (!file || file.id <= 0) return null;
+    const response = await fetchFieldThumbnail(
+      module,
+      fieldName,
+      file.id,
+      recordId,
+      "large",
+    );
+    return response.thumbnail?.data_uri ?? null;
+  }, [file, module, fieldName, recordId]);
+
+  /** 押したときに出すもの（無ければ押せない） */
+  const viewerFor = (target: FieldFileInfo): "document" | "image" | null => {
+    if (target.draft) return localPreviewUrl ? "image" : null;
+    if (target.id > 0 && target.viewable !== false) return "document";
+    return target.is_image && target.id > 0 ? "image" : null;
+  };
+
+  /** ドキュメントを編集した（ファイルを差し替えると版が増える）ので表示を取り直す */
+  const refreshFile = () => {
+    if (!file || file.id <= 0) return;
+    fetchFieldThumbnail(module, fieldName, file.id, recordId)
+      .then((response) => {
+        setFile(response.file);
+        setThumbnail(response.thumbnail);
+      })
+      .catch(() => {
+        // 取り直せなくても今の表示のまま
+      });
+  };
+
+  const renderViewer = () => {
+    if (!file || !viewer) return null;
+    if (viewer === "document") {
+      return (
+        <FileFieldDocumentDialog
+          documentId={file.id}
+          onClose={() => setViewer(null)}
+          onChanged={refreshFile}
+        />
+      );
+    }
+    return (
+      <FileFieldImageDialog
+        src={file.draft ? (localPreviewUrl ?? undefined) : undefined}
+        load={file.draft ? undefined : loadLargeImage}
+        alt={file.filename}
+        onClose={() => setViewer(null)}
+      />
+    );
+  };
+
   const renderFileSummary = () => {
     if (!file) return null;
-    // 保存前の一時ファイルはドキュメントが無いのでダウンロードのリンクにしない
-    const linkProps = file.download_url
-      ? { href: file.download_url, title: label("LBL_FILE_FIELD_DOWNLOAD") }
-      : {};
+    // 押してもダウンロードはしない（詳細・拡大表示を出す）
+    const target = viewerFor(file);
+    const open = target ? () => setViewer(target) : undefined;
+    const openTitle =
+      target === "document"
+        ? label("LBL_FILE_FIELD_SHOW_DETAIL")
+        : label("LBL_FILE_FIELD_SHOW_IMAGE");
     return (
       <div
         className="flex flex-wrap items-start gap-x-3 gap-y-1"
@@ -296,7 +373,16 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
         data-document-id={file.id}
       >
         {file.is_image && thumbnail && (
-          <a {...linkProps} className="shrink-0">
+          <button
+            type="button"
+            onClick={open}
+            disabled={!open}
+            title={open ? openTitle : undefined}
+            className={cn(
+              "shrink-0",
+              open ? "cursor-zoom-in" : "cursor-default",
+            )}
+          >
             <img
               src={thumbnail.data_uri}
               width={thumbnail.width}
@@ -305,20 +391,23 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
               data-testid="file-field-thumbnail"
               className="max-h-40 max-w-[240px] h-auto w-auto rounded border border-gray-200 bg-white object-contain"
             />
-          </a>
+          </button>
         )}
         <div className="flex min-w-0 flex-col gap-0.5">
-          <a
-            {...linkProps}
+          <button
+            type="button"
+            onClick={open}
+            disabled={!open}
+            title={open ? openTitle : undefined}
             className={cn(
-              "flex items-center gap-1 break-all",
-              file.download_url && "text-[#15c] hover:underline",
+              "flex items-center gap-1 break-all text-left",
+              open ? "text-[#15c] hover:underline" : "cursor-default",
             )}
             data-testid="file-field-filename"
           >
             <Paperclip className="size-3.5 shrink-0" aria-hidden="true" />
             <span>{file.filename}</span>
-          </a>
+          </button>
           {file.filesize > 0 && (
             <span className="text-xs text-gray-500">
               {formatFileSize(file.filesize)}
@@ -333,6 +422,7 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
     return (
       <div className={cn("fr-file-field", className)}>
         {renderFileSummary()}
+        {renderViewer()}
       </div>
     );
   }
@@ -491,6 +581,7 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
           {error}
         </span>
       )}
+      {renderViewer()}
     </div>
   );
 };

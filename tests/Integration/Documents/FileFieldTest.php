@@ -652,6 +652,33 @@ final class FileFieldTest extends DocumentsTestCase
         $this->assertNull($empty['thumbnail']);
     }
 
+    public function test_ファイル情報にドキュメント自体を参照できるかを含める(): void
+    {
+        // 画面はこれを見て、参照できればドキュメントの詳細を、できなければ画像の拡大表示だけを出す
+        $notesId = $this->createRestrictedDocument('viewable');
+        $fieldName = self::$fields['file']['fieldname'];
+        $accountId = $this->saveAccount('viewable', [$fieldName => (string) $notesId], null, self::REP_USER_ID);
+        $params = ['module' => 'Accounts', 'api' => 'FileField', 'mode' => 'thumbnail', 'field' => $fieldName, 'document' => $notesId, 'record' => $accountId];
+        $uiType = Vtiger_Field_Model::getInstance(self::$fields['file']['fieldid'])->getUITypeModel();
+
+        $this->assertTrue($this->callApi($params)['file']['viewable']);
+        $this->assertTrue($uiType->getWebComponentProps((string) $notesId, 'detail')['file']['viewable']);
+
+        $this->loginAs(self::REP_USER_ID);
+        $this->assertFalse($this->callApi($params)['file']['viewable'], 'レコードからは見られるがドキュメント自体は参照できない');
+        $this->assertFalse($uiType->getWebComponentProps((string) $notesId, 'detail')['file']['viewable']);
+    }
+
+    public function test_サムネイルAPIは拡大表示用の大きな画像も返す(): void
+    {
+        $png = $this->tempFile('png', $this->pngBinary(1200, 600));
+        $notesId = Documents_FieldFile::createDocument($this->fileEntry($png, self::PREFIX . 'large.png', 'image/png'), $this->fieldInfo('file'));
+        $params = ['module' => 'Accounts', 'api' => 'FileField', 'mode' => 'thumbnail', 'field' => self::$fields['file']['fieldname'], 'document' => $notesId];
+
+        $this->assertSame(Documents_FieldFile::THUMBNAIL_MAX_SIZE, $this->callApi($params)['thumbnail']['width']);
+        $this->assertSame(1200, $this->callApi($params + ['size' => 'large'])['thumbnail']['width'], '元の大きさまで（拡大はしない）');
+    }
+
     // ---- ヘルパー -----------------------------------------------------------
 
     /**

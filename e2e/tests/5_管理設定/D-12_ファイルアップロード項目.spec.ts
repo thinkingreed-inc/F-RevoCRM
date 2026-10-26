@@ -183,6 +183,17 @@ test.describe.serial("管理: ファイルアップロード項目", () => {
     const fileDetail = detailValue(page, fileFieldName);
     await expect(fileDetail.locator('[data-testid="file-field-thumbnail"]')).toBeVisible({ timeout: 20000 });
     await expect(fileDetail.locator('[data-testid="file-field-filename"]')).toContainText(imageName);
+    // サムネイルを押すとダウンロードせずにドキュメントの詳細を出す（削除は出さない）
+    let downloaded = false;
+    page.on("download", () => {
+      downloaded = true;
+    });
+    await fileDetail.locator('[data-testid="file-field-thumbnail"]').click();
+    await expect(page.locator('[data-testid="document-detail-edit"]:visible').first()).toBeVisible({ timeout: 20000 });
+    await expect(page.locator('[data-testid="document-detail-delete"]')).toHaveCount(0);
+    expect(downloaded).toBe(false);
+    await page.goto(detailUrl());
+
     const signDetail = detailValue(page, signFieldName);
     await expect(signDetail.locator('[data-testid="file-field-thumbnail"]')).toBeVisible({ timeout: 20000 });
     // 手書きのファイル名は「項目名_レコードID_項目ID_保存日時.png」

@@ -13,8 +13,9 @@
  *     → ファイルを一時ファイルに置き、項目に入れる値（draft:...）とファイル情報（サムネイルを含む）を返す。
  *       ドキュメントはレコードの保存時に作る（FileFieldHandler）。draft に自分がこの項目に置いた
  *       一時ファイルを指定すると、それを上書きする（手書きの自動保存で一時ファイルを増やさない）
- *   ?module=Accounts&api=FileField&mode=thumbnail&field=cf_123&document=45[&record=12]
- *     → 画像の縮小版を data URI で返す（画像でなければ thumbnail は null）
+ *   ?module=Accounts&api=FileField&mode=thumbnail&field=cf_123&document=45[&record=12][&size=large]
+ *     → 画像の縮小版を data URI で返す（画像でなければ thumbnail は null）。
+ *       size=large なら拡大表示用の大きな画像（ドキュメント自体を参照できない人に画像だけを見せる）
  *   ?module=Accounts&api=FileField&mode=thumbnail&field=cf_123&record=12
  *     → レコードの項目に入っているドキュメントについて同じものを返す（空なら file も null）。
  *       インライン編集の保存直後は画面が一時ファイルを指す値しか知らないため、これで引き直す
@@ -171,9 +172,10 @@ class Vtiger_FileField_Api extends Vtiger_Api_Controller
         if ($info === null) {
             throw new ApiNotFoundException(vtranslate('LBL_RECORD_NOT_FOUND'));
         }
+        $maxSize = $request->get('size') === 'large' ? Documents_FieldFile::PREVIEW_MAX_SIZE : Documents_FieldFile::THUMBNAIL_MAX_SIZE;
         return [
             'file' => Documents_FieldFile::toClientInfo($info),
-            'thumbnail' => $info['is_image'] ? Documents_FieldFile::buildThumbnail($info['path']) : null,
+            'thumbnail' => $info['is_image'] ? Documents_FieldFile::buildThumbnail($info['path'], $maxSize) : null,
         ];
     }
 
