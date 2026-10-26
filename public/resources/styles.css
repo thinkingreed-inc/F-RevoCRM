@@ -254,6 +254,9 @@ td.listViewEntryValue  .fieldValue .value {
     max-height: calc(100vh - 210px) !important;
     padding-bottom: 60px;
   }
+  .importview-content {
+    overflow-x: auto !important;
+  }
   .main-container > .settingsPageDiv {
     padding-top: 45px;
   }
