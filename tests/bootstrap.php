@@ -70,6 +70,7 @@ if ($envDbPassword !== false) {
 $dbconfig['db_hostname'] = $dbConfigString($dbconfig, 'db_server') . $dbConfigString($dbconfig, 'db_port');
 $GLOBALS['dbconfig']       = $dbconfig;           // 全フィールドを GLOBALS にコピー
 $GLOBALS['dbconfigoption'] = $dbconfigoption ?? []; // PearDatabase が参照する接続オプション
+$GLOBALS['upload_badext']  = $upload_badext ?? [];  // 添付ファイル名の検査（sanitizeUploadFileName）が参照する
 
 if (!preg_match('/_test$/', $GLOBALS['dbconfig']['db_name'])) {
     fwrite(STDERR, "FATAL: テスト bootstrap が非テストDB ({$GLOBALS['dbconfig']['db_name']}) を指しています。\n");

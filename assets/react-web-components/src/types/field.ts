@@ -259,6 +259,8 @@ export const UI_TYPES = {
   PRODUCT_TAX: "83",
   /** 通貨リスト（選択式） */
   CURRENCY_LIST: "117",
+  /** ファイルアップロード（値はドキュメントID。F-RevoCRM 独自） */
+  FILE_UPLOAD: "998",
 } as const;
 
 /**

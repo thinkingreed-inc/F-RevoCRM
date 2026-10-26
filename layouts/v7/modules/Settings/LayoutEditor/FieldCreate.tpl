@@ -132,6 +132,20 @@
 							</div>
 						</div>
 					{/if}
+					{if !$IS_FIELD_EDIT_MODE || $FIELD_MODEL->getFieldDataType() eq 'fileupload'}
+						<div class="form-group supportedType handwritingSupported {if $FIELD_MODEL->getFieldDataType() neq 'fileupload'}hide{/if}">
+							<label class="control-label fieldLabel col-sm-5">
+								{vtranslate('LBL_HANDWRITING', $QUALIFIED_MODULE)}
+							</label>
+							<div class="controls col-sm-7">
+								<input type="hidden" name="handwriting" value="0" />
+								<label class="checkbox" style="margin-left: 5px;">
+									<input type="checkbox" class="cursorPointer" name="handwriting" value="1" data-test-id="handwriting-checkbox" {if $FIELD_MODEL->isHandwriting()}checked="checked"{/if} />
+									&nbsp;{vtranslate('LBL_HANDWRITING_DESCRIPTION', $QUALIFIED_MODULE)}
+								</label>
+							</div>
+						</div>
+					{/if}
 					{if $FIELD_MODEL->getFieldDataType() != 'reference'}
 						{include file=vtemplate_path('DefaultValueUi.tpl', $QUALIFIED_MODULE) FIELD_MODEL=$FIELD_MODEL}
 					{/if}

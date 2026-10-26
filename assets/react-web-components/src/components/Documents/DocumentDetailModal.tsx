@@ -13,7 +13,8 @@ interface DocumentDetailModalProps {
   isLoading: boolean;
   onClose: () => void;
   onEdit: (doc: DocumentDetail) => void;
-  onDelete: (recordId: number) => void;
+  /** 削除。渡さなければ削除ボタンを出さない（ファイルアップロード項目から開いた場合など） */
+  onDelete?: (recordId: number) => void;
   /**
    * 関連レコードの紐づけを解除したときに、解除した親レコードを渡して呼ばれる
    *
@@ -1160,7 +1161,7 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
                 {t("Download")}
               </a>
             )}
-            {canEdit && (
+            {canEdit && onDelete && (
               <button
                 data-testid="document-detail-delete"
                 onClick={() => {
@@ -1278,7 +1279,7 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
                   {t("Download")}
                 </a>
               )}
-              {canEdit && (
+              {canEdit && onDelete && (
                 <button
                   data-testid="document-detail-delete"
                   onClick={() => {

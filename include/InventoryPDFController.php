@@ -433,6 +433,14 @@ class Vtiger_InventoryPDFController {
 
 	public static function getMergedDescription($template, $recordId, $moduleName, $startcount = false, $limitcount = false)
 	{
+		// ファイルアップロード項目の画像の変数（$module-cf_xxx#img$ / #src$）は目印にしておき、
+		// 最後（applyingSpecialSymbol）で画像に差し替える（長い data: の URL を正規表現に通さない）
+		// （PDF のファイル名の設定が空のときは null で呼ばれるため、文字列のときだけ行う）
+		if (is_string($template)) {
+			require_once 'modules/Documents/utils/FieldFileTemplate.php';
+			$template = Documents_FieldFileTemplate::replaceImageVariables($template, (int) $recordId, $moduleName);
+		}
+
 		// base64データを含むimgタグをpreg_splitで取得した場合、Segmentation fault.が発生する場合がある。
 		// preg_split前にimgタグを置換し、処理後にimgタグの内容を戻すようにする。
 		preg_match_all('/<img.*?[\"|\'][\"|\'].*?>/is',$template,$matches_img);
@@ -1409,6 +1417,11 @@ class Vtiger_InventoryPDFController {
 			} else {
 				$template = str_replace($before, $after, $template);
 			}
+		}
+		// ファイルアップロード項目の画像の目印を画像に差し替える（getMergedDescription 参照）
+		if (is_string($template)) {
+			require_once 'modules/Documents/utils/FieldFileTemplate.php';
+			$template = Documents_FieldFileTemplate::restorePlaceholders($template);
 		}
 		return $template;
 	}

@@ -94,7 +94,7 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 		return array(
 			//Skypeサービス終了のため、Skype項目を削除
 			'Text','Decimal','Integer','Percent','Currency','Date','Email','Phone','Picklist',
-			'URL','Checkbox','TextArea','MultiSelectCombo','Time','Reference','Blank'
+			'URL','Checkbox','TextArea','MultiSelectCombo','Time','Reference','Blank','FileUpload'
 		);
 	}
 
@@ -134,6 +134,10 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 			}
 			if($fieldType == 'Blank'){
 				// empty field
+			}
+			if($fieldType == 'FileUpload'){
+				// 手書き入力の指定を出す
+				$details['handwritingsupported'] = true;
 			}
 			$fieldTypesInfo[$fieldType] = $details;
 		}
@@ -238,6 +242,11 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 				$relModule = Vtiger_Module::getInstance($relModuleName);
 				$relModule->setRelatedList($module, vtranslate($fieldModel->getModuleName(),$relModule->name)."_".$fieldModel->get('label'), Array('ADD'), 'get_dependents_list', $fieldModel->getId());
 			}
+		}
+
+		if($fieldType == 'FileUpload') {
+			require_once 'modules/Documents/utils/FieldFile.php';
+			Documents_FieldFile::setHandwriting($fieldModel->getId(), isset($params['handwriting']) && $params['handwriting'] == '1');
 		}
 		return $fieldModel;
 	}
@@ -344,6 +353,12 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 							   $uitype = 999;
 							   $type = "VARCHAR(0) default ''"; //adodb type
 							   $uichekdata='V~O';
+							   break;
+				Case 'FileUpload' :
+							   // 値はアップロードしたファイルを登録したドキュメントのID
+							   $uitype = 998;
+							   $type = "INT(19)"; //adodb type
+							   $uichekdata='I~O';
 							   break;
 		}
 		return array(
