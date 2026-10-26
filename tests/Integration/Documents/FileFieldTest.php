@@ -322,7 +322,7 @@ final class FileFieldTest extends DocumentsTestCase
 
         $notesId = Documents_FieldFile::getStoredDocumentId($accountId, $this->fieldInfo('handwriting'), 'Accounts');
         $this->assertGreaterThan(0, $notesId);
-        $this->assertSame(self::PREFIX . 'new.png', Documents_FieldFile::getFileInfo($notesId)['filename']);
+        $this->assertHandwritingFileName($notesId, $accountId);
         $this->assertSame(1, $this->countVersions($notesId));
         $this->assertTrue($this->isLinked($accountId, $notesId));
         $this->assertNull(
@@ -343,8 +343,27 @@ final class FileFieldTest extends DocumentsTestCase
         $this->assertSame($notesId, Documents_FieldFile::getStoredDocumentId($accountId, $this->fieldInfo('handwriting'), 'Accounts'));
         $this->assertSame(2, $this->countVersions($notesId));
         $this->assertSame($before, $this->countDocuments(), 'ドキュメントは増やさない');
-        $this->assertSame(self::PREFIX . 'v2.png', Documents_FieldFile::getFileInfo($notesId)['filename']);
-        $this->assertSame(self::PREFIX . 'v2', $this->notesColumn($notesId, 'title'), 'タイトルも新しいファイルに合わせる');
+        $this->assertHandwritingFileName($notesId, $accountId);
+    }
+
+    public function test_手書きのファイル名は項目名_レコードID_項目ID_保存日時にする(): void
+    {
+        $accountId = $this->saveAccount('naming', [
+            self::$fields['handwriting']['fieldname'] => $this->uploadDraft('handwriting', 'naming.png')['draft'],
+            self::$fields['file']['fieldname'] => $this->uploadDraft('file', 'naming-file.png')['draft'],
+        ]);
+
+        $notesId = Documents_FieldFile::getStoredDocumentId($accountId, $this->fieldInfo('handwriting'), 'Accounts');
+        $fileName = $this->assertHandwritingFileName($notesId, $accountId);
+        $this->assertSame(pathinfo($fileName, PATHINFO_FILENAME), $this->notesColumn($notesId, 'title'), 'タイトルも合わせる');
+        $result = $this->db->pquery(
+            'SELECT a.name FROM vtiger_attachments a INNER JOIN vtiger_seattachmentsrel r ON r.attachmentsid = a.attachmentsid WHERE r.crmid = ?',
+            [$notesId]
+        );
+        $this->assertSame($fileName, $this->db->query_result($result, 0, 'name'), 'ダウンロードするときの名前も合わせる');
+
+        $fileNotesId = Documents_FieldFile::getStoredDocumentId($accountId, $this->fieldInfo('file'), 'Accounts');
+        $this->assertSame(self::PREFIX . 'naming-file.png', Documents_FieldFile::getFileInfo($fileNotesId)['filename'], '手書きでない項目は元のファイル名のまま');
     }
 
     public function test_ファイルが変わらなければ版を増やさない(): void
@@ -682,6 +701,21 @@ final class FileFieldTest extends DocumentsTestCase
         }
         $this->drafts[] = (string) $result['draft'];
         return $result;
+    }
+
+    /**
+     * 手書きのファイル名（項目名_レコードID_項目ID_年月日-時分秒.png）になっているか確かめる
+     *
+     * @return string ファイル名
+     */
+    private function assertHandwritingFileName(int $notesId, int $recordId): string
+    {
+        $fileName = Documents_FieldFile::getFileInfo($notesId)['filename'];
+        $this->assertMatchesRegularExpression(
+            '/^SPECTEST_手書き_' . $recordId . '_' . self::$fields['handwriting']['fieldid'] . '_\d{8}-\d{6}\.png$/u',
+            $fileName
+        );
+        return $fileName;
     }
 
     private function countVersions(int $notesId): int

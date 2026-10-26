@@ -10,6 +10,8 @@
  *         値がドキュメントIDで変わったときは、実行ユーザーが参照できるか確かめる。
  *         参照できないドキュメントの ID を送り込んで、他人のファイルを
  *         自分のレコードから見られるようにするのを防ぐ。
+ *         手書きのドキュメントは、保存後にファイル名を「項目名_レコードID_項目ID_保存日時.png」にする
+ *         （新しいレコードは保存するまで ID が無いため、保存後に行う）。
  * 保存後: 項目に入ったドキュメントをレコードに関連付ける（関連ドキュメントに出す）。
  *         差し替え前のドキュメントは関連付けを残す（履歴として辿れるようにする）。
  */
@@ -21,6 +23,15 @@ require_once 'modules/Documents/utils/FieldFileDraft.php';
  */
 class FileFieldHandler extends VTEventHandler
 {
+    /**
+     * 保存前に作った・差し替えた手書きのドキュメント（保存後にファイル名を付ける）
+     *
+     * イベントごとにハンドラが作り直されるため、保存前と保存後で同じ VTEntityData を鍵にして渡す。
+     *
+     * @var array<int, list<array{notesId: int, fieldInfo: FileFieldInfo}>>
+     */
+    private static array $handwritingDocuments = [];
+
     /**
      * @param mixed $eventName vtiger.entity.beforesave / vtiger.entity.aftersave
      * @param mixed $entityData VTEntityData
@@ -40,6 +51,7 @@ class FileFieldHandler extends VTEventHandler
             $this->saveDrafts($entityData, $fields, $moduleName);
             $this->assertAttachableDocuments($entityData, $fields, $moduleName);
         } elseif ($eventName === 'vtiger.entity.aftersave') {
+            $this->nameHandwritingDocuments($entityData, $moduleName);
             $this->linkDocuments($entityData, $fields);
         }
     }
@@ -75,6 +87,38 @@ class FileFieldHandler extends VTEventHandler
             }
             $entityData->set($fieldName, $notesId);
             Documents_FieldFileDraft::delete($value);
+            if ($fieldInfo['handwriting']) {
+                self::$handwritingDocuments[spl_object_id($entityData)][] = ['notesId' => $notesId, 'fieldInfo' => $fieldInfo];
+            }
+        }
+    }
+
+    /**
+     * 保存前に作った・差し替えた手書きのドキュメントに、レコードIDを含むファイル名を付ける
+     */
+    private function nameHandwritingDocuments(VTEntityData $entityData, string $moduleName): void
+    {
+        $key = spl_object_id($entityData);
+        $documents = self::$handwritingDocuments[$key] ?? [];
+        unset(self::$handwritingDocuments[$key]);
+        if (empty($documents)) {
+            return;
+        }
+        $recordId = Documents_FieldFile::normalizeDocumentId($entityData->getId());
+        // ファイル名の日時は実行ユーザーのタイムゾーンで付ける（画面に出る日時と合わせる）
+        $timeZone = (string) Users_Record_Model::getCurrentUserModel()->get('time_zone');
+        if ($timeZone === '' || !in_array($timeZone, timezone_identifiers_list(), true)) {
+            $timeZone = date_default_timezone_get();
+        }
+        $savedAt = (new DateTime('now', new DateTimeZone($timeZone)))->format('Y-m-d H:i:s');
+        foreach ($documents as $document) {
+            $fieldInfo = $document['fieldInfo'];
+            Documents_FieldFile::renameDocumentFile($document['notesId'], Documents_FieldFile::buildHandwritingFileName(
+                (string) vtranslate($fieldInfo['fieldlabel'], $moduleName),
+                $recordId,
+                $fieldInfo['fieldid'],
+                $savedAt
+            ));
         }
     }
 

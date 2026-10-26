@@ -232,6 +232,39 @@ class Documents_FieldFile
     }
 
     /**
+     * 手書きの画像のファイル名（項目名_レコードID_項目ID_年月日-時分秒.png）
+     *
+     * どのレコードのどの項目に書いたものか、ファイル名だけで分かるようにする。
+     *
+     * @param string $dateTime 保存日時（Y-m-d H:i:s。実行ユーザーのタイムゾーン）
+     */
+    public static function buildHandwritingFileName(string $label, int $recordId, int $fieldId, string $dateTime): string
+    {
+        // ファイル名に使えない文字と空白は _ にする
+        $base = (string) preg_replace('#[\\\\/:*?"<>|\s]+#u', '_', $label);
+        $stamp = date('Ymd-His', (int) strtotime($dateTime));
+        return ($base !== '' ? $base : 'handwriting') . '_' . $recordId . '_' . $fieldId . '_' . $stamp . '.png';
+    }
+
+    /**
+     * ドキュメントのファイル名を変える（タイトル・ダウンロードするときの名前も合わせる）
+     *
+     * 版は増やさない（中身は変えずに名前だけ変えるため）。
+     */
+    public static function renameDocumentFile(int $notesId, string $fileName): void
+    {
+        $title = pathinfo($fileName, PATHINFO_FILENAME);
+        $db = PearDatabase::getInstance();
+        $db->pquery('UPDATE vtiger_notes SET title = ?, filename = ? WHERE notesid = ?', [$title, $fileName, $notesId]);
+        $db->pquery('UPDATE vtiger_crmentity SET label = ? WHERE crmid = ?', [$title, $notesId]);
+        $db->pquery(
+            'UPDATE vtiger_attachments SET name = ?
+              WHERE attachmentsid IN (SELECT attachmentsid FROM vtiger_seattachmentsrel WHERE crmid = ?)',
+            [$fileName, $notesId]
+        );
+    }
+
+    /**
      * ファイル 1 件を添えてドキュメントを保存する
      *
      * ドキュメントの保存は $_FILES['filename'] からファイルを拾い、

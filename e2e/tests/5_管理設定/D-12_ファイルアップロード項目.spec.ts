@@ -183,7 +183,10 @@ test.describe.serial("管理: ファイルアップロード項目", () => {
     await expect(fileDetail.locator('[data-testid="file-field-filename"]')).toContainText(imageName);
     const signDetail = detailValue(page, signFieldName);
     await expect(signDetail.locator('[data-testid="file-field-thumbnail"]')).toBeVisible({ timeout: 20000 });
-    await expect(signDetail.locator('[data-testid="file-field-filename"]')).toContainText(`${signLabel}_`);
+    // 手書きのファイル名は「項目名_レコードID_項目ID_保存日時.png」
+    await expect(signDetail.locator('[data-testid="file-field-filename"]')).toHaveText(
+      new RegExp(`^${signLabel}_${record!.recordId}_[0-9]+_[0-9]{8}-[0-9]{6}\\.png$`),
+    );
   });
 
   test("手書きを書き直して保存すると、同じドキュメントのまま版が増える", async ({ page }) => {
