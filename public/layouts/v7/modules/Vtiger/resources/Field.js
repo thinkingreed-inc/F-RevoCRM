@@ -683,3 +683,95 @@ Vtiger_Field_Js('Vtiger_Integer_Field_Js',{},{
 		return this.addValidationToElement(html);
 	}
 });
+
+/**
+ * ファイルアップロード項目（uitype 998 / データ型 fileupload）
+ *
+ * 入力欄は Web コンポーネント <fr-field-fileupload> で出す（詳細画面のインライン編集で使う）。
+ * 送信する値（ドキュメントID）は hidden 入力に入れ、Web コンポーネントがそれを書き換える。
+ */
+Vtiger_Field_Js('Vtiger_Fileupload_Field_Js',{
+
+	TAG_NAME : 'fr-field-fileupload',
+
+	/**
+	 * 詳細画面のインライン編集で保存した後、表示を Web コンポーネントで出し直す
+	 * （保存後の表示は標準ではファイル名の文字に置き換わり、サムネイルが消えるため）
+	 */
+	registerPostAjaxSaveEvent : function() {
+		if (typeof Vtiger_Detail_Js == 'undefined' || typeof app.event == 'undefined') {
+			return;
+		}
+		app.event.on(Vtiger_Detail_Js.PostAjaxSaveEvent, function(e, fieldBasicData, postSaveRecordDetails) {
+			if (!fieldBasicData || !fieldBasicData.length || fieldBasicData.data('type') != 'fileupload') {
+				return;
+			}
+			var fieldName = fieldBasicData.data('name');
+			var saved = postSaveRecordDetails ? postSaveRecordDetails[fieldName] : null;
+			var valueElement = fieldBasicData.closest('.fieldValue, td').find('.value').first();
+			if (!saved || !valueElement.length) {
+				return;
+			}
+			var props = {
+				mode : 'detail',
+				module : app.getModuleName(),
+				fieldName : fieldName,
+				fieldLabel : '',
+				recordId : Number(app.getRecordId()) || 0,
+				mandatory : false,
+				readonly : false,
+				file : null,
+				value : String(saved.value || '')
+			};
+			valueElement.empty().append(jQuery(document.createElement(Vtiger_Fileupload_Field_Js.TAG_NAME)).attr('props', JSON.stringify(props)));
+		});
+	}
+},{
+
+	/**
+	 * 保存されている値（ドキュメントID）
+	 * インライン編集では value に表示用のファイル名が入るため、詳細画面の元の値を使う
+	 */
+	getRawValue : function() {
+		var fieldName = this.getName();
+		var basicData = jQuery('.fieldBasicData').filter(function(index, element) {
+			return jQuery(element).data('name') == fieldName;
+		}).first();
+		if (basicData.length) {
+			return String(basicData.attr('data-value') || '');
+		}
+		var value = String(this.getValue() || '');
+		return /^[0-9]+$/.test(value) ? value : '';
+	},
+
+	getUi : function() {
+		var fieldName = this.getName();
+		var value = this.getRawValue();
+		var input = jQuery('<input type="hidden" />').attr('name', fieldName).val(value);
+		// 項目の設定画面（既定値の入力欄）ではファイルを扱わない
+		if (app.getParentModuleName() == 'Settings') {
+			return input;
+		}
+		var inputId = 'fr_wc_inline_' + fieldName;
+		input.attr('id', inputId);
+		var props = {
+			mode : 'edit',
+			module : this.getModuleName(),
+			fieldName : fieldName,
+			fieldLabel : this.get('label'),
+			recordId : Number(app.getRecordId()) || 0,
+			mandatory : !!this.isMandatory(),
+			readonly : false,
+			inputId : inputId,
+			file : null,
+			value : value
+		};
+		var container = jQuery('<div class="fr-wc-field"></div>');
+		container.append(input).append(jQuery(document.createElement(Vtiger_Fileupload_Field_Js.TAG_NAME)).attr('props', JSON.stringify(props)));
+		return this.addValidationToElement(container);
+	}
+});
+
+jQuery(function() {
+	Vtiger_Fileupload_Field_Js.registerPostAjaxSaveEvent();
+});

@@ -15,6 +15,7 @@ import { PicklistField } from "./PicklistField";
 import { MultiPicklistField } from "./MultiPicklistField";
 import { ProductTaxField } from "./ProductTaxField";
 import { CurrencyListField } from "./CurrencyListField";
+import { FileUploadField } from "./fields/FileUpload";
 import { cn } from "../lib/utils";
 import { useOptionalTranslation } from "../hooks/useTranslation";
 
@@ -810,6 +811,30 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
             className={className}
             labelClassName={labelClassName}
           />
+        );
+
+      // ファイルアップロード - FileUploadField（UIType 998）
+      // ファイルを選ぶとその場でドキュメントとして登録し、ドキュメントIDを値にする
+      case UI_TYPES.FILE_UPLOAD:
+        return (
+          <div className={cn("flex items-start gap-2", className)}>
+            {renderLabel()}
+            <div className="flex-1 min-w-0">
+              <FileUploadField
+                module={module ?? ""}
+                fieldName={field.name}
+                fieldLabel={field.label}
+                mode="edit"
+                file={null}
+                value={
+                  value === null || value === undefined ? "" : String(value)
+                }
+                disabled={disabled || field.readonly}
+                onChange={(documentId) => onChange(field.name, documentId)}
+              />
+              {renderError()}
+            </div>
+          </div>
         );
 
       // 未対応のUIType - 文字列入力として扱う

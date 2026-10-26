@@ -120,3 +120,13 @@ createWebComponent(
   ["record-id", "is-open"],
   ["onSave", "onCancel", "onOpenChange"],
 );
+
+// UIType の Web コンポーネント（uitypes/WebComponentField.tpl から使う）
+// props: UIType クラスの getWebComponentProps() を JSON にしたもの
+//
+// ファイルアップロード項目（uitype 998）
+// 使用例（HTML）:
+// <fr-field-fileupload props='{"mode":"edit","module":"Accounts","fieldName":"cf_1001",...}'></fr-field-fileupload>
+import { createFieldWebComponent } from "@/utils/createFieldWebComponent";
+import { FileUploadFieldElement } from "@/components/fields/FileUpload";
+createFieldWebComponent(FileUploadFieldElement, "fr-field-fileupload");
