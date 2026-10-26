@@ -419,6 +419,9 @@ $languageStrings = array(
 	// File upload fields
 	'LBL_FILE_FIELD_DOCUMENT_DENIED' => 'You do not have permission to view the document set in the file field',
 	'LBL_FILE_FIELD_DRAFT_INVALID' => 'The uploaded file has expired or is not available. Please select the file again',
+	'LBL_FILE_FIELD_VARIABLE_FILENAME' => ' (File name)',
+	'LBL_FILE_FIELD_VARIABLE_IMG' => ' (Image)',
+	'LBL_FILE_FIELD_VARIABLE_SRC' => ' (Image URL)',
 	'LBL_FILE_FIELD_HANDWRITING_PNG_ONLY' => 'Only PNG images can be saved in a handwriting field',
 	'LBL_FILE_FIELD_NOT_FOUND' => 'The file upload field was not found',
 	'LBL_FILE_FIELD_SELECT' => 'Select file',

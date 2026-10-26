@@ -46,6 +46,9 @@ final class FileFieldTest extends DocumentsTestCase
     /** テストでアップロードした一時ファイル（項目の値） */
     private array $drafts = [];
 
+    /** テストで作った PDF テンプレート */
+    private array $pdfTemplates = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -53,6 +56,7 @@ final class FileFieldTest extends DocumentsTestCase
         require_once 'modules/Documents/utils/FieldFileDraft.php';
         require_once 'modules/Documents/utils/FolderPermission.php';
         require_once 'modules/Reports/ReportUtils.php';
+        require_once 'include/InventoryPDFController.php';
         require_once 'modules/Vtiger/apis/FileField.php';
         require_once 'includes/runtime/Viewer.php';
         $this->cleanAccounts();
@@ -80,6 +84,10 @@ final class FileFieldTest extends DocumentsTestCase
             \Documents_FieldFileDraft::delete($draft);
         }
         $this->drafts = [];
+        foreach ($this->pdfTemplates as $templateId) {
+            $this->db->pquery('DELETE FROM vtiger_pdftemplates WHERE templateid = ?', [$templateId]);
+        }
+        $this->pdfTemplates = [];
         parent::tearDown();
     }
 
@@ -481,6 +489,96 @@ final class FileFieldTest extends DocumentsTestCase
         $this->assertSame([], Documents_FieldFile::getFileInfos([$notesId]));
     }
 
+    // ---- PDF テンプレート ---------------------------------------------------
+
+    public function test_PDFテンプレートでファイル名と画像のタグと画像のURLを出せる(): void
+    {
+        $fieldName = self::$fields['handwriting']['fieldname'];
+        $accountId = $this->saveAccount('pdf', [$fieldName => $this->uploadDraft('handwriting', 'pdf.png')['draft']]);
+        $notesId = Documents_FieldFile::getStoredDocumentId($accountId, $this->fieldInfo('handwriting'), 'Accounts');
+        $info = Documents_FieldFile::getFileInfo($notesId);
+
+        $html = $this->renderPdfTemplate(
+            '<p>[$accounts-' . $fieldName . '$]</p><div>$accounts-' . $fieldName . '#img$</div>'
+            . '<img width="120" src="$accounts-' . $fieldName . '#src$">',
+            $accountId
+        );
+
+        $dataUri = 'data:image/png;base64,' . base64_encode((string) file_get_contents($info['path']));
+        $this->assertStringContainsString('[' . $info['filename'] . ']', $html, '変数そのままはファイル名');
+        $this->assertStringContainsString('<div><div><img src="' . $dataUri . '"', $html, '#img は画像のタグ（div で囲む）');
+        $this->assertStringContainsString('<img width="120" src="' . $dataUri . '">', $html, '#src は画像の URL（data:）だけ');
+    }
+
+    public function test_PDFを出力すると手書きの画像が入る(): void
+    {
+        require_once 'modules/Vtiger/helpers/PDF.php';
+        $fieldName = self::$fields['handwriting']['fieldname'];
+        $accountId = $this->saveAccount('pdf-output', [$fieldName => $this->uploadDraft('handwriting', 'out.png')['draft']]);
+        $withImage = $this->createPdfTemplate('<p>$accounts-' . $fieldName . '$</p>$accounts-' . $fieldName . '#img$<p>after</p>');
+        $withoutImage = $this->createPdfTemplate('<p>$accounts-' . $fieldName . '$</p><p>after</p>');
+
+        $pdf = (string) \PDF_helper::createPDF($withImage, $accountId, 'Accounts', true);
+        $plain = (string) \PDF_helper::createPDF($withoutImage, $accountId, 'Accounts', true);
+
+        $this->assertStringStartsWith('%PDF', $pdf);
+        $this->assertGreaterThan(0, substr_count($pdf, '/Subtype /Image'), '画像が埋め込まれる');
+        $this->assertSame(0, substr_count($plain, '/Subtype /Image'));
+        $this->assertStringNotContainsString('__FR_FILE_FIELD_', $pdf, '目印を残さない');
+    }
+
+    public function test_PDFテンプレートの画像の変数は項目が空や画像でなければ何も出さない(): void
+    {
+        $fileField = self::$fields['file']['fieldname'];
+        $handwritingField = self::$fields['handwriting']['fieldname'];
+        $text = $this->tempFile('txt', 'hello');
+        $notesId = Documents_FieldFile::createDocument($this->fileEntry($text, self::PREFIX . 'memo.txt', 'text/plain'), $this->fieldInfo('file'));
+        $accountId = $this->saveAccount('pdf-empty', [$fileField => (string) $notesId]);
+
+        $html = $this->renderPdfTemplate(
+            '[$accounts-' . $fileField . '#img$][$accounts-' . $fileField . '#src$]'
+            . '[$accounts-' . $handwritingField . '#img$][$accounts-' . $handwritingField . '#src$]',
+            $accountId
+        );
+
+        $this->assertSame('[][][][]', $html);
+    }
+
+    public function test_PDFのファイル名の設定が空でも出力できる(): void
+    {
+        // PDF のファイル名（pdffilename）が未設定のテンプレートでは null で展開が呼ばれる
+        $accountId = $this->saveAccount('pdf-null');
+
+        $this->assertSame('', (string) \Vtiger_InventoryPDFController::getMergedDescription(null, $accountId, 'Accounts'));
+        $this->assertSame('', (string) \Vtiger_InventoryPDFController::applyingSpecialSymbol(null));
+    }
+
+    public function test_テンプレートの画面では画像のURLの変数のimgを代わりの画像にする(): void
+    {
+        require_once 'modules/Documents/utils/FieldFileTemplate.php';
+        $html = '<img width="120" src="$accounts-cf_1#src$"><img src=\'$accounts-cf_2#src$\' alt="b">'
+            . '<img src="logo.png"><p>$accounts-cf_3#src$</p>';
+
+        $this->assertSame(
+            '<img width="120" src="' . \Documents_FieldFileTemplate::PREVIEW_IMAGE_URL . '">'
+            . '<img src=\'' . \Documents_FieldFileTemplate::PREVIEW_IMAGE_URL . '\' alt="b">'
+            . '<img src="logo.png"><p>$accounts-cf_3#src$</p>',
+            \Documents_FieldFileTemplate::replaceSrcVariablesForPreview($html)
+        );
+        $this->assertFileExists('public/' . \Documents_FieldFileTemplate::PREVIEW_IMAGE_URL);
+    }
+
+    public function test_PDFテンプレートの変数一覧にファイル名と画像と画像のURLを出す(): void
+    {
+        $fieldName = self::$fields['handwriting']['fieldname'];
+        $options = \PDFTemplates_Module_Model::getInstance('PDFTemplates')->getAllModulePDFTemplateFields()['Accounts'];
+        $values = array_column($options, 1);
+
+        foreach (['', '#img', '#src'] as $suffix) {
+            $this->assertContains('$accounts-' . $fieldName . $suffix . '$', $values);
+        }
+    }
+
     // ---- API ----------------------------------------------------------------
 
     public function test_設定APIは手書き入力の指定と上限を返す(): void
@@ -716,6 +814,31 @@ final class FileFieldTest extends DocumentsTestCase
             $fileName
         );
         return $fileName;
+    }
+
+    /**
+     * PDF テンプレートの変数を PDF の出力と同じ順で展開する（modules/Vtiger/helpers/PDF.php）
+     */
+    private function renderPdfTemplate(string $template, int $recordId): string
+    {
+        $template = \Vtiger_InventoryPDFController::getMergedDescription($template, $recordId, 'Accounts');
+        $template = \Vtiger_InventoryPDFController::applyingAggrFunctions($template, $recordId, 'Accounts');
+        $template = \Vtiger_InventoryPDFController::applyingFunctions($template, $recordId, 'Accounts');
+        return \Vtiger_InventoryPDFController::applyingSpecialSymbol($template);
+    }
+
+    /**
+     * PDF テンプレートを作る（クラスの最後ではなくテストごとに消す）
+     */
+    private function createPdfTemplate(string $body): int
+    {
+        $templateId = $this->db->getUniqueID('vtiger_pdftemplates');
+        $this->db->pquery(
+            'INSERT INTO vtiger_pdftemplates (templateid, templatename, module, body, deleted, systemtemplate) VALUES (?, ?, ?, ?, 0, 0)',
+            [$templateId, self::PREFIX . 'pdf' . $templateId, 'Accounts', $body]
+        );
+        $this->pdfTemplates[] = $templateId;
+        return $templateId;
     }
 
     private function countVersions(int $notesId): int

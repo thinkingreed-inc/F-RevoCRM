@@ -467,6 +467,9 @@ $languageStrings = array(
 	// ファイルアップロード項目
 	'LBL_FILE_FIELD_DOCUMENT_DENIED' => 'ファイル項目に指定されたドキュメントを参照する権限がありません',
 	'LBL_FILE_FIELD_DRAFT_INVALID' => 'アップロードしたファイルの期限が切れたか、使用できません。ファイルを選び直してください',
+	'LBL_FILE_FIELD_VARIABLE_FILENAME' => '（ファイル名）',
+	'LBL_FILE_FIELD_VARIABLE_IMG' => '（画像）',
+	'LBL_FILE_FIELD_VARIABLE_SRC' => '（画像のURL）',
 	'LBL_FILE_FIELD_HANDWRITING_PNG_ONLY' => '手書き入力の項目には PNG 画像だけを登録できます',
 	'LBL_FILE_FIELD_NOT_FOUND' => 'ファイルアップロード項目が見つかりません',
 	'LBL_FILE_FIELD_SELECT' => 'ファイルを選択',

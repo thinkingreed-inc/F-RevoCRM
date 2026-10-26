@@ -38,11 +38,13 @@ test.describe.serial("管理: ファイルアップロード項目", () => {
   const imageTitle = `e2eimg${token}`;
   const imageName = `${imageTitle}.png`;
   const filterName = `e2ecv${token}`;
+  const pdfTemplateName = `e2epdf${token}`;
   const imageBuffer = fs.readFileSync(path.join(__dirname, "../../fixtures/upload/sample.png"));
 
   let fileFieldName = "";
   let signFieldName = "";
   let record: CreatedRecord | null = null;
+  let pdfTemplateId: string | null = null;
   let filterId = "";
 
   /** レイアウト一覧上の項目行（項目ラベルで特定） */
@@ -228,6 +230,53 @@ test.describe.serial("管理: ファイルアップロード項目", () => {
     expect(String(rows[0].fileversion)).toBe("2");
   });
 
+  test("PDF テンプレートの変数でファイル名と手書きの画像を出せる", async ({ page }) => {
+    await page.goto(`${BASE_URL}index.php?module=PDFTemplates&view=List&app=TOOLS`);
+    const variable = `$${MODULE.toLowerCase()}-${signFieldName}`;
+
+    // テンプレートを保存（保存後は詳細画面へリダイレクトするので、その URL から ID を取る）
+    // 画像は #src の img だけにする（保存し直した後も変数が残っていることを、PDF の画像で確かめるため）
+    const body = `<p>${variable}$</p><p><img width="120" src="${variable}#src$"></p>`;
+    const savedUrl = await page.evaluate(
+      async ({ name, content, module }) => {
+        const form = new FormData();
+        form.append("module", "PDFTemplates");
+        form.append("action", "Save");
+        form.append("templatename", name);
+        form.append("modulename", module);
+        form.append("templatecontent", content);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const w = window as any;
+        form.append(w.csrfMagicName, w.csrfMagicToken);
+        const response = await fetch("index.php", { method: "POST", body: form, credentials: "same-origin" });
+        return response.url;
+      },
+      { name: pdfTemplateName, content: body, module: MODULE },
+    );
+    pdfTemplateId = savedUrl.match(/record=(\d+)/)?.[1] ?? null;
+    expect(pdfTemplateId, "テンプレートを保存できること").toBeTruthy();
+
+    // 編集画面: 画像の URL の変数を src に持つ img は、表示できないため代わりの画像で出す
+    await page.goto(`${BASE_URL}index.php?module=PDFTemplates&view=Edit&record=${pdfTemplateId}&app=TOOLS`);
+    const editorImage = page.locator(`img[data-fr-src-variable="${variable}#src$"]`);
+    await expect(editorImage).toHaveAttribute("src", /fileFieldImagePlaceholder\.svg$/, { timeout: 20000 });
+    await expect.poll(() => editorImage.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+    // 何も変えずに保存しても、変数は元に戻して保存する（下の PDF に画像が入ることで確かめる）
+    await Promise.all([page.waitForURL(/view=Detail/, { timeout: 30000 }), page.locator("button.saveButton").first().click()]);
+
+    // 詳細画面のプレビューも代わりの画像で出す
+    const previewImage = page.frameLocator("#TemplateIFrame").locator('img[src$="fileFieldImagePlaceholder.svg"]');
+    await expect(previewImage).toHaveCount(1, { timeout: 20000 });
+
+    const response = await page.request.get(
+      `${BASE_URL}index.php?module=${MODULE}&action=ExportPDF&record=${record!.recordId}&template=${pdfTemplateId}`,
+    );
+    const pdf = await response.body();
+    expect(pdf.subarray(0, 5).toString("latin1")).toBe("%PDF-");
+    // 手書きの画像が埋め込まれる（変数一覧と展開の中身は結合テストで確かめる）
+    expect(pdf.toString("latin1")).toContain("/Subtype /Image");
+  });
+
   test("一覧にはファイルの印とファイル名が出る", async ({ page }) => {
     await page.goto(`${BASE_URL}index.php?module=${MODULE}&view=List`);
     await page.waitForLoadState("networkidle").catch(() => {});
@@ -342,6 +391,11 @@ test.describe.serial("管理: ファイルアップロード項目", () => {
         for (const row of rows) {
           await frDelete(session, row.id).catch(() => false);
         }
+      }
+      // PDF テンプレート
+      if (pdfTemplateId) {
+        await page.goto(`${BASE_URL}index.php?module=PDFTemplates&view=List&app=TOOLS`);
+        await postViaApp(page, { module: "PDFTemplates", action: "DeleteAjax", record: pdfTemplateId }).catch(() => {});
       }
       // リスト
       if (filterId) {
