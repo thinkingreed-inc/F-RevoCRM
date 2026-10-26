@@ -146,20 +146,27 @@ describe("FileUploadField", () => {
         return jsonResponse({ file: imageFile, thumbnail });
       });
 
+      // 詳細画面の項目の値の中に置く（vtiger の .fieldValue .value a などの指定を受ける場所）
       render(
-        <FileUploadField
-          module="Accounts"
-          fieldName="cf_1"
-          mode="detail"
-          recordId={12}
-          file={{ ...imageFile, viewable: true }}
-        />,
+        <div className="fieldValue">
+          <span className="value">
+            <FileUploadField
+              module="Accounts"
+              fieldName="cf_1"
+              mode="detail"
+              recordId={12}
+              file={{ ...imageFile, viewable: true }}
+            />
+          </span>
+        </div>,
       );
       fireEvent.click(await screen.findByTestId("file-field-thumbnail"));
 
-      expect(
-        await screen.findByTestId("document-detail-edit"),
-      ).toBeInTheDocument();
+      const edit = await screen.findByTestId("document-detail-edit");
+      expect(edit).toBeInTheDocument();
+      // 項目の値の外（body 直下）に出し、項目の値向けのスタイルを受けないようにする
+      expect(edit.closest(".fieldValue")).toBeNull();
+      expect(edit.closest(".web-components-wrapper")).not.toBeNull();
       const detailCall = mockFetch.mock.calls
         .map(([input]) => new URL(String(input), "http://localhost/"))
         .find((url) => url.searchParams.get("api") === "DetailAPI");

@@ -1,10 +1,31 @@
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { DocumentDetailModal } from "@/components/Documents/DocumentDetailModal";
 import { DocumentCreateEditModal } from "@/components/Documents/DocumentCreateEditModal";
 import { useDocumentDetail } from "@/components/Documents/hooks/useDocumentDetail";
 import { useFolderTree } from "@/components/Documents/hooks/useFolderTree";
 import type { DocumentDetail } from "@/components/Documents/types/documents";
+
+/**
+ * body 直下に出す（ui/dialog と同じく web-components-wrapper を付けた入れ物に入れる）
+ *
+ * 項目の値の中に出すと、vtiger の詳細画面の指定（.fieldValue .value a { color: ... !important } など）を
+ * モーダルの中身まで受けてしまうため。
+ */
+const BodyPortal: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [container, setContainer] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    const element = document.createElement("div");
+    element.className = "web-components-wrapper";
+    document.body.appendChild(element);
+    setContainer(element);
+    return () => {
+      element.remove();
+    };
+  }, []);
+  return container ? createPortal(children, container) : null;
+};
 
 interface FileFieldDocumentDialogProps {
   /** 項目に入っているドキュメントのID */
@@ -27,7 +48,7 @@ export const FileFieldDocumentDialog: React.FC<
   const [editTarget, setEditTarget] = useState<DocumentDetail | null>(null);
 
   return (
-    <>
+    <BodyPortal>
       <DocumentDetailModal
         isOpen={editTarget === null}
         document={document}
@@ -47,7 +68,7 @@ export const FileFieldDocumentDialog: React.FC<
           onClose={() => setEditTarget(null)}
         />
       )}
-    </>
+    </BodyPortal>
   );
 };
 
