@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { waitFor } from "@testing-library/react";
+import { act, waitFor } from "@testing-library/react";
 import {
   createFieldWebComponent,
   parseFieldProps,
@@ -58,6 +58,15 @@ describe("updateFieldInput", () => {
 });
 
 describe("createFieldWebComponent", () => {
+  // カスタム要素を外して React の後片付け（unmount）をテスト中に終わらせる。
+  // 残すと、テスト環境（jsdom）を片付けた後に React の処理が走り
+  // "window is not defined" の未処理エラーになることがある（CI で発生した）
+  afterEach(async () => {
+    await act(async () => {
+      document.body.innerHTML = "";
+    });
+  });
+
   it("props 属性を渡し、setValue で hidden 入力を書き換える", async () => {
     const Probe = ({
       props,
