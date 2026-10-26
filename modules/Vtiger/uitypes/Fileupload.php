@@ -88,7 +88,10 @@ class Vtiger_Fileupload_UIType extends Vtiger_Base_UIType
         if ($notesId <= 0) {
             return null;
         }
-        return Documents_FieldFile::toClientInfo(Documents_FieldFile::getFileInfo($notesId));
+        return Documents_FieldFile::toClientInfo(
+            Documents_FieldFile::getFileInfo($notesId),
+            Documents_FieldFile::canAttachDocument($notesId)
+        );
     }
 
     /**

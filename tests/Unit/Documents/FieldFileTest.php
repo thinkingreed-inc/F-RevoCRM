@@ -130,10 +130,11 @@ final class FieldFileTest extends TestCase
             'download_url' => 'index.php?module=Documents&action=DownloadFile&record=5&fileid=6',
             'attachment_id' => 6,
             'path' => 'storage/2026/October/week4/6_abc.png',
-        ]);
+        ], false);
 
-        $this->assertSame(['id', 'filename', 'filetype', 'filesize', 'is_image', 'download_url'], array_keys($info));
-        $this->assertNull(Documents_FieldFile::toClientInfo(null));
+        $this->assertSame(['id', 'filename', 'filetype', 'filesize', 'is_image', 'download_url', 'viewable'], array_keys($info));
+        $this->assertFalse($info['viewable']);
+        $this->assertNull(Documents_FieldFile::toClientInfo(null, true));
     }
 
     private function writeTemp(string $extension, string $content): string

@@ -506,14 +506,15 @@ class Documents_FieldFile
     /**
      * 画面に渡すファイル情報（サーバー上のパスなどを除く）
      *
-     * viewable は実行ユーザーがドキュメント自体を参照できるか。画面はこれを見て、
-     * 参照できればドキュメントの詳細を、できなければ画像の拡大表示だけを出す
+     * viewable は実行ユーザーがドキュメント自体を参照できるか（canAttachDocument() の結果を渡す）。
+     * 画面はこれを見て、参照できればドキュメントの詳細を、できなければ画像の拡大表示だけを出す
      * （項目のファイルはレコードを参照できれば見られるが、ドキュメント側の権限は別のため）。
+     * ここでは DB を見ない（DB を使わないテストからも呼べるように）。
      *
      * @param FileInfo|null $info getFileInfo() の戻り値
      * @return ClientFileInfo|null
      */
-    public static function toClientInfo(?array $info): ?array
+    public static function toClientInfo(?array $info, bool $viewable): ?array
     {
         if (empty($info)) {
             return null;
@@ -525,7 +526,7 @@ class Documents_FieldFile
             'filesize' => $info['filesize'],
             'is_image' => $info['is_image'],
             'download_url' => $info['download_url'],
-            'viewable' => self::canAttachDocument($info['id']),
+            'viewable' => $viewable,
         ];
     }
 

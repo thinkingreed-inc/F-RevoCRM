@@ -174,7 +174,7 @@ class Vtiger_FileField_Api extends Vtiger_Api_Controller
         }
         $maxSize = $request->get('size') === 'large' ? Documents_FieldFile::PREVIEW_MAX_SIZE : Documents_FieldFile::THUMBNAIL_MAX_SIZE;
         return [
-            'file' => Documents_FieldFile::toClientInfo($info),
+            'file' => Documents_FieldFile::toClientInfo($info, Documents_FieldFile::canAttachDocument($notesId)),
             'thumbnail' => $info['is_image'] ? Documents_FieldFile::buildThumbnail($info['path'], $maxSize) : null,
         ];
     }
