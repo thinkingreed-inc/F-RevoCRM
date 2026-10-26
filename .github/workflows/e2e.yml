@@ -14,7 +14,8 @@ concurrency:
 
 jobs:
   e2e:
-    runs-on: ubuntu-latest
+    # ubuntu-latest(=26.04) は Playwright 1.60 が chromium 非対応のため固定 (#1929)
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
       contents: read
