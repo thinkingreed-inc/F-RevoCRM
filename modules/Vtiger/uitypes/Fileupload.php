@@ -29,6 +29,14 @@ class Vtiger_Fileupload_UIType extends Vtiger_Base_UIType
     }
 
     /**
+     * 一覧の列検索は出さない（値はドキュメントIDのため、文字で検索できない）
+     */
+    public function getListSearchTemplateName(): string
+    {
+        return 'uitypes/FileuploadFieldSearchView.tpl';
+    }
+
+    /**
      * Web コンポーネントのタグ名
      */
     public function getWebComponentTagName(): string

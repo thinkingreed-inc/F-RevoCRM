@@ -8,9 +8,13 @@ use Documents_FieldFile;
 use Settings_LayoutEditor_Field_Model;
 use Settings_LayoutEditor_Module_Model;
 use Tests\Support\DocumentsTestCase;
+use Users_Record_Model;
 use Vtiger_Field_Model;
 use Vtiger_FileField_Api;
+use Vtiger_Module_Model;
 use Vtiger_Record_Model;
+use Vtiger_RecordStructure_Model;
+use Vtiger_Viewer;
 
 require_once dirname(__DIR__, 3) . '/tests/Support/DocumentsTestCase.php';
 
@@ -21,6 +25,7 @@ require_once dirname(__DIR__, 3) . '/tests/Support/DocumentsTestCase.php';
  *   - ファイルをドキュメントとして登録する（手書き項目は PNG だけ）
  *   - レコードの保存でドキュメントを関連付け、参照できないドキュメントは入れさせない
  *   - 表示（詳細・レポート）はファイル名を出す
+ *   - 一覧の列検索・フィルターの条件には出さない（値はドキュメントIDのため検索できない）
  *   - サムネイル API は、ドキュメントかレコードのどちらかを参照できれば返す
  *
  * テスト用の項目は顧客企業に作り、クラスの最後に削除する。
@@ -43,6 +48,7 @@ final class FileFieldTest extends DocumentsTestCase
         require_once 'modules/Documents/utils/FolderPermission.php';
         require_once 'modules/Reports/ReportUtils.php';
         require_once 'modules/Vtiger/apis/FileField.php';
+        require_once 'includes/runtime/Viewer.php';
         $this->cleanAccounts();
         $this->cleanAttachments();
         if (empty(self::$fields)) {
@@ -279,6 +285,43 @@ final class FileFieldTest extends DocumentsTestCase
         $this->assertArrayNotHasKey('path', $props['file'], 'サーバー上のパスは画面に渡さない');
     }
 
+    public function test_一覧の列検索にはファイルアップロード項目の入力欄を出さない(): void
+    {
+        $fieldModel = Vtiger_Field_Model::getInstance(self::$fields['file']['fieldid']);
+        $template = $fieldModel->getUITypeModel()->getListSearchTemplateName();
+
+        $html = $this->renderTemplate($template, [
+            'FIELD_MODEL' => $fieldModel,
+            'SEARCH_INFO' => [],
+            'USER_MODEL' => Users_Record_Model::getCurrentUserModel(),
+        ]);
+
+        $this->assertStringNotContainsString('listSearchContributor', $html, '値はドキュメントIDのため検索できない');
+        $this->assertStringNotContainsString('<input', $html);
+    }
+
+    public function test_フィルターの条件にはファイルアップロード項目を出さない(): void
+    {
+        $recordStructure = Vtiger_RecordStructure_Model::getInstanceForModule(
+            Vtiger_Module_Model::getInstance('Accounts'),
+            Vtiger_RecordStructure_Model::RECORD_STRUCTURE_MODE_FILTER
+        )->getStructure();
+
+        $html = $this->renderTemplate('AdvanceFilterCondition.tpl', [
+            'RECORD_STRUCTURE' => $recordStructure,
+            'CONDITION_INFO' => [],
+            'MODULE' => 'Accounts',
+            'SOURCE_MODULE' => 'Accounts',
+            'ADVANCED_FILTER_OPTIONS' => [],
+            'ADVANCED_FILTER_OPTIONS_BY_TYPE' => [],
+            'DATE_FILTERS' => [],
+        ]);
+
+        $this->assertStringContainsString('data-field-name="accountname"', $html, '他の項目は出す');
+        $this->assertStringNotContainsString('data-field-name="' . self::$fields['file']['fieldname'] . '"', $html);
+        $this->assertStringNotContainsString('data-field-name="' . self::$fields['handwriting']['fieldname'] . '"', $html);
+    }
+
     public function test_削除したドキュメントは表示しない(): void
     {
         $notesId = $this->createImageDocument('deleted');
@@ -467,6 +510,20 @@ final class FileFieldTest extends DocumentsTestCase
         $method = new \ReflectionMethod($api, 'processApi');
         $response = $method->invoke($api, $request);
         return $this->responseResult($response);
+    }
+
+    /**
+     * 画面のテンプレート（layouts/v7/modules/Vtiger）を描画した HTML を返す
+     *
+     * @param array<string, mixed> $values
+     */
+    private function renderTemplate(string $template, array $values): string
+    {
+        $viewer = new Vtiger_Viewer();
+        foreach ($values as $name => $value) {
+            $viewer->assign($name, $value);
+        }
+        return (string) $viewer->view($template, 'Accounts', true);
     }
 
     private function tempFile(string $extension, string $content): string
