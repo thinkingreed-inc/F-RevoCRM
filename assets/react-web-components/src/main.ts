@@ -121,6 +121,24 @@ createWebComponent(
   ["onSave", "onCancel", "onOpenChange"],
 );
 
+// リード昇格画面（Leads 詳細画面の「昇格」から開く）
+// record-id: 昇格するリードのレコードID
+// is-open: ダイアログの開閉状態
+// イベント: converted（detail: { redirectUrl, entityIds }。発火後に redirectUrl へ遷移する）, cancel, open-change
+import { LeadConvert } from "@/components/LeadConvert";
+
+createWebComponent(
+  LeadConvert,
+  "lead-convert",
+  ["record-id", "is-open"],
+  ["onConverted", "onCancel", "onOpenChange"],
+);
+
+// リードマッピング設定画面（設定 > リードマッピング。システム管理者のみ）
+import { LeadMappingSettings } from "@/components/LeadMapping";
+
+createWebComponent(LeadMappingSettings, "lead-mapping-settings", [], []);
+
 // UIType の Web コンポーネント（uitypes/WebComponentField.tpl から使う）
 // props: UIType クラスの getWebComponentProps() を JSON にしたもの
 //

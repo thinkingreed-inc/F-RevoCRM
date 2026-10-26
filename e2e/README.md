@@ -64,6 +64,53 @@ npm run test:e2e -- -g "Accounts"
 初回に `setup`（ログイン認証＋参照先モジュールのシード）が走り、認証状態を
 `e2e/.auth/` に保存してから各テストを実行します。
 
+### 新規インストールから実行する
+
+通常の実行と CI は「完了済みインストール状態の dump」から始めるため、インストーラ・setup スクリプト・
+マイグレーションを空の DB から順に実行したときの不具合は検出できません
+（例: #1908 ではインストール途中のマイグレーションが `Unknown column` で止まっていました）。
+インストール処理やマイグレーションを変更したときは、新規インストールから実行してください。
+
+```bash
+cd e2e
+
+# 新規インストール → E2E 全件
+npm run test:e2e:fresh
+
+# 新規インストール → 対象を絞って E2E（引数は playwright test へそのまま渡す）
+npm run test:e2e:fresh -- tests/0_準備 tests/1_スモーク
+
+# 新規インストールと検証だけ（E2E は実行しない）
+SKIP_E2E=1 npm run test:e2e:fresh
+```
+
+`e2e/scripts/fresh-install-local.sh` が以下を行います。開発用のサイト（リポジトリの
+`config.inc.php` と DB）には触れません。
+
+1. 作業ツリー（未コミットの変更を含む）を別ディレクトリへ複製する。
+   インストーラは `config.inc.php` を書き出すため、複製先でインストールする。
+   インストーラはアンケートを外部の CRM へ送信するため、複製先でだけ送信を無効にする
+2. E2E 用の DB を空で作り直す
+3. インストール画面と同じリクエスト（Step4 → Step7）を curl で送り、インストールする
+4. インストールが完走したことを検証する
+   - Step7 がエラーなく最後まで実行された
+   - `run_migration.php --all` で未実行のマイグレーションが 0 件
+   - 主要なシステム変数（`vtiger_parameters`）が登録されている
+5. 認証情報を dump と同じ固定値に揃え、拡充シード投入・キャッシュ再生成を行う
+6. 複製先の URL に向けて Playwright を実行する
+
+| 変数 | 既定値 | 説明 |
+|---|---|---|
+| `FRESH_DIR` | リポジトリの隣の `<リポジトリ名>_fresh` | 複製先。毎回作り直す。空のディレクトリか、このスクリプトで作ったディレクトリ（目印 `.fresh-install-target` あり）だけ指定できる |
+| `FRESH_URL` | `http://localhost/<FRESH_DIR の名前>/` | 複製先の URL |
+| `FRESH_DB` | `<config.inc.php の db_name>_fresh` | インストール先の DB。毎回作り直す。英数字と `_` からなり、末尾が `_fresh` の名前だけ指定できる |
+| `FORCE` | なし | `1` で確認プロンプトを省略 |
+| `SKIP_E2E` | なし | `1` でインストールと検証だけ行う |
+
+DB は `config.inc.php` の接続ユーザーで作り直すため、DB を作成・削除する権限が必要です。
+複製先は Apache から `FRESH_URL` で参照できる場所に置いてください。
+失敗したときは `<FRESH_DIR>/logs/fresh-install-step7.html` にインストーラの応答が残ります。
+
 ## CI (GitHub Actions)
 
 PR（対象 `main`）と手動実行（`workflow_dispatch`）で `.github/workflows/e2e.yml` が動きます。

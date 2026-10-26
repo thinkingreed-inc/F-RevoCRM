@@ -628,8 +628,8 @@ class ReportRun extends CRMEntity {
 		} elseif (stristr($selectedfields[0], "vtiger_users") && ($selectedfields[1] == 'user_name')) {
 			$temp_module_from_tablename = str_replace("vtiger_users", "", $selectedfields[0]);
 			if ($module != $this->primarymodule) {
-				$condition = "and vtiger_crmentity" . $module . ".crmid!=''";
-				$this->queryPlanner->addTable("vtiger_crmentity$module");
+				// 関連モジュールでは vtiger_crmentity を参照しない。レコードが無ければユーザーも結合されず last_name が NULL になるため、追加の条件は不要
+				$condition = "";
 			} else {
 				$condition = "and vtiger_crmentity.crmid!=''";
 			}
@@ -1055,6 +1055,15 @@ class ReportRun extends CRMEntity {
 					$emailTableName = '';
 					if ($moduleName == "Emails" && $moduleName != $this->primarymodule && $selectedFields[0] == "vtiger_activity") {
 						$emailTableName = "vtiger_activityEmails";
+					}
+
+					// 関連モジュールの項目で絞り込む場合は、そのモジュールの基本テーブルも結合対象にする
+					// (cfテーブル等の項目のみの場合、generateReportsSecQuery が関連モジュールを結合しないため)
+					if ($fieldcolname != "" && $moduleName != $this->primarymodule && in_array($moduleName, explode(':', $this->secondarymodule))) {
+						$secondaryModuleModel = Vtiger_Module_Model::getInstance($moduleName);
+						if ($secondaryModuleModel) {
+							$this->queryPlanner->addTable($secondaryModuleModel->get('basetable'));
+						}
 					}
 
 					if ($fieldcolname != "" && $comparator != "") {

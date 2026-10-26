@@ -7,12 +7,13 @@ import { generateRandomString } from "../../utils/util";
 /**
  * リードの固有アクション(詳細画面) — 機能一覧 16-2 / 16-3
  *
- * 詳細の「メールを送る」「SMSを送る」が各モーダルを、「リードを昇格」が昇格
- * (ConvertLead)モーダルを起動すること、および「予定の登録」「TODOの登録」が
+ * 詳細の「メールを送る」「SMSを送る」が各モーダルを、「リードを昇格」が昇格画面
+ * (Web コンポーネント <lead-convert>)を起動すること、および「予定の登録」「TODOの登録」が
  * カレンダーの編集画面へ遷移することを検証する。
  *
- * 1本目は各アクションの「起動」確認(昇格はフォーム #convertLeadForm の表示まで)。
- * 2本目で昇格の「保存(SaveConvertLead)」まで検証する(下の test を参照)。
+ * 1本目は各アクションの「起動」確認(昇格は昇格画面の各セクションの表示まで)。
+ * 2本目で昇格の実行(ConvertLeadSave API)まで検証する(下の test を参照)。
+ * 判定条件・既存レコードへの紐づけ・検証エラー等の詳細は 4-12_リード昇格.spec.ts(ローカル用)。
  * 対象レコードは API で用意して並行安全にする。
  */
 test.describe("リードの固有アクション", () => {
@@ -31,12 +32,14 @@ test.describe("リードの固有アクション", () => {
         .click();
       await expect(visibleModal(page, "メールの作成")).toBeVisible();
 
-      // リード昇格モーダル(DETAILVIEWBASIC。AJAX でフォームを読み込みモーダル表示)
+      // リード昇格画面(DETAILVIEWBASIC。<lead-convert> がダイアログで開き、API で情報を読み込む)
       await gotoDetail(page, "Leads", recordId);
       await page
         .locator("#Leads_detailView_basicAction_LBL_CONVERT_LEAD")
         .click();
-      await expect(page.locator("#convertLeadForm")).toBeVisible();
+      await expect(
+        page.getByTestId("lead-convert-section-Contacts")
+      ).toBeVisible();
 
       // SMS送信モーダル(「その他」メニュー内)
       await gotoDetail(page, "Leads", recordId);
@@ -65,20 +68,15 @@ test.describe("リードの固有アクション", () => {
   });
 
   /**
-   * リード昇格の保存（ConvertLead → SaveConvertLead）— 機能一覧 16-2
+   * リード昇格の実行（<lead-convert> → ConvertLeadSave API）— 機能一覧 16-2
    *
-   * 昇格が成立する条件（実機調査で確定）:
-   *  - リードに company があると Accounts、lastname があると Contacts の作成チェックが
-   *    既定でオンになり、各モジュールの必須項目はリードの値から自動で埋まる。
-   *  - 担当（assigned_user_id）はリストの担当者が既定で入る。
-   *  → 上記が揃った fresh リードなら、昇格フォームは追加入力なしで保存でき、
-   *    作成された顧客企業の詳細へ遷移する（SaveConvertLead.php の header Location）。
-   *
-   * 過去に未成立だった主因: company 未設定で Accounts 未チェックのまま保存し、
-   * jQuery Validation（vtValidate）が必須項目未入力で native submit を止めていた／
-   * submitHandler バインド前にクリックし modules 空で SaveConvertLead に届いていた。
-   * ここでは company+lastname を持つリードを用意し、モーダル描画（=submit登録）を待って
-   * から保存することで昇格を成立させる。
+   * 昇格が成立する条件:
+   *  - リードに company があると顧客企業、lastname があると顧客担当者が既定で「新しく作成する」に
+   *    なり、各モジュールの必須項目はリードの値（マッピング）から埋まる。
+   *  - 担当（assigned_user_id）はリードの担当が既定で入る。
+   *  → company+lastname を持つ fresh リードなら追加入力なしで昇格でき、作成された
+   *    顧客企業の詳細へ遷移する（ConvertLeadSave の redirectUrl）。
+   *  - 会社名は毎回ランダムにして、昇格済み判定（既定は会社名一致）に当たらないようにする。
    *
    * 注意: 一度昇格したリードは `isLeadConverted()` で昇格ボタンが消えるため、テストは
    * 毎回 fresh なリードを作る（使い捨て）。作成された顧客企業/顧客担当者は後始末で削除する。
@@ -98,18 +96,18 @@ test.describe("リードの固有アクション", () => {
       await page
         .locator("#Leads_detailView_basicAction_LBL_CONVERT_LEAD")
         .click();
-      // フォーム描画＝submitHandler(vtValidate)の登録完了を待つ
-      await expect(page.locator("#convertLeadForm")).toBeVisible();
-      // Accounts/Contacts の作成チェックが既定でオン（company/lastname 由来）
-      await expect(
-        page.locator("#AccountsModule")
-      ).toBeChecked();
+      // 顧客企業・顧客担当者が既定で「新しく作成する」（company/lastname 由来）
+      for (const module of ["Accounts", "Contacts"]) {
+        await expect(
+          page
+            .getByTestId(`lead-convert-section-${module}`)
+            .getByRole("radio", { name: "新しく作成する" })
+        ).toBeChecked();
+      }
 
-      // 保存 → 作成された顧客企業の詳細へ遷移する
-      await page
-        .locator('#convertLeadForm button[name="saveButton"]')
-        .click();
-      await page.waitForURL(/[?&]module=Accounts&record=\d+/, {
+      // 昇格 → 作成された顧客企業の詳細へ遷移する
+      await page.getByTestId("lead-convert-submit").click();
+      await page.waitForURL(/[?&]module=Accounts&view=Detail&record=\d+/, {
         timeout: 20000,
       });
       createdAccountId = page.url().match(/record=(\d+)/)![1];

@@ -1,7 +1,9 @@
 import { test, expect } from "../../fixtures/isolated";
 import type { Page } from "@playwright/test";
-import { generateRandomString } from "../../utils/util";
+import { BASE_URL, generateRandomString } from "../../utils/util";
 import { gotoSettings, saveAndSettle, confirmYes } from "../../utils/settings";
+import { apiSession } from "../../utils/api";
+import { frQuery, frDelete } from "../../model/fetcher";
 
 /**
  * E-01 Webフォーム (自動化 > Webフォーム)
@@ -27,6 +29,8 @@ test.describe.serial("管理: Webフォーム (Webforms)", () => {
   const token = generateRandomString(8);
   const name = `e2ewebformadd${token}`;
   const editedDesc = `e2ewebformedit${token}`;
+  // 追加テストで選んだ対象モジュール(送信テストで使う)
+  let targetModuleName = "";
 
   // 一覧のデータ行(Webフォーム名で特定)
   const row = (page: Page, text: string) =>
@@ -50,12 +54,14 @@ test.describe.serial("管理: Webフォーム (Webforms)", () => {
       (await targetModule.locator('option[value="Contacts"]').count()) > 0;
     if (hasContacts) {
       await targetModule.selectOption("Contacts");
+      targetModuleName = "Contacts";
     } else {
       const firstValue = await targetModule
         .locator("option")
         .first()
         .getAttribute("value");
       if (firstValue) await targetModule.selectOption(firstValue);
+      targetModuleName = firstValue ?? "";
     }
 
     // 対象モジュールの必須フィールドが少なくとも1つ選択済みであることを確認。
@@ -70,6 +76,51 @@ test.describe.serial("管理: Webフォーム (Webforms)", () => {
     // 一覧に作成した Webフォームが現れること
     await gotoSettings(page, listParams);
     await expect(row(page, name)).toBeVisible();
+  });
+
+  // #1917: Webフォームの受信(capture.php)はログインしていない状態で動く。
+  // 項目のデフォルト値の取得がログイン中のユーザーの権限を参照していたため、
+  // 送信のたびに Fatal error になり、レコードが作成されていなかった。
+  test("Webフォームからの送信でレコードが作成される", async ({
+    page,
+    playwright,
+  }) => {
+    test.skip(
+      targetModuleName !== "Contacts",
+      "送信内容は顧客担当者(Contacts)の必須項目に合わせている"
+    );
+
+    // 一覧の行からパブリックID(32桁の16進数)を読み取る
+    await gotoSettings(page, listParams);
+    const rowText = await row(page, name).first().innerText();
+    const publicId = rowText.match(/\b[0-9a-f]{32}\b/)?.[0];
+    expect(publicId, "パブリックIDが一覧に見つからない").toBeTruthy();
+
+    // 実際の Webフォームと同じく、ログインしていない状態で POST する
+    const lastname = `e2ewebformpost${token}`;
+    const anonymous = await playwright.request.newContext();
+    try {
+      const response = await anonymous.post(
+        `${BASE_URL}modules/Webforms/capture.php`,
+        { form: { publicid: publicId!, lastname } }
+      );
+      const body = await response.text();
+      expect(response.ok(), body).toBeTruthy();
+      // Fatal error 時は HTML が返るため、JSON として読む前に本文ごと検証する
+      expect(body.trim().startsWith("{"), body).toBeTruthy();
+      expect(JSON.parse(body), body).toEqual({ success: true, result: "ok" });
+    } finally {
+      await anonymous.dispose();
+    }
+
+    // 送信した内容でレコードが作成されていること。確認後に削除する
+    const session = await apiSession();
+    const rows = await frQuery(
+      session,
+      `SELECT id, lastname FROM Contacts WHERE lastname = '${lastname}';`
+    );
+    expect(rows).toHaveLength(1);
+    await frDelete(session, rows[0].id);
   });
 
   // 遅い CI(docker)向けの生成的な待ち時間。

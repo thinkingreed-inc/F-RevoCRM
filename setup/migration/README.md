@@ -190,7 +190,7 @@ public function process() {
 システム変数（`vtiger_parameters`）は画面から追加できない（一覧の追加・削除ボタンは
 非表示）。**新しいシステム変数はマイグレーションで投入する。**
 
-`setup/migration/scripts/20260305100000_add_parameters_type_and_secret_columns.php`
+`setup/migration/scripts/20251028000000_add_parameters_type_and_secret_columns.php`
 で `type` / `secret` カラムを追加済みのため、新規追加時はこの 2 つも必ず指定する。
 
 | カラム | 内容 |

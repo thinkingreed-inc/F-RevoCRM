@@ -47,6 +47,8 @@ class Webform_Capture {
 			$user = CRMEntity::getInstance('Users');
 			$user->id = $user->getActiveAdminId();
 			$user->retrieve_entity_info($user->id, 'Users');
+			// 項目の権限チェックなどがログイン中のユーザーを参照するため、管理者として処理する
+			vglobal('current_user', $user);
 
 			// Prepare the parametets
 			$parameters = array();
