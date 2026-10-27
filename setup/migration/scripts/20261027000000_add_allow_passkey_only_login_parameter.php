@@ -13,7 +13,7 @@ class Migration20261027000000_AddAllowPasskeyOnlyLoginParameter extends FRMigrat
     /**
      * マイグレーションを実行する
      */
-    public function process()
+    public function process(): void
     {
         global $adb;
 
