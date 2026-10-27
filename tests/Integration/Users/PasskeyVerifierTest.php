@@ -217,6 +217,69 @@ final class PasskeyVerifierTest extends TestCase
         self::assertSame('owner_mismatch', $result->reason);
     }
 
+    public function test_ログイン画面のJSが送る形でも読み込める(): void
+    {
+        // PasskeyLogin.js は authenticatorAttachment を付け、userHandle が無ければ null を送る
+        $authenticator = $this->register(self::OWNER_ID);
+        $challenge = random_bytes(32);
+        $data = json_decode($authenticator->assertionJson($challenge, self::RP_ID, self::ORIGIN, 1), true);
+        self::assertIsArray($data);
+        $data['authenticatorAttachment'] = 'platform';
+        $data['clientExtensionResults'] = [];
+        $data['response']['userHandle'] = null;
+
+        $result = $this->verifier->verifyAssertion((string) json_encode($data), $challenge, self::RP_ID, self::OWNER_ID);
+
+        self::assertTrue($result->verified, $result->reason);
+    }
+
+    public function test_署名が不正なら拒否し持ち主を返す(): void
+    {
+        $authenticator = $this->register(self::OWNER_ID);
+        $challenge = random_bytes(32);
+        $json = $authenticator->assertionJson($challenge, self::RP_ID, self::ORIGIN, 1, null, 0x05, true);
+
+        foreach ([self::OWNER_ID, null] as $expectedUserId) {
+            $result = $this->verifier->verifyAssertion($json, $challenge, self::RP_ID, $expectedUserId);
+            self::assertFalse($result->verified);
+            self::assertSame(self::OWNER_ID, $result->userId);
+            self::assertSame('verification_failed', $result->reason);
+        }
+        self::assertSame(0, $this->storedCredential(self::OWNER_ID)['counter']);
+    }
+
+    public function test_ユーザー検証UVが無ければ拒否(): void
+    {
+        $authenticator = $this->register(self::OWNER_ID);
+        $challenge = random_bytes(32);
+
+        $result = $this->verifier->verifyAssertion(
+            $authenticator->assertionJson($challenge, self::RP_ID, self::ORIGIN, 1, null, 0x01),
+            $challenge,
+            self::RP_ID,
+            self::OWNER_ID
+        );
+
+        self::assertFalse($result->verified);
+        self::assertSame('verification_failed', $result->reason);
+    }
+
+    public function test_別オリジンで作られたassertionは拒否(): void
+    {
+        $authenticator = $this->register(self::OWNER_ID);
+        $challenge = random_bytes(32);
+
+        $result = $this->verifier->verifyAssertion(
+            $authenticator->assertionJson($challenge, self::RP_ID, 'https://evil.example', 1),
+            $challenge,
+            self::RP_ID,
+            null
+        );
+
+        self::assertFalse($result->verified);
+        self::assertSame('verification_failed', $result->reason);
+    }
+
     public function test_チャレンジ不一致とfalseは拒否(): void
     {
         $authenticator = $this->register(self::OWNER_ID);

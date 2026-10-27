@@ -103,9 +103,20 @@ final class PasskeyTestAuthenticator
     /**
      * navigator.credentials.get() の結果を JSON.stringify(credential) したものと同じ形
      */
-    public function assertionJson(string $challenge, string $rpId, string $origin, int $counter, ?string $userHandle = null): string
-    {
-        $authenticatorData = hash('sha256', $rpId, true) . chr(0x05) . pack('N', $counter);
+    /**
+     * @param int  $flags           authenticatorData のフラグ。既定は UP と UV（0x05）。UV を外すなら 0x01
+     * @param bool $tamperSignature 署名の末尾 1 バイトを反転させ、署名を不正にする
+     */
+    public function assertionJson(
+        string $challenge,
+        string $rpId,
+        string $origin,
+        int $counter,
+        ?string $userHandle = null,
+        int $flags = 0x05,
+        bool $tamperSignature = false
+    ): string {
+        $authenticatorData = hash('sha256', $rpId, true) . chr($flags) . pack('N', $counter);
         $clientDataJson = (string) json_encode([
             'type' => 'webauthn.get',
             'challenge' => self::b64url($challenge),
@@ -115,6 +126,11 @@ final class PasskeyTestAuthenticator
         if (!openssl_sign($authenticatorData . hash('sha256', $clientDataJson, true), $signature, $this->privateKey, OPENSSL_ALGO_SHA256)) {
             throw new RuntimeException('署名できません');
         }
+        $signature = (string) $signature;
+        if ($tamperSignature) {
+            $last = strlen($signature) - 1;
+            $signature[$last] = chr(ord($signature[$last]) ^ 0x01);
+        }
 
         return (string) json_encode([
             'id' => self::b64url($this->credentialId),
@@ -123,7 +139,7 @@ final class PasskeyTestAuthenticator
             'response' => [
                 'authenticatorData' => self::b64url($authenticatorData),
                 'clientDataJSON' => self::b64url($clientDataJson),
-                'signature' => self::b64url((string) $signature),
+                'signature' => self::b64url($signature),
                 'userHandle' => self::b64url($userHandle ?? $this->userHandle),
             ],
             'clientExtensionResults' => new \stdClass(),
