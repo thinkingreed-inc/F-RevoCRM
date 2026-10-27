@@ -53,6 +53,11 @@
 		.bar:after {
 			right: 50%;
 		}
+		.loginDiv.passkey-login-enabled {
+			height: auto;
+			min-height: 410px;
+			display: flow-root;
+		}
 		.login-or-divider {
 			display: flex;
 			align-items: center;
@@ -86,7 +91,7 @@
 	<span class="app-nav"></span>
 	<div class="container-fluid loginPageContainer">
 		<div class="col-lg-5 col-md-12 col-sm-12 col-xs-12">
-			<div class="loginDiv login-widgetHeight">
+			<div class="loginDiv login-widgetHeight{if $PASSKEY_ONLY_LOGIN} passkey-login-enabled{/if}">
 				<img class="img-responsive user-logo" src="{$COMPANY_LOGO->get('imagepath')}" alt="{$COMPANY_LOGO->get('alt')}">
 				<div>
 					<span class="{if !$ERROR}hide{/if} failureMessage" id="validationMessage">{vtranslate($MESSAGE,'Users')}</span>
