@@ -282,6 +282,11 @@ $languageStrings = array(
 
 	'LBL_LOGIN' => 'ログイン',
 	'LBL_FORGET_PASSWORD' => 'パスワードを忘れた場合は',
+	'LBL_LOGIN_WITH_PASSKEY' => 'パスキーでログイン',
+	'LBL_LOGIN_OR' => 'または',
+	'LBL_PASSKEY_LOGIN_CANCELED' => 'パスキーでのログインがキャンセルされました',
+	'LBL_PASSKEY_LOGIN_ABORTED' => 'パスキーでのログインが中断されました。もう一度お試しください',
+	'LBL_PASSKEY_LOGIN_ERROR' => 'パスキーでログインできませんでした。WebAuthn 対応ブラウザ、または HTTPS でアクセスしてください',
 	'LBL_MAILADDRESS' => 'メールアドレス',
 	'LBL_SUBMIT' => '送信',
 	'LBL_F-Revo_Notice' => 'F-RevoCRMに関するお知らせ',

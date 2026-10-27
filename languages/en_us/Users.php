@@ -278,6 +278,11 @@ $languageStrings = array(
 
 	'LBL_LOGIN' => 'Login',
 	'LBL_FORGET_PASSWORD' => 'If you forgot your password',
+	'LBL_LOGIN_WITH_PASSKEY' => 'Sign in with a passkey',
+	'LBL_LOGIN_OR' => 'or',
+	'LBL_PASSKEY_LOGIN_CANCELED' => 'Sign in with a passkey was canceled.',
+	'LBL_PASSKEY_LOGIN_ABORTED' => 'Sign in with a passkey was interrupted. Please try again.',
+	'LBL_PASSKEY_LOGIN_ERROR' => 'Sign in with a passkey failed. Please use a browser that supports WebAuthn, or access via HTTPS.',
 	'LBL_MAILADDRESS' => 'Email Address',
 	'LBL_SUBMIT' => 'Submit',
 	'LBL_F-Revo_Notice' => 'F-RevoCRM Notices',

@@ -53,6 +53,34 @@
 		.bar:after {
 			right: 50%;
 		}
+		.login-or-divider {
+			display: flex;
+			align-items: center;
+			margin: 0 0 1em 0;
+			color: #7C7C7C;
+			font-size: 14px;
+		}
+		.login-or-divider:before, .login-or-divider:after {
+			content: '';
+			flex: 1;
+			border-top: 1px solid #c8c8c8;
+		}
+		.login-or-divider span {
+			padding: 0 12px;
+		}
+		.login-button.passkey-login-button {
+			margin: 0 0 1em 0;
+			color: #15c;
+			background: #fff;
+			border: 1px solid #15c;
+		}
+		.login-button.passkey-login-button:hover:not(:disabled) {
+			background: #f0f4ff;
+		}
+		.login-button.passkey-login-button:disabled {
+			opacity: .5;
+			cursor: not-allowed;
+		}
 	</style>
 
 	<span class="app-nav"></span>
@@ -80,11 +108,25 @@
 							<label class="login-label">{vtranslate('Password','Users')}</label>
 						</div>
 						<div class="group">
-							<button type="submit" class="login-button login-buttonBlue">{vtranslate('LBL_LOGIN','Users')}</button><br>
+							<button type="submit" class="login-button login-buttonBlue">{vtranslate('LBL_LOGIN','Users')}</button>
+							{if $PASSKEY_ONLY_LOGIN}
+								<div class="login-or-divider"><span>{vtranslate('LBL_LOGIN_OR','Users')}</span></div>
+								<button type="button" id="passkeyOnlyLoginBtn" class="login-button passkey-login-button" data-msg-canceled="{vtranslate('LBL_PASSKEY_LOGIN_CANCELED','Users')|escape}" data-msg-aborted="{vtranslate('LBL_PASSKEY_LOGIN_ABORTED','Users')|escape}" data-msg-error="{vtranslate('LBL_PASSKEY_LOGIN_ERROR','Users')|escape}">{vtranslate('LBL_LOGIN_WITH_PASSKEY','Users')}</button>
+							{/if}
+							<br>
 							<a class="forgotPasswordLink" style="color: #15c;">{vtranslate('LBL_FORGET_PASSWORD','Users')}</a>
 						</div>
 					</form>
 				</div>
+
+				{if $PASSKEY_ONLY_LOGIN}
+					<form id="passkeyOnlyLoginForm" method="POST" action="index.php" class="hide">
+						<input type="hidden" name="__vtrftk" value="{$CSRF_TOKEN}" />
+						<input type="hidden" name="module" value="Users" />
+						<input type="hidden" name="action" value="PasskeyLogin" />
+						<input type="hidden" name="credential" value="" />
+					</form>
+				{/if}
 
 				<div id="forgotPasswordDiv" class="hide">
 					<form class="form-horizontal" action="forgotPassword.php" method="POST">
@@ -186,7 +228,7 @@
 					validationMessage.addClass('hide');
 				});
 
-				loginFormDiv.find('button').on('click', function () {
+				loginFormDiv.find('button[type=submit]').on('click', function () {
 					var username = loginFormDiv.find('#username').val();
 					var password = jQuery('#password').val();
 					var result = true;
