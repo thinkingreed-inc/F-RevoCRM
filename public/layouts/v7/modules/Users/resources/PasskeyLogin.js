@@ -14,6 +14,36 @@
 		return bytes;
 	}
 
+	function arrayBufferToBase64Url(buffer) {
+		if (!buffer) {
+			return null;
+		}
+		var bytes = new Uint8Array(buffer);
+		var binary = '';
+		for (var i = 0; i < bytes.length; i++) {
+			binary += String.fromCharCode(bytes[i]);
+		}
+		return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+	}
+
+	// PublicKeyCredential.toJSON() は古いブラウザに無いため、サーバーが読む形に自前で詰める
+	function serializeCredential(credential) {
+		var response = credential.response;
+		return {
+			id: credential.id,
+			rawId: arrayBufferToBase64Url(credential.rawId),
+			type: credential.type,
+			response: {
+				clientDataJSON: arrayBufferToBase64Url(response.clientDataJSON),
+				authenticatorData: arrayBufferToBase64Url(response.authenticatorData),
+				signature: arrayBufferToBase64Url(response.signature),
+				userHandle: arrayBufferToBase64Url(response.userHandle)
+			},
+			clientExtensionResults: credential.getClientExtensionResults ? credential.getClientExtensionResults() : {},
+			authenticatorAttachment: credential.authenticatorAttachment || null
+		};
+	}
+
 	$(function () {
 		var $btn = $('#passkeyOnlyLoginBtn');
 		var $form = $('#passkeyOnlyLoginForm');
@@ -61,7 +91,7 @@
 						timeout: 60000
 					}
 				}).then(function (credential) {
-					$form.find('input[name="credential"]').val(JSON.stringify(credential));
+					$form.find('input[name="credential"]').val(JSON.stringify(serializeCredential(credential)));
 					$form.get(0).submit();
 				}).catch(function (error) {
 					if (error && error.name === 'NotAllowedError') {

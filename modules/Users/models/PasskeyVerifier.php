@@ -40,7 +40,8 @@ class Users_PasskeyVerifier_Model
     /** 開発環境（http://localhost）で HTTPS なしでも動かすための例外 */
     private const SECURED_RP_IDS = ['localhost'];
 
-    private const CREDENTIAL_ALGORITHMS = [-7, -8, -257]; // ES256, EdDSA, RS256
+    /** 認証時のアルゴリズムマネージャ（ライブラリ既定の ES256 / RS256）で検証できるものだけを許可する */
+    private const CREDENTIAL_ALGORITHMS = [-7, -257]; // ES256, RS256
 
     private readonly Users_PublicKeyCredentialSourceRepository_Model $repository;
 
