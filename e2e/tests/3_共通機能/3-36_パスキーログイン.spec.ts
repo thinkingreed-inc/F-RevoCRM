@@ -1,4 +1,4 @@
-import { test, expect } from "../../fixtures/isolated";
+import { test, expect } from "../../fixtures/privileges";
 import type { Browser, BrowserContext, Page } from "@playwright/test";
 import { BASE_URL, generateRandomString, url } from "../../utils/util";
 import { gotoSettings, saveAndSettle } from "../../utils/settings";
@@ -27,11 +27,20 @@ import {
  * - 仮想認証器はページ単位なので、専用ユーザーの操作は 1 つのページで続けて行い、
  *   登録した credential をそのままログインに使う。
  * - フラグは必要なテストの中だけ ON にし、finally / afterAll で必ず false に戻す。
- *   ON の間は他のテストのログイン画面にもボタンが出るため、ログインボタンの
- *   指定は完全一致にしてある(utils/settings.ts ほか)。
+ *   戻す処理は画面操作の一時的な失敗に備えて 1 回やり直す。
+ * - フラグはグローバルなシステム変数で、ユーザーの作成・削除は権限ファイルを作り直す。
+ *   そのためこの spec は 'chrome-privileges' プロジェクト(一般テストの完了後に実行)に
+ *   入れ(playwright.config.ts の PRIVILEGE_SPECS)、fixtures/privileges の
+ *   ロックで各テストを他の権限テストと直列にする。beforeAll / afterAll も
+ *   同じロックの中で行うため、フラグ ON やユーザー削除が他のテストと重ならない。
+ *   F-07(システム変数)は USER_LOCK_TIME / SHOW_SCHEDULE_CONFIRM_FLAG の行だけを
+ *   キーの完全一致で扱い、件数も見ないため、このフラグとは干渉しない。
+ * - それでも ON の間に表示されたログイン画面には 2 つ目のボタンが出るため、
+ *   ログインボタンの指定は完全一致にしてある(utils/settings.ts ほか)。
  */
 test.describe.serial("共通: パスキーのみのログイン", () => {
-  test.describe.configure({ timeout: 120_000 });
+  // chrome-privileges と同じく、他の権限テストのロック待ちも実行時間に入るため長めにする
+  test.describe.configure({ timeout: 180_000 });
 
   const FLAG_KEY = "ALLOW_PASSKEY_ONLY_LOGIN";
   const token = generateRandomString(6).toLowerCase();
@@ -92,6 +101,20 @@ test.describe.serial("共通: パスキーのみのログイン", () => {
     await expect(
       parameterRow(page).locator("td.listViewEntryValue").nth(1)
     ).toHaveText(want);
+  };
+
+  /**
+   * フラグを false に戻す。画面操作の一時的な失敗で ON のまま残らないよう 1 回やり直す。
+   * 2 回とも失敗したら、その例外を投げる(呼び出し側で後始末を続けてから報告する)。
+   */
+  const restorePasskeyOnlyLogin = async (page: Page) => {
+    try {
+      await setPasskeyOnlyLogin(page, false);
+    } catch (first) {
+      console.warn(`${FLAG_KEY} の復元に失敗したため再試行します: ${String(first)}`);
+      await page.keyboard.press("Escape").catch(() => {});
+      await setPasskeyOnlyLogin(page, false);
+    }
   };
 
   /** 専用ユーザーのページを ID/PW のログイン画面から送信する */
@@ -166,18 +189,24 @@ test.describe.serial("共通: パスキーのみのログイン", () => {
 
   test.afterAll(async ({ browser, workerStorageState }) => {
     await userContext?.close();
-    await asAdmin(browser, workerStorageState, async (page) => {
-      try {
-        // フラグは必ず既定(false)へ戻す
-        await setPasskeyOnlyLogin(page, false);
-      } finally {
-        // beforeAll が途中で落ちても作成済みなら消す
-        const id = userId || (await lookupUserId());
-        if (id) {
-          // 完全削除(登録した Passkey も消える)。レコードは admin(id=1) へ移す
-          await gotoSettings(page, { module: "Users", view: "List" });
-          await withUserPrivilegesLock(() =>
-            page.evaluate(
+    // フラグの復元とユーザー削除は、どちらかが失敗してももう片方を必ず行い、
+    // 失敗はまとめて最後に報告する(後の例外で先の例外が隠れないようにする)
+    const errors: unknown[] = [];
+    await withUserPrivilegesLock(() =>
+      asAdmin(browser, workerStorageState, async (page) => {
+        try {
+          await restorePasskeyOnlyLogin(page);
+        } catch (e) {
+          errors.push(e);
+        }
+
+        try {
+          // beforeAll が途中で落ちても作成済みなら消す
+          const id = userId || (await lookupUserId());
+          if (id) {
+            // 完全削除(登録した Passkey も消える)。レコードは admin(id=1) へ移す
+            await gotoSettings(page, { module: "Users", view: "List" });
+            await page.evaluate(
               (target) =>
                 new Promise<boolean>((resolve, reject) => {
                   // vtiger の app.request.post は CSRF トークンを付与して送る
@@ -195,12 +224,20 @@ test.describe.serial("共通: パスキーのみのログイン", () => {
                     .then((err: unknown) => (err ? reject(err) : resolve(true)));
                 }),
               id
-            )
-          );
-          expect(await lookupUserId(), "テスト用ユーザーが削除されていること").toBe("");
+            );
+            if ((await lookupUserId()) !== "") {
+              throw new Error(`テスト用ユーザー ${userName} を削除できませんでした`);
+            }
+          }
+        } catch (e) {
+          errors.push(e);
         }
-      }
-    });
+      })
+    );
+    if (errors.length === 1) throw errors[0];
+    if (errors.length > 1) {
+      throw new AggregateError(errors, "afterAll の後始末で複数の失敗がありました");
+    }
   });
 
   test("フラグOFFではパスキーボタンが出ない", async ({ page }) => {
@@ -269,7 +306,7 @@ test.describe.serial("共通: パスキーのみのログイン", () => {
 
       await expectLoggedIn();
     } finally {
-      await setPasskeyOnlyLogin(page, false);
+      await restorePasskeyOnlyLogin(page);
     }
 
     await logout();
