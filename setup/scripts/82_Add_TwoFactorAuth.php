@@ -44,6 +44,14 @@ $record->set("value", "false");
 $record->set("description", vtranslate('LBL_SETUP_PARAMETER_MESSAGE_FORCE_MULTI_FACTOR_AUTH', 'Users'));
 $record->save();
 
+$record = Settings_Parameters_Record_Model::getInstanceByKey("ALLOW_PASSKEY_ONLY_LOGIN");
+$record->set("key", "ALLOW_PASSKEY_ONLY_LOGIN");
+$record->set("value", "false");
+$record->set("type", "boolean");
+$record->set("secret", 0);
+$record->set("description", vtranslate('LBL_SETUP_PARAMETER_MESSAGE_ALLOW_PASSKEY_ONLY_LOGIN', 'Users'));
+$record->save();
+
 
 $record = Settings_Parameters_Record_Model::getInstanceByKey("USER_LOCK_TIME");
 $record->set("key", "USER_LOCK_TIME");
