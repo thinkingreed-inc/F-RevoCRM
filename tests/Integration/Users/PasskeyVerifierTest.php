@@ -140,6 +140,44 @@ final class PasskeyVerifierTest extends TestCase
         self::assertSame(self::OWNER_ID, $result->userId);
     }
 
+    public function test_同じcredentialIDが別ユーザーにもあれば拒否し持ち主を特定しない(): void
+    {
+        $victim = $this->register(self::OWNER_ID);
+        // 攻撃者が被害者と同じ credential ID・自分の鍵で登録した行（過去データの重複を想定）
+        $attacker = PasskeyTestAuthenticator::create((string) self::OTHER_ID, $victim->credentialId());
+        $this->insert(self::OTHER_ID, $attacker->v3Json());
+        $challenge = random_bytes(32);
+        $json = $attacker->assertionJson($challenge, self::RP_ID, self::ORIGIN, 1);
+
+        $passkeyOnly = $this->verifier->verifyAssertion($json, $challenge, self::RP_ID, null);
+        self::assertFalse($passkeyOnly->verified);
+        self::assertNull($passkeyOnly->userId);
+        self::assertSame('duplicate_credential', $passkeyOnly->reason);
+
+        self::assertFalse($this->verifier->verifyAssertion($json, $challenge, self::RP_ID, self::OTHER_ID)->verified);
+        $victimJson = $victim->assertionJson($challenge, self::RP_ID, self::ORIGIN, 1);
+        self::assertFalse($this->verifier->verifyAssertion($victimJson, $challenge, self::RP_ID, self::OWNER_ID)->verified);
+    }
+
+    public function test_保存されたuserHandleが行の持ち主と違えば拒否(): void
+    {
+        // 行の持ち主は OWNER_ID だが、保存された credential の userHandle は OTHER_ID
+        $authenticator = PasskeyTestAuthenticator::create((string) self::OTHER_ID);
+        $this->insert(self::OWNER_ID, $authenticator->v3Json());
+        $challenge = random_bytes(32);
+
+        $result = $this->verifier->verifyAssertion(
+            $authenticator->assertionJson($challenge, self::RP_ID, self::ORIGIN, 1),
+            $challenge,
+            self::RP_ID,
+            null
+        );
+
+        self::assertFalse($result->verified);
+        self::assertSame(self::OWNER_ID, $result->userId);
+        self::assertSame('owner_mismatch', $result->reason);
+    }
+
     public function test_チャレンジ不一致とfalseは拒否(): void
     {
         $authenticator = $this->register(self::OWNER_ID);
@@ -235,6 +273,23 @@ final class PasskeyVerifierTest extends TestCase
         self::assertSame($authenticator->coseKey(), $source->credentialPublicKey);
     }
 
+    public function test_他のユーザーが登録済みのcredentialIDは登録できない(): void
+    {
+        $existing = $this->register(self::OTHER_ID);
+        $authenticator = PasskeyTestAuthenticator::create((string) self::OWNER_ID, $existing->credentialId());
+        $challenge = random_bytes(32);
+
+        $result = $this->verifier->verifyRegistration(
+            $authenticator->registrationJson($challenge, self::RP_ID, self::ORIGIN),
+            $challenge,
+            self::RP_ID,
+            self::OWNER_ID,
+            'passkey_test_user'
+        );
+
+        self::assertFalse($result);
+    }
+
     public function test_登録もチャレンジ不一致とfalseは拒否(): void
     {
         $authenticator = PasskeyTestAuthenticator::create((string) self::OWNER_ID);
@@ -255,12 +310,17 @@ final class PasskeyVerifierTest extends TestCase
     private function register(int $userId, int $counter = 0): PasskeyTestAuthenticator
     {
         $authenticator = PasskeyTestAuthenticator::create((string) $userId);
-        $this->db->pquery(
-            'INSERT INTO vtiger_user_credentials (userid, type, device_name, passkey_credential) VALUES (?, ?, ?, ?)',
-            [$userId, 'passkey', 'test device', $authenticator->v3Json($counter)]
-        );
+        $this->insert($userId, $authenticator->v3Json($counter));
 
         return $authenticator;
+    }
+
+    private function insert(int $userId, string $credentialJson): void
+    {
+        $this->db->pquery(
+            'INSERT INTO vtiger_user_credentials (userid, type, device_name, passkey_credential) VALUES (?, ?, ?, ?)',
+            [$userId, 'passkey', 'test device', $credentialJson]
+        );
     }
 
     /**

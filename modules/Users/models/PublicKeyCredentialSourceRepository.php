@@ -24,25 +24,34 @@ class Users_PublicKeyCredentialSourceRepository_Model
     private const ID_CONDITION = "type = 'passkey'"
         . " AND JSON_UNQUOTE(JSON_EXTRACT(passkey_credential, '$.publicKeyCredentialId')) IN (?, ?)";
 
-    public function findOneByCredentialId(string $rawId): ?CredentialRecord
+    /**
+     * credential ID が一致する行をすべて返す（持ち主のユーザー ID と、読み込めた credential の組）
+     *
+     * credential ID は本来ユーザーをまたいで一意だが、過去のデータに重複が無いとは限らない。
+     * 呼び出し側が「1 件だけのときに限り使う」と判断できるよう、絞り込まずに全件返す。
+     * 保存データを読み込めない行は source を null にして返す。
+     *
+     * @return list<array{userId: int, source: CredentialRecord|null}>
+     */
+    public function findAllByCredentialId(string $rawId): array
     {
-        $row = $this->findRowByCredentialId($rawId);
-        if ($row === null) {
-            return null;
+        $db = PearDatabase::getInstance();
+        $result = $db->pquery(
+            'SELECT userid, passkey_credential FROM vtiger_user_credentials WHERE ' . self::ID_CONDITION,
+            $this->idCandidates($rawId)
+        );
+        $rows = [];
+        while ($result !== false && ($row = $db->fetchByAssoc($result, -1, false))) {
+            if (!is_numeric($row['userid'])) {
+                continue;
+            }
+            $rows[] = [
+                'userId' => (int) $row['userid'],
+                'source' => $this->decodeOrNull($row['passkey_credential']),
+            ];
         }
 
-        return $this->decodeOrNull($row['passkey_credential']);
-    }
-
-    public function findOwnerUserId(string $rawId): ?int
-    {
-        $row = $this->findRowByCredentialId($rawId);
-
-        if ($row === null || !is_numeric($row['userid'])) {
-            return null;
-        }
-
-        return (int) $row['userid'];
+        return $rows;
     }
 
     /**
@@ -67,39 +76,18 @@ class Users_PublicKeyCredentialSourceRepository_Model
     }
 
     /**
-     * credential ID が一致する行の JSON を、保存形式（3 系形式）で書き換える
+     * credential ID と持ち主（userHandle = ユーザー ID）が一致する行の JSON を、保存形式（3 系形式）で書き換える
      */
     public function saveCredentialSource(CredentialRecord $source): void
     {
         $db = PearDatabase::getInstance();
         $db->pquery(
-            'UPDATE vtiger_user_credentials SET passkey_credential = ? WHERE ' . self::ID_CONDITION,
+            'UPDATE vtiger_user_credentials SET passkey_credential = ? WHERE userid = ? AND ' . self::ID_CONDITION,
             array_merge(
-                [Users_PasskeyCredentialCodec_Model::encode($source)],
+                [Users_PasskeyCredentialCodec_Model::encode($source), $source->userHandle],
                 $this->idCandidates($source->publicKeyCredentialId)
             )
         );
-    }
-
-    /**
-     * @return array{userid: mixed, passkey_credential: mixed}|null
-     */
-    private function findRowByCredentialId(string $rawId): ?array
-    {
-        $db = PearDatabase::getInstance();
-        $result = $db->pquery(
-            'SELECT userid, passkey_credential FROM vtiger_user_credentials WHERE ' . self::ID_CONDITION . ' LIMIT 1',
-            $this->idCandidates($rawId)
-        );
-        if ($result === false) {
-            return null;
-        }
-        $row = $db->fetchByAssoc($result, -1, false);
-        if (!is_array($row)) {
-            return null;
-        }
-
-        return ['userid' => $row['userid'], 'passkey_credential' => $row['passkey_credential']];
     }
 
     /**

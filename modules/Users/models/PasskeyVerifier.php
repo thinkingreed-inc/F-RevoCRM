@@ -70,16 +70,27 @@ class Users_PasskeyVerifier_Model
             return $this->fail(null, 'invalid_credential');
         }
 
-        $ownerUserId = $this->repository->findOwnerUserId($credential->rawId);
-        if ($ownerUserId === null) {
+        $rows = $this->repository->findAllByCredentialId($credential->rawId);
+        if ($rows === []) {
             return $this->fail(null, 'unknown_credential');
         }
+        if (count($rows) > 1) {
+            // 同じ credential ID が複数行ある。どれかを選ぶと別人として通り得るため、持ち主を特定せず拒否する
+            $this->logError('Duplicate passkey credential ID (' . count($rows) . ' rows)');
+
+            return $this->fail(null, 'duplicate_credential');
+        }
+        $ownerUserId = $rows[0]['userId'];
+        $source = $rows[0]['source'];
         if ($expectedUserId !== null && $ownerUserId !== $expectedUserId) {
             return $this->fail($ownerUserId, 'not_owner');
         }
-        $source = $this->repository->findOneByCredentialId($credential->rawId);
         if ($source === null) {
             return $this->fail($ownerUserId, 'invalid_stored_credential');
+        }
+        if (!hash_equals((string) $ownerUserId, $source->userHandle)) {
+            // 保存されている userHandle が行の持ち主と違う。検証に使う鍵と持ち主を結び付けられないので拒否する
+            return $this->fail($ownerUserId, 'owner_mismatch');
         }
 
         try {
@@ -129,6 +140,13 @@ class Users_PasskeyVerifier_Model
         }
         $credential = $this->parseCredential($credentialJson);
         if ($credential === null || !$credential->response instanceof AuthenticatorAttestationResponse) {
+            return false;
+        }
+
+        if ($this->repository->findAllByCredentialId($credential->rawId) !== []) {
+            // 他のユーザーを含め、既に登録済みの credential ID は受け付けない（WebAuthn §7.1 step 22）
+            $this->logError('Passkey credential ID is already registered');
+
             return false;
         }
 
@@ -237,11 +255,11 @@ class Users_PasskeyVerifier_Model
         return new Users_PasskeyAssertionResult_Model(false, $userId, $reason);
     }
 
-    private function logError(string $message, Throwable $e): void
+    private function logError(string $message, ?Throwable $e = null): void
     {
         global $log;
         if ($log instanceof Logger) {
-            $log->error($message . ': ' . get_class($e) . ': ' . $e->getMessage());
+            $log->error($e === null ? $message : $message . ': ' . get_class($e) . ': ' . $e->getMessage());
         }
     }
 }
