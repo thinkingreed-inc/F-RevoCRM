@@ -17,7 +17,7 @@ setup('authenticate & acquire api session', async ({ page }) => {
 
   await page.fill('id=username', process.env.E2E_USER_NAME || 'admin');
   await page.fill('id=password', process.env.E2E_USER_PASSWORD || 'Admin1234/');
-  await page.getByRole('button', { name: 'ログイン' }).click();
+  await page.getByRole('button', { name: 'ログイン', exact: true }).click();
 
   await page.waitForURL(`${BASE_URL}index.php**`);
 
