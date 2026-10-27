@@ -60,7 +60,7 @@ class Users_MultiFactorAuthentication_Helper {
         return ($decoded === false || $decoded === '') ? false : $decoded;
     }
 
-    // $type: totp or passkey
+    // $type: totp, passkey (2 段階目) or passkey_only (Passkey のみのログイン)
     public static function LoginProcess($userid, $username, $type){
         unset($_SESSION['force_2fa_registration']);
         unset($_SESSION['registration_userid']);
@@ -85,7 +85,9 @@ class Users_MultiFactorAuthentication_Helper {
         // End
 
         //Track the login History
-        $loginType = $type == 'totp' ? 'mfa_totp' : 'mfa_passkey';
+        // passkey_only: ID/PW を使わず Passkey だけで入った場合
+        $loginTypes = array('totp' => 'mfa_totp', 'passkey' => 'mfa_passkey', 'passkey_only' => 'passkey');
+        $loginType = isset($loginTypes[$type]) ? $loginTypes[$type] : 'mfa_passkey';
         $moduleModel = Users_Module_Model::getInstance('Users');
         $moduleModel->saveLoginHistory($username, false, $loginType);
         //End
