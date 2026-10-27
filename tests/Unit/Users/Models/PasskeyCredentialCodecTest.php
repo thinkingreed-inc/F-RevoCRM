@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Users\Models;
 
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\PasskeyTestAuthenticator;
 use Users_PasskeyCredentialCodec_Model;
@@ -90,6 +91,42 @@ final class PasskeyCredentialCodecTest extends TestCase
         foreach (self::V3_KEYS as $key) {
             self::assertSame($original[$key], $roundTripped[$key], $key);
         }
+    }
+
+    /**
+     * AAGUID は認証器の機種を表す任意の 16 バイトで、RFC 4122 の variant を満たすとは限らない
+     *
+     * @return array<string, array{string}>
+     */
+    public static function nonRfcAaguids(): array
+    {
+        return [
+            'Chromium の仮想認証器' => ['01020304-0506-0708-0102-030405060708'],
+            'すべて ff' => ['ffffffff-ffff-ffff-ffff-ffffffffffff'],
+        ];
+    }
+
+    #[DataProvider('nonRfcAaguids')]
+    public function test_RFC4122以外のAAGUIDも読み書きでき往復しても変わらない(string $aaguid): void
+    {
+        $v3 = PasskeyTestAuthenticator::create('5')->v3Json(0, $aaguid);
+
+        $source = Users_PasskeyCredentialCodec_Model::decode($v3);
+        $encoded = json_decode(Users_PasskeyCredentialCodec_Model::encode($source), true);
+
+        self::assertSame($aaguid, $source->aaguid->toRfc4122());
+        self::assertIsArray($encoded);
+        self::assertSame($aaguid, $encoded['aaguid']);
+    }
+
+    public function test_UUIDの形でないAAGUIDは例外(): void
+    {
+        $data = json_decode(PasskeyTestAuthenticator::create('5')->v3Json(), true);
+        self::assertIsArray($data);
+        $data['aaguid'] = '0102030405060708';
+
+        $this->expectException(InvalidArgumentException::class);
+        Users_PasskeyCredentialCodec_Model::decode((string) json_encode($data));
     }
 
     public function test_壊れたJSONは例外(): void

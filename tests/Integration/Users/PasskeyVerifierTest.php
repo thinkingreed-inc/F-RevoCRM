@@ -17,6 +17,7 @@ use PearDatabase;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\PasskeyTestAuthenticator;
 use Users_MultiFactorAuthentication_Helper;
+use Users_PasskeyCredentialCodec_Model;
 use Users_PasskeyVerifier_Model;
 use Webauthn\CredentialRecord;
 
@@ -43,6 +44,8 @@ final class PasskeyVerifierTest extends TestCase
     private const RP_ID = 'localhost';
 
     private const ORIGIN = 'http://localhost';
+
+    private const NON_RFC_AAGUID = '01020304-0506-0708-0102-030405060708';
 
     private PearDatabase $db;
 
@@ -90,6 +93,42 @@ final class PasskeyVerifierTest extends TestCase
 
         self::assertTrue($result->verified, $result->reason);
         self::assertSame(self::OWNER_ID, $result->userId);
+    }
+
+    public function test_RFC4122以外のAAGUIDで保存したPasskeyでも通る(): void
+    {
+        $authenticator = PasskeyTestAuthenticator::create((string) self::OWNER_ID);
+        $this->insert(self::OWNER_ID, $authenticator->v3Json(0, self::NON_RFC_AAGUID));
+        $challenge = random_bytes(32);
+        $json = $authenticator->assertionJson($challenge, self::RP_ID, self::ORIGIN, 1);
+
+        $twoFactor = $this->verifier->verifyAssertion($json, $challenge, self::RP_ID, self::OWNER_ID);
+        $passkeyOnly = $this->verifier->verifyAssertion($json, $challenge, self::RP_ID, null);
+
+        self::assertTrue($twoFactor->verified, $twoFactor->reason);
+        self::assertTrue($passkeyOnly->verified, $passkeyOnly->reason);
+        self::assertSame(self::NON_RFC_AAGUID, $this->storedCredential(self::OWNER_ID)['aaguid']);
+    }
+
+    public function test_RFC4122以外のAAGUIDの認証器も登録でき保存形式で読み直せる(): void
+    {
+        $authenticator = PasskeyTestAuthenticator::create((string) self::OWNER_ID);
+        $challenge = random_bytes(32);
+
+        $source = $this->verifier->verifyRegistration(
+            $authenticator->registrationJson($challenge, self::RP_ID, self::ORIGIN, self::NON_RFC_AAGUID),
+            $challenge,
+            self::RP_ID,
+            self::OWNER_ID,
+            'passkey_test_user'
+        );
+
+        self::assertInstanceOf(CredentialRecord::class, $source);
+        $encoded = Users_PasskeyCredentialCodec_Model::encode($source);
+        self::assertSame(
+            self::NON_RFC_AAGUID,
+            Users_PasskeyCredentialCodec_Model::decode($encoded)->aaguid->toRfc4122()
+        );
     }
 
     public function test_ユーザー指定なしで全ユーザーから持ち主を特定できる(): void
