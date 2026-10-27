@@ -84,7 +84,7 @@ final class PasskeyTestAuthenticator
     /**
      * 3 系の PublicKeyCredentialSource::jsonSerialize() と同じ形の保存用 JSON
      */
-    public function v3Json(int $counter = 0): string
+    public function v3Json(int $counter = 0, string $aaguid = '00000000-0000-0000-0000-000000000000'): string
     {
         return (string) json_encode([
             'publicKeyCredentialId' => self::b64url($this->credentialId),
@@ -92,7 +92,7 @@ final class PasskeyTestAuthenticator
             'transports' => [],
             'attestationType' => 'none',
             'trustPath' => ['type' => 'Webauthn\\TrustPath\\EmptyTrustPath'],
-            'aaguid' => '00000000-0000-0000-0000-000000000000',
+            'aaguid' => $aaguid,
             'credentialPublicKey' => self::b64url($this->coseKey),
             'userHandle' => self::b64url($this->userHandle),
             'counter' => $counter,
@@ -134,12 +134,16 @@ final class PasskeyTestAuthenticator
      * 登録画面の JS（MultiFactorAuthentication.js）が送る形の登録結果 JSON。
      * rawId・clientDataJSON・attestationObject は JS の btoa() と同じ標準 base64（パディングあり）。
      */
-    public function registrationJson(string $challenge, string $rpId, string $origin): string
-    {
+    public function registrationJson(
+        string $challenge,
+        string $rpId,
+        string $origin,
+        string $aaguid = '00000000-0000-0000-0000-000000000000'
+    ): string {
         $authData = hash('sha256', $rpId, true)
             . chr(0x45) // UP | UV | AT
             . pack('N', 0)
-            . str_repeat("\0", 16) // aaguid
+            . (string) hex2bin(str_replace('-', '', $aaguid))
             . pack('n', strlen($this->credentialId))
             . $this->credentialId
             . $this->coseKey;

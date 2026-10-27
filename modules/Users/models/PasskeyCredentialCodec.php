@@ -61,8 +61,10 @@ class Users_PasskeyCredentialCodec_Model
             throw new InvalidArgumentException('counter が整数ではありません');
         }
         $aaguid = self::string($data, 'aaguid');
-        if (!Uuid::isValid($aaguid)) {
-            throw new InvalidArgumentException('aaguid が UUID ではありません');
+        // AAGUID は認証器の機種を表す任意の 16 バイトで、RFC 4122 の variant・version を満たすとは限らない。
+        // Uuid::isValid() はそれを拒否するため、8-4-4-4-12 の 16 進表記かどうかだけを見る。
+        if (preg_match('/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/Di', $aaguid) !== 1) {
+            throw new InvalidArgumentException('aaguid が 8-4-4-4-12 の 16 進表記ではありません');
         }
 
         /** @var list<string> $transports */
@@ -73,7 +75,7 @@ class Users_PasskeyCredentialCodec_Model
             $transports,
             self::string($data, 'attestationType'),
             self::decodeTrustPath($data['trustPath']),
-            Uuid::fromString($aaguid),
+            new Uuid($aaguid), // variant を確かめないコンストラクタ（$checkVariant = false）
             self::decodeBase64Url(self::string($data, 'credentialPublicKey')),
             self::decodeBase64Url(self::string($data, 'userHandle')),
             $data['counter'],
