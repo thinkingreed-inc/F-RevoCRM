@@ -188,6 +188,22 @@ final class PasskeyLoginServiceTest extends TestCase
         self::assertSame(2, $this->loginAttempt(self::USER_ID));
     }
 
+    public function test_署名不正は持ち主の失敗回数に数える(): void
+    {
+        $authenticator = $this->register(self::USER_ID);
+        $challenge = random_bytes(32);
+
+        $userId = $this->service()->authenticate(
+            $authenticator->assertionJson($challenge, self::RP_ID, self::ORIGIN, 1, null, 0x05, true),
+            $challenge,
+            self::RP_ID
+        );
+
+        self::assertNull($userId);
+        self::assertSame(1, $this->loginAttempt(self::USER_ID));
+        self::assertSame(1, $this->errorHistoryCount(self::USER_NAME));
+    }
+
     public function test_未知のcredentialはユーザー名空で失敗履歴(): void
     {
         $authenticator = PasskeyTestAuthenticator::create((string) self::USER_ID);
