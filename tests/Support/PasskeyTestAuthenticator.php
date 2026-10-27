@@ -39,7 +39,10 @@ final class PasskeyTestAuthenticator
     ) {
     }
 
-    public static function create(string $userHandle): self
+    /**
+     * @param string|null $credentialId 省略すると 32 バイトの乱数。重複した credential ID の検証用に指定できる
+     */
+    public static function create(string $userHandle, ?string $credentialId = null): self
     {
         $key = openssl_pkey_new(['curve_name' => 'prime256v1', 'private_key_type' => OPENSSL_KEYTYPE_EC]);
         if ($key === false) {
@@ -60,7 +63,7 @@ final class PasskeyTestAuthenticator
             MapItem::create(NegativeIntegerObject::create(-3), ByteStringObject::create($y)),
         ]);
 
-        return new self($key, random_bytes(32), $userHandle, $coseKey);
+        return new self($key, $credentialId ?? random_bytes(32), $userHandle, $coseKey);
     }
 
     public function credentialId(): string
