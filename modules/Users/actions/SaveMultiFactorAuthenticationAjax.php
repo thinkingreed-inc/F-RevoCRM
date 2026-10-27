@@ -54,9 +54,16 @@ class Users_SaveMultiFactorAuthenticationAjax_Action extends Vtiger_SaveAjax_Act
                 }
             }
         } else {
-            $challenge = $request->get('challenge');
             $credential = $request->get('credential');
-            $verifyKey = Users_MultiFactorAuthentication_Helper::passkeyRegisterVerifyKey($challenge,$credential,$userId,$username);
+            $credentialJson = is_array($credential) ? json_encode($credential) : (string) $credential;
+            $verifier = new Users_PasskeyVerifier_Model();
+            $verifyKey = $verifier->verifyRegistration(
+                $credentialJson,
+                Users_MultiFactorAuthentication_Helper::consumeChallenge(),
+                $_SERVER['SERVER_NAME'],
+                (int) $userId,
+                (string) $username
+            );
             if($verifyKey === false)
             {
                 $response->setError(vtranslate("LBL_FAILED_TO_PASSKEY_VERIFYKEY"), 'Users');

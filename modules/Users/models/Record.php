@@ -8,11 +8,6 @@
  * All Rights Reserved.
  *************************************************************************************/
 
-use Webauthn\PublicKeyCredentialSource;
-use Webauthn\Denormalizer\WebauthnSerializerFactory;
-use Webauthn\AttestationStatement\AttestationStatementSupportManager;
-use Webauthn\AttestationStatement\NoneAttestationStatementSupport;
-
 class Users_Record_Model extends Vtiger_Record_Model {
 	
 	/**
@@ -1213,7 +1208,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 	 *
 	 * @param int $userid ユーザーID
 	 * @param string $device_name デバイス名
-	 * @param PublicKeyCredentialSource $publicKeyCredentialSource 登録するパブリックキー認証情報
+	 * @param \Webauthn\CredentialRecord $publicKeyCredentialSource 登録するパブリックキー認証情報
 	 * @return bool 成功した場合はtrue、失敗した場合はfalse
 	 */
 	public function passkeyRegisterUserCredential($device_name, $publicKeyCredentialSource) {
@@ -1227,7 +1222,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 			$userid,
 			'passkey',
 			$device_name,
-			json_encode($publicKeyCredentialSource) // パブリックキー認証情報をJSON形式で保存
+			Users_PasskeyCredentialCodec_Model::encode($publicKeyCredentialSource) // 3 系形式の JSON で保存
 		);
 
 		$adb->pquery($sql, $params);

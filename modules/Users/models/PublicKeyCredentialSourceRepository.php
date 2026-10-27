@@ -1,111 +1,128 @@
 <?php
+
+/*+**********************************************************************************
+ * The contents of this file are subject to the vtiger CRM Public License Version 1.1
+ * ("License"); You may not use this file except in compliance with the License
+ * The Original Code is:  F-RevoCRM Open Source
+ * The Initial Developer of the Original Code is F-RevoCRM.
+ * Portions created by thinkingreed are Copyright (C) F-RevoCRM.
+ * All Rights Reserved.
+ ************************************************************************************/
+
+use ParagonIE\ConstantTime\Base64UrlSafe;
+use Webauthn\CredentialRecord;
+
 /**
- * EGroupware WebAuthn
+ * vtiger_user_credentials に保存した Passkey の読み書き
  *
- * @link https://www.egroupware.org
- * @author Ralf Becker <rb-At-egroupware.org>
- * @license http://opensource.org/licenses/gpl-license.php GPL - GNU General Public License
+ * 保存形式の変換は Users_PasskeyCredentialCodec_Model に任せる。セッションには依存しない。
+ * credential ID は base64url で保存されている。過去にパディング付きで保存された行もあり得るため、
+ * 検索はパディングあり・なしの両方で照合する。
  */
-
-use Webauthn\PublicKeyCredentialSourceRepository as PublicKeyCredentialSourceRepositoryInterface;
-use Webauthn\PublicKeyCredentialSource;
-use Webauthn\PublicKeyCredentialUserEntity;
-
-class Users_PublicKeyCredentialSourceRepository_Model implements PublicKeyCredentialSourceRepositoryInterface
+class Users_PublicKeyCredentialSourceRepository_Model
 {
+    private const ID_CONDITION = "type = 'passkey'"
+        . " AND JSON_UNQUOTE(JSON_EXTRACT(passkey_credential, '$.publicKeyCredentialId')) IN (?, ?)";
 
-    public function __construct()
+    public function findOneByCredentialId(string $rawId): ?CredentialRecord
     {
+        $row = $this->findRowByCredentialId($rawId);
+        if ($row === null) {
+            return null;
+        }
+
+        return $this->decodeOrNull($row['passkey_credential']);
     }
 
-    public function findOneByCredentialId(string $publicKeyCredentialId): ?PublicKeyCredentialSource
+    public function findOwnerUserId(string $rawId): ?int
     {
-        $encodedId = $this->cleanBase64Padding($publicKeyCredentialId);
-        foreach($this->read() as $data){
-            $data = html_entity_decode($data, ENT_QUOTES, 'UTF-8');
-            $decodedData = json_decode($data, true);
-            if($decodedData['publicKeyCredentialId'] === $encodedId) {
-                return PublicKeyCredentialSource::createFromArray($decodedData);
-            }
+        $row = $this->findRowByCredentialId($rawId);
+
+        if ($row === null || !is_numeric($row['userid'])) {
+            return null;
         }
-        return null;
+
+        return (int) $row['userid'];
     }
 
     /**
-     * @return PublicKeyCredentialSource[]
+     * @return list<CredentialRecord>
      */
-    public function findAllForUserEntity(PublicKeyCredentialUserEntity $publicKeyCredentialUserEntity): array
+    public function findAllForUserId(int $userId): array
     {
+        $db = PearDatabase::getInstance();
+        $result = $db->pquery(
+            "SELECT passkey_credential FROM vtiger_user_credentials WHERE userid = ? AND type = 'passkey'",
+            [$userId]
+        );
         $sources = [];
-        foreach($this->read() as $data)
-        {
-            // データが空でないかチェック
-            if (empty($data)) {
-                continue;
-            }
-            
-            $data = html_entity_decode($data, ENT_QUOTES, 'UTF-8');
-            
-            // JSONデコード
-            $decodedData = json_decode($data, true);
-        
-            // デコード結果が配列かどうかチェック
-            if (!is_array($decodedData)) {
-                global $log;
-                $log->error("Invalid JSON data in credential: " . $data);
-                continue;
-            }
-
-            try {
-                $source = PublicKeyCredentialSource::createFromArray($decodedData);
-                if ($source->getUserHandle() === $publicKeyCredentialUserEntity->getId())
-                {
-                    $sources[] = $source;
-                }
-            } catch (Exception $e) {
-                global $log;
-                $log->error("Error creating credential source: " . $e->getMessage());
-                continue;
+        while ($result !== false && ($row = $db->fetchByAssoc($result, -1, false))) {
+            $source = $this->decodeOrNull($row['passkey_credential']);
+            if ($source !== null) {
+                $sources[] = $source;
             }
         }
+
         return $sources;
     }
 
-    // 未使用
-    public function saveCredentialSource(PublicKeyCredentialSource $publicKeyCredentialSource): void
+    /**
+     * credential ID が一致する行の JSON を、保存形式（3 系形式）で書き換える
+     */
+    public function saveCredentialSource(CredentialRecord $source): void
     {
+        $db = PearDatabase::getInstance();
+        $db->pquery(
+            'UPDATE vtiger_user_credentials SET passkey_credential = ? WHERE ' . self::ID_CONDITION,
+            array_merge(
+                [Users_PasskeyCredentialCodec_Model::encode($source)],
+                $this->idCandidates($source->publicKeyCredentialId)
+            )
+        );
     }
 
-    private function read()
+    /**
+     * @return array{userid: mixed, passkey_credential: mixed}|null
+     */
+    private function findRowByCredentialId(string $rawId): ?array
     {
-        if(isset($_SESSION['registration_userid'] ))
-        {
-            $userid = $_SESSION['registration_userid'];
-        } elseif (isset($_SESSION['multi_factor_auth_userid'])) {
-            $userid = $_SESSION['multi_factor_auth_userid'];
-        } else {
-            return array();
+        $db = PearDatabase::getInstance();
+        $result = $db->pquery(
+            'SELECT userid, passkey_credential FROM vtiger_user_credentials WHERE ' . self::ID_CONDITION . ' LIMIT 1',
+            $this->idCandidates($rawId)
+        );
+        if ($result === false) {
+            return null;
+        }
+        $row = $db->fetchByAssoc($result, -1, false);
+        if (!is_array($row)) {
+            return null;
         }
 
-        $currentUserModel = Users_Record_Model::getInstanceById($userid, 'Users');
-        $userCredentials = $currentUserModel->getUserCredential();
-        $userCredentialList = array();
-        foreach ($userCredentials as $credential) {
-            if(!isset($credential['passkey_credential'])) {
-                continue;
+        return ['userid' => $row['userid'], 'passkey_credential' => $row['passkey_credential']];
+    }
+
+    /**
+     * @return array{string, string} パディングなしとパディングありの base64url
+     */
+    private function idCandidates(string $rawId): array
+    {
+        $unpadded = Base64UrlSafe::encodeUnpadded($rawId);
+
+        return [$unpadded, Base64UrlSafe::encode($rawId)];
+    }
+
+    private function decodeOrNull(mixed $json): ?CredentialRecord
+    {
+        try {
+            return Users_PasskeyCredentialCodec_Model::decode(is_string($json) ? $json : '');
+        } catch (InvalidArgumentException $e) {
+            global $log;
+            if ($log instanceof Logger) {
+                $log->error('Invalid passkey credential data: ' . $e->getMessage());
             }
-            $userCredentialList[] = $credential['passkey_credential'];
+
+            return null;
         }
-        
-        return $userCredentialList;
-    }
-
-    private function cleanBase64Padding($credential) {
-        $cleanCredential = $credential;
-        $cleanCredential = base64_encode($cleanCredential);
-        $cleanCredential = str_replace(['+', '/'], ['-', '_'], $cleanCredential);
-        $cleanCredential = rtrim($cleanCredential, '=');
-
-        return $cleanCredential;
     }
 }
