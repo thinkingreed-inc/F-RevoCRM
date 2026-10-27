@@ -16,6 +16,12 @@ Vtiger_Detail_Js("Leads_Detail_Js", {
      * @param: Convert Lead url, currentElement.
      */
     convertLead: function (convertLeadUrl, buttonElement) {
+        // Web Components 版の昇格画面（<lead-convert>）が読み込まれていればそちらを開く。
+        // 読み込まれていない環境（開発用の Vite が動いていない等）では従来の画面を使う。
+        if (window.customElements && window.customElements.get('lead-convert')) {
+            Leads_Detail_Js.showWebComponentsConvertLead(convertLeadUrl);
+            return;
+        }
         var instance = Leads_Detail_Js.detailCurrentInstance;
         //Initially clear the elements to overwtite earliear cache
         instance.convertLeadContainer = false;
@@ -38,6 +44,33 @@ Vtiger_Detail_Js("Leads_Detail_Js", {
         } else {
             instance.displayConvertLeadModel(Leads_Detail_Js.cache, buttonElement);
         }
+    },
+
+    /*
+     * Web Components 版の昇格画面を開く。昇格に成功すると画面側で企業（無ければ担当者）の詳細へ移動する
+     * @param: Convert Lead url（record パラメータからリードIDを取る）
+     */
+    showWebComponentsConvertLead: function (convertLeadUrl) {
+        var match = /[?&]record=(\d+)/.exec(convertLeadUrl || '');
+        var recordId = match ? match[1] : app.getRecordId();
+        var containerId = 'webcomponents-lead-convert-container';
+        var container = document.getElementById(containerId);
+        if (!container) {
+            container = document.createElement('div');
+            container.id = containerId;
+            document.body.appendChild(container);
+        }
+        container.innerHTML = '';
+
+        var convertElement = document.createElement('lead-convert');
+        convertElement.setAttribute('record-id', recordId);
+        convertElement.setAttribute('is-open', 'true');
+        convertElement.addEventListener('open-change', function (e) {
+            if (e.detail === false) {
+                container.innerHTML = '';
+            }
+        });
+        container.appendChild(convertElement);
     }
 
 }, {
