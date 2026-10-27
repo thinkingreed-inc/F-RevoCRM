@@ -252,6 +252,19 @@ class Users_Module_Model extends Vtiger_Module_Model {
 		$adb->pquery($query, $params);
 	}
 
+	/**
+	 * Passkey のみのログインの失敗を記録する。持ち主が分からないときはユーザー名を空で記録する
+	 * @param string $username
+	 */
+	public function savePasskeyLoginErrorHistory(string $username): void {
+		$adb = PearDatabase::getInstance();
+		$userIPAddress = isset($_SERVER['REMOTE_ADDR']) ? (string) $_SERVER['REMOTE_ADDR'] : '';
+		$loginTime = date("Y-m-d H:i:s");
+		$query = "INSERT INTO vtiger_loginhistory (user_name, user_ip, logout_time, login_time, status, is_portal, login_type) VALUES (?,?,?,?,?,?,?)";
+		$params = array($username, $userIPAddress, $loginTime, $loginTime, 'Signed in error', 0, 'passkey');
+		$adb->pquery($query, $params);
+	}
+
 
 	/**
 	 * Function to save packages info
