@@ -46,13 +46,37 @@ class Vtiger_Base_UIType extends Vtiger_Base_Model {
 	}
 
 	/**
+	 * uitype 専用の UIType クラスの対応表 (uitype => クラス名の接尾辞)
+	 * 対応表にある uitype は、データ型名に関係なく専用クラスで解決する。
+	 * データ型名を既存のもの (date など) のままにして、日付等の既存機能に乗せたい型で使う。
+	 */
+	const UITYPE_CLASS_MAP = array(
+		'996' => 'YearMonth',
+		'997' => 'AutoNumber',
+	);
+
+	/**
+	 * UIType クラス名の接尾辞を解決する
+	 * @param mixed $uitype vtiger_field.uitype (文字列・整数・null のいずれも可)
+	 * @param string $fieldDataType データ型名
+	 * @return string 対応表にあればその接尾辞、無ければデータ型名の先頭を大文字にしたもの
+	 */
+	public static function resolveClassSuffix($uitype, $fieldDataType) {
+		$key = (string) $uitype;
+		if ($key !== '' && isset(self::UITYPE_CLASS_MAP[$key])) {
+			return self::UITYPE_CLASS_MAP[$key];
+		}
+		return ucfirst($fieldDataType);
+	}
+
+	/**
 	 * Static function to get the UIType object from Vtiger Field Model
 	 * @param Vtiger_Field_Model $fieldModel
 	 * @return Vtiger_Base_UIType or UIType specific object instance
 	 */
 	public static function getInstanceFromField($fieldModel) {
 		$fieldDataType = $fieldModel->getFieldDataType();
-		$uiTypeClassSuffix = ucfirst($fieldDataType);
+		$uiTypeClassSuffix = self::resolveClassSuffix($fieldModel->get('uitype'), $fieldDataType);
 		$moduleName = $fieldModel->getModuleName();
 		$moduleSpecificUiTypeClassName = $moduleName.'_'.$uiTypeClassSuffix.'_UIType';
 		$uiTypeClassName = 'Vtiger_'.$uiTypeClassSuffix.'_UIType';

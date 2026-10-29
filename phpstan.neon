@@ -45,3 +45,20 @@ parameters:
         # スタブ本体（ParametersApiTestSupport.php）は vtiger と同名のクラスを
         # 定義するため解析対象にしない（本物の定義と食い違う）。
         - tests/Support/ParametersApiTestState.php
+        # リード昇格（Web Components 版）のテストが参照する関数・クラス
+        - include/Webservices/ConvertLead.php
+        - modules/Vtiger/handlers/CheckDuplicateHandler.php
+        - setup/migration/scripts/20261021000000_create_convertlead_settings_tables.php
+        # 年月項目・自動採番項目（uitype 996 / 997）のテストが参照するクラス
+        - modules/Vtiger/uitypes/YearMonth.php
+        - modules/Vtiger/handlers/YearMonthHandler.php
+        - modules/Vtiger/utils/AutoNumberFormat.php
+        - modules/Vtiger/utils/AutoNumberValue.php
+        - modules/Vtiger/utils/AutoNumber.php
+        - modules/Vtiger/utils/AutoNumberBackfill.php
+        - modules/Vtiger/utils/AutoNumberLegacy.php
+        - setup/migration/scripts/20261028090000_add_yearmonth_uitype.php
+        - setup/migration/scripts/20261028100000_add_autonumber_uitype.php
+        - setup/migration/scripts/20261028110000_migrate_uitype4_to_autonumber.php
+        - include/Webservices/Create.php
+        - include/Webservices/Revise.php

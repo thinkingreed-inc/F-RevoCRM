@@ -683,3 +683,209 @@ Vtiger_Field_Js('Vtiger_Integer_Field_Js',{},{
 		return this.addValidationToElement(html);
 	}
 });
+
+/**
+ * ファイルアップロード項目（uitype 998 / データ型 fileupload）
+ *
+ * 入力欄は Web コンポーネント <fr-field-fileupload> で出す（詳細画面のインライン編集で使う）。
+ * 送信する値（ドキュメントID）は hidden 入力に入れ、Web コンポーネントがそれを書き換える。
+ */
+Vtiger_Field_Js('Vtiger_Fileupload_Field_Js',{
+
+	TAG_NAME : 'fr-field-fileupload',
+
+	/** 保存前の一時ファイルを指す値（Documents_FieldFileDraft） */
+	DRAFT_PATTERN : /^draft:[0-9a-f]{32}$/,
+
+	/**
+	 * 詳細画面のインライン編集で保存した後、表示を Web コンポーネントで出し直す
+	 * （保存後の表示は標準ではファイル名の文字に置き換わり、サムネイルが消えるため）
+	 */
+	registerPostAjaxSaveEvent : function() {
+		if (typeof Vtiger_Detail_Js == 'undefined' || typeof app.event == 'undefined') {
+			return;
+		}
+		app.event.on(Vtiger_Detail_Js.PostAjaxSaveEvent, function(e, fieldBasicData, postSaveRecordDetails) {
+			if (!fieldBasicData || !fieldBasicData.length || fieldBasicData.data('type') != 'fileupload') {
+				return;
+			}
+			var fieldName = fieldBasicData.data('name');
+			var saved = postSaveRecordDetails ? postSaveRecordDetails[fieldName] : null;
+			var valueElement = fieldBasicData.closest('.fieldValue, td').find('.value').first();
+			if (!saved || !valueElement.length) {
+				return;
+			}
+			// インライン編集の入力欄は一度作ると使い回されるため、保存前の値（一時ファイルなど）が
+			// 残らないよう捨てる。次に編集するときに保存後の値（data-value）から作り直される
+			fieldBasicData.closest('.edit').find('.editElement').remove();
+			var moduleName = app.getModuleName();
+			var recordId = Number(app.getRecordId()) || 0;
+			var render = function(value) {
+				var props = {
+					mode : 'detail',
+					module : moduleName,
+					fieldName : fieldName,
+					fieldLabel : '',
+					recordId : recordId,
+					mandatory : false,
+					readonly : false,
+					file : null,
+					value : value
+				};
+				valueElement.empty().append(jQuery(document.createElement(Vtiger_Fileupload_Field_Js.TAG_NAME)).attr('props', JSON.stringify(props)));
+			};
+			var value = String(saved.value || '');
+			if (!Vtiger_Fileupload_Field_Js.DRAFT_PATTERN.test(value)) {
+				render(value);
+				return;
+			}
+			// 保存の応答には一時ファイルを指す値（draft:...）が返る（ドキュメントIDへの置き換えは
+			// 保存処理の中で行われ、応答には反映されない）。次のインライン編集で一時ファイルを
+			// 送り直さないよう、レコードに入ったドキュメントIDを引き直して値を差し替える
+			jQuery.getJSON('index.php', {
+				module : moduleName,
+				api : 'FileField',
+				mode : 'thumbnail',
+				field : fieldName,
+				record : recordId
+			}).then(function(response) {
+				var file = response ? response.file : null;
+				var documentId = file ? String(file.id) : '';
+				fieldBasicData.data('value', documentId);
+				fieldBasicData.attr('data-value', documentId);
+				render(documentId);
+			}, function() {
+				render('');
+			});
+		});
+	}
+},{
+
+	/**
+	 * 保存されている値（ドキュメントID）
+	 * インライン編集では value に表示用のファイル名が入るため、詳細画面の元の値を使う
+	 */
+	getRawValue : function() {
+		var fieldName = this.getName();
+		var basicData = jQuery('.fieldBasicData').filter(function(index, element) {
+			return jQuery(element).data('name') == fieldName;
+		}).first();
+		if (basicData.length) {
+			return String(basicData.attr('data-value') || '');
+		}
+		var value = String(this.getValue() || '');
+		return /^[0-9]+$/.test(value) ? value : '';
+	},
+
+	getUi : function() {
+		var fieldName = this.getName();
+		var value = this.getRawValue();
+		var input = jQuery('<input type="hidden" />').attr('name', fieldName).val(value);
+		// 項目の設定画面（既定値の入力欄）ではファイルを扱わない
+		if (app.getParentModuleName() == 'Settings') {
+			return input;
+		}
+		var inputId = 'fr_wc_inline_' + fieldName;
+		input.attr('id', inputId);
+		var props = {
+			mode : 'edit',
+			module : this.getModuleName(),
+			fieldName : fieldName,
+			fieldLabel : this.get('label'),
+			recordId : Number(app.getRecordId()) || 0,
+			mandatory : !!this.isMandatory(),
+			readonly : false,
+			inputId : inputId,
+			file : null,
+			value : value
+		};
+		var container = jQuery('<div class="fr-wc-field"></div>');
+		container.append(input).append(jQuery(document.createElement(Vtiger_Fileupload_Field_Js.TAG_NAME)).attr('props', JSON.stringify(props)));
+		return this.addValidationToElement(container);
+	}
+});
+
+jQuery(function() {
+	Vtiger_Fileupload_Field_Js.registerPostAjaxSaveEvent();
+});
+
+/**
+ * 年月項目（uitype 996 / データ型 date）
+ *
+ * 入力欄は Web コンポーネント <fr-field-yearmonth>（詳細・一覧のインライン編集で使う）。
+ * 送信する値（月初日 YYYY-MM-01）は hidden 入力に入れ、Web コンポーネントがそれを書き換える。
+ * データ型が date のままなので、Detail.js / List.js が uitype 996 の項目だけ type を yearmonth に
+ * 差し替えてからこのクラスを使う（フィルタ条件など他の画面は日付の入力欄のまま）。
+ */
+Vtiger_Field_Js('Vtiger_Yearmonth_Field_Js',{
+
+	TAG_NAME : 'fr-field-yearmonth',
+
+	UITYPE : '996',
+
+	/**
+	 * 項目情報が年月項目なら、インライン編集で年月の入力欄を使うよう type を差し替えた写しを返す
+	 */
+	toInlineFieldInfo : function(fieldInfo) {
+		if (fieldInfo && String(fieldInfo.uitype) == Vtiger_Yearmonth_Field_Js.UITYPE) {
+			return jQuery.extend({}, fieldInfo, {type : 'yearmonth'});
+		}
+		return fieldInfo;
+	},
+
+	/**
+	 * 「2026年10月」「2026-10-28」などを月初日（YYYY-MM-01）にする。解釈できなければ空文字
+	 */
+	toDbValue : function(text) {
+		var match = /^\s*(\d{4})\s*(?:[-\/]|年)\s*(\d{1,2})/.exec(String(text || ''));
+		if (!match) {
+			return '';
+		}
+		var month = parseInt(match[2], 10);
+		if (month < 1 || month > 12) {
+			return '';
+		}
+		return match[1] + '-' + ('0' + month).slice(-2) + '-01';
+	}
+},{
+
+	/**
+	 * 保存されている値（月初日）
+	 * 詳細画面は元の値（data-value）を使う。一覧や項目の設定画面では表示された文字から戻す
+	 */
+	getRawValue : function() {
+		var fieldName = this.getName();
+		var basicData = jQuery('.fieldBasicData').filter(function(index, element) {
+			return jQuery(element).data('name') == fieldName;
+		}).first();
+		if (basicData.length) {
+			return Vtiger_Yearmonth_Field_Js.toDbValue(basicData.attr('data-value'));
+		}
+		var value = String(this.getValue() || '');
+		return Vtiger_Yearmonth_Field_Js.toDbValue(value);
+	},
+
+	getUi : function() {
+		var fieldName = this.getName();
+		var value = this.getRawValue();
+		var input = jQuery('<input type="hidden" />').attr('name', fieldName).val(value);
+		var inputId = 'fr_wc_inline_' + fieldName;
+		input.attr('id', inputId);
+		var props = {
+			mode : 'edit',
+			module : this.getModuleName(),
+			fieldName : fieldName,
+			fieldLabel : this.get('label'),
+			recordId : Number(app.getRecordId()) || 0,
+			mandatory : !!this.isMandatory(),
+			readonly : false,
+			inputId : inputId,
+			value : value,
+			displayFormat : this.get('displayFormat'),
+			labels : this.get('labels') || {}
+		};
+		var container = jQuery('<div class="fr-wc-field"></div>');
+		container.append(input).append(jQuery(document.createElement(Vtiger_Yearmonth_Field_Js.TAG_NAME)).attr('props', JSON.stringify(props)));
+		return this.addValidationToElement(container);
+	}
+});

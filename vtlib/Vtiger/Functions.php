@@ -799,7 +799,9 @@ class Vtiger_Functions {
             }
         }
 
-        if ($saveimage && in_array($filetype, ['svg+xml', $mimeSubtype])) {
+        // イベント属性の除去は SVG（テキスト）向け。PNG などのバイナリにかけると、圧縮データが
+        // 偶然 `onend=` などに一致したときに中身が書き換わって画像が壊れるため、SVG に限る。
+        if ($saveimage && $mimeSubtype === 'svg+xml') {
             // Remove malicious HTML attributes with values from the contents.
             $imageContents = purifyHtmlEventAttributes($imageContents, true);
             file_put_contents($tmpFileName, $imageContents);

@@ -917,6 +917,13 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 				var pickListOption = form.find('.picklistOption');
 				pickListOption.removeClass('hide');
 			}
+			if (selectedOption.data('handwritingsupported')) {
+				form.find('.handwritingSupported').removeClass('hide');
+			}
+			// 自動採番: 書式などは「連番管理」の画面で設定する旨を出す
+			if (selectedOption.data('autonumbersupported')) {
+				form.find('.autoNumberSupported').removeClass('hide');
+			}
 
 			if (selectedOption.data('isrelation')) {
 				form.find('.relationModules').removeClass('hide');
@@ -1003,6 +1010,26 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 					form.find('input[name="fieldLength"]').val("");
 					form.find('input[name="decimal"]').val("");
 					form.find('input[name="fieldDefaultValue"]').val("");
+				}
+
+				if (type == 'AutoNumber') {
+					// 自動採番は値を入力しない（既定値・必須・一括編集・ヘッダー表示の対象にしない）
+					form.find('.defaultValueUi').closest('.form-group').addClass('hide');
+					form.find('input[type="checkbox"][name="mandatory"]').addClass('cursorPointerNotAllowed').removeAttr('checked').attr('readonly', 'readonly');
+					form.find('input[type="checkbox"][name="headerfield"]').addClass('cursorPointerNotAllowed').removeAttr('checked').attr('readonly', 'readonly');
+					form.find('input[type="checkbox"][name="masseditable"]').addClass('cursorPointerNotAllowed').removeAttr('checked').attr('readonly', 'readonly');
+				}
+
+				if (type == 'YearMonth') {
+					// 年月は既定値を持たない
+					form.find('.defaultValueUi').closest('.form-group').addClass('hide');
+				}
+
+				if (type == 'FileUpload') {
+					// ファイルは既定値・一括編集・ヘッダー表示を扱えない
+					form.find('.defaultValueUi').closest('.form-group').addClass('hide');
+					form.find('input[type="checkbox"][name="headerfield"]').addClass('cursorPointerNotAllowed').removeAttr('checked').attr('readonly', 'readonly');
+					form.find('input[type="checkbox"][name="masseditable"]').addClass('cursorPointerNotAllowed').removeAttr('checked').attr('readonly', 'readonly');
 				}
 
 				var defaultValueUiContainer = defaultValueUi.closest('.defaultValueUi');
