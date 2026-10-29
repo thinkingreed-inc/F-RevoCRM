@@ -148,3 +148,9 @@ createWebComponent(LeadMappingSettings, "lead-mapping-settings", [], []);
 import { createFieldWebComponent } from "@/utils/createFieldWebComponent";
 import { FileUploadFieldElement } from "@/components/fields/FileUpload";
 createFieldWebComponent(FileUploadFieldElement, "fr-field-fileupload");
+
+// 年月項目（uitype 996）
+// 使用例（HTML）:
+// <fr-field-yearmonth props='{"mode":"edit","module":"Accounts","fieldName":"cf_1002","value":"2026-10-01",...}'></fr-field-yearmonth>
+import { YearMonthFieldElement } from "@/components/fields/YearMonth";
+createFieldWebComponent(YearMonthFieldElement, "fr-field-yearmonth");

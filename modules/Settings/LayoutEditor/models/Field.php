@@ -17,7 +17,18 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 
 	public function delete() {
 		$adb = PearDatabase::getInstance();
+		if ($this->get('uitype') == '997') {
+			// 遡及採番の途中で項目を消さない（先にジョブを中止する）
+			require_once 'modules/Vtiger/utils/AutoNumber.php';
+			if (Vtiger_AutoNumberBackfill::hasUnfinishedJob((int) $this->getId())) {
+				throw new Exception(vtranslate('LBL_AUTONUMBER_ERR_LOCKED_BY_JOB', 'Vtiger'));
+			}
+		}
 		parent::delete();
+		if ($this->get('uitype') == '997') {
+			// 設定・連番・ジョブも消す。連番は項目ごとに持つため、他の項目には影響しない
+			Vtiger_AutoNumber::deleteConfig((int) $this->getId());
+		}
 
 		$fld_module = $this->getModuleName();
 		$id = $this->getId();
@@ -149,7 +160,7 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 		$moduleModel = $this->getModule();
 		$complusoryMandatoryFieldList = $moduleModel->getCompulsoryMandatoryFieldList();
 		//uitypes for which mandatory switch is disabled
-		$mandatoryRestrictedUitypes = array('4','70','999');
+		$mandatoryRestrictedUitypes = array('4','70','999','997');
 		if(in_array($this->getName(), $complusoryMandatoryFieldList) || $this->isOptionsRestrictedField()){
 			return true;
 		}
@@ -203,8 +214,8 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 	 */
 	public function isMassEditOptionDisabled() {
 		//uitypes for which mandatory switch is disabled
-		// ファイルアップロード項目（998）は一括編集の画面でファイルを扱えないため対象外
-		$headerFieldOptionUitypes = array('999', '998');
+		// ファイルアップロード項目（998）は一括編集の画面でファイルを扱えない、自動採番項目（997）は編集できないため対象外
+		$headerFieldOptionUitypes = array('999', '998', '997');
 		if(in_array($this->get('uitype'),$headerFieldOptionUitypes) || (in_array($this->get('displaytype'), array(2,4)))) {
 			return true;
 		}
@@ -230,7 +241,7 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 		}
 		// for Record Source Field we should not show default value option as we are setting this while Record Save
 		$defaultValueRestrictedFields = array('source');
-		$defaultValueRestrictedUitypes = array('4', '70', '69', '53', '6', '998');
+		$defaultValueRestrictedUitypes = array('4', '70', '69', '53', '6', '998', '996', '997');
 		if (in_array($this->getName(), $defaultValueRestrictedFields) 
 				|| in_array($this->get('displaytype'), array(4))
 				|| $this->getFieldDataType() == Vtiger_Field_Model::REFERENCE_TYPE
@@ -456,6 +467,14 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 	 * @return string
 	 */
 	public function getFieldDataTypeLabel() {
+		// 年月項目はデータ型が date のため、uitype で見分ける
+		if ($this->get('uitype') == '996') {
+			return 'YearMonth';
+		}
+		// 自動採番項目はデータ型が string のため、uitype で見分ける
+		if ($this->get('uitype') == '997') {
+			return 'AutoNumber';
+		}
 		$fieldDataType = $this->getFieldDataType();        
 		$fieldDataTypeLabelMapping = array('string'=>'Text','reference'=>'Relation','double'=>'Decimal','percentage'=>'Percent',
 											'boolean'=>'Checkbox','text'=>'TextArea','multipicklist'=>'MultiSelectCombo','salutation'=>'Text',

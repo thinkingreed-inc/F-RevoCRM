@@ -16,6 +16,7 @@ import { MultiPicklistField } from "./MultiPicklistField";
 import { ProductTaxField } from "./ProductTaxField";
 import { CurrencyListField } from "./CurrencyListField";
 import { FileUploadField } from "./fields/FileUpload";
+import { YearMonthFieldWithTranslation } from "./fields/YearMonth";
 import { cn } from "../lib/utils";
 import { useOptionalTranslation } from "../hooks/useTranslation";
 
@@ -831,6 +832,53 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
                 }
                 disabled={disabled || field.readonly}
                 onChange={(documentId) => onChange(field.name, documentId)}
+              />
+              {renderError()}
+            </div>
+          </div>
+        );
+
+      // 年月 - YearMonthField（UIType 996）
+      // 値は月初日（YYYY-MM-01）。データ型が date のため、UIType で見分ける
+      case UI_TYPES.YEAR_MONTH:
+        return (
+          <div className={cn("flex items-start gap-2", className)}>
+            {renderLabel()}
+            <div className="flex-1 min-w-0">
+              <YearMonthFieldWithTranslation
+                mode="edit"
+                value={
+                  value === null || value === undefined ? "" : String(value)
+                }
+                fieldLabel={field.label}
+                mandatory={field.mandatory}
+                disabled={disabled || field.readonly}
+                onChange={(next) => onChange(field.name, next)}
+              />
+              {renderError()}
+            </div>
+          </div>
+        );
+
+      // 自動採番（UIType 997）- 値は保存時にサーバーが付けるため入力できない
+      case UI_TYPES.AUTO_NUMBER:
+        return (
+          <div className={cn("flex items-start gap-2", className)}>
+            {renderLabel()}
+            <div className="flex-1 min-w-0">
+              <Input
+                {...inputProps}
+                disabled
+                readOnly
+                value={
+                  value === null || value === undefined ? "" : String(value)
+                }
+                placeholder={
+                  t("LBL_AUTONUMBER_PLACEHOLDER") !==
+                  "LBL_AUTONUMBER_PLACEHOLDER"
+                    ? t("LBL_AUTONUMBER_PLACEHOLDER")
+                    : "保存時に自動で付与されます"
+                }
               />
               {renderError()}
             </div>

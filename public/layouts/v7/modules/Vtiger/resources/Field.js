@@ -808,3 +808,84 @@ Vtiger_Field_Js('Vtiger_Fileupload_Field_Js',{
 jQuery(function() {
 	Vtiger_Fileupload_Field_Js.registerPostAjaxSaveEvent();
 });
+
+/**
+ * 年月項目（uitype 996 / データ型 date）
+ *
+ * 入力欄は Web コンポーネント <fr-field-yearmonth>（詳細・一覧のインライン編集で使う）。
+ * 送信する値（月初日 YYYY-MM-01）は hidden 入力に入れ、Web コンポーネントがそれを書き換える。
+ * データ型が date のままなので、Detail.js / List.js が uitype 996 の項目だけ type を yearmonth に
+ * 差し替えてからこのクラスを使う（フィルタ条件など他の画面は日付の入力欄のまま）。
+ */
+Vtiger_Field_Js('Vtiger_Yearmonth_Field_Js',{
+
+	TAG_NAME : 'fr-field-yearmonth',
+
+	UITYPE : '996',
+
+	/**
+	 * 項目情報が年月項目なら、インライン編集で年月の入力欄を使うよう type を差し替えた写しを返す
+	 */
+	toInlineFieldInfo : function(fieldInfo) {
+		if (fieldInfo && String(fieldInfo.uitype) == Vtiger_Yearmonth_Field_Js.UITYPE) {
+			return jQuery.extend({}, fieldInfo, {type : 'yearmonth'});
+		}
+		return fieldInfo;
+	},
+
+	/**
+	 * 「2026年10月」「2026-10-28」などを月初日（YYYY-MM-01）にする。解釈できなければ空文字
+	 */
+	toDbValue : function(text) {
+		var match = /^\s*(\d{4})\s*(?:[-\/]|年)\s*(\d{1,2})/.exec(String(text || ''));
+		if (!match) {
+			return '';
+		}
+		var month = parseInt(match[2], 10);
+		if (month < 1 || month > 12) {
+			return '';
+		}
+		return match[1] + '-' + ('0' + month).slice(-2) + '-01';
+	}
+},{
+
+	/**
+	 * 保存されている値（月初日）
+	 * 詳細画面は元の値（data-value）を使う。一覧や項目の設定画面では表示された文字から戻す
+	 */
+	getRawValue : function() {
+		var fieldName = this.getName();
+		var basicData = jQuery('.fieldBasicData').filter(function(index, element) {
+			return jQuery(element).data('name') == fieldName;
+		}).first();
+		if (basicData.length) {
+			return Vtiger_Yearmonth_Field_Js.toDbValue(basicData.attr('data-value'));
+		}
+		var value = String(this.getValue() || '');
+		return Vtiger_Yearmonth_Field_Js.toDbValue(value);
+	},
+
+	getUi : function() {
+		var fieldName = this.getName();
+		var value = this.getRawValue();
+		var input = jQuery('<input type="hidden" />').attr('name', fieldName).val(value);
+		var inputId = 'fr_wc_inline_' + fieldName;
+		input.attr('id', inputId);
+		var props = {
+			mode : 'edit',
+			module : this.getModuleName(),
+			fieldName : fieldName,
+			fieldLabel : this.get('label'),
+			recordId : Number(app.getRecordId()) || 0,
+			mandatory : !!this.isMandatory(),
+			readonly : false,
+			inputId : inputId,
+			value : value,
+			displayFormat : this.get('displayFormat'),
+			labels : this.get('labels') || {}
+		};
+		var container = jQuery('<div class="fr-wc-field"></div>');
+		container.append(input).append(jQuery(document.createElement(Vtiger_Yearmonth_Field_Js.TAG_NAME)).attr('props', JSON.stringify(props)));
+		return this.addValidationToElement(container);
+	}
+});

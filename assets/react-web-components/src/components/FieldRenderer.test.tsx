@@ -673,4 +673,53 @@ describe("FieldRenderer", () => {
       vi.unstubAllGlobals();
     });
   });
+
+  describe("年月・自動採番（F-RevoCRM 独自の UIType）", () => {
+    it("年月は月初日の値を年月で出し、選んだ月を月初日で返す", async () => {
+      const onChange = vi.fn();
+      const field = createField({
+        name: "cf_ym",
+        uitype: UI_TYPES.YEAR_MONTH,
+        label: "対象月",
+      });
+
+      render(
+        <FieldRenderer field={field} value="2026-10-01" onChange={onChange} />,
+      );
+
+      const trigger = screen.getByTestId("yearmonth-trigger");
+      expect(trigger.textContent).toContain("2026年10月");
+      fireEvent.click(trigger);
+      fireEvent.click(await screen.findByText("3月"));
+      expect(onChange).toHaveBeenCalledWith("cf_ym", "2026-03-01");
+    });
+
+    it("年月が空ならプレースホルダを出す", () => {
+      const field = createField({
+        name: "cf_ym",
+        uitype: UI_TYPES.YEAR_MONTH,
+        label: "対象月",
+      });
+      render(<FieldRenderer field={field} value="" onChange={vi.fn()} />);
+      expect(screen.getByTestId("yearmonth-trigger").textContent).toContain(
+        "年月を選択",
+      );
+    });
+
+    it("自動採番は入力できず、保存時に付くことを示す", () => {
+      const onChange = vi.fn();
+      const field = createField({
+        name: "cf_no",
+        uitype: UI_TYPES.AUTO_NUMBER,
+        label: "番号",
+      });
+      render(<FieldRenderer field={field} value="" onChange={onChange} />);
+      const input = screen.getByPlaceholderText(
+        "保存時に自動で付与されます",
+      ) as HTMLInputElement;
+      expect(input.disabled).toBe(true);
+      expect(input.readOnly).toBe(true);
+      expect(onChange).not.toHaveBeenCalled();
+    });
+  });
 });

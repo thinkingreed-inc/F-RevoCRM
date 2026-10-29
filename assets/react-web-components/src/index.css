@@ -215,7 +215,8 @@
 }
 
 /* UIType の Web コンポーネント: 定義されるまでは Smarty が出した表示用の文字を出し、定義後は隠す */
-fr-field-fileupload:defined > .fr-wc-fallback {
+fr-field-fileupload:defined > .fr-wc-fallback,
+fr-field-yearmonth:defined > .fr-wc-fallback {
   display: none;
 }
 

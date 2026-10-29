@@ -94,7 +94,7 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 		return array(
 			//Skypeサービス終了のため、Skype項目を削除
 			'Text','Decimal','Integer','Percent','Currency','Date','Email','Phone','Picklist',
-			'URL','Checkbox','TextArea','MultiSelectCombo','Time','Reference','Blank','FileUpload'
+			'URL','Checkbox','TextArea','MultiSelectCombo','Time','Reference','Blank','FileUpload','YearMonth','AutoNumber'
 		);
 	}
 
@@ -134,6 +134,11 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 			}
 			if($fieldType == 'Blank'){
 				// empty field
+			}
+			if($fieldType == 'AutoNumber'){
+				// 設定は連番管理の画面で行う旨を出す。既定値は持たない
+				$details['autonumbersupported'] = true;
+				$details['defaultDisabled'] = true;
 			}
 			if($fieldType == 'FileUpload'){
 				// 手書き入力の指定を出す
@@ -182,6 +187,10 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 		$dbType = $details['dbType'];
 
 		$quickCreate = in_array($moduleName,  getInventoryModules()) ? 3 : $params['quickcreate'];
+		if ($fieldType == 'AutoNumber') {
+			// 自動採番項目は入力できないため、クイック作成には出さない
+			$quickCreate = 3;
+		}
 
 		$fieldModel = new Settings_LayoutEditor_Field_Model();
 		$fieldModel->set('addNewId', $custfld_fieldid)
@@ -194,7 +203,7 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 				   ->set('quickcreate',$quickCreate)
 				   ->set('columntype', $dbType)
 				   ->updateTypeofDataFromMandatory($params['mandatory'])
-				   ->set('masseditable',$params['masseditable'])
+				   ->set('masseditable', $fieldType == 'AutoNumber' ? 2 : $params['masseditable'])
 				   ->set('summaryfield',$params['summaryfield'])
 				   ->set('headerfield',$params['headerfield']);
 
@@ -242,6 +251,12 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 				$relModule = Vtiger_Module::getInstance($relModuleName);
 				$relModule->setRelatedList($module, vtranslate($fieldModel->getModuleName(),$relModule->name)."_".$fieldModel->get('label'), Array('ADD'), 'get_dependents_list', $fieldModel->getId());
 			}
+		}
+
+		if($fieldType == 'AutoNumber') {
+			// 書式などは既定値で作る。「連番管理」の画面で設定する
+			require_once 'modules/Vtiger/utils/AutoNumber.php';
+			Vtiger_AutoNumber::saveConfig($fieldModel->getId(), Vtiger_AutoNumber::defaultConfig());
 		}
 
 		if($fieldType == 'FileUpload') {
@@ -353,6 +368,18 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 							   $uitype = 999;
 							   $type = "VARCHAR(0) default ''"; //adodb type
 							   $uichekdata='V~O';
+							   break;
+				Case 'AutoNumber' :
+							   // 値は書式から作る番号の文字列。画面では編集できない（保存時に自動で付ける）
+							   $uitype = 997;
+							   $type = "VARCHAR(100) default ''"; //adodb type
+							   $uichekdata='V~O';
+							   break;
+				Case 'YearMonth' :
+							   // 値は月初日（YYYY-MM-01）。データ型は date のまま
+							   $uitype = 996;
+							   $type = "DATE"; //adodb type
+							   $uichekdata='D~O';
 							   break;
 				Case 'FileUpload' :
 							   // 値はアップロードしたファイルを登録したドキュメントのID

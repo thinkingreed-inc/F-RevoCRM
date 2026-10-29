@@ -146,6 +146,19 @@
 							</div>
 						</div>
 					{/if}
+					{if !$IS_FIELD_EDIT_MODE || $FIELD_MODEL->get('uitype') eq '997'}
+						<div class="supportedType autoNumberSupported {if $FIELD_MODEL->get('uitype') neq '997'}hide{/if}" data-test-id="autonumber-settings">
+							<div class="form-group">
+								<div class="col-sm-5"></div>
+								<div class="controls col-sm-7">
+									<div class="muted">{vtranslate('LBL_AUTONUMBER_SETTINGS_IN_NUMBERING', 'Vtiger')}</div>
+									{if $IS_FIELD_EDIT_MODE}
+										<a href="index.php?parent=Settings&module=Vtiger&view=CustomRecordNumbering&sourceModule={$SELECTED_MODULE_NAME}&field={$FIELD_MODEL->get('name')}" target="_blank" data-test-id="autonumber-settings-link">{vtranslate('LBL_RECORD_NUMBERING', 'Settings:Vtiger')}</a>
+									{/if}
+								</div>
+							</div>
+						</div>
+					{/if}
 					{if $FIELD_MODEL->getFieldDataType() != 'reference'}
 						{include file=vtemplate_path('DefaultValueUi.tpl', $QUALIFIED_MODULE) FIELD_MODEL=$FIELD_MODEL}
 					{/if}

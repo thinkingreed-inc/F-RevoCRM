@@ -365,6 +365,9 @@ class ListViewController {
 						$value =  Vtiger_Language_Handler::getTranslatedString($value,$module);
 						$value = textlength_check($value);
 					}
+				}elseif($uitype == 996) {
+					// 年月項目は日付型の列に月初日が入っている。日付ではなく年月で出す
+					$value = Vtiger_YearMonth_UIType::formatDisplay($value, Vtiger_YearMonth_UIType::getDisplayFormat());
 				}elseif($fieldDataType == 'date' || $fieldDataType == 'datetime') {
 					if($value != '' && $value != '0000-00-00' && $value != 'NULL') {
 						if($module == 'Calendar' &&($fieldName == 'date_start' || $fieldName == 'due_date')) {

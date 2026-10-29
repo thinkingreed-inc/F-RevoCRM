@@ -34,7 +34,8 @@ class Vtiger_SaveAjax_Action extends Vtiger_Save_Action {
 						$picklistColorMap[$recordFieldValue] = Settings_Picklist_Module_Model::getPicklistColorByValue($fieldName, $recordFieldValue);
 					}
 					$fieldValue = $displayValue = Vtiger_Util_Helper::toSafeHTML($recordFieldValue);
-					if ($fieldModel->getFieldDataType() !== 'currency' && $fieldModel->getFieldDataType() !== 'datetime' && $fieldModel->getFieldDataType() !== 'date' && $fieldModel->getFieldDataType() !== 'double') { 
+					// 年月項目(996)はデータ型が date だが、表示は専用の書式（YYYY年M月）にするためサーバーで作る
+					if ($fieldModel->getFieldDataType() !== 'currency' && $fieldModel->getFieldDataType() !== 'datetime' && ($fieldModel->getFieldDataType() !== 'date' || $fieldModel->get('uitype') == 996) && $fieldModel->getFieldDataType() !== 'double') { 
 						$displayValue = $fieldModel->getDisplayValue($fieldValue, $recordModel->getId()); 
 					}
 					if ($fieldModel->getFieldDataType() == 'currency') {
