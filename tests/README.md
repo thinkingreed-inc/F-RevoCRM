@@ -63,6 +63,31 @@ CI 側にも DB を用意するステップが必要になる。
 | `tests/Integration/Documents/DeleteGuardTest.php` | TS-05 電帳法対象の削除禁止 |
 | `tests/Integration/Documents/ComplianceOnSaveTest.php` | TS-05 保存時の適合判定 |
 
+## 年月項目・自動採番項目のテスト
+
+年月（uitype 996）・自動採番（uitype 997）の網羅リストは `dev-docs/uitype-yearmonth-autonumber-test-matrix.md`（コミット対象外）。
+本体のテストは次のとおり。Integration はファイルごとに実行する（`--testsuite Integration` 全体は既存の Calendar テストが壊れている）。
+
+```bash
+php vendor/bin/phpunit --no-configuration --bootstrap tests/bootstrap.php tests/Integration/Vtiger/Uitypes/AutoNumberFieldTest.php
+```
+
+| パス | 内容 |
+|---|---|
+| `tests/Unit/Vtiger/Uitypes/AutoNumberFormatTest.php` | 書式の解析・描画・検証 |
+| `tests/Unit/Vtiger/Uitypes/AutoNumberLegacyTest.php` | 旧連番（uitype 4）→ 自動採番の読み替え規則 |
+| `tests/Unit/Vtiger/Uitypes/YearMonthNormalizeTest.php` / `UiTypeClassResolutionTest.php` | 年月の正規化 / UIType クラスの解決 |
+| `tests/Integration/Vtiger/Uitypes/YearMonthFieldTest.php` | 年月項目の追加・保存・表示・インライン編集・Webservice |
+| `tests/Integration/Vtiger/Uitypes/AutoNumberFieldTest.php` | 採番・リセット・遡及採番・API・一括保存・Webservice |
+| `tests/Integration/Vtiger/Uitypes/AutoNumberNumberingScreenTest.php` | 「設定 > レコード番号」の画面（モジュール・項目の切り替え）・保存 Ajax・設定リンク・言語キー |
+| `tests/Integration/Vtiger/Uitypes/AutoNumberLegacyMigrationTest.php` | 移行後の標準モジュールの採番 |
+| `tests/Integration/Import/YearMonthAutoNumberImportTest.php` | インポートでの年月・自動採番 |
+| `tests/Integration/Migration/AddYearmonthUitypeTest.php` / `AddAutonumberUitypeTest.php` / `MigrateUitype4ToAutonumberTest.php` | マイグレーション 3 本 |
+
+`AddYearmonthUitypeTest` はプロセス分離のため、この環境では最初のテストで止まることがある。
+止まったプロセスが `vtiger_eventhandlers` などを中途半端に書き換えたまま残るため、止まったら該当プロセスを
+止めたうえで、テスト用 DB の重複行（同じ `handler_class` の登録など）を確認すること。
+
 結合テストは `Tests\Support\DocumentsTestCase` を継承する。この基底クラスが
 F-RevoCRM 本体の読み込み・実行ユーザーの切り替え・テストデータの後始末を引き受ける。
 

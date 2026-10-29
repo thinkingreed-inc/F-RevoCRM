@@ -657,13 +657,13 @@ class Vtiger_Module_Model extends Vtiger_Module {
 		if(!empty($this->fields)) {
 			$fieldList = $this->getFields();
 			foreach($fieldList as $fieldName => $fieldModel) {
-				if($fieldModel->get('uitype') === '4') {
+				if(in_array($fieldModel->get('uitype'), array('4', '997'))) {
 					return true;
 				}
 			}
 		}else{
 			$db = PearDatabase::getInstance();
-			$query = 'SELECT 1 FROM vtiger_field WHERE uitype=4 and tabid=?';
+			$query = 'SELECT 1 FROM vtiger_field WHERE uitype IN (4, 997) and tabid=?';
 			$params = array($this->getId());
 			$result = $db->pquery($query, $params);
 			return $db->num_rows($result) > 0 ? true : false;

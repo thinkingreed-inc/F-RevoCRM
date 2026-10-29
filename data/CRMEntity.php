@@ -536,6 +536,11 @@ class CRMEntity {
 					$fldvalue = $this->setModuleSeqNumber("increment", $module);
 				$this->column_fields[$fieldname] = $fldvalue;
 			}
+			if ($uitype == 997 && $insertion_mode != 'edit' && CRMEntity::isBulkSaveMode() && empty($this->column_fields[$fieldname])) {
+				// Bulk Save Mode: beforesave イベントが動かないため、自動採番項目はここで番号を付ける
+				require_once 'modules/Vtiger/utils/AutoNumber.php';
+				$this->column_fields[$fieldname] = Vtiger_AutoNumber::numberNewRecord($module, $fieldname, $this->column_fields);
+			}
 			if (isset($this->column_fields[$fieldname])) {
 				if ($uitype == 56) {
 					if ($this->column_fields[$fieldname] === 'on' || $this->column_fields[$fieldname] == 1) {
