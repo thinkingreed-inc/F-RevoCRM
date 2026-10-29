@@ -78,11 +78,11 @@ php vendor/bin/phpunit --no-configuration --bootstrap tests/bootstrap.php tests/
 | `tests/Unit/Vtiger/Uitypes/AutoNumberLegacyTest.php` | 旧連番（uitype 4）→ 自動採番の読み替え規則 |
 | `tests/Unit/Vtiger/Uitypes/YearMonthNormalizeTest.php` / `UiTypeClassResolutionTest.php` | 年月の正規化 / UIType クラスの解決 |
 | `tests/Integration/Vtiger/Uitypes/YearMonthFieldTest.php` | 年月項目の追加・保存・表示・インライン編集・Webservice |
-| `tests/Integration/Vtiger/Uitypes/AutoNumberFieldTest.php` | 採番・リセット・遡及採番・API・一括保存・Webservice |
+| `tests/Integration/Vtiger/Uitypes/AutoNumberFieldTest.php` | 採番・リセット・遡及採番・振り直し・API・一括保存・Webservice |
 | `tests/Integration/Vtiger/Uitypes/AutoNumberNumberingScreenTest.php` | 「設定 > レコード番号」の画面（モジュール・項目の切り替え）・保存 Ajax・設定リンク・言語キー |
 | `tests/Integration/Vtiger/Uitypes/AutoNumberLegacyMigrationTest.php` | 移行後の標準モジュールの採番 |
 | `tests/Integration/Import/YearMonthAutoNumberImportTest.php` | インポートでの年月・自動採番 |
-| `tests/Integration/Migration/AddYearmonthUitypeTest.php` / `AddAutonumberUitypeTest.php` / `MigrateUitype4ToAutonumberTest.php` | マイグレーション 3 本 |
+| `tests/Integration/Migration/AddYearmonthUitypeTest.php` / `AddAutonumberUitypeTest.php` / `AddAutonumberRenumberTest.php` / `MigrateUitype4ToAutonumberTest.php` | マイグレーション 4 本 |
 
 `AddYearmonthUitypeTest` はプロセス分離のため、この環境では最初のテストで止まることがある。
 止まったプロセスが `vtiger_eventhandlers` などを中途半端に書き換えたまま残るため、止まったら該当プロセスを

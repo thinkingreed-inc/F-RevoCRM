@@ -3,15 +3,17 @@
 /**
  * 自動採番項目（uitype 997）の遡及採番 API（管理者のみ）
  *
- * 値が空の既存レコードに、後から番号を付ける。処理の本体はサーバー側のジョブで、
+ * 値が空の既存レコードに、後から番号を付ける（振り直しモードでは、既存の番号も開始番号から付け直す）。
+ * 処理の本体はサーバー側のジョブで、
  * 定期ジョブ（cron）が少しずつ進める。画面はこの API で進み具合を読み、開いている間は
  * kick で同じ処理を呼んで進みを速くできる。
  *
  * Usage:
- *   ?module=Accounts&api=AutoNumber&mode=preview&field=cf_123[&created_from=2026-01-01][&created_to=2026-03-31]
+ *   ?module=Accounts&api=AutoNumber&mode=preview&field=cf_123[&created_from=2026-01-01][&created_to=2026-03-31][&renumber=1]
  *     → 対象の件数と、先頭・末尾に付く予定の番号（連番は進めない）
- *   POST module=Accounts&api=AutoNumber&mode=start&field=cf_123[&created_from=..][&created_to=..]
+ *   POST module=Accounts&api=AutoNumber&mode=start&field=cf_123[&created_from=..][&created_to=..][&renumber=1]
  *     → ジョブを登録する
+ *   renumber=1 は振り直し（作成日時の範囲は使わず全件。開始番号から作成日時の古い順に付け直す）
  *   ?module=Accounts&api=AutoNumber&mode=status&field=cf_123
  *     → 最新のジョブの状態（軽い読み取り。ジョブが無ければ job は null）
  *   POST ...&mode=pause|resume|cancel&field=cf_123
@@ -72,11 +74,11 @@ class Vtiger_AutoNumber_Api extends Vtiger_Api_Controller
         switch ($mode) {
             case 'preview':
                 [$from, $to] = $this->getRange($request);
-                return $this->sendSuccess($this->preview($fieldId, $from, $to, $userId));
+                return $this->sendSuccess($this->preview($fieldId, $from, $to, $userId, $this->getJobMode($request)));
             case 'start':
                 [$from, $to] = $this->getRange($request);
                 try {
-                    Vtiger_AutoNumberBackfill::start($fieldId, $userId, $from, $to);
+                    Vtiger_AutoNumberBackfill::start($fieldId, $userId, $from, $to, $this->getJobMode($request));
                 } catch (InvalidArgumentException $e) {
                     throw new ApiBadRequestException(vtranslate('LBL_AUTONUMBER_ERR_LOCKED_BY_JOB', 'Vtiger'));
                 }
@@ -107,9 +109,9 @@ class Vtiger_AutoNumber_Api extends Vtiger_Api_Controller
     /**
      * @return array{total: int, first: string, last: string, warnings: list<string>}
      */
-    private function preview(int $fieldId, ?string $from, ?string $to, int $userId): array
+    private function preview(int $fieldId, ?string $from, ?string $to, int $userId, string $mode): array
     {
-        return Vtiger_AutoNumberBackfill::preview($fieldId, $from, $to, $userId);
+        return Vtiger_AutoNumberBackfill::preview($fieldId, $from, $to, $userId, $mode);
     }
 
     /**
@@ -125,6 +127,7 @@ class Vtiger_AutoNumber_Api extends Vtiger_Api_Controller
         }
         return ['job' => [
             'jobid' => $job['jobid'],
+            'mode' => $job['mode'],
             'status' => $job['status'],
             'status_label' => (string) vtranslate('LBL_AUTONUMBER_STATUS_' . $job['status'], 'Vtiger'),
             'total' => $job['total'],
@@ -145,6 +148,11 @@ class Vtiger_AutoNumber_Api extends Vtiger_Api_Controller
             throw new ApiNotFoundException(vtranslate('LBL_RECORD_NOT_FOUND'));
         }
         return $job;
+    }
+
+    private function getJobMode(Vtiger_Request $request): string
+    {
+        return $this->stringParam($request, 'renumber') === '1' ? Vtiger_AutoNumberBackfill::MODE_RENUMBER : Vtiger_AutoNumberBackfill::MODE_FILL;
     }
 
     /**

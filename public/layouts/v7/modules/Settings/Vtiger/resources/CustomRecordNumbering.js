@@ -110,8 +110,21 @@ Vtiger.Class('Settings_Vtiger_CustomRecordNumbering_Js', {}, {
 			panel.find('.js-backfill-info').removeClass('hide');
 			panel.find('.js-backfill-error').text(message);
 		};
+		var isRenumber = function () {
+			return panel.find('[name="backfill_mode"]:checked').val() === 'renumber';
+		};
 		var range = function () {
+			if (isRenumber()) {
+				// 振り直しは作成日時の範囲を使わず全件
+				return {renumber: '1'};
+			}
 			return {created_from: panel.find('.js-backfill-from').val(), created_to: panel.find('.js-backfill-to').val()};
+		};
+		// 振り直しは、内容を確認するチェックを入れるまで開始できない
+		var syncStartButton = function () {
+			var start = panel.find('.js-backfill-start');
+			var allowed = start.data('ready') === true && (!isRenumber() || panel.find('.js-backfill-confirm').is(':checked'));
+			start.toggleClass('hide', !allowed);
 		};
 		var format = function (text, values) {
 			var index = 0;
@@ -130,11 +143,19 @@ Vtiger.Class('Settings_Vtiger_CustomRecordNumbering_Js', {}, {
 			panel.find('.js-backfill-resume').toggleClass('hide', !(unfinished && job.status === 'paused'));
 			panel.find('.js-backfill-cancel').toggleClass('hide', !unfinished);
 			panel.find('.js-backfill-preview').toggleClass('hide', !!unfinished);
-			panel.find('.js-backfill-range').toggleClass('hide', !!unfinished);
+			panel.find('.js-backfill-range').toggleClass('hide', !!unfinished || isRenumber());
+			panel.find('.js-backfill-mode-group').toggleClass('hide', !!unfinished);
+			panel.find('.js-backfill-renumber-only').toggleClass('hide', !!unfinished || !isRenumber());
 			if (!unfinished) {
-				panel.find('.js-backfill-start').toggleClass('hide', panel.find('.js-backfill-start').data('ready') !== true);
+				syncStartButton();
 			} else {
 				panel.find('.js-backfill-start').addClass('hide');
+			}
+			// 振り直しのジョブが終わったら、変わった番号の記録（CSV）を取り出せる
+			var hasLog = !!job && job.mode === 'renumber' && !unfinished;
+			panel.find('.js-backfill-download').toggleClass('hide', !hasLog);
+			if (hasLog) {
+				panel.find('.js-backfill-download a').attr('href', 'index.php?module=Vtiger&parent=Settings&action=AutoNumberRenumberLog&jobid=' + job.jobid);
 			}
 			if (!job) {
 				panel.find('.js-backfill-progress, .js-backfill-nocron').addClass('hide');
@@ -191,13 +212,25 @@ Vtiger.Class('Settings_Vtiger_CustomRecordNumbering_Js', {}, {
 					text += ' / ' + format(label('range'), [response.first, response.last]);
 				}
 				panel.find('.js-backfill-preview-text').text(text);
-				panel.find('.js-backfill-warning').toggleClass('hide', response.total === 0);
-				panel.find('.js-backfill-start').data('ready', response.total > 0).toggleClass('hide', response.total === 0);
+				panel.find('.js-backfill-warning').toggleClass('hide', response.total === 0 || isRenumber());
+				panel.find('.js-backfill-start').data('ready', response.total > 0);
+				syncStartButton();
 			}, showError);
 		});
+		// モードを切り替えたら、確認の結果を捨てて対象の確認からやり直す
+		panel.on('change', '[name="backfill_mode"]', function () {
+			panel.find('.js-backfill-start').data('ready', false);
+			panel.find('.js-backfill-confirm').prop('checked', false);
+			panel.find('.js-backfill-preview-text').text('');
+			panel.find('.js-backfill-warning').addClass('hide');
+			panel.find('.js-backfill-error').text('');
+			render(null);
+		});
+		panel.on('change', '.js-backfill-confirm', syncStartButton);
 		panel.on('click', '.js-backfill-start', function () {
 			request('start', range(), true).then(function (response) {
 				panel.find('.js-backfill-start').data('ready', false);
+				panel.find('.js-backfill-confirm').prop('checked', false);
 				render(response.job);
 				startPolling();
 			}, showError);

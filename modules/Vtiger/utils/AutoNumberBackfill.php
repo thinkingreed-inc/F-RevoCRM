@@ -1,7 +1,15 @@
 <?php
 
 /*+***********************************************************************************
- * 自動採番項目の遡及採番（値が空の既存レコードに、後から番号を付ける）
+ * 自動採番項目の遡及採番（値が空の既存レコードに、後から番号を付ける）と、振り直し
+ *
+ * モードは 2 つ。
+ *   fill     値が空のレコードにだけ、現在の連番の続きで付ける（既定）
+ *   renumber 値が入っているレコードも含め、開始番号から作成日時の古い順に付け直す
+ *
+ * 振り直しは、途中経過の連番を「ジョブの ID を負にした項目 ID」の行に作り、終わったときに本物の連番と
+ * 入れ替える。途中で新規のレコードが作られても、その番号が振り直しの番号とぶつからない。
+ * 変わった番号（旧 → 新）は vtiger_autonumber_job_log に残す。
  *
  * 処理の本体はサーバー側のジョブ。画面はジョブの進み具合を読むだけで、定期ジョブ（cron）が
  * 時間を区切って少しずつ進める。画面を開いている間は、同じ処理を画面からも呼んで進みを速くできる。
@@ -19,7 +27,7 @@ require_once 'modules/Vtiger/utils/AutoNumberValue.php';
 require_once 'modules/Vtiger/utils/AutoNumber.php';
 
 /**
- * @phpstan-type Job array{jobid: int, fieldid: int, status: string, created_from: string|null, created_to: string|null, total: int, processed: int, failed: int, failed_ids: list<int>, last_number: string, lock_until: string|null, userid: int, created_at: string, started_at: string|null, finished_at: string|null}
+ * @phpstan-type Job array{jobid: int, fieldid: int, status: string, mode: string, cursor_created: string|null, cursor_id: int, created_from: string|null, created_to: string|null, total: int, processed: int, failed: int, failed_ids: list<int>, last_number: string, lock_until: string|null, userid: int, created_at: string, started_at: string|null, finished_at: string|null}
  */
 class Vtiger_AutoNumberBackfill
 {
@@ -29,6 +37,9 @@ class Vtiger_AutoNumberBackfill
     public const STATUS_DONE = 'done';
     public const STATUS_FAILED = 'failed';
     public const STATUS_CANCELLED = 'cancelled';
+
+    public const MODE_FILL = 'fill';
+    public const MODE_RENUMBER = 'renumber';
 
     /** 終わっていないジョブの状態（項目の設定変更・削除を止める） */
     public const UNFINISHED = [self::STATUS_QUEUED, self::STATUS_RUNNING, self::STATUS_PAUSED];
@@ -103,6 +114,9 @@ class Vtiger_AutoNumberBackfill
             'jobid' => Vtiger_AutoNumberValue::int($row['jobid']),
             'fieldid' => Vtiger_AutoNumberValue::int($row['fieldid']),
             'status' => Vtiger_AutoNumberValue::string($row['status']),
+            'mode' => Vtiger_AutoNumberValue::string($row['mode'] ?? '') === self::MODE_RENUMBER ? self::MODE_RENUMBER : self::MODE_FILL,
+            'cursor_created' => Vtiger_AutoNumberValue::nullableString($row['cursor_created'] ?? null),
+            'cursor_id' => Vtiger_AutoNumberValue::int($row['cursor_id'] ?? 0),
             'created_from' => Vtiger_AutoNumberValue::nullableString($row['created_from']),
             'created_to' => Vtiger_AutoNumberValue::nullableString($row['created_to']),
             'total' => Vtiger_AutoNumberValue::int($row['total']),
@@ -124,11 +138,17 @@ class Vtiger_AutoNumberBackfill
      * 実行前の確認。対象の件数と、先頭・末尾に付く予定の番号
      *
      * 連番は払い出さない。新規の保存と交互に番号が出るため、実際の番号とずれることがある。
+     * 振り直しは、作成日時の範囲を使わず（全件）、開始番号から数える。
      *
      * @return array{total: int, first: string, last: string, warnings: list<string>}
      */
-    public static function preview(int $fieldId, ?string $createdFrom = null, ?string $createdTo = null, ?int $userId = null): array
+    public static function preview(int $fieldId, ?string $createdFrom = null, ?string $createdTo = null, ?int $userId = null, string $mode = self::MODE_FILL): array
     {
+        $renumber = $mode === self::MODE_RENUMBER;
+        if ($renumber) {
+            $createdFrom = null;
+            $createdTo = null;
+        }
         $config = self::requireConfig($fieldId);
         $timeZone = self::timeZoneOfUser($userId);
         $total = 0;
@@ -142,13 +162,15 @@ class Vtiger_AutoNumberBackfill
         $warnings = [];
 
         do {
-            $rows = self::fetchCandidates($config, $createdFrom, $createdTo, $afterCreated, $afterId, 500, false, []);
+            $rows = self::fetchCandidates($config, $createdFrom, $createdTo, $afterCreated, $afterId, 500, false, [], $renumber);
             foreach ($rows as $row) {
                 $total++;
                 $baseDate = self::baseDateOfRow($config, $row, $timeZone);
                 $scopeKey = Vtiger_AutoNumberFormat::scopeKey(Vtiger_AutoNumberValue::string($config['reset_type']), $baseDate);
                 if (!isset($counters[$scopeKey])) {
-                    $counters[$scopeKey] = self::currentCounter(Vtiger_AutoNumberValue::int($config['fieldid']), $scopeKey, Vtiger_AutoNumberValue::int($config['start_number']));
+                    $counters[$scopeKey] = $renumber
+                        ? max(Vtiger_AutoNumberValue::int($config['start_number']), 1) - 1
+                        : self::currentCounter(Vtiger_AutoNumberValue::int($config['fieldid']), $scopeKey, Vtiger_AutoNumberValue::int($config['start_number']));
                 }
                 $counters[$scopeKey]++;
                 if ($total === 1 || $row === end($rows)) {
@@ -165,7 +187,7 @@ class Vtiger_AutoNumberBackfill
         } while (count($rows) === 500);
 
         if ($total > 0) {
-            $warnings[] = 'PREVIEW_ORDER_MAY_DIFFER';
+            $warnings[] = $renumber ? 'RENUMBER_OVERWRITES' : 'PREVIEW_ORDER_MAY_DIFFER';
         }
         return ['total' => $total, 'first' => $first, 'last' => $last, 'warnings' => $warnings];
     }
@@ -176,18 +198,23 @@ class Vtiger_AutoNumberBackfill
      * @return int ジョブの ID
      * @throws InvalidArgumentException 設定が無い・停止中ではない・既にジョブがある場合
      */
-    public static function start(int $fieldId, int $userId, ?string $createdFrom = null, ?string $createdTo = null): int
+    public static function start(int $fieldId, int $userId, ?string $createdFrom = null, ?string $createdTo = null, string $mode = self::MODE_FILL): int
     {
+        $renumber = $mode === self::MODE_RENUMBER;
+        if ($renumber) {
+            $createdFrom = null;
+            $createdTo = null;
+        }
         $config = self::requireConfig($fieldId);
         if (self::hasUnfinishedJob($fieldId)) {
             throw new InvalidArgumentException('ALREADY_RUNNING');
         }
-        $total = self::countCandidates($config, $createdFrom, $createdTo);
+        $total = self::countQuery($config, $createdFrom, $createdTo, false, [], $renumber);
         $db = PearDatabase::getInstance();
         $db->pquery(
-            'INSERT INTO ' . Vtiger_AutoNumber::JOB_TABLE . ' (fieldid, status, created_from, created_to, total, userid, created_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [$fieldId, self::STATUS_QUEUED, $createdFrom, $createdTo, $total, $userId, date('Y-m-d H:i:s')]
+            'INSERT INTO ' . Vtiger_AutoNumber::JOB_TABLE . ' (fieldid, status, mode, created_from, created_to, total, userid, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [$fieldId, self::STATUS_QUEUED, $renumber ? self::MODE_RENUMBER : self::MODE_FILL, $createdFrom, $createdTo, $total, $userId, date('Y-m-d H:i:s')]
         );
         $result = $db->pquery('SELECT LAST_INSERT_ID() AS id', []);
         return Vtiger_AutoNumberValue::int($db->query_result($result, 0, 'id'));
@@ -205,7 +232,7 @@ class Vtiger_AutoNumberBackfill
         return self::changeStatus($jobId, self::STATUS_QUEUED, [self::STATUS_PAUSED]);
     }
 
-    /** 中止する。付けた番号はそのまま残る */
+    /** 中止する。付けた番号はそのまま残る（振り直しは、途中まで新しい番号・残りは元の番号のまま） */
     public static function cancel(int $jobId): bool
     {
         $changed = self::changeStatus($jobId, self::STATUS_CANCELLED, self::UNFINISHED);
@@ -214,6 +241,7 @@ class Vtiger_AutoNumberBackfill
                 'UPDATE ' . Vtiger_AutoNumber::JOB_TABLE . ' SET finished_at = ? WHERE jobid = ?',
                 [date('Y-m-d H:i:s'), $jobId]
             );
+            self::discardScratchCounters($jobId);
         }
         return $changed;
     }
@@ -273,6 +301,7 @@ class Vtiger_AutoNumberBackfill
             $fieldInfo = self::getFieldInfo($job['fieldid']);
             if ($config === null || $fieldInfo === null) {
                 self::finish($jobId, self::STATUS_FAILED);
+                self::discardScratchCounters($jobId);
                 return self::getJob($jobId);
             }
             $config = array_merge($config, $fieldInfo);
@@ -280,10 +309,13 @@ class Vtiger_AutoNumberBackfill
             $needsFields = count(Vtiger_AutoNumberFormat::getFieldTokens(Vtiger_AutoNumberValue::string($config['format']))) > 0;
             $handled = 0;
             $failedIds = $job['failed_ids'];
+            $renumber = $job['mode'] === self::MODE_RENUMBER;
+            $cursorCreated = $job['cursor_created'] ?? '';
+            $cursorId = $job['cursor_id'];
 
             while ($handled < $maxRecords && microtime(true) < $deadline) {
                 $limit = min(self::FETCH_SIZE, $maxRecords - $handled);
-                $rows = self::fetchCandidates($config, $job['created_from'], $job['created_to'], '', 0, $limit, true, $failedIds);
+                $rows = self::fetchCandidates($config, $job['created_from'], $job['created_to'], $renumber ? $cursorCreated : '', $renumber ? $cursorId : 0, $limit, !$renumber, $failedIds, $renumber);
                 if (count($rows) === 0) {
                     break;
                 }
@@ -294,10 +326,16 @@ class Vtiger_AutoNumberBackfill
                     if (self::isStopped($jobId)) {
                         return self::getJob($jobId);
                     }
+                    if ($renumber && self::isRecent($row)) {
+                        // 順番を守るため、作成・更新から間もないレコードを飛ばさず、そこで今回は止める
+                        break 2;
+                    }
                     $handled++;
                     $recordId = Vtiger_AutoNumberValue::int($row['crmid']);
                     try {
-                        $number = self::assign($config, $row, $timeZone, $needsFields);
+                        $number = $renumber
+                            ? self::reassign($config, $row, $timeZone, $needsFields, $jobId)
+                            : self::assign($config, $row, $timeZone, $needsFields);
                         if ($number !== null) {
                             self::recordProgress($jobId, 1, 0, $number);
                         }
@@ -305,11 +343,21 @@ class Vtiger_AutoNumberBackfill
                         $failedIds[] = $recordId;
                         self::recordFailure($jobId, $failedIds);
                     }
+                    if ($renumber) {
+                        $cursorCreated = Vtiger_AutoNumberValue::string($row['createdtime']);
+                        $cursorId = $recordId;
+                        self::recordCursor($jobId, $cursorCreated, $cursorId);
+                    }
                     self::extendLock($jobId);
                 }
             }
 
-            if (self::countRemaining($config, $job['created_from'], $job['created_to'], $failedIds) === 0) {
+            if ($renumber) {
+                // 作成日時の順に進むので、カーソルより後ろに（作成から間もないものを含め）残っていなければ終わり
+                if (self::countQuery($config, null, null, false, [], true, $cursorCreated, $cursorId) === 0) {
+                    self::finishRenumber($jobId, $job['fieldid']);
+                }
+            } elseif (self::countRemaining($config, $job['created_from'], $job['created_to'], $failedIds) === 0) {
                 self::finish($jobId, self::STATUS_DONE);
             }
         } finally {
@@ -346,6 +394,70 @@ class Vtiger_AutoNumberBackfill
         return $number;
     }
 
+    /**
+     * 振り直しで 1 件に番号を付ける（今の値は上書きし、旧 → 新を記録に残す）
+     *
+     * 連番は、ジョブの ID を負にした項目 ID の行（途中経過）から払い出す。
+     *
+     * @param array<string, mixed> $config 設定 + 項目の情報
+     * @param array<string, mixed> $row fetchCandidates の 1 行
+     * @return string|null 付けた番号。付けられなかったときは null
+     */
+    private static function reassign(array $config, array $row, DateTimeZone $timeZone, bool $needsFields, int $jobId): ?string
+    {
+        $recordId = Vtiger_AutoNumberValue::int($row['crmid']);
+        $baseDate = self::baseDateOfRow($config, $row, $timeZone);
+        $values = $needsFields ? self::fieldValuesOfRecord($config, $recordId) : [];
+        $scopeKey = Vtiger_AutoNumberFormat::scopeKey(Vtiger_AutoNumberValue::string($config['reset_type']), $baseDate);
+        $seq = Vtiger_AutoNumber::allocate(-$jobId, $scopeKey, Vtiger_AutoNumberValue::int($config['start_number']));
+        $number = Vtiger_AutoNumberFormat::render(Vtiger_AutoNumberValue::string($config['format']), $baseDate, $seq, $values);
+
+        $db = PearDatabase::getInstance();
+        $table = Vtiger_AutoNumberValue::string($config['_table']);
+        $column = Vtiger_AutoNumberValue::string($config['_column']);
+        $index = Vtiger_AutoNumberValue::string($config['_index']);
+        $result = $db->pquery("UPDATE {$table} SET {$column} = ? WHERE {$index} = ?", [$number, $recordId]);
+        if ($result === false) {
+            return null;
+        }
+        // 途中で止まって同じレコードをもう一度処理しても、最初の旧番号を残す
+        $db->pquery(
+            'INSERT INTO ' . Vtiger_AutoNumber::JOB_LOG_TABLE . ' (jobid, crmid, old_number, new_number) VALUES (?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE new_number = VALUES(new_number)',
+            [$jobId, $recordId, Vtiger_AutoNumberValue::string($row['oldvalue'] ?? ''), $number]
+        );
+        return $number;
+    }
+
+    /**
+     * 振り直しを終える。途中経過の連番を本物の連番にして、ジョブを完了にする
+     */
+    private static function finishRenumber(int $jobId, int $fieldId): void
+    {
+        $db = PearDatabase::getInstance();
+        $table = Vtiger_AutoNumber::COUNTER_TABLE;
+        // 本物の連番を途中経過の値で置き換える。同時に新しい行ができていても上書きする
+        $db->pquery(
+            "INSERT INTO {$table} (fieldid, scope_key, cur_value) SELECT ?, scope_key, cur_value FROM {$table} WHERE fieldid = ?
+             ON DUPLICATE KEY UPDATE cur_value = VALUES(cur_value)",
+            [$fieldId, -$jobId]
+        );
+        $db->pquery(
+            "DELETE FROM {$table} WHERE fieldid = ? AND scope_key NOT IN (SELECT scope_key FROM (SELECT scope_key FROM {$table} WHERE fieldid = ?) s)",
+            [$fieldId, -$jobId]
+        );
+        self::discardScratchCounters($jobId);
+        self::finish($jobId, self::STATUS_DONE);
+    }
+
+    /**
+     * 振り直しの途中経過の連番を捨てる
+     */
+    private static function discardScratchCounters(int $jobId): void
+    {
+        PearDatabase::getInstance()->pquery('DELETE FROM ' . Vtiger_AutoNumber::COUNTER_TABLE . ' WHERE fieldid = ?', [-$jobId]);
+    }
+
     // ---- 対象のレコード --------------------------------------------------------
 
     /**
@@ -354,21 +466,18 @@ class Vtiger_AutoNumberBackfill
      * @param array<string, mixed> $config 設定（fieldid を含む）
      * @param bool $quiet true なら作成・更新から QUIET_SECONDS たっていないレコードを除く
      * @param list<int> $excludeIds 除くレコードの ID（処理に失敗したもの）
-     * @return list<array<string, mixed>> crmid / createdtime / basedate
+     * @param bool $renumber true なら値が入っているレコードも対象にする（振り直し）
+     * @return list<array<string, mixed>> crmid / createdtime / basedate / oldvalue
      */
-    private static function fetchCandidates(array $config, ?string $createdFrom, ?string $createdTo, string $afterCreated, int $afterId, int $limit, bool $quiet, array $excludeIds): array
+    private static function fetchCandidates(array $config, ?string $createdFrom, ?string $createdTo, string $afterCreated, int $afterId, int $limit, bool $quiet, array $excludeIds, bool $renumber = false): array
     {
         $info = self::getFieldInfo(Vtiger_AutoNumberValue::int($config['fieldid']));
         if ($info === null) {
             return [];
         }
-        $query = self::buildCandidateQuery($config, $info, $createdFrom, $createdTo, $quiet, $excludeIds);
+        $query = self::buildCandidateQuery($config, $info, $createdFrom, $createdTo, $quiet, $excludeIds, $renumber, $afterCreated, $afterId);
         $sql = $query['sql'];
         $params = $query['params'];
-        if ($afterCreated !== '') {
-            $sql .= ' AND (e.createdtime > ? OR (e.createdtime = ? AND e.crmid > ?))';
-            array_push($params, $afterCreated, $afterCreated, $afterId);
-        }
         $sql .= ' ORDER BY e.createdtime ASC, e.crmid ASC LIMIT ' . (int) $limit;
 
         $db = PearDatabase::getInstance();
@@ -385,14 +494,6 @@ class Vtiger_AutoNumberBackfill
     }
 
     /**
-     * @param array<string, mixed> $config
-     */
-    private static function countCandidates(array $config, ?string $createdFrom, ?string $createdTo): int
-    {
-        return self::countQuery($config, $createdFrom, $createdTo, false, []);
-    }
-
-    /**
      * 残りの件数（作成・更新から間もないレコードも含む）
      *
      * @param array<string, mixed> $config
@@ -400,20 +501,20 @@ class Vtiger_AutoNumberBackfill
      */
     private static function countRemaining(array $config, ?string $createdFrom, ?string $createdTo, array $excludeIds): int
     {
-        return self::countQuery($config, $createdFrom, $createdTo, false, $excludeIds);
+        return self::countQuery($config, $createdFrom, $createdTo, false, $excludeIds, false);
     }
 
     /**
      * @param array<string, mixed> $config
      * @param list<int> $excludeIds
      */
-    private static function countQuery(array $config, ?string $createdFrom, ?string $createdTo, bool $quiet, array $excludeIds): int
+    private static function countQuery(array $config, ?string $createdFrom, ?string $createdTo, bool $quiet, array $excludeIds, bool $renumber, string $afterCreated = '', int $afterId = 0): int
     {
         $info = self::getFieldInfo(Vtiger_AutoNumberValue::int($config['fieldid']));
         if ($info === null) {
             return 0;
         }
-        $query = self::buildCandidateQuery($config, $info, $createdFrom, $createdTo, $quiet, $excludeIds);
+        $query = self::buildCandidateQuery($config, $info, $createdFrom, $createdTo, $quiet, $excludeIds, $renumber, $afterCreated, $afterId);
         $db = PearDatabase::getInstance();
         $result = $db->pquery('SELECT COUNT(*) AS cnt FROM (' . $query['sql'] . ') t', $query['params']);
         return $result === false ? 0 : Vtiger_AutoNumberValue::int($db->query_result($result, 0, 'cnt'));
@@ -425,7 +526,7 @@ class Vtiger_AutoNumberBackfill
      * @param list<int> $excludeIds
      * @return array{sql: string, params: list<mixed>}
      */
-    private static function buildCandidateQuery(array $config, array $info, ?string $createdFrom, ?string $createdTo, bool $quiet, array $excludeIds): array
+    private static function buildCandidateQuery(array $config, array $info, ?string $createdFrom, ?string $createdTo, bool $quiet, array $excludeIds, bool $renumber = false, string $afterCreated = '', int $afterId = 0): array
     {
         $table = $info['_table'];
         $column = $info['_column'];
@@ -433,7 +534,7 @@ class Vtiger_AutoNumberBackfill
         $baseTable = $info['_base_table'];
         $baseIndex = $info['_base_index'];
 
-        $select = 'e.crmid AS crmid, e.createdtime AS createdtime';
+        $select = "e.crmid AS crmid, e.createdtime AS createdtime, e.modifiedtime AS modifiedtime, t.{$column} AS oldvalue";
         $joins = '';
         $baseDate = Vtiger_AutoNumberValue::string($config['base_date']);
         $dateInfo = $baseDate === '' ? null : self::getDateFieldInfo(Vtiger_AutoNumberValue::string($info['_module']), $baseDate);
@@ -449,8 +550,15 @@ class Vtiger_AutoNumberBackfill
         if ($baseTable !== $table) {
             $sql .= " INNER JOIN {$baseTable} b ON b.{$baseIndex} = e.crmid";
         }
-        $sql .= $joins . " WHERE e.setype = ? AND e.deleted = 0 AND (t.{$column} IS NULL OR t.{$column} = '')";
+        $sql .= $joins . ' WHERE e.setype = ? AND e.deleted = 0';
+        if (!$renumber) {
+            $sql .= " AND (t.{$column} IS NULL OR t.{$column} = '')";
+        }
         $params = [self::setypeOf(Vtiger_AutoNumberValue::string($info['_module']))];
+        if ($afterCreated !== '') {
+            $sql .= ' AND (e.createdtime > ? OR (e.createdtime = ? AND e.crmid > ?))';
+            array_push($params, $afterCreated, $afterCreated, $afterId);
+        }
 
         if ($quiet) {
             $limitTime = date('Y-m-d H:i:s', time() - self::QUIET_SECONDS);
@@ -659,6 +767,26 @@ class Vtiger_AutoNumberBackfill
         PearDatabase::getInstance()->pquery(
             'UPDATE ' . Vtiger_AutoNumber::JOB_TABLE . ' SET processed = processed + ?, failed = failed + ?, last_number = ? WHERE jobid = ?',
             [$processed, $failed, $lastNumber, $jobId]
+        );
+    }
+
+    /**
+     * 作成・更新から QUIET_SECONDS たっていないレコードか
+     *
+     * @param array<string, mixed> $row
+     */
+    private static function isRecent(array $row): bool
+    {
+        $limitTime = date('Y-m-d H:i:s', time() - self::QUIET_SECONDS);
+        return Vtiger_AutoNumberValue::string($row['createdtime']) > $limitTime
+            || Vtiger_AutoNumberValue::string($row['modifiedtime'] ?? '') > $limitTime;
+    }
+
+    private static function recordCursor(int $jobId, string $createdTime, int $recordId): void
+    {
+        PearDatabase::getInstance()->pquery(
+            'UPDATE ' . Vtiger_AutoNumber::JOB_TABLE . ' SET cursor_created = ?, cursor_id = ? WHERE jobid = ?',
+            [$createdTime, $recordId, $jobId]
         );
     }
 

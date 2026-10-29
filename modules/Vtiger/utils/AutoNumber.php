@@ -24,6 +24,7 @@ class Vtiger_AutoNumber
     public const CONFIG_TABLE = 'vtiger_autonumber_config';
     public const COUNTER_TABLE = 'vtiger_autonumber_counter';
     public const JOB_TABLE = 'vtiger_autonumber_job';
+    public const JOB_LOG_TABLE = 'vtiger_autonumber_job_log';
 
     /** 連番として扱う番号の上限（counter.cur_value は INT） */
     public const MAX_NUMBER = 2000000000;
@@ -238,6 +239,15 @@ class Vtiger_AutoNumber
     public static function deleteConfig(int $fieldId): void
     {
         $db = PearDatabase::getInstance();
+        // 振り直しの途中経過（ジョブの ID を負にした連番）と記録は、ジョブの行を消す前に片付ける
+        $db->pquery(
+            'DELETE c FROM ' . self::COUNTER_TABLE . ' c INNER JOIN ' . self::JOB_TABLE . ' j ON c.fieldid = -j.jobid WHERE j.fieldid = ?',
+            [$fieldId]
+        );
+        $db->pquery(
+            'DELETE l FROM ' . self::JOB_LOG_TABLE . ' l INNER JOIN ' . self::JOB_TABLE . ' j ON l.jobid = j.jobid WHERE j.fieldid = ?',
+            [$fieldId]
+        );
         foreach ([self::CONFIG_TABLE, self::COUNTER_TABLE, self::JOB_TABLE] as $table) {
             $db->pquery('DELETE FROM ' . $table . ' WHERE fieldid = ?', [$fieldId]);
         }

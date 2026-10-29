@@ -18,6 +18,8 @@ import { apiSession } from "../../utils/api";
  *   6. 同じモジュールの項目を切り替えると、その項目の設定（書式など）に入れ替わる
  *   7. リセット・開始番号・基準日・有効の保存が永続し、停止中は新規レコードに番号が付かない
  *   8. 遡及採番の開始・一時停止・再開・中止（番号は付けずに中止する）
+ *   9. 振り直し（既存の番号も開始番号から付け直す）: 確認にチェックを入れるまで開始できず、
+ *      開始・中止のあと、変わった番号の記録（CSV）を取り出せる
  * 後始末（レコード・項目の削除）は afterAll で必ず行う。
  */
 test.describe.serial("管理: 自動採番項目", () => {
@@ -317,6 +319,59 @@ test.describe.serial("管理: 自動採番項目", () => {
       await active.setChecked(true);
       await saveSettings();
     }
+  });
+
+  test("振り直しは、確認にチェックを入れるまで開始できず、中止のあと記録（CSV）を取り出せる", async ({ page }) => {
+    await page.goto(numberingUrl());
+    const backfill = page.locator('[data-test-id="autonumber-backfill"]');
+    await expect(backfill).toBeVisible({ timeout: 20000 });
+    const modeFill = backfill.locator('[data-test-id="autonumber-backfill-mode-fill"]');
+    const modeRenumber = backfill.locator('[data-test-id="autonumber-backfill-mode-renumber"]');
+    const confirm = backfill.locator('[data-test-id="autonumber-renumber-confirm"]');
+    const start = backfill.locator(".js-backfill-start");
+    const previewText = backfill.locator(".js-backfill-preview-text");
+    const preview = async () => {
+      await backfill.locator(".js-backfill-preview").click();
+      await expect(previewText).toContainText(/[1-9]\d*/, { timeout: 20000 });
+    };
+
+    // 既定は「空の項目にだけ付ける」。作成日時の範囲が出ている
+    await expect(modeFill).toBeChecked();
+    await expect(backfill.locator(".js-backfill-range").first()).toBeVisible();
+
+    // 「すべて振り直す」にすると、範囲が隠れ（全件が対象）、確認が出る。確認するまで開始できない
+    await modeRenumber.check();
+    await expect(backfill.locator(".js-backfill-range").first()).toBeHidden();
+    await expect(confirm).toBeVisible();
+    await preview();
+    await expect(start).toBeHidden();
+    await confirm.check();
+    await expect(start).toBeVisible();
+
+    // モードを戻すと、確認の結果は捨てられる
+    await modeFill.check();
+    await expect(confirm).toBeHidden();
+    await expect(start).toBeHidden();
+
+    // もう一度、振り直しで確認して開始 → 中止
+    await modeRenumber.check();
+    await preview();
+    await confirm.check();
+    await start.click();
+    await expect(backfill.locator(".js-backfill-status")).not.toHaveText("", { timeout: 20000 });
+    await expect(backfill.locator(".js-backfill-cancel")).toBeVisible();
+    await expect(backfill.locator('[data-test-id="autonumber-renumber-download"]')).toBeHidden();
+    await backfill.locator(".js-backfill-cancel").click();
+    await expect(backfill.locator(".js-backfill-cancel")).toBeHidden({ timeout: 20000 });
+
+    // 振り直しのジョブが終わると、記録（CSV）を取り出せる
+    const link = backfill.locator('[data-test-id="autonumber-renumber-download"]');
+    await expect(link).toBeVisible();
+    const href = await link.getAttribute("href");
+    expect(href).toContain("action=AutoNumberRenumberLog");
+    const response = await page.request.get(`${BASE_URL}${href}`);
+    expect(response.ok()).toBe(true);
+    expect(response.headers()["content-type"]).toContain("text/csv");
   });
 
   // 途中で失敗しても後始末するよう afterAll で行う（serial は失敗以降のテストを飛ばすため）

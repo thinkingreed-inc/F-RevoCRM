@@ -618,6 +618,235 @@ final class AutoNumberFieldTest extends DocumentsTestCase
         }
     }
 
+    // ---- 振り直し（既存の番号も開始番号から付け直す） ---------------------------
+
+    public function test_振り直しは既存の番号も含め開始番号から作成日時の古い順に付け直す(): void
+    {
+        $this->setConfig(['format' => 'RN-{000}', 'reset_type' => 'none', 'start_number' => 5]);
+        $ids = $this->savedAccountsCreatedAt(['a' => '1990-01-03 00:00:00', 'b' => '1990-01-02 00:00:00', 'c' => '1990-01-01 00:00:00']);
+        $this->assertStringStartsWith('RN-', $this->storedValue($ids['a']), '振り直す前に番号が入っている');
+
+        $jobId = Vtiger_AutoNumberBackfill::start(self::$fields['main']['fieldid'], self::ADMIN_USER_ID, null, null, Vtiger_AutoNumberBackfill::MODE_RENUMBER);
+        $this->runJobToEnd($jobId);
+
+        // 作成日時が一番古い順に、開始番号から。ほかのアカウントも含め、欠番・重複なく並ぶ
+        $this->assertSame('RN-005', $this->storedValue($ids['c']));
+        $this->assertSame('RN-006', $this->storedValue($ids['b']));
+        $this->assertSame('RN-007', $this->storedValue($ids['a']));
+        $total = $this->accountCount();
+        $expected = [];
+        for ($i = 0; $i < $total; $i++) {
+            $expected[] = sprintf('RN-%03d', 5 + $i);
+        }
+        $this->assertSame($expected, $this->allAccountNumbers());
+
+        $job = $this->job($jobId);
+        $this->assertSame(Vtiger_AutoNumberBackfill::STATUS_DONE, $job['status']);
+        $this->assertSame(Vtiger_AutoNumberBackfill::MODE_RENUMBER, $job['mode']);
+        $this->assertSame($total, $job['total']);
+        $this->assertSame($total, $job['processed']);
+    }
+
+    public function test_振り直しのあと新しいレコードには振り直した番号の続きが付く(): void
+    {
+        $this->setConfig(['format' => 'RC-{000}', 'reset_type' => 'none', 'start_number' => 1]);
+        $this->savedAccountsCreatedAt(['a' => '1990-01-02 00:00:00', 'b' => '1990-01-01 00:00:00']);
+        // 本物の連番を、振り直しの結果より大きい値にしておく
+        $this->db->pquery('DELETE FROM ' . Vtiger_AutoNumber::COUNTER_TABLE . ' WHERE fieldid = ?', [self::$fields['main']['fieldid']]);
+        Vtiger_AutoNumber::allocate(self::$fields['main']['fieldid'], '', 500);
+
+        $this->runJobToEnd(Vtiger_AutoNumberBackfill::start(self::$fields['main']['fieldid'], self::ADMIN_USER_ID, null, null, Vtiger_AutoNumberBackfill::MODE_RENUMBER));
+
+        $next = $this->saveAccount('rc_next');
+        $this->assertSame(sprintf('RC-%03d', $this->accountCount()), $this->storedValue($next), '連番は振り直しの最後の番号から続く（元の 500 台には戻らない）');
+    }
+
+    public function test_振り直しはリセットの区切りごとに数え直す(): void
+    {
+        $this->setConfig(['format' => 'RY-{YYYY}-{00}', 'reset_type' => 'year', 'start_number' => 1]);
+        $ids = $this->savedAccountsCreatedAt(['a' => '1990-03-01 00:00:00', 'b' => '1990-09-01 00:00:00', 'c' => '1991-02-01 00:00:00']);
+
+        $this->runJobToEnd(Vtiger_AutoNumberBackfill::start(self::$fields['main']['fieldid'], self::ADMIN_USER_ID, null, null, Vtiger_AutoNumberBackfill::MODE_RENUMBER));
+
+        $this->assertSame('RY-1990-01', $this->storedValue($ids['a']));
+        $this->assertSame('RY-1990-02', $this->storedValue($ids['b']));
+        $this->assertSame('RY-1991-01', $this->storedValue($ids['c']), '年が変わったら 1 から');
+    }
+
+    public function test_振り直しは作成日時の範囲を使わず全件を対象にする(): void
+    {
+        $this->setConfig(['format' => 'RR-{000}', 'reset_type' => 'none', 'start_number' => 1]);
+        $ids = $this->savedAccountsCreatedAt(['a' => '1990-01-01 00:00:00']);
+        $range = gmdate('Y-m-d H:i:s', time() - 86400);
+
+        $preview = Vtiger_AutoNumberBackfill::preview(self::$fields['main']['fieldid'], $range, null, self::ADMIN_USER_ID, Vtiger_AutoNumberBackfill::MODE_RENUMBER);
+        $this->assertSame($this->accountCount(), $preview['total'], '範囲で絞らず全件');
+        $this->assertSame('RR-001', $preview['first'], '今の連番ではなく開始番号から数える');
+        $this->assertContains('RENUMBER_OVERWRITES', $preview['warnings']);
+
+        $jobId = Vtiger_AutoNumberBackfill::start(self::$fields['main']['fieldid'], self::ADMIN_USER_ID, $range, null, Vtiger_AutoNumberBackfill::MODE_RENUMBER);
+        $job = $this->job($jobId);
+        $this->assertNull($job['created_from'], '振り直しでは範囲を保存しない');
+        $this->assertSame($this->accountCount(), $job['total']);
+        $this->assertSame($ids['a'] > 0, true);
+    }
+
+    public function test_振り直しのプレビューは既存の連番を進めない(): void
+    {
+        $this->setConfig(['format' => 'RV-{000}', 'reset_type' => 'none', 'start_number' => 1]);
+        $this->savedAccountsCreatedAt(['a' => '1990-01-01 00:00:00']);
+        Vtiger_AutoNumber::allocate(self::$fields['main']['fieldid'], '', 1);
+        $before = $this->scalar('SELECT cur_value FROM ' . Vtiger_AutoNumber::COUNTER_TABLE . ' WHERE fieldid = ?', [self::$fields['main']['fieldid']]);
+
+        Vtiger_AutoNumberBackfill::preview(self::$fields['main']['fieldid'], null, null, self::ADMIN_USER_ID, Vtiger_AutoNumberBackfill::MODE_RENUMBER);
+
+        $this->assertSame($before, $this->scalar('SELECT cur_value FROM ' . Vtiger_AutoNumber::COUNTER_TABLE . ' WHERE fieldid = ?', [self::$fields['main']['fieldid']]));
+    }
+
+    public function test_振り直しの途中で作られたレコードの番号が振り直しの番号とぶつからない(): void
+    {
+        $this->setConfig(['format' => 'RM-{000}', 'reset_type' => 'none', 'start_number' => 1]);
+        $ids = $this->savedAccountsCreatedAt(['a' => '1990-01-02 00:00:00', 'b' => '1990-01-01 00:00:00']);
+        $jobId = Vtiger_AutoNumberBackfill::start(self::$fields['main']['fieldid'], self::ADMIN_USER_ID, null, null, Vtiger_AutoNumberBackfill::MODE_RENUMBER);
+
+        // 振り直しを始める前後に新しいレコードが作られる（保存時の採番は本物の連番から）
+        $during = $this->saveAccount('rm_during');
+        $this->assertStringStartsWith('RM-', $this->storedValue($during));
+        $this->setCreated($during, 1);
+
+        $this->runJobToEnd($jobId);
+
+        $numbers = $this->allAccountNumbers();
+        $this->assertSame($numbers, array_values(array_unique($numbers)), '番号は重複しない');
+        $total = $this->accountCount();
+        $this->assertCount($total, $numbers);
+        $this->assertSame('RM-001', $this->storedValue($ids['b']));
+        $this->assertSame('RM-002', $this->storedValue($ids['a']));
+        $this->assertSame($this->scalar('SELECT COUNT(*) FROM ' . Vtiger_AutoNumber::COUNTER_TABLE . ' WHERE fieldid < 0'), '0', '途中経過の連番は片付く');
+    }
+
+    public function test_振り直しは作成・更新から間もないレコードを飛ばさずそこで止まる(): void
+    {
+        $this->setConfig(['format' => 'RQ-{000}', 'reset_type' => 'none', 'start_number' => 1]);
+        $ids = $this->savedAccountsCreatedAt(['x' => '1990-01-01 00:00:00', 'y' => '1990-01-02 00:00:00']);
+        // x は作成が古いが、たった今更新された（編集中かもしれない）
+        $this->db->pquery('UPDATE vtiger_crmentity SET modifiedtime = ? WHERE crmid = ?', [date('Y-m-d H:i:s'), $ids['x']]);
+        $before = $this->storedValue($ids['y']);
+        $jobId = Vtiger_AutoNumberBackfill::start(self::$fields['main']['fieldid'], self::ADMIN_USER_ID, null, null, Vtiger_AutoNumberBackfill::MODE_RENUMBER);
+
+        $job = $this->batch($jobId);
+
+        $this->assertSame($before, $this->storedValue($ids['y']), '順番を守るため、x を飛ばして y だけ先に付けない');
+        $this->assertSame(Vtiger_AutoNumberBackfill::STATUS_QUEUED, $job['status'], '残りがあるので終わらない');
+
+        $this->setCreatedAt($ids['x'], '1990-01-01 00:00:00');
+        $this->runJobToEnd($jobId);
+        $this->assertSame('RQ-001', $this->storedValue($ids['x']));
+        $this->assertSame('RQ-002', $this->storedValue($ids['y']));
+    }
+
+    public function test_振り直しを中止すると途中経過の連番を捨て本物の連番は変えない(): void
+    {
+        $this->setConfig(['format' => 'RX-{000}', 'reset_type' => 'none', 'start_number' => 1]);
+        $ids = $this->savedAccountsCreatedAt(['a' => '1990-01-02 00:00:00', 'b' => '1990-01-01 00:00:00']);
+        $this->setStored($ids['a'], 'ORIG-A');
+        $this->setStored($ids['b'], 'ORIG-B');
+        $this->db->pquery('DELETE FROM ' . Vtiger_AutoNumber::COUNTER_TABLE . ' WHERE fieldid = ?', [self::$fields['main']['fieldid']]);
+        Vtiger_AutoNumber::allocate(self::$fields['main']['fieldid'], '', 300);
+        $jobId = Vtiger_AutoNumberBackfill::start(self::$fields['main']['fieldid'], self::ADMIN_USER_ID, null, null, Vtiger_AutoNumberBackfill::MODE_RENUMBER);
+
+        $job = Vtiger_AutoNumberBackfill::processBatch($jobId, 1);
+        $this->assertNotNull($job);
+        $this->assertSame(1, $job['processed']);
+        $this->assertSame('RX-001', $this->storedValue($ids['b']), '先頭の 1 件だけ新しい番号');
+        $this->assertTrue(Vtiger_AutoNumberBackfill::cancel($jobId));
+
+        $this->assertSame('0', $this->scalar('SELECT COUNT(*) FROM ' . Vtiger_AutoNumber::COUNTER_TABLE . ' WHERE fieldid = ?', [-$jobId]), '途中経過の連番は捨てる');
+        $this->assertSame('300', $this->scalar('SELECT cur_value FROM ' . Vtiger_AutoNumber::COUNTER_TABLE . ' WHERE fieldid = ?', [self::$fields['main']['fieldid']]), '本物の連番は変えない');
+        $this->assertSame('ORIG-A', $this->storedValue($ids['a']), '残りは元の番号のまま');
+    }
+
+    public function test_振り直しで変わった番号を旧番号つきで記録しCSVにできる(): void
+    {
+        $this->setConfig(['format' => 'RL-{000}', 'reset_type' => 'none', 'start_number' => 1]);
+        $ids = $this->savedAccountsCreatedAt(['a' => '1990-01-02 00:00:00', 'b' => '1990-01-01 00:00:00']);
+        $this->setStored($ids['a'], 'ORIG-A');
+        $this->setStored($ids['b'], 'ORIG-B');
+        $oldA = 'ORIG-A';
+        $oldB = 'ORIG-B';
+        $jobId = Vtiger_AutoNumberBackfill::start(self::$fields['main']['fieldid'], self::ADMIN_USER_ID, null, null, Vtiger_AutoNumberBackfill::MODE_RENUMBER);
+        $this->runJobToEnd($jobId);
+
+        $logged = $this->scalar('SELECT CONCAT(old_number, "/", new_number) FROM ' . Vtiger_AutoNumber::JOB_LOG_TABLE . ' WHERE jobid = ? AND crmid = ?', [$jobId, $ids['a']]);
+        $this->assertSame($oldA . '/' . $this->storedValue($ids['a']), $logged);
+
+        require_once 'modules/Settings/Vtiger/actions/AutoNumberRenumberLog.php';
+        $stream = fopen('php://memory', 'w+');
+        $this->assertNotFalse($stream);
+        \Settings_Vtiger_AutoNumberRenumberLog_Action::writeCsv($stream, $jobId);
+        rewind($stream);
+        $csv = (string) stream_get_contents($stream);
+        fclose($stream);
+
+        $this->assertStringStartsWith("\xEF\xBB\xBF", $csv, 'Excel 用の BOM');
+        $lines = array_values(array_filter(explode("\n", trim($csv))));
+        $this->assertCount(1 + $this->accountCount(), $lines, '見出し + 振り直した件数');
+        $this->assertStringContainsString($oldB . ',' . $this->storedValue($ids['b']), $csv);
+    }
+
+    public function test_振り直しの記録を再処理しても最初の旧番号を残す(): void
+    {
+        $this->setConfig(['format' => 'RD-{000}', 'reset_type' => 'none', 'start_number' => 1]);
+        $ids = $this->savedAccountsCreatedAt(['a' => '1990-01-01 00:00:00']);
+        $old = $this->storedValue($ids['a']);
+        $jobId = Vtiger_AutoNumberBackfill::start(self::$fields['main']['fieldid'], self::ADMIN_USER_ID, null, null, Vtiger_AutoNumberBackfill::MODE_RENUMBER);
+        $this->runJobToEnd($jobId);
+
+        // 処理の途中で止まったあとに同じレコードをもう一度処理した状態にする（カーソルを戻す）
+        $this->db->pquery('UPDATE ' . Vtiger_AutoNumber::JOB_TABLE . " SET status = 'queued', cursor_created = NULL, cursor_id = 0 WHERE jobid = ?", [$jobId]);
+        $this->runJobToEnd($jobId);
+
+        $this->assertSame($old, $this->scalar('SELECT old_number FROM ' . Vtiger_AutoNumber::JOB_LOG_TABLE . ' WHERE jobid = ? AND crmid = ?', [$jobId, $ids['a']]));
+    }
+
+    public function test_項目を削除すると振り直しの記録も消える(): void
+    {
+        $second = $this->addAutoNumberField('SPECTEST_採番掃除2', ['autonumber_format' => 'CL-{000}', 'autonumber_reset_type' => 'none']);
+        $jobId = Vtiger_AutoNumberBackfill::start($second['fieldid'], self::ADMIN_USER_ID, null, null, Vtiger_AutoNumberBackfill::MODE_RENUMBER);
+        $this->runJobToEnd($jobId);
+        $this->assertNotSame('0', $this->scalar('SELECT COUNT(*) FROM ' . Vtiger_AutoNumber::JOB_LOG_TABLE . ' WHERE jobid = ?', [$jobId]), '記録がある');
+
+        Settings_LayoutEditor_Field_Model::getInstance($second['fieldid'])->delete();
+
+        $this->assertSame('0', $this->scalar('SELECT COUNT(*) FROM ' . Vtiger_AutoNumber::JOB_LOG_TABLE . ' WHERE jobid = ?', [$jobId]));
+        $this->assertSame('0', $this->scalar('SELECT COUNT(*) FROM ' . Vtiger_AutoNumber::COUNTER_TABLE . ' WHERE fieldid = ?', [-$jobId]));
+    }
+
+    public function test_APIで振り直しのプレビューと開始ができる(): void
+    {
+        $this->setConfig(['format' => 'AR-{000}', 'reset_type' => 'none', 'start_number' => 1]);
+        $ids = $this->savedAccountsCreatedAt(['a' => '1990-01-01 00:00:00']);
+        $params = ['module' => 'Accounts', 'api' => 'AutoNumber', 'field' => self::$fields['main']['fieldname']];
+
+        $fill = $this->callAutoNumberApi($params + ['mode' => 'preview']);
+        $this->assertSame(0, $fill['total'], '振り直しでなければ、番号が入っているレコードは対象外');
+
+        $preview = $this->callAutoNumberApi($params + ['mode' => 'preview', 'renumber' => '1']);
+        $this->assertSame($this->accountCount(), $preview['total']);
+        $this->assertSame('AR-001', $preview['first']);
+        $this->assertIsArray($preview['warnings']);
+        $this->assertContains('RENUMBER_OVERWRITES', $preview['warnings']);
+
+        $started = $this->callAutoNumberApi($params + ['mode' => 'start', 'renumber' => '1']);
+        $this->assertIsArray($started['job']);
+        $this->assertSame('renumber', $started['job']['mode']);
+
+        $kicked = $this->callAutoNumberApi($params + ['mode' => 'kick']);
+        $this->assertIsArray($kicked['job']);
+        $this->assertSame('done', $kicked['job']['status']);
+        $this->assertSame('AR-001', $this->storedValue($ids['a']));
+    }
+
     public function test_定期ジョブは進めるジョブが無ければ何もしない(): void
     {
         $this->db->pquery('UPDATE ' . Vtiger_AutoNumber::JOB_TABLE . " SET status = 'cancelled' WHERE status IN ('queued','running','paused')", []);
@@ -710,6 +939,17 @@ final class AutoNumberFieldTest extends DocumentsTestCase
         $this->assertStringContainsString('data-test-id="autonumber-backfill"', $html);
         $this->assertStringContainsString('data-field="' . self::$fields['main']['fieldname'] . '"', $html);
         $this->assertStringContainsString('data-module="Accounts"', $html);
+    }
+
+    public function test_連番管理の画面に振り直しの選択と確認と記録の取り出しを出す(): void
+    {
+        $html = $this->renderNumberingScreen();
+
+        $this->assertMatchesRegularExpression('/name="backfill_mode" value="fill" checked="checked"/', $html, '既定は空の項目にだけ付ける');
+        $this->assertStringContainsString('data-test-id="autonumber-backfill-mode-renumber"', $html);
+        $this->assertStringContainsString('data-test-id="autonumber-renumber-confirm"', $html);
+        $this->assertStringContainsString('data-test-id="autonumber-renumber-download"', $html);
+        $this->assertStringContainsString(vtranslate('LBL_AUTONUMBER_RENUMBER_HELP', 'Vtiger'), $html, '元に戻せないことを説明している');
     }
 
     public function test_連番管理の画面のJSは更新日時付きで読み込む(): void
@@ -908,7 +1148,7 @@ final class AutoNumberFieldTest extends DocumentsTestCase
     }
 
     /**
-     * @return array{jobid: int, fieldid: int, status: string, created_from: string|null, created_to: string|null, total: int, processed: int, failed: int, failed_ids: list<int>, last_number: string, lock_until: string|null, userid: int, created_at: string, started_at: string|null, finished_at: string|null}
+     * @return array{jobid: int, fieldid: int, status: string, mode: string, cursor_created: string|null, cursor_id: int, created_from: string|null, created_to: string|null, total: int, processed: int, failed: int, failed_ids: list<int>, last_number: string, lock_until: string|null, userid: int, created_at: string, started_at: string|null, finished_at: string|null}
      */
     private function job(int $jobId): array
     {
@@ -1078,6 +1318,58 @@ final class AutoNumberFieldTest extends DocumentsTestCase
     {
         $time = gmdate('Y-m-d H:i:s', time() - $daysAgo * 86400);
         $this->db->pquery('UPDATE vtiger_crmentity SET createdtime = ?, modifiedtime = ? WHERE crmid = ?', [$time, $time, $recordId]);
+    }
+
+    private function setStored(int $accountId, string $value): void
+    {
+        $this->db->pquery('UPDATE vtiger_accountscf SET ' . self::$fields['main']['fieldname'] . ' = ? WHERE accountid = ?', [$value, $accountId]);
+    }
+
+    /** レコードの作成・更新日時を、指定した時刻（DB の時刻）にする */
+    private function setCreatedAt(int $recordId, string $time): void
+    {
+        $this->db->pquery('UPDATE vtiger_crmentity SET createdtime = ?, modifiedtime = ? WHERE crmid = ?', [$time, $time, $recordId]);
+    }
+
+    /**
+     * 作成日時を指定してアカウントを作る（ほかのアカウントより必ず古くなる日付を渡す）
+     *
+     * @param array<string, string> $createdAtBySuffix
+     * @return array<string, int>
+     */
+    private function savedAccountsCreatedAt(array $createdAtBySuffix): array
+    {
+        $ids = [];
+        foreach ($createdAtBySuffix as $suffix => $time) {
+            $ids[$suffix] = $this->saveAccount('rn_' . $suffix);
+            $this->setCreatedAt($ids[$suffix], $time);
+        }
+        return $ids;
+    }
+
+    private function accountCount(): int
+    {
+        return (int) $this->scalar("SELECT COUNT(*) FROM vtiger_crmentity WHERE setype = 'Accounts' AND deleted = 0");
+    }
+
+    /**
+     * 削除されていないアカウント全件の、この項目の値（昇順）
+     *
+     * @return list<string>
+     */
+    private function allAccountNumbers(): array
+    {
+        $column = self::$fields['main']['fieldname'];
+        $result = $this->db->pquery(
+            "SELECT t.{$column} AS v FROM vtiger_accountscf t INNER JOIN vtiger_crmentity e ON e.crmid = t.accountid
+             WHERE e.setype = 'Accounts' AND e.deleted = 0 ORDER BY t.{$column}",
+            []
+        );
+        $values = [];
+        for ($i = 0; $i < $this->db->num_rows($result); $i++) {
+            $values[] = Vtiger_AutoNumberValue::string($this->db->query_result($result, $i, 'v'));
+        }
+        return $values;
     }
 
     private function runJobToEnd(int $jobId): void
