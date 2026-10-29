@@ -21,7 +21,11 @@
 			{append var="PICKLIST_VALUES" $FIELD_VALUE index=$FIELD_VALUE}
 		{/if}
 	{/foreach}
-	<select id="{$MODULE}_{$REQ.view}_fieldName_{$FIELD_MODEL->getFieldName()}" multiple class="select2" name="{$FIELD_MODEL->getFieldName()}[]" data-fieldtype="multipicklist" style='width:210px;height:30px;' 
+	{* #1677: 複数選択(uitype33)をチェックボックス表示に切替えるWeb Component。
+	   選択肢数が threshold 以下でチェックボックス、超過で従来のドロップダウン表示。
+	   送信・必須バリデーションは内側のネイティブ<select>が担うため select 構造は維持し、select2クラスのみ除去する。 *}
+	<multi-picklist-field threshold="100" placeholder="{vtranslate('LBL_SELECT_OPTION','Vtiger')}" label="{Vtiger_Util_Helper::toSafeHTML(vtranslate($FIELD_MODEL->get('label'), $MODULE))}">
+	<select id="{$MODULE}_{$REQ.view}_fieldName_{$FIELD_MODEL->getFieldName()}" multiple name="{$FIELD_MODEL->getFieldName()}[]" data-fieldtype="multipicklist" style='width:210px;height:30px;'
 			{if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if}
 			{if php7_count($FIELD_INFO['validator'])} 
 				data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
@@ -30,9 +34,10 @@
 			>
 		{foreach item=PICKLIST_VALUE key=PICKLIST_NAME from=$PICKLIST_VALUES}
 			{assign var=CLASS_NAME value="picklistColor_{$FIELD_MODEL->getFieldName()}_{$PICKLIST_NAME|replace:' ':'_'}"}
-			<option value="{Vtiger_Util_Helper::toSafeHTML($PICKLIST_NAME)}" {if $PICKLIST_COLORS[$PICKLIST_NAME]}class="{$CLASS_NAME|replace:'selectedFieldsData[':''|replace:'][defaultvalue]':''}"{/if} {if in_array(Vtiger_Util_Helper::toSafeHTML($PICKLIST_NAME), $FIELD_VALUE_LIST)} selected {/if}>{vtranslate($PICKLIST_VALUE, $MODULE)}</option>
+			<option value="{Vtiger_Util_Helper::toSafeHTML($PICKLIST_NAME)}" {if $PICKLIST_COLORS[$PICKLIST_NAME]}class="{$CLASS_NAME|replace:'selectedFieldsData[':''|replace:'][defaultvalue]':''}" data-color="{$PICKLIST_COLORS[$PICKLIST_NAME]}"{/if} {if in_array(Vtiger_Util_Helper::toSafeHTML($PICKLIST_NAME), $FIELD_VALUE_LIST)} selected {/if}>{vtranslate($PICKLIST_VALUE, $MODULE)}</option>
 		{/foreach}
 	</select>
+	</multi-picklist-field>
 	{if $PICKLIST_COLORS}
 		<style type="text/css">
 			{foreach item=PICKLIST_VALUE key=PICKLIST_NAME from=$PICKLIST_VALUES}
