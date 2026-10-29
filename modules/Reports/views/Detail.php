@@ -195,6 +195,7 @@ class Reports_Detail_View extends Vtiger_Index_View {
 
 		// グループ化するカラムを判定するラベルをDB(vtiger_reportsortcol,vtiger_reportgroupbycolumn)からアンダーバーの置換で生成しているため，もとからアンダーバーを含むラベルを生成できない
 		// もとからアンダーバーを含むラベル抽出し置換を行うかどうかの判別をする
+		$includedUnderbar = array(); // 該当ラベルが無いとき null にならないよう初期化（PHP 8 の in_array 対策）
 		global $adb;
 		$result = $adb->pquery('SELECT DISTINCT fieldlabel FROM vtiger_field WHERE fieldlabel LIKE "%\_%"');
 		$rows = $adb->num_rows($result);
