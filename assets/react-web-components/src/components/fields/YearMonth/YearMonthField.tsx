@@ -79,7 +79,7 @@ export const YearMonthField: React.FC<YearMonthFieldProps> = ({
   const thisMonth = currentYearMonth();
 
   return (
-    <div className={cn("flex w-full items-center gap-1", className)}>
+    <div className={cn("flex w-full items-center gap-[4px]", className)}>
       <Popover
         open={open}
         onOpenChange={(next) => {
@@ -96,31 +96,31 @@ export const YearMonthField: React.FC<YearMonthFieldProps> = ({
             aria-required={mandatory || undefined}
             className={cn(
               // 他の入力欄（.inputElement）と同じ高さ・枠・文字色にそろえる
-              "flex h-[30px] w-full items-center justify-between gap-2 rounded-[1px] border border-solid border-[#ccc] bg-white px-2 py-[3px] text-left text-[14px] shadow-none",
+              "flex h-[30px] w-full items-center justify-between gap-[8px] rounded-[1px] border border-solid border-[#ccc] bg-white px-[8px] py-[3px] text-left text-[14px] shadow-none",
               "outline-none focus-visible:border-[#66afe9] disabled:cursor-not-allowed disabled:bg-[#eee]",
               text ? "text-[#555]" : "text-[#999]",
             )}
           >
             <span>{text || label("LBL_YEARMONTH_PLACEHOLDER")}</span>
-            <CalendarDays className="size-4 shrink-0" aria-hidden />
+            <CalendarDays size={16} className="shrink-0" aria-hidden />
           </button>
         </PopoverTrigger>
         <PopoverContent
           align="start"
-          className="z-[100005] w-64 rounded-[2px] border border-solid border-[#ccc] bg-white p-3 shadow-[0_2px_8px_rgba(0,0,0,0.15)]"
+          className="z-[100005] w-[264px] rounded-[2px] border border-solid border-[#ccc] bg-white p-[12px] shadow-[0_2px_8px_rgba(0,0,0,0.15)]"
           onOpenAutoFocus={(event) => event.preventDefault()}
         >
-          <div className="mb-2 flex items-center justify-between">
+          <div className="mb-[8px] flex items-center justify-between">
             <button
               type="button"
               aria-label={label("LBL_YEARMONTH_PREV_YEAR")}
-              className="inline-flex size-7 items-center justify-center rounded-[1px] border-0 bg-transparent text-[#555] hover:bg-[#eef1f4]"
+              className="inline-flex h-[32px] w-[32px] cursor-pointer items-center justify-center rounded-[2px] border-0 bg-transparent p-0 text-[#555] hover:bg-[#eef1f4]"
               onClick={() => setViewYear((year) => year - 1)}
             >
-              <ChevronLeft className="size-4" aria-hidden />
+              <ChevronLeft size={22} strokeWidth={2.5} aria-hidden />
             </button>
             <span
-              className="text-[14px] font-medium text-[#333]"
+              className="text-[16px] font-semibold text-[#333]"
               data-testid="yearmonth-year"
             >
               {formatYearMonth(
@@ -131,13 +131,13 @@ export const YearMonthField: React.FC<YearMonthFieldProps> = ({
             <button
               type="button"
               aria-label={label("LBL_YEARMONTH_NEXT_YEAR")}
-              className="inline-flex size-7 items-center justify-center rounded-[1px] border-0 bg-transparent text-[#555] hover:bg-[#eef1f4]"
+              className="inline-flex h-[32px] w-[32px] cursor-pointer items-center justify-center rounded-[2px] border-0 bg-transparent p-0 text-[#555] hover:bg-[#eef1f4]"
               onClick={() => setViewYear((year) => year + 1)}
             >
-              <ChevronRight className="size-4" aria-hidden />
+              <ChevronRight size={22} strokeWidth={2.5} aria-hidden />
             </button>
           </div>
-          <div className="grid grid-cols-3 gap-1">
+          <div className="grid grid-cols-3 gap-[4px]">
             {Array.from({ length: 12 }, (_, index) => index + 1).map(
               (month) => {
                 const isSelected =
@@ -151,7 +151,7 @@ export const YearMonthField: React.FC<YearMonthFieldProps> = ({
                     aria-pressed={isSelected}
                     data-month={month}
                     className={cn(
-                      "h-[30px] rounded-[1px] border border-solid text-[14px]",
+                      "h-[34px] cursor-pointer whitespace-nowrap rounded-[1px] border border-solid p-0 text-[14px] leading-none",
                       isSelected
                         ? "border-[#3f5166] bg-[#3f5166] text-white"
                         : "border-[#ddd] bg-white text-[#555] hover:bg-[#eef1f4]",
@@ -165,7 +165,7 @@ export const YearMonthField: React.FC<YearMonthFieldProps> = ({
               },
             )}
           </div>
-          <div className="mt-2 flex justify-between border-0 border-t border-solid border-[#e5e5e5] pt-2 text-[14px]">
+          <div className="mt-[8px] flex justify-between border-0 border-t border-solid border-[#e5e5e5] pt-[8px] text-[14px]">
             <button
               type="button"
               className="border-0 bg-transparent p-0 text-[#3f5166] hover:underline"
@@ -193,10 +193,10 @@ export const YearMonthField: React.FC<YearMonthFieldProps> = ({
           type="button"
           data-testid="yearmonth-clear"
           aria-label={label("LBL_YEARMONTH_CLEAR")}
-          className="inline-flex size-7 shrink-0 items-center justify-center rounded-[1px] border-0 bg-transparent text-[#999] hover:bg-[#eef1f4]"
+          className="inline-flex h-[28px] w-[28px] shrink-0 cursor-pointer items-center justify-center rounded-[1px] border-0 bg-transparent p-0 text-[#999] hover:bg-[#eef1f4]"
           onClick={() => onChange?.("")}
         >
-          <X className="size-4" aria-hidden />
+          <X size={16} aria-hidden />
         </button>
       )}
     </div>
