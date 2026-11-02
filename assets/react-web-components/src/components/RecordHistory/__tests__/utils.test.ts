@@ -170,12 +170,14 @@ describe("historyDate", () => {
 describe("formatDelta", () => {
   it("API が整形した差分に符号と増減率を付ける", () => {
     expect(
-      formatDelta({ sign: "+", display: "220.000.000 ¥", percent: 44 }),
+      formatDelta({ sign: "+", display: "220.000.000 ¥", percent: 44 }, t),
     ).toBe("+220.000.000 ¥（+44%）");
-    expect(formatDelta({ sign: "-", display: "30", percent: -20 })).toBe(
+    expect(formatDelta({ sign: "-", display: "30", percent: -20 }, t)).toBe(
       "−30（−20%）",
     );
-    expect(formatDelta({ sign: "+", display: "5", percent: null })).toBe("+5");
+    expect(formatDelta({ sign: "+", display: "5", percent: null }, t)).toBe(
+      "+5",
+    );
   });
 });
 

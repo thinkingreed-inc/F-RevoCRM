@@ -8,7 +8,9 @@ import {
   within,
 } from "@testing-library/react";
 import { RecordHistory } from "../RecordHistory";
+import { clearTranslationCache } from "@/utils/translations";
 import { historyFixture } from "./fixtures";
+import { readLanguageStrings } from "./languageStrings";
 
 function mockFetch(historyOk = true) {
   return vi.fn(async (input: RequestInfo | URL) => {
@@ -210,5 +212,59 @@ describe("RecordHistory (compact)", () => {
       "href",
       "index.php?x=1",
     );
+  });
+});
+
+describe("RecordHistory (英語)", () => {
+  const en = readLanguageStrings("en_us");
+  beforeEach(() => {
+    clearTranslationCache();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("api=GetHistory")) {
+          return new Response(JSON.stringify(historyFixture));
+        }
+        if (url.includes("api=GetTranslations")) {
+          return new Response(
+            JSON.stringify({
+              success: true,
+              module: "Accounts",
+              language: "en_us",
+              translations: { Vtiger: en },
+              timestamp: "",
+            }),
+          );
+        }
+        return new Response("", { status: 404 });
+      }),
+    );
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+  afterEach(() => {
+    clearTranslationCache();
+    vi.restoreAllMocks();
+  });
+
+  it("en_us の言語ファイルの文言で表示し、日本語の記号を出さない", async () => {
+    render(<RecordHistory module="Accounts" recordId="3" />);
+    expect(await screen.findByText("Show system fields")).toBeInTheDocument();
+    const first = screen.getAllByTestId("history-event")[0];
+    expect(within(first).getByText("(Sun)")).toBeInTheDocument();
+    expect(within(first).getByText("updated")).toBeInTheDocument();
+    expect(within(first).getByText("Yesterday")).toBeInTheDocument();
+    expect(
+      within(first).getByTitle("2026-11-01 (Sun) 09:30"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("+220,000,000.00 (+44%)")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Search fields and values"), {
+      target: { value: "3333" },
+    });
+    expect(await screen.findByText('"3333"')).toBeInTheDocument();
+
+    const root = screen.getByTestId("record-history");
+    expect(root.textContent).not.toMatch(/[（）「」：\u3000]/);
   });
 });

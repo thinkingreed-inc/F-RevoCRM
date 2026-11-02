@@ -99,7 +99,7 @@ export const HistoryEventItem: React.FC<HistoryEventItemProps> = ({
           {fmt.monthDay(event.changedOn)}
         </span>
         <span className="font-sans text-xs text-slate-500">
-          （{fmt.weekday(event.changedOn)}）
+          {t("LBL_HISTORY_WEEKDAY_PAREN", fmt.weekday(event.changedOn))}
         </span>
         <span className="mt-0.5 text-xs text-slate-500">
           {fmt.time(event.changedOn)}

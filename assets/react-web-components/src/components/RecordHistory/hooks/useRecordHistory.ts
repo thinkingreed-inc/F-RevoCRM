@@ -25,7 +25,7 @@ export function useRecordHistory(
 
   useEffect(() => {
     if (!module || !recordId) {
-      setError("module / record-id が指定されていません");
+      setError("module / record-id is required");
       setLoading(false);
       return;
     }

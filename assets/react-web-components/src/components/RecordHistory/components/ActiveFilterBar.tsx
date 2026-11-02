@@ -90,7 +90,7 @@ export const ActiveFilterBar: React.FC<ActiveFilterBarProps> = ({
     );
   }
   if (criteria.keyword.trim()) {
-    const label = `「${criteria.keyword.trim()}」`;
+    const label = t("LBL_HISTORY_KEYWORD_CHIP", criteria.keyword.trim());
     chips.push(
       <Chip
         key="q"

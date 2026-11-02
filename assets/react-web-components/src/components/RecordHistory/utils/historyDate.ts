@@ -53,14 +53,19 @@ export function formatTime(value: string, fmt: HistoryDateFormat) {
   return format(parseHistoryDate(value), timePattern(fmt));
 }
 
-/** ユーザー設定の書式での日時（例: 01-11-2026（日）9:30 AM） */
+/** ユーザー設定の書式での日時（例: 01-11-2026（日）9:30 AM / 01-11-2026 (Sun) 9:30 AM） */
 export function formatFullDateTime(
   value: string,
   t: Translate,
   fmt: HistoryDateFormat,
 ): string {
   const date = parseHistoryDate(value);
-  return `${format(date, datePattern(fmt))}（${weekdayLabel(date, t)}）${format(date, timePattern(fmt))}`;
+  return t(
+    "LBL_HISTORY_DATETIME",
+    format(date, datePattern(fmt)),
+    weekdayLabel(date, t),
+    format(date, timePattern(fmt)),
+  );
 }
 
 /** 「たった今」「5分前」「3時間前」「昨日」「18日前」「2か月前」「1年前」 */

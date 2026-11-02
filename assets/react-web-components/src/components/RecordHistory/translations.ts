@@ -1,8 +1,9 @@
 import type { TranslationData } from "@/utils/translations";
 
 /**
- * record-history の既定文言（ja_jp）。
- * サーバーの言語ファイル（languages/<lang>/Vtiger.php）に同じキーがあればそちらを優先する。
+ * record-history の既定文言（ja_jp）。翻訳 API が取得できない場合のフォールバック。
+ * 正は languages/ja_jp/Vtiger.php・languages/en_us/Vtiger.php の $languageStrings で、
+ * キーを追加したら両方の言語ファイルにも追加すること（__tests__/languageFiles.test.ts で検査）。
  */
 export const RECORD_HISTORY_DEFAULTS: TranslationData = {
   LBL_HISTORY_SEARCH: "項目名・値で検索",
@@ -53,7 +54,7 @@ export const RECORD_HISTORY_DEFAULTS: TranslationData = {
   LBL_HISTORY_CHANGED_BY: "%sが変更",
   LBL_HISTORY_HELD_DAYS: "%s日間",
   LBL_HISTORY_HELD_ONGOING: "%s日目（継続中）",
-  LBL_HISTORY_AND_N_MORE: "ほか%s項目",
+  LBL_HISTORY_AND_N_MORE: "　ほか%s項目",
   LBL_HISTORY_VIEW_ALL: "すべて表示",
   LBL_HISTORY_UNKNOWN_USER: "不明なユーザー",
   LBL_HISTORY_JUST_NOW: "たった今",
@@ -72,4 +73,11 @@ export const RECORD_HISTORY_DEFAULTS: TranslationData = {
   LBL_HISTORY_WEEKDAY_4: "木",
   LBL_HISTORY_WEEKDAY_5: "金",
   LBL_HISTORY_WEEKDAY_6: "土",
+  // 記号・語順が言語で変わる組み立て用
+  LBL_HISTORY_DATETIME: "%s（%s）%s",
+  LBL_HISTORY_WEEKDAY_PAREN: "（%s）",
+  LBL_HISTORY_DELTA_PERCENT: "（%s）",
+  LBL_HISTORY_SUMMARY_CHANGE: "%s：%s → %s",
+  LBL_HISTORY_SUMMARY_RELATED: "%s：%s「%s」",
+  LBL_HISTORY_KEYWORD_CHIP: "「%s」",
 };

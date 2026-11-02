@@ -85,7 +85,7 @@ export const ChangeRow: React.FC<ChangeRowProps> = ({
               delta.sign === "+" ? "text-emerald-700" : "text-red-700",
             )}
           >
-            {formatDelta(delta)}
+            {formatDelta(delta, t)}
           </span>
         )}
       </>
