@@ -56,8 +56,14 @@ class Users_MultiFactorAuthLogin_View extends Vtiger_View_Controller {
             $errorIncorrect = "LBL_TOTP_CODE_INCORRECT";
         } else {
             $credential = $request->get('credential');
-            $challenge = $request->get('challenge');
-            $loginResult = Users_MultiFactorAuthentication_Helper::passkeyLoginVerifyKey($challenge, $credential, $userid, $username);
+            $credentialJson = is_array($credential) ? json_encode($credential) : (string) $credential;
+            $verifier = new Users_PasskeyVerifier_Model();
+            $loginResult = $verifier->verifyAssertion(
+                $credentialJson,
+                Users_MultiFactorAuthentication_Helper::consumeChallenge(),
+                $_SERVER['SERVER_NAME'],
+                (int) $userid
+            )->verified;
             $errorIncorrect = "LBL_PASSKEY_CODE_INCORRECT";
         }
 

@@ -282,6 +282,11 @@ $languageStrings = array(
 
 	'LBL_LOGIN' => 'ログイン',
 	'LBL_FORGET_PASSWORD' => 'パスワードを忘れた場合は',
+	'LBL_LOGIN_WITH_PASSKEY' => 'パスキーでログイン',
+	'LBL_LOGIN_OR' => 'または',
+	'LBL_PASSKEY_LOGIN_CANCELED' => 'パスキーでのログインがキャンセルされました',
+	'LBL_PASSKEY_LOGIN_ABORTED' => 'パスキーでのログインが中断されました。もう一度お試しください',
+	'LBL_PASSKEY_LOGIN_ERROR' => 'パスキーでログインできませんでした。WebAuthn 対応ブラウザ、または HTTPS でアクセスしてください',
 	'LBL_MAILADDRESS' => 'メールアドレス',
 	'LBL_SUBMIT' => '送信',
 	'LBL_F-Revo_Notice' => 'F-RevoCRMに関するお知らせ',
@@ -325,6 +330,9 @@ $languageStrings = array(
 強制しない場合もユーザーが多要素認証を設定している場合は、ログイン時に多要素認証が要求されます。
 true: 強制する
 false: 強制しない',
+	'LBL_SETUP_PARAMETER_MESSAGE_ALLOW_PASSKEY_ONLY_LOGIN' => 'パスキーのみでのログインを許可するフラグです。
+true: ログイン画面に「パスキーでログイン」を表示し、登録済みのパスキーだけでログインできます
+false: パスキーは多要素認証の2段階目にのみ使います',
 	'LBL_SETUP_PARAMETER_MESSAGE_USER_LOCK_TIME' => 'USER_LOCK_COUNTの回数ログインに失敗した際、ユーザーのログインをロックする時間（分）です。
 設定は半角の正の整数値で行ってください。
 全角数値、数値として認識できない文字列、0以下の値を指定した場合などは、ログインロックは行われません。',

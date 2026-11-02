@@ -102,7 +102,7 @@ export async function loginInIsolatedContext(
   await page.goto(BASE_URL, { waitUntil: "domcontentloaded" });
   await page.fill("id=username", username);
   await page.fill("id=password", password);
-  await page.getByRole("button", { name: "ログイン" }).click();
+  await page.getByRole("button", { name: "ログイン", exact: true }).click();
   await page.waitForLoadState("domcontentloaded").catch(() => {});
   return { context, page };
 }

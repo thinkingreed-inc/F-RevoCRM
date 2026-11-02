@@ -15,8 +15,13 @@ import { defineConfig, devices } from '@playwright/test';
  * Fatal error で白画面になるため、一般テストとは時間を分けて実行する
  * (下の 'chrome-privileges' プロジェクト)。
  * 詳細は fixtures/userPrivilegesLock.ts 参照。
+ *
+ * 3-36(パスキーログイン)もここで実行する。テスト用ユーザーを作成・削除するうえ、
+ * グローバルなシステム変数 ALLOW_PASSKEY_ONLY_LOGIN を一時的に ON にするため、
+ * 一般テストと時間を分け、同じロックで他の権限テストとも重ならないようにする。
  */
-const PRIVILEGE_SPECS = /5_管理設定[\\/](C-0[1-5]|I-0[12])_/;
+const PRIVILEGE_SPECS =
+  /5_管理設定[\\/](C-0[1-5]|I-0[12])_|3_共通機能[\\/]3-36_/;
 
 /**
  * See https://playwright.dev/docs/test-configuration.

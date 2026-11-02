@@ -139,6 +139,7 @@ class Users_Login_View extends Vtiger_View_Controller {
 		$companyLogo = $companyDetails->getLogo();
 		$viewer->assign('COMPANY_LOGO',$companyLogo);
 		$viewer->assign('CSRF_TOKEN', $csrfToken);
+		$viewer->assign('PASSKEY_ONLY_LOGIN', Users_PasskeyLoginService_Model::isEnabled());
 		$viewer->view('Login.tpl', 'Users');
 	}
 
@@ -161,6 +162,9 @@ class Users_Login_View extends Vtiger_View_Controller {
 							'modules.Vtiger.resources.List',
 							'modules.Vtiger.resources.Popup',
 							);
+		if (Users_PasskeyLoginService_Model::isEnabled()) {
+			$jsFileNames[] = 'modules.Users.resources.PasskeyLogin';
+		}
 		$jsScriptInstances = $this->checkAndConvertJsScripts($jsFileNames);
 		$headerScriptInstances = array_merge($jsScriptInstances,$headerScriptInstances);
 		return $headerScriptInstances;

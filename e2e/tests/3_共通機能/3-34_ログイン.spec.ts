@@ -17,7 +17,7 @@ test.describe("共通: ログイン(失敗系)", () => {
     await page.goto(BASE_URL, { waitUntil: "domcontentloaded" });
     await page.fill("id=username", process.env.E2E_USER_NAME || "admin");
     await page.fill("id=password", "definitely-wrong-password-000");
-    await page.getByRole("button", { name: "ログイン" }).click();
+    await page.getByRole("button", { name: "ログイン", exact: true }).click();
     await page.waitForLoadState("domcontentloaded");
 
     // ログイン画面に留まる(ユーザー名入力欄が見えている)

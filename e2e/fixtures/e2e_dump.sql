@@ -8195,7 +8195,7 @@ CREATE TABLE `vtiger_parameters` (
   `description` text,
   PRIMARY KEY (`id`),
   KEY `key` (`key`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -8204,7 +8204,7 @@ CREATE TABLE `vtiger_parameters` (
 
 LOCK TABLES `vtiger_parameters` WRITE;
 /*!40000 ALTER TABLE `vtiger_parameters` DISABLE KEYS */;
-INSERT INTO `vtiger_parameters` VALUES (1,'FORCE_MULTI_FACTOR_AUTH','false','多要素認証を強制するフラグです。\n強制しない場合もユーザーが多要素認証を設定している場合は、ログイン時に多要素認証が要求されます。\ntrue: 強制する\nfalse: 強制しない'),(2,'USER_LOCK_TIME','30','USER_LOCK_COUNTの回数ログインに失敗した際、ユーザーのログインをロックする時間（分）です。\n設定は半角の正の整数値で行ってください。\n全角数値、数値として認識できない文字列、0以下の値を指定した場合などは、ログインロックは行われません。'),(3,'USER_LOCK_COUNT','5','ログインに失敗した際、ユーザーのログインをロックするまでの回数です。\n設定した回数連続でログインに失敗するとユーザーのログインにロックがかかり、USER_LOCK_TIMEで指定した時間が経過するまでログインできません。\n設定は半角の正の整数値で行ってください。\n全角数値、数値として認識できない文字列、0以下の値を指定した場合などは、ログインロックは行われません。'),(4,'IMPORT_MAX_HISTORY_COUNT','10','ユーザーかつモジュール単位で保持できるインポート履歴の最大件数です。'),(5,'SHOW_SCHEDULE_CONFIRM_FLAG','false','他人のカレンダーを変更する際の確認フラグです。true: 確認する、false: 確認しない'),(6,'CALENDAR_REMEMBER_FEED_SELECTION','false','共有カレンダーにおけるユーザー一覧のチェック状態を制御するフラグです。\ntrue : 組織・役割切替時もチェック状態を記憶し、すべての表示に反映します。\nfalse : マイグループのみチェック状態を記憶し、他の組織・役割では常に全選択とします。');
+INSERT INTO `vtiger_parameters` VALUES (1,'FORCE_MULTI_FACTOR_AUTH','false','多要素認証を強制するフラグです。\n強制しない場合もユーザーが多要素認証を設定している場合は、ログイン時に多要素認証が要求されます。\ntrue: 強制する\nfalse: 強制しない'),(2,'USER_LOCK_TIME','30','USER_LOCK_COUNTの回数ログインに失敗した際、ユーザーのログインをロックする時間（分）です。\n設定は半角の正の整数値で行ってください。\n全角数値、数値として認識できない文字列、0以下の値を指定した場合などは、ログインロックは行われません。'),(3,'USER_LOCK_COUNT','5','ログインに失敗した際、ユーザーのログインをロックするまでの回数です。\n設定した回数連続でログインに失敗するとユーザーのログインにロックがかかり、USER_LOCK_TIMEで指定した時間が経過するまでログインできません。\n設定は半角の正の整数値で行ってください。\n全角数値、数値として認識できない文字列、0以下の値を指定した場合などは、ログインロックは行われません。'),(4,'IMPORT_MAX_HISTORY_COUNT','10','ユーザーかつモジュール単位で保持できるインポート履歴の最大件数です。'),(5,'SHOW_SCHEDULE_CONFIRM_FLAG','false','他人のカレンダーを変更する際の確認フラグです。true: 確認する、false: 確認しない'),(6,'CALENDAR_REMEMBER_FEED_SELECTION','false','共有カレンダーにおけるユーザー一覧のチェック状態を制御するフラグです。\ntrue : 組織・役割切替時もチェック状態を記憶し、すべての表示に反映します。\nfalse : マイグループのみチェック状態を記憶し、他の組織・役割では常に全選択とします。'),(7,'ALLOW_PASSKEY_ONLY_LOGIN','false','パスキーのみでのログインを許可するフラグです。\ntrue: ログイン画面に「パスキーでログイン」を表示し、登録済みのパスキーだけでログインできます\nfalse: パスキーは多要素認証の2段階目にのみ使います');
 /*!40000 ALTER TABLE `vtiger_parameters` ENABLE KEYS */;
 UNLOCK TABLES;
 
