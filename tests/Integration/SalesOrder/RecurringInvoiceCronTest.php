@@ -153,6 +153,25 @@ final class RecurringInvoiceCronTest extends TestCase
     }
 
     /**
+     * 「繰り返し有効」が OFF の受注は、繰り返し請求の設定行が残っていても請求を作成しない。
+     * （ワークフローの項目更新で OFF にすると aftersave が動かず、設定行が削除されずに残る）
+     */
+    public function testDisabledOrderIsNotInvoicedEvenIfRecurringInfoRemains(): void
+    {
+        [$disabled, $enabled] = $this->createSalesOrders(2);
+
+        $monthlyStart = $this->today->modify('first day of -2 month');
+
+        $this->setRecurring($disabled, 'Monthly', $monthlyStart, null, false);
+        $this->setRecurring($enabled, 'Monthly', $monthlyStart);
+
+        $this->runRecurringInvoiceCron();
+
+        $this->assertInvoices($disabled, [], $monthlyStart);
+        $this->assertInvoices($enabled, $this->monthlyDates($monthlyStart), $this->today->modify('first day of +1 month'));
+    }
+
+    /**
      * @return list<int> 作成した受注 ID（ID 昇順 = cron の処理順）
      */
     private function createSalesOrders(int $count): array
