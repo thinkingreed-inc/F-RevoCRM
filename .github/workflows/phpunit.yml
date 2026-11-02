@@ -23,7 +23,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # composer.json の config.platform.php (8.3.0) に合わせる。
       # 対応 PHP は 8.3〜8.5 だが、依存解決の基準である 8.3 でテストする。
@@ -43,7 +43,7 @@ jobs:
         run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
 
       - name: Cache composer downloads
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: composer-php83-${{ hashFiles('composer.lock') }}
@@ -117,7 +117,7 @@ jobs:
 
       - name: Upload JUnit XML
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: phpunit-junit
           path: tests/.phpunit.cache/junit.xml

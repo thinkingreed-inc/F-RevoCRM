@@ -27,21 +27,21 @@ jobs:
       COMPOSE_EXTRA: "-f compose.cache.yaml"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
       # Docker イメージ層のキャッシュ (php イメージの apt/pecl ビルドが重いため)
       - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       # GHCR のプリビルド php イメージを pull できるようにログイン(あれば run-e2e.sh がビルドを省略)。
       # 未公開/未ビルドでも pull 失敗時はローカルビルドにフォールバックするため必須ではない。
       - name: Login to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -49,28 +49,28 @@ jobs:
 
       # PHP 依存 (vendor/) をキャッシュ。composer.lock が変わらなければ composer install は即完了
       - name: Cache composer vendor
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: vendor
           key: vendor-${{ hashFiles('composer.lock') }}
 
       # web-components の node_modules をキャッシュ
       - name: Cache web-components node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: assets/react-web-components/node_modules
           key: wc-node-${{ hashFiles('assets/react-web-components/package-lock.json') }}
 
       # e2e (Playwright) の node_modules をキャッシュ
       - name: Cache e2e node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: e2e/node_modules
           key: e2e-node-${{ hashFiles('e2e/package-lock.json') }}
 
       # Playwright のブラウザバイナリをキャッシュ
       - name: Cache Playwright browsers
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ hashFiles('e2e/package-lock.json') }}
@@ -114,7 +114,7 @@ jobs:
 
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: playwright-report
           path: e2e/playwright-report/
@@ -126,7 +126,7 @@ jobs:
       #                                    --results /tmp/ci/playwright-results-serial.json
       - name: Upload Playwright results (json)
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: playwright-results
           path: |
