@@ -10,6 +10,11 @@
 class SalesOrder_SaveAjax_Action extends Inventory_SaveAjax_Action {
 
 	/**
+	 * 繰り返し請求ブロック（Recurring Invoice Information）の項目
+	 */
+	private static $recurringFields = array('enable_recurring', 'recurring_frequency', 'start_period', 'end_period', 'payment_duration', 'invoicestatus');
+
+	/**
 	 * Function to get the record model based on the request parameters
 	 * @param Vtiger_Request $request
 	 * @return Vtiger_Record_Model or Module specific Record Model instance
@@ -18,10 +23,14 @@ class SalesOrder_SaveAjax_Action extends Inventory_SaveAjax_Action {
 		$moduleName = $request->getModule();
 		$recordId = $request->get('record');
 
+		$enableRecurrence = false;
 		if($request->get('field') == 'enable_recurring'){
 			$enableRecurrence = true;
 		}
+		// 保存済みの繰り返し請求の設定（新規作成時は null）。変更があったかの判定に使う
+		$storedRecurringValues = null;
 		if(!empty($recordId)) {
+			$storedRecurringValues = array();
 			$recordModel = Vtiger_Record_Model::getInstanceById($recordId, $moduleName);
 			$recordModel->set('id', $recordId);
 			$recordModel->set('mode', 'edit');
@@ -34,6 +43,9 @@ class SalesOrder_SaveAjax_Action extends Inventory_SaveAjax_Action {
 					$fieldValue = $recordModel->get($fieldName);
 				} else {
 					$fieldValue = $fieldModel->getUITypeModel()->getUserRequestValue($recordModel->get($fieldName));
+				}
+				if (in_array($fieldName, self::$recurringFields, true)) {
+					$storedRecurringValues[$fieldName] = $fieldValue;
 				}
 
 
@@ -98,6 +110,59 @@ class SalesOrder_SaveAjax_Action extends Inventory_SaveAjax_Action {
 				}
 			} 
 		}
+		$this->validateRecurringInvoiceSettings($recordModel, $storedRecurringValues);
 		return $recordModel;
+	}
+
+	/**
+	 * 繰り返し請求を有効にする場合は、周期と開始日を必須とする
+	 *
+	 * 周期が空のまま有効になっていると、請求の自動作成（cron/modules/SalesOrder/RecurringInvoice.service）で
+	 * 次回請求日を計算できない。インライン編集では「繰り返し有効」だけを保存できるため、ここで確認する。
+	 * 繰り返し請求ブロックの値を変えない保存は妨げない（既に周期が空の受注でも、他の項目は編集できるようにする）。
+	 * @param Vtiger_Record_Model $recordModel 保存する値を反映した受注
+	 * @param array|null $storedRecurringValues 保存済みの繰り返し請求の設定（新規作成時は null）
+	 * @throws AppException
+	 */
+	protected function validateRecurringInvoiceSettings($recordModel, $storedRecurringValues) {
+		if (!$this->isRecurringEnabled($recordModel->get('enable_recurring'))) {
+			return;
+		}
+		if ($storedRecurringValues !== null && !$this->isRecurringSettingChanged($recordModel, $storedRecurringValues)) {
+			return;
+		}
+		if (trim((string) $recordModel->get('recurring_frequency')) === ''
+			|| trim((string) $recordModel->get('start_period')) === '') {
+			throw new AppException(vtranslate('LBL_RECURRING_FREQUENCY_AND_START_PERIOD_REQUIRED', 'SalesOrder'));
+		}
+	}
+
+	/**
+	 * 保存時（CRMEntity::insertIntoEntityTable）と同じ基準で「繰り返し有効」の ON/OFF を判定する
+	 * @param mixed $value
+	 * @return boolean
+	 */
+	private function isRecurringEnabled($value) {
+		return $value === 'on' || $value == 1;
+	}
+
+	/**
+	 * 繰り返し請求ブロックの値が保存済みから変わるか
+	 * @param Vtiger_Record_Model $recordModel
+	 * @param array $storedRecurringValues
+	 * @return boolean
+	 */
+	private function isRecurringSettingChanged($recordModel, $storedRecurringValues) {
+		foreach ($storedRecurringValues as $fieldName => $storedValue) {
+			$newValue = $recordModel->get($fieldName);
+			if ($fieldName === 'enable_recurring') {
+				if ($this->isRecurringEnabled($newValue) !== $this->isRecurringEnabled($storedValue)) {
+					return true;
+				}
+			} else if (trim((string) $newValue) !== trim((string) $storedValue)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
