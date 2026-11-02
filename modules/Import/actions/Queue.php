@@ -40,6 +40,7 @@ class Import_Queue_Action extends Vtiger_Action_Controller {
 								status INT default 0,
 								lineitem_currency_id INT(5),
 								paging INT(1),
+								add_picklist_fields TEXT,
 								time_start datetime,
 								time_end datetime)",
 							true);
@@ -57,7 +58,7 @@ class Import_Queue_Action extends Vtiger_Action_Controller {
 			$paging = 0;
 		}
 
-		$db->pquery('INSERT INTO vtiger_import_queue VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
+		$db->pquery('INSERT INTO vtiger_import_queue (importid, userid, tabid, field_mapping, default_values, merge_type, merge_fields, status, lineitem_currency_id, paging, time_start, time_end, add_picklist_fields) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)',
 				array($db->getUniqueID('vtiger_import_queue'),
 						$user->id,
 						getTabid($request->get('module')),
@@ -69,7 +70,8 @@ class Import_Queue_Action extends Vtiger_Action_Controller {
 						$request->get('lineitem_currency'),
 						$paging,
 						$db->formatDate($date_var, true),
-						null));
+						null,
+						Zend_Json::encode($request->get('add_picklist_fields'))));
 	}
 	
 	public static function finish($user, $importId) {
@@ -214,7 +216,9 @@ class Import_Queue_Action extends Vtiger_Action_Controller {
 			'user_id' => $rowData['userid'],
 			'status' => $rowData['status'],
 			'lineitem_currency_id' => $rowData['lineitem_currency_id'],
-			'paging' => $rowData['paging']
+			'paging' => $rowData['paging'],
+			// 列追加前の行（NULL）はどの項目もチェックなし
+			'add_picklist_fields' => empty($rowData['add_picklist_fields']) ? null : Zend_Json::decode($rowData['add_picklist_fields'])
 		);
 	}
 

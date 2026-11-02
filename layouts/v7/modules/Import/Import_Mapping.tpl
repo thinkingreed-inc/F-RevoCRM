@@ -14,6 +14,7 @@
 	<input type="hidden" id="mandatory_fields" name="mandatory_fields" value='{$ENCODED_MANDATORY_FIELDS}' />
 	<input type="hidden" name="field_mapping" id="field_mapping" value="" />
 	<input type="hidden" name="default_values" id="default_values" value="" />
+	<input type="hidden" name="add_picklist_fields" id="add_picklist_fields" value="" />
 	<table width="100%" class="table table-bordered">
 		<thead>
 			<tr>
@@ -49,6 +50,7 @@
 										data-label="{$_TRANSLATED_FIELD_LABEL}">{$_TRANSLATED_FIELD_LABEL}{if $_FIELD_INFO->isMandatory() eq 'true' || $_FIELD_NAME eq 'activitytype'}&nbsp; (*){/if}</option>
 							{/foreach}
 						</select>
+						<div name="add_picklist_value_container"></div>
 					</td>
 					<td name="default_value_container">&nbsp;</td>
 				</tr>

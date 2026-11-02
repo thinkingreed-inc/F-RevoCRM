@@ -16,7 +16,8 @@
             <select name="saved_maps" id="saved_maps" class="select2 form-control" onchange="Vtiger_Import_Js.loadSavedMap();">
                 <option id="-1" value="" selected>--{'LBL_SELECT_SAVED_MAPPING'|@vtranslate:$MODULE}--</option>
                 {foreach key=_MAP_ID item=_MAP from=$SAVED_MAPS}
-                    <option id="{$_MAP_ID}" value="{$_MAP->getStringifiedContent()}">{$_MAP->getValue('name')}</option>
+                    {* value は ID にする。対応付けの文字列を value にすると、同じ対応付けのマッピングが複数あるとき先頭のものとして選ばれ、別のマッピングを削除・読み込みしてしまう *}
+                    <option id="{$_MAP_ID}" value="{$_MAP_ID}" data-mapping="{$_MAP->getStringifiedContent()|escape}" data-add-picklist-fields="{Zend_Json::encode($_MAP->getAddPicklistFields())|escape}">{$_MAP->getValue('name')}</option>
                 {/foreach}
             </select>
         </div>

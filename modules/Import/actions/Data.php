@@ -30,6 +30,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 	var $mergeType;
 	var $mergeFields;
 	var $defaultValues;
+	protected $addPicklistFields = array();
 	var $lineitem_currency_id;
 	var $paging;
 	var $importedRecordInfo = array();
@@ -56,6 +57,8 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			$this->mergeFields = $importInfo['merge_fields'];
 		}
 		$this->defaultValues = $importInfo['default_values'];
+		// 送信値は信用しない。配列以外は空扱い（対象の項目かどうかは canAddPicklistValue() で判定し直す）
+		$this->addPicklistFields = is_array($importInfo['add_picklist_fields'] ?? null) ? $importInfo['add_picklist_fields'] : array();
 		$this->lineitem_currency_id = $importInfo['lineitem_currency_id'];
 		$this->user = $user;
 		$this->paging = $importInfo['paging'];
@@ -502,9 +505,100 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		return true;
 	}
 
+	/**
+	 * 項目が「存在しない選択肢を追加する」の対象になりうるか。マッピング画面のチェックボックス表示と
+	 * canAddPicklistValue() の両方が使う（表示だけで判断せずサーバ側でも必ず判定し直すため）
+	 */
+	public static function isPicklistAddableField(string $fieldName, string $moduleName): bool {
+		static $addable = array();
+		if (isset($addable[$moduleName][$fieldName])) {
+			return $addable[$moduleName][$fieldName];
+		}
+		$addable[$moduleName][$fieldName] = false;
+
+		// 活動は予定（Events）の項目が混在するため対象外（#1406 より前の自動追加も対象外だった）
+		if ($moduleName == 'Calendar') {
+			return false;
+		}
+
+		// 選択肢エディタに出る項目（表示種別・presence・日報の集計期間などの除外も同じ判定）のうち、
+		// 編集できるものだけに追加する。支払条件・繰り返し頻度など、値に処理が紐づく項目は対象外
+		$picklistFields = Settings_Picklist_Module_Model::getInstance($moduleName)->getFieldsByType(array('picklist'));
+		if (!isset($picklistFields[$fieldName]) || !$picklistFields[$fieldName]->isEditable()) {
+			return false;
+		}
+
+		// 選択肢テーブルを持たない項目（税計算の種類など固定値の項目）は追加できない
+		$addable[$moduleName][$fieldName] = self::getPicklistColumnInfo($fieldName) !== null;
+		return $addable[$moduleName][$fieldName];
+	}
+
+	/**
+	 * 選択肢テーブルの値の列の長さと文字セット。テーブルが無ければ null。行ごとに information_schema を引かないよう項目ごとに覚える
+	 */
+	protected static function getPicklistColumnInfo(string $fieldName): ?array {
+		static $columnInfo = array();
+		if (!array_key_exists($fieldName, $columnInfo)) {
+			$adb = PearDatabase::getInstance();
+			$result = $adb->pquery('SELECT CHARACTER_MAXIMUM_LENGTH AS maxlength, CHARACTER_SET_NAME AS charset FROM information_schema.COLUMNS
+				WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?', array('vtiger_' . $fieldName, $fieldName));
+			$columnInfo[$fieldName] = $adb->num_rows($result) == 0 ? null
+				: array('maxlength' => (int) $adb->query_result($result, 0, 'maxlength'), 'charset' => $adb->query_result($result, 0, 'charset'));
+		}
+		return $columnInfo[$fieldName];
+	}
+
+	/**
+	 * 選択肢に無い値を選択肢へ追加してよいか。マッピング画面でチェックされた項目だけ追加する
+	 */
+	protected function canAddPicklistValue($fieldInstance, $fieldValue, $moduleName) {
+		$adb = PearDatabase::getInstance();
+		$fieldName = $fieldInstance->getFieldName();
+		if (!in_array($fieldName, $this->addPicklistFields, true) || !self::isPicklistAddableField($fieldName, $moduleName)) {
+			return false;
+		}
+		$tableName = 'vtiger_' . $fieldName;
+
+		// 列の長さを超える値・列の文字セットで保存できない4バイト文字（絵文字など）を含む値は、
+		// 切り詰められて別の値として登録されるため追加しない
+		$columnInfo = self::getPicklistColumnInfo($fieldName);
+		if (mb_strlen($fieldValue) > $columnInfo['maxlength']) {
+			return false;
+		}
+		if ($columnInfo['charset'] !== 'utf8mb4' && preg_match('/[\x{10000}-\x{10FFFF}]/u', $fieldValue)) {
+			return false;
+		}
+
+		// 照合に使った一覧は実行者のロールで絞り込まれている。テーブルに同じ値があれば、
+		// ロールの制限を残すため（二重登録も防ぐため）追加しない。
+		// 照合順序が _bin の環境でも大文字小文字違いを同じ値として扱うため LOWER() で比べる（選択肢テーブルは小さく、
+		// このクエリはチェックした項目の選択肢に無い値の行でだけ発行される）
+		$result = $adb->pquery("SELECT 1 FROM $tableName WHERE LOWER($fieldName) = LOWER(?)", array($fieldValue));
+		return $adb->num_rows($result) == 0;
+	}
+
+	/**
+	 * 選択肢に値を追加する。ロール別の選択肢は全ロール（設定画面の「全ロール」と同じ）に割り当てる
+	 */
+	protected function addPicklistValue($fieldName, $fieldValue, $moduleName) {
+		$picklistModuleModel = Settings_Picklist_Module_Model::getInstance($moduleName);
+		$picklistFieldModel = Settings_Picklist_Field_Model::getInstance($fieldName, $picklistModuleModel);
+		$roleIds = array();
+		if ($picklistFieldModel->isRoleBased()) {
+			foreach (Settings_Roles_Record_Model::getAll() as $roleRecord) {
+				$roleIds[] = $roleRecord->getId();
+			}
+		}
+		$picklistModuleModel->addPickListValues($picklistFieldModel, $fieldValue, $roleIds);
+
+		// 同じインポートの後続行で同じ値を再び追加しないよう、照合用の一覧にも加える
+		$this->allPicklistValues[$fieldName][] = array('label' => $fieldValue, 'value' => $fieldValue);
+	}
+
 	public function transformForImport($fieldData, $moduleMeta, $cache, $fillDefault = true, $checkMandatoryFieldValues = true) {
 		global $current_user;
 		$adb = PearDatabase::getInstance();
+		$picklistValuesToAdd = array();
 		$moduleImportableFields = array();
 		$moduleFields = $moduleMeta->getModuleFields();
 		$moduleName = $moduleMeta->getEntityName();
@@ -653,8 +747,13 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 				}
 
 				if (!in_array($picklistValueInLowerCase, $allPicklistValuesInLowerCase)) {
-					// 存在しないPicklist値の場合はエラーとしてインポート失敗にする
-					return null;
+					if (!$this->canAddPicklistValue($fieldInstance, $fieldValue, $moduleName)) {
+						// 存在しないPicklist値の場合はエラーとしてインポート失敗にする
+						return null;
+					}
+					// 後続の項目で失敗した行の値を選択肢に残さないよう、追加は行の検証が済んでから行う
+					$picklistValuesToAdd[$fieldName] = $fieldValue;
+					$fieldData[$fieldName] = $fieldValue;
 				} else {
 					$fieldData[$fieldName] = $picklistDetails[$picklistValueInLowerCase];
 				}
@@ -794,6 +893,9 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			}
 		}
 
+		foreach ($picklistValuesToAdd as $fieldName => $fieldValue) {
+			$this->addPicklistValue($fieldName, $fieldValue, $moduleName);
+		}
 		return $fieldData;
 	}
 
