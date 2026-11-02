@@ -25,8 +25,9 @@ require_once dirname(__DIR__, 3) . '/include/database/PearDatabase.php';
  * vtiger_invoice_recurring_info / vtiger_salesorder へ直接書き込んで状態を作る。
  * cron は本番と同じく vtigercron.php --service=RecurringInvoice で実行する。
  *
- * 件名が FIXTURE_PREFIX で始まる受注・取引先と、それらから作られた請求だけを操作し、
- * 既存データには触らない。
+ * 作成・後片付けの対象は、件名が FIXTURE_PREFIX で始まる受注・取引先と、それらから作られた請求に限る。
+ * ただし cron はテスト用DB 全体を処理するため、テスト用DB に他の繰り返し請求の受注があれば、
+ * それらにも請求が作成される（テスト用DB には繰り返し請求の受注を置かない前提）。
  */
 final class RecurringInvoiceCronTest extends TestCase
 {
@@ -90,7 +91,9 @@ final class RecurringInvoiceCronTest extends TestCase
 
         $this->setRecurring($weekly, 'Weekly', $this->daysAgo(15));
         $this->setRecurring($monthly, 'Monthly', $monthlyStart);
-        $this->setRecurring($yearly, 'Yearly', $this->today->modify('-1 year'));
+        // 2/29 に実行しても日付がずれないよう、年次は月初を起点にする
+        $yearlyStart = $this->today->modify('first day of this month')->modify('-1 year');
+        $this->setRecurring($yearly, 'Yearly', $yearlyStart);
         $this->setRecurring($daily, 'Daily', $this->daysAgo(3));
         $this->setRecurring($monthEnd, 'Monthly', $monthEndStart);
         $this->setRecurring($endFuture, 'Monthly', $monthlyStart, $this->today->modify('+10 day'));
@@ -100,7 +103,7 @@ final class RecurringInvoiceCronTest extends TestCase
 
         $this->assertInvoices($weekly, [$this->daysAgo(15), $this->daysAgo(8), $this->daysAgo(1)], $this->today->modify('+6 day'));
         $this->assertInvoices($monthly, $this->monthlyDates($monthlyStart), $this->today->modify('first day of +1 month'));
-        $this->assertInvoices($yearly, [$this->today->modify('-1 year'), $this->today], $this->today->modify('+1 year'));
+        $this->assertInvoices($yearly, [$yearlyStart, $yearlyStart->modify('+1 year')], $yearlyStart->modify('+2 year'));
         $this->assertInvoices($daily, [$this->daysAgo(3), $this->daysAgo(2), $this->daysAgo(1), $this->today], $this->today->modify('+1 day'));
         $monthEndDates = $this->monthlyDates($monthEndStart);
         $this->assertInvoices($monthEnd, $monthEndDates, $this->monthEndNext($monthEndStart, count($monthEndDates)));
@@ -126,6 +129,7 @@ final class RecurringInvoiceCronTest extends TestCase
 
         $run = $this->runRecurringInvoiceCron();
 
+        $this->assertSame(0, $run['status'], $run['output']);
         $this->assertStringNotContainsString('Fatal error', $run['output']);
         $this->assertStringContainsString("SalesOrder {$emptyFrequency} is skipped: invalid recurring frequency", $run['output']);
         $this->assertStringContainsString("SalesOrder {$noneFrequency} is skipped: invalid recurring frequency '--None--'", $run['output']);

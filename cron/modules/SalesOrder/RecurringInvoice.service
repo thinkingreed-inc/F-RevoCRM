@@ -203,7 +203,8 @@ function getRecurringDate($recurringDate, $recurringFrequency) {
 /* 繰り返し請求の周期として次回請求日を計算できる値か */
 function isValidRecurringFrequency($recurringFrequency) {
 	$validFrequencies = array('daily', 'weekly', 'monthly', 'quarterly', 'half-yearly', 'yearly');
-	return in_array(strtolower(trim((string) $recurringFrequency)), $validFrequencies, true);
+	// getRecurringDate() と同じ判定（strtolower のみ）にそろえる
+	return in_array(strtolower((string) $recurringFrequency), $validFrequencies, true);
 }
 
 /* 処理できなかった受注を cron のログ（標準出力）とアプリケーションログの両方に残す */
