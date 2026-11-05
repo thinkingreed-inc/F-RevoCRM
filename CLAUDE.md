@@ -68,6 +68,9 @@ F-RevoCRM は vtiger ベースの PHP 製 CRM。`modules/` 配下に機能モジ
 ### マイグレーション（DB 変更）
 
 - DB のスキーマ・データ変更は手動 SQL でなく `setup/migration/` のコマンドで行う。詳細は `setup/migration/README.md`。
+- テーブルを作るときは、文字セットと照合順序を `DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci` と明示する（マイグレーションでもコード内の `CREATE TABLE` でも同じ）。
+  - `CHARSET=utf8mb4` だけだと、MySQL 8 では既定の `utf8mb4_0900_ai_ci` になる。既存のテーブル（`utf8mb4_general_ci`。`20260917072813_convert_all_tables_to_utf8mb4.php` で揃えた）と文字列で JOIN すると「Illegal mix of collations」になる。
+  - `CHARSET=utf8`（utf8mb3）は使わない。4 バイト文字（絵文字・一部の人名漢字）を保存できない。
 
 ## Do / Don't
 
