@@ -14,6 +14,7 @@ require_once('include/utils/UserInfoUtil.php');
 require_once('include/utils/utils.php');
 require_once('include/utils/GetUserGroups.php');
 require_once('include/utils/GetGroupUsers.php');
+require_once('modules/Users/helpers/PrivilegeFile.php');
 
 
 /** Creates a file with all the user, user-role,user-profile, user-groups informations 
@@ -24,9 +25,9 @@ require_once('include/utils/GetGroupUsers.php');
 function createUserPrivilegesfile($userid)
 {
 	global $root_directory;
-	$handle=@fopen($root_directory.'user_privileges/user_privileges_'.$userid.'.php',"w+");
+	$filePath = $root_directory.'user_privileges/user_privileges_'.$userid.'.php';
 
-	if($handle)
+	if(is_writable(dirname($filePath)))
 	{
 		$newbuf='';
 		$newbuf .="<?php\n\n";
@@ -51,8 +52,7 @@ function createUserPrivilegesfile($userid)
 			$newbuf .= "\$user_info=".constructSingleStringKeyValueArray($userInfo).";\n";
 			$newbuf .= "\n";
 			$newbuf .= "?>";
-			fputs($handle, $newbuf);
-			fclose($handle);
+			Users_PrivilegeFile_Helper::write($filePath, $newbuf);
 			return;	
 		}
 		else
@@ -100,8 +100,7 @@ function createUserPrivilegesfile($userid)
 			$newbuf .= "\$user_info=".constructSingleStringKeyValueArray($userInfo).";\n";
 
 			$newbuf .= "?>";
-			fputs($handle, $newbuf);
-			fclose($handle);
+			Users_PrivilegeFile_Helper::write($filePath, $newbuf);
 		}
 	}
 }
@@ -115,9 +114,9 @@ function createUserSharingPrivilegesfile($userid)
 	global $adb, $root_directory;
 	checkFileAccessForInclusion('user_privileges/user_privileges_'.$userid.'.php');
 	require('user_privileges/user_privileges_'.$userid.'.php');
-	$handle=@fopen($root_directory.'user_privileges/sharing_privileges_'.$userid.'.php',"w+");
+	$filePath = $root_directory.'user_privileges/sharing_privileges_'.$userid.'.php';
 	
-if($handle)
+if(is_writable(dirname($filePath)))
 	{
 		$newbuf='';
 		$newbuf .="<?php\n\n";
@@ -129,8 +128,7 @@ if($handle)
 		{
 			$newbuf .= "\n";
 			$newbuf .= "?>";
-			fputs($handle, $newbuf);
-			fclose($handle);
+			Users_PrivilegeFile_Helper::write($filePath, $newbuf);
 			return;	
 		}
 		else
@@ -391,8 +389,7 @@ if($handle)
 			// END
 	
 			$newbuf .= "?>";
-			fputs($handle, $newbuf);
-			fclose($handle);
+			Users_PrivilegeFile_Helper::write($filePath, $newbuf);
 
 			//Populating Temp Tables
 			populateSharingtmptables($userid);
