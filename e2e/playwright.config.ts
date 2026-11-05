@@ -16,7 +16,7 @@ import { defineConfig, devices } from '@playwright/test';
  * (下の 'chrome-privileges' プロジェクト)。
  * 詳細は fixtures/userPrivilegesLock.ts 参照。
  */
-const PRIVILEGE_SPECS = /5_管理設定[\\/](C-0[1-5]|I-0[12])_/;
+const PRIVILEGE_SPECS = /5_管理設定[\\/](C-0[1-57]|I-0[12])_/;
 
 /**
  * See https://playwright.dev/docs/test-configuration.
