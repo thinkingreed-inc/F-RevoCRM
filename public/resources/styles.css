@@ -102,17 +102,20 @@ td.listViewEntryValue  .fieldValue .value {
 
 /*
  * カスタムモジュールのアイコン位置調整
+ * 頭文字は <span class="custom-module">日</span> の1要素で出力されるため、
+ * 余白を使わず固定サイズの枠の中央に置く
+ * （max-width はスキン側の .app-modules-dropdown li a span の 85% を打ち消す）
  */
- .app-menu a .module-icon .custom-module {
-  position: relative;
-  width: 23px;
+.app-menu a .module-icon .custom-module {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 20px;
+  max-width: none;
   height: 20px;
-  padding: 8px 6px 0px 3px !important;
-}
-.app-menu a .module-icon .custom-module span {
-  position: absolute;
-  top:0px;
-  left: 3px;
+  padding: 0 !important;
+  line-height: 20px;
+  text-align: center;
+  vertical-align: middle;
 }
 .modules-menu .module-qtip .custom-module {
   text-align: center;
