@@ -162,22 +162,18 @@ class Emails_Record_Model extends Vtiger_Record_Model {
                 $mailer->Body .= $this->getTrackImageDetails($id, $this->isEmailTrackEnabled($parentModule));
             }
             //Checking whether user requested to add signature or not
+            // テキスト版にも同じ署名を付けるため、付ける署名を $signature に持っておく
+            $signature = '';
             if($this->get('signature') == 'Yes'){
                 $mailer->Signature = $currentUserModel->get('signature');
-                if($mailer->Signature != '') {
-                    $mailer->Body.= '<br><br>'.decode_html($mailer->Signature);
+                $signature = $mailer->Signature;
+                if($signature != '') {
+                    $mailer->Body.= '<br><br>'.decode_html($signature);
                 }
             }
             $mailer->Subject = decode_html(strip_tags($subject));
 
-            $plainBody = decode_emptyspace_html($description);
-            // 署名は HTML 版と同じく、署名を付ける指定があるときだけ付ける
-            if ($this->get('signature') == 'Yes' && $currentUserModel->get('signature') != '') {
-                $plainBody .= "\n\n".decode_html($currentUserModel->get('signature'));
-            }
-            $plainBody = preg_replace(array("/<p>/i","/<br>/i","/<br \/>/i"),array("\n","\n","\n"),$plainBody);
-            // 本文は UTF-8 のまま扱う (ISO-8859-1 からの変換や ASCII 変換をすると日本語が文字化けする)
-            $plainBody = html_entity_decode(strip_tags($plainBody), ENT_QUOTES, 'UTF-8');
+            $plainBody = self::buildPlainTextBody($description, $signature);
             $plainBody = $this->convertUrlsToTrackUrls($plainBody, $id,'plain');
             $mailer->AltBody = $plainBody;
      //       $mailer->AddAddress($email);
@@ -249,6 +245,24 @@ class Emails_Record_Model extends Vtiger_Record_Model {
 		}
 	}
 		return $status;
+	}
+
+	/**
+	 * メールのテキスト版 (AltBody) の本文を、HTML 版の本文と署名から組み立てる
+	 * @param <String> $description - HTML 版の本文
+	 * @param <String> $signature - 付ける署名。付けないときは空文字
+	 * @return <String> - テキスト版の本文 (UTF-8)
+	 */
+	public static function buildPlainTextBody($description, $signature) {
+		$plainBody = decode_emptyspace_html($description);
+		// 署名は HTML 版と同じく decode_html してから付ける
+		if ($signature != '') {
+			$plainBody .= "\n\n".decode_html($signature);
+		}
+		$plainBody = preg_replace(array("/<p>/i","/<br>/i","/<br \/>/i"),array("\n","\n","\n"),$plainBody);
+		// 本文は UTF-8 のまま扱う (ISO-8859-1 からの変換や ASCII 変換をすると日本語が文字化けする)
+		// strip_tags を先にするのは、デコードで出てくる "<" ">" をタグとして消さないため
+		return html_entity_decode(strip_tags($plainBody), ENT_QUOTES, 'UTF-8');
 	}
 
 	/**
