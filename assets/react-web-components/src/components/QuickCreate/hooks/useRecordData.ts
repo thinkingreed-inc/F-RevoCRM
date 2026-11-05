@@ -137,9 +137,16 @@ function transformRecordData(
 
   // Add display values for reference fields (e.g., contact_id_display)
   // These are used by ReferenceField to show the display name instead of just the ID
+  // Also add module info for reference fields (e.g., parent_id_module)
   if (displayValues) {
     for (const [fieldName, displayValue] of Object.entries(displayValues)) {
-      transformed[`${fieldName}_display`] = displayValue;
+      // Keys ending with '_module' are module names, add them directly
+      // Other keys are display labels, add with '_display' suffix
+      if (fieldName.endsWith("_module")) {
+        transformed[fieldName] = displayValue;
+      } else {
+        transformed[`${fieldName}_display`] = displayValue;
+      }
     }
   }
 

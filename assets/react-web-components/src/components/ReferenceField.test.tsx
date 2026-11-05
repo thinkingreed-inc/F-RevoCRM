@@ -183,6 +183,91 @@ describe("ReferenceField", () => {
       // クリアされてonChangeが呼ばれる
       expect(onChange).toHaveBeenCalledWith("related_id", "");
     });
+
+    it("initialModuleが参照先に含まれる場合はそのモジュールが選択される", () => {
+      render(
+        <ReferenceField
+          name="parent_id"
+          label="関連"
+          referenceModules={["Accounts", "Potentials", "HelpDesk"]}
+          value="36"
+          displayValue="テスト案件"
+          initialModule="Potentials"
+          onChange={vi.fn()}
+        />,
+      );
+
+      expect(screen.getByDisplayValue("Potentials")).toBeInTheDocument();
+      expect(screen.getByDisplayValue("テスト案件")).toBeInTheDocument();
+    });
+
+    it("initialModuleが参照先に含まれない場合は先頭のモジュールが選択される", () => {
+      render(
+        <ReferenceField
+          name="parent_id"
+          label="関連"
+          referenceModules={["Accounts", "Potentials"]}
+          initialModule="Leads"
+          onChange={vi.fn()}
+        />,
+      );
+
+      expect(screen.getByDisplayValue("Accounts")).toBeInTheDocument();
+    });
+
+    it("initialModuleが後から渡された場合に選択モジュールが追従する", () => {
+      const { rerender } = render(
+        <ReferenceField
+          name="parent_id"
+          label="関連"
+          referenceModules={["Accounts", "Potentials"]}
+          onChange={vi.fn()}
+        />,
+      );
+      expect(screen.getByDisplayValue("Accounts")).toBeInTheDocument();
+
+      rerender(
+        <ReferenceField
+          name="parent_id"
+          label="関連"
+          referenceModules={["Accounts", "Potentials"]}
+          value="36"
+          displayValue="テスト案件"
+          initialModule="Potentials"
+          onChange={vi.fn()}
+        />,
+      );
+
+      expect(screen.getByDisplayValue("Potentials")).toBeInTheDocument();
+    });
+
+    it("initialModuleが変わらない再描画ではユーザーが選んだモジュールを維持する", async () => {
+      const props = {
+        name: "parent_id",
+        label: "関連",
+        referenceModules: ["Accounts", "Potentials", "HelpDesk"],
+        initialModule: "Potentials",
+        onChange: vi.fn(),
+      };
+      const { rerender } = render(<ReferenceField {...props} />);
+
+      await act(async () => {
+        fireEvent.click(screen.getByDisplayValue("Potentials"));
+      });
+      await act(async () => {
+        fireEvent.click(screen.getByText("HelpDesk"));
+      });
+      expect(screen.getByDisplayValue("HelpDesk")).toBeInTheDocument();
+
+      // referenceModules が新しい配列になっても、initialModule が同じなら上書きしない
+      rerender(
+        <ReferenceField
+          {...props}
+          referenceModules={["Accounts", "Potentials", "HelpDesk"]}
+        />,
+      );
+      expect(screen.getByDisplayValue("HelpDesk")).toBeInTheDocument();
+    });
   });
 
   describe("検索機能", () => {

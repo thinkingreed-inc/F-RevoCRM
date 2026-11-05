@@ -790,9 +790,11 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       case UI_TYPES.REFERENCE_QUOTE:
       case UI_TYPES.REFERENCE_SALESORDER:
       case UI_TYPES.REFERENCE_PURCHASEORDER:
-      case UI_TYPES.REFERENCE_USER2:
+      case UI_TYPES.REFERENCE_USER2: {
         // Get display value for reference field (e.g., contact_id_display)
         const referenceDisplayValue = formData?.[`${field.name}_display`];
+        // 編集・複製時は GetRecord API が返す参照先モジュール（例: parent_id_module）を初期選択にする
+        const referenceModule = formData?.[`${field.name}_module`];
         return (
           <ReferenceField
             name={field.name}
@@ -803,6 +805,9 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
             displayValue={
               referenceDisplayValue ? String(referenceDisplayValue) : undefined
             }
+            initialModule={
+              referenceModule ? String(referenceModule) : undefined
+            }
             onChange={onChange}
             mandatory={field.mandatory}
             disabled={disabled || field.readonly}
@@ -811,6 +816,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
             labelClassName={labelClassName}
           />
         );
+      }
 
       // 未対応のUIType - 文字列入力として扱う
       default:
