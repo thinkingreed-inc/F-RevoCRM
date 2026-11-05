@@ -17,6 +17,18 @@ require_once('include/utils/GetGroupUsers.php');
 require_once('modules/Users/helpers/PrivilegeFile.php');
 
 
+/** Writes the privilege file atomically and logs when it fails
+  * @param $filePath -- privilege file path:: Type string
+  * @param $newbuf -- file content:: Type string
+ */
+function writeUserPrivilegesBuffer($filePath, $newbuf)
+{
+	global $log;
+	if(!Users_PrivilegeFile_Helper::write($filePath, $newbuf) && $log) {
+		$log->error("Failed to write privilege file: ".$filePath);
+	}
+}
+
 /** Creates a file with all the user, user-role,user-profile, user-groups informations 
   * @param $userid -- user id:: Type integer
   * @returns user_privileges_userid file under the user_privileges directory
@@ -52,7 +64,7 @@ function createUserPrivilegesfile($userid)
 			$newbuf .= "\$user_info=".constructSingleStringKeyValueArray($userInfo).";\n";
 			$newbuf .= "\n";
 			$newbuf .= "?>";
-			Users_PrivilegeFile_Helper::write($filePath, $newbuf);
+			writeUserPrivilegesBuffer($filePath, $newbuf);
 			return;	
 		}
 		else
@@ -100,7 +112,7 @@ function createUserPrivilegesfile($userid)
 			$newbuf .= "\$user_info=".constructSingleStringKeyValueArray($userInfo).";\n";
 
 			$newbuf .= "?>";
-			Users_PrivilegeFile_Helper::write($filePath, $newbuf);
+			writeUserPrivilegesBuffer($filePath, $newbuf);
 		}
 	}
 }
@@ -128,7 +140,7 @@ if(is_writable(dirname($filePath)))
 		{
 			$newbuf .= "\n";
 			$newbuf .= "?>";
-			Users_PrivilegeFile_Helper::write($filePath, $newbuf);
+			writeUserPrivilegesBuffer($filePath, $newbuf);
 			return;	
 		}
 		else
@@ -389,7 +401,7 @@ if(is_writable(dirname($filePath)))
 			// END
 	
 			$newbuf .= "?>";
-			Users_PrivilegeFile_Helper::write($filePath, $newbuf);
+			writeUserPrivilegesBuffer($filePath, $newbuf);
 
 			//Populating Temp Tables
 			populateSharingtmptables($userid);
