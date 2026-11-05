@@ -334,6 +334,47 @@ describe("useRecordData", () => {
       expect(result.current.data?.parent_id).toBe("85");
       expect(result.current.data?.parent_id_display).toBe("テスト株式会社");
     });
+
+    it("displayValuesの _module キーは参照先モジュールとしてそのまま変換される", async () => {
+      const mockResponse = {
+        record: {
+          id: "201",
+          subject: "関連モジュールテスト活動",
+          date_start: "2026-01-22",
+          time_start: "10:00:00",
+          due_date: "2026-01-22",
+          time_end: "11:00:00",
+          allday: "0",
+          activitytype: "Meeting",
+          parent_id: "36",
+        },
+        displayValues: {
+          parent_id: "テスト案件",
+          parent_id_module: "Potentials",
+        },
+        module: "Events",
+        recordId: "201",
+        timestamp: "2026-01-22 10:00:00",
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      });
+
+      const { result } = renderHook(() =>
+        useRecordData({ module: "Events", recordId: "201" }),
+      );
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      // ラベルは _display、モジュール名は _module のまま格納される
+      expect(result.current.data?.parent_id_display).toBe("テスト案件");
+      expect(result.current.data?.parent_id_module).toBe("Potentials");
+      expect(result.current.data?.parent_id_module_display).toBeUndefined();
+    });
   });
 
   describe("エラーハンドリング", () => {
