@@ -1257,7 +1257,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 
 			$noOfRows = $adb->num_rows($result);
 			for ($i = 0; $i < $noOfRows; ++$i) {	
-				$row = $adb->query_result_rowdata($result, $i);
+				$row = $adb->raw_query_result_rowdata($result, $i);
 				$recordId = $row[$entityidfield];
 				$recordModel = array();
 				$recordModel[$entityidfield] = $recordId;
