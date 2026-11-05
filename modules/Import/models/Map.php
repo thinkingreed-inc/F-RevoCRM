@@ -60,7 +60,7 @@ class Import_Map_Model extends Vtiger_Base_Model {
 	}
 
 	/**
-	 * 「選択肢に無い値を追加」をチェックして保存した項目名。列追加前に保存したマッピング（NULL）は空
+	 * 「選択肢を自動で登録」をチェックして保存した項目名。列追加前に保存したマッピング（NULL）は空
 	 */
 	public function getAddPicklistFields() {
 		$addPicklistFields = empty($this->map['add_picklist_fields']) ? null : Zend_Json::decode(decode_html($this->map['add_picklist_fields']));
