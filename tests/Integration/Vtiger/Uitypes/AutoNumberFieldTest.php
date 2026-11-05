@@ -213,10 +213,10 @@ final class AutoNumberFieldTest extends DocumentsTestCase
 
     public function test_適用開始日時より前の新規レコードには付けない(): void
     {
-        $this->setConfig(['effective_from' => gmdate('Y-m-d H:i:s', time() + 3600)]);
+        $this->setConfig(['effective_from' => date('Y-m-d H:i:s', time() + 3600)]);
         $id = $this->saveAccount('before');
         $this->assertSame('', $this->storedValue($id));
-        $this->setConfig(['effective_from' => gmdate('Y-m-d H:i:s', time() - 3600)]);
+        $this->setConfig(['effective_from' => date('Y-m-d H:i:s', time() - 3600)]);
         $id2 = $this->saveAccount('after');
         $this->assertStringStartsWith('SPEC-', $this->storedValue($id2));
     }
@@ -244,6 +244,18 @@ final class AutoNumberFieldTest extends DocumentsTestCase
         $this->setConfig(['format' => '{YYYY}{MM}-{000}', 'reset_type' => 'month', 'base_date' => self::$fields['date']['fieldname']]);
         $id = $this->saveAccount('basenone');
         $this->assertSame(Vtiger_AutoNumber::now()->format('Ym') . '-001', $this->storedValue($id));
+    }
+
+    public function test_採番の日付はユーザーのタイムゾーンではなくサーバーの時刻を使う(): void
+    {
+        $user = \Users_Record_Model::getCurrentUserModel();
+        $saved = $user->get('time_zone');
+        $user->set('time_zone', 'Pacific/Kiritimati');
+        try {
+            $this->assertSame(date_default_timezone_get(), Vtiger_AutoNumber::now()->getTimezone()->getName());
+        } finally {
+            $user->set('time_zone', $saved);
+        }
     }
 
     public function test_リセットの境界で連番を数え直す(): void
@@ -419,6 +431,19 @@ final class AutoNumberFieldTest extends DocumentsTestCase
         $this->assertSame('201906-01', $this->storedValue($c));
     }
 
+    public function test_遡及採番は作成日時をサーバーの時刻として年月を決める(): void
+    {
+        $this->setConfig(['active' => 0, 'format' => '{YYYY}{MM}-{00}', 'reset_type' => 'month', 'base_date' => '']);
+        $id = $this->saveAccount('tz_edge');
+        // サーバーの時刻で月末の深夜。UTC として読むとタイムゾーンによっては翌月になる
+        $this->db->pquery('UPDATE vtiger_crmentity SET createdtime = ?, modifiedtime = ? WHERE crmid = ?', ['2019-05-31 23:30:00', '2019-05-31 23:30:00', $id]);
+        $this->setConfig(['active' => 1]);
+
+        $this->runJobToEnd(Vtiger_AutoNumberBackfill::start(self::$fields['main']['fieldid'], self::ADMIN_USER_ID));
+
+        $this->assertSame('201905-01', $this->storedValue($id));
+    }
+
     public function test_作成日時の範囲で対象を絞れる(): void
     {
         $this->setConfig(['active' => 0, 'format' => 'RG-{000}', 'reset_type' => 'none']);
@@ -428,7 +453,7 @@ final class AutoNumberFieldTest extends DocumentsTestCase
         $this->setCreated($new, 1);
         $this->setConfig(['active' => 1]);
 
-        $from = gmdate('Y-m-d H:i:s', time() - 5 * 86400);
+        $from = date('Y-m-d H:i:s', time() - 5 * 86400);
         $jobId = Vtiger_AutoNumberBackfill::start(self::$fields['main']['fieldid'], self::ADMIN_USER_ID, $from, null);
         $this->runJobToEnd($jobId);
 
@@ -1073,10 +1098,10 @@ final class AutoNumberFieldTest extends DocumentsTestCase
         return Vtiger_AutoNumberValue::string($this->db->query_result($result, 0, 'v'));
     }
 
-    /** レコードの作成・更新日時を、指定した日数前の時刻にする（静止期間を過ぎた状態にする） */
+    /** レコードの作成・更新日時を、指定した日数前の時刻（DB と同じサーバーの時刻）にする（静止期間を過ぎた状態にする） */
     private function setCreated(int $recordId, int $daysAgo): void
     {
-        $time = gmdate('Y-m-d H:i:s', time() - $daysAgo * 86400);
+        $time = date('Y-m-d H:i:s', time() - $daysAgo * 86400);
         $this->db->pquery('UPDATE vtiger_crmentity SET createdtime = ?, modifiedtime = ? WHERE crmid = ?', [$time, $time, $recordId]);
     }
 

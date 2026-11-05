@@ -1771,7 +1771,7 @@ $languageStrings = array(
 	'LBL_AUTONUMBER_BASE_DATE' => 'Base date',
 	'LBL_AUTONUMBER_BASE_DATE_SAVE' => 'Date and time of saving',
 	'LBL_AUTONUMBER_EFFECTIVE_FROM' => 'Effective from',
-	'LBL_AUTONUMBER_EFFECTIVE_FROM_HELP' => 'Numbers are assigned only to records created at or after this time (empty = always). Format: 2026-10-01 00:00:00',
+	'LBL_AUTONUMBER_EFFECTIVE_FROM_HELP' => 'Numbers are assigned only to records created at or after this time (empty = always). Specify in server time. Format: 2026-10-01 00:00:00',
 	'LBL_AUTONUMBER_ACTIVE' => 'Number new records automatically',
 	'LBL_AUTONUMBER_PREVIEW' => 'Format preview',
 	'LBL_AUTONUMBER_BACKFILL' => 'Backfill',
