@@ -1345,6 +1345,7 @@ function createRecords($obj) {
 		$row = $adb->raw_query_result_rowdata($result, $i);
 		$rowId = $row['id'];
 		$entityInfo = null;
+		$obj->failureReason = null;
 		$fieldData = array();
 		$lineItems = array();
 		$subject = $row['subject'];
@@ -1382,6 +1383,8 @@ function createRecords($obj) {
 			if(method_exists($focus, 'importRecord')) {
 				$entityInfo = $focus->importRecord($obj, $fieldData, $lineItems, $cache);
 			}
+		} else {
+			$obj->setFailureReason('LBL_IMPORT_REASON_NO_VALID_LINEITEM');
 		}
 
 		if($entityInfo == null) {
@@ -1490,6 +1493,7 @@ function importRecord($obj, $inventoryFieldData, $lineItemDetails, $cache) {
 			}
 		}
 		if (empty ($lineItems)) {
+			$obj->setFailureReason('LBL_IMPORT_REASON_LINEITEM_PRODUCT_NOT_FOUND');
 			return null;
 		} elseif ($isRecordExist == false) {
 			foreach ($lineItemDetails[$count] as $key => $value) {

@@ -37,6 +37,9 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 	var $batchImport = true;
 	public $entitydata = array();
 	var $recordSource = 'IMPORT';
+	// 現在処理中の行の失敗・スキップ理由（翻訳済み）。行ごとに createRecords() が初期化する
+	public $failureReason = null;
+	protected $hasFailureReasonColumn = null;
 
 	static $IMPORT_RECORD_NONE = 0;
 	static $IMPORT_RECORD_CREATED = 1;
@@ -172,6 +175,60 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		$focus->updateMissingSeqNumber($moduleName);
 	}
 
+	/**
+	 * 一時テーブルに理由列があるか
+	 * （この機能の導入前に作られたテーブルは理由列を持たないため、存在しない列へ書き込まない）
+	 */
+	public static function tableHasFailureReasonColumn($tableName) {
+		$adb = PearDatabase::getInstance();
+		$result = $adb->pquery('SHOW COLUMNS FROM '.$tableName.' LIKE ?', array('import_failure_reason'));
+		return $result && $adb->num_rows($result) > 0;
+	}
+
+	public function hasFailureReasonColumn() {
+		if ($this->hasFailureReasonColumn === null) {
+			$this->hasFailureReasonColumn = self::tableHasFailureReasonColumn(Import_Utils_Helper::getDbTableName($this->user, $this->id));
+		}
+		return $this->hasFailureReasonColumn;
+	}
+
+	/**
+	 * 失敗・スキップの理由を保持する。1行につき1件で、後から呼ぶと上書きする
+	 * @param string $languageKey Import 言語ファイルのキー(LBL_IMPORT_REASON_xxx)
+	 * @param string|null $fieldLabelKey 文言の %s に入れる項目のラベルキー
+	 * @param string|null $labelModule ラベルを翻訳するモジュール
+	 */
+	public function setFailureReason($languageKey, $fieldLabelKey = null, $labelModule = null) {
+		if (!$this->hasFailureReasonColumn()) {
+			return;
+		}
+		$message = vtranslate($languageKey, 'Import');
+		if ($fieldLabelKey !== null) {
+			$message = sprintf($message, vtranslate($fieldLabelKey, $labelModule));
+		}
+		$this->failureReason = $message;
+	}
+
+	/**
+	 * 保存時の例外を理由に変換する。例外メッセージは画面に出さない（ログのみ）
+	 */
+	public function setFailureReasonFromException($e) {
+		// 上書きモードでは transformForImport() が理由を設定して null を返した後も保存処理に進み、
+		// 必須項目エラーの例外になる。先に設定された根本原因を残す
+		if ($this->failureReason !== null) {
+			return;
+		}
+		$languageKey = 'LBL_IMPORT_REASON_SAVE_ERROR';
+		if ($e instanceof WebServiceException) {
+			if ($e->getCode() == WebServiceErrorCode::$ACCESSDENIED) {
+				$languageKey = 'LBL_IMPORT_REASON_ACCESS_DENIED';
+			} elseif ($e->getCode() == WebServiceErrorCode::$REFERENCEINVALID) {
+				$languageKey = 'LBL_IMPORT_REASON_REFERENCE_INVALID';
+			}
+		}
+		$this->setFailureReason($languageKey);
+	}
+
 	public function updateImportStatus($entryId, $entityInfo) {
 		$adb = PearDatabase::getInstance();
 		$recordId = null;
@@ -179,7 +236,18 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			$entityIdComponents = vtws_getIdComponents($entityInfo['id']);
 			$recordId = $entityIdComponents[1];
 		}
-		$adb->pquery('UPDATE '.Import_Utils_Helper::getDbTableName($this->user, $this->id).' SET status=?, recordid=? WHERE id=?', array($entityInfo['status'], $recordId, $entryId));
+		$tableName = Import_Utils_Helper::getDbTableName($this->user, $this->id);
+		$status = $entityInfo['status'];
+		$succeeded = in_array($status, array(self::$IMPORT_RECORD_CREATED, self::$IMPORT_RECORD_UPDATED, self::$IMPORT_RECORD_MERGED));
+		if ($this->hasFailureReasonColumn() && !$succeeded) {
+			$reason = $this->failureReason;
+			if ($reason === null) {
+				$reason = vtranslate('LBL_IMPORT_REASON_UNKNOWN', 'Import');
+			}
+			$adb->pquery('UPDATE '.$tableName.' SET status=?, recordid=?, import_failure_reason=? WHERE id=?', array($status, $recordId, $reason, $entryId));
+			return;
+		}
+		$adb->pquery('UPDATE '.$tableName.' SET status=?, recordid=? WHERE id=?', array($status, $recordId, $entryId));
 	}
 
 	public function createRecords() {
@@ -261,6 +329,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			$row = $adb->raw_query_result_rowdata($result, $i);
 			$rowId = $row['id'];
 			$entityInfo = null;
+			$this->failureReason = null;
 			$fieldData = array();
 			foreach ($fieldMapping as $fieldName => $index) {
 				$fieldData[$fieldName] = trim($row[$fieldName]);
@@ -323,6 +392,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 
 					if ($noOfDuplicates > 0) {
 						if ($mergeType == Import_Utils_Helper::$AUTO_MERGE_IGNORE) {
+							$this->setFailureReason('LBL_IMPORT_REASON_DUPLICATE_SKIPPED');
 							$entityInfo['status'] = self::$IMPORT_RECORD_SKIPPED;
 						} elseif ($mergeType == Import_Utils_Helper::$AUTO_MERGE_OVERWRITE || $mergeType == Import_Utils_Helper::$AUTO_MERGE_MERGEFIELDS) {
 							$userPriviligesModel = Users_Privileges_Model::getInstanceById($this->user->id);
@@ -385,6 +455,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 											$mergedRecords[] = $entityIdComponents[1];
 										}
 									} else {
+										$this->setFailureReason('LBL_IMPORT_REASON_NO_EDIT_PERMISSION');
 										$entityInfo['status'] = self::$IMPORT_RECORD_SKIPPED;
 									}
 									$fieldData = $filteredFieldData;
@@ -576,8 +647,13 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			} elseif ($fieldDataType == 'reference') {
 				if (!empty($fieldValue)) {
 					$parsed = Import_Reference_Model::parse($fieldValue);
-					$fieldData[$fieldName] = Import_Reference_Model::resolve(
-							$parsed, $fieldInstance, $cache, $this->user, $moduleName);
+					try {
+						$fieldData[$fieldName] = Import_Reference_Model::resolve(
+								$parsed, $fieldInstance, $cache, $this->user, $moduleName);
+					} catch (ImportException $e) {
+						$this->setFailureReason('LBL_IMPORT_REASON_REFERENCE_MULTIPLE', $fieldInstance->getFieldLabelKey(), $moduleName);
+						throw $e;
+					}
 				} else {
 					$referencedModules = $fieldInstance->getReferenceList();
 					if ($referencedModules[0] == 'Users') {
@@ -613,6 +689,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 						// 必須項目で空の場合はエラー
 						if ($fieldInstance->isMandatory()) {
 							if (!(isset($skippedInventoryFields[$moduleName]) && in_array($fieldName, $skippedInventoryFields[$moduleName]))) {
+								$this->setFailureReason('LBL_IMPORT_REASON_MANDATORY_EMPTY', $fieldInstance->getFieldLabelKey(), $moduleName);
 								return null;
 							}
 						}
@@ -654,6 +731,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 
 				if (!in_array($picklistValueInLowerCase, $allPicklistValuesInLowerCase)) {
 					// 存在しないPicklist値の場合はエラーとしてインポート失敗にする
+					$this->setFailureReason('LBL_IMPORT_REASON_PICKLIST_NOT_EXIST', $fieldInstance->getFieldLabelKey(), $moduleName);
 					return null;
 				} else {
 					$fieldData[$fieldName] = $picklistDetails[$picklistValueInLowerCase];
@@ -788,6 +866,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 					}else if($moduleName == "Calendar" && $fieldData["activitytype"] == "Task" && $fieldName == "taskstatus" && !empty($fieldData["eventstatus"])){
 						$fieldData["taskstatus"] == $fieldData["eventstatus"];
 					}else{
+					$this->setFailureReason('LBL_IMPORT_REASON_MANDATORY_EMPTY', $fieldInstance->getFieldLabelKey(), $moduleName);
 					return null;
 					}
 				}
@@ -923,6 +1002,8 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		$importRecords = array();
 		if ($result) {
 			$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
+			$hasFailureReason = self::tableHasFailureReasonColumn($tableName);
+			$importRecords['hasFailureReason'] = $hasFailureReason;
 			$headers = array_slice($adb->getColumnNames($tableName), 3);
 			foreach($headers as $fieldName) {
 				$fieldModel = $moduleModel->getField($fieldName);
@@ -936,6 +1017,9 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 				$record = new Vtiger_Base_Model();
 				foreach ($importRecords['headers'] as $header) {
 					$record->set($header->getName(), $row[$header->getName()]);
+				}
+				if ($hasFailureReason) {
+					$record->set('import_failure_reason', $row['import_failure_reason']);
 				}
 				if ($row['status'] == self::$IMPORT_RECORD_SKIPPED) {
 					$importRecords['skipped'][] = $record;
@@ -1006,6 +1090,8 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 						$dateParts = explode(' ', $fieldValue);
 						$dateValue = $dateParts[0];
 						if ($dateValue == null || $dateValue == '0000-00-00') {
+							$dateFieldModel = $moduleFields[$fieldName];
+							$this->setFailureReason('LBL_IMPORT_REASON_MANDATORY_EMPTY', $dateFieldModel ? $dateFieldModel->get('label') : $fieldName, 'Calendar');
 							return $entityInfo;
 						}
 						$dateTime = Vtiger_Datetime_UIType::getDBDateTimeValue($dateParts[0].' '.$recordData[$timeField]);
@@ -1060,6 +1146,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 								&& !($fieldName == 'activitytype' && $fieldValue == 'Task')
 								&& !empty($fieldValue)) {
 							// 存在しないPicklist値の場合はエラーとしてインポート失敗にする
+							$this->setFailureReason('LBL_IMPORT_REASON_PICKLIST_NOT_EXIST', $fieldModel->get('label'), 'Calendar');
 							return null;
 						}
 					}
@@ -1111,6 +1198,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 					if ($log) {
 						$log->error('[Import Calendar] '.$operation.' failed: '.$e->getMessage()."\n".$e->getTraceAsString());
 					}
+					$this->setFailureReasonFromException($e);
 					if ($operation != 'create') {
 						$entityInfo['status'] = self::$IMPORT_RECORD_SKIPPED;
 					}
@@ -1158,6 +1246,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			if ($log) {
 				$log->error('[Import '.$this->module.'] '.$operation.' failed: '.$e->getMessage()."\n".$e->getTraceAsString());
 			}
+			$this->setFailureReasonFromException($e);
 			if ($operation != 'create') {
 				$entityInfo['status'] = self::$IMPORT_RECORD_SKIPPED;
 			}
