@@ -7,6 +7,7 @@ import type {
   SharedLinkInfo,
   SharedLinkInput,
   SharedLinkSaveResult,
+  SharedLinkSet,
 } from "@/types/sharedLinks";
 import { SharedLinkEditModal } from "../SharedLinkEditModal";
 
@@ -44,12 +45,19 @@ const INFO: SharedLinkInfo = {
     window_max: 4000,
     default_window_width: 1024,
     default_window_height: 768,
+    widget_title_max: 30,
   },
   labels: {},
 };
 
+const SETS: SharedLinkSet[] = [
+  { id: 1, title: "社内システム", linkid: 101, sequence: 1 },
+  { id: 2, title: "申請・手続き", linkid: 102, sequence: 2 },
+];
+
 const savedLink = (overrides: Partial<SharedLink> = {}): SharedLink => ({
   id: 7,
+  set_id: 1,
   sequence: 1,
   title: "勤怠",
   url: "https://kintai.example.com/",
@@ -73,8 +81,12 @@ const setup = (
   result: SharedLinkSaveResult = { saved: true, id: 1 },
 ) => {
   const onSave = vi.fn(
-    async (input: SharedLinkInput): Promise<SharedLinkSaveResult> => {
+    async (
+      input: SharedLinkInput,
+      setId: number,
+    ): Promise<SharedLinkSaveResult> => {
       void input;
+      void setId;
       return result;
     },
   );
@@ -85,6 +97,8 @@ const setup = (
       isOpen
       info={INFO}
       link={link}
+      sets={SETS}
+      defaultSetId={link?.set_id ?? 1}
       isSaving={false}
       onSave={onSave}
       onClose={onClose}
@@ -113,6 +127,8 @@ describe("SharedLinkEditModal", () => {
         isOpen={false}
         info={INFO}
         link={null}
+        sets={SETS}
+        defaultSetId={1}
         isSaving={false}
         onSave={vi.fn()}
         onClose={vi.fn()}
@@ -575,6 +591,8 @@ describe("SharedLinkEditModal", () => {
         isOpen
         info={INFO}
         link={null}
+        sets={SETS}
+        defaultSetId={1}
         isSaving={false}
         onSave={onSave}
         onClose={vi.fn()}
@@ -684,6 +702,35 @@ describe("SharedLinkEditModal", () => {
         "Organization",
         "CEO",
         "\u3000営業部長",
+      ]);
+    });
+  });
+  describe("TS-08 出すウィジェット", () => {
+    it("TC-SET-020 新規は今開いているウィジェットが選ばれ、そのまま保存するとそのウィジェットへ送る", async () => {
+      const { onSave, user } = setup();
+      expect(screen.getByLabelText(/LBL_WIDGET/)).toHaveValue("1");
+      await fillRequired(user);
+      await submit(user);
+
+      expect(onSave.mock.calls[0][1]).toBe(1);
+    });
+
+    it("TC-SET-021 ウィジェットを選び直すと、そのウィジェットへ移す", async () => {
+      const { onSave, user } = setup(savedLink({ set_id: 1 }));
+      await user.selectOptions(screen.getByLabelText(/LBL_WIDGET/), "2");
+      await submit(user);
+
+      expect(onSave.mock.calls[0][1]).toBe(2);
+    });
+
+    it("TC-SET-022 選択肢はウィジェットの見出しで並ぶ", () => {
+      setup();
+      const options = within(screen.getByLabelText(/LBL_WIDGET/)).getAllByRole(
+        "option",
+      );
+      expect(options.map((o) => o.textContent)).toEqual([
+        "社内システム",
+        "申請・手続き",
       ]);
     });
   });

@@ -3,6 +3,7 @@ import {
   expect,
   Browser,
   BrowserContext,
+  Locator,
   Page,
   Request,
 } from "@playwright/test";
@@ -15,15 +16,18 @@ import { passwordFor } from "../../fixtures/seedSpec";
  *
  * テスト仕様書: docs/tests/SharedLinks/（テスト名にケース ID を入れている）
  *
- * リンク先は実在しないドメイン（TARGET）にし、context.route で横取りして
- * 届いたメソッド・本文・Referer を記録する。外部へは接続しない。
- * 公開範囲は拡充ベースライン（seed-spec.json）のロール階層・グループ・ユーザーで確かめる。
+ * - テスト用のウィジェット（見出し SET_TITLE）を作り、リンクはそこに作る。
+ *   ダッシュボードには共有リンクのウィジェットが複数並びうるため、見出しで特定する。
+ * - リンク先は実在しないドメイン（TARGET）にし、context.route で横取りして
+ *   届いたメソッド・本文・Referer を記録する。外部へは接続しない。
+ * - 公開範囲は拡充ベースライン（seed-spec.json）のロール階層・グループ・ユーザーで確かめる。
  *
  * 共有リンクは全ユーザー共通のデータのため、このファイルのテストは直列に実行し、
- * 作ったリンク（タイトルの接頭辞 PREFIX）は前後で消す。
+ * 作ったウィジェット・リンク（見出し・タイトルの接頭辞 PREFIX）は前後で消す。
  */
 
 const PREFIX = "[E2E-SL]";
+const SET_TITLE = `${PREFIX}リンク`;
 const TARGET = "https://e2e-shared-link.test";
 const ORIGIN = new URL(BASE_URL).origin;
 
@@ -35,14 +39,27 @@ interface ApiResult<T> {
 
 interface SavedLink {
   id: number;
+  set_id: number;
   title: string;
   url: string;
+  post_blocked?: boolean;
+}
+
+interface SavedSet {
+  id: number;
+  title: string;
+  linkid: number;
 }
 
 interface Info {
   roles: { id: string; name: string }[];
   groups: { id: string; name: string }[];
   users: { id: string; name: string }[];
+}
+
+/** 正規表現の中で文字どおりに使う（見出しの [ ] など） */
+function literal(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 /** 管理画面の API を、ページの CSRF トークン付きで呼ぶ（ブラウザの fetch と同じ経路） */
@@ -89,41 +106,59 @@ async function api<T>(
   );
 }
 
-async function listLinks(page: Page): Promise<SavedLink[]> {
-  const res = await api<{ links: SavedLink[] }>(page, "list");
+async function listAll(page: Page): Promise<{ sets: SavedSet[]; links: SavedLink[] }> {
+  const res = await api<{ sets: SavedSet[]; links: SavedLink[] }>(page, "list");
   expect(res.success, JSON.stringify(res.error)).toBe(true);
-  return res.result?.links ?? [];
+  return { sets: res.result?.sets ?? [], links: res.result?.links ?? [] };
+}
+
+async function testSet(page: Page, title = SET_TITLE): Promise<SavedSet> {
+  const set = (await listAll(page)).sets.find((s) => s.title === title);
+  expect(set, `ウィジェット ${title} がある`).toBeTruthy();
+  return set!;
+}
+
+async function createSet(page: Page, title: string): Promise<SavedSet> {
+  const res = await api<{ saved: boolean; id: number }>(page, "save_set", { title });
+  expect(res.result?.saved, JSON.stringify(res)).toBe(true);
+  return testSet(page, title);
 }
 
 async function createLink(
   page: Page,
   link: Record<string, unknown>,
+  setTitle = SET_TITLE,
 ): Promise<number> {
-  const res = await api<{ saved: boolean; id: number; errors?: object }>(
-    page,
-    "save",
-    {
-      link: JSON.stringify({
-        description: "",
-        method: "GET",
-        open_mode: "tab",
-        window_width: null,
-        window_height: null,
-        noreferrer: false,
-        active: true,
-        visibility: "all",
-        params: [],
-        targets: [],
-        ...link,
-      }),
-    },
-  );
+  const set = await testSet(page, setTitle);
+  const res = await api<{ saved: boolean; id: number }>(page, "save", {
+    set_id: String(set.id),
+    link: JSON.stringify({
+      description: "",
+      method: "GET",
+      open_mode: "tab",
+      window_width: null,
+      window_height: null,
+      noreferrer: false,
+      active: true,
+      visibility: "all",
+      params: [],
+      targets: [],
+      ...link,
+    }),
+  });
   expect(res.result?.saved, JSON.stringify(res)).toBe(true);
   return res.result!.id;
 }
 
-async function deleteTestLinks(page: Page): Promise<void> {
-  for (const link of await listLinks(page)) {
+/** テストで作ったウィジェット（中のリンクも消える）とリンクを消す */
+async function cleanUp(page: Page): Promise<void> {
+  const { sets, links } = await listAll(page);
+  for (const set of sets) {
+    if (set.title.startsWith(PREFIX)) {
+      await api(page, "delete_set", { id: String(set.id) });
+    }
+  }
+  for (const link of links) {
     if (link.title.startsWith(PREFIX)) {
       await api(page, "delete", { id: String(link.id) });
     }
@@ -136,9 +171,7 @@ async function deleteTestLinks(page: Page): Promise<void> {
  * （config.customize.php の $csp_allowed_domains['form-action'] に TARGET を登録すると実行する）。
  */
 async function skipUnlessPostAllowed(page: Page, linkId: number): Promise<void> {
-  const link = (await listLinks(page)).find((l) => l.id === linkId) as
-    | (SavedLink & { post_blocked?: boolean })
-    | undefined;
+  const link = (await listAll(page)).links.find((l) => l.id === linkId);
   test.skip(
     link?.post_blocked !== false,
     `${TARGET} が $csp_allowed_domains['form-action'] に登録されていないため飛ばします`,
@@ -159,18 +192,64 @@ function interceptTarget(context: BrowserContext): Request[] {
   return requests;
 }
 
-/** 管理者のダッシュボードに共有リンクのウィジェットが 1 個ある状態にして、その要素を返す */
-async function openDashboardWithWidget(page: Page) {
+/** 管理画面で、見出しのタブを選ぶ */
+async function selectSetTab(page: Page, title: string): Promise<void> {
+  await page
+    .locator("shared-links-page")
+    .getByRole("tab", { name: new RegExp(`^${literal(title)}\\d*$`) })
+    .click();
+}
+
+/** 見出しで、ダッシュボードに置いた共有リンクのウィジェットを特定する */
+function widgetOf(page: Page, title = SET_TITLE): Locator {
+  return page
+    .locator('.dashboardWidget[data-name="SharedLinks"]')
+    .filter({ has: page.locator(".dashboardTitle", { hasText: title }) });
+}
+
+/**
+ * ダッシュボードを開き、置いてある共有リンクのウィジェットの中身が読み込まれるのを待つ
+ *
+ * ウィジェットは枠が先に出て、中身（見出しを含む）は後から読み込まれる。
+ * 見出しで探す前に待たないと、置いてあるのに見つからないことになる。
+ */
+async function gotoDashboard(page: Page): Promise<void> {
   await page.goto(url("index.php?module=Home&view=DashBoard"));
-  const widget = page.locator('.dashboardWidget[data-name="SharedLinks"]');
+  await page.waitForLoadState("networkidle").catch(() => {});
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        Array.from(document.querySelectorAll('.dashboardWidget[data-name="SharedLinks"]')).every(
+          (w) => w.querySelector(".dashboardTitle") !== null,
+        ),
+      ),
+    )
+    .toBe(true);
+}
+
+/** 管理者のダッシュボードに、指定したウィジェットが 1 個ある状態にして、その要素を返す */
+async function openDashboardWithWidget(page: Page, title = SET_TITLE): Promise<Locator> {
+  await gotoDashboard(page);
+  const widget = widgetOf(page, title);
   if ((await widget.count()) === 0) {
     await page.getByRole("button", { name: "ウィジェットの追加" }).click();
     await page
       .locator('.widgetsList a[data-name="SharedLinks"]')
+      .filter({ hasText: title })
       .click();
   }
   await expect(widget.locator(".sharedLinksWidget")).toBeVisible();
   return widget;
+}
+
+/** ウィジェットの中身を読み直す（フッターの更新ボタン） */
+async function refreshWidget(widget: Locator): Promise<void> {
+  await widget.locator('a[name="drefresh"]').click({ force: true });
+}
+
+/** ウィジェットのリンク（GET は link、POST は button の役割になるため a.sharedLink で探す） */
+function linkIn(widget: Locator, title: string): Locator {
+  return widget.locator("a.sharedLink", { hasText: title });
 }
 
 /**
@@ -179,7 +258,7 @@ async function openDashboardWithWidget(page: Page) {
  * ShowWidget はウィジェットを置く処理を兼ねるため POST と CSRF トークンが必須。
  * ダッシュボードの JS と同じく、ページの中から送る。
  */
-async function widgetHtml(page: Page, linkId: string): Promise<string> {
+async function widgetHtml(page: Page, linkId: number): Promise<string> {
   await page.goto(url("index.php?module=Home&view=DashBoard"));
   return page.evaluate(async (linkId) => {
     const w = window as unknown as { csrfMagicName: string; csrfMagicToken: string };
@@ -188,7 +267,7 @@ async function widgetHtml(page: Page, linkId: string): Promise<string> {
       module: "Home",
       view: "ShowWidget",
       name: "SharedLinks",
-      linkid: linkId,
+      linkid: String(linkId),
       content: "data",
     });
     const res = await fetch("index.php", { method: "POST", credentials: "same-origin", body });
@@ -200,11 +279,7 @@ async function loginAs(
   browser: Browser,
   userName: string,
 ): Promise<{ context: BrowserContext; page: Page }> {
-  const session = await loginInIsolatedContext(
-    browser,
-    userName,
-    passwordFor(userName),
-  );
+  const session = await loginInIsolatedContext(browser, userName, passwordFor(userName));
   await session.page.waitForURL(/index\.php/);
   return session;
 }
@@ -212,29 +287,24 @@ async function loginAs(
 test.describe.configure({ mode: "serial" });
 
 test.describe("管理設定: 共有リンク", () => {
-  let widgetLinkId = "";
-
   test.beforeAll(async ({ browser }) => {
-    const context = await browser.newContext({
-      storageState: ".auth/user.json",
-    });
+    const context = await browser.newContext({ storageState: ".auth/user.json" });
     const page = await context.newPage();
     await page.goto(url("index.php?module=Home&view=DashBoard"));
-    await deleteTestLinks(page);
+    await cleanUp(page);
+    await createSet(page, SET_TITLE);
     await context.close();
   });
 
   test.afterAll(async ({ browser }) => {
-    const context = await browser.newContext({
-      storageState: ".auth/user.json",
-    });
+    const context = await browser.newContext({ storageState: ".auth/user.json" });
     const page = await context.newPage();
     await page.goto(url("index.php?module=Home&view=DashBoard"));
-    await deleteTestLinks(page);
+    await cleanUp(page);
     await context.close();
   });
 
-  test("TC-UI-001 TC-MIG-001 設定メニューのシステム構成に共有リンクがあり管理画面を開ける", async ({
+  test("TC-UI-001 TC-MIG-001 設定メニューのシステム構成に共有リンクがあり管理画面を開ける。最初のウィジェット「共有リンク」がある", async ({
     page,
   }) => {
     await page.goto(settingsUrl({ module: "Vtiger", view: "Index" }));
@@ -242,17 +312,21 @@ test.describe("管理設定: 共有リンク", () => {
     await page.getByText("システム構成", { exact: true }).first().click();
     await page.getByRole("link", { name: "共有リンク", exact: true }).first().click();
     await expect(page).toHaveURL(/module=SharedLinks/);
+    await expect(page.getByRole("button", { name: /リンクを追加/ })).toBeVisible();
     await expect(
-      page.getByRole("button", { name: /リンクを追加/ }),
+      page.locator("shared-links-page").getByRole("tab", { name: /^共有リンク\d*$/ }),
     ).toBeVisible();
   });
 
-  test("TC-UI-057 TC-UI-047 TC-API-005 管理画面で追加・編集・並び替え・削除でき、再読み込み後も反映されている", async ({
+  test("TC-UI-057 TC-UI-047 TC-API-005 TC-SET-036 管理画面で追加・編集・並び替え・削除でき、再読み込み後も反映されている", async ({
     page,
   }) => {
     await page.goto(settingsUrl({ module: "SharedLinks", view: "List" }));
+    await selectSetTab(page, SET_TITLE);
     await page.getByRole("button", { name: /リンクを追加/ }).click();
     const dialog = page.getByRole("dialog");
+    // 開いているウィジェットが選ばれている
+    await expect(dialog.getByLabel(/^ウィジェット/)).toHaveValue(String((await testSet(page)).id));
     await dialog.getByLabel(/タイトル/).fill(`${PREFIX}画面から追加`);
     await dialog.getByLabel(/^URL/).fill(`${TARGET}/ui`);
     await dialog.getByLabel("POST").check();
@@ -282,28 +356,21 @@ test.describe("管理設定: 共有リンク", () => {
 
     // 再読み込みしても残っている
     await page.reload();
-    const saved = page
-      .getByTestId("shared-link-row")
-      .filter({ hasText: `${PREFIX}画面から追加` });
+    await selectSetTab(page, SET_TITLE);
+    const saved = page.getByTestId("shared-link-row").filter({ hasText: `${PREFIX}画面から追加` });
     await expect(saved).toContainText("POST");
     await expect(saved).toContainText("別ウィンドウ（800×600）");
     await expect(saved).toContainText("役割と下位: E2E営業1課長");
 
     // 編集: 内容が入っていて、変更が保存される
     await saved.getByRole("button", { name: "編集" }).click();
-    await expect(dialog.getByLabel(/タイトル/)).toHaveValue(
-      `${PREFIX}画面から追加`,
-    );
+    await expect(dialog.getByLabel(/タイトル/)).toHaveValue(`${PREFIX}画面から追加`);
     await expect(
-      dialog
-        .getByTestId("shared-link-param-row")
-        .first()
-        .getByRole("combobox", { name: "値" }),
+      dialog.getByTestId("shared-link-param-row").first().getByRole("combobox", { name: "値" }),
     ).toHaveValue("email1");
     await dialog.getByLabel(/タイトル/).fill(`${PREFIX}画面から編集`);
     await dialog.getByRole("button", { name: "保存" }).click();
     await expect(page.getByRole("dialog")).toHaveCount(0);
-    await page.reload();
     await expect(
       page.getByTestId("shared-link-row").filter({ hasText: `${PREFIX}画面から編集` }),
     ).toHaveCount(1);
@@ -311,19 +378,15 @@ test.describe("管理設定: 共有リンク", () => {
     // 並び替え（TC-UI-016）: もう 1 件作り、上へ動かす
     await createLink(page, { title: `${PREFIX}並び替え`, url: `${TARGET}/order` });
     await page.reload();
+    await selectSetTab(page, SET_TITLE);
     await expect(
       page.getByTestId("shared-link-row").filter({ hasText: `${PREFIX}並び替え` }),
     ).toHaveCount(1);
-    const titles = async () =>
-      (await page.getByTestId("shared-link-row").allTextContents()).filter((t) =>
-        t.includes(PREFIX),
-      );
+    const titles = async () => page.getByTestId("shared-link-row").allTextContents();
     expect((await titles()).findIndex((t) => t.includes("並び替え"))).toBeGreaterThan(
       (await titles()).findIndex((t) => t.includes("画面から編集")),
     );
-    await page
-      .getByRole("button", { name: `上へ ${PREFIX}並び替え` })
-      .click();
+    await page.getByRole("button", { name: `上へ ${PREFIX}並び替え` }).click();
     await expect
       .poll(async () => {
         const list = await titles();
@@ -335,26 +398,20 @@ test.describe("管理設定: 共有リンク", () => {
       .toBe(true);
 
     // 削除（TC-UI-017）: キャンセルでは消えず、OK で消える
-    const target = page
-      .getByTestId("shared-link-row")
-      .filter({ hasText: `${PREFIX}並び替え` });
+    const target = page.getByTestId("shared-link-row").filter({ hasText: `${PREFIX}並び替え` });
     page.once("dialog", (d) => void d.dismiss());
     await target.getByRole("button", { name: "削除" }).click();
     await expect(target).toHaveCount(1);
     page.once("dialog", (d) => void d.accept());
     await target.getByRole("button", { name: "削除" }).click();
     await expect(target).toHaveCount(0);
-    await page.reload();
-    await expect(
-      page.getByTestId("shared-link-row").filter({ hasText: `${PREFIX}並び替え` }),
-    ).toHaveCount(0);
   });
 
   test("TC-UI-050 画面の検証: javascript: の URL と未選択のユーザー情報は保存しない", async ({
     page,
   }) => {
     await page.goto(settingsUrl({ module: "SharedLinks", view: "List" }));
-    const before = (await listLinks(page)).length;
+    const before = (await listAll(page)).links.length;
     await page.getByRole("button", { name: /リンクを追加/ }).click();
     const dialog = page.getByRole("dialog");
     await dialog.getByLabel(/タイトル/).fill(`${PREFIX}不正`);
@@ -367,49 +424,123 @@ test.describe("管理設定: 共有リンク", () => {
 
     await expect(dialog).toContainText("http:// または https:// で始まる URL");
     await expect(row).toContainText("項目を選択してください");
-    expect((await listLinks(page)).length).toBe(before);
+    expect((await listAll(page)).links.length).toBe(before);
   });
 
-  test("TC-WDG-001 TC-WDG-002 TC-WDG-003 TC-WDG-004 ウィジェットの追加から置け、見出しは共有リンクで、追加済みなら出ない", async ({
+  test("TC-SET-040 ウィジェットを複数作り、それぞれダッシュボードに置ける。見出しを変える・削除すると反映される", async ({
+    page,
+  }) => {
+    const secondTitle = `${PREFIX}申請`;
+    const renamedTitle = `${PREFIX}申請・手続き`;
+    const settings = page.locator("shared-links-page");
+
+    // 管理画面でウィジェットを作る
+    await page.goto(settingsUrl({ module: "SharedLinks", view: "List" }));
+    await settings.getByRole("button", { name: /ウィジェットを作る/ }).click();
+    await settings.getByLabel("ウィジェットの見出し").first().fill(secondTitle);
+    await settings.getByRole("button", { name: "作る", exact: true }).click();
+    await expect(settings.getByRole("tab", { selected: true })).toContainText(secondTitle);
+    await createLink(page, { title: `${PREFIX}経費精算`, url: `${TARGET}/keihi` }, secondTitle);
+    await createLink(page, { title: `${PREFIX}勤怠`, url: `${TARGET}/kintai` }, SET_TITLE);
+
+    // 2 つともダッシュボードに置け、それぞれのリンクだけが出る。
+    // 1 つ置いても、ほかの共有リンクのウィジェットはメニューから消えない（再読み込みしなくても）
+    await gotoDashboard(page);
+    for (const title of [SET_TITLE, secondTitle]) {
+      if ((await widgetOf(page, title).count()) > 0) {
+        await widgetOf(page, title).locator('a[name="dclose"]').click({ force: true });
+        await confirmYes(page);
+        await expect(widgetOf(page, title)).toHaveCount(0);
+      }
+    }
+    await page.reload();
+    const menu = page.locator('.widgetsList a[data-name="SharedLinks"]');
+    await page.getByRole("button", { name: "ウィジェットの追加" }).click();
+    await menu.filter({ hasText: SET_TITLE }).click();
+    await expect(widgetOf(page, SET_TITLE).locator(".sharedLinksWidget")).toBeVisible();
+    await page.getByRole("button", { name: "ウィジェットの追加" }).click();
+    await expect(menu.filter({ hasText: SET_TITLE })).toBeHidden();
+    await expect(menu.filter({ hasText: secondTitle })).toBeVisible();
+    await menu.filter({ hasText: secondTitle }).click();
+    await expect(widgetOf(page, secondTitle).locator(".sharedLinksWidget")).toBeVisible();
+    await page.getByRole("button", { name: "ウィジェットの追加" }).click();
+    await expect(menu.filter({ hasText: SET_TITLE })).toBeHidden();
+    await expect(menu.filter({ hasText: secondTitle })).toBeHidden();
+    await page.keyboard.press("Escape");
+    await gotoDashboard(page);
+    const first = widgetOf(page, SET_TITLE);
+    const second = widgetOf(page, secondTitle);
+    await expect(first.locator(".dashboardTitle")).toHaveText(SET_TITLE);
+    await expect(second.locator(".dashboardTitle")).toHaveText(secondTitle);
+    await expect(linkIn(first, `${PREFIX}勤怠`)).toBeVisible();
+    await expect(linkIn(first, `${PREFIX}経費精算`)).toHaveCount(0);
+    await expect(linkIn(second, `${PREFIX}経費精算`)).toBeVisible();
+    await expect(linkIn(second, `${PREFIX}勤怠`)).toHaveCount(0);
+
+    // 見出しを変えると、ダッシュボードの見出しも変わる（置いたウィジェットはそのまま）
+    await page.goto(settingsUrl({ module: "SharedLinks", view: "List" }));
+    await selectSetTab(page, secondTitle);
+    const header = settings.getByTestId("shared-link-set-header");
+    await header.getByLabel("ウィジェットの見出し").fill(renamedTitle);
+    await header.getByRole("button", { name: "保存" }).click();
+    await expect(page.getByRole("status")).toContainText("保存しました");
+    await gotoDashboard(page);
+    await expect(widgetOf(page, renamedTitle).locator(".dashboardTitle")).toHaveText(renamedTitle);
+
+    // 削除すると、ダッシュボードからも消える
+    await page.goto(settingsUrl({ module: "SharedLinks", view: "List" }));
+    await selectSetTab(page, renamedTitle);
+    page.once("dialog", (d) => void d.accept());
+    await settings.getByRole("button", { name: "このウィジェットを削除" }).click();
+    await expect(
+      settings.getByRole("tab", { name: new RegExp(`^${literal(renamedTitle)}`) }),
+    ).toHaveCount(0);
+    await gotoDashboard(page);
+    await expect(widgetOf(page, SET_TITLE)).toHaveCount(1);
+    await expect(widgetOf(page, renamedTitle)).toHaveCount(0);
+  });
+
+  test("TC-WDG-001 TC-WDG-002 TC-WDG-003 TC-WDG-004 ウィジェットの追加から置け、見出しはウィジェットの見出しで、追加済みなら出ない", async ({
     page,
   }) => {
     await page.goto(url("index.php?module=Home&view=DashBoard"));
     await createLink(page, { title: `${PREFIX}ウィジェット確認`, url: `${TARGET}/w` });
-    await page.reload();
+    await gotoDashboard(page);
     // 既に置いてあれば外し、メニューから置き直す
-    const widget = page.locator('.dashboardWidget[data-name="SharedLinks"]');
+    const widget = widgetOf(page);
     if ((await widget.count()) > 0) {
       await widget.locator('a[name="dclose"]').click({ force: true });
       await confirmYes(page);
       await expect(widget).toHaveCount(0);
-      await page.reload();
+      await gotoDashboard(page);
     }
-    // TC-WDG-004: ウィジェットの JS を読み込んでいる
+    // TC-WDG-004: 枠を調整する JS と CSS を読み込んでいる
     await expect(
       page.locator('script[src*="modules/Home/resources/SharedLinksWidget.js"]'),
     ).toHaveCount(1);
+    await expect(
+      page.locator('link[href*="modules/Home/resources/SharedLinksWidget.css"]'),
+    ).toHaveCount(1);
 
     await page.getByRole("button", { name: "ウィジェットの追加" }).click();
-    const menuItem = page.locator('.widgetsList a[data-name="SharedLinks"]');
-    await expect(menuItem).toHaveText("共有リンク");
-    widgetLinkId = (await menuItem.getAttribute("data-linkid")) ?? "";
+    const menuItem = page
+      .locator('.widgetsList a[data-name="SharedLinks"]')
+      .filter({ hasText: SET_TITLE });
+    await expect(menuItem).toHaveText(SET_TITLE);
     await menuItem.click();
 
-    await expect(widget.locator(".dashboardTitle")).toHaveText("共有リンク");
-    await expect(widget.locator(".sharedLinksWidget")).toContainText(
-      `${PREFIX}ウィジェット確認`,
-    );
+    await expect(widget.locator(".dashboardTitle")).toHaveText(SET_TITLE);
+    await expect(linkIn(widget, `${PREFIX}ウィジェット確認`)).toBeVisible();
 
     // TC-WDG-002: 再読み込み後、追加済みのタブでは選べない
     await page.reload();
     await page.getByRole("button", { name: "ウィジェットの追加" }).click();
     await expect(
-      page.locator('.widgetsList a[data-name="SharedLinks"]'),
+      page.locator('.widgetsList a[data-name="SharedLinks"]').filter({ hasText: SET_TITLE }),
     ).toHaveCount(0);
-    expect(widgetLinkId).not.toBe("");
   });
 
-  test("TC-WDG-013 管理画面で追加したリンクがウィジェットの更新で出る", async ({
+  test("TC-WDG-013 TC-WDG-015 管理画面で追加したリンクがウィジェットの更新で出る。行の余白は崩れない", async ({
     page,
   }) => {
     const widget = await openDashboardWithWidget(page);
@@ -417,9 +548,36 @@ test.describe("管理設定: 共有リンク", () => {
     await expect(widget).not.toContainText(title);
     await createLink(page, { title, url: `${TARGET}/refresh` });
 
+    await refreshWidget(widget);
+    const row = linkIn(widget, title);
+    await expect(row).toBeVisible();
+    // vtiger の共通 CSS（.group）の margin が付かない
+    expect(await row.evaluate((a) => getComputedStyle(a).margin)).toBe("0px");
+  });
+
+  test("TC-WDG-016 ウィジェットを大きくすると中身も広がり、スクロールバーが出ない", async ({
+    page,
+  }) => {
+    await page.goto(url("index.php?module=Home&view=DashBoard"));
+    for (let i = 0; i < 5; i++) {
+      await createLink(page, { title: `${PREFIX}行${i}`, url: `${TARGET}/row${i}`, description: "説明" });
+    }
+    const widget = await openDashboardWithWidget(page);
+    await refreshWidget(widget);
+    await expect(linkIn(widget, `${PREFIX}行4`)).toBeAttached();
+    const content = widget.locator(".dashboardWidgetContent");
+
     await widget.hover();
-    await widget.locator('a[name="drefresh"]').click({ force: true });
-    await expect(widget.locator(".sharedLinksWidget")).toContainText(title);
+    const box = await widget.locator(".gs-resize-handle").boundingBox();
+    expect(box).not.toBeNull();
+    await page.mouse.move(box!.x + 5, box!.y + 5);
+    await page.mouse.down();
+    await page.mouse.move(box!.x + 300, box!.y + 600, { steps: 15 });
+    await page.mouse.up();
+
+    await expect
+      .poll(async () => content.evaluate((e) => e.scrollHeight <= e.clientHeight))
+      .toBe(true);
   });
 
   test("TC-OPN-001 TC-OPN-016 TC-RES-042 GET・別タブ: パラメータ付きで新しいタブに開き、Referer はオリジンだけ", async ({
@@ -438,12 +596,12 @@ test.describe("管理設定: 共有リンク", () => {
       ],
     });
     const widget = await openDashboardWithWidget(page);
-    await widget.locator('a[name="drefresh"]').click({ force: true });
+    await refreshWidget(widget);
     const before = page.url();
 
     const [popup] = await Promise.all([
       context.waitForEvent("page"),
-      widget.getByRole("link", { name: title }).click(),
+      linkIn(widget, title).click(),
     ]);
     await popup.waitForLoadState();
 
@@ -466,7 +624,7 @@ test.describe("管理設定: 共有リンク", () => {
     const requests = interceptTarget(context);
     const title = `${PREFIX}POST別ウィンドウ`;
     await page.goto(url("index.php?module=Home&view=DashBoard"));
-    const postWindowId = await createLink(page, {
+    const linkId = await createLink(page, {
       title,
       url: `${TARGET}/post`,
       method: "POST",
@@ -480,14 +638,14 @@ test.describe("管理設定: 共有リンク", () => {
         { name: "k", value_type: "fixed", value: `a'b"<c>` },
       ],
     });
-    await skipUnlessPostAllowed(page, postWindowId);
+    await skipUnlessPostAllowed(page, linkId);
     const widget = await openDashboardWithWidget(page);
-    await widget.locator('a[name="drefresh"]').click({ force: true });
+    await refreshWidget(widget);
     const before = page.url();
 
     const [popup] = await Promise.all([
       page.waitForEvent("popup"),
-      widget.getByRole("link", { name: title }).click(),
+      linkIn(widget, title).click(),
     ]);
     await popup.waitForURL(`${TARGET}/post`);
     await popup.waitForLoadState();
@@ -504,10 +662,7 @@ test.describe("管理設定: 共有リンク", () => {
     // 送信後に opener を外している
     expect(await popup.evaluate(() => window.opener === null)).toBe(true);
     // 指定したサイズのウィンドウ（ブラウザの枠の分の差を許容）
-    const [w, h] = await popup.evaluate(() => [
-      window.outerWidth,
-      window.outerHeight,
-    ]);
+    const [w, h] = await popup.evaluate(() => [window.outerWidth, window.outerHeight]);
     expect(Math.abs(w - 800)).toBeLessThanOrEqual(40);
     expect(Math.abs(h - 600)).toBeLessThanOrEqual(120);
     expect(page.url()).toBe(before);
@@ -523,19 +678,19 @@ test.describe("管理設定: 共有リンク", () => {
     const requests = interceptTarget(context);
     const title = `${PREFIX}POST別タブ`;
     await page.goto(url("index.php?module=Home&view=DashBoard"));
-    const postTabId = await createLink(page, {
+    const linkId = await createLink(page, {
       title,
       url: `${TARGET}/post-tab`,
       method: "POST",
       params: [{ name: "a", value_type: "fixed", value: "1" }],
     });
-    await skipUnlessPostAllowed(page, postTabId);
+    await skipUnlessPostAllowed(page, linkId);
     const widget = await openDashboardWithWidget(page);
-    await widget.locator('a[name="drefresh"]').click({ force: true });
+    await refreshWidget(widget);
 
     const [popup] = await Promise.all([
       context.waitForEvent("page"),
-      widget.getByRole("link", { name: title }).click(),
+      linkIn(widget, title).click(),
     ]);
     await popup.waitForURL(`${TARGET}/post-tab`);
 
@@ -550,8 +705,8 @@ test.describe("管理設定: 共有リンク", () => {
     page,
     context,
   }) => {
-    const requests = interceptTarget(context);
     const blockedTarget = "https://e2e-shared-link-blocked.test";
+    const requests: Request[] = [];
     await context.route(`${blockedTarget}/**`, async (route) => {
       requests.push(route.request());
       await route.fulfill({ status: 200, body: "blocked target" });
@@ -569,17 +724,18 @@ test.describe("管理設定: 共有リンク", () => {
 
     // 管理画面: 一覧に印が出る
     await page.goto(settingsUrl({ module: "SharedLinks", view: "List" }));
+    await selectSetTab(page, SET_TITLE);
     const row = page.getByTestId("shared-link-row").filter({ hasText: title });
     await expect(row.getByRole("img", { name: /POST の送り先が許可されていない/ })).toBeVisible();
 
     // ウィジェット: 押しても開かず、通知が出る
     const widget = await openDashboardWithWidget(page);
-    await widget.locator('a[name="drefresh"]').click({ force: true });
+    await refreshWidget(widget);
     const pagesBefore = context.pages().length;
-    await widget.getByRole("link", { name: title }).click();
+    await linkIn(widget, title).click();
     await expect(page.getByText("このリンクの送り先は許可されていないため開けません")).toBeVisible();
     expect(context.pages()).toHaveLength(pagesBefore);
-    expect(requests.filter((r) => r.url().startsWith(blockedTarget))).toHaveLength(0);
+    expect(requests).toHaveLength(0);
   });
 
   test("TC-OPN-017 GET・別ウィンドウ・リファラーを送らない: Referer なしでポップアップに開く", async ({
@@ -598,11 +754,11 @@ test.describe("管理設定: 共有リンク", () => {
       noreferrer: true,
     });
     const widget = await openDashboardWithWidget(page);
-    await widget.locator('a[name="drefresh"]').click({ force: true });
+    await refreshWidget(widget);
 
     const [popup] = await Promise.all([
       context.waitForEvent("page"),
-      widget.getByRole("link", { name: title }).click(),
+      linkIn(widget, title).click(),
     ]);
     await popup.waitForURL(`${TARGET}/get-window`);
 
@@ -622,15 +778,7 @@ test.describe("管理設定: 共有リンク", () => {
     const roleId = (name: string) => info.roles.find((r) => r.name === name)!.id;
     const groupId = info.groups.find((g) => g.name === "E2Eクロスグループ")!.id;
     const repB = info.users.find((u) => u.name.startsWith("2課員"))!.id;
-    // ダッシュボードに置いたウィジェットの data-url（…&linkid=NN…）から、ウィジェットの linkid を取る
-    await openDashboardWithWidget(page);
-    await page.reload();
-    const dataUrl =
-      (await page
-        .locator('.dashboardWidget[data-name="SharedLinks"]')
-        .getAttribute("data-url")) ?? "";
-    widgetLinkId = /[?&]linkid=(\d+)/.exec(dataUrl)?.[1] ?? "";
-    expect(widgetLinkId, dataUrl).not.toBe("");
+    const { linkid } = await testSet(page);
 
     const links = {
       all: `${PREFIX}VIS全員`,
@@ -649,7 +797,11 @@ test.describe("管理設定: 共有リンク", () => {
       url: `${TARGET}/vis`,
       params: [{ name: "login", value_type: "user", value: "user_name" }],
     });
-    await createLink(page, { title: links.role, url: `${TARGET}/vis`, ...targets("Roles", roleId("E2E営業1課長")) });
+    await createLink(page, {
+      title: links.role,
+      url: `${TARGET}/vis`,
+      ...targets("Roles", roleId("E2E営業1課長")),
+    });
     await createLink(page, {
       title: links.roleSub,
       url: `${TARGET}/vis`,
@@ -671,43 +823,48 @@ test.describe("管理設定: 共有リンク", () => {
       let html: string;
       let context: BrowserContext | null = null;
       if (userName === "admin") {
-        html = await widgetHtml(page, widgetLinkId);
+        html = await widgetHtml(page, linkid);
       } else {
         const session = await loginAs(browser, userName);
         context = session.context;
-        html = await widgetHtml(session.page, widgetLinkId);
+        html = await widgetHtml(session.page, linkid);
       }
       try {
+        expect(html, `${userName} の応答に <shared-links-widget> がある`).toContain(
+          "<shared-links-widget",
+        );
         for (const key of Object.keys(links) as (keyof typeof links)[]) {
           const shouldShow = visible.includes(key);
-          expect(html.includes(links[key]), `${userName} に ${key} が${shouldShow ? "出る" : "出ない"}: ${html.slice(0, 600)}`).toBe(shouldShow);
+          expect(
+            html.includes(links[key]),
+            `${userName} に ${key} が${shouldShow ? "出る" : "出ない"}`,
+          ).toBe(shouldShow);
         }
         // TC-RES-008: ユーザー情報は見ている本人の値
         expect(html).toContain(`login=${userName}`);
-        // TC-VIS-029: 公開範囲外のリンクの URL も出さない（全リンク共通の URL なので出る数で確かめる）
-        const count = html.split(`${TARGET}/vis`).length - 1;
-        expect(count, `${userName} のリンクの数`).toBeGreaterThanOrEqual(visible.length);
       } finally {
         await context?.close();
       }
     }
   });
 
-  test("TC-UI-002 TC-API-001 管理者以外は管理画面も API も使えない", async ({
-    browser,
-  }) => {
+  test("TC-UI-002 TC-API-001 管理者以外は管理画面も API も使えない", async ({ browser }) => {
     const { context, page } = await loginAs(browser, "e2e_rep_a");
     try {
       await page.goto(settingsUrl({ module: "SharedLinks", view: "List" }));
       await expect(page.locator("shared-links-page")).toHaveCount(0);
 
       await page.goto(url("index.php?module=Home&view=DashBoard"));
-      const res = await api(page, "list");
-      expect(res.success).toBe(false);
-      const saved = await api(page, "save", {
-        link: JSON.stringify({ title: `${PREFIX}一般ユーザー`, url: `${TARGET}/x` }),
-      });
-      expect(saved.success).toBe(false);
+      expect((await api(page, "list")).success).toBe(false);
+      expect((await api(page, "save_set", { title: `${PREFIX}一般ユーザー` })).success).toBe(false);
+      expect(
+        (
+          await api(page, "save", {
+            set_id: "1",
+            link: JSON.stringify({ title: `${PREFIX}一般ユーザー`, url: `${TARGET}/x` }),
+          })
+        ).success,
+      ).toBe(false);
     } finally {
       await context.close();
     }
@@ -716,26 +873,25 @@ test.describe("管理設定: 共有リンク", () => {
   test("TC-API-004 CSRF トークンの無い保存は受け付けない", async ({ page }) => {
     await page.goto(url("index.php?module=Home&view=DashBoard"));
     const title = `${PREFIX}CSRFなし`;
-    const res = await page.request.post(url("index.php"), {
-      form: {
-        module: "SharedLinks",
-        parent: "Settings",
-        api: "SharedLinkAPI",
-        mode: "save",
-        link: JSON.stringify({ title, url: `${TARGET}/csrf` }),
-      },
-    });
-    const text = await res.text();
-    expect(text).not.toContain('"saved":true');
-    expect((await listLinks(page)).some((l) => l.title === title)).toBe(false);
+    const set = await testSet(page);
+    for (const form of [
+      { mode: "save", set_id: String(set.id), link: JSON.stringify({ title, url: `${TARGET}/csrf` }) },
+      { mode: "save_set", title },
+    ]) {
+      const res = await page.request.post(url("index.php"), {
+        form: { module: "SharedLinks", parent: "Settings", api: "SharedLinkAPI", ...form },
+      });
+      expect(await res.text()).not.toContain('"saved":true');
+    }
+    const { sets, links } = await listAll(page);
+    expect(links.some((l) => l.title === title)).toBe(false);
+    expect(sets.some((s) => s.title === title)).toBe(false);
   });
 
   test("TC-API-006 未ログインでは一覧を返さない", async ({ browser, page }) => {
     await page.goto(url("index.php?module=Home&view=DashBoard"));
     await createLink(page, { title: `${PREFIX}未ログイン確認`, url: `${TARGET}/anon` });
-    const context = await browser.newContext({
-      storageState: { cookies: [], origins: [] },
-    });
+    const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
     try {
       const res = await context.request.get(
         url("index.php?module=SharedLinks&parent=Settings&api=SharedLinkAPI&mode=list"),

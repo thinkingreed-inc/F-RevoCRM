@@ -1,7 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { SharedLink, SharedLinkInfo } from "@/types/sharedLinks";
+import type {
+  SharedLink,
+  SharedLinkInfo,
+  SharedLinkSet,
+} from "@/types/sharedLinks";
 import { SharedLinksPage } from "../SharedLinksPage";
 
 /**
@@ -27,12 +31,19 @@ const INFO: SharedLinkInfo = {
     window_max: 4000,
     default_window_width: 1024,
     default_window_height: 768,
+    widget_title_max: 30,
   },
   labels: { LBL_MORE_TARGETS: "ほか %s 件" },
 };
 
+const SETS: SharedLinkSet[] = [
+  { id: 1, title: "社内システム", linkid: 101, sequence: 1 },
+  { id: 2, title: "申請・手続き", linkid: 102, sequence: 2 },
+];
+
 const link = (id: number, overrides: Partial<SharedLink> = {}): SharedLink => ({
   id,
+  set_id: 1,
   sequence: id,
   title: `リンク${id}`,
   url: `https://example.com/${id}`,
@@ -61,7 +72,16 @@ const givenApi = (handlers: Record<string, Handler>) => {
     const params = new URLSearchParams(String(init?.body ?? ""));
     const mode = params.get("mode") ?? "";
     const handler = handlers[mode];
-    const result = handler ? handler(params) : undefined;
+    let result = handler ? handler(params) : undefined;
+    // 一覧にウィジェットが無ければ、既定のウィジェット（SETS）を付ける
+    if (
+      mode === "list" &&
+      result &&
+      typeof result === "object" &&
+      !("sets" in result)
+    ) {
+      result = { sets: SETS, ...result };
+    }
     const body =
       result instanceof Error
         ? { success: false, error: { message: result.message } }
@@ -350,5 +370,212 @@ describe("SharedLinksPage", () => {
 
     await user.click(within(dialog).getByRole("button", { name: "LBL_SAVE" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  });
+  describe("TS-08 ウィジェット（リンクのまとまり）", () => {
+    const tabs = () => screen.getAllByRole("tab");
+
+    it("TC-SET-030 ウィジェットをタブで並べて件数を出し、選んだウィジェットのリンクだけを出す", async () => {
+      givenApi({
+        info: () => INFO,
+        list: () => ({
+          links: [link(1), link(2, { set_id: 2 }), link(3, { set_id: 2 })],
+        }),
+      });
+      const user = userEvent.setup();
+      render(<SharedLinksPage />);
+      await waitFor(() => expect(tabs()).toHaveLength(2));
+
+      expect(tabs()[0]).toHaveTextContent("社内システム1");
+      expect(tabs()[1]).toHaveTextContent("申請・手続き2");
+      expect(tabs()[0]).toHaveAttribute("aria-selected", "true");
+      expect(
+        rows().map((r) => within(r).getAllByRole("cell")[1].textContent),
+      ).toEqual(["リンク1"]);
+
+      await user.click(tabs()[1]);
+      expect(tabs()[1]).toHaveAttribute("aria-selected", "true");
+      expect(
+        rows().map((r) => within(r).getAllByRole("cell")[1].textContent),
+      ).toEqual(["リンク2", "リンク3"]);
+      expect(screen.getByLabelText("LBL_WIDGET_TITLE")).toHaveValue(
+        "申請・手続き",
+      );
+    });
+
+    it("TC-SET-031 ウィジェットを作ると、見出しを送って作ったウィジェットを選ぶ", async () => {
+      let sets = [...SETS];
+      givenApi({
+        info: () => INFO,
+        list: () => ({ sets, links: [] }),
+        save_set: (params) => {
+          sets = [
+            ...sets,
+            {
+              id: 3,
+              title: params.get("title") ?? "",
+              linkid: 103,
+              sequence: 3,
+            },
+          ];
+          return { saved: true, id: 3, title: params.get("title") };
+        },
+      });
+      const user = userEvent.setup();
+      render(<SharedLinksPage />);
+      await waitFor(() => expect(tabs()).toHaveLength(2));
+
+      await user.click(
+        screen.getByRole("button", { name: /LBL_CREATE_WIDGET/ }),
+      );
+      const inputs = screen.getAllByLabelText("LBL_WIDGET_TITLE");
+      await user.type(inputs[0], "  ツール  ");
+      await user.click(screen.getByRole("button", { name: "LBL_CREATE" }));
+
+      await waitFor(() => expect(tabs()).toHaveLength(3));
+      expect(sent("save_set")[0].get("title")).toBe("ツール");
+      expect(sent("save_set")[0].has("id")).toBe(false);
+      expect(tabs()[2]).toHaveAttribute("aria-selected", "true");
+      expect(screen.getByRole("status")).toHaveTextContent("LBL_SAVED");
+    });
+
+    it("TC-SET-032 作るときに見出しが空・使えない文字なら送らない。キャンセルで閉じる", async () => {
+      givenApi({ info: () => INFO, list: () => ({ links: [] }) });
+      const user = userEvent.setup();
+      render(<SharedLinksPage />);
+      await waitFor(() => expect(tabs()).toHaveLength(2));
+
+      await user.click(
+        screen.getByRole("button", { name: /LBL_CREATE_WIDGET/ }),
+      );
+      await user.click(screen.getByRole("button", { name: "LBL_CREATE" }));
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "LBL_ERROR_WIDGET_TITLE_REQUIRED",
+      );
+
+      await user.type(screen.getAllByLabelText("LBL_WIDGET_TITLE")[0], "R&D");
+      await user.click(screen.getByRole("button", { name: "LBL_CREATE" }));
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "LBL_ERROR_WIDGET_TITLE_CHARS",
+      );
+      expect(sent("save_set")).toHaveLength(0);
+
+      await user.click(screen.getByRole("button", { name: "LBL_CANCEL" }));
+      expect(screen.getAllByLabelText("LBL_WIDGET_TITLE")).toHaveLength(1);
+    });
+
+    it("TC-SET-033 見出しを変えると ID を付けて送る。変えるまで保存できず、サーバーのエラーを出す", async () => {
+      let attempts = 0;
+      givenApi({
+        info: () => INFO,
+        list: () => ({ links: [] }),
+        save_set: () => {
+          attempts++;
+          return attempts === 1
+            ? {
+                saved: false,
+                errors: { title: "ほかのウィジェットと同じです" },
+              }
+            : { saved: true, id: 1, title: "社内" };
+        },
+      });
+      const user = userEvent.setup();
+      render(<SharedLinksPage />);
+      await waitFor(() => expect(tabs()).toHaveLength(2));
+      const title = await screen.findByLabelText("LBL_WIDGET_TITLE");
+      const save = within(
+        screen.getByTestId("shared-link-set-header"),
+      ).getByRole("button", {
+        name: "LBL_SAVE",
+      });
+      expect(save).toBeDisabled();
+
+      await user.clear(title);
+      await user.type(title, "申請・手続き");
+      await user.click(save);
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        "ほかのウィジェットと同じです",
+      );
+      expect(sent("save_set")[0].get("id")).toBe("1");
+
+      await user.clear(title);
+      await user.type(title, "社内");
+      await user.click(save);
+      await waitFor(() => expect(sent("save_set")).toHaveLength(2));
+      expect(sent("save_set")[1].get("title")).toBe("社内");
+    });
+
+    it("TC-SET-034 ウィジェットの削除は見出しと件数を示して確認し、キャンセルなら送らない", async () => {
+      let sets = [...SETS];
+      givenApi({
+        info: () => INFO,
+        list: () => ({ sets, links: [link(1), link(2)] }),
+        delete_set: (params) => {
+          sets = sets.filter((set) => String(set.id) !== params.get("id"));
+          return { id: Number(params.get("id")), deleted: true };
+        },
+      });
+      const confirm = vi.spyOn(window, "confirm");
+      const user = userEvent.setup();
+      render(<SharedLinksPage />);
+      await waitFor(() => expect(tabs()).toHaveLength(2));
+      // 選んだウィジェットの欄はタブの後に描画されるため、出るのを待つ
+      const remove = await screen.findByRole("button", {
+        name: "LBL_DELETE_WIDGET",
+      });
+
+      confirm.mockReturnValueOnce(false);
+      await user.click(remove);
+      expect(sent("delete_set")).toHaveLength(0);
+      expect(confirm).toHaveBeenLastCalledWith(
+        expect.stringMatching(/^LBL_CONFIRM_DELETE_WIDGET/),
+      );
+
+      confirm.mockReturnValueOnce(true);
+      await user.click(remove);
+      await waitFor(() => expect(tabs()).toHaveLength(1));
+      expect(sent("delete_set")[0].get("id")).toBe("1");
+      // 残ったウィジェットを選ぶ
+      expect(tabs()[0]).toHaveTextContent("申請・手続き");
+      expect(tabs()[0]).toHaveAttribute("aria-selected", "true");
+    });
+
+    it("TC-SET-035 ウィジェットが無ければ案内を出し、リンクを追加できない", async () => {
+      givenApi({ info: () => INFO, list: () => ({ sets: [], links: [] }) });
+      render(<SharedLinksPage />);
+
+      expect(await screen.findByText("LBL_NO_WIDGETS")).toBeInTheDocument();
+      expect(screen.queryAllByRole("tab")).toHaveLength(0);
+      expect(
+        screen.getByRole("button", { name: /LBL_ADD_LINK/ }),
+      ).toBeDisabled();
+      expect(screen.queryByRole("table")).toBeNull();
+    });
+
+    it("TC-SET-036 リンクを追加すると、開いているウィジェットへ送る", async () => {
+      givenApi({
+        info: () => INFO,
+        list: () => ({ links: [] }),
+        save: () => ({ saved: true, id: 9 }),
+      });
+      const user = userEvent.setup();
+      render(<SharedLinksPage />);
+      await waitFor(() => expect(tabs()).toHaveLength(2));
+      await user.click(tabs()[1]);
+
+      await user.click(screen.getByRole("button", { name: /LBL_ADD_LINK/ }));
+      const dialog = screen.getByRole("dialog");
+      expect(within(dialog).getByLabelText(/LBL_WIDGET/)).toHaveValue("2");
+      await user.type(within(dialog).getByLabelText(/LBL_TITLE/), "x");
+      await user.type(
+        within(dialog).getByLabelText(/LBL_URL/),
+        "https://a.example.com/",
+      );
+      await user.click(
+        within(dialog).getByRole("button", { name: "LBL_SAVE" }),
+      );
+
+      await waitFor(() => expect(sent("save")).toHaveLength(1));
+      expect(sent("save")[0].get("set_id")).toBe("2");
+    });
   });
 });

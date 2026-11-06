@@ -43,7 +43,7 @@ final class SharedLinksTest extends SharedLinksTestCase
      */
     private function findVisible(int $id): ?array
     {
-        foreach (LinkModel::getVisibleLinksForCurrentUser() as $link) {
+        foreach (LinkModel::getVisibleLinksForCurrentUser($this->setId) as $link) {
             if ($link['id'] === $id) {
                 return $link;
             }
@@ -75,7 +75,7 @@ final class SharedLinksTest extends SharedLinksTestCase
      */
     private function saveViaApi(array $overrides, ?int $id = null): array
     {
-        $params = ['link' => json_encode($this->linkInput($overrides))];
+        $params = ['link' => json_encode($this->linkInput($overrides)), 'set_id' => (string) $this->setId];
         if ($id !== null) {
             $params['id'] = (string) $id;
         }
@@ -104,29 +104,20 @@ final class SharedLinksTest extends SharedLinksTestCase
 
     public function test_TC_MIG_002_2回実行しても重複しない(): void
     {
+        $setsBefore = count(LinkModel::getSets());
         self::runMigration();
         self::runMigration();
 
-        foreach (['vtiger_shared_links', 'vtiger_shared_link_params', 'vtiger_shared_link_targets'] as $table) {
-            $result = $this->db->pquery('SHOW TABLES LIKE ?', [$table]);
-            $this->assertSame(1, $this->db->num_rows($result), $table);
+        foreach (['vtiger_shared_link_sets', 'vtiger_shared_links', 'vtiger_shared_link_params', 'vtiger_shared_link_targets'] as $table) {
             $collation = $this->db->pquery(
                 'SELECT TABLE_COLLATION FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?',
                 [$table]
             );
+            $this->assertSame(1, $this->db->num_rows($collation), $table);
             $this->assertSame('utf8mb4_general_ci', $this->db->query_result($collation, 0, 'table_collation'), $table);
         }
-
-        $links = $this->db->pquery(
-            "SELECT tabid, linkurl FROM vtiger_links WHERE linktype = 'DASHBOARDWIDGET' AND linklabel = 'Shared Links'",
-            []
-        );
-        $this->assertSame(1, $this->db->num_rows($links));
-        $this->assertSame((string) getTabid('Home'), (string) $this->db->query_result($links, 0, 'tabid'));
-        $this->assertSame(
-            'index.php?module=Home&view=ShowWidget&name=SharedLinks',
-            decode_html((string) $this->db->query_result($links, 0, 'linkurl'))
-        );
+        // ウィジェットがあれば最初のウィジェットを作り直さない
+        $this->assertCount($setsBefore, LinkModel::getSets());
 
         $menu = $this->db->pquery(
             'SELECT f.linkto, b.label FROM vtiger_settings_field f'
@@ -141,23 +132,60 @@ final class SharedLinksTest extends SharedLinksTestCase
         );
     }
 
-    public function test_TC_MIG_003_採番が遅れていてもウィジェットを登録できる(): void
+    public function test_TC_MIG_001_ウィジェットが無ければ最初のウィジェット共有リンクを作る(): void
+    {
+        // テストで作ったもの以外のウィジェットを一時的に退避して、空の状態を作る
+        $others = array_filter(LinkModel::getSets(), fn ($set) => !str_starts_with($set['title'], self::PREFIX));
+        $this->db->pquery('CREATE TEMPORARY TABLE spectest_sets SELECT * FROM vtiger_shared_link_sets', []);
+        $this->db->pquery('DELETE FROM vtiger_shared_link_sets', []);
+        try {
+            self::runMigration();
+
+            $sets = LinkModel::getSets();
+            $this->assertCount(1, $sets);
+            $this->assertSame('共有リンク', $sets[0]['title']);
+            $link = $this->db->pquery(
+                'SELECT tabid, linktype, linklabel, linkurl FROM vtiger_links WHERE linkid = ?',
+                [$sets[0]['linkid']]
+            );
+            $this->assertSame([
+                'tabid' => (string) getTabid('Home'),
+                'linktype' => 'DASHBOARDWIDGET',
+                'linklabel' => '共有リンク',
+                'linkurl' => 'index.php?module=Home&view=ShowWidget&name=SharedLinks',
+            ], array_map('decode_html', array_intersect_key(
+                $this->db->query_result_rowdata($link, 0),
+                array_flip(['tabid', 'linktype', 'linklabel', 'linkurl'])
+            )));
+        } finally {
+            // 作られたウィジェットを消し、退避したものを戻す
+            foreach (LinkModel::getSets() as $set) {
+                $this->db->pquery('DELETE FROM vtiger_links WHERE linkid = ?', [$set['linkid']]);
+            }
+            $this->db->pquery('DELETE FROM vtiger_shared_link_sets', []);
+            $this->db->pquery('INSERT INTO vtiger_shared_link_sets SELECT * FROM spectest_sets', []);
+            $this->db->pquery('DROP TEMPORARY TABLE spectest_sets', []);
+        }
+        $this->assertCount(count($others) + 1, LinkModel::getSets());
+    }
+
+    public function test_TC_MIG_003_採番が遅れていてもウィジェットを作れる(): void
     {
         // 過去のマイグレーションが MAX(linkid)+1 で直接 INSERT し、採番が遅れた状態を作る
-        $this->db->pquery("DELETE FROM vtiger_links WHERE linktype = 'DASHBOARDWIDGET' AND linklabel = 'Shared Links'", []);
         $maxId = (int) $this->db->query_result($this->db->pquery('SELECT MAX(linkid) AS m FROM vtiger_links', []), 0, 'm');
         $this->db->pquery('UPDATE vtiger_links_seq SET id = ?', [$maxId - 1]);
 
-        self::runMigration();
+        $setId = $this->createSet('採番');
 
-        $links = $this->db->pquery(
-            "SELECT linkid FROM vtiger_links WHERE linktype = 'DASHBOARDWIDGET' AND linklabel = 'Shared Links'",
-            []
+        $set = LinkModel::getSet($setId);
+        $this->assertNotNull($set);
+        $this->assertGreaterThan($maxId, $set['linkid']);
+        $count = $this->db->query_result(
+            $this->db->pquery('SELECT COUNT(*) AS c FROM vtiger_links WHERE linkid = ?', [$set['linkid']]),
+            0,
+            'c'
         );
-        $this->assertSame(1, $this->db->num_rows($links));
-        $this->assertGreaterThan($maxId, (int) $this->db->query_result($links, 0, 'linkid'));
-        $seq = $this->db->pquery('SELECT id FROM vtiger_links_seq', []);
-        $this->assertGreaterThan($maxId, (int) $this->db->query_result($seq, 0, 'id'));
+        $this->assertSame('1', (string) $count);
     }
 
     // ==== TS-05 API: 権限と要求の種類 =====================================
@@ -171,7 +199,9 @@ final class SharedLinksTest extends SharedLinksTestCase
         $requests = [
             'info' => [],
             'list' => [],
-            'save' => ['link' => json_encode($this->linkInput())],
+            'save' => ['link' => json_encode($this->linkInput()), 'set_id' => (string) $this->setId],
+            'save_set' => ['title' => self::PREFIX . '一般ユーザー'],
+            'delete_set' => ['id' => (string) $this->setId],
             'delete' => ['id' => (string) $id],
             'reorder' => ['ids' => (string) $id],
         ];
@@ -196,7 +226,7 @@ final class SharedLinksTest extends SharedLinksTestCase
                 $request = new Vtiger_Request(['mode' => $mode], ['mode' => $mode]);
                 $this->assertTrue($api->validateRequest($request), $mode);
             }
-            foreach (['save', 'delete', 'reorder'] as $mode) {
+            foreach (['save', 'delete', 'reorder', 'save_set', 'delete_set'] as $mode) {
                 $request = new Vtiger_Request(['mode' => $mode], ['mode' => $mode]);
                 try {
                     $api->validateRequest($request);
@@ -215,7 +245,7 @@ final class SharedLinksTest extends SharedLinksTestCase
     public function test_TC_API_010_linkがJSONでなければ400(): void
     {
         $this->expectException(ApiBadRequestException::class);
-        $this->callApi('save', ['link' => 'not-json']);
+        $this->callApi('save', ['link' => 'not-json', 'set_id' => (string) $this->setId]);
     }
 
     public function test_TC_API_011_034_追加すると末尾に並び一覧は無効も含め並び順で返す(): void
@@ -271,7 +301,9 @@ final class SharedLinksTest extends SharedLinksTestCase
     {
         foreach (['999999999', 'abc', '1 OR 1=1'] as $id) {
             try {
-                $this->callApi('save', ['id' => $id, 'link' => json_encode($this->linkInput())]);
+                $this->callApi('save', [
+                    'id' => $id, 'link' => json_encode($this->linkInput()), 'set_id' => (string) $this->setId,
+                ]);
                 $this->fail("id=$id がエラーにならない");
             } catch (ApiNotFoundException $e) {
                 $this->addToAssertionCount(1);
@@ -487,6 +519,157 @@ final class SharedLinksTest extends SharedLinksTestCase
         }
     }
 
+    // ==== TS-08 ウィジェット（リンクのまとまり） ==============================
+
+    /**
+     * @return array<string, string>
+     */
+    private function widgetLink(int $setId): array
+    {
+        $set = LinkModel::getSet($setId);
+        $this->assertNotNull($set);
+        $row = $this->db->query_result_rowdata(
+            $this->db->pquery('SELECT * FROM vtiger_links WHERE linkid = ?', [$set['linkid']]),
+            0
+        );
+        return array_map('decode_html', array_map('strval', $row));
+    }
+
+    public function test_TC_SET_001_作ると末尾に並びウィジェットの追加に出る(): void
+    {
+        $result = $this->callApi('save_set', ['title' => '  ' . self::PREFIX . '社内システム  ']);
+
+        $this->assertTrue($result['saved']);
+        $this->assertSame(self::PREFIX . '社内システム', $result['title']);
+        $sets = LinkModel::getSets();
+        $this->assertSame($result['id'], end($sets)['id']);
+        $link = $this->widgetLink($result['id']);
+        $this->assertSame([(string) getTabid('Home'), 'DASHBOARDWIDGET', self::PREFIX . '社内システム', LinkModel::WIDGET_URL], [
+            $link['tabid'], $link['linktype'], $link['linklabel'], $link['linkurl'],
+        ]);
+        $listed = array_column($this->callApi('list')['sets'], 'title');
+        $this->assertContains(self::PREFIX . '社内システム', $listed);
+    }
+
+    public function test_TC_SET_002_見出しを変えるとウィジェットの追加の名前も変わる(): void
+    {
+        $linkId = LinkModel::getSet($this->setId)['linkid'];
+
+        $result = $this->callApi('save_set', ['id' => (string) $this->setId, 'title' => self::PREFIX . '申請']);
+
+        $this->assertSame(['saved' => true, 'id' => $this->setId, 'title' => self::PREFIX . '申請'], $result);
+        $this->assertSame(self::PREFIX . '申請', LinkModel::getSet($this->setId)['title']);
+        $this->assertSame(self::PREFIX . '申請', $this->widgetLink($this->setId)['linklabel']);
+        // 登録（linkid）はそのまま（各ユーザーのダッシュボードの配置が残る）
+        $this->assertSame($linkId, LinkModel::getSet($this->setId)['linkid']);
+    }
+
+    public function test_TC_SET_003_ほかのウィジェットと同じ見出しは付けられない(): void
+    {
+        $other = $this->createSet('重なり');
+        $otherTitle = LinkModel::getSet($other)['title'];
+
+        foreach ([$otherTitle, mb_strtolower($otherTitle), 'Notebook', 'mini list'] as $title) {
+            $result = $this->callApi('save_set', ['id' => (string) $this->setId, 'title' => $title]);
+            $this->assertFalse($result['saved'], $title);
+            $this->assertArrayHasKey('title', $result['errors']);
+            $result = $this->callApi('save_set', ['title' => $title]);
+            $this->assertFalse($result['saved'], "新規 $title");
+        }
+        // 自分の今の見出しのままなら保存できる
+        $own = LinkModel::getSet($this->setId)['title'];
+        $this->assertTrue($this->callApi('save_set', ['id' => (string) $this->setId, 'title' => $own])['saved']);
+    }
+
+    public function test_TC_SET_004_見出しが空や長すぎたり使えない文字なら保存しない(): void
+    {
+        $before = count(LinkModel::getSets());
+        foreach (['', '   ', str_repeat('あ', 31), 'R&D', '<b>', 'a"b', "a'b"] as $title) {
+            $result = $this->callApi('save_set', ['title' => $title]);
+            $this->assertFalse($result['saved'], $title);
+            $this->assertStringNotContainsString('LBL_', $result['errors']['title']);
+        }
+        $this->assertCount($before, LinkModel::getSets());
+    }
+
+    public function test_TC_SET_005_削除するとリンクと登録と配置が消え他のウィジェットは残る(): void
+    {
+        $id = $this->createLink([
+            'visibility' => 'targets',
+            'params' => [['name' => 'a', 'value_type' => 'fixed', 'value' => '1']],
+            'targets' => [['type' => 'Users', 'id' => (string) self::ADMIN_USER_ID]],
+        ]);
+        $otherSet = $this->createSet('残る');
+        $otherLink = LinkModel::saveLink(\Settings_SharedLinks_Rules_Model::normalize($this->linkInput()), $otherSet);
+        $linkId = LinkModel::getSet($this->setId)['linkid'];
+        $this->db->pquery(
+            'INSERT INTO vtiger_module_dashboard_widgets (linkid, userid, filterid, title, data, dashboardtabid) VALUES (?, ?, 0, NULL, NULL, 1)',
+            [$linkId, self::ADMIN_USER_ID]
+        );
+
+        $this->assertSame(['id' => $this->setId, 'deleted' => true], $this->callApi('delete_set', ['id' => (string) $this->setId]));
+
+        $this->assertNull(LinkModel::getSet($this->setId));
+        $this->assertNull($this->findLink($id));
+        foreach (['vtiger_shared_link_params', 'vtiger_shared_link_targets'] as $table) {
+            $this->assertSame(0, $this->db->num_rows($this->db->pquery("SELECT 1 FROM $table WHERE linkid = ?", [$id])), $table);
+        }
+        $this->assertSame(0, $this->db->num_rows($this->db->pquery('SELECT 1 FROM vtiger_links WHERE linkid = ?', [$linkId])));
+        $this->assertSame(0, $this->db->num_rows($this->db->pquery(
+            'SELECT 1 FROM vtiger_module_dashboard_widgets WHERE linkid = ?',
+            [$linkId]
+        )));
+        $this->assertNotNull($this->findLink($otherLink));
+    }
+
+    public function test_TC_SET_007_存在しないウィジェットは404(): void
+    {
+        $cases = [
+            ['save_set', ['id' => '999999', 'title' => self::PREFIX . 'x']],
+            ['save_set', ['id' => 'abc', 'title' => self::PREFIX . 'x']],
+            ['delete_set', ['id' => '999999']],
+            ['delete_set', ['id' => '']],
+            ['save', ['set_id' => '999999', 'link' => json_encode($this->linkInput())]],
+            ['save', ['set_id' => '', 'link' => json_encode($this->linkInput())]],
+        ];
+        foreach ($cases as [$mode, $params]) {
+            try {
+                $this->callApi($mode, $params);
+                $this->fail("$mode " . json_encode($params) . ' がエラーにならない');
+            } catch (ApiNotFoundException $e) {
+                $this->addToAssertionCount(1);
+            }
+        }
+    }
+
+    public function test_TC_SET_008_リンクを別のウィジェットへ移せる(): void
+    {
+        $id = $this->createLink(['title' => self::PREFIX . '移す']);
+        $otherSet = $this->createSet('移し先');
+
+        $result = $this->callApi('save', [
+            'id' => (string) $id,
+            'set_id' => (string) $otherSet,
+            'link' => json_encode($this->linkInput(['title' => self::PREFIX . '移す'])),
+        ]);
+
+        $this->assertTrue($result['saved']);
+        $this->assertSame($otherSet, $this->findLink($id)['set_id']);
+        $listed = array_values(array_filter($this->callApi('list')['links'], fn ($l) => $l['id'] === $id));
+        $this->assertSame($otherSet, $listed[0]['set_id']);
+    }
+
+    public function test_TC_SET_009_ウィジェットにはそのウィジェットのリンクだけを出す(): void
+    {
+        $mine = $this->createLink(['title' => self::PREFIX . 'こちら']);
+        $otherSet = $this->createSet('あちら');
+        $theirs = LinkModel::saveLink(\Settings_SharedLinks_Rules_Model::normalize($this->linkInput()), $otherSet);
+
+        $this->assertSame([$mine], array_column(LinkModel::getVisibleLinksForCurrentUser($this->setId), 'id'));
+        $this->assertSame([$theirs], array_column(LinkModel::getVisibleLinksForCurrentUser($otherSet), 'id'));
+        $this->assertSame([], LinkModel::getVisibleLinksForCurrentUser(999999));
+    }
+
     // ==== TS-05 API: info =================================================
 
     public function test_TC_API_040_043_infoは選択肢と上限と文言を返す(): void
@@ -537,6 +720,7 @@ final class SharedLinksTest extends SharedLinksTestCase
             'window_max' => Rules::WINDOW_MAX,
             'default_window_width' => Rules::DEFAULT_WINDOW_WIDTH,
             'default_window_height' => Rules::DEFAULT_WINDOW_HEIGHT,
+            'widget_title_max' => Rules::WIDGET_TITLE_MAX,
         ], $info['limits']);
         $languageStrings = [];
         include dirname(__DIR__, 3) . '/languages/en_us/Settings/SharedLinks.php';

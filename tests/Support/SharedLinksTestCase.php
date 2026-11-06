@@ -30,6 +30,9 @@ abstract class SharedLinksTestCase extends TestCase
 
     protected PearDatabase $db;
 
+    /** テストで使うウィジェット（リンクのまとまり）の ID。setUp で作り、tearDown で消す */
+    protected int $setId = 0;
+
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
@@ -100,6 +103,7 @@ abstract class SharedLinksTestCase extends TestCase
         $this->db = PearDatabase::getInstance();
         $this->loginAs(self::ADMIN_USER_ID);
         $this->cleanLinks();
+        $this->setId = $this->createSet('set');
     }
 
     protected function tearDown(): void
@@ -109,8 +113,26 @@ abstract class SharedLinksTestCase extends TestCase
         parent::tearDown();
     }
 
+    /**
+     * テスト用のウィジェットを作る（見出しに接頭辞 SPECTEST_ を付ける。30 文字まで）
+     */
+    protected function createSet(string $name): int
+    {
+        return Settings_SharedLinks_Module_Model::saveSet(mb_substr(self::PREFIX . $name, 0, 30));
+    }
+
+    /**
+     * テストで作ったウィジェット・リンクを消す
+     *
+     * ウィジェットを消すと、中のリンク・「ウィジェットの追加」の登録・ダッシュボードの配置も消える。
+     */
     protected function cleanLinks(): void
     {
+        foreach (Settings_SharedLinks_Module_Model::getSets() as $set) {
+            if (str_starts_with($set['title'], self::PREFIX)) {
+                Settings_SharedLinks_Module_Model::deleteSet($set['id']);
+            }
+        }
         $result = $this->db->pquery('SELECT id FROM vtiger_shared_links WHERE title LIKE ?', [self::PREFIX . '%']);
         $ids = [];
         for ($i = 0; $i < $this->db->num_rows($result); $i++) {
@@ -172,7 +194,8 @@ abstract class SharedLinksTestCase extends TestCase
     protected function createLink(array $overrides = []): int
     {
         return Settings_SharedLinks_Module_Model::saveLink(
-            Settings_SharedLinks_Rules_Model::normalize($this->linkInput($overrides))
+            Settings_SharedLinks_Rules_Model::normalize($this->linkInput($overrides)),
+            $this->setId
         );
     }
 

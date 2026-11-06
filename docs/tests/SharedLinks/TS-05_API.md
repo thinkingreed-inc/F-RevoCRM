@@ -14,7 +14,8 @@
 | S-06 | `save` で入力に誤りがあれば保存せず、`saved=false` と項目ごとのエラー（翻訳済みの文言）を返す | 8.1 |
 | S-07 | `delete` はリンクとパラメータ・対象を削除する | 8.1 |
 | S-08 | `reorder` は `ids` の順に並び順を振り直す | 8.1 |
-| S-09 | 存在しないリンクの `id` は 404。`link` が JSON でない・`ids` に数字以外・不明な mode は 400 | 8.1 |
+| S-09 | 存在しないリンクの `id`・ウィジェットの `id` / `set_id` は 404。`link` が JSON でない・`ids` に数字以外・不明な mode は 400 | 8.1 |
+| S-11 | ウィジェットの作成・見出しの変更・削除（`save_set` / `delete_set`）は TS-08 | 8.1 |
 | S-10 | URL の `&` などを加工せずに保存する（`getRaw` で受け取る） | 8.1 |
 
 ## 2. デシジョン表
@@ -24,7 +25,7 @@
 | 条件 | R1 | R2 | R3 | R4 | R5 |
 |---|---|---|---|---|---|
 | 管理者 | − | ✓ | ✓ | ✓ | ✓ |
-| mode | * | info / list | save / delete / reorder | save / delete / reorder | save / delete / reorder |
+| mode | * | info / list | save / delete / reorder / save_set / delete_set | 同左 | 同左 |
 | HTTP メソッド | * | GET / POST | GET | POST | POST |
 | CSRF トークン | * | * | * | 無し・不正 | 正しい |
 | **結果** | 403 | 受け付ける | 拒否（Invalid request） | 拒否 | 受け付ける |
@@ -64,10 +65,10 @@
 
 | ID | 観点 | 内容 | 期待 | 自動化 |
 |---|---|---|---|---|
-| TC-API-001 | 認可 | 管理者でないユーザーで info / list / save / delete / reorder | すべて 403（ApiForbiddenException）。DB は変わらない | 自動（Integration / E2E） |
+| TC-API-001 | 認可 | 管理者でないユーザーで info / list / save / delete / reorder / save_set / delete_set | すべて 403（ApiForbiddenException）。DB は変わらない | 自動（Integration / E2E） |
 | TC-API-002 | 正常 | 管理者で info / list を GET | 受け付ける | 自動（Integration） |
-| TC-API-003 | 異常 | 管理者で save / delete / reorder を GET | `Invalid request` | 自動（Integration） |
-| TC-API-004 | セキュリティ | 管理者で save を CSRF トークン無しの POST | 拒否。保存されない | 自動（E2E） |
+| TC-API-003 | 異常 | 管理者で save / delete / reorder / save_set / delete_set を GET | `Invalid request` | 自動（Integration） |
+| TC-API-004 | セキュリティ | 管理者で save / save_set を CSRF トークン無しの POST | 拒否。保存されない | 自動（E2E） |
 | TC-API-005 | 正常 | 管理者で save を CSRF トークン付きの POST | 保存される | 自動（E2E・管理画面の操作） |
 | TC-API-006 | 認可 | 未ログインで list | ログインを求められ、データを返さない | 自動（E2E） |
 | TC-API-010 | 異常 | `link=not-json` | 400（ApiBadRequestException） | 自動（Integration） |
@@ -84,4 +85,4 @@
 | TC-API-040 | 正常 | info の項目 | `id`・`full_name`・`email1` を含み、パスワード類を含まない | 自動（Integration） |
 | TC-API-041 | 正常 | info の役割 | 親の後ろに子が並び、`depth` を持つ | 自動（Integration / Unit） |
 | TC-API-042 | 正常 | info のユーザー | 有効なユーザーだけ | 自動（Integration） |
-| TC-API-043 | 正常 | info の上限・文言 | 上限がサーバーの定数と一致。文言は英語ファイルのキーがすべてそろい、翻訳済み | 自動（Integration） |
+| TC-API-043 | 正常 | info の上限・文言 | 上限（見出しの上限を含む）がサーバーの定数と一致。文言は英語ファイルのキーがすべてそろい、翻訳済み | 自動（Integration） |

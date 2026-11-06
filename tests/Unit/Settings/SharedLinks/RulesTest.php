@@ -578,6 +578,34 @@ final class RulesTest extends TestCase
         $this->assertSame($expected, Rules::isFormActionAllowed($url, $sources));
     }
 
+    // ==== TS-08 ウィジェット（リンクのまとまり）の見出し =====================
+
+    /**
+     * @return array<string, array{string, string|null}>
+     */
+    public static function widgetTitles(): array
+    {
+        return [
+            'TC-TTL-001 空' => ['', 'LBL_ERROR_WIDGET_TITLE_REQUIRED'],
+            'TC-TTL-001 空白だけ' => ['   ', 'LBL_ERROR_WIDGET_TITLE_REQUIRED'],
+            'TC-TTL-002 30文字' => [str_repeat('あ', 30), null],
+            'TC-TTL-002 サロゲートペア30文字' => [str_repeat('𠮷', 30), null],
+            'TC-TTL-004 31文字' => [str_repeat('あ', 31), 'LBL_ERROR_WIDGET_TITLE_TOO_LONG'],
+            'TC-TTL-005 <' => ['社内<システム', 'LBL_ERROR_WIDGET_TITLE_CHARS'],
+            'TC-TTL-005 >' => ['a>b', 'LBL_ERROR_WIDGET_TITLE_CHARS'],
+            'TC-TTL-005 &' => ['R&D', 'LBL_ERROR_WIDGET_TITLE_CHARS'],
+            'TC-TTL-005 "' => ['a"b', 'LBL_ERROR_WIDGET_TITLE_CHARS'],
+            "TC-TTL-005 '" => ["a'b", 'LBL_ERROR_WIDGET_TITLE_CHARS'],
+            'TC-TTL-006 使える記号' => ['社内（システム）・リンク集!', null],
+        ];
+    }
+
+    #[DataProvider('widgetTitles')]
+    public function test_TC_TTL_001_006_ウィジェットの見出しの検証(string $title, ?string $expected): void
+    {
+        $this->assertSame($expected, Rules::validateWidgetTitle($title));
+    }
+
     // ==== TS-05 TC-API-041 役割の並び順 ====================================
 
     public function test_TC_API_041_役割は子孫が親の直後にまとまる(): void

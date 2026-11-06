@@ -12,6 +12,7 @@ import {
   toPayload,
   toTargetType,
   validateSharedLink,
+  validateWidgetTitle,
 } from "../sharedLinkForm";
 
 /**
@@ -32,6 +33,7 @@ const LIMITS: SharedLinkLimits = {
   window_max: 4000,
   default_window_width: 1024,
   default_window_height: 768,
+  widget_title_max: 30,
 };
 
 const USER_FIELDS = ["id", "full_name", "email1", "user_name"];
@@ -282,5 +284,23 @@ describe("validateSharedLink", () => {
         targets: [{ type: "Users", id: "1" }],
       }),
     ).toEqual({});
+  });
+});
+
+describe("validateWidgetTitle", () => {
+  it.each([
+    ["TC-TTL-001 空", "", "LBL_ERROR_WIDGET_TITLE_REQUIRED"],
+    ["TC-TTL-001 空白だけ", "   ", "LBL_ERROR_WIDGET_TITLE_REQUIRED"],
+    ["TC-TTL-002 30 文字", "あ".repeat(30), null],
+    ["TC-TTL-003 前後の空白は数えない", ` ${"あ".repeat(30)} `, null],
+    ["TC-TTL-004 31 文字", "あ".repeat(31), "LBL_ERROR_WIDGET_TITLE_TOO_LONG"],
+    ["TC-TTL-005 <", "社内<システム", "LBL_ERROR_WIDGET_TITLE_CHARS"],
+    ["TC-TTL-005 &", "R&D", "LBL_ERROR_WIDGET_TITLE_CHARS"],
+    ['TC-TTL-005 "', 'a"b', "LBL_ERROR_WIDGET_TITLE_CHARS"],
+    ["TC-TTL-005 '", "a'b", "LBL_ERROR_WIDGET_TITLE_CHARS"],
+    ["TC-TTL-005 >", "a>b", "LBL_ERROR_WIDGET_TITLE_CHARS"],
+    ["TC-TTL-006 記号でも使えるもの", "社内（システム）・リンク集!", null],
+  ])("%s", (_, title, expected) => {
+    expect(validateWidgetTitle(title, LIMITS)).toBe(expected);
   });
 });
