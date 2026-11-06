@@ -9,4 +9,11 @@
  *************************************************************************************/
 
 class Home_DashBoard_View extends Vtiger_DashBoard_View {
+
+	public function getHeaderScripts(Vtiger_Request $request) {
+		$headerScriptInstances = parent::getHeaderScripts($request);
+		// ウィジェット「共有リンク」でリンクを開く処理
+		$jsScriptInstances = $this->checkAndConvertJsScripts(array('modules.Home.resources.SharedLinksWidget'));
+		return array_merge($headerScriptInstances, $jsScriptInstances);
+	}
 }

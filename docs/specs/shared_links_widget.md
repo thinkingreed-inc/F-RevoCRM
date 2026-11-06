@@ -35,7 +35,7 @@
 
 | 列 | 内容 |
 |---|---|
-| 並び順 | ドラッグ、または上下ボタンで入れ替える。ウィジェットでの表示順になる |
+| 並び順 | 上下ボタンで入れ替える。ウィジェットでの表示順になる |
 | タイトル | |
 | URL | 長い場合は省略表示 |
 | メソッド | GET / POST |
@@ -263,6 +263,7 @@ F-RevoCRM の csrf-magic は、出力される HTML の `<form method="post">` �
 2. `vtiger_links` にウィジェットを登録する（無ければ）。
    - `tabid` = 3（Home）、`linktype` = `DASHBOARDWIDGET`、`linklabel` = `Shared Links`
    - `linkurl` = `index.php?module=Home&view=ShowWidget&name=SharedLinks`
+   - 登録する前に、採番テーブル `vtiger_links_seq` が `vtiger_links` の最大 ID より遅れていれば追いつかせる。過去のマイグレーション（IFrame ウィジェットの追加）が `MAX(linkid)+1` で直接 INSERT していて、採番が 1 つ遅れている環境があるため（そのままでは `Vtiger_Link::addLink` の ID が重複して失敗する）。
 3. `vtiger_settings_field` に設定メニューを登録する（無ければ）。
    - ブロック: `LBL_CONFIGURATION`、`name` = `LBL_SHARED_LINKS`
    - `linkto` = `index.php?module=SharedLinks&parent=Settings&view=List`
@@ -271,18 +272,19 @@ F-RevoCRM の csrf-magic は、出力される HTML の `<form method="post">` �
 
 コア（`vtlib/`・`includes/`・`modules/Vtiger/`）は変更しない。ウィジェットのクラスは `Vtiger_Loader::getComponentClassName('Dashboard', …)` がモジュール側（Home）を先に探すので、`modules/Home/dashboards/` に置けばよい。また、tabid = 3 で登録した `DASHBOARDWIDGET` は、`Vtiger_DashBoard_Model::getSelectableDashboard()` によって「ウィジェットを追加」メニューに自動で出る。
 
-| 種別 | ファイル（予定） | 内容 |
+| 種別 | ファイル | 内容 |
 |---|---|---|
-| Model | `modules/Settings/SharedLinks/models/Module.php` | 一覧の取得・保存・削除・並び替え・入力の検証・差し込める項目の一覧・パラメータの値の解決・公開範囲の判定 |
+| Model | `modules/Settings/SharedLinks/models/Module.php` | DB の読み書き（一覧の取得・保存・削除・並び替え）、差し込める項目・公開範囲の選択肢の一覧、ウィジェットに出すリンクの取得 |
+| Model | `modules/Settings/SharedLinks/models/Rules.php` | DB を使わない判定（入力の検証・公開範囲の判定・パラメータの値の解決・GET の URL の組み立て・役割の並び順）。単体テストの対象 |
 | View | `modules/Settings/SharedLinks/views/List.php` | 管理画面 |
 | API | `modules/Settings/SharedLinks/apis/SharedLinkAPI.php` | 管理画面用の JSON API（`list` / `info` / `save` / `delete` / `reorder`）。管理者のみ |
 | テンプレート | `layouts/v7/modules/Settings/SharedLinks/SharedLinksList.tpl` | `<shared-links-page>` を置くだけ |
 | Dashboard | `modules/Home/dashboards/SharedLinks.php` | `Home_SharedLinks_Dashboard`。有効なリンクを、差し込みを済ませた状態で表示 |
 | テンプレート | `layouts/v7/modules/Home/dashboards/SharedLinks.tpl` / `SharedLinksContents.tpl` | ウィジェットの枠と中身 |
-| JS | `layouts/v7/modules/Home/resources/SharedLinksWidget.js`（または同等） | 別ウィンドウで開く、POST のフォームを作って送信する |
-| React | `assets/react-web-components/src/components/SharedLinks/` | 管理画面。型は `src/types` に置く |
-| 言語 | `languages/{ja_jp,en_us}/Settings/SharedLinks.php`、`languages/{ja_jp,en_us}/Home.php` | 画面の文言、ウィジェット名 `Shared Links` = 「共有リンク」 |
-| マイグレーション | `setup/migration/scripts/<日時>_add_shared_links_widget.php` | 7.3 |
+| JS | `public/layouts/v7/modules/Home/resources/SharedLinksWidget.js` | 別ウィンドウで開く、POST のフォームを作って送信する。`Home_DashBoard_View::getHeaderScripts()`（`modules/Home/views/DashBoard.php`）で読み込む |
+| React | `assets/react-web-components/src/components/SharedLinks/` | 管理画面。型は `src/types/sharedLinks.ts` |
+| 言語 | `languages/{ja_jp,en_us}/Settings/SharedLinks.php`、`languages/{ja_jp,en_us}/Home.php`、`languages/{ja_jp,en_us}/Settings/Vtiger.php` | 画面の文言、ウィジェット名 `Shared Links` = 「共有リンク」、設定メニューの名前 |
+| マイグレーション | `setup/migration/scripts/20261106093622_add_shared_links_widget.php` | 7.4 |
 
 ### 8.1 API（`?module=SharedLinks&parent=Settings&api=SharedLinkAPI`）
 
@@ -294,7 +296,12 @@ F-RevoCRM の csrf-magic は、出力される HTML の `<form method="post">` �
 | `delete` | POST | 削除（パラメータも削除） |
 | `reorder` | POST | `ids` の順に `sequence` を振り直す |
 
-返す JSON は既存の `Vtiger_Api_Controller` の形式に合わせる。入力の誤りは、項目ごとのエラーを含めて 400 で返す。
+返す JSON は既存の `Vtiger_Api_Controller` の形式に合わせる。
+
+- `save` の入力に誤りがあるときは、保存せずに `{"saved": false, "errors": {"<項目>": "<文言>"}}` を返す（HTTP 200）。項目のキーは `title`・`url`・`params.0.value`・`targets.0` などで、画面はこれを該当する項目の下に出す。保存できたら `{"saved": true, "id": <ID>}`。
+- 管理者以外は 403、存在しないリンクの更新・削除は 404、`link` が JSON でない・`ids` に数字以外があるときは 400。
+- 更新系（`save` / `delete` / `reorder`）は POST と CSRF トークンを必須にする。
+- `link` は JSON で受け取り、`Vtiger_Request::getRaw()` で読む（`get()` は値をエンティティ化するため、URL の `&` などが変わってしまう）。
 
 ## 9. テスト
 
