@@ -538,6 +538,38 @@ Vtiger_Detail_Js("Project_Detail_Js",{
         return aDeferred.promise();
     },
 	
+	getDeleteMessageKey : function() {
+		return 'LBL_UNLINK_RELATION_CONFIRMATION';
+	},
+
+	registerRelatedRecordDeleteEvent : function() {
+		var self = this;
+		this.getContentHolder().on('click', 'a.relatedRecordDelete', function(e) {
+			e.stopImmediatePropagation();
+			var relatedRecordId = jQuery(e.currentTarget).closest('tr').data('id');
+			var relatedModuleName = self.getRelatedModuleName();
+			app.helper.showConfirmationBox({'message' : app.vtranslate('LBL_DELETE_CONFIRMATION')}).then(function() {
+				var params = {
+					'module' : relatedModuleName,
+					'action' : 'Delete',
+					'record' : relatedRecordId,
+					'ajaxDelete' : true
+				};
+				app.helper.showProgress();
+				app.request.post({data : params}).then(function(error) {
+					app.helper.hideProgress();
+					if (error) {
+						app.helper.showErrorNotification({message : error.message});
+						return;
+					}
+					app.helper.showSuccessNotification({message : app.vtranslate('JS_RECORD_DELETED')});
+					self.getRelatedController().loadRelatedList();
+					self.updateRelatedRecordsCount();
+				});
+			});
+		});
+	},
+
 	registerEvents : function(){
 		var detailContentsHolder = this.getContentHolder();
 		var thisInstance = this;
@@ -558,6 +590,7 @@ Vtiger_Detail_Js("Project_Detail_Js",{
 			recentTasksTab.trigger('click');
 		});
         
+		this.registerRelatedRecordDeleteEvent();
         var detailViewContainer = jQuery('.detailViewContainer');
         thisInstance.registerGanttChartEvents(detailViewContainer);
         if(detailViewContainer.find('#workSpace').length != 0) {

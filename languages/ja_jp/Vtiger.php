@@ -1780,6 +1780,7 @@ $jsLanguageStrings = array(
 
 	'LBL_DELETE_CONFIRMATION' => '削除しますか？', // This is added as duplicate as we need to show different message for different modules. Ex:Accounts has different message
 	'LBL_UNLINK_CONFIRMATION' => 'リンクを解除しますか？',
+	'LBL_UNLINK_RELATION_CONFIRMATION' => '関連を外しますか？',
 	'LBL_DELETE_USER_CONFIRMATION' => 'ユーザーを削除すると、ユーザーは無効化されログイン不可となり、新たなレコードを割り当てることもできなくなります。本当に削除してもよろしいですか？',
 	'LBL_DELETE_CONFIRMATION_NOTE' => '注意 : 削除されたレコードはごみ箱に保持され、%s日後に消去されます',
 	'LBL_MASS_DELETE_CONFIRMATION' => '選択したレコードを削除しますか？',
