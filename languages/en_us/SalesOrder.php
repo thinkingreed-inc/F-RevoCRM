@@ -69,6 +69,7 @@ $languageStrings = array(
 	'Quarterly' => 'Quarterly',
 	'Yearly' => 'Yearly',
 	'Cancel' => 'Cancel',
+	'LBL_RECURRING_FREQUENCY_AND_START_PERIOD_REQUIRED' => 'Frequency and Start Period are required when recurring is enabled. To enable recurring, set it together with the frequency and other fields in the edit view.',
 );
 
 $jsLanguageStrings = array(
