@@ -220,8 +220,19 @@ class VTJsonCondition {
 		}
 
 		if($fieldInstance && $fieldInstance->getFieldDataType() == 'time') {
-			if($value){
-				$value = $value.':00';	// time fields will not have seconds appended to it, so we are adding 
+			if($condition == 'between'){ 
+				$values = explode(',', $value);
+				$values[0] = date('H:i', strtotime($values[0]));
+				$values[1] = date('H:i', strtotime($values[1]));
+				$value = $values[0].':00,'.$values[1].':00';
+			}else{
+				if(strpos($value,'AM') !== false || strpos($value,'PM') !== false){
+					$value = date('H:i', strtotime($value));
+				}
+	
+				if($value){
+					$value = $value.':00';	// time fields will not have seconds appended to it, so we are adding 
+				}
 			}
 		}
 
@@ -408,7 +419,9 @@ class VTJsonCondition {
 					return false;
 				}
 				$values = explode(',', $value);
-				$values = array_map('getValidDBInsertDateValue',$values);
+				if($fieldInstance && $fieldInstance->getFieldDataType() == 'datetime'){
+					$values = array_map('getValidDBInsertDateValue',$values);
+				}
 				if($fieldValue > $values[0] && $fieldValue < $values[1]) {
 					return true;
 				}
