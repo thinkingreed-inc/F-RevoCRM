@@ -8,14 +8,36 @@
  * All Rights Reserved.
  *************************************************************************************/
 
+require_once 'include/fields/PicklistDisplayConfig.php';
+
 class Vtiger_Picklist_UIType extends Vtiger_Base_UIType {
 
 	/**
-	 * Function to get the Template name for the current UI Type object
+	 * #1677: 表示設定(input_style)が 'radio'/'checkbox' のときだけ WebComponent(ラジオ)で描画する。
+	 * 既定(null/auto/dropdown)は従来の select2 テンプレートを維持する（全ピックリストが勝手に React 化しないように）。
 	 * @return <String> - Template Name
 	 */
 	public function getTemplateName() {
+		$config = PicklistDisplayConfig::get($this->get('field')->getName());
+		if (PicklistDisplayConfig::shouldUseWebComponent((int) $this->get('field')->get('uitype'), $config)) {
+			return 'uitypes/WebComponentField.tpl';
+		}
 		return 'uitypes/Picklist.tpl';
+	}
+
+	/** #1677: WebComponent のタグ名（React 側 createFieldWebComponent の登録名と一致させる） */
+	public function getWebComponentTagName() {
+		return 'fr-field-picklist';
+	}
+
+	/**
+	 * #1677: WebComponent(props 属性)に渡すデータ。options＋色＋表示設定(inputStyle/threshold/columns)を載せる。
+	 * 送信・必須検証は WebComponentField.tpl の hidden input が担う。
+	 * @param mixed $value 現在値（単一値）
+	 * @param string $mode 'edit' または 'detail'
+	 */
+	public function getWebComponentProps($value, $mode, $recordModel = false) {
+		return PicklistDisplayConfig::buildProps($this->get('field'), $value, $mode, false);
 	}
 
 	/**
