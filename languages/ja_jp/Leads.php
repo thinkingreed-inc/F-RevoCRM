@@ -69,6 +69,7 @@ $languageStrings = array(
 	'Hot Leads' => '確度の高い顧客',
 	'This Month Leads' => '今月のリード',
 	'last_action_date' => '最終活動日',
+	'LBL_SETUP_PARAMETER_MESSAGE_LEAD_CONVERT_ASSIGN_CURRENT_USER' => 'リード昇格画面の担当の初期値を決めるフラグです。true: ログインユーザー、false: リードの担当',
 );
 $jsLanguageStrings = array(
 	'JS_SELECT_CONTACTS' => '顧客担当者を選択して続行',
