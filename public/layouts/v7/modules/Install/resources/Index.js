@@ -32,29 +32,22 @@ jQuery.Class('Install_Index_Js', {}, {
 	registerEventForStep4: function () {
 		jQuery('input[type="text"]').not('.short').css('width', '210px');
 		jQuery('input[type="password"]').css('width', '210px');
-
-		jQuery('input[name="create_db"]').on('click', function () {
-			var userName = jQuery('#root_user');
-			var password = jQuery('#root_password');
-			var classU = userName.attr('class');
-			if (classU == 'hide')
-				userName.removeClass('hide');
-			else
-				userName.addClass('hide');
-
-			var classP = password.attr('class');
-			if (classP == 'hide')
-				password.removeClass('hide');
-			else
-				password.addClass('hide');
-		});
-
-		if (jQuery('input[name="create_db"]').prop('checked'))
-		{
-			jQuery('#root_user').removeClass("hide");
-			jQuery('#root_password').removeClass("hide");
+		// create_db のチェック状態に応じて、Rootユーザー／Rootパスワード入力欄の表示を切り替える
+		function updateCreateDbFieldsVisibility() {
+			var isChecked = jQuery('input[name="create_db"]').prop('checked');
+			jQuery('#root_user').toggleClass('hide', !isChecked);
+			jQuery('#root_password').toggleClass('hide', !isChecked);
 		}
-
+		// チェック状態が変更されたタイミングで表示状態を同期する
+		jQuery('input[name="create_db"]').on('change', function () {
+			updateCreateDbFieldsVisibility();
+		});
+		// 初期表示時にも、ブラウザ保持中のチェック状態をもとに表示状態を同期する
+		updateCreateDbFieldsVisibility();
+		// 戻る操作などで画面が再表示された場合にも、チェック状態と表示状態を再同期する
+		jQuery(window).on('pageshow', function () {
+			updateCreateDbFieldsVisibility();
+		});
 		function clearPasswordError() {
 			jQuery('#passwordError').html('');
 		}
