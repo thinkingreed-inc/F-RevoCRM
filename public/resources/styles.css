@@ -1897,3 +1897,47 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
 body.calendar-dragging .webui-popover {
     display: none !important;
 }
+
+/* #1778 スマホ表示でインポート画面のステップ表示が見切れる問題を修正。
+   スキンの各ステップ幅(width:18% / min-width:100px)では狭い画面でステップ名が読めないため、
+   現在のステップだけ番号と名前を表示して残りの幅を使い、他のステップは番号のみにする。
+   現在のステップは Import.js が付け替える active クラスで判定する */
+@media (max-width: 767px) {
+    .importview-content .crumbs {
+        display: flex;
+    }
+    .importview-content .crumbs li {
+        flex: 0 0 auto;
+        width: auto;
+        min-width: 0;
+        margin-right: 4px;
+    }
+    .importview-content .crumbs li .stepText {
+        display: none;
+    }
+    .importview-content .crumbs li.active {
+        flex: 1 1 auto;
+    }
+    .importview-content .crumbs li.active a {
+        margin-top: -20px;
+    }
+    .importview-content .crumbs li.active .header_workflow {
+        display: flex;
+        align-items: center;
+        height: 40px;
+    }
+    .importview-content .crumbs li.active .stepNum {
+        flex: 0 0 auto;
+    }
+    /* 2 行に収まらない名前は末尾を「…」で省略する */
+    .importview-content .crumbs li.active .stepText {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        flex: 1 1 auto;
+        overflow: hidden;
+        white-space: normal;
+        font-size: 12px;
+        line-height: 1.2;
+    }
+}
