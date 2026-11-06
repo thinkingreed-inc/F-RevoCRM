@@ -10,7 +10,11 @@ export interface DocFieldInfo {
   displaytype: string;
   defaultvalue: string;
   type: string;
-  picklistValues?: Array<{ label: string; value: string; color?: string | null }>;
+  picklistValues?: Array<{
+    label: string;
+    value: string;
+    color?: string | null;
+  }>;
   /** ピックリスト表示設定（#1677） */
   picklistDisplay?: PicklistDisplayMeta;
   referenceModules?: string[];
