@@ -25,7 +25,8 @@
 					{else}
 						{assign var=columnNameApi value=getCustomViewColumnName}
 					{/if}
-					{if $FIELD_MODEL->getFieldDataType() == 'blank'}
+					{* ファイルアップロード項目は値がドキュメントIDのため条件にできない *}
+					{if $FIELD_MODEL->getFieldDataType() == 'blank' || $FIELD_MODEL->getFieldDataType() == 'fileupload'}
 						{continue}
 					{/if}
 					<option value="{$FIELD_MODEL->$columnNameApi()}" data-fieldtype="{$FIELD_MODEL->getFieldType()}" data-field-name="{$FIELD_NAME}"

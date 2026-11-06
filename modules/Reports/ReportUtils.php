@@ -73,6 +73,27 @@ function IsDateField($reportColDetails) {
 }
 
 /**
+ * ファイルアップロード項目（uitype 998）のレポート上の表示
+ *
+ * レポートは行数が多くなるため、同じドキュメントは一度だけ取得する。
+ *
+ * @param mixed $value ドキュメントID
+ * @return String 「📎 ファイル名」。ファイルが無ければ空
+ */
+function getReportFileFieldValue($value) {
+	static $fileNames = array();
+	$documentId = Documents_FieldFile::normalizeDocumentId($value);
+	if ($documentId <= 0) {
+		return '';
+	}
+	if (!array_key_exists($documentId, $fileNames)) {
+		$info = Documents_FieldFile::getFileInfo($documentId);
+		$fileNames[$documentId] = $info ? $info['filename'] : '';
+	}
+	return $fileNames[$documentId] === '' ? '' : "\u{1F4CE} " . $fileNames[$documentId];
+}
+
+/**
  *
  * @global Users $current_user
  * @param ReportRun $report
@@ -113,7 +134,11 @@ function getReportFieldValue ($report, $picklistArray, $dbField, $valueArray, $f
 		$field = WebserviceField::fromArray($db, $fieldInfo);
 		$fieldType = $field->getFieldDataType();
 	}
-	if(is_object($field) &&	$field->getUIType() == 401){
+	if ($fieldType == 'fileupload') {
+		// ファイルアップロード項目はファイルであることが分かる印とファイル名を出す
+		require_once 'modules/Documents/utils/FieldFile.php';
+		$fieldvalue = getReportFileFieldValue($value);
+	} else if(is_object($field) &&	$field->getUIType() == 401){
 		if ($value) {
 			$value = explode('_', $value);
 			$module = 'RecurringInvoice';

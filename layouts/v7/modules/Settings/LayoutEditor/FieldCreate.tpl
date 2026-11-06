@@ -132,6 +132,33 @@
 							</div>
 						</div>
 					{/if}
+					{if !$IS_FIELD_EDIT_MODE || $FIELD_MODEL->getFieldDataType() eq 'fileupload'}
+						<div class="form-group supportedType handwritingSupported {if $FIELD_MODEL->getFieldDataType() neq 'fileupload'}hide{/if}">
+							<label class="control-label fieldLabel col-sm-5">
+								{vtranslate('LBL_HANDWRITING', $QUALIFIED_MODULE)}
+							</label>
+							<div class="controls col-sm-7">
+								<input type="hidden" name="handwriting" value="0" />
+								<label class="checkbox" style="margin-left: 5px;">
+									<input type="checkbox" class="cursorPointer" name="handwriting" value="1" data-test-id="handwriting-checkbox" {if $FIELD_MODEL->isHandwriting()}checked="checked"{/if} />
+									&nbsp;{vtranslate('LBL_HANDWRITING_DESCRIPTION', $QUALIFIED_MODULE)}
+								</label>
+							</div>
+						</div>
+					{/if}
+					{if !$IS_FIELD_EDIT_MODE || $FIELD_MODEL->get('uitype') eq '997'}
+						<div class="supportedType autoNumberSupported {if $FIELD_MODEL->get('uitype') neq '997'}hide{/if}" data-test-id="autonumber-settings">
+							<div class="form-group">
+								<div class="col-sm-5"></div>
+								<div class="controls col-sm-7">
+									<div class="muted">{vtranslate('LBL_AUTONUMBER_SETTINGS_IN_NUMBERING', 'Vtiger')}</div>
+									{if $IS_FIELD_EDIT_MODE}
+										<a href="index.php?parent=Settings&module=Vtiger&view=CustomRecordNumbering&sourceModule={$SELECTED_MODULE_NAME}&field={$FIELD_MODEL->get('name')}" target="_blank" data-test-id="autonumber-settings-link">{vtranslate('LBL_RECORD_NUMBERING', 'Settings:Vtiger')}</a>
+									{/if}
+								</div>
+							</div>
+						</div>
+					{/if}
 					{if $FIELD_MODEL->getFieldDataType() != 'reference'}
 						{include file=vtemplate_path('DefaultValueUi.tpl', $QUALIFIED_MODULE) FIELD_MODEL=$FIELD_MODEL}
 					{/if}

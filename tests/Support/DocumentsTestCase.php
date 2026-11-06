@@ -192,6 +192,30 @@ abstract class DocumentsTestCase extends TestCase
             Documents_ComplianceChecker::clearCache();
         }
         FR_BusinessDay::clearCache();
+        $this->clearFieldCaches();
+    }
+
+    /**
+     * 項目の追加・削除をまたいで残る、項目情報のキャッシュを捨てる
+     *
+     * 実際の画面ではリクエストごとに作り直されるが、テストは同じプロセスで項目を作っては消すため、
+     * 古い項目一覧が残って後のテストが項目を見つけられなくなることがある。
+     */
+    protected function clearFieldCaches(): void
+    {
+        if (class_exists('WebserviceEntityOperation', false)) {
+            // モジュールごとの項目一覧（WebserviceField）を持つ
+            $property = new \ReflectionProperty('WebserviceEntityOperation', 'metaCache');
+            $property->setValue(null, []);
+        }
+        if (class_exists('VTCacheUtils', false)) {
+            $class = new \ReflectionClass('VTCacheUtils');
+            foreach ($class->getProperties(\ReflectionProperty::IS_STATIC) as $property) {
+                if (preg_match('/field|column/i', $property->getName()) && is_array($property->getValue())) {
+                    $property->setValue(null, []);
+                }
+            }
+        }
     }
 
     // ---- リクエスト -----------------------------------------------------

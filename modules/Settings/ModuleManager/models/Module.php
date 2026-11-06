@@ -105,7 +105,7 @@ class Settings_ModuleManager_Module_Model extends Vtiger_Module_Model {
 	public static function getModulesSupportingSequenceNumbering() {
 		$db = PearDatabase::getInstance();
 		$sql="SELECT tabid, name FROM vtiger_tab WHERE isentitytype = 1 AND presence = 0 AND tabid IN
-			(SELECT DISTINCT tabid FROM vtiger_field WHERE uitype = '4')";
+			(SELECT DISTINCT tabid FROM vtiger_field WHERE uitype IN ('4', '997'))";
 		$result = $db->pquery($sql, array());
 
 		$moduleModels = array();

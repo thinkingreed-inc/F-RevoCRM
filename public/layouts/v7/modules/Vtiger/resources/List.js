@@ -925,6 +925,8 @@ Vtiger.Class("Vtiger_List_Js", {
 				continue;
 			}
 
+			// 年月項目はデータ型が date のため、インライン編集の入力欄だけ年月用に切り替える
+			fieldData = Vtiger_Yearmonth_Field_Js.toInlineFieldInfo(fieldData);
 			var fieldObject = new Vtiger_Field_Js.getInstance(fieldData, moduleName);
 			var fieldModel = fieldObject.getUiTypeModel();
 

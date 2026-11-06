@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="80" viewBox="0 0 160 80">
+  <!-- PDF テンプレートの画面で、画像の URL の変数（$module-cf_xxx#src$）の代わりに出す画像 -->
+  <rect x="1" y="1" width="158" height="78" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="2" stroke-dasharray="6 4"/>
+  <circle cx="98" cy="28" r="7" fill="#9ca3af"/>
+  <path d="M46 60 L66 34 L80 50 L90 40 L114 60 Z" fill="#9ca3af"/>
+</svg>

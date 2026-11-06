@@ -49,7 +49,7 @@ class Vtiger_MassPDFExport_Action extends Vtiger_Mass_Action
         $this->focus = CRMEntity::getInstance($moduleName);
         $uitype4field = "";
         $moduleId = $this->moduleInstance->getId();
-        $uitype4field_result = $adb->query("select fieldname from vtiger_field where uitype=4 and tabid=$moduleId");
+        $uitype4field_result = $adb->query("select fieldname from vtiger_field where uitype in (4, 997) and tabid=$moduleId order by fieldid");
         $uitype4fieldname = "";
         if ($adb->num_rows($uitype4field_result)) {
             $uitype4fieldname = $adb->query_result($uitype4field_result, 0, "fieldname");
