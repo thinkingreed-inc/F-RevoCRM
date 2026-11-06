@@ -118,6 +118,11 @@ class Settings_Picklist_IndexAjax_View extends Settings_Vtiger_IndexAjax_View {
             $viewer->assign('QUALIFIED_MODULE',$qualifiedName);
             $viewer->assign('ROLES_LIST', Settings_Roles_Record_Model::getAll());
             $viewer->assign('SELECTED_PICKLISTFIELD_ALL_VALUES',$selectedFieldAllPickListValues);
+            // 表示方式設定（#1677）: 現在の input_style/threshold/columns と uitype を渡す
+            require_once 'include/fields/PicklistDisplayConfig.php';
+            $viewer->assign('PICKLIST_DISPLAY_CONFIG', PicklistDisplayConfig::get($fieldModel->getName()));
+            $viewer->assign('PICKLIST_UITYPE', (int) $fieldModel->get('uitype'));
+            $viewer->assign('PICKLIST_DEFAULT_THRESHOLD', PicklistDisplayConfig::DEFAULT_THRESHOLD);
             $viewer->view('PickListValueDetail.tpl',$qualifiedName);
         }
     }

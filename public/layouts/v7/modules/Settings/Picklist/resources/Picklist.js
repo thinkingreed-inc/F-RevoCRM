@@ -604,11 +604,42 @@ var Settings_Picklist_Js = {
         colorPickerDiv.ColorPickerSetColor(color);
     },
 
+	// 表示方式設定（#1677）の保存ハンドラを登録する。
+	// 項目選択で PickListValueDetail が Ajax 差し替えされるたびに呼ばれる。
+	registerDisplayConfigEvent : function() {
+		var card = jQuery('#picklistDisplayConfigCard');
+		if(!card.length) {
+			return;
+		}
+		jQuery('#saveDisplayConfig').off('click').on('click', function(e) {
+			var params = {
+				module : app.getModuleName(),
+				parent : app.getParentModuleName(),
+				action : 'SaveAjax',
+				mode : 'saveDisplayConfig',
+				picklistName : card.data('fieldname'),
+				inputStyle : jQuery('#displayConfigInputStyle').val(),
+				threshold : jQuery('#displayConfigThreshold').val(),
+				columns : jQuery('#displayConfigColumns').val()
+			};
+			app.helper.showProgress();
+			app.request.post({data: params}).then(function(error, data) {
+				app.helper.hideProgress();
+				if(error == null) {
+					app.helper.showSuccessNotification({message: app.vtranslate('JS_PICKLIST_DISPLAY_SAVED')});
+				} else {
+					app.helper.showErrorNotification({message: error});
+				}
+			});
+		});
+	},
+
 	registerItemActions : function() {
 		Settings_Picklist_Js.registerAddItemEvent();
 		Settings_Picklist_Js.registerChangeRoleEvent();
 		Settings_Picklist_Js.registerAssingValueToRoleTabClickEvent();
 		Settings_Picklist_Js.registerPickListValuesSortableEvent();
+		Settings_Picklist_Js.registerDisplayConfigEvent();
 	},
 
 

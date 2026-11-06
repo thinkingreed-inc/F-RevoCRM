@@ -29,7 +29,43 @@
     </ul>
     <div class="tab-content layoutContent padding20 themeTableColor overflowVisible">
         <br>
-        <div class="tab-pane active" id="allValuesLayout">	
+        <div class="tab-pane active" id="allValuesLayout">
+            {* 表示方式設定（#1677）: 項目単位で checkbox/radio/dropdown・しきい値・列数を設定 *}
+            <div class="row" id="picklistDisplayConfigRow">
+                <div class="col-lg-2 col-md-2 col-sm-2"></div>
+                <div class="col-lg-8 col-md-8 col-sm-8">
+                    <div class="well" id="picklistDisplayConfigCard" style="padding:12px 16px; margin-bottom:16px;"
+                         data-fieldname="{$SELECTED_PICKLIST_FIELDMODEL->getName()|escape:'html'}"
+                         data-uitype="{$PICKLIST_UITYPE|escape:'html'}">
+                        <div style="margin-bottom:10px;"><strong>{vtranslate('LBL_PICKLIST_DISPLAY_SETTINGS',$QUALIFIED_MODULE)}</strong></div>
+                        <div class="form-inline picklistDisplayConfigForm">
+                            <label class="marginRight10">{vtranslate('LBL_PICKLIST_INPUT_STYLE',$QUALIFIED_MODULE)}</label>
+                            <select id="displayConfigInputStyle" class="inputElement marginRight20">
+                                <option value="">{vtranslate('LBL_PICKLIST_STYLE_AUTO',$QUALIFIED_MODULE)}</option>
+                                {if $PICKLIST_UITYPE eq 33}
+                                    <option value="checkbox" {if $PICKLIST_DISPLAY_CONFIG.input_style eq 'checkbox'}selected{/if}>{vtranslate('LBL_PICKLIST_STYLE_CHECKBOX',$QUALIFIED_MODULE)}</option>
+                                {else}
+                                    <option value="radio" {if $PICKLIST_DISPLAY_CONFIG.input_style eq 'radio'}selected{/if}>{vtranslate('LBL_PICKLIST_STYLE_RADIO',$QUALIFIED_MODULE)}</option>
+                                {/if}
+                                <option value="dropdown" {if $PICKLIST_DISPLAY_CONFIG.input_style eq 'dropdown'}selected{/if}>{vtranslate('LBL_PICKLIST_STYLE_DROPDOWN',$QUALIFIED_MODULE)}</option>
+                            </select>
+
+                            <label class="marginRight10">{vtranslate('LBL_PICKLIST_THRESHOLD',$QUALIFIED_MODULE)}</label>
+                            <input type="number" id="displayConfigThreshold" class="inputElement marginRight20" min="1" style="width:90px;"
+                                   value="{$PICKLIST_DISPLAY_CONFIG.threshold}" placeholder="{$PICKLIST_DEFAULT_THRESHOLD}" />
+
+                            <label class="marginRight10">{vtranslate('LBL_PICKLIST_COLUMNS',$QUALIFIED_MODULE)}</label>
+                            <select id="displayConfigColumns" class="inputElement marginRight20">
+                                <option value="1" {if $PICKLIST_DISPLAY_CONFIG.columns ne 2}selected{/if}>1</option>
+                                <option value="2" {if $PICKLIST_DISPLAY_CONFIG.columns eq 2}selected{/if}>2</option>
+                            </select>
+
+                            <button type="button" class="btn btn-success" id="saveDisplayConfig">{vtranslate('LBL_SAVE',$QUALIFIED_MODULE)}</button>
+                        </div>
+                        <div class="help-block" style="font-size:12px; color:#888; margin-top:8px;">{vtranslate('LBL_PICKLIST_DISPLAY_HELP',$QUALIFIED_MODULE)}</div>
+                    </div>
+                </div>
+            </div>
             <div class="row">
                 <div class="col-lg-2 col-md-2 col-sm-2"></div>
                 <div class="col-lg-8 col-md-8 col-sm-8">

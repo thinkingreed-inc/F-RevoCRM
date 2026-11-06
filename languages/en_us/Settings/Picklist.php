@@ -47,6 +47,16 @@ $languageStrings = array(
 	//F-RevoCRM
 	'Events' => 'Events',
 	'Faq' => 'FAQ',
+	// Display style settings (#1677)
+	'LBL_PICKLIST_DISPLAY_SETTINGS' => 'Display style for this field',
+	'LBL_PICKLIST_INPUT_STYLE' => 'Display style',
+	'LBL_PICKLIST_STYLE_AUTO' => 'Auto',
+	'LBL_PICKLIST_STYLE_CHECKBOX' => 'Checkbox',
+	'LBL_PICKLIST_STYLE_RADIO' => 'Radio button',
+	'LBL_PICKLIST_STYLE_DROPDOWN' => 'Dropdown',
+	'LBL_PICKLIST_THRESHOLD' => 'Threshold',
+	'LBL_PICKLIST_COLUMNS' => 'Columns',
+	'LBL_PICKLIST_DISPLAY_HELP' => 'With "Auto", a multi-select shows checkboxes when options are within the threshold and a dropdown when over; a single-select stays a dropdown. Even when checkbox/radio is chosen explicitly, it falls back to a dropdown above the threshold. Columns apply to checkbox/radio display.',
 );
 $jsLanguageStrings = array(
 	//PickList 
@@ -63,4 +73,6 @@ $jsLanguageStrings = array(
     'JS_PLEASE_SELECT_MODULE' => 'Please select module',
 	'JS_SPECIAL_CHARACTERS' => 'Special Characters like',
 	'JS_NOT_ALLOWED' => 'are not allowed',
+	// Display style settings (#1677)
+	'JS_PICKLIST_DISPLAY_SAVED' => 'Display style saved',
 );	

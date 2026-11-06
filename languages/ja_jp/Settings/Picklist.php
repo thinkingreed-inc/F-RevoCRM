@@ -47,6 +47,16 @@ $languageStrings = array(
 	//F-RevoCRM
 	'Events' => '活動',
 	'Faq' => 'FAQ',
+	// 表示方式設定（#1677）
+	'LBL_PICKLIST_DISPLAY_SETTINGS' => 'この項目の表示方式',
+	'LBL_PICKLIST_INPUT_STYLE' => '表示方式',
+	'LBL_PICKLIST_STYLE_AUTO' => '自動',
+	'LBL_PICKLIST_STYLE_CHECKBOX' => 'チェックボックス',
+	'LBL_PICKLIST_STYLE_RADIO' => 'ラジオボタン',
+	'LBL_PICKLIST_STYLE_DROPDOWN' => 'ドロップダウン',
+	'LBL_PICKLIST_THRESHOLD' => 'しきい値',
+	'LBL_PICKLIST_COLUMNS' => '列数',
+	'LBL_PICKLIST_DISPLAY_HELP' => '「自動」は、複数選択なら選択肢数がしきい値以下でチェックボックス・超過でドロップダウン、単一選択は従来どおりドロップダウンになります。チェック/ラジオを明示指定した場合も、しきい値を超えるとドロップダウンに切り替わります。列数はチェック/ラジオ表示のときに有効です。',
 );
 $jsLanguageStrings = array(
 	//PickList 
@@ -63,4 +73,6 @@ $jsLanguageStrings = array(
     'JS_PLEASE_SELECT_MODULE' => 'モジュールを選択してください',
 	'JS_SPECIAL_CHARACTERS' => '特殊文字 (',
 	'JS_NOT_ALLOWED' => ') は許可されません',
+	// 表示方式設定（#1677）
+	'JS_PICKLIST_DISPLAY_SAVED' => '表示方式を保存しました',
 );	

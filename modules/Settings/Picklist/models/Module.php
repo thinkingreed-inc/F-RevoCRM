@@ -584,4 +584,26 @@ class Settings_Picklist_Module_Model extends Vtiger_Module_Model {
 		return true;
 	}
 
+	/**
+	 * ピックリスト項目の表示方式設定を保存する（#1677）。
+	 * vtiger_picklist（項目名=name 単位）の input_style / threshold / columns を更新する。
+	 *
+	 * @param string   $pickListFieldName 項目名（vtiger_picklist.name）
+	 * @param ?string  $inputStyle        'checkbox'|'radio'|'dropdown' または NULL(=auto)
+	 * @param ?int     $threshold         正の整数 または NULL(=既定)
+	 * @param int      $columns           1 または 2
+	 * @return bool
+	 */
+	public function updateDisplayConfig($pickListFieldName, $inputStyle, $threshold, $columns) {
+		$db = PearDatabase::getInstance();
+		// `columns` は MySQL 予約語のためバッククォート必須
+		$query = 'UPDATE vtiger_picklist SET input_style = ?, threshold = ?, `columns` = ? WHERE name = ?';
+		$db->pquery($query, array($inputStyle, $threshold, $columns, $pickListFieldName));
+
+		// ピックリスト関連キャッシュをフラッシュ（表示設定は PicklistDisplayConfig の
+		// リクエスト内キャッシュで読むため、別リクエストの次回ロードでは最新を読む）
+		Vtiger_Cache::flushPicklistCache($pickListFieldName);
+		return true;
+	}
+
 }
