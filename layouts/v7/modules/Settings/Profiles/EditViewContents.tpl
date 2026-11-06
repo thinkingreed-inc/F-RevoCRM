@@ -21,7 +21,7 @@
 				<option></option>
 				{foreach from=$ALL_PROFILES item=PROFILE}
 					{if $PROFILE->isDirectlyRelated() eq false}
-						<option value="{$PROFILE->getId()}" {if $RECORD_ID eq $PROFILE->getId()} selected="" {/if} >{$PROFILE->getName()}</option>
+						<option value="{$PROFILE->getId()}" {if $RECORD_ID eq $PROFILE->getId()} selected="" {/if} >{vtranslate($PROFILE->getName(), $QUALIFIED_MODULE)}</option>					
 					{/if}
 				{/foreach}
 			</select>
