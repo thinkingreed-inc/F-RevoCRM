@@ -2104,6 +2104,16 @@ class Vtiger_Module_Model extends Vtiger_Module {
 		if ($this->source == 'custom') {
 			$moduleShortName = mb_substr(trim($title), 0, 1);
 			$moduleIcon = "<span class='custom-module' title='$title'>$moduleShortName</span>";
+
+			// F-RevoCRM が追加したモジュールは Vtiger-icons に専用の絵柄が無く、頭文字で出てしまう。
+			// フォント内の近い絵柄を当てる（標準モジュールと同じ色・大きさで描画される）。
+			$vtigerIconAliases = array(
+				'Dailyreports' => 'calendarlist',
+				'PDFTemplates' => 'printtemplates',
+			);
+			if (isset($vtigerIconAliases[$moduleName])) {
+				$moduleIcon = "<i class='vicon-{$vtigerIconAliases[$moduleName]}' title='$title'></i>";
+			}
 		}
 
 		$imageFilePath = 'layouts/'.Vtiger_Viewer::getLayoutName()."/modules/$moduleName/$moduleName.png";
