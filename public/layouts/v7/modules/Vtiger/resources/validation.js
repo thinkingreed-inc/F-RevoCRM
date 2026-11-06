@@ -918,7 +918,7 @@ function calculateValidationRules(form,params,meta){
 		'focusInvalid': true,
 		//Refer for explanation on ignore attrbute https://github.com/select2/select2/issues/215
 		//As element with class select2-input doesn't have name attribute is leading to issue
-		'ignore' : ":hidden:not(.joditEditorSource),.ignore-validation,.select2-input",
+		'ignore' : ":hidden:not(.joditEditorSource):not(.fr-wc-required-input),.ignore-validation,.select2-input",
 		errorPlacement: function(error, element) {
 			if($(error).text()) {
 				$(error).text(app.vtranslate($(error).text()));
@@ -927,7 +927,16 @@ function calculateValidationRules(form,params,meta){
 					element = app.helper.getSelect2FromSelect(element);
 				}
 
-				// Jodit配下textareaは:hiddenのため、qtipの位置計算が0となり画面非表示。
+				// Webコンポーネント項目(#1928)の送信用hidden inputは:hiddenのため、
+				// エラー表示を同じ親の可視コンテナ(.fr-wc-field)へリターゲットする。
+					if(element.hasClass('fr-wc-required-input')) {
+						var wcField = element.closest('.fr-wc-field');
+						if(wcField.length) {
+							element = wcField;
+						}
+					}
+
+					// Jodit配下textareaは:hiddenのため、qtipの位置計算が0となり画面非表示。
 				// 同じ親要素内に生成される可視要素(.jodit-container)へリターゲットして表示可能にする。
 				var isJoditTarget = false;
 				if(element.hasClass('joditEditorSource')) {

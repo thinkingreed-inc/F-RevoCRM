@@ -16,7 +16,7 @@
 	{assign var=WC_PROPS value=$UITYPE_MODEL->getWebComponentProps($FIELD_VALUE, 'edit', $WC_RECORD)}
 	{$WC_PROPS['inputId'] = $WC_INPUT_ID}
 	<div class="fr-wc-field" data-fieldname="{$FIELD_MODEL->getFieldName()}">
-		<input type="hidden" id="{$WC_INPUT_ID}" name="{$FIELD_MODEL->getFieldName()}" value="{$FIELD_VALUE}" data-fieldtype="{$FIELD_MODEL->getFieldDataType()}" data-fieldname="{$FIELD_MODEL->getFieldName()}" {if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if} />
+		<input type="hidden" id="{$WC_INPUT_ID}" name="{$FIELD_MODEL->getFieldName()}" value="{$FIELD_VALUE}" data-fieldtype="{$FIELD_MODEL->getFieldDataType()}" data-fieldname="{$FIELD_MODEL->getFieldName()}" {if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" class="fr-wc-required-input" {/if} />
 		<{$UITYPE_MODEL->getWebComponentTagName()} props="{Vtiger_Util_Helper::toSafeHTML(Zend_Json::encode($WC_PROPS))}"></{$UITYPE_MODEL->getWebComponentTagName()}>
 	</div>
 {/strip}
