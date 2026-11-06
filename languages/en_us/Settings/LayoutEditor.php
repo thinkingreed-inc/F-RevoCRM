@@ -157,6 +157,7 @@ $languageStrings = array(
     'LBL_HEADER' => 'Header',
     'LBL_DETAIL_HEADER' => 'Record header',
     'LBL_HEADER_FIELD' => 'Header View',
+    'LBL_LAST_NAME_FIELD_CANNOT_BE_HIDDEN' => 'At least one label field must be enabled as Header View or Key Field View, so this field cannot be disabled',
 
 	'LBL_DUPLICATE_HANDLING' => 'Duplicate Prevention',
 	'LBL_DUPLICATE_CHECK' => 'Enable duplicate check',
