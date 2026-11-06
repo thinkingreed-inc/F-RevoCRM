@@ -47,7 +47,7 @@ const validate = (overrides: Partial<SharedLinkInput> = {}) =>
   validateSharedLink(valid(overrides), LIMITS, USER_FIELDS);
 
 describe("createEmptyLink", () => {
-  it("既定は GET・別タブ・全員・有効・リファラーを送る", () => {
+  it("TC-UI-054 既定は GET・別タブ・全員・有効・リファラーを送る", () => {
     expect(createEmptyLink()).toEqual({
       title: "",
       url: "",
@@ -96,7 +96,7 @@ describe("toInput", () => {
 });
 
 describe("toPayload", () => {
-  it("前後の空白を落とし、別タブならサイズを、全員なら対象を捨てる", () => {
+  it("TC-VAL-060 TC-VAL-020 TC-VAL-040 前後の空白を落とし、別タブならサイズを、全員なら対象を捨てる", () => {
     const payload = toPayload(
       valid({
         title: "  勤怠 ",
@@ -148,7 +148,7 @@ describe("toTargetType", () => {
 });
 
 describe("hasTarget", () => {
-  it("種類と ID の両方が同じものだけを重複とみなす", () => {
+  it("TC-UI-044 種類と ID の両方が同じものだけを重複とみなす", () => {
     const targets = [{ type: "Roles" as const, id: "H2" }];
 
     expect(hasTarget(targets, { type: "Roles", id: "H2" })).toBe(true);
@@ -170,7 +170,7 @@ describe("isValidHttpUrl", () => {
     ["a.example.com", false],
     ["/index.php", false],
     ["", false],
-  ])("%s → %s", (url, expected) => {
+  ])("TC-VAL-013〜015 %s → %s", (url, expected) => {
     expect(isValidHttpUrl(url)).toBe(expected);
   });
 });
@@ -180,7 +180,7 @@ describe("validateSharedLink", () => {
     expect(validate()).toEqual({});
   });
 
-  it("タイトルは必須で 100 文字まで（空白だけは未入力）", () => {
+  it("TC-VAL-001 TC-VAL-002 TC-VAL-004 タイトルは必須で 100 文字まで（空白だけは未入力）", () => {
     expect(validate({ title: "  " }).title).toBe("LBL_ERROR_TITLE_REQUIRED");
     expect(validate({ title: "あ".repeat(100) }).title).toBeUndefined();
     expect(validate({ title: "あ".repeat(101) }).title).toBe(
@@ -188,11 +188,11 @@ describe("validateSharedLink", () => {
     );
   });
 
-  it("文字数はサロゲートペアも 1 文字として数える（サーバーの mb_strlen と同じ）", () => {
+  it("TC-VAL-003 文字数はサロゲートペアも 1 文字として数える（サーバーの mb_strlen と同じ）", () => {
     expect(validate({ title: "𠮷".repeat(100) }).title).toBeUndefined();
   });
 
-  it("URL は必須・2000 文字まで・http/https のみ", () => {
+  it("TC-VAL-010〜014 URL は必須・2000 文字まで・http/https のみ", () => {
     expect(validate({ url: "" }).url).toBe("LBL_ERROR_URL_REQUIRED");
     const base = "https://a.example.com/";
     const max = base + "a".repeat(2000 - base.length);
@@ -203,7 +203,7 @@ describe("validateSharedLink", () => {
     );
   });
 
-  it("説明は 500 文字まで", () => {
+  it("TC-VAL-016 説明は 500 文字まで", () => {
     expect(validate({ description: "あ".repeat(500) })).toEqual({});
     expect(validate({ description: "あ".repeat(501) }).description).toBe(
       "LBL_ERROR_DESCRIPTION_TOO_LONG",
@@ -218,7 +218,7 @@ describe("validateSharedLink", () => {
     [null, false],
     [300.5, false],
     [Number.NaN, false],
-  ])("別ウィンドウの幅・高さ %s → 妥当: %s", (size, ok) => {
+  ])("TC-VAL-021〜024 別ウィンドウの幅・高さ %s → 妥当: %s", (size, ok) => {
     const errors = validate({
       open_mode: "window",
       window_width: size,
@@ -232,13 +232,13 @@ describe("validateSharedLink", () => {
     }
   });
 
-  it("別タブならサイズは見ない", () => {
+  it("TC-VAL-020 別タブならサイズは見ない", () => {
     expect(
       validate({ open_mode: "tab", window_width: 1, window_height: null }),
     ).toEqual({});
   });
 
-  it("パラメータは 20 件まで", () => {
+  it("TC-VAL-039 パラメータは 20 件まで", () => {
     const param = { name: "a", value_type: "fixed" as const, value: "" };
     expect(validate({ params: Array(20).fill(param) })).toEqual({});
     expect(validate({ params: Array(21).fill(param) }).params).toBe(
@@ -246,7 +246,7 @@ describe("validateSharedLink", () => {
     );
   });
 
-  it("パラメータの名前・固定値・ユーザー情報の項目を行ごとに検証する", () => {
+  it("TC-VAL-030〜037 パラメータの名前・固定値・ユーザー情報の項目を行ごとに検証する", () => {
     const errors = validate({
       params: [
         { name: " ", value_type: "fixed", value: "" },
@@ -271,7 +271,7 @@ describe("validateSharedLink", () => {
     });
   });
 
-  it("指定した対象のみなら対象が 1 件以上必要。全員なら不要", () => {
+  it("TC-VAL-040 TC-VAL-041 指定した対象のみなら対象が 1 件以上必要。全員なら不要", () => {
     expect(validate({ visibility: "targets", targets: [] }).targets).toBe(
       "LBL_ERROR_TARGETS_REQUIRED",
     );

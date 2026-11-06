@@ -47,6 +47,7 @@ const link = (id: number, overrides: Partial<SharedLink> = {}): SharedLink => ({
   params: [],
   targets: [],
   has_warning: false,
+  post_blocked: false,
   ...overrides,
 });
 
@@ -89,7 +90,7 @@ describe("SharedLinksPage", () => {
     vi.restoreAllMocks();
   });
 
-  it("読み込み中を表示し、読み込んだらリンクを並び順で表示する", async () => {
+  it("TC-UI-010 読み込み中を表示し、読み込んだらリンクを並び順で表示する", async () => {
     let resolveInfo: (value: unknown) => void = () => {};
     mockFetch.mockImplementationOnce(
       () =>
@@ -112,7 +113,7 @@ describe("SharedLinksPage", () => {
     expect(within(rows()[1]).getByText("リンク1")).toBeInTheDocument();
   });
 
-  it("API には CSRF トークンを付け、module・parent・api を指定する", async () => {
+  it("TC-UI-015 API には CSRF トークンを付け、module・parent・api を指定する", async () => {
     givenApi({ info: () => INFO, list: () => ({ links: [] }) });
     render(<SharedLinksPage />);
     await screen.findByText("LBL_NO_LINKS");
@@ -124,21 +125,21 @@ describe("SharedLinksPage", () => {
     expect(info.get("api")).toBe("SharedLinkAPI");
   });
 
-  it("0 件なら登録されていない旨を表示する", async () => {
+  it("TC-UI-013 0 件なら登録されていない旨を表示する", async () => {
     givenApi({ info: () => INFO, list: () => ({ links: [] }) });
     render(<SharedLinksPage />);
 
     expect(await screen.findByText("LBL_NO_LINKS")).toBeInTheDocument();
   });
 
-  it("初期表示で権限エラーなどが返ったらメッセージを出す", async () => {
+  it("TC-UI-011 初期表示で権限エラーなどが返ったらメッセージを出す", async () => {
     givenApi({ info: () => new Error("Permission denied") });
     render(<SharedLinksPage />);
 
     expect(await screen.findByText("Permission denied")).toBeInTheDocument();
   });
 
-  it("不正な応答（JSON でない）ならエラーを出す", async () => {
+  it("TC-UI-012 不正な応答（JSON でない）ならエラーを出す", async () => {
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
@@ -149,7 +150,7 @@ describe("SharedLinksPage", () => {
     expect(await screen.findByText("Invalid response")).toBeInTheDocument();
   });
 
-  it("開き方・公開範囲・状態・警告を一覧に出す", async () => {
+  it("TC-UI-014 開き方・公開範囲・状態・警告を一覧に出す", async () => {
     givenApi({
       info: () => INFO,
       list: () => ({
@@ -198,7 +199,28 @@ describe("SharedLinksPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("並び替えると、入れ替えた順の ID を送って一覧を読み直す", async () => {
+  it("TC-UI-018 POST の送り先が許可されていないリンクに印を出す", async () => {
+    givenApi({
+      info: () => INFO,
+      list: () => ({
+        links: [
+          link(1, { method: "POST", post_blocked: true }),
+          link(2, { method: "POST" }),
+        ],
+      }),
+    });
+    render(<SharedLinksPage />);
+    await waitFor(() => expect(rows()).toHaveLength(2));
+
+    expect(
+      within(rows()[0]).getByRole("img", { name: "LBL_POST_BLOCKED" }),
+    ).toBeInTheDocument();
+    expect(
+      within(rows()[1]).queryByRole("img", { name: "LBL_POST_BLOCKED" }),
+    ).toBeNull();
+  });
+
+  it("TC-UI-016 並び替えると、入れ替えた順の ID を送って一覧を読み直す", async () => {
     let links = [link(1), link(2), link(3)];
     givenApi({
       info: () => INFO,
@@ -231,7 +253,7 @@ describe("SharedLinksPage", () => {
     expect(sent("reorder")[0].get("ids")).toBe("2,1,3");
   });
 
-  it("削除は確認してから行い、キャンセルなら送らない", async () => {
+  it("TC-UI-017 削除は確認してから行い、キャンセルなら送らない", async () => {
     let links = [link(1), link(2)];
     givenApi({
       info: () => INFO,
@@ -262,7 +284,7 @@ describe("SharedLinksPage", () => {
     expect(screen.getByRole("status")).toHaveTextContent("LBL_DELETED");
   });
 
-  it("追加して保存すると JSON で送り、モーダルを閉じて一覧を読み直す", async () => {
+  it("TC-UI-051 追加して保存すると JSON で送り、モーダルを閉じて一覧を読み直す", async () => {
     let links: SharedLink[] = [];
     givenApi({
       info: () => INFO,
@@ -297,7 +319,7 @@ describe("SharedLinksPage", () => {
     expect(screen.getByRole("status")).toHaveTextContent("LBL_SAVED");
   });
 
-  it("編集して保存すると ID を付けて送る。入力エラーならモーダルを閉じない", async () => {
+  it("TC-UI-052 TC-UI-055 編集して保存すると ID を付けて送る。入力エラーならモーダルを閉じない", async () => {
     let attempts = 0;
     givenApi({
       info: () => INFO,

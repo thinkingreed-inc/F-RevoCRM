@@ -64,6 +64,7 @@ const savedLink = (overrides: Partial<SharedLink> = {}): SharedLink => ({
   params: [],
   targets: [],
   has_warning: false,
+  post_blocked: false,
   ...overrides,
 });
 
@@ -120,7 +121,7 @@ describe("SharedLinkEditModal", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it("新規追加の既定値で保存する（GET・別タブ・全員・有効）", async () => {
+  it("TC-UI-054 新規追加の既定値で保存する（GET・別タブ・全員・有効）", async () => {
     const { onSave, user } = setup();
     await fillRequired(user);
     await submit(user);
@@ -142,7 +143,7 @@ describe("SharedLinkEditModal", () => {
     });
   });
 
-  it("必須が空なら保存せず、項目の下にエラーを出す", async () => {
+  it("TC-UI-050 必須が空なら保存せず、項目の下にエラーを出す", async () => {
     const { onSave, user } = setup();
     await submit(user);
 
@@ -152,7 +153,7 @@ describe("SharedLinkEditModal", () => {
     expect(screen.getByText("LBL_ERROR_HAS_ERRORS")).toBeInTheDocument();
   });
 
-  it("javascript: の URL は保存しない", async () => {
+  it("TC-UI-050 TC-VAL-014 javascript: の URL は保存しない", async () => {
     const { onSave, user } = setup();
     await user.type(screen.getByLabelText(/LBL_TITLE/), "x");
     await user.type(screen.getByLabelText(/LBL_URL/), "javascript:alert(1)");
@@ -162,8 +163,19 @@ describe("SharedLinkEditModal", () => {
     expect(screen.getByText("LBL_ERROR_URL_INVALID")).toBeInTheDocument();
   });
 
+  it("TC-UI-024 POST を選ぶと、送り先の登録が必要なことを注記する", async () => {
+    const { user } = setup();
+    expect(screen.queryByText("LBL_POST_CSP_NOTE")).toBeNull();
+
+    await user.click(screen.getByLabelText("POST"));
+    expect(screen.getByRole("note")).toHaveTextContent("LBL_POST_CSP_NOTE");
+
+    await user.click(screen.getByLabelText("GET"));
+    expect(screen.queryByText("LBL_POST_CSP_NOTE")).toBeNull();
+  });
+
   describe("開き方", () => {
-    it("幅・高さは別ウィンドウのときだけ出し、既定のサイズを入れる", async () => {
+    it("TC-UI-020 TC-UI-021 幅・高さは別ウィンドウのときだけ出し、既定のサイズを入れる", async () => {
       const { onSave, user } = setup();
       expect(screen.queryByLabelText(/LBL_WINDOW_WIDTH/)).toBeNull();
 
@@ -184,7 +196,7 @@ describe("SharedLinkEditModal", () => {
       });
     });
 
-    it("範囲外のサイズは保存しない", async () => {
+    it("TC-UI-023 範囲外のサイズは保存しない", async () => {
       const { onSave, user } = setup();
       await fillRequired(user);
       await user.click(screen.getByLabelText("LBL_OPEN_MODE_WINDOW"));
@@ -197,7 +209,7 @@ describe("SharedLinkEditModal", () => {
       expect(screen.getByText("LBL_ERROR_WINDOW_SIZE")).toBeInTheDocument();
     });
 
-    it("別タブに戻したらサイズは送らない", async () => {
+    it("TC-UI-022 別タブに戻したらサイズは送らない", async () => {
       const { onSave, user } = setup();
       await fillRequired(user);
       await user.click(screen.getByLabelText("LBL_OPEN_MODE_WINDOW"));
@@ -214,7 +226,7 @@ describe("SharedLinkEditModal", () => {
   });
 
   describe("リクエストパラメータ", () => {
-    it("行を追加・削除できる", async () => {
+    it("TC-UI-036 行を追加・削除できる", async () => {
       const { user } = setup();
       await user.click(screen.getByRole("button", { name: /LBL_ADD_PARAM/ }));
       await user.click(screen.getByRole("button", { name: /LBL_ADD_PARAM/ }));
@@ -234,7 +246,7 @@ describe("SharedLinkEditModal", () => {
       ).toHaveValue("first");
     });
 
-    it("20 行に達したら追加できない", async () => {
+    it("TC-UI-035 20 行に達したら追加できない", async () => {
       const { user } = setup();
       const add = screen.getByRole("button", { name: /LBL_ADD_PARAM/ });
       for (let i = 0; i < 20; i++) {
@@ -244,7 +256,7 @@ describe("SharedLinkEditModal", () => {
       expect(add).toBeDisabled();
     });
 
-    it("ユーザー情報を選ぶと、値の欄が項目のプルダウンになり、記法を手で書かずに保存できる", async () => {
+    it("TC-UI-030 TC-UI-031 ユーザー情報を選ぶと、値の欄が項目のプルダウンになり、記法を手で書かずに保存できる", async () => {
       const { onSave, user } = setup();
       await fillRequired(user);
       await user.click(screen.getByRole("button", { name: /LBL_ADD_PARAM/ }));
@@ -271,7 +283,7 @@ describe("SharedLinkEditModal", () => {
       ]);
     });
 
-    it("ユーザー情報の項目を選んでいなければ保存しない", async () => {
+    it("TC-UI-034 ユーザー情報の項目を選んでいなければ保存しない", async () => {
       const { onSave, user } = setup();
       await fillRequired(user);
       await user.click(screen.getByRole("button", { name: /LBL_ADD_PARAM/ }));
@@ -286,7 +298,7 @@ describe("SharedLinkEditModal", () => {
       ).toBeInTheDocument();
     });
 
-    it("値の種類を切り替えたら値を空に戻す", async () => {
+    it("TC-UI-032 値の種類を切り替えたら値を空に戻す", async () => {
       const { user } = setup();
       await user.click(screen.getByRole("button", { name: /LBL_ADD_PARAM/ }));
       const row = paramRows()[0];
@@ -306,7 +318,7 @@ describe("SharedLinkEditModal", () => {
       ).toHaveValue("");
     });
 
-    it("絞り込み欄に入力すると、項目を表示名で絞り込める", async () => {
+    it("TC-UI-033 絞り込み欄に入力すると、項目を表示名で絞り込める", async () => {
       const { user } = setup();
       await user.click(screen.getByRole("button", { name: /LBL_ADD_PARAM/ }));
       const row = paramRows()[0];
@@ -322,7 +334,7 @@ describe("SharedLinkEditModal", () => {
       ]);
     });
 
-    it("削除された項目を選んでいる行は、削除された項目と表示する", () => {
+    it("TC-UI-037 削除された項目を選んでいる行は、削除された項目と表示する", () => {
       setup(
         savedLink({
           params: [
@@ -349,14 +361,14 @@ describe("SharedLinkEditModal", () => {
   describe("公開範囲", () => {
     const chips = () => screen.getByTestId("shared-link-targets");
 
-    it("対象の欄は「指定した対象のみ」のときだけ出す", async () => {
+    it("TC-UI-040 対象の欄は「指定した対象のみ」のときだけ出す", async () => {
       const { user } = setup();
       expect(screen.queryByLabelText("LBL_TARGET_TYPE")).toBeNull();
       await user.click(screen.getByLabelText("LBL_VISIBILITY_TARGETS"));
       expect(screen.getByLabelText("LBL_TARGET_TYPE")).toBeInTheDocument();
     });
 
-    it("「下位の役割も含む」は種類が役割のときだけ出す", async () => {
+    it("TC-UI-041 TC-UI-042 「下位の役割も含む」は種類が役割のときだけ出す", async () => {
       const { user } = setup();
       await user.click(screen.getByLabelText("LBL_VISIBILITY_TARGETS"));
       expect(
@@ -375,7 +387,7 @@ describe("SharedLinkEditModal", () => {
       expect(screen.queryByLabelText("LBL_INCLUDE_SUBORDINATES")).toBeNull();
     });
 
-    it("役割・役割と下位・グループ・ユーザーを追加して保存する", async () => {
+    it("TC-UI-047 役割・役割と下位・グループ・ユーザーを追加して保存する", async () => {
       const { onSave, user } = setup();
       await fillRequired(user);
       await user.click(screen.getByLabelText("LBL_VISIBILITY_TARGETS"));
@@ -425,7 +437,7 @@ describe("SharedLinkEditModal", () => {
       });
     });
 
-    it("同じ対象は重ねて追加できないが、役割と役割と下位は両方追加できる", async () => {
+    it("TC-UI-044 TC-UI-045 TC-UI-046 同じ対象は重ねて追加できないが、役割と役割と下位は両方追加できる", async () => {
       const { user } = setup();
       await user.click(screen.getByLabelText("LBL_VISIBILITY_TARGETS"));
       const target = screen.getByRole("combobox", { name: "LBL_TARGET" });
@@ -442,7 +454,7 @@ describe("SharedLinkEditModal", () => {
       expect(within(chips()).getAllByRole("button")).toHaveLength(2);
     });
 
-    it("対象を選ばなければ追加できない", async () => {
+    it("TC-UI-043 対象を選ばなければ追加できない", async () => {
       const { user } = setup();
       await user.click(screen.getByLabelText("LBL_VISIBILITY_TARGETS"));
       expect(
@@ -450,7 +462,7 @@ describe("SharedLinkEditModal", () => {
       ).toBeDisabled();
     });
 
-    it("チップの × で外せる", async () => {
+    it("TC-UI-048 チップの × で外せる", async () => {
       const { user } = setup(
         savedLink({
           visibility: "targets",
@@ -468,7 +480,7 @@ describe("SharedLinkEditModal", () => {
       expect(chips()).toHaveTextContent("山田 太郎");
     });
 
-    it("対象が 0 件なら保存しない", async () => {
+    it("TC-UI-050 TC-VAL-041 対象が 0 件なら保存しない", async () => {
       const { onSave, user } = setup();
       await fillRequired(user);
       await user.click(screen.getByLabelText("LBL_VISIBILITY_TARGETS"));
@@ -480,7 +492,7 @@ describe("SharedLinkEditModal", () => {
       ).toBeInTheDocument();
     });
 
-    it("削除された対象は削除済みと表示し、無効になったユーザーは保存済みの名前で表示する", () => {
+    it("TC-UI-049 削除された対象は削除済みと表示し、無効になったユーザーは保存済みの名前で表示する", () => {
       setup(
         savedLink({
           visibility: "targets",
@@ -497,7 +509,7 @@ describe("SharedLinkEditModal", () => {
       expect(chips()).toHaveTextContent("LBL_TARGET_USERS: 退職 花子");
     });
 
-    it("全員に戻したら対象は送らない", async () => {
+    it("TC-UI-04A 全員に戻したら対象は送らない", async () => {
       const { onSave, user } = setup(
         savedLink({
           visibility: "targets",
@@ -516,7 +528,7 @@ describe("SharedLinkEditModal", () => {
     });
   });
 
-  it("編集時は保存済みの内容を表示し、変更して保存できる", async () => {
+  it("TC-UI-055 編集時は保存済みの内容を表示し、変更して保存できる", async () => {
     const { onSave, user } = setup(
       savedLink({ noreferrer: true, active: false, method: "POST" }),
     );
@@ -536,7 +548,7 @@ describe("SharedLinkEditModal", () => {
     });
   });
 
-  it("サーバーが返した項目ごとのエラーを表示する", async () => {
+  it("TC-UI-052 サーバーが返した項目ごとのエラーを表示する", async () => {
     const { user } = setup(null, {
       saved: false,
       errors: {
@@ -553,7 +565,7 @@ describe("SharedLinkEditModal", () => {
     expect(screen.getByText("LBL_ERROR_HAS_ERRORS")).toBeInTheDocument();
   });
 
-  it("保存でエラーが起きたらメッセージを出す", async () => {
+  it("TC-UI-053 保存でエラーが起きたらメッセージを出す", async () => {
     const onSave = vi.fn(async () => {
       throw new Error("通信に失敗しました");
     });
@@ -574,7 +586,7 @@ describe("SharedLinkEditModal", () => {
     expect(await screen.findByText("通信に失敗しました")).toBeInTheDocument();
   });
 
-  it("キャンセル・×・背景のクリックで閉じ、ダイアログの中のクリックでは閉じない", async () => {
+  it("TC-UI-056 キャンセル・×・背景のクリックで閉じ、ダイアログの中のクリックでは閉じない", async () => {
     const { onClose, user } = setup();
     await user.click(screen.getByLabelText(/LBL_TITLE/));
     expect(onClose).not.toHaveBeenCalled();
@@ -589,5 +601,90 @@ describe("SharedLinkEditModal", () => {
     expect(backdrop).not.toBeNull();
     await user.click(backdrop as HTMLElement);
     expect(onClose).toHaveBeenCalledTimes(3);
+  });
+  describe("切り替えたときの値", () => {
+    it("TC-UI-020 入力済みの幅・高さは、別タブと別ウィンドウを行き来しても上書きしない", async () => {
+      const { onSave, user } = setup();
+      await fillRequired(user);
+      await user.click(screen.getByLabelText("LBL_OPEN_MODE_WINDOW"));
+      const width = screen.getByLabelText(/LBL_WINDOW_WIDTH/);
+      await user.clear(width);
+      await user.type(width, "640");
+      await user.click(screen.getByLabelText("LBL_OPEN_MODE_TAB"));
+      await user.click(screen.getByLabelText("LBL_OPEN_MODE_WINDOW"));
+
+      expect(screen.getByLabelText(/LBL_WINDOW_WIDTH/)).toHaveValue(640);
+      await submit(user);
+      expect(onSave.mock.calls[0][0]).toMatchObject({
+        open_mode: "window",
+        window_width: 640,
+        window_height: 768,
+      });
+    });
+
+    it("TC-UI-04B 対象の種類を切り替えると、選んだ対象と「下位の役割も含む」が戻る", async () => {
+      const { user } = setup();
+      await user.click(screen.getByLabelText("LBL_VISIBILITY_TARGETS"));
+      await user.selectOptions(
+        screen.getByRole("combobox", { name: "LBL_TARGET" }),
+        "H2",
+      );
+      await user.click(screen.getByLabelText("LBL_INCLUDE_SUBORDINATES"));
+
+      await user.selectOptions(
+        screen.getByLabelText("LBL_TARGET_TYPE"),
+        "Groups",
+      );
+      expect(screen.getByRole("combobox", { name: "LBL_TARGET" })).toHaveValue(
+        "",
+      );
+      await user.selectOptions(
+        screen.getByLabelText("LBL_TARGET_TYPE"),
+        "Roles",
+      );
+      expect(screen.getByRole("combobox", { name: "LBL_TARGET" })).toHaveValue(
+        "",
+      );
+      expect(
+        screen.getByLabelText("LBL_INCLUDE_SUBORDINATES"),
+      ).not.toBeChecked();
+      expect(
+        screen.getByRole("button", { name: "LBL_ADD_TARGET" }),
+      ).toBeDisabled();
+    });
+
+    it("TC-UI-033 絞り込みで外れても、選んでいる値は選択肢に残る", async () => {
+      const { user } = setup();
+      await user.click(screen.getByRole("button", { name: /LBL_ADD_PARAM/ }));
+      const row = paramRows()[0];
+      await user.click(within(row).getByLabelText("LBL_VALUE_TYPE_USER"));
+      const select = within(row).getByRole("combobox", {
+        name: "LBL_PARAM_VALUE",
+      });
+      await user.selectOptions(select, "user_name");
+      await user.type(within(row).getByRole("searchbox"), "メール");
+
+      expect(select).toHaveValue("user_name");
+      expect(
+        within(select)
+          .getAllByRole("option")
+          .map((o) => o.textContent),
+      ).toEqual(["LBL_SELECT_USER_FIELD", "メールアドレス", "ユーザー名"]);
+    });
+
+    it("TC-UI-041 役割は階層の深さに応じて字下げして並ぶ", async () => {
+      const { user } = setup();
+      await user.click(screen.getByLabelText("LBL_VISIBILITY_TARGETS"));
+      const options = within(
+        screen.getByRole("combobox", { name: "LBL_TARGET" }),
+      ).getAllByRole("option");
+
+      expect(options.map((o) => o.textContent)).toEqual([
+        "LBL_SELECT_TARGET",
+        "Organization",
+        "CEO",
+        "\u3000営業部長",
+      ]);
+    });
   });
 });

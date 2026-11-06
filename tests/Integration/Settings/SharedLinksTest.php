@@ -4,174 +4,27 @@ declare(strict_types=1);
 
 namespace Tests\Integration\Settings;
 
+use ApiBadRequestException;
 use ApiForbiddenException;
 use ApiNotFoundException;
-use CRMEntity;
-use Migration20261106093622_AddSharedLinksWidget;
-use PearDatabase;
-use PHPUnit\Framework\TestCase;
 use Settings_SharedLinks_Module_Model as LinkModel;
+use Settings_SharedLinks_Rules_Model as Rules;
 use Settings_SharedLinks_SharedLinkAPI_Api;
-use Users_Privileges_Model;
+use Tests\Support\SharedLinksTestCase;
 use Users_Record_Model;
 use Vtiger_Request;
 
+require_once dirname(__DIR__, 3) . '/tests/Support/SharedLinksTestCase.php';
+
 /**
- * 共有リンクの結合テスト（テスト用 DB を使う）
+ * 共有リンクの結合テスト（モデル・API・マイグレーション。テスト用 DB を使う）
  *
- * 仕様: docs/specs/shared_links_widget.md
- *   3.4 公開範囲 / 4 ユーザー情報の差し込み / 6.4 権限 / 7 データ構造 / 8.1 API
- *
- * テストで作るリンクのタイトルには接頭辞 SPECTEST_ を付け、tearDown() で消す。
+ * テスト仕様書: docs/tests/SharedLinks/
+ *   TS-01 入力の検証 / TS-02 公開範囲 / TS-03 値の解決と URL / TS-05 API / TS-07 マイグレーション
+ * メソッド名に仕様書のケース ID を入れている。
  */
-final class SharedLinksTest extends TestCase
+final class SharedLinksTest extends SharedLinksTestCase
 {
-    private const PREFIX = 'SPECTEST_';
-    private const ADMIN_USER_ID = 1;
-
-    private static bool $initialized = false;
-
-    private PearDatabase $db;
-
-    public static function setUpBeforeClass(): void
-    {
-        parent::setUpBeforeClass();
-        self::boot();
-        self::requireTestDatabase();
-        // テスト用 DB にテーブル・ウィジェット・設定メニューを用意する
-        self::runMigration();
-    }
-
-    private static function boot(): void
-    {
-        if (self::$initialized) {
-            return;
-        }
-        $root = dirname(__DIR__, 3);
-        if (class_exists('Vtiger_Loader', false)) {
-            spl_autoload_register(['Vtiger_Loader', 'autoLoad']);
-        }
-        require_once $root . '/include/utils/utils.php';
-        require_once $root . '/include/database/PearDatabase.php';
-        vimport('includes.runtime.Globals');
-        vimport('includes.runtime.LanguageHandler');
-        vimport('includes.runtime.BaseModel');
-        vimport('includes.runtime.Controller');
-        vimport('includes.http.Request');
-        vimport('includes.http.Response');
-        vimport('includes.exceptions.AppException');
-        require_once $root . '/modules/Users/Users.php';
-        require_once $root . '/modules/Users/models/Record.php';
-        require_once $root . '/modules/Settings/Vtiger/models/Module.php';
-        require_once $root . '/vtlib/Vtiger/Module.php';
-        require_once $root . '/setup/migration/scripts/20261106093622_add_shared_links_widget.php';
-        self::$initialized = true;
-    }
-
-    /** マイグレーションを実行する（ログの出力は捨てる） */
-    private static function runMigration(): void
-    {
-        ob_start();
-        try {
-            (new Migration20261106093622_AddSharedLinksWidget())->process();
-        } finally {
-            ob_end_clean();
-        }
-    }
-
-    private static function requireTestDatabase(): void
-    {
-        try {
-            $db = PearDatabase::getInstance();
-            $result = $db->pquery('SELECT DATABASE() AS dbname', []);
-            $connected = $result !== false ? (string) $db->query_result($result, 0, 'dbname') : '';
-        } catch (\Throwable $e) {
-            $connected = '';
-        }
-        if ($connected === '') {
-            self::markTestSkipped('テスト用DBに接続できないため飛ばします（tests/README.md のテスト用DBを参照）');
-        }
-    }
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->db = PearDatabase::getInstance();
-        $this->loginAs(self::ADMIN_USER_ID);
-        $this->cleanLinks();
-    }
-
-    protected function tearDown(): void
-    {
-        $this->cleanLinks();
-        $this->loginAs(self::ADMIN_USER_ID);
-        parent::tearDown();
-    }
-
-    private function cleanLinks(): void
-    {
-        $ids = [];
-        $result = $this->db->pquery('SELECT id FROM vtiger_shared_links WHERE title LIKE ?', [self::PREFIX . '%']);
-        for ($i = 0; $i < $this->db->num_rows($result); $i++) {
-            $ids[] = (int) $this->db->query_result($result, $i, 'id');
-        }
-        foreach ($ids as $id) {
-            LinkModel::deleteLink($id);
-        }
-    }
-
-    private function loginAs(int $userId): Users_Record_Model
-    {
-        $user = CRMEntity::getInstance('Users');
-        $user->id = $userId;
-        $user->retrieve_entity_info($userId, 'Users');
-        $user->column_fields = (array) $user->column_fields;
-        $GLOBALS['current_user'] = $user;
-        vglobal('current_user', $user);
-
-        $model = new Users_Record_Model();
-        $model->setData($user->column_fields);
-        $model->setModule('Users');
-        $model->setEntity($user);
-        foreach (get_object_vars($user) as $key => $value) {
-            if (!is_object($value)) {
-                $model->$key = $value;
-            }
-        }
-        Users_Record_Model::$currentUserModels[$userId] = $model;
-        return $model;
-    }
-
-    /**
-     * @param array<string, mixed> $overrides
-     * @return array<string, mixed>
-     */
-    private function linkInput(array $overrides = []): array
-    {
-        return array_merge([
-            'title' => self::PREFIX . 'link',
-            'url' => 'https://kintai.example.com/login?lang=ja',
-            'description' => '',
-            'method' => 'GET',
-            'open_mode' => 'tab',
-            'window_width' => null,
-            'window_height' => null,
-            'noreferrer' => false,
-            'active' => true,
-            'visibility' => 'all',
-            'params' => [],
-            'targets' => [],
-        ], $overrides);
-    }
-
-    /**
-     * @param array<string, mixed> $overrides
-     */
-    private function createLink(array $overrides = []): int
-    {
-        return LinkModel::saveLink(\Settings_SharedLinks_Rules_Model::normalize($this->linkInput($overrides)));
-    }
-
     /**
      * @return array<string, mixed>|null
      */
@@ -216,23 +69,42 @@ final class SharedLinksTest extends TestCase
         return $result;
     }
 
-    /** 管理者でない有効なユーザーの ID。いなければテストを飛ばす */
-    private function nonAdminUserId(): int
+    /**
+     * @param array<string, mixed> $overrides
+     * @return array<string, mixed>
+     */
+    private function saveViaApi(array $overrides, ?int $id = null): array
     {
-        $result = $this->db->pquery(
-            "SELECT id FROM vtiger_users WHERE is_admin = 'off' AND status = 'Active' AND deleted = 0 ORDER BY id LIMIT 1",
-            []
-        );
-        if ($this->db->num_rows($result) === 0) {
-            $this->markTestSkipped('テスト用DBに管理者でない有効なユーザーがいないため飛ばします');
+        $params = ['link' => json_encode($this->linkInput($overrides))];
+        if ($id !== null) {
+            $params['id'] = (string) $id;
         }
-        return (int) $this->db->query_result($result, 0, 'id');
+        return $this->callApi('save', $params);
     }
 
-    // ---- マイグレーション --------------------------------------------
-
-    public function test_マイグレーションは2回実行しても重複しない(): void
+    /**
+     * @return array<string, mixed>
+     */
+    private function listedLink(int $id): array
     {
+        foreach ($this->callApi('list')['links'] as $link) {
+            if ($link['id'] === $id) {
+                return $link;
+            }
+        }
+        $this->fail("一覧にリンク $id が無い");
+    }
+
+    private function countLinks(): int
+    {
+        return (int) $this->db->query_result($this->db->pquery('SELECT COUNT(*) AS c FROM vtiger_shared_links', []), 0, 'c');
+    }
+
+    // ==== TS-07 マイグレーション ===========================================
+
+    public function test_TC_MIG_002_2回実行しても重複しない(): void
+    {
+        self::runMigration();
         self::runMigration();
 
         foreach (['vtiger_shared_links', 'vtiger_shared_link_params', 'vtiger_shared_link_targets'] as $table) {
@@ -263,14 +135,17 @@ final class SharedLinksTest extends TestCase
         );
         $this->assertSame(1, $this->db->num_rows($menu));
         $this->assertSame('LBL_CONFIGURATION', $this->db->query_result($menu, 0, 'label'));
+        $this->assertSame(
+            'index.php?module=SharedLinks&parent=Settings&view=List',
+            decode_html((string) $this->db->query_result($menu, 0, 'linkto'))
+        );
     }
 
-    public function test_マイグレーションは採番が遅れていてもウィジェットを登録できる(): void
+    public function test_TC_MIG_003_採番が遅れていてもウィジェットを登録できる(): void
     {
         // 過去のマイグレーションが MAX(linkid)+1 で直接 INSERT し、採番が遅れた状態を作る
         $this->db->pquery("DELETE FROM vtiger_links WHERE linktype = 'DASHBOARDWIDGET' AND linklabel = 'Shared Links'", []);
-        $maxResult = $this->db->pquery('SELECT MAX(linkid) AS max_id FROM vtiger_links', []);
-        $maxId = (int) $this->db->query_result($maxResult, 0, 'max_id');
+        $maxId = (int) $this->db->query_result($this->db->pquery('SELECT MAX(linkid) AS m FROM vtiger_links', []), 0, 'm');
         $this->db->pquery('UPDATE vtiger_links_seq SET id = ?', [$maxId - 1]);
 
         self::runMigration();
@@ -285,45 +160,83 @@ final class SharedLinksTest extends TestCase
         $this->assertGreaterThan($maxId, (int) $this->db->query_result($seq, 0, 'id'));
     }
 
-    // ---- 保存・更新・削除・並び替え -----------------------------------
+    // ==== TS-05 API: 権限と要求の種類 =====================================
 
-    public function test_保存した内容をそのまま読み出せる(): void
+    public function test_TC_API_001_管理者でなければすべてのmodeを拒否しDBを変えない(): void
     {
-        $id = $this->createLink([
-            'url' => 'https://a.example.com/x?a=1&b=<2>',
-            'description' => "1行目\n2行目",
-            'method' => 'POST',
-            'open_mode' => 'window',
-            'window_width' => 800,
-            'window_height' => 600,
-            'noreferrer' => true,
-            'visibility' => 'targets',
-            'params' => [
-                ['name' => 'from', 'value_type' => 'fixed', 'value' => 'crm & "co"'],
-                ['name' => 'mail', 'value_type' => 'user', 'value' => 'email1'],
-            ],
-            'targets' => [['type' => 'Users', 'id' => (string) self::ADMIN_USER_ID]],
-        ]);
+        $id = $this->createLink();
+        $before = $this->countLinks();
+        $this->loginAs($this->nonAdminUserId());
 
-        $link = $this->findLink($id);
-        $this->assertNotNull($link);
-        // 記号をエンティティ化せずに保存している（URL の & が壊れない）
-        $this->assertSame('https://a.example.com/x?a=1&b=<2>', $link['url']);
-        $this->assertSame("1行目\n2行目", $link['description']);
-        $this->assertSame('POST', $link['method']);
-        $this->assertSame('window', $link['open_mode']);
-        $this->assertSame(800, $link['window_width']);
-        $this->assertSame(600, $link['window_height']);
-        $this->assertTrue($link['noreferrer']);
-        $this->assertTrue($link['active']);
-        $this->assertSame([
-            ['name' => 'from', 'value_type' => 'fixed', 'value' => 'crm & "co"'],
-            ['name' => 'mail', 'value_type' => 'user', 'value' => 'email1'],
-        ], $link['params']);
-        $this->assertSame([['type' => 'Users', 'id' => (string) self::ADMIN_USER_ID]], $link['targets']);
+        $requests = [
+            'info' => [],
+            'list' => [],
+            'save' => ['link' => json_encode($this->linkInput())],
+            'delete' => ['id' => (string) $id],
+            'reorder' => ['ids' => (string) $id],
+        ];
+        foreach ($requests as $mode => $params) {
+            try {
+                $this->callApi($mode, $params);
+                $this->fail("$mode が拒否されない");
+            } catch (ApiForbiddenException $e) {
+                $this->addToAssertionCount(1);
+            }
+        }
+        $this->assertSame($before, $this->countLinks());
+        $this->assertNotNull($this->findLink($id));
     }
 
-    public function test_更新するとパラメータと対象をまとめて置き換える(): void
+    public function test_TC_API_002_003_読み取りはGETで受け付け更新系はGETを拒否する(): void
+    {
+        $api = new Settings_SharedLinks_SharedLinkAPI_Api();
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        try {
+            foreach (['info', 'list'] as $mode) {
+                $request = new Vtiger_Request(['mode' => $mode], ['mode' => $mode]);
+                $this->assertTrue($api->validateRequest($request), $mode);
+            }
+            foreach (['save', 'delete', 'reorder'] as $mode) {
+                $request = new Vtiger_Request(['mode' => $mode], ['mode' => $mode]);
+                try {
+                    $api->validateRequest($request);
+                    $this->fail("$mode が GET で受け付けられた");
+                } catch (\Exception $e) {
+                    $this->assertSame('Invalid request', $e->getMessage(), $mode);
+                }
+            }
+        } finally {
+            unset($_SERVER['REQUEST_METHOD']);
+        }
+    }
+
+    // ==== TS-05 API: save =================================================
+
+    public function test_TC_API_010_linkがJSONでなければ400(): void
+    {
+        $this->expectException(ApiBadRequestException::class);
+        $this->callApi('save', ['link' => 'not-json']);
+    }
+
+    public function test_TC_API_011_034_追加すると末尾に並び一覧は無効も含め並び順で返す(): void
+    {
+        $ids = [];
+        foreach (['1', '2', '3'] as $n) {
+            $result = $this->saveViaApi(['title' => self::PREFIX . $n, 'active' => $n !== '2']);
+            $this->assertTrue($result['saved']);
+            $this->assertIsInt($result['id']);
+            $ids[] = $result['id'];
+        }
+
+        $listed = array_values(array_filter(
+            array_column($this->callApi('list')['links'], 'id'),
+            fn ($id) => in_array($id, $ids, true)
+        ));
+        // 無効（2 件目）も含めて、追加した順に並ぶ
+        $this->assertSame($ids, $listed);
+    }
+
+    public function test_TC_API_012_更新すると内容とパラメータと対象が置き換わる(): void
     {
         $id = $this->createLink([
             'visibility' => 'targets',
@@ -331,21 +244,124 @@ final class SharedLinksTest extends TestCase
             'targets' => [['type' => 'Users', 'id' => (string) self::ADMIN_USER_ID]],
         ]);
 
-        LinkModel::saveLink(\Settings_SharedLinks_Rules_Model::normalize($this->linkInput([
+        $result = $this->saveViaApi([
             'title' => self::PREFIX . 'renamed',
-            'params' => [['name' => 'b', 'value_type' => 'fixed', 'value' => '2']],
-            'visibility' => 'all',
-        ])), $id);
+            'method' => 'POST',
+            'open_mode' => 'window',
+            'window_width' => 640,
+            'window_height' => 480,
+            'noreferrer' => true,
+            'params' => [['name' => 'b', 'value_type' => 'user', 'value' => 'email1']],
+            'visibility' => 'targets',
+            'targets' => [['type' => 'Roles', 'id' => 'H2']],
+        ], $id);
 
+        $this->assertSame(['saved' => true, 'id' => $id], $result);
         $link = $this->findLink($id);
         $this->assertNotNull($link);
         $this->assertSame(self::PREFIX . 'renamed', $link['title']);
-        $this->assertSame([['name' => 'b', 'value_type' => 'fixed', 'value' => '2']], $link['params']);
-        $this->assertSame('all', $link['visibility']);
-        $this->assertSame([], $link['targets']);
+        $this->assertSame(['POST', 'window', 640, 480, true], [
+            $link['method'], $link['open_mode'], $link['window_width'], $link['window_height'], $link['noreferrer'],
+        ]);
+        $this->assertSame([['name' => 'b', 'value_type' => 'user', 'value' => 'email1']], $link['params']);
+        $this->assertSame([['type' => 'Roles', 'id' => 'H2']], $link['targets']);
     }
 
-    public function test_削除するとパラメータと対象も消える(): void
+    public function test_TC_API_013_014_存在しないIDや数字でないIDの更新は404(): void
+    {
+        foreach (['999999999', 'abc', '1 OR 1=1'] as $id) {
+            try {
+                $this->callApi('save', ['id' => $id, 'link' => json_encode($this->linkInput())]);
+                $this->fail("id=$id がエラーにならない");
+            } catch (ApiNotFoundException $e) {
+                $this->addToAssertionCount(1);
+            }
+        }
+    }
+
+    public function test_TC_API_015_TC_VAL_063_入力に誤りがあれば保存せず項目ごとのエラーを返す(): void
+    {
+        $before = $this->countLinks();
+        $result = $this->saveViaApi([
+            'title' => '',
+            'url' => 'javascript:alert(1)',
+            'params' => [['name' => 'a', 'value_type' => 'user', 'value' => 'user_password']],
+            'visibility' => 'targets',
+            'targets' => [['type' => 'Groups', 'id' => '999999']],
+        ]);
+
+        $this->assertFalse($result['saved']);
+        $this->assertSame(['title', 'url', 'params.0.value', 'targets.0'], array_keys($result['errors']));
+        // 言語ファイルのキーではなく文言を返す
+        foreach ($result['errors'] as $message) {
+            $this->assertStringNotContainsString('LBL_', $message);
+            $this->assertNotSame('', $message);
+        }
+        $this->assertSame($before, $this->countLinks());
+    }
+
+    public function test_TC_API_016_URLの記号を加工せずに保存して返す(): void
+    {
+        $url = 'https://a.example.com/?x=1&y=<2>&z="3"';
+        $result = $this->saveViaApi(['url' => $url, 'title' => self::PREFIX . '<b>&amp;</b>']);
+        $this->assertTrue($result['saved']);
+
+        $listed = $this->listedLink($result['id']);
+        $this->assertSame($url, $listed['url']);
+        $this->assertSame(self::PREFIX . '<b>&amp;</b>', $listed['title']);
+    }
+
+    // ==== TS-01 入力の検証（DB を使うもの） ================================
+
+    public function test_TC_VAL_050_053_有効なユーザーと存在するグループと役割は選べる(): void
+    {
+        $groups = $this->db->pquery('SELECT groupid FROM vtiger_groups LIMIT 1', []);
+        $targets = [
+            ['type' => 'Users', 'id' => (string) $this->nonAdminUserId()],
+            ['type' => 'Roles', 'id' => 'H2'],
+            ['type' => 'RoleAndSubordinates', 'id' => 'H2'],
+        ];
+        if ($this->db->num_rows($groups) > 0) {
+            $targets[] = ['type' => 'Groups', 'id' => (string) $this->db->query_result($groups, 0, 'groupid')];
+        }
+
+        $result = $this->saveViaApi(['visibility' => 'targets', 'targets' => $targets]);
+
+        $this->assertTrue($result['saved'], (string) json_encode($result));
+    }
+
+    public function test_TC_VAL_051_052_無効なユーザーは保存済みなら残せるが新しくは選べない(): void
+    {
+        // 管理者でないユーザーを一時的に無効にする（最後に元へ戻す）
+        $userId = $this->nonAdminUserId();
+        $this->db->pquery("UPDATE vtiger_users SET status = 'Inactive' WHERE id = ?", [$userId]);
+        try {
+            $input = ['visibility' => 'targets', 'targets' => [['type' => 'Users', 'id' => (string) $userId]]];
+
+            $created = $this->saveViaApi($input);
+            $this->assertFalse($created['saved']);
+            $this->assertArrayHasKey('targets.0', $created['errors']);
+
+            $id = $this->createLink($input);
+            $this->assertTrue($this->saveViaApi($input, $id)['saved']);
+        } finally {
+            $this->db->pquery("UPDATE vtiger_users SET status = 'Active' WHERE id = ?", [$userId]);
+        }
+    }
+
+    public function test_TC_VAL_054_存在しない役割とグループとユーザーは選べない(): void
+    {
+        $cases = [['Groups', '999999'], ['Roles', 'H99999'], ['RoleAndSubordinates', 'H99999'], ['Users', '999999']];
+        foreach ($cases as [$type, $id]) {
+            $result = $this->saveViaApi(['visibility' => 'targets', 'targets' => [['type' => $type, 'id' => $id]]]);
+            $this->assertFalse($result['saved'], "$type:$id");
+            $this->assertArrayHasKey('targets.0', $result['errors'], "$type:$id");
+        }
+    }
+
+    // ==== TS-05 API: delete / reorder / mode ==============================
+
+    public function test_TC_API_020_削除するとパラメータと対象も消える(): void
     {
         $id = $this->createLink([
             'visibility' => 'targets',
@@ -353,7 +369,7 @@ final class SharedLinksTest extends TestCase
             'targets' => [['type' => 'Users', 'id' => (string) self::ADMIN_USER_ID]],
         ]);
 
-        LinkModel::deleteLink($id);
+        $this->assertSame(['id' => $id, 'deleted' => true], $this->callApi('delete', ['id' => (string) $id]));
 
         $this->assertNull($this->findLink($id));
         foreach (['vtiger_shared_link_params', 'vtiger_shared_link_targets'] as $table) {
@@ -362,78 +378,219 @@ final class SharedLinksTest extends TestCase
         }
     }
 
-    public function test_新しいリンクは末尾に並び並び替えで順序が変わる(): void
+    public function test_TC_API_021_存在しないIDの削除は404(): void
+    {
+        foreach (['999999999', 'abc', ''] as $id) {
+            try {
+                $this->callApi('delete', ['id' => $id]);
+                $this->fail("id=$id がエラーにならない");
+            } catch (ApiNotFoundException $e) {
+                $this->addToAssertionCount(1);
+            }
+        }
+    }
+
+    public function test_TC_API_022_024_並び替えは指定した順になり重複は除く(): void
     {
         $first = $this->createLink(['title' => self::PREFIX . '1']);
         $second = $this->createLink(['title' => self::PREFIX . '2']);
         $third = $this->createLink(['title' => self::PREFIX . '3']);
-
         $order = fn (): array => array_values(array_filter(
             array_map(fn ($l) => $l['id'], LinkModel::getAllLinks()),
             fn ($id) => in_array($id, [$first, $second, $third], true)
         ));
-        $this->assertSame([$first, $second, $third], $order());
 
-        LinkModel::reorder([$third, $first, $second]);
+        $this->callApi('reorder', ['ids' => "$third,$first,$second"]);
         $this->assertSame([$third, $first, $second], $order());
+
+        $this->callApi('reorder', ['ids' => "$second,$second,$third,$first"]);
+        $this->assertSame([$second, $third, $first], $order());
     }
 
-    // ---- ウィジェットに出すリンク ------------------------------------
-
-    public function test_無効のリンクはウィジェットに出ない(): void
+    public function test_TC_API_023_並び替えのIDに数字以外があれば400で何も変えない(): void
     {
-        $active = $this->createLink(['title' => self::PREFIX . 'on']);
-        $inactive = $this->createLink(['title' => self::PREFIX . 'off', 'active' => false]);
-
-        $this->assertNotNull($this->findVisible($active));
-        $this->assertNull($this->findVisible($inactive));
+        $first = $this->createLink(['title' => self::PREFIX . '1']);
+        $second = $this->createLink(['title' => self::PREFIX . '2']);
+        try {
+            $this->callApi('reorder', ['ids' => "$second,x"]);
+            $this->fail('エラーにならない');
+        } catch (ApiBadRequestException $e) {
+            $this->addToAssertionCount(1);
+        }
+        $ids = array_column(LinkModel::getAllLinks(), 'id');
+        $this->assertLessThan(array_search($second, $ids, true), array_search($first, $ids, true));
     }
 
-    public function test_公開範囲の役割とユーザーで表示が切り替わる(): void
+    public function test_TC_API_025_不明なmodeは400(): void
     {
-        $privileges = Users_Privileges_Model::getCurrentUserPrivilegesModel();
-        $roleId = (string) $privileges->get('roleid');
-        $chain = explode('::', (string) $privileges->get('parent_role_seq'));
-        $this->assertNotSame('', $roleId, '管理者の役割が取れない');
-        $parentRole = count($chain) >= 2 ? $chain[count($chain) - 2] : null;
+        $this->expectException(ApiBadRequestException::class);
+        $this->callApi('unknown');
+    }
 
-        $sameRole = $this->createLink([
-            'visibility' => 'targets', 'targets' => [['type' => 'Roles', 'id' => $roleId]],
-        ]);
-        $otherUser = $this->createLink([
-            'visibility' => 'targets', 'targets' => [['type' => 'Users', 'id' => '999999']],
-        ]);
-        $me = $this->createLink([
-            'visibility' => 'targets', 'targets' => [['type' => 'Users', 'id' => (string) self::ADMIN_USER_ID]],
-        ]);
+    // ==== TS-05 API: list の警告 ==========================================
 
-        $this->assertNotNull($this->findVisible($sameRole), '自分の役割');
-        $this->assertNull($this->findVisible($otherUser), '他のユーザーだけ');
-        $this->assertNotNull($this->findVisible($me), '自分');
+    public function test_TC_API_030_033_削除された項目や対象を含むリンクに警告を付ける(): void
+    {
+        $adminTarget = ['type' => 'Users', 'id' => (string) self::ADMIN_USER_ID];
+        $deletedGroup = ['type' => 'Groups', 'id' => '999999'];
+        $clean = $this->createLink([
+            'visibility' => 'targets', 'targets' => [$adminTarget],
+            'params' => [['name' => 'm', 'value_type' => 'user', 'value' => 'email1']],
+        ]);
+        $missingField = $this->createLink([
+            'params' => [['name' => 'g', 'value_type' => 'user', 'value' => 'cf_not_exists']],
+        ]);
+        $partlyDeleted = $this->createLink(['visibility' => 'targets', 'targets' => [$adminTarget, $deletedGroup]]);
+        $allDeleted = $this->createLink(['visibility' => 'targets', 'targets' => [$deletedGroup]]);
 
-        if ($parentRole !== null) {
-            $parentOnly = $this->createLink([
-                'visibility' => 'targets', 'targets' => [['type' => 'Roles', 'id' => $parentRole]],
-            ]);
-            $parentAndBelow = $this->createLink([
-                'visibility' => 'targets', 'targets' => [['type' => 'RoleAndSubordinates', 'id' => $parentRole]],
-            ]);
-            $this->assertNull($this->findVisible($parentOnly), '上位の役割（下位を含まない）');
-            $this->assertNotNull($this->findVisible($parentAndBelow), '上位の役割（下位を含む）');
+        $link = $this->listedLink($clean);                               // TC-API-030
+        $this->assertFalse($link['has_warning']);
+        $this->assertFalse($link['targets'][0]['deleted']);
+        $this->assertNotNull($link['targets'][0]['name']);
+        $this->assertFalse($link['params'][0]['missing']);
+        $this->assertNotNull($link['params'][0]['label']);
+
+        $link = $this->listedLink($missingField);                        // TC-API-031
+        $this->assertTrue($link['has_warning']);
+        $this->assertTrue($link['params'][0]['missing']);
+        $this->assertNull($link['params'][0]['label']);
+
+        $link = $this->listedLink($partlyDeleted);                       // TC-API-032
+        $this->assertTrue($link['has_warning']);
+        $this->assertSame([false, true], array_column($link['targets'], 'deleted'));
+
+        $link = $this->listedLink($allDeleted);                          // TC-API-033
+        $this->assertTrue($link['has_warning']);
+        $this->assertNull($link['targets'][0]['name']);
+    }
+
+    public function test_TC_API_035_CSPで許可されていないPOSTの送り先に印を付ける(): void
+    {
+        $saved = $GLOBALS['csp_allowed_domains'] ?? null;
+        $GLOBALS['csp_allowed_domains'] = ['form-action' => ['https://allowed.example.com']];
+        try {
+            $allowed = $this->createLink(['method' => 'POST', 'url' => 'https://allowed.example.com/post']);
+            $blocked = $this->createLink(['method' => 'POST', 'url' => 'https://blocked.example.com/post']);
+            $get = $this->createLink(['method' => 'GET', 'url' => 'https://blocked.example.com/get']);
+
+            $this->assertFalse($this->listedLink($allowed)['post_blocked']);
+            $this->assertTrue($this->listedLink($blocked)['post_blocked']);
+            // GET は CSP の form-action に関係しない
+            $this->assertFalse($this->listedLink($get)['post_blocked']);
+
+            // ウィジェットに渡すデータにも付く
+            $this->assertFalse($this->findVisible($allowed)['post_blocked']);
+            $this->assertTrue($this->findVisible($blocked)['post_blocked']);
+            $this->assertFalse($this->findVisible($get)['post_blocked']);
+        } finally {
+            $GLOBALS['csp_allowed_domains'] = $saved;
         }
     }
 
-    public function test_管理者でも公開範囲外のリンクは出ない(): void
-    {
-        $this->assertTrue(Users_Record_Model::getCurrentUserModel()->isAdminUser());
-        $id = $this->createLink([
-            'visibility' => 'targets', 'targets' => [['type' => 'Users', 'id' => '999999']],
-        ]);
+    // ==== TS-05 API: info =================================================
 
-        $this->assertNull($this->findVisible($id));
+    public function test_TC_API_040_043_infoは選択肢と上限と文言を返す(): void
+    {
+        $info = $this->callApi('info');
+
+        // TC-API-040
+        $fieldNames = array_column($info['user_fields'], 'name');
+        $this->assertSame(['id', 'full_name'], array_slice($fieldNames, 0, 2));
+        $this->assertContains('email1', $fieldNames);
+        foreach (Rules::EXCLUDED_USER_FIELDS as $excluded) {
+            $this->assertNotContains($excluded, $fieldNames);
+        }
+
+        // TC-API-041: 親の後ろに子が並び、depth を持つ
+        $position = array_flip(array_column($info['roles'], 'id'));
+        $result = $this->db->pquery('SELECT roleid, parentrole, depth FROM vtiger_role', []);
+        $this->assertCount($this->db->num_rows($result), $info['roles']);
+        for ($i = 0; $i < $this->db->num_rows($result); $i++) {
+            $chain = explode('::', (string) $this->db->query_result($result, $i, 'parentrole'));
+            $roleId = (string) $this->db->query_result($result, $i, 'roleid');
+            $this->assertSame((int) $this->db->query_result($result, $i, 'depth'), $info['roles'][$position[$roleId]]['depth']);
+            if (count($chain) >= 2) {
+                $this->assertLessThan($position[$roleId], $position[$chain[count($chain) - 2]], $roleId);
+            }
+        }
+
+        // TC-API-042: 有効なユーザーだけ
+        $active = $this->db->pquery("SELECT id FROM vtiger_users WHERE status = 'Active' AND deleted = 0", []);
+        $expected = [];
+        for ($i = 0; $i < $this->db->num_rows($active); $i++) {
+            $expected[] = (string) $this->db->query_result($active, $i, 'id');
+        }
+        $actual = array_column($info['users'], 'id');
+        sort($expected);
+        sort($actual);
+        $this->assertSame($expected, $actual);
+
+        // TC-API-043
+        $this->assertSame([
+            'title_max' => Rules::TITLE_MAX,
+            'url_max' => Rules::URL_MAX,
+            'description_max' => Rules::DESCRIPTION_MAX,
+            'params_max' => Rules::PARAMS_MAX,
+            'param_name_max' => Rules::PARAM_NAME_MAX,
+            'param_value_max' => Rules::PARAM_VALUE_MAX,
+            'window_min' => Rules::WINDOW_MIN,
+            'window_max' => Rules::WINDOW_MAX,
+            'default_window_width' => Rules::DEFAULT_WINDOW_WIDTH,
+            'default_window_height' => Rules::DEFAULT_WINDOW_HEIGHT,
+        ], $info['limits']);
+        $languageStrings = [];
+        include dirname(__DIR__, 3) . '/languages/en_us/Settings/SharedLinks.php';
+        $this->assertSame(array_keys($languageStrings), array_keys($info['labels']));
+        foreach ($info['labels'] as $key => $label) {
+            $this->assertNotSame($key, $label, "$key が翻訳されていない");
+        }
     }
 
-    public function test_GETはユーザー情報を差し込んだURLを返す(): void
+    // ==== TS-03 値の解決 ==================================================
+
+    public function test_TC_RES_020_024_差し込める項目の一覧(): void
+    {
+        $fields = LinkModel::getInsertableUserFields();
+
+        // TC-RES-024: 追加の項目が先頭で、ラベルは翻訳済み
+        $this->assertSame(['id', 'full_name'], array_slice(array_keys($fields), 0, 2));
+        $this->assertStringNotContainsString('LBL_', $fields['id'] . $fields['full_name']);
+        // TC-RES-020
+        $this->assertArrayHasKey('user_name', $fields);
+        $this->assertArrayHasKey('email1', $fields);
+        // TC-RES-021
+        foreach (Rules::EXCLUDED_USER_FIELDS as $excluded) {
+            $this->assertArrayNotHasKey($excluded, $fields);
+        }
+        // TC-RES-022
+        $passwordFields = $this->db->pquery(
+            'SELECT fieldname FROM vtiger_field WHERE tabid = ? AND uitype = 99',
+            [getTabid('Users')]
+        );
+        for ($i = 0; $i < $this->db->num_rows($passwordFields); $i++) {
+            $this->assertArrayNotHasKey($this->db->query_result($passwordFields, $i, 'fieldname'), $fields);
+        }
+    }
+
+    public function test_TC_RES_023_非表示の項目は差し込めない(): void
+    {
+        $tabId = getTabid('Users');
+        $result = $this->db->pquery("SELECT presence FROM vtiger_field WHERE tabid = ? AND fieldname = 'phone_fax'", [$tabId]);
+        if ($this->db->num_rows($result) === 0) {
+            $this->markTestSkipped('Users に phone_fax が無い');
+        }
+        $presence = $this->db->query_result($result, 0, 'presence');
+        $this->db->pquery("UPDATE vtiger_field SET presence = 2 WHERE tabid = ? AND fieldname = 'phone_fax'", [$tabId]);
+        try {
+            $this->assertArrayHasKey('phone_fax', LinkModel::getInsertableUserFields());
+            $this->db->pquery("UPDATE vtiger_field SET presence = 1 WHERE tabid = ? AND fieldname = 'phone_fax'", [$tabId]);
+            $this->assertArrayNotHasKey('phone_fax', LinkModel::getInsertableUserFields());
+        } finally {
+            $this->db->pquery("UPDATE vtiger_field SET presence = ? WHERE tabid = ? AND fieldname = 'phone_fax'", [$presence, $tabId]);
+        }
+    }
+
+    public function test_TC_RES_003_005_TC_RES_040_GETはユーザー情報を差し込んだURLを返す(): void
     {
         $user = Users_Record_Model::getCurrentUserModel();
         $id = $this->createLink([
@@ -448,7 +605,7 @@ final class SharedLinksTest extends TestCase
 
         $link = $this->findVisible($id);
         $this->assertNotNull($link);
-        $fullName = \Settings_SharedLinks_Rules_Model::fullName(
+        $fullName = Rules::fullName(
             decode_html((string) $user->get('last_name')),
             decode_html((string) $user->get('first_name'))
         );
@@ -463,7 +620,7 @@ final class SharedLinksTest extends TestCase
         $this->assertSame([], $link['params']);
     }
 
-    public function test_POSTはURLをそのままにしてパラメータを解決して返す(): void
+    public function test_TC_RES_006_041_POSTはURLをそのままにしてパラメータを解決して返す(): void
     {
         $id = $this->createLink([
             'method' => 'POST',
@@ -478,172 +635,104 @@ final class SharedLinksTest extends TestCase
         $this->assertSame('https://kintai.example.com/login?lang=ja', $link['url']);
         $this->assertSame([
             ['name' => 'uid', 'value' => (string) self::ADMIN_USER_ID],
-            // 削除された項目は空文字を送る
             ['name' => 'gone', 'value' => ''],
         ], $link['params']);
     }
 
-    // ---- 差し込める項目・公開範囲の選択肢 ------------------------------
+    // ==== TS-02 公開範囲（実際のユーザーの権限情報） ======================
 
-    public function test_差し込める項目にパスワードなどが含まれない(): void
+    public function test_TC_VIS_025_無効のリンクは出ない(): void
     {
-        $fields = LinkModel::getInsertableUserFields();
+        $active = $this->createLink(['title' => self::PREFIX . 'on']);
+        $inactive = $this->createLink(['title' => self::PREFIX . 'off', 'active' => false]);
 
-        $this->assertArrayHasKey('id', $fields);
-        $this->assertArrayHasKey('full_name', $fields);
-        $this->assertArrayHasKey('user_name', $fields);
-        $this->assertArrayHasKey('email1', $fields);
-        foreach (\Settings_SharedLinks_Rules_Model::EXCLUDED_USER_FIELDS as $excluded) {
-            $this->assertArrayNotHasKey($excluded, $fields);
-        }
-        $passwordFields = $this->db->pquery(
-            'SELECT fieldname FROM vtiger_field WHERE tabid = ? AND uitype = 99',
-            [getTabid('Users')]
-        );
-        for ($i = 0; $i < $this->db->num_rows($passwordFields); $i++) {
-            $this->assertArrayNotHasKey($this->db->query_result($passwordFields, $i, 'fieldname'), $fields);
-        }
+        $this->assertNotNull($this->findVisible($active));
+        $this->assertNull($this->findVisible($inactive));
     }
 
-    public function test_役割は親の後ろに子が並ぶ(): void
+    public function test_TC_VIS_026_027_管理者の役割と本人と上位の役割(): void
     {
-        $roles = LinkModel::getRoles();
-        $this->assertNotEmpty($roles);
+        $context = LinkModel::getUserContext(self::ADMIN_USER_ID);
+        $roleId = $context['roleid'];
+        $chain = explode('::', $context['parent_role_seq']);
+        $this->assertNotSame('', $roleId, '管理者の役割が取れない');
+        $this->assertGreaterThanOrEqual(2, count($chain), '管理者の役割に上位が無い');
+        $parentRole = $chain[count($chain) - 2];
 
-        $position = array_flip(array_column($roles, 'id'));
-        $result = $this->db->pquery('SELECT roleid, parentrole FROM vtiger_role', []);
-        for ($i = 0; $i < $this->db->num_rows($result); $i++) {
-            $chain = explode('::', (string) $this->db->query_result($result, $i, 'parentrole'));
-            $roleId = (string) $this->db->query_result($result, $i, 'roleid');
-            if (count($chain) >= 2) {
-                $parent = $chain[count($chain) - 2];
-                $this->assertLessThan($position[$roleId], $position[$parent], "$parent → $roleId");
-            }
-        }
+        $visible = fn (array $targets): bool => $this->findVisible(
+            $this->createLink(['visibility' => 'targets', 'targets' => $targets])
+        ) !== null;
+
+        $this->assertTrue($visible([['type' => 'Roles', 'id' => $roleId]]), '自分の役割');
+        $this->assertTrue($visible([['type' => 'Users', 'id' => (string) self::ADMIN_USER_ID]]), '本人');
+        $this->assertFalse($visible([['type' => 'Roles', 'id' => $parentRole]]), '上位の役割（下位を含まない）');
+        $this->assertTrue($visible([['type' => 'RoleAndSubordinates', 'id' => $parentRole]]), '上位の役割（下位を含む）');
     }
 
-    // ---- API ----------------------------------------------------------
-
-    public function test_API_管理者でなければ拒否する(): void
+    /** テスト用のグループを作る（tearDown ではなく呼び出し側の finally で消す） */
+    private function createGroup(string $name): string
     {
-        $this->loginAs($this->nonAdminUserId());
-
-        $this->expectException(ApiForbiddenException::class);
-        $this->callApi('list');
-    }
-
-    public function test_API_入力に誤りがあれば保存せず項目ごとのエラーを返す(): void
-    {
-        $result = $this->callApi('save', ['link' => json_encode($this->linkInput([
-            'title' => '',
-            'url' => 'javascript:alert(1)',
-            'params' => [['name' => 'a', 'value_type' => 'user', 'value' => 'user_password']],
-            'visibility' => 'targets',
-            'targets' => [['type' => 'Groups', 'id' => '999999']],
-        ]))]);
-
-        $this->assertFalse($result['saved']);
-        $this->assertSame(
-            ['title', 'url', 'params.0.value', 'targets.0'],
-            array_keys($result['errors'])
-        );
-        // 言語ファイルのキーではなく文言を返す
-        $this->assertStringNotContainsString('LBL_', implode('', $result['errors']));
-        $count = $this->db->pquery("SELECT 1 FROM vtiger_shared_links WHERE url = 'javascript:alert(1)'", []);
-        $this->assertSame(0, $this->db->num_rows($count));
-    }
-
-    public function test_API_保存して一覧に出す(): void
-    {
-        $result = $this->callApi('save', ['link' => json_encode($this->linkInput([
-            'url' => 'https://a.example.com/?x=1&y=2',
-            'visibility' => 'targets',
-            'targets' => [['type' => 'Users', 'id' => (string) self::ADMIN_USER_ID]],
-            'params' => [['name' => 'm', 'value_type' => 'user', 'value' => 'email1']],
-        ]))]);
-        $this->assertTrue($result['saved']);
-        $id = $result['id'];
-
-        $list = $this->callApi('list');
-        $saved = array_values(array_filter($list['links'], fn ($l) => $l['id'] === $id))[0] ?? null;
-        $this->assertNotNull($saved);
-        $this->assertSame('https://a.example.com/?x=1&y=2', $saved['url']);
-        $this->assertFalse($saved['has_warning']);
-        $this->assertFalse($saved['targets'][0]['deleted']);
-        $this->assertNotNull($saved['targets'][0]['name']);
-        $this->assertFalse($saved['params'][0]['missing']);
-        $this->assertNotNull($saved['params'][0]['label']);
-    }
-
-    public function test_API_削除された対象や項目を含むリンクには警告を付ける(): void
-    {
-        $id = $this->createLink([
-            'visibility' => 'targets',
-            'targets' => [['type' => 'Groups', 'id' => '999999']],
-            'params' => [['name' => 'g', 'value_type' => 'user', 'value' => 'cf_not_exists']],
+        $groupId = (string) $this->db->getUniqueID('vtiger_users');
+        $this->db->pquery('INSERT INTO vtiger_groups (groupid, groupname, description) VALUES (?, ?, ?)', [
+            $groupId, self::PREFIX . $name, '',
         ]);
-
-        $list = $this->callApi('list');
-        $saved = array_values(array_filter($list['links'], fn ($l) => $l['id'] === $id))[0] ?? null;
-        $this->assertNotNull($saved);
-        $this->assertTrue($saved['has_warning']);
-        $this->assertTrue($saved['targets'][0]['deleted']);
-        $this->assertNull($saved['targets'][0]['name']);
-        $this->assertTrue($saved['params'][0]['missing']);
+        return $groupId;
     }
 
-    public function test_API_保存済みの対象は無効なユーザーでも残せるが新しくは選べない(): void
+    private function dropGroups(string ...$groupIds): void
     {
-        // 管理者でないユーザーを一時的に無効にする（最後に元へ戻す）
+        foreach ($groupIds as $groupId) {
+            $this->db->pquery('DELETE FROM vtiger_users2group WHERE groupid = ?', [$groupId]);
+            $this->db->pquery('DELETE FROM vtiger_group2grouprel WHERE groupid = ? OR containsgroupid = ?', [$groupId, $groupId]);
+            $this->db->pquery('DELETE FROM vtiger_groups WHERE groupid = ?', [$groupId]);
+        }
+    }
+
+    public function test_TC_VIS_029a_管理者もグループの所属で判定し入れ子のグループも含む(): void
+    {
+        // 外側のグループ ⊃ 内側のグループ ⊃ 管理者
+        $outer = $this->createGroup('outer');
+        $inner = $this->createGroup('inner');
+        try {
+            $this->db->pquery('INSERT INTO vtiger_group2grouprel (groupid, containsgroupid) VALUES (?, ?)', [$outer, $inner]);
+            $toInner = $this->createLink(['visibility' => 'targets', 'targets' => [['type' => 'Groups', 'id' => $inner]]]);
+            $toOuter = $this->createLink(['visibility' => 'targets', 'targets' => [['type' => 'Groups', 'id' => $outer]]]);
+
+            $this->assertNull($this->findVisible($toInner), '所属していない');
+            $this->assertNull($this->findVisible($toOuter), '所属していない（外側）');
+
+            $this->db->pquery('INSERT INTO vtiger_users2group (groupid, userid) VALUES (?, ?)', [$inner, self::ADMIN_USER_ID]);
+            $this->assertNotNull($this->findVisible($toInner), '直接所属');
+            $this->assertNotNull($this->findVisible($toOuter), 'グループの中のグループ経由で所属');
+        } finally {
+            $this->dropGroups($outer, $inner);
+        }
+    }
+
+    public function test_TC_VIS_029b_役割とグループはDBから求める(): void
+    {
         $userId = $this->nonAdminUserId();
-        $this->db->pquery("UPDATE vtiger_users SET status = 'Inactive' WHERE id = ?", [$userId]);
-        try {
-            $input = $this->linkInput([
-                'visibility' => 'targets', 'targets' => [['type' => 'Users', 'id' => (string) $userId]],
-            ]);
+        $row = $this->db->query_result_rowdata($this->db->pquery(
+            'SELECT r.roleid, r.parentrole FROM vtiger_user2role ur INNER JOIN vtiger_role r ON r.roleid = ur.roleid WHERE ur.userid = ?',
+            [$userId]
+        ), 0);
 
-            $created = $this->callApi('save', ['link' => json_encode($input)]);
-            $this->assertFalse($created['saved']);
-            $this->assertArrayHasKey('targets.0', $created['errors']);
+        $context = LinkModel::getUserContext($userId);
 
-            $id = $this->createLink($input);
-            $updated = $this->callApi('save', ['id' => (string) $id, 'link' => json_encode($input)]);
-            $this->assertTrue($updated['saved']);
-        } finally {
-            $this->db->pquery("UPDATE vtiger_users SET status = 'Active' WHERE id = ?", [$userId]);
-        }
+        $this->assertSame($userId, $context['id']);
+        $this->assertSame((string) $row['roleid'], $context['roleid']);
+        $this->assertSame((string) $row['parentrole'], $context['parent_role_seq']);
+        $expectedGroups = array_map('strval', (array) explode(',', (string) fetchUserGroupids($userId)));
+        $this->assertSame(array_values(array_filter($expectedGroups, 'strlen')), $context['groups']);
+        // 管理者も権限ファイルに頼らず、役割の経路を持つ
+        $this->assertNotSame('', LinkModel::getUserContext(self::ADMIN_USER_ID)['parent_role_seq']);
     }
 
-    public function test_API_存在しないリンクの更新と削除はエラー(): void
+    public function test_TC_VIS_028_管理者でも公開範囲外のリンクは出ない(): void
     {
-        try {
-            $this->callApi('save', ['id' => '999999999', 'link' => json_encode($this->linkInput())]);
-            $this->fail('更新でエラーにならない');
-        } catch (ApiNotFoundException $e) {
-            $this->addToAssertionCount(1);
-        }
+        $this->assertTrue(Users_Record_Model::getCurrentUserModel()->isAdminUser());
+        $id = $this->createLink(['visibility' => 'targets', 'targets' => [['type' => 'Users', 'id' => '999999']]]);
 
-        $this->expectException(ApiNotFoundException::class);
-        $this->callApi('delete', ['id' => 'abc']);
-    }
-
-    public function test_API_更新系はPOSTでなければ受け付けない(): void
-    {
-        $values = ['module' => 'SharedLinks', 'parent' => 'Settings', 'api' => 'SharedLinkAPI', 'mode' => 'delete'];
-        $request = new Vtiger_Request($values, $values);
-        $_SERVER['REQUEST_METHOD'] = 'GET';
-
-        try {
-            $this->expectExceptionMessage('Invalid request');
-            (new Settings_SharedLinks_SharedLinkAPI_Api())->validateRequest($request);
-        } finally {
-            unset($_SERVER['REQUEST_METHOD']);
-        }
-    }
-
-    public function test_API_並び替えのIDに数字以外があればエラー(): void
-    {
-        $this->expectException(\ApiBadRequestException::class);
-        $this->callApi('reorder', ['ids' => '1,x']);
+        $this->assertNull($this->findVisible($id));
     }
 }
