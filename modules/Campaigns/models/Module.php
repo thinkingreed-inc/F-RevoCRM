@@ -87,7 +87,7 @@ class Campaigns_Module_Model extends Vtiger_Module_Model {
 	 * Function to get supported utility actions for a module
 	 */
 	function getUtilityActionsNames() {
-		return array();
+		return array('Import');
 	}
 
 }
