@@ -45,5 +45,13 @@ Reports_Edit3_Js("Reports_ChartEdit2_Js",{},{
 			}
 		);
 		return aDeferred.promise();
+	},
+
+	registerSubmitEvent : function(){
+		var thisInstance = this;
+		var form = this.getContainer();
+		form.submit(function(e){
+			thisInstance.calculateValues();
+		});
 	}
 });
