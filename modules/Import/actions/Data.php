@@ -448,13 +448,6 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 
 					$adb->pquery('UPDATE vtiger_crmentity SET label=? WHERE crmid=?', array(trim($label), $recordId));
 					CRMEntity::updateBasicInformation($this->module, $recordId);
-
-					//updating solr while import records
-					$recordModel = Vtiger_Record_Model::getCleanInstance($this->module);
-					$focus = $recordModel->getEntity();
-					$focus->id = $recordId;
-					$focus->column_fields = $fieldData;
-					$this->entityData[] = VTEntityData::fromCRMEntity($focus);
 				}
 
 				$label = trim($label);
