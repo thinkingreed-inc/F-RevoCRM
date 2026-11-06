@@ -71,7 +71,7 @@ describe("FieldRenderer", () => {
     });
   });
 
-  describe("テキストエリア (UIType 19, 20, 21)", () => {
+  describe("テキストエリア (UIType 19, 21)", () => {
     it("テキストエリアが正しく表示される", () => {
       const field = createField({
         uitype: UI_TYPES.TEXTAREA,
