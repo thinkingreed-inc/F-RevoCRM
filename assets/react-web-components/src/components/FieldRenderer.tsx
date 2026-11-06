@@ -229,7 +229,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
         <div className="flex items-baseline md:contents">
           <span
             className={cn(
-              "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+              "text-sm text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
               disabled && "text-gray-400",
               labelClassName,
             )}
@@ -254,7 +254,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       <>
         <span
           className={cn(
-            "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+            "text-sm text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
             disabled && "text-gray-400",
           )}
         >
@@ -722,7 +722,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
           <>
             <span
               className={cn(
-                "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+                "text-sm text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
                 (disabled || field.readonly) && "text-gray-400",
               )}
             >

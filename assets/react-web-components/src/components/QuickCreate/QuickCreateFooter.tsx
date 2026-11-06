@@ -28,7 +28,7 @@ export const QuickCreateFooter: React.FC<QuickCreateFooterProps> = ({
         variant="outline"
         onClick={onGoToFullForm}
         disabled={isSaving}
-        className="px-6 py-1.5 h-auto text-md font-bold bg-white hover:bg-gray-100 border-gray-300"
+        className="px-6 py-1.5 h-auto text-sm font-bold bg-white hover:bg-gray-100 border-gray-300"
       >
         {t("LBL_GO_TO_FULL_FORM")}
       </Button>
@@ -38,7 +38,7 @@ export const QuickCreateFooter: React.FC<QuickCreateFooterProps> = ({
         type="button"
         onClick={onSave}
         disabled={isSaving || saveDisabled}
-        className="px-6 py-1.5 h-auto text-md font-bold !bg-green-600 hover:!bg-green-700 !text-white"
+        className="px-6 py-1.5 h-auto text-sm font-bold !bg-green-600 hover:!bg-green-700 !text-white"
       >
         {isSaving ? (
           <>
@@ -56,7 +56,7 @@ export const QuickCreateFooter: React.FC<QuickCreateFooterProps> = ({
         variant="link"
         onClick={onCancel}
         disabled={isSaving}
-        className="px-2.5 py-1.5 h-auto text-md !text-red-600 hover:!text-red-800 hover:no-underline"
+        className="px-2.5 py-1.5 h-auto text-sm !text-red-600 hover:!text-red-800 hover:no-underline"
       >
         {t("LBL_CANCEL")}
       </Button>

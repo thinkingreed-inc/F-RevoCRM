@@ -358,7 +358,7 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
                 key={option.value}
                 onClick={() => handleSelectOption(option)}
                 className={cn(
-                  "px-3 py-1.5 text-md cursor-pointer",
+                  "px-3 py-1.5 text-sm cursor-pointer",
                   index === highlightedIndex
                     ? "bg-blue-100"
                     : String(value) === String(option.value)
@@ -371,7 +371,7 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
             ))}
           </div>
         ) : (
-          <div className="px-3 py-1.5 text-md text-gray-500 text-center">
+          <div className="px-3 py-1.5 text-sm text-gray-500 text-center">
             該当する選択肢がありません
           </div>
         )}
@@ -387,7 +387,7 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
         <div className="flex items-baseline md:contents">
           <span
             className={cn(
-              "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+              "text-sm text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
               disabled && "text-gray-400",
               labelClassName,
             )}
@@ -409,7 +409,7 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
         <>
           <span
             className={cn(
-              "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+              "text-sm text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
               disabled && "text-gray-400",
             )}
           >

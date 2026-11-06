@@ -140,7 +140,7 @@ const ActivityListInner: React.FC<ActivityListProps> = ({
             className="h-12 w-12 text-gray-400 mb-3"
             aria-hidden="true"
           />
-          <p className="text-md text-gray-600">
+          <p className="text-sm text-gray-600">
             {t("LBL_NO_PENDING_ACTIVITIES")}
           </p>
         </div>
@@ -170,7 +170,7 @@ const ActivityListInner: React.FC<ActivityListProps> = ({
             size="lg"
             onClick={loadMore}
             disabled={loading}
-            className="w-full h-8 text-md"
+            className="w-full h-8 text-sm"
           >
             {loading ? (
               <>

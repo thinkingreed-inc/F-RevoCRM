@@ -533,7 +533,7 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
               key={mod}
               onClick={() => handleModuleSelect(mod)}
               className={cn(
-                "px-3 py-1.5 text-md cursor-pointer",
+                "px-3 py-1.5 text-sm cursor-pointer",
                 index === moduleHighlightedIndex
                   ? "bg-blue-100"
                   : selectedModule === mod
@@ -573,7 +573,7 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
         }}
       >
         {isLoading ? (
-          <div className="px-3 py-1.5 text-md text-gray-500 text-center">
+          <div className="px-3 py-1.5 text-sm text-gray-500 text-center">
             検索中...
           </div>
         ) : searchResults.length > 0 ? (
@@ -583,7 +583,7 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
                 key={record.id}
                 onClick={() => handleSelectRecord(record)}
                 className={cn(
-                  "px-3 py-1.5 text-md cursor-pointer",
+                  "px-3 py-1.5 text-sm cursor-pointer",
                   index === highlightedIndex
                     ? "bg-blue-100"
                     : value === record.id
@@ -596,7 +596,7 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
             ))}
           </div>
         ) : (
-          <div className="px-3 py-1.5 text-md text-gray-500 text-center">
+          <div className="px-3 py-1.5 text-sm text-gray-500 text-center">
             {searchTerm
               ? "該当するレコードがありません"
               : "レコードがありません"}
@@ -614,7 +614,7 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
         <div className="flex items-baseline md:contents">
           <span
             className={cn(
-              "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+              "text-sm text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
               disabled && "text-gray-400",
               labelClassName,
             )}
@@ -636,7 +636,7 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
         <>
           <span
             className={cn(
-              "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+              "text-sm text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
               disabled && "text-gray-400",
             )}
           >

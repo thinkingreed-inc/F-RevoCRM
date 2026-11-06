@@ -548,7 +548,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
         {/* ラベル - FieldRendererと同じスタイル */}
         <label
           className={cn(
-            "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+            "text-sm text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
             isDisabled && "text-gray-400",
           )}
         >
@@ -702,7 +702,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
           <div className="flex items-start gap-2">
             <label
               className={cn(
-                "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+                "text-sm text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
                 isDisabled && "text-gray-400",
               )}
             >
@@ -768,7 +768,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                     <div className="flex items-start gap-2">
                       <label
                         className={cn(
-                          "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-tight min-h-[54px] pt-[18px] flex items-start justify-end",
+                          "text-sm text-gray-700 flex-shrink-0 w-[110px] text-right leading-tight min-h-[54px] pt-[18px] flex items-start justify-end",
                           isDisabled && "text-gray-400",
                         )}
                       >
@@ -796,7 +796,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                           <label
                             htmlFor="reminder_enabled"
                             className={cn(
-                              "text-md text-gray-700 cursor-pointer !mb-0",
+                              "text-sm text-gray-700 cursor-pointer !mb-0",
                               isDisabled && "text-gray-400",
                             )}
                           >
@@ -804,7 +804,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                           </label>
                         </div>
                         {isReminderEnabled && (
-                          <div className="flex flex-wrap items-center gap-2 text-md mt-3 pt-3 pb-3 border-t border-gray-200">
+                          <div className="flex flex-wrap items-center gap-2 text-sm mt-3 pt-3 pb-3 border-t border-gray-200">
                             <span className="text-gray-700">
                               {t("LBL_START")}
                             </span>
@@ -818,7 +818,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                               }
                               disabled={isDisabled}
                               className={cn(
-                                "w-20 h-[30px] px-2 text-md border border-input rounded-sm shadow-xs transition-[color,box-shadow]",
+                                "w-20 h-[30px] px-2 text-sm border border-input rounded-sm shadow-xs transition-[color,box-shadow]",
                                 "focus:outline-none focus:ring-[3px] focus:ring-ring/50 focus:border-ring",
                                 "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
                               )}
@@ -842,7 +842,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                               }
                               disabled={isDisabled}
                               className={cn(
-                                "w-20 h-[30px] px-2 text-md border border-input rounded-sm shadow-xs transition-[color,box-shadow]",
+                                "w-20 h-[30px] px-2 text-sm border border-input rounded-sm shadow-xs transition-[color,box-shadow]",
                                 "focus:outline-none focus:ring-[3px] focus:ring-ring/50 focus:border-ring",
                                 "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
                               )}
@@ -866,7 +866,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                               }
                               disabled={isDisabled}
                               className={cn(
-                                "w-20 h-[30px] px-2 text-md border border-input rounded-sm shadow-xs transition-[color,box-shadow]",
+                                "w-20 h-[30px] px-2 text-sm border border-input rounded-sm shadow-xs transition-[color,box-shadow]",
                                 "focus:outline-none focus:ring-[3px] focus:ring-ring/50 focus:border-ring",
                                 "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
                               )}
@@ -905,7 +905,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                   <div className="flex items-start gap-2">
                     <label
                       className={cn(
-                        "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-tight min-h-[54px] pt-[18px] flex items-start justify-end",
+                        "text-sm text-gray-700 flex-shrink-0 w-[110px] text-right leading-tight min-h-[54px] pt-[18px] flex items-start justify-end",
                         isDisabled && "text-gray-400",
                       )}
                     >
@@ -933,7 +933,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                         <label
                           htmlFor="reminder_enabled_standalone"
                           className={cn(
-                            "text-md text-gray-700 cursor-pointer !mb-0",
+                            "text-sm text-gray-700 cursor-pointer !mb-0",
                             isDisabled && "text-gray-400",
                           )}
                         >
@@ -941,7 +941,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                         </label>
                       </div>
                       {isReminderEnabled && (
-                        <div className="flex flex-wrap items-center gap-2 text-md mt-3 pt-3 pb-3 border-t border-gray-200">
+                        <div className="flex flex-wrap items-center gap-2 text-sm mt-3 pt-3 pb-3 border-t border-gray-200">
                           <span className="text-gray-700">
                             {t("LBL_START")}
                           </span>
@@ -955,7 +955,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                             }
                             disabled={isDisabled}
                             className={cn(
-                              "w-20 h-[30px] px-2 text-md border border-input rounded-sm shadow-xs transition-[color,box-shadow]",
+                              "w-20 h-[30px] px-2 text-sm border border-input rounded-sm shadow-xs transition-[color,box-shadow]",
                               "focus:outline-none focus:ring-[3px] focus:ring-ring/50 focus:border-ring",
                               "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
                             )}
@@ -977,7 +977,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                             }
                             disabled={isDisabled}
                             className={cn(
-                              "w-20 h-[30px] px-2 text-md border border-input rounded-sm shadow-xs transition-[color,box-shadow]",
+                              "w-20 h-[30px] px-2 text-sm border border-input rounded-sm shadow-xs transition-[color,box-shadow]",
                               "focus:outline-none focus:ring-[3px] focus:ring-ring/50 focus:border-ring",
                               "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
                             )}
@@ -1001,7 +1001,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                             }
                             disabled={isDisabled}
                             className={cn(
-                              "w-20 h-[30px] px-2 text-md border border-input rounded-sm shadow-xs transition-[color,box-shadow]",
+                              "w-20 h-[30px] px-2 text-sm border border-input rounded-sm shadow-xs transition-[color,box-shadow]",
                               "focus:outline-none focus:ring-[3px] focus:ring-ring/50 focus:border-ring",
                               "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
                             )}
@@ -1038,7 +1038,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
               <div className="flex items-start gap-2">
                 <label
                   className={cn(
-                    "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-tight min-h-[54px] pt-[18px] flex items-start justify-end",
+                    "text-sm text-gray-700 flex-shrink-0 w-[110px] text-right leading-tight min-h-[54px] pt-[18px] flex items-start justify-end",
                     isDisabled && "text-gray-400",
                   )}
                 >
@@ -1071,7 +1071,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                       placeholder={t("LBL_SEARCH_USERS_PLACEHOLDER")}
                       disabled={isDisabled}
                       className={cn(
-                        "w-full h-[30px] px-3 border rounded-sm shadow-sm text-md",
+                        "w-full h-[30px] px-3 border rounded-sm shadow-sm text-sm",
                         "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
                         "disabled:bg-gray-100 disabled:text-gray-500",
                         "border-gray-300",
@@ -1105,7 +1105,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                                   key={user.id}
                                   onClick={() => handleAddInvitee(user.id)}
                                   className={cn(
-                                    "px-3 py-1.5 text-md cursor-pointer",
+                                    "px-3 py-1.5 text-sm cursor-pointer",
                                     index === inviteeHighlightedIndex
                                       ? "bg-blue-100"
                                       : "hover:bg-blue-50",
@@ -1115,13 +1115,13 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                                 </div>
                               ))}
                               {inviteeCandidates.length === 0 && (
-                                <div className="px-3 py-1.5 text-md text-gray-500 text-center">
+                                <div className="px-3 py-1.5 text-sm text-gray-500 text-center">
                                   {t("LBL_ALL_USERS_SELECTED")}
                                 </div>
                               )}
                             </div>
                           ) : (
-                            <div className="px-3 py-1.5 text-md text-gray-500 text-center">
+                            <div className="px-3 py-1.5 text-sm text-gray-500 text-center">
                               {t("LBL_NO_MATCHING_USERS")}
                             </div>
                           )}
@@ -1141,7 +1141,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                         return (
                           <div
                             key={userId}
-                            className="relative inline-flex items-center bg-blue-100 text-blue-800 rounded-md text-md"
+                            className="relative inline-flex items-center bg-blue-100 text-blue-800 rounded-md text-sm"
                           >
                             <span className="pl-3 pr-6 py-1.5">
                               {user.name}
@@ -1170,7 +1170,7 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
                 <label
                   htmlFor="send_mail"
                   className={cn(
-                    "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+                    "text-sm text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
                     isDisabled && "text-gray-400",
                   )}
                 >

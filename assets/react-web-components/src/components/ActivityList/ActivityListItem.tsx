@@ -126,7 +126,7 @@ const CollapsibleText: React.FC<{ text: string; label?: string }> = ({
       <div
         ref={contentRef}
         className={cn(
-          "whitespace-pre-wrap text-gray-600 text-md",
+          "whitespace-pre-wrap text-gray-600 text-sm",
           !expanded && needsCollapse && "line-clamp-2",
         )}
       >
@@ -196,7 +196,7 @@ export const ActivityListItem: React.FC<ActivityListItemProps> = ({
           {formattedDateTime && (
             <time
               dateTime={`${activity.dateStart}T${activity.timeStart}`}
-              className="text-md text-gray-500"
+              className="text-sm text-gray-500"
             >
               {formattedDateTime}
             </time>
@@ -228,7 +228,7 @@ export const ActivityListItem: React.FC<ActivityListItemProps> = ({
 
         {/* Row 2: 件名 */}
         <div
-          className="font-bold text-gray-900 text-md truncate mb-1"
+          className="font-bold text-gray-900 text-sm truncate mb-1"
           title={activity.subject}
         >
           {activity.subject}
