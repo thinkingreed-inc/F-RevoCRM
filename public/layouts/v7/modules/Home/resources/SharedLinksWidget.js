@@ -1,156 +1,66 @@
 /*+**********************************************************************************
- * ダッシュボードのウィジェット「共有リンク」
+ * ダッシュボードのウィジェット「共有リンク」の枠の調整
  *
- * リンクを押したときに、設定どおりの開き方（別タブ / 別ウィンドウ）で開く。
- * - GET・別タブ: <a target="_blank"> のまま、ブラウザに任せる
- * - GET・別ウィンドウ: 通常のクリックだけ受けて window.open で開く
- *   （中クリック・Ctrl+クリックはブラウザの通常の動きのまま）
- * - POST・別タブ: 押したときにフォームを組み立て、target="_blank" で送信する
- * - POST・別ウィンドウ: 空のウィンドウを開き、その中でフォームを組み立てて送信する
+ * ウィジェットの中身（リンクの一覧と開き方）は Web コンポーネント <shared-links-widget>（React）が受け持つ。
+ * ここではダッシュボード（vtiger）側の枠だけを扱う。
  *
- * POST のフォームを HTML に書き出さないのは、csrf-magic が <form method="post"> に
- * CRM の CSRF トークンを埋め込み、リンク先へ送ってしまうため。
+ * 共通の Vtiger_Widget_Js は、読み込み時と大きさを変えたときに中身の高さを
+ * 「今の高さ − 40px」と固定値で書き込むだけで、ウィジェットの大きさを見ていない。
+ * そのため大きくしても中身が広がらず、スクロールバーが出たままになる。
+ * Vtiger_Widget_Js.getInstance は Home_<名前>_Widget_Js があればそれを使う。
  * 仕様: docs/specs/shared_links_widget.md
  ************************************************************************************/
-(function ($) {
-	'use strict';
+if (typeof Vtiger_Widget_Js !== 'undefined') {
+	Vtiger_Widget_Js('Home_SharedLinks_Widget_Js', {}, {
 
-	var SharedLinksWidget = {
-
-		/** 同じリンクは同じウィンドウを使い回す */
-		getWindowName: function (link) {
-			return 'frSharedLink_' + link.id;
+		postLoadWidget: function () {
+			this._super();
+			this.fitContentHeight();
 		},
 
-		/**
-		 * window.open に渡すサイズと位置。今のウィンドウの中央に来るようにし、
-		 * 画面より大きいときは画面に収まるサイズに縮める
-		 */
-		getWindowFeatures: function (link) {
-			var screenWidth = window.screen.availWidth || window.outerWidth;
-			var screenHeight = window.screen.availHeight || window.outerHeight;
-			var width = Math.min(link.width, screenWidth);
-			var height = Math.min(link.height, screenHeight);
-			var baseLeft = typeof window.screenX === 'number' ? window.screenX : window.screenLeft;
-			var baseTop = typeof window.screenY === 'number' ? window.screenY : window.screenTop;
-			var left = baseLeft + Math.max(0, Math.round((window.outerWidth - width) / 2));
-			var top = baseTop + Math.max(0, Math.round((window.outerHeight - height) / 2));
-			return 'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top
-				+ ',resizable=yes,scrollbars=yes';
+		postResizeWidget: function () {
+			this.fitContentHeight();
 		},
 
-		openGetInWindow: function (link) {
-			var features = this.getWindowFeatures(link) + ',noopener' + (link.noreferrer ? ',noreferrer' : '');
-			// noopener を付けると成功しても null が返るため、ブロックされたかは判定しない
-			window.open(link.url, this.getWindowName(link), features);
+		postRefreshWidget: function () {
+			this._super();
+			this.fitContentHeight();
 		},
 
-		openPost: function (link) {
-			// CRM の CSP（form-action）で送り先が許可されていないと、ブラウザが送信を止める。
-			// 空のウィンドウだけが開いて何も起きないのを避け、理由を知らせる
-			if (link.blocked) {
-				app.helper.showErrorNotification({message: app.vtranslate('JS_SHARED_LINK_POST_BLOCKED')});
+		/** 中身の高さ = ウィジェットの内側の下端（フッターの上）− 中身の上端 */
+		fitContentHeight: function () {
+			var container = this.getContainer();
+			var content = container.find('.dashboardWidgetContent');
+			if (content.length === 0) {
 				return;
 			}
-			if (link.openMode !== 'window') {
-				this.submitPost(document, link, '_blank', link.noreferrer ? 'noopener noreferrer' : 'noopener');
-				return;
-			}
-			var name = this.getWindowName(link);
-			var opened = window.open('about:blank', name, this.getWindowFeatures(link));
-			if (!opened) {
-				app.helper.showErrorNotification({message: app.vtranslate('JS_SHARED_LINK_POPUP_BLOCKED')});
-				return;
-			}
-			// 開いた空のウィンドウ（CRM と同じオリジンの about:blank）の中でフォームを作って送る。
-			// CRM の画面から target=名前 で送る方法は、フォームに rel="noopener" を付けると
-			// ブラウザが名前付きのウィンドウを探さずに新しいタブを開いてしまい、空のウィンドウが残るため使わない。
-			var popupDocument = null;
-			try {
-				popupDocument = opened.document;
-				popupDocument.body;
-			} catch (e) {
-				// 同じ名前のウィンドウが別オリジンのページを開いたまま残っている
-				popupDocument = null;
-			}
-			if (popupDocument && popupDocument.body) {
-				if (link.noreferrer) {
-					var meta = popupDocument.createElement('meta');
-					meta.name = 'referrer';
-					meta.content = 'no-referrer';
-					popupDocument.head.appendChild(meta);
-				}
-				this.submitPost(popupDocument, link, '_self', null);
-			} else {
-				// 開いているウィンドウへ名前で送る（rel を付けると名前で探さなくなるため付けない）
-				this.submitPost(document, link, name, null);
-			}
-			// 送信先のページから CRM の画面を操作できないようにする
-			try {
-				opened.opener = null;
-			} catch (e) {
-				// 別オリジンへ遷移済みなら設定できないが、その場合も参照は残らない
-			}
-		},
-
-		/**
-		 * フォームを組み立てて送信し、送信後に消す
-		 *
-		 * @param {Document} targetDocument フォームを置く文書
-		 * @param {string|null} rel フォームの rel（null なら付けない）
-		 */
-		submitPost: function (targetDocument, link, target, rel) {
-			var form = targetDocument.createElement('form');
-			form.method = 'POST';
-			form.action = link.url;
-			form.target = target;
-			form.style.display = 'none';
-			if (rel) {
-				form.setAttribute('rel', rel);
-			}
-
-			$.each(link.params || [], function (index, param) {
-				// 念のため、CRM の CSRF トークンと同じ名前の値は送らない
-				if (typeof csrfMagicName !== 'undefined' && param.name === csrfMagicName) {
-					return;
-				}
-				var input = targetDocument.createElement('input');
-				input.type = 'hidden';
-				input.name = param.name;
-				input.value = param.value;
-				form.appendChild(input);
-			});
-
-			targetDocument.body.appendChild(form);
-			form.submit();
-			if (form.parentNode) {
-				form.parentNode.removeChild(form);
-			}
-		},
-
-		registerEvents: function () {
-			var thisInstance = this;
-			$(document).on('click', '.sharedLinksWidget a.sharedLink', function (e) {
-				var link = $(this).data('sharedLink');
-				if (!link || typeof link !== 'object') {
-					return;
-				}
-				if (link.method === 'GET') {
-					var isPlainClick = e.button === 0 && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey;
-					if (link.openMode !== 'window' || !isPlainClick) {
-						return;
-					}
-					e.preventDefault();
-					thisInstance.openGetInWindow(link);
-					return;
-				}
-				e.preventDefault();
-				thisInstance.openPost(link);
-			});
+			var footer = container.find('.dashBoardWidgetFooter');
+			var contentTop = content.offset().top - container.offset().top;
+			var footerHeight = footer.length ? footer.outerHeight() : 0;
+			var height = container.innerHeight() - contentTop - footerHeight;
+			content.css('height', Math.max(0, Math.floor(height)) + 'px');
 		}
-	};
-
-	$(function () {
-		SharedLinksWidget.registerEvents();
 	});
-})(jQuery);
+}
+
+/*
+ * 「ウィジェットの追加」メニュー
+ *
+ * 共通の Vtiger_DashBoard_Js.addWidget は、追加したウィジェットと同じ名前（data-name）の項目を
+ * メニューからすべて隠す。共有リンクのウィジェットはどれも data-name="SharedLinks" のため、
+ * 1 つ追加するとほかの共有リンクのウィジェットまで選べなくなる。
+ * 押した項目だけを隠したままにし（追加済みの印を付ける）、ほかの共有リンクの項目は表示し直す。
+ * 項目の onclick（addWidget）は押した要素で先に動くため、ここ（document で受ける）はその後に動く。
+ */
+if (typeof jQuery !== 'undefined') {
+	jQuery(document).on('click', '.widgetsList a[data-name="SharedLinks"]', function () {
+		var item = jQuery(this);
+		item.parent().attr('data-shared-links-added', '1');
+		item.closest('.widgetsList')
+			.find('a[data-name="SharedLinks"]')
+			.not(item)
+			.parent()
+			.not('[data-shared-links-added]')
+			.show();
+	});
+}

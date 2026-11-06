@@ -99,6 +99,33 @@ export function hasTarget(
   return targets.some((t) => targetKey(t) === key);
 }
 
+/** ウィジェットの見出しに使えない文字（サーバーの WIDGET_TITLE_FORBIDDEN と同じ） */
+export const WIDGET_TITLE_FORBIDDEN = ["<", ">", "&", '"', "'"];
+
+/**
+ * ウィジェットの見出しを検証する（必須・上限・使えない文字）
+ *
+ * ほかのウィジェットと名前が重ならないかはサーバーで確かめる。
+ *
+ * @returns エラー（言語ファイルのキー）。妥当なら null
+ */
+export function validateWidgetTitle(
+  title: string,
+  limits: SharedLinkLimits,
+): string | null {
+  const value = title.trim();
+  if (value === "") {
+    return "LBL_ERROR_WIDGET_TITLE_REQUIRED";
+  }
+  if ([...value].length > limits.widget_title_max) {
+    return "LBL_ERROR_WIDGET_TITLE_TOO_LONG";
+  }
+  if (WIDGET_TITLE_FORBIDDEN.some((char) => value.includes(char))) {
+    return "LBL_ERROR_WIDGET_TITLE_CHARS";
+  }
+  return null;
+}
+
 /** http / https の URL か */
 export function isValidHttpUrl(value: string): boolean {
   let parsed: URL;

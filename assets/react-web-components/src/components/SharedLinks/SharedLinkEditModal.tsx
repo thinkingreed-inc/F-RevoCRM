@@ -6,6 +6,7 @@ import type {
   SharedLinkOpenMode,
   SharedLinkParam,
   SharedLinkSaveResult,
+  SharedLinkSet,
   SharedLinkTarget,
   SharedLinkValueType,
 } from "@/types/sharedLinks";
@@ -27,9 +28,16 @@ interface SharedLinkEditModalProps {
   info: SharedLinkInfo;
   /** 編集対象。null なら新規追加 */
   link: SharedLink | null;
+  /** 出すウィジェットの選択肢 */
+  sets: SharedLinkSet[];
+  /** 最初に選んでおくウィジェット（新規は今開いているウィジェット、編集は今のウィジェット） */
+  defaultSetId: number | null;
   isSaving: boolean;
   /** 保存する。入力に誤りがあれば saved=false と項目ごとのエラー（文言）を返す */
-  onSave: (input: SharedLinkInput) => Promise<SharedLinkSaveResult>;
+  onSave: (
+    input: SharedLinkInput,
+    setId: number,
+  ) => Promise<SharedLinkSaveResult>;
   onClose: () => void;
 }
 
@@ -91,6 +99,8 @@ export const SharedLinkEditModal: React.FC<SharedLinkEditModalProps> = ({
   isOpen,
   info,
   link,
+  sets,
+  defaultSetId,
   isSaving,
   onSave,
   onClose,
@@ -104,6 +114,7 @@ export const SharedLinkEditModal: React.FC<SharedLinkEditModalProps> = ({
   const [targetKind, setTargetKind] = useState<TargetKind>("Roles");
   const [targetId, setTargetId] = useState("");
   const [includeSubordinates, setIncludeSubordinates] = useState(false);
+  const [setId, setSetId] = useState<number | null>(defaultSetId);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -112,7 +123,8 @@ export const SharedLinkEditModal: React.FC<SharedLinkEditModalProps> = ({
     setTargetKind("Roles");
     setTargetId("");
     setIncludeSubordinates(false);
-  }, [isOpen, link]);
+    setSetId(defaultSetId);
+  }, [isOpen, link, defaultSetId]);
 
   const userFieldOptions = useMemo<FilterableOption[]>(
     () => info.user_fields.map((f) => ({ value: f.name, label: f.label })),
@@ -228,8 +240,12 @@ export const SharedLinkEditModal: React.FC<SharedLinkEditModalProps> = ({
       setErrors(messages);
       return;
     }
+    if (setId === null) {
+      setErrors({ set_id: t("LBL_ERROR_SET_NOT_FOUND") });
+      return;
+    }
     try {
-      const result = await onSave(toPayload(form));
+      const result = await onSave(toPayload(form), setId);
       if (!result.saved) {
         setErrors(result.errors);
       }
@@ -346,6 +362,25 @@ export const SharedLinkEditModal: React.FC<SharedLinkEditModalProps> = ({
                 {errors._ ?? t("LBL_ERROR_HAS_ERRORS")}
               </div>
             )}
+
+            <div style={sectionStyle}>
+              <label style={labelStyle} htmlFor="shared-link-set">
+                {t("LBL_WIDGET")} <span style={{ color: "#E53E3E" }}>*</span>
+              </label>
+              <select
+                id="shared-link-set"
+                value={setId ?? ""}
+                onChange={(e) => setSetId(Number(e.target.value))}
+                style={{ ...inputStyle, width: 280 }}
+              >
+                {sets.map((set) => (
+                  <option key={set.id} value={set.id}>
+                    {set.title}
+                  </option>
+                ))}
+              </select>
+              {fieldError("set_id")}
+            </div>
 
             <div style={sectionStyle}>
               <label style={labelStyle} htmlFor="shared-link-title">

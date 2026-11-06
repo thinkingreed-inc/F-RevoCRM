@@ -16,4 +16,13 @@ class Home_DashBoard_View extends Vtiger_DashBoard_View {
 		$jsScriptInstances = $this->checkAndConvertJsScripts(array('modules.Home.resources.SharedLinksWidget'));
 		return array_merge($headerScriptInstances, $jsScriptInstances);
 	}
+
+	public function getHeaderCss(Vtiger_Request $request) {
+		$headerCssInstances = parent::getHeaderCss($request);
+		// ウィジェット「共有リンク」の見た目
+		$cssInstances = $this->checkAndConvertCssStyles(array(
+			'~layouts/'.Vtiger_Viewer::getDefaultLayoutName().'/modules/Home/resources/SharedLinksWidget.css',
+		));
+		return array_merge($headerCssInstances, $cssInstances);
+	}
 }

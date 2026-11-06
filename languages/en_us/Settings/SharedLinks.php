@@ -5,7 +5,17 @@
 $languageStrings = array(
 	'SharedLinks' => 'Shared Links',
 	'LBL_SHARED_LINKS' => 'Shared Links',
-	'LBL_SHARED_LINKS_DESCRIPTION' => 'Register links shown in the "Shared Links" dashboard widget.',
+	'LBL_SHARED_LINKS_DESCRIPTION' => 'Register shared links shown on the dashboard.',
+	'LBL_WIDGETS' => 'Widgets',
+	'LBL_WIDGET' => 'Widget',
+	'LBL_CREATE_WIDGET' => 'Create widget',
+	'LBL_CREATE' => 'Create',
+	'LBL_DELETE_WIDGET' => 'Delete this widget',
+	'LBL_CONFIRM_DELETE_WIDGET' => 'Delete the widget "%s" and its %s links? It will also be removed from every user\'s dashboard.',
+	'LBL_NO_WIDGETS' => 'No widgets. Create one with "Create widget".',
+	'LBL_WIDGETS_NOTE' => 'Group links into widgets. Users can place each widget from "Add Widget" on their dashboard.',
+	'LBL_WIDGET_TITLE' => 'Widget title',
+	'LBL_WIDGET_TITLE_NOTE' => 'Shown in the "Add Widget" menu and as the title of each user\'s dashboard widget.',
 
 	// List
 	'LBL_ADD_LINK' => 'Add Link',
@@ -100,4 +110,9 @@ $languageStrings = array(
 	'LBL_ERROR_INVALID_VALUE' => 'Invalid value.',
 	'LBL_ERROR_LINK_NOT_FOUND' => 'Link not found. Reload the page.',
 	'LBL_ERROR_HAS_ERRORS' => 'Please correct the errors.',
+	'LBL_ERROR_WIDGET_TITLE_TOO_LONG' => 'Title must be 30 characters or less.',
+	'LBL_ERROR_WIDGET_TITLE_CHARS' => 'The title cannot contain < > & " \'.',
+	'LBL_ERROR_WIDGET_TITLE_REQUIRED' => 'Enter a title.',
+	'LBL_ERROR_WIDGET_TITLE_TAKEN' => 'Another widget already uses this title.',
+	'LBL_ERROR_SET_NOT_FOUND' => 'Widget not found. Reload the page.',
 );

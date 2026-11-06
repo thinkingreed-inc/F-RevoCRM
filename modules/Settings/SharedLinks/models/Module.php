@@ -10,7 +10,8 @@
  * @phpstan-import-type SharedLinkParam from Settings_SharedLinks_Rules_Model
  * @phpstan-import-type SharedLinkTarget from Settings_SharedLinks_Rules_Model
  * @phpstan-import-type SharedLinkInput from Settings_SharedLinks_Rules_Model
- * @phpstan-type SharedLinkStored array{id: int, title: string, url: string, description: string, method: string,
+ * @phpstan-type SharedLinkSet array{id: int, title: string, linkid: int, sequence: int}
+ * @phpstan-type SharedLinkStored array{id: int, set_id: int, title: string, url: string, description: string, method: string,
  *     open_mode: string, window_width: int|null, window_height: int|null, noreferrer: bool, active: bool,
  *     visibility: string, sequence: int, params: list<SharedLinkParam>, targets: list<SharedLinkTarget>}
  * @phpstan-type SharedLinkVisible array{id: int, title: string, description: string, method: string, url: string,
@@ -22,6 +23,10 @@ class Settings_SharedLinks_Module_Model extends Settings_Vtiger_Module_Model
     public const LINKS_TABLE = 'vtiger_shared_links';
     public const PARAMS_TABLE = 'vtiger_shared_link_params';
     public const TARGETS_TABLE = 'vtiger_shared_link_targets';
+    public const SETS_TABLE = 'vtiger_shared_link_sets';
+
+    /** ウィジェットを表示する URL（どのウィジェットかは ShowWidget が付ける linkid で見分ける） */
+    public const WIDGET_URL = 'index.php?module=Home&view=ShowWidget&name=SharedLinks';
 
     /** 言語ファイル（languages/<lang>/Settings/SharedLinks.php）の識別子 */
     public const QUALIFIED_MODULE = 'Settings:SharedLinks';
@@ -88,15 +93,178 @@ class Settings_SharedLinks_Module_Model extends Settings_Vtiger_Module_Model
         return self::str(vtranslate($key, $module));
     }
 
+    // ==== ウィジェット（リンクのまとまり） ====================================
+
     /**
-     * すべてのリンク（無効も含む）を並び順で返す
+     * すべてのウィジェットを並び順で返す
      *
-     * @return list<SharedLinkStored>
+     * @return list<SharedLinkSet>
      */
-    public static function getAllLinks(): array
+    public static function getSets(): array
     {
         $db = PearDatabase::getInstance();
-        $result = $db->pquery('SELECT * FROM ' . self::LINKS_TABLE . ' ORDER BY sequence, id', []);
+        $result = $db->pquery('SELECT id, title, linkid, sequence FROM ' . self::SETS_TABLE . ' ORDER BY sequence, id', []);
+        $sets = [];
+        $count = $db->num_rows($result);
+        for ($i = 0; $i < $count; $i++) {
+            $row = self::fetchRow($db, $result, $i);
+            $sets[] = [
+                'id' => self::int($row['id'] ?? null),
+                'title' => self::str($row['title'] ?? ''),
+                'linkid' => self::int($row['linkid'] ?? null),
+                'sequence' => self::int($row['sequence'] ?? 0),
+            ];
+        }
+        return $sets;
+    }
+
+    /**
+     * @return SharedLinkSet|null
+     */
+    public static function getSet(int $id): ?array
+    {
+        foreach (self::getSets() as $set) {
+            if ($set['id'] === $id) {
+                return $set;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * ダッシュボードのウィジェット（vtiger_links.linkid）から、ウィジェットを引く
+     *
+     * @return SharedLinkSet|null
+     */
+    public static function getSetByLinkId(int $linkId): ?array
+    {
+        foreach (self::getSets() as $set) {
+            if ($set['linkid'] === $linkId) {
+                return $set;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 見出しが、ほかのダッシュボードウィジェットの名前と重なるか
+     *
+     * vtiger は「Mini List」「Notebook」などの名前で特別な扱いをするため、
+     * ほかのウィジェット（共有リンクのほかのウィジェットを含む）と同じ名前は付けない。
+     */
+    public static function isWidgetTitleTaken(string $title, ?int $exceptLinkId = null): bool
+    {
+        $db = PearDatabase::getInstance();
+        $result = $db->pquery(
+            "SELECT linkid FROM vtiger_links WHERE linktype = 'DASHBOARDWIDGET' AND LOWER(linklabel) = LOWER(?)",
+            [$title]
+        );
+        $count = $db->num_rows($result);
+        for ($i = 0; $i < $count; $i++) {
+            if (self::int(self::fetchRow($db, $result, $i)['linkid'] ?? null) !== $exceptLinkId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * ウィジェットを作る（id があれば見出しを変える）
+     *
+     * 作るときは、ホームのダッシュボードの「ウィジェットの追加」に出るよう vtiger_links に登録する。
+     * 見出しは vtiger_links.linklabel にも入れる（メニューと各ユーザーのウィジェットの見出しになる）。
+     *
+     * @param string $title 検証済みの見出し
+     * @return int ウィジェットの ID
+     */
+    public static function saveSet(string $title, ?int $id = null): int
+    {
+        $db = PearDatabase::getInstance();
+        $now = date('Y-m-d H:i:s');
+        $db->startTransaction();
+        if ($id !== null) {
+            $set = self::getSet($id);
+            if ($set !== null) {
+                $db->pquery('UPDATE ' . self::SETS_TABLE . ' SET title = ?, modifiedtime = ? WHERE id = ?', [$title, $now, $id]);
+                $db->pquery('UPDATE vtiger_links SET linklabel = ? WHERE linkid = ?', [$title, $set['linkid']]);
+            }
+        } else {
+            self::syncLinksSequence();
+            $linkId = self::int($db->getUniqueID('vtiger_links'));
+            $db->pquery(
+                'INSERT INTO vtiger_links (linkid, tabid, linktype, linklabel, linkurl, linkicon, sequence) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [$linkId, getTabid('Home'), 'DASHBOARDWIDGET', $title, self::WIDGET_URL, '', 0]
+            );
+            $result = $db->pquery('SELECT COALESCE(MAX(sequence), 0) + 1 AS next_seq FROM ' . self::SETS_TABLE, []);
+            $sequence = self::int($db->query_result($result, 0, 'next_seq'));
+            $db->pquery(
+                'INSERT INTO ' . self::SETS_TABLE . ' (title, linkid, sequence, createdtime, modifiedtime) VALUES (?, ?, ?, ?, ?)',
+                [$title, $linkId, $sequence, $now, $now]
+            );
+            $id = self::int($db->getLastInsertID());
+        }
+        $db->completeTransaction();
+        return $id;
+    }
+
+    /**
+     * ウィジェットを削除する
+     *
+     * ウィジェットのリンク（パラメータ・公開範囲の対象を含む）と、各ユーザーのダッシュボードに置かれた
+     * ウィジェット、「ウィジェットの追加」の登録も消す。
+     */
+    public static function deleteSet(int $id): void
+    {
+        $set = self::getSet($id);
+        if ($set === null) {
+            return;
+        }
+        foreach (self::getAllLinks($id) as $link) {
+            self::deleteLink($link['id']);
+        }
+        $db = PearDatabase::getInstance();
+        $db->startTransaction();
+        $db->pquery('DELETE FROM vtiger_module_dashboard_widgets WHERE linkid = ?', [$set['linkid']]);
+        $db->pquery('DELETE FROM vtiger_links WHERE linkid = ?', [$set['linkid']]);
+        $db->pquery('DELETE FROM ' . self::SETS_TABLE . ' WHERE id = ?', [$id]);
+        $db->completeTransaction();
+    }
+
+    /**
+     * vtiger_links の採番（vtiger_links_seq）を、登録済みの最大 ID に追いつかせる
+     *
+     * 過去のマイグレーション（IFrame ウィジェットの追加）が MAX(linkid)+1 で直接 INSERT しており、
+     * 採番が遅れている環境では ID が重複して登録に失敗するため、先にそろえる。
+     */
+    private static function syncLinksSequence(): void
+    {
+        $db = PearDatabase::getInstance();
+        $result = $db->pquery(
+            'SELECT (SELECT COALESCE(MAX(linkid), 0) FROM vtiger_links) AS max_id,'
+            . ' (SELECT COALESCE(MAX(id), 0) FROM vtiger_links_seq) AS seq_id',
+            []
+        );
+        $row = self::fetchRow($db, $result, 0);
+        $maxId = self::int($row['max_id'] ?? 0);
+        if (self::int($row['seq_id'] ?? 0) < $maxId) {
+            $db->pquery('UPDATE vtiger_links_seq SET id = ?', [$maxId]);
+        }
+    }
+
+    // ==== リンク ============================================================
+
+    /**
+     * リンク（無効も含む）を並び順で返す
+     *
+     * @param int|null $setId 指定すればそのウィジェットのリンクだけ
+     * @return list<SharedLinkStored>
+     */
+    public static function getAllLinks(?int $setId = null): array
+    {
+        $db = PearDatabase::getInstance();
+        $result = $setId === null
+            ? $db->pquery('SELECT * FROM ' . self::LINKS_TABLE . ' ORDER BY sequence, id', [])
+            : $db->pquery('SELECT * FROM ' . self::LINKS_TABLE . ' WHERE setid = ? ORDER BY sequence, id', [$setId]);
 
         /** @var array<int, SharedLinkStored> $links */
         $links = [];
@@ -158,6 +326,7 @@ class Settings_SharedLinks_Module_Model extends Settings_Vtiger_Module_Model
     {
         return [
             'id' => self::int($row['id'] ?? null),
+            'set_id' => self::int($row['setid'] ?? null),
             'title' => self::str($row['title'] ?? ''),
             'url' => self::str($row['url'] ?? ''),
             'description' => self::str($row['description'] ?? ''),
@@ -180,15 +349,17 @@ class Settings_SharedLinks_Module_Model extends Settings_Vtiger_Module_Model
      * パラメータと公開範囲の対象はまとめて置き換える。
      *
      * @param SharedLinkInput $link Settings_SharedLinks_Rules_Model::normalize() の戻り値（検証済み）
+     * @param int $setId 出すウィジェット（存在を確認済み）
      * @return int 保存したリンクの ID
      */
-    public static function saveLink(array $link, ?int $id = null): int
+    public static function saveLink(array $link, int $setId, ?int $id = null): int
     {
         $db = PearDatabase::getInstance();
         $now = date('Y-m-d H:i:s');
         $userId = self::int(Users_Record_Model::getCurrentUserModel()->getId());
 
         $values = [
+            $setId,
             $link['title'],
             $link['url'],
             $link['description'],
@@ -204,7 +375,7 @@ class Settings_SharedLinks_Module_Model extends Settings_Vtiger_Module_Model
         $db->startTransaction();
         if ($id !== null) {
             $db->pquery(
-                'UPDATE ' . self::LINKS_TABLE . ' SET title = ?, url = ?, description = ?, method = ?, open_mode = ?,'
+                'UPDATE ' . self::LINKS_TABLE . ' SET setid = ?, title = ?, url = ?, description = ?, method = ?, open_mode = ?,'
                 . ' window_width = ?, window_height = ?, noreferrer = ?, active = ?, visibility = ?,'
                 . ' modifiedtime = ?, modifiedby = ? WHERE id = ?',
                 array_merge($values, [$now, $userId, $id])
@@ -212,13 +383,16 @@ class Settings_SharedLinks_Module_Model extends Settings_Vtiger_Module_Model
             $db->pquery('DELETE FROM ' . self::PARAMS_TABLE . ' WHERE linkid = ?', [$id]);
             $db->pquery('DELETE FROM ' . self::TARGETS_TABLE . ' WHERE linkid = ?', [$id]);
         } else {
-            // 新しいリンクは末尾に並べる
-            $result = $db->pquery('SELECT COALESCE(MAX(sequence), 0) + 1 AS next_seq FROM ' . self::LINKS_TABLE, []);
+            // 新しいリンクはウィジェットの末尾に並べる
+            $result = $db->pquery(
+                'SELECT COALESCE(MAX(sequence), 0) + 1 AS next_seq FROM ' . self::LINKS_TABLE . ' WHERE setid = ?',
+                [$setId]
+            );
             $sequence = self::int($db->query_result($result, 0, 'next_seq'));
             $db->pquery(
-                'INSERT INTO ' . self::LINKS_TABLE . ' (title, url, description, method, open_mode, window_width,'
+                'INSERT INTO ' . self::LINKS_TABLE . ' (setid, title, url, description, method, open_mode, window_width,'
                 . ' window_height, noreferrer, active, visibility, sequence, createdtime, modifiedtime, modifiedby)'
-                . ' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                . ' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                 array_merge($values, [$sequence, $now, $now, $userId])
             );
             $id = self::int($db->getLastInsertID());
@@ -447,16 +621,17 @@ class Settings_SharedLinks_Module_Model extends Settings_Vtiger_Module_Model
     /**
      * 見ているユーザーにウィジェットで表示するリンクを返す（パラメータの値は解決済み）
      *
+     * @param int $setId どのウィジェットのリンクか
      * @return list<SharedLinkVisible>
      */
-    public static function getVisibleLinksForCurrentUser(): array
+    public static function getVisibleLinksForCurrentUser(int $setId): array
     {
         $currentUser = Users_Record_Model::getCurrentUserModel();
         $userContext = self::getUserContext(self::int($currentUser->getId()));
 
         $userValues = null;
         $links = [];
-        foreach (self::getAllLinks() as $link) {
+        foreach (self::getAllLinks($setId) as $link) {
             if (!$link['active']
                 || !Settings_SharedLinks_Rules_Model::isVisible($link['visibility'], $link['targets'], $userContext)) {
                 continue;

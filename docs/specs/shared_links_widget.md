@@ -10,7 +10,8 @@
 
 - リンクは**システム管理者が設定画面で一元管理**する（各ユーザーが個別に登録するものではない）。
 - リンクごとに**公開範囲**（役割・グループ・ユーザー）を設定でき、対象のユーザーにだけ表示する。
-- 各ユーザーは、ダッシュボードに「共有リンク」ウィジェットを追加して、管理者が登録したリンクを使う。
+- 管理者は**ウィジェット（リンクのまとまり）を複数作れる**（例:「社内システム」「申請・手続き」）。見出しはウィジェットごとに付ける。
+- 各ユーザーは、ダッシュボードの「ウィジェットの追加」から必要なウィジェットを置いて、管理者が登録したリンクを使う。
 - リンク先へのリクエストは GET / POST を選べる。リクエストパラメータを指定でき、値には**ログインユーザーの情報を差し込める**（例: 社員番号やメールアドレスを連携先へ渡す）。
 
 ## 2. 対象外（今回は実装しない）
@@ -31,7 +32,17 @@
 - アクセスできるのはシステム管理者のみ（`Settings_Vtiger_Index_View` の既定の判定）。
 - 画面本体は Web コンポーネント `<shared-links-page>`（React）で描画する。休祝日マスタ（`Settings/Holidays`）と同じ構成。
 
-#### 一覧
+#### ウィジェット（リンクのまとまり）
+
+- 画面の上部にウィジェットをタブで並べ（作った順）、それぞれにリンクの件数を出す。タブを選ぶと、そのウィジェットのリンクの一覧に切り替わる。
+- 「＋ ウィジェットを作る」で見出しを入力して作る。作ったウィジェットのタブを選んだ状態にする。
+- 選んだウィジェットの見出しを変えられる（変えるまで「保存」は押せない）。見出しは「ウィジェットの追加」メニューと、各ユーザーのダッシュボードのウィジェットの見出しになる。
+- 「このウィジェットを削除」で、中のリンクごと削除する。確認ダイアログに見出しとリンクの件数を出す。各ユーザーのダッシュボードに置いたウィジェットと、「ウィジェットの追加」の項目も消える。
+- 見出しの制約: 必須・30 文字まで・`< > & " '` は使えない（vtiger の「ウィジェットの追加」メニューと見出しの title 属性はエスケープせずに出力するため）・ほかのダッシュボードウィジェット（「ノート」「Mini List」や、共有リンクのほかのウィジェット）と同じ名前は付けられない（大文字小文字を区別しない）。
+- ウィジェットが 1 つも無いときは「ウィジェットを作る」への案内を出し、リンクは追加できない。
+- タブの並び替えはしない（作った順）。
+
+#### 一覧（選んだウィジェットのリンク）
 
 | 列 | 内容 |
 |---|---|
@@ -50,6 +61,7 @@
 
 | 項目 | 必須 | 入力 | 制約 |
 |---|---|---|---|
+| ウィジェット | ○ | 選択 | 新規は今開いているウィジェット。選び直すとそのウィジェットへ移す |
 | タイトル | ○ | テキスト | 1〜100 文字 |
 | URL | ○ | テキスト | `http` / `https` のみ。最大 2000 文字。クエリ文字列を含んでもよい |
 | 説明 | | テキストエリア | 最大 500 文字。ウィジェットでタイトルの下に表示する |
@@ -84,12 +96,18 @@
 - 一覧画面・編集モーダルでも、ユーザー情報の値は項目の表示ラベルで見せる。内部の項目名は見せない。
 - 保存時のエラーは、該当する項目の下に表示する。
 
-### 3.2 ダッシュボードのウィジェット「共有リンク」
+### 3.2 ダッシュボードのウィジェット
 
-- ホームのダッシュボードの「ウィジェットを追加」メニューに「共有リンク」が出る。他の通常のウィジェットと同じく、1 つのタブに 1 個まで置ける。
-- 有効なリンクのうち、**見ているユーザーが公開範囲に含まれるもの**を並び順のとおりにリスト表示する（3.4）。各行に外部リンクのアイコン・タイトル・説明（あれば）を出す。
+- ホームのダッシュボードの「ウィジェットの追加」メニューに、作ったウィジェットがそれぞれの見出しで出る。同じウィジェットは 1 つのタブに 1 個まで置ける（ほかのウィジェットは引き続き選べる）。
+- 見出しは管理画面で付けたもの。
+- 中身は Web コンポーネント `<shared-links-widget>`（React）で描画する。サーバーで公開範囲の判定とユーザー情報の差し込みを済ませ、見ているユーザーに表示できるリンクだけを属性で渡す（公開範囲外のリンクは URL も HTML に出ない）。
+- そのウィジェットの有効なリンクのうち、**見ているユーザーが公開範囲に含まれるもの**を並び順のとおりに表示する（3.4）。
+- 1 件 = 1 行で、行全体がリンク。左にタイトルの頭文字の目印（リンクごとに決まる色）、中央にタイトル（1 行で省略）と説明（2 行まで）、右に開き方の印（別タブ ↗ / 別ウィンドウ ⧉）を出す。行に乗ると背景と右の印の色が変わる。
+- 件数が多いときは中身をスクロールする。ウィジェットの大きさを変えたら、中身の高さも合わせる（vtiger の共通の処理は高さを固定値で書き込むだけで、大きくしてもスクロールバーが残るため、ウィジェット用の JS で合わせ直す）。
 - リンクを押すと、リンクごとに設定した開き方（別タブ / 別ウィンドウ）で開く。CRM の画面そのものが遷移することはない。詳細は 3.3。
-- 表示できるリンクが 1 件も無いときは「共有リンクが登録されていません」と表示する。管理者が見ているときは、設定画面へのリンクも表示する。
+- 表示できるリンクが 1 件も無いときは「共有リンクが登録されていません」と表示する。管理者が見ているときは、設定画面へのボタンも表示する。
+- 1 つ置いても、ほかの共有リンクのウィジェットは「ウィジェットの追加」から消えない（vtiger の共通の処理は、追加したウィジェットと同じ名前の項目をすべて隠すため、押した項目以外を表示し直す）。
+- vtiger の共通 CSS（`public/resources/styles.css`）に `.group`（margin 付き）があるため、Tailwind の `group` は名前付き（`group/link`）で使う。
 - ウィジェットの更新ボタンを押すと最新の内容を再取得する（既存ウィジェットと同じ動き）。
 
 ### 3.3 開き方
@@ -192,7 +210,7 @@ Issue では「リンク先の CSRF 対策で開けない問題を避けるた�
 
 F-RevoCRM の csrf-magic は、出力される HTML の `<form method="post">` へ CRM の CSRF トークン（`__vtrftk`）を自動で埋め込む（`libraries/csrf-magic/csrf-magic.php` の出力バッファ処理と、`csrf-magic.js` のページ読み込み時の処理）。そのため、POST のフォームを HTML に書き出すと、トークンがリンク先へ送られてしまう。
 
-- ウィジェットの HTML には `<form>` を書き出さない。POST の内容（URL とパラメータ）は data 属性の JSON で持たせ、押したときに JS でフォームを作って送信する。
+- ウィジェットの HTML には `<form>` を書き出さない。POST の内容（URL とパラメータ）は `<shared-links-widget>` の属性（JSON）で渡し、押したときに JS でフォームを作って送信する。
 - 送信する直前に、フォームに含まれる入力が登録したパラメータだけであることを確認する（`__vtrftk` と同じ名前のパラメータは送らない）。
 
 ### 6.5 CSP の form-action（POST の送り先）
@@ -207,7 +225,7 @@ CRM の画面は CSP（`includes/http/Response.php`）で `form-action 'self'` �
 
 ### 6.3 出力のエスケープ
 
-- タイトル・説明・URL・パラメータはすべて HTML エスケープして出力する。data 属性の JSON もエスケープする。
+- タイトル・説明・URL・パラメータは、`<shared-links-widget>` の属性（JSON）として HTML エスケープして渡す。React は文字として描画する（HTML として解釈しない）。
 - 差し込むユーザー情報は、見ている本人の情報だけ。他のユーザーの情報は差し込まない。
 
 ### 6.4 権限
@@ -222,11 +240,27 @@ CRM の画面は CSP（`includes/http/Response.php`）で `form-action 'self'` �
 
 文字セットと照合順序は `DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci` を明示する（CLAUDE.md の規約）。
 
+### 7.0 `vtiger_shared_link_sets`（ウィジェット = リンクのまとまり）
+
+| 列 | 型 | 内容 |
+|---|---|---|
+| `id` | INT AUTO_INCREMENT PK | |
+| `title` | VARCHAR(30) NOT NULL | 見出し（`vtiger_links.linklabel` と同じ値にそろえる） |
+| `linkid` | INT NOT NULL UNIQUE | `vtiger_links.linkid`（ダッシュボードのウィジェットの登録） |
+| `sequence` | INT NOT NULL DEFAULT 0 | 並び順（作った順） |
+| `createdtime` / `modifiedtime` | DATETIME NOT NULL | |
+
+- ウィジェット 1 つにつき、`vtiger_links` に `DASHBOARDWIDGET` を 1 行登録する（`tabid` = Home、`linkurl` = `index.php?module=Home&view=ShowWidget&name=SharedLinks`）。どのウィジェットかは、ShowWidget が付ける `linkid` で見分ける。
+- 見出しを変えるときは `linklabel` も変える（`linkid` は変えないので、各ユーザーのダッシュボードに置いたウィジェットは残る）。
+- 削除するときは、中のリンク（パラメータ・対象を含む）・`vtiger_links` の行・各ユーザーの配置（`vtiger_module_dashboard_widgets`）も消す。
+- 登録するときは、採番テーブル `vtiger_links_seq` が `vtiger_links` の最大 ID より遅れていれば先に追いつかせる（過去のマイグレーション（IFrame ウィジェットの追加）が `MAX(linkid)+1` で直接 INSERT していて、採番が遅れている環境があるため）。
+
 ### 7.1 `vtiger_shared_links`（リンク）
 
 | 列 | 型 | 内容 |
 |---|---|---|
 | `id` | INT AUTO_INCREMENT PK | |
+| `setid` | INT NOT NULL | `vtiger_shared_link_sets.id`（どのウィジェットに出すか。`(setid, sequence)` に INDEX） |
 | `title` | VARCHAR(100) NOT NULL | タイトル |
 | `url` | VARCHAR(2000) NOT NULL | URL |
 | `description` | TEXT NULL | 説明 |
@@ -273,11 +307,8 @@ CRM の画面は CSP（`includes/http/Response.php`）で `form-action 'self'` �
 
 `setup/migration/` のコマンドで 1 本作る。何度実行しても結果が変わらないようにする。
 
-1. 上記 3 テーブルを作る（無ければ）。
-2. `vtiger_links` にウィジェットを登録する（無ければ）。
-   - `tabid` = 3（Home）、`linktype` = `DASHBOARDWIDGET`、`linklabel` = `Shared Links`
-   - `linkurl` = `index.php?module=Home&view=ShowWidget&name=SharedLinks`
-   - 登録する前に、採番テーブル `vtiger_links_seq` が `vtiger_links` の最大 ID より遅れていれば追いつかせる。過去のマイグレーション（IFrame ウィジェットの追加）が `MAX(linkid)+1` で直接 INSERT していて、採番が 1 つ遅れている環境があるため（そのままでは `Vtiger_Link::addLink` の ID が重複して失敗する）。
+1. 上記 4 テーブルを作る（無ければ）。
+2. ウィジェットが 1 つも無ければ、最初のウィジェット「共有リンク」を作り、`vtiger_links` に登録する（7.0）。
 3. `vtiger_settings_field` に設定メニューを登録する（無ければ）。
    - ブロック: `LBL_CONFIGURATION`、`name` = `LBL_SHARED_LINKS`
    - `linkto` = `index.php?module=SharedLinks&parent=Settings&view=List`
@@ -288,17 +319,17 @@ CRM の画面は CSP（`includes/http/Response.php`）で `form-action 'self'` �
 
 | 種別 | ファイル | 内容 |
 |---|---|---|
-| Model | `modules/Settings/SharedLinks/models/Module.php` | DB の読み書き（一覧の取得・保存・削除・並び替え）、差し込める項目・公開範囲の選択肢の一覧、ウィジェットに出すリンクの取得 |
+| Model | `modules/Settings/SharedLinks/models/Module.php` | DB の読み書き（ウィジェットの作成・見出しの変更・削除、リンクの取得・保存・削除・並び替え）、差し込める項目・公開範囲の選択肢の一覧、ウィジェットに出すリンクの取得、ユーザーの役割とグループ（DB から求める） |
 | Model | `modules/Settings/SharedLinks/models/Rules.php` | DB を使わない判定（入力の検証・公開範囲の判定・パラメータの値の解決・GET の URL の組み立て・役割の並び順）。単体テストの対象 |
 | View | `modules/Settings/SharedLinks/views/List.php` | 管理画面 |
-| API | `modules/Settings/SharedLinks/apis/SharedLinkAPI.php` | 管理画面用の JSON API（`list` / `info` / `save` / `delete` / `reorder`）。管理者のみ |
+| API | `modules/Settings/SharedLinks/apis/SharedLinkAPI.php` | 管理画面用の JSON API（8.1）。管理者のみ |
 | テンプレート | `layouts/v7/modules/Settings/SharedLinks/SharedLinksList.tpl` | `<shared-links-page>` を置くだけ |
-| Dashboard | `modules/Home/dashboards/SharedLinks.php` | `Home_SharedLinks_Dashboard`。有効なリンクを、差し込みを済ませた状態で表示。一覧は `<div>` で組む（ウィジェット自体が gridster の `<li>` で、中の `<li>` にもその CSS が効いて崩れるため） |
-| テンプレート | `layouts/v7/modules/Home/dashboards/SharedLinks.tpl` / `SharedLinksContents.tpl` | ウィジェットの枠と中身 |
+| Dashboard | `modules/Home/dashboards/SharedLinks.php` | `Home_SharedLinks_Dashboard`。`linkid` からウィジェットを引き、見ているユーザーに表示できるリンク（差し込み済み）と文言を JSON にして渡す |
+| テンプレート | `layouts/v7/modules/Home/dashboards/SharedLinks.tpl` / `SharedLinksContents.tpl` | ウィジェットの枠と、`<shared-links-widget>` を置く中身 |
 | コア | `includes/http/Response.php`、`config.customize.php` | CSP の `form-action` を `$csp_allowed_domains['form-action']` で足せるようにする（6.5） |
-| JS | `public/layouts/v7/modules/Home/resources/SharedLinksWidget.js` | 別ウィンドウで開く、POST のフォームを作って送信する。`Home_DashBoard_View::getHeaderScripts()`（`modules/Home/views/DashBoard.php`）で読み込む |
-| React | `assets/react-web-components/src/components/SharedLinks/` | 管理画面。型は `src/types/sharedLinks.ts` |
-| 言語 | `languages/{ja_jp,en_us}/Settings/SharedLinks.php`、`languages/{ja_jp,en_us}/Home.php`、`languages/{ja_jp,en_us}/Settings/Vtiger.php` | 画面の文言、ウィジェット名 `Shared Links` = 「共有リンク」、設定メニューの名前 |
+| JS / CSS | `public/layouts/v7/modules/Home/resources/SharedLinksWidget.js` / `.css` | ダッシュボードの枠の調整だけ（中身の高さをウィジェットの大きさに合わせる `Home_SharedLinks_Widget_Js`、「ウィジェットの追加」メニューで他の共有リンクを隠さない、中身の余白とスクロール）。`Home_DashBoard_View`（`modules/Home/views/DashBoard.php`）で読み込む |
+| React | `assets/react-web-components/src/components/SharedLinks/` | 管理画面（`SharedLinksPage`・`SharedLinkSets`・`SharedLinkEditModal`）とウィジェット（`SharedLinksWidget`）。リンクを開く処理は `utils/openSharedLink.ts`。型は `src/types/sharedLinks.ts` |
+| 言語 | `languages/{ja_jp,en_us}/Settings/SharedLinks.php`、`languages/{ja_jp,en_us}/Home.php`、`languages/{ja_jp,en_us}/Settings/Vtiger.php` | 管理画面・ウィジェットの文言、設定メニューの名前 |
 | マイグレーション | `setup/migration/scripts/20261106093622_add_shared_links_widget.php` | 7.4 |
 
 ### 8.1 API（`?module=SharedLinks&parent=Settings&api=SharedLinkAPI`）
@@ -306,23 +337,20 @@ CRM の画面は CSP（`includes/http/Response.php`）で `form-action 'self'` �
 | mode | メソッド | 内容 |
 |---|---|---|
 | `info` | GET | 差し込める項目の一覧、公開範囲の選択肢（役割（階層つき）・グループ・有効なユーザー）、画面の文言 |
-| `list` | GET | すべてのリンク（無効も含む）とパラメータ・公開範囲の対象（表示名と削除済みかどうかを含む） |
-| `save` | POST | 追加・更新（`id` があれば更新）。パラメータと公開範囲の対象はまとめて置き換える。値の種類が 2 種類以外・差し込めない項目のときはエラー。対象の種類が 4 種類以外・存在しない ID・`targets` で 0 件のときはエラー |
+| `list` | GET | ウィジェットの一覧（`sets`）と、すべてのリンク（無効も含む。`set_id` 付き）とパラメータ・公開範囲の対象（表示名と削除済みかどうかを含む） |
+| `save_set` | POST | ウィジェットを作る（`title`）。`id` があれば見出しを変える。見出しに誤りがあれば `{"saved": false, "errors": {"title": …}}` |
+| `delete_set` | POST | ウィジェットを削除（中のリンク・`vtiger_links` の行・各ユーザーの配置も消す） |
+| `save` | POST | リンクの追加・更新（`set_id` で出すウィジェットを指定。`id` があれば更新）。パラメータと公開範囲の対象はまとめて置き換える。値の種類が 2 種類以外・差し込めない項目のときはエラー。対象の種類が 4 種類以外・存在しない ID・`targets` で 0 件のときはエラー |
 | `delete` | POST | 削除（パラメータも削除） |
 | `reorder` | POST | `ids` の順に `sequence` を振り直す |
 
 返す JSON は既存の `Vtiger_Api_Controller` の形式に合わせる。
 
 - `save` の入力に誤りがあるときは、保存せずに `{"saved": false, "errors": {"<項目>": "<文言>"}}` を返す（HTTP 200）。項目のキーは `title`・`url`・`params.0.value`・`targets.0` などで、画面はこれを該当する項目の下に出す。保存できたら `{"saved": true, "id": <ID>}`。
-- 管理者以外は 403、存在しないリンクの更新・削除は 404、`link` が JSON でない・`ids` に数字以外があるときは 400。
-- 更新系（`save` / `delete` / `reorder`）は POST と CSRF トークンを必須にする。
+- 管理者以外は 403、存在しないリンク・ウィジェット（`set_id` を含む）の更新・削除は 404、`link` が JSON でない・`ids` に数字以外があるときは 400。
+- 更新系（`save` / `delete` / `reorder` / `save_set` / `delete_set`）は POST と CSRF トークンを必須にする。
 - `link` は JSON で受け取り、`Vtiger_Request::getRaw()` で読む（`get()` は値をエンティティ化するため、URL の `&` などが変わってしまう）。
 
 ## 9. テスト
 
-| 種別 | 内容 |
-|---|---|
-| PHPUnit（Unit） | パラメータの値の解決（固定値・ユーザー情報・`id`・`full_name`（姓のみ・名のみを含む）・削除された項目で空文字になること）、差し込める項目の一覧（除外対象が含まれないこと・uitype 99 が含まれないこと）、GET の URL の組み立て（既存のクエリ文字列がある・無い、URL エンコード、`#` が付いた URL）、入力の検証（scheme・文字数・件数・メソッド・開き方・ウィンドウサイズの範囲（199 / 200 / 4000 / 4001）・公開範囲）、公開範囲の判定（ユーザー一致・グループ所属・役割一致・下位の役割・下位を含まない場合に下位が外れること・削除済みの対象・複数の対象の OR・`all`） |
-| PHPUnit（Integration） | 保存・更新・削除・並び替え、無効のリンク・公開範囲外のリンクがウィジェットに出ないこと、API が管理者以外を拒否すること、マイグレーションを 2 回実行しても重複しないこと |
-| Vitest | 管理画面（パラメータの行の追加・削除、値の種類の切り替え（入力欄とプルダウンが入れ替わる・値が空に戻る）、ユーザー情報の項目が未選択だと保存できないこと、公開範囲の対象の追加・削除・重複の防止・「下位の役割も含む」が役割のときだけ出ること、幅・高さが別ウィンドウのときだけ出ること、エラーの表示） |
-| 手動 | ウィジェットの追加、役割・グループ・ユーザーを変えたユーザーでログインして表示が切り替わること、GET / POST × 別タブ / 別ウィンドウの 4 通りで開くこと、別ウィンドウが指定したサイズで中央に開くこと、同じリンクを 2 回押したときの動き、ポップアップをブロックしたときの通知、POST で `__vtrftk` が送られないこと（送信先で確認）、「リファラーを送らない」で Referer が付かないこと |
+テスト仕様書（デシジョン表・テストケース・実行結果）は [docs/tests/SharedLinks/](../tests/SharedLinks/README.md)。

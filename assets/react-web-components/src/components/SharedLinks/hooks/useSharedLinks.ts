@@ -5,6 +5,8 @@ import type {
   SharedLinkInput,
   SharedLinkListResult,
   SharedLinkSaveResult,
+  SharedLinkSaveSetResult,
+  SharedLinkSet,
 } from "@/types/sharedLinks";
 
 /**
@@ -71,21 +73,31 @@ export async function callSharedLinkApi<T>(
 
 interface UseSharedLinksResult {
   info: SharedLinkInfo | null;
+  sets: SharedLinkSet[];
   links: SharedLink[];
   isLoading: boolean;
   isSaving: boolean;
   error: string | null;
   setError: (message: string | null) => void;
-  /** 保存する。入力に誤りがあれば saved=false と項目ごとのエラーを返す */
-  save: (input: SharedLinkInput, id?: number) => Promise<SharedLinkSaveResult>;
+  /** リンクを保存する。入力に誤りがあれば saved=false と項目ごとのエラーを返す */
+  save: (
+    input: SharedLinkInput,
+    setId: number,
+    id?: number,
+  ) => Promise<SharedLinkSaveResult>;
   remove: (id: number) => Promise<void>;
   /** 渡された ID の順に並び替える */
   reorder: (ids: number[]) => Promise<void>;
+  /** ウィジェットを作る（id があれば見出しを変える） */
+  saveSet: (title: string, id?: number) => Promise<SharedLinkSaveSetResult>;
+  /** ウィジェットを削除する（中のリンクも消える） */
+  removeSet: (id: number) => Promise<void>;
 }
 
 /** 共有リンクのデータを扱うフック */
 export function useSharedLinks(): UseSharedLinksResult {
   const [info, setInfo] = useState<SharedLinkInfo | null>(null);
+  const [sets, setSets] = useState<SharedLinkSet[]>([]);
   const [links, setLinks] = useState<SharedLink[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -93,6 +105,7 @@ export function useSharedLinks(): UseSharedLinksResult {
 
   const loadList = useCallback(async () => {
     const result = await callSharedLinkApi<SharedLinkListResult>("list");
+    setSets(result.sets || []);
     setLinks(result.links || []);
   }, []);
 
@@ -118,11 +131,14 @@ export function useSharedLinks(): UseSharedLinksResult {
   }, [loadList]);
 
   const save = useCallback(
-    async (input: SharedLinkInput, id?: number) => {
+    async (input: SharedLinkInput, setId: number, id?: number) => {
       setIsSaving(true);
       setError(null);
       try {
-        const params: Record<string, string> = { link: JSON.stringify(input) };
+        const params: Record<string, string> = {
+          link: JSON.stringify(input),
+          set_id: String(setId),
+        };
         if (id) params.id = String(id);
         const result = await callSharedLinkApi<SharedLinkSaveResult>(
           "save",
@@ -167,8 +183,45 @@ export function useSharedLinks(): UseSharedLinksResult {
     [loadList],
   );
 
+  const saveSet = useCallback(
+    async (title: string, id?: number) => {
+      setIsSaving(true);
+      setError(null);
+      try {
+        const params: Record<string, string> = { title };
+        if (id) params.id = String(id);
+        const result = await callSharedLinkApi<SharedLinkSaveSetResult>(
+          "save_set",
+          params,
+        );
+        if (result.saved) {
+          await loadList();
+        }
+        return result;
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [loadList],
+  );
+
+  const removeSet = useCallback(
+    async (id: number) => {
+      setIsSaving(true);
+      setError(null);
+      try {
+        await callSharedLinkApi("delete_set", { id: String(id) });
+        await loadList();
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [loadList],
+  );
+
   return {
     info,
+    sets,
     links,
     isLoading,
     isSaving,
@@ -177,5 +230,7 @@ export function useSharedLinks(): UseSharedLinksResult {
     save,
     remove,
     reorder,
+    saveSet,
+    removeSet,
   };
 }

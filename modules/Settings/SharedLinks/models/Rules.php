@@ -33,6 +33,13 @@ class Settings_SharedLinks_Rules_Model
     public const WINDOW_MAX = 4000;
     public const DEFAULT_WINDOW_WIDTH = 1024;
     public const DEFAULT_WINDOW_HEIGHT = 768;
+    public const WIDGET_TITLE_MAX = 30;
+
+    /**
+     * ウィジェットの見出しに使えない文字
+     * （vtiger の「ウィジェットの追加」メニュー・見出しの title 属性はエスケープせずに出力するため）
+     */
+    public const WIDGET_TITLE_FORBIDDEN = ['<', '>', '&', '"', "'"];
 
     /** 差し込めないユーザーの項目（パスワード・認証用・テキストに向かない項目） */
     public const EXCLUDED_USER_FIELDS = [
@@ -189,6 +196,29 @@ class Settings_SharedLinks_Rules_Model
         }
 
         return $errors;
+    }
+
+    /**
+     * ウィジェットの見出しを検証する（必須・30 文字まで・使えない文字）
+     *
+     * ほかのダッシュボードウィジェットと名前が重ならないかは DB を見るため、モデルで確かめる。
+     *
+     * @return string|null エラー（言語ファイルのキー）。妥当なら null
+     */
+    public static function validateWidgetTitle(string $title): ?string
+    {
+        if (trim($title) === '') {
+            return 'LBL_ERROR_WIDGET_TITLE_REQUIRED';
+        }
+        if (mb_strlen($title) > self::WIDGET_TITLE_MAX) {
+            return 'LBL_ERROR_WIDGET_TITLE_TOO_LONG';
+        }
+        foreach (self::WIDGET_TITLE_FORBIDDEN as $char) {
+            if (str_contains($title, $char)) {
+                return 'LBL_ERROR_WIDGET_TITLE_CHARS';
+            }
+        }
+        return null;
     }
 
     /**

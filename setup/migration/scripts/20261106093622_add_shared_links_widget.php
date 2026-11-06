@@ -3,9 +3,10 @@
  * マイグレーション: add_shared_links_widget
  * 生成日時: 20261106093622
  *
- * ダッシュボードのウィジェット「共有リンク」（#1963）を追加する。
- * - リンク・リクエストパラメータ・公開範囲の対象のテーブルを作る
- * - ホームのダッシュボードの「ウィジェットを追加」に出るよう vtiger_links に登録する
+ * ダッシュボードの共有リンク（#1963）を追加する。
+ * - ウィジェット（リンクのまとまり）・リンク・リクエストパラメータ・公開範囲の対象のテーブルを作る
+ * - 最初のウィジェット「共有リンク」を作り、ホームのダッシュボードの「ウィジェットの追加」に出す
+ *   （ウィジェット 1 つにつき vtiger_links に DASHBOARDWIDGET を 1 行登録する。2 つ目以降は管理画面で作る）
  * - 設定メニューの「システム構成」に管理画面を追加する
  *
  * 何度実行しても結果が変わらないようにしてある。
@@ -13,7 +14,6 @@
  */
 
 require_once dirname(__FILE__) . '/../FRMigrationClass.php';
-require_once 'vtlib/Vtiger/Link.php';
 
 class Migration20261106093622_AddSharedLinksWidget extends FRMigrationClass {
 
@@ -23,17 +23,37 @@ class Migration20261106093622_AddSharedLinksWidget extends FRMigrationClass {
     /** 設定メニュー名 */
     const SETTINGS_FIELD = 'LBL_SHARED_LINKS';
 
-    /** ウィジェットの名前（vtiger_links.linklabel） */
-    const WIDGET_LABEL = 'Shared Links';
+    /** 最初のウィジェットの見出し */
+    const FIRST_WIDGET_TITLE = '共有リンク';
 
+    /** ウィジェットを表示する URL（どのウィジェットかは ShowWidget が付ける linkid で見分ける） */
     const WIDGET_URL = 'index.php?module=Home&view=ShowWidget&name=SharedLinks';
 
     public function process() {
+        $this->createSetsTable();
         $this->createLinksTable();
         $this->createParamsTable();
         $this->createTargetsTable();
-        $this->registerWidget();
+        $this->createFirstWidget();
         $this->registerSettingsMenu();
+    }
+
+    private function createSetsTable() {
+        if ($this->checkTableExists('vtiger_shared_link_sets')) {
+            $this->log('テーブル vtiger_shared_link_sets は既に存在するためスキップします');
+            return;
+        }
+        $this->db->pquery("CREATE TABLE vtiger_shared_link_sets (
+            id INT AUTO_INCREMENT,
+            title VARCHAR(30) NOT NULL COMMENT 'ウィジェットの見出し（vtiger_links.linklabel と同じ値）',
+            linkid INT NOT NULL COMMENT 'vtiger_links.linkid（DASHBOARDWIDGET）',
+            sequence INT NOT NULL DEFAULT 0,
+            createdtime DATETIME NOT NULL,
+            modifiedtime DATETIME NOT NULL,
+            PRIMARY KEY (id),
+            UNIQUE INDEX idx_shared_link_sets_linkid (linkid)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci", array());
+        $this->log('テーブル vtiger_shared_link_sets を作成しました');
     }
 
     private function createLinksTable() {
@@ -43,6 +63,7 @@ class Migration20261106093622_AddSharedLinksWidget extends FRMigrationClass {
         }
         $this->db->pquery("CREATE TABLE vtiger_shared_links (
             id INT AUTO_INCREMENT,
+            setid INT NOT NULL COMMENT 'vtiger_shared_link_sets.id（どのウィジェットに出すか）',
             title VARCHAR(100) NOT NULL,
             url VARCHAR(2000) NOT NULL,
             description TEXT DEFAULT NULL,
@@ -58,7 +79,7 @@ class Migration20261106093622_AddSharedLinksWidget extends FRMigrationClass {
             modifiedtime DATETIME NOT NULL,
             modifiedby INT NOT NULL,
             PRIMARY KEY (id),
-            INDEX idx_shared_links_sequence (sequence)
+            INDEX idx_shared_links_setid (setid, sequence)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci", array());
         $this->log('テーブル vtiger_shared_links を作成しました');
     }
@@ -98,30 +119,34 @@ class Migration20261106093622_AddSharedLinksWidget extends FRMigrationClass {
     }
 
     /**
-     * ホーム（tabid=3）のダッシュボードウィジェットとして登録する
-     *
-     * Vtiger_DashBoard_Model::getSelectableDashboard() が「ウィジェットを追加」に出す。
+     * 最初のウィジェット「共有リンク」を作る（ウィジェットが 1 つも無いときだけ）
      */
-    private function registerWidget() {
-        $existing = $this->db->pquery(
-            "SELECT linkid FROM vtiger_links WHERE linktype = 'DASHBOARDWIDGET' AND linklabel = ?",
-            array(self::WIDGET_LABEL)
-        );
-        if ($existing !== false && $this->db->num_rows($existing) > 0) {
-            $this->log('ダッシュボードウィジェット ' . self::WIDGET_LABEL . ' は既に登録済みのためスキップします');
+    private function createFirstWidget() {
+        $result = $this->db->pquery('SELECT 1 FROM vtiger_shared_link_sets LIMIT 1', array());
+        if ($result !== false && $this->db->num_rows($result) > 0) {
+            $this->log('共有リンクのウィジェットは既にあるためスキップします');
             return;
         }
+
         $this->syncLinksSequence();
-        Vtiger_Link::addLink(getTabid('Home'), 'DASHBOARDWIDGET', self::WIDGET_LABEL, self::WIDGET_URL);
-        $this->log('ダッシュボードウィジェット ' . self::WIDGET_LABEL . ' を登録しました');
+        $linkId = (int) $this->db->getUniqueID('vtiger_links');
+        $this->db->pquery(
+            'INSERT INTO vtiger_links (linkid, tabid, linktype, linklabel, linkurl, linkicon, sequence) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            array($linkId, getTabid('Home'), 'DASHBOARDWIDGET', self::FIRST_WIDGET_TITLE, self::WIDGET_URL, '', 0)
+        );
+        $now = date('Y-m-d H:i:s');
+        $this->db->pquery(
+            'INSERT INTO vtiger_shared_link_sets (title, linkid, sequence, createdtime, modifiedtime) VALUES (?, ?, 1, ?, ?)',
+            array(self::FIRST_WIDGET_TITLE, $linkId, $now, $now)
+        );
+        $this->log('ダッシュボードウィジェット「' . self::FIRST_WIDGET_TITLE . "」を登録しました（linkid={$linkId}）");
     }
 
     /**
      * vtiger_links の採番（vtiger_links_seq）を、登録済みの最大 ID に追いつかせる
      *
-     * Vtiger_Link::addLink は vtiger_links_seq から ID を採番する。過去のマイグレーション
-     * （IFrame ウィジェットの追加）が MAX(linkid)+1 で直接 INSERT しており、採番が遅れている
-     * 環境では ID が重複して INSERT に失敗するため、先にそろえる。
+     * 過去のマイグレーション（IFrame ウィジェットの追加）が MAX(linkid)+1 で直接 INSERT しており、
+     * 採番が遅れている環境では ID が重複して INSERT に失敗するため、先にそろえる。
      */
     private function syncLinksSequence() {
         $result = $this->db->pquery(

@@ -11,16 +11,18 @@
  *     → 差し込める項目・公開範囲の選択肢・画面の文言を返す
  *   ?module=SharedLinks&parent=Settings&api=SharedLinkAPI&mode=list
  *     → すべてのリンク（無効も含む）を返す
- *   POST mode=save&link=<JSON>[&id=1] … 追加・更新。入力に誤りがあれば saved=false と項目ごとのエラーを返す
+ *   POST mode=save&set_id=1&link=<JSON>[&id=1] … リンクの追加・更新。入力に誤りがあれば saved=false と項目ごとのエラーを返す
  *   POST mode=delete&id=1            … 削除
  *   POST mode=reorder&ids=3,1,2      … 並び替え
+ *   POST mode=save_set&title=社内システム[&id=1] … ウィジェットを作る（id があれば見出しを変える）
+ *   POST mode=delete_set&id=1        … ウィジェットを削除（リンクと、各ユーザーのダッシュボードの配置も消える）
  */
 class Settings_SharedLinks_SharedLinkAPI_Api extends Vtiger_Api_Controller
 {
     private const QUALIFIED_MODULE = Settings_SharedLinks_Module_Model::QUALIFIED_MODULE;
 
     /** 更新を伴う mode */
-    private const WRITE_MODES = ['save', 'delete', 'reorder'];
+    private const WRITE_MODES = ['save', 'delete', 'reorder', 'save_set', 'delete_set'];
 
     public function loginRequired(): bool
     {
@@ -62,13 +64,20 @@ class Settings_SharedLinks_SharedLinkAPI_Api extends Vtiger_Api_Controller
             case 'info':
                 return $this->sendSuccess($this->getInfo());
             case 'list':
-                return $this->sendSuccess(['links' => $this->getList()]);
+                return $this->sendSuccess([
+                    'sets' => Settings_SharedLinks_Module_Model::getSets(),
+                    'links' => $this->getList(),
+                ]);
             case 'save':
                 return $this->sendSuccess($this->save($request));
             case 'delete':
                 return $this->sendSuccess($this->delete($request));
             case 'reorder':
                 return $this->sendSuccess($this->reorder($request));
+            case 'save_set':
+                return $this->sendSuccess($this->saveSet($request));
+            case 'delete_set':
+                return $this->sendSuccess($this->deleteSet($request));
             default:
                 throw new ApiBadRequestException('Invalid mode: ' . $mode);
         }
@@ -102,6 +111,7 @@ class Settings_SharedLinks_SharedLinkAPI_Api extends Vtiger_Api_Controller
                 'window_max' => Settings_SharedLinks_Rules_Model::WINDOW_MAX,
                 'default_window_width' => Settings_SharedLinks_Rules_Model::DEFAULT_WINDOW_WIDTH,
                 'default_window_height' => Settings_SharedLinks_Rules_Model::DEFAULT_WINDOW_HEIGHT,
+                'widget_title_max' => Settings_SharedLinks_Rules_Model::WIDGET_TITLE_MAX,
             ],
             'labels' => $this->getLabels(),
         ];
@@ -183,6 +193,7 @@ class Settings_SharedLinks_SharedLinkAPI_Api extends Vtiger_Api_Controller
     private function save(Vtiger_Request $request): array
     {
         $id = $this->getLinkId($request, false);
+        $setId = $this->getSetId($request, true, 'set_id');
 
         // URL の & などがエンティティ化されないよう、加工前の値を受け取る
         $input = json_decode(Settings_SharedLinks_Rules_Model::toString($request->getRaw('link')), true);
@@ -215,8 +226,66 @@ class Settings_SharedLinks_SharedLinkAPI_Api extends Vtiger_Api_Controller
             return ['saved' => false, 'errors' => $messages];
         }
 
-        $savedId = Settings_SharedLinks_Module_Model::saveLink($link, $id);
+        $savedId = Settings_SharedLinks_Module_Model::saveLink($link, $setId, $id);
         return ['saved' => true, 'id' => $savedId];
+    }
+
+    /**
+     * ウィジェットを作る・見出しを変える
+     *
+     * @return array<string, mixed>
+     */
+    private function saveSet(Vtiger_Request $request): array
+    {
+        $id = $this->getSetId($request, false);
+        // 記号を含むかを正しく判定するため、加工前の値を受け取る
+        $title = trim(Settings_SharedLinks_Rules_Model::toString($request->getRaw('title')));
+        $error = Settings_SharedLinks_Rules_Model::validateWidgetTitle($title);
+        if ($error === null) {
+            $set = $id !== null ? Settings_SharedLinks_Module_Model::getSet($id) : null;
+            if (Settings_SharedLinks_Module_Model::isWidgetTitleTaken($title, $set['linkid'] ?? null)) {
+                $error = 'LBL_ERROR_WIDGET_TITLE_TAKEN';
+            }
+        }
+        if ($error !== null) {
+            return [
+                'saved' => false,
+                'errors' => ['title' => Settings_SharedLinks_Module_Model::translate($error, self::QUALIFIED_MODULE)],
+            ];
+        }
+        $savedId = Settings_SharedLinks_Module_Model::saveSet($title, $id);
+        return ['saved' => true, 'id' => $savedId, 'title' => $title];
+    }
+
+    /**
+     * ウィジェットを削除する
+     *
+     * @return array<string, mixed>
+     */
+    private function deleteSet(Vtiger_Request $request): array
+    {
+        $id = $this->getSetId($request, true);
+        Settings_SharedLinks_Module_Model::deleteSet($id);
+        return ['id' => $id, 'deleted' => true];
+    }
+
+    /**
+     * リクエストの id（ウィジェット）を取り出す。存在しないウィジェットの id はエラー
+     *
+     * @return ($required is true ? int : int|null)
+     */
+    private function getSetId(Vtiger_Request $request, bool $required, string $key = 'id'): ?int
+    {
+        $raw = Settings_SharedLinks_Rules_Model::toString($request->get($key));
+        if ($raw === '' && !$required) {
+            return null;
+        }
+        if (!preg_match('/^\d+$/', $raw) || Settings_SharedLinks_Module_Model::getSet((int) $raw) === null) {
+            throw new ApiNotFoundException(
+                Settings_SharedLinks_Module_Model::translate('LBL_ERROR_SET_NOT_FOUND', self::QUALIFIED_MODULE)
+            );
+        }
+        return (int) $raw;
     }
 
     /**
@@ -238,16 +307,29 @@ class Settings_SharedLinks_SharedLinkAPI_Api extends Vtiger_Api_Controller
      */
     private function reorder(Vtiger_Request $request): array
     {
+        $ids = $this->parseIds($request);
+        Settings_SharedLinks_Module_Model::reorder(array_values(array_unique($ids)));
+        return ['ids' => $ids];
+    }
+
+    /**
+     * リクエストの ids（カンマ区切りの数字）を取り出す。数字以外があれば 400
+     *
+     * @return list<int>
+     */
+    private function parseIds(Vtiger_Request $request): array
+    {
         $ids = [];
         foreach (explode(',', Settings_SharedLinks_Rules_Model::toString($request->get('ids'))) as $value) {
             $value = trim($value);
             if (!preg_match('/^\d+$/', $value)) {
-                throw new ApiBadRequestException(Settings_SharedLinks_Module_Model::translate('LBL_ERROR_INVALID_VALUE', self::QUALIFIED_MODULE));
+                throw new ApiBadRequestException(
+                    Settings_SharedLinks_Module_Model::translate('LBL_ERROR_INVALID_VALUE', self::QUALIFIED_MODULE)
+                );
             }
             $ids[] = (int) $value;
         }
-        Settings_SharedLinks_Module_Model::reorder(array_values(array_unique($ids)));
-        return ['ids' => $ids];
+        return $ids;
     }
 
     /**

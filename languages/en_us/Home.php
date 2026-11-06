@@ -27,15 +27,15 @@ $languageStrings = array(
 	'LBL_ADD_NEW_DASHBOARD'=>'Add new dashboard',
 	'LBL_MAX_CHARACTERS_ALLOWED_DASHBOARD' => 'Maximum 30 characters are allowed for dashboard name.',
 	'顧客担当者 - Contacts Address' => 'Contacts - Contacts Address',
-	// Shared links widget
-	'Shared Links' => 'Shared Links',
 	'LBL_NO_SHARED_LINKS' => 'No shared links registered',
 	'LBL_SHARED_LINKS_SETTINGS' => 'Configure shared links',
+	'LBL_OPEN_IN_NEW_TAB' => 'Opens in a new tab',
+	'LBL_OPEN_IN_NEW_WINDOW' => 'Opens in a new window',
+	'LBL_SHARED_LINK_POPUP_BLOCKED' => 'The pop-up was blocked. Allow pop-ups for this site in your browser settings.',
+	'LBL_SHARED_LINK_POST_BLOCKED' => 'This link cannot be opened because its destination is not allowed. Contact your system administrator.',
 );
 
 $jsLanguageStrings = array(
 	'JS_TAB_NAME_SHOULD_NOT_BE_EMPTY' => 'Dashboard name cannot not be empty',
 	'JS_NO_DATA_AVAILABLE' => 'No data available',
-	'JS_SHARED_LINK_POPUP_BLOCKED' => 'The pop-up was blocked. Allow pop-ups for this site in your browser settings.',
-	'JS_SHARED_LINK_POST_BLOCKED' => 'This link cannot be opened because its destination is not allowed. Contact your system administrator.',
 );

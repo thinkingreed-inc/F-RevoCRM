@@ -57,12 +57,24 @@ export interface SharedLinkInput {
   targets: SharedLinkTarget[];
 }
 
+/** ダッシュボードのウィジェット（リンクのまとまり） */
+export interface SharedLinkSet {
+  id: number;
+  /** 見出し（「ウィジェットの追加」メニューと各ユーザーのウィジェットに出る） */
+  title: string;
+  /** vtiger_links.linkid（ダッシュボードのウィジェットの登録） */
+  linkid: number;
+  sequence: number;
+}
+
 /** 一覧で受け取るリンク */
 export interface SharedLink extends Omit<
   SharedLinkInput,
   "params" | "targets"
 > {
   id: number;
+  /** 出すウィジェット */
+  set_id: number;
   sequence: number;
   params: SharedLinkParamView[];
   targets: SharedLinkTargetView[];
@@ -101,6 +113,7 @@ export interface SharedLinkLimits {
   window_max: number;
   default_window_width: number;
   default_window_height: number;
+  widget_title_max: number;
 }
 
 /** 画面の初期情報（mode=info） */
@@ -115,10 +128,48 @@ export interface SharedLinkInfo {
 
 /** 一覧（mode=list） */
 export interface SharedLinkListResult {
+  sets: SharedLinkSet[];
   links: SharedLink[];
 }
+
+/** ウィジェットの作成・見出しの変更の結果（mode=save_set） */
+export type SharedLinkSaveSetResult =
+  | { saved: true; id: number; title: string }
+  | { saved: false; errors: Record<string, string> };
 
 /** 保存の結果（mode=save） */
 export type SharedLinkSaveResult =
   | { saved: true; id: number }
   | { saved: false; errors: Record<string, string> };
+
+/** ダッシュボードのウィジェットに渡すリンク（サーバーで公開範囲の判定と値の解決を済ませたもの） */
+export interface SharedLinkWidgetItem {
+  id: number;
+  title: string;
+  description: string;
+  method: SharedLinkMethod;
+  /** GET はパラメータを付けた最終的な URL。POST は送り先 */
+  url: string;
+  /** POST で送る値（GET は空） */
+  params: { name: string; value: string }[];
+  openMode: SharedLinkOpenMode;
+  width: number | null;
+  height: number | null;
+  noreferrer: boolean;
+  /** POST の送り先が CSP（form-action）で許可されていない */
+  blocked: boolean;
+  /** 左に出す目印の文字（タイトルの頭文字） */
+  initial: string;
+  /** 目印の色（0〜7） */
+  color: number;
+}
+
+/** ウィジェットの文言 */
+export interface SharedLinkWidgetLabels {
+  empty: string;
+  settings: string;
+  openInNewTab: string;
+  openInNewWindow: string;
+  popupBlocked: string;
+  postBlocked: string;
+}

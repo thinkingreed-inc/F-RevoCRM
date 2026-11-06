@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import type {
   SharedLink,
   SharedLinkInput,
@@ -6,6 +6,7 @@ import type {
 } from "@/types/sharedLinks";
 import { useSharedLinks } from "./hooks/useSharedLinks";
 import { SharedLinkEditModal } from "./SharedLinkEditModal";
+import { SharedLinkSetHeader, SharedLinkSetTabs } from "./SharedLinkSets";
 
 /** 一覧の公開範囲に名前を並べる件数（超えた分は「ほか n 件」） */
 const VISIBLE_TARGETS = 3;
@@ -30,13 +31,15 @@ const buttonStyle: React.CSSProperties = {
 /**
  * 共有リンクの管理画面
  *
- * ダッシュボードのウィジェット「共有リンク」に表示するリンクを管理する。
+ * ダッシュボードの共有リンクのウィジェット（リンクのまとまり。複数作れる）と、
+ * それぞれに表示するリンクを管理する。
  * システム管理者のみアクセスできる（サーバー側で判定）。
  */
 export const SharedLinksPage: React.FC = () => {
   const {
     info,
-    links,
+    sets,
+    links: allLinks,
     isLoading,
     isSaving,
     error,
@@ -44,7 +47,29 @@ export const SharedLinksPage: React.FC = () => {
     save,
     remove,
     reorder,
+    saveSet,
+    removeSet,
   } = useSharedLinks();
+
+  /** 選んだウィジェット。未選択・消えたときは先頭を選んでいるものとして扱う（描画のたびに決める） */
+  const [chosenSetId, setSelectedSetId] = useState<number | null>(null);
+  const selectedSetId = sets.some((set) => set.id === chosenSetId)
+    ? chosenSetId
+    : (sets[0]?.id ?? null);
+
+  const selectedIndex = sets.findIndex((set) => set.id === selectedSetId);
+  const selectedSet = selectedIndex >= 0 ? sets[selectedIndex] : null;
+  const links = useMemo(
+    () => allLinks.filter((link) => link.set_id === selectedSetId),
+    [allLinks, selectedSetId],
+  );
+  const counts = useMemo(() => {
+    const result: Record<number, number> = {};
+    for (const link of allLinks) {
+      result[link.set_id] = (result[link.set_id] ?? 0) + 1;
+    }
+    return result;
+  }, [allLinks]);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<SharedLink | null>(null);
@@ -67,8 +92,8 @@ export const SharedLinksPage: React.FC = () => {
   };
 
   const handleSave = useCallback(
-    async (input: SharedLinkInput) => {
-      const result = await save(input, editTarget?.id);
+    async (input: SharedLinkInput, setId: number) => {
+      const result = await save(input, setId, editTarget?.id);
       if (result.saved) {
         setModalOpen(false);
         setEditTarget(null);
@@ -107,6 +132,20 @@ export const SharedLinksPage: React.FC = () => {
     },
     [links, reorder, setError],
   );
+
+  const handleDeleteSet = useCallback(async () => {
+    if (!selectedSet) return;
+    const confirmMessage = t("LBL_CONFIRM_DELETE_WIDGET")
+      .replace("%s", selectedSet.title)
+      .replace("%s", String(links.length));
+    if (!window.confirm(confirmMessage)) return;
+    try {
+      await removeSet(selectedSet.id);
+      setMessage(t("LBL_DELETED"));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  }, [links.length, removeSet, selectedSet, setError, t]);
 
   const renderVisibility = (link: SharedLink) => {
     if (link.visibility === "all") {
@@ -166,7 +205,9 @@ export const SharedLinksPage: React.FC = () => {
         <button
           type="button"
           onClick={() => openModal(null)}
+          disabled={selectedSet === null}
           style={{
+            opacity: selectedSet === null ? 0.5 : 1,
             ...buttonStyle,
             padding: "6px 14px",
             fontSize: 13,
@@ -179,7 +220,7 @@ export const SharedLinksPage: React.FC = () => {
         </button>
       </div>
       <p style={{ margin: "0 0 12px", fontSize: 12, color: "#718096" }}>
-        {t("LBL_SHARED_LINKS_DESCRIPTION")}
+        {t("LBL_SHARED_LINKS_DESCRIPTION")} {t("LBL_WIDGETS_NOTE")}
       </p>
 
       {error && (
@@ -213,133 +254,169 @@ export const SharedLinksPage: React.FC = () => {
         </div>
       )}
 
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          backgroundColor: "#fff",
+      <SharedLinkSetTabs
+        info={info}
+        sets={sets}
+        counts={counts}
+        selectedId={selectedSetId}
+        isSaving={isSaving}
+        onSelect={(id) => {
+          setSelectedSetId(id);
+          setMessage(null);
         }}
-      >
-        <thead>
-          <tr>
-            <th style={thStyle}>{t("LBL_SEQUENCE")}</th>
-            <th style={thStyle}>{t("LBL_TITLE")}</th>
-            <th style={thStyle}>{t("LBL_URL")}</th>
-            <th style={thStyle}>{t("LBL_METHOD")}</th>
-            <th style={thStyle}>{t("LBL_OPEN_MODE")}</th>
-            <th style={thStyle}>{t("LBL_VISIBILITY")}</th>
-            <th style={thStyle}>{t("LBL_STATUS")}</th>
-            <th style={thStyle}>{t("LBL_ACTIONS")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {links.length === 0 && (
+        onCreate={(title) => saveSet(title)}
+        onCreated={(id) => {
+          setSelectedSetId(id);
+          setMessage(t("LBL_SAVED"));
+        }}
+      />
+
+      {selectedSet && (
+        <SharedLinkSetHeader
+          info={info}
+          set={selectedSet}
+          isSaving={isSaving}
+          onRename={(title) => saveSet(title, selectedSet.id)}
+          onRenamed={() => setMessage(t("LBL_SAVED"))}
+          onDelete={handleDeleteSet}
+        />
+      )}
+
+      {selectedSet && (
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            backgroundColor: "#fff",
+          }}
+        >
+          <thead>
             <tr>
-              <td
-                colSpan={8}
-                style={{ ...tdStyle, textAlign: "center", color: "#718096" }}
-              >
-                {isLoading ? t("LBL_LOADING") : t("LBL_NO_LINKS")}
-              </td>
+              <th style={thStyle}>{t("LBL_SEQUENCE")}</th>
+              <th style={thStyle}>{t("LBL_TITLE")}</th>
+              <th style={thStyle}>{t("LBL_URL")}</th>
+              <th style={thStyle}>{t("LBL_METHOD")}</th>
+              <th style={thStyle}>{t("LBL_OPEN_MODE")}</th>
+              <th style={thStyle}>{t("LBL_VISIBILITY")}</th>
+              <th style={thStyle}>{t("LBL_STATUS")}</th>
+              <th style={thStyle}>{t("LBL_ACTIONS")}</th>
             </tr>
-          )}
-          {links.map((link, index) => (
-            <tr key={link.id} data-testid="shared-link-row">
-              <td style={{ ...tdStyle, whiteSpace: "nowrap" }}>
-                <button
-                  type="button"
-                  onClick={() => handleMove(index, -1)}
-                  disabled={isSaving || index === 0}
-                  aria-label={`${t("LBL_MOVE_UP")} ${link.title}`}
-                  title={t("LBL_MOVE_UP")}
-                  style={{ ...buttonStyle, padding: "2px 6px", marginRight: 4 }}
+          </thead>
+          <tbody>
+            {links.length === 0 && (
+              <tr>
+                <td
+                  colSpan={8}
+                  style={{ ...tdStyle, textAlign: "center", color: "#718096" }}
                 >
-                  ↑
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleMove(index, 1)}
-                  disabled={isSaving || index === links.length - 1}
-                  aria-label={`${t("LBL_MOVE_DOWN")} ${link.title}`}
-                  title={t("LBL_MOVE_DOWN")}
-                  style={{ ...buttonStyle, padding: "2px 6px" }}
-                >
-                  ↓
-                </button>
-              </td>
-              <td style={tdStyle}>
-                {link.has_warning && (
-                  <span
-                    role="img"
-                    aria-label={t("LBL_HAS_WARNING")}
-                    title={t("LBL_HAS_WARNING")}
-                    style={{ color: "#DD6B20", marginRight: 4 }}
+                  {isLoading ? t("LBL_LOADING") : t("LBL_NO_LINKS")}
+                </td>
+              </tr>
+            )}
+            {links.map((link, index) => (
+              <tr key={link.id} data-testid="shared-link-row">
+                <td style={{ ...tdStyle, whiteSpace: "nowrap" }}>
+                  <button
+                    type="button"
+                    onClick={() => handleMove(index, -1)}
+                    disabled={isSaving || index === 0}
+                    aria-label={`${t("LBL_MOVE_UP")} ${link.title}`}
+                    title={t("LBL_MOVE_UP")}
+                    style={{
+                      ...buttonStyle,
+                      padding: "2px 6px",
+                      marginRight: 4,
+                    }}
                   >
-                    ⚠
-                  </span>
-                )}
-                {link.post_blocked && (
-                  <span
-                    role="img"
-                    aria-label={t("LBL_POST_BLOCKED")}
-                    title={t("LBL_POST_BLOCKED")}
-                    style={{ color: "#C53030", marginRight: 4 }}
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleMove(index, 1)}
+                    disabled={isSaving || index === links.length - 1}
+                    aria-label={`${t("LBL_MOVE_DOWN")} ${link.title}`}
+                    title={t("LBL_MOVE_DOWN")}
+                    style={{ ...buttonStyle, padding: "2px 6px" }}
                   >
-                    ⛔
+                    ↓
+                  </button>
+                </td>
+                <td style={tdStyle}>
+                  {link.has_warning && (
+                    <span
+                      role="img"
+                      aria-label={t("LBL_HAS_WARNING")}
+                      title={t("LBL_HAS_WARNING")}
+                      style={{ color: "#DD6B20", marginRight: 4 }}
+                    >
+                      ⚠
+                    </span>
+                  )}
+                  {link.post_blocked && (
+                    <span
+                      role="img"
+                      aria-label={t("LBL_POST_BLOCKED")}
+                      title={t("LBL_POST_BLOCKED")}
+                      style={{ color: "#C53030", marginRight: 4 }}
+                    >
+                      ⛔
+                    </span>
+                  )}
+                  {link.title}
+                </td>
+                <td
+                  style={{
+                    ...tdStyle,
+                    maxWidth: 280,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                  title={link.url}
+                >
+                  {link.url}
+                </td>
+                <td style={tdStyle}>{link.method}</td>
+                <td style={{ ...tdStyle, whiteSpace: "nowrap" }}>
+                  {link.open_mode === "window"
+                    ? `${t("LBL_OPEN_MODE_WINDOW")}（${link.window_width}×${link.window_height}）`
+                    : t("LBL_OPEN_MODE_TAB")}
+                </td>
+                <td style={tdStyle}>{renderVisibility(link)}</td>
+                <td style={tdStyle}>
+                  <span style={{ color: link.active ? "#2F855A" : "#A0AEC0" }}>
+                    {link.active ? t("LBL_ACTIVE") : t("LBL_INACTIVE")}
                   </span>
-                )}
-                {link.title}
-              </td>
-              <td
-                style={{
-                  ...tdStyle,
-                  maxWidth: 280,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-                title={link.url}
-              >
-                {link.url}
-              </td>
-              <td style={tdStyle}>{link.method}</td>
-              <td style={{ ...tdStyle, whiteSpace: "nowrap" }}>
-                {link.open_mode === "window"
-                  ? `${t("LBL_OPEN_MODE_WINDOW")}（${link.window_width}×${link.window_height}）`
-                  : t("LBL_OPEN_MODE_TAB")}
-              </td>
-              <td style={tdStyle}>{renderVisibility(link)}</td>
-              <td style={tdStyle}>
-                <span style={{ color: link.active ? "#2F855A" : "#A0AEC0" }}>
-                  {link.active ? t("LBL_ACTIVE") : t("LBL_INACTIVE")}
-                </span>
-              </td>
-              <td style={{ ...tdStyle, whiteSpace: "nowrap" }}>
-                <button
-                  type="button"
-                  onClick={() => openModal(link)}
-                  style={{ ...buttonStyle, marginRight: 4 }}
-                >
-                  {t("LBL_EDIT")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(link)}
-                  disabled={isSaving}
-                  style={{ ...buttonStyle, color: "#C53030" }}
-                >
-                  {t("LBL_DELETE")}
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                </td>
+                <td style={{ ...tdStyle, whiteSpace: "nowrap" }}>
+                  <button
+                    type="button"
+                    onClick={() => openModal(link)}
+                    style={{ ...buttonStyle, marginRight: 4 }}
+                  >
+                    {t("LBL_EDIT")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(link)}
+                    disabled={isSaving}
+                    style={{ ...buttonStyle, color: "#C53030" }}
+                  >
+                    {t("LBL_DELETE")}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
       <SharedLinkEditModal
         isOpen={modalOpen}
         info={info}
         link={editTarget}
+        sets={sets}
+        defaultSetId={editTarget?.set_id ?? selectedSetId}
         isSaving={isSaving}
         onSave={handleSave}
         onClose={closeModal}

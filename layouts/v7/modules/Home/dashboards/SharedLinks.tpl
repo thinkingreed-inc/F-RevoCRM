@@ -6,7 +6,7 @@
 	{include file="dashboards/WidgetHeader.tpl"|@vtemplate_path:$MODULE_NAME}
 </div>
 
-<div class="dashboardWidgetContent" style="padding: 5px 10px;">
+<div class="dashboardWidgetContent">
 	{include file="dashboards/SharedLinksContents.tpl"|@vtemplate_path:$MODULE_NAME}
 </div>
 

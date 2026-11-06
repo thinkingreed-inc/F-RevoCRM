@@ -5,7 +5,17 @@
 $languageStrings = array(
 	'SharedLinks' => '共有リンク',
 	'LBL_SHARED_LINKS' => '共有リンク',
-	'LBL_SHARED_LINKS_DESCRIPTION' => 'ダッシュボードのウィジェット「共有リンク」に表示するリンクを登録します。',
+	'LBL_SHARED_LINKS_DESCRIPTION' => 'ダッシュボードに表示する共有リンクを登録します。',
+	'LBL_WIDGETS' => 'ウィジェット',
+	'LBL_WIDGET' => 'ウィジェット',
+	'LBL_CREATE_WIDGET' => 'ウィジェットを作る',
+	'LBL_CREATE' => '作る',
+	'LBL_DELETE_WIDGET' => 'このウィジェットを削除',
+	'LBL_CONFIRM_DELETE_WIDGET' => 'ウィジェット「%s」と、中のリンク %s 件を削除します。各ユーザーのダッシュボードからも消えます。よろしいですか？',
+	'LBL_NO_WIDGETS' => 'ウィジェットがありません。「ウィジェットを作る」から作ってください。',
+	'LBL_WIDGETS_NOTE' => 'ウィジェットごとにリンクをまとめられます。作ったウィジェットは、各ユーザーがダッシュボードの「ウィジェットの追加」から置けます。',
+	'LBL_WIDGET_TITLE' => 'ウィジェットの見出し',
+	'LBL_WIDGET_TITLE_NOTE' => '「ウィジェットの追加」メニューと、各ユーザーのダッシュボードのウィジェットの見出しになります。',
 
 	// 一覧
 	'LBL_ADD_LINK' => 'リンクを追加',
@@ -100,4 +110,9 @@ $languageStrings = array(
 	'LBL_ERROR_INVALID_VALUE' => '値が正しくありません。',
 	'LBL_ERROR_LINK_NOT_FOUND' => 'リンクが見つかりません。画面を読み込み直してください。',
 	'LBL_ERROR_HAS_ERRORS' => '入力内容に誤りがあります。',
+	'LBL_ERROR_WIDGET_TITLE_TOO_LONG' => '見出しは 30 文字以内で入力してください。',
+	'LBL_ERROR_WIDGET_TITLE_CHARS' => '見出しに < > & " \' は使えません。',
+	'LBL_ERROR_WIDGET_TITLE_REQUIRED' => '見出しを入力してください。',
+	'LBL_ERROR_WIDGET_TITLE_TAKEN' => 'ほかのウィジェットと同じ見出しは付けられません。',
+	'LBL_ERROR_SET_NOT_FOUND' => 'ウィジェットが見つかりません。画面を読み込み直してください。',
 );
