@@ -104,7 +104,7 @@ Vtiger.Class('Vtiger_Index_Js', {
 							if(saveRecipientPref) {
 								var params = form.serializeFormData();
 								emailEditInstance.showComposeEmailForm(params).then(function(response) {
-									jQuery(document).on('shown.bs.modal', function() {
+									jQuery(document).one('shown.bs.modal', function() {
 										if (typeof cb === 'function') cb(response);
 									});
 								});
@@ -117,7 +117,7 @@ Vtiger.Class('Vtiger_Index_Js', {
 							emailFields.attr('checked','checked');
 							var params = form.serialize();
 							emailEditInstance.showComposeEmailForm(params).then(function(response) {
-								jQuery(document).on('shown.bs.modal', function() {
+								jQuery(document).one('shown.bs.modal', function() {
 									if (typeof cb === 'function') cb(response);
 								});
 							});

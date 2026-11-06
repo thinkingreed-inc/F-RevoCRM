@@ -256,6 +256,8 @@ class MailManager_Draft_Model {
 
 	public function getParentFromEmails($to_string) {
 		$currentUserModel = Users_Record_Model::getCurrentUserModel();
+		// 宛先がすべて未登録アドレスの場合もnullを返さないよう初期化する（idlistsはNOT NULLのため保存に失敗する）
+		$parentIds = '';
 
 		if (!empty($to_string)) {
 			$toArray = explode(',', $to_string);
