@@ -43,6 +43,26 @@ class Reports_SaveAjax_View extends Vtiger_IndexAjax_View {
 		}
 		$calculation = $reportModel->generateCalculationData();
 
+		// Detail.php と同じ補助変数を渡す。未設定だと ReportContents.tpl の in_array() が PHP 8 で TypeError になる（上流 Issue #1837）
+		$groupingModules = array();
+		$groupingList = ReportRun::getInstance($record)->_groupinglist;
+		if (is_array($groupingList)) {
+			foreach ($groupingList as $groupingKey => $groupingValues) {
+				$moduleField = explode(':', $groupingKey)[2];
+				$groupingModules[] = explode('_', $moduleField)[0];
+			}
+		}
+		// もとからアンダーバーを含む項目ラベル（グループ化列名の復元に使う）
+		$includedUnderbar = array();
+		global $adb;
+		$result = $adb->pquery('SELECT DISTINCT fieldlabel FROM vtiger_field WHERE fieldlabel LIKE "%\_%"');
+		$rows = $adb->num_rows($result);
+		for ($i = 0; $i < $rows; $i++) {
+			$includedUnderbar[] = $adb->query_result($result, $i, 'fieldlabel');
+		}
+		$viewer->assign('GROUPING_MODULES', $groupingModules);
+		$viewer->assign('INCLUDED_UNDERBAR_LABELS', $includedUnderbar);
+
 		$viewer->assign('PRIMARY_MODULE', $reportModel->getPrimaryModule());
 		$viewer->assign('CALCULATION_FIELDS', $calculation);
 		$viewer->assign('DATA', $data);
