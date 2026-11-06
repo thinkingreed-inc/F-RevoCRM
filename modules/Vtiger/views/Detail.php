@@ -73,10 +73,39 @@ class Vtiger_Detail_View extends Vtiger_Index_View {
 	}
 
 	function preProcess(Vtiger_Request $request, $display=true) {
-		parent::preProcess($request, false);
-
 		$recordId = $request->get('record');
 		$moduleName = $request->getModule();
+		$navigateDirection = $request->get('navigate');
+
+		if (!empty($navigateDirection)) {
+			// 前後ボタンが実際に押された時のみ、一覧同等のSQLで隣のレコードを特定して遷移する
+			$navigationInfo = ListViewSession::getListViewNavigation($recordId);
+			list($prevRecordId, $nextRecordId) = ListViewSession::resolveAdjacentRecordIds($navigationInfo, $recordId);
+			$targetRecordId = ($navigateDirection == 'previous') ? $prevRecordId : $nextRecordId;
+
+			$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
+			// 一覧表示後に隣のレコードが削除された等で見つからない場合は現在のレコードに留まる
+			$loadUrl = !empty($targetRecordId) ? $moduleModel->getDetailViewUrl($targetRecordId) : $moduleModel->getDetailViewUrl($recordId);
+
+			$firstId = $request->isEmpty('firstId') ? null : $request->get('firstId');
+			$lastId = $request->isEmpty('lastId') ? null : $request->get('lastId');
+			if ($firstId !== null) {
+				$loadUrl .= '&firstId='.$firstId;
+			}
+			if ($lastId !== null) {
+				$loadUrl .= '&lastId='.$lastId;
+			}
+			$appName = $request->get('app');
+			if (!empty($appName)) {
+				$loadUrl .= '&app='.$appName;
+			}
+
+			header("Location: $loadUrl");
+			exit;
+		}
+
+		parent::preProcess($request, false);
+
 		if(!$this->record){
 			$this->record = Vtiger_DetailView_Model::getInstance($moduleName, $recordId);
 		}
@@ -93,47 +122,36 @@ class Vtiger_Detail_View extends Vtiger_Index_View {
 		$detailViewLinkParams = array('MODULE'=>$moduleName,'RECORD'=>$recordId);
 
 		$detailViewLinks = $this->record->getDetailViewLinks($detailViewLinkParams);
-		$navigationInfo = ListViewSession::getListViewNavigation($recordId);
 
 		$viewer = $this->getViewer($request);
 		$viewer->assign('RECORD', $recordModel);
-		$viewer->assign('NAVIGATION', $navigationInfo);
-
-		//Intially make the prev and next records as null
-		$prevRecordId = null;
-		$nextRecordId = null;
-		$found = false;
-		if ($navigationInfo) {
-			foreach($navigationInfo as $page=>$pageInfo) {
-				foreach($pageInfo as $index=>$record) {
-					//If record found then next record in the interation
-					//will be next record
-					if($found) {
-						$nextRecordId = $record;
-						break;
-					}
-					if($record == $recordId) {
-						$found = true;
-					}
-					//If record not found then we are assiging previousRecordId
-					//assuming next record will get matched
-					if(!$found) {
-						$prevRecordId = $record;
-					}
-				}
-				//if record is found and next record is not calculated we need to perform iteration
-				if($found && !empty($nextRecordId)) {
-					break;
-				}
-			}
-		}
 
 		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
-		if(!empty($prevRecordId)) {
-			$viewer->assign('PREVIOUS_RECORD_URL', $moduleModel->getDetailViewUrl($prevRecordId));
-		}
-		if(!empty($nextRecordId)) {
-			$viewer->assign('NEXT_RECORD_URL', $moduleModel->getDetailViewUrl($nextRecordId));
+		$firstId = $request->isEmpty('firstId') ? null : $request->get('firstId');
+		$lastId = $request->isEmpty('lastId') ? null : $request->get('lastId');
+
+		if ($firstId !== null && $lastId !== null) {
+			// 一覧から先頭/末尾IDを受け取っている場合はID比較のみで前後ボタンの活性を判定する(SQLを実行しない)
+			// appパラメータはテンプレート側で付与されるためここでは付けない
+			$navParams = '&firstId='.$firstId.'&lastId='.$lastId;
+			if ($recordId != $firstId) {
+				$viewer->assign('PREVIOUS_RECORD_URL', $moduleModel->getDetailViewUrl($recordId).'&navigate=previous'.$navParams);
+			}
+			if ($recordId != $lastId) {
+				$viewer->assign('NEXT_RECORD_URL', $moduleModel->getDetailViewUrl($recordId).'&navigate=next'.$navParams);
+			}
+		} else {
+			// URL直接アクセス等で先頭/末尾IDが無い場合は従来通り隣のレコードを都度取得する
+			$navigationInfo = ListViewSession::getListViewNavigation($recordId);
+			$viewer->assign('NAVIGATION', $navigationInfo);
+			list($prevRecordId, $nextRecordId) = ListViewSession::resolveAdjacentRecordIds($navigationInfo, $recordId);
+
+			if(!empty($prevRecordId)) {
+				$viewer->assign('PREVIOUS_RECORD_URL', $moduleModel->getDetailViewUrl($prevRecordId));
+			}
+			if(!empty($nextRecordId)) {
+				$viewer->assign('NEXT_RECORD_URL', $moduleModel->getDetailViewUrl($nextRecordId));
+			}
 		}
 
 		$viewer->assign('MODULE_MODEL', $this->record->getModule());
