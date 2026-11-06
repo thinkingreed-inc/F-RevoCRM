@@ -917,6 +917,9 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 				var pickListOption = form.find('.picklistOption');
 				pickListOption.removeClass('hide');
 			}
+			if (selectedOption.data('handwritingsupported')) {
+				form.find('.handwritingSupported').removeClass('hide');
+			}
 
 			if (selectedOption.data('isrelation')) {
 				form.find('.relationModules').removeClass('hide');
@@ -1003,6 +1006,13 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 					form.find('input[name="fieldLength"]').val("");
 					form.find('input[name="decimal"]').val("");
 					form.find('input[name="fieldDefaultValue"]').val("");
+				}
+
+				if (type == 'FileUpload') {
+					// ファイルは既定値・一括編集・ヘッダー表示を扱えない
+					form.find('.defaultValueUi').closest('.form-group').addClass('hide');
+					form.find('input[type="checkbox"][name="headerfield"]').addClass('cursorPointerNotAllowed').removeAttr('checked').attr('readonly', 'readonly');
+					form.find('input[type="checkbox"][name="masseditable"]').addClass('cursorPointerNotAllowed').removeAttr('checked').attr('readonly', 'readonly');
 				}
 
 				var defaultValueUiContainer = defaultValueUi.closest('.defaultValueUi');

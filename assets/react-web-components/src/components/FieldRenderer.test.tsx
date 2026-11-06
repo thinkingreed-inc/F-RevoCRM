@@ -604,4 +604,73 @@ describe("FieldRenderer", () => {
       expect(mockWysiwyg.style.overflowY).toBe("");
     });
   });
+
+  describe("ファイルアップロード (UIType 998)", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("ファイル選択を出し、置いた一時ファイルを指す値にする", async () => {
+      const fetchMock = vi.fn(
+        (input: RequestInfo | URL, init?: RequestInit) => {
+          const mode =
+            init?.body instanceof FormData
+              ? init.body.get("mode")
+              : new URL(String(input), "http://localhost/").searchParams.get(
+                  "mode",
+                );
+          const data =
+            mode === "config"
+              ? {
+                  field_name: "cf_9",
+                  handwriting: false,
+                  max_upload_size: 1024,
+                  max_upload_size_label: "1 KB",
+                }
+              : {
+                  draft: `draft:${"c".repeat(32)}`,
+                  filename: "a.txt",
+                  filetype: "text/plain",
+                  filesize: 1,
+                  is_image: false,
+                  thumbnail: null,
+                };
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(data),
+          } as Response);
+        },
+      );
+      vi.stubGlobal("fetch", fetchMock);
+      const onChange = vi.fn();
+      const field = createField({
+        name: "cf_9",
+        uitype: UI_TYPES.FILE_UPLOAD,
+        label: "添付",
+      });
+
+      render(
+        <FieldRenderer
+          field={field}
+          value=""
+          onChange={onChange}
+          module="Accounts"
+        />,
+      );
+
+      const input = await screen.findByTestId("file-field-input");
+      fireEvent.change(input, {
+        target: { files: [new File(["a"], "a.txt", { type: "text/plain" })] },
+      });
+
+      await vi.waitFor(() =>
+        expect(onChange).toHaveBeenCalledWith(
+          "cf_9",
+          `draft:${"c".repeat(32)}`,
+        ),
+      );
+      vi.unstubAllGlobals();
+    });
+  });
 });

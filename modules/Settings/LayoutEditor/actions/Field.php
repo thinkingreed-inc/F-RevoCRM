@@ -124,6 +124,11 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
 		$response = new Vtiger_Response();
         try{
             $fieldInstance->save();
+            $handwriting = $request->get('handwriting', null);
+            if ($handwriting !== null && $fieldInstance->getFieldDataType() == 'fileupload') {
+                require_once 'modules/Documents/utils/FieldFile.php';
+                Documents_FieldFile::setHandwriting($fieldId, $handwriting == '1');
+            }
 			$fieldInstance = Settings_LayoutEditor_Field_Model::getInstance($fieldId);
 			$fieldLabel = decode_html($request->get('fieldLabel'));
 			$fieldInfo = $fieldInstance->getFieldInfo();
