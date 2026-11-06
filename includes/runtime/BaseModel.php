@@ -46,8 +46,17 @@ class Vtiger_Base_Model {
 	 * @param <Boolean> $skipEmpty - Skip the check if string is empty
 	 * @return Value for the given key
 	 */
-	public function getForSql($key, $skipEmtpy=true) {
-		return Vtiger_Util_Helper::validateStringForSql($this->get($key), $skipEmtpy);
+	public function getForSql($key, $skipEmtpy = true) {
+		$value = $this->get($key);
+		
+		$matches = [];
+		preg_match('/(\w+) ; \((\w+)\) (\w+)/', $value, $matches);
+		if(count($matches) > 0) {
+			// 参照項目の場合はそのまま返す
+			return $value;
+		}
+		
+		return Vtiger_Util_Helper::validateStringForSql($value, $skipEmtpy);
 	}
 
 	/**
