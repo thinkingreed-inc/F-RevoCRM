@@ -148,3 +148,11 @@ createWebComponent(LeadMappingSettings, "lead-mapping-settings", [], []);
 import { createFieldWebComponent } from "@/utils/createFieldWebComponent";
 import { FileUploadFieldElement } from "@/components/fields/FileUpload";
 createFieldWebComponent(FileUploadFieldElement, "fr-field-fileupload");
+
+// ピックリスト／複数選択ピックリスト項目（uitype 15/16/33）#1677
+// チェック/ラジオ/ドロップダウン × 1/2列 × 色反映。単一・複数で同じ要素を使う（props.multiple で分岐）
+// 使用例（HTML）:
+// <fr-field-multipicklist props='{"mode":"edit","multiple":true,"options":[...],...}'></fr-field-multipicklist>
+import { PicklistFieldElement } from "@/components/fields/Picklist";
+createFieldWebComponent(PicklistFieldElement, "fr-field-multipicklist");
+createFieldWebComponent(PicklistFieldElement, "fr-field-picklist");

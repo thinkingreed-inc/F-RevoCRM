@@ -277,14 +277,35 @@ class Vtiger_GetFields_Api extends Vtiger_Api_Controller {
                 try {
                     $picklistValues = $fieldModel->getPicklistValues();
                     if (!empty($picklistValues)) {
+                        // 選択肢の色（#1677）。getFieldInfo() の picklistColors を使う
+                        $picklistColors = (is_array($fieldInfoDetails) && isset($fieldInfoDetails['picklistColors']))
+                            ? $fieldInfoDetails['picklistColors'] : array();
                         $formattedPicklist = array();
                         foreach ($picklistValues as $value => $label) {
+                            $color = (isset($picklistColors[$value]) && $picklistColors[$value] !== '')
+                                ? (string) $picklistColors[$value] : null;
                             $formattedPicklist[] = array(
                                 'value' => $value,
-                                'label' => $label
+                                'label' => $label,
+                                'color' => $color,
                             );
                         }
                         $fieldInfo['picklistValues'] = $formattedPicklist;
+
+                        // ピックリスト表示設定（#1677）。実効スタイルはサーバ側で解決して返す
+                        // （React 側で閾値を再計算しない＝経路Aと同じ唯一の正）
+                        require_once 'include/fields/PicklistDisplayConfig.php';
+                        $pdConfig = PicklistDisplayConfig::get($fieldName);
+                        $effectiveStyle = PicklistDisplayConfig::resolveEffectiveStyle(
+                            (int) $uitype, $pdConfig, count($formattedPicklist)
+                        );
+                        $fieldInfo['picklistDisplay'] = array(
+                            'inputStyle' => $pdConfig['input_style'],
+                            'effectiveStyle' => $effectiveStyle,
+                            'threshold' => $pdConfig['threshold'],
+                            'columns' => $pdConfig['columns'],
+                            'multiple' => ((int) $uitype === 33),
+                        );
                     }
                 } catch (Exception $e) {
                     // ピックリスト取得エラーはログに記録するが、フィールド情報は返す

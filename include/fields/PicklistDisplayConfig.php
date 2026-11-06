@@ -57,21 +57,94 @@ class PicklistDisplayConfig
     }
 
     /**
-     * この uitype・設定で WebComponent（チェック/ラジオ）描画にすべきか。
-     * - multipicklist(33): 'dropdown' 以外は WC（null/auto/checkbox=チェック）。従来の複数選択を踏襲し既定ON。
-     * - picklist(15/16)  : 'radio' または 'checkbox' のときだけ WC。既定(null/auto/dropdown)は従来 select2 を維持。
+     * 実効描画スタイルを解決する（表示判定の唯一の正）。戻り値は 'checkbox'/'radio'/'dropdown'。
+     *
+     * 仕様（#1677）:
+     *  - input_style = dropdown → 常に従来ドロップダウン。
+     *  - input_style = checkbox / radio → ユーザー明示指定を尊重（その方式を強制）。
+     *    ただし単一(15/16)に checkbox 指定は排他ラジオへ、複数(33)に radio 指定はチェックへ丸める。
+     *  - input_style = null/auto（既定） → 閾値で決める。
+     *      複数(33): 選択肢数 <= threshold なら checkbox、超ならドロップダウン（#1677 既定ON）。
+     *      単一(15/16): 既定は従来ドロップダウンを維持（勝手に React 化しない）。
+     *
+     * @param int   $uitype      15/16（単一）または 33（複数）
+     * @param array $config      get() の戻り（input_style/threshold/columns）
+     * @param int   $optionCount 選択肢数
+     * @return string 'checkbox'|'radio'|'dropdown'
      */
-    public static function shouldUseWebComponent($uitype, array $config)
+    public static function resolveEffectiveStyle($uitype, array $config, $optionCount)
     {
         $uitype = (int) $uitype;
         $style = $config['input_style'];
+        $threshold = $config['threshold'];
+        $optionCount = (int) $optionCount;
+
         if ($uitype === 33) {
-            return $style !== 'dropdown';
+            if ($style === 'dropdown') {
+                return 'dropdown';
+            }
+            if ($style === 'checkbox' || $style === 'radio') {
+                return 'checkbox'; // 複数選択に radio は無意味 → チェックへ
+            }
+            // null / auto
+            return ($optionCount <= $threshold) ? 'checkbox' : 'dropdown';
         }
+
         if ($uitype === 15 || $uitype === 16) {
-            return $style === 'radio' || $style === 'checkbox';
+            if ($style === 'radio' || $style === 'checkbox') {
+                return ($optionCount <= $threshold) ? 'radio' : 'dropdown';
+            }
+            // null / auto / dropdown → 従来ドロップダウン維持
+            return 'dropdown';
         }
-        return false;
+
+        return 'dropdown';
+    }
+
+    /**
+     * この uitype・設定で WebComponent（チェック/ラジオ）描画にすべきか。
+     * resolveEffectiveStyle が 'dropdown' 以外を返すときだけ WC（＝従来 select2 に戻すのは dropdown のみ）。
+     *
+     * @param int   $uitype
+     * @param array $config
+     * @param int   $optionCount 選択肢数（閾値判定に使う）
+     */
+    public static function shouldUseWebComponent($uitype, array $config, $optionCount)
+    {
+        return self::resolveEffectiveStyle($uitype, $config, $optionCount) !== 'dropdown';
+    }
+
+    /**
+     * 項目モデルから、描画対象の選択肢一覧を取得する（buildProps と同一の源）。
+     * 編集可能な選択肢(editablepicklistvalues)を優先し、無ければ全選択肢(picklistvalues)。
+     * getTemplateName と buildProps で選択肢数を揃え、閾値境界での描画不整合を防ぐ。
+     *
+     * @param Vtiger_Field_Model $fieldModel
+     * @return array<mixed, mixed> value => label
+     */
+    public static function getFieldOptionValues($fieldModel)
+    {
+        $fieldInfo = $fieldModel->getFieldInfo();
+        if (!empty($fieldInfo['editablepicklistvalues'])) {
+            return $fieldInfo['editablepicklistvalues'];
+        }
+        return isset($fieldInfo['picklistvalues']) ? $fieldInfo['picklistvalues'] : array();
+    }
+
+    /**
+     * 項目モデルから WebComponent 描画要否を判定する（getTemplateName 用）。
+     * buildProps と同じ選択肢源・同じ resolveEffectiveStyle を使うため、
+     * テンプレート選択と React 側の実効スタイルが必ず一致する。
+     *
+     * @param Vtiger_Field_Model $fieldModel
+     * @return bool
+     */
+    public static function shouldUseWebComponentForField($fieldModel)
+    {
+        $uitype = (int) $fieldModel->get('uitype');
+        $config = self::get($fieldModel->getName());
+        $optionCount = count(self::getFieldOptionValues($fieldModel));
+        return self::resolveEffectiveStyle($uitype, $config, $optionCount) !== 'dropdown';
     }
 
     /**
@@ -89,9 +162,8 @@ class PicklistDisplayConfig
     {
         $moduleName = (string) $fieldModel->getModuleName();
         $fieldInfo = $fieldModel->getFieldInfo();
-        $pickValues = !empty($fieldInfo['editablepicklistvalues'])
-            ? $fieldInfo['editablepicklistvalues']
-            : (isset($fieldInfo['picklistvalues']) ? $fieldInfo['picklistvalues'] : array());
+        // 選択肢源は getTemplateName と共通（閾値境界で描画が食い違わないよう一元化）
+        $pickValues = self::getFieldOptionValues($fieldModel);
         $colors = isset($fieldInfo['picklistColors']) ? $fieldInfo['picklistColors'] : array();
 
         $options = array();
@@ -113,6 +185,8 @@ class PicklistDisplayConfig
         }
 
         $config = self::get($fieldModel->getName());
+        $uitype = (int) $fieldModel->get('uitype');
+        $effectiveStyle = self::resolveEffectiveStyle($uitype, $config, count($options));
 
         return array(
             'mode' => $mode === 'edit' ? 'edit' : 'detail',
@@ -125,6 +199,7 @@ class PicklistDisplayConfig
             'options' => $options,
             'value' => $selected,
             'inputStyle' => $config['input_style'],
+            'effectiveStyle' => $effectiveStyle,
             'threshold' => $config['threshold'],
             'columns' => $config['columns'],
         );

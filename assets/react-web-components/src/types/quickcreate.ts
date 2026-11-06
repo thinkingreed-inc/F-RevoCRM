@@ -231,7 +231,17 @@ export interface QuickCreateFieldData {
   picklistValues?: Array<{
     value: string;
     label: string;
+    /** 選択肢の色（HEX）。未設定なら null（#1677） */
+    color?: string | null;
   }>;
+  /** ピックリスト表示設定（#1677） */
+  picklistDisplay?: {
+    inputStyle: string | null;
+    effectiveStyle: "checkbox" | "radio" | "dropdown";
+    threshold: number;
+    columns: number;
+    multiple: boolean;
+  };
   referenceModules?: string[];
   /** 参照先モジュールの翻訳ラベル（モジュール名 -> 翻訳ラベルのマップ） */
   referenceModuleLabels?: Record<string, string>;

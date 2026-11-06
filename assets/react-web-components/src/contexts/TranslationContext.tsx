@@ -85,6 +85,8 @@ const DEFAULT_TRANSLATIONS: TranslationData = {
   // オプション関連
   LBL_NO_OPTIONS_AVAILABLE: "該当する選択肢がありません",
   LBL_ALL_OPTIONS_SELECTED: "すべて選択済みです",
+  // ピックリスト表示（#1677）
+  LBL_PICKLIST_CLEAR_SELECTION: "選択をクリア",
 };
 
 interface TranslationContextValue {

@@ -64,7 +64,11 @@ export function useQuickCreateFields(
         picklistValues: apiField.picklistValues?.map((item) => ({
           label: item.label,
           value: item.value,
+          // 選択肢の色（#1677）を引き継ぐ
+          color: item.color ?? null,
         })),
+        // ピックリスト表示設定（#1677）を引き継ぐ
+        picklistDisplay: apiField.picklistDisplay,
         quickcreate: apiField.quickcreate,
         quickcreatesequence: apiField.quickcreatesequence,
         referenceModules: apiField.referenceModules,

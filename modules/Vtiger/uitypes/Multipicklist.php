@@ -13,14 +13,16 @@ require_once 'include/fields/PicklistDisplayConfig.php';
 class Vtiger_Multipicklist_UIType extends Vtiger_Base_UIType {
 
 	/**
-	 * #1677: 表示設定(input_style)に応じて描画テンプレートを切替える。
-	 * 'dropdown' 以外（null/auto/checkbox）のとき WebComponent(チェックボックス)で描画し、
-	 * 'dropdown' 指定時のみ従来の select2 テンプレートを維持する。
+	 * #1677: 表示設定(input_style)と選択肢数(閾値)から描画テンプレートを切替える。
+	 * 実効スタイルが 'dropdown' 以外（checkbox）のとき WebComponent で描画し、
+	 * dropdown（明示指定 or 選択肢が閾値超）のときのみ従来の select2 テンプレートを維持する。
 	 * @return <String> - Template Name
 	 */
 	public function getTemplateName() {
-		$config = PicklistDisplayConfig::get($this->get('field')->getName());
-		if (PicklistDisplayConfig::shouldUseWebComponent(33, $config)) {
+		$fieldModel = $this->get('field');
+		// 選択肢数の源は buildProps と共通化（shouldUseWebComponentForField）。
+		// これによりテンプレ選択と React 側 effectiveStyle が閾値境界でも必ず一致する。
+		if (PicklistDisplayConfig::shouldUseWebComponentForField($fieldModel)) {
 			return 'uitypes/WebComponentField.tpl';
 		}
 		return 'uitypes/MultiPicklist.tpl';

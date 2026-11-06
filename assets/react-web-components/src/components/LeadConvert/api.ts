@@ -84,6 +84,8 @@ export function toFieldInfo(apiField: QuickCreateFieldData): FieldInfo {
       referenceModules: apiField.referenceModules,
     },
     picklistValues: apiField.picklistValues,
+    // ピックリスト表示設定（#1677）を FieldRenderer へ引き継ぐ
+    picklistDisplay: apiField.picklistDisplay,
     referenceModules: apiField.referenceModules,
     referenceModuleLabels: apiField.referenceModuleLabels,
     customValidations: apiField.customValidations,

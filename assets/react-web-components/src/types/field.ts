@@ -21,6 +21,24 @@ export interface FieldValidator {
 }
 
 /**
+ * ピックリスト表示設定メタ（#1677）
+ * サーバ（PicklistDisplayConfig）が項目単位で解決した実効スタイル等。
+ * React フォーム（FieldRenderer）はこれに従って checkbox/radio/dropdown を描き分ける。
+ */
+export interface PicklistDisplayMeta {
+  /** ユーザー設定の表示方式（null/auto=自動） */
+  inputStyle: string | null;
+  /** サーバが解決した実効スタイル（これに従って描画する） */
+  effectiveStyle: "checkbox" | "radio" | "dropdown";
+  /** チェック/ラジオに切り替える選択肢数の閾値 */
+  threshold: number;
+  /** チェック/ラジオ表示の列数（1 or 2） */
+  columns: number;
+  /** 複数選択（uitype 33）なら true */
+  multiple: boolean;
+}
+
+/**
  * フィールド情報の型定義
  * GetFieldsAPIから取得される情報と対応
  */
@@ -54,7 +72,11 @@ export interface FieldInfo {
   picklistValues?: Array<{
     label: string;
     value: string;
+    /** 選択肢の色（HEX）。未設定なら null（#1677） */
+    color?: string | null;
   }>;
+  /** ピックリスト表示設定（#1677。サーバが解決した実効スタイル等） */
+  picklistDisplay?: PicklistDisplayMeta;
   /** RecordTypeフィールドかどうか */
   isRecordTypeField?: boolean;
   /** RecordFieldID（RecordTypeの場合） */

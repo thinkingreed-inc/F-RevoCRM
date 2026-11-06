@@ -13,13 +13,15 @@ require_once 'include/fields/PicklistDisplayConfig.php';
 class Vtiger_Picklist_UIType extends Vtiger_Base_UIType {
 
 	/**
-	 * #1677: 表示設定(input_style)が 'radio'/'checkbox' のときだけ WebComponent(ラジオ)で描画する。
-	 * 既定(null/auto/dropdown)は従来の select2 テンプレートを維持する（全ピックリストが勝手に React 化しないように）。
+	 * #1677: 表示設定(input_style)が 'radio'/'checkbox' かつ選択肢数が閾値以下のとき WebComponent(ラジオ)で描画する。
+	 * 既定(null/auto/dropdown)や閾値超は従来の select2 テンプレートを維持する（全ピックリストが勝手に React 化しないように）。
 	 * @return <String> - Template Name
 	 */
 	public function getTemplateName() {
-		$config = PicklistDisplayConfig::get($this->get('field')->getName());
-		if (PicklistDisplayConfig::shouldUseWebComponent((int) $this->get('field')->get('uitype'), $config)) {
+		$fieldModel = $this->get('field');
+		// 選択肢数の源は buildProps と共通化（shouldUseWebComponentForField）。
+		// テンプレ選択と React 側 effectiveStyle を閾値境界でも一致させる。
+		if (PicklistDisplayConfig::shouldUseWebComponentForField($fieldModel)) {
 			return 'uitypes/WebComponentField.tpl';
 		}
 		return 'uitypes/Picklist.tpl';

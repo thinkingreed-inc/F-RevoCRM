@@ -107,6 +107,8 @@ function convertToFieldInfo(docField: DocFieldInfo): FieldInfo {
       displaytype: docField.displaytype || "1",
     },
     picklistValues: docField.picklistValues,
+    // ピックリスト表示設定（#1677）を FieldRenderer へ引き継ぐ
+    picklistDisplay: docField.picklistDisplay,
     referenceModules: docField.referenceModules,
     referenceModuleLabels: docField.referenceModuleLabels,
   };

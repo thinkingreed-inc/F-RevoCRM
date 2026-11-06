@@ -13,6 +13,7 @@ import { MultireferenceField } from "./MultireferenceField";
 import { OwnerField } from "./OwnerField";
 import { PicklistField } from "./PicklistField";
 import { MultiPicklistField } from "./MultiPicklistField";
+import { PicklistFormField } from "./fields/Picklist/PicklistFormField";
 import { ProductTaxField } from "./ProductTaxField";
 import { CurrencyListField } from "./CurrencyListField";
 import { FileUploadField } from "./fields/FileUpload";
@@ -212,11 +213,18 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
     onChange(field.name, val);
   };
 
-  // ピックリスト用のオプション変換
+  // ピックリスト用のオプション変換（#1677: 色も引き継ぐ）
   const picklistOptions = field.picklistValues?.map((option) => ({
     value: option.value,
     label: option.label,
+    color: option.color ?? null,
   }));
+
+  // #1677: サーバが解決した表示設定。effectiveStyle が checkbox/radio のときは
+  // チェック/ラジオ表示（色・列数付き）、dropdown（または未設定）は従来の検索ドロップダウン。
+  const picklistDisplay = field.picklistDisplay;
+  const useStyledPicklist =
+    !!picklistDisplay && picklistDisplay.effectiveStyle !== "dropdown";
 
   // エラーメッセージのID（アクセシビリティ用）
   const errorId = error ? `error_${field.name}` : undefined;
@@ -584,6 +592,26 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       // ピックリスト系 - PicklistField（検索可能なドロップダウン）
       case UI_TYPES.PICKLIST:
       case UI_TYPES.PICKLIST_NO_BLANK:
+        // #1677: 設定が radio のときはラジオ表示（色・列数付き）
+        if (useStyledPicklist && picklistDisplay) {
+          return (
+            <PicklistFormField
+              name={field.name}
+              label={field.label}
+              value={String(value ?? "")}
+              onChange={onChange}
+              options={picklistOptions ?? []}
+              effectiveStyle={picklistDisplay.effectiveStyle}
+              columns={picklistDisplay.columns}
+              multiple={false}
+              mandatory={field.mandatory}
+              disabled={disabled || field.readonly}
+              error={error}
+              className={className}
+              labelClassName={labelClassName}
+            />
+          );
+        }
         return (
           <PicklistField
             name={field.name}
@@ -604,6 +632,26 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
 
       // マルチピックリスト - MultiPicklistField
       case UI_TYPES.MULTIPICKLIST:
+        // #1677: 設定が checkbox のときはチェックボックス表示（色・列数付き）
+        if (useStyledPicklist && picklistDisplay) {
+          return (
+            <PicklistFormField
+              name={field.name}
+              label={field.label}
+              value={String(value ?? "")}
+              onChange={onChange}
+              options={picklistOptions ?? []}
+              effectiveStyle={picklistDisplay.effectiveStyle}
+              columns={picklistDisplay.columns}
+              multiple={true}
+              mandatory={field.mandatory}
+              disabled={disabled || field.readonly}
+              error={error}
+              className={className}
+              labelClassName={labelClassName}
+            />
+          );
+        }
         return (
           <MultiPicklistField
             name={field.name}
