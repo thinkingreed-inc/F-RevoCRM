@@ -71,8 +71,8 @@ class VTEntityDelta extends VTEventHandler {
 		/** Detect field value changes **/
 		foreach($newData as $fieldName => $fieldValue) {
 			$isModified = false;
-			if(empty($oldData[$fieldName])) {
-				if(!empty($newData[$fieldName])) {
+			if(!isset($oldData[$fieldName]) || $oldData[$fieldName] === '' || $oldData[$fieldName] === null) {
+				if(isset($newData[$fieldName]) && $newData[$fieldName] !== '' && $newData[$fieldName] !== null) {
 					$isModified = true;
 				}
 			} elseif(str_replace(array("\r\n","\r","\n"), "", $oldData[$fieldName]) != str_replace(array("\r\n","\r","\n"), "", $newData[$fieldName])) {
