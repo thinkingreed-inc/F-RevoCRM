@@ -436,18 +436,15 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 				$entityIdComponents = vtws_getIdComponents($entityInfo['id']);
 				$recordId = $entityIdComponents[1];
 				if (!empty($recordId)) {
-					$entityfields = getEntityFieldNames($this->module);
-					$label = '';
-					if (is_array($entityfields['fieldname'])) {
-						foreach ($entityfields['fieldname'] as $field) {
-							$label .= $fieldData[$field]." ";
-						}
-					} else {
-						$label = $fieldData[$entityfields['fieldname']];
+					// ラベルは CSV の値ではなく保存後の DB の値から作る。
+					// マージでは CSV に値のある項目しか $fieldData に残らないため、
+					// ラベル項目の列が無いとラベルが空や一部欠けで上書きされていた (#1884)
+					$labelInfo = getEntityName($this->module, $recordId, true);
+					if (isset($labelInfo[$recordId])) {
+						$label = trim(decode_html($labelInfo[$recordId]));
+						$adb->pquery('UPDATE vtiger_crmentity SET label=? WHERE crmid=?', array($label, $recordId));
+						CRMEntity::updateBasicInformation($this->module, $recordId);
 					}
-
-					$adb->pquery('UPDATE vtiger_crmentity SET label=? WHERE crmid=?', array(trim($label), $recordId));
-					CRMEntity::updateBasicInformation($this->module, $recordId);
 
 					//updating solr while import records
 					$recordModel = Vtiger_Record_Model::getCleanInstance($this->module);
@@ -456,10 +453,6 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 					$focus->column_fields = $fieldData;
 					$this->entityData[] = VTEntityData::fromCRMEntity($focus);
 				}
-
-				$label = trim($label);
-				$adb->pquery('UPDATE vtiger_crmentity SET label=? WHERE crmid=?', array($label, $recordId));
-				CRMEntity::updateBasicInformation($this->module, $recordId);
 
 				//Creating entity data of updated records for post save events
 				if (in_array($entityInfo['status'], array(self::$IMPORT_RECORD_MERGED, self::$IMPORT_RECORD_UPDATED))) {
