@@ -45,3 +45,7 @@ parameters:
         # スタブ本体（ParametersApiTestSupport.php）は vtiger と同名のクラスを
         # 定義するため解析対象にしない（本物の定義と食い違う）。
         - tests/Support/ParametersApiTestState.php
+        # リード昇格（Web Components 版）のテストが参照する関数・クラス
+        - include/Webservices/ConvertLead.php
+        - modules/Vtiger/handlers/CheckDuplicateHandler.php
+        - setup/migration/scripts/20261021000000_create_convertlead_settings_tables.php
