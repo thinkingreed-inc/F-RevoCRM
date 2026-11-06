@@ -15,14 +15,15 @@ $languageStrings = array(
 	'LBL_EMAIL_TEMPLATE' => 'メールテンプレート',
 	
 	'LBL_TEMPLATE_NAME' => 'テンプレート名',
-	'LBL_DESCRIPTION' => '内容',
-	'LBL_SUBJECT' => '件名',
+	'LBL_DESCRIPTION' => '詳細内容',
+	'LBL_SUBJECT' => 'タイトル',
 	'LBL_SELECT_FIELD_TYPE' => 'モジュールと項目の選択',
 	'LBL_MODULE_NAME' => 'モジュール名',
 	
 	'LBL_EMAIL_TEMPLATE_DESCRIPTION'=>'メールのテンプレートを管理	',
 	'LBL_NO_PERMISSIONS_TO_DELETE_SYSTEM_TEMPLATE' => 'システムテンプレートを削除する権限がありません',
 	'LBL_RECORD_ID' => 'レコードID',
+	'LBL_MESSAGE' => 'メール本文',
 
 	'Current Date' => '現在日',
 	'Current Time' => '現在時刻',
@@ -35,6 +36,39 @@ $languageStrings = array(
 	'Portal Url' => 'ポータルのログインURL',
 
 	'Email Template - Properties of ' => 'メールテンプレート ',
+
+	// Email Template Names, Subjects, and Descriptions
+	'Invite Users' => 'ユーザーを招待',
+	'Invitation' => '招待状',
+	'ToDo Reminder' => 'ToDoリマインダー',
+	'Activity Reminder' => '活動リマインダー',
+	'Reminder' => 'リマインダー',
+	'Support end notification before a month' => 'サポート終了の1ヶ月前通知',
+	'VtigerCRM Support Notification' => 'F-RevoCRMサポート通知',
+	'Send Notification mail to customer before a month of support end date' => 'サポート終了の1ヶ月前に顧客へ通知メールを送信',
+	'Support end notification before a week' => 'サポート終了の1週間前通知',
+	'Send Notification mail to customer before a week of support end date' => 'サポート終了の1週間前に顧客へ通知メールを送信',
+	'Customer Login Details' => '顧客ポータル ログイン詳細',
+	'Send Portal login details to customer' => '顧客にポータルログインの詳細を送信',
+	'Thanks Note' => 'お礼状',
+	'Note of thanks' => 'お礼のメッセージ',
+	'Target Crossed!' => '目標達成！',
+	'Fantastic Sales Spree!' => '素晴らしい販売実績！',
+	'Follow Up' => 'フォローアップ',
+	'Follow Up of meeting' => '会議後のフォローアップ',
+	'Address Change' => '住所変更',
+	'Change of Address' => '住所の変更',
+	'Accept Order' => '注文の受付',
+	'Acknowledgement/Acceptance of Order' => '注文の確認・受付',
+	'Goods received acknowledgement' => '商品受領の確認',
+	'Acknowledged Receipt of Goods' => '商品の受領を確認しました',
+	'Acceptance Proposal' => 'プロポーザルの受諾',
+	'Acceptance of Proposal' => 'プロポーザルの受諾を確認',
+	'Pending Invoices' => '未払いの請求書',
+	'Invoices Pending' => '請求書の保留',
+	'Payment Due' => 'お支払期日',
+	'Announcement for Release' => 'リリースのご案内',
+	'Announcement of a release' => '新リリースのご案内',
 );
 
 $jsLanguageStrings = array(

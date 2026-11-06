@@ -136,6 +136,9 @@ class EmailTemplates_ListView_Model extends Vtiger_ListView_Model {
 				if($key=="module"){
 					$value = vtranslate($value,$value);
 				}
+				if(in_array($key, array('templatename', 'subject', 'description'))){
+					$value = vtranslate($value, 'EmailTemplates');
+				}
 				if(in_array($key,$this->listViewColumns)){
 					$value = textlength_check($value);
 				}
