@@ -278,6 +278,16 @@ export const SharedLinksPage: React.FC = () => {
                     ⚠
                   </span>
                 )}
+                {link.post_blocked && (
+                  <span
+                    role="img"
+                    aria-label={t("LBL_POST_BLOCKED")}
+                    title={t("LBL_POST_BLOCKED")}
+                    style={{ color: "#C53030", marginRight: 4 }}
+                  >
+                    ⛔
+                  </span>
+                )}
                 {link.title}
               </td>
               <td

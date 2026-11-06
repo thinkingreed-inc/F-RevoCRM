@@ -227,6 +227,10 @@ class Settings_SharedLinks_Rules_Model
 
         foreach ($targets as $target) {
             $id = (string) $target['id'];
+            if ($id === '') {
+                // 空の ID は誰にも当てはめない（役割の無いユーザーと一致させない）
+                continue;
+            }
             switch ($target['type']) {
                 case 'Users':
                     if ($id === (string) $user['id']) {
@@ -350,6 +354,79 @@ class Settings_SharedLinks_Rules_Model
         }
 
         return $url . $fragment;
+    }
+
+    /**
+     * POST の送り先が、CSP の form-action の許可リストで許されているか
+     *
+     * CRM の画面は CSP で form-action を制限している（includes/http/Response.php）。
+     * 許可されていない送り先へのフォーム送信はブラウザが止めるため、管理画面で警告し、
+     * ウィジェットでは開かずに通知する。判定は CSP のソース表現の主なもの
+     * （`*`・スキームだけの指定・ホスト（先頭の `*.` を含む）・ポート・パス）に対応する。
+     *
+     * @param list<string> $sources $csp_allowed_domains['form-action'] の値
+     */
+    public static function isFormActionAllowed(string $url, array $sources): bool
+    {
+        $target = parse_url($url);
+        if ($target === false || !isset($target['scheme'], $target['host'])) {
+            return false;
+        }
+        $scheme = strtolower($target['scheme']);
+        $host = strtolower($target['host']);
+        $port = $target['port'] ?? ($scheme === 'https' ? 443 : 80);
+        $path = $target['path'] ?? '/';
+
+        foreach ($sources as $source) {
+            $source = trim($source);
+            if ($source === '*') {
+                return true;
+            }
+            // スキームだけの指定（https: など）。http: は https も許す（CSP Level 3）
+            if (preg_match('/^([a-z][a-z0-9+.-]*):$/i', $source, $m)) {
+                $allowed = strtolower($m[1]);
+                if ($allowed === $scheme || ($allowed === 'http' && $scheme === 'https')) {
+                    return true;
+                }
+                continue;
+            }
+            if (!preg_match('#^(?:([a-z][a-z0-9+.-]*)://)?(\*\.)?([^/:]+)(?::(\d+|\*))?(/.*)?$#i', $source, $m)) {
+                continue;
+            }
+            $sourceScheme = strtolower($m[1]);
+            if ($sourceScheme !== '' && $sourceScheme !== $scheme
+                && !($sourceScheme === 'http' && $scheme === 'https')) {
+                continue;
+            }
+            $sourceHost = strtolower($m[3]);
+            if ($m[2] !== '') {
+                // *.example.com はサブドメインだけ（example.com 自体は含まない）
+                if (!str_ends_with($host, '.' . $sourceHost)) {
+                    continue;
+                }
+            } elseif ($sourceHost !== $host) {
+                continue;
+            }
+            // ポートの指定が無ければ既定のポート（http→https の格上げも許すため、送り先のスキームの既定）
+            $sourcePort = $m[4] ?? '';
+            if ($sourcePort !== '*') {
+                $expectedPort = $sourcePort !== '' ? (int) $sourcePort : ($scheme === 'https' ? 443 : 80);
+                if ($port !== $expectedPort) {
+                    continue;
+                }
+            }
+            $sourcePath = $m[5] ?? '';
+            if ($sourcePath !== '') {
+                $matches = str_ends_with($sourcePath, '/')
+                    ? str_starts_with($path, $sourcePath)
+                    : $path === $sourcePath;
+                if (!$matches) {
+                    continue;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     /**

@@ -150,7 +150,6 @@ class Settings_SharedLinks_SharedLinkAPI_Api extends Vtiger_Api_Controller
             }
 
             $targets = [];
-            $liveTargets = 0;
             foreach ($link['targets'] as $target) {
                 $cacheKey = $target['type'] . ':' . $target['id'];
                 if (!array_key_exists($cacheKey, $nameCache)) {
@@ -161,19 +160,16 @@ class Settings_SharedLinks_SharedLinkAPI_Api extends Vtiger_Api_Controller
                 }
                 $name = $nameCache[$cacheKey];
                 $targets[] = $target + ['name' => $name, 'deleted' => $name === null];
-                if ($name !== null) {
-                    $liveTargets++;
-                }
-            }
-            // 対象がすべて削除されたリンクは、誰にも表示されない
-            if ($link['visibility'] === 'targets' && $liveTargets === 0) {
-                $hasWarning = true;
+                // 削除された対象は管理者に外してもらう（すべて削除されると誰にも表示されない）
+                $hasWarning = $hasWarning || $name === null;
             }
 
             $links[] = array_merge($link, [
                 'params' => $params,
                 'targets' => $targets,
                 'has_warning' => $hasWarning,
+                // POST の送り先が CSP（form-action）で許可されていない
+                'post_blocked' => Settings_SharedLinks_Module_Model::isPostBlocked($link['method'], $link['url']),
             ]);
         }
         return $links;

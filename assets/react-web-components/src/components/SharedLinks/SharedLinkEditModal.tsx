@@ -406,6 +406,11 @@ export const SharedLinkEditModal: React.FC<SharedLinkEditModalProps> = ({
                   {method}
                 </label>
               ))}
+              {form.method === "POST" && (
+                <div role="note" style={noteStyle}>
+                  {t("LBL_POST_CSP_NOTE")}
+                </div>
+              )}
             </fieldset>
 
             <fieldset style={{ ...sectionStyle, border: "none", padding: 0 }}>

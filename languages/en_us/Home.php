@@ -37,4 +37,5 @@ $jsLanguageStrings = array(
 	'JS_TAB_NAME_SHOULD_NOT_BE_EMPTY' => 'Dashboard name cannot not be empty',
 	'JS_NO_DATA_AVAILABLE' => 'No data available',
 	'JS_SHARED_LINK_POPUP_BLOCKED' => 'The pop-up was blocked. Allow pop-ups for this site in your browser settings.',
+	'JS_SHARED_LINK_POST_BLOCKED' => 'This link cannot be opened because its destination is not allowed. Contact your system administrator.',
 );

@@ -33,6 +33,7 @@ class Home_SharedLinks_Dashboard extends Vtiger_IndexAjax_View
                 'width' => $link['window_width'],
                 'height' => $link['window_height'],
                 'noreferrer' => $link['noreferrer'],
+                'blocked' => $link['post_blocked'],
             ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             $links[] = $link;
         }

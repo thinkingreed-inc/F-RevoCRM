@@ -89,6 +89,9 @@ class Vtiger_Response {
 			'font-src'    => "'self'",
 			'connect-src' => "'self'",
 			'frame-src'   => "'self'",
+			// フォームの送信先。外部へ POST するもの（ダッシュボードの共有リンクなど）の送り先を
+			// config.customize.php の $csp_allowed_domains['form-action'] で足せるようにする
+			'form-action' => "'self'",
 		);
 
 		if (!empty($csp_allowed_domains) && is_array($csp_allowed_domains)) {
@@ -104,7 +107,6 @@ class Vtiger_Response {
 			$parts[] = "{$directive} {$value}";
 		}
 		$parts[] = "frame-ancestors 'self'";
-		$parts[] = "form-action 'self'";
 		$parts[] = "base-uri 'self'";
 
 		return "Content-Security-Policy: " . implode('; ', $parts);

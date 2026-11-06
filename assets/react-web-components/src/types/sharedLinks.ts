@@ -68,6 +68,8 @@ export interface SharedLink extends Omit<
   targets: SharedLinkTargetView[];
   /** 削除された項目・対象を含む */
   has_warning: boolean;
+  /** POST の送り先が CSP（form-action）で許可されておらず、ウィジェットから開けない */
+  post_blocked: boolean;
 }
 
 /** 差し込める項目 */

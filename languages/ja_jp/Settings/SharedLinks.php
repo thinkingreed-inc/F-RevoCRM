@@ -33,6 +33,7 @@ $languageStrings = array(
 	'LBL_CONFIRM_DELETE' => 'このリンクを削除しますか？',
 	'LBL_MORE_TARGETS' => 'ほか %s 件',
 	'LBL_HAS_WARNING' => '削除された項目・対象を含んでいます。編集して見直してください。',
+	'LBL_POST_BLOCKED' => 'POST の送り先が許可されていないため、ウィジェットから開けません。config.customize.php の $csp_allowed_domains[\'form-action\'] に送り先を追加してください。',
 	'LBL_SAVED' => '保存しました。',
 	'LBL_DELETED' => '削除しました。',
 
@@ -55,6 +56,7 @@ $languageStrings = array(
 	'LBL_SEARCH' => '絞り込み',
 	'LBL_DELETED_FIELD' => '（削除された項目）',
 	'LBL_PARAMS_NOTE' => '「ユーザー情報」を選ぶと、リンクを開いたユーザー本人の値を送ります。',
+	'LBL_POST_CSP_NOTE' => 'POST で送るには、送り先（例: https://kintai.example.com）を config.customize.php の $csp_allowed_domains[\'form-action\'] に登録する必要があります。',
 	'LBL_NOREFERRER' => 'リファラーを送らない',
 	'LBL_NOREFERRER_NOTE' => 'リンク先が外部からの Referer を拒否していて開けない場合にだけオンにしてください。',
 	'LBL_ACTIVE_NOTE' => 'オフにするとウィジェットに表示しません。',

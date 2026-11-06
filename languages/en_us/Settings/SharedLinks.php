@@ -33,6 +33,7 @@ $languageStrings = array(
 	'LBL_CONFIRM_DELETE' => 'Delete this link?',
 	'LBL_MORE_TARGETS' => '%s more',
 	'LBL_HAS_WARNING' => 'Contains deleted fields or targets. Please edit and review.',
+	'LBL_POST_BLOCKED' => 'The POST destination is not allowed, so the link cannot be opened from the widget. Add it to $csp_allowed_domains[\'form-action\'] in config.customize.php.',
 	'LBL_SAVED' => 'Saved.',
 	'LBL_DELETED' => 'Deleted.',
 
@@ -55,6 +56,7 @@ $languageStrings = array(
 	'LBL_SEARCH' => 'Filter',
 	'LBL_DELETED_FIELD' => '(Deleted field)',
 	'LBL_PARAMS_NOTE' => '"User information" sends the value of the user who opens the link.',
+	'LBL_POST_CSP_NOTE' => 'To send by POST, register the destination (e.g. https://kintai.example.com) in $csp_allowed_domains[\'form-action\'] in config.customize.php.',
 	'LBL_NOREFERRER' => 'Do not send referrer',
 	'LBL_NOREFERRER_NOTE' => 'Turn this on only when the target site rejects external Referer headers.',
 	'LBL_ACTIVE_NOTE' => 'When off, the link is not shown in the widget.',

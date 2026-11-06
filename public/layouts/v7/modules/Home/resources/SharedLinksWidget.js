@@ -5,7 +5,8 @@
  * - GET・別タブ: <a target="_blank"> のまま、ブラウザに任せる
  * - GET・別ウィンドウ: 通常のクリックだけ受けて window.open で開く
  *   （中クリック・Ctrl+クリックはブラウザの通常の動きのまま）
- * - POST: 押したときにフォームを組み立てて送信する
+ * - POST・別タブ: 押したときにフォームを組み立て、target="_blank" で送信する
+ * - POST・別ウィンドウ: 空のウィンドウを開き、その中でフォームを組み立てて送信する
  *
  * POST のフォームを HTML に書き出さないのは、csrf-magic が <form method="post"> に
  * CRM の CSRF トークンを埋め込み、リンク先へ送ってしまうため。
@@ -45,8 +46,14 @@
 		},
 
 		openPost: function (link) {
+			// CRM の CSP（form-action）で送り先が許可されていないと、ブラウザが送信を止める。
+			// 空のウィンドウだけが開いて何も起きないのを避け、理由を知らせる
+			if (link.blocked) {
+				app.helper.showErrorNotification({message: app.vtranslate('JS_SHARED_LINK_POST_BLOCKED')});
+				return;
+			}
 			if (link.openMode !== 'window') {
-				this.submitPost(link, '_blank');
+				this.submitPost(document, link, '_blank', link.noreferrer ? 'noopener noreferrer' : 'noopener');
 				return;
 			}
 			var name = this.getWindowName(link);
@@ -55,7 +62,29 @@
 				app.helper.showErrorNotification({message: app.vtranslate('JS_SHARED_LINK_POPUP_BLOCKED')});
 				return;
 			}
-			this.submitPost(link, name);
+			// 開いた空のウィンドウ（CRM と同じオリジンの about:blank）の中でフォームを作って送る。
+			// CRM の画面から target=名前 で送る方法は、フォームに rel="noopener" を付けると
+			// ブラウザが名前付きのウィンドウを探さずに新しいタブを開いてしまい、空のウィンドウが残るため使わない。
+			var popupDocument = null;
+			try {
+				popupDocument = opened.document;
+				popupDocument.body;
+			} catch (e) {
+				// 同じ名前のウィンドウが別オリジンのページを開いたまま残っている
+				popupDocument = null;
+			}
+			if (popupDocument && popupDocument.body) {
+				if (link.noreferrer) {
+					var meta = popupDocument.createElement('meta');
+					meta.name = 'referrer';
+					meta.content = 'no-referrer';
+					popupDocument.head.appendChild(meta);
+				}
+				this.submitPost(popupDocument, link, '_self', null);
+			} else {
+				// 開いているウィンドウへ名前で送る（rel を付けると名前で探さなくなるため付けない）
+				this.submitPost(document, link, name, null);
+			}
 			// 送信先のページから CRM の画面を操作できないようにする
 			try {
 				opened.opener = null;
@@ -64,32 +93,39 @@
 			}
 		},
 
-		submitPost: function (link, target) {
-			var form = document.createElement('form');
+		/**
+		 * フォームを組み立てて送信し、送信後に消す
+		 *
+		 * @param {Document} targetDocument フォームを置く文書
+		 * @param {string|null} rel フォームの rel（null なら付けない）
+		 */
+		submitPost: function (targetDocument, link, target, rel) {
+			var form = targetDocument.createElement('form');
 			form.method = 'POST';
 			form.action = link.url;
 			form.target = target;
 			form.style.display = 'none';
-			form.setAttribute('rel', link.noreferrer ? 'noopener noreferrer' : 'noopener');
+			if (rel) {
+				form.setAttribute('rel', rel);
+			}
 
 			$.each(link.params || [], function (index, param) {
-				var input = document.createElement('input');
+				// 念のため、CRM の CSRF トークンと同じ名前の値は送らない
+				if (typeof csrfMagicName !== 'undefined' && param.name === csrfMagicName) {
+					return;
+				}
+				var input = targetDocument.createElement('input');
 				input.type = 'hidden';
 				input.name = param.name;
 				input.value = param.value;
 				form.appendChild(input);
 			});
 
-			// 念のため、CRM の CSRF トークンが入っていれば取り除く
-			if (typeof csrfMagicName !== 'undefined') {
-				$(form).find('input').filter(function () {
-					return this.name === csrfMagicName;
-				}).remove();
-			}
-
-			document.body.appendChild(form);
+			targetDocument.body.appendChild(form);
 			form.submit();
-			document.body.removeChild(form);
+			if (form.parentNode) {
+				form.parentNode.removeChild(form);
+			}
 		},
 
 		registerEvents: function () {

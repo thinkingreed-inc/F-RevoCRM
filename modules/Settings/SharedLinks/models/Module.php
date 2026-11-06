@@ -15,7 +15,7 @@
  *     visibility: string, sequence: int, params: list<SharedLinkParam>, targets: list<SharedLinkTarget>}
  * @phpstan-type SharedLinkVisible array{id: int, title: string, description: string, method: string, url: string,
  *     params: list<array{name: string, value: string}>, open_mode: string, window_width: int|null,
- *     window_height: int|null, noreferrer: bool}
+ *     window_height: int|null, noreferrer: bool, post_blocked: bool}
  */
 class Settings_SharedLinks_Module_Model extends Settings_Vtiger_Module_Model
 {
@@ -452,15 +452,7 @@ class Settings_SharedLinks_Module_Model extends Settings_Vtiger_Module_Model
     public static function getVisibleLinksForCurrentUser(): array
     {
         $currentUser = Users_Record_Model::getCurrentUserModel();
-        /** @var Users_Privileges_Model $privileges */
-        $privileges = Users_Privileges_Model::getCurrentUserPrivilegesModel();
-        $groups = array_map([self::class, 'str'], self::toArray($privileges->get('groups')));
-        $userContext = [
-            'id' => self::int($currentUser->getId()),
-            'roleid' => self::str($privileges->get('roleid')),
-            'parent_role_seq' => self::str($privileges->get('parent_role_seq')),
-            'groups' => $groups,
-        ];
+        $userContext = self::getUserContext(self::int($currentUser->getId()));
 
         $userValues = null;
         $links = [];
@@ -486,9 +478,65 @@ class Settings_SharedLinks_Module_Model extends Settings_Vtiger_Module_Model
                 'window_width' => $link['window_width'],
                 'window_height' => $link['window_height'],
                 'noreferrer' => $link['noreferrer'],
+                // CSP で送信が止められる POST は、開かずに通知する
+                'post_blocked' => self::isPostBlocked($link['method'], $link['url']),
             ];
         }
         return $links;
+    }
+
+    /**
+     * POST の送り先として CSP（form-action）で許可されているソースの一覧
+     *
+     * config.customize.php の $csp_allowed_domains['form-action']。
+     *
+     * @return list<string>
+     */
+    public static function getFormActionSources(): array
+    {
+        $domains = $GLOBALS['csp_allowed_domains'] ?? null;
+        $sources = is_array($domains) ? ($domains['form-action'] ?? []) : [];
+        return array_map([self::class, 'str'], self::toArray($sources));
+    }
+
+    /**
+     * POST のリンクが、CSP の form-action で止められるか
+     */
+    public static function isPostBlocked(string $method, string $url): bool
+    {
+        return $method === 'POST'
+            && !Settings_SharedLinks_Rules_Model::isFormActionAllowed($url, self::getFormActionSources());
+    }
+
+    /**
+     * 公開範囲の判定に使う、ユーザーの役割とグループ
+     *
+     * 権限ファイル（user_privileges_<id>.php）は、管理者の場合に役割の経路とグループを持たないため使わない。
+     * グループは共有ルールと同じ GetUserGroups で求める（グループの中のグループ・役割経由の所属を含む）。
+     *
+     * @return array{id: int, roleid: string, parent_role_seq: string, groups: list<string>}
+     */
+    public static function getUserContext(int $userId): array
+    {
+        require_once 'include/utils/GetUserGroups.php';
+        $db = PearDatabase::getInstance();
+
+        $result = $db->pquery(
+            'SELECT r.roleid, r.parentrole FROM vtiger_user2role ur'
+            . ' INNER JOIN vtiger_role r ON r.roleid = ur.roleid WHERE ur.userid = ?',
+            [$userId]
+        );
+        $row = $db->num_rows($result) > 0 ? self::fetchRow($db, $result, 0) : [];
+
+        $userGroups = new GetUserGroups();
+        $userGroups->getAllUserGroups($userId);
+
+        return [
+            'id' => $userId,
+            'roleid' => self::str($row['roleid'] ?? ''),
+            'parent_role_seq' => self::str($row['parentrole'] ?? ''),
+            'groups' => array_map([self::class, 'str'], self::toArray($userGroups->user_groups)),
+        ];
     }
 
     /**

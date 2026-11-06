@@ -99,10 +99,12 @@
 | 開き方 | GET | POST |
 |---|---|---|
 | 別タブ | `<a href="…" target="_blank" rel="noopener">` で開く | 押したときに JS でフォームを作り、`target="_blank"` で送信してからフォームを消す |
-| 別ウィンドウ | 押したときに `window.open(URL, 名前, "width=…,height=…,left=…,top=…,noopener")` で開く | 先に `window.open("about:blank", 名前, "width=…,height=…,left=…,top=…")` で空のウィンドウを開き、JS で作ったフォームを `target=名前` で送信する。送信した直後に、開いたウィンドウの `opener` を `null` にする |
+| 別ウィンドウ | 押したときに `window.open(URL, 名前, "width=…,height=…,left=…,top=…,noopener")` で開く | 先に `window.open("about:blank", 名前, "width=…,height=…,left=…,top=…")` で空のウィンドウを開き、**そのウィンドウの文書の中で**フォームを作って送信する。送信した直後に、開いたウィンドウの `opener` を `null` にする |
 
 - どちらの場合も、GET の `<a>` の href にはパラメータを付けた最終的な URL を入れる。別ウィンドウのリンクでも、中クリック・Ctrl＋クリック・URL のコピーはブラウザの通常の動き（別タブで開く）になる。通常のクリックだけを JS で受けて別ウィンドウで開く。
 - POST のフォームは HTML に書き出さない（6.2）。
+- POST・別ウィンドウで、CRM の画面から `target=名前` で送らないのは、フォームに `rel="noopener"` / `noreferrer` を付けるとブラウザが名前付きのウィンドウを探さず、新しいタブで送信して空のウィンドウが残るため（E2E で確認）。空のウィンドウは CRM と同じオリジンの about:blank なので、中の文書を操作できる。中を操作できない場合（同じ名前のウィンドウが別のサイトを開いたまま残っている）は、`rel` を付けずに `target=名前` で送る。
+- POST の送り先が CSP の `form-action` で許可されていないと、ブラウザが送信を止める（6.5）。その場合はウィンドウを開かず、「このリンクの送り先は許可されていないため開けません。システム管理者に連絡してください」と通知する。
 - 別ウィンドウは、今のブラウザのウィンドウの中央に来るように `left` / `top` を計算する。指定したサイズが画面より大きいときは、画面に収まるサイズに縮める。
 - ウィンドウの名前はリンクごとに固定する（`frSharedLink_<リンク ID>`）。同じリンクを 2 回押したときは、同じウィンドウを再利用する（開くたびにウィンドウが増えない）。
   - ただし GET で `noopener` を付けたときは、ブラウザによっては再利用されず、新しいウィンドウが開く。
@@ -132,13 +134,14 @@
 | 種類 | 当てはまる条件 |
 |---|---|
 | ユーザー | 見ているユーザー本人 |
-| グループ | 見ているユーザーがそのグループに属している。グループの中のグループ・役割経由で属している場合も含む（ユーザーの権限ファイルの `current_user_groups` と同じ範囲） |
+| グループ | 見ているユーザーがそのグループに属している。グループの中のグループ・役割経由で属している場合も含む（共有ルールと同じ `GetUserGroups` で DB から求める） |
 | 役割 | 見ているユーザーの役割がその役割と同じ |
 | 役割と下位 | 見ているユーザーの役割がその役割と同じか、その下位（ユーザーの `parent_role_seq` にその役割 ID が含まれる） |
 
-- 判定はウィジェットを表示するたびにサーバ側で行う。役割の変更やグループのメンバーの変更は、権限ファイルが作り直された時点で反映される。
+- 判定はウィジェットを表示するたびにサーバ側で行う。役割とグループは毎回 DB（`vtiger_user2role` / `vtiger_role` / `GetUserGroups`）から求めるので、変更はすぐに反映される。
+- ユーザーの権限ファイル（`user_privileges_<id>.php`）は使わない。管理者の権限ファイルは役割の経路とグループを持たず、管理者で「役割と下位」「グループ」が当てはまらなくなるため（テストで確認）。
 - **管理者も同じ判定に従う**（管理者だからといって全リンクを表示しない）。管理者は管理画面で全リンクを確認できる。
-- 対象の役割・グループ・ユーザーが削除されたときは、その対象は判定で無視する。管理画面では `（削除済み）` と表示し、管理者が外せるようにする。その結果、「指定した対象のみ」で有効な対象が 1 件も無いリンクは、誰にも表示されない。管理画面の一覧の公開範囲に警告アイコンを出す。
+- 対象の役割・グループ・ユーザーが削除されたときは、その対象は判定で無視する。管理画面では `（削除済み）` と表示し、管理者が外せるようにする。削除された対象を 1 件でも含むリンクには、管理画面の一覧で警告アイコンを出す（対象がすべて削除されると、そのリンクは誰にも表示されない）。
 
 ## 4. ユーザー情報の差し込み
 
@@ -172,7 +175,8 @@ Issue では「リンク先の CSRF 対策で開けない問題を避けるた�
 - オンにしたリンクは、Referer を送らない。
   - 別タブ・GET: `<a>` に `rel="noopener noreferrer"` を付ける
   - 別ウィンドウ・GET: `window.open` の features に `noreferrer` を付ける
-  - POST（別タブ・別ウィンドウとも）: 送信するフォームに `rel="noreferrer"` を付ける。フォームの `rel` に対応していない古いブラウザでは Referer が送られることがある
+  - POST・別タブ: 送信するフォームに `rel="noopener noreferrer"` を付ける。フォームの `rel` に対応していない古いブラウザでは Referer が送られることがある
+  - POST・別ウィンドウ: 開いた空のウィンドウに `<meta name="referrer" content="no-referrer">` を入れてから送る（`rel` を付けると名前付きのウィンドウへ送れないため）
 - オンにするのは「連携先が外部からの Referer を拒否していて開けない」ときに限る、と画面の説明文に書く。
 
 ## 6. セキュリティ
@@ -189,7 +193,17 @@ Issue では「リンク先の CSRF 対策で開けない問題を避けるた�
 F-RevoCRM の csrf-magic は、出力される HTML の `<form method="post">` へ CRM の CSRF トークン（`__vtrftk`）を自動で埋め込む（`libraries/csrf-magic/csrf-magic.php` の出力バッファ処理と、`csrf-magic.js` のページ読み込み時の処理）。そのため、POST のフォームを HTML に書き出すと、トークンがリンク先へ送られてしまう。
 
 - ウィジェットの HTML には `<form>` を書き出さない。POST の内容（URL とパラメータ）は data 属性の JSON で持たせ、押したときに JS でフォームを作って送信する。
-- 送信する直前に、フォームに含まれる入力が登録したパラメータだけであることを確認する（`__vtrftk` が入っていれば取り除く）。
+- 送信する直前に、フォームに含まれる入力が登録したパラメータだけであることを確認する（`__vtrftk` と同じ名前のパラメータは送らない）。
+
+### 6.5 CSP の form-action（POST の送り先）
+
+CRM の画面は CSP（`includes/http/Response.php`）で `form-action 'self'` を指定しており、そのままでは外部へのフォーム送信をブラウザが止める（別タブ・別ウィンドウとも。空のウィンドウは作成元の CSP を引き継ぐ）。
+
+- `config.customize.php` の `$csp_allowed_domains['form-action']` に送り先を登録できるようにする（他のディレクティブと同じ仕組み。コアの `buildCSPHeader()` を変更）。既定は空（`'self'` だけ）。
+- 例: `'form-action' => array('https://kintai.example.com')`
+- 管理画面では、POST の送り先が許可されていないリンクに印（⛔）を出し、編集モーダルで POST を選ぶと登録が必要なことを注記する。判定は CSP のソース表現の主なもの（`*`・`https:` のようなスキームだけの指定・ホスト・先頭の `*.`・ポート・パス）に対応する（`Settings_SharedLinks_Rules_Model::isFormActionAllowed`）。
+- ウィジェットでは、許可されていない POST のリンクを押してもウィンドウを開かず、通知する。
+- GET は CSP の `form-action` に関係しない（リンクの遷移のため）。
 
 ### 6.3 出力のエスケープ
 
@@ -270,7 +284,7 @@ F-RevoCRM の csrf-magic は、出力される HTML の `<form method="post">` �
 
 ## 8. 実装の構成
 
-コア（`vtlib/`・`includes/`・`modules/Vtiger/`）は変更しない。ウィジェットのクラスは `Vtiger_Loader::getComponentClassName('Dashboard', …)` がモジュール側（Home）を先に探すので、`modules/Home/dashboards/` に置けばよい。また、tabid = 3 で登録した `DASHBOARDWIDGET` は、`Vtiger_DashBoard_Model::getSelectableDashboard()` によって「ウィジェットを追加」メニューに自動で出る。
+コア（`vtlib/`・`includes/`・`modules/Vtiger/`）は変更しない。ただし CSP の `form-action` だけは、POST の送り先を許可するために `includes/http/Response.php` を変更する（6.5。方針は確認済み）。ウィジェットのクラスは `Vtiger_Loader::getComponentClassName('Dashboard', …)` がモジュール側（Home）を先に探すので、`modules/Home/dashboards/` に置けばよい。また、tabid = 3 で登録した `DASHBOARDWIDGET` は、`Vtiger_DashBoard_Model::getSelectableDashboard()` によって「ウィジェットを追加」メニューに自動で出る。
 
 | 種別 | ファイル | 内容 |
 |---|---|---|
@@ -279,8 +293,9 @@ F-RevoCRM の csrf-magic は、出力される HTML の `<form method="post">` �
 | View | `modules/Settings/SharedLinks/views/List.php` | 管理画面 |
 | API | `modules/Settings/SharedLinks/apis/SharedLinkAPI.php` | 管理画面用の JSON API（`list` / `info` / `save` / `delete` / `reorder`）。管理者のみ |
 | テンプレート | `layouts/v7/modules/Settings/SharedLinks/SharedLinksList.tpl` | `<shared-links-page>` を置くだけ |
-| Dashboard | `modules/Home/dashboards/SharedLinks.php` | `Home_SharedLinks_Dashboard`。有効なリンクを、差し込みを済ませた状態で表示 |
+| Dashboard | `modules/Home/dashboards/SharedLinks.php` | `Home_SharedLinks_Dashboard`。有効なリンクを、差し込みを済ませた状態で表示。一覧は `<div>` で組む（ウィジェット自体が gridster の `<li>` で、中の `<li>` にもその CSS が効いて崩れるため） |
 | テンプレート | `layouts/v7/modules/Home/dashboards/SharedLinks.tpl` / `SharedLinksContents.tpl` | ウィジェットの枠と中身 |
+| コア | `includes/http/Response.php`、`config.customize.php` | CSP の `form-action` を `$csp_allowed_domains['form-action']` で足せるようにする（6.5） |
 | JS | `public/layouts/v7/modules/Home/resources/SharedLinksWidget.js` | 別ウィンドウで開く、POST のフォームを作って送信する。`Home_DashBoard_View::getHeaderScripts()`（`modules/Home/views/DashBoard.php`）で読み込む |
 | React | `assets/react-web-components/src/components/SharedLinks/` | 管理画面。型は `src/types/sharedLinks.ts` |
 | 言語 | `languages/{ja_jp,en_us}/Settings/SharedLinks.php`、`languages/{ja_jp,en_us}/Home.php`、`languages/{ja_jp,en_us}/Settings/Vtiger.php` | 画面の文言、ウィジェット名 `Shared Links` = 「共有リンク」、設定メニューの名前 |

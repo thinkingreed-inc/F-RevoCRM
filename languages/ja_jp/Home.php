@@ -37,4 +37,5 @@ $jsLanguageStrings = array(
 	'JS_TAB_NAME_SHOULD_NOT_BE_EMPTY' => 'ダッシュボード名は空にできません。',
 	'JS_NO_DATA_AVAILABLE' => '対象データがありません',
 	'JS_SHARED_LINK_POPUP_BLOCKED' => 'ポップアップがブロックされました。ブラウザの設定で、このサイトのポップアップを許可してください。',
+	'JS_SHARED_LINK_POST_BLOCKED' => 'このリンクの送り先は許可されていないため開けません。システム管理者に連絡してください。',
 );
