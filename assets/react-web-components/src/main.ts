@@ -4,6 +4,7 @@ import { QuickCreate, CalendarQuickCreate } from "@/components/QuickCreate";
 import { AppMenu } from "@/components/AppMenu";
 import { ActivityList } from "@/components/ActivityList";
 import { ParameterEdit } from "@/components/ParameterEdit/ParameterEdit";
+import { RecordHistory } from "@/components/RecordHistory";
 
 // QuickCreate本体コンポーネントの登録
 // イベント: save, cancel, go-to-full-form, open-change (CustomEvent)
@@ -120,3 +121,18 @@ createWebComponent(
   ["record-id", "is-open"],
   ["onSave", "onCancel", "onOpenChange"],
 );
+
+// RecordHistory コンポーネントの登録（詳細画面の更新履歴）
+// variant: "full"（更新履歴タブ。絞り込み・項目ごとの変遷つき）/ "compact"（概要タブのウィジェット）
+// page-size: full はさらに表示の単位、compact は表示件数
+// full-history-url: compact の「すべて表示」のリンク先
+// 使用例（HTML）:
+// <record-history module="Accounts" record-id="3"></record-history>
+createWebComponent(RecordHistory, "record-history", [
+  "module",
+  "record-id",
+  "variant",
+  "page-size",
+  "full-history-url",
+  "refresh-key",
+]);
