@@ -53,7 +53,7 @@ class RecordVersion_Display_Model
     }
 
     /**
-     * 過去の版の金額に付ける通貨の記号（品目明細があればそのレコードの通貨、無ければ基準通貨）
+     * 過去の版の金額に付ける通貨の記号（品目明細があればそのレコードの通貨、無ければ当時の基本通貨）
      *
      * @param array<string, mixed> $snapshot
      */
@@ -63,6 +63,22 @@ class RecordVersion_Display_Model
         $currency = RecordVersion_Util_Helper::toArray($inventory['currency'] ?? null);
         if (isset($currency['symbol'])) {
             return RecordVersion_Util_Helper::toStr($currency['symbol']);
+        }
+        return self::getBaseCurrencySymbol($snapshot);
+    }
+
+    /**
+     * 改版した時点の基本通貨の記号（品目明細の無いモジュールの金額に付ける）
+     *
+     * 基本通貨を保存していない過去の版（形を変える前に保存したもの）は、今の基本通貨の記号を使う。
+     *
+     * @param array<string, mixed> $snapshot
+     */
+    public static function getBaseCurrencySymbol(array $snapshot): string
+    {
+        $base = RecordVersion_Util_Helper::toArray($snapshot['base_currency'] ?? null);
+        if (isset($base['symbol'])) {
+            return RecordVersion_Util_Helper::toStr($base['symbol']);
         }
         $info = RecordVersion_Util_Helper::toArray(getCurrencySymbolandCRate(CurrencyField::getDBCurrencyId()));
         return RecordVersion_Util_Helper::toStr(decode_html(RecordVersion_Util_Helper::toStr($info['symbol'] ?? '')));
@@ -123,7 +139,7 @@ class RecordVersion_Display_Model
                 }
                 $deleted[] = [
                     'label' => $this->savedLabel($entry, 'label'),
-                    'value' => $this->formatDeletedValue($entry, $moduleName),
+                    'value' => $this->formatSavedValue($entry, $moduleName),
                 ];
             }
         }
@@ -380,7 +396,11 @@ class RecordVersion_Display_Model
         $value = $entry['value'] ?? '';
         $dataType = RecordVersion_Util_Helper::toStr($fieldModel->getFieldDataType());
         $savedType = RecordVersion_Util_Helper::toStr($entry['datatype'] ?? '');
-        if (in_array($dataType, self::NAMED_DATA_TYPES, true) || in_array($savedType, self::NAMED_DATA_TYPES, true)) {
+        if ($savedType !== '' && $savedType !== $dataType) {
+            // 当時と今で項目の種類が違うときは、今の種類で整えずに当時の値をそのまま出す
+            return $this->formatSavedValue($entry, $moduleName);
+        }
+        if (in_array($dataType, self::NAMED_DATA_TYPES, true)) {
             // 関連項目・担当などは当時の名前で出す
             return htmlspecialchars(RecordVersion_Util_Helper::toStr($entry['display'] ?? ''), ENT_QUOTES, 'UTF-8');
         }
@@ -405,11 +425,13 @@ class RecordVersion_Display_Model
     }
 
     /**
-     * 削除された項目の値（今の項目の種類がわからないので、当時の名前・値をそのまま出す）
+     * 当時の種類のまま値を出す（削除された項目・当時と今で種類が違う項目）
+     *
+     * 関連項目・担当などは当時の名前、選択肢は翻訳、金額は当時の通貨の記号で、それ以外は当時の値をそのまま出す。
      *
      * @param array<string, mixed> $entry
      */
-    private function formatDeletedValue(array $entry, string $moduleName): string
+    private function formatSavedValue(array $entry, string $moduleName): string
     {
         if (isset($entry['display'])) {
             return htmlspecialchars(RecordVersion_Util_Helper::toStr($entry['display']), ENT_QUOTES, 'UTF-8');

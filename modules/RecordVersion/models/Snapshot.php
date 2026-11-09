@@ -52,6 +52,7 @@ class RecordVersion_Snapshot_Model
             'revised_by_name' => $revisedByName,
             'fields' => self::captureFields($record),
             'inventory' => null,
+            'base_currency' => self::captureBaseCurrency(),
             'relations' => [],
         ];
         if ($record instanceof Inventory_Record_Model) {
@@ -113,6 +114,7 @@ class RecordVersion_Snapshot_Model
     {
         $moduleName = $record->getModuleName();
         $data = RecordVersion_Util_Helper::toArray($record->getData());
+        $layout = self::getFieldLayout($moduleName);
         $fields = [];
         foreach ($record->getModule()->getFields() as $fieldName => $fieldModel) {
             if (!($fieldModel instanceof Vtiger_Field_Model)) {
@@ -134,12 +136,62 @@ class RecordVersion_Snapshot_Model
                 'datatype' => $dataType,
                 'value' => is_scalar($value) || $value === null ? $value : RecordVersion_Util_Helper::toStr($value),
             ];
+            // 当時のブロック・並び順（画面は今の位置に出すが、帳票で「当時の画面のとおり」に出せるよう残す）
+            $position = $layout[RecordVersion_Util_Helper::toInt($fieldModel->getId())] ?? ['block_label' => '', 'block_sequence' => 0, 'sequence' => 0];
+            $entry['block_label'] = $position['block_label'];
+            $entry['block_label_ja'] = self::translate($position['block_label'], $moduleName, 'ja_jp');
+            $entry['block_label_en'] = self::translate($position['block_label'], $moduleName, 'en_us');
+            $entry['block_sequence'] = $position['block_sequence'];
+            $entry['sequence'] = $position['sequence'];
             if (in_array($dataType, self::NAMED_DATA_TYPES, true) && !self::isEmpty($value)) {
                 $entry['display'] = self::plainDisplayValue($fieldModel, $value, $record);
             }
             $fields[$entry['fieldid']] = $entry;
         }
         return $fields;
+    }
+
+    /**
+     * 項目ごとの当時のブロック（翻訳前の名前）・ブロックの順・項目の順
+     *
+     * @return array<int, array{block_label: string, block_sequence: int, sequence: int}> 項目 ID => 位置
+     */
+    private static function getFieldLayout(string $moduleName): array
+    {
+        $db = PearDatabase::getInstance();
+        $rows = RecordVersion_Util_Helper::fetchRawRows($db->pquery(
+            'SELECT f.fieldid, f.sequence, b.blocklabel, b.sequence AS block_sequence
+             FROM vtiger_field f LEFT JOIN vtiger_blocks b ON b.blockid = f.block
+             WHERE f.tabid = ?',
+            [RecordVersion_Util_Helper::toInt(getTabid($moduleName))]
+        ));
+        $layout = [];
+        foreach ($rows as $row) {
+            $layout[RecordVersion_Util_Helper::toInt($row['fieldid'] ?? 0)] = [
+                'block_label' => RecordVersion_Util_Helper::toStr($row['blocklabel'] ?? ''),
+                'block_sequence' => RecordVersion_Util_Helper::toInt($row['block_sequence'] ?? 0),
+                'sequence' => RecordVersion_Util_Helper::toInt($row['sequence'] ?? 0),
+            ];
+        }
+        return $layout;
+    }
+
+    /**
+     * 改版した時点の基本通貨（品目明細の無いモジュールの金額を、当時の記号で出すため）
+     *
+     * @return array{code: string, symbol: string}
+     */
+    private static function captureBaseCurrency(): array
+    {
+        $db = PearDatabase::getInstance();
+        $rows = RecordVersion_Util_Helper::fetchRawRows($db->pquery(
+            'SELECT currency_code, currency_symbol FROM vtiger_currency_info WHERE id = ?',
+            [RecordVersion_Util_Helper::toInt(CurrencyField::getDBCurrencyId())]
+        ));
+        return [
+            'code' => RecordVersion_Util_Helper::toStr($rows[0]['currency_code'] ?? ''),
+            'symbol' => RecordVersion_Util_Helper::toStr(decode_html(RecordVersion_Util_Helper::toStr($rows[0]['currency_symbol'] ?? ''))),
+        ];
     }
 
     /**

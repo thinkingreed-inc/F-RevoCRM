@@ -63,6 +63,76 @@ final class ChangedSettingsTest extends RecordVersionTestCase
         $this->assertSame('Amount', $this->snapshotFieldsByName($recordId)['amount']['label'], 'JSON には当時の表示名が残る');
     }
 
+    public function test_項目ごとに当時のブロックとブロックの順と項目の順を保存する(): void
+    {
+        $recordId = $this->createPotential('ブロック');
+        RecordVersion_Revision_Model::revise($recordId, '改版');
+        $entry = $this->snapshotFieldsByName($recordId)['potentialname'];
+        $expected = RecordVersion_Util_Helper::fetchRows($this->db->pquery(
+            'SELECT b.blocklabel, b.sequence AS block_sequence, f.sequence FROM vtiger_field f JOIN vtiger_blocks b ON b.blockid = f.block WHERE f.fieldid = ?',
+            [$this->fieldId('potentialname')]
+        ))[0];
+        $this->assertSame($expected['blocklabel'], $entry['block_label'], '当時のブロック（翻訳前）');
+        $this->assertSame(vtranslate(RecordVersion_Util_Helper::toStr($expected['blocklabel']), self::MODULE), $entry[\Vtiger_Language_Handler::getLanguage() === 'ja_jp' ? 'block_label_ja' : 'block_label_en']);
+        $this->assertNotSame('', $entry['block_label_ja']);
+        $this->assertNotSame('', $entry['block_label_en']);
+        $this->assertSame(RecordVersion_Util_Helper::toInt($expected['block_sequence']), $entry['block_sequence']);
+        $this->assertSame(RecordVersion_Util_Helper::toInt($expected['sequence']), $entry['sequence']);
+    }
+
+    /**
+     * @return array<string, array{0: int, 1: string}>
+     */
+    public static function changedTypes(): array
+    {
+        return [
+            '文字→日付' => [5, 'D~O'],
+            '文字→関連項目' => [10, 'V~O'],
+        ];
+    }
+
+    /**
+     * @dataProvider changedTypes
+     */
+    public function test_当時と今で項目の種類が違うときは当時の値をそのまま出す(int $uitype, string $typeofdata): void
+    {
+        $fieldId = $this->fieldId('nextstep');
+        $recordId = $this->createPotential('種類の変更', ['nextstep' => '来期の段取り']);
+        RecordVersion_Revision_Model::revise($recordId, '改版');
+        $old = RecordVersion_Util_Helper::fetchRows($this->db->pquery('SELECT uitype, typeofdata FROM vtiger_field WHERE fieldid = ?', [$fieldId]))[0];
+        $this->db->pquery('UPDATE vtiger_field SET uitype = ?, typeofdata = ? WHERE fieldid = ?', [$uitype, $typeofdata, $fieldId]);
+        try {
+            \Vtiger_Cache::$cacheEnable = false;
+            $values = $this->flatten($this->displayedBlocks($this->snapshotFields($recordId)));
+        } finally {
+            $this->db->pquery('UPDATE vtiger_field SET uitype = ?, typeofdata = ? WHERE fieldid = ?', [$old['uitype'], $old['typeofdata'], $fieldId]);
+        }
+        $this->assertSame('来期の段取り', $values[vtranslate('Next Step', self::MODULE)] ?? null, '今の種類で整えずに当時の値を出す');
+    }
+
+    public function test_品目明細の無いモジュールの金額は改版した時点の基本通貨の記号で出す(): void
+    {
+        $recordId = $this->createPotential('基本通貨', ['amount' => 1500]);
+        RecordVersion_Revision_Model::revise($recordId, '改版');
+        $snapshot = RecordVersion_Version_Model::getByNumber($recordId, 1)?->getSnapshot() ?? [];
+        $base = RecordVersion_Util_Helper::toArray($snapshot['base_currency'] ?? []);
+        $this->assertSame(
+            $this->scalar('SELECT currency_code FROM vtiger_currency_info WHERE id = ?', [\CurrencyField::getDBCurrencyId()]),
+            $base['code'] ?? null,
+            '改版した時点の基本通貨を保存する'
+        );
+        // 基本通貨の記号が当時と今で違っても、当時の記号で出す
+        $snapshot['base_currency'] = ['code' => 'XXX', 'symbol' => 'X$'];
+        $display = new RecordVersion_Display_Model(RecordVersion_Display_Model::getCurrencySymbol($snapshot));
+        $values = [];
+        foreach ($display->buildFieldBlocks(self::MODULE, RecordVersion_Util_Helper::toArray($snapshot['fields'] ?? []))['blocks'] as $block) {
+            foreach ($block['fields'] as $field) {
+                $values[$field['label']] = html_entity_decode($field['value']);
+            }
+        }
+        $this->assertStringStartsWith('X$', $values[vtranslate('Amount', self::MODULE)] ?? '');
+    }
+
     public function test_今は無い選択肢は当時の値のまま出す(): void
     {
         $recordId = $this->createPotential('選択肢');

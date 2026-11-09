@@ -25,9 +25,11 @@ class RecordVersion_Show_View extends RecordVersion_Base_View
         $inventory = isset($snapshot['inventory']) && is_array($snapshot['inventory'])
             ? $display->buildInventory(RecordVersion_Util_Helper::toArray($snapshot['inventory']))
             : null;
+        // 関連レコードの金額は、親の品目明細の通貨ではなく当時の基本通貨の記号で出す
+        $relationDisplay = new RecordVersion_Display_Model(RecordVersion_Display_Model::getBaseCurrencySymbol($snapshot));
         $relations = [];
         foreach (RecordVersion_Util_Helper::toList($snapshot['relations'] ?? []) as $index => $relation) {
-            $built = $display->buildRelation($record, RecordVersion_Util_Helper::toArray($relation), RecordVersion_Util_Helper::toInt($index), $versionNo);
+            $built = $relationDisplay->buildRelation($record, RecordVersion_Util_Helper::toArray($relation), RecordVersion_Util_Helper::toInt($index), $versionNo);
             if ($built !== null) {
                 $relations[] = $built;
             }

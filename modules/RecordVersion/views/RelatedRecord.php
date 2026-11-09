@@ -36,7 +36,7 @@ class RecordVersion_RelatedRecord_View extends RecordVersion_Base_View
                 break;
             }
         }
-        $display = new RecordVersion_Display_Model(RecordVersion_Display_Model::getCurrencySymbol([]));
+        $display = new RecordVersion_Display_Model(RecordVersion_Display_Model::getBaseCurrencySymbol($snapshot));
         $relatedModuleModel = Vtiger_Module_Model::getInstance($relatedModule);
         $moduleVisible = $relatedModuleModel && $relatedModuleModel->isActive()
             ? (bool) Users_Privileges_Model::isPermitted($relatedModule, 'DetailView')
