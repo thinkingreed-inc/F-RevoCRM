@@ -34,6 +34,14 @@ class RecordVersion_Util_Helper
     }
 
     /**
+     * 値が「ある」か（null・空文字・0・false・空配列でない）
+     */
+    public static function isTruthy(mixed $value): bool
+    {
+        return !empty($value);
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public static function toArray(mixed $value): array
