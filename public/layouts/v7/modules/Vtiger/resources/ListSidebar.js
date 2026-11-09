@@ -307,6 +307,13 @@ Vtiger.Class('Vtiger_ListSidebar_Js',{
             };
 
             jQuery(ele).popover(options);
+            // Bootstrap 3 は hide でクリック状態を戻さず、次の ▼ で開かないため戻す
+            jQuery(ele).on('hidden.bs.popover', function () {
+                var popover = jQuery(this).data('bs.popover');
+                if (popover && popover.inState) {
+                    popover.inState.click = false;
+                }
+            });
     },
 
     buildFilterPopoverContent : function(ele) {
