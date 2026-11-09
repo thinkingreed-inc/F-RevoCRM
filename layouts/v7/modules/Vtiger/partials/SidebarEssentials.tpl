@@ -6,7 +6,7 @@
 * Portions created by vtiger are Copyright (C) vtiger.
 * All Rights Reserved.
 ************************************************************************************}
-<div class="sidebar-menu">
+<div class="sidebar-menu sidebar-menu-fit">
     <div class="module-filters" id="module-filters">
         <div class="sidebar-container lists-menu-container">
             <div class="sidebar-header clearfix">
@@ -129,7 +129,7 @@
             </div>
         </div>
     {/if}
-    <div class="module-filters">
+    <div class="module-filters module-tags">
         <div class="sidebar-container lists-menu-container">
             <h5 class="lists-header">
                 {vtranslate('LBL_TAGS', $MODULE)}

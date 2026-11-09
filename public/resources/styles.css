@@ -1897,3 +1897,52 @@ input:focus ~ .bar:before, input:focus ~ .bar:after {
 body.calendar-dragging .webui-popover {
     display: none !important;
 }
+
+/* #1716 サイドバーを画面の高さに収め、リスト欄と最大 3 割のタグ欄をそれぞれスクロールさせる */
+.sidebar-menu-fit .menu-scroller {
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+.sidebar-menu-fit .module-tags .menu-scroller {
+    max-height: 30vh;
+}
+@media (min-width: 992px) {
+    .main-container .sidebar-essentials:has(> .sidebar-menu-fit) {
+        overflow: hidden;
+    }
+    .sidebar-menu-fit {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    .sidebar-menu-fit > .module-filters,
+    .sidebar-menu-fit > .module-filters > .sidebar-container {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+    .sidebar-menu-fit > .module-filters,
+    .sidebar-menu-fit > .module-filters > .sidebar-container > * {
+        flex: 0 0 auto;
+    }
+    .sidebar-menu-fit > #module-filters,
+    .sidebar-menu-fit > .module-filters > .sidebar-container {
+        flex: 1 1 auto;
+    }
+    .sidebar-menu-fit > .module-filters .menu-scroller {
+        flex: 1 1 auto;
+        min-height: 0;
+        max-height: none;
+    }
+    .sidebar-menu-fit > .module-tags {
+        max-height: 30%;
+    }
+    .sidebar-menu-fit #module-filters .menu-scroller .lists-header {
+        /* z-index を付けると ▼メニュー（z-index: 0）より上に出てしまう */
+        position: sticky;
+        top: 0;
+        margin: 0;
+        padding: 10px 0 5px;
+        background: #FFFFFF;
+    }
+}

@@ -47,7 +47,7 @@ Vtiger.Class('Vtiger_ListSidebar_Js',{},{
 	registerFilters: function() {
 		var self = this;
         var filters = jQuery('.module-filters').not('.module-extensions');
-        var scrollContainers = filters.find(".scrollContainer");
+        var scrollContainers = self.getFixedHeightScrollContainers(filters);
         // applying scroll to filters, tags & extensions
         jQuery.each(scrollContainers,function(key,scroll){
             var scroll = jQuery(scroll);
@@ -266,7 +266,14 @@ Vtiger.Class('Vtiger_ListSidebar_Js',{},{
             jQuery(e.currentTarget).addClass('hide');
         });
     },
+    getFixedHeightScrollContainers : function(filters) {
+        return filters.find(".scrollContainer").filter(function(){
+            return jQuery(this).closest('.sidebar-menu-fit').length === 0;
+        });
+    },
+
     registerEvents : function() {
+        var self = this;
         this.registerFilters();
         this.registerTagClick();
         this.registerPopOverContent();
@@ -276,7 +283,7 @@ Vtiger.Class('Vtiger_ListSidebar_Js',{},{
         app.event.on('Vtiger.Post.MenuToggle', function() {
             if(!jQuery('.sidebar-essentials').hasClass('hide')) {
                 var filters = jQuery('.module-filters').not('.module-extensions');
-                var scrollContainers = filters.find(".scrollContainer");
+                var scrollContainers = self.getFixedHeightScrollContainers(filters);
                 jQuery.each(scrollContainers,function(key,scroll){
                     var scroll = jQuery(scroll);
                     var listcontentHeight = scroll.find(".list-menu-content").height();
