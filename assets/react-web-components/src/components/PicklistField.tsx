@@ -344,6 +344,13 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
           left: dropdownPosition.left,
           width: dropdownPosition.width,
         }}
+        onMouseDown={(e) => {
+          // 候補を押した時に入力欄が blur すると、input の onBlur が 150ms 後に
+          // ドロップダウンを閉じる。ゆっくり押す（押してから離すまで 150ms 超）と
+          // 離した時点で候補が消えていて click が成立せず、選択できなくなる。
+          // フォーカスを入力欄に残して blur 自体を起こさない
+          e.preventDefault();
+        }}
         onWheel={(e) => {
           e.stopPropagation();
           // Radix UIのDialogがbodyのスクロールをブロックするため、手動でスクロール
