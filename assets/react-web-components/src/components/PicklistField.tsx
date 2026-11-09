@@ -282,6 +282,13 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
    */
   const handleFocus = () => {
     updateDropdownPosition();
+    // 開いた時のハイライトは選択済みの候補（無ければ無し）。
+    // 0 固定だと、マウス操作でも常に 1 個目が選択中の色になってしまう
+    setHighlightedIndex(
+      value
+        ? options.findIndex((opt) => String(opt.value) === String(value))
+        : -1,
+    );
     setIsOpen(true);
   };
 
@@ -364,6 +371,7 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
               <div
                 key={option.value}
                 onClick={() => handleSelectOption(option)}
+                onMouseEnter={() => setHighlightedIndex(index)}
                 className={cn(
                   "px-3 py-1.5 text-md cursor-pointer",
                   index === highlightedIndex
