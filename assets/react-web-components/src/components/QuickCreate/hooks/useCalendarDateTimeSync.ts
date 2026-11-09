@@ -50,6 +50,16 @@ export interface UseCalendarDateTimeSyncReturn {
 }
 
 /**
+ * "YYYY-MM-DD" をローカル時刻の 0:00 として Date にする。
+ * new Date("YYYY-MM-DD") は UTC の 0:00 と解釈され、UTC より西の時間帯では前日になるため使わない
+ */
+function toLocalDate(value: string): Date | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!m) return null;
+  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+}
+
+/**
  * Hook to synchronize end datetime when start datetime changes
  *
  * This replicates the behavior from the legacy Calendar/resources/Edit.js:
@@ -181,13 +191,47 @@ export function useCalendarDateTimeSync({
       if (!syncEnabledRef.current) return;
 
       const { date: newDate, time } = parseDateTimeValue(newValue);
+
+      if (isAllDay) {
+        // 終日は時刻を持たないので、既定の時間（分）ではなく開始日と終了日の日数の差を保つ。
+        // 隠れている開始時刻に既定の時間を足すと、遅い時刻のとき終了日が翌日に繰り上がるため
+        const oldStart = toLocalDate(
+          parseDateTimeValue(formData["date_start"] as string | undefined).date,
+        );
+        const oldEnd = toLocalDate(
+          parseDateTimeValue(formData["due_date"] as string | undefined).date,
+        );
+        const newEnd = toLocalDate(newDate);
+        if (!newEnd) return;
+        const diffDays =
+          oldStart && oldEnd
+            ? Math.round((oldEnd.getTime() - oldStart.getTime()) / 86400000)
+            : 0;
+        newEnd.setDate(newEnd.getDate() + Math.max(diffDays, 0));
+
+        isUpdatingRef.current = true;
+        try {
+          onFieldChange("due_date", formatDate(newEnd));
+        } finally {
+          isUpdatingRef.current = false;
+        }
+        return;
+      }
+
       const currentTime =
         time ||
         parseDateTimeValue(formData["date_start"] as string | undefined).time;
 
       updateEndDateTime(newDate, currentTime);
     },
-    [onFieldChange, parseDateTimeValue, formData, updateEndDateTime],
+    [
+      onFieldChange,
+      parseDateTimeValue,
+      formData,
+      updateEndDateTime,
+      isAllDay,
+      formatDate,
+    ],
   );
 
   /**
