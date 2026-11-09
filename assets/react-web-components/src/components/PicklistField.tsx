@@ -282,6 +282,13 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
    */
   const handleFocus = () => {
     updateDropdownPosition();
+    // 開いた時のハイライトは選択済みの候補（無ければ無し）。
+    // 0 固定だと、マウス操作でも常に 1 個目が選択中の色になってしまう
+    setHighlightedIndex(
+      value
+        ? options.findIndex((opt) => String(opt.value) === String(value))
+        : -1,
+    );
     setIsOpen(true);
   };
 
@@ -344,6 +351,13 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
           left: dropdownPosition.left,
           width: dropdownPosition.width,
         }}
+        onMouseDown={(e) => {
+          // 候補を押した時に入力欄が blur すると、input の onBlur が 150ms 後に
+          // ドロップダウンを閉じる。ゆっくり押す（押してから離すまで 150ms 超）と
+          // 離した時点で候補が消えていて click が成立せず、選択できなくなる。
+          // フォーカスを入力欄に残して blur 自体を起こさない
+          e.preventDefault();
+        }}
         onWheel={(e) => {
           e.stopPropagation();
           // Radix UIのDialogがbodyのスクロールをブロックするため、手動でスクロール
@@ -357,6 +371,7 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
               <div
                 key={option.value}
                 onClick={() => handleSelectOption(option)}
+                onMouseEnter={() => setHighlightedIndex(index)}
                 className={cn(
                   "px-3 py-1.5 text-md cursor-pointer",
                   index === highlightedIndex
