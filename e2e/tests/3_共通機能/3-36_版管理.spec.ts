@@ -87,6 +87,8 @@ test.describe("共通: 版管理", () => {
     const show = page.locator("#recordVersionShowView");
     await expect(show).toContainText(subject);
     await expect(show).not.toContainText(`${subject}_v2`);
+    // 版に含めた関連（ドキュメント）が当時 0 件なら「（関連名）はありません」と出す（名前と「は」の間に空白を入れない）
+    await expect(show.locator(".recordVersionRelationEmpty")).toHaveText("ドキュメントはありません");
     // 過去の版は変更できない：編集ボタン・直接編集の鉛筆は出さない。版 1 では「前の版」も出さない
     await expect(page.locator(`#${MODULE}_detailView_basicAction_LBL_EDIT`)).toHaveCount(0);
     await expect(show.locator(".editAction, .fa-pencil")).toHaveCount(0);
