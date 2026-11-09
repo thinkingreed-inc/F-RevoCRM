@@ -151,7 +151,8 @@ test.describe("管理: ユーザーのインポート取り消し (Users)", () =
     page,
   }) => {
     const userName = `e2eimpud${generateRandomString(6).toLowerCase()}`;
-    // 役割は翻訳後の役割名で照合される(modules/Users/Users.php の取り込み処理)
+    // 役割は翻訳後の役割名で照合される(modules/Users/Users.php の取り込み処理)。
+    // E2E の既定言語 ja_jp を前提に「一般」(LBL_GENERAL)を指定する。
     await runImport(page, {
       module: "Users",
       csv:

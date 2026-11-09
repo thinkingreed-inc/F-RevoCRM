@@ -34,21 +34,69 @@ final class ImportUndoTest extends TestCase
         self::bootFrevoCrm();
     }
 
+    /** @var array<string,string> 退避した権限ファイル（パス => 内容） */
+    private array $savedPrivilegeFiles = [];
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->db = PearDatabase::getInstance();
+        $this->savedPrivilegeFiles = $this->backupPrivilegeFiles();
         $this->loginAs(self::$importUserId);
     }
 
     protected function tearDown(): void
     {
-        $this->dropCompletedImport();
-        $result = $this->db->pquery('SELECT id FROM vtiger_users WHERE user_name LIKE ?', [self::PREFIX . '%']);
-        while ($row = $this->db->fetchByAssoc($result)) {
-            Users_Record_Model::deleteUserPermanently((int) $row['id'], self::$importUserId);
+        try {
+            $this->dropCompletedImport();
+            $result = $this->db->pquery('SELECT id FROM vtiger_users WHERE user_name LIKE ?', [self::PREFIX . '%']);
+            while ($row = $this->db->fetchByAssoc($result)) {
+                Users_Record_Model::deleteUserPermanently((int) $row['id'], self::$importUserId);
+            }
+        } finally {
+            $this->restorePrivilegeFiles($this->savedPrivilegeFiles);
         }
         parent::tearDown();
+    }
+
+    /**
+     * user_privileges/ の権限ファイルを退避する
+     *
+     * ユーザーの保存は、作ったユーザー以外の分も含めて権限ファイルを作り直す。
+     * user_privileges/ は開発・E2E 環境と共有で、tests/bootstrap.php の DB 切替では守れないため、
+     * テストの前後で丸ごと退避・復元する。
+     *
+     * @return array<string,string>
+     */
+    private function backupPrivilegeFiles(): array
+    {
+        $files = [];
+        foreach ($this->privilegeFilePaths() as $path) {
+            $files[$path] = (string) file_get_contents($path);
+        }
+
+        return $files;
+    }
+
+    /** @param array<string,string> $files backupPrivilegeFiles() の戻り値 */
+    private function restorePrivilegeFiles(array $files): void
+    {
+        foreach ($this->privilegeFilePaths() as $path) {
+            if (!array_key_exists($path, $files)) {
+                unlink($path);
+            }
+        }
+        foreach ($files as $path => $contents) {
+            file_put_contents($path, $contents);
+        }
+    }
+
+    /** @return list<string> */
+    private function privilegeFilePaths(): array
+    {
+        $paths = glob(dirname(__DIR__, 5) . '/user_privileges/*_privileges_*.php');
+
+        return $paths === false ? [] : $paths;
     }
 
     public function test_完了済みインポートを取り消すと取り込んだユーザーが削除される(): void
