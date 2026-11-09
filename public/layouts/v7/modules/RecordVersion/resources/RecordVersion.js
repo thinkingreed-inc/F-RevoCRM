@@ -74,5 +74,34 @@ window.RecordVersion_Js = {
 				submit.prop('disabled', false);
 			});
 		});
+	},
+
+	/**
+	 * 過去の版の表示：関連レコードの行を押すと、当時の全項目を小窓で出す
+	 */
+	registerShowView: function () {
+		var container = jQuery('#recordVersionShowView');
+		if (container.length === 0) {
+			return;
+		}
+		container.on('click', '.recordVersionRelatedRow', function (e) {
+			if (jQuery(e.target).closest('a').length > 0) {
+				return;
+			}
+			var url = jQuery(this).data('url');
+			app.helper.showProgress();
+			app.request.get({url: url}).then(function (error, html) {
+				app.helper.hideProgress();
+				if (error) {
+					app.helper.showErrorNotification({message: error.message});
+					return;
+				}
+				app.helper.showModal(html);
+			});
+		});
 	}
 };
+
+jQuery(function () {
+	window.RecordVersion_Js.registerShowView();
+});
