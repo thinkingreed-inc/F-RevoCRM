@@ -38,12 +38,7 @@
 				{/foreach}
 			</tbody>
 		</table>
-		<div class="hide" id="recordVersionMessages"
-			data-confirm-enable="{vtranslate('LBL_CONFIRM_ENABLE', $QUALIFIED_MODULE)|escape:'html'}"
-			data-confirm-disable="{vtranslate('LBL_CONFIRM_DISABLE', $QUALIFIED_MODULE)|escape:'html'}"
-			data-none="{vtranslate('LBL_NONE', $QUALIFIED_MODULE)|escape:'html'}"
-			data-saved="{vtranslate('LBL_SAVED', $QUALIFIED_MODULE)|escape:'html'}"
-			data-save-failed="{vtranslate('LBL_SAVE_FAILED', $QUALIFIED_MODULE)|escape:'html'}"></div>
+		<div class="hide" id="recordVersionMessages" data-confirm-enable="{vtranslate('LBL_CONFIRM_ENABLE', $QUALIFIED_MODULE)|escape:'html'}" data-confirm-disable="{vtranslate('LBL_CONFIRM_DISABLE', $QUALIFIED_MODULE)|escape:'html'}" data-none="{vtranslate('LBL_NONE', $QUALIFIED_MODULE)|escape:'html'}" data-saved="{vtranslate('LBL_SAVED', $QUALIFIED_MODULE)|escape:'html'}" data-save-failed="{vtranslate('LBL_SAVE_FAILED', $QUALIFIED_MODULE)|escape:'html'}"></div>
 	</div>
 </div>
 {/strip}
