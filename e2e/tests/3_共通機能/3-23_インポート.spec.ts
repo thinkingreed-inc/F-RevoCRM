@@ -10,6 +10,7 @@ import { frQuery, frDelete } from "../../model/fetcher";
  * インポートの各種条件を Accounts で一通り検証する:
  *   - ヘッダ付き・複数行の新規作成
  *   - ヘッダなし CSV
+ *   - 最新のインポートの取り消し
  *   - 重複処理: スキップ / 上書き / マージ(merge_type=1/2/3、突合は既定の accountname)
  *
  * 【前提/知見】
@@ -60,6 +61,40 @@ test.describe.serial("共通: CSV インポート(パターン別)", () => {
       `SELECT accountname FROM Accounts WHERE accountname='${name}';`
     );
     expect(rows.length).toBe(1);
+    await cleanup(sn, name);
+  });
+
+  test("最新のインポートを取り消すと取り込んだレコードが削除される", async ({
+    page,
+  }) => {
+    // 取り消しボタンは重複処理を選ばずに取り込んだとき(MERGE_ENABLED=0)だけ表示される。
+    // 完了済み(キュー status=4)でも URL の importid で一時テーブルを特定して削除する(#1967)。
+    const name = `E2Eimpud${generateRandomString(6)}`;
+    await runAccountsImport(page, {
+      csv: `accountname\n${name}\n`,
+      mappings: ["accountname"],
+      skipDuplicateStep: true,
+    });
+    const sn = await apiSession();
+    const before = await frQuery(
+      sn,
+      `SELECT id FROM Accounts WHERE accountname='${name}';`
+    );
+    expect(before.length).toBe(1);
+
+    await page.locator('button[onclick*="mode=undoImport"]').click();
+    // 削除結果: 1 行目=対象レコード数 / 2 行目=削除されたレコード数
+    const rows = page.locator(".importResultsTable tr");
+    await expect(rows.nth(1).locator("td").nth(1)).toHaveText("1", {
+      timeout: 15000,
+    });
+    await expect(rows.nth(0).locator("td").nth(1)).toHaveText("1");
+
+    const after = await frQuery(
+      sn,
+      `SELECT id FROM Accounts WHERE accountname='${name}';`
+    );
+    expect(after.length).toBe(0);
     await cleanup(sn, name);
   });
 

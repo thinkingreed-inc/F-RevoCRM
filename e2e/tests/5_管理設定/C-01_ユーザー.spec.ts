@@ -5,6 +5,7 @@ import { gotoSettings, loginInIsolatedContext, saveAndSettle } from "../../utils
 import { listSearch } from "../../utils/listview";
 import { apiSession } from "../../utils/api";
 import { frQuery } from "../../model/fetcher";
+import { runImport } from "../../utils/import";
 
 /**
  * C-01 ユーザー (ユーザー管理 > ユーザー)
@@ -133,4 +134,51 @@ test.describe.serial("管理: ユーザー (Users)", () => {
   // 注: ユーザーの「無効化」はユーザー編集フォームに status セレクトが無く、
   // この環境の UI では標準の編集操作から到達できないため、本パイロットの対象外とする
   // (追加/編集/パスワード変更/ログイン確認で基本操作はカバー済み)。
+});
+
+/**
+ * C-01 ユーザー: インポートの取り消し(#1967)
+ *
+ * ユーザーのインポートは重複処理ステップが無く、結果画面に常に「最新のインポートを
+ * 取り消す」が出る。完了済み(キュー status=4)でも URL の importid で一時テーブルを
+ * 特定し、取り込んだユーザーを完全削除できることを確認する。
+ * ユーザーの作成・削除は権限ファイルを作り直すため、privileges フィクスチャで直列化する。
+ */
+test.describe("管理: ユーザーのインポート取り消し (Users)", () => {
+  test.describe.configure({ timeout: 90000 });
+
+  test("最新のインポートを取り消すと取り込んだユーザーが削除される", async ({
+    page,
+  }) => {
+    const userName = `e2eimpud${generateRandomString(6).toLowerCase()}`;
+    // 役割は翻訳後の役割名で照合される(modules/Users/Users.php の取り込み処理)。
+    // E2E の既定言語 ja_jp を前提に「一般」(LBL_GENERAL)を指定する。
+    await runImport(page, {
+      module: "Users",
+      csv:
+        "user_name,last_name,email1,roleid,user_password,confirm_password\n" +
+        `${userName},Undo,${userName}@example.com,一般,Test_1234,Test_1234\n`,
+      mappings: [
+        "user_name",
+        "last_name",
+        "email1",
+        "roleid",
+        "user_password",
+        "confirm_password",
+      ],
+    });
+    const session = await apiSession();
+    const query = `SELECT id FROM Users WHERE user_name = '${userName}';`;
+    expect((await frQuery(session, query)).length).toBe(1);
+
+    await page.locator('button[onclick*="mode=undoImport"]').click();
+    // 削除結果: 1 行目=対象レコード数 / 2 行目=削除されたレコード数
+    const rows = page.locator(".importResultsTable tr");
+    await expect(rows.nth(1).locator("td").nth(1)).toHaveText("1", {
+      timeout: 15000,
+    });
+    await expect(rows.nth(0).locator("td").nth(1)).toHaveText("1");
+
+    expect((await frQuery(session, query)).length).toBe(0);
+  });
 });
