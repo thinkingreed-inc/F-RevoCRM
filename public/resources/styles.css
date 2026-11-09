@@ -1898,6 +1898,25 @@ body.calendar-dragging .webui-popover {
     display: none !important;
 }
 
+/* #1716 サイドバーのお気に入りリスト */
+.module-filters .favoriteListStar {
+    float: left;
+    width: 14px;
+    padding-top: 3px;
+    line-height: inherit;
+    font-size: 11px;
+    color: #555555;
+    cursor: pointer;
+}
+.module-filters .favoriteListStar.active {
+    color: #FFC600;
+}
+.lists-menu > li > .favoriteListStar + a {
+    width: calc(85% - 14px);
+}
+list-favorites .web-components-wrapper {
+    line-height: inherit;
+}
 /* #1716 サイドバーを画面の高さに収め、リスト欄と最大 3 割のタグ欄をそれぞれスクロールさせる */
 .sidebar-menu-fit .menu-scroller {
     overflow-y: auto;

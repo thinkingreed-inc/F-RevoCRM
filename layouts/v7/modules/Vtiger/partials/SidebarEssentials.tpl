@@ -21,6 +21,12 @@
             </div>
             <div class="menu-scroller scrollContainer" style="position:relative; top:0; left:0;">
 				<div class="list-menu-content">
+                        {assign var=SIDEBAR_FAVORITES value=CustomView_Favorite_Model::getSidebarFavorites($MODULE, $CUSTOM_VIEWS)}
+                        {assign var=FAVORITE_LIST_IDS value=$SIDEBAR_FAVORITES['ids']}
+                        {assign var=FAVORITE_LIST_LABELS value=['LBL_FAVORITE_LIST' => vtranslate('LBL_FAVORITE_LIST',$MODULE), 'LBL_REMOVE_FROM_FAVORITES' => vtranslate('LBL_REMOVE_FROM_FAVORITES',$MODULE)]}
+                        <list-favorites module="{$MODULE}" app="{$SELECTED_MENU_CATEGORY}"
+                            favorites="{Zend_JSON::encode($SIDEBAR_FAVORITES['list'])|escape:'html'}"
+                            labels="{Zend_JSON::encode($FAVORITE_LIST_LABELS)|escape:'html'}"></list-favorites>
 						{assign var="CUSTOM_VIEW_NAMES" value=array()}
                         {if $CUSTOM_VIEWS && php7_count($CUSTOM_VIEWS) > 0}
                             {foreach key=GROUP_LABEL item=GROUP_CUSTOM_VIEWS from=$CUSTOM_VIEWS}
@@ -52,6 +58,8 @@
 									<li style="font-size:12px;" class='listViewFilter {if $VIEWID eq $CUSTOM_VIEW->getId() && ($CURRENT_TAG eq '')} active {if $smarty.foreach.customView.iteration gt 10} {assign var=count value=1} {/if} {else if $smarty.foreach.customView.iteration gt 10} filterHidden hide{/if} '> 
                                         {assign var=VIEWNAME value={vtranslate($CUSTOM_VIEW->get('viewname'), $MODULE)}}
 										{append var="CUSTOM_VIEW_NAMES" value=$VIEWNAME}
+                                        {assign var=IS_FAVORITE_LIST value=in_array($CUSTOM_VIEW->getId(), $FAVORITE_LIST_IDS)}
+                                        <i class="fa {if $IS_FAVORITE_LIST}fa-star active{else}fa-star-o{/if} favoriteListStar" data-filter-id="{$CUSTOM_VIEW->getId()}" data-source-module="{$MODULE}" title="{if $IS_FAVORITE_LIST}{vtranslate('LBL_REMOVE_FROM_FAVORITES',$MODULE)}{else}{vtranslate('LBL_ADD_TO_FAVORITES',$MODULE)}{/if}"></i>
                                          <a class="filterName listViewFilterElipsis" href="{$LISTVIEW_URL|cat:'&viewname='|cat:$CUSTOM_VIEW->getId()|cat:'&app='|cat:$SELECTED_MENU_CATEGORY}" oncontextmenu="return false;" data-filter-id="{$CUSTOM_VIEW->getId()}" title="{$VIEWNAME|@escape:'html'}">{$VIEWNAME|@escape:'html'}</a> 
                                             <div class="pull-right">
                                                 <span class="js-popover-container" style="cursor:pointer;">

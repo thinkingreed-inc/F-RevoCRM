@@ -7,7 +7,11 @@
  * All Rights Reserved.
  *************************************************************************************/
 
-Vtiger.Class('Vtiger_ListSidebar_Js',{},{
+Vtiger.Class('Vtiger_ListSidebar_Js',{
+    // イベント名は assets/react-web-components/src/components/ListFavorites/events.ts とそろえる
+    FAVORITES_CHANGED_EVENT : 'frevo:list-favorites-changed',
+    FAVORITES_RENDERED_EVENT : 'frevo:list-favorites-rendered'
+},{
     
     
     registerFilterSeach : function () {
@@ -66,7 +70,7 @@ Vtiger.Class('Vtiger_ListSidebar_Js',{},{
             self.getParentInstance().resetData();
             self.unMarkAllFilters();
             self.unMarkAllTags();
-            el.closest('li').addClass('active');
+            el.closest('li').add(filters.find('li.listViewFilter').has('a.filterName[data-filter-id="' + el.data('filter-id') + '"]')).addClass('active');
             self.getParentInstance().filterClick = true;
             self.getParentInstance().loadFilter(el.data('filter-id'), {'page' : ''});
             var selectedFilter = element.find('a.filterName').andSelf().filter('a.filterName');
@@ -103,27 +107,55 @@ Vtiger.Class('Vtiger_ListSidebar_Js',{},{
             var element = jQuery(e.target);
             var popoverId = element.closest('.popover').attr('id');
             var ele = jQuery('.list-group' ).find("[aria-describedby='" + popoverId + "']");
-            ele.closest('.listViewFilter').remove();
+            // お気に入り欄の行は React が描き直す
+            jQuery('.list-group').not('#favoriteList').find('li.listViewFilter')
+                .has('[rel="popover"][data-filter-id="' + ele.attr('data-filter-id') + '"]').remove();
             element.closest('.popover').remove();
+            self.notifyFavoritesChanged();
+        });
+
+        filters.on('click','.favoriteListStar',function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            var star = jQuery(e.currentTarget);
+            if(star.data('saving')) return;
+            var favorite = !star.hasClass('active');
+            jQuery('.activePopover').popover('hide').removeClass('rotate').removeClass('activePopover');
+            star.data('saving', true);
+            jQuery.ajax({
+                type : 'POST',
+                url : 'index.php',
+                dataType : 'json',
+                data : {
+                    module : 'CustomView',
+                    api : 'SaveFavorite',
+                    sourceModule : star.data('source-module'),
+                    record : star.data('filter-id'),
+                    favorite : favorite ? 1 : 0
+                }
+            }).done(function(data){
+                if(!data || data.error || !data.favorites) {
+                    self.showFavoriteError(data);
+                    return;
+                }
+                self.notifyFavoritesChanged(data.favorites);
+            }).fail(function(xhr){
+                self.showFavoriteError(xhr.responseJSON);
+            }).always(function(){
+                star.data('saving', false);
+            });
+        });
+
+        jQuery(document).on(Vtiger_ListSidebar_Js.FAVORITES_CHANGED_EVENT, function(e){
+            var detail = e.originalEvent && e.originalEvent.detail;
+            if(detail && detail.favorites) {
+                self.syncFavoriteStars(jQuery.map(detail.favorites, function(favorite){ return favorite.id; }));
+            }
         });
         
         filters.on('post.ToggleDefault.saved',function(e,params){
-            var element = jQuery(e.target);
-            var popoverId = element.closest('.popover').attr('id');
-            var ele = jQuery('.list-group').find("[aria-describedby='" + popoverId + "']");
-            if (params.isdefault === "1") {
-                element.data('isDefault', true);
-                var check = element.closest('.popover').find('.toggleDefault i').removeAttr('class').addClass('fa fa-check-square-o');
-                var class1 = ele.closest('[rel="popover"]').removeAttr('toggleClass').attr('toggleClass', 'fa fa-check-square-o');
-                element.closest('.popover').html($(".popover-content").html()).css("padding", "10px");
-            }
-
-            else {
-                element.data('isDefault', false);
-                var check = element.closest('.popover').find('.toggleDefault i').removeAttr('class').addClass('fa fa-square-o');
-                var class1 = ele.closest('[rel="popover"]').removeAttr('toggleClass').attr('toggleClass', 'fa fa-square-o');
-                element.closest('.popover').html($(".popover-content").html()).css("padding", "10px");
-            }
+            var filterId = jQuery(e.target).attr('data-filter-id');
+            self.setFilterDefaultState(filterId, params && String(params.isdefault) === '1');
         });
         
         filters.find('.toggleFilterSize').on('click',function(e){
@@ -155,10 +187,129 @@ Vtiger.Class('Vtiger_ListSidebar_Js',{},{
         container.find('.tag').removeClass('active').find('i.activeToggleIcon').removeClass('fa-circle-o').addClass('fa-circle');
     },
     
+    notifyFavoritesChanged : function(favorites) {
+        var detail = favorites ? {favorites : favorites} : {};
+        document.dispatchEvent(new CustomEvent(Vtiger_ListSidebar_Js.FAVORITES_CHANGED_EVENT, {detail : detail}));
+    },
+
+    showFavoriteError : function(data) {
+        var message = data && data.error && data.error.message;
+        app.helper.showErrorNotification({'message' : message || app.vtranslate('JS_ERROR')});
+    },
+
+    syncFavoriteStars : function(favoriteIds) {
+        jQuery('#module-filters .favoriteListStar').each(function(){
+            var star = jQuery(this);
+            var favorite = jQuery.inArray(Number(star.attr('data-filter-id')), favoriteIds) !== -1;
+            star.toggleClass('fa-star active', favorite).toggleClass('fa-star-o', !favorite)
+                .attr('title', app.vtranslate(favorite ? 'JS_REMOVE_FROM_FAVORITES' : 'JS_ADD_TO_FAVORITES'));
+        });
+    },
+
     registerPopOverContent: function () {
-        var element = jQuery(".list-group");
+        var self = this;
+        var element = jQuery(".list-group").not('#favoriteList');
 
         jQuery.each(element.find('[rel="popover"]'), function (i, ele) {
+            self.registerFilterPopover(ele);
+
+            jQuery('html').on('click', function (e) {
+                var elements = jQuery('.activePopover');
+                if(elements.length <= 0 ){
+                    return;
+                } else if ($(e.target).data('toggle') !== 'popover' && $(e.target).parents('[data-toggle="popover"]').length === 0
+                        && $(e.target).parents('.popover.in').length === 0) {
+                    elements.popover('hide').removeClass('rotate').removeClass("activePopover");
+                }
+            });
+
+            jQuery('.js-popover-container').not('#favoriteList .js-popover-container').on('click', self.onPopoverContainerClick);
+        });
+
+        self.refreshFavoriteRows();
+        jQuery(document).on(Vtiger_ListSidebar_Js.FAVORITES_RENDERED_EVENT, function () {
+            self.refreshFavoriteRows();
+        });
+    },
+
+    refreshFavoriteRows : function() {
+        var self = this;
+        var others = jQuery('#module-filters .list-group').not('#favoriteList');
+        jQuery('#favoriteList li.listViewFilter').each(function(){
+            var li = jQuery(this);
+            var ele = li.find('[rel="popover"]');
+            var filterId = ele.attr('data-filter-id');
+            li.toggleClass('active', others.find('li.listViewFilter.active').has('a.filterName[data-filter-id="' + filterId + '"]').length > 0);
+            if(ele.data('bs.popover')) return;
+            var source = others.find('[rel="popover"][data-filter-id="' + filterId + '"]').first();
+            if(!source.length) return;
+            jQuery.each(source[0].attributes, function(i, attr){
+                if(attr.name.indexOf('data-') === 0 || attr.name === 'toggleclass') {
+                    ele.attr(attr.name, attr.value);
+                }
+            });
+            self.registerFilterPopover(ele[0]);
+            ele.closest('.js-popover-container').on('click', self.onPopoverContainerClick);
+        });
+        var search = jQuery('#module-filters .search-list');
+        if(search.val()) {
+            search.trigger('keyup');
+        }
+    },
+
+    onPopoverContainerClick : function(e) {
+        var currentElement = jQuery(e.currentTarget).find('[data-toggle]');
+        if(jQuery('.popover').hasClass('in')) {
+            currentElement.addClass('rotate');
+            currentElement.addClass('activePopover');
+        }else {
+            currentElement.removeClass('rotate');
+            currentElement.removeClass('activePopover');
+        }
+        if (jQuery('.popover', '#module-filters').length > 1) {
+            var popoverId = jQuery('.popover', '#module-filters').attr('id');
+            var ele = jQuery('.list-group').find("[aria-describedby='" + popoverId + "']");
+            ele.removeClass('rotate');
+            jQuery('.popover', '#module-filters').first().popover('hide');
+        }
+        e.stopPropagation();
+    },
+
+    // デフォルトはユーザー・モジュールごとに 1 つなので、設定したら他のリストは外れる
+    setFilterDefaultState : function(filterId, isDefault) {
+        jQuery('#module-filters .list-group [rel="popover"][data-filter-id]').each(function(){
+            var ele = jQuery(this);
+            var isTarget = ele.attr('data-filter-id') == filterId;
+            if(!isTarget && !isDefault) return;
+            var value = isTarget && isDefault;
+            ele.attr('data-is-default', value ? '1' : '')
+                .attr('toggleClass', 'fa ' + (value ? 'fa-check-square-o' : 'fa-square-o'));
+            var popover = ele.data('bs.popover');
+            if(popover && popover.$tip) {
+                var toggleEle = popover.$tip.find('.toggleDefault');
+                toggleEle.attr('data-is-default', value ? '1' : '').data('isDefault', value);
+                toggleEle.find('i').attr('class', ele.attr('toggleClass'));
+            }
+        });
+    },
+
+    registerFilterPopover : function(ele) {
+            var self = this;
+            var options = {
+                html: true,
+                placement: 'left',
+                template: '<div class="popover" style="top: 0; position:absolute; z-index:0; margin-top:5px"><div class="popover-content"></div></div>',
+                content: function () {
+                    return self.buildFilterPopoverContent(this);
+                },
+                container: '#module-filters',
+                sanitize: false
+            };
+
+            jQuery(ele).popover(options);
+    },
+
+    buildFilterPopoverContent : function(ele) {
             var contentEle = jQuery('#filterActionPopoverHtml').clone();
             contentEle.find('.listmenu').removeClass('hide');
             var editEle = contentEle.find('.editFilter');
@@ -170,7 +321,8 @@ Vtiger.Class('Vtiger_ListSidebar_Js',{},{
             deleteEle.attr('data-url', jQuery(ele).data('deleteurl'));
             duplEle.attr('data-url', jQuery(ele).data('default'));
             toggleEle.attr('data-url', jQuery(ele).data('defaulttoggle'));
-            toggleEle.attr('data-is-default', jQuery(ele).data('is-default'));
+            // data() は最初の値をキャッシュするため attr() で読む
+            toggleEle.attr('data-is-default', jQuery(ele).attr('data-is-default'));
             toggleEle.attr('data-filter-id', jQuery(ele).data('filter-id'));
             contentEle.find('.toggleDefault i').attr('class', jQuery(ele).attr('toggleClass'));
              editEle.attr('data-id', jQuery(ele).data('id'));
@@ -185,47 +337,8 @@ Vtiger.Class('Vtiger_ListSidebar_Js',{},{
                 contentEle.find('.deleteFilter').remove();
             } else {
                 contentEle.find('.deleteFilter').removeClass('disabled');
-            } 
-            var options = {
-                html: true,
-                placement: 'left',
-                template: '<div class="popover" style="top: 0; position:absolute; z-index:0; margin-top:5px"><div class="popover-content"></div></div>',
-                content: contentEle.html(),
-                container: '#module-filters',
-                sanitize: false
-            };
-            
-            jQuery(ele).popover(options);
-            
-            jQuery('html').on('click', function (e) {
-                var elements = jQuery('.activePopover');
-                if(elements.length <= 0 ){
-                    return;
-                } else if ($(e.target).data('toggle') !== 'popover' && $(e.target).parents('[data-toggle="popover"]').length === 0
-                        && $(e.target).parents('.popover.in').length === 0) {
-                    elements.popover('hide').removeClass('rotate').removeClass("activePopover");
-                }
-            });
-            
-            jQuery('.js-popover-container').on('click', function(e){
-                var currentElement = jQuery(e.currentTarget).find('[data-toggle]');
-                if(jQuery('.popover').hasClass('in')) {
-                    currentElement.addClass('rotate');
-                    currentElement.addClass('activePopover');
-                }else {
-                    currentElement.removeClass('rotate');
-                    currentElement.removeClass('activePopover');
-                }
-                if (jQuery('.popover', '#module-filters').length > 1) { 
-                    var popoverId = jQuery('.popover', '#module-filters').attr('id');
-                    var ele = jQuery('.list-group').find("[aria-describedby='" + popoverId + "']");
-                    ele.removeClass('rotate');
-                    jQuery('.popover', '#module-filters').first().popover('hide');
-                }
-            e.stopPropagation();
-        });
-        });
-         
+            }
+            return contentEle.html();
     },
     
     
