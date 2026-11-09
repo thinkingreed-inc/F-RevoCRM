@@ -68,6 +68,20 @@ final class RevisionTest extends RecordVersionTestCase
         $this->assertSame('1:2', $change, '「版 1→2」と記録する');
     }
 
+    public function test_版が有効になった日時は版1が作成日時で版Nが前の版を改版した日時(): void
+    {
+        $recordId = $this->createPotential('有効になった日時');
+        RecordVersion_Revision_Model::revise($recordId, '1 回目');
+        RecordVersion_Revision_Model::revise($recordId, '2 回目');
+        $createdTime = $this->scalar('SELECT createdtime FROM vtiger_crmentity WHERE crmid = ?', [$recordId]);
+        $first = RecordVersion_Version_Model::getByNumber($recordId, 1);
+        $second = RecordVersion_Version_Model::getByNumber($recordId, 2);
+        $this->assertNotNull($first);
+        $this->assertNotNull($second);
+        $this->assertSame($createdTime, $first->getValidFrom(), '版 1 はレコードの作成日時から');
+        $this->assertSame($first->getRevisedAt(), $second->getValidFrom(), '版 2 は版 1 を改版した日時から');
+    }
+
     public function test_ダイアログを開いたあとにほかの利用者が改版していたら改版しない_表Bルール2(): void
     {
         $recordId = $this->createPotential('同時');
@@ -113,6 +127,7 @@ final class RevisionTest extends RecordVersionTestCase
             1,
             '先にある版',
             self::ADMIN_USER_ID,
+            '2026-01-01 00:00:00',
             '2026-01-01 00:00:00',
             RecordVersion_Version_Model::encodeSnapshot(['fields' => []])
         );

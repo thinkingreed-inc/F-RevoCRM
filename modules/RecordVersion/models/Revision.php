@@ -96,7 +96,7 @@ class RecordVersion_Revision_Model
         try {
             // 行ロックをかけて、ほかの改版と同時に進まないようにする（同じ利用者の別の画面・ボタンの 2 度押しも含む）
             $rows = RecordVersion_Util_Helper::fetchRawRows($db->pquery(
-                'SELECT ' . RecordVersion_Config_Model::FIELD_COLUMN . ' AS version_no FROM ' . RecordVersion_Config_Model::FIELD_TABLE
+                'SELECT ' . RecordVersion_Config_Model::FIELD_COLUMN . ' AS version_no, createdtime FROM ' . RecordVersion_Config_Model::FIELD_TABLE
                 . ' WHERE crmid = ? AND deleted = 0 FOR UPDATE',
                 [$recordId]
             ));
@@ -109,6 +109,7 @@ class RecordVersion_Revision_Model
             }
             $newVersionNo = $currentVersionNo + 1;
             $now = date('Y-m-d H:i:s');
+            $validFrom = self::getValidFrom($recordId, RecordVersion_Util_Helper::toStr($rows[0]['createdtime'] ?? ''), $now);
 
             $record = Vtiger_Record_Model::getInstanceById($recordId, $moduleName);
             $revisedByName = RecordVersion_Util_Helper::toStr(getUserFullName($userId));
@@ -122,7 +123,7 @@ class RecordVersion_Revision_Model
             if (strlen($json) > self::getMaxSnapshotBytes()) {
                 return self::rollback('LBL_TOO_MANY_RELATED_RECORDS');
             }
-            RecordVersion_Version_Model::insert($recordId, $moduleName, $currentVersionNo, $reason, $userId, $now, $json);
+            RecordVersion_Version_Model::insert($recordId, $moduleName, $currentVersionNo, $reason, $userId, $validFrom, $now, $json);
             $db->pquery(
                 'UPDATE ' . RecordVersion_Config_Model::FIELD_TABLE . ' SET ' . RecordVersion_Config_Model::FIELD_COLUMN
                 . ' = ?, modifiedtime = ?, modifiedby = ? WHERE crmid = ?',
@@ -145,6 +146,23 @@ class RecordVersion_Revision_Model
             return self::rollback('LBL_REVISE_FAILED');
         }
         return ['success' => true, 'message' => '', 'version_no' => $newVersionNo];
+    }
+
+    /**
+     * 今回保存する版が有効になった日時（前の版を改版した日時。前の版が無ければレコードの作成日時）
+     */
+    private static function getValidFrom(int $recordId, string $createdTime, string $now): string
+    {
+        $db = PearDatabase::getInstance();
+        $rows = RecordVersion_Util_Helper::fetchRawRows($db->pquery(
+            'SELECT revised_at FROM ' . RecordVersion_Config_Model::VERSIONS_TABLE . ' WHERE crmid = ? ORDER BY version_no DESC LIMIT 1',
+            [$recordId]
+        ));
+        $previous = RecordVersion_Util_Helper::toStr($rows[0]['revised_at'] ?? '');
+        if ($previous !== '') {
+            return $previous;
+        }
+        return $createdTime !== '' ? $createdTime : $now;
     }
 
     /**

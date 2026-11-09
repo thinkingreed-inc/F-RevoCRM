@@ -36,6 +36,7 @@ class Migration20261109162036_SetupRecordVersion extends FRMigrationClass
         $this->createModulesTable();
         $this->createRelationsTable();
         $this->createVersionsTable();
+        $this->upgradeVersionsTable();
         $this->registerSettingsMenu();
         $this->registerEventHandlers();
         $this->log('マイグレーション setup_record_version が正常に完了しました');
@@ -84,13 +85,77 @@ class Migration20261109162036_SetupRecordVersion extends FRMigrationClass
             version_no INT NOT NULL,
             reason TEXT NOT NULL,
             revised_by INT NOT NULL,
+            valid_from DATETIME NOT NULL,
             revised_at DATETIME NOT NULL,
             snapshot LONGTEXT NOT NULL,
             PRIMARY KEY (versionid),
             UNIQUE KEY uk_recordversion_crmid_version (crmid, version_no),
-            KEY idx_recordversion_setype (setype)
+            KEY idx_recordversion_setype_revised (setype, revised_at)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci', []);
         $this->log('テーブル ' . self::VERSIONS_TABLE . ' を作成しました');
+    }
+
+    /**
+     * 先に作ったテーブル（valid_from が無い形）を今の形に合わせる
+     *
+     * 列の追加・既存の行の valid_from の補完・NOT NULL への変更・インデックスの付け替えを、
+     * それぞれ「まだなら行う」形にしているので、途中で止まっても再実行で続きから合わせられる
+     * （ALTER は暗黙にコミットされ、失敗しても巻き戻らないため）。
+     */
+    private function upgradeVersionsTable(): void
+    {
+        $table = self::VERSIONS_TABLE;
+        if (!$this->checkColumnExists($table, 'valid_from')) {
+            $this->db->pquery("ALTER TABLE {$table} ADD COLUMN valid_from DATETIME NULL AFTER revised_by", []);
+            $this->log("テーブル {$table} に valid_from を追加しました");
+        }
+        // 版 1 はレコードの作成日時、版 N は版 N-1 を改版した日時（レコードが無ければ改版日時で代用）
+        $this->db->pquery(
+            "UPDATE {$table} rv
+             JOIN (
+                SELECT v.versionid,
+                       COALESCE(
+                           LAG(v.revised_at) OVER (PARTITION BY v.crmid ORDER BY v.version_no),
+                           ce.createdtime,
+                           v.revised_at
+                       ) AS valid_from
+                FROM {$table} v
+                LEFT JOIN vtiger_crmentity ce ON ce.crmid = v.crmid
+             ) calc ON calc.versionid = rv.versionid
+             SET rv.valid_from = calc.valid_from
+             WHERE rv.valid_from IS NULL",
+            []
+        );
+        if ($this->isColumnNullable($table, 'valid_from')) {
+            $this->db->pquery("ALTER TABLE {$table} MODIFY COLUMN valid_from DATETIME NOT NULL", []);
+            $this->log("テーブル {$table} の valid_from を NOT NULL にしました");
+        }
+        if (!$this->checkIndexExists($table, 'idx_recordversion_setype_revised')) {
+            $this->db->pquery("ALTER TABLE {$table} ADD INDEX idx_recordversion_setype_revised (setype, revised_at)", []);
+            $this->log("テーブル {$table} にインデックス idx_recordversion_setype_revised を追加しました");
+        }
+        if ($this->checkIndexExists($table, 'idx_recordversion_setype')) {
+            $this->db->pquery("ALTER TABLE {$table} DROP INDEX idx_recordversion_setype", []);
+            $this->log("テーブル {$table} のインデックス idx_recordversion_setype を削除しました");
+        }
+    }
+
+    private function isColumnNullable(string $table, string $column): bool
+    {
+        $result = $this->db->pquery(
+            'SELECT IS_NULLABLE AS nullable FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?',
+            [$table, $column]
+        );
+        return $result !== false && $this->db->num_rows($result) > 0 && $this->db->query_result($result, 0, 'nullable') === 'YES';
+    }
+
+    private function checkIndexExists(string $table, string $index): bool
+    {
+        $result = $this->db->pquery(
+            'SELECT COUNT(*) AS cnt FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND INDEX_NAME = ?',
+            [$table, $index]
+        );
+        return $result !== false && (int) $this->db->query_result($result, 0, 'cnt') > 0;
     }
 
     private function registerSettingsMenu(): void

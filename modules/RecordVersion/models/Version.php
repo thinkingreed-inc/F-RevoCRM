@@ -11,6 +11,7 @@ class RecordVersion_Version_Model
     private int $versionNo;
     private string $reason;
     private int $revisedById;
+    private string $validFrom;
     private string $revisedAt;
     private ?string $snapshotJson;
 
@@ -28,6 +29,7 @@ class RecordVersion_Version_Model
         $this->versionNo = RecordVersion_Util_Helper::toInt($row['version_no'] ?? 0);
         $this->reason = RecordVersion_Util_Helper::toStr($row['reason'] ?? '');
         $this->revisedById = RecordVersion_Util_Helper::toInt($row['revised_by'] ?? 0);
+        $this->validFrom = RecordVersion_Util_Helper::toStr($row['valid_from'] ?? '');
         $this->revisedAt = RecordVersion_Util_Helper::toStr($row['revised_at'] ?? '');
         $this->snapshotJson = array_key_exists('snapshot', $row) ? RecordVersion_Util_Helper::toStr($row['snapshot']) : null;
     }
@@ -63,7 +65,15 @@ class RecordVersion_Version_Model
     }
 
     /**
-     * 改版した日時（DB の値。表示するときは getRevisedAtDisplay() を使う）
+     * この版が有効になった日時（期間の始まり。版 1 はレコードの作成日時、版 N は版 N-1 を改版した日時）
+     */
+    public function getValidFrom(): string
+    {
+        return $this->validFrom;
+    }
+
+    /**
+     * 改版した日時（この版の期間の終わり。DB の値。表示するときは getRevisedAtDisplay() を使う）
      */
     public function getRevisedAt(): string
     {
@@ -115,7 +125,7 @@ class RecordVersion_Version_Model
     {
         $db = PearDatabase::getInstance();
         $result = $db->pquery(
-            'SELECT versionid, crmid, setype, version_no, reason, revised_by, revised_at
+            'SELECT versionid, crmid, setype, version_no, reason, revised_by, valid_from, revised_at
              FROM ' . RecordVersion_Config_Model::VERSIONS_TABLE . ' WHERE crmid = ? ORDER BY version_no DESC',
             [$recordId]
         );
@@ -167,25 +177,25 @@ class RecordVersion_Version_Model
      */
     public static function encodeSnapshot(array $snapshot): string
     {
-        $json = json_encode($snapshot, JSON_UNESCAPED_UNICODE | JSON_PARTIAL_OUTPUT_ON_ERROR);
-        if ($json === false) {
-            throw new Exception('Could not encode the snapshot');
-        }
-        return $json;
+        // 不正な UTF-8 の文字だけを置き換えて保存する（値が黙って null になるのを防ぐ）。
+        // それ以外で JSON にできないときは例外にし、改版を止める
+        return json_encode($snapshot, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR);
     }
 
     /**
      * 過去の版を 1 件保存する（改版の処理のトランザクションの中で呼ぶ）
      *
+     * @param string $validFrom この版が有効になった日時（版 1 はレコードの作成日時、版 N は版 N-1 を改版した日時）
+     * @param string $revisedAt この版を改版した日時（期間の終わり）
      * @param string $json encodeSnapshot() で JSON にした内容
      */
-    public static function insert(int $recordId, string $moduleName, int $versionNo, string $reason, int $revisedBy, string $revisedAt, string $json): void
+    public static function insert(int $recordId, string $moduleName, int $versionNo, string $reason, int $revisedBy, string $validFrom, string $revisedAt, string $json): void
     {
         $db = PearDatabase::getInstance();
         $db->pquery(
             'INSERT INTO ' . RecordVersion_Config_Model::VERSIONS_TABLE
-            . ' (crmid, setype, version_no, reason, revised_by, revised_at, snapshot) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [$recordId, $moduleName, $versionNo, $reason, $revisedBy, $revisedAt, $json]
+            . ' (crmid, setype, version_no, reason, revised_by, valid_from, revised_at, snapshot) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [$recordId, $moduleName, $versionNo, $reason, $revisedBy, $validFrom, $revisedAt, $json]
         );
     }
 
