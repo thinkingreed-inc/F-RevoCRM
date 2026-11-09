@@ -41,6 +41,7 @@ $languageStrings = [
     'LBL_OPEN_CURRENT_RECORD' => '今のレコードを開く',
     'LBL_NO_FILE' => 'ファイルはありません',
     'LBL_DOWNLOAD' => 'ダウンロード',
+    'LBL_FILE' => '当時のファイル',
     'LBL_FILE_VERSION' => 'ファイルバージョン %s',
     'LBL_RELATED_RECORD_AT_THAT_TIME' => '当時の内容',
     'LBL_VERSION_NOT_FOUND' => '指定された版が見つかりません',

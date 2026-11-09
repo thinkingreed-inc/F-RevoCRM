@@ -41,6 +41,7 @@ $languageStrings = [
     'LBL_OPEN_CURRENT_RECORD' => 'Open current record',
     'LBL_NO_FILE' => 'No file',
     'LBL_DOWNLOAD' => 'Download',
+    'LBL_FILE' => 'File at that time',
     'LBL_FILE_VERSION' => 'File version %s',
     'LBL_RELATED_RECORD_AT_THAT_TIME' => 'Contents at that time',
     'LBL_VERSION_NOT_FOUND' => 'The specified version was not found.',

@@ -99,7 +99,7 @@
 							<thead>
 								<tr class="listViewHeaders">
 									{foreach item=COLUMN from=$RELATION.columns}<th>{$COLUMN|escape:'html'}</th>{/foreach}
-									{if $RELATION.is_documents}<th></th>{/if}
+									{if $RELATION.is_documents}<th>{vtranslate('LBL_FILE', $RV_MODULE)}</th>{/if}
 									<th></th>
 								</tr>
 							</thead>
