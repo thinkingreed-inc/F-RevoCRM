@@ -71,7 +71,7 @@ class RecordVersion_Display_Model
     /**
      * 項目をブロックごとに並べる（表C）
      *
-     * @param array<string, mixed> $snapshotFields 過去の版に保存した項目（項目 ID => 内容）
+     * @param array<int|string, mixed> $snapshotFields 過去の版に保存した項目（項目 ID => 内容）
      * @return array{blocks: array<int, array{label: string, fields: array<int, array{label: string, value: string}>}>, deleted: array<int, array{label: string, value: string}>}
      */
     public function buildFieldBlocks(string $moduleName, array $snapshotFields): array

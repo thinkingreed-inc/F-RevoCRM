@@ -38,7 +38,8 @@ class Settings_RecordVersion_Save_Api extends Vtiger_Api_Controller
         }
         $mode = RecordVersion_Util_Helper::toStr($request->get('mode'));
         $db = PearDatabase::getInstance();
-        $db->startTransaction();
+        // PearDatabase::startTransaction() は何もしない（AUTOCOMMIT のまま）ため、ADOdb のトランザクションを直接使う
+        $db->database->StartTrans();
         try {
             if ($mode === 'module') {
                 if (RecordVersion_Util_Helper::toStr($request->get('enabled')) === '1') {
@@ -53,10 +54,12 @@ class Settings_RecordVersion_Save_Api extends Vtiger_Api_Controller
             }
         } catch (Exception $e) {
             $db->database->FailTrans();
-            $db->completeTransaction();
+            $db->database->CompleteTrans();
             throw $e;
         }
-        $db->completeTransaction();
+        if (!$db->database->CompleteTrans()) {
+            $this->sendError(RecordVersion_Util_Helper::toStr(vtranslate('LBL_SAVE_FAILED', 'Settings:RecordVersion')), 500);
+        }
 
         $moduleName = RecordVersion_Util_Helper::toStr(getTabModuleName($tabId));
         return $this->sendSuccess(Settings_RecordVersion_Index_View::buildRow($tabId, $moduleName));

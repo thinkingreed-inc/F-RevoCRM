@@ -88,7 +88,8 @@ class RecordVersion_Revision_Model
     private static function saveRevision(int $recordId, string $moduleName, string $reason, int $userId, ?int $expectedVersionNo): array
     {
         $db = PearDatabase::getInstance();
-        $db->startTransaction();
+        // PearDatabase::startTransaction() は何もしない（AUTOCOMMIT のまま）ため、ADOdb のトランザクションを直接使う
+        $db->database->StartTrans();
         try {
             // 行ロックをかけて、ほかの改版と同時に進まないようにする（同じ利用者の別の画面・ボタンの 2 度押しも含む）
             $rows = RecordVersion_Util_Helper::fetchRawRows($db->pquery(
@@ -120,10 +121,12 @@ class RecordVersion_Revision_Model
             );
             self::recordModTracker($recordId, $moduleName, $userId, $now, $currentVersionNo, $newVersionNo);
 
-            if ($db->hasFailedTransaction()) {
+            if ($db->database->HasFailedTrans()) {
                 return self::rollback('LBL_REVISE_FAILED');
             }
-            $db->completeTransaction();
+            if (!$db->database->CompleteTrans()) {
+                return self::failure('LBL_REVISE_FAILED');
+            }
         } catch (Throwable $e) {
             global $log;
             $log->error('RecordVersion: revise failed for record ' . $recordId . ': ' . $e->getMessage());
@@ -211,7 +214,7 @@ class RecordVersion_Revision_Model
     {
         $db = PearDatabase::getInstance();
         $db->database->FailTrans();
-        $db->completeTransaction();
+        $db->database->CompleteTrans();
         return self::failure($messageKey);
     }
 
