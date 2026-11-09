@@ -1965,3 +1965,9 @@ list-favorites .web-components-wrapper {
         background: #FFFFFF;
     }
 }
+/* #1716 リストの ▼ はマウスを乗せたときだけ出す（選択中リストへの常時表示を打ち消す） */
+@media (hover: hover) {
+    .sidebar-menu-fit .lists-menu > li.active:not(:hover) .js-popover-container:not(:has(> [aria-describedby])) {
+        display: none;
+    }
+}
