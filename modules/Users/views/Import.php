@@ -41,9 +41,10 @@ class Users_Import_View extends Vtiger_Import_View {
             $db = PearDatabase::getInstance();
 
             $moduleName = $request->getModule();
+            $importId = (int) $request->get('importid');
 
             $user = Users_Record_Model::getCurrentUserModel();
-            $dbTableName = Import_Utils_Helper::getDbTableName($user);
+            $dbTableName = Import_Utils_Helper::getDbTableName($user, $importId);
 
             $query = "SELECT recordid FROM $dbTableName WHERE status = ? AND recordid IS NOT NULL";
             $result = $db->pquery($query, array(Import_Data_Action::$IMPORT_RECORD_CREATED));
