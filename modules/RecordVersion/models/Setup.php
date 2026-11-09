@@ -11,8 +11,9 @@ require_once 'vtlib/Vtiger/Module.php';
 class RecordVersion_Setup_Model
 {
     public const LINK_TYPE = 'DETAILVIEWBASIC';
-    public const LINK_REVISE = 'LBL_REVISE';
-    public const LINK_HISTORY = 'LBL_VERSION_HISTORY';
+    /** ボタンの名前（共通の言語ファイル languages/<言語>/Vtiger.php で翻訳する） */
+    public const LINK_REVISE = 'LBL_RECORD_VERSION_REVISE';
+    public const LINK_HISTORY = 'LBL_RECORD_VERSION_HISTORY';
 
     /** 「改版」ボタン：押したときに版管理の JavaScript を読み込んでダイアログを開く */
     public const REVISE_URL = "javascript:jQuery.getScript('layouts/v7/modules/RecordVersion/resources/RecordVersion.js')"

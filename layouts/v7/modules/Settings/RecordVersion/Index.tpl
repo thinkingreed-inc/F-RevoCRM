@@ -7,7 +7,7 @@
 <div class="listViewPageDiv detailViewContainer col-sm-12" id="recordVersionSettings">
 	<div class="col-sm-12">
 		<div class="clearfix">
-			<h4>{vtranslate('LBL_RECORD_VERSION', $QUALIFIED_MODULE)}</h4>
+			<h4>{vtranslate('LBL_RECORD_VERSION_SETTINGS', $QUALIFIED_MODULE)}</h4>
 			<p class="text-muted">{vtranslate('LBL_RECORD_VERSION_DESCRIPTION', $QUALIFIED_MODULE)}</p>
 		</div>
 		<table class="table table-bordered listViewEntriesTable" id="recordVersionModules">

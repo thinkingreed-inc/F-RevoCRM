@@ -1733,6 +1733,11 @@ $languageStrings = array(
 	'LBL_DESCENDING' => 'Descending',
 	'LBL_ADD_SORT_ROW' => 'Add sort condition',
 	'LBL_REMOVE_SORTING' => 'Remove sorting for this column',
+
+	// Record versioning (#1964): shown on the detail view and layout editor of any module
+	'LBL_RECORD_VERSION' => 'Version',
+	'LBL_RECORD_VERSION_REVISE' => 'Revise',
+	'LBL_RECORD_VERSION_HISTORY' => 'Version History',
 );
 
 $jsLanguageStrings = array(

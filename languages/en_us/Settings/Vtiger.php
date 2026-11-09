@@ -76,6 +76,8 @@ $languageStrings = array(
 
 	'LBL_DOCUMENTS_COMPLIANCE' => 'Electronic Bookkeeping',
 	'LBL_DOCUMENTS_COMPLIANCE_DESCRIPTION' => 'Configure how the input deadline for scanned documents is calculated',
+	'LBL_RECORD_VERSION_SETTINGS' => 'Record Versioning',
+	'LBL_RECORD_VERSION_DESCRIPTION' => 'Select the modules under version management and the related modules included in each version',
 
 	'LBL_HOLIDAYS' => 'Holidays',
 	'LBL_HOLIDAYS_DESCRIPTION' => 'Configure public holidays, company holidays and weekly days off',

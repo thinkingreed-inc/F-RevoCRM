@@ -5,7 +5,7 @@
  */
 $languageStrings = [
     'RecordVersion' => 'Record Versioning',
-    'LBL_RECORD_VERSION' => 'Record Versioning',
+    'LBL_RECORD_VERSION_SETTINGS' => 'Record Versioning',
     'LBL_RECORD_VERSION_DESCRIPTION' => 'Select the modules under version management and the related modules included in each version.',
     'LBL_MODULE' => 'Module',
     'LBL_VERSIONING' => 'Versioning',

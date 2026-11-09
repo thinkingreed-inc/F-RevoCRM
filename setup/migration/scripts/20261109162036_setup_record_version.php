@@ -24,7 +24,7 @@ class Migration20261109162036_SetupRecordVersion extends FRMigrationClass
     private const VERSIONS_TABLE = 'vtiger_recordversion';
 
     private const SETTINGS_BLOCK = 'LBL_MODULE_MANAGER';
-    private const SETTINGS_FIELD = 'LBL_RECORD_VERSION';
+    private const SETTINGS_FIELD = 'LBL_RECORD_VERSION_SETTINGS';
     private const SETTINGS_URL = 'index.php?module=RecordVersion&parent=Settings&view=Index';
 
     private const HANDLER_PATH = 'modules/RecordVersion/handlers/RecordVersionHandler.php';

@@ -76,6 +76,8 @@ $languageStrings = array(
 
 	'LBL_DOCUMENTS_COMPLIANCE' => '電子帳簿保存法',
 	'LBL_DOCUMENTS_COMPLIANCE_DESCRIPTION' => 'スキャナ保存の入力期限の計算方針を設定します',
+	'LBL_RECORD_VERSION_SETTINGS' => '版管理',
+	'LBL_RECORD_VERSION_DESCRIPTION' => '版管理の対象にするモジュールと、版に含める関連モジュールを選びます',
 
 	'LBL_HOLIDAYS' => '休祝日マスタ',
 	'LBL_HOLIDAYS_DESCRIPTION' => '祝日・会社休日と週休を設定します',

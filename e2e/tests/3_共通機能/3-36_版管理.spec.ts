@@ -43,13 +43,14 @@ test.describe("共通: 版管理", () => {
 
     await gotoDetail(page);
     await expect(versionValue(page)).toContainText("1");
-    await expect(page.locator(`#${MODULE}_detailView_basicAction_LBL_REVISE`)).toBeVisible();
-    await expect(page.locator(`#${MODULE}_detailView_basicAction_LBL_VERSION_HISTORY`)).toBeVisible();
+    // ボタン名・項目名は共通の言語ファイルで翻訳する（確認事項 Q33）
+    await expect(page.locator(`#${MODULE}_detailView_basicAction_LBL_RECORD_VERSION_REVISE`)).toHaveText("改版");
+    await expect(page.locator(`#${MODULE}_detailView_basicAction_LBL_RECORD_VERSION_HISTORY`)).toHaveText("版履歴");
   });
 
   test("改版理由が空なら改版せず、入れて改版すると版が上がり編集画面が開く", async ({ page }) => {
     await gotoDetail(page);
-    await page.locator(`#${MODULE}_detailView_basicAction_LBL_REVISE`).click();
+    await page.locator(`#${MODULE}_detailView_basicAction_LBL_RECORD_VERSION_REVISE`).click();
     const dialog = page.locator("#recordVersionReviseDialog");
     await expect(dialog).toBeVisible();
     await expect(dialog.locator("#recordVersionCurrentNo")).toHaveText("1");
@@ -72,7 +73,7 @@ test.describe("共通: 版管理", () => {
 
   test("版履歴に現在の版と過去の版が出て、過去の版は当時の値を表示のみで出す", async ({ page }) => {
     await gotoDetail(page);
-    await page.locator(`#${MODULE}_detailView_basicAction_LBL_VERSION_HISTORY`).click();
+    await page.locator(`#${MODULE}_detailView_basicAction_LBL_RECORD_VERSION_HISTORY`).click();
     await page.waitForURL(/module=RecordVersion&view=History/);
     const table = page.locator("#recordVersionHistoryTable");
     await expect(table.locator("tr.recordVersionCurrentRow")).toContainText("2");
@@ -124,7 +125,7 @@ test.describe("共通: 版管理", () => {
       await expect(page.locator("body")).toContainText("このモジュールは版管理の対象ではありません");
       await expect(page.locator("#recordVersionHistoryTable")).toHaveCount(0);
       await gotoDetail(page);
-      await expect(page.locator(`#${MODULE}_detailView_basicAction_LBL_REVISE`)).toHaveCount(0);
+      await expect(page.locator(`#${MODULE}_detailView_basicAction_LBL_RECORD_VERSION_REVISE`)).toHaveCount(0);
     } finally {
       await setEnabled("1");
     }

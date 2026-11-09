@@ -5,7 +5,7 @@
  */
 $languageStrings = [
     'RecordVersion' => '版管理',
-    'LBL_RECORD_VERSION' => '版管理',
+    'LBL_RECORD_VERSION_SETTINGS' => '版管理',
     'LBL_RECORD_VERSION_DESCRIPTION' => '版管理の対象にするモジュールと、版に含める関連モジュールを選びます。',
     'LBL_MODULE' => 'モジュール',
     'LBL_VERSIONING' => '版管理',
