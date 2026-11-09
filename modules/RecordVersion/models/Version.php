@@ -161,16 +161,26 @@ class RecordVersion_Version_Model
     }
 
     /**
-     * 過去の版を 1 件保存する（改版の処理のトランザクションの中で呼ぶ）
+     * 過去の版の内容を JSON にする
      *
      * @param array<string, mixed> $snapshot
      */
-    public static function insert(int $recordId, string $moduleName, int $versionNo, string $reason, int $revisedBy, string $revisedAt, array $snapshot): void
+    public static function encodeSnapshot(array $snapshot): string
     {
         $json = json_encode($snapshot, JSON_UNESCAPED_UNICODE | JSON_PARTIAL_OUTPUT_ON_ERROR);
         if ($json === false) {
             throw new Exception('Could not encode the snapshot');
         }
+        return $json;
+    }
+
+    /**
+     * 過去の版を 1 件保存する（改版の処理のトランザクションの中で呼ぶ）
+     *
+     * @param string $json encodeSnapshot() で JSON にした内容
+     */
+    public static function insert(int $recordId, string $moduleName, int $versionNo, string $reason, int $revisedBy, string $revisedAt, string $json): void
+    {
         $db = PearDatabase::getInstance();
         $db->pquery(
             'INSERT INTO ' . RecordVersion_Config_Model::VERSIONS_TABLE

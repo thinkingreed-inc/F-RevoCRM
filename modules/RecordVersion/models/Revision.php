@@ -23,6 +23,9 @@ class RecordVersion_Revision_Model
     public const EVENT_BEFORE = 'recordversion.beforerevise';
     public const EVENT_AFTER = 'recordversion.afterrevise';
 
+    /** @var int|null 過去の版の JSON の大きさの上限（バイト）。null なら DB の設定から決める。テストで小さくするために使う */
+    public static ?int $maxSnapshotBytes = null;
+
     /**
      * @param int $recordId 改版するレコード
      * @param string $reason 改版理由（必須、1,000 文字まで）
@@ -113,7 +116,13 @@ class RecordVersion_Revision_Model
                 return RecordVersion_Snapshot_Model::build($record, $currentVersionNo, $revisedByName);
             });
 
-            RecordVersion_Version_Model::insert($recordId, $moduleName, $currentVersionNo, $reason, $userId, $now, $snapshot);
+            // 大きすぎて DB に保存できない（関連するレコードが多すぎる）ときは、何も変えずに止める
+            $json = RecordVersion_Version_Model::encodeSnapshot($snapshot);
+            unset($snapshot);
+            if (strlen($json) > self::getMaxSnapshotBytes()) {
+                return self::rollback('LBL_TOO_MANY_RELATED_RECORDS');
+            }
+            RecordVersion_Version_Model::insert($recordId, $moduleName, $currentVersionNo, $reason, $userId, $now, $json);
             $db->pquery(
                 'UPDATE ' . RecordVersion_Config_Model::FIELD_TABLE . ' SET ' . RecordVersion_Config_Model::FIELD_COLUMN
                 . ' = ?, modifiedtime = ?, modifiedby = ? WHERE crmid = ?',
@@ -130,9 +139,30 @@ class RecordVersion_Revision_Model
         } catch (Throwable $e) {
             global $log;
             $log->error('RecordVersion: revise failed for record ' . $recordId . ': ' . $e->getMessage());
+            if ($e->getCode() === RecordVersion_Snapshot_Model::ERROR_TOO_LARGE) {
+                return self::rollback('LBL_TOO_MANY_RELATED_RECORDS');
+            }
             return self::rollback('LBL_REVISE_FAILED');
         }
         return ['success' => true, 'message' => '', 'version_no' => $newVersionNo];
+    }
+
+    /**
+     * 過去の版の JSON の大きさの上限
+     *
+     * DB が 1 回に受け取れる大きさ（max_allowed_packet）の半分にする。値は SQL の中に埋め込まれ、
+     * 引用符などのエスケープで大きくなるため、余裕を持たせる。
+     */
+    private static function getMaxSnapshotBytes(): int
+    {
+        if (self::$maxSnapshotBytes !== null) {
+            return self::$maxSnapshotBytes;
+        }
+        $db = PearDatabase::getInstance();
+        $rows = RecordVersion_Util_Helper::fetchRawRows($db->pquery('SELECT @@max_allowed_packet AS packet', []));
+        $packet = RecordVersion_Util_Helper::toInt($rows[0]['packet'] ?? 0);
+        // 読めなかったときは MySQL 8 の既定値（64MB）として扱う
+        return intdiv($packet > 0 ? $packet : 67108864, 2);
     }
 
     /**

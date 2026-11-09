@@ -28,6 +28,15 @@ class RecordVersion_Snapshot_Model
     /** 関連レコードを一度に読む件数 */
     private const RELATED_PAGE_SIZE = 500;
 
+    /** 過去の版の内容が大きすぎて作れないときの例外コード */
+    public const ERROR_TOO_LARGE = 4131;
+
+    /** PHP のメモリの上限のうち、過去の版を作るのに使ってよい割合（超えたら止める） */
+    private const MEMORY_RATIO = 0.8;
+
+    /** @var int|null メモリの上限（バイト）。null なら PHP の memory_limit。テストで小さくするために使う */
+    public static ?int $memoryLimitBytes = null;
+
     /**
      * @return array<string, mixed>
      */
@@ -55,7 +64,44 @@ class RecordVersion_Snapshot_Model
                 $snapshot['relations'][] = $relation;
             }
         }
+        self::ensureMemory();
         return $snapshot;
+    }
+
+    /**
+     * メモリが足りなくなりそうなら止める（関連するレコードが多すぎるとき）
+     *
+     * メモリ不足は PHP の致命的エラーになり受け止められないため、上限に近づいた時点で例外にして、
+     * 改版の処理で「関連するレコードが多すぎるため改版できません」にする。
+     */
+    public static function ensureMemory(): void
+    {
+        $limit = self::$memoryLimitBytes ?? self::getPhpMemoryLimit();
+        if ($limit > 0 && memory_get_usage(true) > $limit * self::MEMORY_RATIO) {
+            throw new Exception('The snapshot is too large', self::ERROR_TOO_LARGE);
+        }
+    }
+
+    /**
+     * PHP の memory_limit（バイト。上限なしなら 0）
+     */
+    private static function getPhpMemoryLimit(): int
+    {
+        $value = trim(RecordVersion_Util_Helper::toStr(ini_get('memory_limit')));
+        if ($value === '' || $value === '-1') {
+            return 0;
+        }
+        $number = (int) $value;
+        switch (strtoupper(substr($value, -1))) {
+            case 'G':
+                return $number * 1024 * 1024 * 1024;
+            case 'M':
+                return $number * 1024 * 1024;
+            case 'K':
+                return $number * 1024;
+            default:
+                return $number;
+        }
     }
 
     /**
@@ -295,6 +341,7 @@ class RecordVersion_Snapshot_Model
                     continue;
                 }
                 $records[$relatedId] = self::captureRelatedRecord($relatedId, $relatedModule, $entry);
+                self::ensureMemory();
             }
             $page++;
         } while (RecordVersion_Util_Helper::isTruthy($pagingModel->get('nextPageExists')));

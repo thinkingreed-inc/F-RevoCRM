@@ -20,6 +20,7 @@ $languageStrings = [
     'LBL_ALREADY_REVISED' => 'ほかの利用者が改版しました。画面を開き直してください',
     'LBL_NOT_TARGET_MODULE' => 'このモジュールは版管理の対象ではありません',
     'LBL_REVISE_FAILED' => '改版できませんでした。もう一度お試しください',
+    'LBL_TOO_MANY_RELATED_RECORDS' => '関連するレコードが多すぎるため改版できません',
     'LBL_REVISED' => '改版しました',
 
     // 版履歴

@@ -20,6 +20,7 @@ $languageStrings = [
     'LBL_ALREADY_REVISED' => 'Another user has revised this record. Please reload the page.',
     'LBL_NOT_TARGET_MODULE' => 'This module is not under version management.',
     'LBL_REVISE_FAILED' => 'The record could not be revised. Please try again.',
+    'LBL_TOO_MANY_RELATED_RECORDS' => 'The record cannot be revised because it has too many related records.',
     'LBL_REVISED' => 'The record has been revised.',
 
     // Version history

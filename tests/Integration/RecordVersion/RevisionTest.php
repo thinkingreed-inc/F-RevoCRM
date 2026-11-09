@@ -107,7 +107,15 @@ final class RevisionTest extends RecordVersionTestCase
     {
         $recordId = $this->createPotential('途中で失敗');
         // 同じ版番号の過去の版を先に入れておき、保存の途中で一意制約に当たるようにする
-        RecordVersion_Version_Model::insert($recordId, self::MODULE, 1, '先にある版', self::ADMIN_USER_ID, '2026-01-01 00:00:00', ['fields' => []]);
+        RecordVersion_Version_Model::insert(
+            $recordId,
+            self::MODULE,
+            1,
+            '先にある版',
+            self::ADMIN_USER_ID,
+            '2026-01-01 00:00:00',
+            RecordVersion_Version_Model::encodeSnapshot(['fields' => []])
+        );
         $dieOnError = $this->db->dieOnError;
         $this->db->dieOnError = false;
         try {
@@ -120,6 +128,37 @@ final class RevisionTest extends RecordVersionTestCase
         $this->assertSame(1, $this->currentVersion($recordId), '版番号は変えない');
         $this->assertSame(1, $this->versionCount($recordId), '過去の版は増えない');
         $this->assertSame(0, $this->versionChangeLogCount($recordId), '更新履歴にも残さない');
+    }
+
+    public function test_過去の版がDBに保存できない大きさなら改版しない_動作定義No6(): void
+    {
+        $recordId = $this->createPotential('大きすぎる');
+        RecordVersion_Revision_Model::$maxSnapshotBytes = 10;
+        try {
+            $result = RecordVersion_Revision_Model::revise($recordId, '保存できない大きさ');
+        } finally {
+            RecordVersion_Revision_Model::$maxSnapshotBytes = null;
+        }
+        $this->assertFalse($result['success']);
+        $this->assertSame(vtranslate('LBL_TOO_MANY_RELATED_RECORDS', 'RecordVersion'), $result['message']);
+        $this->assertSame(1, $this->currentVersion($recordId), '版番号は変えない');
+        $this->assertSame(0, $this->versionCount($recordId), '過去の版は保存しない');
+        $this->assertSame(0, $this->versionChangeLogCount($recordId), '更新履歴にも残さない');
+    }
+
+    public function test_メモリが足りなくなりそうなら改版しない_動作定義No6(): void
+    {
+        $recordId = $this->createPotential('メモリ不足');
+        \RecordVersion_Snapshot_Model::$memoryLimitBytes = 1;
+        try {
+            $result = RecordVersion_Revision_Model::revise($recordId, 'メモリが足りない');
+        } finally {
+            \RecordVersion_Snapshot_Model::$memoryLimitBytes = null;
+        }
+        $this->assertFalse($result['success']);
+        $this->assertSame(vtranslate('LBL_TOO_MANY_RELATED_RECORDS', 'RecordVersion'), $result['message']);
+        $this->assertSame(1, $this->currentVersion($recordId));
+        $this->assertSame(0, $this->versionCount($recordId));
     }
 
     public function test_ほかの機能から改版者を指定して呼べる(): void
