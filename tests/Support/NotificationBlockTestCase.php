@@ -270,6 +270,14 @@ abstract class NotificationBlockTestCase extends TestCase
         return $blockId;
     }
 
+    /**
+     * テストの中で作ったブロックとして後始末の対象にする
+     */
+    protected function trackBlock(int $blockId): void
+    {
+        $this->createdBlockIds[] = $blockId;
+    }
+
     protected function setSendOnCreate(bool $sendOnCreate): void
     {
         NotificationBlock_Config_Model::saveSendOnCreate($this->tabId, $sendOnCreate);

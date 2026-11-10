@@ -118,35 +118,18 @@ class Settings_LayoutEditor_Block_Action extends Settings_Vtiger_Index_Action {
     /**
      * 通知ブロック（#1965）を追加する
      *
-     * 名前は入力させず「通知」（翻訳のキー）にする。1 モジュールに 1 つだけ、置けるモジュールだけ。
+     * 名前は入力させず「通知」（翻訳のキー）にする。1 モジュールに 1 つだけ、置けるモジュールだけ
+     * （同時に追加されても 1 つになるよう、確かめて作るところは NotificationBlock_Config_Model::addBlock() で行う）。
      */
     private function saveNotificationBlock(Vtiger_Request $request, $moduleInstance) {
         $response = new Vtiger_Response();
-        $moduleName = $moduleInstance ? $moduleInstance->getName() : '';
-        if (!NotificationBlock_Config_Model::isSupportedModule($moduleName)) {
-            $response->setError('502', vtranslate('LBL_NOTIFICATION_BLOCK_NOT_SUPPORTED', NotificationBlock_Config_Model::SETTINGS_MODULE));
-            $response->emit();
-            return;
-        }
-        if (NotificationBlock_Config_Model::hasBlock($moduleName)) {
-            $response->setError('502', vtranslate('LBL_NOTIFICATION_BLOCK_EXISTS', NotificationBlock_Config_Model::SETTINGS_MODULE));
-            $response->emit();
-            return;
-        }
-        $blockInstance = new Settings_LayoutEditor_Block_Model();
-        $blockInstance->set('label', NotificationBlock_Config_Model::BLOCK_LABEL);
-        $blockInstance->set('iscustom', '1');
-        $beforeBlockId = $request->get('beforeBlockId');
-        if (!empty($beforeBlockId)) {
-            $beforeBlockInstance = Vtiger_Block_Model::getInstance($beforeBlockId);
-            $beforeBlockSequence = $beforeBlockInstance->get('sequence');
-            $blockInstance->set('sequence', $beforeBlockSequence + 1);
-            Vtiger_Block_Model::pushDown($beforeBlockSequence, $moduleInstance->getId());
-        }
         try {
-            $id = $blockInstance->save($moduleInstance);
-            NotificationBlock_Config_Model::register((int) $moduleInstance->getId(), (int) $id, $request->get('sendOnCreate') === '1');
-            $response->setResult(array('id' => $id, 'label' => $blockInstance->get('label'), 'notificationBlock' => true));
+            $result = NotificationBlock_Config_Model::addBlock($moduleInstance, (int) $request->get('beforeBlockId'), $request->get('sendOnCreate') === '1');
+            if ($result['error'] !== '') {
+                $response->setError('502', vtranslate($result['error'], NotificationBlock_Config_Model::SETTINGS_MODULE));
+            } else {
+                $response->setResult(array('id' => $result['id'], 'label' => NotificationBlock_Config_Model::BLOCK_LABEL, 'notificationBlock' => true));
+            }
         } catch (Exception $e) {
             $response->setError($e->getCode(), $e->getMessage());
         }

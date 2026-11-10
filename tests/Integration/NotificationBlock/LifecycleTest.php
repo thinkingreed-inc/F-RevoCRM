@@ -73,6 +73,52 @@ final class LifecycleTest extends NotificationBlockTestCase
         $this->assertFalse(NotificationBlock_Config_Model::isNotificationBlock($this->blockId));
     }
 
+    public function test_項目設定からの追加は1モジュールに1つだけで_置けないモジュールには追加できない(): void
+    {
+        $module = \Vtiger_Module_Model::getInstance(self::MODULE);
+        $this->assertSame(['id' => 0, 'error' => 'LBL_NOTIFICATION_BLOCK_EXISTS'], NotificationBlock_Config_Model::addBlock($module, 0, false));
+        $this->assertSame(['id' => 0, 'error' => 'LBL_NOTIFICATION_BLOCK_NOT_SUPPORTED'], NotificationBlock_Config_Model::addBlock(\Vtiger_Module_Model::getInstance('Calendar'), 0, false));
+
+        // 通知ブロックを消したあとなら追加でき、置いた位置の後ろのブロックは 1 つずつ下がる
+        $this->db->pquery('DELETE FROM vtiger_blocks WHERE blockid = ?', [$this->blockId]);
+        NotificationBlock_Config_Model::unregisterBlock($this->blockId);
+        $blocks = \NotificationBlock_Util_Helper::fetchRawRows($this->db->pquery('SELECT blockid, sequence FROM vtiger_blocks WHERE tabid = ? ORDER BY sequence', [$this->tabId]));
+        $first = \NotificationBlock_Util_Helper::toInt($blocks[0]['blockid'] ?? 0);
+        $second = \NotificationBlock_Util_Helper::toInt($blocks[1]['blockid'] ?? 0);
+        $saved = $this->saveBlockSequences();
+        try {
+            $result = NotificationBlock_Config_Model::addBlock($module, $first, true);
+            $this->assertSame('', $result['error']);
+            $this->trackBlock($result['id']);
+            $this->assertTrue(NotificationBlock_Config_Model::isSendOnCreate(self::MODULE));
+            $this->assertSame($result['id'], NotificationBlock_Config_Model::getBlockId(self::MODULE));
+            $sequence = fn (int $id): int => \NotificationBlock_Util_Helper::toInt($this->scalar('SELECT sequence FROM vtiger_blocks WHERE blockid = ?', [$id]));
+            $this->assertSame($sequence($first) + 1, $sequence($result['id']), '置いた位置のすぐ後ろ');
+            $this->assertGreaterThan($sequence($result['id']), $sequence($second), '後ろのブロックは下がる');
+            $this->assertSame(['id' => 0, 'error' => 'LBL_NOTIFICATION_BLOCK_EXISTS'], NotificationBlock_Config_Model::addBlock($module, 0, false));
+        } finally {
+            $this->restoreBlockSequences($saved);
+        }
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function saveBlockSequences(): array
+    {
+        return \NotificationBlock_Util_Helper::fetchRawRows($this->db->pquery('SELECT blockid, sequence FROM vtiger_blocks WHERE tabid = ?', [$this->tabId]));
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $saved
+     */
+    private function restoreBlockSequences(array $saved): void
+    {
+        foreach ($saved as $row) {
+            $this->db->pquery('UPDATE vtiger_blocks SET sequence = ? WHERE blockid = ?', [$row['sequence'], $row['blockid']]);
+        }
+    }
+
     public function test_置けるモジュールはエンティティで有効なものだけで_メールやカレンダーなどは置けない(): void
     {
         $this->assertTrue(NotificationBlock_Config_Model::isSupportedModule('Potentials'));

@@ -423,6 +423,9 @@
 				'.notificationBlockPickerCandidates{max-height:240px;overflow-y:auto;margin:0;}',
 				'.notificationBlockCandidate:hover{background:#f0f4f8;}',
 				'.notificationBlockTargetsRow .notificationBlockEditTargets{visibility:hidden;}',
+				// 項目設定の「ブロックの種類」で選べない「通知ブロック」（select2 は背景だけ灰色にするので、文字も
+				// Bootstrap のメニューで選べない項目と同じ色にする）
+				'.select2-results .select2-disabled.notificationBlockOptionDisabled .select2-result-label{color:#777;}',
 				'.notificationBlockTargetsRow:hover .notificationBlockEditTargets{visibility:visible;}'
 			].join('');
 			jQuery('<style id="notificationBlockStyles" type="text/css">').text(css).appendTo('head');

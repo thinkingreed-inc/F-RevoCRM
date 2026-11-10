@@ -404,10 +404,13 @@
 							{vtranslate('LBL_BLOCK_TYPE', 'Settings:NotificationBlock')}
 						</label>
 						<div class="controls col-sm-6">
-							<select class="col-sm-9" name="blockType" data-added-message="{vtranslate('LBL_NOTIFICATION_BLOCK_ADDED', 'Settings:NotificationBlock')}">
-								<option value="normal" selected>{vtranslate('LBL_BLOCK_TYPE_NORMAL', 'Settings:NotificationBlock')}</option>
-								<option value="notification" {if $HAS_NOTIFICATION_BLOCK}disabled{/if}>{vtranslate('LBL_BLOCK_TYPE_NOTIFICATION', 'Settings:NotificationBlock')}</option>
-							</select>
+							{* プルダウン（select2）は左に寄せて回り込ませるので、説明文がプルダウンの下に出るよう clearfix で囲む *}
+							<div class="clearfix">
+								<select class="col-sm-9" name="blockType" data-added-message="{vtranslate('LBL_NOTIFICATION_BLOCK_ADDED', 'Settings:NotificationBlock')}">
+									<option value="normal" selected>{vtranslate('LBL_BLOCK_TYPE_NORMAL', 'Settings:NotificationBlock')}</option>
+									<option value="notification" {if $HAS_NOTIFICATION_BLOCK}disabled class="notificationBlockOptionDisabled"{/if}>{vtranslate('LBL_BLOCK_TYPE_NOTIFICATION', 'Settings:NotificationBlock')}</option>
+								</select>
+							</div>
 							{if $HAS_NOTIFICATION_BLOCK}
 								<div class="help-block">{vtranslate('LBL_NOTIFICATION_BLOCK_EXISTS', 'Settings:NotificationBlock')}</div>
 							{/if}
@@ -440,10 +443,12 @@
 						{vtranslate('LBL_SEND_ON_CREATE', 'Settings:NotificationBlock')}
 					</label>
 					<div class="controls col-sm-6">
-						<select class="col-sm-9" name="sendOnCreate">
-							<option value="0" selected>{vtranslate('LBL_NO', $QUALIFIED_MODULE)}</option>
-							<option value="1">{vtranslate('LBL_YES', $QUALIFIED_MODULE)}</option>
-						</select>
+						<div class="clearfix">
+							<select class="col-sm-9" name="sendOnCreate">
+								<option value="0" selected>{vtranslate('LBL_NO', $QUALIFIED_MODULE)}</option>
+								<option value="1">{vtranslate('LBL_YES', $QUALIFIED_MODULE)}</option>
+							</select>
+						</div>
 						<div class="help-block">{vtranslate('LBL_SEND_ON_CREATE_HELP', 'Settings:NotificationBlock')}</div>
 						{if in_array($SELECTED_MODULE_NAME, getInventoryModules())}
 							<div class="help-block">{vtranslate('LBL_INVENTORY_POSITION_NOTE', 'Settings:NotificationBlock')}</div>

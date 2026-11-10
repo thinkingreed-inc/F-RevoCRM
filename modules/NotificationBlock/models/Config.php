@@ -100,6 +100,55 @@ class NotificationBlock_Config_Model
     }
 
     /**
+     * 項目設定の「ブロックの追加」で、通知ブロックを追加する（1 モジュールに 1 つ）
+     *
+     * 「すでにあるか確かめる」から「ブロックを作って印を付ける」までを、モジュールごとの DB のロックで
+     * 1 つずつ通す。ロックが無いと、別々の利用者が同時に追加したときに、どれも「まだ無い」と判断して
+     * ブロックを作り、印の付かない空のブロック（名前は「通知」）が残る。
+     *
+     * @param Vtiger_Module_Model|false|null $moduleModel
+     * @return array{id: int, error: string} error は言語ファイル（Settings:NotificationBlock）のキー。成功なら空
+     */
+    public static function addBlock(mixed $moduleModel, int $beforeBlockId, bool $sendOnCreate): array
+    {
+        $moduleName = $moduleModel instanceof Vtiger_Module_Model ? NotificationBlock_Util_Helper::toStr($moduleModel->getName()) : '';
+        if (!($moduleModel instanceof Vtiger_Module_Model) || !self::isSupportedModule($moduleName)) {
+            return ['id' => 0, 'error' => 'LBL_NOTIFICATION_BLOCK_NOT_SUPPORTED'];
+        }
+        $tabId = NotificationBlock_Util_Helper::toInt($moduleModel->getId());
+        $db = PearDatabase::getInstance();
+        $lockName = 'notificationblock_layout_' . $tabId;
+        $locked = NotificationBlock_Util_Helper::fetchRawRows($db->pquery('SELECT GET_LOCK(?, 10) AS locked', [$lockName]));
+        if (NotificationBlock_Util_Helper::toInt($locked[0]['locked'] ?? 0) !== 1) {
+            return ['id' => 0, 'error' => 'LBL_NOTIFICATION_BLOCK_EXISTS'];
+        }
+        try {
+            // ほかの利用者がロックの前に追加していないかを、読み直して確かめる
+            self::clearCache();
+            if (self::hasBlock($moduleName)) {
+                return ['id' => 0, 'error' => 'LBL_NOTIFICATION_BLOCK_EXISTS'];
+            }
+            $block = new Settings_LayoutEditor_Block_Model();
+            $block->set('label', self::BLOCK_LABEL);
+            $block->set('iscustom', '1');
+            if ($beforeBlockId > 0) {
+                $beforeBlock = Vtiger_Block_Model::getInstance($beforeBlockId);
+                $beforeSequence = NotificationBlock_Util_Helper::toInt($beforeBlock->get('sequence'));
+                $block->set('sequence', $beforeSequence + 1);
+                // 後ろのブロックを 1 つずつ下げる（Vtiger_Block_Model::pushDown() と同じ SQL。pushDown() は引数の型の
+                // 注釈が誤っている（@param type）ため静的解析を通らない。pushDown() が行うブロックのキャッシュの削除は、
+                // キャッシュが 1 回のリクエストの中だけのもので、このリクエストは追加したら終わるため行わない）
+                $db->pquery('UPDATE vtiger_blocks SET sequence = sequence + 1 WHERE sequence > ? AND tabid = ?', [$beforeSequence, $tabId]);
+            }
+            $blockId = NotificationBlock_Util_Helper::toInt($block->save($moduleModel));
+            self::register($tabId, $blockId, $sendOnCreate);
+            return ['id' => $blockId, 'error' => ''];
+        } finally {
+            $db->pquery('SELECT RELEASE_LOCK(?)', [$lockName]);
+        }
+    }
+
+    /**
      * 追加したブロックを、そのモジュールの通知ブロックにする
      */
     public static function register(int $tabId, int $blockId, bool $sendOnCreate): void
