@@ -1,0 +1,20 @@
+<?php
+/*+***********************************************************************************
+ * The contents of this file are subject to the Vtiger Public License Version 1.2
+ * ("License"); You may not use this file except in compliance with the License
+ * The Original Code is: frevo-mcp (https://github.com/ratorin/frevo-mcp)
+ * The Initial Developer of the Original Code is ratorin.
+ * Portions created by ratorin are Copyright (C) ratorin.
+ * All Rights Reserved.
+ *************************************************************************************/
+
+vimport('includes.runtime.Globals');
+require_once 'include/Mcp/RateLimiter.php';
+require_once 'include/Mcp/OAuthStorage.php';
+
+$mcpRootDir = dirname(__FILE__, 4);
+// 保持期間は mcp.php と同じシステム変数の設定に合わせる
+$mcpRateWindow = Mcp_RateLimiter::parseLimitValue(Settings_Parameters_Record_Model::getParameterValue('MCP_RATE_LIMIT_WINDOW'), Mcp_RateLimiter::DEFAULT_WINDOW_SEC);
+$mcpRateLimiter = new Mcp_RateLimiter($mcpRootDir . '/cache', $mcpRateWindow);
+$mcpRateLimiter->cleanup();
+Mcp_OAuthStorage::cleanup();
