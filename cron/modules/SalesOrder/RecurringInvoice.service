@@ -22,7 +22,8 @@ $sql="SELECT vtiger_salesorder.salesorderid, recurring_frequency, start_period, 
 		 payment_duration, invoice_status FROM vtiger_salesorder
 		 INNER JOIN vtiger_crmentity ON vtiger_salesorder.salesorderid = vtiger_crmentity.crmid AND vtiger_crmentity.deleted = 0
 		 INNER JOIN vtiger_invoice_recurring_info ON vtiger_salesorder.salesorderid = vtiger_invoice_recurring_info.salesorderid
-		 WHERE DATE_FORMAT(start_period,'%Y-%m-%d') <= ?
+		 WHERE vtiger_salesorder.enable_recurring = 1
+			AND DATE_FORMAT(start_period,'%Y-%m-%d') <= ?
 			AND (end_period IS NULL OR end_period = '0000-00-00'
 				OR DATE_FORMAT(end_period,'%Y-%m-%d') >= ?)";
 $result = $adb->pquery($sql, array($currentDate, $currentDate));
@@ -42,32 +43,42 @@ for($i=0; $i<$no_of_salesorder;$i++) {
 	$endDateStrTime = (!empty($end_period) && $end_period !== '0000-00-00') ? strtotime($end_period) : PHP_INT_MAX;
 	$recurringDateStrTime = strtotime($recurring_date);
 
-	if($recurringDateStrTime < $currentDateStrTime) {
-		$recurringDatesList = array();
-		$nextRecurringDate = $validNextRecurringDate = $recurring_date;
+	// 周期が想定外の値（空・--None-- 等）だと次回請求日を計算できず、日付が進まないままループし続けるため処理しない
+	if (!isValidRecurringFrequency($recurringFrequency)) {
+		logRecurringInvoiceError("SalesOrder $salesorder_id is skipped: invalid recurring frequency '$recurringFrequency'");
+		continue;
+	}
 
-		while(strtotime($validNextRecurringDate) <= $currentDateStrTime && $currentDateStrTime <= $endDateStrTime) {
-			$recurringDatesList[]	= $validNextRecurringDate;
-			$nextRecurringDatesInfo = getRecurringDate($nextRecurringDate, $recurringFrequency);
+	// 1 件の受注の失敗で、後続の受注の請求が作成されなくならないようにする
+	try {
+		if($recurringDateStrTime < $currentDateStrTime) {
+			$nextRecurringDate = $validNextRecurringDate = $recurring_date;
 
-			//Updating the existing values
-			$validNextRecurringDate = $nextRecurringDatesInfo['validDate'];
-			$nextRecurringDate		= $nextRecurringDatesInfo['nextRecurringDate'];
-		}
+			while(strtotime($validNextRecurringDate) <= $currentDateStrTime && $currentDateStrTime <= $endDateStrTime) {
+				$recurringDate			= $validNextRecurringDate;
+				$nextRecurringDatesInfo = getRecurringDate($nextRecurringDate, $recurringFrequency);
+				if (strtotime($nextRecurringDatesInfo['validDate']) <= strtotime($recurringDate)) {
+					throw new Exception("next recurring date does not advance from $recurringDate");
+				}
 
-		if ($recurringDatesList) {
-			foreach ($recurringDatesList as $recurringDate) {
 				createInvoice($salesorder_id, $recurringDate);
+
+				//Updating the existing values
+				$validNextRecurringDate = $nextRecurringDatesInfo['validDate'];
+				$nextRecurringDate		= $nextRecurringDatesInfo['nextRecurringDate'];
+				// 請求 1 件ごとに次回請求日を進め、途中で止まっても作成済みの請求を次回また作らないようにする
+				$adb->pquery('UPDATE vtiger_invoice_recurring_info SET last_recurring_date = ? WHERE salesorderid = ?', array($validNextRecurringDate, $salesorder_id));
 			}
-			$adb->pquery('UPDATE vtiger_invoice_recurring_info SET last_recurring_date = ? WHERE salesorderid = ?', array($validNextRecurringDate, $salesorder_id));
+
+		} elseif($recurringDateStrTime == $currentDateStrTime && $recurringDateStrTime <= $endDateStrTime) {
+			createInvoice($salesorder_id, $recurring_date);
+
+			$nextRecurringDatesInfo = getRecurringDate($recurring_date, $recurringFrequency);
+			$nextRecurringDate = $nextRecurringDatesInfo['validDate'];
+			$adb->pquery('UPDATE vtiger_invoice_recurring_info SET last_recurring_date = ? WHERE salesorderid = ?', array($nextRecurringDate, $salesorder_id));
 		}
-
-	} elseif($recurringDateStrTime == $currentDateStrTime && $recurringDateStrTime <= $endDateStrTime) {
-		createInvoice($salesorder_id, $recurringDate);
-
-		$nextRecurringDatesInfo = getRecurringDate($recurring_date, $recurringFrequency);
-		$nextRecurringDate = $nextRecurringDatesInfo['validDate'];
-		$adb->pquery('UPDATE vtiger_invoice_recurring_info SET last_recurring_date = ? WHERE salesorderid = ?', array($nextRecurringDate, $salesorder_id));
+	} catch (Throwable $e) {
+		logRecurringInvoiceError("SalesOrder $salesorder_id is skipped: " . $e->getMessage());
 	}
 }
 
@@ -181,10 +192,25 @@ function getRecurringDate($recurringDate, $recurringFrequency) {
 
 		$nextRecurringDate = $validNextRecurringDate = "$y-$m-$d";
 		if (!checkdate($m, $d, $y)) {
-			$validNextRecurringDate = date('Y-m-d', mktime(0, 0, 0, $m, cal_days_in_month(CAL_GREGORIAN, $m, $y), $y));
+			// 月の日数は calendar 拡張（cal_days_in_month）に頼らず求める。拡張が無い環境では未定義関数で止まるため
+			$validNextRecurringDate = date('Y-m-d', mktime(0, 0, 0, $m, date('t', mktime(0, 0, 0, $m, 1, $y)), $y));
 		}
 	}
 
 	return array('validDate' => $validNextRecurringDate, 'nextRecurringDate' => $nextRecurringDate);
+}
+
+/* 繰り返し請求の周期として次回請求日を計算できる値か */
+function isValidRecurringFrequency($recurringFrequency) {
+	$validFrequencies = array('daily', 'weekly', 'monthly', 'quarterly', 'half-yearly', 'yearly');
+	// getRecurringDate() と同じ判定（strtolower のみ）にそろえる
+	return in_array(strtolower((string) $recurringFrequency), $validFrequencies, true);
+}
+
+/* 処理できなかった受注を cron のログ（標準出力）とアプリケーションログの両方に残す */
+function logRecurringInvoiceError($message) {
+	global $log;
+	echo "[ERROR] RecurringInvoice - $message\n";
+	$log->error("RecurringInvoice - $message");
 }
 ?>
