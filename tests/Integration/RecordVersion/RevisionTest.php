@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Integration\RecordVersion;
 
 use RecordVersion_Revision_Model;
+use RecordVersion_Util_Helper;
 use RecordVersion_Version_Model;
 use Tests\Support\RecordVersionTestCase;
 
@@ -54,8 +55,10 @@ final class RevisionTest extends RecordVersionTestCase
         $this->assertSame(self::PREFIX . '改版', $fields['potentialname']['value']);
         $this->assertSame('1', $fields['record_version']['value'], '過去の版の「版」は改版する前の版番号');
         $this->assertSame('Potential Name', $fields['potentialname']['label']);
-        $this->assertNotSame('', $fields['potentialname']['label_ja'], '日本語の表示名も残す');
-        $this->assertNotSame('', $fields['potentialname']['label_en'], '英語の表示名も残す');
+        $labels = RecordVersion_Util_Helper::toArray(RecordVersion_Util_Helper::toArray($version->getSnapshot()['labels'] ?? [])[self::MODULE] ?? []);
+        $names = RecordVersion_Util_Helper::toArray($labels['Potential Name'] ?? []);
+        $this->assertNotSame('', $names['ja_jp'] ?? '', '日本語の表示名も残す（表示名の辞書）');
+        $this->assertNotSame('', $names['en_us'] ?? '', '英語の表示名も残す（表示名の辞書）');
         $this->assertArrayHasKey('display', $fields['related_to'], '関連項目は当時の名前も残す');
         $this->assertArrayHasKey('display', $fields['assigned_user_id'], '担当は当時の名前も残す');
 

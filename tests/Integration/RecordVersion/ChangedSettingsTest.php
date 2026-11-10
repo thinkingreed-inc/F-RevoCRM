@@ -6,6 +6,7 @@ namespace Tests\Integration\RecordVersion;
 
 use RecordVersion_Config_Model;
 use RecordVersion_Display_Model;
+use RecordVersion_Label_Model;
 use RecordVersion_Revision_Model;
 use RecordVersion_Setup_Model;
 use RecordVersion_Util_Helper;
@@ -73,9 +74,15 @@ final class ChangedSettingsTest extends RecordVersionTestCase
             [$this->fieldId('potentialname')]
         ))[0];
         $this->assertSame($expected['blocklabel'], $entry['block_label'], '当時のブロック（翻訳前）');
-        $this->assertSame(vtranslate(RecordVersion_Util_Helper::toStr($expected['blocklabel']), self::MODULE), $entry[\Vtiger_Language_Handler::getLanguage() === 'ja_jp' ? 'block_label_ja' : 'block_label_en']);
-        $this->assertNotSame('', $entry['block_label_ja']);
-        $this->assertNotSame('', $entry['block_label_en']);
+        $snapshot = RecordVersion_Version_Model::getByNumber($recordId, 1)?->getSnapshot() ?? [];
+        $blockNames = RecordVersion_Util_Helper::toArray(RecordVersion_Util_Helper::toArray(RecordVersion_Util_Helper::toArray($snapshot['labels'] ?? [])[self::MODULE] ?? [])[RecordVersion_Util_Helper::toStr($entry['block_label'])] ?? []);
+        foreach (['ja_jp', 'en_us'] as $language) {
+            $this->assertSame(
+                \Vtiger_Language_Handler::getLanguageTranslatedString($language, RecordVersion_Util_Helper::toStr($expected['blocklabel']), self::MODULE),
+                $blockNames[$language] ?? null,
+                '当時のブロック名の訳は表示名の辞書に残す'
+            );
+        }
         $this->assertSame(RecordVersion_Util_Helper::toInt($expected['block_sequence']), $entry['block_sequence']);
         $this->assertSame(RecordVersion_Util_Helper::toInt($expected['sequence']), $entry['sequence']);
     }
@@ -123,7 +130,7 @@ final class ChangedSettingsTest extends RecordVersionTestCase
         );
         // 基本通貨の記号が当時と今で違っても、当時の記号で出す
         $snapshot['base_currency'] = ['code' => 'XXX', 'symbol' => 'X$'];
-        $display = new RecordVersion_Display_Model(RecordVersion_Display_Model::getCurrencySymbol($snapshot));
+        $display = new RecordVersion_Display_Model(RecordVersion_Display_Model::getCurrencySymbol($snapshot), new RecordVersion_Label_Model($snapshot));
         $values = [];
         foreach ($display->buildFieldBlocks(self::MODULE, RecordVersion_Util_Helper::toArray($snapshot['fields'] ?? []))['blocks'] as $block) {
             foreach ($block['fields'] as $field) {
@@ -171,10 +178,10 @@ final class ChangedSettingsTest extends RecordVersionTestCase
             $this->db->pquery('UPDATE vtiger_crmentity SET deleted = 1 WHERE crmid IN (?, ?)', [$accountId, $productId]);
             $this->db->pquery("UPDATE vtiger_inventorytaxinfo SET taxlabel = 'SPECTEST 改名後', percentage = 8 WHERE taxname = 'tax4'", []);
 
-            $display = new RecordVersion_Display_Model(RecordVersion_Display_Model::getCurrencySymbol($snapshot));
+            $display = new RecordVersion_Display_Model(RecordVersion_Display_Model::getCurrencySymbol($snapshot), new RecordVersion_Label_Model($snapshot));
             $values = $this->flatten($this->displayedBlocks(RecordVersion_Util_Helper::toArray($snapshot['fields'] ?? []), 'Quotes'));
             $this->assertSame($accountName, $values[vtranslate('Account Name', 'Quotes')] ?? null, '参照先は当時の名前');
-            $inventory = $display->buildInventory(RecordVersion_Util_Helper::toArray($snapshot['inventory'] ?? []));
+            $inventory = $display->buildInventory('Quotes', RecordVersion_Util_Helper::toArray($snapshot['inventory'] ?? []));
             $lineNames = [];
             foreach (RecordVersion_Util_Helper::toList($inventory['lines'] ?? []) as $line) {
                 $lineNames[] = RecordVersion_Util_Helper::toStr(RecordVersion_Util_Helper::toArray($line)['name'] ?? '');
@@ -209,7 +216,7 @@ final class ChangedSettingsTest extends RecordVersionTestCase
     private function displayedBlocks(array $fields, string $module = self::MODULE): array
     {
         $blocks = [];
-        foreach ((new RecordVersion_Display_Model('¥'))->buildFieldBlocks($module, $fields)['blocks'] as $block) {
+        foreach ((new RecordVersion_Display_Model('¥', new RecordVersion_Label_Model(['format' => RecordVersion_Label_Model::FORMAT_DICTIONARY])))->buildFieldBlocks($module, $fields)['blocks'] as $block) {
             foreach ($block['fields'] as $field) {
                 $blocks[$block['label']][$field['label']] = trim(strip_tags(html_entity_decode($field['value'])));
             }

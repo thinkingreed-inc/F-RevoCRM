@@ -6,7 +6,7 @@
  * 項目（仕様 表C）
  * - 今もある・表示している・見られる項目：今の項目設定のブロック・並び順で、今の表示名と当時の値を出す
  * - 当時あって今は削除された項目：管理者だけ「削除された項目」ブロックに、当時の表示名と値を出す
- *   （表示名は、見ている利用者の言語が日本語なら日本語、それ以外は英語）
+ *   （表示名は RecordVersion_Label_Model で、見ている利用者の言語 → 既定の言語 → 英語 → 翻訳前の名前 の順に引く）
  * - 当時まだ無かった項目・今は非表示の項目・見られない項目：出さない
  * 「今もその項目がある」は項目 ID で判定する（同じ名前で作り直した項目は別の項目）。
  *
@@ -33,18 +33,19 @@ class RecordVersion_Display_Model
     ];
 
     private bool $isAdmin;
-    private bool $isJapanese;
     private string $currencySymbol;
+    private RecordVersion_Label_Model $labels;
 
     /**
      * @param string $currencySymbol 金額の項目に付ける通貨の記号（当時のレコードの通貨）
+     * @param RecordVersion_Label_Model $labels 過去の版に残した表示名
      */
-    public function __construct(string $currencySymbol)
+    public function __construct(string $currencySymbol, RecordVersion_Label_Model $labels)
     {
         $currentUser = Users_Record_Model::getCurrentUserModel();
         $this->isAdmin = (bool) $currentUser->isAdminUser();
-        $this->isJapanese = RecordVersion_Util_Helper::toStr(Vtiger_Language_Handler::getLanguage()) === 'ja_jp';
         $this->currencySymbol = $currencySymbol;
+        $this->labels = $labels;
     }
 
     public function isAdmin(): bool
@@ -138,7 +139,7 @@ class RecordVersion_Display_Model
                     continue;
                 }
                 $deleted[] = [
-                    'label' => $this->savedLabel($entry, 'label'),
+                    'label' => $this->labels->resolve($entry, 'label', $moduleName),
                     'value' => $this->formatSavedValue($entry, $moduleName),
                 ];
             }
@@ -152,7 +153,7 @@ class RecordVersion_Display_Model
      * @param array<string, mixed> $inventory
      * @return array<string, mixed>
      */
-    public function buildInventory(array $inventory): array
+    public function buildInventory(string $moduleName, array $inventory): array
     {
         $lines = [];
         foreach (RecordVersion_Util_Helper::toList($inventory['lines'] ?? []) as $line) {
@@ -160,7 +161,7 @@ class RecordVersion_Display_Model
             $taxes = [];
             foreach (RecordVersion_Util_Helper::toList($line['taxes'] ?? []) as $tax) {
                 $tax = RecordVersion_Util_Helper::toArray($tax);
-                $taxes[] = $this->savedLabel($tax, 'label') . ' (' . $this->formatPercent($tax['percentage'] ?? 0) . '%) '
+                $taxes[] = $this->labels->resolve($tax, 'label', $moduleName) . ' (' . $this->formatPercent($tax['percentage'] ?? 0) . '%) '
                     . $this->formatAmount($tax['amount'] ?? 0);
             }
             $lines[] = [
@@ -183,12 +184,12 @@ class RecordVersion_Display_Model
             foreach (RecordVersion_Util_Helper::toList($charge['taxes'] ?? []) as $tax) {
                 $tax = RecordVersion_Util_Helper::toArray($tax);
                 $chargeTaxes[] = [
-                    'label' => $this->savedLabel($tax, 'label') . ' (' . $this->formatPercent($tax['percentage'] ?? 0) . '%)',
+                    'label' => $this->labels->resolve($tax, 'label', $moduleName) . ' (' . $this->formatPercent($tax['percentage'] ?? 0) . '%)',
                     'amount' => $this->formatAmount($tax['amount'] ?? 0),
                 ];
             }
             $charges[] = [
-                'name' => $this->savedLabel($charge, 'name'),
+                'name' => $this->labels->resolve($charge, 'name', $moduleName),
                 'value' => $this->formatAmount($charge['value'] ?? 0),
                 'taxes' => $chargeTaxes,
             ];
@@ -197,7 +198,7 @@ class RecordVersion_Display_Model
         foreach (RecordVersion_Util_Helper::toList($inventory['group_taxes'] ?? []) as $tax) {
             $tax = RecordVersion_Util_Helper::toArray($tax);
             $groupTaxes[] = [
-                'label' => $this->savedLabel($tax, 'label') . ' (' . $this->formatPercent($tax['percentage'] ?? 0) . '%)',
+                'label' => $this->labels->resolve($tax, 'label', $moduleName) . ' (' . $this->formatPercent($tax['percentage'] ?? 0) . '%)',
                 'amount' => $this->formatAmount($tax['amount'] ?? 0),
             ];
         }
@@ -245,7 +246,7 @@ class RecordVersion_Display_Model
             return null;
         }
 
-        $label = $this->savedLabel($relation, 'label');
+        $label = $this->labels->resolve($relation, 'label', $relatedModule);
         $headers = $moduleAvailable ? $this->getRelationHeaders($parentRecord, $relatedModule, RecordVersion_Util_Helper::toStr($relation['label'] ?? '')) : [];
         $records = RecordVersion_Util_Helper::toList($relation['records'] ?? []);
 
@@ -460,24 +461,6 @@ class RecordVersion_Display_Model
             return RecordVersion_Util_Helper::toStr(vtranslate($label, RecordVersion_Config_Model::MODULE_NAME));
         }
         return RecordVersion_Util_Helper::toStr(vtranslate($label, $moduleName));
-    }
-
-    /**
-     * 保存した表示名（見ている利用者の言語が日本語なら日本語、それ以外は英語）
-     *
-     * @param array<string, mixed> $entry
-     */
-    private function savedLabel(array $entry, string $key): string
-    {
-        $localized = RecordVersion_Util_Helper::toStr($entry[$key . ($this->isJapanese ? '_ja' : '_en')] ?? '');
-        if ($localized !== '' && $localized !== RecordVersion_Config_Model::FIELD_LABEL) {
-            return $localized;
-        }
-        $raw = RecordVersion_Util_Helper::toStr($entry[$key] ?? '');
-        if ($raw === RecordVersion_Config_Model::FIELD_LABEL) {
-            return RecordVersion_Util_Helper::toStr(vtranslate($raw, RecordVersion_Config_Model::MODULE_NAME));
-        }
-        return $raw;
     }
 
     /**

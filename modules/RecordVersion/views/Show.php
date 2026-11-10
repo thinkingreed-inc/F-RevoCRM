@@ -19,14 +19,15 @@ class RecordVersion_Show_View extends RecordVersion_Base_View
         }
         $snapshot = $version->getSnapshot();
         $record = Vtiger_Record_Model::getInstanceById($this->recordId, $this->sourceModule);
-        $display = new RecordVersion_Display_Model(RecordVersion_Display_Model::getCurrencySymbol($snapshot));
+        $labels = new RecordVersion_Label_Model($snapshot);
+        $display = new RecordVersion_Display_Model(RecordVersion_Display_Model::getCurrencySymbol($snapshot), $labels);
 
         $fieldBlocks = $display->buildFieldBlocks($this->sourceModule, RecordVersion_Util_Helper::toArray($snapshot['fields'] ?? []));
         $inventory = isset($snapshot['inventory']) && is_array($snapshot['inventory'])
-            ? $display->buildInventory(RecordVersion_Util_Helper::toArray($snapshot['inventory']))
+            ? $display->buildInventory($this->sourceModule, RecordVersion_Util_Helper::toArray($snapshot['inventory']))
             : null;
         // 関連レコードの金額は、親の品目明細の通貨ではなく当時の基本通貨の記号で出す
-        $relationDisplay = new RecordVersion_Display_Model(RecordVersion_Display_Model::getBaseCurrencySymbol($snapshot));
+        $relationDisplay = new RecordVersion_Display_Model(RecordVersion_Display_Model::getBaseCurrencySymbol($snapshot), $labels);
         $relations = [];
         foreach (RecordVersion_Util_Helper::toList($snapshot['relations'] ?? []) as $index => $relation) {
             $built = $relationDisplay->buildRelation($record, RecordVersion_Util_Helper::toArray($relation), RecordVersion_Util_Helper::toInt($index), $versionNo);

@@ -4,8 +4,9 @@
  * 改版した時点のレコードの内容（過去の版に保存する JSON）を作る
  *
  * 保存する内容（仕様 4-3）
- * - 項目：すべての項目の元の値と、表示名（翻訳前の名前・日本語・英語）。
+ * - 項目：すべての項目の元の値と、表示名（翻訳前の名前）・当時のブロック・並び順。
  *   関連項目・担当・通貨などは当時の名前も残す
+ * - 表示名の辞書：翻訳前の名前ごとの、システムに登録されている全言語の訳（RecordVersion_Label_Model）
  * - 品目明細：行（品目名を含む）と金額、税の名前・税率・計算方法、手数料の名前、通貨の記号と換算レート
  * - 版に含める関連のレコード：すべての項目の元の値と表示名、関連そのものに付く値、関連の名前
  * - ドキュメント：改版した時点で現在だったファイルバージョン（外部リンクは URL）
@@ -14,7 +15,7 @@
  */
 class RecordVersion_Snapshot_Model
 {
-    public const FORMAT_VERSION = 1;
+    public const FORMAT_VERSION = RecordVersion_Label_Model::FORMAT_DICTIONARY;
 
     /** 当時の名前も残す項目の種類（表示するときに、今の名前ではなく当時の名前で出す） */
     private const NAMED_DATA_TYPES = [
@@ -65,6 +66,13 @@ class RecordVersion_Snapshot_Model
                 $snapshot['relations'][] = $relation;
             }
         }
+        // 表示名の辞書（項目・関連レコードごとには訳を持たず、過去の版 1 件に 1 つだけ持つ）
+        $dictionary = RecordVersion_Label_Model::buildDictionary(
+            RecordVersion_Label_Model::collectNames($snapshot),
+            RecordVersion_Label_Model::getTargetLanguages()
+        );
+        $snapshot['languages'] = $dictionary['languages'];
+        $snapshot['labels'] = $dictionary['labels'];
         self::ensureMemory();
         return $snapshot;
     }
@@ -130,8 +138,6 @@ class RecordVersion_Snapshot_Model
                 'fieldid' => RecordVersion_Util_Helper::toInt($fieldModel->getId()),
                 'name' => (string) $fieldName,
                 'label' => $label,
-                'label_ja' => self::translate($label, $moduleName, 'ja_jp'),
-                'label_en' => self::translate($label, $moduleName, 'en_us'),
                 'uitype' => RecordVersion_Util_Helper::toInt($fieldModel->get('uitype')),
                 'datatype' => $dataType,
                 'value' => is_scalar($value) || $value === null ? $value : RecordVersion_Util_Helper::toStr($value),
@@ -139,8 +145,6 @@ class RecordVersion_Snapshot_Model
             // 当時のブロック・並び順（画面は今の位置に出すが、帳票で「当時の画面のとおり」に出せるよう残す）
             $position = $layout[RecordVersion_Util_Helper::toInt($fieldModel->getId())] ?? ['block_label' => '', 'block_sequence' => 0, 'sequence' => 0];
             $entry['block_label'] = $position['block_label'];
-            $entry['block_label_ja'] = self::translate($position['block_label'], $moduleName, 'ja_jp');
-            $entry['block_label_en'] = self::translate($position['block_label'], $moduleName, 'en_us');
             $entry['block_sequence'] = $position['block_sequence'];
             $entry['sequence'] = $position['sequence'];
             if (in_array($dataType, self::NAMED_DATA_TYPES, true) && !self::isEmpty($value)) {
@@ -201,7 +205,6 @@ class RecordVersion_Snapshot_Model
      */
     private static function captureInventory(Inventory_Record_Model $record): array
     {
-        $moduleName = $record->getModuleName();
         $products = RecordVersion_Util_Helper::toArray($record->getProducts());
         $lines = [];
         $finalDetails = [];
@@ -219,7 +222,7 @@ class RecordVersion_Snapshot_Model
             foreach (RecordVersion_Util_Helper::toList($product['taxes'] ?? []) as $tax) {
                 $tax = RecordVersion_Util_Helper::toArray($tax);
                 $percentage = (float) RecordVersion_Util_Helper::toStr($tax['percentage'] ?? '0');
-                $lineTaxes[] = self::taxEntry($tax, $moduleName, $percentage, $totalAfterDiscount * $percentage / 100);
+                $lineTaxes[] = self::taxEntry($tax, $percentage, $totalAfterDiscount * $percentage / 100);
             }
             $lines[] = [
                 'product_id' => RecordVersion_Util_Helper::toInt($product['hdnProductId' . $i]),
@@ -246,7 +249,6 @@ class RecordVersion_Snapshot_Model
             $tax = RecordVersion_Util_Helper::toArray($tax);
             $groupTaxes[] = self::taxEntry(
                 $tax,
-                $moduleName,
                 (float) RecordVersion_Util_Helper::toStr($tax['percentage'] ?? '0'),
                 (float) RecordVersion_Util_Helper::toStr($tax['amount'] ?? '0')
             );
@@ -260,7 +262,7 @@ class RecordVersion_Snapshot_Model
             'discount_percent' => RecordVersion_Util_Helper::toStr($finalDetails['discount_percentage_final'] ?? '0'),
             'discount_amount' => RecordVersion_Util_Helper::toStr($finalDetails['discount_amount_final'] ?? '0'),
             'discount_total' => RecordVersion_Util_Helper::toStr($finalDetails['discountTotal_final'] ?? '0'),
-            'charges' => self::captureCharges($finalDetails, $moduleName),
+            'charges' => self::captureCharges($finalDetails),
             'charges_total' => RecordVersion_Util_Helper::toStr($finalDetails['shipping_handling_charge'] ?? '0'),
             'pre_tax_total' => RecordVersion_Util_Helper::toStr($finalDetails['preTaxTotal'] ?? '0'),
             'group_taxes' => $groupTaxes,
@@ -276,7 +278,7 @@ class RecordVersion_Snapshot_Model
      * @param array<string, mixed> $finalDetails
      * @return array<int, array<string, mixed>>
      */
-    private static function captureCharges(array $finalDetails, string $moduleName): array
+    private static function captureCharges(array $finalDetails): array
     {
         $chargeInfos = RecordVersion_Util_Helper::toArray(getAllCharges());
         $shippingTaxes = [];
@@ -297,12 +299,10 @@ class RecordVersion_Snapshot_Model
                     continue;
                 }
                 $taxInfo = RecordVersion_Util_Helper::toArray($shippingTaxes[$taxId] ?? []);
-                $taxes[] = self::taxEntry($taxInfo, $moduleName, $percent, $value * $percent / 100);
+                $taxes[] = self::taxEntry($taxInfo, $percent, $value * $percent / 100);
             }
             $charges[] = [
                 'name' => $name,
-                'name_ja' => self::translate($name, $moduleName, 'ja_jp'),
-                'name_en' => self::translate($name, $moduleName, 'en_us'),
                 'value' => RecordVersion_Util_Helper::toStr($charge['value'] ?? '0'),
                 'taxes' => $taxes,
             ];
@@ -314,14 +314,12 @@ class RecordVersion_Snapshot_Model
      * @param array<string, mixed> $tax
      * @return array<string, mixed>
      */
-    private static function taxEntry(array $tax, string $moduleName, float $percentage, float $amount): array
+    private static function taxEntry(array $tax, float $percentage, float $amount): array
     {
         $label = RecordVersion_Util_Helper::toStr(decode_html(RecordVersion_Util_Helper::toStr($tax['taxlabel'] ?? '')));
         return [
             'name' => RecordVersion_Util_Helper::toStr($tax['taxname'] ?? ''),
             'label' => $label,
-            'label_ja' => self::translate($label, $moduleName, 'ja_jp'),
-            'label_en' => self::translate($label, $moduleName, 'en_us'),
             'percentage' => $percentage,
             'amount' => $amount,
         ];
@@ -401,8 +399,6 @@ class RecordVersion_Snapshot_Model
         return [
             'relation_id' => $relationId,
             'label' => $label,
-            'label_ja' => self::translate($label, $relatedModule, 'ja_jp'),
-            'label_en' => self::translate($label, $relatedModule, 'en_us'),
             'related_module' => $relatedModule,
             'records' => array_values(array_filter($records)),
         ];
@@ -469,14 +465,6 @@ class RecordVersion_Snapshot_Model
         $display = $fieldModel->getDisplayValue($value, $record->getId(), $record);
         $text = RecordVersion_Util_Helper::toStr(decode_html(RecordVersion_Util_Helper::toStr($display)));
         return trim(strip_tags($text));
-    }
-
-    private static function translate(string $label, string $moduleName, string $language): string
-    {
-        if ($label === '') {
-            return '';
-        }
-        return RecordVersion_Util_Helper::toStr(Vtiger_Language_Handler::getTranslatedString($label, $moduleName, $language));
     }
 
     private static function isEmpty(mixed $value): bool

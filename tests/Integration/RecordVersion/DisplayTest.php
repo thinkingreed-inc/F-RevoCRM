@@ -6,6 +6,7 @@ namespace Tests\Integration\RecordVersion;
 
 use RecordVersion_Config_Model;
 use RecordVersion_Display_Model;
+use RecordVersion_Label_Model;
 use RecordVersion_Revision_Model;
 use RecordVersion_Util_Helper;
 use Tests\Support\RecordVersionTestCase;
@@ -74,20 +75,22 @@ final class DisplayTest extends RecordVersionTestCase
             'fieldid' => self::DELETED_FIELD_ID,
             'name' => 'cf_spectest_deleted',
             'label' => 'SPECTEST Deleted',
-            'label_ja' => 'SPECTEST 削除した項目',
-            'label_en' => 'SPECTEST Deleted field',
             'uitype' => 1,
             'datatype' => 'string',
             'value' => '当時の値',
         ];
+        $labels = new RecordVersion_Label_Model([
+            'format' => RecordVersion_Label_Model::FORMAT_DICTIONARY,
+            'labels' => [self::MODULE => ['SPECTEST Deleted' => ['ja_jp' => 'SPECTEST 削除した項目', 'en_us' => 'SPECTEST Deleted field']]],
+        ]);
 
-        $admin = (new RecordVersion_Display_Model('¥'))->buildFieldBlocks(self::MODULE, $fields);
+        $admin = (new RecordVersion_Display_Model('¥', $labels))->buildFieldBlocks(self::MODULE, $fields);
         $this->assertCount(1, $admin['deleted'], '今もある項目は「削除された項目」に出さない');
         $expectedLabel = \Vtiger_Language_Handler::getLanguage() === 'ja_jp' ? 'SPECTEST 削除した項目' : 'SPECTEST Deleted field';
         $this->assertSame(['label' => $expectedLabel, 'value' => '当時の値'], $admin['deleted'][0], '当時の表示名と値で出す');
 
         $this->loginAs($this->getNonAdminUserId());
-        $user = (new RecordVersion_Display_Model('¥'))->buildFieldBlocks(self::MODULE, $fields);
+        $user = (new RecordVersion_Display_Model('¥', $labels))->buildFieldBlocks(self::MODULE, $fields);
         $this->assertSame([], $user['deleted'], '管理者でない利用者には出さない');
     }
 
@@ -106,23 +109,28 @@ final class DisplayTest extends RecordVersionTestCase
         $parent = Vtiger_Record_Model::getInstanceById($recordId, self::MODULE);
         $relation = $this->snapshotRelation($recordId, 0);
 
-        $row = $this->findRow((new RecordVersion_Display_Model('¥'))->buildRelation($parent, $relation, 0, 1), $contactId);
+        $row = $this->findRow(($this->display())->buildRelation($parent, $relation, 0, 1), $contactId);
         $this->assertNotNull($row, '今もあり見られる行は出す');
         $this->assertNotSame('', $row['current_url'], '「今のレコードを開く」を出す');
 
         $this->db->pquery('UPDATE vtiger_crmentity SET deleted = 1 WHERE crmid = ?', [$contactId]);
         try {
-            $row = $this->findRow((new RecordVersion_Display_Model('¥'))->buildRelation($parent, $relation, 0, 1), $contactId);
+            $row = $this->findRow(($this->display())->buildRelation($parent, $relation, 0, 1), $contactId);
             $this->assertNotNull($row, '削除された行は管理者には出す');
             $this->assertSame('', $row['current_url'], '削除された行に「今のレコードを開く」は出さない');
 
             $this->loginAs($this->getNonAdminUserId());
-            $built = (new RecordVersion_Display_Model('¥'))->buildRelation($parent, $relation, 0, 1);
+            $built = ($this->display())->buildRelation($parent, $relation, 0, 1);
             $this->assertNull($this->findRow($built, $contactId), '管理者でない利用者には削除された行を出さない');
         } finally {
             $this->db->pquery('UPDATE vtiger_crmentity SET deleted = 0 WHERE crmid = ?', [$contactId]);
             $this->db->pquery('DELETE FROM vtiger_contpotentialrel WHERE potentialid = ?', [$recordId]);
         }
+    }
+
+    private function display(): RecordVersion_Display_Model
+    {
+        return new RecordVersion_Display_Model('¥', new RecordVersion_Label_Model(['format' => RecordVersion_Label_Model::FORMAT_DICTIONARY]));
     }
 
     /**
@@ -132,7 +140,7 @@ final class DisplayTest extends RecordVersionTestCase
     private function displayedValues(array $fields): array
     {
         $values = [];
-        foreach ((new RecordVersion_Display_Model('¥'))->buildFieldBlocks(self::MODULE, $fields)['blocks'] as $block) {
+        foreach (($this->display())->buildFieldBlocks(self::MODULE, $fields)['blocks'] as $block) {
             foreach ($block['fields'] as $field) {
                 $values[$field['label']] = trim(strip_tags(html_entity_decode($field['value'])));
             }
