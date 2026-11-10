@@ -100,6 +100,11 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
   // タッチスワイプ用のref
   const touchStartYRef = useRef<number | null>(null);
 
+  // ドロップダウン内でマウス押下中かどうか。
+  // 押下→blur→(離す)→click の順でイベントが来るため、blur でドロップダウンを
+  // 閉じると押下が長いクリックで click 前に候補が消え、選択できなくなる
+  const isMouseDownInDropdownRef = useRef<boolean>(false);
+
   // Touch event listeners for mobile scrolling (must use passive: false to allow preventDefault)
   useEffect(() => {
     const dropdown = dropdownRef.current;
@@ -281,7 +286,14 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
    * フォーカス時にドロップダウンを開く
    */
   const handleFocus = () => {
+    isMouseDownInDropdownRef.current = false;
     updateDropdownPosition();
+    // キーボード用ハイライトを選択中の値に合わせる
+    // (先頭固定だと選択中の項目と先頭の2つがハイライトされる)
+    const selectedIndex = filteredOptions.findIndex(
+      (opt) => String(opt.value) === String(value),
+    );
+    setHighlightedIndex(selectedIndex >= 0 ? selectedIndex : 0);
     setIsOpen(true);
   };
 
@@ -343,6 +355,9 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
           top: dropdownPosition.top,
           left: dropdownPosition.left,
           width: dropdownPosition.width,
+        }}
+        onMouseDown={() => {
+          isMouseDownInDropdownRef.current = true;
         }}
         onWheel={(e) => {
           e.stopPropagation();
@@ -439,6 +454,12 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
               onFocus={handleFocus}
               onKeyDown={handleKeyDown}
               onBlur={() => {
+                // ドロップダウン内の押下による blur では閉じない
+                // (選択時は handleSelectOption が閉じる)
+                if (isMouseDownInDropdownRef.current) {
+                  isMouseDownInDropdownRef.current = false;
+                  return;
+                }
                 // Tab離脱等の blur でドロップダウンを閉じる
                 // 候補クリック時の選択処理を妨げないよう150ms遅延
                 setTimeout(() => setIsOpen(false), 150);
