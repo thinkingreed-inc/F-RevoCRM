@@ -15,7 +15,7 @@ use Tests\Support\RecordVersionTestCase;
 require_once dirname(__DIR__, 2) . '/Support/RecordVersionTestCase.php';
 
 /**
- * 過去の版に残す表示名の辞書（確認事項 Q38）
+ * 過去の版に残す表示名の辞書
  *
  * テスト用の言語を vtiger_language に登録し、言語ファイルを languages/ の下に一時的に置く。
  */

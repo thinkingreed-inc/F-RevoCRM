@@ -43,7 +43,7 @@ test.describe("共通: 版管理", () => {
 
     await gotoDetail(page);
     await expect(versionValue(page)).toContainText("1");
-    // ボタン名・項目名は共通の言語ファイルで翻訳する（確認事項 Q33）
+    // ボタン名・項目名は共通の言語ファイルで翻訳する
     await expect(page.locator(`#${MODULE}_detailView_basicAction_LBL_RECORD_VERSION_REVISE`)).toHaveText("改版");
     await expect(page.locator(`#${MODULE}_detailView_basicAction_LBL_RECORD_VERSION_HISTORY`)).toHaveText("版履歴");
   });

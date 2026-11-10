@@ -12,7 +12,7 @@ require_once dirname(__DIR__, 3) . '/modules/RecordVersion/models/Config.php';
 require_once dirname(__DIR__, 3) . '/modules/RecordVersion/models/Label.php';
 
 /**
- * 過去の版に残した表示名の出し方（確認事項 Q38）
+ * 過去の版に残した表示名の出し方
  */
 final class LabelTest extends TestCase
 {

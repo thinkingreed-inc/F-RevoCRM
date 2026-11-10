@@ -12,7 +12,7 @@ require_once dirname(__DIR__, 3) . '/modules/RecordVersion/helpers/Util.php';
 require_once dirname(__DIR__, 3) . '/modules/RecordVersion/models/Version.php';
 
 /**
- * 過去の版の内容を JSON にする（確認事項 Q35）
+ * 過去の版の内容を JSON にする
  */
 final class EncodeSnapshotTest extends TestCase
 {

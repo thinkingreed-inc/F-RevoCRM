@@ -16,7 +16,7 @@ use Tests\Support\RecordVersionTestCase;
 require_once dirname(__DIR__, 2) . '/Support/RecordVersionTestCase.php';
 
 /**
- * 改版したあとに項目設定や参照先が変わっても、過去の版を当時の内容で読めるか（確認事項 Q36・Q37）
+ * 改版したあとに項目設定や参照先が変わっても、過去の版を当時の内容で読めるか
  */
 final class ChangedSettingsTest extends RecordVersionTestCase
 {
