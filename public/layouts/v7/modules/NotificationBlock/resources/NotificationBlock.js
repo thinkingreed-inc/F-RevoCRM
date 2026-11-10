@@ -6,6 +6,8 @@
  *
  * - 通知先の入力欄：役割・グループ・ユーザーのタブで候補を出し、入力した文字で絞り込んで複数選ぶ
  * - 詳細画面の通知先の直接編集
+ * - 送信ダイアログ・送信履歴の「すべて表示」・宛先の一覧
+ * - 作成時の送信の結果を、保存したあとに移った先の画面で出す
  */
 (function () {
 	if (typeof window.NotificationBlock_Js !== 'undefined') {
@@ -271,6 +273,131 @@
 			return deferred.promise();
 		},
 
+		/* ------------------------------------------------------------------
+		 * 送信ダイアログ・送信履歴
+		 * ------------------------------------------------------------------ */
+
+		/** 送信の応答を待つ時間（ミリ秒）。過ぎたら「時間がかかっています」と出す（送信はサーバーで最後まで続く） */
+		sendTimeout: 90000,
+
+		registerSendEvents: function () {
+			var self = this;
+			var doc = jQuery(document);
+			doc.on('click', '.notificationBlockSend', function (e) {
+				e.preventDefault();
+				var container = jQuery(this).closest('.notificationBlockContainer');
+				self.openModal({module: 'NotificationBlock', view: 'SendDialog', record: container.data('record')}, function (modal) {
+					self.registerSendForm(modal, container);
+				});
+			});
+			doc.on('click', '.notificationBlockShowAllHistory', function (e) {
+				e.preventDefault();
+				var container = jQuery(this).closest('.notificationBlockContainer');
+				self.openModal({module: 'NotificationBlock', view: 'History', record: container.data('record')});
+			});
+			doc.on('click', '.notificationBlockShowRecipients', function (e) {
+				e.preventDefault();
+				var container = jQuery(this).closest('.notificationBlockContainer');
+				self.openModal({
+					module: 'NotificationBlock',
+					view: 'History',
+					mode: 'recipients',
+					record: container.data('record'),
+					historyid: jQuery(this).data('historyid')
+				});
+			});
+		},
+
+		openModal: function (params, callback) {
+			app.helper.showProgress();
+			app.request.get({data: params}).then(function (error, html) {
+				app.helper.hideProgress();
+				if (error) {
+					app.helper.showErrorNotification({message: error.message});
+					return;
+				}
+				app.helper.showModal(html, {
+					cb: function (modal) {
+						if (callback) {
+							callback(modal);
+						}
+					}
+				});
+			});
+		},
+
+		/**
+		 * 「送信」：押したら処理が終わるまで押せなくする（二重送信を防ぐ。仕様 動作定義 No.8）
+		 */
+		registerSendForm: function (modal, container) {
+			var self = this;
+			var form = modal.find('#notificationBlockSendForm');
+			var errorBox = form.find('.notificationBlockSendError');
+			var messages = self.messages(container);
+			form.on('submit', function (e) {
+				e.preventDefault();
+				var submit = form.find('#notificationBlockSendSubmit');
+				if (submit.length === 0 || submit.prop('disabled')) {
+					return;
+				}
+				var comment = form.find('#notificationBlockComment').val() || '';
+				if (comment.length > parseInt(form.data('maxLength'), 10)) {
+					errorBox.text(form.data('messageTooLong')).removeClass('hide');
+					return;
+				}
+				errorBox.addClass('hide');
+				submit.prop('disabled', true);
+				app.helper.showProgress();
+				self.postApi({module: 'NotificationBlock', api: 'Send', record: form.data('record'), comment: comment}, {timeout: self.sendTimeout})
+					.then(function (response) {
+						app.helper.hideProgress();
+						app.helper.hideModal();
+						self.notify(response.message, response.notify_type);
+						self.reloadBlock(container);
+					}, function (message, isTimeout) {
+						app.helper.hideProgress();
+						app.helper.hideModal();
+						// 画面の応答が先に切れても、送信はサーバーで続けている（仕様 動作定義 No.21）
+						if (isTimeout) {
+							app.helper.showAlertNotification({message: messages.LBL_SEND_TIMEOUT || ''});
+						} else {
+							app.helper.showErrorNotification({message: message || messages.LBL_SEND_ERROR || ''});
+						}
+						self.reloadBlock(container);
+					});
+			});
+		},
+
+		notify: function (message, type) {
+			if (!message) {
+				return;
+			}
+			if (type === 'success') {
+				app.helper.showSuccessNotification({message: message});
+			} else if (type === 'info') {
+				app.helper.showAlertNotification({message: message});
+			} else {
+				app.helper.showErrorNotification({message: message});
+			}
+		},
+
+		/* ------------------------------------------------------------------
+		 * 作成時の送信の結果（保存したあとに移った先の画面で 1 回だけ出す。確認事項 Q7）
+		 * ------------------------------------------------------------------ */
+
+		showFlash: function () {
+			var self = this;
+			if (document.cookie.indexOf('notificationblock_flash=1') === -1) {
+				return;
+			}
+			jQuery.ajax({url: 'index.php', type: 'GET', dataType: 'json', data: {module: 'NotificationBlock', api: 'Flash'}})
+				.done(function (response) {
+					if (response && response.message) {
+						self.notify(response.message, response.type);
+					}
+				});
+		},
+
 		/**
 		 * 通知ブロックの見た目（候補の一覧を入力欄の下に開く、鉛筆はマウスを乗せたときだけ出す）
 		 */
@@ -299,6 +426,8 @@
 			this.injectStyles();
 			this.registerPickerEvents();
 			this.registerInlineEditEvents();
+			this.registerSendEvents();
+			this.showFlash();
 		}
 	};
 
