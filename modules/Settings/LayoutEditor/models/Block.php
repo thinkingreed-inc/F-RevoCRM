@@ -23,6 +23,10 @@ class Settings_LayoutEditor_Block_Model extends Vtiger_Block_Model {
 	 * @return <Boolean> true/false
 	 */
 	public function isAddCustomFieldEnabled() {
+		// 通知ブロック（#1965）には項目を置かない
+		if ($this->isNotificationBlock()) {
+			return false;
+		}
         $actionNotSupportedModules = array_merge(getInventoryModules(), array('Calendar', 'Events', 'Faq', 'HelpDesk'));
 		$blocksEliminatedArray = array(	'Calendar'		=> array('LBL_TASK_INFORMATION', 'LBL_DESCRIPTION_INFORMATION'),
 										'HelpDesk'		=> array('LBL_TICKET_RESOLUTION', 'LBL_COMMENTS'),
@@ -43,6 +47,22 @@ class Settings_LayoutEditor_Block_Model extends Vtiger_Block_Model {
 		}
         return true;
     }
+
+	/**
+	 * 通知ブロック（#1965）か
+	 * @return <Boolean> true/false
+	 */
+	public function isNotificationBlock() {
+		return NotificationBlock_Config_Model::isNotificationBlock((int) $this->get('id'));
+	}
+
+	/**
+	 * 通知ブロック（#1965）の「作成時に送信」
+	 * @return <Boolean> true/false
+	 */
+	public function isNotificationSendOnCreate() {
+		return $this->isNotificationBlock() && NotificationBlock_Config_Model::isSendOnCreate($this->module->name);
+	}
 
     public static function updateFieldSequenceNumber($blockFieldSequence, $moduleModel = false) {
         $fieldIdList = array();

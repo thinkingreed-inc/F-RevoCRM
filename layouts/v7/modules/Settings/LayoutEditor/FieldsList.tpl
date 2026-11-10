@@ -37,11 +37,13 @@
 					{assign var=IS_BLOCK_SORTABLE value=$SELECTED_MODULE_MODEL->isBlockSortableAllowed($BLOCK_LABEL_KEY)}
 					{assign var=FIELDS_LIST value=$BLOCK_MODEL->getLayoutBlockActiveFields()}
 					{assign var=BLOCK_ID value=$BLOCK_MODEL->get('id')}
+					{* 通知ブロック（#1965）：項目を置かず、作成時に送信・メール文面の設定を出す *}
+					{assign var=IS_NOTIFICATION_BLOCK value=$BLOCK_MODEL->isNotificationBlock()}
 					{if $BLOCK_LABEL_KEY neq 'LBL_INVITE_USER_BLOCK'}
 						{$ALL_BLOCK_LABELS[$BLOCK_ID] = $BLOCK_MODEL}
 					{/if}
 					<div id="block_{$BLOCK_ID}" class="editFieldsTable block_{$BLOCK_ID} marginBottom10px border1px {if $IS_BLOCK_SORTABLE} blockSortable{/if}" data-block-id="{$BLOCK_ID}" data-sequence="{$BLOCK_MODEL->get('sequence')}" style="background: white;"
-						 data-custom-fields-count="{$BLOCK_MODEL->getCustomFieldsCount()}">
+						 data-custom-fields-count="{$BLOCK_MODEL->getCustomFieldsCount()}"{if $IS_NOTIFICATION_BLOCK} data-notification-block="1" data-delete-message="{vtranslate('LBL_NOTIFICATION_BLOCK_DELETE_CONFIRM', 'Settings:NotificationBlock')}"{/if}>
 						<div class="col-sm-12">
 							<div class="layoutBlockHeader row">
 								<div class="blockLabel col-sm-3 padding10 marginLeftZero" style="word-break: break-all;">
@@ -64,7 +66,15 @@
 												<i class="fa fa-plus"></i>&nbsp;&nbsp;{vtranslate('LBL_ADD_CUSTOM_FIELD', $QUALIFIED_MODULE)}
 											</button>&nbsp;&nbsp;
 										{/if}
-										{if $BLOCK_MODEL->isActionsAllowed()}
+										{if $IS_NOTIFICATION_BLOCK}
+											<span title="{vtranslate('LBL_SEND_ON_CREATE_HELP', 'Settings:NotificationBlock')}">
+												{vtranslate('LBL_SEND_ON_CREATE', 'Settings:NotificationBlock')}&nbsp;
+												<input style="opacity: 0;" type="checkbox" {if $BLOCK_MODEL->isNotificationSendOnCreate()} checked value='1' {else} value='0' {/if} class='cursorPointer bootstrap-switch' name="notificationSendOnCreate"
+														data-on-text="{vtranslate('LBL_YES', $QUALIFIED_MODULE)}" data-off-text="{vtranslate('LBL_NO', $QUALIFIED_MODULE)}" data-on-color="primary" data-tabid="{$SELECTED_MODULE_MODEL->getId()}"/>
+											</span>&nbsp;&nbsp;
+											<button class="notificationBlockTemplate addButton btn btn-default btn-sm" type="button" data-tabid="{$SELECTED_MODULE_MODEL->getId()}">{vtranslate('LBL_MAIL_TEMPLATE_SETTINGS', 'Settings:NotificationBlock')}</button>&nbsp;&nbsp;
+											<button class="deleteCustomBlock addButton btn btn-default btn-sm">{vtranslate('LBL_DELETE_CUSTOM_BLOCK', $QUALIFIED_MODULE)}</button>
+										{elseif $BLOCK_MODEL->isActionsAllowed()}
 											<button class="inActiveFields addButton btn btn-default btn-sm">{vtranslate('LBL_SHOW_HIDDEN_FIELDS', $QUALIFIED_MODULE)}</button>&nbsp;&nbsp;
 											{if $BLOCK_MODEL->isCustomized()}
 												<button class="deleteCustomBlock addButton btn btn-default btn-sm">{vtranslate('LBL_DELETE_CUSTOM_BLOCK', $QUALIFIED_MODULE)}</button>
@@ -86,7 +96,12 @@
             {assign var=NOT_S_FIELD_TITLE value={vtranslate('LBL_HIDE_THIS_FIELD_IN', $QUALIFIED_MODULE, vtranslate('LBL_KEY_FIELD',$QUALIFIED_MODULE))}}
             {assign var=NOT_H_FIELD_TITLE value={vtranslate('LBL_HIDE_THIS_FIELD_IN', $QUALIFIED_MODULE, vtranslate('LBL_DETAIL_HEADER',$QUALIFIED_MODULE))}}
 						<div class="blockFieldsList {if $IS_FIELDS_SORTABLE} blockFieldsSortable {/if} row">
+							{if $IS_NOTIFICATION_BLOCK}
+							<ul name="notificationBlockFields" class="col-sm-12">
+								<li class="notificationBlockDescription padding10">{vtranslate('LBL_NOTIFICATION_BLOCK_DESCRIPTION', 'Settings:NotificationBlock')}</li>
+							{else}
 							<ul name="{if $IS_FIELDS_SORTABLE}sortable1{else}unSortable1{/if}" class="connectedSortable col-sm-6">
+							{/if}
 								{foreach item=FIELD_MODEL from=$FIELDS_LIST name=fieldlist}
 									{assign var=FIELD_INFO value=$FIELD_MODEL->getFieldInfo()}
 									{assign var=FIELD_UITYPE value=$FIELD_MODEL->get('uitype')}
@@ -381,7 +396,25 @@
 		{include file="ModalHeader.tpl"|vtemplate_path:$MODULE TITLE=$HEADER_TITLE}
 		<form class="form-horizontal addCustomBlockForm">
 			<div class="modal-body">
-				<div class="form-group">
+				{* 通知ブロック（#1965）：置けるモジュールだけ「ブロックの種類」を出す。1 モジュールに 1 つ *}
+				{if NotificationBlock_Config_Model::isSupportedModule($SELECTED_MODULE_NAME)}
+					{assign var=HAS_NOTIFICATION_BLOCK value=NotificationBlock_Config_Model::hasBlock($SELECTED_MODULE_NAME)}
+					<div class="form-group">
+						<label class="control-label fieldLabel col-sm-5">
+							{vtranslate('LBL_BLOCK_TYPE', 'Settings:NotificationBlock')}
+						</label>
+						<div class="controls col-sm-6">
+							<select class="col-sm-9" name="blockType" data-added-message="{vtranslate('LBL_NOTIFICATION_BLOCK_ADDED', 'Settings:NotificationBlock')}">
+								<option value="normal" selected>{vtranslate('LBL_BLOCK_TYPE_NORMAL', 'Settings:NotificationBlock')}</option>
+								<option value="notification" {if $HAS_NOTIFICATION_BLOCK}disabled{/if}>{vtranslate('LBL_BLOCK_TYPE_NOTIFICATION', 'Settings:NotificationBlock')}</option>
+							</select>
+							{if $HAS_NOTIFICATION_BLOCK}
+								<div class="help-block">{vtranslate('LBL_NOTIFICATION_BLOCK_EXISTS', 'Settings:NotificationBlock')}</div>
+							{/if}
+						</div>
+					</div>
+				{/if}
+				<div class="form-group blockLabelRow">
 					<label class="control-label fieldLabel col-sm-5">
 						<span>{vtranslate('LBL_BLOCK_NAME', $QUALIFIED_MODULE)}</span>
 						<span class="redColor">*</span>
@@ -400,6 +433,21 @@
 								<option value="{$BLOCK_ID}" data-label="{$BLOCK_MODEL->get('label')}">{vtranslate($BLOCK_MODEL->get('label'), $SELECTED_MODULE_NAME)}</option>
 							{/foreach}
 						</select>
+					</div>
+				</div>
+				<div class="form-group notificationBlockRow hide">
+					<label class="control-label fieldLabel col-sm-5">
+						{vtranslate('LBL_SEND_ON_CREATE', 'Settings:NotificationBlock')}
+					</label>
+					<div class="controls col-sm-6">
+						<select class="col-sm-9" name="sendOnCreate">
+							<option value="0" selected>{vtranslate('LBL_NO', $QUALIFIED_MODULE)}</option>
+							<option value="1">{vtranslate('LBL_YES', $QUALIFIED_MODULE)}</option>
+						</select>
+						<div class="help-block">{vtranslate('LBL_SEND_ON_CREATE_HELP', 'Settings:NotificationBlock')}</div>
+						{if in_array($SELECTED_MODULE_NAME, getInventoryModules())}
+							<div class="help-block">{vtranslate('LBL_INVENTORY_POSITION_NOTE', 'Settings:NotificationBlock')}</div>
+						{/if}
 					</div>
 				</div>
 			</div>
