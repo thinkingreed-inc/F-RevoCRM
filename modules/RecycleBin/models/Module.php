@@ -138,6 +138,7 @@ class RecycleBin_Module_Model extends Vtiger_Module_Model {
 		if (empty($recordIds)) {
 			return true;
 		}
+		$deletedRecords = self::getDeletedRecordModules($recordIds);
 
 		// 更新履歴の削除も残すレコードを避ける。
 		// 先に全件消すと、削除を禁じたレコード（電帳法対象のドキュメント）の
@@ -159,8 +160,50 @@ class RecycleBin_Module_Model extends Vtiger_Module_Model {
 				. generateQuestionMarks($recordIds) . ')',
 			$recordIds
 		);
+		self::triggerAfterPermanentDelete($deletedRecords);
 
 		return true;
+	}
+
+	/**
+	 * 完全削除の対象のうち、ごみ箱に入っているレコードのモジュール名（削除する前に控える）
+	 *
+	 * @param array $recordIds
+	 * @return array crmid => モジュール名
+	 */
+	public static function getDeletedRecordModules($recordIds) {
+		$records = array();
+		if (empty($recordIds)) {
+			return $records;
+		}
+		$db = PearDatabase::getInstance();
+		$result = $db->pquery(
+			'SELECT crmid, setype FROM vtiger_crmentity WHERE deleted = 1 AND crmid IN ('
+				. generateQuestionMarks($recordIds) . ')',
+			$recordIds
+		);
+		while ($row = $db->fetch_array($result)) {
+			$records[(int) $row['crmid']] = $row['setype'];
+		}
+		return $records;
+	}
+
+	/**
+	 * 完全削除したあとに、登録された処理へ削除したレコードを渡す
+	 *
+	 * 完全削除は SQL で直接消すため、レコードのイベントが出ない。ほかの機能が自分のテーブルに
+	 * 持つデータ（版管理の過去の版など）を一緒に消せるよう、イベント
+	 * vtiger.batchevent.afterpermanentdelete に crmid => モジュール名 の配列を渡す。
+	 *
+	 * @param array $deletedRecords crmid => モジュール名
+	 */
+	public static function triggerAfterPermanentDelete($deletedRecords) {
+		if (empty($deletedRecords)) {
+			return;
+		}
+		require_once 'include/events/include.inc';
+		$eventManager = new VTEventsManager(PearDatabase::getInstance());
+		$eventManager->triggerEvent('vtiger.batchevent.afterpermanentdelete', $deletedRecords);
 	}
 
 	/**
@@ -226,6 +269,7 @@ class RecycleBin_Module_Model extends Vtiger_Module_Model {
 		if (empty($recordIds)) {
 			return;
 		}
+		$deletedRecords = self::getDeletedRecordModules($recordIds);
 
 		$query = 'DELETE FROM vtiger_relatedlists_rb WHERE entityid in('.generateQuestionMarks($recordIds).')';
 		$db->pquery($query, array($recordIds));
@@ -243,6 +287,7 @@ class RecycleBin_Module_Model extends Vtiger_Module_Model {
 		//Delete the records in vtiger crmentity and relatedlists.
 		$query = 'DELETE FROM vtiger_crmentity WHERE deleted = ? and crmid in('.generateQuestionMarks($recordIds).')';
 		$db->pquery($query, array(1, $recordIds));
+		self::triggerAfterPermanentDelete($deletedRecords);
 	}
 
 	/**Function to delete files from CRM.
