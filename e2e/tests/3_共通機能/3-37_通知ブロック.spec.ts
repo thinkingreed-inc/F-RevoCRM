@@ -15,7 +15,7 @@ import { url, generateRandomString } from "../../utils/util";
  * - 作成画面：役割・グループ・ユーザーのタブから通知先を選んで保存すると、作成時に送信し、
  *   移った先の画面に結果を出して送信履歴に「作成時」で記録する
  * - 詳細画面：通知先を種類のラベル付きで出し、「通知を送信」で送信ダイアログ（宛先の人数）から送る
- * - 送信履歴の「すべて表示」と宛先の一覧（送れなかった理由）
+ * - 送信履歴の「すべて表示」と、その中で切り替える宛先の一覧（送れなかった理由）・送信履歴に戻る
  * - 通知先の直接編集（保存しても送らない）と、宛先が 0 人のときは「送信」を押せないこと
  * - 複製では有効な通知先を引き継ぐ
  * - メール文面の設定：保存した文面がダイアログに出て、「既定の文面に戻す」で戻る
@@ -131,7 +131,7 @@ test.describe("共通: 通知ブロック", () => {
     await expect(block.locator("tr.notificationBlockHistoryRow").first()).toContainText("手動");
   });
 
-  test("送信履歴の「すべて表示」と宛先の一覧に、送れなかった理由を出す", async ({ page }) => {
+  test("送信履歴の「すべて表示」から宛先の一覧に切り替えて戻れ、直近の送信履歴からも宛先の一覧を開ける", async ({ page }) => {
     await gotoDetail(page);
     await detailBlock(page).locator(".notificationBlockShowAllHistory").click();
     const history = page.locator("#notificationBlockHistoryDialog");
@@ -139,9 +139,26 @@ test.describe("共通: 通知ブロック", () => {
     await expect(history.locator("th")).toHaveText(["送信日時", "送信者", "送信方法", "宛先", "コメント", "結果"]);
     await expect(history.locator("tr.notificationBlockHistoryRow").first()).toContainText("E2E のコメント");
 
+    // ダイアログを重ねて開かず、同じダイアログの中身を宛先の一覧に切り替える
     await history.locator(".notificationBlockShowRecipients").first().click();
+    const content = history.locator(".notificationBlockRecipientContent");
+    await expect(content).toBeVisible();
+    await expect(content.locator("tr.notificationBlockRecipientRow").first()).toContainText("送信メールサーバーが設定されていません");
+    await expect(history.locator(".notificationBlockHistoryListPane")).toBeHidden();
+    // 前のダイアログが閉じ終わったときに中身が消える不具合があったので、少し待っても出たままで操作できることを確かめる
+    await page.waitForTimeout(1500);
+    await expect(content).toBeVisible();
+    await history.locator(".notificationBlockBackToHistory").click();
+    await expect(history.locator(".notificationBlockHistoryListPane")).toBeVisible();
+    await expect(history.locator("tr.notificationBlockHistoryRow")).toHaveCount(2);
+    await history.locator('[data-dismiss="modal"]').first().click();
+    await expect(history).toBeHidden();
+
+    // 通知ブロックの直近の送信履歴からは、宛先の一覧のダイアログを開く（中身は同じ）
+    await detailBlock(page).locator(".notificationBlockShowRecipients").first().click();
     const recipients = page.locator("#notificationBlockRecipientDialog");
-    await expect(recipients).toBeVisible();
+    await expect(recipients.locator(".notificationBlockRecipientContent")).toBeVisible();
+    await page.waitForTimeout(1500);
     await expect(recipients.locator("tr.notificationBlockRecipientRow").first()).toContainText("送信メールサーバーが設定されていません");
   });
 

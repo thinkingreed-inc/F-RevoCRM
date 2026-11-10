@@ -302,15 +302,58 @@
 			});
 			doc.on('click', '.notificationBlockShowRecipients', function (e) {
 				e.preventDefault();
-				var container = jQuery(this).closest('.notificationBlockContainer');
-				self.openModal({
-					module: 'NotificationBlock',
-					view: 'History',
-					mode: 'recipients',
-					record: container.data('record'),
-					historyid: jQuery(this).data('historyid')
-				});
+				self.showRecipients(jQuery(this));
 			});
+			doc.on('click', '.notificationBlockBackToHistory', function (e) {
+				e.preventDefault();
+				self.backToHistory(jQuery(this).closest('#notificationBlockHistoryDialog'));
+			});
+		},
+
+		/**
+		 * 送信履歴の宛先の人数を押したときに、宛先の一覧を出す（中身は両方の経路で RecipientContent.tpl）
+		 *
+		 * - 通知ブロックの直近の送信履歴から：宛先の一覧のダイアログを開く
+		 * - 「すべて表示」のダイアログの中から：ダイアログを重ねて開かず、中身を宛先の一覧に切り替える。
+		 *   app.helper.showModal() は画面に 1 つの入れ物（.myModal）を使い回し、前のダイアログが閉じ終わったときに
+		 *   入れ物を空にするため、開いたまま別のダイアログを開くと新しい中身まで消えて、暗い背景だけが残る
+		 */
+		showRecipients: function (link) {
+			var self = this;
+			var container = link.closest('.notificationBlockContainer');
+			var params = {
+				module: 'NotificationBlock',
+				view: 'History',
+				record: container.data('record'),
+				historyid: link.data('historyid')
+			};
+			var historyDialog = link.closest('#notificationBlockHistoryDialog');
+			if (historyDialog.length === 0) {
+				self.openModal(jQuery.extend(params, {mode: 'recipients'}));
+				return;
+			}
+			app.helper.showProgress();
+			app.request.get({data: jQuery.extend(params, {mode: 'recipient_content'})}).then(function (error, html) {
+				app.helper.hideProgress();
+				if (error) {
+					app.helper.showErrorNotification({message: error.message});
+					return;
+				}
+				var body = historyDialog.find('.modal-body');
+				// 戻ったときに同じ位置へ戻せるよう、送信履歴の一覧のスクロールの位置を覚えておく
+				historyDialog.data('historyScrollTop', body.scrollTop());
+				historyDialog.find('.notificationBlockHistoryRecipientHolder').html(html);
+				historyDialog.find('.notificationBlockHistoryListPane').addClass('hide');
+				historyDialog.find('.notificationBlockHistoryRecipientPane').removeClass('hide');
+				body.scrollTop(0);
+			});
+		},
+
+		backToHistory: function (historyDialog) {
+			historyDialog.find('.notificationBlockHistoryRecipientPane').addClass('hide');
+			historyDialog.find('.notificationBlockHistoryRecipientHolder').empty();
+			historyDialog.find('.notificationBlockHistoryListPane').removeClass('hide');
+			historyDialog.find('.modal-body').scrollTop(historyDialog.data('historyScrollTop') || 0);
 		},
 
 		openModal: function (params, callback) {

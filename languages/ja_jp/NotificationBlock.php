@@ -67,6 +67,7 @@ $languageStrings = [
     'LBL_STATUS_SENT' => '送信済み',
     'LBL_STATUS_PARTIAL' => '一部失敗',
     'LBL_STATUS_FAILED' => '失敗',
+    'LBL_BACK_TO_HISTORY' => '送信履歴に戻る',
     'LBL_RECIPIENT_LIST_TITLE' => '宛先の一覧',
     'LBL_NAME' => '氏名',
     'LBL_EMAIL' => 'メールアドレス',

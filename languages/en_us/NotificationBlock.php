@@ -67,6 +67,7 @@ $languageStrings = [
     'LBL_STATUS_SENT' => 'Sent',
     'LBL_STATUS_PARTIAL' => 'Partially Failed',
     'LBL_STATUS_FAILED' => 'Failed',
+    'LBL_BACK_TO_HISTORY' => 'Back to Sending History',
     'LBL_RECIPIENT_LIST_TITLE' => 'Recipients',
     'LBL_NAME' => 'Name',
     'LBL_EMAIL' => 'Email',
