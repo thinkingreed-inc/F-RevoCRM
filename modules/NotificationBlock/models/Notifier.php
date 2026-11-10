@@ -312,14 +312,17 @@ class NotificationBlock_Notifier_Model
 
     /**
      * 宛先の利用者のタイムゾーン・日付の書式で日時を出す
+     *
+     * 利用者の設定は DB から読む（権限ファイル user_privileges を読む方法は、ファイルが無いと処理ごと止まるため使わない）。
      */
     private static function formatForUser(string $dbDateTime, int $userId): string
     {
         static $users = [];
         try {
             if (!isset($users[$userId])) {
-                $user = CRMEntity::getInstance('Users');
-                $user->retrieveCurrentUserInfoFromFile($userId);
+                $user = new Users();
+                $user->retrieve_entity_info($userId, 'Users');
+                $user->id = $userId;
                 $users[$userId] = $user;
             }
             return NotificationBlock_Util_Helper::toStr(
