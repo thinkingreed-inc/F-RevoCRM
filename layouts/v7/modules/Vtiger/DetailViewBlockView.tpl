@@ -12,9 +12,18 @@
 		<input type="hidden" name="picklistDependency" value='{Vtiger_Util_Helper::toSafeHTML($PICKIST_DEPENDENCY_DATASOURCE)}' />
 	{/if}
 
+	{* 通知ブロック（#1965）：項目の無いブロックは並ばないため、通知ブロックの位置に来たら出す（概要では主要な項目の下に別に出す） *}
+	{if !empty($RECORD) and empty($NOTIFICATION_BLOCK_IN_SUMMARY)}
+		{assign var=NOTIFICATION_BLOCK_BEFORE value=NotificationBlock_Display_Helper::getPlacement($MODULE_NAME, $RECORD_STRUCTURE)}
+	{else}
+		{assign var=NOTIFICATION_BLOCK_BEFORE value=''}
+	{/if}
 	{foreach key=BLOCK_LABEL_KEY item=FIELD_MODEL_LIST from=$RECORD_STRUCTURE}
 		{assign var=BLOCK value=$BLOCK_LIST[$BLOCK_LABEL_KEY]}
 		{if $BLOCK eq null or $FIELD_MODEL_LIST|@count lte 0}{continue}{/if}
+		{if $NOTIFICATION_BLOCK_BEFORE neq '' and $NOTIFICATION_BLOCK_BEFORE eq $BLOCK_LABEL_KEY}
+			{include file="DetailBlock.tpl"|vtemplate_path:'NotificationBlock' NB_MODULE_NAME=$MODULE_NAME NB_RECORD_ID=$RECORD->getId() NB_MODE='detail'}
+		{/if}
 		<div class="block block_{$BLOCK_LABEL_KEY}" data-block="{$BLOCK_LABEL_KEY}" data-blockid="{$BLOCK_LIST[$BLOCK_LABEL_KEY]->get('id')}">
 			{assign var=IS_HIDDEN value=$BLOCK->isHidden()}
 			{assign var=WIDTHTYPE value=$USER_MODEL->get('rowheight')}
@@ -160,4 +169,7 @@
 		</div>
 		<br>
 	{/foreach}
+	{if $NOTIFICATION_BLOCK_BEFORE eq NotificationBlock_Display_Helper::POSITION_END}
+		{include file="DetailBlock.tpl"|vtemplate_path:'NotificationBlock' NB_MODULE_NAME=$MODULE_NAME NB_RECORD_ID=$RECORD->getId() NB_MODE='detail'}
+	{/if}
 {/strip}
