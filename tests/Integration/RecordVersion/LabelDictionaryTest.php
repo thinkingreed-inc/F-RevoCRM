@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration\RecordVersion;
 
+use PearDatabase;
 use RecordVersion_Display_Model;
 use RecordVersion_Label_Model;
 use RecordVersion_Revision_Model;
@@ -29,12 +30,11 @@ final class LabelDictionaryTest extends RecordVersionTestCase
     /** languages/ にフォルダがあるが登録されていない言語 */
     private const UNREGISTERED_LANGUAGE = 'fr_fr';
 
-    /** @var string[] 作った言語のフォルダ */
-    private array $languageDirs = [];
-
     protected function setUp(): void
     {
         parent::setUp();
+        // 前回のテストが中断して（Ctrl+C・致命的エラーなど）tearDown が動かず残ったものを先に消す
+        $this->removeTestLanguages();
         $this->enableVersioning();
         $this->assertSame('0', $this->scalar('SELECT COUNT(*) FROM vtiger_language WHERE prefix = ?', [self::UNREGISTERED_LANGUAGE]), 'フランス語は登録されていない前提');
         $this->addLanguage(self::INACTIVE_LANGUAGE, 0, [
@@ -48,14 +48,35 @@ final class LabelDictionaryTest extends RecordVersionTestCase
 
     protected function tearDown(): void
     {
-        $this->db->pquery('DELETE FROM vtiger_language WHERE prefix IN (?, ?)', [self::INACTIVE_LANGUAGE, self::BROKEN_LANGUAGE]);
-        foreach ($this->languageDirs as $dir) {
-            foreach (glob($dir . '/*.php') ?: [] as $file) {
+        try {
+            $this->removeTestLanguages();
+        } finally {
+            parent::tearDown();
+        }
+    }
+
+    /**
+     * テスト用の言語（vtiger_language の行と languages/ の下のフォルダ）を消す。無ければ何もしない
+     */
+    private function removeTestLanguages(): void
+    {
+        $prefixes = [self::INACTIVE_LANGUAGE, self::BROKEN_LANGUAGE];
+        PearDatabase::getInstance()->pquery('DELETE FROM vtiger_language WHERE prefix IN (?, ?)', $prefixes);
+        foreach ($prefixes as $prefix) {
+            $dir = $this->languageDir($prefix);
+            if (!is_dir($dir)) {
+                continue;
+            }
+            foreach (glob($dir . '/*') ?: [] as $file) {
                 unlink($file);
             }
             rmdir($dir);
         }
-        parent::tearDown();
+    }
+
+    private function languageDir(string $prefix): string
+    {
+        return dirname(__DIR__, 3) . '/languages/' . $prefix;
     }
 
     public function test_改版すると登録されている全言語の表示名を辞書にして過去の版1件に1つだけ持つ(): void
@@ -131,10 +152,8 @@ final class LabelDictionaryTest extends RecordVersionTestCase
      */
     private function addLanguage(string $prefix, int $active, array $files): void
     {
-        $dir = dirname(__DIR__, 3) . '/languages/' . $prefix;
-        $this->assertDirectoryDoesNotExist($dir);
+        $dir = $this->languageDir($prefix);
         mkdir($dir);
-        $this->languageDirs[] = $dir;
         foreach ($files as $name => $content) {
             file_put_contents($dir . '/' . $name, $content);
         }
