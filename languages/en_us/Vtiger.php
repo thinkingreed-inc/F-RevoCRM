@@ -1733,6 +1733,9 @@ $languageStrings = array(
 	'LBL_DESCENDING' => 'Descending',
 	'LBL_ADD_SORT_ROW' => 'Add sort condition',
 	'LBL_REMOVE_SORTING' => 'Remove sorting for this column',
+
+	// 通知ブロック（#1965）：どのモジュールの詳細画面・項目設定にも出るため共通ファイルに置く
+	'LBL_NOTIFICATION_BLOCK' => 'Notification',
 );
 
 $jsLanguageStrings = array(

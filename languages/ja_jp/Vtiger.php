@@ -1738,6 +1738,9 @@ $languageStrings = array(
 	'LBL_DESCENDING' => '降順',
 	'LBL_ADD_SORT_ROW' => 'ソート条件を追加',
 	'LBL_REMOVE_SORTING' => 'この項目のソートを解除',
+
+	// 通知ブロック（#1965）：どのモジュールの詳細画面・項目設定にも出るため共通ファイルに置く
+	'LBL_NOTIFICATION_BLOCK' => '通知',
 );
 
 $jsLanguageStrings = array(
