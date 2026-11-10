@@ -455,7 +455,11 @@
 			}
 			var css = [
 				'.notificationBlockPicker{position:relative;}',
-				'.notificationBlockPickerChips .notificationBlockChip{display:inline-block;margin:2px 4px 2px 0;padding:4px 6px;font-size:12px;font-weight:normal;}',
+				// 通知先のバッジ（詳細画面・作成・編集画面で共通）。色は Bootstrap の label（本家の税の地域の一覧と同じ）、
+				// 余白・行の高さ・角丸は select2 の複数選択で選んだ値（.select2-search-choice）に合わせ、
+				// 文字は周りの項目の値と同じ大きさ・太さにする（label の既定は 75%・太字・上下の余白がそろわない）
+				'.notificationBlockTarget,.notificationBlockPickerChips .notificationBlockChip{display:inline-block;margin:0 5px 5px 0;',
+				'padding:3px 5px;font-size:inherit;font-weight:normal;line-height:13px;border-radius:3px;vertical-align:middle;white-space:normal;}',
 				'.notificationBlockPickerChips .notificationBlockChipRemove{color:#fff;text-decoration:none;}',
 				'.notificationBlockPickerInput{border:none;outline:none;min-width:160px;padding:2px;}',
 				// 候補の一覧は重ねて開かず、ページの中に押し下げて出す（作成・編集画面の下に固定の「保存」の帯や、

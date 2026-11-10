@@ -18,7 +18,7 @@
 				<span class="text-muted notificationBlockNoTargets">{vtranslate('LBL_NO_TARGETS', $NBM)}</span>
 			{else}
 				{foreach item=TARGET from=$NB.targets}
-					<span class="notificationBlockTarget label {if $TARGET.disabled}label-default{else}label-info{/if}" style="display: inline-block; margin: 0 5px 5px 0;">{NotificationBlock_Display_Helper::formatTarget($TARGET)|escape:'html'}</span>
+					<span class="notificationBlockTarget label {if $TARGET.disabled}label-default{else}label-info{/if}">{NotificationBlock_Display_Helper::formatTarget($TARGET)|escape:'html'}</span>
 				{/foreach}
 			{/if}
 		</div>
