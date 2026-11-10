@@ -145,18 +145,13 @@ class NotificationBlock_Target_Model
      */
     public static function searchCandidates(string $type, string $query, array $excludeIds = []): array
     {
+        if ($type === self::TYPE_ROLE) {
+            return self::searchRoles($query, $excludeIds);
+        }
         $db = PearDatabase::getInstance();
         $like = '%' . addcslashes($query, '%_\\') . '%';
         $params = [];
         switch ($type) {
-            case self::TYPE_ROLE:
-                // ユーザーを持たない最上位の役割（Organization）は出さない
-                $sql = 'SELECT r.roleid AS id, r.rolename AS label FROM vtiger_role r
-                        WHERE r.rolename LIKE ?
-                        AND NOT (r.depth = 0 AND NOT EXISTS (SELECT 1 FROM vtiger_user2role ur WHERE ur.roleid = r.roleid))';
-                $params[] = $like;
-                $order = ' ORDER BY r.parentrole';
-                break;
             case self::TYPE_GROUP:
                 $sql = 'SELECT g.groupid AS id, g.groupname AS label FROM vtiger_groups g WHERE g.groupname LIKE ?';
                 $params[] = $like;
@@ -175,7 +170,7 @@ class NotificationBlock_Target_Model
                 return ['items' => [], 'more' => false];
         }
         if (!empty($excludeIds)) {
-            $column = $type === self::TYPE_ROLE ? 'r.roleid' : ($type === self::TYPE_GROUP ? 'g.groupid' : 'u.id');
+            $column = $type === self::TYPE_GROUP ? 'g.groupid' : 'u.id';
             $sql .= " AND {$column} NOT IN (" . generateQuestionMarks($excludeIds) . ')';
             $params = array_merge($params, array_values($excludeIds));
         }
@@ -190,6 +185,47 @@ class NotificationBlock_Target_Model
         }
         $more = count($items) > self::CANDIDATE_LIMIT;
         return ['items' => array_slice($items, 0, self::CANDIDATE_LIMIT), 'more' => $more];
+    }
+
+    /**
+     * 役割の候補（役割の名前は翻訳のキーのことがあるので、訳した名前で絞り込む）
+     *
+     * 役割は件数が少ないので、すべて読んでから絞り込む。ユーザーを持たない最上位の役割（Organization）は出さない。
+     *
+     * @param array<int, string> $excludeIds
+     * @return array{items: array<int, array{type: string, id: string, label: string}>, more: bool}
+     */
+    private static function searchRoles(string $query, array $excludeIds): array
+    {
+        $db = PearDatabase::getInstance();
+        $result = $db->pquery(
+            'SELECT r.roleid, r.rolename FROM vtiger_role r
+             WHERE NOT (r.depth = 0 AND NOT EXISTS (SELECT 1 FROM vtiger_user2role ur WHERE ur.roleid = r.roleid))
+             ORDER BY r.parentrole',
+            []
+        );
+        $items = [];
+        foreach (NotificationBlock_Util_Helper::fetchRawRows($result) as $row) {
+            $id = NotificationBlock_Util_Helper::toStr($row['roleid'] ?? '');
+            $name = NotificationBlock_Util_Helper::toStr($row['rolename'] ?? '');
+            $label = self::roleLabel($name);
+            if (in_array($id, $excludeIds, true)) {
+                continue;
+            }
+            if ($query !== '' && mb_stripos($label, $query) === false && mb_stripos($name, $query) === false) {
+                continue;
+            }
+            $items[] = ['type' => self::TYPE_ROLE, 'id' => $id, 'label' => $label];
+        }
+        return ['items' => array_slice($items, 0, self::CANDIDATE_LIMIT), 'more' => count($items) > self::CANDIDATE_LIMIT];
+    }
+
+    /**
+     * 役割の表示名（役割の画面と同じく訳す。初期の役割は LBL_ADMIN のような翻訳のキーで登録されている）
+     */
+    public static function roleLabel(string $roleName): string
+    {
+        return NotificationBlock_Util_Helper::toStr(vtranslate($roleName, 'Settings:Roles'));
     }
 
     /**
@@ -258,7 +294,7 @@ class NotificationBlock_Target_Model
         $roles = [];
         foreach (NotificationBlock_Util_Helper::fetchRawRows($result) as $row) {
             $roles[NotificationBlock_Util_Helper::toStr($row['roleid'] ?? '')] = [
-                'label' => NotificationBlock_Util_Helper::toStr($row['rolename'] ?? ''),
+                'label' => self::roleLabel(NotificationBlock_Util_Helper::toStr($row['rolename'] ?? '')),
                 'disabled' => false,
             ];
         }

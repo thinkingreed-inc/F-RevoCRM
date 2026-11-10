@@ -119,13 +119,19 @@ window.Settings_NotificationBlock_TemplateDialog_Js = {
 				var textarea = pane.find('.notificationBlockBody');
 				var editor = Vtiger_Jodit_Js.getInstance(textarea.attr('id'));
 				var subject = jQuery.trim(pane.find('.notificationBlockSubject').val());
+				var body = editor ? editor.getData() : textarea.val();
 				if (subject.length > maxLength) {
 					tooLong = true;
 				}
+				// 「既定の文面のまま」（未設定に戻す）は、件名・本文が本当に既定の文面と同じときだけにする
+				// （入力を検知する前に書き換えられても、書き換えた内容を捨てないため）
+				var useDefault = String(pane.data('useDefault')) === '1'
+					&& subject === String(pane.data('defaultSubject'))
+					&& self.textOf(body) === self.textOf(String(pane.data('defaultBody')));
 				templates[pane.data('language')] = {
 					subject: subject,
-					body: editor ? editor.getData() : textarea.val(),
-					use_default: String(pane.data('useDefault'))
+					body: body,
+					use_default: useDefault ? '1' : '0'
 				};
 			});
 			if (tooLong) {
@@ -158,6 +164,13 @@ window.Settings_NotificationBlock_TemplateDialog_Js = {
 				submit.prop('disabled', false);
 			});
 		});
+	},
+
+	/**
+	 * 本文の比べ方：エディターが HTML の書き方を整えることがあるので、文字だけで比べる
+	 */
+	textOf: function (html) {
+		return jQuery.trim(jQuery('<div>').html(html || '').text().replace(/\s+/g, ' '));
 	},
 
 	insertAtCaret: function (input, text) {

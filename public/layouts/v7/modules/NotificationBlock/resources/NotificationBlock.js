@@ -105,8 +105,13 @@
 					self.search(picker);
 				}
 			});
-			// 入力欄の外を押したら候補を閉じる
-			doc.on('mousedown', function (e) {
+			// 入力欄の外を押したら候補を閉じる。押し下げた時点で閉じると、ボタンの位置がずれてクリックが
+			// 空振りする（「保存」など）ため、クリックが終わってから閉じる
+			doc.on('click', function (e) {
+				// 押した候補・× はその場で画面から消すので、消えた要素のクリックは外側とみなさない
+				if (!jQuery.contains(document.documentElement, e.target)) {
+					return;
+				}
 				jQuery('.notificationBlockPicker').each(function () {
 					if (!jQuery.contains(this, e.target)) {
 						jQuery(this).find('.notificationBlockPickerPanel').addClass('hide');
@@ -215,8 +220,8 @@
 				var editor = row.find('.notificationBlockInlineEditor');
 				editor.data('original', editor.find('.notificationBlockPickerChips').html());
 				row.find('.notificationBlockTargetsView').addClass('hide');
+				// 候補の一覧は入力欄を押したときに開く（開いたままだと「保存」を押しにくい）
 				editor.removeClass('hide');
-				self.openPanel(editor.find('.notificationBlockPicker'));
 			});
 			doc.on('click', '.notificationBlockCancelTargets', function (e) {
 				e.preventDefault();
@@ -399,7 +404,7 @@
 		},
 
 		/**
-		 * 通知ブロックの見た目（候補の一覧を入力欄の下に開く、鉛筆はマウスを乗せたときだけ出す）
+		 * 通知ブロックの見た目（候補の一覧を入力欄の下に出す、鉛筆はマウスを乗せたときだけ出す）
 		 */
 		injectStyles: function () {
 			if (jQuery('#notificationBlockStyles').length > 0) {
@@ -410,8 +415,9 @@
 				'.notificationBlockPickerChips .notificationBlockChip{display:inline-block;margin:2px 4px 2px 0;padding:4px 6px;font-size:12px;font-weight:normal;}',
 				'.notificationBlockPickerChips .notificationBlockChipRemove{color:#fff;text-decoration:none;}',
 				'.notificationBlockPickerInput{border:none;outline:none;min-width:160px;padding:2px;}',
-				'.notificationBlockPickerPanel{position:absolute;z-index:1060;left:0;right:0;background:#fff;border:1px solid #ccc;',
-				'box-shadow:0 4px 8px rgba(0,0,0,0.15);padding:8px;}',
+				// 候補の一覧は重ねて開かず、ページの中に押し下げて出す（作成・編集画面の下に固定の「保存」の帯や、
+				// 直接編集の「保存」「キャンセル」に隠れないように）
+				'.notificationBlockPickerPanel{background:#fff;border:1px solid #ccc;padding:8px;margin-top:4px;}',
 				'.notificationBlockPickerSearchRow{margin:8px 0;}',
 				'.notificationBlockPickerSearch{width:100%;}',
 				'.notificationBlockPickerCandidates{max-height:240px;overflow-y:auto;margin:0;}',
