@@ -59,6 +59,14 @@ class Import_Map_Model extends Vtiger_Base_Model {
 		return $map[$key];
 	}
 
+	/**
+	 * 「選択肢を自動で登録」をチェックして保存した項目名。列追加前に保存したマッピング（NULL）は空
+	 */
+	public function getAddPicklistFields() {
+		$addPicklistFields = empty($this->map['add_picklist_fields']) ? null : Zend_Json::decode(decode_html($this->map['add_picklist_fields']));
+		return is_array($addPicklistFields) ? $addPicklistFields : array();
+	}
+
 	public function getStringifiedContent() {
 		if(empty($this->map['content'])) return;
 		$content = $this->map['content'];

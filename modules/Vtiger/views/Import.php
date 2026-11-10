@@ -221,7 +221,16 @@ class Vtiger_Import_View extends Vtiger_Index_View {
 			$viewer->assign('ROW_1_DATA', $rowData);
 			$viewer->assign('USER_INPUT', $request);
 
-			$viewer->assign('AVAILABLE_FIELDS', $moduleMeta->getImportableFields($moduleName));
+			$importableFields = $moduleMeta->getImportableFields($moduleName);
+			// 「存在しない選択肢を追加する」を出す項目（単一選択のうち追加の対象になるもの）。追加してよいかはインポート時にサーバ側で判定し直す
+			$addPicklistFields = array();
+			foreach ($importableFields as $fieldName => $fieldInfo) {
+				if ($fieldInfo->getFieldDataType() == 'picklist' && Import_Data_Action::isPicklistAddableField($fieldName, $moduleName)) {
+					$addPicklistFields[$fieldName] = true;
+				}
+			}
+			$viewer->assign('ADD_PICKLIST_FIELDS', $addPicklistFields);
+			$viewer->assign('AVAILABLE_FIELDS', $importableFields);
 			$viewer->assign('ENCODED_MANDATORY_FIELDS', Zend_Json::encode($mandatoryFields));
 			$viewer->assign('SAVED_MAPS', Import_Map_Model::getAllByModule($moduleName));
 			$viewer->assign('USERS_LIST', Import_Utils_Helper::getAssignedToUserList($moduleName));
