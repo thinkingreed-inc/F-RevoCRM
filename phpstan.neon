@@ -45,3 +45,7 @@ parameters:
         # スタブ本体（ParametersApiTestSupport.php）は vtiger と同名のクラスを
         # 定義するため解析対象にしない（本物の定義と食い違う）。
         - tests/Support/ParametersApiTestState.php
+        # 通知ブロック（#1965）のテストが参照するクラス（イベントハンドラとマイグレーションは
+        # 自動読み込みの名前の決まりの外にあり、テスト側で require する）
+        - modules/NotificationBlock/handlers/NotificationBlockHandler.php
+        - setup/migration/scripts/20261110120556_setup_notification_block.php
