@@ -15,8 +15,10 @@
 	{assign var=WC_INPUT_ID value="{$MODULE}_editView_fieldName_{$FIELD_MODEL->getFieldName()}"}
 	{assign var=WC_PROPS value=$UITYPE_MODEL->getWebComponentProps($FIELD_VALUE, 'edit', $WC_RECORD)}
 	{$WC_PROPS['inputId'] = $WC_INPUT_ID}
-	<div class="fr-wc-field" data-fieldname="{$FIELD_MODEL->getFieldName()}">
-		<input type="hidden" id="{$WC_INPUT_ID}" name="{$FIELD_MODEL->getFieldName()}" value="{$FIELD_VALUE}" data-fieldtype="{$FIELD_MODEL->getFieldDataType()}" data-fieldname="{$FIELD_MODEL->getFieldName()}" {if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if} />
+	{* 他の入力欄（.fieldBlockContainer .inputElement の max-width）と幅をそろえる。手書き入力欄は広く使う *}
+	<div class="fr-wc-field" data-fieldname="{$FIELD_MODEL->getFieldName()}"{if empty($WC_PROPS['handwriting'])} style="max-width:325px;"{/if}>
+		{* webComponentFieldSource を付けた hidden 入力だけが入力チェックの対象になる。編集できない項目は値を入れる手段が無いため付けない *}
+		<input type="hidden" {if !$FIELD_MODEL->isReadonlyEditView()}class="webComponentFieldSource" {/if}id="{$WC_INPUT_ID}" name="{$FIELD_MODEL->getFieldName()}" value="{$FIELD_VALUE}" data-fieldtype="{$FIELD_MODEL->getFieldDataType()}" data-fieldname="{$FIELD_MODEL->getFieldName()}" {if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if} />
 		<{$UITYPE_MODEL->getWebComponentTagName()} props="{Vtiger_Util_Helper::toSafeHTML(Zend_Json::encode($WC_PROPS))}"></{$UITYPE_MODEL->getWebComponentTagName()}>
 	</div>
 {/strip}
