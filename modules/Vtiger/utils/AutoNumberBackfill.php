@@ -150,7 +150,7 @@ class Vtiger_AutoNumberBackfill
             $createdTo = null;
         }
         $config = self::requireConfig($fieldId);
-        $timeZone = self::timeZoneOfUser($userId);
+        $timeZone = Vtiger_AutoNumber::serverTimeZone();
         $total = 0;
         $first = '';
         $last = '';
@@ -305,7 +305,7 @@ class Vtiger_AutoNumberBackfill
                 return self::getJob($jobId);
             }
             $config = array_merge($config, $fieldInfo);
-            $timeZone = self::timeZoneOfUser($job['userid']);
+            $timeZone = Vtiger_AutoNumber::serverTimeZone();
             $needsFields = count(Vtiger_AutoNumberFormat::getFieldTokens(Vtiger_AutoNumberValue::string($config['format']))) > 0;
             $handled = 0;
             $failedIds = $job['failed_ids'];
@@ -645,7 +645,7 @@ class Vtiger_AutoNumberBackfill
     }
 
     /**
-     * 基準日。基準日の項目に値があればそれ、無ければ作成日時（実行ユーザーのタイムゾーン）
+     * 基準日。基準日の項目に値があればそれ、無ければ作成日時（サーバーの時刻）
      *
      * @param array<string, mixed> $config
      * @param array<string, mixed> $row
@@ -659,8 +659,7 @@ class Vtiger_AutoNumberBackfill
                 return $date;
             }
         }
-        $created = new DateTimeImmutable(Vtiger_AutoNumberValue::string($row['createdtime']), new DateTimeZone('UTC'));
-        return $created->setTimezone($timeZone);
+        return new DateTimeImmutable(Vtiger_AutoNumberValue::string($row['createdtime']), $timeZone);
     }
 
     /**
@@ -705,22 +704,6 @@ class Vtiger_AutoNumberBackfill
         }
         $config['fieldid'] = $fieldId;
         return array_merge($config, $info);
-    }
-
-    private static function timeZoneOfUser(?int $userId): DateTimeZone
-    {
-        $zone = date_default_timezone_get();
-        if ($userId !== null && $userId > 0) {
-            $db = PearDatabase::getInstance();
-            $result = $db->pquery('SELECT time_zone FROM vtiger_users WHERE id = ?', [$userId]);
-            if ($result !== false && $db->num_rows($result) > 0) {
-                $userZone = Vtiger_AutoNumberValue::string($db->query_result($result, 0, 'time_zone'));
-                if ($userZone !== '' && in_array($userZone, timezone_identifiers_list(), true)) {
-                    $zone = $userZone;
-                }
-            }
-        }
-        return new DateTimeZone($zone);
     }
 
     // ---- ロック・進み具合 ------------------------------------------------------

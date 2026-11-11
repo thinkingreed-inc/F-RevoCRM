@@ -56,16 +56,13 @@ class Settings_Vtiger_CustomRecordNumberingModule_Model extends Vtiger_Module_Mo
 	}
 
 	/**
-	 * モジュールの自動採番項目と設定（項目名 => 設定）。画面の入力欄に入れる値で、適用開始日時はユーザーのタイムゾーン
+	 * モジュールの自動採番項目と設定（項目名 => 設定）。画面の入力欄に入れる値で、適用開始日時はサーバーの時刻
 	 * @return <Array>
 	 */
 	public function getFieldConfigs() {
 		require_once 'modules/Vtiger/utils/AutoNumber.php';
 		$configs = Vtiger_AutoNumber::getModuleConfigs($this->getName());
 		foreach ($configs as $fieldName => $config) {
-			if (!empty($config['effective_from'])) {
-				$configs[$fieldName]['effective_from'] = Vtiger_AutoNumber::dbTimeToUser((string) $config['effective_from']);
-			}
 			$configs[$fieldName]['fieldlabel'] = vtranslate($config['fieldlabel'], $this->getName());
 		}
 		return $configs;
@@ -92,7 +89,7 @@ class Settings_Vtiger_CustomRecordNumberingModule_Model extends Vtiger_Module_Mo
 	/**
 	 * 画面の入力から、自動採番の設定を取り出す
 	 * @param <Array> $params format / reset_type / start_number / base_date / effective_from / active
-	 * @return <Array> Vtiger_AutoNumber の設定（適用開始日時は DB の時刻）
+	 * @return <Array> Vtiger_AutoNumber の設定（適用開始日時はサーバーの時刻のまま）
 	 */
 	public static function getConfigFromParams($params) {
 		require_once 'modules/Vtiger/utils/AutoNumber.php';
@@ -103,7 +100,7 @@ class Settings_Vtiger_CustomRecordNumberingModule_Model extends Vtiger_Module_Mo
 			'reset_type' => isset($params['reset_type']) ? (string) $params['reset_type'] : 'none',
 			'start_number' => $startNumber === '' ? 1 : $startNumber,
 			'base_date' => isset($params['base_date']) ? (string) $params['base_date'] : '',
-			'effective_from' => $effectiveFrom === '' ? null : Vtiger_AutoNumber::userTimeToDb($effectiveFrom),
+			'effective_from' => $effectiveFrom === '' ? null : $effectiveFrom,
 			'active' => isset($params['active']) && (string) $params['active'] === '0' ? 0 : 1,
 		);
 	}

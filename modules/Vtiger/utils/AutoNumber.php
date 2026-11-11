@@ -296,7 +296,7 @@ class Vtiger_AutoNumber
     /**
      * 保存前に呼ぶ。新規レコードには採番し、既存レコードは送られた値を捨てて保存済みの値に固定する
      *
-     * @param DateTimeImmutable|null $now 現在の日時（テスト用。未指定なら実行ユーザーのタイムゾーンの今）
+     * @param DateTimeImmutable|null $now 現在の日時（テスト用。未指定ならサーバーの今）
      */
     public static function handleBeforeSave(VTEntityData $entityData, ?DateTimeImmutable $now = null): void
     {
@@ -384,7 +384,7 @@ class Vtiger_AutoNumber
     }
 
     /**
-     * 適用開始日時（作成日時と同じ DB の時刻）以降に作成されるレコードか
+     * 適用開始日時（作成日時と同じサーバーの時刻）以降に作成されるレコードか
      *
      * @param array<string, mixed> $config
      */
@@ -394,7 +394,7 @@ class Vtiger_AutoNumber
         if ($from === null || $from === '') {
             return true;
         }
-        $nowDb = $now->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s');
+        $nowDb = $now->setTimezone(self::serverTimeZone())->format('Y-m-d H:i:s');
         return $nowDb >= Vtiger_AutoNumberValue::string($from);
     }
 
@@ -467,42 +467,22 @@ class Vtiger_AutoNumber
     }
 
     /**
-     * 画面で入力した日時（実行ユーザーのタイムゾーン）を DB の時刻（UTC）にする。読めない値はそのまま返す
+     * サーバーのタイムゾーン（config.inc.php の $default_timezone）
+     *
+     * 作成日時などの DB の日時もこのタイムゾーンで入っているため、採番の日付・適用開始日時・作成日時の範囲はすべてこれで扱う。
+     * 実行ユーザーのタイムゾーンや UTC には寄せない（同じ瞬間の保存でユーザーごとに年月が変わらないようにするため）。
      */
-    public static function userTimeToDb(string $value): string
+    public static function serverTimeZone(): DateTimeZone
     {
-        $date = DateTimeImmutable::createFromFormat('!Y-m-d H:i:s', $value, self::now()->getTimezone());
-        if ($date === false || $date->format('Y-m-d H:i:s') !== $value) {
-            return $value;
-        }
-        return $date->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s');
+        $zone = date_default_timezone_get();
+        return new DateTimeZone($zone !== '' ? $zone : 'UTC');
     }
 
     /**
-     * DB の時刻（UTC）を、画面に出す日時（実行ユーザーのタイムゾーン）にする。読めない値はそのまま返す
-     */
-    public static function dbTimeToUser(string $value): string
-    {
-        $date = DateTimeImmutable::createFromFormat('!Y-m-d H:i:s', $value, new DateTimeZone('UTC'));
-        if ($date === false || $date->format('Y-m-d H:i:s') !== $value) {
-            return $value;
-        }
-        return $date->setTimezone(self::now()->getTimezone())->format('Y-m-d H:i:s');
-    }
-
-    /**
-     * 実行ユーザーのタイムゾーンの現在日時
+     * サーバーのタイムゾーンの現在日時
      */
     public static function now(): DateTimeImmutable
     {
-        $timeZone = date_default_timezone_get();
-        $user = Users_Record_Model::getCurrentUserModel();
-        if ($user) {
-            $userZone = (string) $user->get('time_zone');
-            if ($userZone !== '' && in_array($userZone, timezone_identifiers_list(), true)) {
-                $timeZone = $userZone;
-            }
-        }
-        return new DateTimeImmutable('now', new DateTimeZone($timeZone));
+        return new DateTimeImmutable('now', self::serverTimeZone());
     }
 }

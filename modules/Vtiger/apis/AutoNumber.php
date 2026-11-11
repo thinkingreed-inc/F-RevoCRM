@@ -156,7 +156,7 @@ class Vtiger_AutoNumber_Api extends Vtiger_Api_Controller
     }
 
     /**
-     * 作成日時の範囲（DB の時刻）。実行ユーザーのタイムゾーンの日付から変換する
+     * 作成日時の範囲（DB の時刻＝サーバーの時刻）
      *
      * @return array{0: string|null, 1: string|null}
      */
@@ -177,8 +177,7 @@ class Vtiger_AutoNumber_Api extends Vtiger_Api_Controller
         if ($parsed === false || $parsed->format('Y-m-d') !== $date) {
             throw new ApiBadRequestException('Invalid date: ' . $date);
         }
-        $local = new DateTimeImmutable($date . ' ' . $time, Vtiger_AutoNumber::now()->getTimezone());
-        return $local->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s');
+        return $date . ' ' . $time;
     }
 
     private function stringParam(Vtiger_Request $request, string $name): string
