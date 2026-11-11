@@ -22,7 +22,7 @@ class NotificationBlock_Config_Model
     public const BLOCK_LABEL = 'LBL_NOTIFICATION_BLOCK';
 
     /**
-     * 通知ブロックを置けないモジュール（仕様 概要 1-3 No.1）
+     * 通知ブロックを置けないモジュール
      */
     public const EXCLUDED_MODULES = [
         'Emails', 'Webmails', 'ModComments', 'Calendar', 'Events', 'Users', 'PBXManager', 'SMSNotifier',

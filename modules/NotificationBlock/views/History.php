@@ -1,7 +1,7 @@
 <?php
 
 /**
- * 送信履歴の「すべて表示」と、宛先の一覧（仕様 動作定義 No.10）
+ * 送信履歴の「すべて表示」と、宛先の一覧
  *
  * GET module=NotificationBlock&view=History&record=..                         … すべての送信履歴（新しい順）
  * GET module=NotificationBlock&view=History&record=..&mode=recipients&historyid=.. … 宛先の一覧（ダイアログ）

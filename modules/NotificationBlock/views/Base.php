@@ -4,7 +4,7 @@
  * 通知ブロックの小さな画面（ブロックの読み直し・送信ダイアログ・送信履歴）の共通部分
  *
  * 通知ブロックは vtiger_tab に登録しないので、モジュールの権限ではなく、
- * 元のレコードの参照権限だけで見られるかを決める（仕様 動作定義 No.15）。
+ * 元のレコードの参照権限だけで見られるかを決める。
  * URL の module は信じず、record から元のレコードのモジュールを決める。
  */
 abstract class NotificationBlock_Base_View extends Vtiger_IndexAjax_View

@@ -19,7 +19,7 @@ class Settings_NotificationBlock_SaveTemplate_Api extends Vtiger_Api_Controller
     }
 
     /**
-     * 設定できるのはシステム管理者だけ（仕様 項目設定 4-4 No.1）
+     * 設定できるのはシステム管理者だけ
      */
     public function checkPermission(Vtiger_Request $request): bool
     {

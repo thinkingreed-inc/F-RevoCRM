@@ -13,7 +13,7 @@ use Tests\Support\NotificationBlockTestCase;
 require_once dirname(__DIR__, 2) . '/Support/NotificationBlockTestCase.php';
 
 /**
- * 画面からの保存（作成・編集画面）と作成時の送信（仕様 動作定義 No.5・No.6、デシジョン表 表A、確認事項 Q5・Q7）
+ * 画面からの保存（作成・編集画面）と作成時の送信
  *
  * 作成・編集画面は、保存のときに notificationblock_form と notificationblock_targets を送る。
  * そのリクエストのままレコードを保存し、保存のイベントで通知先が保存されることを確かめる。

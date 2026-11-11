@@ -22,7 +22,7 @@ class Settings_NotificationBlock_SaveSendOnCreate_Api extends Vtiger_Api_Control
     }
 
     /**
-     * 設定できるのは項目設定を使える管理者だけ（仕様 項目設定 4-3 No.2）
+     * 設定できるのは項目設定を使える管理者だけ
      */
     public function checkPermission(Vtiger_Request $request): bool
     {

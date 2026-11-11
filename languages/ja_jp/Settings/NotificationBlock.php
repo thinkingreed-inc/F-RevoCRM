@@ -6,7 +6,7 @@
 $languageStrings = [
     'NotificationBlock' => '通知ブロック',
 
-    // 項目設定の「ブロックの追加」（項目設定 4-1）
+    // 項目設定の「ブロックの追加」
     'LBL_BLOCK_TYPE' => 'ブロックの種類',
     'LBL_BLOCK_TYPE_NORMAL' => '通常のブロック',
     'LBL_BLOCK_TYPE_NOTIFICATION' => '通知ブロック',
@@ -15,7 +15,7 @@ $languageStrings = [
     'LBL_NOTIFICATION_BLOCK_ADDED' => '通知ブロックを追加しました',
     'LBL_INVENTORY_POSITION_NOTE' => '品目明細は、いつもすべてのブロックの下に出ます',
 
-    // 項目設定の通知ブロック（項目設定 4-2）
+    // 項目設定の通知ブロック
     'LBL_SEND_ON_CREATE' => '作成時に送信',
     'LBL_SEND_ON_CREATE_HELP' => '作成画面からレコードを作成して保存したときに、通知先へ通知を送ります',
     'LBL_MAIL_TEMPLATE_SETTINGS' => 'メール文面の設定',
@@ -23,7 +23,7 @@ $languageStrings = [
     'LBL_NOTIFICATION_BLOCK_DELETE_CONFIRM' => 'ブロックを削除します。画面から通知ブロックが消えるだけで、登録済みの通知先と送信履歴は消えません。',
     'LBL_SETTING_SAVED' => '設定を保存しました',
 
-    // メール文面の設定（項目設定 4-4）
+    // メール文面の設定
     'LBL_TEMPLATE_DIALOG_TITLE' => 'メール文面の設定',
     'LBL_LANGUAGE_ja_jp' => '日本語',
     'LBL_LANGUAGE_en_us' => '英語',

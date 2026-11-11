@@ -13,7 +13,7 @@ use Tests\Support\NotificationBlockTestCase;
 require_once dirname(__DIR__, 2) . '/Support/NotificationBlockTestCase.php';
 
 /**
- * 通知の送信（仕様 動作定義 No.8・No.17〜No.22、デシジョン表 表B、通知メール 5-1）
+ * 通知の送信
  */
 final class NotifierTest extends NotificationBlockTestCase
 {

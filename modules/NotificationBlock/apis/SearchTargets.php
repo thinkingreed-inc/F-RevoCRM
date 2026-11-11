@@ -6,8 +6,8 @@
  * GET type=role|group|user&q=絞り込む文字&exclude=選んだ ID（カンマ区切り）
  *   成功：{"items": [{"type", "id", "label", "text"}], "more": まだ候補があるか}
  *
- * 担当者の割り当てのように、役割・共有設定で候補を絞らない（仕様 概要 1-3 No.2）。
- * 一度に返すのは 50 件まで（仕様 動作定義 No.3）。
+ * 担当者の割り当てのように、役割・共有設定で候補を絞らない。
+ * 一度に返すのは 50 件まで。
  */
 class NotificationBlock_SearchTargets_Api extends Vtiger_Api_Controller
 {

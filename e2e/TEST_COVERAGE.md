@@ -215,7 +215,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 | 13-1 | ダッシュボード / ウィジェット | `modules/Home/views/DashBoard.php` | 🟡 | 表示確認のみ(`general`)。ダッシュボード追加・ウィジェット追加/削除は未 |
 | 14-1 | カレンダー（月/週/日/概要） | `modules/Calendar/views/Calendar.php` | 🟡 | `common/tests/3_共通機能/3-33_カレンダー表示.spec.ts`（月/週/日/概要 の表示モード切替）+ イベント作成/編集は `module/tests/4_モジュール/4-8_カレンダー/活動ToDo.spec.ts`、iCal は `4-8_カレンダー/9_iCal.spec.ts`。カンバンは未 |
 | 35-1 | ゴミ箱（復元 / 完全削除） | `modules/RecycleBin/` | ✅ | `common/tests/3_共通機能/3-26_ゴミ箱.spec.ts`（削除→復元→完全削除） |
-| — | 通知ブロック（項目設定 / 作成時の送信 / 送信ダイアログ / 送信履歴 / 直接編集 / 複製 / メール文面の設定） | `modules/NotificationBlock/` / `modules/Settings/NotificationBlock/` | ✅ | `tests/3_共通機能/3-37_通知ブロック.spec.ts`（#1965。シードで通知ブロックを置き「作成時に送信：はい」にした発注先(Vendors)を直列で使い、項目設定の表示と 1 モジュール 1 つ・通知先の選択→作成時の送信と移った先の結果表示・送信ダイアログ・送信履歴と宛先の一覧・直接編集と宛先 0 人・複製・メール文面の保存と既定に戻すを検証。E2E には送信メールサーバーが無いため送信は表B ルール1。送れたとき・一部失敗・宛先の展開・言語・本文・送信中と中断・完全削除は PHPUnit 結合テスト `tests/Integration/NotificationBlock/`） |
+| — | 通知ブロック（項目設定 / 作成時の送信 / 送信ダイアログ / 送信履歴 / 直接編集 / 複製 / メール文面の設定） | `modules/NotificationBlock/` / `modules/Settings/NotificationBlock/` | ✅ | `tests/3_共通機能/3-37_通知ブロック.spec.ts`（#1965。シードで通知ブロックを置き「作成時に送信：はい」にした発注先(Vendors)を直列で使い、項目設定の表示と 1 モジュール 1 つ・通知先の選択→作成時の送信と移った先の結果表示・送信ダイアログ・送信履歴と宛先の一覧・直接編集と宛先 0 人・複製・メール文面の保存と既定に戻すを検証。E2E には送信メールサーバーが無いため送信の結果は「送信メールサーバー未設定」を検証。送れたとき・一部失敗・宛先の展開・言語・本文・送信中と中断・完全削除は PHPUnit 結合テスト `tests/Integration/NotificationBlock/`） |
 | 35-1 | ゴミ箱のモジュール権限 | `modules/RecycleBin/models/Module.php` / `views/List.php` | ✅ | `common/tests/3_共通機能/3-35_ゴミ箱権限.spec.ts`（issue #1205。権限ペルソナ `e2e_p_hidden` で 一覧からの除外 と `sourceModule` 直接指定の拒否 を admin と対比） |
 | — | グローバル検索 | `modules/Vtiger/apis/SearchRecords.php` | ✅ | `common/tests/3_共通機能/3-03_全文検索.spec.ts`（ヘッダー検索→統合検索結果にヒット） |
 

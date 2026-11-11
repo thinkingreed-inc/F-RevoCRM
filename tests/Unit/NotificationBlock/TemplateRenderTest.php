@@ -13,7 +13,7 @@ require_once dirname(__DIR__, 3) . '/modules/NotificationBlock/models/Template.p
 require_once dirname(__DIR__, 3) . '/modules/NotificationBlock/models/History.php';
 
 /**
- * 通知メールの差し込み（仕様 通知メール 5-1・5-2、項目設定 4-4 No.6）と、送信履歴の結果の決め方
+ * 通知メールの差し込みと、送信履歴の結果の決め方
  */
 final class TemplateRenderTest extends TestCase
 {

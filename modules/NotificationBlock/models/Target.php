@@ -3,9 +3,9 @@
 /**
  * 通知先（レコードごとの役割・グループ・ユーザー）
  *
- * 通知先はレコードの項目ではなく、通知ブロック専用のテーブルに持つ（仕様 概要 1-5）。
+ * 通知先はレコードの項目ではなく、通知ブロック専用のテーブルに持つ。
  * 削除された役割・グループ・完全に削除したユーザーは、データは消さずに表示と送信で飛ばし、
- * 次に通知先を保存したときに外れる（確認事項 Q10）。
+ * 次に通知先を保存したときに外れる。
  */
 class NotificationBlock_Target_Model
 {
@@ -14,7 +14,7 @@ class NotificationBlock_Target_Model
     public const TYPE_USER = 'user';
     public const TYPES = [self::TYPE_ROLE, self::TYPE_GROUP, self::TYPE_USER];
 
-    /** 候補として一度に出す件数（仕様 動作定義 No.3） */
+    /** 候補として一度に出す件数 */
     public const CANDIDATE_LIMIT = 50;
 
     /**
@@ -44,7 +44,7 @@ class NotificationBlock_Target_Model
     }
 
     /**
-     * 有効な通知先だけ（無効のユーザー・もう無い役割・グループを除く。複製のときに使う。仕様 動作定義 No.12）
+     * 有効な通知先だけ（無効のユーザー・もう無い役割・グループを除く。複製のときに使う）
      *
      * @return array<int, array{type: string, id: string, label: string, disabled: bool}>
      */
@@ -138,7 +138,7 @@ class NotificationBlock_Target_Model
     /**
      * 候補を探す（入力した文字で絞り込み、最大 50 件。選んだものは除く）
      *
-     * 担当者の割り当てのように、役割・共有設定で候補を絞らない（仕様 概要 1-3 No.2）。
+     * 担当者の割り当てのように、役割・共有設定で候補を絞らない。
      *
      * @param array<int, string> $excludeIds 除く ID（選んだもの）
      * @return array{items: array<int, array{type: string, id: string, label: string}>, more: bool}
@@ -326,7 +326,7 @@ class NotificationBlock_Target_Model
     }
 
     /**
-     * 無効にしたユーザーと、削除したユーザー（戻せる状態。deleted=1）は「無効」として返す（確認事項 Q10）
+     * 無効にしたユーザーと、削除したユーザー（戻せる状態。deleted=1）は「無効」として返す
      *
      * @param array<int, string> $ids
      * @return array<string, array{label: string, disabled: bool}>

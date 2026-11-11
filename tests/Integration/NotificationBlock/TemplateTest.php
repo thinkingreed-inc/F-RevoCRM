@@ -10,7 +10,7 @@ use Tests\Support\NotificationBlockTestCase;
 require_once dirname(__DIR__, 2) . '/Support/NotificationBlockTestCase.php';
 
 /**
- * メール文面の設定（仕様 項目設定 4-4、通知メール 5-1・5-2）
+ * メール文面の設定
  */
 final class TemplateTest extends NotificationBlockTestCase
 {

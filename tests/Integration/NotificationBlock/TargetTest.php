@@ -10,7 +10,7 @@ use Tests\Support\NotificationBlockTestCase;
 require_once dirname(__DIR__, 2) . '/Support/NotificationBlockTestCase.php';
 
 /**
- * 通知先の保存と表示（仕様 動作定義 No.12・No.14、確認事項 Q10・Q11）
+ * 通知先の保存と表示
  */
 final class TargetTest extends NotificationBlockTestCase
 {

@@ -3,7 +3,7 @@
 /**
  * 通知の送信（「通知を送信」・作成時の送信・ほかの機能からの呼び出しの共通の入口）
  *
- * ほかの機能（アドオン）からは、次のように呼ぶ（仕様 動作定義 No.17）。
+ * ほかの機能（アドオン）からは、次のように呼ぶ。
  *
  *     $result = NotificationBlock_Notifier_Model::send($recordId, [
  *         'method' => NotificationBlock_History_Model::METHOD_EXTERNAL,
@@ -30,7 +30,7 @@ class NotificationBlock_Notifier_Model
     public const CODE_NO_BLOCK = 'no_block';
     public const CODE_SENDING = 'sending';
 
-    /** コメントの長さの上限（仕様 動作定義 No.7） */
+    /** コメントの長さの上限 */
     public const COMMENT_MAX_LENGTH = 1000;
 
     private static ?NotificationBlock_MailSender_Model $mailSender = null;
@@ -90,7 +90,7 @@ class NotificationBlock_Notifier_Model
             if (NotificationBlock_History_Model::isSending($crmId)) {
                 return self::result(self::CODE_SENDING);
             }
-            // 宛先は送る時点で展開し直す（仕様 動作定義 No.8）
+            // 宛先は送る時点で展開し直す
             $expanded = NotificationBlock_Recipient_Model::expandForRecord($crmId);
             $recipients = $expanded['recipients'];
             if (empty($recipients)) {
@@ -138,7 +138,7 @@ class NotificationBlock_Notifier_Model
     }
 
     /**
-     * 結果をログイン中の利用者の言語のメッセージにする（仕様 デシジョン表 表B・動作定義 No.20・No.22）
+     * 結果をログイン中の利用者の言語のメッセージにする
      */
     public static function message(string $code, int $total = 0, int $failed = 0): string
     {
@@ -169,7 +169,7 @@ class NotificationBlock_Notifier_Model
     /**
      * 宛先 1 人ずつ送り、結果を記録する
      *
-     * 宛先の人数に上限は設けない（仕様 動作定義 No.18）ので、送っている間は PHP の処理時間の上限を外し、
+     * 宛先の人数に上限は設けないので、送っている間は PHP の処理時間の上限を外し、
      * 利用者がブラウザーを閉じても最後まで送る。それでも処理が止められたときは、終わりぎわの処理で
      * 残りを「未送信（中断）」にする（サーバーの再起動などでそれも動かなければ、10 分後に中断とみなす）。
      *

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * 詳細画面で通知先を直接編集して保存する（JSON。保存しても通知は送らない。仕様 動作定義 No.2）
+ * 詳細画面で通知先を直接編集して保存する（JSON。保存しても通知は送らない）
  *
  * POST record=..&targets=[{"type": "role", "id": "H2"}, ...]
  *   成功：{"targets": [{"type", "id", "label", "disabled", "text"}], "message": 画面に出すメッセージ}

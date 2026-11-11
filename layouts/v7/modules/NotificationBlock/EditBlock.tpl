@@ -1,8 +1,8 @@
 {*<!--
 /*+***********************************************************************************
- * 作成・編集画面（複製を含む）の通知ブロック（仕様 動作定義 No.3・No.4・No.12、デシジョン表 表C）
+ * 作成・編集画面（複製を含む）の通知ブロック
  *
- * 呼び出し元：layouts/v7/modules/Vtiger/partials/EditViewContents.tpl・Inventory/partials/EditViewContents.tpl（確認事項 Q1）
+ * 呼び出し元：layouts/v7/modules/Vtiger/partials/EditViewContents.tpl・Inventory/partials/EditViewContents.tpl
  * 保存のときに notificationblock_form と notificationblock_targets を送り、保存のイベントで通知先を保存する
  * （NotificationBlockHandler）。
  *************************************************************************************/

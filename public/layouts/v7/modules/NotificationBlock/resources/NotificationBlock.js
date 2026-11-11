@@ -375,7 +375,7 @@
 		},
 
 		/**
-		 * 「送信」：押したら処理が終わるまで押せなくする（二重送信を防ぐ。仕様 動作定義 No.8）
+		 * 「送信」：押したら処理が終わるまで押せなくする（二重送信を防ぐ）
 		 */
 		registerSendForm: function (modal, container) {
 			var self = this;
@@ -405,7 +405,7 @@
 					}, function (message, isTimeout) {
 						app.helper.hideProgress();
 						app.helper.hideModal();
-						// 画面の応答が先に切れても、送信はサーバーで続けている（仕様 動作定義 No.21）
+						// 画面の応答が先に切れても、送信はサーバーで続けている
 						if (isTimeout) {
 							app.helper.showAlertNotification({message: messages.LBL_SEND_TIMEOUT || ''});
 						} else {
@@ -430,7 +430,7 @@
 		},
 
 		/* ------------------------------------------------------------------
-		 * 作成時の送信の結果（保存したあとに移った先の画面で 1 回だけ出す。確認事項 Q7）
+		 * 作成時の送信の結果（保存したあとに移った先の画面で 1 回だけ出す）
 		 * ------------------------------------------------------------------ */
 
 		showFlash: function () {

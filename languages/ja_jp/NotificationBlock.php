@@ -44,7 +44,7 @@ $languageStrings = [
     'LBL_SEND_TIMEOUT' => '送信に時間がかかっています。結果は送信履歴で確かめてください',
     'LBL_SEND_ERROR' => '通知を送信できませんでした',
 
-    // 送信の結果（デシジョン表 表B・動作定義 No.20）
+    // 送信の結果
     'LBL_RESULT_SENT' => '通知を送信しました（%s 人）',
     'LBL_RESULT_PARTIAL' => '通知を送信しました（%s 人中 %s 人に送れませんでした）',
     'LBL_RESULT_FAILED' => '通知を送信できませんでした',
@@ -81,7 +81,7 @@ $languageStrings = [
     'LBL_CLOSE' => '閉じる',
     'LBL_RECORD_NOT_FOUND' => 'レコードが見つかりません',
 
-    // メールの差し込み（項目設定 4-4・通知メール 5-2）
+    // メールの差し込み
     'LBL_PLACEHOLDER_SENDER_NAME' => '送信者名',
     'LBL_PLACEHOLDER_MODULE_NAME' => 'モジュール名',
     'LBL_PLACEHOLDER_RECORD_NAME' => 'レコード名',
@@ -89,7 +89,7 @@ $languageStrings = [
     'LBL_PLACEHOLDER_COMMENT' => 'コメント',
     'LBL_PLACEHOLDER_SENT_AT' => '送信日時',
 
-    // 既定のメール文面（通知メール 5-1）。宛先の言語で使う
+    // 既定のメール文面。宛先の言語で使う
     'LBL_DEFAULT_MAIL_SUBJECT' => '【通知】{module_name}：{record_name}',
     'LBL_DEFAULT_MAIL_INTRO' => '{sender_name} さんから {module_name} の通知です。',
     'LBL_DEFAULT_MAIL_RECORD' => 'レコード：{record_name}',

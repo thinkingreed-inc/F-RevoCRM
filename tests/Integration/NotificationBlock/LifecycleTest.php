@@ -15,7 +15,7 @@ use Tests\Support\NotificationBlockTestCase;
 require_once dirname(__DIR__, 2) . '/Support/NotificationBlockTestCase.php';
 
 /**
- * 通知ブロックの置き方と、レコードの削除・ごみ箱（仕様 動作定義 No.13、表C の注記、概要 1-3、確認事項 Q19）
+ * 通知ブロックの置き方と、レコードの削除・ごみ箱
  */
 final class LifecycleTest extends NotificationBlockTestCase
 {

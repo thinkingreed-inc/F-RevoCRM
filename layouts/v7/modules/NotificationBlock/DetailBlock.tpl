@@ -3,7 +3,7 @@
  * 詳細画面（NB_MODE=detail：項目設定で置いた位置）と概要画面（NB_MODE=summary：主要な項目のすぐ下）の通知ブロック
  *
  * 呼び出し元：layouts/v7/modules/Vtiger/DetailViewBlockView.tpl・Products/DetailViewBlockView.tpl・
- *            Vtiger/SummaryViewWidgets.tpl（確認事項 Q1・Q2）
+ *            Vtiger/SummaryViewWidgets.tpl
  *************************************************************************************/
 -->*}
 {strip}
