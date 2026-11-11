@@ -15,8 +15,9 @@
 {if (!$FIELD_NAME)}
     {assign var="FIELD_NAME" value=$FIELD_MODEL->getFieldName()}
 {/if}
+{* 通貨記号を含めた全体の幅を、他の入力欄（.fieldBlockContainer .inputElement の max-width）とそろえる。外枠に max-width が無いと、入力欄だけが 325px になり記号の分だけはみ出す *}
 {if $FIELD_MODEL->get('uitype') eq '71'}
-<div class="input-group">
+<div class="input-group" style="max-width:325px;">
 	<span class="input-group-addon">{$USER_MODEL->get('currency_symbol')}</span>
 	<input id="{$MODULE}_editView_fieldName_{$FIELD_NAME}" type="text" class="inputElement currencyField" name="{$FIELD_NAME}"
 	value="{$FIELD_MODEL->getEditViewDisplayValue($FIELD_MODEL->get('fieldvalue'))}" {if !empty($SPECIAL_VALIDATOR)}data-validator='{Zend_Json::encode($SPECIAL_VALIDATOR)}'{/if}
@@ -28,7 +29,7 @@
     />
 </div>
 {else if ($FIELD_MODEL->get('uitype') eq '72') && ($FIELD_NAME eq 'unit_price')}
-	<div class="input-group" style="float:none;">
+	<div class="input-group" style="float:none;max-width:325px;">
         <span class="input-group-addon" id="baseCurrencySymbol">{$BASE_CURRENCY_SYMBOL}</span>
         <input id="{$MODULE}-editview-fieldname-{$FIELD_NAME}"  type="text" class="inputElement unitPrice currencyField" name="{$FIELD_NAME}"
             value="{$FIELD_MODEL->getDisplayValue($FIELD_MODEL->get('fieldvalue'))}" {if !empty($SPECIAL_VALIDATOR)}data-validator='{Zend_Json::encode($SPECIAL_VALIDATOR)}'{/if}
@@ -50,7 +51,7 @@
     </div>
     {/if}
 {else}
-<div class="input-group">
+<div class="input-group" style="max-width:325px;">
     <span class="input-group-addon" id="basic-addon1">{$USER_MODEL->get('currency_symbol')}</span>
     <input type="text" class="input-lg currencyField" name="{$FIELD_NAME}"
         value="{$FIELD_MODEL->getEditViewDisplayValue($FIELD_MODEL->get('fieldvalue'))}" {if !empty($SPECIAL_VALIDATOR)}data-validator={Zend_Json::encode($SPECIAL_VALIDATOR)}{/if}
