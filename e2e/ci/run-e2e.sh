@@ -181,6 +181,9 @@ CI_SPECS=(
   # ごみ箱のモジュール権限(issue #1205)。一覧からの除外と sourceModule 直接指定の
   # 拒否は 3-26(admin のみ)では通らないため、権限ペルソナを使う本 spec で担保する。
   tests/3_共通機能/3-35_ゴミ箱権限.spec.ts
+  # 版管理(#1964): 改版→版履歴→過去の版の表示 と、版管理「いいえ」での URL 直接表示の拒否。
+  # シードで版管理「はい」にした契約(ServiceContracts。CI の他 spec は使わない)を spec 内で直列に使う
+  tests/3_共通機能/3-36_版管理.spec.ts
   tests/3_共通機能/3-28_権限.spec.ts
   # 関連一覧はマトリクスでは検証できない(describe API に relatedModules が無く自動導出不可)
   tests/3_共通機能/3-12_関連一覧.spec.ts

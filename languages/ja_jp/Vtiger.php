@@ -1738,6 +1738,11 @@ $languageStrings = array(
 	'LBL_DESCENDING' => '降順',
 	'LBL_ADD_SORT_ROW' => 'ソート条件を追加',
 	'LBL_REMOVE_SORTING' => 'この項目のソートを解除',
+
+	// 版管理（#1964）：どのモジュールの詳細画面・項目設定にも出るため共通ファイルに置く
+	'LBL_RECORD_VERSION' => '版',
+	'LBL_RECORD_VERSION_REVISE' => '改版',
+	'LBL_RECORD_VERSION_HISTORY' => '版履歴',
 );
 
 $jsLanguageStrings = array(
