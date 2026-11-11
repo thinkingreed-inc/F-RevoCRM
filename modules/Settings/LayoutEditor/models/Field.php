@@ -203,7 +203,8 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 	 */
 	public function isMassEditOptionDisabled() {
 		//uitypes for which mandatory switch is disabled
-		$headerFieldOptionUitypes = array('999');
+		// ファイルアップロード項目（998）は一括編集の画面でファイルを扱えないため対象外
+		$headerFieldOptionUitypes = array('999', '998');
 		if(in_array($this->get('uitype'),$headerFieldOptionUitypes) || (in_array($this->get('displaytype'), array(2,4)))) {
 			return true;
 		}
@@ -229,7 +230,7 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 		}
 		// for Record Source Field we should not show default value option as we are setting this while Record Save
 		$defaultValueRestrictedFields = array('source');
-		$defaultValueRestrictedUitypes = array('4', '70', '69', '53', '6');
+		$defaultValueRestrictedUitypes = array('4', '70', '69', '53', '6', '998');
 		if (in_array($this->getName(), $defaultValueRestrictedFields) 
 				|| in_array($this->get('displaytype'), array(4))
 				|| $this->getFieldDataType() == Vtiger_Field_Model::REFERENCE_TYPE
@@ -262,7 +263,8 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 
 	public function isHeaderFieldOptionDisabled() {
 		//uitypes for which mandatory switch is disabled
-		$headerFieldOptionUitypes = array('999');
+		// ファイルアップロード項目（998）はヘッダーに出す表示を持たないため対象外
+		$headerFieldOptionUitypes = array('999', '998');
 		if(in_array($this->get('uitype'),$headerFieldOptionUitypes) || (in_array($this->get('displaytype'), array(2,4)))) {
 			return true;
 		}
@@ -456,11 +458,24 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 	public function getFieldDataTypeLabel() {
 		$fieldDataType = $this->getFieldDataType();        
 		$fieldDataTypeLabelMapping = array('string'=>'Text','reference'=>'Relation','double'=>'Decimal','percentage'=>'Percent',
-											'boolean'=>'Checkbox','text'=>'TextArea','multipicklist'=>'MultiSelectCombo','salutation'=>'Text');
+											'boolean'=>'Checkbox','text'=>'TextArea','multipicklist'=>'MultiSelectCombo','salutation'=>'Text',
+											'fileupload'=>'FileUpload');
 		if(array_key_exists($fieldDataType,$fieldDataTypeLabelMapping)) {
 			return $fieldDataTypeLabelMapping[$fieldDataType];
 		}
 		return ucfirst($fieldDataType);
+	}
+
+	/**
+	 * ファイルアップロード項目で、手書き入力にする指定があるか
+	 * @return boolean
+	 */
+	public function isHandwriting() {
+		if ($this->getFieldDataType() != 'fileupload' || !$this->getId()) {
+			return false;
+		}
+		require_once 'modules/Documents/utils/FieldFile.php';
+		return Documents_FieldFile::isHandwritingField($this->getId());
 	}
 
 	public static function getCleanInstance() {

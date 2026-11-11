@@ -194,6 +194,7 @@ class ListViewController {
 			}
 		}
 		$fileTypeFields = array();
+		$fileUploadFields = array();
 		foreach ($listViewFields as $fieldName) {
 			$field = $moduleFields[$fieldName];
 			if(!$is_admin && ($field->getFieldDataType() == 'picklist' ||
@@ -203,6 +204,22 @@ class ListViewController {
 			if($field->getUIType() == '61') {
 				$fileTypeFields[] = $field->getColumnName();
 			}
+			if($field->getUIType() == '998') {
+				$fileUploadFields[] = $field->getColumnName();
+			}
+		}
+
+		// ファイルアップロード項目（998）のファイル名はまとめて取得する
+		$fileUploadCache = array();
+		if(!empty($fileUploadFields)) {
+			require_once 'modules/Documents/utils/FieldFile.php';
+			$documentIds = array();
+			foreach($fileUploadFields as $fileUploadField) {
+				for ($i = 0; $i < $rowCount; ++$i) {
+					$documentIds[] = $db->query_result($result,$i,$fileUploadField);
+				}
+			}
+			$fileUploadCache = Documents_FieldFile::getFileInfos($documentIds);
 		}
 
 		//performance optimization for uitype 61
@@ -499,6 +516,16 @@ class ListViewController {
 				} elseif($field && $field->isNameField) {
 					$value = "<a href='index.php?module=$field->moduleName&view=Detail&".
 								"record=$recordId' title='".vtranslate($field->moduleName, $field->moduleName).":". $value ."'>$value</a>";
+				} elseif($field->getUIType() == 998) {
+					// ファイルアップロード項目はファイルであることが分かる印とファイル名を出す
+					$documentId = Documents_FieldFile::normalizeDocumentId($value);
+					$fileInfo = isset($fileUploadCache[$documentId]) ? $fileUploadCache[$documentId] : Documents_FieldFile::getFileInfo($documentId);
+					$value = '';
+					if($fileInfo) {
+						$fileName = textlength_check(Vtiger_Util_Helper::toSafeHTML($fileInfo['filename']));
+						$value = '<span class="fr-file-field-list" title="'.Vtiger_Util_Helper::toSafeHTML($fileInfo['filename']).'">'.
+								 '<i class="fa fa-paperclip"></i>&nbsp;'.$fileName.'</span>';
+					}
 				} elseif($field->getUIType() == 61) {
 					$attachmentId = (int)$value;
 					$displayValue = '--';

@@ -36,7 +36,10 @@ class PDFTemplates_ShowTemplateContent_Action extends Vtiger_Action_Controller {
 		$response = new Vtiger_Response();
 		$recordId = $request->get('record');
 		$recordModel = PDFTemplates_Record_Model::getInstanceById($recordId);
-		$response->setResult(array("content" => decode_html($recordModel->get('body'))));
+		// 画像の URL の変数（$module-cf_xxx#src$）を src に持つ img は、画面では表示できないため代わりの画像にする
+		require_once 'modules/Documents/utils/FieldFileTemplate.php';
+		$content = Documents_FieldFileTemplate::replaceSrcVariablesForPreview((string) decode_html($recordModel->get('body')));
+		$response->setResult(array("content" => $content));
 		$response->emit();
 	}
 

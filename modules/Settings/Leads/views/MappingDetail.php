@@ -24,9 +24,14 @@ class Settings_Leads_MappingDetail_View extends Settings_Vtiger_Index_View {
 		$qualifiedModuleName = $request->getModule(false);
 
 		$viewer = $this->getViewer($request);
+		$viewer->assign('QUALIFIED_MODULE', $qualifiedModuleName);
+		// 画面本体は Web コンポーネント（<lead-mapping-settings>）。legacy=1 で従来の画面を開ける
+		if ($request->get('legacy') != '1') {
+			$viewer->view('LeadMappingSettings.tpl', $qualifiedModuleName);
+			return;
+		}
 		$viewer->assign('MODULE_MODEL', Settings_Leads_Mapping_Model::getInstance());
 		$viewer->assign('ERROR_MESSAGE', $request->get('errorMessage'));
-		$viewer->assign('QUALIFIED_MODULE', $qualifiedModuleName);
 		$viewer->view('MappingDetail.tpl', $qualifiedModuleName);
 	}
 

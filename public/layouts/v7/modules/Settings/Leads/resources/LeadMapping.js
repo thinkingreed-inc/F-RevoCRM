@@ -157,10 +157,12 @@ jQuery.Class("Settings_LeadMapping_Js",{
 				function(err, data) {
 					app.helper.hideProgress();
 					if(err === null){
+						// MappingDetail の既定は Web コンポーネント版のため、従来の一覧へ戻すには legacy=1 を付ける
 						var detailViewParams = {
 							'module' : app.getModuleName(),
 							'parent' : app.getParentModuleName(),
-							'view' : 'MappingDetail'
+							'view' : 'MappingDetail',
+							'legacy' : 1
 						};
 						app.helper.showProgress();
 						

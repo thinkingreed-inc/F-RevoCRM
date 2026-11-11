@@ -7,7 +7,48 @@
  * All Rights Reserved.
  *************************************************************************************/
 
-Vtiger_Edit_Js("PDFTemplates_Edit_Js",{},{
+Vtiger_Edit_Js("PDFTemplates_Edit_Js",{
+
+	/**
+	 * 画像の URL の変数（$module-cf_xxx#src$）の代わりにエディタに出す画像
+	 * （Documents_FieldFileTemplate::PREVIEW_IMAGE_URL と同じ）
+	 */
+	FILE_IMAGE_PLACEHOLDER : 'layouts/v7/skins/images/fileFieldImagePlaceholder.svg',
+
+	/** 差し替えた img に元の変数を持たせておく属性 */
+	FILE_IMAGE_VARIABLE_ATTR : 'data-fr-src-variable',
+
+	/**
+	 * src が画像の URL の変数の img を、エディタに出す代わりの画像にする
+	 * （変数のままだとブラウザが URL として読みに行き、必ず表示できないため）
+	 */
+	toEditorFileImages : function(html) {
+		var placeholder = PDFTemplates_Edit_Js.FILE_IMAGE_PLACEHOLDER;
+		var attr = PDFTemplates_Edit_Js.FILE_IMAGE_VARIABLE_ATTR;
+		return html.replace(/<img\b[^>]*>/gi, function(tag) {
+			var match = tag.match(/(\ssrc\s*=\s*)(["'])(\$[a-z0-9]+-[a-z0-9_]+#src\$)\2/i);
+			if (!match) {
+				return tag;
+			}
+			return tag.replace(match[0], match[1] + '"' + placeholder + '" ' + attr + '="' + match[3] + '"');
+		});
+	},
+
+	/**
+	 * エディタに出した代わりの画像を、保存する内容では元の変数に戻す
+	 */
+	fromEditorFileImages : function(html) {
+		var attr = PDFTemplates_Edit_Js.FILE_IMAGE_VARIABLE_ATTR;
+		var attrPattern = new RegExp('\\s' + attr + '\\s*=\\s*(["\'])([^"\']*)\\1', 'i');
+		return html.replace(/<img\b[^>]*>/gi, function(tag) {
+			var match = tag.match(attrPattern);
+			if (!match) {
+				return tag;
+			}
+			return tag.replace(match[0], '').replace(/(\ssrc\s*=\s*)(["'])[^"']*\2/i, '$1"' + match[2] + '"');
+		});
+	}
+},{
 	
 	/**
 	 * Function to register Jodit editor for description field
@@ -27,6 +68,7 @@ Vtiger_Edit_Js("PDFTemplates_Edit_Js",{},{
 			}
 			var joditInstance = new Vtiger_Jodit_Js();
 			joditInstance.loadJoditEditor(templateContentElement,customConfig);
+			this.registerFileImagePlaceholder();
 			if ($("[name='is_headlesschrome']").val() == "true") {
 				// Jodit はインスタンス生成後にエディタDOMが非同期で準備されるため、
 				// getInstance() で取得できるまでリトライしつつ注入する
@@ -64,6 +106,40 @@ Vtiger_Edit_Js("PDFTemplates_Edit_Js",{},{
 		
 	},
 	
+	/**
+	 * 画像の URL の変数（$module-cf_xxx#src$）を src に持つ img を、エディタでは代わりの画像で出す
+	 *
+	 * 保存する内容（getData。textarea への同期もこれを通る）では元の変数に戻す。
+	 * ソース表示で img を書き足した場合も、エディタに戻ったときに差し替える。
+	 */
+	registerFileImagePlaceholder : function() {
+		var tryRegister = function(retryCount) {
+			// Jodit はインスタンス生成後にエディタDOMが非同期で準備されるため、取得できるまで待つ
+			var editor = Vtiger_Jodit_Js.getInstance('templatecontent');
+			if (!editor) {
+				if (retryCount < 50) {
+					setTimeout(function() { tryRegister(retryCount + 1); }, 50);
+				}
+				return;
+			}
+			var replaceInEditor = function() {
+				var value = editor.jodit.value;
+				var replaced = PDFTemplates_Edit_Js.toEditorFileImages(value);
+				if (replaced !== value) {
+					editor.jodit.value = replaced;
+				}
+			};
+			replaceInEditor();
+			editor.lastKnownEditorValue = editor.jodit.value;
+			var getData = editor.getData;
+			editor.getData = function() {
+				return PDFTemplates_Edit_Js.fromEditorFileImages(getData.apply(this, arguments));
+			};
+			editor.on('afterSetMode', replaceInEditor);
+		};
+		tryRegister(0);
+	},
+
 	/**
 	 * Function which will register module change event
 	 */

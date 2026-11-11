@@ -5,6 +5,10 @@ import { gotoSettings, saveAndSettle } from "../../utils/settings";
 /**
  * G-01 リードの昇格のマッピング (マーケティングと営業 > リードの昇格のマッピング)
  *
+ * MappingDetail の既定の画面は Web コンポーネント <lead-mapping-settings> になった。
+ * ここでは引き続き残している従来の画面（`legacy=1`）を検証する。新しい画面の
+ * 保存・再読込は 4-13_リード昇格設定.spec.ts(ローカル用)で検証する。
+ *
  * 設定編集型。マッピング一覧(MappingDetail)から「編集」ボタンで編集フォーム
  * (LeadMappingEdit / form#leadsMapping) を AJAX で開き、値を変更せずに保存する。
  *
@@ -29,7 +33,7 @@ import { gotoSettings, saveAndSettle } from "../../utils/settings";
  * を実アサーションで確認する。
  */
 test.describe("管理: リードの昇格のマッピング (Leads Mapping)", () => {
-  const detailParams = { module: "Leads", view: "MappingDetail" };
+  const detailParams = { module: "Leads", view: "MappingDetail", legacy: "1" };
 
   // 一覧(MappingDetail)のデータ行(cfmid を持つ tr)
   const mappingRows = (page: Page) =>
