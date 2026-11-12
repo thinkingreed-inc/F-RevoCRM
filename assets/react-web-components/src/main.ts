@@ -111,6 +111,20 @@ createWebComponent(
   [],
 );
 
+import { ListFavorites } from "@/components/ListFavorites";
+
+// ListFavorites: 一覧画面サイドバーの「お気に入りリスト」欄
+// module: リストのモジュール名
+// favorites: 初期表示するお気に入り一覧（JSON）
+// app: リンクに付ける app パラメータ
+// labels: 翻訳済みの文言（JSON）
+createWebComponent(
+  ListFavorites,
+  "list-favorites",
+  ["module", "favorites", "app", "labels"],
+  [],
+);
+
 // ParameterEdit コンポーネントの登録（システム変数編集ダイアログ）
 // record-id: 編集対象のレコードID
 // is-open: ダイアログの開閉状態
