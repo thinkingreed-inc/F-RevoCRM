@@ -67,7 +67,7 @@
                         {for $i=0 to $GROUPBYFIELDSCOUNT-1}
                             {assign var=FIELD value=explode(':',$GROUPBYFIELDS[$i])}
                             {assign var=FIELD_EXPLODE_FIRST_UNDERBAR value=explode('_',$FIELD[2],2)}
-                            {if in_array($FIELD_EXPLODE_FIRST_UNDERBAR[1], $INCLUDED_UNDERBAR_LABELS)}
+                            {if is_array($INCLUDED_UNDERBAR_LABELS) && in_array($FIELD_EXPLODE_FIRST_UNDERBAR[1], $INCLUDED_UNDERBAR_LABELS)}
                                 {assign var=FIELD_EXPLODE value=$FIELD_EXPLODE_FIRST_UNDERBAR}
                             {else}
                                 {assign var=FIELD_EXPLODE value=explode('_',$FIELD[2])}
