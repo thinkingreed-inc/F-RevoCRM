@@ -25,9 +25,8 @@ $languageStrings = [
     'LBL_TARGETS_SAVE_FAILED' => 'Could not save who to notify',
     'LBL_SEND_NOTIFICATION' => 'Send Notification',
     'LBL_SENDING_IN_PROGRESS' => 'A notification is being sent. You can send again when it finishes',
-    'LBL_SEND_HISTORY' => 'Sending History',
+    'LBL_HISTORY_LINK' => 'Sending History (%s)',
     'LBL_NO_HISTORY' => 'No sending history',
-    'LBL_SHOW_ALL_HISTORY' => 'Show all',
 
     // Send dialog
     'LBL_SEND_DIALOG_TITLE' => 'Send Notification',
@@ -68,7 +67,6 @@ $languageStrings = [
     'LBL_STATUS_PARTIAL' => 'Partially Failed',
     'LBL_STATUS_FAILED' => 'Failed',
     'LBL_BACK_TO_HISTORY' => 'Back to Sending History',
-    'LBL_RECIPIENT_LIST_TITLE' => 'Recipients',
     'LBL_NAME' => 'Name',
     'LBL_EMAIL' => 'Email',
     'LBL_REASON' => 'Reason',

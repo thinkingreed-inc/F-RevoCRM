@@ -71,7 +71,7 @@ final class NotifierTest extends NotificationBlockTestCase
         $this->assertSame(1, $this->mailSender->openCount);
         $this->assertSame(1, $this->mailSender->closeCount);
 
-        $history = NotificationBlock_History_Model::getRecent($recordId)[0];
+        $history = NotificationBlock_History_Model::getAll($recordId)[0];
         $this->assertSame('sent', $history['display_status']);
         $this->assertSame('manual', $history['method']);
         $this->assertSame(3, $history['recipient_count']);
@@ -100,7 +100,7 @@ final class NotifierTest extends NotificationBlockTestCase
 
         $this->assertSame(NotificationBlock_Notifier_Model::CODE_NO_SERVER, $result['code']);
         $this->assertSame([], $this->mailSender->sent);
-        $history = NotificationBlock_History_Model::getRecent($recordId)[0];
+        $history = NotificationBlock_History_Model::getAll($recordId)[0];
         $this->assertSame('failed', $history['display_status']);
         $this->assertNotSame('', $history['failure_reason']);
         $this->assertSame(['failed'], array_column(NotificationBlock_History_Model::getRecipients($this->historyIdOf($history)), 'status'));
@@ -117,7 +117,7 @@ final class NotifierTest extends NotificationBlockTestCase
         $result = NotificationBlock_Notifier_Model::send($recordId);
         $this->assertSame(NotificationBlock_Notifier_Model::CODE_PARTIAL, $result['code']);
         $this->assertSame(1, $result['failed']);
-        $recipients = NotificationBlock_History_Model::getRecipients($this->historyIdOf(NotificationBlock_History_Model::getRecent($recordId)[0]));
+        $recipients = NotificationBlock_History_Model::getRecipients($this->historyIdOf(NotificationBlock_History_Model::getAll($recordId)[0]));
         $failed = array_values(array_filter($recipients, static fn (array $r): bool => $r['status'] === 'failed'));
         $this->assertSame('550 mailbox unavailable', $failed[0]['reason']);
 
@@ -155,7 +155,7 @@ final class NotifierTest extends NotificationBlockTestCase
         NotificationBlock_History_Model::markRecipient($historyId, $user, true);
 
         $this->assertSame(NotificationBlock_Notifier_Model::CODE_SENDING, NotificationBlock_Notifier_Model::send($recordId)['code']);
-        $this->assertSame('sending', NotificationBlock_History_Model::getRecent($recordId)[0]['display_status']);
+        $this->assertSame('sending', NotificationBlock_History_Model::getAll($recordId)[0]['display_status']);
 
         // 最後に記録してから 10 分を過ぎた
         $this->db->pquery('UPDATE vtiger_notificationblock_history SET last_progress_at = ? WHERE historyid = ?', [date('Y-m-d H:i:s', time() - 601), $historyId]);
@@ -164,6 +164,34 @@ final class NotifierTest extends NotificationBlockTestCase
         $this->assertSame(['sent', 'aborted'], array_column(NotificationBlock_History_Model::getRecipients($historyId), 'status'));
 
         $this->assertSame(NotificationBlock_Notifier_Model::CODE_SENT, NotificationBlock_Notifier_Model::send($recordId)['code']);
+    }
+
+    public function test_通知ブロックの送信履歴の件数はそのレコードの分だけを数え_送信中も分かる(): void
+    {
+        $role = $this->createRole('役割');
+        $user = $this->createUser('宛先', 'to@example.com', $role);
+        $recordId = $this->recordWithUsers('件数', [$user]);
+        $otherId = $this->recordWithUsers('ほかのレコード', [$user]);
+
+        $data = \NotificationBlock_Display_Helper::getDetailData(self::MODULE, $recordId);
+        $this->assertSame(0, $data['history_count']);
+        $this->assertFalse($data['is_sending']);
+
+        NotificationBlock_Notifier_Model::send($recordId);
+        NotificationBlock_Notifier_Model::send($recordId);
+        NotificationBlock_Notifier_Model::send($otherId);
+        $this->assertSame(2, NotificationBlock_History_Model::countByRecord($recordId));
+        $this->assertSame(1, NotificationBlock_History_Model::countByRecord($otherId));
+
+        // 送っている最中の行も件数に入り、「送信中」と分かる
+        NotificationBlock_History_Model::create([
+            'crmid' => $recordId, 'setype' => self::MODULE, 'sent_by' => self::ADMIN_USER_ID, 'sender_name' => 'admin',
+            'method' => 'manual', 'method_label' => '', 'method_module' => '', 'comment' => '',
+        ], [['userid' => $user, 'name' => '宛先', 'email' => 'to@example.com']]);
+        $data = \NotificationBlock_Display_Helper::getDetailData(self::MODULE, $recordId);
+        $this->assertSame(3, $data['history_count']);
+        $this->assertTrue($data['is_sending']);
+        $this->assertFalse(\NotificationBlock_Display_Helper::getDetailData(self::MODULE, $otherId)['is_sending'], 'ほかのレコードの送信中は数えない');
     }
 
     public function test_途中で止まったときは送れなかった宛先を未送信_中断にする(): void
@@ -224,7 +252,7 @@ final class NotifierTest extends NotificationBlockTestCase
         $this->assertSame('【承認】' . self::PREFIX . 'ほかの機能', $subjects['ja@example.com']);
         $this->assertSame('[Approval] ' . self::PREFIX . 'ほかの機能', $subjects['en@example.com']);
         $this->assertStringContainsString('{account_no}', $this->mailSender->sent[0]['html'], '使えない差し込みはそのまま');
-        $history = NotificationBlock_History_Model::getRecent($recordId)[0];
+        $history = NotificationBlock_History_Model::getAll($recordId)[0];
         $this->assertSame('external', $history['method']);
         $this->assertSame(vtranslate('LBL_TASK_INFORMATION', 'Calendar'), $history['method_text']);
     }

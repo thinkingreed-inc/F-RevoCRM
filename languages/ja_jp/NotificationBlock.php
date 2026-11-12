@@ -25,9 +25,8 @@ $languageStrings = [
     'LBL_TARGETS_SAVE_FAILED' => '通知先を保存できませんでした',
     'LBL_SEND_NOTIFICATION' => '通知を送信',
     'LBL_SENDING_IN_PROGRESS' => '送信中のため、終わるまで送信できません',
-    'LBL_SEND_HISTORY' => '送信履歴',
+    'LBL_HISTORY_LINK' => '送信履歴（%s 件）',
     'LBL_NO_HISTORY' => '送信履歴はありません',
-    'LBL_SHOW_ALL_HISTORY' => 'すべて表示',
 
     // 送信ダイアログ
     'LBL_SEND_DIALOG_TITLE' => '通知を送信',
@@ -68,7 +67,6 @@ $languageStrings = [
     'LBL_STATUS_PARTIAL' => '一部失敗',
     'LBL_STATUS_FAILED' => '失敗',
     'LBL_BACK_TO_HISTORY' => '送信履歴に戻る',
-    'LBL_RECIPIENT_LIST_TITLE' => '宛先の一覧',
     'LBL_NAME' => '氏名',
     'LBL_EMAIL' => 'メールアドレス',
     'LBL_REASON' => '理由',

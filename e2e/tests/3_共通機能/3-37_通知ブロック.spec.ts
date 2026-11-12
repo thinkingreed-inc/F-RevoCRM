@@ -15,7 +15,9 @@ import { url, generateRandomString } from "../../utils/util";
  * - 作成画面：役割・グループ・ユーザーのタブから通知先を選んで保存すると、作成時に送信し、
  *   移った先の画面に結果を出して送信履歴に「作成時」で記録する
  * - 詳細画面：通知先を種類のラベル付きで出し、「通知を送信」で送信ダイアログ（宛先の人数）から送る
- * - 送信履歴の「すべて表示」と、その中で切り替える宛先の一覧（送れなかった理由）・送信履歴に戻る
+ * - 通知ブロックには送信履歴の表を出さず、「送信履歴（N 件）」のリンク（0 件なら「送信履歴はありません」の文字）を出す。
+ *   送ったあとは件数を読み直す
+ * - リンクから開く送信履歴のダイアログと、その中で切り替える宛先の一覧（送れなかった理由）・送信履歴に戻る
  * - 通知先の直接編集（保存しても送らない）と、宛先が 0 人のときは「送信」を押せないこと
  * - 複製では有効な通知先を引き継ぐ
  * - メール文面の設定：保存した文面がダイアログに出て、「既定の文面に戻す」で戻る
@@ -28,6 +30,7 @@ test.describe.configure({ mode: "serial" });
 test.describe("共通: 通知ブロック", () => {
   const vendorName = `E2Enb${generateRandomString(6)}`;
   let recordId = "";
+  let emptyRecordId = "";
   let roleText = "";
 
   const layoutUrl = url(
@@ -40,6 +43,8 @@ test.describe("共通: 通知ブロック", () => {
     await page.waitForLoadState("domcontentloaded");
   };
   const detailBlock = (page: Page) => page.locator('.notificationBlockContainer[data-mode="detail"]');
+  // 送信履歴へのリンク（「送信履歴（N 件）」）
+  const historyLink = (page: Page) => detailBlock(page).locator(".notificationBlockShowHistory");
   const notifyMessage = (page: Page) => page.locator('[data-notify="message"]');
   // 候補は入力が止まってから読み直すので、絞り込んだ結果が返ってから候補を押す
   const searchAndWait = async (page: Page, search: ReturnType<Page["locator"]>, query: string) => {
@@ -107,10 +112,34 @@ test.describe("共通: 通知ブロック", () => {
     await expect(notifyMessage(page).filter({ hasText: NO_SERVER_MESSAGE })).toBeVisible({ timeout: 15000 });
 
     await gotoDetail(page);
-    const rows = detailBlock(page).locator("tr.notificationBlockHistoryRow");
+    // 通知ブロックには送信履歴の表を出さず、件数のリンクだけを出す
+    await expect(detailBlock(page).locator(".notificationBlockHistoryTable, tr.notificationBlockHistoryRow")).toHaveCount(0);
+    await expect(historyLink(page)).toHaveText("送信履歴（1 件）");
+    await historyLink(page).click();
+    const rows = page.locator("#notificationBlockHistoryDialog tr.notificationBlockHistoryRow");
     await expect(rows).toHaveCount(1);
     await expect(rows.first()).toContainText("作成時");
     await expect(rows.first()).toContainText("失敗");
+  });
+
+  test("送信履歴が無いレコードは、リンクにせず「送信履歴はありません」と出す", async ({ page }) => {
+    // 通知先を選ばずに作る（宛先がいないので作成時の送信はせず、送信履歴も残らない）
+    await page.goto(url(`index.php?module=${MODULE}&view=Edit`));
+    await page.waitForLoadState("domcontentloaded");
+    await page.fill('input[name="vendorname"]', `${vendorName}empty`);
+    await page.locator("button.saveButton").first().click();
+    await page.waitForURL(/[?&]record=\d+/, { timeout: 15000 });
+    emptyRecordId = new URL(page.url()).searchParams.get("record") || "";
+    expect(emptyRecordId).not.toBe("");
+
+    await page.goto(
+      url(`index.php?module=${MODULE}&view=Detail&record=${emptyRecordId}&mode=showDetailViewByMode&requestMode=full`)
+    );
+    const block = detailBlock(page);
+    await expect(block.locator(".notificationBlockNoHistory")).toHaveText("送信履歴はありません");
+    await expect(block.locator(".notificationBlockShowHistory")).toHaveCount(0);
+    await expect(block.locator(".notificationBlockHistorySending")).toHaveCount(0);
+    await expect(block.locator(".notificationBlockHistoryTable, tr.notificationBlockHistoryRow")).toHaveCount(0);
   });
 
   test("詳細画面：通知先をラベル付きで出し、送信ダイアログから送ると送信履歴に記録する", async ({ page }) => {
@@ -127,17 +156,22 @@ test.describe("共通: 通知ブロック", () => {
     await dialog.locator("#notificationBlockSendSubmit").click();
     await expect(dialog).toBeHidden();
     await expect(notifyMessage(page).filter({ hasText: NO_SERVER_MESSAGE })).toBeVisible();
-    await expect(block.locator("tr.notificationBlockHistoryRow")).toHaveCount(2);
-    await expect(block.locator("tr.notificationBlockHistoryRow").first()).toContainText("手動");
+    // 画面を開き直さなくても、送ったあとに件数を読み直す
+    await expect(historyLink(page)).toHaveText("送信履歴（2 件）");
+    await expect(block.locator(".notificationBlockHistoryTable, tr.notificationBlockHistoryRow")).toHaveCount(0);
   });
 
-  test("送信履歴の「すべて表示」から宛先の一覧に切り替えて戻れ、直近の送信履歴からも宛先の一覧を開ける", async ({ page }) => {
+  test("送信履歴のリンクからダイアログを開き、宛先の一覧に切り替えて戻れる", async ({ page }) => {
     await gotoDetail(page);
-    await detailBlock(page).locator(".notificationBlockShowAllHistory").click();
+    await historyLink(page).click();
     const history = page.locator("#notificationBlockHistoryDialog");
     await expect(history).toBeVisible();
     await expect(history.locator("th")).toHaveText(["送信日時", "送信者", "送信方法", "宛先", "コメント", "結果"]);
+    // 新しい順
+    await expect(history.locator("tr.notificationBlockHistoryRow")).toHaveCount(2);
+    await expect(history.locator("tr.notificationBlockHistoryRow").first()).toContainText("手動");
     await expect(history.locator("tr.notificationBlockHistoryRow").first()).toContainText("E2E のコメント");
+    await expect(history.locator("tr.notificationBlockHistoryRow").nth(1)).toContainText("作成時");
 
     // ダイアログを重ねて開かず、同じダイアログの中身を宛先の一覧に切り替える
     await history.locator(".notificationBlockShowRecipients").first().click();
@@ -154,12 +188,9 @@ test.describe("共通: 通知ブロック", () => {
     await history.locator('[data-dismiss="modal"]').first().click();
     await expect(history).toBeHidden();
 
-    // 通知ブロックの直近の送信履歴からは、宛先の一覧のダイアログを開く（中身は同じ）
-    await detailBlock(page).locator(".notificationBlockShowRecipients").first().click();
-    const recipients = page.locator("#notificationBlockRecipientDialog");
-    await expect(recipients.locator(".notificationBlockRecipientContent")).toBeVisible();
-    await page.waitForTimeout(1500);
-    await expect(recipients.locator("tr.notificationBlockRecipientRow").first()).toContainText("送信メールサーバーが設定されていません");
+    // 閉じたあと、もう一度リンクから開ける
+    await historyLink(page).click();
+    await expect(page.locator("#notificationBlockHistoryDialog tr.notificationBlockHistoryRow")).toHaveCount(2);
   });
 
   test("通知先を直接編集して保存しても送らず、宛先が 0 人なら「送信」を押せない", async ({ page }) => {
@@ -175,7 +206,8 @@ test.describe("共通: 通知ブロック", () => {
     await expect(editor.locator(".notificationBlockChip")).toHaveCount(0);
     await editor.locator("button.notificationBlockSaveTargets").click();
     await expect(block.locator(".notificationBlockNoTargets")).toHaveText("通知先はありません");
-    await expect(block.locator("tr.notificationBlockHistoryRow")).toHaveCount(2);
+    // 通知先を保存しても送らない（件数は増えない）
+    await expect(historyLink(page)).toHaveText("送信履歴（2 件）");
 
     await block.locator("button.notificationBlockSend").click();
     const dialog = page.locator("#notificationBlockSendDialog");
@@ -234,19 +266,22 @@ test.describe("共通: 通知ブロック", () => {
 
   test.afterAll(async ({ browser, workerStorageState }) => {
     // 作ったレコードは削除する（ごみ箱に移す）
-    if (!recordId) {
+    const recordIds = [recordId, emptyRecordId].filter((id) => id !== "");
+    if (recordIds.length === 0) {
       return;
     }
     const context = await browser.newContext({ storageState: workerStorageState });
     const page = await context.newPage();
     try {
-      await page.goto(url(`index.php?module=${MODULE}&view=Detail&record=${recordId}`));
-      await page.evaluate(async (record) => {
-        const w = window as unknown as { csrfMagicName: string; csrfMagicToken: string };
-        const body = new URLSearchParams({ module: "Vendors", action: "DeleteAjax", record });
-        body.append(w.csrfMagicName, w.csrfMagicToken);
-        await fetch("index.php", { method: "POST", body, credentials: "same-origin" });
-      }, recordId);
+      await page.goto(url(`index.php?module=${MODULE}&view=Detail&record=${recordIds[0]}`));
+      for (const id of recordIds) {
+        await page.evaluate(async (record) => {
+          const w = window as unknown as { csrfMagicName: string; csrfMagicToken: string };
+          const body = new URLSearchParams({ module: "Vendors", action: "DeleteAjax", record });
+          body.append(w.csrfMagicName, w.csrfMagicToken);
+          await fetch("index.php", { method: "POST", body, credentials: "same-origin" });
+        }, id);
+      }
     } finally {
       await context.close();
     }

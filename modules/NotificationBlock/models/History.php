@@ -28,9 +28,6 @@ class NotificationBlock_History_Model
     /** 送信が止まったとみなすまでの時間（秒）。最後に 1 人分を記録した時点から数える */
     public const STALE_SECONDS = 600;
 
-    /** 詳細画面の通知ブロックに出す件数 */
-    public const RECENT_LIMIT = 5;
-
     /** 理由（言語ファイル NotificationBlock.php のキー） */
     public const REASON_NO_SERVER = 'LBL_REASON_NO_SERVER';
     public const REASON_ABORTED = 'LBL_REASON_ABORTED';
@@ -123,13 +120,14 @@ class NotificationBlock_History_Model
     }
 
     /**
-     * 直近の送信履歴（新しい順）
-     *
-     * @return array<int, array<string, mixed>>
+     * そのレコードの送信履歴の件数（通知ブロックの「送信履歴（N 件）」に出す）
      */
-    public static function getRecent(int $crmId, int $limit = self::RECENT_LIMIT): array
+    public static function countByRecord(int $crmId): int
     {
-        return self::fetch($crmId, $limit);
+        $db = PearDatabase::getInstance();
+        $result = $db->pquery('SELECT COUNT(*) AS cnt FROM ' . NotificationBlock_Config_Model::HISTORY_TABLE . ' WHERE crmid = ?', [$crmId]);
+        $rows = NotificationBlock_Util_Helper::fetchRawRows($result);
+        return NotificationBlock_Util_Helper::toInt($rows[0]['cnt'] ?? 0);
     }
 
     /**
@@ -139,7 +137,16 @@ class NotificationBlock_History_Model
      */
     public static function getAll(int $crmId): array
     {
-        return self::fetch($crmId, 0);
+        $db = PearDatabase::getInstance();
+        $result = $db->pquery(
+            'SELECT * FROM ' . NotificationBlock_Config_Model::HISTORY_TABLE . ' WHERE crmid = ? ORDER BY historyid DESC',
+            [$crmId]
+        );
+        $histories = [];
+        foreach (NotificationBlock_Util_Helper::fetchRawRows($result) as $row) {
+            $histories[] = self::present($row);
+        }
+        return $histories;
     }
 
     /**
@@ -233,24 +240,6 @@ class NotificationBlock_History_Model
             return self::translate($reason);
         }
         return $reason;
-    }
-
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    private static function fetch(int $crmId, int $limit): array
-    {
-        $db = PearDatabase::getInstance();
-        $sql = 'SELECT * FROM ' . NotificationBlock_Config_Model::HISTORY_TABLE . ' WHERE crmid = ? ORDER BY historyid DESC';
-        if ($limit > 0) {
-            $sql .= ' LIMIT ' . $limit;
-        }
-        $result = $db->pquery($sql, [$crmId]);
-        $histories = [];
-        foreach (NotificationBlock_Util_Helper::fetchRawRows($result) as $row) {
-            $histories[] = self::present($row);
-        }
-        return $histories;
     }
 
     /**

@@ -1,12 +1,12 @@
 <?php
 
 /**
- * 送信履歴の「すべて表示」と、宛先の一覧
+ * 送信履歴のダイアログと、その中で切り替えて出す宛先の一覧
  *
- * GET module=NotificationBlock&view=History&record=..                         … すべての送信履歴（新しい順）
- * GET module=NotificationBlock&view=History&record=..&mode=recipients&historyid=.. … 宛先の一覧（ダイアログ）
+ * GET module=NotificationBlock&view=History&record=..
+ *     … 送信履歴のダイアログ（すべての送信履歴を新しい順に。通知ブロックの「送信履歴（N 件）」から開く）
  * GET module=NotificationBlock&view=History&record=..&mode=recipient_content&historyid=..
- *     … 宛先の一覧の中身だけ（「すべて表示」のダイアログの中で切り替えて出す。ダイアログを重ねて開かないため）
+ *     … 宛先の一覧の中身だけ（送信履歴のダイアログの中で切り替えて出す。ダイアログを重ねて開かないため）
  */
 class NotificationBlock_History_View extends NotificationBlock_Base_View
 {
@@ -16,7 +16,7 @@ class NotificationBlock_History_View extends NotificationBlock_Base_View
         $viewer = $this->getViewer($request);
         $viewer->assign('NB_RECORD_ID', $this->recordId);
         $mode = NotificationBlock_Util_Helper::toStr($request->get('mode'));
-        if ($mode === 'recipients' || $mode === 'recipient_content') {
+        if ($mode === 'recipient_content') {
             $historyId = NotificationBlock_Util_Helper::toInt($request->get('historyid'));
             $history = NotificationBlock_History_Model::getById($historyId);
             // ほかのレコードの送信履歴は出さない
@@ -25,8 +25,7 @@ class NotificationBlock_History_View extends NotificationBlock_Base_View
             }
             $viewer->assign('NB_HISTORY', $history);
             $viewer->assign('NB_RECIPIENTS', NotificationBlock_History_Model::getRecipients($historyId));
-            $viewer->assign('NB_TITLE', vtranslate('LBL_RECIPIENT_LIST_TITLE', $module));
-            $viewer->view($mode === 'recipients' ? 'RecipientList.tpl' : 'RecipientContent.tpl', $module);
+            $viewer->view('RecipientContent.tpl', $module);
             return;
         }
         $viewer->assign('NB_HISTORIES', NotificationBlock_History_Model::getAll($this->recordId));

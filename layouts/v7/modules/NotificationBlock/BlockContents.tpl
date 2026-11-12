@@ -1,6 +1,8 @@
 {*<!--
 /*+***********************************************************************************
- * 詳細画面・概要画面の通知ブロックの中身（通知先・「通知を送信」・直近の送信履歴）
+ * 詳細画面・概要画面の通知ブロックの中身（通知先・「通知を送信」・送信履歴へのリンク）
+ *
+ * 送信履歴の表はブロックに出さず、「送信履歴（N 件）」のリンクからダイアログ（HistoryDialog.tpl）で見る。
  *
  * 送信したあとや通知先を変えたあとは、この部分だけを読み直す（NotificationBlock_Block_View）。
  *************************************************************************************/
@@ -42,13 +44,15 @@
 			{/if}
 		</div>
 	{/if}
-	<div class="notificationBlockHistory">
-		<strong>{vtranslate('LBL_SEND_HISTORY', $NBM)}</strong>
-		{if empty($NB.histories)}
-			<div class="text-muted notificationBlockNoHistory" style="margin-top: 5px;">{vtranslate('LBL_NO_HISTORY', $NBM)}</div>
+	<div class="notificationBlockHistory" data-count="{$NB.history_count}">
+		{if $NB.history_count > 0}
+			<a href="javascript:void(0)" class="notificationBlockShowHistory">{vtranslate('LBL_HISTORY_LINK', $NBM, $NB.history_count)}</a>
 		{else}
-			{include file="HistoryTable.tpl"|vtemplate_path:$NBM HISTORIES=$NB.histories}
-			<a href="javascript:void(0)" class="notificationBlockShowAllHistory">{vtranslate('LBL_SHOW_ALL_HISTORY', $NBM)}</a>
+			<span class="text-muted notificationBlockNoHistory">{vtranslate('LBL_NO_HISTORY', $NBM)}</span>
+		{/if}
+		{* 送っている最中（10 分止まって中断とみなすものを除く）の送信履歴があるとき *}
+		{if $NB.is_sending}
+			&nbsp;<span class="label label-warning notificationBlockHistorySending">{vtranslate('LBL_STATUS_SENDING', $NBM)}</span>
 		{/if}
 	</div>
 </div>

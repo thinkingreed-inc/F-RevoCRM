@@ -6,7 +6,7 @@
  *
  * - 通知先の入力欄：役割・グループ・ユーザーのタブで候補を出し、入力した文字で絞り込んで複数選ぶ
  * - 詳細画面の通知先の直接編集
- * - 送信ダイアログ・送信履歴の「すべて表示」・宛先の一覧
+ * - 送信ダイアログ・送信履歴のダイアログ（通知ブロックの「送信履歴（N 件）」から開く）・宛先の一覧
  * - 作成時の送信の結果を、保存したあとに移った先の画面で出す
  */
 (function () {
@@ -260,22 +260,47 @@
 		},
 
 		/**
-		 * 通知ブロックの中身（通知先・ボタン・直近の送信履歴）を読み直す
+		 * 通知ブロックの中身（通知先・ボタン・送信履歴の件数と「送信中」）を読み直す。
+		 * 同じレコードの送信履歴のダイアログを開いていれば、その中身も読み直す
 		 */
 		reloadBlock: function (container) {
 			var deferred = jQuery.Deferred();
+			var recordId = container.data('record');
 			jQuery.ajax({
 				url: 'index.php',
 				type: 'GET',
 				dataType: 'html',
-				data: {module: 'NotificationBlock', view: 'Block', record: container.data('record')}
+				data: {module: 'NotificationBlock', view: 'Block', record: recordId}
 			}).done(function (html) {
 				container.find('.notificationBlockContents').replaceWith(html);
 				deferred.resolve();
 			}).fail(function () {
 				deferred.reject();
 			});
+			this.reloadHistoryDialog(recordId);
 			return deferred.promise();
+		},
+
+		/**
+		 * 開いている送信履歴のダイアログの、送信履歴の一覧を読み直す（宛先の一覧に切り替えていれば、そのままにする）
+		 */
+		reloadHistoryDialog: function (recordId) {
+			var historyDialog = jQuery('#notificationBlockHistoryDialog');
+			if (historyDialog.length === 0 || !historyDialog.is(':visible') || String(historyDialog.data('record')) !== String(recordId)) {
+				return;
+			}
+			jQuery.ajax({
+				url: 'index.php',
+				type: 'GET',
+				dataType: 'html',
+				data: {module: 'NotificationBlock', view: 'History', record: recordId}
+			}).done(function (html) {
+				var pane = historyDialog.find('.notificationBlockHistoryListPane');
+				var fresh = jQuery('<div>').html(html).find('.notificationBlockHistoryListPane');
+				if (fresh.length > 0) {
+					pane.html(fresh.html());
+				}
+			});
 		},
 
 		/* ------------------------------------------------------------------
@@ -295,7 +320,7 @@
 					self.registerSendForm(modal, container);
 				});
 			});
-			doc.on('click', '.notificationBlockShowAllHistory', function (e) {
+			doc.on('click', '.notificationBlockShowHistory', function (e) {
 				e.preventDefault();
 				var container = jQuery(this).closest('.notificationBlockContainer');
 				self.openModal({module: 'NotificationBlock', view: 'History', record: container.data('record')});
@@ -311,29 +336,25 @@
 		},
 
 		/**
-		 * 送信履歴の宛先の人数を押したときに、宛先の一覧を出す（中身は両方の経路で RecipientContent.tpl）
-		 *
-		 * - 通知ブロックの直近の送信履歴から：宛先の一覧のダイアログを開く
-		 * - 「すべて表示」のダイアログの中から：ダイアログを重ねて開かず、中身を宛先の一覧に切り替える。
-		 *   app.helper.showModal() は画面に 1 つの入れ物（.myModal）を使い回し、前のダイアログが閉じ終わったときに
-		 *   入れ物を空にするため、開いたまま別のダイアログを開くと新しい中身まで消えて、暗い背景だけが残る
+		 * 送信履歴のダイアログで宛先の人数を押したときに、ダイアログを重ねて開かず、中身を宛先の一覧
+		 * （RecipientContent.tpl）に切り替える。
+		 * app.helper.showModal() は画面に 1 つの入れ物（.myModal）を使い回し、前のダイアログが閉じ終わったときに
+		 * 入れ物を空にするため、開いたまま別のダイアログを開くと新しい中身まで消えて、暗い背景だけが残る
 		 */
 		showRecipients: function (link) {
-			var self = this;
-			var container = link.closest('.notificationBlockContainer');
+			var historyDialog = link.closest('#notificationBlockHistoryDialog');
+			if (historyDialog.length === 0) {
+				return;
+			}
 			var params = {
 				module: 'NotificationBlock',
 				view: 'History',
-				record: container.data('record'),
-				historyid: link.data('historyid')
+				record: historyDialog.data('record'),
+				historyid: link.data('historyid'),
+				mode: 'recipient_content'
 			};
-			var historyDialog = link.closest('#notificationBlockHistoryDialog');
-			if (historyDialog.length === 0) {
-				self.openModal(jQuery.extend(params, {mode: 'recipients'}));
-				return;
-			}
 			app.helper.showProgress();
-			app.request.get({data: jQuery.extend(params, {mode: 'recipient_content'})}).then(function (error, html) {
+			app.request.get({data: params}).then(function (error, html) {
 				app.helper.hideProgress();
 				if (error) {
 					app.helper.showErrorNotification({message: error.message});
@@ -443,6 +464,13 @@
 					if (response && response.message) {
 						self.notify(response.message, response.type);
 					}
+					// 作成時の送信の結果を受け取ったら、この画面の通知ブロックの件数・「送信中」も読み直す
+					jQuery('.notificationBlockContainer').each(function () {
+						var container = jQuery(this);
+						if (container.find('.notificationBlockContents').length > 0 && container.data('record')) {
+							self.reloadBlock(container);
+						}
+					});
 				});
 		},
 

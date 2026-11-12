@@ -68,7 +68,7 @@ class NotificationBlock_Display_Helper
             'block_id' => NotificationBlock_Config_Model::getBlockId($moduleName),
             'is_hidden' => self::isBlockHidden($moduleName),
             'targets' => NotificationBlock_Target_Model::getTargets($recordId),
-            'histories' => NotificationBlock_History_Model::getRecent($recordId),
+            'history_count' => NotificationBlock_History_Model::countByRecord($recordId),
             'can_edit' => $canEdit,
             'is_sending' => NotificationBlock_History_Model::isSending($recordId),
             'script_url' => self::getScriptUrl(),

@@ -47,7 +47,7 @@ final class HandlerTest extends NotificationBlockTestCase
 
         $this->assertSame([(string) $user], array_column(NotificationBlock_Target_Model::getTargets($recordId), 'id'));
         $this->assertSame(['to@example.com'], $this->mailSender->sentAddresses());
-        $history = NotificationBlock_History_Model::getRecent($recordId)[0];
+        $history = NotificationBlock_History_Model::getAll($recordId)[0];
         $this->assertSame('create', $history['method']);
         $this->assertSame('', $history['comment'], '作成時の送信はコメントなし');
         $flash = NotificationBlock_Flash_Model::take();

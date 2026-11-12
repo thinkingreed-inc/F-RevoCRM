@@ -25,7 +25,7 @@ final class LifecycleTest extends NotificationBlockTestCase
         $recordId = $this->createPotential('ごみ箱');
         NotificationBlock_Target_Model::saveTargets($recordId, [['type' => 'user', 'id' => (string) $user]]);
         NotificationBlock_Notifier_Model::send($recordId);
-        $historyId = \NotificationBlock_Util_Helper::toInt(NotificationBlock_History_Model::getRecent($recordId)[0]['historyid'] ?? 0);
+        $historyId = \NotificationBlock_Util_Helper::toInt(NotificationBlock_History_Model::getAll($recordId)[0]['historyid'] ?? 0);
 
         $record = \Vtiger_Record_Model::getInstanceById($recordId, self::MODULE);
         $record->delete();
@@ -36,7 +36,7 @@ final class LifecycleTest extends NotificationBlockTestCase
         $focus = \CRMEntity::getInstance(self::MODULE);
         $focus->restore(self::MODULE, $recordId);
         $this->assertCount(1, NotificationBlock_Target_Model::getTargets($recordId));
-        $this->assertCount(1, NotificationBlock_History_Model::getRecent($recordId));
+        $this->assertCount(1, NotificationBlock_History_Model::getAll($recordId));
 
         $record = \Vtiger_Record_Model::getInstanceById($recordId, self::MODULE);
         $record->delete();

@@ -1,6 +1,9 @@
 {*<!--
 /*+***********************************************************************************
- * 送信履歴の「すべて表示」（新しい順）と、その中で切り替えて出す宛先の一覧
+ * 送信履歴のダイアログ（通知ブロックの「送信履歴（N 件）」から開く）
+ *
+ * すべての送信履歴を新しい順に出す。「宛先」の人数を押すと、同じダイアログの中で宛先の一覧
+ * （送った時点の氏名・メールアドレス、送れなかった理由。RecipientContent.tpl）に切り替える。
  *************************************************************************************/
 -->*}
 {strip}
@@ -13,7 +16,30 @@
 			{if empty($NB_HISTORIES)}
 				<div class="text-muted">{vtranslate('LBL_NO_HISTORY', $NBM)}</div>
 			{else}
-				{include file="HistoryTable.tpl"|vtemplate_path:$NBM HISTORIES=$NB_HISTORIES SHOW_COMMENT=true}
+				<table class="table table-bordered table-condensed notificationBlockHistoryTable" style="margin-bottom: 5px;">
+					<thead>
+						<tr>
+							<th>{vtranslate('LBL_SENT_AT', $NBM)}</th>
+							<th>{vtranslate('LBL_SENDER', $NBM)}</th>
+							<th>{vtranslate('LBL_METHOD', $NBM)}</th>
+							<th>{vtranslate('LBL_RECIPIENTS', $NBM)}</th>
+							<th>{vtranslate('LBL_COMMENT', $NBM)}</th>
+							<th>{vtranslate('LBL_RESULT', $NBM)}</th>
+						</tr>
+					</thead>
+					<tbody>
+						{foreach item=HISTORY from=$NB_HISTORIES}
+							<tr class="notificationBlockHistoryRow" data-historyid="{$HISTORY.historyid}" data-status="{$HISTORY.display_status}">
+								<td>{$HISTORY.started_at_display|escape:'html'}</td>
+								<td>{$HISTORY.sender_name|escape:'html'}</td>
+								<td>{$HISTORY.method_text|escape:'html'}</td>
+								<td><a href="javascript:void(0)" class="notificationBlockShowRecipients" data-historyid="{$HISTORY.historyid}">{vtranslate('LBL_RECIPIENT_COUNT', $NBM, $HISTORY.recipient_count)}</a></td>
+								<td style="white-space: pre-wrap; word-break: break-all;">{$HISTORY.comment|escape:'html'}</td>
+								<td class="notificationBlockHistoryStatus">{$HISTORY.status_label|escape:'html'}</td>
+							</tr>
+						{/foreach}
+					</tbody>
+				</table>
 			{/if}
 		</div>
 		<div class="notificationBlockHistoryRecipientPane hide">
