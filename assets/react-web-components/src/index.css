@@ -213,3 +213,17 @@
     max-height: 90svh !important;
   }
 }
+
+/* UIType の Web コンポーネント: 定義されるまでは Smarty が出した表示用の文字を出し、定義後は隠す */
+fr-field-fileupload:defined > .fr-wc-fallback,
+fr-field-yearmonth:defined > .fr-wc-fallback {
+  display: none;
+}
+
+/*
+ * 詳細画面（スマホ幅）の項目の値の下線（インライン編集できる印。skins の style.css）は、
+ * ファイルアップロード項目では画像とファイル名の塊の下に枠のように出るため出さない
+ */
+#detailView td.fieldValue > span.value:has(> fr-field-fileupload) {
+  border-bottom: 0;
+}

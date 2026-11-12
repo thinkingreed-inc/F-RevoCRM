@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * 自動採番項目の遡及採番を進める定期ジョブ
+ *
+ * 画面から開始された遡及採番のジョブを、時間を区切って少しずつ進める。
+ * 進めるジョブが無いときは、ジョブの表を 1 回読むだけで終わる。
+ * 1 回の処理は時間の上限（Vtiger_AutoNumberBackfill::BATCH_SECONDS）で打ち切るため、
+ * 1 分ごとの起動でも次の起動と重ならない。
+ */
+
+vimport('includes.runtime.Globals');
+require_once 'modules/Vtiger/utils/AutoNumberBackfill.php';
+
+$job = Vtiger_AutoNumberBackfill::tick();
+if ($job === null) {
+    echo "AutoNumberBackfill: no job\n";
+} else {
+    echo "AutoNumberBackfill: job {$job['jobid']} {$job['status']} {$job['processed']}/{$job['total']} (failed {$job['failed']})\n";
+}

@@ -767,6 +767,14 @@ class Vtiger_Field_Model extends Vtiger_Field {
 		$this->fieldInfo['defaultvalue'] = $this->hasDefaultValue();
 		$this->fieldInfo['column'] = $this->get('column');
 		$this->fieldInfo['type'] = $fieldDataType;
+		// データ型名は既存のもの（date など）のまま、専用の UIType クラスを持つ項目は画面側で見分けられるよう uitype を渡す
+		if (isset(Vtiger_Base_UIType::UITYPE_CLASS_MAP[(string) $this->get('uitype')])) {
+			$this->fieldInfo['uitype'] = (string) $this->get('uitype');
+			$uiTypeModel = $this->getUITypeModel();
+			if (method_exists($uiTypeModel, 'getClientFieldInfo')) {
+				$this->fieldInfo = array_merge($this->fieldInfo, $uiTypeModel->getClientFieldInfo());
+			}
+		}
 		$this->fieldInfo['name'] = $this->get('name');
 		$this->fieldInfo['label'] = vtranslate($this->get('label'), $this->getModuleName());
 

@@ -104,7 +104,16 @@ class PDFTemplates_Module_Model extends Vtiger_Module_Model {
 			}
 			$allFields = array();
 			foreach ($fieldList as $key => $field) {
-				$option = array(vtranslate($field['module'], $field['module']) . ':' . vtranslate($field['fieldlabel'], $field['module']), "$" . strtolower($field['module']) . "-" . $field['columnname'] . "$");
+				$optionLabel = vtranslate($field['module'], $field['module']) . ':' . vtranslate($field['fieldlabel'], $field['module']);
+				if ($field['datatype'] === 'fileupload') {
+					// ファイルアップロード項目はファイル名・画像のタグ・画像の URL を選べるようにする
+					require_once 'modules/Documents/utils/FieldFileTemplate.php';
+					foreach (Documents_FieldFileTemplate::getVariableOptions($field['module'], $field['columnname'], $optionLabel) as $option) {
+						$allFields[] = $option;
+					}
+					continue;
+				}
+				$option = array($optionLabel, "$" . strtolower($field['module']) . "-" . $field['columnname'] . "$");
 				$allFields[] = $option;
 				if (!empty($field['referencelist'])) {
 					foreach ($field['referencelist'] as $referenceList) {
@@ -251,7 +260,7 @@ class PDFTemplates_Module_Model extends Vtiger_Module_Model {
 					$referencelist[] = $this->getRelatedModuleFieldList($relModule, $currentUserModel);
 				}
 			}
-			$returnData[] = array('module' => $module, 'fieldname' => $field->getFieldName(), 'columnname' => $field->getColumnName(), 'fieldlabel' => $field->getFieldLabelKey(), 'referencelist' => $referencelist);
+			$returnData[] = array('module' => $module, 'fieldname' => $field->getFieldName(), 'columnname' => $field->getColumnName(), 'fieldlabel' => $field->getFieldLabelKey(), 'datatype' => $field->getFieldDataType(), 'referencelist' => $referencelist);
 		}
 		return $returnData;
 	}

@@ -529,12 +529,11 @@ class CRMEntity {
 				$ajaxSave = true;
 			}
 
-			if ($uitype == 4 && $insertion_mode != 'edit') {
-				$fldvalue = '';
-				// Bulk Save Mode: Avoid generation of module sequence number, take care later.
-				if (!CRMEntity::isBulkSaveMode())
-					$fldvalue = $this->setModuleSeqNumber("increment", $module);
-				$this->column_fields[$fieldname] = $fldvalue;
+			if ($uitype == 4 && $insertion_mode != 'edit' && CRMEntity::isBulkSaveMode() && empty($this->column_fields[$fieldname])) {
+				// 自動採番項目（uitype 4）は、通常は beforesave の AutoNumberHandler が番号を付ける。
+				// Bulk Save Mode ではイベントが動かないため、ここで番号を付ける
+				require_once 'modules/Vtiger/utils/AutoNumber.php';
+				$this->column_fields[$fieldname] = Vtiger_AutoNumber::numberNewRecord($module, $fieldname, $this->column_fields);
 			}
 			if (isset($this->column_fields[$fieldname])) {
 				if ($uitype == 56) {
@@ -1681,63 +1680,13 @@ class CRMEntity {
 
 	// END
 
+	/**
+	 * @deprecated 連番項目（uitype 4）は自動採番（Vtiger_AutoNumber）が付けるため、何もしない。
+	 *   以前は vtiger_modentity_num の番号を、値が空のレコードに付けていた。いまは番号の元が項目ごとの
+	 *   自動採番の設定に変わっており、ここで付けると番号が食い違うため、互換のためにメソッドだけ残す。
+	 *   番号を後から付けるときは、連番管理の画面の遡及採番（Vtiger_AutoNumberBackfill）を使う。
+	 */
 	function updateMissingSeqNumber($module) {
-		global $log, $adb;
-		$log->debug("Entered updateMissingSeqNumber function");
-
-		vtlib_setup_modulevars($module, $this);
-
-		if (!$this->isModuleSequenceConfigured($module))
-			return;
-
-		$tabid = getTabid($module);
-		$fieldinfo = $adb->pquery("SELECT tablename, columnname FROM vtiger_field WHERE tabid = ? AND uitype = 4", Array($tabid));
-
-		$returninfo = Array();
-
-		if ($fieldinfo && $adb->num_rows($fieldinfo)) {
-			// TODO: We assume the following for module sequencing field
-			// 1. There will be only field per module
-			// 2. This field is linked to module base table column
-			$fld_table = $adb->query_result($fieldinfo, 0, 'tablename');
-			$fld_column = $adb->query_result($fieldinfo, 0, 'columnname');
-
-			if ($fld_table == $this->table_name) {
-				$records = $adb->pquery("SELECT $this->table_index AS recordid FROM $this->table_name " .
-						"WHERE $fld_column = '' OR $fld_column is NULL", array());
-
-				if ($records && $adb->num_rows($records)) {
-					$returninfo['totalrecords'] = $adb->num_rows($records);
-					$returninfo['updatedrecords'] = 0;
-
-					$modseqinfo = $this->getModuleSeqInfo($module);
-					$prefix = $modseqinfo[0];
-					$cur_id = $modseqinfo[1];
-
-					$old_cur_id = $cur_id;
-					while ($recordinfo = $adb->fetch_array($records)) {
-						$value = "$prefix" . "$cur_id";
-						$adb->pquery("UPDATE $fld_table SET $fld_column = ? WHERE $this->table_index = ?", Array($value, $recordinfo['recordid']));
-						$cur_id = $this->getSequnceNumber($cur_id);
-						$ui4_result = $adb->pquery("SELECT fieldname FROM vtiger_entityname WHERE modulename = ?", Array($module));
-						if($fld_column == $ui4_result->fields['fieldname']){
-							$field_ui4 = $adb->pquery("SELECT $fld_column FROM $fld_table WHERE $this->table_index = ?", array($recordinfo['recordid']));
-							$label = $field_ui4->fields[0];
-							$label = trim($label);
-							$adb->pquery('UPDATE vtiger_crmentity SET label=? WHERE crmid=?', array($label, $recordinfo['recordid']));
-							self::updateBasicInformation($module, $recordinfo['recordid']);
-						}
-						$returninfo['updatedrecords'] = $returninfo['updatedrecords'] + 1;
-					}
-					if ($old_cur_id != $cur_id) {
-						$adb->pquery("UPDATE vtiger_modentity_num set cur_id=? where semodule=? and active=1", Array($cur_id, $module));
-					}
-				}
-			} else {
-				$log->fatal("Updating Missing Sequence Number FAILED! REASON: Field table and module table mismatching.");
-			}
-		}
-		return $returninfo;
 	}
     
     function getSequnceNumber($curid){

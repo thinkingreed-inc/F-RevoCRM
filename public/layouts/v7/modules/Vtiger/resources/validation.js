@@ -835,6 +835,11 @@ function calculateValidationRules(form,params,meta){
 					rules[ruleFieldName]['required'] = true;
 				}
 			}
+			// Web コンポーネントの hidden 入力は値の形式（年月の YYYY-MM-01 等）が型の入力チェックと合わない。
+			// 形式は Web コンポーネント側で担保するため、必須だけを検査する
+			if(element.hasClass('webComponentFieldSource')) {
+				continue;
+			}
 			if(fieldBasicInfo['type'] in jQuery.validator.methods){
 				rules[ruleFieldName][fieldBasicInfo['type']] = true;
 			}
@@ -918,7 +923,8 @@ function calculateValidationRules(form,params,meta){
 		'focusInvalid': true,
 		//Refer for explanation on ignore attrbute https://github.com/select2/select2/issues/215
 		//As element with class select2-input doesn't have name attribute is leading to issue
-		'ignore' : ":hidden:not(.joditEditorSource),.ignore-validation,.select2-input",
+		// Web コンポーネントの UIType（WebComponentField.tpl）は送信値を hidden 入力に持つため、必須の検査対象に残す
+		'ignore' : ":hidden:not(.joditEditorSource):not(.webComponentFieldSource),.ignore-validation,.select2-input",
 		errorPlacement: function(error, element) {
 			if($(error).text()) {
 				$(error).text(app.vtranslate($(error).text()));
@@ -929,12 +935,20 @@ function calculateValidationRules(form,params,meta){
 
 				// Jodit配下textareaは:hiddenのため、qtipの位置計算が0となり画面非表示。
 				// 同じ親要素内に生成される可視要素(.jodit-container)へリターゲットして表示可能にする。
-				var isJoditTarget = false;
+				var isRetargetedToContainer = false;
 				if(element.hasClass('joditEditorSource')) {
 					var joditContainer = element.parent().find('.jodit-container').first();
 					if(joditContainer.length) {
 						element = joditContainer;
-						isJoditTarget = true;
+						isRetargetedToContainer = true;
+					}
+				}
+				// Web コンポーネントの hidden 入力も同様に、可視の外枠(.fr-wc-field)へリターゲットする
+				if(element.hasClass('webComponentFieldSource')) {
+					var webComponentContainer = element.closest('.fr-wc-field');
+					if(webComponentContainer.length) {
+						element = webComponentContainer;
+						isRetargetedToContainer = true;
 					}
 				}
 
@@ -1012,14 +1026,14 @@ function calculateValidationRules(form,params,meta){
 					}
 				});
 				element.trigger('Vtiger.Validation.Show.Messsage');
-				// Jodit配下textareaはerrorPlacement初回呼出時にqtipのshow.eventが初期化直後に
-				// 空振りする(qtip側でrender完了前にtriggerが処理される)ため、次tickで強制表示する。
-				if(isJoditTarget) {
-					var $joditEl = element;
+				// 外枠へリターゲットした要素(Jodit・Webコンポーネント)はerrorPlacement初回呼出時にqtipのshow.eventが
+				// 初期化直後に空振りする(qtip側でrender完了前にtriggerが処理される)ため、次tickで強制表示する。
+				if(isRetargetedToContainer) {
+					var $retargetedEl = element;
 					setTimeout(function() {
-						var joditApi = $joditEl.qtip('api');
-						if(joditApi) {
-							joditApi.show();
+						var retargetedApi = $retargetedEl.qtip('api');
+						if(retargetedApi) {
+							retargetedApi.show();
 						}
 					}, 0);
 				}
@@ -1048,6 +1062,9 @@ function calculateValidationRules(form,params,meta){
 			element = $(element);
 			if(element.prop('tagName') === 'SELECT') {
 				element = app.helper.getSelect2FromSelect(element);
+			}
+			if(element.hasClass('webComponentFieldSource')) {
+				element = element.closest('.fr-wc-field');
 			}
 			element.trigger('Vtiger.Validation.Hide.Messsage');
 //			element.tooltipster('hide');

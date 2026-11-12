@@ -702,7 +702,13 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 						$fieldData[$fieldName] = $fieldValue;
 					}
 				}
-				if ($fieldDataType == 'date' && !empty($fieldValue)) {
+				// 年月項目は YYYY-MM などの年月だけの値も受ける。月初日にして、解釈できない値は日付と同じ扱いにする
+				$yearMonthValue = ($fieldDataType == 'date' && !empty($fieldValue) && $fieldInstance->getUIType() == 996)
+					? Vtiger_YearMonth_UIType::normalize($fieldValue) : null;
+				if (!empty($yearMonthValue)) {
+					$fieldValue = $yearMonthValue;
+					$fieldData[$fieldName] = $fieldValue;
+				} elseif ($fieldDataType == 'date' && !empty($fieldValue)) {
 					if ($fieldValue == null || $fieldValue == '0000-00-00') {
 						$fieldValue = '';
 					}

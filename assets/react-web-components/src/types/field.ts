@@ -259,6 +259,12 @@ export const UI_TYPES = {
   PRODUCT_TAX: "83",
   /** 通貨リスト（選択式） */
   CURRENCY_LIST: "117",
+  /** ファイルアップロード（値はドキュメントID。F-RevoCRM 独自） */
+  FILE_UPLOAD: "998",
+  /** 年月（値は月初日 YYYY-MM-01。データ型は date。F-RevoCRM 独自） */
+  YEAR_MONTH: "996",
+  /** 自動採番（値は保存時にサーバーが付ける。データ型は string。F-RevoCRM 独自） */
+  AUTO_NUMBER: "997",
 } as const;
 
 /**
