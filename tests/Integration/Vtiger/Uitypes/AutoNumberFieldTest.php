@@ -6,6 +6,7 @@ namespace Tests\Integration\Vtiger\Uitypes;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use ReflectionProperty;
 use Settings_LayoutEditor_Field_Model;
 use Settings_LayoutEditor_Module_Model;
 use Tests\Support\DocumentsTestCase;
@@ -13,6 +14,7 @@ use Vtiger_AutoNumber;
 use Vtiger_AutoNumberBackfill;
 use Vtiger_AutoNumberValue;
 use Vtiger_Field_Model;
+use Vtiger_Functions;
 use Vtiger_Module_Model;
 use Vtiger_Record_Model;
 
@@ -393,6 +395,50 @@ final class AutoNumberFieldTest extends DocumentsTestCase
         $this->assertSame(3, $job['total']);
         $this->assertSame(3, $job['processed']);
         $this->assertSame('BF-003', $job['last_number']);
+    }
+
+    public function test_ラベル項目にした自動採番項目は遡及採番でラベルも更新される(): void
+    {
+        $this->setConfig(['active' => 0, 'format' => 'LB-{000}', 'reset_type' => 'none']);
+        $id = $this->saveAccount('lb_a');
+        $this->setCreated($id, 1);
+        $this->setConfig(['active' => 1]);
+
+        $this->withAutoNumberAsLabelField(function () use ($id): void {
+            $this->assertStringNotContainsString('LB-', $this->crmLabel($id), '番号を付ける前');
+            $this->runJobToEnd(Vtiger_AutoNumberBackfill::start(self::$fields['main']['fieldid'], self::ADMIN_USER_ID));
+            $this->assertSame('LB-001', $this->storedValue($id));
+            $this->assertStringContainsString('LB-001', $this->crmLabel($id), 'ラベルにも番号が入る');
+        });
+    }
+
+    public function test_ラベル項目にした自動採番項目は振り直しでラベルも更新される(): void
+    {
+        $this->setConfig(['format' => 'LR-{000}', 'reset_type' => 'none', 'start_number' => 1]);
+        $id = $this->saveAccount('lr_a');
+        $this->setCreated($id, 1);
+
+        $this->withAutoNumberAsLabelField(function () use ($id): void {
+            $this->setConfig(['format' => 'LR2-{000}', 'start_number' => 10]);
+            $this->runJobToEnd(Vtiger_AutoNumberBackfill::start(self::$fields['main']['fieldid'], self::ADMIN_USER_ID, null, null, Vtiger_AutoNumberBackfill::MODE_RENUMBER));
+            $number = $this->storedValue($id);
+            $this->assertStringStartsWith('LR2-', $number);
+            $this->assertStringContainsString($number, $this->crmLabel($id));
+        });
+    }
+
+    public function test_ラベル項目でない自動採番項目の遡及採番はラベルを変えない(): void
+    {
+        $this->setConfig(['active' => 0, 'format' => 'NL-{000}', 'reset_type' => 'none']);
+        $id = $this->saveAccount('nl_a');
+        $this->setCreated($id, 1);
+        $before = $this->crmLabel($id);
+        $this->setConfig(['active' => 1]);
+
+        $this->runJobToEnd(Vtiger_AutoNumberBackfill::start(self::$fields['main']['fieldid'], self::ADMIN_USER_ID));
+
+        $this->assertSame('NL-001', $this->storedValue($id));
+        $this->assertSame($before, $this->crmLabel($id));
     }
 
     public function test_プレビューは連番を進めずに予定を返す(): void
@@ -1152,6 +1198,32 @@ final class AutoNumberFieldTest extends DocumentsTestCase
      *
      * @param list<mixed> $params
      */
+    private function crmLabel(int $recordId): string
+    {
+        return $this->scalar('SELECT label FROM vtiger_crmentity WHERE crmid = ?', [$recordId]);
+    }
+
+    /** 自動採番項目を Accounts のラベル項目に含めた状態でコールバックを実行し、終わったら元に戻す */
+    private function withAutoNumberAsLabelField(callable $callback): void
+    {
+        $original = $this->scalar("SELECT fieldname FROM vtiger_entityname WHERE modulename = 'Accounts'");
+        try {
+            $this->db->pquery("UPDATE vtiger_entityname SET fieldname = ? WHERE modulename = 'Accounts'", [$original . ',' . self::$fields['main']['fieldname']]);
+            $this->resetEntityNameCaches();
+            $callback();
+        } finally {
+            $this->db->pquery("UPDATE vtiger_entityname SET fieldname = ? WHERE modulename = 'Accounts'", [$original]);
+            $this->resetEntityNameCaches();
+        }
+    }
+
+    private function resetEntityNameCaches(): void
+    {
+        $property = new ReflectionProperty(Vtiger_Functions::class, 'moduleEntityCache');
+        $property->setAccessible(true);
+        $property->setValue(null, []);
+    }
+
     private function scalar(string $sql, array $params = []): string
     {
         $result = $this->db->pquery($sql, $params);

@@ -391,6 +391,7 @@ class Vtiger_AutoNumberBackfill
         if ($result === false || $db->getAffectedRowCount($result) === 0) {
             return null;
         }
+        Vtiger_AutoNumber::refreshLabel(Vtiger_AutoNumberValue::int($config['fieldid']), $recordId);
         return $number;
     }
 
@@ -426,6 +427,7 @@ class Vtiger_AutoNumberBackfill
              ON DUPLICATE KEY UPDATE new_number = VALUES(new_number)',
             [$jobId, $recordId, Vtiger_AutoNumberValue::string($row['oldvalue'] ?? ''), $number]
         );
+        Vtiger_AutoNumber::refreshLabel(Vtiger_AutoNumberValue::int($config['fieldid']), $recordId);
         return $number;
     }
 

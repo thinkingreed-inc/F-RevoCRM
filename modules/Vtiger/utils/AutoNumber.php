@@ -375,6 +375,40 @@ class Vtiger_AutoNumber
         return $value === null ? '' : (string) $value;
     }
 
+    /**
+     * 自動採番項目がレコードのラベル（名前）項目に含まれるとき、ラベルを作り直す
+     *
+     * 通常の保存は aftersave の RecordLabelUpdater がラベルを更新するが、
+     * 後から番号を付ける処理（バックフィル・振り直し）は列を直接書き換えるのでイベントが動かない。
+     * ラベル項目に含まれない項目のときは何もしない。
+     *
+     * @param int $fieldId 自動採番項目の ID
+     * @param int $recordId 番号を付けたレコードの ID
+     */
+    public static function refreshLabel(int $fieldId, int $recordId): void
+    {
+        if ($fieldId <= 0 || $recordId <= 0) {
+            return;
+        }
+        $db = PearDatabase::getInstance();
+        $result = $db->pquery('SELECT f.fieldname, t.name FROM vtiger_field f INNER JOIN vtiger_tab t ON t.tabid = f.tabid WHERE f.fieldid = ?', [$fieldId]);
+        if ($result === false || $db->num_rows($result) === 0) {
+            return;
+        }
+        $fieldName = Vtiger_AutoNumberValue::string($db->query_result($result, 0, 'fieldname'));
+        $moduleName = Vtiger_AutoNumberValue::string($db->query_result($result, 0, 'name'));
+        $info = Vtiger_Functions::getEntityModuleInfo($moduleName);
+        if (!is_array($info) || !in_array($fieldName, explode(',', Vtiger_AutoNumberValue::string($info['fieldname'])), true)) {
+            return;
+        }
+        $labels = getEntityName($moduleName, $recordId, true);
+        if (!is_array($labels) || !isset($labels[$recordId])) {
+            return;
+        }
+        $db->pquery('UPDATE vtiger_crmentity SET label = ? WHERE crmid = ?', [decode_html($labels[$recordId]), $recordId]);
+        CRMEntity::updateBasicInformation($moduleName, $recordId);
+    }
+
     /** 項目を持つモジュールの名前 */
     public static function moduleOfField(int $fieldId): string
     {
