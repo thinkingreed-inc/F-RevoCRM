@@ -52,7 +52,7 @@ class Vtiger_Base_UIType extends Vtiger_Base_Model {
 	 */
 	const UITYPE_CLASS_MAP = array(
 		'996' => 'YearMonth',
-		'997' => 'AutoNumber',
+		'4' => 'AutoNumber',
 	);
 
 	/**

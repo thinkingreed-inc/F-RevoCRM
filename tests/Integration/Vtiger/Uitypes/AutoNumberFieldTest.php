@@ -21,7 +21,7 @@ use Vtiger_Record_Model;
 require_once dirname(__DIR__, 4) . '/tests/Support/DocumentsTestCase.php';
 
 /**
- * 自動採番項目（uitype 997）
+ * 自動採番項目（uitype 4）
  *
  *   - レイアウトエディタで項目を追加でき、設定が不正なら項目を作らない
  *   - 新規レコードには書式どおりの番号を付け、既存レコードの値は書き換えさせない
@@ -30,7 +30,7 @@ require_once dirname(__DIR__, 4) . '/tests/Support/DocumentsTestCase.php';
  *   - 遡及採番: 作成日時順・静止期間・他で付いた番号を壊さない・冪等・ロック・一時停止と中止
  *
  * テスト用の項目は顧客企業に作り、クラスの最後に削除する。
- * マイグレーション（テーブル・ws_fieldtype・ハンドラ）は適用済みの前提（別のテストで確かめる）。
+ * マイグレーション（テーブル・ハンドラ）は適用済みの前提（別のテストで確かめる）。
  */
 final class AutoNumberFieldTest extends DocumentsTestCase
 {
@@ -86,7 +86,7 @@ final class AutoNumberFieldTest extends DocumentsTestCase
     public function test_レイアウトエディタで自動採番項目を追加できる(): void
     {
         $row = $this->fieldRow(self::$fields['main']['fieldid']);
-        $this->assertSame('997', Vtiger_AutoNumberValue::string($row['uitype']));
+        $this->assertSame('4', Vtiger_AutoNumberValue::string($row['uitype']));
         $this->assertSame('V~O', $row['typeofdata']);
         $this->assertSame('3', Vtiger_AutoNumberValue::string($row['quickcreate']), 'クイック作成には出さない');
         $this->assertSame('varchar', $this->columnType('vtiger_accountscf', self::$fields['main']['fieldname']));

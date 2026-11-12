@@ -23,7 +23,7 @@ require_once dirname(__DIR__, 4) . '/tests/Support/DocumentsTestCase.php';
  *
  *   - sourceModule / field を変えると、項目の一覧・書式・その他の設定が、そのモジュール・項目のものに変わる
  *   - 保存の Ajax: 成功・エラーの文言・必須の入力
- *   - モジュールの設定リンクと、連番を持つモジュールの一覧に、自動採番(997)の項目も含まれる
+ *   - モジュールの設定リンクと、連番を持つモジュールの一覧に、自動採番(uitype 4)の項目も含まれる
  *   - 画面の文言（ja / en）に抜けが無い
  *
  * 標準モジュール（リード・顧客企業など）の自動採番項目で確かめる。変更した設定は元に戻す。
@@ -37,8 +37,8 @@ final class AutoNumberNumberingScreenTest extends DocumentsTestCase
         require_once 'includes/runtime/Viewer.php';
         require_once 'includes/runtime/Theme.php';
         require_once 'includes/runtime/JavaScript.php';
-        if ($this->scalar("SELECT COUNT(*) FROM vtiger_field WHERE uitype = 4") !== '0') {
-            self::markTestSkipped('テスト用DBに連番項目の移行（20261028110000）が適用されていない');
+        if ($this->scalar("SELECT COUNT(*) FROM vtiger_field WHERE uitype = 997") !== '0') {
+            self::markTestSkipped('テスト用DBに uitype 997 の項目が残っている（20261112180000 が適用されていない）');
         }
         Vtiger_AutoNumber::clearCache();
     }
@@ -256,7 +256,7 @@ final class AutoNumberNumberingScreenTest extends DocumentsTestCase
     {
         $name = $this->scalar(
             "SELECT t.name FROM vtiger_tab t WHERE t.isentitytype = 1 AND t.presence = 0
-               AND t.tabid NOT IN (SELECT tabid FROM vtiger_field WHERE uitype IN (4, 997)) ORDER BY t.tabid LIMIT 1"
+               AND t.tabid NOT IN (SELECT tabid FROM vtiger_field WHERE uitype = 4) ORDER BY t.tabid LIMIT 1"
         );
         if ($name === '') {
             self::markTestSkipped('連番の項目を持たないモジュールがテスト用DBに無い');

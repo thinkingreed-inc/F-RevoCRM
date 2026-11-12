@@ -26,9 +26,6 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	const QUICKCREATE_ENABLED = 2;
 	const QUICKCREATE_NOT_PERMITTED = 3;
 	
-	// 自動採番項目。値は保存時にサーバーが付けるため、編集の対象にしない
-	const UITYPE_AUTONUMBER = 997;
-
 	const DISPLAYTYPE_ALL = 1;
 	const DISPLAYTYPE_DETAIL_AND_LIST = 2; //e.g. Created time, Modified time
 	const DISPLAYTYPE_LIST = 3;//e.g. Total, Subtotal in Inventory modules~
@@ -527,8 +524,7 @@ class Vtiger_Field_Model extends Vtiger_Field {
 				|| !$this->isViewable()
 				|| !in_array(((int)$this->get('displaytype')), array(self::DISPLAYTYPE_ALL, self::DISPLAYTYPE_LINEITEM))
 				|| $this->isReadOnly() == true
-				|| $this->get('uitype') ==  self::UITYPE_RECORD_NO
-				|| $this->get('uitype') == self::UITYPE_AUTONUMBER) {
+				|| $this->get('uitype') ==  self::UITYPE_RECORD_NO) {
 
 			return false;
 		}
@@ -542,7 +538,6 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	public function isAjaxEditable() {
 	    $ajaxRestrictedFields = array(
 	        self::UITYPE_RECORD_NO, 
-	        self::UITYPE_AUTONUMBER,
 	        self::UITYPE_LINEITEMS_CURRENCY_AMOUNT, 
 	        self::UITYPE_ATTACHMENT, 
 	        self::UITYPE_DOWNLOAD_TYPE,

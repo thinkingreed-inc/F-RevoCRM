@@ -19,8 +19,8 @@ require_once dirname(__DIR__, 2) . '/Support/DocumentsTestCase.php';
  *
  * 対象: setup/migration/scripts/20261028110000_migrate_uitype4_to_autonumber.php
  *
- * 顧客企業に連番項目（uitype 4）を 1 つ作り、vtiger_modentity_num の行を差し替えて実行し、
- * 設定の読み替え・停止中の扱い・列の拡張・再実行を確かめる。
+ * 顧客企業に設定の無い連番項目（uitype 4）を 1 つ作り、vtiger_modentity_num の行を差し替えて実行し、
+ * 設定の読み替え（uitype は 4 のまま）・停止中の扱い・列の拡張・再実行を確かめる。
  * 実行のたびに顧客企業の vtiger_modentity_num を退避し、最後に元へ戻す。
  */
 final class MigrateUitype4ToAutonumberTest extends DocumentsTestCase
@@ -39,8 +39,8 @@ final class MigrateUitype4ToAutonumberTest extends DocumentsTestCase
         parent::setUp();
         require_once 'modules/Vtiger/utils/AutoNumber.php';
         require_once dirname(__DIR__, 3) . '/setup/migration/scripts/20261028110000_migrate_uitype4_to_autonumber.php';
-        if ($this->value("SELECT COUNT(*) AS v FROM vtiger_field WHERE uitype = 4") !== '0') {
-            self::markTestSkipped('テスト用DBに連番項目（uitype 4）が残っている。先に移行を適用すること');
+        if ($this->value("SELECT COUNT(*) AS v FROM vtiger_field WHERE uitype = 997") !== '0') {
+            self::markTestSkipped('テスト用DBに uitype 997 の項目が残っている。先に 20261112180000 を適用すること');
         }
         $result = $this->db->pquery('SELECT * FROM vtiger_modentity_num WHERE semodule = ?', [self::MODULE]);
         $this->savedNumRows = [];
@@ -106,7 +106,7 @@ final class MigrateUitype4ToAutonumberTest extends DocumentsTestCase
             (string) $current,
             $this->value('SELECT cur_value AS v FROM vtiger_autonumber_counter WHERE fieldid = ? AND scope_key = ?', [$this->fieldId, ''])
         );
-        $this->assertSame('997', $this->value('SELECT uitype AS v FROM vtiger_field WHERE fieldid = ?', [$this->fieldId]));
+        $this->assertSame('4', $this->value('SELECT uitype AS v FROM vtiger_field WHERE fieldid = ?', [$this->fieldId]), 'uitype は 4 のまま');
     }
 
     public function test_移行後の最初の番号はこれまでの次の番号になる(): void
@@ -132,7 +132,7 @@ final class MigrateUitype4ToAutonumberTest extends DocumentsTestCase
         $this->assertSame(0, $config['active']);
         $this->assertSame('{0000}', $config['format']);
         $this->assertSame(1, $config['start_number']);
-        $this->assertSame('997', $this->value('SELECT uitype AS v FROM vtiger_field WHERE fieldid = ?', [$this->fieldId]));
+        $this->assertSame('4', $this->value('SELECT uitype AS v FROM vtiger_field WHERE fieldid = ?', [$this->fieldId]), 'uitype は 4 のまま');
     }
 
     public function test_行がまったく無い項目も停止中の設定にする(): void
@@ -189,22 +189,41 @@ final class MigrateUitype4ToAutonumberTest extends DocumentsTestCase
         Vtiger_AutoNumber::saveConfig($this->fieldId, ['format' => 'KEEP-{000}', 'reset_type' => 'year', 'start_number' => 9, 'base_date' => '', 'effective_from' => null, 'active' => 1]);
         $this->db->pquery('UPDATE vtiger_autonumber_counter SET cur_value = 77 WHERE fieldid = ?', [$this->fieldId]);
 
-        // uitype 4 が残っていなければ何もしない
-        $this->runMigration();
-        Vtiger_AutoNumber::clearCache();
-        $config = Vtiger_AutoNumber::getConfig($this->fieldId);
-        $this->assertNotNull($config);
-        $this->assertSame('KEEP-{000}', $config['format']);
-
-        // 設定が先にある項目を uitype 4 に戻して実行しても、設定と連番は上書きしない
-        $this->db->pquery('UPDATE vtiger_field SET uitype = 4 WHERE fieldid = ?', [$this->fieldId]);
+        // 設定が先にある項目に実行しても、設定と連番は上書きしない
         $this->runMigration();
         Vtiger_AutoNumber::clearCache();
         $config = Vtiger_AutoNumber::getConfig($this->fieldId);
         $this->assertNotNull($config);
         $this->assertSame('KEEP-{000}', $config['format']);
         $this->assertSame('77', $this->value('SELECT cur_value AS v FROM vtiger_autonumber_counter WHERE fieldid = ? AND scope_key = ?', [$this->fieldId, '']));
-        $this->assertSame('997', $this->value('SELECT uitype AS v FROM vtiger_field WHERE fieldid = ?', [$this->fieldId]));
+        $this->assertSame('4', $this->value('SELECT uitype AS v FROM vtiger_field WHERE fieldid = ?', [$this->fieldId]), 'uitype は 4 のまま');
+    }
+
+    public function test_設定の無い項目は使うときに旧連番の設定から作られる(): void
+    {
+        // マイグレーションの後にインストールしたモジュールなど、設定の行が無い連番項目
+        $this->setNumbering('LZY', '5', 1);
+        $this->assertNull(Vtiger_AutoNumber::getConfig($this->fieldId), '作る前は設定が無い');
+
+        $configs = Vtiger_AutoNumber::getModuleConfigs(self::MODULE);
+
+        $this->assertSame('LZY{0}', $configs[$this->fieldName]['format']);
+        $this->assertSame(5, $configs[$this->fieldName]['start_number']);
+        $this->assertSame(1, $configs[$this->fieldName]['active']);
+        $this->assertNotNull(Vtiger_AutoNumber::getConfig($this->fieldId), '設定が保存される');
+        $now = new \DateTimeImmutable('2030-01-02 03:04:05');
+        $this->assertSame('LZY5', Vtiger_AutoNumber::numberNewRecord(self::MODULE, $this->fieldName, [], $now));
+        $this->assertSame('LZY6', Vtiger_AutoNumber::numberNewRecord(self::MODULE, $this->fieldName, [], $now));
+    }
+
+    public function test_旧連番も無い項目は設定を作らず停止中のまま(): void
+    {
+        $this->setNumbering('OFF', '5', 0);
+
+        $configs = Vtiger_AutoNumber::getModuleConfigs(self::MODULE);
+
+        $this->assertSame(0, $configs[$this->fieldName]['active']);
+        $this->assertNull(Vtiger_AutoNumber::getConfig($this->fieldId));
     }
 
     public function test_旧テーブルは消さない(): void

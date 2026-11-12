@@ -65,7 +65,7 @@ CI 側にも DB を用意するステップが必要になる。
 
 ## 年月項目・自動採番項目のテスト
 
-年月（uitype 996）・自動採番（uitype 997）の網羅リストは `dev-docs/uitype-yearmonth-autonumber-test-matrix.md`（コミット対象外）。
+年月（uitype 996）・自動採番（uitype 4）の網羅リストは `dev-docs/uitype-yearmonth-autonumber-test-matrix.md`（コミット対象外）。
 本体のテストは次のとおり。Integration はファイルごとに実行する（`--testsuite Integration` 全体は既存の Calendar テストが壊れている）。
 
 ```bash

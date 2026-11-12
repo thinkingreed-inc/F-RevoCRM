@@ -9,7 +9,8 @@ require_once dirname(__FILE__) . '/../FRMigrationClass.php';
 require_once 'modules/Vtiger/utils/AutoNumberLegacy.php';
 
 /**
- * 連番項目（uitype 4）を自動採番項目（uitype 997）に移行する。
+ * 連番項目（uitype 4）の設定を、自動採番の設定（vtiger_autonumber_config / counter）に移す。
+ * uitype は 4 のまま変えない。
  *
  * 項目ごとに vtiger_modentity_num の有効な行から設定を作る。
  *   接頭辞 POT / 次の番号 1      → 書式 POT{0}      開始番号 1    連番の現在値 0
@@ -22,12 +23,11 @@ require_once 'modules/Vtiger/utils/AutoNumberLegacy.php';
  * 接頭辞に自動採番で使えない文字があるときは、その文字を取り除き、ログに出す。
  * vtiger_modentity_num は消さない（古い画面・パッケージが参照するため）。
  *
- * 何度実行しても、uitype 4 の項目が残っていなければ何もしない。
+ * 何度実行しても、すでに設定のある項目には手を触れない（連番も戻さない）。
  */
 class Migration20261028110000_MigrateUitype4ToAutonumber extends FRMigrationClass
 {
-    public const FROM_UITYPE = '4';
-    public const TO_UITYPE = '997';
+    public const UITYPE = '4';
     /** 項目の列の最小の長さ（自動採番の書式の上限に合わせる） */
     public const MIN_COLUMN_LENGTH = 100;
 
@@ -38,7 +38,7 @@ class Migration20261028110000_MigrateUitype4ToAutonumber extends FRMigrationClas
             'SELECT f.fieldid, f.fieldname, f.tablename, f.columnname, t.name AS modulename
                FROM vtiger_field f INNER JOIN vtiger_tab t ON t.tabid = f.tabid
               WHERE f.uitype = ? ORDER BY f.fieldid',
-            [self::FROM_UITYPE]
+            [self::UITYPE]
         );
         $migrated = 0;
         while (is_array($row = $db->fetchByAssoc($fields, -1, false))) {
@@ -83,8 +83,7 @@ class Migration20261028110000_MigrateUitype4ToAutonumber extends FRMigrationClas
             'INSERT IGNORE INTO vtiger_autonumber_counter (fieldid, scope_key, cur_value) VALUES (?, ?, ?)',
             [$fieldId, '', $converted['cur_value']]
         );
-        $db->pquery('UPDATE vtiger_field SET uitype = ? WHERE fieldid = ?', [self::TO_UITYPE, $fieldId]);
-        $this->log("{$moduleName}: 項目 {$column} を自動採番（{$converted['format']}、次の番号 {$converted['start_number']}）にしました");
+        $this->log("{$moduleName}: 項目 {$column} の自動採番の設定を作りました（{$converted['format']}、次の番号 {$converted['start_number']}）");
     }
 
     /**

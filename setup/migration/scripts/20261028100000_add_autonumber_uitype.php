@@ -9,11 +9,7 @@ require_once dirname(__FILE__) . '/../FRMigrationClass.php';
 require_once 'include/events/include.inc';
 
 /**
- * 自動採番項目（uitype 997）を使えるようにする。
- *
- * vtiger_ws_fieldtype
- *   997 → string の対応を追加する。項目のデータ型は string のままなので、
- *   検索・条件・並べ替え・レポート・ワークフローなどは文字の項目として使える。
+ * 連番項目（uitype 4）を自動採番として使えるようにする（uitype は増やさない）。
  *
  * テーブル
  *   vtiger_autonumber_config   項目ごとの設定
@@ -30,8 +26,6 @@ require_once 'include/events/include.inc';
  */
 class Migration20261028100000_AddAutonumberUitype extends FRMigrationClass
 {
-    public const UITYPE = '997';
-    public const FIELD_TYPE = 'string';
     public const HANDLER_PATH = 'modules/Vtiger/handlers/AutoNumberHandler.php';
     public const HANDLER_CLASS = 'AutoNumberHandler';
     public const CRON_NAME = 'AutoNumberBackfill';
@@ -41,29 +35,10 @@ class Migration20261028100000_AddAutonumberUitype extends FRMigrationClass
 
     public function process(): void
     {
-        $this->addFieldType();
         $this->createTables();
         $this->registerHandlers();
         $this->registerCronTask();
         $this->log("マイグレーション add_autonumber_uitype が正常に完了しました");
-    }
-
-    /**
-     * uitype とデータ型の対応を追加する
-     */
-    public function addFieldType(): void
-    {
-        $db = PearDatabase::getInstance();
-        $result = $db->pquery('SELECT 1 FROM vtiger_ws_fieldtype WHERE uitype = ?', [self::UITYPE]);
-        if ($db->num_rows($result) > 0) {
-            $this->log('vtiger_ws_fieldtype の uitype ' . self::UITYPE . ' は登録済みです');
-            return;
-        }
-        $db->pquery(
-            'INSERT INTO vtiger_ws_fieldtype (uitype, fieldtype) VALUES (?, ?)',
-            [self::UITYPE, self::FIELD_TYPE]
-        );
-        $this->log('vtiger_ws_fieldtype に uitype ' . self::UITYPE . ' を追加しました');
     }
 
     /**

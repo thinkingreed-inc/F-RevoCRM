@@ -7,7 +7,7 @@ import { frQuery } from "../../model/fetcher";
 import { apiSession } from "../../utils/api";
 
 /**
- * D-14 自動採番項目（uitype 997）
+ * D-14 自動採番項目（uitype 4）
  *
  * レイアウトエディタで「自動採番」項目を Faq に追加し、以下を直列で検証する:
  *   1. 項目の追加（設定は「レコード番号」の画面で行う旨が出る。データ型は string）
@@ -113,7 +113,7 @@ test.describe.serial("管理: 自動採番項目", () => {
     expect(json.success).toBe(true);
     // データ型は string のまま（検索・条件・並べ替えは文字の項目として使える）
     expect(json.result.type).toBe("string");
-    expect(json.result.uitype).toBe("997");
+    expect(json.result.uitype).toBe("4");
     fieldName = json.result.name;
   });
 

@@ -146,8 +146,8 @@
 							</div>
 						</div>
 					{/if}
-					{if !$IS_FIELD_EDIT_MODE || $FIELD_MODEL->get('uitype') eq '997'}
-						<div class="supportedType autoNumberSupported {if $FIELD_MODEL->get('uitype') neq '997'}hide{/if}" data-test-id="autonumber-settings">
+					{if !$IS_FIELD_EDIT_MODE || $FIELD_MODEL->get('uitype') eq '4'}
+						<div class="supportedType autoNumberSupported {if $FIELD_MODEL->get('uitype') neq '4'}hide{/if}" data-test-id="autonumber-settings">
 							<div class="form-group">
 								<div class="col-sm-5"></div>
 								<div class="controls col-sm-7">

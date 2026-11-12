@@ -371,7 +371,7 @@ class Settings_LayoutEditor_Module_Model extends Vtiger_Module_Model {
 							   break;
 				Case 'AutoNumber' :
 							   // 値は書式から作る番号の文字列。画面では編集できない（保存時に自動で付ける）
-							   $uitype = 997;
+							   $uitype = 4;
 							   $type = "VARCHAR(100) default ''"; //adodb type
 							   $uichekdata='V~O';
 							   break;

@@ -36,14 +36,14 @@ class Settings_Vtiger_CustomRecordNumberingModule_Model extends Vtiger_Module_Mo
 	}
 
 	/**
-	 * 自動採番項目（uitype 997）を持つモジュール（連番管理の画面で設定できるモジュール）
+	 * 自動採番項目（uitype 4）を持つモジュール（連番管理の画面で設定できるモジュール）
 	 * @return <Array> モジュール名の昇順ではなく tabid 順の Settings_Vtiger_CustomRecordNumberingModule_Model
 	 */
 	public static function getSupportedModules() {
 		$db = PearDatabase::getInstance();
 
 		$sql = "SELECT tabid, name FROM vtiger_tab WHERE isentitytype = ? AND presence = ? AND tabid IN (SELECT DISTINCT tabid FROM vtiger_field WHERE uitype = ? AND presence IN (0, 2)) ORDER BY tabid";
-		$result = $db->pquery($sql, array(1, 0, 997));
+		$result = $db->pquery($sql, array(1, 0, 4));
 		$numOfRows = $db->num_rows($result);
 
 		$modulesModels = array();

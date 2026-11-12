@@ -54,7 +54,7 @@ final class UiTypeClassResolutionTest extends TestCase
     public function testMappedUiTypeResolvesToDedicatedClassRegardlessOfDataType(): void
     {
         $this->assertSame('YearMonth', Vtiger_Base_UIType::resolveClassSuffix('996', 'date'));
-        $this->assertSame('AutoNumber', Vtiger_Base_UIType::resolveClassSuffix('997', 'string'));
+        $this->assertSame('AutoNumber', Vtiger_Base_UIType::resolveClassSuffix('4', 'string'));
         // データ型名が何であっても専用クラスが優先される
         $this->assertSame('YearMonth', Vtiger_Base_UIType::resolveClassSuffix('996', 'string'));
     }
@@ -76,8 +76,9 @@ final class UiTypeClassResolutionTest extends TestCase
     /** 対応表のキーは、既存の使用済み番号と重ならない（PHP は数字の文字列キーを整数に変換する） */
     public function testMapDoesNotCollideWithKnownUiTypes(): void
     {
+        // uitype 4（連番）は、自動採番として専用クラスで拡張している（意図した対応）ため、一覧に入れない
         $knownUiTypes = [
-            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
+            1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
             30, 31, 32, 33, 51, 52, 53, 54, 55, 56, 57, 58, 59, 61, 63, 66, 69, 70, 71, 72, 73,
             75, 76, 77, 78, 80, 81, 83, 85, 98, 99, 101, 104, 105, 106, 115, 116, 117, 156, 255, 357, 401,
             998, 999,

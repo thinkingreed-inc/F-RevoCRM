@@ -12,9 +12,9 @@ use Vtiger_Record_Model;
 require_once dirname(__DIR__, 4) . '/tests/Support/DocumentsTestCase.php';
 
 /**
- * 連番項目（uitype 4）から自動採番項目（uitype 997）への移行後の動き
+ * 連番項目（uitype 4）を自動採番の設定に移した後の動き（uitype は 4 のまま）
  *
- * マイグレーション 20261028110000_migrate_uitype4_to_autonumber が適用済みのテスト用 DB で、
+ * マイグレーション 20261028110000_migrate_uitype4_to_autonumber（と 20261112180000）が適用済みのテスト用 DB で、
  * 見積などの標準モジュールが、これまでと同じ「接頭辞 + 連番」で採番されることを確かめる。
  * リードを 2 件作って消す（連番は戻さない）。
  */
@@ -24,15 +24,15 @@ final class AutoNumberLegacyMigrationTest extends DocumentsTestCase
     {
         parent::setUp();
         require_once 'modules/Vtiger/utils/AutoNumber.php';
-        if ($this->scalar("SELECT COUNT(*) FROM vtiger_field WHERE uitype = 4") !== '0') {
-            self::markTestSkipped('テスト用DBに連番項目の移行（20261028110000）が適用されていない');
+        if ($this->scalar("SELECT COUNT(*) FROM vtiger_field WHERE uitype = 997") !== '0') {
+            self::markTestSkipped('テスト用DBに uitype 997 の項目が残っている（20261112180000 が適用されていない）');
         }
         Vtiger_AutoNumber::clearCache();
     }
 
-    public function test_標準モジュールの連番項目は自動採番項目になっている(): void
+    public function test_標準モジュールの連番項目は自動採番の設定を持つ(): void
     {
-        $this->assertSame('997', $this->scalar("SELECT uitype FROM vtiger_field WHERE tabid = ? AND fieldname = 'lead_no'", [getTabid('Leads')]));
+        $this->assertSame('4', $this->scalar("SELECT uitype FROM vtiger_field WHERE tabid = ? AND fieldname = 'lead_no'", [getTabid('Leads')]));
         $configs = Vtiger_AutoNumber::getModuleConfigs('Leads');
         $this->assertArrayHasKey('lead_no', $configs);
         $this->assertSame('LEA{0}', $configs['lead_no']['format']);

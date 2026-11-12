@@ -1,7 +1,7 @@
 <?php
 
 /*+***********************************************************************************
- * 自動採番項目（uitype 997）の設定・連番の払い出し・保存時の付与
+ * 自動採番項目（uitype 4＝連番項目）の設定・連番の払い出し・保存時の付与
  *
  * テーブル
  *   vtiger_autonumber_config  項目ごとの設定（書式・リセット・開始番号・基準日・適用開始日時・停止中か）
@@ -19,7 +19,7 @@ require_once 'modules/Vtiger/utils/AutoNumberBackfill.php';
 
 class Vtiger_AutoNumber
 {
-    public const UITYPE = '997';
+    public const UITYPE = '4';
 
     public const CONFIG_TABLE = 'vtiger_autonumber_config';
     public const COUNTER_TABLE = 'vtiger_autonumber_counter';
@@ -88,7 +88,8 @@ class Vtiger_AutoNumber
         if ($tabId) {
             $db = PearDatabase::getInstance();
             $result = $db->pquery(
-                'SELECT f.fieldid, f.fieldname, f.fieldlabel, f.tablename, f.columnname, c.*
+                // c.fieldid が NULL（設定の行が無い）で f.fieldid を上書きしないよう、c.* を先に書く
+                'SELECT c.*, f.fieldid, f.fieldname, f.fieldlabel, f.tablename, f.columnname
                    FROM vtiger_field f
                    LEFT JOIN ' . self::CONFIG_TABLE . ' c ON c.fieldid = f.fieldid
                   WHERE f.tabid = ? AND f.uitype = ? AND f.presence IN (0, 2)
@@ -96,7 +97,12 @@ class Vtiger_AutoNumber
                 [$tabId, self::UITYPE]
             );
             while (is_array($row = $db->fetchByAssoc($result, -1, false))) {
-                $config = $row['format'] === null ? self::defaultConfigForMissingRow() : self::normalizeConfigRow($row);
+                if ($row['format'] === null) {
+                    // 設定の行が無い項目（移行の後に入れたモジュールなど）は、旧設定（vtiger_modentity_num）から起こす
+                    $config = self::seedFromLegacy(Vtiger_AutoNumberValue::int($row['fieldid']), $moduleName) ?? self::defaultConfigForMissingRow();
+                } else {
+                    $config = self::normalizeConfigRow($row);
+                }
                 $config['modulename'] = $moduleName;
                 $config['fieldid'] = Vtiger_AutoNumberValue::int($row['fieldid']);
                 $config['fieldname'] = Vtiger_AutoNumberValue::string($row['fieldname']);
@@ -111,7 +117,39 @@ class Vtiger_AutoNumber
     }
 
     /**
-     * 設定の行が無い項目（設定前・移行途中）は採番せず、空のままにする
+     * 旧連番（vtiger_modentity_num の有効な行）から、項目の設定と連番を作る
+     *
+     * 接頭辞と次の番号を書式（POT{0} など）に読み替える。作成済みのレコードの番号は変えない。
+     * 旧設定が無ければ何もしない。すでに設定があれば手を触れない（何度呼んでもよい）。
+     *
+     * @return array<string, mixed>|null 作った設定。旧設定が無いとき null
+     */
+    public static function seedFromLegacy(int $fieldId, string $moduleName): ?array
+    {
+        $db = PearDatabase::getInstance();
+        $num = $db->pquery('SELECT prefix, cur_id FROM vtiger_modentity_num WHERE semodule = ? AND active = 1', [$moduleName]);
+        if ($num === false || $db->num_rows($num) === 0) {
+            return null;
+        }
+        require_once 'modules/Vtiger/utils/AutoNumberLegacy.php';
+        $converted = Vtiger_AutoNumberLegacy::convert(
+            Vtiger_AutoNumberValue::string($db->query_result($num, 0, 'prefix')),
+            Vtiger_AutoNumberValue::string($db->query_result($num, 0, 'cur_id'))
+        );
+        $db->pquery(
+            'INSERT IGNORE INTO ' . self::CONFIG_TABLE . ' (fieldid, format, reset_type, start_number, base_date, effective_from, active)
+             VALUES (?, ?, ?, ?, ?, NULL, 1)',
+            [$fieldId, $converted['format'], 'none', $converted['start_number'], '']
+        );
+        $db->pquery(
+            'INSERT IGNORE INTO ' . self::COUNTER_TABLE . ' (fieldid, scope_key, cur_value) VALUES (?, ?, ?)',
+            [$fieldId, '', $converted['cur_value']]
+        );
+        return self::getConfig($fieldId);
+    }
+
+    /**
+     * 設定の行が無い項目（設定前・旧設定も無い）は採番せず、空のままにする
      *
      * @return array<string, mixed>
      */

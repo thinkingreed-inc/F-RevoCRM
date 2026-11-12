@@ -6,7 +6,7 @@ import { gotoSettings } from "../../utils/settings";
 /**
  * D-03 レコード番号の設定 (設定 > レコード番号 = CustomRecordNumbering)
  *
- * 連番項目はすべて自動採番項目(uitype 997)に移行済みで、この画面が設定の入口。
+ * 連番項目はすべて自動採番項目(uitype 4)に移行済みで、この画面が設定の入口。
  * 画面は #EditView フォーム(モーダルではない)。保存は CustomRecordNumberingAjax への POST で、
  * 画面遷移しない。保存ボタン(button.saveButton)は初期状態 disabled で、入力の変更で有効になる。
  *

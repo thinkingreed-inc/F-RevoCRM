@@ -14,7 +14,7 @@ require_once dirname(__DIR__, 2) . '/Support/DocumentsTestCase.php';
  *
  * 対象: setup/migration/scripts/20261028100000_add_autonumber_uitype.php
  *
- *   - uitype 997 → string の対応・3 つのテーブル・AutoNumberHandler・定期ジョブを用意する
+ *   - 3 つのテーブル・AutoNumberHandler・定期ジョブを用意する（uitype は増やさない）
  *   - 2 回実行しても重複しない
  *   - 既にあるテーブルの中身・登録済みの定期ジョブの設定は書き換えない
  *
@@ -38,11 +38,7 @@ final class AddAutonumberUitypeTest extends DocumentsTestCase
         $this->runMigration();
         $this->runMigration();
 
-        $this->assertSame(1, $this->rowCount("SELECT 1 FROM vtiger_ws_fieldtype WHERE uitype = '997'"));
-        $this->assertSame(
-            'string',
-            $this->value("SELECT fieldtype AS v FROM vtiger_ws_fieldtype WHERE uitype = '997'")
-        );
+        $this->assertSame(0, $this->rowCount("SELECT 1 FROM vtiger_ws_fieldtype WHERE uitype = '997'"), 'uitype 997 は登録しない');
         $this->assertSame(1, $this->rowCount(
             "SELECT 1 FROM vtiger_eventhandlers WHERE handler_class = 'AutoNumberHandler' AND event_name = 'vtiger.entity.beforesave'"
         ));
@@ -94,12 +90,10 @@ final class AddAutonumberUitypeTest extends DocumentsTestCase
         $row = $this->db->fetchByAssoc($cron, -1, false);
         $this->assertIsArray($row);
         $this->db->pquery("DELETE FROM vtiger_cron_task WHERE name = 'AutoNumberBackfill'", []);
-        $this->db->pquery("DELETE FROM vtiger_ws_fieldtype WHERE uitype = '997'", []);
         try {
             $this->runMigration();
 
             $this->assertSame(1, $this->rowCount("SELECT 1 FROM vtiger_cron_task WHERE name = 'AutoNumberBackfill'"));
-            $this->assertSame(1, $this->rowCount("SELECT 1 FROM vtiger_ws_fieldtype WHERE uitype = '997' AND fieldtype = 'string'"));
         } finally {
             $this->runMigration();
         }
