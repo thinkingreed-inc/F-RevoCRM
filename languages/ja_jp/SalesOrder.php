@@ -43,7 +43,7 @@ $languageStrings = array(
 	'Sub Total'=>'小計',
 	'AutoCreated'=>'自動作成済み',
 	'Sent'=>'送付済み',
-	'Credit Invoice'=>'クレジット払い',
+	'Credit Invoice'=>'取消請求',
 	'Paid'=>'支払い済み',
 	'Next Invoice Date' => '次の請求日',
 	
