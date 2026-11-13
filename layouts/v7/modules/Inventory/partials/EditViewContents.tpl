@@ -21,9 +21,15 @@
 		</div>
 	{/if}
     {assign var=CHECK_CONTACTID value=$CHECK_CONTACTID}
+    {* 通知ブロック（#1965）：項目の無いブロックは並ばないため、通知ブロックの位置に来たら出す（品目明細より上にだけ置ける） *}
+    {assign var=NOTIFICATION_BLOCK_BEFORE value=NotificationBlock_Display_Helper::getPlacement($MODULE, $RECORD_STRUCTURE)}
+    {if !empty($IS_DUPLICATE)}{assign var=NOTIFICATION_BLOCK_RECORD value=$smarty.request.record}{elseif !empty($RECORD_ID)}{assign var=NOTIFICATION_BLOCK_RECORD value=$RECORD_ID}{else}{assign var=NOTIFICATION_BLOCK_RECORD value=0}{/if}
     {foreach key=BLOCK_LABEL item=BLOCK_FIELDS from=$RECORD_STRUCTURE name=blockIterator}
         {if $BLOCK_LABEL eq 'LBL_ITEM_DETAILS'}{continue}{/if}
          {if $BLOCK_FIELDS|@count gt 0}
+             {if $NOTIFICATION_BLOCK_BEFORE neq '' and $NOTIFICATION_BLOCK_BEFORE eq $BLOCK_LABEL}
+                 {include file="EditBlock.tpl"|vtemplate_path:'NotificationBlock' NB_MODULE_NAME=$MODULE NB_RECORD_ID=$NOTIFICATION_BLOCK_RECORD NB_IS_DUPLICATE=$IS_DUPLICATE}
+             {/if}
              <div class='fieldBlockContainer' data-block="{$BLOCK_LABEL}">
                      <h4 class='fieldBlockHeader'>{vtranslate($BLOCK_LABEL, $MODULE)}</h4>
                  <hr>
@@ -165,5 +171,8 @@
              </div>
          {/if}
      {/foreach}
+     {if $NOTIFICATION_BLOCK_BEFORE eq NotificationBlock_Display_Helper::POSITION_END}
+         {include file="EditBlock.tpl"|vtemplate_path:'NotificationBlock' NB_MODULE_NAME=$MODULE NB_RECORD_ID=$NOTIFICATION_BLOCK_RECORD NB_IS_DUPLICATE=$IS_DUPLICATE}
+     {/if}
 </div>
 {include file="partials/LineItemsEdit.tpl"|@vtemplate_path:'Inventory'}

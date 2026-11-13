@@ -1338,10 +1338,21 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 				var form = data.find('.addCustomBlockForm');
 				thisInstance.setBlocksListArray(form);
 				var fieldLabel = form.find('[name="label"]');
+				// 通知ブロック（#1965）：ブロック名は入力しない（「通知」になる）。入力欄を無効にして入力チェックから外す
+				form.find('[name="blockType"]').on('change', function () {
+					var isNotification = jQuery(this).val() === 'notification';
+					form.find('.blockLabelRow').toggleClass('hide', isNotification);
+					form.find('.notificationBlockRow').toggleClass('hide', !isNotification);
+					fieldLabel.prop('disabled', isNotification);
+				});
 
 				var params = {
 					submitHandler: function (form) {
 						var form = jQuery(form);
+						if (form.find('[name="blockType"]').val() === 'notification') {
+							thisInstance.saveNotificationBlock(form);
+							return false;
+						}
 
 						var blockLabelValue = jQuery.trim(fieldLabel.val());
 						var specialChars = /[&\<\>\:\'\"\,\_\-]/;
@@ -1402,6 +1413,23 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 
 			app.helper.showModal(addBlockContainer, modalParams);
 		});
+	},
+	/**
+	 * 通知ブロック（#1965）を追加する
+	 */
+	saveNotificationBlock: function (form) {
+		var thisInstance = this;
+		var message = form.find('[name="blockType"]').data('addedMessage');
+		thisInstance.saveBlockDetails(form).then(
+			function () {
+				app.helper.hideModal();
+				app.helper.showSuccessNotification({'message': message});
+				window.location.reload();
+			},
+			function (error) {
+				app.helper.showErrorNotification({'message': error && error.message ? error.message : ''});
+			}
+		);
 	},
 	/**
 	 * Function to save the new custom block details
@@ -1601,6 +1629,10 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 			var blockId = table.data('blockId');
 
 			var message = app.vtranslate('JS_LBL_ARE_YOU_SURE_YOU_WANT_TO_DELETE').replace(/\n/g, "<br>");
+			// 通知ブロック（#1965）：画面から消えるだけで、通知先と送信履歴は消えないことを伝える
+			if (table.data('notificationBlock')) {
+				message = table.data('deleteMessage');
+			}
 			app.helper.showConfirmationBox({'message': message}).then(
 				function (data) {
 					thisInstance.deleteCustomBlock(blockId);
@@ -2048,10 +2080,47 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 		});
 	},
 	/**
+	 * 通知ブロック（#1965）の「作成時に送信」（その場で保存）と「メール文面の設定」
+	 */
+	registerNotificationBlockEvents: function () {
+		var moduleBlocks = jQuery('#moduleBlocks');
+		moduleBlocks.on('switchChange.bootstrapSwitch', "input[name='notificationSendOnCreate']", function (e, state) {
+			var element = jQuery(e.currentTarget);
+			element.attr('value', state ? 1 : 0);
+			var params = {
+				module: 'NotificationBlock',
+				parent: 'Settings',
+				api: 'SaveSendOnCreate',
+				tabid: element.data('tabid'),
+				enabled: state ? 1 : 0
+			};
+			if (typeof csrfMagicName !== 'undefined') {
+				params[csrfMagicName] = csrfMagicToken;
+			}
+			// apis は成功時に中身だけの JSON、失敗時に {success: false, error: {message}} を返す
+			jQuery.ajax({url: 'index.php', type: 'POST', data: params, dataType: 'json'}).done(function (response) {
+				if (!response || response.success === false) {
+					app.helper.showErrorNotification({message: response && response.error ? response.error.message : ''});
+					return;
+				}
+				app.helper.showSuccessNotification({message: response.message});
+			}).fail(function () {
+				app.helper.showErrorNotification({message: ''});
+			});
+		});
+		moduleBlocks.on('click', 'button.notificationBlockTemplate', function (e) {
+			var tabId = jQuery(e.currentTarget).data('tabid');
+			jQuery.getScript('layouts/v7/modules/Settings/NotificationBlock/resources/TemplateDialog.js').done(function () {
+				Settings_NotificationBlock_TemplateDialog_Js.open(tabId);
+			});
+		});
+	},
+	/**
 	 * Function to register all the events for blocks
 	 */
 	registerBlockEvents: function () {
 		var thisInstance = this;
+		thisInstance.registerNotificationBlockEvents();
 		thisInstance.makeBlocksListSortable();
 		thisInstance.registerAddCustomFieldEvent();
 		thisInstance.registerEventForCollapseBlock();
@@ -2264,6 +2333,9 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 					jQuery("input[name='collapseBlock']").bootstrapSwitch();
 					jQuery("input[name='collapseBlock']").bootstrapSwitch('handleWidth', '40px');
 					jQuery("input[name='collapseBlock']").bootstrapSwitch('labelWidth', '25px');
+					jQuery("input[name='notificationSendOnCreate']").bootstrapSwitch();
+					jQuery("input[name='notificationSendOnCreate']").bootstrapSwitch('handleWidth', '40px');
+					jQuery("input[name='notificationSendOnCreate']").bootstrapSwitch('labelWidth', '25px');
 					jQuery("input[name='editReadonlyDisplay']").bootstrapSwitch();
 					jQuery("input[name='editReadonlyDisplay']").bootstrapSwitch('handleWidth', '27px');
 					jQuery("input[name='editReadonlyDisplay']").bootstrapSwitch('labelWidth', '25px');
