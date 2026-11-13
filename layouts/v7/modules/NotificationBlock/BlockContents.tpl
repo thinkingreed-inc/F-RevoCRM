@@ -46,7 +46,8 @@
 	{/if}
 	<div class="notificationBlockHistory" data-count="{$NB.history_count}">
 		{if $NB.history_count > 0}
-			<a href="javascript:void(0)" class="notificationBlockShowHistory">{vtranslate('LBL_HISTORY_LINK', $NBM, $NB.history_count)}</a>
+			{* 本家の一覧画面（Vtiger/ListViewContents.tpl）と同じ fieldValue・value で包み、項目の値のリンクと同じ青にする *}
+			<span class="fieldValue"><span class="value"><a href="javascript:void(0)" class="notificationBlockShowHistory">{vtranslate('LBL_HISTORY_LINK', $NBM, $NB.history_count)}</a></span></span>
 		{else}
 			<span class="text-muted notificationBlockNoHistory">{vtranslate('LBL_NO_HISTORY', $NBM)}</span>
 		{/if}
