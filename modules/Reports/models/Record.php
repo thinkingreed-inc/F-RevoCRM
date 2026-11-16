@@ -348,20 +348,19 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 			list($tableName, $columnName, $moduleFieldLabel, $fieldName, $type) = split(':', $column);
 			$fieldLabel  = explode('_', $moduleFieldLabel);
 			$module = $fieldLabel[0];
-			$dbFieldLabel = trim(str_replace(array($module, '_'), " ", $moduleFieldLabel));
-			$translatedFieldLabel = vtranslate($dbFieldLabel, $module);
+			// NOTE: Do not key this array by the translated field label. The display
+			// name is not unique - "Settings > 文言変更" has no duplicate check - so
+			// two selected columns sharing a display name used to collide and the
+			// later one silently overwrote the earlier one (#1540).
 			if($module == 'Calendar') {
 				if(CheckFieldPermission($fieldName, $module) == 'true' || CheckFieldPermission($fieldName, 'Events') == 'true') {
-					$selectedColumns[$module.'_'.$translatedFieldLabel] = $column;
+					$selectedColumns[] = $column;
 				}
 			} else if($primaryModule == 'PriceBooks' && $fieldName == 'listprice' && in_array($module, array('Products', 'Services'))) {
 				// to support pricebooks listprice in reports 
-				$selectedColumns[$module.'_'.$translatedFieldLabel] = $column;
+				$selectedColumns[] = $column;
 			} else if(CheckFieldPermission($fieldName, $module) == 'true') {
-				// we should affix key with module name to differentiate same labels from diff modules
-				$translatedFieldLabel = str_replace('"', "", $translatedFieldLabel);
-				$translatedFieldLabel = str_replace("'", "", $translatedFieldLabel);
-				$selectedColumns[$module.'_'.$translatedFieldLabel] = $column;
+				$selectedColumns[] = $column;
 			}
 		}
 		return $selectedColumns;

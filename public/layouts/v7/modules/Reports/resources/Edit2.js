@@ -193,27 +193,26 @@ Reports_Edit_Js("Reports_Edit2_Js",{},{
 		var choicesContainer = chosenElement.find('ul.select2-choices');
 		var choicesList = choicesContainer.find('li.select2-search-choice');
 
-		//var coulmnListSelectElement = Vtiger_CustomView_Js.getColumnSelectElement();
-		var selectedOptions = selectElement.find('option:selected');
 		var selectedOrder = JSON.parse(this.getSelectedFields().val());
-		var selectedOrderKeys = [];
-		for(var key in selectedOrder) {
-			if(selectedOrder.hasOwnProperty(key)){
-				selectedOrderKeys.push(key);
+
+		//The display name is not unique(文言変更 has no duplicate check), so the choices
+		//can not be matched by their label. Match them by the option value which select2
+		//keeps on each choice element instead(#1540).
+		var choiceElementsByValue = {};
+		choicesList.each(function(choiceListIndex, element){
+			var liElement = jQuery(element);
+			var choiceData = liElement.data('select2Data');
+			if(choiceData && typeof choiceData.id !== 'undefined') {
+				choiceElementsByValue[choiceData.id] = liElement;
 			}
-		}
-		for(var index=selectedOrderKeys.length ; index > 0 ; index--) {
-			var selectedValue = selectedOrder[selectedOrderKeys[index-1]];
-			//We should consider value as string 
-			var colonEscapedValue = selectedValue.replace(":", "\\:");
-			var option = selectedOptions.filter('[value="'+colonEscapedValue+'"]'); 
-			choicesList.each(function(choiceListIndex,element){
-				var liElement = jQuery(element);
-				if(liElement.find('div').html() == option.html()){
-					choicesContainer.prepend(liElement);
-					return false;
-				}
-			});
+		});
+
+		for(var index=selectedOrder.length ; index > 0 ; index--) {
+			//Saved columns may hold html encoded labels, where the option values do not
+			var selectedValue = app.htmlDecode(selectedOrder[index-1]);
+			if(typeof choiceElementsByValue[selectedValue] !== 'undefined') {
+				choicesContainer.prepend(choiceElementsByValue[selectedValue]);
+			}
 		}
 	},
 
