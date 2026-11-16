@@ -11,6 +11,7 @@
 class Reports_Detail_View extends Vtiger_Index_View {
 
 	protected $reportData;
+	protected $reportHeaders;
 	protected $calculationFields;
 	protected $count;
 
@@ -59,6 +60,7 @@ class Reports_Detail_View extends Vtiger_Index_View {
 
 		$reportData = $reportModel->getReportData($pagingModel);
 		$this->reportData = $reportData['data'];
+		$this->reportHeaders = $reportData['headers'];
 		$this->calculationFields = $reportModel->getReportCalulationData();
 
 		$this->count = $reportData['count'];
@@ -170,6 +172,7 @@ class Reports_Detail_View extends Vtiger_Index_View {
 		$page = $request->get('page');
 
 		$data = $this->reportData;
+		$headers = $this->reportHeaders;
 		$calculation = $this->calculationFields;
 
 		$pagingModel = new Vtiger_Paging_Model();
@@ -183,33 +186,19 @@ class Reports_Detail_View extends Vtiger_Index_View {
 
 			$reportData = $reportModel->getReportData($pagingModel);
 			$data = $reportData['data'];
+			$headers = $reportData['headers'];
 			$this->count = $reportData['count'];
 			$calculation = $reportModel->getReportCalulationData();
 		}
 
-		$groupingList = ReportRun::getInstance($record)->_groupinglist;
-		foreach($groupingList as $groupingKey => $groupingValues){
-			$moduleField = explode(":", $groupingKey)[2];
-			$groupingModules[] = explode("_", $moduleField)[0];
-		}
-
-		// グループ化するカラムを判定するラベルをDB(vtiger_reportsortcol,vtiger_reportgroupbycolumn)からアンダーバーの置換で生成しているため，もとからアンダーバーを含むラベルを生成できない
-		// もとからアンダーバーを含むラベル抽出し置換を行うかどうかの判別をする
-		global $adb;
-		$result = $adb->pquery('SELECT DISTINCT fieldlabel FROM vtiger_field WHERE fieldlabel LIKE "%\_%"');
-		$rows = $adb->num_rows($result);
-		for ($i = 0; $i < $rows; $i++) {
-			$includedUnderbar[] = $adb->query_result($result, $i, 'fieldlabel');
-		}
-
 		$viewer->assign('CALCULATION_FIELDS',$calculation);
 		$viewer->assign('DATA', $data);
+		// 行データのキー（SQL の列の別名）=> 見出し (#1540)
+		$viewer->assign('REPORT_HEADERS', $headers);
 		$viewer->assign('RECORD_ID', $record);
 		$viewer->assign('PAGING_MODEL', $pagingModel);
 		$viewer->assign('COUNT', $this->count);
 		$viewer->assign('MODULE', $moduleName);
-		$viewer->assign('GROUPING_MODULES', $groupingModules);
-		$viewer->assign('INCLUDED_UNDERBAR_LABELS', $includedUnderbar);
 		$viewer->assign('REPORT_RUN_INSTANCE', ReportRun::getInstance($record));
 		if (php7_count($data) > self::REPORT_LIMIT) {
 			$viewer->assign('LIMIT_EXCEEDED', true);

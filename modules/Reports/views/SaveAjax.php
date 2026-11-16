@@ -46,6 +46,8 @@ class Reports_SaveAjax_View extends Vtiger_IndexAjax_View {
 		$viewer->assign('PRIMARY_MODULE', $reportModel->getPrimaryModule());
 		$viewer->assign('CALCULATION_FIELDS', $calculation);
 		$viewer->assign('DATA', $data);
+		// 行データのキー（SQL の列の別名）=> 見出し (#1540)
+		$viewer->assign('REPORT_HEADERS', $reportData['headers']);
 		$viewer->assign('RECORD_ID', $record);
 		$viewer->assign('PAGING_MODEL', $pagingModel);
 		$viewer->assign('MODULE', $moduleName);

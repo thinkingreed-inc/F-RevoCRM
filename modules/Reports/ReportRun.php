@@ -2072,6 +2072,30 @@ class ReportRun extends CRMEntity {
 		return $grouplist;
 	}
 
+	/**
+	 * GenerateReport('PDF') の行データのキー（SQL の列の別名）が「操作」列かを判定する (#1540)
+	 * @param string $columnKey 行データのキー
+	 * @return bool
+	 */
+	function isActionColumnKey($columnKey) {
+		return $columnKey === $this->primarymodule . '_LBL_ACTION';
+	}
+
+	/**
+	 * グループ化している列を、GenerateReport('PDF') の行データのキー（SQL の列の別名）の形で返す (#1540)
+	 * 別名は識別文字列（テーブル名:カラム名:モジュール名_元ラベル:フィールド名:型）の 3 番目を HTML デコードしたもの
+	 * @param int $reportid
+	 * @return string[] グループ化の順番どおりの列のキー
+	 */
+	function getGroupingColumnKeys($reportid) {
+		$columnKeys = array();
+		foreach (array_keys($this->getGroupingList($reportid)) as $groupingColumn) {
+			$columnParts = explode(':', $groupingColumn);
+			$columnKeys[] = decode_html($columnParts[2]);
+		}
+		return $columnKeys;
+	}
+
 	/** function to replace special characters
 	 *  @ param $selectedfield : type string
 	 *  this returns the string for grouplist
@@ -3157,6 +3181,9 @@ class ReportRun extends CRMEntity {
 				$picklistarray = $this->getAccessPickListValues();
 			$noofrows = $adb->num_rows($result);
         	$arr_val = array();
+			// 行データのキーは SQL の列の別名（例: Accounts_test1）にし、見出しは別名 => 見出しの対応で別に返す。
+			// 見出し（翻訳後の表示名）は「文言変更」で重複しうるため、キーにすると同じ見出しの列が上書きされて消える (#1540)
+			$headers = array();
 			if ($noofrows > 0) {
 				// Number of fields in the result
 				$y = $adb->num_fields($result);
@@ -3193,14 +3220,16 @@ class ReportRun extends CRMEntity {
 							$headerLabel = $moduleLabel." ". $translatedLabel;
 						}
 					}
-					$fieldsList[$i]['field'] = $field; 
-					$fieldsList[$i]['headerlabel'] = $headerLabel; 
+					$fieldsList[$i]['field'] = $field;
+					$fieldsList[$i]['headerlabel'] = $headerLabel;
+					if (!(is_array($sec_modules) && (in_array(str_replace('_LBL_ACTION', '', $field->name), $sec_modules)))) {
+						$headers[$field->name] = $headerLabel;
+					}
 				}
 				do {
 					$arraylists = Array();
 					for ($i = 0; $i < $y; $i++) {
 						$fld = $fieldsList[$i]['field'];
-						$headerLabel = $fieldsList[$i]['headerlabel'];
 						// Check for role based pick list
 						$fieldvalue = getReportFieldValue($this, $picklistarray, $fld, $custom_field_values, $i, $operation);
 
@@ -3215,13 +3244,14 @@ class ReportRun extends CRMEntity {
 							continue;
 						}
 
-						$arraylists[$headerLabel] = $fieldvalue;
+						$arraylists[$fld->name] = $fieldvalue;
 					}
 					$arr_val[] = $arraylists;
 					set_time_limit($php_max_execution_time);
 				} while ($custom_field_values = $adb->fetch_array($result));
             	$data['data'] = $arr_val;
 			}
+			$data['headers'] = $headers;
 			$data['count'] = $noofrows;
 			return $data;
 		} elseif ($outputformat == "TOTALXLS") {
@@ -3745,44 +3775,21 @@ class ReportRun extends CRMEntity {
 			if (is_array($reportData) && $reportData['count'] > 0) {
 				$data = $reportData['data'];
 				$noofrows = $reportData['count'];
-				$firstRow = reset($data);
-				$headers = array_keys($firstRow);
-				foreach ($headers as $headerName) {
-					if ($headerName == 'ACTION' || $headerName == vtranslate('LBL_ACTION', $this->primarymodule) || $headerName == vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL_ACTION', $this->primarymodule) || $headerName == vtranslate('LBL ACTION', $this->primarymodule) || $key == vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL ACTION', $this->primarymodule)) {
+				// 行データのキーは SQL の列の別名。見出しは $reportData['headers'] から引く (#1540)
+				$columnHeaders = $reportData['headers'];
+				foreach ($columnHeaders as $columnKey => $headerName) {
+					if ($this->isActionColumnKey($columnKey)) {
 						continue;
 					}
 					$header .= '<th>' . $headerName . '</th>';
 				}
 
-				// グループ化するカラムを判定するラベルをDB(vtiger_reportsortcol,vtiger_reportgroupbycolumn)からアンダーバーの置換で生成しているため，もとからアンダーバーを含むラベルを生成できない
-				// もとからアンダーバーを含むラベル抽出し置換を行うかどうかの判別をする
-				$includeUnderbarResult = $adb->pquery('SELECT DISTINCT fieldlabel FROM vtiger_field WHERE fieldlabel LIKE "%\_%"');
-				$includeUnderbarRows = $adb->num_rows($includeUnderbarResult);
-				for ($i = 0; $i < $includeUnderbarRows; $i++) {
-					$includedUnderbarLabels[] = $adb->query_result($includeUnderbarResult, $i, 'fieldlabel');
-				}
-
-				$groupslist = $this->getGroupingList($this->reportid);
-				foreach ($groupslist as $reportFieldName => $reportFieldValue) {
-					$nameParts = explode(":", $reportFieldName);
-					list($groupFieldModuleName, $groupFieldName) = split("_", $nameParts[2], 2);
-					if(in_array($groupFieldName, $includedUnderbarLabels)){
-						$groupByFieldNames[] = vtranslate($groupFieldName, $groupFieldModuleName);
-					} else {
-						$groupByFieldNames[] = vtranslate(str_replace('_', ' ', $groupFieldName), $groupFieldModuleName);
-					}
-				}
+				// グループ化している列は、翻訳後の見出しではなく行データのキー（SQL の列の別名）で判定する (#1540)
+				$groupByFieldNames = $this->getGroupingColumnKeys($this->reportid);
 				if (php7_count($groupByFieldNames) > 0) {
-					if (php7_count($groupByFieldNames) == 1) {
-						$firstField = $groupByFieldNames[0];
-					} else if (php7_count($groupByFieldNames) == 2) {
-						$firstField = $groupByFieldNames[0];
-						$secondField = $groupByFieldNames[1];
-					} else if (php7_count($groupByFieldNames) == 3) {
-						$firstField = $groupByFieldNames[0];
-						$secondField = $groupByFieldNames[1];
-						$thirdField = $groupByFieldNames[2];
-					}
+					$firstField = $groupByFieldNames[0];
+					$secondField = isset($groupByFieldNames[1]) ? $groupByFieldNames[1] : null;
+					$thirdField = isset($groupByFieldNames[2]) ? $groupByFieldNames[2] : null;
 					$firstValue = ' ';
 					$secondValue = ' ';
 					$thirdValue = ' ';
@@ -3791,10 +3798,10 @@ class ReportRun extends CRMEntity {
 						$firstIsHead = 0;
 						$secondIsHead = 0;
 						foreach ($valueArray as $fieldName => $fieldValue) {
-							if ($fieldName == 'ACTION' || $fieldName == vtranslate('LBL_ACTION', $this->primarymodule) || $fieldName == vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL_ACTION', $this->primarymodule) || $fieldName == vtranslate('LBL ACTION', $this->primarymodule) || $fieldName == vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL ACTION', $this->primarymodule)) {
+							if ($this->isActionColumnKey($fieldName)) {
 								continue;
 							}
-							if (($fieldName == $firstField || strstr($fieldName, $firstField)) && ($firstValue == $fieldValue || $firstValue == " ")) {
+							if ($fieldName === $firstField && ($firstValue == $fieldValue || $firstValue == " ")) {
 								if ($firstValue == ' ' || $fieldValue == '-') {
 									$valtemplate .= "<td style='border-bottom: 0;'>" . $fieldValue . "</td>";
 									$firstIsHead = 1;
@@ -3806,7 +3813,7 @@ class ReportRun extends CRMEntity {
 								if ($fieldValue != ' ') {
 									$firstValue = $fieldValue;
 								}
-							} else if (($fieldName == $secondField || strstr($fieldName, $secondField)) && ($secondValue == $fieldValue || $secondValue == " ")) {
+							} else if ($fieldName === $secondField && ($secondValue == $fieldValue || $secondValue == " ")) {
 								if ($secondValue == ' ' || $secondValue == '-' || $firstIsHead == 1) {
 									$valtemplate .= "<td style='border-bottom: 0;'>" . $fieldValue . "</td>";
 									$secondIsHead = 1;
@@ -3818,7 +3825,7 @@ class ReportRun extends CRMEntity {
 								if ($fieldValue != ' ') {
 									$secondValue = $fieldValue;
 								}
-							} else if (($fieldName == $thirdField || strstr($fieldName, $thirdField)) && ($thirdValue == $fieldValue || $thirdValue == " ")) {
+							} else if ($fieldName === $thirdField && ($thirdValue == $fieldValue || $thirdValue == " ")) {
 								if ($thirdValue == ' ' || $thirdValue == '-' || $secondIsHead == 1) {
 									$valtemplate .= "<td style='border-bottom: 0;'>" . $fieldValue . "</td>";
 								} else if($thirdValue == '') {
@@ -3831,13 +3838,13 @@ class ReportRun extends CRMEntity {
 								}
 							} else {
 								$valtemplate .= "<td style='border-bottom: 0;'>" . $fieldValue . "</td>";
-								if ($fieldName == $firstField || strstr($fieldName, $firstField)) {
+								if ($fieldName === $firstField) {
 									$firstIsHead = 1;
 									$firstValue = $fieldValue;
-								} else if ($fieldName == $secondField || strstr($fieldName, $secondField)) {
+								} else if ($fieldName === $secondField) {
 									$secondIsHead = 1;
 									$secondValue = $fieldValue;
-								} else if ($fieldName == $thirdField || strstr($fieldName, $thirdField)) {
+								} else if ($fieldName === $thirdField) {
 									$thirdValue = $fieldValue;
 								}
 							}
@@ -3848,7 +3855,7 @@ class ReportRun extends CRMEntity {
 					foreach ($data as $key => $values) {
 						$valtemplate .= '<tr>';
 						foreach ($values as $fieldName => $value) {
-							if ($fieldName == 'ACTION' || $fieldName == vtranslate('LBL_ACTION', $this->primarymodule) || $fieldName == vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL_ACTION', $this->primarymodule) || $fieldName == vtranslate('LBL ACTION', $this->primarymodule) || $fieldName == vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL ACTION', $this->primarymodule)) {
+							if ($this->isActionColumnKey($fieldName)) {
 								continue;
 							}
 							$valtemplate .= "<td>" . $value . "</td>";
@@ -4307,12 +4314,14 @@ class ReportRun extends CRMEntity {
 	function getReportPDF($filterlist = false) {
 		$reportData = $this->GenerateReport("PDF", $filterlist);
 		$arr_val = $reportData['data'];
+		// 行データのキーは SQL の列の別名。見出しは $reportData['headers'] から引く (#1540)
+		$columnHeaders = $reportData['headers'];
 
 		if (isset($arr_val)) {
 			foreach ($arr_val as $wkey => $warray_value) {
 				foreach ($warray_value as $whd => $wvalue) {
-					if (strlen($wvalue) < strlen($whd)) {
-						$w_inner_array[] = strlen($whd);
+					if (strlen($wvalue) < strlen($columnHeaders[$whd])) {
+						$w_inner_array[] = strlen($columnHeaders[$whd]);
 					} else {
 						$w_inner_array[] = strlen($wvalue);
 					}
@@ -4339,7 +4348,7 @@ class ReportRun extends CRMEntity {
 			}
 			$count = 0;
 			foreach ($arr_val[0] as $key => $value) {
-				$headerHTML .= '<td width="' . $col_width[$count] . '" bgcolor="#DDDDDD"><b>' . $this->getLstringforReportHeaders($key) . '</b></td>';
+				$headerHTML .= '<td width="' . $col_width[$count] . '" bgcolor="#DDDDDD"><b>' . $this->getLstringforReportHeaders($columnHeaders[$key]) . '</b></td>';
 				$count = $count + 1;
 			}
 
@@ -4414,6 +4423,8 @@ class ReportRun extends CRMEntity {
 
 		$reportData = $this->GenerateReport("PDF", $filterlist, false, false, false, 'ExcelExport');
 		$arr_val = $reportData['data'];
+		// 行データのキーは SQL の列の別名。見出しは $reportData['headers'] から引く (#1540)
+		$columnHeaders = $reportData['headers'];
 		$totalxls = $this->GenerateReport("XLS", $filterlist, false, false, false, 'ExcelExport');
 		$numericTypes = array('currency', 'double', 'integer', 'percentage');
 
@@ -4428,11 +4439,10 @@ class ReportRun extends CRMEntity {
 			//copy the first value details
 			$arrayFirstRowValues = $arr_val[0];
 			foreach ($arrayFirstRowValues as $key => $value) {
-				// It'll not translate properly if you don't mention module of that string
-				if ($key == 'ACTION' || $key == vtranslate('LBL_ACTION', $this->primarymodule) || $key == vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL_ACTION', $this->primarymodule) || $key == vtranslate('LBL ACTION', $this->primarymodule) || $key == vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL ACTION', $this->primarymodule)) {
+				if ($this->isActionColumnKey($key)) {
 					continue;
 				}
-				$worksheet->setCellValueExplicitByColumnAndRow($count, $rowcount, decode_html($key), true);
+				$worksheet->setCellValueExplicitByColumnAndRow($count, $rowcount, decode_html($columnHeaders[$key]), true);
 				$worksheet->getStyleByColumnAndRow($count, $rowcount)->applyFromArray($header_styles);
 
 				// NOTE Performance overhead: http://stackoverflow.com/questions/9965476/phpexcel-column-size-issues
@@ -4452,8 +4462,7 @@ class ReportRun extends CRMEntity {
 						$value = $valueDataType;
 						$dataType = '';
 					}
-					// It'll not translate properly if you don't mention module of that string
-					if ($hdr == 'ACTION' || $hdr == vtranslate('LBL_ACTION', $this->primarymodule) || $hdr == vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL_ACTION', $this->primarymodule) || $hdr == vtranslate('LBL ACTION', $this->primarymodule) || $hdr == vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL ACTION', $this->primarymodule))
+					if ($this->isActionColumnKey($hdr))
 						continue;
 					$value = decode_html($value);
 					if (in_array($dataType, $numericTypes)) {
@@ -4518,21 +4527,26 @@ class ReportRun extends CRMEntity {
 		fputs($fp,chr(0xEF) . chr(0xBB) . chr(0xBF));//UTF-8 byte order mark
 
 		if (isset($arr_val)) {
-			$csv_values = array();
+			// 行データのキーは SQL の列の別名。見出しは $reportData['headers'] から引き、
+			// 「操作」列（詳細を見るリンク）は見出し名ではなく別名で判定して除く (#1540)
+			$columnHeaders = $reportData['headers'];
+			$csvColumnKeys = array();
+			foreach (array_keys($arr_val[0]) as $columnKey) {
+				if (!$this->isActionColumnKey($columnKey)) {
+					$csvColumnKeys[] = $columnKey;
+				}
+			}
 			// Header
-			$csv_values = array_map('decode_html', array_keys($arr_val[0]));
-			$unsetValue = false;
-			// It'll not translate properly if you don't mention module of that string
-			if (end($csv_values) == vtranslate('LBL_ACTION', $this->primarymodule) || end($csv_values) == vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL_ACTION', $this->primarymodule) || end($csv_values) == vtranslate('LBL ACTION', $this->primarymodule) || end($csv_values) == vtranslate($this->primarymodule, $this->primarymodule) . " " . vtranslate('LBL ACTION', $this->primarymodule)) {
-				unset($csv_values[php7_count($csv_values) - 1]); //removed action header in csv file
-				$unsetValue = true;
+			$csv_values = array();
+			foreach ($csvColumnKeys as $columnKey) {
+				$csv_values[] = decode_html($columnHeaders[$columnKey]);
 			}
 			fputcsv($fp, $csv_values);
 			foreach ($arr_val as $key => $array_value) {
-				if ($unsetValue) {
-					array_pop($array_value); //removed action link
+				$csv_values = array();
+				foreach ($csvColumnKeys as $columnKey) {
+					$csv_values[] = decode_html($array_value[$columnKey]);
 				}
-				$csv_values = array_map('decode_html', array_values($array_value));
 				fputcsv($fp, $csv_values);
 			}
 		}
