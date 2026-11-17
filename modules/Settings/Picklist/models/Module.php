@@ -19,6 +19,8 @@ class Settings_Picklist_Module_Model extends Vtiger_Module_Model {
 
 		$excludedFields = array(
 			'Dailyreports' => array('reportsterm'),
+			// 繰り返し請求の日付計算に使うため、選択肢を追加・変更させない
+			'SalesOrder' => array('payment_duration', 'invoice_day', 'payment_due_type', 'payment_due_month', 'payment_due_day'),
 		);
 		$moduleName = $this->getName();
 
