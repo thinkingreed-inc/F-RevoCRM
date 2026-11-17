@@ -36,7 +36,7 @@ $languageStrings = array(
 	'Start Period' => 'Start Period',
 	'End Period' => 'End Period',
 	'Payment Duration' => 'Payment Duration',
-	'Invoice Status' => 'Invoice Status',
+	'Invoice Status' => 'Generated Invoice Status',
 
 	//Added for existing Picklist Entries
 

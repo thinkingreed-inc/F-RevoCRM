@@ -36,7 +36,7 @@ $languageStrings = array(
 	'Start Period' => '開始時期',
 	'End Period' => '終了時期',
 	'Payment Duration' => '支払い期限',
-	'Invoice Status' => '請求ステータス',
+	'Invoice Status' => '自動作成時の請求書ステータス',
 
 	//Added for existing Picklist Entries
 
