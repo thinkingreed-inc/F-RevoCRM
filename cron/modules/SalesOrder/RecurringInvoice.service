@@ -128,7 +128,8 @@ function createInvoice($salesorder_id, $recurringDate = false) {
 		'assigned_user_id' => 'assigned_user_id',
 		'currency_id' => 'currency_id',
 		'conversion_rate' => 'conversion_rate',
-		'balance' => 'hdnGrandTotal'
+		'balance' => 'hdnGrandTotal',
+		'payment_method' => 'payment_method'
 	);
 	foreach($invoice_so_fields as $invoice_field => $so_field) {
 		$focus->column_fields[$invoice_field] = $so_focus->column_fields[$so_field];

@@ -4,7 +4,7 @@
  * マイグレーション: add_recurring_invoice_schedule_fields
  * 生成日時: 20261102114131
  *
- * 繰り返し請求で「毎月25日に請求、翌月20日に支払い」のように指定できるようにする。
+ * 繰り返し請求で「毎月25日に請求、翌月20日に支払い」のように指定できるようにし、支払い方法を登録できるようにする。
  *
  *   1. 受注に請求日（invoice_day）を追加する
  *      周期が月単位（毎月・四半期毎・半期・毎年）の既存の受注には、開始時期の日を請求日として設定する。
@@ -12,7 +12,10 @@
  *   2. 受注に支払い期限の指定方法（payment_due_type）・支払い月（payment_due_month）・支払い日（payment_due_day）を追加する
  *      指定方法が「日数で指定」なら既存の支払い期限（payment_duration）、「日付で指定」なら支払い月・支払い日を使う。
  *      既存の受注は指定方法を「日数で指定」にする。
- *   3. 繰り返し請求情報の項目を「期間 → 請求のルール → 支払いのルール」の順に並べる
+ *   3. 受注と請求書の基本情報に支払い方法（payment_method）を追加する
+ *      繰り返し請求に限らない情報のため、繰り返し請求情報ではなく基本情報に置き、どちらも期限日の後ろに並べる。
+ *      項目名を揃えて選択肢を共有する。受注から請求書を作るとき、同名の項目は値が引き継がれる。
+ *   4. 繰り返し請求情報の項目を「期間 → 請求のルール → 支払いのルール」の順に並べる
  *
  * 既存の項目・選択肢はスキップするため、途中まで適用済みの環境でも実行できる。
  */
@@ -33,6 +36,8 @@ class Migration20261102114131_AddRecurringInvoiceScheduleFields extends FRMigrat
 
         $this->addInvoiceDayField($moduleInstance, $blockInstance);
         $this->addPaymentDueFields($moduleInstance, $blockInstance);
+        $this->addPaymentMethodField($moduleInstance);
+        $this->addInvoicePaymentMethodField();
         $this->setInvoiceDayFromStartPeriod();
         $this->arrangeRecurringFields($blockInstance->id);
     }
@@ -159,6 +164,35 @@ class Migration20261102114131_AddRecurringInvoiceScheduleFields extends FRMigrat
         }
         $values[] = 'End of Month';
         return $values;
+    }
+
+    /**
+     * 受注の基本情報に支払い方法を追加し、期限日の後ろに並べる
+     */
+    private function addPaymentMethodField(Vtiger_Module $moduleInstance): void
+    {
+        if (Vtiger_Field::getInstance('payment_method', $moduleInstance)) {
+            return;
+        }
+        $blockInstance = Vtiger_Block::getInstance('LBL_SO_INFORMATION', $moduleInstance);
+        $values = ['Bank Transfer', 'Account Transfer', 'Credit Card', 'Cash', 'Other'];
+        $this->addPicklistField($blockInstance, 'vtiger_salesorder', 'payment_method', 'Payment Method', $values);
+        $this->placeFieldAfter($blockInstance->id, 'payment_method', 'duedate');
+    }
+
+    /**
+     * 請求書の基本情報に支払い方法を追加し、期限日の後ろに並べる
+     */
+    private function addInvoicePaymentMethodField(): void
+    {
+        $moduleInstance = Vtiger_Module::getInstance('Invoice');
+        if (Vtiger_Field::getInstance('payment_method', $moduleInstance)) {
+            return;
+        }
+        $blockInstance = Vtiger_Block::getInstance('LBL_INVOICE_INFORMATION', $moduleInstance);
+        $values = ['Bank Transfer', 'Account Transfer', 'Credit Card', 'Cash', 'Other'];
+        $this->addPicklistField($blockInstance, 'vtiger_invoice', 'payment_method', 'Payment Method', $values);
+        $this->placeFieldBefore($blockInstance->id, 'payment_method', 'vtiger_purchaseorder');
     }
 
     /**
