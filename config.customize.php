@@ -37,4 +37,7 @@ $csp_allowed_domains = array(
 	'font-src'    => array(),
 	'connect-src' => array('http://localhost:5173', 'ws://localhost:5173'),
 	'frame-src'   => array('https://www.google.com', 'https:'),
+	// フォームの送信先。ダッシュボードの共有リンクで POST を使う場合は、送り先を登録する
+	// （例: 'https://kintai.example.com'）。登録しないとブラウザが送信を止める
+	'form-action' => array(),
 );

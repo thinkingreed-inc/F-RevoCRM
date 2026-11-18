@@ -82,6 +82,22 @@ import { HolidaysPage } from "@/components/Holidays";
 // year: 初期表示年
 createWebComponent(HolidaysPage, "holidays-page", ["year"], []);
 
+// 共有リンク（設定）用コンポーネント
+import { SharedLinksPage, SharedLinksWidget } from "@/components/SharedLinks";
+
+// SharedLinksPage: ダッシュボードの共有リンクの管理画面（システム管理者のみ）
+createWebComponent(SharedLinksPage, "shared-links-page", [], []);
+
+// SharedLinksWidget: ダッシュボードの共有リンクのウィジェットの中身
+// links: 表示するリンク（JSON。サーバーで公開範囲の判定と値の解決を済ませたもの）
+// labels: 文言（JSON） / settings-url: 管理者のときだけ設定画面の URL
+createWebComponent(
+  SharedLinksWidget,
+  "shared-links-widget",
+  ["links", "labels", "settings-url"],
+  [],
+);
+
 import { DocumentsCompliancePage } from "@/components/DocumentsCompliance";
 
 // DocumentsCompliancePage: 電子帳簿保存法設定の管理画面（システム管理者のみ）

@@ -79,6 +79,8 @@ $languageStrings = array(
 
 	'LBL_HOLIDAYS' => 'Holidays',
 	'LBL_HOLIDAYS_DESCRIPTION' => 'Configure public holidays, company holidays and weekly days off',
+	'LBL_SHARED_LINKS' => 'Shared Links',
+	'LBL_SHARED_LINKS_DESCRIPTION' => 'Configure links to internal systems shown on the dashboard',
 
 	'LBL_COMPANY_DETAILS' => 'Company Details',
 	'LBL_COMPANY_DESCRIPTION' => 'Specify business address of company',

@@ -27,6 +27,12 @@ $languageStrings = array(
 	'LBL_ADD_NEW_DASHBOARD'=>'ダッシュボードの追加',
 	'LBL_MAX_CHARACTERS_ALLOWED_DASHBOARD' => 'ダッシュボード名は30文字までです。',
 	'顧客担当者 - Contacts Address' => '顧客担当者 - 郵送先リスト',
+	'LBL_NO_SHARED_LINKS' => '共有リンクが登録されていません',
+	'LBL_SHARED_LINKS_SETTINGS' => '共有リンクを設定する',
+	'LBL_OPEN_IN_NEW_TAB' => '新しいタブで開く',
+	'LBL_OPEN_IN_NEW_WINDOW' => '新しいウィンドウで開く',
+	'LBL_SHARED_LINK_POPUP_BLOCKED' => 'ポップアップがブロックされました。ブラウザの設定で、このサイトのポップアップを許可してください。',
+	'LBL_SHARED_LINK_POST_BLOCKED' => 'このリンクの送り先は許可されていないため開けません。システム管理者に連絡してください。',
 );
 
 $jsLanguageStrings = array(
