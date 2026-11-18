@@ -409,8 +409,8 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
     if (inputContainerRef.current) {
       const rect = inputContainerRef.current.getBoundingClientRect();
       setDropdownPosition({
-        top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX,
+        top: rect.bottom,
+        left: rect.left,
         width: rect.width,
       });
     }
@@ -423,8 +423,8 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
     if (moduleInputContainerRef.current) {
       const rect = moduleInputContainerRef.current.getBoundingClientRect();
       setModuleDropdownPosition({
-        top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX,
+        top: rect.bottom,
+        left: rect.left,
         width: rect.width,
       });
     }

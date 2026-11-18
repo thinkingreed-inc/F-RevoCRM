@@ -203,8 +203,8 @@ export const CurrencyListField: React.FC<CurrencyListFieldProps> = ({
     if (inputContainerRef.current) {
       const rect = inputContainerRef.current.getBoundingClientRect();
       setDropdownPosition({
-        top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX,
+        top: rect.bottom,
+        left: rect.left,
         width: rect.width,
       });
     }

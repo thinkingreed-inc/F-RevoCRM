@@ -303,8 +303,8 @@ export const MultireferenceField: React.FC<MultireferenceFieldProps> = ({
     if (inputContainerRef.current) {
       const rect = inputContainerRef.current.getBoundingClientRect();
       setDropdownPosition({
-        top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX,
+        top: rect.bottom,
+        left: rect.left,
         width: rect.width,
       });
     }
@@ -317,8 +317,8 @@ export const MultireferenceField: React.FC<MultireferenceFieldProps> = ({
     if (moduleInputContainerRef.current) {
       const rect = moduleInputContainerRef.current.getBoundingClientRect();
       setModuleDropdownPosition({
-        top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX,
+        top: rect.bottom,
+        left: rect.left,
         width: rect.width,
       });
     }
