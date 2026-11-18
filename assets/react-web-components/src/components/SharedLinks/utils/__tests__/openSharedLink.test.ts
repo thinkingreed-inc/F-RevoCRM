@@ -31,8 +31,6 @@ const GET_TAB: SharedLinkWidgetItem = {
   height: null,
   noreferrer: false,
   blocked: false,
-  initial: "勤",
-  color: 1,
 };
 
 const POST_WINDOW: SharedLinkWidgetItem = {

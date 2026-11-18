@@ -156,11 +156,6 @@ final class SharedLinksWidgetTest extends SharedLinksTestCase
 
         $this->assertSame([$c, $a, $b], array_column($props['links'], 'id'));
         $this->assertSame("1行目\n2行目", $props['links'][1]['description']);
-        // 目印: タイトルの頭文字（大文字にそろえる）と、リンクごとに決まる色
-        $this->assertSame(['C', 'S', 'S'], array_column($props['links'], 'initial'));
-        foreach ($props['links'] as $link) {
-            $this->assertSame($link['id'] % 8, $link['color']);
-        }
         $this->assertSame(
             ['empty', 'settings', 'openInNewTab', 'openInNewWindow', 'popupBlocked', 'postBlocked'],
             array_keys($props['labels'])
@@ -240,8 +235,6 @@ final class SharedLinksWidgetTest extends SharedLinksTestCase
             'height' => null,
             'noreferrer' => true,
             'blocked' => false,
-            'initial' => 'S',
-            'color' => $get % 8,
         ], $byId[$get]);
         $this->assertSame([
             'method' => 'POST',

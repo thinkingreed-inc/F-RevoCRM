@@ -36,8 +36,6 @@ const link = (
   height: null,
   noreferrer: false,
   blocked: false,
-  initial: "リ",
-  color: id % 8,
   ...overrides,
 });
 
@@ -71,13 +69,10 @@ describe("SharedLinksWidget", () => {
         links={[
           link(3, {
             title: "勤怠",
-            initial: "勤",
             description: "1行目\n2行目",
-            color: 3,
           }),
           link(1, {
             title: "Box",
-            initial: "B",
             openMode: "window",
             width: 800,
             height: 600,

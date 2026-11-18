@@ -158,10 +158,6 @@ export interface SharedLinkWidgetItem {
   noreferrer: boolean;
   /** POST の送り先が CSP（form-action）で許可されていない */
   blocked: boolean;
-  /** 左に出す目印の文字（タイトルの頭文字） */
-  initial: string;
-  /** 目印の色（0〜7） */
-  color: number;
 }
 
 /** ウィジェットの文言 */

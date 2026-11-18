@@ -18,7 +18,7 @@
 | 1 | 入力の検証（画面・サーバー） | `Settings_SharedLinks_Rules_Model`、`sharedLinkForm.ts` | [TS-01](TS-01_入力の検証.md) |
 | 2 | 公開範囲の判定 | `Rules::isVisible`、`Module_Model::getVisibleLinksForCurrentUser` / `getUserContext` | [TS-02](TS-02_公開範囲.md) |
 | 3 | 値の解決と GET の URL | `Rules::resolveParams` / `buildGetUrl`、差し込める項目 | [TS-03](TS-03_値の解決とURL.md) |
-| 4 | リンクの開き方 | `SharedLinksContents.tpl`、`SharedLinksWidget.js` | [TS-04](TS-04_リンクの開き方.md) |
+| 4 | リンクの開き方 | `<shared-links-widget>`、`openSharedLink.ts` | [TS-04](TS-04_リンクの開き方.md) |
 | 5 | 管理画面の API | `apis/SharedLinkAPI.php` | [TS-05](TS-05_API.md) |
 | 6 | 管理画面（React） | `components/SharedLinks/**` | [TS-06](TS-06_管理画面.md) |
 | 7 | ウィジェットとマイグレーション | `Home_SharedLinks_Dashboard`、`<shared-links-widget>`、`SharedLinksWidget.js`、`20261106093622_add_shared_links_widget.php` | [TS-07](TS-07_ウィジェットとマイグレーション.md) |
@@ -86,7 +86,7 @@ E2E の POST で送るケース（TC-OPN-004 / 005）は、送り先 `https://e2
 例: 下位の役割を判定しない・URL のエンコードを変える・ウィンドウの幅の下限を 1 ずらす・削除された項目でも空文字にしない・
 グループや役割の経路を求めない・一部削除では警告しない・リファラーの設定を無視する・CSRF トークンを取り除かない・
 修飾キーを見ない・opener を外さない・CSP の form-action を足さない・ワイルドカードが親ドメインも許す・送れない POST でも開く・
-ウィジェットの削除で配置を消さない・見出しの重なりを見ない・ウィジェットに関係なく全リンクを出す・頭文字を大文字にしない・
+ウィジェットの削除で配置を消さない・見出しの重なりを見ない・ウィジェットに関係なく全リンクを出す・
 `group` クラスに戻す・「ウィジェットの追加」メニューの修正を外す（E2E）、など。すべてテストが落ちることを確認した。
 
 ### 5.3 見つかった不具合（修正済み）

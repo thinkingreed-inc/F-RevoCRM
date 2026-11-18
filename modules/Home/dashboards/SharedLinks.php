@@ -9,9 +9,6 @@
  */
 class Home_SharedLinks_Dashboard extends Vtiger_IndexAjax_View
 {
-    /** 目印の色の数（SharedLinksWidget.tsx の BADGE_COLORS） */
-    private const BADGE_COLORS = 8;
-
     /**
      * @param Vtiger_Widget_Model|null $widget ShowWidget から渡される。追加した直後はタイトルを持たないため使わない
      */
@@ -42,9 +39,6 @@ class Home_SharedLinks_Dashboard extends Vtiger_IndexAjax_View
                 'height' => $link['window_height'],
                 'noreferrer' => $link['noreferrer'],
                 'blocked' => $link['post_blocked'],
-                // 左に出す目印: タイトルの頭文字と、リンクごとに決まる色
-                'initial' => mb_strtoupper(mb_substr($link['title'], 0, 1)),
-                'color' => $link['id'] % self::BADGE_COLORS,
             ];
         }
         $labels = [
