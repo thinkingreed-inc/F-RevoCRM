@@ -288,8 +288,8 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
     if (inviteeInputContainerRef.current) {
       const rect = inviteeInputContainerRef.current.getBoundingClientRect();
       setInviteeDropdownPosition({
-        top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX,
+        top: rect.bottom,
+        left: rect.left,
         width: rect.width,
       });
     }
