@@ -213,3 +213,13 @@
     max-height: 90svh !important;
   }
 }
+
+/* vtiger のスキンが html に overflow-y: auto を指定しているため、Radix のダイアログ等が
+   スクロールを止める間に body に付ける overflow: hidden では背面の画面のスクロールが止まらない。
+   止めている間（body[data-scroll-locked]）だけ html も止める。既存CRMへの影響はこの間に限られる。
+   scrollbar-gutter はスクロールバーの幅を残し、固定表示のヘッダー等が横にずれないようにする */
+html:has(> body[data-scroll-locked]) {
+  overflow-x: hidden;
+  overflow-y: hidden;
+  scrollbar-gutter: stable;
+}
