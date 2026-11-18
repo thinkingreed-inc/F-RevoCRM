@@ -65,7 +65,7 @@ function fakeEnvironment() {
 const links = () => screen.getAllByRole("link");
 
 describe("SharedLinksWidget", () => {
-  it("TC-WDG-010 TC-OPN-031 リンクを渡された順に、目印・タイトル・説明・開き方の印で並べる", () => {
+  it("TC-WDG-010 TC-OPN-031 リンクを渡された順に、タイトル・説明・開き方の印で並べる", () => {
     render(
       <SharedLinksWidget
         links={[
@@ -90,11 +90,10 @@ describe("SharedLinksWidget", () => {
     expect(links()).toHaveLength(2);
     expect(links()[0]).toHaveTextContent("勤怠");
     expect(links()[1]).toHaveTextContent("Box");
-    // 目印（頭文字）と色
-    const badge = links()[0].querySelector(".sharedLinkBadge") as HTMLElement;
-    expect(badge).toHaveTextContent("勤");
-    expect(badge).toHaveAttribute("aria-hidden", "true");
-    expect(badge.style.backgroundColor).toBe("rgb(128, 90, 213)");
+    // 印は右端の開き方の印 1 つだけ（左に頭文字の色付きバッジやリンクの印は出さない）
+    expect(links()[0].lastElementChild).toHaveClass("sharedLinkOpen");
+    expect(links()[0].querySelectorAll(".fa")).toHaveLength(1);
+    expect(links()[0].querySelector(".sharedLinkBadge")).toBeNull();
     // 説明は改行を保つ
     const description = links()[0].querySelector(
       ".sharedLinkDescription",

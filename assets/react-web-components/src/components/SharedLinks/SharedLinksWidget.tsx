@@ -16,18 +16,6 @@ interface SharedLinksWidgetProps {
   environment?: OpenEnvironment;
 }
 
-/** 目印の色（タイトルの頭文字の背景）。リンクの ID で決まる */
-const BADGE_COLORS = [
-  "#3182ce",
-  "#38a169",
-  "#dd6b20",
-  "#805ad5",
-  "#d53f8c",
-  "#319795",
-  "#c05621",
-  "#4a5568",
-];
-
 type VtigerWindow = Window & {
   app?: {
     helper?: { showErrorNotification?: (o: { message: string }) => void };
@@ -56,7 +44,8 @@ function defaultEnvironment(): OpenEnvironment {
  *
  * vtiger の共通 CSS に .group（margin 付き）があるため、Tailwind の group は名前付き（group/link）で使う。
  *
- * 1 件 = 1 行で、行全体がリンク。左にタイトルの頭文字（目印）、右に開き方（別タブ / 別ウィンドウ）を出す。
+ * 1 件 = 1 行で、行全体がリンク。行は罫線で区切り、右端に開き方の印（別タブ / 別ウィンドウ）だけを出す。
+ * F-RevoCRM の画面に合わせて、色は文字色・リンク色・灰色だけにする（色付きの目印は使わない）。
  * 公開範囲の判定とユーザー情報の差し込みはサーバーで済んでいる（公開範囲外のリンクは渡ってこない）。
  * 仕様: docs/specs/shared_links_widget.md 3.2 / 3.3
  */
@@ -75,7 +64,7 @@ export const SharedLinksWidget: React.FC<SharedLinksWidgetProps> = ({
         style={{
           padding: "28px 12px",
           textAlign: "center",
-          color: "#718096",
+          color: "#777",
           fontSize: 13,
         }}
       >
@@ -85,8 +74,8 @@ export const SharedLinksWidget: React.FC<SharedLinksWidgetProps> = ({
           style={{
             display: "block",
             marginBottom: 8,
-            fontSize: 28,
-            color: "#cbd5e0",
+            fontSize: 24,
+            color: "#ccc",
           }}
         />
         {labels.empty}
@@ -122,8 +111,8 @@ export const SharedLinksWidget: React.FC<SharedLinksWidgetProps> = ({
   };
 
   return (
-    <div className="sharedLinksList" style={{ padding: "2px 0" }}>
-      {items.map((link) => {
+    <div className="sharedLinksList">
+      {items.map((link, index) => {
         const isGet = link.method === "GET";
         const openLabel =
           link.openMode === "window"
@@ -132,8 +121,14 @@ export const SharedLinksWidget: React.FC<SharedLinksWidgetProps> = ({
         return (
           <a
             key={link.id}
-            className="sharedLink group/link flex items-center rounded-[6px] no-underline hover:bg-[#f1f5f9] hover:no-underline focus:bg-[#f1f5f9] focus:no-underline focus-visible:outline-2 focus-visible:outline-[#3182ce]"
-            style={{ gap: 10, padding: "8px 8px", color: "#2d3748" }}
+            className="sharedLink group/link flex items-start no-underline hover:bg-[#f5f5f5] hover:no-underline focus:bg-[#f5f5f5] focus:no-underline focus-visible:outline-1 focus-visible:outline-[#15c]"
+            style={{
+              gap: 8,
+              padding: "7px 10px",
+              color: "#333",
+              borderBottom:
+                index === items.length - 1 ? "none" : "1px solid #e5e5e5",
+            }}
             href={isGet ? link.url : "#"}
             {...(isGet
               ? {
@@ -143,34 +138,14 @@ export const SharedLinksWidget: React.FC<SharedLinksWidgetProps> = ({
               : { role: "button" })}
             onClick={(e) => handleClick(e, link)}
           >
-            <span
-              className="sharedLinkBadge"
-              aria-hidden="true"
-              style={{
-                flex: "0 0 32px",
-                width: 32,
-                height: 32,
-                borderRadius: 8,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#fff",
-                fontSize: 14,
-                fontWeight: 600,
-                lineHeight: 1,
-                backgroundColor: BADGE_COLORS[link.color % BADGE_COLORS.length],
-              }}
-            >
-              {link.initial}
-            </span>
             <span style={{ flex: "1 1 auto", minWidth: 0 }}>
               <span
-                className="sharedLinkTitle"
+                className="sharedLinkTitle group-hover/link:underline"
                 style={{
                   display: "block",
                   fontSize: 13,
-                  fontWeight: 600,
-                  lineHeight: 1.4,
+                  lineHeight: 1.5,
+                  color: "#15c",
                   overflow: "hidden",
                   whiteSpace: "nowrap",
                   textOverflow: "ellipsis",
@@ -189,7 +164,7 @@ export const SharedLinksWidget: React.FC<SharedLinksWidgetProps> = ({
                     marginTop: 1,
                     fontSize: 12,
                     lineHeight: 1.45,
-                    color: "#718096",
+                    color: "#777",
                     whiteSpace: "pre-wrap",
                     wordBreak: "break-word",
                   }}
@@ -199,9 +174,9 @@ export const SharedLinksWidget: React.FC<SharedLinksWidgetProps> = ({
               )}
             </span>
             <span
-              className="sharedLinkOpen text-[#a0aec0] group-hover/link:text-[#3182ce] group-focus/link:text-[#3182ce]"
+              className="sharedLinkOpen text-[#999] group-hover/link:text-[#15c] group-focus/link:text-[#15c]"
               title={openLabel}
-              style={{ flex: "0 0 auto", fontSize: 13 }}
+              style={{ flex: "0 0 auto", marginTop: 2, fontSize: 12 }}
             >
               <i
                 className={`fa ${link.openMode === "window" ? "fa-clone" : "fa-external-link"}`}
