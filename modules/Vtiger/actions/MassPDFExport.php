@@ -66,7 +66,8 @@ class Vtiger_MassPDFExport_Action extends Vtiger_Mass_Action
             $recordId = $adb->query_result($result, $i, $this->focus->table_index);
             if (Users_Privileges_Model::isPermitted($moduleName, 'DetailView', $recordId)) {
                 $recordModel = Vtiger_Record_Model::getInstanceById($recordId, $moduleModel);
-                $returnPDF = $recordModel->getPDF($templateId, false);
+                // getPDF() は画面に出力するだけで値を返さないため、一括出力用に PDF の内容を受け取る
+                $returnPDF = self::toPDFContent(Vtiger_Record_Model::createPDF($templateId, $recordId, $moduleName, true));
 
                 // PDFを保存
                 $uitype4value = "";
@@ -88,6 +89,31 @@ class Vtiger_MassPDFExport_Action extends Vtiger_Mass_Action
         }
 
         $this->toZip($pdfarray, $uploadfilepath);
+    }
+
+    /**
+     * PDF_helper::createPDF() を一括出力（$isMassExport = true）で呼んだ戻り値から PDF の内容を取り出す
+     * TCPDF の場合は PDF の内容（文字列）、Headless Chrome の場合は「レコードID => PDF ファイルのパス」の配列が返る。
+     * Headless Chrome が作った PDF ファイルは、内容を読み込んだあとに削除する。
+     * @param string|array|null $pdfData
+     * @return string
+     */
+    public static function toPDFContent($pdfData)
+    {
+        if (!is_array($pdfData)) {
+            return (string)$pdfData;
+        }
+        // 1 レコードずつ呼ぶため要素は 1 つ。複数あっても PDF はつなげられないので先頭を使い、ファイルはすべて削除する
+        $content = null;
+        foreach ($pdfData as $pdfPath) {
+            if (is_string($pdfPath) && is_file($pdfPath)) {
+                if ($content === null) {
+                    $content = (string)file_get_contents($pdfPath);
+                }
+                unlink($pdfPath);
+            }
+        }
+        return (string)$content;
     }
 
     public function toZip($pathAry, $uploadfilepath)
