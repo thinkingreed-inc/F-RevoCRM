@@ -767,7 +767,7 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
 
 	public static function createPDF($templateId, $recordIdData, $moduleName, $isMassExport = false, $is_preview = false)
 	{
-		PDF_helper::createPDF($templateId, $recordIdData, $moduleName, $isMassExport, $is_preview);
+		return PDF_helper::createPDF($templateId, $recordIdData, $moduleName, $isMassExport, $is_preview);
 	}
 
 	/**
