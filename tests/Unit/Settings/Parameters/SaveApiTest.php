@@ -815,6 +815,91 @@ final class SaveApiTest extends TestCase
     }
 
     // ------------------------------------------------------------------
+    // font 型（PDF_DEFAULT_FONT、thinkingreed-inc#1901）
+    // ------------------------------------------------------------------
+
+    public function test_font型は空文字を許可する(): void
+    {
+        // 空は既定のフォント（ume-tgo4）
+        $api = new SaveApiTestDouble();
+
+        $this->assertSame('', $api->exposeValidateValue('', 'font'));
+    }
+
+    public function test_font型はフォントのディレクトリにあるフォントを許可する(): void
+    {
+        $api = new SaveApiTestDouble();
+
+        $this->assertSame('dejavusans', $api->exposeValidateValue('dejavusans', 'font'));
+        $this->assertSame('ume-tgo4', $api->exposeValidateValue('ume-tgo4', 'font'));
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function unavailableFontProvider(): array
+    {
+        return [
+            'フォントがない'           => ['notexistfont'],
+            'フォントではないPHPファイル' => ['uni2cid_aj16'],
+            'パス'                     => ['../../config.inc'],
+            '大文字'                   => ['DejaVuSans'],
+        ];
+    }
+
+    #[DataProvider('unavailableFontProvider')]
+    public function test_font型は使えないフォント名を拒否する(string $font): void
+    {
+        $api = new SaveApiTestDouble();
+
+        $this->expectException(\ApiBadRequestException::class);
+        $api->exposeValidateValue($font, 'font');
+    }
+
+    public function test_font型にシークレットは設定できない(): void
+    {
+        // 値はフォント名で秘匿する情報ではなく、編集画面では一覧から選ぶ
+        \ParametersApiTestState::seed([
+            'id' => 7,
+            'key' => 'PDF_DEFAULT_FONT',
+            'value' => '',
+            'type' => 'font',
+            'secret' => 0,
+            'description' => '備考',
+        ]);
+
+        $message = $this->runApiExpectingError([
+            'id' => '7',
+            'value' => 'dejavusans',
+            'secret' => '1',
+        ]);
+
+        $this->assertSame('Secret is not available for font parameters', $message);
+        $this->assertFalse(\ParametersApiTestState::hasSaved());
+    }
+
+    public function test_font型は選んだフォントを保存する(): void
+    {
+        \ParametersApiTestState::seed([
+            'id' => 7,
+            'key' => 'PDF_DEFAULT_FONT',
+            'value' => '',
+            'type' => 'font',
+            'secret' => 0,
+            'description' => '備考',
+        ]);
+
+        $response = $this->runApi([
+            'id' => '7',
+            'value' => 'dejavusans',
+        ]);
+
+        $this->assertSame(true, $response['saved']);
+        $this->assertSame('dejavusans', \ParametersApiTestState::savedValue(7, 'value'));
+        $this->assertSame(0, \ParametersApiTestState::savedValue(7, 'secret'));
+    }
+
+    // ------------------------------------------------------------------
     // checkPermission
     // ------------------------------------------------------------------
 

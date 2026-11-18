@@ -71,3 +71,9 @@ compose.override.yaml
 
 # for php-cs-fixer / phpstan
 .php-cs-fixer.cache
+
+# E2E（F-09_PDF既定フォント）がアップロードで追加するフォント。削除する手段がないため除外する
+/libraries/tcpdf/fonts/e2e*
+
+# PDF フォントの追加（Vtiger_PDF_FontInstaller）が排他に使うロックファイル
+/libraries/tcpdf/fonts/.font_install.lock

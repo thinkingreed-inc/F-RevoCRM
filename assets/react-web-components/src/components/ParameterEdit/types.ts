@@ -4,8 +4,9 @@
 
 /**
  * パラメータの値の型
+ * font は PDF_DEFAULT_FONT 用。値はフォント名で、編集画面ではフォントの一覧から選ぶ
  */
-export type ParameterType = "boolean" | "integer" | "string";
+export type ParameterType = "boolean" | "integer" | "string" | "font";
 
 /**
  * パラメータレコード
@@ -118,4 +119,41 @@ export interface ParameterFormState {
   description: string;
   /** バリデーションエラー */
   error: string | null;
+}
+
+/** GetFonts APIの結果 */
+export interface ParameterFontsResult {
+  /** 選べるフォント名（libraries/tcpdf/fonts/ にあるもの） */
+  fonts: string[];
+  /** PDF_DEFAULT_FONT が空のときに使うフォント */
+  fallback: string;
+}
+
+/**
+ * GetFonts APIのレスポンス
+ * 成功時は結果（ParameterFontsResult）がそのまま返る（Vtiger_Response の EMIT_PURE_JSON）。
+ * エラー時は { success: false, error: {...} } が返る。
+ */
+export interface ParameterFontsApiResponse extends Partial<ParameterFontsResult> {
+  success?: boolean;
+  /** 結果が result に包まれて返る場合 */
+  result?: ParameterFontsResult;
+  error?: { message?: string };
+}
+
+/** UploadFont APIの結果 */
+export interface ParameterUploadFontResult {
+  /** 追加したフォント名 */
+  font: string;
+}
+
+/**
+ * UploadFont APIのレスポンス
+ * 成功時は結果（ParameterUploadFontResult）がそのまま返る。エラー時は { success: false, error: {...} }
+ */
+export interface ParameterUploadFontApiResponse extends Partial<ParameterUploadFontResult> {
+  success?: boolean;
+  /** 結果が result に包まれて返る場合 */
+  result?: ParameterUploadFontResult;
+  error?: { message?: string };
 }

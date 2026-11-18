@@ -53,7 +53,7 @@ class Vtiger_PDF_ContentViewer extends Vtiger_PDF_Viewer {
 			$content = $this->watermarkModel->get('content');
 
 			$currentFontSize = $pdf->getFontSize();
-			$pdf->SetFont('ume-tgo4','B',40);
+			$pdf->SetFont(Vtiger_PDF_TCPDF::getDefaultFont(),'B',40);
 			$pdf->SetTextColor(240,240,240);
 
 			$contentW = $pdf->GetStringWidth($content);
@@ -63,7 +63,7 @@ class Vtiger_PDF_ContentViewer extends Vtiger_PDF_Viewer {
 
 			$pdf->Text($contentLineX, $contentLineY, $content);
 			$pdf->SetTextColor(0,0,0);
-			$pdf->SetFont('ume-tgo4','',$currentFontSize);
+			$pdf->SetFont(Vtiger_PDF_TCPDF::getDefaultFont(),'',$currentFontSize);
 		}
 	}
 	
