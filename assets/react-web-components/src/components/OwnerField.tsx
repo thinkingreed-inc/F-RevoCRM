@@ -408,11 +408,11 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
                       onClick={() => handleSelectOption(user)}
                       className={cn(
                         "px-3 py-1.5 text-md cursor-pointer",
+                        // 背景色はハイライト位置だけ。選択中の値は太字（PicklistField と同じ）
                         globalIndex === highlightedIndex
                           ? "bg-blue-100"
-                          : value === user.id
-                            ? "bg-blue-100"
-                            : "hover:bg-blue-50",
+                          : "hover:bg-blue-50",
+                        value === user.id && "font-semibold",
                       )}
                     >
                       {user.name}
@@ -438,9 +438,8 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
                         "px-3 py-1.5 text-md cursor-pointer",
                         globalIndex === highlightedIndex
                           ? "bg-blue-100"
-                          : value === group.id
-                            ? "bg-blue-100"
-                            : "hover:bg-blue-50",
+                          : "hover:bg-blue-50",
+                        value === group.id && "font-semibold",
                       )}
                     >
                       {group.name}

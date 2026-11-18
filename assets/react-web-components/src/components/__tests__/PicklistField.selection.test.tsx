@@ -123,3 +123,31 @@ describe("PicklistField - 開いた時のハイライト", () => {
     expect(onChange).toHaveBeenCalledWith("ticketpriorities", "High");
   });
 });
+
+describe("PicklistField - キー操作でのハイライト", () => {
+  it("選択済みで開いて矢印キーで動かすと、ハイライトは移動先だけになる", () => {
+    renderField("Low");
+    const input = screen.getByRole("textbox");
+    fireEvent.focus(input);
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+
+    const highlighted = getOptionElements()
+      .filter((el) => el.className.includes("bg-blue-100"))
+      .map((el) => el.textContent);
+
+    expect(highlighted).toEqual(["通常"]);
+  });
+
+  it("ハイライトが移っても、選択中の値は太字で分かる", () => {
+    renderField("Low");
+    const input = screen.getByRole("textbox");
+    fireEvent.focus(input);
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+
+    const bold = getOptionElements()
+      .filter((el) => el.className.includes("font-semibold"))
+      .map((el) => el.textContent);
+
+    expect(bold).toEqual(["低"]);
+  });
+});

@@ -416,6 +416,33 @@ describe("ReferenceField", () => {
 
       expect(input).toHaveValue("テスト企業A");
     });
+
+    it("矢印キーで動かすと背景色は移動先だけになり、選択中のレコードは太字で分かる", async () => {
+      render(
+        <ReferenceField
+          name="account_id"
+          label="取引先"
+          referenceModules={["Accounts"]}
+          value="3"
+          onChange={vi.fn()}
+        />,
+      );
+
+      const input = screen.getByPlaceholderText("取引先を検索...");
+
+      await act(async () => {
+        fireEvent.focus(input);
+        await vi.advanceTimersByTimeAsync(100);
+      });
+      fireEvent.keyDown(input, { key: "ArrowDown" });
+
+      const withClass = (className: string) =>
+        ["テスト企業A", "テスト企業B", "テスト企業C"].filter((label) =>
+          screen.getByText(label).className.includes(className),
+        );
+      expect(withClass("bg-blue-100")).toEqual(["テスト企業B"]);
+      expect(withClass("font-semibold")).toEqual(["テスト企業C"]);
+    });
   });
 
   describe("クリア機能", () => {
