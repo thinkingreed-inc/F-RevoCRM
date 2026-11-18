@@ -547,9 +547,8 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
                 "px-3 py-1.5 text-md cursor-pointer",
                 index === moduleHighlightedIndex
                   ? "bg-blue-100"
-                  : selectedModule === mod
-                    ? "bg-blue-100"
-                    : "hover:bg-blue-50",
+                  : "hover:bg-blue-50",
+                selectedModule === mod && "font-semibold",
               )}
             >
               {getModuleLabel(mod)}
@@ -598,11 +597,11 @@ export const ReferenceField: React.FC<ReferenceFieldProps> = ({
                 onClick={() => handleSelectRecord(record)}
                 className={cn(
                   "px-3 py-1.5 text-md cursor-pointer",
+                  // 背景色はハイライト位置だけ。選択中の値は太字（PicklistField と同じ）
                   index === highlightedIndex
                     ? "bg-blue-100"
-                    : value === record.id
-                      ? "bg-blue-100"
-                      : "hover:bg-blue-50",
+                    : "hover:bg-blue-50",
+                  value === record.id && "font-semibold",
                 )}
               >
                 {record.label}

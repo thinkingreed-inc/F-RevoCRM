@@ -374,11 +374,12 @@ export const PicklistField: React.FC<PicklistFieldProps> = ({
                 onClick={() => handleSelectOption(option)}
                 className={cn(
                   "px-3 py-1.5 text-md cursor-pointer",
+                  // 背景色はキー操作・マウスのハイライト位置だけに付け、選択中の値は太字で示す。
+                  // 選択中の値にも背景色を付けると、矢印キーで動かしたとき 2 つ色が付く
                   index === highlightedIndex
                     ? "bg-blue-100"
-                    : String(value) === String(option.value)
-                      ? "bg-blue-100"
-                      : "hover:bg-blue-50",
+                    : "hover:bg-blue-50",
+                  String(value) === String(option.value) && "font-semibold",
                 )}
               >
                 {option.label}
