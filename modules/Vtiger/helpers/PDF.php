@@ -41,7 +41,7 @@ class PDF_helper {
 			$tcpdf = new TCPDF();
 			$tcpdf->setPrintHeader(false);
 			$tcpdf->AddPage();
-			$tcpdf->SetFont('ume-tgo4','B');
+			$tcpdf->SetFont(Vtiger_PDF_TCPDF::getDefaultFont(),'B');
 			$tcpdf->writeHTML($template);
 			
 			$pdf = $tcpdf->Output($templateName.'.pdf', 'S');//Dの場合は日本語が消える

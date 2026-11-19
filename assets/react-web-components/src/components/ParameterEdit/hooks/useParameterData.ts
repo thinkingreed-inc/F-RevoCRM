@@ -11,7 +11,7 @@ import "@/types/vtigerApp";
 /**
  * APIのベースURL
  */
-const getApiBaseUrl = () => {
+export const getApiBaseUrl = () => {
   // 現在のページのURLからベースURLを取得
   const baseUrl =
     window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "");

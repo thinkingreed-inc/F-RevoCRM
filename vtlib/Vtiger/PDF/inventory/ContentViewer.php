@@ -43,13 +43,13 @@ class Vtiger_PDF_InventoryContentViewer extends Vtiger_PDF_ContentViewer {
 		
 		// Header	
 		$offsetX = 0;
-		$pdf->SetFont('ume-tgo4','B');
+		$pdf->SetFont(Vtiger_PDF_TCPDF::getDefaultFont(),'B');
 		foreach($this->cells as $cellName => $cellWidth) {
 			$cellLabel = ($this->labelModel)? $this->labelModel->get($cellName, $cellName) : $cellName;
 			$pdf->MultiCell($cellWidth, $this->headerRowHeight, $cellLabel, 1, 'L', 0, 1, $contentFrame->x+$offsetX, $contentFrame->y);
 			$offsetX += $cellWidth;
 		}
-		$pdf->SetFont('ume-tgo4','');
+		$pdf->SetFont(Vtiger_PDF_TCPDF::getDefaultFont(),'');
 		// Reset the y to use
 		$contentFrame->y += $this->headerRowHeight;
 	}
@@ -194,7 +194,7 @@ class Vtiger_PDF_InventoryContentViewer extends Vtiger_PDF_ContentViewer {
 		$waterMarkPositions=array("30","180");
 		$waterMarkRotate=array("45","50","180");
 
-		$pdf->SetFont('ume-tgo4','B',50);
+		$pdf->SetFont(Vtiger_PDF_TCPDF::getDefaultFont(),'B',50);
 		$pdf->SetTextColor(230,230,230);
 		$pdf->Rotate($waterMarkRotate[0], $waterMarkRotate[1], $waterMarkRotate[2]);
 		$pdf->Text($waterMarkPositions[0], $waterMarkPositions[1], 'created');

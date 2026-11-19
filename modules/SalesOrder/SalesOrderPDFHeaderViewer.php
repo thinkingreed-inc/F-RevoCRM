@@ -37,23 +37,23 @@
 				$pdf->Image($modelColumnLeft['logo'], $headerFrame->x, $headerFrame->y, $w, $h);
 				$imageHeightInMM = 30;
 
-				$pdf->SetFont('ume-tgo4', 'B');
+				$pdf->SetFont(Vtiger_PDF_TCPDF::getDefaultFont(), 'B');
 				$contentHeight = $pdf->GetStringHeight( $modelColumnLeft['summary'], $headerColumnWidth);
 				$pdf->MultiCell($headerColumnWidth, $contentHeight, $modelColumnLeft['summary'], 0, 'L', 0, 1,
 					$headerFrame->x, $headerFrame->y+$imageHeightInMM+2);
 
-				$pdf->SetFont('ume-tgo4', '');
+				$pdf->SetFont(Vtiger_PDF_TCPDF::getDefaultFont(), '');
 				$contentHeight = $pdf->GetStringHeight( $modelColumnLeft['content'], $headerColumnWidth);
 				$pdf->MultiCell($headerColumnWidth, $contentHeight, $modelColumnLeft['content'], 0, 'L', 0, 1,
 					$headerFrame->x, $pdf->GetY());
 
 				if(!empty($modelColumnLeft['fieldvalue'])) {
-					$pdf->SetFont('ume-tgo4', 'B');
+					$pdf->SetFont(Vtiger_PDF_TCPDF::getDefaultFont(), 'B');
 					$pdf->SetFillColor(205,201,201);
 					$height = $pdf->GetStringHeight($modelColumnLeft['fieldlabel'], $headerColumnWidth);
 					$pdf->MultiCell($headerColumnWidth, 7, $modelColumnLeft['fieldlabel'], 1, 'C', 1, 1, $headerFrame->x, $pdf->GetY()+2);
 
-					$pdf->SetFont('ume-tgo4', '');
+					$pdf->SetFont(Vtiger_PDF_TCPDF::getDefaultFont(), '');
 					$height = $pdf->GetStringHeight($modelColumnLeft['fieldvalue'], $headerColumnWidth);
 					$pdf->MultiCell($headerColumnWidth, 7, $modelColumnLeft['fieldvalue'], 1, 'C', 0, 1, $headerFrame->x, $pdf->GetY());
 				}
@@ -68,11 +68,11 @@
 				foreach($modelColumnCenter as $label => $value) {
 
 					if(!empty($value)) {
-						$pdf->SetFont('ume-tgo4', 'B');
+						$pdf->SetFont(Vtiger_PDF_TCPDF::getDefaultFont(), 'B');
 						$pdf->SetFillColor(205,201,201);
 						$pdf->MultiCell($headerColumnWidth-$offsetX, 7, $label, 1, 'C', 1, 1, $headerFrame->x+$headerColumnWidth+$offsetX, $pdf->GetY()+$offsetY);
 
-						$pdf->SetFont('ume-tgo4', '');
+						$pdf->SetFont(Vtiger_PDF_TCPDF::getDefaultFont(), '');
 						$pdf->MultiCell($headerColumnWidth-$offsetX, 7, $value, 1, 'C', 0, 1, $headerFrame->x+$headerColumnWidth+$offsetX, $pdf->GetY());
 						$offsetY = 2;
 					}
@@ -92,7 +92,7 @@
 				$pdf->RoundedRect($roundedRectX, 10, $roundedRectW, 10, 3, '1111', 'DF', array(), array(205,201,201));
 
 				$contentX = $roundedRectX + (($roundedRectW - $contentWidth)/2.0);
-				$pdf->SetFont('ume-tgo4', 'B');
+				$pdf->SetFont(Vtiger_PDF_TCPDF::getDefaultFont(), 'B');
 				$pdf->MultiCell($contentWidth*2.0, $contentHeight, $this->model->get('title'), 0, 'R', 0, 1, $contentX-$contentWidth,
 					 $headerFrame->y+2);
 
@@ -100,7 +100,7 @@
 
 				foreach($modelColumnRight as $label => $value) {
 					if(is_array($value)) {
-						$pdf->SetFont('ume-tgo4', '');
+						$pdf->SetFont(Vtiger_PDF_TCPDF::getDefaultFont(), '');
 						foreach($value as $l => $v) {
 							$pdf->MultiCell($headerColumnWidth-$offsetX, 7, sprintf('%s: %s', $l, $v), 1, 'C', 0, 1,
 								$headerFrame->x+$headerColumnWidth*2.0+$offsetX, $pdf->GetY()+$offsetY);
@@ -109,17 +109,17 @@
 					} else {
 						$offsetY = 1;
 
-					$pdf->SetFont('ume-tgo4', 'B');
+					$pdf->SetFont(Vtiger_PDF_TCPDF::getDefaultFont(), 'B');
 					$pdf->SetFillColor(205,201,201);
 					$pdf->MultiCell($headerColumnWidth-$offsetX, 7, $label, 1, 'L', 1, 1, $headerFrame->x+$headerColumnWidth*2.0+$offsetX,
 						$pdf->GetY()+$offsetY);
 
-					$pdf->SetFont('ume-tgo4', '');
+					$pdf->SetFont(Vtiger_PDF_TCPDF::getDefaultFont(), '');
 					$pdf->MultiCell($headerColumnWidth-$offsetX, 7, $value, 1, 'L', 0, 1, $headerFrame->x+$headerColumnWidth*2.0+$offsetX,
 						$pdf->GetY());
 					}
 				}
-				$pdf->setFont('ume-tgo4', '');
+				$pdf->setFont(Vtiger_PDF_TCPDF::getDefaultFont(), '');
 
 				// Add the border cell at the end
 				// This is required to reset Y position for next write

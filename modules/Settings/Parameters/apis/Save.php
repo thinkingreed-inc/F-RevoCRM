@@ -8,6 +8,8 @@
  * All Rights Reserved.
  ************************************************************************************/
 
+require_once 'vtlib/Vtiger/PDF/TCPDF.php';
+
 /**
  * Save API - システム変数の値を更新
  * 
@@ -33,6 +35,8 @@
  *     未入力のまま解除できると、秘匿していた値をそのまま画面へ露出させられるため。
  *   - boolean 型は secret を設定できない。値が true / false の 2 択しかなく、
  *     マスクしても秘匿にならないため。
+ *   - font 型（PDF_DEFAULT_FONT）も secret を設定できない。値はフォント名で秘匿する情報ではなく、
+ *     編集画面でフォントの一覧から選ぶため。値は空か libraries/tcpdf/fonts/ にあるフォント名に限る。
  *   - value / description は Vtiger_Request::getRaw() で受け取る。
  *     get() は vtlib_purify() で HTML 特殊文字を実体参照へ変換し、`{` `[` で始まる値を
  *     JSON としてデコードしてしまうため、トークンのような任意の文字列を保存できない。
@@ -107,9 +111,11 @@ class Settings_Parameters_Save_Api extends Vtiger_Api_Controller {
 
         // boolean 型は値が true / false の 2 択しかなく、マスクしても値を推測できるため
         // シークレットを許可しない。不整合なデータが残っていても保存時に解消する。
-        if ($recordModel->getType() === 'boolean') {
+        // font 型も値はフォント名で秘匿する情報ではなく、一覧から選ぶため許可しない。
+        $secretUnavailable = in_array($recordModel->getType(), array('boolean', 'font'), true);
+        if ($secretUnavailable) {
             if ($requestedSecret === 1) {
-                throw new ApiBadRequestException('Secret is not available for boolean parameters');
+                throw new ApiBadRequestException('Secret is not available for ' . $recordModel->getType() . ' parameters');
             }
             $requestedSecret = 0;
         }
@@ -120,8 +126,8 @@ class Settings_Parameters_Save_Api extends Vtiger_Api_Controller {
 
         // シークレットを解除する場合は値の再入力を必須にする。
         // 未入力のまま解除できると、秘匿していた値をそのまま画面へ露出させられてしまう。
-        // boolean はシークレット自体を許可しないため対象外（不整合の解消を妨げない）。
-        if ($originalSecret === 1 && $requestedSecret === 0 && $recordModel->getType() !== 'boolean') {
+        // boolean / font はシークレット自体を許可しないため対象外（不整合の解消を妨げない）。
+        if ($originalSecret === 1 && $requestedSecret === 0 && !$secretUnavailable) {
             $hasNewValue = $hasValueParam && !$isEmptyValue;
             if (!$hasNewValue) {
                 throw new ApiBadRequestException('A new value is required to turn off the secret setting');
@@ -162,7 +168,7 @@ class Settings_Parameters_Save_Api extends Vtiger_Api_Controller {
      * 型に応じた値のバリデーション
      * 
      * @param mixed $value 入力値
-     * @param string $type 型（boolean, integer, string）
+     * @param string $type 型（boolean, integer, font, string）
      * @return string バリデーション済みの値
      * @throws ApiBadRequestException バリデーションエラー時
      */
@@ -193,7 +199,17 @@ class Settings_Parameters_Save_Api extends Vtiger_Api_Controller {
                     throw new ApiBadRequestException('Invalid integer value');
                 }
                 return (string)(int)$stringValue;
-                
+
+            case 'font':
+                // 空は既定のフォント（ume-tgo4）。それ以外は libraries/tcpdf/fonts/ にあるフォントに限る
+                if ($stringValue === '') {
+                    return '';
+                }
+                if (!Vtiger_PDF_TCPDF::isAvailableFont($stringValue)) {
+                    throw new ApiBadRequestException('Font not found');
+                }
+                return $stringValue;
+
             case 'string':
             default:
                 // 512文字制限（フロント側の maxLength と単位を揃える）

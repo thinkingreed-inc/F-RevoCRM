@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { ParameterEditForm } from "./ParameterEditForm";
+import { secretUnavailable } from "./utils";
 import { useParameterData } from "./hooks/useParameterData";
 import {
   ParameterEditProps,
@@ -59,6 +60,8 @@ const ParameterEditInner: React.FC<ParameterEditProps> = ({
   // シークレット変数は GetRecord が値を返さないため、未編集のまま保存すると
   // 空文字で既存値を上書きしてしまう。未編集なら value を送らず既存値を維持する。
   const [valueTouched, setValueTouched] = useState(false);
+  // 入力が処理中（フォントのアップロード中）。終わるまで保存させない
+  const [formBusy, setFormBusy] = useState(false);
 
   /**
    * ダイアログが開かれたらレコードを取得
@@ -148,9 +151,9 @@ const ParameterEditInner: React.FC<ParameterEditProps> = ({
       description: formState.description,
     };
 
-    // boolean はシークレットを設定できないため送らない。
+    // boolean / font はシークレットを設定できないため送らない。
     // 過去のデータに secret=1 が残っていても、サーバー側が 0 に正規化して解消する。
-    if (data.type !== "boolean") {
+    if (!secretUnavailable(data.type)) {
       payload.secret = formState.secret ? 1 : 0;
     }
 
@@ -288,6 +291,7 @@ const ParameterEditInner: React.FC<ParameterEditProps> = ({
               onSecretChange={handleSecretChange}
               error={formState.error}
               disabled={saving}
+              onBusyChange={setFormBusy}
             />
           )}
         </div>
@@ -297,7 +301,7 @@ const ParameterEditInner: React.FC<ParameterEditProps> = ({
             <Button
               type="button"
               onClick={handleSave}
-              disabled={loading || saving || !data}
+              disabled={loading || saving || formBusy || !data}
               className="px-6 py-1.5 h-auto text-md font-bold !bg-green-600 hover:!bg-green-700 !text-white"
             >
               {saving ? (

@@ -4,6 +4,8 @@ import { Textarea } from "../ui/textarea";
 import { ParameterRecord, ParameterType } from "./types";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
+import { FontSelectField } from "./FontSelectField";
+import { secretUnavailable } from "./utils";
 
 interface ParameterEditFormProps {
   /** レコードデータ */
@@ -24,6 +26,8 @@ interface ParameterEditFormProps {
   error?: string | null;
   /** 無効状態 */
   disabled?: boolean;
+  /** 入力が処理中（フォントのアップロード中）かどうかの変化 */
+  onBusyChange?: (busy: boolean) => void;
 }
 
 // 表示位置調整用の共通クラス。
@@ -56,6 +60,7 @@ const isBooleanTrue = (currentValue: string): boolean => {
  * 型に応じた入力UIを表示:
  * - boolean: トグルスイッチ
  * - integer: 数値入力
+ * - font: フォントの選択と追加（PDF_DEFAULT_FONT）
  * - string: テキスト入力
  */
 export const ParameterEditForm: React.FC<ParameterEditFormProps> = ({
@@ -68,6 +73,7 @@ export const ParameterEditForm: React.FC<ParameterEditFormProps> = ({
   onDescriptionChange,
   error,
   disabled = false,
+  onBusyChange,
 }) => {
   const { t } = useTranslation();
   const descriptionRef = useRef<HTMLTextAreaElement | null>(null);
@@ -88,6 +94,17 @@ export const ParameterEditForm: React.FC<ParameterEditFormProps> = ({
           disabled={disabled}
           trueLabel={t("LBL_TRUE")}
           falseLabel={t("LBL_FALSE")}
+        />
+      );
+    }
+
+    if (type === "font") {
+      return (
+        <FontSelectField
+          value={value}
+          onChange={onValueChange}
+          disabled={disabled}
+          onBusyChange={onBusyChange}
         />
       );
     }
@@ -168,8 +185,9 @@ export const ParameterEditForm: React.FC<ParameterEditFormProps> = ({
             />,
           )}
 
-        {/* シークレット設定（boolean は値が 2 択しかなくマスクの意味がないため出さない） */}
-        {record.type !== "boolean" &&
+        {/* シークレット設定（boolean は値が 2 択しかなくマスクの意味がないため出さない。
+            font は値がフォント名で秘匿する情報ではなく、一覧から選ぶため出さない） */}
+        {!secretUnavailable(record.type) &&
           renderRow(
             t("LBL_SECRET"),
             <>
