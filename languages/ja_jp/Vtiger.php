@@ -1738,6 +1738,7 @@ $languageStrings = array(
 	'LBL_DESCENDING' => '降順',
 	'LBL_ADD_SORT_ROW' => 'ソート条件を追加',
 	'LBL_REMOVE_SORTING' => 'この項目のソートを解除',
+	'import_failure_reason' => '理由',
 );
 
 $jsLanguageStrings = array(

@@ -380,6 +380,7 @@ class PriceBooks extends CRMEntity {
 			$rowId = $row['id'];
 			$subject = $row['bookname'];
 			$entityInfo = null;
+			$obj->failureReason = null;
 			$fieldData = array();
 			$subject = str_replace("\\", "\\\\", $subject);
 			$subject = str_replace('"', '""', $subject);

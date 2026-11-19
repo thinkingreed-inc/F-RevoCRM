@@ -150,4 +150,17 @@ $languageStrings = array(
 	'LBL_IMPORT_AUTO_PROCESS_NOTICE_DUPLICATE_NOTE' => 'During import, this field-based duplicate control does not run. Instead, the "Handling of duplicate records (Ignore / Overwrite / Merge)" you specify in the import wizard takes precedence.',
 	'LBL_IMPORT_AUTO_PROCESS_NOTICE_WORKAROUND' => 'If you need these to run, after importing please open the target records and save them again, or register them manually on screen.',
 
+	// Import failure / skip reasons (recorded in the import_failure_reason column of the temporary table)
+	'LBL_IMPORT_FAILURE_REASON' => 'Reason',
+	'LBL_IMPORT_REASON_MANDATORY_EMPTY' => 'Required field is empty: %s',
+	'LBL_IMPORT_REASON_PICKLIST_NOT_EXIST' => 'Value does not exist in the picklist: %s',
+	'LBL_IMPORT_REASON_ACCESS_DENIED' => 'The record cannot be saved because of insufficient permissions (check the permissions for the module, assignee and referenced records)',
+	'LBL_IMPORT_REASON_REFERENCE_INVALID' => 'A record of a type that cannot be specified in the reference field was specified',
+	'LBL_IMPORT_REASON_SAVE_ERROR' => 'An error occurred while saving',
+	'LBL_IMPORT_REASON_DUPLICATE_SKIPPED' => 'Skipped because a duplicate record exists',
+	'LBL_IMPORT_REASON_REFERENCE_MULTIPLE' => 'Value matched multiple records: %s',
+	'LBL_IMPORT_REASON_NO_EDIT_PERMISSION' => 'You do not have permission to edit the existing record',
+	'LBL_IMPORT_REASON_NO_VALID_LINEITEM' => 'There is no valid line item (check the product, quantity and unit price)',
+	'LBL_IMPORT_REASON_LINEITEM_PRODUCT_NOT_FOUND' => 'The product of the line items was not found, or you do not have permission to refer to it',
+	'LBL_IMPORT_REASON_UNKNOWN' => 'The reason could not be identified',
 );

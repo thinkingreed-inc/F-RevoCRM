@@ -203,7 +203,7 @@ F-RevoCRM の E2E（Playwright）テストについて、**どの機能が存在
 | — | レコード複製（一覧・詳細） | 詳細「その他」→ LBL_DUPLICATE / `utils/duplicate.ts` | ✅(Accounts) | `tests/2_CRUD/2-1_マトリクス.spec.ts`（一覧経由の複製→一覧に2件表示、詳細経由の複製→複製先詳細に元内容を反映。**添付ファイルの引き継ぎは非検証**）。他モジュールは `capabilities.ts` の展開ゲートで段階有効化 |
 | — | ファイル（アップロード / ダウンロード, Documents 経由） | `utils/documentsFile.ts` | ✅(Accounts) | `tests/2_CRUD/2-1_マトリクス.spec.ts`（詳細からファイルをアップロードして表示確認、アップロード済ファイルをダウンロードして非空を確認）。他モジュールは展開ゲートで段階有効化 |
 | 10-1 | CSV エクスポート | `modules/Vtiger/actions/ExportData.php` | ✅ | `common/tests/3_共通機能/3-22_エクスポート.spec.ts` |
-| 11-1 | CSV インポート | `modules/Import/` | ✅ | `tests/3_共通機能/3-23_インポート.spec.ts`（Accounts の重複処理: 複数行/ヘッダなし/スキップ/上書き/マージ）+ `tests/3_共通機能/3-24_インポート履歴.spec.ts`（履歴確認）+ **`tests/2_CRUD/2-1_マトリクス.spec.ts` の `import.create` でインポート対応 13 モジュールを網羅**（describe 駆動で CSV 生成→作成→API 確認→削除。必須 reference は参照先の表示名で名前解決）。3-23/3-24 は Accounts 固有の重複処理・履歴の深掘りとして維持 |
+| 11-1 | CSV インポート | `modules/Import/` | ✅ | `tests/3_共通機能/3-23_インポート.spec.ts`（Accounts の重複処理: 複数行/ヘッダなし/スキップ/上書き/マージ）+ `tests/3_共通機能/3-36_インポート失敗理由.spec.ts`（#1905 失敗・スキップの詳細の「理由」列: 案件・活動・受注）+ `tests/3_共通機能/3-24_インポート履歴.spec.ts`（履歴確認）+ **`tests/2_CRUD/2-1_マトリクス.spec.ts` の `import.create` でインポート対応 13 モジュールを網羅**（describe 駆動で CSV 生成→作成→API 確認→削除。必須 reference は参照先の表示名で名前解決）。3-23/3-24 は Accounts 固有の重複処理・履歴の深掘りとして維持 |
 | 12-1 | 一覧から登録（EditView） | `modules/Vtiger/views/Edit.php` | ✅ | 17 モジュールで実施済（`FrTest`） |
 | 12-2 | クイック作成（＋ボタン） | `views/QuickCreateAjax.php`（React WC） | ✅ | `common/tests/3_共通機能/3-07_クイック作成.spec.ts` |
 | 12-2 | 編集（編集画面） | 同上 | ✅ | 17 モジュールで実施済 |

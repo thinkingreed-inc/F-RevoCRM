@@ -150,4 +150,17 @@ $languageStrings = array(
 	'LBL_IMPORT_AUTO_PROCESS_NOTICE_DUPLICATE_NOTE' => 'インポートでは、この項目設定の重複制御は動作しません。代わりに、インポートウィザードで指定した「重複レコードの処理方法（無視／上書き／結合）」が優先されます。',
 	'LBL_IMPORT_AUTO_PROCESS_NOTICE_WORKAROUND' => 'これらの処理が必要な場合は、インポート後に対象レコードを開いて保存し直すか、画面から手動で登録してください。',
 
+	// インポート失敗・スキップ理由（一時テーブルの import_failure_reason 列に記録する）
+	'LBL_IMPORT_FAILURE_REASON' => '理由',
+	'LBL_IMPORT_REASON_MANDATORY_EMPTY' => '必須項目「%s」が未入力です',
+	'LBL_IMPORT_REASON_PICKLIST_NOT_EXIST' => '「%s」の値が選択肢に存在しません',
+	'LBL_IMPORT_REASON_ACCESS_DENIED' => '権限がないため登録できません（モジュール・担当者・参照先の権限を確認してください）',
+	'LBL_IMPORT_REASON_REFERENCE_INVALID' => '参照項目に指定できない種類のレコードが指定されています',
+	'LBL_IMPORT_REASON_SAVE_ERROR' => '保存時にエラーが発生しました',
+	'LBL_IMPORT_REASON_DUPLICATE_SKIPPED' => '重複するレコードが存在するためスキップしました',
+	'LBL_IMPORT_REASON_REFERENCE_MULTIPLE' => '「%s」の値が複数のレコードに一致しました',
+	'LBL_IMPORT_REASON_NO_EDIT_PERMISSION' => '既存レコードの編集権限がありません',
+	'LBL_IMPORT_REASON_NO_VALID_LINEITEM' => '有効な明細行がありません（製品・数量・単価を確認してください）',
+	'LBL_IMPORT_REASON_LINEITEM_PRODUCT_NOT_FOUND' => '明細行の製品が見つからないか、参照する権限がありません',
+	'LBL_IMPORT_REASON_UNKNOWN' => '理由を特定できませんでした',
 );

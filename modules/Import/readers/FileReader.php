@@ -125,6 +125,7 @@ class Import_FileReader_Reader {
 			$fieldObject = $moduleFields[$fieldName];
 			$columnsListQuery .= $this->getDBColumnType($fieldObject, $fieldTypes);
 		}
+		$columnsListQuery .= ', import_failure_reason TEXT';
 		$createTableQuery = 'CREATE TABLE '. $tableName . ' ('.$columnsListQuery.') ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ';
 		$db->pquery($createTableQuery, array());
 		return true;

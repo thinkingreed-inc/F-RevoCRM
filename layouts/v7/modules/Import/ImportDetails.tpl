@@ -21,6 +21,7 @@
 								{assign var=LISTVIEW_HEADERS value=$IMPORT_RECORDS['headers']}
 								{assign var=IMPORT_RESULT_DATA value=$IMPORT_RECORDS[$TYPE]}
 								{foreach item=LISTVIEW_HEADER from=$LISTVIEW_HEADERS}<th>{vtranslate($LISTVIEW_HEADER->get('label'), $LISTVIEW_HEADER->getModule()->getName())}</th>{/foreach}
+								{if $IMPORT_RECORDS['hasFailureReason']}<th>{vtranslate('LBL_IMPORT_FAILURE_REASON', $MODULE)}</th>{/if}
 							</tr>
 						</thead>
 						{foreach item=RECORD from=$IMPORT_RESULT_DATA}
@@ -28,6 +29,7 @@
 								{foreach item=LISTVIEW_HEADER from=$LISTVIEW_HEADERS}
 									<td>{$RECORD->get($LISTVIEW_HEADER->getName())}</td>
 								{/foreach}
+								{if $IMPORT_RECORDS['hasFailureReason']}<td>{$RECORD->get('import_failure_reason')}</td>{/if}
 							</tr>
 						{/foreach}
 					</table>
