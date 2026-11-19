@@ -16,7 +16,7 @@
 #   ./e2e/ci/run-e2e.sh
 #   ※既存の db-store ボリュームがあると dump が投入されないため、先に `docker compose down -v` すること。
 #   ※普段の開発 (実 DB 直アクセス) には使わない。
-#   ※アプリが書き込むディレクトリ (test / cache / storage / logs / user_privileges) を 0777 にする。
+#   ※アプリが書き込むディレクトリ (test / cache / storage / logs / user_privileges / libraries/tcpdf/fonts) を 0777 にする。
 #     コンテナには repo ツリーをマウントしているためホスト側にも反映され、終了しても戻らない。
 #     開発機で実行する場合はこの点に注意すること。
 #     (config.inc.php は内容・パーミッションとも終了時に復元する)
@@ -118,6 +118,9 @@ echo "==> アプリが書き込むディレクトリの権限調整"
 # Apache が Smarty のコンパイル先 (test/templates_c) や cache/ に書けず Fatal になる。
 # 使い捨て環境なので該当ディレクトリを 0777 にして回避する。
 $COMPOSE exec -T php bash -lc 'mkdir -p test/templates_c test/vtlib cache/images cache/import storage logs user_privileges && chmod -R 0777 test cache storage logs user_privileges'
+# PDF の既定フォント (F-09) は管理画面からアップロードした TTF を libraries/tcpdf/fonts/ に変換して置く。
+# 既存のフォントは書き換えないため、ディレクトリだけ書き込めるようにする。
+$COMPOSE exec -T php bash -lc 'chmod 0777 libraries/tcpdf/fonts'
 # 構成エディタ(F-05)は保存で config.inc.php を書き換えるため、www-data から
 # 書けるようにしておく。書けないと保存が黙って失敗し、値が反映されない。
 # (DB 接続情報を含むファイルなので、終了時に restore_config が元のパーミッションへ戻す)
