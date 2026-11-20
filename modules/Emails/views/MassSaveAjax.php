@@ -147,6 +147,8 @@ class Emails_MassSaveAjax_View extends Vtiger_Footer_View {
 		$recordModel->set('signature',$signature);
 
 		$recordModel->set('toemailinfo', $toMailInfo);
+		// 宛先がすべて未登録アドレスの場合もnullにならないよう初期化する（idlistsはNOT NULLのため保存に失敗する）
+		$parentIds = '';
 		foreach($toMailInfo as $recordId=>$emailValueList) {
 			if($recordModel->getEntityType($recordId) == 'Users'){
 				$parentIds .= $recordId.'@-1|';

@@ -1522,11 +1522,16 @@ Vtiger_List_Js("MailManager_List_Js", {}, {
 	},
 
 	registerPostMailSentEvent: function () {
+		var self = this;
 		app.event.on('post.mail.sent', function (event, data) {
 			var resultEle = jQuery(data);
 			var success = resultEle.find('.mailSentSuccessfully');
 			if (success.length > 0) {
 				app.helper.showModal(data);
+				var folder = self.getContainer().find('.mm_folder.active').data('foldername');
+				if (folder == 'vt_drafts') {
+					self.openDraftFolder();
+				}
 			}
 		});
 	},
