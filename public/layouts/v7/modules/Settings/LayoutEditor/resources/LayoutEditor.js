@@ -433,7 +433,6 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 			if (typeof currentElement.attr('readonly') != "undefined") {
 				return;
 			}
-			var fieldName = container.find('[name="fieldname"]').val();
 			var currentFlagName = currentElement.attr('name');
 			var dependentFlagName = 'headerfield';
 			if (currentFlagName === dependentFlagName) {
@@ -444,17 +443,9 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 						.prop('checked', false).attr('readonly', 'readonly')
 						.removeClass('cursorPointer').addClass('cursorPointerNotAllowed');
 			} else {
-				if (dependentFlagName === 'headerfield') {
-					if (thisInstance.nameFields.indexOf(fieldName) === -1) {
-						container.find('input[type="checkbox"][name="'+dependentFlagName+'"]')
-								.removeAttr('readonly', 'readonly').removeClass('cursorPointerNotAllowed')
-								.addClass('cursorPointer');
-					}
-				} else {
-					container.find('input[type="checkbox"][name="'+dependentFlagName+'"]')
-							.removeAttr('readonly', 'readonly').removeClass('cursorPointerNotAllowed')
-							.addClass('cursorPointer');
-				}
+				container.find('input[type="checkbox"][name="'+dependentFlagName+'"]')
+						.removeAttr('readonly', 'readonly').removeClass('cursorPointerNotAllowed')
+						.addClass('cursorPointer');
 			}
 		}).filter(':checked').trigger('change');
 	},
@@ -676,11 +667,11 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 							}
 							thisInstance.reArrangeBlockFields(block);
 						}
-					}, function () {
+					}, function (err) {
 						app.helper.hideProgress();
 						saveButton.removeAttr('disabled');
 						app.helper.showAlertNotification({
-							'message': app.vtranslate('JS_MAXIMUM_HEADER_FIELDS_ALLOWED', thisInstance.maxNumberOfHeaderFields)
+							'message': (err && err.message) ? err.message : app.vtranslate('JS_MAXIMUM_HEADER_FIELDS_ALLOWED', thisInstance.maxNumberOfHeaderFields)
 						});
 					});
 				} else {
@@ -1794,7 +1785,8 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 						app.helper.showSuccessNotification(params);
 						aDeferred.resolve(data);
 					} else {
-						aDeferred.reject();
+						//サーバ側のエラーメッセージを呼び出し側で表示できるように渡す
+						aDeferred.reject(err);
 					}
 				});
 		}
@@ -2132,16 +2124,6 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 					valueToUpdate = element.find('img').data('enable-value');
 			}
 
-			if (fieldPropertyName === 'headerfield') {
-				//name fields are header enabled by default
-				if (thisInstance.nameFields.indexOf(fieldName) !== -1) {
-					app.helper.showAlertNotification({
-						'message': app.vtranslate('JS_NAME_FIELDS_APPEAR_IN_HEADER_BY_DEFAULT')
-					});
-					return;
-				}
-			}
-
 			if (fieldPropertyName === 'summaryfield' || fieldPropertyName === 'headerfield') {
 				//Field can either be summary or header enabled
 				var dependentFieldPropertySelector = fieldPropertyName === 'summaryfield' ? '.header' : '.summary';
@@ -2169,10 +2151,10 @@ Vtiger.Class('Settings_LayoutEditor_Js', {
 					app.helper.hideProgress();
 					thisInstance.setFieldDetails(data, fieldContatiner);
 				},
-				function () {
+				function (err) {
 					app.helper.hideProgress();
 					app.helper.showAlertNotification({
-						'message': app.vtranslate('JS_MAXIMUM_HEADER_FIELDS_ALLOWED', thisInstance.maxNumberOfHeaderFields)
+						'message': (err && err.message) ? err.message : app.vtranslate('JS_MAXIMUM_HEADER_FIELDS_ALLOWED', thisInstance.maxNumberOfHeaderFields)
 					});
 				});
 		});

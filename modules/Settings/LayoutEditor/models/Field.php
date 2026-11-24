@@ -283,6 +283,45 @@ class Settings_LayoutEditor_Field_Model extends Vtiger_Field_Model {
 	}
 
 	/**
+	 * ラベル(entityname)項目のうち、表示が有効な最後の1項目かどうかを返す。
+	 * ラベル項目を全て無効にすると関連一覧・検索ポップアップからレコードを
+	 * 識別する列が無くなってしまうため、最後の1項目は無効にできないようにする。
+	 * @return <Boolean> true/false
+	 */
+	public function isLastVisibleNameField() {
+		$visibleNameFields = self::getVisibleNameFields($this->block->module->name);
+		return php7_count($visibleNameFields) === 1 && in_array($this->getName(), $visibleNameFields);
+	}
+
+	/**
+	 * ラベル(entityname)項目のうち、「関連一覧に表示」または「主要項目」が有効なものを返す。
+	 * 項目設定画面は全項目からこの判定を呼ぶため、モジュール単位でキャッシュする。
+	 * @param <String> $moduleName
+	 * @return <Array> 有効なラベル項目名の配列
+	 */
+	protected static function getVisibleNameFields($moduleName) {
+		static $visibleNameFieldsCache = array();
+		if(isset($visibleNameFieldsCache[$moduleName])) {
+			return $visibleNameFieldsCache[$moduleName];
+		}
+		$visibleNameFields = array();
+		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
+		if($moduleModel) {
+			$fieldModels = $moduleModel->getFields();
+			foreach($moduleModel->getNameFields() as $nameField) {
+				if(!isset($fieldModels[$nameField])) {
+					continue;
+				}
+				if($fieldModels[$nameField]->isHeaderField() || $fieldModels[$nameField]->isSummaryField()) {
+					$visibleNameFields[] = $nameField;
+				}
+			}
+		}
+		$visibleNameFieldsCache[$moduleName] = $visibleNameFields;
+		return $visibleNameFields;
+	}
+
+	/**
 	 * Function to check field is editable or not
 	 * @return <Boolean> true/false
 	 */
