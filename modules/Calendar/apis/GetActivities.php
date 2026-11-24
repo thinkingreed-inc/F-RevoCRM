@@ -183,7 +183,10 @@ class Calendar_GetActivities_Api extends Vtiger_Api_Controller {
             $timeStart = $activityModel->get('time_start');
             $dueDate = $activityModel->get('due_date');
             $timeEnd = $activityModel->get('time_end');
-            $description = $activityModel->get('description');
+            $description = decode_html($activityModel->get('description'));
+            if ($activityType === 'Emails') {
+                $description = $this->toPlainTextEmailBody($description);
+            }
             $smownerId = $activityModel->get('smownerid');
 
             // Get assigned user information
@@ -222,7 +225,7 @@ class Calendar_GetActivities_Api extends Vtiger_Api_Controller {
                 'dueDate' => $dueDate,
                 'timeEnd' => $timeEnd,
                 'assignedTo' => $assignedTo,
-                'description' => decode_html($description),
+                'description' => $description,
                 'detailViewUrl' => $detailViewUrl
             );
 
@@ -266,6 +269,22 @@ class Calendar_GetActivities_Api extends Vtiger_Api_Controller {
                 'detailViewUrl' => ''
             );
         }
+    }
+
+    /**
+     * メールの本文 (HTML) を、活動欄に表示するプレーンテキストに変換する (#1980)
+     * 画面側は本文を文字列として表示するため、タグを取り除き、改行のタグは改行に置き換える
+     * Emails_Record_Model::buildPlainTextBody() は中で decode_html するため、decode_html 済みの本文に使うと
+     * 本文に文字として書いた "<" ">" まで消える。ここでは文字参照の復元を最後の 1 回だけにする
+     * @param string $html メールの本文 (decode_html 済みの HTML)
+     * @return string プレーンテキストの本文
+     */
+    private function toPlainTextEmailBody(string $html): string {
+        // style や script の中身は本文ではないため、タグごと取り除く (#963 と同じ)
+        $text = (string) preg_replace('/<(head|title|style|script)[^>]*>.*?<\/\1>/si', '', $html);
+        $text = (string) preg_replace('/<br\s*\/?>|<p(\s[^>]*)?>/i', "\n", $text);
+        // strip_tags を先にするのは、文字参照の復元で出てくる "<" ">" をタグとして消さないため
+        return trim(html_entity_decode(strip_tags($text), ENT_QUOTES, 'UTF-8'));
     }
 
     /**
