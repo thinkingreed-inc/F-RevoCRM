@@ -28,12 +28,20 @@ class SalesOrder_DetailRecordStructure_Model extends Vtiger_DetailRecordStructur
 		if ($recordModel) {
 			// 繰り返し請求の有効/無効フラグを各FieldModelにセット
 			$enableRecurring = $recordModel->get('enable_recurring');
+			$paymentDueType = $recordModel->get('payment_due_type');
 			foreach ($values as $fields) {
 				foreach ($fields as $fieldModel) {
 					$fieldModel->set('enableRecurring', $enableRecurring);
+					$fieldModel->set('paymentDueType', $paymentDueType);
 				}
 			}
 		}
+
+		// 支払い期限の指定方法・支払い月・支払い日は詳細画面に出さない。支払い期限に「翌月20日」などとまとめて表示する
+		foreach ($values as $blockLabel => $fields) {
+			unset($values[$blockLabel]['payment_due_type'], $values[$blockLabel]['payment_due_month'], $values[$blockLabel]['payment_due_day']);
+		}
+		$this->structuredValues = $values;
 		return $values;
 	}
 }

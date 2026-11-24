@@ -34,8 +34,13 @@ $languageStrings = array(
 	//Added for existing Picklist Entries
 
 	'Sent'=>'送付済み',
-	'Credit Invoice'=>'クレジットカード請求',
+	'Credit Invoice'=>'取消請求',
 	'Paid'=>'領収済み',
+	'Payment Method' => '支払い方法',
+	'Bank Transfer' => '銀行振込',
+	'Account Transfer' => '口座振替',
+	'Credit Card' => 'クレジットカード',
+	'Cash' => '現金',
 	'AutoCreated'=>'自動生成済み',
 	'Cancel' => '取消',
 	

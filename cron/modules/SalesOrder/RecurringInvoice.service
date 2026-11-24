@@ -10,6 +10,7 @@
 
 require_once('include/utils/utils.php');
 require_once('include/logging.php');
+require_once('modules/SalesOrder/models/RecurringInvoiceSchedule.php');
 
 global $adb, $log;
 $log = Logger::getLogger('RecurringInvoice');
@@ -19,7 +20,7 @@ $currentDate = date('Y-m-d');
 $currentDateStrTime = strtotime($currentDate);
 
 $sql="SELECT vtiger_salesorder.salesorderid, recurring_frequency, start_period, end_period, last_recurring_date,
-		 payment_duration, invoice_status FROM vtiger_salesorder
+		 payment_duration, invoice_status, invoice_day FROM vtiger_salesorder
 		 INNER JOIN vtiger_crmentity ON vtiger_salesorder.salesorderid = vtiger_crmentity.crmid AND vtiger_crmentity.deleted = 0
 		 INNER JOIN vtiger_invoice_recurring_info ON vtiger_salesorder.salesorderid = vtiger_invoice_recurring_info.salesorderid
 		 WHERE DATE_FORMAT(start_period,'%Y-%m-%d') <= ?
@@ -34,6 +35,7 @@ for($i=0; $i<$no_of_salesorder;$i++) {
 	$end_period			= $adb->query_result($result, $i, 'end_period');
 	$recurring_date		= $adb->query_result($result, $i, 'last_recurring_date');
 	$recurringFrequency = $adb->query_result($result, $i, 'recurring_frequency');
+	$invoiceDay			= $adb->query_result($result, $i, 'invoice_day');
 
 	if ($recurring_date == NULL  || $recurring_date == '' || $recurring_date == '0000-00-00') {
 		$recurring_date = $start_period;
@@ -48,7 +50,7 @@ for($i=0; $i<$no_of_salesorder;$i++) {
 
 		while(strtotime($validNextRecurringDate) <= $currentDateStrTime && $currentDateStrTime <= $endDateStrTime) {
 			$recurringDatesList[]	= $validNextRecurringDate;
-			$nextRecurringDatesInfo = getRecurringDate($nextRecurringDate, $recurringFrequency);
+			$nextRecurringDatesInfo = getRecurringDate($nextRecurringDate, $recurringFrequency, $invoiceDay);
 
 			//Updating the existing values
 			$validNextRecurringDate = $nextRecurringDatesInfo['validDate'];
@@ -65,7 +67,7 @@ for($i=0; $i<$no_of_salesorder;$i++) {
 	} elseif($recurringDateStrTime == $currentDateStrTime && $recurringDateStrTime <= $endDateStrTime) {
 		createInvoice($salesorder_id, $recurringDate);
 
-		$nextRecurringDatesInfo = getRecurringDate($recurring_date, $recurringFrequency);
+		$nextRecurringDatesInfo = getRecurringDate($recurring_date, $recurringFrequency, $invoiceDay);
 		$nextRecurringDate = $nextRecurringDatesInfo['validDate'];
 		$adb->pquery('UPDATE vtiger_invoice_recurring_info SET last_recurring_date = ? WHERE salesorderid = ?', array($nextRecurringDate, $salesorder_id));
 	}
@@ -80,18 +82,6 @@ function createInvoice($salesorder_id, $recurringDate = false) {
 
 	global $log, $adb;
 	global $current_user;
-
-	// Payment duration in days
-	$payment_duration_values = Array(
-        'net 01 day' => '1',
-        'net 05 days' => '5',
-        'net 07 days' => '7',
-        'net 10 days' => '10',
-        'net 15 days' => '15',
-		'net 30 days' => '30',
-		'net 45 days' => '45',
-		'net 60 days' => '60'
-	);
 
 	if (!$recurringDate) {
 		$recurringDate = date('Y-m-d');
@@ -111,18 +101,20 @@ function createInvoice($salesorder_id, $recurringDate = false) {
 	// This will only fill in the basic columns from SO to Invoice and also Update the SO id in new Invoice
 	$focus = getConvertSoToInvoice($focus,$so_focus,$salesorder_id);
 
-	// Pick up the Payment due date based on the Configuration in SO
-	$payment_duration = $so_focus->column_fields['payment_duration'];
-	$due_duration = $payment_duration_values[trim(strtolower($payment_duration))];
-
 	// Cleanup focus object, to duplicate the Invoice.
 	$focus->id = '';
 	$focus->mode = '';
 	$focus->column_fields['invoicestatus'] = $so_focus->column_fields['invoicestatus'];
 	$focus->column_fields['invoicedate'] = $recurringDate;
 
-	list($y, $m, $d) = explode('-', $recurringDate);
-	$focus->column_fields['duedate'] = date('Y-m-d', mktime(0, 0, 0, $m, $d + $due_duration, $y));
+	// Pick up the Payment due date based on the Configuration in SO
+	$focus->column_fields['duedate'] = SalesOrder_RecurringInvoiceSchedule_Model::getDueDate(
+		$recurringDate,
+		$so_focus->column_fields['payment_due_type'],
+		$so_focus->column_fields['payment_duration'],
+		$so_focus->column_fields['payment_due_month'],
+		$so_focus->column_fields['payment_due_day']
+	);
 
 	// Additional SO fields to copy -> Invoice field name mapped to equivalent SO field name
 	$invoice_so_fields = Array (
@@ -136,7 +128,8 @@ function createInvoice($salesorder_id, $recurringDate = false) {
 		'assigned_user_id' => 'assigned_user_id',
 		'currency_id' => 'currency_id',
 		'conversion_rate' => 'conversion_rate',
-		'balance' => 'hdnGrandTotal'
+		'balance' => 'hdnGrandTotal',
+		'payment_method' => 'payment_method'
 	);
 	foreach($invoice_so_fields as $invoice_field => $so_field) {
 		$focus->column_fields[$invoice_field] = $so_focus->column_fields[$so_field];
@@ -150,7 +143,7 @@ function createInvoice($salesorder_id, $recurringDate = false) {
 	}
 }
 
-function getRecurringDate($recurringDate, $recurringFrequency) {
+function getRecurringDate($recurringDate, $recurringFrequency, $invoiceDay = '') {
 	$currentDate = date('Y-m-d');
 	list($y, $m, $d) = explode('-', $recurringDate);
 
@@ -183,6 +176,11 @@ function getRecurringDate($recurringDate, $recurringFrequency) {
 		if (!checkdate($m, $d, $y)) {
 			$validNextRecurringDate = date('Y-m-d', mktime(0, 0, 0, $m, cal_days_in_month(CAL_GREGORIAN, $m, $y), $y));
 		}
+	}
+
+	$alignedDate = SalesOrder_RecurringInvoiceSchedule_Model::applyInvoiceDay($validNextRecurringDate, $recurringFrequency, $invoiceDay);
+	if ($alignedDate !== $validNextRecurringDate) {
+		$nextRecurringDate = $validNextRecurringDate = $alignedDate;
 	}
 
 	return array('validDate' => $validNextRecurringDate, 'nextRecurringDate' => $nextRecurringDate);

@@ -36,6 +36,11 @@ $languageStrings = array(
 	'Sent'=>'Sent',
 	'Credit Invoice'=>'Credit Invoice',
 	'Paid'=>'Paid',
+	'Payment Method' => 'Payment Method',
+	'Bank Transfer' => 'Bank Transfer',
+	'Account Transfer' => 'Account Transfer',
+	'Credit Card' => 'Credit Card',
+	'Cash' => 'Cash',
 	'AutoCreated'=>'AutoCreated',
 	'Cancel' => 'Cancel',
 	

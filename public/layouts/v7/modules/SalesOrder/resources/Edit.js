@@ -53,7 +53,7 @@ Inventory_Edit_Js("SalesOrder_Edit_Js",{},{
 			.filter('[name]')
 			.not('[name="enable_recurring"]');
 
-		var requiredOnEnableFields = ['recurring_frequency','start_period','payment_duration','invoicestatus'];
+		var requiredOnEnableFields = ['recurring_frequency','start_period','payment_duration','invoicestatus','invoice_day','payment_due_type','payment_due_month','payment_due_day'];
 		validationToggleFields.each(function() {
 			var el = jQuery(this);
 			var name = el.attr('name');
@@ -61,13 +61,77 @@ Inventory_Edit_Js("SalesOrder_Edit_Js",{},{
 				|| requiredOnEnableFields.indexOf(name) !== -1;
 			el.data('original-required', isRequired);
 		});
+		// 必須の * は繰り返し有効・周期・支払い期限の指定方法に合わせて付け外しするため、テンプレートが付けた * は外す
+		recurringBlock.find('td.fieldLabel span.redColor').remove();
 
 		enableRecurrenceField.on('change',function(e){
 			var element = jQuery(e.currentTarget);
 			var addValidation = element.is(':checked');
 			thisInstance.AddOrRemoveRequiredValidation(validationToggleFields, addValidation);
+			thisInstance.updateScheduleFields();
 		});
 		thisInstance.AddOrRemoveRequiredValidation(validationToggleFields, enableRecurrenceField.is(':checked'));
+
+		form.find('[name="recurring_frequency"], [name="payment_due_type"]').on('change', function() {
+			thisInstance.updateScheduleFields();
+		});
+		thisInstance.updateScheduleFields();
+	},
+
+	/**
+	 * 請求日は月単位の周期のときだけ入力できる
+	 * 支払い期限の指定方法が「日数で指定」なら支払い期限（日数）、「日付で指定」なら支払い月・支払い日を表示する
+	 */
+	updateScheduleFields : function() {
+		var form = this.getForm();
+		var isEnabled = form.find('[name="enable_recurring"]').is(':checked');
+		var monthBasedFrequencies = ['Monthly','Quarterly','Half-Yearly','Yearly'];
+		var isMonthBased = monthBasedFrequencies.indexOf(form.find('[name="recurring_frequency"]').val()) !== -1;
+		var isFixedDueDate = form.find('[name="payment_due_type"]').val() === 'Fixed Date';
+		var daysAfterFields = form.find('[name="payment_duration"]');
+		var fixedDateFields = form.find('[name="payment_due_month"], [name="payment_due_day"]');
+
+		this.AddOrRemoveRequiredValidation(form.find('[name="invoice_day"]'), isEnabled && isMonthBased);
+		this.AddOrRemoveRequiredValidation(daysAfterFields, isEnabled && !isFixedDueDate);
+		this.AddOrRemoveRequiredValidation(fixedDateFields, isEnabled && isFixedDueDate);
+		this.toggleFieldCells(daysAfterFields, !isFixedDueDate);
+		this.toggleFieldCells(fixedDateFields, isFixedDueDate);
+		this.updateRequiredMarks();
+	},
+
+	/**
+	 * 繰り返し請求情報で、いま入力が必須の項目の見出しに * を付ける
+	 * 繰り返し有効のときに必須となる項目のうち、入力できる状態のものが対象。
+	 */
+	updateRequiredMarks : function() {
+		var form = this.getForm();
+		var isEnabled = form.find('[name="enable_recurring"]').is(':checked');
+		form.find('[data-block="Recurring Invoice Information"]').find('input, select').filter('[name]').each(function() {
+			var field = jQuery(this);
+			if (field.data('original-required') !== true) {
+				return;
+			}
+			var label = field.closest('td.fieldValue').prev('td.fieldLabel');
+			var mark = label.find('.recurringRequiredMark');
+			var isRequired = isEnabled && !field.is(':disabled');
+			if (isRequired && !mark.length) {
+				label.prepend('<span class="redColor recurringRequiredMark">* </span>');
+			} else if (!isRequired) {
+				mark.remove();
+			}
+		});
+	},
+
+	/**
+	 * 項目の見出しと入力欄のセルを表示・非表示にする
+	 * 行のセルがすべて非表示になると、その行は高さがなくなり詰まって見える。
+	 */
+	toggleFieldCells : function(fields, show) {
+		fields.each(function() {
+			var valueCell = jQuery(this).closest('td');
+			valueCell.toggle(show);
+			valueCell.prev('td').toggle(show);
+		});
 	},
 
 	AddOrRemoveRequiredValidation : function(dependentFieldsForValidation, addValidation) {
