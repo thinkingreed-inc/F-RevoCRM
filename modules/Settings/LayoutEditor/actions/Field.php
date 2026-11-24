@@ -73,6 +73,14 @@ class Settings_LayoutEditor_Field_Action extends Settings_Vtiger_Index_Action {
 		$currentUser = Users_Record_Model::getCurrentUserModel();
         $fieldId = $request->get('fieldid');
         $fieldInstance = Settings_LayoutEditor_Field_Model::getInstance($fieldId);
+
+        // 設定変更を禁止した項目（昇格フラグ等）は画面を経由しない更新も受け付けない
+        if ($fieldInstance->isOptionsRestrictedField()) {
+            $response = new Vtiger_Response();
+            $response->setError('LBL_PERMISSION_DENIED', vtranslate('LBL_PERMISSION_DENIED'));
+            $response->emit();
+            return;
+        }
         
         $fieldLabel = $fieldInstance->get('label');
         $uitype = $fieldInstance->get('uitype');

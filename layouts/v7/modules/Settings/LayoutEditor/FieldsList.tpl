@@ -210,7 +210,8 @@
                             </div>
                           </div>
                           <span class="col-sm-2 actions">
-                            {if $FIELD_MODEL->isEditable()}
+                            {* 設定変更を禁止した項目は編集モーダルを出さない（移動は isEditable() で判定するため引き続き可） *}
+                            {if $FIELD_MODEL->isEditable() && !$FIELD_MODEL->isOptionsRestrictedField()}
                               <a href="javascript:void(0)" class="editFieldDetails">
                                 <i class="fa fa-pencil" title="{vtranslate('LBL_EDIT', $QUALIFIED_MODULE)}"></i>
                               </a>

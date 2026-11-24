@@ -473,11 +473,13 @@ class Products_Record_Model extends Vtiger_Record_Model {
 				$leadIdsList[] = $row['crmid'];
 			}
 		}
-		$convertedInfo = Leads_Module_Model::getConvertedInfo($leadIdsList);
+		// 昇格済みリードを表示する設定なら検索結果からも除外しない
+		$convertedInfo = Leads_ConvertSetting_Model::showConvertedLeads()
+				? array() : Leads_Module_Model::getConvertedInfo($leadIdsList);
 
 		for($i=0, $recordsCount = 0; $i<$noOfRows && $recordsCount<100; ++$i) {
 			$row = $db->query_result_rowdata($result, $i);
-			if ($row['setype'] === 'Leads' && $convertedInfo[$row['crmid']]) {
+			if ($row['setype'] === 'Leads' && !empty($convertedInfo[$row['crmid']])) {
 				continue;
 			}
 			if(Users_Privileges_Model::isPermitted($row['setype'], 'DetailView', $row['crmid'])) {
