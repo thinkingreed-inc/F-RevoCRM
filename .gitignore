@@ -10,6 +10,7 @@ logs/*.log
 logs/cron/
 cache/cron/
 cache/vtigercron.lock
+cache/mcp_ratelimit/
 cache/images/*
 !cache/images/.htaccess
 cache/import/*
@@ -34,6 +35,7 @@ user_privileges/*
 !user_privileges/enable_backup.php
 !user_privileges/index.html
 config.inc.php
+include/Mcp/mcp_oauth_config.php
 /*.xlsx
 .DS_Store
 .vscode

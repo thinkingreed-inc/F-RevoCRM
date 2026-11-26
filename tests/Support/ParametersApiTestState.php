@@ -21,6 +21,9 @@ class ParametersApiTestState
     /** 現在ユーザーを管理者として扱うか */
     public static bool $isAdmin = true;
 
+    /** 現在ユーザーの id（getId() が返す値） */
+    public static int $userId = 1;
+
     /**
      * getInstanceById() が返すレコードの元データ
      * @var array<int, array<string, mixed>>
@@ -41,6 +44,7 @@ class ParametersApiTestState
         self::$records = [];
         self::$saved = [];
         self::$isAdmin = true;
+        self::$userId = 1;
         self::$throwOnSave = false;
     }
 

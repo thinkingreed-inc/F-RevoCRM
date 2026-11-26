@@ -25,3 +25,5 @@ RedirectMatch 404 /\.git
 <FilesMatch "(^\.env|\.sql|\.bak|\.log|\.ini|\.sh)$">
     Require all denied
 </FilesMatch>
+# MCP: Authorization ヘッダを PHP に渡す（frevo-mcp README 手順4）
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
