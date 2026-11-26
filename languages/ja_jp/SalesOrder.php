@@ -70,6 +70,7 @@ $languageStrings = array(
     'Quarterly' => '四半期毎',
 	'Yearly' => '毎年',
 	'Cancel' => 'キャンセル',
+	'LBL_RECURRING_FREQUENCY_AND_START_PERIOD_REQUIRED' => '繰り返し請求を有効にする場合は、周期と開始時期を入力してください。繰り返し請求を有効にするときは、編集画面から周期などと合わせて設定してください。',
 );
 
 $jsLanguageStrings = array(
