@@ -13,8 +13,8 @@
         <div class="recordBasicInfo">
             <div class="info-row">
                 <h4>
-                    <span class="recordLabel pushDown" title="{htmlentities($RECORD->getName())}">
-                        <span class="templatename">{$RECORD->getName()}</span>&nbsp;
+                    <span class="recordLabel pushDown" title="{vtranslate($RECORD->getName(), $MODULE)}">
+                        <span class="templatename">{vtranslate($RECORD->getName(), $MODULE)}</span>&nbsp;
                     </span>
                 </h4>
             </div>

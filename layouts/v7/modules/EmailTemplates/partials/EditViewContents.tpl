@@ -21,13 +21,13 @@
                     <tr>
                         <td class="fieldLabel {$WIDTHTYPE} alignMiddle">{vtranslate('LBL_TEMPLATE_NAME', $MODULE)}&nbsp;<span class="redColor">*</span></td>
                         <td class="fieldValue {$WIDTHTYPE}">
-                            <input id="{$MODULE}_editView_fieldName_templatename" type="text" class="inputElement" data-rule-required="true" name="templatename" value="{$RECORD->get('templatename')}">
+                            <input id="{$MODULE}_editView_fieldName_templatename" type="text" class="inputElement" data-rule-required="true" name="templatename" value="{vtranslate($RECORD->get('templatename'), $MODULE)}">
                         </td>
                     </tr>
                     <tr>
                         <td class="fieldLabel {$WIDTHTYPE} alignMiddle">{vtranslate('LBL_DESCRIPTION', $MODULE)}</td>
                         <td class="fieldValue {$WIDTHTYPE}">
-                            <textarea class="inputElement col-lg-12" id="description" name="description">{$RECORD->get('description')}</textarea>
+                            <textarea class="inputElement col-lg-12" id="description" name="description">{vtranslate($RECORD->get('description'), $MODULE)}</textarea>
                         </td>
                     </tr>
                 </tbody>
@@ -85,7 +85,7 @@
                         <td class="fieldLabel {$WIDTHTYPE}">{vtranslate('LBL_SUBJECT', $MODULE)}&nbsp;<span class="redColor">*</span></td>
                         <td class="fieldValue {$WIDTHTYPE}">
                             <div class="col-sm-6 col-xs-6">
-                                <input id="{$MODULE}_editView_fieldName_subject" type="text" {if $IS_SYSTEM_TEMPLATE_EDIT} disabled="disabled" {/if} class="inputElement col-lg-12" data-rule-required="true" name="subject" value="{$RECORD->get('subject')}"  spellcheck="true" />
+                                <input id="{$MODULE}_editView_fieldName_subject" type="text" {if $IS_SYSTEM_TEMPLATE_EDIT} disabled="disabled" {/if} class="inputElement col-lg-12" data-rule-required="true" name="subject" value="{vtranslate($RECORD->get('subject'), $MODULE)}"  spellcheck="true" />
                             </div>
                         </td>
                     </tr>
