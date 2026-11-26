@@ -31,7 +31,6 @@ $languageStrings = array(
 	'Assistant' => 'Assistant',
 	'Assistant Phone' => 'Assistant Phone',
 	'Do Not Call' => 'Do Not Call',
-	'Reference' => 'Reference',
 	'Portal User' => 'Portal User',
 	'Mailing Street' => 'Mailing Street',
 	'Mailing City' => 'Mailing City',
