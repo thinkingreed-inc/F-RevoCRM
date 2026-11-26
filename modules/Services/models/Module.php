@@ -74,6 +74,6 @@ class Services_Module_Model extends Products_Module_Model {
      * Function to get supported utility actions for a module
      */
     function getUtilityActionsNames() {
-        return array('Import', 'Export', 'DuplicatesHandling');
+        return array('Import', 'Export', 'Merge', 'DuplicatesHandling');
     }
 }
