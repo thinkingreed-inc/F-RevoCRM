@@ -58,8 +58,15 @@ export class FieldValidation {
     if (c.field === "reference") {
       await fillField(page, target, ""); // fillField(reference)が先頭Accountsを選択
     } else if (c.field === "multipick") {
-      // 選択肢複数の実DOMは配列送信用に name="xxx[]" となるため両対応で選択する
-      await page.selectOption(`select[name="${target.name}"], select[name="${target.name}[]"]`, c.input.split(","));
+      // #1677: 複数選択(uitype33)は WebComponent <multi-picklist-field> でチェックボックス表示に
+      // なった(選択肢<=100時)。ネイティブ select は視覚的に隠され「選択値のみ保持」に作り替えられる
+      // ため、従来の page.selectOption(select) は使えない。実UI(チェックボックス)をクリックして選択する。
+      const mpf = page.locator("multi-picklist-field", {
+        has: page.locator(`select[name="${target.name}[]"]`),
+      });
+      for (const v of c.input.split(",")) {
+        await mpf.getByRole("checkbox", { name: v, exact: true }).check();
+      }
     } else {
       await fillField(page, target, c.input);
     }
