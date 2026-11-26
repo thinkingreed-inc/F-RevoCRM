@@ -431,7 +431,7 @@ export const MultireferenceField: React.FC<MultireferenceFieldProps> = ({
               key={mod}
               onClick={() => handleModuleSelect(mod)}
               className={cn(
-                "px-3 py-1.5 text-md cursor-pointer hover:bg-blue-50",
+                "px-3 py-1.5 text-sm cursor-pointer hover:bg-blue-50",
                 selectedModule === mod && "bg-blue-100",
               )}
             >
@@ -466,7 +466,7 @@ export const MultireferenceField: React.FC<MultireferenceFieldProps> = ({
         }}
       >
         {isLoading ? (
-          <div className="px-3 py-1.5 text-md text-gray-500 text-center">
+          <div className="px-3 py-1.5 text-sm text-gray-500 text-center">
             検索中...
           </div>
         ) : searchResults.length > 0 ? (
@@ -475,14 +475,14 @@ export const MultireferenceField: React.FC<MultireferenceFieldProps> = ({
               <div
                 key={record.id}
                 onClick={() => handleSelectRecord(record)}
-                className="px-3 py-1.5 text-md cursor-pointer hover:bg-blue-50"
+                className="px-3 py-1.5 text-sm cursor-pointer hover:bg-blue-50"
               >
                 {record.label}
               </div>
             ))}
           </div>
         ) : (
-          <div className="px-3 py-1.5 text-md text-gray-500 text-center">
+          <div className="px-3 py-1.5 text-sm text-gray-500 text-center">
             {searchTerm
               ? "該当するレコードがありません"
               : "レコードがありません"}
@@ -499,7 +499,7 @@ export const MultireferenceField: React.FC<MultireferenceFieldProps> = ({
       {/* ラベル（旧版スタイル：右寄せ） */}
       <span
         className={cn(
-          "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+          "text-sm text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
           disabled && "text-gray-400",
         )}
       >
@@ -620,7 +620,7 @@ export const MultireferenceField: React.FC<MultireferenceFieldProps> = ({
             {selectedRecords.map((record) => (
               <div
                 key={record.id}
-                className="relative inline-flex items-center bg-blue-100 text-blue-800 rounded-md text-md"
+                className="relative inline-flex items-center bg-blue-100 text-blue-800 rounded-md text-sm"
               >
                 <span className="pl-3 pr-6 py-1.5">{record.label}</span>
                 {!disabled && (

@@ -334,7 +334,7 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
                 key={option.value}
                 onClick={() => handleSelectOption(option.value)}
                 className={cn(
-                  "px-3 py-1.5 text-md cursor-pointer",
+                  "px-3 py-1.5 text-sm cursor-pointer",
                   index === highlightedIndex
                     ? "bg-blue-100"
                     : "hover:bg-blue-50",
@@ -345,7 +345,7 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
             ))}
           </div>
         ) : (
-          <div className="px-3 py-1.5 text-md text-gray-500 text-center">
+          <div className="px-3 py-1.5 text-sm text-gray-500 text-center">
             {selectedValues.length > 0
               ? t("LBL_ALL_OPTIONS_SELECTED")
               : t("LBL_NO_OPTIONS_AVAILABLE")}
@@ -363,7 +363,7 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
         <div className="flex items-baseline md:contents">
           <span
             className={cn(
-              "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+              "text-sm text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
               disabled && "text-gray-400",
               labelClassName,
             )}
@@ -385,7 +385,7 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
         <>
           <span
             className={cn(
-              "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+              "text-sm text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
               disabled && "text-gray-400",
             )}
           >
@@ -441,7 +441,7 @@ export const MultiPicklistField: React.FC<MultiPicklistFieldProps> = ({
             {selectedValues.map((val) => (
               <div
                 key={val}
-                className="relative inline-flex items-center bg-blue-100 text-blue-800 rounded-md text-md"
+                className="relative inline-flex items-center bg-blue-100 text-blue-800 rounded-md text-sm"
               >
                 <span className="pl-3 pr-6 py-1.5">{getLabel(val)}</span>
                 {!disabled && (

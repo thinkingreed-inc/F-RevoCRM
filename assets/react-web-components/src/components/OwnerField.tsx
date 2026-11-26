@@ -407,7 +407,7 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
                       key={`user_${user.id}`}
                       onClick={() => handleSelectOption(user)}
                       className={cn(
-                        "px-3 py-1.5 text-md cursor-pointer",
+                        "px-3 py-1.5 text-sm cursor-pointer",
                         globalIndex === highlightedIndex
                           ? "bg-blue-100"
                           : value === user.id
@@ -435,7 +435,7 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
                       key={`group_${group.id}`}
                       onClick={() => handleSelectOption(group)}
                       className={cn(
-                        "px-3 py-1.5 text-md cursor-pointer",
+                        "px-3 py-1.5 text-sm cursor-pointer",
                         globalIndex === highlightedIndex
                           ? "bg-blue-100"
                           : value === group.id
@@ -451,7 +451,7 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
             )}
           </div>
         ) : (
-          <div className="px-3 py-1.5 text-md text-gray-500 text-center">
+          <div className="px-3 py-1.5 text-sm text-gray-500 text-center">
             {t("LBL_NO_MATCHING_OWNER", "該当する担当者がいません")}
           </div>
         )}
@@ -467,7 +467,7 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
         <div className="flex items-baseline md:contents">
           <span
             className={cn(
-              "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+              "text-sm text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
               disabled && "text-gray-400",
               labelClassName,
             )}
@@ -489,7 +489,7 @@ export const OwnerField: React.FC<OwnerFieldProps> = ({
         <>
           <span
             className={cn(
-              "text-md text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
+              "text-sm text-gray-700 flex-shrink-0 w-[110px] text-right leading-[30px]",
               disabled && "text-gray-400",
             )}
           >
