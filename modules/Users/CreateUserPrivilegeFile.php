@@ -15,6 +15,12 @@ require_once('include/utils/utils.php');
 require_once('include/utils/GetUserGroups.php');
 require_once('include/utils/GetGroupUsers.php');
 
+function invalidateUserPrivilegesFileCache(string $filepath): void
+{
+	if (function_exists('opcache_invalidate')) {
+		opcache_invalidate($filepath, true);
+	}
+}
 
 /** Creates a file with all the user, user-role,user-profile, user-groups informations 
   * @param $userid -- user id:: Type integer
@@ -24,7 +30,8 @@ require_once('include/utils/GetGroupUsers.php');
 function createUserPrivilegesfile($userid)
 {
 	global $root_directory;
-	$handle=@fopen($root_directory.'user_privileges/user_privileges_'.$userid.'.php',"w+");
+	$filepath = $root_directory.'user_privileges/user_privileges_'.$userid.'.php';
+	$handle=@fopen($filepath,"w+");
 
 	if($handle)
 	{
@@ -53,6 +60,7 @@ function createUserPrivilegesfile($userid)
 			$newbuf .= "?>";
 			fputs($handle, $newbuf);
 			fclose($handle);
+			invalidateUserPrivilegesFileCache($filepath);
 			return;	
 		}
 		else
@@ -102,6 +110,7 @@ function createUserPrivilegesfile($userid)
 			$newbuf .= "?>";
 			fputs($handle, $newbuf);
 			fclose($handle);
+			invalidateUserPrivilegesFileCache($filepath);
 		}
 	}
 }
