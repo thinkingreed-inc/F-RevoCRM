@@ -677,9 +677,28 @@ Vtiger_Edit_Js("Calendar_Edit_Js",{
 	},
 
 	registerDateStartChangeEvent : function(container) {
-		container.find('[name="date_start"]').on('change',function() {
-			var timeStartElement = container.find('[name="time_start"]');
-			timeStartElement.trigger('changeTime');
+		var startDateElement = container.find('[name="date_start"]');
+		var previousStartDate = startDateElement.val();
+		startDateElement.on('change',function() {
+			var currentStartDate = startDateElement.val();
+			if(container.find('[name="is_allday"]').is(':checked')) {
+				// 終日は時刻を持たないので、既定の時間（分）ではなく開始日と終了日の日数の差を保つ。
+				// 隠れている開始時刻に既定の時間を足すと、遅い時刻のとき終了日が翌日に繰り上がるため
+				var dateFormat = vtUtils.getMomentDateFormat();
+				var endDateElement = container.find('[name="due_date"]');
+				var days = moment(endDateElement.val(), dateFormat).diff(moment(previousStartDate, dateFormat), 'days');
+				if(!(days > 0)) {
+					days = 0;
+				}
+				var newEndDate = moment(currentStartDate, dateFormat).add(days, 'days');
+				if(newEndDate.isValid()) {
+					endDateElement.val(newEndDate.format(dateFormat));
+					endDateElement.valid();
+				}
+			} else {
+				container.find('[name="time_start"]').trigger('changeTime');
+			}
+			previousStartDate = currentStartDate;
 		});
 	},
 
