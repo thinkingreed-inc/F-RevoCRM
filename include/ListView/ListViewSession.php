@@ -182,6 +182,43 @@ class ListViewSession {
 		return $recordNavigationInfo;
 	}
 
+	/**
+	 * getListViewNavigation()が返すページ単位のレコードID一覧から、指定レコードの前後のレコードIDを求める。
+	 * @param <Array> $navigationInfo - getListViewNavigation()の戻り値
+	 * @param <Number> $currentRecordId
+	 * @return <Array> - array($prevRecordId, $nextRecordId) 該当が無い場合はnullを返す
+	 */
+	public static function resolveAdjacentRecordIds($navigationInfo, $currentRecordId){
+		$prevRecordId = null;
+		$nextRecordId = null;
+		$found = false;
+		if($navigationInfo){
+			foreach($navigationInfo as $page=>$pageInfo) {
+				foreach($pageInfo as $index=>$record) {
+					//If record found then next record in the interation
+					//will be next record
+					if($found) {
+						$nextRecordId = $record;
+						break;
+					}
+					if($record == $currentRecordId) {
+						$found = true;
+					}
+					//If record not found then we are assiging previousRecordId
+					//assuming next record will get matched
+					if(!$found) {
+						$prevRecordId = $record;
+					}
+				}
+				//if record is found and next record is not calculated we need to perform iteration
+				if($found && !empty($nextRecordId)) {
+					break;
+				}
+			}
+		}
+		return array($prevRecordId, $nextRecordId);
+	}
+
 	function getRequestCurrentPage($currentModule, $query, $viewid, $queryMode = false) {
 		global $list_max_entries_per_page, $adb;
 		$start = 1;
