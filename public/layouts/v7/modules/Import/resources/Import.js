@@ -160,6 +160,7 @@ if (typeof (Vtiger_Import_Js) == 'undefined') {
             var mappedFields = {};
             var errorMessage;
             var mappedDefaultValues = {};
+            var addPicklistFields = [];
 
             for (var i = 0; i < fieldsList.length; ++i) {
                 var fieldElement = jQuery(fieldsList.get(i));
@@ -184,6 +185,9 @@ if (typeof (Vtiger_Import_Js) == 'undefined') {
                     if (defaultValue != '') {
                         mappedDefaultValues[selectedFieldName] = defaultValue;
                     }
+                    if (jQuery('#' + selectedFieldName + '_addpicklistvalue', fieldElement).is(':checked')) {
+                        addPicklistFields.push(selectedFieldName);
+                    }
                 }
             }
 
@@ -207,6 +211,7 @@ if (typeof (Vtiger_Import_Js) == 'undefined') {
             }
             jQuery('#field_mapping').val(JSON.stringify(mappedFields));
             jQuery('#default_values').val(JSON.stringify(mappedDefaultValues));
+            jQuery('#add_picklist_fields').val(JSON.stringify(addPicklistFields));
             return true;
         },
         validateCustomMap: function() {
@@ -253,12 +258,13 @@ if (typeof (Vtiger_Import_Js) == 'undefined') {
                 var fieldElement = jQuery(element);
                 jQuery('[name=mapped_fields]', fieldElement).val('');
             });
+            jQuery('[id$=_addpicklistvalue]').prop('checked', false);
             if (mapId == -1) {
                 deleteMapContainer.hide();
                 return;
             }
             deleteMapContainer.show();
-            var mappingString = selectedMapElement.val()
+            var mappingString = selectedMapElement.attr('data-mapping') || '';
             if (mappingString == '')
                 return;
             var mappingPairs = mappingString.split('&');
@@ -284,6 +290,11 @@ if (typeof (Vtiger_Import_Js) == 'undefined') {
 				}
                 Vtiger_Import_Js.loadDefaultValueWidget(fieldElement.attr('id'));
             });
+            // 機能追加前に保存したマッピングは空の配列になり、どの項目もチェックしない
+            var addPicklistFields = selectedMapElement.data('addPicklistFields') || [];
+            for (var j = 0; j < addPicklistFields.length; ++j) {
+                jQuery('#' + addPicklistFields[j] + '_addpicklistvalue').prop('checked', true);
+            }
         },
         deleteMap: function(module) {
             if (confirm(app.vtranslate('LBL_DELETE_CONFIRMATION'))) {
@@ -380,6 +391,11 @@ if (typeof (Vtiger_Import_Js) == 'undefined') {
             var selectedFieldDefValueContainer = jQuery('#' + selectedFieldName + '_defaultvalue_container', allDefaultValuesContainer);
             var defaultValueWidget = selectedFieldDefValueContainer.detach();
             defaultValueWidget.appendTo(defaultValueContainer);
+
+            var addPicklistValueContainer = jQuery('[name=add_picklist_value_container]', affectedRow);
+            var allAddPicklistValuesContainer = jQuery('#addPicklistValueElementsContainer');
+            addPicklistValueContainer.children().detach().appendTo(allAddPicklistValuesContainer);
+            jQuery('#' + selectedFieldName + '_addpicklistvalue_container', allAddPicklistValuesContainer).detach().appendTo(addPicklistValueContainer);
         },
         loadDefaultValueWidgetForMappedFields: function() {
             var fieldsList = jQuery('.fieldIdentifier');
@@ -390,7 +406,8 @@ if (typeof (Vtiger_Import_Js) == 'undefined') {
                     Vtiger_Import_Js.loadDefaultValueWidget(fieldElement.attr('id'));
                 }
             });
-
+            // 項目マッピングは Ajax で差し込まれるため、ページ読み込み時のツールチップ初期化が効かない
+            jQuery('#addPicklistValueElementsContainer, [name=add_picklist_value_container]').find('[data-toggle="tooltip"]').tooltip();
         },
         //TODO: move to a common file
         copySelectedOptions: function(source, destination) {

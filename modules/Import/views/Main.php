@@ -181,6 +181,12 @@ class Import_Main_View extends Vtiger_View_Controller{
 			$map['module'] = $this->request->get('module');
 			$map['has_header'] = ($hasHeader)?1:0;
 			$map['assigned_user_id'] = $this->user->id;
+			// 保存したマッピングはモジュール内の全ユーザーが読み込み、画面で項目名をセレクタに使うため、項目名の形のものだけ残す
+			$addPicklistFields = $this->request->get('add_picklist_fields');
+			$addPicklistFields = is_array($addPicklistFields) ? array_values(array_filter($addPicklistFields, function ($fieldName) {
+				return is_string($fieldName) && preg_match('/^\w+$/', $fieldName);
+			})) : array();
+			$map['add_picklist_fields'] = Zend_Json::encode($addPicklistFields);
 
 			$importMap = new Import_Map_Model($map, $this->user);
 			$importMap->save();
