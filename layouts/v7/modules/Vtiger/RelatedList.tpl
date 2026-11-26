@@ -125,6 +125,9 @@
 									{if $IS_DELETABLE}
 										<a class="relationDelete"><i title="{vtranslate('LBL_UNLINK', $MODULE)}" class="vicon-linkopen"></i></a>
 									{/if}
+									{if $MODULE eq 'Project' && $RELATED_MODULE_NAME eq 'ProjectTask' && $RELATED_RECORD->isDeletable()}
+										&nbsp;&nbsp; <a class="relatedRecordDelete"><i title="{vtranslate('LBL_DELETE', $MODULE)}" class="vicon-recyclebin" style="font-size: 11px; vertical-align: middle;"></i></a>
+									{/if}
 								</span>
 
 							</td>

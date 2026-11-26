@@ -1775,6 +1775,7 @@ $jsLanguageStrings = array(
 
 	'LBL_DELETE_CONFIRMATION' => 'Are you sure you want to delete?', // This is added as duplicate as we need to show different message for different modules. Ex:Accounts has different message
 	'LBL_UNLINK_CONFIRMATION' => 'Are you sure you want to unlink?',
+	'LBL_UNLINK_RELATION_CONFIRMATION' => 'Are you sure you want to remove this relation?',
 	'LBL_DELETE_USER_CONFIRMATION' => 'When a User is deleted, user will be marked as "Inactive" and no new records can be assigned to the User, and the user will not be able to login. Are you sure you want to delete?',
 	'LBL_DELETE_CONFIRMATION_NOTE' => 'Note : Deleted records will be kept in recycle bin and cleared after %s days',
 	'LBL_MASS_DELETE_CONFIRMATION' => 'Are you sure you want to delete the selected Records?',
