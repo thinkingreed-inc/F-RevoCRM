@@ -69,6 +69,7 @@ $languageStrings = array(
 	'Hot Leads' => 'High Potential Customers',
 	'This Month Leads' => 'Leads of This Month',
 	'last_action_date' => 'Last Activity Date',
+	'LBL_SETUP_PARAMETER_MESSAGE_LEAD_CONVERT_ASSIGN_CURRENT_USER' => 'Default assignee on the Convert Lead screen. true: current user, false: lead assignee',
 );
 $jsLanguageStrings = array(
 	'JS_SELECT_CONTACTS' => 'Select Contacts to proceed',
