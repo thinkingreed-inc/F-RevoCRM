@@ -92,9 +92,12 @@ class CustomView extends CRMEntity {
 	 */
 	function getViewId($module) {
 		global $adb, $current_user;
-		$now_action = vtlib_purify($_REQUEST['action']);
+		$now_action = vtlib_purify($_REQUEST['action'] ?? '');
 		if(!$now_action) {
-			$now_action = vtlib_purify($_REQUEST['view']);
+			$now_action = vtlib_purify($_REQUEST['view'] ?? '');
+		}
+		if(!$now_action) {
+			$now_action = 'List';
 		}
 		/*
 		表示するリストを決める. 優先度は以下の通り1～4.
